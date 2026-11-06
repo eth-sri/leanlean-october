@@ -18,9 +18,12 @@ namespace DedekindZetaZeroFree.Hecke.Theta
 
 variable {F : Type} [Field F] [NumberField F]
 
+section
+variable (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
+    (x : {x : F // x ∈ (I : FractionalIdeal (𝓞 F)⁰ F)})
+include I x
 theorem existsUnique_integralElementIdeal
-    (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
-    (x : {x : F // x ∈ (I : FractionalIdeal (𝓞 F)⁰ F)}) :
+      :
     ∃! a : Ideal (𝓞 F), (a : FractionalIdeal (𝓞 F)⁰ F) =
       FractionalIdeal.spanSingleton (𝓞 F)⁰ x.val *
         (I : FractionalIdeal (𝓞 F)⁰ F)⁻¹ := by
@@ -33,16 +36,16 @@ theorem existsUnique_integralElementIdeal
   intro b hb
   exact FractionalIdeal.coeIdeal_injective (hb.trans ha.symm)
 
-def integralElementIdeal (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
-    (x : {x : F // x ∈ (I : FractionalIdeal (𝓞 F)⁰ F)}) : Ideal (𝓞 F) :=
+def integralElementIdeal   : Ideal (𝓞 F) :=
   Classical.choose (existsUnique_integralElementIdeal I x)
 
-theorem integralElementIdeal_coe (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
-    (x : {x : F // x ∈ (I : FractionalIdeal (𝓞 F)⁰ F)}) :
+theorem integralElementIdeal_coe   :
     (integralElementIdeal I x : FractionalIdeal (𝓞 F)⁰ F) =
       FractionalIdeal.spanSingleton (𝓞 F)⁰ x.val *
         (I : FractionalIdeal (𝓞 F)⁰ F)⁻¹ := by
   exact (Classical.choose_spec (existsUnique_integralElementIdeal I x)).1
+end
+
 
 theorem integralElementIdeal_integral_coe (a : Ideal (𝓞 F)) (ha : a ≠ ⊥)
     (x : 𝓞 F) (hx : x ∈ a) :

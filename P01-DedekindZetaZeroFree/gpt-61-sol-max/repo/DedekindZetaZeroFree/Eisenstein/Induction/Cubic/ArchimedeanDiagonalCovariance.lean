@@ -101,10 +101,13 @@ private theorem arch_center (z : InfinitePlace F → ℂ) :
     exact NNReal.eq hn
   exact ho.trans (congrArg KPGlobalCenterRationalCharacter.positiveComplex hu)
 
+
+local notation:max "current_aInfinity" => aInfinity F ζ hζ
+
 theorem aInfinity_mem_center (u : InfinitePlace F → ℝ) :
-    aInfinity F ζ hζ u ∈ KPGlobalCenterRationalCharacter.Z F ζ hζ := by
+    current_aInfinity u ∈ KPGlobalCenterRationalCharacter.Z F ζ hζ := by
   obtain ⟨c, hc, -⟩ := arch_center F ζ hζ (fun v => (Real.exp (u v) : ℂ))
-  have ha : aInfinity F ζ hζ u = (c : KPGlobalTorusFunctionData.E F ζ hζ) := by
+  have ha : current_aInfinity u = (c : KPGlobalTorusFunctionData.E F ζ hζ) := by
     change KPGlobalTorusFunctionData.torusArchChart F ζ hζ
       (fun v => (Real.exp (u v) : ℂ)) = (c : KPGlobalTorusFunctionData.E F ζ hζ)
     exact hc.symm
@@ -112,11 +115,11 @@ theorem aInfinity_mem_center (u : InfinitePlace F → ℝ) :
   exact c.property
 
 theorem aInfinity_mem_rational (u : InfinitePlace F → ℝ) :
-    aInfinity F ζ hζ u ∈ KPGlobalCenterRationalCharacter.R F ζ hζ :=
+    current_aInfinity u ∈ KPGlobalCenterRationalCharacter.R F ζ hζ :=
   Subgroup.mem_sup_right (aInfinity_mem_center F ζ hζ u)
 
 theorem aInfinity_mem_source (s : ℂ) (u : InfinitePlace F → ℝ) :
-    aInfinity F ζ hζ u ∈
+    current_aInfinity u ∈
       (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ s).H :=
   aInfinity_mem_rational F ζ hζ u
 
@@ -125,7 +128,7 @@ def sourceElement (s : ℂ) (u : InfinitePlace F → ℝ) :
   ⟨aInfinity F ζ hζ u, aInfinity_mem_source F ζ hζ s u⟩
 
 theorem aInfinity_delta (u : InfinitePlace F → ℝ) :
-    ((KPGlobalTorusFunctionData.delta F ζ hζ (aInfinity F ζ hζ u) : ℝ≥0) : ℝ) =
+    ((KPGlobalTorusFunctionData.delta F ζ hζ (current_aInfinity u) : ℝ≥0) : ℝ) =
       Real.exp (2 * ∑ v, u v) := by
   have hz : (fun v => (Real.exp (u v) : ℂ)) ∈ KPGlobalTorusFunctionData.torusArchDomain F := by
     intro w
@@ -138,7 +141,7 @@ theorem aInfinity_delta (u : InfinitePlace F → ℝ) :
     intro w
     rw [Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _), ← Real.exp_nat_mul]
     norm_num
-  calc ((KPGlobalTorusFunctionData.delta F ζ hζ (aInfinity F ζ hζ u) : ℝ≥0) : ℝ)
+  calc ((KPGlobalTorusFunctionData.delta F ζ hζ (current_aInfinity u) : ℝ≥0) : ℝ)
       = ∏ w : InfinitePlace F, ‖((Real.exp (u w) : ℝ) : ℂ)‖ ^ 2 := h
     _ = ∏ w : InfinitePlace F, Real.exp (2 * u w) := Finset.prod_congr rfl (fun w _ => h1 w)
     _ = Real.exp (∑ w : InfinitePlace F, 2 * u w) :=
@@ -146,11 +149,11 @@ theorem aInfinity_delta (u : InfinitePlace F → ℝ) :
     _ = Real.exp (2 * ∑ w : InfinitePlace F, u w) := by rw [← Finset.mul_sum]
 
 private theorem nu_arch (u : InfinitePlace F → ℝ) :
-    ((KPGlobalCenterRationalCharacter.nu F ζ hζ (aInfinity F ζ hζ u) : ℝ≥0) : ℝ) =
+    ((KPGlobalCenterRationalCharacter.nu F ζ hζ (current_aInfinity u) : ℝ≥0) : ℝ) =
       Real.exp ((1 / 6 : ℝ) * (2 * ∑ v, u v)) := by
   have hδ := aInfinity_delta F ζ hζ u
-  have h6 : ((KPGlobalCenterRationalCharacter.nu F ζ hζ (aInfinity F ζ hζ u) : ℝ≥0) : ℝ) =
-      (((KPGlobalTorusFunctionData.delta F ζ hζ (aInfinity F ζ hζ u) : ℝ≥0) : ℝ)) ^
+  have h6 : ((KPGlobalCenterRationalCharacter.nu F ζ hζ (current_aInfinity u) : ℝ≥0) : ℝ) =
+      (((KPGlobalTorusFunctionData.delta F ζ hζ (current_aInfinity u) : ℝ≥0) : ℝ)) ^
         (1 / 6 : ℝ) := by
     simp only [KPGlobalCenterRationalCharacter.nu, MonoidHom.comp_apply,
       KPGlobalCenterRationalCharacter.sixthPower, Units.coe_map, NNReal.rpowMonoidHom_apply,
@@ -162,15 +165,15 @@ theorem source_character (s : ℂ) (u : InfinitePlace F → ℝ) :
       (sourceElement F ζ hζ s u) : ℂ) =
         Complex.exp (((1 : ℂ) / 6 + s) * ((2 * ∑ v, u v : ℝ) : ℂ)) := by
   obtain ⟨c, hc, hχc⟩ := arch_center F ζ hζ (fun v => (Real.exp (u v) : ℂ))
-  have hcE : c.val = aInfinity F ζ hζ u := hc
-  have hR : aInfinity F ζ hζ u ∈ KPGlobalCenterRationalCharacter.R F ζ hζ :=
+  have hcE : c.val = current_aInfinity u := hc
+  have hR : current_aInfinity u ∈ KPGlobalCenterRationalCharacter.R F ζ hζ :=
     aInfinity_mem_rational F ζ hζ u
   have hsplit : ((KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ s).character
       (sourceElement F ζ hζ s u) : ℂ) =
       ((KPGlobalCenterRationalCharacter.lambdaR F ζ hζ
         ⟨aInfinity F ζ hζ u, hR⟩ : ℂˣ) : ℂ) *
       ((KPGlobalTorusBorelTwistCompatibility.normCharacter F ζ hζ s
-        (aInfinity F ζ hζ u) : ℂˣ) : ℂ) := rfl
+        (current_aInfinity u) : ℂˣ) : ℂ) := rfl
   rw [hsplit]
   have hlam : KPGlobalCenterRationalCharacter.lambdaR F ζ hζ
       ⟨aInfinity F ζ hζ u, hR⟩ = KPGlobalCenterRationalCharacter.omegaA F ζ hζ c :=
@@ -190,11 +193,11 @@ theorem source_character (s : ℂ) (u : InfinitePlace F → ℝ) :
     push_cast
     ring
   have hnormc : ((KPGlobalTorusBorelTwistCompatibility.normCharacter F ζ hζ s
-      (aInfinity F ζ hζ u) : ℂˣ) : ℂ) =
+      (current_aInfinity u) : ℂˣ) : ℂ) =
       Complex.exp (s * ((2 * ∑ v, u v : ℝ) : ℂ)) := by
     have hp : ((KPGlobalTorusBorelTwistCompatibility.normCharacter F ζ hζ s
-        (aInfinity F ζ hζ u) : ℂˣ) : ℂ) =
-        KPGlobalTorusBorelTwistCompatibility.normPower F ζ hζ s (aInfinity F ζ hζ u) := rfl
+        (current_aInfinity u) : ℂˣ) : ℂ) =
+        KPGlobalTorusBorelTwistCompatibility.normPower F ζ hζ s (current_aInfinity u) := rfl
     rw [hp, KPGlobalTorusBorelTwistCompatibility.normPower, aInfinity_delta, Real.log_exp]
   rw [hpc, hnuC, hnormc, ← Complex.exp_add]
   congr 1
@@ -206,32 +209,32 @@ theorem flatR_covariance (s : ℂ) (u : InfinitePlace F → ℝ)
       (KPContFlatSourceRecipe.D F ζ hζ))
     (g : KPGlobalTorusFunctionData.G F ζ hζ) :
     (KPContFlatSourceRecipe.flatR F ζ hζ s f).val
-      ((aInfinity F ζ hζ u).val * g) =
+      ((current_aInfinity u).val * g) =
         Complex.exp (((4 : ℂ) / 3 + 2 * s) * ((∑ v, u v : ℝ) : ℂ)) *
           (KPContFlatSourceRecipe.flatR F ζ hζ s f).val g := by
   have hN0 : KPGlobalTorusFunctionData.N F ζ hζ (0 : KPGlobalTorusFunctionData.Adeles F) = 1 :=
     map_one (KPGlobalTorusFunctionData.Nhom F ζ hζ)
   have halpha : KPContFlatSourceRecipe.alpha F ζ hζ
-      ((aInfinity F ζ hζ u).val * g) =
-      Real.log (((KPGlobalTorusFunctionData.delta F ζ hζ (aInfinity F ζ hζ u) : ℝ≥0) : ℝ)) +
+      ((current_aInfinity u).val * g) =
+      Real.log (((KPGlobalTorusFunctionData.delta F ζ hζ (current_aInfinity u) : ℝ≥0) : ℝ)) +
         KPContFlatSourceRecipe.alpha F ζ hζ g := by
-    have h := KPContFlatFullProductIwasawa.alpha_borel_mul F ζ hζ (aInfinity F ζ hζ u) 0 g
+    have h := KPContFlatFullProductIwasawa.alpha_borel_mul F ζ hζ (current_aInfinity u) 0 g
     rwa [hN0, mul_one] at h
   have hlogδ : Real.log
-      (((KPGlobalTorusFunctionData.delta F ζ hζ (aInfinity F ζ hζ u) : ℝ≥0) : ℝ)) =
+      (((KPGlobalTorusFunctionData.delta F ζ hζ (current_aInfinity u) : ℝ≥0) : ℝ)) =
       2 * ∑ v, u v := by
     rw [aInfinity_delta F ζ hζ u, Real.log_exp]
   have halpha' : KPContFlatSourceRecipe.alpha F ζ hζ
-      ((aInfinity F ζ hζ u).val * g) = (2 * ∑ v, u v) +
+      ((current_aInfinity u).val * g) = (2 * ∑ v, u v) +
         KPContFlatSourceRecipe.alpha F ζ hζ g := by
     rw [halpha, hlogδ]
-  have hfmem : aInfinity F ζ hζ u ∈
+  have hfmem : current_aInfinity u ∈
       (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0).H :=
     aInfinity_mem_source F ζ hζ 0 u
   let hEl : (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0).H :=
     ⟨aInfinity F ζ hζ u, hfmem⟩
-  have hElv : hEl.val = aInfinity F ζ hζ u := rfl
-  have hf : f.val.val ((aInfinity F ζ hζ u).val * g) =
+  have hElv : hEl.val = current_aInfinity u := rfl
+  have hf : f.val.val ((current_aInfinity u).val * g) =
       KPGlobalTorusFunctionData.deltaHalf F ζ hζ hEl.val *
         (((KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0).character
           hEl : ℂˣ) : ℂ) * f.val.val g := by
@@ -253,7 +256,7 @@ theorem flatR_covariance (s : ℂ) (u : InfinitePlace F → ℝ)
         (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0).character
         hEl from rfl] at h
     simpa using h
-  calc (KPContFlatSourceRecipe.flatR F ζ hζ s f).val ((aInfinity F ζ hζ u).val * g)
+  calc (KPContFlatSourceRecipe.flatR F ζ hζ s f).val ((current_aInfinity u).val * g)
       = Complex.exp (s * ((2 * ∑ v, u v : ℝ) : ℂ) +
             s * ((KPContFlatSourceRecipe.alpha F ζ hζ g : ℝ) : ℂ)) *
           (Complex.exp ((∑ v, u v : ℝ) : ℂ) *
@@ -299,7 +302,7 @@ theorem flatR_mean_height (s : ℂ) (t : ℝ) (b : InfinitePlace F → ℝ)
       (KPContFlatSourceRecipe.D F ζ hζ))
     (g : KPGlobalTorusFunctionData.G F ζ hζ) :
     (KPContFlatSourceRecipe.flatR F ζ hζ s f).val
-      ((aInfinity F ζ hζ (fun v => t + b v)).val * g) =
+      ((current_aInfinity (fun v => t + b v)).val * g) =
         KPIncomingCasimir.heightFactor (Module.finrank ℚ F / 2) s t *
           (KPContFlatSourceRecipe.flatR F ζ hζ s f).val g := by
   rw [flatR_covariance F ζ hζ s (fun v => t + b v) f g]

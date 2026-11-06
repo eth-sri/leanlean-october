@@ -28,16 +28,19 @@ variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
-def BallInside (a : ActualChart (U := U) (H := H)) (B : LocalBall (3 * d F)) : Prop :=
+
+local notation:max "current_ActualChart" => ActualChart (U := U) (H := H)
+
+def BallInside (a : current_ActualChart) (B : LocalBall (3 * d F)) : Prop :=
   IsCompact (closure B.carrier) ∧
     closure B.carrier ⊆ (baseReindex (F := F)).symm ⁻¹' omega a
 
 def scalar (s : BorelL2Sections F ζ hζ U R P H)
-    (a : ActualChart (U := U) (H := H)) (x : Space (3 * d F)) : ℂ :=
+    (a : current_ActualChart) (x : Space (3 * d F)) : ℂ :=
   liftExtension a (sectionFields s.val a) ((baseReindex (F := F)).symm x)
 
 def coordinateW (W : Family (U := U) (H := H))
-    (a : ActualChart (U := U) (H := H)) (x : Space (3 * d F))
+    (a : current_ActualChart) (x : Space (3 * d F))
     (j : Fin (3 * d F)) : ℂ :=
   let p := (baseReindex (F := F)).symm x
   let ik := (coefficientIndex (F := F)).symm j
@@ -51,22 +54,25 @@ private lemma measurable_fromActual :
     KPContCotangentActualOverlap.labeledAInv
   fun_prop
 
-private lemma chart_eq_preimage (a : ActualChart (U := U) (H := H)) :
+private lemma chart_eq_preimage (a : current_ActualChart) :
     chart a = (baseReindex (F := F)).symm ⁻¹' omega a := by
   ext x
   simp only [Set.mem_preimage, KPContActualSectorChartEquivariantInputs.chart,
     KPContCotangentOverlapRationalBranches.omega,
     KPContActualSectorChartEquivariantInputs.toActual]
 
-private lemma toBase_eq (a : ActualChart (U := U) (H := H)) (y : a.domain) :
+private lemma toBase_eq (a : current_ActualChart) (y : a.domain) :
     a.toBase y = (H.atlas U).components ⟨a.component, Quotient.mk _ y.val⟩ := by
   rw [KPContActualCotangentCountableShrinking.ShrunkChart.toBase]
   simp only [KPFiniteCuspAtlas.componentMap, (H.atlas U).components_formula]
   rfl
 
-private lemma sectionNorm_toBase (a : ActualChart (U := U) (H := H))
+
+local notation:max "current_sectionNorm" => sectionNorm F ζ hζ U R P H
+
+private lemma sectionNorm_toBase (a : current_ActualChart)
     (u : Sections F ζ hζ U R P H) (y : a.domain) :
-    sectionNorm F ζ hζ U R P H u (a.toBase y) = ‖(u a.component).val y.val‖ := by
+    current_sectionNorm u (a.toBase y) = ‖(u a.component).val y.val‖ := by
   rw [toBase_eq (a := a) y]
   exact sectionNorm_component F ζ hζ U R P H u a.component y.val
 
@@ -80,7 +86,7 @@ private lemma measurable_toActual :
     Measurable (toActual (F := F) (ζ := ζ) (hζ := hζ)) :=
   continuous_toActual.measurable
 
-private lemma isOpen_chart (a : ActualChart (U := U) (H := H)) : IsOpen (chart a) :=
+private lemma isOpen_chart (a : current_ActualChart) : IsOpen (chart a) :=
   a.domain_open.preimage continuous_toActual
 
 private lemma toActual_fromActual (y : KPCuspGenuineMonodromy.SymmetricSpace F) :
@@ -91,7 +97,7 @@ private lemma toActual_fromActual (y : KPCuspGenuineMonodromy.SymmetricSpace F) 
   simp [KPContCotangentActualOverlap.labeledA, KPContCotangentActualOverlap.labeledAInv]
 
 private theorem sectionFields_apply_actual (s : Sections F ζ hζ U R P H)
-    (a : ActualChart (U := U) (H := H)) (x : omega a) :
+    (a : current_ActualChart) (x : omega a) :
     sectionFields s a x = (s a.component).val (labeledA (placeEquiv F ζ hζ) x.val) := by
   have hcoe : (isotropyChart a).coefficient s x.val =
       (KPCuspGenuineMonodromy.chi F ζ hζ ((isotropyChart a).splitting x.val) : ℂ) *
@@ -102,7 +108,7 @@ private theorem sectionFields_apply_actual (s : Sections F ζ hζ U R P H)
   simp [isotropyChart, KPContCotangentActualOverlap.ChartKind.representative]
 
 private lemma scalar_eq_on_chart (s : BorelL2Sections F ζ hζ U R P H)
-    (a : ActualChart (U := U) (H := H)) (x : Space (3 * d F)) (hx : x ∈ chart a) :
+    (a : current_ActualChart) (x : Space (3 * d F)) (hx : x ∈ chart a) :
     scalar s a x = (s.val a.component).val (toActual (ζ := ζ) (hζ := hζ) x) := by
   have hx' : (baseReindex (F := F)).symm x ∈ omega a := by
     rw [chart_eq_preimage] at hx; exact hx
@@ -112,10 +118,10 @@ private lemma scalar_eq_on_chart (s : BorelL2Sections F ζ hζ U R P H)
 
 private lemma sectionNorm_eq_zero_measurableSet (u : Sections F ζ hζ U R P H)
     (hu : ∀ i, Measurable (u i).val) :
-    MeasurableSet {b | sectionNorm F ζ hζ U R P H u b = 0} := by
+    MeasurableSet {b | current_sectionNorm u b = 0} := by
   have hsq : Measurable (squaredNorm F ζ hζ U R P H u) :=
     squaredNorm_measurable F ζ hζ U R P H u hu
-  have hset : {b | sectionNorm F ζ hζ U R P H u b = 0} =
+  have hset : {b | current_sectionNorm u b = 0} =
       {b | KPContSectorLineL2Isometry.squaredNorm F ζ hζ U R P H u b = 0} := by
     ext b
     simp only [Set.mem_setOf_eq]
@@ -124,14 +130,14 @@ private lemma sectionNorm_eq_zero_measurableSet (u : Sections F ζ hζ U R P H)
     · intro h; rw [h]; simp
     · intro h
       simp only [ENNReal.ofReal_eq_zero] at h
-      have h2 : sectionNorm F ζ hζ U R P H u b ^ 2 = 0 := le_antisymm h (sq_nonneg _)
+      have h2 : current_sectionNorm u b ^ 2 = 0 := le_antisymm h (sq_nonneg _)
       exact sq_eq_zero_iff.mp h2
   rw [hset]
   exact measurableSet_eq_fun hsq measurable_const
 
 theorem scalar_ae_of_mk_eq (s t : BorelL2Sections F ζ hζ U R P H)
     (hst : mk F ζ hζ U R P H s = mk F ζ hζ U R P H t)
-    (a : ActualChart (U := U) (H := H)) (B : LocalBall (3 * d F))
+    (a : current_ActualChart) (B : LocalBall (3 * d F))
     (hB : BallInside a B) :
     (fun x => scalar s a x) =ᵐ[volume.restrict B.carrier] (fun x => scalar t a x) := by
   obtain ⟨-, hBsub⟩ := hB
@@ -140,7 +146,7 @@ theorem scalar_ae_of_mk_eq (s t : BorelL2Sections F ζ hζ U R P H)
   have hnorm0 : squaredNorm F ζ hζ U R P H (s.val - t.val)
       =ᵐ[KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U] 0 :=
     (mk_eq_mk_iff F ζ hζ U R P H s t).mp hst
-  have hsn : sectionNorm F ζ hζ U R P H (s.val - t.val)
+  have hsn : current_sectionNorm (s.val - t.val)
       =ᵐ[KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U] 0 := by
     filter_upwards [hnorm0] with b hb
     simp only [KPContSectorLineL2Isometry.squaredNorm, Pi.zero_apply,
@@ -156,14 +162,14 @@ theorem scalar_ae_of_mk_eq (s t : BorelL2Sections F ζ hζ U R P H)
       funext x; simp
     rw [he]; exact h1.sub h2
   have hP := every_shrunkChart_properties F ζ hζ U R P H a
-  have hmeas : MeasurableSet {b | sectionNorm F ζ hζ U R P H (s.val - t.val) b = 0} :=
+  have hmeas : MeasurableSet {b | current_sectionNorm (s.val - t.val) b = 0} :=
     sectionNorm_eq_zero_measurableSet (s.val - t.val) hu
   have hbase : ∀ᵐ b ∂((KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U).restrict
-      a.baseDomain), sectionNorm F ζ hζ U R P H (s.val - t.val) b = 0 :=
+      a.baseDomain), current_sectionNorm (s.val - t.val) b = 0 :=
     ae_mono Measure.restrict_le_self hsn
   rw [← hP.exact_pushforward] at hbase
   have hlift : ∀ᵐ y ∂a.liftedMeasure,
-      sectionNorm F ζ hζ U R P H (s.val - t.val) (a.toBase y) = 0 :=
+      current_sectionNorm (s.val - t.val) (a.toBase y) = 0 :=
     (ae_map_iff hP.measurable.aemeasurable hmeas).mp hbase
 
   have hcoeff : (fun y : a.domain => (s.val a.component).val y.val)

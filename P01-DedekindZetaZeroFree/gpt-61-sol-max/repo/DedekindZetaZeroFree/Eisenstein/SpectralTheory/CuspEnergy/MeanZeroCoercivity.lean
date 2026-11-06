@@ -85,9 +85,12 @@ private theorem diagonal_single (a : KPCuspCharts.Horizontal F)
   by_cases h : j = i
   · subst j; simp [diagonal]
   · simp [diagonal, Pi.single_eq_of_ne h]
-private theorem transformed_deriv
-    (f g : KPCuspCharts.Horizontal F → ℂ) (hf : Differentiable ℝ f)
+section
+variable (f g : KPCuspCharts.Horizontal F → ℂ) (hf : Differentiable ℝ f)
     (hg : Differentiable ℝ g) (a b y : KPCuspCharts.Horizontal F) (c : ℂ)
+include f g hf hg a b y c
+private theorem transformed_deriv
+     
     (he : ∀ z, g (diagonal a z + b) = c * f z) :
     (fderiv ℝ g (diagonal a y + b)).comp (diagonal a) = c • fderiv ℝ f y := by
   have hd := (hg _).hasFDerivAt.comp y
@@ -98,8 +101,7 @@ private theorem transformed_deriv
   rw [hh] at hd
   exact hd.unique hc
 private theorem derivative_rotation
-    (f g : KPCuspCharts.Horizontal F → ℂ) (hf : Differentiable ℝ f)
-    (hg : Differentiable ℝ g) (a b y : KPCuspCharts.Horizontal F) (c : ℂ)
+     
     (hc : ‖c‖ = 1) (he : ∀ z, g (diagonal a z + b) = c * f z)
     (i : Fin (KPCuspLogShape.dimension F)) :
     ‖a i‖ ^ 2 *
@@ -121,6 +123,8 @@ private theorem derivative_rotation
   simp only [mul_one] at hz1
   rw [hz1, hz Complex.I, norm_mul, norm_mul, hc, one_mul, one_mul] at hh
   exact hh.symm
+end
+
 
 private theorem chi_norm (s : S) :
     ‖(KPCuspGenuineMonodromy.chi F ζ hζ (ρ s) : ℂ)‖ = 1 := by
@@ -468,8 +472,11 @@ theorem gradientSq_nonneg (v : Representative ζ hζ S ρ V T)
   unfold Representative.gradientSq
   exact Finset.sum_nonneg fun i _ => Finset.sum_nonneg fun k _ => sq_nonneg _
 
-theorem cross_section_coercivity_zero (G : KPCuspCharts.ChartOutput F hF S D)
-    (v : Representative ζ hζ S ρ V T) (t : Set.Ioi T) :
+section
+variable (G : KPCuspCharts.ChartOutput F hF S D)
+    (v : Representative ζ hζ S ρ V T) (t : Set.Ioi T)
+include G v t
+theorem cross_section_coercivity_zero   :
     ((0 : ℝ) * Real.exp (2 * t.val)) *
       (∫ x : KPCuspCharts.Cross F, ‖v.scalar (x, t.val)‖ ^ 2
         ∂(volume.prod G.shapeMeasure).restrict G.fundamentalDomain) ≤
@@ -479,8 +486,7 @@ theorem cross_section_coercivity_zero (G : KPCuspCharts.ChartOutput F hF S D)
   exact integral_nonneg fun x => gradientSq_nonneg v (x, t.val)
 
 theorem scalar_norm_crossAffine
-    (G : KPCuspCharts.ChartOutput F hF S D)
-    (v : Representative ζ hζ S ρ V T) (t : Set.Ioi T)
+     
     (s : S) (A : Matrix.GeneralLinearGroup (Fin 2) F)
     (hA : Matrix.ProjGenLinGroup.mk A = (s : KPCuspArithmetic.PGL2 F))
     (hc : A 1 0 = 0) (x : KPCuspCharts.Cross F) :
@@ -507,8 +513,7 @@ theorem scalar_norm_crossAffine
   rw [he, norm_mul, hu, one_mul]
 
 theorem scalar_norm_crossAction
-    (G : KPCuspCharts.ChartOutput F hF S D)
-    (v : Representative ζ hζ S ρ V T) (t : Set.Ioi T)
+     
     (s : S) (x : KPCuspCharts.Cross F) :
     ‖v.scalar (G.crossAction s x, t.val)‖ = ‖v.scalar (x, t.val)‖ := by
   obtain ⟨A, hA, hc⟩ := D.upper s.val s.property
@@ -516,8 +521,7 @@ theorem scalar_norm_crossAction
   exact scalar_norm_crossAffine G v t s A hA hc x
 
 theorem scalar_slice_continuous
-    (G : KPCuspCharts.ChartOutput F hF S D)
-    (v : Representative ζ hζ S ρ V T) (t : Set.Ioi T) :
+      :
     Continuous (fun x : KPCuspCharts.Cross F => v.scalar (x, t.val)) := by
   have hx : Continuous (fun x : KPCuspCharts.Cross F => KPCuspCharts.toArch F (x, t.val)) :=
     (KPCuspCharts.toArch_contDiff F).continuous.comp (continuous_id.prodMk continuous_const)
@@ -526,14 +530,19 @@ theorem scalar_slice_continuous
       (KPCuspCharts.toArch F (x, t.val))
     rw [KPCuspCharts.toArch_meanHeight F G.positive_dimension]
     exact t.property)
+end
 
- def horizontalRealLinear (d : ℕ) : (Fin d → ℂ) →L[ℝ] HyperbolicChart.Space d :=
+
+ section
+variable (d : ℕ)
+include d
+def horizontalRealLinear   : (Fin d → ℂ) →L[ℝ] HyperbolicChart.Space d :=
   (PiLp.continuousLinearEquiv 2 ℝ (fun _ : Fin d × Fin 3 => ℝ)).symm.toContinuousLinearMap.comp
     (ContinuousLinearMap.pi (fun j =>
       if j.2 = 0 then Complex.reCLM.comp (ContinuousLinearMap.proj j.1)
       else if j.2 = 1 then Complex.imCLM.comp (ContinuousLinearMap.proj j.1)
       else 0))
-private theorem horizontalRealLinear_apply (d : ℕ) (y : Fin d → ℂ) (j : Fin d × Fin 3) :
+private theorem horizontalRealLinear_apply   (y : Fin d → ℂ) (j : Fin d × Fin 3) :
     horizontalRealLinear d y j = if j.2 = 0 then (y j.1).re else
       if j.2 = 1 then (y j.1).im else 0 := by
   change (if j.2 = 0 then Complex.reCLM.comp (ContinuousLinearMap.proj j.1)
@@ -541,7 +550,7 @@ private theorem horizontalRealLinear_apply (d : ℕ) (y : Fin d → ℂ) (j : Fi
       else (0 : (Fin d → ℂ) →L[ℝ] ℝ)) y = _
   split_ifs <;> rfl
 
-private theorem horizontalRealLinear_single_one (d : ℕ) (i : Fin d) :
+private theorem horizontalRealLinear_single_one   (i : Fin d) :
     horizontalRealLinear d (Pi.single i 1) = HyperbolicChart.coordinateVector d i 0 := by
   ext ⟨j, k⟩
   simp only [horizontalRealLinear_apply, HyperbolicChart.coordinateVector,
@@ -550,7 +559,7 @@ private theorem horizontalRealLinear_single_one (d : ℕ) (i : Fin d) :
   · subst i
     fin_cases k <;> simp
   · fin_cases k <;> simp [Pi.single_eq_of_ne hi, hi, Prod.ext_iff]
-private theorem horizontalRealLinear_single_I (d : ℕ) (i : Fin d) :
+private theorem horizontalRealLinear_single_I   (i : Fin d) :
     horizontalRealLinear d (Pi.single i Complex.I) = HyperbolicChart.coordinateVector d i 1 := by
   ext ⟨j, k⟩
   simp only [horizontalRealLinear_apply, HyperbolicChart.coordinateVector,
@@ -560,7 +569,7 @@ private theorem horizontalRealLinear_single_I (d : ℕ) (i : Fin d) :
     fin_cases k <;> simp
   · fin_cases k <;> simp [Pi.single_eq_of_ne hi, hi, Prod.ext_iff]
 
-private theorem smooth_arch (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (arch d) := by
+private theorem smooth_arch   : ContDiff ℝ (⊤ : ℕ∞) (arch d) := by
   apply contDiff_pi.mpr
   intro i
   apply ContDiff.prodMk
@@ -568,8 +577,10 @@ private theorem smooth_arch (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (arch d) := 
       ((EuclideanSpace.proj (𝕜 := ℝ) (i, (0 : Fin 3))).contDiff.prodMk
        (EuclideanSpace.proj (𝕜 := ℝ) (i, (1 : Fin 3))).contDiff)
   · exact (EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff
-private theorem arch_real (d : ℕ) (z : KPArch.Space d) : arch d (real d z) = z := by
+private theorem arch_real   (z : KPArch.Space d) : arch d (real d z) = z := by
   ext i <;> simp [arch, real]
+end
+
 private theorem representative_differentiableAt (G : KPCuspCharts.ChartOutput F hF S D)
     (v : Representative ζ hζ S ρ V T) (x : KPCuspCharts.Cross F) (t : Set.Ioi T) :
     DifferentiableAt ℝ (v.val ∘ arch (KPCuspLogShape.dimension F))

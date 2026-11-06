@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.LocalField.Analytic.ContinuousFieldUnitLog
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -36,21 +39,24 @@ open scoped Topology
 
 variable {K : Type u} [Field K]
 
-/-- The endpoint exponential of the deep exponential–logarithm equivalence, as a homomorphism from the
-additive ideal (written multiplicatively) to the higher principal units. -/
-noncomputable def principalUnitExpSeriesHomOfMaximalIdealPowOfWithZeroValuationScaled
-    [Algebra ℚ K]
+section
+variable [Algebra ℚ K]
     (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
     [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
     {p : ℕ} [Fact p.Prime] (e n : ℕ)
     {π : (completeDVFOfWithZeroValuation v).valuationSubring}
-    (hπval : v (π : K) = WithZero.exp (-1 : ℤ))
+    (hπval : v π = WithZero.exp (-1))
     (hn : 1 ≤ n)
     (hlevel : (e : ℚ) / ((p : ℚ) - 1) < (n : ℚ))
-    (hnK : ∀ m : ℕ, (((m.factorial : ℕ) : K) ≠ 0))
+    (hnK : ∀ m : ℕ, ((m.factorial : K) ≠ 0))
     (hnval : ∀ m : ℕ,
-      v (((m.factorial : ℕ) : K)) =
+      v ((m.factorial : K)) =
         WithZero.exp (-((e : ℤ) * (padicValNat p m.factorial : ℤ))))
+include v p e n π hπval hn hlevel hnK hnval
+/-- The endpoint exponential of the deep exponential–logarithm equivalence, as a homomorphism from the
+additive ideal (written multiplicatively) to the higher principal units. -/
+noncomputable def principalUnitExpSeriesHomOfMaximalIdealPowOfWithZeroValuationScaled
+     
     (hcomplete :
       letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
       CompleteSpace K) :
@@ -58,8 +64,8 @@ noncomputable def principalUnitExpSeriesHomOfMaximalIdealPowOfWithZeroValuationS
       ((completeDVFOfWithZeroValuation v).maximalIdeal ^ n :
         Ideal (completeDVFOfWithZeroValuation v).valuationSubring) →*
       LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup (completeDVFOfWithZeroValuation v) n := by
-  let hπ : v.IsUniformizer (π : K) :=
-    isUniformizer_of_valuation_eq_exp_neg_one v (π : K) hπval
+  let hπ  :=
+    isUniformizer_of_valuation_eq_exp_neg_one v π hπval
   exact
     { toFun := fun a =>
         principalUnitExpSeriesOfMaximalIdealPowOfWithZeroValuationScaled
@@ -72,10 +78,7 @@ noncomputable def principalUnitExpSeriesHomOfMaximalIdealPowOfWithZeroValuationS
         simp [principalUnitExpSeriesOfMaximalIdealPowOfWithZeroValuationScaled]
       map_mul' := by
         intro a b
-        simpa using
-          principalUnitExpSeries_maximalIdealPow_add_eq_mul_ofWithZeroValuationScaled
-            (v := v) (p := p) e n (π := π) hπ hπval hn hlevel
-            hnK hnval hcomplete a.toAdd b.toAdd }
+        apply principalUnitExpSeries_maximalIdealPow_add_eq_mul_ofWithZeroValuationScaled }
 
 /--
 The defining evaluation formula for `principalUnitExpSeriesHomOfMaximalIdealPow` is
@@ -86,18 +89,7 @@ principalUnitExpSeriesOfMaximalIdealPowOfWithZeroValuationScaled (v := v) (p := 
 a.toAdd`.
 -/
 @[simp] theorem principalUnitExpSeriesHomOfMaximalIdealPow_apply
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
-    {p : ℕ} [Fact p.Prime] (e n : ℕ)
-    {π : (completeDVFOfWithZeroValuation v).valuationSubring}
-    (hπval : v (π : K) = WithZero.exp (-1 : ℤ))
-    (hn : 1 ≤ n)
-    (hlevel : (e : ℚ) / ((p : ℚ) - 1) < (n : ℚ))
-    (hnK : ∀ m : ℕ, (((m.factorial : ℕ) : K) ≠ 0))
-    (hnval : ∀ m : ℕ,
-      v (((m.factorial : ℕ) : K)) =
-        WithZero.exp (-((e : ℤ) * (padicValNat p m.factorial : ℤ))))
+     
     (hcomplete :
       letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
       CompleteSpace K)
@@ -109,7 +101,7 @@ a.toAdd`.
         hnK hnval hcomplete a =
       principalUnitExpSeriesOfMaximalIdealPowOfWithZeroValuationScaled
         (v := v) (p := p) e n (π := π)
-        (isUniformizer_of_valuation_eq_exp_neg_one v (π : K) hπval)
+        (isUniformizer_of_valuation_eq_exp_neg_one v π hπval)
         hπval hn hlevel
         hnK hnval hcomplete a.toAdd :=
   rfl
@@ -118,18 +110,7 @@ a.toAdd`.
 The proof is the valuation estimate `v(Exp(a) - 1) = v(a)`: membership in `m^n`
 puts every nonzero `a` above the ramified convergence threshold. -/
 theorem continuousAt_zero_principalUnitExpSeries_maximalIdealPow_fieldVal_ofWithZeroValuationScaled
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
-    {p : ℕ} [Fact p.Prime] (e n : ℕ)
-    {π : (completeDVFOfWithZeroValuation v).valuationSubring}
-    (hπval : v (π : K) = WithZero.exp (-1 : ℤ))
-    (hn : 1 ≤ n)
-    (hlevel : (e : ℚ) / ((p : ℚ) - 1) < (n : ℚ))
-    (hnK : ∀ m : ℕ, (((m.factorial : ℕ) : K) ≠ 0))
-    (hnval : ∀ m : ℕ,
-      v (((m.factorial : ℕ) : K)) =
-        WithZero.exp (-((e : ℤ) * (padicValNat p m.factorial : ℤ))))
+     
     (hcomplete :
       letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
       CompleteSpace K) :
@@ -142,24 +123,23 @@ theorem continuousAt_zero_principalUnitExpSeries_maximalIdealPow_fieldVal_ofWith
             (v := v) (p := p) e n (π := π)
             (isUniformizer_of_valuation_eq_exp_neg_one v (π : K) hπval)
             hπval hn hlevel
-            hnK hnval hcomplete a :
-          LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup (completeDVFOfWithZeroValuation v) n) :
+            hnK hnval hcomplete a) :
           (completeDVFOfWithZeroValuation v).valuationSubringˣ) :
           (completeDVFOfWithZeroValuation v).valuationSubring) : K))
       0 := by
-  let : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-  let hπ : v.IsUniformizer (π : K) :=
-    isUniformizer_of_valuation_eq_exp_neg_one v (π : K) hπval
-  let F : ValuationTheory.DiscreteValuationField.CompleteDVF.{u, 0} K := completeDVFOfWithZeroValuation v
+  let  := Valued.mk' v
+  let hπ  :=
+    isUniformizer_of_valuation_eq_exp_neg_one v π hπval
+  let F  := completeDVFOfWithZeroValuation v
   let E :=
     principalUnitExpSeriesOfMaximalIdealPowOfWithZeroValuationScaled
       (v := v) (p := p) e n (π := π) hπ hπval hn hlevel
       hnK hnval hcomplete
   have hcoe : Continuous
       (fun a : (F.maximalIdeal ^ n : Ideal F.valuationSubring) =>
-        ((a : F.valuationSubring) : K)) :=
+        (a : K)) :=
     continuous_subtype_val.comp continuous_subtype_val
-  have hEzero : ((((E 0 : LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F n) :
+  have hEzero : ((((E 0) :
       F.valuationSubringˣ) : F.valuationSubring) : K) = 1 := by
     simp [E, principalUnitExpSeriesOfMaximalIdealPowOfWithZeroValuationScaled]
   rw [ContinuousAt, Filter.tendsto_def]
@@ -168,7 +148,7 @@ theorem continuousAt_zero_principalUnitExpSeries_maximalIdealPow_fieldVal_ofWith
   obtain ⟨γ, hγ⟩ := hs
   have hball : {x : K |
       v x < MonoidWithZeroHom.ValueGroup₀.embedding γ.1} ∈
-      𝓝 (0 : K) := by
+      𝓝 (0) := by
     apply Valued.mem_nhds_zero.mpr
     exact ⟨γ, by
       intro x hx
@@ -177,29 +157,27 @@ theorem continuousAt_zero_principalUnitExpSeries_maximalIdealPow_fieldVal_ofWith
       exact hx⟩
   have hpre :
       {a : (F.maximalIdeal ^ n : Ideal F.valuationSubring) |
-        v (((a : F.valuationSubring) : K)) <
+        v ((a : K)) <
           MonoidWithZeroHom.ValueGroup₀.embedding γ.1} ∈ 𝓝 0 := by
     have ht := (hcoe.tendsto
-      (0 : (F.maximalIdeal ^ n : Ideal F.valuationSubring))) hball
-    simpa using ht
+      (0)) hball
+    exact ht
   refine Filter.mem_of_superset hpre ?_
   intro a ha
-  change v (((a : F.valuationSubring) : K)) <
+  change v ((a : K)) <
     MonoidWithZeroHom.ValueGroup₀.embedding γ.1 at ha
   apply hγ
   change v.restrict
-    (((((E a : LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F n) :
+    (((((E a) :
       F.valuationSubringˣ) : F.valuationSubring) : K) - 1) < γ.1
   rw [Valuation.restrict_lt_iff_lt_embedding]
-  let x : K := ((a : F.valuationSubring) : K)
+  let x  := (a : K)
   by_cases hx : x = 0
   · simpa [E, principalUnitExpSeriesOfMaximalIdealPowOfWithZeroValuationScaled,
       x, hx] using
         (MonoidWithZeroHom.ValueGroup₀.embedding_unit_pos γ)
   · have hge :
-        (n : ℤ) ≤ (ofWithZeroValuation v).val (Units.mk0 x hx) := by
-      simpa [F, x] using
-        ofWithZeroValuation_val_ge_of_mem_maximalIdeal_pow
+        (n : ℤ) ≤ (ofWithZeroValuation v).val (Units.mk0 x hx) := ofWithZeroValuation_val_ge_of_mem_maximalIdeal_pow
           (v := v) (π := π) hπ hπval n
           (a := (a : F.valuationSubring)) a.property hx
     have hthreshold :
@@ -211,24 +189,13 @@ theorem continuousAt_zero_principalUnitExpSeries_maximalIdealPow_fieldVal_ofWith
         (v := v) (p := p) e (x := x) hx hnK hnval hthreshold hcomplete
     rw [principalUnitExpSeries_maximalIdealPow_val_ofWithZeroValuationScaled,
       hv]
-    simpa [x] using ha
+    exact ha
 
 /-- The field value of the endpoint exponential is continuous everywhere.
 Translation in `m^n`, exponential additivity, and continuity of multiplication
 reduce this to the preceding continuity statement at zero. -/
 theorem continuous_principalUnitExpSeries_maximalIdealPow_fieldVal_ofWithZeroValuationScaled
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
-    {p : ℕ} [Fact p.Prime] (e n : ℕ)
-    {π : (completeDVFOfWithZeroValuation v).valuationSubring}
-    (hπval : v (π : K) = WithZero.exp (-1 : ℤ))
-    (hn : 1 ≤ n)
-    (hlevel : (e : ℚ) / ((p : ℚ) - 1) < (n : ℚ))
-    (hnK : ∀ m : ℕ, (((m.factorial : ℕ) : K) ≠ 0))
-    (hnval : ∀ m : ℕ,
-      v (((m.factorial : ℕ) : K)) =
-        WithZero.exp (-((e : ℤ) * (padicValNat p m.factorial : ℤ))))
+     
     (hcomplete :
       letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
       CompleteSpace K) :
@@ -241,26 +208,22 @@ theorem continuous_principalUnitExpSeries_maximalIdealPow_fieldVal_ofWithZeroVal
             (v := v) (p := p) e n (π := π)
             (isUniformizer_of_valuation_eq_exp_neg_one v (π : K) hπval)
             hπval hn hlevel
-            hnK hnval hcomplete a :
-          LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup (completeDVFOfWithZeroValuation v) n) :
+            hnK hnval hcomplete a) :
           (completeDVFOfWithZeroValuation v).valuationSubringˣ) :
           (completeDVFOfWithZeroValuation v).valuationSubring) : K)) := by
-  let : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-  let hπ : v.IsUniformizer (π : K) :=
-    isUniformizer_of_valuation_eq_exp_neg_one v (π : K) hπval
-  let F : ValuationTheory.DiscreteValuationField.CompleteDVF.{u, 0} K := completeDVFOfWithZeroValuation v
+  let  := Valued.mk' v
+  let hπ  :=
+    isUniformizer_of_valuation_eq_exp_neg_one v π hπval
+  let F  := completeDVFOfWithZeroValuation v
   let E :=
     principalUnitExpSeriesOfMaximalIdealPowOfWithZeroValuationScaled
       (v := v) (p := p) e n (π := π) hπ hπval hn hlevel
       hnK hnval hcomplete
   let f : (F.maximalIdeal ^ n : Ideal F.valuationSubring) → K :=
-    fun a => ((((E a : LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F n) :
+    fun a => ((((E a) :
       F.valuationSubringˣ) : F.valuationSubring) : K)
   have hzero : ContinuousAt f 0 := by
-    simpa [F, E, f] using
-      continuousAt_zero_principalUnitExpSeries_maximalIdealPow_fieldVal_ofWithZeroValuationScaled
-        (v := v) (p := p) e n (π := π) hπval hn hlevel
-        hnK hnval hcomplete
+    apply continuousAt_zero_principalUnitExpSeries_maximalIdealPow_fieldVal_ofWithZeroValuationScaled
   rw [continuous_iff_continuousAt]
   intro a
   have hshiftContinuous : Continuous
@@ -285,25 +248,14 @@ theorem continuous_principalUnitExpSeries_maximalIdealPow_fieldVal_ofWithZeroVal
       hnK hnval hcomplete a (b - a)
   have hfield := congrArg
     (fun u : LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F n =>
-      ((((u : F.valuationSubringˣ) : F.valuationSubring) : K))) hadd
+      ((((u : F.valuationSubringˣ)) : K))) hadd
   simpa [f, E, add_sub_cancel_right] using hfield
 
 /-- The exponential endpoint `m^n → U^n` of the deep exponential–logarithm equivalence is continuous.
 The unit topology records both a unit and its inverse; the inverse component is
 the same continuous exponential evaluated at `-a`. -/
 theorem continuous_principalUnitExpSeriesHomOfMaximalIdealPowOfWithZeroValuationScaled
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
-    {p : ℕ} [Fact p.Prime] (e n : ℕ)
-    {π : (completeDVFOfWithZeroValuation v).valuationSubring}
-    (hπval : v (π : K) = WithZero.exp (-1 : ℤ))
-    (hn : 1 ≤ n)
-    (hlevel : (e : ℚ) / ((p : ℚ) - 1) < (n : ℚ))
-    (hnK : ∀ m : ℕ, (((m.factorial : ℕ) : K) ≠ 0))
-    (hnval : ∀ m : ℕ,
-      v (((m.factorial : ℕ) : K)) =
-        WithZero.exp (-((e : ℤ) * (padicValNat p m.factorial : ℤ))))
+     
     (hcomplete :
       letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
       CompleteSpace K) :
@@ -313,28 +265,25 @@ theorem continuous_principalUnitExpSeriesHomOfMaximalIdealPowOfWithZeroValuation
         (v := v) (p := p) e n (π := π) hπval hn hlevel
         hnK hnval hcomplete) := by
   let : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-  let F : ValuationTheory.DiscreteValuationField.CompleteDVF.{u, 0} K := completeDVFOfWithZeroValuation v
+  let F  := completeDVFOfWithZeroValuation v
   let I : Type u := (F.maximalIdeal ^ n : Ideal F.valuationSubring)
   let H : Multiplicative I →* LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F n :=
     principalUnitExpSeriesHomOfMaximalIdealPowOfWithZeroValuationScaled
       (v := v) (p := p) e n (π := π) hπval hn hlevel
       hnK hnval hcomplete
   have hFieldAdd : Continuous
-      (fun a : I => ((((H (Multiplicative.ofAdd a) :
-        LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F n) : F.valuationSubringˣ) :
-        F.valuationSubring) : K)) := by
-    simpa [F, I, H] using
-      continuous_principalUnitExpSeries_maximalIdealPow_fieldVal_ofWithZeroValuationScaled
+      (fun a : I => ((((H (Multiplicative.ofAdd a)) : F.valuationSubringˣ) :
+        F.valuationSubring) : K)) := continuous_principalUnitExpSeries_maximalIdealPow_fieldVal_ofWithZeroValuationScaled
         (v := v) (p := p) e n (π := π) hπval hn hlevel
         hnK hnval hcomplete
   have hField : Continuous
-      (fun a : Multiplicative I => ((((H a : LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F n) :
+      (fun a : Multiplicative I => ((((H a) :
         F.valuationSubringˣ) : F.valuationSubring) : K)) := by
     convert hFieldAdd.comp continuous_toAdd using 1
     rfl
   have hVal : Continuous
       (fun a : Multiplicative I =>
-        (((H a : LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F n) : F.valuationSubringˣ) :
+        (((H a) : F.valuationSubringˣ) :
           F.valuationSubring)) := by
     apply Continuous.subtype_mk
     exact hField
@@ -344,7 +293,7 @@ theorem continuous_principalUnitExpSeriesHomOfMaximalIdealPowOfWithZeroValuation
     exact (continuous_subtype_val.comp continuous_subtype_val).neg
   have hNeg : Continuous (fun a : Multiplicative I => -(a.toAdd)) :=
     hNegI.comp continuous_toAdd
-  let Hinv : Multiplicative I → F.valuationSubringˣ :=
+  let Hinv  :=
     fun a => ((H a : F.valuationSubringˣ)⁻¹)
   have hFieldInv : Continuous
       (fun a : Multiplicative I => ((Hinv a : F.valuationSubring) : K)) := by
@@ -364,22 +313,27 @@ theorem continuous_principalUnitExpSeriesHomOfMaximalIdealPowOfWithZeroValuation
   change Continuous H
   apply Continuous.subtype_mk
   exact hUnits
+end
 
-/-- The logarithm endpoint `U^n → m^n` of the deep exponential–logarithm equivalence is continuous.
-It is the restriction of the continuous logarithm on `U^1`; the two subtype
-lifts merely record the already-proved fact that its value lies in `m^n`. -/
-theorem continuous_principalUnitLogSeriesOfHigherPrincipalUnitGroupOfWithZeroValuationScaled
-    [Algebra ℚ K]
+
+section
+variable [Algebra ℚ K]
     (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
     [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
     {p : ℕ} [Fact p.Prime] (e n : ℕ)
     {π : (completeDVFOfWithZeroValuation v).valuationSubring}
-    (hπval : v (π : K) = WithZero.exp (-1 : ℤ))
+    (hπval : v π = WithZero.exp (-1))
     (hn : 1 ≤ n)
     (hlevel : (e : ℚ) / ((p : ℚ) - 1) < (n : ℚ))
+include v p e n π hπval hn hlevel
+/-- The logarithm endpoint `U^n → m^n` of the deep exponential–logarithm equivalence is continuous.
+It is the restriction of the continuous logarithm on `U^1`; the two subtype
+lifts merely record the already-proved fact that its value lies in `m^n`. -/
+theorem continuous_principalUnitLogSeriesOfHigherPrincipalUnitGroupOfWithZeroValuationScaled
+     
     (hnK : ∀ m : ℕ, (((m + 1 : ℕ) : K) ≠ 0))
     (hnval : ∀ m : ℕ,
-      v (((m + 1 : ℕ) : K)) =
+      v (((m + 1 : ℕ))) =
         WithZero.exp (-((e : ℤ) * (padicValNat p (m + 1) : ℤ))))
     (hcomplete :
       letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
@@ -388,15 +342,15 @@ theorem continuous_principalUnitLogSeriesOfHigherPrincipalUnitGroupOfWithZeroVal
     Continuous
       (principalUnitLogSeriesOfHigherPrincipalUnitGroupOfWithZeroValuationScaled
         (v := v) (p := p) e n (π := π)
-        (isUniformizer_of_valuation_eq_exp_neg_one v (π : K) hπval)
+        (isUniformizer_of_valuation_eq_exp_neg_one v π hπval)
         hπval hn hlevel
         hnK hnval hcomplete) := by
-  let : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-  let hπ : v.IsUniformizer (π : K) :=
-    isUniformizer_of_valuation_eq_exp_neg_one v (π : K) hπval
-  let F : ValuationTheory.DiscreteValuationField.CompleteDVF.{u, 0} K := completeDVFOfWithZeroValuation v
+  let  := Valued.mk' v
+  let hπ  :=
+    isUniformizer_of_valuation_eq_exp_neg_one v π hπval
+  let F  := completeDVFOfWithZeroValuation v
   let ι : LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F n → LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F 1 :=
-    fun u => ⟨(u : F.valuationSubringˣ),
+    fun u => ⟨u,
       LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup.antitone F hn u.property⟩
   have hι : Continuous ι := by
     apply Continuous.subtype_mk
@@ -405,9 +359,7 @@ theorem continuous_principalUnitLogSeriesOfHigherPrincipalUnitGroupOfWithZeroVal
     principalUnitLogSeriesHomOfWithZeroValuationScaled
       (v := v) (p := p) e hnK hnval hcomplete
   have hL : Continuous L := by
-    simpa [F, L] using
-      continuous_principalUnitLogSeriesHomOfWithZeroValuationScaled
-        (v := v) (p := p) e hnK hnval hcomplete
+    apply continuous_principalUnitLogSeriesHomOfWithZeroValuationScaled
   have hfield : Continuous
       (fun u : LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F n => (L (ι u)).toAdd) :=
     continuous_toAdd.comp (hL.comp hι)
@@ -418,19 +370,12 @@ theorem continuous_principalUnitLogSeriesOfHigherPrincipalUnitGroupOfWithZeroVal
           hnK hnval hcomplete u :
             (F.maximalIdeal ^ n : Ideal F.valuationSubring)) :
           F.valuationSubring) : K)) := by
-    convert hfield using 1
-    funext u
-    change principalUnitLogSeriesOfWithZeroValuation v (ι u) hnK =
-      Multiplicative.toAdd (L (ι u))
-    exact
-      (principalUnitLogSeriesHomOfWithZeroValuationScaled_apply_toAdd
-        (v := v) (p := p) e hnK hnval hcomplete (ι u)).symm
+    assumption
   have hValEndpoint : Continuous
       (fun u : LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F n =>
         ((principalUnitLogSeriesOfHigherPrincipalUnitGroupOfWithZeroValuationScaled
           (v := v) (p := p) e n (π := π) hπ hπval hn hlevel
-          hnK hnval hcomplete u :
-            (F.maximalIdeal ^ n : Ideal F.valuationSubring)) :
+          hnK hnval hcomplete u) :
           F.valuationSubring)) := by
     apply Continuous.subtype_mk
     exact hfieldEndpoint
@@ -441,21 +386,14 @@ theorem continuous_principalUnitLogSeriesOfHigherPrincipalUnitGroupOfWithZeroVal
 series-composition identities have been supplied.  Continuity of both maps is
 not an assumption: it is furnished by the endpoint theorems above. -/
 noncomputable def principalUnitExpLogContinuousMulEquivOfExact_ofWithZeroValuationScaled
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
-    {p : ℕ} [Fact p.Prime] (e n : ℕ)
-    {π : (completeDVFOfWithZeroValuation v).valuationSubring}
-    (hπval : v (π : K) = WithZero.exp (-1 : ℤ))
-    (hn : 1 ≤ n)
-    (hlevel : (e : ℚ) / ((p : ℚ) - 1) < (n : ℚ))
-    (hnKexp : ∀ m : ℕ, (((m.factorial : ℕ) : K) ≠ 0))
+     
+    (hnKexp : ∀ m : ℕ, ((m.factorial : K) ≠ 0))
     (hnvalExp : ∀ m : ℕ,
-      v (((m.factorial : ℕ) : K)) =
+      v ((m.factorial : K)) =
         WithZero.exp (-((e : ℤ) * (padicValNat p m.factorial : ℤ))))
     (hnKlog : ∀ m : ℕ, (((m + 1 : ℕ) : K) ≠ 0))
     (hnvalLog : ∀ m : ℕ,
-      v (((m + 1 : ℕ) : K)) =
+      v (((m + 1 : ℕ))) =
         WithZero.exp (-((e : ℤ) * (padicValNat p (m + 1) : ℤ))))
     (hcomplete :
       letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
@@ -466,24 +404,24 @@ noncomputable def principalUnitExpLogContinuousMulEquivOfExact_ofWithZeroValuati
           Ideal (completeDVFOfWithZeroValuation v).valuationSubring),
         principalUnitLogSeriesOfHigherPrincipalUnitGroupOfWithZeroValuationScaled
           (v := v) (p := p) e n (π := π)
-          (isUniformizer_of_valuation_eq_exp_neg_one v (π : K) hπval)
+          (isUniformizer_of_valuation_eq_exp_neg_one v π hπval)
           hπval hn hlevel
           hnKlog hnvalLog hcomplete
           (principalUnitExpSeriesOfMaximalIdealPowOfWithZeroValuationScaled
             (v := v) (p := p) e n (π := π)
-            (isUniformizer_of_valuation_eq_exp_neg_one v (π : K) hπval)
+            (isUniformizer_of_valuation_eq_exp_neg_one v π hπval)
             hπval hn hlevel
             hnKexp hnvalExp hcomplete a) = a)
     (hexp_log :
       ∀ u : LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup (completeDVFOfWithZeroValuation v) n,
         principalUnitExpSeriesOfMaximalIdealPowOfWithZeroValuationScaled
           (v := v) (p := p) e n (π := π)
-          (isUniformizer_of_valuation_eq_exp_neg_one v (π : K) hπval)
+          (isUniformizer_of_valuation_eq_exp_neg_one v π hπval)
           hπval hn hlevel
           hnKexp hnvalExp hcomplete
           (principalUnitLogSeriesOfHigherPrincipalUnitGroupOfWithZeroValuationScaled
             (v := v) (p := p) e n (π := π)
-            (isUniformizer_of_valuation_eq_exp_neg_one v (π : K) hπval)
+            (isUniformizer_of_valuation_eq_exp_neg_one v π hπval)
             hπval hn hlevel
             hnKlog hnvalLog hcomplete u) = u) :
     letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
@@ -491,9 +429,9 @@ noncomputable def principalUnitExpLogContinuousMulEquivOfExact_ofWithZeroValuati
       ((completeDVFOfWithZeroValuation v).maximalIdeal ^ n :
         Ideal (completeDVFOfWithZeroValuation v).valuationSubring) ≃ₜ*
       LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup (completeDVFOfWithZeroValuation v) n := by
-  letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-  let hπ : v.IsUniformizer (π : K) :=
-    isUniformizer_of_valuation_eq_exp_neg_one v (π : K) hπval
+  letI  := Valued.mk' v
+  let hπ  :=
+    isUniformizer_of_valuation_eq_exp_neg_one v π hπval
   exact
     { __ :=
         principalUnitExpLogMulEquivOfExact_ofWithZeroValuationScaled
@@ -508,6 +446,8 @@ noncomputable def principalUnitExpLogContinuousMulEquivOfExact_ofWithZeroValuati
           (continuous_principalUnitLogSeriesOfHigherPrincipalUnitGroupOfWithZeroValuationScaled
             (v := v) (p := p) e n (π := π) hπval hn hlevel
             hnKlog hnvalLog hcomplete) }
+end
+
 
 end MultiplicativeIntegerValuation
 end LocalFieldTheory.DiscreteValuationField

@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LFunctions.Hecke.QuadraticFamilies.UniformConductorControl
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve
 
@@ -27,7 +30,7 @@ theorem algebra_normalized_reciprocity
           ψ n = (Q.χ a) n * (Q.χ b) n) := by
   classical
 
-  have hqc : q ≤ c := Ideal.le_of_dvd hcq
+  have hqc  := Ideal.le_of_dvd hcq
   have hsupc : ∀ a : Ideal (𝓞 F), a ⊔ q = ⊤ → a ⊔ c = ⊤ := fun a haq =>
     eq_top_iff.mpr (haq ▸ sup_le_sup_left hqc a)
 
@@ -39,10 +42,10 @@ theorem algebra_normalized_reciprocity
       ∀ n : Ideal (𝓞 F), n ⊔ q = ⊤ → (n ⊔ Q.cond a = ⊤ ↔ n ⊔ a = ⊤) := by
     intro a ha haq n hnq
     obtain ⟨hac, hca⟩ := hsandwich a ha haq
-    have hle : Q.cond a ≤ a := Ideal.le_of_dvd hac
+    have hle  := Ideal.le_of_dvd hac
     refine ⟨fun h => le_antisymm le_top (h ▸ sup_le_sup_left hle n), fun h => ?_⟩
 
-    have h1 : n ⊔ (a * q) = ⊤ := (hcop_mul n a q).mpr ⟨h, hnq⟩
+    have h1  := (hcop_mul n a q).mpr ⟨h, hnq⟩
     obtain ⟨k, hk⟩ := hca
     rw [hk] at h1
     exact ((hcop_mul n (Q.cond a) k).mp h1).1
@@ -62,8 +65,8 @@ theorem algebra_normalized_reciprocity
     by_cases hab : a ⊔ b = ⊤
     · exact Q.reciprocity a b ha (hsupc a haq) hb (hsupc b hbq) hab
     · have hba : b ⊔ a ≠ ⊤ := by rw [sup_comm]; exact hab
-      have hza : (Q.χ a) b = 0 := (h1 a ha haq b hbq).mpr (Or.inr hba)
-      have hzb : (Q.χ b) a = 0 := (h1 b hb hbq a haq).mpr (Or.inr hab)
+      have hza  := (h1 a ha haq b hbq).mpr (Or.inr hba)
+      have hzb  := (h1 b hb hbq a haq).mpr (Or.inr hab)
       rw [hza, hzb, zero_mul]
   refine ⟨h1, h2, ?_⟩
 
@@ -79,7 +82,7 @@ theorem algebra_normalized_reciprocity
       rw [hcop_mul, hcop_mul, hcond_coprime a ha haq n hnq,
         hcond_coprime b hb hbq n hnq]
     have hnotab : n ⊔ (a * b) ≠ ⊤ := fun h => hcop (hcopab.mp h)
-    have hψ0 : ψ n = 0 := (RayOperations.eq_zero_iff ψ n).mpr (Or.inr hnotab)
+    have hψ0  := (RayOperations.eq_zero_iff ψ n).mpr (Or.inr hnotab)
     have hna : n ⊔ a ≠ ⊤ ∨ n ⊔ b ≠ ⊤ := by
       by_cases hna' : n ⊔ a = ⊤
       · right

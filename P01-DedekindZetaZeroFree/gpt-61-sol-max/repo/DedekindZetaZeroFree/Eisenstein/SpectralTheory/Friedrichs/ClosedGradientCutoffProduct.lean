@@ -38,7 +38,10 @@ local notation "𝓥" => KPContActualSectorCotangentL2.V F ζ hζ U R P H
 
 include μG hμG hR realization
 
- theorem graphTest_mem (f : S_U F ζ hζ U R P H) :
+
+local notation:max "current_S_U" => S_U F ζ hζ U R P H
+
+ theorem graphTest_mem (f : current_S_U) :
     WithLp.toLp 2 (iota f, j (D_U f)) ∈ closedGradientGraph D := by
   change (iota f, j (D_U f)) ∈ (D).closure.graph
   apply LinearPMap.le_graph_of_le (D).le_closure
@@ -46,11 +49,11 @@ include μG hμG hR realization
   simpa only [KPContActualSectorFriedrichsSynthesis.A_U,
     KPTestOperator.descend_image] using hg
 
-def graphTestLift (f : S_U F ζ hζ U R P H) : ClosedGradientSpace D :=
+def graphTestLift (f : current_S_U) : ClosedGradientSpace D :=
   ⟨WithLp.toLp 2 (iota f, j (D_U f)),
     graphTest_mem F ζ hζ U R P H μG hμG hR realization f⟩
 
-def graphTestLinear : S_U F ζ hζ U R P H →ₗ[ℂ] ClosedGradientSpace D where
+def graphTestLinear : current_S_U →ₗ[ℂ] ClosedGradientSpace D where
   toFun f := graphTestLift F ζ hζ U R P H μG hμG hR realization f
   map_add' f g := by
     apply Subtype.ext
@@ -65,13 +68,13 @@ private theorem fst_embedding (w : ClosedGradientSpace D) :
     closedGradientEmbedding D w = (WithLp.ofLp (w : WithLp 2 (𝓗 × 𝓥))).1 := by
   simp [closedGradientEmbedding, WithLp.fstL]
 
-private theorem closedGradientEmbedding_graphTestLift (f : S_U F ζ hζ U R P H) :
+private theorem closedGradientEmbedding_graphTestLift (f : current_S_U) :
     closedGradientEmbedding D (graphTestLift F ζ hζ U R P H μG hμG hR realization f)
       = iota f := by
   rw [fst_embedding F ζ hζ U R P H μG hμG hR realization]
   simp [graphTestLift, WithLp.ofLp_toLp]
 
-private theorem closedGradientEmbedding_graphTestLinear (f : S_U F ζ hζ U R P H) :
+private theorem closedGradientEmbedding_graphTestLinear (f : current_S_U) :
     closedGradientEmbedding D (graphTestLinear F ζ hζ U R P H μG hμG hR realization f)
       = iota f := by
   rw [show graphTestLinear F ζ hζ U R P H μG hμG hR realization f
@@ -113,7 +116,7 @@ private theorem graphTestLinear_dense :
         (D).closure ⟨closedGradientEmbedding D w, hu⟩)) := hs1.prodMk_nhds hs2
   refine ((WithLp.prod_continuous_toLp 2 𝓗 𝓥).tendsto _).comp hpair
 
-private theorem j_norm_sq (η : RealSmoothCutoff F ζ hζ U R P H) (f : S_U F ζ hζ U R P H) :
+private theorem j_norm_sq (η : RealSmoothCutoff F ζ hζ U R P H) (f : current_S_U) :
     ‖j (cutoffGradientTimes η f)‖ ^ 2 =
       ∫ x, (normSquare (cutoffGradientTimes η f).val x : ℝ)
         ∂KPContActualSectorCotangentL2.muU F ζ hζ U R P := by
@@ -122,7 +125,7 @@ private theorem j_norm_sq (η : RealSmoothCutoff F ζ hζ U R P H) (f : S_U F ζ
     (cotangentSquareFamily (cutoffGradientTimes η f)) rfl
   simpa [cotangentSquareFamily] using h
 
-private theorem iota_norm_sq (f : S_U F ζ hζ U R P H) :
+private theorem iota_norm_sq (f : current_S_U) :
     ‖iota f‖ ^ 2 =
       ∫ x, (scalarPair f f x).re ∂KPContActualSectorCotangentL2.muU F ζ hζ U R P := by
   have hE := kp_cont_actual_sector_test_embeddings F ζ hζ μG hμG U R hR P H realization
@@ -138,8 +141,11 @@ private theorem iota_norm_sq (f : S_U F ζ hζ U R P H) :
     inner_self_eq_norm_sq_to_K (𝕜 := ℂ) (iota f)
   rw [hz, ← Complex.ofReal_pow, Complex.ofReal_re]
 
+section
+variable (η : RealSmoothCutoff F ζ hζ U R P H) (D₀ : ℝ) (hD₀ : 0 ≤ D₀)
+include η D₀ hD₀
 private theorem normSquare_cutoffGradientTimes_le
-    (η : RealSmoothCutoff F ζ hζ U R P H) (D₀ : ℝ) (hD₀ : 0 ≤ D₀)
+     
     (hdη : ∀ (a : ActualChart (U := U) (H := H))
       (y : KPContCotangentOverlapRationalBranches.omega a),
       ‖cutoffDifferential η a y‖ ≤ D₀)
@@ -203,7 +209,7 @@ private theorem normSquare_cutoffGradientTimes_le
   nlinarith [h1, sq_nonneg ‖f.val (cov.chart n) x''‖]
 
 private theorem cutoffGradientTimes_norm_bound
-    (η : RealSmoothCutoff F ζ hζ U R P H) (D₀ : ℝ) (hD₀ : 0 ≤ D₀)
+     
     (hdη : ∀ (a : ActualChart (U := U) (H := H))
       (y : KPContCotangentOverlapRationalBranches.omega a),
       ‖cutoffDifferential η a y‖ ≤ D₀)
@@ -236,7 +242,7 @@ private theorem cutoffGradientTimes_norm_bound
     mul_nonneg hD₀ (norm_nonneg (iota f))]
 
 private theorem exists_scalar_to_cotangent
-    (η : RealSmoothCutoff F ζ hζ U R P H) (D₀ : ℝ) (hD₀ : 0 ≤ D₀)
+     
     (hdη : ∀ (a : ActualChart (U := U) (H := H))
       (y : KPContCotangentOverlapRationalBranches.omega a),
       ‖cutoffDifferential η a y‖ ≤ D₀) :
@@ -254,11 +260,19 @@ private theorem exists_scalar_to_cotangent
   · exact LinearMap.opNorm_extendOfNorm_le hdense hD₀ hbound
   · intro f
     exact LinearMap.extendOfNorm_eq hdense ⟨D₀, hbound⟩ f
+end
 
-private theorem graphTestLinear_bound
-    (η : RealSmoothCutoff F ζ hζ U R P H) (M : SectorMultiplier F ζ hζ U R P H η)
+
+section
+variable (η : RealSmoothCutoff F ζ hζ U R P H) (M : SectorMultiplier F ζ hζ U R P H η)
     (B D₀ : ℝ) (hB : 0 ≤ B) (hD₀ : 0 ≤ D₀)
     (hη : ∀ x, |η.val x| ≤ B)
+include η M B D₀ hB hD₀ hη
+
+local notation:max "current_graphTestLinear" => graphTestLinear F ζ hζ U R P H
+
+private theorem graphTestLinear_bound
+     
     (hdη : ∀ (a : ActualChart (U := U) (H := H))
       (y : KPContCotangentOverlapRationalBranches.omega a),
       ‖cutoffDifferential η a y‖ ≤ D₀) :
@@ -278,10 +292,10 @@ private theorem graphTestLinear_bound
       ‖graphTestLinear F ζ hζ U R P H μG hμG hR realization g‖ ^ 2
         = ‖iota g‖ ^ 2 + ‖j (D_U g)‖ ^ 2 := by
     intro g
-    have hv : (graphTestLinear F ζ hζ U R P H μG hμG hR realization g :
+    have hv : (current_graphTestLinear μG hμG hR realization g :
         WithLp 2 (𝓗 × 𝓥)) = WithLp.toLp 2 (iota g, j (D_U g)) := rfl
     rw [show ‖graphTestLinear F ζ hζ U R P H μG hμG hR realization g‖
-        = ‖(graphTestLinear F ζ hζ U R P H μG hμG hR realization g : WithLp 2 (𝓗 × 𝓥))‖
+        = ‖(current_graphTestLinear μG hμG hR realization g : WithLp 2 (𝓗 × 𝓥))‖
         from rfl, hv, WithLp.prod_norm_sq_eq_of_L2]
     simp
   set a : ℝ := ‖iota f‖ with ha
@@ -331,10 +345,7 @@ private theorem graphTestLinear_bound
   exact hgoal
 
 theorem exists_lift
-    (η : RealSmoothCutoff F ζ hζ U R P H)
-    (M : SectorMultiplier F ζ hζ U R P H η)
-    (B D₀ : ℝ) (hB : 0 ≤ B) (hD₀ : 0 ≤ D₀)
-    (hη : ∀ x, |η.val x| ≤ B)
+     
     (hdη : ∀ (a : ActualChart (U := U) (H := H))
       (y : KPContCotangentOverlapRationalBranches.omega a),
       ‖cutoffDifferential η a y‖ ≤ D₀) :
@@ -356,15 +367,15 @@ theorem exists_lift
       (fun c x => norm_smul_le c (x : WithLp 2 (𝓗 × 𝓥)))
   haveI hCS : CompleteSpace (ClosedGradientSpace D) :=
     (closedGradientGraph_isClosed D hclosable).completeSpace_coe
-  have hdenseE : DenseRange (graphTestLinear F ζ hζ U R P H μG hμG hR realization) :=
+  have hdenseE : DenseRange (current_graphTestLinear μG hμG hR realization) :=
     graphTestLinear_dense F ζ hζ U R P H μG hμG hR realization
   set L : ClosedGradientSpace D →L[ℂ] ClosedGradientSpace D :=
     LinearMap.extendOfNorm (σ₁₂ := RingHom.id ℂ)
-      ((graphTestLinear F ζ hζ U R P H μG hμG hR realization).comp (scalarMultiply η))
-      (graphTestLinear F ζ hζ U R P H μG hμG hR realization) with hLdef
+      ((current_graphTestLinear μG hμG hR realization).comp (scalarMultiply η))
+      (current_graphTestLinear μG hμG hR realization) with hLdef
   have hLeq : ∀ f : S_U F ζ hζ U R P H,
-      L (graphTestLinear F ζ hζ U R P H μG hμG hR realization f)
-        = graphTestLinear F ζ hζ U R P H μG hμG hR realization (scalarMultiply η f) := by
+      L (current_graphTestLinear μG hμG hR realization f)
+        = current_graphTestLinear μG hμG hR realization (scalarMultiply η f) := by
     intro f
     rw [hLdef]
     exact LinearMap.extendOfNorm_eq hdenseE ⟨K, hbound⟩ f
@@ -381,9 +392,11 @@ theorem exists_lift
       closedGradientEmbedding_graphTestLinear F ζ hζ U R P H μG hμG hR realization f]
     exact (M.test_commutes f).symm
   refine ⟨L, hLproj, fun f => ?_⟩
-  show L (graphTestLinear F ζ hζ U R P H μG hμG hR realization f)
-      = graphTestLinear F ζ hζ U R P H μG hμG hR realization (scalarMultiply η f)
+  show L (current_graphTestLinear μG hμG hR realization f)
+      = current_graphTestLinear μG hμG hR realization (scalarMultiply η f)
   exact hLeq f
+end
+
 
 end DedekindZetaZeroFree.KPContActualFormCutoffClosedProduct
 

@@ -129,14 +129,17 @@ private theorem weak_real_cutoff_identity
   rw [hrCross] at he
   linarith
 
-private theorem weak_diagonal_cutoff_estimate
-    {ι : Type*} [Fintype ι]
+section
+variable {ι : Type*} [Fintype ι]
     (q : ι → ℝ → X → X)
     (hq : ∀ i, Continuous (Function.uncurry (q i)))
     (hμ : ∀ i t, MeasurePreserving (q i t) μ μ)
     (hz : ∀ i x, q i 0 x = x)
     (ha : ∀ i s t x, q i (s+t) x = q i t (q i s x))
     (c : ι → ℝ) (hc : ∀ i, 0 ≤ c i)
+include ι q hq hμ hz ha c hc
+private theorem weak_diagonal_cutoff_estimate
+     
     (χ : X → ℝ) (dχ : ι → X → ℝ)
     (u : X → ℂ) (du ddu : ι → X → ℂ)
     (hχ : Continuous χ) (hu : Continuous u)
@@ -250,13 +253,7 @@ private theorem weak_diagonal_cutoff_estimate
   linarith [neg_le_abs C]
 
  theorem weak_diagonal_energy_finite
-    {ι : Type*} [Fintype ι]
-    (q : ι → ℝ → X → X)
-    (hq : ∀ i, Continuous (Function.uncurry (q i)))
-    (hμ : ∀ i t, MeasurePreserving (q i t) μ μ)
-    (hz : ∀ i x, q i 0 x = x)
-    (ha : ∀ i s t x, q i (s+t) x = q i t (q i s x))
-    (c : ι → ℝ) (hc : ∀ i, 0 ≤ c i)
+     
     (u v : X → ℂ) (du ddu : ι → X → ℂ)
     (hu : Continuous u) (hdu : ∀ i, Continuous (du i))
     (hddu : ∀ i, Continuous (ddu i))
@@ -312,6 +309,8 @@ private theorem weak_diagonal_cutoff_estimate
     have hb : χ n x ^ 2 ≤ 1 := by nlinarith [sq_abs (χ n x), hχb n x, abs_nonneg (χ n x)]
     nlinarith [mul_le_mul_of_nonneg_right hb (mul_nonneg (norm_nonneg (u x)) (norm_nonneg (v x)))]
   linarith
+end
+
 
 end DedekindZetaZeroFree.KPMsSameContinuationGreen.NativeBoundaryH1.NativeWeakEnergy
 

@@ -13,7 +13,7 @@ open WildCurrentGlobalMap KPAdelicCoverRestrictedProduct
 variable {F : Type} [Field F] [NumberField F]
   {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
   {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
-local instance finiteRawKernelDecidablePlace : DecidableEq (KPHilbert.Place F) := Classical.decEq _
+
 set_option maxHeartbeats 1500000
 set_option maxRecDepth 4096
 set_option synthInstance.maxHeartbeats 200000

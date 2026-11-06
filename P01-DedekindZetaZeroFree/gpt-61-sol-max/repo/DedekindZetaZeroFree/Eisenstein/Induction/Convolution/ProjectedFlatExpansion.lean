@@ -28,8 +28,11 @@ local instance : IsTopologicalGroup (G F ζ hζ) :=
 local instance (K : Subgroup (G F ζ hζ)) : MeasurableSpace K := borel K
 local instance (K : Subgroup (G F ζ hζ)) : BorelSpace K := ⟨rfl⟩
 
- theorem kfinite_add
-    (K : Subgroup (G F ζ hζ)) (f v : Functions F ζ hζ)
+ section
+variable (K : Subgroup (G F ζ hζ))
+include K
+theorem kfinite_add
+      (f v : Functions F ζ hζ)
     (hf : KFinite F ζ hζ K f) (hv : KFinite F ζ hζ K v) :
     KFinite F ζ hζ K (f + v) := by
   obtain ⟨S, hS, hfS, hSinv⟩ := hf
@@ -42,17 +45,19 @@ local instance (K : Subgroup (G F ζ hζ)) : BorelSpace K := ⟨rfl⟩
   exact Submodule.add_mem_sup (hSinv k s hs) (hTinv k t ht)
 
  theorem kfinite_smul
-    (K : Subgroup (G F ζ hζ)) (f : Functions F ζ hζ)
+      (f : Functions F ζ hζ)
     (hf : KFinite F ζ hζ K f) (c : ℂ) :
     KFinite F ζ hζ K (c • f) := by
   obtain ⟨S, hS, hfS, hSinv⟩ := hf
   exact ⟨S, hS, S.smul_mem c hfS, hSinv⟩
 
- def reweight (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
+ def reweight   (hK : IwasawaCompact F ζ hζ K)
     (s : ℂ) : Functions F ζ hζ →ₗ[ℂ] Functions F ζ hζ where
   toFun v g := Complex.exp (s * alpha F ζ hζ K hK g) * v g
   map_add' := by intros; ext g; simp [mul_add]
   map_smul' := by intros; ext g; simp [mul_left_comm]
+end
+
 
  def parameterChi (s : ℂ) : KPSpatialSmoothing.actualC F ζ hζ →* ℂ where
   toFun c := (KPGlobalTorusBorelTwistCompatibility.normCharacter F ζ hζ s
@@ -76,8 +81,11 @@ private theorem sourceH_hN (r : (KPSpatialSmoothing.P0 F ζ hζ).H)
     (KPSpatialSmoothing.actualHCoordinate F ζ hζ c) = _
   rw [hh]
 
+section
+variable (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
+include K hK
 private theorem reweight_covariant
-    (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
+     
     (v : Functions F ζ hζ)
     (hv : ∀ c : KPSpatialSmoothing.actualC F ζ hζ, ∀ g,
       v (c.val * g) = sourceChi F ζ hζ c * v g)
@@ -100,7 +108,7 @@ private theorem reweight_covariant
   ring
 
 private theorem reweight_continuous
-    (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
+     
     (s : ℂ) (v : Functions F ζ hζ) (hv : Continuous v) :
     Continuous (reweight F ζ hζ K hK s v) := by
   have ha : Continuous (alpha F ζ hζ K hK) :=
@@ -109,7 +117,7 @@ private theorem reweight_continuous
   exact ((continuous_const.mul ha).cexp).mul hv
 
 private theorem reweight_kfinite
-    (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
+     
     (s : ℂ) (v : Functions F ζ hζ) (hv : KFinite F ζ hζ K v) :
     KFinite F ζ hζ K (reweight F ζ hζ K hK s v) := by
   obtain ⟨S, hS, hvS, hSinv⟩ := hv
@@ -125,7 +133,7 @@ private theorem reweight_kfinite
   rw [alpha_right_compact]
 
 private theorem normalized_source_span_properties
-    (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
+     
     (μ : Measure K) [μ.IsHaarMeasure] [IsProbabilityMeasure μ]
     (f : Flat F ζ hζ K) (a : G F ζ hζ) (h : C(K, ℂ))
     (hh : h ∈ TauCeti.representativeSubmodule ℂ K) :
@@ -168,7 +176,7 @@ private theorem normalized_source_span_properties
     · intro g j hj; simp only [Pi.smul_apply, hvJ g j hj]
 
 private theorem reweight_uniform_level
-    (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
+     
     (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
     (v : Functions F ζ hζ)
     (hv : ∀ g u, u ∈ KPGlobalTorusFunctionData.globalLevel F ζ hζ J →
@@ -196,7 +204,7 @@ private theorem reweight_uniform_level
   rw [hU g ⟨j.val, hU'⟩]
 
 private theorem reweight_mem_flat
-    (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
+     
     (v : Functions F ζ hζ) (hv : Continuous v)
     (hc : ∀ c : KPSpatialSmoothing.actualC F ζ hζ, ∀ g,
       v (c.val * g) = sourceChi F ζ hζ c * v g)
@@ -255,7 +263,7 @@ private theorem reweight_mem_flat
       zero_mul, Complex.exp_zero, one_mul, KPGlobalExceptionalParameter.realLogPower]
 
  theorem projected_family_finite_flat_expansion
-    (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
+     
     (μ : Measure K) [μ.IsHaarMeasure] [IsProbabilityMeasure μ]
     (f : Flat F ζ hζ K) (a : G F ζ hζ) (h : C(K, ℂ))
     (hh : h ∈ TauCeti.representativeSubmodule ℂ K) :
@@ -282,6 +290,8 @@ private theorem reweight_mem_flat
 
   simpa only [map_sum, map_smul, Finset.sum_apply, Pi.smul_apply, smul_eq_mul, b,
     LinearMap.sum_apply, hn] using hEq
+end
+
 
 end DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.ActualProjectedFlatExpansion
 

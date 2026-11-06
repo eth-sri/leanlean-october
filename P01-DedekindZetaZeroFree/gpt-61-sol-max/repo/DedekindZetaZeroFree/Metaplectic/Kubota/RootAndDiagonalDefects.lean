@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Metaplectic.Kubota.AlternatingSymbolDefect
 public import DedekindZetaZeroFree.Metaplectic.Kubota.GL2BruhatCoordinates
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 namespace KubotaElementaryLastArgument
@@ -12,50 +15,58 @@ open KubotaRankTwo
 
 noncomputable def tau
     (K : Type*) [Field K] (M : Type*) [CommGroup M]
-    (B : Kˣ → Kˣ → M) (g h : KubotaRankTwo.GL2 K) : M :=
+    (B : Kˣ → Kˣ → M) (g h : KubotaRankTwo.GL2 K)  :=
   B (KubotaRankTwo.X K (g * h) / KubotaRankTwo.X K g)
     (KubotaRankTwo.X K (g * h) /
       (KubotaRankTwo.X K h * KubotaRankTwo.det K g))
 
 noncomputable def defect
     (K : Type*) [Field K] (M : Type*) [CommGroup M]
-    (B : Kˣ → Kˣ → M) (g h k : KubotaRankTwo.GL2 K) : M :=
+    (B : Kˣ → Kˣ → M) (g h k : KubotaRankTwo.GL2 K)  :=
   tau K M B g h * tau K M B (g * h) k /
     (tau K M B h k * tau K M B g (h * k))
 
-private lemma x_botLeft (K : Type*) [Field K] (g : GL2 K)
+section
+variable (K : Type*) [Field K] (g : GL2 K)
+include K g
+private lemma x_botLeft  
     (hc : (g : Matrix (Fin 2) (Fin 2) K) 1 0 ≠ 0) :
     x K g = (g : Matrix (Fin 2) (Fin 2) K) 1 0 := by
   unfold x; rw [if_neg hc]
 
-private lemma x_botRight (K : Type*) [Field K] (g : GL2 K)
+private lemma x_botRight  
     (hc : (g : Matrix (Fin 2) (Fin 2) K) 1 0 = 0) :
     x K g = (g : Matrix (Fin 2) (Fin 2) K) 1 1 := by
   unfold x; rw [if_pos hc]
 
-private lemma entry_botLeft (K : Type*) [Field K] (g : GL2 K) (u v : Kˣ) :
+private lemma entry_botLeft   (u v : Kˣ) :
     ((g * d K u v : GL2 K) : Matrix (Fin 2) (Fin 2) K) 1 0 =
       (g : Matrix (Fin 2) (Fin 2) K) 1 0 * (u : K) := by
   simp [coe_d, Matrix.mul_apply, Fin.sum_univ_two]
 
-private lemma entry_botRight (K : Type*) [Field K] (g : GL2 K) (u v : Kˣ) :
+private lemma entry_botRight   (u v : Kˣ) :
     ((g * d K u v : GL2 K) : Matrix (Fin 2) (Fin 2) K) 1 1 =
       (g : Matrix (Fin 2) (Fin 2) K) 1 1 * (v : K) := by
   simp [coe_d, Matrix.mul_apply, Fin.sum_univ_two]
+end
 
-private lemma entry10_mul (K : Type*) [Field K] (g h : GL2 K) :
+
+section
+variable (K : Type*) [Field K]
+include K
+private lemma entry10_mul   (g h : GL2 K) :
     ((g * h : GL2 K) : Matrix (Fin 2) (Fin 2) K) 1 0 =
       (g : Matrix (Fin 2) (Fin 2) K) 1 0 * (h : Matrix (Fin 2) (Fin 2) K) 0 0 +
       (g : Matrix (Fin 2) (Fin 2) K) 1 1 * (h : Matrix (Fin 2) (Fin 2) K) 1 0 := by
   simp [Matrix.mul_apply, Fin.sum_univ_two]
 
-private lemma entry11_mul (K : Type*) [Field K] (g h : GL2 K) :
+private lemma entry11_mul   (g h : GL2 K) :
     ((g * h : GL2 K) : Matrix (Fin 2) (Fin 2) K) 1 1 =
       (g : Matrix (Fin 2) (Fin 2) K) 1 0 * (h : Matrix (Fin 2) (Fin 2) K) 0 1 +
       (g : Matrix (Fin 2) (Fin 2) K) 1 1 * (h : Matrix (Fin 2) (Fin 2) K) 1 1 := by
   simp [Matrix.mul_apply, Fin.sum_univ_two]
 
-private lemma X_mul_d_closed (K : Type*) [Field K] (g : GL2 K)
+private lemma X_mul_d_closed   (g : GL2 K)
     (hc : (g : Matrix (Fin 2) (Fin 2) K) 1 0 = 0) (u v : Kˣ) :
     X K (g * d K u v) = X K g * v := by
   have hc' : ((g * d K u v : GL2 K) : Matrix (Fin 2) (Fin 2) K) 1 0 = 0 := by
@@ -64,7 +75,7 @@ private lemma X_mul_d_closed (K : Type*) [Field K] (g : GL2 K)
   simp only [Units.val_mul, X, Units.val_mk0, x_botRight K _ hc', x_botRight K g hc,
     entry_botRight]
 
-private lemma X_mul_d_open (K : Type*) [Field K] (g : GL2 K)
+private lemma X_mul_d_open   (g : GL2 K)
     (hc : (g : Matrix (Fin 2) (Fin 2) K) 1 0 ≠ 0) (u v : Kˣ) :
     X K (g * d K u v) = X K g * u := by
   have hc' : ((g * d K u v : GL2 K) : Matrix (Fin 2) (Fin 2) K) 1 0 ≠ 0 := by
@@ -73,7 +84,7 @@ private lemma X_mul_d_open (K : Type*) [Field K] (g : GL2 K)
   simp only [Units.val_mul, X, Units.val_mk0, x_botLeft K _ hc', x_botLeft K g hc,
     entry_botLeft]
 
-private lemma key_open_closed (K : Type*) [Field K] (g h : GL2 K)
+private lemma key_open_closed   (g h : GL2 K)
     (hc1 : (h : Matrix (Fin 2) (Fin 2) K) 1 0 = 0)
     (hc2 : ((g * h : GL2 K) : Matrix (Fin 2) (Fin 2) K) 1 0 ≠ 0) :
     X K (g * h) * X K h = X K g * det K h := by
@@ -86,7 +97,7 @@ private lemma key_open_closed (K : Type*) [Field K] (g h : GL2 K)
     Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two]
   ring
 
-private lemma key_closed_open (K : Type*) [Field K] (g h : GL2 K)
+private lemma key_closed_open   (g h : GL2 K)
     (hc1 : (h : Matrix (Fin 2) (Fin 2) K) 1 0 ≠ 0)
     (hc2 : ((g * h : GL2 K) : Matrix (Fin 2) (Fin 2) K) 1 0 = 0) :
     X K (g * h) * X K h = -(X K g * det K h) := by
@@ -94,7 +105,7 @@ private lemma key_closed_open (K : Type*) [Field K] (g h : GL2 K)
     intro h0
     have hgh : (g : Matrix (Fin 2) (Fin 2) K) 1 1 *
         (h : Matrix (Fin 2) (Fin 2) K) 1 0 = 0 := by
-      have h2 : ((g * h : GL2 K) : Matrix (Fin 2) (Fin 2) K) 1 0 = 0 := hc2
+      have h2  := hc2
       rw [entry10_mul, h0, zero_mul, zero_add] at h2
       exact h2
     have hg11 : (g : Matrix (Fin 2) (Fin 2) K) 1 1 ≠ 0 := by
@@ -114,19 +125,20 @@ private lemma key_closed_open (K : Type*) [Field K] (g h : GL2 K)
     entry11_mul, Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two]
   linear_combination ((h : Matrix (Fin 2) (Fin 2) K) 1 1) * hrel
 
-private lemma neg_mul_div (K : Type*) [Field K] (A d u v : Kˣ) :
+private lemma neg_mul_div   (A d u v : Kˣ) :
     (-(A * d)) * u / (A * v * d) = -(u / v) := by
   apply Units.ext
   simp only [Units.val_div_eq_div_val, Units.val_mul, Units.val_neg]
   field_simp
 
-private lemma div_inv_eq (K : Type*) [Field K] (u v : Kˣ) : v / u = (u / v)⁻¹ := by
-  rw [div_eq_mul_inv, div_eq_mul_inv, mul_inv_rev, inv_inv]
+private lemma div_inv_eq   (u v : Kˣ) : v / u = (u / v)⁻¹ := rfl
 
-private lemma cancel_div (K : Type*) [Field K] (a b c : Kˣ) : a * b / (a * c) = b / c := by
+private lemma cancel_div   (a b c : Kˣ) : a * b / (a * c) = b / c := by
   apply Units.ext
   simp only [Units.val_div_eq_div_val, Units.val_mul]
   field_simp
+end
+
 
 private lemma B_inv_neg (K : Type*) [Field K] (M : Type*) [CommGroup M]
     (B : Kˣ → Kˣ → M)
@@ -221,7 +233,7 @@ theorem defect_d
             cancel_div K (X K (g * h) * X K h) v u,
             div_inv_eq K u v]
       rw [h1, h2]
-      exact B_inv_neg K M B hL hR hAlt hCub (u / v)
+      apply B_inv_neg <;> assumption
     · rw [X_mul_d_open K (g * h) hc2]
       rw [show X K (g * h) * u * X K h / (X K (g * h) * (X K h * u)) = 1 by
             rw [show X K (g * h) * u * X K h = X K (g * h) * (X K h * u) by

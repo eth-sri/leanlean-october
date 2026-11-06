@@ -12,7 +12,7 @@ open MomentSources KPKirillovFiniteTensor WildCurrentTensor WildCurrentReindex W
 open WildCurrentGlobalMap KPAdelicCoverRestrictedProduct
 variable {F : Type} [Field F] [NumberField F]
   {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-  {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
+  {R : PrincipalMellin.ActualRecipe S η} 
 local instance finiteRawSplitDecidablePlace : DecidableEq (KPHilbert.Place F) := Classical.decEq _
 attribute [local instance] KPAdelicCoverRestrictedProduct.localTopology
 set_option maxHeartbeats 1500000
@@ -27,19 +27,19 @@ def insideRaw (W : Finset (KPFinitePlace F))
 def outsideRaw (W : Finset (KPFinitePlace F))
     (a : RestrictedCover F R.A.zeta12 R.A.primitive_zeta12) := a * (insideRaw (R := R) W a)⁻¹
 
-def insideActions (W : Finset (KPFinitePlace F))
+section
+variable (W : Finset (KPFinitePlace F))
     (a : RestrictedCover F R.A.zeta12 R.A.primitive_zeta12)
     (ha : ∀ q : W, KPPGLLocalCover.coverQuotient F R.A.zeta12 R.A.primitive_zeta12
       (Sum.inr q.val) (a (Sum.inr q.val)) ∈
-      KPKirillovGenuineSectionCharts.P F R.A.zeta12 R.A.primitive_zeta12 q.val) :
+      KPKirillovGenuineSectionCharts.P F R.A.zeta12 R.A.primitive_zeta12 q.val)
+include W a ha in
+def insideActions   :
     List (BorelAction R W) :=
   (Finset.univ.toList : List W).map (fun q ↦ ⟨q, a (Sum.inr q.val), ha q⟩)
 
-theorem insideActions_group (W : Finset (KPFinitePlace F))
-    (a : RestrictedCover F R.A.zeta12 R.A.primitive_zeta12)
-    (ha : ∀ q : W, KPPGLLocalCover.coverQuotient F R.A.zeta12 R.A.primitive_zeta12
-      (Sum.inr q.val) (a (Sum.inr q.val)) ∈
-      KPKirillovGenuineSectionCharts.P F R.A.zeta12 R.A.primitive_zeta12 q.val) :
+include W a ha in
+theorem insideActions_group   :
     insideGroup (insideActions W a ha) = rawGlobal (R := R) (insideRaw W a) := by
   let e : W → KPHilbert.Place F := fun q ↦ Sum.inr q.val
   have hinj : Function.Injective e := by
@@ -97,16 +97,15 @@ theorem outsideRaw_support (W : Finset (KPFinitePlace F))
     simp
   | inr q => exact ⟨q, rfl, hout, ht q hout⟩
 
-theorem raw_split (W : Finset (KPFinitePlace F))
-    (a : RestrictedCover F R.A.zeta12 R.A.primitive_zeta12)
-    (ha : ∀ q : W, KPPGLLocalCover.coverQuotient F R.A.zeta12 R.A.primitive_zeta12
-      (Sum.inr q.val) (a (Sum.inr q.val)) ∈
-      KPKirillovGenuineSectionCharts.P F R.A.zeta12 R.A.primitive_zeta12 q.val) :
+include W a ha in
+theorem raw_split   :
     rawGlobal (R := R) (outsideRaw W a) * insideGroup (insideActions W a ha) =
       rawGlobal (R := R) a := by
   rw [insideActions_group, ← map_mul]
   apply congrArg (rawGlobal (R := R))
   exact inv_mul_cancel_right a (insideRaw W a)
+end
+
 end DedekindZetaZeroFree.FourierContinuation.WildFiniteExteriorAssembly
 
 end

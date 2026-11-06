@@ -1,21 +1,27 @@
 module
 
+public import Mathlib
+
 public import Mathlib.RingTheory.DedekindDomain.AdicValuation
 
 @[expose] public section
 
+
 namespace DedekindZetaZeroFree
 open IsDedekindDomain
 
-theorem exists_ringOfIntegers_adicCompletion_approximation
-    (F : Type*) [Field F] [NumberField F]
+section
+variable (F : Type*) [Field F] [NumberField F]
     (v : HeightOneSpectrum (NumberField.RingOfIntegers F))
+include F v
+theorem exists_ringOfIntegers_adicCompletion_approximation
+     
     (x : v.adicCompletion F) (hx : x ∈ v.adicCompletionIntegers F)
     (γ : (WithZero (Multiplicative ℤ))ˣ) :
     ∃ a : NumberField.RingOfIntegers F,
       Valued.v (algebraMap (NumberField.RingOfIntegers F) (v.adicCompletion F) a - x) <
         (γ : WithZero (Multiplicative ℤ)) := by
-  let δ : WithZero (Multiplicative ℤ) := min (γ : WithZero (Multiplicative ℤ)) 1
+  let δ  := min (γ : WithZero (Multiplicative ℤ)) 1
   have hδ : δ ≠ 0 := ne_of_gt (lt_min (Units.zero_lt γ) zero_lt_one)
   obtain ⟨t, ht⟩ := v.valuedAdicCompletion_surjective F δ
   let ε := Units.mk0 (Valued.v.restrict t) (by
@@ -49,8 +55,7 @@ theorem exists_ringOfIntegers_adicCompletion_approximation
   simpa only [sub_add_sub_cancel] using h
 
 theorem denseRange_ringOfIntegers_adicCompletionIntegers
-    (F : Type*) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (NumberField.RingOfIntegers F)) :
+      :
     DenseRange (algebraMap (NumberField.RingOfIntegers F)
       (v.adicCompletionIntegers F)) := by
   intro x
@@ -69,4 +74,6 @@ theorem denseRange_ringOfIntegers_adicCompletionIntegers
     ((algebraMap (NumberField.RingOfIntegers F) (v.adicCompletionIntegers F) a :
       v.adicCompletion F) - x) < _
   exact ha
+end
+
 end DedekindZetaZeroFree

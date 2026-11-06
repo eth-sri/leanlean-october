@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 
 @[expose] public section
+
 
 open scoped NumberField
 
@@ -23,7 +26,7 @@ private lemma exists_shift_totallyPositive
     have h2 : - φ (d₀ : K) / (N : ℝ) * (N : ℝ) = - φ (d₀ : K) := by
       field_simp
     linarith
-  let T : ℕ := (Finset.univ.sum fun φ : K →+* ℝ => Classical.choose (hbound φ)) + 1
+  let T  := (Finset.univ.sum fun φ : K →+* ℝ => Classical.choose (hbound φ)) + 1
   have hT : ∀ φ : K →+* ℝ, 0 < φ (d₀ : K) + (T : ℝ) * (N : ℝ) := by
     intro φ
     have hch := Classical.choose_spec (hbound φ)
@@ -49,8 +52,7 @@ private lemma exists_shift_totallyPositive
       push_cast; ring
     rw [hcoeeq, map_add, map_mul, map_natCast, map_natCast]
     linarith
-  have hNne : (N : 𝓞 K) ≠ 0 := by
-    exact Nat.cast_ne_zero.mpr (Nat.pos_iff_ne_zero.mp hN)
+  have hNne : (N : 𝓞 K) ≠ 0 := Nat.cast_ne_zero.mpr (Nat.pos_iff_ne_zero.mp hN)
   by_cases hzero : d₀ + (T * N : 𝓞 K) = 0
   · refine ⟨T + 1, ?_, hTle (T + 1) (Nat.le_succ T)⟩
     intro h
@@ -78,7 +80,7 @@ theorem positiveIdealCRT
   have hd₀m : d₀ - 1 ∈ m := by
     have heq : d₀ - 1 = -j := by rw [← hsum]; ring
     rw [heq]; exact m.neg_mem hjm
-  have hDm : D ⊓ m ≠ ⊥ := Ideal.inf_ne_bot_of_ne_bot hD hm
+  have hDm  := Ideal.inf_ne_bot_of_ne_bot hD hm
   have hNpos : 0 < Ideal.absNorm (D ⊓ m) :=
     Nat.pos_of_ne_zero fun h => hDm (Ideal.absNorm_eq_zero_iff.mp h)
   have hNmem : (Ideal.absNorm (D ⊓ m) : 𝓞 K) ∈ D ⊓ m := Ideal.absNorm_mem _

@@ -12,10 +12,13 @@ namespace DedekindZetaZeroFree.PoissonS.Covolume
 
 attribute [local instance] completionMeasurable completionBorel
 
-private theorem integral_character_subgroup_eq_zero
-    {G : Type*} [AddGroup G] [MeasurableSpace G] [MeasurableAdd G]
+section
+variable {G : Type*} [AddGroup G] [MeasurableSpace G] [MeasurableAdd G]
     (μ : Measure G) [μ.IsAddLeftInvariant]
-    (H : AddSubgroup G) (χ : G → ℂ)
+    (H : AddSubgroup G)
+include G μ H
+private theorem integral_character_subgroup_eq_zero
+      (χ : G → ℂ)
     (hχ : ∀ a b, χ (a + b) = χ a * χ b)
     (h : G) (hh : h ∈ H) (hn : χ h ≠ 1) :
     (∫ x, (if x ∈ H then χ x else 0) ∂μ) = 0 := by
@@ -39,9 +42,7 @@ private theorem integral_character_subgroup_eq_zero
   exact hf
 
 theorem integral_character_subgroup
-    {G : Type*} [AddGroup G] [MeasurableSpace G] [MeasurableAdd G]
-    (μ : Measure G) [μ.IsAddLeftInvariant]
-    (H : AddSubgroup G) (hH : MeasurableSet (H : Set G)) (χ : G → ℂ)
+      (hH : MeasurableSet (H : Set G)) (χ : G → ℂ)
     (hχ : ∀ a b, χ (a + b) = χ a * χ b) :
     (∫ x, (if x ∈ H then χ x else 0) ∂μ) =
       if ∀ x ∈ H, χ x = 1 then (μ H).toReal else 0 := by
@@ -59,6 +60,8 @@ theorem integral_character_subgroup
     push Not at ht
     obtain ⟨x, hx, hn⟩ := ht
     exact integral_character_subgroup_eq_zero μ H χ hχ x hx hn
+end
+
 
 theorem finite_scaled_ball_conductor
     (F : Type) [Field F] [NumberField F]
@@ -81,14 +84,17 @@ theorem finite_scaled_ball_conductor
     have hh := h (z / a) hza
     simpa only [← mul_assoc, div_mul_cancel₀ z ha] using hh
 
-theorem finite_scaled_ball_fourier
-    (F : Type) [Field F] [NumberField F]
+section
+variable (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (RingOfIntegers F))
     (e : AddChar (v.adicCompletion F) Circle)
     (μ : Measure (v.adicCompletion F)) [μ.IsAddHaarMeasure]
     (hconductor : ∀ y, (∀ z : v.adicCompletion F, ‖z‖ ≤ 1 → e (z * y) = 1) ↔
       ‖y‖ ≤ (v.asIdeal.absNorm : ℝ) ^ differentExponent F v)
-    (a : v.adicCompletion F) (ha : a ≠ 0) (y : v.adicCompletion F) :
+    (a : v.adicCompletion F) (ha : a ≠ 0)
+include F v e μ hconductor a ha
+theorem finite_scaled_ball_fourier
+      (y : v.adicCompletion F) :
     (∫ z, (if ‖z‖ ≤ ‖a‖ then (1 : ℂ) else 0) * (e (-z * y) : ℂ) ∂μ) =
       if ‖a‖ * ‖y‖ ≤ (v.asIdeal.absNorm : ℝ) ^ differentExponent F v then
         ((μ {z | ‖z‖ ≤ ‖a‖}).toReal : ℂ) else 0 := by
@@ -118,13 +124,7 @@ theorem finite_scaled_ball_fourier
   split_ifs <;> simp [H]
 
 theorem finite_translated_ball_fourier
-    (F : Type) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (RingOfIntegers F))
-    (e : AddChar (v.adicCompletion F) Circle)
-    (μ : Measure (v.adicCompletion F)) [μ.IsAddHaarMeasure]
-    (hconductor : ∀ y, (∀ z : v.adicCompletion F, ‖z‖ ≤ 1 → e (z * y) = 1) ↔
-      ‖y‖ ≤ (v.asIdeal.absNorm : ℝ) ^ differentExponent F v)
-    (a : v.adicCompletion F) (ha : a ≠ 0) (b y : v.adicCompletion F) :
+      (b y : v.adicCompletion F) :
     (∫ z, (if ‖z - b‖ ≤ ‖a‖ then (1 : ℂ) else 0) * (e (-z * y) : ℂ) ∂μ) =
       (e (-b * y) : ℂ) *
         (if ‖a‖ * ‖y‖ ≤ (v.asIdeal.absNorm : ℝ) ^ differentExponent F v then
@@ -141,6 +141,8 @@ theorem finite_translated_ball_fourier
   rw [← hi]
   simp_rw [hf]
   rw [integral_const_mul, finite_scaled_ball_fourier F v e μ hconductor a ha y]
+end
+
 
 end DedekindZetaZeroFree.PoissonS.Covolume
 

@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Ramification.LocalField.Core
 public import ValuedFieldTheory.Ramification.HilbertRamification.FirstRamificationComparison
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -35,13 +38,16 @@ namespace RamificationTheory.LocalField
 
 open LocalFieldTheory
 
+section
+variable (K L : Type) [Field K] [Field L] [Algebra K L]
+    [FiniteDimensional K L] [IsGalois K L]
+    [ValuativeRel K] [TopologicalSpace K]
+    [IsNonarchimedeanLocalField K]
+include K L
 /-- The first lower group of the chosen local extension is Hilbert's
 ramification group for its canonical valuation ring. -/
 theorem localLowerRamificationGroup_one_eq_hilbertRamificationGroup
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] :
+      :
     localLowerRamificationGroup K L 1 =
       Subgroup.comap
         (RamificationTheory.HilbertRamification.CompleteDVF.galEquivDecompositionGroup
@@ -55,7 +61,7 @@ theorem localLowerRamificationGroup_one_eq_hilbertRamificationGroup
     chosenLocalExtensionCompleteDVF_hasExtension K L
   let : Module.Finite base.valuationSubring target.valuationSubring :=
     moduleFinite_target_valuationSubring_of_finite_separable base target
-  let : FiniteDimensional base.residueField target.residueField :=
+  let  :=
     residueField_finiteDimensional_of_moduleFinite base target
   let : Finite base.residueField := by
     change Finite 𝓀[K]
@@ -70,10 +76,7 @@ theorem localLowerRamificationGroup_one_eq_hilbertRamificationGroup
 /-- Triviality of the first lower group is exactly triviality of Hilbert's
 ramification group; the two transports above are both injective. -/
 theorem localLowerRamificationGroup_one_eq_bot_iff_hilbertRamificationGroup_eq_bot
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] :
+      :
     localLowerRamificationGroup K L 1 = ⊥ ↔
       RamificationTheory.HilbertRamification.ValuationSubring.ramificationGroup K
         (chosenLocalExtensionCompleteDVF K L).valuation.valuationSubring = ⊥ := by
@@ -98,6 +101,8 @@ theorem localLowerRamificationGroup_one_eq_bot_iff_hilbertRamificationGroup_eq_b
       Subgroup.map_eq_bot_iff_of_injective (H := H) (f := f) (by
         intro x y hxy
         exact Subtype.ext hxy)
+end
+
 
 end RamificationTheory.LocalField
 

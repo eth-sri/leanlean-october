@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Algebra.Module.ZLattice.Basic
 public import Mathlib.LinearAlgebra.BilinearForm.DualLattice
 public import Mathlib.Analysis.Fourier.AddCircleMulti
 
 @[expose] public section
+
 
 noncomputable section
 open scoped Classical FourierTransform
@@ -58,10 +61,7 @@ variable [FiniteDimensional ℝ V]
 variable (L : Submodule ℤ V) [DiscreteTopology L] [IsZLattice ℝ L]
 variable {ι : Type*} [Fintype ι] (b : Basis ι ℤ L)
 
-theorem dualLattice_eq_span_dualBasis :
-    dualLattice L = Submodule.span ℤ (Set.range
-      (LinearMap.BilinForm.dualBasis (innerₗ V) (innerₗ_nondegenerate V) (b.ofZLatticeBasis ℝ L))) := by
-  exact dualLattice_span L b
+def dualLattice_eq_span_dualBasis  := dualLattice_span L b
 
 def dualVector_b : (ι → ℤ) ≃+ dualLattice L :=
   AddEquiv.ofBijective
@@ -102,8 +102,7 @@ def dualVector_b : (ι → ℤ) ≃+ dualLattice L :=
 
 theorem dualVector_b_coe (n : ι → ℤ) :
     (dualVector_b L b n : V) = ∑ i, (n i : ℝ) •
-      LinearMap.BilinForm.dualBasis (innerₗ V) (innerₗ_nondegenerate V) (b.ofZLatticeBasis ℝ L) i := by
-  rfl
+      LinearMap.BilinForm.dualBasis (innerₗ V) (innerₗ_nondegenerate V) (b.ofZLatticeBasis ℝ L) i := rfl
 
 theorem dualVector_b_inner_basis (n : ι → ℤ) (j : ι) :
     inner ℝ (dualVector_b L b n : V) (b j : V) = (n j : ℝ) := by

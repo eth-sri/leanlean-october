@@ -2,16 +2,19 @@ module
 
 public import Mathlib
 
+public import Mathlib
+
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 
 variable {G V : Type*} [Group G] [TopologicalSpace G] [AddCommGroup V] [Module ℂ V]
 
-def SmoothVector (ρ : Representation ℂ G V) (v : V) : Prop :=
+def SmoothVector (ρ : Representation ℂ G V) (v : V)  :=
   ∃ J : OpenSubgroup G, ∀ j ∈ J, ρ j v = v
 
-def SmoothRepresentation (ρ : Representation ℂ G V) : Prop :=
+def SmoothRepresentation (ρ : Representation ℂ G V)  :=
   ∀ v, SmoothVector ρ v
 
 def fixedSubmodule (ρ : Representation ℂ G V) (J : Subgroup G) : Submodule ℂ V where
@@ -27,10 +30,10 @@ structure CompactOpenLevel (G : Type*) [Group G] [TopologicalSpace G] where
 instance : CoeTC (CompactOpenLevel G) (OpenSubgroup G) where
   coe := CompactOpenLevel.toOpenSubgroup
 
-def Admissible (ρ : Representation ℂ G V) : Prop :=
+def Admissible (ρ : Representation ℂ G V)  :=
   ∀ J : CompactOpenLevel G, Module.Finite ℂ (fixedSubmodule ρ (J.toOpenSubgroup : Subgroup G))
 
-def rightTranslate (g : G) (f : G → ℂ) : G → ℂ := fun x => f (x * g)
+def rightTranslate (g : G) (f : G → ℂ)  := fun x => f (x * g)
 
 @[simp] theorem mem_fixedSubmodule (ρ : Representation ℂ G V) (J : Subgroup G) (v : V) :
     v ∈ fixedSubmodule ρ J ↔ ∀ j ∈ J, ρ j v = v := by

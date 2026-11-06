@@ -59,8 +59,8 @@ private theorem arch_action (u : Raw R)
     hp (fun w => (Real.rpow (localNorm R P C t a d (Sum.inl w)) (1/6 : ℝ) : ℂ))]
   rfl
 
-theorem unitaryComparison_torus_stage
-    (u : Raw R)
+section
+variable (u : Raw R)
     (t : ∀ q, KPLocalExceptionalConstruction.actualTorus F R.A.zeta12 R.A.primitive_zeta12 q)
     (a d : InfinitePlace F → ℂˣ) (b : InfinitePlace F → ℂ)
     (e : KPGlobalTorusFunctionData.E F R.A.zeta12 R.A.primitive_zeta12)
@@ -71,7 +71,10 @@ theorem unitaryComparison_torus_stage
     (he : KPAdelicCoverRestrictedProduct.scalarQuotient F R.A.zeta12 R.A.primitive_zeta12
       (KPAdelicCoverRestrictedProduct.amalgamation F R.A.zeta12 R.A.primitive_zeta12 u) = e.val)
     (s : RestrictedTensorSimple.Level (bad R P C)) (y : ∀ j : s.val, Fiber R P C j)
-    (htail : ∀ p, p ∉ s.val → torusSlot R P C u t a d p (reference R P C p) = reference R P C p) :
+    (htail : ∀ p, p ∉ s.val → torusSlot R P C u t a d p (reference R P C p) = reference R P C p)
+include u t a d b e ht hp he s y htail in
+theorem unitaryComparison_torus_stage
+      :
     unitaryComparison R P C (RestrictedTensorSimple.stageInclusion _ _ _ s
       (PiTensorProduct.tprod ℂ (fun j => torusSlot R P C u t a d j (y j)))) =
       ((KPGlobalCenterRationalCharacter.nu F R.A.zeta12 R.A.primitive_zeta12 e : ℝ≥0) : ℂ) •
@@ -130,6 +133,9 @@ theorem unitaryComparison_torus_stage
             F R.A.zeta12 R.A.primitive_zeta12 P C q hq)))
     (fun q => y ⟨Sum.inr q.val, Finset.mem_toRight.mp q.property⟩)
     (raw * u) (fun q => tg q * t q) hm
+  change Function.HasFiniteMulSupport (fun q =>
+    localUntwistedEvaluation F R.A.zeta12 R.A.primitive_zeta12 P C q
+      (v q) (tg q * t q)) at hvs
   rw [finprod_mul_distrib hvs hnf]
   have hn : ((KPGlobalCenterRationalCharacter.nu F R.A.zeta12 R.A.primitive_zeta12 e : ℝ≥0) : ℂ) =
       (∏ w, (Real.rpow (localNorm R P C t a d (Sum.inl w)) (1/6 : ℝ) : ℂ)) * ∏ᶠ q, n q := by
@@ -164,19 +170,9 @@ theorem periodization_torus
   simp only [NNReal.coe_mul, Complex.ofReal_mul]
   ring
 
+include u t a d b e ht hp he s y htail in
 theorem comparisonSmooth_torus_stage
-    (u : Raw R)
-    (t : ∀ q, KPLocalExceptionalConstruction.actualTorus F R.A.zeta12 R.A.primitive_zeta12 q)
-    (a d : InfinitePlace F → ℂˣ) (b : InfinitePlace F → ℂ)
-    (e : KPGlobalTorusFunctionData.E F R.A.zeta12 R.A.primitive_zeta12)
-    (ht : ∀ q, (t q).val = KPPGLLocalCover.coverQuotient F R.A.zeta12
-      R.A.primitive_zeta12 (Sum.inr q) (u (Sum.inr q)))
-    (hp : ∀ w, complexMatrix R w (u (Sum.inl w)) =
-      KPCplxPrincipalSeriesCharts.upperTriangular (a w) (d w) (b w))
-    (he : KPAdelicCoverRestrictedProduct.scalarQuotient F R.A.zeta12 R.A.primitive_zeta12
-      (KPAdelicCoverRestrictedProduct.amalgamation F R.A.zeta12 R.A.primitive_zeta12 u) = e.val)
-    (s : RestrictedTensorSimple.Level (bad R P C)) (y : ∀ j : s.val, Fiber R P C j)
-    (htail : ∀ p, p ∉ s.val → torusSlot R P C u t a d p (reference R P C p) = reference R P C p)
+     
     (g : KPGlobalTorusFunctionData.E F R.A.zeta12 R.A.primitive_zeta12) :
     (comparisonSmooth R P C (RestrictedTensorSimple.stageInclusion _ _ _ s
       (PiTensorProduct.tprod ℂ (fun j => torusSlot R P C u t a d j (y j))))).val.val g =
@@ -186,6 +182,8 @@ theorem comparisonSmooth_torus_stage
     R.A.primitive_zeta12 P (unitaryComparison R P C _)).val.val g = _
   rw [unitaryComparison_torus_stage R P C u t a d b e ht hp he s y htail, map_smul]
   exact periodization_torus R P e _ g
+end
+
 
 end DedekindZetaZeroFree.FourierContinuation.FaithfulSource.RepairedInducing
 

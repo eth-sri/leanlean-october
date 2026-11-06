@@ -96,7 +96,10 @@ private theorem archIdele_zero : archDiagonalIdele F ζ hζ 0 = 1 := by
       logarithmicSlots F w r + logarithmicSlots F w s by
     ext v; simp only [logarithmicSlots, Pi.add_apply, Real.log_mul r.property.ne' s.property.ne']
     split_ifs <;> ring, archIdele_add]
- theorem ell_cube (w : InfinitePlace F) (r : Radius) :
+ section
+variable (w : InfinitePlace F) (r : Radius)
+include w r
+theorem ell_cube   :
     ∃ u : KPGlobalTorusFunctionData.Ideles F, u^3 = ell F ζ hζ w r := by
   refine ⟨archDiagonalIdele F ζ hζ (fun v => logarithmicSlots F w r v / 3),?_⟩
   rw [pow_succ,pow_two,← archIdele_add,← archIdele_add]
@@ -104,7 +107,7 @@ private theorem archIdele_zero : archDiagonalIdele F ζ hζ 0 = 1 := by
   ext v
   simp only [Pi.add_apply]
   ring
- theorem ell_slots (w : InfinitePlace F) (r : Radius) (v : InfinitePlace F) :
+ theorem ell_slots   (v : InfinitePlace F) :
     KPAdelicCoverRestrictedProduct.adeleEval F (Sum.inl v) (ell F ζ hζ w r : KPAdeles F) =
       (InfinitePlace.Completion.ringEquivComplexOfIsComplex
         (KPHilbert.infinite_isComplex F ζ hζ v)).symm (positiveSlots F w r v) := by
@@ -112,17 +115,17 @@ private theorem archIdele_zero : archDiagonalIdele F ζ hζ 0 = 1 := by
       (KPHilbert.infinite_isComplex F ζ hζ v)).symm
       (Real.exp (logarithmicSlots F w r v) : ℂ) = _
   rw [exp_slots]
- theorem ell_norm (w : InfinitePlace F) (r : Radius) :
+ theorem ell_norm   :
     ((KPGlobalTorusFunctionData.ideleAbs F (ell F ζ hζ w r) : ℝ≥0) : ℝ) = r.val := by
   rw [ell,KPGlobalResidualConstruction.PositiveArchCharacter.archDiagonalIdele_ideleAbs]
   simp only [logarithmicSlots, Finset.sum_ite_eq', Finset.mem_univ, ↓reduceIte]
   convert Real.exp_log r.property using 1
   congr 1
   ring
- theorem ell_finite (w : InfinitePlace F) (r : Radius) (q : HeightOneSpectrum (𝓞 F)) :
+ theorem ell_finite   (q : HeightOneSpectrum (𝓞 F)) :
     KPAdelicCoverRestrictedProduct.adeleEval F (Sum.inr q) (ell F ζ hζ w r : KPAdeles F) = 1 := by
   rfl
- theorem lift_ratio (w : InfinitePlace F) (r : Radius) :
+ theorem lift_ratio   :
     KPGlobalTorusFunctionData.p F ζ hζ
       (KPGlobalTorusFunctionData.torusArchChart F ζ hζ (positiveSlots F w r)) = ell F ζ hζ w r := by
   have he (v : KPHilbert.Place F) :
@@ -154,6 +157,8 @@ private theorem archIdele_zero : archDiagonalIdele F ζ hζ 0 = 1 := by
       (KPGlobalTorusFunctionData.archDiagonalTuple F ζ hζ (positiveSlots F w r)) he
   have hh : t = KPGlobalTorusFunctionData.torusArchChart F ζ hζ (positiveSlots F w r) := Subtype.ext ht
   exact hh ▸ hp
+end
+
 private theorem archTuple_continuous :
     Continuous (fun u : InfinitePlace F → ℝ =>
       KPGlobalTorusFunctionData.archDiagonalTuple F ζ hζ (fun v => (Real.exp (u v) : ℂ))) := by
@@ -331,11 +336,14 @@ def atlas (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     obtain ⟨hF', _, hA⟩ := kp_cont_finite_cusp_atlas F ζ hζ U
     exact hA)
 
-theorem exists_geometry
-    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+section
+variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
     (P : SphericalTransport F ζ hζ)
     (kernels : ∀ (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-      (U : Level F ζ hζ) (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U), FiberKernel A) :
+      (U : Level F ζ hζ) (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U), FiberKernel A)
+include R P kernels
+theorem exists_geometry
+      :
     ∃ (hF : NumberField.InfinitePlace.nrRealPlaces F = 0) (B : RadialData F ζ hζ)
       (D : ∀ U, GeometricDisintegration (atlas F ζ hζ hF U) R P),
       (∀ U, (D U).radial = B) ∧
@@ -350,10 +358,7 @@ theorem exists_geometry
   exact ⟨hF, B, D, hrad, hkernel⟩
 
 theorem exists_geometry_and_actual_transport
-    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-    (P : SphericalTransport F ζ hζ)
-    (kernels : ∀ (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-      (U : Level F ζ hζ) (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U), FiberKernel A) :
+      :
     ∃ (hF : NumberField.InfinitePlace.nrRealPlaces F = 0) (B : RadialData F ζ hζ)
       (D : ∀ U, GeometricDisintegration (atlas F ζ hζ hF U) R P),
       (∀ U, (D U).radial = B) ∧
@@ -391,6 +396,8 @@ theorem exists_geometry_and_actual_transport
   obtain ⟨l,rho,c,a,hc,ha,hcl,hal,hcomm,hbeta,hprob,hcoeff,hkernel,hchart⟩ :=
     exists_actual_compatibility_laws R P h (D V) (D U) hslot
   exact ⟨l,rho,c,a,hc,ha,hcl,hal,hcomm,hbeta,hprob,hcoeff,hslot,hkernel,hchart⟩
+end
+
 
 end DedekindZetaZeroFree.KPMsFixedHaar.ActualAllLevels
 

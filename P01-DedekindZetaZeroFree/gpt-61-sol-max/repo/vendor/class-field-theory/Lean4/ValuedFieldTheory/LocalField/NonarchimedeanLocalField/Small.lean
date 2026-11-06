@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.LocalField.NonarchimedeanLocalField.FiniteExtensionCompleteDVF
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.PrincipalUnits.Core
 public import Mathlib.Logic.Small.Basic
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -40,7 +43,7 @@ universe u
 theorem nonarchimedeanLocalField_small
     (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K] : Small.{0} K := by
-  let F : CompleteDVF.{u, u} K := localCompleteDVF K
+  let F  := localCompleteDVF K
   let O := F.valuationSubring
   let I := F.maximalIdeal
   let : Finite F.residueField := by
@@ -56,7 +59,7 @@ theorem nonarchimedeanLocalField_small
       intro n
       simpa [f, Ideal.Quotient.mk_eq_mk_iff_sub_mem, SModEq] using congrFun h n
     exact small_of_injective hf
-  let : Small.{0} O := hO
+  let  := hO
   let : IsFractionRing O K := F.toDVF.valuationSubring_isFractionRing
   apply small_of_surjective
     (f := fun p : O × O => (algebraMap O K p.1) / (algebraMap O K p.2))

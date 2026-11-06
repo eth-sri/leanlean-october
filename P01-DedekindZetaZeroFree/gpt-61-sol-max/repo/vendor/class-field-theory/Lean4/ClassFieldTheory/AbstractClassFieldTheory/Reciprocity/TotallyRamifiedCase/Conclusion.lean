@@ -40,11 +40,14 @@ variable {D : DegreeData G} {A : Rep ℤ G}
 local infixl:65 (priority := high) " + " =>
   (fun {α : Type _} [Add α] (a b : α) => HAdd.hAdd a b)
 
-/-- The exponent in the chosen cyclic decomposition is zero. -/
-theorem abstractReciprocity_cyclicTotallyRamified_exponent_eq_zero
-    (v : ValuationData D A) (hcf : SatisfiesClassFieldAxiom A)
+section
+variable (v : ValuationData D A) (hcf : SatisfiesClassFieldAxiom A)
     [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
     [TotallyDisconnectedSpace G]
+include v hcf
+/-- The exponent in the chosen cyclic decomposition is zero. -/
+theorem abstractReciprocity_cyclicTotallyRamified_exponent_eq_zero
+     
     (K : FiniteAbstractField G)
     (E : FiniteCyclicSubextension K)
     (hTot : E.IsTotallyRamified D)
@@ -171,9 +174,7 @@ theorem abstractReciprocity_cyclicTotallyRamified_exponent_eq_zero
 /-- In the cyclic totally ramified case, the reciprocity homomorphism of
 the finite reciprocity equivalence has trivial kernel.  This is the final kernel calculation. -/
 theorem abstractReciprocity_cyclicTotallyRamified_finiteReciprocityHom_injective
-    (v : ValuationData D A) (hcf : SatisfiesClassFieldAxiom A)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
+     
     (hAxiom : v.SatisfiesUnramifiedUnitCohomology D)
     (K : FiniteAbstractField G)
     (E : FiniteCyclicSubextension K)
@@ -285,9 +286,7 @@ theorem abstractReciprocity_cyclicTotallyRamified_finiteReciprocityHom_injective
 
 /-- The cyclic totally ramified instance of the abstract reciprocity theorem. -/
 theorem abstractReciprocity_cyclicTotallyRamified_finiteReciprocityHom_bijective
-    (v : ValuationData D A) (hcf : SatisfiesClassFieldAxiom A)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
+     
     (hAxiom : v.SatisfiesUnramifiedUnitCohomology D)
     (K : FiniteAbstractField G)
     (E : FiniteCyclicSubextension K)
@@ -307,6 +306,8 @@ theorem abstractReciprocity_cyclicTotallyRamified_finiteReciprocityHom_bijective
       hcf hAxiom K E hTot,
     cyclicReciprocity_card_equality
       A hcf EF E.normal E.generator E.generates⟩
+end
+
 
 end ValuationData
 

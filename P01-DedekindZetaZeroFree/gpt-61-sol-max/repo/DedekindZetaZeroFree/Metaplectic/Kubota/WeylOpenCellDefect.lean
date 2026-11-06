@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Metaplectic.Kubota.RootAndDiagonalDefects
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 namespace KubotaWeylOpenCell
@@ -55,8 +58,8 @@ theorem defect_w_open
     simp [C, D, c, e, f, q, KubotaRankTwo.det,
       Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two, Matrix.mul_apply]
     ring
-  let s : Kˣ := c * q / (C * f)
-  let a : Kˣ := D * e / (C * f)
+  let s  := c * q / (C * f)
+  let a  := D * e / (C * f)
   have ha : (a : K) = 1 - (s : K) := by
     dsimp [a, s]
     simp only [Units.val_div_eq_div_val, Units.val_mul]

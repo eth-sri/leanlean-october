@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.CuspEnergy.CompactTestIdentities
 public import DedekindZetaZeroFree.Analysis.QuadraticForms.TestDifferentialFriedrichsLaplacian
 
 @[expose] public section
+
 
 noncomputable section
 open MeasureTheory
@@ -61,21 +64,21 @@ structure Section (T : ℝ) where
     val x ∈ KPCuspGenuineMonodromy.scalarFiber F ζ hζ U
   equivariant : ∀ (s : E.parabolicGroup) x,
     T < KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) x →
-    val (KPCuspSiegel.action F (s : KPCuspArithmetic.PGL2 F) x) =
+    val (KPCuspSiegel.action F s x) =
       (KPCuspGenuineMonodromy.chi F ζ hζ (E.rho s) : ℂ) * val x
 
 namespace Section
 variable {E} {T : ℝ} (v : Section E T)
 
-def scalar (p : KPCuspCharts.Coordinates F) : ℂ := v.val (KPCuspCharts.toArch F p)
+def scalar (p : KPCuspCharts.Coordinates F)  := v.val (KPCuspCharts.toArch F p)
 
-def gradientSq (p : KPCuspCharts.Coordinates F) : ℝ :=
+def gradientSq (p : KPCuspCharts.Coordinates F)  :=
   let w := HyperbolicChart.differential (KPCuspLogShape.dimension F)
     (v.val ∘ archCoordinates (KPCuspLogShape.dimension F))
     (realCoordinates (KPCuspLogShape.dimension F) (KPCuspCharts.toArch F p))
   ∑ i, ∑ k, ‖w i k‖ ^ 2
 
-def laplacian (p : KPCuspCharts.Coordinates F) : ℂ :=
+def laplacian (p : KPCuspCharts.Coordinates F)  :=
   HyperbolicChart.laplacian (KPCuspLogShape.dimension F)
     (v.val ∘ archCoordinates (KPCuspLogShape.dimension F))
     (realCoordinates (KPCuspLogShape.dimension F) (KPCuspCharts.toArch F p))
@@ -103,23 +106,23 @@ def torusSlice (b : KPCuspCharts.Shape F) (t : Set.Ioi T) : E.KernelTorus → �
 
 end Section
 
-def forcingMass {T : ℝ} (g : Section E T) (A R : ℝ) : ℝ≥0∞ :=
+def forcingMass {T : ℝ} (g : Section E T) (A R : ℝ)  :=
   ∫⁻ p in {p : KPCuspCharts.Coordinates F | R < p.2},
     ENNReal.ofReal (Real.exp (2 * A * p.2) * ‖g.scalar p‖ ^ 2) ∂E.measure
 
-def energy {T : ℝ} (v : Section E T) (A R : ℝ) : ℝ≥0∞ :=
+def energy {T : ℝ} (v : Section E T) (A R : ℝ)  :=
   ∫⁻ p in {p : KPCuspCharts.Coordinates F | R < p.2},
     ENNReal.ofReal (Real.exp (2 * A * p.2) *
       (‖v.scalar p‖ ^ 2 + v.gradientSq p)) ∂E.measure
 
-def IsCutoff (T : ℝ) (η : ℝ → ℝ) : Prop :=
+def IsCutoff (T : ℝ) (η : ℝ → ℝ)  :=
   ContDiff ℝ (⊤ : ℕ∞) η ∧ HasCompactSupport η ∧ tsupport η ⊆ Set.Ioi T
 
 def average {T : ℝ} (μ : Measure E.KernelTorus) (v : Section E T)
-    (b : KPCuspCharts.Shape F) (t : Set.Ioi T) : ℂ :=
+    (b : KPCuspCharts.Shape F) (t : Set.Ioi T)  :=
   ∫ y, v.torusSlice b t y ∂μ
 
-def MeanZero {T : ℝ} (μ : Measure E.KernelTorus) (v : Section E T) : Prop :=
+def MeanZero {T : ℝ} (μ : Measure E.KernelTorus) (v : Section E T)  :=
   ∀ b t, average E μ v b t = 0
 
 structure AnalyticAdapter where
@@ -173,13 +176,13 @@ theorem cutoff_mass_integrable (D : AnalyticAdapter E) {T : ℝ}
     η p.2 ^ 2 * ‖v.scalar p‖ ^ 2 = 1 * (η p.2 ^ 2 * ‖v.scalar p‖ ^ 2) := by ring
     _ = Real.exp (2 * p.2) * (Real.exp (-1 * p.2) ^ 2 * η p.2 ^ 2) *
         ‖v.scalar p‖ ^ 2 := by
-      calc
-        _ = (Real.exp (2 * p.2) * Real.exp (-1 * p.2) ^ 2) *
-            (η p.2 ^ 2 * ‖v.scalar p‖ ^ 2) := by rw [hexp]
-        _ = _ := by ring
+      grind
 
-theorem laplacian_pairing_bound {T : ℝ} (v g : Section E T)
-    (z : ℂ) {Z : ℝ} (hz : ‖z‖ ≤ Z) (p : KPCuspCharts.Coordinates F)
+section
+variable {T : ℝ} (v g : Section E T)
+    (z : ℂ) {Z : ℝ} (hz : ‖z‖ ≤ Z)
+include T v g z Z hz
+theorem laplacian_pairing_bound   (p : KPCuspCharts.Coordinates F)
     (heq : v.laplacian p - z * v.scalar p = g.scalar p) :
     (star (v.scalar p) * v.laplacian p).re ≤
       (1 / 2 : ℝ) * ‖g.scalar p‖ ^ 2 + (Z + 1 / 2) * ‖v.scalar p‖ ^ 2 := by
@@ -197,8 +200,7 @@ theorem laplacian_pairing_bound {T : ℝ} (v g : Section E T)
       _ ≤ Z * ‖v.scalar p‖ ^ 2 := mul_le_mul_of_nonneg_right hz (sq_nonneg _)
   nlinarith [sq_nonneg (‖v.scalar p‖ - ‖g.scalar p‖)]
 
-theorem cutoff_pairing_bound {T : ℝ} (v g : Section E T)
-    (z : ℂ) {Z : ℝ} (hz : ‖z‖ ≤ Z)
+theorem cutoff_pairing_bound  
     (heq : ∀ p : KPCuspCharts.Coordinates F, T < p.2 →
       v.laplacian p - z * v.scalar p = g.scalar p)
     (η : ℝ → ℝ) (hη : IsCutoff T η) (p : KPCuspCharts.Coordinates F) :
@@ -210,6 +212,8 @@ theorem cutoff_pairing_bound {T : ℝ} (v g : Section E T)
   · have ht : T < p.2 := hη.2.2 (subset_tsupport η (Function.mem_support.mpr hp))
     exact mul_le_mul_of_nonneg_left (laplacian_pairing_bound E v g z hz p (heq p ht))
       (sq_nonneg _)
+end
+
 
 theorem cutoff_gradient_bound (D : AnalyticAdapter E) {T : ℝ}
     (v : Section E T) (η : ℝ → ℝ) (hη : IsCutoff T η) :
@@ -234,7 +238,7 @@ theorem cutoff_equation_energy (D : AnalyticAdapter E) {T : ℝ}
   have hg := cutoff_mass_integrable E D g η hη
   have hv := cutoff_mass_integrable E D v η hη
   have hi := (D.compact_integrable v η hη).2.2.2
-  have hsum := (hg.const_mul (1 / 2 : ℝ)).add (hv.const_mul (Z + 1 / 2))
+  have hsum := (hg.const_mul (1 / 2)).add (hv.const_mul (Z + 1 / 2))
   have hb : (∫ p, η p.2 ^ 2 * (star (v.scalar p) * v.laplacian p).re ∂E.measure) ≤
       (1 / 2 : ℝ) * (∫ p, η p.2 ^ 2 * ‖g.scalar p‖ ^ 2 ∂E.measure) +
       (Z + 1 / 2) * (∫ p, η p.2 ^ 2 * ‖v.scalar p‖ ^ 2 ∂E.measure) := by
@@ -305,7 +309,7 @@ theorem energy_le_of_compact_cutoffs (D : AnalyticAdapter E) {T : ℝ}
       (∫ p, Real.exp (2 * A * p.2) * η n p.2 ^ 2 *
         (‖v.scalar p‖ ^ 2 + v.gradientSq p) ∂E.measure) ≤ B) :
     energy E v A R ≤ ENNReal.ofReal B := by
-  let f : ℕ → KPCuspCharts.Coordinates F → ℝ := fun n p =>
+  let f  := fun n p =>
     Real.exp (2 * A * p.2) * η n p.2 ^ 2 *
       (‖v.scalar p‖ ^ 2 + v.gradientSq p)
   have hf : ∀ n, Integrable (f n) E.measure := by
@@ -346,11 +350,9 @@ theorem energy_le_of_compact_cutoffs (D : AnalyticAdapter E) {T : ℝ}
     exact (ENNReal.continuous_ofReal.tendsto _ |>.comp hl').liminf_eq
   calc
     energy E v A R = ∫⁻ p in {p : KPCuspCharts.Coordinates F | R < p.2},
-        Filter.liminf (fun n => ENNReal.ofReal (f n p)) Filter.atTop ∂E.measure := by
-      exact lintegral_congr_ae (hlim.mono fun _ hp => hp.symm)
+        Filter.liminf (fun n => ENNReal.ofReal (f n p)) Filter.atTop ∂E.measure := lintegral_congr_ae (hlim.mono fun _ hp => hp.symm)
     _ ≤ Filter.liminf (fun n => ∫⁻ p in {p : KPCuspCharts.Coordinates F | R < p.2},
-        ENNReal.ofReal (f n p) ∂E.measure) Filter.atTop := by
-      exact lintegral_liminf_le' (μ := E.measure.restrict {p : KPCuspCharts.Coordinates F | R < p.2}) (u := Filter.atTop) fun n =>
+        ENNReal.ofReal (f n p) ∂E.measure) Filter.atTop := lintegral_liminf_le' (μ := E.measure.restrict {p : KPCuspCharts.Coordinates F | R < p.2}) (u := Filter.atTop) fun n =>
         ENNReal.continuous_ofReal.measurable.comp_aemeasurable
           ((hf n).aestronglyMeasurable.restrict.aemeasurable)
     _ ≤ ENNReal.ofReal B := by
@@ -369,7 +371,7 @@ theorem mass_le_of_compact_cutoffs (D : AnalyticAdapter E) {T : ℝ}
       (∫ p, Real.exp (2 * A * p.2) * η n p.2 ^ 2 *
         (‖v.scalar p‖ ^ 2) ∂E.measure) ≤ B) :
     forcingMass E v A R ≤ ENNReal.ofReal B := by
-  let f : ℕ → KPCuspCharts.Coordinates F → ℝ := fun n p =>
+  let f  := fun n p =>
     Real.exp (2 * A * p.2) * η n p.2 ^ 2 *
       (‖v.scalar p‖ ^ 2)
   have hf : ∀ n, Integrable (f n) E.measure := by
@@ -407,11 +409,9 @@ theorem mass_le_of_compact_cutoffs (D : AnalyticAdapter E) {T : ℝ}
     exact (ENNReal.continuous_ofReal.tendsto _ |>.comp hl').liminf_eq
   calc
     forcingMass E v A R = ∫⁻ p in {p : KPCuspCharts.Coordinates F | R < p.2},
-        Filter.liminf (fun n => ENNReal.ofReal (f n p)) Filter.atTop ∂E.measure := by
-      exact lintegral_congr_ae (hlim.mono fun _ hp => hp.symm)
+        Filter.liminf (fun n => ENNReal.ofReal (f n p)) Filter.atTop ∂E.measure := lintegral_congr_ae (hlim.mono fun _ hp => hp.symm)
     _ ≤ Filter.liminf (fun n => ∫⁻ p in {p : KPCuspCharts.Coordinates F | R < p.2},
-        ENNReal.ofReal (f n p) ∂E.measure) Filter.atTop := by
-      exact lintegral_liminf_le' (μ := E.measure.restrict {p : KPCuspCharts.Coordinates F | R < p.2}) (u := Filter.atTop) fun n =>
+        ENNReal.ofReal (f n p) ∂E.measure) Filter.atTop := lintegral_liminf_le' (μ := E.measure.restrict {p : KPCuspCharts.Coordinates F | R < p.2}) (u := Filter.atTop) fun n =>
         ENNReal.continuous_ofReal.measurable.comp_aemeasurable
           ((hf n).aestronglyMeasurable.restrict.aemeasurable)
     _ ≤ ENNReal.ofReal B := by
@@ -456,18 +456,18 @@ private theorem transition_deriv_bound : ∃ D : ℝ, 0 ≤ D ∧ ∀ t, ‖deri
   have hc := Real.smoothTransition.contDiff.continuous_deriv (n := (⊤ : ℕ∞)) (by simp)
   obtain ⟨D, hD⟩ := isCompact_Icc.exists_bound_of_continuousOn hc.continuousOn
   refine ⟨max D 0, le_max_right _ _, fun t => ?_⟩
-  by_cases ht : t ∈ Set.Icc (0 : ℝ) 1
+  by_cases ht : t ∈ Set.Icc (0) 1
   · exact (hD t ht).trans (le_max_left _ _)
   · have hz : deriv Real.smoothTransition t = 0 := by
       rcases not_and_or.mp ht with ht | ht
       · have ht : t < 0 := lt_of_not_ge ht
         apply HasDerivAt.deriv
-        apply (hasDerivAt_const t (0 : ℝ)).congr_of_eventuallyEq
+        apply (hasDerivAt_const t (0)).congr_of_eventuallyEq
         filter_upwards [eventually_lt_nhds ht] with x hx
         exact Real.smoothTransition.zero_of_nonpos hx.le
       · have ht : 1 < t := lt_of_not_ge ht
         apply HasDerivAt.deriv
-        apply (hasDerivAt_const t (1 : ℝ)).congr_of_eventuallyEq
+        apply (hasDerivAt_const t (1)).congr_of_eventuallyEq
         filter_upwards [eventually_gt_nhds ht] with x hx
         exact Real.smoothTransition.one_of_one_le hx.le
     simp only [hz, norm_zero]
@@ -484,16 +484,16 @@ theorem exists_weighted_cutoff_family (S R b : ℝ) (hSR : S < R) :
   let δ := R - a
   have ha : S < a := by dsimp [a]; linarith
   have hδ : 0 < δ := by dsimp [δ, a]; linarith
-  let l : ℝ → ℝ := fun t => Real.smoothTransition ((t - a) / δ)
+  let l  := fun t => Real.smoothTransition ((t - a) / δ)
   let u : ℕ → ℝ → ℝ := fun n t => Real.smoothTransition ((n : ℝ) - t)
-  let η : ℕ → ℝ → ℝ := fun n t => l t * u n t
+  let η  := fun n t => l t * u n t
   have hl : ContDiff ℝ (⊤ : ℕ∞) l :=
     Real.smoothTransition.contDiff.comp ((contDiff_id.sub contDiff_const).div_const δ)
   have hu : ∀ n, ContDiff ℝ (⊤ : ℕ∞) (u n) := fun n =>
     Real.smoothTransition.contDiff.comp (contDiff_const.sub contDiff_id)
   have hη : ∀ n, IsCutoff S (η n) := by
     intro n
-    have hs : Function.support (η n) ⊆ Set.Icc a (n : ℝ) := by
+    have hs : Function.support (η n) ⊆ Set.Icc a n := by
       intro t ht
       have ht : l t * u n t ≠ 0 := ht
       constructor
@@ -507,8 +507,7 @@ theorem exists_weighted_cutoff_family (S R b : ℝ) (hSR : S < R) :
   have hsize : ∀ n t, η n t ^ 2 ≤ 1 := by
     intro n t
     have h0 : 0 ≤ η n t := mul_nonneg (Real.smoothTransition.nonneg _) (Real.smoothTransition.nonneg _)
-    have h1 : η n t ≤ 1 := by
-      exact (mul_le_mul (Real.smoothTransition.le_one _) (Real.smoothTransition.le_one _)
+    have h1 : η n t ≤ 1 := (mul_le_mul (Real.smoothTransition.le_one _) (Real.smoothTransition.le_one _)
         (Real.smoothTransition.nonneg _) zero_le_one).trans (by norm_num)
     nlinarith
   have hlim : ∀ t : ℝ, R < t → Filter.Tendsto (fun n => η n t) Filter.atTop (nhds 1) := by
@@ -657,7 +656,7 @@ theorem weighted_step_from_cutoffs (D : AnalyticAdapter E) {T : ℝ}
       ring
     simpa only [hx, mul_comm D.potential] using h
   constructor
-  · exact mass_le_of_compact_cutoffs E D v (b + 1) R (Q / D.potential) η ht hlimit hpot
+  · apply mass_le_of_compact_cutoffs <;> assumption
   · apply energy_le_of_compact_cutoffs E D v b R (V + Q) η ht hlimit
     intro n
     have hmi := cutoff_mass_integrable E D v _ ((ht n).exp_mul b)
@@ -670,8 +669,11 @@ theorem weighted_step_from_cutoffs (D : AnalyticAdapter E) {T : ℝ}
     rw [mul_pow, hexp]
     ring
 
-theorem energy_compare_weights {T : ℝ} (v : Section E T)
-    {a b R : ℝ} (hab : a ≤ b) :
+section
+variable {T : ℝ} (v : Section E T)
+    {a b R : ℝ} (hab : a ≤ b)
+include T v a b R hab
+theorem energy_compare_weights   :
     energy E v a R ≤ ENNReal.ofReal (Real.exp (2 * (a - b) * R)) * energy E v b R := by
   unfold energy
   rw [← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
@@ -685,8 +687,7 @@ theorem energy_compare_weights {T : ℝ} (v : Section E T)
   have h := mul_nonneg (sub_nonneg.mpr hab) (sub_nonneg.mpr (le_of_lt hp))
   nlinarith
 
-theorem mass_compare_weights {T : ℝ} (v : Section E T)
-    {a b R : ℝ} (hab : a ≤ b) :
+theorem mass_compare_weights   :
     forcingMass E v a R ≤
       ENNReal.ofReal (Real.exp (2 * (a - b) * R)) * forcingMass E v b R := by
   unfold forcingMass
@@ -699,6 +700,8 @@ theorem mass_compare_weights {T : ℝ} (v : Section E T)
   apply Real.exp_le_exp.mpr
   have h := mul_nonneg (sub_nonneg.mpr hab) (sub_nonneg.mpr (le_of_lt hp))
   nlinarith
+end
+
 
 theorem forcing_bounds_all_real {T : ℝ} {I : Type*} (g : I → Section E T)
     (hforcing : ∀ a : ℝ, 0 ≤ a → ∃ B : ℝ, 0 ≤ B ∧ ∀ i,
@@ -753,8 +756,11 @@ theorem bootstrap_from_uniform_mass_step {T : ℝ} {I : Type*}
       mul_le_mul_right (hb i) _
     _ = _ := (ENNReal.ofReal_mul (Real.exp_nonneg _)).symm
 
-theorem uniform_weighted_step (D : AnalyticAdapter E) {T : ℝ} {I : Type*}
-    (v g : I → Section E T) (z : I → ℂ) (Z b S R V G : ℝ)
+section
+variable (D : AnalyticAdapter E) {T : ℝ} {I : Type*}
+    (v g : I → Section E T) (z : I → ℂ)
+include D T I v g z
+theorem uniform_weighted_step   (Z b S R V G : ℝ)
     (hZ : 0 ≤ Z) (hz : ∀ i, ‖z i‖ ≤ Z) (hTS : T ≤ S) (hSR : S < R)
     (hV : 0 ≤ V) (hG : 0 ≤ G)
     (hv0 : ∀ i, MeanZero E D.fiberMeasure (v i))
@@ -779,8 +785,7 @@ theorem uniform_weighted_step (D : AnalyticAdapter E) {T : ℝ} {I : Type*}
       hZ (hz i) hTS hV hG hK (hv0 i) (heq i) (hmass i) (hforcing i)
       η hη hs hd hl).2.trans (ENNReal.ofReal_le_ofReal (le_max_right _ _))
 
-theorem weighted_energy_from_mass_seed (D : AnalyticAdapter E) {T : ℝ} {I : Type*}
-    (v g : I → Section E T) (z : I → ℂ) (Z b₀ : ℝ)
+theorem weighted_energy_from_mass_seed   (Z b₀ : ℝ)
     (hZ : 0 ≤ Z) (hz : ∀ i, ‖z i‖ ≤ Z)
     (hv0 : ∀ i, MeanZero E D.fiberMeasure (v i))
     (heq : ∀ i p, T < p.2 → (v i).laplacian p - z i * (v i).scalar p = (g i).scalar p)
@@ -811,6 +816,8 @@ theorem weighted_energy_from_mass_seed (D : AnalyticAdapter E) {T : ℝ} {I : Ty
   intro a ha R hR
   obtain ⟨B, hB, hb⟩ := bootstrap_from_uniform_mass_step E v b₀ hseed hs a R hR
   exact ⟨B, hB, hb, fun S hS i => energy_tail_of_weighted_bound E (v i) ha hB (hb i) hS⟩
+end
+
 
 def Section.rawRepresentative {T : ℝ} (v : Section E T) :
     KPMeanZeroWeightedEnergy.Representative ζ hζ E.parabolicGroup E.rho

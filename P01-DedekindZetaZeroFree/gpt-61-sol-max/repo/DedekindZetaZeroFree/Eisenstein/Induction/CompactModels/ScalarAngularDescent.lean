@@ -62,7 +62,10 @@ theorem target_rational (s : ℂ) (f : Target F ζ hζ s)
   | symm _ _ _ ih => exact ih.symm
   | trans _ _ _ _ _ ih ij => exact ih.trans ij
 
-def fullSourceSection (D : Iwasawa F ζ hζ) (s : ℂ) :
+section
+variable (D : Iwasawa F ζ hζ) (s : ℂ)
+include D s
+def fullSourceSection   :
     Source F ζ hζ s →ₗ[ℂ] (FullOmega F ζ hζ D → ℂ) :=
   quotientLinear (fullAngularSetoid F ζ hζ D)
     { toFun := fun f g => f.val g.val
@@ -73,7 +76,7 @@ def fullSourceSection (D : Iwasawa F ζ hζ) (s : ℂ) :
     rintro a b ⟨y, x, hb⟩
     rw [hb, source_rational])
 
-def fullTargetSection (D : Iwasawa F ζ hζ) (s : ℂ) :
+def fullTargetSection   :
     Target F ζ hζ s →ₗ[ℂ] (FullOmega F ζ hζ D → ℂ) :=
   quotientLinear (fullAngularSetoid F ζ hζ D)
     { toFun := fun f g => f.val g.val
@@ -84,15 +87,20 @@ def fullTargetSection (D : Iwasawa F ζ hζ) (s : ℂ) :
     rintro a b ⟨y, x, hb⟩
     rw [hb, target_rational])
 
-@[simp] theorem fullSourceSection_mk (D : Iwasawa F ζ hζ) (s : ℂ)
+@[simp] theorem fullSourceSection_mk  
     (f : Source F ζ hζ s) (g : NormOne F ζ hζ D) :
     fullSourceSection D s f (Quotient.mk _ g) = f.val g.val := rfl
 
-@[simp] theorem fullTargetSection_mk (D : Iwasawa F ζ hζ) (s : ℂ)
+@[simp] theorem fullTargetSection_mk  
     (f : Target F ζ hζ s) (g : NormOne F ζ hζ D) :
     fullTargetSection D s f (Quotient.mk _ g) = f.val g.val := rfl
+end
 
-def sourceAngular (D : Iwasawa F ζ hζ) (U : Level F ζ hζ) :
+
+section
+variable (D : Iwasawa F ζ hζ) (U : Level F ζ hζ)
+include D U
+def sourceAngular   :
     fixedPlus F ζ hζ D U →ₗ[ℂ] (Omega F ζ hζ D U → ℂ) :=
   quotientLinear (angularSetoid F ζ hζ D U)
     { toFun := fun f g => f.val.val.val g.val
@@ -103,7 +111,7 @@ def sourceAngular (D : Iwasawa F ζ hζ) (U : Level F ζ hζ) :
     rintro a b ⟨y, x, u, hb⟩
     rw [hb, f.property, source_rational])
 
-def targetAngular (D : Iwasawa F ζ hζ) (U : Level F ζ hζ) :
+def targetAngular   :
     fixedMinus F ζ hζ D U →ₗ[ℂ] (Omega F ζ hζ D U → ℂ) :=
   quotientLinear (angularSetoid F ζ hζ D U)
     { toFun := fun f g => f.val.val.val g.val
@@ -114,29 +122,36 @@ def targetAngular (D : Iwasawa F ζ hζ) (U : Level F ζ hζ) :
     rintro a b ⟨y, x, u, hb⟩
     rw [hb, f.property, target_rational])
 
-@[simp] theorem sourceAngular_mk (D : Iwasawa F ζ hζ) (U : Level F ζ hζ)
+@[simp] theorem sourceAngular_mk  
     (f : fixedPlus F ζ hζ D U) (g : NormOne F ζ hζ D) :
     sourceAngular D U f (Quotient.mk _ g) = f.val.val.val g.val := rfl
 
-@[simp] theorem targetAngular_mk (D : Iwasawa F ζ hζ) (U : Level F ζ hζ)
+@[simp] theorem targetAngular_mk  
     (f : fixedMinus F ζ hζ D U) (g : NormOne F ζ hζ D) :
     targetAngular D U f (Quotient.mk _ g) = f.val.val.val g.val := rfl
+end
 
-def fullSourceAngular (D : Iwasawa F ζ hζ) :
+
+section
+variable (D : Iwasawa F ζ hζ)
+include D
+def fullSourceAngular   :
     Vplus F ζ hζ D →ₗ[ℂ] (FullOmega F ζ hζ D → ℂ) :=
   (fullSourceSection D 0).comp (sourceCore F ζ hζ D).subtype
 
-def fullTargetAngular (D : Iwasawa F ζ hζ) :
+def fullTargetAngular   :
     Vminus F ζ hζ D →ₗ[ℂ] (FullOmega F ζ hζ D → ℂ) :=
   (fullTargetSection D 0).comp (targetCore F ζ hζ D).subtype
 
-@[simp] theorem fullSourceAngular_mk (D : Iwasawa F ζ hζ)
+@[simp] theorem fullSourceAngular_mk  
     (f : Vplus F ζ hζ D) (g : NormOne F ζ hζ D) :
     fullSourceAngular D f (Quotient.mk _ g) = f.val.val g.val := rfl
 
-@[simp] theorem fullTargetAngular_mk (D : Iwasawa F ζ hζ)
+@[simp] theorem fullTargetAngular_mk  
     (f : Vminus F ζ hζ D) (g : NormOne F ζ hζ D) :
     fullTargetAngular D f (Quotient.mk _ g) = f.val.val g.val := rfl
+end
+
 
 end DedekindZetaZeroFree.KPMsRationalCompactCrossPairingProof.ScalarAngularDescent
 

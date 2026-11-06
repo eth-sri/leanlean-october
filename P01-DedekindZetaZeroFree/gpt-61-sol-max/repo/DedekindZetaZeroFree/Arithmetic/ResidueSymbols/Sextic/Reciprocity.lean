@@ -81,10 +81,13 @@ theorem actual_sextic_prime_integral_cft (A : SArithmeticData F)
 open GlobalClassFieldTheory.Reciprocity
 open LocalFieldTheory.IsNonarchimedeanLocalField
 
-theorem actual_sextic_local_integral_tame (A : SArithmeticData F)
+section
+variable (A : SArithmeticData F)
     (I : A.Exterior) (v : HeightOneSpectrum (𝓞 F)) (hI : I.val = v.asIdeal)
     (hc : (Ideal.absNorm v.asIdeal).Coprime 6)
     (hv : v ∉ powerResidueExponentFinitePlaces F 6)
+include A I v hI hc hv
+theorem actual_sextic_local_integral_tame  
     (r : 𝓞 F) (hr : r ∉ v.asIdeal) (a : Fˣ) :
     ((A.actualLocalSymbol v 6 (Or.inr (Or.inr rfl))
       (Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom a)
@@ -123,10 +126,7 @@ theorem actual_sextic_local_integral_tame (A : SArithmeticData F)
   simp only [Subgroup.coe_zpow, Units.val_zpow_eq_zpow_val]
   rfl
 
-theorem actual_sextic_local_sinteger_tame (A : SArithmeticData F)
-    (I : A.Exterior) (v : HeightOneSpectrum (𝓞 F)) (hI : I.val = v.asIdeal)
-    (hc : (Ideal.absNorm v.asIdeal).Coprime 6)
-    (hv : v ∉ powerResidueExponentFinitePlaces F 6) (hvS : v ∉ A.Sf)
+theorem actual_sextic_local_sinteger_tame   (hvS : v ∉ A.Sf)
     (b : A.R) (ub : Fˣ) (hub : (ub : F) = (b : F))
     (hval : v.valuation F (ub : F) = 1) (a : Fˣ) :
     ((A.actualLocalSymbol v 6 (Or.inr (Or.inr rfl))
@@ -180,6 +180,8 @@ theorem actual_sextic_local_sinteger_tame (A : SArithmeticData F)
       (AlgebraicNumberTheory.PowerResidueSymbols.primeIdealPowerResidueSymbol F v 6
         A.primitive_sixth_root hc d hdn).val).ne_zero
   exact (mul_right_cancel₀ (zpow_ne_zero _ hnzero) he).symm
+end
+
 
 theorem actual_sextic_top (A : SArithmeticData F) (I : A.Exterior)
     (hI : I.val = ⊤) (x : A.R) : A.sexticResidue I x = 1 :=
@@ -287,8 +289,11 @@ theorem actual_exterior_prime_outside (A : SArithmeticData F) (I : A.Exterior)
   rw [hI, sup_idem] at h
   exact v.isPrime.ne_top h
 
-theorem actual_outside_norm_coprime_six (A : SArithmeticData F)
-    (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ A.Sf) :
+section
+variable (A : SArithmeticData F)
+    (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ A.Sf)
+include A v hv
+theorem actual_outside_norm_coprime_six   :
     (Ideal.absNorm v.asIdeal).Coprime 6 := by
   letI : v.asIdeal.IsMaximal := v.isMaximal
   obtain ⟨p,n,hn,hpI,hp,hq⟩ := Ideal.exists_prime_and_absNorm_eq_pow v.asIdeal
@@ -302,8 +307,7 @@ theorem actual_outside_norm_coprime_six (A : SArithmeticData F)
   have hd' : (p : 𝓞 F) ∣ 6 := ⟨(k : 𝓞 F), by exact_mod_cast hk⟩
   exact Ideal.mem_of_dvd v.asIdeal hd' hpI
 
-theorem actual_outside_exponent_support (A : SArithmeticData F)
-    (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ A.Sf) :
+theorem actual_outside_exponent_support   :
     v ∉ powerResidueExponentFinitePlaces F 6 := by
   intro h
   rw [mem_powerResidueExponentFinitePlaces_iff, Ideal.dvd_iff_le] at h
@@ -311,8 +315,7 @@ theorem actual_outside_exponent_support (A : SArithmeticData F)
   apply A.above_six
   exact (Ideal.span_singleton_le_iff_mem _).mp h
 
- def generatorBoundIdeal (A : SArithmeticData F)
-    (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ A.Sf) (n : ℕ) : Ideal A.R where
+ def generatorBoundIdeal   (n : ℕ) : Ideal A.R where
   carrier := {a | v.valuation F (a : F) ≤ WithZero.exp (-(n : ℤ))}
   zero_mem' := by simp
   add_mem' := by
@@ -324,6 +327,8 @@ theorem actual_outside_exponent_support (A : SArithmeticData F)
     change v.valuation F ((a : F) * (b : F)) ≤ _
     rw [map_mul]
     exact (mul_le_mul_of_nonneg_right (a.property v hv) zero_le).trans (by simpa using hb)
+end
+
 
 theorem actual_generator_valuation (A : SArithmeticData F)
     (I : A.Exterior) (r : A.R) (hr : A.Generates I r) (a : Fˣ) (ha : (a : F) = (r : F))
@@ -489,12 +494,15 @@ theorem actual_cft_normalizedValuation_log (v : HeightOneSpectrum (𝓞 F)) (a :
   change _ = WithZero.log (v.valuation F ((n : F) / (d : F)))
   rw [map_div₀, WithZero.log_div hvn hvd]
 
- def factor (A : SArithmeticData F) (a b : Fˣ)
+ section
+variable (A : SArithmeticData F)
+include A
+def factor   (a b : Fˣ)
     (v : HeightOneSpectrum (𝓞 F)) : F :=
   ((A.actualLocalSymbol v 6 (Or.inr (Or.inr rfl))
       (Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom a)
       (Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom b)).val : F)
-private theorem globalprod (A : SArithmeticData F) (a b : Fˣ) :
+private theorem globalprod   (a b : Fˣ) :
     (∏ᶠ v : HeightOneSpectrum (𝓞 F), factor A a b v) = 1 := by
   let g : rootsOfUnity 6 F →* F := (Units.coeHom F).comp (rootsOfUnity 6 F).subtype
   have hg : Function.Injective g := by
@@ -506,7 +514,7 @@ private theorem globalprod (A : SArithmeticData F) (a b : Fˣ) :
       (Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom b))
   have hp := A.actualSextic_productFormula a b
   exact h.symm.trans ((congrArg g hp).trans (map_one g))
-private theorem split_product (A : SArithmeticData F) (a b : Fˣ)
+private theorem split_product   (a b : Fˣ)
     (hf : (factor A a b).HasFiniteMulSupport) :
     ((A.H_S (A.diagonal a) (A.diagonal b)).val : F) *
       (∏ᶠ v : HeightOneSpectrum (𝓞 F), ∏ᶠ (_ : v ∉ (A.Sf : Set _)),
@@ -534,7 +542,7 @@ private theorem split_product (A : SArithmeticData F) (a b : Fˣ)
   simpa only [Set.mem_diff, Set.mem_univ, true_and] using
     he.trans (globalprod A a b)
 
-private theorem actual_factor_finiteSupport (A : SArithmeticData F) (a b : Fˣ) :
+private theorem actual_factor_finiteSupport   (a b : Fˣ) :
     (factor A a b).HasFiniteMulSupport := by
   open GlobalClassFieldTheory.Reciprocity in
   let S := powerResidueBadFinitePlaces F 6 a b
@@ -553,26 +561,28 @@ private theorem actual_factor_finiteSupport (A : SArithmeticData F) (a b : Fˣ) 
   apply hv
   exact (congrArg (fun z : rootsOfUnity 6 F => (z.val : F)) hz).trans (by rfl)
 
- theorem outside_exterior (A : SArithmeticData F)
+ theorem outside_exterior  
     (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ A.Sf) : v.asIdeal ⊔ A.cS = ⊤ := by
   apply Ideal.sup_prod_eq_top
   intro w hw
   have hne : v ≠ w := fun he => hv (he ▸ hw)
   have hin : v.asIdeal ≠ w.asIdeal := fun he => hne (HeightOneSpectrum.ext he)
   exact Ideal.IsMaximal.coprime_of_ne v.isMaximal w.isMaximal hin
- def primeValue (A : SArithmeticData F) (x : A.R) (v : HeightOneSpectrum (𝓞 F)) : F :=
+ def primeValue   (x : A.R) (v : HeightOneSpectrum (𝓞 F)) : F :=
   if hv : v ∉ A.Sf then A.sexticResidue ⟨v.asIdeal, v.ne_bot, outside_exterior A v hv⟩ x else 1
-private theorem primeval (A : SArithmeticData F) (x : A.R)
+private theorem primeval   (x : A.R)
     (P : A.Exterior) (v : HeightOneSpectrum (𝓞 F)) (hP : P.val = v.asIdeal) :
     primeValue A x v = A.sexticResidue P x := by
   have hv := actual_exterior_prime_outside A P v hP
   rw [primeValue, dif_pos hv]
   congr 1
   exact Subtype.ext hP.symm
-private theorem residue_prod (A : SArithmeticData F) (I : A.Exterior) (x : A.R) :
+private theorem residue_prod   (I : A.Exterior) (x : A.R) :
     A.sexticResidue I x = ∏ᶠ v : HeightOneSpectrum (𝓞 F),
       primeValue A x v ^ idealPrimeExponent v.asIdeal I.val :=
     actual_sextic_factorization_finprod A x (primeValue A x) (primeval A x) I
+end
+
 private theorem exponent_support (I : Ideal (𝓞 F)) :
     (fun v : HeightOneSpectrum (𝓞 F) => idealPrimeExponent v.asIdeal I).support.Finite := by
   have he : Function.Injective (fun v : HeightOneSpectrum (𝓞 F) => v.asIdeal) := by
@@ -583,7 +593,10 @@ private theorem exponent_support (I : Ideal (𝓞 F)) :
   intro v hv
   change v.asIdeal ∈ idealPrimeSupport I
   exact Multiset.mem_toFinset.mpr (Multiset.count_pos.mp (Nat.pos_of_ne_zero hv))
-private theorem power_finite (A : SArithmeticData F) (I : A.Exterior) (x : A.R) :
+section
+variable (A : SArithmeticData F)
+include A
+private theorem power_finite   (I : A.Exterior) (x : A.R) :
     (fun v : HeightOneSpectrum (𝓞 F) =>
       primeValue A x v ^ idealPrimeExponent v.asIdeal I.val).HasFiniteMulSupport := by
   apply (exponent_support I.val).subset
@@ -592,7 +605,7 @@ private theorem power_finite (A : SArithmeticData F) (I : A.Exterior) (x : A.R) 
   intro h
   exact hv (by change primeValue A x v ^ idealPrimeExponent v.asIdeal I.val = 1; exact h ▸ pow_zero _)
 
-private theorem coprime_wrapper (A : SArithmeticData F)
+private theorem coprime_wrapper  
     (I J : A.Exterior) (a b : A.R) (ua ub : Fˣ)
     (hloc : ∀ v : HeightOneSpectrum (𝓞 F), v ∉ A.Sf →
       factor A ua ub v = (primeValue A b v ^ idealPrimeExponent v.asIdeal I.val) *
@@ -628,7 +641,7 @@ private theorem coprime_wrapper (A : SArithmeticData F)
   field_simp
   field_simp at hglobal
   linear_combination hglobal
-private theorem sunit_wrapper (A : SArithmeticData F)
+private theorem sunit_wrapper  
     (I : A.Exterior) (ua : Fˣ) (eps : A.U)
     (hloc : ∀ v : HeightOneSpectrum (𝓞 F), v ∉ A.Sf →
       factor A ua eps.val v = primeValue A (A.unitEquiv eps : A.R) v ^
@@ -657,7 +670,7 @@ private theorem sunit_wrapper (A : SArithmeticData F)
   field_simp
   simpa only [mul_comm] using hglobal
 
-theorem actual_sextic_sunit_symbol_of_cft_exponents (A : SArithmeticData F)
+theorem actual_sextic_sunit_symbol_of_cft_exponents  
     (I : A.Exterior) (ua : Fˣ) (eps : A.U)
     (hexp : ∀ v : HeightOneSpectrum (𝓞 F), v ∉ A.Sf →
       -finitePlaceNormalizedValuation F v ua = (idealPrimeExponent v.asIdeal I.val : ℤ)) :
@@ -676,7 +689,7 @@ theorem actual_sextic_sunit_symbol_of_cft_exponents (A : SArithmeticData F)
     exact primeval A _ P v rfl
   exact ht.trans (congrArg (fun z => z ^ idealPrimeExponent v.asIdeal I.val) hp.symm)
 
-private lemma generator_unit_of_exponent_zero (A : SArithmeticData F)
+private lemma generator_unit_of_exponent_zero  
     (I : A.Exterior) (r : A.R) (hr : A.Generates I r) (a : Fˣ)
     (ha : (a : F) = (r : F)) (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ A.Sf)
     (he : idealPrimeExponent v.asIdeal I.val = 0) : v.valuation F (a : F) = 1 := by
@@ -685,7 +698,7 @@ private lemma generator_unit_of_exponent_zero (A : SArithmeticData F)
   have hz : WithZero.log (v.valuation F (a : F)) = 0 := neg_eq_zero.mp h
   have hn : v.valuation F (a : F) ≠ 0 := (Valuation.ne_zero_iff _).mpr a.ne_zero
   rw [← WithZero.exp_log hn, hz, WithZero.exp_zero]
-private lemma coprime_exponents (A : SArithmeticData F) (I J : A.Exterior)
+private lemma coprime_exponents   (I J : A.Exterior)
     (hcop : I.val ⊔ J.val = ⊤) (v : HeightOneSpectrum (𝓞 F)) :
     idealPrimeExponent v.asIdeal I.val = 0 ∨ idealPrimeExponent v.asIdeal J.val = 0 := by
   by_contra h
@@ -697,11 +710,16 @@ private lemma coprime_exponents (A : SArithmeticData F) (I J : A.Exterior)
     ((Ideal.mem_normalizedFactors_iff J.property.1).mp
       (Multiset.count_pos.mp (Nat.pos_of_ne_zero h.2))).2
   exact v.isPrime.ne_top (top_unique (hcop ▸ sup_le hi hj))
-private theorem coprime_local (A : SArithmeticData F)
+end
+
+section
+variable (A : SArithmeticData F)
     (I J : A.Exterior) (a b : A.R) (ua ub : Fˣ)
     (ha : A.Generates I a) (hb : A.Generates J b)
     (hua : (ua : F) = (a : F)) (hub : (ub : F) = (b : F))
-    (hcop : I.val ⊔ J.val = ⊤) (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ A.Sf) :
+    (hcop : I.val ⊔ J.val = ⊤)
+include A I J a b ua ub ha hb hua hub hcop
+private theorem coprime_local   (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ A.Sf) :
       factor A ua ub v = (primeValue A b v ^ idealPrimeExponent v.asIdeal I.val) *
         (primeValue A a v ^ idealPrimeExponent v.asIdeal J.val)⁻¹ := by
   let P : A.Exterior := ⟨v.asIdeal, v.ne_bot, outside_exterior A v hv⟩
@@ -728,17 +746,15 @@ private theorem coprime_local (A : SArithmeticData F)
     rw [hj, pow_zero, inv_one, mul_one, hp b]
     exact ht
 
-theorem actual_sextic_coprime_reciprocity (A : SArithmeticData F)
-    (I J : A.Exterior) (a b : A.R) (ua ub : Fˣ)
-    (ha : A.Generates I a) (hb : A.Generates J b)
-    (hua : (ua : F) = (a : F)) (hub : (ub : F) = (b : F))
-    (hcop : I.val ⊔ J.val = ⊤) :
+theorem actual_sextic_coprime_reciprocity   :
     A.sexticResidue I b =
       (((A.H_S (A.diagonal ua) (A.diagonal ub))⁻¹ : Fˣ) : F) *
         A.sexticResidue J a := by
   apply coprime_wrapper
   intro v hv
   exact coprime_local A I J a b ua ub ha hb hua hub hcop v hv
+end
+
 
 theorem actual_sextic_sunit_symbol (A : SArithmeticData F)
     (I : A.Exterior) (a : A.R) (ua : Fˣ) (eps : A.U)

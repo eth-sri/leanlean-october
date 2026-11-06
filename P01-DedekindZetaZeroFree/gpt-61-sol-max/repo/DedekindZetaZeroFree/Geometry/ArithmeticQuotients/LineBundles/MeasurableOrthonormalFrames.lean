@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Geometry.ArithmeticQuotients.LocalCharts.LineBundleLocalization
 
 @[expose] public section
+
 
 noncomputable section
 open scoped Classical Pointwise
@@ -17,10 +20,13 @@ private theorem finite_orbit_compact {G Y : Type*} [Group G] [MulAction G Y]
     (Γ := G) (K := {x}) (L := K) isCompact_singleton hK
   apply (h.image (fun g : G => g • x)).subset
   rintro y ⟨hy, g, rfl⟩
-  exact ⟨g, ⟨g • x, ⟨x, by simp, rfl⟩, hy⟩, rfl⟩
+  exact ⟨g, ⟨g • x, ⟨x, rfl, rfl⟩, hy⟩, rfl⟩
 
-theorem measurable_exact_transversal {G Y : Type*} [Group G] [Countable G]
-    [MulAction G Y] [TopologicalSpace Y] [T2Space Y] [SigmaCompactSpace Y]
+section
+variable {G Y : Type*} [Group G] [Countable G]
+    [MulAction G Y]
+include G Y
+theorem measurable_exact_transversal   [TopologicalSpace Y] [T2Space Y] [SigmaCompactSpace Y]
     [MeasurableSpace Y] [BorelSpace Y] [StandardBorelSpace Y]
     [ContinuousConstSMul G Y] [ProperlyDiscontinuousSMul G Y] :
     ∃ S : Set Y, MeasurableSet S ∧ ∀ x : Y, ∃! y : Y, y ∈ S ∧ ∃ g : G, g • x = y := by
@@ -89,8 +95,7 @@ theorem measurable_exact_transversal {G Y : Type*} [Group G] [Countable G]
   · have h := hyP.2.2 (b * a⁻¹)
     simpa [mul_smul, ← hb, ← ha] using h (by simpa [mul_smul, ← hb, ← ha] using hm.1)
 
-private theorem selector_of_transversal {G Y : Type*} [Group G] [Countable G]
-    [MulAction G Y] [MeasurableSpace Y] [MeasurableConstSMul G Y]
+private theorem selector_of_transversal   [MeasurableSpace Y] [MeasurableConstSMul G Y]
     (S : Set Y) (hS : MeasurableSet S)
     (huniq : ∀ x : Y, ∃! y : Y, y ∈ S ∧ ∃ g : G, g • x = y) :
     ∃ r : Y → Y, Measurable r ∧ (∀ x, r x ∈ S ∧ ∃ g : G, g • x = r x) ∧
@@ -114,8 +119,7 @@ private theorem selector_of_transversal {G Y : Type*} [Group G] [Countable G]
   exact (hu _ ⟨(hs (g • x)).1, a * g, by simpa [mul_smul] using ha⟩).trans
     (hu _ (hs x)).symm
 
-private theorem prioritize_domain {G Y : Type*} [Group G] [Countable G]
-    [MulAction G Y] [TopologicalSpace Y] [T2Space Y]
+private theorem prioritize_domain   [TopologicalSpace Y] [T2Space Y]
     [MeasurableSpace Y] [BorelSpace Y] [ContinuousConstSMul G Y]
     (S D : Set Y) (hS : MeasurableSet S) (hD : MeasurableSet D)
     (huniq : ∀ x : Y, ∃! y : Y, y ∈ S ∧ ∃ g : G, g • x = y) :
@@ -180,8 +184,7 @@ private theorem prioritize_domain {G Y : Type*} [Group G] [Countable G]
     · exact hy.1
     · exact False.elim (hy.2 ((hBi b x).mpr hb))
 
-theorem measurable_fundamental_domain_choice {G Y : Type*} [Group G] [Countable G]
-    [MulAction G Y] [TopologicalSpace Y] [T2Space Y] [SigmaCompactSpace Y]
+theorem measurable_fundamental_domain_choice   [TopologicalSpace Y] [T2Space Y] [SigmaCompactSpace Y]
     [MeasurableSpace Y] [BorelSpace Y] [StandardBorelSpace Y]
     [ContinuousConstSMul G Y] [ProperlyDiscontinuousSMul G Y]
     (μ : Measure Y) [SMulInvariantMeasure G Y μ]
@@ -205,6 +208,8 @@ theorem measurable_fundamental_domain_choice {G Y : Type*} [Group G] [Countable 
     have h := hx _ he
     have := congrArg (fun b : G => a * b * a⁻¹) h
     simpa [mul_assoc] using this
+end
+
 
 theorem component_measurable_section (F : Type) [Field F] [NumberField F]
     (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -238,7 +243,7 @@ theorem component_measurable_section (F : Type) [Field F] [NumberField F]
       intro x y h
       obtain ⟨γ, hγ⟩ := MulAction.mem_orbit_iff.mp (MulAction.orbitRel_apply.mp h)
       simpa [← hγ] using (hinv γ y))
-  have hsq (x) : s (KPCuspSiegel.projection F Γ x) = r x := rfl
+  
   have hsm : Measurable s := measurable_from_quotient.mpr hr
   refine ⟨s, hsm, ?_, ?_, ?_⟩
   · intro q
@@ -248,9 +253,8 @@ theorem component_measurable_section (F : Type) [Field F] [NumberField F]
       apply Quotient.sound
       apply MulAction.orbitRel_apply.mpr
       exact MulAction.mem_orbit_iff.mpr ⟨γ, hγ⟩
-  · apply (ae_map_iff (show AEMeasurable (KPCuspSiegel.projection F Γ) (μ.restrict D) from
-        measurable_quotient_mk''.aemeasurable) (hD.preimage hsm)).mpr
-    exact (ae_restrict_of_ae hmem)
+  · apply (ae_map_iff (measurable_quotient_mk''.aemeasurable) (hD.preimage hsm)).mpr
+    apply ae_restrict_of_ae <;> assumption
   · have hp : MeasurableSet {q | ∀ γ : Γ, γ • s q = s q → γ = 1} := by
       have heq : {q | ∀ γ : Γ, γ • s q = s q → γ = 1} =
           ⋂ γ : Γ, ((s ⁻¹' {y | γ • y = y})ᶜ ∪ {q | γ = 1}) := by
@@ -259,8 +263,7 @@ theorem component_measurable_section (F : Type) [Field F] [NumberField F]
       exact MeasurableSet.iInter fun γ : Γ =>
         ((isClosed_eq (continuous_const_smul γ) continuous_id).measurableSet.preimage hsm).compl.union
           (MeasurableSet.const (γ = 1))
-    apply (ae_map_iff (show AEMeasurable (KPCuspSiegel.projection F Γ) (μ.restrict D) from
-        measurable_quotient_mk''.aemeasurable) hp).mpr
+    apply (ae_map_iff (measurable_quotient_mk''.aemeasurable) hp).mpr
     exact ae_restrict_of_ae hfree
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -347,8 +350,11 @@ theorem full_base_measurable_section (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     rw [hl, hc]
     exact hq
 
-theorem quotient_line_frame_injective (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+section
+variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (i : Fin A.componentCount) (z : KPFiniteCuspAtlas.SymmetricSpace F)
+include A i z
+theorem quotient_line_frame_injective  
     (hz : ∀ γ : KPCuspGenuineMonodromy.Component F ζ hζ U (A.representative i),
       γ • z = z → γ = 1) :
     Function.Injective (fun a : V F ζ hζ U => (⟨i, Quotient.mk _ (z, a)⟩ : Line F ζ hζ hF U A)) := by
@@ -361,8 +367,7 @@ theorem quotient_line_frame_injective (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U
   apply Subtype.ext
   simpa using ha.symm
 
-theorem quotient_line_frame_surjective (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (i : Fin A.componentCount) (z : KPFiniteCuspAtlas.SymmetricSpace F)
+theorem quotient_line_frame_surjective  
     (l : Line F ζ hζ hF U A)
     (hl : lineBase F ζ hζ hF U A l = KPFiniteCuspAtlas.componentMap F ζ hζ U
       (A.representative i) (KPCuspSiegel.projection F _ z)) :
@@ -387,6 +392,8 @@ theorem quotient_line_frame_surjective (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF 
     change (b : ℂ) = _ * (_ * (b : ℂ))
     rw [← mul_assoc, ← Units.val_mul]
     simp
+end
+
 
 theorem component_quotientVolume_locallyFinite (hF : NumberField.InfinitePlace.nrRealPlaces F = 0) (g : KPFiniteCuspAtlas.FiniteCover F ζ hζ)
     (D : Set (KPFiniteCuspAtlas.SymmetricSpace F)) (hD : MeasurableSet D)
@@ -430,7 +437,10 @@ theorem component_quotientVolume_locallyFinite (hF : NumberField.InfinitePlace.n
       rw [← hFD.measure_eq_tsum K]
       exact hK.measure_lt_top
 
-theorem quotientMeasure_finiteOnCompacts (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) :
+section
+variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+include A
+theorem quotientMeasure_finiteOnCompacts   :
     IsFiniteMeasureOnCompacts (quotientMeasure F ζ hζ hF U A) := by
   letI : BorelSpace (X F ζ hζ U) := ⟨rfl⟩
   letI (i : Fin A.componentCount) : ContinuousConstSMul
@@ -462,7 +472,7 @@ theorem quotientMeasure_finiteOnCompacts (A : KPFiniteCuspAtlas.Atlas F ζ hζ h
   rw [Measure.map_apply he.continuous.measurable hK.isClosed.measurableSet]
   exact (he.isCompact_preimage hK).measure_lt_top
 
-theorem smooth_section_norm_continuous (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+theorem smooth_section_norm_continuous  
     (c : X F ζ hζ U → Fin A.componentCount)
     (l : X F ζ hζ U → KPFiniteCuspAtlas.SymmetricSpace F)
     (hc : Measurable c) (hl : Measurable l)
@@ -492,7 +502,7 @@ theorem smooth_section_norm_continuous (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF 
   rw [he]
   rfl
 
-theorem measurable_realization (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) :
+theorem measurable_realization   :
     Nonempty (Realization F ζ hζ hF U A) := by
   letI : BorelSpace (X F ζ hζ U) := ⟨rfl⟩
   obtain ⟨c,l,hc,hl,hbase,hdom,hfree⟩ := full_base_measurable_section F ζ hζ hF U A
@@ -520,11 +530,11 @@ theorem measurable_realization (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) :
     frame_surjective_ae := ?_
     smooth_test_memLp := ?_ }⟩
   · filter_upwards [hfree] with x hx
-    exact quotient_line_frame_injective F ζ hζ hF U A (c x) (l x) hx
+    apply quotient_line_frame_injective <;> assumption
   · exact Filter.Eventually.of_forall fun x b hb =>
       quotient_line_frame_surjective F ζ hζ hF U A (c x) (l x) b (hb.trans (hbase x).symm)
   · intro s hs hcompact
-    letI : IsFiniteMeasureOnCompacts (quotientMeasure F ζ hζ hF U A) :=
+    letI  :=
       quotientMeasure_finiteOnCompacts F ζ hζ hF U A
     have hnm : Continuous (fun x => ‖R s x‖) :=
       smooth_section_norm_continuous F ζ hζ hF U A c l hc hl hbase s hs
@@ -545,6 +555,8 @@ theorem measurable_realization (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) :
     have hnp : MemLp (fun x => ‖R s x‖) 2 (quotientMeasure F ζ hζ hF U A) :=
       hnm.memLp_of_hasCompactSupport hncompact
     exact (memLp_norm_iff hrm.aestronglyMeasurable).mp hnp
+end
+
 
 end DedekindZetaZeroFree.CoreChartLocalizers
 

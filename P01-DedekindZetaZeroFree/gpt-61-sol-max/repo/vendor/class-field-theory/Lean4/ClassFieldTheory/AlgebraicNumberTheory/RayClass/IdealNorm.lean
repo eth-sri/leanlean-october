@@ -140,83 +140,83 @@ noncomputable def idealNormLiftedModulusExponent
   else
     0
 
-omit [FiniteDimensional K L] in
-theorem idealNormLiftedModulusExponent_pos
-    (m : Modulus K)
-    (W : HeightOneSpectrum (𝓞 L))
-    (hW :
-      _root_.finitePlaceBelow (K := K) W ∈ m.finitePart.support) :
-    0 < idealNormLiftedModulusExponent
-      (K := K) (L := L) m W := by
-  rw [idealNormLiftedModulusExponent, dite_eq_left hW]
-  exact Nat.zero_lt_succ _
 
-omit [FiniteDimensional K L] in
-/-- The chosen positive depth still has the required local norm
-property. -/
-theorem localHigherUnitGroup_idealNormLiftedModulusExponent_le
-    (m : Modulus K)
-    (W : HeightOneSpectrum (𝓞 L))
-    (hW :
-      _root_.finitePlaceBelow (K := K) W ∈ m.finitePart.support) :
-    let v := _root_.finitePlaceBelow (K := K) W
-    letI : Algebra (v.adicCompletion K) (W.adicCompletion L) :=
-      (_root_.finitePlaceAdicCompletionMap K L v ⟨W, rfl⟩).toAlgebra
-    localHigherUnitGroup W
-        (idealNormLiftedModulusExponent
-          (K := K) (L := L) m W) ≤
-      (localHigherUnitGroup v (m.finitePart v)).comap
-        (LocalFieldTheory.normUnits
-          (v.adicCompletion K) (W.adicCompletion L)) := by
-  classical
-  let v := _root_.finitePlaceBelow (K := K) W
-  let : Algebra (v.adicCompletion K) (W.adicCompletion L) :=
-    (_root_.finitePlaceAdicCompletionMap K L v ⟨W, rfl⟩).toAlgebra
-  rw [idealNormLiftedModulusExponent, dite_eq_left hW]
-  exact
-    (localHigherUnitGroup_antitone W (Nat.le_succ _)).trans
-      (Nat.find_spec
-        (exists_localHigherUnitGroup_le_norm_preimage
-          (K := K) (L := L) m W))
 
-omit [FiniteDimensional K L] in
-/-- At a prime above the support, the selected positive depth is at most the
-successor of every depth having the required local norm property. -/
-theorem idealNormLiftedModulusExponent_min
-    (m : Modulus K)
-    (W : HeightOneSpectrum (𝓞 L))
-    (hW :
-      _root_.finitePlaceBelow (K := K) W ∈ m.finitePart.support)
-    (r : ℕ)
-    (hr :
-      let v := _root_.finitePlaceBelow (K := K) W
-      letI : Algebra (v.adicCompletion K) (W.adicCompletion L) :=
-        (_root_.finitePlaceAdicCompletionMap K L v ⟨W, rfl⟩).toAlgebra
-      localHigherUnitGroup W r ≤
-        (localHigherUnitGroup v (m.finitePart v)).comap
-          (LocalFieldTheory.normUnits
-            (v.adicCompletion K) (W.adicCompletion L))) :
-    idealNormLiftedModulusExponent (K := K) (L := L) m W ≤ r + 1 := by
-  classical
-  let v := _root_.finitePlaceBelow (K := K) W
-  let : Algebra (v.adicCompletion K) (W.adicCompletion L) :=
-    (_root_.finitePlaceAdicCompletionMap K L v ⟨W, rfl⟩).toAlgebra
-  rw [idealNormLiftedModulusExponent, dite_eq_left hW]
-  exact Nat.add_le_add_right
-    (Nat.find_min'
-      (exists_localHigherUnitGroup_le_norm_preimage
-        (K := K) (L := L) m W) hr) 1
 
-omit [FiniteDimensional K L] in
-/-- Away from the pulled-back support, the lifted exponent is zero. -/
-@[simp]
-theorem idealNormLiftedModulusExponent_eq_zero_of_not_mem
-    (m : Modulus K)
-    (W : HeightOneSpectrum (𝓞 L))
-    (hW :
-      _root_.finitePlaceBelow (K := K) W ∉ m.finitePart.support) :
-    idealNormLiftedModulusExponent (K := K) (L := L) m W = 0 := by
-  rw [idealNormLiftedModulusExponent, dite_eq_right hW]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 omit [FiniteDimensional K L] in
 /-- The finite set of primes upstairs lying over the support of `m`. -/
@@ -300,7 +300,7 @@ theorem idealNormExponentMap_apply
         else
           0 := by
   classical
-  simp [idealNormExponentMap, Finsupp.single_apply, eq_comm]
+  simp +contextual [idealNormExponentMap, Finsupp.single_apply, eq_comm]
 
 omit [FiniteDimensional K L] in
 /-- The exponent pushforward can equivalently be written as the finite
@@ -413,48 +413,48 @@ theorem count_fractionalIdealNorm
       _
   rw [factorizationEquiv_symm_toAdd]
 
-omit [FiniteDimensional K L] in
-private theorem fractionalIdealNormPrimeBelow_eq_finitePlaceBelow
-    (W : HeightOneSpectrum (𝓞 L)) :
-    ClassFieldTheory.fractionalIdealNormPrimeBelow K L W =
-      _root_.finitePlaceBelow (K := K) W := by
-  ext
-  rfl
 
-private theorem idealNormExponentMap_eq_public :
-    idealNormExponentMap (K := K) (L := L) =
-      ClassFieldTheory.fractionalIdealNormExponentMap K L := by
-  unfold idealNormExponentMap ClassFieldTheory.fractionalIdealNormExponentMap
-  simp only [fractionalIdealNormPrimeBelow_eq_finitePlaceBelow]
 
-private theorem factorizationEquiv_eq_public
-    (F : Type) [Field F] [NumberField F] :
-    FractionalIdealGroup.factorizationEquiv (K := F) =
-      ClassFieldTheory.NumberFieldFractionalIdealGroup.factorizationEquiv
-        (K := F) := by
-  apply MulEquiv.ext
-  intro exps
-  apply FractionalIdealGroup.ext_count
-  intro v
-  change FractionalIdeal.count F v
-      ((FractionalIdealGroup.factorization exps : FractionalIdealGroup F) :
-        FractionalIdeal (nonZeroDivisors (𝓞 F)) F) =
-    FractionalIdeal.count F v
-      ((ClassFieldTheory.NumberFieldFractionalIdealGroup.factorization exps :
-        FractionalIdealGroup F) :
-        FractionalIdeal (nonZeroDivisors (𝓞 F)) F)
-  rw [FractionalIdealGroup.count_factorization,
-    ClassFieldTheory.NumberFieldFractionalIdealGroup.count_factorization]
 
-/-- The Mathlib-level public fractional-ideal norm agrees with the norm used
-by the idelic and ray-class constructions. -/
-theorem fractionalIdealNorm_eq_public :
-    fractionalIdealNorm (K := K) (L := L) =
-      ClassFieldTheory.fractionalIdealNorm K L := by
-  unfold fractionalIdealNorm ClassFieldTheory.fractionalIdealNorm
-  rw [factorizationEquiv_eq_public K,
-    factorizationEquiv_eq_public L,
-    idealNormExponentMap_eq_public]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The exponent of the fractional ideal attached to an idèle is its
 finite local order. -/
@@ -585,70 +585,70 @@ theorem primeToModulusIdealNorm_coe
           (I : FractionalIdealGroup L) :=
   rfl
 
-/-- The finite component of an idèle prime to the lifted modulus has
-norm satisfying the finite prime-to conditions of the base modulus. -/
-theorem finite_norm_mem_finitePrimeToModulusSubgroup
-    (m : Modulus K)
-    (a : idelePrimeToModulusSubgroup
-      (idealNormLiftedModulus (K := K) (L := L) m)) :
-    (IdeleGroup.norm K L (a : IdeleGroup L)).2 ∈
-      finitePrimeToModulusSubgroup m := by
-  classical
-  intro v hv
-  let vK := HeightOneSpectrum.adicAbv K v
-  let hvK : vK.IsNontrivial :=
-    adicAbv_isNontrivial v
-  let eAbove :=
-    finitePlaceExtensionEquivAbove
-      (K := K) (L := L) v
-  let :=
-    AlgebraicNumberTheory.Valuations.completionTensorDecomposition_extensionFintype
-      (K := K) (L := L) vK hvK
-  let : Fintype {W : HeightOneSpectrum (𝓞 L) //
-      _root_.finitePlaceBelow (K := K) W = v} :=
-    Fintype.ofEquiv
-      (AlgebraicNumberTheory.Valuations.AbsoluteValueExtension vK L) eAbove
-  let : ∀ W : {W : HeightOneSpectrum (𝓞 L) //
-      _root_.finitePlaceBelow (K := K) W = v},
-      Algebra (v.adicCompletion K) (W.1.adicCompletion L) :=
-    fun W =>
-      (_root_.finitePlaceAdicCompletionMap K L v W).toAlgebra
-  change IdeleGroup.finiteComponent v
-      (IdeleGroup.norm K L (a : IdeleGroup L)) ∈
-        localHigherUnitGroup v (m.finitePart v)
-  rw [IdeleGroup.finiteComponent_norm_eq_prod]
-  apply Subgroup.prod_mem
-  rintro ⟨W, rfl⟩ _
-  have hnorm :=
-    localHigherUnitGroup_idealNormLiftedModulusExponent_le
-      (K := K) (L := L) m W hv
-  have hmem := hnorm
-    (a.property.2 W
-      ((mem_idealNormLiftedModulus_support_iff
-        (K := K) (L := L) m W).2 hv))
-  let : Algebra
-      ((_root_.finitePlaceBelow (K := K) W).adicCompletion K)
-      (W.adicCompletion L) :=
-    (_root_.finitePlaceAdicCompletionMap K L
-      (_root_.finitePlaceBelow (K := K) W) ⟨W, rfl⟩).toAlgebra
-  change
-    LocalFieldTheory.normUnits
-      ((_root_.finitePlaceBelow (K := K) W).adicCompletion K)
-      (W.adicCompletion L)
-      (IdeleGroup.finiteComponent W (a : IdeleGroup L)) ∈
-        localHigherUnitGroup
-          (_root_.finitePlaceBelow (K := K) W)
-          (m.finitePart (_root_.finitePlaceBelow (K := K) W)) at hmem
-  exact hmem
 
-/-- The genuine norm-defined subgroup
-`N_{L/K} J_L^m P_K^m` of ideals prime to `m`. -/
-noncomputable def idealNormSubgroup
-    (m : Modulus K) :
-    Subgroup (primeToModulusIdeals m) :=
-  (primeToModulusIdealNorm
-    (K := K) (L := L) m).range ⊔
-      principalRayIdealSubgroup m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end RayClass
 

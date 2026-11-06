@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.CuspEnergy.GradientDensityInvariance
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.CuspEnergy.LaplacianPairingInvariance
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.CuspEnergy.WeightedGreenDensity
 
 @[expose] public section
+
 
 section
 
@@ -15,15 +18,14 @@ open scoped Classical ENNReal
 namespace DedekindZetaZeroFree.KPCompactGreenRadialIntegrability
 open KPMeanZeroWeightedEnergy HyperbolicChart
 
-private theorem arch_real (d : ℕ) (z : KPArch.Space d) : arch d (real d z) = z := by
-  ext i <;> simp [arch, real]
+private theorem arch_real (d : ℕ) (z : KPArch.Space d) : arch d (real d z) = z := rfl
 
 private theorem smooth_arch (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (arch d) := by
   apply contDiff_pi.mpr
   intro i
   apply ContDiff.prodMk
   · exact Complex.equivRealProdCLM.symm.contDiff.comp
-      ((EuclideanSpace.proj (𝕜 := ℝ) (i, (0 : Fin 3))).contDiff.prodMk
+      ((EuclideanSpace.proj (𝕜 := ℝ) (i, (0))).contDiff.prodMk
        (EuclideanSpace.proj (𝕜 := ℝ) (i, (1 : Fin 3))).contDiff)
   · exact (EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff
 
@@ -32,9 +34,9 @@ private theorem smooth_real (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (real d) := 
   intro j
   rcases j with ⟨i, k⟩
   fin_cases k
-  · simpa [real, Function.comp_def] using Complex.reCLM.contDiff.comp (contDiff_fst.comp (contDiff_apply ℝ KPArch.H3 i))
-  · simpa [real, Function.comp_def] using Complex.imCLM.contDiff.comp (contDiff_fst.comp (contDiff_apply ℝ KPArch.H3 i))
-  · simpa [real, Function.comp_def] using contDiff_snd.comp (contDiff_apply ℝ KPArch.H3 i)
+  · exact Complex.reCLM.contDiff.comp (contDiff_fst.comp (contDiff_apply ℝ KPArch.H3 i))
+  · exact Complex.imCLM.contDiff.comp (contDiff_fst.comp (contDiff_apply ℝ KPArch.H3 i))
+  · exact contDiff_snd.comp (contDiff_apply ℝ KPArch.H3 i)
 
 private theorem smooth_mean (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (KPCuspLogShape.meanHeight d) := by
   unfold KPCuspLogShape.meanHeight
@@ -43,21 +45,24 @@ private theorem smooth_mean (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (KPCuspLogSh
   intro i hi
   exact contDiff_snd.comp (contDiff_apply ℝ KPArch.H3 i)
 
-private theorem derivative_smoothAt (d : ℕ) (g : Space d → ℂ) (x : Space d)
-    (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x) (i : Fin d) (k : Fin 3) :
-    ContDiffAt ℝ (⊤ : ℕ∞) (coordinateDerivative d i k g) x := by
-  exact (hg.fderiv_right (by simp)).clm_apply contDiffAt_const
+section
+variable (d : ℕ) (g : Space d → ℂ) (x : Space d)
+    (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x) (i : Fin d) (k : Fin 3)
+include d g x hg i k
+private theorem derivative_smoothAt   :
+    ContDiffAt ℝ (⊤ : ℕ∞) (coordinateDerivative d i k g) x := (hg.fderiv_right (by simp)).clm_apply contDiffAt_const
 
-private theorem differential_smoothAt (d : ℕ) (g : Space d → ℂ) (x : Space d)
-    (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x) (i : Fin d) (k : Fin 3) :
+private theorem differential_smoothAt   :
     ContDiffAt ℝ (⊤ : ℕ∞) (fun q => differential d g q i k) x := by
   have he : ContDiffAt ℝ (⊤ : ℕ∞) (fun q : Space d => (Real.exp (q (i,2)) : ℂ)) x :=
     Complex.ofRealCLM.contDiff.contDiffAt.comp x
       ((EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff.contDiffAt.exp)
   fin_cases k
-  · simpa [differential] using derivative_smoothAt d g x hg i 2
-  · simpa [differential] using he.mul (derivative_smoothAt d g x hg i 0)
-  · simpa [differential] using he.mul (derivative_smoothAt d g x hg i 1)
+  · apply derivative_smoothAt <;> assumption
+  · exact he.mul (derivative_smoothAt d g x hg i 0)
+  · exact he.mul (derivative_smoothAt d g x hg i 1)
+end
+
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
     {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
@@ -86,13 +91,11 @@ private theorem chart_height (G : KPCuspCharts.ChartOutput F hF S D)
         (real (KPCuspLogShape.dimension F) (KPCuspCharts.toArch F p))) = p.2 := by
   rw [arch_real, KPCuspCharts.toArch_meanHeight F G.positive_dimension]
 
-private theorem cutoff_smoothAt (v : Representative ζ hζ S ρ V T)
+private def cutoff_smoothAt (v : Representative ζ hζ S ρ V T)
     (η : ℝ → ℝ) (hη : ContDiff ℝ (⊤ : ℕ∞) η)
     (x : Space (KPCuspLogShape.dimension F))
     (hx : T < KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F)
-      (arch (KPCuspLogShape.dimension F) x)) :
-    ContDiffAt ℝ (⊤ : ℕ∞) (rawCutoffUpstairs v η) x := by
-  exact (Complex.ofRealCLM.contDiff.contDiffAt.comp x
+      (arch (KPCuspLogShape.dimension F) x))  := (Complex.ofRealCLM.contDiff.contDiffAt.comp x
     (hη.contDiffAt.comp x ((smooth_mean _).comp (smooth_arch _)).contDiffAt)).mul
       (representative_smoothAt v x hx)
 
@@ -116,8 +119,11 @@ private theorem differential_zero_of_eventually_zero (d : ℕ)
   funext i k
   fin_cases k <;> simp [differential, coordinateDerivative, hh]
 
-private theorem cutoffGradientSq_continuousOn (G : KPCuspCharts.ChartOutput F hF S D)
+section
+variable (G : KPCuspCharts.ChartOutput F hF S D)
     (v : Representative ζ hζ S ρ V T) (η : ℝ → ℝ)
+include G v η
+private theorem cutoffGradientSq_continuousOn  
     (hη : ContDiff ℝ (⊤ : ℕ∞) η) :
     ContinuousOn (rawCutoffGradientSq v η) {p | T < p.2} := by
   apply continuousOn_of_forall_continuousAt
@@ -131,8 +137,7 @@ private theorem cutoffGradientSq_continuousOn (G : KPCuspCharts.ChartOutput F hF
     (f := fun p : KPCuspCharts.Coordinates F =>
       real _ (KPCuspCharts.toArch F p)) chart_smooth.continuous.continuousAt).norm.pow 2)
 
-private theorem cutoffGradientSq_support (G : KPCuspCharts.ChartOutput F hF S D)
-    (v : Representative ζ hζ S ρ V T) (η : ℝ → ℝ) :
+private theorem cutoffGradientSq_support   :
     Function.support (rawCutoffGradientSq v η) ⊆ {p | p.2 ∈ tsupport η} := by
   intro p hp
   by_contra hn
@@ -142,6 +147,8 @@ private theorem cutoffGradientSq_support (G : KPCuspCharts.ChartOutput F hF S D)
     rwa [chart_height G p]
   have hz := differential_zero_of_eventually_zero _ _ _ (cutoff_eventually_zero v η _ hx)
   exact hp (by simp [rawCutoffGradientSq, hz])
+end
+
 
 namespace CutoffAffine
 
@@ -158,28 +165,38 @@ namespace CutoffAffine
       intro r x
       ext ⟨i,k⟩
       fin_cases k <;> simp <;> ring }
- def translation (d : ℕ) (a b : Fin d → ℂ) : Space d :=
+ section
+variable (d : ℕ) (a b : Fin d → ℂ)
+include d a b
+def translation   : Space d :=
   WithLp.toLp 2 (fun j => ![(b j.1).re, (b j.1).im, Real.log ‖a j.1‖] j.2)
- def affine (d : ℕ) (a b : Fin d → ℂ) (x : Space d) : Space d :=
+ def affine   (x : Space d)  :=
   linear d a x + translation d a b
-private theorem affine_deriv (d : ℕ) (a b : Fin d → ℂ) (x : Space d) :
+private theorem affine_deriv   (x : Space d) :
     HasFDerivAt (affine d a b) (linear d a) x := by
   change HasFDerivAt (fun x => linear d a x + translation d a b) (linear d a) x
   exact (linear d a).hasFDerivAt.add_const (translation d a b)
-private theorem linear_basis (d : ℕ) (a : Fin d → ℂ) (i : Fin d) :
+end
+
+section
+variable (d : ℕ) (a : Fin d → ℂ) (i : Fin d)
+include d a i
+private theorem linear_basis   :
     linear d a (coordinateVector d i 0) =
       (a i).re • coordinateVector d i 0 + (a i).im • coordinateVector d i 1 := by
   ext ⟨j,k⟩
   fin_cases k <;> simp [linear, coordinateVector] <;> split_ifs <;> simp_all
-private theorem linear_basis1 (d : ℕ) (a : Fin d → ℂ) (i : Fin d) :
+private theorem linear_basis1   :
     linear d a (coordinateVector d i 1) =
       -(a i).im • coordinateVector d i 0 + (a i).re • coordinateVector d i 1 := by
   ext ⟨j,k⟩
   fin_cases k <;> simp [linear, coordinateVector] <;> split_ifs <;> simp_all
-private theorem linear_basis2 (d : ℕ) (a : Fin d → ℂ) (i : Fin d) :
+private theorem linear_basis2   :
     linear d a (coordinateVector d i 2) = coordinateVector d i 2 := by
   ext ⟨j,k⟩
   fin_cases k <;> simp [linear, coordinateVector]
+end
+
 private theorem norm_rotation (r s : ℝ) (u w : ℂ) :
     ‖(r : ℂ) * u + (s : ℂ) * w‖ ^ 2 +
       ‖-(s : ℂ) * u + (r : ℂ) * w‖ ^ 2 =
@@ -251,7 +268,7 @@ private theorem action_affine (G : KPCuspCharts.ChartOutput F hF S D) (g : S)
     (A : Matrix.GeneralLinearGroup (Fin 2) F)
     (hA : Matrix.ProjGenLinGroup.mk A = (g : KPCuspArithmetic.PGL2 F)) (hc : A 1 0 = 0)
     (x : Space (KPCuspLogShape.dimension F)) :
-    KPCuspSiegel.action F (g : KPCuspArithmetic.PGL2 F) (arch _ x) =
+    KPCuspSiegel.action F g (arch _ x) =
       arch _ (affine _ (KPCuspCharts.embedding F (D.ratio g : Fˣ))
         (KPCuspCharts.embedding F (A 0 1 / A 1 1)) x) := by
   obtain ⟨p,hp⟩ := (KPCuspCharts.toArchHomeomorph F G.positive_dimension).surjective (arch _ x)
@@ -299,7 +316,7 @@ theorem cutoffGradientSq_geometry
     have he := CutoffAffine.action_affine G s A hA hc x
     have harch : arch d x = KPCuspCharts.toArch F q.val := arch_real _ _
     rw [harch] at he
-    change KPCuspSiegel.action F (s : KPCuspArithmetic.PGL2 F)
+    change KPCuspSiegel.action F s
       (KPCuspCharts.toArch F q.val) = KPCuspCharts.toArch F p.val at hs
     have h := congrArg (real d) (he.symm.trans hs)
     change real d (arch d (CutoffAffine.affine d a b x)) = _ at h
@@ -357,42 +374,50 @@ variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ
     {S : Subgroup (KPCuspArithmetic.PGL2 F)} {D : KPCuspCharts.ParabolicData F S}
     {ρ : S →* rootsOfUnity 3 F} {V : Submodule ℂ ℂ} {T : ℝ}
 
-def cutoffUpstairs (v : Representative ζ hζ S ρ V T) (η : ℝ → ℝ)
-    (x : HyperbolicChart.Space (KPCuspLogShape.dimension F)) : ℂ :=
+section
+variable (v : Representative ζ hζ S ρ V T) (η : ℝ → ℝ)
+include v η
+def cutoffUpstairs  
+    (x : HyperbolicChart.Space (KPCuspLogShape.dimension F))  :=
   (η (KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F)
     (arch (KPCuspLogShape.dimension F) x)) : ℂ) *
       v.val (arch (KPCuspLogShape.dimension F) x)
 
-def cutoffGradientSq (v : Representative ζ hζ S ρ V T) (η : ℝ → ℝ)
-    (p : KPCuspCharts.Coordinates F) : ℝ :=
+def cutoffGradientSq  
+    (p : KPCuspCharts.Coordinates F)  :=
   let w := HyperbolicChart.differential (KPCuspLogShape.dimension F)
     (cutoffUpstairs v η)
     (real (KPCuspLogShape.dimension F) (KPCuspCharts.toArch F p))
   ∑ i, ∑ k, ‖w i k‖ ^ 2
 
-def weightedGreenDensity (v : Representative ζ hζ S ρ V T) (η : ℝ → ℝ)
-    (p : KPCuspCharts.Coordinates F) : ℝ :=
+def weightedGreenDensity  
+    (p : KPCuspCharts.Coordinates F)  :=
   let x := real (KPCuspLogShape.dimension F) (KPCuspCharts.toArch F p)
   (HyperbolicChart.pairing (KPCuspLogShape.dimension F)
     (HyperbolicChart.differential (KPCuspLogShape.dimension F)
       (cutoffUpstairs v (fun t => η t ^ 2)) x)
     (HyperbolicChart.differential (KPCuspLogShape.dimension F)
       (v.val ∘ arch (KPCuspLogShape.dimension F)) x)).re
+end
+
 
 theorem radialMeasure_locallyFinite (d : ℕ) : IsLocallyFiniteMeasure (KPCuspCharts.radialMeasure d) := by
   apply IsLocallyFiniteMeasure.withDensity_ofReal
   fun_prop
 
-theorem fundamentalDomain_finiteMeasure (G : KPCuspCharts.ChartOutput F hF S D) :
+section
+variable (G : KPCuspCharts.ChartOutput F hF S D)
+include G
+theorem fundamentalDomain_finiteMeasure   :
     IsFiniteMeasure ((volume.prod G.shapeMeasure).restrict G.fundamentalDomain) := by
   letI := G.finite_sectionMeasure
   constructor
   have h := measure_lt_top G.sectionMeasure Set.univ
   rw [G.sectionMeasure_formula,
     Measure.map_apply measurable_quotient_mk'' MeasurableSet.univ] at h
-  simpa using h
+  exact h
 
-theorem compact_radial_slab_finiteMeasure (G : KPCuspCharts.ChartOutput F hF S D)
+theorem compact_radial_slab_finiteMeasure  
     {K : Set ℝ} (hK : IsCompact K) :
     IsFiniteMeasure ((chartMeasure G).restrict {p | p.2 ∈ K}) := by
   letI := G.haar_shapeMeasure
@@ -413,7 +438,7 @@ theorem compact_radial_slab_finiteMeasure (G : KPCuspCharts.ChartOutput F hF S D
   rw [hm]
   infer_instance
 
-theorem integrable_of_radial_bound (G : KPCuspCharts.ChartOutput F hF S D)
+theorem integrable_of_radial_bound  
     {E : Type*} [NormedAddCommGroup E]
     {K : Set ℝ} (hK : IsCompact K) {f : KPCuspCharts.Coordinates F → E}
     (hf : AEStronglyMeasurable f (chartMeasure G))
@@ -427,7 +452,7 @@ theorem integrable_of_radial_bound (G : KPCuspCharts.ChartOutput F hF S D)
   exact hbound p hp
 
 theorem integrable_of_high_orbit_invariant
-    (G : KPCuspCharts.ChartOutput F hF S D)
+     
     {E : Type*} [NormedAddCommGroup E]
     {T : ℝ} {K : Set ℝ} (hK : IsCompact K) (hKT : K ⊆ Set.Ioi T)
     {f : KPCuspCharts.Coordinates F → E}
@@ -455,6 +480,8 @@ theorem integrable_of_high_orbit_invariant
   intro p hp
   have hx := hC (Quotient.mk _ p.1, ⟨p.2, hp⟩) (Set.mem_univ _)
   simpa [g, j, G.highPresentation_formula, d] using hx
+end
+
 
 theorem continuous_of_high_radial_support
     {E : Type*} [NormedAddCommGroup E]
@@ -477,16 +504,14 @@ theorem continuous_of_high_radial_support
       exact hq (hsupport hh)
     exact hzero
 
-theorem integrable_of_continuous_high_orbit_invariant
+def integrable_of_continuous_high_orbit_invariant
     (G : KPCuspCharts.ChartOutput F hF S D)
     {T : ℝ} {K : Set ℝ} (hK : IsCompact K) (hKT : K ⊆ Set.Ioi T)
     {f : KPCuspCharts.Coordinates F → ℝ}
     (hcont : ContinuousOn f {p | T < p.2})
     (hsupport : Function.support f ⊆ {p | p.2 ∈ K})
     (hinv : ∀ p q : {p : KPCuspCharts.Coordinates F // T < p.2},
-      KPCuspCharts.highRelation F S T p q → f p.val = f q.val) :
-    Integrable f (chartMeasure G) := by
-  apply integrable_of_high_orbit_invariant G hK hKT
+      KPCuspCharts.highRelation F S T p q → f p.val = f q.val)  := integrable_of_high_orbit_invariant G hK hKT
     (continuous_of_high_radial_support hK.isClosed hKT hcont hsupport).aestronglyMeasurable
     hcont hsupport hinv
 
@@ -518,8 +543,11 @@ theorem highRelation_radial_eq (G : KPCuspCharts.ChartOutput F hF S D)
     exact Quotient.sound hrel
   exact congrArg (fun x => (x.2 : ℝ)) ((G.highPresentation T).injective h)
 
-theorem scalar_norm_high_orbit_invariant (G : KPCuspCharts.ChartOutput F hF S D)
+section
+variable (G : KPCuspCharts.ChartOutput F hF S D)
     (v : Representative ζ hζ S ρ V T)
+include G v
+theorem scalar_norm_high_orbit_invariant  
     {p q : {p : KPCuspCharts.Coordinates F // T < p.2}}
     (hrel : KPCuspCharts.highRelation F S T p q) : ‖v.scalar p.val‖ = ‖v.scalar q.val‖ := by
   change MulAction.orbitRel S (KPArch.Space _) (KPCuspCharts.toArch F p.val)
@@ -534,8 +562,7 @@ theorem scalar_norm_high_orbit_invariant (G : KPCuspCharts.ChartOutput F hF S D)
   simpa only [Representative.scalar, norm_mul, character_norm, one_mul] using congrArg norm heq
 
 theorem compact_scalar_density_integrable
-    (G : KPCuspCharts.ChartOutput F hF S D)
-    (v : Representative ζ hζ S ρ V T)
+     
     {K : Set ℝ} (hK : IsCompact K) (hKT : K ⊆ Set.Ioi T)
     (a : ℝ → ℝ) (ha : Continuous a) (hs : Function.support a ⊆ K) :
     Integrable (fun p => a p.2 * ‖v.scalar p‖ ^ 2) (chartMeasure G) := by
@@ -544,13 +571,12 @@ theorem compact_scalar_density_integrable
   · intro p hp
     apply hs
     intro hzero
-    exact hp (by simp [hzero])
+    apply hp <;> aesop
   · intro p q hrel
     rw [highRelation_radial_eq G hrel, scalar_norm_high_orbit_invariant G v hrel]
 
 theorem compact_radial_scalar_densities_integrable
-    (G : KPCuspCharts.ChartOutput F hF S D)
-    (v : Representative ζ hζ S ρ V T) (η : ℝ → ℝ)
+      (η : ℝ → ℝ)
     (hη : CompactRadialTest T η) :
     Integrable (fun p => deriv η p.2 ^ 2 * ‖v.scalar p‖ ^ 2) (chartMeasure G) ∧
     Integrable (fun p => Real.exp (2 * p.2) * η p.2 ^ 2 * ‖v.scalar p‖ ^ 2)
@@ -561,14 +587,16 @@ theorem compact_radial_scalar_densities_integrable
     intro t ht
     apply support_deriv_subset
     intro hz
-    exact ht (by simp [hz])
+    apply ht <;> aesop
   · apply compact_scalar_density_integrable G v hη.2.1 hη.2.2
       (fun t => Real.exp (2 * t) * η t ^ 2)
       ((Real.continuous_exp.comp (continuous_const.mul continuous_id)).mul (hη.1.continuous.pow 2))
     intro t ht
     apply subset_tsupport η
     intro hz
-    exact ht (by simp [hz])
+    apply ht <;> aesop
+end
+
 namespace DensityContinuity
 open HyperbolicChart
 

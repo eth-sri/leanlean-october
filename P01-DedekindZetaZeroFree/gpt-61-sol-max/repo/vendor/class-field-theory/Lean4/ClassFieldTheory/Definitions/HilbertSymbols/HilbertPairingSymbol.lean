@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.Definitions.HilbertSymbols.HilbertPairing
 public import ClassFieldTheory.Definitions.HilbertSymbols.PowerClass
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -27,8 +30,7 @@ universe u
 /-- Evaluate a power-class pairing on representatives in `Kˣ`. -/
 def symbol
     {K : Type u} [Field K] {n : ℕ+}
-    (B : HilbertPairing K n) (a b : Kˣ) :
-    rootsOfUnity (n : ℕ) K :=
+    (B : HilbertPairing K n) (a b : Kˣ)  :=
   B (powerClass K n a) (powerClass K n b)
 
 end ClassFieldTheory.HilbertPairing

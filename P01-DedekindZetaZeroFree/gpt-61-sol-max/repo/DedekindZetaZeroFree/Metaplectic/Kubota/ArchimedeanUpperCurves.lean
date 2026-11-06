@@ -27,12 +27,15 @@ def upperCurve (w : InfinitePlace F) (imaginary : Bool) (t : ℝ) : Group R :=
       ((InfinitePlace.Completion.ringEquivComplexOfIsComplex (R.A.complex_place w)).symm (t : ℂ) *
         upperLieDirection R w imaginary))
 
-theorem upperCoordinates_zero (w : InfinitePlace F) (b : Bool) :
+section
+variable (w : InfinitePlace F) (b : Bool)
+include w b
+theorem upperCoordinates_zero   :
     upperCoordinates w b 0 = archBase F := by
   funext v i
   fin_cases i <;> simp [upperCoordinates, archBase]
 
-theorem upperCoordinates_smooth (w : InfinitePlace F) (b : Bool) :
+theorem upperCoordinates_smooth   :
     ContDiff ℝ (⊤ : ℕ∞) (upperCoordinates w b) := by
   apply contDiff_pi.mpr; intro v
   apply contDiff_pi.mpr; intro i
@@ -45,7 +48,7 @@ theorem upperCoordinates_smooth (w : InfinitePlace F) (b : Bool) :
   · exact contDiff_const
   · exact contDiff_const
 
-theorem upperCoordinates_chart (w : InfinitePlace F) (b : Bool) (t : ℝ) :
+theorem upperCoordinates_chart   (t : ℝ) :
     archChart F R.A.zeta12 R.A.primitive_zeta12 (upperCoordinates w b t) = upperCurve R w b t := by
   unfold archChart upperCurve KPRationalAdelicSplitting.pglN
     KPRationalAdelicSplitting.N
@@ -76,11 +79,11 @@ theorem upperCoordinates_chart (w : InfinitePlace F) (b : Bool) (t : ℝ) :
       cases b <;> simp [upperCoordinates, upperLieDirection, direction, map_mul]
     · simp [upperCoordinates, hv, upperLieDirection]
 
-theorem upperCurve_zero (w : InfinitePlace F) (b : Bool) : upperCurve R w b 0 = 1 := by
+theorem upperCurve_zero   : upperCurve R w b 0 = 1 := by
   rw [← upperCoordinates_chart, upperCoordinates_zero,
     KPInterface.ResidueConstruction.Raw.archChart_base]
 
-theorem upperCurve_hasDeriv (w : InfinitePlace F) (b : Bool) (f : Functions R)
+theorem upperCurve_hasDeriv   (f : Functions R)
     (hf : KPLiteralRaw.Smooth F R.A.zeta12 R.A.primitive_zeta12 f) (g : Group R) :
     HasDerivAt (fun t => f (g * upperCurve R w b t)) (upperLieDerivative R w b f g) 0 := by
   have hbase : archBase F ∈ archDomain F := by intro v; simp [archBase]
@@ -92,7 +95,7 @@ theorem upperCurve_hasDeriv (w : InfinitePlace F) (b : Bool) (f : Functions R)
     exact ((upperCoordinates_zero w b).symm ▸ hc |>.comp 0 ht.contDiffAt).differentiableAt (by simp)
   exact hd.hasDerivAt
 
-theorem upperCurve_add (w : InfinitePlace F) (b : Bool) (s t : ℝ) :
+theorem upperCurve_add   (s t : ℝ) :
     upperCurve R w b (s + t) = upperCurve R w b s * upperCurve R w b t := by
   have ha : KPRationalAdelicSplitting.localAdele F (Sum.inl w)
       ((InfinitePlace.Completion.ringEquivComplexOfIsComplex (R.A.complex_place w)).symm ((s + t : ℝ) : ℂ) *
@@ -111,7 +114,7 @@ theorem upperCurve_add (w : InfinitePlace F) (b : Bool) (s t : ℝ) :
   unfold upperCurve KPRationalAdelicSplitting.pglN
   rw [ha, KPRationalAdelicSplitting.N_add, map_mul]
 
-theorem upperCurve_hasDerivAt (w : InfinitePlace F) (b : Bool) (f : Functions R)
+theorem upperCurve_hasDerivAt   (f : Functions R)
     (hf : KPLiteralRaw.Smooth F R.A.zeta12 R.A.primitive_zeta12 f) (g : Group R) (t : ℝ) :
     HasDerivAt (fun s => f (g * upperCurve R w b s))
       (upperLieDerivative R w b f (g * upperCurve R w b t)) t := by
@@ -126,6 +129,8 @@ theorem upperCurve_hasDerivAt (w : InfinitePlace F) (b : Bool) (f : Functions R)
     congr 2
     ring
   · simp
+end
+
 
 end DedekindZetaZeroFree.RootDerivatives
 

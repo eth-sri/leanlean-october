@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AlgebraicNumberTheory.RayClass.Basic
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -104,11 +107,11 @@ instance : LE (Modulus K) where
   le m n :=
     m.finitePart ≤ n.finitePart ∧ m.infinitePart ⊆ n.infinitePart
 
-@[simp]
-theorem le_iff {m n : Modulus K} :
-    m ≤ n ↔
-      m.finitePart ≤ n.finitePart ∧ m.infinitePart ⊆ n.infinitePart :=
-  Iff.rfl
+
+
+
+
+
 
 instance : PartialOrder (Modulus K) where
   le_refl m := ⟨le_rfl, fun _ hx => hx⟩
@@ -151,63 +154,81 @@ instance : Bot (Modulus K) where
 instance : OrderBot (Modulus K) where
   bot_le _ := ⟨bot_le, Finset.empty_subset _⟩
 
+section
+variable (m : Modulus K) (f : FiniteModulus K)
+include m f
 /-- Replace the finite part of a full modulus while retaining exactly its
 selected real places. -/
 def replaceFinitePart
-    (m : Modulus K) (f : FiniteModulus K) : Modulus K where
+      : Modulus K where
   finitePart := f
   infinitePart := m.infinitePart
 
 @[simp]
 theorem finitePart_replaceFinitePart
-    (m : Modulus K) (f : FiniteModulus K) :
+      :
     (m.replaceFinitePart f).finitePart = f :=
   rfl
 
 @[simp]
 theorem infinitePart_replaceFinitePart
-    (m : Modulus K) (f : FiniteModulus K) :
+      :
     (m.replaceFinitePart f).infinitePart = m.infinitePart :=
   rfl
+end
 
+
+section
+variable (m : Modulus K) (v : RealPlace K)
+include m v
 /-- Remove the positivity condition at one real place. -/
 noncomputable def eraseRealPlace
-    (m : Modulus K) (v : RealPlace K) : Modulus K where
+      : Modulus K where
   finitePart := m.finitePart
   infinitePart := m.infinitePart.erase v
 
 @[simp]
 theorem finitePart_eraseRealPlace
-    (m : Modulus K) (v : RealPlace K) :
+      :
     (m.eraseRealPlace v).finitePart = m.finitePart :=
   rfl
 
 @[simp]
 theorem infinitePart_eraseRealPlace
-    (m : Modulus K) (v : RealPlace K) :
+      :
     (m.eraseRealPlace v).infinitePart = m.infinitePart.erase v :=
   rfl
+end
 
+
+section
+variable (m : Modulus K) (s : Finset (RealPlace K))
+include m s
 /-- Remove the positivity conditions at a finite set of real places. -/
 noncomputable def eraseRealPlaces
-    (m : Modulus K) (s : Finset (RealPlace K)) : Modulus K where
+      : Modulus K where
   finitePart := m.finitePart
   infinitePart := m.infinitePart \ s
 
 @[simp]
 theorem finitePart_eraseRealPlaces
-    (m : Modulus K) (s : Finset (RealPlace K)) :
+      :
     (m.eraseRealPlaces s).finitePart = m.finitePart :=
   rfl
 
 @[simp]
 theorem infinitePart_eraseRealPlaces
-    (m : Modulus K) (s : Finset (RealPlace K)) :
+      :
     (m.eraseRealPlaces s).infinitePart = m.infinitePart \ s :=
   rfl
+end
 
+
+section
+variable (m : Modulus K)
+include m
 @[simp]
-theorem eraseRealPlaces_empty (m : Modulus K) :
+theorem eraseRealPlaces_empty   :
     m.eraseRealPlaces ∅ = m := by
   apply ext
   · rfl
@@ -215,7 +236,7 @@ theorem eraseRealPlaces_empty (m : Modulus K) :
 
 @[simp]
 theorem eraseRealPlaces_insert
-    (m : Modulus K) (s : Finset (RealPlace K)) (v : RealPlace K) :
+      (s : Finset (RealPlace K)) (v : RealPlace K) :
     m.eraseRealPlaces (insert v s) =
       (m.eraseRealPlaces s).eraseRealPlace v := by
   apply ext
@@ -225,7 +246,7 @@ theorem eraseRealPlaces_insert
 /-- The local infinite congruence condition at an infinite place.  It is the
 positive subgroup exactly at a real place selected by the modulus, and the
 whole local group otherwise. -/
-noncomputable def localInfiniteCongruenceSubgroup (m : Modulus K)
+noncomputable def localInfiniteCongruenceSubgroup  
     (w : InfinitePlace K) : Subgroup w.Completionˣ := by
   classical
   exact if hw : w.IsReal then
@@ -236,39 +257,38 @@ noncomputable def localInfiniteCongruenceSubgroup (m : Modulus K)
 
 @[simp]
 theorem localInfiniteCongruenceSubgroup_replaceFinitePart
-    (m : Modulus K) (f : FiniteModulus K) (w : InfinitePlace K) :
+      (f : FiniteModulus K) (w : InfinitePlace K) :
     (m.replaceFinitePart f).localInfiniteCongruenceSubgroup w =
-      m.localInfiniteCongruenceSubgroup w := by
-  rfl
+      m.localInfiniteCongruenceSubgroup w := rfl
 
 @[simp]
 theorem localInfiniteCongruenceSubgroup_of_mem
-    (m : Modulus K) (v : RealPlace K) (hv : v ∈ m.infinitePart) :
+      (v : RealPlace K) (hv : v ∈ m.infinitePart) :
     m.localInfiniteCongruenceSubgroup v.1 = infinitePositiveSubgroup v.1 := by
   simp [localInfiniteCongruenceSubgroup, v.property, hv]
 
-@[simp]
-theorem localInfiniteCongruenceSubgroup_of_not_mem
-    (m : Modulus K) (v : RealPlace K) (hv : v ∉ m.infinitePart) :
-    m.localInfiniteCongruenceSubgroup v.1 = ⊤ := by
-  simp [localInfiniteCongruenceSubgroup, v.property, hv]
+
+
+
+
+
 
 @[simp]
 theorem localInfiniteCongruenceSubgroup_of_not_isReal
-    (m : Modulus K) (w : InfinitePlace K) (hw : ¬ w.IsReal) :
+      (w : InfinitePlace K) (hw : ¬ w.IsReal) :
     m.localInfiniteCongruenceSubgroup w = ⊤ := by
   simp [localInfiniteCongruenceSubgroup, hw]
 
 /-- The subgroup of infinite idèles positive at the real places selected by
 the modulus. -/
-def infiniteCongruenceSubgroup (m : Modulus K) :
+def infiniteCongruenceSubgroup   :
     Subgroup (InfiniteIdeleGroup K) :=
   Subgroup.comap ContinuousMulEquiv.piUnits.toMonoidHom
     (Subgroup.pi Set.univ (fun w => m.localInfiniteCongruenceSubgroup w))
 
 @[simp]
 theorem mem_infiniteCongruenceSubgroup_iff_local
-    (m : Modulus K) (a : InfiniteIdeleGroup K) :
+      (a : InfiniteIdeleGroup K) :
     a ∈ m.infiniteCongruenceSubgroup ↔
       ∀ w, ContinuousMulEquiv.piUnits a w ∈ m.localInfiniteCongruenceSubgroup w := by
   change ContinuousMulEquiv.piUnits a ∈
@@ -278,7 +298,7 @@ theorem mem_infiniteCongruenceSubgroup_iff_local
 
 @[simp]
 theorem mem_infiniteCongruenceSubgroup_iff
-    (m : Modulus K) (a : InfiniteIdeleGroup K) :
+      (a : InfiniteIdeleGroup K) :
     a ∈ m.infiniteCongruenceSubgroup ↔
       ∀ v : RealPlace K, v ∈ m.infinitePart →
         ContinuousMulEquiv.piUnits a v.1 ∈ infinitePositiveSubgroup v.1 :=
@@ -296,6 +316,8 @@ theorem mem_infiniteCongruenceSubgroup_iff
             ha ⟨w, hw⟩ hmem
         · simp [localInfiniteCongruenceSubgroup, hw, hmem]
       · simp [localInfiniteCongruenceSubgroup, hw]
+end
+
 
 /-- Selecting every real place recovers the narrow infinite congruence
 subgroup. -/
@@ -313,7 +335,7 @@ theorem infiniteCongruenceSubgroup_narrowOfFinite (f : FiniteModulus K) :
     · rw [mem_infinitePositiveSubgroup_iff]
       exact fun hreal => (hw hreal).elim
   · intro ha v
-    exact ha v.1
+    apply ha
 
 /-- The idèle congruence subgroup attached to a full ray modulus. -/
 def ideleCongruenceSubgroup (m : Modulus K) :

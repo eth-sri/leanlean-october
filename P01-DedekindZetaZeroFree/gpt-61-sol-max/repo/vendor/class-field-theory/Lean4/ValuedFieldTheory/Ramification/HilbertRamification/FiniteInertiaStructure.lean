@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Ramification.HilbertRamification.FiniteRamificationPrimary
 public import ValuedFieldTheory.Ramification.HilbertRamification.FiniteOrderValuation
 public import ValuedFieldTheory.Ramification.HilbertRamification.CharacterMap
@@ -7,6 +9,7 @@ public import Mathlib.Algebra.CharP.Reduced
 public import Mathlib.GroupTheory.Sylow
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -37,30 +40,30 @@ universe u v
 
 variable (K : Type u) {L : Type v} [Field K] [Field L] [Algebra K L]
 
-/-- Finite inertia is commutative in residue characteristic zero. -/
-theorem inertiaGroup_isMulCommutative_of_residueCharZero
-    (A : _root_.ValuationSubring L) [Finite (inertiaGroup K A)]
-    [CharZero (IsLocalRing.ResidueField A)] :
-    IsMulCommutative (inertiaGroup K A) := by
-  have htop := valueTrivialInertiaGroup_eq_top_of_finite K A
-  have hinj : Function.Injective (valueTrivialInertiaCharacterHom K A) := by
-    apply (injective_iff_map_eq_one (valueTrivialInertiaCharacterHom K A)).mpr
-    intro σ hσ
-    apply Subtype.ext
-    have hmem : (σ : inertiaGroup K A) ∈ ramificationGroup K A :=
-      (valueTrivialInertiaCharacterHom_mem_ker_iff K A σ).mp hσ
-    rw [ramificationGroup_eq_bot_of_residueCharZero K A] at hmem
-    exact hmem
-  apply IsMulCommutative.of_comm
-  intro σ τ
-  let s : valueTrivialInertiaGroup K A := ⟨σ, htop.symm ▸ Subgroup.mem_top σ⟩
-  let t : valueTrivialInertiaGroup K A := ⟨τ, htop.symm ▸ Subgroup.mem_top τ⟩
-  have hst : s * t = t * s := hinj (by
-    apply MonoidHom.ext
-    intro x
-    simp only [map_mul, MonoidHom.mul_apply]
-    exact mul_comm _ _)
-  exact congrArg (fun a : valueTrivialInertiaGroup K A => (a : inertiaGroup K A)) hst
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- Every p-subgroup of inertia lies in the actual ramification group. -/
 theorem pSubgroup_le_ramificationGroup_of_residueChar
@@ -72,7 +75,7 @@ theorem pSubgroup_le_ramificationGroup_of_residueChar
   obtain ⟨a, ha⟩ := hP ⟨σ, hσ⟩
   have hpow : σ ^ (p ^ a) = 1 :=
     congrArg (fun x : P => (x : inertiaGroup K A)) ha
-  have hfinite : IsOfFinOrder σ :=
+  have hfinite  :=
     isOfFinOrder_iff_pow_eq_one.mpr
       ⟨p ^ a, pow_pos (Fact.out : p.Prime).pos a, hpow⟩
   let s : valueTrivialInertiaGroup K A :=
@@ -94,28 +97,27 @@ theorem pSubgroup_le_ramificationGroup_of_residueChar
     (by simpa only [mul_one] using hchar)
   simpa only [pow_one, MonoidHom.one_apply, Units.val_one] using h
 
-/-- The actual ramification group is the unique Sylow p-subgroup of finite inertia. -/
-theorem sylow_eq_ramificationGroup_of_residueChar
-    (A : _root_.ValuationSubring L) (p : ℕ) [Fact p.Prime]
+section
+variable (A : _root_.ValuationSubring L) (p : ℕ) [Fact p.Prime]
     [Finite (inertiaGroup K A)] [CharP (IsLocalRing.ResidueField A) p]
-    (P : Sylow p (inertiaGroup K A)) :
-    (P : Subgroup (inertiaGroup K A)) = ramificationGroup K A := by
-  exact (P.is_maximal' (ramificationGroup_isPGroup_of_residueChar K A p)
+include A p
+/-- The actual ramification group is the unique Sylow p-subgroup of finite inertia. -/
+def sylow_eq_ramificationGroup_of_residueChar
+     
+    (P : Sylow p (inertiaGroup K A))  := (P.is_maximal' (ramificationGroup_isPGroup_of_residueChar K A p)
     (pSubgroup_le_ramificationGroup_of_residueChar K A p P P.isPGroup')).symm
 
 /-- In positive residue characteristic, the actual finite ramification group
 is trivial exactly when the residue characteristic does not divide the order
 of inertia. -/
 theorem ramificationGroup_eq_bot_iff_residueChar_not_dvd_inertia_card
-    (A : _root_.ValuationSubring L) (p : ℕ) [Fact p.Prime]
-    [Finite (inertiaGroup K A)]
-    [CharP (IsLocalRing.ResidueField A) p] :
+      :
     ramificationGroup K A = ⊥ ↔
       ¬ p ∣ Nat.card (inertiaGroup K A) := by
   classical
-  let P : Sylow p (inertiaGroup K A) :=
+  let P  :=
     Classical.choice (inferInstance : Nonempty (Sylow p (inertiaGroup K A)))
-  have hP : (P : Subgroup (inertiaGroup K A)) = ramificationGroup K A :=
+  have hP  :=
     sylow_eq_ramificationGroup_of_residueChar K A p P
   rw [← hP]
   constructor
@@ -125,5 +127,7 @@ theorem ramificationGroup_eq_bot_iff_residueChar_not_dvd_inertia_card
     apply Subgroup.eq_bot_of_card_eq
     rw [P.card_eq_multiplicity,
       Nat.factorization_eq_zero_of_not_dvd hp, pow_zero]
+end
+
 
 end RamificationTheory.HilbertRamification.ValuationSubring

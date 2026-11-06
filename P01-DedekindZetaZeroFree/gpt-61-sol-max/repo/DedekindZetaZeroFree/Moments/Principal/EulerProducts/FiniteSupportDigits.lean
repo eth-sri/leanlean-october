@@ -1,4 +1,6 @@
 module
+
+public import Mathlib
 public import Mathlib.Analysis.Normed.Group.InfiniteSum
 
 public import Mathlib.Analysis.Complex.Basic
@@ -7,12 +9,13 @@ public import Mathlib.Analysis.Normed.Group.Tannery
 
 @[expose] public section
 
+
 namespace DedekindZetaZeroFree.FinsuppEulerProduct
 
 abbrev Digit := ℕ × ℕ × ℕ × ℕ
 
 noncomputable def coefficient {P : Type*} [DecidableEq P]
-    (a : P → Digit → ℂ) (d : P →₀ Digit) : ℂ :=
+    (a : P → Digit → ℂ) (d : P →₀ Digit)  :=
   ∏ p ∈ d.support, a p (d p)
 
 theorem local_norm_summable {P : Type*} [DecidableEq P]
@@ -24,7 +27,7 @@ theorem local_norm_summable {P : Type*} [DecidableEq P]
   simpa only [Finsupp.prod_single_index (hzero p)] using h
 
 universe u
-def PiSpec (I : Type u) [Fintype I] : Prop :=
+def PiSpec (I : Type u) [Fintype I]  :=
   ∀ a : I → Digit → ℂ,
     (∀ i, Summable (fun d => ‖a i d‖)) →
     Summable (fun f : I → Digit => ‖∏ i, a i (f i)‖) ∧
@@ -33,7 +36,7 @@ private theorem finite_pi (I : Type u) [Fintype I] : PiSpec I := by
   classical
   apply Fintype.induction_empty_option (P := PiSpec)
   · intro I J inst e ih a h
-    letI : Fintype I := Fintype.ofEquiv J e.symm
+    letI  := Fintype.ofEquiv J e.symm
     let E := Equiv.piCongrLeft (fun _ : J => Digit) e
     obtain ⟨hs, ht⟩ := ih (fun i => a (e i)) (fun i => h (e i))
     have he : ∀ f, (∏ j, a j (E f j)) = ∏ i, a (e i) (f i) := by
@@ -95,9 +98,12 @@ private theorem supportEquiv_coeff {P : Type*} [DecidableEq P] (s : Finset P)
     exact Finset.prod_congr rfl (fun p _ => congrArg (a p) (he p))
   · rw [Finsupp.notMem_support_iff.mp hdp, hzero]
 
-private theorem finite_prod_eq {P : Type*} [DecidableEq P]
+section
+variable {P : Type*} [DecidableEq P]
     (a : P → Digit → ℂ) (hzero : ∀ p, a p 0 = 1)
-    (hsum : Summable (fun d : P →₀ Digit => ‖coefficient a d‖)) (s : Finset P) :
+    (hsum : Summable (fun d : P →₀ Digit => ‖coefficient a d‖))
+include P a hzero hsum
+private theorem finite_prod_eq   (s : Finset P) :
     (∏ p ∈ s, ∑' δ : Digit, a p δ) =
       ∑' d : {d : P →₀ Digit // d.support ⊆ s}, coefficient a d.1 := by
   classical
@@ -110,9 +116,7 @@ private theorem finite_prod_eq {P : Type*} [DecidableEq P]
   rw [← Finset.prod_coe_sort s]
   exact H.tsum_eq.symm
 
-theorem hasProd {P : Type*} [DecidableEq P]
-    (a : P → Digit → ℂ) (hzero : ∀ p, a p 0 = 1)
-    (hsum : Summable (fun d : P →₀ Digit => ‖coefficient a d‖)) :
+theorem hasProd   :
     HasProd (fun p => ∑' δ : Digit, a p δ)
       (∑' d : P →₀ Digit, coefficient a d) := by
   classical
@@ -139,5 +143,7 @@ theorem hasProd {P : Type*} [DecidableEq P]
     exact (Equiv.subtypeEquivRight (fun d : P →₀ Digit =>
       (Iff.rfl : (d.support ⊆ s) ↔ d ∈ {d : P →₀ Digit | d.support ⊆ s}))).tsum_eq
       (fun d => coefficient a d.1)
+end
+
 
 end DedekindZetaZeroFree.FinsuppEulerProduct

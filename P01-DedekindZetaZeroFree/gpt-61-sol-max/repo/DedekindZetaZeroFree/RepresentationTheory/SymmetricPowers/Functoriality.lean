@@ -25,7 +25,7 @@ open scoped TensorProduct
 
 universe v w w'
 
-variable {R : Type} {G : Type v} {M : Type w} {N : Type w'}
+variable {R : Type} {G : Type v} {M : Type w} 
 
 namespace Representation
 

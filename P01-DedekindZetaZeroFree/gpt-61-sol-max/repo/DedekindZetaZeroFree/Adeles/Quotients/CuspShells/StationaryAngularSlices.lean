@@ -105,8 +105,8 @@ open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming rationalA
 open _root_.DedekindZetaZeroFree.FullAngularHaar.Constructor.JointMeasure.LocalCuspFactorization renaming full_fiber_test_covariance → full_fiber_test_covariance
 
 open _root_.DedekindZetaZeroFree.FullAngularHaar.Constructor.JointMeasure renaming actual_rational_Iwasawa_fiber → actual_rational_Iwasawa_fiber
-theorem full_fiber_parabolic_invariant
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
+section
+variable (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (V : KPMsFixedHaar.Level F ζ hζ)
     (At : KPFiniteCuspAtlas.Atlas F ζ hζ hF V)
     (i : Fin At.componentCount)
@@ -121,6 +121,9 @@ theorem full_fiber_parabolic_invariant
     (D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ)
     (B₀ : KPMsFixedHaarDisintegration.RadialData F ζ hζ)
     (φ : KPMsActualAngularSource.FullOmega F ζ hζ D → ℝ≥0∞) (hφ : Measurable φ)
+include hF V At i a e heBase heFiber ν D B₀ φ hφ
+theorem full_fiber_parabolic_invariant
+     
     (η : KPCuspArithmetic.conjugatedStabilizer F (Gi F ζ hζ hF V At i)
       ((At.cuspAtlas i).cusp a) ((At.cuspAtlas i).representative a))
     (p : KPCuspCharts.Cross F) (t : ℝ) :
@@ -190,20 +193,7 @@ theorem full_fiber_parabolic_invariant
   exact hh
 
 theorem full_fundamental_shape_shift
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (V : KPMsFixedHaar.Level F ζ hζ)
-    (At : KPFiniteCuspAtlas.Atlas F ζ hζ hF V)
-    (i : Fin At.componentCount) (a : Fin (At.cuspAtlas i).cuspCount)
-    (e : KPSmoothActualFlowData.GInfinity F ≃ₜ
-      (X (KPCuspLogShape.dimension F) × K (KPCuspLogShape.dimension F)))
-    (heBase : ∀ b, (e b).1 = KPMsFixedHaarDisintegration.archBasepoint F b)
-    (heFiber : ∀ x k j, (e.symm (x,k)) (KPCusp.complexPlace F j) =
-      (KPArithmeticAction.productProjectiveSection (KPCuspLogShape.dimension F) x *
-        (k : G (KPCuspLogShape.dimension F))) j)
-    (ν : Measure (KPFiniteCuspAtlas.FiniteCover F ζ hζ)) [ν.IsHaarMeasure] [SFinite ν]
-    (D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ)
-    (B₀ : KPMsFixedHaarDisintegration.RadialData F ζ hζ)
-    (φ : KPMsActualAngularSource.FullOmega F ζ hζ D → ℝ≥0∞) (hφ : Measurable φ)
+     
     (b : KPCuspCharts.Shape F) (t : ℝ) :
     (∫⁻ p in ((At.cuspAtlas i).geometry a).fundamentalDomain,
       ∫⁻ z : K (KPCuspLogShape.dimension F) × KPFiniteCuspAtlas.FiniteCover F ζ hζ,
@@ -233,6 +223,8 @@ theorem full_fundamental_shape_shift
   apply KPMsFixedHaar.RadialIntegrationSteps.shape_shift_fundamental_lintegral At ⟨i,a⟩ b f
   intro η p
   exact full_fiber_parabolic_invariant hF V At i a e heBase heFiber ν D B₀ φ hφ η p t
+end
+
 
 theorem full_compact_covariance
     (e : KPSmoothActualFlowData.GInfinity F ≃ₜ

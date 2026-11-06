@@ -24,10 +24,13 @@ variable (C : KPGlobalTorusFiniteStages.LocalFiberData F A.zeta12 A.primitive_ze
     (K : Set (LiteralSource.Raw A)) (hK : IsCompact K) :=
   (exists_compact_reference_stage A P C s K hK).choose
 
-def stageSmoothObservationLinear
-    (t : RestrictedTensorSimple.Level (LiteralSource.bad A P C))
+section
+variable (t : RestrictedTensorSimple.Level (LiteralSource.bad A P C))
     (y : ∀ j : t.val, LiteralSource.Plus A P C j.val) (w : InfinitePlace F)
-    (K : Set (LiteralSource.Raw A)) :
+    (K : Set (LiteralSource.Raw A))
+include t y w K
+def stageSmoothObservationLinear
+      :
     PrincipalSeries negativeParameter →ₗ[ℂ] C(K, ℂ) where
   toFun f := ⟨fun g => CanonicalStageSlot.negative A P C t y g.val w f,
     ((CanonicalStageSlot.negative_raw_joint A P C t y w).comp
@@ -36,31 +39,31 @@ def stageSmoothObservationLinear
   map_smul' := by intro c f; ext g; exact (CanonicalStageSlot.negative A P C t y g.val w).map_smul c f
 
 theorem stageSmoothObservationLinear_continuous
-    (t : RestrictedTensorSimple.Level (LiteralSource.bad A P C))
-    (y : ∀ j : t.val, LiteralSource.Plus A P C j.val) (w : InfinitePlace F)
-    (K : Set (LiteralSource.Raw A)) : Continuous (stageSmoothObservationLinear A P C t y w K) := by
+      : Continuous (stageSmoothObservationLinear A P C t y w K) := by
   exact ContinuousMap.continuous_of_continuous_uncurry _
     ((CanonicalStageSlot.negative_raw_joint A P C t y w).comp
       (continuous_fst.prodMk (continuous_subtype_val.comp continuous_snd)))
 
 def stageSmoothObservation
-    (t : RestrictedTensorSimple.Level (LiteralSource.bad A P C))
-    (y : ∀ j : t.val, LiteralSource.Plus A P C j.val) (w : InfinitePlace F)
-    (K : Set (LiteralSource.Raw A)) : PrincipalSeries negativeParameter →L[ℂ] C(K, ℂ) :=
+      : PrincipalSeries negativeParameter →L[ℂ] C(K, ℂ) :=
   ⟨stageSmoothObservationLinear A P C t y w K,
     stageSmoothObservationLinear_continuous A P C t y w K⟩
+end
 
-def rawSmoothObservation
-    (s : RestrictedTensorSimple.Level (LiteralSource.bad A P C))
+
+section
+variable (s : RestrictedTensorSimple.Level (LiteralSource.bad A P C))
     (x : ∀ j : s.val, LiteralSource.Plus A P C j.val) (w : InfinitePlace F)
+include s x w
+def rawSmoothObservation
+     
     (K : Set (LiteralSource.Raw A)) (hK : IsCompact K) :
     PrincipalSeries negativeParameter →L[ℂ] C(K, ℂ) :=
   let t := compactHead A P C s K hK
   stageSmoothObservation A P C t (enlargedTuple A P C s t x) w K
 
 theorem rawSmoothObservation_core
-    (s : RestrictedTensorSimple.Level (LiteralSource.bad A P C))
-    (x : ∀ j : s.val, LiteralSource.Plus A P C j.val) (w : InfinitePlace F)
+     
     (hw : Sum.inl w ∈ s.val) (K : Set (LiteralSource.Raw A)) (hK : IsCompact K)
     (v : complexCore) (g : K) :
     rawSmoothObservation A P C s x w K hK v.val g =
@@ -73,8 +76,7 @@ theorem rawSmoothObservation_core
     restrictedSlot_raw_pin A P C t _ w (hst hw) g.val ht v]
 
 theorem rawSmoothObservation_bound
-    (s : RestrictedTensorSimple.Level (LiteralSource.bad A P C))
-    (x : ∀ j : s.val, LiteralSource.Plus A P C j.val) (w : InfinitePlace F)
+     
     (K : Set (LiteralSource.Raw A)) (hK : IsCompact K) :
     letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
     ∃ orders : Finset ℕ, ∃ B : ℝ≥0, B ≠ 0 ∧
@@ -89,6 +91,8 @@ theorem rawSmoothObservation_bound
   apply (ContinuousMap.norm_le _ (mul_nonneg B.coe_nonneg (apply_nonneg _ _))).mpr
   intro g
   exact hb f g.val g.property
+end
+
 
 end DedekindZetaZeroFree.FourierContinuation.ComplexLines
 

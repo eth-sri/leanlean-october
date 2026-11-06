@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Representatives.IntegralIdealClasses
 public import DedekindZetaZeroFree.Arithmetic.Ideals.WeightedFractionalCharacter
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Characters.PrimeDetermination
 
 @[expose] public section
+
 
 open scoped NumberField
 
@@ -43,7 +46,7 @@ theorem rayFractionalCharacterExtension
     · exact h hcop
   have hred := rayCharacterIntegralPrimeReduction K m χ H hprime I hchi
     (rayIdealFractionalIdeal K I hI)
-    (by rw [rayIdealFractionalIdeal_coe])
+    (rfl)
   have hJeq : (J : ClassFieldTheory.NumberFieldFractionalIdealGroup K) =
       rayIdealFractionalIdeal K I hI := by
     apply Units.ext

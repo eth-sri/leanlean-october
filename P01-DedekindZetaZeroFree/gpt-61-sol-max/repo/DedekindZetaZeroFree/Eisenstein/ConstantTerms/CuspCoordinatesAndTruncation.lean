@@ -140,25 +140,28 @@ variable {T} (B : Continuation F ζ hζ C D R P H A U T)
 def g (f : ℂ → Stage F ζ hζ D U T) (s : ℂ) := B.clearedM s (f s)
 
 abbrev Atlas := H.atlas (A.atlasLevel U)
-abbrev Cusp := KPMsFixedHaarDisintegration.CuspIndex (Atlas (A := A) (U := U))
+
+local notation:max "current_Atlas" => Atlas (A := A) (U := U)
+
+abbrev Cusp := KPMsFixedHaarDisintegration.CuspIndex (current_Atlas)
 
 def cuspRepresentative (j : Cusp (A := A) (U := U)) : G F ζ hζ :=
   rationalLift F ζ hζ
-    (((Atlas (A := A) (U := U)).cuspAtlas j.1).representative j.2)
+    (((current_Atlas).cuspAtlas j.1).representative j.2)
 
 def cuspEnd (j : Cusp (A := A) (U := U)) (Y : ℝ) : Set (X F ζ hζ) :=
   (P.projection (A.atlasLevel U)) ⁻¹'
     (KPFiniteCuspAtlas.componentMap F ζ hζ (A.atlasLevel U)
-      ((Atlas (A := A) (U := U)).representative j.1) ''
+      ((current_Atlas).representative j.1) ''
       KPFiniteCuspAtlas.endSet F
         (KPCuspGenuineMonodromy.Component F ζ hζ (A.atlasLevel U)
-          ((Atlas (A := A) (U := U)).representative j.1))
-        (((Atlas (A := A) (U := U)).cuspAtlas j.1).representative j.2)
+          ((current_Atlas).representative j.1))
+        (((current_Atlas).cuspAtlas j.1).representative j.2)
         (KPMsFixedHaarDisintegration.logHeight (F := F) Y))
 
 theorem cuspLift_exists (j : Cusp (A := A) (U := U)) (Y : ℝ)
     (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff
-      (Atlas (A := A) (U := U)) Y) (x : X F ζ hζ) (hx : x ∈ cuspEnd j Y) :
+      (current_Atlas) Y) (x : X F ζ hζ) (hx : x ∈ cuspEnd j Y) :
     ∃ g : G F ζ hζ,
       KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g = x ∧
       ∃ (a : KPSmoothActualFlowData.GInfinity F) (p : KPCuspCharts.Cross F)
@@ -167,23 +170,23 @@ theorem cuspLift_exists (j : Cusp (A := A) (U := U)) (Y : ℝ)
         KPMsFixedHaarDisintegration.logHeight (F := F) Y < t ∧
         KPMsFixedHaarDisintegration.archBasepoint F a =
           KPCuspSiegel.action F
-            (((Atlas (A := A) (U := U)).cuspAtlas j.1).representative j.2)
+            (((current_Atlas).cuspAtlas j.1).representative j.2)
             (KPCuspCharts.toArch F (p,t)) ∧
         g = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a *
-          ((Atlas (A := A) (U := U)).representative j.1).val *
+          ((current_Atlas).representative j.1).val *
           KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε * u.val := by
   obtain ⟨g, hg, hframe⟩ := KPMsActualCuspSource.cusp_lift_exists (H := H) (A.atlasLevel U) (A.level_matching U) j Y x hx
   exact ⟨g, hg, hframe.2⟩
 
 def cuspLift (j : Cusp (A := A) (U := U)) (Y : ℝ)
     (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff
-      (Atlas (A := A) (U := U)) Y) (x : X F ζ hζ) : G F ζ hζ :=
+      (current_Atlas) Y) (x : X F ζ hζ) : G F ζ hζ :=
   if hx : x ∈ cuspEnd j Y then Classical.choose (cuspLift_exists j Y hY x hx)
     else Quotient.out x
 
 def cuspRadius (j : Cusp (A := A) (U := U)) (Y : ℝ)
     (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff
-      (Atlas (A := A) (U := U)) Y) (x : X F ζ hζ) :
+      (current_Atlas) Y) (x : X F ζ hζ) :
     KPMsFixedHaarDisintegration.Radius :=
   ⟨((KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ D
     ((cuspRepresentative j)⁻¹ * cuspLift j Y hY x) : ℝ≥0) : ℝ), by exact NNReal.coe_pos.mpr (pos_iff_ne_zero.mpr (Units.ne_zero _))⟩
@@ -204,7 +207,7 @@ def cuspRadius (j : Cusp (A := A) (U := U)) (Y : ℝ)
 
 def cuspAngular (j : Cusp (A := A) (U := U)) (Y : ℝ)
     (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff
-      (Atlas (A := A) (U := U)) Y) (x : X F ζ hζ) :
+      (current_Atlas) Y) (x : X F ζ hζ) :
     KPMsRationalCompactCrossPairing.NormOne F ζ hζ D :=
   ⟨(KPMsFixedHaarDisintegration.radialSection F ζ hζ
       (H.disintegration (A.atlasLevel U)).radial.slot (cuspRadius j Y hY x))⁻¹ *

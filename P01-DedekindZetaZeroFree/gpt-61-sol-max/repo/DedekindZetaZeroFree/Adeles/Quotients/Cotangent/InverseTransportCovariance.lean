@@ -21,22 +21,28 @@ variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
-private theorem eqRec_places {i j : Fin (H.atlas U).componentCount} (h : i = j)
+section
+variable {i j : Fin (H.atlas U).componentCount} (h : i = j)
+include i j h in
+private theorem eqRec_places  
     (s : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i) :
     (h ▸ s).places = s.places := by
   cases h; rfl
 
-private theorem eqRec_rep {i j : Fin (H.atlas U).componentCount} (h : i = j)
+include i j h in
+private theorem eqRec_rep  
     (s : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i) :
     (h ▸ s).kind.representative = s.kind.representative := by
   cases h; rfl
 
-private theorem eqRec_splitting {i j : Fin (H.atlas U).componentCount} (h : i = j)
+include i j h in
+private theorem eqRec_splitting  
     (s : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i) :
     (h ▸ s).splitting = s.splitting := by
   cases h; rfl
 
-private theorem eqRec_cast_symm {i j : Fin (H.atlas U).componentCount} (h : i = j)
+include i j h in
+private theorem eqRec_cast_symm  
     (y : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) j) :
     h ▸ (h.symm ▸ y) = y := by
   cases h; rfl
@@ -143,12 +149,14 @@ private theorem twistedOperator_eq_Op {i : Fin (H.atlas U).componentCount}
   congr 1
   simp only [Q, hpsi]
 
- def castArrow {i j : Fin (H.atlas U).componentCount} (h : i = j)
+ include i j h in
+def castArrow  
     {A B : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i}
     (e : Arrow A B) : Arrow (h ▸ A) (h ▸ B) :=
   cast (by cases h; rfl) e
 
-private theorem arrow_gamma_index_cast {i j : Fin (H.atlas U).componentCount} (h : i = j)
+include i j h in
+private theorem arrow_gamma_index_cast  
     {A B : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i}
     (e : Arrow A B) :
     ((castArrow h e).gamma : KPCuspArithmetic.PGL2 F) = (e.gamma : KPCuspArithmetic.PGL2 F) := by
@@ -159,7 +167,8 @@ private theorem arrow_gamma_chart_cast {i : Fin (H.atlas U).componentCount}
     (h : B = B') (e : Arrow A B) : (h ▸ e).gamma = e.gamma := by
   cases h; rfl
 
-private theorem arrow_root_index_cast {i j : Fin (H.atlas U).componentCount} (h : i = j)
+include i j h in
+private theorem arrow_root_index_cast  
     {A B : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i}
     (e : Arrow A B) : (castArrow h e).root = e.root := by
   cases h; rfl
@@ -169,7 +178,8 @@ private theorem arrow_root_chart_cast {i : Fin (H.atlas U).componentCount}
     (h : B = B') (e : Arrow A B) : (h ▸ e).root = e.root := by
   cases h; rfl
 
-private theorem arrow_psi_index_cast {i j : Fin (H.atlas U).componentCount} (h : i = j)
+include i j h in
+private theorem arrow_psi_index_cast  
     {A B : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i}
     (e : Arrow A B) : (castArrow h e).psi = e.psi := by
   cases h; rfl
@@ -179,7 +189,8 @@ private theorem arrow_psi_chart_cast {i : Fin (H.atlas U).componentCount}
     (h : B = B') (e : Arrow A B) : (h ▸ e).psi = e.psi := by
   cases h; rfl
 
-private theorem arrow_domain_index_cast {i j : Fin (H.atlas U).componentCount} (h : i = j)
+include i j h in
+private theorem arrow_domain_index_cast  
     {A B : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i}
     (e : Arrow A B) : (castArrow h e).domain = e.domain := by
   cases h; rfl
@@ -189,8 +200,8 @@ private theorem arrow_domain_chart_cast {i : Fin (H.atlas U).componentCount}
     (h : B = B') (e : Arrow A B) : (h ▸ e).domain = e.domain := by
   cases h; rfl
 
-private theorem arrow_finite_comparison_index_cast {i j : Fin (H.atlas U).componentCount}
-    (h : i = j)
+include i j h in
+private theorem arrow_finite_comparison_index_cast  
     {A B : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i}
     (e : Arrow A B) :
     KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ ((castArrow h e).gamma) *
@@ -292,23 +303,28 @@ private theorem comparison_inv {i : Fin (H.atlas U).componentCount}
             ((u : KPCuspGenuineMonodromy.FiniteCover F ζ hζ)⁻¹)]
     _ = R₀ * KPCuspGenuineMonodromy.central F ζ hζ c⁻¹ * (↑u)⁻¹ := by group
 
-private theorem cast_lifted_places {i j : Fin (H.atlas U).componentCount} (h : i = j)
+include i j h in
+private theorem cast_lifted_places  
     (s : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i)
     (hs : s.places = placeEquiv F ζ hζ) :
     (h ▸ s).places = placeEquiv F ζ hζ := by
   rw [eqRec_places, hs]
 
-private theorem cast_lifted_rep {i j : Fin (H.atlas U).componentCount} (h : i = j)
+include i j h in
+private theorem cast_lifted_rep  
     (s : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i)
     (hs : s.kind.representative = 1) :
     (h ▸ s).kind.representative = 1 := by
   rw [eqRec_rep, hs]
 
-private theorem cast_lifted_splitting {i j : Fin (H.atlas U).componentCount} (h : i = j)
+include i j h in
+private theorem cast_lifted_splitting  
     (s : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i)
     (hs : s.splitting = fun _ => 1) :
     (h ▸ s).splitting = fun _ => 1 := by
   rw [eqRec_splitting, hs]
+end
+
 
 theorem omega_subset_larger (a : ShrunkChart F ζ hζ U R P H) :
     omega a ⊆ (isotropyChart a).omega := by

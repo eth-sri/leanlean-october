@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Adeles.Quotients.CuspShells.OffsetWeightedMass
 
 @[expose] public section
+
 
 noncomputable section
 set_option backward.isDefEq.respectTransparency false
@@ -26,24 +29,32 @@ abbrev cuspEnd (j : Cusp S U) (Y : ℝ) := KPMsActualCuspSource.cuspEnd
   (H := nativeFamily F ζ hζ R P) (S.atlasLevel (cofinalLevel F ζ hζ U)) j Y
 abbrev cuspRepresentative (j : Cusp S U) := rationalLift F ζ hζ
   (((nativeAtlas F ζ hζ R P S U).cuspAtlas j.1).representative j.2)
-def cuspLift (j : Cusp S U) (Y : ℝ) (x : X F ζ hζ) : KPMsActualAngularSource.G F ζ hζ :=
+section
+variable (j : Cusp S U) (Y : ℝ)
+include j Y
+def cuspLift   (x : X F ζ hζ) : KPMsActualAngularSource.G F ζ hζ :=
   if hx : x ∈ cuspEnd S U j Y then
     Classical.choose (cusp_lift_exists (H := nativeFamily F ζ hζ R P)
       (S.atlasLevel (cofinalLevel F ζ hζ U)) (S.level_matching _) j Y x hx)
   else Quotient.out x
-theorem cuspLift_frame (j : Cusp S U) (Y : ℝ) (x : X F ζ hζ)
+
+section
+private noncomputable abbrev context_cofinalLevel := cofinalLevel F ζ hζ
+end
+
+theorem cuspLift_frame   (x : X F ζ hζ)
     (hx : x ∈ cuspEnd S U j Y) :
     AdmissibleFrame (H := nativeFamily F ζ hζ R P) (U := cofinalLevel F ζ hζ U)
       (S.atlasLevel (cofinalLevel F ζ hζ U)) j Y x (cuspLift S U j Y x) := by
   rw [cuspLift, dif_pos hx]
   exact (Classical.choose_spec (cusp_lift_exists (H := nativeFamily F ζ hζ R P)
-    (S.atlasLevel (cofinalLevel F ζ hζ U)) (S.level_matching _) j Y x hx)).2
-theorem cuspLift_quotient (j : Cusp S U) (Y : ℝ) (x : X F ζ hζ) :
+    (S.atlasLevel (_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_cofinalLevel U)) (S.level_matching _) j Y x hx)).2
+theorem cuspLift_quotient   (x : X F ζ hζ) :
     KPSmoothLocalQuotientCharts.quotientMap F ζ hζ (cuspLift S U j Y x) = x := by
   by_cases hx : x ∈ cuspEnd S U j Y
   · exact (cuspLift_frame S U j Y x hx).1
   · simp only [cuspLift, dif_neg hx]; exact Quotient.out_eq x
-def fullCuspDomain (j : Cusp S U) (Y : ℝ) : Set (KPMsActualAngularSource.G F ζ hζ) :=
+def fullCuspDomain    :=
   {g | ∃ (a : KPSmoothActualFlowData.GInfinity F) (p : KPCuspCharts.Cross F)
     (t : ℝ) (ε : rootsOfUnity 3 F)
     (u : KPGlobalTorusFunctionData.globalLevel F ζ hζ (cofinalLevel F ζ hζ U)),
@@ -56,25 +67,29 @@ def fullCuspDomain (j : Cusp S U) (Y : ℝ) : Set (KPMsActualAngularSource.G F �
       ((nativeAtlas F ζ hζ R P S U).representative j.1).val *
       KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε * u.val}
 
-theorem cuspLift_mem_fullCuspDomain (j : Cusp S U) (Y : ℝ)
-    (x : X F ζ hζ) (hx : x ∈ cuspEnd S U j Y) :
-    cuspLift S U j Y x ∈ fullCuspDomain S U j Y := (cuspLift_frame S U j Y x hx).2
+def cuspLift_mem_fullCuspDomain  
+    (x : X F ζ hζ) (hx : x ∈ cuspEnd S U j Y)  := (cuspLift_frame S U j Y x hx).2
+
+
+section
+private noncomputable abbrev context_nativeAtlas := nativeAtlas F ζ hζ
+end
 
 theorem quotientMap_mem_cuspEnd_of_mem_fullCuspDomain
-    (j : Cusp S U) (Y : ℝ)
+     
     (g : KPMsActualAngularSource.G F ζ hζ) (hg : g ∈ fullCuspDomain S U j Y) :
     KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g ∈ cuspEnd S U j Y := by
   obtain ⟨a,p,t,ε,u,ht,ha,rfl⟩ := hg
-  have hu : (u.val : KPMsActualAngularSource.G F ζ hζ) ∈ (S.atlasLevel (cofinalLevel F ζ hζ U)).toOpenSubgroup.toSubgroup.map
+  have hu : u.val ∈ (S.atlasLevel (_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_cofinalLevel U)).toOpenSubgroup.toSubgroup.map
       (KPFiniteCuspAtlas.FiniteCover F ζ hζ).subtype := by
-    simpa only [← S.level_matching (cofinalLevel F ζ hζ U)] using u.property
+    simpa only [← S.level_matching (_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_cofinalLevel U)] using u.property
   obtain ⟨v,hv,hu⟩ := hu
-  let v' : (S.atlasLevel (cofinalLevel F ζ hζ U)).toOpenSubgroup := ⟨v,hv⟩
-  let c : KPFiniteCuspAtlas.FiniteCover F ζ hζ :=
-    (nativeAtlas F ζ hζ R P S U).representative j.1 *
+  let v' : (S.atlasLevel (_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_cofinalLevel U)).toOpenSubgroup := ⟨v,hv⟩
+  let c  :=
+    (_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_nativeAtlas R P S U).representative j.1 *
       KPCuspGenuineMonodromy.central F ζ hζ ε * v
   have he : KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a *
-      ((nativeAtlas F ζ hζ R P S U).representative j.1).val *
+      ((_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_nativeAtlas R P S U).representative j.1).val *
       KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε * u.val =
         KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a * c.val := by
     rw [← hu]
@@ -84,16 +99,16 @@ theorem quotientMap_mem_cuspEnd_of_mem_fullCuspDomain
   unfold FullSupportGeometry.cuspEnd KPMsActualCuspSource.cuspEnd
   simp only [Set.mem_preimage]
   rw [P.formula]
-  have hc : (Quotient.mk (KPFiniteCuspAtlas.sphericalRelation F ζ hζ (S.atlasLevel (cofinalLevel F ζ hζ U)))
+  have hc : (Quotient.mk (KPFiniteCuspAtlas.sphericalRelation F ζ hζ (S.atlasLevel (_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_cofinalLevel U)))
       (KPMsFixedHaarDisintegration.archBasepoint F a,c)) =
       Quotient.mk _ (KPMsFixedHaarDisintegration.archBasepoint F a,
-        (nativeAtlas F ζ hζ R P S U).representative j.1) := by
+        (_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_nativeAtlas R P S U).representative j.1) := by
     apply Eq.symm
     apply Quotient.sound
     refine ⟨1, ε, v', by simp, ?_⟩
     simp only [map_one, one_mul]
     change c = KPCuspGenuineMonodromy.central F ζ hζ ε *
-      (nativeAtlas F ζ hζ R P S U).representative j.1 * v
+      (_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_nativeAtlas R P S U).representative j.1 * v
     unfold c
     congr 1
     apply Subtype.ext
@@ -111,20 +126,20 @@ theorem quotientMap_mem_cuspEnd_of_mem_fullCuspDomain
   exact ht
 
 theorem quotientMap_image_fullCuspDomain
-    (j : Cusp S U) (Y : ℝ)
+     
     (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff
       (nativeAtlas F ζ hζ R P S U) Y) :
     KPSmoothLocalQuotientCharts.quotientMap F ζ hζ '' fullCuspDomain S U j Y =
       cuspEnd S U j Y := by
   apply Set.Subset.antisymm
   · rintro _ ⟨g,hg,rfl⟩
-    exact quotientMap_mem_cuspEnd_of_mem_fullCuspDomain S U j Y g hg
+    apply quotientMap_mem_cuspEnd_of_mem_fullCuspDomain <;> assumption
   · intro x hx
     exact ⟨cuspLift S U j Y x, cuspLift_mem_fullCuspDomain S U j Y x hx,
       cuspLift_quotient S U j Y x⟩
 
 theorem fullCusp_arch_constraint_iff
-    (j : Cusp S U) (Y : ℝ)
+     
     (a : KPSmoothActualFlowData.GInfinity F) :
     (∃ (p : KPCuspCharts.Cross F) (t : ℝ),
       KPMsFixedHaarDisintegration.logHeight (F := F) Y < t ∧
@@ -154,7 +169,7 @@ theorem fullCusp_arch_constraint_iff
       exact he.symm
 
 theorem isOpen_fullCusp_arch_constraint
-    (j : Cusp S U) (Y : ℝ) :
+      :
     IsOpen {a : KPSmoothActualFlowData.GInfinity F |
       ∃ (p : KPCuspCharts.Cross F) (t : ℝ),
         KPMsFixedHaarDisintegration.logHeight (F := F) Y < t ∧
@@ -167,32 +182,37 @@ theorem isOpen_fullCusp_arch_constraint
         KPMsFixedHaarDisintegration.logHeight (F := F) Y < t ∧
         KPMsFixedHaarDisintegration.archBasepoint F a =
           KPCuspSiegel.action F
-            (((nativeAtlas F ζ hζ R P S U).cuspAtlas j.1).representative j.2)
+            (((_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_nativeAtlas R P S U).cuspAtlas j.1).representative j.2)
             (KPCuspCharts.toArch F (p,t))} =
       KPMsFixedHaarDisintegration.archBasepoint F ⁻¹'
         KPCuspSiegel.highCusp F
-          (((nativeAtlas F ζ hζ R P S U).cuspAtlas j.1).representative j.2)
+          (((_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_nativeAtlas R P S U).cuspAtlas j.1).representative j.2)
           (KPMsFixedHaarDisintegration.logHeight (F := F) Y) := by
     ext a
-    exact fullCusp_arch_constraint_iff S U j Y a
+    apply fullCusp_arch_constraint_iff
   rw [he]
   exact (KPCuspSiegel.isOpen_highCusp F _ _).preimage KPMsActualAngularDomainSource.continuous_archBasepoint
+end
 
-def fullCuspFiniteDomain (j : Cusp S U) : Set (KPFiniteCuspAtlas.FiniteCover F ζ hζ) :=
+
+section
+variable (j : Cusp S U)
+include j
+def fullCuspFiniteDomain    :=
   ⋃ ε : rootsOfUnity 3 F,
     (fun u => (nativeAtlas F ζ hζ R P S U).representative j.1 *
       KPCuspGenuineMonodromy.central F ζ hζ ε * u) ''
-        ((S.atlasLevel (cofinalLevel F ζ hζ U)).toOpenSubgroup : Set (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
+        ((S.atlasLevel (cofinalLevel F ζ hζ U)).toOpenSubgroup)
 
-theorem isOpen_fullCuspFiniteDomain (j : Cusp S U) :
+theorem isOpen_fullCuspFiniteDomain   :
     IsOpen (fullCuspFiniteDomain S U j) := by
   letI : IsTopologicalGroup (KPMsActualAngularSource.G F ζ hζ) :=
     (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.1
   apply isOpen_iUnion
   intro ε
-  exact (Homeomorph.mulLeft _).isOpenMap _ (S.atlasLevel (cofinalLevel F ζ hζ U)).toOpenSubgroup.isOpen
+  exact (Homeomorph.mulLeft _).isOpenMap _ (S.atlasLevel (_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_cofinalLevel U)).toOpenSubgroup.isOpen
 
-theorem fullCuspDomain_product_image (j : Cusp S U) (Y : ℝ)
+theorem fullCuspDomain_product_image   (Y : ℝ)
     (e : (KPSmoothActualFlowData.GInfinity F × KPFiniteCuspAtlas.FiniteCover F ζ hζ) ≃ₜ* KPMsActualAngularSource.G F ζ hζ)
     (he : ∀ a c, e (a,c) = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a * c.val) :
     fullCuspDomain S U j Y = e ''
@@ -204,11 +224,11 @@ theorem fullCuspDomain_product_image (j : Cusp S U) (Y : ℝ)
   ext g
   constructor
   · rintro ⟨a,p,t,ε,u,ht,ha,hg⟩
-    have hu : (u.val : KPMsActualAngularSource.G F ζ hζ) ∈ (S.atlasLevel (cofinalLevel F ζ hζ U)).toOpenSubgroup.toSubgroup.map
+    have hu : u.val ∈ (S.atlasLevel (_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_cofinalLevel U)).toOpenSubgroup.toSubgroup.map
         (KPFiniteCuspAtlas.FiniteCover F ζ hζ).subtype := by
-      simpa only [← S.level_matching (cofinalLevel F ζ hζ U)] using u.property
+      simpa only [← S.level_matching (_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_cofinalLevel U)] using u.property
     obtain ⟨v,hv,hu⟩ := hu
-    refine ⟨(a, (nativeAtlas F ζ hζ R P S U).representative j.1 *
+    refine ⟨(a, (_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_nativeAtlas R P S U).representative j.1 *
       KPCuspGenuineMonodromy.central F ζ hζ ε * v), ⟨⟨p,t,ht,ha⟩, ?_⟩, ?_⟩
     · exact Set.mem_iUnion.mpr ⟨ε, ⟨v,hv,rfl⟩⟩
     · rw [he, hg, ← hu]
@@ -216,29 +236,31 @@ theorem fullCuspDomain_product_image (j : Cusp S U) (Y : ℝ)
       rfl
   · rintro ⟨⟨a,c⟩,⟨⟨p,t,ht,ha⟩,hc⟩,rfl⟩
     obtain ⟨ε,v,hv,hc⟩ := Set.mem_iUnion.mp hc
-    have hu : v.val ∈ KPGlobalTorusFunctionData.globalLevel F ζ hζ (cofinalLevel F ζ hζ U) := by
-      rw [S.level_matching (cofinalLevel F ζ hζ U)]
+    have hu : v.val ∈ KPGlobalTorusFunctionData.globalLevel F ζ hζ (_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_cofinalLevel U) := by
+      rw [S.level_matching (_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_cofinalLevel U)]
       exact ⟨v,hv,rfl⟩
     refine ⟨a,p,t,ε,⟨v.val,hu⟩,ht,ha,?_⟩
-    change (nativeAtlas F ζ hζ R P S U).representative j.1 *
+    change (_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_nativeAtlas R P S U).representative j.1 *
       KPCuspGenuineMonodromy.central F ζ hζ ε * v = c at hc
     rw [he, ← hc]
     simp only [Subgroup.coe_mul, mul_assoc]
     rfl
 
-theorem isOpen_fullCuspDomain (j : Cusp S U) (Y : ℝ) :
+theorem isOpen_fullCuspDomain   (Y : ℝ) :
     IsOpen (fullCuspDomain S U j Y) := by
   obtain ⟨e,he⟩ := KPMsActualAngularDomainSource.product_splitting (F := F) (ζ := ζ) (hζ := hζ)
   rw [fullCuspDomain_product_image S U j Y e he]
   exact e.toHomeomorph.isOpenMap _
     ((isOpen_fullCusp_arch_constraint S U j Y).prod (isOpen_fullCuspFiniteDomain S U j))
+end
+
 
 theorem finiteProjection_level (u : KPGlobalTorusFunctionData.globalLevel F ζ hζ (cofinalLevel F ζ hζ U)) :
     KPCuspGenuineMonodromy.finiteProjection F ζ hζ u.val ∈
       (S.atlasLevel (cofinalLevel F ζ hζ U)).toOpenSubgroup.toSubgroup.map (KPCuspGenuineMonodromy.finiteBase F ζ hζ) := by
-  have hu : u.val ∈ (S.atlasLevel (cofinalLevel F ζ hζ U)).toOpenSubgroup.toSubgroup.map
+  have hu : u.val ∈ (S.atlasLevel (_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_cofinalLevel U)).toOpenSubgroup.toSubgroup.map
       (KPFiniteCuspAtlas.FiniteCover F ζ hζ).subtype := by
-    simpa only [← S.level_matching (cofinalLevel F ζ hζ U)] using u.property
+    simpa only [← S.level_matching (_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_cofinalLevel U)] using u.property
   obtain ⟨w, hw, hwu⟩ := hu
   exact ⟨w, hw, congrArg (KPCuspGenuineMonodromy.finiteProjection F ζ hζ) hwu⟩
 
@@ -261,11 +283,11 @@ theorem frame_transition_component
   simp only [map_mul, KPMsActualCuspSource.finiteProjection_rationalLift, KPMsActualCuspSource.finiteProjection_insertion,
     KPMsActualAngularTransitionSource.finiteProjection_centre, one_mul, mul_one] at hp
   let c := KPCuspGenuineMonodromy.finiteBase F ζ hζ
-    ((nativeAtlas F ζ hζ R P S U).representative j.1)
+    ((_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_nativeAtlas R P S U).representative j.1)
   let w := KPCuspGenuineMonodromy.finiteProjection F ζ hζ u₂.val *
     (KPCuspGenuineMonodromy.finiteProjection F ζ hζ u₁.val)⁻¹
   change KPFiniteComponents.diagonal F γ ∈
-    (((S.atlasLevel (cofinalLevel F ζ hζ U)).toOpenSubgroup.toSubgroup.map (KPCuspGenuineMonodromy.finiteBase F ζ hζ)).map
+    (((S.atlasLevel (_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_cofinalLevel U)).toOpenSubgroup.toSubgroup.map (KPCuspGenuineMonodromy.finiteBase F ζ hζ)).map
       (MulAut.conj c).toMonoidHom)
   refine ⟨w, ?_, ?_⟩
   · exact Subgroup.mul_mem _ (finiteProjection_level S U u₂)
@@ -278,9 +300,12 @@ theorem frame_transition_component
           (c * KPCuspGenuineMonodromy.finiteProjection F ζ hζ u₁.val)⁻¹ := by group
       _ = KPFiniteComponents.diagonal F γ := by rw [← hp]; group
 
-theorem high_frame_transition_fixes_cusp
-    (j : Cusp S U) (Y : ℝ)
+section
+variable (j : Cusp S U) (Y : ℝ)
     (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff (nativeAtlas F ζ hζ R P S U) Y)
+include j Y hY
+theorem high_frame_transition_fixes_cusp
+     
     (a₁ a₂ : KPSmoothActualFlowData.GInfinity F)
     (p₁ p₂ : KPCuspCharts.Cross F) (t₁ t₂ : ℝ)
     (ε₁ ε₂ : rootsOfUnity 3 F)
@@ -303,12 +328,12 @@ theorem high_frame_transition_fixes_cusp
         KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε₂ * u₂.val) :
     γ • (((nativeAtlas F ζ hζ R P S U).cuspAtlas j.1).cusp j.2) =
       (((nativeAtlas F ζ hζ R P S U).cuspAtlas j.1).cusp j.2) := by
-  let c := (nativeAtlas F ζ hζ R P S U).representative j.1
-  have hlevel_arch (u : KPGlobalTorusFunctionData.globalLevel F ζ hζ (cofinalLevel F ζ hζ U)) :
+  
+  have hlevel_arch (u : KPGlobalTorusFunctionData.globalLevel F ζ hζ (_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_cofinalLevel U)) :
       PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ u.val = 1 := by
-    have hu : u.val ∈ (S.atlasLevel (cofinalLevel F ζ hζ U)).toOpenSubgroup.toSubgroup.map
+    have hu : u.val ∈ (S.atlasLevel (_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_cofinalLevel U)).toOpenSubgroup.toSubgroup.map
         (KPFiniteCuspAtlas.FiniteCover F ζ hζ).subtype := by
-      simpa only [← S.level_matching (cofinalLevel F ζ hζ U)] using u.property
+      simpa only [← S.level_matching (_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_cofinalLevel U)] using u.property
     obtain ⟨w, hw, hwu⟩ := hu
     change PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ u.val = 1
     rw [← hwu]
@@ -341,7 +366,7 @@ theorem high_frame_transition_fixes_cusp
       KPMsFixedHaarDisintegration.archBasepoint F a₂ := by
     rw [← hp, KPMsActualCuspSource.archBasepoint_rational_mul]
   have hγ := frame_transition_component S U j a₁ a₂ ε₁ ε₂ u₁ u₂ γ he
-  apply atlas_high_overlap_stabilizes_cusp (nativeAtlas F ζ hζ R P S U) j Y hY
+  apply atlas_high_overlap_stabilizes_cusp (_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_nativeAtlas R P S U) j Y hY
     ⟨γ, hγ⟩ (KPMsFixedHaarDisintegration.archBasepoint F a₁)
   · rw [ha₁]
     refine ⟨KPCuspCharts.toArch F (p₁,t₁), ?_, rfl⟩
@@ -355,8 +380,7 @@ theorem high_frame_transition_fixes_cusp
     rw [KPCuspCharts.toArch_meanHeight F (KPCuspLogShape.dimension_pos F (nativeFamily F ζ hζ R P).totallyComplex)]
     exact ht₂
 
-theorem actual_full_frame_invariant (j : Cusp S U) (Y : ℝ)
-    (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff (nativeAtlas F ζ hζ R P S U) Y)
+theorem actual_full_frame_invariant  
     (a b : KPMsActualAngularSource.G F ζ hζ) (ha : a ∈ fullCuspDomain S U j Y) (hb : b ∈ fullCuspDomain S U j Y)
     (he : KPSmoothLocalQuotientCharts.quotientMap F ζ hζ a =
       KPSmoothLocalQuotientCharts.quotientMap F ζ hζ b) :
@@ -369,10 +393,10 @@ theorem actual_full_frame_invariant (j : Cusp S U) (Y : ℝ)
   obtain ⟨a₂,p₂,t₂,ε₂,u₂,ht₂,ha₂,he₂⟩ := hb
   have hfix := high_frame_transition_fixes_cusp S U j Y hY a₁ a₂ p₁ p₂ t₁ t₂
     ε₁ ε₂ u₁ u₂ ht₁ ht₂ ha₁ ha₂ η (he₁ ▸ he₂)
-  let σ := ((nativeAtlas F ζ hζ R P S U).cuspAtlas j.1).representative j.2
+  let σ := ((_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_nativeAtlas R P S U).cuspAtlas j.1).representative j.2
   obtain ⟨y,x,hupper⟩ := rational_upper_literal_factorization F ζ hζ (σ⁻¹ * η * σ)
     (KPMsActualAngularTransitionSource.cusp_fixing_upper F _ σ η
-      (((nativeAtlas F ζ hζ R P S U).cuspAtlas j.1).representative_formula j.2) hfix)
+      (((_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_nativeAtlas R P S U).cuspAtlas j.1).representative_formula j.2) hfix)
   apply Eq.symm
   apply framedFullAngular_upper_transition F ζ hζ (nativeDatum F ζ hζ)
     (nativeDisintegration F ζ hζ R P S U).radial (cuspRepresentative S U j) a _ y x
@@ -380,11 +404,9 @@ theorem actual_full_frame_invariant (j : Cusp S U) (Y : ℝ)
   dsimp [σ, cuspRepresentative]
   group
 
-theorem cuspFullAngular_continuousOn (j : Cusp S U) (Y : ℝ)
-    (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff (nativeAtlas F ζ hζ R P S U) Y) :
+theorem cuspFullAngular_continuousOn   :
     ContinuousOn (fun x => (framedFullAngular F ζ hζ (nativeDatum F ζ hζ)
-        (nativeDisintegration F ζ hζ R P S U).radial (cuspRepresentative S U j) (cuspLift S U j Y x) :
-      FullOmega F ζ hζ (nativeDatum F ζ hζ))) (cuspEnd S U j Y) := by
+        (nativeDisintegration F ζ hζ R P S U).radial (cuspRepresentative S U j) (cuspLift S U j Y x))) (cuspEnd S U j Y) := by
   letI : IsTopologicalGroup (KPMsActualAngularSource.G F ζ hζ) :=
     (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.1
   have hq : Continuous (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ) := continuous_quotient_mk'
@@ -402,13 +424,14 @@ theorem cuspFullAngular_continuousOn (j : Cusp S U) (Y : ℝ)
     (fun a ha b hb he => actual_full_frame_invariant S U j Y hY a b ha hb he)
   rw [quotientMap_image_fullCuspDomain S U j Y hY] at hc
   exact hc
-theorem cuspEnd_isOpen (j : Cusp S U) (Y : ℝ)
-    (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff (nativeAtlas F ζ hζ R P S U) Y) :
+theorem cuspEnd_isOpen   :
     IsOpen (cuspEnd S U j Y) := by
   letI : IsTopologicalGroup (KPMsActualAngularSource.G F ζ hζ) :=
     (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.1
   rw [← quotientMap_image_fullCuspDomain S U j Y hY]
   exact isOpenMap_quotient_mk'_mul _ (isOpen_fullCuspDomain S U j Y)
+end
+
 
 theorem chart_projection (j : Cusp S U)
     (a : KPSmoothActualFlowData.GInfinity F) (ε : rootsOfUnity 3 F)
@@ -420,9 +443,9 @@ theorem chart_projection (j : Cusp S U)
       Quotient.mk _ (KPMsFixedHaarDisintegration.archBasepoint F a,
         (nativeAtlas F ζ hζ R P S U).representative j.1) := by
   have hu := u.property
-  simp only [S.level_matching (cofinalLevel F ζ hζ U)] at hu
+  simp only [S.level_matching (_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_cofinalLevel U)] at hu
   obtain ⟨uf, huf, heq⟩ := hu
-  let uf' : (S.atlasLevel (cofinalLevel F ζ hζ U)).toOpenSubgroup := ⟨uf, huf⟩
+  let uf' : (S.atlasLevel (_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_cofinalLevel U)).toOpenSubgroup := ⟨uf, huf⟩
   have heq' : uf'.val.val = u.val := heq
   have hcentre : (KPCuspGenuineMonodromy.central F ζ hζ ε).val =
       KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε := rfl
@@ -430,12 +453,12 @@ theorem chart_projection (j : Cusp S U)
   simp only [mul_assoc]
   rw [← Subgroup.coe_mul, ← Subgroup.coe_mul, P.formula]
   apply Quotient.sound
-  change (KPFiniteCuspAtlas.sphericalRelation F ζ hζ (S.atlasLevel (cofinalLevel F ζ hζ U))).r _ _
+  change (KPFiniteCuspAtlas.sphericalRelation F ζ hζ (S.atlasLevel (_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_cofinalLevel U))).r _ _
   refine ⟨1, ε⁻¹, uf'⁻¹, by simp, ?_⟩
   simp only [map_one, one_mul, mul_assoc]
   have hc : KPCuspGenuineMonodromy.central F ζ hζ ε⁻¹ *
-      (nativeAtlas F ζ hζ R P S U).representative j.1 =
-      (nativeAtlas F ζ hζ R P S U).representative j.1 *
+      (_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_nativeAtlas R P S U).representative j.1 =
+      (_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_nativeAtlas R P S U).representative j.1 *
         KPCuspGenuineMonodromy.central F ζ hζ ε⁻¹ := by
     apply Subtype.ext
     exact (Subgroup.mem_center_iff.mp
@@ -470,7 +493,7 @@ theorem spherical_modulus_of_cusp_basepoint
     have h1 : Real.log Y < t * (2 * (KPCuspLogShape.dimension F : ℝ)) :=
       (div_lt_iff₀ hd2).mp ht
     linarith [mul_comm t (2 * (KPCuspLogShape.dimension F : ℝ))]
-  have hYexp : Y < Real.exp (2 * (KPCuspLogShape.dimension F : ℝ) * t) :=
+  have hYexp  :=
     (Real.log_lt_iff_lt_exp hY.1).mp hlog
   let r : Set.Ioi Y := ⟨Real.exp (2 * (KPCuspLogShape.dimension F : ℝ) * t), hYexp⟩
   have hrval : r.val = Real.exp (2 * (KPCuspLogShape.dimension F : ℝ) * t) := rfl
@@ -494,9 +517,9 @@ theorem spherical_modulus_of_cusp_basepoint
   have hchart : (nativeDisintegration F ζ hζ R P S U).chart Y hY
       (⟨j, Quotient.mk _ p₀⟩, r) =
       Quotient.mk _ (KPCuspSiegel.action F
-        (((nativeAtlas F ζ hζ R P S U).cuspAtlas j.1).representative j.2)
+        (((_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_nativeAtlas R P S U).cuspAtlas j.1).representative j.2)
         (KPCuspCharts.toArch F (p,t)),
-        (nativeAtlas F ζ hζ R P S U).representative j.1) := by
+        (_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_nativeAtlas R P S U).representative j.1) := by
     rw [(nativeDisintegration F ζ hζ R P S U).chart_formula Y hY j p₀ r]
     simp only [KPFiniteCuspAtlas.componentMap, KPCuspSiegel.projection,
       Quotient.lift_mk]
@@ -520,7 +543,7 @@ theorem finite_frame (S : NativeRecipe F ζ hζ R P)
           ((nativeAtlas F ζ hζ R P S U).representative j.1).val *
             KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε * u.val := by
   obtain ⟨a,c,hg⟩ := KPMsActualCuspSource.arch_finite_factorization F ζ hζ g
-  let T := nativeAtlas F ζ hζ R P S U
+  let T := _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_nativeAtlas R P S U
   obtain ⟨⟨i,q⟩,hq⟩ := T.components.surjective (Quotient.mk _ (KPMsFixedHaarDisintegration.archBasepoint F a,c))
   obtain ⟨z,rfl⟩ := Quotient.mk_surjective q
   rw [T.components_formula] at hq
@@ -536,15 +559,15 @@ theorem finite_frame (S : NativeRecipe F ζ hζ R P)
     rw [mul_smul, mul_smul, ← hη, inv_smul_smul,
       ← (T.cuspAtlas i).representative_formula j, inv_smul_smul]
   obtain ⟨θ,v,hv⟩ := KPCuspGenuineMonodromy.finiteComparison_exists F ζ hζ
-    (S.atlasLevel (cofinalLevel F ζ hζ U)) (T.representative i) η⁻¹
+    (S.atlasLevel (_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_cofinalLevel U)) (T.representative i) η⁻¹
   let tau := η.val⁻¹ * δ
   obtain ⟨ρ,hρ⟩ := KPMsActualCuspSource.rationalLift_finite_factor F ζ hζ tau
   change rationalLift F ζ hζ tau = _ at hρ
   let a' := KPMsActualCuspSource.archRational F tau * a
   let e := ρ * θ * ε⁻¹
-  let w : KPGlobalTorusFunctionData.globalLevel F ζ hζ (cofinalLevel F ζ hζ U) :=
+  let w : KPGlobalTorusFunctionData.globalLevel F ζ hζ (_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_cofinalLevel U) :=
     ⟨((v * u⁻¹).val : KPFiniteCuspAtlas.FiniteCover F ζ hζ).val, by
-      rw [S.level_matching (cofinalLevel F ζ hζ U)]
+      rw [S.level_matching (_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_cofinalLevel U)]
       exact ⟨(v*u⁻¹).val,(v*u⁻¹).property,rfl⟩⟩
   have hfin : KPCuspGenuineMonodromy.central F ζ hζ ρ *
       KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ tau * c =
@@ -585,7 +608,7 @@ theorem finite_frame (S : NativeRecipe F ζ hζ R P)
         simp only [map_mul,mul_assoc]
         rfl
   refine ⟨⟨i,j⟩,b,a',e,w,upper_of_infinity_fixed b hb,?_⟩
-  have htau : cuspRepresentative S U (⟨i,j⟩ : Cusp S U) * rationalLift F ζ hζ b = rationalLift F ζ hζ tau := by
+  have htau : cuspRepresentative S U (⟨i,j⟩) * rationalLift F ζ hζ b = rationalLift F ζ hζ tau := by
     change rationalLift F ζ hζ σ * rationalLift F ζ hζ b = _
     rw [← KPMsActualAngularTransitionSource.rationalLift_mul]
     congr 1
@@ -647,7 +670,7 @@ theorem offset_frame (j : Cusp S U) (ε : rootsOfUnity 3 F)
         KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε * u.val) =
       cuspOffset F ζ hζ R P S U j := by
   have hu := u.property
-  simp only [S.level_matching (cofinalLevel F ζ hζ U)] at hu
+  simp only [S.level_matching (_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_cofinalLevel U)] at hu
   obtain ⟨w, hw, hwu⟩ := hu
   have hp : PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ u.val = 1 := by
     rw [← hwu]; exact finite_archProjection w
@@ -656,11 +679,11 @@ theorem offset_frame (j : Cusp S U) (ε : rootsOfUnity 3 F)
     (KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε) = 1 at hz
   have hf : KPMsAngularSourceRecipe.finiteComponent F ζ hζ
       ((cuspRepresentative S U j)⁻¹ *
-        (((nativeAtlas F ζ hζ R P S U).representative j.1).val *
+        (((_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_nativeAtlas R P S U).representative j.1).val *
           KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε * u.val)) =
       KPMsAngularSourceRecipe.finiteComponent F ζ hζ
         ((cuspRepresentative S U j)⁻¹ *
-          ((nativeAtlas F ζ hζ R P S U).representative j.1).val) *
+          ((_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_nativeAtlas R P S U).representative j.1).val) *
           KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε * u.val := by
     unfold KPMsAngularSourceRecipe.finiteComponent
     simp only [map_mul, hz, hp, mul_one]
@@ -684,12 +707,15 @@ theorem frame_norm (j : Cusp S U)
           ((nativeAtlas F ζ hζ R P S U).representative j.1).val *
           KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε * u.val)) : ℝ≥0) : ℝ) =
       (cuspOffset F ζ hζ R P S U j).val * Real.exp (2 * (KPCuspLogShape.dimension F : ℝ) * t) := by
-  have he := S.height_normalized (cofinalLevel F ζ hζ U) j a p t ε u ha
+  have he := S.height_normalized (_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_cofinalLevel U) j a p t ε u ha
   dsimp only at he
   rw [offset_frame S U j ε u] at he
   simpa only [KPMsAngularSourceRecipe.frame, mul_assoc] using he
 
-theorem radius_eq_offset_modulus (j : Cusp S U) (Y : ℝ)
+section
+variable (j : Cusp S U) (Y : ℝ)
+include j Y
+theorem radius_eq_offset_modulus  
     (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff (nativeAtlas F ζ hζ R P S U) Y)
     (x : X F ζ hζ) (hx : x ∈ cuspEnd S U j Y) :
     (framedRadius F ζ hζ (nativeDatum F ζ hζ) (cuspRepresentative S U j)
@@ -703,9 +729,9 @@ theorem radius_eq_offset_modulus (j : Cusp S U) (Y : ℝ)
   change ((KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ (nativeDatum F ζ hζ)
     ((cuspRepresentative S U j)⁻¹ * cuspLift S U j Y x) : ℝ≥0) : ℝ) = _
   rw [he]
-  exact frame_norm S U j a p t ε u ha
+  apply frame_norm <;> assumption
 
-theorem cuspRadius_continuousOn (j : Cusp S U) (Y : ℝ)
+theorem cuspRadius_continuousOn  
     (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff (nativeAtlas F ζ hζ R P S U) Y) :
     ContinuousOn (fun x => (framedRadius F ζ hζ (nativeDatum F ζ hζ) (cuspRepresentative S U j) (cuspLift S U j Y x)).val) (cuspEnd S U j Y) := by
   letI : IsTopologicalGroup (KPMsActualAngularSource.G F ζ hζ) :=
@@ -729,10 +755,10 @@ theorem cuspRadius_continuousOn (j : Cusp S U) (Y : ℝ)
     obtain ⟨a₂,p₂,t₂,ε₂,u₂,ht₂,ha₂,he₂⟩ := hb
     have hfix := high_frame_transition_fixes_cusp S U j Y hY a₁ a₂ p₁ p₂ t₁ t₂
       ε₁ ε₂ u₁ u₂ ht₁ ht₂ ha₁ ha₂ η (he₁ ▸ he₂)
-    let σ := ((nativeAtlas F ζ hζ R P S U).cuspAtlas j.1).representative j.2
+    let σ := ((_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_nativeAtlas R P S U).cuspAtlas j.1).representative j.2
     obtain ⟨y,x,hupper⟩ := rational_upper_literal_factorization F ζ hζ (σ⁻¹ * η * σ)
       (KPMsActualAngularTransitionSource.cusp_fixing_upper F _ σ η
-        (((nativeAtlas F ζ hζ R P S U).cuspAtlas j.1).representative_formula j.2) hfix)
+        (((_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_nativeAtlas R P S U).cuspAtlas j.1).representative_formula j.2) hfix)
     have hframe : (cuspRepresentative S U j)⁻¹ * (KPMsActualCuspSource.rationalLift F ζ hζ η * a) =
         ((KPGlobalTorusFunctionData.s F ζ hζ y).val * KPGlobalTorusFunctionData.N F ζ hζ x) *
           ((cuspRepresentative S U j)⁻¹ * a) := by
@@ -756,13 +782,11 @@ theorem cuspRadius_continuousOn (j : Cusp S U) (Y : ℝ)
   rw [quotientMap_image_fullCuspDomain S U j Y hY] at hc
   exact hc
 
-theorem fullCoordinate_continuousOn (j : Cusp S U) (Y : ℝ)
-    (hY : OffsetAdmissible F ζ hζ R P S U Y) :
-    ContinuousOn (fullCoordinate F ζ hζ R P S U j Y)
-      (cuspEnd S U j (Y / (cuspOffset F ζ hζ R P S U j).val)) :=
+def fullCoordinate_continuousOn  
+    (hY : OffsetAdmissible F ζ hζ R P S U Y)  :=
   cuspFullAngular_continuousOn S U j _ (hY j)
 
-theorem modulus_continuousOn (j : Cusp S U) (Y : ℝ)
+theorem modulus_continuousOn  
     (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff (nativeAtlas F ζ hζ R P S U) Y) :
     ContinuousOn (fun x => (nativeDisintegration F ζ hζ R P S U).modulus
       (P.projection (S.atlasLevel (cofinalLevel F ζ hζ U)) x)) (cuspEnd S U j Y) := by
@@ -773,21 +797,23 @@ theorem modulus_continuousOn (j : Cusp S U) (Y : ℝ)
   rw [radius_eq_offset_modulus S U j Y hY x hx,
     mul_div_cancel_left₀ _ (ne_of_gt (cuspOffset F ζ hζ R P S U j).property)]
 
-theorem cuspShell_measurable (j : Cusp S U) (Y : ℝ)
+theorem cuspShell_measurable  
     (hY : OffsetAdmissible F ζ hζ R P S U Y) :
     MeasurableSet (cuspShell F ζ hζ R P S U j Y) := by
   have hm := ((nativeDisintegration F ζ hζ R P S U).measurable_modulus.comp
-    (P.continuous (S.atlasLevel (cofinalLevel F ζ hζ U))).measurable) (measurableSet_Ioc (a := Y / (cuspOffset F ζ hζ R P S U j).val)
+    (P.continuous (S.atlasLevel (_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_cofinalLevel U))).measurable) (measurableSet_Ioc (a := Y / (cuspOffset F ζ hζ R P S U j).val)
       (b := 2 * Y / (cuspOffset F ζ hζ R P S U j).val))
   exact (cuspEnd_isOpen S U j _ (hY j)).measurableSet.inter hm
 
-theorem fullCoordinate_aemeasurable (j : Cusp S U) (Y : ℝ)
+theorem fullCoordinate_aemeasurable  
     (hY : OffsetAdmissible F ζ hζ R P S U Y) :
     AEMeasurable (fullCoordinate F ζ hζ R P S U j Y)
       (R.quotientHaar.restrict (cuspShell F ζ hζ R P S U j Y)) := by
   letI : BorelSpace (FullOmega F ζ hζ (nativeDatum F ζ hζ)) := ⟨rfl⟩
   exact ((fullCoordinate_continuousOn S U j Y hY).mono Set.inter_subset_left).aemeasurable
     (cuspShell_measurable S U j Y hY)
+end
+
 
 theorem shell_reaches (S : NativeRecipe F ζ hζ R P)
     (U : KPMsActualAngularSource.Level F ζ hζ) (Y r₀ : ℝ)
@@ -808,16 +834,16 @@ theorem shell_reaches (S : NativeRecipe F ζ hζ R P)
   let r : KPMsFixedHaarDisintegration.Radius := ⟨r₀, lt_trans hYpos hr.1⟩
   let t₀ := KPGlobalTorusFunctionData.torusArchChart F ζ hζ (KPMsFixedHaarDisintegration.positiveSlots F B.slot r)
   let v := KPMsFixedHaarDisintegration.radialSection F ζ hζ B.slot r * g.val
-  have hdelt : ((KPGlobalTorusFunctionData.delta F ζ hζ t₀ : ℝ≥0) : ℝ) = r.val := by
+  have hdelt : ((KPGlobalTorusFunctionData.delta F ζ hζ t₀) : ℝ) = r.val := by
     change ((KPGlobalTorusFunctionData.ideleAbs F
-      (KPGlobalTorusFunctionData.p F ζ hζ t₀) : ℝ≥0) : ℝ) = _
+      (KPGlobalTorusFunctionData.p F ζ hζ t₀)) : ℝ) = _
     rw [B.lift_ratio, B.ell_norm]
-  have hvnorm : ((KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ (nativeDatum F ζ hζ) v : ℝ≥0) : ℝ) = r.val := by
+  have hvnorm : ((KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ (nativeDatum F ζ hζ) v) : ℝ) = r.val := by
     have hn : KPGlobalTorusFunctionData.N F ζ hζ 0 = 1 :=
       (KPGlobalTorusFunctionData.Nhom F ζ hζ).map_one
     have hm := KPGlobalTorusBorelTwistCompatibility.iwasawaNorm_borel_mul F ζ hζ (nativeDatum F ζ hζ) t₀ 0 g.val
     simp only [hn, mul_one, g.property] at hm
-    exact (congrArg (fun n : (ℝ≥0)ˣ => ((n : ℝ≥0) : ℝ)) hm).trans hdelt
+    exact (congrArg (fun n : (ℝ≥0)ˣ => (n : ℝ)) hm).trans hdelt
   obtain ⟨j,b,a,ε,u,hb,he⟩ := finite_frame S U v
   obtain ⟨y,z,hb'⟩ := rational_upper_literal_factorization F ζ hζ b hb
   let σ := cuspRepresentative S U j
@@ -832,7 +858,7 @@ theorem shell_reaches (S : NativeRecipe F ζ hζ R P)
     exact hvnorm
   let Z := Y / (cuspOffset F ζ hζ R P S U j).val
   have hZ := hY j
-  let σ₀ := ((nativeAtlas F ζ hζ R P S U).cuspAtlas j.1).representative j.2
+  let σ₀ := ((_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_nativeAtlas R P S U).cuspAtlas j.1).representative j.2
   let c := (KPCuspCharts.toArchHomeomorph F (KPCuspLogShape.dimension_pos F (nativeFamily F ζ hζ R P).totallyComplex)).symm
     (KPCuspSiegel.action F σ₀⁻¹ (KPMsFixedHaarDisintegration.archBasepoint F a))
   have hc : KPMsFixedHaarDisintegration.archBasepoint F a = KPCuspSiegel.action F σ₀ (KPCuspCharts.toArch F c) := by
@@ -844,7 +870,7 @@ theorem shell_reaches (S : NativeRecipe F ζ hζ R P)
     apply hnorm.symm.trans
     dsimp only [h, σ]
     rw [he]
-    exact frame_norm S U j a c.1 c.2 ε u hc
+    apply frame_norm <;> assumption
   have hd : 0 < 2 * (KPCuspLogShape.dimension F : ℝ) :=
     mul_pos (by norm_num) (Nat.cast_pos.mpr (KPCuspLogShape.dimension_pos F (nativeFamily F ζ hζ R P).totallyComplex))
   have ht : KPMsFixedHaarDisintegration.logHeight (F := F) Z < c.2 := by
@@ -865,7 +891,7 @@ theorem shell_reaches (S : NativeRecipe F ζ hζ R P)
   have hm := spherical_modulus_of_cusp_basepoint S U j Z hZ a c.1 c.2 ε u ht hc
   rw [← he] at hm
   have hmod : (nativeDisintegration F ζ hζ R P S U).modulus
-      (P.projection (S.atlasLevel (cofinalLevel F ζ hζ U)) x) = r.val / (cuspOffset F ζ hζ R P S U j).val := by
+      (P.projection (S.atlasLevel (_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_cofinalLevel U)) x) = r.val / (cuspOffset F ζ hζ R P S U j).val := by
     rw [hm, hnsource, mul_div_cancel_left₀ _ (ne_of_gt (cuspOffset F ζ hζ R P S U j).property)]
   have hang₀ := framedFullAngular_upper_transition F ζ hζ (nativeDatum F ζ hζ) B σ (σ*v) h y z (by
     simpa only [inv_mul_cancel_left] using hframe)
@@ -902,11 +928,11 @@ theorem cusp_mass_pos (j : Cusp S U) (Y : ℝ)
     0 < (ENNReal.ofReal (2 * Y) • Measure.map (fullCoordinate F ζ hζ R P S U j Y)
       (R.quotientHaar.restrict (cuspShell F ζ hζ R P S U j Y))) E := by
   letI : BorelSpace (FullOmega F ζ hζ (nativeDatum F ζ hζ)) := ⟨rfl⟩
-  letI : R.quotientHaar.IsOpenPosMeasure :=
+  letI  :=
     (KPSmoothLocalQuotientCharts.quotient_full_support F ζ hζ R).1
   let Z := Y / (cuspOffset F ζ hζ R P S U j).val
   let m := fun z => (nativeDisintegration F ζ hζ R P S U).modulus
-    (P.projection (S.atlasLevel (cofinalLevel F ζ hζ U)) z)
+    (P.projection (S.atlasLevel (_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_cofinalLevel U)) z)
   let A := cuspEnd S U j Z ∩ m ⁻¹' Set.Ioo Z (2 * Y / (cuspOffset F ζ hζ R P S U j).val)
   have hopenA : IsOpen A := (modulus_continuousOn S U j Z (hY j)).isOpen_inter_preimage
     (cuspEnd_isOpen S U j Z (hY j)) isOpen_Ioo
@@ -949,7 +975,7 @@ theorem fullShell_support (Y : ℝ) (hY : OffsetAdmissible F ζ hζ R P S V Y) :
     (f := fun k : NativeCusp F ζ hζ R P S V =>
       (ENNReal.ofReal (2 * Y) • Measure.map (fullCoordinate F ζ hζ R P S V k Y)
         (R.quotientHaar.restrict (cuspShell F ζ hζ R P S V k Y))) E)
-    (fun k _ => (zero_le : (0 : ℝ≥0∞) ≤ _)) (Finset.mem_univ j)
+    (fun k _ => zero_le) (Finset.mem_univ j)
 
 end DedekindZetaZeroFree.KPMsNativeOffsetMass
 
@@ -968,7 +994,7 @@ theorem finiteOffset_right_center_level
         KPMsAngularSourceRecipe.finiteOffset F ζ hζ σ f := by
   have hu : u.val ∈ KPFiniteCuspAtlas.FiniteCover F ζ hζ := by
     have hm := u.property
-    simp only [S.level_matching (cofinalLevel F ζ hζ V)] at hm
+    simp only [S.level_matching (_root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.FullSupportGeometry.context_cofinalLevel V)] at hm
     obtain ⟨v,hv,he⟩ := hm
     rw [← he]
     exact v.property

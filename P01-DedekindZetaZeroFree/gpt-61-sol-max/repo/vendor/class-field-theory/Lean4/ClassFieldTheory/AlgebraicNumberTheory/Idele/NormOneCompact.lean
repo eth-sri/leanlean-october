@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.LocallyCompact
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.PrincipalNorm
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.PrincipalTopology
@@ -9,6 +11,7 @@ public import Mathlib.NumberTheory.NumberField.ClassNumber
 public import Mathlib.NumberTheory.NumberField.Units.DirichletTheorem
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -72,8 +75,7 @@ theorem range_integralStructureMap :
 /-- The everywhere integral finite ideles form a compact group. -/
 theorem isCompact_integralSubgroup :
     IsCompact
-      ((integralSubgroup (K := K) :
-        Subgroup (FiniteIdeleGroup K)) : Set (FiniteIdeleGroup K)) := by
+      ((integralSubgroup (K := K)) : Set (FiniteIdeleGroup K)) := by
   have hlocal :
       ∀ v : HeightOneSpectrum (𝓞 K),
         CompactSpace (v.adicCompletionIntegers K).units := by
@@ -174,8 +176,8 @@ theorem mem_annulus_iff (a : InfiniteIdeleGroup K) (B : ℝ) :
     a ∈ annulus (K := K) B ↔
       ∀ w : InfinitePlace K,
         Real.exp (-B) ≤
-            ‖((component w a : w.Completionˣ) : w.Completion)‖ ∧
-          ‖((component w a : w.Completionˣ) : w.Completion)‖ ≤
+            ‖((component w a) : w.Completion)‖ ∧
+          ‖((component w a) : w.Completion)‖ ≤
             Real.exp B := by
   constructor
   · rintro ⟨u, hu, rfl⟩ w
@@ -209,18 +211,18 @@ distinguished place omitted as in Dirichlet's unit theorem. -/
 def logNorm (a : InfiniteIdeleGroup K) :
     logSpace K :=
   fun w ↦ w.1.mult *
-    Real.log ‖((component w.1 a : w.1.Completionˣ) : w.1.Completion)‖
+    Real.log ‖((component w.1 a) : w.1.Completion)‖
 
 @[simp]
 theorem logNorm_mul (a b : InfiniteIdeleGroup K) :
     logNorm (a * b) = logNorm a + logNorm b := by
   ext w
   have ha :
-      ‖((component w.1 a : w.1.Completionˣ) :
+      ‖((component w.1 a) :
         w.1.Completion)‖ ≠ 0 :=
     norm_ne_zero_iff.mpr (component w.1 a).ne_zero
   have hb :
-      ‖((component w.1 b : w.1.Completionˣ) :
+      ‖((component w.1 b) :
         w.1.Completion)‖ ≠ 0 :=
     norm_ne_zero_iff.mpr (component w.1 b).ne_zero
   simp only [logNorm, Pi.add_apply, map_mul, Units.val_mul, norm_mul,
@@ -233,11 +235,9 @@ def ringUnitToFieldUnit :
 
 theorem norm_infiniteComponent_principalIdele (x : Kˣ)
     (w : InfinitePlace K) :
-    ‖((component w (IdeleGroup.principalIdele K x).1 :
-        w.Completionˣ) : w.Completion)‖ =
+    ‖((component w (IdeleGroup.principalIdele K x).1) : w.Completion)‖ =
       w (x : K) := by
-  change ‖(((WithAbs.equiv w.1).symm (x : K) :
-    WithAbs w.1) : w.Completion)‖ = w (x : K)
+  change ‖(((WithAbs.equiv w.1).symm (x : K)) : w.Completion)‖ = w (x : K)
   rw [NumberField.InfinitePlace.Completion.norm_coe,
     (WithAbs.equiv w.1).apply_symm_apply]
 
@@ -256,9 +256,7 @@ theorem logNorm_component_le {r : ℝ} (a : InfiniteIdeleGroup K)
     (h : ‖logNorm a‖ ≤ r)
     (w : {w : InfinitePlace K //
       w ≠ w₀ (K := K)}) :
-    |logNorm a w| ≤ r := by
-  simpa only [Real.norm_eq_abs] using
-    (norm_le_pi_norm (logNorm a) w).trans h
+    |logNorm a w| ≤ r := (norm_le_pi_norm (logNorm a) w).trans h
 
 /-- If the total archimedean norm is one, the omitted logarithmic coordinate
 is the negative sum of all the other coordinates. -/
@@ -268,12 +266,11 @@ theorem sum_logNorm_eq_neg_distinguished
     ∑ w, logNorm a w =
       -(w₀ (K := K)).mult *
         Real.log
-          ‖((component (w₀ (K := K)) a :
-              (w₀ (K := K)).Completionˣ) :
+          ‖((component (w₀ (K := K)) a) :
             (w₀ (K := K)).Completion)‖ := by
   have hprod :
       ∏ w : InfinitePlace K,
-          ‖((component w a : w.Completionˣ) : w.Completion)‖ ^ w.mult =
+          ‖((component w a) : w.Completion)‖ ^ w.mult =
         1 := by
     have h := congrArg
       (fun z : ℝ≥0ˣ ↦ (((z : ℝ≥0) : ℝ))) ha
@@ -284,17 +281,17 @@ theorem sum_logNorm_eq_neg_distinguished
       ∑ w : InfinitePlace K,
           w.mult *
             Real.log
-              ‖((component w a : w.Completionˣ) :
+              ‖((component w a) :
                 w.Completion)‖ = 0 := by
     calc
       ∑ w : InfinitePlace K,
           w.mult *
             Real.log
-              ‖((component w a : w.Completionˣ) :
+              ‖((component w a) :
                 w.Completion)‖ =
           Real.log
             (∏ w : InfinitePlace K,
-              ‖((component w a : w.Completionˣ) :
+              ‖((component w a) :
                 w.Completion)‖ ^ w.mult) := by
               rw [Real.log_prod]
               · apply Finset.sum_congr rfl
@@ -309,26 +306,28 @@ theorem sum_logNorm_eq_neg_distinguished
       (∑ w : {w : InfinitePlace K // w ≠ w₀ (K := K)},
           w.1.mult *
             Real.log
-              ‖((component w.1 a : w.1.Completionˣ) :
+              ‖((component w.1 a) :
                 w.1.Completion)‖) =
         -(w₀ (K := K)).mult *
           Real.log
-            ‖((component (w₀ (K := K)) a :
-                (w₀ (K := K)).Completionˣ) :
+            ‖((component (w₀ (K := K)) a) :
               (w₀ (K := K)).Completion)‖ := by
     simpa only [neg_mul] using
       (eq_neg_of_add_eq_zero_right hsum)
-  simpa only [logNorm] using hsum'
+  exact hsum'
 
+section
+variable {r : ℝ} (hr : 0 ≤ r) (a : InfiniteIdeleGroup K)
+    (hlog : ‖logNorm a‖ ≤ r)
+    (hnorm : archimedeanNorm a = 1)
+include r hr a hlog hnorm
 /-- A norm bound in the logarithmic space bounds every local logarithm.
 The harmless factor `#S∞` also covers the omitted coordinate. -/
 theorem abs_log_norm_component_le
-    {r : ℝ} (hr : 0 ≤ r) (a : InfiniteIdeleGroup K)
-    (hlog : ‖logNorm a‖ ≤ r)
-    (hnorm : archimedeanNorm a = 1)
+     
     (w : InfinitePlace K) :
     |Real.log
-        ‖((component w a : w.Completionˣ) : w.Completion)‖| ≤
+        ‖((component w a) : w.Completion)‖| ≤
       (Fintype.card (InfinitePlace K) : ℝ) * r := by
   have hmult :
       ∀ x : ℝ, 0 ≤ x → x ≤ w.mult * x := by
@@ -365,9 +364,7 @@ theorem abs_log_norm_component_le
 /-- Exponentiating the preceding logarithmic estimate gives a compact
 annulus containing the idele. -/
 theorem mem_annulus_of_logNorm_le
-    {r : ℝ} (hr : 0 ≤ r) (a : InfiniteIdeleGroup K)
-    (hlog : ‖logNorm a‖ ≤ r)
-    (hnorm : archimedeanNorm a = 1) :
+      :
     a ∈ annulus (K := K)
       ((Fintype.card (InfinitePlace K) : ℝ) * r) := by
   rw [mem_annulus_iff]
@@ -377,38 +374,39 @@ theorem mem_annulus_of_logNorm_le
     abs_log_norm_component_le hr a hlog hnorm w
   have hnpos :
       0 <
-        ‖((component w a : w.Completionˣ) :
+        ‖((component w a) :
           w.Completion)‖ :=
     norm_pos_iff.mpr (component w a).ne_zero
   have habs :
       -B ≤
           Real.log
-            ‖((component w a : w.Completionˣ) :
+            ‖((component w a) :
               w.Completion)‖ ∧
         Real.log
-            ‖((component w a : w.Completionˣ) :
-              w.Completion)‖ ≤ B := by
-    simpa only [B] using (abs_le.mp h)
+            ‖((component w a) :
+              w.Completion)‖ ≤ B := (abs_le.mp h)
   constructor
   · calc
       Real.exp (-B) ≤
           Real.exp
             (Real.log
-              ‖((component w a : w.Completionˣ) :
+              ‖((component w a) :
                 w.Completion)‖) :=
         Real.exp_le_exp.mpr habs.1
-      _ = ‖((component w a : w.Completionˣ) :
+      _ = ‖((component w a) :
             w.Completion)‖ :=
         Real.exp_log hnpos
   · calc
-      ‖((component w a : w.Completionˣ) :
+      ‖((component w a) :
           w.Completion)‖ =
           Real.exp
             (Real.log
-              ‖((component w a : w.Completionˣ) :
+              ‖((component w a) :
                 w.Completion)‖) :=
         (Real.exp_log hnpos).symm
       _ ≤ Real.exp B := Real.exp_le_exp.mpr habs.2
+end
+
 
 /-- A real basis obtained from the full unit lattice. -/
  def unitLatticeRealBasis :
@@ -422,7 +420,7 @@ theorem mem_annulus_of_logNorm_le
 
 /-- An explicit uniform logarithmic bound for representatives modulo the
 ordinary unit lattice. -/
-def logFundamentalBound : ℝ :=
+def logFundamentalBound  :=
   ∑ i, ‖unitLatticeRealBasis (K := K) i‖
 
 theorem logFundamentalBound_nonneg :
@@ -462,16 +460,10 @@ theorem exists_ringUnit_logNorm_le (a : InfiniteIdeleGroup K) :
       NumberField.Units.logEmbedding K
           (Additive.ofMul u.toMul⁻¹) =
         -(f : logSpace K) := by
-    calc
-      NumberField.Units.logEmbedding K
-          (Additive.ofMul u.toMul⁻¹) =
-          -NumberField.Units.logEmbedding K u := by
-            rw [← map_neg]
-            rfl
-      _ = -(f : logSpace K) := congrArg Neg.neg hu
+    simp_all
   rw [logNorm_mul, logNorm_principalRingUnit, hinv,
     ← sub_eq_add_neg, ← ZSpan.fract_apply]
-  exact ZSpan.norm_fract_le b (logNorm a)
+  apply ZSpan.norm_fract_le
 
 end InfiniteIdeleGroup
 
@@ -570,35 +562,27 @@ theorem exists_compactIntegralNormOneSet_representative
         QuotientGroup.mk' (principalSubgroup K) a := by
   obtain ⟨u, hu⟩ :=
     InfiniteIdeleGroup.exists_ringUnit_logNorm_le a.1
-  let p : IdeleGroup K :=
+  let p  :=
     principalIdele K
       (InfiniteIdeleGroup.ringUnitToFieldUnit (K := K) u)
-  let b : IdeleGroup K := a * p
+  let b  := a * p
   have hpIntegral :
-      p ∈ integralAtFinitePlaces (K := K) := by
-    exact principalRingUnit_mem_integralAtFinitePlaces u
+      p ∈ integralAtFinitePlaces (K := K) := principalRingUnit_mem_integralAtFinitePlaces u
   have hbIntegral :
-      b.2 ∈ FiniteIdeleGroup.integralSubgroup (K := K) := by
-    exact (integralAtFinitePlaces (K := K)).mul_mem hintegral
+      b.2 ∈ FiniteIdeleGroup.integralSubgroup (K := K) := (integralAtFinitePlaces (K := K)).mul_mem hintegral
       hpIntegral
   have hpNorm :
-      p ∈ normOneSubgroup (K := K) := by
-    exact principalSubgroup_le_normOneSubgroup
+      p ∈ normOneSubgroup (K := K) := principalSubgroup_le_normOneSubgroup
       ⟨InfiniteIdeleGroup.ringUnitToFieldUnit (K := K) u, rfl⟩
   have hbNorm :
       b ∈ normOneSubgroup (K := K) :=
     (normOneSubgroup (K := K)).mul_mem hnorm hpNorm
-  have hbArch :
-      InfiniteIdeleGroup.archimedeanNorm b.1 = 1 :=
+  have hbArch  :=
     archimedeanNorm_eq_one_of_normOne_integral b hbNorm hbIntegral
   have hbLog :
       ‖InfiniteIdeleGroup.logNorm b.1‖ ≤
-        InfiniteIdeleGroup.logFundamentalBound (K := K) := by
-    exact hu
-  have hbAnnulus :
-      b.1 ∈ InfiniteIdeleGroup.annulus (K := K)
-        ((Fintype.card (InfinitePlace K) : ℝ) *
-          InfiniteIdeleGroup.logFundamentalBound (K := K)) :=
+        InfiniteIdeleGroup.logFundamentalBound (K := K) := hu
+  have hbAnnulus  :=
     InfiniteIdeleGroup.mem_annulus_of_logNorm_le
       InfiniteIdeleGroup.logFundamentalBound_nonneg b.1 hbLog hbArch
   refine ⟨b,
@@ -620,7 +604,7 @@ theorem exists_compactIntegralNormOneSet_representative
 /-- For every ordinary ideal class which occurs on a norm-one idele, choose
 one such representative; use `1` for the (irrelevant) remaining classes. -/
  def normOneIdealClassRepresentative
-    (c : ClassGroup (𝓞 K)) : IdeleGroup K :=
+    (c : ClassGroup (𝓞 K))  :=
   if h : ∃ a : IdeleGroup K,
       a ∈ normOneSubgroup (K := K) ∧ idealClass a = c then
     Classical.choose h
@@ -646,7 +630,7 @@ private theorem idealClass_normOneIdealClassRepresentative
 
 /-- The finite set of chosen norm-one representatives of ordinary ideal
 classes. -/
-def normOneIdealClassRepresentativeSet : Set (IdeleGroup K) :=
+def normOneIdealClassRepresentativeSet  :=
   Set.range (normOneIdealClassRepresentative (K := K))
 
 theorem isCompact_normOneIdealClassRepresentativeSet :
@@ -680,7 +664,7 @@ theorem exists_integral_normOne_reduction
   have hrClass : idealClass r = idealClass a :=
     idealClass_normOneIdealClassRepresentative
       (idealClass a) ⟨a, ha, rfl⟩
-  let d : IdeleGroup K := a * r⁻¹
+  let d  := a * r⁻¹
   have hdClass : idealClass d = 1 := by
     dsimp [d]
     rw [map_mul, map_inv, hrClass]
@@ -691,8 +675,8 @@ theorem exists_integral_normOne_reduction
     change ClassGroup.mk K (fractionalIdeal d) = 1 at hdClass
     exact (classGroup_mk_eq_one_iff (fractionalIdeal d)).mp hdClass
   obtain ⟨x, hx⟩ := hdPrincipal
-  let p : IdeleGroup K := principalIdele K x
-  let b : IdeleGroup K := d * p⁻¹
+  let p  := principalIdele K x
+  let b  := d * p⁻¹
   have hbIntegral :
       b.2 ∈ FiniteIdeleGroup.integralSubgroup (K := K) := by
     change b ∈ integralAtFinitePlaces (K := K)
@@ -774,8 +758,7 @@ theorem image_compactNormOneClassCover :
     obtain ⟨a, rfl⟩ :=
       QuotientGroup.mk'_surjective
         (IdeleGroup.principalSubgroup K) q
-    have ha :
-        a ∈ IdeleGroup.normOneSubgroup (K := K) :=
+    have ha  :=
       (mk_mem_normOneSubgroup_iff a).mp hq
     obtain ⟨b, hbIntegral, hbNorm, hbClass⟩ :=
       IdeleGroup.exists_integral_normOne_reduction a ha
@@ -805,8 +788,7 @@ theorem image_compactNormOneClassCover :
                   rw [hcClass]
         _ =
             QuotientGroup.mk'
-              (IdeleGroup.principalSubgroup K) (b * r) := by
-                rw [map_mul]
+              (IdeleGroup.principalSubgroup K) (b * r) := rfl
         _ =
             QuotientGroup.mk'
               (IdeleGroup.principalSubgroup K) a := hbClass

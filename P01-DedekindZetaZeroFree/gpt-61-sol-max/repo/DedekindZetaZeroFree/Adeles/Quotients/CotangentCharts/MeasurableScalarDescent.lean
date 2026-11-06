@@ -32,19 +32,25 @@ def coordHomeomorph : M F ≃ₜ KPCuspGenuineMonodromy.SymmetricSpace F where
     apply (CotangentLogCoframe.A (d F)).symm.continuous.comp
     exact continuous_pi fun k => continuous_apply _
 
-theorem omega_open (a : ShrunkChart F ζ hζ U R P H) : IsOpen (omega a) :=
+section
+variable (a : ShrunkChart F ζ hζ U R P H)
+include a in
+theorem omega_open   : IsOpen (omega a) :=
   a.domain_open.preimage (coordHomeomorph (F := F) (ζ := ζ) (hζ := hζ)).continuous
 
-def chartHomeomorph (a : ShrunkChart F ζ hζ U R P H) : omega a ≃ₜ a.domain :=
+include a in
+def chartHomeomorph   : omega a ≃ₜ a.domain :=
   (coordHomeomorph (F := F) (ζ := ζ) (hζ := hζ)).subtype (by
     intro x
     rfl)
 
-def chartMeasure (a : ShrunkChart F ζ hζ U R P H) : Measure (omega a) :=
+include a in
+def chartMeasure   : Measure (omega a) :=
   Measure.comap (Subtype.val : omega a → M F)
     ((KPContCotangentOverlapNullEquivalence.liftedMeasure a).restrict (omega a))
 
-theorem coordinate_lift (a : ShrunkChart F ζ hζ U R P H) :
+include a in
+theorem coordinate_lift   :
     chartMeasure a = Measure.map (chartHomeomorph a).symm a.liftedMeasure := by
   let c := coordHomeomorph (F := F) (ζ := ζ) (hζ := hζ)
   let e := chartHomeomorph a
@@ -68,7 +74,8 @@ theorem coordinate_lift (a : ShrunkChart F ζ hζ U R P H) :
       simpa using y.property
   exact hmem
 
-theorem q_pushforward (a : ShrunkChart F ζ hζ U R P H) :
+include a in
+theorem q_pushforward   :
     Measurable (fun x : omega a => q a x.val) ∧
     Measure.map (fun x : omega a => q a x.val) (chartMeasure a) =
       (KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U).restrict a.baseDomain := by
@@ -85,7 +92,8 @@ theorem q_pushforward (a : ShrunkChart F ζ hζ U R P H) :
     rw [Homeomorph.apply_symm_apply]
   rw [hc, hp.exact_pushforward]
 
-theorem ae_chart_iff (a : ShrunkChart F ζ hζ U R P H)
+include a in
+theorem ae_chart_iff  
     (p : KPFiniteCuspAtlas.rawXU F ζ hζ U → Prop) (hp : MeasurableSet {x | p x}) :
     (∀ᵐ x ∂chartMeasure a, p (q a x.val)) ↔
       ∀ᵐ x ∂(KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U).restrict a.baseDomain, p x := by
@@ -133,10 +141,13 @@ theorem ae_cover_iff (cover : CountableCover F ζ hζ U R P H)
   subst j
   rfl
 
- theorem omega_subset (a : ShrunkChart F ζ hζ U R P H) :
+ include a in
+theorem omega_subset   :
     omega a ⊆ (isotropyChart a).omega := by
   intro x hx
   exact a.closure_subset (subset_closure hx)
+end
+
 
  def rationalBranch (a b : ShrunkChart F ζ hζ U R P H)
     (h : a.component = b.component)

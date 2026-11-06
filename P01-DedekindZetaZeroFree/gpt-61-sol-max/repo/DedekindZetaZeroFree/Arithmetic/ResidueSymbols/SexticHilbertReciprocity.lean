@@ -44,7 +44,7 @@ private theorem extended_sup_ne_top (A : SArithmeticData F) (I J : A.Exterior)
     intro x hx
     apply Ideal.Quotient.eq_zero_iff_mem.mp
     apply ArithGaussCRT.exteriorQuotientMap_injective A K
-    rw [map_zero, Ideal.quotientMap_mk]
+    rw [map_zero]
     exact Ideal.Quotient.eq_zero_iff_mem.mpr hx
   intro he
   have hk : A.extendIdeal K = ⊤ := by

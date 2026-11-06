@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Adeles.Lattices.NormalizedRayCosetLattice
 public import DedekindZetaZeroFree.HarmonicAnalysis.Poisson.RayLatticePeriodization
 public import DedekindZetaZeroFree.Arithmetic.Units.RayUnitHalfOpenDomain
 public import DedekindZetaZeroFree.Arithmetic.Units.RayUnitTorsionFibers
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -16,13 +19,16 @@ namespace DedekindZetaZeroFree.AbelianQuotient.RayTheta
 
 variable (K : Type) [Field K] [NumberField K]
 
-def q (t : ℝ) (h : RayCoset.logHyperplane K) : InfinitePlace K → ℝ :=
+def q (t : ℝ) (h : RayCoset.logHyperplane K)  :=
   fun v => t ^ (Module.finrank ℚ K : ℝ)⁻¹ * Real.exp (h.val v)
 
 variable {K}
 
-def fδ (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K))
-    (t : ℝ) : ℂ :=
+section
+variable (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K))
+include D δ
+def fδ  
+    (t : ℝ)  :=
   if 0 < t then
     (RayCoset.rayUnitTorsionCard K D.m : ℂ)⁻¹ *
       ∫ h in RayCoset.rayUnitHalfOpenDomain K D.m D.modulus_ne_bot,
@@ -32,8 +38,8 @@ def fδ (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K))
         ∂Theta.normalizedLogHaar K
   else 0
 
-def gδDual (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K))
-    (t : ℝ) : ℂ :=
+def gδDual  
+    (t : ℝ)  :=
   if 0 < t then
     ((RayCoset.rayUnitTorsionCard K D.m : ℂ) *
       (RayCoset.modulusCovolume K D.m : ℂ))⁻¹ *
@@ -47,18 +53,20 @@ def gδDual (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K))
         ∂Theta.normalizedLogHaar K
   else 0
 
-def f0δ (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K)) : ℂ :=
+def f0δ    :=
   if δ = ∅ ∧ (0 : euclidean.mixedSpace K) ∈ RayCoset.normalizedAffineCoset D then
     (RayCoset.rayUnitDomainVolume K D.m D.modulus_ne_bot : ℂ) /
       (RayCoset.rayUnitTorsionCard K D.m : ℂ)
   else 0
 
-def g0δ (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K)) : ℂ :=
+def g0δ    :=
   if δ = ∅ then
     (RayCoset.rayUnitDomainVolume K D.m D.modulus_ne_bot : ℂ) /
       ((RayCoset.rayUnitTorsionCard K D.m : ℂ) *
         (RayCoset.modulusCovolume K D.m : ℂ))
   else 0
+end
+
 
 end DedekindZetaZeroFree.AbelianQuotient.RayTheta
 

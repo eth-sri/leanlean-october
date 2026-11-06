@@ -37,10 +37,8 @@ section FinitePlaces
 variable {K : Type} [Field K]
     [NumberField K]
 
-/-- A completely decomposed coordinate place above the `i`-th chosen
-base prime. -/
-theorem exists_sUnitKummerCoordinatePlace
-    {Omega : Type} [Field Omega] [Algebra K Omega]
+section
+variable {Omega : Type} [Field Omega] [Algebra K Omega]
     [IsSepClosure K Omega]
     (E : IntermediateField K Omega)
     [FiniteDimensional K E] [IsGalois K E]
@@ -54,6 +52,11 @@ theorem exists_sUnitKummerCoordinatePlace
       Gal(E/K) ≃*
         (Fin r → Multiplicative (ZMod (n : ℕ))))
     (S : Finset (HeightOneSpectrum (𝓞 K)))
+include Omega E n hmu p v hp hv hn r eG S
+/-- A completely decomposed coordinate place above the `i`-th chosen
+base prime. -/
+theorem exists_sUnitKummerCoordinatePlace
+     
     (i : Fin
       (sUnitKummerPrimeCount
         (K := K) E n hmu r S)) :
@@ -140,20 +143,7 @@ theorem exists_sUnitKummerCoordinatePlace
 
 /-- The selected coordinate place above the `i`-th chosen base prime. -/
 noncomputable def sUnitKummerCoordinatePlace
-    {Omega : Type} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (E : IntermediateField K Omega)
-    [FiniteDimensional K E] [IsGalois K E]
-    [IsMulCommutative Gal(E/K)]
-    (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (p v : ℕ) (hp : p.Prime) (hv : 0 < v)
-    (hn : (n : ℕ) = p ^ v)
-    (r : ℕ)
-    (eG :
-      Gal(E/K) ≃*
-        (Fin r → Multiplicative (ZMod (n : ℕ))))
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
+     
     (i : Fin
       (sUnitKummerPrimeCount
         (K := K) E n hmu r S)) :=
@@ -166,20 +156,7 @@ noncomputable def sUnitKummerCoordinatePlace
 base prime. -/
 @[simp]
 theorem sUnitKummerCoordinatePlace_below
-    {Omega : Type} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (E : IntermediateField K Omega)
-    [FiniteDimensional K E] [IsGalois K E]
-    [IsMulCommutative Gal(E/K)]
-    (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (p v : ℕ) (hp : p.Prime) (hv : 0 < v)
-    (hn : (n : ℕ) = p ^ v)
-    (r : ℕ)
-    (eG :
-      Gal(E/K) ≃*
-        (Fin r → Multiplicative (ZMod (n : ℕ))))
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
+     
     (i : Fin
       (sUnitKummerPrimeCount
         (K := K) E n hmu r S)) :
@@ -220,20 +197,7 @@ theorem sUnitKummerCoordinatePlace_below
 Kummer extension over its coordinate fixed field. -/
 @[simp]
 theorem sUnitKummerCoordinatePlace_decompositionGroup
-    {Omega : Type} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (E : IntermediateField K Omega)
-    [FiniteDimensional K E] [IsGalois K E]
-    [IsMulCommutative Gal(E/K)]
-    (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (p v : ℕ) (hp : p.Prime) (hv : 0 < v)
-    (hn : (n : ℕ) = p ^ v)
-    (r : ℕ)
-    (eG :
-      Gal(E/K) ≃*
-        (Fin r → Multiplicative (ZMod (n : ℕ))))
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
+     
     (i : Fin
       (sUnitKummerPrimeCount
         (K := K) E n hmu r S)) :
@@ -280,20 +244,7 @@ theorem sUnitKummerCoordinatePlace_decompositionGroup
 /-- The `i`-th selected base prime is unramified in the full Kummer
 extension. -/
 theorem sUnitKummerChosenBasePlace_not_mem_ramified
-    {Omega : Type} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (E : IntermediateField K Omega)
-    [FiniteDimensional K E] [IsGalois K E]
-    [IsMulCommutative Gal(E/K)]
-    (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (p v : ℕ) (hp : p.Prime) (hv : 0 < v)
-    (hn : (n : ℕ) = p ^ v)
-    (r : ℕ)
-    (eG :
-      Gal(E/K) ≃*
-        (Fin r → Multiplicative (ZMod (n : ℕ))))
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
+     
     (i : Fin
       (sUnitKummerPrimeCount
         (K := K) E n hmu r S)) :
@@ -332,20 +283,7 @@ theorem sUnitKummerChosenBasePlace_not_mem_ramified
 
 /-- The chosen completed place at `p_i` is unramified in `N/K`. -/
 theorem sUnitKummerChosenBasePlace_isUnramified
-    {Omega : Type} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (E : IntermediateField K Omega)
-    [FiniteDimensional K E] [IsGalois K E]
-    [IsMulCommutative Gal(E/K)]
-    (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (p v : ℕ) (hp : p.Prime) (hv : 0 < v)
-    (hn : (n : ℕ) = p ^ v)
-    (r : ℕ)
-    (eG :
-      Gal(E/K) ≃*
-        (Fin r → Multiplicative (ZMod (n : ℕ))))
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
+     
     (i : Fin
       (sUnitKummerPrimeCount
         (K := K) E n hmu r S)) :
@@ -404,6 +342,8 @@ theorem sUnitKummerChosenBasePlace_isUnramified
         (_root_.chosenFinitePlaceExtension
           (L := N) _),
       hram⟩
+end
+
 
 end FinitePlaces
 

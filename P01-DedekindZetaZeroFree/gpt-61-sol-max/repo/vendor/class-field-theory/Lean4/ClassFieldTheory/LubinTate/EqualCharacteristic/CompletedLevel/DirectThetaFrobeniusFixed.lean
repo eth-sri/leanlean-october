@@ -63,25 +63,25 @@ noncomputable local instance equalCharacteristicDirectThetaFixedBaseAlgebra
       (equalCharacteristicCompletedUnramifiedField F.residueField) :=
   laurentSeriesCoefficientAlgebra
 
-noncomputable local instance
-    equalCharacteristicDirectThetaFixedBaseValuationIsNontrivial
-    (F : LocalField.{u, v} K) :
-    (Valued.v : Valuation
-      (equalCharacteristicCompletedUnramifiedField F.residueField) ℤᵐ⁰).IsNontrivial :=
-  equalCharacteristicCompletedBaseValuationIsNontrivial F.residueField
 
-noncomputable local instance
-    equalCharacteristicDirectThetaFixedBaseValuationRankOne
-    (F : LocalField.{u, v} K) :
-    (Valued.v : Valuation
-      (equalCharacteristicCompletedUnramifiedField F.residueField) ℤᵐ⁰).RankOne :=
-  equalCharacteristicCompletedBaseValuationRankOne F.residueField
 
-noncomputable local instance equalCharacteristicDirectThetaFixedBaseNormedField
-    (F : LocalField.{u, v} K) :
-    NontriviallyNormedField
-      (equalCharacteristicCompletedUnramifiedField F.residueField) :=
-  equalCharacteristicCompletedBaseNormedField F.residueField
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 noncomputable local instance equalCharacteristicDirectThetaFixedLevelNormedField
     (F : LocalField.{u, v} K) (n : ℕ) :
@@ -139,11 +139,14 @@ private theorem equalCharacteristicDirectThetaFixedCoefficientHom_continuous
       (Valued.integer (equalCharacteristicCompletedLevelField F n)) :=
   (equalCharacteristicCompletedLevelCoefficientHom F n).toAlgebra
 
+section
+variable (F : LocalField.{u, v} K)
+    [CharP K F.residueCharacteristic]
+    (u : F.residueField⟦X⟧ˣ) (n : ℕ)
+include F u n
 /-- Restriction of the completed theta-intertwining theorem Frobenius lift to the spectral valuation ring. -/
  noncomputable def equalCharacteristicCompletedIntegerFrobeniusLift
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      :
     Valued.integer (equalCharacteristicCompletedLevelField F n) →+*
       Valued.integer (equalCharacteristicCompletedLevelField F n) where
   toFun x := ⟨equalCharacteristicCompletedFrobeniusLiftEquiv F n u⁻¹ x, by
@@ -161,9 +164,7 @@ private theorem equalCharacteristicDirectThetaFixedCoefficientHom_continuous
 
 @[simp]
 private theorem equalCharacteristicCompletedIntegerFrobeniusLift_coe
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n : ℕ)
+     
     (x : Valued.integer (equalCharacteristicCompletedLevelField F n)) :
     ((equalCharacteristicCompletedIntegerFrobeniusLift F u n x :
       Valued.integer (equalCharacteristicCompletedLevelField F n)) :
@@ -173,9 +174,7 @@ private theorem equalCharacteristicCompletedIntegerFrobeniusLift_coe
   rfl
 
 private theorem equalCharacteristicCompletedIntegerFrobeniusLift_continuous
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      :
     Continuous (equalCharacteristicCompletedIntegerFrobeniusLift F u n) := by
   exact
     ((equalCharacteristicCompletedFrobeniusLift_continuous F u n).comp
@@ -183,9 +182,7 @@ private theorem equalCharacteristicCompletedIntegerFrobeniusLift_continuous
 
 private theorem
     equalCharacteristicCompletedIntegerFrobeniusLift_coefficientHom
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n : ℕ)
+     
     (f : (AlgebraicClosure F.residueField)⟦X⟧) :
     equalCharacteristicCompletedIntegerFrobeniusLift F u n
         (equalCharacteristicCompletedLevelCoefficientHom F n f) =
@@ -224,9 +221,7 @@ private theorem
       (k := F.residueField) f
 
 private theorem equalCharacteristicCompletedIntegerFrobeniusLift_hasEval
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n : ℕ)
+     
     (x : Valued.integer (equalCharacteristicCompletedLevelField F n))
     (hx : PowerSeries.HasEval x) :
     PowerSeries.HasEval
@@ -251,9 +246,7 @@ private theorem equalCharacteristicCompletedIntegerFrobeniusLift_hasEval
 
 /-- Convergent evaluation is semilinear for the completed theta-intertwining theorem Frobenius lift. -/
 private theorem equalCharacteristicCompletedIntegerFrobeniusLift_evaluation
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n : ℕ)
+     
     (x : Valued.integer (equalCharacteristicCompletedLevelField F n))
     (hx : PowerSeries.HasEval x)
     (f : ((AlgebraicClosure F.residueField)⟦X⟧)⟦X⟧) :
@@ -301,9 +294,7 @@ private theorem equalCharacteristicCompletedIntegerFrobeniusLift_evaluation
       (equalCharacteristicPowerSeriesFrobenius F.residueField) f)
 
 private theorem equalCharacteristicCompletedFrobeniusLift_residueHom
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n : ℕ) (c : F.residueField) :
+      (c : F.residueField) :
     equalCharacteristicCompletedFrobeniusLiftEquiv F n u⁻¹
         (equalCharacteristicCompletedLevelResidueHom F n c) =
       equalCharacteristicCompletedLevelResidueHom F n c := by
@@ -322,9 +313,7 @@ private theorem equalCharacteristicCompletedFrobeniusLift_residueHom
     F.residueField).commutes _
 
 private theorem equalCharacteristicCompletedFrobeniusLift_uniformizer
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      :
     equalCharacteristicCompletedFrobeniusLiftEquiv F n u⁻¹
         (equalCharacteristicCompletedLevelUniformizer F n) =
       equalCharacteristicCompletedLevelUniformizer F n := by
@@ -339,9 +328,7 @@ private theorem equalCharacteristicCompletedFrobeniusLift_uniformizer
     (k := F.residueField)
 
 private theorem equalCharacteristicCompletedFrobeniusLift_piEnd
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n : ℕ)
+     
     (x : equalCharacteristicCompletedLevelField F n) :
     equalCharacteristicCompletedFrobeniusLiftEquiv F n u⁻¹
         (equalCharacteristicLubinTateAmbientPiEnd F
@@ -352,11 +339,16 @@ private theorem equalCharacteristicCompletedFrobeniusLift_piEnd
   simp only [equalCharacteristicLubinTateAmbientPiEnd_apply,
     map_add, map_pow, map_mul,
     equalCharacteristicCompletedFrobeniusLift_uniformizer]
+end
 
-private theorem equalCharacteristicCompletedFrobeniusLift_piIterate
-    (F : LocalField.{u, v} K)
+
+section
+variable (F : LocalField.{u, v} K)
     [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n i : ℕ)
+    (u : F.residueField⟦X⟧ˣ)
+include F u
+private theorem equalCharacteristicCompletedFrobeniusLift_piIterate
+      (n i : ℕ)
     (x : equalCharacteristicCompletedLevelField F n) :
     equalCharacteristicCompletedFrobeniusLiftEquiv F n u⁻¹
         (equalCharacteristicLubinTateAmbientPiIterate F
@@ -374,9 +366,7 @@ private theorem equalCharacteristicCompletedFrobeniusLift_piIterate
         equalCharacteristicCompletedFrobeniusLift_piEnd]
 
 private theorem equalCharacteristicCompletedFrobeniusLift_ambientBracket
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n m : ℕ)
+      (n m : ℕ)
     (a : F.residueField⟦X⟧)
     (x : equalCharacteristicCompletedLevelField F n) :
     equalCharacteristicCompletedFrobeniusLiftEquiv F n u⁻¹
@@ -399,9 +389,7 @@ private theorem equalCharacteristicCompletedFrobeniusLift_ambientBracket
 `[u⁻¹](lambda)` back to `lambda`. -/
 private theorem
     equalCharacteristicCompletedFrobeniusLift_directBracketAtPrimitiveRoot
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      (n : ℕ) :
     equalCharacteristicCompletedFrobeniusLiftEquiv F n u⁻¹
         (equalCharacteristicLubinTateAmbientBracket F
           (equalCharacteristicCompletedLevelResidueHom F n)
@@ -431,9 +419,14 @@ private theorem
       (equalCharacteristicCompletedLevelUniformizer F n) (n + 1)
       (equalCharacteristicCompletedPrimitiveRoot F n)
       (equalCharacteristicCompletedPrimitiveRoot_torsion F n)
+end
 
+
+section
+variable (F : LocalField.{u, v} K)
+include F
 private theorem equalCharacteristicDirectThetaFixedEvaluation_hasEval_of_hasSubst
-    (F : LocalField.{u, v} K) (n : ℕ)
+      (n : ℕ)
     (x : Valued.integer (equalCharacteristicCompletedLevelField F n))
     (hx : PowerSeries.HasEval x)
     (a : ((AlgebraicClosure F.residueField)⟦X⟧)⟦X⟧)
@@ -449,7 +442,7 @@ private theorem equalCharacteristicDirectThetaFixedEvaluation_hasEval_of_hasSubs
         (equalCharacteristicDirectThetaFixedCoefficientHom_continuous F n) hx)
 
 private theorem equalCharacteristicDirectThetaFixedEvaluation_subst
-    (F : LocalField.{u, v} K) (n : ℕ)
+      (n : ℕ)
     (x : Valued.integer (equalCharacteristicCompletedLevelField F n))
     (hx : PowerSeries.HasEval x)
     (a f : ((AlgebraicClosure F.residueField)⟦X⟧)⟦X⟧)
@@ -475,7 +468,7 @@ private theorem equalCharacteristicDirectThetaFixedEvaluation_subst
         (PowerSeries.hasEval hx) f)
 
 private theorem equalCharacteristicDirectThetaFixedEvaluation_eq_of_point_eq
-    (F : LocalField.{u, v} K) (n : ℕ)
+      (n : ℕ)
     (x y : Valued.integer (equalCharacteristicCompletedLevelField F n))
     (hx : PowerSeries.HasEval x) (hy : PowerSeries.HasEval y)
     (hxy : x = y) :
@@ -486,7 +479,7 @@ private theorem equalCharacteristicDirectThetaFixedEvaluation_eq_of_point_eq
 
 private theorem
     equalCharacteristicDirectBracketEvaluationAtPrimitiveRoot_eq_sourceIterate
-    (F : LocalField.{u, v} K)
+     
     [CharP K F.residueCharacteristic]
     (n : ℕ) (a : F.residueField⟦X⟧) :
     equalCharacteristicCompletedLevelEvaluation F n
@@ -509,14 +502,19 @@ private theorem
   simp only [equalCharacteristicCompletedLevelEvaluation,
     PowerSeries.coe_eval₂Hom]
   rw [hpoint]
+end
 
+
+section
+variable (F : LocalField.{u, v} K)
+    [CharP K F.residueCharacteristic]
+    (u : F.residueField⟦X⟧ˣ) (n : ℕ)
+include F u n
 /-- Analytically evaluating `[u]` at the prescribed image
 `[u⁻¹](lambda)` returns the original completed primitive point. -/
 private theorem
     equalCharacteristicDirectBracketAtCompletedFrobeniusPrimitiveRoot_eq
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      :
     equalCharacteristicCompletedLevelEvaluation F n
         (equalCharacteristicCompletedIntegerFrobeniusLift F u n
           (equalCharacteristicCompletedPrimitiveRootInteger F n))
@@ -550,9 +548,7 @@ private theorem
 
 private theorem
     equalCharacteristicCompletedIntegerFrobeniusLift_directThetaFixed
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      :
     equalCharacteristicCompletedIntegerFrobeniusLift F u n
         (equalCharacteristicDirectThetaAtCompletedPrimitiveRoot F u n) =
       equalCharacteristicDirectThetaAtCompletedPrimitiveRoot F u n := by
@@ -612,9 +608,7 @@ private theorem
 whose action on `lambda` is `[u⁻¹](lambda)` fixes the genuine analytic
 theta value `theta(lambda)`. -/
 theorem equalCharacteristicCompletedFrobeniusLift_directThetaFixed
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      :
     equalCharacteristicCompletedFrobeniusLiftEquiv F n u⁻¹
         (equalCharacteristicDirectThetaAtCompletedPrimitiveRoot F u n :
           equalCharacteristicCompletedLevelField F n) =
@@ -622,6 +616,8 @@ theorem equalCharacteristicCompletedFrobeniusLift_directThetaFixed
         equalCharacteristicCompletedLevelField F n) := by
   exact congrArg Subtype.val
     (equalCharacteristicCompletedIntegerFrobeniusLift_directThetaFixed F u n)
+end
+
 
 end EqualCharacteristic
 end LubinTate

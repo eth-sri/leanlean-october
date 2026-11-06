@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Representatives.IntegralIdealClasses
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -13,7 +16,7 @@ namespace DedekindZetaZeroFree.AbelianQuotient
 
 def finiteRayModulusIdeal
     (K : Type) [Field K] [NumberField K]
-    (f : HeightOneSpectrum (𝓞 K) →₀ ℕ) : Ideal (𝓞 K) :=
+    (f : HeightOneSpectrum (𝓞 K) →₀ ℕ)  :=
   ∏ p ∈ f.support, p.asIdeal ^ f p
 
 theorem finiteRayModulusIdeal_ne_bot
@@ -64,7 +67,7 @@ theorem finiteRayModulusIdeal_coprime
     by_contra hne
     have h := sup_le le_rfl (hle.mpr hne)
     rw [htop] at h
-    exact p.isPrime.ne_top (top_unique h)
+    apply p.isPrime.ne_top <;> aesop
   · intro hz
     by_contra hne
     have heq := p.isMaximal.eq_of_le hne le_sup_left
@@ -79,7 +82,7 @@ theorem narrowIdealModulus_finiteRayModulusIdeal
   apply ClassFieldTheory.RayClassModulus.ext
   · ext p
     simp
-  · simpa using hc.symm
+  · exact hc.symm
 
 end DedekindZetaZeroFree.AbelianQuotient
 

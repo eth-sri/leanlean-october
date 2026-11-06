@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Algebra.QuadraticCharacterKernelIndex
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.RayClassSubgroupQuotientEquiv
 
 @[expose] public section
+
 
 open scoped NumberField Classical
 
@@ -38,8 +41,7 @@ theorem quadraticCharacter_of_rayClassRealization
         (QuotientGroup.mk x) = R.artin x := by
       change (QuotientGroup.kerLift R.artin) (QuotientGroup.mk x) = R.artin x
       rw [QuotientGroup.kerLift_mk]
-    simpa only [e, ClassFieldTheory.rayClassSubgroupQuotientEquiv, MulEquiv.trans_apply,
-      QuotientGroup.quotientMulEquivOfEq_mk] using this
+    exact this
   have hj : ∀ x : ClassFieldTheory.RayClassGroup m,
       j (QuotientGroup.mk x) = ⟨ψ x, MonoidHom.mem_range.mpr ⟨x, rfl⟩⟩ := by
     intro x

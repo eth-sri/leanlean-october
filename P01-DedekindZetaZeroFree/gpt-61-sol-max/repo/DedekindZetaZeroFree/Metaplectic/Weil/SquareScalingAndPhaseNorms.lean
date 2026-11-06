@@ -58,7 +58,10 @@ private lemma squareScaling_cutoff_scale (v : HeightOneSpectrum (𝓞 F))
   change ((Real.sqrt ‖(2 : v.adicCompletion F) * a.val‖ : ℂ) * (‖t.val‖ : ℂ)) *
     ((‖t⁻¹.val‖ : ℂ) * _) = _
   rw [mul_assoc, ← mul_assoc (‖t.val‖ : ℂ), ht, one_mul]
-private lemma squareScaling_traceHaar (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F)) :
+section
+variable (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
+include A v
+private lemma squareScaling_traceHaar   :
     (A.finiteTraceHaar v).IsAddHaarMeasure := by
   let K := v.adicCompletion F
   letI : LocallyCompactSpace K :=
@@ -77,8 +80,7 @@ private lemma squareScaling_traceHaar (A : SArithmeticData F) (v : HeightOneSpec
   · exact ENNReal.div_ne_zero.mpr ⟨by simpa using PoissonS.integerVolume_pos F v, hf⟩
   · exact ENNReal.div_ne_top ENNReal.ofReal_ne_top hp.ne'
 
-theorem finiteGamma_mul_sq (A : SArithmeticData F)
-    (v : HeightOneSpectrum (𝓞 F)) (a t : (v.adicCompletion F)ˣ) :
+theorem finiteGamma_mul_sq   (a t : (v.adicCompletion F)ˣ) :
     A.finiteGamma v (a * t ^ 2) = A.finiteGamma v a := by
   haveI := squareScaling_traceHaar A v
   have hq : 0 < (v.asIdeal.absNorm : ℝ) := by
@@ -103,18 +105,15 @@ theorem finiteGamma_mul_sq (A : SArithmeticData F)
   rw [← hN n (by dsimp [n]; omega), ← hM m (by dsimp [m]; omega)]
   exact squareScaling_cutoff_scale v (A.finiteTraceHaar v) a t n m hh
 
-theorem finiteGamma_norm (A : SArithmeticData F)
-    (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ) :
+theorem finiteGamma_norm   (a : (v.adicCompletion F)ˣ) :
     ‖A.finiteGamma v a‖ = 1 := by
   exact A.norm_finiteGamma v a
 
-theorem finiteWeilPhase_mul_sq (A : SArithmeticData F)
-    (v : HeightOneSpectrum (𝓞 F)) (a t : (v.adicCompletion F)ˣ) :
+theorem finiteWeilPhase_mul_sq   (a t : (v.adicCompletion F)ˣ) :
     A.finiteWeilPhase v (a * t ^ 2) = A.finiteWeilPhase v a := by
   rw [finiteWeilPhase, finiteWeilPhase, finiteGamma_mul_sq]
 
-theorem finiteWeilPhase_one (A : SArithmeticData F)
-    (v : HeightOneSpectrum (𝓞 F)) : A.finiteWeilPhase v 1 = 1 := by
+theorem finiteWeilPhase_one   : A.finiteWeilPhase v 1 = 1 := by
   have hne : A.finiteGamma v 1 ≠ 0 := by
     intro h0
     have h := A.finiteGamma_norm v 1
@@ -122,15 +121,15 @@ theorem finiteWeilPhase_one (A : SArithmeticData F)
     exact one_ne_zero h.symm
   rw [finiteWeilPhase, div_self hne]
 
-theorem finiteWeilPhase_sq (A : SArithmeticData F)
-    (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ) :
+theorem finiteWeilPhase_sq   (a : (v.adicCompletion F)ˣ) :
     A.finiteWeilPhase v (a ^ 2) = 1 := by
   rw [← one_mul (a ^ 2), finiteWeilPhase_mul_sq, finiteWeilPhase_one]
 
-theorem finiteWeilPhase_norm (A : SArithmeticData F)
-    (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ) :
+theorem finiteWeilPhase_norm   (a : (v.adicCompletion F)ˣ) :
     ‖A.finiteWeilPhase v a‖ = 1 := by
   rw [finiteWeilPhase, norm_div, A.finiteGamma_norm v a, A.finiteGamma_norm v 1, div_one]
+end
+
 
 theorem complexWeilPhase_mul_sq (A : SArithmeticData F)
     (w : InfinitePlace F) (a t : w.Completionˣ) :

@@ -91,41 +91,41 @@ theorem smallHilbertClassFieldIdeleExtensionMap_mk'
         (ideleClassExtension K L c) := by
   rfl
 
-omit [IsGalois K L] in
-/-- The concrete idele extension and extension of ideal classes form
-the naturality square on the small-Hilbert quotients. -/
-theorem smallHilbertClassFieldIdeleExtensionMap_naturality
-    (q : IdeleClassGroup K ⧸
-      GlobalClassFields.smallHilbertClassFieldNormSubgroup) :
-    GlobalClassFields.smallHilbertClassFieldQuotientEquivClassGroup
-        (K := L)
-        (smallHilbertClassFieldIdeleExtensionMap K L q) =
-      ClassGroup.extendedHom (𝓞 K) (𝓞 L)
-        (GlobalClassFields.smallHilbertClassFieldQuotientEquivClassGroup
-          (K := K) q) := by
-  induction q using QuotientGroup.induction_on with
-  | _ c =>
-      induction c using QuotientGroup.induction_on with
-      | _ a =>
-          change
-            GlobalClassFields.smallHilbertClassFieldQuotientEquivClassGroup
-                (K := L)
-                (QuotientGroup.mk'
-                  GlobalClassFields.smallHilbertClassFieldNormSubgroup
-                  (QuotientGroup.mk'
-                    (IdeleGroup.principalSubgroup L)
-                    (IdeleGroup.extension K L a))) =
-              ClassGroup.extendedHom (𝓞 K) (𝓞 L)
-                (GlobalClassFields.smallHilbertClassFieldQuotientEquivClassGroup
-                  (K := K)
-                  (QuotientGroup.mk'
-                    GlobalClassFields.smallHilbertClassFieldNormSubgroup
-                    (QuotientGroup.mk'
-                      (IdeleGroup.principalSubgroup K) a)))
-          rw [
-            GlobalClassFields.smallHilbertClassFieldQuotientEquivClassGroup_mk,
-            GlobalClassFields.smallHilbertClassFieldQuotientEquivClassGroup_mk,
-            IdeleGroup.idealClass_extension]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end SmallHilbertIdeleExtension
 

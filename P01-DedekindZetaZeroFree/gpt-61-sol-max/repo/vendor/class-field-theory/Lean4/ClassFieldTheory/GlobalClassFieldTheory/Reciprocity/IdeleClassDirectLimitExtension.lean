@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.GlobalClassFieldTheory.Reciprocity.IdeleClassDirectLimitAbstractFixedField
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -155,8 +158,8 @@ noncomputable def rationalAbstractExtensionIdeleClassEquiv
     IsScalarTower.of_algebraMap_eq' (RingHom.ext_rat _ _)
   letI : FiniteDimensional ℚ E :=
     FiniteDimensional.trans ℚ F E
-  letI : NumberField F := NumberField.of_module_finite ℚ F
-  letI : NumberField E := NumberField.of_module_finite ℚ E
+  letI  := NumberField.of_module_finite ℚ F
+  letI  := NumberField.of_module_finite ℚ E
   let eFixed :
       Additive (IdeleClassGroup E) ≃+
         KummerTheory.ambientFixedAddSubgroup
@@ -181,13 +184,16 @@ noncomputable def rationalAbstractExtensionIdeleClassEquiv
       rationalIdeleClassRepresentation K L hLK hnormal).trans
         eFixed.symm).trans eRelative.symm).trans eTower
 
+section
+variable (K : IntermediateField ℚ (SeparableClosure ℚ))
+    [FiniteDimensional ℚ K]
+    (c : RelativeIdeleGroup.ClassGroup ℚ K)
+include K c
 /-- In the direct-limit fixed-part comparison, one absolute left-coset
 action is the idele-class embedding selected by the corresponding
 embedding into the canonical normal closure. -/
 theorem rationalIdeleClassEquivFixed_relativeCosetAction_coe
-    (K : IntermediateField ℚ (SeparableClosure ℚ))
-    [FiniteDimensional ℚ K]
-    (c : RelativeIdeleGroup.ClassGroup ℚ K)
+     
     (q :
       (RamificationTheory.closedFixingSubgroup
           ℚ (SeparableClosure ℚ)
@@ -294,17 +300,13 @@ theorem rationalIdeleClassEquivFixed_relativeCosetAction_coe
             hKN)) c
   rw [(_root_.relativeIdeleClassBaseChangeMulEquiv
     (K := ℚ) (L := K)).symm_apply_apply]
-  exact
-    rationalRelativeIdeleClassEmbedding_smul_eq_classEmbedding
-      hKN σ.1 c
+  apply rationalRelativeIdeleClassEmbedding_smul_eq_classEmbedding
 
 /-- The abstract class-formation norm in the rational idele-class
 direct limit is the ordinary relative idele-class norm, embedded at the
 canonical normal closure. -/
 theorem rationalIdeleClassEquivFixed_relativeNorm_coe
-    (K : IntermediateField ℚ (SeparableClosure ℚ))
-    [FiniteDimensional ℚ K]
-    (c : RelativeIdeleGroup.ClassGroup ℚ K) :
+      :
     (relativeNorm rationalIdeleClassRepresentation
         (RamificationTheory.closedFixingSubgroup
           ℚ (SeparableClosure ℚ)
@@ -399,25 +401,7 @@ theorem rationalIdeleClassEquivFixed_relativeNorm_coe
           (∏ q : Q,
             RelativeIdeleGroup.classEmbedding
               (rationalBaseFixingCosetEquivNormalClosure K q) c) := by
-      let g :=
-        rationalRelativeIdeleClassToDirectLimit
-          (rationalNormalClosure K)
-      let f := fun q : Q =>
-        RelativeIdeleGroup.classEmbedding
-          (rationalBaseFixingCosetEquivNormalClosure K q) c
-      have hmap (s : Finset Q) :
-          g (s.prod f) =
-            s.prod (fun q => g (f q)) := by
-        induction s using Finset.induction_on with
-        | empty =>
-            exact g.map_one
-        | @insert q s hqs ih =>
-            rw [Finset.prod_insert hqs, Finset.prod_insert hqs,
-              g.map_mul, ih]
-      change
-        (∏ q : Q, g (f q)) =
-          g (∏ q : Q, f q)
-      exact (hmap Finset.univ).symm
+      simp_all
     _ =
         rationalRelativeIdeleClassToDirectLimit
           (rationalNormalClosure K)
@@ -461,8 +445,9 @@ theorem rationalIdeleClassEquivFixed_relativeNorm_coe
         _ =
             RelativeIdeleGroup.classInclusion
               ℚ (rationalNormalClosure K)
-              (RelativeIdeleGroup.Cohomology.ideleClassNorm ℚ K c) := by
-          rw [hnorm]
+              (RelativeIdeleGroup.Cohomology.ideleClassNorm ℚ K c) := rfl
+end
+
 
 /-- For a finite abstract rational field, the abstract norm to the base
 has the ordinary relative idele-class norm as its underlying direct-limit
@@ -600,10 +585,7 @@ theorem
       _root_.relativeIdeleClassBaseChangeMulEquiv
           (K := ℚ) (L := F) d =
         Additive.toMul c := by
-    simpa only [d] using
-      ((_root_.relativeIdeleClassBaseChangeMulEquiv
-        (K := ℚ) (L := F)).apply_symm_apply
-        (Additive.toMul c))
+    simp_all [d] <;> aesop
   have hcoe :
       (normToBase rationalIdeleClassRepresentation H.field
           (rationalAbstractFixedFieldIdeleClassEquivFixed
@@ -626,8 +608,7 @@ theorem
         Additive.ofMul
             (_root_.relativeIdeleClassBaseChangeMulEquiv
               (K := ℚ) (L := F) d) =
-          c := by
-      simpa only [ofMul_toMul] using congrArg Additive.ofMul hc
+          c := congrArg Additive.ofMul hc
     rw [hcAdd] at h
     exact h
   have hordinary :

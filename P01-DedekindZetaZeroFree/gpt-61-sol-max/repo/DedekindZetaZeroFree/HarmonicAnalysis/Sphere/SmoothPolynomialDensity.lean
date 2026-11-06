@@ -108,8 +108,8 @@ theorem polynomialSphere_smooth (p : MvPolynomial (Fin 3) ℂ) :
   have hx' : x ≠ 0 := hx
   simp [radialExtension, polynomialSphere, hx']
 
-noncomputable def densityOuterBump : ContDiffBump (0 : Ambient) :=
-  ⟨3 / 2, 2, by norm_num, by norm_num⟩
+
+
 
 open MeasureTheory
 open scoped RealInnerProductSpace

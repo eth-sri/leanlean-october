@@ -31,9 +31,12 @@ variable (F : Type) [Field F] [NumberField F]
  local instance whittakerCoinvariantRankOnePlusSectionAddCommGroup : AddCommGroup (sectionSpace S.borel P .plus 0) := inferInstance
  local instance whittakerCoinvariantRankOneMinusSectionAddCommGroup : AddCommGroup (sectionSpace S.borel P .minus 0) := inferInstance
 
+section
+variable (ht : (3 : (valuation (LocalField F q)).integer) ∉
+      IsLocalRing.maximalIdeal (valuation (LocalField F q)).integer)
+include ht in
 theorem residue_char_ne_three
-    (ht : (3 : (valuation (LocalField F q)).integer) ∉
-      IsLocalRing.maximalIdeal (valuation (LocalField F q)).integer) :
+      :
     ringChar (IsLocalRing.ResidueField (valuation (LocalField F q)).integer) ≠ 3 := by
   intro h
   apply ht
@@ -59,9 +62,9 @@ private theorem range_coinvariants_map
     _ = (LinearMap.range f.toLinearMap).map (rootCoinvariantsMk σ n ψ) :=
       LinearMap.range_comp f.toLinearMap (rootCoinvariantsMk σ n ψ)
 
+include ht in
 theorem standard_coinvariant_rank_le_one
-    (ht : (3 : (valuation (LocalField F q)).integer) ∉
-      IsLocalRing.maximalIdeal (valuation (LocalField F q)).integer) :
+      :
     Module.rank ℂ (RootCoinvariants
       (actualCanonicalImageRepresentation F ζ hζ q S P μ hμ)
       (KPLocalJacquetImage.root S.borel)
@@ -105,9 +108,9 @@ theorem standard_coinvariant_rank_le_one
   exact Uniqueness.standard_plus_coinvariant_rank_le_three F ζ hζ q
     (actualRawInducing F ζ hζ q S) P hroot htchar
 
+include ht in
 theorem coinvariant_rank_le_one
-    (ht : (3 : (valuation (LocalField F q)).integer) ∉
-      IsLocalRing.maximalIdeal (valuation (LocalField F q)).integer)
+     
     (ψ : Multiplicative (LocalField F q) →ₜ* ℂˣ) (hne : ψ.toMonoidHom ≠ 1) :
     Module.rank ℂ (RootCoinvariants
       (actualCanonicalImageRepresentation F ζ hζ q S P μ hμ)
@@ -129,6 +132,8 @@ theorem coinvariant_rank_le_one
     (KPLocalJacquetImage.root S.borel) χ.toMonoidHom) ≤ 1
   rw [hn, e.rank_eq, ← hn]
   exact standard_coinvariant_rank_le_one F ζ hζ q S P μ hμ ht
+end
+
 
 end DedekindZetaZeroFree.ExteriorWhittakerValues.ActualWhittaker
 

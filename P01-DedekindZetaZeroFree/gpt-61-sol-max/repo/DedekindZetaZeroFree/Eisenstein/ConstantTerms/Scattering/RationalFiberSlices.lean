@@ -35,9 +35,12 @@ def rationalSlotContraction (s : RestrictedTensorSimple.Level (bad A P C))
       (comparison A P C (RestrictedTensorSimple.stageInclusion _ _ _ s
         (PiTensorProduct.tprod ℂ (Function.update v ⟨Sum.inr q,hq⟩ w)))).val.val 1 := rfl
 
-def rationalScatteringSlice (s : RestrictedTensorSimple.Level (bad A P C))
+section
+variable (s : RestrictedTensorSimple.Level (bad A P C))
     (x : ∀ j : s.val, Plus A P C j.val) (g : Raw A)
-    (q : KPFinitePlace F) (hq : Sum.inr q ∈ s.val) (y : q.adicCompletion F) : ℂ :=
+    (q : KPFinitePlace F) (hq : Sum.inr q ∈ s.val)
+include s x g q hq in
+def rationalScatteringSlice   (y : q.adicCompletion F) : ℂ :=
   rationalSlotContraction A P C s q hq
     (fun j => localValue A P C j.val (g j.val) (x j))
     ((x ⟨Sum.inr q,hq⟩).val ((C.canonical q).borel.liftedW⁻¹ *
@@ -58,10 +61,9 @@ theorem finiteScatteringRaw_quotient (q : KPFinitePlace F) (y : q.adicCompletion
     (C.canonical q).openCell (C.polarization q) |>.upper_eq]
   rfl
 
+include s x g q hq in
 theorem rawStageInsertion_scattering
-    (s : RestrictedTensorSimple.Level (bad A P C))
-    (x : ∀ j : s.val, Plus A P C j.val) (g : Raw A)
-    (q : KPFinitePlace F) (hq : Sum.inr q ∈ s.val) (y : q.adicCompletion F) :
+      (y : q.adicCompletion F) :
     rawStageInsertion A P C s (PiTensorProduct.tprod ℂ x)
       (localToRestricted F ζ hζ (Sum.inr q) (finiteScatteringRaw A q y) * g) =
       rationalScatteringSlice A P C s x g q hq y := by
@@ -106,10 +108,9 @@ theorem finiteScatteringRaw_tail
     RestrictedProduct.mulSingleMonoidHom_apply, RestrictedProduct.coe_mulSingle_apply,
     Pi.mulSingle_eq_of_ne hne, one_mul] using hg v hv
 
+include s x g q hq in
 theorem rawCoreInsertion_scattering_stage
-    (s : RestrictedTensorSimple.Level (bad A P C))
-    (x : ∀ j : s.val, Plus A P C j.val) (g : Raw A)
-    (q : KPFinitePlace F) (hq : Sum.inr q ∈ s.val)
+     
     (hg : ∀ v, v ∉ s.val → localValue A P C v (g v) (plusReference A P C v) = reference A P C v)
     (y : q.adicCompletion F) :
     rawCoreInsertion A P C (RestrictedTensorSimple.stageInclusion _ _ _ s
@@ -119,6 +120,8 @@ theorem rawCoreInsertion_scattering_stage
   exact (rawCoreInsertion_stage A P C s _ _
     (finiteScatteringRaw_tail A P C s g q hq hg y)).trans
       (rawStageInsertion_scattering A P C s x g q hq y)
+end
+
 
 end DedekindZetaZeroFree.FourierContinuation.LiteralSource
 

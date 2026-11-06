@@ -1,15 +1,21 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Topology.Algebra.Group.Quotient
 
 @[expose] public section
 
+
 namespace DedekindZetaZeroFree
 
-theorem exists_compact_leftOrbit_lifts
-    {G : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
+section
+variable {G : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
     [LocallyCompactSpace G] [T2Space G] (L : Subgroup G)
-    [CompactSpace (Quotient (MulAction.orbitRel L G))] :
+    [CompactSpace (Quotient (MulAction.orbitRel L G))]
+include G L
+theorem exists_compact_leftOrbit_lifts
+      :
     ∃ K : Set G, IsCompact K ∧
       (Quotient.mk (MulAction.orbitRel L G)) '' K = Set.univ := by
   classical
@@ -35,9 +41,7 @@ theorem exists_compact_leftOrbit_lifts
   exact ⟨v, Set.mem_iUnion.2 ⟨g, Set.mem_iUnion.2 ⟨hgt, subset_closure hvV⟩⟩, hvq⟩
 
 theorem exists_compact_subgroup_left_translates
-    {G : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
-    [LocallyCompactSpace G] [T2Space G] (L : Subgroup G)
-    [CompactSpace (Quotient (MulAction.orbitRel L G))] :
+      :
     ∃ K : Set G, IsCompact K ∧ ∀ g : G, ∃ l : L, (l : G) * g ∈ K := by
   obtain ⟨K, hKc, hK⟩ := exists_compact_leftOrbit_lifts L
   refine ⟨K, hKc, fun g => ?_⟩
@@ -47,7 +51,9 @@ theorem exists_compact_subgroup_left_translates
   have hrel : MulAction.orbitRel L G k g := Quotient.exact hkq
   rw [MulAction.orbitRel_apply, MulAction.mem_orbit_iff] at hrel
   obtain ⟨l, hl⟩ := hrel
-  have : (l : G) * g = k := (show (l : G) * g = l • g from rfl).trans hl
+  have  := (show (l : G) * g = l • g from rfl).trans hl
   exact ⟨l, this ▸ hkK⟩
+end
+
 
 end DedekindZetaZeroFree

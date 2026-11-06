@@ -196,7 +196,10 @@ theorem rawCoreVector_amalgamation_invariant (x : PlusCore R N P C)
 
 local notation "GL" => KPAdelicCoverRestrictedProduct.CubicGL2Adelic F R.A.zeta12 R.A.primitive_zeta12
 
- theorem rawCoreVector_amalgamation_eq (x : PlusCore R N P C) (g h : Raw R)
+ section
+variable (x : PlusCore R N P C)
+include x
+theorem rawCoreVector_amalgamation_eq   (g h : Raw R)
     (he : KPAdelicCoverRestrictedProduct.amalgamation F R.A.zeta12 R.A.primitive_zeta12 g =
       KPAdelicCoverRestrictedProduct.amalgamation F R.A.zeta12 R.A.primitive_zeta12 h) :
     rawCoreVector R N P C g x = rawCoreVector R N P C h x := by
@@ -211,16 +214,16 @@ local notation "GL" => KPAdelicCoverRestrictedProduct.CubicGL2Adelic F R.A.zeta1
   rw [hh] at hi
   exact hi.symm
 
-def amalgamatedCoreVector (x : PlusCore R N P C) : GL → FiberCore R P C :=
+def amalgamatedCoreVector   : GL → FiberCore R P C :=
   Quotient.lift (fun g : Raw R => rawCoreVector R N P C g x)
     (fun g h he => rawCoreVector_amalgamation_eq R N P C x g h (Quotient.sound he))
 
-@[simp] theorem amalgamatedCoreVector_raw (x : PlusCore R N P C) (g : Raw R) :
+@[simp] theorem amalgamatedCoreVector_raw   (g : Raw R) :
     amalgamatedCoreVector R N P C x
       (KPAdelicCoverRestrictedProduct.amalgamation F R.A.zeta12 R.A.primitive_zeta12 g) =
       rawCoreVector R N P C g x := rfl
 
-theorem amalgamatedCoreVector_scalar (x : PlusCore R N P C)
+theorem amalgamatedCoreVector_scalar  
     (z : KPAdelicCoverRestrictedProduct.Ideles F) (g : GL) :
     amalgamatedCoreVector R N P C x (KPAdelicCoverRestrictedProduct.scalarHom F R.A.zeta12
       R.A.primitive_zeta12 z * g) = amalgamatedCoreVector R N P C x g := by
@@ -234,7 +237,7 @@ theorem amalgamatedCoreVector_scalar (x : PlusCore R N P C)
     change _ = rawCoreVector R N P C g x
     exact rawCoreVector_scalar R N P C x z g
 
- theorem amalgamatedCoreVector_quotient_eq (x : PlusCore R N P C) (g h : GL)
+ theorem amalgamatedCoreVector_quotient_eq   (g h : GL)
     (he : KPAdelicCoverRestrictedProduct.scalarQuotient F R.A.zeta12 R.A.primitive_zeta12 g =
       KPAdelicCoverRestrictedProduct.scalarQuotient F R.A.zeta12 R.A.primitive_zeta12 h) :
     amalgamatedCoreVector R N P C x g = amalgamatedCoreVector R N P C x h := by
@@ -248,14 +251,16 @@ theorem amalgamatedCoreVector_scalar (x : PlusCore R N P C)
   rw [hh] at hi
   exact hi.symm
 
-def quotientCoreVector (x : PlusCore R N P C) : Group R → FiberCore R P C :=
+def quotientCoreVector   : Group R → FiberCore R P C :=
   Quotient.lift (fun g : GL => amalgamatedCoreVector R N P C x g)
     (fun g h he => amalgamatedCoreVector_quotient_eq R N P C x g h (Quotient.sound he))
 
-@[simp] theorem quotientCoreVector_raw (x : PlusCore R N P C) (g : Raw R) :
+@[simp] theorem quotientCoreVector_raw   (g : Raw R) :
     quotientCoreVector R N P C x (KPAdelicCoverRestrictedProduct.scalarQuotient F R.A.zeta12
       R.A.primitive_zeta12 (KPAdelicCoverRestrictedProduct.amalgamation
         F R.A.zeta12 R.A.primitive_zeta12 g)) = rawCoreVector R N P C g x := rfl
+end
+
 
 def quotientCoreEvaluator : PlusCore R N P C →ₗ[ℂ] (Group R → FiberCore R P C) where
   toFun := quotientCoreVector R N P C

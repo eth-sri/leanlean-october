@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.Meromorphic.Order
 public import Mathlib.Analysis.Complex.Basic
 
 @[expose] public section
+
 
 noncomputable section
 open scoped Topology
@@ -17,8 +20,8 @@ theorem meromorphic_germ_unique {f g : ℂ → ℂ} {O V : Set ℂ}
   obtain ⟨a, ha⟩ := hVne
   have hzero : (fun z => f z - g z) =ᶠ[𝓝[≠] a] 0 := by
     filter_upwards [nhdsWithin_le_nhds (hV.mem_nhds ha)] with z hz
-    simpa using sub_eq_zero.mpr (hfg hz)
-  have hord : meromorphicOrderAt (fun z => f z - g z) a = ⊤ :=
+    apply sub_eq_zero.mpr <;> aesop
+  have hord  :=
     meromorphicOrderAt_eq_top_iff.mpr hzero
   have hprop := (hf.sub hg).meromorphicOrderAt_eq_top_of_isPreconnected hO
     (hVO ha) hs hord

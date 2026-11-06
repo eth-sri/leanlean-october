@@ -241,16 +241,19 @@ theorem actual_chart_coordinate_derivative_injective (A : Localizers F ζ hζ U 
 namespace ActualChartEnergyGeometry
 open HyperbolicChart Matrix
 open scoped Matrix
- def arch (d : ℕ) (p : Space d) : KPArch.Space d :=
+ section
+variable (d : ℕ)
+include d
+def arch   (p : Space d) : KPArch.Space d :=
   fun i => (⟨p (i,0), p (i,1)⟩, p (i,2))
- def real (d : ℕ) (p : KPArch.Space d) : Space d :=
+ def real   (p : KPArch.Space d) : Space d :=
   WithLp.toLp 2 (fun ik => ![(p ik.1).1.re, (p ik.1).1.im, (p ik.1).2] ik.2)
- def archL (d : ℕ) : Space d →L[ℝ] KPArch.Space d :=
+ def archL   : Space d →L[ℝ] KPArch.Space d :=
   LinearMap.toContinuousLinearMap {
     toFun := arch d
     map_add' := by intro x y; ext i <;> simp [arch, Complex.add_re, Complex.add_im]; rfl
     map_smul' := by intro a x; ext i : 1; apply Prod.ext <;> simp [arch, Complex.real_smul]; apply Complex.ext <;> simp }
- def realL (d : ℕ) : KPArch.Space d →L[ℝ] Space d :=
+ def realL   : KPArch.Space d →L[ℝ] Space d :=
   LinearMap.toContinuousLinearMap {
     toFun := real d
     map_add' := by
@@ -258,24 +261,24 @@ open scoped Matrix
     map_smul' := by
       intro a x; ext ⟨i,k⟩; fin_cases k <;> simp [real, Complex.real_smul] }
 
-private lemma arch_real' (d : ℕ) (x : KPArch.Space d) : arch d (real d x) = x := by
+private lemma arch_real'   (x : KPArch.Space d) : arch d (real d x) = x := by
   ext i <;> simp [real, arch]
- def scaleL (d : ℕ) (w : Fin d × Fin 3 → ℝ) : Space d →L[ℝ] Space d :=
+ def scaleL   (w : Fin d × Fin 3 → ℝ) : Space d →L[ℝ] Space d :=
   LinearMap.toContinuousLinearMap {
     toFun := fun x => WithLp.toLp 2 (fun j => w j * x j)
     map_add' := by intro x y; ext j; simp [mul_add]
     map_smul' := by intro a x; ext j; simp; ring }
-private lemma scaleL_apply (d : ℕ) (w : Fin d × Fin 3 → ℝ) (z : Space d) (j) :
+private lemma scaleL_apply   (w : Fin d × Fin 3 → ℝ) (z : Space d) (j) :
     scaleL d w z j = w j * z j := rfl
- def frame (d : ℕ) (x : Space d) : Space d →L[ℝ] Space d :=
+ def frame   (x : Space d) : Space d →L[ℝ] Space d :=
   scaleL d (fun j => if j.2 = 2 then 1 else Real.exp (x (j.1, 2)))
- def unframe (d : ℕ) (x : Space d) : Space d →L[ℝ] Space d :=
+ def unframe   (x : Space d) : Space d →L[ℝ] Space d :=
   scaleL d (fun j => if j.2 = 2 then 1 else (Real.exp (x (j.1, 2)))⁻¹)
-private lemma frame_unframe (d : ℕ) (x z : Space d) : frame d x (unframe d x z) = z := by
+private lemma frame_unframe   (x z : Space d) : frame d x (unframe d x z) = z := by
   ext j
   simp only [frame, unframe, scaleL_apply]
   split_ifs <;> simp [Real.exp_ne_zero, ← mul_assoc]
-private lemma metric_frame (d : ℕ) (x z : Space d) :
+private lemma metric_frame   (x z : Space d) :
     KPArch.metric d (arch d x) (arch d (frame d x z)) = ‖z‖ ^ 2 := by
   rw [EuclideanSpace.real_norm_sq_eq, Fintype.sum_prod_type]
   simp only [KPArch.metric, KPArch.height, arch, frame, scaleL_apply,
@@ -284,10 +287,10 @@ private lemma metric_frame (d : ℕ) (x z : Space d) :
   intro i hi
   rw [← Complex.normSq_eq_norm_sq, Complex.normSq_apply]
   field_simp
-private lemma metric_unframe (d : ℕ) (x z : Space d) :
+private lemma metric_unframe   (x z : Space d) :
     ‖unframe d x z‖ ^ 2 = KPArch.metric d (arch d x) (arch d z) := by
   rw [← metric_frame d x (unframe d x z), frame_unframe]
-private lemma frame_basis (d : ℕ) (x : Space d) (i : Fin d) (k : Fin 3) :
+private lemma frame_basis   (x : Space d) (i : Fin d) (k : Fin 3) :
     frame d x (EuclideanSpace.basisFun (Fin d × Fin 3) ℝ (i,k)) =
       (if k = 2 then 1 else Real.exp (x (i,2))) • coordinateVector d i k := by
   ext j
@@ -297,7 +300,7 @@ private lemma frame_basis (d : ℕ) (x : Space d) (i : Fin d) (k : Fin 3) :
   by_cases h : j = (i,k)
   · subst j; simp
   · simp [h, Ne.symm h]
-private theorem differential_sum (d : ℕ) (g : Space d → ℂ) (x : Space d) :
+private theorem differential_sum   (g : Space d → ℂ) (x : Space d) :
     (∑ i, ∑ k, ‖differential d g x i k‖ ^ 2) =
       ∑ j, ‖fderiv ℝ g x (frame d x (EuclideanSpace.basisFun (Fin d × Fin 3) ℝ j))‖ ^ 2 := by
   rw [Fintype.sum_prod_type]
@@ -309,6 +312,8 @@ private theorem differential_sum (d : ℕ) (g : Space d → ℂ) (x : Space d) :
     Complex.real_smul, Complex.ofReal_one, one_mul]
   simp
   ring
+end
+
 
 private theorem pullback_metric (d n : ℕ) (y : Space d)
     (J : EuclideanSpace ℝ (Fin n) →L[ℝ] KPArch.Space d) :

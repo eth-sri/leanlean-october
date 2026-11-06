@@ -40,9 +40,9 @@ private theorem rationalStageEval_insert
   have hc := congrArg (fun L => L (PiTensorProduct.tprod ℂ v))
     (KPGlobalTorusFiniteStages.tensor_insertion_compatible F ζ hζ P C E T hE hET)
   simp only [LinearMap.comp_apply, RestrictedTensorSimple.insert_pure] at hc
-  unfold rationalStageEval
-  simp only [LinearMap.compMultilinearMap_apply, LinearMap.comp_apply]
-  rw [hc]
+  exact congrArg (fun z =>
+    (PrincipalOfKP.ResidueCoreBridge.CanonicalBinding.productUnitaryToRational
+      F ζ hζ P z).val.val t) hc
 
 theorem actual_finite_euler_enlargement
     (hD : localDifferentSupport F ⊆ (E : Set (HeightOneSpectrum (𝓞 F))))

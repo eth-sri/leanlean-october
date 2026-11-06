@@ -15,9 +15,9 @@ open KPRankOneTameSphericalFactor
 
 variable (F : Type) [Field F] [NumberField F]
   (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
-  (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
+  (S : CanonicalFiniteInducingData F ζ hζ q) 
   (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
-  (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
+  
 
 theorem kernel_generators_mem_of_actual_compact
     (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)

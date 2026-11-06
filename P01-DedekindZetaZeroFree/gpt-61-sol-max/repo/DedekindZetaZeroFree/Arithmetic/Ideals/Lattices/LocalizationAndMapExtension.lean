@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Ideals.RankTwoLattices.FullLatticesAndRationalLines
 
 @[expose] public section
+
 
 open scoped nonZeroDivisors
 
@@ -78,7 +81,7 @@ theorem kp_cusp_full_lattice_equiv_extension
   let F := IsLocalizedModule.mapEquiv R⁰ M.subtype N.subtype K f
   have hF : ∀ m : M, F (m : V) = (f m : W) := by
     intro m
-    exact IsLocalizedModule.map_apply R⁰ M.subtype N.subtype f.toLinearMap m
+    apply IsLocalizedModule.map_apply
   refine ⟨F, ⟨hF, ?_⟩, ?_⟩
   · ext w
     constructor
@@ -98,10 +101,13 @@ theorem kp_cusp_full_lattice_equiv_extension
     ext m
     exact (hG.1 m).trans (hF m).symm
 
-private theorem fractionalIdealNonzero
-    {R : Type*} [CommRing R] [IsDomain R]
+section
+variable {R : Type*} [CommRing R] [IsDomain R]
     {K : Type*} [Field K] [Algebra R K] [IsFractionRing R K]
-    (I : FractionalIdeal R⁰ K) (hI : I ≠ 0) :
+    (I : FractionalIdeal R⁰ K) (hI : I ≠ 0)
+include R K I hI
+private theorem fractionalIdealNonzero
+      :
     ∃ t : K, t ∈ I ∧ t ≠ 0 := by
   by_contra h
   apply hI
@@ -111,9 +117,7 @@ private theorem fractionalIdealNonzero
   exact h ⟨t, ht, ht0⟩
 
 private theorem fractionalIdealClear
-    {R : Type*} [CommRing R] [IsDomain R]
-    {K : Type*} [Field K] [Algebra R K] [IsFractionRing R K]
-    (I : FractionalIdeal R⁰ K) (hI : I ≠ 0) (x : K) :
+      (x : K) :
     ∃ r : R, r ≠ 0 ∧ (algebraMap R K r) • x ∈ I := by
   obtain ⟨t, ht, ht0⟩ := fractionalIdealNonzero I hI
   obtain ⟨a, b, hb, heq⟩ := IsFractionRing.div_surjective R (x / t)
@@ -125,10 +129,15 @@ private theorem fractionalIdealClear
     simpa only [mul_comm] using this.symm
   rw [smul_eq_mul, hbt, ← smul_eq_mul, algebraMap_smul]
   exact I.1.smul_mem a ht
+end
 
-theorem kp_cusp_fractional_ideal_map_scalar
-    (R : Type*) [CommRing R] [IsDomain R]
+
+section
+variable (R : Type*) [CommRing R] [IsDomain R]
     (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
+include R K
+theorem kp_cusp_fractional_ideal_map_scalar
+     
     (I : FractionalIdeal R⁰ K) (hI : I ≠ 0) (f : I →ₗ[R] K) :
     ∃! c : K, ∀ t : I, f t = c * (t : K) := by
   letI := localizedSubmodule (I : Submodule R K) (fractionalIdealClear I hI)
@@ -148,8 +157,7 @@ theorem kp_cusp_fractional_ideal_map_scalar
   rw [← scalar, hF ⟨t, ht⟩, hc ⟨t, ht⟩]
 
 theorem kp_cusp_fractional_ideal_equiv_iff
-    (R : Type*) [CommRing R] [IsDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
+     
     (I J : FractionalIdeal R⁰ K) (hI : I ≠ 0) (hJ : J ≠ 0) :
     Nonempty (I ≃ₗ[R] J) ↔
       ∃ c : K, c ≠ 0 ∧ FractionalIdeal.spanSingleton R⁰ c * I = J := by
@@ -196,5 +204,7 @@ theorem kp_cusp_fractional_ideal_equiv_iff
         exact y.property
       obtain ⟨t, ht, heq⟩ := FractionalIdeal.mem_singleton_mul.mp hy
       exact ⟨⟨t, ht⟩, Subtype.ext heq.symm⟩
+end
+
 
 end DedekindZetaZeroFree

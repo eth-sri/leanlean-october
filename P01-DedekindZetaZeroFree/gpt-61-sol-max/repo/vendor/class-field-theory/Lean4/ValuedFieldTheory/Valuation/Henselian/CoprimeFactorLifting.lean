@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Valuation.Henselian.EtaleLifting
 public import Mathlib.RingTheory.Polynomial.UniversalFactorizationRing
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -50,9 +53,9 @@ theorem exists_coprime_factor_lift
         (hf.natDegree_map (Ideal.Quotient.mk I)).symm
       _ = gbar.natDegree + hbar.natDegree := by
         rw [hfac, hgbar.natDegree_mul hhbar]
-  let p : MonicDegreeEq R f.natDegree := MonicDegreeEq.mk f hf rfl
-  let g₀ : MonicDegreeEq (R ⧸ I) gbar.natDegree := MonicDegreeEq.mk gbar hgbar rfl
-  let h₀ : MonicDegreeEq (R ⧸ I) hbar.natDegree := MonicDegreeEq.mk hbar hhbar rfl
+  let p  := MonicDegreeEq.mk f hf rfl
+  let g₀  := MonicDegreeEq.mk gbar hgbar rfl
+  let h₀  := MonicDegreeEq.mk hbar hhbar rfl
   let c : { q : MonicDegreeEq (R ⧸ I) gbar.natDegree ×
       MonicDegreeEq (R ⧸ I) hbar.natDegree //
       q.1.1 * q.2.1 = p.1.map (algebraMap R (R ⧸ I)) ∧ IsCoprime q.1.1 q.2.1 } :=
@@ -67,9 +70,7 @@ theorem exists_coprime_factor_lift
   have hres : (UniversalCoprimeFactorizationRing.homEquiv (R ⧸ I)
       gbar.natDegree hbar.natDegree hn p ((Ideal.Quotient.mkₐ R I).comp τ)).1 = c.1 := by
     rw [hτ]
-    exact congrArg Subtype.val
-      ((UniversalCoprimeFactorizationRing.homEquiv (R ⧸ I)
-        gbar.natDegree hbar.natDegree hn p).apply_symm_apply c)
+    apply congrArg <;> aesop
   have hg : factors.1.1.1.map (Ideal.Quotient.mk I) = gbar := by
     have heq := UniversalCoprimeFactorizationRing.homEquiv_comp_fst R
       gbar.natDegree hbar.natDegree hn p τ (Ideal.Quotient.mkₐ R I)

@@ -33,14 +33,16 @@ def fullIndex (Q : Finset (KPFinitePlace F)) (hQ : C.exceptional ⊆ Q) :
   left_inv j := by cases j <;> rfl
   right_inv j := by rcases j with ⟨j,hj⟩; cases j <;> rfl
 
-def fullProfile (Q : Finset (KPFinitePlace F)) (hQ : C.exceptional ⊆ Q)
-    (f : ∀ j : (fullLevel R P C Q hQ).val, RootPoint R j.val → ℂ) :
+section
+variable (Q : Finset (KPFinitePlace F)) (hQ : C.exceptional ⊆ Q)
+    (f : ∀ j : (fullLevel R P C Q hQ).val, RootPoint R j.val → ℂ)
+include Q hQ f
+def fullProfile   :
     ∀ i, CurrentBoxCoordinateHaar.Root F Q i → ℂ
   | .inl w => f (fullIndex R P C Q hQ (.inl w))
   | .inr q => f (fullIndex R P C Q hQ (.inr q))
 
-theorem fullProfile_product (Q : Finset (KPFinitePlace F)) (hQ : C.exceptional ⊆ Q)
-    (f : ∀ j : (fullLevel R P C Q hQ).val, RootPoint R j.val → ℂ)
+theorem fullProfile_product  
     (y : KPGlobalTorusFunctionData.Adeles F) :
     (∏ j, f j (rootCoordinate R y j.val)) =
       ∏ i, fullProfile R P C Q hQ f i
@@ -51,8 +53,7 @@ theorem fullProfile_product (Q : Finset (KPFinitePlace F)) (hQ : C.exceptional �
   intro i _
   cases i <;> rfl
 
-theorem fullProfile_integral (Q : Finset (KPFinitePlace F)) (hQ : C.exceptional ⊆ Q)
-    (f : ∀ j : (fullLevel R P C Q hQ).val, RootPoint R j.val → ℂ)
+theorem fullProfile_integral  
     (i : InfinitePlace F ⊕ Q) :
     (∫ x, fullProfile R P C Q hQ f i x ∂CurrentBoxCoordinateHaar.rootMeasure F Q i) =
       ∫ x, f (fullIndex R P C Q hQ i) x
@@ -63,10 +64,15 @@ theorem fullProfile_integral (Q : Finset (KPFinitePlace F)) (hQ : C.exceptional 
     change (∫ x, f (fullIndex R P C Q hQ (.inr q)) x ∂localNormalizedHaar F q.val) =
       ∫ x, f (fullIndex R P C Q hQ (.inr q)) x ∂N.finiteHaar q.val
     rw [CurrentFiniteHaarBinding.finiteHaar_eq N q.val]
+end
 
-theorem full_product_integral (Q : Finset (KPFinitePlace F)) (hQ : C.exceptional ⊆ Q)
+
+section
+variable (Q : Finset (KPFinitePlace F)) (hQ : C.exceptional ⊆ Q)
     (hD : localDifferentSupport F ⊆ (Q : Set _))
-    (f : ∀ j : (fullLevel R P C Q hQ).val, RootPoint R j.val → ℂ) :
+    (f : ∀ j : (fullLevel R P C Q hQ).val, RootPoint R j.val → ℂ)
+include Q hQ hD f
+theorem full_product_integral   :
     (∫ y : KPGlobalTorusFunctionData.Adeles F, ∏ j, f j (rootCoordinate R y j.val)
       ∂(KPAdditiveHaar.adelicMeasure F).restrict (TraceBox.adelicBox F Q)) =
       ∏ j, ∫ x, f j x ∂arithmeticRootMeasure R N j.val := by
@@ -76,9 +82,7 @@ theorem full_product_integral (Q : Finset (KPFinitePlace F)) (hQ : C.exceptional
   simp_rw [fullProfile_integral R N P C Q hQ f]
   exact (fullIndex R P C Q hQ).prod_comp (fun j => ∫ x, f j x ∂arithmeticRootMeasure R N j.val)
 
-theorem full_product_integrable (Q : Finset (KPFinitePlace F)) (hQ : C.exceptional ⊆ Q)
-    (hD : localDifferentSupport F ⊆ (Q : Set _))
-    (f : ∀ j : (fullLevel R P C Q hQ).val, RootPoint R j.val → ℂ)
+theorem full_product_integrable  
     (hf : ∀ j, Integrable (f j) (arithmeticRootMeasure R N j.val)) :
     Integrable (fun y : KPGlobalTorusFunctionData.Adeles F => ∏ j, f j (rootCoordinate R y j.val))
       ((KPAdditiveHaar.adelicMeasure F).restrict (TraceBox.adelicBox F Q)) := by
@@ -93,6 +97,8 @@ theorem full_product_integrable (Q : Finset (KPFinitePlace F)) (hQ : C.exception
     change Integrable _ (N.finiteHaar q.val) at h
     rw [CurrentFiniteHaarBinding.finiteHaar_eq N q.val] at h
     exact h
+end
+
 
 end DedekindZetaZeroFree.FourierContinuation.CurrentRepairedLocalBinding
 

@@ -11,9 +11,12 @@ open scoped NumberField Classical
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 open KPTameJacquetTestDuality KPLocalExceptionalConstruction
 
+section
+variable (F : Type) [Field F] [NumberField F] (q : HeightOneSpectrum (𝓞 F))
+    (π : (LocalField F q)ˣ)
+include F q π
 private theorem ball_add_subgroup
-    (F : Type) [Field F] [NumberField F] (q : HeightOneSpectrum (𝓞 F))
-    (π : (LocalField F q)ˣ) (r : ℕ) :
+      (r : ℕ) :
     ∃ A : AddSubgroup (LocalField F q), (A : Set (LocalField F q)) = expandingBall F q π r := by
   let a : LocalField F q := ((π ^ r : (LocalField F q)ˣ) : LocalField F q)⁻¹
   let A := (valuation (LocalField F q)).integer.toAddSubgroup.map
@@ -29,8 +32,7 @@ private theorem ball_add_subgroup
     exact ⟨u, u.property, h.symm⟩
 
 private theorem ball_mono
-    (F : Type) [Field F] [NumberField F] (q : HeightOneSpectrum (𝓞 F))
-    (π : (LocalField F q)ˣ)
+     
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
       (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
     {r s : ℕ} (hrs : r ≤ s) : expandingBall F q π r ⊆ expandingBall F q π s := by
@@ -52,8 +54,7 @@ private theorem ball_mono
   field_simp
 
 private theorem ball_measurable
-    (F : Type) [Field F] [NumberField F] (q : HeightOneSpectrum (𝓞 F))
-    (π : (LocalField F q)ˣ) (r : ℕ) : MeasurableSet (expandingBall F q π r) := by
+      (r : ℕ) : MeasurableSet (expandingBall F q π r) := by
   let a : LocalField F q := ((π ^ r : (LocalField F q)ˣ) : LocalField F q)⁻¹
   have ha : a ≠ 0 := inv_ne_zero (π ^ r).ne_zero
   have he : expandingBall F q π r =
@@ -69,8 +70,7 @@ private theorem ball_measurable
   exact (valuation (LocalField F q)).isOpen_integer.measurableSet.preimage (by fun_prop)
 
 theorem exists_conductor_one_translation
-    (F : Type) [Field F] [NumberField F] (q : HeightOneSpectrum (𝓞 F))
-    (π : (LocalField F q)ˣ)
+     
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
       (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
     (ψ : Multiplicative (LocalField F q) →* ℂˣ)
@@ -95,8 +95,7 @@ theorem exists_conductor_one_translation
   · simpa only [neg_neg] using ho
 
 theorem integral_zero_of_translation
-    (F : Type) [Field F] [NumberField F] (q : HeightOneSpectrum (𝓞 F))
-    (π : (LocalField F q)ˣ)
+     
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
       (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
     (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
@@ -142,6 +141,8 @@ theorem integral_zero_of_translation
   have hz : (c-1) * (∫ x in shell, g x ∂μ) = 0 := by
     linear_combination he
   exact (mul_eq_zero.mp hz).resolve_left (sub_ne_zero.mpr hc)
+end
+
 
 end DedekindZetaZeroFree.KPTameTransposeKernelUnfoldingRaw.HigherShellCancellation
 

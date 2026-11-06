@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Eisenstein.Induction.Cusps.IncomingSheetEvaluation
 public import DedekindZetaZeroFree.Eisenstein.Induction.Spherical.CompactJetHolomorphy
 
 @[expose] public section
+
 
 noncomputable section
 open scoped Classical NumberField
@@ -36,24 +39,24 @@ instance zeroFiberNormedAddCommGroup : NormedAddCommGroup (ZeroFiber F ζ hζ C 
   NormedAddCommGroup.induced _ ℂ (zeroFiberEvaluation F ζ hζ C R P H U a)
     (zeroFiberEvaluation_injective F ζ hζ C R P H U a)
 
-instance zeroFiberNormedSpace : NormedSpace ℂ (ZeroFiber F ζ hζ C R P H U a) :=
-  NormedSpace.induced ℂ _ ℂ (zeroFiberEvaluation F ζ hζ C R P H U a)
 
-instance zeroFiberFiniteDimensional : FiniteDimensional ℂ (ZeroFiber F ζ hζ C R P H U a) :=
-  (frequencies F ζ hζ C R P H U a).constantSystem.finiteDimensional
+
+
+
+
 
 variable {S : Type*} [AddCommGroup S] [Module ℂ S] [FiniteDimensional ℂ S]
 
- def stageCoordinates : S ≃ₗ[ℂ] (Fin (Module.finrank ℂ S) → ℂ) :=
+ def stageCoordinates  :=
   (Module.finBasis ℂ S).equivFun
 
- abbrev stageNormedAddCommGroup : NormedAddCommGroup S :=
+ abbrev stageNormedAddCommGroup  :=
   NormedAddCommGroup.induced _ _ (stageCoordinates (S := S)).toLinearMap
     (stageCoordinates (S := S)).injective
 
 attribute [local instance] stageNormedAddCommGroup
 
- abbrev stageNormedSpace : NormedSpace ℂ S :=
+ abbrev stageNormedSpace  :=
   NormedSpace.induced ℂ _ _ (stageCoordinates (S := S)).toLinearMap
 
 attribute [local instance] stageNormedSpace
@@ -65,14 +68,15 @@ def frameCoefficient (shape : KPCuspCharts.Shape F) (s : ℂ) :
   ((zeroProjection F ζ hζ C R P H U a).comp
     (sheetEvaluation F ζ hζ C R P H U a ι s)).toContinuousLinearMap
 
-theorem frameCoefficient_formula (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain)
-    (v : S) (shape : KPCuspCharts.Shape F) :
+section
+variable (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain)
+    (v : S)
+include s hs v
+theorem frameCoefficient_formula   (shape : KPCuspCharts.Shape F) :
     frameCoefficient F ζ hζ C R P H U a ι shape s v =
-      (b F ζ hζ C R P H U a ι s hs v).val shape := by
-  rfl
+      (b F ζ hζ C R P H U a ι s hs v).val shape := rfl
 
-theorem locally_parallel (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain)
-    (v : S) (j : Fin (geometry F ζ hζ C R P H U a).atlas.chartCount) :
+theorem locally_parallel   (j : Fin (geometry F ζ hζ C R P H U a).atlas.chartCount) :
     IsLocallyConstant (fun shape : (geometry F ζ hζ C R P H U a).atlas.shapeLift j =>
       (b F ζ hζ C R P H U a ι s hs v).val shape.val) := by
   have h : (fun shape : (geometry F ζ hζ C R P H U a).atlas.shapeLift j =>
@@ -83,8 +87,7 @@ theorem locally_parallel (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain)
   rw [h]
   exact IsLocallyConstant.const _
 
-theorem transport_formula (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain)
-    (v : S) (g : stabilizer F ζ hζ C R P H U a) (shape : KPCuspCharts.Shape F) :
+theorem transport_formula   (g : stabilizer F ζ hζ C R P H U a) (shape : KPCuspCharts.Shape F) :
     let shape' := shape + KPCuspLogShape.logarithm F H.totallyComplex
       (parabolic F ζ hζ C R P H U a).E
       (parabolic F ζ hζ C R P H U a).integralUnits
@@ -104,11 +107,13 @@ theorem transport_formula (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain)
   rw [h1]
   exact (frequencies F ζ hζ C R P H U a).constantSystem.transition_formula g
     ((b F ζ hζ C R P H U a ι s hs v).val shape) z
+end
 
- instance instFintypeCentralLevel
-    (U : KPMsFixedHaarDisintegration.Level F ζ hζ) :
-    Fintype (KPContSectorPhaseComponentCharts.centralLevel F ζ hζ U) :=
-  Fintype.ofFinite _
+
+
+
+
+
 
  instance instFintypeRootsOfUnity : Fintype (rootsOfUnity 3 F) :=
   Fintype.ofFinite _

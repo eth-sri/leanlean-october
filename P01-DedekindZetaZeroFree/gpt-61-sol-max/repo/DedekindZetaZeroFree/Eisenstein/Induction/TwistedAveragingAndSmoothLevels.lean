@@ -201,23 +201,23 @@ set_option synthInstance.maxHeartbeats 100000
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-local instance smoothTopology3 (P : Polarization F ζ hζ) :
-    TopologicalSpace (Smooth F ζ hζ P) :=
-  KPGlobalTorusFunctionData.torusSmoothTopology F ζ hζ P
+
+
+
 
 local instance inducedTop3 (P : Polarization F ζ hζ) : TopologicalSpace (Induced F ζ hζ P) :=
   inducedTopology F ζ hζ P
 
-local instance inducedFunctionsAddGroup3 (P : Polarization F ζ hζ) :
-    AddCommGroup (InducedFunctions F ζ hζ P) := @Submodule.addCommGroup ℂ (G F ζ hζ → Smooth F ζ hζ P)
-      inferInstance inferInstance inferInstance (InducedFunctions F ζ hζ P)
-local instance inducedLevelAddGroup3 (P : Polarization F ζ hζ)
-    (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ) :
-    AddCommGroup (InducedLevel F ζ hζ P J) := @Submodule.addCommGroup ℂ (InducedFunctions F ζ hζ P)
-      inferInstance inferInstance inferInstance (InducedLevel F ζ hζ P J)
-local instance inducedAddGroup3 (P : Polarization F ζ hζ) :
-    AddCommGroup (Induced F ζ hζ P) := @Submodule.addCommGroup ℂ (InducedFunctions F ζ hζ P)
-      inferInstance inferInstance inferInstance (Induced F ζ hζ P)
+
+
+
+
+
+
+
+
+
+
 
 def borelP (C : ModelData F ζ hζ) (s : ℂ) :
     Induced F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s) →L[ℂ]

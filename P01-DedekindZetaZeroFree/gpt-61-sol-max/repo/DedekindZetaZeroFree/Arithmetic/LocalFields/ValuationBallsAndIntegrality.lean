@@ -22,10 +22,10 @@ def ball (v : HeightOneSpectrum (𝓞 F)) (k : ℤ) : AddSubgroup (v.adicComplet
     (x : v.adicCompletion F) :
     x ∈ ball F v k ↔ Valued.v x ≤ WithZero.exp (-k) := Iff.rfl
 
-@[simp] theorem ball_zero (v : HeightOneSpectrum (𝓞 F)) :
-    (ball F v 0 : Set (v.adicCompletion F)) = v.adicCompletionIntegers F := by
-  ext x
-  simp [HeightOneSpectrum.mem_adicCompletionIntegers]
+
+
+
+
 
 theorem ball_isOpen (v : HeightOneSpectrum (𝓞 F)) (k : ℤ) :
     IsOpen (ball F v k : Set (v.adicCompletion F)) := by

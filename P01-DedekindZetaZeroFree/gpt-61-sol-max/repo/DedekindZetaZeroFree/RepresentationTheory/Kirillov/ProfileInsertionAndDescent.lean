@@ -36,7 +36,7 @@ theorem phase_eq_finiteTrace : phase F q = (finiteTrace (F := F) q).toMonoidHom 
     Circle.toUnits (localFiniteCharacter F q t.toAdd)
   rw [one_mul]
 
-variable (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F q m)
+variable (m : ℕ) 
 
 end DedekindZetaZeroFree.FourierContinuation.ActualKirillov
 

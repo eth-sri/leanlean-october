@@ -102,10 +102,13 @@ theorem functionsQ_chart_integral (C : ModelData F ζ hζ) (s : ℂ)
   exact twistedQ_formula F ζ hζ C s r
     (f.val (groupArchChart F ζ hζ z * g)) 1
 
-theorem functionsQ_right_level (C : ModelData F ζ hζ) (s : ℂ)
+section
+variable (C : ModelData F ζ hζ) (s : ℂ)
     (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
     (f : InducedFunctions F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s))
     (hf : f ∈ InducedLevel F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s) J)
+include C s J f hf in
+theorem functionsQ_right_level  
     (g : G F ζ hζ) (j : KPGlobalTorusFunctionData.globalLevel F ζ hζ J) :
     (functionsQ F ζ hζ C s f).val (g * j.val) =
       (functionsQ F ζ hζ C s f).val g := by
@@ -155,10 +158,8 @@ theorem functionsQ_chart_contDiff_of_local_extension (C : ModelData F ζ hζ) (s
   apply integral_congr_ae
   exact Filter.Eventually.of_forall (fun x => (hEq y hy.2 x).symm)
 
-theorem functionsQ_preserves_level (C : ModelData F ζ hζ) (s : ℂ)
-    (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
-    (f : InducedFunctions F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s))
-    (hf : f ∈ InducedLevel F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s) J) :
+include C s J f hf in
+theorem functionsQ_preserves_level   :
     functionsQ F ζ hζ C s f ∈
       InducedLevel F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s) J := by
   constructor
@@ -173,6 +174,8 @@ theorem functionsQ_preserves_level (C : ModelData F ζ hζ) (s : ℂ)
     intro y hy x
     rw [hEq y hy x, TorusChartTransport.weightedChartIntegrand_eq F ζ hζ C s r f g y]
   · exact functionsQ_right_level F ζ hζ C s J f hf
+end
+
 
 end
 end DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibilityBorelInduction

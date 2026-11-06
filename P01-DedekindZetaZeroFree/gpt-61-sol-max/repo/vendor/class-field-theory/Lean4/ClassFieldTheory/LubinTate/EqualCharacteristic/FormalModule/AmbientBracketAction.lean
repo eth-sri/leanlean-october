@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.SetTheory.Cardinal.Finite
 public import ClassFieldTheory.LubinTate.EqualCharacteristic.FormalModule.LubinTateAction
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -62,18 +65,15 @@ private theorem ambientAddMonoidHom_map_finset_sum
     {A I : Type*} [AddCommMonoid A]
     (f : AddMonoid.End A) (s : Finset I) (g : I → A) :
     f (∑ i ∈ s, g i) = ∑ i ∈ s, f (g i) := by
-  classical
-  induction s using Finset.induction_on with
-  | empty => simp
-  | @insert i s hi ih =>
-      rw [Finset.sum_insert hi, Finset.sum_insert hi]
-      exact (f.map_add _ _).trans
-        (congrArg (fun x ↦ f (g i) + x) ih)
+  simp_all
 
+section
+variable (F : LocalField.{u, v} K)
+    {A : Type w} [Field A]
+include F A
 /-- The distinguished endomorphism `Y ↦ Y^q + tY` in an ambient field. -/
 noncomputable def equalCharacteristicLubinTateAmbientPiEnd
-    (F : LocalField.{u, v} K)
-    {A : Type w} [Field A] [CharP A F.residueCharacteristic]
+      [CharP A F.residueCharacteristic]
     (t : A) : AddMonoid.End A where
   toFun x :=
     iterateFrobenius A F.residueCharacteristic
@@ -89,8 +89,7 @@ noncomputable def equalCharacteristicLubinTateAmbientPiEnd
 /-- The ambient `π`-endomorphism is Frobenius plus multiplication by `t`. -/
 @[simp]
 theorem equalCharacteristicLubinTateAmbientPiEnd_apply
-    (F : LocalField.{u, v} K)
-    {A : Type w} [Field A] [CharP A F.residueCharacteristic]
+      [CharP A F.residueCharacteristic]
     (t x : A) :
     equalCharacteristicLubinTateAmbientPiEnd F t x =
       x ^ Nat.card F.residueField + t * x := by
@@ -103,8 +102,7 @@ theorem equalCharacteristicLubinTateAmbientPiEnd_apply
 
 /-- Multiplication by an embedded residue-field coefficient. -/
 noncomputable def equalCharacteristicLubinTateAmbientCoefficientEnd
-    (F : LocalField.{u, v} K)
-    {A : Type w} [Field A]
+     
     (ι : F.residueField →+* A) (a : F.residueField) :
     AddMonoid.End A where
   toFun x := ι a * x
@@ -114,8 +112,7 @@ noncomputable def equalCharacteristicLubinTateAmbientCoefficientEnd
 /-- A coefficient endomorphism acts by multiplication by the embedded coefficient. -/
 @[simp]
 theorem equalCharacteristicLubinTateAmbientCoefficientEnd_apply
-    (F : LocalField.{u, v} K)
-    {A : Type w} [Field A]
+     
     (ι : F.residueField →+* A) (a : F.residueField) (x : A) :
     equalCharacteristicLubinTateAmbientCoefficientEnd F ι a x = ι a * x :=
   rfl
@@ -123,13 +120,12 @@ theorem equalCharacteristicLubinTateAmbientCoefficientEnd_apply
 /-- The distinguished endomorphism commutes with the embedded coefficient
 field. -/
 theorem equalCharacteristicLubinTateAmbientPiEnd_coefficient_mul
-    (F : LocalField.{u, v} K)
-    {A : Type w} [Field A] [CharP A F.residueCharacteristic]
+      [CharP A F.residueCharacteristic]
     (ι : F.residueField →+* A) (t : A)
     (a : F.residueField) (x : A) :
     equalCharacteristicLubinTateAmbientPiEnd F t (ι a * x) =
       ι a * equalCharacteristicLubinTateAmbientPiEnd F t x := by
-  let : Fintype F.residueField := Fintype.ofFinite F.residueField
+  let  := Fintype.ofFinite F.residueField
   rw [equalCharacteristicLubinTateAmbientPiEnd_apply,
     equalCharacteristicLubinTateAmbientPiEnd_apply, mul_pow, ← ι.map_pow]
   have ha : a ^ Nat.card F.residueField = a := by
@@ -139,57 +135,53 @@ theorem equalCharacteristicLubinTateAmbientPiEnd_coefficient_mul
 
 /-- The `i`-fold iterate of the ambient distinguished endomorphism. -/
 noncomputable def equalCharacteristicLubinTateAmbientPiIterate
-    (F : LocalField.{u, v} K)
-    {A : Type w} [Field A] [CharP A F.residueCharacteristic]
-    (t : A) (i : ℕ) : AddMonoid.End A :=
+      [CharP A F.residueCharacteristic]
+    (t : A) (i : ℕ)  :=
   (equalCharacteristicLubinTateAmbientPiEnd F t) ^ i
 
 /-- The zeroth ambient `π`-iterate is the identity. -/
 @[simp]
 theorem equalCharacteristicLubinTateAmbientPiIterate_zero
-    (F : LocalField.{u, v} K)
-    {A : Type w} [Field A] [CharP A F.residueCharacteristic]
+      [CharP A F.residueCharacteristic]
     (t x : A) :
-    equalCharacteristicLubinTateAmbientPiIterate F t 0 x = x := by
-  simp [equalCharacteristicLubinTateAmbientPiIterate]
+    equalCharacteristicLubinTateAmbientPiIterate F t 0 x = x := rfl
 
 /-- A successor ambient `π`-iterate applies one more `π`-endomorphism. -/
 @[simp]
 theorem equalCharacteristicLubinTateAmbientPiIterate_succ
-    (F : LocalField.{u, v} K)
-    {A : Type w} [Field A] [CharP A F.residueCharacteristic]
+      [CharP A F.residueCharacteristic]
     (t : A) (i : ℕ) (x : A) :
     equalCharacteristicLubinTateAmbientPiIterate F t (i + 1) x =
       equalCharacteristicLubinTateAmbientPiIterate F t i
         (equalCharacteristicLubinTateAmbientPiEnd F t x) := by
-  change
-    ((equalCharacteristicLubinTateAmbientPiEnd F t) ^ (i + 1)) x =
-      ((equalCharacteristicLubinTateAmbientPiEnd F t) ^ i)
-        (equalCharacteristicLubinTateAmbientPiEnd F t x)
-  rw [pow_succ]
   rfl
+end
 
-/-- Ambient iterates commute with residue-field scalar multiplication. -/
-theorem equalCharacteristicLubinTateAmbientPiIterate_coefficient_mul
-    (F : LocalField.{u, v} K)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+section
+variable (F : LocalField.{u, v} K)
     {A : Type w} [Field A] [CharP A F.residueCharacteristic]
     (ι : F.residueField →+* A) (t : A)
-    (i : ℕ) (a : F.residueField) (x : A) :
-    equalCharacteristicLubinTateAmbientPiIterate F t i (ι a * x) =
-      ι a * equalCharacteristicLubinTateAmbientPiIterate F t i x := by
-  induction i generalizing x with
-  | zero => simp
-  | succ i ih =>
-      rw [equalCharacteristicLubinTateAmbientPiIterate_succ,
-        equalCharacteristicLubinTateAmbientPiEnd_coefficient_mul,
-        ih, equalCharacteristicLubinTateAmbientPiIterate_succ]
-
+    (n : ℕ)
+include F A ι t n
 /-- The genuine finite bracket in the ambient field. -/
 noncomputable def equalCharacteristicLubinTateAmbientBracket
-    (F : LocalField.{u, v} K)
-    {A : Type w} [Field A] [CharP A F.residueCharacteristic]
-    (ι : F.residueField →+* A) (t : A)
-    (n : ℕ) (a : F.residueField⟦X⟧) : AddMonoid.End A :=
+      (a : F.residueField⟦X⟧)  :=
   ∑ i ∈ Finset.range n,
     equalCharacteristicLubinTateAmbientCoefficientEnd F ι
         (PowerSeries.coeff i a) *
@@ -197,10 +189,7 @@ noncomputable def equalCharacteristicLubinTateAmbientBracket
 
 /-- Ambient bracket evaluation expands as the finite coefficient-and-iterate sum. -/
 theorem equalCharacteristicLubinTateAmbientBracket_apply
-    (F : LocalField.{u, v} K)
-    {A : Type w} [Field A] [CharP A F.residueCharacteristic]
-    (ι : F.residueField →+* A) (t : A)
-    (n : ℕ) (a : F.residueField⟦X⟧) (x : A) :
+      (a : F.residueField⟦X⟧) (x : A) :
     equalCharacteristicLubinTateAmbientBracket F ι t n a x =
       ∑ i ∈ Finset.range n,
         ι (PowerSeries.coeff i a) *
@@ -212,28 +201,25 @@ theorem equalCharacteristicLubinTateAmbientBracket_apply
   rw [ambientAddMonoidEnd_mul_apply,
     equalCharacteristicLubinTateAmbientCoefficientEnd_apply]
 
-/-- The ambient bracket of the zero series is the zero endomorphism. -/
-@[simp]
-theorem equalCharacteristicLubinTateAmbientBracket_zero
-    (F : LocalField.{u, v} K)
-    {A : Type w} [Field A] [CharP A F.residueCharacteristic]
-    (ι : F.residueField →+* A) (t : A) (n : ℕ) :
-    equalCharacteristicLubinTateAmbientBracket F ι t n 0 = 0 := by
-  apply AddMonoidHom.ext
-  intro x
-  change
-    equalCharacteristicLubinTateAmbientBracket F ι t n 0 x =
-      (0 : AddMonoid.End A) x
-  rw [equalCharacteristicLubinTateAmbientBracket_apply]
-  simp
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The ambient bracket is additive in its power-series parameter. -/
 @[simp]
 theorem equalCharacteristicLubinTateAmbientBracket_add
-    (F : LocalField.{u, v} K)
-    {A : Type w} [Field A] [CharP A F.residueCharacteristic]
-    (ι : F.residueField →+* A) (t : A)
-    (n : ℕ) (a b : F.residueField⟦X⟧) :
+      (a b : F.residueField⟦X⟧) :
     equalCharacteristicLubinTateAmbientBracket F ι t n (a + b) =
       equalCharacteristicLubinTateAmbientBracket F ι t n a +
         equalCharacteristicLubinTateAmbientBracket F ι t n b := by
@@ -254,10 +240,7 @@ theorem equalCharacteristicLubinTateAmbientBracket_add
 /-- The ambient bracket of a constant acts by the embedded scalar. -/
 @[simp]
 theorem equalCharacteristicLubinTateAmbientBracket_C
-    (F : LocalField.{u, v} K)
-    {A : Type w} [Field A] [CharP A F.residueCharacteristic]
-    (ι : F.residueField →+* A) (t : A)
-    (n : ℕ) (a : F.residueField) :
+      (a : F.residueField) :
     equalCharacteristicLubinTateAmbientBracket F ι t (n + 1)
         (PowerSeries.C a) =
       equalCharacteristicLubinTateAmbientCoefficientEnd F ι a := by
@@ -276,11 +259,16 @@ theorem equalCharacteristicLubinTateAmbientBracket_C
   · intro i hi hi0
     simp [PowerSeries.coeff_C, hi0]
   · simp
+end
 
+
+section
+variable (F : LocalField.{u, v} K)
+    {A : Type w} [Field A] [CharP A F.residueCharacteristic]
+include F A
 /-- Ambient iterates add their exponents under composition. -/
 theorem equalCharacteristicLubinTateAmbientPiIterate_add
-    (F : LocalField.{u, v} K)
-    {A : Type w} [Field A] [CharP A F.residueCharacteristic]
+     
     (t : A) (i j : ℕ) (x : A) :
     equalCharacteristicLubinTateAmbientPiIterate F t (i + j) x =
       equalCharacteristicLubinTateAmbientPiIterate F t i
@@ -294,15 +282,13 @@ theorem equalCharacteristicLubinTateAmbientPiIterate_add
 
 /-- A point in an ambient field killed by the level-`n` iterate. -/
 def IsEqualCharacteristicLubinTateAmbientTorsion
-    (F : LocalField.{u, v} K)
-    {A : Type w} [Field A] [CharP A F.residueCharacteristic]
-    (t : A) (n : ℕ) (x : A) : Prop :=
+     
+    (t : A) (n : ℕ) (x : A)  :=
   equalCharacteristicLubinTateAmbientPiIterate F t n x = 0
 
 /-- A level-`n` ambient torsion point is killed at every higher level. -/
 theorem equalCharacteristicLubinTateAmbientPiIterate_eq_zero_of_le
-    (F : LocalField.{u, v} K)
-    {A : Type w} [Field A] [CharP A F.residueCharacteristic]
+     
     (t : A) {n m : ℕ} (hnm : n ≤ m) (x : A)
     (hx : IsEqualCharacteristicLubinTateAmbientTorsion F t n x) :
     equalCharacteristicLubinTateAmbientPiIterate F t m x = 0 := by
@@ -310,19 +296,15 @@ theorem equalCharacteristicLubinTateAmbientPiIterate_eq_zero_of_le
     equalCharacteristicLubinTateAmbientPiIterate_add, hx, map_zero]
 
 /-- The image under `e` of level `n+1` torsion has level `n`. -/
-theorem equalCharacteristicLubinTateAmbientPiEnd_torsion_pred
-    (F : LocalField.{u, v} K)
-    {A : Type w} [Field A] [CharP A F.residueCharacteristic]
+def equalCharacteristicLubinTateAmbientPiEnd_torsion_pred
+     
     (t : A) (n : ℕ) (x : A)
-    (hx : IsEqualCharacteristicLubinTateAmbientTorsion F t (n + 1) x) :
-    IsEqualCharacteristicLubinTateAmbientTorsion F t n
-      (equalCharacteristicLubinTateAmbientPiEnd F t x) :=
+    (hx : IsEqualCharacteristicLubinTateAmbientTorsion F t (n + 1) x)  :=
   hx
 
 /-- Recursive evaluation formula for an ambient bracket. -/
 theorem equalCharacteristicLubinTateAmbientBracket_succ_apply
-    (F : LocalField.{u, v} K)
-    {A : Type w} [Field A] [CharP A F.residueCharacteristic]
+     
     (ι : F.residueField →+* A) (t : A)
     (n : ℕ) (a : F.residueField⟦X⟧) (x : A) :
     equalCharacteristicLubinTateAmbientBracket F ι t (n + 1) a x =
@@ -343,17 +325,14 @@ theorem equalCharacteristicLubinTateAmbientBracket_succ_apply
 /-- The first ambient `π`-iterate is the ambient `π`-endomorphism. -/
 @[simp]
 theorem equalCharacteristicLubinTateAmbientPiIterate_one
-    (F : LocalField.{u, v} K)
-    {A : Type w} [Field A] [CharP A F.residueCharacteristic]
+     
     (t x : A) :
     equalCharacteristicLubinTateAmbientPiIterate F t 1 x =
-      equalCharacteristicLubinTateAmbientPiEnd F t x := by
-  simp [equalCharacteristicLubinTateAmbientPiIterate]
+      equalCharacteristicLubinTateAmbientPiEnd F t x := rfl
 
 /-- The distinguished ambient endomorphism commutes with its iterates. -/
 theorem equalCharacteristicLubinTateAmbientPiEnd_iterate
-    (F : LocalField.{u, v} K)
-    {A : Type w} [Field A] [CharP A F.residueCharacteristic]
+     
     (t : A) (i : ℕ) (x : A) :
     equalCharacteristicLubinTateAmbientPiEnd F t
         (equalCharacteristicLubinTateAmbientPiIterate F t i x) =
@@ -375,31 +354,35 @@ theorem equalCharacteristicLubinTateAmbientPiEnd_iterate
       equalCharacteristicLubinTateAmbientPiIterate_add F t i 1 x
     _ = equalCharacteristicLubinTateAmbientPiIterate F t i
         (equalCharacteristicLubinTateAmbientPiEnd F t x) := by
-      exact congrArg (equalCharacteristicLubinTateAmbientPiIterate F t i)
-        (equalCharacteristicLubinTateAmbientPiIterate_one F t x)
+      apply congrArg <;> aesop
+end
 
-/-- Ambient brackets are linear for the embedded coefficient action. -/
-theorem equalCharacteristicLubinTateAmbientBracket_coefficient_mul_apply
-    (F : LocalField.{u, v} K)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+section
+variable (F : LocalField.{u, v} K)
     {A : Type w} [Field A] [CharP A F.residueCharacteristic]
     (ι : F.residueField →+* A) (t : A)
-    (n : ℕ) (a : F.residueField⟦X⟧) (c : F.residueField) (x : A) :
-    equalCharacteristicLubinTateAmbientBracket F ι t n a (ι c * x) =
-      ι c * equalCharacteristicLubinTateAmbientBracket F ι t n a x := by
-  rw [equalCharacteristicLubinTateAmbientBracket_apply,
-    equalCharacteristicLubinTateAmbientBracket_apply, Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro i hi
-  rw [equalCharacteristicLubinTateAmbientPiIterate_coefficient_mul]
-  ring
-
+    (n : ℕ)
+include F A ι t n
 /-- Multiplication of coefficient series by `C(c)` scales an ambient
 bracket by `ι(c)`. -/
 theorem equalCharacteristicLubinTateAmbientBracket_C_mul_apply
-    (F : LocalField.{u, v} K)
-    {A : Type w} [Field A] [CharP A F.residueCharacteristic]
-    (ι : F.residueField →+* A) (t : A)
-    (n : ℕ) (c : F.residueField) (a : F.residueField⟦X⟧) (x : A) :
+      (c : F.residueField) (a : F.residueField⟦X⟧) (x : A) :
     equalCharacteristicLubinTateAmbientBracket F ι t n
         (PowerSeries.C c * a) x =
       ι c * equalCharacteristicLubinTateAmbientBracket F ι t n a x := by
@@ -412,10 +395,7 @@ theorem equalCharacteristicLubinTateAmbientBracket_C_mul_apply
 
 /-- The ambient bracket commutes with the distinguished endomorphism. -/
 theorem equalCharacteristicLubinTateAmbientPiEnd_bracket
-    (F : LocalField.{u, v} K)
-    {A : Type w} [Field A] [CharP A F.residueCharacteristic]
-    (ι : F.residueField →+* A) (t : A)
-    (n : ℕ) (a : F.residueField⟦X⟧) (x : A) :
+      (a : F.residueField⟦X⟧) (x : A) :
     equalCharacteristicLubinTateAmbientPiEnd F t
         (equalCharacteristicLubinTateAmbientBracket F ι t n a x) =
       equalCharacteristicLubinTateAmbientBracket F ι t n a
@@ -431,10 +411,7 @@ theorem equalCharacteristicLubinTateAmbientPiEnd_bracket
 /-- On level-`n` torsion, adding the `(n+1)`-st bracket term changes
 nothing. -/
 theorem equalCharacteristicLubinTateAmbientBracket_succ_eq_of_torsion
-    (F : LocalField.{u, v} K)
-    {A : Type w} [Field A] [CharP A F.residueCharacteristic]
-    (ι : F.residueField →+* A) (t : A)
-    (n : ℕ) (a : F.residueField⟦X⟧) (x : A)
+      (a : F.residueField⟦X⟧) (x : A)
     (hx : IsEqualCharacteristicLubinTateAmbientTorsion F t n x) :
     equalCharacteristicLubinTateAmbientBracket F ι t (n + 1) a x =
       equalCharacteristicLubinTateAmbientBracket F ι t n a x := by
@@ -446,27 +423,19 @@ theorem equalCharacteristicLubinTateAmbientBracket_succ_eq_of_torsion
 /-- Applying `e` to an `(n+1)`-term bracket on level `n+1` torsion drops
 the bracket level by one. -/
 theorem equalCharacteristicLubinTateAmbientPiEnd_bracket_succ_of_torsion
-    (F : LocalField.{u, v} K)
-    {A : Type w} [Field A] [CharP A F.residueCharacteristic]
-    (ι : F.residueField →+* A) (t : A)
-    (n : ℕ) (a : F.residueField⟦X⟧) (x : A)
+      (a : F.residueField⟦X⟧) (x : A)
     (hx : IsEqualCharacteristicLubinTateAmbientTorsion F t (n + 1) x) :
     equalCharacteristicLubinTateAmbientPiEnd F t
         (equalCharacteristicLubinTateAmbientBracket F ι t (n + 1) a x) =
       equalCharacteristicLubinTateAmbientBracket F ι t n a
         (equalCharacteristicLubinTateAmbientPiEnd F t x) := by
   rw [equalCharacteristicLubinTateAmbientPiEnd_bracket]
-  exact equalCharacteristicLubinTateAmbientBracket_succ_eq_of_torsion
-    F ι t n a (equalCharacteristicLubinTateAmbientPiEnd F t x)
-      (equalCharacteristicLubinTateAmbientPiEnd_torsion_pred F t n x hx)
+  apply equalCharacteristicLubinTateAmbientBracket_succ_eq_of_torsion <;> assumption
 
 /-- Multiplicativity of the genuine truncated brackets on ambient
 `e^n`-division points. -/
 theorem equalCharacteristicLubinTateAmbientBracket_mul_apply_of_torsion
-    (F : LocalField.{u, v} K)
-    {A : Type w} [Field A] [CharP A F.residueCharacteristic]
-    (ι : F.residueField →+* A) (t : A)
-    (n : ℕ) (a b : F.residueField⟦X⟧) (x : A)
+      (a b : F.residueField⟦X⟧) (x : A)
     (hx : IsEqualCharacteristicLubinTateAmbientTorsion F t n x) :
     equalCharacteristicLubinTateAmbientBracket F ι t n (a * b) x =
       equalCharacteristicLubinTateAmbientBracket F ι t n a
@@ -475,9 +444,7 @@ theorem equalCharacteristicLubinTateAmbientBracket_mul_apply_of_torsion
   | zero =>
       simp [equalCharacteristicLubinTateAmbientBracket_apply]
   | succ n ih =>
-      have hxpred :
-          IsEqualCharacteristicLubinTateAmbientTorsion F t n
-            (equalCharacteristicLubinTateAmbientPiEnd F t x) :=
+      have hxpred  :=
         equalCharacteristicLubinTateAmbientPiEnd_torsion_pred F t n x hx
       have hcoeff :
           PowerSeries.coeff 0 (a * b) =
@@ -561,6 +528,8 @@ theorem equalCharacteristicLubinTateAmbientBracket_mul_apply_of_torsion
           (equalCharacteristicLubinTateAmbientBracket_succ_apply F ι t n a
             (equalCharacteristicLubinTateAmbientBracket F ι t
               (n + 1) b x)).symm
+end
+
 
 end EqualCharacteristic
 end LubinTate

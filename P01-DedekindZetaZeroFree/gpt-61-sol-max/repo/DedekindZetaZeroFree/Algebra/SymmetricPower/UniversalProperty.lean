@@ -57,11 +57,11 @@ theorem lift_tprod (hf : ∀ e : Equiv.Perm ι, f.domDomCongr e = f) (m : ι →
     lift f hf (⨂ₛ[R] i, m i) = f m := by
   rw [tprod, LinearMap.compMultilinearMap_apply, lift_mk, PiTensorProduct.lift.tprod]
 
-@[ext]
-theorem ext {g h : Sym[R] ι M →ₗ[R] N}
-    (hgh : ∀ m : ι → M, g (⨂ₛ[R] i, m i) = h (⨂ₛ[R] i, m i)) : g = h := by
-  refine LinearMap.ext_on (span_tprod_eq_top R ι M) ?_
-  rintro _ ⟨m, rfl⟩
-  exact hgh m
+
+
+
+
+
+
 
 end SymmetricPower

@@ -97,27 +97,28 @@ private theorem completeDVFComapAlgEquiv_hasExtension
       (_root_.Valuation.HasExtension.val_map_le_one_iff
         (vR := base.valuation) (vA := target.valuation) a).symm
 
+section
+variable (K L : Type) [Field K] [Field L] [Algebra K L]
+    [FiniteDimensional K L] [IsGalois K L]
+    [ValuativeRel K] [TopologicalSpace K]
+    [IsNonarchimedeanLocalField K]
+include K L in
 /-- The actual real lower ramification group of an arbitrary finite Galois
 extension of nonarchimedean local fields, using its integral-closure
 valuation. -/
 noncomputable def localLowerRamificationGroup
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
+     
     (t : ℝ) : Subgroup Gal(L / K) :=
   Higher.lowerRamificationGroup
     (base := (localCompleteDVF K).toDVF)
     (target := (chosenLocalExtensionCompleteDVF K L).toDVF)
     (chosenLocalExtensionCompleteDVF_hasUniqueDVFValuationExtension K L) t
 
+include K L in
 /-- The actual real upper ramification group of an arbitrary finite Galois
 extension of nonarchimedean local fields. -/
 noncomputable def localUpperRamificationGroup
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
+     
     (t : ℝ) : Subgroup Gal(L / K) :=
   Higher.upperRamificationGroupOfUniqueExtension
     (base := (localCompleteDVF K).toDVF)
@@ -599,12 +600,9 @@ private theorem fixedFieldUpperRamificationGroup_map_autCongr
   rw [hinverse]
   exact hlower _
 
+include K L in
 private theorem fixedFieldUpperRamificationGroup_eq_local
-    (K L : Type)
-    [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
+     
     (H : Subgroup Gal(L / K)) [H.Normal]
     (t : ℝ) :
     fixedFieldUpperRamificationGroup
@@ -743,12 +741,10 @@ theorem localUpperRamificationGroup_map_restrict
     localUpperRamificationGroup_map_autCongr
       K (IntermediateField.fixedField H) E eFixed t
 
+include K L in
 /-- The local upper ramification filtration is antitone. -/
 theorem localUpperRamificationGroup_antitone
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] :
+      :
     Antitone (localUpperRamificationGroup K L) := by
   intro s t hst
   unfold localUpperRamificationGroup
@@ -758,107 +754,105 @@ theorem localUpperRamificationGroup_antitone
     (Higher.inverseHerbrandFunctionOfUniqueExtension_strictMono
       (chosenLocalExtensionCompleteDVF_hasUniqueDVFValuationExtension K L)).monotone hst
 
-/-- The subgroup immediately after an upper ramification index for an
-arbitrary finite local Galois extension. -/
-def localUpperRamificationGroupAfter
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    (t : ℝ) : Subgroup Gal(L / K) :=
-  ⨆ s : {s : ℝ // t < s}, localUpperRamificationGroup K L s
 
-/-- The right-limit upper group lies in the group at the limiting index. -/
-theorem localUpperRamificationGroupAfter_le
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    (t : ℝ) :
-    localUpperRamificationGroupAfter K L t ≤
-      localUpperRamificationGroup K L t := by
-  apply iSup_le
-  intro s
-  exact localUpperRamificationGroup_antitone K L (le_of_lt s.property)
 
-/-- Intrinsic upper-jump predicate for an arbitrary finite local Galois
-extension. -/
-def IsLocalUpperRamificationJump
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    (t : ℝ) : Prop :=
-  localUpperRamificationGroup K L t ≠
-    localUpperRamificationGroupAfter K L t
 
-/-- Restriction along a finite Galois tower carries the right-limit of the
-upper filtration onto the corresponding right-limit downstairs. -/
-theorem localUpperRamificationGroupAfter_map_restrict
-    (K : Type) [Field K]
-    [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    (E F : IntermediateField K (SeparableClosure K)) (hEF : E ≤ F)
-    [FiniteDimensional K E] [FiniteDimensional K F]
-    [IsGalois K E] [IsGalois K F]
-    (t : ℝ) :
-    Subgroup.map
-        (intermediateFieldRestrictNormalHom E F hEF)
-        (localUpperRamificationGroupAfter K F t) =
-      localUpperRamificationGroupAfter K E t := by
-  unfold localUpperRamificationGroupAfter
-  calc
-    Subgroup.map
-        (intermediateFieldRestrictNormalHom E F hEF)
-        (⨆ s : {s : ℝ // t < s},
-          localUpperRamificationGroup K F (s : ℝ)) =
-      ⨆ s : {s : ℝ // t < s},
-        Subgroup.map
-          (intermediateFieldRestrictNormalHom E F hEF)
-          (localUpperRamificationGroup K F (s : ℝ)) := by
-            simpa using
-              Subgroup.map_iSup
-                (intermediateFieldRestrictNormalHom E F hEF)
-                (fun s : {s : ℝ // t < s} =>
-                  localUpperRamificationGroup K F (s : ℝ))
-    _ = ⨆ s : {s : ℝ // t < s},
-        localUpperRamificationGroup K E (s : ℝ) := by
-          apply iSup_congr
-          intro s
-          exact localUpperRamificationGroup_map_restrict
-            K E F hEF (s : ℝ)
 
-/-- Every upper jump downstairs in a finite Galois tower was already an
-upper jump upstairs.  Thus quotienting an extension cannot create new break
-indices. -/
-theorem isLocalUpperRamificationJump_of_map_restrict
-    (K : Type) [Field K]
-    [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    (E F : IntermediateField K (SeparableClosure K)) (hEF : E ≤ F)
-    [FiniteDimensional K E] [FiniteDimensional K F]
-    [IsGalois K E] [IsGalois K F]
-    {t : ℝ} (ht : IsLocalUpperRamificationJump K E t) :
-    IsLocalUpperRamificationJump K F t := by
-  intro hF
-  apply ht
-  calc
-    localUpperRamificationGroup K E t =
-        Subgroup.map
-          (intermediateFieldRestrictNormalHom E F hEF)
-          (localUpperRamificationGroup K F t) :=
-      (localUpperRamificationGroup_map_restrict K E F hEF t).symm
-    _ = Subgroup.map
-          (intermediateFieldRestrictNormalHom E F hEF)
-          (localUpperRamificationGroupAfter K F t) := by rw [hF]
-    _ = localUpperRamificationGroupAfter K E t :=
-      localUpperRamificationGroupAfter_map_restrict K E F hEF t
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+include K L in
 private theorem localInverseHerbrandFunction_eq_self_of_nonpos
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
+     
     (t : ℝ) (ht : t ≤ 0) :
     inverseHerbrandFunctionOfUniqueExtension
         (base := (localCompleteDVF K).toDVF)
@@ -885,13 +879,11 @@ private theorem localInverseHerbrandFunction_eq_self_of_nonpos
         huniq)
       ht).symm
 
+include K L in
 /-- At every nonpositive index the inverse Herbrand function is the identity,
 so upper and lower numbering agree. -/
 theorem localUpperRamificationGroup_eq_localLowerRamificationGroup_of_nonpos
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
+     
     (t : ℝ) (ht : t ≤ 0) :
     localUpperRamificationGroup K L t =
       localLowerRamificationGroup K L t := by
@@ -899,161 +891,163 @@ theorem localUpperRamificationGroup_eq_localLowerRamificationGroup_of_nonpos
   unfold localLowerRamificationGroup
   unfold upperRamificationGroupOfUniqueExtension
   rw [localInverseHerbrandFunction_eq_self_of_nonpos K L t ht]
+end
 
-/-- The lower filtration is constant between the distinguished endpoints `-1` and
-`0`: every such real index imposes exactly the first maximal-ideal power. -/
-theorem localLowerRamificationGroup_eq_zero_of_neg_one_lt_of_nonpos
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    (t : ℝ) (hneg : -1 < t) (ht : t ≤ 0) :
-    localLowerRamificationGroup K L t =
-      localLowerRamificationGroup K L 0 := by
-  have hexp : realRamificationExponent t = 1 := by
-    unfold realRamificationExponent
-    have hceil : Int.ceil (t + 1) = 1 := by
-      rw [Int.ceil_eq_iff]
-      norm_num
-      constructor <;> linarith
-    rw [hceil]
-    norm_num
-  have hideal :
-      realRamificationIdeal
-          (chosenLocalExtensionCompleteDVF K L).toDVF t =
-        realRamificationIdeal
-          (chosenLocalExtensionCompleteDVF K L).toDVF 0 := by
-    unfold realRamificationIdeal
-    have hzero : realRamificationExponent (0 : ℝ) = 1 := by
-      norm_num [realRamificationExponent]
-    rw [hexp, hzero]
-  unfold localLowerRamificationGroup
-  ext sigma
-  change
-    (∀ a, _ ∈ realRamificationIdeal
-      (chosenLocalExtensionCompleteDVF K L).toDVF t) ↔
-      ∀ a, _ ∈ realRamificationIdeal
-        (chosenLocalExtensionCompleteDVF K L).toDVF 0
-  rw [hideal]
 
-/-- The upper filtration is constant on the half-open interval `(-1, 0]`. -/
-theorem localUpperRamificationGroup_eq_zero_of_neg_one_lt_of_nonpos
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    (t : ℝ) (hneg : -1 < t) (ht : t ≤ 0) :
-    localUpperRamificationGroup K L t =
-      localUpperRamificationGroup K L 0 := by
-  rw [
-    localUpperRamificationGroup_eq_localLowerRamificationGroup_of_nonpos
-      K L t ht,
-    localUpperRamificationGroup_eq_localLowerRamificationGroup_of_nonpos
-      K L 0 (by norm_num),
-    localLowerRamificationGroup_eq_zero_of_neg_one_lt_of_nonpos
-      K L t hneg ht]
 
-/-- At and below `-1`, the local upper ramification group is the full Galois
-group. -/
-theorem localUpperRamificationGroup_eq_top_of_le_neg_one
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    (t : ℝ) (ht : t ≤ -1) :
-    localUpperRamificationGroup K L t = ⊤ := by
-  rw [
-    localUpperRamificationGroup_eq_localLowerRamificationGroup_of_nonpos
-      K L t (by linarith)]
-  unfold localLowerRamificationGroup
-  exact lowerRamificationGroup_eq_top_of_le_neg_one
-    (chosenLocalExtensionCompleteDVF_hasUniqueDVFValuationExtension K L) ht
 
-/-- No upper jump occurs strictly below the distinguished endpoint `-1`. -/
-theorem not_isLocalUpperRamificationJump_of_lt_neg_one
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    (t : ℝ) (ht : t < -1) :
-    ¬ IsLocalUpperRamificationJump K L t := by
-  intro hjump
-  apply hjump
-  have htgroup :
-      localUpperRamificationGroup K L t = ⊤ :=
-    localUpperRamificationGroup_eq_top_of_le_neg_one K L t ht.le
-  let s : {s : ℝ // t < s} := ⟨(t + (-1)) / 2, by linarith⟩
-  have hsle : (s : ℝ) ≤ -1 := by
-    dsimp [s]
-    linarith
-  have hsgroup :
-      localUpperRamificationGroup K L (s : ℝ) = ⊤ :=
-    localUpperRamificationGroup_eq_top_of_le_neg_one K L s hsle
-  rw [htgroup]
-  apply le_antisymm
-  · calc
-      (⊤ : Subgroup Gal(L / K)) =
-          localUpperRamificationGroup K L (s : ℝ) := hsgroup.symm
-      _ ≤ localUpperRamificationGroupAfter K L t :=
-        le_iSup (fun u : {u : ℝ // t < u} =>
-          localUpperRamificationGroup K L (u : ℝ)) s
-  · exact le_top
 
-/-- No upper jump occurs strictly between `-1` and `0`. -/
-theorem not_isLocalUpperRamificationJump_of_neg_one_lt_of_lt_zero
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    (t : ℝ) (hneg : -1 < t) (ht : t < 0) :
-    ¬ IsLocalUpperRamificationJump K L t := by
-  intro hjump
-  apply hjump
-  let s : {s : ℝ // t < s} := ⟨t / 2, by linarith⟩
-  have hsneg : -1 < (s : ℝ) := by
-    dsimp [s]
-    linarith
-  have hs0 : (s : ℝ) ≤ 0 := by
-    dsimp [s]
-    linarith
-  have htzero :
-      localUpperRamificationGroup K L t =
-        localUpperRamificationGroup K L 0 :=
-    localUpperRamificationGroup_eq_zero_of_neg_one_lt_of_nonpos
-      K L t hneg ht.le
-  have hszero :
-      localUpperRamificationGroup K L (s : ℝ) =
-        localUpperRamificationGroup K L 0 :=
-    localUpperRamificationGroup_eq_zero_of_neg_one_lt_of_nonpos
-      K L s hsneg hs0
-  apply le_antisymm
-  · calc
-      localUpperRamificationGroup K L t =
-          localUpperRamificationGroup K L (s : ℝ) :=
-        htzero.trans hszero.symm
-      _ ≤ localUpperRamificationGroupAfter K L t :=
-        le_iSup (fun u : {u : ℝ // t < u} =>
-          localUpperRamificationGroup K L (u : ℝ)) s
-  · exact localUpperRamificationGroupAfter_le K L t
 
-/-- Every local upper jump is either the possible endpoint `-1` or a
-nonnegative index. -/
-theorem isLocalUpperRamificationJump_eq_neg_one_or_nonneg
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    {t : ℝ} (ht : IsLocalUpperRamificationJump K L t) :
-    t = -1 ∨ 0 ≤ t := by
-  rcases lt_trichotomy t (-1) with htlt | hteq | htgt
-  · exact False.elim
-      ((not_isLocalUpperRamificationJump_of_lt_neg_one K L t htlt) ht)
-  · exact Or.inl hteq
-  · by_cases ht0 : 0 ≤ t
-    · exact Or.inr ht0
-    · exact False.elim
-        ((not_isLocalUpperRamificationJump_of_neg_one_lt_of_lt_zero
-          K L t htgt (lt_of_not_ge ht0)) ht)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end RamificationTheory.LocalField
 

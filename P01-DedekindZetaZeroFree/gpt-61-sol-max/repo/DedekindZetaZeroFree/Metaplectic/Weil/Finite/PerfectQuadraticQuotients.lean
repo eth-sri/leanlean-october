@@ -14,13 +14,16 @@ namespace DedekindZetaZeroFree
 
 variable (F : Type) [Field F] [NumberField F]
 
-theorem localFiniteQuadraticPhase_respects
-    (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ)
+section
+variable (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ)
     (b : (v.adicCompletion F)ˣ) (hb : (b : v.adicCompletion F) = 2 * (a : v.adicCompletion F))
     (m : ℤ)
     (hq : ∀ h ∈ finiteCompletionBall F v m,
       localFiniteCharacter F v ((a : v.adicCompletion F) * h ^ 2) = 1)
     (hHL : finiteCompletionBall F v m ≤ localScaledBallDual F v b m)
+include v a b hb m hq hHL
+theorem localFiniteQuadraticPhase_respects
+     
     (x y : localScaledBallDual F v b m)
     (hxy : QuotientAddGroup.leftRel
       ((finiteCompletionBall F v m).comap (localScaledBallDual F v b m).subtype) x y) :
@@ -43,12 +46,7 @@ theorem localFiniteQuadraticPhase_respects
     mul_one, mul_one]
 
 def localFinitePerfectQuadraticPhase
-    (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ)
-    (b : (v.adicCompletion F)ˣ) (hb : (b : v.adicCompletion F) = 2 * (a : v.adicCompletion F))
-    (m : ℤ)
-    (hq : ∀ h ∈ finiteCompletionBall F v m,
-      localFiniteCharacter F v ((a : v.adicCompletion F) * h ^ 2) = 1)
-    (hHL : finiteCompletionBall F v m ≤ localScaledBallDual F v b m) :
+      :
     localScaledBallDualQuotient F v b m → Circle :=
   Quotient.lift
     (fun x : localScaledBallDual F v b m =>
@@ -56,34 +54,19 @@ def localFinitePerfectQuadraticPhase
     (localFiniteQuadraticPhase_respects F v a b hb m hq hHL)
 
 @[simp] theorem localFinitePerfectQuadraticPhase_mk
-    (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ)
-    (b : (v.adicCompletion F)ˣ) (hb : (b : v.adicCompletion F) = 2 * (a : v.adicCompletion F))
-    (m : ℤ)
-    (hq : ∀ h ∈ finiteCompletionBall F v m,
-      localFiniteCharacter F v ((a : v.adicCompletion F) * h ^ 2) = 1)
-    (hHL : finiteCompletionBall F v m ≤ localScaledBallDual F v b m)
+     
     (x : localScaledBallDual F v b m) :
     localFinitePerfectQuadraticPhase F v a b hb m hq hHL (QuotientAddGroup.mk x) =
       localFiniteCharacter F v ((a : v.adicCompletion F) * (x : v.adicCompletion F) ^ 2) := by
   rfl
 
 def localFinitePerfectQuadraticPolar
-    (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ)
-    (b : (v.adicCompletion F)ˣ) (hb : (b : v.adicCompletion F) = 2 * (a : v.adicCompletion F))
-    (m : ℤ)
-    (hq : ∀ h ∈ finiteCompletionBall F v m,
-      localFiniteCharacter F v ((a : v.adicCompletion F) * h ^ 2) = 1)
-    (hHL : finiteCompletionBall F v m ≤ localScaledBallDual F v b m)
+     
     (x y : localScaledBallDualQuotient F v b m) : Circle :=
   finiteQuadraticPolarization (localFinitePerfectQuadraticPhase F v a b hb m hq hHL) x y
 
 theorem localFinitePerfectQuadraticPolar_mk
-    (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ)
-    (b : (v.adicCompletion F)ˣ) (hb : (b : v.adicCompletion F) = 2 * (a : v.adicCompletion F))
-    (m : ℤ)
-    (hq : ∀ h ∈ finiteCompletionBall F v m,
-      localFiniteCharacter F v ((a : v.adicCompletion F) * h ^ 2) = 1)
-    (hHL : finiteCompletionBall F v m ≤ localScaledBallDual F v b m)
+     
     (x y : localScaledBallDual F v b m) :
     localFinitePerfectQuadraticPolar F v a b hb m hq hHL
         (QuotientAddGroup.mk x) (QuotientAddGroup.mk y) =
@@ -101,12 +84,7 @@ theorem localFinitePerfectQuadraticPolar_mk
   simp only [mul_div_cancel_left]
 
 theorem weil_finite_perfect_quadratic_quotient
-    (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ)
-    (b : (v.adicCompletion F)ˣ) (hb : (b : v.adicCompletion F) = 2 * (a : v.adicCompletion F))
-    (m : ℤ)
-    (hq : ∀ h ∈ finiteCompletionBall F v m,
-      localFiniteCharacter F v ((a : v.adicCompletion F) * h ^ 2) = 1)
-    (hHL : finiteCompletionBall F v m ≤ localScaledBallDual F v b m) :
+      :
     let G := localScaledBallDualQuotient F v b m
     let q := localFinitePerfectQuadraticPhase F v a b hb m hq hHL
     let B := localFinitePerfectQuadraticPolar F v a b hb m hq hHL
@@ -199,6 +177,8 @@ theorem weil_finite_perfect_quadratic_quotient
   have hrpos := Real.rpow_nonneg (norm_nonneg (b : v.adicCompletion F)) (-(1 / 2 : ℝ))
   change ‖(M : ℂ) * ∑ g : G, (q g : ℂ)‖ = _
   nlinarith [norm_nonneg ((M : ℂ) * ∑ g : G, (q g : ℂ))]
+end
+
 
 end DedekindZetaZeroFree
 

@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 
 @[expose] public section
+
 
 /-
 https://github.com/openai/math
@@ -19,26 +22,31 @@ noncomputable section
 variable {R : Type*} [CommMonoidWithZero R] [UniqueFactorizationMonoid R]
   [Subsingleton Rˣ]
 
-def divisors (g : R) : Finset R :=
+def divisors (g : R)  :=
   if g = 0 then ∅ else (UniqueFactorizationMonoid.factors g).powerset.toFinset.image
     Multiset.prod
 
-def normalizedValue (n : R →* (ℝ≥0)) (χ : R →* ℂ) (b : R) : ℂ :=
+section
+variable (n : R →* (ℝ≥0))
+include n
+def normalizedValue   (χ : R →* ℂ) (b : R)  :=
   χ b / (Real.sqrt (n b : ℝ) : ℂ)
 
-def cutoff (n : R →* (ℝ≥0)) (K : ℝ) (b : R) : ℤ :=
+def cutoff   (K : ℝ) (b : R) : ℤ :=
   if (n b : ℝ) ≤ K then 1 else 0
 
-def moebiusDivisorSum (n : R →* (ℝ≥0)) (χ : R →* ℂ) (g : R) : ℂ :=
+def moebiusDivisorSum   (χ : R →* ℂ) (g : R)  :=
   ∑ e ∈ divisors g, (UniqueFactorizationMonoid.moebius e : ℂ) * normalizedValue n χ e
 
-def density (n : R →* (ℝ≥0)) (g : R) : ℝ :=
+def density   (g : R)  :=
   ∏ p ∈ (UniqueFactorizationMonoid.factors g).toFinset, (1 - 1 / (n p : ℝ))
+end
 
-def boundaryElements (H : Finset R) (g : R) : Finset R :=
+
+def boundaryElements (H : Finset R) (g : R)  :=
   (H ×ˢ (divisors g ×ˢ divisors g)).image (fun x => x.1 * x.2.1 * x.2.2)
 
-def boundaryCoefficient (n : R →* (ℝ≥0)) (K : ℝ) (H : Finset R) (g b : R) : ℤ :=
+def boundaryCoefficient (n : R →* (ℝ≥0)) (K : ℝ) (H : Finset R) (g b : R)  :=
   ∑ h ∈ H, ∑ d ∈ divisors g, ∑ e ∈ divisors g,
     if h * d * e = b then
       UniqueFactorizationMonoid.moebius e * (cutoff n K (h * d) - cutoff n K h)

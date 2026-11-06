@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.ContourIntegration.HigherPrincipalParts
 public import DedekindZetaZeroFree.Analysis.ContourIntegration.SubquadraticGrowthAndGaussianRegulation
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -42,7 +45,7 @@ private theorem verticalIntegral_finset_sum {ι : Type*} (s : Finset ι) (f : ι
     simp [verticalIntegral]
   | insert a s ha ih =>
     intro hf
-    have hfa : Complex.VerticalIntegrable (f a) c := hf a (Finset.mem_insert_self a s)
+    have hfa  := hf a (Finset.mem_insert_self a s)
     have hfs : Complex.VerticalIntegrable (fun z => ∑ i ∈ s, f i z) c :=
       integrable_finsetSum s (fun i hi => hf i (Finset.mem_insert_of_mem hi))
     have hsplit : (fun z => ∑ i ∈ insert a s, f i z)
@@ -73,12 +76,12 @@ theorem verticalIntegral_sub_eq_sum_residues_of_finite_order
       ∑ p : S, if n p = 0 then 0 else C p 1 := by
   classical
   have hcard : Fintype.card ↥S = S.card := by simp [Finset.card_attach]
-  let e : ↥S ≃ Fin S.card := Fintype.equivFinOfCardEq hcard
-  let p : Fin S.card → ℝ := fun j => (e.symm j).val
-  let R : Fin S.card → ℂ := fun j => if n (e.symm j) = 0 then 0 else C (e.symm j) 1
-  let H : ℂ → ℂ := fun s => ∑ q : ↥S, ∑ k ∈ Finset.Icc 2 (n q),
+  let e  := Fintype.equivFinOfCardEq hcard
+  let p  := fun j => (e.symm j).val
+  let R  := fun j => if n (e.symm j) = 0 then 0 else C (e.symm j) 1
+  let H  := fun s => ∑ q : ↥S, ∑ k ∈ Finset.Icc 2 (n q),
       C q k / (s - (q.val : ℂ)) ^ k
-  let G : ℂ → ℂ := fun s => F s - H s
+  let G  := fun s => F s - H s
   have hp_inj : Function.Injective p := by
     intro j₁ j₂ h
     exact e.symm.injective (Subtype.ext h)
@@ -94,18 +97,18 @@ theorem verticalIntegral_sub_eq_sum_residues_of_finite_order
     · rintro ⟨q, rfl⟩
       exact ⟨e q, by simp [p, Equiv.symm_apply_apply]⟩
 
-  have hinner_int (c : ℝ) (hc : ∀ q : ↥S, c ≠ (q.val : ℝ)) (q : ↥S) :
+  have hinner_int (c : ℝ) (hc : ∀ q : ↥S, c ≠ q.val) (q : ↥S) :
       Complex.VerticalIntegrable (fun z => ∑ k ∈ Finset.Icc 2 (n q),
         C q k / (z - (q.val : ℂ)) ^ k) c :=
     integrable_finsetSum (Finset.Icc 2 (n q))
       (fun k hk => verticalIntegrable_higher_principal_part (C q k) (hc q)
         (Finset.mem_Icc.mp hk).1)
-  have hH_int_of (c : ℝ) (hc : ∀ q : ↥S, c ≠ (q.val : ℝ)) :
+  have hH_int_of (c : ℝ) (hc : ∀ q : ↥S, c ≠ q.val) :
       Complex.VerticalIntegrable H c := by
     show Integrable (fun y : ℝ => H (c + y * Complex.I)) volume
     simp only [H]
     exact integrable_finsetSum Finset.univ (fun q _ => hinner_int c hc q)
-  have hinner_vert_zero (c : ℝ) (hc : ∀ q : ↥S, c ≠ (q.val : ℝ)) (q : ↥S) :
+  have hinner_vert_zero (c : ℝ) (hc : ∀ q : ↥S, c ≠ q.val) (q : ↥S) :
       verticalIntegral c (fun z => ∑ k ∈ Finset.Icc 2 (n q),
         C q k / (z - (q.val : ℂ)) ^ k) = 0 := by
     rw [verticalIntegral_finset_sum (Finset.Icc 2 (n q))
@@ -114,7 +117,7 @@ theorem verticalIntegral_sub_eq_sum_residues_of_finite_order
         (Finset.mem_Icc.mp hk).1)]
     exact Finset.sum_eq_zero (fun k hk => verticalIntegral_higher_principal_part_eq_zero
       (C q k) (hc q) (Finset.mem_Icc.mp hk).1)
-  have hH_vert_zero (c : ℝ) (hc : ∀ q : ↥S, c ≠ (q.val : ℝ)) :
+  have hH_vert_zero (c : ℝ) (hc : ∀ q : ↥S, c ≠ q.val) :
       verticalIntegral c H = 0 := by
     have h1 : verticalIntegral c H = ∑ q : ↥S, verticalIntegral c
         (fun z => ∑ k ∈ Finset.Icc 2 (n q), C q k / (z - (q.val : ℂ)) ^ k) := by
@@ -145,15 +148,15 @@ theorem verticalIntegral_sub_eq_sum_residues_of_finite_order
     rwa [← hrange] at h
 
   have hG_int (c : ℝ) (hFc : Complex.VerticalIntegrable F c)
-      (hc : ∀ q : ↥S, c ≠ (q.val : ℝ)) : Complex.VerticalIntegrable G c := by
-    have hHint : Complex.VerticalIntegrable H c := hH_int_of c hc
+      (hc : ∀ q : ↥S, c ≠ q.val) : Complex.VerticalIntegrable G c := by
+    have hHint  := hH_int_of c hc
     show Integrable (fun y : ℝ => G (c + y * Complex.I)) volume
     simp only [G]
     exact hFc.sub hHint
   have hG_vert_eq (c : ℝ) (hFc : Complex.VerticalIntegrable F c)
-      (hc : ∀ q : ↥S, c ≠ (q.val : ℝ)) :
+      (hc : ∀ q : ↥S, c ≠ q.val) :
       verticalIntegral c G = verticalIntegral c F := by
-    have hHint : Complex.VerticalIntegrable H c := hH_int_of c hc
+    have hHint  := hH_int_of c hc
     have hsplit : verticalIntegral c G = verticalIntegral c F - verticalIntegral c H := by
       show (1 / (2 * Real.pi) : ℂ) * ∫ t : ℝ, G (c + t * Complex.I) = _
       rw [show (fun t : ℝ => G (c + t * Complex.I))
@@ -169,7 +172,7 @@ theorem verticalIntegral_sub_eq_sum_residues_of_finite_order
         ‖G ((σ : ℂ) + (t : ℂ) * Complex.I)‖ ≤
           C * Real.exp (A * (1 + |t|) ^ (3 / 2 : ℝ)) := by
     obtain ⟨C₀, A, hC₀, hA, hgr⟩ := hgrowth
-    let K : ℝ := ∑ q : ↥S, ∑ k ∈ Finset.Icc 2 (n q), ‖C q k‖
+    let K  := ∑ q : ↥S, ∑ k ∈ Finset.Icc 2 (n q), ‖C q k‖
     have hKnn : 0 ≤ K := by
       simp only [K]
       exact Finset.sum_nonneg (fun q _ => Finset.sum_nonneg (fun k _ => norm_nonneg _))
@@ -180,8 +183,7 @@ theorem verticalIntegral_sub_eq_sum_residues_of_finite_order
     have hexp1 : 1 ≤ Real.exp (A * (1 + |t|) ^ (3 / 2 : ℝ)) := by
       rw [Real.one_le_exp_iff]
       exact mul_nonneg hA (Real.rpow_nonneg (by positivity) _)
-    have hFs : ‖F ((σ : ℂ) + (t : ℂ) * Complex.I)‖
-        ≤ C₀ * Real.exp (A * (1 + |t|) ^ (3 / 2 : ℝ)) := hgr σ t hσ ht
+    have hFs  := hgr σ t hσ ht
     have hstep : ∀ q : ↥S, ‖∑ k ∈ Finset.Icc 2 (n q),
         C q k / (((σ : ℂ) + (t : ℂ) * Complex.I) - (q.val : ℂ)) ^ k‖
         ≤ ∑ k ∈ Finset.Icc 2 (n q), ‖C q k‖ := by
@@ -191,7 +193,7 @@ theorem verticalIntegral_sub_eq_sum_residues_of_finite_order
         (Finset.mem_Icc.mp hk).1 (a := a) (b := b)
         (s := ((σ : ℂ) + (t : ℂ) * Complex.I))
         (by rw [hsre]; exact hσ) (by rw [hsim]; exact ht)
-      simpa using hle
+      exact hle
     have hHs : ‖H ((σ : ℂ) + (t : ℂ) * Complex.I)‖ ≤ K := by
       simp only [H, K]
       exact le_trans (norm_sum_le _ _) (Finset.sum_le_sum (fun q _ => hstep q))
@@ -239,7 +241,7 @@ theorem verticalIntegral_sub_eq_sum_residues_of_finite_order
     simp only [G]
     rw [hRfun, hP]
     ring
-  have hmain : verticalIntegral b G - verticalIntegral a G = ∑ j : Fin S.card, R j :=
+  have hmain  :=
     verticalIntegral_sub_eq_sum_residues_of_subquadratic_strip_growth hab S.card p R
       hp_inj hp_mem G U hU hstrip hG_diff hregular'
       (hG_int a ha (fun q => ne_of_lt (hp_strip q.val q.property).1))

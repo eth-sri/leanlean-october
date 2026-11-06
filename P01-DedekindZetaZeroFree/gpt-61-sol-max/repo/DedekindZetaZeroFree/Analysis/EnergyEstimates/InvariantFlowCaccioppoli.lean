@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.Calculus.Deriv.Pow
 public import Mathlib.Analysis.Complex.RealDeriv
 public import Mathlib.MeasureTheory.Function.L2Space
 
 @[expose] public section
+
 
 noncomputable section
 set_option maxHeartbeats 1000000
@@ -18,8 +21,7 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [MeasurableSpace X]
  theorem cutoff_young (χ dχ : ℝ) (u du : ℂ) :
     |2 * χ * dχ * (star u * du).re| ≤
       (χ ^ 2 * ‖du‖ ^ 2) / 2 + 2 * dχ ^ 2 * ‖u‖ ^ 2 := by
-  have hp : |(star u * du).re| ≤ ‖u‖ * ‖du‖ := by
-    exact (Complex.abs_re_le_norm _).trans_eq (by rw [norm_mul, norm_star])
+  have hp : |(star u * du).re| ≤ ‖u‖ * ‖du‖ := (Complex.abs_re_le_norm _).trans_eq (by rw [norm_mul, norm_star])
   have hm := mul_le_mul_of_nonneg_left hp (abs_nonneg (2 * χ * dχ))
   have hs := sq_nonneg (|χ| * ‖du‖ - 2 * |dχ| * ‖u‖)
   simp only [abs_mul, abs_of_pos (by norm_num : (0:ℝ) < 2)] at hm ⊢
@@ -55,7 +57,7 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [MeasurableSpace X]
       intro n
       rw [← ofReal_integral_eq_lintegral_ofReal (hi n)
         (Filter.Eventually.of_forall (fun x => mul_nonneg (sq_nonneg _) (he0 x)))]
-      exact ENNReal.ofReal_le_ofReal (hM n)
+      apply ENNReal.ofReal_le_ofReal <;> aesop
     _ < ⊤ := ENNReal.ofReal_lt_top
 
 end DedekindZetaZeroFree.KPMsSameContinuationGreen.NativeBoundaryH1.Caccioppoli

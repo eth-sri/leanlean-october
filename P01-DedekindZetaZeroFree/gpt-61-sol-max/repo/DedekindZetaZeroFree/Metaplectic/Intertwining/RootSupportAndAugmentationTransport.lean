@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Metaplectic.Intertwining.DeformedRootProfiles
 public import DedekindZetaZeroFree.Metaplectic.Intertwining.DiagonalInverseRootSupport
 
 @[expose] public section
+
 
 section
 noncomputable section
@@ -22,7 +25,7 @@ variable (F : Type) [Field F] [NumberField F]
 
 def diagonalDoubleKernel (π : (LocalField F q)ˣ) (i : Fin 3)
     (f : scalarSections F ζ hζ q S P hP .minus) (s : ℂ)
-    (x u : LocalField F q) : ℂ :=
+    (x u : LocalField F q)  :=
   ((deformedTest F ζ hζ q S P hP f s).val
     (kernelW (LocalField F q) S.borel .minus *
       KPPGLLocalCover.N F ζ hζ (Sum.inr q) u *
@@ -32,20 +35,20 @@ def diagonalDoubleKernel (π : (LocalField F q)ˣ) (i : Fin 3)
 def relativeBorelRootChart : Set (LocalField F q) :=
   {u | ∃ (v : (LocalField F q)ˣ), (v : LocalField F q) = u ∧
     ∃ b : BL F ζ hζ q S P, (b : ActualCover F ζ hζ q) =
-      KPPGLLocalCover.N F ζ hζ (Sum.inr q) (-(v⁻¹ : (LocalField F q)ˣ) : LocalField F q) *
-        KPPGLLocalCover.A F ζ hζ (Sum.inr q) (v⁻¹ ^ (2 : ℕ))}
+      KPPGLLocalCover.N F ζ hζ (Sum.inr q) (-(v⁻¹) : LocalField F q) *
+        KPPGLLocalCover.A F ζ hζ (Sum.inr q) (v⁻¹ ^ (2))}
 
 theorem eventual_u_first_transport_of_integrable_and_chart_support
     (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
     (htame : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
     (π : (LocalField F q)ˣ)
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ)) :
+      (valuation (LocalField F q) π) = WithZero.exp (-1)) :
     ∃ M : ℕ, ∀ m ≥ M, ∀ (i : Fin 3)
       (f₀ fᵢ : scalarSections F ζ hζ q S P hP .minus),
       IsMinusTest F ζ hζ q S P hP (diagonalLift F ζ hζ q π (0, 0)) m f₀ →
       IsMinusTest F ζ hζ q S P hP
-        (diagonalLift F ζ hζ q π ((i.val : ℤ), 0)) m fᵢ →
+        (diagonalLift F ζ hζ q π (i.val, 0)) m fᵢ →
       ∀ s : ℂ,
       Integrable (Function.uncurry (diagonalDoubleKernel F ζ hζ q S P hP π 0 f₀ s))
         ((μ.restrict (lowShell F q)).prod μ) →
@@ -103,16 +106,19 @@ variable (F : Type) [Field F] [NumberField F]
   (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
   (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
 
-theorem diagonal_actual_support_lower_row
-    (π : (LocalField F q)ˣ) (i : Fin 3) (m : ℕ)
+section
+variable (π : (LocalField F q)ˣ) (i : Fin 3) (m : ℕ)
     (hm : KPLocalChartTopology.MatrixChartDepth F q m) (u x : LocalField F q)
     (hg : kernelW (LocalField F q) S.borel .minus *
       KPPGLLocalCover.N F ζ hζ (Sum.inr q) u *
       (eta F ζ hζ q π i * KPPGLLocalCover.W F ζ hζ (Sum.inr q) *
         KPPGLLocalCover.N F ζ hζ (Sum.inr q) x) ∈
-      testSupport F ζ hζ q S P (diagonalLift F ζ hζ q π ((i.val : ℤ), 0)) m) :
+      testSupport F ζ hζ q S P (diagonalLift F ζ hζ q π (i.val, 0)) m)
+include π i m hm u x hg
+theorem diagonal_actual_support_lower_row
+      :
     u ≠ 0 ∧ ∃ k : KPLocalCube.Gamma F q m,
-      x + (π ^ i.val : (LocalField F q)ˣ) / u = k.val 1 0 / k.val 1 1 := by
+      x + (π ^ i.val) / u = k.val 1 0 / k.val 1 1 := by
   obtain ⟨b, k, hk, hg⟩ := hg
   obtain ⟨k, rfl⟩ := hk
   obtain ⟨t, ht⟩ := S.borel.borel_decomposition (inBorel F ζ hζ q S P b)
@@ -126,7 +132,7 @@ theorem diagonal_actual_support_lower_row
     change S.borel.projection ((inBorel F ζ hζ q S P b).val) = _
     rw [he, map_mul, S.borel.torus_projection, S.borel.upperRoot_projection, map_mul]
     rfl
-  have pa : S.borel.projection (diagonalLift F ζ hζ q π ((i.val : ℤ), 0)) =
+  have pa : S.borel.projection (diagonalLift F ζ hζ q π (i.val, 0)) =
       Matrix.ProjGenLinGroup.mk
         (KubotaRankTwo.d (LocalField F q) (π ^ i.val) 1) := by
     rw [diagonalLift_index_zero_eq_eta]
@@ -168,19 +174,12 @@ theorem diagonal_actual_support_lower_row
   exact ⟨hu, k, he⟩
 
 theorem diagonal_actual_support_residual
-    (π : (LocalField F q)ˣ) (i : Fin 3) (m : ℕ)
-    (hm : KPLocalChartTopology.MatrixChartDepth F q m) (u x : LocalField F q)
-    (hg : kernelW (LocalField F q) S.borel .minus *
-      KPPGLLocalCover.N F ζ hζ (Sum.inr q) u *
-      (eta F ζ hζ q π i * KPPGLLocalCover.W F ζ hζ (Sum.inr q) *
-        KPPGLLocalCover.N F ζ hζ (Sum.inr q) x) ∈
-      testSupport F ζ hζ q S P (diagonalLift F ζ hζ q π ((i.val : ℤ), 0)) m) :
-    u ≠ 0 ∧ x + (π ^ i.val : (LocalField F q)ˣ) / u ∈ rootLevelSet F ζ hζ q m := by
+      :
+    u ≠ 0 ∧ x + (π ^ i.val) / u ∈ rootLevelSet F ζ hζ q m := by
   obtain ⟨hu, k, hk⟩ := diagonal_actual_support_lower_row F ζ hζ q S P π i m hm u x hg
   obtain ⟨k₀, hk₀, he₀⟩ := k.property
   have hentries := (KPLocalCube.mem_integerCongruence_iff F q m k₀).mp hk₀
-  have h11ideal : k₀ 1 1 - 1 ∈ KPLocalCube.maximalIdeal F q ^ m := by
-    simpa using hentries 1 1
+  have h11ideal : k₀ 1 1 - 1 ∈ KPLocalCube.maximalIdeal F q ^ m := hentries 1 1
   have h10ideal : k₀ 1 0 ∈ KPLocalCube.maximalIdeal F q ^ m := by
     simpa using hentries 1 0
   have hisunit : IsUnit (k₀ 1 1) := by
@@ -190,19 +189,19 @@ theorem diagonal_actual_support_residual
     change 1 - k₀ 1 1 ∈ KPLocalCube.maximalIdeal F q
     simpa only [neg_sub] using (KPLocalCube.maximalIdeal F q).neg_mem hmem
   obtain ⟨v, hv⟩ := hisunit
-  let y : KPLocalCube.LocalIntegers F q := k₀ 1 0 * (↑v⁻¹)
+  let y  := k₀ 1 0 * (↑v⁻¹)
   have hyideal : y ∈ KPLocalCube.maximalIdeal F q ^ m :=
     (KPLocalCube.maximalIdeal F q ^ m).mul_mem_right _ h10ideal
-  have hy : (y : LocalField F q) = x + (π ^ i.val : (LocalField F q)ˣ) / u := by
+  have hy : (y : LocalField F q) = x + (π ^ i.val) / u := by
     rw [hk]
     have hratio : k.val 1 0 / k.val 1 1 =
         (k₀ 1 0 : LocalField F q) / (k₀ 1 1 : LocalField F q) := by
       rw [← he₀]
       rfl
     rw [hratio, ← hv]
-    change (k₀ 1 0 : LocalField F q) * ((↑v⁻¹ : KPLocalCube.LocalIntegers F q) : LocalField F q) = _
-    have hinv : ((↑v⁻¹ : KPLocalCube.LocalIntegers F q) : LocalField F q) =
-        ((v : KPLocalCube.LocalIntegers F q) : LocalField F q)⁻¹ :=
+    change (k₀ 1 0 : LocalField F q) * ((↑v⁻¹) : LocalField F q) = _
+    have hinv : ((↑v⁻¹) : LocalField F q) =
+        (v : LocalField F q)⁻¹ :=
       Units.val_inv_eq_inv_val (Units.map (KPLocalCube.LocalIntegers F q).subtype.toMonoidHom v)
     rw [hinv, div_eq_mul_inv]
   refine ⟨hu, ?_⟩
@@ -215,46 +214,50 @@ theorem diagonal_actual_support_residual
     intro a b
     fin_cases a <;> fin_cases b <;> simp [n₀, hyideal]
   have hn : KubotaRankTwo.n (LocalField F q)
-      (x + (π ^ i.val : (LocalField F q)ˣ) / u) ∈ KPLocalCube.Gamma F q m := by
+      (x + (π ^ i.val) / u) ∈ KPLocalCube.Gamma F q m := by
     refine ⟨n₀, hn₀, ?_⟩
     ext a b
     fin_cases a <;> fin_cases b <;>
       simp [n₀, KPLocalCube.integerInclusion, Matrix.GeneralLinearGroup.map_apply,
         KubotaRankTwo.n, hy]
   exact ⟨⟨_, hn⟩, rfl⟩
+end
 
+
+section
+variable (hP : IsTamePolarization F ζ hζ q S P)
+    (π : (LocalField F q)ˣ)
+include hP π
 theorem diagonalDoubleKernel_ne_zero_support
-    (hP : IsTamePolarization F ζ hζ q S P)
-    (π : (LocalField F q)ˣ) (i : Fin 3) (m : ℕ)
+      (i : Fin 3) (m : ℕ)
     (hm : KPLocalChartTopology.MatrixChartDepth F q m)
     (f : scalarSections F ζ hζ q S P hP .minus)
     (hf : IsMinusTest F ζ hζ q S P hP
-      (diagonalLift F ζ hζ q π ((i.val : ℤ), 0)) m f)
+      (diagonalLift F ζ hζ q π (i.val, 0)) m f)
     (s : ℂ) (x u : LocalField F q)
     (hne : diagonalDoubleKernel F ζ hζ q S P hP π i f s x u ≠ 0) :
-    u ≠ 0 ∧ x + (π ^ i.val : (LocalField F q)ˣ) / u ∈ rootLevelSet F ζ hζ q m := by
+    u ≠ 0 ∧ x + (π ^ i.val) / u ∈ rootLevelSet F ζ hζ q m := by
   apply diagonal_actual_support_residual F ζ hζ q S P π i m hm u x
   exact KPTameTransposeKernelUnfoldingRaw.HigherShellCubicUnitConjugation.deformedTest_support_of_minusTest
     F ζ hζ q S P hP (scalarCoordinateEquiv F ζ hζ q S P hP)
     (fun _ _ _ => rfl) _ m f hf s hne
 
 theorem diagonalDoubleKernel_ne_zero_radial_cutoff
-    (hP : IsTamePolarization F ζ hζ q S P)
-    (π : (LocalField F q)ˣ)
+     
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
+      (valuation (LocalField F q) π) = WithZero.exp (-1))
     (i : Fin 3) (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F q m)
     (hs : rootLevelSet F ζ hζ q m ⊆ (valuation (LocalField F q)).integer)
     (f : scalarSections F ζ hζ q S P hP .minus)
     (hf : IsMinusTest F ζ hζ q S P hP
-      (diagonalLift F ζ hζ q π ((i.val : ℤ), 0)) m f)
+      (diagonalLift F ζ hζ q π (i.val, 0)) m f)
     (s : ℂ) (x : LocalField F q) (hx : x ∈ lowShell F q)
     (u : (LocalField F q)ˣ)
     (hne : diagonalDoubleKernel F ζ hζ q S P hP π i f s x u ≠ 0) :
     KPCubicExpansion.valuationExponent (LocalField F q) u ≤ (i.val : ℤ) := by
   have hr := hs (diagonalDoubleKernel_ne_zero_support F ζ hζ q S P hP
     π i m hm f hf s x u hne).2
-  have hratio : ((π ^ i.val * u⁻¹ : (LocalField F q)ˣ) : LocalField F q) ∈
+  have hratio : ((π ^ i.val * u⁻¹) : LocalField F q) ∈
       (valuation (LocalField F q)).integer := by
     have ht := (valuation (LocalField F q)).integer.sub_mem hr hx
     simpa only [add_sub_cancel_left, Units.val_mul, Units.val_inv_eq_inv_val,
@@ -269,8 +272,7 @@ theorem diagonalDoubleKernel_ne_zero_radial_cutoff
   omega
 
 theorem diagonalDoubleKernel_locallyConstant
-    (hP : IsTamePolarization F ζ hζ q S P)
-    (π : (LocalField F q)ˣ) (i : Fin 3)
+      (i : Fin 3)
     (f : scalarSections F ζ hζ q S P hP .minus) (s : ℂ) :
     IsLocallyConstant (Function.uncurry (diagonalDoubleKernel F ζ hζ q S P hP π i f s)) := by
   let f' := deformedTest F ζ hζ q S P hP f s
@@ -303,15 +305,14 @@ theorem diagonalDoubleKernel_locallyConstant
   exact hlc.comp_continuous hc
 
 theorem diagonal_actual_support_exponent_dvd
-    (hP : IsTamePolarization F ζ hζ q S P)
-    (π : (LocalField F q)ˣ) (i : Fin 3) (m : ℕ)
+      (i : Fin 3) (m : ℕ)
     (hm : KPLocalChartTopology.MatrixChartDepth F q m)
     (u : (LocalField F q)ˣ) (x : LocalField F q)
     (hg : kernelW (LocalField F q) S.borel .minus *
       KPPGLLocalCover.N F ζ hζ (Sum.inr q) u *
       (eta F ζ hζ q π i * KPPGLLocalCover.W F ζ hζ (Sum.inr q) *
         KPPGLLocalCover.N F ζ hζ (Sum.inr q) x) ∈
-      testSupport F ζ hζ q S P (diagonalLift F ζ hζ q π ((i.val : ℤ), 0)) m) :
+      testSupport F ζ hζ q S P (diagonalLift F ζ hζ q π (i.val, 0)) m) :
     3 ∣ KPCubicExpansion.valuationExponent (LocalField F q) u := by
   obtain ⟨b, k, hk, hg⟩ := hg
   obtain ⟨k, rfl⟩ := hk
@@ -397,11 +398,13 @@ theorem diagonal_actual_support_exponent_dvd
   change KPCubicExpansion.valuationExponent (LocalField F q) z = 3 * a at ha
   apply (Int.dvd_iff_emod_eq_zero).mpr
   omega
+end
+
 
 private theorem unitCubeClasses_of_exponent_dvd
     (π : (LocalField F q)ˣ)
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
+      (valuation (LocalField F q) π) = WithZero.exp (-1))
     (u : (LocalField F q)ˣ) (hu : 3 ∣ KPCubicExpansion.valuationExponent (LocalField F q) u) :
     QuotientGroup.mk' (CubicCharacters.cubes (LocalField F q)ˣ) u ∈
       unitCubeClasses (LocalField F q) := by
@@ -417,13 +420,13 @@ private theorem unitCubeClasses_of_exponent_dvd
     ring
   have hvv : valuation (LocalField F q) (v : LocalField F q) = 1 := by
     let e := IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-    have hnz : e (valuation (LocalField F q) (v : LocalField F q)) ≠ 0 := by
+    have hnz : e (valuation (LocalField F q) v) ≠ 0 := by
       simp [e, v.ne_zero]
-    have hl : WithZero.log (e (valuation (LocalField F q) (v : LocalField F q))) = 0 := by
-      change -WithZero.log (e (valuation (LocalField F q) (v : LocalField F q))) = 0 at hv
+    have hl : WithZero.log (e (valuation (LocalField F q) v)) = 0 := by
+      change -WithZero.log (e (valuation (LocalField F q) v)) = 0 at hv
       omega
     apply e.injective
-    change e (valuation (LocalField F q) (v : LocalField F q)) = e 1
+    change e (valuation (LocalField F q) v) = e 1
     rw [map_one, ← WithZero.exp_log hnz, hl, WithZero.exp_zero]
   let v₀ : (valuation (LocalField F q)).integer := ⟨v, hvv.le⟩
   have hvunit : IsUnit v₀ :=
@@ -444,34 +447,36 @@ private theorem unitCubeClasses_of_exponent_dvd
     (QuotientGroup.mk' (CubicCharacters.cubes (LocalField F q)ˣ))
   exact ⟨u, hu' ▸ Subgroup.mul_mem_sup ⟨w, rfl⟩ ⟨π ^ n, rfl⟩, rfl⟩
 
-private theorem relativeBorelRootChart_of_exponent_dvd
-    (hP : IsTamePolarization F ζ hζ q S P)
+section
+variable (hP : IsTamePolarization F ζ hζ q S P)
     (π : (LocalField F q)ˣ)
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
+      (valuation (LocalField F q) π) = WithZero.exp (-1))
+include hP π hπ
+private theorem relativeBorelRootChart_of_exponent_dvd
+     
     (u : (LocalField F q)ˣ) (hu : 3 ∣ KPCubicExpansion.valuationExponent (LocalField F q) u) :
     (u : LocalField F q) ∈ relativeBorelRootChart F ζ hζ q S P := by
   let a : actualTorus F ζ hζ q :=
-    ⟨KPPGLLocalCover.A F ζ hζ (Sum.inr q) (u⁻¹ ^ (2 : ℕ)), by
-      refine ⟨KubotaRankTwo.d (LocalField F q) (u⁻¹ ^ (2 : ℕ)) 1, ?_, ?_, ?_⟩
+    ⟨KPPGLLocalCover.A F ζ hζ (Sum.inr q) (u⁻¹ ^ (2)), by
+      refine ⟨KubotaRankTwo.d (LocalField F q) (u⁻¹ ^ (2)) 1, ?_, ?_, ?_⟩
       · rfl
       · simp [KubotaRankTwo.d]
       · simp [KubotaRankTwo.d]⟩
-  have ha : S.borel.coordinate a = u⁻¹ ^ (2 : ℕ) := S.coordinate_lift a _ rfl
+  have ha  := S.coordinate_lift a _ rfl
   have hc : S.cubeClassEquiv (S.heisenberg.π a) ∈ unitCubeClasses (LocalField F q) := by
     rw [S.cube_class, ha]
-    change QuotientGroup.mk' (CubicCharacters.cubes (LocalField F q)ˣ) (u⁻¹ ^ (2 : ℕ)) ∈ _
+    change QuotientGroup.mk' (CubicCharacters.cubes (LocalField F q)ˣ) (u⁻¹ ^ (2)) ∈ _
     have hcu := unitCubeClasses_of_exponent_dvd F q π hπ u hu
-    simpa only [map_pow, map_inv] using
-      (unitCubeClasses (LocalField F q)).pow_mem
+    exact (unitCubeClasses (LocalField F q)).pow_mem
         ((unitCubeClasses (LocalField F q)).inv_mem hcu) 2
   have hL : a ∈ HL F ζ hζ q S P := by
     rw [← hP] at hc
     obtain ⟨d, hd, he⟩ := hc
     change S.heisenberg.π a ∈ P.L
     exact S.cubeClassEquiv.injective he ▸ hd
-  let b₀ : S.borel.B :=
-    S.borel.upperRoot (Multiplicative.ofAdd (-(u⁻¹ : (LocalField F q)ˣ) : LocalField F q)) *
+  let b₀  :=
+    S.borel.upperRoot (Multiplicative.ofAdd (-(u⁻¹) : LocalField F q)) *
       S.borel.torus a
   have hb₀ : b₀ ∈ (HL F ζ hζ q S P).comap S.borel.retract := by
     change S.borel.retract b₀ ∈ HL F ζ hζ q S P
@@ -487,14 +492,11 @@ private theorem relativeBorelRootChart_of_exponent_dvd
   exact (S.openCell P).upper_eq _
 
 theorem diagonalDoubleKernel_ne_zero_mem_relativeBorelRootChart
-    (hP : IsTamePolarization F ζ hζ q S P)
-    (π : (LocalField F q)ˣ)
-    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
+     
     (i : Fin 3) (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F q m)
     (f : scalarSections F ζ hζ q S P hP .minus)
     (hf : IsMinusTest F ζ hζ q S P hP
-      (diagonalLift F ζ hζ q π ((i.val : ℤ), 0)) m f)
+      (diagonalLift F ζ hζ q π (i.val, 0)) m f)
     (s : ℂ) (x u : LocalField F q)
     (hne : diagonalDoubleKernel F ζ hζ q S P hP π i f s x u ≠ 0) :
     u ∈ relativeBorelRootChart F ζ hζ q S P := by
@@ -506,6 +508,8 @@ theorem diagonalDoubleKernel_ne_zero_mem_relativeBorelRootChart
     (fun _ _ _ => rfl) _ m f hf s hne
   exact relativeBorelRootChart_of_exponent_dvd F ζ hζ q S P hP π hπ v
     (diagonal_actual_support_exponent_dvd F ζ hζ q S P hP π i m hm v x hg)
+end
+
 
 theorem eventual_u_first_transport_of_integrable
     (hP : IsTamePolarization F ζ hζ q S P)
@@ -513,12 +517,12 @@ theorem eventual_u_first_transport_of_integrable
     (htame : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
     (π : (LocalField F q)ˣ)
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ)) :
+      (valuation (LocalField F q) π) = WithZero.exp (-1)) :
     ∃ M : ℕ, ∀ m ≥ M, ∀ (i : Fin 3)
       (f₀ fᵢ : scalarSections F ζ hζ q S P hP .minus),
       IsMinusTest F ζ hζ q S P hP (diagonalLift F ζ hζ q π (0, 0)) m f₀ →
       IsMinusTest F ζ hζ q S P hP
-        (diagonalLift F ζ hζ q π ((i.val : ℤ), 0)) m fᵢ →
+        (diagonalLift F ζ hζ q π (i.val, 0)) m fᵢ →
       ∀ s : ℂ,
       Integrable (Function.uncurry (diagonalDoubleKernel F ζ hζ q S P hP π 0 f₀ s))
         ((μ.restrict (lowShell F q)).prod μ) →
@@ -540,7 +544,7 @@ theorem eventual_u_first_transport_of_integrable
   constructor
   · by_contra h
     exact hu (diagonalDoubleKernel_ne_zero_mem_relativeBorelRootChart F ζ hζ q S P hP
-      π hπ 0 m hdepth f₀ (by simpa only [Fin.val_zero, Int.ofNat_zero] using hf₀) s x u h)
+      π hπ 0 m hdepth f₀ (hf₀) s x u h)
   · by_contra h
     exact hu (diagonalDoubleKernel_ne_zero_mem_relativeBorelRootChart F ζ hζ q S P hP
       π hπ i m hdepth fᵢ hfᵢ s x u h)

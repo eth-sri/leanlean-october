@@ -53,11 +53,11 @@ private theorem ringHom_apply_eq_of_powerBasis
   have h : phiAlg = fAlg := pb.algHom_ext hgen
   exact DFunLike.congr_fun h x
 
-@[reducible] noncomputable local instance equalCharacteristicHigherUnitMapBaseAlgebra
-    (F : LocalField K) :
-    Algebra F.residueField⸨X⸩
-      (equalCharacteristicCompletedUnramifiedField F.residueField) :=
-  equalCharacteristicCompletedLevelBaseAlgebra F
+
+
+
+
+
 
 @[reducible] noncomputable local instance equalCharacteristicHigherUnitMapLevelAlgebra
     (F : LocalField K) (n : ℕ) :
@@ -65,12 +65,12 @@ private theorem ringHom_apply_eq_of_powerBasis
       (equalCharacteristicCompletedLevelField F n) :=
   equalCharacteristicCompletedLevelLaurentAlgebra F n
 
-local instance equalCharacteristicHigherUnitMapScalarTower
-    (F : LocalField K) (n : ℕ) :
-    IsScalarTower F.residueField⸨X⸩
-      (equalCharacteristicCompletedUnramifiedField F.residueField)
-      (equalCharacteristicCompletedLevelField F n) :=
-  IsScalarTower.of_algebraMap_eq' rfl
+
+
+
+
+
+
 
  noncomputable def higherUnitLevelMapRingHom
     (F : LocalField K) [CharP K F.residueCharacteristic] (n : ℕ) :

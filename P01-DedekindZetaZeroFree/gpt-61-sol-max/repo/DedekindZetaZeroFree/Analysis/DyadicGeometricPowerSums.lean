@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Algebra.Order.Floor.Extended
 public import Mathlib.Algebra.Order.Floor.Semifield
 public import Mathlib.Algebra.Order.Interval.Basic
@@ -40,6 +42,7 @@ public import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
+
 namespace DedekindZetaZeroFree.Quantitative
 namespace DyadicPowerSums
 
@@ -58,7 +61,7 @@ theorem sum_dyadic_pos (a : ℝ) (ha : 0 < a) :
   have hr : (1 : ℝ) < (2 : ℝ) ^ a := Real.one_lt_rpow (by norm_num) ha
   refine ⟨(2 : ℝ) ^ a / ((2 : ℝ) ^ a - 1), div_pos (by linarith) (by linarith), fun X hX => ?_⟩
   set n := Nat.log 2 ⌊X⌋₊ with hn
-  have hnX : (2 : ℝ) ^ n ≤ X := (mem_dyadicRange_iff hX n).1 (by simp [hn])
+  have hnX  := (mem_dyadicRange_iff hX n).1 (by simp [hn])
   have hterm : ∀ k : ℕ, ((2 : ℝ) ^ k) ^ a = ((2 : ℝ) ^ a) ^ k := fun k => by
     rw [← Real.rpow_natCast, ← Real.rpow_mul (by norm_num), mul_comm, Real.rpow_mul (by norm_num),
       Real.rpow_natCast]
@@ -84,7 +87,10 @@ theorem sum_dyadic_pos_interval (a : ℝ) (ha : 0 < a) :
   exact Finset.sum_le_sum_of_subset_of_nonneg (Finset.filter_subset _ _)
     (fun k _ _ => by positivity)
 
-theorem summable_tail_dyadic_neg (a : ℝ) (ha : a < 0) (X : ℝ) :
+section
+variable (a : ℝ) (ha : a < 0)
+include a ha
+theorem summable_tail_dyadic_neg   (X : ℝ) :
     Summable (fun k : ℕ => if X ≤ (2 : ℝ) ^ k then ((2 : ℝ) ^ k) ^ a else 0) := by
   have hr0 : (0 : ℝ) < (2 : ℝ) ^ a := by positivity
   have hr1 : (2 : ℝ) ^ a < 1 := Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) ha
@@ -98,7 +104,7 @@ theorem summable_tail_dyadic_neg (a : ℝ) (ha : a < 0) (X : ℝ) :
     · rw [hterm]
     · positivity
 
-theorem tsum_tail_dyadic_neg (a : ℝ) (ha : a < 0) :
+theorem tsum_tail_dyadic_neg   :
     ∃ C : ℝ, 0 < C ∧ ∀ X : ℝ, 1 ≤ X →
       ∑' k : ℕ, (if X ≤ (2 : ℝ) ^ k then ((2 : ℝ) ^ k) ^ a else 0) ≤ C * X ^ a := by
   have hr0 : (0 : ℝ) < (2 : ℝ) ^ a := by positivity
@@ -135,7 +141,7 @@ theorem tsum_tail_dyadic_neg (a : ℝ) (ha : a < 0) :
         gcongr
     _ = _ := by ring
 
-theorem sum_dyadic_neg_interval (a : ℝ) (ha : a < 0) :
+theorem sum_dyadic_neg_interval   :
     ∃ C : ℝ, 0 < C ∧ ∀ X Y : ℝ, 1 ≤ X →
       ∑ k ∈ (Finset.range (Nat.log 2 ⌊Y⌋₊ + 1)).filter (fun k => X ≤ (2 : ℝ) ^ k),
         ((2 : ℝ) ^ k) ^ a ≤ C * X ^ a := by
@@ -146,6 +152,8 @@ theorem sum_dyadic_neg_interval (a : ℝ) (ha : a < 0) :
         (if X ≤ (2 : ℝ) ^ k then ((2 : ℝ) ^ k) ^ a else 0) := by
         rw [Finset.sum_filter]
     _ ≤ _ := hs.sum_le_tsum _ (fun k _ => by split_ifs <;> positivity)
+end
+
 
 end DyadicPowerSums
 end DedekindZetaZeroFree.Quantitative

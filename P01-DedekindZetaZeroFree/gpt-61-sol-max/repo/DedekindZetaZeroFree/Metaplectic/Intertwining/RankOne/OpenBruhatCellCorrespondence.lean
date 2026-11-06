@@ -88,19 +88,24 @@ def nLift (s : LocalField F q) : Cover F ζ hζ q :=
 def hLift (v : (LocalField F q)ˣ) : Cover F ζ hζ q :=
   KPPGLLocalCover.A F ζ hζ (Sum.inr q) (v ^ 2)
 
-def bruhatLeft (v : (LocalField F q)ˣ) (s : LocalField F q) : RawCover F ζ hζ q :=
+section
+variable (v : (LocalField F q)ˣ) (s : LocalField F q)
+include v s in
+def bruhatLeft   : RawCover F ζ hζ q :=
   (signedWeylRaw F ζ hζ q)⁻¹ *
     KPStandardLocalRootLifts.N F ζ hζ (Sum.inr q) (-((v⁻¹ : (LocalField F q)ˣ) : LocalField F q)) *
     (signedWeylRaw F ζ hζ q)⁻¹ * KPStandardLocalRootLifts.N F ζ hζ (Sum.inr q) s
 
-def bruhatRight (v : (LocalField F q)ˣ) (s : LocalField F q) : RawCover F ζ hζ q :=
+include v s in
+def bruhatRight   : RawCover F ζ hζ q :=
   KPScalarSplitCentral.scalarHom F ζ hζ (Sum.inr q) v⁻¹ *
     (KPStandardLocalRootLifts.A F ζ hζ (Sum.inr q) (v ^ 2) *
       KPStandardLocalRootLifts.N F ζ hζ (Sum.inr q) ((v⁻¹ : (LocalField F q)ˣ) : LocalField F q) *
       (signedWeylRaw F ζ hζ q)⁻¹ *
       KPStandardLocalRootLifts.N F ζ hζ (Sum.inr q) (s + (v : LocalField F q)))
 
-def kappa (v : (LocalField F q)ˣ) (s : LocalField F q) : rootsOfUnity 3 F :=
+include v s in
+def kappa   : rootsOfUnity 3 F :=
   (bruhatLeft F ζ hζ q v s).epsilon / (bruhatRight F ζ hζ q v s).epsilon
 
 private theorem signed_bruhat_matrix_aux {L : Type*} [Field L] (v : Lˣ) (z : L) :
@@ -139,7 +144,8 @@ private theorem signed_bruhat_matrix_aux {L : Type*} [Field L] (v : Lˣ) (z : L)
     rw [← mul_assoc, ← map_mul, inv_mul_cancel, map_one, one_mul]
   rw [h, key]
 
-theorem raw_bruhat_identity (v : (LocalField F q)ˣ) (s : LocalField F q) :
+include v s in
+theorem raw_bruhat_identity   :
     bruhatLeft F ζ hζ q v s =
       KPLocalCover.centralInjection F ζ hζ (Sum.inr q) (kappa F ζ hζ q v s) *
         bruhatRight F ζ hζ q v s := by
@@ -169,7 +175,8 @@ theorem raw_bruhat_identity (v : (LocalField F q)ˣ) (s : LocalField F q) :
   · simpa only [KPLocalCover.mul_g, KPLocalCover.centralInjection_g, one_mul] using hg
   · exact he
 
-theorem lifted_bruhat_identity (v : (LocalField F q)ˣ) (s : LocalField F q) :
+include v s in
+theorem lifted_bruhat_identity   :
     (signedWeyl F ζ hζ q)⁻¹ *
       nLift F ζ hζ q (-((v⁻¹ : (LocalField F q)ˣ) : LocalField F q)) *
       (signedWeyl F ζ hζ q)⁻¹ * nLift F ζ hζ q s =
@@ -192,6 +199,8 @@ theorem lifted_bruhat_identity (v : (LocalField F q)ˣ) (s : LocalField F q) :
   rw [hz, one_mul] at h
   simpa only [signedWeyl, nLift, hLift, KPPGLLocalCover.centralInjection,
     KPPGLLocalCover.N, KPPGLLocalCover.A, MonoidHom.comp_apply, mul_assoc] using h
+end
+
 
 variable [ValuativeRel (LocalField F q)] [IsNonarchimedeanLocalField (LocalField F q)]
 variable {H D : Type*} [Group H] [TopologicalSpace H] [IsTopologicalGroup H]

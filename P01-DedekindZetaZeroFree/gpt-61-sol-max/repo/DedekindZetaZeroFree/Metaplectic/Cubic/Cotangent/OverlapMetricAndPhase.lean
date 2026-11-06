@@ -62,20 +62,20 @@ structure LiftedChart (i : Fin (H.atlas U).componentCount) where
   splitting_locallyConstant : IsLocallyConstant
     (fun x : {x : M F | labeledA places x ∈ kind.archDomain} => splitting x.val)
 
-def LiftedChart.omega {i} (a : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
-    (U := U) (R := R) (P := P) (H := H) i) : Set (M F) :=
+
+local notation:max "current_LiftedChart" => LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H)
+
+def LiftedChart.omega {i} (a : current_LiftedChart i) : Set (M F) :=
   labeledA a.places ⁻¹' a.kind.archDomain
 
-def coordinateMap {i} (a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
-    (U := U) (R := R) (P := P) (H := H) i)
+def coordinateMap {i} (a b : current_LiftedChart i)
     (γ : KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative i)) :
     M F → M F :=
   fun x => labeledAInv b.places
     ((b.kind.representative⁻¹ * (γ : KPCuspArithmetic.PGL2 F) *
       a.kind.representative) • labeledA a.places x)
 
-structure Arrow {i} (a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
-    (U := U) (R := R) (P := P) (H := H) i) where
+structure Arrow {i} (a b : current_LiftedChart i) where
   gamma : KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative i)
   root : rootsOfUnity 3 F
   levelLift : U.toOpenSubgroup
@@ -88,17 +88,14 @@ structure Arrow {i} (a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
   source : domain ⊆ a.omega
   target : Set.MapsTo (coordinateMap a b gamma) domain b.omega
 
-def Arrow.psi {i} {a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
-    (U := U) (R := R) (P := P) (H := H) i} (e : Arrow a b) : M F → M F :=
+def Arrow.psi {i} {a b : current_LiftedChart i} (e : Arrow a b) : M F → M F :=
   coordinateMap a b e.gamma
 
-def Arrow.phase {i} {a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
-    (U := U) (R := R) (P := P) (H := H) i} (e : Arrow a b) (x : M F) : ℂ :=
+def Arrow.phase {i} {a b : current_LiftedChart i} (e : Arrow a b) (x : M F) : ℂ :=
   (KPCuspGenuineMonodromy.chi F ζ hζ
     (b.splitting (e.psi x) * e.root * (a.splitting x)⁻¹) : ℂ)
 
-def LiftedChart.coefficient {i} (a : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
-    (U := U) (R := R) (P := P) (H := H) i)
+def LiftedChart.coefficient {i} (a : current_LiftedChart i)
     (s : KPContSectorSmoothFramesSupport.Sections F ζ hζ U R P H) (x : M F) : ℂ :=
   (KPCuspGenuineMonodromy.chi F ζ hζ (a.splitting x) : ℂ) *
     (s i).val (a.kind.representative • labeledA a.places x)
@@ -106,31 +103,34 @@ def LiftedChart.coefficient {i} (a : LiftedChart (F := F) (ζ := ζ) (hζ := hζ
 def Pσ (n : ℕ) (σ : Equiv.Perm (Fin n)) (x : KPArch.Space n) : KPArch.Space n :=
   fun k => x (σ k)
 
+section
+variable (p : Fin (d F) ≃ Fin (KPCuspLogShape.dimension F))
+include p
 private theorem labeledAInv_labeledA
-    (p : Fin (d F) ≃ Fin (KPCuspLogShape.dimension F)) (x : M F) :
+      (x : M F) :
     labeledAInv p (labeledA p x) = x := by
   simp [labeledAInv, labeledA]
 
 private theorem labeledA_labeledAInv
-    (p : Fin (d F) ≃ Fin (KPCuspLogShape.dimension F))
+     
     (x : KPCuspGenuineMonodromy.SymmetricSpace F) :
     labeledA p (labeledAInv p x) = x := by
   funext k
   simp [labeledAInv, labeledA]
 
 private theorem continuous_labeledA
-    (p : Fin (d F) ≃ Fin (KPCuspLogShape.dimension F)) : Continuous (labeledA p) := by
+      : Continuous (labeledA p) := by
   apply continuous_pi
   intro k
   exact (continuous_apply _).comp (CotangentLogCoframe.A (d F)).continuous
+end
 
- theorem coordinateMap_one {i} (a : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
-    (U := U) (R := R) (P := P) (H := H) i) : coordinateMap a a 1 = id := by
+
+ theorem coordinateMap_one {i} (a : current_LiftedChart i) : coordinateMap a a 1 = id := by
   funext x
   simp [coordinateMap, labeledAInv_labeledA]
 
-theorem LiftedChart.isOpen_omega {i} (a : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
-    (U := U) (R := R) (P := P) (H := H) i) : IsOpen a.omega := by
+theorem LiftedChart.isOpen_omega {i} (a : current_LiftedChart i) : IsOpen a.omega := by
   apply IsOpen.preimage (continuous_labeledA a.places)
   cases a.kind with
   | orbifold x O => exact O.isOpen
@@ -142,8 +142,7 @@ theorem LiftedChart.isOpen_omega {i} (a : LiftedChart (F := F) (ζ := ζ) (hζ :
       |>.preimage (continuous_snd.comp continuous_fst) |>.inter
         (isOpen_lt continuous_const continuous_snd)
 
-def identity {i} (a : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
-    (U := U) (R := R) (P := P) (H := H) i) : Arrow a a where
+def identity {i} (a : current_LiftedChart i) : Arrow a a where
   gamma := 1
   root := 1
   levelLift := 1
@@ -154,8 +153,7 @@ def identity {i} (a : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
   target := by simpa [coordinateMap_one] using (Set.mapsTo_id a.omega)
 
  theorem continuous_coordinateMap {i}
-    (a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
-      (U := U) (R := R) (P := P) (H := H) i)
+    (a b : current_LiftedChart i)
     (γ : KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative i)) :
     Continuous (coordinateMap a b γ) := by
   apply (CotangentLogCoframe.A (d F)).symm.continuous.comp
@@ -165,8 +163,7 @@ def identity {i} (a : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
     ((KPCuspSiegel.continuous_action F _).comp (continuous_labeledA a.places))
 
  theorem coordinateMap_mul {i}
-    (a b c : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
-      (U := U) (R := R) (P := P) (H := H) i)
+    (a b c : current_LiftedChart i)
     (θ ψ : KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative i)) :
     coordinateMap a c (θ * ψ) = coordinateMap b c θ ∘ coordinateMap a b ψ := by
   funext x
@@ -184,8 +181,7 @@ def identity {i} (a : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
   exact (Subgroup.mem_center_iff.mp
     (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ ⟨ε, rfl⟩) c).symm
 
-def comp {i} {a b c : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
-    (U := U) (R := R) (P := P) (H := H) i}
+def comp {i} {a b c : current_LiftedChart i}
     (θ : Arrow b c) (ψ : Arrow a b) : Arrow a c where
   gamma := θ.gamma * ψ.gamma
   root := θ.root * ψ.root
@@ -206,8 +202,7 @@ def comp {i} {a b c : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
     rw [coordinateMap_mul a b c θ.gamma ψ.gamma]
     exact θ.target hx.2
 
-theorem actual_local_formula {i} {a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
-    (U := U) (R := R) (P := P) (H := H) i} (e : Arrow a b) :
+theorem actual_local_formula {i} {a b : current_LiftedChart i} (e : Arrow a b) :
     ∃ g : Fin (d F) → Matrix.GeneralLinearGroup (Fin 2) ℂ,
       (∀ k, Matrix.ProjGenLinGroup.mk (g k) =
         Matrix.ProjGenLinGroup.map (KPCusp.complexPlace F (a.places k)).embedding
@@ -245,19 +240,20 @@ private theorem metric_perm (n : ℕ) (σ : Equiv.Perm (Fin n)) (x v : KPArch.Sp
   exact Equiv.sum_comp σ (fun k =>
     (KPArch.height (x k))⁻¹ ^ 2 * ‖(v k).1‖ ^ 2 + (v k).2 ^ 2)
 
- def formula (n : ℕ) (g : Fin n → Matrix.GeneralLinearGroup (Fin 2) ℂ)
-    (σ : Equiv.Perm (Fin n)) (x : HyperbolicChart.Space n) :=
+ section
+variable (n : ℕ) (g : Fin n → Matrix.GeneralLinearGroup (Fin 2) ℂ)
+    (σ : Equiv.Perm (Fin n))
+include n g σ
+def formula   (x : HyperbolicChart.Space n) :=
   (CotangentLogCoframe.A n).symm (permCLM n σ (KPArch.productAction n g (CotangentLogCoframe.A n x)))
 
-private theorem formula_smooth (n : ℕ) (g : Fin n → Matrix.GeneralLinearGroup (Fin 2) ℂ)
-    (σ : Equiv.Perm (Fin n)) : ContDiff ℝ (⊤ : ℕ∞) (formula n g σ) := by
+private theorem formula_smooth   : ContDiff ℝ (⊤ : ℕ∞) (formula n g σ) := by
   exact (CotangentLogCoframe.A n).symm.contDiff.comp
     ((permCLM n σ).contDiff.comp (((KPArch.productAction_contDiff n g).of_le
       (show (⊤ : ℕ∞) ≤ (⊤ : ℕ∞ω) from le_top)).comp
       (CotangentLogCoframe.A n).contDiff))
 
-private theorem formula_quadratic (n : ℕ)
-    (g : Fin n → Matrix.GeneralLinearGroup (Fin 2) ℂ) (σ : Equiv.Perm (Fin n))
+private theorem formula_quadratic  
     (x v : HyperbolicChart.Space n) :
     HyperbolicChart.metric n (formula n g σ x)
       (fderiv ℝ (formula n g σ) x v) (fderiv ℝ (formula n g σ) x v) =
@@ -275,6 +271,8 @@ private theorem formula_quadratic (n : ℕ)
   rw [metric_perm]
   exact (KPArch.metric_invariant n g (CotangentLogCoframe.A n x)
     (CotangentLogCoframe.A n v)).trans (CotangentLogCoframe.metric_A n x v)
+end
+
 
 private theorem metric_polarization (n : ℕ) (x u w : HyperbolicChart.Space n) :
     HyperbolicChart.metric n x (u+w) (u+w) =
@@ -284,8 +282,7 @@ private theorem metric_polarization (n : ℕ) (x u w : HyperbolicChart.Space n) 
     real_inner_comm (CotangentLogCoframe.C n x w) (CotangentLogCoframe.C n x u)]
   ring
 
-theorem smooth_metric {i} {a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
-    (U := U) (R := R) (P := P) (H := H) i} (e : Arrow a b) :
+theorem smooth_metric {i} {a b : current_LiftedChart i} (e : Arrow a b) :
     ContDiffOn ℝ (⊤ : ℕ∞) e.psi e.domain ∧
     ∀ x ∈ e.domain, ∀ u w : M F,
       HyperbolicChart.metric (d F) (e.psi x)
@@ -304,8 +301,7 @@ theorem smooth_metric {i} {a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
   rw [map_add, metric_polarization, metric_polarization, hq u, hq w] at hp
   linarith
 
-private theorem phase_locallyConstant {i} {a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
-    (U := U) (R := R) (P := P) (H := H) i} (e : Arrow a b) :
+private theorem phase_locallyConstant {i} {a b : current_LiftedChart i} (e : Arrow a b) :
     IsLocallyConstant (fun x : e.domain => e.phase x.val) := by
   have ha := a.splitting_locallyConstant.comp_continuous
     (show Continuous (fun x : e.domain => (⟨x.val, e.source x.property⟩ : a.omega)) from
@@ -316,8 +312,7 @@ private theorem phase_locallyConstant {i} {a b : LiftedChart (F := F) (ζ := ζ)
   exact ((hb.mul (IsLocallyConstant.const e.root)).mul (ha.comp Inv.inv)).comp
     (fun z => (KPCuspGenuineMonodromy.chi F ζ hζ z : ℂ))
 
-private theorem phase_smooth {i} {a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
-    (U := U) (R := R) (P := P) (H := H) i} (e : Arrow a b) :
+private theorem phase_smooth {i} {a b : current_LiftedChart i} (e : Arrow a b) :
     ContDiffOn ℝ (⊤ : ℕ∞) e.phase e.domain := by
   rw [e.isOpen_domain.contDiffOn_iff]
   intro x hx
@@ -329,16 +324,14 @@ private theorem phase_smooth {i} {a b : LiftedChart (F := F) (ζ := ζ) (hζ := 
     exact h
   exact contDiffAt_const.congr_of_eventuallyEq he
 
-private theorem phase_norm {i} {a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
-    (U := U) (R := R) (P := P) (H := H) i} (e : Arrow a b) (x : M F) :
+private theorem phase_norm {i} {a b : current_LiftedChart i} (e : Arrow a b) (x : M F) :
     ‖e.phase x‖ = 1 := by
   exact (KPCuspGenuineMonodromy.unitary_chart_cocycle F ζ hζ U
     ((H.atlas U).representative i) ((H.atlas U).line i).rho
     (fun _ => 1) (IsLocallyConstant.const 1)).1 _
 
 set_option maxHeartbeats 1000000 in
-private theorem root_ambiguity {i} {a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
-    (U := U) (R := R) (P := P) (H := H) i} (e : Arrow a b)
+private theorem root_ambiguity {i} {a b : current_LiftedChart i} (e : Arrow a b)
     (v : KPCuspGenuineMonodromy.scalarFiber F ζ hζ U) :
     (KPCuspGenuineMonodromy.chi F ζ hζ (((H.atlas U).line i).rho e.gamma) : ℂ) * v.val =
       (KPCuspGenuineMonodromy.chi F ζ hζ e.root : ℂ) * v.val := by
@@ -367,8 +360,7 @@ private theorem root_ambiguity {i} {a b : LiftedChart (F := F) (ζ := ζ) (hζ :
     ← mul_assoc, ← mul_assoc, mul_inv_cancel₀ (Units.ne_zero _), one_mul] at hd
   exact hd
 
-theorem unitary_phase {i} {a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
-    (U := U) (R := R) (P := P) (H := H) i} (e : Arrow a b) :
+theorem unitary_phase {i} {a b : current_LiftedChart i} (e : Arrow a b) :
     IsLocallyConstant (fun x : e.domain => e.phase x.val) ∧
     ContDiffOn ℝ (⊤ : ℕ∞) e.phase e.domain ∧
     (∀ x ∈ e.domain, ‖e.phase x‖ = 1) ∧

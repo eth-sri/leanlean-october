@@ -10,45 +10,53 @@ open scoped Pointwise
 
 namespace DedekindZetaZeroFree.KPFiniteAdelicLatticeStabilizers
 
-abbrev Adeles (F : Type*) [Field F] [NumberField F] :=
+section
+variable (F : Type*) [Field F]
+include F
+abbrev Adeles   [NumberField F] :=
   IsDedekindDomain.FiniteAdeleRing (NumberField.RingOfIntegers F) F
-abbrev RationalGL (F : Type*) [Field F] := Matrix.GeneralLinearGroup (Fin 2) F
-abbrev AdelicGL (F : Type*) [Field F] [NumberField F] :=
+abbrev RationalGL   := Matrix.GeneralLinearGroup (Fin 2) F
+abbrev AdelicGL   [NumberField F] :=
   Matrix.GeneralLinearGroup (Fin 2) (Adeles F)
-abbrev RationalPG (F : Type*) [Field F] := Matrix.ProjGenLinGroup (Fin 2) F
-abbrev AdelicPG (F : Type*) [Field F] [NumberField F] :=
+abbrev RationalPG   := Matrix.ProjGenLinGroup (Fin 2) F
+end
+
+section
+variable (F : Type*) [Field F] [NumberField F]
+include F
+abbrev AdelicPG   :=
   Matrix.ProjGenLinGroup (Fin 2) (Adeles F)
 
-noncomputable def projectiveTopology (F : Type*) [Field F] [NumberField F] :
+noncomputable def projectiveTopology   :
     TopologicalSpace (AdelicPG F) := by
   unfold AdelicPG Matrix.ProjGenLinGroup
   infer_instance
 
-noncomputable def diagonalGL (F : Type*) [Field F] [NumberField F] :
+noncomputable def diagonalGL   :
     RationalGL F →* AdelicGL F :=
   Matrix.GeneralLinearGroup.map (algebraMap F (Adeles F))
-noncomputable def diagonalPG (F : Type*) [Field F] [NumberField F] :
+noncomputable def diagonalPG   :
     RationalPG F →* AdelicPG F :=
   Matrix.ProjGenLinGroup.map (algebraMap F (Adeles F))
 
-def integralVectors (F : Type*) [Field F] [NumberField F] :
+def integralVectors   :
     Set (Matrix (Fin 2) (Fin 1) (Adeles F)) :=
   {x | ∀ i j v, x i j v ∈ v.adicCompletionIntegers F}
-noncomputable def integralGL (F : Type*) [Field F] [NumberField F] :
+noncomputable def integralGL   :
     Subgroup (AdelicGL F) := MulAction.stabilizer (AdelicGL F) (integralVectors F)
-noncomputable def integralPG (F : Type*) [Field F] [NumberField F] :
+noncomputable def integralPG   :
     Subgroup (AdelicPG F) := (integralGL F).map Matrix.ProjGenLinGroup.mk
 
-noncomputable def diagonalVector (F : Type*) [Field F] [NumberField F] (x : F × F) :
+noncomputable def diagonalVector   (x : F × F) :
     Matrix (Fin 2) (Fin 1) (Adeles F) :=
   fun i _ => algebraMap F (Adeles F) (if i = 0 then x.1 else x.2)
 
-noncomputable def localVector (F : Type*) [Field F] [NumberField F]
+noncomputable def localVector  
     (v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F)) (x : F × F) :
     Matrix (Fin 2) (Fin 1) (v.adicCompletion F) :=
   fun i _ => algebraMap F (v.adicCompletion F) (if i = 0 then x.1 else x.2)
 
-def localTranslatedLattice (F : Type*) [Field F] [NumberField F]
+def localTranslatedLattice  
     (g : AdelicGL F)
     (v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F)) :
     Set (Matrix (Fin 2) (Fin 1) (v.adicCompletion F)) :=
@@ -56,6 +64,8 @@ def localTranslatedLattice (F : Type*) [Field F] [NumberField F]
     (show Matrix (Fin 2) (Fin 2) (v.adicCompletion F) from
       fun i j => (g.val i j) v) * x) ''
       {x | ∀ i j, x i j ∈ v.adicCompletionIntegers F}
+end
+
 
 open IsDedekindDomain NumberField
 
@@ -168,24 +178,27 @@ noncomputable def diagonalVectorLinear : (F × F) →ₗ[RingOfIntegers F]
     intro a x; ext i j; fin_cases i <;>
       simp [diagonalVector, Algebra.smul_def, IsScalarTower.algebraMap_apply (RingOfIntegers F) F (Adeles F)]
 
-noncomputable def adelicVectorLinear (g : AdelicGL F) :
+section
+variable (g : AdelicGL F)
+include g
+noncomputable def adelicVectorLinear   :
     Matrix (Fin 2) (Fin 1) (Adeles F) →ₗ[RingOfIntegers F]
       Matrix (Fin 2) (Fin 1) (Adeles F) where
   toFun := fun x => g.val * x
   map_add' := Matrix.mul_add _
   map_smul' := by intro a x; exact Matrix.mul_smul _ _ _
 
-noncomputable def rationalIntersectionModule (g : AdelicGL F) :
+noncomputable def rationalIntersectionModule   :
     Submodule (RingOfIntegers F) (F × F) :=
   (integralVectorModule F).comap ((adelicVectorLinear F g⁻¹).comp
       (diagonalVectorLinear F))
 
-theorem rationalIntersectionModule_mem (g : AdelicGL F) (x : F × F) :
+theorem rationalIntersectionModule_mem   (x : F × F) :
     x ∈ rationalIntersectionModule F g ↔ diagonalVector F x ∈ g • integralVectors F := by
   change g⁻¹ • diagonalVector F x ∈ integralVectors F ↔ _
   exact Set.mem_smul_set_iff_inv_smul_mem.symm
 
-theorem localVector_mem_translated (g : AdelicGL F) (x : F × F)
+theorem localVector_mem_translated   (x : F × F)
     (hx : x ∈ rationalIntersectionModule F g)
     (v : HeightOneSpectrum (RingOfIntegers F)) :
     localVector F v x ∈ localTranslatedLattice F g v := by
@@ -200,7 +213,7 @@ theorem localVector_mem_translated (g : AdelicGL F) (x : F × F)
   simp only [Matrix.mul_apply, Fin.sum_univ_two] at h ⊢
   exact h
 
-theorem localTranslatedLattice_compact (g : AdelicGL F)
+theorem localTranslatedLattice_compact  
     (v : HeightOneSpectrum (RingOfIntegers F)) :
     IsCompact (localTranslatedLattice F g v) := by
   letI : CompactSpace (v.adicCompletionIntegers F) :=
@@ -221,18 +234,20 @@ theorem localTranslatedLattice_compact (g : AdelicGL F)
     · rintro ⟨y, rfl⟩; exact fun i j => (y i j).property
   exact hc.image (continuous_const.matrix_mul continuous_id)
 
-theorem localTranslatedLattice_closed (g : AdelicGL F)
+theorem localTranslatedLattice_closed  
     (v : HeightOneSpectrum (RingOfIntegers F)) :
     IsClosed (localTranslatedLattice F g v) :=
   (localTranslatedLattice_compact F g v).isClosed
 
-theorem rationalIntersectionModule_local_closure_subset (g : AdelicGL F)
+theorem rationalIntersectionModule_local_closure_subset  
     (v : HeightOneSpectrum (RingOfIntegers F)) :
     closure (localVector F v '' (rationalIntersectionModule F g : Set (F × F))) ⊆
       localTranslatedLattice F g v := by
   apply closure_minimal _ (localTranslatedLattice_closed F g v)
   rintro _ ⟨x, hx, rfl⟩
   exact localVector_mem_translated F g x hx v
+end
+
 
 theorem local_clear_denominator (v : HeightOneSpectrum (RingOfIntegers F))
     (a : v.adicCompletion F) :

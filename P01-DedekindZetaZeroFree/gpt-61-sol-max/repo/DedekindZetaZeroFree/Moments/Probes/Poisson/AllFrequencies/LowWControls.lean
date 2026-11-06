@@ -91,8 +91,11 @@ private theorem comb_aux {X Q G1 G2 Mn W P L cp mi bX bG bM bWP bL bcp bmi : ℝ
     _ ≤ bX * Q * (bG * bM) * bWP * bL * bcp * bmi := h7
     _ = bX * Q * bG * bM * bWP * bL * bcp * bmi := by ring
 
-theorem rawKernel_w_bound (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
-    (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) (hξ : ξ.re = 4) (B : ℝ) :
+section
+variable (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
+    (Z : ℝ) (hZ : 0 < Z)
+include u hu Z hZ
+theorem rawKernel_w_bound   (ξ : ℂ) (hξ : ξ.re = 4) (B : ℝ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ y s t : ℝ, Scales.wLine - EulerDomain.pad / 2 ≤ y → y ≤ 4 + EulerDomain.pad / 2 →
       ‖rawKernel D u ξ ((y : ℂ) + (t : ℂ) * I) ((Scales.zLine : ℂ) + (s : ℂ) * I) Z‖ ≤
         C * (1 + |s|) ^ (-(2 : ℝ)) * (1 + |t|) ^ (-B) := by
@@ -180,8 +183,7 @@ theorem rawKernel_w_bound (u : Frequency D.recipe) (hu : u ≠ principalFrequenc
   refine le_trans hfin (le_of_eq ?_)
   ring
 
-private theorem kdiff (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
-    (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) (hξ : ξ.re = 4) (w z : ℂ)
+private theorem kdiff   (ξ : ℂ) (hξ : ξ.re = 4) (w z : ℂ)
     (hw : Scales.wLine - EulerDomain.pad / 2 < w.re) (hz : z.re = Scales.zLine) :
     DifferentiableAt ℂ (fun p : ℂ × ℂ × ℂ => rawKernel D u p.1 p.2.1 p.2.2 Z) (ξ, w, z) := by
   have hw0 : (1 / 10 : ℝ) < w.re := by
@@ -199,8 +201,7 @@ private theorem kdiff (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.
   exact RawKernelRegularity31.rawKernel_differentiableAt D u hu Z hZ (ξ, w, z) hmemΩ
     (by show (1 : ℝ) / 6 < z.re; rw [hz]; unfold Scales.zLine; norm_num) hne
 
-theorem rawKernel_differentiableOn_w (u : Frequency D.recipe)
-    (hu : u ≠ principalFrequency D.recipe) (Z : ℝ) (hZ : 0 < Z) (ξ z : ℂ) (hξ : ξ.re = 4)
+theorem rawKernel_differentiableOn_w   (ξ z : ℂ) (hξ : ξ.re = 4)
     (hz : z.re = Scales.zLine) :
     DifferentiableOn ℂ (fun w : ℂ => rawKernel D u ξ w z Z)
       {w : ℂ | Scales.wLine - EulerDomain.pad / 2 < w.re ∧ w.re < 4 + EulerDomain.pad / 2} := by
@@ -210,8 +211,7 @@ theorem rawKernel_differentiableOn_w (u : Frequency D.recipe)
   have hf : DifferentiableAt ℂ (fun w : ℂ => ((ξ, w, z) : ℂ × ℂ × ℂ)) w := by fun_prop
   exact (hd.comp w hf).differentiableWithinAt
 
-theorem Iz_differentiableOn_w (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
-    (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) (hξ : ξ.re = 4) :
+theorem Iz_differentiableOn_w   (ξ : ℂ) (hξ : ξ.re = 4) :
     DifferentiableOn ℂ (fun w : ℂ => Iz D u ξ w Scales.zLine Z)
       (comparisonClosedStrip Scales.wLine 4) := by
   have hp : (0 : ℝ) < EulerDomain.pad := by unfold EulerDomain.pad; norm_num
@@ -297,8 +297,7 @@ theorem Iz_differentiableOn_w (u : Frequency D.recipe) (hu : u ≠ principalFreq
   · rw [hlo]; linarith
   · rw [hhi]; linarith
 
-theorem Iz_decayOn_w (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
-    (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) (hξ : ξ.re = 4) :
+theorem Iz_decayOn_w   (ξ : ℂ) (hξ : ξ.re = 4) :
     LowRowXiControls.DecayOn (fun w : ℂ => Iz D u ξ w Scales.zLine Z) Scales.wLine 4 := by
   intro B hB
   have hp : (0 : ℝ) < EulerDomain.pad := by unfold EulerDomain.pad; norm_num
@@ -328,12 +327,13 @@ theorem Iz_decayOn_w (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.r
     _ = ‖(2 * (Real.pi : ℂ))⁻¹‖ * (C * ∫ s : ℝ, (1 + |s|) ^ (-(2 : ℝ))) * (1 + |y|) ^ (-B) := by
         ring
 
-theorem Iwz_w_shift (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
-    (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) (hξ : ξ.re = 4) :
+theorem Iwz_w_shift   (ξ : ℂ) (hξ : ξ.re = 4) :
     Iwz D u ξ 4 Scales.zLine Z = Iwz D u ξ Scales.wLine Scales.zLine Z := by
   unfold Iwz
   exact LowRowXiControls.verticalIntegral_eq_of_decayOn (by norm_num [Scales.wLine])
     (Iz_differentiableOn_w D u hu Z hZ ξ hξ) (Iz_decayOn_w D u hu Z hZ ξ hξ)
+end
+
 
 end
 

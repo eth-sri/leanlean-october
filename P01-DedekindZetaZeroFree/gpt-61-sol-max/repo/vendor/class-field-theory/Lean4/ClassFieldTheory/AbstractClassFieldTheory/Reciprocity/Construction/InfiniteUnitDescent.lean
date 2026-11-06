@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction.FixedTowerUnitDescent
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction.FiniteFieldUnitMaps
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -46,15 +49,14 @@ noncomputable def toFiniteAbstractFieldExtension
     {E : ClosedSubgroup G} (K : FiniteAbstractField G)
     (M : FiniteIntermediateField E K.field) :
     FiniteAbstractFieldExtension G := by
-  letI : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field M.field M.below) :=
+  letI  :=
     M.finite
   exact FiniteAbstractFieldExtension.ofInclusion M.field K M.below
 
 /-- The upper endpoint of the canonical finite-field extension bundle. -/
 noncomputable def toFiniteAbstractField
     {E : ClosedSubgroup G} (K : FiniteAbstractField G)
-    (M : FiniteIntermediateField E K.field) : FiniteAbstractField G :=
+    (M : FiniteIntermediateField E K.field)  :=
   (M.toFiniteAbstractFieldExtension K).field
 
 end FiniteIntermediateField
@@ -95,8 +97,7 @@ theorem descend_maximalUnramified_fixed_unit_of_finiteSupport
     D.descend_maximalUnramified_fixed_of_finiteSupport
       A (K.toFiniteResidueAbstractField D) L hLK φ hφ
         P aI aP.1 hsupport hfixed
-  let : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field P.field P.below) :=
+  let  :=
     P.finite
   let EP := P.toFiniteAbstractFieldExtension K
   have hKP :
@@ -118,16 +119,14 @@ theorem descend_maximalUnramified_fixed_unit_of_finiteSupport
     exact aP.2
   have hmul :
       (EP.degree : ℕ) •
-        ((v.valuationAt K bK : v.valueGroup) : ZHat) = 0 := by
+        ((v.valuationAt K bK) : ZHat) = 0 := by
     let ER := EP.toFiniteResidueAbstractExtension D
     change (ER.residueDegree : ℕ) •
         ((v.valuationAt EP.field
-          (fixedFieldInclusion A K.field P.field P.below bK) :
-            v.valueGroup) : ZHat) =
+          (fixedFieldInclusion A K.field P.field P.below bK)) : ZHat) =
       ((v.valuationAt K
         (relativeNorm A K.field P.field P.below
-          (fixedFieldInclusion A K.field P.field P.below bK)) :
-            v.valueGroup) : ZHat) at htower
+          (fixedFieldInclusion A K.field P.field P.below bK))) : ZHat) at htower
     rw [hvalP] at htower
     rw [show relativeNorm A K.field P.field P.below
         (fixedFieldInclusion A K.field P.field P.below bK) =
@@ -140,26 +139,28 @@ theorem descend_maximalUnramified_fixed_unit_of_finiteSupport
     apply Subtype.ext
     apply zHatMulNat_injective EP.degree.property
     change (EP.degree : ℕ) •
-        ((v.valuationAt K bK : v.valueGroup) : ZHat) =
-      (EP.degree : ℕ) • ((0 : v.valueGroup) : ZHat)
+        ((v.valuationAt K bK) : ZHat) =
+      (EP.degree : ℕ) • ((0) : ZHat)
     simpa using hmul
   exact ⟨⟨bK, hbKunit⟩, hbK⟩
 
+section
+variable (v : ValuationData D A) (E : ClosedSubgroup G)
+    (K : FiniteAbstractField G)
+include v E K
 /-- An element of an infinite algebraic extension is a unit when it is
 already a unit at some finite intermediate stage.  This is the literal
 finite-support meaning of `U_E = \bigcup_M U_M` used. -/
 def IsFiniteStageUnit
-    (v : ValuationData D A) (E : ClosedSubgroup G)
-    (K : FiniteAbstractField G)
-    (a : ambientFixedAddSubgroup A E) : Prop :=
+     
+    (a : ambientFixedAddSubgroup A E)  :=
   ∃ M : FiniteIntermediateField E K.field,
     ∃ u : v.unitAddSubgroup (M.toFiniteAbstractField K),
       fixedFieldInclusion A M.field E M.above u.1 = a
 
 /-- The actual finite-stage unit group `U_E` inside `A_E`. -/
 noncomputable def infiniteUnitAddSubgroup
-    (v : ValuationData D A) (E : ClosedSubgroup G)
-    (K : FiniteAbstractField G)
+     
     (hEK : E.toSubgroup ≤ K.field.toSubgroup) :
     AddSubgroup (ambientFixedAddSubgroup A E) where
   carrier := {a | v.IsFiniteStageUnit E K a}
@@ -172,17 +173,14 @@ noncomputable def infiniteUnitAddSubgroup
     rcases ha with ⟨M, u, hu⟩
     rcases hb with ⟨N, w, hw⟩
     let P := M.compositum N
-    let hPfinite : Finite
-        (K.field.toSubgroup ⧸ extensionSubgroup K.field P.field P.below) :=
+    let hPfinite  :=
       P.finite
     let hPM : P.field.toSubgroup ≤ M.field.toSubgroup := M.compositum_le_left N
     let hPN : P.field.toSubgroup ≤ N.field.toSubgroup := M.compositum_le_right N
-    let hPMfinite : Finite
-        (M.field.toSubgroup ⧸ extensionSubgroup M.field P.field hPM) :=
+    let hPMfinite  :=
       FiniteIntermediateField.finite_extension_of_le
         P.below M.below hPM
-    let hPNfinite : Finite
-        (N.field.toSubgroup ⧸ extensionSubgroup N.field P.field hPN) :=
+    let hPNfinite  :=
       FiniteIntermediateField.finite_extension_of_le
         P.below N.below hPN
     let : Finite
@@ -197,10 +195,10 @@ noncomputable def infiniteUnitAddSubgroup
       change Finite
         (N.field.toSubgroup ⧸ extensionSubgroup N.field P.field hPN)
       exact hPNfinite
-    let EMP : FiniteAbstractFieldExtension G :=
+    let EMP  :=
       FiniteAbstractFieldExtension.ofInclusion
         P.field (M.toFiniteAbstractField K) hPM
-    let ENP : FiniteAbstractFieldExtension G :=
+    let ENP  :=
       FiniteAbstractFieldExtension.ofInclusion
         P.field (N.toFiniteAbstractField K) hPN
     let hEMPfield : EMP.field = P.toFiniteAbstractField K :=
@@ -238,23 +236,27 @@ Characterizes `a ∈ v.infiniteUnitAddSubgroup E K hEK` by the equivalent condit
 -/
 @[simp]
 theorem mem_infiniteUnitAddSubgroup_iff
-    (v : ValuationData D A) (E : ClosedSubgroup G)
-    (K : FiniteAbstractField G)
+     
     (hEK : E.toSubgroup ≤ K.field.toSubgroup)
     (a : ambientFixedAddSubgroup A E) :
     a ∈ v.infiniteUnitAddSubgroup E K hEK ↔
       v.IsFiniteStageUnit E K a :=
   Iff.rfl
+end
 
+
+section
+variable (v : ValuationData D A) [IsTopologicalGroup G]
+    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
+    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
+    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
+include v K L hLK hLnormal
 /-- The actual `G(\widetilde L/K)`-action preserves the finite-stage unit
 group `U_{\widetilde L}`.  A unit is first moved to a finite Galois
 refinement of its support; that refinement is stable under the chosen
 representative, so the translated element still has finite unit support. -/
 theorem frobeniusQuotientAction_mem_infiniteUnitAddSubgroup
-    (v : ValuationData D A) [IsTopologicalGroup G]
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
+     
     (q : K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK)
     (a : ambientFixedAddSubgroup A (D.maximalUnramifiedField L))
     (ha : a ∈ v.infiniteUnitAddSubgroup (D.maximalUnramifiedField L) K
@@ -270,11 +272,9 @@ theorem frobeniusQuotientAction_mem_infiniteUnitAddSubgroup
   let R := M.galoisRefinement
   have hRM : R.field.toSubgroup ≤ M.field.toSubgroup :=
     M.galoisRefinement_le_field
-  let hRfinite : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field R.field R.below) :=
+  let hRfinite  :=
     R.finite
-  let hRMfinite : Finite
-      (M.field.toSubgroup ⧸ extensionSubgroup M.field R.field hRM) :=
+  let hRMfinite  :=
     FiniteIntermediateField.finite_extension_of_le R.below M.below hRM
   let : Finite
       ((M.toFiniteAbstractField K).field.toSubgroup ⧸
@@ -282,18 +282,18 @@ theorem frobeniusQuotientAction_mem_infiniteUnitAddSubgroup
     change Finite
       (M.field.toSubgroup ⧸ extensionSubgroup M.field R.field hRM)
     exact hRMfinite
-  let k : K.field.toSubgroup := Quotient.out q
+  let k  := Quotient.out q
   have hkq :
       (QuotientGroup.mk k :
         K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK) = q :=
     Quotient.out_eq' q
-  let EMR : FiniteAbstractFieldExtension G :=
+  let EMR  :=
     FiniteAbstractFieldExtension.ofInclusion
       R.field (M.toFiniteAbstractField K) hRM
   let ER := R.toFiniteAbstractFieldExtension K
   let hEMRfield : EMR.field = R.toFiniteAbstractField K :=
     FiniteAbstractField.eq_of_field_eq _ _ rfl
-  let uR : v.unitAddSubgroup (R.toFiniteAbstractField K) :=
+  let uR  :=
     hEMRfield ▸ v.finiteUnitInclusion EMR u
   let uR' : v.unitAddSubgroup (R.toFiniteAbstractField K) :=
     v.unitActionLinearMap ER
@@ -312,10 +312,7 @@ theorem frobeniusQuotientAction_mem_infiniteUnitAddSubgroup
 /-- The Frobenius power sum used preserves the finite-stage unit
 group of the maximal unramified extension. -/
 theorem frobeniusPowerSum_mem_infiniteUnit_universalNormDescent
-    (v : ValuationData D A) [IsTopologicalGroup G]
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
+     
     (φ : K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK)
     (n : ℕ)
     (x : ambientFixedAddSubgroup A (D.maximalUnramifiedField L))
@@ -328,16 +325,12 @@ theorem frobeniusPowerSum_mem_infiniteUnit_universalNormDescent
   unfold DegreeData.frobeniusPowerSum
   apply AddSubgroup.sum_mem
   intro i _
-  exact v.frobeniusQuotientAction_mem_infiniteUnitAddSubgroup
-    K L hLK (φ ^ i.1) x hx
+  apply v.frobeniusQuotientAction_mem_infiniteUnitAddSubgroup <;> assumption
 
 /-- The relative norm from `\widetilde L` to `\widetilde K`, included back
 in `A_{\widetilde L}`, preserves finite-stage units. -/
 theorem maximalUnramifiedNorm_mem_infiniteUnitAddSubgroup
-    (v : ValuationData D A) [IsTopologicalGroup G]
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
+     
     [hLfinite : Finite
       (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
     (a : ambientFixedAddSubgroup A (D.maximalUnramifiedField L))
@@ -356,11 +349,7 @@ theorem maximalUnramifiedNorm_mem_infiniteUnitAddSubgroup
           (D.maximalUnramifiedField L) (D.maximalUnramifiedField_mono hLK) a)
       ∈ v.infiniteUnitAddSubgroup (D.maximalUnramifiedField L) K
         (D.maximalUnramifiedField_le_of_le hLK) := by
-  let : Finite
-      ((D.maximalUnramifiedField K.field).toSubgroup ⧸
-        extensionSubgroup (D.maximalUnramifiedField K.field)
-          (D.maximalUnramifiedField L)
-          (D.maximalUnramifiedField_mono hLK)) :=
+  let  :=
     D.maximalUnramifiedExtension_finite K.field L hLK
   let I := D.maximalUnramifiedField K.field
   let E := D.maximalUnramifiedField L
@@ -380,9 +369,7 @@ theorem maximalUnramifiedNorm_mem_infiniteUnitAddSubgroup
   have hterm (q : I.toSubgroup ⧸ extensionSubgroup I E hEI) :
       f q ∈ v.infiniteUnitAddSubgroup E K
         (D.maximalUnramifiedField_le_of_le hLK) := by
-    exact
-      v.frobeniusQuotientAction_mem_infiniteUnitAddSubgroup
-        K L hLK (qK q) a ha
+    apply v.frobeniusQuotientAction_mem_infiniteUnitAddSubgroup <;> assumption
   have hsum :
       ∑ q : I.toSubgroup ⧸ extensionSubgroup I E hEI, f q ∈
         v.infiniteUnitAddSubgroup E K
@@ -402,7 +389,7 @@ theorem maximalUnramifiedNorm_mem_infiniteUnitAddSubgroup
     rw [map_sum]
     apply Finset.sum_congr rfl
     intro q _
-    let r : I.toSubgroup := Quotient.out q
+    let r  := Quotient.out q
     have hrq : (QuotientGroup.mk r :
         I.toSubgroup ⧸ extensionSubgroup I E hEI) = q :=
       Quotient.out_eq' q
@@ -412,17 +399,14 @@ theorem maximalUnramifiedNorm_mem_infiniteUnitAddSubgroup
           relativeCosetAction A I E hEI a (QuotientGroup.mk r) :=
         congrArg (relativeCosetAction A I E hEI a) hrq.symm
       _ = A.ρ r.1 a.1 := relativeCosetAction_mk A I E hEI a r
-      _ = (f q).1 := by rfl
+      _ = (f q).1 := rfl
   rw [heq]
   exact hsum
 
 /-- A maximal-unramified norm of a finite-stage unit descends to a genuine
 unit of `K` once it is fixed by a degree-one Frobenius lift. -/
 theorem descend_maximalUnramifiedNorm_unit
-    (v : ValuationData D A) [IsTopologicalGroup G]
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
+     
     [hLfinite : Finite
       (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
     (φ : D.FrobeniusElements (K.toFiniteResidueAbstractField D) L hLK)
@@ -454,11 +438,7 @@ theorem descend_maximalUnramifiedNorm_unit
         (D.maximalUnramifiedField_le K.field) aK.1 =
         relativeNorm A (D.maximalUnramifiedField K.field)
           (D.maximalUnramifiedField L) (D.maximalUnramifiedField_mono hLK) a := by
-  let : Finite
-      ((D.maximalUnramifiedField K.field).toSubgroup ⧸
-        extensionSubgroup (D.maximalUnramifiedField K.field)
-          (D.maximalUnramifiedField L)
-          (D.maximalUnramifiedField_mono hLK)) :=
+  let  :=
     D.maximalUnramifiedExtension_finite K.field L hLK
   let I := D.maximalUnramifiedField K.field
   let E := D.maximalUnramifiedField L
@@ -475,14 +455,10 @@ theorem descend_maximalUnramifiedNorm_unit
   let R := Q.galoisRefinement
   let hRQ : R.field.toSubgroup ≤ Q.field.toSubgroup :=
     Q.galoisRefinement_le_field
-  let hQabsolute : Finite ((baseField G).toSubgroup ⧸
-      extensionSubgroup (baseField G) Q.field (le_baseField Q.field)) :=
-    Q.absoluteFinite
-  let hRfinite : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field R.field R.below) :=
+  
+  let hRfinite  :=
     R.finite
-  let hRQfinite : Finite
-      (Q.field.toSubgroup ⧸ extensionSubgroup Q.field R.field hRQ) :=
+  let hRQfinite  :=
     FiniteIntermediateField.finite_extension_of_le R.below Q.below hRQ
   let : Finite
       ((Q.toFiniteAbstractField K).field.toSubgroup ⧸
@@ -492,23 +468,19 @@ theorem descend_maximalUnramifiedNorm_unit
     exact hRQfinite
   let hRnormal : (extensionSubgroup K.field R.field R.below).Normal :=
     FiniteIntermediateField.galoisRefinement_normal Q
-  let EQR : FiniteAbstractFieldExtension G :=
+  let EQR  :=
     FiniteAbstractFieldExtension.ofInclusion
       R.field (Q.toFiniteAbstractField K) hRQ
   let hEQRfield : EQR.field = R.toFiniteAbstractField K :=
     FiniteAbstractField.eq_of_field_eq _ _ rfl
-  let aR : v.unitAddSubgroup (R.toFiniteAbstractField K) :=
+  let aR  :=
     hEQRfield ▸ v.finiteUnitInclusion EQR aQ
   have haR : fixedFieldInclusion A R.field E R.above aR.1 = J (N a) := by
-    apply Subtype.ext
-    change aR.1.1 = (J (N a)).1
-    have haRcoe : aR.1.1 = aQ.1.1 :=
-      v.finiteUnitInclusion_transport_coe EQR
-        (R.toFiniteAbstractField K) hEQRfield aQ
-    rw [haRcoe]
-    exact congrArg Subtype.val haQ
+    assumption
   exact v.descend_maximalUnramified_fixed_unit_of_finiteSupport
     K L hLK φ hφ R (N a) aR haR hfixed
+end
+
 
 end ValuationData
 end

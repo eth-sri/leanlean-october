@@ -39,7 +39,10 @@ theorem Llam_eq_J_mul_mask (u : D.Row)
     exact if_neg hnp
   rw [h0, pow_zero, div_one]
 
-theorem Lpsi_analyticOnNhd (u : D.Row) (hu : u.u ≠ 1) :
+section
+variable (u : D.Row) (hu : u.u ≠ 1)
+include u hu
+theorem Lpsi_analyticOnNhd   :
     AnalyticOnNhd ℂ (D.Lpsi u) {s : ℂ | 0 < s.re} := by
   have hnp := (RowNonprincipal.inducers_nonprincipal D u hu).1
   intro s hs
@@ -52,7 +55,7 @@ theorem Lpsi_analyticOnNhd (u : D.Row) (hu : u.u ≠ 1) :
   rw [hfun]
   exact hJ.mul hB
 
-theorem Llam_analyticOnNhd (u : D.Row) (hu : u.u ≠ 1) :
+theorem Llam_analyticOnNhd   :
     AnalyticOnNhd ℂ (D.Llam u) {s : ℂ | 0 < s.re} := by
   have hnp := (RowNonprincipal.inducers_nonprincipal D u hu).2
   intro s hs
@@ -65,7 +68,7 @@ theorem Llam_analyticOnNhd (u : D.Row) (hu : u.u ≠ 1) :
   rw [hfun]
   exact hJ.mul hB
 
-theorem exists_entire_numerator (u : D.Row) (hu : u.u ≠ 1) :
+theorem exists_entire_numerator   :
     ∃ g : ℂ → ℂ, Differentiable ℂ g ∧ ∀ s : ℂ, 1 < s.re → g s = D.Lpsi u s := by
   have hnp := (RowNonprincipal.inducers_nonprincipal D u hu).1
   obtain ⟨h, hh, hh'⟩ :=
@@ -79,18 +82,18 @@ theorem exists_entire_numerator (u : D.Row) (hu : u.u ≠ 1) :
     have h2 := hh' s (by linarith)
     simp only [h1, h2]
 
-theorem eq_Lpsi_of_analyticOn (u : D.Row) (hu : u.u ≠ 1) {g : ℂ → ℂ}
+theorem eq_Lpsi_of_analyticOn   {g : ℂ → ℂ}
     (hg : AnalyticOnNhd ℂ g {z : ℂ | 0 < z.re})
     (h : ∀ s : ℂ, 1 < s.re → g s = D.Lpsi u s) :
     ∀ s : ℂ, 0 < s.re → g s = D.Lpsi u s :=
   RowHeckeBridge.eqOn_halfPlane_of_eq_right hg (Lpsi_analyticOnNhd D u hu) h
 
-theorem entire_eq_Lpsi (u : D.Row) (hu : u.u ≠ 1) {g : ℂ → ℂ} (hg : Differentiable ℂ g)
+theorem entire_eq_Lpsi   {g : ℂ → ℂ} (hg : Differentiable ℂ g)
     (h : ∀ s : ℂ, 1 < s.re → g s = D.Lpsi u s) :
     ∀ s : ℂ, 0 < s.re → g s = D.Lpsi u s :=
   eq_Lpsi_of_analyticOn D u hu (fun z _ => hg.analyticAt z) h
 
-theorem Llam_eq_mask_mul_hecke (u : D.Row) (hu : u.u ≠ 1) (s : ℂ) (hs : 0 < s.re) :
+theorem Llam_eq_mask_mul_hecke   (s : ℂ) (hs : 0 < s.re) :
     D.Llam u s =
       Detector.finiteEulerDeletionMask F (RowHeckeBridge.deletionSet D u)
         (fun v => (D.omega u).character v.asIdeal) s *
@@ -102,6 +105,8 @@ theorem Llam_eq_mask_mul_hecke (u : D.Row) (hu : u.u ≠ 1) (s : ℂ) (hs : 0 < 
   exact ((RowHeckeBridge.mask_differentiable D.recipe.A (D.omega u) hnp _
     (RowHeckeBridge.deletionSet_finite D u)).analyticAt z).mul
     (RowHeckeBridge.hecke_analyticOn D.recipe.A (D.omega u) hnp z hz)
+end
+
 
 theorem Llam_ne_zero_of_not_exceptional (ρ U : ℝ) (u : D.Row) (hu : u.u ≠ 1)
     (hU1 : U ≤ D.q u) (hU2 : D.q u < 2 * U)
@@ -201,9 +206,12 @@ theorem rowFactor_differentiableAt (u : D.Row) (hu : u.u ≠ 1) (ξ w z : ℂ)
   simp only [div_eq_mul_inv]
   exact e4.mul hHu
 
-theorem K_differentiableAt (u : D.Row) (hu : u.u ≠ 1) (hq : 0 < D.q u) (Z : ℝ) (hZ : 0 < Z)
+section
+variable (u : D.Row) (hu : u.u ≠ 1) (hq : 0 < D.q u) (Z : ℝ) (hZ : 0 < Z)
     (ξ w z : ℂ) (hmem : (ξ, w, z) ∈ EulerDomain.OmegaStar) (hz1 : 6 * z ≠ 1)
-    (hξ : D.Llam u ξ ≠ 0) :
+    (hξ : D.Llam u ξ ≠ 0)
+include u hu hq Z hZ ξ w z hmem hz1 hξ
+theorem K_differentiableAt   :
     DifferentiableAt ℂ
       (fun p : ℂ × ℂ × ℂ => PoissonKernel.K D u p.1 p.2.1 p.2.2 Z) (ξ, w, z) := by
   have hz0 : 0 < z.re := hmem.2.2.1
@@ -232,13 +240,13 @@ theorem K_differentiableAt (u : D.Row) (hu : u.u ≠ 1) (hq : 0 < D.q u) (Z : �
   unfold PoissonKernel.K PoissonKernel.kernelWith
   exact (((((a1.mul a2).mul a3).mul a4).mul a5).mul a6)
 
-theorem K_differentiableAt_xi (u : D.Row) (hu : u.u ≠ 1) (hq : 0 < D.q u) (Z : ℝ) (hZ : 0 < Z)
-    (ξ w z : ℂ) (hmem : (ξ, w, z) ∈ EulerDomain.OmegaStar) (hz1 : 6 * z ≠ 1)
-    (hξ : D.Llam u ξ ≠ 0) :
+theorem K_differentiableAt_xi   :
     DifferentiableAt ℂ (fun x : ℂ => PoissonKernel.K D u x w z Z) ξ := by
   have h := K_differentiableAt D u hu hq Z hZ ξ w z hmem hz1 hξ
   have hc : DifferentiableAt ℂ (fun x : ℂ => ((x, w, z) : ℂ × ℂ × ℂ)) ξ := by fun_prop
   exact h.comp ξ hc
+end
+
 
 theorem K_continuous_heights (u : D.Row) (hu : u.u ≠ 1) (hq : 0 < D.q u) (Z : ℝ) (hZ : 0 < Z)
     (ξ : ℂ) (hx : Scales.goodLine - EulerDomain.pad ≤ ξ.re) (hξ : D.Llam u ξ ≠ 0) :

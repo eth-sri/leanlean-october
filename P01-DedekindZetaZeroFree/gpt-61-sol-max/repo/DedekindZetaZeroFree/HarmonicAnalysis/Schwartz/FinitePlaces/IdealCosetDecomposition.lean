@@ -196,8 +196,11 @@ private theorem mem_iff_valuations (F : Type) [Field F] [NumberField F]
     intro v
     simpa only [hv, WithZero.exp_le_exp, neg_le_neg_iff] using h v
 
-private theorem count_ball (F : Type) [Field F] [NumberField F]
+section
+variable (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (k : S → ℤ)
+include F S k
+private theorem count_ball  
     (w : HeightOneSpectrum (RingOfIntegers F)) :
     FractionalIdeal.count F w (∏ v : S,
       (FractionalIdeal.coeIdeal v.val.asIdeal) ^ k v) =
@@ -219,8 +222,7 @@ private theorem count_ball (F : Type) [Field F] [NumberField F]
   · intro v _
     exact zpow_ne_zero _ (FractionalIdeal.coeIdeal_ne_zero.mpr v.val.ne_bot)
 
-private theorem mem_ball (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (k : S → ℤ)
+private theorem mem_ball  
     (m : (S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F) :
     (m : F) ∈ (∏ v : S, (FractionalIdeal.coeIdeal v.val.asIdeal) ^ k v :
       FractionalIdeal (RingOfIntegers F)⁰ F) ↔
@@ -236,9 +238,7 @@ private theorem mem_ball (F : Type) [Field F] [NumberField F]
     · simpa only [dif_pos hv] using h ⟨v, hv⟩
     · simpa only [dif_neg hv, neg_zero, WithZero.exp_zero] using m.property v hv
 
-private theorem exists_ball_center (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
-    (k : S → ℤ) (b : (v : S) → v.val.adicCompletion F) :
+private theorem exists_ball_center   (b : (v : S) → v.val.adicCompletion F) :
     ∃ a : (S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F,
        ∀ v : S, (Valued.v (FinitePlace.embedding v.val (a : F) - b v) : WithZero (Multiplicative ℤ)) ≤
         WithZero.exp (-k v) := by
@@ -301,9 +301,7 @@ private theorem exists_ball_center (F : Type) [Field F] [NumberField F]
   exact (mul_le_mul_iff_right₀ (pow_pos (bot_lt_iff_ne_bot.mpr WithZero.exp_ne_zero) t)).mp hcr
 
 theorem valuation_ball_fiber_eq_ideal_coset
-    (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
-    (k : S → ℤ) (b : ((v : S) → v.val.adicCompletion F)) :
+      (b : ((v : S) → v.val.adicCompletion F)) :
     ∃ t : (S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F,
       ∀ m : (S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F,
         (∀ v : S,
@@ -336,6 +334,8 @@ theorem valuation_ball_fiber_eq_ideal_coset
       rw [hcoe, map_sub]; ring
     rw [heq]
     exact Valuation.map_add_le _ (hm v) (ht v)
+end
+
 
 end DedekindZetaZeroFree.PoissonFinite.BallExpansion
 
@@ -564,15 +564,16 @@ local instance completionMeasurable (v : HeightOneSpectrum (RingOfIntegers F)) :
 local instance completionBorel (v : HeightOneSpectrum (RingOfIntegers F)) :
     BorelSpace (v.adicCompletion F) := ⟨rfl⟩
 
-def fourierIntegral (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
+section
+variable (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
     (μ : (v : S) → MeasureTheory.Measure (v.val.adicCompletion F))
+include S e μ
+def fourierIntegral  
     (φ : Space F S → ℂ) (y : Space F S) : ℂ :=
   ∫ x, φ x * ∏ v : S, (e v (-x v * y v) : ℂ) ∂MeasureTheory.Measure.pi μ
 
-theorem fourierIntegral_eq_zero_of_period (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
-    (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
-    (μ : (v : S) → MeasureTheory.Measure (v.val.adicCompletion F))
+theorem fourierIntegral_eq_zero_of_period  
     [(MeasureTheory.Measure.pi μ).IsAddLeftInvariant]
     (φ : Space F S → ℂ) (u y : Space F S)
     (hu : ∀ x, φ (u + x) = φ x)
@@ -597,9 +598,7 @@ theorem fourierIntegral_eq_zero_of_period (S : Finset (HeightOneSpectrum (RingOf
   by_contra h
   exact hne ((mul_eq_right₀ h).mp hi)
 
-theorem fourierIntegral_add_of_support_phase (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
-    (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
-    (μ : (v : S) → MeasureTheory.Measure (v.val.adicCompletion F))
+theorem fourierIntegral_add_of_support_phase  
     (φ : Space F S → ℂ) (u y : Space F S)
     (hu : ∀ x ∈ Function.support φ, (∏ v : S, (e v (-x v * u v) : ℂ)) = 1) :
     fourierIntegral F S e μ φ (y + u) = fourierIntegral F S e μ φ y := by
@@ -614,9 +613,7 @@ theorem fourierIntegral_add_of_support_phase (S : Finset (HeightOneSpectrum (Rin
         Circle.coe_mul, Finset.prod_mul_distrib]
     rw [hp, hu x hx, mul_one]
 
-theorem fourierIntegral_isLocallyConstant_of_open_phase (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
-    (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
-    (μ : (v : S) → MeasureTheory.Measure (v.val.adicCompletion F))
+theorem fourierIntegral_isLocallyConstant_of_open_phase  
     (φ : Space F S → ℂ) (U : AddSubgroup (Space F S))
     (hopen : IsOpen (U : Set (Space F S)))
     (hphase : ∀ u ∈ U, ∀ x ∈ Function.support φ,
@@ -630,9 +627,7 @@ theorem fourierIntegral_isLocallyConstant_of_open_phase (S : Finset (HeightOneSp
   have h := fourierIntegral_add_of_support_phase F S e μ φ (z - y) y (hphase _ hz)
   simpa only [add_sub_cancel] using h
 
-theorem fourierIntegral_hasCompactSupport_of_period (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
-    (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
-    (μ : (v : S) → MeasureTheory.Measure (v.val.adicCompletion F))
+theorem fourierIntegral_hasCompactSupport_of_period  
     [(MeasureTheory.Measure.pi μ).IsAddLeftInvariant]
     (φ : Space F S → ℂ) (U : AddSubgroup (Space F S))
     (hperiod : ∀ u ∈ U, ∀ x, φ (u + x) = φ x)
@@ -643,6 +638,8 @@ theorem fourierIntegral_hasCompactSupport_of_period (S : Finset (HeightOneSpectr
   intro y hy u hu
   by_contra hne
   exact hy (fourierIntegral_eq_zero_of_period F S e μ φ u y (hperiod u hu) hne)
+end
+
 
 end Fourier
 

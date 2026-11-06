@@ -23,18 +23,20 @@ variable [ValuativeRel (LocalField F q)] [IsNonarchimedeanLocalField (LocalField
 variable {H₀ D : Type} [Group H₀] [TopologicalSpace H₀] [IsTopologicalGroup H₀]
   [CommGroup D] [Finite D] [DecidableEq D]
 variable (T : LocalHeisenbergData H₀ D)
-variable (A : LocalBorelData (K := LocalField F q) (G := Cover F ζ hζ q) T)
-variable (P : Polarization T)
+
+
 variable [MeasurableSpace (LocalField F q)] [BorelSpace (LocalField F q)]
 
 variable {X : Type*} [MeasurableSpace X]
 
-def integratedShellNumerator (ν : Measure X) (S : Finset (ℤ × ℤ))
-    (c : (ℤ × ℤ) → X → ℂ) : ShellNumerator :=
+section
+variable (ν : Measure X) (S : Finset (ℤ × ℤ))
+    (c : (ℤ × ℤ) → X → ℂ)
+include ν S c
+def integratedShellNumerator   : ShellNumerator :=
   ∑ ij ∈ S, Finsupp.single ij (∫ x, c ij x ∂ν)
 
-theorem evaluate_integratedShellNumerator (ν : Measure X) (S : Finset (ℤ × ℤ))
-    (c : (ℤ × ℤ) → X → ℂ) (r Q : ℂ) :
+theorem evaluate_integratedShellNumerator   (r Q : ℂ) :
     evaluateNumerator (integratedShellNumerator ν S c) r Q =
       ∑ ij ∈ S, (∫ x, c ij x ∂ν) * r ^ ij.1 * Q ^ ij.2 := by
   unfold integratedShellNumerator
@@ -48,8 +50,7 @@ theorem evaluate_integratedShellNumerator (ν : Measure X) (S : Finset (ℤ × �
     · intro ij; simp
     · intro ij hij b d; ring
 
-theorem integral_finite_shell_expansion (ν : Measure X) (S : Finset (ℤ × ℤ))
-    (c : (ℤ × ℤ) → X → ℂ) (hc : ∀ ij ∈ S, Integrable (c ij) ν)
+theorem integral_finite_shell_expansion   (hc : ∀ ij ∈ S, Integrable (c ij) ν)
     (r Q den : ℂ) (f : X → ℂ)
     (hf : ∀ x, f x = (∑ ij ∈ S, c ij x * r ^ ij.1 * Q ^ ij.2) / den) :
     Integrable f ν ∧ (∫ x, f x ∂ν) =
@@ -67,6 +68,8 @@ theorem integral_finite_shell_expansion (ν : Measure X) (S : Finset (ℤ × ℤ
   apply Finset.sum_congr rfl
   intro ij hij
   rw [integral_mul_const, integral_mul_const]
+end
+
 
 theorem setIntegral_finite_shell_expansion (ν : Measure X) (E : Set X)
     (hE : MeasurableSet E) (S : Finset (ℤ × ℤ))

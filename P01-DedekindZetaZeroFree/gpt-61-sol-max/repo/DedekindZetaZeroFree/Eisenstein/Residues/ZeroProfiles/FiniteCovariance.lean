@@ -50,17 +50,18 @@ theorem literalZeroProfiles_finite_mem (hK : IwasawaCompact F ζ hζ K)
   intro i _
   exact ⟨(v i : literalFlatModule K), rfl⟩
 
-def literalZeroProfileResidue (hK : IwasawaCompact F ζ hζ K)
-    (E N : Flat F ζ hζ K → ℂ → Functions F ζ hζ)
-    (hg : ExceptionalGerm F ζ hζ K E N)
-    (hm : ∀ f g, MeromorphicOn (fun z => E f z g) KPContinuation.spectralDomain) :
-    literalZeroProfiles K →ₗ[ℂ] Functions F ζ hζ :=
-  (literalFlatResidue hK E N hg hm).comp (literalZeroProfileEquiv hK).symm.toLinearMap
-
-@[simp] theorem literalZeroProfileResidue_flat (hK : IwasawaCompact F ζ hζ K)
+section
+variable (hK : IwasawaCompact F ζ hζ K)
     (E N : Flat F ζ hζ K → ℂ → Functions F ζ hζ)
     (hg : ExceptionalGerm F ζ hζ K E N)
     (hm : ∀ f g, MeromorphicOn (fun z => E f z g) KPContinuation.spectralDomain)
+include hK E N hg hm in
+def literalZeroProfileResidue   :
+    literalZeroProfiles K →ₗ[ℂ] Functions F ζ hζ :=
+  (literalFlatResidue hK E N hg hm).comp (literalZeroProfileEquiv hK).symm.toLinearMap
+
+include hK E N hg hm in
+@[simp] theorem literalZeroProfileResidue_flat  
     (f : literalFlatModule K) :
     literalZeroProfileResidue hK E N hg hm (literalZeroProfileEquiv hK f) =
       N (asLiteralFlat f) 0 := by
@@ -77,10 +78,8 @@ def literalZeroProfileFinite (hK : IwasawaCompact F ζ hζ K)
     (literalZeroProfiles K).subtype).codRestrict _
       (fun f => literalZeroProfiles_finite_mem hK q a f)
 
-theorem literalZeroProfileResidue_finite (hK : IwasawaCompact F ζ hζ K)
-    (E N : Flat F ζ hζ K → ℂ → Functions F ζ hζ)
-    (hg : ExceptionalGerm F ζ hζ K E N)
-    (hm : ∀ f g, MeromorphicOn (fun z => E f z g) KPContinuation.spectralDomain)
+include hK E N hg hm in
+theorem literalZeroProfileResidue_finite  
     (q : KPFinitePlace F) (a : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q))
     (f : literalZeroProfiles K) (g : G F ζ hζ) :
     literalZeroProfileResidue hK E N hg hm (literalZeroProfileFinite hK q a f) g =
@@ -98,6 +97,8 @@ theorem literalZeroProfileResidue_finite (hK : IwasawaCompact F ζ hζ K)
   intro x
   rw [hv, hu]
   rfl
+end
+
 
 end DedekindZetaZeroFree.FourierContinuation.TensorActionSource
 

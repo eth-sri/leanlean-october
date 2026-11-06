@@ -216,8 +216,11 @@ private theorem compact_integral_deriv {X : Type*} [TopologicalSpace X]
     (y : SLocalProduct F A.Sf) : SLocalProduct F A.Sf :=
   (fun w => (InfinitePlace.Completion.ringEquivComplexOfIsComplex (A.complex_place w)).symm (a w : ℂ) * y.1 w, y.2)
 
-private theorem prof_phase (A : SArithmeticData F)
+section
+variable (A : SArithmeticData F)
     (e : (v : ↥A.Sf) → AddChar (v.val.adicCompletion F) Circle)
+include A e
+private theorem prof_phase  
     (a : InfinitePlace F → ℝ) (x y : SLocalProduct F A.Sf) :
     ProbeAdditive.phase F A.Sf e (-x * prof A a y) =
       Complex.exp (2 * (Real.pi : ℂ) * Complex.I *
@@ -243,8 +246,7 @@ private theorem prof_phase (A : SArithmeticData F)
   rw [ht']
   rfl
 
-private theorem prof_kernel_deriv (A : SArithmeticData F)
-    (e : (v : ↥A.Sf) → AddChar (v.val.adicCompletion F) Circle)
+private theorem prof_kernel_deriv  
     (a da : ℝ → InfinitePlace F → ℝ) (ha : ∀ v w, HasDerivAt (fun v => a v w) (da v w) v)
     (W : SLocalProduct F A.Sf → ℂ) (x y : SLocalProduct F A.Sf) (v : ℝ) :
     HasDerivAt (fun v => W x * ProbeAdditive.phase F A.Sf e (-x * prof A (a v) y))
@@ -260,6 +262,8 @@ private theorem prof_kernel_deriv (A : SArithmeticData F)
       (∏ v : ↥A.Sf, (e v (-x.2 v * y.2 v) : ℂ)) using 1
   · funext v; push_cast; ring
   · push_cast; ring
+end
+
 
  def coeff {A : SArithmeticData F} (da : InfinitePlace F → ℝ) (x y : SLocalProduct F A.Sf) : ℂ :=
   2 * (Real.pi : ℂ) * Complex.I *
@@ -498,14 +502,17 @@ private theorem sheet_continuous (A : SArithmeticData F) :
     (Units.continuous_val.comp (hc.comp
       (A.continuous_radialSection.comp continuous_fst)))
 
-private theorem sheet_bounds
-    (A : SArithmeticData F)
+section
+variable (A : SArithmeticData F)
     (e : (v : ↥A.Sf) → AddChar (v.val.adicCompletion F) Circle)
     (he : ∀ v, Continuous (e v)) (hne : ∀ v, e v ≠ 1)
     (μ : @Measure (SLocalProduct F A.Sf) (borel _))
     (dt : @Measure A.G1 (borel _))
     (hμ : @Measure.IsAddHaarMeasure (SLocalProduct F A.Sf) _ _ (borel _) μ)
     (hdt : @Measure.IsHaarMeasure A.G1 _ _ (borel _) dt)
+include A e he hne μ dt hμ hdt
+private theorem sheet_bounds
+     
     (w : InfinitePlace F) (k : ℕ)
     (W0 : SLocalProduct F A.Sf → ℂ)
     (hW0 : ProbeWeight.IsAnnularTensor F A.Sf W0)
@@ -556,13 +563,7 @@ private theorem sheet_bounds
     _ = (M * C) * T ^ (-1 : ℝ) := (mul_assoc _ _ _).symm
 
 theorem fourier_log_radial_integrability
-    (A : SArithmeticData F)
-    (e : (v : ↥A.Sf) → AddChar (v.val.adicCompletion F) Circle)
-    (he : ∀ v, Continuous (e v)) (hne : ∀ v, e v ≠ 1)
-    (μ : @Measure (SLocalProduct F A.Sf) (borel _))
-    (dt : @Measure A.G1 (borel _))
-    (hμ : @Measure.IsAddHaarMeasure (SLocalProduct F A.Sf) _ _ (borel _) μ)
-    (hdt : @Measure.IsHaarMeasure A.G1 _ _ (borel _) dt)
+     
     (W0 : SLocalProduct F A.Sf → ℂ)
     (hW0 : ProbeWeight.IsAnnularTensor F A.Sf W0)
     (hcompact : HasCompactSupport W0) (hannular : tsupport W0 ⊆ {x | IsUnit x})
@@ -652,6 +653,8 @@ theorem fourier_log_radial_integrability
       intro u
       rw [Real.norm_eq_abs, abs_of_nonneg (integral_nonneg (fun _ => norm_nonneg _))]
       exact (hb _ (mul_pos hT₀ (Real.exp_pos u))).2
+end
+
 
 end
 end DedekindZetaZeroFree.ProbeSheetFourierMellinBounds.SheetContinuityAtoms.Integrability
@@ -668,12 +671,15 @@ local instance (A : SArithmeticData F) : MeasurableSpace (SLocalProduct F A.Sf) 
 local instance (A : SArithmeticData F) : BorelSpace (SLocalProduct F A.Sf) := ⟨rfl⟩
 local instance (A : SArithmeticData F) : MeasurableSpace A.G1 := borel _
 local instance (A : SArithmeticData F) : BorelSpace A.G1 := ⟨rfl⟩
-private theorem raw_continuous_localUnits (A : SArithmeticData F) : Continuous (localUnitsRaw A) := by
+section
+variable (A : SArithmeticData F)
+include A
+private theorem raw_continuous_localUnits   : Continuous (localUnitsRaw A) := by
   change Continuous (Homeomorph.prodUnits.symm ∘
     (ContinuousMulEquiv.piUnits.symm.toHomeomorph.prodCongr
       ContinuousMulEquiv.piUnits.symm.toHomeomorph))
   fun_prop
-theorem raw_sheet_continuous (A : SArithmeticData F) :
+theorem raw_sheet_continuous   :
     Continuous (fun p : {T : ℝ // 0 < T} × A.G1 => (sheetPointRaw A p.1 p.2).val) := by
   have he : (fun p : {T : ℝ // 0 < T} × A.G1 => (sheetPointRaw A p.1 p.2).val) =
       fun p => (localUnitsRaw A p.2.val).val * (localUnitsRaw A (A.radialSection p.1.val p.1.property)).val := by
@@ -684,7 +690,7 @@ theorem raw_sheet_continuous (A : SArithmeticData F) :
     (continuous_subtype_val.comp continuous_snd))).mul
     (Units.continuous_val.comp ((raw_continuous_localUnits A).comp
       (A.continuous_radialSection.comp continuous_fst)))
-private theorem raw_annular_continuous (A : SArithmeticData F)
+private theorem raw_annular_continuous  
     (W0 : SLocalProduct F A.Sf → ℂ)
     (hW0 : ProbeWeight.IsAnnularTensor F A.Sf W0) : Continuous W0 := by
   obtain ⟨fr, fc, ff, hr, hc, hf, heq⟩ := hW0
@@ -714,7 +720,7 @@ private theorem raw_annular_continuous (A : SArithmeticData F)
   · apply continuous_finset_prod
     intro v hv
     exact (hf v).1.continuous.comp ((continuous_apply v).comp continuous_snd)
-theorem raw_fourier_continuous (A : SArithmeticData F)
+theorem raw_fourier_continuous  
     (e : (v : ↥A.Sf) → AddChar (v.val.adicCompletion F) Circle)
     (he : ∀ v, Continuous (e v))
     (μ : @Measure (SLocalProduct F A.Sf) (borel _))
@@ -744,7 +750,7 @@ theorem raw_fourier_continuous (A : SArithmeticData F)
     (hc.integrable_of_hasCompactSupport hcompact).norm
     (Filter.Eventually.of_forall fun x =>
       (continuous_const.mul (hp.comp (continuous_const.mul continuous_id))))
-theorem raw_sheet_integral_continuous_of_majorant (A : SArithmeticData F)
+theorem raw_sheet_integral_continuous_of_majorant  
     (dt : @Measure A.G1 (borel _)) (f : SLocalProduct F A.Sf → ℂ)
     (hf : Continuous f)
     (hmajorant : ∀ T₀ : {T : ℝ // 0 < T}, ∃ B : A.G1 → ℝ,
@@ -762,6 +768,8 @@ theorem raw_sheet_integral_continuous_of_majorant (A : SArithmeticData F)
   · exact Filter.Eventually.of_forall fun t =>
       (hf.comp ((raw_sheet_continuous A).comp
         (continuous_id.prodMk continuous_const))).continuousAt
+end
+
 
 section RadialFTC
 open Set

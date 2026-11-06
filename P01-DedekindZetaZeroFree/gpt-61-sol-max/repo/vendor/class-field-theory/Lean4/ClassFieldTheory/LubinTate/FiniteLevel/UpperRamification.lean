@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.LubinTate.FiniteLevel.LowerRamification
 public import ValuedFieldTheory.Ramification.HilbertRamification.HerbrandFunction
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -49,11 +52,14 @@ noncomputable local instance
     IsGalois K (standardLubinTateLevelField hπ n) :=
   standardLubinTateLevelField_isGalois hπ n
 
+section
+variable {F : LocalField.{u, v} K} {π : F.valuationSubring}
+    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
+    (n : ℕ)
+include F π hπ n
 /-- The lower ramification filtration packaged for the Herbrand API. -/
 noncomputable def standardLubinTateLowerRamificationFiltration
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) :
+      :
     RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration
       Gal((standardLubinTateLevelField hπ n) / K) :=
   lowerRamificationFiltrationOfUniqueExtension
@@ -63,9 +69,7 @@ noncomputable def standardLubinTateLowerRamificationFiltration
 
 /-- The Herbrand function of a standard finite Lubin--Tate level. -/
 noncomputable def standardLubinTateHerbrandFunction
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) (s : ℝ) : ℝ :=
+      (s : ℝ)  :=
   herbrandFunctionOfUniqueExtension
     (base := F.toCompleteDVF.toDVF)
     (target := (standardLubinTateLevelCompleteDVF hπ n).toDVF)
@@ -74,9 +78,7 @@ noncomputable def standardLubinTateHerbrandFunction
 
 /-- The inverse Herbrand function of a standard finite Lubin--Tate level. -/
 noncomputable def standardLubinTateInverseHerbrandFunction
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) (t : ℝ) : ℝ :=
+      (t : ℝ)  :=
   inverseHerbrandFunctionOfUniqueExtension
     (base := F.toCompleteDVF.toDVF)
     (target := (standardLubinTateLevelCompleteDVF hπ n).toDVF)
@@ -86,9 +88,7 @@ noncomputable def standardLubinTateInverseHerbrandFunction
 /-- The genuine real upper ramification group of a standard finite
 Lubin--Tate level. -/
 noncomputable def standardLubinTateRealUpperRamificationGroup
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) (t : ℝ) :
+      (t : ℝ) :
     Subgroup Gal((standardLubinTateLevelField hπ n) / K) :=
   upperRamificationGroupOfUniqueExtension
     (base := F.toCompleteDVF.toDVF)
@@ -99,18 +99,13 @@ noncomputable def standardLubinTateRealUpperRamificationGroup
 /-- Evaluating the upper filtration at a Herbrand value recovers the
 corresponding lower group. -/
 theorem standardLubinTateRealUpperRamificationGroup_herbrandFunction
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) (s : ℝ) :
+      (s : ℝ) :
     standardLubinTateRealUpperRamificationGroup hπ n
         (standardLubinTateHerbrandFunction hπ n s) =
       standardLubinTateRealLowerRamificationGroup hπ n s := by
-  exact
-    upperRamificationGroupOfUniqueExtension_herbrandFunction
-      (base := F.toCompleteDVF.toDVF)
-      (target := (standardLubinTateLevelCompleteDVF hπ n).toDVF)
-      (standardLubinTateLevelCompleteDVF_hasUniqueDVFValuationExtension hπ n)
-      s
+  apply upperRamificationGroupOfUniqueExtension_herbrandFunction
+end
+
 
 end LubinTate
 

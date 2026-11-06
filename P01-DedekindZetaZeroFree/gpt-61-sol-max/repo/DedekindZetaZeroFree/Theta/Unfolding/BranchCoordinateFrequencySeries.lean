@@ -11,8 +11,11 @@ open scoped NumberField Classical
 open IsDedekindDomain UniqueFactorizationMonoid
 variable {F : Type} [Field F] [NumberField F]
 
-abbrev BranchCoordinateIndex (A : SArithmeticData F) (G : AllowedRecipe A)
-    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m) :=
+section
+variable (A : SArithmeticData F) (G : AllowedRecipe A)
+    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
+include A G m D in
+abbrev BranchCoordinateIndex   :=
   (b : Branch A G m D) × Coordinates A G m D b
 
 def branchCoordinateSummand (A : SArithmeticData F) (G : AllowedRecipe A)
@@ -32,13 +35,13 @@ def branchCoordinateSeries (A : SArithmeticData F) (G : AllowedRecipe A)
     (D : RowFactorization A G m) (Z : ℝ) : ℂ :=
   ∑' i : BranchCoordinateIndex A G m D, branchCoordinateSummand A G U σ ψ L H m D Z i
 
-def branchCoordinateIndexMap (A : SArithmeticData F) (G : AllowedRecipe A)
-    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m) :
+include A G m D in
+def branchCoordinateIndexMap   :
     BranchCoordinateIndex A G m D → RMSeparatedExpansion.Index A D.h :=
   fun i => (⟨freeze A G m D i.1 i.2, rfl⟩, ⟨i.2.c, i.2.c_squarefree⟩)
 
-theorem branchCoordinateIndexMap_injective (A : SArithmeticData F) (G : AllowedRecipe A)
-    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m) :
+include A G m D in
+theorem branchCoordinateIndexMap_injective   :
     Function.Injective (branchCoordinateIndexMap A G m D) := by
   intro i j hij
   have hf : i.1.f = j.1.f := congrArg (fun k => k.1.val.f) hij
@@ -53,13 +56,18 @@ theorem branchCoordinateIndexMap_injective (A : SArithmeticData F) (G : AllowedR
   have hv : v = v' := by cases v; cases v'; simp_all
   subst v'
   rfl
+end
 
-theorem branchCoordinateSummand_norm_summable_of_separated
-    (A : SArithmeticData F) (G : AllowedRecipe A) (U : UnitRepresentatives A)
+
+section
+variable (A : SArithmeticData F) (G : AllowedRecipe A) (U : UnitRepresentatives A)
     (σ : F →+* ℂ) (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
     (hψ : ∀ p, (ψ p).IsPrimitive) (L : Fˣ →* ℂ) (hL : ∀ x, ‖L x‖ = 1)
     (hrec : SquarefreeGeneratorReciprocity A G σ) (H : A.V → ℝ → ℂ)
     (m : ThetaReflectionData.Row A) (D : RowFactorization A G m) (Z : ℝ)
+include A G U σ ψ hψ L hL hrec H m D Z in
+theorem branchCoordinateSummand_norm_summable_of_separated
+     
     (hs : Summable (fun i : RMSeparatedExpansion.Index A D.h =>
       ‖RMSeparatedExpansion.summand A G U σ ψ L H i.1.val D.d i.2 Z‖)) :
     Summable (fun i : BranchCoordinateIndex A G m D =>
@@ -105,12 +113,9 @@ private theorem rowIndex_eq_of_mem (A : SArithmeticData F) (G : AllowedRecipe A)
   simp only [rowIndex, hv]
   omega
 
+include A G U σ ψ hψ L hL hrec H m D Z in
 theorem branch_coordinate_series_eq_expansion
-    (A : SArithmeticData F) (G : AllowedRecipe A) (U : UnitRepresentatives A)
-    (σ : F →+* ℂ) (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (hψ : ∀ p, (ψ p).IsPrimitive) (L : Fˣ →* ℂ) (hL : ∀ x, ‖L x‖ = 1)
-    (hrec : SquarefreeGeneratorReciprocity A G σ) (H : A.V → ℝ → ℂ)
-    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m) (Z : ℝ)
+     
     (hsum : Summable fun i : BranchCoordinateIndex A G m D =>
       ‖branchCoordinateSummand A G U σ ψ L H m D Z i‖) :
     branchCoordinateSeries A G U σ ψ L H m D Z =
@@ -178,6 +183,8 @@ theorem branch_coordinate_series_eq_expansion
   change (∑' i, branchCoordinateSummand A G U σ ψ L H m D Z i) = ∑' j, f j
   rw [← tsum_congr hterm]
   exact hmain.symm
+end
+
 
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 

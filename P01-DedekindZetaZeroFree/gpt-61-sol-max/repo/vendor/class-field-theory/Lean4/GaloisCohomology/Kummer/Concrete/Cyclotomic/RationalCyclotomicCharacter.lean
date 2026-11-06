@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import GaloisCohomology.Kummer.Concrete.Cyclotomic.RationalCyclotomicField
 public import GaloisCohomology.ProfiniteIntegers.ProfiniteIntegerUnits
 public import Mathlib.NumberTheory.Cyclotomic.CyclotomicCharacter
 public import Mathlib.NumberTheory.NumberField.Cyclotomic.Galois
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -116,11 +119,11 @@ theorem rationalCyclotomicCharacterPrimeProduct_toZModPow
   let : IsCyclotomicExtension {p.1 ^ k} ℚ F := by
     change IsCyclotomicExtension {(n : ℕ)} ℚ (rationalCyclotomicLevel n)
     exact rationalCyclotomicLevel_isCyclotomicExtension n
-  let ζ : F :=
+  let ζ  :=
     IsCyclotomicExtension.zeta (p.1 ^ k) ℚ F
   have hζ : IsPrimitiveRoot ζ (p.1 ^ k) :=
     IsCyclotomicExtension.zeta_spec (p.1 ^ k) ℚ F
-  let t : rationalCyclotomicField :=
+  let t  :=
     algebraMap F rationalCyclotomicField ζ
   have ht : t ^ (p.1 ^ k) = 1 := by
     dsimp only [t]
@@ -166,8 +169,7 @@ theorem rationalCyclotomicCharacterPrimeProduct_toZModPow
           (p.1 ^ k) F (σ.restrictNormal F)).val.val) := by
       rw [hfinite]
     _ = t ^ (IsCyclotomicExtension.Rat.galEquivZMod
-        (p.1 ^ k) F (σ.restrictNormal F)).val.val := by
-      rw [map_pow]
+        (p.1 ^ k) F (σ.restrictNormal F)).val.val := rfl
 
 end PrimePowerCharacter
 

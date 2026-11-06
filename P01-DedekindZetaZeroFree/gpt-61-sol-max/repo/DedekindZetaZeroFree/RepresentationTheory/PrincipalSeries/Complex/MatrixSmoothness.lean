@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.InnerProductSpace.Calculus
 public import DedekindZetaZeroFree.Metaplectic.Kubota.ComplexCharactersHaarAndSU2Splitting
 public import Mathlib.Analysis.Matrix.Normed
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.KPCplxPrincipalSeriesMatrixSmooth
 open KPCplxCharacterHaar
@@ -12,22 +15,25 @@ open scoped ContDiff Matrix Matrix.Norms.Elementwise
 noncomputable def upperTriangular (a d : ℂˣ) (b : ℂ) : ComplexGL2 :=
   Matrix.GeneralLinearGroup.mkOfDetNeZero !![(a : ℂ), b; 0, (d : ℂ)] (by
     simpa [Matrix.det_fin_two] using mul_ne_zero a.ne_zero d.ne_zero)
-noncomputable def inductionWeight (s : ℝ) (a d : ℂˣ) : ℝ :=
+noncomputable def inductionWeight (s : ℝ) (a d : ℂˣ)  :=
   Real.rpow (‖(a : ℂ) / (d : ℂ)‖ ^ 2) (1 / 2 + s)
-noncomputable def openCoordinate (f : ComplexGL2 → ℂ) (x : ℂ) : ℂ :=
+noncomputable def openCoordinate (f : ComplexGL2 → ℂ) (x : ℂ)  :=
   f (weyl * upperUnipotent x)
-noncomputable def infinityCoordinate (f : ComplexGL2 → ℂ) (u : ℂ) : ℂ :=
+noncomputable def infinityCoordinate (f : ComplexGL2 → ℂ) (u : ℂ)  :=
   f (lowerUnipotent u)
 noncomputable def matrixFunction (f : ComplexGL2 → ℂ)
-    (g : Matrix (Fin 2) (Fin 2) ℂ) : ℂ :=
+    (g : Matrix (Fin 2) (Fin 2) ℂ)  :=
   if h : g.det ≠ 0 then f (Matrix.GeneralLinearGroup.mkOfDetNeZero g h) else 0
 private lemma upperTriangular_coe_matrix (a d : ℂˣ) (b : ℂ) :
     (upperTriangular a d b : Matrix (Fin 2) (Fin 2) ℂ) = !![(a : ℂ), b; 0, (d : ℂ)] := rfl
-private lemma chart_formula (s : ℝ) (f : ComplexGL2 → ℂ)
+section
+variable (s : ℝ) (f : ComplexGL2 → ℂ)
     (hcov : ∀ (a d : ℂˣ) (b : ℂ) (g : ComplexGL2),
       f (upperTriangular a d b * g) = (inductionWeight s a d : ℂ) * f g)
     (hopen : ContDiff ℝ (⊤ : ℕ∞) (openCoordinate f))
-    (hinf : ContDiff ℝ (⊤ : ℕ∞) (infinityCoordinate f)) (g : ComplexGL2)
+    (hinf : ContDiff ℝ (⊤ : ℕ∞) (infinityCoordinate f))
+include s f hcov hopen hinf
+private lemma chart_formula   (g : ComplexGL2)
     (north : Bool) (h : (g : Matrix (Fin 2) (Fin 2) ℂ) 1 (if north then 0 else 1) ≠ 0) :
     f g = (Real.rpow (‖(Matrix.GeneralLinearGroup.det g : ℂ)‖ /
       ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 (if north then 0 else 1)‖ ^ 2) (1 + 2*s) : ℂ) *
@@ -70,11 +76,7 @@ private lemma chart_formula (s : ℝ) (f : ComplexGL2 → ℂ)
   rw [hw]
   cases north <;> rfl
 
-private lemma matrix_chart_smooth (s : ℝ) (f : ComplexGL2 → ℂ)
-    (hcov : ∀ (a d : ℂˣ) (b : ℂ) (g : ComplexGL2),
-      f (upperTriangular a d b * g) = (inductionWeight s a d : ℂ) * f g)
-    (hopen : ContDiff ℝ (⊤ : ℕ∞) (openCoordinate f))
-    (hinf : ContDiff ℝ (⊤ : ℕ∞) (infinityCoordinate f))
+private lemma matrix_chart_smooth  
     (m : Matrix (Fin 2) (Fin 2) ℂ) (hm : m.det ≠ 0)
     (north : Bool) (hc : m 1 (if north then 0 else 1) ≠ 0) :
     ContDiffAt ℝ (⊤ : ℕ∞) (matrixFunction f) m := by
@@ -120,13 +122,9 @@ private lemma matrix_chart_smooth (s : ℝ) (f : ComplexGL2 → ℂ)
     he.continuous.continuousAt (isOpen_ne.mem_nhds hc)
   filter_upwards [hmd, hmc] with g hg hg'
   rw [matrixFunction, dif_pos hg]
-  exact chart_formula s f hcov hopen hinf (Matrix.GeneralLinearGroup.mkOfDetNeZero g hg) north hg'
+  apply chart_formula <;> assumption
 
-theorem covariant_matrix_smooth (s : ℝ) (f : ComplexGL2 → ℂ)
-    (hcov : ∀ (a d : ℂˣ) (b : ℂ) (g : ComplexGL2),
-      f (upperTriangular a d b * g) = (inductionWeight s a d : ℂ) * f g)
-    (hopen : ContDiff ℝ (⊤ : ℕ∞) (openCoordinate f))
-    (hinf : ContDiff ℝ (⊤ : ℕ∞) (infinityCoordinate f)) :
+theorem covariant_matrix_smooth   :
     ContDiffOn ℝ (⊤ : ℕ∞) (matrixFunction f)
       {g : Matrix (Fin 2) (Fin 2) ℂ | g.det ≠ 0} := by
   intro m hm
@@ -137,11 +135,13 @@ theorem covariant_matrix_smooth (s : ℝ) (f : ComplexGL2 → ℂ)
       simp [Matrix.det_fin_two, h, hz]
     exact (matrix_chart_smooth s f hcov hopen hinf m hm false h').contDiffWithinAt
   · exact (matrix_chart_smooth s f hcov hopen hinf m hm true h).contDiffWithinAt
+end
+
 
 lemma matrixFunction_coe (f : ComplexGL2 → ℂ) (g : ComplexGL2) : matrixFunction f (g : Matrix (Fin 2) (Fin 2) ℂ) = f g := by
   unfold matrixFunction
   split_ifs with h
-  · exact congrArg f (Units.ext rfl)
+  · apply congrArg <;> aesop
   · exact False.elim (h (Matrix.GeneralLinearGroup.det_ne_zero g))
 lemma matrix_smooth_charts (f : ComplexGL2 → ℂ)
     (hf : ContDiffOn ℝ (⊤ : ℕ∞) (matrixFunction f)
@@ -170,7 +170,7 @@ lemma matrix_smooth_charts (f : ComplexGL2 → ℂ)
     convert h using 1
     funext z
     exact (matrixFunction_coe f _).symm
-  · have h := hf.comp hi.contDiffOn (s := Set.univ) (by intro z hz; exact Matrix.GeneralLinearGroup.det_ne_zero (lowerUnipotent z))
+  · have h := hf.comp hi.contDiffOn (s := Set.univ) (by intro z hz; apply Matrix.GeneralLinearGroup.det_ne_zero)
     apply contDiffOn_univ.mp
     convert h using 1
     funext z

@@ -150,7 +150,7 @@ end DedekindZetaZeroFree.ResidueContinuity
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualPeriodContinuation
 
 variable {G₀ H J : Type*} [TopologicalSpace G₀] [AddCommGroup H] [Module ℂ H]
-variable (D₀ : J → H →ₗ[ℂ] C(G₀, ℂ))
+
 
 end DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualPeriodContinuation
 

@@ -14,10 +14,13 @@ variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable (R : PrincipalMellin.ActualRecipe S η)
 
-lemma orbitMass_reverse_joint_bound (N : TraceHaarTransport R)
+section
+variable (N : TraceHaarTransport R)
     {Q : AdmissibleFlatSources R} (T : Realization R Q) (P : Packet R Q)
     (D : SourceFactorization R Q T) (E : ExteriorCoefficients R Q T D)
-    (H : SameResidueProfiles R Q T P) :
+    (H : SameResidueProfiles R Q T P)
+include N Q T P D E H in
+lemma orbitMass_reverse_joint_bound   :
     ∃ K : ℝ, 0 ≤ K ∧ ∀ v m d (l : PositiveAxis),
       Summable (fun i : ThetaReflectionData.Frequency R.A × ThetaReflectionData.rationalGamma R.A =>
         orbitMass R N T P v m false i.1 i.2 d l) ∧
@@ -37,10 +40,8 @@ lemma orbitMass_reverse_joint_bound (N : TraceHaarTransport R)
   exact Summable.tsum_le_tsum (fun ξ => (hb v m ξ d l).2) hξ
     ((frequencyMajorant_summable R m).mul_left (K * l.val ^ 2))
 
-lemma orbitMass_reverse_smoothed (N : TraceHaarTransport R)
-    {Q : AdmissibleFlatSources R} (T : Realization R Q) (P : Packet R Q)
-    (D : SourceFactorization R Q T) (E : ExteriorCoefficients R Q T D)
-    (H : SameResidueProfiles R Q T P)
+include N Q T P D E H in
+lemma orbitMass_reverse_smoothed  
     (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A)
     (d : ThetaDigitAverage.Dig (RowPrime R m)) (Z : ℝ) (hZ : 0 < Z) :
     (∀ i : ThetaReflectionData.Frequency R.A × ThetaReflectionData.rationalGamma R.A,
@@ -81,10 +82,8 @@ lemma orbitMass_weighted_eq (N : TraceHaarTransport R)
   letI := N.groupHaar_isHaar
   simp only [norm_mul, ← integral_const_mul, orbitMass]
 
-theorem reverse_orbit_product_integrable (N : TraceHaarTransport R)
-    {Q : AdmissibleFlatSources R} (T : Realization R Q) (P : Packet R Q)
-    (D : SourceFactorization R Q T) (E : ExteriorCoefficients R Q T D)
-    (H : SameResidueProfiles R Q T P)
+include N Q T P D E H in
+theorem reverse_orbit_product_integrable  
     (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A) Z (hZ : 0 < Z)
     (i : ThetaReflectionData.Frequency R.A × ThetaReflectionData.rationalGamma R.A)
     (d : ThetaDigitAverage.Dig (RowPrime R m)) :
@@ -114,10 +113,8 @@ theorem reverse_orbit_product_integrable (N : TraceHaarTransport R)
     simp_rw [he, orbitMass_weighted_eq R N T P]
     exact hi
 
-theorem reverse_orbit_pregrouping (N : TraceHaarTransport R)
-    {Q : AdmissibleFlatSources R} (T : Realization R Q) (P : Packet R Q)
-    (D : SourceFactorization R Q T) (E : ExteriorCoefficients R Q T D)
-    (H : SameResidueProfiles R Q T P)
+include N Q T P D E H in
+theorem reverse_orbit_pregrouping  
     (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A) Z (hZ : 0 < Z) :
     letI := N.groupHaar_isHaar;
     Summable (fun i : ThetaReflectionData.Frequency R.A × ThetaReflectionData.rationalGamma R.A =>
@@ -129,5 +126,7 @@ theorem reverse_orbit_pregrouping (N : TraceHaarTransport R)
   letI := N.groupHaar_isHaar
   simp_rw [orbitMass_weighted_eq R N T P]
   exact summable_sum (fun d _ => (orbitMass_reverse_smoothed R N T P D E H v m d Z hZ).2)
+end
+
 end DedekindZetaZeroFree.OrbitFrequencies
 end

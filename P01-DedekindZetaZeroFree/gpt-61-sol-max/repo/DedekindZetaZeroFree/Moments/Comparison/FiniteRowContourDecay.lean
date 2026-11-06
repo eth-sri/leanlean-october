@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Moments.Comparison.TripleMellinKernel
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 
@@ -23,14 +26,14 @@ private lemma rpow_two_add_le (x B : ℝ) (hx : 0 ≤ x) (hB : 0 ≤ B) :
     Real.rpow_le_rpow (by linarith) (by linarith) hB
   rwa [Real.mul_rpow (by norm_num) (by linarith)] at h
 
-def comparisonRapidStripDecay (f : ℂ → ℂ) (a b : ℝ) : Prop :=
+def comparisonRapidStripDecay (f : ℂ → ℂ) (a b : ℝ)  :=
   ∀ A : ℝ, 0 ≤ A → ∃ C : ℝ, 0 < C ∧
     ∀ s ∈ comparisonClosedStrip a b, ‖f s‖ ≤ C * (1 + |s.im|) ^ (-A)
 
-def comparisonGaussianMellinWeight (M W : ℂ → ℂ) (ξ w z : ℂ) : ℂ :=
+def comparisonGaussianMellinWeight (M W : ℂ → ℂ) (ξ w z : ℂ)  :=
   Complex.exp ((ξ + z - 1) ^ 2) * M z * W w
 
-def comparisonHeightEnvelope (A t τ ν : ℝ) : ℝ :=
+def comparisonHeightEnvelope (A t τ ν : ℝ)  :=
   Real.exp (-(t + ν) ^ 2) * (1 + |ν|) ^ (-A) * (1 + |τ|) ^ (-A)
 
 theorem comparisonGaussianMellinWeight_polynomial_bound
@@ -55,24 +58,19 @@ theorem comparisonGaussianMellinWeight_polynomial_bound
   obtain ⟨hwc, hwd⟩ := hw
   obtain ⟨hze, hzf⟩ := hz
   have hK : (ξ + z - 1).re ^ 2 ≤ (|a| + |e| + |b| + |f| + 1) ^ 2 := by
-    have hre : (ξ + z - 1).re = ξ.re + z.re - 1 := by
-      simp only [Complex.add_re, Complex.sub_re, Complex.one_re, sub_zero]
+    have hre : (ξ + z - 1).re = ξ.re + z.re - 1 := rfl
     rw [hre]
     have habs : |ξ.re + z.re - 1| ≤ |a| + |e| + |b| + |f| + 1 := by
-      refine abs_le.mpr ⟨?_, ?_⟩
-      · have h1 := neg_abs_le a; have h2 := neg_abs_le e
-        have h3 := abs_nonneg b; have h4 := abs_nonneg f; linarith
-      · have h1 := le_abs_self b; have h2 := le_abs_self f
-        have h3 := abs_nonneg a; have h4 := abs_nonneg e; linarith
+      grind
     have h2 := pow_le_pow_left₀ (abs_nonneg (ξ.re + z.re - 1)) habs 2
     rwa [sq_abs] at h2
   have hexp : ‖Complex.exp ((ξ + z - 1) ^ 2)‖ ≤
       Real.exp ((|a| + |e| + |b| + |f| + 1) ^ 2) * Real.exp (-(ξ.im + z.im) ^ 2) := by
     have h := norm_exp_sq_le (ξ + z - 1) ((|a| + |e| + |b| + |f| + 1) ^ 2) hK
     simpa only [Complex.add_im, Complex.sub_im, Complex.one_im, sub_zero] using h
-  have hMz : ‖M z‖ ≤ CM * (1 + |z.im|) ^ (-(A + D)) :=
+  have hMz  :=
     hCM z (by simp only [comparisonClosedStrip, Set.mem_setOf_eq]; exact ⟨hze, hzf⟩)
-  have hWw : ‖W w‖ ≤ CW * (1 + |w.im|) ^ (-(A + B)) :=
+  have hWw  :=
     hCW w (by simp only [comparisonClosedStrip, Set.mem_setOf_eq]; exact ⟨hwc, hwd⟩)
   have hB1 : (2 + |w.im|) ^ B ≤ 2 ^ B * (1 + |w.im|) ^ B :=
     rpow_two_add_le _ _ (abs_nonneg _) hB
@@ -112,22 +110,7 @@ theorem comparisonGaussianMellinWeight_polynomial_bound
         (2 ^ B * (1 + |w.im|) ^ B) * (2 ^ D * (1 + |z.im|) ^ D) =
       Real.exp ((|a| + |e| + |b| + |f| + 1) ^ 2) * CM * CW * 2 ^ (B + D) *
         Real.exp (-(ξ.im + z.im) ^ 2) * (1 + |z.im|) ^ (-A) * (1 + |w.im|) ^ (-A) := by
-    calc (Real.exp ((|a| + |e| + |b| + |f| + 1) ^ 2) * Real.exp (-(ξ.im + z.im) ^ 2)) *
-          (CM * (1 + |z.im|) ^ (-(A + D))) * (CW * (1 + |w.im|) ^ (-(A + B))) *
-          (2 ^ B * (1 + |w.im|) ^ B) * (2 ^ D * (1 + |z.im|) ^ D)
-        = Real.exp ((|a| + |e| + |b| + |f| + 1) ^ 2) * Real.exp (-(ξ.im + z.im) ^ 2) * CM *
-            CW * ((1 + |z.im|) ^ (-(A + D)) * (1 + |z.im|) ^ D) *
-            ((1 + |w.im|) ^ (-(A + B)) * (1 + |w.im|) ^ B) * (2 ^ B * 2 ^ D) := by
-          ring
-      _ = Real.exp ((|a| + |e| + |b| + |f| + 1) ^ 2) * Real.exp (-(ξ.im + z.im) ^ 2) * CM *
-            CW * (1 + |z.im|) ^ (-A) * (1 + |w.im|) ^ (-A) * (2 ^ B * 2 ^ D) := by
-          rw [e1, e2]
-      _ = Real.exp ((|a| + |e| + |b| + |f| + 1) ^ 2) * Real.exp (-(ξ.im + z.im) ^ 2) * CM *
-            CW * (1 + |z.im|) ^ (-A) * (1 + |w.im|) ^ (-A) * 2 ^ (B + D) := by
-          rw [e3]
-      _ = Real.exp ((|a| + |e| + |b| + |f| + 1) ^ 2) * CM * CW * 2 ^ (B + D) *
-            Real.exp (-(ξ.im + z.im) ^ 2) * (1 + |z.im|) ^ (-A) * (1 + |w.im|) ^ (-A) := by
-          ring
+    grind
   rw [comparisonGaussianMellinWeight, norm_mul, norm_mul]
   refine s4.trans (le_of_eq ?_)
   rw [comparisonHeightEnvelope]
@@ -165,15 +148,13 @@ theorem comparisonHeightEnvelope_convolution (A : ℝ) (hA : 0 ≤ A) :
         C * (1 + |t|) ^ (-(A + 2)) := by
   let k := A+2
   have hk : 0 ≤ k := by dsimp [k]; linarith
-  have hw : Integrable (fun x : ℝ => (1+|x|)^(-k)) := by
-    simpa only [Real.norm_eq_abs] using
-      (integrable_one_add_norm (E := ℝ) (μ := volume) (r := k) (by simp [k]; linarith))
+  have hw : Integrable (fun x : ℝ => (1+|x|)^(-k)) := (integrable_one_add_norm (E := ℝ) (μ := volume) (r := k) (by simp [k]; linarith))
   have hg : Integrable (fun x : ℝ => Real.exp (-(1/2:ℝ)*x^2)) :=
     integrable_exp_neg_mul_sq (by norm_num)
   let G := ∫ x : ℝ, Real.exp (-(1/2:ℝ)*x^2)
   let W := ∫ x : ℝ, (1+|x|)^(-k)
-  have hG : 0 ≤ G := integral_nonneg (fun _ => Real.exp_nonneg _)
-  have hW : 0 ≤ W := integral_nonneg (fun _ => by positivity)
+  
+  
   refine ⟨Real.exp (k^2/2) * G * W + 1, by positivity, ?_⟩
   intro t
   have hmajor : Integrable (fun p : ℝ × ℝ =>
@@ -215,16 +196,13 @@ theorem comparisonHeightEnvelope_convolution (A : ℝ) (hA : 0 ≤ A) :
         integral_add_left_eq_self (fun x : ℝ => Real.exp (-(1/2:ℝ)*x^2)) t]
       dsimp [G,W]
       ring
-    _ ≤ (Real.exp (k^2/2)*G*W+1)*(1+|t|)^(-(A+2)) := by
-      apply mul_le_mul_of_nonneg_right (by linarith) (by positivity)
+    _ ≤ (Real.exp (k^2/2)*G*W+1)*(1+|t|)^(-(A+2)) := mul_le_mul_of_nonneg_right (by linarith) (by positivity)
 
 theorem comparisonHeightEnvelope_integrable (A : ℝ) (hA : 0 ≤ A) :
     Integrable (fun p : ℝ × ℝ × ℝ =>
       comparisonHeightEnvelope (A + 2) p.1 p.2.1 p.2.2) := by
   obtain ⟨C, hC, h⟩ := comparisonHeightEnvelope_convolution A hA
-  have hi : Integrable (fun t : ℝ => (1 + |t|) ^ (-(A+2))) := by
-    simpa only [Real.norm_eq_abs] using
-      (integrable_one_add_norm (E := ℝ) (μ := volume) (r := A+2) (by simp; linarith))
+  have hi : Integrable (fun t : ℝ => (1 + |t|) ^ (-(A+2))) := (integrable_one_add_norm (E := ℝ) (μ := volume) (r := A+2) (by simp; linarith))
   have hm : AEStronglyMeasurable (fun p : ℝ × ℝ × ℝ =>
       comparisonHeightEnvelope (A+2) p.1 p.2.1 p.2.2) volume := by
     unfold comparisonHeightEnvelope

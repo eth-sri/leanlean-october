@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Ideals.MultiplicativeWeightEncoding
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.AbelianQuotient
 
@@ -34,8 +37,7 @@ theorem genericIdealEulerProduct
     rw [hF1 n]
     exact norm_extendByZero _ (Odlyzko.idealPrimeCode_injective K) _ n
   have hsumm_F : Summable (fun n => ‖F n‖) := by
-    rw [show (fun n => ‖F n‖) = Odlyzko.extendByZero (Odlyzko.idealPrimeCode K)
-        (fun I : Odlyzko.NonzeroIdeal K => ‖g (I : Ideal (𝓞 K))‖) from funext hnorm]
+    rw [(funext hnorm)]
     exact Odlyzko.summable_extendByZero _ (Odlyzko.idealPrimeCode_injective K) hsumm_nz
   have hsub : Function.support g ⊆ {I : Ideal (𝓞 K) | I ≠ 0} := by
     intro I hI h0
@@ -53,7 +55,7 @@ theorem genericIdealEulerProduct
     rw [show (fun n => F n) = Odlyzko.extendByZero (Odlyzko.idealPrimeCode K)
         (fun I : Odlyzko.NonzeroIdeal K => g (I : Ideal (𝓞 K))) from funext hF1]
     exact Odlyzko.hasSum_extendByZero _ (Odlyzko.idealPrimeCode_injective K) hhasSum_nz
-  have htsum : (∑' n, F n) = ∑' I : Ideal (𝓞 K), g I := hhasSum_F.tsum_eq
+  have htsum  := hhasSum_F.tsum_eq
   have hEuler : HasProd (fun p : Nat.Primes => (1 - F p)⁻¹) (∑' n, F n) :=
     EulerProduct.eulerProduct_completely_multiplicative_hasProd hsumm_F
   have hout : ∀ p : Nat.Primes, p ∉ Set.range (Odlyzko.primeIdealCodeEmbedding K) →

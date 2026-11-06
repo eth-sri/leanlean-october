@@ -1,23 +1,25 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Fourier.Archimedean.TraceNormalization
 public import DedekindZetaZeroFree.HarmonicAnalysis.Fourier.RealContinuousCharacters
 
 @[expose] public section
 
+
 noncomputable section
 open scoped Classical
 namespace DedekindZetaZeroFree.PoissonArch
 variable (F : Type) [Field F] [NumberField F]
-def infiniteAdeleCoordinates : NumberField.InfiniteAdeleRing F ≃+ Space F :=
+def infiniteAdeleCoordinates  :=
   (NumberField.InfiniteAdeleRing.ringEquiv_mixedSpace F).toAddEquiv.trans
     (NumberField.mixedEmbedding.euclidean.toMixed F).symm.toLinearEquiv.toAddEquiv
 
 instance infiniteAdeleRealModule : Module ℝ (NumberField.InfiniteAdeleRing F) :=
   (infiniteAdeleCoordinates F).module ℝ
 
-def infiniteAdeleMixedHomeomorph :
-    NumberField.InfiniteAdeleRing F ≃ₜ NumberField.mixedEmbedding.mixedSpace F :=
+def infiniteAdeleMixedHomeomorph  :=
   (Homeomorph.piEquivPiSubtypeProd (fun v : NumberField.InfinitePlace F => v.IsReal)
     (fun v => v.Completion)).trans
     (Homeomorph.prodCongr
@@ -42,10 +44,7 @@ def infiniteAdeleToSpace : NumberField.InfiniteAdeleRing F ≃L[ℝ] Space F :=
 theorem infiniteAdeleToSpace_coordinates (x : NumberField.InfiniteAdeleRing F) :
     NumberField.mixedEmbedding.euclidean.toMixed F (infiniteAdeleToSpace F x) =
       NumberField.InfiniteAdeleRing.ringEquiv_mixedSpace F x := by
-  change (NumberField.mixedEmbedding.euclidean.toMixed F)
-    ((NumberField.mixedEmbedding.euclidean.toMixed F).symm
-      (NumberField.InfiniteAdeleRing.ringEquiv_mixedSpace F x)) = _
-  exact (NumberField.mixedEmbedding.euclidean.toMixed F).apply_symm_apply _
+  rfl
 end DedekindZetaZeroFree.PoissonArch
 
 namespace DedekindZetaZeroFree
@@ -60,7 +59,7 @@ private theorem arch_character_inner
   have hgexp' (x : E) : Circle.exp (g x) = χ x := congr_fun hgexp x
   have hgadd (x y : E) : g (x + y) = g x + g y := by
     let H : C(E, ℝ) := ⟨fun t => g (x + t) - g x, by fun_prop⟩
-    have hH : H = g := hguniq H ⟨by simp [H], ?_⟩
+    have hH  := hguniq H ⟨by simp [H], ?_⟩
     · have := DFunLike.congr_fun hH y
       dsimp [H] at this
       linarith
@@ -90,7 +89,7 @@ private theorem arch_character_inner
     field_simp
   · intro w hw
     let H : C(E, ℝ) := ⟨fun x => 2 * Real.pi * inner ℝ x w, by fun_prop⟩
-    have hH : H = g := hguniq H ⟨by simp [H], ?_⟩
+    have hH  := hguniq H ⟨by simp [H], ?_⟩
     · apply (InnerProductSpace.toDual ℝ E).injective
       ext x
       rw [InnerProductSpace.toDual_apply_apply, InnerProductSpace.toDual_apply_apply,

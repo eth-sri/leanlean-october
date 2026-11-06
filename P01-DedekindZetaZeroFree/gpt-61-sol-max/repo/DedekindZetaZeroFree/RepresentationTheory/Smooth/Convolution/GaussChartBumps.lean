@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.RepresentationTheory.RankOne.TranslatedBigCellCoordinates
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -16,7 +19,7 @@ variable (F : Type) [Field F] [NumberField F]
 abbrev L := PGLComplex.AdelicSlicesRaw.ArchGroup F
 abbrev X := KPGlobalTorusBorelTwistCompatibility.GroupArch F
 abbrev D0 := KPGlobalTorusBorelTwistCompatibility.groupArchDomain F
-abbrev G (ζ : F) (hζ : IsPrimitiveRoot ζ 12) := KPGlobalTorusFunctionData.G F ζ hζ
+abbrev G := @_root_.DedekindZetaZeroFree.KPGlobalTorusFunctionData.G
 abbrev Y := NumberField.InfinitePlace F → PGLComplex.Coordinates
 
 def e0 : X F := fun _ => ![0, 1, 0]
@@ -38,33 +41,37 @@ def fromAffine (x : Y F) : X F := fun w =>
   let t := PGLComplex.complexCoordinates (x w)
   ![t 2, (1 + t 0 - t 1 * t 2)⁻¹, t 1]
 
-def gaussInverse (a : L F) : X F :=
+def gaussInverse (a : L F)  :=
   fromAffine F (fun w => PGLComplex.affineInverse (a w))
 
-def KernelSmooth {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
-    (f : L F → V) : Prop :=
+section
+variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+    (f : L F → V)
+include V f
+def KernelSmooth    :=
   ∀ a : L F, ContDiffOn ℝ (⊤ : ℕ∞) (fun z => f (ell F z * a)) (D0 F)
 
-def AffineSmooth {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
-    (f : L F → V) : Prop :=
+def AffineSmooth    :=
   ∀ a : L F, ContDiffOn ℝ (⊤ : ℕ∞)
     (fun x => f (a * affineEll F x)) (affineDomain F)
+end
 
-def rawBump (b : ContDiffBump (e0 F)) (a : L F) : ℝ :=
+
+def rawBump (b : ContDiffBump (e0 F)) (a : L F)  :=
   if a ∈ gaussTarget F then b (gaussInverse F a) else 0
 
-def eta (μ : Measure (L F)) (b : ContDiffBump (e0 F)) (a : L F) : ℝ :=
+def eta (μ : Measure (L F)) (b : ContDiffBump (e0 F)) (a : L F)  :=
   rawBump F b a / ∫ y, rawBump F b y ∂μ
 
 def BumpSequence (μ : Measure (L F))
-    (b : ℕ → ContDiffBump (e0 F)) : Prop :=
+    (b : ℕ → ContDiffBump (e0 F))  :=
   (∀ m, Metric.closedBall (e0 F) (b m).rOut ⊆ D0 F) ∧
   Tendsto (fun m => (b m).rOut) atTop (𝓝 0) ∧
   (∀ m, 0 < ∫ a, rawBump F (b m) a ∂μ) ∧
   (∀ m, Continuous (eta F μ (b m)) ∧ KernelSmooth F (eta F μ (b m)) ∧
     HasCompactSupport (eta F μ (b m)) ∧
     (∀ a, 0 ≤ eta F μ (b m) a) ∧ (∫ a, eta F μ (b m) a ∂μ) = 1) ∧
-  (∀ O ∈ 𝓝 (1 : L F), ∀ᶠ m in atTop,
+  (∀ O ∈ 𝓝 (1), ∀ᶠ m in atTop,
     tsupport (eta F μ (b m)) ⊆ O)
 
 private theorem complex_coordinates_cle (x : PGLComplex.Coordinates) :
@@ -86,12 +93,12 @@ theorem toAffine_mapsTo : MapsTo (toAffine F) (D0 F) (affineDomain F) := by
   intro z hz w
   change PGLComplex.delta (toAffine F z w) ≠ 0
   rw [delta_toAffine]
-  exact inv_ne_zero (hz w)
+  apply inv_ne_zero <;> aesop
 
 private theorem fromAffine_mapsTo : MapsTo (fromAffine F) (affineDomain F) (D0 F) := by
   intro x hx w
   change (PGLComplex.delta (x w))⁻¹ ≠ 0
-  exact inv_ne_zero (hx w)
+  apply inv_ne_zero <;> aesop
 
 private theorem fromAffine_toAffine (z : X F) : fromAffine F (toAffine F z) = z := by
   ext w i
@@ -110,7 +117,10 @@ private theorem toAffine_fromAffine (x : Y F) : toAffine F (fromAffine F x) = x 
   fin_cases i <;> simp
   ring
 
-private theorem affinePoint_toAffine (z : X F) (hz : z ∈ D0 F)
+section
+variable (z : X F) (hz : z ∈ D0 F)
+include z hz
+private theorem affinePoint_toAffine  
     (w : NumberField.InfinitePlace F) :
     PGLComplex.affinePoint (toAffine F z w) =
       Matrix.ProjGenLinGroup.mk (KPLiteralChamber.leftMatrix (z w)) := by
@@ -129,18 +139,20 @@ private theorem affinePoint_toAffine (z : X F) (hz : z ∈ D0 F)
   all_goals first | ring | skip
   all_goals rw [mul_inv_cancel₀ hw]
 
-theorem affineEll_toAffine (z : X F) (hz : z ∈ D0 F) :
+theorem affineEll_toAffine   :
     affineEll F (toAffine F z) = ell F z := by
   funext w
-  exact affinePoint_toAffine F z hz w
+  apply affinePoint_toAffine <;> assumption
 
-private theorem ell_mem_gaussTarget (z : X F) (hz : z ∈ D0 F) :
+private theorem ell_mem_gaussTarget   :
     ell F z ∈ gaussTarget F := by
   rw [← affineEll_toAffine F z hz]
   intro w
   rw [affineEll, ← PGLComplex.affineChart_apply _ (toAffine_mapsTo F hz w)]
   rw [← PGLComplex.affineChart_target]
-  exact PGLComplex.affineChart.map_source (by rw [PGLComplex.affineChart_source]; exact toAffine_mapsTo F hz w)
+  exact PGLComplex.affineChart.map_source (by rw [PGLComplex.affineChart_source]; apply toAffine_mapsTo <;> assumption)
+end
+
 
 private theorem gaussInverse_mapsTo : MapsTo (gaussInverse F) (gaussTarget F) (D0 F) := by
   intro a ha
@@ -168,7 +180,7 @@ private theorem ell_gaussInverse (a : L F) (ha : a ∈ gaussTarget F) :
     exact ha w
   rw [← PGLComplex.affineChart_apply _ hs,
     ← PGLComplex.affineChart_symm_apply _ (ha w)]
-  exact PGLComplex.affineChart.right_inv (by rw [PGLComplex.affineChart_target]; exact ha w)
+  apply PGLComplex.affineChart.right_inv <;> aesop
 
 private theorem e0_mem : e0 F ∈ D0 F := by
   intro w
@@ -184,13 +196,9 @@ private theorem ell_e0 : ell F (e0 F) = 1 := by
     fin_cases i <;> fin_cases j <;> simp [e0]
   rw [he, map_one]
 
-private theorem ell_insertion (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (z : X F) :
-    KPGlobalTorusBorelTwistCompatibility.groupArchChart F ζ hζ z =
-      PGLComplex.AdelicSlicesRaw.archimedeanInsertion F ζ hζ (ell F z) := by
-  exact KPLiteralChamber.left_insertion F ζ hζ z
+private def ell_insertion (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (z : X F)  := KPLiteralChamber.left_insertion F ζ hζ z
 
-theorem gauss_domain_open : IsOpen (D0 F) :=
-  KPGlobalTorusBorelTwistCompatibility.groupArchDomain_open F
+alias gauss_domain_open := _root_.DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibility.groupArchDomain_open
 
 theorem toAffine_contDiff : ContDiffOn ℝ (⊤ : ℕ∞) (toAffine F) (D0 F) := by
   intro z hz
@@ -255,16 +263,19 @@ theorem gaussTarget_open : IsOpen (gaussTarget F) := by
   rw [← affineProductChart_target F]
   exact (affineProductChart F).open_target
 
-theorem affineTarget_one : (1 : L F) ∈ gaussTarget F := by
+theorem affineTarget_one : (1) ∈ gaussTarget F := by
   intro w
-  have h := PGLComplex.affineChart.map_source (show (0 : PGLComplex.Coordinates) ∈
+  have h := PGLComplex.affineChart.map_source (show (0) ∈
     PGLComplex.affineChart.source by simp)
   simpa using h
 
  def affineTransition (l r : L F) (x : Y F) : Y F := fun w =>
   PGLComplex.affineTranslate (l w).out (r w).out (x w)
 
-private theorem affineTransition_eq (l r : L F) (x : Y F) (hx : x ∈ affineDomain F) :
+section
+variable (l r : L F) (x : Y F) (hx : x ∈ affineDomain F)
+include l r x hx
+private theorem affineTransition_eq   :
     affineTransition F l r x = fun w => PGLComplex.affineInverse ((l * affineEll F x * r) w) := by
   funext w
   rw [affineTransition, PGLComplex.affineTranslate_eq_inverse_translate _ _ _ (hx w)]
@@ -275,8 +286,7 @@ private theorem affineTransition_eq (l r : L F) (x : Y F) (hx : x ∈ affineDoma
     show Matrix.ProjGenLinGroup.mk (r w).out = r w from Quotient.out_eq _]
   rfl
 
-private theorem affineTransition_contDiffAt (l r : L F) (x : Y F)
-    (hx : x ∈ affineDomain F) (ht : l * affineEll F x * r ∈ gaussTarget F) :
+private theorem affineTransition_contDiffAt   (ht : l * affineEll F x * r ∈ gaussTarget F) :
     ContDiffAt ℝ (⊤ : ℕ∞) (affineTransition F l r) x := by
   apply contDiffAt_pi.mpr
   intro w
@@ -287,8 +297,7 @@ private theorem affineTransition_contDiffAt (l r : L F) (x : Y F)
     show Matrix.ProjGenLinGroup.mk (r w).out = r w from Quotient.out_eq _]
   exact ht w
 
-private theorem affineTransition_reconstruct (l r : L F) (x : Y F)
-    (hx : x ∈ affineDomain F) (ht : l * affineEll F x * r ∈ gaussTarget F) :
+private theorem affineTransition_reconstruct   (ht : l * affineEll F x * r ∈ gaussTarget F) :
     affineTransition F l r x ∈ affineDomain F ∧
       affineEll F (affineTransition F l r x) = l * affineEll F x * r := by
   rw [affineTransition_eq F l r x hx]
@@ -298,12 +307,14 @@ private theorem affineTransition_reconstruct (l r : L F) (x : Y F)
   refine ⟨h, ?_⟩
   rw [← affineProductChart_apply F _ h, ← affineProductChart_symm_apply F _ ht]
   exact (affineProductChart F).right_inv (by rwa [affineProductChart_target F])
+end
+
 
 theorem affineEll_continuousAt (x : Y F) (hx : x ∈ affineDomain F) :
     ContinuousAt (affineEll F) x := by
   have h : (affineProductChart F : Y F → L F) =ᶠ[𝓝 x] affineEll F := by
     filter_upwards [(affineDomain_open F).mem_nhds hx] with y hy
-    exact affineProductChart_apply F y hy
+    apply affineProductChart_apply <;> assumption
   apply ContinuousAt.congr_of_eventuallyEq _ h.symm
   exact (affineProductChart F).continuousAt (by rwa [affineProductChart_source F])
 
@@ -312,8 +323,7 @@ private theorem affine_transition_near (l r : L F) (x : Y F)
     ∀ᶠ y in 𝓝 x, y ∈ affineDomain F ∧
       affineTransition F l r y ∈ affineDomain F ∧
       affineEll F (affineTransition F l r y) = l * affineEll F y * r := by
-  have hc : ContinuousAt (fun y => l * affineEll F y * r) x := by
-    exact (continuousAt_const.mul (affineEll_continuousAt F x hx)).mul continuousAt_const
+  have hc : ContinuousAt (fun y => l * affineEll F y * r) x := (continuousAt_const.mul (affineEll_continuousAt F x hx)).mul continuousAt_const
   have hn := hc.preimage_mem_nhds ((gaussTarget_open F).mem_nhds ht)
   filter_upwards [(affineDomain_open F).mem_nhds hx, hn] with y hy ht'
   exact ⟨hy, affineTransition_reconstruct F l r y hy ht'⟩
@@ -332,8 +342,7 @@ private theorem affine_left_right_smooth {V : Type*} [NormedAddCommGroup V]
       group
     have htr := affineTransition_contDiffAt F l a x hx ht
     have hr := affineTransition_reconstruct F l a x hx ht
-    have hs : ContDiffAt ℝ (⊤ : ℕ∞)
-        (fun y => f (k * affineEll F y)) (affineTransition F l a x) :=
+    have hs  :=
       (hf k _ hr.1).contDiffAt ((affineDomain_open F).mem_nhds hr.1)
     apply ContDiffAt.contDiffWithinAt
     apply (hs.comp x htr).congr_of_eventuallyEq
@@ -352,8 +361,7 @@ private theorem affine_left_right_smooth {V : Type*} [NormedAddCommGroup V]
       group
     have htr := affineTransition_contDiffAt F a r x hx ht
     have hr := affineTransition_reconstruct F a r x hx ht
-    have hs : ContDiffAt ℝ (⊤ : ℕ∞)
-        (fun y => f (affineEll F y * k)) (affineTransition F a r x) :=
+    have hs  :=
       (hf k _ hr.1).contDiffAt ((affineDomain_open F).mem_nhds hr.1)
     apply ContDiffAt.contDiffWithinAt
     apply (hs.comp x htr).congr_of_eventuallyEq
@@ -364,11 +372,14 @@ private theorem affine_left_right_smooth {V : Type*} [NormedAddCommGroup V]
     dsimp [r]
     group
 
- def coordinateHomeomorph
-    (hmap : MapsTo (toAffine F) (D0 F) (affineDomain F))
+ section
+variable (hmap : MapsTo (toAffine F) (D0 F) (affineDomain F))
     (hback : MapsTo (fromAffine F) (affineDomain F) (D0 F))
     (hleft : ∀ z ∈ D0 F, fromAffine F (toAffine F z) = z)
-    (hright : ∀ x ∈ affineDomain F, toAffine F (fromAffine F x) = x) :
+    (hright : ∀ x ∈ affineDomain F, toAffine F (fromAffine F x) = x)
+include hmap hback hleft hright
+def coordinateHomeomorph
+      :
     OpenPartialHomeomorph (X F) (Y F) where
   toFun := toAffine F
   invFun := fromAffine F
@@ -384,10 +395,7 @@ private theorem affine_left_right_smooth {V : Type*} [NormedAddCommGroup V]
   continuousOn_invFun := (fromAffine_contDiff F).continuousOn
 
 private theorem gauss_homeomorph_of_coordinate_algebra
-    (hmap : MapsTo (toAffine F) (D0 F) (affineDomain F))
-    (hback : MapsTo (fromAffine F) (affineDomain F) (D0 F))
-    (hleft : ∀ z ∈ D0 F, fromAffine F (toAffine F z) = z)
-    (hright : ∀ x ∈ affineDomain F, toAffine F (fromAffine F x) = x)
+     
     (hell : ∀ z ∈ D0 F, affineEll F (toAffine F z) = ell F z) :
     ∃ C : OpenPartialHomeomorph (X F) (L F),
       C.source = D0 F ∧ C.target = gaussTarget F ∧
@@ -416,6 +424,8 @@ private theorem gauss_homeomorph_of_coordinate_algebra
     change fromAffine F ((affineProductChart F).symm a) = gaussInverse F a
     rw [affineProductChart_symm_apply F a ha]
     rfl
+end
+
 
 private theorem smooth_bridge_of_coordinate_algebra
     (hmap : MapsTo (toAffine F) (D0 F) (affineDomain F))
@@ -469,8 +479,7 @@ theorem actualSmoothBridge {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V
   smooth_bridge_of_coordinate_algebra F (toAffine_mapsTo F) (fromAffine_mapsTo F)
     (fun x _ => toAffine_fromAffine F x) (affineEll_toAffine F) f
 
-private theorem actualEll_continuousAt (z : X F) (hz : z ∈ D0 F) :
-    ContinuousAt (ell F) z :=
+private def actualEll_continuousAt (z : X F) (hz : z ∈ D0 F)  :=
   ell_continuousAt_of_coordinate_algebra F (toAffine_mapsTo F) (affineEll_toAffine F) z hz
 
  instance arch_t2 : T2Space (L F) := by
@@ -499,32 +508,28 @@ private theorem rawBump_support_subset (b : ContDiffBump (e0 F)) :
     exact hb
   exact ⟨gaussInverse F a, hball, ell_gaussInverse F a ht⟩
 
-private theorem rawBump_image_compact (b : ContDiffBump (e0 F))
-    (hb : Metric.closedBall (e0 F) b.rOut ⊆ D0 F) :
-    IsCompact (ell F '' Metric.closedBall (e0 F) b.rOut) :=
+section
+variable (b : ContDiffBump (e0 F))
+    (hb : Metric.closedBall (e0 F) b.rOut ⊆ D0 F)
+include b hb
+private def rawBump_image_compact    :=
   (isCompact_closedBall (e0 F) b.rOut).image_of_continuousOn ((ell_continuousOn F).mono hb)
 
-private theorem rawBump_tsupport_subset (b : ContDiffBump (e0 F))
-    (hb : Metric.closedBall (e0 F) b.rOut ⊆ D0 F) :
-    tsupport (rawBump F b) ⊆ ell F '' Metric.closedBall (e0 F) b.rOut :=
+private def rawBump_tsupport_subset    :=
   (rawBump_image_compact F b hb).isClosed.closure_subset_iff.mpr
     (rawBump_support_subset F b)
 
-private theorem rawBump_compact (b : ContDiffBump (e0 F))
-    (hb : Metric.closedBall (e0 F) b.rOut ⊆ D0 F) :
-    HasCompactSupport (rawBump F b) :=
+private def rawBump_compact    :=
   (rawBump_image_compact F b hb).of_isClosed_subset (isClosed_tsupport _)
     (rawBump_tsupport_subset F b hb)
 
-private theorem rawBump_zero_near (b : ContDiffBump (e0 F))
-    (hb : Metric.closedBall (e0 F) b.rOut ⊆ D0 F) (a : L F)
+private theorem rawBump_zero_near   (a : L F)
     (ha : a ∉ ell F '' Metric.closedBall (e0 F) b.rOut) :
     rawBump F b =ᶠ[𝓝 a] 0 := by
   filter_upwards [(rawBump_image_compact F b hb).isClosed.compl_mem_nhds ha] with y hy
   exact Function.notMem_support.mp (fun hs => hy (rawBump_support_subset F b hs))
 
-private theorem rawBump_affine_smooth (b : ContDiffBump (e0 F))
-    (hb : Metric.closedBall (e0 F) b.rOut ⊆ D0 F) : AffineSmooth F (rawBump F b) := by
+private theorem rawBump_affine_smooth   : AffineSmooth F (rawBump F b) := by
   intro a x hx
   apply ContDiffAt.contDiffWithinAt
   by_cases ht : a * affineEll F x ∈ gaussTarget F
@@ -545,8 +550,7 @@ private theorem rawBump_affine_smooth (b : ContDiffBump (e0 F))
     exact contDiffAt_const.congr_of_eventuallyEq
       ((rawBump_zero_near F b hb _ hn).comp_tendsto hc)
 
-private theorem rawBump_continuous (b : ContDiffBump (e0 F))
-    (hb : Metric.closedBall (e0 F) b.rOut ⊆ D0 F) : Continuous (rawBump F b) := by
+private theorem rawBump_continuous   : Continuous (rawBump F b) := by
   apply continuous_iff_continuousAt.mpr
   intro a
   by_cases ha : a ∈ gaussTarget F
@@ -570,20 +574,21 @@ private theorem rawBump_continuous (b : ContDiffBump (e0 F))
       exact ha (he ▸ ell_mem_gaussTarget F z (hb hz))
     exact continuousAt_const.congr (rawBump_zero_near F b hb a hn).symm
 
-private theorem rawBump_kernel_smooth (b : ContDiffBump (e0 F))
-    (hb : Metric.closedBall (e0 F) b.rOut ⊆ D0 F) : KernelSmooth F (rawBump F b) :=
+private def rawBump_kernel_smooth    :=
   (smooth_bridge_of_coordinate_algebra F (toAffine_mapsTo F) (fromAffine_mapsTo F)
     (fun x _ => toAffine_fromAffine F x) (affineEll_toAffine F) _).mpr
     (rawBump_affine_smooth F b hb)
+end
+
 
 private theorem closedBall_subset_D0 (r : ℝ) (hr : r < 1) :
     Metric.closedBall (e0 F) r ⊆ D0 F := by
   intro z hz w
-  have hz' : dist z (e0 F) ≤ r := by simpa [Metric.mem_closedBall] using hz
+  have hz' : dist z (e0 F) ≤ r := hz
   have h1 : dist (z w) ((e0 F) w) ≤ r := le_trans (dist_le_pi_dist z (e0 F) w) hz'
   have h2 : dist ((z w) 1) (((e0 F) w) 1) ≤ r :=
     le_trans (dist_le_pi_dist (z w) ((e0 F) w) 1) h1
-  have h3 : ((e0 F) w) 1 = (1 : ℂ) := by simp [e0]
+  have h3 : ((e0 F) w) 1 = (1 : ℂ) := rfl
   rw [h3] at h2
   intro hzero
   rw [hzero] at h2
@@ -595,7 +600,7 @@ private theorem closedBall_subset_D0 (r : ℝ) (hr : r < 1) :
     rOut := 1/((m:ℝ)+2)
     rIn_pos := by positivity
     rIn_lt_rOut := by
-      have h : (0:ℝ) < (m:ℝ)+2 := by positivity
+      
       exact one_div_lt_one_div_of_lt (by positivity) (by linarith) }
 
 private theorem bumpB_support (m : ℕ) :
@@ -610,7 +615,7 @@ private theorem bumpB_tendsto :
     Tendsto (fun m => (bumpB F m).rOut) atTop (𝓝 0) := by
   have h : Tendsto (fun n : ℕ => (1:ℝ)/(n:ℝ)) atTop (𝓝 0) :=
     tendsto_const_div_atTop_nhds_zero_nat 1
-  have h2 : Tendsto (fun n : ℕ => ((n:ℕ)+2 : ℕ)) atTop atTop :=
+  have h2  :=
     tendsto_add_atTop_nat 2
   have := h.comp h2
   simp only [bumpB]
@@ -623,13 +628,16 @@ private theorem rawBump_nonneg (b : ContDiffBump (e0 F)) (a : L F) :
   · exact b.nonneg
   · exact le_refl 0
 
-private theorem eta_nonneg (μ : Measure (L F)) (b : ContDiffBump (e0 F))
+section
+variable (μ : Measure (L F)) (b : ContDiffBump (e0 F))
+include μ b
+private theorem eta_nonneg  
     (hpos : 0 < ∫ y, rawBump F b y ∂μ) (a : L F) : 0 ≤ eta F μ b a := by
   have hden : 0 ≤ (∫ y, rawBump F b y ∂μ)⁻¹ := inv_nonneg.mpr hpos.le
   simp only [eta, div_eq_mul_inv]
   exact mul_nonneg (rawBump_nonneg F b a) hden
 
-private theorem eta_integral_eq_one (μ : Measure (L F)) (b : ContDiffBump (e0 F))
+private theorem eta_integral_eq_one  
     (hne : ∫ y, rawBump F b y ∂μ ≠ 0) : ∫ a, eta F μ b a ∂μ = 1 := by
   have h1 : ∫ a, eta F μ b a ∂μ =
       (∫ a, rawBump F b a ∂μ) / (∫ a, rawBump F b a ∂μ) := by
@@ -637,48 +645,46 @@ private theorem eta_integral_eq_one (μ : Measure (L F)) (b : ContDiffBump (e0 F
     exact MeasureTheory.integral_div _ _
   rw [h1, div_self hne]
 
-private theorem eta_eq (μ : Measure (L F)) (b : ContDiffBump (e0 F)) :
+private theorem eta_eq   :
     eta F μ b = fun a => rawBump F b a * (∫ y, rawBump F b y ∂μ)⁻¹ := by
   funext a
   simp only [eta, div_eq_mul_inv]
 
-private theorem continuous_eta (μ : Measure (L F)) (b : ContDiffBump (e0 F))
+private theorem continuous_eta  
     (hc : Continuous (rawBump F b)) : Continuous (eta F μ b) := by
   rw [eta_eq F μ b]
   exact hc.mul continuous_const
 
-private theorem hasCompactSupport_eta (μ : Measure (L F)) (b : ContDiffBump (e0 F))
+private theorem hasCompactSupport_eta  
     (hc : HasCompactSupport (rawBump F b)) : HasCompactSupport (eta F μ b) := by
   rw [eta_eq F μ b]
   exact hc.mul_right
 
-private theorem kernelSmooth_eta (μ : Measure (L F)) (b : ContDiffBump (e0 F))
+private theorem kernelSmooth_eta  
     (hc : KernelSmooth F (rawBump F b)) : KernelSmooth F (eta F μ b) := by
   rw [eta_eq F μ b]
   intro a
   exact (hc a).smul_const _
+end
 
-private theorem one_mem_gaussTarget : (1 : L F) ∈ gaussTarget F := by
-  intro w
-  have h := PGLComplex.affineChart.map_source
-    (show (0 : PGLComplex.Coordinates) ∈ PGLComplex.affineChart.source by simp)
-  simpa [gaussTarget] using h
 
-private theorem affineInverse_one : PGLComplex.affineInverse (1 : PGLComplex.Group) = 0 := by
-  have h1 : (1 : PGLComplex.Group) ∈ PGLComplex.affineTarget := by
+private alias one_mem_gaussTarget := _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel.affineTarget_one
+
+private theorem affineInverse_one : PGLComplex.affineInverse (1) = 0 := by
+  have h1 : (1) ∈ PGLComplex.affineTarget := by
     have h := PGLComplex.affineChart.map_source
-      (show (0 : PGLComplex.Coordinates) ∈ PGLComplex.affineChart.source by simp)
+      (show (0) ∈ PGLComplex.affineChart.source by simp)
     simpa using h
   rw [← PGLComplex.affineChart_symm_apply 1 h1, ← PGLComplex.affineChart_zero]
-  exact PGLComplex.affineChart.left_inv (x := 0) (by simp)
+  apply PGLComplex.affineChart.left_inv <;> aesop
 
-private theorem fromAffine_zero : fromAffine F (0 : Y F) = e0 F := by
+private theorem fromAffine_zero : fromAffine F (0) = e0 F := by
   funext w i
   fin_cases i <;> simp [fromAffine, e0, PGLComplex.complexCoordinates, Complex.ext_iff]
 
 private theorem rawBump_one (b : ContDiffBump (e0 F)) : rawBump F b 1 = 1 := by
   rw [rawBump, if_pos (one_mem_gaussTarget F)]
-  have hg : gaussInverse F (1 : L F) = e0 F := by
+  have hg : gaussInverse F (1) = e0 F := by
     simp only [gaussInverse]
     rw [show (fun w : NumberField.InfinitePlace F => PGLComplex.affineInverse ((1 : L F) w)) =
         (0 : Y F) from by funext w; exact affineInverse_one]
@@ -700,10 +706,10 @@ private theorem eta_tsupport_subset (μ : Measure (L F)) (b : ContDiffBump (e0 F
   exact tsupport_mul_subset_left.trans (rawBump_tsupport_subset F b hb)
 
 private theorem bumpB_shrinking (μ : Measure (L F)) :
-    ∀ O ∈ 𝓝 (1 : L F), ∀ᶠ m in atTop, tsupport (eta F μ (bumpB F m)) ⊆ O := by
+    ∀ O ∈ 𝓝 (1), ∀ᶠ m in atTop, tsupport (eta F μ (bumpB F m)) ⊆ O := by
   intro O hO
   have hc := actualEll_continuousAt F (e0 F) (e0_mem F)
-  have hn : ell F ⁻¹' O ∈ 𝓝 (e0 F) :=
+  have hn  :=
     hc.preimage_mem_nhds (by simpa only [ell_e0 F] using hO)
   obtain ⟨ε, hε, hball⟩ := Metric.mem_nhds_iff.mp hn
   have hr : ∀ᶠ m in atTop, (bumpB F m).rOut < ε :=

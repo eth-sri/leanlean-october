@@ -18,7 +18,7 @@ namespace DedekindZetaZeroFree.KPCuspParabolicLattices.RatioUnits
     (M : Submodule (IntegralOrder F) (Plane F)) :
     Subgroup (Matrix.GeneralLinearGroup (Fin 2) F) where
   carrier := {A | ∀ v, v ∈ M ↔ (A : Matrix (Fin 2) (Fin 2) F) *ᵥ v ∈ M}
-  one_mem' := by simp
+  one_mem' := by intro v; rw [Units.val_one, Matrix.one_mulVec]
   mul_mem' := by
     intro A B hA hB v
     rw [Units.val_mul, ← Matrix.mulVec_mulVec]
@@ -401,7 +401,7 @@ theorem integral_unit_is_full_cusp_ratio
     simp only [C, mul_smul]
     change B⁻¹ • (A • v) = _
     rw [hav, smul_comm B⁻¹ (u : F)]
-    simp [v]
+    simp only [v, inv_smul_smul]
   change (↑C : Matrix (Fin 2) (Fin 2) F) *ᵥ e₀ = (u : F) • e₀ at hc
   have hc10 : C 1 0 = 0 := by
     simpa [e₀, Matrix.mulVec, dotProduct, Fin.sum_univ_two] using congrFun hc 1

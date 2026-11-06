@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Metaplectic.Weil.Complex.DampedGaussianEvaluation
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.ComplexWeil
 
@@ -10,10 +13,10 @@ noncomputable section
 open MeasureTheory Filter
 open scoped Topology
 
-def PK (β a : ℂ) (ε : ℝ) : ℂ :=
+def PK (β a : ℂ) (ε : ℝ)  :=
   ((‖β‖ * Real.pi / Real.sqrt (ε ^ 2 + 4 * Real.pi ^ 2 * ‖β * a‖ ^ 2) : ℝ) : ℂ)
 
-def EK (β a u ξ : ℂ) (ε : ℝ) : ℂ :=
+def EK (β a u ξ : ℂ) (ε : ℝ)  :=
   -(Real.pi : ℂ) ^ 2 * ((β * u * ξ).re : ℂ) ^ 2 /
       ((ε : ℂ) - 2 * (Real.pi : ℂ) * Complex.I * (‖β * a‖ : ℂ)) -
     (Real.pi : ℂ) ^ 2 * ((β * u * ξ).im : ℂ) ^ 2 /
@@ -23,9 +26,12 @@ private lemma K_eq (β a u ξ : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)
     (hu : ‖u‖ = 1) (hrot : β * a * u ^ 2 = (‖β * a‖ : ℂ))
     (ε : ℝ) (hε : 0 < ε) :
     K β ε a ξ = PK β a ε * Complex.exp (EK β a u ξ ε) := by
-  simpa only [PK, EK] using damped_gaussian_evaluation β a ξ hβ ha ε hε u hu hrot
+  apply damped_gaussian_evaluation <;> assumption
 
-private lemma prefactor_le (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) (ε : ℝ) :
+section
+variable (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)
+include β a hβ ha in
+private lemma prefactor_le   (ε : ℝ) :
     ‖β‖ * Real.pi / Real.sqrt (ε ^ 2 + 4 * Real.pi ^ 2 * ‖β * a‖ ^ 2) ≤ 1 / (2 * ‖a‖) := by
   have hbn : 0 < ‖β‖ := norm_pos_iff.mpr hβ
   have han : 0 < ‖a‖ := norm_pos_iff.mpr ha
@@ -42,9 +48,9 @@ private lemma prefactor_le (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) (ε : �
         div_le_div_of_nonneg_left hnum (by positivity) hs
     _ = 1 / (2 * ‖a‖) := by
         rw [norm_mul]
-        have hb0 : ‖β‖ ≠ 0 := ne_of_gt hbn
-        have hp0 : Real.pi ≠ 0 := Real.pi_ne_zero
-        have ha0 : ‖a‖ ≠ 0 := ne_of_gt han
+        have hb0  := ne_of_gt hbn
+        have hp0  := Real.pi_ne_zero
+        have ha0  := ne_of_gt han
         field_simp
 
 private lemma re_div_nonneg (s : ℝ) (hs : 0 ≤ s) (b : ℂ) (hb : 0 ≤ b.re) :
@@ -85,7 +91,8 @@ private lemma EK_re_le_zero (β a u ξ : ℂ) (ε : ℝ) (hε : 0 < ε) :
   simp only [EK, Complex.sub_re]
   linarith
 
-theorem norm_K_le (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)
+include β a hβ ha in
+theorem norm_K_le  
     (ε : ℝ) (hε : 0 < ε) (ξ : ℂ) :
     ‖K β ε a ξ‖ ≤ 1 / (2 * ‖a‖) := by
   obtain ⟨u, hu, hrot⟩ := exists_quadratic_unit β a hβ ha
@@ -98,7 +105,7 @@ theorem norm_K_le (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)
         ‖β‖ * Real.pi / Real.sqrt (ε ^ 2 + 4 * Real.pi ^ 2 * ‖β * a‖ ^ 2)
     exact (RCLike.norm_ofReal _).trans (abs_of_nonneg hPnn)
   rw [hnorm]
-  have hexp : Real.exp (EK β a u ξ ε).re ≤ 1 :=
+  have hexp  :=
     Real.exp_le_one_iff.mpr (EK_re_le_zero β a u ξ ε hε)
   calc ‖β‖ * Real.pi / Real.sqrt (ε ^ 2 + 4 * Real.pi ^ 2 * ‖β * a‖ ^ 2) *
         Real.exp (EK β a u ξ ε).re
@@ -109,7 +116,7 @@ theorem norm_K_le (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)
 
 private lemma EK_continuous (β a u ξ : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) :
     Continuous (EK β a u ξ) := by
-  have hr : 0 < ‖β * a‖ := norm_pos_iff.mpr (mul_ne_zero hβ ha)
+  
   have hm (ε : ℝ) : ((ε : ℂ) - 2 * (Real.pi : ℂ) * Complex.I * (‖β * a‖ : ℂ)) ≠ 0 := by
     intro h
     have hi := congrArg Complex.im h
@@ -127,7 +134,8 @@ private lemma EK_continuous (β a u ξ : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) :
   unfold EK
   fun_prop
 
-private lemma PK_continuous (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) :
+include β a hβ ha in
+private lemma PK_continuous   :
     Continuous (PK β a) := by
   have hr : 0 < ‖β * a‖ := norm_pos_iff.mpr (mul_ne_zero hβ ha)
   have hs (ε : ℝ) : Real.sqrt (ε ^ 2 + 4 * Real.pi ^ 2 * ‖β * a‖ ^ 2) ≠ 0 := by
@@ -137,7 +145,8 @@ private lemma PK_continuous (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) :
   unfold PK
   fun_prop
 
-private lemma PK_zero (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) :
+include β a hβ ha in
+private lemma PK_zero   :
     PK β a 0 = ((1 / (2 * ‖a‖) : ℝ) : ℂ) := by
   have hb0 : ‖β‖ ≠ 0 := norm_ne_zero_iff.mpr hβ
   have ha0 : ‖a‖ ≠ 0 := norm_ne_zero_iff.mpr ha
@@ -169,7 +178,8 @@ private lemma EK_zero (β a u ξ : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)
   field_simp
   ring
 
-theorem tendsto_K (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) (ξ : ℂ) :
+include β a hβ ha in
+theorem tendsto_K   (ξ : ℂ) :
     Tendsto (fun ε : ℝ => K β ε a ξ)
       (nhdsWithin 0 (Set.Ioi 0))
       (nhds (((1 / (2 * ‖a‖) : ℝ) : ℂ) * psi β (-ξ ^ 2 / (4 * a)))) := by
@@ -184,17 +194,18 @@ theorem tendsto_K (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) (ξ : ℂ) :
   filter_upwards [self_mem_nhdsWithin] with ε hε
   exact (K_eq β a u ξ hβ ha hu hrot ε hε).symm
 
-theorem norm_schwartz_mul_K_le (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)
+include β a hβ ha in
+theorem norm_schwartz_mul_K_le  
     (ε : ℝ) (hε : 0 < ε) (f : SchwartzMap ℂ ℂ) (y z : ℂ) :
     ‖f z * K β ε a (y + z)‖ ≤ (1 / (2 * ‖a‖)) * ‖f z‖ := by
   rw [norm_mul, mul_comm (1 / (2 * ‖a‖))]
   exact mul_le_mul_of_nonneg_left (norm_K_le β a hβ ha ε hε (y + z)) (norm_nonneg _)
 
 theorem integrable_schwartz_kernel_bound (β a : ℂ) (f : SchwartzMap ℂ ℂ) :
-    Integrable (fun z : ℂ => (1 / (2 * ‖a‖)) * ‖f z‖) (mu β) := by
-  exact (integrable_schwartz_mu β f).norm.const_mul _
+    Integrable (fun z : ℂ => (1 / (2 * ‖a‖)) * ‖f z‖) (mu β) := (integrable_schwartz_mu β f).norm.const_mul _
 
-theorem tendsto_integral_schwartz_mul_K (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)
+include β a hβ ha in
+theorem tendsto_integral_schwartz_mul_K  
     (f : SchwartzMap ℂ ℂ) (y : ℂ) :
     Tendsto (fun ε : ℝ => ∫ z : ℂ, f z * K β ε a (y + z) ∂mu β)
       (nhdsWithin 0 (Set.Ioi 0))
@@ -215,9 +226,11 @@ theorem tendsto_integral_schwartz_mul_K (β a : ℂ) (hβ : β ≠ 0) (ha : a �
     exact hc.aestronglyMeasurable
   · filter_upwards [self_mem_nhdsWithin] with ε hε
     exact Filter.Eventually.of_forall (fun z => norm_schwartz_mul_K_le β a hβ ha ε hε f y z)
-  · exact integrable_schwartz_kernel_bound β a f
+  · apply integrable_schwartz_kernel_bound
   · exact Filter.Eventually.of_forall fun z => by
       simpa only [mul_assoc] using (tendsto_K β a hβ ha (y + z)).const_mul (f z)
+end
+
 
 end
 end DedekindZetaZeroFree.ComplexWeil

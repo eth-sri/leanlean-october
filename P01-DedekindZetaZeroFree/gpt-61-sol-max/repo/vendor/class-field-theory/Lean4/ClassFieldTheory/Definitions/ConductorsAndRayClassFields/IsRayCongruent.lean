@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.RayClassModulus
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.RayLocalHigherUnitGroup
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -32,15 +35,14 @@ universe u
 /-- The diagonal embedding of field units into a finite completion. -/
 def finitePlaceUnitEmbedding
     {K : Type u} [Field K] [NumberField K]
-    (v : HeightOneSpectrum (𝓞 K)) :
-    Kˣ →* (v.adicCompletion K)ˣ :=
+    (v : HeightOneSpectrum (𝓞 K))  :=
   Units.map (algebraMap K (v.adicCompletion K)).toMonoidHom
 
 /-- A field unit satisfies the finite congruences and real positivity
 conditions specified by a ray modulus. -/
 def IsRayCongruent
     {K : Type u} [Field K] [NumberField K]
-    (m : RayClassModulus K) (x : Kˣ) : Prop :=
+    (m : RayClassModulus K) (x : Kˣ)  :=
   (∀ v, v ∈ m.finitePart.support →
       finitePlaceUnitEmbedding v x ∈
         rayLocalHigherUnitGroup v (m.finitePart v)) ∧
@@ -49,8 +51,11 @@ def IsRayCongruent
 
 namespace IsRayCongruent
 
+section
+variable {K : Type u} [Field K] [NumberField K]
+include K
 /-- The identity satisfies every ray congruence. -/
-theorem one {K : Type u} [Field K] [NumberField K]
+theorem one  
     (m : RayClassModulus K) : IsRayCongruent m 1 := by
   constructor
   · intro v _
@@ -59,7 +64,7 @@ theorem one {K : Type u} [Field K] [NumberField K]
     simp
 
 /-- Ray-congruent nonzero elements are closed under multiplication. -/
-theorem mul {K : Type u} [Field K] [NumberField K]
+theorem mul  
     {m : RayClassModulus K} {x y : Kˣ}
     (hx : IsRayCongruent m x) (hy : IsRayCongruent m y) :
     IsRayCongruent m (x * y) := by
@@ -71,7 +76,7 @@ theorem mul {K : Type u} [Field K] [NumberField K]
     simpa only [Units.val_mul, map_mul] using mul_pos (hx.2 v hv) (hy.2 v hv)
 
 /-- Ray-congruent nonzero elements are closed under inversion. -/
-theorem inv {K : Type u} [Field K] [NumberField K]
+theorem inv  
     {m : RayClassModulus K} {x : Kˣ}
     (hx : IsRayCongruent m x) : IsRayCongruent m x⁻¹ := by
   constructor
@@ -80,6 +85,8 @@ theorem inv {K : Type u} [Field K] [NumberField K]
       (rayLocalHigherUnitGroup v (m.finitePart v)).inv_mem (hx.1 v hv)
   · intro v hv
     simpa only [Units.val_inv_eq_inv_val, map_inv₀] using inv_pos.mpr (hx.2 v hv)
+end
+
 
 end IsRayCongruent
 

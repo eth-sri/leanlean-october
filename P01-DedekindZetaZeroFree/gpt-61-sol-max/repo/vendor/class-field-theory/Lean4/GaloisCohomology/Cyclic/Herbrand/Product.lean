@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import GaloisCohomology.Cyclic.Herbrand.HerbrandLowDegree.Product
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -76,9 +79,7 @@ theorem herbrandQuotient_pi
         (G := G) A σ).toEquiv,
     Nat.card_pi, Nat.card_pi]
   simp only [Nat.cast_prod]
-  simpa only [Finset.mem_univ, Finset.prod_const_one,
-    Finset.prod_filter, true_and] using
-    (Finset.prod_div_distrib
+  exact (Finset.prod_div_distrib
       (s := Finset.univ)
       (fun i : ι ↦
         (Nat.card (HerbrandH0 G (A i)) : ℚ))

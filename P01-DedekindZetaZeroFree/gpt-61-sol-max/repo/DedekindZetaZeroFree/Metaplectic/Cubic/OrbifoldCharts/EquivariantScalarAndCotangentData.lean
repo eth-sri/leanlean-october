@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.HyperbolicCharts.LogarithmicCoframe
 public import DedekindZetaZeroFree.Analysis.EquivariantSections.WeightedL2.SmoothDensity
 public import DedekindZetaZeroFree.Metaplectic.Cubic.OrbifoldCharts.CoreCutoffsAndL2Reconstruction
 
 @[expose] public section
+
 
 noncomputable section
 open scoped Classical NumberField ENNReal
@@ -45,12 +48,10 @@ def scalarReindex : ℂ ≃ₗᵢ[ℂ] EuclideanSpace ℂ (Fin 1) where
     rw [PiLp.norm_toLp_const']
     simp
 
-def toActual (x : EuclideanSpace ℝ (Fin (3 * d F))) :
-    KPCuspGenuineMonodromy.SymmetricSpace F :=
+def toActual (x : EuclideanSpace ℝ (Fin (3 * d F)))  :=
   labeledA (placeEquiv F ζ hζ) ((baseReindex (F := F)).symm x)
 
-def fromActual (y : KPCuspGenuineMonodromy.SymmetricSpace F) :
-    EuclideanSpace ℝ (Fin (3 * d F)) :=
+def fromActual (y : KPCuspGenuineMonodromy.SymmetricSpace F)  :=
   baseReindex (labeledAInv (placeEquiv F ζ hζ) y)
 
 private theorem continuous_labeledA_aux
@@ -66,15 +67,21 @@ private theorem continuous_labeledA_aux
   exact (continuous_labeledA_aux (F := F) (placeEquiv F ζ hζ)).comp
     (baseReindex (F := F)).symm.continuous
 
+
+local notation:max "current_fromActual" => fromActual (ζ := ζ) (hζ := hζ)
+
+
+local notation:max "current_toActual" => toActual (ζ := ζ) (hζ := hζ)
+
  theorem fromActual_toActual_aux (x : EuclideanSpace ℝ (Fin (3 * d F))) :
-    fromActual (ζ := ζ) (hζ := hζ) (toActual (ζ := ζ) (hζ := hζ) x) = x := by
+    current_fromActual (current_toActual x) = x := by
   unfold fromActual toActual
   have h : ∀ y : M F, labeledAInv (placeEquiv F ζ hζ) (labeledA (placeEquiv F ζ hζ) y) = y := by
     intro y; apply PiLp.ext; intro k; simp [labeledAInv, labeledA]
   rw [h, LinearIsometryEquiv.apply_symm_apply]
 
  theorem toActual_fromActual_aux (y : KPCuspGenuineMonodromy.SymmetricSpace F) :
-    toActual (ζ := ζ) (hζ := hζ) (fromActual (ζ := ζ) (hζ := hζ) y) = y := by
+    current_toActual (current_fromActual y) = y := by
   simp only [toActual, fromActual, LinearIsometryEquiv.symm_apply_apply]
   funext k
   simp [labeledA, labeledAInv]
@@ -86,8 +93,8 @@ private theorem continuous_labeledA_aux
 
  def actualMeasurableEquiv : EuclideanSpace ℝ (Fin (3 * d F)) ≃ᵐ
     KPCuspGenuineMonodromy.SymmetricSpace F where
-  toFun := toActual (ζ := ζ) (hζ := hζ)
-  invFun := fromActual (ζ := ζ) (hζ := hζ)
+  toFun := current_toActual
+  invFun := current_fromActual
   left_inv := fromActual_toActual_aux
   right_inv := toActual_fromActual_aux
   measurable_toFun := continuous_toActual_aux.measurable
@@ -108,18 +115,17 @@ private theorem toActual_volume_aux :
 
 variable (a : ShrunkChart F ζ hζ U R P H)
 
-def chart : Set (EuclideanSpace ℝ (Fin (3 * d F))) :=
-  (toActual (ζ := ζ) (hζ := hζ)) ⁻¹' a.domain
+def chart  :=
+  (current_toActual) ⁻¹' a.domain
 
-def normalization : ℝ :=
+def normalization  :=
   ((H.disintegration U).componentWeight a.component /
     (Nat.card a.Isotropy : ℝ≥0∞)).toReal
 
-def weight (x : EuclideanSpace ℝ (Fin (3 * d F))) : ℝ :=
-  normalization a * KPArch.volumeDensity (KPCuspLogShape.dimension F) (toActual (ζ := ζ) (hζ := hζ) x)
+def weight (x : EuclideanSpace ℝ (Fin (3 * d F)))  :=
+  normalization a * KPArch.volumeDensity (KPCuspLogShape.dimension F) (current_toActual x)
 
-def action (γ : Gamma a) (x : EuclideanSpace ℝ (Fin (3 * d F))) :
-    EuclideanSpace ℝ (Fin (3 * d F)) :=
+def action (γ : Gamma a) (x : EuclideanSpace ℝ (Fin (3 * d F)))  :=
   baseReindex ((isotropyArrow a γ).psi ((baseReindex (F := F)).symm x))
 
  theorem action_one_aux (x : EuclideanSpace ℝ (Fin (3 * d F))) :
@@ -140,11 +146,11 @@ def action (γ : Gamma a) (x : EuclideanSpace ℝ (Fin (3 * d F))) :
   exact (gammaMulAction a).mul_smul γ δ _
 
  theorem toActual_action_aux (γ : Gamma a) (x : EuclideanSpace ℝ (Fin (3 * d F))) :
-    toActual (ζ := ζ) (hζ := hζ) (action a γ x) =
-      ((γ.val.1).val : KPCuspArithmetic.PGL2 F) • toActual (ζ := ζ) (hζ := hζ) x := by
+    current_toActual (action a γ x) =
+      ((γ.val.1).val : KPCuspArithmetic.PGL2 F) • current_toActual x := by
   have hAA : ∀ w, labeledA (placeEquiv F ζ hζ) (labeledAInv (placeEquiv F ζ hζ) w) = w := by
     intro w; funext k; simp [labeledA, labeledAInv]
-  rw [show toActual (ζ := ζ) (hζ := hζ) (action a γ x) =
+  rw [show current_toActual (action a γ x) =
       labeledA (placeEquiv F ζ hζ) ((isotropyArrow a γ).psi ((baseReindex (F := F)).symm x)) from by
     simp [toActual, action, LinearIsometryEquiv.symm_apply_apply]]
   rw [show (isotropyArrow a γ).psi ((baseReindex (F := F)).symm x) =
@@ -159,11 +165,11 @@ def action (γ : Gamma a) (x : EuclideanSpace ℝ (Fin (3 * d F))) :
  theorem chart_mem_isotropyChart (x : EuclideanSpace ℝ (Fin (3 * d F)))
     (hx : x ∈ chart a) : (baseReindex (F := F)).symm x ∈ (isotropyChart a).omega := by
   show labeledA (placeEquiv F ζ hζ) ((baseReindex (F := F)).symm x) ∈ a.larger.neighborhood
-  have h : toActual (ζ := ζ) (hζ := hζ) x ∈ a.domain := hx
+  have h : current_toActual x ∈ a.domain := hx
   exact a.closure_subset (subset_closure h)
 
  theorem smooth_weight_aux : ContDiffOn ℝ (⊤ : ℕ∞) (weight a) (chart a) := by
-  have htoActual : ContDiff ℝ (⊤ : ℕ∞) (toActual (ζ := ζ) (hζ := hζ)) := by
+  have htoActual : ContDiff ℝ (⊤ : ℕ∞) (current_toActual) := by
     show ContDiff ℝ (⊤ : ℕ∞)
       (fun x => labeledA (placeEquiv F ζ hζ) ((baseReindex (F := F)).symm x))
     unfold labeledA
@@ -178,14 +184,14 @@ def action (γ : Gamma a) (x : EuclideanSpace ℝ (Fin (3 * d F))) :
     exact (((h1.exp).inv (fun p => ne_of_gt (Real.exp_pos _))).pow 2)
   have hcomp : ContDiffOn ℝ (⊤ : ℕ∞)
       (fun x => KPArch.volumeDensity (KPCuspLogShape.dimension F)
-        (toActual (ζ := ζ) (hζ := hζ) x)) (chart a) :=
+        (current_toActual x)) (chart a) :=
     (hvol.comp htoActual).contDiffOn
-  exact (contDiffOn_const.mul hcomp)
+  apply contDiffOn_const.mul <;> assumption
 
 private theorem normalization_pos_aux : 0 < normalization a := by
   have hP := every_shrunkChart_properties F ζ hζ U R P H a
   haveI : Nonempty a.Isotropy := ⟨⟨1, one_mem _⟩⟩
-  haveI : Finite a.Isotropy := hP.finite_isotropy
+  haveI  := hP.finite_isotropy
   rw [normalization, ENNReal.toReal_pos_iff]
   refine ⟨ENNReal.div_pos_iff.mpr ⟨hP.normalization_positive.ne', ?_⟩,
     ENNReal.div_lt_top hP.normalization_finite.ne ?_⟩
@@ -212,8 +218,7 @@ private theorem normalization_pos_aux : 0 < normalization a := by
     (baseReindex (F := F)).symm.contDiff.contDiffOn
   have hmaps : Set.MapsTo (baseReindex (F := F)).symm (chart a) (isotropyChart a).omega :=
     fun x hx => chart_mem_isotropyChart (a := a) x hx
-  have hcomp1 : ContDiffOn ℝ (⊤ : ℕ∞)
-      ((isotropyArrow a γ).psi ∘ (baseReindex (F := F)).symm) (chart a) :=
+  have hcomp1  :=
     hψ.comp hsymm hmaps
   have hb : ContDiffOn ℝ (⊤ : ℕ∞) (baseReindex (F := F)) Set.univ :=
     (baseReindex (F := F)).contDiff.contDiffOn
@@ -236,22 +241,10 @@ def scalarPhase (ε : rootsOfUnity 3 F) : ℂ ≃ₗᵢ[ℂ] ℂ where
   invFun z := (KPCuspGenuineMonodromy.chi F ζ hζ ε⁻¹ : ℂ) * z
   left_inv := by
     intro z
-    show (KPCuspGenuineMonodromy.chi F ζ hζ ε⁻¹ : ℂ) *
-        ((KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ) * z) = z
-    rw [← mul_assoc]
-    have h : (KPCuspGenuineMonodromy.chi F ζ hζ ε⁻¹ : ℂ) *
-        (KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ) = 1 := by
-      rw [map_inv, Units.inv_mul]
-    rw [h, one_mul]
+    simp_all [mul_assoc, map_inv, Units.inv_mul, one_mul] <;> aesop
   right_inv := by
     intro z
-    show (KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ) *
-        ((KPCuspGenuineMonodromy.chi F ζ hζ ε⁻¹ : ℂ) * z) = z
-    rw [← mul_assoc]
-    have h : (KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ) *
-        (KPCuspGenuineMonodromy.chi F ζ hζ ε⁻¹ : ℂ) = 1 := by
-      rw [map_inv, Units.mul_inv]
-    rw [h, one_mul]
+    simp_all [mul_assoc, map_inv, Units.mul_inv, one_mul] <;> aesop
   map_add' := by intros; simp [mul_add]
   map_smul' := by intros; simp [mul_left_comm]
   norm_map' := by
@@ -259,12 +252,11 @@ def scalarPhase (ε : rootsOfUnity 3 F) : ℂ ≃ₗᵢ[ℂ] ℂ where
     show ‖(KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ) * z‖ = ‖z‖
     rw [norm_mul, chi_norm_aux (ζ := ζ) (hζ := hζ) ε, one_mul]
 
-def scalarCocycle (γ : Gamma a) (_x : EuclideanSpace ℝ (Fin (3 * d F))) :
-    EuclideanSpace ℂ (Fin 1) ≃ₗᵢ[ℂ] EuclideanSpace ℂ (Fin 1) :=
+def scalarCocycle (γ : Gamma a) (_x : EuclideanSpace ℝ (Fin (3 * d F)))  :=
   scalarReindex.symm.trans ((scalarPhase (ζ := ζ) (hζ := hζ) γ.val.2).trans scalarReindex)
 
  theorem T_one_aux (y : M F) (hy : y ∈ (isotropyChart a).omega) :
-    T (isotropyArrow a (1 : Gamma a)) y hy = LinearIsometryEquiv.refl ℂ (E F) := by
+    T (isotropyArrow a (1)) y hy = LinearIsometryEquiv.refl ℂ (E F) := by
   show T (isotropyArrow a 1) y hy = LinearIsometryEquiv.refl ℂ (E F)
   exact (stabilizerRepresentation (A := a) y hy).map_one
 
@@ -283,8 +275,7 @@ def scalarCocycle (γ : Gamma a) (_x : EuclideanSpace ℝ (Fin (3 * d F))) :
   exact (hL.comp (contDiff_snd (𝕜 := ℝ) (E := EuclideanSpace ℝ (Fin (3 * d F)))
     (F := EuclideanSpace ℂ (Fin 1)))).contDiffOn
 
-def cotangentCocycle (γ : Gamma a) (x : EuclideanSpace ℝ (Fin (3 * d F))) :
-    EuclideanSpace ℂ (Fin (3 * d F)) ≃ₗᵢ[ℂ] EuclideanSpace ℂ (Fin (3 * d F)) :=
+def cotangentCocycle (γ : Gamma a) (x : EuclideanSpace ℝ (Fin (3 * d F)))  :=
   if hx : (baseReindex (F := F)).symm x ∈ (isotropyChart a).omega then
     (coefficientReindex (F := F)).symm.trans
       ((T (isotropyArrow a γ) ((baseReindex (F := F)).symm x) hx).trans
@@ -310,20 +301,20 @@ private theorem actualDensity_measurable_aux : Measurable
   fun_prop
 
 private theorem measure_transport_aux :
-    MeasurePreserving (toActual (ζ := ζ) (hζ := hζ))
+    MeasurePreserving (current_toActual)
       (KPChartL2.weightedMeasure (3 * d F) (chart a) (weight a))
       (ENNReal.ofReal (normalization a) •
         (KPArch.hyperbolicVolume (KPCuspLogShape.dimension F)).restrict a.domain) := by
   have hρ := actualDensity_measurable_aux (F := F)
-  have hmp : MeasurePreserving (toActual (ζ := ζ) (hζ := hζ))
+  have hmp : MeasurePreserving (current_toActual)
       (volume.withDensity (fun x => ENNReal.ofReal
-        (KPArch.volumeDensity (KPCuspLogShape.dimension F) (toActual (ζ := ζ) (hζ := hζ) x))))
+        (KPArch.volumeDensity (KPCuspLogShape.dimension F) (current_toActual x))))
       (KPArch.hyperbolicVolume (KPCuspLogShape.dimension F)) := by
     refine ⟨continuous_toActual_aux.measurable, ?_⟩
-    change Measure.map (toActual (ζ := ζ) (hζ := hζ))
+    change Measure.map (current_toActual)
       (volume.withDensity ((fun y : KPCuspGenuineMonodromy.SymmetricSpace F =>
         ENNReal.ofReal (KPArch.volumeDensity (KPCuspLogShape.dimension F) y)) ∘
-          toActual (ζ := ζ) (hζ := hζ))) =
+          current_toActual)) =
       volume.withDensity (fun y : KPCuspGenuineMonodromy.SymmetricSpace F =>
         ENNReal.ofReal (KPArch.volumeDensity (KPCuspLogShape.dimension F) y))
     exact weighted_map_aux (toActual_volume_aux (ζ := ζ) (hζ := hζ)) _ hρ
@@ -334,9 +325,9 @@ private theorem measure_transport_aux :
   unfold KPChartL2.weightedMeasure weight chart
   have he : (fun x : EuclideanSpace ℝ (Fin (3 * d F)) => ENNReal.ofReal
       (normalization a * KPArch.volumeDensity (KPCuspLogShape.dimension F)
-        (toActual (ζ := ζ) (hζ := hζ) x))) =
+        (current_toActual x))) =
       ENNReal.ofReal (normalization a) • (fun x => ENNReal.ofReal
-        (KPArch.volumeDensity (KPCuspLogShape.dimension F) (toActual (ζ := ζ) (hζ := hζ) x))) := by
+        (KPArch.volumeDensity (KPCuspLogShape.dimension F) (current_toActual x))) := by
     funext x
     exact ENNReal.ofReal_mul (normalization_pos_aux (a := a)).le
   rw [he]
@@ -372,22 +363,22 @@ private theorem measure_transport_aux :
   have h := hi.comp ((hg.smul_measure (ENNReal.ofReal (normalization a))).comp hf)
   convert h using 1
   funext x
-  change action a γ x = fromActual (ζ := ζ) (hζ := hζ)
-    ((γ.val.1.val : KPCuspArithmetic.PGL2 F) • toActual (ζ := ζ) (hζ := hζ) x)
+  change action a γ x = current_fromActual
+    ((γ.val.1.val : KPCuspArithmetic.PGL2 F) • current_toActual x)
   rw [← toActual_action_aux (a := a) γ x, fromActual_toActual_aux]
 
 private theorem lifted_measure_transport_aux :
-    Measure.map (fun y : a.domain => fromActual (ζ := ζ) (hζ := hζ) y.val) a.liftedMeasure =
+    Measure.map (fun y : a.domain => current_fromActual y.val) a.liftedMeasure =
       KPChartL2.weightedMeasure (3 * d F) (chart a) (weight a) := by
   have hP := every_shrunkChart_properties F ζ hζ U R P H a
   haveI : Nonempty a.Isotropy := ⟨⟨1, one_mem _⟩⟩
-  haveI : Finite a.Isotropy := hP.finite_isotropy
+  haveI  := hP.finite_isotropy
   have hn : ENNReal.ofReal (normalization a) =
       (H.disintegration U).componentWeight a.component / (Nat.card a.Isotropy : ENNReal) := by
     apply ENNReal.ofReal_toReal
     exact (ENNReal.div_lt_top hP.normalization_finite.ne
       (by simp only [ne_eq, Nat.cast_eq_zero]; exact (Nat.card_pos (α := a.Isotropy)).ne')).ne
-  have hm : Measure.map (Subtype.val : a.domain → KPCuspGenuineMonodromy.SymmetricSpace F)
+  have hm : Measure.map Subtype.val
       a.liftedMeasure = ENNReal.ofReal (normalization a) •
         (KPArch.hyperbolicVolume (KPCuspLogShape.dimension F)).restrict a.domain := by
     unfold ShrunkChart.liftedMeasure
@@ -397,16 +388,13 @@ private theorem lifted_measure_transport_aux :
     change _ • ((KPArch.hyperbolicVolume (KPCuspLogShape.dimension F)).restrict a.domain).restrict
       a.domain = _
     rw [Measure.restrict_restrict a.domain_open.measurableSet, Set.inter_self, hn]
-  rw [show (fun y : a.domain => fromActual (ζ := ζ) (hζ := hζ) y.val) =
-      fromActual (ζ := ζ) (hζ := hζ) ∘ Subtype.val from rfl,
+  rw [show (fun y : a.domain => current_fromActual y.val) =
+      current_fromActual ∘ Subtype.val from rfl,
     ← Measure.map_map continuous_fromActual_aux.measurable measurable_subtype_coe, hm]
   exact ((measure_transport_aux (a := a)).symm
     (actualMeasurableEquiv (ζ := ζ) (hζ := hζ))).map_eq
 
-theorem lifted_measure_transport :
-    Measure.map (fun y : a.domain => fromActual (ζ := ζ) (hζ := hζ) y.val) a.liftedMeasure =
-      KPChartL2.weightedMeasure (3 * d F) (chart a) (weight a) :=
-  lifted_measure_transport_aux (a := a)
+alias lifted_measure_transport := _root_.DedekindZetaZeroFree.KPContActualSectorChartEquivariantInputs.lifted_measure_transport_aux
 
 def scalarData : KPChartL2.Data (3 * d F) 1 (Gamma a) where
   chart := chart a
@@ -418,7 +406,7 @@ def scalarData : KPChartL2.Data (3 * d F) 1 (Gamma a) where
   act := action a
   act_mem := by
     intro γ x hx
-    show toActual (ζ := ζ) (hζ := hζ) (action a γ x) ∈ a.domain
+    show current_toActual (action a γ x) ∈ a.domain
     rw [toActual_action_aux (a := a) γ x]
     have hinv : (fun y : KPCuspGenuineMonodromy.SymmetricSpace F =>
         ((γ.val.1).val : KPCuspArithmetic.PGL2 F) • y) '' a.domain = a.domain :=
@@ -459,7 +447,7 @@ def cotangentData : KPChartL2.Data (3 * d F) (3 * d F) (Gamma a) where
   act := action a
   act_mem := by
     intro γ x hx
-    show toActual (ζ := ζ) (hζ := hζ) (action a γ x) ∈ a.domain
+    show current_toActual (action a γ x) ∈ a.domain
     rw [toActual_action_aux (a := a) γ x]
     have hinv : (fun y : KPCuspGenuineMonodromy.SymmetricSpace F =>
         ((γ.val.1).val : KPCuspArithmetic.PGL2 F) • y) '' a.domain = a.domain :=
@@ -523,7 +511,7 @@ def cotangentData : KPChartL2.Data (3 * d F) (3 * d F) (Gamma a) where
         EuclideanSpace ℂ (Fin (3 * d F)) => (baseReindex (F := F)).symm p.1)
         S (isotropyArrow a γ).domain := by
       intro p hp
-      exact chart_mem_isotropyChart (a := a) p.1 hp.1
+      apply chart_mem_isotropyChart <;> aesop
     have hop := (smooth_operators (isotropyArrow a γ)).2.comp hbase hmaps
     have hopR : ContDiffOn ℝ (⊤ : ℕ∞)
         (fun p : EuclideanSpace ℝ (Fin (3 * d F)) × EuclideanSpace ℂ (Fin (3 * d F)) =>
@@ -544,8 +532,8 @@ def cotangentData : KPChartL2.Data (3 * d F) (3 * d F) (Gamma a) where
 
 abbrev measure := KPChartL2.weightedMeasure (3 * d F) (chart a) (weight a)
 
- def domainEmbedding (y : a.domain) : EuclideanSpace ℝ (Fin (3 * d F)) :=
-  fromActual (ζ := ζ) (hζ := hζ) y.val
+ def domainEmbedding (y : a.domain)  :=
+  current_fromActual y.val
 
 private theorem domainEmbedding_measurable_aux : MeasurableEmbedding (domainEmbedding a) :=
   (actualMeasurableEquiv (ζ := ζ) (hζ := hζ)).symm.measurableEmbedding.comp
@@ -554,15 +542,15 @@ private theorem domainEmbedding_measurable_aux : MeasurableEmbedding (domainEmbe
 private theorem domainEmbedding_action_aux (γ : Gamma a) (y : a.domain) :
     domainEmbedding a (KPContActualCotangentPieceHilbertSum.actualActionEquiv a γ y) =
       action a γ (domainEmbedding a y) := by
-  change fromActual (ζ := ζ) (hζ := hζ) (γ.val.1.val • y.val) = _
+  change current_fromActual (γ.val.1.val • y.val) = _
   apply (actualMeasurableEquiv (ζ := ζ) (hζ := hζ)).injective
-  change toActual (ζ := ζ) (hζ := hζ) (fromActual (ζ := ζ) (hζ := hζ) _) =
-    toActual (ζ := ζ) (hζ := hζ) (action a γ (domainEmbedding a y))
+  change current_toActual (current_fromActual _) =
+    current_toActual (action a γ (domainEmbedding a y))
   rw [toActual_fromActual_aux, toActual_action_aux, domainEmbedding, toActual_fromActual_aux]
   rfl
 
 private theorem domainEmbedding_mem_aux (y : a.domain) : domainEmbedding a y ∈ chart a := by
-  change toActual (ζ := ζ) (hζ := hζ) (fromActual (ζ := ζ) (hζ := hζ) y.val) ∈ a.domain
+  change current_toActual (current_fromActual y.val) ∈ a.domain
   rw [toActual_fromActual_aux]
   exact y.property
 
@@ -640,7 +628,7 @@ private theorem multiplier_action_aux {n : ℕ}
       (KPContActualCotangentPieceHilbertSum.actualActionEquiv (C i) γ y)) =
       partition.multiplier i ((C i).toBase y) := by
   rw [← partition.lift_restriction, ← partition.lift_restriction]
-  exact partition.lift_invariant i γ.val.1 y.val
+  apply partition.lift_invariant
 
 private theorem scalar_norm_aux (s : Sections F ζ hζ U R P H) (y : a.domain) :
     sectionNorm F ζ hζ U R P H s (a.toBase y) = ‖(a.coefficient s y : ℂ)‖ := by
@@ -648,7 +636,7 @@ private theorem scalar_norm_aux (s : Sections F ζ hζ U R P H) (y : a.domain) :
     (KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative a.component)
       (KPCuspSiegel.projection F _ y.val)) = _
   rw [← (H.atlas U).components_formula]
-  exact sectionNorm_component F ζ hζ U R P H s a.component y.val
+  apply sectionNorm_component
 
 private theorem scalar_coefficient_memLp_aux (s : BorelL2Sections F ζ hζ U R P H) :
     MemLp (fun y : a.domain => (a.coefficient s.val y : ℂ)) 2 a.liftedMeasure := by
@@ -725,11 +713,11 @@ structure Inputs {n : ℕ} (C : Fin n → ShrunkChart F ζ hζ U R P H)
   finite_isotropy : ∀ i, Finite (Gamma (C i))
   positive_normalization : ∀ i, 0 < normalization (C i)
   exact_measure : ∀ i,
-    Measure.map (fun y : (C i).domain => fromActual (ζ := ζ) (hζ := hζ) y.val) (C i).liftedMeasure =
+    Measure.map (fun y : (C i).domain => current_fromActual y.val) (C i).liftedMeasure =
       measure (C i)
   actual_action : ∀ i (γ : Gamma (C i)) x,
-    toActual (ζ := ζ) (hζ := hζ) (action (C i) γ x) =
-      (γ.val.1.val : KPCuspArithmetic.PGL2 F) • toActual (ζ := ζ) (hζ := hζ) x
+    current_toActual (action (C i) γ x) =
+      (γ.val.1.val : KPCuspArithmetic.PGL2 F) • current_toActual x
   genuine_scalar : ∀ i (γ : Gamma (C i)) x z,
     scalarCocycle (C i) γ x (scalarReindex z) =
       scalarReindex ((isotropyArrow (C i) γ).phase
@@ -746,7 +734,7 @@ structure Inputs {n : ℕ} (C : Fin n → ShrunkChart F ζ hζ U R P H)
         (measure (C i)) (scalarData (C i)).act (scalarData (C i)).cocycle ∧
       ∀ s : BorelL2Sections F ζ hζ U R P H,
         mk F ζ hζ U R P H s = sectorLineIsometry F ζ hζ U R P H u →
-        (fun y : (C i).domain => f (fromActual (ζ := ζ) (hζ := hζ) y.val)) =ᵐ[(C i).liftedMeasure]
+        (fun y : (C i).domain => f (current_fromActual y.val)) =ᵐ[(C i).liftedMeasure]
           (fun y => scalarReindex
             ((partition.multiplier i ((C i).toBase y) : ℂ) *
               ((C i).coefficient s.val y : ℂ)))
@@ -756,7 +744,7 @@ structure Inputs {n : ℕ} (C : Fin n → ShrunkChart F ζ hζ U R P H)
         (measure (C i)) (cotangentData (C i)).act (cotangentData (C i)).cocycle ∧
       ∀ r : KPContActualCotangentMeasurableFamilies.SquareFiniteFamily (U := U) (H := H),
         KPContActualSectorCotangentL2.ofFamily F ζ hζ U R P H r = v →
-        (fun y : (C i).domain => f (fromActual (ζ := ζ) (hζ := hζ) y.val)) =ᵐ[(C i).liftedMeasure]
+        (fun y : (C i).domain => f (current_fromActual y.val)) =ᵐ[(C i).liftedMeasure]
           (fun y => (partition.multiplier i ((C i).toBase y) : ℂ) •
             coefficientReindex (localCoefficient (C i) r.val y))
 
@@ -783,13 +771,13 @@ theorem kp_cont_actual_sector_chart_equivariant_inputs
     rw [← h.2.1]
     exact h.2.2
   · intro i
-    exact KPContCotangentActualGenuineTwistIsotropy.finite_Gamma (C i)
+    apply KPContCotangentActualGenuineTwistIsotropy.finite_Gamma
   · intro i
-    exact KPContActualSectorChartEquivariantInputs.normalization_pos_aux (a := C i)
+    apply KPContActualSectorChartEquivariantInputs.normalization_pos_aux
   · intro i
-    exact KPContActualSectorChartEquivariantInputs.lifted_measure_transport_aux (a := C i)
+    apply KPContActualSectorChartEquivariantInputs.lifted_measure_transport_aux
   · intro i γ x
-    exact KPContActualSectorChartEquivariantInputs.toActual_action_aux (a := C i) γ x
+    apply KPContActualSectorChartEquivariantInputs.toActual_action_aux
   · intro i γ x z
     simp only [KPContActualSectorChartEquivariantInputs.scalarCocycle,
       LinearIsometryEquiv.trans_apply, LinearIsometryEquiv.symm_apply_apply]
@@ -842,12 +830,12 @@ theorem kp_cont_actual_sector_chart_equivariant_inputs
           (KPContActualSectorChartEquivariantInputs.scalarPhase (ζ := ζ) (hζ := hζ) γ.val.2
             (KPContActualSectorChartEquivariantInputs.scalarReindex.symm
               ((partition.multiplier i (a.toBase y) : ℂ) •
-                KPContActualSectorChartEquivariantInputs.scalarReindex (a.coefficient s.val y : ℂ))))
+                KPContActualSectorChartEquivariantInputs.scalarReindex (a.coefficient s.val y))))
       rw [← KPContActualSectorChartEquivariantInputs.scalarReindex.map_smul
-        (partition.multiplier i (a.toBase y) : ℂ) (a.coefficient s.val y : ℂ),
+        (partition.multiplier i (a.toBase y)) (a.coefficient s.val y),
         LinearIsometryEquiv.symm_apply_apply]
       rw [← KPContActualSectorChartEquivariantInputs.scalarReindex.map_smul
-        (partition.multiplier i (a.toBase y) : ℂ)
+        (partition.multiplier i (a.toBase y))
         ((KPCuspGenuineMonodromy.chi F ζ hζ γ.val.2 : ℂ) * (a.coefficient s.val y : ℂ))]
       change KPContActualSectorChartEquivariantInputs.scalarReindex
         ((partition.multiplier i (a.toBase y) : ℂ) *
@@ -861,8 +849,7 @@ theorem kp_cont_actual_sector_chart_equivariant_inputs
       (a := a) (KPContActualSectorChartEquivariantInputs.scalarData a) rfl rfl g hg hcov
     refine ⟨f, hf, ?_⟩
     intro t ht
-    have hst : KPContSectorLineL2Isometry.mk F ζ hζ U R P H s =
-        KPContSectorLineL2Isometry.mk F ζ hζ U R P H t := hs.symm.trans ht.symm
+    have hst  := hs.symm.trans ht.symm
     have hcoeff := KPContActualSectorChartEquivariantInputs.scalar_coeff_congr_aux (a := a) s t hst
     filter_upwards [hfg, hcoeff] with y hy hz
     change f (KPContActualSectorChartEquivariantInputs.domainEmbedding a y) = _
@@ -870,11 +857,11 @@ theorem kp_cont_actual_sector_chart_equivariant_inputs
     dsimp [g, coeff]
     rw [hz]
     exact (KPContActualSectorChartEquivariantInputs.scalarReindex.map_smul
-      (partition.multiplier i (a.toBase y) : ℂ) (a.coefficient t.val y : ℂ)).symm
+      (partition.multiplier i (a.toBase y)) (a.coefficient t.val y)).symm
   · intro i v
     let a := C i
     let qv := KPContActualSectorCotangentL2.restriction F ζ hζ U R P H a v
-    let g : a.domain → EuclideanSpace ℂ (Fin (3 * KPContCotangentActualOverlap.d F)) :=
+    let g  :=
       fun y => (partition.multiplier i (a.toBase y) : ℂ) • qv.val y
     have ha := KPContActualCotangentCountableShrinking.every_shrunkChart_properties F ζ hζ U R P H a
     have hg : MemLp g 2 a.liftedMeasure :=
@@ -898,7 +885,7 @@ theorem kp_cont_actual_sector_chart_equivariant_inputs
         (KPContActualSectorChartEquivariantInputs.domainEmbedding a y) _
       rw [KPContActualSectorChartEquivariantInputs.cotangentCocycle_domain_aux]
       exact ((KPContActualCotangentChartRestriction.euclideanData a).tensor γ y).map_smul
-          (partition.multiplier i (a.toBase y) : ℂ) (qv.val y) |>.symm
+          (partition.multiplier i (a.toBase y)) (qv.val y) |>.symm
     obtain ⟨f, hf, hfg⟩ := KPContActualSectorChartEquivariantInputs.lift_equivariant_aux
       (a := a) (KPContActualSectorChartEquivariantInputs.cotangentData a) rfl rfl g hg hcov
     refine ⟨f, hf, ?_⟩

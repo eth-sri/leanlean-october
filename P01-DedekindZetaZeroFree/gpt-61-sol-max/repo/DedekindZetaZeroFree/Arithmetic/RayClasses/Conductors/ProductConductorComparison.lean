@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Characters.CharacterUniqueness
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Conductors.PrimitiveModulusComparison
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve.RayComparison
 
@@ -12,19 +15,17 @@ open DedekindZetaZeroFree
 
 variable {F : Type} [Field F] [NumberField F]
 
-theorem away_uniqueness {m q : Ideal (𝓞 F)}
+def away_uniqueness {m q : Ideal (𝓞 F)}
     (hm : m ≠ ⊥) (hq : q ≠ ⊥)
     (η θ : RayClassCharacter F m)
-    (hagree : ∀ I : Ideal (𝓞 F), I ≠ ⊥ → I ⊔ (m * q) = ⊤ → η I = θ I) :
-    ∀ I : Ideal (𝓞 F), η I = θ I :=
+    (hagree : ∀ I : Ideal (𝓞 F), I ≠ ⊥ → I ⊔ (m * q) = ⊤ → η I = θ I)  :=
   DedekindZetaZeroFree.LargeSieve.rayCharacter_eq_of_eq_away hm hq η θ hagree
 
-theorem primitive_conductor_dvd {m f q : Ideal (𝓞 F)}
+def primitive_conductor_dvd {m f q : Ideal (𝓞 F)}
     (hm : m ≠ ⊥) (hf : f ≠ ⊥) (hq : q ≠ ⊥)
     (η : RayClassCharacter F m) (θ : RayClassCharacter F f)
     (hprim : η.IsPrimitive)
-    (hagree : ∀ I : Ideal (𝓞 F), I ≠ ⊥ → I ⊔ (m * f * q) = ⊤ → η I = θ I) :
-    m ∣ f :=
+    (hagree : ∀ I : Ideal (𝓞 F), I ≠ ⊥ → I ⊔ (m * f * q) = ⊤ → η I = θ I)  :=
   Ideal.dvd_iff_le.mpr
     (DedekindZetaZeroFree.LargeSieve.rayCharacter_primitive_modulus_le hm hf hq η hprim θ hagree)
 

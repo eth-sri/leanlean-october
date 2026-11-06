@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction.FiniteFieldUnitMaps
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -39,10 +42,8 @@ namespace ValuationData
 
 variable {D : DegreeData G} {A : Rep ℤ G}
 
-/-- The unit-valued correction term on the upper Frobenius fixed field.
-This is the additive form of the right-hand side of the corrected equation. -/
-noncomputable def fixedTowerCorrection
-    (v : ValuationData D A)
+section
+variable (v : ValuationData D A)
     [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
     [TotallyDisconnectedSpace G]
     (K : DegreeData.FiniteResidueAbstractField D) (L : ClosedSubgroup G)
@@ -61,7 +62,12 @@ noncomputable def fixedTowerCorrection
     (uBar :
       v.unitAddSubgroup (D.frobeniusFixedAbstractField K L hLK σn))
     (uBarᵢ : ι →
-      v.unitAddSubgroup (D.frobeniusFixedAbstractField K L hLK σn)) :
+      v.unitAddSubgroup (D.frobeniusFixedAbstractField K L hLK σn))
+include v K L hLK hLnormal σn ι s φ hφσn τ hτσn uBar uBarᵢ
+/-- The unit-valued correction term on the upper Frobenius fixed field.
+This is the additive form of the right-hand side of the corrected equation. -/
+noncomputable def fixedTowerCorrection
+      :
     v.unitAddSubgroup (D.frobeniusFixedAbstractField K L hLK σn) :=
   v.frobeniusFixedFieldUnitAction K L hLK σn φ hφσn uBar -
     uBar -
@@ -74,26 +80,7 @@ The underlying fixed-tower correction is the Frobenius difference minus the pres
 of correction terms.
 -/
 theorem fixedTowerCorrection_coe
-    (v : ValuationData D A)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : DegreeData.FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σn : D.FrobeniusElements K L hLK)
-    [Finite ((baseField G).toSubgroup ⧸
-      extensionSubgroup (baseField G)
-        (D.frobeniusFixedField K L hLK σn)
-        (le_baseField (D.frobeniusFixedField K L hLK σn)))]
-    {ι : Type v} (s : Finset ι)
-    (φ : K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK)
-    (hφσn : φ * σn.1 = σn.1 * φ)
-    (τ : ι → K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK)
-    (hτσn : ∀ i, τ i * σn.1 = σn.1 * τ i)
-    (uBar :
-      v.unitAddSubgroup (D.frobeniusFixedAbstractField K L hLK σn))
-    (uBarᵢ : ι →
-      v.unitAddSubgroup (D.frobeniusFixedAbstractField K L hLK σn)) :
+      :
     (v.fixedTowerCorrection K L hLK σn s φ hφσn
       τ hτσn uBar uBarᵢ).1 =
         (v.frobeniusFixedFieldUnitAction K L hLK σn
@@ -111,6 +98,8 @@ theorem fixedTowerCorrection_coe
           (inclusion (v.frobeniusFixedFieldUnitAction K L hLK σn
             (τ i) (hτσn i) (uBarᵢ i)) - inclusion (uBarᵢ i))
   simp only [fixedTowerCorrection, map_sub, map_sum]
+end
+
 
 /-- Applying the lower norm to the correction term gives zero.  This is
 the norm calculation immediately before the use of H⁻¹ = 0. -/
@@ -177,62 +166,14 @@ theorem fixedTowerCorrection_relativeNorm_eq_zero
   let uBarᵢ' (i : ι) : ambientFixedAddSubgroup A
       (D.frobeniusFixedField K L hLK σn) :=
     ⟨(uBarᵢ i).1.1, (uBarᵢ i).1.2⟩
-  have hsumBar (f : ι →
-      v.unitAddSubgroup (D.frobeniusFixedAbstractField K L hLK σn)) :
-      ((∑ i ∈ s, f i).1.1 : A.V) = ∑ i ∈ s, (f i).1.1 := by
-    calc
-      ((∑ i ∈ s, f i).1.1 : A.V) =
-          (ambientFixedAddSubgroup A
-            (D.frobeniusFixedField K L hLK σn)).subtype
-              (∑ i ∈ s, (v.unitAddSubgroup
-                (D.frobeniusFixedAbstractField K L hLK σn)).subtype (f i)) := by
-        exact congrArg (ambientFixedAddSubgroup A
-          (D.frobeniusFixedField K L hLK σn)).subtype
-          (map_sum (v.unitAddSubgroup
-            (D.frobeniusFixedAbstractField K L hLK σn)).subtype f s)
-      _ = _ := map_sum
-        (ambientFixedAddSubgroup A
-          (D.frobeniusFixedField K L hLK σn)).subtype
-        (fun i => (v.unitAddSubgroup
-          (D.frobeniusFixedAbstractField K L hLK σn)).subtype (f i)) s
-  have hsumBar' (f : ι → ambientFixedAddSubgroup A
-      (D.frobeniusFixedField K L hLK σn)) :
-      ((∑ i ∈ s, f i).1 : A.V) = ∑ i ∈ s, (f i).1 :=
-    map_sum (ambientFixedAddSubgroup A
-      (D.frobeniusFixedField K L hLK σn)).subtype f s
-  have hφVal :
-      ((D.frobeniusFixedFieldAction A K L hLK σn φ hφσn uBar').1 : A.V) =
-        A.ρ (Quotient.out φ).1 uBar.1.1 := by
-    simp [uBar']
-  have hτVal (i : ι) :
-      ((D.frobeniusFixedFieldAction A K L hLK σn
-        (τ i) (hτσn i) (uBarᵢ' i)).1 : A.V) =
-        A.ρ (Quotient.out (τ i)).1 (uBarᵢ i).1.1 := by
-    simp [uBarᵢ']
-  have hunitφVal :
-      ((v.frobeniusFixedFieldUnitAction K L hLK σn
-        φ hφσn uBar).1.1 : A.V) =
-        A.ρ (Quotient.out φ).1 uBar.1.1 := by
-    change ((D.frobeniusFixedFieldAction A K L hLK σn
-      φ hφσn uBar.1).1 : A.V) = _
-    exact hφVal
-  have hunitτVal (i : ι) :
-      ((v.frobeniusFixedFieldUnitAction K L hLK σn
-        (τ i) (hτσn i) (uBarᵢ i)).1.1 : A.V) =
-        A.ρ (Quotient.out (τ i)).1 (uBarᵢ i).1.1 := by
-    change ((D.frobeniusFixedFieldAction A K L hLK σn
-      (τ i) (hτσn i) (uBarᵢ i).1).1 : A.V) = _
-    exact hτVal i
-  have hsubAmbient (x y : ambientFixedAddSubgroup A
-      (D.frobeniusFixedField K L hLK σn)) :
-      ((x - y).1 : A.V) = x.1 - y.1 :=
-    map_sub (ambientFixedAddSubgroup A
-      (D.frobeniusFixedField K L hLK σn)).subtype x y
-  have hsumAmbient (f : ι → ambientFixedAddSubgroup A
-      (D.frobeniusFixedField K L hLK σn)) :
-      ((∑ i ∈ s, f i).1 : A.V) = ∑ i ∈ s, (f i).1 :=
-    map_sum (ambientFixedAddSubgroup A
-      (D.frobeniusFixedField K L hLK σn)).subtype f s
+  
+  
+  
+  
+  
+  
+  
+  
   have hcorrection :
       (v.fixedTowerCorrection K L hLK σn s φ hφσn
           τ hτσn uBar uBarᵢ).1 =
@@ -247,38 +188,18 @@ theorem fixedTowerCorrection_relativeNorm_eq_zero
     rfl
   rw [hcorrection]
   simp only [map_sub, map_sum]
-  have hφEquiv :
-      relativeNorm A (D.frobeniusFixedField K L hLK σ)
-          (D.frobeniusFixedField K L hLK σn) hTS
-          (D.frobeniusFixedFieldAction A K L hLK σn
-            φ hφσn uBar') =
-        D.frobeniusFixedFieldAction A K L hLK σ
-          φ hφσ
-            (relativeNorm A (D.frobeniusFixedField K L hLK σ)
-              (D.frobeniusFixedField K L hLK σn) hTS uBar') := by
-    exact D.relativeNorm_frobeniusFixedFieldAction
+  have hφEquiv  := D.relativeNorm_frobeniusFixedFieldAction
       A K L hLK σ σn hTS φ hφσ hφσn uBar'
   rw [hφEquiv]
-  have hτEquiv (i : ι) :
-      relativeNorm A (D.frobeniusFixedField K L hLK σ)
-          (D.frobeniusFixedField K L hLK σn) hTS
-          (D.frobeniusFixedFieldAction A K L hLK σn
-            (τ i) (hτσn i) (uBarᵢ' i)) =
-        D.frobeniusFixedFieldAction A K L hLK σ
-          (τ i) (hτσ i)
-            (relativeNorm A (D.frobeniusFixedField K L hLK σ)
-              (D.frobeniusFixedField K L hLK σn) hTS (uBarᵢ' i)) := by
-    exact D.relativeNorm_frobeniusFixedFieldAction
+  have hτEquiv (i : ι)  := D.relativeNorm_frobeniusFixedFieldAction
       A K L hLK σ σn hTS (τ i) (hτσ i) (hτσn i) (uBarᵢ' i)
   simp_rw [hτEquiv]
   have huBar' :
       relativeNorm A (D.frobeniusFixedField K L hLK σ)
-        (D.frobeniusFixedField K L hLK σn) hTS uBar' = u' := by
-    exact huBar
+        (D.frobeniusFixedField K L hLK σn) hTS uBar' = u' := huBar
   have huBarᵢ' (i : ι) :
       relativeNorm A (D.frobeniusFixedField K L hLK σ)
-        (D.frobeniusFixedField K L hLK σn) hTS (uBarᵢ' i) = uᵢ' i := by
-    exact huBarᵢ i
+        (D.frobeniusFixedField K L hLK σn) hTS (uBarᵢ' i) = uᵢ' i := huBarᵢ i
   rw [huBar']
   simp_rw [huBarᵢ']
   apply Subtype.ext

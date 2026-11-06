@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.InnerProductSpace.LinearPMap
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -15,22 +18,25 @@ def resolventSet {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
     (∀ f : H, ∃ hf : R f ∈ A.domain, A ⟨R f, hf⟩ - z • R f = f) ∧
     (∀ u : A.domain, R (A u - z • (u : H)) = (u : H))}
 
-def fromBoundedInverse {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
-    (B : H →L[ℂ] H) (hB : Function.Injective B) : H →ₗ.[ℂ] H where
+section
+variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+    (B : H →L[ℂ] H) (hB : Function.Injective B)
+include H B hB
+def fromBoundedInverse   : H →ₗ.[ℂ] H where
   domain := LinearMap.range B.toLinearMap
   toFun := (LinearEquiv.ofInjective B.toLinearMap hB).symm.toLinearMap -
     (LinearMap.range B.toLinearMap).subtype
 
-theorem fromBoundedInverse_domain {H : Type*} [NormedAddCommGroup H]
-    [InnerProductSpace ℂ H] (B : H →L[ℂ] H) (hB : Function.Injective B) :
+theorem fromBoundedInverse_domain   :
     (fromBoundedInverse B hB).domain = LinearMap.range B.toLinearMap := rfl
 
-theorem fromBoundedInverse_apply {H : Type*} [NormedAddCommGroup H]
-    [InnerProductSpace ℂ H] (B : H →L[ℂ] H) (hB : Function.Injective B) (f : H) :
+theorem fromBoundedInverse_apply   (f : H) :
     fromBoundedInverse B hB ⟨B f, ⟨f, rfl⟩⟩ = f - B f := by
   change (LinearEquiv.ofInjective B.toLinearMap hB).symm
     ((LinearEquiv.ofInjective B.toLinearMap hB) f) - B f = f - B f
   rw [LinearEquiv.symm_apply_apply]
+end
+
 
 end ResolventOperator
 
@@ -79,8 +85,7 @@ theorem kp_cont_resolvent_selfadjoint_operator
         Subtype.ext (hzu.symm.trans (hrecover z))
       rw [hu, ResolventOperator.fromBoundedInverse_apply, ← hrecover z]
       abel
-  have hself : IsSelfAdjoint Δ := by
-    exact (LinearPMap.isSelfAdjoint_def).mpr (le_antisymm hback hforward)
+  have hself : IsSelfAdjoint Δ := (LinearPMap.isSelfAdjoint_def).mpr (le_antisymm hback hforward)
   have hpositive : ∀ u : Δ.domain, 0 ≤ (inner ℂ (u : H) (Δ u)).re := by
     rintro ⟨u, hu⟩
     rcases hu with ⟨f, rfl⟩

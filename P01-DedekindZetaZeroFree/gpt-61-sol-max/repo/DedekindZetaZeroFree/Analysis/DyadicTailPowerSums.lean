@@ -8,11 +8,14 @@ namespace DedekindZetaZeroFree.LargeSieve.Vendor
 
 open scoped NumberField Classical
 
-private theorem tail_shell_sum_le
-    {ι : Type*} (w : ι → ℝ) (C : ℝ)
+section
+variable {ι : Type*} (w : ι → ℝ) (C : ℝ)
     (hcount : ∀ Y : ℝ, 1 ≤ Y → ∀ s : Finset ι,
       (∀ i ∈ s, w i ≤ Y) → (s.card : ℝ) ≤ C * Y)
-    (p : ℝ) (hp : 1 < p) (A : ℝ) (hA : 1 ≤ A)
+    (p : ℝ) (hp : 1 < p)
+include ι w C hcount p hp in
+private theorem tail_shell_sum_le
+      (A : ℝ) (hA : 1 ≤ A)
     (s : Finset ι) (hlo : ∀ i ∈ s, A < w i)
     (hup : ∀ i ∈ s, w i ≤ 2 * A) :
     ∑ i ∈ s, (w i) ^ (-p) ≤ 2 * C * A ^ (1 - p) := by
@@ -37,11 +40,9 @@ private theorem tail_scale_rpow (X p : ℝ) (hX : 0 < X) (n : ℕ) :
   rw [mul_comm (n : ℝ), Real.rpow_mul (by norm_num : (0 : ℝ) ≤ 2), Real.rpow_natCast]
   ring
 
+include ι w C hcount p hp in
 private theorem tail_partial_sum_le
-    {ι : Type*} (w : ι → ℝ) (C : ℝ)
-    (hcount : ∀ Y : ℝ, 1 ≤ Y → ∀ s : Finset ι,
-      (∀ i ∈ s, w i ≤ Y) → (s.card : ℝ) ≤ C * Y)
-    (p : ℝ) (hp : 1 < p) (X : ℝ) (hX : 1 ≤ X) (n : ℕ) :
+      (X : ℝ) (hX : 1 ≤ X) (n : ℕ) :
     ∀ s : Finset ι, (∀ i ∈ s, X < w i) → (∀ i ∈ s, w i ≤ (2 : ℝ) ^ n * X) →
       ∑ i ∈ s, (w i) ^ (-p) ≤
         (2 * C * X ^ (1 - p)) * ∑ k ∈ Finset.range n, ((2 : ℝ) ^ (1 - p)) ^ k := by
@@ -83,6 +84,8 @@ private theorem tail_partial_sum_le
       rw [tail_scale_rpow X p (by linarith) n] at hu'
       rw [hsplit, Finset.sum_range_succ, mul_add]
       exact add_le_add ht (by simpa [mul_assoc] using hu')
+end
+
 
 theorem inversePower_tail_sum_le
     {ι : Type*} (w : ι → ℝ) (hw : ∀ i, 1 ≤ w i)

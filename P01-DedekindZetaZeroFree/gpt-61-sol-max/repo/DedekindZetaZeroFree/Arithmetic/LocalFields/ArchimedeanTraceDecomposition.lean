@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Adeles.Characters.ArchimedeanTraceCharacter
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -68,7 +71,7 @@ theorem trace_eq_sum_archTrace {F : Type*} [Field F] [NumberField F] (t : F) :
     · rw [h]
     · rw [← h, ComplexEmbedding.conjugate_coe_eq]
       simp [Complex.conj_re]
-  have hcard : (Finset.univ.filter (fun φ : F →+* ℂ => InfinitePlace.mk φ = v)).card = v.mult :=
+  have hcard  :=
     InfinitePlace.card_filter_mk_eq v
   rw [Finset.sum_congr rfl hfiber, Finset.sum_const, hcard, nsmul_eq_mul]
   exact (archTrace_algebraMap v t).symm

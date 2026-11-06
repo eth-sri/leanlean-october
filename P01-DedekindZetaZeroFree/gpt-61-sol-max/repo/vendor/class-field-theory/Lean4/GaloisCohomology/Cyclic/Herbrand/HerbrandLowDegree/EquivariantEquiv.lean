@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import GaloisCohomology.Cyclic.Herbrand.Induced
 public import GaloisCohomology.Cyclic.Herbrand.HerbrandFiniteness
 public import Mathlib.SetTheory.Cardinal.Finite
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -58,7 +61,7 @@ theorem equivariantMulEquiv_map_tateNorm
     map_tateNorm
       (G := G) (A := A) (B := B)
       e.toMonoidHom
-      (fun g x ↦ by simpa using he g x) a
+      (fun g x ↦ (he g x)) a
 
 omit [Fintype G] in
 /-- An equivariant multiplicative equivalence commutes with the
@@ -74,7 +77,7 @@ theorem equivariantMulEquiv_map_sigmaMinusOne
     map_sigmaMinusOne
       (G := G) (A := A) (B := B)
       e.toMonoidHom
-      (fun g x ↦ by simpa using he g x) σ a
+      (fun g x ↦ (he g x)) σ a
 
 /-- An equivariant multiplicative equivalence restricted to fixed
 subgroups. -/
@@ -91,10 +94,10 @@ noncomputable def fixedSubgroupEquivariantMulEquiv
       rw [← mulEquiv_symm_commutes_smul e he, b.2 g]⟩
   left_inv a := by
     apply Subtype.ext
-    exact e.symm_apply_apply a.1
+    apply e.symm_apply_apply
   right_inv b := by
     apply Subtype.ext
-    exact e.apply_symm_apply b.1
+    apply e.apply_symm_apply
   map_mul' _ _ := by
     apply Subtype.ext
     exact e.map_mul _ _
@@ -132,10 +135,10 @@ noncomputable def normKernelEquivariantMulEquiv
         _ = e 1 := e.map_one.symm⟩
   left_inv a := by
     apply Subtype.ext
-    exact e.symm_apply_apply a.1
+    apply e.symm_apply_apply
   right_inv b := by
     apply Subtype.ext
-    exact e.apply_symm_apply b.1
+    apply e.apply_symm_apply
   map_mul' _ _ := by
     apply Subtype.ext
     exact e.map_mul _ _
@@ -200,8 +203,7 @@ theorem herbrandH0EquivariantMulEquiv_mk
       e (g • a) = g • e a)
     (a : fixedSubgroup G A) :
     herbrandH0EquivariantMulEquiv e he (HerbrandH0.mk a) =
-      HerbrandH0.mk (fixedSubgroupEquivariantMulEquiv e he a) := by
-  rfl
+      HerbrandH0.mk (fixedSubgroupEquivariantMulEquiv e he a) := rfl
 
 /-- An equivariant multiplicative equivalence induces an equivalence on
 degree-minus-one Tate cohomology. -/
@@ -260,25 +262,23 @@ noncomputable def herbrandHMinusOneEquivariantMulEquiv
 
 /-- Finiteness of `H⁰` transports through an equivariant
 multiplicative equivalence. -/
-theorem herbrandH0Finite_of_equivariantMulEquiv
+def herbrandH0Finite_of_equivariantMulEquiv
     (e : A ≃* B)
     (he : ∀ (g : G) (a : A),
       e (g • a) = g • e a)
-    [Finite (HerbrandH0 G A)] :
-    Finite (HerbrandH0 G B) :=
+    [Finite (HerbrandH0 G A)]  :=
   Finite.of_equiv
     (HerbrandH0 G A)
     (herbrandH0EquivariantMulEquiv e he).toEquiv
 
 /-- Finiteness of `H⁻¹` transports through an equivariant
 multiplicative equivalence. -/
-theorem herbrandHMinusOneFinite_of_equivariantMulEquiv
+def herbrandHMinusOneFinite_of_equivariantMulEquiv
     (e : A ≃* B)
     (he : ∀ (g : G) (a : A),
       e (g • a) = g • e a)
     (σ : G)
-    [Finite (HerbrandHMinusOne G A σ)] :
-    Finite (HerbrandHMinusOne G B σ) :=
+    [Finite (HerbrandHMinusOne G A σ)]  :=
   Finite.of_equiv
     (HerbrandHMinusOne G A σ)
     (herbrandHMinusOneEquivariantMulEquiv
@@ -301,22 +301,11 @@ theorem herbrandQuotient_eq_of_equivariantMulEquiv
         e he σ
     herbrandQuotient (G := G) (A := A) σ =
       herbrandQuotient (G := G) (A := B) σ := by
-  let h0B : Finite (HerbrandH0 G B) :=
-    herbrandH0Finite_of_equivariantMulEquiv e he
-  let hMinusOneB :
-      Finite (HerbrandHMinusOne G B σ) :=
-    herbrandHMinusOneFinite_of_equivariantMulEquiv
-      e he σ
-  have h0Card :
-      Nat.card (HerbrandH0 G A) =
-        Nat.card (HerbrandH0 G B) := by
-    exact Nat.card_congr
+  
+  
+  have h0Card  := Nat.card_congr
       (herbrandH0EquivariantMulEquiv e he).toEquiv
-  have hMinusOneCard :
-      Nat.card (HerbrandHMinusOne G A σ) =
-        Nat.card
-          (HerbrandHMinusOne G B σ) := by
-    exact Nat.card_congr
+  have hMinusOneCard  := Nat.card_congr
       (herbrandHMinusOneEquivariantMulEquiv
         e he σ).toEquiv
   rw [herbrandQuotient_eq_card_ratio,

@@ -305,8 +305,8 @@ def rightTranslation : Representation ℂ T (ScalarFunctions H χ) where
   map_one' := by ext f g; simp
   map_mul' := by intros; ext f g; simp [mul_assoc]
 
-@[simp] theorem evaluation_covariance (f : ScalarFunctions H χ) (h : H) (g : T) :
-    evaluation H χ ((h : T) * g) f = (χ h : ℂ) * evaluation H χ g f := f.property h g
+
+
 
 @[simp] theorem evaluation_rightTranslation (a g : T) (f : ScalarFunctions H χ) :
     evaluation H χ g (rightTranslation H χ a f) = evaluation H χ (g * a) f := rfl

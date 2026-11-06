@@ -16,37 +16,3 @@ public import ClassFieldTheory.AlgebraicNumberTheory.Idele.ClassGroup.NormalClos
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.ClassGroup.Tower
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.ClassGroup.TowerAlgEquivNaturality
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.ClassGroup.TowerBaseChange
-
-@[expose] public section
-
-/-
-Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
--/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-set_option autoImplicit false
-
-/-!
-# Idelic class groups
-
-Public aggregate for the ordinary ideal class quotient of the ideles and its
-base-change, norm-comparison, tower, and algebra-equivalence constructions.
--/

@@ -140,9 +140,12 @@ theorem equalCharacteristicTargetResidueCharacteristicCharP
   rw [hres]
   infer_instance
 
- theorem equalCharacteristicUniformizerRatio_valuationMap
-    (ϖ : Kˣ)
-    (hϖ : valuationMap K (Additive.ofMul ϖ) = 1) :
+ section
+variable (ϖ : Kˣ)
+    (hϖ : valuationMap K (Additive.ofMul ϖ) = 1)
+include ϖ hϖ
+theorem equalCharacteristicUniformizerRatio_valuationMap
+      :
     valuationMap K
         (Additive.ofMul
           (ϖ / inverseIntegerRingUniformizerFieldUnit K)) = 0 := by
@@ -156,8 +159,7 @@ theorem equalCharacteristicTargetResidueCharacteristicCharP
 /-- The unit by which the canonical prime element must be changed in order
 to obtain the inverse of the prescribed positive uniformizer. -/
 noncomputable def equalCharacteristicUniformizerRatioIntegerUnit
-    (ϖ : Kˣ)
-    (hϖ : valuationMap K (Additive.ofMul ϖ) = 1) :
+      :
     𝒪[K]ˣ :=
   integerUnitOfValuationMapZero K
     (ϖ / inverseIntegerRingUniformizerFieldUnit K)
@@ -166,8 +168,7 @@ noncomputable def equalCharacteristicUniformizerRatioIntegerUnit
 /-- The uniformizer-ratio integer unit maps to the prescribed ratio of field units. -/
 @[simp]
 theorem integerUnitsToFieldUnits_equalCharacteristicUniformizerRatioIntegerUnit
-    (ϖ : Kˣ)
-    (hϖ : valuationMap K (Additive.ofMul ϖ) = 1) :
+      :
     integerUnitsToFieldUnits K
         (equalCharacteristicUniformizerRatioIntegerUnit K ϖ hϖ) =
       ϖ / inverseIntegerRingUniformizerFieldUnit K :=
@@ -178,15 +179,13 @@ theorem integerUnitsToFieldUnits_equalCharacteristicUniformizerRatioIntegerUnit
 /-- A prime element of the target integer ring whose inverse in the field is
 the prescribed positive uniformizer. -/
 noncomputable def equalCharacteristicTargetUniformizerInteger
-    (ϖ : Kˣ)
-    (hϖ : valuationMap K (Additive.ofMul ϖ) = 1) : 𝒪[K] :=
+      : 𝒪[K] :=
   chosenIntegerRingUniformizer K *
     ((equalCharacteristicUniformizerRatioIntegerUnit K ϖ hϖ)⁻¹ : 𝒪[K]ˣ)
 
 /-- The adjusted prime element in the target integer ring is irreducible. -/
 theorem equalCharacteristicTargetUniformizerInteger_irreducible
-    (ϖ : Kˣ)
-    (hϖ : valuationMap K (Additive.ofMul ϖ) = 1) :
+      :
     Irreducible
       (equalCharacteristicTargetUniformizerInteger K ϖ hϖ) := by
   unfold equalCharacteristicTargetUniformizerInteger
@@ -198,8 +197,7 @@ theorem equalCharacteristicTargetUniformizerInteger_irreducible
 /-- The adjusted target prime element coerces to the inverse prescribed uniformizer. -/
 @[simp]
 theorem equalCharacteristicTargetUniformizerInteger_coe
-    (ϖ : Kˣ)
-    (hϖ : valuationMap K (Additive.ofMul ϖ) = 1) :
+      :
     ((equalCharacteristicTargetUniformizerInteger K ϖ hϖ : 𝒪[K]) : K) =
       ((ϖ⁻¹ : Kˣ) : K) := by
   let η := inverseIntegerRingUniformizerFieldUnit K
@@ -225,8 +223,7 @@ theorem equalCharacteristicTargetUniformizerInteger_coe
 /-- The preceding prime element, in the valuation ring of the canonical
 complete-DVF package. -/
 noncomputable def equalCharacteristicTargetUniformizer
-    (ϖ : Kˣ)
-    (hϖ : valuationMap K (Additive.ofMul ϖ) = 1) :
+      :
     (equalCharacteristicTargetLocalField K).valuationSubring :=
   equalCharacteristicTargetIntegerEquiv K
     (equalCharacteristicTargetUniformizerInteger K ϖ hϖ)
@@ -234,8 +231,7 @@ noncomputable def equalCharacteristicTargetUniformizer
 /-- The target valuation-ring uniformizer coerces to the inverse prescribed field unit. -/
 @[simp]
 theorem equalCharacteristicTargetUniformizer_coe
-    (ϖ : Kˣ)
-    (hϖ : valuationMap K (Additive.ofMul ϖ) = 1) :
+      :
     ((equalCharacteristicTargetUniformizer K ϖ hϖ :
       (equalCharacteristicTargetLocalField K).valuationSubring) : K) =
       ((ϖ⁻¹ : Kˣ) : K) := by
@@ -245,8 +241,7 @@ theorem equalCharacteristicTargetUniformizer_coe
 
 /-- The adjusted target prime element is a uniformizer for the canonical valuation. -/
 theorem equalCharacteristicTargetUniformizer_isUniformizer
-    (ϖ : Kˣ)
-    (hϖ : valuationMap K (Additive.ofMul ϖ) = 1) :
+      :
     (equalCharacteristicTargetLocalField K).valuation.IsUniformizer
       (equalCharacteristicTargetUniformizer K ϖ hϖ : K) := by
   have hirr :
@@ -256,15 +251,20 @@ theorem equalCharacteristicTargetUniformizer_isUniformizer
   exact Valuation.isUniformizer_of_maximalIdeal_eq_span
     (v := (equalCharacteristicTargetLocalField K).valuation)
     hirr.maximalIdeal_eq
+end
+
 
 /-! ## The Laurent equivalence -/
 
+section
+variable (p : ℕ) [Fact p.Prime] [CharP K p]
+    (ϖ : Kˣ)
+    (hϖ : valuationMap K (Additive.ofMul ϖ) = 1)
+include p ϖ hϖ
 /-- The Laurent-series model of the target equal-characteristic local field,
 normalized by the prescribed positive uniformizer. -/
 noncomputable def equalCharacteristicTargetLaurentRingEquiv
-    (p : ℕ) [Fact p.Prime] [CharP K p]
-    (ϖ : Kˣ)
-    (hϖ : valuationMap K (Additive.ofMul ϖ) = 1) :
+      :
     (equalCharacteristicTargetLocalField K).residueField⸨X⸩ ≃+* K := by
   let F := equalCharacteristicTargetLocalField K
   letI : CharP K F.residueCharacteristic :=
@@ -275,9 +275,7 @@ noncomputable def equalCharacteristicTargetLaurentRingEquiv
 /-- The Laurent-series equivalence sends its formal uniformizer to the inverse prescribed unit. -/
 @[simp]
 theorem equalCharacteristicTargetLaurentRingEquiv_uniformizer
-    (p : ℕ) [Fact p.Prime] [CharP K p]
-    (ϖ : Kˣ)
-    (hϖ : valuationMap K (Additive.ofMul ϖ) = 1) :
+      :
     equalCharacteristicTargetLaurentRingEquiv K p ϖ hϖ
         (equalCharacteristicLaurentUniformizer
           (equalCharacteristicTargetLocalField K)) =
@@ -296,9 +294,7 @@ theorem equalCharacteristicTargetLaurentRingEquiv_uniformizer
 
 /-- The induced equivalence of field-unit groups. -/
 noncomputable def equalCharacteristicTargetLaurentUnitsEquiv
-    (p : ℕ) [Fact p.Prime] [CharP K p]
-    (ϖ : Kˣ)
-    (hϖ : valuationMap K (Additive.ofMul ϖ) = 1) :
+      :
     (equalCharacteristicTargetLocalField K).residueField⸨X⸩ˣ ≃* Kˣ :=
   Units.mapEquiv
     (equalCharacteristicTargetLaurentRingEquiv K p ϖ hϖ).toMulEquiv
@@ -307,9 +303,7 @@ noncomputable def equalCharacteristicTargetLaurentUnitsEquiv
 uniformizer, at the level of field units. -/
 @[simp]
 theorem equalCharacteristicTargetLaurentUnitsEquiv_uniformizer
-    (p : ℕ) [Fact p.Prime] [CharP K p]
-    (ϖ : Kˣ)
-    (hϖ : valuationMap K (Additive.ofMul ϖ) = 1) :
+      :
     equalCharacteristicTargetLaurentUnitsEquiv K p ϖ hϖ
         (equalCharacteristicLaurentUniformizerUnit
           (equalCharacteristicTargetLocalField K)) =
@@ -321,9 +315,7 @@ theorem equalCharacteristicTargetLaurentUnitsEquiv_uniformizer
 uniformizer. -/
 @[simp]
 theorem equalCharacteristicTargetLaurentUnitsEquiv_uniformizer_inv
-    (p : ℕ) [Fact p.Prime] [CharP K p]
-    (ϖ : Kˣ)
-    (hϖ : valuationMap K (Additive.ofMul ϖ) = 1) :
+      :
     equalCharacteristicTargetLaurentUnitsEquiv K p ϖ hϖ
         (equalCharacteristicLaurentUniformizerUnit
           (equalCharacteristicTargetLocalField K))⁻¹ =
@@ -339,9 +331,7 @@ Laurent parameter at the prescribed target prime element.  This pointwise
 form is all that the equal-characteristic Laurent-series classification needs and avoids constructing a second, expensive
 integer-ring equivalence. -/
 theorem equalCharacteristicTargetLaurentUnitsEquiv_mem_fieldPrincipalUnits_of_mem_higherUnit
-    (p : ℕ) [Fact p.Prime] [CharP K p]
-    (ϖ : Kˣ)
-    (hϖ : valuationMap K (Additive.ofMul ϖ) = 1)
+     
     (m : ℕ)
     (a :
       (equalCharacteristicTargetLocalField K).residueField⟦X⟧ˣ)
@@ -440,9 +430,7 @@ theorem equalCharacteristicTargetLaurentUnitsEquiv_mem_fieldPrincipalUnits_of_me
 /-- The normalized Laurent equivalence carries every level-m+1 principal
 unit into the corresponding target principal-unit group. -/
 theorem equalCharacteristicTargetLaurent_fieldPrincipalUnits_map_le
-    (p : ℕ) [Fact p.Prime] [CharP K p]
-    (ϖ : Kˣ)
-    (hϖ : valuationMap K (Additive.ofMul ϖ) = 1)
+     
     (m : ℕ) :
     let F := equalCharacteristicTargetLocalField K
     let B := F.residueField⸨X⸩
@@ -470,9 +458,7 @@ theorem equalCharacteristicTargetLaurent_fieldPrincipalUnits_map_le
 /-- Consequently the explicit norm-subgroup computation maps the standard subgroup into the target
 standard subgroup with the prescribed positive uniformizer. -/
 theorem equalCharacteristicTargetLaurent_uniformizerPrincipalSubgroup_map_le
-    (p : ℕ) [Fact p.Prime] [CharP K p]
-    (ϖ : Kˣ)
-    (hϖ : valuationMap K (Additive.ofMul ϖ) = 1)
+     
     (m : ℕ) :
     let F := equalCharacteristicTargetLocalField K
     let B := F.residueField⸨X⸩
@@ -507,17 +493,22 @@ theorem equalCharacteristicTargetLaurent_uniformizerPrincipalSubgroup_map_le
   · exact
       equalCharacteristicTargetLaurent_fieldPrincipalUnits_map_le
         K p ϖ hϖ m
+end
+
 
 /-! ## Transport of the finite Lubin--Tate extension and its norm subgroup -/
 
+section
+variable (p : ℕ) [Fact p.Prime] [hKp : CharP K p]
+    (ϖ : Kˣ)
+    (hϖ : valuationMap K (Additive.ofMul ϖ) = 1)
+    (m : ℕ)
+include p hKp ϖ hϖ m
 /-- The level field with its base algebra transported from the Laurent model
 to the target field. -/
 @[reducible]
 noncomputable def equalCharacteristicTransportedLubinTateLevelAlgebra
-    (p : ℕ) [Fact p.Prime] [hKp : CharP K p]
-    (ϖ : Kˣ)
-    (hϖ : valuationMap K (Additive.ofMul ϖ) = 1)
-    (m : ℕ) :
+      :
     let F := equalCharacteristicTargetLocalField K
     letI : CharP K F.residueCharacteristic :=
       equalCharacteristicTargetResidueCharacteristicCharP K p
@@ -535,10 +526,7 @@ noncomputable def equalCharacteristicTransportedLubinTateLevelAlgebra
 
 /-- The transported `K`-algebra map agrees with the original Laurent-series base map. -/
 theorem equalCharacteristicTransportedLubinTateLevelAlgebra_comp
-    (p : ℕ) [Fact p.Prime] [hKp : CharP K p]
-    (ϖ : Kˣ)
-    (hϖ : valuationMap K (Additive.ofMul ϖ) = 1)
-    (m : ℕ) :
+      :
     let F := equalCharacteristicTargetLocalField K
     let B := F.residueField⸨X⸩
     letI : CharP K F.residueCharacteristic :=
@@ -572,10 +560,7 @@ theorem equalCharacteristicTransportedLubinTateLevelAlgebra_comp
 
 /-- Finite-dimensionality of the uniformizer norm identity survives the change of base field. -/
 theorem equalCharacteristicTransportedLubinTateLevel_finiteDimensional
-    (p : ℕ) [Fact p.Prime] [hKp : CharP K p]
-    (ϖ : Kˣ)
-    (hϖ : valuationMap K (Additive.ofMul ϖ) = 1)
-    (m : ℕ) :
+      :
     let F := equalCharacteristicTargetLocalField K
     letI : CharP K F.residueCharacteristic :=
       equalCharacteristicTargetResidueCharacteristicCharP K p
@@ -608,10 +593,7 @@ theorem equalCharacteristicTransportedLubinTateLevel_finiteDimensional
 
 /-- Galoisness of the uniformizer norm identity survives the same change of base field. -/
 theorem equalCharacteristicTransportedLubinTateLevel_isGalois
-    (p : ℕ) [Fact p.Prime] [hKp : CharP K p]
-    (ϖ : Kˣ)
-    (hϖ : valuationMap K (Additive.ofMul ϖ) = 1)
-    (m : ℕ) :
+      :
     let F := equalCharacteristicTargetLocalField K
     letI : CharP K F.residueCharacteristic :=
       equalCharacteristicTargetResidueCharacteristicCharP K p
@@ -641,10 +623,7 @@ theorem equalCharacteristicTransportedLubinTateLevel_isGalois
 /-- Abelian Galoisness of the Lubin--Tate level field is preserved when its
 base algebra is transported from the Laurent model to the target field. -/
 theorem equalCharacteristicTransportedLubinTateLevel_isAbelianGalois
-    (p : ℕ) [Fact p.Prime] [hKp : CharP K p]
-    (ϖ : Kˣ)
-    (hϖ : valuationMap K (Additive.ofMul ϖ) = 1)
-    (m : ℕ) :
+      :
     let F := equalCharacteristicTargetLocalField K
     letI : CharP K F.residueCharacteristic :=
       equalCharacteristicTargetResidueCharacteristicCharP K p
@@ -702,10 +681,7 @@ theorem equalCharacteristicTransportedLubinTateLevel_isAbelianGalois
 
 /-- The actual norm subgroup of the transported level field. -/
 noncomputable def equalCharacteristicTransportedLubinTateNormSubgroup
-    (p : ℕ) [Fact p.Prime] [hKp : CharP K p]
-    (ϖ : Kˣ)
-    (hϖ : valuationMap K (Additive.ofMul ϖ) = 1)
-    (m : ℕ) : Subgroup Kˣ := by
+      : Subgroup Kˣ := by
   let F := equalCharacteristicTargetLocalField K
   letI : CharP K F.residueCharacteristic :=
     equalCharacteristicTargetResidueCharacteristicCharP K p
@@ -716,10 +692,7 @@ noncomputable def equalCharacteristicTransportedLubinTateNormSubgroup
   exact _root_.LocalFieldTheory.localNormSubgroup K E
 
 private theorem equalCharacteristicTransported_normUnits
-    (p : ℕ) [Fact p.Prime] [hKp : CharP K p]
-    (ϖ : Kˣ)
-    (hϖ : valuationMap K (Additive.ofMul ϖ) = 1)
-    (m : ℕ)
+     
     (x :
       let F := equalCharacteristicTargetLocalField K
       letI : CharP K F.residueCharacteristic :=
@@ -766,10 +739,7 @@ private theorem equalCharacteristicTransported_normUnits
 /-- Mapping the explicit norm-subgroup computation norm subgroup along the base-field equivalence gives
 the actual norm subgroup for the transported algebra. -/
 theorem equalCharacteristicLubinTateNormSubgroup_map_eq_transported
-    (p : ℕ) [Fact p.Prime] [hKp : CharP K p]
-    (ϖ : Kˣ)
-    (hϖ : valuationMap K (Additive.ofMul ϖ) = 1)
-    (m : ℕ) :
+      :
     let F := equalCharacteristicTargetLocalField K
     letI : CharP K F.residueCharacteristic :=
       equalCharacteristicTargetResidueCharacteristicCharP K p
@@ -805,10 +775,7 @@ theorem equalCharacteristicLubinTateNormSubgroup_map_eq_transported
 transported actual norm subgroup is contained in the prescribed standard
 subgroup at division level m+1. -/
 theorem equalCharacteristicTransportedLubinTateNormSubgroup_le_uniformizerPrincipalSubgroup
-    (p : ℕ) [Fact p.Prime] [hKp : CharP K p]
-    (ϖ : Kˣ)
-    (hϖ : valuationMap K (Additive.ofMul ϖ) = 1)
-    (m : ℕ) :
+      :
     equalCharacteristicTransportedLubinTateNormSubgroup K p ϖ hϖ m ≤
       LocalFieldTheory.uniformizerPrincipalSubgroup K ϖ 1 (m + 1) := by
   let F := equalCharacteristicTargetLocalField K
@@ -830,6 +797,8 @@ theorem equalCharacteristicTransportedLubinTateNormSubgroup_le_uniformizerPrinci
   exact
     equalCharacteristicTargetLaurent_uniformizerPrincipalSubgroup_map_le
       K p ϖ hϖ m
+end
+
 
 /-- The same containment indexed directly by a positive division level. -/
 theorem equalCharacteristicTransportedLubinTateNormSubgroup_le_of_pos

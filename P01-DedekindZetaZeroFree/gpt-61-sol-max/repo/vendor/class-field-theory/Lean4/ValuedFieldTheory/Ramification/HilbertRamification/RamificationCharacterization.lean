@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Ramification.HilbertRamification.ValuationSubring
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -52,8 +55,7 @@ theorem ramificationCondition_mem_inertiaGroup
         subst a
         simp
       · let x : Lˣ := Units.mk0 (a : L) ha
-        have hx : A.valuation
-            ((automorphismUnitQuotient K A sigma x : L) - 1) < 1 :=
+        have hx  :=
           (A.mem_principalUnitGroup_iff
             (automorphismUnitQuotient K A sigma x)).mp (hsigma x)
         rw [← sub_eq_zero, ← map_sub, IsLocalRing.residue_eq_zero_iff,
@@ -75,8 +77,7 @@ theorem ramificationCondition_mem_inertiaGroup
 
 /-- The ramification group transported from inertia into the decomposition group. -/
 abbrev ramificationGroupInDecomposition
-    (A : _root_.ValuationSubring L) :
-    Subgroup (decompositionGroup K A) :=
+    (A : _root_.ValuationSubring L)  :=
   Subgroup.map (inertiaGroup K A).subtype (ramificationGroup K A)
 /-- Membership in the transported ramification group is the intrinsic principal-unit condition. -/
 @[simp] theorem mem_ramificationGroupInDecomposition_iff
@@ -88,7 +89,7 @@ abbrev ramificationGroupInDecomposition
   · rintro ⟨iota, hiota, rfl⟩
     exact hiota
   · intro hsigma
-    have hi : sigma ∈ inertiaGroup K A :=
+    have hi  :=
       ramificationCondition_mem_inertiaGroup (K := K) A sigma hsigma
     exact ⟨⟨sigma, hi⟩, hsigma, rfl⟩
 

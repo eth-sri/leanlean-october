@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import GaloisCohomology.Cyclic.Herbrand.HerbrandLowDegree.Basic
 public import GaloisCohomology.Cyclic.Herbrand.HerbrandLowDegree.Cardinality
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -44,7 +47,7 @@ variable [MulDistribMulAction G A] [MulDistribMulAction G B]
 low-degree multiplicative Tate quotients.  The finiteness assumptions prevent
 `Nat.card` from silently taking the value `0` on infinite quotients. -/
 noncomputable def herbrandQuotient (σ : G)
-    [Finite (HerbrandH0 G A)] [Finite (HerbrandHMinusOne G A σ)] : ℚ :=
+    [Finite (HerbrandH0 G A)] [Finite (HerbrandHMinusOne G A σ)]  :=
   (Nat.card (HerbrandH0 G A) : ℚ) / (Nat.card (HerbrandHMinusOne G A σ) : ℚ)
 
 /-- The Herbrand quotient is definitionally the ratio `#H⁰ / #H^{-1}`. -/
@@ -61,19 +64,13 @@ theorem herbrandQuotient_eq_one_of_card_eq (σ : G)
     [Finite (HerbrandH0 G A)] [Finite (HerbrandHMinusOne G A σ)]
     (hcard : Nat.card (HerbrandH0 G A) = Nat.card (HerbrandHMinusOne G A σ)) :
     herbrandQuotient (G := G) (A := A) σ = 1 := by
-  have hden : ((Nat.card (HerbrandHMinusOne G A σ) : ℚ) ≠ 0) :=
-    Nat.cast_ne_zero.mpr (Finite.card_pos (α := HerbrandHMinusOne G A σ)).ne'
-  unfold herbrandQuotient
-  rw [hcard]
-  exact div_self hden
+  simp_all [CyclicCohomology.ProfiniteCohomology.Herbrand.herbrandQuotient] <;> aesop
 
 /-- Herbrand-quotient theory Herbrand-quotient multiplicativity: the Herbrand quotient of a finite
 cyclic module is `1`. -/
 theorem herbrandQuotient_finite_module_eq_one
     (σ : G) (hgen : ∀ g : G, g ∈ Subgroup.zpowers σ) [Finite A] :
-    herbrandQuotient (G := G) (A := A) σ = 1 := by
-  exact herbrandQuotient_eq_one_of_card_eq (G := G) (A := A) σ
-    (herbrand_finite_module_card_eq (G := G) (A := A) σ hgen)
+    herbrandQuotient (G := G) (A := A) σ = 1 := (herbrandQuotient_eq_one_of_card_eq σ (herbrand_finite_module_card_eq σ hgen))
 
 /-- Herbrand-quotient theory Herbrand-quotient multiplicativity: Herbrand quotient multiplicativity
 for a short exact sequence of multiplicative `G`-modules, proved from the

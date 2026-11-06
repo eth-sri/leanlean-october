@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 
 @[expose] public section
+
 
 /-
 https://github.com/openai/math/blob/adc7f1241b42e322a6451854ab7e4b4c146bf78a/lean/OAI/NumberTheory/DirichletL/QuadraticSieve/InitialBound.lean
@@ -23,23 +26,19 @@ def annularWeightBump : ContDiffBump (3 / 2 : ℝ) where
   rIn_pos := by norm_num
   rIn_lt_rOut := by norm_num
 
-def annularWeight (t : ℝ) : ℝ := annularWeightBump t
+def annularWeight (t : ℝ)  := annularWeightBump t
 
 @[simp] theorem annularWeightBump_rIn : annularWeightBump.rIn = (1 / 2 : ℝ) := rfl
 
 @[simp] theorem annularWeightBump_rOut : annularWeightBump.rOut = (1 : ℝ) := rfl
 
-theorem annularWeight_contDiff : ContDiff ℝ ∞ annularWeight := by
-  exact annularWeightBump.contDiff
+theorem annularWeight_contDiff : ContDiff ℝ ∞ annularWeight := annularWeightBump.contDiff
 
-theorem annularWeight_hasCompactSupport : HasCompactSupport annularWeight := by
-  exact annularWeightBump.hasCompactSupport
+def annularWeight_hasCompactSupport : HasCompactSupport annularWeight := annularWeightBump.hasCompactSupport
 
-theorem annularWeight_nonneg (t : ℝ) : 0 ≤ annularWeight t := by
-  exact annularWeightBump.nonneg' t
+def annularWeight_nonneg (t : ℝ)  := annularWeightBump.nonneg' t
 
-theorem annularWeight_le_one (t : ℝ) : annularWeight t ≤ 1 := by
-  exact annularWeightBump.le_one (x := t)
+def annularWeight_le_one (t : ℝ)  := annularWeightBump.le_one (x := t)
 
 theorem annularWeight_eq_one {t : ℝ} (h₁ : 1 ≤ t) (h₂ : t ≤ 2) :
     annularWeight t = 1 := by

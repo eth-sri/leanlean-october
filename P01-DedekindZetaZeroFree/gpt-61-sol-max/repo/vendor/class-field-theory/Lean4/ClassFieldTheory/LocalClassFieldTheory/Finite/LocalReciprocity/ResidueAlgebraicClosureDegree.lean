@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.LocalClassFieldTheory.Finite.LocalReciprocity.ResidueAbsoluteDegree
 public import ValuedFieldTheory.Ramification.GaloisValuation.AbsoluteGalois.InfiniteGaloisCorrespondence
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -60,11 +63,14 @@ variable (Omega : Type v) [Field Omega] [Algebra k Omega]
     T2Space (Omega ≃ₐ[k] Omega) := by
   infer_instance
 
+section
+variable (n : ℕ) [NeZero n]
+include n
 /-- Embed the degree-`n` finite extension of `k` into the given residue
 algebraic closure.  This choice is used only to prove that all profinite
 coordinates are detected. -/
 noncomputable def finiteResidueExtensionEmbeddingInto
-    (n : ℕ) [NeZero n] :
+      :
     FiniteField.Extension k (ringChar k) n →ₐ[k] Omega := by
   letI : Module.IsTorsionFree k Omega :=
     Module.isTorsionFree_iff_algebraMap_injective.mpr
@@ -75,16 +81,14 @@ noncomputable def finiteResidueExtensionEmbeddingInto
 /-- The image of the degree-`n` finite extension in the given residue
 algebraic closure. -/
 noncomputable def finiteResidueIntermediateFieldIn
-    (n : ℕ) [NeZero n] : IntermediateField k Omega :=
+       :=
   (⊤ : IntermediateField k
       (FiniteField.Extension k (ringChar k) n)).map
     (finiteResidueExtensionEmbeddingInto k Omega n)
 
 /-- The model finite field is canonically isomorphic to its embedded image. -/
 noncomputable def finiteResidueExtensionEquivIntermediateIn
-    (n : ℕ) [NeZero n] :
-    FiniteField.Extension k (ringChar k) n ≃ₐ[k]
-      finiteResidueIntermediateFieldIn k Omega n :=
+       :=
   IntermediateField.topEquiv.symm.trans
     (IntermediateField.equivMap ⊤
       (finiteResidueExtensionEmbeddingInto k Omega n))
@@ -92,12 +96,14 @@ noncomputable def finiteResidueExtensionEquivIntermediateIn
 /-- An actual degree-`n` finite Galois intermediate field in any residue
 algebraic closure. -/
 noncomputable def finiteResidueGaloisIntermediateFieldIn
-    (n : ℕ) [NeZero n] : FiniteGaloisIntermediateField k Omega where
+      : FiniteGaloisIntermediateField k Omega where
   toIntermediateField := finiteResidueIntermediateFieldIn k Omega n
   finiteDimensional := Module.Finite.equiv
     (finiteResidueExtensionEquivIntermediateIn k Omega n).toLinearEquiv
   isGalois := IsGalois.of_algEquiv
     (finiteResidueExtensionEquivIntermediateIn k Omega n)
+end
+
 
 omit [Algebra.IsAlgebraic k Omega] in
 /-- States the theorem `finrank_finiteResidueGaloisIntermediateFieldIn`. -/
@@ -136,8 +142,7 @@ theorem residueAbsoluteFrobenius_isAlgClosure_injective :
   have hcoordinate := congrArg Multiplicative.toAdd
     (finiteResidueFrobeniusExponentHom_injective k E hrestriction)
   have hdegree : Module.finrank k E = n := by
-    exact finrank_finiteResidueGaloisIntermediateFieldIn
-      k Omega n
+    apply finrank_finiteResidueGaloisIntermediateFieldIn
   simp only [toAdd_ofAdd] at hcoordinate
   change zHatReduction (Module.finrank k E) Module.finrank_pos z.toAdd =
     zHatReduction (Module.finrank k E) Module.finrank_pos w.toAdd at hcoordinate
@@ -159,16 +164,14 @@ theorem mem_range_algebraMap_iff_frobenius_fixed_in
     simp only [FiniteField.coe_frobeniusAlgEquivOfAlgebraic]
     rw [← map_pow, FiniteField.pow_card]
   · intro hx
-    have hxpow : x ^ Fintype.card k = x := by
-      simpa only [FiniteField.coe_frobeniusAlgEquivOfAlgebraic] using hx
+    have hxpow : x ^ Fintype.card k = x := hx
     let p : k[X] := X ^ Fintype.card k - X
     have hpne : p ≠ 0 :=
       FiniteField.X_pow_card_sub_X_ne_zero k Fintype.one_lt_card
     have hxroot : x ∈ p.rootSet Omega := by
       rw [Polynomial.mem_rootSet_of_ne hpne]
       simp [p, hxpow]
-    have hsplits : (p.map (algebraMap k k)).Splits := by
-      simpa only [p] using (FiniteField.isSplittingField_sub k k).splits
+    have hsplits : (p.map (algebraMap k k)).Splits := (FiniteField.isSplittingField_sub k k).splits
     have himage := hsplits.image_rootSet (Algebra.ofId k Omega)
     rw [← himage] at hxroot
     rcases hxroot with ⟨a, _ha, hax⟩
@@ -194,7 +197,7 @@ theorem fixedField_residueAbsoluteFrobeniusRangeIn :
           residueAbsoluteFrobeniusRangeIn k Omega := by
       change FiniteField.frobeniusAlgEquivOfAlgebraic k Omega ∈
         (residueAbsoluteFrobenius k Omega).toMonoidHom.range
-      exact ⟨Multiplicative.ofAdd (1 : ZHat),
+      exact ⟨Multiplicative.ofAdd (1),
         residueAbsoluteFrobenius_one k Omega⟩
     rw [IntermediateField.mem_fixedField_iff] at hx
     have hxFrobenius := hx
@@ -243,8 +246,7 @@ noncomputable def residueAbsoluteFrobeniusEquivIn :
 
 /-- **Finite local reciprocity, intrinsic residue degree.**  This is the inverse of
 arithmetic Frobenius coordinates on the actual residue algebraic closure. -/
-noncomputable def residueAbsoluteDegreeIn :
-    (Omega ≃ₐ[k] Omega) →ₜ* ZHatMul :=
+noncomputable def residueAbsoluteDegreeIn  :=
   ContinuousMonoidHom.toContinuousMonoidHom
     (residueAbsoluteFrobeniusEquivIn k Omega).symm
 
@@ -306,18 +308,18 @@ theorem residueAbsoluteDegreeIn_semilinear_conjugation
       continuous_toFun :=
         RamificationTheory.Field.absoluteGaloisGroup.semilinear_conjugation_continuous
           tau e he conjugation (fun _ => rfl) }
-  let lhs : ZHatMul →ₜ* (Omega' ≃ₐ[k'] Omega') :=
+  let lhs  :=
     conjugationContinuous.comp (residueAbsoluteFrobenius k Omega)
-  let rhs : ZHatMul →ₜ* (Omega' ≃ₐ[k'] Omega') :=
+  let rhs  :=
     residueAbsoluteFrobenius k' Omega'
   have hgenerator :
-      lhs (Multiplicative.ofAdd (1 : ZHat)) =
-        rhs (Multiplicative.ofAdd (1 : ZHat)) := by
+      lhs (Multiplicative.ofAdd (1)) =
+        rhs (Multiplicative.ofAdd (1)) := by
     change conjugation
         (residueAbsoluteFrobenius k Omega
-          (Multiplicative.ofAdd (1 : ZHat))) =
+          (Multiplicative.ofAdd (1))) =
       residueAbsoluteFrobenius k' Omega'
-        (Multiplicative.ofAdd (1 : ZHat))
+        (Multiplicative.ofAdd (1))
     rw [residueAbsoluteFrobenius_one, residueAbsoluteFrobenius_one]
     apply AlgEquiv.ext
     intro x
@@ -332,7 +334,7 @@ theorem residueAbsoluteDegreeIn_semilinear_conjugation
     have hOfAdd :
         DenseRange (Multiplicative.ofAdd : ZHat → ZHatMul) :=
       (show Function.Surjective
-          (Multiplicative.ofAdd : ZHat → ZHatMul) from
+          Multiplicative.ofAdd from
         fun x => ⟨Multiplicative.toAdd x, rfl⟩).denseRange
     have hCast :
         DenseRange
@@ -341,10 +343,9 @@ theorem residueAbsoluteDegreeIn_semilinear_conjugation
     have hToAdd :
         DenseRange (Multiplicative.toAdd : Multiplicative ℤ → ℤ) :=
       (show Function.Surjective
-          (Multiplicative.toAdd : Multiplicative ℤ → ℤ) from
+          Multiplicative.toAdd from
         fun a => ⟨Multiplicative.ofAdd a, rfl⟩).denseRange
-    simpa [iota, Function.comp_def] using
-      hCast.comp hToAdd continuous_of_discreteTopology
+    exact hCast.comp hToAdd continuous_of_discreteTopology
   have hcomp :
       lhs.toMonoidHom.comp iota = rhs.toMonoidHom.comp iota := by
     apply MonoidHom.ext_mint
@@ -358,8 +359,7 @@ theorem residueAbsoluteDegreeIn_semilinear_conjugation
   let z := residueAbsoluteDegreeIn k Omega sigma
   have hz :
       conjugation (residueAbsoluteFrobenius k Omega z) =
-        residueAbsoluteFrobenius k' Omega' z := by
-    exact heq z
+        residueAbsoluteFrobenius k' Omega' z := heq z
   apply (residueAbsoluteFrobeniusEquivIn k' Omega').injective
   change
     (residueAbsoluteFrobeniusEquivIn k' Omega')
@@ -393,7 +393,7 @@ theorem residueAbsoluteFrobenius_restrictScalars
         (Multiplicative.ofAdd
           ((Module.finrank k E) • z.toAdd)) := by
   let : Finite E := Module.finite_of_finite k
-  let : Fintype E := Fintype.ofFinite E
+  let  := Fintype.ofFinite E
   let scaleHom : ZHatMul →* ZHatMul :=
     AddMonoidHom.toMultiplicative
       (zHatMulNat (Module.finrank k E)).toAddMonoidHom
@@ -406,16 +406,16 @@ theorem residueAbsoluteFrobenius_restrictScalars
   let inclusion : (Omega ≃ₐ[E] Omega) →ₜ* (Omega ≃ₐ[k] Omega) :=
     { toMonoidHom := ofIntermediateFieldInExtension E
       continuous_toFun := ofIntermediateFieldInExtension_continuous E }
-  let lhs : ZHatMul →ₜ* (Omega ≃ₐ[k] Omega) :=
+  let lhs  :=
     inclusion.comp (residueAbsoluteFrobenius E Omega)
-  let rhs : ZHatMul →ₜ* (Omega ≃ₐ[k] Omega) :=
+  let rhs  :=
     (residueAbsoluteFrobenius k Omega).comp scale
   have hgenerator :
-      lhs (Multiplicative.ofAdd (1 : ZHat)) =
-        rhs (Multiplicative.ofAdd (1 : ZHat)) := by
+      lhs (Multiplicative.ofAdd (1)) =
+        rhs (Multiplicative.ofAdd (1)) := by
     change
       (residueAbsoluteFrobenius E Omega
-          (Multiplicative.ofAdd (1 : ZHat))).restrictScalars k =
+          (Multiplicative.ofAdd (1))).restrictScalars k =
         residueAbsoluteFrobenius k Omega
           (Multiplicative.ofAdd
             ((Module.finrank k E) • (1 : ZHat)))
@@ -423,7 +423,7 @@ theorem residueAbsoluteFrobenius_restrictScalars
     have hscale :
         Multiplicative.ofAdd
             ((Module.finrank k E) • (1 : ZHat)) =
-          (Multiplicative.ofAdd (1 : ZHat)) ^ Module.finrank k E := by
+          (Multiplicative.ofAdd (1)) ^ Module.finrank k E := by
       apply Multiplicative.ext
       simp
     rw [hscale, map_pow, residueAbsoluteFrobenius_one]
@@ -444,7 +444,7 @@ theorem residueAbsoluteFrobenius_restrictScalars
     have hOfAdd :
         DenseRange (Multiplicative.ofAdd : ZHat → ZHatMul) :=
       (show Function.Surjective
-          (Multiplicative.ofAdd : ZHat → ZHatMul) from
+          Multiplicative.ofAdd from
         fun x => ⟨Multiplicative.toAdd x, rfl⟩).denseRange
     have hCast :
         DenseRange
@@ -453,10 +453,9 @@ theorem residueAbsoluteFrobenius_restrictScalars
     have hToAdd :
         DenseRange (Multiplicative.toAdd : Multiplicative ℤ → ℤ) :=
       (show Function.Surjective
-          (Multiplicative.toAdd : Multiplicative ℤ → ℤ) from
+          Multiplicative.toAdd from
         fun a => ⟨Multiplicative.ofAdd a, rfl⟩).denseRange
-    simpa [iota, Function.comp_def] using
-      hCast.comp hToAdd continuous_of_discreteTopology
+    exact hCast.comp hToAdd continuous_of_discreteTopology
   have hcomp :
       lhs.toMonoidHom.comp iota = rhs.toMonoidHom.comp iota := by
     apply MonoidHom.ext_mint
@@ -481,7 +480,7 @@ theorem residueAbsoluteDegreeIn_restrictScalars
         ((Module.finrank k E) •
           (residueAbsoluteDegreeIn E Omega sigma).toAdd) := by
   let : Finite E := Module.finite_of_finite k
-  let : Fintype E := Fintype.ofFinite E
+  let  := Fintype.ofFinite E
   apply (residueAbsoluteFrobeniusEquivIn k Omega).injective
   change
     (residueAbsoluteFrobeniusEquivIn k Omega)
@@ -501,20 +500,20 @@ theorem residueAbsoluteDegreeIn_restrictScalars
   exact congrArg (fun g : Omega ≃ₐ[E] Omega => g.restrictScalars k)
     ((residueAbsoluteFrobeniusEquivIn E Omega).apply_symm_apply sigma).symm
 
-/-- The intrinsic degree map sends arithmetic Frobenius to `1`. -/
-@[simp]
-theorem residueAbsoluteDegreeIn_frobenius :
-    residueAbsoluteDegreeIn k Omega
-        (FiniteField.frobeniusAlgEquivOfAlgebraic k Omega) =
-      Multiplicative.ofAdd (1 : ZHat) := by
-  apply (residueAbsoluteFrobeniusEquivIn k Omega).injective
-  change (residueAbsoluteFrobeniusEquivIn k Omega)
-      ((residueAbsoluteFrobeniusEquivIn k Omega).symm
-        (FiniteField.frobeniusAlgEquivOfAlgebraic k Omega)) =
-    (residueAbsoluteFrobeniusEquivIn k Omega)
-      (Multiplicative.ofAdd (1 : ZHat))
-  rw [(residueAbsoluteFrobeniusEquivIn k Omega).apply_symm_apply]
-  exact (residueAbsoluteFrobenius_one k Omega).symm
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- Finite-coordinate compatibility for the intrinsic residue degree. -/
 theorem finiteResidueFrobeniusExponentEquiv_symm_restrict_in

@@ -33,7 +33,10 @@ theorem exteriorResidue_finite (A : SArithmeticData F) (I : A.Exterior) :
   rw [A.exteriorResidue_card I]
   exact fun h => I.property.1 (Ideal.absNorm_eq_zero_iff.mp h)
 
-def idealGauss (A : SArithmeticData F) (σ : F →+* ℂ)
+section
+variable (A : SArithmeticData F) (σ : F →+* ℂ)
+include A σ
+def idealGauss  
     (hS : A.ContainsTraceBadPlaces) (I : A.Exterior) (a : A.R)
     (ha : A.Generates I a) (j : ℤ) : ℂ :=
   letI : Finite (A.R ⧸ A.extendIdeal I) := A.exteriorResidue_finite I
@@ -43,12 +46,12 @@ def idealGauss (A : SArithmeticData F) (σ : F →+* ℂ)
       A.sexticResiduePowerChar σ I j x *
         (A.residueTraceCharacter hS I a ha x : ℂ)
 
-theorem sexticResiduePowerChar_nonunit (A : SArithmeticData F) (σ : F →+* ℂ)
+theorem sexticResiduePowerChar_nonunit  
     (I : A.Exterior) (j : ℤ) (x : A.R ⧸ A.extendIdeal I) (hx : ¬ IsUnit x) :
     A.sexticResiduePowerChar σ I j x = 0 := by
   exact MulChar.map_nonunit _ hx
 
-theorem idealGauss_top (A : SArithmeticData F) (σ : F →+* ℂ)
+theorem idealGauss_top  
     (hS : A.ContainsTraceBadPlaces) (I : A.Exterior) (hI : I.val = ⊤)
     (a : A.R) (ha : A.Generates I a) (j : ℤ) :
     A.idealGauss σ hS I a ha j = 1 := by
@@ -63,7 +66,7 @@ theorem idealGauss_top (A : SArithmeticData F) (σ : F →+* ℂ)
   rw [Subsingleton.elim (1 : A.R ⧸ A.extendIdeal I) 0]
   simp
 
-theorem idealGauss_sixth_unit_translate (A : SArithmeticData F) (σ : F →+* ℂ)
+theorem idealGauss_sixth_unit_translate  
     (hS : A.ContainsTraceBadPlaces) (I : A.Exterior) (a : A.R)
     (ha : A.Generates I a) (u : A.U)
     (ha' : A.Generates I (a * (A.unitEquiv u : A.R) ^ 6)) (j : ℤ) :
@@ -105,7 +108,7 @@ theorem idealGauss_sixth_unit_translate (A : SArithmeticData F) (σ : F →+* �
   congr 1
   exact congrArg (fun z : Circle => (z : ℂ)) (hphase x).symm
 
-theorem idealGauss_generator_independent (A : SArithmeticData F) (σ : F →+* ℂ)
+theorem idealGauss_generator_independent  
     (hS : A.ContainsTraceBadPlaces) (I : A.Exterior) (a a' : A.R)
     (ha : A.Generates I a) (ha' : A.Generates I a')
     (hchange : ∃ u : A.U, a' = a * (A.unitEquiv u : A.R) ^ 6) (j : ℤ) :
@@ -113,8 +116,7 @@ theorem idealGauss_generator_independent (A : SArithmeticData F) (σ : F →+* �
   obtain ⟨u, rfl⟩ := hchange
   exact A.idealGauss_sixth_unit_translate σ hS I a ha u ha' j
 
-theorem idealGauss_allowed_generator_independent (A : SArithmeticData F)
-    (σ : F →+* ℂ) (hS : A.ContainsTraceBadPlaces)
+theorem idealGauss_allowed_generator_independent   (hS : A.ContainsTraceBadPlaces)
     (hCl : Subsingleton (ClassGroup A.R)) (H : A.V → A.V → Fˣ)
     (B : Subgroup A.V) (hB : A.IsSUnitIsotropicComplement H B)
     (I : A.Exterior) (a a' : A.R)
@@ -145,7 +147,7 @@ theorem idealGauss_allowed_generator_independent (A : SArithmeticData F)
   simp only [Units.val_div_eq_div_val, Units.val_pow_eq_pow_val, hua, hua'] at hval
   exact (div_eq_iff (by simpa [hua] using ua.ne_zero)).mp hval |>.trans (mul_comm _ _)
 
-private theorem gaussCRT_char_base (A : SArithmeticData F) (σ : F →+* ℂ)
+private theorem gaussCRT_char_base  
     (I : A.Exterior) (x : A.R) :
     MulChar.ofUnitHom ((Units.map σ.toMonoidHom).comp (A.sexticResidueFamily I))
       (Ideal.Quotient.mk (A.extendIdeal I) x) = σ (A.sexticResidue I x) := by
@@ -156,7 +158,7 @@ private theorem gaussCRT_char_base (A : SArithmeticData F) (σ : F →+* ℂ)
   · rw [MulChar.map_nonunit _ hx]
     change 0 = σ (MulChar.ofUnitHom (A.sexticResidueFamily I) _)
     rw [MulChar.map_nonunit _ hx, map_zero]
-private theorem gaussCRT_char_mul_modulus (A : SArithmeticData F) (σ : F →+* ℂ)
+private theorem gaussCRT_char_mul_modulus  
     (I J K : A.Exterior) (hK : K.val = I.val * J.val) (x : A.R)
     (hu : IsUnit (Ideal.Quotient.mk (A.extendIdeal K) x) ↔
       IsUnit (Ideal.Quotient.mk (A.extendIdeal I) x) ∧
@@ -177,13 +179,15 @@ private theorem gaussCRT_char_mul_modulus (A : SArithmeticData F) (σ : F →+* 
   · simp only [sexticResiduePowerChar, MulChar.pow_apply' _ hn, gaussCRT_char_base]
     rw [show A.sexticResidue K x = A.sexticResidue I x * A.sexticResidue J x from
       A.sexticResidueFamily_normalized.2.2 I J K hK x, map_mul, mul_pow]
-private theorem gaussCRT_char_unit (A : SArithmeticData F) (σ : F →+* ℂ)
+private theorem gaussCRT_char_unit  
     (I : A.Exterior) (x : A.R) (hx : IsUnit (Ideal.Quotient.mk (A.extendIdeal I) x))
     (j : ℤ) : A.sexticResiduePowerChar σ I j (Ideal.Quotient.mk (A.extendIdeal I) x) =
     σ (A.sexticResidue I x) ^ sexticExponent j := by
   unfold sexticResiduePowerChar
   rw [← hx.unit_spec, MulChar.pow_apply_coe]
   rw [hx.unit_spec, gaussCRT_char_base]
+end
+
 
 set_option maxHeartbeats 800000 in
 

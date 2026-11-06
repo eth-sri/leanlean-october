@@ -127,42 +127,42 @@ theorem arithmeticFinitePlacePrimeArtin_eq_chosenFinitePlaceArithmeticFrobenius
     Reciprocity.arithmeticChosenFinitePlaceArtinMonoidHom_apply]
   rw [hgeometric, inv_inv]
 
-/-- At an unramified chosen place, the arithmetic prime Artin element
-has order equal to the local extension degree. -/
-theorem
-    orderOf_arithmeticFinitePlacePrimeArtin_eq_finitePlaceLocalDegree_of_chosenUnramified
-    (v : HeightOneSpectrum (𝓞 K))
-    (hunram :
-      _root_.ChosenFinitePlaceIsUnramified
-        (K := K) (L := L) v) :
-    orderOf
-        (arithmeticFinitePlacePrimeArtin
-          (K := K) (L := L) v) =
-      _root_.finitePlaceLocalDegree
-        (K := K) (L := L) v := by
-  rw [arithmeticFinitePlacePrimeArtin_eq_inv,
-    orderOf_inv]
-  exact
-    orderOf_finitePlacePrimeArtin_eq_finitePlaceLocalDegree_of_chosenUnramified
-      (K := K) (L := L) v hunram
 
-/-- An unramified finite place splits completely exactly when its
-arithmetic Frobenius is trivial. -/
-theorem
-    arithmeticFinitePlacePrimeArtin_eq_one_iff_splitsCompletely_of_chosenUnramified
-    (v : HeightOneSpectrum (𝓞 K))
-    (hunram :
-      _root_.ChosenFinitePlaceIsUnramified
-        (K := K) (L := L) v) :
-    arithmeticFinitePlacePrimeArtin
-          (K := K) (L := L) v =
-        1 ↔
-      _root_.FinitePlaceSplitsCompletely
-        (K := K) (L := L) v := by
-  rw [arithmeticFinitePlacePrimeArtin_eq_inv, inv_eq_one]
-  exact
-    finitePlacePrimeArtin_eq_one_iff_splitsCompletely_of_chosenUnramified
-      (K := K) (L := L) v hunram
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end GlobalClassFields
 end GlobalClassFieldTheory

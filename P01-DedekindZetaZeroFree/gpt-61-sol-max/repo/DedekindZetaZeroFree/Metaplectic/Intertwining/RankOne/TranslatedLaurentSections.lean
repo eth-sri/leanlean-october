@@ -32,10 +32,13 @@ def translatedLevel (J : CompactOpenLevel (ActualCover F ζ hζ q))
     S.iwasawa.compact.isCompact.of_isClosed_subset
       (U ⊓ S.iwasawa.compact.toOpenSubgroup).isClosed (fun _ hx => hx.2)⟩
 
-theorem actual_translate_uniform_level (δ : Sign)
+section
+variable (δ : Sign)
     (J : CompactOpenLevel (ActualCover F ζ hζ q))
     (hJ : (J.toOpenSubgroup : Subgroup (ActualCover F ζ hζ q)) ≤ S.iwasawa.compact.toOpenSubgroup)
-    (g : ActualCover F ζ hζ q) :
+    (g : ActualCover F ζ hζ q)
+include δ J hJ g in
+theorem actual_translate_uniform_level   :
     ((translatedLevel F ζ hζ q S J g).toOpenSubgroup : Subgroup (ActualCover F ζ hζ q)) ≤
       S.iwasawa.compact.toOpenSubgroup ∧
     ∀ (s : ℂ) (φ : compactLevel S.borel P S.iwasawa δ J),
@@ -106,10 +109,8 @@ private theorem exponent_invariant
   if initialExponent F ζ hζ q S ((k : ActualCover F ζ hζ q) * g) = n
   then (translatedCompact F ζ hζ q S P δ 0 g φ).val k else 0
 
- theorem spectralValue_level (δ : Sign)
-    (J : CompactOpenLevel (ActualCover F ζ hζ q))
-    (hJ : (J.toOpenSubgroup : Subgroup (ActualCover F ζ hζ q)) ≤ S.iwasawa.compact.toOpenSubgroup)
-    (g : ActualCover F ζ hζ q)
+ include δ J hJ g in
+theorem spectralValue_level  
     (φ : compactLevel S.borel P S.iwasawa δ J) (n : ℤ)
     (j : (translatedLevel F ζ hζ q S J g).toOpenSubgroup)
     (k k' : S.iwasawa.compact.toOpenSubgroup)
@@ -149,10 +150,8 @@ private theorem exponent_invariant
   · exact (translatedCompact F ζ hζ q S P δ 0 g φ).property.1 b k k' hk
   · exact (map_zero _).symm
 
- def spectralVector (δ : Sign)
-    (J : CompactOpenLevel (ActualCover F ζ hζ q))
-    (hJ : (J.toOpenSubgroup : Subgroup (ActualCover F ζ hζ q)) ≤ S.iwasawa.compact.toOpenSubgroup)
-    (g : ActualCover F ζ hζ q) (φ : compactLevel S.borel P S.iwasawa δ J) (n : ℤ) :
+ include δ J hJ g in
+def spectralVector   (φ : compactLevel S.borel P S.iwasawa δ J) (n : ℤ) :
     compactLevel S.borel P S.iwasawa δ (translatedLevel F ζ hζ q S J g) := by
   let v := spectralValue F ζ hζ q S P δ g φ.val n
   have hlev := spectralValue_level F ζ hζ q S P δ J hJ g φ n
@@ -163,6 +162,8 @@ private theorem exponent_invariant
     funext k
     exact hlev ⟨j, hj⟩ k (k * j) rfl
   exact ⟨⟨v, spectralValue_borel F ζ hζ q S P δ g φ.val n, hsm⟩, hlev⟩
+end
+
 
 private theorem translated_monomial (ε : Sign) (g : ActualCover F ζ hζ q)
     (φ : compactPicture S.borel P S.iwasawa (sourceSign ε))

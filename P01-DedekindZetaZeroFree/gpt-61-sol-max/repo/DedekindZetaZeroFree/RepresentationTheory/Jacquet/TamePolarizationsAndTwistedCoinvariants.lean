@@ -108,18 +108,21 @@ def retractL (b : BL F ζ hζ q S P) : HL F ζ hζ q S P :=
     rw [he']
     exact ha⟩
 
-def chiH (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
+section
+variable (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
+include hP ε
+def chiH  
     (h : HL F ζ hζ q S P) : ℂ :=
   (match ε with
     | .plus => (P.ωL h : ℂ)
     | .minus => (P.ωL (weylHL F ζ hζ q S P hP h) : ℂ)) *
     normPower (LocalField F q) (S.borel.coordinate h) (1 / 2)
 
-def chi (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
+def chi  
     (b : BL F ζ hζ q S P) : ℂ :=
   chiH F ζ hζ q S P hP ε (retractL F ζ hζ q S P b)
 
-def scalarSections (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign) :
+def scalarSections   :
     Submodule ℂ (ActualCover F ζ hζ q → ℂ) where
   carrier := {f | (∀ (b : BL F ζ hζ q S P) (g : ActualCover F ζ hζ q),
     f ((b : ActualCover F ζ hζ q) * g) = chi F ζ hζ q S P hP ε b * f g) ∧
@@ -140,7 +143,7 @@ def scalarSections (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign) :
     ring
 
  theorem scalarSections_stable
-    (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign) (g : ActualCover F ζ hζ q) :
+      (g : ActualCover F ζ hζ q) :
     scalarSections F ζ hζ q S P hP ε ≤
       (scalarSections F ζ hζ q S P hP ε).comap (rightTranslationRepresentation g) := by
   intro f hf
@@ -151,10 +154,12 @@ def scalarSections (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign) :
   rw [mul_assoc, hf.1]
   rfl
 
-def scalarAction (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign) :
+def scalarAction   :
     Representation ℂ (ActualCover F ζ hζ q) (scalarSections F ζ hζ q S P hP ε) :=
   rightTranslationRepresentation.subrepresentation _
     (scalarSections_stable F ζ hζ q S P hP ε)
+end
+
 
 def eta (π : (LocalField F q)ˣ) (j : Fin 3) : ActualCover F ζ hζ q :=
   KPPGLLocalCover.A F ζ hζ (Sum.inr q) (π ^ j.val)

@@ -89,9 +89,12 @@ private theorem margin_data (δ : ℝ) (hδ : 0 < δ) :
       (η := η) (hS := hS) δ hδ
   exact ⟨ρ, δ₀, hρ0, hρ1, hδ₀, fun C pr j hj θ p hp i => h C pr j hj θ p hp i⟩
 
-private theorem sub_one_le_aux (C : A.GeneralArithmeticContext σ η hS)
+section
+variable (C : A.GeneralArithmeticContext σ η hS)
     (pr : LocalFiniteSums.ExteriorPrime A) (j : Fin 6) (hj : j.val ≠ 0)
-    (θ : {θ : ℂ // ‖θ‖ = 1}) (p : Coordinates) (ρ q : ℝ) (hρ0 : 0 ≤ ρ)
+    (θ : {θ : ℂ // ‖θ‖ = 1})
+include C pr j hj θ
+private theorem sub_one_le_aux   (p : Coordinates) (ρ q : ℝ) (hρ0 : 0 ≤ ρ)
     (hρ1 : ρ < 1) (hq : 0 ≤ q)
     (hV : ‖CorrectionFactors.V pr p.2.2‖ ≤ ρ)
     (h2 : ∀ i : Fin 2 × ℕ × ℕ × ℕ,
@@ -151,9 +154,7 @@ private theorem sub_one_le_aux (C : A.GeneralArithmeticContext σ η hS)
         mul_le_mul hV2 hrs (norm_nonneg _) (by norm_num)
     _ = 2 * (∑' i, BadPrimeShellSeries.weight ρ i) * q := by ring
 
-theorem badFactor_differentiableOn (C : A.GeneralArithmeticContext σ η hS)
-    (pr : LocalFiniteSums.ExteriorPrime A) (j : Fin 6) (hj : j.val ≠ 0)
-    (θ : {θ : ℂ // ‖θ‖ = 1}) :
+theorem badFactor_differentiableOn   :
     DifferentiableOn ℂ
       (fun p : Coordinates => CorrectionFactors.badFactor C pr j θ p.1 p.2.1 p.2.2)
       OmegaStar := by
@@ -173,6 +174,8 @@ theorem badFactor_differentiableOn (C : A.GeneralArithmeticContext σ η hS)
   refine h.congr ?_
   intro x _
   simp only [CorrectionFactors.badFactor, LocalFiniteSums.f, tsum_mul_left]
+end
+
 
 theorem badFactor_sub_one_le (δ' : ℝ) (hδ' : 0 < δ') :
     ∃ Cc δ : ℝ, 0 < Cc ∧ 0 < δ ∧
@@ -203,15 +206,17 @@ variable (D : FixedData S η)
 
 open AllRowEuler.InitialSeparation
 
-theorem localCorrection_bad_eq (U : RawFrequency D.recipe.A)
-    (pr : LocalFiniteSums.ExteriorPrime D.recipe.A) (hj : (U.j pr).val ≠ 0) (ξ w z : ℂ) :
+section
+variable (U : RawFrequency D.recipe.A)
+    (pr : LocalFiniteSums.ExteriorPrime D.recipe.A) (hj : (U.j pr).val ≠ 0)
+include U pr hj
+theorem localCorrection_bad_eq   (ξ w z : ℂ) :
     AllRowEuler.InitialSeparation.localCorrection D.context U pr ξ w z =
       CorrectionFactors.badFactor D.context pr (U.j pr) (U.theta D.context pr) ξ w z := by
   unfold AllRowEuler.InitialSeparation.localCorrection
   rw [if_neg hj]
 
-theorem localCorrection_bad_differentiableOn (U : RawFrequency D.recipe.A)
-    (pr : LocalFiniteSums.ExteriorPrime D.recipe.A) (hj : (U.j pr).val ≠ 0) :
+theorem localCorrection_bad_differentiableOn   :
     DifferentiableOn ℂ
       (fun p : Coordinates =>
         AllRowEuler.InitialSeparation.localCorrection D.context U pr p.1 p.2.1 p.2.2)
@@ -219,6 +224,8 @@ theorem localCorrection_bad_differentiableOn (U : RawFrequency D.recipe.A)
   refine (badFactor_differentiableOn D.context pr (U.j pr) hj (U.theta D.context pr)).congr ?_
   intro p _
   exact localCorrection_bad_eq D U pr hj _ _ _
+end
+
 
 theorem localCorrection_bad_sub_one_le (δ' : ℝ) (hδ' : 0 < δ') :
     ∃ C δ : ℝ, 0 < C ∧ 0 < δ ∧

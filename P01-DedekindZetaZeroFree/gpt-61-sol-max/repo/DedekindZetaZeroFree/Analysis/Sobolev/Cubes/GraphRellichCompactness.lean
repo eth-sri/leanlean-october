@@ -1,36 +1,42 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.Sobolev.Cubes.CellAverageError
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 namespace KPCubeGraphRellich
 
 open KPCubeAverage
 
-noncomputable abbrev GradientSpace (n : ℕ) (a : ℝ) :=
+section
+variable (n : ℕ) (a : ℝ)
+include n a
+noncomputable abbrev GradientSpace   :=
   PiLp 2 (fun _ : Fin n => CubeLp n a)
 
-noncomputable abbrev ProductSpace (n : ℕ) (a : ℝ) :=
+noncomputable abbrev ProductSpace   :=
   WithLp 2 (CubeLp n a × GradientSpace n a)
 
-theorem smooth_coordinate_memLp (n : ℕ) (a : ℝ) (f : Space n → ℂ)
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) (j : Fin n) :
-    MeasureTheory.MemLp (coordinateDerivative n f j) 2 (cubeMeasure n a) := by
-  exact smooth_memLp n a (coordinateDerivative n f j)
+def smooth_coordinate_memLp   (f : Space n → ℂ)
+    (hf : ContDiff ℝ (⊤ : ℕ∞) f) (j : Fin n)  := smooth_memLp n a (coordinateDerivative n f j)
     ((hf.fderiv_right (by simp)).clm_apply contDiff_const)
 
-noncomputable def smoothJet (n : ℕ) (a : ℝ) (f : Space n → ℂ)
+noncomputable def smoothJet   (f : Space n → ℂ)
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) : ProductSpace n a :=
   WithLp.toLp 2
     ((smooth_memLp n a f hf).toLp f,
       WithLp.toLp 2 (fun j : Fin n =>
         (smooth_coordinate_memLp n a f hf j).toLp (coordinateDerivative n f j)))
 
-noncomputable def smoothSubspace (n : ℕ) (a : ℝ) : Submodule ℂ (ProductSpace n a) :=
+noncomputable def smoothSubspace    :=
   Submodule.span ℂ {u | ∃ (f : Space n → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f),
     u = smoothJet n a f hf}
+end
+
 
 private theorem coordinateDerivative_add (n : ℕ) (f g : Space n → ℂ)
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (hg : ContDiff ℝ (⊤ : ℕ∞) g) (j : Fin n) :
@@ -48,7 +54,10 @@ private theorem coordinateDerivative_smul (n : ℕ) (f : Space n → ℂ)
   simp only [coordinateDerivative, Pi.smul_apply]
   rw [fderiv_const_smul (hf.differentiable (by simp) x) c, ContinuousLinearMap.smul_apply]
 
-private theorem smoothJet_zero (n : ℕ) (a : ℝ)
+section
+variable (n : ℕ) (a : ℝ)
+include n a
+private theorem smoothJet_zero  
     (hf : ContDiff ℝ (⊤ : ℕ∞) (0 : Space n → ℂ)) :
     smoothJet n a (0 : Space n → ℂ) hf = 0 := by
   rw [smoothJet, WithLp.toLp_eq_zero, Prod.mk_eq_zero]
@@ -62,7 +71,7 @@ private theorem smoothJet_zero (n : ℕ) (a : ℝ)
     (smooth_memLp n a 0 hf) (Filter.EventuallyEq.of_eq h0)]
   exact MeasureTheory.MemLp.toLp_zero _
 
-private theorem smoothJet_add (n : ℕ) (a : ℝ) (f g : Space n → ℂ)
+private theorem smoothJet_add   (f g : Space n → ℂ)
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (hg : ContDiff ℝ (⊤ : ℕ∞) g) :
     smoothJet n a (f + g) (hf.add hg) = smoothJet n a f hf + smoothJet n a g hg := by
   rw [smoothJet, smoothJet, smoothJet, WithLp.ext_iff]
@@ -77,7 +86,7 @@ private theorem smoothJet_add (n : ℕ) (a : ℝ) (f g : Space n → ℂ)
     exact MeasureTheory.MemLp.toLp_congr _ _
       (Filter.EventuallyEq.of_eq (coordinateDerivative_add n f g hf hg j))
 
-private theorem smoothJet_smul (n : ℕ) (a : ℝ) (f : Space n → ℂ)
+private theorem smoothJet_smul   (f : Space n → ℂ)
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (c : ℂ) :
     smoothJet n a (c • f) (hf.const_smul c) = c • smoothJet n a f hf := by
   rw [smoothJet, smoothJet, WithLp.ext_iff]
@@ -91,7 +100,7 @@ private theorem smoothJet_smul (n : ℕ) (a : ℝ) (f : Space n → ℂ)
     exact MeasureTheory.MemLp.toLp_congr _ _
       (Filter.EventuallyEq.of_eq (coordinateDerivative_smul n f hf c j))
 
-theorem mem_smoothSubspace_iff (n : ℕ) (a : ℝ) (u : ProductSpace n a) :
+theorem mem_smoothSubspace_iff   (u : ProductSpace n a) :
     u ∈ smoothSubspace n a ↔
       ∃ (f : Space n → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f), u = smoothJet n a f hf := by
   constructor
@@ -111,10 +120,12 @@ theorem mem_smoothSubspace_iff (n : ℕ) (a : ℝ) (u : ProductSpace n a) :
     rw [smoothSubspace]
     exact Submodule.subset_span ⟨f, hf, rfl⟩
 
-noncomputable def graphSubspace (n : ℕ) (a : ℝ) : Submodule ℂ (ProductSpace n a) :=
+noncomputable def graphSubspace   : Submodule ℂ (ProductSpace n a) :=
   (smoothSubspace n a).topologicalClosure
+end
 
-noncomputable abbrev GraphSpace (n : ℕ) (a : ℝ) := graphSubspace n a
+
+noncomputable abbrev GraphSpace := @_root_.DedekindZetaZeroFree.KPCubeGraphRellich.graphSubspace
 
 instance graphSpace_completeSpace (n : ℕ) (a : ℝ) : CompleteSpace (GraphSpace n a) :=
   inferInstanceAs (CompleteSpace (smoothSubspace n a).topologicalClosure)
@@ -146,8 +157,11 @@ theorem smoothJet_gradient_norm_sq (n : ℕ) (a : ℝ) (f : Space n → ℂ)
   intro j hj
   exact ((smooth_coordinate_memLp n a f hf j).norm).integrable_sq
 
-theorem smoothJet_average_error_sq (n : ℕ) (hn : 1 ≤ n) (a : ℝ) (ha : 0 < a)
-    (m : ℕ) (hm : 1 ≤ m) (f : Space n → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
+section
+variable (n : ℕ) (hn : 1 ≤ n) (a : ℝ) (ha : 0 < a)
+    (m : ℕ) (hm : 1 ≤ m)
+include n hn a ha m hm
+theorem smoothJet_average_error_sq   (f : Space n → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
     ‖(smoothJet n a f hf).fst - average n a m (smoothJet n a f hf).fst‖ ^ 2 ≤
       (((n : ℝ) + 1) * side a m) ^ 2 * ‖smoothJet n a f hf‖ ^ 2 := by
   have h := smooth_error_bound n hn a ha m hm f hf
@@ -164,11 +178,10 @@ theorem smoothJet_average_error_sq (n : ℕ) (hn : 1 ≤ n) (a : ℝ) (ha : 0 < 
       mul_le_mul_of_nonneg_left hg (mul_nonneg (sq_nonneg _) (sq_nonneg _))
     _ = _ := by ring
 
-theorem projection_average_error (n : ℕ) (hn : 1 ≤ n) (a : ℝ) (ha : 0 < a)
-    (m : ℕ) (hm : 1 ≤ m) :
+theorem projection_average_error   :
     ‖projection n a - (average n a m).comp (projection n a)‖ ≤
       ((n : ℝ) + 1) * (2 * a / (m : ℝ)) := by
-  let C : ℝ := ((n : ℝ) + 1) * (2 * a / (m : ℝ))
+  let C  := ((n : ℝ) + 1) * (2 * a / (m : ℝ))
   have hC : 0 ≤ C := by dsimp [C]; positivity
   let T : ProductSpace n a →L[ℂ] CubeLp n a :=
     WithLp.fstL 2 ℂ (CubeLp n a) (GradientSpace n a) -
@@ -179,7 +192,7 @@ theorem projection_average_error (n : ℕ) (hn : 1 ≤ n) (a : ℝ) (ha : 0 < a)
       {u | ‖T u‖ ^ 2 ≤ C ^ 2 * ‖u‖ ^ 2} := by
     intro u hu
     obtain ⟨f, hf, rfl⟩ := (mem_smoothSubspace_iff n a u).mp hu
-    exact smoothJet_average_error_sq n hn a ha m hm f hf
+    apply smoothJet_average_error_sq <;> assumption
   have hclosure := closure_minimal hs hclosed
   apply ContinuousLinearMap.opNorm_le_bound _ hC
   intro u
@@ -188,6 +201,8 @@ theorem projection_average_error (n : ℕ) (hn : 1 ≤ n) (a : ℝ) (ha : 0 < a)
   change ‖T (u : ProductSpace n a)‖ ≤ C * ‖(u : ProductSpace n a)‖
   nlinarith [norm_nonneg (T (u : ProductSpace n a)),
     mul_nonneg hC (norm_nonneg (u : ProductSpace n a))]
+end
+
 
 set_option backward.isDefEq.respectTransparency.types false in
 
@@ -215,7 +230,7 @@ theorem projection_isCompactOperator (n : ℕ) (hn : 1 ≤ n) (a : ℝ) (ha : 0 
         congr 1
         abel
       rw [hrev]
-      exact projection_average_error n hn a ha m hm
+      apply projection_average_error <;> assumption
     · simpa using ((tendsto_const_div_atTop_nhds_zero_nat (2 * a)).const_mul ((n : ℝ) + 1))
   · exact Filter.Eventually.of_forall (fun m =>
       (hcompact m).comp_clm (projection n a))

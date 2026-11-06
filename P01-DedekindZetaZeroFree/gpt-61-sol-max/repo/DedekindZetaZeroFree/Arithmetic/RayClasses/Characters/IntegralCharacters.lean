@@ -11,54 +11,54 @@ noncomputable section
 open scoped NumberField Classical
 open IsDedekindDomain
 
-def M (F : Type) [Field F] [NumberField F]
-    (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) : ClassFieldTheory.RayClassModulus F where
+section
+variable (F : Type) [Field F] [NumberField F]
+    (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
+include F m hm
+def M   : ClassFieldTheory.RayClassModulus F where
   finitePart := (RayClassBridge.narrowIdealModulus F m hm).finitePart
   infinitePart := ∅
 
-@[simp] theorem M_finitePart (F : Type) [Field F] [NumberField F]
-    (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (v : HeightOneSpectrum (𝓞 F)) :
+@[simp] theorem M_finitePart   (v : HeightOneSpectrum (𝓞 F)) :
     (M F m hm).finitePart v = idealPrimeExponent v.asIdeal m := by
   change Int.toNat (FractionalIdeal.count F v
     (m : FractionalIdeal (nonZeroDivisors (𝓞 F)) F)) = _
   rw [FractionalIdeal.count_coe F v hm, Int.toNat_natCast]
   exact Ideal.count_associates_factors_eq hm v.isPrime v.ne_bot
 
-@[simp] theorem M_infinitePart (F : Type) [Field F] [NumberField F]
-    (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) : (M F m hm).infinitePart = ∅ := rfl
+@[simp] theorem M_infinitePart   : (M F m hm).infinitePart = ∅ := rfl
 
-def frozenIntegralPrimeTo (F : Type) [Field F] [NumberField F]
-    (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
+def frozenIntegralPrimeTo  
     (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hcop : I ⊔ m = ⊤) :
     ClassFieldTheory.rayClassPrimeToIdeals (M F m hm) :=
   ⟨RayClassBridge.integralUnit F I hI,
     (RayClassBridge.integralUnit_mem_primeTo_iff F m hm I hI).mpr hcop⟩
 
-def frozenIntegralRayClass (F : Type) [Field F] [NumberField F]
-    (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
+def frozenIntegralRayClass  
     (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hcop : I ⊔ m = ⊤) :
     ClassFieldTheory.RayClassGroup (M F m hm) :=
   QuotientGroup.mk (frozenIntegralPrimeTo F m hm I hI hcop)
+end
 
-def frozenRayValue (F : Type) [Field F] [NumberField F]
+
+section
+variable (F : Type) [Field F] [NumberField F]
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     (rho : ClassFieldTheory.RayClassGroup (M F m hm) →* ℂˣ)
+include F m hm rho
+def frozenRayValue  
     (I : Ideal (𝓞 F)) : ℂ :=
   if h : I ≠ ⊥ ∧ I ⊔ m = ⊤ then
     (rho (frozenIntegralRayClass F m hm I h.1 h.2) : ℂ)
   else 0
 
-theorem frozenRayValue_of_primeTo (F : Type) [Field F] [NumberField F]
-    (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
-    (rho : ClassFieldTheory.RayClassGroup (M F m hm) →* ℂˣ)
+theorem frozenRayValue_of_primeTo  
     (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hcop : I ⊔ m = ⊤) :
     frozenRayValue F m hm rho I =
       (rho (frozenIntegralRayClass F m hm I hI hcop) : ℂ) := by
   simp [frozenRayValue, hI, hcop]
 
-theorem frozenRayValue_of_not_primeTo (F : Type) [Field F] [NumberField F]
-    (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
-    (rho : ClassFieldTheory.RayClassGroup (M F m hm) →* ℂˣ)
+theorem frozenRayValue_of_not_primeTo  
     (I : Ideal (𝓞 F)) (hI : I = ⊥ ∨ I ⊔ m ≠ ⊤) :
     frozenRayValue F m hm rho I = 0 := by
   unfold frozenRayValue
@@ -68,9 +68,7 @@ theorem frozenRayValue_of_not_primeTo (F : Type) [Field F] [NumberField F]
     · exact (hI h.2).elim
   · rfl
 
-theorem frozenRayValue_eq_zero_iff (F : Type) [Field F] [NumberField F]
-    (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
-    (rho : ClassFieldTheory.RayClassGroup (M F m hm) →* ℂˣ) (I : Ideal (𝓞 F)) :
+theorem frozenRayValue_eq_zero_iff   (I : Ideal (𝓞 F)) :
     frozenRayValue F m hm rho I = 0 ↔ I = ⊥ ∨ I ⊔ m ≠ ⊤ := by
   unfold frozenRayValue
   split_ifs with h
@@ -79,9 +77,7 @@ theorem frozenRayValue_eq_zero_iff (F : Type) [Field F] [NumberField F]
   · simp only [true_iff]
     tauto
 
-@[simp] theorem frozenRayValue_top (F : Type) [Field F] [NumberField F]
-    (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
-    (rho : ClassFieldTheory.RayClassGroup (M F m hm) →* ℂˣ) :
+@[simp] theorem frozenRayValue_top   :
     frozenRayValue F m hm rho ⊤ = 1 := by
   rw [frozenRayValue_of_primeTo F m hm rho ⊤ top_ne_bot (by simp)]
   have h : frozenIntegralRayClass F m hm ⊤ top_ne_bot (by simp) = 1 := by
@@ -91,9 +87,7 @@ theorem frozenRayValue_eq_zero_iff (F : Type) [Field F] [NumberField F]
     simp [frozenIntegralRayClass, h']
   simp [h]
 
-theorem frozenRayValue_mul (F : Type) [Field F] [NumberField F]
-    (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
-    (rho : ClassFieldTheory.RayClassGroup (M F m hm) →* ℂˣ)
+theorem frozenRayValue_mul  
     (I J : Ideal (𝓞 F)) :
     frozenRayValue F m hm rho (I * J) =
       frozenRayValue F m hm rho I * frozenRayValue F m hm rho J := by
@@ -126,8 +120,13 @@ theorem frozenRayValue_mul (F : Type) [Field F] [NumberField F]
       · right; exact fun h => hzI (hc.mp h).1
     rw [frozenRayValue_of_not_primeTo F m hm rho (I * J) hzIJ,
       frozenRayValue_of_not_primeTo F m hm rho I hzI, zero_mul]
+end
 
-theorem frozenIntegralRayClass_span (F : Type) [Field F] [NumberField F]
+
+section
+variable (F : Type) [Field F] [NumberField F]
+include F
+theorem frozenIntegralRayClass_span  
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     (α : 𝓞 F) (hα : α ≠ 0) (hcα : α - 1 ∈ m)
     (hI : Ideal.span {α} ≠ ⊥) (hcop : Ideal.span {α} ⊔ m = ⊤) :
@@ -148,7 +147,7 @@ theorem frozenIntegralRayClass_span (F : Type) [Field F] [NumberField F]
       FractionalIdeal.coeIdeal_span_singleton]
     rfl
 
-theorem frozenRayValue_span (F : Type) [Field F] [NumberField F]
+theorem frozenRayValue_span  
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     (rho : ClassFieldTheory.RayClassGroup (M F m hm) →* ℂˣ)
     (α : 𝓞 F) (hα : α ≠ 0) (hcα : α - 1 ∈ m) :
@@ -158,7 +157,7 @@ theorem frozenRayValue_span (F : Type) [Field F] [NumberField F]
   rw [frozenRayValue_of_primeTo F m hm rho _ hI hcop,
     frozenIntegralRayClass_span F m hm α hα hcα hI hcop, map_one, Units.val_one]
 
-theorem M_le_iff (F : Type) [Field F] [NumberField F]
+theorem M_le_iff  
     (m n : Ideal (𝓞 F)) (hm : m ≠ ⊥) (hn : n ≠ ⊥) :
     M F m hm ≤ M F n hn ↔ n ≤ m := by
   rw [ClassFieldTheory.RayClassModulus.le_iff]
@@ -177,7 +176,7 @@ theorem M_le_iff (F : Type) [Field F] [NumberField F]
       v.associates_irreducible
     exact Associates.mk_dvd_mk.mpr (Ideal.dvd_iff_le.mpr h)
 
-def frozenRay (F : Type) [Field F] [NumberField F]
+def frozenRay  
     (_htc : NumberField.IsTotallyComplex F)
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     (rho : ClassFieldTheory.RayClassGroup (M F m hm) →* ℂˣ) :
@@ -188,7 +187,7 @@ def frozenRay (F : Type) [Field F] [NumberField F]
   eq_zero_iff' := frozenRayValue_eq_zero_iff F m hm rho
   map_span' := fun α hα hcα _ => frozenRayValue_span F m hm rho α hα hcα
 
-theorem frozenRay_apply (F : Type) [Field F] [NumberField F]
+theorem frozenRay_apply  
     (htc : NumberField.IsTotallyComplex F)
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     (rho : ClassFieldTheory.RayClassGroup (M F m hm) →* ℂˣ)
@@ -197,6 +196,8 @@ theorem frozenRay_apply (F : Type) [Field F] [NumberField F]
       if h : I ≠ ⊥ ∧ I ⊔ m = ⊤ then
         (rho (frozenIntegralRayClass F m hm I h.1 h.2) : ℂ)
       else 0 := rfl
+end
+
 
 end
 end DedekindZetaZeroFree

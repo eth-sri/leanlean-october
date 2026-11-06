@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Fourier.AffineCovariance
 public import DedekindZetaZeroFree.Theta.Profiles.RayParityFourierMellin
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -14,24 +17,21 @@ namespace DedekindZetaZeroFree.AbelianQuotient.RayParity.AffineFourier
 
 variable (K : Type) [Field K] [NumberField K]
 
-def positiveScaling (q : InfinitePlace K → ℝ) (hq : ∀ v, 0 < q v) :
+section
+variable (q : InfinitePlace K → ℝ) (hq : ∀ v, 0 < q v)
+include q hq
+def positiveScaling   :
     euclidean.mixedSpace K ≃L[ℝ] euclidean.mixedSpace K :=
   Theta.traceRadialScale K q (fun v ↦ ne_of_gt (hq v))
 
-theorem positiveScaling_apply (q : InfinitePlace K → ℝ)
-    (hq : ∀ v, 0 < q v) (x : euclidean.mixedSpace K) :
-    positiveScaling K q hq x = Q K q x := by
-  exact (Q_eq_traceRadialScale K q (fun v ↦ ne_of_gt (hq v)) x).symm
+theorem positiveScaling_apply   (x : euclidean.mixedSpace K) :
+    positiveScaling K q hq x = Q K q x := (Q_eq_traceRadialScale K q (fun v ↦ ne_of_gt (hq v)) x).symm
 
-theorem positiveScaling_symm_apply (q : InfinitePlace K → ℝ)
-    (hq : ∀ v, 0 < q v) (x : euclidean.mixedSpace K) :
+theorem positiveScaling_symm_apply   (x : euclidean.mixedSpace K) :
     (positiveScaling K q hq).symm x = Q K (fun v ↦ (q v)⁻¹) x := by
-  exact (Theta.traceRadialScale_symm_apply K q (fun v ↦ ne_of_gt (hq v)) x).trans
-    (Q_eq_traceRadialScale K (fun v ↦ (q v)⁻¹)
-      (fun v ↦ inv_ne_zero (ne_of_gt (hq v))) x).symm
+  rfl
 
-theorem det_positiveScaling (q : InfinitePlace K → ℝ)
-    (hq : ∀ v, 0 < q v) :
+theorem det_positiveScaling   :
     LinearMap.det (positiveScaling K q hq).toLinearMap = J K q := by
   rw [positiveScaling, Theta.det_traceRadialScale, J]
   rw [← Fintype.prod_subtype_mul_prod_subtype (fun v : InfinitePlace K ↦ IsReal v)]
@@ -43,24 +43,26 @@ theorem det_positiveScaling (q : InfinitePlace K → ℝ)
     (fun v ↦ q v.1 ^ v.1.mult) (fun v ↦ q v.1 ^ 2)
     (fun v ↦ by simp [mult, v.2])).symm
 
-theorem J_pos (q : InfinitePlace K → ℝ) (hq : ∀ v, 0 < q v) :
-    0 < J K q := by
-  exact Finset.prod_pos (fun v _ ↦ pow_pos (hq v) _)
+theorem J_pos   :
+    0 < J K q := Finset.prod_pos (fun v _ ↦ pow_pos (hq v) _)
+end
 
-def shiftedSchwartz (δ : Finset (RayCoset.RealPlaces K))
+
+section
+variable (δ : Finset (RayCoset.RealPlaces K))
     (q : InfinitePlace K → ℝ) (hq : ∀ v, 0 < q v)
+include δ q hq
+def shiftedSchwartz  
     (z : euclidean.mixedSpace K) : SchwartzMap (euclidean.mixedSpace K) ℂ :=
   affineSchwartz (rayParitySchwartz K δ) (positiveScaling K q hq) z
 
-theorem shiftedSchwartz_apply (δ : Finset (RayCoset.RealPlaces K))
-    (q : InfinitePlace K → ℝ) (hq : ∀ v, 0 < q v)
+theorem shiftedSchwartz_apply  
     (z x : euclidean.mixedSpace K) :
     shiftedSchwartz K δ q hq z x = gδ K δ (Q K q (z + x)) := by
   rw [shiftedSchwartz, affineSchwartz_apply, rayParitySchwartz_apply,
     positiveScaling_apply]
 
-theorem fourier_shiftedSchwartz (δ : Finset (RayCoset.RealPlaces K))
-    (q : InfinitePlace K → ℝ) (hq : ∀ v, 0 < q v)
+theorem fourier_shiftedSchwartz  
     (z ξ : euclidean.mixedSpace K) :
     (FourierTransform.fourier (shiftedSchwartz K δ q hq z)) ξ =
       (J K q : ℂ)⁻¹ * εδ K δ *
@@ -83,9 +85,11 @@ theorem fourier_shiftedSchwartz (δ : Finset (RayCoset.RealPlaces K))
     abs_of_pos (J_pos K q hq)]
   have hf : (rayParitySchwartz K δ : euclidean.mixedSpace K → ℂ) = gδ K δ := by
     ext x
-    exact rayParitySchwartz_apply K δ x
+    apply rayParitySchwartz_apply
   rw [SchwartzMap.fourier_coe, hf, FourierMellin.fourier]
   ring
+end
+
 
 theorem gδ_zero (δ : Finset (RayCoset.RealPlaces K)) :
     gδ K δ 0 = if δ = ∅ then 1 else 0 := by

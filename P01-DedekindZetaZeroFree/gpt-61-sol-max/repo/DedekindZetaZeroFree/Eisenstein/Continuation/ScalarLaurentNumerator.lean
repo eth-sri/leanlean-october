@@ -17,12 +17,15 @@ def selectedScalarNumerator
     {v : R.A.UnitQuotient} (D : SelectedScalarBranch R B v) (r : ℝ) : ℂ → Functions R :=
   fun s g => toMeromorphicNFOn (fun z => z * D.E z g) (Metric.ball (0 : ℂ) r) s
 
-theorem selectedScalarNumerator_analytic
-    {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R} {B : JointRootAlignedSources R N}
+section
+variable {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R} {B : JointRootAlignedSources R N}
     {v : R.A.UnitQuotient} (D : SelectedScalarBranch R B v) (r : ℝ)
     (hb : Metric.ball (0 : ℂ) r ⊆ KPContinuation.spectralDomain)
     (hregular : ∀ s ∈ Metric.ball (0 : ℂ) r, s ≠ 0 →
       ∀ g, AnalyticAt ℂ (fun z => D.E z g) s)
+include R N B v D r hb hregular
+theorem selectedScalarNumerator_analytic
+     
     (horder : ∀ g, (-1 : WithTop ℤ) ≤ meromorphicOrderAt (fun s => D.E s g) 0) :
     ∀ g, AnalyticOnNhd ℂ (fun s => selectedScalarNumerator D r s g)
       (Metric.ball (0 : ℂ) r) := by
@@ -43,11 +46,7 @@ theorem selectedScalarNumerator_analytic
   · exact (analyticAt_id.mul (hregular s hs hs0 g)).meromorphicOrderAt_nonneg
 
 theorem selectedScalarNumerator_clears
-    {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R} {B : JointRootAlignedSources R N}
-    {v : R.A.UnitQuotient} (D : SelectedScalarBranch R B v) (r : ℝ)
-    (hb : Metric.ball (0 : ℂ) r ⊆ KPContinuation.spectralDomain)
-    (hregular : ∀ s ∈ Metric.ball (0 : ℂ) r, s ≠ 0 →
-      ∀ g, AnalyticAt ℂ (fun z => D.E z g) s)
+     
     (s : ℂ) (hs : s ∈ Metric.ball (0 : ℂ) r) (hs0 : s ≠ 0) :
     selectedScalarNumerator D r s = s • D.E s := by
   funext g
@@ -58,6 +57,8 @@ theorem selectedScalarNumerator_clears
   rw [toMeromorphicNFOn_eq_toMeromorphicNFAt hm hs]
   exact congrFun (toMeromorphicNFAt_eq_self.mpr
     (analyticAt_id.mul (hregular s hs hs0 g)).meromorphicNFAt) s
+end
+
 
 end DedekindZetaZeroFree.ThetaExpansion
 

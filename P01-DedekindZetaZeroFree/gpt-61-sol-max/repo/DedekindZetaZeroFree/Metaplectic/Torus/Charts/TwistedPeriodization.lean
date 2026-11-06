@@ -19,11 +19,14 @@ set_option maxHeartbeats 800000
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-theorem chartTerm_contDiffOn (C : ModelData F ζ hζ) (s : ℂ)
+section
+variable (C : ModelData F ζ hζ) (s : ℂ)
     (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
     (f : InducedFunctions F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s))
     (hf : f ∈ InducedLevel F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s) J)
     (g : G F ζ hζ)
+include C s J f hf g
+theorem chartTerm_contDiffOn  
     (a : KPGlobalTorusPeriodizationInverse.PeriodizationIndex F ζ hζ C) :
     ContDiffOn ℝ (⊤ : ℕ∞) (chartTerm F ζ hζ C s f g a) (groupArchDomain F) := by
   obtain ⟨y, hy⟩ := rationalRep_rational F ζ hζ C a
@@ -31,16 +34,14 @@ theorem chartTerm_contDiffOn (C : ModelData F ζ hζ) (s : ℂ)
   rw [hy]
   exact RationalDiagonalSectionSmoothness.rational_eval_contDiffOn F ζ hζ _ J f hf g y
 
-theorem chartTerm_eventually_zero (C : ModelData F ζ hζ) (s : ℂ)
-    (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
-    (f : InducedFunctions F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s))
-    (hf : f ∈ InducedLevel F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s) J)
-    (g : G F ζ hζ) (K : Set (GroupArch F)) (hK : IsCompact K)
+theorem chartTerm_eventually_zero   (K : Set (GroupArch F)) (hK : IsCompact K)
     (hKU : K ⊆ groupArchDomain F) :
     ∃ S : Finset (KPGlobalTorusPeriodizationInverse.PeriodizationIndex F ζ hζ C),
       ∀ z ∈ K, ∀ a ∉ S, chartTerm F ζ hζ C s f g a z = 0 := by
   obtain ⟨S, hS⟩ := UniformFiberLevel.exists_uniform_chart_support F ζ hζ C s J g
   exact ⟨S, fun z _ a ha => hS ⟨f, hf⟩ z a ha⟩
+end
+
 
 theorem functionsP_chart_tsum (C : ModelData F ζ hζ) (s : ℂ)
     (f : InducedFunctions F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s))

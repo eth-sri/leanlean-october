@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Algebra.Group.Subgroup.Finite
 public import Mathlib.FieldTheory.Finite.Basic
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -32,17 +35,19 @@ namespace PowerResidueSymbols
 
 variable (k : Type*) [Field k] [Fintype k]
 
+section
+variable (n : ℕ+) (hn : (n : ℕ) ∣ Fintype.card k - 1)
+include n hn
 /-- The finite-field `n`-th power-residue symbol. -/
 def finiteFieldPowerResidueSymbol
-    (n : ℕ+) (hn : (n : ℕ) ∣ Fintype.card k - 1) :
+      :
     kˣ →* rootsOfUnity (n : ℕ) k where
   toFun u :=
     ⟨u ^ ((Fintype.card k - 1) / (n : ℕ)), by
       change (u ^ ((Fintype.card k - 1) / (n : ℕ))) ^ (n : ℕ) = 1
       rw [← pow_mul, Nat.div_mul_cancel hn]
       apply Units.ext
-      exact FiniteField.pow_card_sub_one_eq_one
-        (u : k) (Units.ne_zero u)⟩
+      apply FiniteField.pow_card_sub_one_eq_one <;> aesop⟩
   map_one' := by
     apply Subtype.ext
     simp
@@ -52,7 +57,7 @@ def finiteFieldPowerResidueSymbol
 
 @[simp]
 theorem finiteFieldPowerResidueSymbol_apply
-    (n : ℕ+) (hn : (n : ℕ) ∣ Fintype.card k - 1) (u : kˣ) :
+      (u : kˣ) :
     ((finiteFieldPowerResidueSymbol k n hn u :
         rootsOfUnity (n : ℕ) k) : kˣ) =
       u ^ ((Fintype.card k - 1) / (n : ℕ)) :=
@@ -60,7 +65,7 @@ theorem finiteFieldPowerResidueSymbol_apply
 
 /-- The finite-field symbol is trivial exactly on `n`-th powers. -/
 theorem finiteFieldPowerResidueSymbol_eq_one_iff
-    (n : ℕ+) (hn : (n : ℕ) ∣ Fintype.card k - 1) (u : kˣ) :
+      (u : kˣ) :
     finiteFieldPowerResidueSymbol k n hn u = 1 ↔
       ∃ v : kˣ, v ^ (n : ℕ) = u := by
   classical
@@ -77,8 +82,7 @@ theorem finiteFieldPowerResidueSymbol_eq_one_iff
       exact Nat.div_mul_cancel hn
     rw [hnm]
     apply Units.ext
-    exact FiniteField.pow_card_sub_one_eq_one
-      (v : k) (Units.ne_zero v)
+    apply FiniteField.pow_card_sub_one_eq_one <;> aesop
   have hCard : Nat.card powerM.ker ≤ Nat.card powerN.range := by
     have hm : m ∣ Fintype.card k - 1 :=
       Nat.div_dvd_of_dvd hn
@@ -88,7 +92,7 @@ theorem finiteFieldPowerResidueSymbol_eq_one_iff
     rw [IsCyclic.card_powMonoidHom_ker,
       IsCyclic.card_powMonoidHom_range, hUnitsCard,
       Nat.gcd_eq_right hm, Nat.gcd_eq_right hn]
-  have hRange_eq_ker : powerN.range = powerM.ker :=
+  have hRange_eq_ker  :=
     Subgroup.eq_of_le_of_card_ge hRange_le_ker hCard
   constructor
   · intro hsymbol
@@ -115,6 +119,8 @@ theorem finiteFieldPowerResidueSymbol_eq_one_iff
     change u ^ m = 1
     simpa only [powerM, powMonoidHom_apply] using
       (MonoidHom.mem_ker.mp huKer)
+end
+
 
 end PowerResidueSymbols
 end AlgebraicNumberTheory

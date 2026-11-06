@@ -47,7 +47,7 @@ theorem normalized_multiplier (s : ℂ) (t : KPGlobalTorusFunctionData.E F ζ h�
   unfold KPGlobalExceptionalParameter.realLogPower normPower
   rw [add_mul, Complex.exp_add]
 
-variable (C : ModelData F ζ hζ) (s : ℂ)
+
 
 end DedekindZetaZeroFree.EisensteinReferenceSections.SeedScalarTransport
 

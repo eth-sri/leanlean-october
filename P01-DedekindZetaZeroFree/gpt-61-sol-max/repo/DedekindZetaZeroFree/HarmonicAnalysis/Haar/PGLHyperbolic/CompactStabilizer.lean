@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Adeles.Quotients.ArithmeticProperActionsAndOrbifoldCharts
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.KPCompactStabilizerHaarSources
 
@@ -10,13 +13,13 @@ noncomputable section
 open scoped Classical ENNReal Matrix.Norms.Operator
 open MeasureTheory MeasureTheory.Measure
 
-abbrev G (d : ℕ) := KPArithmeticAction.ProjectiveGroup d
+abbrev G := @_root_.DedekindZetaZeroFree.KPArithmeticAction.ProjectiveGroup
 
-abbrev X (d : ℕ) := KPArch.Space d
+abbrev X := @_root_.DedekindZetaZeroFree.KPArch.Space
 
 def o (d : ℕ) : X d := fun _ => (0, 0)
 
-def K (d : ℕ) : Subgroup (G d) := MulAction.stabilizer (G d) (o d)
+def K (d : ℕ)  := MulAction.stabilizer (G d) (o d)
 
 instance groupMeasurableSpace (d : ℕ) : MeasurableSpace (G d) := borel _
 
@@ -52,19 +55,18 @@ instance groupLocallyCompact (d : ℕ) : LocallyCompactSpace (G d) :=
 instance groupSecondCountable (d : ℕ) : SecondCountableTopology (G d) :=
   inferInstanceAs (SecondCountableTopology (Fin d → Matrix.ProjGenLinGroup (Fin 2) ℂ))
 
-theorem stabilizer_isCompact (d : ℕ) : IsCompact (K d : Set (G d)) :=
-  KPArithmeticAction.product_origin_stabilizer_compact d
+alias stabilizer_isCompact := _root_.DedekindZetaZeroFree.KPArithmeticAction.product_origin_stabilizer_compact
 
 instance stabilizerCompactSpace (d : ℕ) : CompactSpace (K d) :=
   isCompact_iff_compactSpace.mp (stabilizer_isCompact d)
 
-instance stabilizerLocallyCompact (d : ℕ) : LocallyCompactSpace (K d) :=
-  inferInstance
+
+
 
 instance stabilizerSecondCountable (d : ℕ) : SecondCountableTopology (K d) :=
   inferInstanceAs (SecondCountableTopology ↥(K d : Set (G d)))
 
-def stabilizerHaar (d : ℕ) : Measure (K d) :=
+def stabilizerHaar (d : ℕ)  :=
   haarMeasure (⊤ : TopologicalSpace.PositiveCompacts (K d))
 
 instance stabilizerHaar_isHaarMeasure (d : ℕ) : (stabilizerHaar d).IsHaarMeasure := by
@@ -74,7 +76,7 @@ instance stabilizerHaar_isHaarMeasure (d : ℕ) : (stabilizerHaar d).IsHaarMeasu
 instance stabilizerHaar_isProbabilityMeasure (d : ℕ) :
     IsProbabilityMeasure (stabilizerHaar d) where
   measure_univ := by
-    exact haarMeasure_self (K₀ := (⊤ : TopologicalSpace.PositiveCompacts (K d)))
+    apply haarMeasure_self
 
 end
 

@@ -41,7 +41,10 @@ private theorem finiteMinkowski {I J : Type*} [Fintype I]
     _ ≤ ∑ j ∈ s, ‖v j‖ := norm_sum_le _ _
     _ = _ := by simp only [v, EuclideanSpace.norm_eq, PiLp.toLp_apply]
 
-theorem frozen_scalar_norm_le (A : SArithmeticData F) (G : AllowedRecipe A)
+section
+variable (A : SArithmeticData F)
+include A
+theorem frozen_scalar_norm_le   (G : AllowedRecipe A)
     (U : UnitRepresentatives A) (σ : F →+* ℂ)
     (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
     (hψ : ∀ p : ExteriorPrime A, (ψ p).IsPrimitive)
@@ -55,7 +58,7 @@ theorem frozen_scalar_norm_le (A : SArithmeticData F) (G : AllowedRecipe A)
   apply div_le_div_of_nonneg_right _ hn.le
   exact (RMSeparatedExpansion.factors_norm_le_betaIdeal A G U σ ψ hψ L hL T T.h T.f).1
 
-theorem frozen_profileArgument_dyadic (A : SArithmeticData F) (T : Frozen A)
+theorem frozen_profileArgument_dyadic   (T : Frozen A)
     (d c : A.Exterior) (Z C D : ℝ) (hC : 0 < C) (hD : 0 < D) :
     profileArgument A T d c Z =
       (Z * A.exteriorNorm T.a * A.exteriorNorm T.n ^ 3 * C /
@@ -69,7 +72,7 @@ theorem frozen_profileArgument_dyadic (A : SArithmeticData F) (T : Frozen A)
   field_simp
   <;> ring
 
-theorem frozen_summand_sieve_form (A : SArithmeticData F) (G : AllowedRecipe A)
+theorem frozen_summand_sieve_form   (G : AllowedRecipe A)
     (U : UnitRepresentatives A) (σ : F →+* ℂ)
     (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
     (L : Fˣ →* ℂ) (H : A.V → ℝ → ℂ)
@@ -108,7 +111,7 @@ theorem frozen_summand_sieve_form (A : SArithmeticData F) (G : AllowedRecipe A)
   simp only [rowMask, columnMask, Complex.ofReal_inv]
   split_ifs <;> simp_all <;> field_simp <;> ring
 
-theorem frozen_row_window_finite (A : SArithmeticData F) (h : A.Exterior) (D : ℝ) :
+theorem frozen_row_window_finite   (h : A.Exterior) (D : ℝ) :
     {d : ExteriorSquarefreeIdeal A.cS |
       D ≤ A.exteriorNorm d.val ∧ A.exteriorNorm d.val < 2 * D ∧
         d.val.val ⊔ h.val = ⊤}.Finite := by
@@ -121,7 +124,7 @@ theorem frozen_row_window_finite (A : SArithmeticData F) (h : A.Exterior) (D : �
     exact Subtype.ext (Subtype.ext (congrArg (fun i : NonzeroIdeal F => i.val) hde))
   · exact normBoundedIdeals_finite F (2 * D)
 
-theorem frozen_row_finsum_eq_sum (A : SArithmeticData F) (h : A.Exterior)
+theorem frozen_row_finsum_eq_sum   (h : A.Exterior)
     (D : ℝ) (g : ExteriorSquarefreeIdeal A.cS → ℝ) :
     (∑ᶠ d : {d : ExteriorSquarefreeIdeal A.cS |
       D ≤ A.exteriorNorm d.val ∧ A.exteriorNorm d.val < 2 * D ∧
@@ -130,7 +133,7 @@ theorem frozen_row_finsum_eq_sum (A : SArithmeticData F) (h : A.Exterior)
   rw [finsum_subtype_eq_finsum_cond]
   exact finsum_mem_eq_finite_toFinset_sum g (frozen_row_window_finite A h D)
 
-theorem frozen_profile_scale_pos (A : SArithmeticData F) (T : Frozen A)
+theorem frozen_profile_scale_pos   (T : Frozen A)
     (Z C D : ℝ) (hZ : 0 < Z) (hC : 0 < C) (hD : 0 < D) :
     0 < Z * A.exteriorNorm T.a * A.exteriorNorm T.n ^ 3 * C /
       (D ^ 2 * A.exteriorNorm T.f ^ 2) := by
@@ -142,16 +145,16 @@ theorem frozen_profile_scale_pos (A : SArithmeticData F) (T : Frozen A)
     lt_of_lt_of_le zero_lt_one (idealNorm_ge_one _ T.f.property.1)
   positivity
 
- def liftColumn (A : SArithmeticData F) (f : ExteriorSquarefreeIdeal A.cS → ℂ)
+ def liftColumn   (f : ExteriorSquarefreeIdeal A.cS → ℂ)
     (I : Ideal (𝓞 F)) : ℂ :=
   if h : ∃ d : ExteriorSquarefreeIdeal A.cS, d.val.val = I then f h.choose else 0
-private theorem liftColumn_apply (A : SArithmeticData F)
+private theorem liftColumn_apply  
     (f : ExteriorSquarefreeIdeal A.cS → ℂ) (d : ExteriorSquarefreeIdeal A.cS) :
     liftColumn A f d.val.val = f d := by
   have h : ∃ e : ExteriorSquarefreeIdeal A.cS, e.val.val = d.val.val := ⟨d, rfl⟩
   have he : h.choose = d := Subtype.ext (Subtype.ext h.choose_spec)
   simp only [liftColumn, dif_pos h, he]
-private theorem liftColumn_norm_le (A : SArithmeticData F)
+private theorem liftColumn_norm_le  
     (f : ExteriorSquarefreeIdeal A.cS → ℂ) (hf : ∀ d, ‖f d‖ ≤ 1) :
     ∀ I, ‖liftColumn A f I‖ ≤ 1 := by
   intro I
@@ -159,7 +162,7 @@ private theorem liftColumn_norm_le (A : SArithmeticData F)
   split_ifs <;> simp_all
 
 theorem frozen_exterior_profiled_hgl
-     (A : SArithmeticData F)
+      
     (𝓕 : QuadraticHeckeFamily F A.cS)
     (J : Type) [Fintype J] (Φ : J → ℝ → ℂ)
     (hΦ : RMFourierProfile.UniformLogBounds Φ) (b : ℝ) (hb : 0 < b) :
@@ -200,10 +203,12 @@ theorem frozen_exterior_profiled_hgl
   dsimp only [f] at h
   simp_rw [liftColumn_apply] at h
   exact h
+end
+
 
 set_option maxHeartbeats 1000000 in
-theorem frozen_sliced_dyadic_bound
-    (A : SArithmeticData F) (G : AllowedRecipe A) (U : UnitRepresentatives A)
+section
+variable (A : SArithmeticData F) (G : AllowedRecipe A) (U : UnitRepresentatives A)
     (σ : F →+* ℂ)
     (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
     (hψ : ∀ p : ExteriorPrime A, (ψ p).IsPrimitive)
@@ -214,7 +219,10 @@ theorem frozen_sliced_dyadic_bound
     (𝓕 : QuadraticHeckeFamily F A.cS)
     (h𝓕 : ∀ d c : ExteriorSquarefreeIdeal A.cS,
       (𝓕.χ c.val.val) d.val.val = quadraticPairing A G σ d.val c.val)
-    (b : ℝ) (hb : 0 < b) :
+    (b : ℝ) (hb : 0 < b)
+include A G U σ ψ hψ L hL H hH 𝓕 h𝓕 b hb
+theorem frozen_sliced_dyadic_bound
+      :
     ∃ M : ℝ, 0 < M ∧ ∀ (u : A.UnitQuotient) (T : Frozen A)
       (sd sc : G.B) (Z C D : ℝ)
       (cs rs : Finset (ExteriorSquarefreeIdeal A.cS)),
@@ -300,18 +308,7 @@ theorem frozen_sliced_dyadic_bound
     _ = _ := by simp only [Real.rpow_eq_pow]; ring
 
 theorem frozen_dyadic_block_bound
-    (A : SArithmeticData F) (G : AllowedRecipe A) (U : UnitRepresentatives A)
-    (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (hψ : ∀ p : ExteriorPrime A, (ψ p).IsPrimitive)
-    (L : A.UnitQuotient → Fˣ →* ℂ)
-    (hL : ∀ (u : A.UnitQuotient) (x : Fˣ), ‖L u x‖ = 1)
-    (H : A.UnitQuotient → A.V → ℝ → ℂ)
-    (hH : RMSeparatedExpansion.FiniteProfileFamily A H)
-    (𝓕 : QuadraticHeckeFamily F A.cS)
-    (h𝓕 : ∀ d c : ExteriorSquarefreeIdeal A.cS,
-      (𝓕.χ c.val.val) d.val.val = quadraticPairing A G σ d.val c.val)
-    (b : ℝ) (hb : 0 < b) :
+      :
     ∃ K : ℝ, 0 < K ∧
       ∀ (u : A.UnitQuotient) (h : A.Exterior)
         (T : {T : Frozen A // T.h = h}) (Z C D : ℝ)
@@ -400,6 +397,8 @@ theorem frozen_dyadic_block_bound
           A.exteriorNorm T.val.n) * Real.rpow (D * C) (b / 2) * Real.sqrt (D + C) :=
       Finset.sum_le_sum (fun q _ => hq q)
     _ = _ := by simp; ring
+end
+
 
 end
 end DedekindZetaZeroFree.RMDyadicSieveAggregation

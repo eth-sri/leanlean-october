@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Representatives.TotallyPositiveCoprimeRepresentatives
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve
 
@@ -34,8 +37,8 @@ theorem exists_ray_inverse_coprime (F : Type) [Field F] [NumberField F]
   have hbI : b ∈ I := by
     have hb' : b - b0 ∈ I := hrI hbsub
     have : b = b0 + (b - b0) := by ring
-    rw [this]; exact Ideal.add_mem I hb0I hb'
-  have hspanb_le : Ideal.span {b} ≤ I := (Ideal.span_singleton_le_iff_mem I).mpr hbI
+    rw [this]; apply Ideal.add_mem <;> assumption
+  have hspanb_le  := (Ideal.span_singleton_le_iff_mem I).mpr hbI
   obtain ⟨J0, hJ0⟩ := (Ideal.dvd_iff_le.mpr hspanb_le : I ∣ Ideal.span {b})
   have hJ0ne : J0 ≠ ⊥ := by
     intro h
@@ -80,7 +83,7 @@ theorem exists_ray_inverse_coprime (F : Type) [Field F] [NumberField F]
     refine Ideal.coprime_of_no_prime_ge ?_
     intro P hle1 hle2 hP
     have hu0P : u0 ∈ P := hle1 (Ideal.mem_span_singleton_self u0)
-    have hbu0P : b * u0 ∈ P := Ideal.mul_mem_left P b hu0P
+    have hbu0P  := Ideal.mul_mem_left P b hu0P
     have hsubP : b * u0 - 1 ∈ P := hle2 hbu0
     have hone : (1 : 𝓞 F) ∈ P := by
       have : b * u0 - (b * u0 - 1) = 1 := by ring
@@ -97,9 +100,9 @@ theorem exists_ray_inverse_coprime (F : Type) [Field F] [NumberField F]
     exact (h1.mul_left h2).sup_eq
   · exact mul_ne_zero hbne hune
   · have h1 : b * u - b * u0 ∈ m := by
-      rw [← mul_sub]; exact Ideal.mul_mem_left m b husub
+      rw [← mul_sub]; apply Ideal.mul_mem_left <;> assumption
     have : b * u - 1 = (b * u - b * u0) + (b * u0 - 1) := by ring
-    rw [this]; exact Ideal.add_mem m h1 hbu0
+    rw [this]; apply Ideal.add_mem <;> assumption
   · intro φ
     have : ((b * u : 𝓞 F) : F) = (b : F) * (u : F) := by push_cast; ring
     rw [this, map_mul]

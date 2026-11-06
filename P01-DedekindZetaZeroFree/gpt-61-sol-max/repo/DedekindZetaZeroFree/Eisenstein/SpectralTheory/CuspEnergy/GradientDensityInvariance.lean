@@ -46,13 +46,15 @@ private theorem smooth_mean (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (KPCuspLogSh
   intro i hi
   exact contDiff_snd.comp (contDiff_apply ℝ KPArch.H3 i)
 
-private theorem derivative_smoothAt (d : ℕ) (g : Space d → ℂ) (x : Space d)
-    (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x) (i : Fin d) (k : Fin 3) :
+section
+variable (d : ℕ) (g : Space d → ℂ) (x : Space d)
+    (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x) (i : Fin d) (k : Fin 3)
+include d g x hg i k
+private theorem derivative_smoothAt   :
     ContDiffAt ℝ (⊤ : ℕ∞) (coordinateDerivative d i k g) x := by
   exact (hg.fderiv_right (by simp)).clm_apply contDiffAt_const
 
-private theorem differential_smoothAt (d : ℕ) (g : Space d → ℂ) (x : Space d)
-    (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x) (i : Fin d) (k : Fin 3) :
+private theorem differential_smoothAt   :
     ContDiffAt ℝ (⊤ : ℕ∞) (fun q => differential d g q i k) x := by
   have he : ContDiffAt ℝ (⊤ : ℕ∞) (fun q : Space d => (Real.exp (q (i,2)) : ℂ)) x :=
     Complex.ofRealCLM.contDiff.contDiffAt.comp x
@@ -61,6 +63,8 @@ private theorem differential_smoothAt (d : ℕ) (g : Space d → ℂ) (x : Space
   · simpa [differential] using derivative_smoothAt d g x hg i 2
   · simpa [differential] using he.mul (derivative_smoothAt d g x hg i 0)
   · simpa [differential] using he.mul (derivative_smoothAt d g x hg i 1)
+end
+
 
 private theorem representative_smoothAt (v : Representative ζ hζ S ρ V T)
     (x : Space (KPCuspLogShape.dimension F))
@@ -98,12 +102,15 @@ private theorem gradientSq_continuousOn (G : KPCuspCharts.ChartOutput F hF S D)
     (f := fun p : KPCuspCharts.Coordinates F => real _ (KPCuspCharts.toArch F p))
     chart_smooth.continuous.continuousAt).norm.pow 2)
 
- def archL (d : ℕ) : Space d →L[ℝ] KPArch.Space d :=
+ section
+variable (d : ℕ)
+include d
+def archL   : Space d →L[ℝ] KPArch.Space d :=
   LinearMap.toContinuousLinearMap {
     toFun := arch d
     map_add' := by intro x y; ext i <;> simp [arch, Complex.add_re, Complex.add_im]; rfl
     map_smul' := by intro a x; ext i : 1; apply Prod.ext <;> simp [arch, Complex.real_smul]; apply Complex.ext <;> simp }
- def realL (d : ℕ) : KPArch.Space d →L[ℝ] Space d :=
+ def realL   : KPArch.Space d →L[ℝ] Space d :=
   LinearMap.toContinuousLinearMap {
     toFun := real d
     map_add' := by
@@ -111,24 +118,24 @@ private theorem gradientSq_continuousOn (G : KPCuspCharts.ChartOutput F hF S D)
     map_smul' := by
       intro a x; ext ⟨i,k⟩; fin_cases k <;> simp [real, Complex.real_smul] }
 
-private lemma arch_real' (d : ℕ) (x : KPArch.Space d) : arch d (real d x) = x := by
+private lemma arch_real'   (x : KPArch.Space d) : arch d (real d x) = x := by
   ext i <;> simp [real, arch]
- def scaleL (d : ℕ) (w : Fin d × Fin 3 → ℝ) : Space d →L[ℝ] Space d :=
+ def scaleL   (w : Fin d × Fin 3 → ℝ) : Space d →L[ℝ] Space d :=
   LinearMap.toContinuousLinearMap {
     toFun := fun x => WithLp.toLp 2 (fun j => w j * x j)
     map_add' := by intro x y; ext j; simp [mul_add]
     map_smul' := by intro a x; ext j; simp; ring }
-private lemma scaleL_apply (d : ℕ) (w : Fin d × Fin 3 → ℝ) (z : Space d) (j) :
+private lemma scaleL_apply   (w : Fin d × Fin 3 → ℝ) (z : Space d) (j) :
     scaleL d w z j = w j * z j := rfl
- def frame (d : ℕ) (x : Space d) : Space d →L[ℝ] Space d :=
+ def frame   (x : Space d) : Space d →L[ℝ] Space d :=
   scaleL d (fun j => if j.2 = 2 then 1 else Real.exp (x (j.1, 2)))
- def unframe (d : ℕ) (x : Space d) : Space d →L[ℝ] Space d :=
+ def unframe   (x : Space d) : Space d →L[ℝ] Space d :=
   scaleL d (fun j => if j.2 = 2 then 1 else (Real.exp (x (j.1, 2)))⁻¹)
-private lemma frame_unframe (d : ℕ) (x z : Space d) : frame d x (unframe d x z) = z := by
+private lemma frame_unframe   (x z : Space d) : frame d x (unframe d x z) = z := by
   ext j
   simp only [frame, unframe, scaleL_apply]
   split_ifs <;> simp [Real.exp_ne_zero, ← mul_assoc]
-private lemma metric_frame (d : ℕ) (x z : Space d) :
+private lemma metric_frame   (x z : Space d) :
     KPArch.metric d (arch d x) (arch d (frame d x z)) = ‖z‖ ^ 2 := by
   rw [EuclideanSpace.real_norm_sq_eq, Fintype.sum_prod_type]
   simp only [KPArch.metric, KPArch.height, arch, frame, scaleL_apply,
@@ -137,7 +144,7 @@ private lemma metric_frame (d : ℕ) (x z : Space d) :
   intro i hi
   rw [← Complex.normSq_eq_norm_sq, Complex.normSq_apply]
   field_simp
-private lemma sum_norm_basis (d : ℕ) (L : Space d →L[ℝ] ℂ)
+private lemma sum_norm_basis   (L : Space d →L[ℝ] ℂ)
     (e : Space d ≃ₗᵢ[ℝ] Space d) :
     (∑ j, ‖L (e (EuclideanSpace.basisFun (Fin d × Fin 3) ℝ j))‖ ^ 2) =
     ∑ j, ‖L (EuclideanSpace.basisFun (Fin d × Fin 3) ℝ j)‖ ^ 2 := by
@@ -151,10 +158,10 @@ private lemma sum_norm_basis (d : ℕ) (L : Space d →L[ℝ] ℂ)
   rw [(EuclideanSpace.basisFun (Fin d × Fin 3) ℝ).norm_dual (Complex.imCLM.comp L)] at hi
   simpa only [OrthonormalBasis.map_apply, ContinuousLinearMap.comp_apply,
     Complex.reCLM_apply, Complex.imCLM_apply, pow_two] using congrArg₂ (· + ·) hr.symm hi.symm
-private lemma metric_unframe (d : ℕ) (x z : Space d) :
+private lemma metric_unframe   (x z : Space d) :
     ‖unframe d x z‖ ^ 2 = KPArch.metric d (arch d x) (arch d z) := by
   rw [← metric_frame d x (unframe d x z), frame_unframe]
-private lemma transport_sum (d : ℕ) (x y : Space d) (J : Space d →L[ℝ] Space d)
+private lemma transport_sum   (x y : Space d) (J : Space d →L[ℝ] Space d)
     (hm : ∀ z, KPArch.metric d (arch d y) (arch d (J z)) =
       KPArch.metric d (arch d x) (arch d z)) (L : Space d →L[ℝ] ℂ) :
     (∑ j, ‖L (J (frame d x (EuclideanSpace.basisFun (Fin d × Fin 3) ℝ j)))‖ ^ 2) =
@@ -169,7 +176,7 @@ private lemma transport_sum (d : ℕ) (x y : Space d) (J : Space d →L[ℝ] Spa
   have hh := sum_norm_basis d (L.comp (frame d y)) (E.toLinearIsometryEquiv rfl)
   simpa only [LinearIsometry.toLinearIsometryEquiv_apply, ContinuousLinearMap.comp_apply,
     E, LinearIsometry.coe_mk, ContinuousLinearMap.coe_coe, frame_unframe] using hh
-private lemma frame_basis (d : ℕ) (x : Space d) (i : Fin d) (k : Fin 3) :
+private lemma frame_basis   (x : Space d) (i : Fin d) (k : Fin 3) :
     frame d x (EuclideanSpace.basisFun (Fin d × Fin 3) ℝ (i,k)) =
       (if k = 2 then 1 else Real.exp (x (i,2))) • coordinateVector d i k := by
   ext j
@@ -179,7 +186,7 @@ private lemma frame_basis (d : ℕ) (x : Space d) (i : Fin d) (k : Fin 3) :
   by_cases h : j = (i,k)
   · subst j; simp
   · simp [h, Ne.symm h]
-private lemma differential_sum (d : ℕ) (g : Space d → ℂ) (x : Space d) :
+private lemma differential_sum   (g : Space d → ℂ) (x : Space d) :
     (∑ i, ∑ k, ‖differential d g x i k‖ ^ 2) =
       ∑ j, ‖fderiv ℝ g x (frame d x (EuclideanSpace.basisFun (Fin d × Fin 3) ℝ j))‖ ^ 2 := by
   rw [Fintype.sum_prod_type]
@@ -191,16 +198,21 @@ private lemma differential_sum (d : ℕ) (g : Space d → ℂ) (x : Space d) :
     Complex.real_smul, Complex.ofReal_one, one_mul]
   simp
   ring
- def realAction (d : ℕ) (a : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ)
+end
+
+ section
+variable (d : ℕ) (a : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ)
+include d a
+def realAction  
     (x : Space d) : Space d := real d (KPArch.productAction d a (arch d x))
-private lemma realAction_deriv (d : ℕ) (a : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ)
+private lemma realAction_deriv  
     (x : Space d) :
     HasFDerivAt (realAction d a)
       ((realL d).comp ((fderiv ℝ (KPArch.productAction d a) (arch d x)).comp (archL d))) x := by
   exact (realL d).hasFDerivAt.comp x
     (((KPArch.productAction_contDiff d a).differentiable (by simp) (arch d x)).hasFDerivAt.comp x
       (archL d).hasFDerivAt)
-private lemma realAction_metric (d : ℕ) (a : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ)
+private lemma realAction_metric  
     (x z : Space d) :
     KPArch.metric d (arch d (realAction d a x)) (arch d (fderiv ℝ (realAction d a) x z)) =
       KPArch.metric d (arch d x) (arch d z) := by
@@ -208,7 +220,7 @@ private lemma realAction_metric (d : ℕ) (a : Fin d → Matrix.GeneralLinearGro
   change KPArch.metric d (arch d (real d _)) (arch d (real d _)) = _
   rw [arch_real', arch_real']
   exact KPArch.metric_invariant d a (arch d x) (arch d z)
-private lemma differential_invariant (d : ℕ) (a : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ)
+private lemma differential_invariant  
     (g : Space d → ℂ) (x : Space d) (c : ℂ)
     (hg : DifferentiableAt ℝ g x) (hy : DifferentiableAt ℝ g (realAction d a x))
     (heq : (g ∘ realAction d a) =ᶠ[nhds x] fun z => c * g z) (hc : ‖c‖ = 1) :
@@ -228,6 +240,8 @@ private lemma differential_invariant (d : ℕ) (a : Fin d → Matrix.GeneralLine
     (frame d x (EuclideanSpace.basisFun (Fin d × Fin 3) ℝ j))) hd
   simpa only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.smul_apply,
     smul_eq_mul, norm_mul, hc, one_mul] using congrArg (fun z : ℂ => ‖z‖ ^ 2) hh
+end
+
 
 theorem gradientSq_continuousOn_and_invariant
     (G : KPCuspCharts.ChartOutput F hF S D)

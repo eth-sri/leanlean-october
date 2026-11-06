@@ -27,20 +27,25 @@ variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
  def permIsometry {n m : ℕ} (e : Fin n ≃ Fin m) : Space n ≃ₗᵢ[ℝ] Space m :=
   LinearIsometryEquiv.piLpCongrLeft 2 ℝ ℝ e
 
- def permBall {n m : ℕ} (e : Fin n ≃ Fin m) (B : LocalBall n) : LocalBall m :=
+ section
+variable {n m : ℕ} (e : Fin n ≃ Fin m) (B : LocalBall n)
+include n m e B in
+def permBall   : LocalBall m :=
   ⟨by
     have h : n = m := by simpa using Fintype.card_congr e
     exact h ▸ B.dimension_pos,
    permIsometry e B.center, B.radius, B.radius_pos⟩
 
-private theorem permBall_preimage {n m : ℕ} (e : Fin n ≃ Fin m) (B : LocalBall n) :
+include n m e B in
+private theorem permBall_preimage   :
     permIsometry e ⁻¹' (permBall e B).carrier = B.carrier := by
   ext x
   change dist (permIsometry e x) (permIsometry e B.center) < B.radius ↔ _
   rw [(permIsometry e).dist_map]
   rfl
 
-private theorem perm_preserving {n m : ℕ} (e : Fin n ≃ Fin m) (B : LocalBall n) :
+include n m e B in
+private theorem perm_preserving   :
     MeasurePreserving (permIsometry e) (volume.restrict B.carrier)
       (volume.restrict (permBall e B).carrier) := by
   have h := (permIsometry e).measurePreserving.restrict_preimage_emb
@@ -53,7 +58,8 @@ private theorem perm_single {n m : ℕ} (e : Fin n ≃ Fin m) (j : Fin n) :
   simp only [permIsometry, LinearIsometryEquiv.piLpCongrLeft_apply]
   simp [Pi.single_apply, Equiv.symm_apply_eq]
 
- def permTest {n m : ℕ} (e : Fin n ≃ Fin m) (B : LocalBall n)
+ include n m e B in
+def permTest  
     (φ : TestFunction B.toOpens ℂ ⊤) : TestFunction (permBall e B).toOpens ℂ ⊤ :=
   ⟨fun x => φ ((permIsometry e).symm x),
     φ.contDiff.comp (permIsometry e).symm.contDiff,
@@ -70,7 +76,8 @@ private theorem perm_single {n m : ℕ} (e : Fin n ≃ Fin m) (j : Fin n) :
       rw [(permIsometry e).apply_symm_apply] at he
       rwa [he]⟩
 
-private theorem permTest_deriv {n m : ℕ} (e : Fin n ≃ Fin m) (B : LocalBall n)
+include n m e B in
+private theorem permTest_deriv  
     (φ : TestFunction B.toOpens ℂ ⊤) (j : Fin n) (x : Space n) :
     coordinateDerivativeList [e j] (permTest e B φ) (permIsometry e x) =
       coordinateDerivativeList [j] φ x := by
@@ -107,7 +114,8 @@ private theorem first_degree {n : ℕ} (j : Fin n) :
     apply_ite Fin.val, Fin.val_one, Fin.val_zero]
   simp
 
-private theorem pull_weak_first {n m : ℕ} (e : Fin n ≃ Fin m) (B : LocalBall n)
+include n m e B in
+private theorem pull_weak_first  
     (h : IntegerSobolev (permBall e B) 1) (j : Fin n) :
     IsWeakDerivative B (KPContLocalEnergy.firstIndex j)
       (Lp.compMeasurePreserving (permIsometry e) (perm_preserving e B) (KPContLocalEnergy.value h))
@@ -146,6 +154,8 @@ private theorem pull_weak_first {n m : ℕ} (e : Fin n ≃ Fin m) (B : LocalBall
         (perm_preserving e B)] with x hx
       rw [hx]
       rfl
+end
+
 
 private theorem ballLp_locallyIntegrable {n : ℕ} (B : LocalBall n) (u : BallL2 B) :
     LocallyIntegrableOn u B.carrier (volume.restrict B.carrier) := by
@@ -203,8 +213,11 @@ open KPContCotangentActualOverlap
   finProdFinEquiv.symm.trans
     ((Equiv.prodCongr (placeEquiv F ζ hζ).symm (Equiv.refl (Fin 3))).trans coefficientIndex)
 
+
+local notation:max "current_coordinateIndex" => coordinateIndex (F := F) (ζ := ζ) (hζ := hζ)
+
 private theorem coordinateIndex_inverse (ik : Fin (d F) × Fin 3) :
-    (coordinateIndex (F := F) (ζ := ζ) (hζ := hζ)).symm (coefficientIndex ik) =
+    (current_coordinateIndex).symm (coefficientIndex ik) =
       finProdFinEquiv ((placeEquiv F ζ hζ) ik.1, ik.2) := by
   change finProdFinEquiv
     ((Equiv.prodCongr (placeEquiv F ζ hζ).symm (Equiv.refl (Fin 3))).symm
@@ -214,16 +227,16 @@ private theorem coordinateIndex_inverse (ik : Fin (d F) × Fin 3) :
 
 private theorem coordinate_compat (p : Space (KPCuspLogShape.dimension F * 3)) :
     (baseReindex (F := F)).symm
-      (permIsometry (coordinateIndex (F := F) (ζ := ζ) (hζ := hζ)) p) =
+      (permIsometry (current_coordinateIndex) p) =
       labeledAInv (placeEquiv F ζ hζ) (coordinates F p) := by
   apply PiLp.ext
   intro ik
   have hleft : ((baseReindex (F := F)).symm
-      (permIsometry (coordinateIndex (F := F) (ζ := ζ) (hζ := hζ)) p)) ik =
+      (permIsometry (current_coordinateIndex) p)) ik =
         p (finProdFinEquiv ((placeEquiv F ζ hζ) ik.1, ik.2)) := by
     simp only [baseReindex, LinearIsometryEquiv.piLpCongrLeft_symm,
       LinearIsometryEquiv.piLpCongrLeft_apply, permIsometry]
-    change p ((coordinateIndex (F := F) (ζ := ζ) (hζ := hζ)).symm
+    change p ((current_coordinateIndex).symm
       (coefficientIndex ik)) = _
     rw [coordinateIndex_inverse]
   rw [hleft]
@@ -239,8 +252,8 @@ private theorem labeled_inverse (x : KPCuspGenuineMonodromy.SymmetricSpace F) :
 private theorem coord_ball_inside (a : ShrunkChart F ζ hζ U R P H)
     (A : LocalBall (KPCuspLogShape.dimension F * 3))
     (hA : coordinates F '' KPContLocalCubeEmbedding.closedCarrier A ⊆ a.domain) :
-    InteriorBall a (permBall (coordinateIndex (F := F) (ζ := ζ) (hζ := hζ)) A) := by
-  let e := coordinateIndex (F := F) (ζ := ζ) (hζ := hζ)
+    InteriorBall a (permBall (current_coordinateIndex) A) := by
+  let e := current_coordinateIndex
   constructor
   · change IsCompact (closure (Metric.ball (permIsometry e A.center) A.radius))
     rw [closure_ball _ (ne_of_gt A.radius_pos)]
@@ -295,7 +308,7 @@ theorem coordinate_weak_gradient_decode (s : BorelL2Sections F ζ hζ U R P H)
         (KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ) *
           ![(Real.exp (-q (k, 2)) : ℂ) * v (k, 1),
             (Real.exp (-q (k, 2)) : ℂ) * v (k, 2), v (k, 0)] ik.2) := by
-  let e := coordinateIndex (F := F) (ζ := ζ) (hζ := hζ)
+  let e := current_coordinateIndex
   let B := permBall e A
   have hB : InteriorBall a B := coord_ball_inside a A hA
   obtain ⟨h, h0, hgrad⟩ := hsW a B hB ε

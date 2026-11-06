@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import Mathlib.MeasureTheory.Integral.DominatedConvergence
 
 @[expose] public section
+
 
 noncomputable section
 open MeasureTheory
@@ -11,31 +14,33 @@ namespace DedekindZetaZeroFree.OrbitExpansion.AbsoluteIntegration
 variable {X ι : Type*} [MeasurableSpace X] [Countable ι]
   {μ : Measure X} {f : ι → X → ℂ}
 
-theorem absolute_mass_finite (hi : ∀ i, Integrable (f i) μ)
-    (hs : Summable (fun i => ∫ x, ‖f i x‖ ∂μ)) :
+section
+variable (hi : ∀ i, Integrable (f i) μ)
+    (hs : Summable (fun i => ∫ x, ‖f i x‖ ∂μ))
+include hi hs
+theorem absolute_mass_finite   :
     (∫⁻ x, ∑' i, ‖f i x‖ₑ ∂μ) < ⊤ := by
   rw [lintegral_tsum (fun i => (hi i).aestronglyMeasurable.enorm)]
-  have he (i : ι) : (∫⁻ x, ‖f i x‖ₑ ∂μ) = ENNReal.ofReal (∫ x, ‖f i x‖ ∂μ) := by
-    simpa only [enorm_eq_nnnorm, coe_nnnorm] using lintegral_coe_eq_integral
+  have he (i : ι) : (∫⁻ x, ‖f i x‖ₑ ∂μ) = ENNReal.ofReal (∫ x, ‖f i x‖ ∂μ) := lintegral_coe_eq_integral
       (fun x => ‖f i x‖₊) (hi i).norm
   simp_rw [he]
   rw [← ENNReal.ofReal_tsum_of_nonneg (fun i => integral_nonneg (fun x => norm_nonneg _)) hs]
   exact ENNReal.ofReal_lt_top
 
-theorem norm_sum_ae (hi : ∀ i, Integrable (f i) μ)
-    (hs : Summable (fun i => ∫ x, ‖f i x‖ ∂μ)) :
+theorem norm_sum_ae   :
     ∀ᵐ x ∂μ, Summable (fun i => ‖f i x‖) := by
   have hm := absolute_mass_finite hi hs
   filter_upwards [ae_lt_top' (AEMeasurable.tsum
     (fun i => (hi i).aestronglyMeasurable.enorm)) hm.ne] with x hx
   exact tsum_enorm_ne_top_iff_summable_norm.mp hx.ne
 
-theorem integrable_sum (hi : ∀ i, Integrable (f i) μ)
-    (hs : Summable (fun i => ∫ x, ‖f i x‖ ∂μ)) :
+theorem integrable_sum   :
     Integrable (fun x => ∑' i, f i x) μ := by
   have hm := absolute_mass_finite hi hs
   refine ⟨AEStronglyMeasurable.tsum (fun i => (hi i).aestronglyMeasurable), ?_⟩
   exact lt_of_le_of_lt (lintegral_mono (fun _ => enorm_tsum_le_tsum_enorm)) hm
+end
+
 
 theorem hasSum_integral {g : X → ℂ} (hi : ∀ i, Integrable (f i) μ)
     (hs : Summable (fun i => ∫ x, ‖f i x‖ ∂μ))

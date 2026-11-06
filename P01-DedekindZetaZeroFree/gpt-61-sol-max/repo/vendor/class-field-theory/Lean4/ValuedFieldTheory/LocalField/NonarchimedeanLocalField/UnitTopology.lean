@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.LocalField.NonarchimedeanLocalField.Basic
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -31,15 +34,18 @@ namespace LocalFieldTheory
 open scoped ValuativeRel
 open _root_.LocalFieldTheory.IsNonarchimedeanLocalField
 
+section
+variable (K : Type u) [Field K] [ValuativeRel K]
+include K
 /-- The image of valuation-ring units in the field unit group. -/
 def localBaseUnitSubgroup
-    (K : Type u) [Field K] [ValuativeRel K] : Subgroup Kˣ :=
+       :=
   MonoidHom.range (integerUnitsToFieldUnits K)
 
 /-- A field unit lies in the image of valuation-ring units exactly when its
 valuation is one. -/
 theorem mem_localBaseUnitSubgroup_iff_valuation_eq_one
-    (K : Type u) [Field K] [ValuativeRel K] (x : Kˣ) :
+      (x : Kˣ) :
     x ∈ localBaseUnitSubgroup K ↔ ValuativeRel.valuation K (x : K) = 1 := by
   constructor
   · rintro ⟨a, rfl⟩
@@ -61,7 +67,7 @@ theorem mem_localBaseUnitSubgroup_iff_valuation_eq_one
 /-- The image of valuation-ring units is open in the native topology of a
 nonarchimedean local field. -/
 theorem localBaseUnitSubgroup_isOpen
-    (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
+      [TopologicalSpace K]
     [IsNonarchimedeanLocalField K] :
     IsOpen (localBaseUnitSubgroup K : Set Kˣ) := by
   have hsphere : IsOpen {x : K | ValuativeRel.valuation K x = 1} :=
@@ -75,6 +81,8 @@ theorem localBaseUnitSubgroup_isOpen
     ext x
     exact mem_localBaseUnitSubgroup_iff_valuation_eq_one K x]
   exact hpre
+end
+
 
 end LocalFieldTheory
 

@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Ramification.GaloisValuation.Ramification
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -64,7 +67,7 @@ namespace NonarchimedeanDepth
 variable (D : NonarchimedeanDepth G)
 
 /-- States the theorem `depth_one`. -/
-@[simp] theorem depth_one : D.depth 1 = ⊤ :=
+@[simp] def depth_one  :=
   (D.depth_eq_top_iff 1).2 rfl
 
 /-- States the theorem `depth_ne_top_iff`. -/
@@ -96,29 +99,31 @@ instance quotientFiber_nonempty (q : G ⧸ H) : Nonempty (QuotientFiber H q) := 
   obtain ⟨σ, rfl⟩ := QuotientGroup.mk'_surjective H q
   exact ⟨⟨σ, rfl⟩⟩
 
+section
+variable {q : G ⧸ H} (hq : q ≠ 1)
+    (σ : QuotientFiber H q)
+include q hq σ
 /-- States the theorem `ne_one_of_mem_quotientFiber`. -/
-theorem ne_one_of_mem_quotientFiber {q : G ⧸ H} (hq : q ≠ 1)
-    (σ : QuotientFiber H q) : (σ : G) ≠ 1 := by
+theorem ne_one_of_mem_quotientFiber   : (σ : G) ≠ 1 := by
   intro hσ
   apply hq
   rw [← σ.property, hσ]
   simp
 
 /-- States the theorem `depth_ne_top_of_mem_quotientFiber`. -/
-theorem depth_ne_top_of_mem_quotientFiber {q : G ⧸ H} (hq : q ≠ 1)
-    (σ : QuotientFiber H q) : D.depth (σ : G) ≠ ⊤ :=
+def depth_ne_top_of_mem_quotientFiber    :=
   D.depth_ne_top_iff.2 (ne_one_of_mem_quotientFiber H hq σ)
 
 /-- The finite natural depth of an element in a nontrivial quotient fibre. -/
-def quotientFiberDepth {q : G ⧸ H} (hq : q ≠ 1)
-    (σ : QuotientFiber H q) : ℕ :=
+def quotientFiberDepth    :=
   (D.depth (σ : G)).untop (D.depth_ne_top_of_mem_quotientFiber H hq σ)
 
 /-- States the theorem `coe_quotientFiberDepth`. -/
-theorem coe_quotientFiberDepth {q : G ⧸ H} (hq : q ≠ 1)
-    (σ : QuotientFiber H q) :
+theorem coe_quotientFiberDepth   :
     (D.quotientFiberDepth H hq σ : WithTop ℕ) = D.depth (σ : G) :=
   WithTop.coe_untop _ _
+end
+
 
 /-- Every nontrivial fibre of a finite quotient has a representative of
 maximal depth.  The conclusion is stated back in `WithTop ℕ`, rather than in
@@ -160,20 +165,23 @@ def rightCosetEquivQuotientFiber (σ : G) : H ≃ QuotientFiber H (QuotientGroup
     apply Subtype.ext
     simp
 
-/-- States the theorem `card_quotientFiber`. -/
-theorem card_quotientFiber [Finite G] (σ : G) :
-    Fintype.card (QuotientFiber H (QuotientGroup.mk' H σ)) = Fintype.card H := by
-  classical
-  exact (Fintype.card_congr (rightCosetEquivQuotientFiber H σ)).symm
 
+
+
+
+
+
+section
+variable [Finite G]
+    {M : Type*} [AddCommMonoid M] (f : G → M)
+include M f
 /-- Reindex a sum over a quotient fibre by multiplication with elements of
 the normal subgroup. -/
-theorem sum_quotientFiber_eq_sum_subgroup [Finite G]
-    {M : Type*} [AddCommMonoid M] (f : G → M) (σ : G) :
+theorem sum_quotientFiber_eq_sum_subgroup   (σ : G) :
     (∑ γ : QuotientFiber H (QuotientGroup.mk' H σ), f (γ : G)) =
       ∑ τ : H, f (σ * τ) := by
   classical
-  simpa using Fintype.sum_equiv
+  exact Fintype.sum_equiv
     (rightCosetEquivQuotientFiber H σ).symm
     (fun γ : QuotientFiber H (QuotientGroup.mk' H σ) => f (γ : G))
     (fun τ : H => f (σ * τ)) (fun γ => by
@@ -181,8 +189,7 @@ theorem sum_quotientFiber_eq_sum_subgroup [Finite G]
       simp)
 
 /-- Partition a finite sum over `G` into the fibres of the quotient map. -/
-theorem sum_quotientFiber [Finite G]
-    {M : Type*} [AddCommMonoid M] (f : G → M) :
+theorem sum_quotientFiber   :
     (∑ q : G ⧸ H, ∑ σ : QuotientFiber H q, f (σ : G)) = ∑ σ : G, f σ := by
   classical
   calc
@@ -194,6 +201,8 @@ theorem sum_quotientFiber [Finite G]
       (Equiv.sigmaFiberEquiv (QuotientGroup.mk' H))
       (fun z : (q : G ⧸ H) × QuotientFiber H q => f (z.2 : G))
       f (fun _ => rfl)
+end
+
 
 /-- The maximal-representative identity in the proof of Herbrand's theorem.
 If `σ` has maximal depth in its quotient fibre, then multiplication by every
@@ -229,33 +238,33 @@ theorem sum_depth_quotientFiber_eq_sum_min_of_maximal_representative
   intro τ _
   rw [D.depth_mul_eq_min_of_maximal_representative H hmax τ]
 
-/-- Combined existence form used verbatim in the group-theoretic step of
-the Herbrand quotient theorem. -/
-theorem exists_representative_depth_mul_eq_min [Finite G]
-    {q : G ⧸ H} (hq : q ≠ 1) :
-    ∃ σ : G, QuotientGroup.mk' H σ = q ∧
-      ∀ τ : H, D.depth (σ * τ) = min (D.depth (τ : G)) (D.depth σ) := by
-  obtain ⟨σ, hσq, hmax⟩ := D.exists_maximal_depth_representative H hq
-  refine ⟨σ, hσq, ?_⟩
-  intro τ
-  apply D.depth_mul_eq_min_of_maximal_representative H
-  intro γ hγ
-  exact hmax γ (hγ.trans hσq)
 
-/-- Existence form of the fibre-sum identity for a nontrivial quotient
-element. -/
-theorem exists_representative_sum_depth_eq_sum_min [Finite G]
-    {M : Type*} [AddCommMonoid M] (f : WithTop ℕ → M)
-    {q : G ⧸ H} (hq : q ≠ 1) :
-    ∃ σ : G, QuotientGroup.mk' H σ = q ∧
-      (∑ γ : QuotientFiber H q, f (D.depth (γ : G))) =
-        ∑ τ : H, f (min (D.depth (τ : G)) (D.depth σ)) := by
-  obtain ⟨σ, hσq, hmax⟩ := D.exists_maximal_depth_representative H hq
-  refine ⟨σ, hσq, ?_⟩
-  rw [← hσq]
-  apply D.sum_depth_quotientFiber_eq_sum_min_of_maximal_representative H f
-  intro γ hγ
-  exact hmax γ (hγ.trans hσq)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end NonarchimedeanDepth
 end HerbrandGroupTheory

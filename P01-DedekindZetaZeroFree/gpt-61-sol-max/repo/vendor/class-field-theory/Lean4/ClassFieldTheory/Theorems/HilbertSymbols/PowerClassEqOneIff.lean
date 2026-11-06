@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.Definitions.HilbertSymbols.PowerClass
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -32,7 +35,6 @@ power. -/
 theorem powerClass_eq_one_iff
     (K : Type u) [Field K] (n : ℕ+) (a : Kˣ) :
     powerClass K n a = 1 ↔
-      a ∈ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range := by
-  exact QuotientGroup.eq_one_iff a
+      a ∈ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range := QuotientGroup.eq_one_iff a
 
 end ClassFieldTheory

@@ -1,9 +1,12 @@
 module
+
+public import Mathlib
 public import Mathlib.MeasureTheory.Integral.Asymptotics
 
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.Complex.HarmonicKTypes
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.KPCplxHarmonicIntertwinerSpectrum
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts MeasureTheory
@@ -40,7 +43,7 @@ private lemma tail_bigO (f : PrincipalSeries positiveParameter) :
     exact hx.le
   filter_upwards [hev] with x hx
   have hx0 : x ≠ 0 := by intro h; simp [h] at hx; norm_num at hx
-  have hxp : 0 < ‖x‖ := norm_pos_iff.mpr hx0
+  
   have hxi : x⁻¹ ∈ Metric.closedBall (0 : ℂ) 1 := by
     simp only [Metric.mem_closedBall, dist_zero_right, norm_inv]
     exact inv_le_one_of_one_le₀ hx

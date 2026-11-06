@@ -33,7 +33,7 @@ local notation "V" => KPContActualAllCuspSource.level F ζ hζ C R P H U
 local notation "Smooth" => KPContActualAllCuspSource.SmoothSections F ζ hζ C R P H U
 local notation "Q" => KPSmoothLocalQuotientCharts.quotientMap F ζ hζ
 local instance averagedEigentestMeasurableSpace : MeasurableSpace (K_U F ζ hζ V) := borel (K_U F ζ hζ V)
-local instance averagedEigentestBorelSpace : BorelSpace (K_U F ζ hζ V) := ⟨rfl⟩
+
 
 theorem exists_averaged_eigentest (f : KPSmoothActualFlowData.X F ζ hζ → ℂ)
     (hf : KPLiteralRaw.Smooth F ζ hζ (f ∘ Q))

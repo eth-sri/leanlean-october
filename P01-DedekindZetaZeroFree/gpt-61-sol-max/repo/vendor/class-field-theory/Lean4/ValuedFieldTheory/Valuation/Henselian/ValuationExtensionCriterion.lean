@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Valuation.Henselian.NonmonicReduction
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -51,7 +54,7 @@ theorem MonicResidualCoprimeFactorLifting.leadingCoeff_unit_branch
       (IsLocalRing.residue V) hlead
   refine ⟨hdegree, ?_⟩
   intro a b hfactor hcoprime
-  let u : Vˣ := hlead.unit
+  let u  := hlead.unit
   let F : Polynomial V := Polynomial.C ((u⁻¹ : Vˣ) : V) * Q
   have hu : (u : V) = Q.leadingCoeff := hlead.unit_spec
   have hFmonic : F.Monic := by
@@ -60,10 +63,8 @@ theorem MonicResidualCoprimeFactorLifting.leadingCoeff_unit_branch
     rw [← hu]
     simp
   have hscalarUnitK : IsUnit (((u⁻¹ : Vˣ) : V) : K) := by
-    exact isUnit_iff_ne_zero.mpr
-      (V.subtype_injective.ne (Units.ne_zero (u⁻¹ : Vˣ)))
-  have hCunitK :
-      IsUnit (Polynomial.C (((u⁻¹ : Vˣ) : V) : K)) :=
+    apply isUnit_iff_ne_zero.mpr <;> aesop
+  have hCunitK  :=
     Polynomial.isUnit_C.mpr hscalarUnitK
   have hFmap :
       F.map V.subtype =
@@ -76,10 +77,10 @@ theorem MonicResidualCoprimeFactorLifting.leadingCoeff_unit_branch
       rw [hFmap]
       exact associated_unit_mul_left _ _ hCunitK
     exact hassoc.symm.irreducible hQirr
-  let c : IsLocalRing.ResidueField V :=
+  let c  :=
     IsLocalRing.residue V (((u⁻¹ : Vˣ) : V))
   have hcunit : IsUnit c :=
-    (IsLocalRing.residue V).isUnit_map (Units.isUnit (u⁻¹ : Vˣ))
+    (IsLocalRing.residue V).isUnit_map (Units.isUnit (u⁻¹))
   have hCunit : IsUnit (Polynomial.C c) :=
     Polynomial.isUnit_C.mpr hcunit
   let a' : Polynomial (IsLocalRing.ResidueField V) := Polynomial.C c * a
@@ -99,16 +100,16 @@ theorem MonicResidualCoprimeFactorLifting.leadingCoeff_unit_branch
   have ha'0 : a' ≠ 0 := by
     dsimp [a']
     exact mul_ne_zero hCunit.ne_zero hab0.1
-  have ha'lead0 : a'.leadingCoeff ≠ 0 :=
+  have ha'lead0  :=
     Polynomial.leadingCoeff_ne_zero.mpr ha'0
   have hleadProduct : a'.leadingCoeff * b.leadingCoeff = 1 := by
     have hproductMonic : (a' * b).Monic := by
       rw [← hfactor']
-      exact hFmonic.map (IsLocalRing.residue V)
+      apply hFmonic.map
     simpa only [Polynomial.Monic, Polynomial.leadingCoeff_mul] using hproductMonic
-  let A : Polynomial (IsLocalRing.ResidueField V) :=
+  let A  :=
     Polynomial.C a'.leadingCoeff⁻¹ * a'
-  let B : Polynomial (IsLocalRing.ResidueField V) :=
+  let B  :=
     Polynomial.C a'.leadingCoeff * b
   have hAmonic : A.Monic := by
     dsimp [A]
@@ -131,13 +132,13 @@ theorem MonicResidualCoprimeFactorLifting.leadingCoeff_unit_branch
   have hCinvUnit : IsUnit (Polynomial.C a'.leadingCoeff⁻¹) :=
     Polynomial.isUnit_C.mpr
       (isUnit_iff_ne_zero.mpr (inv_ne_zero ha'lead0))
-  have hCleadUnit : IsUnit (Polynomial.C a'.leadingCoeff) :=
+  have hCleadUnit  :=
     Polynomial.isUnit_C.mpr (isUnit_iff_ne_zero.mpr ha'lead0)
   have hcoprimeAB : IsCoprime A B := by
     dsimp [A, B]
     exact
       (isCoprime_mul_units_left hCinvUnit hCleadUnit a' b).2 hcoprime'
-  have hdegrees : A.natDegree = 0 ∨ B.natDegree = 0 :=
+  have hdegrees  :=
     hlift.irreducible_monic_reduction_coprime_factor_degree_zero
       hFmonic hFirr hAmonic hBmonic hfactorAB hcoprimeAB
   have hAdegree : A.natDegree = a'.natDegree := by
@@ -156,70 +157,70 @@ theorem MonicResidualCoprimeFactorLifting.leadingCoeff_unit_branch
     (fun hA ↦ Or.inl (ha'degree.symm.trans (hAdegree.symm.trans hA)))
     (fun hB ↦ Or.inr (hBdegree.symm.trans hB))
 
-/-- the factor-lifting criterion's irreducible-factor input.  Exact monic lifting forces a
-primitive irreducible polynomial to have either full-degree or constant
-reduction, and the reduction has no coprime splitting into two nonconstant
-factors. -/
-theorem primitiveIrreducibleReductionProperty_of_monicResidualCoprimeFactorLifting
-    {K : Type u} [Field K] (V : ValuationSubring K)
-    (hlift : MonicResidualCoprimeFactorLifting V) :
-    PrimitiveIrreducibleReductionProperty V := by
-  intro Q hQprim hQirr
-  let qbar : Polynomial (IsLocalRing.ResidueField V) :=
-    Q.map (IsLocalRing.residue V)
-  have hqbar0 : qbar ≠ 0 :=
-    residue_ne_zero_of_isPrimitive_valuationSubring V hQprim
-  by_cases hlead : IsUnit Q.leadingCoeff
-  · have hbranch := hlift.leadingCoeff_unit_branch hQprim hQirr hlead
-    exact ⟨Or.inr hbranch.1, hbranch.2⟩
-  · let L : Type u := (Q.map V.subtype).SplittingField
-    obtain ⟨B, _hB, _hlocal, _hpullback, hExt⟩ :=
-      ValuationTheory.DiscreteValuationField.Valuation.exists_extension_valuationSubring_with_hasExtension
-        (L := L) V.valuation
-    let : V.valuation.HasExtension B.valuation := hExt
-    let : Normal K L :=
-      Normal.of_isSplittingField (Q.map V.subtype)
-    have hsplit :
-        ((Q.map V.subtype).map (algebraMap K L)).Splits :=
-      IsSplittingField.splits L (Q.map V.subtype)
-    have hrootsEq : ∀ {a b : L},
-        a ∈ ((Q.map V.subtype).map (algebraMap K L)).roots →
-        b ∈ ((Q.map V.subtype).map (algebraMap K L)).roots →
-        B.valuation a = B.valuation b := by
-      intro a b ha hb
-      exact hlift.irreducible_roots_same_valuation B hQirr hsplit ha hb
-    have hdegree : qbar.natDegree = 0 :=
-      AlgebraicNumberTheory.Valuations.primitive_irreducible_reduction_natDegree_zero_of_leadingCoeff_nonunit_of_roots_eq
-        V B Q hQprim hQirr hlead hrootsEq
-    refine ⟨Or.inl hdegree, ?_⟩
-    intro a b hfactor _hcoprime
-    have hab : a * b ≠ 0 := by
-      rw [← hfactor]
-      exact hqbar0
-    have hmulDegree :=
-      Polynomial.natDegree_mul (left_ne_zero_of_mul hab)
-        (right_ne_zero_of_mul hab)
-    have hsum : a.natDegree + b.natDegree = 0 := by
-      rw [← hmulDegree, ← hfactor, hdegree]
-    exact Or.inl (Nat.eq_zero_of_add_eq_zero_right hsum)
 
-/-- the factor-lifting criterion: monic coprime-factor lifting is sufficient for
-Hensel's lemma in the exact primitive factorization form of the primitive factorization definition. -/
-theorem henselianValuationExtension
-    {K : Type u} [Field K] (V : ValuationSubring K)
-    (hlift : MonicResidualCoprimeFactorLifting V) :
-    HenselFactorizationProperty V :=
-  henselFactorization_of_primitiveIrreducibleReductionProperty V
-    (primitiveIrreducibleReductionProperty_of_monicResidualCoprimeFactorLifting
-      V hlift)
 
-/-- Exact criterion form of the factor-lifting criterion.  The reverse implication is the
-monic specialization of the primitive factorization definition. -/
-theorem henselianValuationExtension_iff
-    {K : Type u} [Field K] (V : ValuationSubring K) :
-    MonicResidualCoprimeFactorLifting V ↔ HenselFactorizationProperty V :=
-  ⟨henselianValuationExtension V,
-    monicResidualCoprimeFactorLifting_of_henselFactorization⟩
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end DiscreteValuationField
 

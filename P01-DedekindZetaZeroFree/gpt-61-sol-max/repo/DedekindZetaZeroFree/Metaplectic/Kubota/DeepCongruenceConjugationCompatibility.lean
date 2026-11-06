@@ -37,12 +37,15 @@ private lemma X_continuousAt_open (g : KPLocalCube.LocalGL2 F v)
     simp [KubotaRankTwo.X, KubotaRankTwo.x, hk]
   exact hc.continuousAt.congr hh.symm
 
-private lemma cubes_nhds (m : ℕ) (hm : 1 ≤ m)
+section
+variable (m : ℕ) (hm : 1 ≤ m)
     (hcharts : ∀ k ∈ KPLocalCube.Gamma F v m,
       (∀ i : Fin 2, ∃ t : (KPLocalCube.LocalField F v)ˣ,
         ((t ^ 3 : (KPLocalCube.LocalField F v)ˣ) :
           KPLocalCube.LocalField F v) = k i i) ∧
-      Matrix.GeneralLinearGroup.det k ∈ KPLocalCube.cubes F v) :
+      Matrix.GeneralLinearGroup.det k ∈ KPLocalCube.cubes F v)
+include m hm hcharts in
+private lemma cubes_nhds   :
     (KPLocalCube.cubes F v : Set (KPLocalCube.LocalField F v)ˣ) ∈ 𝓝 1 := by
   have hc : Continuous (fun t : (KPLocalCube.LocalField F v)ˣ =>
       KubotaRankTwo.d (KPLocalCube.LocalField F v) t 1) := by
@@ -66,20 +69,23 @@ private lemma cubes_nhds (m : ℕ) (hm : 1 ≤ m)
   obtain ⟨u, hu⟩ := (hcharts _ ht).1 0
   exact ⟨u, Units.ext (by simpa [KubotaRankTwo.coe_d] using hu)⟩
 
+
+local notation:max "current_sectionMap" => KPLocalCover.sectionMap F ζ hζ
+
 private lemma lift_conjugation (g k : KPLocalCube.LocalGL2 F v)
-    (hs : KPLocalCover.sectionMap F ζ hζ (Sum.inr v) g *
-      KPLocalCover.sectionMap F ζ hζ (Sum.inr v) k *
-      (KPLocalCover.sectionMap F ζ hζ (Sum.inr v) g)⁻¹ =
-      KPLocalCover.sectionMap F ζ hζ (Sum.inr v) (g * k * g⁻¹))
+    (hs : current_sectionMap (Sum.inr v) g *
+      current_sectionMap (Sum.inr v) k *
+      (current_sectionMap (Sum.inr v) g)⁻¹ =
+      current_sectionMap (Sum.inr v) (g * k * g⁻¹))
     (x : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr v)) (hx : x.g = g) :
-    x * KPLocalCover.sectionMap F ζ hζ (Sum.inr v) k * x⁻¹ =
-      KPLocalCover.sectionMap F ζ hζ (Sum.inr v) (g * k * g⁻¹) := by
+    x * current_sectionMap (Sum.inr v) k * x⁻¹ =
+      current_sectionMap (Sum.inr v) (g * k * g⁻¹) := by
   have hs' := (mul_inv_eq_iff_eq_mul).mp hs
   have he := congrArg KPLocalCover.CubicGL2Raw.epsilon hs'
   simp only [KPLocalCover.mul_epsilon, KPLocalCover.sectionMap_epsilon,
     KPLocalCover.sectionMap_g, one_mul] at he
-  have hmul : x * KPLocalCover.sectionMap F ζ hζ (Sum.inr v) k =
-      KPLocalCover.sectionMap F ζ hζ (Sum.inr v) (g * k * g⁻¹) * x := by
+  have hmul : x * current_sectionMap (Sum.inr v) k =
+      current_sectionMap (Sum.inr v) (g * k * g⁻¹) * x := by
     cases x with
     | mk xg xe =>
       dsimp at hx
@@ -94,8 +100,8 @@ private lemma lift_conjugation (g k : KPLocalCube.LocalGL2 F v)
  def Good (g : KPLocalCube.LocalGL2 F v) : Prop :=
   ∀ᶠ k in 𝓝 (1 : KPLocalCube.LocalGL2 F v),
     ∀ x : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr v), x.g = g →
-      x * KPLocalCover.sectionMap F ζ hζ (Sum.inr v) k * x⁻¹ =
-        KPLocalCover.sectionMap F ζ hζ (Sum.inr v) (g * k * g⁻¹)
+      x * current_sectionMap (Sum.inr v) k * x⁻¹ =
+        current_sectionMap (Sum.inr v) (g * k * g⁻¹)
 
 private lemma symbol_cube_left (a b : (KPLocalCube.LocalField F v)ˣ)
     (ha : a ∈ KPLocalCube.cubes F v) : KPHilbert.B3 F ζ hζ (Sum.inr v) a b = 1 := by
@@ -107,12 +113,8 @@ private lemma symbol_cube_right (a b : (KPLocalCube.LocalField F v)ˣ)
   obtain ⟨t, rfl⟩ := hb
   exact (KPHilbert.B3_laws F ζ hζ (Sum.inr v)).2.2.2.2.1 a t |>.2
 
-private lemma Good_open (m : ℕ) (hm : 1 ≤ m)
-    (hcharts : ∀ k ∈ KPLocalCube.Gamma F v m,
-      (∀ i : Fin 2, ∃ t : (KPLocalCube.LocalField F v)ˣ,
-        ((t ^ 3 : (KPLocalCube.LocalField F v)ˣ) :
-          KPLocalCube.LocalField F v) = k i i) ∧
-      Matrix.GeneralLinearGroup.det k ∈ KPLocalCube.cubes F v)
+include m hm hcharts in
+private lemma Good_open  
     (g : KPLocalCube.LocalGL2 F v) (hg : g 1 0 ≠ 0) : Good F ζ hζ v g := by
   have hr : Filter.Tendsto (fun k : KPLocalCube.LocalGL2 F v =>
       KubotaRankTwo.X (KPLocalCube.LocalField F v) (g * k) /
@@ -177,24 +179,20 @@ private lemma Good_mul (g h : KPLocalCube.LocalGL2 F v)
   have he := hc.eventually hg
   filter_upwards [he, hh] with k hk hk'
   intro x hx
-  let y := (KPLocalCover.sectionMap F ζ hζ (Sum.inr v) g)⁻¹ * x
+  let y := (current_sectionMap (Sum.inr v) g)⁻¹ * x
   have hy : y.g = h := by simp [y, hx]
-  have hx' : x = KPLocalCover.sectionMap F ζ hζ (Sum.inr v) g * y := by simp [y]
+  have hx' : x = current_sectionMap (Sum.inr v) g * y := by simp [y]
   rw [hx']
   have hyk := hk' y hy
-  have hgk := hk (KPLocalCover.sectionMap F ζ hζ (Sum.inr v) g) rfl
+  have hgk := hk (current_sectionMap (Sum.inr v) g) rfl
   calc
-    _ = KPLocalCover.sectionMap F ζ hζ (Sum.inr v) g *
-        (y * KPLocalCover.sectionMap F ζ hζ (Sum.inr v) k * y⁻¹) *
-        (KPLocalCover.sectionMap F ζ hζ (Sum.inr v) g)⁻¹ := by group
+    _ = current_sectionMap (Sum.inr v) g *
+        (y * current_sectionMap (Sum.inr v) k * y⁻¹) *
+        (current_sectionMap (Sum.inr v) g)⁻¹ := by group
     _ = _ := by rw [hyk, hgk]; congr 1; group
 
-private lemma Good_all (m : ℕ) (hm : 1 ≤ m)
-    (hcharts : ∀ k ∈ KPLocalCube.Gamma F v m,
-      (∀ i : Fin 2, ∃ t : (KPLocalCube.LocalField F v)ˣ,
-        ((t ^ 3 : (KPLocalCube.LocalField F v)ˣ) :
-          KPLocalCube.LocalField F v) = k i i) ∧
-      Matrix.GeneralLinearGroup.det k ∈ KPLocalCube.cubes F v)
+include m hm hcharts in
+private lemma Good_all  
     (g : KPLocalCube.LocalGL2 F v) : Good F ζ hζ v g := by
   by_cases hg : g 1 0 = 0
   · let w := KubotaRankTwo.w (KPLocalCube.LocalField F v)
@@ -216,7 +214,7 @@ private lemma Good_all (m : ℕ) (hm : 1 ≤ m)
 
 theorem cover_eq (x : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr v)) :
     x = KPLocalCover.centralInjection F ζ hζ (Sum.inr v) x.epsilon *
-        KPLocalCover.sectionMap F ζ hζ (Sum.inr v) x.g := by
+        current_sectionMap (Sum.inr v) x.g := by
   obtain ⟨g, ε⟩ := x
   change (⟨g, ε⟩ : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr v)) =
     ⟨1 * g, ε * 1 * KPLocalCover.sigmaTwo F ζ hζ (Sum.inr v) 1 g⟩
@@ -232,19 +230,15 @@ theorem central_comm (ε : rootsOfUnity 3 F)
     ⟨g * 1, δ * ε * KPLocalCover.sigmaTwo F ζ hζ (Sum.inr v) g 1⟩
   simp [mul_comm]
 
-theorem conjugation_compatibility_near_identity (m : ℕ) (hm : 1 ≤ m)
-    (hcharts : ∀ k ∈ KPLocalCube.Gamma F v m,
-      (∀ i : Fin 2, ∃ t : (KPLocalCube.LocalField F v)ˣ,
-        ((t ^ 3 : (KPLocalCube.LocalField F v)ˣ) :
-          KPLocalCube.LocalField F v) = k i i) ∧
-      Matrix.GeneralLinearGroup.det k ∈ KPLocalCube.cubes F v)
+include m hm hcharts in
+theorem conjugation_compatibility_near_identity  
     (g : KPLocalCube.LocalGL2 F v) :
     ∃ r : ℕ, m ≤ r ∧ ∀ k ∈ KPLocalCube.Gamma F v r,
       g * k * g⁻¹ ∈ KPLocalCube.Gamma F v m ∧
-      KPLocalCover.sectionMap F ζ hζ (Sum.inr v) g *
-        KPLocalCover.sectionMap F ζ hζ (Sum.inr v) k *
-        (KPLocalCover.sectionMap F ζ hζ (Sum.inr v) g)⁻¹ =
-      KPLocalCover.sectionMap F ζ hζ (Sum.inr v) (g * k * g⁻¹) := by
+      current_sectionMap (Sum.inr v) g *
+        current_sectionMap (Sum.inr v) k *
+        (current_sectionMap (Sum.inr v) g)⁻¹ =
+      current_sectionMap (Sum.inr v) (g * k * g⁻¹) := by
   have he := Good_all F ζ hζ v m hm hcharts g
   have ht : ∀ᶠ k in 𝓝 (1 : KPLocalCube.LocalGL2 F v),
       g * k * g⁻¹ ∈ KPLocalCube.Gamma F v m := by
@@ -254,26 +248,22 @@ theorem conjugation_compatibility_near_identity (m : ℕ) (hm : 1 ≤ m)
       exact (KPLocalCube.Gamma_compact_open F v m hm).2.mem_nhds (Subgroup.one_mem _))
   have hboth : {k : KPLocalCube.LocalGL2 F v |
       g * k * g⁻¹ ∈ KPLocalCube.Gamma F v m ∧
-      KPLocalCover.sectionMap F ζ hζ (Sum.inr v) g *
-        KPLocalCover.sectionMap F ζ hζ (Sum.inr v) k *
-        (KPLocalCover.sectionMap F ζ hζ (Sum.inr v) g)⁻¹ =
-          KPLocalCover.sectionMap F ζ hζ (Sum.inr v) (g * k * g⁻¹)} ∈ 𝓝 1 := by
+      current_sectionMap (Sum.inr v) g *
+        current_sectionMap (Sum.inr v) k *
+        (current_sectionMap (Sum.inr v) g)⁻¹ =
+          current_sectionMap (Sum.inr v) (g * k * g⁻¹)} ∈ 𝓝 1 := by
     filter_upwards [he, ht] with k hk hq
     exact ⟨hq, hk _ rfl⟩
   exact (KPLocalCube.Gamma_nhds_basis F v m hm).mem_iff.mp hboth
 
-theorem raw_extension_conjugation_near_identity (m : ℕ) (hm : 1 ≤ m)
-    (hcharts : ∀ k ∈ KPLocalCube.Gamma F v m,
-      (∀ i : Fin 2, ∃ t : (KPLocalCube.LocalField F v)ˣ,
-        ((t ^ 3 : (KPLocalCube.LocalField F v)ˣ) :
-          KPLocalCube.LocalField F v) = k i i) ∧
-      Matrix.GeneralLinearGroup.det k ∈ KPLocalCube.cubes F v)
+include m hm hcharts in
+theorem raw_extension_conjugation_near_identity  
     (g : KPLocalCube.LocalGL2 F v) :
     ∃ r : ℕ, m ≤ r ∧ ∀ k ∈ KPLocalCube.Gamma F v r,
       g * k * g⁻¹ ∈ KPLocalCube.Gamma F v m ∧
       ∀ x : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr v), x.g = g →
-        x * KPLocalCover.sectionMap F ζ hζ (Sum.inr v) k * x⁻¹ =
-          KPLocalCover.sectionMap F ζ hζ (Sum.inr v) (g * k * g⁻¹) := by
+        x * current_sectionMap (Sum.inr v) k * x⁻¹ =
+          current_sectionMap (Sum.inr v) (g * k * g⁻¹) := by
   obtain ⟨r, hr, h⟩ := conjugation_compatibility_near_identity F ζ hζ v m hm hcharts g
   refine ⟨r, hr, ?_⟩
   intro k hk
@@ -284,8 +274,8 @@ theorem raw_extension_conjugation_near_identity (m : ℕ) (hm : 1 ≤ m)
   have he := congrArg KPLocalCover.CubicGL2Raw.epsilon hs'
   simp only [KPLocalCover.mul_epsilon, KPLocalCover.sectionMap_epsilon,
     KPLocalCover.sectionMap_g, one_mul] at he
-  have hmul : x * KPLocalCover.sectionMap F ζ hζ (Sum.inr v) k =
-      KPLocalCover.sectionMap F ζ hζ (Sum.inr v) (g * k * g⁻¹) * x := by
+  have hmul : x * current_sectionMap (Sum.inr v) k =
+      current_sectionMap (Sum.inr v) (g * k * g⁻¹) * x := by
     cases x with
     | mk xg xe =>
       dsimp at hx
@@ -296,6 +286,8 @@ theorem raw_extension_conjugation_near_identity (m : ℕ) (hm : 1 ≤ m)
       · simpa [KPLocalCover.rawMul, KPLocalCover.sectionMap, mul_comm] using
           congrArg (fun z => xe * z) he
   exact (mul_inv_eq_iff_eq_mul).mpr hmul
+end
+
 
 end
 end DedekindZetaZeroFree.KPDeepConjugationGerms

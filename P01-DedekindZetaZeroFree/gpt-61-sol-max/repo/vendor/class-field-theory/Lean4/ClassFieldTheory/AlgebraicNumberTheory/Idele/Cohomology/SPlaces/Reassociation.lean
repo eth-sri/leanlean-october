@@ -44,10 +44,13 @@ variable
     [Field L] [NumberField L] [Algebra K L]
     [FiniteDimensional K L] [IsGalois K L]
 
+section
+variable (S : Finset (HeightOneSpectrum (𝓞 K)))
+include S
 /-- The product of the actual integral tensor-unit factors outside
 `S`. -/
 abbrev RelativeOutsideSPlaceFactors
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :=
+      :=
   ∀ w : {w : HeightOneSpectrum (𝓞 K) // w ∉ S},
     relativeLocalTensorDecompositionIntegralUnitSubgroup
       (K := K) (L := L) w.1
@@ -56,7 +59,7 @@ abbrev RelativeOutsideSPlaceFactors
 `S`. -/
 @[reducible]
 noncomputable def relativeOutsideSPlaceFactorsAction
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+      :
     MulDistribMulAction (L ≃ₐ[K] L)
       (RelativeOutsideSPlaceFactors
         (K := K) (L := L) S) := by
@@ -80,7 +83,7 @@ noncomputable def relativeOutsideSPlaceFactorsAction
 outside-integral local factors. -/
 @[reducible]
 noncomputable def relativeUnrestrictedProdOutsideAction
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+      :
     MulDistribMulAction (L ≃ₐ[K] L)
       (RelativeUnrestrictedSPlaceFactors
           (K := K) (L := L) S ×
@@ -98,7 +101,7 @@ noncomputable def relativeUnrestrictedProdOutsideAction
 `(unrestricted factors) × (outside integral factors)`. -/
 noncomputable def
     relativeIdeleSPlaceFactorsEquivUnrestrictedProdOutside
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+      :
     RelativeIdeleSPlaceFactors (K := K) (L := L) S ≃*
       RelativeUnrestrictedSPlaceFactors
           (K := K) (L := L) S ×
@@ -125,34 +128,34 @@ noncomputable def
       cases i <;> rfl
     · rfl
 
-omit [NumberField L] [IsGalois K L] in
-/-- The reassociation of supported local factors is Galois
-equivariant. -/
-theorem
-    relativeIdeleSPlaceFactorsEquivUnrestrictedProdOutside_smul
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
-    (σ : L ≃ₐ[K] L)
-    (z : RelativeIdeleSPlaceFactors
-      (K := K) (L := L) S) :
-    relativeIdeleSPlaceFactorsEquivUnrestrictedProdOutside
-        (K := K) (L := L) S
-        ((relativeIdeleSPlaceFactorsAction
-          (K := K) (L := L) S).smul σ z) =
-      (relativeUnrestrictedProdOutsideAction
-        (K := K) (L := L) S).smul σ
-        (relativeIdeleSPlaceFactorsEquivUnrestrictedProdOutside
-          (K := K) (L := L) S z) := by
-  apply Prod.ext
-  · funext i
-    cases i <;> rfl
-  · rfl
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The complete supported relative-idele group, with its restricted-product
 condition already built into the subtype, is the product of the unrestricted
 local factors in `S` and the integral local factors outside `S`. -/
 noncomputable def
     relativeIdeleSupportedEquivUnrestrictedProdOutside
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+      :
     relativeIdeleLocalTensorDecompositionSupportedSubgroup
           (K := K) (L := L) S ≃*
       RelativeUnrestrictedSPlaceFactors
@@ -163,13 +166,18 @@ noncomputable def
       (K := K) (L := L) S).trans
     (relativeIdeleSPlaceFactorsEquivUnrestrictedProdOutside
       (K := K) (L := L) S)
+end
+
 
 omit [IsGalois K L] in
+section
+variable (S : Finset (HeightOneSpectrum (𝓞 K)))
+include S
 /-- The supported relative-idele decomposition is equivariant for the
 concrete Galois action on every factor. -/
 theorem
     relativeIdeleSupportedEquivUnrestrictedProdOutside_smul
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
+     
     (σ : L ≃ₐ[K] L)
     (z : relativeIdeleLocalTensorDecompositionSupportedSubgroup
       (K := K) (L := L) S) :
@@ -214,7 +222,7 @@ supported relative ideles to the unrestricted and outside-integral
 factorization. -/
 noncomputable def
     relativeIdeleSupportedHerbrandH0EquivUnrestrictedProdOutside
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+      :
     letI :=
       relativeIdeleLocalTensorDecompositionSupportedSubgroupAction
         (K := K) (L := L) S
@@ -247,7 +255,7 @@ actual supported relative ideles to the unrestricted and outside-integral
 factorization. -/
 noncomputable def
     relativeIdeleSupportedHerbrandHMinusOneEquivUnrestrictedProdOutside
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
+     
     (σ : L ≃ₐ[K] L) :
     letI :=
       relativeIdeleLocalTensorDecompositionSupportedSubgroupAction
@@ -275,5 +283,7 @@ noncomputable def
         (K := K) (L := L) S)
       (relativeIdeleSupportedEquivUnrestrictedProdOutside_smul
         (K := K) (L := L) S) σ
+end
+
 
 end

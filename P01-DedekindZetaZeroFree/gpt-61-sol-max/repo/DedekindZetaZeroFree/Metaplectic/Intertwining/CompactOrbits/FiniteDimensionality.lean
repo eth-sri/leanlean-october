@@ -15,9 +15,9 @@ variable {D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ}
 variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
-variable (A : KPMsRationalCompactCrossPairing.RawCompactComparison F ζ hζ T D R P H)
 
-variable {S : Submodule ℂ (KPMsFixedHaarDisintegration.X F ζ hζ → ℂ)}
+
+
 
 theorem source_raw_compact_orbit_finiteDimensional_public
     (f : KPMsRationalCompactCrossPairing.Vplus F ζ hζ D) :

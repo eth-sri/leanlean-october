@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import Mathlib.LinearAlgebra.PiTensorProduct.Basic
 public import Mathlib.LinearAlgebra.Basis.VectorSpace
 public import Mathlib.Algebra.Module.Projective
 
 @[expose] public section
+
 
 noncomputable section
 namespace DedekindZetaZeroFree.KPLiteralResidueKernelTests
@@ -21,8 +24,7 @@ namespace DedekindZetaZeroFree.KPLiteralResidueKernelTests
   let S := Submodule.span 𝕜 {t | ∃ a : ∀ i, V i,
     (∃ i, f i (a i) = 0) ∧ PiTensorProduct.tprod 𝕜 a = t}
   let T := S.mkQ.compMultilinearMap (PiTensorProduct.tprod 𝕜)
-  have hzero (a : ∀ i, V i) (i : ι) (ha : f i (a i) = 0) : T a = 0 := by
-    exact (Submodule.Quotient.mk_eq_zero S).mpr
+  have hzero (a : ∀ i, V i) (i : ι) (ha : f i (a i) = 0) : T a = 0 := (Submodule.Quotient.mk_eq_zero S).mpr
       (Submodule.subset_span ⟨a, ⟨i, ha⟩, rfl⟩)
   have hupdate (a : ∀ i, V i) (i : ι) (b : V i) (hab : f i (a i) = f i b) :
       T (Function.update a i b) = T a := by
@@ -43,8 +45,7 @@ namespace DedekindZetaZeroFree.KPLiteralResidueKernelTests
     intro i
     exact (f i).exists_rightInverse_of_surjective (LinearMap.range_eq_top.mpr (hf i))
   choose g hg using hr
-  have hg' (i : ι) (w : W i) : f i (g i w) = w := by
-    simpa using LinearMap.congr_fun (hg i) w
+  have hg' (i : ι) (w : W i) : f i (g i w) = w := LinearMap.congr_fun (hg i) w
   have heq : S.mkQ = (S.mkQ.comp (PiTensorProduct.map g)).comp
       (PiTensorProduct.map f) := by
     apply PiTensorProduct.ext

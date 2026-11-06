@@ -1,18 +1,23 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.RepresentationTheory.Smooth.SubmodulesAndQuotients
 public import DedekindZetaZeroFree.RepresentationTheory.Jacquet.LocalCoinvariantExactness
 
 @[expose] public section
 
+
 namespace DedekindZetaZeroFree.KPCyclicQuotient
 
-def cyclicSubmodule {G U : Type*} [Group G] [AddCommGroup U] [Module ℂ U]
-    (ρ : Representation ℂ G U) (u : U) : Submodule ℂ U :=
+section
+variable {G U : Type*} [Group G] [AddCommGroup U] [Module ℂ U]
+    (ρ : Representation ℂ G U)
+include G U ρ
+def cyclicSubmodule   (u : U)  :=
   Submodule.span ℂ (Set.range fun g : G => ρ g u)
 
-theorem cyclicSubmodule_stable {G U : Type*} [Group G]
-    [AddCommGroup U] [Module ℂ U] (ρ : Representation ℂ G U) (u : U) :
+theorem cyclicSubmodule_stable   (u : U) :
     ∀ g : G, cyclicSubmodule ρ u ≤ (cyclicSubmodule ρ u).comap (ρ g) := by
   intro g
   refine Submodule.span_le.mpr ?_
@@ -21,20 +26,16 @@ theorem cyclicSubmodule_stable {G U : Type*} [Group G]
   rw [← Module.End.mul_apply, ← map_mul]
   exact Submodule.subset_span ⟨g * h, rfl⟩
 
-def cyclicRepresentation {G U : Type*} [Group G] [AddCommGroup U] [Module ℂ U]
-    (ρ : Representation ℂ G U) (u : U) :
-    Representation ℂ G (cyclicSubmodule ρ u) :=
+def cyclicRepresentation   (u : U)  :=
   ρ.subrepresentation (cyclicSubmodule ρ u) (cyclicSubmodule_stable ρ u)
 
-def quotientMap {G U : Type*} [Group G] [AddCommGroup U] [Module ℂ U]
-    (ρ : Representation ℂ G U) (M : Submodule ℂ U)
+def quotientMap   (M : Submodule ℂ U)
     (hM : ∀ g : G, M ≤ M.comap (ρ g)) :
     Representation.IntertwiningMap ρ (ρ.quotient M hM) where
   toLinearMap := M.mkQ
   isIntertwining' _ := rfl
 
-theorem exists_maximal_cyclic_quotient {G U : Type*} [Group G]
-    [AddCommGroup U] [Module ℂ U] (ρ : Representation ℂ G U)
+theorem exists_maximal_cyclic_quotient  
     (u : U) (hu : u ≠ 0) :
     ∃ M : Submodule ℂ (cyclicSubmodule ρ u),
       ∃ hM : ∀ g : G, M ≤ M.comap (cyclicRepresentation ρ u g),
@@ -85,7 +86,7 @@ theorem exists_maximal_cyclic_quotient {G U : Type*} [Group G]
       · simpa [v, Submodule.mem_bot, Subtype.ext_iff] using hu
       · intro L hL
         exact False.elim (hne ⟨L, hL⟩))
-  have hM : ∀ g : G, M ≤ M.comap (τ g) := hMmax.prop.1
+  have hM  := hMmax.prop.1
   have hproper : M ≠ ⊤ := by
     intro he
     exact hMmax.prop.2 (he ▸ Submodule.mem_top)
@@ -126,6 +127,8 @@ theorem exists_maximal_cyclic_quotient {G U : Type*} [Group G]
       change D = Submodule.comap M.mkQ ⊥
       simpa using he
   exact ⟨M, hM, hproper, hmax, hn, hirr, M.mkQ_surjective⟩
+end
+
 
 theorem nonzero_representation_has_cyclic_quotient {G U : Type*} [Group G]
     [AddCommGroup U] [Module ℂ U] [Nontrivial U] (ρ : Representation ℂ G U) :
@@ -141,51 +144,45 @@ theorem nonzero_representation_has_cyclic_quotient {G U : Type*} [Group G]
   exact ⟨u, hu, M, hM, hproper, hnonzero, hirr, hsurj⟩
 
 def inside {V : Type*} [AddCommGroup V] [Module ℂ V]
-    (A B : Submodule ℂ V) : Submodule ℂ A := B.comap A.subtype
+    (A B : Submodule ℂ V)  := B.comap A.subtype
 
-theorem inside_stable {G V : Type*} [Group G] [AddCommGroup V] [Module ℂ V]
+section
+variable {G V : Type*} [Group G] [AddCommGroup V] [Module ℂ V]
     (ρ : Representation ℂ G V) (A B : Submodule ℂ V)
     (hA : ∀ g : G, A ≤ A.comap (ρ g))
-    (hB : ∀ g : G, B ≤ B.comap (ρ g)) :
+    (hB : ∀ g : G, B ≤ B.comap (ρ g))
+include G V ρ A B hA hB
+theorem inside_stable   :
     ∀ g : G, inside A B ≤ (inside A B).comap (ρ.subrepresentation A hA g) := by
   intro g x hx
   exact hB g hx
 
-def subquotientRepresentation {G V : Type*} [Group G]
-    [AddCommGroup V] [Module ℂ V] (ρ : Representation ℂ G V)
-    (A B : Submodule ℂ V) (hA : ∀ g : G, A ≤ A.comap (ρ g))
-    (hB : ∀ g : G, B ≤ B.comap (ρ g)) : Representation ℂ G (A ⧸ inside A B) :=
+def subquotientRepresentation    :=
   (ρ.subrepresentation A hA).quotient (inside A B) (inside_stable ρ A B hA hB)
+end
+
 
 def preimage {V : Type*} [AddCommGroup V] [Module ℂ V]
     (A B : Submodule ℂ V) (C : Submodule ℂ (A ⧸ inside A B)) : Submodule ℂ A :=
   C.comap (inside A B).mkQ
 
-theorem preimage_stable {G V : Type*} [Group G] [AddCommGroup V] [Module ℂ V]
+section
+variable {G V : Type*} [Group G] [AddCommGroup V] [Module ℂ V]
     (ρ : Representation ℂ G V) (A B : Submodule ℂ V)
     (hA : ∀ g : G, A ≤ A.comap (ρ g)) (hB : ∀ g : G, B ≤ B.comap (ρ g))
     (C : Submodule ℂ (A ⧸ inside A B))
-    (hC : ∀ g : G, C ≤ C.comap (subquotientRepresentation ρ A B hA hB g)) :
+    (hC : ∀ g : G, C ≤ C.comap (subquotientRepresentation ρ A B hA hB g))
+include G V ρ A B hA hB C hC
+theorem preimage_stable   :
     ∀ g : G, preimage A B C ≤ (preimage A B C).comap (ρ.subrepresentation A hA g) := by
   intro g x hx
   exact hC g hx
 
-def preimageRepresentation {G V : Type*} [Group G]
-    [AddCommGroup V] [Module ℂ V] (ρ : Representation ℂ G V)
-    (A B : Submodule ℂ V) (hA : ∀ g : G, A ≤ A.comap (ρ g))
-    (hB : ∀ g : G, B ≤ B.comap (ρ g))
-    (C : Submodule ℂ (A ⧸ inside A B))
-    (hC : ∀ g : G, C ≤ C.comap (subquotientRepresentation ρ A B hA hB g)) :
-    Representation ℂ G (preimage A B C) :=
+def preimageRepresentation    :=
   (ρ.subrepresentation A hA).subrepresentation (preimage A B C)
     (preimage_stable ρ A B hA hB C hC)
 
-def preimageMap {G V : Type*} [Group G]
-    [AddCommGroup V] [Module ℂ V] (ρ : Representation ℂ G V)
-    (A B : Submodule ℂ V) (hA : ∀ g : G, A ≤ A.comap (ρ g))
-    (hB : ∀ g : G, B ≤ B.comap (ρ g))
-    (C : Submodule ℂ (A ⧸ inside A B))
-    (hC : ∀ g : G, C ≤ C.comap (subquotientRepresentation ρ A B hA hB g)) :
+def preimageMap   :
     Representation.IntertwiningMap (preimageRepresentation ρ A B hA hB C hC)
       ((subquotientRepresentation ρ A B hA hB).subrepresentation C hC) where
   toLinearMap :=
@@ -193,6 +190,8 @@ def preimageMap {G V : Type*} [Group G]
       map_add' := by intros; apply Subtype.ext; exact map_add _ _ _
       map_smul' := by intros; apply Subtype.ext; exact map_smul _ _ _ }
   isIntertwining' _ := rfl
+end
+
 
 abbrev ordinaryJacquet {K G U : Type*} [Field K] [Group G]
     [AddCommGroup U] [Module ℂ U] (ρ : Representation ℂ G U)
@@ -289,7 +288,7 @@ private theorem admissible_quot {G V : Type*} [Group G] [TopologicalSpace G]
       (fun x => fun g => by
         change (ρ.quotient M hM) g (q x.val) = q x.val
         rw [← q.isIntertwining]
-        exact congrArg q (x.property g))
+        apply congrArg <;> aesop)
   letI := ha J
   apply Module.Finite.of_surjective f
   intro w
@@ -307,7 +306,10 @@ private theorem twisted_one {K V : Type*} [Field K] [AddCommGroup V] [Module ℂ
     KPCoinvariants.twistedRepresentation ρ 1 = ρ := by
   ext g v
   simp [KPCoinvariants.twistedRepresentation]
-private theorem jacquet_sub_zero {K G V : Type*} [Field K] [ValuativeRel K] [TopologicalSpace K]
+section
+variable {K G V : Type*} [Field K]
+include K G V
+private theorem jacquet_sub_zero   [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K] [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
     [AddCommGroup V] [Module ℂ V] (n : Multiplicative K →* G) (hn : Continuous n)
     (ρ : Representation ℂ G V) (hs : SmoothRepresentation ρ)
@@ -335,7 +337,7 @@ private theorem jacquet_sub_zero {K G V : Type*} [Field K] [ValuativeRel K] [Top
     letI := hz'
     exact Function.Injective.subsingleton hi
   simpa only [KPCoinvariants.Coinvariants, twisted_one] using hz''
-private theorem jacquet_quot_zero {K G V : Type*} [Field K] [Group G]
+private theorem jacquet_quot_zero   [Group G]
     [AddCommGroup V] [Module ℂ V] (n : Multiplicative K →* G)
     (ρ : Representation ℂ G V) (A : Submodule ℂ V) (hA : ∀ g, A ≤ A.comap (ρ g))
     (hz : Subsingleton (ordinaryJacquet ρ n)) :
@@ -352,7 +354,7 @@ private theorem jacquet_quot_zero {K G V : Type*} [Field K] [Group G]
   exact hf.subsingleton
 
 theorem jacquet_zero_subquotient_cyclic_quotient
-    {K G V : Type*} [Field K] [ValuativeRel K] [TopologicalSpace K]
+      [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K] [Group G] [TopologicalSpace G]
     [IsTopologicalGroup G] [AddCommGroup V] [Module ℂ V]
     (n : Multiplicative K →* G) (hn : Continuous n)
@@ -383,7 +385,7 @@ theorem jacquet_zero_subquotient_cyclic_quotient
   classical
   dsimp only
   let Q := subquotientRepresentation ρ A B hA hB
-  have hQA : SmoothRepresentation (ρ.subrepresentation A hA) :=
+  have hQA  :=
     smoothRepresentation_subrepresentation ρ hsmooth A hA
   have hQs : SmoothRepresentation Q :=
     smoothRepresentation_quotient _ hQA (inside A B) (inside_stable ρ A B hA hB)
@@ -408,8 +410,8 @@ theorem jacquet_zero_subquotient_cyclic_quotient
     jacquet_sub_zero n hn Q hQs C (cyclicSubmodule_stable Q u) hJacquet
   have hSs : SmoothRepresentation (τ.quotient M hM) :=
     smoothRepresentation_quotient τ hCs M hM
-  have hSa : Admissible (τ.quotient M hM) := admissible_quot τ hCs hCa M hM
-  have hSj : Subsingleton (ordinaryJacquet (τ.quotient M hM) n) :=
+  have hSa  := admissible_quot τ hCs hCa M hM
+  have hSj  :=
     jacquet_quot_zero n τ M hM hCj
   have hDs : SmoothRepresentation (preimageRepresentation ρ A B hA hB C
       (cyclicSubmodule_stable Q u)) :=
@@ -425,5 +427,7 @@ theorem jacquet_zero_subquotient_cyclic_quotient
     · exact Subtype.ext ha
   exact ⟨u, hu, M, hM, hQs, hQa, hCs, hCa, hCj, hnon, hirr,
     hSs, hSa, hSj, hsurj, hDs, hps, hsurj.comp hps⟩
+end
+
 
 end DedekindZetaZeroFree.KPCyclicQuotient

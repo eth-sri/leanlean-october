@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.RepresentationTheory.RankOne.HarmonicPolynomials.EquivariantFischer
 public import Mathlib.Topology.Algebra.MvPolynomial
 public import Mathlib.Algebra.MvPolynomial.Funext
 
 @[expose] public section
+
 
 noncomputable section
 namespace DedekindZetaZeroFree.HarmonicVendor
@@ -15,7 +18,7 @@ open scoped ComplexConjugate
 abbrev Polynomial := MvPolynomial (Fin 3) ℂ
 abbrev Harmonic (ℓ : ℕ) := ↥(harmonicPolynomials ℓ)
 
-def Q (x : Fin 3 → ℂ) : Matrix (Fin 2) (Fin 2) ℂ :=
+def Q (x : Fin 3 → ℂ)  :=
   !![x 2, x 0 - Complex.I * x 1; x 0 + Complex.I * x 1, -x 2]
 
 def sphereMatrix (g : ComplexSU2) : Matrix (Fin 3) (Fin 3) ℂ :=
@@ -27,7 +30,7 @@ def sphereMatrix (g : ComplexSU2) : Matrix (Fin 3) (Fin 3) ℂ :=
     2*a.re*b.re-2*a.im*b.im, 2*a.re*b.im+2*a.im*b.re, b.re^2+b.im^2-a.re^2-a.im^2]
       : Matrix (Fin 3) (Fin 3) ℝ) i j) : ℂ)
 
-def S (g : ComplexSU2) (x : Fin 3 → ℂ) : Fin 3 → ℂ := (sphereMatrix g).mulVec x
+def S (g : ComplexSU2) (x : Fin 3 → ℂ)  := (sphereMatrix g).mulVec x
 
 private theorem hopf_top00 (g : ComplexSU2) : (g : Matrix (Fin 2) (Fin 2) ℂ) 0 0 = star ((g : Matrix (Fin 2) (Fin 2) ℂ) 1 1) := by
   have h := congrArg (fun M : Matrix (Fin 2) (Fin 2) ℂ => M 1 1) (Matrix.specialUnitaryGroup.star_eq_adjugate g)
@@ -74,7 +77,7 @@ set_option maxHeartbeats 800000 in
 
 theorem compactSphereCoordinate_mul (k g : ComplexSU2) :
     compactSphereCoordinate (k * g) = S g (compactSphereCoordinate k) := by
-  have hmul : ((k * g : ComplexSU2) : Matrix (Fin 2) (Fin 2) ℂ) =
+  have hmul : ((k * g) : Matrix (Fin 2) (Fin 2) ℂ) =
       (k : Matrix (Fin 2) (Fin 2) ℂ) * (g : Matrix (Fin 2) (Fin 2) ℂ) := rfl
   funext i
   fin_cases i <;>
@@ -193,16 +196,14 @@ private theorem su2_row_norm (k : ComplexSU2) :
 
 private theorem sphereMatrix_orthogonal (g : ComplexSU2) (i k : Fin 3) :
     ∑ j, sphereMatrix g i j * sphereMatrix g k j = if i = k then 1 else 0 := by
-  let a := (g : Matrix (Fin 2) (Fin 2) ℂ) 1 0
-  let b := (g : Matrix (Fin 2) (Fin 2) ℂ) 1 1
+  
+  
   have h := su2_row_norm g
   fin_cases i <;> fin_cases k <;>
     simp [sphereMatrix, Fin.sum_univ_three, ← Complex.ofReal_mul,
       ← Complex.ofReal_add]
   all_goals norm_cast
-  all_goals first | (solve | ring) | (calc
-    _ = (a.re^2+a.im^2+b.re^2+b.im^2)^2 := by dsimp [a, b]; ring
-    _ = _ := by rw [h]; norm_num)
+  all_goals grind
 
 theorem coefficientAction_mem (ℓ : ℕ) (g : ComplexSU2) (p : Harmonic ℓ) :
     coefficientAction g p ∈ harmonicPolynomials ℓ := by
@@ -238,8 +239,7 @@ instance harmonicFiniteDimensional (ℓ : ℕ) : FiniteDimensional ℂ (Harmonic
     Module.Finite.iff_fg.mpr (MvPolynomial.homogeneousSubmodule_fg (Fin 3) ℂ ℓ)
   exact Submodule.finiteDimensional_of_le inf_le_left
 
-def harmonicCoordinates (ℓ : ℕ) :
-    Harmonic ℓ ≃ₗ[ℂ] EuclideanSpace ℂ (Fin (Module.finrank ℂ (Harmonic ℓ))) :=
+def harmonicCoordinates (ℓ : ℕ)  :=
   (Module.finBasis ℂ (Harmonic ℓ)).equivFun.trans
     (EuclideanSpace.equiv _ ℂ).toLinearEquiv.symm
 
@@ -295,8 +295,7 @@ private theorem coefficientAction_coeff_continuous (p : Polynomial)
       · simp only [mul_zero]
         exact continuous_const
 
-def harmonicCoefficientMap (ℓ : ℕ) :
-    Harmonic ℓ →ₗ[ℂ] ((Fin 3 →₀ ℕ) → ℂ) :=
+def harmonicCoefficientMap (ℓ : ℕ)  :=
   LinearMap.pi (fun d => (MvPolynomial.lcoeff ℂ d).comp (harmonicPolynomials ℓ).subtype)
 
 theorem harmonicContRepresentation_continuous (ℓ : ℕ) :
@@ -315,9 +314,12 @@ theorem harmonicContRepresentation_continuous (ℓ : ℕ) :
   intro d
   exact coefficientAction_coeff_continuous p d
 
-def triangle (n : ℕ) (f : ℤ → ℂ) :=
+section
+variable (n : ℕ) (f : ℤ → ℂ)
+include n f
+def triangle   :=
   ∑ a ∈ Finset.range (n + 1), ∑ b ∈ Finset.range (n - a + 1), f ((a : ℤ) - b)
-private theorem triangle_border (n : ℕ) (f : ℤ → ℂ) :
+private theorem triangle_border   :
     triangle (n + 2) f = (∑ a ∈ Finset.range (n + 3), f a) +
       (∑ b ∈ Finset.range (n + 2), f (-(b : ℤ) - 1)) + triangle n f := by
   unfold triangle
@@ -345,7 +347,7 @@ private theorem triangle_border (n : ℕ) (f : ℤ → ℂ) :
   rw [Finset.sum_range_succ' (f := fun b : ℕ => f (-(b : ℤ))) (n := n + 2)]
   simp only [Nat.cast_add, Nat.cast_one, Nat.cast_zero, neg_zero, neg_add, sub_eq_add_neg]
   ring
-private theorem border_string (n : ℕ) (f : ℤ → ℂ) :
+private theorem border_string   :
     (∑ a ∈ Finset.range (n + 1), f a) +
       (∑ b ∈ Finset.range n, f (-(b : ℤ) - 1)) =
       ∑ i ∈ Finset.range (2 * n + 1), f ((i : ℤ) - n) := by
@@ -363,6 +365,8 @@ private theorem border_string (n : ℕ) (f : ℤ → ℂ) :
   rw [hpos, hneg, add_comm]
   rw [show 2 * n + 1 = n + (n + 1) by omega]
   exact (Finset.sum_range_add (fun i : ℕ => f ((i : ℤ) - n)) n (n + 1)).symm
+end
+
 private theorem triangle_low (f : ℤ → ℂ) :
     triangle 0 f = ∑ i ∈ Finset.range 1, f ((i : ℤ) - 0) := by
   simp [triangle]
@@ -450,7 +454,7 @@ theorem harmonic_equiv_symPower (ℓ : ℕ) :
     by_contra hn
     have hz : ∀ f : ContIntertwiningMap ρ π, f.toContinuousLinearMap = 0 := by
       intro f
-      letI : Representation.IsIrreducible π.toRepresentation := hi
+      letI  := hi
       rcases Representation.IsIrreducible.surjective_or_eq_zero f.toIntertwiningMap with hf | hf
       · have hb : Function.Bijective f.toIntertwiningMap :=
           ⟨(LinearMap.injective_iff_surjective_of_finrank_eq_finrank hd).2 hf, hf⟩

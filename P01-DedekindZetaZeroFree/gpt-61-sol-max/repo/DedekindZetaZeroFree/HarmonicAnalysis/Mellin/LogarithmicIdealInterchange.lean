@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LFunctions.Hecke.IdealCoefficientMellinSummation
 public import DedekindZetaZeroFree.HarmonicAnalysis.Mellin.TruncatedLogarithmicPolynomials
 
 @[expose] public section
+
 
 set_option maxHeartbeats 4000000
 
@@ -39,14 +42,14 @@ private lemma summable_ideal_scaled_inverse_power (p Y : ℝ) (hp : 1 < p) (hY :
   exact hmul
 
 private lemma norm_cpow_vertical {z c t : ℝ} (hz : 0 < z) :
-    ‖((z : ℝ) : ℂ) ^ (-((c : ℂ) + t * Complex.I))‖ = z ^ (-c) := by
+    ‖(z : ℂ) ^ (-((c : ℂ) + t * Complex.I))‖ = z ^ (-c) := by
   rw [Complex.norm_cpow_eq_rpow_re_of_pos hz]
   congr 1
   simp [Complex.neg_re, Complex.add_re, Complex.mul_re]
 
 private lemma norm_vertical_summand_le {K : ℂ → ℂ} {c : ℝ} {a : ℂ} {z : ℝ} (hz : 0 < z)
     (ha : ‖a‖ ≤ 1) (t : ℝ) :
-    ‖K ((c : ℂ) + t * Complex.I) * ((z : ℝ) : ℂ) ^ (-((c : ℂ) + t * Complex.I)) * a‖ ≤
+    ‖K ((c : ℂ) + t * Complex.I) * (z : ℂ) ^ (-((c : ℂ) + t * Complex.I)) * a‖ ≤
       z ^ (-c) * ‖K ((c : ℂ) + t * Complex.I)‖ := by
   rw [norm_mul, norm_mul, norm_cpow_vertical hz]
   calc ‖K ((c : ℂ) + t * Complex.I)‖ * z ^ (-c) * ‖a‖
@@ -55,48 +58,45 @@ private lemma norm_vertical_summand_le {K : ℂ → ℂ} {c : ℝ} {a : ℂ} {z 
           (mul_nonneg (norm_nonneg _) (Real.rpow_nonneg hz.le _))
     _ = z ^ (-c) * ‖K ((c : ℂ) + t * Complex.I)‖ := by ring
 
-private lemma integrable_vertical_summand {K : ℂ → ℂ} {c : ℝ}
+section
+variable {K : ℂ → ℂ} {c : ℝ}
     (hK : Integrable (fun t : ℝ => K ((c : ℂ) + t * Complex.I)))
+include K c hK
+private lemma integrable_vertical_summand  
     (hKcont : Continuous fun t : ℝ => K ((c : ℂ) + t * Complex.I))
     {a : ℂ} {z : ℝ} (hz : 0 < z) (ha : ‖a‖ ≤ 1) :
     Integrable (fun t : ℝ => K ((c : ℂ) + t * Complex.I) *
-      ((z : ℝ) : ℂ) ^ (-((c : ℂ) + t * Complex.I)) * a) := by
+      (z : ℂ) ^ (-((c : ℂ) + t * Complex.I)) * a) := by
   refine Integrable.mono' (hK.norm.const_mul (z ^ (-c))) ?_ ?_
   · have hcp : Continuous fun t : ℝ =>
-        ((z : ℝ) : ℂ) ^ (-((c : ℂ) + t * Complex.I)) :=
+        (z : ℂ) ^ (-((c : ℂ) + t * Complex.I)) :=
       Continuous.const_cpow (f := fun t : ℝ => -((c : ℂ) + t * Complex.I))
         (by fun_prop) (Or.inl (Complex.ofReal_ne_zero.mpr hz.ne'))
     exact ((hKcont.mul hcp).mul continuous_const).aestronglyMeasurable
   · filter_upwards with t
-    exact norm_vertical_summand_le hz ha t
+    apply norm_vertical_summand_le <;> assumption
 
-private lemma norm_integral_vertical_summand_le {K : ℂ → ℂ} {c : ℝ}
-    (hK : Integrable (fun t : ℝ => K ((c : ℂ) + t * Complex.I)))
+private lemma norm_integral_vertical_summand_le  
     {a : ℂ} {z : ℝ} (hz : 0 < z) (ha : ‖a‖ ≤ 1) :
     (∫ t : ℝ, ‖K ((c : ℂ) + t * Complex.I) *
-        ((z : ℝ) : ℂ) ^ (-((c : ℂ) + t * Complex.I)) * a‖) ≤
+        (z : ℂ) ^ (-((c : ℂ) + t * Complex.I)) * a‖) ≤
       z ^ (-c) * ∫ t : ℝ, ‖K ((c : ℂ) + t * Complex.I)‖ := by
   calc (∫ t : ℝ, ‖K ((c : ℂ) + t * Complex.I) *
-        ((z : ℝ) : ℂ) ^ (-((c : ℂ) + t * Complex.I)) * a‖)
+        (z : ℂ) ^ (-((c : ℂ) + t * Complex.I)) * a‖)
       ≤ ∫ t : ℝ, z ^ (-c) * ‖K ((c : ℂ) + t * Complex.I)‖ :=
         integral_mono_of_nonneg (ae_of_all _ fun t => norm_nonneg _)
           (hK.norm.const_mul _) (ae_of_all _ fun t => norm_vertical_summand_le hz ha t)
     _ = z ^ (-c) * ∫ t : ℝ, ‖K ((c : ℂ) + t * Complex.I)‖ := integral_const_mul _ _
 
-private lemma norm_mellinInv_le {K : ℂ → ℂ} {c : ℝ}
-    (hK : Integrable (fun t : ℝ => K ((c : ℂ) + t * Complex.I))) {z : ℝ} (hz : 0 < z) :
+private lemma norm_mellinInv_le   {z : ℝ} (hz : 0 < z) :
     ‖mellinInv c K z‖ ≤
       (1 / (2 * Real.pi)) * (z ^ (-c) * ∫ t : ℝ, ‖K ((c : ℂ) + t * Complex.I)‖) := by
   have hpi : ‖(1 / (2 * Real.pi) : ℂ)‖ = 1 / (2 * Real.pi) := by
-    rw [show (1 / (2 * Real.pi) : ℂ) = ((1 / (2 * Real.pi) : ℝ) : ℂ) by
-      push_cast; ring]
-    rw [show ‖(((1 / (2 * Real.pi) : ℝ)) : ℂ)‖ = |(1 / (2 * Real.pi) : ℝ)| from
-      by simpa using @RCLike.norm_ofReal ℂ _ (1 / (2 * Real.pi) : ℝ)]
-    rw [abs_of_pos (by positivity)]
-  have hXint : (∫ y : ℝ, ‖((z : ℝ) : ℂ) ^ (-((c : ℂ) + y * Complex.I)) *
+    simp_all
+  have hXint : (∫ y : ℝ, ‖(z : ℂ) ^ (-((c : ℂ) + y * Complex.I)) *
         K ((c : ℂ) + y * Complex.I)‖) =
       z ^ (-c) * ∫ t : ℝ, ‖K ((c : ℂ) + t * Complex.I)‖ := by
-    have hfun : (fun y : ℝ => ‖((z : ℝ) : ℂ) ^ (-((c : ℂ) + y * Complex.I)) *
+    have hfun : (fun y : ℝ => ‖(z : ℂ) ^ (-((c : ℂ) + y * Complex.I)) *
           K ((c : ℂ) + y * Complex.I)‖) =
         fun y : ℝ => z ^ (-c) * ‖K ((c : ℂ) + y * Complex.I)‖ := by
       funext y
@@ -104,15 +104,20 @@ private lemma norm_mellinInv_le {K : ℂ → ℂ} {c : ℝ}
     rw [hfun, integral_const_mul]
   rw [Vendor.mellinInv_eq_verticalIntegral c K hz, Vendor.verticalIntegral, norm_mul, hpi]
   calc (1 / (2 * Real.pi)) * ‖∫ y : ℝ,
-        ((z : ℝ) : ℂ) ^ (-((c : ℂ) + y * Complex.I)) * K ((c : ℂ) + y * Complex.I)‖
+        (z : ℂ) ^ (-((c : ℂ) + y * Complex.I)) * K ((c : ℂ) + y * Complex.I)‖
       ≤ (1 / (2 * Real.pi)) * ∫ y : ℝ,
-          ‖((z : ℝ) : ℂ) ^ (-((c : ℂ) + y * Complex.I)) * K ((c : ℂ) + y * Complex.I)‖ :=
+          ‖(z : ℂ) ^ (-((c : ℂ) + y * Complex.I)) * K ((c : ℂ) + y * Complex.I)‖ :=
         mul_le_mul_of_nonneg_left (norm_integral_le_integral_norm _) (by positivity)
     _ = (1 / (2 * Real.pi)) *
           (z ^ (-c) * ∫ t : ℝ, ‖K ((c : ℂ) + t * Complex.I)‖) := by rw [hXint]
+end
 
-private lemma continuous_idealCoefficientLSeries_line (a : Ideal (𝓞 F) → ℂ)
-    (ha : ∀ I, I ≠ ⊥ → ‖a I‖ ≤ 1) {c : ℝ} (hc : 1 < c) :
+
+section
+variable (a : Ideal (𝓞 F) → ℂ)
+    (ha : ∀ I, I ≠ ⊥ → ‖a I‖ ≤ 1)
+include a ha
+private lemma continuous_idealCoefficientLSeries_line   {c : ℝ} (hc : 1 < c) :
     Continuous fun t : ℝ => idealCoefficientLSeries a ((c : ℂ) + t * Complex.I) := by
   have hS : Summable (fun I : {I : Ideal (𝓞 F) // I ≠ ⊥} =>
       (Ideal.absNorm I.val : ℝ) ^ (-c)) := by
@@ -134,9 +139,9 @@ private lemma continuous_idealCoefficientLSeries_line (a : Ideal (𝓞 F) → �
             mul_le_mul_of_nonneg_right (ha I.val I.2)
               (Real.rpow_nonneg (absNorm_cast_pos I.2).le _)
         _ = (Ideal.absNorm I.val : ℝ) ^ (-c) := one_mul _)
-  simpa only [idealCoefficientLSeries] using h
+  exact h
 
-private lemma norm_lseries_le (a : Ideal (𝓞 F) → ℂ) (ha : ∀ I, I ≠ ⊥ → ‖a I‖ ≤ 1)
+private lemma norm_lseries_le  
     {c : ℝ} (hc : 1 < c) (t : ℝ) :
     ‖idealCoefficientLSeries a ((c : ℂ) + t * Complex.I)‖ ≤
       ∑' I : {I : Ideal (𝓞 F) // I ≠ ⊥}, (Ideal.absNorm I.val : ℝ) ^ (-c) := by
@@ -165,18 +170,14 @@ private lemma norm_lseries_le (a : Ideal (𝓞 F) → ℂ) (ha : ∀ I, I ≠ �
     _ ≤ ∑' I : {I : Ideal (𝓞 F) // I ≠ ⊥}, (Ideal.absNorm I.val : ℝ) ^ (-c) :=
         Summable.tsum_le_tsum hterm hsum.norm hS
 
-private lemma integrable_lseries_line (a : Ideal (𝓞 F) → ℂ)
-    (ha : ∀ I, I ≠ ⊥ → ‖a I‖ ≤ 1) {K : ℂ → ℂ} {c Y : ℝ} (hc : 1 < c) (hY : 0 < Y)
+private lemma integrable_lseries_line   {K : ℂ → ℂ} {c Y : ℝ} (hc : 1 < c) (hY : 0 < Y)
     (hK : Integrable (fun t : ℝ => K ((c : ℂ) + t * Complex.I)))
     (hKcont : Continuous fun t : ℝ => K ((c : ℂ) + t * Complex.I)) :
     Integrable (fun t : ℝ => K ((c : ℂ) + t * Complex.I) * (Y : ℂ) ^ (-((c : ℂ) + t * Complex.I)) *
       idealCoefficientLSeries a ((c : ℂ) + t * Complex.I)) := by
   have hLcont := continuous_idealCoefficientLSeries_line a ha hc
-  have hS : Summable (fun I : {I : Ideal (𝓞 F) // I ≠ ⊥} =>
-      (Ideal.absNorm I.val : ℝ) ^ (-c)) := by
-    simpa using summable_ideal_scaled_inverse_power (F := F) c 1 hc one_pos
-  have hSnn : 0 ≤ ∑' I : {I : Ideal (𝓞 F) // I ≠ ⊥}, (Ideal.absNorm I.val : ℝ) ^ (-c) :=
-    tsum_nonneg fun I => Real.rpow_nonneg (absNorm_cast_pos I.2).le _
+  
+  
   refine Integrable.mono' (hK.norm.const_mul (Y ^ (-c) *
       ∑' I : {I : Ideal (𝓞 F) // I ≠ ⊥}, (Ideal.absNorm I.val : ℝ) ^ (-c))) ?_ ?_
   · have hcp : Continuous fun t : ℝ => (Y : ℂ) ^ (-((c : ℂ) + t * Complex.I)) :=
@@ -193,6 +194,8 @@ private lemma integrable_lseries_line (a : Ideal (𝓞 F) → ℂ)
             (mul_nonneg (norm_nonneg _) (Real.rpow_nonneg hY.le _))
       _ = (Y ^ (-c) * (∑' I : {I : Ideal (𝓞 F) // I ≠ ⊥},
             (Ideal.absNorm I.val : ℝ) ^ (-c))) * ‖K ((c : ℂ) + t * Complex.I)‖ := by ring
+end
+
 
 private theorem countable_ideal_fubini (F : Type*) [Field F] [NumberField F] :
     Countable (Ideal (𝓞 F)) := by
@@ -247,7 +250,7 @@ theorem idealLogMellin_inverseSpectrum_interchange
       (fun s => K s * (Y : ℂ) ^ (-s) * idealCoefficientLSeries a s) =
       ∑' I : {I : Ideal (𝓞 F) // I ≠ ⊥},
         a I.val * k (Y * (Ideal.absNorm I.val : ℝ)) := by
-  have hKnorm : Integrable (fun t : ℝ => ‖K ((c : ℂ) + t * Complex.I)‖) := hK.norm
+  
   have hzpos : ∀ I : {I : Ideal (𝓞 F) // I ≠ ⊥},
       0 < Y * (Ideal.absNorm I.val : ℝ) :=
     fun I => mul_pos hY (absNorm_cast_pos I.2)
@@ -296,7 +299,7 @@ theorem idealLogMellin_inverseSpectrum_interchange
     Summable.of_nonneg_of_le (fun I => norm_nonneg _)
       (fun I => by
         rw [norm_mul]
-        have h1 : ‖a I.val‖ ≤ 1 := ha I.val I.2
+        have h1  := ha I.val I.2
         have h2 : 0 ≤ ‖k (Y * (Ideal.absNorm I.val : ℝ))‖ := norm_nonneg _
         nlinarith [h1, h2])
       hsum_k
@@ -305,7 +308,7 @@ theorem idealLogMellin_inverseSpectrum_interchange
   have hvert : Complex.VerticalIntegrable
       (fun s => K s * (Y : ℂ) ^ (-s) * idealCoefficientLSeries a s) c := by
     rw [Complex.VerticalIntegrable]
-    exact integrable_lseries_line a ha hc hY hK hKcont
+    apply integrable_lseries_line <;> assumption
 
   have hpoint : ∀ t : ℝ,
       K ((c : ℂ) + t * Complex.I) * (Y : ℂ) ^ (-((c : ℂ) + t * Complex.I)) *
@@ -334,7 +337,7 @@ theorem idealLogMellin_inverseSpectrum_interchange
           K ((c : ℂ) + t * Complex.I) *
             ((Y : ℂ) * ((Ideal.absNorm I.val : ℝ) : ℂ)) ^ (-((c : ℂ) + t * Complex.I)) *
               a I.val := by
-    haveI : Countable (Ideal (𝓞 F)) := countable_ideal_fubini F
+    haveI  := countable_ideal_fubini F
     haveI : Countable {I : Ideal (𝓞 F) // I ≠ ⊥} := inferInstance
     exact integral_tsum_of_summable_integral_norm hsingle hsum_int
 
@@ -372,10 +375,13 @@ theorem idealLogMellin_inverseSpectrum_interchange
               a I.val :=
       integral_congr_ae (ae_of_all _ hpoint)
     rw [hcongr, ← hFubini, ← tsum_mul_left]
-    exact tsum_congr fun I => hterm I
+    apply tsum_congr <;> assumption
 
-theorem logSpectrum_continuousOn_line {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ}
-    {H : ℂ → ℂ} (hf : Vendor.LogMellinAdmissible f δ P H) {c : ℝ} (hc : 1 < c) :
+section
+variable {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ}
+    {H : ℂ → ℂ} (hf : Vendor.LogMellinAdmissible f δ P H) {c : ℝ} (hc : 1 < c)
+include f δ P H hf c hc
+theorem logSpectrum_continuousOn_line   :
     Continuous fun t : ℝ => H ((c : ℂ) + (t : ℂ) * Complex.I) := by
   rw [continuous_iff_continuousAt]
   intro t
@@ -392,8 +398,7 @@ theorem logSpectrum_continuousOn_line {f : ℝ → ℂ} {δ : ℝ} {P : Polynomi
   exact (hf.differentiableAt _ hre hne).continuousAt.comp'
     (f := fun t : ℝ => (c : ℂ) + (t : ℂ) * Complex.I) hg
 
-theorem logSpectrum_verticalIntegrable {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ}
-    {H : ℂ → ℂ} (hf : Vendor.LogMellinAdmissible f δ P H) {c : ℝ} (hc : 1 < c) :
+theorem logSpectrum_verticalIntegrable   :
     Complex.VerticalIntegrable H c := by
   obtain ⟨C, hC0, hCbound⟩ := hf.rapid_vertical_decay c c (by linarith [hf.delta_pos]) le_rfl 2
   have hline := logSpectrum_continuousOn_line hf hc
@@ -436,8 +441,7 @@ theorem logSpectrum_verticalIntegrable {f : ℝ → ℂ} {δ : ℝ} {P : Polynom
     hline.aestronglyMeasurable (Filter.Eventually.of_forall fun y => ?_)
   simpa only [Real.norm_eq_abs] using hboundD y
 
-theorem logSource_mellinConvergent {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ}
-    {H : ℂ → ℂ} (hf : Vendor.LogMellinAdmissible f δ P H) {c : ℝ} (hc : 1 < c) :
+theorem logSource_mellinConvergent   :
     MellinConvergent f (c : ℂ) := by
   have hpow : ContinuousOn (fun t : ℝ => (t:ℂ)^((c:ℂ)-1)) (Set.Ioi 0) :=
     fun t ht => (Complex.continuousAt_ofReal_cpow_const t ((c:ℂ)-1) (Or.inr (ne_of_gt ht))).continuousWithinAt
@@ -457,7 +461,7 @@ theorem logSource_mellinConvergent {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial 
     refine Integrable.mono' hdom ?_ ?_
     · have hlog : ContinuousOn (fun t : ℝ => (Real.log t : ℂ)) (Set.Ioi 0) :=
         Complex.continuous_ofReal.comp_continuousOn
-          (Real.continuousOn_log.mono (by intro x hx; simpa using ne_of_gt hx))
+          (Real.continuousOn_log.mono (by intro x hx; exact ne_of_gt hx))
       have hPlog : ContinuousOn (fun t : ℝ => P.eval (Real.log t : ℂ)) (Set.Ioi 0) :=
         (Polynomial.continuous P).comp_continuousOn hlog
       have hgc : ContinuousOn (fun t : ℝ => f t - P.eval (Real.log t : ℂ)) (Set.Ioi 0) :=
@@ -481,7 +485,7 @@ theorem logSource_mellinConvergent {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial 
             rw [Real.rpow_add ht1]; ring
   have hFint : IntegrableOn (fun t : ℝ => (t:ℂ)^((c:ℂ)-1) * f t) (Set.Ici 1) := by
     obtain ⟨n, hn⟩ := exists_nat_ge (c + 1)
-    have hnc : c < (n:ℝ) := by linarith
+    
     obtain ⟨C, hC0, hCbound⟩ := hf.rapid_decay 0 n
     have hdom : IntegrableOn (fun t : ℝ => C * t^(c-1-(n:ℝ))) (Set.Ici 1) := by
       have hbase : IntegrableOn (fun t : ℝ => t^(c-1-(n:ℝ))) (Set.Ici 1) :=
@@ -515,9 +519,11 @@ theorem logSource_mellinConvergent {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial 
   have hsub : Set.Ioi (0:ℝ) ⊆ Set.Ioo 0 1 ∪ Set.Ici 1 := by
     intro t ht
     rcases lt_or_ge t 1 with h | h
-    · exact Or.inl ⟨ht, h⟩
+    · apply Or.inl <;> aesop
     · exact Or.inr h
   exact (hnear.union hFint).mono_set hsub
+end
+
 
 theorem idealLogMellin_source_interchange
     (a : Ideal (𝓞 F) → ℂ) (ha : ∀ I, I ≠ ⊥ → ‖a I‖ ≤ 1)
@@ -539,7 +545,7 @@ theorem idealLogMellin_source_interchange
 
   have hk : ∀ x : ℝ, 0 < x → f x = mellinInv c H x := by
     intro x hx
-    have hfx : mellinInv c (mellin f) x = f x :=
+    have hfx  :=
       mellinInv_mellin_eq c f hx hMC hVI_mellin
         ((hf.contDiffOn.contDiffAt (Ioi_mem_nhds hx)).continuousAt)
     have hsame : mellinInv c H x = mellinInv c (mellin f) x := by

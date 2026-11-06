@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Valuation.AbsoluteValue.Extension
 public import ValuedFieldTheory.Valuation.AbsoluteValue.Nonarchimedean
 public import Mathlib.Analysis.Normed.Unbundled.SpectralNorm
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -57,15 +60,17 @@ private theorem withAbs_isUltrametricDist
     IsUltrametricDist (WithAbs v) := by
   refine IsUltrametricDist.isUltrametricDist_of_isNonarchimedean_norm ?_
   intro x y
-  simpa [WithAbs.norm_eq_apply_ofAbs] using
-    hnonarch (WithAbs.equiv v x) (WithAbs.equiv v y)
+  apply hnonarch
 
+section
+variable {K L : Type*} [Field K] [Field L] [Algebra K L]
+    [Algebra.IsAlgebraic K L]
+    (v : AbsoluteValue K ℝ)
+include K L v
 /-- existence branch: the spectral extension restricts to the
 given absolute value on the base field. -/
 private theorem spectral_spectralNorm_extends_base
-    {K L : Type*} [Field K] [Field L] [Algebra K L]
-    [Algebra.IsAlgebraic K L]
-    (v : AbsoluteValue K ℝ) (x : K) :
+      (x : K) :
     _root_.spectralNorm (WithAbs v) L (algebraMap K L x) = v x := by
   let : Algebra.IsAlgebraic (WithAbs v) L :=
     withAbsAlgebra_isAlgebraic v
@@ -76,14 +81,12 @@ private theorem spectral_spectralNorm_extends_base
 /-- existence branch: the spectral extension satisfies the
 strong triangle inequality in the nonarchimedean case. -/
  theorem spectral_spectralNorm_strong_triangle
-    {K L : Type*} [Field K] [Field L] [Algebra K L]
-    [Algebra.IsAlgebraic K L]
-    (v : AbsoluteValue K ℝ)
+     
     (hnonarch : IsNonarchimedean (v : K → ℝ)) (x y : L) :
     _root_.spectralNorm (WithAbs v) L (x + y) ≤
       max (_root_.spectralNorm (WithAbs v) L x)
         (_root_.spectralNorm (WithAbs v) L y) := by
-  let : IsUltrametricDist (WithAbs v) :=
+  let  :=
     withAbs_isUltrametricDist v hnonarch
   let : Algebra.IsAlgebraic (WithAbs v) L :=
     withAbsAlgebra_isAlgebraic v
@@ -93,9 +96,7 @@ strong triangle inequality in the nonarchimedean case. -/
 /-- existence branch: the spectral extension vanishes exactly
 at zero. -/
  theorem spectral_spectralNorm_eq_zero_iff
-    {K L : Type*} [Field K] [Field L] [Algebra K L]
-    [Algebra.IsAlgebraic K L]
-    (v : AbsoluteValue K ℝ) (x : L) :
+      (x : L) :
     _root_.spectralNorm (WithAbs v) L x = 0 ↔ x = 0 := by
   let : Algebra.IsAlgebraic (WithAbs v) L :=
     withAbsAlgebra_isAlgebraic v
@@ -107,26 +108,31 @@ at zero. -/
   · intro hx
     rw [hx]
     exact _root_.spectralNorm_zero (K := WithAbs v) (L := L)
+end
 
-/-- existence branch: multiplicativity of the spectral
-extension over an algebraic extension. -/
- theorem spectral_spectralNorm_mul
-    {K L : Type*} [Field K] [Field L] [Algebra K L]
+
+section
+variable {K L : Type*} [Field K] [Field L] [Algebra K L]
     [Algebra.IsAlgebraic K L]
     (v : AbsoluteValue K ℝ)
     (hcomplete : CompleteSpace (WithAbs v))
     (hnonarch : IsNonarchimedean (v : K → ℝ))
-    (hv : v.IsNontrivial) (x y : L) :
+    (hv : v.IsNontrivial)
+include K L v hcomplete hnonarch hv
+/-- existence branch: multiplicativity of the spectral
+extension over an algebraic extension. -/
+ theorem spectral_spectralNorm_mul
+      (x y : L) :
     _root_.spectralNorm (WithAbs v) L (x * y) =
       _root_.spectralNorm (WithAbs v) L x *
         _root_.spectralNorm (WithAbs v) L y := by
-  let : NontriviallyNormedField (WithAbs v) :=
+  let  :=
     spectral_withAbsNontriviallyNormedField v hv
-  let : Algebra (WithAbs v) L :=
+  let  :=
     WithAbs.algebraLeft L v
-  let : CompleteSpace (WithAbs v) :=
+  let  :=
     hcomplete
-  let : IsUltrametricDist (WithAbs v) :=
+  let  :=
     withAbs_isUltrametricDist v hnonarch
   let : Algebra.IsAlgebraic (WithAbs v) L :=
     withAbsAlgebra_isAlgebraic v
@@ -136,12 +142,7 @@ extension over an algebraic extension. -/
 /-- existence branch: the spectral norm, bundled as the unique
 nonarchimedean absolute-value extension of the complete base valuation. -/
 noncomputable def spectralExtension
-    {K L : Type*} [Field K] [Field L] [Algebra K L]
-    [Algebra.IsAlgebraic K L]
-    (v : AbsoluteValue K ℝ)
-    (hcomplete : CompleteSpace (WithAbs v))
-    (hnonarch : IsNonarchimedean (v : K → ℝ))
-    (hv : v.IsNontrivial) : AbsoluteValue L ℝ where
+      : AbsoluteValue L ℝ where
   toFun := _root_.spectralNorm (WithAbs v) L
   map_mul' x y :=
     spectral_spectralNorm_mul (K := K) (L := L)
@@ -151,63 +152,48 @@ noncomputable def spectralExtension
   add_le' x y := by
     have hstrong :=
       spectral_spectralNorm_strong_triangle v hnonarch x y
-    have hx_nonneg :
-        0 ≤ _root_.spectralNorm (WithAbs v) L x :=
+    have hx_nonneg  :=
       _root_.spectralNorm_nonneg (K := WithAbs v) (L := L) x
-    have hy_nonneg :
-        0 ≤ _root_.spectralNorm (WithAbs v) L y :=
+    have hy_nonneg  :=
       _root_.spectralNorm_nonneg (K := WithAbs v) (L := L) y
-    exact hstrong.trans
-      (max_le
-        (le_add_of_nonneg_right hy_nonneg)
-        (le_add_of_nonneg_left hx_nonneg))
+    apply hstrong.trans <;> aesop
 
-/-- The absolute-value extension constructed is
-nonarchimedean. -/
-theorem spectralExtension_isNonarchimedean
-    {K L : Type*} [Field K] [Field L] [Algebra K L]
-    [Algebra.IsAlgebraic K L]
-    (v : AbsoluteValue K ℝ)
-    (hcomplete : CompleteSpace (WithAbs v))
-    (hnonarch : IsNonarchimedean (v : K → ℝ))
-    (hv : v.IsNontrivial) :
-    IsNonarchimedean
-      (spectralExtension (K := K) (L := L)
-        v hcomplete hnonarch hv : L → ℝ) := by
-  intro x y
-  simpa [spectralExtension] using
-    spectral_spectralNorm_strong_triangle v hnonarch x y
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The absolute-value extension constructed restricts to
 the given base valuation. -/
 theorem spectralExtension_extends
-    {K L : Type*} [Field K] [Field L] [Algebra K L]
-    [Algebra.IsAlgebraic K L]
-    (v : AbsoluteValue K ℝ)
-    (hcomplete : CompleteSpace (WithAbs v))
-    (hnonarch : IsNonarchimedean (v : K → ℝ))
-    (hv : v.IsNontrivial) :
+      :
     Extends v (spectralExtension (K := K) (L := L)
       v hcomplete hnonarch hv) :=
   spectral_spectralNorm_extends_base v
 
 /-- Pointwise uniqueness of the spectral norm among extending absolute values. -/
 private theorem spectral_unique_spectralNorm
-    {K L : Type*} [Field K] [Field L] [Algebra K L]
-    [Algebra.IsAlgebraic K L]
-    (v : AbsoluteValue K ℝ)
-    (hcomplete : CompleteSpace (WithAbs v))
-    (hnonarch : IsNonarchimedean (v : K → ℝ))
-    (hv : v.IsNontrivial)
+     
     (w : AbsoluteValue L ℝ)
     (hw_ext : Extends v w)
     (x : L) :
     w x = _root_.spectralNorm (WithAbs v) L x := by
-  let : NontriviallyNormedField (WithAbs v) :=
+  let  :=
     spectral_withAbsNontriviallyNormedField v hv
-  let : Algebra (WithAbs v) L :=
+  let  :=
     WithAbs.algebraLeft L v
-  let : CompleteSpace (WithAbs v) :=
+  let  :=
     hcomplete
   let : IsUltrametricDist (WithAbs v) :=
     withAbs_isUltrametricDist v hnonarch
@@ -222,19 +208,15 @@ private theorem spectral_unique_spectralNorm
 /-- nonarchimedean complete branch: uniqueness of the
 absolute-value extension, stated as equality with the constructed extension. -/
 theorem eq_spectralExtension_of_extends
-    {K L : Type*} [Field K] [Field L] [Algebra K L]
-    [Algebra.IsAlgebraic K L]
-    (v : AbsoluteValue K ℝ)
-    (hcomplete : CompleteSpace (WithAbs v))
-    (hnonarch : IsNonarchimedean (v : K → ℝ))
-    (hv : v.IsNontrivial)
+     
     (w : AbsoluteValue L ℝ)
     (hw_ext : Extends v w) :
     w = spectralExtension (K := K) (L := L)
       v hcomplete hnonarch hv := by
   ext x
-  exact spectral_unique_spectralNorm
-    v hcomplete hnonarch hv w hw_ext x
+  apply spectral_unique_spectralNorm <;> assumption
+end
+
 
 
 end AbsoluteValue

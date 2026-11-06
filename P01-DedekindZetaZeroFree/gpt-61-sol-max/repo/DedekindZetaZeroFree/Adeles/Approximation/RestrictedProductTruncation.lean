@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Topology.Algebra.RestrictedProduct.TopologicalSpace
 public import Mathlib.Order.Filter.AtTopBot.Finset
 
 @[expose] public section
+
 
 noncomputable section
 open Filter Topology
@@ -27,10 +30,10 @@ def truncate (x : Product G K) (s : Finset I) : Product G K :=
 
 theorem tendsto_truncate (x : Product G K) :
     Tendsto (truncate G K x) atTop (𝓝 x) := by
-  let S : Set I := {i | x i ∈ K i}
+  let S  := {i | x i ∈ K i}
   have hS : Filter.cofinite ≤ Filter.principal S := Filter.le_principal_iff.mpr x.property
   let y : RestrictedProduct G (fun i ↦ (K i : Set (G i))) (Filter.principal S) :=
-    ⟨x, by exact Filter.eventually_principal.mpr (fun i hi ↦ hi)⟩
+    ⟨x, by apply Filter.eventually_principal.mpr <;> aesop⟩
   let f (s : Finset I) :
       RestrictedProduct G (fun i ↦ (K i : Set (G i))) (Filter.principal S) :=
     ⟨truncate G K x s, by
@@ -47,7 +50,7 @@ theorem tendsto_truncate (x : Product G K) :
     intro i
     apply tendsto_const_nhds.congr'
     filter_upwards [eventually_ge_atTop ({i} : Finset I)] with s hs
-    have hi : i ∈ s := hs (Finset.mem_singleton_self i)
+    have hi  := hs (Finset.mem_singleton_self i)
     change x i = (if i ∈ s then x i else 1)
     rw [ite_eq_left hi]
   exact (RestrictedProduct.continuous_inclusion (R := G)

@@ -23,7 +23,10 @@ open KPMsResidualTailRestoration.SharpConstantTerm
 open KPMsResidualTailRestoration.OutgoingTailL2.CoordinateDescent
 open KPAdelicCoverRestrictedProduct
 
- def nativeFullDomain (j : NativeCusp F ζ hζ R P S V) (Y : ℝ) : Set (KPMsActualAngularSource.G F ζ hζ) :=
+ section
+variable (j : NativeCusp F ζ hζ R P S V) (Y : ℝ)
+include j Y in
+def nativeFullDomain   : Set (KPMsActualAngularSource.G F ζ hζ) :=
   {g | ∃ (a : KPSmoothActualFlowData.GInfinity F) (p : KPCuspCharts.Cross F)
     (t : ℝ) (ε : rootsOfUnity 3 F)
     (u : KPGlobalTorusFunctionData.globalLevel F ζ hζ (cofinalLevel F ζ hζ V)),
@@ -36,8 +39,9 @@ open KPAdelicCoverRestrictedProduct
       ((nativeAtlas F ζ hζ R P S V).representative j.1).val *
       KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε * u.val}
 
- theorem nativeDomainProjects
-    (j : NativeCusp F ζ hζ R P S V) (Y : ℝ)
+ include j Y in
+theorem nativeDomainProjects
+     
     (g : KPMsActualAngularSource.G F ζ hζ) (hg : g ∈ nativeFullDomain F ζ hζ R P S V j Y) :
     KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g ∈ KPMsActualCuspSource.cuspEnd (H := nativeFamily F ζ hζ R P) (S.atlasLevel (cofinalLevel F ζ hζ V)) j Y := by
   obtain ⟨a,p,t,ε,u,ht,ha,rfl⟩ := hg
@@ -86,8 +90,9 @@ open KPAdelicCoverRestrictedProduct
   rw [KPCuspCharts.toArch_meanHeight F (KPCuspLogShape.dimension_pos F (nativeFamily F ζ hζ R P).totallyComplex)]
   exact ht
 
+include j Y in
 private theorem nativeArchConstraint
-    (j : NativeCusp F ζ hζ R P S V) (Y : ℝ)
+     
     (a : KPSmoothActualFlowData.GInfinity F) :
     (∃ (p : KPCuspCharts.Cross F) (t : ℝ),
       KPMsFixedHaarDisintegration.logHeight (F := F) Y < t ∧
@@ -116,8 +121,9 @@ private theorem nativeArchConstraint
     · rw [show (c.1,c.2) = c from rfl, hc]
       exact he.symm
 
+include j Y in
 private theorem nativeArchOpen
-    (j : NativeCusp F ζ hζ R P S V) (Y : ℝ) :
+      :
     IsOpen {a : KPSmoothActualFlowData.GInfinity F |
       ∃ (p : KPCuspCharts.Cross F) (t : ℝ),
         KPMsFixedHaarDisintegration.logHeight (F := F) Y < t ∧
@@ -155,7 +161,8 @@ private theorem nativeFiniteOpen (j : NativeCusp F ζ hζ R P S V) :
   intro ε
   exact (Homeomorph.mulLeft _).isOpenMap _ (S.atlasLevel (cofinalLevel F ζ hζ V)).toOpenSubgroup.isOpen
 
-private theorem nativeDomainProduct (j : NativeCusp F ζ hζ R P S V) (Y : ℝ)
+include j Y in
+private theorem nativeDomainProduct  
     (e : (KPSmoothActualFlowData.GInfinity F × KPFiniteCuspAtlas.FiniteCover F ζ hζ) ≃ₜ* KPMsActualAngularSource.G F ζ hζ)
     (he : ∀ a c, e (a,c) = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a * c.val) :
     nativeFullDomain F ζ hζ R P S V j Y = e ''
@@ -189,7 +196,8 @@ private theorem nativeDomainProduct (j : NativeCusp F ζ hζ R P S V) (Y : ℝ)
     simp only [Subgroup.coe_mul, mul_assoc]
     rfl
 
- theorem nativeDomainOpen (j : NativeCusp F ζ hζ R P S V) (Y : ℝ) :
+ include j Y in
+theorem nativeDomainOpen   :
     IsOpen (nativeFullDomain F ζ hζ R P S V j Y) := by
   obtain ⟨e,he⟩ := product_splitting (F := F) (ζ := ζ) (hζ := hζ)
   rw [nativeDomainProduct F ζ hζ R P S V j Y e he]
@@ -241,8 +249,9 @@ private theorem nativeFrameComponent
           (c * KPCuspGenuineMonodromy.finiteProjection F ζ hζ u₁.val)⁻¹ := by group
       _ = KPFiniteComponents.diagonal F γ := by rw [← hp]; group
 
+include j Y in
 private theorem nativeHighTransition
-    (j : NativeCusp F ζ hζ R P S V) (Y : ℝ)
+     
     (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff (nativeAtlas F ζ hζ R P S V) Y)
     (a₁ a₂ : KPSmoothActualFlowData.GInfinity F)
     (p₁ p₂ : KPCuspCharts.Cross F) (t₁ t₂ : ℝ)
@@ -318,7 +327,8 @@ private theorem nativeHighTransition
     rw [KPCuspCharts.toArch_meanHeight F (KPCuspLogShape.dimension_pos F (nativeFamily F ζ hζ R P).totallyComplex)]
     exact ht₂
 
- theorem nativeFrameInvariant (j : NativeCusp F ζ hζ R P S V) (Y : ℝ)
+ include j Y in
+theorem nativeFrameInvariant  
     (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff (nativeAtlas F ζ hζ R P S V) Y)
     (a b : KPMsActualAngularSource.G F ζ hζ) (ha : a ∈ nativeFullDomain F ζ hζ R P S V j Y) (hb : b ∈ nativeFullDomain F ζ hζ R P S V j Y)
     (he : KPSmoothLocalQuotientCharts.quotientMap F ζ hζ a =
@@ -343,7 +353,8 @@ private theorem nativeHighTransition
   dsimp [σ]
   group
 
- theorem actualFrame_spec (j : NativeCusp F ζ hζ R P S V) (Y : ℝ)
+ include j Y in
+theorem actualFrame_spec  
     (x : KPSmoothLocalQuotientCharts.X F ζ hζ)
     (hx : x ∈ KPMsActualCuspSource.cuspEnd (H := nativeFamily F ζ hζ R P)
       (S.atlasLevel (cofinalLevel F ζ hζ V)) j (Y / (cuspOffset F ζ hζ R P S V j).val)) :
@@ -355,7 +366,8 @@ private theorem nativeHighTransition
     (H := nativeFamily F ζ hζ R P) (S.atlasLevel (cofinalLevel F ζ hζ V))
     (S.level_matching (cofinalLevel F ζ hζ V)) j _ x hx)).2
 
- theorem nativeDomainImage (j : NativeCusp F ζ hζ R P S V) (Y : ℝ) :
+ include j Y in
+theorem nativeDomainImage   :
     KPSmoothLocalQuotientCharts.quotientMap F ζ hζ '' nativeFullDomain F ζ hζ R P S V j
       (Y / (cuspOffset F ζ hζ R P S V j).val) =
     KPMsActualCuspSource.cuspEnd (H := nativeFamily F ζ hζ R P)
@@ -367,8 +379,9 @@ private theorem nativeHighTransition
     have hf := actualFrame_spec F ζ hζ R P S V j Y x hx
     exact ⟨actualFrame F ζ hζ R P S V j Y x,hf.2,hf.1⟩
 
- theorem fullCoordinate_continuousOn_end
-    (j : NativeCusp F ζ hζ R P S V) (Y : ℝ)
+ include j Y in
+theorem fullCoordinate_continuousOn_end
+     
     (hY : OffsetAdmissible F ζ hζ R P S V Y) :
     ContinuousOn (fullCoordinate F ζ hζ R P S V j Y)
       (KPMsActualCuspSource.cuspEnd (H := nativeFamily F ζ hζ R P)
@@ -395,6 +408,8 @@ private theorem nativeHighTransition
     (fun a ha b hb he => nativeFrameInvariant F ζ hζ R P S V j Z (hY j) a b ha hb he)
   rw [nativeDomainImage F ζ hζ R P S V j Y] at hc
   exact hc
+end
+
 
 end CoordinateProof
 

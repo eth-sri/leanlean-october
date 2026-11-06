@@ -1,69 +1,76 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LargeSieve.CharacterBounds.IdealOperatorMaximalEstimate
 public import DedekindZetaZeroFree.LargeSieve.Exponents.MaximalEstimateLogAbsorption
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 
 noncomputable section
 open scoped NumberField Classical
 
-def detectorDyadicPrefix (F : Type) [Field F] [NumberField F]
-    (b ω : Ideal (𝓞 F) → ℂ) (N y t : ℝ) : ℂ :=
+section
+variable (F : Type) [Field F] [NumberField F]
+include F
+def detectorDyadicPrefix  
+    (b ω : Ideal (𝓞 F) → ℂ) (N y t : ℝ)  :=
   ∑ᶠ J : Ideal (𝓞 F),
     if J ≠ ⊥ ∧ N < (Ideal.absNorm J : ℝ) ∧ (Ideal.absNorm J : ℝ) ≤ y then
       b J * ω J * (Ideal.absNorm J : ℂ) ^ (-Complex.I * (t : ℂ))
     else 0
 
-def detectorDyadicSupport (F : Type) [Field F] [NumberField F]
-    (b : Ideal (𝓞 F) → ℂ) (N : ℝ) : Prop :=
+def detectorDyadicSupport  
+    (b : Ideal (𝓞 F) → ℂ) (N : ℝ)  :=
   ∀ J, ¬ (J ≠ ⊥ ∧ N < (Ideal.absNorm J : ℝ) ∧ (Ideal.absNorm J : ℝ) ≤ 2 * N) →
     b J = 0
 
-def detectorDyadicCoefficientMass (F : Type) [Field F] [NumberField F]
-    (b : Ideal (𝓞 F) → ℂ) (N : ℝ) : ℝ :=
+def detectorDyadicCoefficientMass  
+    (b : Ideal (𝓞 F) → ℂ) (N : ℝ)  :=
   ∑ᶠ J : Ideal (𝓞 F),
     if J ≠ ⊥ ∧ N < (Ideal.absNorm J : ℝ) ∧ (Ideal.absNorm J : ℝ) ≤ 2 * N then
       ‖b J‖ ^ 2 else 0
 
-def detectorPrefixMaximum (F : Type) [Field F] [NumberField F]
-    (b ω : Ideal (𝓞 F) → ℂ) (N t : ℝ) : ℝ :=
+def detectorPrefixMaximum  
+    (b ω : Ideal (𝓞 F) → ℂ) (N t : ℝ)  :=
   sSup {v : ℝ | ∃ y ∈ Set.Icc N (2 * N),
     v = ‖detectorDyadicPrefix F b ω N y t‖ ^ 2}
 
-def detectorHeightPrefixMaximum (F : Type) [Field F] [NumberField F]
-    (b ω : Ideal (𝓞 F) → ℂ) (N T : ℝ) : ℝ :=
+def detectorHeightPrefixMaximum  
+    (b ω : Ideal (𝓞 F) → ℂ) (N T : ℝ)  :=
   sSup {v : ℝ | ∃ t ∈ Set.Icc (-T) T, v = detectorPrefixMaximum F b ω N t}
 
-theorem detectorDyadicCoefficientMass_expression (F : Type) [Field F] [NumberField F]
+theorem detectorDyadicCoefficientMass_expression  
     (b : Ideal (𝓞 F) → ℂ) (N : ℝ) :
     detectorDyadicCoefficientMass F b N = DetectorMaximalExpressions.mass F b N := rfl
 
-theorem detectorHeightPrefixMaximum_expression (F : Type) [Field F] [NumberField F]
+theorem detectorHeightPrefixMaximum_expression  
     (b ω : Ideal (𝓞 F) → ℂ) (N T : ℝ) :
     detectorHeightPrefixMaximum F b ω N T = DetectorMaximalExpressions.heightMaximum F b ω N T := rfl
 
-theorem detectorDyadicCoefficientMass_nonneg (F : Type) [Field F] [NumberField F]
+theorem detectorDyadicCoefficientMass_nonneg  
     (b : Ideal (𝓞 F) → ℂ) (N : ℝ) : 0 ≤ detectorDyadicCoefficientMass F b N := by
   apply finsum_nonneg
   intro J
   split_ifs <;> positivity
+end
 
-theorem ball_finite (F : Type) [Field F] [NumberField F] (X : ℝ) :
-    {J : Ideal (𝓞 F) | J ≠ ⊥ ∧ (Ideal.absNorm J : ℝ) ≤ X}.Finite := by
-  apply (Ideal.finite_setOfPred_absNorm_le ⌈X⌉₊).subset
-  intro J hJ
-  exact Nat.cast_le.mp (hJ.2.trans (Nat.le_ceil X))
-def ball (F : Type) [Field F] [NumberField F] (N : ℝ) : Finset (Ideal (𝓞 F)) :=
+
+alias ball_finite := _root_.DedekindZetaZeroFree.Detector.ideals_bounded_norm_finite
+section
+variable (F : Type) [Field F] [NumberField F]
+include F
+def ball   (N : ℝ)  :=
   (ball_finite F (2 * N)).toFinset
-def active (F : Type) [Field F] [NumberField F] (N y : ℝ) :=
+def active   (N y : ℝ) :=
   (ball F N).filter (fun J => N < (Ideal.absNorm J : ℝ) ∧ (Ideal.absNorm J : ℝ) ≤ y)
-def poly (F : Type) [Field F] [NumberField F]
-    (b ω : Ideal (𝓞 F) → ℂ) (B : Finset (Ideal (𝓞 F))) (t : ℝ) : ℂ :=
+def poly  
+    (b ω : Ideal (𝓞 F) → ℂ) (B : Finset (Ideal (𝓞 F))) (t : ℝ)  :=
   ∑ J ∈ B, b J * ω J * (Ideal.absNorm J : ℂ) ^ (-Complex.I * (t : ℂ))
-private theorem prefix_eq (F : Type) [Field F] [NumberField F]
+private theorem prefix_eq  
     (b ω : Ideal (𝓞 F) → ℂ) (N y t : ℝ) (hy : y ≤ 2 * N) :
     detectorDyadicPrefix F b ω N y t = poly F b ω (active F N y) t := by
   unfold detectorDyadicPrefix poly active
@@ -80,7 +87,7 @@ private theorem prefix_eq (F : Type) [Field F] [NumberField F]
       by_contra hc
       simp [hc] at hJ
     simpa [ball] using And.intro h.1 (h.2.2.trans hy)
-private theorem poly_cont (F : Type) [Field F] [NumberField F]
+private theorem poly_cont  
     (b ω : Ideal (𝓞 F) → ℂ) (B : Finset (Ideal (𝓞 F)))
     (hB : ∀ J ∈ B, J ≠ ⊥) : Continuous (poly F b ω B) := by
   unfold poly
@@ -91,18 +98,22 @@ private theorem poly_cont (F : Type) [Field F] [NumberField F]
   · fun_prop
   · left
     exact_mod_cast (Ideal.absNorm_eq_zero_iff.not.mpr (hB J hJ))
-def prefixSets (F : Type) [Field F] [NumberField F] (N : ℝ) : Set (Finset (Ideal (𝓞 F))) :=
+def prefixSets   (N : ℝ)  :=
   active F N '' Set.Icc N (2 * N)
-private theorem sets_finite (F : Type) [Field F] [NumberField F] (N : ℝ) :
+private theorem sets_finite   (N : ℝ) :
     (prefixSets F N).Finite := by
   apply (ball F N).powerset.finite_toSet.subset
   rintro B ⟨y, hy, rfl⟩
   exact Finset.mem_powerset.mpr (Finset.filter_subset _ _)
-private theorem sets_nonempty (F : Type) [Field F] [NumberField F] (N : ℝ) (hN : 2 ≤ N) :
-    (prefixSets F N).Nonempty := by
-  exact ⟨active F N N, N, ⟨le_rfl, by linarith⟩, rfl⟩
-private theorem values_eq (F : Type) [Field F] [NumberField F]
-    (b ω : Ideal (𝓞 F) → ℂ) (N t : ℝ) :
+private theorem sets_nonempty   (N : ℝ) (hN : 2 ≤ N) :
+    (prefixSets F N).Nonempty := ⟨active F N N, N, ⟨le_rfl, by linarith⟩, rfl⟩
+end
+
+section
+variable (F : Type) [Field F] [NumberField F]
+    (b ω : Ideal (𝓞 F) → ℂ)
+include F b ω
+private theorem values_eq   (N t : ℝ) :
     {v : ℝ | ∃ y ∈ Set.Icc N (2 * N), v = ‖detectorDyadicPrefix F b ω N y t‖ ^ 2} =
       (fun B => ‖poly F b ω B t‖ ^ 2) '' prefixSets F N := by
   ext v
@@ -112,8 +123,7 @@ private theorem values_eq (F : Type) [Field F] [NumberField F]
   · rintro ⟨B, ⟨y, hy, rfl⟩, rfl⟩
     exact ⟨y, hy, by rw [prefix_eq F b ω N y t hy.2]⟩
 
-theorem detectorPrefixMaximum_attained (F : Type) [Field F] [NumberField F]
-    (b ω : Ideal (𝓞 F) → ℂ) (N t : ℝ) (hN : 2 ≤ N) :
+theorem detectorPrefixMaximum_attained   (N t : ℝ) (hN : 2 ≤ N) :
     ∃ y ∈ Set.Icc N (2 * N),
       detectorPrefixMaximum F b ω N t = ‖detectorDyadicPrefix F b ω N y t‖ ^ 2 ∧
       ∀ z ∈ Set.Icc N (2 * N),
@@ -130,8 +140,7 @@ theorem detectorPrefixMaximum_attained (F : Type) [Field F] [NumberField F]
   intro z hz
   exact le_csSup hf.bddAbove ⟨z, hz, rfl⟩
 
-private theorem max_cont (F : Type) [Field F] [NumberField F]
-    (b ω : Ideal (𝓞 F) → ℂ) (N : ℝ) (hN : 2 ≤ N) :
+private theorem max_cont   (N : ℝ) (hN : 2 ≤ N) :
     Continuous (detectorPrefixMaximum F b ω N) := by
   let S := (sets_finite F N).toFinset
   have hS : S.Nonempty := by
@@ -151,11 +160,10 @@ private theorem max_cont (F : Type) [Field F] [NumberField F]
   intro J hJ
   have hb : B ∈ prefixSets F N := by simpa [S] using hB
   obtain ⟨y, hy, rfl⟩ := hb
-  have hj : J ∈ ball F N := (Finset.mem_filter.mp hJ).1
+  have hj  := (Finset.mem_filter.mp hJ).1
   exact (show J ≠ ⊥ ∧ (Ideal.absNorm J : ℝ) ≤ 2 * N by simpa [ball] using hj).1
 
-theorem detectorHeightPrefixMaximum_attained (F : Type) [Field F] [NumberField F]
-    (b ω : Ideal (𝓞 F) → ℂ) (N T : ℝ) (hN : 2 ≤ N) (hT : 1 ≤ T) :
+theorem detectorHeightPrefixMaximum_attained   (N T : ℝ) (hN : 2 ≤ N) (hT : 1 ≤ T) :
     ∃ t ∈ Set.Icc (-T) T,
       detectorHeightPrefixMaximum F b ω N T = detectorPrefixMaximum F b ω N t ∧
       ∀ u ∈ Set.Icc (-T) T,
@@ -175,6 +183,8 @@ theorem detectorHeightPrefixMaximum_attained (F : Type) [Field F] [NumberField F
   · intro u hu
     rw [detectorHeightPrefixMaximum, hset, he]
     exact hm u hu
+end
+
 
 theorem detector_maximal_sieve (F : Type) [Field F] [NumberField F]
     (ε C₀ : ℝ) (hε : 0 < ε) (hC₀ : 0 < C₀) :

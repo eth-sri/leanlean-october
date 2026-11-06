@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.GenuineSector.TestFriedrichsRealization
 
 @[expose] public section
+
 
 noncomputable section
 set_option maxHeartbeats 8000000
@@ -23,7 +26,7 @@ variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
 variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
 variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 
-abbrev X_U := KPFiniteCuspAtlas.rawXU F ζ hζ U
+abbrev X_U := @_root_.DedekindZetaZeroFree.KPFiniteCuspAtlas.rawXU
 abbrev H_U := KPContSectorClosedLpSubspace.H F ζ hζ R U
 abbrev muU := KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U
 
@@ -31,17 +34,17 @@ attribute [local instance 5000] KPContSectorLineL2Isometry.instNormedAddCommGrou
 attribute [local instance 5000] KPContSectorLineL2Isometry.instNormedSpaceL2Line
 attribute [local instance 5000] KPContSectorLineL2Isometry.instInnerProductSpaceL2Line
 
- abbrev instTopologicalSpaceL2LineLocal : TopologicalSpace (L2Line F ζ hζ U R P H) :=
+ abbrev instTopologicalSpaceL2LineLocal  :=
   (KPContSectorLineL2Isometry.instNormedAddCommGroupL2Line F ζ hζ U R P H).toSeminormedAddCommGroup.toPseudoMetricSpace.toUniformSpace.toTopologicalSpace
 
 attribute [local instance 5000] instTopologicalSpaceL2LineLocal
 
- abbrev instAddCommMonoidL2LineLocal : AddCommMonoid (L2Line F ζ hζ U R P H) :=
+ abbrev instAddCommMonoidL2LineLocal  :=
   (KPContSectorLineL2Isometry.instNormedAddCommGroupL2Line F ζ hζ U R P H).toSeminormedAddCommGroup.toAddCommMonoid
 
 attribute [local instance 5000] instAddCommMonoidL2LineLocal
 
- abbrev instTopologicalSpaceHULocal : TopologicalSpace (H_U F ζ hζ U R) :=
+ abbrev instTopologicalSpaceHULocal  :=
   (inferInstance : NormedAddCommGroup (H_U F ζ hζ U R)).toSeminormedAddCommGroup.toPseudoMetricSpace.toUniformSpace.toTopologicalSpace
 
 attribute [local instance 5000] instTopologicalSpaceHULocal
@@ -57,102 +60,77 @@ private theorem componentNorm_nonneg (s : Sections F ζ hζ U R P H)
   simp only [componentNorm, Quotient.lift_mk]
   exact norm_nonneg _
 
+
+local notation:max "current_sectionNorm" => sectionNorm F ζ hζ U R P H
+
  theorem sectionNorm_nonneg (s : Sections F ζ hζ U R P H)
-    (b : X_U F ζ hζ U) : 0 ≤ sectionNorm F ζ hζ U R P H s b := by
+    (b : X_U F ζ hζ U) : 0 ≤ current_sectionNorm s b := by
   simp only [sectionNorm]
   exact componentNorm_nonneg F ζ hζ U R P H s _ _
 
-private theorem componentNorm_add_le (s t : Sections F ζ hζ U R P H)
-    (i : Fin (H.atlas U).componentCount)
-    (b : KPCuspSiegel.OrbitQuotient F
-      (KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative i))) :
-    componentNorm F ζ hζ U R P H (s + t) i b ≤
-      componentNorm F ζ hζ U R P H s i b + componentNorm F ζ hζ U R P H t i b := by
-  refine Quotient.inductionOn b (fun x => ?_)
-  simp only [componentNorm, Quotient.lift_mk]
-  rw [show ((s + t) i).val x = (s i).val x + (t i).val x from rfl]
-  exact norm_add_le _ _
 
- theorem sectionNorm_add_le (s t : Sections F ζ hζ U R P H) :
-    sectionNorm F ζ hζ U R P H (s + t) ≤
-      sectionNorm F ζ hζ U R P H s + sectionNorm F ζ hζ U R P H t := by
-  intro b
-  simp only [sectionNorm]
-  exact componentNorm_add_le F ζ hζ U R P H s t _ _
+ alias sectionNorm_add_le := _root_.DedekindZetaZeroFree.KPContSectorLineL2Isometry.sectionNorm_add_le
 
- theorem sectionNorm_smul (c : ℂ) (s : Sections F ζ hζ U R P H) :
-    sectionNorm F ζ hζ U R P H (c • s) =
-      fun b => ‖c‖ * sectionNorm F ζ hζ U R P H s b := by
-  funext b
-  simp only [sectionNorm]
-  refine Quotient.inductionOn ((H.atlas U).components.symm b).2 (fun x => ?_)
-  simp only [componentNorm, Quotient.lift_mk]
-  rw [show ((c • s) ((H.atlas U).components.symm b).1).val x =
-    c * (s ((H.atlas U).components.symm b).1).val x from rfl]
-  exact norm_mul _ _
+ alias sectionNorm_smul := _root_.DedekindZetaZeroFree.KPContSectorLineL2Isometry.sectionNorm_smul
+
+
+local notation:max "current_squaredNorm" => squaredNorm F ζ hζ U R P H
 
  theorem sectionNorm_zero_of_squaredNorm_ae
     {ν : Measure (X_U F ζ hζ U)} {s : Sections F ζ hζ U R P H}
-    (h : squaredNorm F ζ hζ U R P H s =ᵐ[ν] 0) :
-    sectionNorm F ζ hζ U R P H s =ᵐ[ν] 0 := by
+    (h : current_squaredNorm s =ᵐ[ν] 0) :
+    current_sectionNorm s =ᵐ[ν] 0 := by
   filter_upwards [h] with b hb
   simp only [Pi.zero_apply] at hb
-  have hb' : sectionNorm F ζ hζ U R P H s b ^ 2 ≤ 0 := by
+  have hb' : current_sectionNorm s b ^ 2 ≤ 0 := by
     rw [squaredNorm, ENNReal.ofReal_eq_zero] at hb
     exact hb
-  have hzero : sectionNorm F ζ hζ U R P H s b ^ 2 = 0 :=
+  have hzero  :=
     le_antisymm hb' (sq_nonneg _)
   exact sq_eq_zero_iff.mp hzero
 
-private theorem sectionNorm_zero :
-    sectionNorm F ζ hζ U R P H (0 : Sections F ζ hζ U R P H) = 0 := by
-  funext b
-  simp only [sectionNorm]
-  refine Quotient.inductionOn ((H.atlas U).components.symm b).2 (fun x => ?_)
-  simp only [componentNorm, Quotient.lift_mk]
-  simp
+private alias sectionNorm_zero := _root_.DedekindZetaZeroFree.KPContSectorLineL2Isometry.sectionNorm_zero
 
- theorem squaredNorm_zero :
-    squaredNorm F ζ hζ U R P H (0 : Sections F ζ hζ U R P H) = 0 := by
-  funext b
-  simp only [squaredNorm, sectionNorm_zero]
-  simp
+ alias squaredNorm_zero := _root_.DedekindZetaZeroFree.KPContSectorLineL2Isometry.squaredNorm_zero
+
+
+local notation:max "current_muU" => muU F ζ hζ U
 
 def nullOnK : Submodule ℂ (BorelL2Sections F ζ hζ U R P H) where
-  carrier := {s | squaredNorm F ζ hζ U R P H s.val =ᵐ[
-    (muU F ζ hζ U R P).restrict K] 0}
+  carrier := {s | current_squaredNorm s.val =ᵐ[
+    (current_muU R P).restrict K] 0}
   zero_mem' := by
-    change squaredNorm F ζ hζ U R P H (0 : BorelL2Sections F ζ hζ U R P H).val =ᵐ[
-      (muU F ζ hζ U R P).restrict K] 0
+    change current_squaredNorm (0 : BorelL2Sections F ζ hζ U R P H).val =ᵐ[
+      (current_muU R P).restrict K] 0
     rw [show (0 : BorelL2Sections F ζ hζ U R P H).val =
       (0 : Sections F ζ hζ U R P H) from rfl, squaredNorm_zero]
   add_mem' := by
     intro s t hs ht
-    change squaredNorm F ζ hζ U R P H (s + t).val =ᵐ[
-      (muU F ζ hζ U R P).restrict K] 0
+    change current_squaredNorm (s + t).val =ᵐ[
+      (current_muU R P).restrict K] 0
     rw [show (s + t).val = s.val + t.val from rfl]
-    have hs' : squaredNorm F ζ hζ U R P H s.val =ᵐ[
-        (muU F ζ hζ U R P).restrict K] 0 := hs
-    have ht' : squaredNorm F ζ hζ U R P H t.val =ᵐ[
-        (muU F ζ hζ U R P).restrict K] 0 := ht
+    have hs' : current_squaredNorm s.val =ᵐ[
+        (current_muU R P).restrict K] 0 := hs
+    have ht' : current_squaredNorm t.val =ᵐ[
+        (current_muU R P).restrict K] 0 := ht
     filter_upwards [sectionNorm_zero_of_squaredNorm_ae F ζ hζ U R P H hs',
       sectionNorm_zero_of_squaredNorm_ae F ζ hζ U R P H ht'] with b hbs hbt
     simp only [Pi.zero_apply] at hbs hbt
-    have h1 : sectionNorm F ζ hζ U R P H (s.val + t.val) b ≤
-        sectionNorm F ζ hζ U R P H s.val b + sectionNorm F ζ hζ U R P H t.val b :=
+    have h1 : current_sectionNorm (s.val + t.val) b ≤
+        current_sectionNorm s.val b + current_sectionNorm t.val b :=
       sectionNorm_add_le F ζ hζ U R P H s.val t.val b
     rw [hbs, hbt, add_zero] at h1
-    have h2 : 0 ≤ sectionNorm F ζ hζ U R P H (s.val + t.val) b :=
+    have h2  :=
       sectionNorm_nonneg F ζ hζ U R P H (s.val + t.val) b
-    have h3 : sectionNorm F ζ hζ U R P H (s.val + t.val) b = 0 := le_antisymm h1 h2
+    have h3  := le_antisymm h1 h2
     simp [squaredNorm, h3]
   smul_mem' := by
     intro c s hs
-    change squaredNorm F ζ hζ U R P H (c • s).val =ᵐ[
-      (muU F ζ hζ U R P).restrict K] 0
+    change current_squaredNorm (c • s).val =ᵐ[
+      (current_muU R P).restrict K] 0
     rw [show (c • s).val = c • s.val from rfl]
-    have hs' : squaredNorm F ζ hζ U R P H s.val =ᵐ[
-        (muU F ζ hζ U R P).restrict K] 0 := hs
+    have hs' : current_squaredNorm s.val =ᵐ[
+        (current_muU R P).restrict K] 0 := hs
     filter_upwards [sectionNorm_zero_of_squaredNorm_ae F ζ hζ U R P H hs'] with b hb
     simp only [Pi.zero_apply] at hb
     have hsm := congrFun (sectionNorm_smul F ζ hζ U R P H c s.val) b
@@ -163,11 +141,17 @@ local instance : HasQuotient (BorelL2Sections F ζ hζ U R P H)
   @Submodule.hasQuotient ℂ (BorelL2Sections F ζ hζ U R P H)
     inferInstance inferInstance inferInstance
 
-abbrev H_K := (BorelL2Sections F ζ hζ U R P H) ⧸ nullOnK F ζ hζ U R P H K
 
-def mkK : BorelL2Sections F ζ hζ U R P H →ₗ[ℂ] H_K F ζ hζ U R P H K :=
+local notation:max "current_nullOnK" => nullOnK F ζ hζ U R P H
+
+abbrev H_K := (BorelL2Sections F ζ hζ U R P H) ⧸ current_nullOnK K
+
+
+local notation:max "current_H_K" => H_K F ζ hζ U R P H
+
+def mkK : BorelL2Sections F ζ hζ U R P H →ₗ[ℂ] current_H_K K :=
   @Submodule.mkQ ℂ (BorelL2Sections F ζ hζ U R P H)
-    inferInstance inferInstance inferInstance (nullOnK F ζ hζ U R P H K)
+    inferInstance inferInstance inferInstance (current_nullOnK K)
 
  def maskCoeff (s : BorelL2Sections F ζ hζ U R P H)
     (i : Fin (H.atlas U).componentCount) :
@@ -217,10 +201,7 @@ private theorem measurable_maskCoeff (hK : MeasurableSet K)
       (H.atlas U).components ⟨i, Quotient.mk _ x⟩ ∈ K} := hK.preimage hcont.measurable
   have hfun : maskCoeff F ζ hζ U R P H K s i = fun x =>
       if (H.atlas U).components ⟨i, Quotient.mk _ x⟩ ∈ K then (s.val i).val x else 0 := by
-    funext x
-    by_cases hx : (H.atlas U).components ⟨i, Quotient.mk _ x⟩ ∈ K
-    · rw [maskCoeff, Set.indicator_of_mem hx, if_pos hx]
-    · rw [maskCoeff, Set.indicator_of_notMem hx, if_neg hx]
+    rfl
   rw [hfun]
   exact Measurable.ite hset (s.property.1 i) measurable_const
 
@@ -230,46 +211,43 @@ private theorem measurable_maskCoeff (hK : MeasurableSet K)
     ⟨maskCoeff_scalarFiber F ζ hζ U R P H K s i,
       maskCoeff_equivariant F ζ hζ U R P H K s i⟩⟩
 
+
+local notation:max "current_maskSections" => maskSections F ζ hζ U R P H
+
 private theorem sectionNorm_maskSections_le (hK : MeasurableSet K)
     (s : BorelL2Sections F ζ hζ U R P H) (b : KPFiniteCuspAtlas.rawXU F ζ hζ U) :
-    sectionNorm F ζ hζ U R P H (maskSections F ζ hζ U R P H K hK s) b ≤
-      sectionNorm F ζ hζ U R P H s.val b := by
-  rw [show b = (H.atlas U).components ((H.atlas U).components.symm b) from
-    (Homeomorph.apply_symm_apply (H.atlas U).components b).symm]
+    current_sectionNorm (current_maskSections K hK s) b ≤
+      current_sectionNorm s.val b := by
+  rw [((Homeomorph.apply_symm_apply (H.atlas U).components b).symm)]
   obtain ⟨i, q⟩ := (H.atlas U).components.symm b
   simp only [sectionNorm]
   rw [Homeomorph.symm_apply_apply]
   refine Quotient.inductionOn q (fun x => ?_)
   simp only [componentNorm, Quotient.lift_mk]
   by_cases hx : (H.atlas U).components ⟨i, Quotient.mk _ x⟩ ∈ K
-  · rw [show (maskSections F ζ hζ U R P H K hK s i).val x = (s.val i).val x from by
-      simp only [maskSections, maskCoeff]
-      rw [Set.indicator_of_mem hx]]
-  · rw [show (maskSections F ζ hζ U R P H K hK s i).val x = 0 from by
-      simp only [maskSections, maskCoeff]
-      rw [Set.indicator_of_notMem hx]]
-    simp
+  · simp_all [DedekindZetaZeroFree.KPContActualFixedHaarCoreLocalizers.maskSections, DedekindZetaZeroFree.KPContActualFixedHaarCoreLocalizers.maskCoeff, Set.indicator_of_mem] <;> aesop
+  · simp_all [DedekindZetaZeroFree.KPContActualFixedHaarCoreLocalizers.maskSections, DedekindZetaZeroFree.KPContActualFixedHaarCoreLocalizers.maskCoeff, Set.indicator_of_notMem] <;> aesop
 
 private theorem normIntegral_maskSections_lt_top (hK : MeasurableSet K)
     (s : BorelL2Sections F ζ hζ U R P H) :
-    normIntegral F ζ hζ U R P H (maskSections F ζ hζ U R P H K hK s) < ⊤ := by
+    normIntegral F ζ hζ U R P H (current_maskSections K hK s) < ⊤ := by
   refine lt_of_le_of_lt ?_ s.property.2
   simp only [normIntegral, squaredNorm]
   refine lintegral_mono (fun b => ENNReal.ofReal_le_ofReal ?_)
   exact pow_le_pow_left₀
-    (sectionNorm_nonneg F ζ hζ U R P H (maskSections F ζ hζ U R P H K hK s) b)
+    (sectionNorm_nonneg F ζ hζ U R P H (current_maskSections K hK s) b)
     (sectionNorm_maskSections_le F ζ hζ U R P H K hK s b) 2
 
  theorem maskSections_mem (hK : MeasurableSet K)
     (s : BorelL2Sections F ζ hζ U R P H) :
-    maskSections F ζ hζ U R P H K hK s ∈ BorelL2Sections F ζ hζ U R P H :=
+    current_maskSections K hK s ∈ BorelL2Sections F ζ hζ U R P H :=
   ⟨fun i => measurable_maskCoeff F ζ hζ U R P H K hK s i,
     normIntegral_maskSections_lt_top F ζ hζ U R P H K hK s⟩
 
  theorem maskSections_add (hK : MeasurableSet K)
     (s t : BorelL2Sections F ζ hζ U R P H) :
-    maskSections F ζ hζ U R P H K hK (s + t) =
-      maskSections F ζ hζ U R P H K hK s + maskSections F ζ hζ U R P H K hK t := by
+    current_maskSections K hK (s + t) =
+      current_maskSections K hK s + current_maskSections K hK t := by
   funext i
   apply Subtype.ext
   funext x
@@ -282,8 +260,8 @@ private theorem normIntegral_maskSections_lt_top (hK : MeasurableSet K)
 
  theorem maskSections_smul (hK : MeasurableSet K) (c : ℂ)
     (s : BorelL2Sections F ζ hζ U R P H) :
-    maskSections F ζ hζ U R P H K hK (c • s) =
-      c • maskSections F ζ hζ U R P H K hK s := by
+    current_maskSections K hK (c • s) =
+      c • current_maskSections K hK s := by
   funext i
   apply Subtype.ext
   funext x
@@ -304,20 +282,23 @@ def mask (hK : MeasurableSet K) :
     intro c s
     exact Subtype.ext (maskSections_smul F ζ hζ U R P H K hK c s)
 
+
+local notation:max "current_mask" => mask F ζ hζ U R P H
+
 theorem mask_val_apply (hK : MeasurableSet K) (s : BorelL2Sections F ζ hζ U R P H)
     (i : Fin (H.atlas U).componentCount) (x : KPFiniteCuspAtlas.SymmetricSpace F) :
-    ((mask F ζ hζ U R P H K hK s).val i).val x =
+    ((current_mask K hK s).val i).val x =
       K.indicator (fun _ => (s.val i).val x)
         ((H.atlas U).components ⟨i, Quotient.mk _ x⟩) := rfl
 
 theorem sectionNorm_mask_components (hK : MeasurableSet K)
     (s : BorelL2Sections F ζ hζ U R P H)
     (i : Fin (H.atlas U).componentCount) (x : KPFiniteCuspAtlas.SymmetricSpace F) :
-    sectionNorm F ζ hζ U R P H (mask F ζ hζ U R P H K hK s).val
+    current_sectionNorm (current_mask K hK s).val
         ((H.atlas U).components ⟨i, Quotient.mk _ x⟩) =
-      K.indicator (sectionNorm F ζ hζ U R P H s.val)
+      K.indicator (current_sectionNorm s.val)
         ((H.atlas U).components ⟨i, Quotient.mk _ x⟩) := by
-  rw [sectionNorm_component F ζ hζ U R P H (mask F ζ hζ U R P H K hK s).val i x]
+  rw [sectionNorm_component F ζ hζ U R P H (current_mask K hK s).val i x]
   by_cases h : (H.atlas U).components ⟨i, Quotient.mk _ x⟩ ∈ K
   · rw [Set.indicator_of_mem h, mask_val_apply, Set.indicator_of_mem h,
       sectionNorm_component F ζ hζ U R P H s.val i x]
@@ -325,11 +306,10 @@ theorem sectionNorm_mask_components (hK : MeasurableSet K)
     simp
 
 theorem squaredNorm_mask (hK : MeasurableSet K) (s : BorelL2Sections F ζ hζ U R P H) :
-    squaredNorm F ζ hζ U R P H (mask F ζ hζ U R P H K hK s).val =
-      K.indicator (squaredNorm F ζ hζ U R P H s.val) := by
+    current_squaredNorm (current_mask K hK s).val =
+      K.indicator (current_squaredNorm s.val) := by
   funext b
-  rw [show b = (H.atlas U).components ((H.atlas U).components.symm b) from
-    (Homeomorph.apply_symm_apply (H.atlas U).components b).symm]
+  rw [((Homeomorph.apply_symm_apply (H.atlas U).components b).symm)]
   obtain ⟨i, q⟩ := (H.atlas U).components.symm b
   refine Quotient.inductionOn q (fun x => ?_)
   simp only [squaredNorm]
@@ -341,18 +321,18 @@ theorem squaredNorm_mask (hK : MeasurableSet K) (s : BorelL2Sections F ζ hζ U 
     simp
 
  theorem mask_mem_nullSections (hK : MeasurableSet K)
-    {s : BorelL2Sections F ζ hζ U R P H} (hs : s ∈ nullOnK F ζ hζ U R P H K) :
-    mask F ζ hζ U R P H K hK s ∈ nullSections F ζ hζ U R P H := by
-  change squaredNorm F ζ hζ U R P H (mask F ζ hζ U R P H K hK s).val =ᵐ[
-    muU F ζ hζ U R P] 0
+    {s : BorelL2Sections F ζ hζ U R P H} (hs : s ∈ current_nullOnK K) :
+    current_mask K hK s ∈ nullSections F ζ hζ U R P H := by
+  change current_squaredNorm (current_mask K hK s).val =ᵐ[
+    current_muU R P] 0
   rw [squaredNorm_mask F ζ hζ U R P H K hK s]
-  have hs' : squaredNorm F ζ hζ U R P H s.val =ᵐ[
-      (muU F ζ hζ U R P).restrict K] 0 := hs
-  have hmem : ∀ᵐ b ∂(muU F ζ hζ U R P), b ∈ K →
-      squaredNorm F ζ hζ U R P H s.val b = 0 := by
+  have hs' : current_squaredNorm s.val =ᵐ[
+      (current_muU R P).restrict K] 0 := hs
+  have hmem : ∀ᵐ b ∂(current_muU R P), b ∈ K →
+      current_squaredNorm s.val b = 0 := by
     rw [← ae_restrict_iff' hK]
     filter_upwards [hs'] with b hb
-    simpa only [Pi.zero_apply] using hb
+    exact hb
   filter_upwards [hmem] with b hb
   by_cases hx : b ∈ K
   · rw [Set.indicator_of_mem hx]; exact hb hx
@@ -360,52 +340,48 @@ theorem squaredNorm_mask (hK : MeasurableSet K) (s : BorelL2Sections F ζ hζ U 
 
  def zeroExtensionLinearMap (hK : MeasurableSet K) :
     BorelL2Sections F ζ hζ U R P H →ₗ[ℂ] L2Line F ζ hζ U R P H :=
-  (mk F ζ hζ U R P H).comp (mask F ζ hζ U R P H K hK)
+  (mk F ζ hζ U R P H).comp (current_mask K hK)
 
 def zeroExtension (hK : MeasurableSet K) :
-    H_K F ζ hζ U R P H K →ₗ[ℂ] L2Line F ζ hζ U R P H :=
+    current_H_K K →ₗ[ℂ] L2Line F ζ hζ U R P H :=
   @Submodule.liftQ ℂ (BorelL2Sections F ζ hζ U R P H)
-    inferInstance inferInstance inferInstance (nullOnK F ζ hζ U R P H K)
+    inferInstance inferInstance inferInstance (current_nullOnK K)
     ℂ (L2Line F ζ hζ U R P H) inferInstance inferInstance inferInstance (RingHom.id ℂ)
     (zeroExtensionLinearMap F ζ hζ U R P H K hK) (by
       intro s hs
       rw [LinearMap.mem_ker]
-      change (mk F ζ hζ U R P H) ((mask F ζ hζ U R P H K hK) s) = 0
+      change (mk F ζ hζ U R P H) ((current_mask K hK) s) = 0
       rw [show (0 : L2Line F ζ hζ U R P H) = mk F ζ hζ U R P H 0 from
         (map_zero (mk F ζ hζ U R P H)).symm]
       rw [mk_eq_mk_iff]
-      rw [show ((mask F ζ hζ U R P H K hK) s).val -
+      rw [show ((current_mask K hK) s).val -
           (0 : BorelL2Sections F ζ hζ U R P H).val =
-          ((mask F ζ hζ U R P H K hK) s).val from sub_zero _]
-      exact mask_mem_nullSections F ζ hζ U R P H K hK hs)
+          ((current_mask K hK) s).val from sub_zero _]
+      apply mask_mem_nullSections <;> assumption)
 
 private theorem zeroExtension_mkK (hK : MeasurableSet K) (s : BorelL2Sections F ζ hζ U R P H) :
     zeroExtension F ζ hζ U R P H K hK (mkK F ζ hζ U R P H K s) =
-      mk F ζ hζ U R P H (mask F ζ hζ U R P H K hK s) := by
-  simp only [zeroExtension, zeroExtensionLinearMap, LinearMap.comp_apply,
-    Submodule.liftQ_apply, mkK, Submodule.mkQ_apply]
+      mk F ζ hζ U R P H (current_mask K hK s) := rfl
 
  theorem nullSections_le_nullOnK :
-    nullSections F ζ hζ U R P H ≤ nullOnK F ζ hζ U R P H K := by
+    nullSections F ζ hζ U R P H ≤ current_nullOnK K := by
   intro s hs
-  change squaredNorm F ζ hζ U R P H s.val =ᵐ[(muU F ζ hζ U R P).restrict K] 0
+  change current_squaredNorm s.val =ᵐ[(current_muU R P).restrict K] 0
   exact ae_restrict_of_ae hs
 
  def lineRestrictionLin :
-    L2Line F ζ hζ U R P H →ₗ[ℂ] H_K F ζ hζ U R P H K :=
+    L2Line F ζ hζ U R P H →ₗ[ℂ] current_H_K K :=
   @Submodule.mapQ ℂ (BorelL2Sections F ζ hζ U R P H)
     inferInstance inferInstance inferInstance (nullSections F ζ hζ U R P H)
     ℂ (BorelL2Sections F ζ hζ U R P H) inferInstance inferInstance inferInstance (RingHom.id ℂ)
-    (nullOnK F ζ hζ U R P H K) (LinearMap.id) (by
+    (current_nullOnK K) (LinearMap.id) (by
       intro s hs
       rw [Submodule.mem_comap]
-      exact nullSections_le_nullOnK F ζ hζ U R P H K hs)
+      apply nullSections_le_nullOnK <;> assumption)
 
 private theorem lineRestrictionLin_mk (s : BorelL2Sections F ζ hζ U R P H) :
     lineRestrictionLin F ζ hζ U R P H K (mk F ζ hζ U R P H s) =
       mkK F ζ hζ U R P H K s := by
-  rw [lineRestrictionLin, show (mk F ζ hζ U R P H) s = Submodule.Quotient.mk s from
-    Submodule.mkQ_apply _ s, Submodule.mapQ_apply, LinearMap.id_apply]
   rfl
 
 theorem zeroExtension_injective (hK : MeasurableSet K) :
@@ -417,21 +393,20 @@ theorem zeroExtension_injective (hK : MeasurableSet K) :
   change mkK F ζ hζ U R P H K t = v at ht
   rw [← hs, ← ht] at huv ⊢
   rw [zeroExtension_mkK, zeroExtension_mkK] at huv
-  have h2 : squaredNorm F ζ hζ U R P H
-      ((mask F ζ hζ U R P H K hK (s - t)).val) =ᵐ[muU F ζ hζ U R P] 0 := by
-    have h0 := (mk_eq_mk_iff F ζ hζ U R P H (mask F ζ hζ U R P H K hK s)
-      (mask F ζ hζ U R P H K hK t)).mp huv
-    have hsub : (mask F ζ hζ U R P H K hK s - mask F ζ hζ U R P H K hK t :
-        BorelL2Sections F ζ hζ U R P H) = mask F ζ hζ U R P H K hK (s - t) :=
-      (map_sub (mask F ζ hζ U R P H K hK) s t).symm
+  have h2 : current_squaredNorm
+      ((current_mask K hK (s - t)).val) =ᵐ[current_muU R P] 0 := by
+    have h0 := (mk_eq_mk_iff F ζ hζ U R P H (current_mask K hK s)
+      (current_mask K hK t)).mp huv
+    have hsub : (current_mask K hK s - current_mask K hK t) = current_mask K hK (s - t) :=
+      (map_sub (current_mask K hK) s t).symm
     rw [← Submodule.coe_sub, hsub] at h0
     exact h0
-  have h3 : K.indicator (squaredNorm F ζ hζ U R P H (s - t).val) =ᵐ[muU F ζ hζ U R P] 0 := by
+  have h3 : K.indicator (current_squaredNorm (s - t).val) =ᵐ[current_muU R P] 0 := by
     rw [← squaredNorm_mask F ζ hζ U R P H K hK (s - t)]
     exact h2
-  have h4 : squaredNorm F ζ hζ U R P H (s - t).val =ᵐ[(muU F ζ hζ U R P).restrict K] 0 := by
-    change ∀ᵐ b ∂(muU F ζ hζ U R P).restrict K,
-      squaredNorm F ζ hζ U R P H (s - t).val b = 0
+  have h4 : current_squaredNorm (s - t).val =ᵐ[(current_muU R P).restrict K] 0 := by
+    change ∀ᵐ b ∂(current_muU R P).restrict K,
+      current_squaredNorm (s - t).val b = 0
     rw [ae_restrict_iff' hK]
     filter_upwards [h3] with b hb
     intro hbK
@@ -440,35 +415,35 @@ theorem zeroExtension_injective (hK : MeasurableSet K) :
   rw [Submodule.Quotient.eq]
   exact h4
 
- def hullK : Set (X_U F ζ hζ U) := toMeasurable (muU F ζ hζ U R P) K
+ def hullK : Set (X_U F ζ hζ U) := toMeasurable (current_muU R P) K
 
  theorem measurableSet_hullK : MeasurableSet (hullK F ζ hζ U R P K) :=
   measurableSet_toMeasurable _ _
 
 private theorem restrict_hullK :
-    (muU F ζ hζ U R P).restrict (hullK F ζ hζ U R P K) =
-      (muU F ζ hζ U R P).restrict K := by
-  haveI : SigmaFinite (muU F ζ hζ U R P) :=
+    (current_muU R P).restrict (hullK F ζ hζ U R P K) =
+      (current_muU R P).restrict K := by
+  haveI : SigmaFinite (current_muU R P) :=
     KPContSectorFixedMeasureLocalFiniteness.sphericalMeasure_sigmaFinite F ζ hζ R P U
-  haveI : SFinite (muU F ζ hζ U R P) := inferInstance
+  haveI : SFinite (current_muU R P) := inferInstance
   exact Measure.restrict_toMeasurable_of_sFinite K
 
  theorem nullOnK_hullK :
-    nullOnK F ζ hζ U R P H K = nullOnK F ζ hζ U R P H (hullK F ζ hζ U R P K) := by
+    current_nullOnK K = current_nullOnK (hullK F ζ hζ U R P K) := by
   refine Submodule.ext fun s => ?_
-  change (squaredNorm F ζ hζ U R P H s.val =ᵐ[(muU F ζ hζ U R P).restrict K] 0) ↔
-    (squaredNorm F ζ hζ U R P H s.val =ᵐ[
-      (muU F ζ hζ U R P).restrict (hullK F ζ hζ U R P K)] 0)
+  change (current_squaredNorm s.val =ᵐ[(current_muU R P).restrict K] 0) ↔
+    (current_squaredNorm s.val =ᵐ[
+      (current_muU R P).restrict (hullK F ζ hζ U R P K)] 0)
   rw [restrict_hullK]
 
  def extToHull :
-    H_K F ζ hζ U R P H K ≃ₗ[ℂ] H_K F ζ hζ U R P H (hullK F ζ hζ U R P K) :=
+    current_H_K K ≃ₗ[ℂ] current_H_K (hullK F ζ hζ U R P K) :=
   @Submodule.quotEquivOfEq ℂ (BorelL2Sections F ζ hζ U R P H)
     inferInstance inferInstance inferInstance
-    (nullOnK F ζ hζ U R P H K)
-    (nullOnK F ζ hζ U R P H (hullK F ζ hζ U R P K)) (nullOnK_hullK F ζ hζ U R P H K)
+    (current_nullOnK K)
+    (current_nullOnK (hullK F ζ hζ U R P K)) (nullOnK_hullK F ζ hζ U R P H K)
 
- def normMap : H_K F ζ hζ U R P H K →ₗ[ℂ] L2Line F ζ hζ U R P H :=
+ def normMap : current_H_K K →ₗ[ℂ] L2Line F ζ hζ U R P H :=
   (zeroExtension F ζ hζ U R P H (hullK F ζ hζ U R P K)
       (measurableSet_hullK F ζ hζ U R P K)).comp
     (extToHull F ζ hζ U R P H K).toLinearMap
@@ -478,23 +453,23 @@ private theorem restrict_hullK :
     (measurableSet_hullK F ζ hζ U R P K)).comp (extToHull F ζ hζ U R P H K).injective
 
 instance instNormedAddCommGroupHK :
-    NormedAddCommGroup (H_K F ζ hζ U R P H K) :=
+    NormedAddCommGroup (current_H_K K) :=
   NormedAddCommGroup.induced _ _ (normMap F ζ hζ U R P H K).toAddMonoidHom
     (normMap_injective F ζ hζ U R P H K)
 
-instance instNormedSpaceHK : NormedSpace ℂ (H_K F ζ hζ U R P H K) :=
+instance instNormedSpaceHK : NormedSpace ℂ (current_H_K K) :=
   NormedSpace.induced ℂ _ _ (normMap F ζ hζ U R P H K)
 
-instance instInnerProductSpaceHK : InnerProductSpace ℂ (H_K F ζ hζ U R P H K) :=
-  InnerProductSpace.induced (normMap F ζ hζ U R P H K)
 
- abbrev instTopologicalSpaceHKLocal : TopologicalSpace (H_K F ζ hζ U R P H K) :=
-  (inferInstance : NormedAddCommGroup (H_K F ζ hζ U R P H K)).toSeminormedAddCommGroup.toPseudoMetricSpace.toUniformSpace.toTopologicalSpace
+
+
+ abbrev instTopologicalSpaceHKLocal  :=
+  (inferInstance : NormedAddCommGroup (current_H_K K)).toSeminormedAddCommGroup.toPseudoMetricSpace.toUniformSpace.toTopologicalSpace
 
 attribute [local instance 5000] instTopologicalSpaceHKLocal
 
- abbrev instAddCommMonoidHKLocal : AddCommMonoid (H_K F ζ hζ U R P H K) :=
-  (inferInstance : NormedAddCommGroup (H_K F ζ hζ U R P H K)).toSeminormedAddCommGroup.toAddCommMonoid
+ abbrev instAddCommMonoidHKLocal  :=
+  (inferInstance : NormedAddCommGroup (current_H_K K)).toSeminormedAddCommGroup.toAddCommMonoid
 
 attribute [local instance 5000] instAddCommMonoidHKLocal
 
@@ -507,17 +482,7 @@ theorem norm_mkK_sq (s : BorelL2Sections F ζ hζ U R P H) :
   have hnorm : ‖mkK F ζ hζ U R P H K s‖ =
       ‖mk F ζ hζ U R P H (mask F ζ hζ U R P H (hullK F ζ hζ U R P K)
         (measurableSet_hullK F ζ hζ U R P K) s)‖ := by
-    change ‖normMap F ζ hζ U R P H K (mkK F ζ hζ U R P H K s)‖ = _
-    rw [normMap, LinearMap.comp_apply]
-    change ‖zeroExtension F ζ hζ U R P H (hullK F ζ hζ U R P K)
-        (measurableSet_hullK F ζ hζ U R P K)
-        ((extToHull F ζ hζ U R P H K) (mkK F ζ hζ U R P H K s))‖ = _
-    rw [show (extToHull F ζ hζ U R P H K) (mkK F ζ hζ U R P H K s) =
-        mkK F ζ hζ U R P H (hullK F ζ hζ U R P K) s from by
-      rw [extToHull, show (mkK F ζ hζ U R P H K) s = Submodule.Quotient.mk s from
-        Submodule.mkQ_apply _ s, Submodule.quotEquivOfEq_mk]
-      rfl]
-    rw [zeroExtension_mkK]
+    rfl
   rw [hnorm, norm_sq]
   congr 1
   rw [normIntegral, squaredNorm_mask,
@@ -529,8 +494,7 @@ theorem zeroExtension_norm (u : H_K F ζ hζ U R P H K) :
   change mkK F ζ hζ U R P H K s = u at hs
   rw [← hs]
   have hZ : ‖zeroExtension F ζ hζ U R P H K hK (mkK F ζ hζ U R P H K s)‖ =
-      ‖mk F ζ hζ U R P H (mask F ζ hζ U R P H K hK s)‖ := by
-    rw [zeroExtension_mkK]
+      ‖mk F ζ hζ U R P H (mask F ζ hζ U R P H K hK s)‖ := rfl
   have h2 : ‖mk F ζ hζ U R P H (mask F ζ hζ U R P H K hK s)‖ ^ 2 =
       ‖mkK F ζ hζ U R P H K s‖ ^ 2 := by
     rw [norm_sq, norm_mkK_sq]
@@ -569,13 +533,13 @@ theorem mkK_eq_iff (s t : BorelL2Sections F ζ hζ U R P H) :
 def lineRestriction (hK : MeasurableSet K) : L2Line F ζ hζ U R P H →L[ℂ] H_K F ζ hζ U R P H K :=
   (lineRestrictionLin F ζ hζ U R P H K).mkContinuous 1 fun u => by
     rw [one_mul]
-    exact lineRestrictionLin_norm_le F ζ hζ U R P H K u
+    apply lineRestrictionLin_norm_le
 
 theorem lineRestriction_mk (s : BorelL2Sections F ζ hζ U R P H) :
     lineRestriction F ζ hζ U R P H K hK (mk F ζ hζ U R P H s) =
       mkK F ζ hζ U R P H K s := by
   rw [lineRestriction, LinearMap.mkContinuous_apply]
-  exact lineRestrictionLin_mk F ζ hζ U R P H K s
+  apply lineRestrictionLin_mk
 
 def res_K : H_U F ζ hζ U R →L[ℂ] H_K F ζ hζ U R P H K where
   toFun u := lineRestriction F ζ hζ U R P H K hK
@@ -598,7 +562,7 @@ end RestrictedNorm
 
 abbrev Chart := KPCoreChartLocalizers.Chart F ζ hζ H.totallyComplex U (H.atlas U)
 
-def actualWeight (C : Chart F ζ hζ U R P H) (x : KPCoreChartLocalizers.E C.n) : ℝ :=
+def actualWeight (C : Chart F ζ hζ U R P H) (x : KPCoreChartLocalizers.E C.n)  :=
   ((H.disintegration U).componentWeight C.component).toReal * C.weight x
 
 variable (hK : IsCompact K)
@@ -642,7 +606,7 @@ structure Localizers (hK : IsCompact K) where
     ((Fintype.card ((chart i).G F ζ hζ H.totallyComplex U) : ℝ≥0∞)⁻¹ •
       (volume.restrict (Metric.ball 0 (chart i).radius)).withDensity
         (fun x => ENNReal.ofReal (actualWeight F ζ hζ U R P H (chart i) x))) =
-    (muU F ζ hζ U R P).restrict ((chart i).O F ζ hζ H.totallyComplex U)
+    (current_muU R P).restrict ((chart i).O F ζ hζ H.totallyComplex U)
   lower : Fin count → ℝ
   upper : Fin count → ℝ
   positive_lower : ∀ i, 0 < lower i
@@ -692,7 +656,7 @@ structure Localizers (hK : IsCompact K) where
       (fun x => (cutoff i x : ℂ) * (s.val (chart i).component).val ((chart i).coordinates x))
   Rmap : ∀ i, Lp ℂ 2
     (volume.restrict (KPCoreChartLocalizers.cube (chart i).n (chart i).a)) →L[ℂ]
-      H_K F ζ hζ U R P H K
+      current_H_K K
 
   R_formula : ∀ i f, ∃ t : BorelL2Sections F ζ hζ U R P H,
     Rmap i f = mkK F ζ hζ U R P H K t ∧
@@ -701,8 +665,8 @@ structure Localizers (hK : IsCompact K) where
       (t.val (chart i).component).val ((chart i).coordinates x) =
         ((KPCuspGenuineMonodromy.scalarFiber F ζ hζ U).orthogonalProjectionOnto
           ((chart i).average F ζ hζ H.totallyComplex U f x) : ℂ)) ∧
-    (∀ᵐ b ∂(muU F ζ hζ U R P).restrict K,
-      b ∉ (chart i).O F ζ hζ H.totallyComplex U → squaredNorm F ζ hζ U R P H t.val b = 0)
+    (∀ᵐ b ∂(current_muU R P).restrict K,
+      b ∉ (chart i).O F ζ hζ H.totallyComplex U → current_squaredNorm t.val b = 0)
   reconstruction : res_K F ζ hζ U R P H K hK.measurableSet =
     ∑ i, (Rmap i).comp (T i)
   smooth_test_image : ∀ i (f : KPContActualSectorSmoothTestModules.S_U F ζ hζ U R P H),

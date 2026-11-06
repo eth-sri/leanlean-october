@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Sphere.SmoothPolynomialDensity
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.ComplexFractionalInverse.HarmonicIdentity
 open KPCplxIntertwinerEigenvalues
@@ -35,7 +38,7 @@ private theorem rot_eval_flow (i : Fin 3) (p : MvPolynomial (Fin 3) ℂ)
       ((EuclideanSpace.proj (𝕜 := ℝ) j).hasFDerivAt.comp_hasDerivAt t
         (rotationFlow_hasDerivAt i x t))
     change HasDerivAt (fun t => ((rotationFlow i t x) j : ℂ))
-      ((rotationVector i (rotationFlow i t x)) j : ℂ) t at hj
+      ((rotationVector i (rotationFlow i t x)) j) t at hj
     have hd := hp.mul hj
     change HasDerivAt (fun t => eval _ p * ((rotationFlow i t x) j : ℂ)) _ t at hd
     convert hd using 1

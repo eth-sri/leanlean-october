@@ -20,16 +20,18 @@ theorem affineResidueScale_pos (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ) :
   exact_mod_cast lt_of_le_of_ne (FractionalIdeal.absNorm_nonneg (I : FractionalIdeal (𝓞 F)⁰ F))
     (Ne.symm (FractionalIdeal.absNorm_eq_zero_iff.not.mpr (Units.ne_zero I)))
 
-def commonNormalizedLattice (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
-    (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ) :
+section
+variable (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
+    (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
+include m hm I
+def commonNormalizedLattice   :
     Submodule ℤ (NumberField.mixedEmbedding.euclidean.mixedSpace F) :=
   (Theta.traceIdealLattice F (I * rayIdealFractionalIdeal F m hm)).map
     (affineResidueScale I •
       (LinearMap.id : NumberField.mixedEmbedding.euclidean.mixedSpace F →ₗ[ℤ]
         NumberField.mixedEmbedding.euclidean.mixedSpace F))
 
- theorem mem_commonDual_iff (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
-    (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
+ theorem mem_commonDual_iff  
     (v : NumberField.mixedEmbedding.euclidean.mixedSpace F) :
     v ∈ Theta.dualLattice (commonNormalizedLattice m hm I) ↔
       affineResidueScale I • v ∈ Theta.dualLattice
@@ -49,8 +51,7 @@ def commonNormalizedLattice (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     rw [← he, real_inner_smul_right]
     simpa only [real_inner_smul_left] using hn
 
- theorem commonDual_mem (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
-    (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
+ theorem commonDual_mem  
     (β : {β : F // β ∈ (Theta.traceDualIdealUnit F
       (I * rayIdealFractionalIdeal F m hm) : FractionalIdeal (𝓞 F)⁰ F)}) :
     (affineResidueScale I)⁻¹ • Theta.traceConjugation F (Theta.traceEmbedding F β.val) ∈
@@ -60,8 +61,7 @@ def commonNormalizedLattice (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
   exact Submodule.mem_map.mpr ⟨Theta.traceEmbedding F β.val,
     (Theta.traceEmbedding_mem_traceIdealLattice F _).mpr β.property, rfl⟩
 
-def commonDualIndexEquiv (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
-    (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ) :
+def commonDualIndexEquiv   :
     {β : F // β ∈ (Theta.traceDualIdealUnit F
       (I * rayIdealFractionalIdeal F m hm) : FractionalIdeal (𝓞 F)⁰ F)} ≃
       Theta.dualLattice (commonNormalizedLattice m hm I) := by
@@ -85,8 +85,7 @@ def commonDualIndexEquiv (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     change Theta.traceConjugation F w = affineResidueScale I • v.val at he
     rw [he, smul_smul, inv_mul_cancel₀ (affineResidueScale_pos I).ne', one_smul]
 
-@[simp] theorem commonDualIndexEquiv_apply (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
-    (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
+@[simp] theorem commonDualIndexEquiv_apply  
     (β : {β : F // β ∈ (Theta.traceDualIdealUnit F
       (I * rayIdealFractionalIdeal F m hm) : FractionalIdeal (𝓞 F)⁰ F)}) :
     (commonDualIndexEquiv m hm I β :
@@ -95,8 +94,7 @@ def commonDualIndexEquiv (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
         Theta.traceConjugation F (Theta.traceEmbedding F β.val) := by
   rfl
 
-theorem commonDualIndex_tracePhase (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
-    (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (x : F)
+theorem commonDualIndex_tracePhase   (x : F)
     (β : {β : F // β ∈ (Theta.traceDualIdealUnit F
       (I * rayIdealFractionalIdeal F m hm) : FractionalIdeal (𝓞 F)⁰ F)}) :
     Complex.exp ((2 * Real.pi : ℝ) * Complex.I *
@@ -109,6 +107,8 @@ theorem commonDualIndex_tracePhase (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     real_inner_comm, Theta.inner_traceEmbedding_traceConjugation,
     rationalTracePhase_apply_real]
   simp only [Complex.ofReal_mul, Complex.ofReal_ofNat]
+end
+
 
 theorem affineResidueScale_rayIdealFractionalIdeal
     (a : Ideal (𝓞 F)) (ha : a ≠ ⊥) :
@@ -156,22 +156,21 @@ def normalizedCosetDualIndexEquiv (D : RayCoset.Data F) :
     (Equiv.subtypeEquivRight (fun v ↦ by
       rw [commonNormalizedLattice_eq_normalizedLattice]))
 
-@[simp] theorem normalizedCosetDualIndexEquiv_apply (D : RayCoset.Data F)
+section
+variable (D : RayCoset.Data F)
     (β : {β : F // β ∈ (Theta.traceDualIdealUnit F
       (rayIdealFractionalIdeal F D.a D.ideal_ne_bot *
         rayIdealFractionalIdeal F D.m D.modulus_ne_bot) :
-          FractionalIdeal (𝓞 F)⁰ F)}) :
+          FractionalIdeal (𝓞 F)⁰ F)})
+include D β
+@[simp] theorem normalizedCosetDualIndexEquiv_apply   :
     (normalizedCosetDualIndexEquiv D β :
       NumberField.mixedEmbedding.euclidean.mixedSpace F) =
       (affineResidueScale (rayIdealFractionalIdeal F D.a D.ideal_ne_bot))⁻¹ •
         Theta.traceConjugation F (Theta.traceEmbedding F β.val) := by
   rfl
 
-theorem normalizedCosetDualIndex_tracePhase (D : RayCoset.Data F)
-    (β : {β : F // β ∈ (Theta.traceDualIdealUnit F
-      (rayIdealFractionalIdeal F D.a D.ideal_ne_bot *
-        rayIdealFractionalIdeal F D.m D.modulus_ne_bot) :
-          FractionalIdeal (𝓞 F)⁰ F)}) :
+theorem normalizedCosetDualIndex_tracePhase   :
     Complex.exp ((2 * Real.pi : ℝ) * Complex.I *
       (inner ℝ (normalizedCosetDualIndexEquiv D β :
         NumberField.mixedEmbedding.euclidean.mixedSpace F)
@@ -185,6 +184,8 @@ theorem normalizedCosetDualIndex_tracePhase (D : RayCoset.Data F)
   rw [RayCoset.normalizationScale, ← affineResidueScale_rayIdealFractionalIdeal D.a D.ideal_ne_bot]
   exact commonDualIndex_tracePhase D.m D.modulus_ne_bot
     (rayIdealFractionalIdeal F D.a D.ideal_ne_bot) (D.b : F) β
+end
+
 
 end DedekindZetaZeroFree.Hecke.Theta
 

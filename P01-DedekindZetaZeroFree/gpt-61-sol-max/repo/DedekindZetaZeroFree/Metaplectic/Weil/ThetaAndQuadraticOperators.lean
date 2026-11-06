@@ -28,11 +28,11 @@ def dilation (T : Finset (HeightOneSpectrum (𝓞 F))) (c : F)
   fun x => f (PoissonS.localProductToSpace F T
     (sLocalDiagonal F T c * (PoissonS.localProductToSpace F T).symm x))
 
-local instance completionMeasurable (v : HeightOneSpectrum (𝓞 F)) :
-    MeasurableSpace (v.adicCompletion F) := borel _
 
-local instance completionBorel (v : HeightOneSpectrum (𝓞 F)) :
-    BorelSpace (v.adicCompletion F) := ⟨rfl⟩
+
+
+
+
 
 abbrev fourier (T : Finset (HeightOneSpectrum (𝓞 F))) :=
   PoissonS.fourierIntegral F T (fun v : T => localFiniteCharacter F v.val)

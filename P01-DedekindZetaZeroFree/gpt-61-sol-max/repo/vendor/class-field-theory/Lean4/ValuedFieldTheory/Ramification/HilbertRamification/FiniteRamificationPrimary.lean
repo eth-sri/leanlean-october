@@ -58,18 +58,18 @@ theorem ramificationGroup_isPGroup_of_residueChar
   rw [← pow_mul, ← hfactor]
   exact pow_orderOf_eq_one σ
 
-/-- The actual finite ramification group is trivial in residue characteristic zero. -/
-theorem ramificationGroup_eq_bot_of_residueCharZero
-    (A : _root_.ValuationSubring L) [CharZero (IsLocalRing.ResidueField A)]
-    [Finite (ramificationGroup K A)] :
-    ramificationGroup K A = ⊥ := by
-  apply bot_unique
-  intro σ hσ
-  change σ = 1
-  let τ : ramificationGroup K A := ⟨σ, hσ⟩
-  have hτ : τ = 1 :=
-    ramificationGroup_eq_one_of_pow_eq_one_of_residue_natCast_ne_zero K A
-      τ (orderOf τ) (Nat.cast_ne_zero.mpr (orderOf_pos τ).ne') (pow_orderOf_eq_one τ)
-  exact congrArg (fun t : ramificationGroup K A => (t : inertiaGroup K A)) hτ
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end RamificationTheory.HilbertRamification.ValuationSubring

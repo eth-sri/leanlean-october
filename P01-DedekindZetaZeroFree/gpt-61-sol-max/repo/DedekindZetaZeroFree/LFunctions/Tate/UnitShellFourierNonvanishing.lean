@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LFunctions.Tate.Local.AnnularFourierMellin
 
 @[expose] public section
+
 
 noncomputable section
 open scoped NumberField Classical
@@ -26,8 +29,8 @@ theorem finiteShell_weighted_fourier_integral_ne_zero
   let μ := Measure.addHaarMeasure (finiteCompletionIntegersPositiveCompacts F v)
   have hμ : μ (v.adicCompletionIntegers F : Set (v.adicCompletion F)) = 1 :=
     Measure.addHaarMeasure_self
-  let m : ℤ := -(localDifferentExponent F v : ℤ)
-  let a : v.adicCompletion F := finiteCompletionUniformizer F v ^ m
+  let m  := -(localDifferentExponent F v : ℤ)
+  let a  := finiteCompletionUniformizer F v ^ m
   have ha : Valued.v a = WithZero.exp (-m) := by
     simp [a, map_zpow₀, finiteCompletionUniformizer_valuation, ← WithZero.exp_zsmul]
   have ha0 : a ≠ 0 := zpow_ne_zero _ (finiteCompletionUniformizer_ne_zero F v)
@@ -62,7 +65,7 @@ theorem finiteShell_weighted_fourier_integral_ne_zero
     · apply mul_ne_zero
       · exact_mod_cast (Real.rpow_pos_of_pos (norm_pos_iff.mpr ha0) s).ne'
       · exact hz.2.2.2
-  letI : NullSingletonClass μ := KPRankOneMellin.completion_addHaar_nullSingletonClass F v μ
+  letI  := KPRankOneMellin.completion_addHaar_nullSingletonClass F v μ
   have hm : TateFiniteShell.mellin F v μ g s =
       (↑((1 - (TateFiniteShell.q F v : ℝ)⁻¹)⁻¹) : ℂ) *
         (∫ y in ({0}ᶜ : Set (v.adicCompletion F)), g y * (‖y‖ ^ (s - 1) : ℝ) ∂μ) := by
@@ -108,10 +111,10 @@ namespace DedekindZetaZeroFree.TateFiniteShellFourierIntegrals
 
 variable (F : Type) [Field F] [NumberField F]
 
-private instance completionMeasurable (v : HeightOneSpectrum (𝓞 F)) :
-    MeasurableSpace (v.adicCompletion F) := borel _
-private instance completionBorel (v : HeightOneSpectrum (𝓞 F)) :
-    BorelSpace (v.adicCompletion F) := ⟨rfl⟩
+
+
+
+
 
 end DedekindZetaZeroFree.TateFiniteShellFourierIntegrals
 

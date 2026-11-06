@@ -60,8 +60,11 @@ private theorem rational_eval_pow (u : Fˣ) (w : KPHilbert.Place F) :
   apply Units.ext
   cases w <;> change algebraMap F _ ((u : F) ^ 6) = _ <;> exact map_pow _ _ _
 
-theorem digitRightTuple_arch (m : ThetaReflectionData.Row R.A) (u : R.A.U) (y : R.A.G)
-    (d : ThetaDigitAverage.Dig (ThetaDigitAverage.rowPrimes R.A m.val m.property)) (w : InfinitePlace F) :
+section
+variable (m : ThetaReflectionData.Row R.A) (u : R.A.U) (y : R.A.G)
+    (d : ThetaDigitAverage.Dig (ThetaDigitAverage.rowPrimes R.A m.val m.property))
+include m u y d
+theorem digitRightTuple_arch   (w : InfinitePlace F) :
     digitRightTuple R m u y d (Sum.inl w) = 1 := by
   unfold digitRightTuple
   simp only [RestrictedProduct.mul_apply, RestrictedProduct.inv_apply, nt_eval, at_eval]
@@ -73,8 +76,7 @@ theorem digitRightTuple_arch (m : ThetaReflectionData.Row R.A) (u : R.A.U) (y : 
   rw [hd, local_A_pow_six_mul]
   group
 
-theorem digitRightTuple_S (m : ThetaReflectionData.Row R.A) (u : R.A.U) (y : R.A.G)
-    (d : ThetaDigitAverage.Dig (ThetaDigitAverage.rowPrimes R.A m.val m.property))
+theorem digitRightTuple_S  
     (p : KPFinitePlace F) (hp : p ∈ R.A.Sf) :
     digitRightTuple R m u y d (Sum.inr p) = 1 := by
   unfold digitRightTuple
@@ -88,8 +90,7 @@ theorem digitRightTuple_S (m : ThetaReflectionData.Row R.A) (u : R.A.U) (y : R.A
   rw [hd, local_A_pow_six_mul]
   group
 
-theorem digitRightTuple_exterior (m : ThetaReflectionData.Row R.A) (u : R.A.U) (y : R.A.G)
-    (d : ThetaDigitAverage.Dig (ThetaDigitAverage.rowPrimes R.A m.val m.property))
+theorem digitRightTuple_exterior  
     (p : KPFinitePlace F) (hp : p ∉ R.A.Sf) :
     digitRightTuple R m u y d (Sum.inr p) ∈ exteriorFactor R (Sum.inr p) := by
   unfold digitRightTuple
@@ -105,8 +106,7 @@ theorem digitRightTuple_exterior (m : ThetaReflectionData.Row R.A) (u : R.A.U) (
   rw [hu']
   exact digitParameter_congruence R m u d p
 
-theorem digitRightTuple_mem (m : ThetaReflectionData.Row R.A) (u : R.A.U) (y : R.A.G)
-    (d : ThetaDigitAverage.Dig (ThetaDigitAverage.rowPrimes R.A m.val m.property)) :
+theorem digitRightTuple_mem   :
     ∀ w, digitRightTuple R m u y d w ∈ exteriorFactor R w := by
   intro w
   cases w with
@@ -117,14 +117,12 @@ theorem digitRightTuple_mem (m : ThetaReflectionData.Row R.A) (u : R.A.U) (y : R
     · simp only [exteriorFactor, dif_neg hp, Subgroup.mem_bot]
       exact digitRightTuple_S R m u y d p (not_not.mp hp)
 
-def digitRight (m : ThetaReflectionData.Row R.A) (u : R.A.U) (y : R.A.G)
-    (d : ThetaDigitAverage.Dig (ThetaDigitAverage.rowPrimes R.A m.val m.property)) : Group R :=
+def digitRight   : Group R :=
   KPAdelicCoverRestrictedProduct.scalarQuotient F R.A.zeta12 R.A.primitive_zeta12
     (KPAdelicCoverRestrictedProduct.amalgamation F R.A.zeta12 R.A.primitive_zeta12
       (digitRightTuple R m u y d))
 
-theorem signedArgument_reindex_true (m : ThetaReflectionData.Row R.A) (u : R.A.U) (y : R.A.G)
-    (d : ThetaDigitAverage.Dig (ThetaDigitAverage.rowPrimes R.A m.val m.property)) :
+theorem signedArgument_reindex_true   :
     signedArgument R m true (R.A.diagonal (u.val ^ 6) * y) (digitReindex R m u d) =
       KPRationalAdelicSplitting.pglA F R.A.zeta12 R.A.primitive_zeta12
         (Units.map (algebraMap F (KPAdeles F)).toMonoidHom (u.val ^ 6)) *
@@ -142,8 +140,7 @@ theorem signedArgument_reindex_true (m : ThetaReflectionData.Row R.A) (u : R.A.U
   rw [ht]
   group
 
-theorem signedArgument_reindex_false (m : ThetaReflectionData.Row R.A) (u : R.A.U) (y : R.A.G)
-    (d : ThetaDigitAverage.Dig (ThetaDigitAverage.rowPrimes R.A m.val m.property)) :
+theorem signedArgument_reindex_false   :
     signedArgument R m false (R.A.diagonal (u.val ^ 6) * y) (digitReindex R m u d) =
       KPRationalAdelicSplitting.pglA F R.A.zeta12 R.A.primitive_zeta12
         (Units.map (algebraMap F (KPAdeles F)).toMonoidHom (u.val ^ 6)⁻¹) *
@@ -155,6 +152,8 @@ theorem signedArgument_reindex_false (m : ThetaReflectionData.Row R.A) (u : R.A.
   rw [he, signedArgument_reindex_true, ← mul_assoc, ← mul_assoc,
     KPRationalAdelicSplitting.quotient_weyl_diagonal, he, map_inv]
   simp only [mul_assoc]
+end
+
 
 end DedekindZetaZeroFree.DigitMasks
 

@@ -49,22 +49,22 @@ def globalNormClassFromIdele :
     (QuotientGroup.mk'
       (IdeleGroup.principalSubgroup K))
 
-omit [FiniteDimensional K L] in
-/-- The map from ideles to the class norm quotient factors through
-`C_K`, so it kills every principal idele. -/
-@[simp]
-theorem globalNormClassFromIdele_principalIdele
-    (x : Kˣ) :
-    globalNormClassFromIdele K L
-        (IdeleGroup.principalIdele K x) = 1 := by
-  rw [globalNormClassFromIdele, MonoidHom.comp_apply]
-  have hclass :
-      QuotientGroup.mk'
-          (IdeleGroup.principalSubgroup K)
-          (IdeleGroup.principalIdele K x) = 1 :=
-    (QuotientGroup.eq_one_iff
-      (IdeleGroup.principalIdele K x)).2 ⟨x, rfl⟩
-  rw [hclass, map_one]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end Reciprocity
 end GlobalClassFieldTheory

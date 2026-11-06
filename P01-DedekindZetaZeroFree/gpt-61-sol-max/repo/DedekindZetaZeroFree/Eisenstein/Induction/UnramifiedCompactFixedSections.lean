@@ -16,8 +16,11 @@ variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 variable (q : HeightOneSpectrum (𝓞 F))
 variable (S : RawFiniteInducingData F ζ hζ q)
 
+section
+variable (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
+include ht in
 def actual_split_compact_level
-    (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3) :
+      :
     CompactOpenLevel (ActualCover F ζ hζ q) := by
   let m := KPAdelicCoverRestrictedProduct.depth F ζ hζ q
   have hm := KPAdelicCoverRestrictedProduct.depth_admissible F ζ hζ q
@@ -43,14 +46,16 @@ def actual_split_compact_level
     rw [he]
     exact hk.image hq
 
+include ht in
 @[simp] theorem actual_split_compact_level_subgroup
-    (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3) :
+      :
     ((actual_split_compact_level F ζ hζ q ht).toOpenSubgroup :
       Subgroup (ActualCover F ζ hζ q)) =
       (((KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)).comp
         (KPGoodCompactSplitting.kStar F ζ hζ q ht)).range) := rfl
 
-theorem actual_split_compact_factor (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
+include ht in
+theorem actual_split_compact_factor  
     (g : ActualCover F ζ hζ q) :
     ∃ b : S.borel.B, ∃ k : (actual_split_compact_level F ζ hζ q ht).toOpenSubgroup,
       g = (b : ActualCover F ζ hζ q) * (k : ActualCover F ζ hζ q) := by
@@ -82,16 +87,19 @@ theorem actual_split_compact_factor (ht : ringChar (KPTameCompact.O F q ⧸ KPTa
   refine ⟨⟨g * K⁻¹, hb⟩, ⟨K, hkmem⟩, ?_⟩
   simp
 
- abbrev rawSplit
-    (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3) :=
+ include ht in
+abbrev rawSplit
+      :=
   (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)).comp
     (KPGoodCompactSplitting.kStar F ζ hζ q ht)
- abbrev rawCompact
-    (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3) :=
+ include ht in
+abbrev rawCompact
+      :=
   (rawSplit F ζ hζ q ht).range
 
+include ht in
 theorem actual_split_compact_retract
-    (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
+     
     (b : S.borel.B)
     (hb : b.val ∈ (actual_split_compact_level F ζ hζ q ht).toOpenSubgroup) :
     S.borel.retract b ∈
@@ -193,8 +201,9 @@ private lemma raw_split_ratio (b : S.borel.B) :
   simp [G, KubotaRankTwo.d, KubotaRankTwo.n, Matrix.GeneralLinearGroup.coe_mul,
     Matrix.mul_apply, Fin.sum_univ_two, y]
 
+include ht in
 private lemma raw_split_intersection_norm
-    (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
+     
     (b : S.borel.B) (hb : b.val ∈ rawCompact F ζ hζ q ht) :
     localAbs (LocalField F q) (S.borel.coordinate (S.borel.retract b)) = 1 := by
   rw [raw_split_ratio F ζ hζ q S]
@@ -204,8 +213,9 @@ private lemma raw_split_intersection_norm
     exact ⟨k, hk ▸ rfl⟩
   exact ActualFiniteBorel.IwasawaProof.covered_intersection F ζ hζ q ⟨b.val, hbb⟩ hc
 
+include ht in
 theorem actual_split_compact_iwasawa
-    (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3) :
+      :
     ∃ I : IwasawaData S.borel,
       (I.compact.toOpenSubgroup : Subgroup (ActualCover F ζ hζ q)) =
         (((KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)).comp
@@ -239,6 +249,8 @@ theorem actual_split_compact_iwasawa
     simp [kp, k.property]
   · intro b hb
     exact raw_split_intersection_norm F ζ hζ q S ht b hb
+end
+
 
 end
 end DedekindZetaZeroFree.KPExceptionalRaw.FiniteSource.GoodSphericalVector

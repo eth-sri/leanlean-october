@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Algebra.FiniteSupport.Basic
 public import Mathlib.RingTheory.DedekindDomain.SInteger
 public import Mathlib.NumberTheory.NumberField.Completion.InfinitePlace
@@ -7,14 +9,18 @@ public import Mathlib.NumberTheory.NumberField.ProductFormula
 
 @[expose] public section
 
+
 noncomputable section
 
 namespace DedekindZetaZeroFree
 
 open NumberField IsDedekindDomain WithZero
 
+section
+variable (F : Type) [Field F] [NumberField F]
+include F
 private theorem simultaneous_integer_approximation
-    (F : Type) [Field F] [NumberField F]
+     
     (T : Finset (HeightOneSpectrum (RingOfIntegers F))) (x : F)
     (hx : ∀ v ∈ T, v.valuation F x ≤ 1)
     (e : HeightOneSpectrum (RingOfIntegers F) → ℕ) :
@@ -40,7 +46,7 @@ private theorem simultaneous_integer_approximation
   exact hadd.trans (max_le hbr (hr ⟨v, hv⟩).le)
 
 private theorem span_singleton_mem_iff_valuations
-    (F : Type) [Field F] [NumberField F]
+     
     (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (a y : (S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F)
     (ha : a ≠ 0) :
@@ -62,7 +68,7 @@ private theorem span_singleton_mem_iff_valuations
     exact (mul_div_cancel₀ _ haF).symm
 
 private theorem valuation_eq_exp_neg_toNat
-    (F : Type) [Field F] [NumberField F]
+     
     (v : HeightOneSpectrum (RingOfIntegers F)) (a : F) (ha : a ≠ 0)
     (hv : v.valuation F a ≤ 1) :
     v.valuation F a = WithZero.exp (-((-WithZero.log (v.valuation F a)).toNat : ℤ)) := by
@@ -73,7 +79,7 @@ private theorem valuation_eq_exp_neg_toNat
   rw [Int.toNat_of_nonneg (neg_nonneg.mpr hlog), neg_neg, WithZero.exp_log hn]
 
 private theorem finite_valuation_mulSupport
-    (F : Type) [Field F] [NumberField F] (a : F) (ha : a ≠ 0) :
+      (a : F) (ha : a ≠ 0) :
     Function.HasFiniteMulSupport (fun v : HeightOneSpectrum (RingOfIntegers F) => v.valuation F a) := by
   have hfin := (FinitePlace.hasFiniteMulSupport ha).comp_of_injective
     (FinitePlace.equivHeightOneSpectrum.symm.injective)
@@ -85,12 +91,17 @@ private theorem finite_valuation_mulSupport
   apply hv
   have h' : (WithZeroMulInt.toNNReal (e := (Ideal.absNorm v.asIdeal : NNReal)) (ne_of_gt (zero_lt_one.trans (NumberField.HeightOneSpectrum.one_lt_absNorm_nnreal v)))) (v.valuation F a) = 1 := by exact_mod_cast h
   exact (WithZeroMulInt.toNNReal_eq_one_iff _ _ (ne_of_gt ((NumberField.HeightOneSpectrum.one_lt_absNorm_nnreal v)))).mp h'
+end
 
-private theorem principal_quotient_comap_surjective
-    (F : Type) [Field F] [NumberField F]
+
+section
+variable (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (a : (S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F)
-    (ha : a ≠ 0) :
+    (ha : a ≠ 0)
+include F S a ha
+private theorem principal_quotient_comap_surjective
+      :
     Function.Surjective (Ideal.quotientMap (Ideal.span {a})
       (algebraMap (RingOfIntegers F) ((S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F)) le_rfl) := by
   classical
@@ -115,10 +126,7 @@ private theorem principal_quotient_comap_surjective
     exact hr v hvT
 
 private theorem comap_principal_eq_product
-    (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
-    (a : (S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F)
-    (ha : a ≠ 0) :
+      :
     Ideal.comap (algebraMap (RingOfIntegers F) ((S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F)) (Ideal.span {a}) =
       (by classical exact ∏ v ∈ (finite_valuation_mulSupport F (a : F) (by exact_mod_cast ha)).toFinset \ S,
         v.asIdeal ^ (-WithZero.log (v.valuation F (a : F))).toNat) := by
@@ -155,6 +163,8 @@ private theorem comap_principal_eq_product
       change v.valuation F (r : F) ≤ _
       rw [v.valuation_of_algebraMap]
       exact hr'
+end
+
 
 private theorem place_mul_norm_power
     (F : Type) [Field F] [NumberField F]
@@ -168,15 +178,17 @@ private theorem place_mul_norm_power
     conv_lhs => rw [valuation_eq_exp_neg_toNat F v a ha hv, WithZero.log_exp]
   conv_lhs => lhs; rw [hlog]
   simp only [NNReal.coe_zpow, NNReal.coe_natCast, zpow_neg, zpow_natCast]
-  have hn : (Ideal.absNorm v.asIdeal : ℝ) ≠ 0 := by exact_mod_cast
-    (ne_of_gt (zero_lt_one.trans (NumberField.HeightOneSpectrum.one_lt_absNorm_nnreal v)))
+  have hn : (Ideal.absNorm v.asIdeal : ℝ) ≠ 0 := (ne_of_gt (zero_lt_one.trans (NumberField.HeightOneSpectrum.one_lt_absNorm_nnreal v)))
   exact inv_mul_cancel₀ (pow_ne_zero _ hn)
 
-private theorem quotient_card_eq_comap_norm
-    (F : Type) [Field F] [NumberField F]
+section
+variable (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (a : (S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F)
-    (ha : a ≠ 0) :
+    (ha : a ≠ 0)
+include F S a ha
+private theorem quotient_card_eq_comap_norm
+      :
     Finite (((S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F) ⧸ Ideal.span {a}) ∧
     Nat.card (((S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F) ⧸ Ideal.span {a}) =
       Ideal.absNorm (Ideal.comap
@@ -188,7 +200,7 @@ private theorem quotient_card_eq_comap_norm
     change Ideal.comap _ (Ideal.span {a}) ≠ ⊥
     rw [comap_principal_eq_product F S a ha]
     exact Finset.prod_ne_zero_iff.mpr (fun v hv => pow_ne_zero _ v.ne_bot)
-  letI : Finite ((RingOfIntegers F) ⧸ I) := Ring.HasFiniteQuotients.finiteQuotient hI
+  letI  := Ring.HasFiniteQuotients.finiteQuotient hI
   let eqv := RingEquiv.ofBijective (Ideal.quotientMap (Ideal.span {a})
     (algebraMap (RingOfIntegers F) ((S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F)) le_rfl)
     ⟨Ideal.quotientMap_injective, principal_quotient_comap_surjective F S a ha⟩
@@ -196,10 +208,7 @@ private theorem quotient_card_eq_comap_norm
   rw [← Nat.card_congr eqv.toEquiv, Ideal.absNorm_apply, Submodule.cardQuot_apply]
 
 theorem sProductModulus_eq_principalIdeal_index
-    (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
-    (a : (S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F)
-    (ha : a ≠ 0) :
+      :
     Finite (((S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F) ⧸
       Ideal.span ({a} : Set ((S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F))) ∧
     (∏ v : InfinitePlace F, v (a : F) ^ v.mult) *
@@ -242,6 +251,8 @@ theorem sProductModulus_eq_principalIdeal_index
   rw [hfull, ← mul_assoc] at hprod
   apply mul_right_cancel₀ (left_ne_zero_of_mul (hTN.trans_ne one_ne_zero))
   rw [hprod, mul_comm N, hTN]
+end
+
 
 end DedekindZetaZeroFree
 

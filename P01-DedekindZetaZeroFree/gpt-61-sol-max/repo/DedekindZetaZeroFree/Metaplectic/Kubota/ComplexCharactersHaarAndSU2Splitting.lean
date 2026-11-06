@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Fourier.RealContinuousCharacters
 public import Mathlib.Analysis.Complex.Polynomial.Basic
 public import Mathlib.Analysis.Complex.Isometry
@@ -7,6 +9,7 @@ public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
 public import Mathlib.LinearAlgebra.Matrix.GeneralLinearGroup.Projective
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.KPCplxCharacterHaar
 
@@ -49,18 +52,20 @@ theorem character_classification (ψ : AddChar ℂ Circle)
     exact AddChar.ext _ _ (fun x => by simpa [hz, character] using hβ x)
   exact ⟨Units.mk0 β hβ0, hβ⟩
 
-noncomputable def characterScale (β : ℂˣ) : ℝ := ‖(β : ℂ)‖
+section
+variable (β : ℂˣ)
+include β
+noncomputable def characterScale    := ‖(β : ℂ)‖
 
-noncomputable def characterRotation (β : ℂˣ) : Circle :=
+noncomputable def characterRotation   : Circle :=
   ⟨star (β : ℂ) / (characterScale β : ℂ), by
     apply mem_sphere_zero_iff_norm.mpr
     simp [characterScale, norm_div, norm_star, Complex.norm_real,
       abs_of_nonneg (norm_nonneg _), Units.ne_zero]⟩
 
-theorem characterScale_pos (β : ℂˣ) : 0 < characterScale β := by
-  exact norm_pos_iff.mpr β.ne_zero
+theorem characterScale_pos   : 0 < characterScale β := norm_pos_iff.mpr β.ne_zero
 
-theorem character_rotated (β : ℂˣ) (x : ℂ) :
+theorem character_rotated   (x : ℂ) :
     character (β : ℂ) ((characterRotation β : ℂ) * x) =
       Circle.exp (characterScale β * x.re) := by
   change Circle.exp ((β : ℂ) * (star (β : ℂ) / (characterScale β : ℂ) * x)).re = _
@@ -75,23 +80,25 @@ theorem character_rotated (β : ℂˣ) (x : ℂ) :
   rw [← mul_assoc, h]
   simp
 
-noncomputable def characterHaar (β : ℂˣ) : Measure ℂ :=
+noncomputable def characterHaar    :=
   ENNReal.ofReal (characterScale β / (2 * Real.pi)) • euclideanArea
 
-theorem characterHaar_isAddHaarMeasure (β : ℂˣ) :
+theorem characterHaar_isAddHaarMeasure   :
     (characterHaar β).IsAddHaarMeasure := by
   unfold characterHaar euclideanArea
   exact Measure.IsAddHaarMeasure.smul volume
     (ne_of_gt (ENNReal.ofReal_pos.mpr (div_pos (characterScale_pos β)
       (mul_pos (by norm_num) Real.pi_pos)))) ENNReal.ofReal_ne_top
 
-theorem characterHaar_rotation (β : ℂˣ) :
+theorem characterHaar_rotation   :
     Measure.map (fun x : ℂ => (characterRotation β : ℂ) * x) (characterHaar β) =
       characterHaar β := by
   unfold characterHaar euclideanArea
   rw [Measure.map_smul _ (by fun_prop)]
   congr 1
   exact (rotation (characterRotation β)).measurePreserving.map_eq
+end
+
 
 open scoped FourierTransform RealInnerProductSpace ComplexConjugate
 

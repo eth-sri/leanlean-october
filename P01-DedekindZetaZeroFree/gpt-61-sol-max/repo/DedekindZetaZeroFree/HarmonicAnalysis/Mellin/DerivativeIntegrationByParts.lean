@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Mellin.SourceDerivativePositiveStripBounds
 
 @[expose] public section
+
 
 noncomputable section
 open MeasureTheory Filter Set
@@ -14,7 +17,7 @@ theorem mellin_deriv_eq_neg_mul (h : ℝ → ℂ)
     (hh : ContDiff ℝ ∞ h) (hc : HasCompactSupport h)
     (s : ℂ) (hs : 0 < s.re) :
     mellin (deriv h) (s + 1) = -s * mellin h s := by
-  have hh1 : ContDiff ℝ 1 h := hh.of_le (by norm_num : (1 : ℕ∞ω) ≤ ∞)
+  have hh1  := hh.of_le (by norm_num : (1 : ℕ∞ω) ≤ ∞)
   have hsne : s ≠ 0 := by rintro rfl; simp at hs
   have hs1 : 0 < (s + 1).re := by
     rw [Complex.add_re, Complex.one_re]; linarith
@@ -67,7 +70,7 @@ theorem mellin_deriv_eq_neg_mul (h : ℝ → ℂ)
 theorem integral_Ioi_deriv_eq_neg_at_zero (h : ℝ → ℂ)
     (hh : ContDiff ℝ ∞ h) (hc : HasCompactSupport h) :
     (∫ x : ℝ in Set.Ioi 0, deriv h x) = -h 0 := by
-  have hh1 : ContDiff ℝ 1 h := hh.of_le (by norm_num : (1 : ℕ∞ω) ≤ ∞)
+  have hh1  := hh.of_le (by norm_num : (1 : ℕ∞ω) ≤ ∞)
   exact hc.integral_Ioi_deriv_eq hh1 0
 
 end DedekindZetaZeroFree.LargeSieve.Vendor

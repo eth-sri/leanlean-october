@@ -34,10 +34,8 @@ section FinitePlaces
 variable {K : Type} [Field K]
     [NumberField K]
 
-/-- The finite set `T` of primes chosen for the coordinate cyclic extensions
-that detect the enlarged `S`-unit Kummer radical. -/
-noncomputable def sUnitKummerPrimeSet
-    {Omega : Type} [Field Omega] [Algebra K Omega]
+section
+variable {Omega : Type} [Field Omega] [Algebra K Omega]
     [IsSepClosure K Omega]
     (E : IntermediateField K Omega)
     [FiniteDimensional K E] [IsGalois K E]
@@ -50,7 +48,12 @@ noncomputable def sUnitKummerPrimeSet
     (eG :
       Gal(E/K) ≃*
         (Fin r → Multiplicative (ZMod (n : ℕ))))
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+    (S : Finset (HeightOneSpectrum (𝓞 K)))
+include Omega E n hmu p v hp hv hn r eG S
+/-- The finite set `T` of primes chosen for the coordinate cyclic extensions
+that detect the enlarged `S`-unit Kummer radical. -/
+noncomputable def sUnitKummerPrimeSet
+      :
     Finset (HeightOneSpectrum (𝓞 K)) :=
   Finset.univ.image
     (sUnitKummerChosenBasePlaces
@@ -60,20 +63,7 @@ noncomputable def sUnitKummerPrimeSet
 /-- The chosen prime set has the required cardinality `s-r`. -/
 @[simp]
 theorem sUnitKummerPrimeSet_card
-    {Omega : Type} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (E : IntermediateField K Omega)
-    [FiniteDimensional K E] [IsGalois K E]
-    [IsMulCommutative Gal(E/K)]
-    (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (p v : ℕ) (hp : p.Prime) (hv : 0 < v)
-    (hn : (n : ℕ) = p ^ v)
-    (r : ℕ)
-    (eG :
-      Gal(E/K) ≃*
-        (Fin r → Multiplicative (ZMod (n : ℕ))))
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+      :
     (sUnitKummerPrimeSet
       (K := K) (Omega := Omega) E n hmu
       p v hp hv hn r eG S).card =
@@ -88,20 +78,7 @@ theorem sUnitKummerPrimeSet_card
 
 /-- The chosen prime set is disjoint from the enlarged finite Kummer-radical support. -/
 theorem sUnitKummerPrimeSet_disjoint_enlargeByFiniteKummerRadicalSupport
-    {Omega : Type} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (E : IntermediateField K Omega)
-    [FiniteDimensional K E] [IsGalois K E]
-    [IsMulCommutative Gal(E/K)]
-    (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (p v : ℕ) (hp : p.Prime) (hv : 0 < v)
-    (hn : (n : ℕ) = p ^ v)
-    (r : ℕ)
-    (eG :
-      Gal(E/K) ≃*
-        (Fin r → Multiplicative (ZMod (n : ℕ))))
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+      :
     Disjoint
       (sUnitKummerPrimeSet
         (K := K) (Omega := Omega) E n hmu
@@ -119,6 +96,8 @@ theorem sUnitKummerPrimeSet_disjoint_enlargeByFiniteKummerRadicalSupport
       p v hp hv hn r eG S i
       (enlargeByFiniteKummerRadicalSupport_subset_sUnitKummerAvoidedBasePlaces
         (K := K) (Omega := Omega) E n hmu S hwS)
+end
+
 
 end FinitePlaces
 

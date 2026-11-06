@@ -150,12 +150,12 @@ theorem supportedAt_sup_principalSubgroup_eq_top :
   convert Subgroup.mul_mem _ hquot' hr' using 1
   group
 
-/-- Existential form of the sufficiently-large support theorem. -/
-theorem exists_finset_supportedAt_sup_principalSubgroup_eq_top :
-    ∃ S : Finset (HeightOneSpectrum (𝓞 K)),
-      supportedAt (K := K) (S : Set _) ⊔ principalSubgroup K = ⊤ :=
-  ⟨sufficientlyLargeFiniteSet (K := K),
-    supportedAt_sup_principalSubgroup_eq_top (K := K)⟩
+
+
+
+
+
+
 
 end IdeleGroup
 

@@ -175,13 +175,16 @@ open NumberField IsDedekindDomain
 open scoped Classical
 open ArithmeticGramSteps
 
- def aliasTrace (F : Type) [Field F] [NumberField F]
+ section
+variable (F : Type) [Field F] [NumberField F]
+include F
+def aliasTrace  
     (S : Finset (HeightOneSpectrum (𝓞 F))) : F →+ PoissonArch.Space F :=
   (PoissonArch.traceAdapter F).toAddMonoidHom.comp
     ((PoissonArch.infiniteAdeleToSpace F).toAddMonoidHom.comp
       ((RingHom.fst _ _).comp (sLocalDiagonal F S)).toAddMonoidHom)
 
-private theorem aliasTrace_coordinates (F : Type) [Field F] [NumberField F]
+private theorem aliasTrace_coordinates  
     (S : Finset (HeightOneSpectrum (𝓞 F))) (t : F) :
     mixedEmbedding.euclidean.toMixed F
       ((PoissonArch.traceAdapter F).symm (aliasTrace F S t)) = mixedEmbedding F t := by
@@ -193,7 +196,7 @@ private theorem aliasTrace_coordinates (F : Type) [Field F] [NumberField F]
   rw [PoissonArch.infiniteAdeleToSpace_coordinates]
   exact (InfiniteAdeleRing.mixedEmbedding_eq_algebraMap_comp (K := F) (x := t)).symm
 
-private theorem place_le_mixed_norm (F : Type) [Field F] [NumberField F]
+private theorem place_le_mixed_norm  
     (x : mixedEmbedding.mixedSpace F) (v : InfinitePlace F) :
     mixedEmbedding.normAtPlace v x ≤ ‖x‖ := by
   by_cases hv : v.IsReal
@@ -205,7 +208,7 @@ private theorem place_le_mixed_norm (F : Type) [Field F] [NumberField F]
       (norm_snd_le x)
 
 theorem same_color_alias_power_separation
-    (F : Type) [Field F] [NumberField F]
+     
     (S : Finset (HeightOneSpectrum (𝓞 F)))
     (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
     (k : (v : S) → ℤ)
@@ -343,6 +346,8 @@ theorem same_color_alias_power_separation
         ‖aliasTrace F S t‖ ^ Module.finrank ℚ F) * V ^ 2 :=
       mul_le_mul_of_nonneg_right hup (sq_nonneg V)
     _ = _ := by ring
+end
+
 
 end
 end DedekindZetaZeroFree.ProbeAdditiveGramBounds.ArithmeticGramPacking
@@ -356,8 +361,11 @@ noncomputable section
 open NumberField IsDedekindDomain
 open scoped Classical nonZeroDivisors
 
-private theorem coordinates (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (k : S → ℤ) :
+section
+variable (F : Type) [Field F] [NumberField F]
+    (S : Finset (HeightOneSpectrum (𝓞 F)))
+include F S
+private theorem coordinates   (k : S → ℤ) :
     ∃ g : PoissonArch.dualLattice (PoissonS.ballArchLattice F S k) → F,
       (∀ ν, g ν ∈ (PoissonArch.codifferentIdeal F : FractionalIdeal (𝓞 F)⁰ F) * (PoissonS.ballFractionalIdeal F S k)⁻¹) ∧
       (∀ ν, PoissonArch.traceAdapter F (PoissonArch.minkowskiEmbedding F (g ν)) = (ν : PoissonArch.Space F)) := by
@@ -381,8 +389,7 @@ private theorem coordinates (F : Type) [Field F] [NumberField F]
     exact (PoissonArch.mem_idealLattice F _ _).mp hh
   choose g hg heq using hex
   exact ⟨g, hg, fun ν => by rw [heq]; simp⟩
-private theorem dual_le (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (k : S → ℤ) (hk : ∀ v, k v ≤ 0) :
+private theorem dual_le   (k : S → ℤ) (hk : ∀ v, k v ≤ 0) :
     (PoissonArch.codifferentIdeal F : FractionalIdeal (𝓞 F)⁰ F) * (PoissonS.ballFractionalIdeal F S k)⁻¹ ≤
       (PoissonArch.codifferentIdeal F : FractionalIdeal (𝓞 F)⁰ F) := by
   have h : 1 ≤ PoissonS.ballFractionalIdeal F S k := by
@@ -392,8 +399,7 @@ private theorem dual_le (F : Type) [Field F] [NumberField F]
   have hi : (PoissonS.ballFractionalIdeal F S k)⁻¹ ≤ 1 := by
     exact inv_le_one_of_one_le₀ h
   simpa using mul_le_mul_of_nonneg_left hi (show 0 ≤ (PoissonArch.codifferentIdeal F : FractionalIdeal (𝓞 F)⁰ F) from bot_le)
-private theorem finite_bound (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F)))
+private theorem finite_bound  
     (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
     (hne : ∀ v, ∃ y, e v y ≠ 1) (k : S → ℤ) :
     ∃ C : ℝ, 0 < C ∧ ∀ t : F,
@@ -432,8 +438,13 @@ private theorem finite_bound (F : Type) [Field F] [NumberField F]
         exact (hR w).le
     have hh := ht _ hx v
     exact hy v (by simpa [z, hz] using hh)
+end
 
-private theorem arch_product (F : Type) [Field F] [NumberField F]
+
+section
+variable (F : Type) [Field F] [NumberField F]
+include F
+private theorem arch_product  
     [IsTotallyComplex F] (x : InfiniteAdeleRing F) :
     (∏ v : InfinitePlace F, (archTraceCharacter v (x v) : ℂ)) =
       Complex.exp (2 * (Real.pi : ℂ) * Complex.I *
@@ -449,7 +460,7 @@ private theorem arch_product (F : Type) [Field F] [NumberField F]
   intro v _
   ring
 
-private theorem canonical_diagonal (F : Type) [Field F] [NumberField F]
+private theorem canonical_diagonal  
     (S : Finset (HeightOneSpectrum (𝓞 F))) (m : sIntegerRing F S) :
     (∏ v : InfinitePlace F, archTraceCharacter v (algebraMap F v.Completion (m : F))) *
       (∏ v : S, localFiniteCharacter F v.val
@@ -473,7 +484,7 @@ private theorem canonical_diagonal (F : Type) [Field F] [NumberField F]
   exact traceCharacter_diagonal_product_formula F (m : F)
 
 theorem trace_coordinates_and_finite_annihilator
-    (F : Type) [Field F] [NumberField F]
+     
     (ζ12 : F) (hζ12 : IsPrimitiveRoot ζ12 12)
     (S : Finset (HeightOneSpectrum (𝓞 F)))
     (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
@@ -628,6 +639,8 @@ theorem trace_coordinates_and_finite_annihilator
     · simp
   rw [heq v]
   exact hp.symm.trans ht
+end
+
 
 end
 end DedekindZetaZeroFree.ProbeAdditiveGramBounds.ArithmeticGramPacking
@@ -641,9 +654,12 @@ noncomputable section
 open NumberField IsDedekindDomain
 open scoped Classical
 
-theorem dual_alias_ball_finite
-    (F : Type) [Field F] [NumberField F]
+section
+variable (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (𝓞 F))) (k : (v : S) → ℤ)
+include F S k
+theorem dual_alias_ball_finite
+     
     (c : PoissonArch.Space F) (ρ : ℝ) :
     {z : PoissonArch.dualLattice (PoissonS.ballArchLattice F S k) |
        ‖(z : PoissonArch.Space F) - c‖ ≤ ρ}.Finite := by
@@ -673,8 +689,7 @@ theorem dual_alias_ball_finite
   exact ⟨by simpa [Metric.mem_closedBall, dist_eq_norm] using hz, z.property⟩
 
 theorem dual_alias_family_finite
-    (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (k : (v : S) → ℤ)
+     
     {ι : Type*} [Finite ι] (b : ι → PoissonArch.Space F) (α : ι) (ρ : ℝ) :
     ∃ T : Finset (ι × PoissonArch.dualLattice (PoissonS.ballArchLattice F S k)),
       ∀ z, z ∈ T ↔ ‖(z.2 : PoissonArch.Space F) - (b α - b z.1)‖ ≤ ρ := by
@@ -692,6 +707,8 @@ theorem dual_alias_family_finite
     exact hw
   · intro hz
     exact ⟨z.1, z.2, hz, rfl⟩
+end
+
 
 theorem trace_dual_alias_packing
     (F : Type) [Field F] [NumberField F]

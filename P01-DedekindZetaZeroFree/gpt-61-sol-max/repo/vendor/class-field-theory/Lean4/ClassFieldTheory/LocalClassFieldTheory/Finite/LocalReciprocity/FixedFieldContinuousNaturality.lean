@@ -193,10 +193,8 @@ theorem abstractFixedFieldUnitsEquiv_finiteNormSubgroup_preimage
       k Ω K L hLK y]
     exact congrArg uK (congrArg Additive.ofMul hy)
 
-/-- The kernel of the additive fixed-field norm-residue symbol is the
-ordinary norm subgroup, written additively. -/
-theorem abstractFixedFieldNormResidueSymbol_ker
-    (D : DegreeData (Gal(Ω / k)))
+section
+variable (D : DegreeData (Gal(Ω / k)))
     (v : ValuationData D (galoisAmbientUnitsRep k Ω))
     (hcf : SatisfiesClassFieldAxiom (galoisAmbientUnitsRep k Ω))
     [IsSepClosed Ω]
@@ -208,7 +206,12 @@ theorem abstractFixedFieldNormResidueSymbol_ker
     [hKabsolute : Finite
       ((baseField (Gal(Ω / k))).toSubgroup ⧸
         extensionSubgroup (baseField (Gal(Ω / k))) K
-          (le_baseField K))] :
+          (le_baseField K))]
+include D v hcf K L hLK hnormal hfinite hKabsolute
+/-- The kernel of the additive fixed-field norm-residue symbol is the
+ordinary norm subgroup, written additively. -/
+theorem abstractFixedFieldNormResidueSymbol_ker
+      :
     (abstractFixedFieldNormResidueSymbol
       k Ω D v hcf K L hLK).ker =
       additiveNormSubgroup
@@ -244,19 +247,7 @@ theorem abstractFixedFieldNormResidueSymbol_ker
 /-- The kernel of the multiplicative fixed-field norm-residue homomorphism
 is the ordinary norm subgroup. -/
 theorem abstractFixedFieldNormResidueMonoidHom_ker
-    (D : DegreeData (Gal(Ω / k)))
-    (v : ValuationData D (galoisAmbientUnitsRep k Ω))
-    (hcf : SatisfiesClassFieldAxiom (galoisAmbientUnitsRep k Ω))
-    [IsSepClosed Ω]
-    (K L : ClosedSubgroup (Gal(Ω / k)))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [hnormal : (extensionSubgroup K L hLK).Normal]
-    [hfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
-    [hKabsolute : Finite
-      ((baseField (Gal(Ω / k))).toSubgroup ⧸
-        extensionSubgroup (baseField (Gal(Ω / k))) K
-          (le_baseField K))] :
+      :
     (abstractFixedFieldNormResidueMonoidHom
       k Ω D v hcf K L hLK).ker =
       localNormSubgroup
@@ -267,6 +258,8 @@ theorem abstractFixedFieldNormResidueMonoidHom_ker
   rw [abstractFixedFieldNormResidueSymbol_ker
     k Ω D v hcf K L hLK]
   rfl
+end
+
 
 /-! ## Continuous arrows -/
 
@@ -325,10 +318,8 @@ noncomputable def abstractFixedFieldNormResidueMap
     exact localNormSubgroup_isOpen F E
   exact hopen.mem_nhds (by simp)
 
-/-- The ordinary norm on fixed-field units, continuously bundled for the
-two spectral topologies extended from the original local field. -/
-noncomputable def abstractFixedFieldNormUnitsMap
-    [ValuativeRel k] [TopologicalSpace k]
+section
+variable [ValuativeRel k] [TopologicalSpace k]
     [IsNonarchimedeanLocalField k]
     (K K' : ClosedSubgroup (Gal(Ω / k)))
     (hK'K : K'.toSubgroup ≤ K.toSubgroup)
@@ -340,6 +331,11 @@ noncomputable def abstractFixedFieldNormUnitsMap
       ((baseField (Gal(Ω / k))).toSubgroup ⧸
         extensionSubgroup (baseField (Gal(Ω / k))) K'
           (le_baseField K'))]
+include K K' hK'K hKabsolute hK'absolute
+/-- The ordinary norm on fixed-field units, continuously bundled for the
+two spectral topologies extended from the original local field. -/
+noncomputable def abstractFixedFieldNormUnitsMap
+     
     [hK'Kfinite : Finite
       (K.toSubgroup ⧸ extensionSubgroup K K' hK'K)] :
     letI : FiniteDimensional k (abstractFixedField k Ω K) :=
@@ -381,18 +377,7 @@ noncomputable def abstractFixedFieldNormUnitsMap
 /-- Inclusion of fixed-field units, continuously bundled for the two
 spectral topologies extended from the original local field. -/
 noncomputable def abstractFixedFieldUnitsInclusionMap
-    [ValuativeRel k] [TopologicalSpace k]
-    [IsNonarchimedeanLocalField k]
-    (K K' : ClosedSubgroup (Gal(Ω / k)))
-    (hK'K : K'.toSubgroup ≤ K.toSubgroup)
-    [hKabsolute : Finite
-      ((baseField (Gal(Ω / k))).toSubgroup ⧸
-        extensionSubgroup (baseField (Gal(Ω / k))) K
-          (le_baseField K))]
-    [hK'absolute : Finite
-      ((baseField (Gal(Ω / k))).toSubgroup ⧸
-        extensionSubgroup (baseField (Gal(Ω / k))) K'
-          (le_baseField K'))] :
+      :
     letI : FiniteDimensional k (abstractFixedField k Ω K) :=
       abstractFixedField_finiteDimensional k Ω K hKabsolute
     letI : FiniteDimensional k (abstractFixedField k Ω K') :=
@@ -425,6 +410,8 @@ noncomputable def abstractFixedFieldUnitsInclusionMap
   exact Continuous.units_map _
     (IntermediateField.inclusion
       (abstractFixedField_le k Ω hK'K)).toLinearMap.continuous_of_finiteDimensional
+end
+
 
 /-- Abelianized restriction, continuously bundled for the finite native
 Krull quotient topologies. -/
@@ -520,9 +507,12 @@ namespace LocalFixedFieldNormRestrictionSquare
 variable {k : Type} [Field k] [ValuativeRel k] [TopologicalSpace k]
   [IsNonarchimedeanLocalField k]
 
+section
+variable (T : LocalFixedFieldNormRestrictionSquare k)
+include T
 /-- The lower horizontal norm-residue arrow as a continuous homomorphism. -/
 noncomputable def lowerNormResidueMap
-    (T : LocalFixedFieldNormRestrictionSquare k) :
+      :
     letI : FiniteDimensional k
         (abstractFixedField k (SeparableClosure k) T.lowerBase) :=
       abstractFixedField_finiteDimensional
@@ -547,7 +537,7 @@ noncomputable def lowerNormResidueMap
 
 /-- Forgetting continuity recovers the lower algebraic norm-residue map. -/
 @[simp] theorem lowerNormResidueMap_toMonoidHom
-    (T : LocalFixedFieldNormRestrictionSquare k) :
+      :
     letI : FiniteDimensional k
         (abstractFixedField k (SeparableClosure k) T.lowerBase) :=
       abstractFixedField_finiteDimensional
@@ -561,7 +551,7 @@ noncomputable def lowerNormResidueMap
 
 /-- The upper horizontal norm-residue arrow as a continuous homomorphism. -/
 noncomputable def upperNormResidueMap
-    (T : LocalFixedFieldNormRestrictionSquare k) :
+      :
     letI : FiniteDimensional k
         (abstractFixedField k (SeparableClosure k) T.upperBase) :=
       abstractFixedField_finiteDimensional
@@ -586,7 +576,7 @@ noncomputable def upperNormResidueMap
 
 /-- Forgetting continuity recovers the upper algebraic norm-residue map. -/
 @[simp] theorem upperNormResidueMap_toMonoidHom
-    (T : LocalFixedFieldNormRestrictionSquare k) :
+      :
     letI : FiniteDimensional k
         (abstractFixedField k (SeparableClosure k) T.upperBase) :=
       abstractFixedField_finiteDimensional
@@ -600,7 +590,7 @@ noncomputable def upperNormResidueMap
 
 /-- The vertical ordinary norm arrow as a continuous homomorphism. -/
 noncomputable def normUnitsMap
-    (T : LocalFixedFieldNormRestrictionSquare k) :
+      :
     letI : FiniteDimensional k
         (abstractFixedField k (SeparableClosure k) T.lowerBase) :=
       abstractFixedField_finiteDimensional
@@ -632,7 +622,7 @@ noncomputable def normUnitsMap
 
 /-- Forgetting continuity recovers the algebraic norm on units. -/
 @[simp] theorem normUnitsMap_toMonoidHom
-    (T : LocalFixedFieldNormRestrictionSquare k) :
+      :
     letI : FiniteDimensional k
         (abstractFixedField k (SeparableClosure k) T.lowerBase) :=
       abstractFixedField_finiteDimensional
@@ -658,7 +648,7 @@ noncomputable def normUnitsMap
 /-- The vertical abelianized restriction arrow as a continuous
 homomorphism. -/
 noncomputable def abelianizedRestrictionMap
-    (T : LocalFixedFieldNormRestrictionSquare k) :=
+      :=
   letI := T.lowerNormal
   letI := T.upperNormal
   letI := T.upperFinite
@@ -671,81 +661,83 @@ noncomputable def abelianizedRestrictionMap
 
 /-- Forgetting continuity recovers algebraic abelianized restriction. -/
 @[simp] theorem abelianizedRestrictionMap_toMonoidHom
-    (T : LocalFixedFieldNormRestrictionSquare k) :
+      :
     (abelianizedRestrictionMap T).toMonoidHom =
       MonoidHom.toAdditive.symm (abelianizedRestriction T) := rfl
+end
 
-/-- Norm--restriction naturality as a commuting square of continuous
-homomorphisms. -/
-theorem norm_restriction_commutes_continuous
-    (T : LocalFixedFieldNormRestrictionSquare k) :
-    letI : FiniteDimensional k
-        (abstractFixedField k (SeparableClosure k) T.lowerBase) :=
-      abstractFixedField_finiteDimensional
-        k (SeparableClosure k) T.lowerBase T.lowerAbsoluteFinite
-    letI : FiniteDimensional k
-        (abstractFixedField k (SeparableClosure k) T.upperBase) :=
-      abstractFixedField_finiteDimensional
-        k (SeparableClosure k) T.upperBase (upperAbsoluteFinite T)
-    letI : FiniteDimensional k
-        (abstractRelativeFixedField k (SeparableClosure k)
-          T.upperBase_le_lowerBase) :=
-      abstractFixedField_finiteDimensional
-        k (SeparableClosure k) T.upperBase (upperAbsoluteFinite T)
-    letI : NontriviallyNormedField
-        (abstractFixedField k (SeparableClosure k) T.lowerBase) :=
-      finiteExtensionSpectralNormedField k
-        (abstractFixedField k (SeparableClosure k) T.lowerBase)
-    letI : NontriviallyNormedField
-        (abstractFixedField k (SeparableClosure k) T.upperBase) :=
-      finiteExtensionSpectralNormedField k
-        (abstractFixedField k (SeparableClosure k) T.upperBase)
-    letI : NontriviallyNormedField
-        (abstractRelativeFixedField k (SeparableClosure k)
-          T.upperBase_le_lowerBase) :=
-      finiteExtensionSpectralNormedField k
-        (abstractRelativeFixedField k (SeparableClosure k)
-          T.upperBase_le_lowerBase)
-    (abelianizedRestrictionMap T).comp (upperNormResidueMap T) =
-      (lowerNormResidueMap T).comp (normUnitsMap T) := by
-  let : FiniteDimensional k
-      (abstractFixedField k (SeparableClosure k) T.lowerBase) :=
-    abstractFixedField_finiteDimensional
-      k (SeparableClosure k) T.lowerBase T.lowerAbsoluteFinite
-  let : FiniteDimensional k
-      (abstractFixedField k (SeparableClosure k) T.upperBase) :=
-    abstractFixedField_finiteDimensional
-      k (SeparableClosure k) T.upperBase (upperAbsoluteFinite T)
-  let : FiniteDimensional k
-      (abstractRelativeFixedField k (SeparableClosure k)
-        T.upperBase_le_lowerBase) :=
-    abstractFixedField_finiteDimensional
-      k (SeparableClosure k) T.upperBase (upperAbsoluteFinite T)
-  let : NontriviallyNormedField
-      (abstractFixedField k (SeparableClosure k) T.lowerBase) :=
-    finiteExtensionSpectralNormedField k
-      (abstractFixedField k (SeparableClosure k) T.lowerBase)
-  let : NontriviallyNormedField
-      (abstractFixedField k (SeparableClosure k) T.upperBase) :=
-    finiteExtensionSpectralNormedField k
-      (abstractFixedField k (SeparableClosure k) T.upperBase)
-  let : NontriviallyNormedField
-      (abstractRelativeFixedField k (SeparableClosure k)
-        T.upperBase_le_lowerBase) :=
-    finiteExtensionSpectralNormedField k
-      (abstractRelativeFixedField k (SeparableClosure k)
-        T.upperBase_le_lowerBase)
-  apply ContinuousMonoidHom.ext
-  intro x
-  change Additive.toMul
-      (abelianizedRestriction T
-        (upperNormResidueSymbol T (Additive.ofMul x))) =
-    Additive.toMul
-      (lowerNormResidueSymbol T
-        (normUnits T (Additive.ofMul x)))
-  exact congrArg Additive.toMul
-    (DFunLike.congr_fun (norm_restriction_commutes T)
-      (Additive.ofMul x))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end LocalFixedFieldNormRestrictionSquare
 
@@ -756,9 +748,12 @@ namespace LocalFixedFieldTransferTower
 variable {k : Type} [Field k] [ValuativeRel k] [TopologicalSpace k]
   [IsNonarchimedeanLocalField k]
 
+section
+variable (T : LocalFixedFieldTransferTower k)
+include T
 /-- The total horizontal norm-residue arrow as a continuous homomorphism. -/
 noncomputable def baseNormResidueMap
-    (T : LocalFixedFieldTransferTower k) :
+      :
     letI : FiniteDimensional k
         (abstractFixedField k (SeparableClosure k) T.base) :=
       abstractFixedField_finiteDimensional
@@ -784,7 +779,7 @@ noncomputable def baseNormResidueMap
 
 /-- Forgetting continuity recovers the total algebraic norm-residue map. -/
 @[simp] theorem baseNormResidueMap_toMonoidHom
-    (T : LocalFixedFieldTransferTower k) :
+      :
     letI : FiniteDimensional k
         (abstractFixedField k (SeparableClosure k) T.base) :=
       abstractFixedField_finiteDimensional
@@ -799,7 +794,7 @@ noncomputable def baseNormResidueMap
 /-- The intermediate horizontal norm-residue arrow as a continuous
 homomorphism. -/
 noncomputable def intermediateNormResidueMap
-    (T : LocalFixedFieldTransferTower k) :
+      :
     letI : FiniteDimensional k
         (abstractFixedField k (SeparableClosure k) T.intermediate) :=
       abstractFixedField_finiteDimensional
@@ -825,7 +820,7 @@ noncomputable def intermediateNormResidueMap
 
 /-- Forgetting continuity recovers the intermediate norm-residue map. -/
 @[simp] theorem intermediateNormResidueMap_toMonoidHom
-    (T : LocalFixedFieldTransferTower k) :
+      :
     letI : FiniteDimensional k
         (abstractFixedField k (SeparableClosure k) T.intermediate) :=
       abstractFixedField_finiteDimensional
@@ -841,7 +836,7 @@ noncomputable def intermediateNormResidueMap
 /-- The vertical inclusion of fixed-field units as a continuous
 homomorphism. -/
 noncomputable def unitsInclusionMap
-    (T : LocalFixedFieldTransferTower k) :
+      :
     letI : FiniteDimensional k
         (abstractFixedField k (SeparableClosure k) T.base) :=
       abstractFixedField_finiteDimensional
@@ -869,7 +864,7 @@ noncomputable def unitsInclusionMap
 
 /-- Forgetting continuity recovers algebraic inclusion of fixed-field units. -/
 @[simp] theorem unitsInclusionMap_toMonoidHom
-    (T : LocalFixedFieldTransferTower k) :
+      :
     letI : FiniteDimensional k
         (abstractFixedField k (SeparableClosure k) T.base) :=
       abstractFixedField_finiteDimensional
@@ -892,7 +887,7 @@ noncomputable def unitsInclusionMap
 
 /-- The vertical abelianized transfer arrow as a continuous homomorphism. -/
 noncomputable def abelianizedTransferMap
-    (T : LocalFixedFieldTransferTower k) :=
+      :=
   letI := T.totalNormal
   letI := T.totalFinite
   letI := T.baseAbsoluteFinite
@@ -903,61 +898,63 @@ noncomputable def abelianizedTransferMap
 
 /-- Forgetting continuity recovers algebraic abelianized transfer. -/
 @[simp] theorem abelianizedTransferMap_toMonoidHom
-    (T : LocalFixedFieldTransferTower k) :
+      :
     (abelianizedTransferMap T).toMonoidHom =
       MonoidHom.toAdditive.symm (abelianizedTransfer T) := rfl
+end
 
-/-- Transfer--inclusion naturality as a commuting square of continuous
-homomorphisms. -/
-theorem transfer_inclusion_commutes_continuous
-    (T : LocalFixedFieldTransferTower k) :
-    letI : FiniteDimensional k
-        (abstractFixedField k (SeparableClosure k) T.base) :=
-      abstractFixedField_finiteDimensional
-        k (SeparableClosure k) T.base T.baseAbsoluteFinite
-    letI : FiniteDimensional k
-        (abstractFixedField k (SeparableClosure k) T.intermediate) :=
-      abstractFixedField_finiteDimensional
-        k (SeparableClosure k) T.intermediate
-          (intermediateAbsoluteFinite T)
-    letI : NontriviallyNormedField
-        (abstractFixedField k (SeparableClosure k) T.base) :=
-      finiteExtensionSpectralNormedField k
-        (abstractFixedField k (SeparableClosure k) T.base)
-    letI : NontriviallyNormedField
-        (abstractFixedField k (SeparableClosure k) T.intermediate) :=
-      finiteExtensionSpectralNormedField k
-        (abstractFixedField k (SeparableClosure k) T.intermediate)
-    (abelianizedTransferMap T).comp (baseNormResidueMap T) =
-      (intermediateNormResidueMap T).comp (unitsInclusionMap T) := by
-  let : FiniteDimensional k
-      (abstractFixedField k (SeparableClosure k) T.base) :=
-    abstractFixedField_finiteDimensional
-      k (SeparableClosure k) T.base T.baseAbsoluteFinite
-  let : FiniteDimensional k
-      (abstractFixedField k (SeparableClosure k) T.intermediate) :=
-    abstractFixedField_finiteDimensional
-      k (SeparableClosure k) T.intermediate
-        (intermediateAbsoluteFinite T)
-  let : NontriviallyNormedField
-      (abstractFixedField k (SeparableClosure k) T.base) :=
-    finiteExtensionSpectralNormedField k
-      (abstractFixedField k (SeparableClosure k) T.base)
-  let : NontriviallyNormedField
-      (abstractFixedField k (SeparableClosure k) T.intermediate) :=
-    finiteExtensionSpectralNormedField k
-      (abstractFixedField k (SeparableClosure k) T.intermediate)
-  apply ContinuousMonoidHom.ext
-  intro x
-  change Additive.toMul
-      (abelianizedTransfer T
-        (baseNormResidueSymbol T (Additive.ofMul x))) =
-    Additive.toMul
-      (intermediateNormResidueSymbol T
-        (unitsInclusion T (Additive.ofMul x)))
-  exact congrArg Additive.toMul
-    (DFunLike.congr_fun (transfer_inclusion_commutes T)
-      (Additive.ofMul x))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end LocalFixedFieldTransferTower
 

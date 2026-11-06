@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.GcdReduction.CoreCoefficientEstimate
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.GcdReduction.ShellEnvelopeNonnegativity
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.OperatorBounds.HomogeneousUnitBallBound
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -55,9 +58,7 @@ theorem bilinear_gcd_reduction_core
       obtain ⟨b, hbS, hb⟩ := exists_lt_of_lt_csSup ⟨0, hmem0⟩ hlt
       have hcases : (b = 0 ∨
           (∃ T : ℝ, 1 ≤ T ∧ T ≤ N / H ∧ b = B2 F c Q W M T K)) ∨
-          (N / H < 1 ∧ 1 ≤ 2 * (N / H) ∧ b = B2unitColumn F c Q W M K) := by
-        simpa only [Set.mem_union, Set.mem_insert_iff, Set.mem_singleton_iff,
-          Set.mem_setOf_eq] using hbS
+          (N / H < 1 ∧ 1 ≤ 2 * (N / H) ∧ b = B2unitColumn F c Q W M K) := hbS
       rcases hcases with (hb0 | hb1) | hb2
       · exfalso
         rw [hb0] at hb
@@ -71,15 +72,14 @@ theorem bilinear_gcd_reduction_core
   have hSg0 : 0 ≤ Sg := by
     rw [hSg]
     exact Finset.sum_nonneg fun d _ => B3_nonneg Q W M N K d
-  have hE0 : 0 ≤ B2env F c Q W M (N / H) K :=
+  have hE0  :=
     GcdReduction.envelope_nonneg F c Q W hW M (N / H) K hM hX1 hK
   have hA0 : 0 ≤ C * Real.rpow (M * N) δ * (B2env F c Q W M (N / H) K + M + Sg) :=
     mul_nonneg (mul_nonneg hC0 (Real.rpow_nonneg hMN δ)) (by linarith)
-  have hlift : B2 F c Q W M N K ≤
-      C * Real.rpow (M * N) δ * (B2env F c Q W M (N / H) K + M + Sg) :=
+  have hlift  :=
     GcdReduction.unit_ball_lift F c Q W M N K _ hA0
       (fun lam => hC M N K H hM hN hK hH hHN lam)
-  have hB20 : 0 ≤ B2 F c Q W M N' K := B2_nonneg Q W M N' K
+  have hB20  := B2_nonneg Q W M N' K
   calc B2 F c Q W M N K
       ≤ C * Real.rpow (M * N) δ * (B2env F c Q W M (N / H) K + M + Sg) := hlift
     _ ≤ C * Real.rpow (M * N) δ * ((B2 F c Q W M N' K + M + Sg) * 2) :=

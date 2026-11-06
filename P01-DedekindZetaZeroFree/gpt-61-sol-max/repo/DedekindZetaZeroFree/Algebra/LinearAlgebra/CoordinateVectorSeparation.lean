@@ -29,14 +29,14 @@ public theorem toMatrix_piMap {R ι : Type*} [CommSemiring R] [Fintype ι] [Deci
     simp
   · simp [h]
 
-@[simp]
-public theorem det_piMap {R ι : Type*} [CommRing R] [Fintype ι] {M : ι → Type*}
-    [∀ i, AddCommGroup (M i)] [∀ i, Module R (M i)] [∀ i, Module.Free R (M i)]
-    [∀ i, Module.Finite R (M i)] (f : ∀ i, M i →ₗ[R] M i) :
-    (piMap f).det = ∏ i, (f i).det := by
-  classical
-  let b (i : ι) := Module.Free.chooseBasis R (M i)
-  rw [← det_toMatrix (Pi.basis b), toMatrix_piMap b b, Matrix.det_blockDiagonal']
-  exact Finset.prod_congr rfl fun i _ ↦ det_toMatrix (b i) (f i)
+
+
+
+
+
+
+
+
+
 
 end LinearMap

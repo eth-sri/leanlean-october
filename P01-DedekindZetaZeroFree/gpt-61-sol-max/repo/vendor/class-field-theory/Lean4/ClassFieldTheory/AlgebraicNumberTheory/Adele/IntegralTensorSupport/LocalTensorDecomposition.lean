@@ -92,10 +92,13 @@ def RelativeLocalTensorDecompositionIntegralUnitAt
 
 /-- The discriminant of the globally integral scaled relative basis,
 viewed as an algebraic integer of the base field. -/
+
+local notation:max "current_scaledRelativeExtensionBasis" => scaledRelativeExtensionBasis (K := K) (L := L)
+
 noncomputable def scaledRelativeBasisDiscriminantInteger :
     𝓞 K :=
   ⟨Algebra.discr K
-      (scaledRelativeExtensionBasis (K := K) (L := L)),
+      (current_scaledRelativeExtensionBasis),
     Algebra.discr_isIntegral K fun i =>
       scaledRelativeExtensionBasis_isIntegral
         (K := K) (L := L) i⟩
@@ -107,7 +110,7 @@ theorem scaledRelativeBasisDiscriminantInteger_coe :
     (scaledRelativeBasisDiscriminantInteger
         (K := K) (L := L) : K) =
       Algebra.discr K
-        (scaledRelativeExtensionBasis (K := K) (L := L)) :=
+        (current_scaledRelativeExtensionBasis) :=
   rfl
 
 /-- The discriminant control integer is nonzero. -/
@@ -116,7 +119,7 @@ theorem scaledRelativeBasisDiscriminantInteger_ne_zero :
       (K := K) (L := L) ≠ 0 := by
   intro h
   apply Algebra.discr_not_zero_of_basis K
-    (scaledRelativeExtensionBasis (K := K) (L := L))
+    (current_scaledRelativeExtensionBasis)
   exact congrArg (fun x : 𝓞 K => (x : K)) h
 
 /-- The principal discriminant ideal of the scaled relative basis. -/
@@ -178,7 +181,7 @@ theorem adicAbv_scaledRelativeBasisDiscriminant_eq_one_of_notMem
       (K := K) (L := L)) :
     NumberField.HeightOneSpectrum.adicAbv K w
         (Algebra.discr K
-          (scaledRelativeExtensionBasis (K := K) (L := L))) = 1 := by
+          (current_scaledRelativeExtensionBasis)) = 1 := by
   have hnorm :
       ‖FinitePlace.embedding (K := K) w
         (scaledRelativeBasisDiscriminantInteger
@@ -202,17 +205,17 @@ noncomputable def integralTensorComparisonBadPlaces :
       scaledRelativeBasisDiscriminantBadPlaces
         (K := K) (L := L)
 
-/-- Membership in the combined comparison bad-place set is componentwise. -/
 
-@[simp]
-theorem mem_integralTensorComparisonBadPlaces_iff
-    (w : HeightOneSpectrum (𝓞 K)) :
-    w ∈ integralTensorComparisonBadPlaces
-        (K := K) (L := L) ↔
-      w ∈ integralTensorBadPlaces (K := K) (L := L) ∨
-        w ∈ scaledRelativeBasisDiscriminantBadPlaces
-          (K := K) (L := L) := by
-  simp [integralTensorComparisonBadPlaces]
+
+
+
+
+
+
+
+
+
+
 
 omit [NumberField L] in
 /-- The local tensor-decomposition component of a pure tensor has the expected value. -/
@@ -277,13 +280,16 @@ theorem finitePlaceLocalTensorDecomposition_coefficient_mem_integers
 
 /-- Away from the bad set, every chosen relative basis vector maps to
 the valuation ring in each local completion factor. -/
+
+local notation:max "current_RelativeAdeleBasisIndex" => RelativeAdeleBasisIndex (K := K) (L := L)
+
 theorem finitePlaceLocalTensorDecomposition_basis_mem_integers_of_notMem
     (w : HeightOneSpectrum (𝓞 K))
     (hw : w ∉ integralTensorBadPlaces
       (K := K) (L := L))
     (wL : AbsoluteValueExtension
       (NumberField.HeightOneSpectrum.adicAbv K w) L)
-    (i : RelativeAdeleBasisIndex (K := K) (L := L)) :
+    (i : current_RelativeAdeleBasisIndex) :
     AbsoluteValue.toCompletion wL.1
         (relativeExtensionBasis
           (K := K) (L := L) i) ∈
@@ -315,14 +321,12 @@ theorem relativeBasisIntegralAt_imp_localTensorDecompositionIntegral_of_notMem
   have hsum :
       finitePlaceLocalTensorDecompositionComponent
           (K := K) (L := L) w wL
-          (∑ i : RelativeAdeleBasisIndex
-              (K := K) (L := L),
+          (∑ i : current_RelativeAdeleBasisIndex,
             ((c i : w.adicCompletionIntegers K) :
                 w.adicCompletion K) ⊗ₜ[K]
               relativeExtensionBasis
                 (K := K) (L := L) i) =
-        ∑ i : RelativeAdeleBasisIndex
-            (K := K) (L := L),
+        ∑ i : current_RelativeAdeleBasisIndex,
           finitePlaceLocalTensorDecompositionComponent
             (K := K) (L := L) w wL
             (((c i : w.adicCompletionIntegers K) :
@@ -379,7 +383,7 @@ theorem scaledRelativeTensorCoordinates_isIntegral_of_localTensorDecompositionIn
         (K := K) (L := L) w).symm x
     let bA :=
       Algebra.TensorProduct.basis vK.Completion
-        (scaledRelativeExtensionBasis (K := K) (L := L))
+        (current_scaledRelativeExtensionBasis)
     ∀ i, IsIntegral (absoluteValueCompletionIntegers vK
         (NumberField.HeightOneSpectrum.isNonarchimedean_adicAbv K w))
       (bA.equivFun xA i) := by
@@ -407,7 +411,7 @@ theorem scaledRelativeTensorCoordinates_isIntegral_of_localTensorDecompositionIn
       (K := K) (L := L) w).symm x
   let bA :=
     Algebra.TensorProduct.basis vK.Completion
-      (scaledRelativeExtensionBasis (K := K) (L := L))
+      (current_scaledRelativeExtensionBasis)
   have hxA :
       ∀ wL : AbsoluteValueExtension vK L,
         completionTensorDecomposition_left
@@ -418,7 +422,7 @@ theorem scaledRelativeTensorCoordinates_isIntegral_of_localTensorDecompositionIn
     simpa [xA, vK, hvK, hvK0,
       finitePlaceLocalTensorDecompositionComponent] using hx wL
   have hbA :
-      ∀ (i : RelativeAdeleBasisIndex (K := K) (L := L))
+      ∀ (i : current_RelativeAdeleBasisIndex)
         (wL : AbsoluteValueExtension vK L),
         completionTensorDecomposition_left
             (K := K) (L := L) vK hvK0 (bA i) wL ∈
@@ -428,7 +432,7 @@ theorem scaledRelativeTensorCoordinates_isIntegral_of_localTensorDecompositionIn
     have hbAi :
         bA i =
           1 ⊗ₜ[K]
-            scaledRelativeExtensionBasis (K := K) (L := L) i := by
+            current_scaledRelativeExtensionBasis i := by
       simp [bA, Algebra.TensorProduct.basis_apply]
     rw [hbAi]
     rw [completionTensorDecomposition_left_tmul_apply]
@@ -440,7 +444,7 @@ theorem scaledRelativeTensorCoordinates_isIntegral_of_localTensorDecompositionIn
         scaledRelativeExtensionBasis_absoluteValue_le_one
           (K := K) (L := L) vK hvK wL i
   have hM :
-      ∀ i j : RelativeAdeleBasisIndex (K := K) (L := L),
+      ∀ i j : current_RelativeAdeleBasisIndex,
         IsIntegral (absoluteValueCompletionIntegers vK hvK)
           (Algebra.trace vK.Completion
             (vK.Completion ⊗[K] L) (bA i * bA j)) := by
@@ -458,7 +462,7 @@ theorem scaledRelativeTensorCoordinates_isIntegral_of_localTensorDecompositionIn
         (absoluteValueExtension_isNonarchimedean
           vK hvK wL)).toSubring.mul_mem (hbA i wL) (hbA j wL)
   have ht :
-      ∀ i : RelativeAdeleBasisIndex (K := K) (L := L),
+      ∀ i : current_RelativeAdeleBasisIndex,
         IsIntegral (absoluteValueCompletionIntegers vK hvK)
           (Algebra.trace vK.Completion
             (vK.Completion ⊗[K] L) (xA * bA i)) := by
@@ -488,32 +492,32 @@ theorem scaledRelativeTensorCoordinates_isIntegral_of_localTensorDecompositionIn
     have hdnorm :
         ‖algebraMap K vK.Completion
           (Algebra.discr K
-            (scaledRelativeExtensionBasis (K := K) (L := L)))‖ = 1 := by
+            (current_scaledRelativeExtensionBasis))‖ = 1 := by
       calc
         ‖algebraMap K vK.Completion
             (Algebra.discr K
-              (scaledRelativeExtensionBasis (K := K) (L := L)))‖ =
+              (current_scaledRelativeExtensionBasis))‖ =
             vK (Algebra.discr K
-              (scaledRelativeExtensionBasis (K := K) (L := L))) := by
+              (current_scaledRelativeExtensionBasis)) := by
               exact AbsoluteValue.completionAbsoluteValue_coe _ _
         _ = 1 := hdabs
     change AbsoluteValue.completionAbsoluteValue vK
       ((algebraMap K vK.Completion
         (Algebra.discr K
-          (scaledRelativeExtensionBasis (K := K) (L := L))))⁻¹) ≤ 1
+          (current_scaledRelativeExtensionBasis)))⁻¹) ≤ 1
     rw [map_inv₀]
     change
       ‖algebraMap K vK.Completion
         (Algebra.discr K
-          (scaledRelativeExtensionBasis (K := K) (L := L)))‖⁻¹ ≤ 1
+          (current_scaledRelativeExtensionBasis))‖⁻¹ ≤ 1
     rw [hdnorm, inv_one]
   have hdiscne :
       Algebra.discr vK.Completion bA ≠ 0 := by
     rw [discr_tensorProduct_basis]
     exact (algebraMap K vK.Completion).injective.ne
       (Algebra.discr_not_zero_of_basis K
-        (scaledRelativeExtensionBasis (K := K) (L := L)))
-  change ∀ i : RelativeAdeleBasisIndex (K := K) (L := L),
+        (current_scaledRelativeExtensionBasis))
+  change ∀ i : current_RelativeAdeleBasisIndex,
     IsIntegral (absoluteValueCompletionIntegers vK hvK)
       (bA.equivFun xA i)
   intro i
@@ -523,22 +527,24 @@ theorem scaledRelativeTensorCoordinates_isIntegral_of_localTensorDecompositionIn
 /-- The concrete tensor comparison sends a scaled-basis summand to
 the corresponding original-basis summand, with the global scale
 absorbed into its coefficient. -/
+
+local notation:max "current_relativeBasisIntegralScaleInK" => relativeBasisIntegralScaleInK (K := K) (L := L)
+
 theorem relativeFinitePlaceLocalTensorAlgEquiv_scaled_basis_smul
     (w : HeightOneSpectrum (𝓞 K))
     (a :
       (NumberField.HeightOneSpectrum.adicAbv K w).Completion)
-    (i : RelativeAdeleBasisIndex (K := K) (L := L)) :
+    (i : current_RelativeAdeleBasisIndex) :
     relativeFinitePlaceLocalTensorAlgEquiv
         (K := K) (L := L) w
         (a •
           Algebra.TensorProduct.basis
             (NumberField.HeightOneSpectrum.adicAbv K w).Completion
-            (scaledRelativeExtensionBasis (K := K) (L := L)) i) =
+            (current_scaledRelativeExtensionBasis) i) =
       relativeFinitePlaceCompletionAlgEquiv w
           (a * algebraMap K
             (NumberField.HeightOneSpectrum.adicAbv K w).Completion
-            (relativeBasisIntegralScaleInK
-              (K := K) (L := L))) ⊗ₜ[K]
+            (current_relativeBasisIntegralScaleInK)) ⊗ₜ[K]
         relativeExtensionBasis (K := K) (L := L) i := by
   simp [relativeFinitePlaceLocalTensorAlgEquiv,
     Algebra.TensorProduct.basis_apply,
@@ -546,7 +552,7 @@ theorem relativeFinitePlaceLocalTensorAlgEquiv_scaled_basis_smul
     Algebra.smul_def, mul_comm]
   simpa [Algebra.smul_def] using
     (TensorProduct.smul_tmul
-      (relativeBasisIntegralScaleInK (K := K) (L := L))
+      (current_relativeBasisIntegralScaleInK)
       (relativeFinitePlaceCompletionAlgEquiv w a)
       (relativeExtensionBasis (K := K) (L := L) i)).symm
 
@@ -576,16 +582,16 @@ theorem localTensorDecompositionIntegral_imp_relativeBasisIntegralAt_of_notMem
       (K := K) (L := L) w).symm x
   let bA :=
     Algebra.TensorProduct.basis vK.Completion
-      (scaledRelativeExtensionBasis (K := K) (L := L))
+      (current_scaledRelativeExtensionBasis)
   have hscaled :
-      ∀ i : RelativeAdeleBasisIndex (K := K) (L := L),
+      ∀ i : current_RelativeAdeleBasisIndex,
         IsIntegral (absoluteValueCompletionIntegers vK hvK)
           (bA.equivFun xA i) := by
     simpa [vK, hvK, xA, bA] using
       scaledRelativeTensorCoordinates_isIntegral_of_localTensorDecompositionIntegral
         (K := K) (L := L) w hwdisc hx
   have hscaledNorm :
-      ∀ i : RelativeAdeleBasisIndex (K := K) (L := L),
+      ∀ i : current_RelativeAdeleBasisIndex,
         ‖bA.equivFun xA i‖ ≤ 1 := by
     intro i
     obtain ⟨ci, hci⟩ :=
@@ -594,50 +600,42 @@ theorem localTensorDecompositionIntegral_imp_relativeBasisIntegralAt_of_notMem
     exact ci.property
   have hscaleIntegral :
       IsIntegral ℤ
-        (relativeBasisIntegralScaleInK
-          (K := K) (L := L)) := by
+        (current_relativeBasisIntegralScaleInK) := by
     change IsIntegral ℤ
       (algebraMap ℤ K
         (chosenRelativeBasisIntegralScale (K := K) (L := L)))
     exact isIntegral_algebraMap
   have hscaleAbs :
-      vK (relativeBasisIntegralScaleInK
-        (K := K) (L := L)) ≤ 1 :=
+      vK (current_relativeBasisIntegralScaleInK) ≤ 1 :=
     absoluteValue_le_one_of_isIntegral vK hvK hscaleIntegral
   have hscaleNorm :
       ‖algebraMap K vK.Completion
-        (relativeBasisIntegralScaleInK
-          (K := K) (L := L))‖ ≤ 1 := by
+        (current_relativeBasisIntegralScaleInK)‖ ≤ 1 := by
     calc
       ‖algebraMap K vK.Completion
-          (relativeBasisIntegralScaleInK
-            (K := K) (L := L))‖ =
-          vK (relativeBasisIntegralScaleInK
-            (K := K) (L := L)) :=
+          (current_relativeBasisIntegralScaleInK)‖ =
+          vK (current_relativeBasisIntegralScaleInK) :=
         AbsoluteValue.completionAbsoluteValue_coe _ _
       _ ≤ 1 := hscaleAbs
   let cA :
-      RelativeAdeleBasisIndex (K := K) (L := L) →
+      current_RelativeAdeleBasisIndex →
         vK.Completion :=
     fun i =>
       bA.equivFun xA i *
         algebraMap K vK.Completion
-          (relativeBasisIntegralScaleInK
-            (K := K) (L := L))
+          (current_relativeBasisIntegralScaleInK)
   have hcANorm :
-      ∀ i : RelativeAdeleBasisIndex (K := K) (L := L),
+      ∀ i : current_RelativeAdeleBasisIndex,
         ‖cA i‖ ≤ 1 := by
     intro i
     change ‖bA.equivFun xA i *
       algebraMap K vK.Completion
-        (relativeBasisIntegralScaleInK
-          (K := K) (L := L))‖ ≤ 1
+        (current_relativeBasisIntegralScaleInK)‖ ≤ 1
     rw [norm_mul]
     calc
       ‖bA.equivFun xA i‖ *
           ‖algebraMap K vK.Completion
-            (relativeBasisIntegralScaleInK
-              (K := K) (L := L))‖ ≤
+            (current_relativeBasisIntegralScaleInK)‖ ≤
           1 * 1 :=
         mul_le_mul (hscaledNorm i) hscaleNorm
           (norm_nonneg _) (by positivity)
@@ -649,7 +647,7 @@ theorem localTensorDecompositionIntegral_imp_relativeBasisIntegralAt_of_notMem
       (relativeFinitePlaceCompletionRingHom_isometry w).norm_map_of_map_zero
         (map_zero (relativeFinitePlaceCompletionRingHom w)) y
   let c :
-      RelativeAdeleBasisIndex (K := K) (L := L) →
+      current_RelativeAdeleBasisIndex →
         w.adicCompletionIntegers K :=
     fun i =>
       ⟨relativeFinitePlaceCompletionAlgEquiv w (cA i),
@@ -661,13 +659,13 @@ theorem localTensorDecompositionIntegral_imp_relativeBasisIntegralAt_of_notMem
       (K := K) (L := L) w
   calc
     x = e xA := (e.apply_symm_apply x).symm
-    _ = e (∑ i : RelativeAdeleBasisIndex (K := K) (L := L),
+    _ = e (∑ i : current_RelativeAdeleBasisIndex,
         (bA.equivFun xA i) • bA i) :=
       congrArg e (bA.sum_repr xA).symm
-    _ = ∑ i : RelativeAdeleBasisIndex (K := K) (L := L),
+    _ = ∑ i : current_RelativeAdeleBasisIndex,
         e ((bA.equivFun xA i) • bA i) := by
       rw [map_sum]
-    _ = ∑ i : RelativeAdeleBasisIndex (K := K) (L := L),
+    _ = ∑ i : current_RelativeAdeleBasisIndex,
         ((c i : w.adicCompletionIntegers K) :
             w.adicCompletion K) ⊗ₜ[K]
           relativeExtensionBasis (K := K) (L := L) i := by

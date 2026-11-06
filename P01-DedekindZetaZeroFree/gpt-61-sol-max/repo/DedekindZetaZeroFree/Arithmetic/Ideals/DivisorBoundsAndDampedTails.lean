@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Ideals.Counting.NormSeries
 
 @[expose] public section
+
 
 open scoped NumberField Topology
 open Filter
@@ -13,10 +16,10 @@ namespace DedekindZetaZeroFree.Detector
 open UniqueFactorizationMonoid
 
 noncomputable def idealDivisorCount (F : Type) [Field F] [NumberField F]
-    (n : Ideal (𝓞 F)) : ℕ :=
+    (n : Ideal (𝓞 F))  :=
   Set.ncard {d : Ideal (𝓞 F) | d ≠ ⊥ ∧ d ∣ n}
 
-noncomputable def idealNormCount (F : Type) [Field F] [NumberField F] (X : ℝ) : ℕ :=
+noncomputable def idealNormCount (F : Type) [Field F] [NumberField F] (X : ℝ)  :=
   Set.ncard {n : Ideal (𝓞 F) | n ≠ ⊥ ∧ (Ideal.absNorm n : ℝ) ≤ X}
 
 theorem ideal_divisors_finite (F : Type) [Field F] [NumberField F]
@@ -80,7 +83,7 @@ private theorem local_large (a : ℝ) (ha : 2 ≤ a) (k : ℕ) :
     | zero => simp
     | succ k ih =>
       rw [pow_succ]
-      have hp : 1 ≤ (2:ℝ)^k := one_le_pow₀ (by norm_num)
+      
       norm_num only [Nat.cast_add, Nat.cast_one]
       nlinarith
   exact h.trans (pow_le_pow_left₀ (by norm_num) ha k)
@@ -90,12 +93,12 @@ theorem ideal_divisor_bound (F : Type) [Field F] [NumberField F]
     ∃ C : ℝ, 0 < C ∧ ∀ n : Ideal (𝓞 F), n ≠ ⊥ →
       (idealDivisorCount F n : ℝ) ≤ C * (Ideal.absNorm n : ℝ) ^ ε := by
   classical
-  let a : ℝ := (2:ℝ)^ε
+  let a  := (2:ℝ)^ε
   have ha : 1 < a := Real.one_lt_rpow (by norm_num) hε
-  let B : ℝ := 1 + (a-1)⁻¹
+  let B  := 1 + (a-1)⁻¹
   have hB : 1 ≤ B := by dsimp [B]; have := inv_nonneg.mpr (sub_nonneg.mpr ha.le); linarith
-  let T : ℝ := (2:ℝ)^ε⁻¹
-  let e : Finset (Ideal (𝓞 F)) := (ideals_bounded_norm_finite F T).toFinset
+  let T  := (2:ℝ)^ε⁻¹
+  let e  := (ideals_bounded_norm_finite F T).toFinset
   refine ⟨B^e.card, pow_pos (lt_of_lt_of_le zero_lt_one hB) _, ?_⟩
   intro n hn
   let s := (normalizedFactors n).toFinset
@@ -162,7 +165,7 @@ private theorem sqrt_sum (N : ℕ) : (∑ i ∈ Finset.range N, ((i+1:ℕ):ℝ)^
     rw [inv_eq_one_div, div_le_iff₀ hp]
     have h1 := Real.sq_sqrt (show 0 ≤ (i:ℝ)+1 by positivity)
     have h0 := Real.sq_sqrt (show 0 ≤ (i:ℝ) by positivity)
-    have hd := sq_nonneg (Real.sqrt (i+1) - Real.sqrt i)
+    
     norm_num only [Nat.cast_add, Nat.cast_one]
     nlinarith
   induction N with
@@ -179,7 +182,7 @@ private theorem weighted {F : Type} [Field F] [NumberField F] (K : ℝ)
     (hN : ∀ I ∈ u, Ideal.absNorm I.val ≤ N)
     (g : ℕ → ℝ) (hg0 : 0 ≤ g) (hg : Antitone g) :
     ∑ I ∈ u, g (Ideal.absNorm I.val - 1) ≤ K * ∑ i ∈ Finset.range N, g i := by
-  let f : ℕ → ℝ := fun i => ((u.filter (fun I => Ideal.absNorm I.val - 1 = i)).card : ℝ)
+  let f  := fun i => ((u.filter (fun I => Ideal.absNorm I.val - 1 = i)).card : ℝ)
   have hsum (k : ℕ) : ∑ i ∈ Finset.range k, f i =
       ((u.filter (fun I => Ideal.absNorm I.val - 1 < k)).card : ℝ) := by
     simp only [f, ← Finset.sum_boole]
@@ -257,7 +260,7 @@ theorem ideal_norm_summation_bounds (F : Type) [Field F] [NumberField F] :
         rw [Finset.sum_image (g := fun I : NonzeroIdeal F => I.val) (fun a _ b _ h => Subtype.ext h)]
         apply Finset.sum_congr rfl
         intro I hI
-        have hmem : I ∈ normBoundedIdeals F X := (normBoundedIdeals_finite F X).mem_toFinset.mp hI
+        have hmem  := (normBoundedIdeals_finite F X).mem_toFinset.mp hI
         rw [if_pos ⟨I.property, hmem⟩]
       · intro n hn
         apply (Set.Finite.mem_toFinset _).mpr
@@ -265,13 +268,13 @@ theorem ideal_norm_summation_bounds (F : Type) [Field F] [NumberField F] :
         simp only [Function.mem_support] at hn
         exact hn (if_neg H)
     rw [he]
-    let g : ℕ → ℝ := fun i => ((i+1:ℕ):ℝ)^(-(1/2:ℝ))
+    let g  := fun i => ((i+1:ℕ):ℝ)^(-(1/2:ℝ))
     have hg : Antitone g := by
       intro i j hij
       exact Real.rpow_le_rpow_of_nonpos (by positivity) (by exact_mod_cast Nat.succ_le_succ hij) (by norm_num)
     have hw := weighted K hK u ⌊X⌋₊ (fun I hI => by
-      have hmem : I ∈ normBoundedIdeals F X := (normBoundedIdeals_finite F X).mem_toFinset.mp hI
-      exact Nat.le_floor (show (Ideal.absNorm I.val : ℝ) ≤ X from hmem))
+      have hmem  := (normBoundedIdeals_finite F X).mem_toFinset.mp hI
+      apply Nat.le_floor <;> assumption)
       g (fun i => by dsimp [g]; positivity) hg
     have he2 : (fun I : NonzeroIdeal F => g (Ideal.absNorm I.val - 1)) =
         (fun I => (Ideal.absNorm I.val : ℝ)^(-(1/2:ℝ))) := by

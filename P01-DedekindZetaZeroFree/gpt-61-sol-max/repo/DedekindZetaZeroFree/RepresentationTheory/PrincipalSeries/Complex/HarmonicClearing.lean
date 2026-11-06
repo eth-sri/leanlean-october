@@ -221,8 +221,11 @@ theorem sphericalWord_polynomial_smooth_factors
 
 end PolynomialWords
 
-private theorem entire_det {m : ℕ} (A : ℂ → Matrix (Fin m) (Fin m) ℂ)
-    (hA : ∀ i j, AnalyticOnNhd ℂ (fun s => A s i j) Set.univ) :
+section
+variable {m : ℕ} (A : ℂ → Matrix (Fin m) (Fin m) ℂ)
+    (hA : ∀ i j, AnalyticOnNhd ℂ (fun s => A s i j) Set.univ)
+include m A hA
+private theorem entire_det   :
     AnalyticOnNhd ℂ (fun s => (A s).det) Set.univ := by
   simp only [Matrix.det_apply']
   apply Finset.analyticOnNhd_fun_sum
@@ -230,8 +233,7 @@ private theorem entire_det {m : ℕ} (A : ℂ → Matrix (Fin m) (Fin m) ℂ)
   exact analyticOnNhd_const.mul
     (Finset.analyticOnNhd_fun_prod _ (fun i hi => hA (σ i) i))
 
-private theorem entire_adjugate {m : ℕ} (A : ℂ → Matrix (Fin m) (Fin m) ℂ)
-    (hA : ∀ i j, AnalyticOnNhd ℂ (fun s => A s i j) Set.univ) (i j : Fin m) :
+private theorem entire_adjugate   (i j : Fin m) :
     AnalyticOnNhd ℂ (fun s => (A s).adjugate i j) Set.univ := by
   simp only [Matrix.adjugate_apply]
   apply entire_det
@@ -242,9 +244,7 @@ private theorem entire_adjugate {m : ℕ} (A : ℂ → Matrix (Fin m) (Fin m) �
     exact analyticOnNhd_const
   · simpa [Matrix.updateRow_apply, ha] using hA a b
 
-theorem normalized_adjugate_clearing {m : ℕ}
-    (A : ℂ → Matrix (Fin m) (Fin m) ℂ)
-    (hA : ∀ i j, AnalyticOnNhd ℂ (fun s => A s i j) Set.univ)
+theorem normalized_adjugate_clearing  
     (h0 : (A 0).det ≠ 0) (v : Fin m → ℂ) :
     ∃ (q : ℂ → ℂ) (b : Fin m → ℂ → ℂ),
       AnalyticOnNhd ℂ q Set.univ ∧ q 0 = 1 ∧
@@ -273,6 +273,8 @@ theorem normalized_adjugate_clearing {m : ℕ}
         exact (mul_div_assoc _ _ _).symm
       _ = ((A s).det * v i) / d := congrArg (fun z : ℂ => z / d) h
       _ = _ := by ring
+end
+
 
 section HarmonicClearingAssembly
 open KPCplxIntertwinerEigenvalues KPCplxHarmonicExtraction MeasureTheory
@@ -281,22 +283,28 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1500000
 
  abbrev HS (ℓ : ℕ) := harmonicKType positiveParameter ℓ
- def cProj (μ : Measure ComplexSU2) (hp : IsProbabilityMeasure μ) (ℓ : ℕ)
-    (h : PrincipalSeries positiveParameter) : PrincipalSeries positiveParameter :=
+ section
+variable (μ : Measure ComplexSU2) (hp : IsProbabilityMeasure μ) (ℓ : ℕ)
+    (h : PrincipalSeries positiveParameter)
+include μ hp ℓ h
+def cProj   : PrincipalSeries positiveParameter :=
   (characterAverage_section_exists positiveParameter μ hp ℓ h).choose
-private theorem cProj_eval (μ : Measure ComplexSU2) (hp : IsProbabilityMeasure μ) (ℓ : ℕ)
-    (h : PrincipalSeries positiveParameter) (g : ComplexGL2) :
+private theorem cProj_eval   (g : ComplexGL2) :
     cProj μ hp ℓ h g = characterAverage positiveParameter μ ℓ h g :=
   (characterAverage_section_exists positiveParameter μ hp ℓ h).choose_spec g
-private theorem cProj_mem (μ : Measure ComplexSU2) (hhaar : μ.IsHaarMeasure)
-    (hp : IsProbabilityMeasure μ) (ℓ : ℕ) (h : PrincipalSeries positiveParameter) :
+end
+
+section
+variable (μ : Measure ComplexSU2) (hhaar : μ.IsHaarMeasure)
+    (hp : IsProbabilityMeasure μ) (ℓ : ℕ) (h : PrincipalSeries positiveParameter)
+include μ hhaar hp ℓ h
+private theorem cProj_mem   :
     cProj μ hp ℓ h ∈ HS ℓ := by
   obtain ⟨p,hp',he⟩ := characterAverage_compact_polynomial positiveParameter μ hhaar hp ℓ h
   refine ⟨p,hp',?_⟩
   ext k
   exact (he k).trans (cProj_eval μ hp ℓ h (complexSU2Embedding k)).symm
-private theorem cProj_self_compact (μ : Measure ComplexSU2) (hhaar : μ.IsHaarMeasure)
-    (hp : IsProbabilityMeasure μ) (ℓ : ℕ) (h : PrincipalSeries positiveParameter)
+private theorem cProj_self_compact  
     (hh : h ∈ HS ℓ) (k : ComplexSU2) :
     cProj μ hp ℓ h (complexSU2Embedding k) = h (complexSU2Embedding k) := by
   obtain ⟨p,hp',he⟩ := hh
@@ -310,6 +318,8 @@ private theorem cProj_self_compact (μ : Measure ComplexSU2) (hhaar : μ.IsHaarM
     exact congrArg (star (su2HarmonicCharacter ℓ t) * ·) (he' (k*t)).symm
   rw [e1, CompactPolynomial.harmonic_character_projection_diagonal μ hhaar hp ℓ p hp' k]
   exact he' k
+end
+
 private theorem cProj_sum_eval (μ : Measure ComplexSU2) (hp : IsProbabilityMeasure μ)
     (ℓ : ℕ) {ι : Type} [Fintype ι] (h : ι → PrincipalSeries positiveParameter)
     (c : ι → ℂ) (g : ComplexGL2) :

@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import Mathlib.SetTheory.Cardinal.Finite
 public import ClassFieldTheory.LubinTate.EqualCharacteristic.CompletedLevel.CompletedFrobeniusFixedField
 public import ClassFieldTheory.LubinTate.EqualCharacteristic.CompletedLevel.ChangedCompletedPrimitiveAction
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -47,16 +50,16 @@ noncomputable local instance
       (equalCharacteristicCompletedUnramifiedField F.residueField) :=
   laurentSeriesCoefficientAlgebra
 
-/-- Provides the instance `equalCharacteristicCompletedFrobeniusIdentificationLevelCharP`. -/
-instance equalCharacteristicCompletedFrobeniusIdentificationLevelCharP
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic] (n : ℕ) :
-    CharP (equalCharacteristicCompletedLevelField F n)
-      F.residueCharacteristic :=
-  charP_of_injective_algebraMap
-    (algebraMap (equalCharacteristicCompletedUnramifiedField F.residueField)
-      (equalCharacteristicCompletedLevelField F n)).injective
-    F.residueCharacteristic
+
+
+
+
+
+
+
+
+
+
 
 private theorem equalCharacteristicDirectTargetCompletedPrimitivePolynomial_eq
     (F : LocalField.{u, v} K)
@@ -64,15 +67,16 @@ private theorem equalCharacteristicDirectTargetCompletedPrimitivePolynomial_eq
     equalCharacteristicChangedCompletedPrimitivePolynomial F a⁻¹ n =
       (equalCharacteristicChangedPrimitivePolynomial F a n).map
         (algebraMap F.residueField⸨X⸩
-          (equalCharacteristicCompletedUnramifiedField F.residueField)) := by
-  simp [equalCharacteristicChangedCompletedPrimitivePolynomial,
-    equalCharacteristicThetaSourceUnit]
+          (equalCharacteristicCompletedUnramifiedField F.residueField)) := rfl
 
+section
+variable (F : LocalField.{u, v} K)
+    [CharP K F.residueCharacteristic]
+    (a : F.residueField⟦X⟧ˣ) (n : ℕ)
+include F a n
 private theorem
     equalCharacteristicDirectThetaAtCompletedPrimitiveRoot_isRoot_targetCompleted
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      :
     ((equalCharacteristicChangedCompletedPrimitivePolynomial F a⁻¹ n).map
       (algebraMap (equalCharacteristicCompletedUnramifiedField F.residueField)
         (equalCharacteristicCompletedLevelField F n))).IsRoot
@@ -80,30 +84,23 @@ private theorem
         equalCharacteristicCompletedLevelField F n) := by
   rw [equalCharacteristicDirectTargetCompletedPrimitivePolynomial_eq,
     Polynomial.map_map]
-  simpa [equalCharacteristicCompletedLevelBaseHom] using
-    equalCharacteristicDirectThetaAtCompletedPrimitiveRoot_isRoot_target F a n
+  apply equalCharacteristicDirectThetaAtCompletedPrimitiveRoot_isRoot_target
 
 /-- States the theorem `equalCharacteristicDirectThetaAtCompletedPrimitiveRoot_isIntegral_completedBase`. -/
 theorem
     equalCharacteristicDirectThetaAtCompletedPrimitiveRoot_isIntegral_completedBase
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      :
     IsIntegral (equalCharacteristicCompletedUnramifiedField F.residueField)
       (equalCharacteristicDirectThetaAtCompletedPrimitiveRoot F a n :
         equalCharacteristicCompletedLevelField F n) := by
   refine ⟨equalCharacteristicChangedCompletedPrimitivePolynomial F a⁻¹ n,
     equalCharacteristicChangedCompletedPrimitivePolynomial_monic F a⁻¹ n, ?_⟩
   rw [← Polynomial.eval_map]
-  exact
-    equalCharacteristicDirectThetaAtCompletedPrimitiveRoot_isRoot_targetCompleted
-      F a n
+  apply equalCharacteristicDirectThetaAtCompletedPrimitiveRoot_isRoot_targetCompleted
 
 private theorem
     equalCharacteristicDirectThetaAtCompletedPrimitiveRoot_minpoly_completedBase
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      :
     minpoly (equalCharacteristicCompletedUnramifiedField F.residueField)
         (equalCharacteristicDirectThetaAtCompletedPrimitiveRoot F a n :
           equalCharacteristicCompletedLevelField F n) =
@@ -113,9 +110,7 @@ private theorem
         equalCharacteristicCompletedLevelField F n)
       (equalCharacteristicChangedCompletedPrimitivePolynomial F a⁻¹ n) = 0 := by
     rw [Polynomial.aeval_def, ← Polynomial.eval_map]
-    exact
-      equalCharacteristicDirectThetaAtCompletedPrimitiveRoot_isRoot_targetCompleted
-        F a n
+    apply equalCharacteristicDirectThetaAtCompletedPrimitiveRoot_isRoot_targetCompleted
   have hmin := minpoly.eq_of_irreducible
     (equalCharacteristicChangedCompletedPrimitivePolynomial_irreducible F a⁻¹ n)
     hroot
@@ -127,9 +122,7 @@ private theorem
 over the completed maximal-unramified Laurent field. -/
 theorem
     equalCharacteristicDirectThetaAtCompletedPrimitiveRoot_adjoin_completedBase_eq_top
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      :
     IntermediateField.adjoin
         (equalCharacteristicCompletedUnramifiedField F.residueField)
         ({(equalCharacteristicDirectThetaAtCompletedPrimitiveRoot F a n :
@@ -155,6 +148,8 @@ theorem
     _ = Module.finrank
         (equalCharacteristicCompletedUnramifiedField F.residueField)
         (equalCharacteristicCompletedLevelField F n) := pb.finrank.symm
+end
+
 
 end EqualCharacteristic
 end LubinTate

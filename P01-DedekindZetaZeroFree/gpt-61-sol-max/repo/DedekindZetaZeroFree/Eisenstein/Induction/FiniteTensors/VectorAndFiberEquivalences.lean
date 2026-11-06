@@ -45,8 +45,12 @@ theorem comparison_stage_pure
       LiteralSource.comparison R.A P C
         (RestrictedTensorSimple.stageInclusion _ _ _ (sourceLevel R P C s)
           (PiTensorProduct.tprod ℂ y)) := by
-  simp only [FaithfulSource.RepairedInducing.comparisonSmooth,
-    LiteralSource.comparison, LinearMap.comp_apply, LinearEquiv.coe_coe]
+  change PrincipalOfKP.ResidueCoreBridge.CanonicalBinding.productUnitaryToRational
+      F R.A.zeta12 R.A.primitive_zeta12 P
+      (FaithfulSource.RepairedInducing.finiteTensorMap R P C
+        (FaithfulSource.RepairedInducing.finiteCoreEquiv R P C _)) =
+    PrincipalOfKP.ResidueCoreBridge.CanonicalBinding.productUnitaryToRational
+      F R.A.zeta12 R.A.primitive_zeta12 P (LiteralSource.finiteTensorMap R.A P C _)
   rw [FaithfulSource.RepairedInducing.finiteCoreEquiv_stage_pure,
     KPGlobalResidualConstruction.ScalarAbsorption.absorb_stage,
     KPGlobalResidualConstruction.ScalarAbsorption.stageEquiv_pure]

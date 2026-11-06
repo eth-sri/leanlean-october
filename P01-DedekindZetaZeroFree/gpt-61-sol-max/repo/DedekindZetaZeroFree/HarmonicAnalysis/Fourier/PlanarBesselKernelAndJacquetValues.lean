@@ -21,8 +21,11 @@ noncomputable def planarFourierKernel (c ρ : ℝ) (x : ℂ) : ℂ :=
       Real.rpow (ρ ^ 2 + ‖x‖ ^ 2) (-(4 / 3 : ℝ)) : ℝ) : ℂ) *
     Complex.exp (-Complex.I * (c : ℂ) * (x.re : ℂ))
 
-theorem characterHaar_eq_planarSelfDualHaar (c : ℝ) (hc : 0 < c)
-    (β : ℂˣ) (hβ : (β : ℂ) = (c : ℂ)) :
+section
+variable (c : ℝ) (hc : 0 < c)
+    (β : ℂˣ) (hβ : (β : ℂ) = (c : ℂ))
+include c hc β hβ in
+theorem characterHaar_eq_planarSelfDualHaar   :
     characterHaar β = planarSelfDualHaar c := by
   simp [characterHaar, characterScale, planarSelfDualHaar, hβ,
     Complex.norm_real, abs_of_pos hc]
@@ -312,8 +315,8 @@ theorem planar_fourier_bessel (c ρ : ℝ) (hc : 0 < c) (hρ : 0 < ρ) :
   rw [← mul_assoc, hreal]
   ring
 
-theorem jacquet_spherical_diagonal_eq_bessel (c : ℝ) (hc : 0 < c)
-    (β : ℂˣ) (hβ : (β : ℂ) = (c : ℂ)) (y : ℂˣ) :
+include c hc β hβ in
+theorem jacquet_spherical_diagonal_eq_bessel   (y : ℂˣ) :
     jacquetFunctional β
         (pi positiveParameter (Matrix.ProjGenLinGroup.mk (diagonal y))
           (sphericalSection positiveParameter)) =
@@ -322,8 +325,8 @@ theorem jacquet_spherical_diagonal_eq_bessel (c : ℝ) (hc : 0 < c)
     characterHaar_eq_planarSelfDualHaar c hc β hβ]
   exact planar_fourier_bessel c ‖(y : ℂ)‖ hc (norm_pos_iff.mpr y.ne_zero)
 
-theorem jacquet_spherical_diagonal_positive (c : ℝ) (hc : 0 < c)
-    (β : ℂˣ) (hβ : (β : ℂ) = (c : ℂ)) (y : ℂˣ) :
+include c hc β hβ in
+theorem jacquet_spherical_diagonal_positive   (y : ℂˣ) :
     (jacquetFunctional β
       (pi positiveParameter (Matrix.ProjGenLinGroup.mk (diagonal y))
         (sphericalSection positiveParameter))).im = 0 ∧
@@ -335,5 +338,7 @@ theorem jacquet_spherical_diagonal_positive (c : ℝ) (hc : 0 < c)
   have hy : 0 < ‖(y : ℂ)‖ := norm_pos_iff.mpr y.ne_zero
   exact ⟨True.intro, mul_pos (mul_pos (besselCoefficient_pos c hc) hy)
     (besselKThird_pos (c * ‖(y : ℂ)‖) (mul_pos hc hy))⟩
+end
+
 
 end DedekindZetaZeroFree.KPCplxPlanarKernel

@@ -36,11 +36,8 @@ variable {G : IntegralRepGroupType} [Group G] [TopologicalSpace G]
 
 namespace DegreeData
 
-/-- The alternating Frobenius power sum used in multiplicativity is a genuine
-finite-stage unit. Splitting the long sum into two blocks expresses it as
-power sums of differences of prime elements. -/
-theorem frobeniusPowerSum_alternating_mem_infiniteUnitAddSubgroup
-    (D : DegreeData G) (A : Rep ℤ G) (v : ValuationData D A)
+section
+variable (D : DegreeData G) (A : Rep ℤ G) (v : ValuationData D A)
     [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
     [TotallyDisconnectedSpace G]
     (K : FiniteAbstractField G) (L : ClosedSubgroup G)
@@ -60,6 +57,12 @@ theorem frobeniusPowerSum_alternating_mem_infiniteUnitAddSubgroup
           L hLK φ σ₂
           (D.frobeniusExponent (K.toFiniteResidueAbstractField D)
             L hLK σ₁))))
+include D A v K L hLK hLnormal hLfinite φ σ₁ σ₂ π₁ π₃ π₄
+/-- The alternating Frobenius power sum used in multiplicativity is a genuine
+finite-stage unit. Splitting the long sum into two blocks expresses it as
+power sums of differences of prime elements. -/
+theorem frobeniusPowerSum_alternating_mem_infiniteUnitAddSubgroup
+     
     (hπ₁ :
       let KR := K.toFiniteResidueAbstractField D
       let Sigma1 : FiniteAbstractField G :=
@@ -185,26 +188,7 @@ identity is a finite-stage unit.  In the left-action translation the
 product is `τ₄τ₁`, so the third coefficient is `p₃-τ₁p₃`; it is
 acted on by `τ₄` in `frobeniusMultiplicativityCorrectionAction`. -/
 theorem frobeniusCorrectionTerms_mem_infiniteUnitAddSubgroup
-    (D : DegreeData G) (A : Rep ℤ G) (v : ValuationData D A)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    [hLfinite : Finite (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
-    (φ σ₁ σ₂ : D.FrobeniusElements
-      (K.toFiniteResidueAbstractField D) L hLK)
-    (π₁ : ambientFixedAddSubgroup A
-      (D.frobeniusFixedField (K.toFiniteResidueAbstractField D) L hLK σ₁))
-    (π₃ : ambientFixedAddSubgroup A
-      (D.frobeniusFixedField (K.toFiniteResidueAbstractField D) L hLK
-        (σ₁ * σ₂)))
-    (π₄ : ambientFixedAddSubgroup A
-      (D.frobeniusFixedField (K.toFiniteResidueAbstractField D) L hLK
-        (D.frobeniusActionConjugate (K.toFiniteResidueAbstractField D)
-          L hLK φ σ₂
-          (D.frobeniusExponent (K.toFiniteResidueAbstractField D)
-            L hLK σ₁))))
+     
     (hπ₁ :
       let KR := K.toFiniteResidueAbstractField D
       let Sigma1 : FiniteAbstractField G :=
@@ -287,6 +271,8 @@ theorem frobeniusCorrectionTerms_mem_infiniteUnitAddSubgroup
     exact h₁₃
   · change p₃ - D.frobeniusQuotientAction A KR.field L hLK τ₁ p₃ ∈ _
     exact h₃action
+end
+
 
 
 end DegreeData

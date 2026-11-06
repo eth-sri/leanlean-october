@@ -12,7 +12,7 @@ open MomentSources
 variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable {R : PrincipalMellin.ActualRecipe S η}
-variable {Q : AdmissibleFlatSources R}
+
 
 theorem fourier_left_root (μ : Measure (KPAdditiveQuotient F)) [μ.IsAddHaarMeasure]
     (θ : Functions R)

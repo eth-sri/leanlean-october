@@ -59,15 +59,18 @@ theorem theta_derivatives_bounded : ∃ B : ℝ, 0 ≤ B ∧ ∀ t : ℝ,
     · rw [image_eq_zero_of_notMem_tsupport ht, norm_zero]
       exact le_max_left _ _
 
-def mean (d : ℕ) : HyperbolicChart.Space d →L[ℝ] ℝ :=
+section
+variable (d : ℕ)
+include d
+def mean   : HyperbolicChart.Space d →L[ℝ] ℝ :=
   (d : ℝ)⁻¹ • ∑ i : Fin d,
     PiLp.proj (𝕜 := ℝ) 2 (fun _ : Fin d × Fin 3 => ℝ) (i,2)
 
-theorem mean_apply (d : ℕ) (p : HyperbolicChart.Space d) :
+theorem mean_apply   (p : HyperbolicChart.Space d) :
     mean d p = (d : ℝ)⁻¹ * ∑ i : Fin d, p (i,2) := by
   simp [mean]
 
-theorem mean_coordinate (d : ℕ) (i : Fin d) (k : Fin 3) :
+theorem mean_coordinate   (i : Fin d) (k : Fin 3) :
     mean d (HyperbolicChart.coordinateVector d i k) =
       if k = 2 then (d : ℝ)⁻¹ else 0 := by
   simp only [mean_apply, HyperbolicChart.coordinateVector]
@@ -77,7 +80,7 @@ theorem mean_coordinate (d : ℕ) (i : Fin d) (k : Fin 3) :
     simp [hji]
   · simp
 
-theorem radial_partial (d : ℕ) (g : ℝ → ℂ) (hg : Differentiable ℝ g)
+theorem radial_partial   (g : ℝ → ℂ) (hg : Differentiable ℝ g)
     (i : Fin d) (k : Fin 3) (p : HyperbolicChart.Space d) :
     HyperbolicChart.coordinateDerivative d i k (fun q => g (mean d q)) p =
       if k = 2 then (d : ℂ)⁻¹ * deriv g (mean d p) else 0 := by
@@ -88,13 +91,13 @@ theorem radial_partial (d : ℕ) (g : ℝ → ℂ) (hg : Differentiable ℝ g)
     mean_coordinate]
   split_ifs <;> simp [Algebra.smul_def, mul_comm]
 
-theorem radial_differential (d : ℕ) (g : ℝ → ℂ) (hg : Differentiable ℝ g)
+theorem radial_differential   (g : ℝ → ℂ) (hg : Differentiable ℝ g)
     (p : HyperbolicChart.Space d) (i : Fin d) (k : Fin 3) :
     HyperbolicChart.differential d (fun q => g (mean d q)) p i k =
       if k = 0 then (d : ℂ)⁻¹ * deriv g (mean d p) else 0 := by
   fin_cases k <;> simp [HyperbolicChart.differential, radial_partial d g hg]
 
-theorem radial_laplacian (d : ℕ) (hd : 0 < d) (g : ℝ → ℂ)
+theorem radial_laplacian   (hd : 0 < d) (g : ℝ → ℂ)
     (hg : Differentiable ℝ g) (hg' : Differentiable ℝ (deriv g))
     (p : HyperbolicChart.Space d) :
     HyperbolicChart.laplacian d (fun q => g (mean d q)) p =
@@ -126,7 +129,7 @@ theorem radial_laplacian (d : ℕ) (hd : 0 < d) (g : ℝ → ℂ)
   have hn : (d : ℂ) ≠ 0 := by exact_mod_cast hd.ne'
   field_simp
 
-theorem radial_gradient_sq (d : ℕ) (g : ℝ → ℂ) (hg : Differentiable ℝ g)
+theorem radial_gradient_sq   (g : ℝ → ℂ) (hg : Differentiable ℝ g)
     (p : HyperbolicChart.Space d) :
     (∑ i : Fin d, ∑ k : Fin 3,
       ‖HyperbolicChart.differential d (fun q => g (mean d q)) p i k‖ ^ 2) =
@@ -134,7 +137,7 @@ theorem radial_gradient_sq (d : ℕ) (g : ℝ → ℂ) (hg : Differentiable ℝ 
   simp_rw [radial_differential d g hg]
   simp [Fin.sum_univ_succ]
 
-theorem radial_derivative_bound (d : ℕ) (hd : 0 < d) (g : ℝ → ℂ)
+theorem radial_derivative_bound   (hd : 0 < d) (g : ℝ → ℂ)
     (hg : Differentiable ℝ g) (hg' : Differentiable ℝ (deriv g))
     (B : ℝ) (hB : 0 ≤ B) (h1 : ∀ t, ‖deriv g t‖ ≤ B)
     (h2 : ∀ t, ‖deriv (deriv g) t‖ ≤ B) (p : HyperbolicChart.Space d) :
@@ -166,7 +169,7 @@ theorem radial_derivative_bound (d : ℕ) (hd : 0 < d) (g : ℝ → ℂ)
     linarith [h1 (mean d p)]
   nlinarith
 
-theorem translated_transition_bound (d : ℕ) (hd : 0 < d) : ∃ B : ℝ, 0 ≤ B ∧
+theorem translated_transition_bound   (hd : 0 < d) : ∃ B : ℝ, 0 ≤ B ∧
     ∀ (shift : ℝ) (p : HyperbolicChart.Space d),
       Real.sqrt (∑ i : Fin d, ∑ k : Fin 3,
         ‖HyperbolicChart.differential d
@@ -215,6 +218,8 @@ theorem translated_transition_bound (d : ℕ) (hd : 0 < d) : ∃ B : ℝ, 0 ≤ 
     have h := (hθ (t-shift)).2
     rw [hθ2] at h
     simpa using h
+end
+
 
 end DedekindZetaZeroFree.KPCuspCutoffGraphApproximation.RadialProfile
 
@@ -293,11 +298,14 @@ private theorem end_unique (c d : Cusp a) (x : X (F := F) (ζ := ζ) (hζ := hζ
   subst d
   rfl
 
-private theorem eta_zero_off (n : ℕ) (c : Cusp a) {x : X (F := F) (ζ := ζ) (hζ := hζ) (U := U)}
+section
+variable (n : ℕ) (c : Cusp a)
+include n c
+private theorem eta_zero_off   {x : X (F := F) (ζ := ζ) (hζ := hζ) (U := U)}
     (hx : x ∉ endRegion a a.threshold c) : eta a n c x = 0 := by
   exact Set.indicator_of_notMem hx _
 
-private theorem eta_bounds (n : ℕ) (c : Cusp a) (x : X (F := F) (ζ := ζ) (hζ := hζ) (U := U)) :
+private theorem eta_bounds   (x : X (F := F) (ζ := ζ) (hζ := hζ) (U := U)) :
     0 ≤ eta a n c x ∧ eta a n c x ≤ 1 := by
   by_cases hx : x ∈ endRegion a a.threshold c
   · simp only [eta, Set.indicator_of_mem hx]
@@ -305,15 +313,20 @@ private theorem eta_bounds (n : ℕ) (c : Cusp a) (x : X (F := F) (ζ := ζ) (h�
   · rw [eta_zero_off a n c hx]
     norm_num
 
-private theorem sum_eq_eta (n : ℕ) (c : Cusp a) {x : X (F := F) (ζ := ζ) (hζ := hζ) (U := U)}
+private theorem sum_eq_eta   {x : X (F := F) (ζ := ζ) (hζ := hζ) (U := U)}
     (hx : x ∈ endRegion a a.threshold c) : ∑ d : Cusp a, eta a n d x = eta a n c x := by
   apply Finset.sum_eq_single c
   · intro d _ hdc
     apply eta_zero_off
     exact fun hd => hdc (end_unique a d c x hd hx)
   · simp
+end
 
-theorem rho_bounds (n : ℕ) (x : X (F := F) (ζ := ζ) (hζ := hζ) (U := U)) :
+
+section
+variable (n : ℕ)
+include n
+theorem rho_bounds   (x : X (F := F) (ζ := ζ) (hζ := hζ) (U := U)) :
     0 ≤ rho a n x ∧ rho a n x ≤ 1 := by
   by_cases hx : ∃ c : Cusp a, x ∈ endRegion a a.threshold c
   · obtain ⟨c,hc⟩ := hx
@@ -325,14 +338,14 @@ theorem rho_bounds (n : ℕ) (x : X (F := F) (ζ := ζ) (hζ := hζ) (U := U)) :
       eta_zero_off a n c (fun hc => hx ⟨c,hc⟩)
     simp [rho, he]
 
-private theorem profile_zero (n : ℕ) {t : ℝ} (ht : t ≤ a.threshold + 1) :
+private theorem profile_zero   {t : ℝ} (ht : t ≤ a.threshold + 1) :
     smoothTransition (t - shift a n) = 0 := by
   apply smoothTransition.zero_of_nonpos
   have hs := le_max_right (n : ℝ) (a.threshold + 1)
   dsimp [shift]
   linarith
 
-theorem rho_smooth (n : ℕ) (i : Fin a.componentCount) :
+theorem rho_smooth   (i : Fin a.componentCount) :
     ContDiff ℝ (⊤ : ℕ∞) (fun x : KPFiniteCuspAtlas.SymmetricSpace F => rho a n
       (KPFiniteCuspAtlas.componentMap F ζ hζ U (a.representative i)
         (KPCuspSiegel.projection F _ x))) := by
@@ -344,7 +357,7 @@ theorem rho_smooth (n : ℕ) (i : Fin a.componentCount) :
       (fun t ht => profile_zero a n ht)).1 i
   exact contDiff_const.sub (ContDiff.sum fun c _ => he c)
 
-theorem rho_on_sublevel (n : ℕ) {x : X (F := F) (ζ := ζ) (hζ := hζ) (U := U)}
+theorem rho_on_sublevel   {x : X (F := F) (ζ := ζ) (hζ := hζ) (U := U)}
     (hx : x ∉ ⋃ c : Cusp a, endRegion a (shift a n) c) : rho a n x = 1 := by
   have he (c : Cusp a) : eta a n c x = 0 := by
     by_cases hc : x ∈ endRegion a a.threshold c
@@ -366,7 +379,7 @@ theorem rho_on_sublevel (n : ℕ) {x : X (F := F) (ζ := ζ) (hζ := hζ) (U := 
     · exact eta_zero_off a n c hc
   simp [rho, he]
 
-theorem rho_on_lift (n : ℕ) (c : Cusp a) (z : KPCuspCharts.Coordinates F)
+theorem rho_on_lift   (c : Cusp a) (z : KPCuspCharts.Coordinates F)
     (hz : a.threshold < z.2) : rho a n (lift a c z) = RadialProfile.theta (z.2 - shift a n) := by
   have hc : lift a c z ∈ endRegion a a.threshold c := by
     rw [← range_lift a a.threshold le_rfl c]
@@ -375,7 +388,7 @@ theorem rho_on_lift (n : ℕ) (c : Cusp a) (z : KPCuspCharts.Coordinates F)
   rw [sum_eq_eta a n c hc]
   simp only [eta, Set.indicator_of_mem hc, height_lift a c z hz, RadialProfile.theta]
 
-theorem rho_compact_support (n : ℕ) : HasCompactSupport (rho a n) := by
+theorem rho_compact_support   : HasCompactSupport (rho a n) := by
   letI := CoreChartLocalizers.quotient_hausdorff F ζ hζ hF U a
   let K := (⋃ c : Cusp a, endRegion a (shift a n + 1) c)ᶜ
   have hK : IsCompact K := by
@@ -397,6 +410,8 @@ theorem rho_compact_support (n : ℕ) : HasCompactSupport (rho a n) := by
     rw [rho_on_lift a n c z hz0]
     exact RadialProfile.theta_zero (by change shift a n + 1 < z.2 at hz; linarith)
   exact hx he
+end
+
 
 def heightBound : ℕ := Nat.ceil (a.threshold + 1)
 
@@ -404,24 +419,27 @@ theorem above_threshold : a.threshold < (heightBound a : ℝ) := by
   have hh : a.threshold + 1 ≤ (heightBound a : ℝ) := Nat.le_ceil _
   linarith
 
-private theorem shift_eq (n : ℕ) (hn : heightBound a ≤ n) : shift a n = n := by
+section
+variable (n : ℕ)
+include n
+private theorem shift_eq   (hn : heightBound a ≤ n) : shift a n = n := by
   have hh : a.threshold + 1 ≤ (heightBound a : ℝ) := Nat.le_ceil _
   have hn' : (heightBound a : ℝ) ≤ n := by exact_mod_cast hn
   exact max_eq_left (hh.trans hn')
 
-theorem rho_on_integer_sublevel (n : ℕ) (hn : heightBound a ≤ n)
+theorem rho_on_integer_sublevel   (hn : heightBound a ≤ n)
     {x : X (F := F) (ζ := ζ) (hζ := hζ) (U := U)}
     (hx : x ∉ ⋃ c : Cusp a, endRegion a (n : ℝ) c) : rho a n x = 1 := by
   apply rho_on_sublevel
   simpa only [shift_eq a n hn] using hx
 
-theorem rho_on_core (n : ℕ) {x : X (F := F) (ζ := ζ) (hζ := hζ) (U := U)}
+theorem rho_on_core   {x : X (F := F) (ζ := ζ) (hζ := hζ) (U := U)}
     (hx : x ∉ ⋃ c : Cusp a, endRegion a a.threshold c) : rho a n x = 1 := by
   have he (c : Cusp a) : eta a n c x = 0 :=
     eta_zero_off a n c (fun hc => hx (Set.mem_iUnion.mpr ⟨c,hc⟩))
   simp [rho, he]
 
-theorem rho_above_next (n : ℕ) (hn : heightBound a ≤ n)
+theorem rho_above_next   (hn : heightBound a ≤ n)
     {x : X (F := F) (ζ := ζ) (hζ := hζ) (U := U)}
     (hx : x ∈ ⋃ i : Fin a.componentCount, ⋃ c : Fin (a.cuspAtlas i).cuspCount,
       KPFiniteCuspAtlas.componentMap F ζ hζ U (a.representative i) ''
@@ -452,7 +470,7 @@ theorem rho_above_next (n : ℕ) (hn : heightBound a ≤ n)
   change (n : ℝ) + 1 ≤ KPCuspLogShape.meanHeight _ y at hy
   linarith
 
-theorem eta_local_model (n : ℕ) (c : Cusp a) (i : Fin a.componentCount)
+theorem eta_local_model   (c : Cusp a) (i : Fin a.componentCount)
     (x : KPFiniteCuspAtlas.SymmetricSpace F) :
     let Q := fun y : KPFiniteCuspAtlas.SymmetricSpace F =>
       KPFiniteCuspAtlas.componentMap F ζ hζ U (a.representative i)
@@ -465,6 +483,8 @@ theorem eta_local_model (n : ℕ) (c : Cusp a) (i : Fin a.componentCount)
   exact GenericZeroExtension.scalar_zeroExtension_local_model a a.threshold
     (a.threshold + 1) le_rfl (by linarith) c
     (fun t => smoothTransition (t - shift a n)) (fun t ht => profile_zero a n ht) i x
+end
+
 
 end DedekindZetaZeroFree.KPCuspCutoffGraphApproximation.CutoffScalars
 
@@ -620,13 +640,16 @@ private theorem smooth_differential (d : ℕ) (f : HyperbolicChart.Space d → �
   · exact hE.mul (hD 0)
   · exact hE.mul (hD 1)
 
-theorem laplacian_isometry (d : ℕ) (hd : 1 ≤ d)
+section
+variable (d : ℕ) (hd : 1 ≤ d)
     (ψ : HyperbolicChart.Space d → HyperbolicChart.Space d)
     (hψ : ContDiff ℝ (⊤ : ℕ∞) ψ)
     (hm : ∀ x u v, HyperbolicChart.metric d (ψ x) (fderiv ℝ ψ x u)
       (fderiv ℝ ψ x v) = HyperbolicChart.metric d x u v)
     (f : HyperbolicChart.Space d → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f)
-    (x : HyperbolicChart.Space d) :
+    (x : HyperbolicChart.Space d)
+include d hd ψ hψ hm f hf x
+theorem laplacian_isometry   :
     HyperbolicChart.laplacian d (f ∘ ψ) x = HyperbolicChart.laplacian d f (ψ x) := by
   let V := fun y => CotangentLogCoframe.j d (HyperbolicChart.differential d (f ∘ ψ) y)
   let W := fun y => CotangentLogCoframe.j d (HyperbolicChart.differential d f y)
@@ -651,25 +674,24 @@ theorem laplacian_isometry (d : ℕ) (hd : 1 ≤ d)
     HyperbolicChart.codifferential_differential d hd _ (hf.comp hψ)] at ht
   exact ht.symm
 
-theorem derivative_control_isometry (d : ℕ) (hd : 1 ≤ d)
-    (ψ : HyperbolicChart.Space d → HyperbolicChart.Space d)
-    (hψ : ContDiff ℝ (⊤ : ℕ∞) ψ)
-    (hm : ∀ x u v, HyperbolicChart.metric d (ψ x) (fderiv ℝ ψ x u)
-      (fderiv ℝ ψ x v) = HyperbolicChart.metric d x u v)
-    (f : HyperbolicChart.Space d → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f)
-    (x : HyperbolicChart.Space d) :
+theorem derivative_control_isometry   :
     Real.sqrt (∑ i, ∑ k, ‖HyperbolicChart.differential d (f ∘ ψ) x i k‖ ^ 2) +
       ‖HyperbolicChart.laplacian d (f ∘ ψ) x‖ =
     Real.sqrt (∑ i, ∑ k, ‖HyperbolicChart.differential d f (ψ x) i k‖ ^ 2) +
       ‖HyperbolicChart.laplacian d f (ψ x)‖ := by
   rw [differential_norm_isometry d ψ x (hψ.differentiable (by simp) _)
     (hm x) f (hf.differentiable (by simp) _), laplacian_isometry d hd ψ hψ hm f hf x]
+end
 
-def actionCoordinates (F : Type) [Field F] [NumberField F]
+
+section
+variable (F : Type) [Field F] [NumberField F]
+include F
+def actionCoordinates  
     (γ : KPCuspArithmetic.PGL2 F) (x : HyperbolicChart.Space (KPCuspLogShape.dimension F)) :=
   (CotangentLogCoframe.A _).symm (γ • CotangentLogCoframe.A _ x)
 
-private theorem action_smooth_metric (F : Type) [Field F] [NumberField F]
+private theorem action_smooth_metric  
     (γ : KPCuspArithmetic.PGL2 F) :
     ContDiff ℝ (⊤ : ℕ∞) (actionCoordinates F γ) ∧
       ∀ x u v, HyperbolicChart.metric (KPCuspLogShape.dimension F) (actionCoordinates F γ x)
@@ -719,7 +741,7 @@ private theorem action_smooth_metric (F : Type) [Field F] [NumberField F]
   rw [map_add, hpolar, hpolar, hquad x v, hquad x w] at hp
   linarith
 
-theorem translated_transition_action_bound (F : Type) [Field F] [NumberField F]
+theorem translated_transition_action_bound  
     (hd : 0 < KPCuspLogShape.dimension F) : ∃ B : ℝ, 0 ≤ B ∧
     ∀ (shift : ℝ) (γ : KPCuspArithmetic.PGL2 F)
       (x : HyperbolicChart.Space (KPCuspLogShape.dimension F)),
@@ -740,6 +762,8 @@ theorem translated_transition_action_bound (F : Type) [Field F] [NumberField F]
       ‖HyperbolicChart.laplacian (KPCuspLogShape.dimension F) (f ∘ actionCoordinates F γ) x‖ ≤ B
   rw [derivative_control_isometry _ hd (actionCoordinates F γ) hs.1 hs.2 f hf x]
   exact hbound shift (actionCoordinates F γ x)
+end
+
 end DedekindZetaZeroFree.KPCuspCutoffGraphApproximation.ScalarIsometry
 
 end
@@ -830,8 +854,11 @@ private theorem eta_bound : ∃ B : ℝ, 0 ≤ B ∧ ∀ n c i (p : Coordinates 
     rw [laplacian_congr_nhds _ he]
     exact hbound (CutoffScalars.shift a n) γ p
 
-private theorem coord_sum {C : Type*} [Fintype C] (d : ℕ) (f : C → Space d → ℂ)
-    (hf : ∀ c, ContDiff ℝ (⊤ : ℕ∞) (f c)) (j : Fin d) (k : Fin 3) :
+section
+variable {C : Type*} [Fintype C] (d : ℕ) (f : C → Space d → ℂ)
+    (hf : ∀ c, ContDiff ℝ (⊤ : ℕ∞) (f c))
+include C d f hf
+private theorem coord_sum   (j : Fin d) (k : Fin 3) :
     coordinateDerivative d j k (fun p => ∑ c, f c p) =
       fun p => ∑ c, coordinateDerivative d j k (f c) p := by
   funext p
@@ -839,8 +866,7 @@ private theorem coord_sum {C : Type*} [Fintype C] (d : ℕ) (f : C → Space d �
   rw [fderiv_fun_sum (fun c _ => (hf c).differentiable (by simp) p)]
   simp
 
-private theorem lap_sum {C : Type*} [Fintype C] (d : ℕ) (f : C → Space d → ℂ)
-    (hf : ∀ c, ContDiff ℝ (⊤ : ℕ∞) (f c)) (p : Space d) :
+private theorem lap_sum   (p : Space d) :
     laplacian d (fun q => ∑ c, f c q) p = ∑ c, laplacian d (f c) p := by
   have hdf (j : Fin d) (k : Fin 3) (c : C) :
       ContDiff ℝ (⊤ : ℕ∞) (coordinateDerivative d j k (f c)) :=
@@ -856,13 +882,18 @@ private theorem lap_sum {C : Type*} [Fintype C] (d : ℕ) (f : C → Space d →
   intro j _
   simp only [Finset.sum_sub_distrib, Finset.sum_add_distrib,
     Finset.sum_neg_distrib, Finset.mul_sum, mul_add]
+end
 
-private theorem coord_const_sub (d : ℕ) (f : Space d → ℂ) (j : Fin d) (k : Fin 3) :
+
+section
+variable (d : ℕ) (f : Space d → ℂ)
+include d f
+private theorem coord_const_sub   (j : Fin d) (k : Fin 3) :
     coordinateDerivative d j k (fun q => 1 - f q) = -coordinateDerivative d j k f := by
   funext p
   simp [coordinateDerivative, fderiv_const_sub]
 
-private theorem lap_const_sub (d : ℕ) (f : Space d → ℂ) (p : Space d) :
+private theorem lap_const_sub   (p : Space d) :
     laplacian d (fun q => 1 - f q) p = -laplacian d f p := by
   have hn (j : Fin d) (k : Fin 3) :
       coordinateDerivative d j k (-coordinateDerivative d j k f) =
@@ -878,13 +909,15 @@ private theorem lap_const_sub (d : ℕ) (f : Space d → ℂ) (p : Space d) :
   simp only [Pi.neg_apply]
   ring
 
- def diffVec (d : ℕ) (f : Space d → ℂ) (p : Space d) :
+ def diffVec   (p : Space d) :
     EuclideanSpace ℂ (Fin d × Fin 3) := WithLp.toLp 2 (fun jk => differential d f p jk.1 jk.2)
 
-private theorem diffVec_norm (d : ℕ) (f : Space d → ℂ) (p : Space d) :
+private theorem diffVec_norm   (p : Space d) :
     ‖diffVec d f p‖ = sqrt (∑ j, ∑ k, ‖differential d f p j k‖ ^ 2) := by
   rw [EuclideanSpace.norm_eq, Fintype.sum_prod_type]
   rfl
+end
+
 
 private theorem diffVec_const_sub_sum {C : Type*} [Fintype C] (d : ℕ) (f : C → Space d → ℂ)
     (hf : ∀ c, ContDiff ℝ (⊤ : ℕ∞) (f c)) (p : Space d) :

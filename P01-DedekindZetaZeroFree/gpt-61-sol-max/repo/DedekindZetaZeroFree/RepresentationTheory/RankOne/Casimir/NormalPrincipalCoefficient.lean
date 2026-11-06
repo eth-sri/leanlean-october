@@ -261,7 +261,7 @@ namespace DedekindZetaZeroFree.KPMsGreenFlux
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
 variable {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
 variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+
 
 namespace NormalCoefficientCalculus
 
@@ -294,7 +294,7 @@ theorem flow_apply (w v : NumberField.InfinitePlace F) (j : Fin 6) (t : ℝ) :
       apply Units.ext; simp
     rw [hunit, map_one]
 
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+variable (ζ : F) 
 
 end GlobalHeight
 

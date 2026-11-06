@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.LocalField.NonarchimedeanLocalField.StandardOpenSubgroups
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.NormTopology
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.FiniteAbelianSubextension
@@ -8,6 +10,7 @@ public import ClassFieldTheory.LocalClassFieldTheory.Finite.LocalReciprocity.Int
 public import ClassFieldTheory.LocalClassFieldTheory.Finite.LocalReciprocity.SeparableUnitsNorm
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -85,24 +88,26 @@ theorem unramifiedNormSubgroup_inf_uniformizerPrincipalSubgroup_le
     rw [← hky', Subgroup.mem_zpowers_iff]
     refine ⟨t, ?_⟩
     calc
-      (ϖ ^ d) ^ t = (ϖ ^ (d : ℤ)) ^ t := by
-        rw [zpow_natCast]
+      (ϖ ^ d) ^ t = (ϖ ^ (d : ℤ)) ^ t := rfl
       _ = ϖ ^ ((d : ℤ) * t) := by
         rw [zpow_mul]
       _ = ϖ ^ k := by rw [← ht]
   exact Subgroup.mem_sup.mpr
     ⟨y, hyTarget, z, ⟨u, hu, huz⟩, hyz⟩
 
-/-- If an unramified norm condition and a principal-unit norm condition are
-realized by finite Galois subextensions, their compositum has norm subgroup
-contained in every subgroup containing the corresponding standard subgroup. -/
-theorem finiteGaloisCompositum_normSubgroup_le_of_standard
-    (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
+section
+variable (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K]
     (H : Subgroup Kˣ)
     (ϖ : Kˣ) (d n : ℕ)
     (hϖ : valuationMap K (Additive.ofMul ϖ) = 1)
     (hstandard : LocalFieldTheory.uniformizerPrincipalSubgroup K ϖ d n ≤ H)
+include K H ϖ d n hϖ hstandard
+/-- If an unramified norm condition and a principal-unit norm condition are
+realized by finite Galois subextensions, their compositum has norm subgroup
+contained in every subgroup containing the corresponding standard subgroup. -/
+theorem finiteGaloisCompositum_normSubgroup_le_of_standard
+     
     (U T : ClassFormation.FiniteGaloisSubextension (intrinsicAbstractBase K))
     (hUle :
       (U.normSubgroup (intrinsicAbsoluteUnits K)).map
@@ -132,8 +137,7 @@ theorem finiteGaloisCompositum_normSubgroup_le_of_standard
       unramifiedNormSubgroup K d := hxUnramAdd
   have hxPrincipal : Additive.toMul (e.symm x) ∈
       LocalFieldTheory.uniformizerPrincipalSubgroup K ϖ 1 n := hxPrincipalAdd
-  have hxStandard : Additive.toMul (e.symm x) ∈
-      LocalFieldTheory.uniformizerPrincipalSubgroup K ϖ d n :=
+  have hxStandard  :=
     unramifiedNormSubgroup_inf_uniformizerPrincipalSubgroup_le
       K ϖ d n hϖ ⟨hxUnram, hxPrincipal⟩
   have hxH : e.symm x ∈ H.toAddSubgroup := by
@@ -144,12 +148,7 @@ theorem finiteGaloisCompositum_normSubgroup_le_of_standard
 /-- The same standard-subgroup containment while retaining both inputs and
 their compositum as finite abelian subextensions. -/
 theorem finiteAbelianCompositum_normSubgroup_le_of_standard
-    (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    (H : Subgroup Kˣ)
-    (ϖ : Kˣ) (d n : ℕ)
-    (hϖ : valuationMap K (Additive.ofMul ϖ) = 1)
-    (hstandard : LocalFieldTheory.uniformizerPrincipalSubgroup K ϖ d n ≤ H)
+     
     (U T : ClassFormation.FiniteAbelianSubextension
       (intrinsicAbstractBase K))
     (hUle :
@@ -184,6 +183,8 @@ theorem finiteAbelianCompositum_normSubgroup_le_of_standard
     change Additive.toMul (e.symm x) ∈ H
     exact hstandard hxStandard
   exact ⟨e.symm x, hxH, e.apply_symm_apply x⟩
+end
+
 
 end LocalClassFieldTheory
 

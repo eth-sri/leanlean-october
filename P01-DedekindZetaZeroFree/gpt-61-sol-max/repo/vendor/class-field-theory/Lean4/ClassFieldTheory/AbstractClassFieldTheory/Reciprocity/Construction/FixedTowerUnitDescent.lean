@@ -45,6 +45,9 @@ variable {D : DegreeData G} {A : Rep ℤ G}
 /-- The stabilizing action on the upper unit group, expressed directly on a
 fixed-field tower.  This is the bundle-native boundary used by the descent
 construction. -/
+
+local notation:max "current_field" => DegreeData.FrobeniusFixedFieldTower.field (G := G) (D := D)
+
 noncomputable def fixedTowerUnitAction
     (v : ValuationData D A)
     [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
@@ -55,9 +58,9 @@ noncomputable def fixedTowerUnitAction
         T.ambient.below)
     (hq : q * T.fieldFrobenius.1 = T.fieldFrobenius.1 * q) :
     v.unitAddSubgroup
-        (DegreeData.FrobeniusFixedFieldTower.field (G := G) (D := D) T) →+
+        (current_field T) →+
       v.unitAddSubgroup
-        (DegreeData.FrobeniusFixedFieldTower.field (G := G) (D := D) T) := by
+        (current_field T) := by
   let TF :=
     D.frobeniusFixedAbstractField T.ambientBase T.ambient.field
       T.ambient.below T.fieldFrobenius
@@ -83,15 +86,15 @@ noncomputable def powerTowerCorrection
     (hτ : ∀ i, (τ i).1 * P.fieldFrobenius.1 =
       P.fieldFrobenius.1 * (τ i).1)
     (uBar : v.unitAddSubgroup
-      (DegreeData.FrobeniusFixedFieldTower.field (G := G) (D := D)
+      (current_field
         (DegreeData.FrobeniusPowerFixedFieldTower.toFrobeniusFixedFieldTower
           (G := G) (D := D) P)))
     (uBarᵢ : ι → v.unitAddSubgroup
-      (DegreeData.FrobeniusFixedFieldTower.field (G := G) (D := D)
+      (current_field
         (DegreeData.FrobeniusPowerFixedFieldTower.toFrobeniusFixedFieldTower
           (G := G) (D := D) P))) :
     v.unitAddSubgroup
-      (DegreeData.FrobeniusFixedFieldTower.field (G := G) (D := D)
+      (current_field
         (DegreeData.FrobeniusPowerFixedFieldTower.toFrobeniusFixedFieldTower
           (G := G) (D := D) P)) :=
   let T := DegreeData.FrobeniusPowerFixedFieldTower.toFrobeniusFixedFieldTower
@@ -110,12 +113,12 @@ theorem unitRepresentation_generator_action_eq
     (T : DegreeData.FrobeniusFixedFieldTower D)
     (g : T.Representative)
     (y : v.unitAddSubgroup
-      (DegreeData.FrobeniusFixedFieldTower.field (G := G) (D := D) T)) :
+      (current_field T)) :
     v.fixedTowerUnitAction T T.baseFrobenius.1 T.commute y =
       ((v.unitRepresentation T.extension T.normal).ρ
           (QuotientGroup.mk g.element) y :
         v.unitAddSubgroup
-          (DegreeData.FrobeniusFixedFieldTower.field (G := G) (D := D) T)) := by
+          (current_field T)) := by
   let gK : T.ambientBase.field.toSubgroup :=
     ⟨g.element.1, (D.frobeniusFixedField_le T.ambientBase T.ambient.field
       T.ambient.below T.baseFrobenius) g.element.2⟩
@@ -172,11 +175,11 @@ theorem universalNormDescent_fixedTower_solution
       DegreeData.FrobeniusPowerFixedFieldTower.toFrobeniusFixedFieldTower
         (G := G) (D := D) P
     ∃ (uBar : v.unitAddSubgroup
-          (DegreeData.FrobeniusFixedFieldTower.field (G := G) (D := D) T))
+          (current_field T))
         (uBarᵢ : ι → v.unitAddSubgroup
-          (DegreeData.FrobeniusFixedFieldTower.field (G := G) (D := D) T))
+          (current_field T))
         (yBar : v.unitAddSubgroup
-          (DegreeData.FrobeniusFixedFieldTower.field (G := G) (D := D) T)),
+          (current_field T)),
       relativeNorm A T.extension.base.field T.extension.field.field
           T.extension.below uBar.1 = u.1 ∧
       (∀ i, relativeNorm A T.extension.base.field T.extension.field.field
@@ -343,7 +346,7 @@ theorem maximalNorm_relativeNorm_fixedTower
     (n : ℕ)
     (hcard : (FT.extension.degree : ℕ) = n)
     (a : v.unitAddSubgroup
-      (DegreeData.FrobeniusFixedFieldTower.field (G := G) (D := D)
+      (current_field
         FT.toFrobeniusFixedFieldTower)) :
     letI : Finite
         ((D.maximalUnramifiedField FT.ambientBase.field).toSubgroup ⧸

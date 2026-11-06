@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.LocalFields.TruncatedCubicUnitIndices
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.KPCubicHaarTransport
 open KPCubicUnitIndices ValuativeRel
@@ -17,7 +20,7 @@ def exponent : Kˣ →* Multiplicative ℤ where
   map_mul' x y := by
     apply Multiplicative.toAdd.injective
     simp only [Units.val_mul, map_mul]
-    exact WithZero.log_mul (by simp) (by simp)
+    apply WithZero.log_mul <;> aesop
 
 private lemma exponent_eq_one_iff (x : Kˣ) :
     exponent K x = 1 ↔ valuation K (x : K) = 1 := by
@@ -46,7 +49,7 @@ private lemma exists_exponent_one : ∃ π : Kˣ, exponent K π = Multiplicative
   change Multiplicative.ofAdd (WithZero.log (e (valuation K x))) = _
   rw [hx, e.apply_symm_apply, WithZero.log_exp]
 
-def unitMap : (Integers K)ˣ →* Kˣ :=
+def unitMap  :=
   Units.map (valuation K).integer.subtype.toMonoidHom
 
 private lemma exponent_unitMap (u : (Integers K)ˣ) :
@@ -146,8 +149,7 @@ theorem field_cube_index
       exact ⟨f p, (map_pow f p 3).symm⟩
   have hp : powMonoidHom (α := Multiplicative ℤ × (Integers K)ˣ) 3 =
       (powMonoidHom (α := Multiplicative ℤ) 3).prodMap
-        (powMonoidHom (α := (Integers K)ˣ) 3) := by
-    ext p <;> rfl
+        (powMonoidHom (α := (Integers K)ˣ) 3) := rfl
   rw [hr, Subgroup.index_map_of_bijective hf, hp, MonoidHom.range_prodMap,
     Subgroup.index_prod, exponent_cube_index]
   rfl

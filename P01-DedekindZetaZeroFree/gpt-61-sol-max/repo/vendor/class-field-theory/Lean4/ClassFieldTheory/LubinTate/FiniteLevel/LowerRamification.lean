@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.LubinTate.FiniteLevel.LevelValuation
 public import ValuedFieldTheory.Ramification.HilbertRamification.RamificationNumber
 public import ValuedFieldTheory.Ramification.HilbertRamification.RealLowerGroups
 public import ValuedFieldTheory.Valuation.DiscreteValuationField.AddVal
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -68,12 +71,15 @@ noncomputable local instance
     IsGalois K (standardLubinTateLevelField hπ n) :=
   standardLubinTateLevelField_isGalois hπ n
 
+section
+variable {F : LocalField.{u, v} K} {π : F.valuationSubring}
+    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
+include F π hπ
 /-- At a natural lower index, an automorphism belongs to the lower
 ramification group exactly when its displacement of the primitive
 Lubin--Tate uniformizer has additive valuation at least `i + 1`. -/
 theorem mem_standardLubinTateRealLowerRamificationGroup_nat_iff_primitivePoint
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
+     
     (n i : ℕ)
     (σ : Gal((standardLubinTateLevelField hπ n) / K)) :
     σ ∈ standardLubinTateRealLowerRamificationGroup hπ n (i : ℝ) ↔
@@ -126,16 +132,12 @@ theorem mem_standardLubinTateRealLowerRamificationGroup_nat_iff_primitivePoint
           (i + 1)).mpr hdisplacement
     · exact
         (standardLubinTatePrimitivePointInteger_adjoin_eq_top hπ n).symm.le
-          (show z ∈
-              (⊤ : Subalgebra F.valuationSubring
-                (standardLubinTateLevelCompleteDVF hπ n).valuationSubring) from
-            by simp)
+          ((by simp))
 
 /-- At a nonnegative real lower index, the standard lower group is already
 the group at the natural-number ceiling of that index. -/
 theorem standardLubinTateRealLowerRamificationGroup_eq_natCeil
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
+     
     (n : ℕ) (s : ℝ) (hs : 0 ≤ s) :
     standardLubinTateRealLowerRamificationGroup hπ n s =
       standardLubinTateRealLowerRamificationGroup
@@ -165,6 +167,8 @@ theorem standardLubinTateRealLowerRamificationGroup_eq_natCeil
           (standardLubinTateLevelCompleteDVF hπ n).toDVF
           (⌈s⌉₊ : ℝ)
   rw [hideal]
+end
+
 
 end LubinTate
 

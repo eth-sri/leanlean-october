@@ -52,23 +52,26 @@ open NumberField
 
 namespace DedekindZetaZeroFree.KPContFlatLogNormSmooth
 
-def complexMatrixLogNorm (A : Matrix (Fin 2) (Fin 2) ℂ) : ℝ :=
+section
+variable (A : Matrix (Fin 2) (Fin 2) ℂ)
+include A
+def complexMatrixLogNorm   : ℝ :=
   Real.log ((‖A.det‖ / (‖A 1 0‖ ^ 2 + ‖A 1 1‖ ^ 2)) ^ 2)
 
-private def ratio (A : Matrix (Fin 2) (Fin 2) ℂ) : ℝ :=
+private def ratio   : ℝ :=
   ‖A.det‖ / (‖A 1 0‖ ^ 2 + ‖A 1 1‖ ^ 2)
 
-private lemma complexMatrixLogNorm_eq_ratio (A : Matrix (Fin 2) (Fin 2) ℂ) :
+private lemma complexMatrixLogNorm_eq_ratio   :
     complexMatrixLogNorm A = Real.log ((ratio A) ^ 2) := rfl
 
-private lemma bottomRow_ne_zero_of_det_ne_zero (A : Matrix (Fin 2) (Fin 2) ℂ) (h : A.det ≠ 0) :
+private lemma bottomRow_ne_zero_of_det_ne_zero   (h : A.det ≠ 0) :
     A 1 0 ≠ 0 ∨ A 1 1 ≠ 0 := by
   by_contra hc
   push Not at hc
   obtain ⟨h0, h1⟩ := hc
   exact h (by rw [Matrix.det_fin_two]; simp [h0, h1])
 
-private lemma ratio_denom_pos (A : Matrix (Fin 2) (Fin 2) ℂ) (h : A.det ≠ 0) :
+private lemma ratio_denom_pos   (h : A.det ≠ 0) :
     0 < ‖A 1 0‖ ^ 2 + ‖A 1 1‖ ^ 2 := by
   rcases bottomRow_ne_zero_of_det_ne_zero A h with h0 | h1
   · have : 0 < ‖A 1 0‖ := norm_pos_iff.mpr h0
@@ -76,8 +79,10 @@ private lemma ratio_denom_pos (A : Matrix (Fin 2) (Fin 2) ℂ) (h : A.det ≠ 0)
   · have : 0 < ‖A 1 1‖ := norm_pos_iff.mpr h1
     nlinarith [sq_nonneg ‖A 1 1‖, sq_nonneg ‖A 1 0‖]
 
-private lemma ratio_pos (A : Matrix (Fin 2) (Fin 2) ℂ) (h : A.det ≠ 0) : 0 < ratio A :=
+private lemma ratio_pos   (h : A.det ≠ 0) : 0 < ratio A :=
   div_pos (norm_pos_iff.mpr h) (ratio_denom_pos A h)
+end
+
 
 theorem complexMatrixLogNorm_argument_pos
     (A : Matrix.GeneralLinearGroup (Fin 2) ℂ) :
@@ -86,7 +91,10 @@ theorem complexMatrixLogNorm_argument_pos
   have h : (A : Matrix (Fin 2) (Fin 2) ℂ).det ≠ 0 := Matrix.GeneralLinearGroup.det_ne_zero A
   exact pow_pos (ratio_pos _ h) 2
 
-private lemma ratio_scalar_mul (c : ℂ) (hc : c ≠ 0) (A : Matrix (Fin 2) (Fin 2) ℂ) :
+section
+variable (c : ℂ) (hc : c ≠ 0) (A : Matrix (Fin 2) (Fin 2) ℂ)
+include c hc A
+private lemma ratio_scalar_mul   :
     ratio (Matrix.scalar (Fin 2) c * A) = ratio A := by
   have hc2 : ‖c‖ ^ 2 ≠ 0 := pow_ne_zero 2 (norm_ne_zero_iff.mpr hc)
   have hent : ∀ i j, (Matrix.scalar (Fin 2) c * A) i j = c * A i j := by
@@ -105,7 +113,7 @@ private lemma ratio_scalar_mul (c : ℂ) (hc : c ≠ 0) (A : Matrix (Fin 2) (Fin
   rw [hnum, hden]
   exact mul_div_mul_left _ _ hc2
 
-private lemma ratio_mul_scalar (c : ℂ) (hc : c ≠ 0) (A : Matrix (Fin 2) (Fin 2) ℂ) :
+private lemma ratio_mul_scalar   :
     ratio (A * Matrix.scalar (Fin 2) c) = ratio A := by
   have hc2 : ‖c‖ ^ 2 ≠ 0 := pow_ne_zero 2 (norm_ne_zero_iff.mpr hc)
   have hent : ∀ i j, (A * Matrix.scalar (Fin 2) c) i j = A i j * c := by
@@ -124,6 +132,8 @@ private lemma ratio_mul_scalar (c : ℂ) (hc : c ≠ 0) (A : Matrix (Fin 2) (Fin
   rw [hnum, hden, mul_comm (‖A.det‖) (‖c‖ ^ 2),
     mul_comm (‖A 1 0‖ ^ 2 + ‖A 1 1‖ ^ 2) (‖c‖ ^ 2)]
   exact mul_div_mul_left _ _ hc2
+end
+
 
 theorem complexMatrixLogNorm_scalar
     (A : Matrix.GeneralLinearGroup (Fin 2) ℂ) (c : ℂˣ) :
@@ -335,7 +345,10 @@ def finiteLogNorm (g : KPGlobalTorusFunctionData.G F ζ hζ) : ℝ :=
   intro k hk
   obtain ⟨w, hw, rfl⟩ := List.mem_map.mp hk
   exact KPContFlatFullProductIwasawa.complexCompactLift_mem F ζ hζ w (u w)
-private lemma finite_component_raw (g : KPGlobalTorusFunctionData.G F ζ hζ) :
+section
+variable (g : KPGlobalTorusFunctionData.G F ζ hζ)
+include g
+private lemma finite_component_raw   :
   finiteComponent F ζ hζ g ∈ PGLComplex.AdelicSlicesRaw.finiteSubgroup F ζ hζ := by
   apply RepresentationTheory.ArchFiniteSplitting.arch_kernel_le_finite F ζ hζ
   change PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ (finiteComponent F ζ hζ g) = 1
@@ -344,7 +357,7 @@ private lemma finite_component_raw (g : KPGlobalTorusFunctionData.G F ζ hζ) :
   simp
 
 theorem alpha_eq_arch_sum_add_finite
-    (g : KPGlobalTorusFunctionData.G F ζ hζ) :
+      :
     KPContFlatFullProductIwasawa.alpha F ζ hζ g =
       (∑ w : InfinitePlace F, complexProjectiveLogNorm
         (PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ g w)) +
@@ -372,7 +385,7 @@ theorem alpha_eq_arch_sum_add_finite
   rw [hy w]
 
 theorem finiteComponent_groupArchChart_mul
-    (g : KPGlobalTorusFunctionData.G F ζ hζ)
+     
     (z : KPGlobalTorusBorelTwistCompatibility.GroupArch F)
     (hz : z ∈ KPGlobalTorusBorelTwistCompatibility.groupArchDomain F) :
     finiteComponent F ζ hζ
@@ -398,7 +411,7 @@ theorem finiteComponent_groupArchChart_mul
   group
 
 theorem alpha_groupArchChart_mul_matrix_formula
-    (g : KPGlobalTorusFunctionData.G F ζ hζ)
+     
     (S : Set (KPGlobalTorusBorelTwistCompatibility.GroupArch F))
     (hS : S ⊆ KPGlobalTorusBorelTwistCompatibility.groupArchDomain F)
     (A : InfinitePlace F → KPGlobalTorusBorelTwistCompatibility.GroupArch F →
@@ -432,6 +445,8 @@ theorem alpha_groupArchChart_mul_matrix_formula
     unfold finiteLogNorm
     rw [finiteComponent_groupArchChart_mul F ζ hζ g z (hS hz)]
   rw [h1, h2]
+end
+
 
 theorem alpha_continuous :
     Continuous (KPContFlatFullProductIwasawa.alpha F ζ hζ) := by

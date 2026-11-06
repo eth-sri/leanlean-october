@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Ideals.DivisorFinsets
 public import DedekindZetaZeroFree.Arithmetic.Ideals.SquarefreeDivisorsAndPrimeSubsets
 
 @[expose] public section
+
 
 noncomputable section
 open scoped NumberField Classical BigOperators
@@ -12,7 +15,10 @@ namespace DedekindZetaZeroFree.LargeSieve.PoissonCoprimeExact
 
 open UniqueFactorizationMonoid
 
-private lemma sum_mu {F : Type*} [Field F] [NumberField F]
+section
+variable {F : Type*} [Field F] [NumberField F]
+include F
+private lemma sum_mu  
     (a : Ideal (𝓞 F)) (ha : a ≠ ⊥) :
     (∑ d ∈ idealDivisors a, (moebius d : ℂ)) = if a = ⊤ then 1 else 0 := by
   let r := UniqueFactorizationMonoid.radical a
@@ -53,7 +59,7 @@ private lemma sum_mu {F : Type*} [Field F] [NumberField F]
     constructor
     · intro h
       have hr1 : r = 1 := hprod.symm.trans
-        ((congrArg (fun S : Finset (Ideal (𝓞 F)) => ∏ p ∈ S, p) h).trans (by simp))
+        ((congrArg (fun S : Finset (Ideal (𝓞 F)) => ∏ p ∈ S, p) h).trans (rfl))
       exact Ideal.isUnit_iff.mp ((radical_eq_one_iff.mp hr1).resolve_left ha)
     · intro h
       subst a
@@ -62,13 +68,13 @@ private lemma sum_mu {F : Type*} [Field F] [NumberField F]
       simp only [factors_one, Multiset.toFinset_zero]
   by_cases h : a = ⊤
   · rw [hP.mpr h, Finset.prod_empty, if_pos h]
-  · have hne : (factors r).toFinset.Nonempty := Finset.nonempty_iff_ne_empty.mpr
+  · have hne  := Finset.nonempty_iff_ne_empty.mpr
       (fun he => h (hP.mp he))
     rw [if_neg h]
     simp only [add_neg_cancel]
     obtain ⟨p, hp⟩ := hne
     exact Finset.prod_eq_zero hp rfl
-private lemma indicator {F : Type*} [Field F] [NumberField F]
+private lemma indicator  
     (m I : Ideal (𝓞 F)) (hm : m ≠ ⊥) (hI : I ≠ ⊥) :
     (∑ d ∈ idealDivisors m, if d ∣ I then (moebius d : ℂ) else 0) =
       if I ⊔ m = ⊤ then 1 else 0 := by
@@ -81,7 +87,7 @@ private lemma indicator {F : Type*} [Field F] [NumberField F]
   rw [← Finset.sum_filter, heq, sum_mu _ hsup]
 
 theorem coprimeFinsum_eq_moebiusMultiples
-    {F : Type*} [Field F] [NumberField F]
+     
     (g : Ideal (𝓞 F) → ℂ)
     (hg : Function.HasFiniteSupport (fun I => if I = ⊥ then 0 else g I))
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) :
@@ -118,6 +124,8 @@ theorem coprimeFinsum_eq_moebiusMultiples
       by_cases hdI : d ∣ I <;> simp [hI, hdI]
     rw [he, hid]
     by_cases hc : I ⊔ m = ⊤ <;> simp [hI, hc]
+end
+
 
 end DedekindZetaZeroFree.LargeSieve.PoissonCoprimeExact
 

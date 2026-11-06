@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Fourier.Torus.PeriodisationCoefficients
 
 @[expose] public section
+
 
 set_option maxHeartbeats 800000
 
@@ -27,9 +30,7 @@ theorem poisson_summation_lattice_shift
   let b : Basis ι ℤ L := Module.finBasis ℤ L
   let e : (ι → ℤ) ≃ dualLattice L := (dualVector_b L b : (ι → ℤ) ≃+ dualLattice L)
   set x : ι → UnitAddCircle := fun i => (((b.ofZLatticeBasis ℝ L).repr a) i : UnitAddCircle) with hx
-  have hconjgen : ∀ z : ℝ, (starRingEnd ℂ) (((𝐞 z : Circle)) : ℂ) = (((𝐞 (-z) : Circle)) : ℂ) := by
-    intro z
-    rw [AddChar.map_neg_eq_inv, Circle.coe_inv_eq_conj]
+  
   have hchar : ∀ n : ι → ℤ, UnitAddTorus.mFourier n x =
       ((𝐞 (inner ℝ a (((dualVector_b L b n : dualLattice L) : V))) : Circle) : ℂ) := by
     intro n
@@ -54,9 +55,7 @@ theorem poisson_summation_lattice_shift
   have hnorm : Summable (fun w : dualLattice L => ‖(𝓕 (f : V → ℂ)) (w : V)‖) := by
     have h := summable_norm_fourier_schwartz_translate L f 0
     simpa using h
-  have hcov : Summable (fun w : dualLattice L =>
-      (ZLattice.covolume L volume : ℂ)⁻¹ * (𝓕 (f : V → ℂ)) (w : V)) :=
-    (Summable.of_norm hnorm).mul_left _
+  
   have hreindex_norm : Summable (fun n : ι → ℤ =>
       ‖(𝓕 (f : V → ℂ)) (((dualVector_b L b n : dualLattice L) : V))‖) := by
     refine (Function.Injective.summable_iff (dualVector_b L b).injective ?_).mpr hnorm

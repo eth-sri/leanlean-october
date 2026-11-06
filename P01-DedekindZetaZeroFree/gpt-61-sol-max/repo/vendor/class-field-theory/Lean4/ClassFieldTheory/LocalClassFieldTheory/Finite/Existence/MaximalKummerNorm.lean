@@ -39,16 +39,22 @@ variable (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
   [IsNonarchimedeanLocalField K]
 variable {Omega : Type} [Field Omega] [Algebra K Omega] [IsSepClosure K Omega]
 
+section
+variable (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
+    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
+include n hnK hmu
 /-- The Galois group of the maximal exponent-`n` Kummer extension is
 canonically equivalent to the local power-class group. -/
+
+local notation:max "current_kummerRadicalExtension" => kummerRadicalExtension (K := K) (Omega := Omega)
+
 noncomputable def chosenMaximalKummerGaloisEquivPowerQuotient
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
-    Gal(kummerRadicalExtension (K := K) (Omega := Omega) n
+      :
+    Gal(current_kummerRadicalExtension n
         (KummerTheory.maximalKummerSubgroup K n).1/K) ≃*
       Kˣ ⧸ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range := by
   let Delta := KummerTheory.maximalKummerSubgroup K n
-  let E := kummerRadicalExtension (K := K) (Omega := Omega) n Delta.1
+  let E := current_kummerRadicalExtension n Delta.1
   let R := RestrictedRadicalQuotient n Delta
   let M := nthRootsSubgroup E (n : ℕ)
   letI : Finite R :=
@@ -66,13 +72,12 @@ noncomputable def chosenMaximalKummerGaloisEquivPowerQuotient
 /-- Local reciprocity and Kummer duality identify the norm quotient of the
 maximal Kummer extension with the local power-class group. -/
 noncomputable def maximalKummerNormQuotientEquivPowerQuotient
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
-    let E := kummerRadicalExtension (K := K) (Omega := Omega) n
+      :
+    let E := current_kummerRadicalExtension n
       (KummerTheory.maximalKummerSubgroup K n).1
     NormQuotient K E ≃* Kˣ ⧸ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range := by
   let Delta := KummerTheory.maximalKummerSubgroup K n
-  let E := kummerRadicalExtension (K := K) (Omega := Omega) n Delta.1
+  let E := current_kummerRadicalExtension n Delta.1
   letI : IsGalois K E :=
     kummerRadicalExtension_isGalois (K := K) (Omega := Omega) n Delta.1
   letI : FiniteDimensional K E :=
@@ -92,13 +97,12 @@ noncomputable def maximalKummerNormQuotientEquivPowerQuotient
 /-- Every `n`-th power is a norm from the maximal exponent-`n` Kummer
 extension. -/
 theorem powMonoidHom_range_le_maximalKummerNormSubgroup
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
-    let E := kummerRadicalExtension (K := K) (Omega := Omega) n
+      :
+    let E := current_kummerRadicalExtension n
       (KummerTheory.maximalKummerSubgroup K n).1
     (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range ≤ localNormSubgroup K E := by
   let Delta := KummerTheory.maximalKummerSubgroup K n
-  let E := kummerRadicalExtension (K := K) (Omega := Omega) n Delta.1
+  let E := current_kummerRadicalExtension n Delta.1
   let : IsGalois K E :=
     kummerRadicalExtension_isGalois (K := K) (Omega := Omega) n Delta.1
   let : FiniteDimensional K E :=
@@ -128,13 +132,12 @@ theorem powMonoidHom_range_le_maximalKummerNormSubgroup
 /-- If the base field contains the `n`-th roots of unity, the norm subgroup
 of the maximal exponent-`n` Kummer extension is exactly `Kˣⁿ`. -/
 theorem maximalKummerNormSubgroup_eq_powMonoidHom_range
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
-    let E := kummerRadicalExtension (K := K) (Omega := Omega) n
+      :
+    let E := current_kummerRadicalExtension n
       (KummerTheory.maximalKummerSubgroup K n).1
     localNormSubgroup K E = (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range := by
   let Delta := KummerTheory.maximalKummerSubgroup K n
-  let E := kummerRadicalExtension (K := K) (Omega := Omega) n Delta.1
+  let E := current_kummerRadicalExtension n Delta.1
   let P := (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range
   let N := localNormSubgroup K E
   let : IsGalois K E :=
@@ -170,6 +173,8 @@ theorem maximalKummerNormSubgroup_eq_powMonoidHom_range
     rw [hindex] at hindexLt
     exact (Nat.lt_irrefl _ hindexLt)
   · exact hle
+end
+
 
 end LocalClassFieldTheory
 

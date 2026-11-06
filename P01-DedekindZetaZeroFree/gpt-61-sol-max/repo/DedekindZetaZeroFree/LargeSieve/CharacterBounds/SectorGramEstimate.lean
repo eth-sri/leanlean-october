@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LargeSieve.CharacterBounds.SmoothThetaAndGramKernels
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.QuadraticFormsAndSieveExponents
 public import DedekindZetaZeroFree.Analysis.FiniteWeightedGramBounds
 public import DedekindZetaZeroFree.Arithmetic.Ideals.LinearCountingBound
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve.Sieve
 
@@ -81,7 +84,7 @@ theorem initial_conditional_sector
         = initialGram F Q M b d := by
     intro b d
     rw [hR, hw]
-    exact gram_sum_eq F Q M b d
+    apply gram_sum_eq
   have hdiag : ∀ b ∈ S,
       ‖∑ a ∈ R, (w a : ℂ) * (Q.χ b) a * (starRingEnd ℂ) ((Q.χ b) a)‖ ≤ D * M := by
     intro b hb
@@ -103,7 +106,7 @@ theorem initial_conditional_sector
     intro I hI
     rw [hS, Finset.mem_filter] at hI
     exact ((mem_paperShell F c N I).mp hI.1).2.2.2
-  have hScard : (S.card : ℝ) ≤ CF * (2 * N) :=
+  have hScard  :=
     hCF (2 * N) (by linarith) S hSsub
   have hT : 0 ≤ ∑ b ∈ S, ‖lam b‖ ^ 2 :=
     Finset.sum_nonneg (fun b _ => sq_nonneg _)

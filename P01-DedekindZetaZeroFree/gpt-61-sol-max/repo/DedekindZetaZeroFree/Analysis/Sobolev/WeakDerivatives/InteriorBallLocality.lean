@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.Sobolev.WeightedCovariant.CoordinateData
 public import DedekindZetaZeroFree.Analysis.EllipticRegularity.LocalH1EnergyEstimates
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -18,7 +21,7 @@ private theorem interior_ball {n : ℕ} (hn : 0 < n) (Ω : TopologicalSpace.Open
     ∃ B : LocalBall n, x ∈ B.carrier ∧ closure B.carrier ⊆ (Ω : Set (Space n)) := by
   obtain ⟨r, hr, hsub⟩ := Metric.isOpen_iff.mp Ω.isOpen x hx
   refine ⟨⟨hn, x, r / 2, half_pos hr⟩, ?_, ?_⟩
-  · exact Metric.mem_ball_self (half_pos hr)
+  · apply Metric.mem_ball_self <;> aesop
   · rw [LocalBall.carrier, closure_ball _ (ne_of_gt (half_pos hr))]
     exact (Metric.closedBall_subset_ball (by linarith)).trans hsub
 
@@ -37,19 +40,26 @@ private theorem compact_memLp {n : ℕ} (hn : 0 < n) (Ω : TopologicalSpace.Open
     · exact (memLp_two_iff_integrable_sq_norm (hl B hBO).aestronglyMeasurable).mp (hl B hBO)
   exact hloc.integrableOn_compact_subset hKO hK
 
- def derivativeTest {n : ℕ} {Ω : TopologicalSpace.Opens (Space n)}
-    (φ : TestFunction Ω ℂ ⊤) (j : Fin n) : TestFunction Ω ℂ ⊤ :=
+ section
+variable {n : ℕ} {Ω : TopologicalSpace.Opens (Space n)}
+    (φ : TestFunction Ω ℂ ⊤) (j : Fin n)
+include n Ω φ j
+def derivativeTest   : TestFunction Ω ℂ ⊤ :=
   TestFunction.lineDerivCLM ℝ (EuclideanSpace.single j 1) φ
 
-private theorem derivativeTest_eq {n : ℕ} {Ω : TopologicalSpace.Opens (Space n)}
-    (φ : TestFunction Ω ℂ ⊤) (j : Fin n) :
+private theorem derivativeTest_eq   :
     (fun x => derivativeTest φ j x) = KPCompactInteriorH1.coordinatePartial j (fun x => φ x) := by
   funext x
   rw [derivativeTest, TestFunction.lineDerivCLM_eq_fderivCLM,
     TestFunction.fderivCLM_apply_of_le _ (by simp)]
   rfl
+end
 
-private theorem test_mul_integrable {n : ℕ} (B : LocalBall n) (f : Space n → ℂ)
+
+section
+variable {n : ℕ}
+include n
+private theorem test_mul_integrable   (B : LocalBall n) (f : Space n → ℂ)
     (hf : MemLp f 2 (volume.restrict B.carrier)) (φ : TestFunction B.toOpens ℂ ⊤) :
     Integrable (fun x => f x * φ x) volume := by
   apply (integrableOn_iff_integrable_of_support_subset (s := B.carrier) ?_).mp
@@ -62,7 +72,7 @@ private theorem test_mul_integrable {n : ℕ} (B : LocalBall n) (f : Space n →
     apply hx
     simp [h]
 
-private theorem ball_IBP {n : ℕ} (B : LocalBall n) (f : Space n → ℂ)
+private theorem ball_IBP   (B : LocalBall n) (f : Space n → ℂ)
     (g : Fin n → Space n → ℂ) (h : IntegerSobolev B 1)
     (h0 : (fun x => value h x) =ᵐ[volume.restrict B.carrier] f)
     (h1 : ∀ j, (fun x => gradient h j x) =ᵐ[volume.restrict B.carrier] g j)
@@ -101,7 +111,7 @@ private theorem ball_IBP {n : ℕ} (B : LocalBall n) (f : Space n → ℂ)
       filter_upwards [h1 j] with x hx
       rw [hx]
 
-private theorem finite_test_decomposition {n : ℕ} (hn : 0 < n)
+private theorem finite_test_decomposition   (hn : 0 < n)
     (Ω : TopologicalSpace.Opens (Space n)) (ψ : TestFunction Ω ℂ ⊤) :
     ∃ (ι : Type) (_ : Fintype ι) (B : ι → LocalBall n),
       (∀ i, closure (B i).carrier ⊆ (Ω : Set (Space n))) ∧
@@ -140,7 +150,7 @@ private theorem finite_test_decomposition {n : ℕ} (hn : 0 < n)
     simp [hsum]
   · simp [image_eq_zero_of_notMem_tsupport hx]
 
-private theorem global_IBP {n : ℕ} (hn : 0 < n) (Ω : TopologicalSpace.Opens (Space n))
+private theorem global_IBP   (hn : 0 < n) (Ω : TopologicalSpace.Opens (Space n))
     (f : Space n → ℂ) (g : Fin n → Space n → ℂ)
     (hlocal : ∀ B : LocalBall n, closure B.carrier ⊆ (Ω : Set (Space n)) →
       ∃ h : IntegerSobolev B 1,
@@ -150,7 +160,7 @@ private theorem global_IBP {n : ℕ} (hn : 0 < n) (Ω : TopologicalSpace.Opens (
     (∫ x, f x * KPCompactInteriorH1.coordinatePartial j (fun x => ψ x) x) =
       -(∫ x, g j x * ψ x) := by
   obtain ⟨ι, hι, B, hBO, φ, hsum⟩ := finite_test_decomposition hn Ω ψ
-  letI : Fintype ι := hι
+  letI  := hι
   have hlocal' i := hlocal (B i) (hBO i)
   choose h h0 h1 using hlocal'
   have hflp i : MemLp f 2 (volume.restrict (B i).carrier) :=
@@ -195,7 +205,7 @@ private theorem global_IBP {n : ℕ} (hn : 0 < n) (Ω : TopologicalSpace.Opens (
       funext x
       rw [← Finset.mul_sum, congrFun hsum x]
 
-private theorem scalar_lift_memLp {n : ℕ} (f : Space n → ℂ) (hf : Measurable f)
+private theorem scalar_lift_memLp   (f : Space n → ℂ) (hf : Measurable f)
     (K : Set (Space n)) (hlp : MemLp f 2 (volume.restrict K)) :
     MemLp (fun x => WithLp.toLp 2 (fun _ : Fin 1 => f x)) 2 (volume.restrict K) := by
   have hm : Measurable (fun x => WithLp.toLp 2 (fun _ : Fin 1 => f x)) :=
@@ -205,6 +215,8 @@ private theorem scalar_lift_memLp {n : ℕ} (f : Space n → ℂ) (hf : Measurab
   intro x
   rw [one_mul, EuclideanSpace.norm_eq]
   simp
+end
+
 
 theorem weakFirst_of_all_interior_balls (n : ℕ) (hn : 0 < n)
     (Ω : TopologicalSpace.Opens (Space n))
@@ -252,7 +264,7 @@ theorem weakFirst_of_all_interior_balls (n : ℕ) (hn : 0 < n)
     intro x hx
     simpa only [Pi.zero_apply, mul_zero] using congrArg (fun z : ℂ => g j x * z) (ψ.zero_on_compl hx)
   rw [hL, hR]
-  exact global_IBP hn Ω f g hlocal ψ j
+  apply global_IBP <;> assumption
 
 end DedekindZetaZeroFree
 

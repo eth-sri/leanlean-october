@@ -38,8 +38,11 @@ theorem matrixExp_single_slot
     simp [KPSmoothActualFlowData.matrixExponential]
   · simp [hv]
 
+section
+variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+include F ζ hζ in
 theorem actualRight_single_slot
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+     
     (b : Fin (KPContActualSphericalRightFieldIdentification.groupDimension F))
     (f : KPGlobalTorusFunctionData.G F ζ hζ → ℂ) (g : KPGlobalTorusFunctionData.G F ζ hζ) :
     KPContActualSphericalRightFieldIdentification.actualRight F ζ hζ b f g =
@@ -55,8 +58,9 @@ theorem actualRight_single_slot
   funext t
   rw [matrixExp_single_slot]
 
- theorem insertion_commutes_finite
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+ include F ζ hζ in
+theorem insertion_commutes_finite
+     
     (a : KPSmoothActualFlowData.GInfinity F)
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ) :
     Commute (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a) c.val := by
@@ -83,8 +87,9 @@ def nativeSlotWord (r : List (Fin 3 × Fin 2))
     (f : KPCplxCharacterHaar.ComplexGL2 → ℂ) : KPCplxCharacterHaar.ComplexGL2 → ℂ :=
   r.foldr (fun ij => nativeSlotRight ij.1 ij.2) f
 
+include F ζ hζ in
 theorem actualRight_pure_tensor
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+     
     (w : NumberField.InfinitePlace F) (i : Fin 3) (j : Fin 2)
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ) (C : ℂ)
     (h : KPGlobalTorusFunctionData.G F ζ hζ → ℂ)
@@ -144,8 +149,9 @@ def wordAtSlot {F : Type} [Field F] [NumberField F]
     List (Fin 3 × Fin 2) :=
   r.filterMap (fun b => if b.1 = v then some b.2 else none)
 
+include F ζ hζ in
 theorem actualRightWord_pure_tensor
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+     
     (r : List (KPContActualSphericalRightFieldIdentification.LieIndex F))
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ) (C : ℂ)
     (h : KPGlobalTorusFunctionData.G F ζ hζ → ℂ)
@@ -174,16 +180,18 @@ theorem actualRightWord_pure_tensor
       simp [wordAtSlot, nativeSlotWord]
     · simp [wordAtSlot, nativeSlotWord, he, Ne.symm he]
 
+include F ζ hζ in
 private theorem finite_arch_projection_eq_one
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+     
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ) :
     PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ c.val = 1 := by
   apply PGLComplex.AdelicSlicesRaw.finiteSubgroup_le_archProjection_ker F ζ hζ
   obtain ⟨x, hx, he⟩ := c.property
   exact Subgroup.mem_map.mpr ⟨x, fun w => Subgroup.mem_iInf.mp hx w, he⟩
 
+include F ζ hζ in
 private theorem alpha_arch_finite_formula
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+     
     (a : NumberField.InfinitePlace F → KPCplxCharacterHaar.ComplexGL2)
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ) :
     KPContFlatSourceRecipe.alpha F ζ hζ
@@ -231,8 +239,9 @@ private theorem alpha_arch_finite_formula
   congr 1
   exact Finset.sum_congr rfl (fun w _ => KPContFlatLogNormSmooth.complexProjectiveLogNorm_mk (a w))
 
+include F ζ hζ in
 private theorem flatR_pure_tensor_formula
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+     
     (t : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ))
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ) (C : ℂ)
     (f : NumberField.InfinitePlace F → KPCplxCharacterHaar.ComplexGL2 → ℂ)
@@ -250,6 +259,8 @@ private theorem flatR_pure_tensor_formula
   rw [mul_add, Complex.exp_add, Finset.prod_mul_distrib, ← Complex.exp_sum]
   simp only [Finset.mul_sum]
   ring
+end
+
 
 private theorem complex_spherical_twist (s : ℂ) (g : KPCplxCharacterHaar.ComplexGL2) :
     Complex.exp (s * (KPContFlatLogNormSmooth.complexMatrixLogNorm g : ℂ)) *
@@ -372,9 +383,12 @@ private theorem nativeSlotWord_complex_spherical
     rw [he, rightDerivative_smooth_fderiv _ (spherical_word_matrix_smooth _ _)]
     rfl
 
-theorem actualRightWord_flat_spherical_tensor
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+section
+variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (t : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ))
+include F ζ hζ t in
+theorem actualRightWord_flat_spherical_tensor
+     
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ) (C : ℂ)
     (ht : ∀ a : NumberField.InfinitePlace F → KPCplxCharacterHaar.ComplexGL2,
       t.val.val (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
@@ -410,9 +424,9 @@ theorem sourceCore_le_scalarSmooth
   unfold KPMsRationalCompactCrossPairing.sourceCore KPGlobalEisensteinData.hcHeckeCore
   exact iSup_le fun _ => iSup_le fun _ => inf_le_left.trans inf_le_left
 
+include F ζ hζ t in
 theorem source_common_level
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (t : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ)) :
+      :
     ∃ U : KPMsRationalCompactCrossPairing.Level F ζ hζ,
       t ∈ KPContFlatCommonLevelKernel.CommonLevel F ζ hζ U ∧
       KPGlobalTorusFunctionData.globalLevel F ζ hζ U ≤ (KPContFlatSourceRecipe.D F ζ hζ).K ∧
@@ -441,9 +455,9 @@ theorem source_common_level
     rw [KPContFlatSourceRecipe.flatR_formula, KPContFlatSourceRecipe.flatR_formula,
       halpha g u, hV g ⟨u.val, hUV u.property⟩]
 
+include F ζ hζ t in
 theorem actual_source_flat_finite_pure_core
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (t : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ)) :
+      :
     ∃ (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
       (n : ℕ) (v : Fin n → KPContActualSphericalFlatStage.Stage F ζ hζ U)
       (f : Fin n → NumberField.InfinitePlace F →
@@ -468,6 +482,8 @@ theorem actual_source_flat_finite_pure_core
   push_cast
   rw [mul_add, Complex.exp_add, Finset.mul_sum]
   ring
+end
+
 
 open ActualRaisingLocal.SphericalReseeding in
 

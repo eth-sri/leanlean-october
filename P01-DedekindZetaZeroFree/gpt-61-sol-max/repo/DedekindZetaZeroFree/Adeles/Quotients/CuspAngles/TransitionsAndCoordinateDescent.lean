@@ -239,7 +239,7 @@ end Radial
 section CuspDescent
 local instance : MulAction (KPCuspArithmetic.PGL2 F) (KPArch.Space (KPCuspLogShape.dimension F)) :=
   KPCuspSiegel.instMulActionPGL2SpaceDimension F
-variable (S : SourceRecipe F ζ hζ R P H) (U : Level F ζ hζ)
+
 
 theorem full_quotient_eq_iff_rational_left (g h : G F ζ hζ) :
     KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g =

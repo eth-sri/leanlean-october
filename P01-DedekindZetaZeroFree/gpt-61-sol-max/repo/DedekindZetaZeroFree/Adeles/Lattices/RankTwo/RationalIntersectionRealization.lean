@@ -11,7 +11,10 @@ open IsDedekindDomain NumberField
 
 namespace DedekindZetaZeroFree.KPFiniteAdelicLatticeStabilizers
 
-private theorem counts_nonneg_integral (F : Type*) [Field F] [NumberField F]
+section
+variable (F : Type*) [Field F] [NumberField F]
+include F
+private theorem counts_nonneg_integral  
     (I : FractionalIdeal (RingOfIntegers F)⁰ F) (hI : I ≠ 0)
     (h : ∀ v, 0 ≤ FractionalIdeal.count F v I) : I ≤ 1 := by
   rw [← FractionalIdeal.finprod_heightOneSpectrum_factorization' F hI]
@@ -23,7 +26,7 @@ private theorem counts_nonneg_integral (F : Type*) [Field F] [NumberField F]
     exact zpow_le_one₀ (bot_lt_iff_ne_bot.mpr
       (FractionalIdeal.coeIdeal_ne_zero.mpr v.ne_bot))
       FractionalIdeal.coeIdeal_le_one (h v)
-private theorem ideal_le_of_counts (F : Type*) [Field F] [NumberField F]
+private theorem ideal_le_of_counts  
     (I J : FractionalIdeal (RingOfIntegers F)⁰ F) (hI : I ≠ 0) (hJ : J ≠ 0)
     (h : ∀ v, FractionalIdeal.count F v J ≤ FractionalIdeal.count F v I) : I ≤ J := by
   have hi := counts_nonneg_integral F (I * J⁻¹) (mul_ne_zero hI (inv_ne_zero hJ)) (by
@@ -34,7 +37,7 @@ private theorem ideal_le_of_counts (F : Type*) [Field F] [NumberField F]
   rw [mul_comm J (I * J⁻¹), mul_assoc, inv_mul_cancel₀ hJ, mul_one] at hh
   simpa only [mul_one] using hh
 
-private theorem ideal_mem_counts (F : Type*) [Field F] [NumberField F]
+private theorem ideal_mem_counts  
     (I : FractionalIdeal (RingOfIntegers F)⁰ F) (hI : I ≠ 0) (x : F) (hx : x ≠ 0) :
     x ∈ I ↔ ∀ v, FractionalIdeal.count F v I ≤
       -WithZero.log (v.valuation F x) := by
@@ -52,7 +55,7 @@ private theorem ideal_mem_counts (F : Type*) [Field F] [NumberField F]
     intro v
     simpa [hc] using h v
 
-private theorem scalar_intersection (F : Type*) [Field F] [NumberField F]
+private theorem scalar_intersection  
     (I : FractionalIdeal (RingOfIntegers F)⁰ F) (hI : I ≠ 0)
     (a : FiniteIdeleGroup F) (ha : FiniteIdeleGroup.fractionalIdeal a = Units.mk0 I hI)
     (x : F) :
@@ -80,7 +83,7 @@ private theorem scalar_intersection (F : Type*) [Field F] [NumberField F]
   simp only [WithZero.log_one]
   omega
 
- noncomputable def rankTwoDiagonal (F : Type*) [Field F] [NumberField F]
+ noncomputable def rankTwoDiagonal  
     (u : (Adeles F)ˣ) : AdelicGL F where
   val := Matrix.diagonal (fun i => if i = 0 then 1 else u.val)
   inv := Matrix.diagonal (fun i => if i = 0 then 1 else u.inv)
@@ -99,13 +102,13 @@ private theorem scalar_intersection (F : Type*) [Field F] [NumberField F]
       split_ifs <;> simp
     · simp [Matrix.diagonal_apply_ne _ hij, hij]
 
-private theorem coordinate_realization (F : Type*) [Field F] [NumberField F]
+private theorem coordinate_realization  
     (I : FractionalIdeal (RingOfIntegers F)⁰ F) (hI : I ≠ 0) :
     ∃ g : AdelicGL F, ∀ x : F × F,
       x ∈ coordinateLattice (RingOfIntegers F) F 1 I ↔
         diagonalVector F x ∈ g • integralVectors F := by
   obtain ⟨a, ha⟩ := FiniteIdeleGroup.fractionalIdeal_surjective (Units.mk0 I hI)
-  let u := IdeleGroup.finiteEquivFiniteAdeleUnits a
+  let u : (Adeles F)ˣ := IdeleGroup.finiteEquivFiniteAdeleUnits a
   refine ⟨rankTwoDiagonal F u, ?_⟩
   intro x
   change x ∈ coordinateLattice (RingOfIntegers F) F 1 I ↔
@@ -146,14 +149,19 @@ private theorem coordinate_realization (F : Type*) [Field F] [NumberField F]
     · have hh := h 1 0 v
       rw [hd] at hh
       simpa only [Fin.reduceEq, if_false] using hh
+end
 
- noncomputable def rationalAction (F : Type*) [Field F] (h : RationalGL F) :
+
+ section
+variable (F : Type*) [Field F]
+include F
+noncomputable def rationalAction   (h : RationalGL F) :
     (F × F) ≃ₗ[F] (F × F) :=
   (LinearEquiv.finTwoArrow F F).symm.trans
     ((Matrix.GeneralLinearGroup.toLin h).toLinearEquiv.trans
       (LinearEquiv.finTwoArrow F F))
 
-private theorem diagonal_action (F : Type*) [Field F] [NumberField F]
+private theorem diagonal_action   [NumberField F]
     (h : RationalGL F) (x : F × F) :
     diagonalVector F (rationalAction F h x) = diagonalGL F h • diagonalVector F x := by
   ext i j
@@ -163,7 +171,7 @@ private theorem diagonal_action (F : Type*) [Field F] [NumberField F]
       Matrix.mul_apply, Matrix.mulVecLin_apply, Matrix.mulVec, dotProduct,
       Fin.sum_univ_two, LinearEquiv.finTwoArrow, finTwoArrowEquiv]
 
-private theorem rationalAction_surjective (F : Type*) [Field F]
+private theorem rationalAction_surjective  
     (e : (F × F) ≃ₗ[F] (F × F)) : ∃ h : RationalGL F, rationalAction F h = e := by
   let t := LinearEquiv.finTwoArrow F F
   let u := t.trans (e.trans t.symm)
@@ -178,7 +186,7 @@ private theorem rationalAction_surjective (F : Type*) [Field F]
   change t (u (t.symm x)) = e x
   simp [u]
 
-theorem full_lattice_adelic_realization (F : Type*) [Field F] [NumberField F] :
+theorem full_lattice_adelic_realization   [NumberField F] :
     ∀ M : FullLattice (NumberField.RingOfIntegers F) F,
       ∃ g : AdelicGL F, ∀ x : F × F,
         x ∈ M.val ↔ diagonalVector F x ∈ g • integralVectors F := by
@@ -198,5 +206,7 @@ theorem full_lattice_adelic_realization (F : Type*) [Field F] [NumberField F] :
   rw [hm, hg]
   rw [← hh, diagonal_action, mul_smul]
   conv_rhs => rw [Set.mem_smul_set_iff_inv_smul_mem, inv_inv]
+end
+
 
 end DedekindZetaZeroFree.KPFiniteAdelicLatticeStabilizers

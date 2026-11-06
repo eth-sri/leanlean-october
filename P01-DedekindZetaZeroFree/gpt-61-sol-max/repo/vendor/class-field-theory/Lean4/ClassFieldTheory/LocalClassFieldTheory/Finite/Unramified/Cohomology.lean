@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import Mathlib.SetTheory.Cardinal.Finite
 public import Mathlib.FieldTheory.Galois.Basic
 public import GaloisCohomology.Cyclic.Herbrand.PrincipalUnits.QuotientTower
@@ -10,6 +12,7 @@ public import ValuedFieldTheory.LocalField.NonarchimedeanLocalField.UnramifiedFr
 public import ClassFieldTheory.LocalClassFieldTheory.Finite.Unramified.Norm
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -48,66 +51,67 @@ open LocalFieldTheory.IsNonarchimedeanLocalField
 open CyclicCohomology
 open CyclicCohomology.ProfiniteCohomology.Herbrand
 
+section
+variable (K L : Type u) [Field K] [ValuativeRel K] [Field L] [ValuativeRel L]
+    [Algebra K L]
+    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
+    [IsIntegralClosure 𝒪[L] 𝒪[K] L] (n : Nat)
+include K L n
 /-- The actual integral-closure Galois action on `U_L^n`, packaged as the
 multiplicative action used by low-degree Tate cohomology. -/
 @[implicit_reducible]
 def galoisGroupPrincipalUnitsMulDistribMulActionOfIsIntegralClosure
-    (K L : Type u) [Field K] [ValuativeRel K] [Field L] [ValuativeRel L]
-    [Algebra K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] (n : Nat) :
+      :
     MulDistribMulAction Gal(L / K) (principalUnits L n) where
   smul sigma a := galoisGroupPrincipalUnitsMapEquivOfIsIntegralClosure K L n sigma a
   one_smul := by
     intro a
     change galoisGroupPrincipalUnitsMapEquivOfIsIntegralClosure K L n 1 a = a
-    exact congrArg (fun e : principalUnits L n ≃* principalUnits L n => e a)
-      (map_one (galoisGroupPrincipalUnitsMapEquivHomOfIsIntegralClosure K L n))
+    apply congrArg <;> aesop
   mul_smul := by
     intro sigma tau a
     change galoisGroupPrincipalUnitsMapEquivOfIsIntegralClosure K L n (sigma * tau) a =
       galoisGroupPrincipalUnitsMapEquivOfIsIntegralClosure K L n sigma
         (galoisGroupPrincipalUnitsMapEquivOfIsIntegralClosure K L n tau a)
-    exact congrArg (fun e : principalUnits L n ≃* principalUnits L n => e a)
-      (map_mul (galoisGroupPrincipalUnitsMapEquivHomOfIsIntegralClosure K L n) sigma tau)
+    apply congrArg <;> aesop
   smul_mul := by
     intro sigma a b
-    exact map_mul (galoisGroupPrincipalUnitsMapEquivOfIsIntegralClosure K L n sigma) a b
+    apply map_mul
   smul_one := by
     intro sigma
-    exact map_one (galoisGroupPrincipalUnitsMapEquivOfIsIntegralClosure K L n sigma)
+    apply map_one
 
 /-- States the theorem `galoisGroupPrincipalUnitsMulDistribMulActionOfIsIntegralClosure_smul`. -/
 @[simp]
 theorem galoisGroupPrincipalUnitsMulDistribMulActionOfIsIntegralClosure_smul
-    (K L : Type u) [Field K] [ValuativeRel K] [Field L] [ValuativeRel L]
-    [Algebra K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] (n : Nat)
+     
     (sigma : Gal(L / K)) (a : principalUnits L n) :
     letI := galoisGroupPrincipalUnitsMulDistribMulActionOfIsIntegralClosure K L n
     sigma • a = galoisGroupPrincipalUnitsMapEquivOfIsIntegralClosure K L n sigma a :=
   rfl
+end
+
 
 /-- Inclusion in the actual short exact sequence
 `1 → U_L^n → 𝒪_Lˣ → 𝒪_Lˣ/U_L^n → 1`. -/
  def principalUnitsIntegerUnitsInclusion
-    (L : Type u) [Field L] [ValuativeRel L] (n : Nat) :
-    principalUnits L n →* 𝒪[L]ˣ :=
+    (L : Type u) [Field L] [ValuativeRel L] (n : Nat)  :=
   (principalUnits L n).subtype
 
 /-- Quotient map in the actual short exact sequence
 `1 → U_L^n → 𝒪_Lˣ → 𝒪_Lˣ/U_L^n → 1`. -/
  def integerUnitsPrincipalUnitsQuotientMap
-    (L : Type u) [Field L] [ValuativeRel L] (n : Nat) :
-    𝒪[L]ˣ →* IntegerUnitsModPrincipalUnitsAtLevel L n :=
+    (L : Type u) [Field L] [ValuativeRel L] (n : Nat)  :=
   integerUnitsModPrincipalUnitsAtLevelMk L n
 
+section
+variable (K L : Type u) [Field K] [ValuativeRel K] [Field L] [ValuativeRel L]
+    [Algebra K L]
+include K L
 /-- The standard principal-unit sequence is short exact and equivariant for
 the actual integral-closure Galois actions. -/
 private theorem principalUnitsIntegerUnits_shortExact
-    (K L : Type u) [Field K] [ValuativeRel K] [Field L] [ValuativeRel L]
-    [Algebra K L]
+     
     [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
     [IsIntegralClosure 𝒪[L] 𝒪[K] L] (n : Nat) :
     letI := galoisGroupPrincipalUnitsMulDistribMulActionOfIsIntegralClosure K L n
@@ -139,8 +143,7 @@ private theorem principalUnitsIntegerUnits_shortExact
   · intro a
     constructor
     · intro ha
-      have ha' : a ∈ principalUnits L n := by
-        exact (integerUnitsModPrincipalUnitsAtLevelMk_eq_one_iff L n a).1 ha
+      have ha'  := (integerUnitsModPrincipalUnitsAtLevelMk_eq_one_iff L n a).1 ha
       exact ⟨⟨a, ha'⟩, rfl⟩
     · rintro ⟨v, rfl⟩
       exact (integerUnitsModPrincipalUnitsAtLevelMk_eq_one_iff L n
@@ -149,8 +152,7 @@ private theorem principalUnitsIntegerUnits_shortExact
 /-- A Galois-fixed actual integer unit descends to a base integer unit.  This
 is valuation-ring descent, not an assumed comparison of fixed parts. -/
 private theorem exists_integerUnit_map_eq_of_galoisGroup_fixed
-    (K L : Type u) [Field K] [ValuativeRel K] [Field L] [ValuativeRel L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
+      [FiniteDimensional K L] [IsGalois K L]
     [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
     [IsIntegralClosure 𝒪[L] 𝒪[K] L]
     (a : 𝒪[L]ˣ)
@@ -159,19 +161,19 @@ private theorem exists_integerUnit_map_eq_of_galoisGroup_fixed
     ∃ b : 𝒪[K]ˣ, integerUnitsMapOfValuationExtension K L b = a := by
   let := galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure K L
   have hfixed : ∀ sigma : Gal(L / K),
-      sigma ((((a : 𝒪[L]ˣ) : 𝒪[L]) : L)) = (((a : 𝒪[L]ˣ) : 𝒪[L]) : L) := by
+      sigma (((a : 𝒪[L]) : L)) = ((a : 𝒪[L]) : L) := by
     intro sigma
-    have h := congrArg (fun z : 𝒪[L]ˣ => (((z : 𝒪[L]ˣ) : 𝒪[L]) : L)) (ha sigma)
-    simpa [galoisGroupIntegerRingEquivOfIsIntegralClosure_apply] using h
-  have hmem : ((((a : 𝒪[L]ˣ) : 𝒪[L]) : L)) ∈ Set.range (algebraMap K L) :=
+    have h := congrArg (fun z : 𝒪[L]ˣ => ((z : 𝒪[L]) : L)) (ha sigma)
+    exact h
+  have hmem : (((a : 𝒪[L]) : L)) ∈ Set.range (algebraMap K L) :=
     (IsGalois.mem_range_algebraMap_iff_fixed
-      (F := K) (E := L) ((((a : 𝒪[L]ˣ) : 𝒪[L]) : L))).2 hfixed
+      (F := K) (E := L) (((a : 𝒪[L]) : L))).2 hfixed
   rcases hmem with ⟨y, hy⟩
   have hy0 : y ≠ 0 := by
     intro hzero
-    have : (((a : 𝒪[L]ˣ) : 𝒪[L]) : L) = 0 := by
+    have : ((a : 𝒪[L]) : L) = 0 := by
       rw [← hy, hzero, map_zero]
-    exact a.ne_zero (Subtype.ext this)
+    apply a.ne_zero <;> aesop
   have hy_mem : ValuativeRel.valuation K y ≤ 1 := by
     apply (Valuation.HasExtension.val_map_le_one_iff
       (vR := ValuativeRel.valuation K) (vA := ValuativeRel.valuation L) y).1
@@ -181,11 +183,10 @@ private theorem exists_integerUnit_map_eq_of_galoisGroup_fixed
     apply (Valuation.HasExtension.val_map_le_one_iff
       (vR := ValuativeRel.valuation K) (vA := ValuativeRel.valuation L) y⁻¹).1
     rw [map_inv₀, hy]
-    have hinv : ValuativeRel.valuation L (((a.inv : 𝒪[L])) : L) ≤ 1 :=
+    have hinv : ValuativeRel.valuation L ((a.inv) : L) ≤ 1 :=
       a.inv.property
-    have hmul : (((a.val : 𝒪[L])) : L) * (((a.inv : 𝒪[L])) : L) = 1 := by
-      exact congrArg (fun z : 𝒪[L] => (z : L)) a.val_inv
-    have hinvEq : (((a.inv : 𝒪[L])) : L) = (((a.val : 𝒪[L])) : L)⁻¹ :=
+    have hmul : ((a.val) : L) * ((a.inv) : L) = 1 := congrArg (fun z : 𝒪[L] => (z : L)) a.val_inv
+    have hinvEq : ((a.inv) : L) = ((a.val) : L)⁻¹ :=
       eq_inv_of_mul_eq_one_right hmul
     rw [hinvEq] at hinv
     exact hinv
@@ -198,6 +199,8 @@ private theorem exists_integerUnit_map_eq_of_galoisGroup_fixed
   apply Units.ext
   apply Subtype.ext
   exact hy
+end
+
 
 /-- The normal-basis construction, restricted to its actual
 integer-unit conclusion `h(G,𝒪_Lˣ)=1`. -/
@@ -221,7 +224,7 @@ private theorem integerUnits_herbrandQuotient_eq_one
       (K := K) (L := L) g hg with ⟨cH, hcH⟩
   rcases exists_integerUnits_herbrandQuotient_eq_one_of_large_chosenNormalBasisLevel
       (K := K) (L := L) with ⟨cU, hcU⟩
-  let n : Nat := max cV (max cH cU)
+  let n  := max cV (max cH cU)
   have hcVn : cV ≤ n := le_max_left cV (max cH cU)
   have hrest : max cH cU ≤ n := le_max_right cV (max cH cU)
   have hcHn : cH ≤ n := le_trans (le_max_left cH cU) hrest
@@ -240,8 +243,7 @@ private theorem herbrandHMinusOne_subsingleton_of_h0_subsingleton_of_quotient_eq
     [Subsingleton (HerbrandH0 G A)]
     (hquot : herbrandQuotient (G := G) (A := A) g = 1) :
     Subsingleton (HerbrandHMinusOne G A g) := by
-  have hzero : Nat.card (HerbrandH0 G A) = 1 := by
-    exact Nat.card_unique
+  have hzero : Nat.card (HerbrandH0 G A) = 1 := Nat.card_unique
   have hden : ((Nat.card (HerbrandHMinusOne G A g) : ℚ) ≠ 0) :=
     Nat.cast_ne_zero.mpr
       (Finite.card_pos (α := HerbrandHMinusOne G A g)).ne'
@@ -253,10 +255,8 @@ private theorem herbrandHMinusOne_subsingleton_of_h0_subsingleton_of_quotient_eq
     exact_mod_cast hcardQ.symm
   exact (Nat.card_eq_one_iff_unique.mp hcard).1
 
-/-- The unramified unit-cohomology theorem for the actual integer-unit module: both low-degree Tate
-groups are trivial in an unramified extension. -/
-private theorem unramified_integerUnits_herbrand_subsingleton
-    (K L : Type) [Field K] [Field L] [Algebra K L]
+section
+variable (K L : Type) [Field K] [Field L] [Algebra K L]
     [FiniteDimensional K L] [IsGalois K L]
     [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
     [ValuativeRel L] [UniformSpace L] [IsUniformAddGroup L]
@@ -264,6 +264,11 @@ private theorem unramified_integerUnits_herbrand_subsingleton
     [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
     [IsIntegralClosure 𝒪[L] 𝒪[K] L] [Module.Finite 𝒪[K] 𝒪[L]]
     [IsUnramifiedValuedExtension K L]
+include K L
+/-- The unramified unit-cohomology theorem for the actual integer-unit module: both low-degree Tate
+groups are trivial in an unramified extension. -/
+private theorem unramified_integerUnits_herbrand_subsingleton
+     
     (g : Gal(L / K)) (hg : ∀ sigma : Gal(L / K), sigma ∈ Subgroup.zpowers g) :
     letI := galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure K L
     Subsingleton (HerbrandH0 Gal(L / K) 𝒪[L]ˣ) ∧
@@ -290,7 +295,7 @@ private theorem unramified_integerUnits_herbrand_subsingleton
         (integerUnitsMap_normIntegerUnits_eq_galoisGroup_prod_of_isIntegralClosure K L z).symm
       _ = integerUnitsMapOfValuationExtension K L b := by rw [hz]
       _ = a := hb
-  let : Subsingleton (HerbrandH0 Gal(L / K) 𝒪[L]ˣ) :=
+  let  :=
     herbrandH0_subsingleton_of_fixed_le_tateNormSubgroup hfixed
   exact ⟨inferInstance,
     herbrandHMinusOne_subsingleton_of_h0_subsingleton_of_quotient_eq_one
@@ -300,14 +305,7 @@ private theorem unramified_integerUnits_herbrand_subsingleton
 uses the actual sequence `1 → U_L^n → 𝒪_Lˣ → 𝒪_Lˣ/U_L^n → 1`,
 Herbrand-quotient multiplicativity, and the actual unramified norm lifting. -/
 private theorem unramified_principalUnits_herbrand_subsingleton
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [ValuativeRel L] [UniformSpace L] [IsUniformAddGroup L]
-    [IsNonarchimedeanLocalField L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] [Module.Finite 𝒪[K] 𝒪[L]]
-    [IsUnramifiedValuedExtension K L]
+     
     (n : Nat) (hn : 1 ≤ n) (g : Gal(L / K))
     (hg : ∀ sigma : Gal(L / K), sigma ∈ Subgroup.zpowers g) :
     letI := galoisGroupPrincipalUnitsMulDistribMulActionOfIsIntegralClosure K L n
@@ -320,7 +318,7 @@ private theorem unramified_principalUnits_herbrand_subsingleton
     K L n
   rcases integerUnits_herbrandQuotient_eq_one K L g hg with
     ⟨hU, hUone⟩
-  let : Finite (IntegerUnitsModPrincipalUnitsAtLevel L n) :=
+  let  :=
     integerUnitsModPrincipalUnitsAtLevel_finite_of_isNonarchimedeanLocalField L n
   let hQ : HerbrandQuotientDefined Gal(L / K)
       (IntegerUnitsModPrincipalUnitsAtLevel L n) g :=
@@ -340,13 +338,10 @@ private theorem unramified_principalUnits_herbrand_subsingleton
       g hg hU hQ
   let : Finite (HerbrandH0 Gal(L / K) 𝒪[L]ˣ) := hU.1
   let : Finite (HerbrandHMinusOne Gal(L / K) 𝒪[L]ˣ g) := hU.2
-  let : Finite (HerbrandH0 Gal(L / K)
-      (IntegerUnitsModPrincipalUnitsAtLevel L n)) := hQ.1
-  let : Finite (HerbrandHMinusOne Gal(L / K)
-      (IntegerUnitsModPrincipalUnitsAtLevel L n) g) := hQ.2
-  let : Finite (HerbrandH0 Gal(L / K) (principalUnits L n)) := hP.1
-  let : Finite (HerbrandHMinusOne Gal(L / K)
-      (principalUnits L n) g) := hP.2
+  let  := hQ.1
+  let  := hQ.2
+  let  := hP.1
+  let  := hP.2
   have hPone : herbrandQuotient (G := Gal(L / K))
       (A := principalUnits L n) g = 1 := by
     have hmul := herbrandQuotient_multiplicative_of_shortExact
@@ -362,13 +357,13 @@ private theorem unramified_principalUnits_herbrand_subsingleton
     intro a ha
     have haUnits : ∀ sigma : Gal(L / K),
         letI := galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure K L
-        sigma • ((a : principalUnits L n) : 𝒪[L]ˣ) =
-          ((a : principalUnits L n) : 𝒪[L]ˣ) := by
+        sigma • (a : 𝒪[L]ˣ) =
+          (a : 𝒪[L]ˣ) := by
       intro sigma
       exact congrArg (fun z : principalUnits L n => (z : 𝒪[L]ˣ)) (ha sigma)
     rcases exists_integerUnit_map_eq_of_galoisGroup_fixed K L (a : 𝒪[L]ˣ) haUnits with
       ⟨b, hb⟩
-    have hbmem : b ∈ principalUnits K n :=
+    have hbmem  :=
       principalUnits_of_integerUnitsMap_mem_principalUnits_of_unramifiedValuation
         K L n (by rw [hb]; exact a.2)
     let bP : principalUnits K n := ⟨b, hbmem⟩
@@ -391,8 +386,7 @@ private theorem unramified_principalUnits_herbrand_subsingleton
           K L n z).symm
       _ = principalUnitsMapOfUnramifiedValuation K L n bP := by rw [hz]
       _ = a := hmap
-  let : Subsingleton
-      (HerbrandH0 Gal(L / K) (principalUnits L n)) :=
+  let  :=
     herbrandH0_subsingleton_of_fixed_le_tateNormSubgroup hfixed
   exact ⟨inferInstance,
     herbrandHMinusOne_subsingleton_of_h0_subsingleton_of_quotient_eq_one
@@ -401,14 +395,7 @@ private theorem unramified_principalUnits_herbrand_subsingleton
 /-- Generator-explicit form of the unramified unit-cohomology theorem.  The canonical
 endpoint below supplies the canonical unramified arithmetic Frobenius. -/
 theorem unramified_units_tateCohomology_and_norm_surjective_for_generator
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [ValuativeRel L] [UniformSpace L] [IsUniformAddGroup L]
-    [IsNonarchimedeanLocalField L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] [Module.Finite 𝒪[K] 𝒪[L]]
-    [IsUnramifiedValuedExtension K L]
+     
     (g : Gal(L / K)) (hg : ∀ sigma : Gal(L / K), sigma ∈ Subgroup.zpowers g) :
     letI := galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure K L
     (Subsingleton (HerbrandH0 Gal(L / K) 𝒪[L]ˣ) ∧
@@ -425,40 +412,42 @@ theorem unramified_units_tateCohomology_and_norm_surjective_for_generator
     MonoidHom.range_eq_top_of_surjective (normIntegerUnits K L)
       (normIntegerUnits_surjective_unramified_of_isIntegralClosure K L), ?_⟩
   · intro n hn
-    exact unramified_principalUnits_herbrand_subsingleton K L n hn g hg
+    apply unramified_principalUnits_herbrand_subsingleton <;> assumption
   · intro n hn
     exact MonoidHom.range_eq_top_of_surjective
       (principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure K L n)
       (principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure_surjective
         K L n hn)
+end
 
-/-- The unramified unit-cohomology theorem.  The arithmetic Frobenius and its generation
-property are constructed from unramifiedness, so the canonical endpoint has no
-extra chosen-generator argument. -/
-theorem unramified_units_tateCohomology_and_norm_surjective
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [ValuativeRel L] [UniformSpace L] [IsUniformAddGroup L]
-    [IsNonarchimedeanLocalField L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] [Module.Finite 𝒪[K] 𝒪[L]]
-    [IsUnramifiedValuedExtension K L] :
-    let phi := arithmeticFrobeniusOfUnramifiedValuation K L
-    letI := galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure K L
-    (Subsingleton (HerbrandH0 Gal(L / K) 𝒪[L]ˣ) ∧
-      Subsingleton (HerbrandHMinusOne Gal(L / K) 𝒪[L]ˣ phi)) ∧
-      (∀ n : Nat, 1 ≤ n →
-        letI := galoisGroupPrincipalUnitsMulDistribMulActionOfIsIntegralClosure K L n
-        Subsingleton (HerbrandH0 Gal(L / K) (principalUnits L n)) ∧
-          Subsingleton
-            (HerbrandHMinusOne Gal(L / K) (principalUnits L n) phi)) ∧
-      MonoidHom.range (normIntegerUnits K L) = ⊤ ∧
-      ∀ n : Nat, 1 ≤ n → MonoidHom.range
-        (principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure K L n) = ⊤ := by
-  exact unramified_units_tateCohomology_and_norm_surjective_for_generator K L
-    (arithmeticFrobeniusOfUnramifiedValuation K L)
-    (arithmeticFrobeniusOfUnramifiedValuation_generates K L)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end LocalClassFieldTheory
 

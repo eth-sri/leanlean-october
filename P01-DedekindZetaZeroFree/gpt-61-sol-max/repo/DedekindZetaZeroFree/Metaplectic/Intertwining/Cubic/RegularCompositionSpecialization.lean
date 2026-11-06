@@ -21,13 +21,17 @@ open scoped TensorProduct
 private lemma regular_one (a : ℂ) : Regular a 1 := by simp [Regular]
  lemma regular_C (a c : ℂ) : Regular a (RatFunc.C c) := by simp [Regular]
 private lemma regular_X (a : ℂ) : Regular a RatFunc.X := by simp [Regular]
- lemma regular_add {a : ℂ} {f g : RatFunc ℂ} (hf : Regular a f) (hg : Regular a g) :
+ section
+variable {a : ℂ} {f g : RatFunc ℂ} (hf : Regular a f) (hg : Regular a g)
+include a f g hf hg in
+lemma regular_add   :
     Regular a (f + g) := by
   intro h
   have H := Polynomial.eval₂_eq_zero_of_dvd_of_eval₂_eq_zero (RingHom.id ℂ) a
     (RatFunc.denom_add_dvd f g) (by simpa using h)
   simp [Polynomial.eval₂_mul, Polynomial.eval₂_id, mul_ne_zero hf hg] at H
- lemma regular_mul {a : ℂ} {f g : RatFunc ℂ} (hf : Regular a f) (hg : Regular a g) :
+ include a f g hf hg in
+lemma regular_mul   :
     Regular a (f * g) := by
   intro h
   have H := Polynomial.eval₂_eq_zero_of_dvd_of_eval₂_eq_zero (RingHom.id ℂ) a
@@ -41,11 +45,17 @@ private lemma regular_inv {a : ℂ} {f : RatFunc ℂ} (_hf : Regular a f)
     (RatFunc.denom_inv_dvd hf0) (by simpa using h)
   apply hne
   simp [RatFunc.eval, H]
- lemma eval_mul' {a : ℂ} {f g : RatFunc ℂ} (hf : Regular a f) (hg : Regular a g) :
+ include a f g hf hg in
+lemma eval_mul'   :
     RatFunc.eval (RingHom.id ℂ) a (f * g) =
       RatFunc.eval (RingHom.id ℂ) a f * RatFunc.eval (RingHom.id ℂ) a g := by
   apply RatFunc.eval_mul <;> simpa [Regular, Polynomial.eval₂_id] using ‹Regular a _›
-private lemma eval_inv' {a : ℂ} {f : RatFunc ℂ} (hf : Regular a f)
+end
+
+section
+variable {a : ℂ} {f : RatFunc ℂ} (hf : Regular a f)
+include a f hf in
+private lemma eval_inv'  
     (hne : RatFunc.eval (RingHom.id ℂ) a f ≠ 0) :
     RatFunc.eval (RingHom.id ℂ) a f⁻¹ = (RatFunc.eval (RingHom.id ℂ) a f)⁻¹ := by
   have hf0 : f ≠ 0 := by intro h; simp [h] at hne
@@ -74,29 +84,35 @@ private lemma exists_eval_linear (a : ℂ) : ∃ E : RatFunc ℂ →ₗ[ℂ] ℂ
     ∀ f, Regular a f → E f = RatFunc.eval (RingHom.id ℂ) a f := by
   obtain ⟨E, hE⟩ := (regularEval a).exists_extend
   exact ⟨E, fun f hf => congrArg (fun L => L ⟨f, hf⟩) hE⟩
-private lemma regular_neg {a : ℂ} {f : RatFunc ℂ} (hf : Regular a f) : Regular a (-f) := by
+include a f hf in
+private lemma regular_neg   : Regular a (-f) := by
   simpa using regular_mul (regular_C a (-1)) hf
-private lemma eval_neg' {a : ℂ} {f : RatFunc ℂ} (hf : Regular a f) :
+include a f hf in
+private lemma eval_neg'   :
     RatFunc.eval (RingHom.id ℂ) a (-f) = -RatFunc.eval (RingHom.id ℂ) a f := by
   have H := eval_mul' (regular_C a (-1)) hf
   rw [RatFunc.eval_C] at H
   simpa using H
-private lemma regular_pow {a : ℂ} {f : RatFunc ℂ} (hf : Regular a f) (n : ℕ) :
+include a f hf in
+private lemma regular_pow   (n : ℕ) :
     Regular a (f ^ n) := by
   induction n with
   | zero => simpa using regular_one a
   | succ n hn => simpa [pow_succ] using regular_mul hn hf
-private lemma eval_pow' {a : ℂ} {f : RatFunc ℂ} (hf : Regular a f) (n : ℕ) :
+include a f hf in
+private lemma eval_pow'   (n : ℕ) :
     RatFunc.eval (RingHom.id ℂ) a (f ^ n) = RatFunc.eval (RingHom.id ℂ) a f ^ n := by
   induction n with
   | zero => simp
   | succ n hn => rw [pow_succ, eval_mul' (regular_pow hf n) hf, hn, pow_succ]
-private lemma regular_zpow {a : ℂ} {f : RatFunc ℂ} (hf : Regular a f)
+include a f hf in
+private lemma regular_zpow  
     (hne : RatFunc.eval (RingHom.id ℂ) a f ≠ 0) (n : ℤ) : Regular a (f ^ n) := by
   cases n with
   | ofNat n => simpa using regular_pow hf n
   | negSucc n => simpa [zpow_negSucc, ← inv_pow] using regular_pow (regular_inv hf hne) (n + 1)
-private lemma eval_zpow' {a : ℂ} {f : RatFunc ℂ} (hf : Regular a f)
+include a f hf in
+private lemma eval_zpow'  
     (hne : RatFunc.eval (RingHom.id ℂ) a f ≠ 0) (n : ℤ) :
     RatFunc.eval (RingHom.id ℂ) a (f ^ n) = RatFunc.eval (RingHom.id ℂ) a f ^ n := by
   cases n with
@@ -104,6 +120,8 @@ private lemma eval_zpow' {a : ℂ} {f : RatFunc ℂ} (hf : Regular a f)
   | negSucc n =>
       simpa [zpow_negSucc, ← inv_pow, eval_inv' hf hne] using
         (eval_pow' (regular_inv hf hne) (n + 1))
+end
+
 
 private lemma specialize_scalar {V W : Type*} [AddCommMonoid V] [Module ℂ V]
     [AddCommMonoid W] [Module ℂ W]

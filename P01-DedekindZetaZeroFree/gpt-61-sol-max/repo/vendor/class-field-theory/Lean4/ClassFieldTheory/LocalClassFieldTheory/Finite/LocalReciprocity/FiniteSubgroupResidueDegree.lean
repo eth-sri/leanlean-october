@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.LocalClassFieldTheory.Finite.LocalReciprocity.LocalResidueDatum
 public import ClassFieldTheory.LocalClassFieldTheory.Finite.LocalReciprocity.FiniteAbstractFixedField
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -84,14 +87,17 @@ noncomputable local instance localAbstractFixedResidueIntermediateFieldModule
   @Algebra.toModule _ _ _ _
     (localAbstractFixedResidueIntermediateFieldAlgebra K H)
 
+section
+variable (H : ClosedSubgroup (Gal(SeparableClosure K / K)))
+include H
 /-- Every automorphism over the fixed field preserves the selected extension
 valuation.  This is the base-change form of the full decomposition-group
 statement proved for `K`. -/
 theorem localAbstractFixedDecompositionGroup_eq_top
-    (H : ClosedSubgroup (Gal(SeparableClosure K / K))) :
+      :
     decompositionGroup (abstractFixedField K (SeparableClosure K) H)
       (localSeparableValuationSubring K) = ⊤ := by
-  let E := abstractFixedField K (SeparableClosure K) H
+  
   let A := localSeparableValuationSubring K
   apply top_unique
   intro tau _htau
@@ -107,7 +113,7 @@ theorem localAbstractFixedDecompositionGroup_eq_top
 automorphism of the selected residue field as applying the residue-action map
 over the fixed field of `H`. -/
 theorem localAbstractFixedResidueAction_apply
-    (H : ClosedSubgroup (Gal(SeparableClosure K / K)))
+     
     (sigma : H.toSubgroup)
     (x : selectedResidueField (localSeparableValuationSubring K)) :
     localSeparableResidueAlgAction K sigma.1 x =
@@ -116,24 +122,14 @@ theorem localAbstractFixedResidueAction_apply
         (localSeparableValuationSubring K)
         (localAbstractFixedDecompositionGroup_eq_top K H)
         (abstractSubgroupEquivGaloisGroup K (SeparableClosure K) H sigma) x := by
-  let A := localSeparableValuationSubring K
-  obtain ⟨a, rfl⟩ := IsLocalRing.residue_surjective x
-  change IsLocalRing.residue A
-      ((toDecompositionGroupOfEqTop K A
-        (localSeparableDecompositionGroup_eq_top K) sigma.1) • a) =
-    IsLocalRing.residue A
-      ((toDecompositionGroupOfEqTop
-        (abstractFixedField K (SeparableClosure K) H) A
-        (localAbstractFixedDecompositionGroup_eq_top K H)
-        (abstractSubgroupEquivGaloisGroup K (SeparableClosure K) H sigma)) • a)
-  congr 1
+  rfl
 
 /-- The image of `H` under the local residue action is exactly the subgroup
 fixing the residue subfield of its fixed field.  The reverse inclusion is the
 surjectivity of the residue-action map after changing the base to that
 fixed field. -/
 theorem localAbstractFixedResidueAction_map_eq_fixingSubgroup
-    (H : ClosedSubgroup (Gal(SeparableClosure K / K))) :
+      :
     H.toSubgroup.map (localSeparableResidueAlgAction K).toMonoidHom =
       (localAbstractFixedResidueIntermediateField K H).fixingSubgroup := by
   let E := abstractFixedField K (SeparableClosure K) H
@@ -161,14 +157,9 @@ theorem localAbstractFixedResidueAction_map_eq_fixingSubgroup
           change rhoK sigma z = z at hz
           change rhoK sigma (y + z) = y + z
           rw [map_add]
-          exact congrArg₂ (fun a b : Omega => a + b) hy hz
+          apply congrArg₂ <;> assumption
         mul_mem' := by
-          intro y z hy hz
-          change rhoK sigma y = y at hy
-          change rhoK sigma z = z at hz
-          change rhoK sigma (y * z) = y * z
-          rw [map_mul]
-          exact congrArg₂ (fun a b : Omega => a * b) hy hz
+          simp_all
         algebraMap_mem' := fun y => (rhoK sigma).commutes y
         inv_mem' := by
           intro y hy
@@ -219,7 +210,7 @@ theorem localAbstractFixedResidueAction_map_eq_fixingSubgroup
 /-- The residue action of an element of `H` fixes the finite residue
 subfield attached to the fixed field of `H`. -/
 theorem localAbstractFixedResidueAction_mem_fixingSubgroup
-    (H : ClosedSubgroup (Gal(SeparableClosure K / K)))
+     
     (sigma : H.toSubgroup) :
     localSeparableResidueAlgAction K sigma.1 ∈
       (localAbstractFixedResidueIntermediateField K H).fixingSubgroup := by
@@ -230,16 +221,13 @@ theorem localAbstractFixedResidueAction_mem_fixingSubgroup
 residue subfield selected by `H` inside the common residue algebraic
 closure. -/
 noncomputable def localAbstractFixedResidueActionOverIntermediateField
-    (H : ClosedSubgroup (Gal(SeparableClosure K / K))) :
+      :
     H.toSubgroup →*
       (selectedResidueField (localSeparableValuationSubring K) ≃ₐ[
         localAbstractFixedResidueIntermediateField K H]
         selectedResidueField (localSeparableValuationSubring K)) := by
   let F := localAbstractFixedResidueIntermediateField K H
-  let rhoH : H.toSubgroup →*
-      (selectedResidueField (localSeparableValuationSubring K) ≃ₐ[
-        decompositionResidueField K (localSeparableValuationSubring K)]
-        selectedResidueField (localSeparableValuationSubring K)) :=
+  let rhoH  :=
     (localSeparableResidueAlgAction K).toMonoidHom.comp H.toSubgroup.subtype
   let rhoF : H.toSubgroup →* F.fixingSubgroup :=
     rhoH.codRestrict F.fixingSubgroup
@@ -251,24 +239,28 @@ noncomputable def localAbstractFixedResidueActionOverIntermediateField
 not the underlying automorphism of the selected residue field. -/
 @[simp]
 theorem localAbstractFixedResidueActionOverIntermediateField_apply
-    (H : ClosedSubgroup (Gal(SeparableClosure K / K)))
+     
     (sigma : H.toSubgroup)
     (x : selectedResidueField (localSeparableValuationSubring K)) :
     localAbstractFixedResidueActionOverIntermediateField K H sigma x =
-      localSeparableResidueAlgAction K sigma.1 x := by
-  rfl
+      localSeparableResidueAlgAction K sigma.1 x := rfl
+end
 
+
+section
+variable (H : ClosedSubgroup (Gal(SeparableClosure K / K)))
+    [Finite
+      ((baseField (Gal(SeparableClosure K / K))).toSubgroup ⧸
+        extensionSubgroup
+          (baseField (Gal(SeparableClosure K / K))) H
+          (le_baseField H))]
+include H
 /-- A finite abstract field has a genuinely finite residue subfield inside
 the selected residue algebraic closure.  Finiteness is deduced from the
 finite index of `H`: surjectivity of the absolute residue action makes the
 index of its image divide the index of `H`. -/
 theorem localAbstractFixedResidueIntermediateField_finiteDimensional
-    (H : ClosedSubgroup (Gal(SeparableClosure K / K)))
-    [Finite
-      ((baseField (Gal(SeparableClosure K / K))).toSubgroup ⧸
-        extensionSubgroup
-          (baseField (Gal(SeparableClosure K / K))) H
-          (le_baseField H))] :
+      :
     FiniteDimensional
       (decompositionResidueField K (localSeparableValuationSubring K))
       (localAbstractFixedResidueIntermediateField K H) := by
@@ -288,7 +280,7 @@ theorem localAbstractFixedResidueIntermediateField_finiteDimensional
     have hdiv : (H.toSubgroup.map rho).index ∣ H.toSubgroup.index :=
       H.toSubgroup.index_map_dvd (localSeparableResidueAlgAction_surjective K)
     rw [hzero] at hdiv
-    exact hHindex (eq_zero_of_zero_dvd hdiv)
+    apply hHindex <;> aesop
   let : Finite
       ((Omega ≃ₐ[k] Omega) ⧸ H.toSubgroup.map rho) :=
     (Subgroup.index_ne_zero_iff_finite (H := H.toSubgroup.map rho)).mp
@@ -298,7 +290,7 @@ theorem localAbstractFixedResidueIntermediateField_finiteDimensional
   let : Finite ((Omega ≃ₐ[k] Omega) ⧸ F.fixingSubgroup) := by
     rw [← himage]
     infer_instance
-  let : Subgroup.FiniteIndex F.fixingSubgroup :=
+  let  :=
     F.fixingSubgroup.finiteIndex_of_finite_quotient
   apply (InfiniteGalois.isOpen_iff_finite (K := Omega) F).1
   exact Subgroup.isOpen_of_isClosed_of_finiteIndex
@@ -307,12 +299,7 @@ theorem localAbstractFixedResidueIntermediateField_finiteDimensional
 /-- The finite residue subfield, packaged in the form used by the intrinsic
 finite-field residue datum. -/
 noncomputable def localAbstractFixedResidueFiniteGaloisIntermediateField
-    (H : ClosedSubgroup (Gal(SeparableClosure K / K)))
-    [Finite
-      ((baseField (Gal(SeparableClosure K / K))).toSubgroup ⧸
-        extensionSubgroup
-          (baseField (Gal(SeparableClosure K / K))) H
-          (le_baseField H))] :
+      :
     FiniteGaloisIntermediateField
       (decompositionResidueField K (localSeparableValuationSubring K))
       (selectedResidueField (localSeparableValuationSubring K)) := by
@@ -324,7 +311,7 @@ noncomputable def localAbstractFixedResidueFiniteGaloisIntermediateField
   letI : FiniteDimensional k F :=
     localAbstractFixedResidueIntermediateField_finiteDimensional K H
   letI : Finite F := Module.finite_of_finite k
-  letI : Fintype F := Fintype.ofFinite F
+  letI  := Fintype.ofFinite F
   letI : IsGalois k F := by
     obtain ⟨p, hp⟩ := CharP.exists k
     let : CharP k p := hp
@@ -336,6 +323,8 @@ noncomputable def localAbstractFixedResidueFiniteGaloisIntermediateField
         (let ⟨n, _, hn⟩ := FiniteField.card F p
         hn.symm ▸ dvd_pow_self p n.ne_zero))
   exact { toIntermediateField := F }
+end
+
 
 /-- **Finite local reciprocity, finite-field index form.**  The residue degree attached
 by `localResidueDatum` to a finite abstract field is the degree of the actual
@@ -375,7 +364,7 @@ theorem localResidueDatum_residueDegree_eq_selectedResidueFinrank
     exact residueDegreeImage_index_eq_finrank_of_map_eq_fixingSubgroup
       k Omega rho H.field.toSubgroup F himage
   let : ((localResidueDatum K).fieldImage HR.field).IsFiniteRelIndex
-      (⊤ : Subgroup ZHatMul) :=
+      (⊤) :=
     ⟨by
       rw [Subgroup.relIndex_top_right, hindex]
       let : Module.IsTorsionFree k R :=
@@ -389,8 +378,7 @@ theorem localResidueDatum_residueDegree_eq_selectedResidueFinrank
     ← HR.residueDegreeCardinal_eq_coe,
     DegreeData.residueDegreeCardinal,
     relativeIndexCardinal_eq_index_of_finite
-      (show (localResidueDatum K).fieldImage HR.field ≤
-        (⊤ : Subgroup ZHatMul) from le_top)]
+      (le_top)]
   norm_cast
   simpa only [Subgroup.relIndex_top_right] using hindex
 
@@ -429,7 +417,7 @@ theorem localResidueDatum_normalizedDegree_eq_residueAbsoluteDegreeIn
   let : FiniteDimensional k F :=
     localAbstractFixedResidueIntermediateField_finiteDimensional K H.field
   let : Finite F := Module.finite_of_finite k
-  let : Fintype F := Fintype.ofFinite F
+  let  := Fintype.ofFinite F
   let HF := H.toFiniteResidueAbstractField (localResidueDatum K)
   let tau : Omega ≃ₐ[F] Omega :=
     localAbstractFixedResidueActionOverIntermediateField K H.field sigma

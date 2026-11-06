@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.CharacterSums.DavenportHasse.WeightedMonicPolynomials
 
 @[expose] public section
+
 
 open Polynomial UniqueFactorizationMonoid
 
@@ -40,7 +43,7 @@ lemma divisors_reindex {M : Type*} [AddCommMonoid M] (n : ℕ) (H : ℕ → ℕ 
     simp only [Finset.mem_filter, Finset.mem_product, Finset.mem_Icc] at hx ⊢
     refine ⟨Nat.mul_pos (by omega) (by omega), hx.2⟩
 
-noncomputable def MonLe (k : Type*) [Field k] [Fintype k] (n : ℕ) : Finset k[X] :=
+noncomputable def MonLe (k : Type*) [Field k] [Fintype k] (n : ℕ)  :=
   (Finset.Icc 1 n).biUnion (Mon k)
 
 lemma sum_MonLe {M : Type*} [AddCommMonoid M] (n : ℕ) (G : k[X] → M) :

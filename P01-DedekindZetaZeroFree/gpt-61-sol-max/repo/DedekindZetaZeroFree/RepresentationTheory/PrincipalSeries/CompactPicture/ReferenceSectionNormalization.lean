@@ -46,7 +46,7 @@ end Local
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P)
+
 
 end DedekindZetaZeroFree.KPLiteralScalarCanonicalReferenceComparison
 

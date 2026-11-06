@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import GaloisCohomology.Cyclic.Herbrand.Product
 public import GaloisCohomology.Cyclic.Herbrand.HerbrandLowDegree.EquivariantEquiv
 public import GaloisCohomology.Cyclic.Herbrand.HerbrandFiniteness
@@ -8,6 +10,7 @@ public import Mathlib.GroupTheory.GroupAction.Quotient
 public import Mathlib.SetTheory.Cardinal.Finite
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -123,8 +126,7 @@ theorem trivialIntFixedToZModHom_ker :
     have hx0 :
         ((Multiplicative.toAdd
           (x : Multiplicative ℤ) : ℤ) :
-            ZMod (Fintype.card G)) = 0 := by
-      exact congrArg Multiplicative.toAdd hx
+            ZMod (Fintype.card G)) = 0 := congrArg Multiplicative.toAdd hx
     rcases
         (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).1 hx0
       with ⟨z, hz⟩
@@ -205,11 +207,11 @@ theorem trivialInt_normKernelSubgroup_eq_bot :
     exact congrArg Multiplicative.ofAdd (by
       change
         Multiplicative.toAdd
-          (x : Multiplicative ℤ) = 0
+          x = 0
       have hnorm :
           (Fintype.card G : ℤ) *
               Multiplicative.toAdd
-                (x : Multiplicative ℤ) = 0 := by
+                x = 0 := by
         rw [← trivialInt_tateNorm_toAdd]
         exact congrArg Multiplicative.toAdd hx
       exact (mul_eq_zero.mp hnorm).resolve_left (by
@@ -294,16 +296,7 @@ theorem trivialInt_herbrandQuotient_eq_card
     herbrandQuotient
         (G := G) (A := Multiplicative ℤ) σ =
       (Fintype.card G : ℚ) := by
-  let := trivialIntMulDistribMulAction G
-  let := trivialIntHerbrandH0Finite (G := G)
-  let :=
-    trivialIntHerbrandHMinusOneFinite
-      (G := G) σ
-  rw [herbrandQuotient_eq_card_ratio,
-    trivialInt_herbrandH0_card (G := G),
-    trivialInt_herbrandHMinusOne_card_eq_one
-      (G := G) σ]
-  simp
+  simp_all [CyclicCohomology.ProfiniteCohomology.Herbrand.herbrandQuotient_eq_card_ratio, CyclicCohomology.trivialInt_herbrandH0_card, CyclicCohomology.trivialInt_herbrandHMinusOne_card_eq_one] <;> aesop
 
 end TrivialInteger
 
@@ -320,11 +313,14 @@ abbrev TransitivePermutationLattice
   InducedModule (G := G)
     (B := Multiplicative ℤ) H
 
-theorem transitivePermutationLatticeHerbrandH0Finite
-    (H : Subgroup G)
+section
+variable (H : Subgroup G)
     (σ : G)
     (hgen : ∀ g : G,
-      g ∈ Subgroup.zpowers σ) :
+      g ∈ Subgroup.zpowers σ)
+include H σ hgen
+theorem transitivePermutationLatticeHerbrandH0Finite
+      :
     letI _stabilizerAction :
         MulDistribMulAction H (Multiplicative ℤ) :=
       trivialIntMulDistribMulAction H
@@ -336,7 +332,7 @@ theorem transitivePermutationLatticeHerbrandH0Finite
   let stabilizerAction :
       MulDistribMulAction H (Multiplicative ℤ) :=
     trivialIntMulDistribMulAction H
-  let stabilizerFintype : Fintype H :=
+  let stabilizerFintype  :=
     Fintype.ofFinite H
   let : Finite
       (HerbrandH0 H (Multiplicative ℤ)) :=
@@ -347,10 +343,7 @@ theorem transitivePermutationLatticeHerbrandH0Finite
       H σ hgen).symm.toEquiv
 
 theorem transitivePermutationLatticeHerbrandHMinusOneFinite
-    (H : Subgroup G)
-    (σ : G)
-    (hgen : ∀ g : G,
-      g ∈ Subgroup.zpowers σ) :
+      :
     letI _stabilizerAction :
         MulDistribMulAction H (Multiplicative ℤ) :=
       trivialIntMulDistribMulAction H
@@ -362,7 +355,7 @@ theorem transitivePermutationLatticeHerbrandHMinusOneFinite
   let stabilizerAction :
       MulDistribMulAction H (Multiplicative ℤ) :=
     trivialIntMulDistribMulAction H
-  let stabilizerFintype : Fintype H :=
+  let stabilizerFintype  :=
     Fintype.ofFinite H
   let δ :=
     subgroupGeneratorOfGenerator H σ hgen
@@ -380,10 +373,7 @@ theorem transitivePermutationLatticeHerbrandHMinusOneFinite
 /-- The Herbrand quotient of the permutation lattice on one orbit is the
 order of the stabilizer. -/
 theorem transitivePermutationLattice_herbrandQuotient_eq_stabilizerCard
-    (H : Subgroup G)
-    (σ : G)
-    (hgen : ∀ g : G,
-      g ∈ Subgroup.zpowers σ) :
+      :
     letI _stabilizerAction :
         MulDistribMulAction H (Multiplicative ℤ) :=
       trivialIntMulDistribMulAction H
@@ -408,32 +398,14 @@ theorem transitivePermutationLattice_herbrandQuotient_eq_stabilizerCard
   let stabilizerAction :
       MulDistribMulAction H (Multiplicative ℤ) :=
     trivialIntMulDistribMulAction H
-  let stabilizerFintype : Fintype H :=
+  let stabilizerFintype  :=
     Fintype.ofFinite H
   let δ :=
     subgroupGeneratorOfGenerator H σ hgen
-  let stabilizerH0Finite :
-      Finite
-        (HerbrandH0 H (Multiplicative ℤ)) :=
-    trivialIntHerbrandH0Finite (G := H)
-  let stabilizerHMinusOneFinite :
-      Finite
-        (HerbrandHMinusOne H
-          (Multiplicative ℤ) δ) :=
-    trivialIntHerbrandHMinusOneFinite
-      (G := H) δ
-  let h0Finite :
-      Finite
-        (HerbrandH0 G
-          (TransitivePermutationLattice H)) :=
-    transitivePermutationLatticeHerbrandH0Finite
-      H σ hgen
-  let hMinusOneFinite :
-      Finite
-        (HerbrandHMinusOne G
-          (TransitivePermutationLattice H) σ) :=
-    transitivePermutationLatticeHerbrandHMinusOneFinite
-      H σ hgen
+  
+  
+  
+  
   have h0Card :
       Nat.card
           (HerbrandH0 G
@@ -472,6 +444,8 @@ theorem transitivePermutationLattice_herbrandQuotient_eq_stabilizerCard
   rw [herbrandQuotient_eq_card_ratio,
     h0Card, hMinusOneCard]
   simp
+end
+
 
 end TransitivePermutationLattice
 
@@ -630,9 +604,7 @@ theorem permutationLattice_herbrandQuotient_eq_stabilizerProduct
     _ = ∏ i, (Fintype.card (H i) : ℚ) := by
       apply Finset.prod_congr rfl
       intro i _
-      exact
-        transitivePermutationLattice_herbrandQuotient_eq_stabilizerCard
-          (H i) σ hgen
+      apply transitivePermutationLattice_herbrandQuotient_eq_stabilizerCard <;> assumption
 
 end PermutationLatticeOrbits
 
@@ -661,7 +633,7 @@ def permutationFunctionMulDistribMulAction :
 
 /-- A chosen representative of the orbit containing `i`. -/
 noncomputable def chosenPermutationOrbitRepresentative
-    (i : ι) : ι :=
+    (i : ι)  :=
   Quotient.out
     (Quotient.mk'' i :
       MulAction.orbitRel.Quotient G ι)
@@ -680,7 +652,7 @@ theorem chosenPermutationOrbitRepresentative_sameOrbit
 /-- A chosen group element carrying the chosen representative of
 the orbit of `i` to `i`. -/
 noncomputable def chosenPermutationOrbitTransport
-    (i : ι) : G :=
+    (i : ι)  :=
   Classical.choose
     (chosenPermutationOrbitRepresentative_sameOrbit
       (G := G) i)
@@ -696,8 +668,7 @@ theorem chosenPermutationOrbitTransport_smul
 
 /-- The stabilizer of the chosen representative of an orbit. -/
 abbrev permutationOrbitStabilizer
-    (ω : MulAction.orbitRel.Quotient G ι) :
-    Subgroup G :=
+    (ω : MulAction.orbitRel.Quotient G ι)  :=
   MulAction.stabilizer G ω.out
 
 /-- Integer-valued functions on a finite `G`-set, decomposed into the
@@ -760,15 +731,8 @@ noncomputable def permutationFunctionOrbitEquiv :
     have hω :
         (Quotient.mk'' (x⁻¹ • ω.out) :
             MulAction.orbitRel.Quotient G ι) = ω := by
-      calc
-        (Quotient.mk'' (x⁻¹ • ω.out) :
-            MulAction.orbitRel.Quotient G ι) =
-            Quotient.mk'' ω.out := by
-              exact Quotient.sound
-                (MulAction.orbitRel_apply.mpr
-                  ⟨x⁻¹, rfl⟩)
-        _ = ω := Quotient.out_eq' ω
-    let t : G :=
+      simp_all
+    let t  :=
       chosenPermutationOrbitTransport
         (G := G) (x⁻¹ • ω.out)
     have ht :
@@ -835,34 +799,10 @@ theorem permutationFunctionOrbitEquiv_equivariant :
           (g • f) =
         g • permutationFunctionOrbitEquiv
           (G := G) (ι := ι) f := by
-  let functionAction :
-      MulDistribMulAction G (ι → Multiplicative ℤ) :=
-    permutationFunctionMulDistribMulAction
-  let stabilizerAction :
-      ∀ ω : MulAction.orbitRel.Quotient G ι,
-        MulDistribMulAction
-          (permutationOrbitStabilizer ω)
-          (Multiplicative ℤ) :=
-    fun ω =>
-      trivialIntMulDistribMulAction
-        (permutationOrbitStabilizer ω)
-  let orbitAction :
-      ∀ ω : MulAction.orbitRel.Quotient G ι,
-        MulDistribMulAction G
-          (TransitivePermutationLattice
-            (permutationOrbitStabilizer ω)) :=
-    fun ω =>
-      inducedMulDistribMulAction
-        (permutationOrbitStabilizer ω)
-  let familyAction :
-      MulDistribMulAction G
-        (PermutationLatticeOrbitFamily
-          (fun ω : MulAction.orbitRel.Quotient G ι =>
-            permutationOrbitStabilizer ω)) :=
-    piMulDistribMulAction G
-      (fun ω : MulAction.orbitRel.Quotient G ι =>
-        TransitivePermutationLattice
-          (permutationOrbitStabilizer ω))
+  
+  
+  
+  
   intro g f
   funext ω
   apply Subtype.ext
@@ -872,12 +812,15 @@ theorem permutationFunctionOrbitEquiv_equivariant :
       f ((x * g)⁻¹ • ω.out)
   rw [mul_inv_rev, mul_smul]
 
+section
+variable (σ : G)
+    (hgen : ∀ g : G,
+      g ∈ Subgroup.zpowers σ)
+include σ hgen
 /-- Degree-zero Tate cohomology of a finite integral permutation module
 is finite for a cyclic generator. -/
 theorem permutationFunctionHerbrandH0Finite
-    (σ : G)
-    (hgen : ∀ g : G,
-      g ∈ Subgroup.zpowers σ) :
+      :
     letI _functionAction :
         MulDistribMulAction G (ι → Multiplicative ℤ) :=
       permutationFunctionMulDistribMulAction
@@ -894,10 +837,7 @@ theorem permutationFunctionHerbrandH0Finite
     fun ω =>
       trivialIntMulDistribMulAction
         (permutationOrbitStabilizer ω)
-  let stabilizerFintype :
-      ∀ ω : MulAction.orbitRel.Quotient G ι,
-        Fintype (permutationOrbitStabilizer ω) :=
-    fun _ => Fintype.ofFinite _
+  
   let orbitAction :
       ∀ ω : MulAction.orbitRel.Quotient G ι,
         MulDistribMulAction G
@@ -953,9 +893,7 @@ theorem permutationFunctionHerbrandH0Finite
 /-- Degree-minus-one Tate cohomology of a finite integral permutation
 module is finite for a cyclic generator. -/
 theorem permutationFunctionHerbrandHMinusOneFinite
-    (σ : G)
-    (hgen : ∀ g : G,
-      g ∈ Subgroup.zpowers σ) :
+      :
     letI _functionAction :
         MulDistribMulAction G (ι → Multiplicative ℤ) :=
       permutationFunctionMulDistribMulAction
@@ -973,10 +911,7 @@ theorem permutationFunctionHerbrandHMinusOneFinite
     fun ω =>
       trivialIntMulDistribMulAction
         (permutationOrbitStabilizer ω)
-  let stabilizerFintype :
-      ∀ ω : MulAction.orbitRel.Quotient G ι,
-        Fintype (permutationOrbitStabilizer ω) :=
-    fun _ => Fintype.ofFinite _
+  
   let orbitAction :
       ∀ ω : MulAction.orbitRel.Quotient G ι,
         MulDistribMulAction G
@@ -1033,9 +968,7 @@ theorem permutationFunctionHerbrandHMinusOneFinite
 integer-valued functions on a finite `G`-set is the product of the
 orders of the stabilizers of its orbits. -/
 theorem permutationFunction_herbrandQuotient_eq_stabilizerProduct
-    (σ : G)
-    (hgen : ∀ g : G,
-      g ∈ Subgroup.zpowers σ) :
+      :
     letI _functionAction :
         MulDistribMulAction G (ι → Multiplicative ℤ) :=
       permutationFunctionMulDistribMulAction
@@ -1170,15 +1103,15 @@ theorem permutationFunction_herbrandQuotient_eq_stabilizerProduct
           (A := PermutationLatticeOrbitFamily
             (fun ω : MulAction.orbitRel.Quotient G ι =>
               permutationOrbitStabilizer ω)) σ := by
-      simpa only [e, he] using
-        (herbrandQuotient_eq_of_equivariantMulEquiv
-          e he σ)
+      apply herbrandQuotient_eq_of_equivariantMulEquiv <;> assumption
     _ = ∏ ω : MulAction.orbitRel.Quotient G ι,
           (Fintype.card
             (permutationOrbitStabilizer ω) : ℚ) :=
       permutationLattice_herbrandQuotient_eq_stabilizerProduct
         (fun ω : MulAction.orbitRel.Quotient G ι =>
           permutationOrbitStabilizer ω) σ hgen
+end
+
 
 end CanonicalPermutationFunctions
 
@@ -1188,46 +1121,44 @@ variable {G : Type uG} {A : Type uA}
     [Group G] [CommGroup A]
     [MulDistribMulAction G A]
 
+section
+variable (B : Subgroup A)
+    (hstable : ∀ (g : G) (x : A),
+      x ∈ B → g • x ∈ B)
+include B hstable
 /-- Restriction of an action to a stable subgroup. -/
 @[reducible]
 def stableSubgroupMulDistribMulAction
-    (B : Subgroup A)
-    (hstable : ∀ (g : G) (x : A),
-      x ∈ B → g • x ∈ B) :
+      :
     MulDistribMulAction G B where
   smul g x := ⟨g • x.1, hstable g x.1 x.2⟩
   one_smul x := by
     apply Subtype.ext
-    exact one_smul G x.1
+    apply one_smul
   mul_smul g h x := by
     apply Subtype.ext
-    exact mul_smul g h x.1
+    apply mul_smul
   smul_one g := by
     apply Subtype.ext
     exact MulDistribMulAction.smul_one g
   smul_mul g x y := by
     apply Subtype.ext
-    exact MulDistribMulAction.smul_mul
-      g x.1 y.1
+    apply MulDistribMulAction.smul_mul
 
 @[simp]
 theorem stableSubgroup_smul_coe
-    (B : Subgroup A)
-    (hstable : ∀ (g : G) (x : A),
-      x ∈ B → g • x ∈ B)
+     
     (g : G) (x : B) :
     letI :=
       stableSubgroupMulDistribMulAction
         B hstable
-    ((g • x : B) : A) = g • (x : A) :=
+    ((g • x) : A) = g • (x : A) :=
   rfl
 
 /-- The action induced on the quotient by a stable subgroup. -/
 @[reducible]
 def stableQuotientMulDistribMulAction
-    (B : Subgroup A)
-    (hstable : ∀ (g : G) (x : A),
-      x ∈ B → g • x ∈ B) :
+      :
     MulDistribMulAction G (A ⧸ B) where
   smul g q :=
     QuotientGroup.map B B
@@ -1261,9 +1192,7 @@ def stableQuotientMulDistribMulAction
 
 @[simp]
 theorem stableQuotient_smul_mk
-    (B : Subgroup A)
-    (hstable : ∀ (g : G) (x : A),
-      x ∈ B → g • x ∈ B)
+     
     (g : G) (x : A) :
     letI :=
       stableQuotientMulDistribMulAction
@@ -1274,9 +1203,7 @@ theorem stableQuotient_smul_mk
 
 /-- The inclusion of a stable subgroup is equivariant. -/
 theorem stableSubgroup_subtype_equivariant
-    (B : Subgroup A)
-    (hstable : ∀ (g : G) (x : A),
-      x ∈ B → g • x ∈ B) :
+      :
     letI :=
       stableSubgroupMulDistribMulAction
         B hstable
@@ -1290,9 +1217,7 @@ theorem stableSubgroup_subtype_equivariant
 
 /-- The quotient map by a stable subgroup is equivariant. -/
 theorem stableSubgroup_quotientMap_equivariant
-    (B : Subgroup A)
-    (hstable : ∀ (g : G) (x : A),
-      x ∈ B → g • x ∈ B) :
+      :
     letI :=
       stableQuotientMulDistribMulAction
         B hstable
@@ -1304,6 +1229,8 @@ theorem stableSubgroup_quotientMap_equivariant
       B hstable
   intro g x
   rfl
+end
+
 
 /-- Exactness of the inclusion followed by the quotient map. -/
 theorem stableSubgroup_quotientMap_exact
@@ -1311,17 +1238,7 @@ theorem stableSubgroup_quotientMap_exact
     ∀ x : A,
       QuotientGroup.mk' B x = 1 ↔
         ∃ b : B, B.subtype b = x := by
-  intro x
-  constructor
-  · intro hx
-    have hxB :
-        x ∈ B :=
-      (QuotientGroup.eq_one_iff x).mp hx
-    exact ⟨⟨x, hxB⟩, rfl⟩
-  · rintro ⟨b, rfl⟩
-    exact
-      (QuotientGroup.eq_one_iff b.1).mpr
-        b.2
+  simp_all
 
 end FiniteIndexStableSubgroup
 
@@ -1333,16 +1250,19 @@ variable {G A : Type}
 
 variable [Fintype G]
 
-/-- If the Herbrand quotient is defined on a stable finite-index
-subgroup, then it is defined on the ambient module.  Finiteness of the
-quotient supplies the third term of the exact-sequence argument. -/
-theorem finiteIndexStableSubgroup_ambientHerbrandQuotientDefined
-    (B : Subgroup A)
+section
+variable (B : Subgroup A)
     (hstable : ∀ (g : G) (x : A),
       x ∈ B → g • x ∈ B)
     (σ : G)
     (hgen : ∀ g : G,
       g ∈ Subgroup.zpowers σ)
+include B hstable σ hgen
+/-- If the Herbrand quotient is defined on a stable finite-index
+subgroup, then it is defined on the ambient module.  Finiteness of the
+quotient supplies the third term of the exact-sequence argument. -/
+theorem finiteIndexStableSubgroup_ambientHerbrandQuotientDefined
+     
     (hB :
       letI :=
         stableSubgroupMulDistribMulAction
@@ -1382,12 +1302,7 @@ theorem finiteIndexStableSubgroup_ambientHerbrandQuotientDefined
 `G`-module to a stable subgroup with finite quotient does not change the
 Herbrand quotient. -/
 theorem herbrandQuotient_eq_of_finiteIndex_stableSubgroup
-    (B : Subgroup A)
-    (hstable : ∀ (g : G) (x : A),
-      x ∈ B → g • x ∈ B)
-    (σ : G)
-    (hgen : ∀ g : G,
-      g ∈ Subgroup.zpowers σ)
+     
     (hB :
       letI :=
         stableSubgroupMulDistribMulAction
@@ -1424,22 +1339,12 @@ theorem herbrandQuotient_eq_of_finiteIndex_stableSubgroup
       (HerbrandH0 G B) := hB.1
   let : Finite
       (HerbrandHMinusOne G B σ) := hB.2
-  let : Finite
-      (HerbrandH0 G A) := hA.1
-  let : Finite
-      (HerbrandHMinusOne G A σ) := hA.2
-  let : Finite
-      (HerbrandH0 G (A ⧸ B)) := hQ.1
-  let : Finite
-      (HerbrandHMinusOne G (A ⧸ B) σ) :=
+  let  := hA.1
+  let  := hA.2
+  let  := hQ.1
+  let  :=
     hQ.2
-  have hmult :
-      herbrandQuotient
-          (G := G) (A := A) σ =
-        herbrandQuotient
-            (G := G) (A := B) σ *
-          herbrandQuotient
-            (G := G) (A := A ⧸ B) σ :=
+  have hmult  :=
     herbrandQuotient_multiplicative_of_shortExact
       B.subtype (QuotientGroup.mk' B)
       (stableSubgroup_subtype_equivariant
@@ -1455,22 +1360,9 @@ theorem herbrandQuotient_eq_of_finiteIndex_stableSubgroup
           (G := G) (A := A ⧸ B) σ = 1 :=
     herbrandQuotient_eq_one_of_finite_module
       (G := G) (A := A ⧸ B) σ hgen
-  change
-    @herbrandQuotient G A _ _ _ _
-        σ hA.1 hA.2 =
-      @herbrandQuotient G B _ _ _ _
-        σ hB.1 hB.2
-  calc
-    @herbrandQuotient G A _ _ _ _
-          σ hA.1 hA.2 =
-        @herbrandQuotient G B _ _ _ _
-            σ hB.1 hB.2 *
-          @herbrandQuotient G (A ⧸ B)
-            _ _ _ _ σ hQ.1 hQ.2 :=
-      hmult
-    _ = @herbrandQuotient G B _ _ _ _
-          σ hB.1 hB.2 := by
-      rw [hquotient, mul_one]
+  simp_all
+end
+
 
 end FiniteIndexStableSubgroupFiniteness
 

@@ -75,12 +75,15 @@ private lemma far_iteration_absorb (α M N η : ℝ) (r : ℕ) (δ : ℝ)
     _ = Real.rpow (M * N) (η / 4 + η / 4) := rpow_add' hT0 (η / 4) (η / 4)
     _ ≤ Real.rpow (M * N) η := rpow_le_rpow_exp' hT1 (by linarith)
 
-private theorem far_core_aux
-    (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
+section
+variable (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
     (c : Ideal (𝓞 F)) (hc : c ≠ ⊥)
     (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c) (hGood : CoreGood Q)
     (W : ℝ → ℝ) (hW : SieveWeight W) (α : ℝ) (hα : 1 ≤ α) (hα₂ : α ≤ 2)
     (hExponent : HasSieveExponent F c Q α)
+include F hF c hc Q hGood W hW α hα hα₂ hExponent
+private theorem far_core_aux
+     
     (η : ℝ) (hη : 0 < η) (r : ℕ) (hr : r = max 1 (Nat.ceil (20 / η)))
     (δ : ℝ) (hδ : δ = η / (8 * (r : ℝ) * (α + 1))) :
     ∃ C : ℝ, 0 ≤ C ∧
@@ -241,12 +244,7 @@ private theorem far_core_aux
     · exact hfinal
 
 theorem recursion_far_region_core
-    (F : Type) [Field F] [NumberField F]
-    (hF : NumberField.IsTotallyComplex F)
-    (c : Ideal (𝓞 F)) (hc : c ≠ ⊥)
-    (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c) (hGood : CoreGood Q)
-    (W : ℝ → ℝ) (hW : SieveWeight W) (α : ℝ) (hα : 1 ≤ α)
-    (hα₂ : α ≤ 2) (hExponent : HasSieveExponent F c Q α)
+     
      :
     ∀ η : ℝ, 0 < η →
       let r : ℕ := max 1 (Nat.ceil (20 / η))
@@ -264,6 +262,8 @@ theorem recursion_far_region_core
   exact far_core_aux F hF c hc Q hGood W hW α hα hα₂ hExponent η hη
     (max 1 (Nat.ceil (20 / η))) rfl
     (η / (8 * (((max 1 (Nat.ceil (20 / η)) : ℕ)) : ℝ) * (α + 1))) rfl
+end
+
 
 end DedekindZetaZeroFree.LargeSieve.Sieve
 

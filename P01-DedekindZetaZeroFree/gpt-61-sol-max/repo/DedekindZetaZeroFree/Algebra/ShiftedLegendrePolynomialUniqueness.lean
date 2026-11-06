@@ -1,14 +1,17 @@
 module
 
+public import Mathlib
+
 public import Mathlib.RingTheory.Polynomial.ShiftedLegendre
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.ComplexFractionalInverse.FunkHecke.CircleAverage
 
 open Polynomial
 
-def Lc (ℓ k : ℕ) : ℤ := (-1) ^ k * (ℓ.choose k : ℤ) * ((ℓ + k).choose ℓ : ℤ)
+def Lc (ℓ k : ℕ)  := (-1) ^ k * (ℓ.choose k : ℤ) * ((ℓ + k).choose ℓ : ℤ)
 
 private lemma Lc_rec (ℓ k : ℕ) :
     ((k + 1 : ℤ) ^ 2) * Lc ℓ (k + 1)
@@ -22,7 +25,7 @@ private lemma Lc_rec (ℓ k : ℕ) :
       have h := Nat.choose_mul_succ_eq (ℓ + k) ℓ
       have e2 : ℓ + k + 1 - ℓ = k + 1 := by omega
       rw [e2] at h
-      have e1 : ℓ + k + 1 = ℓ + (k + 1) := by omega
+      have e1 : ℓ + k + 1 = ℓ + (k + 1) := rfl
       rw [e1] at h
       exact_mod_cast h.symm
     have hkey : (k : ℤ) * ((k + 1 : ℕ) : ℤ) - (ℓ : ℤ) * ((ℓ : ℤ) + 1)
@@ -33,11 +36,7 @@ private lemma Lc_rec (ℓ k : ℕ) :
     have hXY : ((k + 1 : ℤ) ^ 2) * ((ℓ.choose (k + 1) : ℤ) * ((ℓ + (k + 1)).choose ℓ : ℤ))
         = (ℓ.choose k : ℤ) * ((ℓ + k).choose ℓ : ℤ)
           * (((ℓ - k : ℕ) : ℤ) * ((ℓ + (k + 1) : ℕ) : ℤ)) := by
-      rw [show ((k + 1 : ℤ) ^ 2) * ((ℓ.choose (k + 1) : ℤ) * ((ℓ + (k + 1)).choose ℓ : ℤ))
-            = ((ℓ.choose (k + 1) : ℤ) * ((k + 1 : ℕ) : ℤ))
-              * (((ℓ + (k + 1)).choose ℓ : ℤ) * ((k + 1 : ℕ) : ℤ)) by push_cast; ring,
-        h1, h2]
-      ring
+      grind
     have hp : (-1 : ℤ) ^ (k + 1) = -((-1 : ℤ) ^ k) := by rw [pow_succ]; ring
     simp only [Lc]
     rw [show ((k + 1 : ℤ) ^ 2)
@@ -57,14 +56,14 @@ private lemma Lc_rec (ℓ k : ℕ) :
       simp only [Lc]
       push_cast
       ring
-    · have : ℓ.choose k = 0 := Nat.choose_eq_zero_of_lt h
+    · have  := Nat.choose_eq_zero_of_lt h
       simp [Lc, this]
 
 private lemma coeff_op {K : Type*} [Field K] (c : K) (R : Polynomial K) (k : ℕ) :
     (Polynomial.derivative (Polynomial.X * (1 - Polynomial.X) * R.derivative) +
       Polynomial.C c * R).coeff k
     = ((k + 1 : ℕ) : K) ^ 2 * R.coeff (k + 1)
-      - (((k : ℕ) : K) * ((k + 1 : ℕ) : K) - c) * R.coeff k := by
+      - ((k : K) * ((k + 1 : ℕ) : K) - c) * R.coeff k := by
   rcases k with _ | m
   · have e : Polynomial.X * (1 - Polynomial.X) * R.derivative
         = Polynomial.X * R.derivative - Polynomial.X ^ 2 * R.derivative := by ring
@@ -95,7 +94,7 @@ theorem polynomial_shiftedLegendre_ode_unique {K : Type*} [Field K] [CharZero K]
       Polynomial.derivative_X, Polynomial.derivative_C]
     ring
   have hQrec : ∀ k, ((k + 1 : ℕ) : K) ^ 2 * Q.coeff (k + 1)
-      = (((k : ℕ) : K) * ((k + 1 : ℕ) : K) - (ℓ : K) * ((ℓ : K) + 1)) * Q.coeff k := by
+      = ((k : K) * ((k + 1 : ℕ) : K) - (ℓ : K) * ((ℓ : K) + 1)) * Q.coeff k := by
     intro k
     have h := congrArg (fun p : Polynomial K => p.coeff k) hQ
     rw [hop] at h
@@ -107,7 +106,7 @@ theorem polynomial_shiftedLegendre_ode_unique {K : Type*} [Field K] [CharZero K]
     rw [hP, Polynomial.coeff_map, Polynomial.coeff_shiftedLegendre]
     simp only [Lc, Int.coe_castRingHom]
   have hPrec : ∀ k, ((k + 1 : ℕ) : K) ^ 2 * P.coeff (k + 1)
-      = (((k : ℕ) : K) * ((k + 1 : ℕ) : K) - (ℓ : K) * ((ℓ : K) + 1)) * P.coeff k := by
+      = ((k : K) * ((k + 1 : ℕ) : K) - (ℓ : K) * ((ℓ : K) + 1)) * P.coeff k := by
     intro k
     rw [hPcoeff (k + 1), hPcoeff k]
     exact_mod_cast Lc_rec ℓ k

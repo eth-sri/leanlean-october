@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.Sobolev.WeakDerivatives.MultiIndexLeibnizRule
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -21,20 +24,23 @@ structure GlobalWeakSobolev (n k : ℕ) where
 open WeakJets.Raw Filter
 open scoped Topology
 
-private theorem list_smooth {n : ℕ} (l : List (Fin n)) {a : Space n → ℂ}
+section
+variable {n : ℕ} (l : List (Fin n))
+include n l
+private theorem list_smooth   {a : Space n → ℂ}
     (ha : ContDiff ℝ (⊤ : ℕ∞) a) :
     ContDiff ℝ (⊤ : ℕ∞) (coordinateDerivativeList l a) := by
   induction l with
   | nil => exact ha
   | cons i l ih => exact (ih.fderiv_right (by simp)).clm_apply contDiff_const
 
-private theorem list_support {n : ℕ} (l : List (Fin n)) (a : Space n → ℂ) :
+private theorem list_support   (a : Space n → ℂ) :
     tsupport (coordinateDerivativeList l a) ⊆ tsupport a := by
   induction l with
   | nil => exact Set.Subset.rfl
   | cons i l ih => exact (tsupport_fderiv_apply_subset ℝ (EuclideanSpace.single i 1)).trans ih
 
-private theorem list_congr {n : ℕ} (l : List (Fin n)) {a b : Space n → ℂ}
+private theorem list_congr   {a b : Space n → ℂ}
     {x : Space n} (hab : a =ᶠ[𝓝 x] b) :
     coordinateDerivativeList l a =ᶠ[𝓝 x] coordinateDerivativeList l b := by
   induction l with
@@ -42,6 +48,8 @@ private theorem list_congr {n : ℕ} (l : List (Fin n)) {a b : Space n → ℂ}
   | cons i l ih =>
     exact (ih.fderiv (𝕜 := ℝ)).mono fun _ h =>
       congrArg (fun f : Space n →L[ℝ] ℂ => f (EuclideanSpace.single i 1)) h
+end
+
 
 private theorem jet_norm_le {n k : ℕ} {B : LocalBall n}
     (u : IntegerSobolev B k) (γ : Counts n) : ‖jet u γ‖ ≤ u.sobolevNorm := by
@@ -53,8 +61,7 @@ private theorem jet_norm_le {n k : ℕ} {B : LocalBall n}
     exact Real.sqrt_nonneg _
 
  def extendedExpansion {n k : ℕ} {B : LocalBall n}
-    (u : IntegerSobolev B k) (l : List (Fin n)) (a : Space n → ℂ) (γ : Counts n) :
-    Space n → ℂ := B.carrier.indicator (productExpansion u l a γ)
+    (u : IntegerSobolev B k) (l : List (Fin n)) (a : Space n → ℂ) (γ : Counts n)  := B.carrier.indicator (productExpansion u l a γ)
 
 private theorem expansion_zero_off {n k : ℕ} {B : LocalBall n}
     (u : IntegerSobolev B k) (l : List (Fin n)) (a : Space n → ℂ) (γ : Counts n)
@@ -200,7 +207,7 @@ theorem cutoff_global_weak_sobolev {n : ℕ} (B : LocalBall n) (k : ℕ)
         Real.sqrt (∑ α : MultiIndex n k, ‖g.derivatives α‖ ^ 2) ≤
           L * u.sobolevNorm := by
   classical
-  let a : Space n → ℂ := fun x => (χ x : ℂ)
+  let a  := fun x => (χ x : ℂ)
   have ha : ContDiff ℝ (⊤ : ℕ∞) a := Complex.ofRealCLM.contDiff.comp hχ
   have hsa : tsupport a = tsupport χ := by
     unfold tsupport
@@ -211,7 +218,7 @@ theorem cutoff_global_weak_sobolev {n : ℕ} (B : LocalBall n) (k : ℕ)
     change IsCompact (tsupport a)
     rw [hsa]
     exact hs
-  have hba : tsupport a ⊆ B.carrier := hsa ▸ hsub
+  have hba  := hsa ▸ hsub
   have hC : ∀ α : MultiIndex n k, ∃ C : ℝ, 0 < C ∧
       ∀ u : IntegerSobolev B k, ∃ h : MemLp (extendedExpansion u α.directions a 0) 2 volume,
         ‖h.toLp (extendedExpansion u α.directions a 0)‖ ≤ C * u.sobolevNorm := by
@@ -219,13 +226,13 @@ theorem cutoff_global_weak_sobolev {n : ℕ} (B : LocalBall n) (k : ℕ)
     obtain ⟨C, hC, HC⟩ := expansion_bound B α.directions a ha hca
     exact ⟨C, hC, fun u => HC k u 0⟩
   choose C hC HC using hC
-  let L : ℝ := 1 + ∑ α, C α
+  let L  := 1 + ∑ α, C α
   have hsumC : 0 ≤ ∑ α, C α := Finset.sum_nonneg fun α _ => (hC α).le
   refine ⟨L, by dsimp [L]; linarith, ?_⟩
   intro u
   have HU := fun α => HC α u
   choose hm hnorm using HU
-  let d : MultiIndex n k → Lp ℂ 2 (volume : Measure (Space n)) :=
+  let d  :=
     fun α => (hm α).toLp (extendedExpansion u α.directions a 0)
   have hd : ∀ α : MultiIndex n k,
       (fun x => d α x) =ᵐ[volume] extendedExpansion u α.directions a 0 :=
@@ -263,10 +270,10 @@ theorem cutoff_global_weak_sobolev {n : ℕ} (B : LocalBall n) (k : ℕ)
     filter_upwards [hd α] with x hx hχx
     change d α x = 0
     rw [hx]
-    have hax : x ∉ tsupport a := hsa ▸ hχx
+    have hax  := hsa ▸ hχx
     by_cases hxB : x ∈ B.carrier
     · simp only [extendedExpansion, Set.indicator_of_mem hxB]
-      exact expansion_zero_off u α.directions a 0 hax
+      apply expansion_zero_off <;> assumption
     · simp [extendedExpansion, hxB]
   · change Real.sqrt (∑ α, ‖d α‖ ^ 2) ≤ L * u.sobolevNorm
     have hn : 0 ≤ u.sobolevNorm := Real.sqrt_nonneg _

@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Metaplectic.Torus.FiniteIntersectionCharacterAdjustment
 
 @[expose] public section
+
 
 open scoped NumberField Classical BigOperators NNReal
 open NumberField IsDedekindDomain
@@ -15,7 +18,7 @@ variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 abbrev D := KPGlobalCubicIdelePairing.D F
-abbrev E := KPGlobalCenterRationalCharacter.E F ζ hζ
+abbrev E := @_root_.DedekindZetaZeroFree.KPGlobalCenterRationalCharacter.E
 abbrev LocalD := KPGlobalCubicIdelePairing.LocalD F
 
 attribute [local instance] KPAdelicCoverRestrictedProduct.localTopology
@@ -37,20 +40,20 @@ def diagonalHom (v : KPHilbert.Place F) :
     intro i j
     fin_cases i <;> fin_cases j <;> simp [Matrix.mul_apply]
 
-def localOrdinaryTorus (v : KPHilbert.Place F) :
-    Subgroup (KPPGLLocalCover.LocalPGL2 F v) :=
+def localOrdinaryTorus (v : KPHilbert.Place F)  :=
   ((KPPGLLocalCover.baseQuotient F v).comp (diagonalHom F v)).range
 
-def localTorus (v : KPHilbert.Place F) :
-    Subgroup (KPPGLLocalCover.CubicPGL2 F ζ hζ v) :=
+def localTorus (v : KPHilbert.Place F)  :=
   (localOrdinaryTorus F v).comap (KPPGLLocalCover.projection F ζ hζ v)
 
-abbrev LocalE (v : KPHilbert.Place F) := localTorus F ζ hζ v
+abbrev LocalE := @_root_.DedekindZetaZeroFree.KPGlobalProductPolarizationCharacter.localTorus
 
-def localRatioValue (v : KPHilbert.Place F) (g : LocalE F ζ hζ v) :
-    (KPHilbert.Completion F v)ˣ := Classical.choose g.property
+section
+variable (v : KPHilbert.Place F)
+include v
+def localRatioValue   (g : LocalE F ζ hζ v)  := Classical.choose g.property
 
-private theorem baseQuotient_diagonalHom_injective (v : KPHilbert.Place F) :
+private theorem baseQuotient_diagonalHom_injective   :
     Function.Injective fun y : (KPHilbert.Completion F v)ˣ =>
       KPPGLLocalCover.baseQuotient F v (diagonalHom F v y) := by
   intro y y' h
@@ -73,14 +76,14 @@ private theorem baseQuotient_diagonalHom_injective (v : KPHilbert.Place F) :
     apply Units.ext
     simpa using h11
   subst hw1
-  exact Units.ext (by simpa using h00)
+  apply Units.ext <;> aesop
 
-private theorem localRatioValue_spec (v : KPHilbert.Place F) (g : LocalE F ζ hζ v) :
+private theorem localRatioValue_spec   (g : LocalE F ζ hζ v) :
     KPPGLLocalCover.baseQuotient F v (diagonalHom F v (localRatioValue F ζ hζ v g)) =
       KPPGLLocalCover.projection F ζ hζ v g :=
   Classical.choose_spec g.property
 
-theorem localRatioValue_eq (v : KPHilbert.Place F) {g : LocalE F ζ hζ v}
+theorem localRatioValue_eq   {g : LocalE F ζ hζ v}
     {y : (KPHilbert.Completion F v)ˣ}
     (hy : KPPGLLocalCover.baseQuotient F v (diagonalHom F v y) =
       KPPGLLocalCover.projection F ζ hζ v g) :
@@ -88,58 +91,54 @@ theorem localRatioValue_eq (v : KPHilbert.Place F) {g : LocalE F ζ hζ v}
   (baseQuotient_diagonalHom_injective F v
     ((localRatioValue_spec F ζ hζ v g).trans hy.symm).symm)
 
-theorem localRatioValue_one (v : KPHilbert.Place F) :
+theorem localRatioValue_one   :
     localRatioValue F ζ hζ v 1 = 1 := by
   symm
   apply localRatioValue_eq F ζ hζ v
   simp
 
-theorem localRatioValue_mul (v : KPHilbert.Place F) (g h : LocalE F ζ hζ v) :
+theorem localRatioValue_mul   (g h : LocalE F ζ hζ v) :
     localRatioValue F ζ hζ v (g * h) =
       localRatioValue F ζ hζ v g * localRatioValue F ζ hζ v h := by
   symm
   apply localRatioValue_eq F ζ hζ v (g := g * h)
   have hgh : KPPGLLocalCover.projection F ζ hζ v (↑(g * h) : KPPGLLocalCover.CubicPGL2 F ζ hζ v) =
       KPPGLLocalCover.projection F ζ hζ v ↑g * KPPGLLocalCover.projection F ζ hζ v ↑h := by
-    rw [show (↑(g * h) : KPPGLLocalCover.CubicPGL2 F ζ hζ v) = ↑g * ↑h from rfl, map_mul]
+    simp_all
   rw [hgh, ← localRatioValue_spec F ζ hζ v g, ← localRatioValue_spec F ζ hζ v h]
   rw [map_mul, map_mul]
 
-def localRatio (v : KPHilbert.Place F) :
+def localRatio   :
     LocalE F ζ hζ v →* (KPHilbert.Completion F v)ˣ where
   toFun := localRatioValue F ζ hζ v
   map_one' := localRatioValue_one F ζ hζ v
   map_mul' := localRatioValue_mul F ζ hζ v
 
-def localProjection (v : KPHilbert.Place F) : LocalE F ζ hζ v →* LocalD F v :=
+def localProjection   : LocalE F ζ hζ v →* LocalD F v :=
   (KPGlobalCubicIdelePairing.localClass F v).comp (localRatio F ζ hζ v)
 
-def localCenter (v : KPHilbert.Place F) : Subgroup (LocalE F ζ hζ v) :=
+def localCenter    :=
   (localProjection F ζ hζ v).ker
 
-theorem exists_local_omega (v : KPHilbert.Place F) :
-    ∃ ω : localCenter F ζ hζ v →ₜ* ℂˣ,
-      ∀ (z : localCenter F ζ hζ v) (g : KPLocalCover.CubicGL2Raw F ζ hζ v),
-        KPPGLLocalCover.coverQuotient F ζ hζ v g = z.val.val →
-        ω z = KPGlobalCenterRationalCharacter.localValue F ζ hζ v g := by
-  exact (ProductPolarization.local_center_character F ζ hζ v).2
+def exists_local_omega    := (ProductPolarization.local_center_character F ζ hζ v).2
 
-def localOmega (v : KPHilbert.Place F) : localCenter F ζ hζ v →ₜ* ℂˣ :=
+def localOmega   : localCenter F ζ hζ v →ₜ* ℂˣ :=
   Classical.choose (exists_local_omega F ζ hζ v)
 
-theorem localOmega_raw_formula (v : KPHilbert.Place F)
+theorem localOmega_raw_formula  
     (z : localCenter F ζ hζ v) (g : KPLocalCover.CubicGL2Raw F ζ hζ v)
     (hg : KPPGLLocalCover.coverQuotient F ζ hζ v g = z.val.val) :
     localOmega F ζ hζ v z = KPGlobalCenterRationalCharacter.localValue F ζ hζ v g :=
   Classical.choose_spec (exists_local_omega F ζ hζ v) z g hg
+end
+
 
 def IsMaximalIsotropic {G : Type*} [CommGroup G]
-    (b : G → G → rootsOfUnity 3 F) (L : Subgroup G) : Prop :=
+    (b : G → G → rootsOfUnity 3 F) (L : Subgroup G)  :=
   (∀ x ∈ L, ∀ y ∈ L, b x y = 1) ∧
     ∀ N : Subgroup G, L ≤ N → (∀ x ∈ N, ∀ y ∈ N, b x y = 1) → N = L
 
-def localPreimage (v : KPHilbert.Place F) (L : Subgroup (LocalD F v)) :
-    Subgroup (LocalE F ζ hζ v) := L.comap (localProjection F ζ hζ v)
+def localPreimage (v : KPHilbert.Place F) (L : Subgroup (LocalD F v))  := L.comap (localProjection F ζ hζ v)
 
 structure LocalPolarization (v : KPHilbert.Place F) where
   L : Subgroup (LocalD F v)
@@ -149,7 +148,7 @@ structure LocalPolarization (v : KPHilbert.Place F) where
     b.val = z.val → lambda b = localOmega F ζ hζ v z
   modulus : ∀ b : localPreimage F ζ hζ v L,
     ‖(lambda b : ℂ)‖ = Real.rpow
-      (KPGlobalCenterRationalCharacter.localAbs F v (localRatio F ζ hζ v b.val)) (1 / 6 : ℝ)
+      (KPGlobalCenterRationalCharacter.localAbs F v (localRatio F ζ hζ v b.val)) (1 / 6)
 
 def IsUnramified (q : HeightOneSpectrum (𝓞 F))
     (P : LocalPolarization F ζ hζ (Sum.inr q)) : Prop :=
@@ -210,7 +209,7 @@ def J (P : CompatibleLocalData F ζ hζ) : Subgroup (D F) :=
 
 private theorem single_cont (v : KPHilbert.Place F) : Continuous (RestrictedProduct.mulSingle (KPGlobalCubicIdelePairing.U F) v) := by
   let S : Set (KPHilbert.Place F) := {v}ᶜ
-  let t : LocalD F v → RestrictedProduct (LocalD F) (fun w => (KPGlobalCubicIdelePairing.U F w : Set (LocalD F w))) (Filter.principal S) :=
+  let t : LocalD F v → RestrictedProduct (LocalD F) (fun w => (KPGlobalCubicIdelePairing.U F w)) (Filter.principal S) :=
     fun l => ⟨Pi.mulSingle v l, by intro w hw; simp only [S, Set.mem_compl_iff, Set.mem_singleton_iff] at hw; simp [Pi.mulSingle_eq_of_ne hw, Subgroup.one_mem]⟩
   have ht : Continuous t := by
     apply RestrictedProduct.continuous_rng_of_principal.mpr
@@ -228,7 +227,7 @@ private theorem local_finite (v : KPHilbert.Place F) : Finite (LocalD F v) := by
   cases v with
   | inl w => letI := KPGlobalCubicIdelePairing.local_complex_trivial F w; infer_instance
   | inr q =>
-    letI : ValuativeRel (q.adicCompletion F) := ClassFieldTheory.finitePlaceCompletionValuativeRel F q
+    letI  := ClassFieldTheory.finitePlaceCompletionValuativeRel F q
     letI : IsNonarchimedeanLocalField (q.adicCompletion F) := ClassFieldTheory.finitePlaceCompletionIsNonarchimedeanLocalField F q
     exact ClassFieldTheory.powerClassGroup_finite _ 3 (by norm_num)
 private theorem local_discrete (v : KPHilbert.Place F) : DiscreteTopology (LocalD F v) := by
@@ -248,7 +247,7 @@ private theorem eventually_eq (P : CompatibleLocalData F ζ hζ) :
   | inr q =>
     have hu : IsUnramified F ζ hζ q (P.localData (Sum.inr q)) := by
       by_contra h
-      exact hv ⟨q, h, rfl⟩
+      apply hv <;> aesop
     exact hu.2.1
 private theorem restrictedM_compact_open (P : CompatibleLocalData F ζ hζ) :
     IsCompact (restrictedM F ζ hζ P : Set (KPGlobalCubicIdelePairing.RestrictedClasses F)) ∧
@@ -259,11 +258,11 @@ private theorem restrictedM_compact_open (P : CompatibleLocalData F ζ hζ) :
   let U := fun v => (KPGlobalCubicIdelePairing.U F v : Set (LocalD F v))
   have hLU : ∀ᶠ v in Filter.cofinite, L v ⊆ U v := by
     filter_upwards [eventually_eq F ζ hζ P] with v hv
-    change ((P.localData v).L : Set (LocalD F v)) ⊆ (KPGlobalCubicIdelePairing.U F v : Set (LocalD F v))
+    change ((P.localData v).L : Set (LocalD F v)) ⊆ (KPGlobalCubicIdelePairing.U F v)
     rw [hv]
   have hUL : ∀ᶠ v in Filter.cofinite, U v ⊆ L v := by
     filter_upwards [eventually_eq F ζ hζ P] with v hv
-    change (KPGlobalCubicIdelePairing.U F v : Set (LocalD F v)) ⊆ ((P.localData v).L : Set (LocalD F v))
+    change (KPGlobalCubicIdelePairing.U F v : Set (LocalD F v)) ⊆ ((P.localData v).L)
     rw [hv]
   let f : RestrictedProduct (LocalD F) L Filter.cofinite → KPGlobalCubicIdelePairing.RestrictedClasses F :=
     RestrictedProduct.mapAlong (LocalD F) (LocalD F) id Filter.tendsto_id (fun _ => id) hLU
@@ -292,7 +291,7 @@ theorem M_compact_open (P : CompatibleLocalData F ζ hζ) :
     IsCompact (M F ζ hζ P : Set (D F)) ∧ IsOpen (M F ζ hζ P : Set (D F)) := by
   obtain ⟨e, he⟩ := KPGlobalCubicIdelePairing.restricted_cube_quotient F
   have hset : (M F ζ hζ P : Set (D F)) =
-      e ⁻¹' (restrictedM F ζ hζ P : Set (KPGlobalCubicIdelePairing.RestrictedClasses F)) := by
+      e ⁻¹' (restrictedM F ζ hζ P) := by
     ext x
     change KPGlobalCubicIdelePairing.classComparison F x ∈ restrictedM F ζ hζ P ↔
       e x ∈ restrictedM F ζ hζ P
@@ -367,7 +366,10 @@ private theorem maximal_mem_of_annihilates {G : Type*} [CommGroup G]
   rw [← heq]
   exact Subgroup.mem_sup_right (Subgroup.mem_zpowers x)
 
-theorem M_maximal_isotropic (P : CompatibleLocalData F ζ hζ) :
+section
+variable (P : CompatibleLocalData F ζ hζ)
+include P
+theorem M_maximal_isotropic   :
     IsMaximalIsotropic F (KPGlobalCubicIdelePairing.beta3 F ζ hζ) (M F ζ hζ P) := by
   obtain ⟨e, he⟩ := KPGlobalCubicIdelePairing.restricted_cube_quotient F
   refine ⟨?_, ?_⟩
@@ -392,7 +394,7 @@ theorem M_maximal_isotropic (P : CompatibleLocalData F ζ hζ) :
       let t : KPGlobalCubicIdelePairing.RestrictedClasses F :=
         RestrictedProduct.mulSingle (KPGlobalCubicIdelePairing.U F) v l
       obtain ⟨y, hy⟩ := e.surjective t
-      have hy' : KPGlobalCubicIdelePairing.classComparison F y = t := (he y).symm.trans hy
+      have hy'  := (he y).symm.trans hy
       have hym : y ∈ M F ζ hζ P := by
         change ∀ w, KPGlobalCubicIdelePairing.classComparison F y w ∈ (P.localData w).L
         intro w
@@ -416,11 +418,11 @@ theorem M_maximal_isotropic (P : CompatibleLocalData F ζ hζ) :
       induction z using QuotientGroup.induction_on with
       | H z => exact ((KPHilbert.B3_laws F ζ hζ v).2.2.2.2.2 z).1
 
-theorem B_maximal_abelian (P : CompatibleLocalData F ζ hζ) :
+theorem B_maximal_abelian   :
     KPLocalPolarization.IsMaximalAbelian (B F ζ hζ P) := by
   exact (ProductPolarization.product_polarization F ζ hζ (toRawData F ζ hζ P)).1
 
-theorem B_closed (P : CompatibleLocalData F ζ hζ) :
+theorem B_closed   :
     IsClosed (B F ζ hζ P : Set (E F ζ hζ)) := by
   letI := (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).1
   letI := (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.1
@@ -439,7 +441,7 @@ theorem B_closed (P : CompatibleLocalData F ζ hζ) :
   rw [← hc]
   exact (B F ζ hζ P).isClosed_topologicalClosure
 
-theorem center_le_B (P : CompatibleLocalData F ζ hζ) :
+theorem center_le_B   :
     KPGlobalCenterRationalCharacter.Z F ζ hζ ≤ B F ζ hζ P := by
   have hB := B_maximal_abelian F ζ hζ P
   let C := B F ζ hζ P ⊔ KPGlobalCenterRationalCharacter.Z F ζ hζ
@@ -451,27 +453,29 @@ theorem center_le_B (P : CompatibleLocalData F ζ hζ) :
     have h2 : Commute zx cy := (Subgroup.mem_center_iff.mp hzx cy).symm
     have h3 : Commute zx zy := Subgroup.mem_center_iff.mp hzy zx
     exact ((hB.1 bx hbx cy hcy).mul_right h1).mul_left (h2.mul_right h3)
-  have hCB : C = B F ζ hζ P := hB.2 C le_sup_left hcomm
+  have hCB  := hB.2 C le_sup_left hcomm
   rw [← hCB]
   exact le_sup_right
 
-theorem J_finite (P : CompatibleLocalData F ζ hζ) : Finite (J F ζ hζ P) := by
+theorem J_finite   : Finite (J F ζ hζ P) := by
   letI := KPGlobalCubicIdelePairing.hausdorff F
   letI := KPGlobalPrincipalCubicLagrangian.principal_discrete F ζ hζ
   have hA : IsClosed (KPGlobalPrincipalCubicLagrangian.A F : Set (D F)) :=
     Subgroup.isClosed_of_discreteTopology
   have hJ : IsCompact (J F ζ hζ P : Set (D F)) :=
     ((M_compact_open F ζ hζ P).1.inter_left hA)
-  have hd : IsDiscrete (J F ζ hζ P : Set (D F)) :=
+  have hd : IsDiscrete (J F ζ hζ P) :=
     (show IsDiscrete (KPGlobalPrincipalCubicLagrangian.A F : Set (D F)) from
       isDiscrete_iff_discreteTopology.mpr inferInstance).mono inf_le_left
   exact (hJ.finite hd).to_subtype
 
-theorem rational_intersection_preimage (P : CompatibleLocalData F ζ hζ) :
+theorem rational_intersection_preimage   :
     KPGlobalCenterRationalCharacter.R F ζ hζ ⊓ B F ζ hζ P =
       (J F ζ hζ P).comap (pD F ζ hζ) := by
   rw [KPGlobalCenterRationalCharacter.R_eq_principal_preimage]
   rfl
+end
+
 
 structure FiniteAdjustment (P : CompatibleLocalData F ζ hζ) where
   S : Finset (HeightOneSpectrum (𝓞 F))
@@ -480,7 +484,10 @@ structure FiniteAdjustment (P : CompatibleLocalData F ζ hζ) where
   complex_unchanged : ∀ w : InfinitePlace F, chi (Sum.inl w) = 1
   outside_unchanged : ∀ q, q ∉ S → chi (Sum.inr q) = 1
 
- def toRawAdjustment (P : CompatibleLocalData F ζ hζ)
+ section
+variable (P : CompatibleLocalData F ζ hζ)
+include P
+def toRawAdjustment  
     (T : FiniteAdjustment F ζ hζ P) :
     ProductPolarization.FiniteAdjustment F ζ hζ (toRawData F ζ hζ P) where
   S := T.S
@@ -489,7 +496,7 @@ structure FiniteAdjustment (P : CompatibleLocalData F ζ hζ) where
   complex_unchanged := T.complex_unchanged
   outside_unchanged := T.outside_unchanged
 
-def fromRawAdjustment (P : CompatibleLocalData F ζ hζ)
+def fromRawAdjustment  
     (T : ProductPolarization.FiniteAdjustment F ζ hζ (toRawData F ζ hζ P)) :
     FiniteAdjustment F ζ hζ P where
   S := T.S
@@ -498,47 +505,47 @@ def fromRawAdjustment (P : CompatibleLocalData F ζ hζ)
   complex_unchanged := T.complex_unchanged
   outside_unchanged := T.outside_unchanged
 
-def adjustedLocalValue (P : CompatibleLocalData F ζ hζ)
+def adjustedLocalValue  
     (T : FiniteAdjustment F ζ hζ P) (v : KPHilbert.Place F)
     (b : localPreimage F ζ hζ v (P.localData v).L) : ℂˣ :=
   (P.localData v).lambda b * T.chi v ⟨localProjection F ζ hζ v b.val, b.property⟩
 
-theorem adjustedLocalValue_outside (P : CompatibleLocalData F ζ hζ)
+theorem adjustedLocalValue_outside  
     (T : FiniteAdjustment F ζ hζ P) (q : HeightOneSpectrum (𝓞 F)) (hq : q ∉ T.S)
     (b : localPreimage F ζ hζ (Sum.inr q) (P.localData (Sum.inr q)).L) :
     adjustedLocalValue F ζ hζ P T (Sum.inr q) b = (P.localData (Sum.inr q)).lambda b := by
   simp [adjustedLocalValue, T.outside_unchanged q hq]
 
-def rawB (P : CompatibleLocalData F ζ hζ) :
+def rawB   :
     Subgroup (KPGlobalCenterRationalCharacter.Raw F ζ hζ) :=
   ((B F ζ hζ P).map (E F ζ hζ).subtype).comap
     ((KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ).comp
       (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ))
 
-theorem raw_coordinate_mem (P : CompatibleLocalData F ζ hζ)
+theorem raw_coordinate_mem  
     (x : rawB F ζ hζ P) (v : KPHilbert.Place F) :
     ∃ b : localPreimage F ζ hζ v (P.localData v).L,
       b.val.val = KPPGLLocalCover.coverQuotient F ζ hζ v (x.val v) := by
   exact (ProductPolarization.product_polarization F ζ hζ (toRawData F ζ hζ P)).2 x v
 
-def rawCoordinate (P : CompatibleLocalData F ζ hζ)
+def rawCoordinate  
     (x : rawB F ζ hζ P) (v : KPHilbert.Place F) :
     localPreimage F ζ hζ v (P.localData v).L :=
   Classical.choose (raw_coordinate_mem F ζ hζ P x v)
 
- theorem rawCoordinate_val (P : CompatibleLocalData F ζ hζ)
+ theorem rawCoordinate_val  
     (x : rawB F ζ hζ P) (v : KPHilbert.Place F) :
     (rawCoordinate F ζ hζ P x v).val.val =
       KPPGLLocalCover.coverQuotient F ζ hζ v (x.val v) :=
   Classical.choose_spec (raw_coordinate_mem F ζ hζ P x v)
 
-private theorem rawCoordinate_one (P : CompatibleLocalData F ζ hζ)
+private theorem rawCoordinate_one  
     (v : KPHilbert.Place F) : rawCoordinate F ζ hζ P 1 v = 1 := by
   apply Subtype.ext
   apply Subtype.ext
   simpa using rawCoordinate_val F ζ hζ P 1 v
 
-private theorem rawCoordinate_mul (P : CompatibleLocalData F ζ hζ)
+private theorem rawCoordinate_mul  
     (x y : rawB F ζ hζ P) (v : KPHilbert.Place F) :
     rawCoordinate F ζ hζ P (x * y) v =
       rawCoordinate F ζ hζ P x v * rawCoordinate F ζ hζ P y v := by
@@ -548,9 +555,14 @@ private theorem rawCoordinate_mul (P : CompatibleLocalData F ζ hζ)
     (rawCoordinate F ζ hζ P x v).val.val * (rawCoordinate F ζ hζ P y v).val.val
   rw [rawCoordinate_val, rawCoordinate_val, rawCoordinate_val]
   exact map_mul _ _ _
+end
 
-private theorem adjustedLocalValue_one (P : CompatibleLocalData F ζ hζ)
-    (T : FiniteAdjustment F ζ hζ P) (v : KPHilbert.Place F) :
+
+section
+variable (P : CompatibleLocalData F ζ hζ)
+    (T : FiniteAdjustment F ζ hζ P)
+include P T
+private theorem adjustedLocalValue_one   (v : KPHilbert.Place F) :
     adjustedLocalValue F ζ hζ P T v 1 = 1 := by
   have h : (⟨localProjection F ζ hζ v (1 : localPreimage F ζ hζ v (P.localData v).L).val,
       (1 : localPreimage F ζ hζ v (P.localData v).L).property⟩ : (P.localData v).L) = 1 := by
@@ -558,8 +570,7 @@ private theorem adjustedLocalValue_one (P : CompatibleLocalData F ζ hζ)
     exact map_one _
   simp only [adjustedLocalValue, map_one, one_mul, h]
 
-private theorem adjustedLocalValue_mul (P : CompatibleLocalData F ζ hζ)
-    (T : FiniteAdjustment F ζ hζ P) (v : KPHilbert.Place F)
+private theorem adjustedLocalValue_mul   (v : KPHilbert.Place F)
     (b c : localPreimage F ζ hζ v (P.localData v).L) :
     adjustedLocalValue F ζ hζ P T v (b * c) =
       adjustedLocalValue F ζ hζ P T v b * adjustedLocalValue F ζ hζ P T v c := by
@@ -574,12 +585,10 @@ private theorem adjustedLocalValue_mul (P : CompatibleLocalData F ζ hζ)
   rw [h, map_mul]
   ac_rfl
 
-def rawProduct (P : CompatibleLocalData F ζ hζ)
-    (T : FiniteAdjustment F ζ hζ P) (x : rawB F ζ hζ P) : ℂˣ :=
+def rawProduct   (x : rawB F ζ hζ P) : ℂˣ :=
   ∏ᶠ v, adjustedLocalValue F ζ hζ P T v (rawCoordinate F ζ hζ P x v)
 
-theorem rawProduct_finiteSupport (P : CompatibleLocalData F ζ hζ)
-    (T : FiniteAdjustment F ζ hζ P) (x : rawB F ζ hζ P) :
+theorem rawProduct_finiteSupport   (x : rawB F ζ hζ P) :
     Function.HasFiniteMulSupport
       (fun v => adjustedLocalValue F ζ hζ P T v (rawCoordinate F ζ hζ P x v)) := by
   have hx : ∀ᶠ q in Filter.cofinite,
@@ -597,19 +606,17 @@ theorem rawProduct_finiteSupport (P : CompatibleLocalData F ζ hζ)
     rw [rawCoordinate_val]
     exact Subgroup.mem_map.mpr ⟨x.val (Sum.inr q), hq, rfl⟩
   have hf := Filter.eventually_cofinite.mp hg
-  apply Set.Finite.subset ((Set.finite_range (Sum.inl : InfinitePlace F → KPHilbert.Place F)).union
-    (hf.image (Sum.inr : HeightOneSpectrum (𝓞 F) → KPHilbert.Place F)))
+  apply Set.Finite.subset ((Set.finite_range Sum.inl).union
+    (hf.image Sum.inr))
   intro v hv
   cases v with
   | inl w => exact Or.inl ⟨w, rfl⟩
   | inr q => exact Or.inr ⟨q, hv, rfl⟩
 
- theorem rawProduct_one (P : CompatibleLocalData F ζ hζ)
-    (T : FiniteAdjustment F ζ hζ P) : rawProduct F ζ hζ P T 1 = 1 := by
+ theorem rawProduct_one   : rawProduct F ζ hζ P T 1 = 1 := by
   simp only [rawProduct, rawCoordinate_one, adjustedLocalValue_one, finprod_one]
 
- theorem rawProduct_mul (P : CompatibleLocalData F ζ hζ)
-    (T : FiniteAdjustment F ζ hζ P) (x y : rawB F ζ hζ P) :
+ theorem rawProduct_mul   (x y : rawB F ζ hζ P) :
     rawProduct F ζ hζ P T (x * y) =
       rawProduct F ζ hζ P T x * rawProduct F ζ hζ P T y := by
   unfold rawProduct
@@ -617,16 +624,15 @@ theorem rawProduct_finiteSupport (P : CompatibleLocalData F ζ hζ)
   exact finprod_mul_distrib (rawProduct_finiteSupport F ζ hζ P T x)
     (rawProduct_finiteSupport F ζ hζ P T y)
 
- def rawProductHom (P : CompatibleLocalData F ζ hζ)
-    (T : FiniteAdjustment F ζ hζ P) : rawB F ζ hζ P →* ℂˣ where
+ def rawProductHom   : rawB F ζ hζ P →* ℂˣ where
   toFun := rawProduct F ζ hζ P T
   map_one' := rawProduct_one F ζ hζ P T
   map_mul' := rawProduct_mul F ζ hζ P T
 
-theorem rawProduct_continuous (P : CompatibleLocalData F ζ hζ)
-    (T : FiniteAdjustment F ζ hζ P) : Continuous (rawProduct F ζ hζ P T) := by
-  exact (ProductPolarization.product_topology F ζ hζ (toRawData F ζ hζ P)
+def rawProduct_continuous    := (ProductPolarization.product_topology F ζ hζ (toRawData F ζ hζ P)
     (toRawAdjustment F ζ hζ P T)).1
+end
+
 
 private theorem localValue_central (v : KPHilbert.Place F) (e : rootsOfUnity 3 F) :
     KPGlobalCenterRationalCharacter.localValue F ζ hζ v
@@ -646,7 +652,10 @@ private theorem localValue_central (v : KPHilbert.Place F) (e : rootsOfUnity 3 F
   simp only [hm, map_one, mul_one]
   rfl
 
-private theorem rawCoordinate_central_projection (P : CompatibleLocalData F ζ hζ)
+section
+variable (P : CompatibleLocalData F ζ hζ)
+include P
+private theorem rawCoordinate_central_projection  
     (x : rawB F ζ hζ P) (v : KPHilbert.Place F) (e : rootsOfUnity 3 F)
     (hx : x.val v = KPLocalCover.centralInjection F ζ hζ v e) :
     localProjection F ζ hζ v (rawCoordinate F ζ hζ P x v).val = 1 := by
@@ -662,7 +671,7 @@ private theorem rawCoordinate_central_projection (P : CompatibleLocalData F ζ h
     (localRatioValue F ζ hζ v (rawCoordinate F ζ hζ P x v).val) = 1
   rw [hr, map_one]
 
-theorem rawProduct_productOne (P : CompatibleLocalData F ζ hζ)
+theorem rawProduct_productOne  
     (T : FiniteAdjustment F ζ hζ P) (x : rawB F ζ hζ P)
     (hx : x.val ∈ KPAdelicCoverRestrictedProduct.M F ζ hζ) :
     rawProduct F ζ hζ P T x = 1 := by
@@ -683,8 +692,8 @@ theorem rawProduct_productOne (P : CompatibleLocalData F ζ hζ)
     rw [hchi, map_one, mul_one, (P.localData v).extends_center _ z hz]
     rw [localOmega_raw_formula F ζ hζ v z
       (KPLocalCover.centralInjection F ζ hζ v (e v))
-      (by exact hxv ▸ (rawCoordinate_val F ζ hζ P x v).symm)]
-    exact localValue_central F ζ hζ v (e v)
+      (hxv ▸ (rawCoordinate_val F ζ hζ P x v).symm)]
+    apply localValue_central
   unfold rawProduct
   simp only [hval]
   rw [← (KPGlobalTorusFunctionData.iota F ζ hζ).map_finprod
@@ -693,7 +702,7 @@ theorem rawProduct_productOne (P : CompatibleLocalData F ζ hζ)
     (KPAdelicCoverRestrictedProduct.centralProduct F e) = 1
   rw [he1, map_one]
 
-theorem rawProduct_splitScalar (P : CompatibleLocalData F ζ hζ)
+theorem rawProduct_splitScalar  
     (T : FiniteAdjustment F ζ hζ P) (u : KPGlobalCenterRationalCharacter.Ideles F)
     (x : rawB F ζ hζ P) (hx : x.val = KPAdelicCoverRestrictedProduct.scalarTuple F ζ hζ u) :
     rawProduct F ζ hζ P T x = 1 := by
@@ -709,10 +718,10 @@ theorem rawProduct_splitScalar (P : CompatibleLocalData F ζ hζ)
       apply Subtype.ext
       exact (rawCoordinate_val F ζ hζ P x v).trans hq
     rw [hc]
-    exact adjustedLocalValue_one F ζ hζ P T v
+    apply adjustedLocalValue_one
   simp only [hval, finprod_one]
 
-private theorem scalarTuple_mem_rawB (P : CompatibleLocalData F ζ hζ)
+private theorem scalarTuple_mem_rawB  
     (u : KPGlobalCenterRationalCharacter.Ideles F) :
     KPAdelicCoverRestrictedProduct.scalarTuple F ζ hζ u ∈ rawB F ζ hζ P := by
   change KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
@@ -725,7 +734,7 @@ private theorem scalarTuple_mem_rawB (P : CompatibleLocalData F ζ hζ)
   rw [h]
   exact Subgroup.one_mem _
 
-private theorem rawProduct_kernel (P : CompatibleLocalData F ζ hζ)
+private theorem rawProduct_kernel  
     (T : FiniteAdjustment F ζ hζ P) (x : rawB F ζ hζ P)
     (hx : KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
       (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ x.val) = 1) :
@@ -733,7 +742,7 @@ private theorem rawProduct_kernel (P : CompatibleLocalData F ζ hζ)
   obtain ⟨u, hu⟩ := (QuotientGroup.eq_one_iff _).mp hx
   let s : rawB F ζ hζ P := ⟨KPAdelicCoverRestrictedProduct.scalarTuple F ζ hζ u,
     scalarTuple_mem_rawB F ζ hζ P u⟩
-  have hs : rawProduct F ζ hζ P T s = 1 :=
+  have hs  :=
     rawProduct_splitScalar F ζ hζ P T u s rfl
   have hm : (x * s⁻¹).val ∈ KPAdelicCoverRestrictedProduct.M F ζ hζ := by
     apply (QuotientGroup.eq_one_iff _).mp
@@ -749,7 +758,7 @@ private theorem rawProduct_kernel (P : CompatibleLocalData F ζ hζ)
   change rawProductHom F ζ hζ P T x = 1
   simpa only [hs, inv_one, mul_one] using hprod
 
-private theorem rawProduct_independent (P : CompatibleLocalData F ζ hζ)
+private theorem rawProduct_independent  
     (T : FiniteAdjustment F ζ hζ P) (x y : rawB F ζ hζ P)
     (hxy : KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
       (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ x.val) =
@@ -766,7 +775,7 @@ private theorem rawProduct_independent (P : CompatibleLocalData F ζ hζ)
   rw [map_mul, map_inv, mul_inv_eq_one] at h
   exact h
 
-theorem B_has_raw_lift (P : CompatibleLocalData F ζ hζ) (b : B F ζ hζ P) :
+theorem B_has_raw_lift   (b : B F ζ hζ P) :
     ∃ x : rawB F ζ hζ P,
       KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
         (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ x.val) = b.val.val := by
@@ -783,26 +792,28 @@ theorem B_has_raw_lift (P : CompatibleLocalData F ζ hζ) (b : B F ζ hζ P) :
       (B F ζ hζ P).map (E F ζ hζ).subtype
   rw [h]
   exact Subgroup.mem_map.mpr ⟨b.val, b.property, rfl⟩
+end
 
-def lambdaValue (P : CompatibleLocalData F ζ hζ)
-    (T : FiniteAdjustment F ζ hζ P) (b : B F ζ hζ P) : ℂˣ :=
+
+section
+variable (P : CompatibleLocalData F ζ hζ)
+    (T : FiniteAdjustment F ζ hζ P)
+include P T
+def lambdaValue   (b : B F ζ hζ P)  :=
   rawProduct F ζ hζ P T (Classical.choose (B_has_raw_lift F ζ hζ P b))
 
-theorem lambdaValue_raw_formula (P : CompatibleLocalData F ζ hζ)
-    (T : FiniteAdjustment F ζ hζ P) (b : B F ζ hζ P) (x : rawB F ζ hζ P)
+theorem lambdaValue_raw_formula   (b : B F ζ hζ P) (x : rawB F ζ hζ P)
     (hx : KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
       (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ x.val) = b.val.val) :
     lambdaValue F ζ hζ P T b = rawProduct F ζ hζ P T x := by
   apply rawProduct_independent F ζ hζ P T
   exact (Classical.choose_spec (B_has_raw_lift F ζ hζ P b)).trans hx.symm
 
-theorem lambdaValue_one (P : CompatibleLocalData F ζ hζ)
-    (T : FiniteAdjustment F ζ hζ P) : lambdaValue F ζ hζ P T 1 = 1 := by
-  rw [lambdaValue_raw_formula F ζ hζ P T 1 1 (by simp)]
-  exact rawProduct_one F ζ hζ P T
+theorem lambdaValue_one   : lambdaValue F ζ hζ P T 1 = 1 := by
+  rw [lambdaValue_raw_formula F ζ hζ P T 1 1 (rfl)]
+  apply rawProduct_one
 
-theorem lambdaValue_mul (P : CompatibleLocalData F ζ hζ)
-    (T : FiniteAdjustment F ζ hζ P) (b c : B F ζ hζ P) :
+theorem lambdaValue_mul   (b c : B F ζ hζ P) :
     lambdaValue F ζ hζ P T (b * c) =
       lambdaValue F ζ hζ P T b * lambdaValue F ζ hζ P T c := by
   obtain ⟨x, hx⟩ := B_has_raw_lift F ζ hζ P b
@@ -815,10 +826,9 @@ theorem lambdaValue_mul (P : CompatibleLocalData F ζ hζ)
   rw [lambdaValue_raw_formula F ζ hζ P T (b * c) (x * y) hxy,
     lambdaValue_raw_formula F ζ hζ P T b x hx,
     lambdaValue_raw_formula F ζ hζ P T c y hy]
-  exact rawProduct_mul F ζ hζ P T x y
+  apply rawProduct_mul
 
-theorem lambdaValue_continuous (P : CompatibleLocalData F ζ hζ)
-    (T : FiniteAdjustment F ζ hζ P) : Continuous (lambdaValue F ζ hζ P T) := by
+theorem lambdaValue_continuous   : Continuous (lambdaValue F ζ hζ P T) := by
   have hq := (ProductPolarization.product_topology F ζ hζ (toRawData F ζ hζ P)
     (toRawAdjustment F ζ hζ P T)).2
   apply hq.continuous_iff.mpr
@@ -829,37 +839,33 @@ theorem lambdaValue_continuous (P : CompatibleLocalData F ζ hζ)
     exact lambdaValue_raw_formula F ζ hζ P T _ x rfl
   exact heq.symm ▸ rawProduct_continuous F ζ hζ P T
 
-def lambdaB (P : CompatibleLocalData F ζ hζ)
-    (T : FiniteAdjustment F ζ hζ P) : B F ζ hζ P →ₜ* ℂˣ where
+def lambdaB   : B F ζ hζ P →ₜ* ℂˣ where
   toFun := lambdaValue F ζ hζ P T
   map_one' := lambdaValue_one F ζ hζ P T
   map_mul' := lambdaValue_mul F ζ hζ P T
   continuous_toFun := lambdaValue_continuous F ζ hζ P T
 
-theorem lambdaB_extends_center (P : CompatibleLocalData F ζ hζ)
-    (T : FiniteAdjustment F ζ hζ P) (b : B F ζ hζ P)
+theorem lambdaB_extends_center   (b : B F ζ hζ P)
     (z : KPGlobalCenterRationalCharacter.Z F ζ hζ) (hz : b.val = z.val) :
-    lambdaB F ζ hζ P T b = KPGlobalCenterRationalCharacter.omegaA F ζ hζ z := by
-  exact (ProductPolarization.product_character_values F ζ hζ (toRawData F ζ hζ P)
+    lambdaB F ζ hζ P T b = KPGlobalCenterRationalCharacter.omegaA F ζ hζ z := (ProductPolarization.product_character_values F ζ hζ (toRawData F ζ hζ P)
     (toRawAdjustment F ζ hζ P T) (lambdaValue F ζ hζ P T)
     (lambdaValue_raw_formula F ζ hζ P T)).1 b z hz
 
-theorem lambdaB_norm (P : CompatibleLocalData F ζ hζ)
-    (T : FiniteAdjustment F ζ hζ P) (b : B F ζ hζ P) :
+theorem lambdaB_norm   (b : B F ζ hζ P) :
     ‖(lambdaB F ζ hζ P T b : ℂ)‖ =
-      ((KPGlobalCenterRationalCharacter.nu F ζ hζ b.val : ℝ≥0) : ℝ) := by
-  exact (ProductPolarization.product_character_values F ζ hζ (toRawData F ζ hζ P)
+      ((KPGlobalCenterRationalCharacter.nu F ζ hζ b.val) : ℝ) := (ProductPolarization.product_character_values F ζ hζ (toRawData F ζ hζ P)
     (toRawAdjustment F ζ hζ P T) (lambdaValue F ζ hζ P T)
     (lambdaValue_raw_formula F ζ hζ P T)).2 b
 
-theorem lambdaB_raw_formula (P : CompatibleLocalData F ζ hζ)
-    (T : FiniteAdjustment F ζ hζ P) (b : B F ζ hζ P) (x : rawB F ζ hζ P)
+theorem lambdaB_raw_formula   (b : B F ζ hζ P) (x : rawB F ζ hζ P)
     (hx : KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
       (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ x.val) = b.val.val) :
     lambdaB F ζ hζ P T b =
       ∏ᶠ v, adjustedLocalValue F ζ hζ P T v (rawCoordinate F ζ hζ P x v) := by
   change lambdaValue F ζ hζ P T b = rawProduct F ζ hζ P T x
-  exact lambdaValue_raw_formula F ζ hζ P T b x hx
+  apply lambdaValue_raw_formula <;> assumption
+end
+
 
 theorem exists_finite_compatible_adjustment (P : CompatibleLocalData F ζ hζ) :
     ∃ T : FiniteAdjustment F ζ hζ P,

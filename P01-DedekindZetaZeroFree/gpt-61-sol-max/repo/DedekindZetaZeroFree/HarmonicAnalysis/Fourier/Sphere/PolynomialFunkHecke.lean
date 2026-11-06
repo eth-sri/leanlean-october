@@ -1098,7 +1098,7 @@ theorem raw_polynomial_funkHecke (ℓ : ℕ) (p : MvPolynomial (Fin 3) ℂ)
             RawFiniteFunkHecke.polynomialSphere p x := by
       apply integral_congr_ae
       filter_upwards [ae_restrict_mem measurableSet_Icc] with u hu
-      change (∫ θ : ℝ, F (RawFiniteFunkHecke.latitudePoint g u θ) ∂RawFiniteFunkHecke.angleMeasure) = _
+      change (∫ θ : ℝ, F (RawFiniteFunkHecke.latitudePoint g u θ) ∂ RawFiniteFunkHecke.angleMeasure) = _
       have hpoint (θ : ℝ) : F (RawFiniteFunkHecke.latitudePoint g u θ) =
           (w u : ℂ) * RawFiniteFunkHecke.polynomialSphere p (RawFiniteFunkHecke.latitudePoint g u θ) := by
         dsimp [F, rawLatitudeKernel]

@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction.ReciprocityDefinition
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction.FiniteIntermediateCompositum
 public import ClassFieldTheory.AbstractClassFieldTheory.Degree.NormConjugation
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -45,9 +48,12 @@ variable {G : Type u} [Group G] [TopologicalSpace G]
 
 namespace DegreeData
 
+section
+variable (D : DegreeData G)
+    (K L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.toSubgroup)
+include D K L hLK
 /-- The inclusion of inertia cosets into the finite extension cosets. -/
- noncomputable def inertiaCosetToExtensionCoset (D : DegreeData G)
-    (K L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.toSubgroup) :
+ noncomputable def inertiaCosetToExtensionCoset   :
     ((D.maximalUnramifiedField K).toSubgroup ⧸
         extensionSubgroup (D.maximalUnramifiedField K)
           (D.maximalUnramifiedField L)
@@ -61,8 +67,7 @@ namespace DegreeData
       rw [QuotientGroup.leftRel_apply] at hxy ⊢
       exact hxy.1)
 
-private theorem inertiaCosetToExtensionCoset_injective (D : DegreeData G)
-    (K L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.toSubgroup) :
+private theorem inertiaCosetToExtensionCoset_injective   :
     Function.Injective (D.inertiaCosetToExtensionCoset K L hLK) := by
   intro x y hxy
   refine Quotient.inductionOn₂' x y ?_ hxy
@@ -71,8 +76,7 @@ private theorem inertiaCosetToExtensionCoset_injective (D : DegreeData G)
   rw [QuotientGroup.leftRel_apply]
   have habE :
       (⟨a.1, a.2.1⟩ : K.toSubgroup)⁻¹ * ⟨b.1, b.2.1⟩ ∈
-        extensionSubgroup K L hLK := by
-    exact QuotientGroup.leftRel_apply.mp (Quotient.exact' hab)
+        extensionSubgroup K L hLK := QuotientGroup.leftRel_apply.mp (Quotient.exact' hab)
   refine ⟨habE, ?_⟩
   change D.degree (a.1⁻¹ * b.1) = 1
   rw [map_mul, map_inv]
@@ -83,8 +87,7 @@ private theorem inertiaCosetToExtensionCoset_injective (D : DegreeData G)
 
 /-- Finiteness of `\widetilde L | \widetilde K`, derived from the finite
 Galois extension `L | K`; no separate finiteness assumption is introduced. -/
-theorem maximalUnramifiedExtension_finite (D : DegreeData G)
-    (K L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.toSubgroup)
+theorem maximalUnramifiedExtension_finite  
     [Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)] :
     Finite
       ((D.maximalUnramifiedField K).toSubgroup ⧸
@@ -93,13 +96,18 @@ theorem maximalUnramifiedExtension_finite (D : DegreeData G)
           (D.maximalUnramifiedField_mono hLK)) :=
   Finite.of_injective (D.inertiaCosetToExtensionCoset K L hLK)
     (D.inertiaCosetToExtensionCoset_injective K L hLK)
+end
 
-/-- The actual quotient `G(\widetilde L/\widetilde K)` is the kernel of
-`d_K` inside `G(\widetilde L/K)`. -/
- noncomputable def inertiaCosetToDegreeKernel (D : DegreeData G)
+
+section
+variable (D : DegreeData G)
     (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
     (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal] :
+    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
+include D K L hLK hLnormal
+/-- The actual quotient `G(\widetilde L/\widetilde K)` is the kernel of
+`d_K` inside `G(\widetilde L/K)`. -/
+ noncomputable def inertiaCosetToDegreeKernel   :
     ((D.maximalUnramifiedField K.field).toSubgroup ⧸
         extensionSubgroup (D.maximalUnramifiedField K.field)
           (D.maximalUnramifiedField L)
@@ -121,10 +129,7 @@ theorem maximalUnramifiedExtension_finite (D : DegreeData G)
       rw [QuotientGroup.leftRel_apply] at hxy
       exact hxy)
 
-theorem inertiaCosetToDegreeKernel_bijective (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal] :
+theorem inertiaCosetToDegreeKernel_bijective   :
     Function.Bijective (D.inertiaCosetToDegreeKernel K L hLK) := by
   constructor
   · intro x y hxy
@@ -139,21 +144,12 @@ theorem inertiaCosetToDegreeKernel_bijective (D : DegreeData G)
         (⟨a.1, a.2.1⟩ : K.field.toSubgroup)⁻¹ * ⟨b.1, b.2.1⟩ ∈
           D.extensionInertiaWithin K.field L hLK :=
       QuotientGroup.eq.mp hq
-    refine ⟨hkN.1, ?_⟩
-    change D.degree (a.1⁻¹ * b.1) = 1
-    rw [map_mul, map_inv]
-    change (D.degree a.1)⁻¹ * D.degree b.1 = 1
-    rw [show D.degree a.1 = 1 from a.2.2,
-      show D.degree b.1 = 1 from b.2.2]
-    simp
+    assumption
   · intro z
     obtain ⟨k, hk⟩ := QuotientGroup.mk'_surjective
       (D.extensionInertiaWithin K.field L hLK) z.1
     have hkNorm : D.normalizedDegree K k = 1 := by
-      change D.extensionNormalizedDegreeContinuous K L hLK
-          ((QuotientGroup.mk' (D.extensionInertiaWithin K.field L hLK)) k) = 1
-      exact (congrArg
-        (D.extensionNormalizedDegreeContinuous K L hLK) hk).trans z.2
+      aesop
     have hkI : k ∈ D.fieldInertiaWithin K.field := by
       rw [← D.normalizedDegree_ker K]
       exact hkNorm
@@ -164,17 +160,11 @@ theorem inertiaCosetToDegreeKernel_bijective (D : DegreeData G)
     exact hk
 
 /-- Canonical actual-group identification used in the Frobenius norm-identity lemma. -/
-noncomputable def inertiaQuotientDegreeKernelEquiv (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal] :
-    ((D.maximalUnramifiedField K.field).toSubgroup ⧸
-        extensionSubgroup (D.maximalUnramifiedField K.field)
-          (D.maximalUnramifiedField L)
-          (D.maximalUnramifiedField_mono hLK)) ≃
-      (D.extensionNormalizedDegreeContinuous K L hLK).toMonoidHom.ker :=
+noncomputable def inertiaQuotientDegreeKernelEquiv    :=
   Equiv.ofBijective (D.inertiaCosetToDegreeKernel K L hLK)
     (D.inertiaCosetToDegreeKernel_bijective K L hLK)
+end
+
 
 end DegreeData
 
@@ -190,10 +180,13 @@ variable {G : IntegralRepGroupType} [Group G] [TopologicalSpace G]
 
 namespace DegreeData
 
-/-- The actual action of `G(\widetilde L/K)` on `A_{\widetilde L}`. -/
-def frobeniusQuotientAction (D : DegreeData G) (A : Rep ℤ G)
+section
+variable (D : DegreeData G) (A : Rep ℤ G)
     (K L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.toSubgroup)
     [hLnormal : (extensionSubgroup K L hLK).Normal]
+include D A K L hLK hLnormal
+/-- The actual action of `G(\widetilde L/K)` on `A_{\widetilde L}`. -/
+def frobeniusQuotientAction  
     (q : K.toSubgroup ⧸ D.extensionInertiaWithin K L hLK)
     (a : ambientFixedAddSubgroup A (D.maximalUnramifiedField L)) :
     ambientFixedAddSubgroup A (D.maximalUnramifiedField L) :=
@@ -226,9 +219,7 @@ normalExtensionAction A K (D.maximalUnramifiedField L) (D.maximalUnramifiedField
 (D.extensionSubgroup_maximalUnramifiedField_normal K L hLK) k a`.
 -/
 @[simp]
-theorem frobeniusQuotientAction_mk (D : DegreeData G) (A : Rep ℤ G)
-    (K L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [hLnormal : (extensionSubgroup K L hLK).Normal]
+theorem frobeniusQuotientAction_mk  
     (k : K.toSubgroup)
     (a : ambientFixedAddSubgroup A (D.maximalUnramifiedField L)) :
     D.frobeniusQuotientAction A K L hLK (QuotientGroup.mk k) a =
@@ -236,6 +227,8 @@ theorem frobeniusQuotientAction_mk (D : DegreeData G) (A : Rep ℤ G)
         (D.maximalUnramifiedField_le_of_le hLK)
         (D.extensionSubgroup_maximalUnramifiedField_normal K L hLK) k a :=
   rfl
+end
+
 
 /-- Conjugation by an element of `G_K` preserves the inertia group `I_K`.
 The inverse convention is chosen so that the resulting coset permutation
@@ -244,15 +237,13 @@ rewrites `τ·φ` as `φ·(φ⁻¹τφ)`. -/
     (k : K.toSubgroup) :
     (D.maximalUnramifiedField K).toSubgroup ≃
       (D.maximalUnramifiedField K).toSubgroup where
-  toFun x := ⟨k.1⁻¹ * x.1 * k.1, ⟨by
-    exact K.toSubgroup.mul_mem
+  toFun x := ⟨k.1⁻¹ * x.1 * k.1, ⟨K.toSubgroup.mul_mem
       (K.toSubgroup.mul_mem (K.toSubgroup.inv_mem k.2) x.2.1) k.2, by
     change D.degree (k.1⁻¹ * x.1 * k.1) = 1
     have hx : D.degree x.1 = 1 := x.2.2
     rw [map_mul, map_mul, map_inv, hx]
     simp⟩⟩
-  invFun x := ⟨k.1 * x.1 * k.1⁻¹, ⟨by
-    exact K.toSubgroup.mul_mem
+  invFun x := ⟨k.1 * x.1 * k.1⁻¹, ⟨K.toSubgroup.mul_mem
       (K.toSubgroup.mul_mem k.2 x.2.1) (K.toSubgroup.inv_mem k.2), by
     change D.degree (k.1 * x.1 * k.1⁻¹) = 1
     have hx : D.degree x.1 = 1 := x.2.2
@@ -265,11 +256,14 @@ rewrites `τ·φ` as `φ·(φ⁻¹τφ)`. -/
     apply Subtype.ext
     simp [mul_assoc]
 
-/-- Conjugation by `G_K` also preserves `I_L` when `L/K` is Galois. -/
-theorem conjugate_mem_maximalUnramifiedField (D : DegreeData G)
+section
+variable (D : DegreeData G)
     (K L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.toSubgroup)
     [hLnormal : (extensionSubgroup K L hLK).Normal]
-    (k : K.toSubgroup) (l : (D.maximalUnramifiedField L).toSubgroup) :
+    (k : K.toSubgroup)
+include D K L hLK hLnormal k
+/-- Conjugation by `G_K` also preserves `I_L` when `L/K` is Galois. -/
+theorem conjugate_mem_maximalUnramifiedField   (l : (D.maximalUnramifiedField L).toSubgroup) :
     k.1⁻¹ * l.1 * k.1 ∈ (D.maximalUnramifiedField L).toSubgroup := by
   let lK : K.toSubgroup := ⟨l.1, hLK l.2.1⟩
   have hcK : k⁻¹ * lK * k ∈ extensionSubgroup K L hLK := by
@@ -283,10 +277,7 @@ theorem conjugate_mem_maximalUnramifiedField (D : DegreeData G)
 
 /-- The coset permutation `τ ↦ φ⁻¹τφ` of
 `G(\widetilde L/\widetilde K)`. -/
- noncomputable def inertiaConjugationCosetEquiv (D : DegreeData G)
-    (K L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [hLnormal : (extensionSubgroup K L hLK).Normal]
-    (k : K.toSubgroup) :
+ noncomputable def inertiaConjugationCosetEquiv   :
     ((D.maximalUnramifiedField K).toSubgroup ⧸
         extensionSubgroup (D.maximalUnramifiedField K)
           (D.maximalUnramifiedField L)
@@ -314,18 +305,20 @@ theorem conjugate_mem_maximalUnramifiedField (D : DegreeData G)
       simpa [l, mul_assoc] using hl)
 
 @[simp]
-private theorem inertiaConjugationCosetEquiv_mk (D : DegreeData G)
-    (K L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [hLnormal : (extensionSubgroup K L hLK).Normal]
-    (k : K.toSubgroup) (x : (D.maximalUnramifiedField K).toSubgroup) :
+private theorem inertiaConjugationCosetEquiv_mk   (x : (D.maximalUnramifiedField K).toSubgroup) :
     D.inertiaConjugationCosetEquiv K L hLK k (QuotientGroup.mk x) =
       QuotientGroup.mk (D.inertiaConjugationEquiv K k x) :=
   rfl
+end
 
-private theorem relativeCosetAction_inertiaConjugation (D : DegreeData G)
+
+section
+variable (D : DegreeData G)
     (A : Rep ℤ G)
     (K L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.toSubgroup)
     [hLnormal : (extensionSubgroup K L hLK).Normal]
+include D A K L hLK hLnormal
+private theorem relativeCosetAction_inertiaConjugation  
     (k : K.toSubgroup)
     (a : ambientFixedAddSubgroup A (D.maximalUnramifiedField L))
     (r : (D.maximalUnramifiedField K).toSubgroup ⧸
@@ -357,9 +350,7 @@ private theorem relativeCosetAction_inertiaConjugation (D : DegreeData G)
 
 /-- The norm `N_{\widetilde L/\widetilde K}` is equivariant for the
 normalizing `G_K`-action. -/
-private theorem relativeNorm_normalizingAction (D : DegreeData G) (A : Rep ℤ G)
-    (K L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [hLnormal : (extensionSubgroup K L hLK).Normal]
+private theorem relativeNorm_normalizingAction  
     [Finite ((D.maximalUnramifiedField K).toSubgroup ⧸
       extensionSubgroup (D.maximalUnramifiedField K)
         (D.maximalUnramifiedField L)
@@ -394,7 +385,7 @@ private theorem relativeNorm_normalizingAction (D : DegreeData G) (A : Rep ℤ G
           a (e r)) := by
       apply Finset.sum_congr rfl
       intro r _
-      exact D.relativeCosetAction_inertiaConjugation A K L hLK k a r
+      apply D.relativeCosetAction_inertiaConjugation
     _ = A.ρ k.1
         (∑ r : R, relativeCosetAction A (D.maximalUnramifiedField K)
           (D.maximalUnramifiedField L) (D.maximalUnramifiedField_mono hLK)
@@ -410,10 +401,7 @@ private theorem relativeNorm_normalizingAction (D : DegreeData G) (A : Rep ℤ G
 Relative norm commutes with the Frobenius quotient action after including the norm into the upper
 fixed field.
 -/
-theorem relativeNorm_frobeniusQuotientAction (D : DegreeData G)
-    (A : Rep ℤ G)
-    (K L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [hLnormal : (extensionSubgroup K L hLK).Normal]
+theorem relativeNorm_frobeniusQuotientAction  
     [Finite ((D.maximalUnramifiedField K).toSubgroup ⧸
       extensionSubgroup (D.maximalUnramifiedField K)
         (D.maximalUnramifiedField L)
@@ -431,15 +419,13 @@ theorem relativeNorm_frobeniusQuotientAction (D : DegreeData G)
             (D.maximalUnramifiedField L) (D.maximalUnramifiedField_mono hLK)
             a)) : ambientFixedAddSubgroup A (D.maximalUnramifiedField L)) :
         A.V) := by
-  let k : K.toSubgroup := Quotient.out q
+  let k  := Quotient.out q
   have hq : q = QuotientGroup.mk k := (Quotient.out_eq' q).symm
   rw [hq]
-  exact D.relativeNorm_normalizingAction A K L hLK k a
+  apply D.relativeNorm_normalizingAction
 
 /-- Additive form of the `φ_n = 1 + φ + ⋯ + φ^{n-1}`. -/
-def frobeniusPowerSum (D : DegreeData G) (A : Rep ℤ G)
-    (K L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [hLnormal : (extensionSubgroup K L hLK).Normal]
+def frobeniusPowerSum  
     (φ : K.toSubgroup ⧸ D.extensionInertiaWithin K L hLK)
     (n : ℕ)
     (a : ambientFixedAddSubgroup A (D.maximalUnramifiedField L)) :
@@ -452,9 +438,7 @@ Establishes the identity `((D.frobeniusPowerSum A K L hLK φ n a : ambientFixedA
 a : A.V)`.
 -/
 @[simp]
-theorem frobeniusPowerSum_coe (D : DegreeData G) (A : Rep ℤ G)
-    (K L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [hLnormal : (extensionSubgroup K L hLK).Normal]
+theorem frobeniusPowerSum_coe  
     (φ : K.toSubgroup ⧸ D.extensionInertiaWithin K L hLK)
     (n : ℕ)
     (a : ambientFixedAddSubgroup A (D.maximalUnramifiedField L)) :
@@ -471,6 +455,8 @@ theorem frobeniusPowerSum_coe (D : DegreeData G) (A : Rep ℤ G)
     apply Finset.sum_congr rfl
     intro i _
     rfl
+end
+
 
 end DegreeData
 
@@ -482,14 +468,17 @@ variable {G : Type u} [Group G] [TopologicalSpace G]
 
 namespace DegreeData
 
-/-- Quotient projection identifies the actual cosets `G_K/G_Σ` with
-the cosets of `Γ` in `G(\widetilde L/K)`. -/
- noncomputable def frobeniusFixedCosetToClosureCoset
-    (D : DegreeData G) [IsTopologicalGroup G]
+section
+variable (D : DegreeData G) [IsTopologicalGroup G]
     (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
     (hLK : L.toSubgroup ≤ K.field.toSubgroup)
     [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK) :
+    (σ : D.FrobeniusElements K L hLK)
+include D K L hLK hLnormal σ
+/-- Quotient projection identifies the actual cosets `G_K/G_Σ` with
+the cosets of `Γ` in `G(\widetilde L/K)`. -/
+ noncomputable def frobeniusFixedCosetToClosureCoset
+      :
     (K.field.toSubgroup ⧸
         extensionSubgroup K.field (D.frobeniusFixedField K L hLK σ)
           (D.frobeniusFixedField_le K L hLK σ)) →
@@ -504,11 +493,7 @@ the cosets of `Γ` in `G(\widetilde L/K)`. -/
       exact hxy)
 
 theorem frobeniusFixedCosetToClosureCoset_bijective
-    (D : DegreeData G) [IsTopologicalGroup G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK) :
+      :
     Function.Bijective
       (D.frobeniusFixedCosetToClosureCoset K L hLK σ) := by
   constructor
@@ -533,19 +518,12 @@ theorem frobeniusFixedCosetToClosureCoset_bijective
 
 /-- Defines `frobeniusFixedCosetClosureEquiv`. -/
 noncomputable def frobeniusFixedCosetClosureEquiv
-    (D : DegreeData G) [IsTopologicalGroup G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK) :
-    (K.field.toSubgroup ⧸
-        extensionSubgroup K.field (D.frobeniusFixedField K L hLK σ)
-          (D.frobeniusFixedField_le K L hLK σ)) ≃
-      ((K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK) ⧸
-        (D.frobeniusClosure K L hLK σ).toSubgroup) :=
+       :=
   Equiv.ofBijective
     (D.frobeniusFixedCosetToClosureCoset K L hLK σ)
     (D.frobeniusFixedCosetToClosureCoset_bijective K L hLK σ)
+end
+
 
 /-- The procyclic degree isomorphism says that `Γ` meets the inertia kernel trivially. -/
 private theorem frobeniusClosure_inf_degreeKernel (D : DegreeData G)
@@ -595,12 +573,15 @@ by one of the first `n=d_K(σ)` powers of a degree-one Frobenius. -/
         (D.frobeniusClosure K L hLK σ).toSubgroup) :=
   fun p => QuotientGroup.mk (φ.1 ^ p.2.1 * p.1.1)
 
-private theorem kernelPowerCosetMap_injective (D : DegreeData G)
+section
+variable (D : DegreeData G)
     [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
     [TotallyDisconnectedSpace G]
     (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
     (hLK : L.toSubgroup ≤ K.field.toSubgroup)
     [hLnormal : (extensionSubgroup K.field L hLK).Normal]
+include D K L hLK hLnormal
+private theorem kernelPowerCosetMap_injective  
     (φ σ : D.FrobeniusElements K L hLK)
     (hφ : D.frobeniusExponent K L hLK φ = 1) :
     Function.Injective (D.kernelPowerCosetMap K L hLK φ σ) := by
@@ -650,12 +631,11 @@ private theorem kernelPowerCosetMap_injective (D : DegreeData G)
     rw [hdegAdd] at hred
     rw [map_add, map_neg, map_nsmul, map_nsmul, hredOne] at hred
     simpa [sub_eq_add_neg, add_comm] using hred
-  have hijCast : (i.1 : ZMod n) = (j.1 : ZMod n) := by
-    exact (sub_eq_zero.mp hmod).symm
+  have hijCast  := (sub_eq_zero.mp hmod).symm
   have hijVal : i.1 = j.1 := by
     have hv := congrArg ZMod.val hijCast
     simpa [ZMod.val_natCast_of_lt i.2, ZMod.val_natCast_of_lt j.2] using hv
-  have hijFin : i = j := Fin.ext hijVal
+  have hijFin  := Fin.ext hijVal
   subst j
   have hkernel : h.1⁻¹ * h'.1 ∈ dQ.toMonoidHom.ker := by
     have hdh : dQ h.1 = 1 := h.2
@@ -677,12 +657,7 @@ private theorem kernelPowerCosetMap_injective (D : DegreeData G)
   subst h'
   rfl
 
-theorem kernelPowerCosetMap_bijective (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
+theorem kernelPowerCosetMap_bijective  
     [hLfinite : Finite
       (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
     (φ σ : D.FrobeniusElements K L hLK)
@@ -698,7 +673,7 @@ theorem kernelPowerCosetMap_bijective (D : DegreeData G)
     Finite.of_injective j
       (D.extensionDegreeKernelRestriction_injective K L hLK)
   let : Finite (Q ⧸ Γ) := by
-    simpa [Q, Γ] using D.frobeniusFixedField_finiteIndex K L hLK σ
+    apply D.frobeniusFixedField_finiteIndex
   have hΓmap : Γ.map dQ.toMonoidHom =
       (D.frobeniusClosureDegree K L hLK σ).toMonoidHom.range := by
     ext z
@@ -723,8 +698,7 @@ theorem kernelPowerCosetMap_bijective (D : DegreeData G)
   have hkernel : (Γ ⊓ dQ.toMonoidHom.ker).relIndex
       ((⊤ : Subgroup Q) ⊓ dQ.toMonoidHom.ker) = Nat.card H := by
     rw [show Γ ⊓ dQ.toMonoidHom.ker = ⊥ by
-      simpa [Γ, dQ, Q] using
-        D.frobeniusClosure_inf_degreeKernel K L hLK σ]
+      apply D.frobeniusClosure_inf_degreeKernel]
     rw [top_inf_eq]
     change (⊥ : Subgroup Q).relIndex H = Nat.card H
     rw [Subgroup.relIndex_bot_left]
@@ -738,11 +712,7 @@ theorem kernelPowerCosetMap_bijective (D : DegreeData G)
       Nat.card (H × Fin n) =
           Nat.card H * Nat.card (Fin n) := Nat.card_prod _ _
       _ = Nat.card H * n := by
-        have hfin : Nat.card (Fin n) = n := by
-          calc
-            Nat.card (Fin n) = Fintype.card (Fin n) :=
-              Nat.card_eq_fintype_card
-            _ = n := Fintype.card_fin n
+        have hfin  := (Trans.trans Nat.card_eq_fintype_card (Fintype.card_fin n))
         rw [hfin]
       _ = n * Nat.card H := Nat.mul_comm _ _
       _ = Γ.index := hindex.symm
@@ -750,34 +720,30 @@ theorem kernelPowerCosetMap_bijective (D : DegreeData G)
   apply (Nat.bijective_iff_injective_and_card
     (D.kernelPowerCosetMap K L hLK φ σ)).2
   exact ⟨D.kernelPowerCosetMap_injective K L hLK φ σ hφ,
-    by simpa [H, n, Q, Γ, dQ] using hcard⟩
+    hcard⟩
 
 /-- The coset decomposition used in the proof of the Frobenius norm-identity lemma. -/
-noncomputable def kernelPowerCosetEquiv (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
+noncomputable def kernelPowerCosetEquiv  
     [hLfinite : Finite
       (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
     (φ σ : D.FrobeniusElements K L hLK)
-    (hφ : D.frobeniusExponent K L hLK φ = 1) :
-    (D.extensionNormalizedDegreeContinuous K L hLK).toMonoidHom.ker ×
-        Fin (D.frobeniusExponent K L hLK σ) ≃
-      ((K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK) ⧸
-        (D.frobeniusClosure K L hLK σ).toSubgroup) :=
+    (hφ : D.frobeniusExponent K L hLK φ = 1)  :=
   Equiv.ofBijective (D.kernelPowerCosetMap K L hLK φ σ)
     (D.kernelPowerCosetMap_bijective K L hLK φ σ hφ)
+end
 
-/-- Explicit version of the coset decomposition, with representatives in
-the order `φ^i · τ`; this is the order occurring in `φ_n ∘ N`. -/
- noncomputable def frobeniusNormIdentityCosetMap (D : DegreeData G)
+
+section
+variable (D : DegreeData G)
     [IsTopologicalGroup G]
     (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
     (hLK : L.toSubgroup ≤ K.field.toSubgroup)
     [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (φ σ : D.FrobeniusElements K L hLK) :
+    (φ σ : D.FrobeniusElements K L hLK)
+include D K L hLK hLnormal φ σ
+/-- Explicit version of the coset decomposition, with representatives in
+the order `φ^i · τ`; this is the order occurring in `φ_n ∘ N`. -/
+ noncomputable def frobeniusNormIdentityCosetMap   :
     ((D.maximalUnramifiedField K.field).toSubgroup ⧸
         extensionSubgroup (D.maximalUnramifiedField K.field)
           (D.maximalUnramifiedField L)
@@ -791,12 +757,7 @@ the order `φ^i · τ`; this is the order occurring in `φ_n ∘ N`. -/
     let kI : (D.maximalUnramifiedField K.field).toSubgroup := Quotient.out p.1
     QuotientGroup.mk (kφ * (⟨kI.1, kI.2.1⟩ : K.field.toSubgroup))
 
-private theorem frobeniusNormIdentityCosetMap_commutes (D : DegreeData G)
-    [IsTopologicalGroup G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (φ σ : D.FrobeniusElements K L hLK)
+private theorem frobeniusNormIdentityCosetMap_commutes  
     (p : ((D.maximalUnramifiedField K.field).toSubgroup ⧸
         extensionSubgroup (D.maximalUnramifiedField K.field)
           (D.maximalUnramifiedField L)
@@ -806,8 +767,8 @@ private theorem frobeniusNormIdentityCosetMap_commutes (D : DegreeData G)
         (D.frobeniusNormIdentityCosetMap K L hLK φ σ p) =
       D.kernelPowerCosetMap K L hLK φ σ
         (D.inertiaQuotientDegreeKernelEquiv K L hLK p.1, p.2) := by
-  let kφ : K.field.toSubgroup := Quotient.out (φ.1 ^ p.2.1)
-  let kI : (D.maximalUnramifiedField K.field).toSubgroup := Quotient.out p.1
+  let kφ  := Quotient.out (φ.1 ^ p.2.1)
+  let kI  := Quotient.out p.1
   let kIK : K.field.toSubgroup := ⟨kI.1, kI.2.1⟩
   have hkφ : (QuotientGroup.mk'
       (D.extensionInertiaWithin K.field L hLK)) kφ = φ.1 ^ p.2.1 :=
@@ -820,9 +781,7 @@ private theorem frobeniusNormIdentityCosetMap_commutes (D : DegreeData G)
       (D.inertiaCosetToDegreeKernel K L hLK p.1).1 =
           (D.inertiaCosetToDegreeKernel K L hLK
             (QuotientGroup.mk kI)).1 := by
-        exact congrArg
-          (fun r => (D.inertiaCosetToDegreeKernel K L hLK r).1)
-          (Quotient.out_eq' p.1).symm
+        apply congrArg <;> aesop
       _ = _ := rfl
   change QuotientGroup.mk
       ((QuotientGroup.mk' (D.extensionInertiaWithin K.field L hLK))
@@ -831,8 +790,11 @@ private theorem frobeniusNormIdentityCosetMap_commutes (D : DegreeData G)
       (φ.1 ^ p.2.1 *
         (D.inertiaQuotientDegreeKernelEquiv K L hLK p.1).1)
   rw [map_mul, hkφ, hkI]
+end
 
-theorem frobeniusNormIdentityCosetMap_bijective (D : DegreeData G)
+
+section
+variable (D : DegreeData G)
     [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
     [TotallyDisconnectedSpace G]
     (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
@@ -841,7 +803,9 @@ theorem frobeniusNormIdentityCosetMap_bijective (D : DegreeData G)
     [hLfinite : Finite
       (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
     (φ σ : D.FrobeniusElements K L hLK)
-    (hφ : D.frobeniusExponent K L hLK φ = 1) :
+    (hφ : D.frobeniusExponent K L hLK φ = 1)
+include D K L hLK hLnormal hLfinite φ σ hφ
+theorem frobeniusNormIdentityCosetMap_bijective   :
     Function.Bijective (D.frobeniusNormIdentityCosetMap K L hLK φ σ) := by
   let eI := D.inertiaQuotientDegreeKernelEquiv K L hLK
   let eP := D.kernelPowerCosetEquiv K L hLK φ σ hφ
@@ -875,26 +839,11 @@ theorem frobeniusNormIdentityCosetMap_bijective (D : DegreeData G)
   exact ⟨hinj, hsurj⟩
 
 /-- Defines `frobeniusNormIdentityCosetEquiv`. -/
-noncomputable def frobeniusNormIdentityCosetEquiv (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    [hLfinite : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
-    (φ σ : D.FrobeniusElements K L hLK)
-    (hφ : D.frobeniusExponent K L hLK φ = 1) :
-    ((D.maximalUnramifiedField K.field).toSubgroup ⧸
-        extensionSubgroup (D.maximalUnramifiedField K.field)
-          (D.maximalUnramifiedField L)
-          (D.maximalUnramifiedField_mono hLK)) ×
-        Fin (D.frobeniusExponent K L hLK σ) ≃
-      (K.field.toSubgroup ⧸
-        extensionSubgroup K.field (D.frobeniusFixedField K L hLK σ)
-          (D.frobeniusFixedField_le K L hLK σ)) :=
+noncomputable def frobeniusNormIdentityCosetEquiv    :=
   Equiv.ofBijective (D.frobeniusNormIdentityCosetMap K L hLK φ σ)
     (D.frobeniusNormIdentityCosetMap_bijective K L hLK φ σ hφ)
+end
+
 
 end DegreeData
 
@@ -910,8 +859,11 @@ variable {G : IntegralRepGroupType} [Group G] [TopologicalSpace G]
 
 namespace DegreeData
 
+section
+variable (D : DegreeData G) (A : Rep ℤ G)
+include D A
 private theorem relativeCosetAction_frobeniusNormIdentityCosetEquiv
-    (D : DegreeData G) (A : Rep ℤ G)
+     
     [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
     [TotallyDisconnectedSpace G]
     (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
@@ -939,8 +891,8 @@ private theorem relativeCosetAction_frobeniusNormIdentityCosetEquiv
             (D.frobeniusFixedField K L hLK σ)
             (D.maximalUnramifiedField L)
             (D.fieldInertia_le_frobeniusFixedField K L hLK σ) a) r) := by
-  let kφ : K.field.toSubgroup := Quotient.out (φ.1 ^ i.1)
-  let kI : (D.maximalUnramifiedField K.field).toSubgroup := Quotient.out r
+  let kφ  := Quotient.out (φ.1 ^ i.1)
+  let kI  := Quotient.out r
   let kIK : K.field.toSubgroup := ⟨kI.1, kI.2.1⟩
   change relativeCosetAction A K.field
       (D.frobeniusFixedField K L hLK σ)
@@ -953,8 +905,7 @@ private theorem relativeCosetAction_frobeniusNormIdentityCosetEquiv
   rw [map_mul]
   rfl
 
-private theorem frobeniusQuotientAction_relativeNorm (D : DegreeData G)
-    (A : Rep ℤ G)
+private theorem frobeniusQuotientAction_relativeNorm  
     (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
     (hLK : L.toSubgroup ≤ K.field.toSubgroup)
     [hLnormal : (extensionSubgroup K.field L hLK).Normal]
@@ -984,7 +935,7 @@ private theorem frobeniusQuotientAction_relativeNorm (D : DegreeData G)
             (relativeCosetAction A (D.maximalUnramifiedField K.field)
               (D.maximalUnramifiedField L)
               (D.maximalUnramifiedField_mono hLK) a r)) := by
-  let kφ : K.field.toSubgroup := Quotient.out (φ.1 ^ i)
+  let kφ  := Quotient.out (φ.1 ^ i)
   have hkφ : φ.1 ^ i = QuotientGroup.mk kφ :=
     (Quotient.out_eq' (φ.1 ^ i)).symm
   let b := fixedFieldInclusion A (D.maximalUnramifiedField K.field)
@@ -992,24 +943,19 @@ private theorem frobeniusQuotientAction_relativeNorm (D : DegreeData G)
     (relativeNorm A (D.maximalUnramifiedField K.field)
       (D.maximalUnramifiedField L) (D.maximalUnramifiedField_mono hLK) a)
   calc
-    ((D.frobeniusQuotientAction A K.field L hLK (φ.1 ^ i) b :
-        ambientFixedAddSubgroup A (D.maximalUnramifiedField L)) : A.V) =
+    ((D.frobeniusQuotientAction A K.field L hLK (φ.1 ^ i) b) : A.V) =
       (D.frobeniusQuotientAction A K.field L hLK
         (QuotientGroup.mk kφ) b : A.V) := by
-          exact congrArg
-            (fun q => (D.frobeniusQuotientAction A K.field L hLK q b : A.V)) hkφ
+          apply congrArg <;> aesop
     _ = A.ρ kφ.1 b.1 := rfl
     _ = A.ρ kφ.1
         ((relativeNorm A (D.maximalUnramifiedField K.field)
           (D.maximalUnramifiedField L)
-          (D.maximalUnramifiedField_mono hLK) a :
-            ambientFixedAddSubgroup A (D.maximalUnramifiedField K.field)) : A.V) := by
-          rw [fixedFieldInclusion_coe]
+          (D.maximalUnramifiedField_mono hLK) a) : A.V) := rfl
     _ = A.ρ kφ.1
         (relativeNormValue A (D.maximalUnramifiedField K.field)
           (D.maximalUnramifiedField L)
-          (D.maximalUnramifiedField_mono hLK) a) := by
-          rw [relativeNorm_apply_coe]
+          (D.maximalUnramifiedField_mono hLK) a) := rfl
     _ = A.ρ kφ.1
         ((@Finset.univ
           ((D.maximalUnramifiedField K.field).toSubgroup ⧸
@@ -1019,8 +965,7 @@ private theorem frobeniusQuotientAction_relativeNorm (D : DegreeData G)
           (Fintype.ofFinite _)).sum (fun r =>
             relativeCosetAction A (D.maximalUnramifiedField K.field)
               (D.maximalUnramifiedField L)
-              (D.maximalUnramifiedField_mono hLK) a r)) := by
-          rfl
+              (D.maximalUnramifiedField_mono hLK) a r)) := rfl
     _ = (@Finset.univ
         ((D.maximalUnramifiedField K.field).toSubgroup ⧸
           extensionSubgroup (D.maximalUnramifiedField K.field)
@@ -1033,7 +978,7 @@ private theorem frobeniusQuotientAction_relativeNorm (D : DegreeData G)
           rw [map_sum]
 
 /-- The first norm identity of the Frobenius norm-identity lemma, in the order `φ_n ∘ N`. -/
-theorem frobeniusNormIdentity_norm_eq_powerSum_norm (D : DegreeData G) (A : Rep ℤ G)
+theorem frobeniusNormIdentity_norm_eq_powerSum_norm  
     [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
     [TotallyDisconnectedSpace G]
     (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
@@ -1072,16 +1017,9 @@ theorem frobeniusNormIdentity_norm_eq_powerSum_norm (D : DegreeData G) (A : Rep 
               (D.maximalUnramifiedField L)
               (D.fieldInertia_le_frobeniusFixedField K L hLK σ) a))) :
           ambientFixedAddSubgroup A (D.maximalUnramifiedField L)) : A.V) := by
-  let : Finite
-      (K.field.toSubgroup ⧸
-        extensionSubgroup K.field (D.frobeniusFixedField K L hLK σ)
-          (D.frobeniusFixedField_le K L hLK σ)) :=
+  let  :=
     D.frobeniusFixedField_finite K L hLK σ
-  let : Finite
-      ((D.maximalUnramifiedField K.field).toSubgroup ⧸
-        extensionSubgroup (D.maximalUnramifiedField K.field)
-          (D.maximalUnramifiedField L)
-          (D.maximalUnramifiedField_mono hLK)) :=
+  let  :=
     D.maximalUnramifiedExtension_finite K.field L hLK
   let R := (D.maximalUnramifiedField K.field).toSubgroup ⧸
     extensionSubgroup (D.maximalUnramifiedField K.field)
@@ -1119,8 +1057,7 @@ theorem frobeniusNormIdentity_norm_eq_powerSum_norm (D : DegreeData G) (A : Rep 
             aI p.1) := by
       apply Finset.sum_congr rfl
       intro p _
-      exact D.relativeCosetAction_frobeniusNormIdentityCosetEquiv
-        A K L hLK φ σ hφ a p.1 p.2
+      apply D.relativeCosetAction_frobeniusNormIdentityCosetEquiv
     _ = ∑ i : Fin n, ∑ r : R,
         A.ρ (Quotient.out (φ.1 ^ i.1)).1
           (relativeCosetAction A (D.maximalUnramifiedField K.field)
@@ -1138,8 +1075,7 @@ theorem frobeniusNormIdentity_norm_eq_powerSum_norm (D : DegreeData G) (A : Rep 
 /-- The second identity of the Frobenius norm-identity lemma:
 `N_{\widetilde L/\widetilde K} ∘ φ_n =
   φ_n ∘ N_{\widetilde L/\widetilde K}`. -/
-theorem frobeniusNormIdentity_norm_powerSum_eq_powerSum_norm (D : DegreeData G)
-    (A : Rep ℤ G)
+theorem frobeniusNormIdentity_norm_powerSum_eq_powerSum_norm  
     (K L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.toSubgroup)
     [hLnormal : (extensionSubgroup K L hLK).Normal]
     [hLfinite : Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
@@ -1163,11 +1099,7 @@ theorem frobeniusNormIdentity_norm_powerSum_eq_powerSum_norm (D : DegreeData G)
             (D.maximalUnramifiedField L) (D.maximalUnramifiedField_mono hLK)
             a)) : ambientFixedAddSubgroup A (D.maximalUnramifiedField L)) :
         A.V) := by
-  let : Finite
-      ((D.maximalUnramifiedField K).toSubgroup ⧸
-        extensionSubgroup (D.maximalUnramifiedField K)
-          (D.maximalUnramifiedField L)
-          (D.maximalUnramifiedField_mono hLK)) :=
+  let  :=
     D.maximalUnramifiedExtension_finite K L hLK
   change
     ((relativeNorm A (D.maximalUnramifiedField K)
@@ -1196,13 +1128,13 @@ theorem frobeniusNormIdentity_norm_powerSum_eq_powerSum_norm (D : DegreeData G)
   rw [map_sum, map_sum]
   apply Finset.sum_congr rfl
   intro i _
-  exact D.relativeNorm_frobeniusQuotientAction A K L hLK (φ ^ i.1) a
+  apply D.relativeNorm_frobeniusQuotientAction
 
 /-- **The Frobenius norm-identity lemma.**  For `d_K(φ)=1`, `d_K(σ)=n` and the
 fixed field `Σ` of `σ`, the three actual norm expressions agree:
 `N_{Σ/K}(a) = (N_{\widetilde L/\widetilde K} ∘ φ_n)(a) =
 (φ_n ∘ N_{\widetilde L/\widetilde K})(a)`. -/
-theorem frobeniusNormIdentities (D : DegreeData G) (A : Rep ℤ G)
+theorem frobeniusNormIdentities  
     [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
     [TotallyDisconnectedSpace G]
     (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
@@ -1248,16 +1180,9 @@ theorem frobeniusNormIdentities (D : DegreeData G) (A : Rep ℤ G)
         (D.maximalUnramifiedField K.field)) : A.V) =
       ((D.frobeniusPowerSum A K.field L hLK φ.1 n b :
         ambientFixedAddSubgroup A (D.maximalUnramifiedField L)) : A.V)) := by
-  let : Finite
-      (K.field.toSubgroup ⧸
-        extensionSubgroup K.field (D.frobeniusFixedField K L hLK σ)
-          (D.frobeniusFixedField_le K L hLK σ)) :=
+  let  :=
     D.frobeniusFixedField_finite K L hLK σ
-  let : Finite
-      ((D.maximalUnramifiedField K.field).toSubgroup ⧸
-        extensionSubgroup (D.maximalUnramifiedField K.field)
-          (D.maximalUnramifiedField L)
-          (D.maximalUnramifiedField_mono hLK)) :=
+  let  :=
     D.maximalUnramifiedExtension_finite K.field L hLK
   let n := D.frobeniusExponent K L hLK σ
   let aI := fixedFieldInclusion A
@@ -1271,23 +1196,18 @@ theorem frobeniusNormIdentities (D : DegreeData G) (A : Rep ℤ G)
   let φnAI := D.frobeniusPowerSum A K.field L hLK φ.1 n aI
   have hFirst :
       ((relativeNorm A K.field (D.frobeniusFixedField K L hLK σ)
-        (D.frobeniusFixedField_le K L hLK σ) a :
-          ambientFixedAddSubgroup A K.field) : A.V) =
-        ((D.frobeniusPowerSum A K.field L hLK φ.1 n b :
-          ambientFixedAddSubgroup A (D.maximalUnramifiedField L)) : A.V) := by
-    simpa [n, aI, b] using
-      D.frobeniusNormIdentity_norm_eq_powerSum_norm A K L hLK φ σ hφ a
+        (D.frobeniusFixedField_le K L hLK σ) a) : A.V) =
+        ((D.frobeniusPowerSum A K.field L hLK φ.1 n b) : A.V) := by
+    apply D.frobeniusNormIdentity_norm_eq_powerSum_norm <;> assumption
   have hCommute :
       ((relativeNorm A (D.maximalUnramifiedField K.field)
         (D.maximalUnramifiedField L) (D.maximalUnramifiedField_mono hLK)
-        φnAI : ambientFixedAddSubgroup A
-          (D.maximalUnramifiedField K.field)) : A.V) =
-        ((D.frobeniusPowerSum A K.field L hLK φ.1 n b :
-          ambientFixedAddSubgroup A (D.maximalUnramifiedField L)) : A.V) := by
-    simpa [n, aI, b, φnAI] using
-      D.frobeniusNormIdentity_norm_powerSum_eq_powerSum_norm
-        A K.field L hLK φ.1 n aI
+        φnAI) : A.V) =
+        ((D.frobeniusPowerSum A K.field L hLK φ.1 n b) : A.V) := by
+    apply D.frobeniusNormIdentity_norm_powerSum_eq_powerSum_norm
   exact ⟨hFirst.trans hCommute.symm, hCommute⟩
+end
+
 
 end DegreeData
 end frobeniusNormIdentities

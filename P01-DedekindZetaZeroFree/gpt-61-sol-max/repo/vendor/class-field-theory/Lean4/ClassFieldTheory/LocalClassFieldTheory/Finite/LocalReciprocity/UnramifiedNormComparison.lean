@@ -118,11 +118,11 @@ theorem galoisGroupEquivAbelianizationOfUnramifiedValuation_apply
       Abelianization.of σ :=
   rfl
 
-noncomputable local instance unramifiedNormComparisonNormQuotientFinite :
-    Finite (NormQuotient K L) :=
-  Finite.of_equiv (Gal(L / K))
-    ((galoisGroupEquivAbelianizationOfUnramifiedValuation K L).toEquiv.trans
-      (abelianizationEquivNormQuotient K L).toEquiv)
+
+
+
+
+
 
 private theorem normQuotient_card_eq_finrank :
     Nat.card (NormQuotient K L) = Module.finrank K L := by

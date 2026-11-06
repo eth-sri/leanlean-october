@@ -279,7 +279,10 @@ theorem kern_diffAt_z (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 0 < Z) (ξ w z 
   exact ((((hpow.mul hexp).mul hM).mul (differentiableAt_const _)).mul hqz).mul
     (((hζ.mul (differentiableAt_const _)).mul hHu).div_const _)
 
-theorem kern_z_holo (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) (ξ w : ℂ)
+section
+variable (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z)
+include u hu Z hZ
+theorem kern_z_holo   (ξ w : ℂ)
     (hξ : ξ.re ∈ Icc Scales.rightLine 4) (hw : w.re ∈ Icc Scales.rightLine 4) :
     DifferentiableOn ℂ (fun z => kern D u Z ξ w z)
       (comparisonClosedStrip (1 / 6 + Scales.contourOffset) 2) := by
@@ -298,32 +301,32 @@ theorem kern_z_holo (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) (ξ w : 
     refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> linarith
   exact (kern_diffAt_z D u hu Z hZpos ξ w z hmem (by linarith) hz6).differentiableWithinAt
 
-theorem kern_z_decay (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) (ξ w : ℂ)
+theorem kern_z_decay   (ξ w : ℂ)
     (hξ : ξ.re ∈ Icc Scales.rightLine 4) (hw : w.re ∈ Icc Scales.rightLine 4) :
     DecayOn (fun z => kern D u Z ξ w z) (1 / 6 + Scales.contourOffset) 2 :=
   DedekindZetaZeroFree.Quantitative.PrincipalPointwiseDecay.kern_z_decay D u hu Z hZ ξ w hξ hw
 
-theorem Iz_w_holo (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) (ξ : ℂ)
+theorem Iz_w_holo   (ξ : ℂ)
     (hξ : ξ.re ∈ Icc Scales.rightLine 4) :
     DifferentiableOn ℂ (fun w => Iz D u Z (1 / 6 + Scales.contourOffset) ξ w)
       (comparisonClosedStrip Scales.rightLine 4) :=
   DedekindZetaZeroFree.Quantitative.PrincipalIntegratedWControls.Iz_w_holo D u hu Z hZ ξ hξ
 
-theorem Iz_w_decay (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) (ξ : ℂ)
+theorem Iz_w_decay   (ξ : ℂ)
     (hξ : ξ.re ∈ Icc Scales.rightLine 4) :
     DecayOn (fun w => Iz D u Z (1 / 6 + Scales.contourOffset) ξ w) Scales.rightLine 4 :=
   DedekindZetaZeroFree.Quantitative.PrincipalIntegratedWControls.Iz_w_decay D u hu Z hZ ξ hξ
 
-theorem Iwz_xi_holo (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) :
+theorem Iwz_xi_holo   :
     DifferentiableOn ℂ (fun ξ => Iwz D u Z Scales.rightLine (1 / 6 + Scales.contourOffset) ξ)
       (comparisonClosedStrip Scales.rightLine 4) :=
   DedekindZetaZeroFree.Quantitative.PrincipalIntegratedXiControls.Iwz_xi_holo D u hu Z hZ
 
-theorem Iwz_xi_decay (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) :
+theorem Iwz_xi_decay   :
     DecayOn (fun ξ => Iwz D u Z Scales.rightLine (1 / 6 + Scales.contourOffset) ξ) Scales.rightLine 4 :=
   DedekindZetaZeroFree.Quantitative.PrincipalIntegratedXiControls.Iwz_xi_decay D u hu Z hZ
 
-theorem kern_w_holo (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) (s t : ℝ) :
+theorem kern_w_holo   (s t : ℝ) :
     DifferentiableOn ℂ
       (fun w => kern D u Z ((Scales.rightLine : ℂ) + (s : ℂ) * I) w
         (((1 / 6 + Scales.contourOffset : ℝ) : ℂ) + (t : ℂ) * I))
@@ -343,13 +346,13 @@ theorem kern_w_holo (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) (s t : �
     refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> linarith
   exact (kern_diffAt_w D u Z hZpos _ w _ hmem (by linarith) hw0).differentiableWithinAt
 
-theorem kern_w_decay (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) (s t : ℝ) :
+theorem kern_w_decay   (s t : ℝ) :
     DecayOn
       (fun w => kern D u Z ((Scales.rightLine : ℂ) + (s : ℂ) * I) w
         (((1 / 6 + Scales.contourOffset : ℝ) : ℂ) + (t : ℂ) * I)) (9 / 10) Scales.rightLine :=
   DedekindZetaZeroFree.Quantitative.PrincipalPointwiseDecay.kern_w_decay D u hu Z hZ s t
 
-theorem kern_w_residue (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) (s t : ℝ) :
+theorem kern_w_residue   (s t : ℝ) :
     Tendsto (fun w : ℂ => (w - 1) *
         kern D u Z ((Scales.rightLine : ℂ) + (s : ℂ) * I) w
           (((1 / 6 + Scales.contourOffset : ℝ) : ℂ) + (t : ℂ) * I))
@@ -363,6 +366,8 @@ theorem kern_w_residue (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) (s t 
     norm_num
   exact kern_w_tendsto u hu _ _ Z (by linarith) (by rw [re_x₁_line]; exact one_lt_x₁)
     (by rw [re_z_line]; unfold EulerDomain.pad Scales.contourOffset; norm_num) hz6
+end
+
 
 set_option maxHeartbeats 1000000 in
 theorem Hu_diffAt_z (u : D.Row) (ξ z : ℂ)
@@ -402,7 +407,10 @@ theorem wResidueExplicit_diffAt (u : D.Row) (Z : ℝ) (hZ : 0 < Z) (ξ z : ℂ)
   exact (((hpow.mul hexp).mul hM).mul ((hζ.mul hHu).div_const _)).const_mul _
 
 set_option maxHeartbeats 1000000 in
-theorem wResidue_z_holo (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) (s : ℝ) :
+section
+variable (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z)
+include u hu Z hZ
+theorem wResidue_z_holo   (s : ℝ) :
     DifferentiableOn ℂ
       (fun z => wResidueLocal D u ((Scales.rightLine : ℂ) + (s : ℂ) * I) z Z)
       (comparisonClosedStrip (1 / 20) (1 / 6 + Scales.contourOffset) \ {1 / 6}) := by
@@ -441,19 +449,19 @@ theorem wResidue_z_holo (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) (s :
   rw [PrincipalResidueFormulas.wResidue_eq D u hu _ z Z hZpos (by rw [hξre]; exact hx1) h20 hz6,
     PrincipalResidueFormulas.remainingKernel_principal D u hu]
 
-theorem wResidue_z_decay (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) (s : ℝ) :
+theorem wResidue_z_decay   (s : ℝ) :
     DecayOn (fun z => wResidueLocal D u ((Scales.rightLine : ℂ) + (s : ℂ) * I) z Z)
       (1 / 20) (1 / 6 + Scales.contourOffset) :=
   DedekindZetaZeroFree.Quantitative.PrincipalPointwiseDecay.wResidue_z_decay D u hu Z hZ s
 
-theorem wResidue_z_residue (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) (s : ℝ) :
+theorem wResidue_z_residue   (s : ℝ) :
     Tendsto (fun z : ℂ => (z - 1 / 6) *
         wResidueLocal D u ((Scales.rightLine : ℂ) + (s : ℂ) * I) z Z)
       (𝓝[≠] (1 / 6 : ℂ))
       (𝓝 (zResidueExplicit D ((Scales.rightLine : ℂ) + (s : ℂ) * I) Z)) :=
   wResidue_tendsto u hu _ (by rw [re_x₁_line]; exact one_lt_x₁) Z (by linarith)
 
-theorem zResidue_xi_holo (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) :
+theorem zResidue_xi_holo   :
     DifferentiableOn ℂ (fun ξ => zResidueLocal D u ξ Z)
       (comparisonClosedStrip Scales.rightLine 2) := by
   have hZpos : 0 < Z := by linarith
@@ -470,7 +478,7 @@ theorem zResidue_xi_holo (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) :
   exact hex.congr fun ξ hξ =>
     PrincipalResidueFormulas.zResidue_eq D u hu ξ (strip_re_one_lt le_rfl hξ) Z hZpos
 
-theorem zResidue_xi_gaussian_decay (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) :
+theorem zResidue_xi_gaussian_decay   :
     ∃ C : ℝ, ∀ x ∈ Icc Scales.rightLine 2, ∀ y : ℝ,
       ‖zResidueLocal D u ((x : ℂ) + (y : ℂ) * I) Z‖ ≤ C * Real.exp (-(y ^ 2) / 2) := by
   have hZpos : 0 < Z := by linarith
@@ -534,6 +542,8 @@ theorem zResidue_xi_gaussian_decay (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 
         mul_le_mul (mul_le_mul_of_nonneg_left hZn (norm_nonneg _)) hGb (norm_nonneg _)
           (by positivity)
     _ = _ := by ring
+end
+
 
 end
 

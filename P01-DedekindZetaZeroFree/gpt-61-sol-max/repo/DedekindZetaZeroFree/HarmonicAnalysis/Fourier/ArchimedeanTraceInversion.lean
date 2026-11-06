@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LFunctions.Tate.ComplexTraceFourierMellinNormalization
 public import DedekindZetaZeroFree.Adeles.Characters.ArchimedeanTraceCharacter
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -17,7 +20,7 @@ def realMeasure : Measure ℝ := volume
 
 def complexMeasure : Measure ℂ := (2 : ℝ≥0∞) • volume
 
-def realFourier (f : ℝ → ℂ) (y : ℝ) : ℂ :=
+def realFourier (f : ℝ → ℂ) (y : ℝ)  :=
   ∫ x : ℝ, f x * Complex.exp (((-2 * Real.pi * (x * y) : ℝ) : ℂ) * Complex.I)
     ∂realMeasure
 
@@ -44,8 +47,7 @@ def complexJ : ℂ ≃L[ℝ] ℂ :=
   Complex.conjLIE.toContinuousLinearEquiv.trans
     (LinearEquiv.smulOfNeZero ℝ ℂ 2 (by norm_num)).toContinuousLinearEquiv
 
-private theorem complexJ_apply (z : ℂ) : complexJ z = 2 * (starRingEnd ℂ) z := by
-  simp [complexJ, Complex.conjLIE_apply, Complex.real_smul]
+private theorem complexJ_apply (z : ℂ) : complexJ z = 2 * (starRingEnd ℂ) z := rfl
 
 theorem complexTraceFourier_schwartz (f : SchwartzMap ℂ ℂ) :
     ∃ g : SchwartzMap ℂ ℂ, ∀ y : ℂ, g y = complexTraceFourier f y := by
@@ -62,11 +64,11 @@ instance completionMeasurableSpace {F : Type*} [Field F] [NumberField F]
 instance completionBorelSpace {F : Type*} [Field F] [NumberField F]
     (v : InfinitePlace F) : BorelSpace v.Completion := ⟨rfl⟩
 
-instance infiniteMeasurableSpace (F : Type*) [Field F] [NumberField F] :
-    MeasurableSpace (InfiniteAdeleRing F) :=
-  inferInstanceAs (MeasurableSpace ((v : InfinitePlace F) → v.Completion))
 
-instance instSigmaFiniteTraceInversionRealMeasure : SigmaFinite realMeasure := inferInstanceAs (SigmaFinite (volume : Measure ℝ))
+
+
+
+
 
 instance instSigmaFiniteTraceInversionComplexMeasure : SigmaFinite complexMeasure := by
   change SigmaFinite ((2 : ℝ≥0) • (volume : Measure ℂ))

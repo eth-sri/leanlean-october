@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.FieldTheory.IsSepClosed
 public import ClassFieldTheory.LocalClassFieldTheory.Finite.LocalReciprocity.GaloisExtensionQuotient
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -31,22 +34,25 @@ namespace LocalClassFieldTheory
 open RamificationTheory CyclicCohomology KummerTheory
 open ClassFormation
 
+section
+variable (F : Type) [Field F]
+include F
 /-- The absolute Galois group of a field, formed using its chosen separable closure. -/
 abbrev intrinsicAbsoluteGalois
-    (F : Type) [Field F] :=
+      :=
   Gal(SeparableClosure F / F)
 
 /-- The integral representation of the intrinsic absolute Galois group on the
 units of the chosen separable closure. -/
 abbrev intrinsicAbsoluteUnits
-    (F : Type) [Field F] :
+      :
     Rep ℤ (intrinsicAbsoluteGalois F) :=
   galoisAmbientUnitsRep F (SeparableClosure F)
 
 /-- The closed base subgroup of the intrinsic absolute Galois group, expressed
 as the fixing subgroup of the bottom intermediate field. -/
 abbrev intrinsicAbstractBase
-    (F : Type) [Field F] :
+      :
     ClosedSubgroup (intrinsicAbsoluteGalois F) :=
   closedFixingSubgroup F (SeparableClosure F)
     (⊥ : IntermediateField F (SeparableClosure F))
@@ -54,7 +60,7 @@ abbrev intrinsicAbstractBase
 /-- The canonical equivalence from the intrinsic abstract base subgroup to the
 full absolute Galois group. -/
 noncomputable def intrinsicAbstractBaseEquivAbsolute
-    (F : Type) [Field F] :
+      :
     (intrinsicAbstractBase F).toSubgroup ≃*
       intrinsicAbsoluteGalois F :=
   (MulEquiv.subgroupCongr (by
@@ -66,15 +72,14 @@ noncomputable def intrinsicAbstractBaseEquivAbsolute
 the supplied absolute Galois automorphism. -/
 @[simp]
 theorem intrinsicAbstractBaseEquivAbsolute_symm_apply_val
-    (F : Type) [Field F] (σ : intrinsicAbsoluteGalois F) :
-    ((intrinsicAbstractBaseEquivAbsolute F).symm σ).1 = σ := by
-  simp [intrinsicAbstractBaseEquivAbsolute]
+      (σ : intrinsicAbsoluteGalois F) :
+    ((intrinsicAbstractBaseEquivAbsolute F).symm σ).1 = σ := rfl
 
 /-- The intrinsic abstract base packaged as a finite abstract field; its
 defining quotient is the trivial finite quotient. -/
 @[reducible]
 noncomputable def intrinsicFiniteAbstractBase
-    (F : Type) [Field F] :
+      :
     FiniteAbstractField (intrinsicAbsoluteGalois F) where
   field := intrinsicAbstractBase F
   finite := by
@@ -85,13 +90,15 @@ noncomputable def intrinsicFiniteAbstractBase
 abstract class formation. -/
 @[simp]
 theorem intrinsicFiniteAbstractBase_eq_base
-    (F : Type) [Field F] :
+      :
     intrinsicFiniteAbstractBase F =
       FiniteAbstractField.base (intrinsicAbsoluteGalois F) := by
   have h := closedFixingSubgroup_bot_eq_baseField F (SeparableClosure F)
   change intrinsicAbstractBase F =
     baseField (intrinsicAbsoluteGalois F) at h
   exact FiniteAbstractField.eq_of_field_eq _ _ h
+end
+
 
 end LocalClassFieldTheory
 end

@@ -73,57 +73,57 @@ theorem
       (ideleClassNorm_range_eq_narrowFiniteConductorCongruenceSubgroup_iff_rayClassGroup_card_eq_normQuotient_card
         (K := K) (L := L))
 
-/-- The canonical map from the ray class group at the exact narrow finite
-norm conductor to the actual norm quotient is injective precisely when the
-ray class number equals the extension degree. -/
-theorem
-    narrowFiniteConductorRayClassGroupToIdeleClassNormQuotient_injective_iff_card_eq_extensionDegree :
-    Function.Injective
-        (narrowFiniteConductorRayClassGroupToIdeleClassNormQuotient
-          (K := K) (L := L)) ↔
-      Nat.card
-          (RayClass.RayClassGroup
-            (RayClass.Modulus.narrowOfFinite
-              (ideleClassNormNarrowFiniteConductor (K := K) (L := L)))) =
-        Module.finrank K L := by
-  simpa only [
-    ← Subgroup.index_eq_card,
-    ClassFieldAxiom.ideleClassNorm_index_eq_finrank_cyclic K L] using
-      (narrowFiniteConductorRayClassGroupToIdeleClassNormQuotient_injective_iff_card_eq_normQuotient_card
-        (K := K) (L := L))
 
-/-- When the ray class number at the exact narrow finite norm conductor
-equals the degree of a finite cyclic extension, its actual norm quotient is
-canonically the full ray class group at that conductor. -/
-def cyclicNormQuotientEquivNarrowFiniteConductorRayClassGroup
-    (hcard :
-      Nat.card
-          (RayClass.RayClassGroup
-            (RayClass.Modulus.narrowOfFinite
-              (ideleClassNormNarrowFiniteConductor (K := K) (L := L)))) =
-        Module.finrank K L) :
-    (IdeleClassGroup K ⧸
-        (_root_.ideleClassNorm K L).range) ≃*
-      RayClass.RayClassGroup
-        (RayClass.Modulus.narrowOfFinite
-          (ideleClassNormNarrowFiniteConductor (K := K) (L := L))) :=
-  normQuotientEquivNarrowFiniteConductorRayClassGroup
-    (K := K) (L := L) <| by
-      calc
-        Nat.card
-            (RayClass.RayClassGroup
-              (RayClass.Modulus.narrowOfFinite
-                (ideleClassNormNarrowFiniteConductor (K := K) (L := L)))) =
-            Module.finrank K L :=
-          hcard
-        _ = ((_root_.ideleClassNorm K L).range).index :=
-          (ClassFieldAxiom.ideleClassNorm_index_eq_finrank_cyclic
-            K L).symm
-        _ =
-            Nat.card
-              (IdeleClassGroup K ⧸
-                (_root_.ideleClassNorm K L).range) :=
-          Subgroup.index_eq_card ((_root_.ideleClassNorm K L).range)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end GlobalClassFields
 end GlobalClassFieldTheory

@@ -1,14 +1,20 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LFunctions.Dedekind.GammaFactors
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.AbelianQuotient
 
 open Complex
 
-theorem zetaGammaReciprocal_differentiable (K : Type) [Field K] [NumberField K] :
+section
+variable (K : Type) [Field K] [NumberField K]
+include K
+theorem zetaGammaReciprocal_differentiable   :
     Differentiable ℂ (zetaGammaReciprocal K) := by
   have hc : ((|NumberField.discr K| : ℤ) : ℂ) ≠ 0 := by
     simp [NumberField.discr_ne_zero K]
@@ -18,7 +24,7 @@ theorem zetaGammaReciprocal_differentiable (K : Type) [Field K] [NumberField K] 
   · exact (Complex.differentiable_Gammaℝ_inv.pow _)
   · exact (Complex.differentiable_Gammaℂ_inv.pow _)
 
-theorem zetaGammaReciprocal_zero (K : Type) [Field K] [NumberField K] :
+theorem zetaGammaReciprocal_zero   :
     zetaGammaReciprocal K 0 = 0 := by
   have hsum := NumberField.InfinitePlace.card_add_two_mul_card_eq_rank (K := K)
   have hrank : 0 < Module.finrank ℚ K := Module.finrank_pos
@@ -36,13 +42,13 @@ theorem zetaGammaReciprocal_zero (K : Type) [Field K] [NumberField K] :
     exact zero_pow h2
   · rw [zero_pow h1, zero_mul]
 
-theorem zetaGammaReciprocal_mul_factor (K : Type) [Field K] [NumberField K]
+theorem zetaGammaReciprocal_mul_factor  
     (s : ℂ) (hs : 1 < s.re) :
     zetaGammaReciprocal K s * zetaGammaFactor K s = 1 := by
   have hs0 : 0 < s.re := lt_trans zero_lt_one hs
   have hc : ((|NumberField.discr K| : ℤ) : ℂ) ≠ 0 := by
     simp [NumberField.discr_ne_zero K]
-  have hGℝ : Complex.Gammaℝ s ≠ 0 := Complex.Gammaℝ_ne_zero_of_re_pos hs0
+  have hGℝ  := Complex.Gammaℝ_ne_zero_of_re_pos hs0
   have hGℂ : Complex.Gammaℂ s ≠ 0 := by
     rw [Complex.Gammaℂ_def]
     exact mul_ne_zero (mul_ne_zero two_ne_zero (cpow_ne_zero_iff.mpr (Or.inl (by norm_num))))
@@ -70,5 +76,7 @@ theorem zetaGammaReciprocal_mul_factor (K : Type) [Field K] [NumberField K]
         ((Complex.Gammaℂ s)⁻¹ ^ NumberField.InfinitePlace.nrComplexPlaces K *
           Complex.Gammaℂ s ^ NumberField.InfinitePlace.nrComplexPlaces K) := by ring
     _ = 1 := by rw [hc1, hℝ, hℂ]; ring
+end
+
 
 end DedekindZetaZeroFree.AbelianQuotient

@@ -37,51 +37,63 @@ private theorem continuous_labeledA_self :
   exact (continuous_apply (placeEquiv F ζ hζ |>.symm k)).comp
     (CotangentLogCoframe.A (d F)).continuous
 
-private theorem continuous_proj_self (C : ShrunkChart F ζ hζ U R P H) :
+section
+variable (C : ShrunkChart F ζ hζ U R P H)
+include C in
+private theorem continuous_proj_self   :
     Continuous (KPCuspSiegel.projection F
       (KPContSectorPhaseComponentCharts.Component F ζ hζ U R P H C.component)) := by
   show Continuous (Quotient.mk _)
   exact continuous_quotient_mk'
 
-private theorem continuous_componentMap_self (C : ShrunkChart F ζ hζ U R P H) :
+include C in
+private theorem continuous_componentMap_self   :
     Continuous (KPFiniteCuspAtlas.componentMap F ζ hζ U
       ((H.atlas U).representative C.component)) := by
   have hh := (H.atlas U).components.continuous.comp (continuous_sigmaMk (i := C.component))
   simpa only [Function.comp_def, (H.atlas U).components_formula] using hh
 
-private theorem continuous_q (C : ShrunkChart F ζ hζ U R P H) :
+include C in
+private theorem continuous_q   :
     Continuous (KPContCotangentOverlapRationalBranches.q C) :=
   (continuous_componentMap_self C).comp ((continuous_proj_self C).comp continuous_labeledA_self)
 
-private theorem isotropyArrow_phase (C : ShrunkChart F ζ hζ U R P H) (γ : Gamma C)
+include C in
+private theorem isotropyArrow_phase   (γ : Gamma C)
     (x : M F) :
     (isotropyArrow C γ).phase x =
       (KPCuspGenuineMonodromy.chi F ζ hζ γ.val.2 : ℂ) := by
   simp [KPContCotangentActualOverlap.Arrow.phase, isotropyArrow, isotropyChart]
 
-private theorem scalarCocycle_apply (C : ShrunkChart F ζ hζ U R P H) (γ : Gamma C)
+include C in
+private theorem scalarCocycle_apply   (γ : Gamma C)
     (x : EuclideanSpace ℝ (Fin (3 * d F))) (v : EuclideanSpace ℂ (Fin 1)) :
     (scalarCocycle C γ x) v =
       scalarReindex ((KPCuspGenuineMonodromy.chi F ζ hζ γ.val.2 : ℂ) *
         (scalarReindex.symm v)) := by
   simp [scalarCocycle, scalarPhase]
 
-private theorem action_eq (C : ShrunkChart F ζ hζ U R P H) (γ : Gamma C) (x : M F) :
+include C in
+private theorem action_eq   (γ : Gamma C) (x : M F) :
     action C γ (baseReindex (F := F) x) =
       baseReindex (F := F) ((isotropyArrow C γ).psi x) := by
   simp [KPContActualSectorChartEquivariantInputs.action,
     LinearIsometryEquiv.symm_apply_apply]
 
-private theorem scalarData_act (C : ShrunkChart F ζ hζ U R P H) :
+include C in
+private theorem scalarData_act   :
     (scalarData C).act = action C := rfl
 
-private theorem scalarData_cocycle (C : ShrunkChart F ζ hζ U R P H) :
+include C in
+private theorem scalarData_cocycle   :
     (scalarData C).cocycle = scalarCocycle C := rfl
 
-private theorem cotangentData_act (C : ShrunkChart F ζ hζ U R P H) :
+include C in
+private theorem cotangentData_act   :
     (cotangentData C).act = action C := rfl
 
-private theorem cotangentData_cocycle (C : ShrunkChart F ζ hζ U R P H) :
+include C in
+private theorem cotangentData_cocycle   :
     (cotangentData C).cocycle = cotangentCocycle C := rfl
 
 private theorem T_apply' {i : Fin (H.atlas U).componentCount}
@@ -96,7 +108,8 @@ private theorem T_apply' {i : Fin (H.atlas U).componentCount}
     rfl
   rw [T_apply, ← hQ]
 
-theorem scalar (C : ShrunkChart F ζ hζ U R P H)
+include C in
+theorem scalar  
     (h : EuclideanSpace ℝ (Fin (3 * d F)) → EuclideanSpace ℂ (Fin 1))
     (hsmooth : ContDiffOn ℝ (⊤ : ℕ∞) h (chart C))
     (hcompact : HasCompactSupport h)
@@ -171,7 +184,8 @@ theorem scalar (C : ShrunkChart F ζ hζ U R P H)
     show scalarReindex (scalarReindex.symm (h (baseReindex x.val))) = h (baseReindex x.val)
     rw [LinearIsometryEquiv.apply_symm_apply]⟩
 
-theorem cotangent (C : ShrunkChart F ζ hζ U R P H)
+include C in
+theorem cotangent  
     (h : EuclideanSpace ℝ (Fin (3 * d F)) →
       EuclideanSpace ℂ (Fin (3 * d F)))
     (hsmooth : ContDiffOn ℝ (⊤ : ℕ∞) h (chart C))
@@ -261,6 +275,8 @@ theorem cotangent (C : ShrunkChart F ζ hζ U R P H)
   exact ⟨⟨f, hfmem⟩, fun x => by
     show coefficientReindex (coefficientReindex.symm (h (baseReindex x.val))) = h (baseReindex x.val)
     rw [LinearIsometryEquiv.apply_symm_apply]⟩
+end
+
 
 end DedekindZetaZeroFree.KPContActualCompactEquivariantDescent
 

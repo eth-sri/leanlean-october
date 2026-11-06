@@ -115,51 +115,51 @@ theorem equalCharacteristicChangedLaurentUniformizerUnit_mem_normSubgroup_iff
       equalCharacteristicChangedLaurentUnit F a * T ∈ N
     exact N.mul_mem hu hT
 
-/-- The positive-valuation inverse prime norm used by the normalized
-normalized additive valuation has the same norm-membership test. -/
-theorem equalCharacteristicChangedLaurentUniformizerUnit_inv_mem_normSubgroup_iff
-    {K₀ : Type} [Field K₀]
-    (F : LocalField K₀)
-    [CharP K₀ F.residueCharacteristic]
-    (n : ℕ) (a : F.residueField⟦X⟧ˣ) :
-    (equalCharacteristicChangedLaurentUniformizerUnit F a)⁻¹ ∈
-        equalCharacteristicLubinTateNormSubgroup F n ↔
-      equalCharacteristicChangedLaurentUnit F a ∈
-        equalCharacteristicLubinTateNormSubgroup F n := by
-  let N := equalCharacteristicLubinTateNormSubgroup F n
-  constructor
-  · intro hinv
-    apply
-      (equalCharacteristicChangedLaurentUniformizerUnit_mem_normSubgroup_iff
-        F n a).1
-    simpa using N.inv_mem hinv
-  · intro hu
-    exact N.inv_mem
-      ((equalCharacteristicChangedLaurentUniformizerUnit_mem_normSubgroup_iff
-        F n a).2 hu)
 
-/-- Every valuation-zero Laurent field unit, and only such a unit, comes
-from a power-series unit under the canonical inclusion. -/
-theorem equalCharacteristicPowerSeriesUnitToLaurentFieldUnit_range
-    (F : LocalField.{u, v} K) :
-    letI : ValuativeRel F.residueField⸨X⸩ :=
-      equalCharacteristicLaurentValuativeRel F
-    MonoidHom.range (equalCharacteristicPowerSeriesUnitToLaurentFieldUnit F) =
-      LocalFieldTheory.localBaseUnitSubgroup F.residueField⸨X⸩ := by
-  let : ValuativeRel F.residueField⸨X⸩ :=
-    equalCharacteristicLaurentValuativeRel F
-  let e := equalCharacteristicPowerSeriesUnitsEquivLaurentInteger
-    F.residueField
-  change MonoidHom.range
-      ((integerUnitsToFieldUnits F.residueField⸨X⸩).comp e.toMonoidHom) =
-    MonoidHom.range (integerUnitsToFieldUnits F.residueField⸨X⸩)
-  ext x
-  constructor
-  · rintro ⟨a, rfl⟩
-    exact ⟨e a, rfl⟩
-  · rintro ⟨b, rfl⟩
-    refine ⟨e.symm b, ?_⟩
-    simp [e]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The explicit Lubin--Tate higher-unit kernel maps to the canonical field
 principal-unit group `U^(n+1)` in one step. -/

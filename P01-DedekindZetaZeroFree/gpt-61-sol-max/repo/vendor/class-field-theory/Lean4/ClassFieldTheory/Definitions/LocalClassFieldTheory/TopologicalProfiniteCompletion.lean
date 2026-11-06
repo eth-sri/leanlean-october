@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Topology.Algebra.Category.ProfiniteGrp.Basic
 public import Mathlib.Topology.Algebra.Group.Quotient
 public import Mathlib.Topology.Algebra.OpenSubgroup
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -45,20 +48,18 @@ namespace OpenFiniteIndexNormalSubgroup
 variable {G : Type u} [Group G] [TopologicalSpace G]
 
 /-- The underlying open normal subgroup. -/
-def toOpenNormalSubgroup (H : OpenFiniteIndexNormalSubgroup G) :
-    OpenNormalSubgroup G :=
+def toOpenNormalSubgroup (H : OpenFiniteIndexNormalSubgroup G)  :=
   H.1
 
 /-- The finite-index witness carried by the subtype. -/
-theorem finiteIndex' (H : OpenFiniteIndexNormalSubgroup G) :
-    H.toOpenNormalSubgroup.toSubgroup.FiniteIndex :=
+def finiteIndex' (H : OpenFiniteIndexNormalSubgroup G)  :=
   H.2
 
-/-- Finite-index open normal subgroups are determined by their underlying open normal subgroups. -/
-@[ext]
-theorem ext {H K : OpenFiniteIndexNormalSubgroup G}
-    (h : H.toOpenNormalSubgroup = K.toOpenNormalSubgroup) : H = K :=
-  Subtype.ext h
+
+
+
+
+
 
 /-- An indexed open normal subgroup carries its finite-index witness as an instance. -/
 instance (H : OpenFiniteIndexNormalSubgroup G) :
@@ -77,7 +78,7 @@ instance : SmallCategory (OpenFiniteIndexNormalSubgroup G) :=
 /-- A morphism of open finite-index normal subgroups induces inclusion of the underlying subgroups. -/
 theorem le_of_hom {H K : OpenFiniteIndexNormalSubgroup G} (f : H ⟶ K) :
     H.toOpenNormalSubgroup.toSubgroup ≤ K.toOpenNormalSubgroup.toSubgroup := by
-  have h : H ≤ K := CategoryTheory.leOfHom f
+  have h  := CategoryTheory.leOfHom f
   change H.toOpenNormalSubgroup ≤ K.toOpenNormalSubgroup at h
   exact h
 
@@ -91,13 +92,12 @@ def openFiniteQuotientFunctor :
     OpenFiniteIndexNormalSubgroup G ⥤ FiniteGrp where
   obj H := FiniteGrp.of (G ⧸ H.toOpenNormalSubgroup.toSubgroup)
   map := fun hHK => FiniteGrp.ofHom <|
-    QuotientGroup.map _ _ (.id _) (by
-      simpa using OpenFiniteIndexNormalSubgroup.le_of_hom hHK)
+    QuotientGroup.map _ _ (.id _) (OpenFiniteIndexNormalSubgroup.le_of_hom hHK)
   map_id _ := ConcreteCategory.ext <| QuotientGroup.map_id _
   map_comp f g := ConcreteCategory.ext <|
     (QuotientGroup.map_comp_map _ _ _ (.id _) (.id _)
-      (by simpa using OpenFiniteIndexNormalSubgroup.le_of_hom f)
-      (by simpa using OpenFiniteIndexNormalSubgroup.le_of_hom g)).symm
+      (OpenFiniteIndexNormalSubgroup.le_of_hom f)
+      (OpenFiniteIndexNormalSubgroup.le_of_hom g)).symm
 
 /-- The finite-quotient diagram, regarded in profinite groups with the
 discrete topology on every finite stage. -/

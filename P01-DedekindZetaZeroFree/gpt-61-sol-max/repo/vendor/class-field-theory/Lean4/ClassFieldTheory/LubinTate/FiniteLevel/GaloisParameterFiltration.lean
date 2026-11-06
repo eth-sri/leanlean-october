@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.LubinTate.FiniteLevel.FiniteParameterFiltration
 public import ClassFieldTheory.LubinTate.FiniteLevel.LevelAbelian
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -37,12 +40,15 @@ open LocalFieldTheory.DiscreteValuationField.CompleteDVF
 
 variable {K : Type u} [Field K]
 
+section
+variable (F : LocalField.{u, v} K) {π : F.valuationSubring}
+    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
+    (n k : ℕ)
+include F π hπ n k
 /-- The image of the `k`-th finite unit-parameter subgroup in the Galois
 group of the standard level-`n + 1` Lubin--Tate extension. -/
 noncomputable def standardLubinTateGaloisParameterSubgroup
-    (F : LocalField.{u, v} K) {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n k : ℕ) :
+      :
     Subgroup (Gal((standardLubinTateLevelField hπ n) / K)) :=
   Subgroup.map (standardLubinTateUnitParameterToGalHom F hπ n)
     (standardLubinTateUnitParameterSubgroup F n k)
@@ -50,9 +56,7 @@ noncomputable def standardLubinTateGaloisParameterSubgroup
 /-- The explicit parameter-to-Galois map reflects membership in every
 transported parameter subgroup. -/
 theorem standardLubinTateUnitParameterToGal_mem_galoisParameterSubgroup_iff
-    (F : LocalField.{u, v} K) {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n k : ℕ) (a : standardLubinTateUnitParameter F n) :
+      (a : standardLubinTateUnitParameter F n) :
     standardLubinTateUnitParameterToGal F hπ n a ∈
         standardLubinTateGaloisParameterSubgroup F hπ n k ↔
       a ∈ standardLubinTateUnitParameterSubgroup F n k := by
@@ -65,7 +69,7 @@ theorem standardLubinTateUnitParameterToGal_mem_galoisParameterSubgroup_iff
   · rintro ⟨b, hb, hba⟩
     have hba' : b = a := by
       apply standardLubinTateUnitParameterToGal_injective F hπ n
-      simpa only [standardLubinTateUnitParameterToGalHom_apply] using hba
+      exact hba
     change a ∈
       (standardLubinTateUnitParameterSubgroup F n k :
         Set (standardLubinTateUnitParameter F n))
@@ -73,27 +77,25 @@ theorem standardLubinTateUnitParameterToGal_mem_galoisParameterSubgroup_iff
   · intro ha
     exact ⟨a, ha, rfl⟩
 
-/-- On a valuation-ring unit representative, membership in the transported
-Galois subgroup is exactly membership in `U_F^k`. -/
-theorem
-    standardLubinTateUnitParameterToGal_class_mem_galoisParameterSubgroup_iff
-    (F : LocalField.{u, v} K) {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n k : ℕ) (hkn : k ≤ n + 1) (u : F.valuationSubringˣ) :
-    standardLubinTateUnitParameterToGal F hπ n
-          (standardLubinTateUnitParameterClass F n u) ∈
-        standardLubinTateGaloisParameterSubgroup F hπ n k ↔
-      u ∈ higherPrincipalUnitGroup F.toCompleteDVF k := by
-  rw [standardLubinTateUnitParameterToGal_mem_galoisParameterSubgroup_iff,
-    standardLubinTateUnitParameterClass_mem_subgroup_iff F n k hkn u]
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- Restricting the parameter-to-Galois homomorphism gives a multiplicative
 equivalence onto the transported subgroup. -/
 noncomputable def
     standardLubinTateUnitParameterSubgroupEquivGaloisParameterSubgroup
-    (F : LocalField.{u, v} K) {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n k : ℕ) :
+      :
     standardLubinTateUnitParameterSubgroup F n k ≃*
       standardLubinTateGaloisParameterSubgroup F hπ n k := by
   let f := standardLubinTateUnitParameterToGalHom F hπ n
@@ -105,27 +107,25 @@ noncomputable def
     apply standardLubinTateUnitParameterToGal_injective F hπ n
     change f (a : standardLubinTateUnitParameter F n) =
       f (b : standardLubinTateUnitParameter F n) at hval
-    simpa only [f, standardLubinTateUnitParameterToGalHom_apply] using hval
+    exact hval
   · exact f.subgroupMap_surjective H
 
 /-- The transported Galois filtration has the same cardinality as its
 finite unit-parameter source. -/
 theorem standardLubinTateGaloisParameterSubgroup_natCard
-    (F : LocalField.{u, v} K) {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n k : ℕ) (hk : 1 ≤ k) (hkn : k ≤ n + 1) :
+      (hk : 1 ≤ k) (hkn : k ≤ n + 1) :
     Nat.card (standardLubinTateGaloisParameterSubgroup F hπ n k) =
       Nat.card F.residueField ^ (n + 1 - k) := by
   calc
     Nat.card (standardLubinTateGaloisParameterSubgroup F hπ n k) =
-        Nat.card (standardLubinTateUnitParameterSubgroup F n k) := by
-      exact
-        (Nat.card_congr
+        Nat.card (standardLubinTateUnitParameterSubgroup F n k) := (Nat.card_congr
           (standardLubinTateUnitParameterSubgroupEquivGaloisParameterSubgroup
             F hπ n k).toEquiv).symm
     _ = Nat.card F.residueField ^ (n + 1 - k) :=
       standardLubinTateUnitParameterSubgroup_natCard
         F hπ n k hk hkn
+end
+
 
 end LubinTate
 

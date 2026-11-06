@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.CoherentPinnedCuspGeometry
 
 @[expose] public section
+
 
 section
 
@@ -20,7 +23,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 
 abbrev Level := CompactOpenLevel (KPFiniteCuspAtlas.FiniteCover F ζ hζ)
 
-abbrev Spherical (U : Level F ζ hζ) := KPFiniteCuspAtlas.rawXU F ζ hζ U
+abbrev Spherical := @_root_.DedekindZetaZeroFree.KPFiniteCuspAtlas.rawXU
 
 instance (U : Level F ζ hζ) : MeasurableSpace (Spherical F ζ hζ U) := borel _
 
@@ -84,10 +87,8 @@ theorem fixed_haar_recipe
       (Cover F ζ hζ) := by
     have hH : IsCompact (MulAction.stabilizer (Cover F ζ hζ)
         (1 : Cover F ζ hζ) : Set (Cover F ζ hζ)) := by
-      have h : MulAction.stabilizer (Cover F ζ hζ) (1 : Cover F ζ hζ) = ⊥ := by
-        ext g; simp [MulAction.mem_stabilizer_iff]
-      rw [h]; exact isCompact_singleton
-    exact KPArithmeticAction.properlyDiscontinuous_of_section (1 : Cover F ζ hζ) id
+      norm_num
+    exact KPArithmeticAction.properlyDiscontinuous_of_section (1) id
       continuous_id (fun x => by simp) hH (KPSmoothLocalQuotientCharts.rationalSubgroup F ζ hζ)
 
   have hfree : ∀ᵐ x ∂μ, ∀ g : KPSmoothLocalQuotientCharts.rationalSubgroup F ζ hζ,
@@ -132,7 +133,7 @@ private theorem affine_probability_haar
     (e : T ≃ₜ T) (he : ∀ x y, e (x + y) = e x + e y - e 0)
     (ν : Measure T) [ν.IsAddHaarMeasure] [IsProbabilityMeasure ν] :
     Measure.map e ν = ν := by
-  let h : T ≃ₜ T := e.trans (Homeomorph.subRight (e 0))
+  let h  := e.trans (Homeomorph.subRight (e 0))
   let a : T ≃ₜ+ T := {
     toHomeomorph := h
     map_add' := fun x y => by
@@ -251,10 +252,10 @@ private theorem probability_torus_haar
   haveI : DiscreteTopology (KPCuspCharts.translationLattice F D.L) := hd
   haveI : IsClosed (KPCuspCharts.translationLattice F D.L : Set (KPCuspCharts.Horizontal F)) :=
     AddSubgroup.isClosed_of_discreteTopology
-  haveI : CompactSpace (KPCuspCharts.Torus F D.L) := G.compact_torus
+  haveI  := G.compact_torus
   let ν : Measure (KPCuspCharts.Torus F D.L) := Measure.addHaarMeasure ⊤
   refine ⟨ν, inferInstance, ⟨?_⟩⟩
-  exact Measure.addHaarMeasure_self (K₀ := ⊤)
+  apply Measure.addHaarMeasure_self
 
 theorem probability_fiber_kernel
     {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
@@ -335,7 +336,7 @@ theorem probability_fiber_kernel
     apply measurable_of_countable_open_cover (G j).atlas.baseOpen
       (G j).atlas.open_baseOpen (G j).atlas.cover
     intro i
-    let b : (G j).atlas.baseOpen i → KPCuspCharts.Shape F :=
+    let b  :=
       fun q => ((G j).atlas.baseChart i).symm q |>.val
     have hb : Continuous b :=
       continuous_subtype_val.comp ((G j).atlas.baseChart i).symm.continuous
@@ -376,8 +377,8 @@ namespace KPMsFixedHaarDisintegration
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-abbrev Cover := KPCubicCoverConstruction.AdelicPGL2Cover F ζ hζ
-abbrev X := KPSmoothLocalQuotientCharts.X F ζ hζ
+abbrev Cover := @_root_.DedekindZetaZeroFree.KPCubicCoverConstruction.AdelicPGL2Cover
+abbrev X := @_root_.DedekindZetaZeroFree.KPSmoothLocalQuotientCharts.X
 
 def archBasepoint (g : KPSmoothActualFlowData.GInfinity F) :
     KPFiniteCuspAtlas.SymmetricSpace F := fun i =>
@@ -400,8 +401,7 @@ structure SphericalTransport where
   compatible : ∀ V U h x, forget V U h (projection V x) = projection U x
 
 def sphericalMeasure (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-    (P : SphericalTransport F ζ hζ) (U : Level F ζ hζ) :
-    Measure (Spherical F ζ hζ U) := Measure.map (P.projection U) R.quotientHaar
+    (P : SphericalTransport F ζ hζ) (U : Level F ζ hζ)  := Measure.map (P.projection U) R.quotientHaar
 
 private def fromRawTransport (P : KPMsFixedHaar.SphericalTransport F ζ hζ) :
     SphericalTransport F ζ hζ where
@@ -436,7 +436,7 @@ abbrev Radius := {r : ℝ // 0 < r}
 
 def positiveSlots (w : NumberField.InfinitePlace F) (r : Radius) :
     KPGlobalTorusFunctionData.TorusArch F := fun v =>
-  if v = w then (Real.sqrt r.val : ℂ) else 1
+  if v = w then (Real.sqrt r.val) else 1
 
 def radialSection (w : NumberField.InfinitePlace F) (r : Radius) : Cover F ζ hζ :=
   KPGlobalTorusFunctionData.archDiagonalLift F ζ hζ (positiveSlots F w r)
@@ -450,12 +450,12 @@ structure RadialData where
     ell ⟨r.val * s.val, mul_pos r.property s.property⟩ = ell r * ell s
   ell_cube : ∀ r, ∃ u : KPGlobalTorusFunctionData.Ideles F, u ^ 3 = ell r
   ell_slots : ∀ r v,
-    KPAdelicCoverRestrictedProduct.adeleEval F (Sum.inl v) (ell r : KPAdeles F) =
+    KPAdelicCoverRestrictedProduct.adeleEval F (Sum.inl v) (ell r) =
       (NumberField.InfinitePlace.Completion.ringEquivComplexOfIsComplex
         (KPHilbert.infinite_isComplex F ζ hζ v)).symm (positiveSlots F slot r v)
   ell_finite : ∀ r q,
-    KPAdelicCoverRestrictedProduct.adeleEval F (Sum.inr q) (ell r : KPAdeles F) = 1
-  ell_norm : ∀ r, ((KPGlobalTorusFunctionData.ideleAbs F (ell r) : ℝ≥0) : ℝ) = r.val
+    KPAdelicCoverRestrictedProduct.adeleEval F (Sum.inr q) (ell r) = 1
+  ell_norm : ∀ r, ((KPGlobalTorusFunctionData.ideleAbs F (ell r)) : ℝ) = r.val
   lift_ratio : ∀ r,
     KPGlobalTorusFunctionData.p F ζ hζ
       (KPGlobalTorusFunctionData.torusArchChart F ζ hζ (positiveSlots F slot r)) = ell r
@@ -502,9 +502,9 @@ instance : BorelSpace (CrossSection A) := ⟨rfl⟩
 def angularProjection (x : CrossSection A) : Omega A :=
   ⟨x.1, (Geometry A x.1).atlas.projection x.2⟩
 
-def logHeight (r : ℝ) : ℝ := Real.log r / (2 * (KPCuspLogShape.dimension F : ℝ))
+def logHeight (r : ℝ)  := Real.log r / (2 * (KPCuspLogShape.dimension F : ℝ))
 
-def AdmissibleCutoff (Y : ℝ) : Prop := 0 < Y ∧ A.threshold ≤ logHeight (F := F) Y
+def AdmissibleCutoff (Y : ℝ)  := 0 < Y ∧ A.threshold ≤ logHeight (F := F) Y
 
 def cuspEnds (Y : ℝ) : Set (Spherical F ζ hζ U) :=
   ⋃ j : CuspIndex A,
@@ -513,7 +513,7 @@ def cuspEnds (Y : ℝ) : Set (Spherical F ζ hζ U) :=
         (KPCuspGenuineMonodromy.Component F ζ hζ U (A.representative j.1))
         ((A.cuspAtlas j.1).representative j.2) (logHeight (F := F) Y)
 
-def probability (β : Measure (Omega A)) : Measure (Omega A) :=
+def probability (β : Measure (Omega A))  :=
   (β Set.univ)⁻¹ • β
 
 structure Disintegration (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
@@ -533,7 +533,7 @@ structure Disintegration (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
     ∃ dn : Measure (KPCuspCharts.Torus F (Parabolic A j).L),
       dn.IsAddHaarMeasure ∧ IsProbabilityMeasure dn ∧
       unipotent ⟨j, QuotientAddGroup.mk b⟩ =
-        Measure.map (fun z => (⟨j, (Geometry A j).atlas.lift (z,b)⟩ : CrossSection A)) dn
+        Measure.map (fun z => (⟨j, (Geometry A j).atlas.lift (z,b)⟩)) dn
 
   componentWeight : Fin A.componentCount → ℝ≥0∞
   positive_componentWeight : ∀ i, 0 < componentWeight i
@@ -550,7 +550,7 @@ structure Disintegration (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
     beta E = ∑ j : CuspIndex A,
       (componentWeight j.1 / ENNReal.ofReal (2 * (KPCuspLogShape.dimension F : ℝ))) *
       (Geometry A j).sectionMeasure
-        ((fun x => (⟨j, (Geometry A j).atlas.projection x⟩ : Omega A)) ⁻¹' E)
+        ((fun x => (⟨j, (Geometry A j).atlas.projection x⟩)) ⁻¹' E)
   section_disintegration : ∀ f : CrossSection A → ℝ≥0∞, Measurable f →
     (∑ j : CuspIndex A,
       (componentWeight j.1 / ENNReal.ofReal (2 * (KPCuspLogShape.dimension F : ℝ))) *
@@ -581,7 +581,7 @@ structure Disintegration (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
       beta Set.univ *
         ∫⁻ r : Set.Ioi Y, ∫⁻ ω, ∫⁻ x,
           φ (chart Y hY (x,r)) ∂unipotent ω ∂probability A beta
-          ∂Measure.comap (Subtype.val : Set.Ioi Y → ℝ) radialMeasure
+          ∂Measure.comap Subtype.val radialMeasure
 
   shell_coefficient : ∀ Y, AdmissibleCutoff A Y →
     beta Set.univ = ENNReal.ofReal (2 * Y) *
@@ -590,7 +590,7 @@ structure Disintegration (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
   open_positive : (sphericalMeasure F ζ hζ R P U).IsOpenPosMeasure
 
 def kappa (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-    (P : SphericalTransport F ζ hζ) (D : Disintegration A R P) : ℝ :=
+    (P : SphericalTransport F ζ hζ) (D : Disintegration A R P)  :=
   (D.beta Set.univ).toReal
 
 end Atlas

@@ -17,7 +17,7 @@ open scoped NumberField TensorProduct Classical
 open NumberField IsDedekindDomain
 
 variable (F : Type) [Field F] [NumberField F]
-  (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+  (ζ : F) 
 
 variable (v : HeightOneSpectrum (RingOfIntegers F))
 
@@ -57,7 +57,7 @@ theorem standardCharacter_properties :
   · intro b
     exact Circle.norm_coe _
 
-variable (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F v m)
+variable (m : ℕ) 
 
 end DedekindZetaZeroFree.KPWildCompactProjectorKirillov.ActualInput
 

@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.LargeDivisors.DirectExpansionAndRectangleBounds
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.DivisibleColumnOperator
 
 @[expose] public section
+
 
 section
 
@@ -28,15 +31,15 @@ private theorem fixed_mass_le (C : Context Q) : fixedDivisorMass C ≤ (idealDiv
       exact hcd (le_bot_iff.mp this)
     exact ((mem_idealDivisors hr).mp hf).trans (Ideal.dvd_iff_le.mpr Ideal.le_radical)
   calc
-    fixedDivisorMass C ≤ ∑ f ∈ C.mobiusDivisors, (1 : ℝ) := by
+    fixedDivisorMass C ≤ ∑ f ∈ C.mobiusDivisors, (1) := by
       apply Finset.sum_le_sum
       intro f hf
       have hf0 := ne_bot_of_mem_idealDivisors hf
       have hn : 1 ≤ norm f := by
         have hp : 0 < Ideal.absNorm f := Nat.pos_of_ne_zero (by simpa [Ideal.absNorm_eq_zero_iff] using hf0)
         change 1 ≤ (Ideal.absNorm f : ℝ)
-        exact_mod_cast (Nat.succ_le_of_lt hp : 1 ≤ Ideal.absNorm f)
-      exact (div_le_one (by linarith : 0 < norm f)).mpr hn
+        exact_mod_cast (Nat.succ_le_of_lt hp)
+      exact (div_le_one (by linarith)).mpr hn
     _ = (C.mobiusDivisors.card : ℝ) := by simp
     _ ≤ (idealDivisorCount (c * C.d) : ℝ) := by
       exact_mod_cast Finset.card_le_card hsub
@@ -50,12 +53,10 @@ private theorem rectangle_card_le (C : Context Q) (B : ℝ) :
     intro P hP
     exact (Finset.mem_filter.mp (Finset.mem_filter.mp hP).1).1
   have hs : (ErrorRectangles.scales (C.N / norm C.d)).card ≤
-      Vendor.dyadicLength (2 * max 1 (C.N / norm C.d)) + 1 := by
-    exact (Finset.card_insert_le _ _).trans (Nat.add_le_add_right
+      Vendor.dyadicLength (2 * max 1 (C.N / norm C.d)) + 1 := (Finset.card_insert_le _ _).trans (Nat.add_le_add_right
       ((Finset.card_image_le).trans (by rw [Finset.card_range])) 1)
   have hd : (ErrorRectangles.directRectangles C B).card ≤
-      (Vendor.dyadicLength (2 * max 1 (C.N / norm C.d)) + 1) ^ 2 := by
-    exact h12.trans (by
+      (Vendor.dyadicLength (2 * max 1 (C.N / norm C.d)) + 1) ^ 2 := h12.trans (by
       rw [Finset.card_product, pow_two]
       exact Nat.mul_le_mul hs hs)
   exact_mod_cast hd
@@ -81,7 +82,7 @@ theorem fixed_cost_epsilon
     have hR : 0 < R := by dsimp [R, residueMagnitude]; positivity
     have hT : 0 < T := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
     have hL : 0 < L := Vendor.dyadicLength_small_power_constant_pos he
-    have hH : 0 < H := mul_pos hL (Real.rpow_pos_of_pos (by norm_num) _)
+    
     refine ⟨R * (A * T ^ e) * H ^ 2, by positivity, ?_⟩
     intro C hD hW hM hN hn B
     let Z := C.M * C.N * norm C.d
@@ -116,7 +117,7 @@ theorem fixed_cost_epsilon
     have hl : (Vendor.dyadicLength (2 * max 1 (C.N / norm C.d)) + 1 : ℝ) ≤ H * Z ^ e := by
       calc _ ≤ L * (2 * max 1 (C.N / norm C.d)) ^ e :=
           Vendor.dyadicLength_small_power he (by
-            have := le_max_left (1 : ℝ) (C.N / norm C.d); linarith)
+            have := le_max_left (1) (C.N / norm C.d); linarith)
         _ ≤ L * (2 * Z) ^ e := mul_le_mul_of_nonneg_left
           (Real.rpow_le_rpow (by positivity) hx he.le) hL.le
         _ = H * Z ^ e := by dsimp [H]; rw [Real.mul_rpow (by norm_num) (by linarith)]; ring
@@ -130,7 +131,7 @@ theorem fixed_cost_epsilon
           mul_le_mul (mul_le_mul hr hf hf0 hR.le) hc (by positivity) (by positivity)
       _ = (R * (A * T ^ e) * H ^ 2) * Z ^ η := by
         have hp : Z ^ e * Z ^ e * Z ^ e = Z ^ η := by
-          rw [← Real.rpow_add (by linarith : 0 < Z), ← Real.rpow_add (by linarith : 0 < Z)]
+          rw [← Real.rpow_add (by linarith), ← Real.rpow_add (by linarith)]
           congr 1
           dsimp [e]
           ring
@@ -161,7 +162,7 @@ namespace DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.LargeDirect
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
 variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
 
-def incidenceEnergy (C : Context Q) (P : ℝ) : ℝ :=
+def incidenceEnergy (C : Context Q) (P : ℝ)  :=
   ∑ u ∈ C.columns,
     (2 : ℝ) ^ (UniqueFactorizationMonoid.normalizedFactors u).toFinset.card *
       (((divisorBin (F := F) P).filter (fun f => f ∣ u)).card : ℝ) *
@@ -192,7 +193,7 @@ private lemma valid_iff (C : Context Q) {u v : Ideal (𝓞 F)}
     have hduv : C.d ⊔ u * v = ⊤ :=
       Ideal.isUnit_iff.mp ((hdu.mul_right hdv)
         (Ideal.dvd_iff_le.mpr le_sup_left) (Ideal.dvd_iff_le.mpr le_sup_right))
-    have hclass : Q.cls (C.d * u) = Q.cls (C.d * v) := hgu.trans hgv.symm
+    have hclass  := hgu.trans hgv.symm
     have hquot : Q.cls u = Q.cls v := by
       letI := Q.instGroup
       apply mul_left_cancel (a := Q.cls C.d)
@@ -205,7 +206,10 @@ private lemma valid_iff (C : Context Q) {u v : Ideal (𝓞 F)}
     have hvt : v = ⊤ := top_unique (htop.symm.trans_le Ideal.mul_le_right)
     rcases hoff with h | h <;> contradiction
 
-private lemma row_data (C : Context Q) (B : ℝ) (unit : Bool)
+section
+variable (C : Context Q) (B : ℝ) (unit : Bool)
+include C B unit
+private lemma row_data  
     (hunit : unit = true → B = 1) (hB : 1 ≤ B) {a : Ideal (𝓞 F)}
     (ha : a ∈ C.originalRows B unit) :
     a ∈ Sieve.idealAdmissibleFinset F c (2 * B) ∧ a ⊔ (c * C.d) = ⊤ := by
@@ -215,7 +219,7 @@ private lemma row_data (C : Context Q) (B : ℝ) (unit : Bool)
     refine ⟨(Sieve.mem_idealAdmissibleFinset F c _ _).mpr ⟨hs, ?_, hn⟩, hc⟩
     exact top_unique (hc.symm.trans_le (sup_le_sup_left Ideal.mul_le_left a))
   · have hBeq := hunit rfl
-    have hat : a = ⊤ := Finset.mem_singleton.mp (Finset.mem_filter.mp ha).1
+    have hat  := Finset.mem_singleton.mp (Finset.mem_filter.mp ha).1
     subst a
     constructor
     · apply (Sieve.mem_idealAdmissibleFinset F c _ _).mpr
@@ -223,7 +227,7 @@ private lemma row_data (C : Context Q) (B : ℝ) (unit : Bool)
       simp [hBeq]
     · simp
 
-private lemma pair_sum_as_product (C : Context Q) (B : ℝ) (unit : Bool)
+private lemma pair_sum_as_product  
     (hunit : unit = true → B = 1) (hB : 1 ≤ B)
     (a : Ideal (𝓞 F)) (ha : a ∈ C.originalRows B unit) (f₁ f₂ : Ideal (𝓞 F)) :
     C.pairSum (fun p hp => if f₁ ∣ p.1 ∧ f₂ ∣ p.2 then
@@ -249,17 +253,17 @@ private lemma pair_sum_as_product (C : Context Q) (B : ℝ) (unit : Bool)
         ((Q.χ u) a * starRingEnd ℂ ((Q.χ v) a)) = _
       ring
     · simp [hf]
-  · have hn : ¬(u ⊔ v = ⊤ ∧ (u ≠ ⊤ ∨ v ≠ ⊤)) := mt hiff.mpr hp
+  · have hn  := mt hiff.mpr hp
     simp only [if_neg hp]
     rw [if_neg (by tauto)]
 
- def coprimeMass (C : Context Q) (B : ℝ) (unit : Bool) (P : ℝ × ℝ)
-    (U V : Finset (Ideal (𝓞 F))) : ℝ :=
+ def coprimeMass   (P : ℝ × ℝ)
+    (U V : Finset (Ideal (𝓞 F)))  :=
   Sieve.DivisorSeparation.idealDivisorRectangle F c Q
     (divisorBin P.1) (divisorBin P.2) (C.originalRows B unit) U V
     (fun u => C.lam (C.d * u)) (fun u => C.lam (C.d * u))
 
-private lemma rectangleMass_le (C : Context Q) (B : ℝ) (unit : Bool)
+private lemma rectangleMass_le  
     (hunit : unit = true → B = 1) (hB : 1 ≤ B) (P : ℝ × ℝ) :
     rectangleMass C B unit P ≤
       coprimeMass C B unit P (C.columns.filter (fun u => u ≠ ⊤)) C.columns +
@@ -305,9 +309,10 @@ private lemma rectangleMass_le (C : Context Q) (B : ℝ) (unit : Bool)
     · simp only [hut, ne_eq, not_false_eq_true, if_false, if_true, add_zero, true_or, true_and]
   rw [he]
   exact norm_add_le _ _
+end
 
-private lemma U_nonneg (B X : ℝ) : 0 ≤ ErrorRectangles.U Q B X := by
-  exact Real.sSup_nonneg' ⟨0, Or.inl rfl, le_rfl⟩
+
+private lemma U_nonneg (B X : ℝ) : 0 ≤ ErrorRectangles.U Q B X := Real.sSup_nonneg' ⟨0, Or.inl rfl, le_rfl⟩
 
 private lemma incidence_nonneg (C : Context Q) (P : ℝ) : 0 ≤ incidenceEnergy C P := by
   unfold incidenceEnergy
@@ -330,8 +335,8 @@ private lemma coprimeMass_bound (C : Context Q) (B : ℝ) (unit : Bool) (P : ℝ
         Real.sqrt (incidenceEnergy C P.1 * incidenceEnergy C P.2) := by
   have hH0 : 0 ≤ H := by linarith
   have hK0 : 0 ≤ K := by linarith
-  have hp₁0 : 0 ≤ P.1 := by linarith
-  have hp₂0 : 0 ≤ P.2 := by linarith
+  
+  
   have hi₁ := incidence_nonneg C P.1
   have hi₂ := incidence_nonneg C P.2
   have hu₁ := U_nonneg (Q := Q) B (C.N / (norm C.d * P.1))
@@ -472,7 +477,7 @@ theorem actual_prefix_rectangle_estimate_of_operators
         (fun a ha => (row_data C B unit hunit hB ha).1) hV z
     have hb := rectangle_bound_from_operators C B unit hunit hB P hP H K hH hK hcard hop
     have hpow : 1 ≤ Real.rpow (C.M * C.N * norm C.d) η :=
-      Real.one_le_rpow (by nlinarith [mul_le_mul hM hN zero_le_one (by linarith : 0 ≤ C.M)]) hη.le
+      Real.one_le_rpow (by nlinarith [mul_le_mul hM hN zero_le_one (by linarith)]) hη.le
     apply hb.trans
     have hscore : 0 ≤ ErrorRectangles.largeScore C B P := by
       unfold ErrorRectangles.largeScore; positivity
@@ -561,46 +566,45 @@ private lemma primeSupportCost_le_divisorCount {F : Type} [Field F] [NumberField
     intro s hs
     have hirr : ∀ p ∈ s.val, Irreducible p := by
       intro p hp
-      exact hprime p (hs (by simpa using hp))
+      exact hprime p (hs (hp))
     have h1 := UniqueFactorizationMonoid.normalizedFactors_prod_eq s.val hirr
     have hprod : (∏ p ∈ s, p) = s.val.prod := by
       rw [Finset.prod_eq_multiset_prod, Multiset.map_id']
     rw [hprod, h1]
-    rw [Multiset.map_congr rfl (fun p hp => hnorm p (hs (by simpa using hp))),
+    rw [Multiset.map_congr rfl (fun p hp => hnorm p (hs (hp))),
       Multiset.map_id']
   have hinj : Set.InjOn (fun s : Finset (Ideal (𝓞 F)) => ∏ p ∈ s, p)
-      (↑S.powerset : Set (Finset (Ideal (𝓞 F)))) := by
+      (↑S.powerset) := by
     intro s hs t ht hst
-    have hssub : s ⊆ S := Finset.mem_powerset.mp hs
-    have htsub : t ⊆ S := Finset.mem_powerset.mp ht
-    have hsval : UniqueFactorizationMonoid.normalizedFactors (∏ p ∈ s, p) = s.val :=
+    have hssub  := Finset.mem_powerset.mp hs
+    have htsub  := Finset.mem_powerset.mp ht
+    have hsval  :=
       key s hssub
-    have htval : UniqueFactorizationMonoid.normalizedFactors (∏ p ∈ t, p) = t.val :=
+    have htval  :=
       key t htsub
     have hst' : (∏ p ∈ s, p) = (∏ p ∈ t, p) := hst
     rw [hst'] at hsval
     exact Finset.val_inj.mp (hsval.symm.trans htval)
   have hmaps : Set.MapsTo (fun s : Finset (Ideal (𝓞 F)) => ∏ p ∈ s, p)
-      (↑S.powerset : Set (Finset (Ideal (𝓞 F))))
-      (↑(DedekindZetaZeroFree.LargeSieve.idealDivisors u) : Set (Ideal (𝓞 F))) := by
+      (↑S.powerset)
+      (↑(DedekindZetaZeroFree.LargeSieve.idealDivisors u)) := by
     intro s hs
     change (∏ p ∈ s, p) ∈ DedekindZetaZeroFree.LargeSieve.idealDivisors u
     rw [DedekindZetaZeroFree.LargeSieve.mem_idealDivisors hu]
-    have hssub : s ⊆ S := Finset.mem_powerset.mp hs
+    have hssub  := Finset.mem_powerset.mp hs
     have hle : s.val ≤ m := by
       rw [Multiset.le_iff_subset s.nodup]
       intro p hp
-      exact (hmem p).mp (hssub (by simpa using hp))
+      exact (hmem p).mp (hssub (hp))
     have hprod : (∏ p ∈ s, p) = s.val.prod := by
       rw [Finset.prod_eq_multiset_prod, Multiset.map_id']
     rw [hprod, ← Ideal.prod_normalizedFactors_eq_self hu]
     exact Multiset.prod_dvd_prod_of_le hle
-  have hcard : S.powerset.card ≤ (DedekindZetaZeroFree.LargeSieve.idealDivisors u).card :=
+  have hcard  :=
     Finset.card_le_card_of_injOn _ hmaps hinj
-  have hcost : (2 : ℝ) ^ (UniqueFactorizationMonoid.normalizedFactors u).toFinset.card = (2 : ℝ) ^ S.card := by
-    rw [hS, ← hm]
+  have hcost : (2 : ℝ) ^ (UniqueFactorizationMonoid.normalizedFactors u).toFinset.card = (2 : ℝ) ^ S.card := rfl
   rw [hcost]
-  have hpc : ((S.powerset.card : ℕ) : ℝ) = (2 : ℝ) ^ S.card := by
+  have hpc : (S.powerset.card : ℝ) = (2 : ℝ) ^ S.card := by
     rw [Finset.card_powerset]
     push_cast
     ring
@@ -655,8 +659,7 @@ private lemma incidence_energy_le (η A : ℝ) (hη : 0 < η) (hA : 1 ≤ A)
       intro u hu
       have hs := (primeSupportCost_le_divisorCount u (hu0 u hu)).trans (hcnt u hu)
       have hc := hcard u hu
-      nlinarith [mul_le_mul hc hs (by positivity : 0 ≤ (2 : ℝ) ^
-        (UniqueFactorizationMonoid.normalizedFactors u).toFinset.card) hL,
+      nlinarith [mul_le_mul hc hs (by positivity) hL,
         sq_nonneg ‖C.lam (C.d * u)‖]
     _ = L ^ 2 * ∑ u ∈ C.columns, ‖C.lam (C.d * u)‖ ^ 2 := by rw [Finset.mul_sum]
     _ ≤ _ := mul_le_mul_of_nonneg_left (column_energy_le C) (sq_nonneg _)
@@ -757,12 +760,12 @@ theorem bilinear_error_large_direct
   have hX : 0 < C.M * C.N * norm C.d := by
     have hM0 : 0 < C.M := by linarith
     have hN0 : 0 < C.N := by linarith
-    have hn0 : 0 < norm C.d := by linarith
+    
     positivity
   let X := C.M * C.N * norm C.d
   change 0 < X at hX
   have hp : 0 ≤ Real.rpow X η := Real.rpow_nonneg hX.le _
-  have hI0 : 0 ≤ I := le_trans zero_le_one hI
+  
   let T := ErrorRectangles.directRectangles C B
   let E := Sieve.energy F c C.N C.lam
   let V := ErrorRectangles.directEnvelope C B
@@ -772,8 +775,8 @@ theorem bilinear_error_large_direct
   have hsupbdd : BddAbove ({0} ∪ {x : ℝ | ∃ P ∈ T,
       x = ErrorRectangles.largeScore C B P}) := by
     have hf : ({x : ℝ | ∃ P ∈ T,
-        x = ErrorRectangles.largeScore C B P} : Set ℝ) =
-        ErrorRectangles.largeScore C B '' (T : Set (ℝ × ℝ)) := by
+        x = ErrorRectangles.largeScore C B P}) =
+        ErrorRectangles.largeScore C B '' T := by
       ext x
       simp only [Set.mem_setOf_eq, Set.mem_image, Finset.mem_coe]
       constructor
@@ -783,8 +786,7 @@ theorem bilinear_error_large_direct
         exact ⟨P, hP, rfl⟩
     rw [hf]
     exact ((Set.finite_singleton 0).union (T.finite_toSet.image _)).bddAbove
-  have hV : 0 ≤ V := by
-    exact le_csSup hsupbdd (Or.inl rfl)
+  have hV : 0 ≤ V := le_csSup hsupbdd (Or.inl rfl)
   have hscore : ∀ P ∈ T, ErrorRectangles.largeScore C B P ≤ V := by
     intro P hP
     exact le_csSup hsupbdd (Or.inr ⟨P, hP, rfl⟩)
@@ -795,9 +797,7 @@ theorem bilinear_error_large_direct
     have hh := hrect C hCD B unit hunit hM hN hB hBK hKM hn hnN P
       (Finset.mem_filter.mp hP).1
     have hi := hinc C hM hN hn P.1 P.2
-    have hs : 0 ≤ ErrorRectangles.largeScore C B P := by
-      unfold ErrorRectangles.largeScore
-      positivity
+    
     calc
       _ ≤ A₀ * Real.rpow X η * ErrorRectangles.largeScore C B P *
             Real.sqrt (LargeDirect.incidenceEnergy C P.1 *

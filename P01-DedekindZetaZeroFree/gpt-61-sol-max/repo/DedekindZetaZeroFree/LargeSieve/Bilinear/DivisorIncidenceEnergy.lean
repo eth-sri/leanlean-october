@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.GcdTailAndMaskedShellBounds
 
 @[expose] public section
+
 
 noncomputable section
 namespace DedekindZetaZeroFree.LargeSieve.Sieve.CoreCoefficient
@@ -24,7 +27,7 @@ theorem divisor_incidence_sum
       ((S.filter (fun d => d ∣ b)).card : ℝ) ≤ A * Real.rpow 2 ε * Real.rpow N ε := by
     intro b hb
     have hm := (mem_paperShell F c N b).mp hb
-    have hb0 : b ≠ ⊥ := by simpa [Ideal.zero_eq_bot] using hm.1.ne_zero
+    have hb0 : b ≠ ⊥ := hm.1.ne_zero
     have hc : (S.filter (fun d => d ∣ b)).card ≤ (DedekindZetaZeroFree.LargeSieve.idealDivisors b).card := by
       apply Finset.card_le_card
       intro d hd

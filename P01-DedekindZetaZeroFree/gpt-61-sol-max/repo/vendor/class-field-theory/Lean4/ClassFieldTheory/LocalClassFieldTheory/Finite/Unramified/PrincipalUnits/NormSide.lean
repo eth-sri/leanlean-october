@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.FieldTheory.Galois.Basic
 public import ValuedFieldTheory.LocalField.NonarchimedeanLocalField.ResidueGalois
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -70,18 +73,13 @@ theorem integerUnitsMap_normIntegerUnits_eq_galoisGroup_prod_of_isIntegralClosur
 
 /-- The product of actual integral-closure Galois conjugates preserves every
 principal-unit level. -/
-theorem galoisGroup_prod_mem_principalUnits_of_isIntegralClosure (K L : Type u)
+def galoisGroup_prod_mem_principalUnits_of_isIntegralClosure (K L : Type u)
     [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
     [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
     [Algebra K L] [FiniteDimensional K L]
     [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
     [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    (n : Nat) (u : 𝒪[L]ˣ) (hu : u ∈ principalUnits L n) :
-    Finset.univ.prod (fun σ : Gal(L / K) =>
-      Units.mapEquiv
-        (galoisGroupIntegerRingEquivOfIsIntegralClosure K L σ).toMulEquiv u) ∈
-        principalUnits L n := by
-  simpa using (Subgroup.prod_mem (principalUnits L n) (t := Finset.univ)
+    (n : Nat) (u : 𝒪[L]ˣ) (hu : u ∈ principalUnits L n)  := (Subgroup.prod_mem (principalUnits L n) (t := Finset.univ)
     (f := fun σ : Gal(L / K) =>
       Units.mapEquiv
         (galoisGroupIntegerRingEquivOfIsIntegralClosure K L σ).toMulEquiv u)
@@ -89,31 +87,29 @@ theorem galoisGroup_prod_mem_principalUnits_of_isIntegralClosure (K L : Type u)
       principalUnits_integerRingEquiv_mem_self L n
         (galoisGroupIntegerRingEquivOfIsIntegralClosure K L σ) u hu))
 
-/-- Actual integral-closure version: after embedding `N(u)` back into `𝒪[L]`,
-the result remains in the same principal-unit level. -/
-theorem integerUnitsMap_normIntegerUnits_mem_principalUnits_of_isIntegralClosure
-    (K L : Type u)
+section
+variable (K L : Type u)
     [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
     [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
     [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
     [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
     [IsIntegralClosure 𝒪[L] 𝒪[K] L] [LocalFieldTheory.ValuativeExtension K L]
-    (n : Nat) (u : 𝒪[L]ˣ) (hu : u ∈ principalUnits L n) :
+    (n : Nat)
+include K L n
+/-- Actual integral-closure version: after embedding `N(u)` back into `𝒪[L]`,
+the result remains in the same principal-unit level. -/
+theorem integerUnitsMap_normIntegerUnits_mem_principalUnits_of_isIntegralClosure
+      (u : 𝒪[L]ˣ) (hu : u ∈ principalUnits L n) :
     integerUnitsMapOfValuationExtension K L (normIntegerUnits K L u) ∈
       principalUnits L n := by
   rw [integerUnitsMap_normIntegerUnits_eq_galoisGroup_prod_of_isIntegralClosure K L u]
-  exact galoisGroup_prod_mem_principalUnits_of_isIntegralClosure K L n u hu
+  apply galoisGroup_prod_mem_principalUnits_of_isIntegralClosure <;> assumption
 
 /-- Actual integral-closure version of the base-extended norm on `U_L^n`.
 
 This is the source map for the unramified norm product calculation; it
 asserts only that the embedded norm remains in `U_L^n`. -/
-noncomputable def principalUnitsNormExtensionSideOfIsIntegralClosure (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] [LocalFieldTheory.ValuativeExtension K L] (n : Nat) :
+noncomputable def principalUnitsNormExtensionSideOfIsIntegralClosure   :
     principalUnits L n →* principalUnits L n where
   toFun u :=
     ⟨integerUnitsMapOfValuationExtension K L (normIntegerUnits K L u.1),
@@ -129,28 +125,15 @@ noncomputable def principalUnitsNormExtensionSideOfIsIntegralClosure (K L : Type
 
 /-- States the theorem `principalUnitsNormExtensionSideOfIsIntegralClosure_apply`. -/
 @[simp]
-theorem principalUnitsNormExtensionSideOfIsIntegralClosure_apply (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] [LocalFieldTheory.ValuativeExtension K L]
-    (n : Nat) (u : principalUnits L n) :
-    ((principalUnitsNormExtensionSideOfIsIntegralClosure K L n u :
-        principalUnits L n) : 𝒪[L]ˣ) =
+theorem principalUnitsNormExtensionSideOfIsIntegralClosure_apply   (u : principalUnits L n) :
+    ((principalUnitsNormExtensionSideOfIsIntegralClosure K L n u) : 𝒪[L]ˣ) =
       integerUnitsMapOfValuationExtension K L (normIntegerUnits K L u.1) :=
   rfl
 
 /-- Actual integral-closure version: the base-extended norm on `U_L^n` is the
 product of the actual integral-closure real Galois actions. -/
 theorem principalUnitsNormExtensionSideOfIsIntegralClosure_eq_galoisGroup_prod
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] [LocalFieldTheory.ValuativeExtension K L]
-    (n : Nat) (u : principalUnits L n) :
+      (u : principalUnits L n) :
     principalUnitsNormExtensionSideOfIsIntegralClosure K L n u =
       Finset.univ.prod (fun σ : Gal(L / K) =>
         galoisGroupPrincipalUnitsMapEquivOfIsIntegralClosure K L n σ u) := by
@@ -162,16 +145,9 @@ theorem principalUnitsNormExtensionSideOfIsIntegralClosure_eq_galoisGroup_prod
 /-- Actual integral-closure version of the first-order norm-product
 calculation before residue trace identification. -/
 theorem principalUnitsNormExtensionSideOfIsIntegralClosure_oneAdd_sub_one_sub_sum_mem_maximalIdeal_pow_succ
-    (K L : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L] [TopologicalSpace L]
-    [IsNonarchimedeanLocalField L] [Algebra K L] [FiniteDimensional K L]
-    [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] [LocalFieldTheory.ValuativeExtension K L]
-    (n : Nat) (hn : 1 ≤ n) (a : (𝓂[L] ^ n : Ideal 𝒪[L])) :
+      (hn : 1 ≤ n) (a : (𝓂[L] ^ n : Ideal 𝒪[L])) :
     (((principalUnitsNormExtensionSideOfIsIntegralClosure K L n
-          (principalUnitOneAddOfMemPowSubgroup L hn (a : 𝒪[L]) a.2) :
-        principalUnits L n) : 𝒪[L]ˣ) : 𝒪[L]) - 1 -
+          (principalUnitOneAddOfMemPowSubgroup L hn (a : 𝒪[L]) a.2)) : 𝒪[L]ˣ) : 𝒪[L]) - 1 -
       (Finset.univ.sum fun σ : Gal(L / K) =>
         galoisGroupIntegerRingEquivOfIsIntegralClosure K L σ (a : 𝒪[L])) ∈
         (𝓂[L] ^ (n + 1) : Ideal 𝒪[L]) := by
@@ -187,12 +163,7 @@ theorem principalUnitsNormExtensionSideOfIsIntegralClosure_oneAdd_sub_one_sub_su
 
 /-- Actual integral-closure version of the base-extended norm on successive
 principal-unit quotients. -/
-def principalUnitsSuccQuotNormExtensionSideOfIsIntegralClosure (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] [LocalFieldTheory.ValuativeExtension K L] (n : Nat) :
+def principalUnitsSuccQuotNormExtensionSideOfIsIntegralClosure   :
     PrincipalUnitsSuccQuot L n →* PrincipalUnitsSuccQuot L n :=
   QuotientGroup.map
     ((principalUnits L (n + 1)).subgroupOf (principalUnits L n))
@@ -200,54 +171,47 @@ def principalUnitsSuccQuotNormExtensionSideOfIsIntegralClosure (K L : Type u)
     (principalUnitsNormExtensionSideOfIsIntegralClosure K L n)
     (by
       intro u hu
-      change ((principalUnitsNormExtensionSideOfIsIntegralClosure K L n u :
-          principalUnits L n) : 𝒪[L]ˣ) ∈ principalUnits L (n + 1)
-      simpa [principalUnitsNormExtensionSideOfIsIntegralClosure_apply] using
-        integerUnitsMap_normIntegerUnits_mem_principalUnits_of_isIntegralClosure
-          K L (n + 1) u.1 hu)
+      change ((principalUnitsNormExtensionSideOfIsIntegralClosure K L n u) : 𝒪[L]ˣ) ∈ principalUnits L (n + 1)
+      apply integerUnitsMap_normIntegerUnits_mem_principalUnits_of_isIntegralClosure <;> assumption)
 
 /-- States the theorem `principalUnitsSuccQuotNormExtensionSideOfIsIntegralClosure_mk`. -/
 @[simp]
 theorem principalUnitsSuccQuotNormExtensionSideOfIsIntegralClosure_mk
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] [LocalFieldTheory.ValuativeExtension K L]
-    (n : Nat) (u : principalUnits L n) :
+      (u : principalUnits L n) :
     principalUnitsSuccQuotNormExtensionSideOfIsIntegralClosure K L n
         (QuotientGroup.mk u) =
       QuotientGroup.mk
         (principalUnitsNormExtensionSideOfIsIntegralClosure K L n u) :=
   rfl
+end
 
-/-- Actual integral-closure version: on `U_L^n/U_L^(n+1)`, the base-extended
-norm is the product of the induced actual real Galois actions. -/
-theorem principalUnitsSuccQuotNormExtensionSideOfIsIntegralClosure_eq_galoisGroup_prod
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] [LocalFieldTheory.ValuativeExtension K L]
-    (n : Nat) (x : PrincipalUnitsSuccQuot L n) :
-    principalUnitsSuccQuotNormExtensionSideOfIsIntegralClosure K L n x =
-      Finset.univ.prod (fun σ : Gal(L / K) =>
-        galoisGroupPrincipalUnitsSuccQuotMapEquivOfIsIntegralClosure K L n σ x) := by
-  refine QuotientGroup.induction_on x ?_
-  intro u
-  rw [principalUnitsSuccQuotNormExtensionSideOfIsIntegralClosure_mk,
-    principalUnitsNormExtensionSideOfIsIntegralClosure_eq_galoisGroup_prod]
-  change (principalUnitsSuccQuotMk L n)
-      (Finset.univ.prod (fun σ : Gal(L / K) =>
-        galoisGroupPrincipalUnitsMapEquivOfIsIntegralClosure K L n σ u)) =
-    Finset.univ.prod (fun σ : Gal(L / K) =>
-      (principalUnitsSuccQuotMk L n)
-        (galoisGroupPrincipalUnitsMapEquivOfIsIntegralClosure K L n σ u))
-  exact map_prod (principalUnitsSuccQuotMk L n)
-    (fun σ : Gal(L / K) =>
-      galoisGroupPrincipalUnitsMapEquivOfIsIntegralClosure K L n σ u) Finset.univ
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end LocalClassFieldTheory
 

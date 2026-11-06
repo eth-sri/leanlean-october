@@ -1,29 +1,37 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.LocalFields.FilteredCubicCharacterCounts
 public import DedekindZetaZeroFree.Arithmetic.LocalFields.TruncatedCubicUnitIndices
 public import DedekindZetaZeroFree.Arithmetic.LocalFields.CubicConductorWeightedSums
 
 @[expose] public section
 
+
 namespace DedekindZetaZeroFree
 namespace CubicUnitCharacters
 
 open scoped ValuativeRel
 
-noncomputable def unitFiltration (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] (n : ℕ) : Subgroup (𝒪[K])ˣ :=
+section
+variable (K : Type*) [Field K] [ValuativeRel K]
+include K
+noncomputable def unitFiltration   [TopologicalSpace K]
+    [IsNonarchimedeanLocalField K] (n : ℕ)  :=
   if n = 0 then ⊤ else
     (Units.map (Ideal.Quotient.mk (𝓂[K] ^ n)).toMonoidHom).ker
 
-abbrev Character (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K] :=
+abbrev Character   [TopologicalSpace K] :=
   CubicCharacters.Character (𝒪[K])ˣ
 
-noncomputable def residueCard (K : Type*) [Field K] [ValuativeRel K] : ℕ := Nat.card 𝓀[K]
+noncomputable def residueCard    := Nat.card 𝓀[K]
 
-noncomputable def conductor (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] (χ : Character K) : ℕ :=
+noncomputable def conductor   [TopologicalSpace K]
+    [IsNonarchimedeanLocalField K] (χ : Character K)  :=
   CubicCharacters.conductor (unitFiltration K) χ
+end
+
 
 end CubicUnitCharacters
 
@@ -37,16 +45,7 @@ local instance : IsUniformAddGroup K := isUniformAddGroup_of_addCommGroup
 private lemma filtration_eq (j : ℕ) : unitFiltration K j = KPCubicUnitIndices.principalUnits K j := by
   unfold unitFiltration
   split_ifs with h
-  · subst j
-    unfold KPCubicUnitIndices.principalUnits
-    symm
-    apply top_unique
-    intro u hu
-    change Units.map _ u = 1
-    rw [Units.ext_iff]
-    change Ideal.Quotient.mk _ (u : 𝒪[K]) = 1
-    rw [← map_one (Ideal.Quotient.mk _), Ideal.Quotient.eq]
-    simp
+  · simp_all
   · rfl
 private lemma filtration_mem (j : ℕ) (u : (𝒪[K])ˣ) :
     u ∈ unitFiltration K j ↔ (u : 𝒪[K]) - 1 ∈ 𝓂[K] ^ j := by
@@ -63,7 +62,7 @@ private lemma filtration_open (j : ℕ) : IsOpen (unitFiltration K j : Set (𝒪
   have he : (unitFiltration K j : Set (𝒪[K])ˣ) =
       (fun u : (𝒪[K])ˣ => (u : 𝒪[K]) - 1) ⁻¹' ((𝓂[K] ^ j : Ideal (𝒪[K])) : Set (𝒪[K])) := by
     ext u
-    exact filtration_mem K j u
+    apply filtration_mem
   rw [he]
   exact (IsLocalRing.isOpen_maximalIdeal_pow (𝒪[K]) j).preimage (by fun_prop)
 private lemma filtration_basis : ∀ W ∈ 𝓝 (1 : (𝒪[K])ˣ),
@@ -82,7 +81,7 @@ private lemma filtration_basis : ∀ W ∈ 𝓝 (1 : (𝒪[K])ˣ),
     (fun j => (unitFiltration K j).isClosed_of_isOpen (filtration_open K j)) (by
       apply mem_nhdsSet_iff_forall.mpr
       intro x hx
-      have : x = 1 := Set.mem_singleton_iff.mp (hi hx)
+      have  := Set.mem_singleton_iff.mp (hi hx)
       simpa [this] using hW)
 private lemma filtration_finite (j : ℕ) : (unitFiltration K j).FiniteIndex := by
   letI := (unitFiltration K j).quotient_finite_of_isOpen (filtration_open K j)
@@ -121,7 +120,7 @@ private lemma local_counts (ζ : K) (hζ : IsPrimitiveRoot ζ 3) :
   dsimp only at hi
   have hq : KPCubicUnitIndices.residueCard K = residueCard K := rfl
   have hf := kp_filtered_cubic_character_count (unitFiltration K)
-    (by simp [unitFiltration]) (filtration_anti K) (filtration_open K)
+    (rfl) (filtration_anti K) (filtration_open K)
     (filtration_finite K) (filtration_basis K)
     (fun j => by
       letI := filtration_finite K j
@@ -253,7 +252,7 @@ theorem unitFiltration_antitone : Antitone (unitFiltration K) := by
   exact Ideal.pow_le_pow_right hab hu
 
 theorem isOpen_unitFiltration (j : ℕ) : IsOpen (unitFiltration K j : Set (𝒪[K])ˣ) := by
-  haveI : T2Space K := t2Space_of_isValuativeTopology K
+  haveI  := t2Space_of_isValuativeTopology K
   haveI : T2Space 𝒪[K] := inferInstance
   have hopen : IsOpen (((𝓂[K] ^ j : Ideal 𝒪[K]) : Set 𝒪[K])) :=
     IsLocalRing.isOpen_maximalIdeal_pow 𝒪[K] j
@@ -262,7 +261,7 @@ theorem isOpen_unitFiltration (j : ℕ) : IsOpen (unitFiltration K j : Set (𝒪
       Units.val ⁻¹' ((fun x : 𝒪[K] => x - 1) ⁻¹' ((𝓂[K] ^ j : Ideal 𝒪[K]) : Set 𝒪[K])) := by
     ext u
     rw [Set.mem_preimage, Set.mem_preimage]
-    exact unitFiltration_mem_iff K j u
+    apply unitFiltration_mem_iff
   rw [hset]
   exact (hopen.preimage hcont).preimage Units.continuous_val
 
@@ -284,15 +283,12 @@ theorem kp_local_unramified_character_count
         CubicUnitCharacters.conductor K χ) =
       1 + 2 * (CubicUnitCharacters.residueCard K : ℝ)⁻¹ := by
   classical
-  letI : UniformSpace K := IsTopologicalAddGroup.rightUniformSpace K
+  letI  := IsTopologicalAddGroup.rightUniformSpace K
   letI : IsUniformAddGroup K := isUniformAddGroup_of_addCommGroup
   obtain ⟨r, hq, hfin, hex, hmin, hb, hd, hz, hzcard, ha0, has, hat⟩ :=
     local_counts K ζ hζ
   letI := hfin
   refine ⟨hfin, hex, hmin, hz, ?_⟩
-  exact sum_from_indices (CubicUnitCharacters.conductor K)
-    (CubicUnitCharacters.residueCard K) r hq
-    (CubicCharacters.levelIndex (CubicUnitCharacters.unitFiltration K))
-    hb hzcard hd ha0 has hat
+  apply sum_from_indices <;> assumption
 
 end DedekindZetaZeroFree

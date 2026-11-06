@@ -24,14 +24,17 @@ def MatrixChartDepth (m : ℕ) : Prop :=
         KPLocalCube.LocalField F v) = k i i) ∧
     Matrix.GeneralLinearGroup.det k ∈ KPLocalCube.cubes F v
 
+
+local notation:max "current_CubicGL2Raw" => KPLocalCover.CubicGL2Raw F ζ hζ
+
 def translatedChart (m : ℕ)
-    (γ : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr v))
+    (γ : current_CubicGL2Raw (Sum.inr v))
     (k : KPLocalCube.Gamma F v m) :
-    KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr v) :=
+    current_CubicGL2Raw (Sum.inr v) :=
   γ * KPLocalCover.sectionMap F ζ hζ (Sum.inr v) k.val
 
 def translatedTopology (m : ℕ) :
-    TopologicalSpace (KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr v)) where
+    TopologicalSpace (current_CubicGL2Raw (Sum.inr v)) where
   IsOpen U := ∀ γ, IsOpen (translatedChart F ζ hζ v m γ ⁻¹' U)
   isOpen_univ := by intro γ; simp
   isOpen_inter := by
@@ -42,25 +45,34 @@ def translatedTopology (m : ℕ) :
     rw [Set.preimage_sUnion]
     exact isOpen_biUnion (fun U hU => hS U hU γ)
 
-theorem isOpen_iff (m : ℕ)
-    (U : Set (KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr v))) :
-    @IsOpen _ (translatedTopology F ζ hζ v m) U ↔
-      ∀ γ, IsOpen {k : KPLocalCube.Gamma F v m |
-        γ * KPLocalCover.sectionMap F ζ hζ (Sum.inr v) k.val ∈ U} := by
-  rfl
+
+
+
+
+
+
 
 set_option maxHeartbeats 500000 in
 
-theorem translatedChart_isOpenEmbedding (m : ℕ)
+section
+variable (m : ℕ)
     (hm : MatrixChartDepth F v m)
-    (γ : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr v)) :
-    letI := translatedTopology F ζ hζ v m
+include m hm
+
+local notation:max "current_CubicGL2RawLocal" => KPLocalCover.CubicGL2Raw F ζ hζ
+
+
+local notation:max "current_translatedTopology" => translatedTopology F ζ hζ
+
+theorem translatedChart_isOpenEmbedding  
+    (γ : current_CubicGL2RawLocal (Sum.inr v)) :
+    letI := current_translatedTopology v m
     Topology.IsOpenEmbedding (translatedChart F ζ hζ v m γ) := by
   set_option maxHeartbeats 800000 in
-  letI := translatedTopology F ζ hζ v m
+  letI := current_translatedTopology v m
   obtain ⟨s, hs, hi, _⟩ := KPDeepRawSplitting.raw_section_splitting F ζ hζ v m
     (fun g hg h hh => KPDeepRawSplitting.sigmaTwo_eq_one_on_Gamma F ζ hζ v m hm.2 g h hg hh)
-  have he : CubicCoverTranslatedCharts.topology s = translatedTopology F ζ hζ v m := by
+  have he : CubicCoverTranslatedCharts.topology s = current_translatedTopology v m := by
     apply TopologicalSpace.ext
     funext U
     change (∀ g, IsOpen ((fun k => g * s k) ⁻¹' U)) =
@@ -75,35 +87,34 @@ theorem translatedChart_isOpenEmbedding (m : ℕ)
   rw [hf] at h
   exact h
 
-theorem translatedChart_homeomorphism (m : ℕ)
-    (hm : MatrixChartDepth F v m)
-    (γ : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr v)) :
-    letI := translatedTopology F ζ hζ v m
+theorem translatedChart_homeomorphism  
+    (γ : current_CubicGL2RawLocal (Sum.inr v)) :
+    letI := current_translatedTopology v m
     IsOpen (Set.range (translatedChart F ζ hζ v m γ)) ∧
       ∃ e : KPLocalCube.Gamma F v m ≃ₜ
           Set.range (translatedChart F ζ hζ v m γ),
         ∀ k, (e k).val = translatedChart F ζ hζ v m γ k := by
-  letI := translatedTopology F ζ hζ v m
+  letI := current_translatedTopology v m
   have h := translatedChart_isOpenEmbedding F ζ hζ v m hm γ
   exact ⟨h.isOpen_range, h.isEmbedding.toHomeomorph, fun _ => rfl⟩
 
-theorem finite_topological_group (m : ℕ) (hm : MatrixChartDepth F v m) :
-    letI := translatedTopology F ζ hζ v m
-    T2Space (KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr v)) ∧
-      LocallyCompactSpace (KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr v)) ∧
-      IsTopologicalGroup (KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr v)) := by
-  letI := translatedTopology F ζ hζ v m
+theorem finite_topological_group   :
+    letI := current_translatedTopology v m
+    T2Space (current_CubicGL2RawLocal (Sum.inr v)) ∧
+      LocallyCompactSpace (current_CubicGL2RawLocal (Sum.inr v)) ∧
+      IsTopologicalGroup (current_CubicGL2RawLocal (Sum.inr v)) := by
+  letI := current_translatedTopology v m
   obtain ⟨s, hs, hi, _⟩ := KPDeepRawSplitting.raw_section_splitting F ζ hζ v m
     (fun g hg h hh => KPDeepRawSplitting.sigmaTwo_eq_one_on_Gamma F ζ hζ v m hm.2 g h hg hh)
-  have he : CubicCoverTranslatedCharts.topology s = translatedTopology F ζ hζ v m := by
+  have he : CubicCoverTranslatedCharts.topology s = current_translatedTopology v m := by
     apply TopologicalSpace.ext
     funext U
     change (∀ g, IsOpen ((fun k => g * s k) ⁻¹' U)) =
       (∀ g, IsOpen ((fun k : KPLocalCube.Gamma F v m =>
         g * KPLocalCover.sectionMap F ζ hζ (Sum.inr v) k.val) ⁻¹' U))
     simp only [hs]
-  have hgrp : IsTopologicalGroup (KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr v)) := by
-    change @IsTopologicalGroup _ (translatedTopology F ζ hζ v m) _
+  have hgrp : IsTopologicalGroup (current_CubicGL2RawLocal (Sum.inr v)) := by
+    change @IsTopologicalGroup _ (current_translatedTopology v m) _
     rw [← he]
     apply CubicCoverTranslatedCharts.topologicalGroup s hi
     intro x
@@ -120,7 +131,7 @@ theorem finite_topological_group (m : ℕ) (hm : MatrixChartDepth F v m) :
     exact CubicCoverTranslatedCharts.conjugation_tendsto s hi x J hJ c hcc
       (fun k => by rw [hs, hs]; exact (hc _ k.property).2 x rfl)
   letI := hgrp
-  have hclosed : IsClosed ({1} : Set (KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr v))) := by
+  have hclosed : IsClosed ({1} : Set (current_CubicGL2RawLocal (Sum.inr v))) := by
     apply isOpen_compl_iff.mp
     intro g
     rw [Set.preimage_compl]
@@ -140,7 +151,7 @@ theorem finite_topological_group (m : ℕ) (hm : MatrixChartDepth F v m) :
         exact fun hk => hex ⟨k, hk⟩
       rw [hset]
       exact isClosed_empty
-  have ht : T2Space (KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr v)) :=
+  have ht : T2Space (current_CubicGL2RawLocal (Sum.inr v)) :=
     IsTopologicalGroup.t2Space_iff_one_closed.mpr hclosed
   letI := ht
   have ho := translatedChart_isOpenEmbedding F ζ hζ v m hm 1
@@ -149,20 +160,20 @@ theorem finite_topological_group (m : ℕ) (hm : MatrixChartDepth F v m) :
       isCompact_iff_compactSpace.mp (KPLocalCube.Gamma_compact_open F v m hm.1).1
     exact isCompact_range ho.continuous
   have hn : Set.range (translatedChart F ζ hζ v m 1) ∈ nhds
-      (1 : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr v)) := by
+      (1 : current_CubicGL2RawLocal (Sum.inr v)) := by
     apply ho.isOpen_range.mem_nhds
     refine ⟨1, ?_⟩
-    change (1 : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr v)) * 1 = 1
+    change (1 : current_CubicGL2RawLocal (Sum.inr v)) * 1 = 1
     exact one_mul _
   exact ⟨ht, hcpt.locallyCompactSpace_of_mem_nhds_of_group hn, hgrp⟩
 
-theorem finite_projection (m : ℕ) (hm : MatrixChartDepth F v m) :
-    letI := translatedTopology F ζ hζ v m
+theorem finite_projection   :
+    letI := current_translatedTopology v m
     IsLocalHomeomorph (KPLocalCover.projection F ζ hζ (Sum.inr v)) ∧
       ∀ g : KPLocalCover.LocalGL2 F (Sum.inr v),
-        Nat.card {x : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr v) |
+        Nat.card {x : current_CubicGL2RawLocal (Sum.inr v) |
           KPLocalCover.projection F ζ hζ (Sum.inr v) x = g} = 3 := by
-  letI := translatedTopology F ζ hζ v m
+  letI := current_translatedTopology v m
   refine ⟨?_, ?_⟩
   · intro x
     have hs := translatedChart_isOpenEmbedding F ζ hζ v m hm x
@@ -177,10 +188,10 @@ theorem finite_projection (m : ℕ) (hm : MatrixChartDepth F v m) :
       (s := Set.univ)).of_comp_right hs.isLocalHomeomorph.isLocalHomeomorphOn
     apply hlocal x
     exact ⟨1, Set.mem_univ _, by
-      change x * (1 : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr v)) = x
+      change x * (1 : current_CubicGL2RawLocal (Sum.inr v)) = x
       exact mul_one x⟩
   · intro g
-    let q : {x : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr v) |
+    let q : {x : current_CubicGL2RawLocal (Sum.inr v) |
         KPLocalCover.projection F ζ hζ (Sum.inr v) x = g} ≃ rootsOfUnity 3 F := {
       toFun x := x.val.epsilon
       invFun ε := ⟨⟨g, ε⟩, rfl⟩
@@ -193,24 +204,23 @@ theorem finite_projection (m : ℕ) (hm : MatrixChartDepth F v m) :
     }
     exact (Nat.card_congr q).trans (KPHilbert.primitive_three F ζ hζ).card_rootsOfUnity
 
-theorem finite_three_sheet_trivialization (m : ℕ)
-    (hm : MatrixChartDepth F v m)
+theorem finite_three_sheet_trivialization  
     (g : KPLocalCover.LocalGL2 F (Sum.inr v)) :
-    letI := translatedTopology F ζ hζ v m
+    letI := current_translatedTopology v m
     letI : TopologicalSpace (rootsOfUnity 3 F) := ⊥
     ∃ e : (rootsOfUnity 3 F × KPLocalCube.Gamma F v m) ≃ₜ
-        {x : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr v) |
+        {x : current_CubicGL2RawLocal (Sum.inr v) |
           x.g ∈ (fun k : KPLocalCube.Gamma F v m => g * k.val) '' Set.univ},
       ∀ ε k, (e (ε, k)).val =
         KPLocalCover.centralInjection F ζ hζ (Sum.inr v) ε *
           KPLocalCover.sectionMap F ζ hζ (Sum.inr v) g *
           KPLocalCover.sectionMap F ζ hζ (Sum.inr v) k.val := by
-  letI := translatedTopology F ζ hζ v m
+  letI := current_translatedTopology v m
   letI : TopologicalSpace (rootsOfUnity 3 F) := ⊥
   letI : DiscreteTopology (rootsOfUnity 3 F) := ⟨rfl⟩
-  let B := {x : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr v) |
+  let B := {x : current_CubicGL2RawLocal (Sum.inr v) |
     x.g ∈ (fun k : KPLocalCube.Gamma F v m => g * k.val) '' Set.univ}
-  let a : rootsOfUnity 3 F → KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr v) :=
+  let a : rootsOfUnity 3 F → current_CubicGL2RawLocal (Sum.inr v) :=
     fun ε => KPLocalCover.centralInjection F ζ hζ (Sum.inr v) ε *
       KPLocalCover.sectionMap F ζ hζ (Sum.inr v) g
   let f : (rootsOfUnity 3 F × KPLocalCube.Gamma F v m) → B := fun p =>
@@ -268,17 +278,17 @@ theorem finite_three_sheet_trivialization (m : ℕ)
   let e := (Equiv.ofBijective f hf).toHomeomorphOfContinuousOpen hfc hfo
   exact ⟨e, fun _ _ => rfl⟩
 
-theorem finite_discrete_kernel (m : ℕ) (hm : MatrixChartDepth F v m) :
-    letI := translatedTopology F ζ hζ v m
+theorem finite_discrete_kernel   :
+    letI := current_translatedTopology v m
     letI : TopologicalSpace (rootsOfUnity 3 F) := ⊥
     DiscreteTopology (KPLocalCover.projection F ζ hζ (Sum.inr v)).ker ∧
       ∃ e : rootsOfUnity 3 F ≃ₜ
           (KPLocalCover.projection F ζ hζ (Sum.inr v)).ker,
         ∀ ε, (e ε).val = KPLocalCover.centralInjection F ζ hζ (Sum.inr v) ε := by
-  letI := translatedTopology F ζ hζ v m
+  letI := current_translatedTopology v m
   letI : TopologicalSpace (rootsOfUnity 3 F) := ⊥
   letI : DiscreteTopology (rootsOfUnity 3 F) := ⟨rfl⟩
-  letI : T2Space (KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr v)) :=
+  letI : T2Space (current_CubicGL2RawLocal (Sum.inr v)) :=
     (finite_topological_group F ζ hζ v m hm).1
   let q : rootsOfUnity 3 F ≃ (KPLocalCover.projection F ζ hζ (Sum.inr v)).ker := {
     toFun ε := ⟨KPLocalCover.centralInjection F ζ hζ (Sum.inr v) ε, rfl⟩
@@ -293,6 +303,8 @@ theorem finite_discrete_kernel (m : ℕ) (hm : MatrixChartDepth F v m) :
   letI : Finite (KPLocalCover.projection F ζ hζ (Sum.inr v)).ker := Finite.of_equiv _ q
   letI : DiscreteTopology (KPLocalCover.projection F ζ hζ (Sum.inr v)).ker := inferInstance
   exact ⟨inferInstance, q.toHomeomorphOfDiscrete, fun _ => rfl⟩
+end
+
 
 private theorem Gamma_antitone {a b : ℕ} (hab : a ≤ b) :
     KPLocalCube.Gamma F v b ≤ KPLocalCube.Gamma F v a := by
@@ -303,11 +315,14 @@ private theorem Gamma_antitone {a b : ℕ} (hab : a ≤ b) :
   exact Ideal.pow_le_pow_right hab
     ((KPLocalCube.mem_integerCongruence_iff F v b g).mp hg i j)
 
+
+local notation:max "current_translatedTopologyLocal" => translatedTopology F ζ hζ
+
 private theorem identity_continuous (m n : ℕ)
     (hm : MatrixChartDepth F v m) (hn : MatrixChartDepth F v n) :
-    @Continuous _ _ (translatedTopology F ζ hζ v m) (translatedTopology F ζ hζ v n) id := by
-  letI := translatedTopology F ζ hζ v m
-  letI : IsTopologicalGroup (KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr v)) :=
+    @Continuous _ _ (current_translatedTopologyLocal v m) (current_translatedTopologyLocal v n) id := by
+  letI := current_translatedTopologyLocal v m
+  letI : IsTopologicalGroup (current_CubicGL2Raw (Sum.inr v)) :=
     (finite_topological_group F ζ hζ v m hm).2.2
   let r := max m n
   let J := (KPLocalCube.Gamma F v r).comap (KPLocalCube.Gamma F v m).subtype
@@ -318,37 +333,37 @@ private theorem identity_continuous (m n : ℕ)
     ⟨k.val.val, Gamma_antitone F v (le_max_right m n) k.property⟩
   have hf : Continuous f := Continuous.subtype_mk
     (continuous_subtype_val.comp continuous_subtype_val) _
-  have hc : @Continuous _ _ _ (translatedTopology F ζ hζ v n)
+  have hc : @Continuous _ _ _ (current_translatedTopologyLocal v n)
       (translatedChart F ζ hζ v m 1 ∘ (Subtype.val : J → KPLocalCube.Gamma F v m)) := by
-    letI := translatedTopology F ζ hζ v n
+    letI := current_translatedTopologyLocal v n
     have hc := (translatedChart_isOpenEmbedding F ζ hζ v n hn 1).continuous.comp hf
     have heq : translatedChart F ζ hζ v n 1 ∘ f =
         translatedChart F ζ hζ v m 1 ∘ (Subtype.val : J → KPLocalCube.Gamma F v m) := by
       funext k
       rfl
     exact heq ▸ hc
-  have hcont : @ContinuousAt _ _ (translatedTopology F ζ hζ v m) (translatedTopology F ζ hζ v n)
+  have hcont : @ContinuousAt _ _ (current_translatedTopologyLocal v m) (current_translatedTopologyLocal v n)
       id 1 := by
     have ht := (@Topology.IsOpenEmbedding.continuousAt_iff _ _ _
-      _ id _ _ (translatedTopology F ζ hζ v n) ho (x := (1 : J))).mp
-        (@Continuous.continuousAt _ _ _ (translatedTopology F ζ hζ v n) _ (1 : J) hc)
-    change @ContinuousAt _ _ (translatedTopology F ζ hζ v m) (translatedTopology F ζ hζ v n)
-      id (1 * (1 : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr v))) at ht
+      _ id _ _ (current_translatedTopologyLocal v n) ho (x := (1 : J))).mp
+        (@Continuous.continuousAt _ _ _ (current_translatedTopologyLocal v n) _ (1 : J) hc)
+    change @ContinuousAt _ _ (current_translatedTopologyLocal v m) (current_translatedTopologyLocal v n)
+      id (1 * (1 : current_CubicGL2Raw (Sum.inr v))) at ht
     simpa only [one_mul] using ht
-  exact @continuous_of_continuousAt_one _ (translatedTopology F ζ hζ v m) _
-    (finite_topological_group F ζ hζ v m hm).2.2 _ _ _ (translatedTopology F ζ hζ v n)
+  exact @continuous_of_continuousAt_one _ (current_translatedTopologyLocal v m) _
+    (finite_topological_group F ζ hζ v m hm).2.2 _ _ _ (current_translatedTopologyLocal v n)
     (finite_topological_group F ζ hζ v n hn).2.2.toContinuousMul _ _ (MonoidHom.id _) hcont
 
 theorem translatedTopology_independent (m n : ℕ)
     (hm : MatrixChartDepth F v m) (hn : MatrixChartDepth F v n) :
-    translatedTopology F ζ hζ v m = translatedTopology F ζ hζ v n := by
+    current_translatedTopologyLocal v m = current_translatedTopologyLocal v n := by
   exact le_antisymm (continuous_id_iff_le.mp (identity_continuous F ζ hζ v m n hm hn))
     (continuous_id_iff_le.mp (identity_continuous F ζ hζ v n m hn hm))
 
 theorem deep_chart_topology :
     ∃ m : ℕ, MatrixChartDepth F v m ∧ ∀ r : ℕ, m ≤ r →
       MatrixChartDepth F v r ∧
-        translatedTopology F ζ hζ v r = translatedTopology F ζ hζ v m := by
+        current_translatedTopologyLocal v r = current_translatedTopologyLocal v m := by
   obtain ⟨m, hm, _hcubes, hdeep⟩ := KPDeepRawSplitting.deep_raw_splitting F ζ hζ v
   have hchart : ∀ r, m ≤ r → MatrixChartDepth F v r :=
     fun r hr => ⟨hm.trans hr, (hdeep r hr).1⟩
@@ -359,7 +374,7 @@ theorem deep_chart_topology :
 
 variable (w : InfinitePlace F)
 
-def complexCoordinates : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl w) ≃
+def complexCoordinates : current_CubicGL2Raw (Sum.inl w) ≃
     (KPLocalCover.LocalGL2 F (Sum.inl w) × rootsOfUnity 3 F) where
   toFun x := (x.g, x.epsilon)
   invFun x := ⟨x.1, x.2⟩
@@ -367,7 +382,7 @@ def complexCoordinates : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl w) ≃
   right_inv x := by cases x; rfl
 
 def complexTopology :
-    TopologicalSpace (KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl w)) :=
+    TopologicalSpace (current_CubicGL2Raw (Sum.inl w)) :=
   letI : TopologicalSpace (rootsOfUnity 3 F) := ⊥
   TopologicalSpace.induced (complexCoordinates F ζ hζ w) inferInstance
 
@@ -380,13 +395,13 @@ theorem complex_sigmaTwo_eq_one
 theorem complex_product_cover :
     letI := complexTopology F ζ hζ w
     letI : TopologicalSpace (rootsOfUnity 3 F) := ⊥
-    ∃ e : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl w) ≃*
+    ∃ e : current_CubicGL2Raw (Sum.inl w) ≃*
         (KPLocalCover.LocalGL2 F (Sum.inl w) × rootsOfUnity 3 F),
       (∀ x, e x = (x.g, x.epsilon)) ∧
         Continuous e ∧ Continuous e.symm := by
   letI := complexTopology F ζ hζ w
   letI : TopologicalSpace (rootsOfUnity 3 F) := ⊥
-  let e : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl w) ≃*
+  let e : current_CubicGL2Raw (Sum.inl w) ≃*
       (KPLocalCover.LocalGL2 F (Sum.inl w) × rootsOfUnity 3 F) :=
     { complexCoordinates F ζ hζ w with
       map_mul' := by
@@ -421,19 +436,19 @@ private theorem fst_localHomeomorph {X Y : Type*}
 
 theorem complex_topological_cover :
     letI := complexTopology F ζ hζ w
-    T2Space (KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl w)) ∧
-      LocallyCompactSpace (KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl w)) ∧
-      IsTopologicalGroup (KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl w)) ∧
+    T2Space (current_CubicGL2Raw (Sum.inl w)) ∧
+      LocallyCompactSpace (current_CubicGL2Raw (Sum.inl w)) ∧
+      IsTopologicalGroup (current_CubicGL2Raw (Sum.inl w)) ∧
       IsLocalHomeomorph (KPLocalCover.projection F ζ hζ (Sum.inl w)) ∧
       DiscreteTopology (KPLocalCover.projection F ζ hζ (Sum.inl w)).ker ∧
       ∀ g : KPLocalCover.LocalGL2 F (Sum.inl w),
-        Nat.card {x : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl w) |
+        Nat.card {x : current_CubicGL2Raw (Sum.inl w) |
           KPLocalCover.projection F ζ hζ (Sum.inl w) x = g} = 3 := by
   letI := complexTopology F ζ hζ w
   letI : TopologicalSpace (rootsOfUnity 3 F) := ⊥
   letI : DiscreteTopology (rootsOfUnity 3 F) := ⟨rfl⟩
   obtain ⟨e, he, hc, hci⟩ := complex_product_cover F ζ hζ w
-  let E : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl w) ≃ₜ*
+  let E : current_CubicGL2Raw (Sum.inl w) ≃ₜ*
       (KPLocalCover.LocalGL2 F (Sum.inl w) × rootsOfUnity 3 F) :=
     { e with continuous_toFun := hc, continuous_invFun := hci }
   let H := E.toHomeomorph
@@ -442,7 +457,7 @@ theorem complex_topological_cover :
     infer_instance
   letI : LocallyCompactSpace (KPLocalCover.LocalGL2 F (Sum.inl w)) :=
     Units.isClosedEmbedding_embedProduct.locallyCompactSpace
-  have ht : T2Space (KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl w)) := H.symm.t2Space
+  have ht : T2Space (current_CubicGL2Raw (Sum.inl w)) := H.symm.t2Space
   letI := ht
   have hl : IsLocalHomeomorph (KPLocalCover.projection F ζ hζ (Sum.inl w)) := by
     have hp := fst_localHomeomorph.comp H.isLocalHomeomorph
@@ -471,7 +486,7 @@ theorem complex_topological_cover :
   refine ⟨ht, H.locallyCompactSpace_iff.mpr inferInstance,
     E.isTopologicalGroup, hl, hk, ?_⟩
   intro g
-  let q : {x : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl w) |
+  let q : {x : current_CubicGL2Raw (Sum.inl w) |
       KPLocalCover.projection F ζ hζ (Sum.inl w) x = g} ≃ rootsOfUnity 3 F := {
     toFun x := x.val.epsilon
     invFun ε := ⟨⟨g, ε⟩, rfl⟩

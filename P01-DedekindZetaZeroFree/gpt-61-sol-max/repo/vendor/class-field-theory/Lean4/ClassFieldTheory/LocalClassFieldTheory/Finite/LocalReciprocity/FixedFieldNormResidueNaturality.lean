@@ -51,22 +51,22 @@ def abstractFixedFieldUnitsInclusion
       (IntermediateField.inclusion
         (abstractFixedField_le k Ω hK'K)).toRingHom)
 
-omit [IsGalois k Ω] in
-/-- The concrete fixed-field unit equivalences identify actual unit
-inclusion with inclusion of fixed coefficients. -/
-theorem abstractFixedFieldUnitsEquiv_inclusion
-    (K K' : ClosedSubgroup (Gal(Ω / k)))
-    (hK'K : K'.toSubgroup ≤ K.toSubgroup)
-    (x : Additive (abstractFixedField k Ω K)ˣ) :
-    abstractFixedFieldUnitsEquivGaloisFixed k Ω K'
-        (abstractFixedFieldUnitsInclusion k Ω K K' hK'K x) =
-      fixedFieldInclusion (galoisAmbientUnitsRep k Ω)
-        K K' hK'K
-        (abstractFixedFieldUnitsEquivGaloisFixed k Ω K x) := by
-  apply Subtype.ext
-  apply Additive.ext
-  apply Units.ext
-  rfl
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The norm-residue symbol on the actual units of a concrete fixed field,
 obtained from the abstract class-formation symbol through the canonical
@@ -140,44 +140,44 @@ noncomputable def abstractFixedFieldAbelianizedRestriction
           k Ω K' L' hL'K'
           hL'normal).abelianizationCongr.symm.toMonoidHom))
 
-/-- On an ambient representative, the transported actual restriction is
-restriction of that same automorphism to the smaller upper fixed field. -/
-theorem abstractFixedFieldAbelianizedRestriction_on_representative
-    (K K' L L' : ClosedSubgroup (Gal(Ω / k)))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hL'K' : L'.toSubgroup ≤ K'.toSubgroup)
-    (hK'K : K'.toSubgroup ≤ K.toSubgroup)
-    (hL'L : L'.toSubgroup ≤ L.toSubgroup)
-    [hLnormal : (extensionSubgroup K L hLK).Normal]
-    [hL'normal : (extensionSubgroup K' L' hL'K').Normal]
-    (σ : K'.toSubgroup) :
-    let q := abstractExtensionQuotientEquivGaloisGroup
-      k Ω K L hLK hLnormal
-    let q' := abstractExtensionQuotientEquivGaloisGroup
-      k Ω K' L' hL'K' hL'normal
-    abstractFixedFieldAbelianizedRestriction
-        k Ω K K' L L' hLK hL'K' hK'K hL'L
-        (Additive.ofMul
-          (q'.abelianizationCongr
-            (Abelianization.of (QuotientGroup.mk σ)))) =
-      Additive.ofMul
-        (q.abelianizationCongr
-          (Abelianization.of
-            (QuotientGroup.mk (Subgroup.inclusion hK'K σ)))) := by
-  dsimp only
-  let q := abstractExtensionQuotientEquivGaloisGroup
-    k Ω K L hLK hLnormal
-  let q' := abstractExtensionQuotientEquivGaloisGroup
-    k Ω K' L' hL'K' hL'normal
-  change Additive.ofMul
-      (q.abelianizationCongr
-        (normResidueNaturalityAbelianizedRestriction K K' L L'
-          hLK hL'K' hK'K hL'L
-          (q'.abelianizationCongr.symm
-            (q'.abelianizationCongr
-              (Abelianization.of (QuotientGroup.mk σ)))))) = _
-  rw [q'.abelianizationCongr.symm_apply_apply]
-  rw [normResidueNaturalityAbelianizedRestriction_of_mk]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- Norm-restriction naturality for actual fixed fields.
 Actual Galois restriction is compatible with the ordinary unit norm and
@@ -332,128 +332,128 @@ noncomputable def abstractFixedFieldAbelianizedTransfer
           k Ω K L (hLK'.trans hK'K)
           hLnormal).abelianizationCongr.symm.toMonoidHom))
 
-/-- Transfer-inclusion naturality for actual fixed fields.
-Transfer of the actual relative Galois abelianizations is compatible with
-inclusion of actual fixed-field units and the unit-level norm-residue
-symbols. -/
-theorem abstractFixedFieldNormResidueSymbol_transfer_inclusion
-    (D : DegreeData (Gal(Ω / k)))
-    (v : ValuationData D (galoisAmbientUnitsRep k Ω))
-    (hcf : SatisfiesClassFieldAxiom
-      (galoisAmbientUnitsRep k Ω))
-    (K K' L : ClosedSubgroup (Gal(Ω / k)))
-    (hLK' : L.toSubgroup ≤ K'.toSubgroup)
-    (hK'K : K'.toSubgroup ≤ K.toSubgroup)
-    [hLnormal :
-      (extensionSubgroup K L (hLK'.trans hK'K)).Normal]
-    [hLfinite : Finite
-      (K.toSubgroup ⧸
-        extensionSubgroup K L (hLK'.trans hK'K))]
-    [hKabsolute : Finite
-      ((baseField (Gal(Ω / k))).toSubgroup ⧸
-        extensionSubgroup (baseField (Gal(Ω / k))) K
-          (le_baseField K))] :
-    letI : (extensionSubgroup K' L hLK').Normal :=
-      transferNormNaturality_intermediateExtension_normal K K' L hLK' hK'K
-    letI : Finite
-        (K'.toSubgroup ⧸ extensionSubgroup K' L hLK') :=
-      FiniteGaloisSubextension.finite_extension_over_intermediate
-        (hLK'.trans hK'K) hK'K hLK'
-    letI : Finite
-        (K.toSubgroup ⧸ extensionSubgroup K K' hK'K) :=
-      FiniteGaloisSubextension.finite_intermediate_extension
-        (hLK'.trans hK'K) hLK' hK'K
-    letI : Finite ((baseField (Gal(Ω / k))).toSubgroup ⧸
-        extensionSubgroup (baseField (Gal(Ω / k))) K'
-          (le_baseField K')) :=
-      relativeTowerQuotientFinite (baseField (Gal(Ω / k))) K K' hK'K
-        (le_baseField K)
-    (abstractFixedFieldAbelianizedTransfer
-        k Ω K K' L hLK' hK'K).comp
-      (abstractFixedFieldNormResidueSymbol
-        k Ω D v hcf K L (hLK'.trans hK'K)) =
-      (abstractFixedFieldNormResidueSymbol
-        k Ω D v hcf K' L hLK').comp
-        (abstractFixedFieldUnitsInclusion k Ω K K' hK'K) := by
-  let : (extensionSubgroup K' L hLK').Normal :=
-    transferNormNaturality_intermediateExtension_normal K K' L hLK' hK'K
-  let : Finite
-      (K'.toSubgroup ⧸ extensionSubgroup K' L hLK') :=
-    FiniteGaloisSubextension.finite_extension_over_intermediate
-      (hLK'.trans hK'K) hK'K hLK'
-  let : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K K' hK'K) :=
-    FiniteGaloisSubextension.finite_intermediate_extension
-      (hLK'.trans hK'K) hLK' hK'K
-  let : Finite ((baseField (Gal(Ω / k))).toSubgroup ⧸
-      extensionSubgroup (baseField (Gal(Ω / k))) K'
-        (le_baseField K')) :=
-    relativeTowerQuotientFinite (baseField (Gal(Ω / k))) K K' hK'K
-      (le_baseField K)
-  let KF : FiniteAbstractField (Gal(Ω / k)) :=
-    ⟨K, hKabsolute⟩
-  let K'F : FiniteAbstractField (Gal(Ω / k)) :=
-    ⟨K', inferInstance⟩
-  let T : FiniteAbstractFieldExtension (Gal(Ω / k)) :=
-    { field := K'F
-      base := KF
-      below := hK'K
-      finiteQuotient := inferInstance }
-  apply AddMonoidHom.ext
-  intro x
-  have h := DFunLike.congr_fun
-    (D.normResidueNaturality_transfer_inclusion
-      (galoisAmbientUnitsRep k Ω) v hcf
-      T L hLK')
-    (finiteNormClass (galoisAmbientUnitsRep k Ω)
-      K L (hLK'.trans hK'K)
-      (abstractFixedFieldUnitsEquivGaloisFixed k Ω K x))
-  dsimp only [T, KF, K'F] at h
-  let q := abstractExtensionQuotientEquivGaloisGroup
-    k Ω K L (hLK'.trans hK'K) hLnormal
-  let q' := abstractExtensionQuotientEquivGaloisGroup
-    k Ω K' L hLK' (inferInstance :
-      (extensionSubgroup K' L hLK').Normal)
-  let E : FiniteGaloisSubextension KF.field :=
-    ⟨L, hLK'.trans hK'K, hLnormal, hLfinite⟩
-  let E' : FiniteGaloisSubextension K'F.field :=
-    ⟨L, hLK', inferInstance, inferInstance⟩
-  change Additive.ofMul
-      (q'.abelianizationCongr
-        (transferNormNaturalityTransfer K K' L hLK' hK'K
-          (q.abelianizationCongr.symm
-            (q.abelianizationCongr
-              (Additive.toMul
-                (D.normResidueSymbol
-                  (galoisAmbientUnitsRep k Ω) v hcf KF E
-                  (finiteNormClass (galoisAmbientUnitsRep k Ω)
-                    K L (hLK'.trans hK'K)
-                    (abstractFixedFieldUnitsEquivGaloisFixed
-                      k Ω K x)))))))) =
-    Additive.ofMul
-      (q'.abelianizationCongr
-        (Additive.toMul
-          (D.normResidueSymbol
-            (galoisAmbientUnitsRep k Ω) v hcf K'F E'
-            (finiteNormClass (galoisAmbientUnitsRep k Ω) K' L hLK'
-              (abstractFixedFieldUnitsEquivGaloisFixed k Ω K'
-                (abstractFixedFieldUnitsInclusion
-                  k Ω K K' hK'K x))))))
-  apply Additive.toMul.injective
-  change q'.abelianizationCongr _ = q'.abelianizationCongr _
-  rw [q'.abelianizationCongr.apply_eq_iff_eq]
-  rw [q.abelianizationCongr.symm_apply_apply]
-  change _ =
-    D.normResidueSymbol
-      (galoisAmbientUnitsRep k Ω) v hcf K'F E'
-        (transferNormNaturalityNormQuotientInclusion
-          (galoisAmbientUnitsRep k Ω) K K' L hLK' hK'K
-          (finiteNormClass (galoisAmbientUnitsRep k Ω)
-            K L (hLK'.trans hK'K)
-            (abstractFixedFieldUnitsEquivGaloisFixed k Ω K x))) at h
-  rw [transferNormNaturality_normQuotientInclusion_finiteNormClass] at h
-  rw [← abstractFixedFieldUnitsEquiv_inclusion k Ω K K' hK'K x] at h
-  exact congrArg Additive.toMul h
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-! ## Canonical local-field specializations -/
 
@@ -513,9 +513,12 @@ namespace LocalFixedFieldNormRestrictionSquare
 variable {k : Type} [Field k] [ValuativeRel k] [TopologicalSpace k]
   [IsNonarchimedeanLocalField k]
 
+section
+variable (T : LocalFixedFieldNormRestrictionSquare k)
+include T
 /-- The quotient from the absolute subgroup to the upper fixed-field subgroup is finite. -/
 theorem upperAbsoluteFinite
-    (T : LocalFixedFieldNormRestrictionSquare k) :
+      :
     Finite
       ((baseField (Gal(SeparableClosure k / k))).toSubgroup ⧸
         extensionSubgroup (baseField (Gal(SeparableClosure k / k)))
@@ -531,7 +534,7 @@ theorem upperAbsoluteFinite
 /-- The fixed-field norm-residue symbol for the lower horizontal extension,
 induced by the canonical local class formation. -/
 noncomputable def lowerNormResidueSymbol
-    (T : LocalFixedFieldNormRestrictionSquare k) :=
+      :=
   letI := T.lowerNormal
   letI := T.lowerFinite
   letI := T.lowerAbsoluteFinite
@@ -543,7 +546,7 @@ noncomputable def lowerNormResidueSymbol
 /-- The fixed-field norm-residue symbol for the upper horizontal extension,
 induced by the canonical local class formation. -/
 noncomputable def upperNormResidueSymbol
-    (T : LocalFixedFieldNormRestrictionSquare k) :=
+      :=
   letI := T.upperNormal
   letI := T.upperFinite
   letI := upperAbsoluteFinite T
@@ -554,45 +557,47 @@ noncomputable def upperNormResidueSymbol
 
 /-- The ordinary field norm on units along the vertical base extension. -/
 noncomputable def normUnits
-    (T : LocalFixedFieldNormRestrictionSquare k) :=
+      :=
   abstractFixedFieldNormUnits k (SeparableClosure k)
     T.lowerBase T.upperBase T.upperBase_le_lowerBase
 
 /-- Restriction between the abelianized actual relative Galois groups. -/
 noncomputable def abelianizedRestriction
-    (T : LocalFixedFieldNormRestrictionSquare k) :=
+      :=
   letI := T.lowerNormal
   letI := T.upperNormal
   abstractFixedFieldAbelianizedRestriction k (SeparableClosure k)
     T.lowerBase T.upperBase T.lowerTop T.upperTop
     T.lowerTop_le_lowerBase T.upperTop_le_upperBase
     T.upperBase_le_lowerBase T.upperTop_le_lowerTop
+end
 
-/-- Canonical norm-restriction naturality for a local fixed-field square.
-Restriction commutes with the ordinary field norm and the fixed-field
-norm-residue symbols induced by the canonical local class formation for the
-finite Galois square bundled by `T`; no normality of the vertical base
-extension is required. -/
-theorem norm_restriction_commutes
-    (T : LocalFixedFieldNormRestrictionSquare k) :
-    (abelianizedRestriction T).comp (upperNormResidueSymbol T) =
-      (lowerNormResidueSymbol T).comp (normUnits T) := by
-  let := T.lowerNormal
-  let := T.upperNormal
-  let := T.lowerFinite
-  let := T.upperFinite
-  let := T.baseFinite
-  let := T.lowerAbsoluteFinite
-  let := upperAbsoluteFinite T
-  simpa [abelianizedRestriction, upperNormResidueSymbol,
-    lowerNormResidueSymbol, normUnits] using
-    (abstractFixedFieldNormResidueSymbol_norm_restriction
-      k (SeparableClosure k)
-      (localResidueDatum k) (localHenselianValuation k)
-      (separableClosureUnits_isClassFormation k)
-      T.lowerBase T.upperBase T.lowerTop T.upperTop
-      T.lowerTop_le_lowerBase T.upperTop_le_upperBase
-      T.upperBase_le_lowerBase T.upperTop_le_lowerTop)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end LocalFixedFieldNormRestrictionSquare
 
@@ -635,8 +640,11 @@ namespace LocalFixedFieldTransferTower
 variable {k : Type} [Field k] [ValuativeRel k] [TopologicalSpace k]
   [IsNonarchimedeanLocalField k]
 
+section
+variable (T : LocalFixedFieldTransferTower k)
+include T
 /-- The top extension subgroup is normal inside the intermediate subgroup. -/
-theorem intermediateNormal (T : LocalFixedFieldTransferTower k) :
+theorem intermediateNormal   :
     (extensionSubgroup T.intermediate T.top
       T.top_le_intermediate).Normal := by
   let := T.totalNormal
@@ -646,7 +654,7 @@ theorem intermediateNormal (T : LocalFixedFieldTransferTower k) :
       T.top_le_intermediate T.intermediate_le_base
 
 /-- The quotient of the intermediate subgroup by the top extension subgroup is finite. -/
-theorem intermediateFinite (T : LocalFixedFieldTransferTower k) :
+theorem intermediateFinite   :
     Finite (T.intermediate.toSubgroup ⧸
       extensionSubgroup T.intermediate T.top
         T.top_le_intermediate) := by
@@ -659,7 +667,7 @@ theorem intermediateFinite (T : LocalFixedFieldTransferTower k) :
 
 /-- The quotient of the base subgroup by the intermediate extension subgroup is finite. -/
 theorem baseIntermediateFinite
-    (T : LocalFixedFieldTransferTower k) :
+      :
     Finite (T.base.toSubgroup ⧸
       extensionSubgroup T.base T.intermediate
         T.intermediate_le_base) := by
@@ -672,7 +680,7 @@ theorem baseIntermediateFinite
 
 /-- The absolute quotient determined by the intermediate fixed field is finite. -/
 theorem intermediateAbsoluteFinite
-    (T : LocalFixedFieldTransferTower k) :
+      :
     Finite
       ((baseField (Gal(SeparableClosure k / k))).toSubgroup ⧸
         extensionSubgroup (baseField (Gal(SeparableClosure k / k)))
@@ -688,7 +696,7 @@ theorem intermediateAbsoluteFinite
 /-- The fixed-field norm-residue symbol for the total extension, induced by
 the canonical local class formation. -/
 noncomputable def baseNormResidueSymbol
-    (T : LocalFixedFieldTransferTower k) :=
+      :=
   letI := T.totalNormal
   letI := T.totalFinite
   letI := T.baseAbsoluteFinite
@@ -701,7 +709,7 @@ noncomputable def baseNormResidueSymbol
 /-- The fixed-field norm-residue symbol after changing the base to the
 intermediate fixed field, induced by the canonical local class formation. -/
 noncomputable def intermediateNormResidueSymbol
-    (T : LocalFixedFieldTransferTower k) :=
+      :=
   letI := intermediateNormal T
   letI := intermediateFinite T
   letI := intermediateAbsoluteFinite T
@@ -712,42 +720,44 @@ noncomputable def intermediateNormResidueSymbol
 
 /-- Inclusion of actual fixed-field units along the base change. -/
 noncomputable def unitsInclusion
-    (T : LocalFixedFieldTransferTower k) :=
+      :=
   abstractFixedFieldUnitsInclusion k (SeparableClosure k)
     T.base T.intermediate T.intermediate_le_base
 
 /-- Transfer between the abelianized actual relative Galois groups. -/
 noncomputable def abelianizedTransfer
-    (T : LocalFixedFieldTransferTower k) :=
+      :=
   letI := T.totalNormal
   letI := T.totalFinite
   abstractFixedFieldAbelianizedTransfer k (SeparableClosure k)
     T.base T.intermediate T.top
     T.top_le_intermediate T.intermediate_le_base
+end
 
-/-- Canonical transfer-inclusion naturality for a local fixed-field tower.
-Transfer commutes with inclusion of fixed-field units and the fixed-field
-norm-residue symbols induced by the canonical local class formation for the
-finite Galois tower bundled by `T`. -/
-theorem transfer_inclusion_commutes
-    (T : LocalFixedFieldTransferTower k) :
-    (abelianizedTransfer T).comp (baseNormResidueSymbol T) =
-      (intermediateNormResidueSymbol T).comp (unitsInclusion T) := by
-  let := T.totalNormal
-  let := T.totalFinite
-  let := T.baseAbsoluteFinite
-  let := intermediateNormal T
-  let := intermediateFinite T
-  let := baseIntermediateFinite T
-  let := intermediateAbsoluteFinite T
-  simpa [abelianizedTransfer, baseNormResidueSymbol,
-    intermediateNormResidueSymbol, unitsInclusion] using
-    (abstractFixedFieldNormResidueSymbol_transfer_inclusion
-      k (SeparableClosure k)
-      (localResidueDatum k) (localHenselianValuation k)
-      (separableClosureUnits_isClassFormation k)
-      T.base T.intermediate T.top
-      T.top_le_intermediate T.intermediate_le_base)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end LocalFixedFieldTransferTower
 

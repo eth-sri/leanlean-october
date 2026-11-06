@@ -158,7 +158,10 @@ private theorem stripV_g (ξ : ℂ) (hξ : ξ ∈ stripV) : Scales.goodLine - Eu
   have := (mem_stripV.1 hξ).1
   unfold Scales.goodLine EulerDomain.pad; linarith
 
-private theorem K_strip_diff (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) :
+section
+variable (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z)
+include u hu Z hZ
+private theorem K_strip_diff   :
     ∀ ξ ∈ stripV, ∀ s t : ℝ, DifferentiableAt ℂ
       (fun x : ℂ => PoissonKernel.K D u x ((Scales.wLine : ℂ) + (s : ℂ) * Complex.I)
         ((Scales.zLine : ℂ) + (t : ℂ) * Complex.I) Z) ξ := by
@@ -176,7 +179,7 @@ private theorem K_strip_diff (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z)
   unfold Scales.zLine at this
   norm_num at this
 
-private theorem K_strip_cont (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) :
+private theorem K_strip_cont   :
     ∀ ξ ∈ stripV, Continuous (fun p : ℝ × ℝ => PoissonKernel.K D u ξ
       ((Scales.wLine : ℂ) + (p.2 : ℂ) * Complex.I) ((Scales.zLine : ℂ) + (p.1 : ℂ) * Complex.I) Z) :=
   by
@@ -186,7 +189,7 @@ private theorem K_strip_cont (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z)
   have h2 := h.comp (continuous_swap (X := ℝ) (Y := ℝ))
   exact h2
 
-private theorem K_strip_maj (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) :
+private theorem K_strip_maj   :
     ∀ ξ₀ ∈ stripV, ∃ r : ℝ, 0 < r ∧ Metric.ball ξ₀ r ⊆ stripV ∧ ∃ C k : ℝ,
       0 ≤ C ∧ 0 ≤ k ∧ ∀ ξ ∈ Metric.ball ξ₀ r, ∀ p : ℝ × ℝ,
         ‖PoissonKernel.K D u ξ ((Scales.wLine : ℂ) + (p.2 : ℂ) * Complex.I)
@@ -214,7 +217,7 @@ private theorem K_strip_maj (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) 
   have := mem_stripV.1 (hball hξ)
   exact hbd ξ this.1.le this.2.le p
 
-private theorem Iwz_xi_holo_gen (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) :
+private theorem Iwz_xi_holo_gen   :
     DifferentiableOn ℂ (fun ξ => Iwz D u ξ Scales.wLine Scales.zLine Z)
       (comparisonClosedStrip Scales.rightLine 4) := by
   have hI : DifferentiableOn ℂ (fun ξ => comparisonVerticalIntegral Scales.wLine (fun w =>
@@ -230,7 +233,7 @@ private theorem Iwz_xi_holo_gen (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 <
     exact mem_stripV.2 ⟨by linarith, by linarith⟩
   exact hI.mono hsub
 
-private theorem Iwz_xi_decay_gen (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) :
+private theorem Iwz_xi_decay_gen   :
     DecayOn (fun ξ => Iwz D u ξ Scales.wLine Scales.zLine Z) Scales.rightLine 4 := by
   have hq0 : 0 < D.q u := PoissonInitialBridge.q_pos D u
   have hpad0 : EulerDomain.pad = 1 / 1000000 := rfl
@@ -341,20 +344,22 @@ private theorem Iwz_xi_decay_gen (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 
   calc _ ≤ _ := hle
     _ = _ := by ring
 
-theorem Iwz_xi_holo (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) :
+theorem Iwz_xi_holo   :
     DifferentiableOn ℂ (fun ξ => Iwz D u ξ Scales.wLine Scales.zLine Z)
       (comparisonClosedStrip Scales.rightLine 4) :=
   Iwz_xi_holo_gen D u hu Z hZ
 
-theorem Iwz_xi_decay (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) :
+theorem Iwz_xi_decay   :
     DecayOn (fun ξ => Iwz D u ξ Scales.wLine Scales.zLine Z) Scales.rightLine 4 :=
   Iwz_xi_decay_gen D u hu Z hZ
 
-theorem triple_xi_shift (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) :
+theorem triple_xi_shift   :
     triple D u 4 Scales.wLine Scales.zLine Z = triple D u Scales.rightLine Scales.wLine Scales.zLine Z := by
   unfold triple
   exact verticalIntegral_eq_of_decayOn (by norm_num [Scales.rightLine, Scales.contourOffset])
     (Iwz_xi_holo D u hu Z hZ) (Iwz_xi_decay D u hu Z hZ)
+end
+
 
 end
 

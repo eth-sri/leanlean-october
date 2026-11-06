@@ -2,7 +2,10 @@ module
 
 public import Mathlib
 
+public import Mathlib
+
 @[expose] public section
+
 
 section
 
@@ -20,13 +23,11 @@ def shiftDiff {d : Type*} [Fintype d] (f : C(UnitAddTorus d, ℂ)) (a : d → �
 private lemma diff_bounds {d : Type*} [Fintype d] (f : C(UnitAddTorus d, ℂ)) (a : d → ℝ) (N : ℕ) (C : ℝ)
     (hf : ContDiff ℝ (N + 1 : ℕ) (fun x : d → ℝ => f (fun i => (x i : UnitAddCircle))))
     (hb : ∀ k ≤ N+1, ∀ x : d → ℝ, ‖iteratedFDeriv ℝ k (fun y : d → ℝ => f (fun i => (y i : UnitAddCircle))) x‖ ≤ C) :
-    ContDiff ℝ (N : ℕ) (fun x : d → ℝ => shiftDiff f a (fun i => (x i : UnitAddCircle))) ∧
+    ContDiff ℝ N (fun x : d → ℝ => shiftDiff f a (fun i => (x i : UnitAddCircle))) ∧
     (∀ k ≤ N, ∀ x : d → ℝ, ‖iteratedFDeriv ℝ k (fun y : d → ℝ => shiftDiff f a (fun i => (y i : UnitAddCircle))) x‖ ≤ C * ‖a‖) := by
   let F := fun x : d → ℝ => f (fun i => (x i : UnitAddCircle))
   have heq : (fun x : d → ℝ => shiftDiff f a (fun i => (x i : UnitAddCircle))) = (fun x => F (x+a)) - F := by
-    funext x
-    change f (fun i => (x i : UnitAddCircle) + (a i : UnitAddCircle)) - _ = _
-    simp [F, AddCircle.coe_add, Pi.add_apply]
+    rfl
   have ht : ContDiff ℝ (N+1 : ℕ) (fun x => F (x+a)) := hf.comp (contDiff_id.add contDiff_const)
   rw [heq]
   constructor
@@ -37,10 +38,13 @@ private lemma diff_bounds {d : Type*} [Fintype d] (f : C(UnitAddTorus d, ℂ)) (
   have hh := (convex_univ : Convex ℝ (Set.univ : Set (d → ℝ))).norm_image_sub_le_of_norm_fderiv_le
     (𝕜 := ℝ) (f := iteratedFDeriv ℝ k F) (C := C)
     (fun y _ => (hf.differentiable_iteratedFDeriv (by exact_mod_cast (show k < N+1 by omega))).differentiableAt)
-    (fun y _ => by rw [norm_fderiv_iteratedFDeriv]; exact hb (k+1) (by omega) y)
+    (fun y _ => by rw [norm_fderiv_iteratedFDeriv]; apply hb <;> aesop)
     (Set.mem_univ x) (Set.mem_univ (x+a))
   simpa only [add_sub_cancel_left] using hh
-private lemma fourier_shift {d : Type*} [Fintype d] [DecidableEq d]
+section
+variable {d : Type*} [Fintype d]
+include d
+private lemma fourier_shift   [DecidableEq d]
     (n : d → ℤ) (i : d) (hi : n i ≠ 0) (t : UnitAddTorus d) :
     UnitAddTorus.mFourier (-n) (t + fun j => (((Pi.single i (1 / 2 / (-(n i) : ℝ)) : d → ℝ) j : ℝ) : UnitAddCircle)) = - UnitAddTorus.mFourier (-n) t := by
   simp only [UnitAddTorus.mFourier, ContinuousMap.coe_mk, Pi.neg_apply, Pi.add_apply]
@@ -60,7 +64,7 @@ private lemma fourier_shift {d : Type*} [Fintype d] [DecidableEq d]
   apply Finset.prod_congr rfl
   intro j hj
   rw [if_neg (Finset.ne_of_mem_erase hj)]
-private lemma coeff_diff {d : Type*} [Fintype d] [DecidableEq d]
+private lemma coeff_diff   [DecidableEq d]
     (f : C(UnitAddTorus d, ℂ)) (n : d → ℤ) (i : d) (hi : n i ≠ 0) :
     ‖UnitAddTorus.mFourierCoeff f n‖ ≤ ‖UnitAddTorus.mFourierCoeff (shiftDiff f (Pi.single i (1/2/(-(n i) : ℝ)))) n‖ := by
   let a : d → ℝ := Pi.single i (1/2/(-(n i) : ℝ))
@@ -82,7 +86,7 @@ private lemma coeff_diff {d : Type*} [Fintype d] [DecidableEq d]
   rw [hcoef, norm_mul]
   norm_num
   linarith [norm_nonneg (UnitAddTorus.mFourierCoeff f n)]
-private lemma shift_norm_le {d : Type*} [Fintype d] [DecidableEq d]
+private lemma shift_norm_le   [DecidableEq d]
     (n : d → ℤ) (i : d) (hi : n i ≠ 0) :
     ‖(Pi.single i (1/2/(-(n i) : ℝ)) : d → ℝ)‖ ≤ (max 1 |(n i : ℝ)|)⁻¹ := by
   have hn : (n i : ℝ) ≠ 0 := by exact_mod_cast hi
@@ -91,12 +95,12 @@ private lemma shift_norm_le {d : Type*} [Fintype d] [DecidableEq d]
   norm_num
   rw [div_eq_mul_inv]
   nlinarith [inv_nonneg.mpr (abs_nonneg (n i : ℝ))]
-private lemma coeff_bound {d : Type*} [Fintype d] (f : C(UnitAddTorus d, ℂ)) (n : d → ℤ) (C : ℝ)
+private lemma coeff_bound   (f : C(UnitAddTorus d, ℂ)) (n : d → ℤ) (C : ℝ)
     (hb : ∀ x : d → ℝ, ‖f (fun i => (x i : UnitAddCircle))‖ ≤ C) :
     ‖UnitAddTorus.mFourierCoeff f n‖ ≤ C := by
   have ht : ∀ t : UnitAddTorus d, ‖f t‖ ≤ C := by
     intro t
-    have hs : ∀ i, ∃ x : ℝ, (x : UnitAddCircle) = t i := fun i => QuotientAddGroup.mk_surjective (t i)
+    have hs  := fun i => QuotientAddGroup.mk_surjective (t i)
     choose x hx using hs
     simpa only [hx] using hb x
   have hm : ∀ t : UnitAddTorus d, ‖UnitAddTorus.mFourier (-n) t‖ = 1 := by
@@ -105,16 +109,16 @@ private lemma coeff_bound {d : Type*} [Fintype d] (f : C(UnitAddTorus d, ℂ)) (
   simpa only [UnitAddTorus.mFourierCoeff, smul_eq_mul, probReal_univ, mul_one] using
     norm_integral_le_of_norm_le_const (μ := (volume : Measure (UnitAddTorus d)))
       (Filter.Eventually.of_forall (fun t => by simpa only [norm_mul, hm t, one_mul] using ht t))
-private lemma coeff_list {d : Type*} [Fintype d] [DecidableEq d]
+private lemma coeff_list   [DecidableEq d]
     (l : List d) (f : C(UnitAddTorus d, ℂ)) (C : ℝ) (hC : 0 ≤ C)
-    (hf : ContDiff ℝ (l.length : ℕ) (fun x : d → ℝ => f (fun i => (x i : UnitAddCircle))))
+    (hf : ContDiff ℝ l.length (fun x : d → ℝ => f (fun i => (x i : UnitAddCircle))))
     (hb : ∀ k ≤ l.length, ∀ x : d → ℝ, ‖iteratedFDeriv ℝ k (fun y : d → ℝ => f (fun i => (y i : UnitAddCircle))) x‖ ≤ C)
     (n : d → ℤ) :
     ‖UnitAddTorus.mFourierCoeff f n‖ ≤ C * (l.map (fun i => (max 1 |(n i : ℝ)|)⁻¹)).prod := by
   induction l generalizing f C with
   | nil =>
     simp only [List.map_nil, List.prod_nil, mul_one]
-    exact coeff_bound f n C (fun x => by simpa only [norm_iteratedFDeriv_zero] using hb 0 (by simp) x)
+    apply coeff_bound <;> aesop
   | cons i l ih =>
     simp only [List.map_cons, List.prod_cons]
     by_cases hi : n i = 0
@@ -130,11 +134,11 @@ private lemma coeff_list {d : Type*} [Fintype d] [DecidableEq d]
         _ ≤ (C * (max 1 |(n i : ℝ)|)⁻¹) * (l.map (fun j => (max 1 |(n j : ℝ)|)⁻¹)).prod := by
           gcongr
           · exact List.prod_nonneg (fun x hx => by obtain ⟨j, _, rfl⟩ := List.mem_map.mp hx; positivity)
-          · exact shift_norm_le n i hi
+          · apply shift_norm_le <;> assumption
         _ = _ := by ring
 
 theorem compactTorus_mFourierCoeff_decay_of_deriv_bound
-    {d : Type*} [Fintype d] (f : C(UnitAddTorus d, ℂ)) (C : ℝ)
+      (f : C(UnitAddTorus d, ℂ)) (C : ℝ)
     (hC : 0 ≤ C)
     (hf : ContDiff ℝ (2 * Fintype.card d : ℕ)
       (fun x : d → ℝ => f (fun i => (x i : UnitAddCircle))))
@@ -155,6 +159,8 @@ theorem compactTorus_mFourierCoeff_decay_of_deriv_bound
   apply Finset.prod_congr rfl
   intro i hi
   simp [pow_two, mul_inv]
+end
+
 
 end
 end DedekindZetaZeroFree
@@ -175,9 +181,7 @@ private lemma max_inv_sq_le_four (x : ℝ) :
   have hmpos : (0 : ℝ) < m := lt_of_lt_of_le one_pos hm1
   have hm2pos : (0 : ℝ) < m ^ 2 := by positivity
   have hle : 1 + |x| ≤ 2 * m := by
-    rcases lt_or_ge |x| 1 with h | h
-    · rw [hm_def, max_eq_left (le_of_lt h)]; linarith
-    · rw [hm_def, max_eq_right h]; linarith
+    grind [max_eq_left, le_of_lt, max_eq_right]
   have hpos2 : (0 : ℝ) < (1 + |x|) ^ 2 := by positivity
   have hsq : (1 + |x|) ^ 2 ≤ 4 * m ^ 2 := by
     have hnn : (0 : ℝ) ≤ 2 * m := by positivity
@@ -197,7 +201,7 @@ theorem compactTorus_product_decay_comparison
         · intro i _
           exact inv_nonneg.mpr (sq_nonneg _)
         · intro i _
-          exact max_inv_sq_le_four (x i)
+          apply max_inv_sq_le_four
     _ = (4 : ℝ) ^ Fintype.card d * ∏ i : d, ((1 + |x i|) ^ 2)⁻¹ := by
         rw [Finset.prod_mul_distrib, Finset.prod_const, Finset.card_univ]
 
@@ -258,11 +262,11 @@ private lemma summable_pi_prod_of_summable {d : Type*} [Fintype d] (w : ℤ → 
   refine Fintype.induction_empty_option
     (P := fun d _ => Summable (fun n : d → ℤ => ∏ i : d, w (n i))) ?_ ?_ ?_ d
   · intro α β inst e ih
-    letI : Fintype α := Fintype.ofEquiv β e.symm
+    letI  := Fintype.ofEquiv β e.symm
     exact summable_pi_prod_of_equiv e.symm w ih
   · exact Summable.of_finite
   · intro α _ ih
-    have hmain : Summable (fun p : ℤ × (α → ℤ) => w p.1 * ∏ i : α, w (p.2 i)) :=
+    have hmain  :=
       summable_mul_prod_of_nonneg hw ih hw0 (fun m => Finset.prod_nonneg fun i _ => hw0 _)
     let φ : (Option α → ℤ) ≃ ℤ × (α → ℤ) :=
       { toFun := fun n => (n none, fun i => n (some i))
@@ -281,8 +285,7 @@ private lemma summable_pi_prod_of_summable {d : Type*} [Fintype d] (w : ℤ → 
 
 theorem compactTorus_summable_product_decay
     {d : Type*} [Fintype d] :
-    Summable (fun n : d → ℤ => ∏ i : d, ((1 + |(n i : ℝ)|) ^ 2)⁻¹) := by
-  exact summable_pi_prod_of_summable (fun n : ℤ => ((1 + |(n : ℝ)|) ^ 2)⁻¹)
+    Summable (fun n : d → ℤ => ∏ i : d, ((1 + |(n i : ℝ)|) ^ 2)⁻¹) := summable_pi_prod_of_summable (fun n : ℤ => ((1 + |(n : ℝ)|) ^ 2)⁻¹)
     summable_int_inv_one_add_abs_sq (fun _ => inv_nonneg.mpr (sq_nonneg _))
 
 end
@@ -331,7 +334,7 @@ theorem compactTorus_parametric_mFourier {d P : Type*} [Fintype d]
       ∀ p n, ‖UnitAddTorus.mFourierCoeff (f p) n‖ ≤ b n := by
     classical
     obtain ⟨C, hC, hCbound⟩ := hbounded
-    let A : ℝ := C * (4 : ℝ) ^ Fintype.card d
+    let A  := C * (4 : ℝ) ^ Fintype.card d
     let w : (d → ℤ) → ℝ :=
       fun n => ∏ i : d, ((1 + |(n i : ℝ)|) ^ 2)⁻¹
     have hA : 0 ≤ A := mul_nonneg hC (pow_nonneg (by norm_num) _)

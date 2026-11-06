@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Extension.NormProperties
 public import Mathlib.LinearAlgebra.Basis.VectorSpace
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -114,8 +117,7 @@ theorem comap_principalSubgroup :
             ((IdeleGroup.equivAdeleRingUnits (K := K) a :
               (NumberField.AdeleRing (𝓞 K) K)ˣ) :
               NumberField.AdeleRing (𝓞 K) K) =
-          fieldInclusion K L (x : L) := by
-      exact congrArg Units.val hx.symm
+          fieldInclusion K L (x : L) := congrArg Units.val hx.symm
     obtain ⟨k, hkA, hkL⟩ :=
       exists_scalar_of_adeleInclusion_eq_fieldInclusion
         K L _ _ htensor
@@ -201,11 +203,7 @@ theorem classInclusion_injective :
   constructor
   · rintro ⟨a, ha, rfl⟩
     exact (QuotientGroup.eq_one_iff a).2 ha
-  · intro hz
-    have hz1 : z = 1 := Subgroup.mem_bot.mp hz
-    obtain ⟨a, rfl⟩ :=
-      QuotientGroup.mk_surjective z
-    exact ⟨a, (QuotientGroup.eq_one_iff a).1 hz1, rfl⟩
+  · simp_all
 
 end RelativeIdeleGroup
 

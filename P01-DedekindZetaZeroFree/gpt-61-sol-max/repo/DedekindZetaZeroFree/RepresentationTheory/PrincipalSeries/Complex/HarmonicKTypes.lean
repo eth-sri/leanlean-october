@@ -1,10 +1,13 @@
 module
+
+public import Mathlib
 public import Mathlib.Algebra.MvPolynomial.PDeriv
 
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.ComplexChartsAndSphericalSections
 public import Mathlib.RingTheory.MvPolynomial.Homogeneous
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.KPCplxHarmonicIntertwinerSpectrum
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts MeasureTheory
@@ -21,7 +24,7 @@ noncomputable def polynomialLaplacian :
   ∑ i : Fin 3, (MvPolynomial.pderiv i).toLinearMap.comp
     (MvPolynomial.pderiv i).toLinearMap
 
-noncomputable def harmonicPolynomials (ℓ : ℕ) : Submodule ℂ (MvPolynomial (Fin 3) ℂ) :=
+noncomputable def harmonicPolynomials (ℓ : ℕ)  :=
   MvPolynomial.homogeneousSubmodule (Fin 3) ℂ ℓ ⊓ polynomialLaplacian.ker
 
 noncomputable def compactRestriction (s : ℝ) : PrincipalSeries s →ₗ[ℂ] (ComplexSU2 → ℂ) where
@@ -35,13 +38,13 @@ noncomputable def polynomialCompactRestriction :
   map_add' p q := by ext k; simp
   map_smul' c p := by ext k; simp
 
-noncomputable def harmonicKType (s : ℝ) (ℓ : ℕ) : Submodule ℂ (PrincipalSeries s) :=
+noncomputable def harmonicKType (s : ℝ) (ℓ : ℕ)  :=
   ((harmonicPolynomials ℓ).map polynomialCompactRestriction).comap (compactRestriction s)
 
-def IsKInvariant (s : ℝ) (U : Submodule ℂ (PrincipalSeries s)) : Prop :=
+def IsKInvariant (s : ℝ) (U : Submodule ℂ (PrincipalSeries s))  :=
   ∀ (k : compactSubgroup) (f : PrincipalSeries s), f ∈ U → pi s k f ∈ U
 
-def KEquivalent (s : ℝ) (U V : Submodule ℂ (PrincipalSeries s)) : Prop :=
+def KEquivalent (s : ℝ) (U V : Submodule ℂ (PrincipalSeries s))  :=
   ∃ e : U ≃ₗ[ℂ] V, ∀ (k : compactSubgroup) (u v : U),
     (v : PrincipalSeries s) = pi s k u →
       (e v : PrincipalSeries s) = pi s k (e u)

@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Ideals.DivisorFinsets
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve
 
@@ -10,9 +13,12 @@ open scoped NumberField Classical
 
 open UniqueFactorizationMonoid
 
+section
+variable {F : Type*} [Field F] [NumberField F]
+    (A : Ideal (𝓞 F)) (hA : A ≠ ⊥)
+include F A hA
 theorem idealDivisorCount_le_normalizedFactors_box
-    {F : Type*} [Field F] [NumberField F]
-    (A : Ideal (𝓞 F)) (hA : A ≠ ⊥) :
+      :
     let m := UniqueFactorizationMonoid.normalizedFactors A
     let S := m.toFinset
     (idealDivisorCount A : ℝ) ≤ ∏ P ∈ S, ((m.count P : ℝ) + 1) := by
@@ -74,7 +80,7 @@ theorem idealDivisorCount_le_normalizedFactors_box
     rw [← Ideal.prod_normalizedFactors_eq_self (hne D₁ hD₁),
       ← Ideal.prod_normalizedFactors_eq_self (hne D₂ hD₂), hext]
   have hcard : idealDivisorCount A ≤ ∏ P ∈ S, (m.count P + 1) := by
-    have h1 : (idealDivisors A).card ≤ (Finset.univ : Finset box).card :=
+    have h1  :=
       Finset.card_le_card_of_injective (s := idealDivisors A) (t := Finset.univ) hf_inj
     rw [idealDivisorCount]
     calc (idealDivisors A).card ≤ (Finset.univ : Finset box).card := h1
@@ -86,8 +92,7 @@ theorem idealDivisorCount_le_normalizedFactors_box
   exact_mod_cast hcard
 
 theorem absNorm_eq_prod_normalizedFactors_counts
-    {F : Type*} [Field F] [NumberField F]
-    (A : Ideal (𝓞 F)) (hA : A ≠ ⊥) :
+      :
     let m := UniqueFactorizationMonoid.normalizedFactors A
     let S := m.toFinset
     Ideal.absNorm A = ∏ P ∈ S, Ideal.absNorm P ^ m.count P := by
@@ -105,17 +110,18 @@ theorem absNorm_eq_prod_normalizedFactors_counts
           Finset.prod_multiset_map_count _ _
 
 theorem two_le_absNorm_of_mem_normalizedFactors
-    {F : Type*} [Field F] [NumberField F]
-    (A : Ideal (𝓞 F)) (hA : A ≠ ⊥) :
+      :
     let m := UniqueFactorizationMonoid.normalizedFactors A
     let S := m.toFinset
     ∀ P ∈ S, 2 ≤ Ideal.absNorm P := by
   classical
   dsimp only
   intro P hP
-  have hPrime : Prime P := prime_of_normalized_factor _ (Multiset.mem_toFinset.mp hP)
+  have hPrime  := prime_of_normalized_factor _ (Multiset.mem_toFinset.mp hP)
   rw [Nat.two_le_iff]
   exact ⟨fun h => hPrime.ne_zero (Ideal.absNorm_eq_zero_iff.mp h),
     fun h => hPrime.not_unit (Ideal.isUnit_iff.mpr (Ideal.absNorm_eq_one_iff.mp h))⟩
+end
+
 
 end DedekindZetaZeroFree.LargeSieve

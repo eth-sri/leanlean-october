@@ -109,8 +109,8 @@ structure ComponentEndData
       fundamentalDomain).restrict
       (ends (KPCuspGenuineMonodromy.Component F ζ hζ U g) (representative a) threshold)
 
-theorem component_transport_range
-    (hd : 0 < KPCuspLogShape.dimension F)
+section
+variable (hd : 0 < KPCuspLogShape.dimension F)
     (Γ : Subgroup (KPCuspArithmetic.PGL2 F)) (q : KPCuspArithmetic.Cusp F)
     (σ : KPCuspArithmetic.PGL2 F) (T : ℝ)
     (f : KPCuspCharts.HighQuotient F
@@ -118,7 +118,10 @@ theorem component_transport_range
         KPCuspSiegel.OrbitQuotient F Γ)
     (hf : ∀ (p : {p : KPCuspCharts.Coordinates F // T < p.2}),
       f (Quotient.mk _ p) =
-        KPCuspSiegel.projection F Γ (σ • KPCuspCharts.toArch F p.val)) :
+        KPCuspSiegel.projection F Γ (σ • KPCuspCharts.toArch F p.val))
+include hd Γ q σ T f hf
+theorem component_transport_range
+      :
     Set.range f = KPCuspSiegel.projection F Γ '' KPCuspSiegel.highCusp F σ T := by
   let e := KPCuspCharts.highCoordinatesHomeomorph F hd σ T
   apply Set.ext
@@ -136,15 +139,7 @@ theorem component_transport_range
       (congrArg Subtype.val (e.apply_symm_apply ⟨z, hz⟩))
 
 theorem component_transport_embedding
-    (hd : 0 < KPCuspLogShape.dimension F)
-    (Γ : Subgroup (KPCuspArithmetic.PGL2 F)) (q : KPCuspArithmetic.Cusp F)
-    (σ : KPCuspArithmetic.PGL2 F) (T : ℝ)
-    (f : KPCuspCharts.HighQuotient F
-      (KPCuspArithmetic.conjugatedStabilizer F Γ q σ) T →
-        KPCuspSiegel.OrbitQuotient F Γ)
-    (hf : ∀ (p : {p : KPCuspCharts.Coordinates F // T < p.2}),
-      f (Quotient.mk _ p) =
-        KPCuspSiegel.projection F Γ (σ • KPCuspCharts.toArch F p.val))
+     
     (j : KPCuspSiegel.CuspQuotient F Γ q (KPCuspSiegel.highCusp F σ T) →
       KPCuspSiegel.OrbitQuotient F Γ)
     (hj : Topology.IsEmbedding j)
@@ -162,6 +157,8 @@ theorem component_transport_embedding
     rfl
   rw [he]
   exact hj.comp e.isEmbedding
+end
+
 
 theorem component_bounded_shapes
     (F : Type) [Field F] [NumberField F]

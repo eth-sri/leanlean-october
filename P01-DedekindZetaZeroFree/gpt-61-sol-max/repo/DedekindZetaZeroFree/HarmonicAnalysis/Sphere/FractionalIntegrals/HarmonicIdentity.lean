@@ -1,15 +1,18 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Fourier.SphericalHarmonics.PolynomialFunkHecke
 public import DedekindZetaZeroFree.HarmonicAnalysis.Fourier.SphericalHarmonics.RotationLaplacian
 
 @[expose] public section
 
+
 namespace DedekindZetaZeroFree.ComplexFractionalInverse
 open KPCplxIntertwinerEigenvalues
 open scoped BigOperators
 
-noncomputable def fractionalEigenvalue (α : ℝ) (ℓ : ℕ) : ℝ :=
+noncomputable def fractionalEigenvalue (α : ℝ) (ℓ : ℕ)  :=
   ∏ j ∈ Finset.Icc 1 ℓ, (((j : ℝ) - α) / ((j : ℝ) + α))
 
 theorem fractionalIntegral_harmonic (ℓ : ℕ) (p : MvPolynomial (Fin 3) ℂ)
@@ -42,8 +45,8 @@ theorem fractionalEigenvalue_product (ℓ : ℕ) :
   | zero => norm_num [fractionalEigenvalue]
   | succ n ih =>
     simp only [fractionalEigenvalue] at ih ⊢
-    rw [Finset.prod_Icc_succ_top (by omega : 1 ≤ n + 1),
-      Finset.prod_Icc_succ_top (by omega : 1 ≤ n + 1)]
+    rw [Finset.prod_Icc_succ_top (by omega),
+      Finset.prod_Icc_succ_top (by omega)]
     rw [show (∏ j ∈ Finset.Icc 1 n, ((j : ℝ) - 1 / 3) / ((j : ℝ) + 1 / 3)) *
         ((((n + 1 : ℕ) : ℝ) - 1 / 3) / (((n + 1 : ℕ) : ℝ) + 1 / 3)) *
         ((∏ j ∈ Finset.Icc 1 n, ((j : ℝ) - 2 / 3) / ((j : ℝ) + 2 / 3)) *
@@ -58,31 +61,16 @@ theorem fractionalEigenvalue_product (ℓ : ℕ) :
     <;> ring
 
 private lemma sphere_ne_zero (x : Sphere) : (x : Ambient) ≠ 0 := by
-  have h : ‖(x : Ambient)‖ = 1 := by simpa [Metric.mem_sphere, dist_zero_right] using x.property
-  intro h0
-  simp [h0] at h
+  simp_all [Metric.mem_sphere, dist_zero_right] <;> aesop
 
 private lemma smooth_diff (F : Sphere → ℂ) (hF : IsSphereSmooth F) (x : Sphere) :
-    DifferentiableAt ℝ (radialExtension F) (x : Ambient) := by
-  exact (hF.differentiableOn (by simp)).differentiableAt
+    DifferentiableAt ℝ (radialExtension F) x := (hF.differentiableOn (by simp)).differentiableAt
     (isOpen_ne.mem_nhds (sphere_ne_zero x))
 
-private lemma harmonic_rotationVector_smooth (i : Fin 3) :
-    ContDiff ℝ (⊤ : ℕ∞) (rotationVector i) := by
-  unfold rotationVector
-  change ContDiff ℝ (⊤ : ℕ∞) (WithLp.toLp 2 ∘
-    (fun x : Ambient => fun j : Fin 3 => if j = i + 1 then -x (i + 2) else if j = i + 2 then x (i + 1) else 0))
-  apply PiLp.contDiff_toLp.comp
-  apply contDiff_pi.mpr
-  intro j
-  split_ifs
-  · exact (EuclideanSpace.proj (𝕜 := ℝ) (i + 2)).contDiff.neg
-  · exact (EuclideanSpace.proj (𝕜 := ℝ) (i + 1)).contDiff
-  · exact contDiff_const
+private alias harmonic_rotationVector_smooth := _root_.DedekindZetaZeroFree.ComplexFractionalInverse.rotationVector_smooth
 
 private lemma normalize_smooth :
-    ContDiffOn ℝ (⊤ : ℕ∞) (fun x : Ambient => ‖x‖⁻¹ • x) {x | x ≠ 0} := by
-  exact ((contDiff_id.contDiffOn.norm ℝ (by intro x hx; exact hx)).inv
+    ContDiffOn ℝ (⊤ : ℕ∞) (fun x : Ambient => ‖x‖⁻¹ • x) {x | x ≠ 0} := ((contDiff_id.contDiffOn.norm ℝ (by intro x hx; exact hx)).inv
     (by intro x hx; exact norm_ne_zero_iff.mpr hx)).smul contDiff_id.contDiffOn
 
 private lemma rotation_smooth (i : Fin 3) (F : Sphere → ℂ) (hF : IsSphereSmooth F) :
@@ -91,7 +79,7 @@ private lemma rotation_smooth (i : Fin 3) (F : Sphere → ℂ) (hF : IsSphereSmo
   have hg := hd.clm_apply (harmonic_rotationVector_smooth i).contDiffOn
   have hn : Set.MapsTo (fun x : Ambient => ‖x‖⁻¹ • x) {x | x ≠ 0} {x | x ≠ 0} := by
     intro x hx
-    exact smul_ne_zero (inv_ne_zero (norm_ne_zero_iff.mpr hx)) hx
+    apply smul_ne_zero <;> aesop
   apply (hg.comp normalize_smooth hn).congr
   intro x hx
   change x ≠ 0 at hx
@@ -174,7 +162,7 @@ theorem fractional_polynomial_identity (p : MvPolynomial (Fin 3) ℂ) :
     (fun x => G x + (9 / 2 : ℂ) * positiveLaplacian G x) = polynomialSphere p := by
   classical
   obtain ⟨I, h, hh, he⟩ := finite_fischer_spanning p
-  have hp : polynomialSphere p = fun x => ∑ ℓ ∈ I, polynomialSphere (h ℓ) x := funext he
+  have hp  := funext he
   have hf (ℓ : ℕ) := polynomialSphere_smooth (h ℓ)
   have hi : fractionalIntegral (1 / 3) (polynomialSphere p) =
       fun x => ∑ ℓ ∈ I, (fractionalEigenvalue (1 / 3) ℓ : ℂ) * polynomialSphere (h ℓ) x := by

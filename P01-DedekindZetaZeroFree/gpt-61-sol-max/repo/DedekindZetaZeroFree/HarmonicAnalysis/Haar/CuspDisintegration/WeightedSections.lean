@@ -62,15 +62,15 @@ def transition (M : ComponentMatching AV AU) (j : CuspIndex AV) :
   ((AU.cuspAtlas (cuspLabel M j).1).representative (cuspLabel M j).2)⁻¹ *
     ((correction M j).val⁻¹ * M.rational j.1) * (AV.cuspAtlas j.1).representative j.2
 
-structure NormOneMatrix (M : ComponentMatching AV AU) (j : CuspIndex AV) where
-  matrix : Matrix.GeneralLinearGroup (Fin 2) F
-  ratio : Fˣ
-  upper : (matrix : Matrix (Fin 2) (Fin 2) F) 1 0 = 0
-  ratio_formula : (matrix : Matrix (Fin 2) (Fin 2) F) 0 0 =
-    (ratio : F) * (matrix : Matrix (Fin 2) (Fin 2) F) 1 1
-  projective_formula : Matrix.ProjGenLinGroup.mk matrix = transition M j
-  sum_log_zero : ∑ i : Fin (KPCuspLogShape.dimension F),
-    Real.log ((KPCusp.complexPlace F i) (ratio : F)) = 0
+
+
+
+
+
+
+
+
+
 
  theorem transition_properties
     (h : V.toOpenSubgroup.toSubgroup ≤ U.toOpenSubgroup.toSubgroup)

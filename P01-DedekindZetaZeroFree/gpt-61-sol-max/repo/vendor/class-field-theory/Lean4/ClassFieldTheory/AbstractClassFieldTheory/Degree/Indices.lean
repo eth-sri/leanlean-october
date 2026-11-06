@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import GaloisCohomology.GroupTheory.QuotientTower
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -30,11 +33,14 @@ universe u v
 
 variable {G : Type u} {D : Type v} [Group G] [Group D]
 
- def kernelToSaturation (d : G →* D) (L K : Subgroup G) :
+ section
+variable (d : G →* D) (L K : Subgroup G)
+include d L K
+def kernelToSaturation   :
     ↑(K ⊓ d.ker) →* ↑(K ⊓ (L ⊔ d.ker)) :=
   Subgroup.inclusion (inf_le_inf le_rfl le_sup_right)
 
- theorem kernelToSaturation_rel_iff (d : G →* D) (L K : Subgroup G)
+ theorem kernelToSaturation_rel_iff  
     (x y : ↑(K ⊓ d.ker)) :
     QuotientGroup.leftRel ((L ⊓ d.ker).subgroupOf (K ⊓ d.ker)) x y ↔
       QuotientGroup.leftRel (L.subgroupOf (K ⊓ (L ⊔ d.ker)))
@@ -45,13 +51,13 @@ variable {G : Type u} {D : Type v} [Group G] [Group D]
   · intro h
     exact ⟨h, d.ker.mul_mem (d.ker.inv_mem x.property.2) y.property.2⟩
 
- noncomputable def kernelCosetToSaturationCoset (d : G →* D) (L K : Subgroup G) :
+ noncomputable def kernelCosetToSaturationCoset   :
     (↑(K ⊓ d.ker) ⧸ (L ⊓ d.ker).subgroupOf (K ⊓ d.ker)) →
       (↑(K ⊓ (L ⊔ d.ker)) ⧸ L.subgroupOf (K ⊓ (L ⊔ d.ker))) :=
   Quotient.map' (kernelToSaturation d L K) fun x y h ↦
     (kernelToSaturation_rel_iff d L K x y).mp h
 
- theorem kernelCosetToSaturationCoset_injective (d : G →* D) (L K : Subgroup G) :
+ theorem kernelCosetToSaturationCoset_injective   :
     Function.Injective (kernelCosetToSaturationCoset d L K) := by
   intro q₁ q₂
   refine Quotient.inductionOn₂ q₁ q₂ ?_
@@ -60,9 +66,14 @@ variable {G : Type u} {D : Type v} [Group G] [Group D]
   apply (kernelToSaturation_rel_iff d L K x y).mpr
   apply Quotient.eq''.mp
   simpa only [kernelCosetToSaturationCoset, Quotient.map'_mk''] using h
+end
 
- theorem kernelCosetToSaturationCoset_surjective (d : G →* D) {L K : Subgroup G}
-    (hLK : L ≤ K) : Function.Surjective (kernelCosetToSaturationCoset d L K) := by
+
+ section
+variable (d : G →* D) {L K : Subgroup G}
+    (hLK : L ≤ K)
+include d L K hLK
+theorem kernelCosetToSaturationCoset_surjective   : Function.Surjective (kernelCosetToSaturationCoset d L K) := by
   intro q
   refine Quotient.inductionOn q ?_
   intro z
@@ -87,21 +98,20 @@ variable {G : Type u} {D : Type v} [Group G] [Group D]
 
 This is the set-level second-isomorphism argument needed for relative indices; no normality
 assumption on `L` is required. -/
-noncomputable def kernelCosetEquivSaturation (d : G →* D) {L K : Subgroup G} (hLK : L ≤ K) :
-    (↑(K ⊓ d.ker) ⧸ (L ⊓ d.ker).subgroupOf (K ⊓ d.ker)) ≃
-      (↑(K ⊓ (L ⊔ d.ker)) ⧸ L.subgroupOf (K ⊓ (L ⊔ d.ker))) :=
+noncomputable def kernelCosetEquivSaturation    :=
   Equiv.ofBijective (kernelCosetToSaturationCoset d L K)
     ⟨kernelCosetToSaturationCoset_injective d L K,
       kernelCosetToSaturationCoset_surjective d hLK⟩
 
 /-- The index of `L` in the `ker d`-saturated part of `K` is the relative
 index of the corresponding kernel intersections. -/
-theorem relIndex_saturation_eq_inf_ker_relIndex (d : G →* D)
-    {L K : Subgroup G} (hLK : L ≤ K) :
+theorem relIndex_saturation_eq_inf_ker_relIndex   :
     L.relIndex (K ⊓ (L ⊔ d.ker)) =
       (L ⊓ d.ker).relIndex (K ⊓ d.ker) := by
   unfold Subgroup.relIndex
   exact Nat.card_congr (kernelCosetEquivSaturation d hLK).symm
+end
+
 
 /-- The mapped relative index is the index of the `ker d`-saturated part of
 `K`. -/
@@ -154,20 +164,20 @@ theorem relativeIndexCardinal_eq_index_of_finite {L K : Subgroup G} (hLK : L ≤
   rw [relativeIndexCardinal, intersectionIndexCardinal, Subgroup.relIndex, Subgroup.index]
   exact Nat.cast_card.symm
 
-/-- Establishes the identity `relativeIndexCardinal (le_refl K) = 1`. -/
-@[simp] theorem relativeIndexCardinal_self (K : Subgroup G) :
-    relativeIndexCardinal (le_refl K) = 1 := by
-  let α := K ⧸ K.subgroupOf K
-  let : Subsingleton α := by
-    constructor
-    intro q r
-    refine Quotient.inductionOn₂ q r ?_
-    intro x y
-    apply Quotient.eq''.mpr
-    rw [QuotientGroup.leftRel_apply, Subgroup.mem_subgroupOf]
-    exact (x⁻¹ * y).2
-  change Cardinal.mk α = 1
-  exact Cardinal.mk_eq_one α
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- Relative cardinal indices multiply in every subgroup tower. -/
 theorem relativeIndexCardinal_mul {M L K : Subgroup G}
@@ -190,8 +200,11 @@ private theorem subgroupMapRestriction_surjective (d : G →* D) (K : Subgroup G
   rintro ⟨_, x, hx, rfl⟩
   exact ⟨⟨x, hx⟩, rfl⟩
 
- theorem subgroupMapRestriction_rel_iff (d : G →* D)
-    (H : Subgroup D) (K : Subgroup G) (x y : K) :
+ section
+variable (d : G →* D)
+    (H : Subgroup D) (K : Subgroup G)
+include d H K
+theorem subgroupMapRestriction_rel_iff   (x y : K) :
     QuotientGroup.leftRel ((H.comap d).subgroupOf K) x y ↔
       QuotientGroup.leftRel (H.subgroupOf (K.map d))
         (subgroupMapRestriction d K x) (subgroupMapRestriction d K y) := by
@@ -200,15 +213,13 @@ private theorem subgroupMapRestriction_surjective (d : G →* D) (K : Subgroup G
   change d (x.1⁻¹ * y.1) ∈ H ↔ (d x.1)⁻¹ * d y.1 ∈ H
   rw [map_mul, map_inv]
 
- noncomputable def relativeCosetComapMap (d : G →* D)
-    (H : Subgroup D) (K : Subgroup G) :
+ noncomputable def relativeCosetComapMap   :
     (K ⧸ (H.comap d).subgroupOf K) →
       (K.map d ⧸ H.subgroupOf (K.map d)) :=
   Quotient.map' (subgroupMapRestriction d K) fun x y h ↦
     (subgroupMapRestriction_rel_iff d H K x y).mp h
 
- theorem relativeCosetComapMap_injective (d : G →* D)
-    (H : Subgroup D) (K : Subgroup G) :
+ theorem relativeCosetComapMap_injective   :
     Function.Injective (relativeCosetComapMap d H K) := by
   intro q₁ q₂
   refine Quotient.inductionOn₂ q₁ q₂ ?_
@@ -218,25 +229,25 @@ private theorem subgroupMapRestriction_surjective (d : G →* D) (K : Subgroup G
   apply Quotient.eq''.mp
   simpa only [relativeCosetComapMap, Quotient.map'_mk''] using h
 
- theorem relativeCosetComapMap_surjective (d : G →* D)
-    (H : Subgroup D) (K : Subgroup G) :
+ theorem relativeCosetComapMap_surjective   :
     Function.Surjective (relativeCosetComapMap d H K) := by
   intro q
   refine Quotient.inductionOn' q ?_
   intro z
   obtain ⟨x, rfl⟩ := subgroupMapRestriction_surjective d K z
-  exact ⟨Quotient.mk'' x, by
-    simp only [relativeCosetComapMap, Quotient.map'_mk'']⟩
+  exact ⟨Quotient.mk'' x, rfl⟩
 
- noncomputable def relativeCosetComapEquiv (d : G →* D)
-    (H : Subgroup D) (K : Subgroup G) :
-    (K ⧸ (H.comap d).subgroupOf K) ≃
-      (K.map d ⧸ H.subgroupOf (K.map d)) :=
+ noncomputable def relativeCosetComapEquiv    :=
   Equiv.ofBijective (relativeCosetComapMap d H K)
     ⟨relativeCosetComapMap_injective d H K,
       relativeCosetComapMap_surjective d H K⟩
+end
 
- noncomputable def imageCosetEquivSaturation (d : G →* D)
+
+ section
+variable (d : G →* D)
+include d
+noncomputable def imageCosetEquivSaturation  
     (L K : Subgroup G) :
     (K ⧸ (K ⊓ (L ⊔ d.ker)).subgroupOf K) ≃
       (K.map d ⧸ (L.map d).subgroupOf (K.map d)) := by
@@ -252,28 +263,21 @@ private theorem subgroupMapRestriction_surjective (d : G →* D) (K : Subgroup G
 
 /-- Cardinal form of the image contribution: it is the intersection index of
 the kernel-saturated part of the upper subgroup. -/
-theorem intersectionIndexCardinal_image_eq_saturation (d : G →* D)
+theorem intersectionIndexCardinal_image_eq_saturation  
     (L K : Subgroup G) :
     Cardinal.lift.{u} (intersectionIndexCardinal (L.map d) (K.map d)) =
       Cardinal.lift.{v}
-        (intersectionIndexCardinal (K ⊓ (L ⊔ d.ker)) K) := by
-  exact (imageCosetEquivSaturation d L K).lift_cardinal_eq.symm
+        (intersectionIndexCardinal (K ⊓ (L ⊔ d.ker)) K) := (imageCosetEquivSaturation d L K).lift_cardinal_eq.symm
 
 /-- Cardinal form of the kernel contribution: intersecting both subgroups
 with the kernel gives the saturated inner index. -/
-theorem relativeIndexCardinal_kernel_eq_saturation (d : G →* D)
-    {L K : Subgroup G} (hLK : L ≤ K) :
-    relativeIndexCardinal
-      (show L ⊓ d.ker ≤ K ⊓ d.ker from inf_le_inf hLK le_rfl) =
-      relativeIndexCardinal
-        (show L ≤ K ⊓ (L ⊔ d.ker) from fun _ hx ↦
-          ⟨hLK hx, (show L ≤ L ⊔ d.ker from le_sup_left) hx⟩) := by
-  exact Cardinal.mk_congr (kernelCosetEquivSaturation d hLK)
+def relativeIndexCardinal_kernel_eq_saturation  
+    {L K : Subgroup G} (hLK : L ≤ K)  := Cardinal.mk_congr (kernelCosetEquivSaturation d hLK)
 
 /-- The cardinal image--kernel identity for a subgroup inclusion.  It remains
 valid for infinite indices because it is induced by equivalences of the
 actual coset types. -/
-theorem relativeIndexCardinal_eq_map_mul_inf_ker (d : G →* D)
+theorem relativeIndexCardinal_eq_map_mul_inf_ker  
     {L K : Subgroup G} (hLK : L ≤ K) :
     Cardinal.lift.{v} (relativeIndexCardinal hLK) =
       Cardinal.lift.{u}
@@ -298,9 +302,7 @@ theorem relativeIndexCardinal_eq_map_mul_inf_ker (d : G →* D)
             (relativeIndexCardinal (Subgroup.map_mono (f := d) hLK)) := by
       have hkernel :
           intersectionIndexCardinal (L ⊓ d.ker) (K ⊓ d.ker) =
-            intersectionIndexCardinal L (K ⊓ (L ⊔ d.ker)) := by
-        simpa only [relativeIndexCardinal] using
-          relativeIndexCardinal_kernel_eq_saturation d hLK
+            intersectionIndexCardinal L (K ⊓ (L ⊔ d.ker)) := relativeIndexCardinal_kernel_eq_saturation d hLK
       change
         Cardinal.lift.{v}
             (intersectionIndexCardinal L (K ⊓ (L ⊔ d.ker))) *
@@ -316,5 +318,7 @@ theorem relativeIndexCardinal_eq_map_mul_inf_ker (d : G →* D)
           Cardinal.lift.{v}
             (relativeIndexCardinal
               (show L ⊓ d.ker ≤ K ⊓ d.ker from inf_le_inf hLK le_rfl)) := mul_comm _ _
+end
+
 
 end ClassFormation

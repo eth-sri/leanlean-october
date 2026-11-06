@@ -23,9 +23,9 @@ variable {R : Type u} {G : Type uG} {H : Type uH} {K : Type uK}
   [Semiring R] [Monoid G] [Monoid H] [Monoid K]
   [AddCommMonoid V] [Module R V] [AddCommMonoid W] [Module R W] [AddCommMonoid U] [Module R U]
 
-instance isTrivial_comp (σ : Representation R H W) [σ.IsTrivial] (f : G →* H) :
-    Representation.IsTrivial (σ.comp f) :=
-  ⟨fun g ↦ IsTrivial.out (f g)⟩
+
+
+
 
 end Monoid
 

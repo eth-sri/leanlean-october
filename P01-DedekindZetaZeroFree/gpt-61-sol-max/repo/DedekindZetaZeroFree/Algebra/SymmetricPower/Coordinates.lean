@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Algebra.SymmetricPower.BasisAndTrace
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 The Tau Ceti contributors. All rights reserved.
@@ -96,7 +99,7 @@ theorem repr_basis_symmetricPower_tprod_const_ne_zero {u : M}
     (b.symmetricPower n).repr (⨂ₛ[R] (_ : Fin n), u) s ≠ 0 := by
   classical
 
-  have : Finite κ := Finite.of_injective
+  have  := Finite.of_injective
     (fun k : κ => (⟨k, Finsupp.mem_support_iff.2 (hu k)⟩ : {j // j ∈ (b.repr u).support}))
     fun _ _ h => congrArg Subtype.val h
   have := Fintype.ofFinite κ

@@ -1,6 +1,9 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Metaplectic.Kubota.ComplexCharactersHaarAndSU2Splitting
+
 
 noncomputable section
 
@@ -10,7 +13,7 @@ namespace DedekindZetaZeroFree.TraceHaarTransport
 
 @[expose] public def standardComplexParameter : ℂˣ :=
   Units.mk0 ((4 * Real.pi : ℝ) : ℂ) (by
-    exact Complex.ofReal_ne_zero.mpr (mul_pos (by norm_num) Real.pi_pos).ne')
+    apply Complex.ofReal_ne_zero.mpr <;> aesop)
 
 public theorem standard_complex_mass :
     KPCplxCharacterHaar.characterHaar standardComplexParameter =

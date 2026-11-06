@@ -20,29 +20,29 @@ def integerCompacts (q : KPFinitePlace F) :
     rw [(valuation (q.adicCompletion F)).isOpen_integer.interior_eq]
     exact ⟨0, by simp⟩
 
-def localData (R : PrincipalMellin.ActualRecipe S η) (q : KPFinitePlace F) :
-    MomentSources.LocalImageData R q where
-  inducing := KPLocalExceptionalConstruction.actualCanonicalInducing F R.A.zeta12
-    R.A.primitive_zeta12 q
-    (Classical.choice (KPExceptionalRaw.exists_rawFiniteInducingData F R.A.zeta12
-      R.A.primitive_zeta12 q))
-  haar := Measure.addHaarMeasure (integerCompacts q)
-  haar_integer := Measure.addHaarMeasure_self
 
-def bad (R : PrincipalMellin.ActualRecipe S η) : Finset (KPHilbert.Place F) :=
-  Finset.univ.image Sum.inl ∪ R.A.Sf.image Sum.inr
 
-theorem bad_exact (R : PrincipalMellin.ActualRecipe S η) (p : KPHilbert.Place F) :
-    p ∈ bad R ↔ (∃ w : InfinitePlace F, p = Sum.inl w) ∨
-      (∃ q : KPFinitePlace F, p = Sum.inr q ∧ q ∈ R.A.Sf) := by
-  simp only [bad, Finset.mem_union, Finset.mem_image, Finset.mem_univ, true_and]
-  constructor
-  · rintro (⟨w, hw⟩ | ⟨q, hq, he⟩)
-    · exact Or.inl ⟨w, hw.symm⟩
-    · exact Or.inr ⟨q, he.symm, hq⟩
-  · rintro (⟨w, hw⟩ | ⟨q, he, hq⟩)
-    · exact Or.inl ⟨w, hw.symm⟩
-    · exact Or.inr ⟨q, hq, he.symm⟩
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 theorem finiteSet_nonempty (A : SArithmeticData F) : A.Sf.Nonempty := by
   let p : Ideal ℤ := Ideal.span {(2 : ℤ)}

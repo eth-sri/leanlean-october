@@ -62,9 +62,12 @@ theorem mean_zero_real_test_has_primitive
   intro x
   exact f.continuous.deriv_integral f (-R) x
 
- theorem smooth_fiber_convolution (F : ℝ × ℝ → ℂ)
+ section
+variable (F : ℝ × ℝ → ℂ)
     (hF : ContDiff ℝ (⊤ : ℕ∞) F) (R : ℝ)
     (hzero : ∀ x y, x ∉ Icc (-R) R → F (x,y) = 0)
+include F hF R hzero
+theorem smooth_fiber_convolution  
     (u : ℝ → ℝ) (hu : LocallyIntegrable u volume) :
     ContDiff ℝ (⊤ : ℕ∞)
       (fun p : ℝ × ℝ => ∫ t : ℝ, u t • F (p.1-t,p.2)) := by
@@ -82,9 +85,7 @@ theorem mean_zero_real_test_has_primitive
           rfl)
   simpa [convolution_def, g, contDiffOn_univ] using hc
 
- theorem smooth_fiber_integral (F : ℝ × ℝ → ℂ)
-    (hF : ContDiff ℝ (⊤ : ℕ∞) F) (R : ℝ)
-    (hzero : ∀ x y, x ∉ Icc (-R) R → F (x,y) = 0) :
+ theorem smooth_fiber_integral   :
     ContDiff ℝ (⊤ : ℕ∞) (fun y : ℝ => ∫ t : ℝ, F (t,y)) := by
   have hc := smooth_fiber_convolution F hF R hzero (fun _ => 1)
     (locallyIntegrable_const (1 : ℝ))
@@ -97,9 +98,7 @@ theorem mean_zero_real_test_has_primitive
     exact integral_neg_eq_self (fun t : ℝ => F (t,y)) volume
   simpa only [Function.comp_def, heq] using hc'
 
- theorem smooth_fiber_lower_integral (F : ℝ × ℝ → ℂ)
-    (hF : ContDiff ℝ (⊤ : ℕ∞) F) (R : ℝ)
-    (hzero : ∀ x y, x ∉ Icc (-R) R → F (x,y) = 0) :
+ theorem smooth_fiber_lower_integral   :
     ContDiff ℝ (⊤ : ℕ∞)
       (fun p : ℝ × ℝ => ∫ t in Iio p.1, F (t,p.2)) := by
   classical
@@ -120,6 +119,8 @@ theorem mean_zero_real_test_has_primitive
     · simp [ht, show ¬ p.1 - t < p.1 by linarith]
   rw [← heq]
   exact hc
+end
+
 
  theorem hasDerivAt_lower_integral (f : ℝ → ℂ) (hf : Continuous f)
     (hfi : Integrable f) (x : ℝ) :
@@ -478,8 +479,11 @@ private theorem weighted_comp_bound (s : ℝ) (K : Compacts ℂ) (r : ℝ) (hr :
       exact hb i hin u huA
     _ = _ := by rw [Finset.sum_mul]; apply Finset.sum_congr rfl; intros; ring
 
-private theorem fixed_support_bound (s : ℝ)
+section
+variable (s : ℝ)
     (E : 𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ) →ₗ[ℂ] PrincipalSeries s)
+include s E
+private theorem fixed_support_bound  
     (hE : ∀ φ, openCoordinate (E φ) = φ)
     (K : Compacts ℂ) (n : ℕ) : ∃ C : ℝ, 0 ≤ C ∧ ∀ φ : 𝓓_{K}(ℂ, ℂ),
       chartSeminorm s n (E (TestFunction.ofSupportedIn (Set.subset_univ _) φ)) ≤
@@ -527,8 +531,7 @@ private theorem fixed_support_bound (s : ℝ)
     · exact (Metric.nonempty_closedBall.mpr zero_le_one).image _
     · rintro _ ⟨u, hu, rfl⟩; exact hinf u hu
 
-theorem affine_extension_continuous (s : ℝ)
-    (E : 𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ) →ₗ[ℂ] PrincipalSeries s)
+theorem affine_extension_continuous  
     (hE : ∀ φ : 𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ),
       openCoordinate (E φ) = φ) :
     Continuous E := by
@@ -548,6 +551,8 @@ theorem affine_extension_continuous (s : ℝ)
   simp only [Seminorm.smul_apply, NNReal.smul_def, smul_eq_mul, Real.coe_toNNReal C hC]
   change chartSeminorm s n (E (TestFunction.ofSupportedIn hK φ)) ≤ _
   exact hb φ
+end
+
 
 end DedekindZetaZeroFree.KPCplxOpenCellTranslationInvariance
 
@@ -573,7 +578,10 @@ noncomputable def translateTestFunction (t : ℂ)
 @[simp] theorem translateTestFunction_apply (t x : ℂ) (φ : OpenCellTestFunction) :
     translateTestFunction t φ x = φ (x + t) := rfl
 
-theorem supportedAwayInfinity_iff_hasCompactSupport (s : ℝ) (f : PrincipalSeries s) :
+section
+variable (s : ℝ)
+include s
+theorem supportedAwayInfinity_iff_hasCompactSupport   (f : PrincipalSeries s) :
     SupportedAwayInfinity s f ↔ HasCompactSupport (openCoordinate f) := by
   constructor
   · rintro ⟨ε, hε, hf⟩
@@ -611,7 +619,7 @@ theorem supportedAwayInfinity_iff_hasCompactSupport (s : ℝ) (f : PrincipalSeri
         (Filter.Tendsto.congr' heq.symm tendsto_const_nhds)
     · exact hz u hu0 hu
 
-theorem testFunction_extendsSmoothly (s : ℝ) (φ : OpenCellTestFunction) :
+theorem testFunction_extendsSmoothly   (φ : OpenCellTestFunction) :
     ExtendsSmoothly s φ := by
   obtain ⟨R, hR, hbound⟩ := φ.hasCompactSupport.exists_pos_le_norm
   let H : ℂ → ℂ := fun u => if u = 0 then 0 else (transitionWeight s u : ℂ) * φ u⁻¹
@@ -639,14 +647,14 @@ theorem testFunction_extendsSmoothly (s : ℝ) (φ : OpenCellTestFunction) :
     filter_upwards [eventually_ne_nhds hu] with v hv
     simp only [H, if_neg hv, Function.comp_apply]
 
-noncomputable def testFunctionSection (s : ℝ) (φ : OpenCellTestFunction) : PrincipalSeries s :=
+noncomputable def testFunctionSection   (φ : OpenCellTestFunction) : PrincipalSeries s :=
   Classical.choose ((openCoordinate_range s φ).mpr (testFunction_extendsSmoothly s φ))
 
-@[simp] theorem testFunctionSection_coordinate (s : ℝ) (φ : OpenCellTestFunction) :
+@[simp] theorem testFunctionSection_coordinate   (φ : OpenCellTestFunction) :
     openCoordinate (testFunctionSection s φ) = φ :=
   Classical.choose_spec ((openCoordinate_range s φ).mpr (testFunction_extendsSmoothly s φ))
 
-noncomputable def testFunctionSectionLinear (s : ℝ) :
+noncomputable def testFunctionSectionLinear   :
     OpenCellTestFunction →ₗ[ℂ] PrincipalSeries s where
   toFun := testFunctionSection s
   map_add' φ χ := by
@@ -663,6 +671,8 @@ noncomputable def testFunctionSectionLinear (s : ℝ) :
       c * openCoordinate (testFunctionSection s φ) x
     simp only [testFunctionSection_coordinate]
     rfl
+end
+
 
 private theorem upperUnipotent_add (x t : ℂ) :
     upperUnipotent x * upperUnipotent t = upperUnipotent (x + t) := by

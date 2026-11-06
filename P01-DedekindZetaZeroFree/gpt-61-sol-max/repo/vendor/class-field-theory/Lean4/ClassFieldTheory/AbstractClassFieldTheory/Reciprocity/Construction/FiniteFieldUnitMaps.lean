@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction.FrobeniusFixedFieldTower
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction.FrobeniusClosureCommutation
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction.FrobeniusFixedFieldAction
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -83,10 +86,8 @@ private theorem valuationAt_transport
   cases h
   rfl
 
-/-- A quotient element stabilizing a Frobenius fixed field preserves its
-normalized valuation. -/
-theorem valuationAt_frobeniusFixedFieldAction
-    (v : ValuationData D A)
+section
+variable (v : ValuationData D A)
     [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
     [TotallyDisconnectedSpace G]
     (K : DegreeData.FiniteResidueAbstractField D) (L : ClosedSubgroup G)
@@ -99,13 +100,18 @@ theorem valuationAt_frobeniusFixedFieldAction
       extensionSubgroup (baseField G)
         (D.frobeniusFixedField K L hLK σ)
         (le_baseField (D.frobeniusFixedField K L hLK σ)))]
+include v K L hLK hLnormal σ q hq
+/-- A quotient element stabilizing a Frobenius fixed field preserves its
+normalized valuation. -/
+theorem valuationAt_frobeniusFixedFieldAction
+     
     (a : ambientFixedAddSubgroup A
       (D.frobeniusFixedField K L hLK σ)) :
     v.valuationAt (D.frobeniusFixedAbstractField K L hLK σ)
         (D.frobeniusFixedFieldAction A K L hLK σ q hq a) =
       v.valuationAt (D.frobeniusFixedAbstractField K L hLK σ) a := by
   let TF := D.frobeniusFixedAbstractField K L hLK σ
-  let k : K.field.toSubgroup := Quotient.out q
+  let k  := Quotient.out q
   let hstable : conjugateClosedSubgroup TF.field k.1⁻¹ = TF.field :=
     D.conjugate_frobeniusFixedField_eq_of_commutes K L hLK σ q hq
   let CF := TF.conjugate k.1⁻¹
@@ -113,13 +119,12 @@ theorem valuationAt_frobeniusFixedFieldAction
   have hconj := v.normalizedValuation_conjugate TF k.1⁻¹ a
   let bC : ambientFixedAddSubgroup A C :=
     conjugateFixedElement A TF.field k.1⁻¹ a
-  have hCFTF : CF = TF := by
-    exact FiniteAbstractField.eq_of_field_eq CF TF hstable
+  have hCFTF  := FiniteAbstractField.eq_of_field_eq CF TF hstable
   let bT : ambientFixedAddSubgroup A TF.field := hCFTF ▸ bC
   have hbTcoe : bT.1 = bC.1 := by
-    exact ambientFixedAddSubgroup_transport_coe CF TF hCFTF bC
+    apply ambientFixedAddSubgroup_transport_coe
   have hvaluationTransport : v.valuationAt TF bT = v.valuationAt CF bC := by
-    exact v.valuationAt_transport CF TF hCFTF bC
+    apply v.valuationAt_transport
   have hbT : bT = D.frobeniusFixedFieldAction
       A K L hLK σ q hq a := by
     apply Subtype.ext
@@ -130,29 +135,17 @@ theorem valuationAt_frobeniusFixedFieldAction
       _ = A.ρ k.1 a.1 :=
         (conjugateFixedElement_coe A TF.field k.1⁻¹ a).trans
           (congrArg (fun s : G => A.ρ s a.1) (inv_inv k.1))
-      _ = (D.frobeniusFixedFieldAction A K L hLK σ q hq a).1 := by rfl
+      _ = (D.frobeniusFixedFieldAction A K L hLK σ q hq a).1 := rfl
   calc
     v.valuationAt TF (D.frobeniusFixedFieldAction A K L hLK σ q hq a) =
         v.valuationAt TF bT := congrArg (v.valuationAt TF) hbT.symm
     _ = v.valuationAt CF bC := hvaluationTransport
-    _ = v.valuationAt TF a := by simpa [CF, C, bC] using hconj
+    _ = v.valuationAt TF a := hconj
 
 /-- The stabilizing action restricted to the unit group of a Frobenius
 fixed field. -/
 noncomputable def frobeniusFixedFieldUnitAction
-    (v : ValuationData D A)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : DegreeData.FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK)
-    (q : K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK)
-    (hq : q * σ.1 = σ.1 * q)
-    [Finite ((baseField G).toSubgroup ⧸
-      extensionSubgroup (baseField G)
-        (D.frobeniusFixedField K L hLK σ)
-        (le_baseField (D.frobeniusFixedField K L hLK σ)))] :
+      :
     v.unitAddSubgroup (D.frobeniusFixedAbstractField K L hLK σ) →+
       v.unitAddSubgroup (D.frobeniusFixedAbstractField K L hLK σ) where
   toFun u := ⟨D.frobeniusFixedFieldAction A K L hLK σ q hq u.1, by
@@ -162,12 +155,17 @@ noncomputable def frobeniusFixedFieldUnitAction
         ((v.valuationAt_frobeniusFixedFieldAction K L hLK σ q hq u.1).trans u.2)⟩
   map_zero' := by apply Subtype.ext; exact map_zero _
   map_add' _ _ := by apply Subtype.ext; exact map_add _ _ _
+end
 
+
+section
+variable (v : ValuationData D A) (E : FiniteAbstractFieldExtension G)
+include v E
 /-- Units stay units after inclusion into any finite extension.  The construction
 uses this silently when all finitely many terms of `(*)` are placed in one
 finite Galois field. -/
 theorem fixedFieldInclusion_mem_unitAddSubgroup
-    (v : ValuationData D A) (E : FiniteAbstractFieldExtension G)
+     
     (u : v.unitAddSubgroup E.base) :
     fixedFieldInclusion A E.base.field E.field.field E.below u.1 ∈
       v.unitAddSubgroup E.field := by
@@ -177,22 +175,18 @@ theorem fixedFieldInclusion_mem_unitAddSubgroup
   apply zHatMulNat_injective ER.residueDegree.property
   change (ER.residueDegree : ℕ) •
       ((v.valuationAt E.field
-        (fixedFieldInclusion A E.base.field E.field.field E.below u.1) :
-        v.valueGroup) : ZHat) =
-    (ER.residueDegree : ℕ) • ((0 : v.valueGroup) : ZHat)
+        (fixedFieldInclusion A E.base.field E.field.field E.below u.1)) : ZHat) =
+    (ER.residueDegree : ℕ) • ((0) : ZHat)
   have htower :=
     v.normalizedValuation_tower E
       (fixedFieldInclusion A E.base.field E.field.field E.below u.1)
   have htower' :
       (ER.residueDegree : ℕ) •
           ((v.valuationAt E.field
-            (fixedFieldInclusion A E.base.field E.field.field E.below u.1) :
-            v.valueGroup) : ZHat) =
+            (fixedFieldInclusion A E.base.field E.field.field E.below u.1)) : ZHat) =
         ((v.valuationAt E.base
           (relativeNorm A E.base.field E.field.field E.below
-            (fixedFieldInclusion A E.base.field E.field.field E.below u.1)) :
-              v.valueGroup) : ZHat) := by
-    simpa [ER] using htower
+            (fixedFieldInclusion A E.base.field E.field.field E.below u.1))) : ZHat) := htower
   rw [htower']
   rw [show relativeNorm A E.base.field E.field.field E.below
       (fixedFieldInclusion A E.base.field E.field.field E.below u.1) =
@@ -204,7 +198,7 @@ theorem fixedFieldInclusion_mem_unitAddSubgroup
 
 /-- Inclusion of units along an arbitrary finite extension. -/
 def finiteUnitInclusion
-    (v : ValuationData D A) (E : FiniteAbstractFieldExtension G) :
+      :
     v.unitAddSubgroup E.base →+ v.unitAddSubgroup E.field where
   toFun u := ⟨fixedFieldInclusion A E.base.field E.field.field E.below u.1,
     v.fixedFieldInclusion_mem_unitAddSubgroup E u⟩
@@ -214,7 +208,7 @@ def finiteUnitInclusion
 /-- Transporting a finite-unit inclusion along equality of its target field
 does not change its ambient coefficient. -/
 theorem finiteUnitInclusion_transport_coe
-    (v : ValuationData D A) (E : FiniteAbstractFieldExtension G)
+     
     (F : FiniteAbstractField G) (h : E.field = F)
     (u : v.unitAddSubgroup E.base) :
     (((h ▸ v.finiteUnitInclusion E u : v.unitAddSubgroup F).1 :
@@ -226,7 +220,7 @@ theorem finiteUnitInclusion_transport_coe
 This is the valuation-theoretic step used when a finite Galois refinement
 is pushed back down to the originally prescribed intermediate field. -/
 theorem relativeNorm_mem_unitAddSubgroup
-    (v : ValuationData D A) (E : FiniteAbstractFieldExtension G)
+     
     (u : v.unitAddSubgroup E.field) :
     relativeNorm A E.base.field E.field.field E.below u.1 ∈
       v.unitAddSubgroup E.base := by
@@ -235,21 +229,22 @@ theorem relativeNorm_mem_unitAddSubgroup
   have h := v.normalizedValuation_tower E u.1
   let ER := E.toFiniteResidueAbstractExtension D
   change (ER.residueDegree : ℕ) •
-      ((v.valuationAt E.field u.1 : v.valueGroup) : ZHat) =
+      ((v.valuationAt E.field u.1) : ZHat) =
     ((v.valuationAt E.base
-      (relativeNorm A E.base.field E.field.field E.below u.1) :
-        v.valueGroup) : ZHat) at h
+      (relativeNorm A E.base.field E.field.field E.below u.1)) : ZHat) at h
   have hu : v.valuationAt E.field u.1 = 0 := u.2
   simpa [hu] using h.symm
 
 /-- Relative norm restricted to the finite unit groups. -/
 def finiteUnitNorm
-    (v : ValuationData D A) (E : FiniteAbstractFieldExtension G) :
+      :
     v.unitAddSubgroup E.field →+ v.unitAddSubgroup E.base where
   toFun u := ⟨relativeNorm A E.base.field E.field.field E.below u.1,
     v.relativeNorm_mem_unitAddSubgroup E u⟩
   map_zero' := by apply Subtype.ext; exact map_zero _
   map_add' _ _ := by apply Subtype.ext; exact map_add _ _ _
+end
+
 
 end ValuationData
 end

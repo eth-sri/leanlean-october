@@ -34,18 +34,23 @@ variable {E V : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
   [NormedAddCommGroup V] [NormedSpace ℝ V] [CompleteSpace V]
 noncomputable def partialT (F : ℝ × E → V) (p : ℝ × E) : V :=
   fderiv ℝ (fun t => F (t,p.2)) p.1 1
-lemma partialT_smooth (F : ℝ × E → V) (hF : ContDiff ℝ (⊤ : ℕ∞) F) :
+section
+variable (F : ℝ × E → V) (hF : ContDiff ℝ (⊤ : ℕ∞) F)
+include F hF in
+lemma partialT_smooth   :
     ContDiff ℝ (⊤ : ℕ∞) (partialT F) := by
   have h : ContDiff ℝ (⊤ : ℕ∞) (fun p : ℝ × E =>
       fderiv ℝ (fun t => F (t,p.2)) p.1) :=
     (hF.comp (contDiff_snd.prodMk contDiff_fst.snd)).fderiv contDiff_fst (by simp)
   exact h.clm_apply contDiff_const
-lemma partialT_deriv (F : ℝ × E → V) (hF : ContDiff ℝ (⊤ : ℕ∞) F) (t : ℝ) (x : E) :
+include F hF in
+lemma partialT_deriv   (t : ℝ) (x : E) :
     HasDerivAt (fun s => F (s,x)) (partialT F (t,x)) t := by
   exact ((hF.comp (contDiff_id.prodMk contDiff_const)).differentiable (by simp) t).hasDerivAt
 noncomputable def extSlope (F : ℝ × E → V) (p : ℝ × E) : V :=
   ∫ s : ℝ in 0..1, partialT F (s * p.1, p.2)
-lemma extSlope_continuous (F : ℝ × E → V) (hF : ContDiff ℝ (⊤ : ℕ∞) F) :
+include F hF in
+lemma extSlope_continuous   :
     Continuous (extSlope F) := by
   apply intervalIntegral.continuous_parametric_intervalIntegral_of_continuous'
   exact (partialT_smooth F hF).continuous.comp
@@ -53,7 +58,8 @@ lemma extSlope_continuous (F : ℝ × E → V) (hF : ContDiff ℝ (⊤ : ℕ∞)
 lemma extSlope_zero (F : ℝ × E → V) (x : E) :
     extSlope F (0,x) = partialT F (0,x) := by
   simp [extSlope, intervalIntegral.integral_const]
-lemma extSlope_ne (F : ℝ × E → V) (hF : ContDiff ℝ (⊤ : ℕ∞) F)
+include F hF in
+lemma extSlope_ne  
     (t : ℝ) (ht : t ≠ 0) (x : E) :
     extSlope F (t,x) = t⁻¹ • (F (t,x) - F (0,x)) := by
   have h := intervalIntegral.integral_eq_sub_of_hasDerivAt
@@ -67,7 +73,8 @@ lemma extSlope_ne (F : ℝ × E → V) (hF : ContDiff ℝ (⊤ : ℕ∞) F)
   change extSlope F (t,x) = _
   rw [← h, intervalIntegral.integral_smul, smul_smul, inv_mul_cancel₀ ht, one_smul]
   rfl
-lemma slope_locally_uniform (F : ℝ × E → V) (hF : ContDiff ℝ (⊤ : ℕ∞) F)
+include F hF in
+lemma slope_locally_uniform  
     [WeaklyLocallyCompactSpace E] :
     TendstoLocallyUniformlyOn (fun t x => t⁻¹ • (F (t,x) - F (0,x)))
       (fun x => partialT F (0,x)) (𝓝[≠] (0:ℝ)) Set.univ := by
@@ -85,11 +92,13 @@ lemma slope_locally_uniform (F : ℝ × E → V) (hF : ContDiff ℝ (⊤ : ℕ�
     exact extSlope_ne F hF t ht x
   have h' := h.congr_inseparable (heq.mono (fun t ht x _ => Inseparable.of_eq (congrFun ht x)))
   simpa only [G, ContinuousMap.coe_mk, extSlope_zero] using h'
-lemma slice_smooth (F : ℝ × E → V) (hF : ContDiff ℝ (⊤ : ℕ∞) F) (t : ℝ) :
+include F hF in
+lemma slice_smooth   (t : ℝ) :
     ContDiff ℝ (⊤ : ℕ∞) (fun x => F (t,x)) :=
   hF.comp (contDiff_const.prodMk contDiff_id)
 
-lemma jets_partialT (F : ℝ × E → V) (hF : ContDiff ℝ (⊤ : ℕ∞) F)
+include F hF in
+lemma jets_partialT  
     [WeaklyLocallyCompactSpace E] (n : ℕ) :
     iteratedFDeriv ℝ n (fun x => partialT F (0,x)) =
       (fun x => partialT (fun p => iteratedFDeriv ℝ n (fun x => F (p.1,x)) p.2) (0,x)) := by
@@ -123,7 +132,8 @@ lemma jets_partialT (F : ℝ × E → V) (hF : ContDiff ℝ (⊤ : ℕ∞) F)
     have ht := L.hasFDerivAt.comp_hasDerivAt 0 (partialT_deriv K hK 0 x)
     change L (partialT K (0,x)) = deriv (fun t => L (K (t,x))) 0
     exact ht.deriv.symm
-lemma quotient_jets_uniform (F : ℝ × E → V) (hF : ContDiff ℝ (⊤ : ℕ∞) F)
+include F hF in
+lemma quotient_jets_uniform  
     [WeaklyLocallyCompactSpace E] (n : ℕ) (S : Set E) (hS : IsCompact S) :
     TendstoUniformlyOn (fun t x => iteratedFDeriv ℝ n
       (fun x => t⁻¹ • (F (t,x) - F (0,x))) x)
@@ -141,7 +151,8 @@ lemma quotient_jets_uniform (F : ℝ × E → V) (hF : ContDiff ℝ (⊤ : ℕ�
     fun_iteratedFDeriv_sub_apply ((slice_smooth F hF t).of_le (by simp)).contDiffAt
       ((slice_smooth F hF 0).of_le (by simp)).contDiffAt]
 
-lemma sup_jet_error_tendsto (F : ℝ × E → V) (hF : ContDiff ℝ (⊤ : ℕ∞) F)
+include F hF in
+lemma sup_jet_error_tendsto  
     [WeaklyLocallyCompactSpace E] (n : ℕ) (S : Set E) (hS : IsCompact S) (hne : S.Nonempty) :
     Tendsto (fun t => sSup ((fun x => ‖iteratedFDeriv ℝ n
       (fun x => t⁻¹ • (F (t,x) - F (0,x)) - partialT F (0,x)) x‖) '' S))
@@ -175,6 +186,8 @@ lemma sup_jet_error_tendsto (F : ℝ × E → V) (hF : ContDiff ℝ (⊤ : ℕ�
     change ‖iteratedFDeriv ℝ n (fun x => Q t x - P x) x‖ ≤ b / 2
     rw [heq]
     exact le_of_lt (by simpa [dist_eq_norm, norm_sub_rev, Q, P] using ht x hx)
+end
+
 end SmoothQuotient
 end RaisingTopology
 
@@ -258,9 +271,13 @@ theorem rowW_left (a d : ℂˣ) (b : ℂ) (g : ComplexGL2) :
   simp only [Complex.star_def, Complex.mul_conj']
   push_cast
   exact mul_div_mul_left _ _ (pow_ne_zero 2 (Complex.ofReal_ne_zero.mpr (norm_ne_zero_iff.mpr d.ne_zero)))
-noncomputable def harmonicFunction (s : ℝ) (ℓ : ℕ) (g : ComplexGL2) : ℂ :=
+section
+variable (s : ℝ) (ℓ : ℕ)
+include s ℓ in
+noncomputable def harmonicFunction   (g : ComplexGL2) : ℂ :=
   sphericalSection s g * rowW g ^ ℓ
-theorem harmonicFunction_mem (s : ℝ) (ℓ : ℕ) :
+include s ℓ in
+theorem harmonicFunction_mem   :
     harmonicFunction s ℓ ∈ principalSeriesSubmodule s := by
   apply (principalSeries_mem_iff s _).mpr
   constructor
@@ -278,7 +295,8 @@ theorem harmonicFunction_mem (s : ℝ) (ℓ : ℕ) :
     change m.det ≠ 0 at hm
     simp only [matrixFunction, dif_pos hm, harmonicFunction]
     rfl
-noncomputable def harmonicSection (s : ℝ) (ℓ : ℕ) : PrincipalSeries s :=
+include s ℓ in
+noncomputable def harmonicSection   : PrincipalSeries s :=
   ⟨harmonicFunction s ℓ, harmonicFunction_mem s ℓ⟩
 
 noncomputable def rowZ (m : Matrix (Fin 2) (Fin 2) ℂ) : ℂ := ((‖m 1 0‖ ^ 2 - ‖m 1 1‖ ^ 2 : ℝ) : ℂ) / (rowB m : ℂ)
@@ -306,7 +324,8 @@ theorem rowW_compact (k : ComplexSU2) :
 theorem rowZ_compact (k : ComplexSU2) : rowZ k = compactSphereCoordinate k 2 := by
   simp [rowZ, rowB_compact, compactSphereCoordinate]
 
-theorem harmonicSection_compact (s : ℝ) (ℓ : ℕ) :
+include s ℓ in
+theorem harmonicSection_compact   :
     compactRestriction s (harmonicSection s ℓ) = polynomialCompactRestriction (transverse ^ ℓ) := by
   ext k
   change sphericalSection s (complexSU2Embedding k) * rowW k ^ ℓ =
@@ -314,11 +333,13 @@ theorem harmonicSection_compact (s : ℝ) (ℓ : ℕ) :
   rw [spherical_compact, rowW_compact]
   simp [transverse]
 
-theorem harmonicSection_harmonic (s : ℝ) (ℓ : ℕ) :
+include s ℓ in
+theorem harmonicSection_harmonic   :
     harmonicSection s ℓ ∈ harmonicKType s ℓ := by
   exact ⟨transverse ^ ℓ, transverse_harmonic ℓ, (harmonicSection_compact s ℓ).symm⟩
 
-theorem height_harmonic_of_formula (s : ℝ) (ℓ : ℕ) (c : ℂ)
+include s ℓ in
+theorem height_harmonic_of_formula   (c : ℂ)
     (v : PrincipalSeries s)
     (hv : ∀ g, v g = c * rowZ g * harmonicSection s ℓ g) :
     v ∈ harmonicKType s (ℓ + 1) := by
@@ -332,7 +353,8 @@ theorem height_harmonic_of_formula (s : ℝ) (ℓ : ℕ) (c : ℂ)
   rw [spherical_compact, rowZ_compact, rowW_compact]
   simp [transverse, mul_assoc]
 
-theorem height_ne_zero_of_formula (s : ℝ) (ℓ : ℕ) (c : ℂ) (hc : c ≠ 0)
+include s ℓ in
+theorem height_ne_zero_of_formula   (c : ℂ) (hc : c ≠ 0)
     (v : PrincipalSeries s)
     (hv : ∀ g, v g = c * rowZ g * harmonicSection s ℓ g) : v ≠ 0 := by
   let g : ComplexGL2 := Matrix.GeneralLinearGroup.mkOfDetNeZero !![1, 0; 1, 2] (by
@@ -357,6 +379,8 @@ theorem height_ne_zero_of_formula (s : ℝ) (ℓ : ℕ) (c : ℂ) (hc : c ≠ 0)
   rw [hZ, hW] at hz
   exact (mul_ne_zero (mul_ne_zero hc (by norm_num))
     (mul_ne_zero hS (pow_ne_zero ℓ (by norm_num)))) hz
+end
+
 
 noncomputable def boostUnit (t : ℝ) : ℂˣ := Units.mk0 (Real.exp t : ℂ) (Complex.ofReal_ne_zero.mpr (Real.exp_ne_zero t))
 noncomputable def boost (t : ℝ) : ComplexGL2 := diagonal (boostUnit t)

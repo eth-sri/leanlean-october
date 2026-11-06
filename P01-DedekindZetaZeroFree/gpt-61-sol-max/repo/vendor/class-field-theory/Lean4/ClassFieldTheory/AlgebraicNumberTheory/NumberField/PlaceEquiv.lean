@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import Mathlib.NumberTheory.NumberField.Basic
 public import Mathlib.NumberTheory.NumberField.InfinitePlace.Ramification
 public import Mathlib.RingTheory.DedekindDomain.Ideal.Lemmas
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -34,13 +37,13 @@ namespace ClassFieldTheory
 
 universe u v
 
-/-- Finite places correspond via the induced equivalence of rings of integers. -/
-def finitePlaceEquivOfRingEquiv
-    {F : Type u} {G : Type v} [Field F] [Field G]
-    [NumberField F] [NumberField G] (e : F ≃+* G) :
-    HeightOneSpectrum (𝓞 F) ≃ HeightOneSpectrum (𝓞 G) :=
-  IsDedekindDomain.HeightOneSpectrum.equivOfRingEquiv
-    (NumberField.RingOfIntegers.mapRingEquiv e)
+
+
+
+
+
+
+
 
 /-- Infinite places correspond by pulling embeddings back along the inverse
 field equivalence. -/
@@ -51,19 +54,9 @@ def infinitePlaceEquivOfRingEquiv
   toFun w := w.comap e.symm.toRingHom
   invFun w := w.comap e.toRingHom
   left_inv w := by
-    change (w.comap e.symm.toRingHom).comap e.toRingHom = w
-    rw [← NumberField.InfinitePlace.comap_comp]
-    have hcomp : e.symm.toRingHom.comp e.toRingHom = RingHom.id F := by
-      ext x
-      simp
-    rw [hcomp, NumberField.InfinitePlace.comap_id]
+    simp_all [NumberField.InfinitePlace.comap_comp, NumberField.InfinitePlace.comap_id] <;> aesop
   right_inv w := by
-    change (w.comap e.toRingHom).comap e.symm.toRingHom = w
-    rw [← NumberField.InfinitePlace.comap_comp]
-    have hcomp : e.toRingHom.comp e.symm.toRingHom = RingHom.id G := by
-      ext x
-      simp
-    rw [hcomp, NumberField.InfinitePlace.comap_id]
+    simp_all [NumberField.InfinitePlace.comap_comp, NumberField.InfinitePlace.comap_id] <;> aesop
 
 end ClassFieldTheory
 

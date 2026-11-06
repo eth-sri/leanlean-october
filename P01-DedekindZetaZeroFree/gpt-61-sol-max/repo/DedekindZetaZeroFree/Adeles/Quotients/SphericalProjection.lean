@@ -306,18 +306,19 @@ private theorem forgetMap_continuous (V U : Level F ζ hζ)
     (g : Cover F ζ hζ) : Spherical F ζ hζ U :=
   Quotient.mk _ (archBasepoint F (e.symm g).1, (e.symm g).2)
 
-private theorem rawProjection_formula (U : Level F ζ hζ)
+section
+variable (U : Level F ζ hζ)
     (e : (KPSmoothActualFlowData.GInfinity F × KPFiniteCuspAtlas.FiniteCover F ζ hζ) ≃ₜ Cover F ζ hζ)
     (he : ∀ a c, e (a,c) = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a * c.val)
+include U e he
+private theorem rawProjection_formula  
     (a : KPSmoothActualFlowData.GInfinity F) (c : KPFiniteCuspAtlas.FiniteCover F ζ hζ) :
     rawProjection F ζ hζ U e (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a * c.val) =
       Quotient.mk _ (archBasepoint F a, c) := by
   rw [← he]
   simp [rawProjection]
 
- theorem rawProjection_rational (U : Level F ζ hζ)
-    (e : (KPSmoothActualFlowData.GInfinity F × KPFiniteCuspAtlas.FiniteCover F ζ hζ) ≃ₜ Cover F ζ hζ)
-    (he : ∀ a c, e (a,c) = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a * c.val)
+ theorem rawProjection_rational  
     (γ : KPCuspArithmetic.PGL2 F) (g : Cover F ζ hζ) :
     rawProjection F ζ hζ U e g = rawProjection F ζ hζ U e (rationalLift F ζ hζ γ * g) := by
   obtain ⟨ε, hε⟩ := rationalLift_split F ζ hζ γ
@@ -341,9 +342,7 @@ private theorem rawProjection_formula (U : Level F ζ hζ)
   rw [central_comm]
   simp
 
- def projection (U : Level F ζ hζ)
-    (e : (KPSmoothActualFlowData.GInfinity F × KPFiniteCuspAtlas.FiniteCover F ζ hζ) ≃ₜ Cover F ζ hζ)
-    (he : ∀ a c, e (a,c) = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a * c.val) :
+ def projection   :
     X F ζ hζ → Spherical F ζ hζ U :=
   Quotient.lift (rawProjection F ζ hζ U e) (by
     intro x y h
@@ -357,15 +356,15 @@ private theorem rawProjection_formula (U : Level F ζ hζ)
     rw [hy]
     exact rawProjection_rational F ζ hζ U e he γ x)
 
-private theorem projection_continuous (U : Level F ζ hζ)
-    (e : (KPSmoothActualFlowData.GInfinity F × KPFiniteCuspAtlas.FiniteCover F ζ hζ) ≃ₜ Cover F ζ hζ)
-    (he : ∀ a c, e (a,c) = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a * c.val) :
+private theorem projection_continuous   :
     Continuous (projection F ζ hζ U e he) := by
   apply isQuotientMap_quotient_mk'.continuous_iff.mpr
   change Continuous (rawProjection F ζ hζ U e)
   exact continuous_quotient_mk'.comp
     (((archBasepoint_continuous F).comp (continuous_fst.comp e.symm.continuous)).prodMk
       (continuous_snd.comp e.symm.continuous))
+end
+
 
 theorem spherical_transport_exists
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12) :

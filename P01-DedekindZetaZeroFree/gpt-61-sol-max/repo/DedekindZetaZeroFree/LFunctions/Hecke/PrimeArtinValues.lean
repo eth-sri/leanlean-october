@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 public import ClassFieldTheory.Definitions.FrobeniusAndHilbertClassFields.ArithmeticFrobeniusAt
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.AbelianQuotient
 
@@ -13,7 +16,7 @@ abbrev ComplexDual (G : Type*) [Group G] := G →* ℂˣ
 
 noncomputable instance instFintypeComplexDual (G : Type*) [CommGroup G] [Finite G] :
     Fintype (ComplexDual G) := by
-  letI : Fintype G := Fintype.ofFinite G
+  letI  := Fintype.ofFinite G
   exact Fintype.ofEquiv G
     (CommGroup.monoidHom_mulEquiv_of_hasEnoughRootsOfUnity G ℂ).some.toEquiv.symm
 

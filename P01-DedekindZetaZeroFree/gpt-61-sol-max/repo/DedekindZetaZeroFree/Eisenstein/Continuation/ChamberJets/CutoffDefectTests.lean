@@ -439,8 +439,11 @@ private theorem raw_test_smooth (f : S_U F ζ hζ U R P H) :
     IsSmoothSections F ζ hζ U R P H (scalarSections f) := by
   exact (Classical.choose_spec (scalar_gluing f)).1.1
 
+
+local notation:max "current_ActualChart" => ActualChart (U := U) (H := H)
+
 private theorem raw_test_laplacian_coefficient (f : S_U F ζ hζ U R P H)
-    (a : ActualChart (U := U) (H := H)) (x : omega a) :
+    (a : current_ActualChart) (x : omega a) :
     (isotropyChart a).coefficient
       (scalarSections (KPContActualSectorTestDifferentialDescent.δ_U
         (KPContActualSectorTestDifferentialDescent.D_U f))) x.val =
@@ -454,7 +457,7 @@ private theorem raw_test_laplacian_coefficient (f : S_U F ζ hζ U R P H)
   exact KPContActualSectorTestDifferentialDescentCalculus.coframe_calculus.2.2.2.2.1
     a (f.val a) (f.property.1 a) x
 
-private theorem raw_coefficient_formula (a : ActualChart (U := U) (H := H))
+private theorem raw_coefficient_formula (a : current_ActualChart)
     (s : Sections F ζ hζ U R P H) (x : KPContCotangentActualOverlap.M F) :
     (isotropyChart a).coefficient s x = (s a.component).val
       (KPContCotangentActualOverlap.labeledA
@@ -530,11 +533,11 @@ private theorem raw_cutoff_test_common_support
     rw [raw_test_laplacian_coefficient]
     rw [raw_test_representative]
 
-private theorem raw_omega_open (a : ActualChart (U := U) (H := H)) :
+private theorem raw_omega_open (a : current_ActualChart) :
     IsOpen (omega a) :=
   a.domain_open.preimage KPContActualGlobalGreen.contDiff_labeledA.continuous
 
-private theorem raw_coefficient_smooth (a : ActualChart (U := U) (H := H))
+private theorem raw_coefficient_smooth (a : current_ActualChart)
     (s : Sections F ζ hζ U R P H) (hs : IsSmoothSections F ζ hζ U R P H s) :
     ContDiff ℝ (⊤ : ℕ∞) ((isotropyChart a).coefficient s) := by
   have he : (isotropyChart a).coefficient s = fun x => (s a.component).val
@@ -543,7 +546,7 @@ private theorem raw_coefficient_smooth (a : ActualChart (U := U) (H := H))
   rw [he]
   exact (hs a.component).comp KPContActualGlobalGreen.contDiff_labeledA
 
-private theorem raw_chart_sub (a : ActualChart (U := U) (H := H))
+private theorem raw_chart_sub (a : current_ActualChart)
     (O : Set ℂ) (f g : ℂ → Sections F ζ hζ U R P H)
     (hf : ∀ s ∈ O, IsSmoothSections F ζ hζ U R P H (f s))
     (hg : ∀ s ∈ O, IsSmoothSections F ζ hζ U R P H (g s))
@@ -571,7 +574,7 @@ private theorem raw_chart_sub (a : ActualChart (U := U) (H := H))
 private theorem raw_cutoff_chart_holomorphic
     (r : KPContActualSectorCutoffGraphLimit.Cutoffs (U := U) (H := H)) (n : ℕ)
     (w : ℂ → KPContActualSectorCutoffGraphLimit.SmoothSection (U := U) (H := H))
-    (O : Set ℂ) (a : ActualChart (U := U) (H := H))
+    (O : Set ℂ) (a : current_ActualChart)
     (hh : KPContActualCompactSectionL2Jets.ChartHolomorphicOn a (fun s => (w s).val) O) :
     KPContActualCompactSectionL2Jets.ChartHolomorphicOn a
       (fun s => scalarSections (KPContActualSectorCutoffGraphLimit.cutoffTest r n (w s))) O := by
@@ -741,7 +744,7 @@ private theorem laplacian_congr (f g : M F → ℂ) (x : M F) (he : f =ᶠ[𝓝 
 
 private theorem raw_test_laplacian_chart_holomorphic
     (φ : ℂ → S_U F ζ hζ U R P H) (O : Set ℂ)
-    (a : ActualChart (U := U) (H := H))
+    (a : current_ActualChart)
     (hh : KPContActualCompactSectionL2Jets.ChartHolomorphicOn a
       (fun s => scalarSections (φ s)) O) :
     KPContActualCompactSectionL2Jets.ChartHolomorphicOn a
@@ -886,7 +889,7 @@ private theorem raw_laplacian_parameter_commute (W : Set (M F)) (hW : IsOpen W)
 
 open KPContSectorCoveredQuotientVocabulary
 private theorem shrink_at (i : Fin (H.atlas U).componentCount) (p : SymmetricSpace F) :
-    ∃ C : ActualChart (U := U) (H := H), C.component = i ∧ C.center = p ∧ p ∈ C.domain := by
+    ∃ C : current_ActualChart, C.component = i ∧ C.center = p ∧ p ∈ C.domain := by
   let O := Classical.choice (KPContSectorPhaseComponentCharts.orbifoldChart_exists F ζ hζ U R P H i p)
   letI : Finite (MulAction.stabilizer
       (KPContSectorPhaseComponentCharts.Component F ζ hζ U R P H i) p) :=
@@ -927,7 +930,7 @@ private theorem raw_test_laplacian_parameter_jets
     (hj : ∀ k s, s ∈ O → ∀ i x,
       (scalarSections (φ k s) i).val x =
         iteratedDerivWithin k (fun t => (scalarSections (φ 0 t) i).val x) O s)
-    (hh : ∀ a : ActualChart (U := U) (H := H),
+    (hh : ∀ a : current_ActualChart,
       KPContActualCompactSectionL2Jets.ChartHolomorphicOn a (fun s => scalarSections (φ 0 s)) O)
     (k : ℕ) (s : ℂ) (hs : s ∈ O) : ∀ i x,
       (scalarSections (KPContActualSectorTestDifferentialDescent.δ_U

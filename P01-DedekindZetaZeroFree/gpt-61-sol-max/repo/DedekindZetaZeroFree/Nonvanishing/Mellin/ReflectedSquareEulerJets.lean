@@ -1,16 +1,19 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Poisson.SquareTransformCoprimeSummationAndResidues
 public import DedekindZetaZeroFree.HarmonicAnalysis.Mellin.InverseSpectrumEulerDerivatives
 
 @[expose] public section
+
 
 section
 
 noncomputable section
 namespace DedekindZetaZeroFree.LargeSieve.ReflectedSquareDerivatives
 
-def inverseWeight (D : ℝ) (r : ℕ) (W : ℝ → ℂ) (x : ℝ) : ℂ :=
+def inverseWeight (D : ℝ) (r : ℕ) (W : ℝ → ℂ) (x : ℝ)  :=
   if 0 < x then mellinInv 2 (reflectedSquareSpectrum D r W) x else 0
 
 end DedekindZetaZeroFree.LargeSieve.ReflectedSquareDerivatives
@@ -30,7 +33,7 @@ theorem identify_inverseWeight
     (hD : 0 < D) (hr : 1 ≤ r) (hW : ContDiff ℝ ∞ W)
     (hsupp : Function.support W ⊆ Set.Icc a b) (ha : 0 < a) (hab : a < b) :
     SquareSecondPass.reflectedTransform D r W = inverseWeight D r W := by
-  have hc : HasCompactSupport W :=
+  have hc  :=
     HasCompactSupport.of_support_subset_isCompact isCompact_Icc hsupp
   have hlines : ∀ (c d x : ℝ), 0 < c → c < 3 → 0 < d → d < 3 → 0 < x →
       mellinInv c (reflectedSquareSpectrum D r W) x =
@@ -50,7 +53,7 @@ theorem identify_inverseWeight
     unfold mellinInv
     congr 1
     apply MeasureTheory.integral_congr_ae
-    filter_upwards [MeasureTheory.Measure.ae_ne (MeasureTheory.volume : MeasureTheory.Measure ℝ) 0]
+    filter_upwards [MeasureTheory.Measure.ae_ne MeasureTheory.volume 0]
       with t ht
     have hsi : (((3 / 2 : ℝ) : ℂ) + (t : ℂ) * Complex.I).im ≠ 0 := by
       simpa using ht
@@ -83,9 +86,12 @@ noncomputable section
 open scoped Classical ContDiff
 namespace DedekindZetaZeroFree.LargeSieve.ReflectedSquareDerivatives
 
-private lemma rapid (D : ℝ) (r : ℕ) (W : ℝ → ℂ) (a b : ℝ)
+section
+variable (D : ℝ) (r : ℕ) (W : ℝ → ℂ) (a b : ℝ)
     (hD : 0 < D) (hr : 1 ≤ r) (hW : ContDiff ℝ ∞ W)
     (hsupp : Function.support W ⊆ Set.Icc a b) (ha : 0 < a) (hab : a < b)
+include D r W a b hD hr hW hsupp ha hab
+private lemma rapid  
     (u v : ℝ) (hu : 0 < u) (huv : u ≤ v) (n : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ σ t : ℝ, u ≤ σ → σ ≤ v → 1 ≤ |t| →
       (1 + |t|) ^ n * ‖reflectedSquareSpectrum D r W ((σ : ℂ) + (t : ℂ) * Complex.I)‖ ≤ C := by
@@ -93,9 +99,7 @@ private lemma rapid (D : ℝ) (r : ℕ) (W : ℝ → ℂ) (a b : ℝ)
     reflectedSquareSpectrum_rapid_bound D r W a b u v n hD hr hW hsupp ha hab hu huv
   exact ⟨C, hC.le, fun σ t hσ hσv _ => hbound σ ⟨hσ, hσv⟩ t⟩
 
-private lemma weighted_integrable (D : ℝ) (r : ℕ) (W : ℝ → ℂ) (a b : ℝ)
-    (hD : 0 < D) (hr : 1 ≤ r) (hW : ContDiff ℝ ∞ W)
-    (hsupp : Function.support W ⊆ Set.Icc a b) (ha : 0 < a) (hab : a < b)
+private lemma weighted_integrable  
     (c : ℝ) (hc : 0 < c) (j : ℕ) :
     MeasureTheory.Integrable (fun t : ℝ =>
       (-((c : ℂ) + (t : ℂ) * Complex.I)) ^ j *
@@ -145,9 +149,7 @@ private lemma weighted_integrable (D : ℝ) (r : ℕ) (W : ℝ → ℂ) (a b : �
     hhol hrapid c hc (by linarith)).1
 
 theorem inverseWeight_regularity
-    (D : ℝ) (r : ℕ) (W : ℝ → ℂ) (a b : ℝ)
-    (hD : 0 < D) (hr : 1 ≤ r) (hW : ContDiff ℝ ∞ W)
-    (hsupp : Function.support W ⊆ Set.Icc a b) (ha : 0 < a) (hab : a < b) :
+      :
     ContDiffOn ℝ ∞ (inverseWeight D r W) (Set.Ioi 0) ∧
       ∀ (j : ℕ) (c x : ℝ), 0 < c → 0 < x →
         Vendor.EulerIter j (inverseWeight D r W) x =
@@ -186,6 +188,8 @@ theorem inverseWeight_regularity
         rw [he.deriv_eq]
     exact (hjet j x hx).trans
       (Vendor.InverseSpectrumEuler.EulerIter_eq_mellinInv c K (hint c hc) j x hx)
+end
+
 
 end DedekindZetaZeroFree.LargeSieve.ReflectedSquareDerivatives
 
@@ -220,9 +224,7 @@ private lemma uniform_abs_rpow_neg_two_le (t : ℝ) :
   rw [div_le_div_iff₀ (by positivity) (by positivity)]
   nlinarith [abs_nonneg t, sq_abs t, sq_nonneg t]
 
-private lemma uniform_integrable_one_add_abs_rpow_neg_two :
-    Integrable (fun t : ℝ => (1 + |t|) ^ (-2 : ℝ)) := by
-  simpa using (integrable_one_add_norm (E := ℝ) (μ := volume) (r := 2) (by simp))
+private def uniform_integrable_one_add_abs_rpow_neg_two  := (integrable_one_add_norm (E := ℝ) (μ := volume) (r := 2) (by simp))
 
 private lemma uniform_integral_one_add_abs_rpow_neg_two_le :
     ∫ t : ℝ, (1 + |t|) ^ (-2 : ℝ) ≤ 2 * Real.pi := by
@@ -262,7 +264,7 @@ private lemma uniform_norm_mellinInv_le (c x A : ℝ) (g : ℂ → ℂ) (hx : 0 
     simp [Complex.neg_re, Complex.add_re, Complex.mul_re, Complex.I_re, Complex.ofReal_re]
   have hmaj_int : Integrable (fun t : ℝ => x ^ (-c) * A * (1 + |t|) ^ (-2 : ℝ)) := by
     have h := (uniform_integrable_one_add_abs_rpow_neg_two.const_mul (x ^ (-c) * A))
-    simpa [mul_assoc] using h
+    exact h
   have hle : ∫ t, ‖F t‖ ≤ ∫ t, x ^ (-c) * A * (1 + |t|) ^ (-2 : ℝ) := by
     apply integral_mono_of_nonneg (Filter.Eventually.of_forall (fun t => norm_nonneg (F t))) hmaj_int
     apply Filter.Eventually.of_forall
@@ -283,8 +285,7 @@ private lemma uniform_norm_mellinInv_le (c x A : ℝ) (g : ℂ → ℂ) (hx : 0 
     congr 1
   rw [hInv, norm_smul, hscal]
   calc (1 / (2 * Real.pi)) * ‖∫ t, F t‖
-      ≤ (1 / (2 * Real.pi)) * ∫ t, ‖F t‖ := by
-        exact mul_le_mul_of_nonneg_left (norm_integral_le_integral_norm F) (by positivity)
+      ≤ (1 / (2 * Real.pi)) * ∫ t, ‖F t‖ := mul_le_mul_of_nonneg_left (norm_integral_le_integral_norm F) (by positivity)
     _ ≤ (1 / (2 * Real.pi)) * (x ^ (-c) * A * ∫ t, (1 + |t|) ^ (-2 : ℝ)) := by
         apply mul_le_mul_of_nonneg_left _ (by positivity)
         rw [← hIeq]; exact hle
@@ -316,7 +317,7 @@ theorem inverseWeight_uniform_euler_jet
     reflectedSquareSpectrum_uniform_rapid_bound D r a b u v (j + 2) hD hr ha hab hu huv
   refine ⟨N, C0 * (v + 1) ^ j, by positivity, ?_⟩
   intro W hW hsupp q hq
-  have hS : 0 ≤ Vendor.S b N W := Vendor.S_nonneg b (by linarith) N W hW
+  have hS  := Vendor.S_nonneg b (by linarith) N W hW
   have hδmem : δ ∈ Set.Icc u v :=
     ⟨by rw [hu_def]; exact min_le_left _ _, by rw [hv_def]; exact le_max_left _ _⟩
   have hmem : ((n : ℝ) + 1) ∈ Set.Icc u v :=
@@ -336,7 +337,7 @@ theorem inverseWeight_uniform_euler_jet
           ≤ (C0 * Vendor.S b N W * (v + 1) ^ j) * (1 + |t|) ^ (-2 : ℝ) := by
       intro t
       have hrp := hrap W hW hsupp c hc t
-      have hs : ‖(c : ℂ) + (t : ℂ) * Complex.I‖ ≤ (v + 1) * (1 + |t|) :=
+      have hs  :=
         uniform_norm_add_mul_I_le c t v (le_of_lt hcpos) hcv hv0
       have hu : 0 < 1 + |t| := by positivity
       have hnorm :
@@ -361,8 +362,7 @@ theorem inverseWeight_uniform_euler_jet
               mul_le_mul_of_nonneg_right hsp (norm_nonneg _)
           _ = (v + 1) ^ j
                 * ((1 + |t|) ^ j * ‖reflectedSquareSpectrum D r W ((c : ℂ) + (t : ℂ) * Complex.I)‖) := by ring
-      have h2 : (1 + |t|) ^ j * ‖reflectedSquareSpectrum D r W ((c : ℂ) + (t : ℂ) * Complex.I)‖
-          ≤ (C0 * Vendor.S b N W) * (1 + |t|) ^ (-2 : ℝ) :=
+      have h2  :=
         uniform_jet_mul_bound (1 + |t|) hu j (C0 * Vendor.S b N W)
           ‖reflectedSquareSpectrum D r W ((c : ℂ) + (t : ℂ) * Complex.I)‖ hrp
       calc ‖(c : ℂ) + (t : ℂ) * Complex.I‖ ^ q
@@ -379,7 +379,7 @@ theorem inverseWeight_uniform_euler_jet
       _ = C0 * (v + 1) ^ j * Vendor.S b N W * x ^ (-c) := by ring
   refine ⟨?_, ?_⟩
   · intro x hx0 hx1
-    simpa using step δ hδmem x hx0
+    apply step <;> assumption
   · intro x hx1
     have hlt : (0 : ℝ) < x := lt_of_lt_of_le zero_lt_one hx1
     calc ‖Vendor.EulerIter q (inverseWeight D r W) x‖
@@ -403,10 +403,13 @@ open scoped Classical ContDiff
 
 namespace DedekindZetaZeroFree.LargeSieve
 
-theorem EulerIter_reflectedSquareTransform_eq_mellinInv
-    (D : ℝ) (r : ℕ) (W : ℝ → ℂ) (a b : ℝ)
+section
+variable (D : ℝ) (r : ℕ) (W : ℝ → ℂ) (a b : ℝ)
     (hD : 0 < D) (hr : 1 ≤ r) (hW : ContDiff ℝ ∞ W)
     (hsupp : Function.support W ⊆ Set.Icc a b) (ha : 0 < a) (hab : a < b)
+include D r W a b hD hr hW hsupp ha hab
+theorem EulerIter_reflectedSquareTransform_eq_mellinInv
+     
     (j : ℕ) (c x : ℝ) (hc : 0 < c) (hx : 0 < x) :
     Vendor.EulerIter j (SquareSecondPass.reflectedTransform D r W) x =
       mellinInv c (fun s : ℂ => (-s) ^ j * reflectedSquareSpectrum D r W s) x := by
@@ -415,18 +418,14 @@ theorem EulerIter_reflectedSquareTransform_eq_mellinInv
     hD hr hW hsupp ha hab).2 j c x hc hx
 
 theorem reflectedSquareTransform_contDiffOn
-    (D : ℝ) (r : ℕ) (W : ℝ → ℂ) (a b : ℝ)
-    (hD : 0 < D) (hr : 1 ≤ r) (hW : ContDiff ℝ ∞ W)
-    (hsupp : Function.support W ⊆ Set.Icc a b) (ha : 0 < a) (hab : a < b) :
+      :
     ContDiffOn ℝ ∞ (SquareSecondPass.reflectedTransform D r W) (Set.Ioi 0) := by
   rw [ReflectedSquareDerivatives.identify_inverseWeight D r W a b hD hr hW hsupp ha hab]
   exact (ReflectedSquareDerivatives.inverseWeight_regularity D r W a b
     hD hr hW hsupp ha hab).1
 
 theorem reflectedSquareTransform_euler_two_ended_bound
-    (D : ℝ) (r : ℕ) (W : ℝ → ℂ) (a b : ℝ)
-    (hD : 0 < D) (hr : 1 ≤ r) (hW : ContDiff ℝ ∞ W)
-    (hsupp : Function.support W ⊆ Set.Icc a b) (ha : 0 < a) (hab : a < b)
+     
     (j n : ℕ) (δ : ℝ) (hδ : 0 < δ) :
     ∃ C : ℝ, 0 < C ∧
       (∀ x : ℝ, 0 < x → x ≤ 1 →
@@ -454,6 +453,8 @@ theorem reflectedSquareTransform_euler_two_ended_bound
         apply mul_le_mul_of_nonneg_right _ (Real.rpow_nonneg (by linarith) _)
         have := le_max_left (C * Vendor.S b N W) 0
         linarith
+end
+
 
 end DedekindZetaZeroFree.LargeSieve
 

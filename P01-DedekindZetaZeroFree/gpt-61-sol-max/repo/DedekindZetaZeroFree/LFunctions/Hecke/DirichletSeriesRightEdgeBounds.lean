@@ -45,9 +45,12 @@ private theorem right_edge_of_bound (F : Type) [Field F] [NumberField F]
   refine ⟨hf, (norm_tsum_le_tsum_norm hf.norm).trans ?_⟩
   exact hf.norm.tsum_le_tsum hb hw
 
-theorem heckeDirichlet_right_edge (F : Type) [Field F] [NumberField F]
+section
+variable (F : Type) [Field F] [NumberField F]
     (σ : ℝ) (hσ : 1 < σ) (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥)
-    (η : RayClassCharacter F 𝔪) (s : ℂ) (hs : σ ≤ s.re) :
+    (η : RayClassCharacter F 𝔪) (s : ℂ) (hs : σ ≤ s.re)
+include F σ hσ 𝔪 h𝔪 η s hs
+theorem heckeDirichlet_right_edge   :
     Summable (fun I : Ideal (𝓞 F) => η I * (Ideal.absNorm I : ℂ) ^ (-s)) ∧
       ‖∑' I : Ideal (𝓞 F), η I * (Ideal.absNorm I : ℂ) ^ (-s)‖ ≤
         idealAbsoluteSum F σ := by
@@ -55,9 +58,7 @@ theorem heckeDirichlet_right_edge (F : Type) [Field F] [NumberField F]
   · exact (η.eq_zero_iff' ⊥).mpr (Or.inl rfl)
   · exact RayUnitary.ray_character_norm_le_one F 𝔪 h𝔪 η
 
-theorem conjugateHeckeDirichlet_right_edge (F : Type) [Field F] [NumberField F]
-    (σ : ℝ) (hσ : 1 < σ) (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥)
-    (η : RayClassCharacter F 𝔪) (s : ℂ) (hs : σ ≤ s.re) :
+theorem conjugateHeckeDirichlet_right_edge   :
     Summable (fun I : Ideal (𝓞 F) =>
       (starRingEnd ℂ) (η I) * (Ideal.absNorm I : ℂ) ^ (-s)) ∧
       ‖∑' I : Ideal (𝓞 F),
@@ -68,13 +69,13 @@ theorem conjugateHeckeDirichlet_right_edge (F : Type) [Field F] [NumberField F]
   · intro I
     simpa using RayUnitary.ray_character_norm_le_one F 𝔪 h𝔪 η I
 
-theorem heckeDirichlet_hasSum_norm_le (F : Type) [Field F] [NumberField F]
-    (σ : ℝ) (hσ : 1 < σ) (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥)
-    (η : RayClassCharacter F 𝔪) (s : ℂ) (hs : σ ≤ s.re) (v : ℂ)
+theorem heckeDirichlet_hasSum_norm_le   (v : ℂ)
     (hv : HasSum (fun I : Ideal (𝓞 F) => η I * (Ideal.absNorm I : ℂ) ^ (-s)) v) :
     ‖v‖ ≤ idealAbsoluteSum F σ := by
   rw [← hv.tsum_eq]
   exact (heckeDirichlet_right_edge F σ hσ 𝔪 h𝔪 η s hs).2
+end
+
 
 end
 

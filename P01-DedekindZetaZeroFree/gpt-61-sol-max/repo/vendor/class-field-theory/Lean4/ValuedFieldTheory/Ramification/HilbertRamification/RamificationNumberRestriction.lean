@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Ramification.HilbertRamification.OrbitPolynomialIdeal
 public import ValuedFieldTheory.Ramification.HilbertRamification.FixedFieldRamificationIndex
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -47,7 +50,7 @@ def cosetRamificationNumberSum
     (H : Subgroup Gal(L/K)) (sigma : Gal(L/K))
     (z : target.valuationSubring) : ℕ∞ := by
   classical
-  letI : Fintype H := Fintype.ofFinite H
+  letI  := Fintype.ofFinite H
   exact ∑ tau : H, ramificationNumberOfUniqueExtension
     (base := base) (target := target) huniq z (sigma * tau)
 
@@ -66,7 +69,7 @@ theorem addVal_cosetGeneratorDisplacementProduct
       cosetRamificationNumberSum
         (base := base) (target := target) huniq H sigma z := by
   classical
-  let : Fintype H := Fintype.ofFinite H
+  let  := Fintype.ofFinite H
   unfold cosetGeneratorDisplacementProductDVF
   simp only [cosetRamificationNumberSum,
     ramificationNumberOfUniqueExtension]
@@ -85,27 +88,27 @@ theorem addVal_cosetGeneratorDisplacementProduct
     | @insert tau s htau ih =>
         rw [Finset.prod_insert htau, Finset.sum_insert htau,
           IsDiscreteValuationRing.addVal_mul, ih]
-  simpa using hprod Finset.univ
+  exact hprod Finset.univ
 
 variable [Algebra.IsSeparable base.residueField target.residueField]
 
-/-- The canonical coset sum, with its monogenic integral generator hidden. -/
-def intrinsicCosetRamificationNumberSum
-    (huniq :
+section
+variable (huniq :
       RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
         base target)
-    (H : Subgroup Gal(L/K)) (sigma : Gal(L/K)) : ℕ∞ := by
+    (H : Subgroup Gal(L/K))
+include huniq H
+/-- The canonical coset sum, with its monogenic integral generator hidden. -/
+def intrinsicCosetRamificationNumberSum
+      (sigma : Gal(L/K)) : ℕ∞ := by
   classical
-  letI : Fintype H := Fintype.ofFinite H
+  letI  := Fintype.ofFinite H
   exact ∑ tau : H, intrinsicRamificationNumberOfUniqueExtension
     (base := base) (target := target) huniq (sigma * tau)
 
 /-- States the theorem `cosetRamificationNumberSum_eq_intrinsic`. -/
 theorem cosetRamificationNumberSum_eq_intrinsic
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) (sigma : Gal(L/K))
+      (sigma : Gal(L/K))
     {z : target.valuationSubring}
     (hz : Algebra.adjoin base.valuationSubring
       ({z} : Set target.valuationSubring) = ⊤) :
@@ -114,7 +117,7 @@ theorem cosetRamificationNumberSum_eq_intrinsic
       intrinsicCosetRamificationNumberSum
         (base := base) (target := target) huniq H sigma := by
   classical
-  let : Fintype H := Fintype.ofFinite H
+  let  := Fintype.ofFinite H
   simp only [cosetRamificationNumberSum,
     intrinsicCosetRamificationNumberSum,
     intrinsicRamificationNumberOfUniqueExtension]
@@ -133,10 +136,7 @@ For `M = L ^ H` and `sigma' = sigma|_M`,
 
 The statement also covers the identity, where both sides are infinite. -/
 theorem ramificationIndex_nsmul_fixedFieldRamificationNumber_eq_cosetSum
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) [H.Normal]
+      [H.Normal]
     (sigma : Gal(L/K)) :
     fixedFieldRamificationIndex
           (target := target) H •
@@ -168,17 +168,12 @@ theorem ramificationIndex_nsmul_fixedFieldRamificationNumber_eq_cosetSum
     rw [← hspanJ, Ideal.map_span, Set.image_singleton]
   have hideal :
       Ideal.span (Set.singleton (cosetGeneratorDisplacementProductDVF
-          (base := base) (target := target) huniq H sigma z) :
-        Set target.valuationSubring) =
+          (base := base) (target := target) huniq H sigma z)) =
         Ideal.span ({j g} : Set target.valuationSubring) := by
     rw [span_cosetGeneratorDisplacementProduct_eq_map_fixedFieldDisplacementIdeal
       (base := base) (target := target) huniq H sigma hz]
     exact hmapJ
-  have hadd :
-      IsDiscreteValuationRing.addVal target.valuationSubring
-          (cosetGeneratorDisplacementProductDVF
-            (base := base) (target := target) huniq H sigma z) =
-        IsDiscreteValuationRing.addVal target.valuationSubring (j g) :=
+  have hadd  :=
     (IsDiscreteValuationRing.addVal_eq_iff_associated _ _).2
       (Ideal.span_singleton_eq_span_singleton.mp hideal)
   have hfixed :
@@ -207,6 +202,8 @@ theorem ramificationIndex_nsmul_fixedFieldRamificationNumber_eq_cosetSum
         (base := base) (target := target) huniq H sigma :=
       cosetRamificationNumberSum_eq_intrinsic
         (base := base) (target := target) huniq H sigma hz
+end
+
 
 end Higher
 end RamificationTheory.HilbertRamification

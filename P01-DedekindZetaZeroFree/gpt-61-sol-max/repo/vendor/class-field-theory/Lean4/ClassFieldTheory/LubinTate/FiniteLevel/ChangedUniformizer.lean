@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.LubinTate.FiniteLevel.NormSubgroup
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.ValuationSubringUnits.RangeRestriction
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.ValuationSubringUnits.CyclicValueGroup
@@ -14,6 +16,7 @@ public import ValuedFieldTheory.LocalField.DiscreteValuationField.ValuationSubri
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.ValuationSubringUnits.ValuedExtensionUnitMap
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -68,8 +71,7 @@ variable {K : Type u} [Field K]
 /-- The unit change `uπ` of a chosen integral uniformizer. -/
 def standardLubinTateChangedUniformizer
     (F : LocalField.{u, v} K) (π : F.valuationSubring)
-    (u : F.valuationSubringˣ) :
-    F.valuationSubring :=
+    (u : F.valuationSubringˣ) : F.valuationSubring :=
   (u : F.valuationSubring) * π
 
 /-- The changed parameter is literally the unit factor times the original
@@ -81,48 +83,42 @@ theorem standardLubinTateChangedUniformizer_eq_unit_mul
       (u : F.valuationSubring) * π :=
   rfl
 
+section
+variable {F : LocalField.{u, v} K} {π : F.valuationSubring}
+    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
+    (u : F.valuationSubringˣ)
+include F π hπ u
 /-- Multiplication by a valuation-ring unit preserves the uniformizer
 property. -/
-theorem standardLubinTateChangedUniformizer_isUniformizer
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) :
+theorem standardLubinTateChangedUniformizer_isUniformizer :
     F.toCompleteDVF.valuation.IsUniformizer
-      (standardLubinTateChangedUniformizer F π u : K) := by
-  exact hπ.of_associated
+      (standardLubinTateChangedUniformizer F π u : K) := hπ.of_associated
     (associated_unit_mul_right π (u : F.valuationSubring) u.isUnit)
 
 /-- The standard finite Lubin--Tate level attached to the changed
 uniformizer `uπ`. -/
 abbrev standardLubinTateChangedLevelField
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ) :=
+      (n : ℕ) :=
   standardLubinTateLevelField
     (standardLubinTateChangedUniformizer_isUniformizer hπ u) n
 
 /-- The chosen primitive generator of the changed standard level. -/
 noncomputable abbrev standardLubinTateChangedLevelGenerator
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ) :
-    standardLubinTateChangedLevelField hπ u n :=
+      (n : ℕ)  :=
   standardLubinTateLevelGenerator
     (standardLubinTateChangedUniformizer_isUniformizer hπ u) n
 
-/-- The local norm subgroup of the changed standard level. -/
-def standardLubinTateChangedNormSubgroup
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ) :
-    Subgroup Kˣ :=
-  standardLubinTateNormSubgroup
-    (standardLubinTateChangedUniformizer_isUniformizer hπ u) n
+
+
+
+
+
+end
+
 
 /-- A valuation-ring unit regarded as a unit of the base field. -/
 noncomputable def standardLubinTateUnitFactorFieldUnit
-    (F : LocalField.{u, v} K) (u : F.valuationSubringˣ) :
-    Kˣ :=
+    (F : LocalField.{u, v} K) (u : F.valuationSubringˣ)  :=
   CompleteDVF.valuationSubringUnitsToFieldUnits F.toCompleteDVF u
 
 /-- The unit-factor inclusion has the expected underlying field element. -/
@@ -130,59 +126,53 @@ noncomputable def standardLubinTateUnitFactorFieldUnit
 theorem standardLubinTateUnitFactorFieldUnit_coe
     (F : LocalField.{u, v} K) (u : F.valuationSubringˣ) :
     (standardLubinTateUnitFactorFieldUnit F u : K) =
-      (u : F.valuationSubring) := by
-  exact CompleteDVF.coe_valuationSubringUnitsToFieldUnits_apply
+      (u : F.valuationSubring) := CompleteDVF.coe_valuationSubringUnitsToFieldUnits_apply
     F.toCompleteDVF u
 
+section
+variable {F : LocalField.{u, v} K} {π : F.valuationSubring}
+    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
+    (u : F.valuationSubringˣ)
+include F π hπ u
 /-- The changed uniformizer, regarded as a nonzero base-field unit. -/
 noncomputable def standardLubinTateChangedUniformizerUnit
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) :
-    Kˣ :=
+       :=
   standardLubinTateBaseUniformizerUnit
     (standardLubinTateChangedUniformizer_isUniformizer hπ u)
 
 /-- The changed uniformizer unit has underlying field element `uπ`. -/
 @[simp]
 theorem standardLubinTateChangedUniformizerUnit_coe
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) :
+      :
     (standardLubinTateChangedUniformizerUnit hπ u : K) =
       (standardLubinTateChangedUniformizer F π u : K) := by
-  exact standardLubinTateBaseUniformizerUnit_coe
-    (standardLubinTateChangedUniformizer_isUniformizer hπ u)
+  apply standardLubinTateBaseUniformizerUnit_coe
 
 /-- In the base-field unit group, the changed uniformizer is the product
 of the included valuation-ring unit and the original uniformizer. -/
 theorem standardLubinTateChangedUniformizerUnit_eq_unit_mul
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) :
+      :
     standardLubinTateChangedUniformizerUnit hπ u =
       standardLubinTateUnitFactorFieldUnit F u *
         standardLubinTateBaseUniformizerUnit hπ := by
   apply Units.ext
   simp [standardLubinTateChangedUniformizer]
 
-/-- Equivalently, the unit factor is the quotient of the changed and
-original uniformizers. -/
-theorem standardLubinTateUnitFactorFieldUnit_eq_changed_mul_uniformizer_inv
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) :
-    standardLubinTateUnitFactorFieldUnit F u =
-      standardLubinTateChangedUniformizerUnit hπ u *
-        (standardLubinTateBaseUniformizerUnit hπ)⁻¹ := by
-  rw [standardLubinTateChangedUniformizerUnit_eq_unit_mul]
-  simp
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The negative primitive generator at the changed level has norm `uπ`. -/
 theorem standardLubinTateChanged_norm_neg_levelGenerator
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ) :
+      (n : ℕ) :
     Algebra.norm K
         (-standardLubinTateChangedLevelGenerator hπ u n) =
       (standardLubinTateChangedUniformizer F π u : K) :=
@@ -191,13 +181,8 @@ theorem standardLubinTateChanged_norm_neg_levelGenerator
 
 /-- The changed uniformizer is an actual norm from its own standard
 finite level. -/
-theorem standardLubinTateChangedUniformizerUnit_mem_changedNormSubgroup
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ) :
-    standardLubinTateChangedUniformizerUnit hπ u ∈
-      standardLubinTateChangedNormSubgroup hπ u n := by
-  exact standardLubinTateBaseUniformizerUnit_mem_normSubgroup
+def standardLubinTateChangedUniformizerUnit_mem_changedNormSubgroup
+      (n : ℕ)  := standardLubinTateBaseUniformizerUnit_mem_normSubgroup
     (standardLubinTateChangedUniformizer_isUniformizer hπ u) n
 
 /-- Inside the original level's norm subgroup, the changed uniformizer
@@ -206,9 +191,7 @@ step used after transporting the changed-level norm through a future
 finite-level intertwining equivalence. -/
 theorem
     standardLubinTateChangedUniformizerUnit_mem_standardNormSubgroup_iff
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ) :
+      (n : ℕ) :
     standardLubinTateChangedUniformizerUnit hπ u ∈
         standardLubinTateNormSubgroup hπ n ↔
       standardLubinTateUnitFactorFieldUnit F u ∈
@@ -230,27 +213,27 @@ theorem
     change standardLubinTateUnitFactorFieldUnit F u * ϖ ∈ N
     exact N.mul_mem hu hϖ
 
-/-- The inverse changed uniformizer gives the same norm-membership test. -/
-theorem
-    standardLubinTateChangedUniformizerUnit_inv_mem_standardNormSubgroup_iff
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ) :
-    (standardLubinTateChangedUniformizerUnit hπ u)⁻¹ ∈
-        standardLubinTateNormSubgroup hπ n ↔
-      standardLubinTateUnitFactorFieldUnit F u ∈
-        standardLubinTateNormSubgroup hπ n := by
-  let N := standardLubinTateNormSubgroup hπ n
-  constructor
-  · intro hinv
-    apply
-      (standardLubinTateChangedUniformizerUnit_mem_standardNormSubgroup_iff
-        hπ u n).1
-    simpa using N.inv_mem hinv
-  · intro hu
-    exact N.inv_mem
-      ((standardLubinTateChangedUniformizerUnit_mem_standardNormSubgroup_iff
-        hπ u n).2 hu)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- An actual equivalence from the changed level to the original level
 transports the changed prime-element norm and therefore makes the unit
@@ -259,16 +242,12 @@ terminal step of a changed-uniformizer comparison; constructing `e` is the
 remaining substantive input. -/
 theorem
     standardLubinTateUnitFactorFieldUnit_mem_standardNormSubgroup_of_algEquiv
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ)
+      (n : ℕ)
     (e : standardLubinTateChangedLevelField hπ u n ≃ₐ[K]
       standardLubinTateLevelField hπ n) :
     standardLubinTateUnitFactorFieldUnit F u ∈
       standardLubinTateNormSubgroup hπ n := by
-  have hchanged :
-      standardLubinTateChangedUniformizerUnit hπ u ∈
-        standardLubinTateChangedNormSubgroup hπ u n :=
+  have hchanged  :=
     standardLubinTateChangedUniformizerUnit_mem_changedNormSubgroup
       hπ u n
   have htransport :
@@ -295,6 +274,8 @@ theorem
   exact
     (standardLubinTateChangedUniformizerUnit_mem_standardNormSubgroup_iff
       hπ u n).1 htransport
+end
+
 
 end LubinTate
 

@@ -49,11 +49,14 @@ theorem integralSpectralSection_value (q : KPFinitePlace F)
   simpa only [integralSpectralSection, integralCompactProfile,
     LinearEquiv.apply_symm_apply] using h
 
-theorem coreFlatInsertion_scattering_stage
-    (t : RestrictedTensorSimple.Level (bad R.A P C))
+section
+variable (t : RestrictedTensorSimple.Level (bad R.A P C))
     (x : ∀ j : t.val, Plus R.A P C j.val) (g : Raw R.A)
     (q : KPFinitePlace F) (hq : Sum.inr q ∈ t.val)
     (hg : ∀ v, v ∉ t.val → localValue R.A P C v (g v) (plusReference R.A P C v) = reference R.A P C v)
+include t x g q hq hg in
+theorem coreFlatInsertion_scattering_stage
+     
     (s : ℂ) (y : q.adicCompletion F) :
     (coreFlatInsertion R P C (RestrictedTensorSimple.stageInclusion _ _ _ t
       (PiTensorProduct.tprod ℂ x))).val s
@@ -142,11 +145,9 @@ theorem spectral_forward_contraction (q : KPFinitePlace F)
   conv_rhs => rw [hex out]
   simp only [map_sum, map_smul, smul_eq_mul]
 
+include t x g q hq hg in
 theorem coreFlatInsertion_scattering_stage_integral
-    (t : RestrictedTensorSimple.Level (bad R.A P C))
-    (x : ∀ j : t.val, Plus R.A P C j.val) (g : Raw R.A)
-    (q : KPFinitePlace F) (hq : Sum.inr q ∈ t.val)
-    (hg : ∀ v, v ∉ t.val → localValue R.A P C v (g v) (plusReference R.A P C v) = reference R.A P C v)
+     
     (μ : Measure (q.adicCompletion F)) [μ.IsAddHaarMeasure]
     (hμ : μ ((valuation (q.adicCompletion F)).integer : Set _) = 1)
     (s : ℂ) (hs : KPRankOneShellContinuation.convergenceHalfPlane .plus s) :
@@ -175,6 +176,8 @@ theorem coreFlatInsertion_scattering_stage_integral
       (fun j => localValue R.A P C j.val (g j.val) (x j)))
   exact ⟨hi.1.const_mul _, (integral_const_mul _ _).trans (congrArg (fun z =>
     Complex.exp (s * (awayHeight R P C q g : ℂ)) * z) hi.2)⟩
+end
+
 
 end DedekindZetaZeroFree.FourierContinuation.LiteralSource
 

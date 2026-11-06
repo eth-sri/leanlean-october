@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Valuation.DiscreteValuationField.Complete
 public import Mathlib.RingTheory.AdicCompletion.Topology
 public import Mathlib.Topology.Algebra.Valued.ValuedField
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -37,27 +40,30 @@ namespace Valuations
 
 open DiscreteValuationField
 
-/-- The valuation ring of a rank-one discrete valued field is a discrete
-valuation ring. -/
-theorem rankOneDiscreteValuationSubring_isDiscreteValuationRing
-    {K : Type u} [Field K] {Gamma : Type v}
-    [LinearOrderedCommGroupWithZero Gamma]
-    [Valued K Gamma]
-    [(Valued.v : Valuation K Gamma).IsRankOneDiscrete] :
-    IsDiscreteValuationRing
-      (Valued.v : Valuation K Gamma).valuationSubring := by
-  let F : DVF.{u, v} K :=
-    { ValueGroup := Gamma
-      valuation := Valued.v }
-  exact F.valuationSubring_isDiscreteValuationRing
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+section
+variable {K : Type u} [Field K] {Gamma : Type v}
+    [LinearOrderedCommGroupWithZero Gamma] [MulArchimedean Gamma]
+    [Valued K Gamma]
+    [(Valued.v : Valuation K Gamma).IsRankOneDiscrete]
+include K Gamma
 /-- The native subtype topology on the valuation ring of a rank-one discrete
 valued field is its maximal-ideal adic topology. -/
 theorem rankOneDiscreteValuationSubring_isAdic
-    {K : Type u} [Field K] {Gamma : Type v}
-    [LinearOrderedCommGroupWithZero Gamma] [MulArchimedean Gamma]
-    [Valued K Gamma]
-    [(Valued.v : Valuation K Gamma).IsRankOneDiscrete] :
+      :
     IsAdic
       (IsLocalRing.maximalIdeal
         (Valued.v : Valuation K Gamma).valuationSubring) := by
@@ -92,9 +98,7 @@ theorem rankOneDiscreteValuationSubring_isAdic
       h_open_ball.preimage continuous_subtype_val
     convert h_preimage_open using 1
     ext x
-    exact
-      (ValuationTheory.DiscreteValuationField.Valuation.mem_maximalIdeal_pow_iff_valuation_le_uniformizer_pow
-          (val := val) (pi := pi) hpi n)
+    apply ValuationTheory.DiscreteValuationField.Valuation.mem_maximalIdeal_pow_iff_valuation_le_uniformizer_pow <;> assumption
   · intro s hs
     rcases
         (mem_nhds_subtype (val.valuationSubring : Set K)
@@ -124,21 +128,13 @@ theorem rankOneDiscreteValuationSubring_isAdic
       _ = ((Valuation.IsRankOneDiscrete.generator val) ^ n : Gamma) := by
             simp [map_pow, hpi.val]
       _ < MonoidWithZeroHom.ValueGroup₀.embedding (f := (val : K →*₀ Gamma)) gamma.1 := by
-        have hn_coe := Units.val_lt_val.mp hn
-        change
-          ((Valuation.IsRankOneDiscrete.generator val : Gammaˣ) : Gamma) ^ n <
-            MonoidWithZeroHom.ValueGroup₀.embedding
-              (f := (val : K →*₀ Gamma)) gamma.1 at hn_coe
-        exact hn_coe
+        assumption
 
 /-- Completeness of a rank-one discrete valued field produces adic
 completeness of its valuation ring; no adic-completeness assumption is
 exposed. -/
 theorem rankOneDiscreteValuationSubring_isAdicComplete
-    {K : Type u} [Field K] {Gamma : Type v}
-    [LinearOrderedCommGroupWithZero Gamma] [MulArchimedean Gamma]
-    [Valued K Gamma]
-    [(Valued.v : Valuation K Gamma).IsRankOneDiscrete]
+     
     [CompleteSpace K] :
     IsAdicComplete
       (IsLocalRing.maximalIdeal
@@ -157,10 +153,7 @@ theorem rankOneDiscreteValuationSubring_isAdicComplete
 /-- A complete rank-one discrete valued field, equipped with its distinguished
 valuation, gives a `CompleteDVF` by construction. -/
 noncomputable def completeDVFOfCompleteValuedField
-    {K : Type u} [Field K] {Gamma : Type v}
-    [LinearOrderedCommGroupWithZero Gamma] [MulArchimedean Gamma]
-    [Valued K Gamma]
-    [(Valued.v : Valuation K Gamma).IsRankOneDiscrete]
+     
     [CompleteSpace K] :
     CompleteDVF.{u, v} K where
   ValueGroup := Gamma
@@ -168,6 +161,8 @@ noncomputable def completeDVFOfCompleteValuedField
   instCompleteDiscrete :=
     { isRankOneDiscrete := inferInstance
       isAdicComplete := rankOneDiscreteValuationSubring_isAdicComplete }
+end
+
 
 end Valuations
 end

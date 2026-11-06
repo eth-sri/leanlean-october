@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Ideals.DyadicNormBlocks
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.OperatorNormBounds
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve.Sieve
 
@@ -14,9 +17,9 @@ variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
 private lemma one_le_dyadicScale (i : ℕ) : 1 ≤ dyadicScale i := by
   cases i with
   | zero => simp [dyadicScale]
-  | succ k => simp only [dyadicScale]; exact one_le_pow₀ (show (1 : ℝ) ≤ 2 by norm_num)
+  | succ k => simp only [dyadicScale]; apply one_le_pow₀ <;> aesop
 
-private lemma dyadicScale_nonneg (i : ℕ) : 0 ≤ dyadicScale i :=
+private def dyadicScale_nonneg (i : ℕ)  :=
   le_trans zero_le_one (one_le_dyadicScale i)
 
 private lemma rpow_one_eq_one (η : ℝ) : Real.rpow (1 : ℝ) η = 1 := by
@@ -48,7 +51,7 @@ private lemma card_idealDyadicBlock_le (A : ℝ) (hA1 : 1 ≤ A)
     have h := hAset (2 * (2 : ℝ) ^ k) hk
       (paperShell F c ((2 : ℝ) ^ k))
       (fun I hI => ((mem_paperShell F c ((2 : ℝ) ^ k) I).mp hI).2.2.2)
-    simpa [idealDyadicBlock, dyadicScale] using h
+    exact h
 
 private lemma mem_block_squarefree (j : ℕ) {b : Ideal (𝓞 F)}
     (hb : b ∈ idealDyadicBlock F c j) : Squarefree b ∧ b ⊔ c = ⊤ := by
@@ -58,7 +61,7 @@ private lemma mem_block_squarefree (j : ℕ) {b : Ideal (𝓞 F)}
     subst hb
     exact ⟨by rw [show (⊤ : Ideal (𝓞 F)) = 1 by simp]; exact squarefree_one, by simp⟩
   | succ k =>
-    have hb' : b ∈ paperShell F c ((2 : ℝ) ^ k) := by simpa [idealDyadicBlock] using hb
+    have hb' : b ∈ paperShell F c ((2 : ℝ) ^ k) := hb
     obtain ⟨h1, h2, -, -⟩ := (mem_paperShell F c ((2 : ℝ) ^ k) b).mp hb'
     exact ⟨h1, h2⟩
 
@@ -82,7 +85,7 @@ private lemma sum_sq_le_card_mul_energy (Q : DedekindZetaZeroFree.QuadraticHecke
     (hSsf : ∀ b ∈ S, Squarefree b ∧ b ⊔ c = ⊤) :
     ∑ a ∈ R, ‖∑ b ∈ S, lam b * (Q.χ b) a‖ ^ 2
       ≤ (R.card : ℝ) * (S.card : ℝ) * ∑ b ∈ S, ‖lam b‖ ^ 2 := by
-  have hE0 : 0 ≤ ∑ b ∈ S, ‖lam b‖ ^ 2 := Finset.sum_nonneg (fun b _ => by positivity)
+  
   calc ∑ a ∈ R, ‖∑ b ∈ S, lam b * (Q.χ b) a‖ ^ 2
       ≤ ∑ _a ∈ R, (S.card : ℝ) * ∑ b ∈ S, ‖lam b‖ ^ 2 :=
         Finset.sum_le_sum (fun a _ => norm_row_le_card_mul Q S lam hSsf a)
@@ -95,9 +98,9 @@ private lemma arith_zero_row (C A η α : ℝ) (hA1 : 1 ≤ A) (hC : 2 * A ≤ C
     2 * A * x * E ≤ C * Real.rpow x η * (1 + Real.rpow x α) * E := by
   have hC0 : 0 ≤ C := by linarith
   have hx0 : 0 ≤ x := le_trans zero_le_one hx1
-  have hX : 1 ≤ Real.rpow x η := one_le_rpow' x hx1 η hη.le
-  have hY : x ≤ Real.rpow x α := rpow_ge_self x hx1 α hα1
-  have hY0 : 0 ≤ Real.rpow x α := rpow_nonneg' x hx0 α
+  have hX  := one_le_rpow' x hx1 η hη.le
+  have hY  := rpow_ge_self x hx1 α hα1
+  
   have h1Y0 : 0 ≤ 1 + Real.rpow x α := by linarith
   have h1 : 2 * A * x ≤ C * x := mul_le_mul_of_nonneg_right hC hx0
   have h2 : C * x ≤ C * (1 + Real.rpow x α) :=
@@ -113,7 +116,7 @@ private lemma arith_zero_col (C A η α : ℝ) (hA1 : 1 ≤ A) (hC : 2 * A ≤ C
     2 * A * m * E ≤ C * Real.rpow m η * (m + 1) * E := by
   have hC0 : 0 ≤ C := by linarith
   have hm0 : 0 ≤ m := le_trans zero_le_one hm1
-  have hX : 1 ≤ Real.rpow m η := one_le_rpow' m hm1 η hη.le
+  have hX  := one_le_rpow' m hm1 η hη.le
   have hm10 : 0 ≤ m + 1 := by linarith
   have h1 : 2 * A * m ≤ C * m := mul_le_mul_of_nonneg_right hC hm0
   have h2 : C * m ≤ C * (m + 1) := mul_le_mul_of_nonneg_left (by linarith) hC0
@@ -147,12 +150,12 @@ theorem bilinear_endpoint_exponent_extension
   rcases i with _ | i' <;> rcases j with _ | j'
   ·
     have hR1 : (R.card : ℝ) ≤ 1 := by
-      have hsub : R ⊆ ({⊤} : Finset (Ideal (𝓞 F))) := by simpa [idealDyadicBlock] using hR
+      have hsub : R ⊆ ({⊤} : Finset (Ideal (𝓞 F))) := hR
       calc (R.card : ℝ) ≤ (({⊤} : Finset (Ideal (𝓞 F))).card : ℝ) :=
             by exact_mod_cast Finset.card_le_card hsub
         _ = 1 := by simp
     have hS1 : (S.card : ℝ) ≤ 1 := by
-      have hsub : S ⊆ ({⊤} : Finset (Ideal (𝓞 F))) := by simpa [idealDyadicBlock] using hS
+      have hsub : S ⊆ ({⊤} : Finset (Ideal (𝓞 F))) := hS
       calc (S.card : ℝ) ≤ (({⊤} : Finset (Ideal (𝓞 F))).card : ℝ) :=
             by exact_mod_cast Finset.card_le_card hsub
         _ = 1 := by simp
@@ -166,7 +169,7 @@ theorem bilinear_endpoint_exponent_extension
     rw [one_mul] at hstep
     refine le_trans hstep ?_
     have h2C : (1 : ℝ) ≤ max (2 * A) Cexp * 1 * (1 + 1) := by
-      have : (1 : ℝ) ≤ max (2 * A) Cexp := hC1
+      have  := hC1
       nlinarith
     calc ∑ b ∈ S, ‖lam b‖ ^ 2 = 1 * ∑ b ∈ S, ‖lam b‖ ^ 2 := by rw [one_mul]
       _ ≤ (max (2 * A) Cexp * 1 * (1 + 1)) * ∑ b ∈ S, ‖lam b‖ ^ 2 :=
@@ -176,7 +179,7 @@ theorem bilinear_endpoint_exponent_extension
           simp only [dyadicScale, one_mul, rpow_one_eq_one]
   ·
     have hR1 : (R.card : ℝ) ≤ 1 := by
-      have hsub : R ⊆ ({⊤} : Finset (Ideal (𝓞 F))) := by simpa [idealDyadicBlock] using hR
+      have hsub : R ⊆ ({⊤} : Finset (Ideal (𝓞 F))) := hR
       calc (R.card : ℝ) ≤ (({⊤} : Finset (Ideal (𝓞 F))).card : ℝ) :=
             by exact_mod_cast Finset.card_le_card hsub
         _ = 1 := by simp
@@ -186,9 +189,7 @@ theorem bilinear_endpoint_exponent_extension
     have hSsf : ∀ b ∈ S, Squarefree b ∧ b ⊔ c = ⊤ := fun b hb => mem_block_squarefree (j' + 1) (hS hb)
     have hE0 : 0 ≤ ∑ b ∈ S, ‖lam b‖ ^ 2 := Finset.sum_nonneg (fun b _ => by positivity)
     have hprod : (R.card : ℝ) * (S.card : ℝ) ≤ 2 * A * dyadicScale (j' + 1) := by
-      calc (R.card : ℝ) * (S.card : ℝ) ≤ 1 * (A * (2 * dyadicScale (j' + 1))) :=
-            mul_le_mul hR1 hScard (Nat.cast_nonneg _) zero_le_one
-        _ = 2 * A * dyadicScale (j' + 1) := by ring
+      nlinarith
     have hstep : ∑ a ∈ R, ‖∑ b ∈ S, lam b * (Q.χ b) a‖ ^ 2
         ≤ 2 * A * dyadicScale (j' + 1) * ∑ b ∈ S, ‖lam b‖ ^ 2 :=
       le_trans (sum_sq_le_card_mul_energy Q R S lam hSsf)
@@ -199,7 +200,7 @@ theorem bilinear_endpoint_exponent_extension
       (2 ^ j') (one_le_pow₀ (show (1 : ℝ) ≤ 2 by norm_num) (n := j')) _ hE0
   ·
     have hS1 : (S.card : ℝ) ≤ 1 := by
-      have hsub : S ⊆ ({⊤} : Finset (Ideal (𝓞 F))) := by simpa [idealDyadicBlock] using hS
+      have hsub : S ⊆ ({⊤} : Finset (Ideal (𝓞 F))) := hS
       calc (S.card : ℝ) ≤ (({⊤} : Finset (Ideal (𝓞 F))).card : ℝ) :=
             by exact_mod_cast Finset.card_le_card hsub
         _ = 1 := by simp
@@ -209,13 +210,7 @@ theorem bilinear_endpoint_exponent_extension
     have hSsf : ∀ b ∈ S, Squarefree b ∧ b ⊔ c = ⊤ := fun b hb => mem_block_squarefree 0 (hS hb)
     have hE0 : 0 ≤ ∑ b ∈ S, ‖lam b‖ ^ 2 := Finset.sum_nonneg (fun b _ => by positivity)
     have hprod : (R.card : ℝ) * (S.card : ℝ) ≤ 2 * A * dyadicScale (i' + 1) := by
-      have hb0 : 0 ≤ A * (2 * dyadicScale (i' + 1)) := by
-        have hA0 : 0 ≤ A := le_trans zero_le_one hA1
-        have := dyadicScale_nonneg (i' + 1)
-        positivity
-      calc (R.card : ℝ) * (S.card : ℝ) ≤ (A * (2 * dyadicScale (i' + 1))) * 1 :=
-            mul_le_mul hRcard hS1 (Nat.cast_nonneg _) hb0
-        _ = 2 * A * dyadicScale (i' + 1) := by ring
+      nlinarith
     have hstep : ∑ a ∈ R, ‖∑ b ∈ S, lam b * (Q.χ b) a‖ ^ 2
         ≤ 2 * A * dyadicScale (i' + 1) * ∑ b ∈ S, ‖lam b‖ ^ 2 :=
       le_trans (sum_sq_le_card_mul_energy Q R S lam hSsf)
@@ -227,8 +222,7 @@ theorem bilinear_endpoint_exponent_extension
   ·
     have hR' : R ⊆ paperShell F c (dyadicScale (i' + 1)) := by
       simpa [idealDyadicBlock, dyadicScale] using hR
-    have hS' : S ⊆ paperShell F c (dyadicScale (j' + 1)) := by
-      simpa [idealDyadicBlock, dyadicScale] using hS
+    have hS' : S ⊆ paperShell F c (dyadicScale (j' + 1)) := hS
     have hfilt : (paperShell F c (dyadicScale (j' + 1))).filter (fun b => b ∈ S) = S := by
       rw [Finset.filter_mem_eq_inter]
       exact (Finset.inter_eq_right).2 hS'
@@ -326,7 +320,7 @@ theorem bilinear_endpoint_exponent_extension_contractions
       rw [Finset.mul_sum]
       refine Finset.sum_congr rfl (fun b _ => ?_); ring
     rw [hrow, norm_mul]
-    have hu' : ‖u a‖ ≤ 1 := hu a ha
+    have hu'  := hu a ha
     calc (‖u a‖ * ‖∑ b ∈ S, (lam b * v b) * (Q.χ b) a‖) ^ 2
         = ‖u a‖ ^ 2 * ‖∑ b ∈ S, (lam b * v b) * (Q.χ b) a‖ ^ 2 := by ring
       _ ≤ 1 * ‖∑ b ∈ S, (lam b * v b) * (Q.χ b) a‖ ^ 2 :=
@@ -335,14 +329,14 @@ theorem bilinear_endpoint_exponent_extension_contractions
   have henergy_le : ∑ b ∈ S, ‖lam b * v b‖ ^ 2 ≤ ∑ b ∈ S, ‖lam b‖ ^ 2 := by
     refine Finset.sum_le_sum (fun b hb => ?_)
     rw [norm_mul]
-    have hv' : ‖v b‖ ≤ 1 := hv b hb
+    have hv'  := hv b hb
     calc (‖lam b‖ * ‖v b‖) ^ 2 = ‖lam b‖ ^ 2 * ‖v b‖ ^ 2 := by ring
       _ ≤ ‖lam b‖ ^ 2 * 1 :=
           mul_le_mul_of_nonneg_left (pow_le_one₀ (norm_nonneg _) hv') (by positivity)
       _ = ‖lam b‖ ^ 2 := by ring
   have hC0 : 0 ≤ C := le_trans zero_le_one hC
-  have hM0 : 0 ≤ dyadicScale i := dyadicScale_nonneg i
-  have hN0 : 0 ≤ dyadicScale j := dyadicScale_nonneg j
+  have hM0  := dyadicScale_nonneg i
+  have hN0  := dyadicScale_nonneg j
   have hK0 : 0 ≤ C * Real.rpow (dyadicScale i * dyadicScale j) η *
       (dyadicScale i + Real.rpow (dyadicScale j) α) := by
     have h1 : 0 ≤ Real.rpow (dyadicScale i * dyadicScale j) η :=

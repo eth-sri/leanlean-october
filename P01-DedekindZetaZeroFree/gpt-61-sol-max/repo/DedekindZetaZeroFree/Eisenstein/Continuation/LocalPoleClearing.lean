@@ -12,11 +12,14 @@ open MomentSources ThetaExpansion ResidueContinuity.ScalarSourcePoleGeometry
 
 variable {X : Type*}
 
-theorem meromorphicOn_of_local_clearing (A : ℂ → X → ℂ) (O : Set ℂ)
+section
+variable (A : ℂ → X → ℂ) (O : Set ℂ)
     (hlocal : ∀ z ∈ O, ∃ (r : ℝ) (m : ℕ) (w : ℂ → X → ℂ),
       0 < r ∧ Metric.ball z r ⊆ O ∧
       (∀ g, AnalyticOnNhd ℂ (fun s => w s g) (Metric.ball z r)) ∧
-      ∀ s ∈ Metric.ball z r, s ≠ z → ∀ g, w s g = (s-z)^m * A s g) :
+      ∀ s ∈ Metric.ball z r, s ≠ z → ∀ g, w s g = (s-z)^m * A s g)
+include A O hlocal
+theorem meromorphicOn_of_local_clearing   :
     ∀ g, MeromorphicOn (fun s => A s g) O := by
   intro g z hz
   obtain ⟨r, m, w, hr, _, ha, hc⟩ := hlocal z hz
@@ -29,11 +32,7 @@ theorem meromorphicOn_of_local_clearing (A : ℂ → X → ℂ) (O : Set ℂ)
     inv_mul_cancel_left₀ (pow_ne_zero m (sub_ne_zero.mpr hne))]
 
 theorem scalar_singularities_isolated_of_local_clearing
-    (A : ℂ → X → ℂ) (O : Set ℂ)
-    (hlocal : ∀ z ∈ O, ∃ (r : ℝ) (m : ℕ) (w : ℂ → X → ℂ),
-      0 < r ∧ Metric.ball z r ⊆ O ∧
-      (∀ g, AnalyticOnNhd ℂ (fun s => w s g) (Metric.ball z r)) ∧
-      ∀ s ∈ Metric.ball z r, s ≠ z → ∀ g, w s g = (s-z)^m * A s g) :
+      :
     IsolatedPoles O {s | s ∈ O ∧ ∃ g, ¬ AnalyticAt ℂ (fun z => A z g) s} := by
   intro z hz
   obtain ⟨r, m, w, hr, hb, ha, hc⟩ := hlocal z hz
@@ -50,11 +49,13 @@ theorem scalar_singularities_isolated_of_local_clearing
     rw [hc s hs hsz g, mul_div_cancel_left₀ _
       (pow_ne_zero m (sub_ne_zero.mpr hsz))]
   exact hg (hq.congr he.symm)
+end
+
 
 variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
-variable {B : JointRootAlignedSources R N} {v : R.A.UnitQuotient}
+
 
 end DedekindZetaZeroFree.KPScalarContinuation
 

@@ -33,8 +33,8 @@ variable (M : NativeMeasuredSource F R.A.zeta12 R.A.primitive_zeta12 HR HP)
 variable (U : Level F R.A.zeta12 R.A.primitive_zeta12)
 local notation "H" => nativeFamily F ζ hζ HR HP
 local notation "V" => EisensteinSmoothGerms.ScalarSource.atlasLevel F ζ hζ U
-local instance ResidualCoreNormIdentityMeasurable (K : Subgroup (KPLiteralRaw.G F ζ hζ)) : MeasurableSpace K := borel K
-local instance ResidualCoreNormIdentityBorel (K : Subgroup (KPLiteralRaw.G F ζ hζ)) : BorelSpace K := ⟨rfl⟩
+
+
 
 open ResidualWeakEnergy KPContActualSphericalRightFieldIdentification
 open KPMsClearedTruncationL2.NativeWordBridge

@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.GcdTailAndMaskedShellBounds
 
 @[expose] public section
+
 
 noncomputable section
 namespace DedekindZetaZeroFree.LargeSieve.Sieve.CoreCoefficient
@@ -19,19 +22,22 @@ private lemma weight_bound (W : ℝ → ℝ) (hW : SieveWeight W) :
   · rw [hW.zero_outside t ht]
     exact hW.nonneg x
 
-theorem unit_column_bound
-    (F : Type) [Field F] [NumberField F]
+section
+variable (F : Type) [Field F] [NumberField F]
     (c : Ideal (𝓞 F)) (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (W : ℝ → ℝ) (hW : SieveWeight W) :
+    (W : ℝ → ℝ) (hW : SieveWeight W)
+include F c Q W hW
+theorem unit_column_bound
+      :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ M K : ℝ, 1 ≤ M → B2unitColumn F c Q W M K ≤ C * M := by
   obtain ⟨A, hA1, hA⟩ := DedekindZetaZeroFree.LargeSieve.exists_ideal_count_bound F
   obtain ⟨B, hB0, hB⟩ := weight_bound W hW
-  have hA0 : 0 ≤ A := le_trans zero_le_one hA1
+  
   refine ⟨B * A * (5 / 2), by positivity, ?_⟩
   intro M K hM
   have hchi : ∀ a : Ideal (𝓞 F), ‖(Q.χ ⊤) a‖ ≤ 1 := by
     intro a
-    exact quadraticFamily_norm_le_one Q (by simpa using (squarefree_one : Squarefree (1 : Ideal (𝓞 F)))) (by simp) a
+    apply quadraticFamily_norm_le_one <;> aesop
   have hcard : ((kernelRows F c M K).card : ℝ) ≤ A * ((5 / 2) * M) := by
     calc _ ≤ ((DedekindZetaZeroFree.LargeSieve.boundedNormIdeals F ((5 / 2) * M)).card : ℝ) := by
           exact_mod_cast Finset.card_filter_le (DedekindZetaZeroFree.LargeSieve.boundedNormIdeals F ((5 / 2) * M)) _
@@ -48,9 +54,7 @@ theorem unit_column_bound
     _ = B * A * (5 / 2) * M := by ring
 
 theorem envelope_comparison
-    (F : Type) [Field F] [NumberField F]
-    (c : Ideal (𝓞 F)) (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (W : ℝ → ℝ) (hW : SieveWeight W) :
+      :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ M X Y K : ℝ,
       1 ≤ M → 0 < X → 1 ≤ Y → X ≤ Y → 0 < K →
       B2env F c Q W M X K ≤ B2env F c Q W M Y K + C * M := by
@@ -62,7 +66,7 @@ theorem envelope_comparison
   have hY0 : 0 ≤ B2env F c Q W M Y K := by
     unfold B2env
     exact Real.sSup_nonneg' ⟨0, Or.inl (Or.inl rfl), le_rfl⟩
-  let SY : Set ℝ := {0} ∪
+  let SY  := {0} ∪
     {x : ℝ | ∃ T : ℝ, 1 ≤ T ∧ T ≤ Y ∧ x = B2 F c Q W M T K} ∪
     {x : ℝ | Y < 1 ∧ 1 ≤ 2 * Y ∧ x = B2unitColumn F c Q W M K}
   have hbdd : BddAbove SY := by
@@ -85,6 +89,8 @@ theorem envelope_comparison
         exact Or.inl (Or.inr ⟨T, hT1, hTX.trans hXY, rfl⟩)
       exact ht.trans (le_add_of_nonneg_right (mul_nonneg hC0 hM0))
     · exact (hC M K hM).trans (le_add_of_nonneg_left hY0)
+end
+
 
 end DedekindZetaZeroFree.LargeSieve.Sieve.CoreCoefficient
 

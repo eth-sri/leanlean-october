@@ -225,24 +225,24 @@ noncomputable def ideleClassComponentQuotientEquivMaximalAbelianGalois :
       continuous_toFun := h.continuous
       continuous_invFun := h.symm.continuous }
 
-/-- Evaluation of component-quotient reciprocity on an idele class is the
-maximal abelian global Artin map. -/
-@[simp]
-theorem ideleClassComponentQuotientEquivMaximalAbelianGalois_mk
-    (c : IdeleClassGroup K) :
-    ideleClassComponentQuotientEquivMaximalAbelianGalois K
-        (QuotientGroup.mk'
-          (ideleClassIdentityComponent K) c) =
-      maximalAbelianGlobalArtin K c := by
-  change
-    QuotientGroup.liftEquiv
-        (ideleClassIdentityComponent K)
-        (maximalAbelianGlobalArtin_surjective K)
-        (maximalAbelianGlobalArtin_ker K).symm
-        (QuotientGroup.mk'
-          (ideleClassIdentityComponent K) c) =
-      maximalAbelianGlobalArtin K c
-  exact QuotientGroup.liftEquiv_coe _ _ _ _
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end Reciprocity
 end GlobalClassFieldTheory

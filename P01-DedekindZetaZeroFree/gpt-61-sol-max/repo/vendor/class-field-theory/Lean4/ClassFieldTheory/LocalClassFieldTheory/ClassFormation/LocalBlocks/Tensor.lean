@@ -1040,38 +1040,38 @@ theorem localTensorUnitsEquivLocalPlaceBlock_smul
     localTensorUnitsEquivLocalPlaceBlock_eq_orbitHom_apply]
   exact localTensorOrbitHom_smul vK hvK w τ z
 
-/-- The inverse of the induced local-block equivalence is equivariant as well. -/
-theorem localTensorUnitsEquivLocalPlaceBlock_symm_smul
-    (τ : L ≃ₐ[K] L)
-    (f : LocalPlaceBlock vK hvK w) :
-    letI :=
-      decompositionGroupLocalUnitsAction vK hvK w
-    letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
-    letI : SMul K w.1.Completion := hK.toSMul
-    letI := AbsoluteValue.completionAlgebra vK w.1 w.2
-    letI : ∀ w' : AbsoluteValueExtension vK L,
-        Algebra vK.Completion w'.1.Completion :=
-      fun w' ↦ AbsoluteValue.completionAlgebra vK w'.1 w'.2
-    letI := localTensorUnitsAction (K := K) (L := L) vK
-    (localTensorUnitsEquivLocalPlaceBlock vK hvK w).symm
-        (τ • f) =
-      τ •
-        (localTensorUnitsEquivLocalPlaceBlock vK hvK w).symm f := by
-  let _ :=
-    decompositionGroupLocalUnitsAction vK hvK w
-  let hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
-  let _ : SMul K w.1.Completion := hK.toSMul
-  let _ := AbsoluteValue.completionAlgebra vK w.1 w.2
-  let _ : ∀ w' : AbsoluteValueExtension vK L,
-      Algebra vK.Completion w'.1.Completion :=
-    fun w' ↦ AbsoluteValue.completionAlgebra vK w'.1 w'.2
-  let _ := localTensorUnitsAction (K := K) (L := L) vK
-  apply
-    (localTensorUnitsEquivLocalPlaceBlock
-      vK hvK w).injective
-  rw [MulEquiv.apply_symm_apply,
-    localTensorUnitsEquivLocalPlaceBlock_smul,
-    MulEquiv.apply_symm_apply]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end ProductEquivalences
 

@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction.Universal
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -34,15 +37,18 @@ variable {G : Type u} [Group G] [TopologicalSpace G]
 
 namespace DegreeData
 
-/-- A chosen degree-one element of `G(\widetilde L/K)`, packaged as an
-element of the Frobenius semigroup. -/
-noncomputable def chosenDegreeOneFrobeniusElement (D : DegreeData G)
+section
+variable (D : DegreeData G)
     (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
     (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal] :
+    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
+include D K L hLK hLnormal
+/-- A chosen degree-one element of `G(\widetilde L/K)`, packaged as an
+element of the Frobenius semigroup. -/
+noncomputable def chosenDegreeOneFrobeniusElement   :
     D.FrobeniusElements K L hLK := by
   let hsurj := D.extensionNormalizedDegreeContinuous_surjective K L hLK
-    (Multiplicative.ofAdd (1 : ZHat))
+    (Multiplicative.ofAdd (1))
   refine ⟨Classical.choose hsurj, 1, Nat.one_pos, ?_⟩
   rw [pow_one, ← D.extensionNormalizedDegreeContinuous_apply]
   exact Classical.choose_spec hsurj
@@ -52,32 +58,31 @@ Establishes the identity `D.frobeniusExponent K L hLK (D.chosenDegreeOneFrobeniu
 = 1`.
 -/
 @[simp]
-theorem frobeniusExponent_chosenDegreeOneFrobeniusElement (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal] :
+theorem frobeniusExponent_chosenDegreeOneFrobeniusElement   :
     D.frobeniusExponent K L hLK
         (D.chosenDegreeOneFrobeniusElement K L hLK) = 1 := by
   apply proCIntegerOne_pow_nat_injective
   calc
-    (Multiplicative.ofAdd (1 : ZHat)) ^
+    (Multiplicative.ofAdd (1)) ^
         D.frobeniusExponent K L hLK
           (D.chosenDegreeOneFrobeniusElement K L hLK) =
       D.extensionNormalizedDegree K L hLK
         (D.chosenDegreeOneFrobeniusElement K L hLK).1 :=
       (D.extensionNormalizedDegree_frobenius_eq_pow K L hLK
         (D.chosenDegreeOneFrobeniusElement K L hLK)).symm
-    _ = Multiplicative.ofAdd (1 : ZHat) := by
+    _ = Multiplicative.ofAdd (1) := by
       rw [← D.extensionNormalizedDegreeContinuous_apply]
       change D.extensionNormalizedDegreeContinuous K L hLK
         (Classical.choose
           (D.extensionNormalizedDegreeContinuous_surjective K L hLK
-            (Multiplicative.ofAdd (1 : ZHat)))) =
-          Multiplicative.ofAdd (1 : ZHat)
+            (Multiplicative.ofAdd (1)))) =
+          Multiplicative.ofAdd (1)
       exact Classical.choose_spec
         (D.extensionNormalizedDegreeContinuous_surjective K L hLK
-          (Multiplicative.ofAdd (1 : ZHat)))
-    _ = (Multiplicative.ofAdd (1 : ZHat)) ^ (1 : ℕ) := by simp
+          (Multiplicative.ofAdd (1)))
+    _ = (Multiplicative.ofAdd (1)) ^ (1) := by simp
+end
+
 
 end DegreeData
 

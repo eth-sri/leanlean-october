@@ -71,11 +71,14 @@ variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
- theorem line_identity {n : ℕ}
+ section
+variable {n : ℕ}
     (K N : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U)) (hKN : K ⊆ N)
     (η : Fin n → KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ)
     (hη : ∀ x ∈ N, ∑ i, η i x = 1)
     (s : Sections F ζ hζ U R P H)
+include n K N hKN η hη s
+theorem line_identity  
     (hs : ∀ᵐ v ∂coveredMeasure F ζ hζ R U,
       q F ζ hζ U v ∉ K → (scalarRepresentative F ζ hζ U R P H s).val v = 0) :
     (scalarRepresentative F ζ hζ U R P H s).val =ᵐ[coveredMeasure F ζ hζ R U]
@@ -88,11 +91,7 @@ variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
     rw [ht, one_mul]
   · rw [hv h]; simp
 
- theorem chart_identity {n : ℕ}
-    (K N : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U)) (hKN : K ⊆ N)
-    (η : Fin n → KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ)
-    (hη : ∀ x ∈ N, ∑ i, η i x = 1)
-    (s : Sections F ζ hζ U R P H) (C : ShrunkChart F ζ hζ U R P H)
+ theorem chart_identity   (C : ShrunkChart F ζ hζ U R P H)
     (hs : ∀ᵐ b ∂KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U,
       b ∉ K → sectionNorm F ζ hζ U R P H s b = 0) :
     C.coefficient s =ᵐ[C.liftedMeasure]
@@ -117,6 +116,8 @@ variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
       exact sectionNorm_component F ζ hζ U R P H s C.component y.val
     have hz : C.coefficient s y = 0 := norm_eq_zero.mp (he ▸ hh)
     rw [hz]; simp
+end
+
 
 private theorem derivative_identity {n : ℕ}
     (N : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U)) (hN : IsOpen N)
@@ -304,12 +305,15 @@ end DedekindZetaZeroFree.KPContActualSectorFiniteSupportPartition
 
 namespace DedekindZetaZeroFree
 
-theorem kp_cont_actual_sector_finite_support_partition_in_charts
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+section
+variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
     (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
     (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+include F ζ hζ U R P H
+theorem kp_cont_actual_sector_finite_support_partition_in_charts
+     
     (n : ℕ) (C : Fin n → KPContActualCotangentCountableShrinking.ShrunkChart F ζ hζ U R P H)
     (K O : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U))
     (hK : IsCompact K) (hO : IsOpen O) (hKO : K ⊆ O)
@@ -324,11 +328,7 @@ theorem kp_cont_actual_sector_finite_support_partition_in_charts
       (Set.nonempty_iff_ne_empty.mpr he) B
 
 theorem kp_cont_actual_sector_finite_support_partition
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+     
     (K O : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U))
     (hK : IsCompact K) (hO : IsOpen O) (hKO : K ⊆ O) :
     ∃ (n : ℕ) (C : Fin n → KPContActualCotangentCountableShrinking.ShrunkChart F ζ hζ U R P H),
@@ -352,6 +352,8 @@ theorem kp_cont_actual_sector_finite_support_partition
       simpa [C] using hxn
     exact ⟨Fintype.card s,C,fun h => (he h).elim,hc,
       kp_cont_actual_sector_finite_support_partition_in_charts F ζ hζ U R P H _ C K O hK hO hKO hc⟩
+end
+
 
 end DedekindZetaZeroFree
 

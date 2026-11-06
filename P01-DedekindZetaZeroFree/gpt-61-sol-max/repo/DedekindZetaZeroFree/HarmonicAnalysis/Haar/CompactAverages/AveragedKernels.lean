@@ -2,14 +2,20 @@ module
 
 public import Mathlib
 
+public import Mathlib
+
 @[expose] public section
+
 
 noncomputable section
 namespace DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel
 open MeasureTheory Set Filter Topology
 
+section
+variable {G K : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
+include G K
 private theorem conjugation_saturation_compact
-    {G K : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
+     
     [TopologicalSpace K] [CompactSpace K] (π : K → G) (hπ : Continuous π)
     {f : G → ℝ} (hf : HasCompactSupport f) :
     IsCompact ((fun p : K × G => π p.1 * p.2 * (π p.1)⁻¹) ''
@@ -17,7 +23,7 @@ private theorem conjugation_saturation_compact
   (isCompact_univ.prod hf).image (by fun_prop)
 
 theorem averaged_support_subset
-    {G K : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G] [T2Space G]
+      [T2Space G]
     [TopologicalSpace K] [CompactSpace K] [MeasurableSpace K]
     (π : K → G) (hπ : Continuous π) (μ : Measure K)
     {f : G → ℝ} (hf : HasCompactSupport f) :
@@ -35,7 +41,7 @@ theorem averaged_support_subset
   · exact (conjugation_saturation_compact π hπ hf).isClosed
 
 theorem averaged_hasCompactSupport
-    {G K : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G] [T2Space G]
+      [T2Space G]
     [TopologicalSpace K] [CompactSpace K] [MeasurableSpace K]
     (π : K → G) (hπ : Continuous π) (μ : Measure K)
     {f : G → ℝ} (hf : HasCompactSupport f) :
@@ -44,19 +50,19 @@ theorem averaged_hasCompactSupport
     (averaged_support_subset π hπ μ hf)
 
 theorem averaged_continuous
-    {G K : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
+     
     [TopologicalSpace K] [CompactSpace K] [MeasurableSpace K] [BorelSpace K]
     (π : K → G) (hπ : Continuous π) (μ : Measure K) [IsFiniteMeasure μ]
     {f : G → ℝ} (hf : Continuous f) :
     Continuous (fun a : G => ∫ k, f ((π k)⁻¹ * a * π k) ∂μ) := by
   rw [← continuousOn_univ]
   exact continuousOn_integral_of_compact_support isCompact_univ
-    (by exact (hf.comp (((hπ.comp continuous_snd).inv.mul continuous_fst).mul
+    ((hf.comp (((hπ.comp continuous_snd).inv.mul continuous_fst).mul
       (hπ.comp continuous_snd))).continuousOn)
     (by simp)
 
 theorem conjugation_saturation_shrinks
-    {G K : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
+     
     [TopologicalSpace K] [CompactSpace K]
     (π : K → G) (hπ : Continuous π) {O : Set G} (hO : O ∈ 𝓝 (1 : G)) :
     ∃ U ∈ 𝓝 (1 : G), ∀ k a, a ∈ U → π k * a * (π k)⁻¹ ∈ O := by
@@ -72,7 +78,7 @@ theorem conjugation_saturation_shrinks
   exact ha k (mem_univ k)
 
 theorem averaged_integrable_parameter
-    {G K : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
+     
     [TopologicalSpace K] [CompactSpace K] [MeasurableSpace K] [BorelSpace K]
     (π : K → G) (hπ : Continuous π) (μ : Measure K) [IsFiniteMeasure μ]
     {f : G → ℝ} (hf : Continuous f) (a : G) :
@@ -81,7 +87,7 @@ theorem averaged_integrable_parameter
   exact HasCompactSupport.of_compactSpace _
 
 theorem averaged_conjugation_invariant
-    {G K : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
+     
     [Group K] [TopologicalSpace K] [IsTopologicalGroup K]
     [MeasurableSpace K] [BorelSpace K]
     (π : K →* G) (μ : Measure K) [μ.IsMulLeftInvariant]
@@ -95,7 +101,7 @@ theorem averaged_conjugation_invariant
     (fun u => f ((π u)⁻¹ * a * π u)) k
 
 theorem averaged_mass
-    {G K : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G] [T2Space G]
+      [T2Space G]
     [LocallyCompactSpace G] [SecondCountableTopology G]
     [MeasurableSpace G] [BorelSpace G]
     [TopologicalSpace K] [CompactSpace K] [T2Space K] [MeasurableSpace K] [BorelSpace K]
@@ -105,7 +111,7 @@ theorem averaged_mass
     (hmap : ∀ k, Measure.map (fun a => (π k)⁻¹ * a * π k) μG = μG)
     {f : G → ℝ} (hf : Continuous f) (hs : HasCompactSupport f) :
     (∫ a, (∫ k, f ((π k)⁻¹ * a * π k) ∂μK) ∂μG) = ∫ a, f a ∂μG := by
-  let S : Set G := (fun p : K × G => π p.1 * p.2 * (π p.1)⁻¹) ''
+  let S  := (fun p : K × G => π p.1 * p.2 * (π p.1)⁻¹) ''
     (univ ×ˢ tsupport f)
   have hS : IsCompact S := conjugation_saturation_compact π hπ hs
   have hc : Continuous (fun p : G × K => f ((π p.2)⁻¹ * p.1 * π p.2)) := by fun_prop
@@ -123,6 +129,8 @@ theorem averaged_mass
       hf.aestronglyMeasurable, hmap k]
   simp_rw [he]
   simp
+end
+
 
 end DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel
 

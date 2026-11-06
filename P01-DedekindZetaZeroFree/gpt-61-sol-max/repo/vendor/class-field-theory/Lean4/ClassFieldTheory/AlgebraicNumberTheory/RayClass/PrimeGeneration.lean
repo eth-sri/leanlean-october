@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AlgebraicNumberTheory.RayClass.Ideal
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -60,7 +63,7 @@ theorem primeToModulusIdeals_hom_ext
     apply FractionalIdealGroup.ext_count
     intro v
     rw [FractionalIdealGroup.count_factorization]
-    exact FractionalIdealGroup.countVector_apply (I : FractionalIdealGroup K) v
+    apply FractionalIdealGroup.countVector_apply
   have hI : I = c.prod (fun v e => p v ^ e) := by
     apply Subtype.ext
     change (I : FractionalIdealGroup K) =

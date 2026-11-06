@@ -28,28 +28,30 @@ def integerScaledSubgroup {A : Type*} [AddCommGroup A] (n : ℤ) (H : AddSubgrou
 def integerFieldSubgroup (F : Type*) [Field F] [NumberField F] : AddSubgroup F :=
   (algebraMap (𝓞 F) F).toAddMonoidHom.range
 
-def finiteLevelFieldSubgroup {F : Type*} [Field F] [NumberField F]
-    (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F)) : AddSubgroup F :=
+section
+variable {F : Type*} [Field F] [NumberField F]
+    (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
+include F K
+def finiteLevelFieldSubgroup   : AddSubgroup F :=
   K.comap (algebraMap F (FiniteAdeleRing (𝓞 F) F)).toAddMonoidHom
 
-def finiteLevelLattice {F : Type*} [Field F] [NumberField F]
-    (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F)) :
+def finiteLevelLattice   :
     Submodule ℤ (NumberField.mixedEmbedding.mixedSpace F) :=
   (finiteLevelFieldSubgroup K).toIntSubmodule.map
     (NumberField.mixedEmbedding F).toIntAlgHom.toLinearMap
 
-theorem mem_finiteLevelLattice_iff {F : Type*} [Field F] [NumberField F]
-    (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
+theorem mem_finiteLevelLattice_iff  
     (x : NumberField.mixedEmbedding.mixedSpace F) :
     x ∈ finiteLevelLattice K ↔ ∃ lam : F,
       algebraMap F (FiniteAdeleRing (𝓞 F) F) lam ∈ K ∧ NumberField.mixedEmbedding F lam = x := by
   rfl
 
-def finiteLevelDiagonal {F : Type*} [Field F] [NumberField F]
-    (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F)) : finiteLevelFieldSubgroup K →+ K where
+def finiteLevelDiagonal   : finiteLevelFieldSubgroup K →+ K where
   toFun x := ⟨algebraMap F (FiniteAdeleRing (𝓞 F) F) x, x.property⟩
   map_zero' := by ext; simp
   map_add' := by intros; ext; simp
+end
+
 
 namespace FiniteLevelHelpers
 
@@ -150,10 +152,13 @@ end FiniteLevelHelpers
 
 open FiniteLevelHelpers in
 
-theorem finiteLevel_integer_bounds {F : Type*} [Field F] [NumberField F]
+section
+variable {F : Type*} [Field F] [NumberField F]
     (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
     (hcompact : IsCompact (K : Set (FiniteAdeleRing (𝓞 F) F)))
-    (hopen : IsOpen (K : Set (FiniteAdeleRing (𝓞 F) F))) :
+    (hopen : IsOpen (K : Set (FiniteAdeleRing (𝓞 F) F)))
+include F K hcompact hopen
+theorem finiteLevel_integer_bounds   :
     ∃ a b : ℕ, 0 < a ∧ 0 < b ∧
       integerScaledSubgroup (a : ℤ) (integralFiniteAdeles F) ≤ K ∧
       K ≤ (integralFiniteAdeles F).comap (integerScaleHom (b : ℤ)) ∧
@@ -173,10 +178,7 @@ theorem finiteLevel_integer_bounds {F : Type*} [Field F] [NumberField F]
     rw [map_zsmul]
     exact hupp _ hx
 
-theorem finiteLevelLattice_discrete {F : Type*} [Field F] [NumberField F]
-    (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
-    (hcompact : IsCompact (K : Set (FiniteAdeleRing (𝓞 F) F)))
-    (hopen : IsOpen (K : Set (FiniteAdeleRing (𝓞 F) F))) :
+theorem finiteLevelLattice_discrete   :
     DiscreteTopology (finiteLevelLattice K) := by
   obtain ⟨a, b, ha, hb, h₁, h₂, h₃, h₄⟩ := finiteLevel_integer_bounds K hcompact hopen
   let g : finiteLevelLattice K → mixedEmbedding.integerLattice F := fun x =>
@@ -196,10 +198,7 @@ theorem finiteLevelLattice_discrete {F : Type*} [Field F] [NumberField F]
     exact smul_right_injective (mixedEmbedding.mixedSpace F)
       (show (b : ℤ) ≠ 0 by exact_mod_cast hb.ne') (congrArg Subtype.val hxy)
 
-theorem finiteLevelLattice_full_rank {F : Type*} [Field F] [NumberField F]
-    (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
-    (hcompact : IsCompact (K : Set (FiniteAdeleRing (𝓞 F) F)))
-    (hopen : IsOpen (K : Set (FiniteAdeleRing (𝓞 F) F))) :
+theorem finiteLevelLattice_full_rank   :
     letI := finiteLevelLattice_discrete K hcompact hopen
     IsZLattice ℝ (finiteLevelLattice K) ∧
       Module.finrank ℤ (finiteLevelLattice K) = Module.finrank ℚ F := by
@@ -227,6 +226,8 @@ theorem finiteLevelLattice_full_rank {F : Type*} [Field F] [NumberField F]
     exact hspan⟩
   exact ⟨inferInstance, (ZLattice.rank ℝ (finiteLevelLattice K)).trans
     (mixedEmbedding.finrank F)⟩
+end
+
 
 open FiniteLevelHelpers in
 

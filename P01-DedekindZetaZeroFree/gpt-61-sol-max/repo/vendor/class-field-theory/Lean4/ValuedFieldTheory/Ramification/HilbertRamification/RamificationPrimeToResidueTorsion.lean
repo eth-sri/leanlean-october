@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Ramification.HilbertRamification.ValuationSubring
 public import Mathlib.Algebra.BigOperators.Field
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -55,10 +58,10 @@ theorem ramificationGroup_eq_one_of_pow_eq_one_of_residue_natCast_ne_zero
   intro x
   change ρ σ x = x
   by_contra hx
-  let γ : L ≃ₐ[K] L := ρ σ
+  let γ  := ρ σ
   have hγn : γ ^ n = 1 := by
     rw [← map_pow ρ, hσ, map_one]
-  let y : L := γ x - x
+  let y  := γ x - x
   have hy : y ≠ 0 := sub_ne_zero.mpr hx
   let q : ℕ → Lˣ := fun i =>
     automorphismUnitQuotient K A

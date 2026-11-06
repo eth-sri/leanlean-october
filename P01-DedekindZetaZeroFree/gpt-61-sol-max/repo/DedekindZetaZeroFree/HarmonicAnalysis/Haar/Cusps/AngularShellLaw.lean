@@ -15,7 +15,7 @@ variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ
 variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
-variable (S : SourceRecipe F ζ hζ R P H) (U : Level F ζ hζ)
+
 
 theorem fullToLevel_continuous (D : Iwasawa F ζ hζ) (V : Level F ζ hζ) :
     Continuous (fullToLevel F ζ hζ D V) :=

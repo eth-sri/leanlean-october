@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import Mathlib.NumberTheory.LocalField.Basic
 public import Mathlib.RepresentationTheory.Coinvariants
 public import Mathlib.RepresentationTheory.Stabilizer
 public import Mathlib.Topology.LocallyConstant.Basic
 
 @[expose] public section
+
 
 section
 
@@ -21,7 +24,7 @@ private lemma compact_bound {K : Type*} [Field K] [ValuativeRel K] [TopologicalS
     obtain ⟨z, hz⟩ := valuation_surjective (γ : ValueGroupWithZero K)
     have hz0 : z ≠ 0 := by
       intro h
-      exact γ.ne_zero (by simpa [h] using hz.symm)
+      apply γ.ne_zero <;> aesop
     have ho := Valuation.isOpen_closedBall (v := v) (r := v.restrict z)
       (by simpa using hz0)
     convert ho using 1
@@ -52,14 +55,14 @@ private lemma finite_transversal {K : Type*} [AddCommGroup K] [TopologicalSpace 
       (∀ l ∈ L, ∃! r : {r // r ∈ R}, l - r.val ∈ J) ∧ R.Nonempty := by
   classical
   let mk : K → K ⧸ J := QuotientAddGroup.mk
-  let Q : Set (K ⧸ J) := mk '' (L : Set K)
-  letI : DiscreteTopology (K ⧸ J) := QuotientAddGroup.discreteTopology hJo
+  let Q  := mk '' (L : Set K)
+  letI  := QuotientAddGroup.discreteTopology hJo
   have hQ : Q.Finite := (hLc.image QuotientAddGroup.continuous_mk).finite_of_discrete
-  letI : Finite Q := hQ.to_subtype
+  letI  := hQ.to_subtype
   have hex (q : Q) : ∃ r : K, r ∈ L ∧ mk r = q.val := q.property
   let rep (q : Q) : K := Classical.choose (hex q)
   have hrep (q : Q) : rep q ∈ L ∧ mk (rep q) = q.val := Classical.choose_spec (hex q)
-  have hR : (Set.range rep).Finite := Set.finite_range rep
+  have hR  := Set.finite_range rep
   let R := hR.toFinset
   have hmem (r : K) : r ∈ R ↔ ∃ q : Q, rep q = r := by simp [R]
   refine ⟨R, ?_, ?_, ?_⟩
@@ -68,7 +71,7 @@ private lemma finite_transversal {K : Type*} [AddCommGroup K] [TopologicalSpace 
     exact (hrep q).1
   · intro l hl
     let q : Q := ⟨mk l, ⟨l, hl, rfl⟩⟩
-    have hr : rep q ∈ R := (hmem _).mpr ⟨q, rfl⟩
+    have hr  := (hmem _).mpr ⟨q, rfl⟩
     refine ⟨⟨rep q, hr⟩, ?_, ?_⟩
     · apply QuotientAddGroup.eq_iff_sub_mem.mp
       exact (hrep q).2.symm
@@ -102,7 +105,7 @@ theorem compactOpen_enlargement_transversal
   let L := (valuation K).leAddSubgroup (γ : ValueGroupWithZero K)
   have hJL : J ≤ L := fun x hx => hγ (Or.inl hx)
   have hLF : ∀ n ∈ F, n ∈ L := fun n hn => hγ (Or.inr hn)
-  have hLo : IsOpen (L : Set K) := AddSubgroup.isOpen_mono hJL hJo
+  have hLo  := AddSubgroup.isOpen_mono hJL hJo
   have hLc : IsCompact (L : Set K) :=
     IsNonarchimedeanLocalField.isCompact_closedBall K γ
   obtain ⟨R, hRL, huniq, hRne⟩ := finite_transversal J L hJo hLc
@@ -133,7 +136,7 @@ theorem transversal_average_kills_relation
   let T := {r // r ∈ R}
   have hex (r : T) : ∃! s : T, r.val + n - s.val ∈ J :=
     hR.2 (r.val + n) (L.add_mem (hR.1 r.val r.property) hn)
-  let p : T → T := fun r => Classical.choose (hex r).exists
+  let p  := fun r => Classical.choose (hex r).exists
   have hp (r : T) : r.val + n - (p r).val ∈ J :=
     Classical.choose_spec (hex r).exists
   have hpinj : Function.Injective p := by
@@ -235,31 +238,36 @@ namespace DedekindZetaZeroFree.KPCoinvariants
 variable {K V W : Type*} [Field K] [TopologicalSpace K] [AddCommGroup V] [Module ℂ V]
     [AddCommGroup W] [Module ℂ W]
 
-def IsSmooth (ρ : Representation ℂ (Multiplicative K) V) : Prop :=
+section
+variable (ρ : Representation ℂ (Multiplicative K) V)
+include ρ
+def IsSmooth    :=
   ∀ v, IsOpen {n : K | ρ (Multiplicative.ofAdd n) v = v}
 
-noncomputable def twistedRepresentation (ρ : Representation ℂ (Multiplicative K) V)
+noncomputable def twistedRepresentation  
     (ψ : Multiplicative K →* ℂˣ) : Representation ℂ (Multiplicative K) V where
   toFun n := (ψ n : ℂ)⁻¹ • ρ n
   map_one' := by simp
   map_mul' n m := by ext v; simp [map_mul, mul_smul]
 
-abbrev Coinvariants (ρ : Representation ℂ (Multiplicative K) V)
+abbrev Coinvariants  
     (ψ : Multiplicative K →* ℂˣ) :=
   Representation.Coinvariants (twistedRepresentation ρ ψ)
 
-noncomputable def map (ρ : Representation ℂ (Multiplicative K) V)
+noncomputable def map  
     (τ : Representation ℂ (Multiplicative K) W) (ψ : Multiplicative K →* ℂˣ)
     (f : Representation.IntertwiningMap ρ τ) : Coinvariants ρ ψ →ₗ[ℂ] Coinvariants τ ψ :=
   Representation.Coinvariants.map _ _
     { toLinearMap := f.toLinearMap
       isIntertwining' n := by ext v; simp [twistedRepresentation, f.isIntertwining] }
 
-noncomputable def psiAverage (ρ : Representation ℂ (Multiplicative K) V)
-    (ψ : Multiplicative K →* ℂˣ) (R : Finset K) : V →ₗ[ℂ] V :=
+noncomputable def psiAverage  
+    (ψ : Multiplicative K →* ℂˣ) (R : Finset K)  :=
   (R.card : ℂ)⁻¹ • ∑ n ∈ R, ((ψ (Multiplicative.ofAdd n) : ℂ)⁻¹ • ρ (Multiplicative.ofAdd n))
+end
 
-def IsTransversal (J L : AddSubgroup K) (R : Finset K) : Prop :=
+
+def IsTransversal (J L : AddSubgroup K) (R : Finset K)  :=
   (∀ r ∈ R, r ∈ L) ∧
   ∀ l ∈ L, ∃! r : {r // r ∈ R}, l - r.val ∈ J
 
@@ -269,15 +277,18 @@ variable {K U V W : Type*} [Field K] [ValuativeRel K] [TopologicalSpace K]
     [AddCommGroup V] [Module ℂ V]
     [AddCommGroup W] [Module ℂ W]
 
-theorem commonLevel (ρ : Representation ℂ (Multiplicative K) V)
+section
+variable (ρ : Representation ℂ (Multiplicative K) V)
     (hρ : IsSmooth ρ) (ψ : Multiplicative K →* ℂˣ)
     (hψc : Continuous ψ) (hψs : IsLocallyConstant ψ)
+include ρ hρ ψ hψc hψs
+theorem commonLevel  
     (T : Finset V) :
     ∃ J : AddSubgroup K, IsOpen (J : Set K) ∧ IsCompact (J : Set K) ∧
       (∀ j ∈ J, ψ (Multiplicative.ofAdd j) = 1) ∧
       (∀ v ∈ T, ∀ j ∈ J, ρ (Multiplicative.ofAdd j) v = v) := by
   classical
-  let O : Set K := {j | ψ (Multiplicative.ofAdd j) = 1} ∩
+  let O  := {j | ψ (Multiplicative.ofAdd j) = 1} ∩
     ⋂ v ∈ T, {j | ρ (Multiplicative.ofAdd j) v = v}
   have hO : IsOpen O :=
     ((hψs.isOpen_fiber 1).preimage continuous_ofAdd).inter
@@ -306,9 +317,7 @@ theorem commonLevel (ρ : Representation ℂ (Multiplicative K) V)
   · intro v hv j hj
     exact Set.mem_iInter.mp (Set.mem_iInter.mp (hJO hj).2 v) hv
 
-theorem killsFiniteRelations (ρ : Representation ℂ (Multiplicative K) V)
-    (hρ : IsSmooth ρ) (ψ : Multiplicative K →* ℂˣ)
-    (hψc : Continuous ψ) (hψs : IsLocallyConstant ψ)
+theorem killsFiniteRelations  
     (S : Finset (K × V)) :
     ∃ J L : AddSubgroup K, ∃ R : Finset K,
       IsOpen (J : Set K) ∧ IsCompact (J : Set K) ∧
@@ -324,17 +333,13 @@ theorem killsFiniteRelations (ρ : Representation ℂ (Multiplicative K) V)
   obtain ⟨L, R, hLo, hLc, hJL, hcontains, hR, hRne⟩ :=
     TransversalAverages.compactOpen_enlargement_transversal J hJo hJc (S.image Prod.fst)
   refine ⟨J, L, R, hJo, hJc, hLo, hLc, hJL, hR, hRne, hψJ, ?_, ?_⟩
-  · intro nv hnv
-    exact ⟨hcontains nv.1 (Finset.mem_image.mpr ⟨nv, hnv, rfl⟩),
-      hfix nv.2 (Finset.mem_image.mpr ⟨nv, hnv, rfl⟩)⟩
+  · grind
   · intro nv hnv
     exact TransversalAverages.transversal_average_kills_relation ρ ψ J L hJL R hR hψJ
       nv.1 (hcontains nv.1 (Finset.mem_image.mpr ⟨nv, hnv, rfl⟩)) nv.2
       (hfix nv.2 (Finset.mem_image.mpr ⟨nv, hnv, rfl⟩))
 
-theorem killsRelation (ρ : Representation ℂ (Multiplicative K) V)
-    (hρ : IsSmooth ρ) (ψ : Multiplicative K →* ℂˣ)
-    (hψc : Continuous ψ) (hψs : IsLocallyConstant ψ)
+theorem killsRelation  
     (v : V) (hv : v ∈ Representation.Coinvariants.ker (twistedRepresentation ρ ψ)) :
     ∃ J L : AddSubgroup K, ∃ R : Finset K,
       IsOpen (J : Set K) ∧ IsCompact (J : Set K) ∧
@@ -366,6 +371,8 @@ theorem killsRelation (ρ : Representation ℂ (Multiplicative K) V)
       simp [f, twistedRepresentation, smul_smul, Units.ne_zero]
     rw [he] at hk
     simp [hk]
+end
+
 
 theorem exact (ρU : Representation ℂ (Multiplicative K) U)
     (ρV : Representation ℂ (Multiplicative K) V)

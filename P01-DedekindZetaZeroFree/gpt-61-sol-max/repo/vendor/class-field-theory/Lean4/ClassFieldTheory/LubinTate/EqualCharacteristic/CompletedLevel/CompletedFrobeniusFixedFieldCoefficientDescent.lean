@@ -54,13 +54,13 @@ noncomputable local instance
       (algebraMap F.residueField⸨X⸩
         (equalCharacteristicCompletedUnramifiedField F.residueField)))
 
-local instance
-    equalCharacteristicCompletedFrobeniusFixedFieldCoefficientDescentScalarTower
-    (F : LocalField.{u, v} K) (n : ℕ) :
-    IsScalarTower F.residueField⸨X⸩
-      (equalCharacteristicCompletedUnramifiedField F.residueField)
-      (equalCharacteristicCompletedLevelField F n) :=
-  IsScalarTower.of_algebraMap_eq' rfl
+
+
+
+
+
+
+
 
 /-- States the theorem `equalCharacteristicCompletedFrobenius_fixed_mem_adjoin_directTheta`. -/
 theorem equalCharacteristicCompletedFrobenius_fixed_mem_adjoin_directTheta

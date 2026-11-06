@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import Mathlib.MeasureTheory.Group.FundamentalDomain
 
 @[expose] public section
+
 
 noncomputable section
 set_option linter.style.haveILetI false
@@ -11,10 +14,13 @@ open MeasureTheory
 
 namespace DedekindZetaZeroFree.KPActualComponentHaarSources.ProductDisintegration
 
-private theorem partial_domain_pushforward_compare
-    {Γ Y Z : Type*} [Group Γ] [MulAction Γ Y]
+section
+variable {Γ Y Z : Type*} [Group Γ] [MulAction Γ Y]
     [MeasurableSpace Y] [MeasurableSpace Z] [Countable Γ]
     [MeasurableConstSMul Γ Y] (μ : Measure Y) [SMulInvariantMeasure Γ Y μ]
+include Γ Y Z μ
+private theorem partial_domain_pushforward_compare
+     
     (S D E : Set Y) (hS : MeasurableSet S)
     (hSinv : ∀ γ : Γ, (fun y => γ • y) ⁻¹' S = S)
     (hD : IsFundamentalDomain Γ D (μ.restrict S))
@@ -40,17 +46,14 @@ private theorem partial_domain_pushforward_compare
     simp only [Set.mem_preimage, hqi])
 
 theorem quotient_restrict_of_partial_domain
-    {Γ Y Z : Type*} [Group Γ] [MulAction Γ Y]
-    [MeasurableSpace Y] [MeasurableSpace Z] [Countable Γ]
-    [MeasurableConstSMul Γ Y]
-    (μ : Measure Y) [SMulInvariantMeasure Γ Y μ]
+     
     (E : Set Y) (hEm : MeasurableSet E) (hE : IsFundamentalDomain Γ E μ)
     (q : Y → Z) (hq : Measurable q) (hqi : ∀ (γ : Γ) y, q (γ • y) = q y)
     (T : Set Z) (hT : MeasurableSet T)
     (D : Set Y) (hDm : MeasurableSet D) (hDsub : D ⊆ q ⁻¹' T)
     (hD : IsFundamentalDomain Γ D (μ.restrict (q ⁻¹' T))) :
     (Measure.map q (μ.restrict E)).restrict T = Measure.map q (μ.restrict D) := by
-  have hS : MeasurableSet (q ⁻¹' T) := hT.preimage hq
+  have hS  := hT.preimage hq
   have hSinv : ∀ γ : Γ, (fun y => γ • y) ⁻¹' (q ⁻¹' T) = q ⁻¹' T := by
     intro γ
     ext y
@@ -74,6 +77,8 @@ theorem quotient_restrict_of_partial_domain
     tauto
   rw [hmap]
   exact hcmp.symm
+end
+
 
 end DedekindZetaZeroFree.KPActualComponentHaarSources.ProductDisintegration
 

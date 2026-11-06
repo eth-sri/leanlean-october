@@ -20,8 +20,8 @@ open KPContCotangentActualGenuineTwistIsotropy
 section CompactReconstruction
 variable {X C : Type*} [MeasurableSpace X]
   [TopologicalSpace C] [CompactSpace C] [MeasurableSpace C] [BorelSpace C]
-variable (μ : Measure X) (q : X → C) (hq : Measurable q)
-  (a : X → ℂ) (ha : MemLp a 2 μ)
+variable (μ : Measure X) (q : X → C) 
+  (a : X → ℂ) 
 
 end CompactReconstruction
 

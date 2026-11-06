@@ -150,14 +150,17 @@ def iota : rootsOfUnity 3 F →* ℂˣ :=
 def hCoordinates (h : H F ζ hζ w) : K F w × rootsOfUnity 3 F :=
   Classical.choose (ExistsUnique.exists (H_decomposition F ζ hζ w h))
 
+
+local notation:max "current_hCoordinates" => hCoordinates F ζ hζ
+
 private theorem hCoordinates_spec (h : H F ζ hζ w) :
-    h.val = n F ζ hζ w (hCoordinates F ζ hζ w h).1 *
-      z F ζ hζ w (hCoordinates F ζ hζ w h).2 :=
+    h.val = n F ζ hζ w (current_hCoordinates w h).1 *
+      z F ζ hζ w (current_hCoordinates w h).2 :=
   Classical.choose_spec (ExistsUnique.exists (H_decomposition F ζ hζ w h))
 
 private theorem hCoordinates_eq (h : H F ζ hζ w) (b : K F w)
     (e : rootsOfUnity 3 F) (hh : h.val = n F ζ hζ w b * z F ζ hζ w e) :
-    hCoordinates F ζ hζ w h = (b, e) := by
+    current_hCoordinates w h = (b, e) := by
   obtain ⟨hb, he⟩ := nz_unique F ζ hζ w _ b _ e
     ((hCoordinates_spec F ζ hζ w h).symm.trans hh)
   exact Prod.ext hb he
@@ -176,14 +179,14 @@ private theorem z_comm (e : rootsOfUnity 3 F) (p : P F ζ hζ w) :
     (KPPGLLocalCover.centralInjection_range_le_center F ζ hζ (Sum.inr w) ⟨e, rfl⟩)
       p.val).symm
 
-theorem hCoordinates_one : hCoordinates F ζ hζ w 1 = (0, 1) := by
+theorem hCoordinates_one : current_hCoordinates w 1 = (0, 1) := by
   apply hCoordinates_eq
   simp [n_zero]
 
 theorem hCoordinates_mul (h k : H F ζ hζ w) :
-    hCoordinates F ζ hζ w (h * k) =
-      ((hCoordinates F ζ hζ w h).1 + (hCoordinates F ζ hζ w k).1,
-        (hCoordinates F ζ hζ w h).2 * (hCoordinates F ζ hζ w k).2) := by
+    current_hCoordinates w (h * k) =
+      ((current_hCoordinates w h).1 + (current_hCoordinates w k).1,
+        (current_hCoordinates w h).2 * (current_hCoordinates w k).2) := by
   apply hCoordinates_eq
   rw [Subgroup.coe_mul, hCoordinates_spec F ζ hζ w h,
     hCoordinates_spec F ζ hζ w k, n_add, map_mul]
@@ -192,16 +195,16 @@ theorem hCoordinates_mul (h k : H F ζ hζ w) :
 
 def inducingCharacter (ψ : Multiplicative (K F w) →* ℂˣ) :
     H F ζ hζ w →* ℂˣ where
-  toFun h := ψ (Multiplicative.ofAdd (hCoordinates F ζ hζ w h).1) *
-    iota F ζ hζ (hCoordinates F ζ hζ w h).2
+  toFun h := ψ (Multiplicative.ofAdd (current_hCoordinates w h).1) *
+    iota F ζ hζ (current_hCoordinates w h).2
   map_one' := by simp [hCoordinates_one]
   map_mul' h k := by
     simp only [hCoordinates_mul, map_mul]
     change ψ (Multiplicative.ofAdd (_ + _)) * _ = _
-    rw [show Multiplicative.ofAdd ((hCoordinates F ζ hζ w h).1 +
-        (hCoordinates F ζ hζ w k).1) =
-      Multiplicative.ofAdd (hCoordinates F ζ hζ w h).1 *
-        Multiplicative.ofAdd (hCoordinates F ζ hζ w k).1 from rfl, map_mul]
+    rw [show Multiplicative.ofAdd ((current_hCoordinates w h).1 +
+        (current_hCoordinates w k).1) =
+      Multiplicative.ofAdd (current_hCoordinates w h).1 *
+        Multiplicative.ofAdd (current_hCoordinates w k).1 from rfl, map_mul]
     ac_rfl
 
 section Topology
@@ -248,21 +251,26 @@ private lemma chart_borelRatio_continuous : Continuous (KPRankOneInduction.borel
     simp_rw [hval, inv_div]
     exact (hentry 1 1).div (hentry 0 0) (fun a => (hdiag a).1)
 
-def diagonalLift (y : (K F w)ˣ) : P F ζ hζ w :=
+section
+variable (y : (K F w)ˣ)
+include y
+def diagonalLift   : P F ζ hζ w :=
   ⟨KPPGLLocalCover.A F ζ hζ (Sum.inr w) y,
     KPRankOneInduction.diagonalElement_mem F w y⟩
 
-private lemma diagonalLift_projects (y : (K F w)ˣ) :
+private lemma diagonalLift_projects   :
     KPLocalSmoothRepresentation.projection F ζ hζ w (diagonalLift F ζ hζ w y).val =
       KPRankOneInduction.diagonalElement F w y := rfl
 
-lemma diagonalLift_slope (y : (K F w)ˣ) :
+lemma diagonalLift_slope   :
     slope F ζ hζ w (diagonalLift F ζ hζ w y) = y := by
   apply Units.ext
   change (KPRankOneInduction.borelRatio F w _ : K F w) = y
   rw [KPRankOneInduction.borelRatio_eq F w _ (KPRankOneInduction.diagonalMatrix F w y)
     rfl (by simp [KPRankOneInduction.diagonalMatrix, KubotaRankTwo.d])]
   simp [KPRankOneInduction.diagonalMatrix, KubotaRankTwo.d]
+end
+
 
 include hm in
  lemma diagonalLift_continuous :
@@ -340,7 +348,10 @@ theorem quotientHomeomorph_mk (p : P F ζ hζ w) :
 
 variable (ψ : Multiplicative (K F w) →* ℂˣ)
 
-def coefficientRepresentation (J : Type*) [AddCommGroup J] [Module ℂ J] :
+section
+variable (J : Type*) [AddCommGroup J] [Module ℂ J]
+include J
+def coefficientRepresentation   :
     Representation ℂ (H F ζ hζ w) J where
   toFun h := (inducingCharacter F ζ hζ w ψ h : ℂ) • LinearMap.id
   map_one' := by ext v; simp
@@ -349,7 +360,7 @@ def coefficientRepresentation (J : Type*) [AddCommGroup J] [Module ℂ J] :
     simp only [map_mul, Units.val_mul, LinearMap.smul_apply,
       LinearMap.id_apply, Module.End.mul_apply, smul_smul]
 
-def CompactLCSections (J : Type*) [AddCommGroup J] [Module ℂ J] :
+def CompactLCSections   :
     letI := coverTopology
     Submodule ℂ (P F ζ hζ w → J) := by
   letI := coverTopology
@@ -387,10 +398,12 @@ def CompactLCSections (J : Type*) [AddCommGroup J] [Module ℂ J] :
       change c • f _ = _ • (c • f p)
       rw [hf.2.2, smul_comm] }
 
-abbrev Sections (J : Type*) [AddCommGroup J] [Module ℂ J] :=
+abbrev Sections   :=
   letI := coverTopology
   letI := (KPPGLLocalCover.finite_topological_cover F ζ hζ w m hm).2.2.1
   CompactSmoothInd (H F ζ hζ w) (coefficientRepresentation F ζ hζ w ψ J) 1
+end
+
 
 def sectionValue {J : Type*} [AddCommGroup J] [Module ℂ J]
     (f : Sections F ζ hζ w m ψ J) : P F ζ hζ w → J := f.val.val.val
@@ -603,12 +616,15 @@ def rightAction (J : Type*) [AddCommGroup J] [Module ℂ J] :
   compactSmoothIndRepresentation (H F ζ hζ w)
     (coefficientRepresentation F ζ hζ w ψ J) 1
 
-theorem rightAction_apply {J : Type*} [AddCommGroup J] [Module ℂ J]
+section
+variable {J : Type*} [AddCommGroup J] [Module ℂ J]
+include J
+theorem rightAction_apply  
     (a p : P F ζ hζ w) (f : Sections F ζ hζ w m ψ J) :
     sectionValue F ζ hζ w m ψ (rightAction F ζ hζ w m hm ψ J a f) p =
       sectionValue F ζ hζ w m ψ f (p * a) := by rfl
 
-theorem sections_covariance {J : Type*} [AddCommGroup J] [Module ℂ J]
+theorem sections_covariance  
     (f : Sections F ζ hζ w m ψ J) (b : K F w) (e : rootsOfUnity 3 F)
     (p : P F ζ hζ w) :
     sectionValue F ζ hζ w m ψ f ((n F ζ hζ w b * z F ζ hζ w e) * p) =
@@ -625,9 +641,11 @@ theorem sections_covariance {J : Type*} [AddCommGroup J] [Module ℂ J]
   simpa [normalizedSectionRepresentation, coefficientRepresentation,
     inducingCharacter_formula F ζ hζ w ψ b e h rfl] using hc
 
-def chartValue {J : Type*} [AddCommGroup J] [Module ℂ J]
+def chartValue  
     (c : LocalChart F ζ hζ w m) (f : Sections F ζ hζ w m ψ J) : c.ball.domain → J :=
   fun t => sectionValue F ζ hζ w m ψ f (c.lift t)
+end
+
 
 private theorem chart_kernel_central (F : Type) [Field F] [NumberField F]
     (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -734,9 +752,12 @@ private theorem slope_continuous :
   rw [← he]
   exact (quotientHomeomorph F ζ hζ w m hm).continuous.comp continuous_quot_mk
 
-private def cutSection (hψ : IsLocallyConstant ψ)
+section
+variable (hψ : IsLocallyConstant ψ)
     {J : Type*} [AddCommGroup J] [Module ℂ J]
-    (U : TopologicalSpace.Clopens (K F w)ˣ) (f : Sections F ζ hζ w m ψ J) :
+    (U : TopologicalSpace.Clopens (K F w)ˣ) (f : Sections F ζ hζ w m ψ J)
+include hψ J U f
+private def cutSection   :
     Sections F ζ hζ w m ψ J := by
   classical
   letI := coverTopology
@@ -767,14 +788,14 @@ private def cutSection (hψ : IsLocallyConstant ψ)
         rw [Set.indicator_of_notMem hp, Set.indicator_of_notMem hh, smul_zero]⟩
   exact (compactLCEquiv F ζ hζ w m hm ψ hψ J).symm v
 
-private theorem cutSection_value (hψ : IsLocallyConstant ψ)
-    {J : Type*} [AddCommGroup J] [Module ℂ J]
-    (U : TopologicalSpace.Clopens (K F w)ˣ) (f : Sections F ζ hζ w m ψ J)
+private theorem cutSection_value  
     (p : P F ζ hζ w) :
     sectionValue F ζ hζ w m ψ (cutSection F ζ hζ w m hm ψ hψ U f) p =
       if slope F ζ hζ w p ∈ U then sectionValue F ζ hζ w m ψ f p else 0 := by
   classical
   rfl
+end
+
 
 def patchRestriction (hψ : IsLocallyConstant ψ) (c : LocalChart F ζ hζ w m)
     (J : Type*) [AddCommGroup J] [Module ℂ J] :
@@ -954,9 +975,12 @@ private lemma patchLC_translation_continuous : Continuous (patchLC_translation F
   simp_rw [hval]
   exact (hentry 0 1).div (hentry 1 1) h11
 
+
+local notation:max "current_hCoordinatesLocal" => hCoordinates F ζ hζ
+
 private lemma patchLC_coordinates_word (h : H F ζ hζ w) :
-    h.val = n F ζ hζ w (hCoordinates F ζ hζ w h).1 *
-      z F ζ hζ w (hCoordinates F ζ hζ w h).2 :=
+    h.val = n F ζ hζ w (current_hCoordinatesLocal w h).1 *
+      z F ζ hζ w (current_hCoordinatesLocal w h).2 :=
   Classical.choose_spec (ExistsUnique.exists (H_decomposition F ζ hζ w h))
 
 private lemma patchLC_projection_z (e : rootsOfUnity 3 F) :
@@ -972,17 +996,17 @@ private lemma patchLC_projection_z (e : rootsOfUnity 3 F) :
   rw [hz, map_one]
 
 private lemma patchLC_coordinates_fst_eq (h : H F ζ hζ w) :
-    (hCoordinates F ζ hζ w h).1 = patchLC_translation F w
+    (current_hCoordinatesLocal w h).1 = patchLC_translation F w
       ⟨KPLocalSmoothRepresentation.projection F ζ hζ w h.val.val, h.val.property⟩ := by
   have hp : KPLocalSmoothRepresentation.projection F ζ hζ w h.val.val =
-      KPRankOneInduction.upperRootElement F w (hCoordinates F ζ hζ w h).1 := by
+      KPRankOneInduction.upperRootElement F w (current_hCoordinatesLocal w h).1 := by
     have hw := congrArg (fun p : P F ζ hζ w => KPLocalSmoothRepresentation.projection F ζ hζ w p.val)
       (patchLC_coordinates_word F ζ hζ w h)
     simp only [Subgroup.coe_mul, map_mul, patchLC_projection_z, mul_one] at hw
     exact hw
   rw [patchLC_translation_formula F w
     ⟨KPLocalSmoothRepresentation.projection F ζ hζ w h.val.val, h.val.property⟩
-    (KPRankOneInduction.upperRootMatrix F w (hCoordinates F ζ hζ w h).1)
+    (KPRankOneInduction.upperRootMatrix F w (current_hCoordinatesLocal w h).1)
     hp.symm (by simp [KPRankOneInduction.upperRootMatrix])]
   simp [KPRankOneInduction.upperRootMatrix]
 
@@ -1001,7 +1025,7 @@ private lemma patchLC_actual_projection_continuous :
 
 private lemma patchLC_coordinates_fst_continuous :
     letI := topology
-    Continuous (fun h : H F ζ hζ w => (hCoordinates F ζ hζ w h).1) := by
+    Continuous (fun h : H F ζ hζ w => (current_hCoordinatesLocal w h).1) := by
   letI := topology
   simp_rw [patchLC_coordinates_fst_eq]
   exact (patchLC_translation_continuous F w).comp
@@ -1012,19 +1036,19 @@ private def patchLC_centralDefect (h : H F ζ hζ w) :
     letI := KPPGLLocalCover.scalarSubgroup_normal F (Sum.inr w)
     (KPPGLLocalCover.projection F ζ hζ (Sum.inr w)).ker := by
   letI := KPPGLLocalCover.scalarSubgroup_normal F (Sum.inr w)
-  refine ⟨(n F ζ hζ w (hCoordinates F ζ hζ w h).1).val⁻¹ * h.val.val, ?_⟩
-  have he : (n F ζ hζ w (hCoordinates F ζ hζ w h).1).val⁻¹ * h.val.val =
-      (z F ζ hζ w (hCoordinates F ζ hζ w h).2).val := by
+  refine ⟨(n F ζ hζ w (current_hCoordinatesLocal w h).1).val⁻¹ * h.val.val, ?_⟩
+  have he : (n F ζ hζ w (current_hCoordinatesLocal w h).1).val⁻¹ * h.val.val =
+      (z F ζ hζ w (current_hCoordinatesLocal w h).2).val := by
     rw [patchLC_coordinates_word F ζ hζ w h]
     simp
   rw [he, ← KPPGLLocalCover.range_centralInjection_eq_ker_projection]
-  exact ⟨(hCoordinates F ζ hζ w h).2, rfl⟩
+  exact ⟨(current_hCoordinatesLocal w h).2, rfl⟩
 
 private lemma patchLC_centralDefect_value (h : H F ζ hζ w) :
     letI := KPPGLLocalCover.scalarSubgroup_normal F (Sum.inr w)
     (patchLC_centralDefect F ζ hζ w h).val =
-      KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr w) (hCoordinates F ζ hζ w h).2 := by
-  change (n F ζ hζ w (hCoordinates F ζ hζ w h).1).val⁻¹ * h.val.val = _
+      KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr w) (current_hCoordinatesLocal w h).2 := by
+  change (n F ζ hζ w (current_hCoordinatesLocal w h).1).val⁻¹ * h.val.val = _
   rw [patchLC_coordinates_word F ζ hζ w h]
   simp only [Subgroup.coe_mul, inv_mul_cancel_left]
   rfl
@@ -1037,14 +1061,14 @@ private lemma patchLC_centralDefect_continuous :
   letI := KPPGLLocalCover.scalarSubgroup_normal F (Sum.inr w)
   letI := (KPPGLLocalCover.finite_topological_cover F ζ hζ w m hm).2.2.1
   have hn : Continuous (fun h : H F ζ hζ w =>
-      (n F ζ hζ w (hCoordinates F ζ hζ w h).1).val) :=
+      (n F ζ hζ w (current_hCoordinatesLocal w h).1).val) :=
     (KPLocalSmoothRepresentation.continuousUpperRoot F ζ hζ w m hm).continuous.comp
       (continuous_ofAdd.comp (patchLC_coordinates_fst_continuous F ζ hζ w m hm))
   exact (hn.inv.mul (continuous_subtype_val.comp continuous_subtype_val)).subtype_mk _
 
 private lemma patchLC_coordinates_snd_locallyConstant :
     letI := topology
-    IsLocallyConstant (fun h : H F ζ hζ w => (hCoordinates F ζ hζ w h).2) := by
+    IsLocallyConstant (fun h : H F ζ hζ w => (current_hCoordinatesLocal w h).2) := by
   letI := topology
   letI := KPPGLLocalCover.scalarSubgroup_normal F (Sum.inr w)
   letI : TopologicalSpace (rootsOfUnity 3 F) := ⊥
@@ -1053,7 +1077,7 @@ private lemma patchLC_coordinates_snd_locallyConstant :
   have hc := (IsLocallyConstant.of_discrete e.symm).comp_continuous
     (patchLC_centralDefect_continuous F ζ hζ w m hm)
   have hv (h : H F ζ hζ w) : e.symm (patchLC_centralDefect F ζ hζ w h) =
-      (hCoordinates F ζ hζ w h).2 := by
+      (current_hCoordinatesLocal w h).2 := by
     apply e.injective
     rw [e.apply_symm_apply]
     apply Subtype.ext
@@ -1401,14 +1425,16 @@ private def patchTensorIntoSections (c : LocalChart F ζ hζ w m)
     CompactFunctions c.ball.domain ℂ ⊗[ℂ] J →ₗ[ℂ] Sections F ζ hζ w m ψ J :=
   (sectionTensorMap F ζ hζ w m hm ψ hψ J).comp
     (TensorProduct.map (patchToSection F ζ hζ w m hm ψ hψ c) LinearMap.id)
-private theorem patchTensorIntoSections_tmul (c : LocalChart F ζ hζ w m)
+section
+variable (c : LocalChart F ζ hζ w m)
     {J : Type*} [AddCommGroup J] [Module ℂ J]
+include c J
+private theorem patchTensorIntoSections_tmul  
     (f : CompactFunctions c.ball.domain ℂ) (v : J) (p : P F ζ hζ w) :
     sectionValue F ζ hζ w m ψ (patchTensorIntoSections F ζ hζ w m hm ψ hψ c J (f ⊗ₜ[ℂ] v)) p =
       sectionValue F ζ hζ w m ψ (patchToSection F ζ hζ w m hm ψ hψ c f) p • v :=
   sectionTensorMap_tmul F ζ hζ w m hm ψ hψ _ v p
-private theorem sectionTensorMap_patch_mem (c : LocalChart F ζ hζ w m)
-    {J : Type*} [AddCommGroup J] [Module ℂ J]
+private theorem sectionTensorMap_patch_mem  
     (z : CompactFunctions c.ball.domain ℂ ⊗[ℂ] J) :
     sectionTensorMap F ζ hζ w m hm ψ hψ J
       (TensorProduct.map (patchToSection F ζ hζ w m hm ψ hψ c) LinearMap.id z) ∈
@@ -1427,13 +1453,17 @@ private theorem sectionTensorMap_patch_mem (c : LocalChart F ζ hζ w m)
     have he := patchTensorIntoSections_tmul F ζ hζ w m hm ψ hψ c f v p
     have hz := ((patchEquiv F ζ hζ w m hm ψ hψ c ℂ).symm f).property p hp
     exact he.trans ((congrArg (fun c : ℂ => c • v) hz).trans (zero_smul _ _))
-private def sectionTensorPatchMap (c : LocalChart F ζ hζ w m)
-    (J : Type*) [AddCommGroup J] [Module ℂ J] :
+end
+
+section
+variable (c : LocalChart F ζ hζ w m)
+    (J : Type*) [AddCommGroup J] [Module ℂ J]
+include c J
+private def sectionTensorPatchMap   :
     CompactFunctions c.ball.domain ℂ ⊗[ℂ] J →ₗ[ℂ] PatchSections F ζ hζ w m ψ c J :=
   (patchTensorIntoSections F ζ hζ w m hm ψ hψ c J).codRestrict
       (PatchSections F ζ hζ w m ψ c J) (sectionTensorMap_patch_mem F ζ hζ w m hm ψ hψ c)
-private theorem patchTensorIntoSections_chart (c : LocalChart F ζ hζ w m)
-    (J : Type*) [AddCommGroup J] [Module ℂ J]
+private theorem patchTensorIntoSections_chart  
     (z : CompactFunctions c.ball.domain ℂ ⊗[ℂ] J) (t : c.ball.domain) :
     sectionValue F ζ hζ w m ψ (patchTensorIntoSections F ζ hζ w m hm ψ hψ c J z) (c.lift t) =
       (patchTensorEquiv F ζ hζ w m c J z).val t := by
@@ -1458,8 +1488,7 @@ private theorem patchTensorIntoSections_chart (c : LocalChart F ζ hζ w m)
     exact ht.trans ((congrArg (fun c : ℂ => c • v) hc).trans
       (patchTensorEquiv_tmul F ζ hζ w m c f v t).symm)
   exact congrArg (fun L => L z) he
-private theorem sectionTensorPatchMap_surjective (c : LocalChart F ζ hζ w m)
-    (J : Type*) [AddCommGroup J] [Module ℂ J] :
+private theorem sectionTensorPatchMap_surjective   :
     Function.Surjective (sectionTensorPatchMap F ζ hζ w m hm ψ hψ c J) := by
   intro f
   let z := (patchTensorEquiv F ζ hζ w m c J).symm (patchEquiv F ζ hζ w m hm ψ hψ c J f)
@@ -1470,6 +1499,8 @@ private theorem sectionTensorPatchMap_surjective (c : LocalChart F ζ hζ w m)
   exact hpoint.trans ((congrArg (fun g => g.val t)
     ((patchTensorEquiv F ζ hζ w m c J).apply_symm_apply _)).trans
       (patchEquiv_value F ζ hζ w m hm ψ hψ c f t))
+end
+
 theorem sectionTensorMap_surjective (J : Type*) [AddCommGroup J] [Module ℂ J] :
     Function.Surjective (sectionTensorMap F ζ hζ w m hm ψ hψ J) := by
   intro f

@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import Mathlib.MeasureTheory.Group.ModularCharacter
 
 @[expose] public section
+
 
 section
 
@@ -56,9 +59,12 @@ private theorem compact_character_eq_one
   have hh := mul_le_mul_left (hle k⁻¹) (χ k)
   simpa only [← map_mul, inv_mul_cancel, map_one, one_mul] using hh
 
-theorem modular_character_compact_image
-    {G K : Type*} [TopologicalSpace G] [Group G] [IsTopologicalGroup G]
+section
+variable {G K : Type*} [TopologicalSpace G] [Group G] [IsTopologicalGroup G]
     [LocallyCompactSpace G] [T2Space G]
+include G K
+theorem modular_character_compact_image
+     
     [TopologicalSpace K] [Group K] [CompactSpace K]
     (π : K →* G) (hπ : Continuous π) (k : K) :
     Measure.modularCharacter (π k) = 1 := by
@@ -66,8 +72,7 @@ theorem modular_character_compact_image
     (continuous_modular_character.comp hπ) (fun j => Measure.modularCharacterFun_pos (π j)) k
 
 theorem map_compact_conjugation
-    {G K : Type*} [TopologicalSpace G] [Group G] [IsTopologicalGroup G]
-    [LocallyCompactSpace G] [T2Space G] [MeasurableSpace G] [BorelSpace G]
+      [MeasurableSpace G] [BorelSpace G]
     [TopologicalSpace K] [Group K] [CompactSpace K]
     (π : K →* G) (hπ : Continuous π)
     (μ : Measure G) [μ.IsHaarMeasure] [μ.InnerRegular] (k : K) :
@@ -78,6 +83,8 @@ theorem map_compact_conjugation
     (fun a : G => a * π k) ∘ (fun a : G => (π k)⁻¹ * a) from rfl,
     ← Measure.map_map (by fun_prop) (by fun_prop), map_mul_left_eq_self,
     Measure.map_right_mul_eq_modularCharacterFun_smul, h, one_smul]
+end
+
 
 end DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel.CompactModular
 
@@ -97,12 +104,11 @@ variable {G K : Type*} [TopologicalSpace G] [Group G] [IsTopologicalGroup G]
   [TopologicalSpace K] [Group K] [IsTopologicalGroup K] [CompactSpace K]
   [T2Space K] [MeasurableSpace K] [BorelSpace K]
 
-def average (π : K →* G) (ν : Measure K) (f : G → ℝ) (a : G) : ℝ :=
+def average (π : K →* G) (ν : Measure K) (f : G → ℝ) (a : G)  :=
   ∫ k, f ((π k)⁻¹ * a * π k) ∂ν
 
-theorem continuous_integrand (π : K →* G) (hπ : Continuous π)
-    (f : G → ℝ) (hf : Continuous f) :
-    Continuous (fun p : G × K => f ((π p.2)⁻¹ * p.1 * π p.2)) :=
+def continuous_integrand (π : K →* G) (hπ : Continuous π)
+    (f : G → ℝ) (hf : Continuous f)  :=
   hf.comp (((hπ.comp continuous_snd).inv.mul continuous_fst).mul
     (hπ.comp continuous_snd))
 
@@ -113,7 +119,7 @@ theorem continuous_average (π : K →* G) (hπ : Continuous π)
   apply continuousOn_integral_of_compact_support (k := univ) isCompact_univ
   · exact (continuous_integrand π hπ f hf).continuousOn
   · intro p x _ hx
-    exact False.elim (hx (mem_univ x))
+    apply False.elim <;> aesop
 
 theorem average_nonneg (π : K →* G) (ν : Measure K)
     (f : G → ℝ) (hf : ∀ x, 0 ≤ f x) (a : G) : 0 ≤ average π ν f a :=

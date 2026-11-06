@@ -19,6 +19,7 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 
 
 set_option autoImplicit false
+set_option maxHeartbeats 2000000
 
 /-!
 # The rational absolute idele-class direct limit
@@ -107,14 +108,14 @@ noncomputable def rationalAbsoluteGaloisIdeleClassAction
       (RelativeIdeleGroup.ClassGroup ℚ E)
       (AlgEquiv.restrictNormalHom E)
 
-/-- The rational absolute Galois action on every finite-Galois
-relative idele class group. -/
-noncomputable instance rationalFiniteGaloisIdeleClassMulDistribMulAction
-    (E : FiniteGaloisIntermediateField ℚ (SeparableClosure ℚ)) :
-    MulDistribMulAction
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)
-      (RelativeIdeleGroup.ClassGroup ℚ E) :=
-  rationalAbsoluteGaloisIdeleClassAction E
+
+
+
+
+
+
+
+
 
  instance
     (E : FiniteGaloisIntermediateField ℚ (SeparableClosure ℚ)) :
@@ -147,12 +148,15 @@ theorem rationalAbsoluteGaloisIdeleClass_smul_mk
         ((AlgEquiv.restrictNormalHom E σ) • a) :=
   rfl
 
+section
+variable {E : IntermediateField ℚ (SeparableClosure ℚ)}
+    [FiniteDimensional ℚ E]
+    {F : FiniteGaloisIntermediateField ℚ (SeparableClosure ℚ)}
+include E F in
 /-- Relative-adele scalar extension intertwines conjugation with the
 restriction of an absolute Galois automorphism. -/
 theorem rationalRelativeAdeleEmbedding_conjugation_of_restrict
-    {E : IntermediateField ℚ (SeparableClosure ℚ)}
-    [FiniteDimensional ℚ E]
-    {F : FiniteGaloisIntermediateField ℚ (SeparableClosure ℚ)}
+     
     (h : E ≤ (F : IntermediateField ℚ (SeparableClosure ℚ)))
     (σ : SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)
     (τ : E ≃ₐ[ℚ] E)
@@ -187,12 +191,11 @@ theorem rationalRelativeAdeleEmbedding_conjugation_of_restrict
   | add x y hx hy =>
       simp only [map_add, hx, hy]
 
+include E F in
 /-- Relative-idele scalar extension intertwines conjugation with the
 restriction of an absolute Galois automorphism. -/
 theorem rationalRelativeIdeleEmbedding_conjugation_of_restrict
-    {E : IntermediateField ℚ (SeparableClosure ℚ)}
-    [FiniteDimensional ℚ E]
-    {F : FiniteGaloisIntermediateField ℚ (SeparableClosure ℚ)}
+     
     (h : E ≤ (F : IntermediateField ℚ (SeparableClosure ℚ)))
     (σ : SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)
     (τ : E ≃ₐ[ℚ] E)
@@ -210,13 +213,12 @@ theorem rationalRelativeIdeleEmbedding_conjugation_of_restrict
       h σ τ hστ
       (a : RelativeAdeleRing ℚ E)
 
+include E F in
 /-- Relative idele-class scalar extension intertwines conjugation with
 the restriction of an absolute Galois automorphism. -/
 theorem
     rationalRelativeIdeleClassEmbedding_conjugation_of_restrict
-    {E : IntermediateField ℚ (SeparableClosure ℚ)}
-    [FiniteDimensional ℚ E]
-    {F : FiniteGaloisIntermediateField ℚ (SeparableClosure ℚ)}
+     
     (h : E ≤ (F : IntermediateField ℚ (SeparableClosure ℚ)))
     (σ : SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)
     (τ : E ≃ₐ[ℚ] E)
@@ -248,13 +250,12 @@ theorem rationalRelativeIdeleClassEmbedding_smul
   intro x
   simp only [AlgEquiv.restrictNormalHom_apply]
 
+include E F in
 /-- Acting after scalar extension agrees with the class embedding induced
 by the resulting restricted field embedding. -/
 theorem
     rationalRelativeIdeleClassEmbedding_smul_eq_classEmbedding
-    {E : IntermediateField ℚ (SeparableClosure ℚ)}
-    [FiniteDimensional ℚ E]
-    {F : FiniteGaloisIntermediateField ℚ (SeparableClosure ℚ)}
+     
     (h : E ≤ F)
     (σ : SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)
     (c : RelativeIdeleGroup.ClassGroup ℚ E) :
@@ -287,6 +288,8 @@ theorem
       congr 1
   | add x y hx hy =>
       simp only [map_add, hx, hy]
+end
+
 
 /-- The equivariant scalar-extension transition map in the
 finite-Galois idele-class system. -/
@@ -319,12 +322,15 @@ theorem rationalRelativeAdeleEmbedding_self
   | add x y hx hy =>
       simp only [map_add, hx, hy]
 
+section
+variable {E F H : IntermediateField ℚ (SeparableClosure ℚ)}
+    [NumberField E] [NumberField F] [NumberField H]
+    (hEF : E ≤ F) (hFH : F ≤ H)
+include E F H hEF hFH in
 /-- Scalar extension of relative adeles is transitive in a tower of
 intermediate fields. -/
 theorem rationalRelativeAdeleEmbedding_comp
-    {E F H : IntermediateField ℚ (SeparableClosure ℚ)}
-    [NumberField E] [NumberField F] [NumberField H]
-    (hEF : E ≤ F) (hFH : F ≤ H)
+     
     (z : RelativeAdeleRing ℚ E) :
     RelativeIdeleGroup.adeleEmbedding (IntermediateField.inclusion hFH)
         (RelativeIdeleGroup.adeleEmbedding (IntermediateField.inclusion hEF) z) =
@@ -355,12 +361,11 @@ theorem rationalRelativeIdeleClassEmbedding_self
       (rationalRelativeAdeleEmbedding_self E
         (a : RelativeAdeleRing ℚ E)))
 
+include E F H hEF hFH in
 /-- Scalar extension of relative idele classes is transitive in a tower
 of intermediate fields. -/
 theorem rationalRelativeIdeleClassEmbedding_comp
-    {E F H : IntermediateField ℚ (SeparableClosure ℚ)}
-    [NumberField E] [NumberField F] [NumberField H]
-    (hEF : E ≤ F) (hFH : F ≤ H)
+     
     (c : RelativeIdeleGroup.ClassGroup ℚ E) :
     RelativeIdeleGroup.classEmbedding (IntermediateField.inclusion hFH)
         (RelativeIdeleGroup.classEmbedding (IntermediateField.inclusion hEF) c) =
@@ -374,6 +379,8 @@ theorem rationalRelativeIdeleClassEmbedding_comp
     (Units.ext
       (rationalRelativeAdeleEmbedding_comp hEF hFH
         (a : RelativeAdeleRing ℚ E)))
+end
+
 
  noncomputable instance :
     DirectedSystem

@@ -15,15 +15,18 @@ open KPActualReflectionData.StandardLocalSource
 open KPReferenceChange.StandardComplexImage
 variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
+variable {R : PrincipalMellin.ActualRecipe S η} 
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 
-theorem prepared_spherical_period_ne_zero {Q : AdmissibleFlatSources R}
+section
+variable {Q : AdmissibleFlatSources R}
     {T : Realization R Q} (D : SourceFactorization R Q T)
     (K : PreparedSphericalTensor R D)
     (L : ∀w:InfinitePlace F,Theta frequency →L[ℂ] ℂ)
     (hr : ∀w v,L w (coreInStandardImage v)=D.ell (Sum.inl w) v)
+include Q T D K L hr in
+theorem prepared_spherical_period_ne_zero  
     (hn : ∀w,L w sphericalSeed≠0) :
     fourier R Q.dq K.value 1 ≠ 0 := by
   rw [K.product_at_one]
@@ -55,11 +58,8 @@ theorem factorization_source_detected {Q : AdmissibleFlatSources R}
   refine ⟨v,?_,ht,hv⟩
   exact (realizationScalarResidue T v).zero_section_ne_zero Q.iwasawa ht
 
-theorem prepared_spherical_period_product {Q : AdmissibleFlatSources R}
-    {T : Realization R Q} (D : SourceFactorization R Q T)
-    (K : PreparedSphericalTensor R D)
-    (L : ∀w:InfinitePlace F,Theta frequency →L[ℂ] ℂ)
-    (hr : ∀w v,L w (coreInStandardImage v)=D.ell (Sum.inl w) v) :
+include Q T D K L hr in
+theorem prepared_spherical_period_product   :
     fourier R Q.dq K.value 1 = ∏w,L w sphericalSeed := by
   rw [K.product_at_one]
   have hm (w:InfinitePlace F) : Sum.inl w∈K.stage.val := by
@@ -82,6 +82,8 @@ theorem prepared_spherical_period_product {Q : AdmissibleFlatSources R}
   · intro w
     change L w sphericalSeed = D.ell (Sum.inl w) (K.entries ⟨Sum.inl w,hm w⟩)
     rw [K.spherical,←hr,coreInStandardImage_spherical]
+end
+
 
 end DedekindZetaZeroFree.RootDerivatives
 

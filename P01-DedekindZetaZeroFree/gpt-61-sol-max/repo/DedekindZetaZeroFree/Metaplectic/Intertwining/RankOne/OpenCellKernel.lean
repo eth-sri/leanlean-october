@@ -23,8 +23,8 @@ variable {H D : Type*} [Group H] [TopologicalSpace H] [IsTopologicalGroup H]
   [CommGroup D] [Finite D]
 variable {T : LocalHeisenbergData H D}
 
-variable (A : LocalBorelData (K := LocalField F q) (G := Cover F ζ hζ q) T)
-variable (P : Polarization T)
+
+
 
 variable [MeasurableSpace (LocalField F q)] [BorelSpace (LocalField F q)]
 

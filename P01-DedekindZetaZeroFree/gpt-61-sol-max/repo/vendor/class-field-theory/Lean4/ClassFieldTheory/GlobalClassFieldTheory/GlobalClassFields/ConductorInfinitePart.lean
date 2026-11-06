@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.GlobalClassFieldTheory.GlobalClassFields.ConductorLocalComparison
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -61,7 +64,7 @@ theorem infinitePlaceIdeleClass_range_le_congruenceSubgroup_of_not_mem
       exact hv hw
     have hwv' : w.1 ≠ v.1 := by
       intro h
-      exact hwv (Subtype.ext h)
+      apply hwv <;> aesop
     change
       IdeleGroup.infiniteComponent w.1
           (IdeleGroup.infinitePlaceIdele v.1 x) ∈
@@ -78,14 +81,17 @@ theorem infinitePlaceIdeleClass_range_le_congruenceSubgroup_of_not_mem
     rw [IdeleGroup.infinitePlaceIdele_finiteComponent]
     exact Subgroup.one_mem _
 
-private theorem eraseRealPlace_isDefiningModulus_of_range_le
-    (H : Subgroup (IdeleClassGroup K))
+section
+variable (H : Subgroup (IdeleClassGroup K))
     (m : RayClass.Modulus K)
+include H m
+private theorem eraseRealPlace_isDefiningModulus_of_range_le
+     
     (hm : IsDefiningModulus H m)
     (v : RayClass.RealPlace K)
     (hvH : (IdeleGroup.infinitePlaceIdeleClass v.1).range ≤ H) :
     IsDefiningModulus H (m.eraseRealPlace v) := by
-  let m' : RayClass.Modulus K := m.eraseRealPlace v
+  let m'  := m.eraseRealPlace v
   show IsDefiningModulus H m'
   let q : IdeleGroup K →* IdeleClassGroup K :=
     QuotientGroup.mk' (IdeleGroup.principalSubgroup K)
@@ -95,10 +101,10 @@ private theorem eraseRealPlace_isDefiningModulus_of_range_le
   · intro a ha
     have ha' :=
       (RayClass.Modulus.mem_ideleCongruenceSubgroup_iff m' a).1 ha
-    let s : IdeleGroup K :=
+    let s  :=
       IdeleGroup.infinitePlaceIdele v.1
         (IdeleGroup.infiniteComponent v.1 a)
-    let b : IdeleGroup K := a * s⁻¹
+    let b  := a * s⁻¹
     have hsH : q s ∈ H := by
       change
         IdeleGroup.infinitePlaceIdeleClass v.1
@@ -143,8 +149,7 @@ private theorem eraseRealPlace_isDefiningModulus_of_range_le
       · rw [RayClass.mem_finiteCongruenceSubgroup_iff]
         intro w
         have haw :
-            a.2 w ∈ RayClass.localHigherUnitGroup w (m.finitePart w) := by
-          simpa [m'] using ha'.2 w
+            a.2 w ∈ RayClass.localHigherUnitGroup w (m.finitePart w) := ha'.2 w
         change
           IdeleGroup.finiteComponent w b ∈
             RayClass.localHigherUnitGroup w (m.finitePart w)
@@ -175,8 +180,7 @@ private theorem eraseRealPlace_isDefiningModulus_of_range_le
 defining-modulus property exactly when the whole one-place idèle-class
 image is already contained in the target subgroup. -/
 theorem eraseRealPlace_isDefiningModulus_iff
-    (H : Subgroup (IdeleClassGroup K))
-    (m : RayClass.Modulus K)
+     
     (v : RayClass.RealPlace K) :
     IsDefiningModulus H (m.eraseRealPlace v) ↔
       IsDefiningModulus H m ∧
@@ -191,14 +195,13 @@ theorem eraseRealPlace_isDefiningModulus_iff
         (infinitePlaceIdeleClass_range_le_congruenceSubgroup_of_not_mem
           (m.eraseRealPlace v) v (by simp)).trans hm'
   · rintro ⟨hm, hvH⟩
-    exact eraseRealPlace_isDefiningModulus_of_range_le H m hm v hvH
+    apply eraseRealPlace_isDefiningModulus_of_range_le <;> assumption
 
 /-- Erasing finitely many real places preserves the defining-modulus
 property when every corresponding one-place idèle-class image is contained
 in the target subgroup. -/
 theorem eraseRealPlaces_isDefiningModulus_of_ranges_le
-    (H : Subgroup (IdeleClassGroup K))
-    (m : RayClass.Modulus K)
+     
     (hm : IsDefiningModulus H m)
     (s : Finset (RayClass.RealPlace K))
     (hs : ∀ v ∈ s,
@@ -218,13 +221,18 @@ theorem eraseRealPlaces_isDefiningModulus_of_ranges_le
           (m.eraseRealPlaces s) v).2
           ⟨ih (fun w hw => hs w (Finset.mem_insert_of_mem hw)),
             hs v (Finset.mem_insert_self v s)⟩
+end
+
 
 namespace ConductorialSubgroup
 
+section
+variable (H : ConductorialSubgroup K)
+include H
 /-- The real places whose one-place idèle-class image is not contained in
 the target subgroup. -/
 noncomputable def fullConductorInfinitePart
-    (H : ConductorialSubgroup K) : Finset (RayClass.RealPlace K) :=
+      : Finset (RayClass.RealPlace K) :=
   (Finset.univ : Finset (RayClass.RealPlace K)).filter fun v =>
     ¬ (IdeleGroup.infinitePlaceIdeleClass v.1).range ≤ H.1
 
@@ -232,7 +240,7 @@ noncomputable def fullConductorInfinitePart
 the corresponding one-place idèle-class image to lie in the target subgroup. -/
 @[simp]
 theorem mem_fullConductorInfinitePart_iff
-    (H : ConductorialSubgroup K) (v : RayClass.RealPlace K) :
+      (v : RayClass.RealPlace K) :
     v ∈ H.fullConductorInfinitePart ↔
       ¬ (IdeleGroup.infinitePlaceIdeleClass v.1).range ≤ H.1 := by
   simp only [fullConductorInfinitePart, Finset.mem_filter,
@@ -240,7 +248,7 @@ theorem mem_fullConductorInfinitePart_iff
 
 /-- Every defining modulus contains the infinite part of the full conductor. -/
 theorem fullConductorInfinitePart_subset_of_isDefiningModulus
-    (H : ConductorialSubgroup K) {m : RayClass.Modulus K}
+      {m : RayClass.Modulus K}
     (hm : IsDefiningModulus H.1 m) :
     H.fullConductorInfinitePart ⊆ m.infinitePart := by
   intro v hv
@@ -253,43 +261,39 @@ theorem fullConductorInfinitePart_subset_of_isDefiningModulus
 /-- The full conductor, with the narrow finite conductor as finite part and
 exactly the required real places as infinite part. -/
 noncomputable def fullConductor
-    (H : ConductorialSubgroup K) : RayClass.Modulus K where
+      : RayClass.Modulus K where
   finitePart := H.narrowFiniteConductor
   infinitePart := H.fullConductorInfinitePart
 
 /-- The full conductor is itself a defining modulus. -/
 theorem fullConductor_isDefiningModulus
-    (H : ConductorialSubgroup K) :
+      :
     IsDefiningModulus H.1 H.fullConductor := by
   obtain ⟨m, hm, hfinite⟩ :=
     H.exists_definingModulus_finitePart_eq_narrowFiniteConductor
-  let s : Finset (RayClass.RealPlace K) :=
+  let s  :=
     m.infinitePart \ H.fullConductorInfinitePart
   have hs : ∀ v ∈ s,
       (IdeleGroup.infinitePlaceIdeleClass v.1).range ≤ H.1 := by
     intro v hv
-    have hvNot : v ∉ H.fullConductorInfinitePart :=
+    have hvNot  :=
       (Finset.mem_sdiff.mp hv).2
     by_contra hvRange
-    exact hvNot (H.mem_fullConductorInfinitePart_iff v |>.2 hvRange)
-  have hmErase :
-      IsDefiningModulus H.1 (m.eraseRealPlaces s) :=
+    apply hvNot <;> aesop
+  have hmErase  :=
     eraseRealPlaces_isDefiningModulus_of_ranges_le H.1 m hm s hs
-  have hsubset : H.fullConductorInfinitePart ⊆ m.infinitePart :=
+  have hsubset  :=
     H.fullConductorInfinitePart_subset_of_isDefiningModulus hm
   have hmod : m.eraseRealPlaces s = H.fullConductor := by
     apply RayClass.Modulus.ext
-    · simpa only [RayClass.Modulus.finitePart_eraseRealPlaces,
-        fullConductor] using hfinite
-    · simpa only [RayClass.Modulus.infinitePart_eraseRealPlaces,
-        fullConductor, s] using
-        Finset.sdiff_sdiff_eq_self hsubset
+    · exact hfinite
+    · exact Finset.sdiff_sdiff_eq_self hsubset
   rw [← hmod]
   exact hmErase
 
 /-- A modulus is defining exactly when it is at least the full conductor. -/
 theorem isDefiningModulus_iff_fullConductor_le
-    (H : ConductorialSubgroup K) (m : RayClass.Modulus K) :
+      (m : RayClass.Modulus K) :
     IsDefiningModulus H.1 m ↔ H.fullConductor ≤ m := by
   constructor
   · intro hm
@@ -300,6 +304,8 @@ theorem isDefiningModulus_iff_fullConductor_le
     exact
       (RayClass.Modulus.congruenceSubgroup_antitone hm).trans
         H.fullConductor_isDefiningModulus
+end
+
 
 end ConductorialSubgroup
 

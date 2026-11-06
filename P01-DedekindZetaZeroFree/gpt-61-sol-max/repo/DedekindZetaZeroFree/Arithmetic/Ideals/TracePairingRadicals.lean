@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Ideals.TraceQuotientPairing
 
 @[expose] public section
+
 
 /-
 https://github.com/LeanPool/lean-pool
@@ -37,7 +40,7 @@ theorem traceQuotientPairing_left_radical
       hx (fractionalIdealQuotientMk
         (traceDualFractionalIdeal J) (traceDualFractionalIdeal I) ⟨b, hb⟩)
   · rintro rfl y
-    exact traceQuotientPairing_zero_left I J hI hJ hJI y
+    apply traceQuotientPairing_zero_left
 
 theorem traceQuotientPairing_right_radical
     (y : fractionalIdealQuotient
@@ -55,17 +58,17 @@ theorem traceQuotientPairing_right_radical
     simpa only [traceQuotientPairing_mk] using
       hy (fractionalIdealQuotientMk I J ⟨a, ha⟩)
   · rintro rfl x
-    exact traceQuotientPairing_zero_right I J hI hJ hJI x
+    apply traceQuotientPairing_zero_right
 
-theorem traceQuotientPairing_injective :
-    Function.Injective (traceQuotientPairing I J hI hJ hJI) := by
-  apply (traceQuotientPairing I J hI hJ hJI).ker_eq_bot_iff.mp
-  apply bot_unique
-  intro x hx
-  apply (traceQuotientPairing_left_radical I J hI hJ hJI x).mp
-  intro y
-  have h : traceQuotientPairing I J hI hJ hJI x = 0 := hx
-  simpa only [h, AddChar.zero_apply]
+
+
+
+
+
+
+
+
+
 
 def traceQuotientPairingTranspose :
     fractionalIdealQuotient
@@ -88,8 +91,7 @@ def traceQuotientPairingTranspose :
       (traceDualFractionalIdeal J) (traceDualFractionalIdeal I))
     (x : fractionalIdealQuotient I J) :
     traceQuotientPairingTranspose I J hI hJ hJI y x =
-      traceQuotientPairing I J hI hJ hJI x y := by
-  rfl
+      traceQuotientPairing I J hI hJ hJI x y := rfl
 
 theorem traceQuotientPairingTranspose_injective :
     Function.Injective (traceQuotientPairingTranspose I J hI hJ hJI) := by

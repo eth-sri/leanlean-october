@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.LubinTate.FiniteLevel.CompletedIterates
 public import ClassFieldTheory.LubinTate.FiniteLevel.PrimitiveAction
 public import ClassFieldTheory.LubinTate.FiniteLevel.LevelValuation
@@ -7,6 +9,7 @@ public import Mathlib.RingTheory.MvPowerSeries.Inverse
 public import Mathlib.RingTheory.PowerSeries.Inverse
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -78,10 +81,13 @@ private theorem coeff_subst_X_zero
     · simp [he]
   · exact MvPowerSeries.HasSubst.X_zero
 
+section
+variable (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
+include hπ
 /-- The standard formal-group difference `F(X,Y) - X` is divisible by
 `Y`. -/
  theorem standardLubinTateFormalGroup_rightDisplacement_dvd
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) :
+      :
     (MvPowerSeries.X (1 : Fin 2) :
         MvPowerSeries (Fin 2) F.valuationSubring) ∣
       SameUniformizer.standardFormalGroupPowerSeries hπ -
@@ -98,10 +104,7 @@ private theorem coeff_subst_X_zero
     apply MvPowerSeries.hasSubst_of_constantCoeff_zero
     intro i
     fin_cases i
-    · simpa only [Fin.zero_eta, Matrix.cons_val_zero,
-        PowerSeries.X_apply] using
-        (MvPowerSeries.constantCoeff_X
-          (R := F.valuationSubring) ())
+    · apply MvPowerSeries.constantCoeff_X
     · simp
   have hsubst :
       MvPowerSeries.subst
@@ -113,27 +116,24 @@ private theorem coeff_subst_X_zero
         MvPowerSeries.subst
             ![(PowerSeries.X : PowerSeries F.valuationSubring), 0]
             (SameUniformizer.standardFormalGroupPowerSeries hπ) =
-          PowerSeries.X := by
-      simpa only [PowerSeries.X_apply] using
-        SameUniformizer.standardFormalGroupPowerSeries_subst_X_zero hπ
+          PowerSeries.X := SameUniformizer.standardFormalGroupPowerSeries_subst_X_zero hπ
     rw [hformal, MvPowerSeries.subst_X hhas]
     exact sub_self _
   have hcoeff :=
     congrArg (PowerSeries.coeff (d 0)) hsubst
   rw [coeff_subst_X_zero D d hd] at hcoeff
-  simpa [D] using hcoeff
+  exact hcoeff
 
 /-- The quotient of `F(X,Y) - X` by `Y`. -/
  noncomputable def standardLubinTateFormalGroupRightDisplacementFactor
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) :
-    MvPowerSeries (Fin 2) F.valuationSubring :=
+       :=
   Classical.choose
     (standardLubinTateFormalGroup_rightDisplacement_dvd hπ)
 
 /-- Factorization of the ordinary displacement in the standard formal
 group. -/
 private theorem standardLubinTateFormalGroup_rightDisplacement_factor
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) :
+      :
     SameUniformizer.standardFormalGroupPowerSeries hπ -
         MvPowerSeries.X (0 : Fin 2) =
       MvPowerSeries.X (1 : Fin 2) *
@@ -144,7 +144,7 @@ private theorem standardLubinTateFormalGroup_rightDisplacement_factor
 /-- The formal-group displacement factor has constant coefficient one. -/
 private theorem
     standardLubinTateFormalGroupRightDisplacementFactor_constantCoeff
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) :
+      :
     MvPowerSeries.constantCoeff
         (standardLubinTateFormalGroupRightDisplacementFactor hπ) = 1 := by
   let H := standardLubinTateFormalGroupRightDisplacementFactor hπ
@@ -176,7 +176,7 @@ private theorem
 
 /-- The formal-group displacement factor is invertible. -/
 private theorem standardLubinTateFormalGroupRightDisplacementFactor_isUnit
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) :
+      :
     IsUnit (standardLubinTateFormalGroupRightDisplacementFactor hπ) := by
   rw [MvPowerSeries.isUnit_iff_constantCoeff,
     standardLubinTateFormalGroupRightDisplacementFactor_constantCoeff]
@@ -185,16 +185,15 @@ private theorem standardLubinTateFormalGroupRightDisplacementFactor_isUnit
 /-- The factor left after removing `X` from the scalar endomorphism
 `[a](X)`. -/
  noncomputable def standardLubinTateEndomorphismLinearFactor
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (a : F.valuationSubring) :
-    PowerSeries F.valuationSubring :=
+     
+    (a : F.valuationSubring)  :=
   PowerSeries.mk fun m =>
     PowerSeries.coeff (m + 1)
       (SameUniformizer.standardLubinTateEndomorphism hπ a)
 
 /-- A standard scalar endomorphism is `X` times its linear factor. -/
 private theorem standardLubinTateEndomorphism_eq_X_mul_linearFactor
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
+     
     (a : F.valuationSubring) :
     SameUniformizer.standardLubinTateEndomorphism hπ a =
       PowerSeries.X *
@@ -220,7 +219,7 @@ private theorem standardLubinTateEndomorphism_eq_X_mul_linearFactor
 
 /-- The constant coefficient of the linear factor is the scalar. -/
 private theorem standardLubinTateEndomorphismLinearFactor_constantCoeff
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
+     
     (a : F.valuationSubring) :
     PowerSeries.constantCoeff
         (standardLubinTateEndomorphismLinearFactor hπ a) = a := by
@@ -231,7 +230,7 @@ private theorem standardLubinTateEndomorphismLinearFactor_constantCoeff
 
 /-- The linear factor of a unit scalar endomorphism is invertible. -/
 private theorem standardLubinTateEndomorphismLinearFactor_isUnit
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
+     
     (a : F.valuationSubringˣ) :
     IsUnit
       (standardLubinTateEndomorphismLinearFactor hπ
@@ -239,6 +238,8 @@ private theorem standardLubinTateEndomorphismLinearFactor_isUnit
   rw [PowerSeries.isUnit_iff_constantCoeff,
     standardLubinTateEndomorphismLinearFactor_constantCoeff]
   exact a.isUnit
+end
+
 
 end FormalFactors
 
@@ -293,9 +294,12 @@ private theorem hasEval_fin_two
     · exact hy
   · simp [Filter.cofinite_eq_bot]
 
+section
+variable (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
+include hπ
 private theorem
     standardLubinTateEndomorphismEvalAt_congr_point_forPrimitiveDisplacement
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
+      (n : ℕ)
     (x y : (standardLubinTateLevelCompleteDVF hπ n).valuationSubring)
     (hx : PowerSeries.HasEval x) (hy : PowerSeries.HasEval y)
     (hxy : x = y) (a : F.valuationSubring) :
@@ -307,7 +311,7 @@ private theorem
 /-- Ordinary subtraction after standard formal-group addition has the same
 additive valuation as the added topologically nilpotent point. -/
 theorem standardLubinTateFormalAdd_sub_left_addVal
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
+      (n : ℕ)
     (x z :
       (standardLubinTateLevelCompleteDVF hπ n).valuationSubring)
     (hx : PowerSeries.HasEval x) (hz : PowerSeries.HasEval z) :
@@ -361,7 +365,7 @@ theorem standardLubinTateFormalAdd_sub_left_addVal
 /-- A unit scalar endomorphism preserves normalized additive valuation on
 every topologically nilpotent point of a finite level. -/
 theorem standardLubinTateEndomorphismEvalAt_unit_addVal
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
+      (n : ℕ)
     (x : (standardLubinTateLevelCompleteDVF hπ n).valuationSubring)
     (hx : PowerSeries.HasEval x) (a : F.valuationSubringˣ) :
     IsDiscreteValuationRing.addVal
@@ -391,29 +395,26 @@ theorem standardLubinTateEndomorphismEvalAt_unit_addVal
 /-- The analytic value of `[π^k]` is the evaluated standard polynomial
 iterate. -/
 theorem standardLubinTateEndomorphismValue_uniformizer_pow
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
+     
     (n k : ℕ) :
     standardLubinTateEndomorphismValue hπ n (π ^ k) =
       standardLubinTatePrimitivePointIterateInteger hπ n k := by
-  exact
-    standardLubinTateEndomorphismEvalAt_uniformizer_pow hπ n
-      (standardLubinTatePrimitivePointInteger hπ n)
-      (standardLubinTatePrimitivePointInteger_hasEval hπ n) k
+  apply standardLubinTateEndomorphismEvalAt_uniformizer_pow
 
 /-- Every evaluated standard iterate before the annihilating level is
 topologically nilpotent. -/
 theorem standardLubinTatePrimitivePointIterateInteger_hasEval
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
+     
     (n k : ℕ) :
     PowerSeries.HasEval
       (standardLubinTatePrimitivePointIterateInteger hπ n k) := by
   rw [← standardLubinTateEndomorphismValue_uniformizer_pow hπ n k]
-  exact standardLubinTateEndomorphismValue_hasEval hπ n (π ^ k)
+  apply standardLubinTateEndomorphismValue_hasEval
 
 /-- An element in the exact `k`th principal-unit layer is a unit times
 `π^k`. -/
 private theorem exists_unit_mul_uniformizer_pow_of_exactDepth
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
+     
     (a : F.valuationSubringˣ) (k : ℕ)
     (ha :
       a ∈ CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF k)
@@ -431,9 +432,7 @@ private theorem exists_unit_mul_uniformizer_pow_of_exactDepth
       (a : F.valuationSubring) - 1 ∉
         F.toCompleteDVF.maximalIdeal ^ (k + 1) := by
     intro h
-    exact hnot
-      ((CompleteDVF.higherPrincipalUnitGroup.mem_iff
-        F.toCompleteDVF (k + 1) a).mpr h)
+    apply hnot <;> assumption
   have hdiv :
       π ^ k ∣ (a : F.valuationSubring) - 1 :=
     (F.toCompleteDVF.mem_maximalIdeal_pow_iff_uniformizer_pow_dvd
@@ -454,22 +453,27 @@ private theorem exists_unit_mul_uniformizer_pow_of_exactDepth
   rcases hcunit with ⟨cunit, rfl⟩
   refine ⟨cunit, ?_⟩
   simpa [mul_comm] using hc
+end
 
-/-- Exact principal-unit depth controls the valuation of `[a - 1]` at the
-primitive point. -/
-theorem standardLubinTateEndomorphismValue_sub_one_addVal_of_exactDepth
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
+
+section
+variable (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
     (n : ℕ) (a : F.valuationSubringˣ) (k : ℕ)
     (ha :
       a ∈ CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF k)
     (hnot :
       a ∉ CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF (k + 1))
-    (hk : k ≤ n) :
+    (hk : k ≤ n)
+include hπ n a k ha hnot hk
+/-- Exact principal-unit depth controls the valuation of `[a - 1]` at the
+primitive point. -/
+theorem standardLubinTateEndomorphismValue_sub_one_addVal_of_exactDepth
+      :
     IsDiscreteValuationRing.addVal
         (standardLubinTateLevelCompleteDVF hπ n).valuationSubring
         (standardLubinTateEndomorphismValue hπ n
           ((a : F.valuationSubring) - 1)) =
-      (Nat.card F.residueField ^ k : ℕ) := by
+      (Nat.card F.residueField ^ k) := by
   obtain ⟨c, hc⟩ :=
     exists_unit_mul_uniformizer_pow_of_exactDepth hπ a k ha hnot
   calc
@@ -503,7 +507,7 @@ theorem standardLubinTateEndomorphismValue_sub_one_addVal_of_exactDepth
       standardLubinTateEndomorphismEvalAt_unit_addVal hπ n
         (standardLubinTatePrimitivePointIterateInteger hπ n k)
         (standardLubinTatePrimitivePointIterateInteger_hasEval hπ n k) c
-    _ = (Nat.card F.residueField ^ k : ℕ) :=
+    _ = (Nat.card F.residueField ^ k) :=
       standardLubinTatePrimitivePointIterateInteger_addVal hπ n k hk
 
 /-- If a unit first differs from `1` in principal-unit depth `k`, its
@@ -511,18 +515,12 @@ ordinary displacement of the primitive point has valuation exactly
 `q^k`. -/
 theorem
     standardLubinTatePrimitivePointIntegerAction_sub_self_addVal_of_exactDepth
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) (a : F.valuationSubringˣ) (k : ℕ)
-    (ha :
-      a ∈ CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF k)
-    (hnot :
-      a ∉ CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF (k + 1))
-    (hk : k ≤ n) :
+      :
     IsDiscreteValuationRing.addVal
         (standardLubinTateLevelCompleteDVF hπ n).valuationSubring
         (standardLubinTatePrimitivePointIntegerAction hπ n a -
           standardLubinTatePrimitivePointInteger hπ n) =
-      (Nat.card F.residueField ^ k : ℕ) := by
+      (Nat.card F.residueField ^ k) := by
   let lambda := standardLubinTatePrimitivePointInteger hπ n
   let z :=
     standardLubinTateEndomorphismValue hπ n
@@ -561,13 +559,18 @@ theorem
         (standardLubinTatePrimitivePointInteger_hasEval hπ n)
         (standardLubinTateEndomorphismValue_hasEval hπ n
           ((a : F.valuationSubring) - 1))
-    _ = (Nat.card F.residueField ^ k : ℕ) :=
+    _ = (Nat.card F.residueField ^ k) :=
       standardLubinTateEndomorphismValue_sub_one_addVal_of_exactDepth
         hπ n a k ha hnot hk
+end
 
+
+section
+variable (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
+include hπ
 /-- Principal-unit membership is antitone in the depth index. -/
 private theorem higherPrincipalUnitGroup_mem_of_le
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
+     
     (a : F.valuationSubringˣ) {k r : ℕ} (hkr : k ≤ r)
     (ha :
       a ∈ CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF r) :
@@ -583,7 +586,7 @@ private theorem higherPrincipalUnitGroup_mem_of_le
 equivalent to `k ≤ r`. -/
 private theorem
     mem_higherPrincipalUnitGroup_iff_le_of_sub_eq_unit_mul_uniformizer_pow
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
+     
     (a c : F.valuationSubringˣ) (r k : ℕ)
     (hsub :
       (a : F.valuationSubring) - 1 =
@@ -605,9 +608,7 @@ private theorem
       (F.toCompleteDVF.mem_maximalIdeal_pow_iff_uniformizer_pow_dvd
         hπ (r + 1)).mpr hdeepDiv
     have hcmem : (c : F.valuationSubring) ∈
-        F.toCompleteDVF.maximalIdeal := by
-      exact
-        (F.toCompleteDVF.toDVF
+        F.toCompleteDVF.maximalIdeal := (F.toCompleteDVF.toDVF
           |>.mul_uniformizer_pow_mem_maximalIdeal_pow_succ_iff
             hπ r (c : F.valuationSubring)).mp (by
           simpa [hsub] using hdeep)
@@ -624,7 +625,7 @@ exactly the `k`th principal-unit subgroup.  The statement includes the
 identity action, whose displacement has infinite additive valuation. -/
 theorem
     standardLubinTatePrimitivePointIntegerAction_sub_self_addVal_ge_iff_mem
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
+     
     (n : ℕ) (a : F.valuationSubringˣ) (k : ℕ)
     (hk : k ≤ n + 1) :
     ((Nat.card F.residueField ^ k : ℕ) : ℕ∞) ≤
@@ -664,8 +665,7 @@ theorem
       exact
         (mem_higherPrincipalUnitGroup_iff_le_of_sub_eq_unit_mul_uniformizer_pow
           hπ a c r (n + 1) hsub).2 (by omega)
-    have hrmem :
-        a ∈ CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF r :=
+    have hrmem  :=
       (mem_higherPrincipalUnitGroup_iff_le_of_sub_eq_unit_mul_uniformizer_pow
         hπ a c r r hsub).2 le_rfl
     have hrnot :
@@ -685,14 +685,14 @@ theorem
     constructor
     · intro hpow
       by_contra hkr
-      have hrk : r < k := Nat.lt_of_not_ge hkr
+      have hrk  := Nat.lt_of_not_ge hkr
       have hltNat :
           Nat.card F.residueField ^ r <
             Nat.card F.residueField ^ k :=
         Nat.pow_lt_pow_right hqone hrk
       have hlt :
           (Nat.card F.residueField ^ r : ℕ∞) <
-            (Nat.card F.residueField ^ k : ℕ) := by
+            (Nat.card F.residueField ^ k) := by
         exact_mod_cast hltNat
       exact (not_lt_of_ge hpow) hlt
     · intro hkr
@@ -707,7 +707,7 @@ theorem
 detects the `k`th principal-unit subgroup. -/
 theorem
     standardLubinTatePrimitivePointIntegerAction_sub_self_addVal_ge_iff_mem_of_pow_interval
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
+     
     (n : ℕ) (a : F.valuationSubringˣ) (k r : ℕ)
     (hkpos : 1 ≤ k) (hk : k ≤ n + 1)
     (hlower : Nat.card F.residueField ^ (k - 1) ≤ r)
@@ -745,8 +745,7 @@ theorem
       exact
         (mem_higherPrincipalUnitGroup_iff_le_of_sub_eq_unit_mul_uniformizer_pow
           hπ a c j (n + 1) hsub).2 (by omega)
-    have hjmem :
-        a ∈ CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF j :=
+    have hjmem  :=
       (mem_higherPrincipalUnitGroup_iff_le_of_sub_eq_unit_mul_uniformizer_pow
         hπ a c j j hsub).2 le_rfl
     have hjnot :
@@ -785,9 +784,11 @@ theorem
       Nat.succ_le_of_lt hupper
     have hrq :
         ((r + 1 : ℕ) : ℕ∞) ≤
-          (Nat.card F.residueField ^ k : ℕ) := by
+          (Nat.card F.residueField ^ k) := by
       exact_mod_cast hrqNat
     exact hrq.trans hthreshold
+end
+
 
 section ParameterDisplacement
 
@@ -827,7 +828,7 @@ theorem standardLubinTateUnitParameterToGal_apply_primitivePointInteger
     standardLubinTateUnitParameterAlgEquiv F hπ n a
         (standardLubinTateLevelPowerBasis hπ n).gen =
       standardLubinTateUnitParameterLevelRoot F hπ n a
-  exact standardLubinTateUnitParameterAlgEquiv_apply_gen F hπ n a
+  apply standardLubinTateUnitParameterAlgEquiv_apply_gen
 
 /-- Exact depth of a chosen finite-parameter representative computes the
 displacement of the corresponding Galois automorphism. -/
@@ -851,13 +852,9 @@ theorem
             (standardLubinTateUnitParameterToGal F hπ n a)
             (standardLubinTatePrimitivePointInteger hπ n) -
           standardLubinTatePrimitivePointInteger hπ n) =
-      (Nat.card F.residueField ^ k : ℕ) := by
+      (Nat.card F.residueField ^ k) := by
   rw [standardLubinTateUnitParameterToGal_apply_primitivePointInteger]
-  exact
-    standardLubinTatePrimitivePointIntegerAction_sub_self_addVal_of_exactDepth
-      hπ n
-      (standardLubinTateUnitParameterChosenRepresentative F n a)
-      k ha hnot hk
+  apply standardLubinTatePrimitivePointIntegerAction_sub_self_addVal_of_exactDepth <;> assumption
 
 /-- The `q^k` displacement threshold for a finite-parameter automorphism is
 equivalent to its chosen representative belonging to `U^k`. -/
@@ -879,38 +876,35 @@ theorem
       standardLubinTateUnitParameterChosenRepresentative F n a ∈
         CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF k := by
   rw [standardLubinTateUnitParameterToGal_apply_primitivePointInteger]
-  exact
-    standardLubinTatePrimitivePointIntegerAction_sub_self_addVal_ge_iff_mem
-      hπ n
-      (standardLubinTateUnitParameterChosenRepresentative F n a) k hk
+  apply standardLubinTatePrimitivePointIntegerAction_sub_self_addVal_ge_iff_mem <;> assumption
 
-/-- The power-interval form of the finite-parameter displacement criterion,
-stated using its chosen representative. -/
-theorem
-    standardLubinTateUnitParameterToGal_displacement_addVal_ge_iff_chosenRepresentative_mem_of_pow_interval
-    (F : LocalField.{u, v} K) {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) (a : standardLubinTateUnitParameter F n) (k r : ℕ)
-    (hkpos : 1 ≤ k) (hk : k ≤ n + 1)
-    (hlower : Nat.card F.residueField ^ (k - 1) ≤ r)
-    (hupper : r < Nat.card F.residueField ^ k) :
-    (((r + 1 : ℕ) : ℕ∞) ≤
-        IsDiscreteValuationRing.addVal
-          (standardLubinTateLevelCompleteDVF hπ n).valuationSubring
-          (valuationSubringAutOfUniqueExtension
-              (standardLubinTateLevelCompleteDVF_hasUniqueDVFValuationExtension
-                hπ n)
-              (standardLubinTateUnitParameterToGal F hπ n a)
-              (standardLubinTatePrimitivePointInteger hπ n) -
-            standardLubinTatePrimitivePointInteger hπ n)) ↔
-      standardLubinTateUnitParameterChosenRepresentative F n a ∈
-        CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF k := by
-  rw [standardLubinTateUnitParameterToGal_apply_primitivePointInteger]
-  exact
-    standardLubinTatePrimitivePointIntegerAction_sub_self_addVal_ge_iff_mem_of_pow_interval
-      hπ n
-      (standardLubinTateUnitParameterChosenRepresentative F n a)
-      k r hkpos hk hlower hupper
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- Every nontrivial displacement of the primitive point by a level Galois
 automorphism has additive valuation at most `q ^ n`.
@@ -968,9 +962,7 @@ theorem standardLubinTateGal_displacement_addVal_le_of_ne
     exact
       (mem_higherPrincipalUnitGroup_iff_le_of_sub_eq_unit_mul_uniformizer_pow
         hπ representative c k (n + 1) hsub).2 (by omega)
-  have hkmem :
-      representative ∈
-        CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF k :=
+  have hkmem  :=
     (mem_higherPrincipalUnitGroup_iff_le_of_sub_eq_unit_mul_uniformizer_pow
       hπ representative c k k hsub).2 le_rfl
   have hknot :

@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Representatives.TotallyPositiveCoprimeRepresentatives
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Characters.PrincipalIdealCharacterValues
 
 @[expose] public section
+
 
 open scoped NumberField Classical
 
@@ -81,13 +84,13 @@ theorem rayCharacter_primitive_modulus_le {m f q : Ideal (𝓞 F)}
     rw [this]
     exact add_mem (Ideal.mul_le_right (I := m) (J := f) hbb0) hb0f
 
-  have hres : η (Ideal.span {α}) = η (Ideal.span {b}) :=
+  have hres  :=
     rayCharacter_span_eq_of_residue hm η α b hα0 hb0 (by
       have : α - b = -(b - α) := by ring
       rw [this]; exact neg_mem hb_α) hαcop hαpos hbpos
   have hspanb_ne : Ideal.span {b} ≠ ⊥ := fun hc => hb0 (Ideal.span_singleton_eq_bot.mp hc)
-  have hηb : η (Ideal.span {b}) = θ (Ideal.span {b}) := h _ hspanb_ne hbcop
-  have hθb : θ (Ideal.span {b}) = 1 := θ.map_span' b hb0 hb_1 hbpos
+  have hηb  := h _ hspanb_ne hbcop
+  have hθb  := θ.map_span' b hb0 hb_1 hbpos
   exact hηα (hres.trans (hηb.trans hθb))
 
 end DedekindZetaZeroFree.LargeSieve

@@ -28,11 +28,14 @@ def coordinatePiece (cover : CountableCover F ζ hζ U R P H) (n : ℕ) :
     Set (omega (cover.chart n)) :=
   (fun y => q (cover.chart n) y.val) ⁻¹' basePiece cover n
 
+
+local notation:max "current_ShrunkChart" => ShrunkChart F ζ hζ U R P H
+
 structure Properties (cover : CountableCover F ζ hζ U R P H) : Prop where
   all_charts : ∀ (f g : PieceSequence cover),
     (∀ n : ℕ, f.val n =ᵐ[(chartMeasure (cover.chart n)).restrict
       (coordinatePiece cover n)] g.val n) →
-    ∀ a : ShrunkChart F ζ hζ U R P H,
+    ∀ a : current_ShrunkChart,
       coefficient (G cover f) a =ᵐ[chartMeasure a] coefficient (G cover g) a
   intrinsic : ∀ (f g : PieceSequence cover),
     (∀ n : ℕ, f.val n =ᵐ[(chartMeasure (cover.chart n)).restrict
@@ -41,7 +44,7 @@ structure Properties (cover : CountableCover F ζ hζ U R P H) : Prop where
   every_arrow : ∀ (f : PieceSequence cover) (n : ℕ)
     (r : omega (cover.chart n) → E F),
     r =ᵐ[(chartMeasure (cover.chart n)).restrict (coordinatePiece cover n)] f.val n →
-    ∀ (a : ShrunkChart F ζ hζ U R P H)
+    ∀ (a : current_ShrunkChart)
       (ψ : ActualBranch a (cover.chart n)),
       ∀ᵐ x ∂((chartMeasure a).restrict
         {x : omega a | x.val ∈ ψ.arrow.domain ∧ q a x.val ∈ basePiece cover n}),
@@ -67,10 +70,13 @@ structure Properties (cover : CountableCover F ζ hζ U R P H) : Prop where
   Measure.map (coordHomeomorph (F := F) (ζ := ζ) (hζ := hζ)).symm
     (KPArch.hyperbolicVolume (KPCuspLogShape.dimension F))
 
-private theorem lifted_formula (a : ShrunkChart F ζ hζ U R P H) :
+
+local notation:max "current_coordinateMeasure" => coordinateMeasure (F := F) (ζ := ζ) (hζ := hζ)
+
+private theorem lifted_formula (a : current_ShrunkChart) :
     KPContCotangentOverlapNullEquivalence.liftedMeasure a =
       ((H.disintegration U).componentWeight a.component / (Nat.card a.Isotropy : ENNReal)) •
-        (coordinateMeasure (F := F) (ζ := ζ) (hζ := hζ)).restrict (omega a) := by
+        (current_coordinateMeasure).restrict (omega a) := by
   let c := coordHomeomorph (F := F) (ζ := ζ) (hζ := hζ)
   rw [KPContCotangentOverlapNullEquivalence.liftedMeasure, ShrunkChart.liftedMeasure,
     Measure.map_smul]
@@ -89,10 +95,10 @@ private theorem lifted_formula (a : ShrunkChart F ζ hζ U R P H) :
       ((KPArch.hyperbolicVolume (KPCuspLogShape.dimension F)).restrict s)) he.symm
   · exact (c.symm.measurable.comp measurable_subtype_coe).aemeasurable
 
-private theorem lifted_absolutelyContinuous (a : ShrunkChart F ζ hζ U R P H) :
+private theorem lifted_absolutelyContinuous (a : current_ShrunkChart) :
     KPContCotangentOverlapNullEquivalence.liftedMeasure a ≪
-        (coordinateMeasure (F := F) (ζ := ζ) (hζ := hζ)).restrict (omega a) ∧
-      (coordinateMeasure (F := F) (ζ := ζ) (hζ := hζ)).restrict (omega a) ≪
+        (current_coordinateMeasure).restrict (omega a) ∧
+      (current_coordinateMeasure).restrict (omega a) ≪
         KPContCotangentOverlapNullEquivalence.liftedMeasure a := by
   rw [lifted_formula]
   refine ⟨Measure.smul_absolutelyContinuous, Measure.absolutelyContinuous_smul ?_⟩
@@ -102,8 +108,8 @@ private theorem lifted_absolutelyContinuous (a : ShrunkChart F ζ hζ U R P H) :
 private theorem rational_preserving (g : KPCuspArithmetic.PGL2 F) :
     MeasurePreserving (fun x => labeledAInv (placeEquiv F ζ hζ)
       (g • labeledA (placeEquiv F ζ hζ) x))
-      (coordinateMeasure (F := F) (ζ := ζ) (hζ := hζ))
-      (coordinateMeasure (F := F) (ζ := ζ) (hζ := hζ)) := by
+      (current_coordinateMeasure)
+      (current_coordinateMeasure) := by
   let c := coordHomeomorph (F := F) (ζ := ζ) (hζ := hζ)
   have hs : MeasurePreserving c.symm
       (KPArch.hyperbolicVolume (KPCuspLogShape.dimension F)) coordinateMeasure :=
@@ -118,13 +124,13 @@ private theorem cast_fields {i j : Fin (H.atlas U).componentCount}
   cases h
   exact ⟨rfl, rfl⟩
 
-private theorem target_chart_fields (a b : ShrunkChart F ζ hζ U R P H)
+private theorem target_chart_fields (a b : current_ShrunkChart)
     (h : a.component = b.component) :
     (targetChart a b h).kind.representative = 1 ∧
       (targetChart a b h).places = placeEquiv F ζ hζ :=
   cast_fields h.symm (isotropyChart b)
 
-private theorem arrow_psi_formula {a b : ShrunkChart F ζ hζ U R P H}
+private theorem arrow_psi_formula {a b : current_ShrunkChart}
     (e : ActualBranch a b) :
     e.arrow.psi = fun x => labeledAInv (placeEquiv F ζ hζ)
       ((e.arrow.gamma : KPCuspArithmetic.PGL2 F) • labeledA (placeEquiv F ζ hζ) x) := by
@@ -139,11 +145,11 @@ private theorem arrow_psi_formula {a b : ShrunkChart F ζ hζ U R P H}
     show (isotropyChart a).places = placeEquiv F ζ hζ from rfl]
   simp
 
-private theorem psi_quasiMeasurePreserving {a b : ShrunkChart F ζ hζ U R P H}
+private theorem psi_quasiMeasurePreserving {a b : current_ShrunkChart}
     (e : ActualBranch a b) :
     Measure.QuasiMeasurePreserving e.arrow.psi
-      (coordinateMeasure (F := F) (ζ := ζ) (hζ := hζ))
-      (coordinateMeasure (F := F) (ζ := ζ) (hζ := hζ)) := by
+      (current_coordinateMeasure)
+      (current_coordinateMeasure) := by
   rw [arrow_psi_formula e]
   exact (rational_preserving (F := F) (ζ := ζ) (hζ := hζ)
     (e.arrow.gamma : KPCuspArithmetic.PGL2 F)).quasiMeasurePreserving
@@ -159,11 +165,11 @@ private theorem labeledA_labeledAInv (p : Fin (d F) ≃ Fin (KPCuspLogShape.dime
     (KPCuspSiegel.projection F (KPContSectorPhaseComponentCharts.Component F ζ hζ U R P H i)
       (labeledA (placeEquiv F ζ hζ) x))
 
-private theorem q_eq_Qfun (a : ShrunkChart F ζ hζ U R P H) :
+private theorem q_eq_Qfun (a : current_ShrunkChart) :
     KPContCotangentOverlapRationalBranches.q a = Qfun (F := F) (ζ := ζ) (hζ := hζ) (U := U)
       (R := R) (P := P) (H := H) a.component := rfl
 
-private theorem branch_quotient_compatibility {a b : ShrunkChart F ζ hζ U R P H}
+private theorem branch_quotient_compatibility {a b : current_ShrunkChart}
     (e : ActualBranch a b) (x : M F) (hx : x ∈ e.arrow.domain) :
     KPContCotangentOverlapRationalBranches.q b (e.arrow.psi x)
       = KPContCotangentOverlapRationalBranches.q a x := by
@@ -184,21 +190,21 @@ private theorem branch_quotient_compatibility {a b : ShrunkChart F ζ hζ U R P 
       MulAction.orbit (KPContSectorPhaseComponentCharts.Component F ζ hζ U R P H a.component)
         (labeledA (placeEquiv F ζ hζ) x) from ⟨e.arrow.gamma, rfl⟩)
 
-private theorem null_transfer {a b : ShrunkChart F ζ hζ U R P H}
+private theorem null_transfer {a b : current_ShrunkChart}
     (e : ActualBranch a b) (T : Set (M F)) (hT : T ⊆ omega b)
     (hT0 : (KPContCotangentOverlapNullEquivalence.liftedMeasure b).restrict (omega b) T = 0) :
     (KPContCotangentOverlapNullEquivalence.liftedMeasure a).restrict (omega a)
       (e.arrow.psi ⁻¹' T ∩ omega a) = 0 := by
   have hb := lifted_absolutelyContinuous b
   have ha := lifted_absolutelyContinuous a
-  have hcoord : coordinateMeasure (F := F) (ζ := ζ) (hζ := hζ) T = 0 := by
+  have hcoord : current_coordinateMeasure T = 0 := by
     have h1 : KPContCotangentOverlapNullEquivalence.liftedMeasure b T = 0 := by
       rw [← Measure.restrict_eq_self _ hT]; exact hT0
     have h2 := hb.2 h1
     rwa [Measure.restrict_eq_self _ hT] at h2
-  have hpre : coordinateMeasure (F := F) (ζ := ζ) (hζ := hζ) (e.arrow.psi ⁻¹' T) = 0 :=
+  have hpre : current_coordinateMeasure (e.arrow.psi ⁻¹' T) = 0 :=
     (psi_quasiMeasurePreserving e).preimage_null hcoord
-  have h2 : (coordinateMeasure (F := F) (ζ := ζ) (hζ := hζ)).restrict (omega a)
+  have h2 : (current_coordinateMeasure).restrict (omega a)
       (e.arrow.psi ⁻¹' T ∩ omega a) = 0 := by
     rw [Measure.restrict_eq_self _ (Set.inter_subset_right
       (s := e.arrow.psi ⁻¹' T) (t := omega a))]
@@ -215,11 +221,11 @@ private theorem continuous_labeledA_placeEquiv :
   intro k
   exact (continuous_apply _).comp (CotangentLogCoframe.A (d F)).continuous
 
-private theorem measurable_omega (a : ShrunkChart F ζ hζ U R P H) :
+private theorem measurable_omega (a : current_ShrunkChart) :
     MeasurableSet (omega a) :=
   a.domain_open.measurableSet.preimage continuous_labeledA_placeEquiv.measurable
 
-private theorem measurable_q (a : ShrunkChart F ζ hζ U R P H) :
+private theorem measurable_q (a : current_ShrunkChart) :
     Measurable (KPContCotangentOverlapRationalBranches.q a) := by
   have hcm : Continuous (KPFiniteCuspAtlas.componentMap F ζ hζ U
       ((H.atlas U).representative a.component)) := by
@@ -249,7 +255,7 @@ private theorem every_arrow_ae
     (cover : CountableCover F ζ hζ U R P H) (f : PieceSequence cover) (n : ℕ)
     (r : omega (cover.chart n) → E F)
     (hr : r =ᵐ[(chartMeasure (cover.chart n)).restrict (coordinatePiece cover n)] f.val n)
-    (a : ShrunkChart F ζ hζ U R P H) (ψ : ActualBranch a (cover.chart n)) :
+    (a : current_ShrunkChart) (ψ : ActualBranch a (cover.chart n)) :
     ∀ᵐ x ∂((chartMeasure a).restrict
       {x : omega a | x.val ∈ ψ.arrow.domain ∧ q a x.val ∈ basePiece cover n}),
       ∀ hx : x.val ∈ ψ.arrow.domain,
@@ -337,7 +343,7 @@ private theorem all_charts_ae
     (cover : CountableCover F ζ hζ U R P H) (f g : PieceSequence cover)
     (hfg : ∀ n : ℕ, f.val n =ᵐ[(chartMeasure (cover.chart n)).restrict
       (coordinatePiece cover n)] g.val n)
-    (a : ShrunkChart F ζ hζ U R P H) :
+    (a : current_ShrunkChart) :
     coefficient (G cover f) a =ᵐ[chartMeasure a] coefficient (G cover g) a := by
   classical
   have hglue := kp_cont_actual_cotangent_exact_measurable_gluing F ζ hζ μG hμG U R hR P H cover

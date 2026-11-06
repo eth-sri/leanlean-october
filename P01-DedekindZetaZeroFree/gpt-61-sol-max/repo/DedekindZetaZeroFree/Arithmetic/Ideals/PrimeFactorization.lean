@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 The FLT Project. All rights reserved.
@@ -31,8 +34,7 @@ variable (K : Type*) [Field K] [NumberField K]
 abbrev NonzeroIdeal :=
   {I : Ideal (𝓞 K) // I ≠ 0}
 
-noncomputable def idealPrimeFactors (I : NonzeroIdeal K) :
-    Multiset (HeightOneSpectrum (𝓞 K)) :=
+noncomputable def idealPrimeFactors (I : NonzeroIdeal K)  :=
   Multiset.pmap
     (p := fun P : Ideal (𝓞 K) ↦ Prime P)
     (fun _ hP ↦ HeightOneSpectrum.ofPrime hP)
@@ -41,8 +43,7 @@ noncomputable def idealPrimeFactors (I : NonzeroIdeal K) :
 
 noncomputable def idealOfPrimeFactors
     (m : Multiset (HeightOneSpectrum (𝓞 K))) : NonzeroIdeal K :=
-  ⟨(m.map HeightOneSpectrum.asIdeal).prod, by
-    exact Multiset.prod_ne_zero fun h ↦
+  ⟨(m.map HeightOneSpectrum.asIdeal).prod, Multiset.prod_ne_zero fun h ↦
       let ⟨P, hP, heq⟩ := Multiset.mem_map.mp h
       P.ne_bot (heq ▸ rfl)⟩
 
@@ -64,7 +65,7 @@ theorem idealOfPrimeFactors_idealPrimeFactors (I : NonzeroIdeal K) :
         calc
           _ = Multiset.pmap (fun P (_ : Prime P) ↦ P)
               (normalizedFactors (I : Ideal (𝓞 K)))
-              prime_of_normalized_factor := by simp
+              prime_of_normalized_factor := rfl
           _ = Multiset.map id (normalizedFactors (I : Ideal (𝓞 K))) :=
                 Multiset.pmap_eq_map _ _ _ _
           _ = normalizedFactors (I : Ideal (𝓞 K)) := Multiset.map_id _]

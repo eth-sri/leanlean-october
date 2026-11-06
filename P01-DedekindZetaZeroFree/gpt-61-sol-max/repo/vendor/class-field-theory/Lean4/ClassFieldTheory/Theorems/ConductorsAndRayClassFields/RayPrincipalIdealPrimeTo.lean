@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.RayPrincipalIdealSubgroup
 public import ClassFieldTheory.Theorems.ConductorsAndRayClassFields.RayPrincipalIdealMembership
 public import ClassFieldTheory.AlgebraicNumberTheory.RayClass.Ideal
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -48,7 +51,7 @@ theorem rayPrincipalIdealSubgroup_le_primeToIdeals
   change FractionalIdeal.count K v
       (((FractionalIdealGroup.factorization (K := K))
         (FiniteIdeleGroup.valuationVector
-          (IdeleGroup.principalIdele K x).2) : FractionalIdealGroup K) :
+          (IdeleGroup.principalIdele K x).2)) :
         FractionalIdeal (nonZeroDivisors (𝓞 K)) K) = 0
   rw [FractionalIdealGroup.count_factorization,
     FiniteIdeleGroup.valuationVector_apply]

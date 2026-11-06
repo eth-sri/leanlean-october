@@ -255,45 +255,45 @@ theorem local_derivative_preserves_HC (s : ℝ) (b : LocalBasis)
     rw [localDerivative_add]
     exact Submodule.add_mem _ hx hy
 
-def localHCGenerator (s : ℝ) (b : LocalBasis) (f : localHC s) : localHC s :=
-  ⟨localDerivative s b f.val, local_derivative_preserves_HC s b f⟩
+
+
 
 section ActualQuotient
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (μ : KPSmoothActualFlowData.QuotientMeasureData F ζ hζ)
+
 
 abbrev B := InfinitePlace F × LocalBasis
 
-def cartanFlow (b : B F) (t : ℝ) : KPSmoothActualFlowData.GInfinity F :=
-  fun v => if v = b.1 then Matrix.ProjGenLinGroup.mk
-    (KPSmoothActualFlowData.matrixExponential ((t : ℂ) • cartanMatrix b.2)) else 1
 
-def generator (b : B F) (c : KPSmoothActualFlowData.H F ζ hζ μ.measure) :
-    KPSmoothActualFlowData.H F ζ hζ μ.measure :=
-  deriv (fun t : ℝ => (KPSmoothActualFlowData.pi F ζ hζ μ).operator
-    (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (cartanFlow F b t)) c) 0
 
-def CoreFlowDomains (C : Submodule ℂ (KPSmoothActualFlowData.H F ζ hζ μ.measure)) : Prop :=
-  ∀ b c, c ∈ C →
-    HasDerivAt (fun t : ℝ => (KPSmoothActualFlowData.pi F ζ hζ μ).operator
-      (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (cartanFlow F b t)) c)
-      (generator F ζ hζ μ b c) 0 ∧ generator F ζ hζ μ b c ∈ C
 
-structure ActualResiduePresentation
-    (C : Submodule ℂ (KPSmoothActualFlowData.H F ζ hζ μ.measure)) where
-  flowDomains : CoreFlowDomains F ζ hζ μ C
-  parameter : InfinitePlace F → ℝ
-  exceptional : ∀ v, parameter v = KPCplxPrincipalSeriesCharts.positiveParameter ∨
-    parameter v = KPCplxPrincipalSeriesCharts.negativeParameter
-  index : InfinitePlace F → Type
-  realize : ∀ v, index v → localHC (parameter v) →ₗ[ℂ] C
-  span : ∀ v, (⨆ i, (realize v i).range) = ⊤
-  intertwines : ∀ v i b f,
-    ((realize v i (localHCGenerator (parameter v) b f) : C) :
-      KPSmoothActualFlowData.H F ζ hζ μ.measure) =
-      generator F ζ hζ μ (v, b) (realize v i f)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end ActualQuotient
 

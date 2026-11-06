@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LargeSieve.CharacterBounds.ConductorControlledRestriction
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.GcdTailAndMaskedShellBounds
 
 @[expose] public section
+
 
 noncomputable section
 namespace DedekindZetaZeroFree.LargeSieve.Sieve.CoreCoefficient
@@ -31,7 +34,7 @@ theorem gcdPairTransport
     intro w hwsf hwc haw
     rw [(Q.χ w).eq_zero_iff']
     refine Or.inr fun hcond => haw ?_
-    have hle : Q.cond w ≤ w := Ideal.dvd_iff_le.mp (hGood w hwsf hwc).1
+    have hle  := Ideal.dvd_iff_le.mp (hGood w hwsf hwc).1
     have h : a ⊔ Q.cond w ≤ a ⊔ w := sup_le_sup_left hle a
     rw [hcond] at h
     exact top_le_iff.mp h
@@ -116,16 +119,16 @@ theorem gcdPairTransport
         ((Ideal.isCoprime_iff_sup_eq.mpr hcon.1).mul_right
           (Ideal.isCoprime_iff_sup_eq.mpr hcon.2)))
     rcases hua_or with hua | hva
-    · have h1 : (Q.χ u) a = 0 := hzw u husf hu_c hua
-      have h2 : (Q.χ (d * u)) a = 0 :=
+    · have h1  := hzw u husf hu_c hua
+      have h2  :=
         hzw (d * u) hdusf hduc fun h => hua (by
           have hle : d * u ≤ u := Ideal.dvd_iff_le.mp (dvd_mul_left u d)
           have hh : a ⊔ (d * u) ≤ a ⊔ u := sup_le_sup_left hle a
           rw [h] at hh
           exact top_le_iff.mp hh)
       rw [h2, h1, zero_mul, zero_mul]
-    · have h1 : (Q.χ v) a = 0 := hzw v hvsf hv_c hva
-      have h2 : (Q.χ (d * v)) a = 0 :=
+    · have h1  := hzw v hvsf hv_c hva
+      have h2  :=
         hzw (d * v) hdvsf hdvc fun h => hva (by
           have hle : d * v ≤ v := Ideal.dvd_iff_le.mp (dvd_mul_left v d)
           have hh : a ⊔ (d * v) ≤ a ⊔ v := sup_le_sup_left hle a
@@ -164,10 +167,10 @@ theorem T3_eq_maskedGcdBlock_core
       · rw [if_neg hcond]
         have ha' : a ∈ boundedNormIdeals F ((5 / 2) * M) ∧ a ≠ ⊥ ∧ a ⊔ c = ⊤ ∧ K < s a := by
           simpa only [kernelRows, Finset.mem_filter] using ha
-        have hac : a ⊔ c = ⊤ := ha'.2.2.1
+        have hac  := ha'.2.2.1
         have hb1' := (mem_paperShell F c N b1).mp hb1
-        have hb1sf : Squarefree b1 := hb1'.1
-        have hb1c : b1 ⊔ c = ⊤ := hb1'.2.1
+        have hb1sf  := hb1'.1
+        have hb1c  := hb1'.2.1
         have had : a ⊔ d ≠ ⊤ := by
           intro hd_
           exact hcond (Ideal.isCoprime_iff_sup_eq.mp
@@ -180,9 +183,9 @@ theorem T3_eq_maskedGcdBlock_core
           exact had (top_le_iff.mp (h_ ▸ hle))
         have hcondb1 : a ⊔ Q.cond b1 ≠ ⊤ := by
           intro hc_
-          have hle : Q.cond b1 ≤ b1 := Ideal.dvd_iff_le.mp (hGood b1 hb1sf hb1c).1
+          have hle  := Ideal.dvd_iff_le.mp (hGood b1 hb1sf hb1c).1
           exact hab1 (top_le_iff.mp (hc_ ▸ sup_le_sup_left hle a))
-        have hz : (Q.χ b1) a = 0 := ((Q.χ b1).eq_zero_iff' a).mpr (Or.inr hcondb1)
+        have hz  := ((Q.χ b1).eq_zero_iff' a).mpr (Or.inr hcondb1)
         rw [hz]; ring
     rw [hsum]
     simp only [one_mul, map_mul, map_one, Complex.ofReal_one]

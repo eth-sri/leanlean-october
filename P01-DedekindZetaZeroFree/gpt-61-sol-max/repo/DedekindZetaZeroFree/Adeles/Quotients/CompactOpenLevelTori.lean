@@ -19,15 +19,19 @@ def finiteLevelFiniteInclusion (F : Type*) [Field F] [NumberField F] :
     change (0, x + y) = (0 + 0, x + y)
     simp
 
-def finiteLevelImage {F : Type*} [Field F] [NumberField F]
-    (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F)) :
+section
+variable {F : Type*} [Field F] [NumberField F]
+    (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
+include F K
+def finiteLevelImage   :
     AddSubgroup (AdeleRing (𝓞 F) F ⧸ AdeleRing.principalSubgroup (𝓞 F) F) :=
   K.map ((QuotientAddGroup.mk' (AdeleRing.principalSubgroup (𝓞 F) F)).comp
     (finiteLevelFiniteInclusion F))
 
-abbrev finiteLevelAdditiveQuotient {F : Type*} [Field F] [NumberField F]
-    (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F)) :=
+abbrev finiteLevelAdditiveQuotient   :=
   (AdeleRing (𝓞 F) F ⧸ AdeleRing.principalSubgroup (𝓞 F) F) ⧸ finiteLevelImage K
+end
+
 
 private theorem existsOpenDiagonalZero (F : Type*) [Field F] [NumberField F] :
     ∃ U : Set (AdeleRing (𝓞 F) F), IsOpen U ∧ (0 : AdeleRing (𝓞 F) F) ∈ U ∧

@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Mellin.NormSheetLogarithmicDerivativeBounds
 public import DedekindZetaZeroFree.HarmonicAnalysis.Mellin.VerticalStripRapidDecay
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 noncomputable section
@@ -17,17 +20,17 @@ def localUnits (A : SArithmeticData F) : A.G ≃* (SLocalProduct F A.Sf)ˣ :=
   ((MulEquiv.piUnits).symm.prodCongr (MulEquiv.piUnits).symm).trans
     (MulEquiv.prodUnits).symm
 
-def ell (A : SArithmeticData F) (T : ℝ) : (SLocalProduct F A.Sf)ˣ :=
+def ell (A : SArithmeticData F) (T : ℝ)  :=
   if hT : 0 < T then localUnits A (A.radialSection T hT) else 1
 
 def complexNormFlow (A : SArithmeticData F) (w : InfinitePlace F)
     (u : ℝ) (x : SLocalProduct F A.Sf) : SLocalProduct F A.Sf :=
   (Function.update x.1 w
     ((InfinitePlace.Completion.ringEquivComplexOfIsComplex (A.complex_place w)).symm
-      (Real.exp (u / 2) : ℂ) * x.1 w), x.2)
+      (Real.exp (u / 2)) * x.1 w), x.2)
 
 def logDerivative (A : SArithmeticData F) (w : InfinitePlace F) (k : ℕ)
-    (f : SLocalProduct F A.Sf → ℂ) (x : SLocalProduct F A.Sf) : ℂ :=
+    (f : SLocalProduct F A.Sf → ℂ) (x : SLocalProduct F A.Sf)  :=
   iteratedDeriv k (fun u : ℝ => f (complexNormFlow A w u x)) 0
 
 local instance (A : SArithmeticData F) : MeasurableSpace (SLocalProduct F A.Sf) := borel _
@@ -40,25 +43,25 @@ local instance (A : SArithmeticData F) : BorelSpace A.G1 := ⟨rfl⟩
 def radialMeasure : Measure ℝ :=
   (volume.restrict (Set.Ioi 0)).withDensity (fun T => ENNReal.ofReal (1 / T))
 
-def sheetPoint (A : SArithmeticData F) (T : ℝ) (t : A.G1) :
-    (SLocalProduct F A.Sf)ˣ := localUnits A t.val * ell A T
+def sheetPoint (A : SArithmeticData F) (T : ℝ) (t : A.G1)  := localUnits A t.val * ell A T
 
 def HaarDisintegration (A : SArithmeticData F)
-    (ν : Measure (SLocalProduct F A.Sf)ˣ) (dt : Measure A.G1) : Prop :=
+    (ν : Measure (SLocalProduct F A.Sf)ˣ) (dt : Measure A.G1)  :=
   ν = Measure.map (fun p : ℝ × A.G1 => sheetPoint A p.1 p.2)
     (radialMeasure.prod dt)
 
-def envelope (A : SArithmeticData F)
+section
+variable (A : SArithmeticData F)
     (e : (v : ↥A.Sf) → AddChar (v.val.adicCompletion F) Circle)
-    (μ : Measure (SLocalProduct F A.Sf)) (dt : Measure A.G1)
-    (W0 : SLocalProduct F A.Sf → ℂ) (T : ℝ) : ℂ :=
+    (μ : Measure (SLocalProduct F A.Sf))
+include A e μ
+def envelope   (dt : Measure A.G1)
+    (W0 : SLocalProduct F A.Sf → ℂ) (T : ℝ)  :=
   ∫ t, ProbeWeight.fourier F A.Sf e μ W0 (sheetPoint A T t).val ∂dt
 
-def MellinEstimates (A : SArithmeticData F)
-    (e : (v : ↥A.Sf) → AddChar (v.val.adicCompletion F) Circle)
-    (μ : Measure (SLocalProduct F A.Sf)) (ν : Measure (SLocalProduct F A.Sf)ˣ)
+def MellinEstimates   (ν : Measure (SLocalProduct F A.Sf)ˣ)
     (dt : Measure A.G1) (w : InfinitePlace F)
-    (W0 : SLocalProduct F A.Sf → ℂ) (W1 : ProbeRealAnnularWeight) : Prop :=
+    (W0 : SLocalProduct F A.Sf → ℂ) (W1 : ProbeRealAnnularWeight)  :=
   let W0hat := ProbeWeight.fourier F A.Sf e μ W0
   let V0 := envelope A e μ dt W0
   let M := ProbeWeight.fourierMellin F A.Sf e μ ν W0
@@ -72,7 +75,7 @@ def MellinEstimates (A : SArithmeticData F)
     Integrable (fun y : (SLocalProduct F A.Sf)ˣ =>
       W0hat y.val * (ProbeWeight.modulus F A.Sf y : ℂ) ^ z) ν ∧
     IntegrableOn (fun T : ℝ => V0 T * (T : ℂ) ^ z / (T : ℂ)) (Set.Ioi 0) ∧
-    (∫ T in Set.Ioi (0 : ℝ), V0 T * (T : ℂ) ^ z / (T : ℂ)) = M z) ∧
+    (∫ T in Set.Ioi (0), V0 T * (T : ℂ) ^ z / (T : ℂ)) = M z) ∧
   DifferentiableOn ℂ M {z | 0 < z.re} ∧
   (∀ (σ0 σ1 B : ℝ), 0 < σ0 → σ0 ≤ σ1 → 0 ≤ B →
     ∃ C : ℝ, 0 ≤ C ∧ ∀ σ ∈ Set.Icc σ0 σ1, ∀ τ : ℝ,
@@ -85,9 +88,11 @@ def MellinEstimates (A : SArithmeticData F)
   (∀ (c T : ℝ), 0 < c → 0 < T →
     Integrable (fun τ : ℝ => M ((c : ℂ) + (τ : ℂ) * Complex.I) *
       (T : ℂ) ^ (-(c : ℂ) - (τ : ℂ) * Complex.I)) ∧
-    V0 T = ((2 * Real.pi : ℝ) : ℂ)⁻¹ *
+    V0 T = ((2 * Real.pi : ℝ))⁻¹ *
       ∫ τ : ℝ, M ((c : ℂ) + (τ : ℂ) * Complex.I) *
         (T : ℂ) ^ (-(c : ℂ) - (τ : ℂ) * Complex.I))
+end
+
 
 open MeasureTheory.Measure
 variable (A : SArithmeticData F)
@@ -165,7 +170,7 @@ def logSplit : A.G ≃ₜ Multiplicative ℝ × A.G1 where
   right_inv p := by
     have hn : A.norm (p.2.val * A.radialSection (Real.exp p.1.toAdd) (Real.exp_pos _)) =
         Real.exp p.1.toAdd := by
-      rw [norm_mul, show A.norm p.2.val = 1 from p.2.property, A.norm_radialSection, one_mul]
+      rw [norm_mul, (p.2.property), A.norm_radialSection, one_mul]
     apply Prod.ext
     · change Multiplicative.ofAdd (Real.log _) = _
       rw [hn, Real.log_exp]
@@ -200,7 +205,7 @@ def logSplitMul : A.G ≃ₜ* Multiplicative ℝ × A.G1 where
   map_mul' := logSplit_mul A
 
 lemma map_log_radial : Measure.map Real.log radialMeasure = volume := by
-  have h := map_withDensity_abs_det_fderiv_eq_addHaar (volume : Measure ℝ)
+  have h := map_withDensity_abs_det_fderiv_eq_addHaar volume
     (s := Set.Ioi 0) (f := Real.log)
     (f' := fun x => ContinuousLinearMap.toSpanSingleton ℝ x⁻¹)
     measurableSet_Ioi.nullMeasurableSet
@@ -210,14 +215,13 @@ lemma map_log_radial : Measure.map Real.log radialMeasure = volume := by
     apply Set.eq_univ_of_forall
     intro u
     exact ⟨Real.exp u, Real.exp_pos u, Real.log_exp u⟩
-  have hd (x : ℝ) : (ContinuousLinearMap.toSpanSingleton ℝ x⁻¹).det = x⁻¹ := by
-    exact ContinuousLinearMap.det_toSpanSingleton _
+  have hd (x : ℝ) : (ContinuousLinearMap.toSpanSingleton ℝ x⁻¹).det = x⁻¹ := ContinuousLinearMap.det_toSpanSingleton _
   simp only [hd, him, Measure.restrict_univ] at h
   convert h using 2
   unfold radialMeasure
   apply withDensity_congr_ae
   filter_upwards [ae_restrict_mem measurableSet_Ioi] with x hx
-  simp [one_div, abs_of_pos (show 0 < x from hx)]
+  simp [one_div, abs_of_pos (hx)]
 lemma map_exp_volume : Measure.map Real.exp volume = radialMeasure := by
   rw [← map_log_radial, Measure.map_map Real.continuous_exp.measurable Real.measurable_log]
   calc
@@ -235,8 +239,7 @@ instance : mulVolume.IsHaarMeasure := by
   let e : ℝ ≃ₜ Multiplicative ℝ := ⟨Multiplicative.ofAdd, continuous_ofAdd, continuous_toAdd⟩
   have hfin : IsFiniteMeasureOnCompacts mulVolume :=
     IsFiniteMeasureOnCompacts.map volume e
-  have hopen : IsOpenPosMeasure mulVolume := by
-    exact continuous_ofAdd.isOpenPosMeasure_map Multiplicative.ofAdd.surjective
+  have hopen : IsOpenPosMeasure mulVolume := continuous_ofAdd.isOpenPosMeasure_map Multiplicative.ofAdd.surjective
   refine { hfin, hopen with
     map_mul_left_eq_self := ?_ }
   intro x
@@ -250,7 +253,7 @@ def localUnitsContinuous : A.G ≃ₜ* (SLocalProduct F A.Sf)ˣ where
   continuous_toFun := continuous_localUnits A
   continuous_invFun := continuous_localUnits_symm A
 
-def unitLogSplit : (SLocalProduct F A.Sf)ˣ ≃ₜ* Multiplicative ℝ × A.G1 :=
+def unitLogSplit  :=
   (localUnitsContinuous A).symm.trans (logSplitMul A)
 
 lemma unitLogSplit_symm_apply (p : Multiplicative ℝ × A.G1) :
@@ -280,7 +283,7 @@ lemma measurable_sheetPoint : Measurable (fun p : ℝ × A.G1 => sheetPoint A p.
       measurable_const measurableSet_Ioi
   have hm : MeasurableMul₂ (SLocalProduct F A.Sf)ˣ := by
     letI := secondCountable_G A
-    letI : SecondCountableTopology (SLocalProduct F A.Sf)ˣ :=
+    letI  :=
       (localUnitsContinuous A).symm.toHomeomorph.secondCountableTopology
     infer_instance
   letI := hm
@@ -296,13 +299,13 @@ lemma sheet_map_log_product (dt : Measure A.G1) [SFinite dt] :
       (Multiplicative.ofAdd p.1, p.2)) (volume.prod dt) = mulVolume.prod dt := by
     change Measure.map (Prod.map Multiplicative.ofAdd id) (volume.prod dt) = _
     simpa only [Measure.map_id, mulVolume] using
-      (Measure.map_prod_map (volume : Measure ℝ) dt
+      (Measure.map_prod_map volume dt
         continuous_ofAdd.measurable measurable_id).symm
   have hr : Measure.map (fun p : ℝ × A.G1 => (Real.exp p.1, p.2))
       (volume.prod dt) = radialMeasure.prod dt := by
     change Measure.map (Prod.map Real.exp id) (volume.prod dt) = _
     simpa only [map_exp_volume, Measure.map_id] using
-      (Measure.map_prod_map (volume : Measure ℝ) dt
+      (Measure.map_prod_map volume dt
         Real.continuous_exp.measurable measurable_id).symm
   have hup : Measurable (fun p : ℝ × A.G1 => (Multiplicative.ofAdd p.1, p.2)) :=
     (continuous_ofAdd.comp continuous_fst |>.prodMk continuous_snd).measurable
@@ -331,16 +334,16 @@ lemma normalized_haar_exists
   letI := secondCountable_G A
   letI := locallyCompact_G1 A
   letI := secondCountable_G1 A
-  letI : LocallyCompactSpace (SLocalProduct F A.Sf)ˣ :=
+  letI  :=
     (localUnitsContinuous A).symm.toHomeomorph.isOpenEmbedding.locallyCompactSpace
-  letI : SecondCountableTopology (SLocalProduct F A.Sf)ˣ :=
+  letI  :=
     (localUnitsContinuous A).symm.toHomeomorph.secondCountableTopology
   let dt₀ : Measure A.G1 := Measure.haar
-  let ν₀ : Measure (SLocalProduct F A.Sf)ˣ :=
+  let ν₀  :=
     Measure.map (fun p : ℝ × A.G1 => sheetPoint A p.1 p.2) (radialMeasure.prod dt₀)
   letI : dt₀.IsHaarMeasure := by dsimp [dt₀]; infer_instance
   letI : ν₀.IsHaarMeasure := sheet_map_isHaar A dt₀
-  let c : NNReal := ν.haarScalarFactor ν₀
+  let c  := ν.haarScalarFactor ν₀
   have hc : c ≠ 0 := (Measure.haarScalarFactor_pos_of_isHaarMeasure ν ν₀).ne'
   refine ⟨c • dt₀, Measure.IsHaarMeasure.nnreal_smul dt₀ hc, ?_⟩
   unfold HaarDisintegration
@@ -348,13 +351,12 @@ lemma normalized_haar_exists
   exact Measure.isMulLeftInvariant_eq_smul ν ν₀
 
 lemma modulus_localUnits (A : SArithmeticData F) (x : A.G) :
-    ProbeWeight.modulus F A.Sf (localUnits A x) = A.norm x := by
-  rfl
+    ProbeWeight.modulus F A.Sf (localUnits A x) = A.norm x := rfl
 lemma modulus_sheetPoint (A : SArithmeticData F) (T : ℝ) (hT : 0 < T) (t : A.G1) :
     ProbeWeight.modulus F A.Sf (sheetPoint A T t) = T := by
   unfold sheetPoint ell
   rw [dif_pos hT, ← map_mul, modulus_localUnits, ProbeSheet.norm_mul,
-    show A.norm t.val = 1 from t.property, A.norm_radialSection, one_mul]
+    t.property, A.norm_radialSection, one_mul]
 
 lemma radial_integrable_iff (f : ℝ → ℂ) :
     Integrable f radialMeasure ↔ IntegrableOn (fun T => f T / (T : ℂ)) (Set.Ioi 0) := by
@@ -367,7 +369,7 @@ lemma radial_integrable_iff (f : ℝ → ℂ) :
     Complex.ofReal_div, Complex.ofReal_one, smul_eq_mul]
   ring
 lemma radial_integral (f : ℝ → ℂ) :
-    (∫ T, f T ∂radialMeasure) = ∫ T in Set.Ioi (0 : ℝ), f T / (T : ℂ) := by
+    (∫ T, f T ∂radialMeasure) = ∫ T in Set.Ioi (0), f T / (T : ℂ) := by
   unfold radialMeasure
   rw [integral_withDensity_eq_integral_toReal_smul (by fun_prop) (by simp)]
   apply integral_congr_ae
@@ -383,7 +385,7 @@ lemma sheet_mellin_of_integrable (A : SArithmeticData F)
     (hi : Integrable (fun y => f y * (ProbeWeight.modulus F A.Sf y : ℂ) ^ z) ν) :
     IntegrableOn (fun T : ℝ => (∫ t, f (sheetPoint A T t) ∂dt) * (T : ℂ) ^ z / (T : ℂ))
       (Set.Ioi 0) ∧
-    (∫ T in Set.Ioi (0 : ℝ), (∫ t, f (sheetPoint A T t) ∂dt) * (T : ℂ) ^ z / (T : ℂ)) =
+    (∫ T in Set.Ioi (0), (∫ t, f (sheetPoint A T t) ∂dt) * (T : ℂ) ^ z / (T : ℂ)) =
       ∫ y, f y * (ProbeWeight.modulus F A.Sf y : ℂ) ^ z ∂ν := by
   letI := locallyCompact_G1 A
   letI := secondCountable_G1 A
@@ -410,7 +412,7 @@ lemma complexNormFlow_zero (A : SArithmeticData F) (w : InfinitePlace F)
   apply Prod.ext
   · dsimp [complexNormFlow]
     simp only [zero_div, Real.exp_zero, Complex.ofReal_one, map_one, one_mul]
-    exact Function.update_eq_self w x.1
+    apply Function.update_eq_self
   · rfl
 lemma logDerivative_zero (A : SArithmeticData F) (w : InfinitePlace F)
     (f : SLocalProduct F A.Sf → ℂ) (x : SLocalProduct F A.Sf) :
@@ -423,33 +425,36 @@ open Filter Asymptotics
 open scoped Topology
 
 namespace ProbeSheet.MellinProof
-private theorem realWeight_eventually_zero_top (W : ProbeRealAnnularWeight) :
+section
+variable (W : ProbeRealAnnularWeight)
+include W
+private theorem realWeight_eventually_zero_top   :
     (fun t : ℝ => (W t : ℂ)) =ᶠ[atTop] 0 := by
   have h := (hasCompactSupport_iff_eventuallyEq.mp W.compactSupport).filter_mono
     ((atTop_le_cocompact : (atTop : Filter ℝ) ≤ cocompact ℝ).trans
       cocompact_le_coclosedCompact)
   filter_upwards [h] with t ht
   simp [ht]
-private theorem realWeight_eventually_zero_zero (W : ProbeRealAnnularWeight) :
+private theorem realWeight_eventually_zero_zero   :
     (fun t : ℝ => (W t : ℂ)) =ᶠ[𝓝[>] 0] 0 := by
-  have hz : (0 : ℝ) ∉ tsupport W.toFun := by
+  have hz : (0) ∉ tsupport W.toFun := by
     intro h
-    exact lt_irrefl (0 : ℝ) (W.support_positive h)
-  have h : W.toFun =ᶠ[𝓝[>] (0 : ℝ)] 0 :=
+    exact lt_irrefl (0) (W.support_positive h)
+  have h : W.toFun =ᶠ[𝓝[>] (0)] 0 :=
     (notMem_tsupport_iff_eventuallyEq.mp hz).filter_mono nhdsWithin_le_nhds
   filter_upwards [h] with t ht
   simp [ht]
-private theorem realWeight_mellin_eq (W : ProbeRealAnnularWeight) :
+private theorem realWeight_mellin_eq   :
     probeRealWeightMellin W = mellin (fun t : ℝ => (W t : ℂ)) := by
   funext z
   apply setIntegral_congr_fun measurableSet_Ioi
   intro t ht
-  have hn : (t : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (ne_of_gt ht)
+  have hn  := Complex.ofReal_ne_zero.mpr (ne_of_gt ht)
   simp only [smul_eq_mul]
   rw [Complex.cpow_sub _ _ hn]
   simp only [Complex.cpow_one]
   ring
-theorem realWeight_mellin_differentiable (W : ProbeRealAnnularWeight) :
+theorem realWeight_mellin_differentiable   :
     Differentiable ℂ (probeRealWeightMellin W) := by
   rw [realWeight_mellin_eq]
   intro z
@@ -461,7 +466,7 @@ theorem realWeight_mellin_differentiable (W : ProbeRealAnnularWeight) :
   · linarith
   · exact (isBigO_zero _ _).congr' (realWeight_eventually_zero_zero W).symm Filter.EventuallyEq.rfl
   · linarith
-theorem realWeight_mellin_convergent (W : ProbeRealAnnularWeight) (z : ℂ) :
+theorem realWeight_mellin_convergent   (z : ℂ) :
     MellinConvergent (fun t : ℝ => (W t : ℂ)) z := by
   apply mellinConvergent_of_isBigO_rpow (a := z.re + 1) (b := z.re - 1)
   · exact (Complex.continuous_ofReal.comp W.smooth.continuous).continuousOn.locallyIntegrableOn
@@ -470,6 +475,8 @@ theorem realWeight_mellin_convergent (W : ProbeRealAnnularWeight) (z : ℂ) :
   · linarith
   · exact (isBigO_zero _ _).congr' (realWeight_eventually_zero_zero W).symm Filter.EventuallyEq.rfl
   · linarith
+end
+
 
 private theorem cpow_mul_integrable {f : ℝ → ℂ} (hf : Continuous f)
     (hc : HasCompactSupport f) (hp : tsupport f ⊆ Set.Ioi 0) (z : ℂ) :
@@ -523,7 +530,7 @@ theorem annular_mellin_logDerivative {f : ℝ → ℂ}
     simp only [smul_eq_mul]
     apply setIntegral_eq_integral_of_forall_compl_eq_zero
     intro t ht
-    have hd : f t = 0 := image_eq_zero_of_notMem_tsupport (fun h => ht (hp h))
+    have hd  := image_eq_zero_of_notMem_tsupport (fun h => ht (hp h))
     simp [hd]
   rw [hleft, hright]
   simpa [neg_mul] using hi
@@ -565,15 +572,18 @@ theorem annular_mellin_bounded_on_strip {f : ℝ → ℂ} (hf : Continuous f)
       t ^ (σ - 1) * ‖f t‖ ≤ (t ^ (a - 1) + t ^ (b - 1)) * ‖f t‖ :=
         mul_le_mul_of_nonneg_right hh (norm_nonneg _)
       _ = _ := by ring
-  · have hz : f t = 0 := image_eq_zero_of_notMem_tsupport (fun h => ht (hp h))
+  · have hz  := image_eq_zero_of_notMem_tsupport (fun h => ht (hp h))
     simp [g, hz]
 
  noncomputable def eulerIterate (f : ℝ → ℂ) : ℕ → ℝ → ℂ
   | 0 => f
   | n + 1 => fun t => (t : ℂ) * deriv (eulerIterate f n) t
-private theorem eulerIterate_properties {f : ℝ → ℂ}
+section
+variable {f : ℝ → ℂ}
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (hc : HasCompactSupport f)
-    (hp : tsupport f ⊆ Set.Ioi 0) (n : ℕ) :
+    (hp : tsupport f ⊆ Set.Ioi 0)
+include f hf hc hp
+private theorem eulerIterate_properties   (n : ℕ) :
     ContDiff ℝ (⊤ : ℕ∞) (eulerIterate f n) ∧ HasCompactSupport (eulerIterate f n) ∧
     tsupport (eulerIterate f n) ⊆ Set.Ioi 0 := by
   induction n with
@@ -583,9 +593,7 @@ private theorem eulerIterate_properties {f : ℝ → ℂ}
     dsimp only [eulerIterate]
     exact (Complex.ofRealCLM.contDiff : ContDiff ℝ (⊤ : ℕ∞) (fun t : ℝ => (t : ℂ))).mul
       ((contDiff_infty_iff_deriv.mp ih.1).2)
-private theorem eulerIterate_mellin {f : ℝ → ℂ}
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) (hc : HasCompactSupport f)
-    (hp : tsupport f ⊆ Set.Ioi 0) (n : ℕ) (z : ℂ) :
+private theorem eulerIterate_mellin   (n : ℕ) (z : ℂ) :
     mellin (eulerIterate f n) z = (-z) ^ n * mellin f z := by
   induction n with
   | zero => simp [eulerIterate]
@@ -593,9 +601,7 @@ private theorem eulerIterate_mellin {f : ℝ → ℂ}
     obtain ⟨hs, hc', hp'⟩ := eulerIterate_properties hf hc hp n
     rw [eulerIterate, annular_mellin_logDerivative hs hc' hp', ih, pow_succ]
     ring
-theorem annular_mellin_rapid_on_strip {f : ℝ → ℂ}
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) (hc : HasCompactSupport f)
-    (hp : tsupport f ⊆ Set.Ioi 0) (a b B : ℝ) (hB : 0 ≤ B) :
+theorem annular_mellin_rapid_on_strip   (a b B : ℝ) (hB : 0 ≤ B) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ σ ∈ Set.Icc a b, ∀ τ : ℝ,
       ‖mellin f ((σ : ℂ) + (τ : ℂ) * Complex.I)‖ ≤ C * (1 + |τ|) ^ (-B) := by
   obtain ⟨n, hn⟩ := exists_nat_ge B
@@ -604,7 +610,7 @@ theorem annular_mellin_rapid_on_strip {f : ℝ → ℂ}
   obtain ⟨Cn, hCn, hboundn⟩ := annular_mellin_bounded_on_strip hs.continuous hc' hp' a b
   refine ⟨(C0 + Cn) * 2 ^ n, mul_nonneg (add_nonneg hC0 hCn) (by positivity), ?_⟩
   intro σ hσ τ
-  let z : ℂ := (σ : ℂ) + (τ : ℂ) * Complex.I
+  let z  := (σ : ℂ) + (τ : ℂ) * Complex.I
   have hzn : ‖z‖ ^ n * ‖mellin f z‖ ≤ Cn := by
     have h := hboundn σ hσ τ
     rw [eulerIterate_mellin hf hc hp n, _root_.norm_mul, norm_pow, norm_neg] at h
@@ -636,6 +642,8 @@ theorem annular_mellin_rapid_on_strip {f : ℝ → ℂ}
     (mul_le_mul_of_nonneg_left hpow (norm_nonneg _)).trans hprod
   rw [Real.rpow_neg (by positivity)]
   exact (le_div_iff₀ (Real.rpow_pos_of_pos (by positivity) B)).mpr hprodB
+end
+
 
 theorem realWeight_mellin_rapid_on_strip (W : ProbeRealAnnularWeight)
     (a b B : ℝ) (hB : 0 ≤ B) :
@@ -644,7 +652,7 @@ theorem realWeight_mellin_rapid_on_strip (W : ProbeRealAnnularWeight)
         C * (1 + |τ|) ^ (-B) := by
   rw [realWeight_mellin_eq]
   apply annular_mellin_rapid_on_strip (Complex.ofRealCLM.contDiff.comp W.smooth)
-    (W.compactSupport.comp_left (by simp))
+    (W.compactSupport.comp_left (rfl))
   · exact (tsupport_comp_subset Complex.ofReal_zero W.toFun).trans W.support_positive
   · exact hB
 
@@ -653,7 +661,7 @@ theorem vertical_integrable_of_quadratic_decay (M : ℂ → ℂ) (c C : ℝ)
     (hbound : ∀ τ : ℝ, ‖M ((c : ℂ) + (τ : ℂ) * Complex.I)‖ ≤ C * (1 + |τ|) ^ (-2 : ℝ)) :
     Complex.VerticalIntegrable M c := by
   have hkernel : Integrable (fun τ : ℝ => (1 + |τ|) ^ (-2 : ℝ)) := by
-    simpa only [Real.norm_eq_abs] using (integrable_one_add_norm (E := ℝ) (r := 2) (by simp))
+    apply integrable_one_add_norm <;> aesop
   exact (hkernel.const_mul C).mono' hmeas (Filter.Eventually.of_forall hbound)
 
 theorem inverse_kernel_integrable (M : ℂ → ℂ) (c T : ℝ) (hT : 0 < T)
@@ -663,7 +671,7 @@ theorem inverse_kernel_integrable (M : ℂ → ℂ) (c T : ℝ) (hT : 0 < T)
   have hk : Continuous (fun τ : ℝ => (T : ℂ) ^ (-(c : ℂ) - (τ : ℂ) * Complex.I)) := by
     apply Continuous.const_cpow
     · fun_prop
-    · exact Or.inl (Complex.ofReal_ne_zero.mpr hT.ne')
+    · apply Or.inl <;> aesop
   apply (hM.norm.const_mul (T ^ (-c))).mono'
     (hM.aestronglyMeasurable.mul hk.aestronglyMeasurable)
   filter_upwards [] with τ
@@ -679,7 +687,7 @@ theorem mellin_inversion_explicit (f : ℝ → ℂ) (M : ℂ → ℂ) (c T : ℝ
       M ((c : ℂ) + (τ : ℂ) * Complex.I)) (hcont : ContinuousAt f T) :
     Integrable (fun τ : ℝ => M ((c : ℂ) + (τ : ℂ) * Complex.I) *
       (T : ℂ) ^ (-(c : ℂ) - (τ : ℂ) * Complex.I)) ∧
-    f T = ((2 * Real.pi : ℝ) : ℂ)⁻¹ *
+    f T = ((2 * Real.pi : ℝ))⁻¹ *
       ∫ τ : ℝ, M ((c : ℂ) + (τ : ℂ) * Complex.I) *
         (T : ℂ) ^ (-(c : ℂ) - (τ : ℂ) * Complex.I) := by
   refine ⟨inverse_kernel_integrable M c T hT hM, ?_⟩
@@ -704,15 +712,15 @@ lemma mellinConvergent_iff_explicit (f : ℝ → ℂ) (z : ℂ) :
   unfold MellinConvergent
   apply integrable_congr
   filter_upwards [ae_restrict_mem measurableSet_Ioi] with T hT
-  have hn : (T : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (ne_of_gt hT)
+  have hn  := Complex.ofReal_ne_zero.mpr (ne_of_gt hT)
   simp only [smul_eq_mul, Complex.cpow_sub _ _ hn, Complex.cpow_one]
   ring
 lemma mellin_eq_explicit (f : ℝ → ℂ) (z : ℂ) :
-    mellin f z = ∫ T in Set.Ioi (0 : ℝ), f T * (T : ℂ) ^ z / (T : ℂ) := by
+    mellin f z = ∫ T in Set.Ioi (0), f T * (T : ℂ) ^ z / (T : ℂ) := by
   unfold mellin
   apply setIntegral_congr_fun measurableSet_Ioi
   intro T hT
-  have hn : (T : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (ne_of_gt hT)
+  have hn  := Complex.ofReal_ne_zero.mpr (ne_of_gt hT)
   simp only [smul_eq_mul, Complex.cpow_sub _ _ hn, Complex.cpow_one]
   ring
 
@@ -720,7 +728,7 @@ theorem positive_profile_mellin_inversion (V : ℝ → ℂ) (M : ℂ → ℂ)
     (hconv : ∀ z : ℂ, 0 < z.re →
       IntegrableOn (fun T : ℝ => V T * (T : ℂ) ^ z / (T : ℂ)) (Set.Ioi 0))
     (heq : ∀ z : ℂ, 0 < z.re →
-      (∫ T in Set.Ioi (0 : ℝ), V T * (T : ℂ) ^ z / (T : ℂ)) = M z)
+      (∫ T in Set.Ioi (0), V T * (T : ℂ) ^ z / (T : ℂ)) = M z)
     (hhol : DifferentiableOn ℂ M {z | 0 < z.re})
     (hdecay : ∀ (a b B : ℝ), 0 < a → a ≤ b → 0 ≤ B →
       ∃ C : ℝ, 0 ≤ C ∧ ∀ σ ∈ Set.Icc a b, ∀ τ : ℝ,
@@ -728,7 +736,7 @@ theorem positive_profile_mellin_inversion (V : ℝ → ℂ) (M : ℂ → ℂ)
     (hcont : ContinuousOn V (Set.Ioi 0)) (c T : ℝ) (hc : 0 < c) (hT : 0 < T) :
     Integrable (fun τ : ℝ => M ((c : ℂ) + (τ : ℂ) * Complex.I) *
       (T : ℂ) ^ (-(c : ℂ) - (τ : ℂ) * Complex.I)) ∧
-    V T = ((2 * Real.pi : ℝ) : ℂ)⁻¹ *
+    V T = ((2 * Real.pi : ℝ))⁻¹ *
       ∫ τ : ℝ, M ((c : ℂ) + (τ : ℂ) * Complex.I) *
         (T : ℂ) ^ (-(c : ℂ) - (τ : ℂ) * Complex.I) := by
   have hline : Continuous (fun τ : ℝ => M ((c : ℂ) + (τ : ℂ) * Complex.I)) := by
@@ -749,7 +757,7 @@ theorem positive_profile_mellin_inversion (V : ℝ → ℂ) (M : ℂ → ℂ)
 theorem positive_profile_mellin_holomorphic (V : ℝ → ℂ) (M : ℂ → ℂ)
     (hcont : ContinuousOn V (Set.Ioi 0))
     (heq : ∀ z : ℂ, 0 < z.re →
-      (∫ T in Set.Ioi (0 : ℝ), V T * (T : ℂ) ^ z / (T : ℂ)) = M z)
+      (∫ T in Set.Ioi (0), V T * (T : ℂ) ^ z / (T : ℂ)) = M z)
     (hbound : ∀ σ : ℝ, 0 < σ → ∃ C : ℝ, ∀ T : ℝ, 0 < T →
       ‖V T‖ ≤ C * T ^ (-σ)) :
     DifferentiableOn ℂ M {z | 0 < z.re} := by
@@ -760,7 +768,7 @@ theorem positive_profile_mellin_holomorphic (V : ℝ → ℂ) (M : ℂ → ℂ)
   obtain ⟨Cb, hCb⟩ := hbound (z.re / 2) (by linarith)
   have htop : V =O[atTop] (fun T : ℝ => T ^ (-(z.re + 1))) := by
     apply IsBigO.of_bound Ca
-    filter_upwards [eventually_gt_atTop (0 : ℝ)] with T hT
+    filter_upwards [eventually_gt_atTop (0)] with T hT
     simpa only [Real.norm_eq_abs, abs_of_nonneg (Real.rpow_nonneg hT.le _)] using hCa T hT
   have hzero : V =O[𝓝[>] 0] (fun T : ℝ => T ^ (-(z.re / 2))) := by
     apply IsBigO.of_bound Cb
@@ -776,23 +784,15 @@ theorem positive_profile_mellin_holomorphic (V : ℝ → ℂ) (M : ℂ → ℂ)
 
 end ProbeSheet.MellinProof
 
-theorem probe_sheet_norm_one_haar_exists (F : Type) [Field F] [NumberField F]
+def probe_sheet_norm_one_haar_exists (F : Type) [Field F] [NumberField F]
     (A : SArithmeticData F)
     (ν : @Measure (SLocalProduct F A.Sf)ˣ
       (@Units.instMeasurableSpace (SLocalProduct F A.Sf) _ (borel _)))
     (hν : @Measure.IsHaarMeasure (SLocalProduct F A.Sf)ˣ _ _
-      (@Units.instMeasurableSpace (SLocalProduct F A.Sf) _ (borel _)) ν) :
-    ∃ dt : @Measure A.G1 (borel _),
-      @Measure.IsHaarMeasure A.G1 _ _ (borel _) dt ∧
-      ProbeSheet.HaarDisintegration A ν dt := by
-  letI : MeasurableSpace (SLocalProduct F A.Sf) := borel _
-  letI : BorelSpace (SLocalProduct F A.Sf) := ⟨rfl⟩
-  letI : MeasurableSpace A.G1 := borel _
-  letI : BorelSpace A.G1 := ⟨rfl⟩
-  letI := hν
-  exact ProbeSheet.normalized_haar_exists A ν
+      (@Units.instMeasurableSpace (SLocalProduct F A.Sf) _ (borel _)) ν)  := (ProbeSheet.normalized_haar_exists A ν)
 
-theorem probe_sheet_mellin_estimates_of_disintegration (F : Type) [Field F] [NumberField F]
+section
+variable (F : Type) [Field F] [NumberField F]
     (A : SArithmeticData F)
     (e : (v : ↥A.Sf) → AddChar (v.val.adicCompletion F) Circle)
     (he : ∀ v, Continuous (e v)) (htrace : ProbeAdditive.TraceCompatible F A.Sf e)
@@ -800,6 +800,8 @@ theorem probe_sheet_mellin_estimates_of_disintegration (F : Type) [Field F] [Num
     (μ : @Measure (SLocalProduct F A.Sf) (borel _))
     (ν : @Measure (SLocalProduct F A.Sf)ˣ
       (@Units.instMeasurableSpace (SLocalProduct F A.Sf) _ (borel _)))
+include F A e he htrace hne μ ν
+theorem probe_sheet_mellin_estimates_of_disintegration  
     (dt : @Measure A.G1 (borel _))
     (hμ : @Measure.IsAddHaarMeasure (SLocalProduct F A.Sf) _ _ (borel _) μ)
     (hν : @Measure.IsHaarMeasure (SLocalProduct F A.Sf)ˣ _ _
@@ -817,33 +819,27 @@ theorem probe_sheet_mellin_estimates_of_disintegration (F : Type) [Field F] [Num
   letI := hdt
   let M := ProbeWeight.fourierMellin F A.Sf e μ ν W0
   let V := ProbeSheet.envelope A e μ dt W0
-  have hglobal : ∀ z : ℂ, 0 < z.re → Integrable
-      (fun y : (SLocalProduct F A.Sf)ˣ => ProbeWeight.fourier F A.Sf e μ W0 y.val *
-        (ProbeWeight.modulus F A.Sf y : ℂ) ^ z) ν := by
-    exact ProbeSheetFourierMellinBounds.fourier_mellin_integrable A e he hne μ ν hμ hν W0
+  have hglobal  := ProbeSheetFourierMellinBounds.fourier_mellin_integrable A e he hne μ ν hμ hν W0
       hW0 hcompact hannular
   have hprofile : ∀ z : ℂ, 0 < z.re →
       IntegrableOn (fun T : ℝ => V T * (T : ℂ) ^ z / (T : ℂ)) (Set.Ioi 0) ∧
-      (∫ T in Set.Ioi (0 : ℝ), V T * (T : ℂ) ^ z / (T : ℂ)) = M z := by
+      (∫ T in Set.Ioi (0), V T * (T : ℂ) ^ z / (T : ℂ)) = M z := by
     intro z hz
     exact ProbeSheet.sheet_mellin_of_integrable A ν dt hnormalized
       (fun y => ProbeWeight.fourier F A.Sf e μ W0 y.val) z (hglobal z hz)
   have hdecay : ∀ (a b B : ℝ), 0 < a → a ≤ b → 0 ≤ B →
       ∃ C : ℝ, 0 ≤ C ∧ ∀ σ ∈ Set.Icc a b, ∀ τ : ℝ,
         ‖M ((σ : ℂ) + (τ : ℂ) * Complex.I)‖ ≤ C * (1 + |τ|) ^ (-B) := by
-    exact ProbeSheetFourierMellinBounds.fourier_mellin_rapid_on_strip A e he hne μ ν hμ hν W0
-      hW0 hcompact hannular
+    apply ProbeSheetFourierMellinBounds.fourier_mellin_rapid_on_strip <;> assumption
   have hcont : ContinuousOn V (Set.Ioi 0) := by
-    exact ProbeSheetFourierMellinBounds.positive_sheet_continuous A e he hne μ dt hμ hdt W0
-      hW0 hcompact hannular
+    apply ProbeSheetFourierMellinBounds.positive_sheet_continuous <;> assumption
   have hsheet : ∀ (σ : ℝ) (k : ℕ), 0 < σ → ∃ C : ℝ, 0 ≤ C ∧
       ∀ T : ℝ, 0 < T →
         Integrable (fun t => ProbeSheet.logDerivative A w k
           (ProbeWeight.fourier F A.Sf e μ W0) (ProbeSheet.sheetPoint A T t).val) dt ∧
         (∫ t, ‖ProbeSheet.logDerivative A w k (ProbeWeight.fourier F A.Sf e μ W0)
           (ProbeSheet.sheetPoint A T t).val‖ ∂dt) ≤ C * T ^ (-σ) := by
-    exact ProbeSheetFourierMellinBounds.sheet_log_derivative_bounds A e he hne μ dt hμ hdt w W0
-      hW0 hcompact hannular
+    apply ProbeSheetFourierMellinBounds.sheet_log_derivative_bounds <;> assumption
   have henvelopeBound : ∀ σ : ℝ, 0 < σ → ∃ C : ℝ, ∀ T : ℝ, 0 < T →
       ‖V T‖ ≤ C * T ^ (-σ) := by
     intro σ hσ
@@ -852,7 +848,7 @@ theorem probe_sheet_mellin_estimates_of_disintegration (F : Type) [Field F] [Num
     intro T hT
     apply (norm_integral_le_integral_norm _).trans
     simpa only [ProbeSheet.logDerivative_zero] using (hbound T hT).2
-  have hhol : DifferentiableOn ℂ M {z | 0 < z.re} :=
+  have hhol  :=
     ProbeSheet.MellinProof.positive_profile_mellin_holomorphic V M hcont
       (fun z hz => (hprofile z hz).2) henvelopeBound
   unfold ProbeSheet.MellinEstimates
@@ -864,18 +860,11 @@ theorem probe_sheet_mellin_estimates_of_disintegration (F : Type) [Field F] [Num
   · intro z hz
     exact ⟨hglobal z hz, hprofile z hz⟩
   · intro σ0 σ1 B _ hB
-    exact ProbeSheet.MellinProof.realWeight_mellin_rapid_on_strip W1 σ0 σ1 B hB
+    apply ProbeSheet.MellinProof.realWeight_mellin_rapid_on_strip <;> assumption
   · exact ProbeSheet.MellinProof.positive_profile_mellin_inversion V M
       (fun z hz => (hprofile z hz).1) (fun z hz => (hprofile z hz).2) hhol hdecay hcont
 
-theorem probe_sheet_mellin_estimates (F : Type) [Field F] [NumberField F]
-    (A : SArithmeticData F)
-    (e : (v : ↥A.Sf) → AddChar (v.val.adicCompletion F) Circle)
-    (he : ∀ v, Continuous (e v)) (htrace : ProbeAdditive.TraceCompatible F A.Sf e)
-    (hne : ∀ v, e v ≠ 1)
-    (μ : @Measure (SLocalProduct F A.Sf) (borel _))
-    (ν : @Measure (SLocalProduct F A.Sf)ˣ
-      (@Units.instMeasurableSpace (SLocalProduct F A.Sf) _ (borel _)))
+theorem probe_sheet_mellin_estimates  
     (hμ : @Measure.IsAddHaarMeasure (SLocalProduct F A.Sf) _ _ (borel _) μ)
     (hν : @Measure.IsHaarMeasure (SLocalProduct F A.Sf)ˣ _ _
       (@Units.instMeasurableSpace (SLocalProduct F A.Sf) _ (borel _)) ν)
@@ -890,6 +879,8 @@ theorem probe_sheet_mellin_estimates (F : Type) [Field F] [NumberField F]
   exact ⟨dt, hdt, hdisintegration,
     probe_sheet_mellin_estimates_of_disintegration F A e he htrace hne μ ν dt
       hμ hν hdt hdisintegration w W0 W1 hW0 hcompact hannular⟩
+end
+
 
 end
 end DedekindZetaZeroFree

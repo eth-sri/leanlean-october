@@ -183,9 +183,12 @@ end
 noncomputable section
 variable (A : SArithmeticData F)
 local notation "ext" => Ideal.map (algebraMap (𝓞 F) A.R)
- def ph
-    (p : (I : A.Exterior) → (v : HeightOneSpectrum (𝓞 F)) →
+ section
+variable (p : (I : A.Exterior) → (v : HeightOneSpectrum (𝓞 F)) →
       I.val = v.asIdeal → ((A.R ⧸ A.extendIdeal I)ˣ →* Fˣ))
+include p in
+def ph
+     
     (q : Ideal (𝓞 F)) : (A.R ⧸ ext q)ˣ →* Fˣ :=
   if h : q ≠ ⊥ ∧ q ⊔ A.cS = ⊤ ∧ q.IsPrime then
     p ⟨q, h.1, h.2.1⟩ ⟨q, h.2.2, h.1⟩ rfl
@@ -200,23 +203,23 @@ private lemma factor_le (I : A.Exterior) (q : Ideal (𝓞 F))
   if h : I.val ≤ q then
     (ph A p q).comp (Units.map (Ideal.Quotient.factor (Ideal.map_mono h)).toMonoidHom)
   else 1
- def chars
-    (p : (I : A.Exterior) → (v : HeightOneSpectrum (𝓞 F)) →
-      I.val = v.asIdeal → ((A.R ⧸ A.extendIdeal I)ˣ →* Fˣ))
+ include p in
+def chars
+     
     (I : A.Exterior) : (A.R ⧸ A.extendIdeal I)ˣ →* Fˣ :=
   ((normalizedFactors I.val).map (fun q => pull A I q p)).prod
+include p in
 private lemma ph_pow
-    (p : (I : A.Exterior) → (v : HeightOneSpectrum (𝓞 F)) →
-      I.val = v.asIdeal → ((A.R ⧸ A.extendIdeal I)ˣ →* Fˣ))
+     
     (hp : ∀ I v hI x, p I v hI x ^ 6 = 1)
     (q : Ideal (𝓞 F)) (x : (A.R ⧸ ext q)ˣ) : ph A p q x ^ 6 = 1 := by
   by_cases h : q ≠ ⊥ ∧ q ⊔ A.cS = ⊤ ∧ q.IsPrime
   · simp only [ph, dif_pos h]
     exact hp _ _ _ _
   · simp [ph, h]
+include p in
 private lemma chars_pow
-    (p : (I : A.Exterior) → (v : HeightOneSpectrum (𝓞 F)) →
-      I.val = v.asIdeal → ((A.R ⧸ A.extendIdeal I)ˣ →* Fˣ))
+     
     (hp : ∀ I v hI x, p I v hI x ^ 6 = 1)
     (I : A.Exterior) (x : (A.R ⧸ A.extendIdeal I)ˣ) : chars A p I x ^ 6 = 1 := by
   have hv (q : Ideal (𝓞 F)) : (pull A I q p x) ^ 6 = 1 := by
@@ -235,9 +238,9 @@ private lemma chars_pow
   intro y hy
   obtain ⟨q, hq, rfl⟩ := Multiset.mem_map.mp hy
   exact hv q
+include p in
 private lemma chars_prime
-    (p : (I : A.Exterior) → (v : HeightOneSpectrum (𝓞 F)) →
-      I.val = v.asIdeal → ((A.R ⧸ A.extendIdeal I)ˣ →* Fˣ))
+     
     (I : A.Exterior) (v : HeightOneSpectrum (𝓞 F)) (hI : I.val = v.asIdeal) :
     chars A p I = p I v hI := by
   rcases I with ⟨i, hi⟩
@@ -279,9 +282,9 @@ private lemma unit_factors (I : A.Exterior) (x : A.R) :
   · intro h j q hq hj
     subst j
     exact h q hq
+include p in
 private lemma pull_value
-    (p : (I : A.Exterior) → (v : HeightOneSpectrum (𝓞 F)) →
-      I.val = v.asIdeal → ((A.R ⧸ A.extendIdeal I)ˣ →* Fˣ))
+     
     (I : A.Exterior) (q : Ideal (𝓞 F)) (hq : q ∈ normalizedFactors I.val)
     (x : A.R) (hx : IsUnit (Ideal.Quotient.mk (A.extendIdeal I) x)) :
     (pull A I q p hx.unit : F) =
@@ -295,9 +298,9 @@ private lemma pull_value
     exact Ideal.Quotient.factor_mk _ x
   rw [← hu, MulChar.ofUnitHom_coe]
   rfl
+include p in
 private lemma chars_raw
-    (p : (I : A.Exterior) → (v : HeightOneSpectrum (𝓞 F)) →
-      I.val = v.asIdeal → ((A.R ⧸ A.extendIdeal I)ˣ →* Fˣ))
+     
     (I : A.Exterior) (x : A.R) :
     MulChar.ofUnitHom (chars A p I) (Ideal.Quotient.mk (A.extendIdeal I) x) =
       ((normalizedFactors I.val).map
@@ -320,15 +323,17 @@ private lemma chars_raw
     symm
     apply Multiset.prod_eq_zero
     exact Multiset.mem_map.mpr ⟨q, hq, MulChar.map_nonunit _ hqu⟩
+include p in
 private lemma chars_mul
-    (p : (I : A.Exterior) → (v : HeightOneSpectrum (𝓞 F)) →
-      I.val = v.asIdeal → ((A.R ⧸ A.extendIdeal I)ˣ →* Fˣ))
+     
     (I J K : A.Exterior) (hK : K.val = I.val * J.val) (x : A.R) :
     MulChar.ofUnitHom (chars A p K) (Ideal.Quotient.mk (A.extendIdeal K) x) =
       MulChar.ofUnitHom (chars A p I) (Ideal.Quotient.mk (A.extendIdeal I) x) *
       MulChar.ofUnitHom (chars A p J) (Ideal.Quotient.mk (A.extendIdeal J) x) := by
   rw [chars_raw, chars_raw, chars_raw]
   rw [hK, normalizedFactors_mul I.property.1 J.property.1, Multiset.map_add, Multiset.prod_add]
+end
+
 end
 
 theorem extend_exterior_prime_sextic_characters (A : SArithmeticData F)
@@ -364,14 +369,19 @@ set_option autoImplicit false
 
 variable {F : Type} [Field F] [NumberField F]
 
-abbrev SexticResidueFamily (A : SArithmeticData F) :=
+section
+variable (A : SArithmeticData F)
+include A in
+abbrev SexticResidueFamily   :=
   (I : A.Exterior) → (A.R ⧸ A.extendIdeal I)ˣ →* Fˣ
 
-def residueValue (A : SArithmeticData F) (C : A.SexticResidueFamily)
+include A in
+def residueValue   (C : A.SexticResidueFamily)
     (I : A.Exterior) (x : A.R) : F :=
   MulChar.ofUnitHom (C I) (Ideal.Quotient.mk (A.extendIdeal I) x)
 
-def IsNormalizedSexticResidueFamily (A : SArithmeticData F)
+include A in
+def IsNormalizedSexticResidueFamily  
     (C : A.SexticResidueFamily) : Prop :=
   (∀ (I : A.Exterior) (x : (A.R ⧸ A.extendIdeal I)ˣ), C I x ^ 6 = 1) ∧
   (∀ (I : A.Exterior) (v : HeightOneSpectrum (𝓞 F)), I.val = v.asIdeal →
@@ -384,7 +394,8 @@ def IsNormalizedSexticResidueFamily (A : SArithmeticData F)
   (∀ (I J K : A.Exterior), K.val = I.val * J.val →
     ∀ x : A.R, A.residueValue C K x = A.residueValue C I x * A.residueValue C J x)
 
-theorem residueFamily_ext (A : SArithmeticData F) {C D : A.SexticResidueFamily}
+include A in
+theorem residueFamily_ext   {C D : A.SexticResidueFamily}
     (h : ∀ I x, A.residueValue C I x = A.residueValue D I x) : C = D := by
   funext I
   apply MonoidHom.ext
@@ -396,7 +407,8 @@ theorem residueFamily_ext (A : SArithmeticData F) {C D : A.SexticResidueFamily}
   rw [hr, MulChar.ofUnitHom_coe, MulChar.ofUnitHom_coe] at he
   exact he
 
-theorem residueValue_top (A : SArithmeticData F) (C : A.SexticResidueFamily)
+include A in
+theorem residueValue_top   (C : A.SexticResidueFamily)
     (I : A.Exterior) (hI : I.val = ⊤) (x : A.R) : A.residueValue C I x = 1 := by
   have ht : A.extendIdeal I = ⊤ := by simpa only [extendIdeal, hI] using
     (Ideal.map_top (algebraMap (𝓞 F) A.R))
@@ -406,7 +418,8 @@ theorem residueValue_top (A : SArithmeticData F) (C : A.SexticResidueFamily)
     trivial
   simp [residueValue, he]
 
-theorem residueFamily_ext_of_prime_values (A : SArithmeticData F)
+include A in
+theorem residueFamily_ext_of_prime_values  
     {C D : A.SexticResidueFamily}
     (hC : ∀ (I J K : A.Exterior), K.val = I.val * J.val →
       ∀ x, A.residueValue C K x = A.residueValue C I x * A.residueValue C J x)
@@ -465,7 +478,8 @@ private theorem primitiveRoot_mod_ideal_of_unit_order {R : Type} [CommRing R] [I
     simpa only [map_sub, map_pow, map_one, hl, sub_self]
   exact (hu.map (Ideal.Quotient.mk I)).ne_zero hz
 
-theorem residue_six_isUnit (A : SArithmeticData F) : IsUnit (6 : A.R) := by
+include A in
+theorem residue_six_isUnit   : IsUnit (6 : A.R) := by
   let u : Fˣ := Units.mk0 (6 : F) (by norm_num)
   let su : A.U := ⟨u, fun v hv => (v.valuation_eq_one_iff_notMem (K := F)).mpr
     (fun h => hv (A.above_six v h))⟩
@@ -473,7 +487,8 @@ theorem residue_six_isUnit (A : SArithmeticData F) : IsUnit (6 : A.R) := by
   apply Subtype.ext
   rfl
 
-theorem residue_extendIdeal_ne_top (A : SArithmeticData F) (I : A.Exterior)
+include A in
+theorem residue_extendIdeal_ne_top   (I : A.Exterior)
     (hI : I.val ≠ ⊤) : A.extendIdeal I ≠ ⊤ := by
   let T : A.Exterior := ⟨⊤, top_ne_bot, by simp⟩
   have hT : A.extendIdeal T = ⊤ := by
@@ -485,7 +500,8 @@ theorem residue_extendIdeal_ne_top (A : SArithmeticData F) (I : A.Exterior)
     rw [A.exteriorIdealEquiv_apply, A.exteriorIdealEquiv_apply, h, hT]
   exact congrArg Subtype.val (A.exteriorIdealEquiv.injective he)
 
-theorem exterior_sextic_primitive (A : SArithmeticData F) (I : A.Exterior)
+include A in
+theorem exterior_sextic_primitive   (I : A.Exterior)
     (hI : I.val ≠ ⊤) :
     IsPrimitiveRoot (Ideal.Quotient.mk (A.extendIdeal I)
       (algebraMap (𝓞 F) A.R (A.primitive_zeta12.toInteger ^ 2))) 6 := by
@@ -498,7 +514,8 @@ theorem exterior_sextic_primitive (A : SArithmeticData F) (I : A.Exterior)
       exact congrArg (fun t : A.R => (t : F)) h
   · exact residue_six_isUnit A
 
-theorem normalized_sextic_residue_family_unique (A : SArithmeticData F)
+include A in
+theorem normalized_sextic_residue_family_unique  
     {C D : A.SexticResidueFamily}
     (hC : A.IsNormalizedSexticResidueFamily C)
     (hD : A.IsNormalizedSexticResidueFamily D) : C = D := by
@@ -518,7 +535,8 @@ theorem normalized_sextic_residue_family_unique (A : SArithmeticData F)
   · unfold residueValue
     rw [MulChar.map_nonunit _ hx, MulChar.map_nonunit _ hx]
 
-theorem existsUnique_normalized_sextic_residue_family (A : SArithmeticData F) :
+include A in
+theorem existsUnique_normalized_sextic_residue_family   :
     ∃! C : A.SexticResidueFamily, A.IsNormalizedSexticResidueFamily C := by
   have hprime := ResidueReciprocity.exists_exterior_prime_sextic_character A
   choose p hp6 hpn using hprime
@@ -531,17 +549,21 @@ theorem existsUnique_normalized_sextic_residue_family (A : SArithmeticData F) :
     exact hpn I v hI x
   exact ⟨C, hC, fun D hD => A.normalized_sextic_residue_family_unique hD hC⟩
 
-def sexticResidueFamily (A : SArithmeticData F) : A.SexticResidueFamily :=
+include A in
+def sexticResidueFamily   : A.SexticResidueFamily :=
   Classical.choose (A.existsUnique_normalized_sextic_residue_family.exists)
 
-theorem sexticResidueFamily_normalized (A : SArithmeticData F) :
+include A in
+theorem sexticResidueFamily_normalized   :
     A.IsNormalizedSexticResidueFamily A.sexticResidueFamily :=
   Classical.choose_spec (A.existsUnique_normalized_sextic_residue_family.exists)
 
-def sexticResidue (A : SArithmeticData F) (I : A.Exterior) (x : A.R) : F :=
+include A in
+def sexticResidue   (I : A.Exterior) (x : A.R) : F :=
   A.residueValue A.sexticResidueFamily I x
 
-theorem sexticResidue_neg_one (A : SArithmeticData F) (I : A.Exterior) :
+include A in
+theorem sexticResidue_neg_one   (I : A.Exterior) :
     A.sexticResidue I (-1) = 1 := by
   let z : 𝓞 F := A.primitive_zeta12.toInteger
   have hz : z ^ 6 = -1 := by
@@ -561,7 +583,8 @@ theorem sexticResidue_neg_one (A : SArithmeticData F) (I : A.Exterior) :
   unfold sexticResidue residueValue
   rw [← hn, map_pow, hpow]
 
-def SexticReciprocitySpec (A : SArithmeticData F)
+include A in
+def SexticReciprocitySpec  
     (B : Subgroup A.V) (H : A.V → A.V → Fˣ) : Prop :=
   (∀ (I J : A.Exterior) (a b : A.R) (ua ub : Fˣ),
     A.Generates I a → A.Generates J b →
@@ -582,7 +605,8 @@ def SexticReciprocitySpec (A : SArithmeticData F)
     A.Generates I a → A.Generates J b → I.val ⊔ J.val ≠ ⊤ →
       A.sexticResidue I b = 0 ∧ A.sexticResidue J a = 0)
 
-theorem sexticResidue_sixth_unit_translate (A : SArithmeticData F)
+include A in
+theorem sexticResidue_sixth_unit_translate  
     (I : A.Exterior) (x : A.R) (u : A.U) :
     A.sexticResidue I (x * (A.unitEquiv u : A.R) ^ 6) = A.sexticResidue I x := by
   let q := Ideal.Quotient.mk (A.extendIdeal I)
@@ -594,6 +618,8 @@ theorem sexticResidue_sixth_unit_translate (A : SArithmeticData F)
   change (MulChar.ofUnitHom (A.sexticResidueFamily I)) (q (x * (A.unitEquiv u : A.R) ^ 6)) = _
   rw [map_mul, map_pow, map_mul, map_pow, hpow]
   exact _root_.mul_one _
+end
+
 
 end
 end DedekindZetaZeroFree.SArithmeticData

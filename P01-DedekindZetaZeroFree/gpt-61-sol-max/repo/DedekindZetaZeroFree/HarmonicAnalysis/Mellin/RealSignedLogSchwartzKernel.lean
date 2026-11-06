@@ -1,20 +1,23 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Deriv
 
 @[expose] public section
 
+
 namespace DedekindZetaZeroFree.ProbeSheetLogDensityRegularity
 noncomputable section
 
-def rawRealSignedLogKernel (g : ℝ → ℂ) (σ t : ℝ) : ℂ :=
+def rawRealSignedLogKernel (g : ℝ → ℂ) (σ t : ℝ)  :=
   ((Real.exp (σ * t) : ℂ) / 2) *
     (g (Real.exp (t / 2)) + g (-Real.exp (t / 2)))
 
-def logKernel (g : SchwartzMap ℝ ℂ) (σ : ℝ) : ℝ → ℂ :=
+def logKernel (g : SchwartzMap ℝ ℂ) (σ : ℝ)  :=
   fun t => g (Real.exp (t / 2)) * (Real.exp (σ * t) : ℂ)
 
-def euler (g : SchwartzMap ℝ ℂ) : SchwartzMap ℝ ℂ :=
+def euler (g : SchwartzMap ℝ ℂ)  :=
   (1 / 2 : ℝ) • SchwartzMap.smulLeftCLM ℂ
     (fun x : ℝ => (x : ℂ)) (SchwartzMap.derivCLM ℂ ℂ g)
 
@@ -96,7 +99,7 @@ private lemma pow_mul_exp_neg_le_const {c : ℝ} (hc : 0 < c) (k : ℕ) :
   · subst hk
     refine ⟨1, zero_le_one, fun s hs => ?_⟩
     rw [pow_zero, one_mul]
-    exact Real.exp_le_one_iff.mpr (neg_nonpos.mpr (mul_nonneg hc.le hs))
+    apply Real.exp_le_one_iff.mpr <;> aesop
   · refine ⟨(k / (c * Real.exp 1)) ^ k, by positivity, fun s hs => ?_⟩
     have hy : (c * s / k) * Real.exp (-(c * s / k)) ≤ Real.exp (-1) :=
       Real.mul_exp_neg_le_exp_neg_one _
@@ -120,7 +123,10 @@ private lemma pow_mul_exp_neg_le_const {c : ℝ} (hc : 0 < c) (k : ℕ) :
           field_simp
       _ ≤ (k / (c * Real.exp 1)) ^ k := pow_le_pow_left₀ (by positivity) hbase k
 
-private theorem logKernel_pow_bound (g : SchwartzMap ℝ ℂ) (σ : ℝ) (hσ : 0 < σ) (k : ℕ) :
+section
+variable (g : SchwartzMap ℝ ℂ) (σ : ℝ) (hσ : 0 < σ)
+include g σ hσ
+private theorem logKernel_pow_bound   (k : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ t : ℝ, |t| ^ k * ‖logKernel g σ t‖ ≤ C := by
   obtain ⟨Bpos, hBposnn, hBpos⟩ := pow_mul_exp_neg_le_const (c := 1) one_pos k
   obtain ⟨Bneg, hBnegnn, hBneg⟩ := pow_mul_exp_neg_le_const (c := σ) hσ k
@@ -185,12 +191,11 @@ private theorem logKernel_pow_bound (g : SchwartzMap ℝ ℂ) (σ : ℝ) (hσ : 
           mul_le_mul_of_nonneg_left (by simpa using hBpos t ht0) hC₁pos.le
       _ ≤ max (C₁ * Bpos) (C₀ * Bneg) := le_max_left _ _
 
-private theorem logKernel_decay (g : SchwartzMap ℝ ℂ) (σ : ℝ) (hσ : 0 < σ) :
+private theorem logKernel_decay   :
     ∀ k n : ℕ, ∃ C : ℝ, ∀ x : ℝ,
       ‖x‖ ^ k * ‖iteratedFDeriv ℝ n (logKernel g σ) x‖ ≤ C := by
   intro k n
-  have hb : ∀ i : ℕ, ∃ C : ℝ, 0 ≤ C ∧
-      ∀ t : ℝ, |t| ^ k * ‖logKernel (euler^[i] g) σ t‖ ≤ C :=
+  have hb  :=
     fun i => logKernel_pow_bound (euler^[i] g) σ hσ k
   choose C hCnn hC using hb
   refine ⟨∑ i ∈ Finset.range (n + 1), ‖(n.choose i : ℂ) * (σ : ℂ) ^ (n - i)‖ * C i,
@@ -218,11 +223,13 @@ private theorem logKernel_decay (g : SchwartzMap ℝ ℂ) (σ : ℝ) (hσ : 0 < 
           rw [Real.norm_eq_abs]
           exact hC i x
 
-private theorem logKernel_isSchwartz (g : SchwartzMap ℝ ℂ) (σ : ℝ) (hσ : 0 < σ) :
+private theorem logKernel_isSchwartz   :
     ∃ k : SchwartzMap ℝ ℂ, ∀ t, k t = logKernel g σ t :=
   ⟨⟨logKernel g σ, logKernel_contDiff g σ, logKernel_decay g σ hσ⟩, fun _ => rfl⟩
+end
 
-def negComp (g : SchwartzMap ℝ ℂ) : SchwartzMap ℝ ℂ :=
+
+def negComp (g : SchwartzMap ℝ ℂ)  :=
   SchwartzMap.compCLMOfContinuousLinearEquiv ℂ (ContinuousLinearEquiv.neg ℝ) g
 
 @[simp] private theorem negComp_apply (g : SchwartzMap ℝ ℂ) (x : ℝ) :

@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Algebra.TensorProduct.RestrictedTensorSimplicity
 
 @[expose] public section
+
 
 noncomputable section
 open scoped Classical TensorProduct
@@ -27,16 +30,12 @@ instance (j : A ⊕ Q) : Module ℂ (FullV V j) := by cases j <;> dsimp [FullV] 
       intro c
       simp [PiTensorProduct.lift.tprod])
     (by
-      apply PiTensorProduct.ext
-      apply MultilinearMap.ext
-      intro x
-      simp only [LinearMap.compMultilinearMap_apply, LinearMap.comp_apply,
-        LinearMap.id_apply, PiTensorProduct.lift.tprod, MultilinearMap.mkPiRing_apply,
-        smul_eq_mul, mul_one, LinearMap.toSpanSingleton_apply]
-      have h := (PiTensorProduct.tprod ℂ (s := fun _ : J => ℂ)).map_smul_univ x (fun _ => 1)
-      simpa only [smul_eq_mul, mul_one] using h.symm)
+      ext <;> simp_all [smul_eq_mul, mul_one])
 
- def split (s : Finset (A ⊕ Q)) : s ≃ s.toLeft ⊕ s.toRight where
+ section
+variable (s : Finset (A ⊕ Q))
+include s
+def split   : s ≃ s.toLeft ⊕ s.toRight where
   toFun j := match j with
     | ⟨.inl a, ha⟩ => .inl ⟨a, Finset.mem_toLeft.mpr ha⟩
     | ⟨.inr q, hq⟩ => .inr ⟨q, Finset.mem_toRight.mpr hq⟩
@@ -46,14 +45,14 @@ instance (j : A ⊕ Q) : Module ℂ (FullV V j) := by cases j <;> dsimp [FullV] 
   left_inv j := by rcases j with ⟨a | q, h⟩ <;> rfl
   right_inv j := by cases j <;> rfl
 
- def slotEquiv (s : Finset (A ⊕ Q)) (j : s.toLeft ⊕ s.toRight) :
+ def slotEquiv   (j : s.toLeft ⊕ s.toRight) :
     FullV V ((split s).symm j).val ≃ₗ[ℂ]
       FullV (fun q : s.toRight => V q.val) j := by
   cases j with
   | inl a => exact LinearEquiv.refl ℂ ℂ
   | inr q => exact LinearEquiv.refl ℂ (V q.val)
 
-def stageEquiv (s : Finset (A ⊕ Q)) :
+def stageEquiv   :
     RestrictedTensorSimple.Stage (FullV V) s ≃ₗ[ℂ] RestrictedTensorSimple.Stage V s.toRight :=
   (PiTensorProduct.reindex ℂ (fun j : s => FullV V j.val) (split s)).trans
     ((PiTensorProduct.congr (slotEquiv V s)).trans ((PiTensorProduct.tmulEquivDep ℂ
@@ -61,7 +60,7 @@ def stageEquiv (s : Finset (A ⊕ Q)) :
       ((TensorProduct.congr (scalarEquiv s.toLeft) (LinearEquiv.refl ℂ _)).trans
         (TensorProduct.lid ℂ _))))
 
-theorem stageEquiv_pure (s : Finset (A ⊕ Q))
+theorem stageEquiv_pure  
     (x : ∀ j : s, FullV V j.val) :
     stageEquiv V s (PiTensorProduct.tprod ℂ x) =
       (∏ a : s.toLeft, x ⟨.inl a.val, Finset.mem_toLeft.mp a.property⟩) •
@@ -74,6 +73,8 @@ theorem stageEquiv_pure (s : Finset (A ⊕ Q))
     x ⟨.inl a.val, Finset.mem_toLeft.mp a.property⟩))) •
       PiTensorProduct.tprod ℂ (fun q : s.toRight => x ⟨.inr q.val, Finset.mem_toRight.mp q.property⟩) = _
   simp [scalarEquiv, PiTensorProduct.lift.tprod, MultilinearMap.mkPiRing_apply]
+end
+
 
  instance level_nonempty {J : Type*} (E : Finset J) :
     Nonempty (RestrictedTensorSimple.Level E) := ⟨⟨E, le_rfl⟩⟩
@@ -96,7 +97,10 @@ private theorem left_eq_univ (E : Finset Q)
   intro a
   exact Finset.mem_toLeft.mpr (s.property (by simp [fullBad]))
 
- theorem stageEquiv_insert (e : ∀ q, V q) (E : Finset Q)
+ section
+variable (e : ∀ q, V q) (E : Finset Q)
+include e E
+theorem stageEquiv_insert  
     (s t : RestrictedTensorSimple.Level (fullBad (A := A) E)) (hst : s ≤ t) :
     (stageEquiv V t.val).toLinearMap.comp
       (RestrictedTensorSimple.transition (FullV V) (fullReference V e) (fullBad E) s t hst) =
@@ -114,7 +118,7 @@ private theorem left_eq_univ (E : Finset Q)
       (stageEquiv V s.val (PiTensorProduct.tprod ℂ x))
   rw [RestrictedTensorSimple.insert_pure, stageEquiv_pure, stageEquiv_pure,
     map_smul, RestrictedTensorSimple.insert_pure]
-  have hl : t.val.toLeft = s.val.toLeft := (left_eq_univ E t).trans (left_eq_univ E s).symm
+  have hl  := (left_eq_univ E t).trans (left_eq_univ E s).symm
   have hp : (∏ a : t.val.toLeft,
       (if h : (.inl a.val : A ⊕ Q) ∈ s.val then x ⟨.inl a.val, h⟩
        else fullReference V e (.inl a.val))) =
@@ -137,10 +141,9 @@ private theorem left_eq_univ (E : Finset Q)
   funext q
   by_cases hq : q.val ∈ s.val.toRight
   · simp [Finset.mem_toRight.mp hq, hq]
-  · simp [show (.inr q.val : A ⊕ Q) ∉ s.val from fun h => hq (Finset.mem_toRight.mpr h), hq,
-      fullReference]
+  · norm_num
 
-def absorb (e : ∀ q, V q) (E : Finset Q) :
+def absorb   :
     RestrictedTensorSimple.Core (FullV V) (fullReference V e) (fullBad (A := A) E) →ₗ[ℂ]
       RestrictedTensorSimple.Core V e E :=
   Module.DirectLimit.lift ℂ _ _ _
@@ -154,7 +157,7 @@ def absorb (e : ∀ q, V q) (E : Finset Q) :
       rw [stageEquiv_insert V e E s t hst]
       exact Module.DirectLimit.of_f)
 
-theorem absorb_stage (e : ∀ q, V q) (E : Finset Q)
+theorem absorb_stage  
     (s : RestrictedTensorSimple.Level (fullBad (A := A) E))
     (x : RestrictedTensorSimple.Stage (FullV V) s.val) :
     absorb V e E (RestrictedTensorSimple.stageInclusion (FullV V) (fullReference V e)
@@ -164,7 +167,7 @@ theorem absorb_stage (e : ∀ q, V q) (E : Finset Q)
   rw [Module.DirectLimit.lift_of]
   rfl
 
-theorem absorb_injective (e : ∀ q, V q) (E : Finset Q)
+theorem absorb_injective  
     (he : ∀ q ∉ E, e q ≠ 0) : Function.Injective (absorb (A := A) V e E) := by
   apply LinearMap.ker_eq_bot.mp
   apply le_antisymm _ bot_le
@@ -180,14 +183,14 @@ theorem absorb_injective (e : ∀ q, V q) (E : Finset Q)
   rw [hx0, map_zero]
   exact Submodule.zero_mem _
 
-theorem absorb_surjective (e : ∀ q, V q) (E : Finset Q) :
+theorem absorb_surjective   :
     Function.Surjective (absorb (A := A) V e E) := by
   intro z
   obtain ⟨s, x, rfl⟩ := Module.DirectLimit.exists_of z
   let t : RestrictedTensorSimple.Level (fullBad (A := A) E) :=
     ⟨Finset.univ.disjSum s.val, Finset.disjSum_mono le_rfl s.property⟩
   have ht : t.val.toRight = s.val := Finset.toRight_disjSum
-  let y : RestrictedTensorSimple.Stage V t.val.toRight :=
+  let y  :=
     Eq.mp (congrArg (RestrictedTensorSimple.Stage V) ht.symm) x
   refine ⟨RestrictedTensorSimple.stageInclusion (FullV V) (fullReference V e) (fullBad E) t
     ((stageEquiv V t.val).symm y), ?_⟩
@@ -199,14 +202,16 @@ theorem absorb_surjective (e : ∀ q, V q) (E : Finset Q) :
         RestrictedTensorSimple.stageInclusion V e E ⟨S, hES⟩ x := by
     subst T
     rfl
-  exact general t.val.toRight s.val ht (rightLevel E t).property s.property x
+  apply general <;> assumption
 
-def equivalence (e : ∀ q, V q) (E : Finset Q)
+def equivalence  
     (he : ∀ q ∉ E, e q ≠ 0) :
     RestrictedTensorSimple.Core (FullV V) (fullReference V e) (fullBad (A := A) E) ≃ₗ[ℂ]
       RestrictedTensorSimple.Core V e E :=
   LinearEquiv.ofBijective (absorb V e E)
     ⟨absorb_injective V e E he, absorb_surjective V e E⟩
+end
+
 
 end DedekindZetaZeroFree.KPGlobalResidualConstruction.ScalarAbsorption
 

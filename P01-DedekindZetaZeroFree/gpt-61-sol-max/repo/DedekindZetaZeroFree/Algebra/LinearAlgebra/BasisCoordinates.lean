@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import Mathlib.LinearAlgebra.Basis.Basic
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 The Tau Ceti contributors. All rights reserved.
@@ -24,8 +27,8 @@ namespace Module.Basis
 
 variable {ι K V : Type*} [Semiring K] [AddCommMonoid V] [Module K V]
 
-theorem eq_smul_of_repr_support_subset_singleton (b : Module.Basis ι K V) {w : V} {i : ι}
-    (h : (b.repr w).support ⊆ {i}) : w = b.repr w i • b i :=
+def eq_smul_of_repr_support_subset_singleton (b : Module.Basis ι K V) {w : V} {i : ι}
+    (h : (b.repr w).support ⊆ {i})  :=
   calc w = b.repr.symm (b.repr w) := (b.repr.symm_apply_apply w).symm
     _ = b.repr.symm (Finsupp.single i (b.repr w i)) :=
         congrArg _ (Finsupp.support_subset_singleton.1 h)

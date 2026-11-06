@@ -1,19 +1,25 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Ideals.Lattices.LocalizationAndMapExtension
 public import Mathlib.RingTheory.Flat.TorsionFree
 public import Mathlib.RingTheory.Flat.EquationalCriterion
 
 @[expose] public section
 
+
 open scoped nonZeroDivisors
 
 namespace DedekindZetaZeroFree
 
-theorem kp_cusp_coefficientSubmodule_fg
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
+section
+variable (R : Type*) [CommRing R] [IsDedekindDomain R]
     (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
-    (M : FullLattice R K) (v : K × K) (hv : v ≠ 0) :
+    (M : FullLattice R K) (v : K × K) (hv : v ≠ 0)
+include R K M v hv
+theorem kp_cusp_coefficientSubmodule_fg
+      :
     (coefficientSubmodule R K M.val v).FG := by
   let f := (LinearMap.toSpanSingleton K (K × K) v).restrictScalars R
   apply Submodule.fg_of_fg_map_injective f (smul_left_injective K hv)
@@ -22,16 +28,11 @@ theorem kp_cusp_coefficientSubmodule_fg
   exact ht
 
 theorem kp_cusp_coefficientSubmodule_isFractional
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
-    (M : FullLattice R K) (v : K × K) (hv : v ≠ 0) :
-    IsFractional R⁰ (coefficientSubmodule R K M.val v) := by
-  exact FractionalIdeal.isFractional_of_fg (kp_cusp_coefficientSubmodule_fg R K M v hv)
+      :
+    IsFractional R⁰ (coefficientSubmodule R K M.val v) := FractionalIdeal.isFractional_of_fg (kp_cusp_coefficientSubmodule_fg R K M v hv)
 
 theorem kp_cusp_coefficientSubmodule_ne_bot
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
-    (M : FullLattice R K) (v : K × K) (hv : v ≠ 0) :
+      :
     coefficientSubmodule R K M.val v ≠ ⊥ := by
   letI : Submodule.IsLattice K M.val := M.property
   obtain ⟨r, hr, hrv⟩ := kp_cusp_full_lattice_clear_denominators R K (K × K) M.val v
@@ -39,6 +40,8 @@ theorem kp_cusp_coefficientSubmodule_ne_bot
   have hm : algebraMap R K r ∈ coefficientSubmodule R K M.val v := hrv
   rw [h, Submodule.mem_bot] at hm
   exact hr ((IsFractionRing.injective R K) (by simpa using hm))
+end
+
 
 private theorem det_zero_coeff
     {K : Type*} [Field K] (v x : K × K) (hv : v ≠ 0)
@@ -46,10 +49,9 @@ private theorem det_zero_coeff
   by_cases h₁ : v.1 = 0
   · have h₂ : v.2 ≠ 0 := by
       intro h₂
-      exact hv (Prod.ext h₁ h₂)
+      apply hv <;> aesop
     have hx : x.1 = 0 := by
-      have hh : v.2 * x.1 = 0 := by simpa [det₂, h₁] using h
-      exact (mul_eq_zero.mp hh).resolve_left h₂
+      simp_all [DedekindZetaZeroFree.det₂] <;> aesop
     refine ⟨x.2 / v.2, Prod.ext ?_ ?_⟩
     · simp [hx, h₁]
     · simp [smul_eq_mul, h₂]
@@ -85,10 +87,10 @@ theorem kp_cusp_line_adapted_ideal_splitting
     by_cases h₁ : v.1 = 0
     · refine ⟨(1, 0), ?_⟩
       have h₂ : v.2 ≠ 0 := by
-        intro h₂; exact hv (Prod.ext h₁ h₂)
+        intro h₂; apply hv <;> aesop
       simpa [p, det₂] using h₂
     · exact ⟨(0, 1), by simpa [p, det₂] using h₁⟩
-  let q : M.val →ₗ[R] K := (p.restrictScalars R).comp M.val.subtype
+  let q  := (p.restrictScalars R).comp M.val.subtype
   have hfg : q.range.FG := by
     rw [LinearMap.range_comp]
     simpa using M.property.fg.map (p.restrictScalars R)
@@ -116,11 +118,11 @@ theorem kp_cusp_line_adapted_ideal_splitting
     q.surjective_rangeRestrict
   have hσp (t : J) : p (σ t).val = t.val :=
     congrArg Subtype.val (LinearMap.congr_fun hσ t)
-  let σ₁ : J →ₗ[R] K := (LinearMap.fst R K K).comp (M.val.subtype.comp σ)
-  let σ₂ : J →ₗ[R] K := (LinearMap.snd R K K).comp (M.val.subtype.comp σ)
+  let σ₁  := (LinearMap.fst R K K).comp (M.val.subtype.comp σ)
+  let σ₂  := (LinearMap.snd R K K).comp (M.val.subtype.comp σ)
   obtain ⟨a, ha, _⟩ := kp_cusp_fractional_ideal_map_scalar R K J hJ σ₁
   obtain ⟨b, hb, _⟩ := kp_cusp_fractional_ideal_map_scalar R K J hJ σ₂
-  let w : K × K := (a, b)
+  let w  := (a, b)
   have hσw (t : J) : (σ t).val = t.val • w := by
     apply Prod.ext
     · simpa [σ₁, w, smul_eq_mul, mul_comm] using ha t

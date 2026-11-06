@@ -57,8 +57,11 @@ private theorem compact_mask_locallyConstant (K : Subgroup (G F ζ hζ))
   map_add' v w := by ext g; by_cases h : m g = a <;> simp [h]
   map_smul' c v := by ext g; by_cases h : m g = a <;> simp [h]
 
- theorem cut_KFinite (K : Subgroup (G F ζ hζ))
-    (hK : IwasawaCompact F ζ hζ K) (a : ℝ) (v : Functions F ζ hζ)
+ section
+variable (K : Subgroup (G F ζ hζ))
+    (hK : IwasawaCompact F ζ hζ K)
+include K hK
+theorem cut_KFinite   (a : ℝ) (v : Functions F ζ hζ)
     (hv : KFinite F ζ hζ K v) : KFinite F ζ hζ K (cut F ζ hζ K hK a v) := by
   obtain ⟨W, hW, hvW, hstable⟩ := hv
   letI : Module.Finite ℂ W := hW
@@ -93,8 +96,7 @@ private theorem compact_mask_locallyConstant (K : Subgroup (G F ζ hζ))
     · intro c x hx ih
       exact S.smul_mem c ih
 
-private theorem discrepancy_right_level (K : Subgroup (G F ζ hζ))
-    (hK : IwasawaCompact F ζ hζ K) :
+private theorem discrepancy_right_level   :
     ∃ U : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ, ∀ g u,
       u ∈ KPGlobalTorusFunctionData.globalLevel F ζ hζ U →
         discrepancy F ζ hζ K hK (g * u) = discrepancy F ζ hζ K hK g := by
@@ -112,8 +114,7 @@ private theorem discrepancy_right_level (K : Subgroup (G F ζ hζ))
   unfold discrepancy KPContFlatFullProductIwasawa.alpha
   rw [hU g ⟨u, hu'.1⟩, hV g ⟨u, hu'.2⟩]
 
- theorem cut_smooth (K : Subgroup (G F ζ hζ))
-    (hK : IwasawaCompact F ζ hζ K) (a : ℝ) (v : Functions F ζ hζ)
+ theorem cut_smooth   (a : ℝ) (v : Functions F ζ hζ)
     (hv : Smooth F ζ hζ v) : Smooth F ζ hζ (cut F ζ hζ K hK a v) := by
   have he (g : G F ζ hζ) : cut F ζ hζ K hK a v =ᶠ[𝓝 g]
       (if discrepancy F ζ hζ K hK g = a then v else fun _ => 0) := by
@@ -147,7 +148,7 @@ private theorem discrepancy_right_level (K : Subgroup (G F ζ hζ))
       exact ⟨Subgroup.mem_map.mpr ⟨w, hw.1, rfl⟩, Subgroup.mem_map.mpr ⟨w, hw.2, rfl⟩⟩
     simp only [cut, hV g u hu'.2, hU g u hu'.1]
 
- def cutFlat (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
+ def cutFlat  
     (a : ℝ) (f : Flat F ζ hζ K) : Flat F ζ hζ K := by
   refine ⟨fun s => cut F ζ hζ K hK a (f.val s), ?_, ?_, ?_⟩
   · intro s
@@ -163,6 +164,8 @@ private theorem discrepancy_right_level (K : Subgroup (G F ζ hζ))
     · exact f.property.2.1 s t k
     · simp
   · exact cut_KFinite F ζ hζ K hK a (f.val 0) f.property.2.2
+end
+
 
 end DedekindZetaZeroFree.KPLiteralExceptionalResidue.DiscrepancyCuts
 
@@ -182,18 +185,19 @@ open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.NormDiscrepancy ren
 open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.NormDiscrepancy renaming literal_reweight_finite_expansion → literal_reweight_finite_expansion
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
- def cutCore (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
+ section
+variable (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
+include K hK
+def cutCore  
     (a : ℝ) (f : Flat F ζ hζ K) :
     KPMsRationalCompactCrossPairing.Vplus F ζ hζ (literalIwasawa F ζ hζ K hK) :=
   literalCore F ζ hζ K hK (cutFlat F ζ hζ K hK a f)
 
- theorem cutCore_formula (K : Subgroup (G F ζ hζ))
-    (hK : IwasawaCompact F ζ hζ K) (a : ℝ) (f : Flat F ζ hζ K) (g : G F ζ hζ) :
+ theorem cutCore_formula   (a : ℝ) (f : Flat F ζ hζ K) (g : G F ζ hζ) :
     (cutCore F ζ hζ K hK a f).val.val g =
       if discrepancy F ζ hζ K hK g = a then f.val 0 g else 0 := rfl
 
- theorem reweight_expansion_in_literal_core (K : Subgroup (G F ζ hζ))
-    (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K) :
+ theorem reweight_expansion_in_literal_core   (f : Flat F ζ hζ K) :
     ∃ C : Finset ℝ, ∀ (s : ℂ) (g : G F ζ hζ),
       Complex.exp (-s * (KPContFlatFullProductIwasawa.alpha F ζ hζ g : ℂ)) * f.val s g =
         ∑ a ∈ C, Complex.exp (s * (a : ℂ)) * (cutCore F ζ hζ K hK a f).val.val g := by
@@ -201,6 +205,8 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
   refine ⟨C, ?_⟩
   intro s g
   simpa only [cutCore_formula] using hC s g
+end
+
 
 end DedekindZetaZeroFree.KPLiteralExceptionalResidue.DiscrepancyCuts
 

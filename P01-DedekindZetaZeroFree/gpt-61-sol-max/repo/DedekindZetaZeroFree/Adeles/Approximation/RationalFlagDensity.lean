@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Metaplectic.Kubota.PGL.LocalCover
 
 @[expose] public section
+
 
 section
 
@@ -13,7 +16,7 @@ open scoped NumberField Pointwise
 
 def borel (R : Type*) [CommRing R] : Subgroup (Matrix.GeneralLinearGroup (Fin 2) R) where
   carrier := {g | g 1 0 = 0}
-  one_mem' := by simp
+  one_mem' := rfl
   mul_mem' := by
     intro a b ha hb
     change a 1 0 = 0 at ha
@@ -80,7 +83,7 @@ private theorem abv_nontrivial (F : Type) [Field F] [NumberField F] (i : Place F
   | inr v =>
     obtain ⟨x, hx, hx0⟩ := Submodule.exists_mem_ne_zero_of_ne_bot v.ne_bot
     refine ⟨algebraMap (𝓞 F) F x, ?_, ne_of_lt ?_⟩
-    · exact (IsFractionRing.injective (𝓞 F) F).ne (by simpa using hx0)
+    · exact (IsFractionRing.injective (𝓞 F) F).ne (hx0)
     · exact (v.adicAbv_coe_lt_one_iff (NumberField.HeightOneSpectrum.one_lt_absNorm_nnreal v) x).mpr hx
 
 private theorem abv_inequivalent (F : Type) [Field F] [NumberField F] :
@@ -91,23 +94,19 @@ private theorem abv_inequivalent (F : Type) [Field F] [NumberField F] :
     cases j with
     | inl w => exact hij (congrArg Sum.inl (NumberField.InfinitePlace.eq_iff_isEquiv.mpr he))
     | inr w =>
-      have h := he.le_one_iff (x := (2 : F))
-      have hw : abv F (Sum.inr w) (2 : F) ≤ 1 := by
-        simpa only [abv, Sum.elim_inr, NumberField.HeightOneSpectrum.adicAbv, map_ofNat] using w.adicAbv_coe_le_one (NumberField.HeightOneSpectrum.one_lt_absNorm_nnreal w) (2 : 𝓞 F)
-      have hv : abv F (Sum.inl v) (2 : F) = 2 := by
-        simpa [abv, NumberField.InfinitePlace.coe_apply] using v.map_natCast 2
+      have h := he.le_one_iff (x := (2))
+      have hw : abv F (Sum.inr w) (2) ≤ 1 := w.adicAbv_coe_le_one (NumberField.HeightOneSpectrum.one_lt_absNorm_nnreal w) (2 : 𝓞 F)
+      have hv : abv F (Sum.inl v) (2) = 2 := v.map_natCast 2
       have := h.mpr hw
       rw [hv] at this
       norm_num at this
   | inr v =>
     cases j with
     | inl w =>
-      have h := he.one_lt_iff (x := (2 : F))
-      have hv : abv F (Sum.inr v) (2 : F) ≤ 1 := by
-        simpa only [abv, Sum.elim_inr, NumberField.HeightOneSpectrum.adicAbv, map_ofNat] using v.adicAbv_coe_le_one (NumberField.HeightOneSpectrum.one_lt_absNorm_nnreal v) (2 : 𝓞 F)
-      have hw : abv F (Sum.inl w) (2 : F) = 2 := by
-        simpa [abv, NumberField.InfinitePlace.coe_apply] using w.map_natCast 2
-      have hh : 1 < abv F (Sum.inl w) (2 : F) := by rw [hw]; norm_num
+      have h := he.one_lt_iff (x := (2))
+      have hv : abv F (Sum.inr v) (2) ≤ 1 := v.adicAbv_coe_le_one (NumberField.HeightOneSpectrum.one_lt_absNorm_nnreal v) (2 : 𝓞 F)
+      have hw : abv F (Sum.inl w) (2) = 2 := w.map_natCast 2
+      have hh : 1 < abv F (Sum.inl w) (2) := by rw [hw]; norm_num
       exact (not_lt_of_ge hv) (h.mpr hh)
     | inr w =>
       apply hij
@@ -130,15 +129,14 @@ private theorem denseRange_abv_pi (F : Type) [Field F] [NumberField F] :
     (fun i j hij => abv_inequivalent F (fun h => hij (Subtype.ext h)))
   obtain ⟨x, hx⟩ := hd.exists_mem_open
     (isOpen_set_pi Set.finite_univ (fun i _ => (hV i i.property).1))
-    (show (Set.pi Set.univ (fun i : I => V i)).Nonempty from
-      ⟨fun i => z i, fun i _ => (hV i i.property).2⟩)
+    ((⟨fun i => z i, fun i _ => (hV i i.property).2⟩))
   refine ⟨algebraMap F _ x, hsub ?_, ⟨x, rfl⟩⟩
   intro i hi
   exact hx ⟨i, hi⟩ (Set.mem_univ _)
 
 private def localMap (F : Type) [Field F] [NumberField F] :
     ((i : Place F) → WithAbs (abv F i)) → LocalScalarProduct F :=
-  fun x => (fun v => ((show WithAbs v.1 from x (Sum.inl v)) : v.Completion),
+  fun x => (fun v => ((show WithAbs v.1 from x (Sum.inl v))),
     fun v => NumberField.FinitePlace.embedding v (WithAbs.equiv (abv F (Sum.inr v)) (x (Sum.inr v))))
 
 private theorem finiteMap_isometry (F : Type) [Field F] [NumberField F]
@@ -234,11 +232,11 @@ theorem affine_integral_completion {K : Type*} [Field K]
     · simp
   · have hx0 : x ≠ 0 := by
       intro h
-      exact hx (h ▸ A.zero_mem)
-    have hxi : x⁻¹ ∈ A := (A.mem_or_inv_mem x).resolve_left hx
-    let k : GL (Fin 2) K := Matrix.GeneralLinearGroup.mkOfDetNeZero
+      apply hx <;> aesop
+    have hxi  := (A.mem_or_inv_mem x).resolve_left hx
+    let k  := Matrix.GeneralLinearGroup.mkOfDetNeZero
       !![x⁻¹, -1; 1, 0] (by simp [Matrix.det_fin_two])
-    let l : GL (Fin 2) K := Matrix.GeneralLinearGroup.mkOfDetNeZero
+    let l  := Matrix.GeneralLinearGroup.mkOfDetNeZero
       !![0, 1; -1, x⁻¹] (by simp [Matrix.det_fin_two])
     have hkl : k * l = 1 := by
       apply Units.ext
@@ -275,7 +273,7 @@ theorem local_affine_chart_hits_open {K : Type*} [Field K]
   by_cases ha : g 0 0 ≠ 0
   · obtain ⟨x, b, hb, he⟩ := factor_affine g ha
     exact ⟨x, b, hb, he ▸ hg⟩
-  · have ha' : g 0 0 = 0 := not_ne_iff.mp ha
+  · have ha'  := not_ne_iff.mp ha
     have hc : g 1 0 ≠ 0 := by
       intro hc
       have hd := (Matrix.GeneralLinearGroup.det g).ne_zero
@@ -283,15 +281,14 @@ theorem local_affine_chart_hits_open {K : Type*} [Field K]
       change Matrix.det g.val = 0
       simp [Matrix.det_fin_two, ha', hc]
     let f : K → GL (Fin 2) K := fun t => Matrix.GeneralLinearGroup.upperRightHom t * g
-    have hf : Continuous f := by
-      exact Matrix.GeneralLinearGroup.continuous_upperRightHom.mul continuous_const
-    have hV : IsOpen (f ⁻¹' U) := hU.preimage hf
+    have hf : Continuous f := Matrix.GeneralLinearGroup.continuous_upperRightHom.mul continuous_const
+    have hV  := hU.preimage hf
     have hnV : (f ⁻¹' U).Nonempty := ⟨0, by
       change Matrix.GeneralLinearGroup.upperRightHom 0 * g ∈ U
       rw [Matrix.GeneralLinearGroup.upperRightHom.map_zero_eq_one, one_mul]
       exact hg⟩
-    obtain ⟨t, ht, ht0⟩ := (dense_compl_singleton (0 : K)).inter_open_nonempty _ hV hnV
-    have ht0' : t ≠ 0 := by simpa using ht0
+    obtain ⟨t, ht, ht0⟩ := (dense_compl_singleton (0)).inter_open_nonempty _ hV hnV
+    have ht0' : t ≠ 0 := ht0
     have hft : f t 0 0 ≠ 0 := by
       simpa [f, Matrix.mul_apply, Fin.sum_univ_two, ha'] using mul_ne_zero ht0' hc
     obtain ⟨x, b, hb, he⟩ := factor_affine (f t) hft
@@ -307,7 +304,7 @@ variable (F : Type) [Field F] [NumberField F]
 abbrev V := HeightOneSpectrum (𝓞 F)
 abbrev KF (v : V F) := HeightOneSpectrum.adicCompletion F v
 abbrev LF := ((v : InfinitePlace F) → GL (Fin 2) v.Completion) × ((v : V F) → GL (Fin 2) (KF F v))
-def Good (S : Finset (V F)) (g : LF F) : Prop :=
+def Good (S : Finset (V F)) (g : LF F)  :=
   ∀ v, v ∉ S → (∀ i j, g.2 v i j ∈ v.adicCompletionIntegers F) ∧
     (∀ i j, (g.2 v)⁻¹ i j ∈ v.adicCompletionIntegers F)
 abbrev Domain (S : Finset (V F)) := {g : LF F // Good F S g}
@@ -470,19 +467,19 @@ theorem affine_flag_cylinder
   obtain ⟨T, hT, hTe⟩ := IsInducing.subtypeVal.isOpen_iff.mp
     (hU.preimage (continuous_assemble (F := F) (S := S)))
   have hpT : p.val ∈ T := by
-    change p ∈ (Subtype.val ⁻¹' T : Set (Domain F S))
-    exact (Set.ext_iff.mp hTe p).mpr (by change assemble p ∈ U; simpa [p, assemble_localize] using hg)
+    change p ∈ (Subtype.val ⁻¹' T)
+    exact (Set.ext_iff.mp hTe p).mpr (by change assemble p ∈ U; exact hg)
   obtain ⟨A, B, hA, hB, hpA, hpB, hAB⟩ := isOpen_prod_iff.mp hT _ _ hpT
   obtain ⟨I, a, ha, hIa⟩ := isOpen_pi_iff.mp hA _ hpA
   obtain ⟨J, c, hc, hJc⟩ := isOpen_pi_iff.mp hB _ hpB
-  let ao : (v : InfinitePlace F) → Set (GL (Fin 2) v.Completion) :=
+  let ao  :=
     fun v => if v ∈ I then a v else Set.univ
   have hao : ∀ v, IsOpen (ao v) ∧ (localize g).1 v ∈ ao v := by
     intro v
     by_cases hv : v ∈ I
     · simpa [ao, localize, p, hv] using ha v hv
     · simp [ao, hv]
-  let co : (v : V F) → Set (GL (Fin 2) (KF F v)) := fun v =>
+  let co  := fun v =>
     (if v ∈ J then c v else Set.univ) ∩
       (if v ∈ S then Set.univ else {k | (∀ i j, k i j ∈ v.adicCompletionIntegers F) ∧
         (∀ i j, k⁻¹ i j ∈ v.adicCompletionIntegers F)})
@@ -642,7 +639,7 @@ abbrev scalars (F : Type) [Field F] [NumberField F] :
   Matrix.GeneralLinearGroup.scalar (Fin 2)
 
 def fullBorelPreimage (F : Type) [Field F] [NumberField F]
-    {G : Type*} [Group G] (π : G →* AdelicGL F) : Subgroup G :=
+    {G : Type*} [Group G] (π : G →* AdelicGL F)  :=
   (borel (NumberField.AdeleRing (𝓞 F) F)).comap π
 
 end
@@ -653,7 +650,7 @@ open scoped NumberField Pointwise
 private theorem borel_eq_mirabolic_mul_scalar (R : Type*) [CommRing R] :
     (KPRationalFlag.borel R : Set (GL (Fin 2) R)) =
       (KPRationalFlag.mirabolic R : Set (GL (Fin 2) R)) *
-        Set.range (Matrix.GeneralLinearGroup.scalar (Fin 2) : Rˣ →* GL (Fin 2) R) := by
+        Set.range (Matrix.GeneralLinearGroup.scalar (Fin 2)) := by
   ext g
   constructor
   · intro hg
@@ -680,10 +677,7 @@ private theorem borel_eq_mirabolic_mul_scalar (R : Type*) [CommRing R] :
       rw [Matrix.GeneralLinearGroup.coe_scalar]
       simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar_apply, hg, ← hu,
         Units.val_inv u]
-    · show (g * Matrix.GeneralLinearGroup.scalar (Fin 2) u⁻¹) *
-        Matrix.GeneralLinearGroup.scalar (Fin 2) u = g
-      rw [map_inv (Matrix.GeneralLinearGroup.scalar (Fin 2)) u, mul_assoc,
-        inv_mul_cancel, mul_one]
+    · simp_all
   · intro hg
     obtain ⟨p, hp, z, ⟨u, rfl⟩, rfl⟩ := Set.mem_mul.mp hg
     have hp10 : (p : Matrix (Fin 2) (Fin 2) R) 1 0 = 0 := hp.1
@@ -698,7 +692,7 @@ theorem kp_adelic_borel_eq_mirabolic_scalars
     (borel (NumberField.AdeleRing (𝓞 F) F) : Set (AdelicGL F)) =
       (mirabolic (NumberField.AdeleRing (𝓞 F) F) : Set (AdelicGL F)) *
         Set.range (scalars F) := by
-  exact borel_eq_mirabolic_mul_scalar (NumberField.AdeleRing (𝓞 F) F)
+  apply borel_eq_mirabolic_mul_scalar
 
 private lemma dense_preimage_of_dense_image {G H : Type*} [TopologicalSpace G]
     [TopologicalSpace H] {π : G → H} (hπopen : IsOpenMap π) {T : Set H} (hT : Dense T) :
@@ -755,7 +749,7 @@ theorem kp_rational_adelic_cover_flag_density
       rw [map_mul]
       have h1 : π (sF γ) = rationalMap F γ := DFunLike.congr_fun hsF γ
       rw [h1]
-      exact Set.mul_mem_mul ⟨γ, rfl⟩ hc
+      apply Set.mul_mem_mul <;> aesop
     · intro hx
       obtain ⟨y, ⟨γ, rfl⟩, b, hb, hxb⟩ := Set.mem_mul.mp hx
       refine Set.mem_mul.mpr ⟨sF γ, ⟨γ, rfl⟩, (sF γ)⁻¹ * x, ?_, by group⟩

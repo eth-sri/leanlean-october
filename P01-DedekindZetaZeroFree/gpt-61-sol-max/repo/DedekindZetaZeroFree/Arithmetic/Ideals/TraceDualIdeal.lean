@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 The FLT Project. All rights reserved.
@@ -29,9 +32,11 @@ namespace DedekindZetaZeroFree.AbelianQuotient.Theta
 
 variable (K : Type*) [Field K] [NumberField K]
 
+section
+variable (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ)
+include I
 noncomputable def traceDualIdealUnit
-    (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) :
-    (FractionalIdeal (𝓞 K)⁰ K)ˣ :=
+       :=
   Units.mk0
     (FractionalIdeal.dual ℤ ℚ
       (I : FractionalIdeal (𝓞 K)⁰ K))
@@ -39,21 +44,21 @@ noncomputable def traceDualIdealUnit
 
 @[simp]
 theorem coe_traceDualIdealUnit
-    (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) :
+      :
     (traceDualIdealUnit K I : FractionalIdeal (𝓞 K)⁰ K) =
       FractionalIdeal.dual ℤ ℚ
         (I : FractionalIdeal (𝓞 K)⁰ K) :=
   rfl
 
-@[simp]
-theorem traceDualIdealUnit_traceDualIdealUnit
-    (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) :
-    traceDualIdealUnit K (traceDualIdealUnit K I) = I := by
-  ext
-  simp
+
+
+
+
+
+
 
 theorem coe_traceDualIdealUnit_eq_dual_one_mul_inv
-    (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) :
+      :
     (traceDualIdealUnit K I : FractionalIdeal (𝓞 K)⁰ K) =
       FractionalIdeal.dual ℤ ℚ
           (1 : FractionalIdeal (𝓞 K)⁰ K) *
@@ -62,7 +67,7 @@ theorem coe_traceDualIdealUnit_eq_dual_one_mul_inv
     FractionalIdeal.dual_eq_mul_inv]
 
 theorem absNorm_traceDualIdealUnit
-    (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) :
+      :
     FractionalIdeal.absNorm
         (traceDualIdealUnit K I :
           FractionalIdeal (𝓞 K)⁰ K) =
@@ -73,6 +78,8 @@ theorem absNorm_traceDualIdealUnit
           (I : FractionalIdeal (𝓞 K)⁰ K))⁻¹ := by
   rw [coe_traceDualIdealUnit_eq_dual_one_mul_inv,
     map_mul, map_inv₀]
+end
+
 
 theorem absNorm_traceDual_one :
     FractionalIdeal.absNorm

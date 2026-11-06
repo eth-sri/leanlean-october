@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Poisson.FieldTransform.OriginContourShift
 
 @[expose] public section
+
 
 noncomputable section
 open MeasureTheory
@@ -78,7 +81,7 @@ theorem originPolynomial_coeff_uniform_bound
   obtain ⟨N, C, hC, hA⟩ := A_uniform_disk_bound D r b hD hr hb
   refine ⟨N, 2 ^ (r - 1) * C, by positivity, ?_⟩
   intro h hh hhc hsupp n hn
-  have hS : 0 ≤ Vendor.S b N h := Vendor.S_nonneg b hb N h hh
+  have hS  := Vendor.S_nonneg b hb N h hh
   have hM : 0 ≤ C * Vendor.S b N h := mul_nonneg hC.le hS
   have hdisk : Metric.closedBall (0 : ℂ) (1 / 2 : ℝ) ⊆ {s : ℂ | -1 < s.re} := by
     intro s hs

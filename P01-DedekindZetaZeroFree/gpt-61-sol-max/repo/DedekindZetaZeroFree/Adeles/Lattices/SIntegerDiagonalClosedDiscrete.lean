@@ -11,12 +11,14 @@ open NumberField IsDedekindDomain
 
 namespace DedekindZetaZeroFree
 
-def sIntegerDiagonalSubgroup (F : Type*) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) : AddSubgroup (SLocalProduct F S) :=
+section
+variable (F : Type*) [Field F] [NumberField F]
+    (S : Finset (HeightOneSpectrum (𝓞 F)))
+include F S
+def sIntegerDiagonalSubgroup   : AddSubgroup (SLocalProduct F S) :=
   (sIntegerDiagonal F S).toAddMonoidHom.range
 
-theorem sIntegerDiagonalSubgroup_exists_open_zero (F : Type*) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) :
+theorem sIntegerDiagonalSubgroup_exists_open_zero   :
     ∃ W : Set (SLocalProduct F S), IsOpen W ∧ (0 : SLocalProduct F S) ∈ W ∧
       W ∩ (sIntegerDiagonalSubgroup F S : Set (SLocalProduct F S)) = {0} := by
   classical
@@ -60,8 +62,7 @@ theorem sIntegerDiagonalSubgroup_exists_open_zero (F : Type*) [Field F] [NumberF
     subst x
     exact ⟨hW0, (sIntegerDiagonalSubgroup F S).zero_mem⟩
 
-theorem sIntegerDiagonalSubgroup_discreteTopology (F : Type*) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) :
+theorem sIntegerDiagonalSubgroup_discreteTopology   :
     DiscreteTopology (sIntegerDiagonalSubgroup F S) := by
   obtain ⟨W, hW, _, hsep⟩ := sIntegerDiagonalSubgroup_exists_open_zero F S
   apply discreteTopology_of_isOpen_singleton_zero
@@ -75,11 +76,12 @@ theorem sIntegerDiagonalSubgroup_discreteTopology (F : Type*) [Field F] [NumberF
   rw [← heq]
   exact hW.preimage continuous_subtype_val
 
-theorem sIntegerDiagonalSubgroup_isClosed (F : Type*) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) :
+theorem sIntegerDiagonalSubgroup_isClosed   :
     IsClosed (sIntegerDiagonalSubgroup F S : Set (SLocalProduct F S)) := by
   letI := sIntegerDiagonalSubgroup_discreteTopology F S
   exact AddSubgroup.isClosed_of_discreteTopology
+end
+
 
 end DedekindZetaZeroFree
 

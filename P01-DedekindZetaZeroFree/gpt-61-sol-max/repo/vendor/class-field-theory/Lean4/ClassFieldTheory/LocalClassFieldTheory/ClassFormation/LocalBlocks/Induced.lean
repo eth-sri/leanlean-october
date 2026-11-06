@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import GaloisCohomology.Cyclic.Herbrand.Induced
 public import ValuedFieldTheory.Ramification.HilbertRamification.AlgebraicLocalization
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -62,10 +65,13 @@ noncomputable def decompositionGroupLocalUnitsAction
       vK hvK w).toMonoidHom
 
 omit [FiniteDimensional K L] in
+section
+variable (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
+    (w : AbsoluteValueExtension vK L)
+include vK hvK w
 @[simp]
 theorem decompositionGroup_smul_localUnit_coe
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    (w : AbsoluteValueExtension vK L)
+     
     (σ : absoluteValueDecompositionGroup K w.1)
     (x : (LocalizedCompletion vK w)ˣ) :
     letI :=
@@ -73,15 +79,14 @@ theorem decompositionGroup_smul_localUnit_coe
     ((σ • x : (LocalizedCompletion vK w)ˣ) :
         LocalizedCompletion vK w) =
       decompositionGroupEquivAlgebraicLocalizationAut
-        vK hvK w σ (x : LocalizedCompletion vK w) :=
+        vK hvK w σ x :=
   rfl
 
 /-- The block of local multiplicative groups above `v`, after choosing
 one extension `w`.  It is the induced module from the decomposition group
 at `w`. -/
 abbrev LocalPlaceBlock
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    (w : AbsoluteValueExtension vK L) :=
+      :=
   @InducedModule
     (G := L ≃ₐ[K] L)
     (B := (LocalizedCompletion vK w)ˣ)
@@ -90,29 +95,28 @@ abbrev LocalPlaceBlock
     inferInstance
     (decompositionGroupLocalUnitsAction vK hvK w)
 
-/-- In cyclic coordinates, the local block is a finite product
-of conjugate copies of the chosen completion. -/
-noncomputable def localPlaceBlockEquivProduct
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    (w : AbsoluteValueExtension vK L)
-    (σ : L ≃ₐ[K] L)
-    (hgen : ∀ τ : L ≃ₐ[K] L,
-      τ ∈ Subgroup.zpowers σ) :
-    letI :=
-      decompositionGroupLocalUnitsAction vK hvK w
-    LocalPlaceBlock vK hvK w ≃*
-      (Fin (absoluteValueDecompositionGroup K w.1).index →
-        (LocalizedCompletion vK w)ˣ) :=
-  by
-    letI :=
-      decompositionGroupLocalUnitsAction vK hvK w
-    exact inducedCoordinatesOfFiniteCyclic
-      (absoluteValueDecompositionGroup K w.1) σ hgen
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- Degree-zero cohomology for one local block. -/
 noncomputable def localPlaceBlockHerbrandH0Equiv
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    (w : AbsoluteValueExtension vK L)
+     
     (σ : L ≃ₐ[K] L)
     (hgen : ∀ τ : L ≃ₐ[K] L,
       τ ∈ Subgroup.zpowers σ) :
@@ -134,8 +138,7 @@ noncomputable def localPlaceBlockHerbrandH0Equiv
 
 /-- Degree-minus-one cohomology for one local block. -/
 noncomputable def localPlaceBlockHerbrandHMinusOneEquiv
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    (w : AbsoluteValueExtension vK L)
+     
     (σ : L ≃ₐ[K] L)
     (hgen : ∀ τ : L ≃ₐ[K] L,
       τ ∈ Subgroup.zpowers σ) :
@@ -157,6 +160,8 @@ noncomputable def localPlaceBlockHerbrandHMinusOneEquiv
       Fintype.ofFinite _
     exact inducedHerbrandHMinusOneEquivOfFiniteCyclic
       (absoluteValueDecompositionGroup K w.1) σ hgen
+end
+
 
 end LocalClassFieldTheory
 

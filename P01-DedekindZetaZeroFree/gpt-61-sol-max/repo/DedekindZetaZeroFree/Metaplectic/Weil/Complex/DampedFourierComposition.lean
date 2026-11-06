@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Metaplectic.Weil.Complex.TraceFourierNormalization
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.ComplexWeil
 
@@ -29,8 +32,11 @@ theorem norm_damped_fubini_integrand (β a : ℂ) (ε : ℝ)
       Real.exp (-ε * ‖x‖ ^ 2) * ‖f z‖ := by
   rw [norm_mul, norm_mul, Complex.norm_exp, Complex.ofReal_re, norm_psi, mul_one]
 
-theorem integrable_damped_fubini_integrand (β a : ℂ) (hβ : β ≠ 0)
-    (ha : a ≠ 0) (ε : ℝ) (hε : 0 < ε) (f : SchwartzMap ℂ ℂ) (y : ℂ) :
+section
+variable (β a : ℂ) (hβ : β ≠ 0)
+    (ha : a ≠ 0) (ε : ℝ) (hε : 0 < ε) (f : SchwartzMap ℂ ℂ) (y : ℂ)
+include β a hβ ha ε hε f y
+theorem integrable_damped_fubini_integrand   :
     Integrable (fun p : ℂ × ℂ =>
       Complex.exp (((-ε * ‖p.1‖ ^ 2 : ℝ) : ℂ)) * f p.2 *
         psi β (a * p.1 ^ 2 - p.1 * (y + p.2)))
@@ -39,7 +45,7 @@ theorem integrable_damped_fubini_integrand (β a : ℂ) (hβ : β ≠ 0)
   have hgaussvol : Integrable (fun v : ℂ => Real.exp (-ε * ‖v‖^2)) (volume : Measure ℂ) := by
     have hvol : Integrable (fun v : ℂ => Complex.exp (-(ε:ℂ) * ‖v‖^2)) (volume : Measure ℂ) := by
       have := GaussianFourier.integrable_cexp_neg_mul_sq_norm_add (V := ℂ) (b := (ε:ℂ))
-        (c := 0) (w := 0) (by simpa using hε)
+        (c := 0) (w := 0) (hε)
       simpa using this
     refine (hvol.norm).congr ?_
     filter_upwards with v
@@ -60,8 +66,7 @@ theorem integrable_damped_fubini_integrand (β a : ℂ) (hβ : β ≠ 0)
   · filter_upwards with p
     rw [norm_damped_fubini_integrand]
 
-theorem F_damped_M_F_eq_integral_K (β a : ℂ) (hβ : β ≠ 0)
-    (ha : a ≠ 0) (ε : ℝ) (hε : 0 < ε) (f : SchwartzMap ℂ ℂ) (y : ℂ) :
+theorem F_damped_M_F_eq_integral_K   :
     F β (fun x : ℂ =>
       Complex.exp (((-ε * ‖x‖ ^ 2 : ℝ) : ℂ)) *
         psi β (a * x ^ 2) * F β (⇑f) x) y =
@@ -93,10 +98,7 @@ theorem F_damped_M_F_eq_integral_K (β a : ℂ) (hβ : β ≠ 0)
       _ = (Complex.exp (((-ε * ‖x‖ ^ 2 : ℝ) : ℂ)) * psi β (a * x ^ 2) *
             F β (⇑f) x) * psi β (-x * y) := by
           have hF : (∫ z : ℂ, f z * psi β (-x * z) ∂mu β) = F β (⇑f) x := by
-            rw [F]
-            exact integral_congr_ae (Eventually.of_forall (fun z => by
-              show f z * psi β (-x * z) = ⇑f z * psi β (-z * x)
-              rw [show (-x) * z = (-z) * x by ring]))
+            grind [DedekindZetaZeroFree.ComplexWeil.F]
           rw [hF]; ring
   have hinner2 : ∀ z : ℂ,
       (∫ x : ℂ, Complex.exp (((-ε * ‖x‖ ^ 2 : ℝ) : ℂ)) * f z *
@@ -111,7 +113,7 @@ theorem F_damped_M_F_eq_integral_K (β a : ℂ) (hβ : β ≠ 0)
       _ = f z * ∫ x : ℂ, Complex.exp (((-ε * ‖x‖ ^ 2 : ℝ) : ℂ)) *
             psi β (a * x ^ 2 - x * (y + z)) ∂mu β := by
           rw [integral_const_mul]
-      _ = f z * K β ε a (y + z) := by rw [K]
+      _ = f z * K β ε a (y + z) := rfl
   rw [F]
   calc ∫ x : ℂ, (Complex.exp (((-ε * ‖x‖ ^ 2 : ℝ) : ℂ)) * psi β (a * x ^ 2) *
           F β (⇑f) x) * psi β (-x * y) ∂mu β
@@ -124,6 +126,8 @@ theorem F_damped_M_F_eq_integral_K (β a : ℂ) (hβ : β ≠ 0)
           psi β (a * x ^ 2 - x * (y + z))) hDint
     _ = ∫ z : ℂ, f z * K β ε a (y + z) ∂mu β :=
         integral_congr_ae (Eventually.of_forall (fun z => hinner2 z))
+end
+
 
 theorem tendsto_F_damped_M_F (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)
     (f : SchwartzMap ℂ ℂ) (y : ℂ) :
@@ -136,7 +140,7 @@ theorem tendsto_F_damped_M_F (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)
   haveI : SFinite (mu β) := by rw [mu]; infer_instance
   have hpsi : Continuous fun z : ℂ => psi β z := by unfold psi; fun_prop
   have hFint : Integrable (fun x : ℂ => F β (⇑f) x) (mu β) := integrable_F_schwartz_mu β f
-  have hFmeas : AEStronglyMeasurable (fun x : ℂ => F β (⇑f) x) (mu β) := hFint.aestronglyMeasurable
+  have hFmeas  := hFint.aestronglyMeasurable
   have hbint : Integrable (fun x : ℂ => ‖F β (⇑f) x‖) (mu β) := hFint.norm
   change Tendsto (fun ε : ℝ => ∫ x : ℂ,
       (Complex.exp (((-ε * ‖x‖ ^ 2 : ℝ) : ℂ)) * psi β (a * x ^ 2) * F β (⇑f) x) *
@@ -160,7 +164,7 @@ theorem tendsto_F_damped_M_F (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)
     filter_upwards with x
     have hle : Real.exp (-ε * ‖x‖ ^ 2) ≤ 1 := by
       rw [Real.exp_le_one_iff, neg_mul]
-      exact neg_nonpos.mpr (mul_nonneg hε.le (sq_nonneg ‖x‖))
+      apply neg_nonpos.mpr <;> aesop
     simp only [norm_mul, norm_exp_damped, norm_psi, mul_one, one_mul]
     exact mul_le_of_le_one_left (norm_nonneg _) hle
   · filter_upwards with x

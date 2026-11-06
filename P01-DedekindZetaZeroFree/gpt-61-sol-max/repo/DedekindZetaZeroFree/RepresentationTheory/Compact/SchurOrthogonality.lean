@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.RepresentationTheory.Compact.AveragedIntertwiners
 public import DedekindZetaZeroFree.RepresentationTheory.Continuous.SchurLemma
 public import DedekindZetaZeroFree.RepresentationTheory.Irreducible.SubrepresentationsAndEigenvectors
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 The Tau Ceti contributors. All rights reserved.
@@ -47,7 +50,7 @@ theorem averageOperator_eq_finrank_inv_mul_trace_smul_id
     averageOperator π hπ π hπ T =
       ((Module.finrank 𝕜 V : 𝕜)⁻¹ * LinearMap.trace 𝕜 V (T : V →ₗ[𝕜] V)) •
         ContinuousLinearMap.id 𝕜 V := by
-  have hdim : (Module.finrank 𝕜 V : 𝕜) ≠ 0 :=
+  have hdim  :=
     Representation.IsIrreducible.natCast_finrank_ne_zero hirr
   have h := π.eq_finrank_inv_mul_trace_smul_id_of_isIrreducible hdim hirr
     (averageIntertwiner π hπ π hπ T)

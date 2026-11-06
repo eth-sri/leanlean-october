@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Ramification.GaloisValuation.ClosedFixingSubgroup
 public import GaloisCohomology.Kummer.Abstract.KummerDelta
 public import Mathlib.RepresentationTheory.Rep.Basic
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -62,10 +65,13 @@ theorem intermediateFieldUnitsToGaloisAmbient_apply
 
 variable [IsGalois K Ω]
 
+section
+variable (E : IntermediateField K Ω)
+include E
 /-- An ambient unit is fixed by `Gal(Ω/E)` exactly when its underlying
 field element belongs to `E`. -/
 theorem mem_galoisAmbientUnits_fixed_iff
-    (E : IntermediateField K Ω)
+     
     (x : Additive Ωˣ) :
     x ∈ ambientFixedAddSubgroup (galoisAmbientUnitsRep K Ω)
         (closedFixingSubgroup K Ω E) ↔
@@ -82,8 +88,7 @@ theorem mem_galoisAmbientUnits_fixed_iff
       IntermediateField.mem_fixedField_iff]
     intro σ hσ
     have hσclosed :
-        σ ∈ (closedFixingSubgroup K Ω E).toSubgroup := by
-      simpa only [closedFixingSubgroup] using hσ
+        σ ∈ (closedFixingSubgroup K Ω E).toSubgroup := hσ
     have hfixed := hx ⟨σ, hσclosed⟩
     have hρ :
         (Rep.ofAlgebraAutOnUnits K Ω).ρ σ x =
@@ -96,8 +101,7 @@ theorem mem_galoisAmbientUnits_fixed_iff
     convert hval using 1
     rfl
   · intro hx σ
-    have hσE : σ.1 ∈ E.fixingSubgroup := by
-      simpa only [closedFixingSubgroup] using σ.2
+    have hσE : σ.1 ∈ E.fixingSubgroup := σ.2
     have hρ :
         (Rep.ofAlgebraAutOnUnits K Ω).ρ
             (σ : Gal(Ω / K)) x =
@@ -115,7 +119,7 @@ theorem mem_galoisAmbientUnits_fixed_iff
 /-- The image of `Eˣ` in `Ωˣ` is precisely the abstract fixed
 subgroup `A_E` used in the abstract class-formation framework. -/
 theorem intermediateFieldUnitsToGaloisAmbient_range
-    (E : IntermediateField K Ω) :
+      :
     (intermediateFieldUnitsToGaloisAmbient K Ω E).range =
       ambientFixedAddSubgroup (galoisAmbientUnitsRep K Ω)
         (closedFixingSubgroup K Ω E) := by
@@ -133,8 +137,7 @@ theorem intermediateFieldUnitsToGaloisAmbient_range
       toMul_ofMul, Units.coe_map]
     exact (Additive.toMul y : Eˣ).1.property
   · intro hx
-    have hxE :
-        ((Additive.toMul x : Ωˣ) : Ω) ∈ E :=
+    have hxE  :=
       (mem_galoisAmbientUnits_fixed_iff K Ω E x).1 hx
     let y₀ : E :=
       ⟨((Additive.toMul x : Ωˣ) : Ω), hxE⟩
@@ -156,7 +159,7 @@ theorem intermediateFieldUnitsToGaloisAmbient_range
 /-- Canonical additive equivalence `Eˣ ≃ A_E` for the actual ambient-unit
 representation. -/
 def intermediateFieldUnitsEquivGaloisFixed
-    (E : IntermediateField K Ω) :
+      :
     Additive Eˣ ≃+ ambientFixedAddSubgroup (galoisAmbientUnitsRep K Ω)
       (closedFixingSubgroup K Ω E) := by
   let eRange : Additive Eˣ ≃+
@@ -172,20 +175,23 @@ def intermediateFieldUnitsEquivGaloisFixed
 /-- States the theorem `intermediateFieldUnitsEquivGaloisFixed_coe`. -/
 @[simp]
 theorem intermediateFieldUnitsEquivGaloisFixed_coe
-    (E : IntermediateField K Ω) (x : Additive Eˣ) :
+      (x : Additive Eˣ) :
     (intermediateFieldUnitsEquivGaloisFixed K Ω E x).1 =
         intermediateFieldUnitsToGaloisAmbient K Ω E x :=
   rfl
+end
 
+
+section
+variable (L : Type) [Field L] [Algebra K L]
+    (i : L →ₐ[K] Ω)
+include L i
 /-- For an embedded extension `i : L → Ω`, the coefficient group fixed by
 `Gal(Ω/i(L))` is canonically the actual unit group `Lˣ`.  This is the form
 needed when an abstract finite extension is realized inside a separable
 closure. -/
 def embeddedFieldUnitsEquivGaloisFixed
-    (L : Type) [Field L] [Algebra K L]
-    (i : L →ₐ[K] Ω) :
-    Additive Lˣ ≃+ ambientFixedAddSubgroup (galoisAmbientUnitsRep K Ω)
-      (closedFixingSubgroup K Ω (AlgHom.fieldRange i)) :=
+       :=
   (MulEquiv.toAdditive
     (Units.mapEquiv (AlgEquiv.ofInjectiveField i).toMulEquiv)).trans
       (intermediateFieldUnitsEquivGaloisFixed K Ω (AlgHom.fieldRange i))
@@ -193,11 +199,12 @@ def embeddedFieldUnitsEquivGaloisFixed
 /-- States the theorem `embeddedFieldUnitsEquivGaloisFixed_coe`. -/
 @[simp]
 theorem embeddedFieldUnitsEquivGaloisFixed_coe
-    (L : Type) [Field L] [Algebra K L]
-    (i : L →ₐ[K] Ω) (x : Lˣ) :
+      (x : Lˣ) :
     (embeddedFieldUnitsEquivGaloisFixed K Ω L i (Additive.ofMul x)).1 =
       Additive.ofMul (Units.map i.toRingHom.toMonoidHom x) :=
   rfl
+end
+
 
 end
 end LocalClassFieldTheory

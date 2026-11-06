@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.ValuationSubringUnits.RangeRestriction
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.ValuationSubringUnits.CyclicValueGroup
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.ValuationSubringUnits.IntegerValuation
@@ -13,6 +15,7 @@ public import ValuedFieldTheory.LocalField.DiscreteValuationField.ValuationSubri
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.ValuationSubringUnits.ValuedExtensionUnitMap
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -56,11 +59,14 @@ namespace WithZeroValuationTopology
 
 variable {K : Type u} [Field K]
 
+section
+variable (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
+    [Valuation.IsCompleteDiscrete v]
+include v
 /-- The complete-DVF package attached to a standard `ℤᵐ⁰`-valued complete
 discrete valuation. -/
 def completeDVF
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [Valuation.IsCompleteDiscrete v] : CompleteDVF.{u, 0} K where
+      : CompleteDVF.{u, 0} K where
   ValueGroup := WithZero (Multiplicative ℤ)
   valuation := v
   instCompleteDiscrete := inferInstance
@@ -68,8 +74,7 @@ def completeDVF
 /-- Restricting a standard `ℤᵐ⁰`-valued valuation to its actual range does not
 change the uniform structure on the field. -/
 theorem valuedMk_uniformSpace_eq_mrangeRestrict
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [Valuation.IsCompleteDiscrete v] :
+      :
     (Valued.mk' v).toUniformSpace =
       (_root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrictValued (completeDVF v)).toUniformSpace := by
   let w :=
@@ -82,27 +87,25 @@ theorem valuedMk_uniformSpace_eq_mrangeRestrict
   change (Valued.mk' v).toUniformSpace = (Valued.mk' w).toUniformSpace
   apply le_antisymm
   · rw [le_iff_uniformContinuous_id]
-    simpa using hequiv.symm.uniformContinuous
+    exact hequiv.symm.uniformContinuous
   · rw [le_iff_uniformContinuous_id]
-    simpa using hequiv.uniformContinuous
+    exact hequiv.uniformContinuous
 
 /-- A standard complete discrete valuation with finite residue field makes the
 field complete for the topology obtained directly from `Valued.mk' v`. -/
 theorem completeSpace_ofWithZeroValuation
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [Valuation.IsCompleteDiscrete v]
+     
     [Finite (IsLocalRing.ResidueField v.valuationSubring)] :
     letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
     CompleteSpace K := by
-  let F : CompleteDVF.{u, 0} K := completeDVF v
-  let direct : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-  let restrictedNormed : NontriviallyNormedField K :=
+  let F  := completeDVF v
+  let direct  := Valued.mk' v
+  let restrictedNormed  :=
     _root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict_nontriviallyNormedField F
   have : Finite F.residueField := by
     change Finite (IsLocalRing.ResidueField v.valuationSubring)
     infer_instance
-  have hcomplete : @CompleteSpace K restrictedNormed.toUniformSpace := by
-    exact _root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict_completeSpace_of_residueField_finite F
+  have hcomplete : @CompleteSpace K restrictedNormed.toUniformSpace := _root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict_completeSpace_of_residueField_finite F
   have huniform : direct.toUniformSpace = restrictedNormed.toUniformSpace := by
     change
       (Valued.mk' v).toUniformSpace =
@@ -115,12 +118,13 @@ theorem completeSpace_ofWithZeroValuation
         valuedMk_uniformSpace_eq_mrangeRestrict v
       _ =
           (_root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict_nontriviallyNormedField
-            (completeDVF v)).toUniformSpace := by
-        rfl
-  let : Valued K (WithZero (Multiplicative ℤ)) := direct
+            (completeDVF v)).toUniformSpace := rfl
+  let  := direct
   change @CompleteSpace K direct.toUniformSpace
   rw [huniform]
   exact hcomplete
+end
+
 
 end WithZeroValuationTopology
 end LocalFieldTheory.DiscreteValuationField

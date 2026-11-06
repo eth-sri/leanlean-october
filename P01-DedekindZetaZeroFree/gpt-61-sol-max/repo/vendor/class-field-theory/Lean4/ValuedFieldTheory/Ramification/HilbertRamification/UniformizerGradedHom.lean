@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Ramification.HilbertRamification.Monogeneity
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -88,12 +91,12 @@ def dvfHigherPrincipalUnitGroup
       (a : target.valuationSubring) - 1 ∈ target.maximalIdeal ^ n :=
   Iff.rfl
 
-/-- States the theorem `dvfHigherPrincipalUnitGroup_antitone`. -/
-theorem dvfHigherPrincipalUnitGroup_antitone
-    (target : ValuationTheory.DiscreteValuationField.DVF.{w, x} L) :
-    Antitone (dvfHigherPrincipalUnitGroup target) := by
-  intro m n hmn a ha
-  exact Ideal.pow_le_pow_right hmn ha
+
+
+
+
+
+
 
 /-- The literal target U_L^n/U_L^(n+1). -/
 abbrev dvfPrincipalUnitGradedPiece
@@ -120,8 +123,7 @@ abbrev dvfValuationSubringUnitAut
     (huniq :
       RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
         base target)
-    (sigma : Gal(L/K)) :
-    target.valuationSubringˣ →* target.valuationSubringˣ :=
+    (sigma : Gal(L/K))  :=
   Units.map
     (valuationSubringAutOfUniqueExtension
       (base := base) (target := target) huniq sigma).toMonoidHom
@@ -134,8 +136,7 @@ omit [FiniteDimensional K L] [IsGalois K L] in
         base target)
     (sigma : Gal(L/K)) (a : target.valuationSubringˣ) :
     ((dvfValuationSubringUnitAut
-      (base := base) (target := target) huniq sigma a :
-        target.valuationSubringˣ) : target.valuationSubring) =
+      (base := base) (target := target) huniq sigma a) : target.valuationSubring) =
       valuationSubringAutOfUniqueExtension
         (base := base) (target := target) huniq sigma
         (a : target.valuationSubring) :=
@@ -158,12 +159,10 @@ theorem exists_dvfUniformizerQuotientUnit
   let sigmaPi :=
     valuationSubringAutOfUniqueExtension
       (base := base) (target := target) huniq sigma pi
-  have hpiMem : pi ∈ target.maximalIdeal :=
+  have hpiMem  :=
     target.uniformizer_mem_maximalIdeal hpi
   have hpiDvd : pi ∣ sigmaPi := by
-    have hsigmaMem : sigmaPi ∈ target.maximalIdeal ^ 1 := by
-      exact
-        (valuationSubringAutOfUniqueExtension_mem_maximalIdeal_pow_iff
+    have hsigmaMem : sigmaPi ∈ target.maximalIdeal ^ 1 := (valuationSubringAutOfUniqueExtension_mem_maximalIdeal_pow_iff
           (base := base) (target := target) huniq sigma 1 pi).2
           (by simpa using hpiMem)
     rw [← Ideal.mem_span_singleton]
@@ -214,7 +213,7 @@ theorem exists_dvfUniformizerQuotientUnit
     intro hzero
     have hzeroL :=
       congrArg (fun z : target.valuationSubring => (z : L)) hzero
-    exact hpi.ne_zero (by simpa using hzeroL)
+    apply hpi.ne_zero <;> assumption
   have hab : a * b = 1 := by
     apply mul_left_cancel₀ hpi0
     calc
@@ -234,7 +233,7 @@ noncomputable def dvfUniformizerQuotientUnit
         base target)
     (pi : target.valuationSubring)
     (hpi : target.valuation.IsUniformizer (pi : L))
-    (sigma : Gal(L/K)) : target.valuationSubringˣ :=
+    (sigma : Gal(L/K))  :=
   Classical.choose
     (exists_dvfUniformizerQuotientUnit
       (base := base) (target := target) huniq hpi sigma)
@@ -279,12 +278,11 @@ theorem dvfUniformizerQuotientUnit_mul_eq
     intro hzero
     have hzeroL :=
       congrArg (fun z : target.valuationSubring => (z : L)) hzero
-    exact hpi.ne_zero (by simpa using hzeroL)
+    apply hpi.ne_zero <;> assumption
   apply mul_right_cancel₀ hpi0
   calc
     ((dvfUniformizerQuotientUnit
-        (base := base) (target := target) huniq pi hpi (sigma * tau) :
-          target.valuationSubringˣ) : target.valuationSubring) * pi =
+        (base := base) (target := target) huniq pi hpi (sigma * tau)) : target.valuationSubring) * pi =
         valuationSubringAutOfUniqueExtension
           (base := base) (target := target) huniq (sigma * tau) pi := by
       rw [dvfUniformizerQuotientUnit_mul_uniformizer
@@ -292,13 +290,11 @@ theorem dvfUniformizerQuotientUnit_mul_eq
     _ = valuationSubringAutOfUniqueExtension
           (base := base) (target := target) huniq sigma
           (valuationSubringAutOfUniqueExtension
-            (base := base) (target := target) huniq tau pi) := by
-      rw [valuationSubringAutOfUniqueExtension_mul_apply]
+            (base := base) (target := target) huniq tau pi) := rfl
     _ = valuationSubringAutOfUniqueExtension
           (base := base) (target := target) huniq sigma
           ((dvfUniformizerQuotientUnit
-              (base := base) (target := target) huniq pi hpi tau :
-                target.valuationSubringˣ) : target.valuationSubring) *
+              (base := base) (target := target) huniq pi hpi tau) : target.valuationSubring) *
             valuationSubringAutOfUniqueExtension
               (base := base) (target := target) huniq sigma pi := by
       rw [dvfUniformizerQuotientUnit_mul_uniformizer
@@ -332,7 +328,7 @@ theorem dvfUniformizerQuotientUnit_mem_iff_uniformizer_sub_mem
       valuationSubringAutOfUniqueExtension
           (base := base) (target := target) huniq sigma pi - pi ∈
         target.maximalIdeal ^ (n + 1) := by
-  let a : target.valuationSubring :=
+  let a  :=
     (dvfUniformizerQuotientUnit
       (base := base) (target := target) huniq pi hpi sigma :
         target.valuationSubring)
@@ -369,7 +365,7 @@ theorem dvfUniformizerQuotientUnit_mem_iff_uniformizer_sub_mem
       intro hzero
       have hzeroL :=
         congrArg (fun z : target.valuationSubring => (z : L)) hzero
-      exact hpi.ne_zero (by simpa using hzeroL)
+      apply hpi.ne_zero <;> assumption
     apply mul_right_cancel₀ hpi0
     calc
       (a - 1) * pi = pi ^ (n + 1) * b := hb
@@ -389,9 +385,7 @@ theorem dvfUniformizerQuotientUnit_mem_of_mem_lowerRamificationGroup
         (base := base) (target := target) huniq (n : ℝ)) :
     dvfUniformizerQuotientUnit
         (base := base) (target := target) huniq pi hpi sigma ∈
-      dvfHigherPrincipalUnitGroup target n := by
-  exact
-    (dvfUniformizerQuotientUnit_mem_iff_uniformizer_sub_mem
+      dvfHigherPrincipalUnitGroup target n := (dvfUniformizerQuotientUnit_mem_iff_uniformizer_sub_mem
       (base := base) (target := target) huniq hpi n sigma).2
       ((mem_lowerRamificationGroup_nat_iff
         (base := base) (target := target) huniq n sigma).1 hsigma pi)
@@ -411,18 +405,12 @@ theorem dvfValuationSubringUnitAut_div_mem_succ
         (base := base) (target := target) huniq sigma a / a ∈
       dvfHigherPrincipalUnitGroup target (n + 1) := by
   rw [mem_dvfHigherPrincipalUnitGroup_iff]
-  have hdiff :
-      valuationSubringAutOfUniqueExtension
-          (base := base) (target := target) huniq sigma
-          (a : target.valuationSubring) -
-        (a : target.valuationSubring) ∈
-      target.maximalIdeal ^ (n + 1) :=
+  have hdiff  :=
     (mem_lowerRamificationGroup_nat_iff
       (base := base) (target := target) huniq n sigma).1 hsigma a
   have hre :
       ((dvfValuationSubringUnitAut
-          (base := base) (target := target) huniq sigma a / a :
-            target.valuationSubringˣ) : target.valuationSubring) - 1 =
+          (base := base) (target := target) huniq sigma a / a) : target.valuationSubring) - 1 =
         ((a⁻¹ : target.valuationSubringˣ) : target.valuationSubring) *
           (valuationSubringAutOfUniqueExtension
               (base := base) (target := target) huniq sigma
@@ -431,8 +419,7 @@ theorem dvfValuationSubringUnitAut_div_mem_succ
     simp [div_eq_mul_inv]
     have hinv :
         ((a⁻¹ : target.valuationSubringˣ) : target.valuationSubring) *
-          (a : target.valuationSubring) = 1 := by
-      exact_mod_cast Units.inv_mul a
+          (a : target.valuationSubring) = 1 := Units.inv_mul a
     rw [mul_sub, hinv]
     ring
   rw [hre]
@@ -473,12 +460,11 @@ theorem dvfUniformizerQuotientUnit_eq_of_uniformizer_eq_unit_mul
     intro hzero
     have hzeroL :=
       congrArg (fun z : target.valuationSubring => (z : L)) hzero
-    exact hpi'.ne_zero (by simpa using hzeroL)
+    apply hpi'.ne_zero <;> assumption
   apply mul_right_cancel₀ hpi'0
   calc
     ((dvfUniformizerQuotientUnit
-        (base := base) (target := target) huniq pi' hpi' sigma :
-          target.valuationSubringˣ) : target.valuationSubring) * pi' =
+        (base := base) (target := target) huniq pi' hpi' sigma) : target.valuationSubring) * pi' =
         valuationSubringAutOfUniqueExtension
           (base := base) (target := target) huniq sigma pi' := by
       rw [dvfUniformizerQuotientUnit_mul_uniformizer
@@ -489,18 +475,15 @@ theorem dvfUniformizerQuotientUnit_eq_of_uniformizer_eq_unit_mul
       rw [hpiA]
     _ =
         (dvfValuationSubringUnitAut
-            (base := base) (target := target) huniq sigma a :
-            target.valuationSubringˣ) *
+            (base := base) (target := target) huniq sigma a) *
           valuationSubringAutOfUniqueExtension
             (base := base) (target := target) huniq sigma pi := by
       simp
     _ =
         (dvfValuationSubringUnitAut
-            (base := base) (target := target) huniq sigma a :
-            target.valuationSubringˣ) *
+            (base := base) (target := target) huniq sigma a) *
           ((dvfUniformizerQuotientUnit
-            (base := base) (target := target) huniq pi hpi sigma :
-              target.valuationSubringˣ) : target.valuationSubring) * pi := by
+            (base := base) (target := target) huniq pi hpi sigma) : target.valuationSubring) * pi := by
       rw [dvfUniformizerQuotientUnit_mul_uniformizer
         (base := base) (target := target) huniq pi hpi sigma]
       ring
@@ -508,8 +491,7 @@ theorem dvfUniformizerQuotientUnit_eq_of_uniformizer_eq_unit_mul
         ((dvfValuationSubringUnitAut
               (base := base) (target := target) huniq sigma a *
             dvfUniformizerQuotientUnit
-              (base := base) (target := target) huniq pi hpi sigma * a⁻¹ :
-            target.valuationSubringˣ) : target.valuationSubring) * pi' := by
+              (base := base) (target := target) huniq pi hpi sigma * a⁻¹) : target.valuationSubring) * pi' := by
       rw [hpiA]
       simp [mul_assoc, mul_comm]
 
@@ -555,12 +537,7 @@ noncomputable def dvfUniformizerRepresentativeHom
       dvfUniformizerQuotientUnit
           (base := base) (target := target) huniq pi hpi 1 ∈
         dvfHigherPrincipalUnitGroup target (n + 1)
-    exact
-      dvfUniformizerQuotientUnit_mem_of_mem_lowerRamificationGroup
-        (base := base) (target := target) huniq hpi
-        (lowerRamificationGroup
-          (base := base) (target := target) huniq
-          ((n + 1 : ℕ) : ℝ)).one_mem
+    apply dvfUniformizerQuotientUnit_mem_of_mem_lowerRamificationGroup <;> aesop
   map_mul' := by
     intro sigma tau
     apply
@@ -751,9 +728,7 @@ theorem uniformizerGradedHom_eq_of_uniformizers
         ((n + 1 : ℕ) : ℝ)).subgroupOf
         (lowerRamificationGroup
           (base := base) (target := target) huniq (n : ℝ))) q
-  exact
-    dvfUniformizerRepresentativeHom_apply_eq_of_uniformizers
-      (base := base) (target := target) huniq hpi hpi' n sigma
+  apply dvfUniformizerRepresentativeHom_apply_eq_of_uniformizers
 
 omit [FiniteDimensional K L] [IsGalois K L] in
 /-- Kernel criterion at a representative. -/
@@ -780,15 +755,7 @@ theorem uniformizerGradedHom_mk_eq_one_iff
           (sigma : Gal(L/K)) ∈
         dvfHigherPrincipalUnitGroup target (n + 1) := by
   rw [uniformizerGradedHom_mk]
-  exact
-    QuotientGroup.eq_one_iff
-      (N := (dvfHigherPrincipalUnitGroup target (n + 1)).subgroupOf
-        (dvfHigherPrincipalUnitGroup target n))
-      ⟨dvfUniformizerQuotientUnit
-          (base := base) (target := target) huniq pi hpi
-          (sigma : Gal(L/K)),
-        dvfUniformizerQuotientUnit_mem_of_mem_lowerRamificationGroup
-          (base := base) (target := target) huniq hpi sigma.property⟩
+  apply QuotientGroup.eq_one_iff
 
 /-- The unique-extension ring automorphism as an algebra automorphism over
 the base valuation ring. -/
@@ -835,18 +802,12 @@ theorem polynomial_argument_sub_mem_succ_dvf
     rw [hdecomp]
     simp [Polynomial.eval_add, Polynomial.eval_mul, Polynomial.eval_sub]
   have hqEval : q.eval a = P.derivative.eval a := by
-    simpa [q] using
-      ValuationTheory.DiscreteValuationField.divByMonic_X_sub_C_eval_eq_derivative_eval
-        (p := P) a
+    apply ValuationTheory.DiscreteValuationField.divByMonic_X_sub_C_eval_eq_derivative_eval
   have hqUnitA : IsUnit (q.eval a) := by
     simpa [hqEval] using hderiv
   have hqdiff :
       q.eval b - q.eval a ∈ target.maximalIdeal ^ (n + 1) := by
-    simpa using
-      polynomial_eval₂_sub_mem_of_sub_mem
-        (f := RingHom.id target.valuationSubring)
-        (I := target.maximalIdeal ^ (n + 1))
-        (x := b) (y := a) hab q
+    apply polynomial_eval₂_sub_mem_of_sub_mem <;> assumption
   have hqdiffM : q.eval b - q.eval a ∈ target.maximalIdeal := by
     simpa using
       Ideal.pow_le_pow_right (Nat.succ_pos n) hqdiff
@@ -856,12 +817,12 @@ theorem polynomial_argument_sub_mem_succ_dvf
     rw [residue_eq_residue_iff_sub_mem_maximalIdeal
       (R := target.valuationSubring)]
     exact hqdiffM
-  have hresA : target.residueMap (q.eval a) ≠ 0 :=
+  have hresA  :=
     (target.residue_ne_zero_iff_isUnit (q.eval a)).2 hqUnitA
   have hresB : target.residueMap (q.eval b) ≠ 0 := by
     rw [hres]
     exact hresA
-  have hqUnitB : IsUnit (q.eval b) :=
+  have hqUnitB  :=
     (target.residue_ne_zero_iff_isUnit (q.eval b)).1 hresB
   have hmul :
       q.eval b * (b - a) ∈ target.maximalIdeal ^ (n + 2) := by
@@ -953,7 +914,7 @@ theorem uniformizerGradedHom_injective_of_residue_isSeparable
   rcases exists_valuationSubring_generator_data_of_uniqueExtension
       (base := base) (target := target) huniq with
     ⟨P, generator, _hprim, hpiGenerator, hderiv, hgenerator⟩
-  let piGenerator : target.valuationSubring :=
+  let piGenerator  :=
     Polynomial.aeval generator P
   rw [← MonoidHom.ker_eq_bot_iff]
   apply le_antisymm
@@ -990,18 +951,14 @@ theorem uniformizerGradedHom_injective_of_residue_isSeparable
       rw [uniformizerGradedHom_eq_of_uniformizers
         (base := base) (target := target) huniq hpi hpiGenerator n]
       exact hmapPi
-    have hu :
-        dvfUniformizerQuotientUnit
-            (base := base) (target := target) huniq
-            piGenerator hpiGenerator (sigma : Gal(L/K)) ∈
-          dvfHigherPrincipalUnitGroup target (n + 1) :=
+    have hu  :=
       (uniformizerGradedHom_mk_eq_one_iff
         (base := base) (target := target) huniq
         piGenerator hpiGenerator n sigma).1 hmapGenerator
     let e :=
       valuationSubringAlgEquivOfUniqueExtension
         (base := base) (target := target) huniq (sigma : Gal(L/K))
-    let Q : Polynomial target.valuationSubring :=
+    let Q  :=
       P.map (algebraMap base.valuationSubring target.valuationSubring)
     have hx :
         e generator - generator ∈ target.maximalIdeal ^ (n + 1) :=
@@ -1009,16 +966,12 @@ theorem uniformizerGradedHom_injective_of_residue_isSeparable
         (base := base) (target := target) huniq n (sigma : Gal(L/K))).1
         sigma.property generator
     have hpiDeep :
-        e piGenerator - piGenerator ∈ target.maximalIdeal ^ (n + 2) := by
-      exact
-        (dvfUniformizerQuotientUnit_mem_iff_uniformizer_sub_mem
+        e piGenerator - piGenerator ∈ target.maximalIdeal ^ (n + 2) := (dvfUniformizerQuotientUnit_mem_iff_uniformizer_sub_mem
           (base := base) (target := target) huniq
           hpiGenerator (n + 1) (sigma : Gal(L/K))).1 hu
     have hmap :
         e (Polynomial.aeval generator P) =
-          Polynomial.aeval (e generator) P := by
-      simpa [e] using
-        (Polynomial.aeval_algHom_apply e.toAlgHom generator P).symm
+          Polynomial.aeval (e generator) P := (Polynomial.aeval_algHom_apply e.toAlgHom generator P).symm
     have hQeval :
         Q.eval (e generator) - Q.eval generator =
           e piGenerator - piGenerator := by
@@ -1036,12 +989,11 @@ theorem uniformizerGradedHom_injective_of_residue_isSeparable
           target.maximalIdeal ^ (n + 2) := by
       rw [hQeval]
       exact hpiDeep
-    have hxDeep :
-        e generator - generator ∈ target.maximalIdeal ^ (n + 2) :=
+    have hxDeep  :=
       polynomial_argument_sub_mem_succ_dvf
         (target := target) (P := Q)
         (a := generator) (b := e generator) (n := n)
-        (by simpa [Q] using hderiv) hx hQdeep
+        (hderiv) hx hQdeep
     have hnext :
         (sigma : Gal(L/K)) ∈
           lowerRamificationGroup

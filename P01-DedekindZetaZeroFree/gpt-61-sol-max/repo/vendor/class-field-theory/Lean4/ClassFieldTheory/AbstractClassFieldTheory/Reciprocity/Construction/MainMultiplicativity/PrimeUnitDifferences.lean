@@ -36,17 +36,20 @@ variable {G : IntegralRepGroupType} [Group G] [TopologicalSpace G]
 
 namespace DegreeData
 
-/-- Two prime elements coming from Frobenius fixed fields differ by a
-finite-stage unit after inclusion in `A_{\widetilde L}`. The common stage is
-their finite compositum, which is unramified over both fixed fields. -/
-theorem frobeniusPrimeDifference_mem_infiniteUnitAddSubgroup
-    (D : DegreeData G) (A : Rep ℤ G) (v : ValuationData D A)
+section
+variable (D : DegreeData G) (A : Rep ℤ G) (v : ValuationData D A)
     [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
     [TotallyDisconnectedSpace G]
     (K : FiniteAbstractField G) (L : ClosedSubgroup G)
     (hLK : L.toSubgroup ≤ K.field.toSubgroup)
     [hLnormal : (extensionSubgroup K.field L hLK).Normal]
     [hLfinite : Finite (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
+include D A v K L hLK hLnormal hLfinite
+/-- Two prime elements coming from Frobenius fixed fields differ by a
+finite-stage unit after inclusion in `A_{\widetilde L}`. The common stage is
+their finite compositum, which is unramified over both fixed fields. -/
+theorem frobeniusPrimeDifference_mem_infiniteUnitAddSubgroup
+     
     (σ τ : D.FrobeniusElements
       (K.toFiniteResidueAbstractField D) L hLK)
     (πσ : ambientFixedAddSubgroup A
@@ -158,13 +161,7 @@ of it is a finite-stage unit.  A finite Galois refinement of the prime's
 fixed field supplies a stage stable under the chosen quotient
 representative. -/
 theorem frobeniusPrime_actionDifference_mem_infiniteUnitAddSubgroup
-    (D : DegreeData G) (A : Rep ℤ G) (v : ValuationData D A)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    [hLfinite : Finite (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
+     
     (σ : D.FrobeniusElements (K.toFiniteResidueAbstractField D) L hLK)
     (π : ambientFixedAddSubgroup A
       (D.frobeniusFixedField (K.toFiniteResidueAbstractField D) L hLK σ))
@@ -259,6 +256,8 @@ theorem frobeniusPrime_actionDifference_mem_infiniteUnitAddSubgroup
   rw [← hkq, D.frobeniusQuotientAction_mk]
   apply Subtype.ext
   rfl
+end
+
 
 end DegreeData
 

@@ -12,8 +12,11 @@ open scoped NumberField
 
 noncomputable section
 
+section
+variable (F : Type) [Field F] [NumberField F] (𝔪 : Ideal (𝓞 F))
+include F 𝔪 in
 private theorem primitive_principal_modulus_top
-    (F : Type) [Field F] [NumberField F] (𝔪 : Ideal (𝓞 F))
+     
     (η : RayClassCharacter F 𝔪) (hprim : η.IsPrimitive) (hp : η.IsPrincipal) : 𝔪 = ⊤ := by
   by_contra hm
   obtain ⟨α, hα, _, _, hcop, hne⟩ := hprim ⊤ (lt_top_iff_ne_top.mpr hm)
@@ -50,8 +53,9 @@ private theorem order_product_growth
       gcongr
       nlinarith [mul_le_mul_of_nonneg_left ht2 hB]
 
+include F 𝔪 in
 private theorem reciprocal_strip_bound
-    (F : Type) [Field F] [NumberField F] (𝔪 : Ideal (𝓞 F)) (hm : 𝔪 ≠ ⊥)
+      (hm : 𝔪 ≠ ⊥)
     (δ : ℝ) (hδ : 0 < δ) :
     ∃ A B : ℝ, 0 ≤ A ∧ 0 ≤ B ∧
       ∀ s : ℂ, -δ ≤ s.re ∧ s.re ≤ 1 + δ →
@@ -79,8 +83,9 @@ private theorem reciprocal_strip_bound
       rw [show (r : ℝ) * (Real.pi * |s.im|) = (r * Real.pi) * |s.im| by ring]
       ring
 
+include F 𝔪 in
 private theorem principal_prefactor_strip_bound
-    (F : Type) [Field F] [NumberField F] (𝔪 : Ideal (𝓞 F)) (hm : 𝔪 ≠ ⊥)
+      (hm : 𝔪 ≠ ⊥)
     (δ : ℝ) (hδ : 0 < δ) :
     ∃ A B : ℝ, 0 ≤ A ∧ 0 ≤ B ∧
       ∀ s : ℂ, -δ ≤ s.re ∧ s.re ≤ 1 + δ →
@@ -122,8 +127,9 @@ private theorem principal_prefactor_strip_bound
             (Real.exp (Real.pi * |s.im|) * Real.exp (r * (Real.pi * |s.im|))) := by ring
         _ = _ := by rw [he]
 
+include F 𝔪 in
 private theorem nonprincipal_strip_growth
-    (F : Type) [Field F] [NumberField F] (𝔪 : Ideal (𝓞 F)) (hm : 𝔪 ≠ ⊥)
+      (hm : 𝔪 ≠ ⊥)
     (η : RayClassCharacter F 𝔪) (D : NonprincipalRayHeckeData F 𝔪 η)
     (δ : ℝ) (hδ : 0 < δ) (hδle : δ ≤ 1 / 10) :
     ∃ M B : ℝ, 0 ≤ M ∧ 0 ≤ B ∧
@@ -134,8 +140,9 @@ private theorem nonprincipal_strip_growth
   exact order_product_growth δ hδ hδle D.Λ (heckeReciprocalCompletionFactor F 𝔪)
     A B hA hB (by convert D.order_bound 1 zero_lt_one using 1 <;> norm_num) hg
 
+include F 𝔪 in
 private theorem principal_strip_growth
-    (F : Type) [Field F] [NumberField F] (𝔪 : Ideal (𝓞 F)) (hm : 𝔪 ≠ ⊥)
+      (hm : 𝔪 ≠ ⊥)
     (η : RayClassCharacter F 𝔪) (D : PrincipalRayHeckeData F 𝔪 η)
     (δ : ℝ) (hδ : 0 < δ) (hδle : δ ≤ 1 / 10) :
     ∃ M B : ℝ, 0 ≤ M ∧ 0 ≤ B ∧
@@ -145,6 +152,8 @@ private theorem principal_strip_growth
   obtain ⟨A, B, hA, hB, hg⟩ := principal_prefactor_strip_bound F 𝔪 hm δ hδ
   exact order_product_growth δ hδ hδle D.E _ A B hA hB
     (by convert D.order_bound 1 zero_lt_one using 1 <;> norm_num) hg
+end
+
 
 private theorem norm_le_detector_strip
     (δ : ℝ) (hδ : 0 < δ) (hδle : δ ≤ 1 / 10)

@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Geometry.Hyperbolic.DivergenceIsometry
 public import DedekindZetaZeroFree.Geometry.ArithmeticQuotients.DifferentialOperators.ScalarDifferentialDescent
 
 @[expose] public section
+
 
 section
 
@@ -34,8 +37,7 @@ private theorem codifferential_smul_const (d : ℕ) (W : HyperbolicChart.Space d
     HyperbolicChart.codifferential d (fun y => c • W y) x =
       c * HyperbolicChart.codifferential d W x := by
   unfold HyperbolicChart.codifferential HyperbolicChart.coordinateDerivative
-  have hc (i : Fin d) (k : Fin 3) : DifferentiableAt ℝ (fun y => W y i k) x := by
-    exact (differentiableAt_pi.mp ((differentiableAt_pi.mp hW) i)) k
+  have hc (i : Fin d) (k : Fin 3) : DifferentiableAt ℝ (fun y => W y i k) x := (differentiableAt_pi.mp ((differentiableAt_pi.mp hW) i)) k
   simp only [Pi.smul_apply, smul_eq_mul]
   change (∑ i : Fin d, (-(fderiv ℝ (fun y => c * W y i 0) x) (HyperbolicChart.coordinateVector d i 2) +
       2 * (c * W x i 0) - (Real.exp (x (i, 2)) : ℂ) * (fderiv ℝ (fun y => c * W y i 1) x) (HyperbolicChart.coordinateVector d i 0) -
@@ -45,9 +47,12 @@ private theorem codifferential_smul_const (d : ℕ) (W : HyperbolicChart.Space d
   apply Finset.sum_congr rfl
   intro i _
   ring
- def part (d : ℕ) (f : ℂ →L[ℝ] ℝ) (v : EuclideanSpace ℂ (Fin d × Fin 3)) :
+ section
+variable (d : ℕ) (f : ℂ →L[ℝ] ℝ)
+include d f
+def part   (v : EuclideanSpace ℂ (Fin d × Fin 3)) :
     EuclideanSpace ℝ (Fin d × Fin 3) := WithLp.toLp 2 (fun k => f (v k))
-private theorem part_complexification (d : ℕ) (f : ℂ →L[ℝ] ℝ)
+private theorem part_complexification  
     (A : EuclideanSpace ℝ (Fin d × Fin 3) →L[ℝ] EuclideanSpace ℝ (Fin d × Fin 3))
     (v : EuclideanSpace ℂ (Fin d × Fin 3)) :
     part d f (operatorComplexification _ A v) = A (part d f v) := by
@@ -59,25 +64,25 @@ private theorem part_complexification (d : ℕ) (f : ℂ →L[ℝ] ℝ)
     WithLp.ofLp_sum, Finset.sum_apply, map_smul, WithLp.ofLp_smul, Pi.smul_apply, smul_eq_mul]
   apply Finset.sum_congr rfl
   intro j _
-  rw [show (((A (EuclideanSpace.basisFun _ ℝ j)) k : ℝ) : ℂ) * v j =
+  rw [show (((A (EuclideanSpace.basisFun _ ℝ j)) k) : ℂ) * v j =
       ((A (EuclideanSpace.basisFun _ ℝ j)) k : ℝ) • v j by simp [Complex.real_smul]]
   rw [map_smul]
   simp only [smul_eq_mul]
   ring
-private theorem part_contDiffAt (d : ℕ) (f : ℂ →L[ℝ] ℝ)
+private theorem part_contDiffAt  
     (V : HyperbolicChart.Space d → EuclideanSpace ℂ (Fin d × Fin 3))
     (x : HyperbolicChart.Space d) (hV : ContDiffAt ℝ (⊤ : ℕ∞) V x) :
     ContDiffAt ℝ (⊤ : ℕ∞) (fun y => part d f (V y)) x := by
   apply (contDiffAt_piLp 2).mpr
   intro k
   exact f.contDiff.contDiffAt.comp x (((EuclideanSpace.proj (𝕜 := ℂ) k).restrictScalars ℝ).contDiff.contDiffAt.comp x hV)
-private theorem scalar_fderiv_map (d : ℕ) (f : ℂ →L[ℝ] ℝ)
+private theorem scalar_fderiv_map  
     (g : HyperbolicChart.Space d → ℂ) (x v : HyperbolicChart.Space d)
     (hg : DifferentiableAt ℝ g x) :
     fderiv ℝ (fun y => f (g y)) x v = f (fderiv ℝ g x v) := by
   rw [show (fun y => f (g y)) = f ∘ g from rfl, fderiv_comp x f.differentiableAt hg,
     f.fderiv, ContinuousLinearMap.comp_apply]
-private theorem part_codifferential (d : ℕ) (f : ℂ →L[ℝ] ℝ)
+private theorem part_codifferential  
     (V : HyperbolicChart.Space d → EuclideanSpace ℂ (Fin d × Fin 3))
     (x : HyperbolicChart.Space d) (hV : ContDiffAt ℝ (⊤ : ℕ∞) V x) :
     f (HyperbolicChart.codifferential d ((CotangentLogCoframe.j d).symm ∘ V) x) =
@@ -126,6 +131,8 @@ private theorem part_codifferential (d : ℕ) (f : ℂ →L[ℝ] ℝ)
     rfl
   rw [hmul, hmul]
   rfl
+end
+
 set_option maxHeartbeats 1000000 in
 private theorem untwisted_codifferential {i : Fin (H.atlas U).componentCount}
     {a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H) i}
@@ -147,11 +154,9 @@ private theorem untwisted_codifferential {i : Fin (H.atlas U).componentCount}
         f (HyperbolicChart.codifferential (d F) ((CotangentLogCoframe.j (d F)).symm ∘ V) x) := by
     let A : M F → M F := fun y => CotangentLogCoframe.H (d F) y (part (d F) f (V y))
     let B : M F → M F := fun y => CotangentLogCoframe.H (d F) y (part (d F) f (W y))
-    have ha : ContDiffAt ℝ 1 A x := by
-      exact ((CotangentLogCoframe.contDiff_H (d F)).contDiffAt.clm_apply
+    have ha : ContDiffAt ℝ 1 A x := ((CotangentLogCoframe.contDiff_H (d F)).contDiffAt.clm_apply
         (part_contDiffAt (d F) f V x hV)).of_le (by simp)
-    have hb : ContDiffAt ℝ 1 B (e.psi x) := by
-      exact ((CotangentLogCoframe.contDiff_H (d F)).contDiffAt.clm_apply
+    have hb : ContDiffAt ℝ 1 B (e.psi x) := ((CotangentLogCoframe.contDiff_H (d F)).contDiffAt.clm_apply
         (part_contDiffAt (d F) f W (e.psi x) hW)).of_le (by simp)
     have hpush : (B ∘ e.psi) =ᶠ[𝓝 x] fun y => fderiv ℝ e.psi y (A y) := by
       filter_upwards [hVW] with y hy
@@ -159,7 +164,7 @@ private theorem untwisted_codifferential {i : Fin (H.atlas U).componentCount}
       rw [hy, part_complexification]
       simp [Q, ContinuousLinearMap.comp_apply, CotangentLogCoframe.H]
     rw [part_codifferential (d F) f W (e.psi x) hW, part_codifferential (d F) f V x hV]
-    exact HyperbolicChart.real_divergence_isometry (d F) e.psi A B x hψ ha hb hm hpush
+    apply HyperbolicChart.real_divergence_isometry <;> assumption
   exact Complex.ext (hr Complex.reCLM) (hr Complex.imCLM)
 
 set_option maxHeartbeats 1000000 in
@@ -175,14 +180,13 @@ theorem actual_codifferential_arrow {i : Fin (H.atlas U).componentCount}
         (e.psi x) =
       e.phase x *
         HyperbolicChart.codifferential (d F) ((CotangentLogCoframe.j (d F)).symm ∘ V) x := by
-  let c : ℂ := e.phase x
+  let c  := e.phase x
   have hc : c ≠ 0 := by
     have hn := (unitary_phase e).2.2.1 x hx
     intro h
-    simp [c, show e.phase x = 0 from h] at hn
-  let W' : M F → E F := fun y => c⁻¹ • W y
-  have hW' : ContDiffAt ℝ (⊤ : ℕ∞) W' (e.psi x) := by
-    exact (contDiffAt_const (c := c⁻¹)).smul hW
+    simp [c, h] at hn
+  let W'  := fun y => c⁻¹ • W y
+  have hW' : ContDiffAt ℝ (⊤ : ℕ∞) W' (e.psi x) := (contDiffAt_const (c := c⁻¹)).smul hW
   have hp : (fun y => W' (e.psi y)) =ᶠ[𝓝 x]
       (fun y => operatorComplexification _ (Q e y) (V y)) := by
     filter_upwards [hVW, phase_eventually_constant e x hx] with y hy hphase
@@ -225,11 +229,7 @@ variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
-private theorem continuous_labeledA_self :
-    Continuous (labeledA (placeEquiv F ζ hζ) : M F → KPCuspGenuineMonodromy.SymmetricSpace F) := by
-  apply continuous_pi
-  intro k
-  exact (continuous_apply (placeEquiv F ζ hζ |>.symm k)).comp (CotangentLogCoframe.A (d F)).continuous
+private alias continuous_labeledA_self := _root_.DedekindZetaZeroFree.KPContActualCotangentExactMeasurableGluing.continuous_labeledA_placeEquiv
 
 private theorem isOpen_omega (a : ActualChart (U := U) (H := H)) : IsOpen (omega a) :=
   a.domain_open.preimage continuous_labeledA_self
@@ -317,7 +317,7 @@ private theorem smooth_codifferential {a : ActualChart (U := U) (H := H)}
     SmoothOnLift a (fun x => HyperbolicChart.codifferential (d F)
       (fun y => (CotangentLogCoframe.j (d F)).symm
         (if hy : y ∈ omega a then W ⟨y, hy⟩ else 0)) x.val) := by
-  let Z : M F → HyperbolicChart.Cotangent (d F) := fun y =>
+  let Z  := fun y =>
     (CotangentLogCoframe.j (d F)).symm
       (if hy : y ∈ omega a then W ⟨y, hy⟩ else 0)
   have hs (i : Fin (d F)) (k : Fin 3) :
@@ -347,19 +347,9 @@ private theorem smooth_codifferential {a : ActualChart (U := U) (H := H)}
 
 private theorem compact_cotangentSupport (W : T_U F ζ hζ U R P H) :
     IsCompact (cotangentSupport W.val) := by
-  let g : KPFiniteCuspAtlas.rawXU F ζ hζ U → NNReal :=
-    fun x => if x ∈ cotangentSupport W.val then normSquare W.val x else 0
-  have hg : Measurable g := (measurable_normSquare W.val).piecewise
-    isClosed_closure.measurableSet measurable_const
-  have he : g = normSquare W.val :=
-    (Classical.choose_spec (normSquare_descends W.val)).2 g ⟨hg, by
-      intro a x
-      by_cases hx : q a x.val ∈ cotangentSupport W.val
-      · simp [g, hx, normSquare_chart]
-      · have hz : coefficient W.val a x = 0 := by
-          by_contra hn
-          exact hx (subset_closure ⟨a, x, rfl, hn⟩)
-        simp [g, hx, hz]⟩
+  
+  
+  
   apply W.property.2.of_isClosed_subset isClosed_closure
   apply closure_mono
   rintro x ⟨a, y, hq, hn⟩
@@ -367,7 +357,7 @@ private theorem compact_cotangentSupport (W : T_U F ζ hζ U R P H) :
   simpa using hn
 
  def tensorExtension (a : ActualChart (U := U) (H := H))
-    (W : omega a → E F) : M F → E F :=
+    (W : omega a → E F)  :=
   fun y => if hy : y ∈ omega a then W ⟨y, hy⟩ else 0
 
  def positiveC (a : ActualChart (U := U) (H := H))
@@ -424,7 +414,7 @@ private theorem codifferential_cutoff_product
           (CotangentLogCoframe.j (d F) (HyperbolicChart.differential (d F)
             (fun y => if hy : y ∈ omega a then (η ⟨y, hy⟩ : ℂ) else 0) x.val)) (i,k) *
           W x (i,k) := by
-  let f : M F → ℂ := fun y => if hy : y ∈ omega a then (η ⟨y, hy⟩ : ℂ) else 0
+  let f : M F → ℂ := fun y => if hy : y ∈ omega a then (η ⟨y, hy⟩) else 0
   let Z : M F → HyperbolicChart.Cotangent (d F) :=
     (CotangentLogCoframe.j (d F)).symm ∘ tensorExtension a W
   have hf : DifferentiableAt ℝ f x.val := by
@@ -481,7 +471,7 @@ theorem metric_codifferential_descent :
         (if hy : y ∈ omega a then W ⟨y, hy⟩ else 0)) x.val
   let lift : (KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ) →
       (a : ActualChart (U := U) (H := H)) → omega a → ℂ :=
-    fun η a x => (η (q a x.val) : ℂ)
+    fun η a x => (η (q a x.val))
   let contract : E F → E F → ℂ :=
     fun v W => ∑ i : Fin (d F), ∑ k : Fin 3, v (i, k) * W (i, k)
   (∀ W : T_U F ζ hζ U R P H,

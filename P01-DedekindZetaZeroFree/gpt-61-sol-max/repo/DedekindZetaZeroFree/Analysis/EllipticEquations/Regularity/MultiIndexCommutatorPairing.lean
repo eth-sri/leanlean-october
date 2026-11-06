@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.Sobolev.WeakDerivatives.MultiIndexLeibnizRule
 
 @[expose] public section
+
 
 noncomputable section
 namespace DedekindZetaZeroFree.WeakJets.Raw
@@ -16,7 +19,7 @@ def commutatorSource {n r : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
   classical
   let below := Finset.univ.filter (fun β : MultiIndex n r => ∀ i, counts β i ≤ counts α i)
   let positive := below.filter (fun β => 0 < β.degree)
-  let ρ : Space n → ℂ := fun x => (D.density x : ℂ)
+  let ρ  := fun x => (D.density x : ℂ)
   let b (i j : Fin n) : Space n → ℂ := fun x => ((D.density x * D.matrix x i j : ℝ) : ℂ)
   exact fun x => (ρ x)⁻¹ *
     ((∑ β ∈ below, (multiChoose α β : ℂ) * coefficientJet (counts β) ρ x *
@@ -45,19 +48,26 @@ theorem coordinateDerivativeList_star {n : ℕ} (l : List (Fin n)) (f : Space n 
       simp only [coordinateDerivativeList, ih, fderiv_star,
         ContinuousLinearMap.comp_apply, ContinuousLinearEquiv.coe_coe, starL'_apply]
 
-private theorem density_smooth {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
-    (D : KPContLocalEnergy.SobolevEnergyEstimates.Raw.Coefficients B cρ Cρ κ Λ) :
+section
+variable {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
+    (D : KPContLocalEnergy.SobolevEnergyEstimates.Raw.Coefficients B cρ Cρ κ Λ)
+include n B cρ Cρ κ Λ D
+private theorem density_smooth   :
     ContDiffOn ℝ (⊤ : ℕ∞) (fun x => (D.density x : ℂ)) B.carrier :=
   Complex.ofRealCLM.contDiff.comp_contDiffOn D.density_smooth
 
-private theorem flux_smooth {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
-    (D : KPContLocalEnergy.SobolevEnergyEstimates.Raw.Coefficients B cρ Cρ κ Λ) (i j : Fin n) :
+private theorem flux_smooth   (i j : Fin n) :
     ContDiffOn ℝ (⊤ : ℕ∞)
       (fun x => ((D.density x * D.matrix x i j : ℝ) : ℂ)) B.carrier :=
   Complex.ofRealCLM.contDiff.comp_contDiffOn (D.density_smooth.mul (D.matrix_smooth i j))
+end
 
-theorem differentiated_pairing_shifted {n r : ℕ} {B : LocalBall n}
+
+section
+variable {n r : ℕ} {B : LocalBall n}
     {cρ Cρ κ Λ : ℝ}
+include n r B cρ Cρ κ Λ
+theorem differentiated_pairing_shifted  
     (D : KPContLocalEnergy.SobolevEnergyEstimates.Raw.Coefficients B cρ Cρ κ Λ) (z : ℂ)
     (u₁ : IntegerSobolev B 1) (u : IntegerSobolev B (r + 1))
     (h : IntegerSobolev B r)
@@ -76,8 +86,7 @@ theorem differentiated_pairing_shifted {n r : ℕ} {B : LocalBall n}
   classical
   have hj (j : Fin n) : jet u (unitCount j) = KPContLocalEnergy.SobolevEnergyEstimates.Raw.gradient u₁ j := by
     rw [← counts_first]
-    exact (jet_unique_of_represents u u₁ hu _ (by
-      exact (KPContLocalEnergy.SobolevEnergyEstimates.Raw.firstIndex j).property.trans (by omega))
+    exact (jet_unique_of_represents u u₁ hu _ ((KPContLocalEnergy.SobolevEnergyEstimates.Raw.firstIndex j).property.trans (by omega))
       (KPContLocalEnergy.SobolevEnergyEstimates.Raw.firstIndex j).property).trans (jet_index u₁ _)
   let ψ := coordinateDerivativeTest α φ
   have htest (i : Fin n) :
@@ -88,8 +97,7 @@ theorem differentiated_pairing_shifted {n r : ℕ} {B : LocalBall n}
     rw [coordinateDerivative, ← coordinateDerivativeList_star α.directions,
       ← coordinateDerivativeList_star [i]]
     rfl
-  have htest0 : (fun x => star (ψ x)) = coordinateDerivative α (fun y => star (φ y)) := by
-    exact (coordinateDerivativeList_star α.directions (fun y => φ y)).symm
+  have htest0 : (fun x => star (ψ x)) = coordinateDerivative α (fun y => star (φ y)) := (coordinateDerivativeList_star α.directions (fun y => φ y)).symm
   have hw := heq ψ
   have hv : (∫ x in B.carrier, (D.density x : ℂ) * KPContLocalEnergy.SobolevEnergyEstimates.Raw.value u₁ x * star (ψ x)) =
       ∫ x in B.carrier, (D.density x : ℂ) * jet u 0 x * star (ψ x) := by
@@ -101,7 +109,7 @@ theorem differentiated_pairing_shifted {n r : ℕ} {B : LocalBall n}
   have hi (i j : Fin n) : Integrable (fun x =>
       ((D.density x * D.matrix x i j : ℝ) : ℂ) * jet u (unitCount j) x *
         star (coordinateDerivativeList [i] (fun y => ψ y) x)) (volume.restrict B.carrier) := by
-    let χ : TestFunction B.toOpens ℂ ⊤ := conjugateTest
+    let χ  := conjugateTest
       (TestFunction.lineDerivCLM ℝ (EuclideanSpace.single i 1) ψ)
     have hχ : (fun x => χ x) = fun x => star (coordinateDerivativeList [i] (fun y => ψ y) x) := by
       funext x
@@ -125,8 +133,7 @@ theorem differentiated_pairing_shifted {n r : ℕ} {B : LocalBall n}
   have ht0 (x : Space n) := congrFun htest0 x
   simpa only [ht, ht0, jet_zero] using hw
 
-theorem differentiated_pairing_collected {n r : ℕ} {B : LocalBall n}
-    {cρ Cρ κ Λ : ℝ}
+theorem differentiated_pairing_collected  
     (hproduct : WeakProductRule B (r + 1)) (hproductSource : WeakProductRule B r)
     (D : KPContLocalEnergy.SobolevEnergyEstimates.Raw.Coefficients B cρ Cρ κ Λ) (z : ℂ)
     (u₁ : IntegerSobolev B 1) (u : IntegerSobolev B (r + 1)) (h : IntegerSobolev B r)
@@ -166,7 +173,7 @@ theorem differentiated_pairing_collected {n r : ℕ} {B : LocalBall n}
             coefficientJet (counts β) (fun y => ((D.density y * D.matrix y i j : ℝ) : ℂ)) x *
               jet u (unitCount j + counts α - counts β) x) *
                 star (coordinateDerivativeList [i] (fun y => φ y) x)) := by
-    let ψ : TestFunction B.toOpens ℂ ⊤ := conjugateTest
+    let ψ  := conjugateTest
       (TestFunction.lineDerivCLM ℝ (EuclideanSpace.single i 1) φ)
     have hψ : (fun x => ψ x) = coordinateDerivativeList [i] (fun y => star (φ y)) := by
       rw [coordinateDerivativeList_star]
@@ -187,8 +194,7 @@ theorem differentiated_pairing_collected {n r : ℕ} {B : LocalBall n}
   apply mul_left_cancel₀ (pow_ne_zero α.degree (by norm_num : (-1 : ℂ) ≠ 0))
   linear_combination hw
 
-theorem positive_flux_pairing {n r : ℕ} {B : LocalBall n}
-    {cρ Cρ κ Λ : ℝ}
+theorem positive_flux_pairing  
     (D : KPContLocalEnergy.SobolevEnergyEstimates.Raw.Coefficients B cρ Cρ κ Λ)
     (u : IntegerSobolev B (r + 1)) (α β : MultiIndex n r)
     (hβα : ∀ q, counts β q ≤ counts α q) (hβ : 0 < β.degree)
@@ -224,6 +230,8 @@ theorem positive_flux_pairing {n r : ℕ} {B : LocalBall n}
   have hc : counts α - counts β + unitCount j + unitCount i =
       counts α - counts β + unitCount i + unitCount j := by ac_rfl
   rw [hc]
+end
+
 
 theorem sum_below_split_zero {n r : ℕ} (α : MultiIndex n r)
     (f : MultiIndex n r → ℂ) :
@@ -250,15 +258,17 @@ theorem sum_below_split_zero {n r : ℕ} (α : MultiIndex n r)
         change counts β i = 0
         omega
       · rintro rfl; exact zero_degree
-    have hp : 0 < β.degree ↔ β ≠ Z := by
-      exact Nat.pos_iff_ne_zero.trans (not_congr he)
+    have hp : 0 < β.degree ↔ β ≠ Z := Nat.pos_iff_ne_zero.trans (not_congr he)
     rw [hp]
     exact and_comm
   rw [hpos]
   exact (Finset.add_sum_erase S f hz).symm
 
-theorem collected_jet_integrable {n k r : ℕ} {B : LocalBall n}
+section
+variable {n k r : ℕ} {B : LocalBall n}
     (u : IntegerSobolev B k) (α : MultiIndex n r) (γ : Counts n)
+include n k r B u α γ
+theorem collected_jet_integrable  
     (S : Finset (MultiIndex n r)) {a : Space n → ℂ}
     (ha : ContDiffOn ℝ (⊤ : ℕ∞) a B.carrier) (φ : TestFunction B.toOpens ℂ ⊤) :
     Integrable (fun x => (∑ β ∈ S, (multiChoose α β : ℂ) *
@@ -271,8 +281,7 @@ theorem collected_jet_integrable {n k r : ℕ} {B : LocalBall n}
   simpa only [mul_assoc] using
     (smooth_jet_test_integrable u _ (coefficientJet_smooth_on (counts β) ha) φ).const_mul (multiChoose α β : ℂ)
 
-theorem collected_jet_split_zero {n k r : ℕ} {B : LocalBall n}
-    (u : IntegerSobolev B k) (α : MultiIndex n r) (γ : Counts n)
+theorem collected_jet_split_zero  
     {a : Space n → ℂ} (ha : ContDiffOn ℝ (⊤ : ℕ∞) a B.carrier)
     (φ : TestFunction B.toOpens ℂ ⊤) :
     (∫ x in B.carrier,
@@ -291,6 +300,8 @@ theorem collected_jet_split_zero {n k r : ℕ} {B : LocalBall n}
   simp only [add_mul]
   exact integral_add (smooth_jet_test_integrable u _ ha φ)
     (collected_jet_integrable u α γ _ ha φ)
+end
+
 
 theorem differentiated_pairing {n r : ℕ} {B : LocalBall n}
     {cρ Cρ κ Λ : ℝ}
@@ -313,7 +324,7 @@ theorem differentiated_pairing {n r : ℕ} {B : LocalBall n}
     ∫ x in B.carrier, (D.density x : ℂ) * commutatorSource D z u h α x * star (φ x) := by
   classical
   let S := (Finset.univ.filter (fun β : MultiIndex n r => ∀ q, counts β q ≤ counts α q)).filter (fun β => 0 < β.degree)
-  let ρ : Space n → ℂ := fun x => (D.density x : ℂ)
+  let ρ  := fun x => (D.density x : ℂ)
   let b (i j : Fin n) : Space n → ℂ := fun x => ((D.density x * D.matrix x i j : ℝ) : ℂ)
   let F (i j : Fin n) : Space n → ℂ := fun x => ∑ β ∈ S, (multiChoose α β : ℂ) *
     (coefficientJet (counts β + unitCount i) (b i j) x * jet u (counts α - counts β + unitCount j) x +
@@ -344,7 +355,7 @@ theorem differentiated_pairing {n r : ℕ} {B : LocalBall n}
       (h₁.add h₂).const_mul (multiChoose α β : ℂ)
   have hshift (β : MultiIndex n r) (hβ : β ∈ S) (j : Fin n) :
       unitCount j + counts α - counts β = counts α - counts β + unitCount j := by
-    have hbβ : ∀ q, counts β q ≤ counts α q := (Finset.mem_filter.mp (Finset.mem_filter.mp hβ).1).2
+    have hbβ  := (Finset.mem_filter.mp (Finset.mem_filter.mp hβ).1).2
     funext q
     simp only [Pi.add_apply, Pi.sub_apply]
     have := hbβ q
@@ -397,16 +408,15 @@ theorem differentiated_pairing {n r : ℕ} {B : LocalBall n}
           funext x
           simp only [Finset.mul_sum, b, Complex.ofReal_mul, add_comm (counts α), mul_assoc]]
     have hi (i j : Fin n) : Integrable (fun x => b i j x * jet u (unitCount j + counts α) x *
-        star (coordinateDerivativeList [i] (fun y => φ y) x)) (volume.restrict B.carrier) := by
-      simpa only [htest] using smooth_jet_test_integrable u _ (flux_smooth D i j)
+        star (coordinateDerivativeList [i] (fun y => φ y) x)) (volume.restrict B.carrier) := smooth_jet_test_integrable u _ (flux_smooth D i j)
         (conjugateTest (TestFunction.lineDerivCLM ℝ (EuclideanSpace.single i 1) φ))
     rw [integral_finsetSum _ (fun i _ => integrable_finsetSum _ (fun j _ => hi i j))]
     apply Finset.sum_congr rfl
     intro i hi'
     exact integral_finsetSum _ (fun j _ => hi i j)
-  let H : Space n → ℂ := fun x => ∑ β ∈ Finset.univ.filter (fun β : MultiIndex n r => ∀ q, counts β q ≤ counts α q),
+  let H  := fun x => ∑ β ∈ Finset.univ.filter (fun β : MultiIndex n r => ∀ q, counts β q ≤ counts α q),
     (multiChoose α β : ℂ) * coefficientJet (counts β) ρ x * jet h (counts α - counts β) x
-  let U : Space n → ℂ := fun x => ∑ β ∈ S,
+  let U  := fun x => ∑ β ∈ S,
     (multiChoose α β : ℂ) * coefficientJet (counts β) ρ x * jet u (counts α - counts β) x
   have hHint : Integrable (fun x => H x * star (φ x)) (volume.restrict B.carrier) := by
     simpa only [zero_add, conjugateTest_apply] using collected_jet_integrable h α 0 _ (density_smooth D) (conjugateTest φ)

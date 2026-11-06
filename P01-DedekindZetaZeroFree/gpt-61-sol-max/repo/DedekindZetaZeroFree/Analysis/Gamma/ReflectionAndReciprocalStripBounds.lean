@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.SpecialFunctions.Gamma.Beta
 
 @[expose] public section
+
 
 /-
 Statements adapted from OpenAI's `openai/math` repository (Apache 2.0).
@@ -20,7 +23,10 @@ namespace DedekindZetaZeroFree.GammaBounds
 open scoped BigOperators
 open MeasureTheory
 
-theorem norm_Gamma_le_real (z : ℂ) (hz : 0 < z.re) :
+section
+variable (z : ℂ)
+include z
+theorem norm_Gamma_le_real   (hz : 0 < z.re) :
     ‖Complex.Gamma z‖ ≤ Real.Gamma z.re := by
   rw [Complex.Gamma_eq_integral hz,Real.Gamma_eq_integral hz]
   unfold Complex.GammaIntegral
@@ -32,7 +38,7 @@ theorem norm_Gamma_le_real (z : ℂ) (hz : 0 < z.re) :
     Complex.norm_cpow_eq_rpow_re_of_pos hx]
   simp
 
-theorem norm_sin_le_exp_abs_im (z : ℂ) :
+theorem norm_sin_le_exp_abs_im   :
     ‖Complex.sin z‖ ≤ Real.exp |z.im| := by
   rw [Complex.sin,norm_div,norm_mul,Complex.norm_I,mul_one]
   norm_num only [Complex.norm_ofNat]
@@ -44,7 +50,7 @@ theorem norm_sin_le_exp_abs_im (z : ℂ) :
       add_le_add (Real.exp_le_exp.mpr (le_abs_self _)) (Real.exp_le_exp.mpr (neg_le_abs _))
     _ = _ := by ring
 
-theorem Gamma_ne_zero_of_im_ne_zero (z : ℂ) (hz : z.im ≠ 0) :
+theorem Gamma_ne_zero_of_im_ne_zero   (hz : z.im ≠ 0) :
     Complex.Gamma z ≠ 0 := by
   apply Complex.Gamma_ne_zero
   intro n he
@@ -52,12 +58,12 @@ theorem Gamma_ne_zero_of_im_ne_zero (z : ℂ) (hz : z.im ≠ 0) :
   have h:=congrArg Complex.im he
   simpa using h
 
-theorem inverse_Gamma_reflection (z : ℂ) (hz : z.im ≠ 0) :
+theorem inverse_Gamma_reflection   (hz : z.im ≠ 0) :
     (Complex.Gamma z)⁻¹ =
       Complex.Gamma (1 - z) * Complex.sin ((Real.pi : ℂ) * z) / (Real.pi : ℂ) := by
   have hg:=Gamma_ne_zero_of_im_ne_zero z hz
   have hh:=Gamma_ne_zero_of_im_ne_zero (1-z) (by simpa using hz)
-  have hp : (Real.pi:ℂ)≠0:=Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
+  have hp  :=Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
   have hs : Complex.sin (Real.pi*z)≠0 := by
     intro hs
     have he:=Complex.Gamma_mul_Gamma_one_sub z
@@ -71,7 +77,7 @@ theorem inverse_Gamma_reflection (z : ℂ) (hz : z.im ≠ 0) :
     _ = 1 := by
       rw [Complex.Gamma_mul_Gamma_one_sub,div_mul_cancel₀ _ hs,div_self hp]
 
-theorem inverse_Gamma_norm_of_left (z : ℂ) (hz : z.re < 1) (hi : z.im ≠ 0) :
+theorem inverse_Gamma_norm_of_left   (hz : z.re < 1) (hi : z.im ≠ 0) :
     ‖(Complex.Gamma z)⁻¹‖ ≤
       (Real.Gamma (1 - z.re) / Real.pi) * Real.exp (Real.pi * |z.im|) := by
   rw [inverse_Gamma_reflection z hi,norm_div,norm_mul,
@@ -89,7 +95,7 @@ theorem inverse_Gamma_norm_of_left (z : ℂ) (hz : z.re < 1) (hi : z.im ≠ 0) :
         Real.pi_pos.le
     _ = _ := by ring
 
-theorem inverse_Gamma_shift (z : ℂ) (n : ℕ) :
+theorem inverse_Gamma_shift   (n : ℕ) :
     (Complex.Gamma z)⁻¹ =
       (∏ k ∈ Finset.range n, (z + (k : ℂ))) * (Complex.Gamma (z + (n : ℂ)))⁻¹ := by
   induction n with
@@ -99,7 +105,7 @@ theorem inverse_Gamma_shift (z : ℂ) (n : ℕ) :
     rw [ih, Complex.one_div_Gamma_eq_self_mul_one_div_Gamma_add_one (z + (n : ℂ))]
     simp only [add_assoc, mul_assoc]
 
-theorem inverse_Gamma_norm_le_shift_left (z : ℂ) (n : ℕ) (hi : 1 ≤ |z.im|) :
+theorem inverse_Gamma_norm_le_shift_left   (n : ℕ) (hi : 1 ≤ |z.im|) :
     ‖(Complex.Gamma z)⁻¹‖ ≤ ‖(Complex.Gamma (z - (n : ℂ)))⁻¹‖ := by
   have he:=congrArg norm (inverse_Gamma_shift (z-n) n)
   simp only [sub_add_cancel,norm_mul] at he
@@ -113,6 +119,8 @@ theorem inverse_Gamma_norm_le_shift_left (z : ℂ) (n : ℕ) (hi : 1 ≤ |z.im|)
       _ ≤ _ := Complex.abs_im_le_norm _
   rw [he]
   exact le_mul_of_one_le_left (norm_nonneg _) hprod
+end
+
 
 theorem real_Gamma_compact_bound (a b : ℝ) (ha : 0 < a) :
     ∃ C : ℝ, 0 < C ∧ ∀ x ∈ Set.Icc a b, Real.Gamma x ≤ C := by
@@ -154,8 +162,8 @@ theorem inverse_Gamma_strip_exp_bound (a b : ℝ) :
         le_mul_of_one_le_right (by positivity) hexp
   · have ht1 : 1 < |t| :=lt_of_not_ge ht
     have ht0 : t≠0 := by intro ht0;subst t;norm_num at ht1
-    let z : ℂ := (σ:ℂ)+t*Complex.I
-    let w : ℂ := z-n
+    let z  := (σ:ℂ)+t*Complex.I
+    let w  := z-n
     have hw : w.re<1 := by
       dsimp [w,z]
       simp only [Complex.ofReal_re,Complex.mul_re,

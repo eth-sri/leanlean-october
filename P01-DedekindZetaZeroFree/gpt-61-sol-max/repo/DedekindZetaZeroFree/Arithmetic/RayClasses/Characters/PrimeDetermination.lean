@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 public import ClassFieldTheory.Definitions.FrobeniusAndHilbertClassFields.FinitePrimeFractionalIdeal
 
 @[expose] public section
+
 
 open scoped NumberField
 
@@ -22,7 +25,7 @@ theorem rayCharacterIntegralPrimeReduction
           (I : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) →
         (H J : ℂ) = χ I := by
   classical
-  let P : Ideal (𝓞 K) → Prop := fun I =>
+  let P  := fun I =>
     χ I ≠ 0 → ∀ J : ClassFieldTheory.NumberFieldFractionalIdealGroup K,
       (J : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) =
         (I : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) →
@@ -33,7 +36,7 @@ theorem rayCharacterIntegralPrimeReduction
     · intro hzero
       exact absurd ((χ.eq_zero_iff' 0).mpr (Or.inl rfl)) hzero
     · intro x hx hxne J hJ
-      have hxtop : x = ⊤ := Ideal.isUnit_iff.mp hx
+      have hxtop  := Ideal.isUnit_iff.mp hx
       have hJone : J = 1 := Units.ext (by
         rw [hJ, hxtop, FractionalIdeal.coeIdeal_top, Units.val_one])
       rw [hJone, map_one, hxtop]
@@ -43,14 +46,13 @@ theorem rayCharacterIntegralPrimeReduction
       have hpne : χ p ≠ 0 := fun h => hne (by rw [h, zero_mul])
       have hane : χ a ≠ 0 := fun h => hne (by rw [h, mul_zero])
       have hp0 : p ≠ 0 := hp.ne_zero
-      have hprime_p : p.IsPrime := (Ideal.prime_iff_isPrime hp0).mp hp
+      have hprime_p  := (Ideal.prime_iff_isPrime hp0).mp hp
       let v : IsDedekindDomain.HeightOneSpectrum (𝓞 K) := ⟨p, hprime_p, hp0⟩
       let A : ClassFieldTheory.NumberFieldFractionalIdealGroup K :=
         Units.mk0 (a : FractionalIdeal (nonZeroDivisors (𝓞 K)) K)
           (FractionalIdeal.coeIdeal_ne_zero.mpr ha0)
       have hAval : (A : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) =
-          (a : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) := by
-        simp only [A, Units.val_mk0]
+          (a : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) := rfl
       have hJA : J = ClassFieldTheory.finitePrimeFractionalIdeal v * A := by
         apply Units.ext
         rw [Units.val_mul, hAval, hJ, FractionalIdeal.coeIdeal_mul]

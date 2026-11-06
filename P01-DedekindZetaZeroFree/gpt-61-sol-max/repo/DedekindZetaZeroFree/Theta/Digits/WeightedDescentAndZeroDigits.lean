@@ -52,8 +52,11 @@ theorem mask_frequency (m : ThetaReflectionData.Row R.A) (a : Fˣ)
       exact sextic_fourier_mask_inversion R ⟨p.val, hp⟩ (ThetaDigitAverage.rowExponent R.A m.val p.val)
         (ThetaBranch.unitResidue p.val a)
 
-theorem theta_descent (C : JointMellinGaussianSources R N) (v : R.A.UnitQuotient)
-    (m : ThetaReflectionData.Row R.A) (b : Bool) (γ : R.A.Gamma) (y : R.A.G) :
+section
+variable (C : JointMellinGaussianSources R N) (v : R.A.UnitQuotient)
+    (m : ThetaReflectionData.Row R.A) (b : Bool) (γ : R.A.Gamma) (y : R.A.G)
+include C v m b γ y
+theorem theta_descent   :
     signedDigits R C.sources C.realization v m b (γ.val * y) =
       signedDigits R C.sources C.realization v m b y := by
   obtain ⟨q, ⟨u, hu, rfl⟩, hq⟩ := γ.property
@@ -66,8 +69,7 @@ theorem theta_descent (C : JointMellinGaussianSources R N) (v : R.A.UnitQuotient
   intro d _
   rw [digitWeight_reindex, selected_theta_digit_reindex R C]
 
-theorem upper_descent (C : JointMellinGaussianSources R N) (v : R.A.UnitQuotient)
-    (m : ThetaReflectionData.Row R.A) (b : Bool) (γ : R.A.Gamma) (y : R.A.G) :
+theorem upper_descent   :
     upperDigits R C.sources C.realization v m b (γ.val * y) =
       upperDigits R C.sources C.realization v m b y := by
   obtain ⟨q, ⟨u, hu, rfl⟩, hq⟩ := γ.property
@@ -79,6 +81,8 @@ theorem upper_descent (C : JointMellinGaussianSources R N) (v : R.A.UnitQuotient
   apply Finset.sum_congr rfl
   intro d _
   rw [digitWeight_reindex, (selected_upper_digit_reindex R C v m u' b y d).2]
+end
+
 
 theorem gamma_class (γ : R.A.Gamma) : QuotientGroup.mk' R.A.sixthPowers γ.val = 1 := by
   obtain ⟨q, ⟨u, hu, rfl⟩, hq⟩ := γ.property
@@ -105,25 +109,32 @@ theorem branch_gamma (C : JointMellinGaussianSources R N) (v : R.A.UnitQuotient)
   change R.σ (1 : F) = 1
   exact map_one R.σ
 
-theorem weighted_theta_descent (C : JointMellinGaussianSources R N) (v : R.A.UnitQuotient)
-    (m : ThetaReflectionData.Row R.A) (b : Bool) (γ : R.A.Gamma) (y : R.A.G) :
+section
+variable (C : JointMellinGaussianSources R N) (v : R.A.UnitQuotient)
+    (m : ThetaReflectionData.Row R.A) (b : Bool) (γ : R.A.Gamma) (y : R.A.G)
+include C v m b γ y
+theorem weighted_theta_descent   :
     weightedDigits R C.sources C.realization C.packet v m b (γ.val * y) =
       weightedDigits R C.sources C.realization C.packet v m b y := by
   unfold weightedDigits
   simp only [map_mul, gamma_class, branch_gamma, one_mul, theta_descent]
   rw [one_mul (QuotientGroup.mk' R.A.sixthPowers y)]
 
-theorem weighted_upper_descent (C : JointMellinGaussianSources R N) (v : R.A.UnitQuotient)
-    (m : ThetaReflectionData.Row R.A) (b : Bool) (γ : R.A.Gamma) (y : R.A.G) :
+theorem weighted_upper_descent   :
     weightedUpper R C.sources C.realization C.packet v m b (γ.val * y) =
       weightedUpper R C.sources C.realization C.packet v m b y := by
   unfold weightedUpper
   simp only [map_mul, gamma_class, branch_gamma, one_mul, upper_descent]
   rw [one_mul (QuotientGroup.mk' R.A.sixthPowers y)]
+end
+
 
 open _root_.DedekindZetaZeroFree.KPLiteralPeriod renaming raw_rationalLift_mk → raw_rationalLift_mk
 
-theorem theta_weyl (C : JointMellinGaussianSources R N) (v : R.A.UnitQuotient) (g : Group R) :
+section
+variable (C : JointMellinGaussianSources R N) (v : R.A.UnitQuotient)
+include C v
+theorem theta_weyl   (g : Group R) :
     C.realization.theta v (KPRationalAdelicSplitting.pglW F R.A.zeta12 R.A.primitive_zeta12 * g) =
       C.realization.theta v g := by
   have h := (C.realization.automorphic v).2.1
@@ -134,7 +145,7 @@ theorem theta_weyl (C : JointMellinGaussianSources R N) (v : R.A.UnitQuotient) (
       (KPStandardLocalRootLifts.weylSwap F)) * g) = C.realization.theta v g at h
   simpa only [KPRationalAdelicSplitting.pglW, KPRationalAdelicSplitting.W_rational] using h
 
-theorem weyl (C : JointMellinGaussianSources R N) (v : R.A.UnitQuotient)
+theorem weyl  
     (m : ThetaReflectionData.Row R.A) (y : R.A.G) :
     signedDigits R C.sources C.realization v m true y =
       signedDigits R C.sources C.realization v m false y := by
@@ -143,7 +154,7 @@ theorem weyl (C : JointMellinGaussianSources R N) (v : R.A.UnitQuotient)
   intro d _
   rw [mul_assoc, theta_weyl]
 
-theorem quotientUpper_projection (C : JointMellinGaussianSources R N) (v : R.A.UnitQuotient)
+theorem quotientUpper_projection  
     (m : ThetaReflectionData.Row R.A) (b : Bool) (l : PositiveAxis) (y : Sheet R.A l) :
     quotientUpper R C.sources C.realization C.packet v m b l (sheetProjection R.A l y) =
       weightedUpper R C.sources C.realization C.packet v m b y.val := by
@@ -155,7 +166,7 @@ theorem quotientUpper_projection (C : JointMellinGaussianSources R N) (v : R.A.U
   rw [← hv]
   exact weighted_upper_descent C v m b ⟨γ.val.val, γ.property⟩ _
 
-theorem upperAverage_zero_for_smoothing (C : JointMellinGaussianSources R N) (v : R.A.UnitQuotient)
+theorem upperAverage_zero_for_smoothing  
     (m : ThetaReflectionData.Row R.A) (b : Bool) (l : PositiveAxis)
     (hi : letI := C.transport.groupHaar_isHaar;
       Integrable (quotientUpper R C.sources C.realization C.packet v m b l)
@@ -169,6 +180,8 @@ theorem upperAverage_zero_for_smoothing (C : JointMellinGaussianSources R N) (v 
   intro y y' hy'
   rw [quotientUpper_projection, quotientUpper_projection, hy']
   exact DedekindZetaZeroFree.IdeleInsertion.weightedUpper_neg_one R C.packet C.constantTerm v m b C.packet.v₀ y.val
+end
+
 
 def descent_of_jointMellinGaussianSources (C : JointMellinGaussianSources R N) :
     DigitsDescent R C.transport C.sources C.realization C.packet where

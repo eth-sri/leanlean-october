@@ -33,15 +33,18 @@ variable {G : IntegralRepGroupType} [Group G] [TopologicalSpace G]
 
 namespace DegreeData
 
-/-- The restriction `\tilde\sigma|_M`, an element of the actual upper
-quotient `G(M/K)`. -/
-noncomputable def abstractReciprocityTotallyRamifiedFrobeniusInM
-    (D : DegreeData G)
+section
+variable (D : DegreeData G)
     [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
     (K : FiniteResidueAbstractField D)
     (L : FiniteGaloisSubextension K.field)
     (hTot : L.IsTotallyRamified D)
-    (q : L.extensionQuotient) :
+    (q : L.extensionQuotient)
+include D K L hTot q
+/-- The restriction `\tilde\sigma|_M`, an element of the actual upper
+quotient `G(M/K)`. -/
+noncomputable def abstractReciprocityTotallyRamifiedFrobeniusInM
+      :
     (D.abstractReciprocityTotallyRamifiedFiniteGaloisExtension
       K L hTot q).extensionQuotient := by
   let σ := D.chosenDegreeOneFrobeniusLiftOfFiniteTotallyRamified
@@ -70,12 +73,7 @@ noncomputable def abstractReciprocityTotallyRamifiedFrobeniusInM
 /-- The Frobenius chosen in the auxiliary field has the expected restriction. -/
 @[simp]
 theorem abstractReciprocityTotallyRamifiedFrobeniusInM_restriction
-    (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (K : FiniteResidueAbstractField D)
-    (L : FiniteGaloisSubextension K.field)
-    (hTot : L.IsTotallyRamified D)
-    (q : L.extensionQuotient) :
+      :
     let M := D.abstractReciprocityTotallyRamifiedFiniteGaloisExtension
       K L hTot q
     let hML := D.abstractReciprocityTotallyRamifiedFiniteGaloisExtension_le_L
@@ -125,12 +123,7 @@ theorem abstractReciprocityTotallyRamifiedFrobeniusInM_restriction
 /-- Including the lower generator and then restricting recovers its prescribed action. -/
 @[simp]
 theorem abstractReciprocityTotallyRamifiedLowerGenerator_inclusion_restriction
-    (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (K : FiniteResidueAbstractField D)
-    (L : FiniteGaloisSubextension K.field)
-    (hTot : L.IsTotallyRamified D)
-    (q : L.extensionQuotient) :
+      :
     let M := D.abstractReciprocityTotallyRamifiedFiniteGaloisExtension
       K L hTot q
     let S := M.inertiaImage D
@@ -165,12 +158,7 @@ theorem abstractReciprocityTotallyRamifiedLowerGenerator_inclusion_restriction
 
 /-- The lower cyclic generator commutes with the selected Frobenius element. -/
 theorem abstractReciprocityTotallyRamified_generator_commutes_frobenius
-    (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (K : FiniteResidueAbstractField D)
-    (L : FiniteGaloisSubextension K.field)
-    (hTot : L.IsTotallyRamified D)
-    (q : L.extensionQuotient) :
+      :
     let M := D.abstractReciprocityTotallyRamifiedFiniteGaloisExtension
       K L hTot q
     let S := M.inertiaImage D
@@ -217,15 +205,20 @@ theorem abstractReciprocityTotallyRamified_generator_commutes_frobenius
   rw [Commute]
   apply M.extensionQuotientMulEquiv.injective
   simpa only [map_mul] using hcommRaw.eq
+end
 
-/-- Frobenius fixes the automorphism used in the totally ramified construction. -/
-theorem abstractReciprocityTotallyRamified_frobenius_fixes_sigma
-    (D : DegreeData G) (A : Rep ℤ G)
+
+section
+variable (D : DegreeData G) (A : Rep ℤ G)
     [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
     (K : FiniteResidueAbstractField D)
     (L : FiniteGaloisSubextension K.field)
     (hTot : L.IsTotallyRamified D)
     (q : L.extensionQuotient)
+include D A K L hTot q
+/-- Frobenius fixes the automorphism used in the totally ramified construction. -/
+theorem abstractReciprocityTotallyRamified_frobenius_fixes_sigma
+     
     (a : ambientFixedAddSubgroup A
       (D.frobeniusFixedField K L.field L.below
         (D.chosenDegreeOneFrobeniusLiftOfFiniteTotallyRamified
@@ -290,12 +283,7 @@ theorem abstractReciprocityTotallyRamified_frobenius_fixes_sigma
 
 /-- The two constructed automorphisms induce the same action on the extension field. -/
 theorem abstractReciprocityTotallyRamified_actions_agree_on_L
-    (D : DegreeData G) (A : Rep ℤ G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (K : FiniteResidueAbstractField D)
-    (L : FiniteGaloisSubextension K.field)
-    (hTot : L.IsTotallyRamified D)
-    (q : L.extensionQuotient)
+     
     (a : ambientFixedAddSubgroup A L.field) :
     let M := D.abstractReciprocityTotallyRamifiedFiniteGaloisExtension
       K L hTot q
@@ -341,12 +329,7 @@ theorem abstractReciprocityTotallyRamified_actions_agree_on_L
 /-- The first norm restriction used:
 `N_{M/M⁰}|_{A_L}=N_{L/K}`, with both sides included in `A_{M⁰}`. -/
 theorem abstractReciprocity_totallyRamified_relativeNorm_L
-    (D : DegreeData G) (A : Rep ℤ G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (K : FiniteResidueAbstractField D)
-    (L : FiniteGaloisSubextension K.field)
-    (hTot : L.IsTotallyRamified D)
-    (q : L.extensionQuotient)
+     
     (a : ambientFixedAddSubgroup A L.field) :
     let M := D.abstractReciprocityTotallyRamifiedFiniteGaloisExtension
       K L hTot q
@@ -383,6 +366,8 @@ theorem abstractReciprocity_totallyRamified_relativeNorm_L
     exact ⟨hiL, (D.mem_fieldInertiaWithin_iff K.field i).1 hiI⟩
   exact M.abstractReciprocity_relativeNorm_fixedFieldInclusion
     A D L.toFiniteAbstractExtension hML hTot hInertia a
+end
+
 
 /-- The second norm restriction used:
 `N_{M/M⁰}|_{A_Σ}=N_{Σ/K}`, again in the actual fixed group

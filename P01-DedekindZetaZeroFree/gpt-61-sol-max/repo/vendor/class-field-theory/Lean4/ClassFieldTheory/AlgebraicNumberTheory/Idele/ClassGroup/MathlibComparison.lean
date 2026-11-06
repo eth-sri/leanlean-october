@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.SinglePlace
 public import Mathlib.NumberTheory.NumberField.AdeleRing
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -39,10 +42,7 @@ diagonal idèle. -/
 theorem equivAdeleRingUnits_principalIdele (x : Kˣ) :
     equivAdeleRingUnits (principalIdele K x) =
       NumberField.IdeleGroup.unitEmbedding (𝓞 K) K x := by
-  change equivAdeleRingUnits
-    ((equivAdeleRingUnits (K := K)).symm
-      (NumberField.IdeleGroup.unitEmbedding (𝓞 K) K x)) = _
-  exact (equivAdeleRingUnits (K := K)).apply_symm_apply _
+  rfl
 
 /-- The induced multiplicative equivalence of idèle class groups. -/
 def ideleClassGroupEquivMathlib :

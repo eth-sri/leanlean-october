@@ -20,7 +20,7 @@ variable (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
     [MeasurableSpace K] [BorelSpace K]
 variable {G H D : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
     [Group H] [TopologicalSpace H] [IsTopologicalGroup H] [CommGroup D] [Finite D]
-variable {T : LocalHeisenbergData H D}
+
 
 theorem r_zero : r K 0 = 1 := by simp [r]
 

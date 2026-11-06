@@ -26,7 +26,10 @@ local instance (A : SArithmeticData F) : MeasurableSpace (A.G1 ⧸ A.Gamma1) := 
 
 local instance (A : SArithmeticData F) : BorelSpace (A.G1 ⧸ A.Gamma1) := ⟨rfl⟩
 
-theorem exterior_weight_finite (A : SArithmeticData F)
+section
+variable (A : SArithmeticData F)
+include A
+theorem exterior_weight_finite  
     (W1 : ProbeRealAnnularWeight) (Y : ℝ) (hY : 0 < Y) :
     Set.Finite {s : A.Exterior | W1 (A.exteriorNorm s / Y) ≠ 0} := by
   obtain ⟨M, hM⟩ := W1.compactSupport.bddAbove
@@ -41,15 +44,15 @@ theorem exterior_weight_finite (A : SArithmeticData F)
     hn.trans (Nat.le_ceil _)
   exact_mod_cast hn'
 
-def scaledIntegralRows (A : SArithmeticData F) (T : ℝ) (K : Set A.G) : Set A.R :=
+def scaledIntegralRows   (T : ℝ) (K : Set A.G) : Set A.R :=
   {m | ∃ k ∈ K, sLocalDiagonal F A.Sf (m : F) =
     asLocalPoint A (radialSection A T * k)}
 
-private theorem localPoint_mul (A : SArithmeticData F) (x y : A.G) :
+private theorem localPoint_mul   (x y : A.G) :
     asLocalPoint A (x * y) = asLocalPoint A x * asLocalPoint A y := by
   ext <;> rfl
 
-private theorem localPoint_continuous (A : SArithmeticData F) :
+private theorem localPoint_continuous   :
     Continuous (asLocalPoint A) := by
   unfold asLocalPoint SArithmeticData.localToAdditive
   apply Continuous.prodMk
@@ -58,12 +61,12 @@ private theorem localPoint_continuous (A : SArithmeticData F) :
   · exact continuous_pi (fun v => Units.continuous_val.comp
       ((continuous_apply v).comp continuous_snd))
 
-private theorem localPoint_embedding (A : SArithmeticData F) :
+private theorem localPoint_embedding   :
     Topology.IsEmbedding (asLocalPoint A) :=
   (Topology.IsEmbedding.piMap (fun _ => Units.isEmbedding_val₀)).prodMap
     (Topology.IsEmbedding.piMap (fun _ => Units.isEmbedding_val₀))
 
-private theorem radial_continuousOn (A : SArithmeticData F) (L : Set ℝ)
+private theorem radial_continuousOn   (L : Set ℝ)
     (hL : L ⊆ Set.Ioi 0) : ContinuousOn (radialSection A) L := by
   rw [continuousOn_iff_continuous_restrict]
   have hc := A.continuous_radialSection.comp
@@ -73,7 +76,7 @@ private theorem radial_continuousOn (A : SArithmeticData F) (L : Set ℝ)
   change radialSection A r.val = A.radialSection r.val (hL r.property)
   exact dif_pos (hL r.property)
 
-theorem common_finite_row_support (A : SArithmeticData F)
+theorem common_finite_row_support  
     (Ω : Set A.G1) (hΩ : IsCompact (closure Ω))
     (W0 : SLocalProduct F A.Sf → ℂ) (hW0 : HasCompactSupport W0)
     (hUnits : tsupport W0 ⊆ {x | IsUnit x})
@@ -180,7 +183,7 @@ theorem common_finite_row_support (A : SArithmeticData F)
       _ = sLocalDiagonal F A.Sf (m : F) * 1 := (mul_one _).symm
       _ = _ := by rw [← hinv]; ac_rfl
 
-theorem original_zero_row (A : SArithmeticData F)
+theorem original_zero_row  
     (W0 : SLocalProduct F A.Sf → ℂ) (hUnits : tsupport W0 ⊆ {x | IsUnit x})
     (t : A.G1) (T : ℝ) :
     W0 (sLocalDiagonal F A.Sf (0 : F) *
@@ -193,6 +196,8 @@ theorem original_zero_row (A : SArithmeticData F)
   have hd : sLocalDiagonal F A.Sf (0 : F) = 0 := by
     ext <;> simp [sLocalDiagonal]
   rw [hd, zero_mul, hz]
+end
+
 
 set_option maxHeartbeats 800000
 
@@ -352,10 +357,13 @@ theorem principal_inserted_absolutely_convergent (A : SArithmeticData F)
 
 set_option maxHeartbeats 800000 in
 
-theorem principal_integrated_absolutely_convergent (A : SArithmeticData F)
+section
+variable (A : SArithmeticData F)
     (σ : F →+* ℂ) (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
     (P : PrincipalData A σ η hS) (X Y Z : ℝ)
-    (hX : 0 < X) (hY : 0 < Y) (hZ : 0 < Z) :
+    (hX : 0 < X) (hY : 0 < Y) (hZ : 0 < Z)
+include A σ η hS P X Y Z hX hY hZ
+theorem principal_integrated_absolutely_convergent   :
     (∑' j : A.Exterior × A.R × (ExteriorSquarefreeIdeal A.cS × A.Exterior),
       ∫⁻ t in P.domain.domain,
         ENNReal.ofReal ‖expandedProbeSummand A P.coefficients P.W0 P.W1 X Y Z t
@@ -445,10 +453,7 @@ theorem principal_integrated_absolutely_convergent (A : SArithmeticData F)
         f s j.1 j.2 = 0 := fun j => hz s j.1 (Or.inl hs) j.2
     simp only [he, tsum_zero]
 
-theorem principal_expansion_valid (A : SArithmeticData F)
-    (σ : F →+* ℂ) (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (P : PrincipalData A σ η hS) (X Y Z : ℝ)
-    (hX : 0 < X) (hY : 0 < Y) (hZ : 0 < Z) :
+theorem principal_expansion_valid   :
     (∀ j : A.Exterior × A.R × (ExteriorSquarefreeIdeal A.cS × A.Exterior),
       IntegrableOn (fun t => expandedProbeSummand A P.coefficients P.W0 P.W1 X Y Z t
         j.1 j.2.1 j.2.2) P.domain.domain P.domain.measure) ∧
@@ -528,6 +533,8 @@ theorem principal_expansion_valid (A : SArithmeticData F)
   apply integral_tsum (fun j => (hi j).aestronglyMeasurable)
   simpa only [f, ofReal_norm_eq_enorm] using
     (principal_integrated_absolutely_convergent A σ η hS P X Y Z hX hY hZ).ne
+end
+
 
 end
 end NormalizedProbe

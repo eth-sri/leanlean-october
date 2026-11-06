@@ -271,10 +271,13 @@ private lemma deriv_pow_mul {V : ℂ → ℂ} {n j : ℕ} (hjn : j ≤ n)
     rw [iteratedDeriv_fun_pow_zero, if_neg hin]
     ring
 
-private lemma origin_residue_eval
-    (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
+section
+variable (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
     (h : ℝ → ℂ) (hh : ContDiff ℝ ∞ h) (hc : HasCompactSupport h)
-    (X : ℝ) (hX : 0 < X) :
+    (X : ℝ) (hX : 0 < X)
+include F hF h hh hc X hX in
+private lemma origin_residue_eval
+      :
     principalLogResidue0 F hF
       ((originPolynomial (principalDiscriminant F) (principalComplexPlaces F) h).comp
         (Polynomial.C (2 : ℂ) * Polynomial.X)) X =
@@ -288,7 +291,7 @@ private lemma origin_residue_eval
   have hr : 1 ≤ r := principalComplexPlaces_pos F hF
   have hP : P.natDegree ≤ r - 1 := by
     apply (Polynomial.natDegree_comp_le).trans
-    simpa using originPolynomial_natDegree_le D r h hD hr hh hc
+    simpa [originPolynomial] using originPolynomial_natDegree_le D r h hD hr hh hc
   have hV : AnalyticAt ℂ (fun s : ℂ => (X : ℂ) ^ s * data.zetaOriginFactor s) 0 :=
     (analyticAt_const.cpow analyticAt_id (Complex.ofReal_mem_slitPlane.2 hX)).mul
       (principalZetaZeroFactor_analyticAt F hF)
@@ -354,10 +357,9 @@ private lemma tsum_nonzero {F : Type} [Field F] [NumberField F]
   ext I
   by_cases hi : I = ⊥ <;> simp [Set.indicator, hi]
 
+include F hF h hh hc X hX in
 theorem square_log_poisson
-    (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
-    (h : ℝ → ℂ) (hh : ContDiff ℝ ∞ h) (hc : HasCompactSupport h)
-    (X : ℝ) (hX : 0 < X) :
+      :
     let data := principalHeckeData F hF
     (∑' I : Ideal (𝓞 F), if I = ⊥ then 0 else
       weight (principalDiscriminant F) (principalComplexPlaces F) h
@@ -404,6 +406,8 @@ theorem square_log_poisson
   rw [hp]
   change (kappa (principalHeckeData F hF) * (X : ℂ) * (mellin h (1 / 2) / 2) + _ + _) = _
   ring
+end
+
 end DedekindZetaZeroFree.LargeSieve.SquarePoisson
 
 end

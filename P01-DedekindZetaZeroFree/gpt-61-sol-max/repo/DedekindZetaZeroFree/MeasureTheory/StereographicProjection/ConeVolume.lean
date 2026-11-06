@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.Calculus.ContDiff.WithLp
 public import DedekindZetaZeroFree.MeasureTheory.Sphere.EuclideanAreaNormalization
 public import DedekindZetaZeroFree.Metaplectic.Kubota.ComplexCharactersHaarAndSU2Splitting
@@ -7,23 +9,27 @@ public import Mathlib.Analysis.Calculus.FDeriv.WithLp
 
 @[expose] public section
 
+
 namespace DedekindZetaZeroFree.ComplexLocal.StereographicTransport.RawCone
 open MeasureTheory Set
 open scoped Pointwise ENNReal
 open ComplexFractionalInverse.RawSphereProjection
 open KPCplxCharacterHaar
 
-noncomputable def denominator (z : ℂ) : ℝ := 1 + ‖z‖ ^ 2
+section
+variable (z : ℂ)
+include z
+noncomputable def denominator    := 1 + ‖z‖ ^ 2
 
-private theorem denominator_pos (z : ℂ) : 0 < denominator z := by
+private theorem denominator_pos   : 0 < denominator z := by
   unfold denominator
   positivity
 
-noncomputable def sigmaVector (z : ℂ) : rawAmbient :=
+noncomputable def sigmaVector   : rawAmbient :=
   WithLp.toLp 2 ![2 * z.re / denominator z, -2 * z.im / denominator z,
     (1 - ‖z‖ ^ 2) / denominator z]
 
-theorem sigmaVector_norm (z : ℂ) : ‖sigmaVector z‖ = 1 := by
+theorem sigmaVector_norm   : ‖sigmaVector z‖ = 1 := by
   have hn : z.re ^ 2 + z.im ^ 2 = ‖z‖ ^ 2 := by
     simpa only [Complex.normSq_apply, ← sq] using (Complex.normSq_eq_norm_sq z)
   have hD := (denominator_pos z).ne'
@@ -38,10 +44,12 @@ theorem sigmaVector_norm (z : ℂ) : ‖sigmaVector z‖ = 1 := by
     nlinarith
   nlinarith [norm_nonneg (sigmaVector z)]
 
-noncomputable def sigma (z : ℂ) : rawSphere :=
+noncomputable def sigma   : rawSphere :=
   ⟨sigmaVector z, mem_sphere_zero_iff_norm.mpr (sigmaVector_norm z)⟩
+end
 
-noncomputable def planeProbability : Measure ℂ :=
+
+noncomputable def planeProbability  :=
   euclideanArea.withDensity
     (fun z => ENNReal.ofReal (denominator z ^ (-2 : ℝ) / Real.pi))
 
@@ -77,7 +85,10 @@ theorem invChart_left (z : ℂ) : Complex.mk
     have : denominator z ≠ 0 := by unfold denominator; positivity
     field_simp
 
-theorem invChart_norm (y : rawSphere) (hy : (y : rawAmbient) 2 ≠ -1) :
+section
+variable (y : rawSphere) (hy : (y : rawAmbient) 2 ≠ -1)
+include y hy
+theorem invChart_norm   :
     ‖invChart y‖ ^ 2 = (1 - (y : rawAmbient) 2) / (1 + (y : rawAmbient) 2) := by
   have hN : (y : rawAmbient) 0 ^ 2 + (y : rawAmbient) 1 ^ 2 +
       (y : rawAmbient) 2 ^ 2 = 1 := by
@@ -92,14 +103,14 @@ theorem invChart_norm (y : rawSphere) (hy : (y : rawAmbient) 2 ≠ -1) :
   dsimp [invChart]
   field_simp
   nlinarith
-theorem invChart_denominator (y : rawSphere) (hy : (y : rawAmbient) 2 ≠ -1) :
+theorem invChart_denominator   :
     denominator (invChart y) = 2 / (1 + (y : rawAmbient) 2) := by
   unfold denominator
   rw [invChart_norm y hy]
   have hD : 1 + (y : rawAmbient) 2 ≠ 0 := by intro h; apply hy; linarith
   field_simp
   ring
-theorem invChart_right (y : rawSphere) (hy : (y : rawAmbient) 2 ≠ -1) : sigma (invChart y) = y := by
+theorem invChart_right   : sigma (invChart y) = y := by
   apply Subtype.ext
   apply PiLp.ext
   intro i
@@ -124,13 +135,15 @@ theorem invChart_right (y : rawSphere) (hy : (y : rawAmbient) 2 ≠ -1) : sigma 
     have hD : 1 + (y : rawAmbient) 2 ≠ 0 := by intro h; apply hy; linarith
     field_simp
     ring
+end
+
 
 theorem sigma_injective : Function.Injective sigma := by
   intro z w h
   have he := congrArg invChart h
   simpa only [invChart, invChart_left] using he
 
-noncomputable def cone (q : ℝ × ℂ) : rawAmbient := q.1 • sigmaVector q.2
+noncomputable def cone (q : ℝ × ℂ)  := q.1 • sigmaVector q.2
 
 theorem cone_injective : Set.InjOn cone (Ioo 0 1 ×ˢ (univ : Set ℂ)) := by
   rintro ⟨t,z⟩ ⟨ht,hz⟩ ⟨r,w⟩ ⟨hr,hw⟩ he
@@ -158,18 +171,21 @@ theorem south_ray_null : (volume : Measure rawAmbient)
 
 namespace CV
 
-noncomputable def D (v : rawAmbient) : ℝ := 1 + v 1 ^ 2 + v 2 ^ 2
-noncomputable def coneR (v : rawAmbient) : rawAmbient :=
+section
+variable (v : rawAmbient)
+include v
+noncomputable def D   : ℝ := 1 + v 1 ^ 2 + v 2 ^ 2
+noncomputable def coneR   : rawAmbient :=
   WithLp.toLp 2 ![2 * v 0 * v 1 / D v, -2 * v 0 * v 2 / D v,
     v 0 * (1-v 1 ^ 2-v 2 ^ 2) / D v]
-lemma D_pos (v : rawAmbient) : 0 < D v := by dsimp [D]; positivity
+lemma D_pos   : 0 < D v := by dsimp [D]; positivity
 
-noncomputable def jac (v : rawAmbient) : Matrix (Fin 3) (Fin 3) ℝ :=
+noncomputable def jac   : Matrix (Fin 3) (Fin 3) ℝ :=
   !![2*v 1 / D v, 2*v 0 / D v - 4*v 0*v 1^2/(D v)^2, -4*v 0*v 1*v 2/(D v)^2;
     -2*v 2 / D v, 4*v 0*v 1*v 2/(D v)^2, -2*v 0 / D v + 4*v 0*v 2^2/(D v)^2;
     (1-v 1^2-v 2^2)/D v, -4*v 0*v 1/(D v)^2, -4*v 0*v 2/(D v)^2]
 
-lemma jac_det (v : rawAmbient) : (jac v).det = -4*v 0^2/(D v)^2 := by
+lemma jac_det   : (jac v).det = -4*v 0^2/(D v)^2 := by
   rw [Matrix.det_fin_three]
   simp [jac, D, Matrix.cons_val, Matrix.vecHead, Matrix.vecTail]
   have hd := (D_pos v).ne'
@@ -177,7 +193,7 @@ lemma jac_det (v : rawAmbient) : (jac v).det = -4*v 0^2/(D v)^2 := by
   field_simp
   ring
 
-lemma cone_deriv (v : rawAmbient) :
+lemma cone_deriv   :
     HasFDerivAt coneR ((jac v).toEuclideanLin.toContinuousLinearMap) v := by
   rw [← hasFDerivWithinAt_univ]
   apply (hasFDerivWithinAt_piLp 2).mpr
@@ -216,18 +232,19 @@ lemma cone_deriv (v : rawAmbient) :
       Fin.sum_univ_three, Matrix.cons_val, Matrix.vecHead, Matrix.vecTail, D]
     field_simp
     ring
-lemma abs_det (v : rawAmbient) : |((jac v).toEuclideanLin.toContinuousLinearMap).det| =
+lemma abs_det   : |((jac v).toEuclideanLin.toContinuousLinearMap).det| =
     4 * v 0 ^ 2 / D v ^ 2 := by
   change |LinearMap.det ((jac v).toEuclideanLin)| = _
   rw [Matrix.toEuclideanLin_eq_toLin_orthonormal, LinearMap.det_toLin, jac_det]
   rw [show -4 * v 0 ^ 2 / D v ^ 2 = -(4 * v 0 ^ 2 / D v ^ 2) by ring,
     abs_neg, abs_of_nonneg (by positivity)]
+end
 
-noncomputable def coords : rawAmbient ≃ᵐ ℝ × ℂ :=
+
+noncomputable def coords  :=
   split.trans (MeasurableEquiv.prodCongr (MeasurableEquiv.refl ℝ)
     ((MeasurableEquiv.toLp 2 (Fin 2 → ℝ)).symm.trans Complex.measurableEquivPi.symm))
-lemma coords_mp : MeasurePreserving coords volume (volume.prod euclideanArea) := by
-  exact split_preserving.trans ((MeasurePreserving.id volume).prod
+lemma coords_mp : MeasurePreserving coords volume (volume.prod euclideanArea) := split_preserving.trans ((MeasurePreserving.id volume).prod
     ((PiLp.volume_preserving_ofLp (Fin 2)).trans Complex.volume_preserving_equiv_pi.symm))
 lemma coords_symm (q : ℝ × ℂ) : coords.symm q = WithLp.toLp 2 ![q.1, q.2.re, q.2.im] := by
   rw [coords, MeasurableEquiv.trans_symm, MeasurableEquiv.trans_apply, split_symm_apply]

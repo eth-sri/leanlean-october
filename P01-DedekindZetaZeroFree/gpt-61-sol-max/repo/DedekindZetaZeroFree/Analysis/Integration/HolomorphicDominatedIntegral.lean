@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Algebra.Order.Floor.Extended
 public import Mathlib.Algebra.Order.Floor.Semifield
 public import Mathlib.Algebra.Order.Interval.Basic
@@ -41,6 +43,7 @@ public import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
+
 namespace DedekindZetaZeroFree.Quantitative
 
 open MeasureTheory Metric Set Filter Topology
@@ -50,19 +53,22 @@ namespace HolomorphicDominatedIntegral
 variable {α : Type*} [MeasurableSpace α] {μ : Measure α}
   {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E] [CompleteSpace E]
 
-theorem hasDerivAt_integral_of_locally_dominated
-    {U : Set ℂ} (hU : IsOpen U) {G : ℂ → α → E}
+section
+variable {U : Set ℂ} (hU : IsOpen U) {G : ℂ → α → E}
     (hmeas : ∀ z ∈ U, AEStronglyMeasurable (G z) μ)
     (hdiff : ∀ p, DifferentiableOn ℂ (fun z => G z p) U)
     (hdom : ∀ z0 ∈ U, ∃ r > 0, Metric.ball z0 r ⊆ U ∧
       ∃ g : α → ℝ, Integrable g μ ∧ ∀ z ∈ Metric.ball z0 r, ∀ p, ‖G z p‖ ≤ g p)
+include U hU G hmeas hdiff hdom
+theorem hasDerivAt_integral_of_locally_dominated
+     
     {z0 : ℂ} (hz0 : z0 ∈ U) :
     Integrable (fun p => deriv (fun z => G z p) z0) μ ∧
       HasDerivAt (fun z => ∫ p, G z p ∂μ) (∫ p, deriv (fun z => G z p) z0 ∂μ) z0 := by
   obtain ⟨r, hr, hrU, g, hg, hbd⟩ := hdom z0 hz0
   have hr2 : 0 < r / 2 := by positivity
   have hsub : Metric.ball z0 (r / 2) ⊆ Metric.ball z0 r := ball_subset_ball (by linarith)
-  have hdiffAt : ∀ p, ∀ z ∈ U, DifferentiableAt ℂ (fun z => G z p) z :=
+  have hdiffAt  :=
     fun p z hz => (hdiff p z hz).differentiableAt (hU.mem_nhds hz)
 
   have hder_bd : ∀ p, ∀ z ∈ Metric.ball z0 (r / 2), ‖deriv (fun z => G z p) z‖ ≤ g p / (r / 2) := by
@@ -73,14 +79,14 @@ theorem hasDerivAt_integral_of_locally_dominated
       rw [mem_closedBall] at hw
       have := dist_triangle w z z0
       linarith
-    have hdc : DiffContOnCl ℂ (fun z => G z p) (Metric.ball z (r / 2)) :=
+    have hdc  :=
       DifferentiableOn.diffContOnCl
         ((hdiff p).mono ((closure_ball_subset_closedBall.trans hcl).trans hrU))
     exact Complex.norm_deriv_le_of_forall_mem_sphere_norm_le hr2 hdc
       (fun w hw => hbd w (hcl (sphere_subset_closedBall hw)) p)
   have hFmeas : ∀ᶠ z in 𝓝 z0, AEStronglyMeasurable (G z) μ :=
     Filter.mem_of_superset (ball_mem_nhds z0 hr) (fun z hz => hmeas z (hrU hz))
-  have hFint : Integrable (G z0) μ :=
+  have hFint  :=
     hg.mono' (hmeas z0 hz0) (Filter.Eventually.of_forall fun p =>
       hbd z0 (mem_ball_self hr) p)
 
@@ -96,7 +102,7 @@ theorem hasDerivAt_integral_of_locally_dominated
         tendsto_const_div_atTop_nhds_zero_nat (r / 4) |>.comp (tendsto_add_atTop_nat 1) |>.congr
           (fun n => by simp [Function.comp])
       have := (Complex.continuous_ofReal.tendsto 0).comp this
-      have h0 : (𝓝 (0 : ℂ)) = 𝓝 ((0 : ℝ) : ℂ) := by simp
+      have h0 : (𝓝 (0 : ℂ)) = 𝓝 ((0 : ℝ) : ℂ) := rfl
       rw [h0]
       exact this
     have hmem : ∀ n, z0 + h n ∈ U := by
@@ -130,14 +136,12 @@ theorem hasDerivAt_integral_of_locally_dominated
   exact key
 
 theorem differentiableOn_integral_of_locally_dominated
-    {U : Set ℂ} (hU : IsOpen U) {G : ℂ → α → E}
-    (hmeas : ∀ z ∈ U, AEStronglyMeasurable (G z) μ)
-    (hdiff : ∀ p, DifferentiableOn ℂ (fun z => G z p) U)
-    (hdom : ∀ z0 ∈ U, ∃ r > 0, Metric.ball z0 r ⊆ U ∧
-      ∃ g : α → ℝ, Integrable g μ ∧ ∀ z ∈ Metric.ball z0 r, ∀ p, ‖G z p‖ ≤ g p) :
+      :
     DifferentiableOn ℂ (fun z => ∫ p, G z p ∂μ) U := fun z hz =>
   (hasDerivAt_integral_of_locally_dominated hU hmeas hdiff hdom hz).2.differentiableAt
     |>.differentiableWithinAt
+end
+
 
 theorem integrable_of_locally_dominated
     {U : Set ℂ} {G : ℂ → α → E}
@@ -149,14 +153,13 @@ theorem integrable_of_locally_dominated
   exact hg.mono' (hmeas z hz) (Filter.Eventually.of_forall fun p =>
     hbd z (mem_ball_self hr) p)
 
-theorem differentiableOn_integral_prod_real
+def differentiableOn_integral_prod_real
     {U : Set ℂ} (hU : IsOpen U) {G : ℂ → ℝ × ℝ → ℂ}
     (hmeas : ∀ z ∈ U, AEStronglyMeasurable (G z) (volume : Measure (ℝ × ℝ)))
     (hdiff : ∀ p, DifferentiableOn ℂ (fun z => G z p) U)
     (hdom : ∀ z0 ∈ U, ∃ r > 0, Metric.ball z0 r ⊆ U ∧
       ∃ g : ℝ × ℝ → ℝ, Integrable g (volume : Measure (ℝ × ℝ)) ∧
-        ∀ z ∈ Metric.ball z0 r, ∀ p, ‖G z p‖ ≤ g p) :
-    DifferentiableOn ℂ (fun z => ∫ p, G z p) U :=
+        ∀ z ∈ Metric.ball z0 r, ∀ p, ‖G z p‖ ≤ g p)  :=
   differentiableOn_integral_of_locally_dominated hU hmeas hdiff hdom
 
 end HolomorphicDominatedIntegral

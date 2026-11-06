@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Adeles.Quotients.Cotangent.IntrinsicHilbertIntegrals
 
 @[expose] public section
+
 
 noncomputable section
 open scoped Classical NumberField ENNReal
@@ -39,8 +42,8 @@ def Q : Submodule ℂ (Lp (E F) 2 a.liftedMeasure) :=
 instance qInnerProductSpace : InnerProductSpace ℂ (Q a) :=
   KPMeasurableLocalL2.Q_innerProductSpace (localData a) (fullPiece a)
 
-instance qCompleteSpace : CompleteSpace (Q a) :=
-  KPMeasurableLocalL2.Q_completeSpace (localData a) (fullPiece a)
+
+
 
 def localCoefficient (r : Family (U := U) (H := H)) (y : a.domain) : E F :=
   coefficient r a (coordinates a y)
@@ -65,23 +68,22 @@ private theorem localCoefficient_covariant (r : Family (U := U) (H := H))
       from Subtype.ext (coordinates_action a γ y)]
   exact hcov
 
-theorem localCoefficient_memLp (r : SquareFiniteFamily (U := U) (H := H)) :
+
+local notation:max "current_SquareFiniteFamily" => SquareFiniteFamily (U := U) (H := H)
+
+theorem localCoefficient_memLp (r : current_SquareFiniteFamily) :
     MemLp (localCoefficient a r.val) 2 a.liftedMeasure := by
   have hmeas : Measurable (localCoefficient a r.val) :=
     ((r.val.property).1 a).comp (coordinates_continuous a).measurable
   rw [memLp_two_iff_integrable_sq_norm hmeas.aestronglyMeasurable]
   refine ⟨(hmeas.norm.pow_const 2).aestronglyMeasurable, ?_⟩
   rw [hasFiniteIntegral_iff_enorm]
-  have hnn : ∀ y, ‖(‖localCoefficient a r.val y‖ ^ 2 : ℝ)‖ₑ =
+  have hnn : ∀ y, ‖(‖localCoefficient a r.val y‖ ^ 2)‖ₑ =
       (normSquare r.val (a.toBase y) : ℝ≥0∞) := by
     intro y
-    have h1 : ‖(‖localCoefficient a r.val y‖ ^ 2 : ℝ)‖ₑ =
+    have h1 : ‖(‖localCoefficient a r.val y‖ ^ 2)‖ₑ =
         (‖localCoefficient a r.val y‖₊ : ℝ≥0∞) ^ 2 := by
-      have h : ‖(‖localCoefficient a r.val y‖ ^ 2 : ℝ)‖ₑ =
-          ENNReal.ofReal (‖localCoefficient a r.val y‖ ^ 2) :=
-        Real.enorm_eq_ofReal (r := ‖localCoefficient a r.val y‖ ^ 2) (sq_nonneg _)
-      rw [h, ENNReal.ofReal_pow (norm_nonneg _), ofReal_norm (x := localCoefficient a r.val y),
-        enorm_eq_nnnorm]
+      simp_all [ENNReal.ofReal_pow, norm_nonneg, ofReal_norm, DedekindZetaZeroFree.KPContActualCotangentChartRestriction.localCoefficient, enorm_eq_nnnorm] <;> aesop
     rw [h1, ← q_coordinates a y, normSquare_chart]
     rfl
   simp only [hnn]
@@ -102,10 +104,10 @@ theorem localCoefficient_memLp (r : SquareFiniteFamily (U := U) (H := H)) :
         simp only [ENNReal.ofReal_coe_nnreal]
     _ < ⊤ := r.property
 
-def familyLp (r : SquareFiniteFamily (U := U) (H := H)) : Lp (E F) 2 a.liftedMeasure :=
+def familyLp (r : current_SquareFiniteFamily)  :=
   (localCoefficient_memLp a r).toLp (localCoefficient a r.val)
 
-theorem familyLp_mem_Q (r : SquareFiniteFamily (U := U) (H := H)) :
+theorem familyLp_mem_Q (r : current_SquareFiniteFamily) :
     familyLp a r ∈ Q a := by
   show KPMeasurableLocalL2.SupportedCovariant (localData a) (fullPiece a) (familyLp a r)
   refine ⟨?_, ?_⟩
@@ -120,10 +122,10 @@ theorem familyLp_mem_Q (r : SquareFiniteFamily (U := U) (H := H)) :
   · filter_upwards with y hy
     exact absurd (Set.mem_univ y) hy
 
-def familyQ (r : SquareFiniteFamily (U := U) (H := H)) : Q a :=
+def familyQ (r : current_SquareFiniteFamily) : Q a :=
   ⟨familyLp a r, familyLp_mem_Q a r⟩
 
-private theorem familyQ_inner_eq_integral (r s : SquareFiniteFamily (U := U) (H := H)) :
+private theorem familyQ_inner_eq_integral (r s : current_SquareFiniteFamily) :
     inner ℂ (familyQ a r) (familyQ a s) =
       ∫ x in a.baseDomain, pair r.val s.val x
         ∂(baseMeasure (R := R) (P := P) (U := U)) := by
@@ -133,20 +135,18 @@ private theorem familyQ_inner_eq_integral (r s : SquareFiniteFamily (U := U) (H 
         ((familyQ a s : Lp (E F) 2 a.liftedMeasure) y) ∂a.liftedMeasure :=
     KPMeasurableLocalL2.Q_inner_eq_integral (localData a) (fullPiece a) (familyQ a r) (familyQ a s)
   rw [h1]
-  rw [integral_congr_ae (show (fun y => inner ℂ ((familyQ a r : Lp (E F) 2 a.liftedMeasure) y)
-        ((familyQ a s : Lp (E F) 2 a.liftedMeasure) y))
-        =ᵐ[a.liftedMeasure] (fun y => pair r.val s.val (a.toBase y)) from by
+  rw [integral_congr_ae ((by
     filter_upwards [MemLp.coeFn_toLp (localCoefficient_memLp a r),
       MemLp.coeFn_toLp (localCoefficient_memLp a s)] with y hy1 hy2
     change inner ℂ (familyLp a r y) (familyLp a s y) = pair r.val s.val (a.toBase y)
     simp only [familyLp]
     rw [hy1, hy2, ← q_coordinates a y, pair_chart]
-    rfl)]
+    rfl))]
   rw [(integral_map (μ := a.liftedMeasure) (φ := a.toBase) hP.measurable.aemeasurable
     (measurable_pair r.val s.val).aestronglyMeasurable).symm]
   rw [hP.exact_pushforward]
 
-private theorem familyQ_norm_sq_eq_integral (r : SquareFiniteFamily (U := U) (H := H)) :
+private theorem familyQ_norm_sq_eq_integral (r : current_SquareFiniteFamily) :
     ‖familyQ a r‖ ^ 2 = ∫ x in a.baseDomain, (normSquare r.val x : ℝ)
       ∂(baseMeasure (R := R) (P := P) (U := U)) := by
   have hP := every_shrunkChart_properties F ζ hζ U R P H a
@@ -176,7 +176,7 @@ private theorem familyQ_norm_sq_eq_integral (r : SquareFiniteFamily (U := U) (H 
         rfl
       exact hpt
 
-private theorem localCoefficient_ae_eq (r s : SquareFiniteFamily (U := U) (H := H))
+private theorem localCoefficient_ae_eq (r s : current_SquareFiniteFamily)
     (hrs : AeEquivalent r.val s.val) :
     localCoefficient a r.val =ᵐ[a.liftedMeasure] localCoefficient a s.val := by
   have hP := every_shrunkChart_properties F ζ hζ U R P H a
@@ -192,7 +192,7 @@ private theorem localCoefficient_ae_eq (r s : SquareFiniteFamily (U := U) (H := 
   change localCoefficient a r.val y - localCoefficient a s.val y = 0 at hz
   exact sub_eq_zero.mp hz
 
- theorem familyQ_ae_eq (r s : SquareFiniteFamily (U := U) (H := H))
+ theorem familyQ_ae_eq (r s : current_SquareFiniteFamily)
     (hrs : AeEquivalent r.val s.val) : familyQ a r = familyQ a s := by
   apply Subtype.ext
   apply Lp.ext
@@ -200,31 +200,12 @@ private theorem localCoefficient_ae_eq (r s : SquareFiniteFamily (U := U) (H := 
     ((localCoefficient_ae_eq a r s hrs).trans
       (MemLp.coeFn_toLp (localCoefficient_memLp a s)).symm)
 
- theorem familyQ_add (r s : SquareFiniteFamily (U := U) (H := H)) :
+ theorem familyQ_add (r s : current_SquareFiniteFamily) :
     familyQ a (r + s) = familyQ a r + familyQ a s := by
-  apply Subtype.ext
-  apply Lp.ext
-  filter_upwards [MemLp.coeFn_toLp (localCoefficient_memLp a (r + s)),
-    MemLp.coeFn_toLp (localCoefficient_memLp a r),
-    MemLp.coeFn_toLp (localCoefficient_memLp a s),
-    Lp.coeFn_add (familyLp a r) (familyLp a s)] with y hsum hr hs hadd
-  change familyLp a (r + s) y = (familyLp a r + familyLp a s) y
-  rw [hadd]
-  simp only [familyLp, Pi.add_apply]
-  rw [hsum, hr, hs]
   rfl
 
- theorem familyQ_smul (c : ℂ) (r : SquareFiniteFamily (U := U) (H := H)) :
+ theorem familyQ_smul (c : ℂ) (r : current_SquareFiniteFamily) :
     familyQ a (c • r) = c • familyQ a r := by
-  apply Subtype.ext
-  apply Lp.ext
-  filter_upwards [MemLp.coeFn_toLp (localCoefficient_memLp a (c • r)),
-    MemLp.coeFn_toLp (localCoefficient_memLp a r),
-    Lp.coeFn_smul c (familyLp a r)] with y hsmul hr hcoe
-  change familyLp a (c • r) y = (c • familyLp a r) y
-  rw [hcoe]
-  simp only [familyLp, Pi.smul_apply]
-  rw [hsmul, hr]
   rfl
 
 def restrictionLinear : IntrinsicHilbert cover →ₗ[ℂ] Q a where
@@ -240,12 +221,12 @@ def restrictionLinear : IntrinsicHilbert cover →ₗ[ℂ] Q a where
     obtain ⟨r, rfl⟩ := toAeQuotient_surjective (intrinsicClass cover v)
     obtain ⟨s, rfl⟩ := toAeQuotient_surjective (intrinsicClass cover w)
     erw [← toAeQuotient_add r s]
-    exact familyQ_add a r s
+    apply familyQ_add
   map_smul' := by
     intro c v
     obtain ⟨r, rfl⟩ := toAeQuotient_surjective (intrinsicClass cover v)
     erw [← toAeQuotient_smul c r]
-    exact familyQ_smul a c r
+    apply familyQ_smul
 
 theorem restrictionLinear_norm_le (v : IntrinsicHilbert cover) :
     ‖restrictionLinear cover a v‖ ≤ ‖v‖ := by
@@ -268,7 +249,7 @@ def res : IntrinsicHilbert cover →L[ℂ] Q a :=
     simpa only [one_mul] using restrictionLinear_norm_le cover a v)
 
 theorem res_eq_familyQ (v : IntrinsicHilbert cover)
-    (r : SquareFiniteFamily (U := U) (H := H))
+    (r : current_SquareFiniteFamily)
     (hr : toAeQuotient r = intrinsicClass cover v) :
     res cover a v = familyQ a r := by
   have hv : v = toAeQuotient (R := R) (U := U) (H := H) r := by
@@ -278,7 +259,7 @@ theorem res_eq_familyQ (v : IntrinsicHilbert cover)
   rfl
 
 theorem res_represented (v : IntrinsicHilbert cover)
-    (r : SquareFiniteFamily (U := U) (H := H))
+    (r : current_SquareFiniteFamily)
     (hr : toAeQuotient r = intrinsicClass cover v) :
     (fun y => (res cover a v : Lp (E F) 2 a.liftedMeasure) y) =ᵐ[a.liftedMeasure]
       localCoefficient a r.val := by
@@ -293,17 +274,17 @@ theorem res_norm_le (v : IntrinsicHilbert cover) : ‖res cover a v‖ ≤ ‖v�
     _ = ‖v‖ := one_mul _
 
 theorem res_inner_eq_integral (v w : IntrinsicHilbert cover)
-    (r s : SquareFiniteFamily (U := U) (H := H))
+    (r s : current_SquareFiniteFamily)
     (hr : toAeQuotient r = intrinsicClass cover v)
     (hs : toAeQuotient s = intrinsicClass cover w) :
     inner ℂ (res cover a v) (res cover a w) =
       ∫ x in a.baseDomain, pair r.val s.val x
         ∂(KPContActualCotangentMeasurableFamilies.baseMeasure (R := R) (P := P) (U := U)) := by
   rw [res_eq_familyQ cover a v r hr, res_eq_familyQ cover a w s hs]
-  exact familyQ_inner_eq_integral a r s
+  apply familyQ_inner_eq_integral
 
 theorem res_norm_sq_eq_integral (v : IntrinsicHilbert cover)
-    (r : SquareFiniteFamily (U := U) (H := H))
+    (r : current_SquareFiniteFamily)
     (hr : toAeQuotient r = intrinsicClass cover v) :
     ‖res cover a v‖ ^ 2 = ∫ x in a.baseDomain, (normSquare r.val x : ℝ)
       ∂(KPContActualCotangentMeasurableFamilies.baseMeasure (R := R) (P := P) (U := U)) := by
@@ -345,7 +326,7 @@ theorem original_normalization :
 def coefficientIndex : (Fin (d F) × Fin 3) ≃ Fin (3 * d F) :=
   (Equiv.prodComm _ _).trans finProdFinEquiv
 
-def coefficientReindex : E F ≃ₗᵢ[ℂ] EuclideanSpace ℂ (Fin (3 * d F)) :=
+def coefficientReindex  :=
   LinearIsometryEquiv.piLpCongrLeft 2 ℂ ℂ (coefficientIndex (F := F))
 
 def euclideanData : KPMeasurableLocalL2.Data a.domain
@@ -471,7 +452,7 @@ def resEuclidean : IntrinsicHilbert cover →L[ℂ] EuclideanQ a :=
   (reindexQ a).toContinuousLinearEquiv.toContinuousLinearMap.comp (res cover a)
 
 theorem resEuclidean_represented (v : IntrinsicHilbert cover)
-    (r : SquareFiniteFamily (U := U) (H := H))
+    (r : current_SquareFiniteFamily)
     (hr : toAeQuotient r = intrinsicClass cover v) :
     (fun y => (resEuclidean cover a v :
       Lp (EuclideanSpace ℂ (Fin (3 * d F))) 2 a.liftedMeasure) y) =ᵐ[a.liftedMeasure]
@@ -485,8 +466,7 @@ theorem resEuclidean_represented (v : IntrinsicHilbert cover)
   rfl
 
 theorem resEuclidean_norm (v : IntrinsicHilbert cover) :
-    ‖resEuclidean cover a v‖ = ‖res cover a v‖ := by
-  exact LinearIsometryEquiv.norm_map (reindexQ a) (res cover a v)
+    ‖resEuclidean cover a v‖ = ‖res cover a v‖ := LinearIsometryEquiv.norm_map (reindexQ a) (res cover a v)
 
 end DedekindZetaZeroFree.KPContActualCotangentChartRestriction
 

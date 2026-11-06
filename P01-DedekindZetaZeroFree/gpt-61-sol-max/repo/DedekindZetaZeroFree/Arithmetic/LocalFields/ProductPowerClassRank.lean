@@ -22,8 +22,11 @@ instance instVnModule (F : Type) [Field F] [NumberField F]
   (AddEquiv.piAdditive (fun v : A.Place => PowerQuotient (A.Completion v)ˣ n)).module
     (ZMod n)
 
-private theorem Vn_finite_aux (F : Type) [Field F] [NumberField F]
-    (A : SArithmeticData F) (n : ℕ) (hn : n = 2 ∨ n = 3) :
+section
+variable (F : Type) [Field F] [NumberField F]
+    (A : SArithmeticData F) (n : ℕ) (hn : n = 2 ∨ n = 3)
+include F A n hn
+private theorem Vn_finite_aux   :
     Finite (Vn F A n) := by
   haveI (v : A.Place) : Finite (PowerQuotient (A.Completion v)ˣ n) := by
     cases v with
@@ -35,8 +38,7 @@ private theorem Vn_finite_aux (F : Type) [Field F] [NumberField F]
       exact A.finite_power_class_finite ⟨n, by omega⟩ hn v.val v.property
   infer_instance
 
-private theorem Vn_card_aux (F : Type) [Field F] [NumberField F]
-    (A : SArithmeticData F) (n : ℕ) (hn : n = 2 ∨ n = 3) :
+private theorem Vn_card_aux   :
     Nat.card (Vn F A n) = n ^ (2 * A.Sf.card + Module.finrank ℚ F) := by
   have hi (w : InfinitePlace F) : Nat.card (PowerQuotient w.Completionˣ n) = 1 := by
     haveI := A.infinite_power_quotient_subsingleton w n
@@ -57,14 +59,12 @@ private theorem Vn_card_aux (F : Type) [Field F] [NumberField F]
   rw [pow_add, pow_mul]
   ring
 
-theorem Vn_module_finite (F : Type) [Field F] [NumberField F]
-    (A : SArithmeticData F) (n : ℕ) (hn : n = 2 ∨ n = 3) :
+theorem Vn_module_finite   :
     Module.Finite (ZMod n) (Additive (Vn F A n)) := by
   haveI := Vn_finite_aux F A n hn
   infer_instance
 
-theorem Vn_finrank (F : Type) [Field F] [NumberField F]
-    (A : SArithmeticData F) (n : ℕ) (hn : n = 2 ∨ n = 3) :
+theorem Vn_finrank   :
     Module.finrank (ZMod n) (Additive (Vn F A n)) =
       2 * A.Sf.card + Module.finrank ℚ F := by
   haveI : Fact n.Prime := ⟨by rcases hn with h | h <;> rw [h] <;> norm_num⟩
@@ -78,8 +78,7 @@ theorem Vn_finrank (F : Type) [Field F] [NumberField F]
   rw [← hfr, (Nat.card_congr (Additive.ofMul : Vn F A n ≃ Additive (Vn F A n))).symm]
   exact Vn_card_aux F A n hn
 
-theorem Vn_finrank_complex (F : Type) [Field F] [NumberField F]
-    (A : SArithmeticData F) (n : ℕ) (hn : n = 2 ∨ n = 3) :
+theorem Vn_finrank_complex   :
     Module.finrank (ZMod n) (Additive (Vn F A n)) =
       2 * (A.Sf.card + InfinitePlace.nrComplexPlaces F) := by
   rw [Vn_finrank F A n hn]
@@ -90,10 +89,11 @@ theorem Vn_finrank_complex (F : Type) [Field F] [NumberField F]
   rw [← hdegree]
   ring
 
-theorem Vn_card (F : Type) [Field F] [NumberField F]
-    (A : SArithmeticData F) (n : ℕ) (hn : n = 2 ∨ n = 3) :
+theorem Vn_card   :
     Nat.card (Vn F A n) = n ^ (2 * A.Sf.card + Module.finrank ℚ F) := by
   exact Vn_card_aux F A n hn
+end
+
 
 end
 end SArithmeticData

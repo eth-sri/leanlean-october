@@ -20,9 +20,12 @@ namespace DedekindZetaZeroFree.KPCuspChart.SectionConstruction
   rw [horizontalLinear, LinearMap.det_pi]
   simp only [LinearMap.det_restrictScalars, LinearMap.det_mulLeft,
     Algebra.norm_complex_apply, Complex.normSq_eq_norm_sq]
-private lemma norm_product
-    (F : Type*) [Field F] [NumberField F]
+section
+variable (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
+include F hF
+private lemma norm_product
+     
     (E : Subgroup Fˣ) (hE : E ≤ KPCuspArithmetic.rationalUnits F) (u : E) :
     ∏ i, ‖embedding F ((u : Fˣ) : F) i‖ ^ 2 = 1 := by
   have hs := KPCuspLogShape.sum_logRatio_eq_zero F hF E hE u
@@ -43,8 +46,7 @@ private lemma norm_product
       _ = 1 := by rw [← Real.exp_sum, hs, Real.exp_zero]
   rw [hp, one_pow]
 private lemma horizontal_invariant
-    (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
+     
     (E : Subgroup Fˣ) (hE : E ≤ KPCuspArithmetic.rationalUnits F) (u : E) (v : F) :
     Measure.map (fun x : Horizontal F => fun i => embedding F ((u : Fˣ) : F) i * x i + embedding F v i)
       volume = volume := by
@@ -61,8 +63,7 @@ private lemma horizontal_invariant
     hm, map_add_right_eq_self]
 
 theorem full_affine_measure_invariant
-    (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
+     
     (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)
     (G : GeometryData F hF S D)
     (μ : Measure (Shape F)) [μ.IsAddHaarMeasure] (g : S) :
@@ -76,6 +77,8 @@ theorem full_affine_measure_invariant
     exact G.crossAction_formula g A hA hu p
   rw [he, ← Measure.map_prod_map volume μ (by fun_prop) (by fun_prop),
     horizontal_invariant F hF D.E D.integralUnits (D.ratio g) v, map_add_right_eq_self]
+end
+
 
 end DedekindZetaZeroFree.KPCuspChart.SectionConstruction
 
@@ -151,9 +154,12 @@ private theorem mass_upper_action (g : Matrix.GeneralLinearGroup (Fin 2) ℂ)
     field_simp
   · exact KPCuspLogShape.upper_action_snd g hc u hu ha z
 
-private theorem mass_actual_affine_action (F : Type*) [Field F] [NumberField F]
+section
+variable (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)
+include F hF S D
+private theorem mass_actual_affine_action  
     (g : S) (A : Matrix.GeneralLinearGroup (Fin 2) F)
     (hA : Matrix.ProjGenLinGroup.mk A = (g : KPCuspArithmetic.PGL2 F))
     (hc : A 1 0 = 0) (p : Coordinates F) :
@@ -185,9 +191,7 @@ private theorem mass_actual_affine_action (F : Type*) [Field F] [NumberField F]
     ring
 
 private theorem mass_cross_orbit_relation
-    (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)
+     
     (G : GeometryData F hF S D) :
     letI := homeomorphAction G.crossAction
     crossRelation F S = MulAction.orbitRel S (Cross F) := by
@@ -220,9 +224,7 @@ private theorem mass_cross_orbit_relation
     exact ⟨g, (hact g q).trans (congrArg (fun p => toArch F (p, 0)) hg)⟩
 
 theorem actual_fundamental_domain_mass
-    (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)
+     
     (hdisc : DiscreteTopology (translationLattice F D.L).toIntSubmodule)
     (hlattice : letI := hdisc; IsZLattice ℝ (translationLattice F D.L).toIntSubmodule)
     (G : GeometryData F hF S D)
@@ -257,6 +259,8 @@ theorem actual_fundamental_domain_mass
   exact mul_ne_zero (Measure.measure_univ_ne_zero.mpr
     (NeZero.ne (volume : Measure (Horizontal F))))
     (Measure.measure_univ_ne_zero.mpr (NeZero.ne μ))
+end
+
 
 end DedekindZetaZeroFree.KPCuspChart.SectionConstruction
 
@@ -270,22 +274,25 @@ open scoped Classical Matrix
 open MeasureTheory
 namespace DedekindZetaZeroFree.KPCuspChart
 
-theorem sectionMeasure_univ
-    (F : Type*) [Field F] [NumberField F]
+section
+variable (F : Type*) [Field F] [NumberField F]
     (S : Subgroup (KPCuspArithmetic.PGL2 F))
-    (μ : Measure (Shape F)) (Ω : Set (Cross F)) :
+    (μ : Measure (Shape F)) (Ω : Set (Cross F))
+include F S μ Ω
+theorem sectionMeasure_univ
+      :
     Measure.map (Quotient.mk (crossRelation F S))
       ((volume.prod μ).restrict Ω) Set.univ = (volume.prod μ) Ω := by
   rw [Measure.map_apply measurable_quotient_mk'' MeasurableSet.univ]
   simp
 
 theorem finite_sectionMeasure_iff
-    (F : Type*) [Field F] [NumberField F]
-    (S : Subgroup (KPCuspArithmetic.PGL2 F))
-    (μ : Measure (Shape F)) (Ω : Set (Cross F)) :
+      :
     IsFiniteMeasure (Measure.map (Quotient.mk (crossRelation F S))
       ((volume.prod μ).restrict Ω)) ↔ (volume.prod μ) Ω < ⊤ := by
   rw [isFiniteMeasure_iff, sectionMeasure_univ]
+end
+
 
 theorem normalized_finite_section
     (F : Type*) [Field F] [NumberField F]

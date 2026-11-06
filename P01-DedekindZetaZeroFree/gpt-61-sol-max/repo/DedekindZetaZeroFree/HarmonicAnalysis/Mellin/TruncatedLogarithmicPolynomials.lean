@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Mellin.LogarithmicWeights
 
 @[expose] public section
+
 
 /-
 Repository: openai/math.
@@ -16,7 +19,10 @@ open scoped Classical
 
 namespace DedekindZetaZeroFree.LargeSieve.Vendor
 
-private lemma laplace_integrable (k : ℕ) (s : ℂ) (hs : 0 < s.re) :
+section
+variable (k : ℕ) (s : ℂ) (hs : 0 < s.re)
+include k s hs
+private lemma laplace_integrable   :
     IntegrableOn (fun t : ℝ => (t : ℂ)^k * Complex.exp (-s * t)) (Ioi 0) := by
   have hi : IntegrableOn (fun t : ℝ => Real.exp (-s.re * t) • t^k) (Ici 0) :=
     integrableOn_exp_neg_smul_of_isBigO_exp
@@ -28,7 +34,7 @@ private lemma laplace_integrable (k : ℕ) (s : ℂ) (hs : 0 < s.re) :
     simp [norm_mul, norm_pow, Complex.norm_exp, Complex.norm_real, abs_of_pos (mem_Ioi.mp ht), mul_comm]
   exact (integrable_norm_iff (by fun_prop)).mp ((hi.mono_set Ioi_subset_Ici_self).congr heq.symm)
 
-private lemma laplace_tendsto (k : ℕ) (s : ℂ) (hs : 0 < s.re) :
+private lemma laplace_tendsto   :
     Tendsto (fun t : ℝ => (t : ℂ)^k * Complex.exp (-s * t)) atTop (𝓝 0) := by
   rw [tendsto_zero_iff_norm_tendsto_zero]
   have h := tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero (k : ℝ) s.re hs
@@ -36,7 +42,7 @@ private lemma laplace_tendsto (k : ℕ) (s : ℂ) (hs : 0 < s.re) :
   filter_upwards [eventually_gt_atTop (0 : ℝ)] with t ht
   simp [norm_mul, norm_pow, Complex.norm_exp, Complex.norm_real, abs_of_pos ht, Real.rpow_natCast]
 
-private lemma laplace_integral (k : ℕ) (s : ℂ) (hs : 0 < s.re) :
+private lemma laplace_integral   :
     (∫ t in Ioi (0 : ℝ), (t : ℂ)^k * Complex.exp (-s * t)) = (k.factorial : ℂ) / s^(k+1) := by
   have hs0 : s ≠ 0 := by intro h; simp [h] at hs
   induction k with
@@ -65,6 +71,8 @@ private lemma laplace_integral (k : ℕ) (s : ℂ) (hs : 0 < s.re) :
     rw [h]
     field_simp
     <;> push_cast <;> ring
+end
+
 private lemma exp_neg_image : (fun t : ℝ => Real.exp (-t)) '' Ioi 0 = Ioo 0 1 := by
   rw [show (fun t : ℝ => Real.exp (-t)) = Real.exp ∘ Neg.neg from rfl, image_comp]
   rw [image_neg_Ioi, neg_zero, Real.image_exp_Iio, Real.exp_zero]
@@ -105,30 +113,33 @@ theorem integral_logMonomial (k : ℕ) (s : ℂ) (hs : 0 < s.re) :
   simp_rw [mul_neg_one, exp_neg_subst]
   rw [integral_const_mul, laplace_integral k s hs, mul_div_assoc]
 
-private lemma poly_integrable (P : Polynomial ℂ) (s : ℂ) (hs : 0 < s.re) :
+section
+variable (P : Polynomial ℂ)
+include P
+private lemma poly_integrable   (s : ℂ) (hs : 0 < s.re) :
     IntegrableOn (fun x : ℝ => (x : ℂ)^(s-1)*P.eval (Real.log x : ℂ)) (Ioo 0 1) := by
   simp_rw [Polynomial.eval_eq_sum, Polynomial.sum_def, Finset.mul_sum]
   apply integrable_finsetSum
   intro k hk
   simpa only [mul_left_comm] using (logMonomial_integrableOn k s hs).const_mul (P.coeff k)
 
-def truncatedLogPolynomial (P : Polynomial ℂ) (x : ℝ) : ℂ :=
+def truncatedLogPolynomial   (x : ℝ)  :=
   if 0 < x ∧ x < 1 then P.eval (Real.log x : ℂ) else 0
 
-private lemma truncated_weight (P : Polynomial ℂ) (s : ℂ) :
+private lemma truncated_weight   (s : ℂ) :
     (fun x : ℝ => (x : ℂ)^(s-1)*truncatedLogPolynomial P x) =
     (Ioo 0 1).indicator (fun x : ℝ => (x : ℂ)^(s-1)*P.eval (Real.log x : ℂ)) := by
   funext x
   simp only [truncatedLogPolynomial, Set.indicator, mem_Ioo]
   split_ifs <;> simp
 
-theorem truncatedLogPolynomial_mellinConvergent (P : Polynomial ℂ) (s : ℂ)
+theorem truncatedLogPolynomial_mellinConvergent   (s : ℂ)
     (hs : 0 < s.re) : MellinConvergent (truncatedLogPolynomial P) s := by
   unfold MellinConvergent
   simp only [smul_eq_mul, truncated_weight]
   exact ((integrable_indicator_iff measurableSet_Ioo).mpr (poly_integrable P s hs)).integrableOn
 
-theorem mellin_truncatedLogPolynomial (P : Polynomial ℂ) (s : ℂ) (hs : 0 < s.re) :
+theorem mellin_truncatedLogPolynomial   (s : ℂ) (hs : 0 < s.re) :
     mellin (truncatedLogPolynomial P) s = logPrincipalPart P s := by
   unfold mellin
   simp only [smul_eq_mul, truncated_weight]
@@ -144,6 +155,8 @@ theorem mellin_truncatedLogPolynomial (P : Polynomial ℂ) (s : ℂ) (hs : 0 < s
     ring
   · intro k hk
     simpa only [mul_left_comm] using (logMonomial_integrableOn k s hs).const_mul (P.coeff k)
+end
+
 
 end DedekindZetaZeroFree.LargeSieve.Vendor
 

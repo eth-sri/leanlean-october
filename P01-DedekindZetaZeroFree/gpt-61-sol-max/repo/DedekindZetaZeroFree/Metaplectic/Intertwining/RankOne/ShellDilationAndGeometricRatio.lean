@@ -65,9 +65,12 @@ private theorem uniformizer_multiplier (ε : Sign) (s : ℂ)
     rw [rootCharacter_weyl_inversion, rootCharacter_uniformizer S.borel s π hπ]
     simp [actualShellRatio, t, mul_inv_rev, inv_pow, mul_comm]
 
-private theorem tail_pointwise_rescale (P : Polarization S.heisenberg)
+section
+variable (P : Polarization S.heisenberg)
     (J : CompactOpenLevel (ActualCover F ζ hζ q))
     (hJ : (J.toOpenSubgroup : Subgroup (ActualCover F ζ hζ q)) ≤ S.iwasawa.compact.toOpenSubgroup)
+include P J hJ in
+private theorem tail_pointwise_rescale  
     (ε : Sign) (π : (LocalField F q)ˣ) :
     ∀ᶠ v : LocalField F q in nhds 0, ∀ (s : ℂ)
       (φ : compactLevel S.borel P S.iwasawa (sourceSign ε) J)
@@ -182,9 +185,8 @@ theorem actual_shell_dilation {L : Type*} [RCLike L]
     rw [he] at H
     exact H.symm
 
-theorem actual_tail_shell_pointwise (P : Polarization S.heisenberg)
-    (J : CompactOpenLevel (ActualCover F ζ hζ q))
-    (hJ : (J.toOpenSubgroup : Subgroup (ActualCover F ζ hζ q)) ≤ S.iwasawa.compact.toOpenSubgroup)
+include P J hJ in
+theorem actual_tail_shell_pointwise  
     (ε : Sign) (π : (LocalField F q)ˣ) :
     ∃ M : ℕ, ∀ m : ℕ, M ≤ m → ∀ x ∈ actualShell F q (m : ℤ), ∀ (s : ℂ)
       (φ : compactLevel S.borel P S.iwasawa (sourceSign ε) J)
@@ -211,9 +213,8 @@ theorem actual_tail_shell_pointwise (P : Polarization S.heisenberg)
     simp [mul_inv_rev, mul_comm]
   simpa only [he, inv_neg, inv_inv, neg_neg] using H
 
-theorem actual_tail_shell_step (P : Polarization S.heisenberg)
-    (J : CompactOpenLevel (ActualCover F ζ hζ q))
-    (hJ : (J.toOpenSubgroup : Subgroup (ActualCover F ζ hζ q)) ≤ S.iwasawa.compact.toOpenSubgroup)
+include P J hJ in
+theorem actual_tail_shell_step  
     (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
     (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
     (π : (LocalField F q)ˣ)
@@ -251,6 +252,8 @@ theorem actual_tail_shell_step (P : Polarization S.heisenberg)
   rw [← mul_assoc]
   congr 1
   exact uniformizer_multiplier F ζ hζ q S ε s π hπ
+end
+
 
 theorem actual_uniformizer_multiplier (ε : Sign) (s : ℂ)
     (π : (LocalField F q)ˣ)

@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Valuation.AbsoluteValue.Nonarchimedean
 public import Mathlib.Analysis.Normed.Algebra.GelfandMazur
 public import Mathlib.NumberTheory.Ostrowski
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -38,11 +41,11 @@ private theorem ostrowski_isNonarchimedean_of_charP_pos
     IsNonarchimedean (v : K → ℝ) := by
   rw [isNonarchimedean_iff_bounded_nat]
   refine ⟨(p : ℝ), fun n => ?_⟩
-  have hp_pos : 0 < p := Nat.pos_of_ne_zero hp
+  have hp_pos  := Nat.pos_of_ne_zero hp
   calc
     v (n : K) = v ((n % p : ℕ) : K) := by
       congr 1
-      exact CharP.natCast_eq_natCast_mod K p n
+      apply CharP.natCast_eq_natCast_mod
     _ ≤ ((n % p : ℕ) : ℝ) := v.apply_nat_le_self (n % p)
     _ ≤ (p : ℝ) := by
       exact_mod_cast (Nat.mod_lt n hp_pos).le
@@ -70,23 +73,25 @@ theorem charZero_of_not_isNonarchimedean
   ((WithAbs.equiv v).toRingHom.charZero_iff
     (WithAbs.equiv v).injective).mpr inferInstance
 
+section
+variable {K : Type*} [Field K] [CharZero K] (v : AbsoluteValue K ℝ)
+include K v
 /-- The restriction of an absolute value on a characteristic-zero field to the
 prime field `ℚ`. -/
  noncomputable def ostrowski_restrictRatAbsoluteValue
-    {K : Type*} [Field K] [CharZero K] (v : AbsoluteValue K ℝ) :
-    AbsoluteValue ℚ ℝ :=
+       :=
   v.comp (f := Rat.castHom K) Rat.cast_injective
 
 @[simp]
 private theorem ostrowski_restrictRatAbsoluteValue_apply
-    {K : Type*} [Field K] [CharZero K] (v : AbsoluteValue K ℝ) (q : ℚ) :
+      (q : ℚ) :
     ostrowski_restrictRatAbsoluteValue (K := K) v q = v (q : K) :=
   rfl
 
 /-- If the restriction to `ℚ` is nonarchimedean, then so is the original
 absolute value. -/
 private theorem ostrowski_isNonarchimedean_of_restrictRat
-    {K : Type*} [Field K] [CharZero K] (v : AbsoluteValue K ℝ)
+     
     (h : IsNonarchimedean
       (ostrowski_restrictRatAbsoluteValue (K := K) v : ℚ → ℝ)) :
     IsNonarchimedean (v : K → ℝ) := by
@@ -94,12 +99,17 @@ private theorem ostrowski_isNonarchimedean_of_restrictRat
   rcases h with ⟨C, hC⟩
   refine ⟨C, fun n => ?_⟩
   simpa using hC n
+end
 
+
+section
+variable {K : Type*} [Field K] [CharZero K] (v : AbsoluteValue K ℝ)
+    (harch : ¬ IsNonarchimedean (v : K → ℝ))
+include K v harch
 /-- Hence an archimedean absolute value restricts to an archimedean
 absolute value on `ℚ`. -/
 private theorem ostrowski_restrictRat_not_isNonarchimedean
-    {K : Type*} [Field K] [CharZero K] (v : AbsoluteValue K ℝ)
-    (harch : ¬ IsNonarchimedean (v : K → ℝ)) :
+      :
     ¬ IsNonarchimedean
       (ostrowski_restrictRatAbsoluteValue (K := K) v : ℚ → ℝ) := by
   intro hnonarch
@@ -109,8 +119,7 @@ private theorem ostrowski_restrictRat_not_isNonarchimedean
 
 /-- The archimedean restriction to ℚ is equivalent to the real absolute value. -/
 private theorem ostrowski_restrictRat_isEquiv_real_of_not_isNonarchimedean
-    {K : Type*} [Field K] [CharZero K] (v : AbsoluteValue K ℝ)
-    (harch : ¬ IsNonarchimedean (v : K → ℝ)) :
+      :
     (ostrowski_restrictRatAbsoluteValue (K := K) v).IsEquiv
       Rat.AbsoluteValue.real := by
   have harch_rat :=
@@ -124,8 +133,7 @@ private theorem ostrowski_restrictRat_isEquiv_real_of_not_isNonarchimedean
 restricted absolute value to a positive power, it is the usual absolute value
 on `ℚ`. -/
 private theorem ostrowski_restrictRat_exists_rpow_eq_real_of_not_isNonarchimedean
-    {K : Type*} [Field K] [CharZero K] (v : AbsoluteValue K ℝ)
-    (harch : ¬ IsNonarchimedean (v : K → ℝ)) :
+      :
     ∃ c : ℝ, 0 < c ∧
       ∀ q : ℚ,
         (ostrowski_restrictRatAbsoluteValue (K := K) v q) ^ c =
@@ -141,8 +149,7 @@ private theorem ostrowski_restrictRat_exists_rpow_eq_real_of_not_isNonarchimedea
 archimedean absolute value is the usual absolute value raised to an
 exponent `s ∈ (0, 1]`. -/
 private theorem ostrowski_restrictRat_exists_real_rpow_eq_of_not_isNonarchimedean
-    {K : Type*} [Field K] [CharZero K] (v : AbsoluteValue K ℝ)
-    (harch : ¬ IsNonarchimedean (v : K → ℝ)) :
+      :
     ∃ s : ℝ, 0 < s ∧ s ≤ 1 ∧
       ∀ q : ℚ,
         ostrowski_restrictRatAbsoluteValue (K := K) v q =
@@ -170,18 +177,20 @@ private theorem ostrowski_restrictRat_exists_real_rpow_eq_of_not_isNonarchimedea
         ((ostrowski_restrictRatAbsoluteValue (K := K) v).nonneg q)
         hc_pos.ne').2 (hc q).symm
     exact hq.symm
+end
+
 
 /-- A positive rational whose s-power is smaller than a prescribed bound. -/
  theorem ostrowski_exists_rat_pos_rpow_lt
     {s ε : ℝ} (hs : 0 < s) (hε : 0 < ε) :
     ∃ δ : ℚ, (0 : ℚ) < δ ∧ ((δ : ℝ) ^ s < ε) := by
-  let η : ℝ := ε ^ s⁻¹
+  let η  := ε ^ s⁻¹
   have hη_pos : 0 < η := Real.rpow_pos_of_pos hε s⁻¹
   obtain ⟨δ, hδ0, hδη⟩ := exists_rat_btwn hη_pos
   refine ⟨δ, ?_, ?_⟩
   · exact_mod_cast hδ0
   · have hδ_nonneg : 0 ≤ (δ : ℝ) := le_of_lt hδ0
-    have hlt : ((δ : ℝ) ^ s) < η ^ s :=
+    have hlt  :=
       Real.rpow_lt_rpow hδ_nonneg hδη hs
     have hηpow : η ^ s = ε := by
       dsimp [η]
@@ -200,16 +209,17 @@ same snowflaked norm. -/
         Rat.AbsoluteValue.real q ^ s)
     (q : ℚ) :
     ‖Rat.castHom (WithAbs v) q‖ = ‖(q : ℝ)‖ ^ s := by
-  change v (q : K) = ‖(q : ℝ)‖ ^ s
-  rw [← ostrowski_restrictRatAbsoluteValue_apply (K := K) v q, hnorm q]
-  rw [Rat.AbsoluteValue.real_eq_abs, Real.norm_eq_abs, Rat.cast_abs]
+  aesop
 
+section
+variable {K : Type*} [Field K] [CharZero K] (v : AbsoluteValue K ℝ)
+    (s : ℝ) (hs : 0 < s)
+include K v s hs
 /-- A rational Cauchy sequence for the usual absolute value is still Cauchy
 after transport through a prime-field embedding whose norm is `|·|^s`, for
 `s > 0`. -/
  def ostrowski_ratCauSeqMapWithAbs_of_real_rpow
-    {K : Type*} [Field K] [CharZero K] (v : AbsoluteValue K ℝ)
-    (s : ℝ) (hs : 0 < s)
+     
     (hnorm : ∀ q : ℚ,
       ostrowski_restrictRatAbsoluteValue (K := K) v q =
         Rat.AbsoluteValue.real q ^ s)
@@ -224,8 +234,7 @@ after transport through a prime-field embedding whose norm is `|·|^s`, for
     have hsource : abs (u j - u N) < δ := hN j hj
     have hsource_real : ((abs (u j - u N) : ℚ) : ℝ) < (δ : ℝ) := by
       exact_mod_cast hsource
-    have hpow :
-        ((abs (u j - u N) : ℚ) : ℝ) ^ s < (δ : ℝ) ^ s :=
+    have hpow  :=
       Real.rpow_lt_rpow (by positivity) hsource_real hs
     calc
       ‖Rat.castHom (WithAbs v) (u j) -
@@ -241,8 +250,7 @@ after transport through a prime-field embedding whose norm is `|·|^s`, for
 
 @[simp]
  theorem ostrowski_ratCauSeqMapWithAbs_zero_of_real_rpow
-    {K : Type*} [Field K] [CharZero K] (v : AbsoluteValue K ℝ)
-    (s : ℝ) (hs : 0 < s)
+     
     (hnorm : ∀ q : ℚ,
       ostrowski_restrictRatAbsoluteValue (K := K) v q =
         Rat.AbsoluteValue.real q ^ s) :
@@ -253,8 +261,7 @@ after transport through a prime-field embedding whose norm is `|·|^s`, for
 
 @[simp]
  theorem ostrowski_ratCauSeqMapWithAbs_one_of_real_rpow
-    {K : Type*} [Field K] [CharZero K] (v : AbsoluteValue K ℝ)
-    (s : ℝ) (hs : 0 < s)
+     
     (hnorm : ∀ q : ℚ,
       ostrowski_restrictRatAbsoluteValue (K := K) v q =
         Rat.AbsoluteValue.real q ^ s) :
@@ -265,8 +272,7 @@ after transport through a prime-field embedding whose norm is `|·|^s`, for
 
 @[simp]
  theorem ostrowski_ratCauSeqMapWithAbs_add_of_real_rpow
-    {K : Type*} [Field K] [CharZero K] (v : AbsoluteValue K ℝ)
-    (s : ℝ) (hs : 0 < s)
+     
     (hnorm : ∀ q : ℚ,
       ostrowski_restrictRatAbsoluteValue (K := K) v q =
         Rat.AbsoluteValue.real q ^ s)
@@ -284,8 +290,7 @@ after transport through a prime-field embedding whose norm is `|·|^s`, for
 
 @[simp]
  theorem ostrowski_ratCauSeqMapWithAbs_mul_of_real_rpow
-    {K : Type*} [Field K] [CharZero K] (v : AbsoluteValue K ℝ)
-    (s : ℝ) (hs : 0 < s)
+     
     (hnorm : ∀ q : ℚ,
       ostrowski_restrictRatAbsoluteValue (K := K) v q =
         Rat.AbsoluteValue.real q ^ s)
@@ -302,8 +307,7 @@ after transport through a prime-field embedding whose norm is `|·|^s`, for
   exact (Rat.castHom (WithAbs v)).map_mul (u n) (t n)
 
  theorem ostrowski_ratCauSeqMapWithAbs_equiv_of_real_rpow
-    {K : Type*} [Field K] [CharZero K] (v : AbsoluteValue K ℝ)
-    (s : ℝ) (hs : 0 < s)
+     
     (hnorm : ∀ q : ℚ,
       ostrowski_restrictRatAbsoluteValue (K := K) v q =
         Rat.AbsoluteValue.real q ^ s)
@@ -319,8 +323,7 @@ after transport through a prime-field embedding whose norm is `|·|^s`, for
   have hsource : abs ((u - t) j) < δ := hN j hj
   have hsource_real : ((abs ((u - t) j) : ℚ) : ℝ) < (δ : ℝ) := by
     exact_mod_cast hsource
-  have hpow :
-      ((abs ((u - t) j) : ℚ) : ℝ) ^ s < (δ : ℝ) ^ s :=
+  have hpow  :=
     Real.rpow_lt_rpow (by positivity) hsource_real hs
   calc
     ‖((ostrowski_ratCauSeqMapWithAbs_of_real_rpow
@@ -338,13 +341,15 @@ after transport through a prime-field embedding whose norm is `|·|^s`, for
     _ = ((abs ((u - t) j) : ℚ) : ℝ) ^ s := by
         rw [Real.norm_eq_abs, Rat.cast_abs]
     _ < ε := hpow.trans hδε
+end
+
 
 /-- Completeness expressed through rational Cauchy sequences. -/
  theorem ostrowski_cauSeq_isComplete_withAbs_of_complete
     {K : Type*} [Field K] (v : AbsoluteValue K ℝ)
     (hcomplete : CompleteSpace (WithAbs v)) :
     CauSeq.IsComplete (WithAbs v) (norm : WithAbs v → ℝ) := by
-  let : CompleteSpace (WithAbs v) :=
+  let  :=
     hcomplete
   refine ⟨fun s => ?_⟩
   obtain ⟨a, ha⟩ := cauchySeq_tendsto_of_complete (CauSeq.cauchySeq s)
@@ -368,8 +373,7 @@ private theorem ostrowski_real_mk_tendsto_ratCauSeq
   obtain ⟨N, hN⟩ := s.cauchy₂ hδq
   refine ⟨N, fun n hn => ?_⟩
   rw [Real.dist_eq, abs_sub_comm]
-  have hnear :
-      |Real.mk s - (s n : ℝ)| ≤ (δ : ℝ) :=
+  have hnear  :=
     Real.mk_near_of_forall_near
       (f := s) (x := (s n : ℝ)) (ε := (δ : ℝ))
       ⟨N, fun j hj => ?_⟩
@@ -380,17 +384,20 @@ private theorem ostrowski_real_mk_tendsto_ratCauSeq
     rw [← Rat.cast_sub, ← Rat.cast_abs]
     exact hsource_real.le
 
+section
+variable {K : Type*} [Field K] [CharZero K] (v : AbsoluteValue K ℝ)
+    (hcomplete : CompleteSpace (WithAbs v))
+    (s : ℝ) (hs : 0 < s)
+include K v hcomplete s hs
 /-- Cauchy-completion form of the non-normalized closure-of-`ℚ` map when the
 restriction to `ℚ` is `|·|^s`. -/
  noncomputable def ostrowski_ratCauSeqCompletionEmbedding_of_real_rpow
-    {K : Type*} [Field K] [CharZero K] (v : AbsoluteValue K ℝ)
-    (hcomplete : CompleteSpace (WithAbs v))
-    (s : ℝ) (hs : 0 < s)
+     
     (hnorm : ∀ q : ℚ,
       ostrowski_restrictRatAbsoluteValue (K := K) v q =
         Rat.AbsoluteValue.real q ^ s) :
     CauSeq.Completion.Cauchy (abs : ℚ → ℚ) →+* WithAbs v := by
-  letI : CauSeq.IsComplete (WithAbs v) (norm : WithAbs v → ℝ) :=
+  letI  :=
     ostrowski_cauSeq_isComplete_withAbs_of_complete v hcomplete
   exact
     { toFun := fun x =>
@@ -451,21 +458,16 @@ restriction to `ℚ` is `|·|^s`. -/
 /-- The non-normalized closure-of-`ℚ` map transported to the Cauchy model of
 the real numbers. -/
  noncomputable def ostrowski_realEmbedding_of_real_rpow
-    {K : Type*} [Field K] [CharZero K] (v : AbsoluteValue K ℝ)
-    (hcomplete : CompleteSpace (WithAbs v))
-    (s : ℝ) (hs : 0 < s)
+     
     (hnorm : ∀ q : ℚ,
       ostrowski_restrictRatAbsoluteValue (K := K) v q =
-        Rat.AbsoluteValue.real q ^ s) :
-    ℝ →+* WithAbs v :=
+        Rat.AbsoluteValue.real q ^ s)  :=
   (ostrowski_ratCauSeqCompletionEmbedding_of_real_rpow
     (K := K) v hcomplete s hs hnorm).comp Real.ringEquivCauchy.toRingHom
 
 @[simp]
 private theorem ostrowski_ratCauSeqCompletionEmbedding_norm_mk_of_real_rpow
-    {K : Type*} [Field K] [CharZero K] (v : AbsoluteValue K ℝ)
-    (hcomplete : CompleteSpace (WithAbs v))
-    (s : ℝ) (hs : 0 < s)
+     
     (hnorm : ∀ q : ℚ,
       ostrowski_restrictRatAbsoluteValue (K := K) v q =
         Rat.AbsoluteValue.real q ^ s)
@@ -473,7 +475,7 @@ private theorem ostrowski_ratCauSeqCompletionEmbedding_norm_mk_of_real_rpow
     ‖ostrowski_ratCauSeqCompletionEmbedding_of_real_rpow
       (K := K) v hcomplete s hs hnorm (CauSeq.Completion.mk u)‖ =
       ‖Real.mk u‖ ^ s := by
-  let : CauSeq.IsComplete (WithAbs v) (norm : WithAbs v → ℝ) :=
+  let  :=
     ostrowski_cauSeq_isComplete_withAbs_of_complete v hcomplete
   change ‖CauSeq.lim
       (ostrowski_ratCauSeqMapWithAbs_of_real_rpow
@@ -504,15 +506,12 @@ private theorem ostrowski_ratCauSeqCompletionEmbedding_norm_mk_of_real_rpow
   have hRnorm :
       Tendsto (fun n => ‖(u n : ℝ)‖) atTop (nhds ‖Real.mk u‖) :=
     tendsto_norm.comp (ostrowski_real_mk_tendsto_ratCauSeq u)
-  have hR :
-      Tendsto (fun n => ‖(u n : ℝ)‖ ^ s) atTop (nhds (‖Real.mk u‖ ^ s)) :=
+  have hR  :=
     hRnorm.rpow_const (Or.inr hs.le)
   exact tendsto_nhds_unique hK' hR
 
 private theorem ostrowski_realEmbedding_norm_eq_of_real_rpow
-    {K : Type*} [Field K] [CharZero K] (v : AbsoluteValue K ℝ)
-    (hcomplete : CompleteSpace (WithAbs v))
-    (s : ℝ) (hs : 0 < s)
+     
     (hnorm : ∀ q : ℚ,
       ostrowski_restrictRatAbsoluteValue (K := K) v q =
         Rat.AbsoluteValue.real q ^ s)
@@ -524,8 +523,7 @@ private theorem ostrowski_realEmbedding_norm_eq_of_real_rpow
       change ‖ostrowski_ratCauSeqCompletionEmbedding_of_real_rpow
         (K := K) v hcomplete s hs hnorm (CauSeq.Completion.mk u)‖ =
         ‖Real.mk u‖ ^ s
-      exact ostrowski_ratCauSeqCompletionEmbedding_norm_mk_of_real_rpow
-        (K := K) v hcomplete s hs hnorm u
+      apply ostrowski_ratCauSeqCompletionEmbedding_norm_mk_of_real_rpow
 
 /-- Algebra package for the embedded copy of `ℝ` obtained from the
 non-normalized completion-of-`ℚ` construction.  Its scalar norm is
@@ -533,9 +531,7 @@ non-normalized completion-of-`ℚ` construction.  Its scalar norm is
 `s < 1`. -/
 @[reducible]
  noncomputable def ostrowski_realAlgebra_of_real_rpow
-    {K : Type*} [Field K] [CharZero K] (v : AbsoluteValue K ℝ)
-    (hcomplete : CompleteSpace (WithAbs v))
-    (s : ℝ) (hs : 0 < s)
+     
     (hnorm : ∀ q : ℚ,
       ostrowski_restrictRatAbsoluteValue (K := K) v q =
         Rat.AbsoluteValue.real q ^ s) :
@@ -544,22 +540,21 @@ non-normalized completion-of-`ℚ` construction.  Its scalar norm is
     (K := K) v hcomplete s hs hnorm).toAlgebra
 
 private theorem ostrowski_realAlgebra_norm_algebraMap_of_real_rpow
-    {K : Type*} [Field K] [CharZero K] (v : AbsoluteValue K ℝ)
-    (hcomplete : CompleteSpace (WithAbs v))
-    (s : ℝ) (hs : 0 < s)
+     
     (hnorm : ∀ q : ℚ,
       ostrowski_restrictRatAbsoluteValue (K := K) v q =
         Rat.AbsoluteValue.real q ^ s) :
     letI : Algebra ℝ (WithAbs v) :=
       ostrowski_realAlgebra_of_real_rpow (K := K) v hcomplete s hs hnorm
     ∀ r : ℝ, ‖algebraMap ℝ (WithAbs v) r‖ = ‖r‖ ^ s := by
-  let : Algebra ℝ (WithAbs v) :=
+  let  :=
     ostrowski_realAlgebra_of_real_rpow (K := K) v hcomplete s hs hnorm
   intro r
   change ‖ostrowski_realEmbedding_of_real_rpow
     (K := K) v hcomplete s hs hnorm r‖ = ‖r‖ ^ s
-  exact ostrowski_realEmbedding_norm_eq_of_real_rpow
-    (K := K) v hcomplete s hs hnorm r
+  apply ostrowski_realEmbedding_norm_eq_of_real_rpow
+end
+
 
 section RealRpowGelfandMazur
 
@@ -568,19 +563,21 @@ open Bornology Filter Set Topology
 
 variable {F : Type*} [NormedField F] [Algebra ℝ F]
 
+section
+variable {s : ℝ} (hs : 0 < s)
+include s hs
 /-- If the scalar embedding has norm `‖r‖^s` with `s > 0`, it is continuous.
 This replaces the usual `NormedAlgebra` continuity in the non-normalized
 Ostrowski step. -/
 private theorem ostrowski_continuous_algebraMap_of_real_rpow
-    {s : ℝ} (hs : 0 < s)
+     
     (hnorm : ∀ r : ℝ, ‖algebraMap ℝ F r‖ = ‖r‖ ^ s) :
     Continuous (algebraMap ℝ F) := by
   rw [Metric.continuous_iff]
   intro r ε hε
   obtain ⟨δ, hδ0, hδε⟩ := ostrowski_exists_rat_pos_rpow_lt hs hε
   refine ⟨(δ : ℝ), by exact_mod_cast hδ0, fun y hy => ?_⟩
-  have hdist : ‖y - r‖ < (δ : ℝ) := by
-    simpa [Real.dist_eq, dist_eq_norm] using hy
+  have hdist : ‖y - r‖ < (δ : ℝ) := hy
   have hpow : ‖y - r‖ ^ s < (δ : ℝ) ^ s :=
     Real.rpow_lt_rpow (norm_nonneg _) hdist hs
   calc
@@ -591,12 +588,12 @@ private theorem ostrowski_continuous_algebraMap_of_real_rpow
     _ < ε := hpow.trans hδε
 
 private theorem ostrowski_tendsto_norm_rpow_cobounded_atTop
-    {s : ℝ} (hs : 0 < s) :
+      :
     Tendsto (fun r : ℝ => ‖r‖ ^ s) (cobounded ℝ) atTop :=
   (tendsto_rpow_atTop hs).comp tendsto_norm_cobounded_atTop
 
 private theorem ostrowski_tendsto_norm_rpow_fst_atTop
-    {s : ℝ} (hs : 0 < s) :
+      :
     Tendsto (fun y : ℝ × ℝ => ‖y.1‖ ^ s) (cobounded ℝ ×ˢ ⊤) atTop :=
   (tendsto_rpow_atTop hs).comp
     (by
@@ -604,16 +601,18 @@ private theorem ostrowski_tendsto_norm_rpow_fst_atTop
       exact tendsto_fst)
 
 private theorem ostrowski_tendsto_norm_rpow_snd_atTop
-    {s : ℝ} (hs : 0 < s) (S : Set ℝ) :
+      (S : Set ℝ) :
     Tendsto (fun y : ℝ × ℝ => ‖y.2‖ ^ s) (𝓟 S ×ˢ cobounded ℝ) atTop :=
   (tendsto_rpow_atTop hs).comp
     (by
       rw [tendsto_norm_atTop_iff_cobounded]
       exact tendsto_snd)
+end
+
 
 /-- The quadratic test function from the real Gelfand-Mazur proof, written
 without assuming a usual `NormedAlgebra ℝ F` structure. -/
- abbrev ostrowski_realRpowPhi (x : F) (u : ℝ × ℝ) : F :=
+ abbrev ostrowski_realRpowPhi (x : F) (u : ℝ × ℝ)  :=
   x ^ 2 - algebraMap ℝ F u.1 * x + algebraMap ℝ F u.2
 
 private theorem ostrowski_continuous_realRpowPhi
@@ -621,7 +620,7 @@ private theorem ostrowski_continuous_realRpowPhi
     (hnorm : ∀ r : ℝ, ‖algebraMap ℝ F r‖ = ‖r‖ ^ s)
     (x : F) :
     Continuous (ostrowski_realRpowPhi (F := F) x) := by
-  have hcont_alg : Continuous (algebraMap ℝ F) :=
+  have hcont_alg  :=
     ostrowski_continuous_algebraMap_of_real_rpow
       (F := F) hs hnorm
   exact ((continuous_const.pow 2).sub
@@ -658,7 +657,7 @@ private theorem ostrowski_norm_eq_of_isMinOn_of_forall_le
       atTop (𝓝 (M * (1 + 0))) by
     refine ge_of_tendsto (by simpa) ?_
     filter_upwards [Ioi_mem_atTop 0] with n hn
-    exact H u hw n hn
+    apply H <;> assumption
   exact tendsto_pow_atTop_nhds_zero_of_lt_one (by positivity) hu
     |>.const_add 1 |>.const_mul M
 
@@ -680,12 +679,15 @@ private theorem ostrowski_le_aeval_of_isMonicOfDegree_real_rpow
         ostrowski_aeval_eq_realRpowPhi (F := F) x (a, b)]
       exact mul_le_mul (ih hf₂) (h (a, b)) hM (norm_nonneg _)
 
+section
+variable {s : ℝ} (hs : 0 < s)
+    (hnorm : ∀ r : ℝ, ‖algebraMap ℝ F r‖ = ‖r‖ ^ s)
+include s hs hnorm
 /-- If the quadratic test function has a positive minimum, then its norm is
 constant.  This is the algebraic part of the real Gelfand-Mazur proof and does
 not need the usual `NormedAlgebra` inequality. -/
 private theorem ostrowski_norm_realRpowPhi_eq_of_isMinOn
-    {s : ℝ} (hs : 0 < s)
-    (hnorm : ∀ r : ℝ, ‖algebraMap ℝ F r‖ = ‖r‖ ^ s)
+     
     {x : F} {z : ℝ × ℝ}
     (h : IsMinOn (‖ostrowski_realRpowPhi (F := F) x ·‖) univ z)
     (H : ‖ostrowski_realRpowPhi (F := F) x z‖ ≠ 0)
@@ -736,11 +738,10 @@ private theorem ostrowski_norm_realRpowPhi_eq_of_isMinOn
 /-- The one-variable minimization input for the non-normalized real
 Gelfand-Mazur proof. -/
 private theorem ostrowski_exists_isMinOn_norm_sub_algebraMap_of_real_rpow
-    {s : ℝ} (hs : 0 < s)
-    (hnorm : ∀ r : ℝ, ‖algebraMap ℝ F r‖ = ‖r‖ ^ s)
+     
     (x : F) :
     ∃ z : ℝ, IsMinOn (fun r : ℝ => ‖x - algebraMap ℝ F r‖) univ z := by
-  have hcont_alg : Continuous (algebraMap ℝ F) :=
+  have hcont_alg  :=
     ostrowski_continuous_algebraMap_of_real_rpow
       (F := F) hs hnorm
   have htend :
@@ -767,8 +768,7 @@ private theorem ostrowski_exists_isMinOn_norm_sub_algebraMap_of_real_rpow
 /-- The quadratic test function is cobounded under the scalar norm
 `‖algebraMap r‖ = ‖r‖^s`. -/
 private theorem ostrowski_tendsto_realRpowPhi_cobounded
-    {s : ℝ} (hs : 0 < s)
-    (hnorm : ∀ r : ℝ, ‖algebraMap ℝ F r‖ = ‖r‖ ^ s)
+     
     {x : F} {c : ℝ} (hc₀ : 0 < c)
     (hbd : ∀ r : ℝ, c ≤ ‖x - algebraMap ℝ F r‖) :
     Tendsto (ostrowski_realRpowPhi (F := F) x ·)
@@ -787,7 +787,7 @@ private theorem ostrowski_tendsto_realRpowPhi_cobounded
       filter_upwards [prod_mem_prod (mem_principal_self Sᶜ) univ_mem] with y hy
       rw [norm_sub_rev]
       refine le_trans ?_ (norm_sub_norm_le ..)
-      have hy₁_le : ‖y.1‖ ≤ M := hM _ (Set.mem_prod.mp hy).1
+      have hy₁_le  := hM _ (Set.mem_prod.mp hy).1
       have hy₁_pow : ‖y.1‖ ^ s ≤ M ^ s :=
         Real.rpow_le_rpow (norm_nonneg _) hy₁_le hs.le
       calc
@@ -802,8 +802,7 @@ private theorem ostrowski_tendsto_realRpowPhi_cobounded
         (cobounded ℝ ×ˢ ⊤) atTop by
       refine tendsto_atTop_mono' _ ?_ this
       filter_upwards [prod_mem_prod (isBounded_singleton (x := 0)) univ_mem] with y hy
-      have hy₁_ne : y.1 ≠ 0 := by
-        simpa using (Set.mem_prod.mp hy).1
+      have hy₁_ne : y.1 ≠ 0 := (Set.mem_prod.mp hy).1
       calc
         ‖y.1‖ ^ s * c
             ≤ ‖y.1‖ ^ s * ‖x - algebraMap ℝ F (y.1⁻¹ * y.2)‖ := by
@@ -827,8 +826,7 @@ private theorem ostrowski_tendsto_realRpowPhi_cobounded
 
 /-- The norm of the non-normalized quadratic test function attains a minimum. -/
 private theorem ostrowski_exists_isMinOn_norm_realRpowPhi
-    {s : ℝ} (hs : 0 < s)
-    (hnorm : ∀ r : ℝ, ‖algebraMap ℝ F r‖ = ‖r‖ ^ s)
+     
     (x : F) :
     ∃ z : ℝ × ℝ,
       IsMinOn (‖ostrowski_realRpowPhi (F := F) x ·‖) univ z := by
@@ -851,8 +849,7 @@ private theorem ostrowski_exists_isMinOn_norm_realRpowPhi
 /-- Non-normalized real Gelfand-Mazur core: every element is quadratic over the
 embedded real line when scalar norms are `‖r‖^s`. -/
 private theorem ostrowski_exists_isMonicOfDegree_two_and_aeval_eq_zero_real_rpow
-    {s : ℝ} (hs : 0 < s)
-    (hnorm : ∀ r : ℝ, ‖algebraMap ℝ F r‖ = ‖r‖ ^ s)
+     
     (x : F) :
     ∃ p : ℝ[X], IsMonicOfDegree p 2 ∧ aeval x p = 0 := by
   obtain ⟨z, h⟩ :=
@@ -876,6 +873,8 @@ private theorem ostrowski_exists_isMonicOfDegree_two_and_aeval_eq_zero_real_rpow
   simp only [ostrowski_norm_realRpowPhi_eq_of_isMinOn
     (F := F) hs hnorm h (norm_ne_zero_iff.mpr H)] at htend
   exact Filter.not_tendsto_const_atTop _ _ htend
+end
+
 
 /-- Non-normalized real Gelfand-Mazur: scalar norm `‖r‖^s` is enough for the
 usual algebraic classification by `ℝ` or `ℂ`. -/
@@ -894,10 +893,13 @@ private theorem ostrowski_gelfandMazur_of_real_rpow_scalar
 
 end RealRpowGelfandMazur
 
-private theorem ostrowski_gelfandMazur_of_real_rpow
-    {K : Type*} [Field K] [CharZero K] (v : AbsoluteValue K ℝ)
+section
+variable {K : Type*} [Field K] [CharZero K] (v : AbsoluteValue K ℝ)
     (hcomplete : CompleteSpace (WithAbs v))
     (s : ℝ) (hs : 0 < s)
+include K v hcomplete s hs
+private theorem ostrowski_gelfandMazur_of_real_rpow
+     
     (hnorm : ∀ q : ℚ,
       ostrowski_restrictRatAbsoluteValue (K := K) v q =
         Rat.AbsoluteValue.real q ^ s) :
@@ -905,16 +907,14 @@ private theorem ostrowski_gelfandMazur_of_real_rpow
       ostrowski_realAlgebra_of_real_rpow (K := K) v hcomplete s hs hnorm
     Nonempty (WithAbs v ≃ₐ[ℝ] ℝ) ∨
       Nonempty (WithAbs v ≃ₐ[ℝ] ℂ) := by
-  let : Algebra ℝ (WithAbs v) :=
+  let  :=
     ostrowski_realAlgebra_of_real_rpow (K := K) v hcomplete s hs hnorm
   exact ostrowski_gelfandMazur_of_real_rpow_scalar (WithAbs v) hs
     (ostrowski_realAlgebra_norm_algebraMap_of_real_rpow
       (K := K) v hcomplete s hs hnorm)
 
 private theorem ostrowski_realAlgEquiv_norm_eq_of_real_rpow
-    {K : Type*} [Field K] [CharZero K] (v : AbsoluteValue K ℝ)
-    (hcomplete : CompleteSpace (WithAbs v))
-    (s : ℝ) (hs : 0 < s)
+     
     (hnorm : ∀ q : ℚ,
       ostrowski_restrictRatAbsoluteValue (K := K) v q =
         Rat.AbsoluteValue.real q ^ s) :
@@ -922,23 +922,20 @@ private theorem ostrowski_realAlgEquiv_norm_eq_of_real_rpow
       ostrowski_realAlgebra_of_real_rpow (K := K) v hcomplete s hs hnorm
     ∀ (e : WithAbs v ≃ₐ[ℝ] ℝ) (x : WithAbs v),
       ‖x‖ = ‖e x‖ ^ s := by
-  let : Algebra ℝ (WithAbs v) :=
+  let  :=
     ostrowski_realAlgebra_of_real_rpow (K := K) v hcomplete s hs hnorm
   intro e x
   have hx : x = algebraMap ℝ (WithAbs v) (e x) := by
     calc
       x = e.symm (e x) := by simp
       _ = algebraMap ℝ (WithAbs v) (e x) := by
-        simpa using (AlgEquiv.commutes e.symm (e x))
+        apply AlgEquiv.commutes
   rw [hx]
   simp only [AlgEquiv.commutes, Algebra.algebraMap_self_apply]
-  exact ostrowski_realAlgebra_norm_algebraMap_of_real_rpow
-    (K := K) v hcomplete s hs hnorm (e x)
+  apply ostrowski_realAlgebra_norm_algebraMap_of_real_rpow
 
 private theorem ostrowski_realBranch_abs_eq_of_real_rpow
-    {K : Type*} [Field K] [CharZero K] (v : AbsoluteValue K ℝ)
-    (hcomplete : CompleteSpace (WithAbs v))
-    (s : ℝ) (hs : 0 < s)
+     
     (hnorm : ∀ q : ℚ,
       ostrowski_restrictRatAbsoluteValue (K := K) v q =
         Rat.AbsoluteValue.real q ^ s) :
@@ -946,13 +943,14 @@ private theorem ostrowski_realBranch_abs_eq_of_real_rpow
       ostrowski_realAlgebra_of_real_rpow (K := K) v hcomplete s hs hnorm
     ∀ (e : WithAbs v ≃ₐ[ℝ] ℝ) (x : K),
       v x = ‖e ((WithAbs.equiv v).symm x)‖ ^ s := by
-  let : Algebra ℝ (WithAbs v) :=
+  let  :=
     ostrowski_realAlgebra_of_real_rpow (K := K) v hcomplete s hs hnorm
   intro e x
   change ‖((WithAbs.equiv v).symm x : WithAbs v)‖ =
     ‖e ((WithAbs.equiv v).symm x)‖ ^ s
-  exact ostrowski_realAlgEquiv_norm_eq_of_real_rpow
-    (K := K) v hcomplete s hs hnorm e ((WithAbs.equiv v).symm x)
+  apply ostrowski_realAlgEquiv_norm_eq_of_real_rpow
+end
+
 
 end AbsoluteValue
 
@@ -979,7 +977,7 @@ private theorem norm_symm_le_re_add_im_rpow
     (hnorm : ∀ r : ℝ, ‖algebraMap ℝ F r‖ = ‖r‖ ^ s)
     (e : F ≃ₐ[ℝ] ℂ) (z : ℂ) :
     ‖e.symm z‖ ≤ ‖z.re‖ ^ s + ‖z.im‖ ^ s := by
-  let j : F := e.symm Complex.I
+  let j  := e.symm Complex.I
   have hj : ‖j‖ = 1 :=
     norm_symm_I_eq_one e
   have hzdecomp :
@@ -995,11 +993,14 @@ private theorem norm_symm_le_re_add_im_rpow
     _ = ‖z.re‖ ^ s + ‖z.im‖ ^ s := by
         rw [norm_mul, hnorm z.re, hnorm z.im, hj, mul_one]
 
-private theorem norm_symm_le_one_of_norm_eq_one
-    {F : Type*} [NormedField F] [Algebra ℝ F]
+section
+variable {F : Type*} [NormedField F] [Algebra ℝ F]
     {s : ℝ} (hs : 0 < s)
     (hnorm : ∀ r : ℝ, ‖algebraMap ℝ F r‖ = ‖r‖ ^ s)
-    (e : F ≃ₐ[ℝ] ℂ) {z : ℂ} (hz : ‖z‖ = 1) :
+    (e : F ≃ₐ[ℝ] ℂ)
+include F s hs hnorm e
+private theorem norm_symm_le_one_of_norm_eq_one
+      {z : ℂ} (hz : ‖z‖ = 1) :
     ‖e.symm z‖ ≤ 1 := by
   by_contra hnot
   have hlt : 1 < ‖e.symm z‖ := lt_of_not_ge hnot
@@ -1032,19 +1033,15 @@ private theorem norm_symm_le_one_of_norm_eq_one
   exact not_lt_of_ge hbound hn
 
 private theorem norm_symm_eq_one_of_norm_eq_one
-    {F : Type*} [NormedField F] [Algebra ℝ F]
-    {s : ℝ} (hs : 0 < s)
-    (hnorm : ∀ r : ℝ, ‖algebraMap ℝ F r‖ = ‖r‖ ^ s)
-    (e : F ≃ₐ[ℝ] ℂ) {z : ℂ} (hz : ‖z‖ = 1) :
+      {z : ℂ} (hz : ‖z‖ = 1) :
     ‖e.symm z‖ = 1 := by
-  have hle : ‖e.symm z‖ ≤ 1 :=
+  have hle  :=
     norm_symm_le_one_of_norm_eq_one
       hs hnorm e hz
   have hz0 : z ≠ 0 := by
     intro h
     simp [h] at hz
-  have hle_inv : ‖e.symm z⁻¹‖ ≤ 1 := by
-    exact norm_symm_le_one_of_norm_eq_one
+  have hle_inv : ‖e.symm z⁻¹‖ ≤ 1 := norm_symm_le_one_of_norm_eq_one
       hs hnorm e (by simp [norm_inv, hz])
   have hprod : ‖e.symm z‖ * ‖e.symm z⁻¹‖ = 1 := by
     calc
@@ -1066,17 +1063,13 @@ private theorem norm_symm_eq_one_of_norm_eq_one
 
 /-- A real-algebra equivalence with ℂ determines the norm from its restriction to ℝ. -/
 theorem norm_symm_apply_eq_norm_rpow
-    {F : Type*} [NormedField F] [Algebra ℝ F]
-    {s : ℝ} (hs : 0 < s)
-    (hnorm : ∀ r : ℝ, ‖algebraMap ℝ F r‖ = ‖r‖ ^ s)
-    (e : F ≃ₐ[ℝ] ℂ) (z : ℂ) :
+      (z : ℂ) :
     ‖e.symm z‖ = ‖z‖ ^ s := by
   by_cases hz0 : z = 0
   · simp [hz0, hs.ne']
-  · let r : ℝ := ‖z‖
-    have hr_pos : 0 < r := by
-      simpa [r] using norm_pos_iff.mpr hz0
-    let u : ℂ := (r⁻¹ : ℂ) * z
+  · let r  := ‖z‖
+    have hr_pos : 0 < r := norm_pos_iff.mpr hz0
+    let u  := (r⁻¹ : ℂ) * z
     have hu_norm : ‖u‖ = 1 := by
       simp [u, r, hr_pos.ne']
     have hz_decomp : z = (r : ℂ) * u := by
@@ -1093,15 +1086,20 @@ theorem norm_symm_apply_eq_norm_rpow
             norm_symm_eq_one_of_norm_eq_one
               hs hnorm e hu_norm, mul_one]
           simp [r]
+end
+
 
 end AlgEquiv
 
 namespace AbsoluteValue
 
-private theorem ostrowski_complexAlgEquiv_norm_eq_of_real_rpow
-    {K : Type*} [Field K] [CharZero K] (v : AbsoluteValue K ℝ)
+section
+variable {K : Type*} [Field K] [CharZero K] (v : AbsoluteValue K ℝ)
     (hcomplete : CompleteSpace (WithAbs v))
     (s : ℝ) (hs : 0 < s)
+include K v hcomplete s hs
+private theorem ostrowski_complexAlgEquiv_norm_eq_of_real_rpow
+     
     (hnorm : ∀ q : ℚ,
       ostrowski_restrictRatAbsoluteValue (K := K) v q =
         Rat.AbsoluteValue.real q ^ s) :
@@ -1109,7 +1107,7 @@ private theorem ostrowski_complexAlgEquiv_norm_eq_of_real_rpow
       ostrowski_realAlgebra_of_real_rpow (K := K) v hcomplete s hs hnorm
     ∀ (e : WithAbs v ≃ₐ[ℝ] ℂ) (x : WithAbs v),
       ‖x‖ = ‖e x‖ ^ s := by
-  let : Algebra ℝ (WithAbs v) :=
+  let  :=
     ostrowski_realAlgebra_of_real_rpow (K := K) v hcomplete s hs hnorm
   intro e x
   calc
@@ -1120,9 +1118,7 @@ private theorem ostrowski_complexAlgEquiv_norm_eq_of_real_rpow
             (K := K) v hcomplete s hs hnorm) e (e x)
 
 private theorem ostrowski_complexBranch_abs_eq_of_real_rpow
-    {K : Type*} [Field K] [CharZero K] (v : AbsoluteValue K ℝ)
-    (hcomplete : CompleteSpace (WithAbs v))
-    (s : ℝ) (hs : 0 < s)
+     
     (hnorm : ∀ q : ℚ,
       ostrowski_restrictRatAbsoluteValue (K := K) v q =
         Rat.AbsoluteValue.real q ^ s) :
@@ -1130,13 +1126,14 @@ private theorem ostrowski_complexBranch_abs_eq_of_real_rpow
       ostrowski_realAlgebra_of_real_rpow (K := K) v hcomplete s hs hnorm
     ∀ (e : WithAbs v ≃ₐ[ℝ] ℂ) (x : K),
       v x = ‖e ((WithAbs.equiv v).symm x)‖ ^ s := by
-  let : Algebra ℝ (WithAbs v) :=
+  let  :=
     ostrowski_realAlgebra_of_real_rpow (K := K) v hcomplete s hs hnorm
   intro e x
   change ‖((WithAbs.equiv v).symm x : WithAbs v)‖ =
     ‖e ((WithAbs.equiv v).symm x)‖ ^ s
-  exact ostrowski_complexAlgEquiv_norm_eq_of_real_rpow
-    (K := K) v hcomplete s hs hnorm e ((WithAbs.equiv v).symm x)
+  apply ostrowski_complexAlgEquiv_norm_eq_of_real_rpow
+end
+
 
 /-- Ostrowski classification for complete archimedean absolute values.
 A field complete for an archimedean absolute value is isomorphic to ℝ or
@@ -1150,12 +1147,12 @@ theorem ostrowski_of_complete
     ∃ s : ℝ, 0 < s ∧ s ≤ 1 ∧
       ((∃ σ : K ≃+* ℝ, ∀ a : K, v a = ‖σ a‖ ^ s) ∨
         (∃ σ : K ≃+* ℂ, ∀ a : K, v a = ‖σ a‖ ^ s)) := by
-  let : CharZero K := charZero_of_not_isNonarchimedean v harch
+  let  := charZero_of_not_isNonarchimedean v harch
   obtain ⟨s, hs, hs_le, hnorm⟩ :=
     ostrowski_restrictRat_exists_real_rpow_eq_of_not_isNonarchimedean
       (K := K) v harch
   refine ⟨s, hs, hs_le, ?_⟩
-  let : Algebra ℝ (WithAbs v) :=
+  let  :=
     ostrowski_realAlgebra_of_real_rpow (K := K) v hcomplete s hs hnorm
   rcases ostrowski_gelfandMazur_of_real_rpow
       (K := K) v hcomplete s hs hnorm with hreal | hcomplex
@@ -1164,15 +1161,13 @@ theorem ostrowski_of_complete
     let σ : K ≃+* ℝ := (WithAbs.equiv v).symm.trans e.toRingEquiv
     refine ⟨σ, fun a => ?_⟩
     change v a = ‖e ((WithAbs.equiv v).symm a)‖ ^ s
-    exact ostrowski_realBranch_abs_eq_of_real_rpow
-      (K := K) v hcomplete s hs hnorm e a
+    apply ostrowski_realBranch_abs_eq_of_real_rpow
   · rcases hcomplex with ⟨e⟩
     right
     let σ : K ≃+* ℂ := (WithAbs.equiv v).symm.trans e.toRingEquiv
     refine ⟨σ, fun a => ?_⟩
     change v a = ‖e ((WithAbs.equiv v).symm a)‖ ^ s
-    exact ostrowski_complexBranch_abs_eq_of_real_rpow
-      (K := K) v hcomplete s hs hnorm e a
+    apply ostrowski_complexBranch_abs_eq_of_real_rpow
 
 
 

@@ -20,10 +20,13 @@ set_option maxRecDepth 4096
 set_option synthInstance.maxHeartbeats 200000
 set_option backward.isDefEq.respectTransparency false
 
-theorem period_slot_compare (D : TensorDetected R N) (W : Finset (KPFinitePlace F))
+section
+variable (D : TensorDetected R N) (W : Finset (KPFinitePlace F))
     (s : RestrictedTensorSimple.Level D.bad) (hW : places W ⊆ s.val)
     (x : ∀ p : s.val, actualLocal R D.finiteData p)
     (hx : coreStageMultilinear _ D.references D.bad (D.toTensorHC.literalPeriod 1) s x ≠ 0)
+include D W s hW x hx
+theorem period_slot_compare  
     (u : ∀ p : s.val, actualLocal R D.finiteData p)
     (p : s.val) (hp : WildCurrentTameExterior.tameSlot p.val) (ho : p.val ∉ places W)
     (v : actualLocal R D.finiteData p) (z : AmbientTensor F W (fiber D.toTensorActions W)) :
@@ -41,10 +44,7 @@ theorem period_slot_compare (D : TensorDetected R N) (W : Finset (KPFinitePlace 
     simp only [map_add, hz, hw]
     ring
 
-theorem period_finite_tame (D : TensorDetected R N) (W : Finset (KPFinitePlace F))
-    (s : RestrictedTensorSimple.Level D.bad) (hW : places W ⊆ s.val)
-    (x : ∀ p : s.val, actualLocal R D.finiteData p)
-    (hx : coreStageMultilinear _ D.references D.bad (D.toTensorHC.literalPeriod 1) s x ≠ 0)
+theorem period_finite_tame  
     (t : Finset s.val) (ht : ∀ p ∈ t, WildCurrentTameExterior.tameSlot p.val)
     (ho : ∀ p ∈ t, p.val ∉ places W)
     (v : ∀ p : s.val, actualLocal R D.finiteData p)
@@ -69,10 +69,7 @@ theorem period_finite_tame (D : TensorDetected R N) (W : Finset (KPFinitePlace F
         (fun q hq => ho q (Finset.mem_insert_of_mem hq)), Finset.prod_insert hpt]
     ring
 
-theorem finite_tame_kernel (D : TensorDetected R N) (W : Finset (KPFinitePlace F))
-    (s : RestrictedTensorSimple.Level D.bad) (hW : places W ⊆ s.val)
-    (x : ∀ p : s.val, actualLocal R D.finiteData p)
-    (hx : coreStageMultilinear _ D.references D.bad (D.toTensorHC.literalPeriod 1) s x ≠ 0)
+theorem finite_tame_kernel  
     (t : Finset s.val) (ht : ∀ p ∈ t, WildCurrentTameExterior.tameSlot p.val)
     (ho : ∀ p ∈ t, p.val ∉ places W)
     (v : ∀ p : s.val, actualLocal R D.finiteData p)
@@ -80,6 +77,8 @@ theorem finite_tame_kernel (D : TensorDetected R N) (W : Finset (KPFinitePlace F
     (hz : WildCurrentJointPeriod.period D.toTensorActions W s hW x z = 0) :
     WildCurrentJointPeriod.period D.toTensorActions W s hW (t.piecewise v x) z = 0 := by
   rw [period_finite_tame D W s hW x hx t ht ho v z, hz, zero_mul]
+end
+
 
 def extendTuple (D : TensorActions R N) (s t : RestrictedTensorSimple.Level D.bad)
     (x : ∀ p : s.val, actualLocal R D.finiteData p) :

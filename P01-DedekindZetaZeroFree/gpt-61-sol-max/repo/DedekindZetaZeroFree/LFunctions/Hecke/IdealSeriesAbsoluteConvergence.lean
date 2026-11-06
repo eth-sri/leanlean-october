@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Ideals.InverseNormPowerSums
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve.IdealEuler
 
@@ -10,8 +13,11 @@ open scoped NumberField Classical
 
 variable {F : Type} [Field F] [NumberField F] {f : Ideal (𝓞 F)}
 
+section
+variable (η : DedekindZetaZeroFree.RayClassCharacter F f) (s : ℂ)
+include η s
 noncomputable def idealHeckeSummandHom
-    (η : DedekindZetaZeroFree.RayClassCharacter F f) (s : ℂ) :
+      :
     Ideal (𝓞 F) →*₀ ℂ where
   toFun I := η I * (Ideal.absNorm I : ℂ) ^ (-s)
   map_zero' := by
@@ -25,23 +31,28 @@ noncomputable def idealHeckeSummandHom
     ring
 
 theorem idealHeckeSummandHom_apply
-    (η : DedekindZetaZeroFree.RayClassCharacter F f) (s : ℂ) (I : Ideal (𝓞 F)) :
+      (I : Ideal (𝓞 F)) :
     idealHeckeSummandHom η s I = η I * (Ideal.absNorm I : ℂ) ^ (-s) := rfl
 
 theorem idealHeckeSummandHom_bot
-    (η : DedekindZetaZeroFree.RayClassCharacter F f) (s : ℂ) :
+      :
     idealHeckeSummandHom η s ⊥ = 0 :=
   map_zero _
 
 theorem idealHeckeSummandHom_top
-    (η : DedekindZetaZeroFree.RayClassCharacter F f) (s : ℂ) :
+      :
     idealHeckeSummandHom η s ⊤ = 1 := by
   rw [← Ideal.one_eq_top]
   exact map_one _
+end
 
+
+section
+variable (η : DedekindZetaZeroFree.RayClassCharacter F f) (s : ℂ)
+    (hf : f ≠ ⊥) (hη : ∀ I, ‖η I‖ ≤ 1) (hs : 1 < s.re)
+include η s hf hη hs
 theorem summable_norm_idealHeckeSummand
-    (η : DedekindZetaZeroFree.RayClassCharacter F f) (s : ℂ)
-    (hf : f ≠ ⊥) (hη : ∀ I, ‖η I‖ ≤ 1) (hs : 1 < s.re) :
+      :
     Summable (fun I => ‖idealHeckeSummandHom η s I‖) := by
   have hs0 : s.re ≠ 0 := by linarith
 
@@ -55,7 +66,7 @@ theorem summable_norm_idealHeckeSummand
           Real.zero_rpow (neg_ne_zero.mpr hs0)]
       · rw [if_neg h]
     rw [← hif]
-    exact summable_ideal_inverse_power F s.re hs
+    apply summable_ideal_inverse_power <;> assumption
   refine Summable.of_nonneg_of_le (fun I => norm_nonneg _) (fun I => ?_) hsum
   by_cases hI : I = ⊥
   · rw [hI, idealHeckeSummandHom_bot, norm_zero, Ideal.absNorm_bot, Nat.cast_zero,
@@ -74,12 +85,12 @@ theorem summable_norm_idealHeckeSummand
       _ = (Ideal.absNorm I : ℝ) ^ (-s.re) := one_mul _
 
 theorem summable_idealHeckeSummand
-    (η : DedekindZetaZeroFree.RayClassCharacter F f) (s : ℂ)
-    (hf : f ≠ ⊥) (hη : ∀ I, ‖η I‖ ≤ 1) (hs : 1 < s.re) :
+      :
     Summable (fun I => η I * (Ideal.absNorm I : ℂ) ^ (-s)) := by
   have h : Summable (fun I : Ideal (𝓞 F) => ‖η I * (Ideal.absNorm I : ℂ) ^ (-s)‖) := by
-    simpa only [idealHeckeSummandHom_apply] using
-      summable_norm_idealHeckeSummand η s hf hη hs
+    apply summable_norm_idealHeckeSummand <;> assumption
   exact Summable.of_norm h
+end
+
 
 end DedekindZetaZeroFree.LargeSieve.IdealEuler

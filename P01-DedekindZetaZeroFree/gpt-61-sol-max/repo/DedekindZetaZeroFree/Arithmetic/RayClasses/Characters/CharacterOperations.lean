@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve.RayOperations
 
@@ -45,27 +48,32 @@ def mul {m f : Ideal (𝓞 F)} (η : RayClassCharacter F m)
     (θ : RayClassCharacter F f) (I : Ideal (𝓞 F)) :
     mul η θ I = η I * θ I := rfl
 
-theorem modulus_eq_top_of_primitive_principal {m : Ideal (𝓞 F)}
-    (η : RayClassCharacter F m) (hprim : η.IsPrimitive) (hprincipal : η.IsPrincipal) :
+section
+variable {m : Ideal (𝓞 F)}
+    (η : RayClassCharacter F m)
+include m η
+theorem modulus_eq_top_of_primitive_principal   (hprim : η.IsPrimitive) (hprincipal : η.IsPrincipal) :
     m = ⊤ := by
   by_contra hm
   have hlt : m < ⊤ := lt_of_le_of_ne le_top hm
   obtain ⟨α, hα, _hmem, _hpos, hspan, hne⟩ := hprim ⊤ hlt
   exact hne (hprincipal _ (fun hbot => hα (Ideal.span_singleton_eq_bot.mp hbot)) hspan)
 
-theorem map_mul {m : Ideal (𝓞 F)} (η : RayClassCharacter F m)
-    (I J : Ideal (𝓞 F)) : η (I * J) = η I * η J := η.map_mul' I J
+def map_mul  
+    (I J : Ideal (𝓞 F))  := η.map_mul' I J
 
-theorem map_top {m : Ideal (𝓞 F)} (η : RayClassCharacter F m) : η ⊤ = 1 := η.map_top'
+def map_top    := η.map_top'
 
-theorem eq_zero_iff {m : Ideal (𝓞 F)} (η : RayClassCharacter F m)
-    (I : Ideal (𝓞 F)) : η I = 0 ↔ I = ⊥ ∨ I ⊔ m ≠ ⊤ := η.eq_zero_iff' I
+def eq_zero_iff  
+    (I : Ideal (𝓞 F))  := η.eq_zero_iff' I
 
-theorem map_bot {m : Ideal (𝓞 F)} (η : RayClassCharacter F m) : η ⊥ = 0 := by
+theorem map_bot   : η ⊥ = 0 := by
   rw [eq_zero_iff]; exact Or.inl rfl
 
-theorem ne_zero_iff {m : Ideal (𝓞 F)} (η : RayClassCharacter F m)
+theorem ne_zero_iff  
     (I : Ideal (𝓞 F)) : η I ≠ 0 ↔ I ≠ ⊥ ∧ I ⊔ m = ⊤ := by
   rw [ne_eq, eq_zero_iff]; tauto
+end
+
 
 end DedekindZetaZeroFree.LargeSieve.RayOperations

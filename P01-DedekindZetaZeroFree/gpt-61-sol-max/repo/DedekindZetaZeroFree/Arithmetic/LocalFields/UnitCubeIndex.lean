@@ -10,8 +10,11 @@ noncomputable section
 open KPCubicUnitIndices ValuativeRel
 
 open Polynomial in
-private theorem cube_near_one (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
+section
+variable (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K]
+include K
+private theorem cube_near_one  
     (c : Integers K) (hc : c ∈ IsLocalRing.maximalIdeal (Integers K)) :
     ∃ t : (Integers K)ˣ, (t : Integers K)^3 = 1 + 9*c := by
   let O := Integers K
@@ -78,8 +81,7 @@ private theorem cube_near_one (K : Type*) [Field K] [CharZero K] [ValuativeRel K
     simpa [p, IsLocalRing.mem_maximalIdeal, mem_nonunits_iff] using hnone
   exact ⟨htu.unit, by rwa [htu.unit_spec]⟩
 
-private theorem deep_units_cubes (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] :
+private theorem deep_units_cubes   :
     ∃ m : ℕ, principalUnits K m ≤ cubeUnits K := by
   obtain ⟨π, hπ⟩ := IsDiscreteValuationRing.exists_irreducible (Integers K)
   have h9 : Ideal.span ({(9 : Integers K)} : Set (Integers K)) ≠ ⊥ := by
@@ -100,8 +102,7 @@ private theorem deep_units_cubes (K : Type*) [Field K] [CharZero K] [ValuativeRe
   rw [ht, hcx]
   ring
 
-private theorem log_integer (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K]
+private theorem log_integer  
     (a : Integers K) (ha : a ≠ 0) :
     WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
       (valuation K (a : K))) = -((IsDiscreteValuationRing.addVal (Integers K) a).toNat : ℤ) := by
@@ -146,8 +147,7 @@ private theorem log_integer (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
   rw [← WithZero.exp_nsmul, WithZero.log_exp]
   simp [nsmul_eq_mul]
 
-private theorem depth_three (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K]
+private theorem depth_three  
     (ζ : Integers K) (hζ : IsPrimitiveRoot ζ 3) :
     (IsDiscreteValuationRing.addVal (Integers K) (3 : Integers K)).toNat = 2 * rootDepth K ζ := by
   let v := IsDiscreteValuationRing.addVal (Integers K)
@@ -180,8 +180,7 @@ private theorem depth_three (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
   omega
 
 theorem unit_cube_index
-    (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K]
+     
     (ζ : Integers K) (hζ : IsPrimitiveRoot ζ 3) :
     ((cubeUnits K).index : ℝ) = 3 / abs K (3 : K) := by
   obtain ⟨m, hm⟩ := deep_units_cubes K
@@ -200,6 +199,8 @@ theorem unit_cube_index
       log_integer K (3 : Integers K) hO, depth_three K ζ hζ]
   rw [hind, Nat.cast_mul, Nat.cast_ofNat, Nat.cast_pow, h3, zpow_neg, zpow_natCast,
     div_inv_eq_mul]
+end
+
 
 end
 end DedekindZetaZeroFree.KPCubicHaarTransport

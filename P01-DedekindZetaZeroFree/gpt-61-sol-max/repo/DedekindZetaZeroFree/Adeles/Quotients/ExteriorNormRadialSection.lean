@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Units.SArithmeticData
 
 @[expose] public section
+
 
 open scoped NumberField Classical
 open NumberField
@@ -12,15 +15,17 @@ namespace SArithmeticData
 
 noncomputable section
 
-theorem nrComplexPlaces_pos {F : Type} [Field F] [NumberField F]
-    (A : SArithmeticData F) : 0 < InfinitePlace.nrComplexPlaces F := by
+section
+variable {F : Type} [Field F] [NumberField F]
+    (A : SArithmeticData F)
+include F A
+theorem nrComplexPlaces_pos   : 0 < InfinitePlace.nrComplexPlaces F := by
   classical
   let w : InfinitePlace F := Classical.arbitrary _
   have : Nonempty {w : InfinitePlace F // w.IsComplex} := ⟨⟨w, A.complex_place w⟩⟩
   exact Fintype.card_pos
 
-def radialSection {F : Type} [Field F] [NumberField F]
-    (A : SArithmeticData F) (T : ℝ) (hT : 0 < T) : A.G :=
+def radialSection   (T : ℝ) (hT : 0 < T) : A.G :=
   (fun w =>
     Units.map
       (InfinitePlace.Completion.ringEquivComplexOfIsComplex (A.complex_place w)).symm.toMonoidHom
@@ -29,8 +34,7 @@ def radialSection {F : Type} [Field F] [NumberField F]
           (Real.rpow_pos_of_pos hT (1 / (2 * (InfinitePlace.nrComplexPlaces F : ℝ)))).ne')),
     fun _ => 1)
 
-theorem norm_radialSection {F : Type} [Field F] [NumberField F]
-    (A : SArithmeticData F) (T : ℝ) (hT : 0 < T) :
+theorem norm_radialSection   (T : ℝ) (hT : 0 < T) :
     A.norm (A.radialSection T hT) = T := by
   classical
   have hlocal (w : InfinitePlace F) :
@@ -61,23 +65,20 @@ theorem norm_radialSection {F : Type} [Field F] [NumberField F]
     field_simp
   rw [hexp, Real.rpow_one]
 
-theorem radialSection_one {F : Type} [Field F] [NumberField F]
-    (A : SArithmeticData F) : A.radialSection 1 (by norm_num) = 1 := by
+theorem radialSection_one   : A.radialSection 1 (by norm_num) = 1 := by
   ext w <;> simp [radialSection]
 
-theorem radialSection_mul {F : Type} [Field F] [NumberField F]
-    (A : SArithmeticData F) (T T' : ℝ) (hT : 0 < T) (hT' : 0 < T') :
+theorem radialSection_mul   (T T' : ℝ) (hT : 0 < T) (hT' : 0 < T') :
     A.radialSection (T * T') (mul_pos hT hT') =
       A.radialSection T hT * A.radialSection T' hT' := by
   ext w <;> simp [radialSection, Real.mul_rpow hT.le hT'.le]
 
-theorem continuous_radialSection {F : Type} [Field F] [NumberField F]
-    (A : SArithmeticData F) :
+theorem continuous_radialSection   :
     Continuous (fun T : {T : ℝ // 0 < T} => A.radialSection T.val T.property) := by
   apply Continuous.prodMk
   · apply continuous_pi
     intro w
-    let p : ℝ := 1 / (2 * (InfinitePlace.nrComplexPlaces F : ℝ))
+    let p  := 1 / (2 * (InfinitePlace.nrComplexPlaces F : ℝ))
     have hp : Continuous (fun T : {T : ℝ // 0 < T} => T.val ^ p) :=
       continuous_subtype_val.rpow_const (fun T => Or.inl T.property.ne')
     let e := InfinitePlace.Completion.ringEquivComplexOfIsComplex (A.complex_place w)
@@ -90,18 +91,14 @@ theorem continuous_radialSection {F : Type} [Field F] [NumberField F]
       apply Units.continuous_iff.mpr
       constructor
       · exact Complex.continuous_ofReal.comp hp
-      · simpa only [Units.val_inv_eq_inv_val, Units.val_mk0, Pi.inv_def, Function.comp_def] using
-          (Complex.continuous_ofReal.comp hp).inv₀
+      · exact (Complex.continuous_ofReal.comp hp).inv₀
             (fun T => Complex.ofReal_ne_zero.mpr (Real.rpow_pos_of_pos T.property p).ne')
     exact (he.units_map e.symm.toMonoidHom).comp hu
   · exact continuous_const
 
-theorem exteriorNorm_pos {F : Type} [Field F] [NumberField F]
-    (A : SArithmeticData F) (I : A.Exterior) : 0 < A.exteriorNorm I := by
-  exact lt_of_lt_of_le zero_lt_one (idealNorm_ge_one I.val I.property.1)
+theorem exteriorNorm_pos   (I : A.Exterior) : 0 < A.exteriorNorm I := lt_of_lt_of_le zero_lt_one (idealNorm_ge_one I.val I.property.1)
 
-theorem normalized_generator_mem_G1 {F : Type} [Field F] [NumberField F]
-    (A : SArithmeticData F) (I : A.Exterior) (r : A.R)
+theorem normalized_generator_mem_G1   (I : A.Exterior) (r : A.R)
     (hr : A.Generates I r) (a : Fˣ) (ha : (a : F) = (r : F)) :
     A.diagonal a / A.radialSection (A.exteriorNorm I) (A.exteriorNorm_pos I) ∈ A.G1 := by
   change A.norm _ = 1
@@ -109,6 +106,8 @@ theorem normalized_generator_mem_G1 {F : Type} [Field F] [NumberField F]
     simp [norm, norm_div, div_pow, Finset.prod_div_distrib, mul_div_mul_comm]
   rw [hdiv, A.generator_norm I r hr a ha, A.norm_radialSection]
   exact div_self (A.exteriorNorm_pos I).ne'
+end
+
 
 end
 end SArithmeticData

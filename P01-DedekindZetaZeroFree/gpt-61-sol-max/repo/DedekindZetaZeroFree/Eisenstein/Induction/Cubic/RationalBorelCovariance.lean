@@ -14,13 +14,15 @@ namespace DedekindZetaZeroFree.KPContFlatRationalCosetCovariance
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-abbrev L (s : ℂ)
-    (v : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ)) :
+section
+variable (s : ℂ)
+    (v : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ))
+include s v
+abbrev L   :
     KPGlobalTorusFunctionData.G F ζ hζ → ℂ :=
   (KPContFlatSourceRecipe.flatR F ζ hζ s v).val
 
-private theorem rationalBorel_invariance (s : ℂ)
-    (v : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ))
+private theorem rationalBorel_invariance  
     (a : KPGlobalResidualKernel.rationalBorel F ζ hζ)
     (g : KPGlobalTorusFunctionData.G F ζ hζ) :
     L F ζ hζ s v (KPRationalAdelicSplitting.rationalPGLHom F ζ hζ a.val * g) =
@@ -35,16 +37,14 @@ private theorem rationalBorel_invariance (s : ℂ)
   rw [← KPGlobalResidualKernel.RawStageL2.Outgoing.ChamberQuotient.rationalEquiv_lift] at h
   simpa only [MulEquiv.apply_symm_apply] using h
 
-theorem L_rationalBorel (s : ℂ)
-    (v : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ))
+theorem L_rationalBorel  
     (a : KPGlobalResidualKernel.rationalBorel F ζ hζ)
     (g : KPGlobalTorusFunctionData.G F ζ hζ) :
     L F ζ hζ s v (KPRationalAdelicSplitting.rationalPGLHom F ζ hζ a.val * g) =
       L F ζ hζ s v g :=
   rationalBorel_invariance F ζ hζ s v a g
 
-theorem L_centre (s : ℂ)
-    (v : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ))
+theorem L_centre  
     (ε : rootsOfUnity 3 F) (g : KPGlobalTorusFunctionData.G F ζ hζ) :
     L F ζ hζ s v (KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε * g) =
       (KPContSectorCoveredQuotientVocabulary.chi F ζ hζ ε : ℂ) * L F ζ hζ s v g := by
@@ -107,6 +107,8 @@ theorem L_centre (s : ℂ)
   have hprop := (KPContFlatSourceRecipe.flatR F ζ hζ s v).property h 0 g
   rw [htv, hN, mul_one, hcoef] at hprop
   exact hprop
+end
+
 
 theorem rationalBorel_eq :
     (KPGlobalResidualKernel.rationalBorel F ζ hζ).comap
@@ -136,15 +138,16 @@ abbrev matrixRationalHom : Matrix.ProjGenLinGroup (Fin 2) F →*
   (KPRationalAdelicSplitting.rationalPGLHom F ζ hζ).comp
     (KPGlobalResidualKernel.RawStageL2.Outgoing.ChamberQuotient.rationalEquiv F).toMonoidHom
 
-def rationalTerm (s : ℂ)
+section
+variable (s : ℂ)
     (v : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ))
     (g : KPGlobalTorusFunctionData.G F ζ hζ)
+include s v g
+def rationalTerm  
     (q : KPGlobalResidualKernel.RationalQuotient F ζ hζ) : ℂ :=
   L F ζ hζ s v (KPRationalAdelicSplitting.rationalPGLHom F ζ hζ (Quotient.out q) * g)
 
-theorem rationalTerm_eq (s : ℂ)
-    (v : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ))
-    (g : KPGlobalTorusFunctionData.G F ζ hζ)
+theorem rationalTerm_eq  
     (γ : KPRationalAdelicSplitting.RationalPGL2 F) :
     rationalTerm F ζ hζ s v g
         (Quotient.mk (QuotientGroup.rightRel (KPGlobalResidualKernel.rationalBorel F ζ hζ)) γ) =
@@ -174,9 +177,7 @@ theorem rationalTerm_eq (s : ℂ)
       KPRationalAdelicSplitting.rationalPGLHom F ζ hζ γ * g from by group] at hi
   exact hi.symm
 
-theorem rationalTerm_transport (s : ℂ)
-    (v : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ))
-    (g : KPGlobalTorusFunctionData.G F ζ hζ)
+theorem rationalTerm_transport  
     (q : KPChamberBruhatTwoCells.RationalQuotient F) :
     rationalTerm F ζ hζ s v g (cosetEquiv F ζ hζ q) =
       KPChamberBruhatTwoCells.rationalTerm F (matrixRationalHom F ζ hζ)
@@ -193,9 +194,7 @@ theorem rationalTerm_transport (s : ℂ)
   rw [KPChamberBruhatTwoCells.rationalTerm]
   rfl
 
-theorem rationalTerm_transport_mk (s : ℂ)
-    (v : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ))
-    (g : KPGlobalTorusFunctionData.G F ζ hζ)
+theorem rationalTerm_transport_mk  
     (γ : Matrix.ProjGenLinGroup (Fin 2) F) :
     rationalTerm F ζ hζ s v g
         (cosetEquiv F ζ hζ (KPChamberBruhatTwoCells.rationalCoset F γ)) =
@@ -204,6 +203,8 @@ theorem rationalTerm_transport_mk (s : ℂ)
   rw [rationalTerm_eq F ζ hζ s v g
     (KPGlobalResidualKernel.RawStageL2.Outgoing.ChamberQuotient.rationalEquiv F γ)]
   rfl
+end
+
 
 end DedekindZetaZeroFree.KPContFlatRationalCosetCovariance
 

@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Units.RayUnitHalfOpenDomain
 
 @[expose] public section
+
 
 /-
 Adapted from
@@ -45,7 +48,7 @@ theorem rayUnitPeriodicLogHaarIntegral_translation
   let e : RayCoset.logHyperplane F ≃ᵐ RayCoset.logHyperplane F :=
     MeasurableEquiv.addRight v
   have he : MeasurePreserving e μ μ :=
-    ⟨e.measurable, by simpa [e] using map_add_right_eq_self μ v⟩
+    ⟨e.measurable, map_add_right_eq_self μ v⟩
   have hT : IsAddFundamentalDomain L (e '' D) μ := by
     apply hD.image_of_equiv e.toEquiv ?_ (Equiv.refl L) ?_
     · exact (measurePreserving_add_right μ (-v)).quasiMeasurePreserving
@@ -56,6 +59,6 @@ theorem rayUnitPeriodicLogHaarIntegral_translation
   calc
     _ = ∫ h in e '' D, f h ∂μ :=
       (he.setIntegral_image_emb e.measurableEmbedding f D).symm
-    _ = ∫ h in D, f h ∂μ := hT.setIntegral_eq hD hp
+    _ = ∫ h in D, f h ∂μ := hT.setIntegral_eq (G := L) hD hp
 
 end DedekindZetaZeroFree.Hecke

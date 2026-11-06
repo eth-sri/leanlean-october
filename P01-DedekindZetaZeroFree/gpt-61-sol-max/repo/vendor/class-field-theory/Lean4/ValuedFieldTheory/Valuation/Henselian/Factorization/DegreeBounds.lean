@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Valuation.Henselian.Factorization.DivisionBounds
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -72,22 +75,25 @@ theorem henselFactorization_residual_right_natDegree_le
     hbar.natDegree ≤ d - m := by
   by_cases hh : hbar = 0
   · simp [hh]
-  · have hg : gbar ≠ 0 := Polynomial.leadingCoeff_ne_zero.mp hglead
+  · have hg  := Polynomial.leadingCoeff_ne_zero.mp hglead
     have hprod : (gbar * hbar).natDegree ≤ d := by
       simpa [hfbar] using hf
     have hsum : m + hbar.natDegree ≤ d := by
       simpa [hgbar_nat, Polynomial.natDegree_mul hg hh] using hprod
     exact Nat.le_sub_of_add_le (by simpa [Nat.add_comm] using hsum)
 
+section
+variable {R : Type*} [CommRing R]
+include R
 /-- if `deg f ≤ d`, `deg g ≤ m`, and `deg h ≤ d-m`, then
 `deg(f-gh)≤d`. -/
 theorem henselFactorization_error_natDegree_le
-    {R : Type*} [CommRing R] {f g h : R[X]} {d m : ℕ}
+      {f g h : R[X]} {d m : ℕ}
     (hf : f.natDegree ≤ d) (hg : g.natDegree ≤ m)
     (hh : h.natDegree ≤ d - m) (hmd : m ≤ d) :
     (f - g * h).natDegree ≤ d := by
   have hmul : (g * h).natDegree ≤ d := by
-    have hmul' : (g * h).natDegree ≤ m + (d - m) :=
+    have hmul'  :=
       Polynomial.natDegree_mul_le_of_le hg hh
     have hsum : m + (d - m) = d := by
       rw [Nat.add_comm, Nat.sub_add_cancel hmd]
@@ -98,43 +104,42 @@ theorem henselFactorization_error_natDegree_le
 /-- if `P=C(a)Q` with `a≠0`, then a degree bound on `P`
 is a degree bound on `Q`. -/
 theorem henselFactorization_factor_natDegree_le_of_constant_mul_eq
-    {R : Type*} [CommRing R] [NoZeroDivisors R] {a : R} (ha : a ≠ 0)
+      [NoZeroDivisors R] {a : R} (ha : a ≠ 0)
     {P Q : R[X]} {d : ℕ}
     (hP : P.natDegree ≤ d) (hfactor : P = Polynomial.C a * Q) :
     Q.natDegree ≤ d := by
-  have hCQ : (Polynomial.C a * Q).natDegree ≤ d := by
-    simpa [hfactor] using hP
-  simpa [Polynomial.natDegree_C_mul (p := Q) (a0 := ha)] using hCQ
+  simp_all [Polynomial.natDegree_C_mul] <;> aesop
 
 /-- degree bound for the next error factor `f_n` from the
 current factorization error. -/
-theorem henselFactorization_error_factor_natDegree_le
-    {R : Type*} [CommRing R] [NoZeroDivisors R] {π : R} {n : ℕ}
+def henselFactorization_error_factor_natDegree_le
+      [NoZeroDivisors R] {π : R} {n : ℕ}
     (hπn : π ^ n ≠ 0)
     {f g h fn : R[X]} {d m : ℕ}
     (hf : f.natDegree ≤ d) (hg : g.natDegree ≤ m)
     (hh : h.natDegree ≤ d - m) (hmd : m ≤ d)
-    (hfactor : f - g * h = Polynomial.C (π ^ n) * fn) :
-    fn.natDegree ≤ d :=
+    (hfactor : f - g * h = Polynomial.C (π ^ n) * fn)  :=
   henselFactorization_factor_natDegree_le_of_constant_mul_eq
     (a := π ^ n) hπn
     (P := f - g * h) (Q := fn)
     (henselFactorization_error_natDegree_le hf hg hh hmd)
     hfactor
+end
 
-/-- residue-degree bound for the next error factor `f_n`. -/
-theorem henselFactorization_error_factor_residue_natDegree_le
-    {R : Type*} [CommRing R] [IsLocalRing R] [NoZeroDivisors R]
-    {π : R} {n : ℕ} (hπn : π ^ n ≠ 0)
-    {f g h fn : R[X]} {d m : ℕ}
-    (hf : f.natDegree ≤ d) (hg : g.natDegree ≤ m)
-    (hh : h.natDegree ≤ d - m) (hmd : m ≤ d)
-    (hfactor : f - g * h = Polynomial.C (π ^ n) * fn) :
-    (fn.map (IsLocalRing.residue R)).natDegree ≤ d :=
-  henselFactorization_map_natDegree_le_of_natDegree_le
-    (IsLocalRing.residue R)
-    (henselFactorization_error_factor_natDegree_le
-      (π := π) hπn hf hg hh hmd hfactor)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end Valuations
 end AlgebraicNumberTheory

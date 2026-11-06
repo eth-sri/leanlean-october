@@ -32,11 +32,11 @@ namespace LubinTate
 open LocalFieldTheory.DiscreteValuationField
 open LocalFieldTheory.DiscreteValuationField.Examples.Qp
 
- noncomputable local instance (priority := 50)
-    padicCompletedThetaFixedWittUniformSpace
-    (p : ℕ) [Fact p.Prime] :
-    UniformSpace (padicCompletedUnramifiedWittRing p) :=
-  ⊥
+
+
+
+
+
 
  noncomputable local instance
     padicCompletedThetaFixedTargetWithIdeal
@@ -45,23 +45,23 @@ open LocalFieldTheory.DiscreteValuationField.Examples.Qp
       (padicCompletedLevelCompleteDVF p n).valuationSubring where
   i := (padicCompletedLevelCompleteDVF p n).maximalIdeal
 
- noncomputable local instance
-    padicCompletedThetaFixedTargetCompleteSpace
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
-    CompleteSpace
-      (padicCompletedLevelCompleteDVF p n).valuationSubring := by
-  let target := padicCompletedLevelCompleteDVF p n
-  have hadic : IsAdic target.maximalIdeal := rfl
-  exact (hadic.isAdicComplete_iff.mp target.isAdicComplete).1
 
- noncomputable local instance
-    padicCompletedThetaFixedTargetT2Space
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
-    T2Space
-      (padicCompletedLevelCompleteDVF p n).valuationSubring := by
-  let target := padicCompletedLevelCompleteDVF p n
-  have hadic : IsAdic target.maximalIdeal := rfl
-  exact (hadic.isAdicComplete_iff.mp target.isAdicComplete).2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 private theorem padicCompletedThetaFixedEvaluation_eq_of_point_eq
     (p : ℕ) [Fact p.Prime] (n : ℕ)

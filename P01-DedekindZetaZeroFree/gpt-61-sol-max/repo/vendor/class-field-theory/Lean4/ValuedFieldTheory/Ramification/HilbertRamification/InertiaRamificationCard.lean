@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Ramification.HilbertRamification.Dedekind.ValuedGalois
 public import ValuedFieldTheory.Ramification.HilbertRamification.CompleteDVF
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -79,9 +82,7 @@ theorem natCard_decompositionInertiaSubgroup_eq_ramificationIndex
       Nat.card (inertiaGroup (K := K) (base := base) (target := target)) =
         ValuedExtension.ramificationIndex base.toDVF target.toDVF := by
     rw [← hIdealInertia]
-    exact
-      ValuedExtension.card_inertia_eq_ramificationIndex_of_finite_separable
-        base target (L ≃ₐ[K] L)
+    apply ValuedExtension.card_inertia_eq_ramificationIndex_of_finite_separable
   have hMap :=
     inertiaGroup_map_galEquivDecompositionGroup
       (K := K) (base := base) (target := target)

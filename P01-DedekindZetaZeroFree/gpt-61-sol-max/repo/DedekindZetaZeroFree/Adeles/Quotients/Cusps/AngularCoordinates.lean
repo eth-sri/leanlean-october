@@ -130,7 +130,7 @@ variable {F ζ hζ}
 variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
-variable (S : SourceRecipe F ζ hζ R P H) (U : Level F ζ hζ)
+
 
 end CuspCoordinates
 end DedekindZetaZeroFree.KPMsActualAngularSource

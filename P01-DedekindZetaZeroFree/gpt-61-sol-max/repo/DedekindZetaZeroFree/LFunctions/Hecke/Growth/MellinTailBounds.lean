@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.MellinTransform
 public import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 public import DedekindZetaZeroFree.Analysis.Decay.PowerStretchedExponentialEnvelope
 public import DedekindZetaZeroFree.LFunctions.Hecke.Growth.StretchedExponentialExponent
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.Hecke
 
@@ -16,7 +19,7 @@ private theorem tail_decay_integrable (a p : ℝ) (ha : 0 < a) (hp : 0 < p) :
   have hi := integrableOn_rpow_mul_exp_neg_mul_rpow (s := 0) (b := a / 2)
     (by norm_num) hp (by positivity)
   simp only [Real.rpow_zero, one_mul] at hi
-  exact hi.mono_set (fun t ht => by simp only [Set.mem_Ioi] at *; linarith)
+  apply hi.mono_set <;> aesop
 
 private theorem tail_norm_envelope (h : ℝ → ℂ) (A a p : ℝ)
     (hA : 0 ≤ A) (ha : 0 < a) (hp : 0 < p)
@@ -49,10 +52,13 @@ private theorem tail_integrand_measurable (h : ℝ → ℂ)
     simp only [Set.mem_Ioi] at ht
     linarith))
 
-theorem mellinTail_integrable_of_stretchedExp (h : ℝ → ℂ) (A a p : ℝ)
+section
+variable (h : ℝ → ℂ) (A a p : ℝ)
     (hA : 0 ≤ A) (ha : 0 < a) (hp : 0 < p)
     (hmeas : AEStronglyMeasurable h (volume.restrict (Set.Ioi (1 : ℝ))))
     (hdecay : ∀ t : ℝ, 1 ≤ t → ‖h t‖ ≤ A * Real.exp (-a * t ^ p))
+include h A a p hA ha hp hmeas hdecay
+theorem mellinTail_integrable_of_stretchedExp  
     (z : ℂ) :
     IntegrableOn (fun t : ℝ => (t : ℂ) ^ (z - 1) * h t)
       (Set.Ioi (1 : ℝ)) volume := by
@@ -64,15 +70,12 @@ theorem mellinTail_integrable_of_stretchedExp (h : ℝ → ℂ) (A a p : ℝ)
   exact tail_norm_envelope h A a p hA ha hp hdecay z R (le_max_left _ _)
     (le_max_right _ _) t (le_of_lt ht)
 
-theorem mellinTail_norm_le (h : ℝ → ℂ) (A a p : ℝ)
-    (hA : 0 ≤ A) (ha : 0 < a) (hp : 0 < p)
-    (hmeas : AEStronglyMeasurable h (volume.restrict (Set.Ioi (1 : ℝ))))
-    (hdecay : ∀ t : ℝ, 1 ≤ t → ‖h t‖ ≤ A * Real.exp (-a * t ^ p)) :
+theorem mellinTail_norm_le   :
     ∃ C K : ℝ, 0 ≤ C ∧ 0 ≤ K ∧
       ∀ (z : ℂ) (R : ℝ), 0 ≤ R → z.re - 1 ≤ R →
         ‖∫ t : ℝ in Set.Ioi (1 : ℝ), (t : ℂ) ^ (z - 1) * h t‖ ≤
           C * Real.exp (K * (1 + R) * Real.log (2 + R)) := by
-  let J : ℝ := ∫ t : ℝ in Set.Ioi (1 : ℝ), Real.exp (-(a / 2) * t ^ p)
+  let J  := ∫ t : ℝ in Set.Ioi (1 : ℝ), Real.exp (-(a / 2) * t ^ p)
   have hJ : 0 ≤ J := integral_nonneg (fun t => (Real.exp_pos _).le)
   obtain ⟨K, hK, hKbound⟩ := stretchedExp_envelope_exponent_le a p ha hp
   refine ⟨A * J, K, mul_nonneg hA hJ, hK, ?_⟩
@@ -96,5 +99,7 @@ theorem mellinTail_norm_le (h : ℝ → ℂ) (A a p : ℝ)
       ring
     _ ≤ (A * J) * Real.exp (K * (1 + R) * Real.log (2 + R)) :=
       mul_le_mul_of_nonneg_left (Real.exp_le_exp.mpr (hKbound R hR)) (mul_nonneg hA hJ)
+end
+
 
 end DedekindZetaZeroFree.Hecke

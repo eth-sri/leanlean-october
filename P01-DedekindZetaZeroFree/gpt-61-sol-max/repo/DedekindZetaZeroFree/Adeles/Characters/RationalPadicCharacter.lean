@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.LocalFields.PadicFractionalRepresentatives
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -10,10 +13,13 @@ namespace DedekindZetaZeroFree
 
 instance instFactPrimeRationalPadicCharacterNatPrimes (p : Nat.Primes) : Fact p.1.Prime := ⟨p.2⟩
 
-def rationalPInverted (p : Nat.Primes) : Subring ℚ :=
+def rationalPInverted (p : Nat.Primes)  :=
   Subring.closure ({((p.1 : ℚ)⁻¹)} : Set ℚ)
 
-theorem existsUnique_padicFractionalPart (p : Nat.Primes) (z : ℚ_[p]) :
+section
+variable (p : Nat.Primes) (z : ℚ_[p])
+include p z
+theorem existsUnique_padicFractionalPart   :
     ∃! r : ℚ, r ∈ rationalPInverted p ∧ (0 : ℚ) ≤ r ∧ r < 1 ∧
       z - (r : ℚ_[p]) ∈ Set.range (fun x : ℤ_[p] => (x : ℚ_[p])) := by
   obtain ⟨r, hr, hr0, hr1, hzr⟩ := RationalPadicArithmetic.exists_representative p z
@@ -23,15 +29,17 @@ theorem existsUnique_padicFractionalPart (p : Nat.Primes) (z : ℚ_[p]) :
     ⟨hs.1, hs.2.1, hs.2.2.1, (RationalPadicArithmetic.range_iff_norm p _).mp hs.2.2.2⟩
     ⟨hr, hr0, hr1, hzr⟩
 
-def padicFractionalPart (p : Nat.Primes) (z : ℚ_[p]) : ℚ :=
+def padicFractionalPart    :=
   Classical.choose (existsUnique_padicFractionalPart p z)
 
-theorem padicFractionalPart_spec (p : Nat.Primes) (z : ℚ_[p]) :
+theorem padicFractionalPart_spec   :
     padicFractionalPart p z ∈ rationalPInverted p ∧
       (0 : ℚ) ≤ padicFractionalPart p z ∧ padicFractionalPart p z < 1 ∧
       z - (padicFractionalPart p z : ℚ_[p]) ∈
         Set.range (fun x : ℤ_[p] => (x : ℚ_[p])) := by
   exact (Classical.choose_spec (existsUnique_padicFractionalPart p z)).1
+end
+
 
 lemma fractionalPart_zero (p : Nat.Primes) : padicFractionalPart p 0 = 0 := by
   symm
@@ -66,7 +74,10 @@ lemma negative_exp_congr (r s : ℚ) (h : ∃ a : ℤ, r-s = a) :
       -(2 * Real.pi * (s:ℝ)) + -(2 * Real.pi * (a:ℝ)) := by ring
   rw [he, Circle.exp_add, negative_exp_int, mul_one]
 
-lemma fractionalPart_add_mod_int (p : Nat.Primes) (x y : ℚ_[p]) :
+section
+variable (p : Nat.Primes)
+include p
+lemma fractionalPart_add_mod_int   (x y : ℚ_[p]) :
     ∃ a : ℤ, padicFractionalPart p (x+y) - (padicFractionalPart p x + padicFractionalPart p y) = a := by
   have hx := padicFractionalPart_spec p x
   have hy := padicFractionalPart_spec p y
@@ -84,7 +95,7 @@ lemma fractionalPart_add_mod_int (p : Nat.Primes) (x y : ℚ_[p]) :
       ((RationalPadicArithmetic.range_iff_norm p _).mp hy.2.2.2))
   · rw [norm_neg]; exact (RationalPadicArithmetic.range_iff_norm p _).mp hs.2.2.2
 
-def rationalPadicCharacter (p : Nat.Primes) : AddChar ℚ_[p] Circle where
+def rationalPadicCharacter   : AddChar ℚ_[p] Circle where
   toFun z := Circle.exp (-(2 * Real.pi * (padicFractionalPart p z : ℝ)))
   map_zero_eq_one' := by rw [fractionalPart_zero]; simp
   map_add_eq_mul' := by
@@ -95,7 +106,7 @@ def rationalPadicCharacter (p : Nat.Primes) : AddChar ℚ_[p] Circle where
       -(2 * Real.pi * (padicFractionalPart p x : ℝ)) + -(2 * Real.pi * (padicFractionalPart p y : ℝ)) by ring,
       Circle.exp_add]
 
-theorem continuous_rationalPadicCharacter (p : Nat.Primes) :
+theorem continuous_rationalPadicCharacter   :
     Continuous (rationalPadicCharacter p : ℚ_[p] → Circle) := by
   apply continuous_iff_continuousAt.mpr
   intro z
@@ -104,10 +115,10 @@ theorem continuous_rationalPadicCharacter (p : Nat.Primes) :
     filter_upwards [Metric.ball_mem_nhds z (show (0:ℝ) < 1 by norm_num)] with w hw
     change Circle.exp _ = Circle.exp _
     rw [fractionalPart_integral_difference p w z (by
-      exact le_of_lt (by simpa only [Metric.mem_ball, dist_eq_norm] using hw))]
+      apply le_of_lt <;> assumption)]
   exact continuousAt_const.congr_of_eventuallyEq he
 
-theorem rationalPadicCharacter_eq_one_iff (p : Nat.Primes) (z : ℚ_[p]) :
+theorem rationalPadicCharacter_eq_one_iff   (z : ℚ_[p]) :
     rationalPadicCharacter p z = 1 ↔
       z ∈ Set.range (fun x : ℤ_[p] => (x : ℚ_[p])) := by
   constructor
@@ -131,7 +142,7 @@ theorem rationalPadicCharacter_eq_one_iff (p : Nat.Primes) (z : ℚ_[p]) :
     change Circle.exp (-(2 * Real.pi * (padicFractionalPart p z : ℝ))) = 1
     simp [hf]
 
-theorem rationalPadicCharacter_inv_prime_ne_one (p : Nat.Primes) :
+theorem rationalPadicCharacter_inv_prime_ne_one   :
     rationalPadicCharacter p (((p.1 : ℚ)⁻¹ : ℚ_[p])) ≠ 1 := by
   intro h
   have hn := (RationalPadicArithmetic.range_iff_norm p _).mp
@@ -142,6 +153,8 @@ theorem rationalPadicCharacter_inv_prime_ne_one (p : Nat.Primes) :
     rw [norm_inv, Padic.norm_p, inv_inv]
   rw [he] at hn
   exact (not_le.mpr hp) hn
+end
+
 
 end DedekindZetaZeroFree
 

@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 The Tau Ceti contributors. All rights reserved.
@@ -24,14 +27,7 @@ namespace DedekindZetaZeroFree.TauCeti
 
 theorem integral_cos_int_mul (k : ℤ) :
     ∫ θ in (0 : ℝ)..Real.pi, Real.cos ((k : ℝ) * θ) = if k = 0 then Real.pi else 0 := by
-  rcases eq_or_ne k 0 with rfl | hk
-  · simp
-  · have hk' : (k : ℝ) ≠ 0 := Int.cast_ne_zero.mpr hk
-    have h := intervalIntegral.mul_integral_comp_mul_left
-      (f := Real.cos) (a := (0 : ℝ)) (b := Real.pi) (k : ℝ)
-    rw [integral_cos, mul_zero, Real.sin_zero, sub_zero, Real.sin_int_mul_pi] at h
-    rw [ite_eq_right hk]
-    exact (mul_eq_zero.mp h).resolve_left hk'
+  aesop
 
 theorem integral_sin_nat_mul_mul_sin_nat_mul (m n : ℕ) :
     ∫ θ in (0 : ℝ)..Real.pi, Real.sin ((m : ℝ) * θ) * Real.sin ((n : ℝ) * θ)
@@ -61,8 +57,7 @@ theorem integral_sin_nat_mul_mul_sin_nat_mul (m n : ℕ) :
   rcases eq_or_ne m n with rfl | hmn
   · rw [ite_eq_left (by omega : (m : ℤ) - (m : ℤ) = 0), ite_eq_left rfl]
     ring
-  · rw [ite_eq_right (by omega : ¬((m : ℤ) - (n : ℤ) = 0)), ite_eq_right hmn]
-    ring
+  · grind
 
 theorem integral_sin_succ_mul_sin_succ (m n : ℕ) :
     ∫ θ in (0 : ℝ)..Real.pi,

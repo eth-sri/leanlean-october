@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.ContinuousAveraging
 public import DedekindZetaZeroFree.RepresentationTheory.Continuous.UnitaryActions
 public import Mathlib.Analysis.InnerProductSpace.Positive
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 The Tau Ceti contributors. All rights reserved.
@@ -80,7 +83,7 @@ theorem inner_gramOperator (v w : V) :
   refine integral_congr_ae (Filter.Eventually.of_forall fun g ↦ ?_)
   rw [ContinuousMap.comp_apply]
   dsimp [gramFamily]
-  exact ContinuousLinearMap.adjoint_inner_right (π g) v (π g w)
+  apply ContinuousLinearMap.adjoint_inner_right
 
 theorem inner_gramOperator_left (v w : V) :
     ⟪gramOperator π hπ v, w⟫_𝕜 = ∫ g, ⟪π g v, π g w⟫_𝕜 ∂haarProb G := by
@@ -125,23 +128,23 @@ theorem inner_gramOperator_map_map (g : G) (v w : V) :
   simpa only [map_mul, mul_apply_eq_comp] using
     integral_mul_right_eq_self (μ := haarProb G) (fun h ↦ ⟪π h v, π h w⟫_𝕜) g
 
-@[simp]
-theorem adjoint_comp_gramOperator_comp (g : G) :
-    (ContinuousLinearMap.adjoint (π g)).comp ((gramOperator π hπ).comp (π g)) =
-      gramOperator π hπ := by
-  ext w
-  apply ext_inner_left 𝕜
-  intro v
-  simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.adjoint_inner_right,
-    inner_gramOperator_map_map]
 
-@[simp]
-theorem gramOperator_eq_one (hunitary : DedekindZetaZeroFree.TauCeti.ContRepresentation.IsUnitary π) :
-    gramOperator π hπ = 1 := by
-  let := NormedSpace.restrictScalars ℝ 𝕜 V
-  let := IsScalarTower.restrictScalars ℝ 𝕜 V
-  have hconst : gramFamily π hπ = ContinuousMap.const G 1 :=
-    ContinuousMap.ext fun g ↦ hunitary.adjoint_comp_self g
-  rw [gramOperator, hconst, haarAverage_const]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end ContRepresentation

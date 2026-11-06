@@ -43,8 +43,11 @@ theorem idealMellinWeight_hasFiniteSupport (a : Ideal (𝓞 F) → ℂ)
   rw [div_le_iff₀ hX] at hle
   exact hle
 
-theorem idealCoefficientLSeries_summable (a : Ideal (𝓞 F) → ℂ)
-    (ha0 : a ⊥ = 0) (ha : ∀ I, ‖a I‖ ≤ 1) {s : ℂ} (hs : 1 < s.re) :
+section
+variable (a : Ideal (𝓞 F) → ℂ)
+    (ha0 : a ⊥ = 0) (ha : ∀ I, ‖a I‖ ≤ 1)
+include a ha0 ha in
+theorem idealCoefficientLSeries_summable   {s : ℂ} (hs : 1 < s.re) :
     Summable (fun I : {I : Ideal (𝓞 F) // I ≠ ⊥} =>
       ‖a I.val * (Ideal.absNorm I.val : ℂ) ^ (-s)‖) ∧
     Summable (fun I : {I : Ideal (𝓞 F) // I ≠ ⊥} =>
@@ -93,8 +96,8 @@ private theorem norm_absNorm_cpow {I : Ideal (𝓞 F)} (hI : I ≠ ⊥) (w : ℂ
     exact_mod_cast Nat.pos_of_ne_zero hne
   rw [← Complex.ofReal_natCast, Complex.norm_cpow_eq_rpow_re_of_pos hpos]
 
-theorem idealMellin_verticalIntegrable (a : Ideal (𝓞 F) → ℂ)
-    (ha0 : a ⊥ = 0) (ha : ∀ I, ‖a I‖ ≤ 1)
+include a ha0 ha in
+theorem idealMellin_verticalIntegrable  
     {h : ℝ → ℂ} (hh : ContDiff ℝ ∞ h) (hcompact : HasCompactSupport h)
     {X σ : ℝ} (hX : 0 < X) (hσ : 1 < σ) :
     Complex.VerticalIntegrable
@@ -188,8 +191,8 @@ private theorem cpow_absNorm_div {I : Ideal (𝓞 F)} (hI : I ≠ ⊥) {X : ℝ}
     Complex.ofReal_inv (X : ℝ), Complex.inv_cpow ((X : ℝ) : ℂ) (-s) harg,
     ← Complex.cpow_neg ((X : ℝ) : ℂ) (-s), neg_neg]
 
-theorem idealMellin_finsum_eq_verticalIntegral (a : Ideal (𝓞 F) → ℂ)
-    (ha0 : a ⊥ = 0) (ha : ∀ I, ‖a I‖ ≤ 1)
+include a ha0 ha in
+theorem idealMellin_finsum_eq_verticalIntegral  
     {h : ℝ → ℂ} (hh : ContDiff ℝ ∞ h) (hcompact : HasCompactSupport h)
     {X σ : ℝ} (hX : 0 < X) (hσ : 1 < σ) :
     (∑ᶠ I : Ideal (𝓞 F), idealMellinWeight a h X I) =
@@ -335,8 +338,8 @@ theorem idealMellin_finsum_eq_verticalIntegral (a : Ideal (𝓞 F) → ℂ)
       (by rw [hfs.coe_toFinset]), hsub, htsum]
   exact hLHS.trans hRHS.symm
 
-theorem idealMellin_dual_interchange (a : Ideal (𝓞 F) → ℂ)
-    (ha0 : a ⊥ = 0) (ha : ∀ I, ‖a I‖ ≤ 1)
+include a ha0 ha in
+theorem idealMellin_dual_interchange  
     (B : ℂ → ℂ) (T : ℝ → ℂ) {c X q : ℝ}
     (hc : 1 < c) (hX : 0 < X) (hq : 0 < q)
     (hB : Complex.VerticalIntegrable B c)
@@ -584,6 +587,8 @@ theorem idealMellin_dual_interchange (a : Ideal (𝓞 F) → ℂ)
     rw [h1, ← hswap, ← tsum_mul_left]
     exact tsum_congr fun I => hper I
   exact ⟨hsumTnorm, hsumTnorm.of_norm, hVert, hEq⟩
+end
+
 
 end DedekindZetaZeroFree.LargeSieve
 

@@ -31,21 +31,24 @@ def rowExterior (m : ThetaReflectionData.Row R.A) (p : RowPrime R m) :
     ThetaBranch.ExteriorPrime R.A :=
   ⟨p.val, ((ThetaDigitAverage.rowPrimes_finite R.A m.val m.property).mem_toFinset.mp p.property).1⟩
 
-def digitLift (m : ThetaReflectionData.Row R.A)
-    (d : ThetaDigitAverage.Dig (RowPrime R m)) (p : RowPrime R m) : 𝓞 F :=
+section
+variable (m : ThetaReflectionData.Row R.A)
+    (d : ThetaDigitAverage.Dig (RowPrime R m)) (p : RowPrime R m)
+include m d p in
+def digitLift   : 𝓞 F :=
   (ThetaDigitAverage.residueLifts (RowPrime R m)).lift p (d p)
 
-def rationalDigit (m : ThetaReflectionData.Row R.A)
-    (d : ThetaDigitAverage.Dig (RowPrime R m)) (p : RowPrime R m) : F :=
+include m d p in
+def rationalDigit   : F :=
   -(digitLift R m d p : F) / (R.probe.allowed.generator (ThetaBranch.primeIdeal R.A (rowExterior R m p)) : F)
 
-lemma digitLift_residue (m : ThetaReflectionData.Row R.A)
-    (d : ThetaDigitAverage.Dig (RowPrime R m)) (p : RowPrime R m) :
+include m d p in
+lemma digitLift_residue   :
     Ideal.Quotient.mk p.val.asIdeal (digitLift R m d p) = d p :=
   ThetaDigitAverage.ResidueLifts.residue_lift _ _ _
 
-lemma digitParameter_at_row (m : ThetaReflectionData.Row R.A)
-    (d : ThetaDigitAverage.Dig (RowPrime R m)) (p : RowPrime R m) :
+include m d p in
+lemma digitParameter_at_row   :
     KPAdelicCoverRestrictedProduct.adeleEval F (Sum.inr p.val) (digitParameter R m d) =
       algebraMap F (p.val.adicCompletion F) (rationalDigit R m d p) := by
   simp only [digitParameter, map_sum]
@@ -70,8 +73,8 @@ lemma digitParameter_off_row (m : ThetaReflectionData.Row R.A)
   apply Pi.single_eq_of_ne
   exact fun he => hp (he.symm ▸ q.property)
 
-lemma zero_digit_integral (m : ThetaReflectionData.Row R.A)
-    (d : ThetaDigitAverage.Dig (RowPrime R m)) (p : RowPrime R m) (hd : d p = 0) :
+include m d p in
+lemma zero_digit_integral   (hd : d p = 0) :
     algebraMap F (p.val.adicCompletion F) (rationalDigit R m d p) ∈ KPTameCompact.O F p.val := by
   apply completion_integer_of_valuation_le_one
   have hs : digitLift R m d p ∈ p.val.asIdeal :=
@@ -85,8 +88,8 @@ lemma zero_digit_integral (m : ThetaReflectionData.Row R.A)
   rw [map_div₀, Valuation.map_neg, hg]
   exact (div_le_one₀ (by simp)).mpr hv
 
-lemma nonzero_digitLift (m : ThetaReflectionData.Row R.A)
-    (d : ThetaDigitAverage.Dig (RowPrime R m)) (p : RowPrime R m) (hd : d p ≠ 0) :
+include m d p in
+lemma nonzero_digitLift   (hd : d p ≠ 0) :
     (digitLift R m d p : F) ≠ 0 := by
   have hs : digitLift R m d p ∉ p.val.asIdeal := by
     intro h
@@ -95,8 +98,8 @@ lemma nonzero_digitLift (m : ThetaReflectionData.Row R.A)
   have hz : digitLift R m d p = 0 := Subtype.ext h
   exact hs (hz ▸ p.val.asIdeal.zero_mem)
 
-lemma nonzero_digit_valuation (m : ThetaReflectionData.Row R.A)
-    (d : ThetaDigitAverage.Dig (RowPrime R m)) (p : RowPrime R m) (hd : d p ≠ 0) :
+include m d p in
+lemma nonzero_digit_valuation   (hd : d p ≠ 0) :
     p.val.valuation F (rationalDigit R m d p) = WithZero.exp (1 : ℤ) := by
   have hs : digitLift R m d p ∉ p.val.asIdeal := by
     intro h
@@ -106,13 +109,15 @@ lemma nonzero_digit_valuation (m : ThetaReflectionData.Row R.A)
   simp only [rationalDigit, map_div₀, Valuation.map_neg,
     p.val.valuation_eq_one_iff_notMem.mpr hs, hg, one_div, ← WithZero.exp_neg, neg_neg]
 
-lemma nonzero_digit_inverse_integral (m : ThetaReflectionData.Row R.A)
-    (d : ThetaDigitAverage.Dig (RowPrime R m)) (p : RowPrime R m) (hd : d p ≠ 0) :
+include m d p in
+lemma nonzero_digit_inverse_integral   (hd : d p ≠ 0) :
     algebraMap F (p.val.adicCompletion F) ((rationalDigit R m d p)⁻¹) ∈ KPTameCompact.O F p.val := by
   apply completion_integer_of_valuation_le_one
   rw [map_inv₀, nonzero_digit_valuation R m d p hd, ← WithZero.exp_neg,
     ← WithZero.exp_zero, WithZero.exp_le_exp]
   norm_num
+end
+
 end DedekindZetaZeroFree.OrbitFrequencies
 end
 
@@ -128,8 +133,11 @@ variable (R : PrincipalMellin.ActualRecipe S η)
 variable {Q : AdmissibleFlatSources R} {T : Realization R Q}
 variable (D : SourceFactorization R Q T)
 
-lemma exteriorDigitValue_eq_slot (m : ThetaReflectionData.Row R.A) (x : Fˣ)
-    (d : ThetaDigitAverage.Dig (RowPrime R m)) (p : ThetaBranch.ExteriorPrime R.A) :
+section
+variable (m : ThetaReflectionData.Row R.A) (x : Fˣ)
+    (d : ThetaDigitAverage.Dig (RowPrime R m))
+include m x d in
+lemma exteriorDigitValue_eq_slot   (p : ThetaBranch.ExteriorPrime R.A) :
     exteriorDigitValue R D m x d p = OrbitExpansion.exteriorSlotValue R D p.val
       (KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val)
         (Units.map (algebraMap F (p.val.adicCompletion F)).toMonoidHom x) *
@@ -163,8 +171,8 @@ lemma exterior_diagonal_slot (p : ThetaBranch.ExteriorPrime R.A) (x : Fˣ) :
   exact congrArg (fun z => OrbitExpansion.exteriorSlotValue R D p.val
     (KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val) z)) h.symm
 
-lemma exteriorDigitValue_off_row (m : ThetaReflectionData.Row R.A) (x : Fˣ)
-    (d : ThetaDigitAverage.Dig (RowPrime R m)) (p : ThetaBranch.ExteriorPrime R.A)
+include m x d in
+lemma exteriorDigitValue_off_row   (p : ThetaBranch.ExteriorPrime R.A)
     (hp : p.val ∉ RowPrime R m) :
     exteriorDigitValue R D m x d p = D.exteriorValue R p x := by
   rw [exteriorDigitValue_eq_slot, digitParameter_off_row R m d p.val hp]
@@ -172,8 +180,8 @@ lemma exteriorDigitValue_off_row (m : ThetaReflectionData.Row R.A) (x : Fˣ)
     (Units.map (algebraMap F (p.val.adicCompletion F)).toMonoidHom x) 0
   simpa only [ZeroMemClass.coe_zero] using h.trans (exterior_diagonal_slot R D p x)
 
-lemma exteriorDigitValue_zero (m : ThetaReflectionData.Row R.A) (x : Fˣ)
-    (d : ThetaDigitAverage.Dig (RowPrime R m)) (p : RowPrime R m) (hp : d p = 0) :
+include m x d in
+lemma exteriorDigitValue_zero   (p : RowPrime R m) (hp : d p = 0) :
     exteriorDigitValue R D m x d (rowExterior R m p) = D.exteriorValue R (rowExterior R m p) x := by
   rw [exteriorDigitValue_eq_slot]
   have he := digitParameter_at_row R m d p
@@ -190,8 +198,8 @@ def digitUnit (m : ThetaReflectionData.Row R.A) (d : ThetaDigitAverage.Dig (RowP
   Units.mk0 (rationalDigit R m d p) (div_ne_zero (neg_ne_zero.mpr (nonzero_digitLift R m d p hp))
     (R.probe.allowed.generator (ThetaBranch.primeIdeal R.A (rowExterior R m p))).ne_zero)
 
-lemma exteriorDigitValue_nonzero_norm (m : ThetaReflectionData.Row R.A) (x : Fˣ)
-    (d : ThetaDigitAverage.Dig (RowPrime R m)) (p : RowPrime R m) (hp : d p ≠ 0) :
+include m x d in
+lemma exteriorDigitValue_nonzero_norm   (p : RowPrime R m) (hp : d p ≠ 0) :
     ‖exteriorDigitValue R D m x d (rowExterior R m p)‖ =
       ‖D.exteriorValue R (rowExterior R m p) (x * -((digitUnit R m d p hp)⁻¹ ^ 2))‖ := by
   let H := Units.map (algebraMap F (p.val.adicCompletion F)).toMonoidHom (digitUnit R m d p hp)
@@ -218,6 +226,8 @@ lemma exteriorDigitValue_nonzero_norm (m : ThetaReflectionData.Row R.A) (x : Fˣ
   rw [hs] at h
   simpa only [H, digitUnit, Units.coe_map, Units.val_mk0,
     RingHom.toMonoidHom_eq_coe, MonoidHom.coe_ofClass] using h
+end
+
 end DedekindZetaZeroFree.OrbitFrequencies
 end
 

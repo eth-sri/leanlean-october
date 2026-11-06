@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.ContourIntegration.ExponentialStripGrowth
 public import DedekindZetaZeroFree.Analysis.VerticalStripBounds
 
 @[expose] public section
+
 
 /-
 Repository: openai/math.
@@ -61,7 +64,10 @@ private lemma poleKernel_eq (c α t : ℝ) :
   push_cast
   ring
 
-private lemma integrable_im_poleKernel (δ1 δ2 : ℝ) (h1 : δ1 ≠ 0) (h2 : δ2 ≠ 0) :
+section
+variable (δ1 δ2 : ℝ) (h1 : δ1 ≠ 0) (h2 : δ2 ≠ 0)
+include δ1 δ2 h1 h2
+private lemma integrable_im_poleKernel   :
     Integrable (fun t : ℝ => t/(δ2^2+t^2) - t/(δ1^2+t^2)) := by
   have hcont : Continuous fun t : ℝ => t/(δ2^2+t^2) - t/(δ1^2+t^2) := by
     refine Continuous.sub ?_ ?_
@@ -100,7 +106,7 @@ private lemma integrable_im_poleKernel (δ1 δ2 : ℝ) (h1 : δ1 ≠ 0) (h2 : δ
     _ ≤ (|δ1^2 - δ2^2| / (min (δ1^2) 1 * min (δ2^2) 1)) * 1 * (1 + t^2)⁻¹ := by gcongr
     _ = (|δ1^2 - δ2^2| / (min (δ1^2) 1 * min (δ2^2) 1)) * (1 + t^2)⁻¹ := by ring
 
-private lemma integrable_poleKernel (δ1 δ2 : ℝ) (h1 : δ1 ≠ 0) (h2 : δ2 ≠ 0) :
+private lemma integrable_poleKernel   :
     Integrable (fun t : ℝ =>
         (1:ℂ)/((δ1:ℂ) + t*Complex.I) - (1:ℂ)/((δ2:ℂ) + t*Complex.I)) := by
   have hre : (fun t : ℝ => RCLike.re ((1:ℂ)/((δ1:ℂ) + t*Complex.I) - (1:ℂ)/((δ2:ℂ) + t*Complex.I)))
@@ -115,11 +121,11 @@ private lemma integrable_poleKernel (δ1 δ2 : ℝ) (h1 : δ1 ≠ 0) (h2 : δ2 �
     exact (integrable_div_sq_add_sq δ1 h1).sub (integrable_div_sq_add_sq δ2 h2)
   have himint : Integrable (fun t : ℝ =>
       RCLike.im ((1:ℂ)/((δ1:ℂ) + t*Complex.I) - (1:ℂ)/((δ2:ℂ) + t*Complex.I))) := by
-    rw [him]; exact integrable_im_poleKernel δ1 δ2 h1 h2
+    rw [him]; apply integrable_im_poleKernel <;> assumption
   rw [← Integrable.re_im_iff]
   exact ⟨hreint, himint⟩
 
-private lemma integral_poleKernel (δ1 δ2 : ℝ) (h1 : δ1 ≠ 0) (h2 : δ2 ≠ 0) :
+private lemma integral_poleKernel   :
     ∫ t : ℝ, ((1:ℂ)/((δ1:ℂ) + t*Complex.I) - (1:ℂ)/((δ2:ℂ) + t*Complex.I))
       = ((π * (δ1/|δ1| - δ2/|δ2|) : ℝ) : ℂ) := by
   set K : ℝ → ℂ := fun t =>
@@ -144,6 +150,8 @@ private lemma integral_poleKernel (δ1 δ2 : ℝ) (h1 : δ1 ≠ 0) (h2 : δ2 ≠
   rw [← integral_re_add_im hK, hIre, hIim]
   simp
   ring
+end
+
 
 private lemma verticalIntegral_poleKernel (c α β : ℝ) (hα : c ≠ α) (hβ : c ≠ β) :
     verticalIntegral c (fun s : ℂ => (s - (α:ℂ))⁻¹ - (s - (β:ℂ))⁻¹)
@@ -180,9 +188,9 @@ theorem verticalIntegral_sub_eq_sum_residues
     verticalIntegral b f - verticalIntegral a f = ∑ j : Fin n, R j := by
   obtain ⟨g, hg, hreg⟩ := hregular
   obtain ⟨C, k, hC, hbound⟩ := hgrowth
-  let Q : ℝ := b + 1
-  let φ : ℂ → ℂ := fun s => ∑ j, R j * ((s - (p j : ℂ))⁻¹ - (s - (Q : ℂ))⁻¹)
-  let H : ℂ → ℂ := fun s => g s + ∑ j, R j / (s - (Q : ℂ))
+  let Q  := b + 1
+  let φ  := fun s => ∑ j, R j * ((s - (p j : ℂ))⁻¹ - (s - (Q : ℂ))⁻¹)
+  let H  := fun s => g s + ∑ j, R j / (s - (Q : ℂ))
   have hQ : b < Q := by dsimp [Q]; linarith
   have hQne (s : ℂ) (hs : s.re ∈ Set.Icc a b) : s - (Q : ℂ) ≠ 0 := by
     intro he
@@ -236,7 +244,7 @@ theorem verticalIntegral_sub_eq_sum_residues
   have hHtail : ∀ (σ t : ℝ), σ ∈ Set.Icc a b → 1 ≤ |t| →
       ‖H ((σ : ℂ) + t * Complex.I)‖ ≤ (C + 2 * ∑ j, ‖R j‖) * (1 + |t|)^k := by
     intro σ t hσ ht
-    let s : ℂ := (σ : ℂ) + t * Complex.I
+    let s  := (σ : ℂ) + t * Complex.I
     have hs : s.re ∈ Set.Icc a b := by simpa [s] using hσ
     have htn : t ≠ 0 := by intro he; simp [he] at ht; linarith
     have hpn (j : Fin n) : s ≠ (p j : ℂ) := by
@@ -273,7 +281,7 @@ theorem verticalIntegral_sub_eq_sum_residues
   have hHgrow : ∃ A B : ℝ, 0 ≤ A ∧ 0 ≤ B ∧
       ∀ σ ∈ Set.Icc a b, ∀ t : ℝ,
         ‖H ((σ : ℂ) + t * Complex.I)‖ ≤ B * Real.exp (A * |t|) := by
-    let J : ℂ → ℂ := fun s => (Real.exp (-|s.im|) : ℂ) * H s
+    let J  := fun s => (Real.exp (-|s.im|) : ℂ) * H s
     have hJcont : ContinuousOn J {s : ℂ | s.re ∈ Set.Icc a b} := by
       apply ContinuousOn.mul
       · fun_prop
@@ -342,8 +350,8 @@ theorem verticalIntegral_sub_eq_sum_residues
       apply Finset.sum_eq_zero
       intro j hj
       rw [abs_of_neg (hs j), abs_of_neg haQ]
-      have hpne : a - p j ≠ 0 := ne_of_lt (hs j)
-      have hQne : a - Q ≠ 0 := ne_of_lt haQ
+      have hpne  := ne_of_lt (hs j)
+      have hQne  := ne_of_lt haQ
       field_simp
       norm_num
     · subst c
@@ -353,8 +361,8 @@ theorem verticalIntegral_sub_eq_sum_residues
       apply Finset.sum_congr rfl
       intro j hj
       rw [abs_of_pos (hs j), abs_of_neg hbQ]
-      have hpne : b - p j ≠ 0 := ne_of_gt (hs j)
-      have hQne : b - Q ≠ 0 := ne_of_lt hbQ
+      have hpne  := ne_of_gt (hs j)
+      have hQne  := ne_of_lt hbQ
       field_simp
       norm_num
   have hVI (c : ℝ) (hc : c = a ∨ c = b) (hi : Complex.VerticalIntegrable f c) :

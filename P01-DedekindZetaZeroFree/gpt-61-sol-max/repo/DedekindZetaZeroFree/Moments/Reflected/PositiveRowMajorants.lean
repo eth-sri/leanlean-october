@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Moments.Reflected.BetaEulerSeries
 public import DedekindZetaZeroFree.Arithmetic.Ideals.Counting.NormSeries
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 noncomputable section
@@ -13,7 +16,7 @@ set_option maxHeartbeats 800000
 
 variable {F : Type} [Field F] [NumberField F]
 
-def exteriorNormZeta (cS : Ideal (𝓞 F)) (t : ℝ) : ℝ :=
+def exteriorNormZeta (cS : Ideal (𝓞 F)) (t : ℝ)  :=
   ∑' I : ExteriorIdeal cS, (idealNorm I.val).rpow (-t)
 
 def PositiveRowIndex {cS : Ideal (𝓞 F)} (f : ExteriorSquarefreeIdeal cS) :=
@@ -21,7 +24,7 @@ def PositiveRowIndex {cS : Ideal (𝓞 F)} (f : ExteriorSquarefreeIdeal cS) :=
     ExteriorSquarefreeIdeal cS × ExteriorIdeal cS
 
 def positiveRowWeight {cS : Ideal (𝓞 F)} (f : ExteriorSquarefreeIdeal cS)
-    (σ : ℝ) (x : PositiveRowIndex f) : ℝ :=
+    (σ : ℝ) (x : PositiveRowIndex f)  :=
   betaIdeal f x.1.val.val * (rowNorm x.1.val x.2.1.val x.2.2).rpow (-σ) /
     (Real.sqrt (idealNorm x.2.1.val.val) * idealNorm x.2.2.val)
 

@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.Definitions.HilbertSymbols.GlobalHilbertPairingFiniteFactor
 public import ClassFieldTheory.Definitions.HilbertSymbols.IsLocalHilbertPairing
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -27,21 +30,25 @@ namespace ClassFieldTheory.GlobalHilbertPairingFamily
 
 universe u
 
+section
+variable (F : Type u) [Field F] [NumberField F]
+    {n : ℕ+} (B : GlobalHilbertPairingFamily F n)
+include F n B
 /-- Every finite-place member of the family is a local Hilbert pairing. -/
 def IsLocallyHilbert
-    (F : Type u) [Field F] [NumberField F]
-    {n : ℕ+} (B : GlobalHilbertPairingFamily F n) : Prop :=
+       :=
   ∀ v : HeightOneSpectrum (𝓞 F),
     HilbertPairing.IsLocalHilbertPairing (B v)
 
 /-- For each pair of nonzero elements of the number field, only finitely many
 finite-place factors are nontrivial. -/
 def HasFiniteSupport
-    (F : Type u) [Field F] [NumberField F]
-    {n : ℕ+} (B : GlobalHilbertPairingFamily F n)
-    (hmu : (primitiveRoots (n : ℕ) F).Nonempty) : Prop :=
+     
+    (hmu : (primitiveRoots (n : ℕ) F).Nonempty)  :=
   ∀ a b : Fˣ,
     Function.HasFiniteMulSupport (fun v : HeightOneSpectrum (𝓞 F) ↦
       finiteFactor F B hmu v a b)
+end
+
 
 end ClassFieldTheory.GlobalHilbertPairingFamily

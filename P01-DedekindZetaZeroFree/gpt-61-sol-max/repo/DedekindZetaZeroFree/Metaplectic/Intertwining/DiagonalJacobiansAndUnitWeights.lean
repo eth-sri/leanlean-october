@@ -20,7 +20,7 @@ variable (F : Type) [Field F] [NumberField F]
   (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
   (hP : IsTamePolarization F ζ hζ q S P)
   (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
-  (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
+  
 
 theorem fullDiagonal_inner_increment_abs
     (π : (LocalField F q)ˣ)

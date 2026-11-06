@@ -1,5 +1,7 @@
 module
 
+
+
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.CuspCutoffBoundaryVanishing
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.GreenIdentity.CutoffIntegralConvergence
 public import DedekindZetaZeroFree.Adeles.Quotients.CuspFrames.CubicCoveredRayCoordinates
@@ -69,13 +71,9 @@ private theorem global_private_native_normalRadialJet_abs_le {F : Type} [Field F
   · have h := KPArch.actionDenominator_pos
       (KPSmoothLocalQuotientCharts.archProjection F ζ hζ (c⁻¹ * g) w).out (0,0)
     simpa [KPArch.actionDenominator, KPArch.height, Complex.sq_norm, add_comm] using h
-private theorem global_private_native_normalRadial_flow_hasDerivAt {F : Type} [Field F] [NumberField F]
+private def global_private_native_normalRadial_flow_hasDerivAt {F : Type} [Field F] [NumberField F]
     {ζ : F} {hζ : IsPrimitiveRoot ζ 12} (c g : Cover F ζ hζ)
-    (w : NumberField.InfinitePlace F) (i : Fin 6) (t : ℝ) :
-    HasDerivAt (fun s => NormalCoefficient.normalRadial c
-      (g * KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (KPSmoothActualFlowData.flow F (w,i) s)))
-      (NormalCoefficient.normalRadialJet c w i
-        (g * KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (KPSmoothActualFlowData.flow F (w,i) t))) t := by
+    (w : NumberField.InfinitePlace F) (i : Fin 6) (t : ℝ)  := by
   let a : ℝ → Cover F ζ hζ := fun s =>
     KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (KPSmoothActualFlowData.flow F (w,i) s)
   have ha (s t : ℝ) : a (s + t) = a s * a t := by
@@ -151,9 +149,7 @@ private theorem global_private_clipped_exp_lipschitz (R : ℝ) (hR : 0 < R) :
   · simpa only [abs_sub_comm] using hb x y hxy
   · exact hb y x hyx
 
-private theorem global_private_clipped_taper_exp_lipschitz (Y ε : ℝ) (hε : 0 < ε) (hR : 0 < Y+ε) :
-    LipschitzWith (⟨|ε⁻¹|, abs_nonneg _⟩ * ⟨Y+ε, hR.le⟩)
-      (fun t : ℝ => max 0 (min 1 ((Y+ε-Real.exp t)/ε))) := by
+private def global_private_clipped_taper_exp_lipschitz (Y ε : ℝ) (hε : 0 < ε) (hR : 0 < Y+ε)  := by
   have hc := global_private_clipped_exp_lipschitz (Y+ε) hR
   have hp : LipschitzWith ⟨|ε⁻¹|, abs_nonneg _⟩
       (fun r : ℝ => max 0 (min 1 ((Y+ε-r)/ε))) := by
@@ -179,13 +175,9 @@ private theorem global_private_clipped_taper_exp_lipschitz (Y ε : ℝ) (hε : 0
     · rw [min_eq_right (le_of_not_ge h)]
   rwa [heq] at hh
 
-private theorem global_private_native_taper_flow_lipschitz (c g : Cover F ζ hζ)
+private def global_private_native_taper_flow_lipschitz (c g : Cover F ζ hζ)
     (Y ε : ℝ) (hε : 0 < ε) (hR : 0 < Y+ε)
-    (w : NumberField.InfinitePlace F) (i : Fin 6) :
-    LipschitzWith ((⟨|ε⁻¹|, abs_nonneg _⟩ * ⟨Y+ε, hR.le⟩) * 4)
-      (fun t : ℝ => max 0 (min 1 ((Y+ε-NormalCoefficient.normalRadial c
-        (g * KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
-          (KPSmoothActualFlowData.flow F (w,i) t)))/ε))) := by
+    (w : NumberField.InfinitePlace F) (i : Fin 6)  := by
   have h := (global_private_clipped_taper_exp_lipschitz Y ε hε hR).comp
     (global_private_native_log_radial_flow_lipschitz c g w i)
   have hr (a : Cover F ζ hζ) : 0 < NormalCoefficient.normalRadial c a := Real.exp_pos _
@@ -407,14 +399,13 @@ private theorem global_cutoff_modulus_continuousOn_ends
     exact D.chart_modulus Y hY p.1 p.2
   rw [he]
   exact (continuous_subtype_val.comp continuous_snd).continuousOn
-private theorem global_cutoff_continuousAt_off_core
+private def global_cutoff_continuousAt_off_core
     (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
     (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
     (D : KPMsFixedHaarDisintegration.Disintegration A R P) (Y ε : ℝ)
     (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff A Y)
-    (x : X F ζ hζ) (hx : x ∉ quotientCore A P Y) :
-    ContinuousAt (CutoffApproximation.coreCutoff A R P D Y ε) x := by
+    (x : X F ζ hζ) (hx : x ∉ quotientCore A P Y)  := by
   have hopen := (FiniteSlabCoreShell.isClosed_quotientCore A P Y).isOpen_compl
   have hmem : x ∈ (quotientCore A P Y)ᶜ := hx
   have he : ∀ᶠ y in 𝓝 x, CutoffApproximation.coreCutoff A R P D Y ε y =

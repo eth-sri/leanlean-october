@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Valuation.Henselian.Factorization.FiniteApproximation
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -94,7 +97,7 @@ def henselFactorization_initialPrefixState_of_factor
       gRed := ?_
       hRed := ?_ }
   · intro r hr
-    have hr0 : r = 0 := Nat.eq_zero_of_le_zero hr
+    have hr0  := Nat.eq_zero_of_le_zero hr
     subst r
     exact ⟨f1, by simpa using hfactor0⟩
   · intro r
@@ -191,17 +194,15 @@ def henselFactorization_chosenNextPrefixState_of_mem_span
   · intro r hr
     by_cases htop : r = N + 1
     · subst r
-      exact ⟨fnNext, by simpa [Nat.add_assoc] using hfactorNext⟩
-    · have hrn : r ≤ N := Nat.lt_succ_iff.mp (lt_of_le_of_ne hr htop)
+      exact ⟨fnNext, hfactorNext⟩
+    · have hrn  := Nat.lt_succ_iff.mp (lt_of_le_of_ne hr htop)
       exact hprefixOld r hrn
   · exact henselFactorization_update_corr_natDegree_le s.pCorrDeg hpdeg
   · exact henselFactorization_update_corr_natDegree_le s.qCorrDeg hqdeg
   · simpa [Nat.add_assoc] using hfactorNext
 
-/-- in the displayed-factor prefix extension the `p`
-correction changes only at the newly constructed index. -/
-theorem henselFactorization_chosenNextPrefixState_pCorr_of_ne_of_mem_span
-    {R : Type*} [CommRing R] [IsLocalRing R] [NoZeroDivisors R]
+section
+variable {R : Type*} [CommRing R] [IsLocalRing R] [NoZeroDivisors R]
     {π : R} (hπne : π ≠ 0)
     (hπmem : π ∈ IsLocalRing.maximalIdeal R)
     {f g0 h0 a b e : R[X]}
@@ -215,7 +216,12 @@ theorem henselFactorization_chosenNextPrefixState_pCorr_of_ne_of_mem_span
     (hbezFactor : a * g0 + b * h0 - 1 = Polynomial.C π * e)
     (hmd : m ≤ d)
     (s : HenselFactorizationFinitePrefixState π f g0 h0 m d N)
-    (hr : r ≠ N + 1) :
+    (hr : r ≠ N + 1)
+include R π hπne hπmem f g0 h0 a b e gbar m d N r hf hg0map hg0nat hgbar_nat hglead hh0deg hbezFactor hmd s hr
+/-- in the displayed-factor prefix extension the `p`
+correction changes only at the newly constructed index. -/
+theorem henselFactorization_chosenNextPrefixState_pCorr_of_ne_of_mem_span
+      :
     (henselFactorization_chosenNextPrefixState_of_mem_span
         (π := π) hπne hπmem
         (f := f) (g0 := g0) (h0 := h0) (a := a) (b := b) (e := e)
@@ -228,21 +234,7 @@ theorem henselFactorization_chosenNextPrefixState_pCorr_of_ne_of_mem_span
 /-- in the displayed-factor prefix extension the `q`
 correction changes only at the newly constructed index. -/
 theorem henselFactorization_chosenNextPrefixState_qCorr_of_ne_of_mem_span
-    {R : Type*} [CommRing R] [IsLocalRing R] [NoZeroDivisors R]
-    {π : R} (hπne : π ≠ 0)
-    (hπmem : π ∈ IsLocalRing.maximalIdeal R)
-    {f g0 h0 a b e : R[X]}
-    {gbar : (IsLocalRing.ResidueField R)[X]} {m d N r : ℕ}
-    (hf : f.natDegree ≤ d)
-    (hg0map : g0.map (IsLocalRing.residue R) = gbar)
-    (hg0nat : g0.natDegree = m)
-    (hgbar_nat : gbar.natDegree = m)
-    (hglead : gbar.leadingCoeff ≠ 0)
-    (hh0deg : h0.natDegree ≤ d - m)
-    (hbezFactor : a * g0 + b * h0 - 1 = Polynomial.C π * e)
-    (hmd : m ≤ d)
-    (s : HenselFactorizationFinitePrefixState π f g0 h0 m d N)
-    (hr : r ≠ N + 1) :
+      :
     (henselFactorization_chosenNextPrefixState_of_mem_span
         (π := π) hπne hπmem
         (f := f) (g0 := g0) (h0 := h0) (a := a) (b := b) (e := e)
@@ -251,6 +243,8 @@ theorem henselFactorization_chosenNextPrefixState_qCorr_of_ne_of_mem_span
       s.qCorr r := by
   unfold henselFactorization_chosenNextPrefixState_of_mem_span
   simp [Function.update_of_ne hr]
+end
+
 
 /-- recursively chosen compatible finite Hensel prefixes in
 the displayed-factor displayed-factor form. -/
@@ -322,49 +316,14 @@ theorem henselFactorization_prefixStateSeq_pCorr_eq_of_le_of_mem_span
   intro M N hMN
   induction N generalizing M with
   | zero =>
-      have hM0 : M = 0 := Nat.eq_zero_of_le_zero hMN
+      have hM0  := Nat.eq_zero_of_le_zero hMN
       subst M
       rfl
   | succ N ih =>
       by_cases htop : M = N + 1
       · subst M
         rfl
-      · have hMN' : M ≤ N := Nat.lt_succ_iff.mp (lt_of_le_of_ne hMN htop)
-        calc
-          (henselFactorization_prefixStateSeq_of_mem_span
-              (π := π) (f := f) (g0 := g0) (h0 := h0)
-              (a := a) (b := b) (f1 := f1) (e := e)
-              (gbar := gbar) (m := m) (d := d)
-              hπne hπmem hf hg0map hg0nat hgbar_nat hglead hh0deg
-              hfactor0 hbezFactor hmd (N + 1)).pCorr M =
-            (henselFactorization_prefixStateSeq_of_mem_span
-              (π := π) (f := f) (g0 := g0) (h0 := h0)
-              (a := a) (b := b) (f1 := f1) (e := e)
-              (gbar := gbar) (m := m) (d := d)
-              hπne hπmem hf hg0map hg0nat hgbar_nat hglead hh0deg
-              hfactor0 hbezFactor hmd N).pCorr M := by
-              simpa [henselFactorization_prefixStateSeq_of_mem_span] using
-                henselFactorization_chosenNextPrefixState_pCorr_of_ne_of_mem_span
-                  (π := π) hπne hπmem
-                  (f := f) (g0 := g0) (h0 := h0)
-                  (a := a) (b := b) (e := e)
-                  (gbar := gbar) (m := m) (d := d) (N := N) (r := M)
-                  hf hg0map hg0nat hgbar_nat hglead hh0deg
-                  hbezFactor hmd
-                  (henselFactorization_prefixStateSeq_of_mem_span
-                    (π := π) (f := f) (g0 := g0) (h0 := h0)
-                    (a := a) (b := b) (f1 := f1) (e := e)
-                    (gbar := gbar) (m := m) (d := d)
-                    hπne hπmem hf hg0map hg0nat hgbar_nat hglead hh0deg
-                    hfactor0 hbezFactor hmd N)
-                  htop
-          _ =
-            (henselFactorization_prefixStateSeq_of_mem_span
-              (π := π) (f := f) (g0 := g0) (h0 := h0)
-              (a := a) (b := b) (f1 := f1) (e := e)
-              (gbar := gbar) (m := m) (d := d)
-              hπne hπmem hf hg0map hg0nat hgbar_nat hglead hh0deg
-              hfactor0 hbezFactor hmd M).pCorr M := ih hMN'
+      · exact Trans.trans (id (henselFactorization_chosenNextPrefixState_pCorr_of_ne_of_mem_span hπne hπmem hf hg0map hg0nat hgbar_nat hglead hh0deg hbezFactor hmd (henselFactorization_prefixStateSeq_of_mem_span hπne hπmem hf hg0map hg0nat hgbar_nat hglead hh0deg hfactor0 hbezFactor hmd N) htop)) (ih (Nat.lt_succ_iff.mp (lt_of_le_of_ne hMN htop)))
 
 /-- coherence of the displayed-factor `q`-corrections:
 later prefix states agree with earlier ones at every already constructed
@@ -400,49 +359,14 @@ theorem henselFactorization_prefixStateSeq_qCorr_eq_of_le_of_mem_span
   intro M N hMN
   induction N generalizing M with
   | zero =>
-      have hM0 : M = 0 := Nat.eq_zero_of_le_zero hMN
+      have hM0  := Nat.eq_zero_of_le_zero hMN
       subst M
       rfl
   | succ N ih =>
       by_cases htop : M = N + 1
       · subst M
         rfl
-      · have hMN' : M ≤ N := Nat.lt_succ_iff.mp (lt_of_le_of_ne hMN htop)
-        calc
-          (henselFactorization_prefixStateSeq_of_mem_span
-              (π := π) (f := f) (g0 := g0) (h0 := h0)
-              (a := a) (b := b) (f1 := f1) (e := e)
-              (gbar := gbar) (m := m) (d := d)
-              hπne hπmem hf hg0map hg0nat hgbar_nat hglead hh0deg
-              hfactor0 hbezFactor hmd (N + 1)).qCorr M =
-            (henselFactorization_prefixStateSeq_of_mem_span
-              (π := π) (f := f) (g0 := g0) (h0 := h0)
-              (a := a) (b := b) (f1 := f1) (e := e)
-              (gbar := gbar) (m := m) (d := d)
-              hπne hπmem hf hg0map hg0nat hgbar_nat hglead hh0deg
-              hfactor0 hbezFactor hmd N).qCorr M := by
-              simpa [henselFactorization_prefixStateSeq_of_mem_span] using
-                henselFactorization_chosenNextPrefixState_qCorr_of_ne_of_mem_span
-                  (π := π) hπne hπmem
-                  (f := f) (g0 := g0) (h0 := h0)
-                  (a := a) (b := b) (e := e)
-                  (gbar := gbar) (m := m) (d := d) (N := N) (r := M)
-                  hf hg0map hg0nat hgbar_nat hglead hh0deg
-                  hbezFactor hmd
-                  (henselFactorization_prefixStateSeq_of_mem_span
-                    (π := π) (f := f) (g0 := g0) (h0 := h0)
-                    (a := a) (b := b) (f1 := f1) (e := e)
-                    (gbar := gbar) (m := m) (d := d)
-                    hπne hπmem hf hg0map hg0nat hgbar_nat hglead hh0deg
-                    hfactor0 hbezFactor hmd N)
-                  htop
-          _ =
-            (henselFactorization_prefixStateSeq_of_mem_span
-              (π := π) (f := f) (g0 := g0) (h0 := h0)
-              (a := a) (b := b) (f1 := f1) (e := e)
-              (gbar := gbar) (m := m) (d := d)
-              hπne hπmem hf hg0map hg0nat hgbar_nat hglead hh0deg
-              hfactor0 hbezFactor hmd M).qCorr M := ih hMN'
+      · exact Trans.trans (id (henselFactorization_chosenNextPrefixState_qCorr_of_ne_of_mem_span hπne hπmem hf hg0map hg0nat hgbar_nat hglead hh0deg hbezFactor hmd (henselFactorization_prefixStateSeq_of_mem_span hπne hπmem hf hg0map hg0nat hgbar_nat hglead hh0deg hfactor0 hbezFactor hmd N) htop)) (ih (Nat.lt_succ_iff.mp (lt_of_le_of_ne hMN htop)))
 
 /-- the infinite `p`-correction sequence from the
 displayed-factor displayed-factor prefix construction. -/
@@ -460,7 +384,7 @@ def henselFactorization_infinitePCorr_of_mem_span
     (hh0deg : h0.natDegree ≤ d - m)
     (hfactor0 : f - g0 * h0 = Polynomial.C π * f1)
     (hbezFactor : a * g0 + b * h0 - 1 = Polynomial.C π * e)
-    (hmd : m ≤ d) (n : ℕ) : R[X] :=
+    (hmd : m ≤ d) (n : ℕ)  :=
   (henselFactorization_prefixStateSeq_of_mem_span
     (π := π) (f := f) (g0 := g0) (h0 := h0)
     (a := a) (b := b) (f1 := f1) (e := e)
@@ -484,7 +408,7 @@ def henselFactorization_infiniteQCorr_of_mem_span
     (hh0deg : h0.natDegree ≤ d - m)
     (hfactor0 : f - g0 * h0 = Polynomial.C π * f1)
     (hbezFactor : a * g0 + b * h0 - 1 = Polynomial.C π * e)
-    (hmd : m ≤ d) (n : ℕ) : R[X] :=
+    (hmd : m ≤ d) (n : ℕ)  :=
   (henselFactorization_prefixStateSeq_of_mem_span
     (π := π) (f := f) (g0 := g0) (h0 := h0)
     (a := a) (b := b) (f1 := f1) (e := e)
@@ -516,16 +440,7 @@ theorem henselFactorization_infinitePCorr_natDegree_le_of_mem_span
         (a := a) (b := b) (f1 := f1) (e := e)
         (gbar := gbar) (m := m) (d := d)
         hf hg0map hg0nat hgbar_nat hglead hh0deg
-        hfactor0 hbezFactor hmd n).natDegree ≤ m := by
-  intro n
-  unfold henselFactorization_infinitePCorr_of_mem_span
-  exact
-    (henselFactorization_prefixStateSeq_of_mem_span
-      (π := π) (f := f) (g0 := g0) (h0 := h0)
-      (a := a) (b := b) (f1 := f1) (e := e)
-      (gbar := gbar) (m := m) (d := d)
-      hπne hπmem hf hg0map hg0nat hgbar_nat hglead hh0deg
-      hfactor0 hbezFactor hmd n).pCorrDeg n
+        hfactor0 hbezFactor hmd n).natDegree ≤ m := (fun n => id ((henselFactorization_prefixStateSeq_of_mem_span hπne hπmem hf hg0map hg0nat hgbar_nat hglead hh0deg hfactor0 hbezFactor hmd n).pCorrDeg n))
 
 /-- the displayed-factor infinite `q`-corrections retain the
 stated degree bound. -/
@@ -551,16 +466,7 @@ theorem henselFactorization_infiniteQCorr_natDegree_le_of_mem_span
         (a := a) (b := b) (f1 := f1) (e := e)
         (gbar := gbar) (m := m) (d := d)
         hf hg0map hg0nat hgbar_nat hglead hh0deg
-        hfactor0 hbezFactor hmd n).natDegree ≤ d - m := by
-  intro n
-  unfold henselFactorization_infiniteQCorr_of_mem_span
-  exact
-    (henselFactorization_prefixStateSeq_of_mem_span
-      (π := π) (f := f) (g0 := g0) (h0 := h0)
-      (a := a) (b := b) (f1 := f1) (e := e)
-      (gbar := gbar) (m := m) (d := d)
-      hπne hπmem hf hg0map hg0nat hgbar_nat hglead hh0deg
-      hfactor0 hbezFactor hmd n).qCorrDeg n
+        hfactor0 hbezFactor hmd n).natDegree ≤ d - m := (fun n => id ((henselFactorization_prefixStateSeq_of_mem_span hπne hπmem hf hg0map hg0nat hgbar_nat hglead hh0deg hfactor0 hbezFactor hmd n).qCorrDeg n))
 
 /-- a displayed-factor finite prefix state's
 `p`-correction agrees with the extracted infinite `p`-correction at every
@@ -596,12 +502,7 @@ theorem henselFactorization_prefixStateSeq_pCorr_eq_infinite_of_le_of_mem_span
           hfactor0 hbezFactor hmd r := by
   intro r N hr
   unfold henselFactorization_infinitePCorr_of_mem_span
-  exact henselFactorization_prefixStateSeq_pCorr_eq_of_le_of_mem_span
-    (π := π) (f := f) (g0 := g0) (h0 := h0)
-    (a := a) (b := b) (f1 := f1) (e := e)
-    (gbar := gbar) (m := m) (d := d)
-    hπne hπmem hf hg0map hg0nat hgbar_nat hglead hh0deg
-    hfactor0 hbezFactor hmd hr
+  apply henselFactorization_prefixStateSeq_pCorr_eq_of_le_of_mem_span <;> assumption
 
 /-- a displayed-factor finite prefix state's
 `q`-correction agrees with the extracted infinite `q`-correction at every
@@ -637,12 +538,7 @@ theorem henselFactorization_prefixStateSeq_qCorr_eq_infinite_of_le_of_mem_span
           hfactor0 hbezFactor hmd r := by
   intro r N hr
   unfold henselFactorization_infiniteQCorr_of_mem_span
-  exact henselFactorization_prefixStateSeq_qCorr_eq_of_le_of_mem_span
-    (π := π) (f := f) (g0 := g0) (h0 := h0)
-    (a := a) (b := b) (f1 := f1) (e := e)
-    (gbar := gbar) (m := m) (d := d)
-    hπne hπmem hf hg0map hg0nat hgbar_nat hglead hh0deg
-    hfactor0 hbezFactor hmd hr
+  apply henselFactorization_prefixStateSeq_qCorr_eq_of_le_of_mem_span <;> assumption
 
 /-- every finite displayed-factor factorization invariant
 transfers from the coherent prefix states to the extracted infinite correction
@@ -702,13 +598,7 @@ theorem henselFactorization_infiniteCorr_factor_prefix_of_mem_span
           N := by
     apply henselFactorization_henselIterate_eq_of_corr_eq_le
     intro k hk
-    simpa [S] using
-      henselFactorization_prefixStateSeq_pCorr_eq_infinite_of_le_of_mem_span
-        (π := π) (f := f) (g0 := g0) (h0 := h0)
-        (a := a) (b := b) (f1 := f1) (e := e)
-        (gbar := gbar) (m := m) (d := d)
-        hπne hπmem hf hg0map hg0nat hgbar_nat hglead hh0deg
-        hfactor0 hbezFactor hmd (r := k) (N := N) hk
+    apply henselFactorization_prefixStateSeq_pCorr_eq_infinite_of_le_of_mem_span <;> assumption
   have hq :
       henselFactorization_henselIterate π h0 S.qCorr N =
         henselFactorization_henselIterate π h0
@@ -722,62 +612,56 @@ theorem henselFactorization_infiniteCorr_factor_prefix_of_mem_span
           N := by
     apply henselFactorization_henselIterate_eq_of_corr_eq_le
     intro k hk
-    simpa [S] using
-      henselFactorization_prefixStateSeq_qCorr_eq_infinite_of_le_of_mem_span
-        (π := π) (f := f) (g0 := g0) (h0 := h0)
-        (a := a) (b := b) (f1 := f1) (e := e)
-        (gbar := gbar) (m := m) (d := d)
-        hπne hπmem hf hg0map hg0nat hgbar_nat hglead hh0deg
-        hfactor0 hbezFactor hmd (r := k) (N := N) hk
+    apply henselFactorization_prefixStateSeq_qCorr_eq_infinite_of_le_of_mem_span <;> assumption
   exact ⟨S.fErr, by simpa [S, hp, hq] using S.factor⟩
 
-/-- the factorization error of the displayed-factor infinite
-approximants is coefficientwise in the corresponding high power of the
-maximal ideal. -/
-theorem henselFactorization_infiniteCorr_error_coeff_mem_maximalIdeal_pow_of_mem_span
-    {R : Type*} [CommRing R] [IsLocalRing R] [NoZeroDivisors R]
-    {π : R} (hπne : π ≠ 0)
-    (hπmem : π ∈ IsLocalRing.maximalIdeal R)
-    {f g0 h0 a b f1 e : R[X]}
-    {gbar : (IsLocalRing.ResidueField R)[X]} {m d : ℕ}
-    (hf : f.natDegree ≤ d)
-    (hg0map : g0.map (IsLocalRing.residue R) = gbar)
-    (hg0nat : g0.natDegree = m)
-    (hgbar_nat : gbar.natDegree = m)
-    (hglead : gbar.leadingCoeff ≠ 0)
-    (hh0deg : h0.natDegree ≤ d - m)
-    (hfactor0 : f - g0 * h0 = Polynomial.C π * f1)
-    (hbezFactor : a * g0 + b * h0 - 1 = Polynomial.C π * e)
-    (hmd : m ≤ d) :
-    ∀ N i : ℕ,
-      (f - henselFactorization_henselIterate π g0
-            (henselFactorization_infinitePCorr_of_mem_span
-              (π := π) hπne hπmem
-              (f := f) (g0 := g0) (h0 := h0)
-              (a := a) (b := b) (f1 := f1) (e := e)
-              (gbar := gbar) (m := m) (d := d)
-              hf hg0map hg0nat hgbar_nat hglead hh0deg
-              hfactor0 hbezFactor hmd) N *
-          henselFactorization_henselIterate π h0
-            (henselFactorization_infiniteQCorr_of_mem_span
-              (π := π) hπne hπmem
-              (f := f) (g0 := g0) (h0 := h0)
-              (a := a) (b := b) (f1 := f1) (e := e)
-              (gbar := gbar) (m := m) (d := d)
-              hf hg0map hg0nat hgbar_nat hglead hh0deg
-              hfactor0 hbezFactor hmd) N).coeff i ∈
-        IsLocalRing.maximalIdeal R ^ (N + 1) := by
-  intro N i
-  rcases henselFactorization_infiniteCorr_factor_prefix_of_mem_span
-      (π := π) hπne hπmem
-      (f := f) (g0 := g0) (h0 := h0)
-      (a := a) (b := b) (f1 := f1) (e := e)
-      (gbar := gbar) (m := m) (d := d)
-      hf hg0map hg0nat hgbar_nat hglead hh0deg
-      hfactor0 hbezFactor hmd N with
-    ⟨fN, hfactor⟩
-  exact henselFactorization_coeff_mem_maximalIdeal_pow_of_factor_of_mem
-    (π := π) (n := N + 1) hπmem hfactor i
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- the displayed-factor `g`-approximants keep the construction
 degree bound. -/
@@ -805,25 +689,7 @@ theorem henselFactorization_infiniteGIter_natDegree_le_of_mem_span
           (gbar := gbar) (m := m) (d := d)
           hf hg0map hg0nat hgbar_nat hglead hh0deg
           hfactor0 hbezFactor hmd)
-        N).natDegree ≤ m := by
-  exact henselFactorization_henselIterate_natDegree_le
-    (π := π) (F0 := g0)
-    (corr := henselFactorization_infinitePCorr_of_mem_span
-      (π := π) hπne hπmem
-      (f := f) (g0 := g0) (h0 := h0)
-      (a := a) (b := b) (f1 := f1) (e := e)
-      (gbar := gbar) (m := m) (d := d)
-      hf hg0map hg0nat hgbar_nat hglead hh0deg
-      hfactor0 hbezFactor hmd)
-    (M := m)
-    (by simp [hg0nat])
-    (henselFactorization_infinitePCorr_natDegree_le_of_mem_span
-      (π := π) hπne hπmem
-      (f := f) (g0 := g0) (h0 := h0)
-      (a := a) (b := b) (f1 := f1) (e := e)
-      (gbar := gbar) (m := m) (d := d)
-      hf hg0map hg0nat hgbar_nat hglead hh0deg
-      hfactor0 hbezFactor hmd)
+        N).natDegree ≤ m := (henselFactorization_henselIterate_natDegree_le (of_eq_true (Eq.trans (congrFun' (congrArg LE.le hg0nat) m) (Std.le_refl._simp_1 m))) (henselFactorization_infinitePCorr_natDegree_le_of_mem_span hπne hπmem hf hg0map hg0nat hgbar_nat hglead hh0deg hfactor0 hbezFactor hmd))
 
 /-- the displayed-factor `h`-approximants keep the construction
 degree bound. -/
@@ -851,195 +717,177 @@ theorem henselFactorization_infiniteHIter_natDegree_le_of_mem_span
           (gbar := gbar) (m := m) (d := d)
           hf hg0map hg0nat hgbar_nat hglead hh0deg
           hfactor0 hbezFactor hmd)
-        N).natDegree ≤ d - m := by
-  exact henselFactorization_henselIterate_natDegree_le
-    (π := π) (F0 := h0)
-    (corr := henselFactorization_infiniteQCorr_of_mem_span
-      (π := π) hπne hπmem
-      (f := f) (g0 := g0) (h0 := h0)
-      (a := a) (b := b) (f1 := f1) (e := e)
-      (gbar := gbar) (m := m) (d := d)
-      hf hg0map hg0nat hgbar_nat hglead hh0deg
-      hfactor0 hbezFactor hmd)
-    (M := d - m)
-    hh0deg
-    (henselFactorization_infiniteQCorr_natDegree_le_of_mem_span
-      (π := π) hπne hπmem
-      (f := f) (g0 := g0) (h0 := h0)
-      (a := a) (b := b) (f1 := f1) (e := e)
-      (gbar := gbar) (m := m) (d := d)
-      hf hg0map hg0nat hgbar_nat hglead hh0deg
-      hfactor0 hbezFactor hmd)
+        N).natDegree ≤ d - m := (henselFactorization_henselIterate_natDegree_le hh0deg (henselFactorization_infiniteQCorr_natDegree_le_of_mem_span hπne hπmem hf hg0map hg0nat hgbar_nat hglead hh0deg hfactor0 hbezFactor hmd))
 
-/-- the displayed-factor infinite `g`-approximants keep the
-original residual class of `g0`. -/
-theorem henselFactorization_infiniteGIter_reduction_of_mem_span
-    {R : Type*} [CommRing R] [IsLocalRing R] [NoZeroDivisors R]
-    {π : R} (hπne : π ≠ 0)
-    (hπmem : π ∈ IsLocalRing.maximalIdeal R)
-    {f g0 h0 a b f1 e : R[X]}
-    {gbar : (IsLocalRing.ResidueField R)[X]} {m d : ℕ}
-    (hf : f.natDegree ≤ d)
-    (hg0map : g0.map (IsLocalRing.residue R) = gbar)
-    (hg0nat : g0.natDegree = m)
-    (hgbar_nat : gbar.natDegree = m)
-    (hglead : gbar.leadingCoeff ≠ 0)
-    (hh0deg : h0.natDegree ≤ d - m)
-    (hfactor0 : f - g0 * h0 = Polynomial.C π * f1)
-    (hbezFactor : a * g0 + b * h0 - 1 = Polynomial.C π * e)
-    (hmd : m ≤ d) :
-    ∀ N i : ℕ,
-      (henselFactorization_henselIterate π g0
-        (henselFactorization_infinitePCorr_of_mem_span
-          (π := π) hπne hπmem
-          (f := f) (g0 := g0) (h0 := h0)
-          (a := a) (b := b) (f1 := f1) (e := e)
-          (gbar := gbar) (m := m) (d := d)
-          hf hg0map hg0nat hgbar_nat hglead hh0deg
-          hfactor0 hbezFactor hmd)
-        N - g0).coeff i ∈
-        IsLocalRing.maximalIdeal R :=
-  henselFactorization_henselIterate_reduction_of_mem
-    (π := π) hπmem g0
-    (henselFactorization_infinitePCorr_of_mem_span
-      (π := π) hπne hπmem
-      (f := f) (g0 := g0) (h0 := h0)
-      (a := a) (b := b) (f1 := f1) (e := e)
-      (gbar := gbar) (m := m) (d := d)
-      hf hg0map hg0nat hgbar_nat hglead hh0deg
-      hfactor0 hbezFactor hmd)
 
-/-- the displayed-factor infinite `h`-approximants keep the
-original residual class of `h0`. -/
-theorem henselFactorization_infiniteHIter_reduction_of_mem_span
-    {R : Type*} [CommRing R] [IsLocalRing R] [NoZeroDivisors R]
-    {π : R} (hπne : π ≠ 0)
-    (hπmem : π ∈ IsLocalRing.maximalIdeal R)
-    {f g0 h0 a b f1 e : R[X]}
-    {gbar : (IsLocalRing.ResidueField R)[X]} {m d : ℕ}
-    (hf : f.natDegree ≤ d)
-    (hg0map : g0.map (IsLocalRing.residue R) = gbar)
-    (hg0nat : g0.natDegree = m)
-    (hgbar_nat : gbar.natDegree = m)
-    (hglead : gbar.leadingCoeff ≠ 0)
-    (hh0deg : h0.natDegree ≤ d - m)
-    (hfactor0 : f - g0 * h0 = Polynomial.C π * f1)
-    (hbezFactor : a * g0 + b * h0 - 1 = Polynomial.C π * e)
-    (hmd : m ≤ d) :
-    ∀ N i : ℕ,
-      (henselFactorization_henselIterate π h0
-        (henselFactorization_infiniteQCorr_of_mem_span
-          (π := π) hπne hπmem
-          (f := f) (g0 := g0) (h0 := h0)
-          (a := a) (b := b) (f1 := f1) (e := e)
-          (gbar := gbar) (m := m) (d := d)
-          hf hg0map hg0nat hgbar_nat hglead hh0deg
-          hfactor0 hbezFactor hmd)
-        N - h0).coeff i ∈
-        IsLocalRing.maximalIdeal R :=
-  henselFactorization_henselIterate_reduction_of_mem
-    (π := π) hπmem h0
-    (henselFactorization_infiniteQCorr_of_mem_span
-      (π := π) hπne hπmem
-      (f := f) (g0 := g0) (h0 := h0)
-      (a := a) (b := b) (f1 := f1) (e := e)
-      (gbar := gbar) (m := m) (d := d)
-      hf hg0map hg0nat hgbar_nat hglead hh0deg
-      hfactor0 hbezFactor hmd)
 
-/-- coefficientwise Cauchy estimate for the displayed-factor
-infinite `g`-approximants. -/
-theorem henselFactorization_infiniteGIter_sub_coeff_mem_maximalIdeal_pow_of_le_of_mem_span
-    {R : Type*} [CommRing R] [IsLocalRing R] [NoZeroDivisors R]
-    {π : R} (hπne : π ≠ 0)
-    (hπmem : π ∈ IsLocalRing.maximalIdeal R)
-    {f g0 h0 a b f1 e : R[X]}
-    {gbar : (IsLocalRing.ResidueField R)[X]} {m d : ℕ}
-    (hf : f.natDegree ≤ d)
-    (hg0map : g0.map (IsLocalRing.residue R) = gbar)
-    (hg0nat : g0.natDegree = m)
-    (hgbar_nat : gbar.natDegree = m)
-    (hglead : gbar.leadingCoeff ≠ 0)
-    (hh0deg : h0.natDegree ≤ d - m)
-    (hfactor0 : f - g0 * h0 = Polynomial.C π * f1)
-    (hbezFactor : a * g0 + b * h0 - 1 = Polynomial.C π * e)
-    (hmd : m ≤ d) :
-    ∀ {M N : ℕ}, M ≤ N → ∀ i : ℕ,
-      (henselFactorization_henselIterate π g0
-          (henselFactorization_infinitePCorr_of_mem_span
-            (π := π) hπne hπmem
-            (f := f) (g0 := g0) (h0 := h0)
-            (a := a) (b := b) (f1 := f1) (e := e)
-            (gbar := gbar) (m := m) (d := d)
-            hf hg0map hg0nat hgbar_nat hglead hh0deg
-            hfactor0 hbezFactor hmd)
-          N -
-        henselFactorization_henselIterate π g0
-          (henselFactorization_infinitePCorr_of_mem_span
-            (π := π) hπne hπmem
-            (f := f) (g0 := g0) (h0 := h0)
-            (a := a) (b := b) (f1 := f1) (e := e)
-            (gbar := gbar) (m := m) (d := d)
-            hf hg0map hg0nat hgbar_nat hglead hh0deg
-            hfactor0 hbezFactor hmd)
-          M).coeff i ∈
-        IsLocalRing.maximalIdeal R ^ (M + 1) :=
-  henselFactorization_henselIterate_sub_coeff_mem_maximalIdeal_pow_of_le_of_mem
-    (π := π) hπmem g0
-    (henselFactorization_infinitePCorr_of_mem_span
-      (π := π) hπne hπmem
-      (f := f) (g0 := g0) (h0 := h0)
-      (a := a) (b := b) (f1 := f1) (e := e)
-      (gbar := gbar) (m := m) (d := d)
-      hf hg0map hg0nat hgbar_nat hglead hh0deg
-      hfactor0 hbezFactor hmd)
 
-/-- coefficientwise Cauchy estimate for the displayed-factor
-infinite `h`-approximants. -/
-theorem henselFactorization_infiniteHIter_sub_coeff_mem_maximalIdeal_pow_of_le_of_mem_span
-    {R : Type*} [CommRing R] [IsLocalRing R] [NoZeroDivisors R]
-    {π : R} (hπne : π ≠ 0)
-    (hπmem : π ∈ IsLocalRing.maximalIdeal R)
-    {f g0 h0 a b f1 e : R[X]}
-    {gbar : (IsLocalRing.ResidueField R)[X]} {m d : ℕ}
-    (hf : f.natDegree ≤ d)
-    (hg0map : g0.map (IsLocalRing.residue R) = gbar)
-    (hg0nat : g0.natDegree = m)
-    (hgbar_nat : gbar.natDegree = m)
-    (hglead : gbar.leadingCoeff ≠ 0)
-    (hh0deg : h0.natDegree ≤ d - m)
-    (hfactor0 : f - g0 * h0 = Polynomial.C π * f1)
-    (hbezFactor : a * g0 + b * h0 - 1 = Polynomial.C π * e)
-    (hmd : m ≤ d) :
-    ∀ {M N : ℕ}, M ≤ N → ∀ i : ℕ,
-      (henselFactorization_henselIterate π h0
-          (henselFactorization_infiniteQCorr_of_mem_span
-            (π := π) hπne hπmem
-            (f := f) (g0 := g0) (h0 := h0)
-            (a := a) (b := b) (f1 := f1) (e := e)
-            (gbar := gbar) (m := m) (d := d)
-            hf hg0map hg0nat hgbar_nat hglead hh0deg
-            hfactor0 hbezFactor hmd)
-          N -
-        henselFactorization_henselIterate π h0
-          (henselFactorization_infiniteQCorr_of_mem_span
-            (π := π) hπne hπmem
-            (f := f) (g0 := g0) (h0 := h0)
-            (a := a) (b := b) (f1 := f1) (e := e)
-            (gbar := gbar) (m := m) (d := d)
-            hf hg0map hg0nat hgbar_nat hglead hh0deg
-            hfactor0 hbezFactor hmd)
-          M).coeff i ∈
-        IsLocalRing.maximalIdeal R ^ (M + 1) :=
-  henselFactorization_henselIterate_sub_coeff_mem_maximalIdeal_pow_of_le_of_mem
-    (π := π) hπmem h0
-    (henselFactorization_infiniteQCorr_of_mem_span
-      (π := π) hπne hπmem
-      (f := f) (g0 := g0) (h0 := h0)
-      (a := a) (b := b) (f1 := f1) (e := e)
-      (gbar := gbar) (m := m) (d := d)
-      hf hg0map hg0nat hgbar_nat hglead hh0deg
-      hfactor0 hbezFactor hmd)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 end Valuations

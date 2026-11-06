@@ -59,19 +59,19 @@ local instance rationalCyclotomicPrincipalProductPrimePowerIsAbelianGalois
   rationalCyclotomicLevelIsAbelianGalois
     ⟨p.1 ^ k, pow_pos p.2.pos k⟩
 
-noncomputable local instance
-    rationalCyclotomicPrincipalProductLevelFiniteDimensional
-    (m : ℕ+) :
-    FiniteDimensional ℚ
-      (KummerTheory.rationalCyclotomicLevel m) :=
-  rationalCyclotomicPrincipalPrimeLevelFiniteDimensional m
 
-noncomputable local instance
-    rationalCyclotomicPrincipalProductLevelIsAbelianGalois
-    (m : ℕ+) :
-    IsAbelianGalois ℚ
-      (KummerTheory.rationalCyclotomicLevel m) :=
-  rationalCyclotomicPrincipalPrimeLevelIsAbelianGalois m
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The finite product of the genuine chosen local Artin characters of a
 rational principal idele is the reduction of its rational sign. -/

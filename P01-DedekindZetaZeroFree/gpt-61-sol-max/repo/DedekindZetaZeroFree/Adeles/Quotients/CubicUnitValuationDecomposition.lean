@@ -18,7 +18,7 @@ attribute [local instance] exteriorValuationsTopology
 
 namespace CubicIdeleDecomposition
 
-variable (S : Finset (KPHilbert.Place F))
+
 
 attribute [local instance] exteriorValuationsTopology
 

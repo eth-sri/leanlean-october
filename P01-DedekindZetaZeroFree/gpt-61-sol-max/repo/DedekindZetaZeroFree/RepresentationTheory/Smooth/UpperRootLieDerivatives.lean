@@ -42,20 +42,23 @@ theorem chartProduct_chart (x y : ArchCoordinates F) (hx : x ∈ archDomain F)
   simpa [Units.val_mul, rightMatrix_val _ (hx w), rightMatrix_val _ (hy w),
     Matrix.mul_apply, Fin.sum_univ_two, add_comm] using hden w
 
-def upperTransport (w : InfinitePlace F) (b : Bool) (x : ArchCoordinates F) (t : ℝ) :=
+section
+variable (w : InfinitePlace F) (b : Bool)
+include w b
+def upperTransport   (x : ArchCoordinates F) (t : ℝ) :=
   chartProduct (x, upperCoordinates w b t)
 
-def upperField (w : InfinitePlace F) (b : Bool) (x : ArchCoordinates F) : ArchCoordinates F :=
+def upperField   (x : ArchCoordinates F) : ArchCoordinates F :=
   fun v => if v = w then
     ![x v 1 * direction b, -2 * x v 1 * x v 2 * direction b, -(x v 2)^2 * direction b]
     else 0
 
-theorem upperTransport_zero (w : InfinitePlace F) (b : Bool) (x : ArchCoordinates F) :
+theorem upperTransport_zero   (x : ArchCoordinates F) :
     upperTransport w b x 0 = x := by
   funext v i
   fin_cases i <;> simp [upperTransport, chartProduct, upperCoordinates]
 
-theorem upperField_smooth (w : InfinitePlace F) (b : Bool) :
+theorem upperField_smooth   :
     ContDiff ℝ (⊤ : ℕ∞) (upperField w b) := by
   apply contDiff_pi.mpr; intro v
   by_cases hv : v = w
@@ -65,7 +68,7 @@ theorem upperField_smooth (w : InfinitePlace F) (b : Bool) :
   · simpa [upperField, hv] using (contDiff_const : ContDiff ℝ (⊤ : ℕ∞)
       (fun _ : ArchCoordinates F => (0 : Fin 3 → ℂ)))
 
-theorem upperTransport_hasDeriv (w : InfinitePlace F) (b : Bool) (x : ArchCoordinates F) :
+theorem upperTransport_hasDeriv   (x : ArchCoordinates F) :
     HasDerivAt (upperTransport w b x) (upperField w b x) 0 := by
   apply hasDerivAt_pi.mpr; intro v
   apply hasDerivAt_pi.mpr; intro i
@@ -90,8 +93,13 @@ theorem upperTransport_hasDeriv (w : InfinitePlace F) (b : Bool) (x : ArchCoordi
   · convert hasDerivAt_const (0 : ℝ) (x v i) using 1
     · funext t; fin_cases i <;> simp [upperTransport, chartProduct, upperCoordinates, hv]
     · simp [upperField, hv]
+end
 
-theorem upperLieDerivative_chart (w : InfinitePlace F) (b : Bool) (f : Functions R)
+
+section
+variable (w : InfinitePlace F) (b : Bool) (f : Functions R)
+include w b f
+theorem upperLieDerivative_chart  
     (hf : KPLiteralRaw.Smooth F R.A.zeta12 R.A.primitive_zeta12 f) (g : Group R)
     (x : ArchCoordinates F) (hx : x ∈ archDomain F) :
     upperLieDerivative R w b f (g * archChart F R.A.zeta12 R.A.primitive_zeta12 x) =
@@ -123,7 +131,7 @@ theorem upperLieDerivative_chart (w : InfinitePlace F) (b : Bool) (f : Functions
   rw [he.deriv_eq]
   exact hder.deriv
 
-theorem upperLieDerivative_chart_smooth (w : InfinitePlace F) (b : Bool) (f : Functions R)
+theorem upperLieDerivative_chart_smooth  
     (hf : KPLiteralRaw.Smooth F R.A.zeta12 R.A.primitive_zeta12 f) (g : Group R) :
     ContDiffOn ℝ (⊤ : ℕ∞) (fun x => upperLieDerivative R w b f
       (g * archChart F R.A.zeta12 R.A.primitive_zeta12 x)) (archDomain F) := by
@@ -132,7 +140,7 @@ theorem upperLieDerivative_chart_smooth (w : InfinitePlace F) (b : Bool) (f : Fu
     (upperField_smooth w b).contDiffOn).congr
       (fun x hx => upperLieDerivative_chart R w b f hf g x hx)
 
-theorem upperLieDerivative_level (w : InfinitePlace F) (b : Bool) (f : Functions R)
+theorem upperLieDerivative_level  
     (U : KPGlobalTorusFunctionData.FiniteLevel F R.A.zeta12 R.A.primitive_zeta12)
     (hU : ∀ g u, u ∈ KPGlobalTorusFunctionData.globalLevel F R.A.zeta12 R.A.primitive_zeta12 U →
       f (g * u) = f g) (g u : Group R)
@@ -148,7 +156,7 @@ theorem upperLieDerivative_level (w : InfinitePlace F) (b : Bool) (f : Functions
   rw [← upperCoordinates_chart, mul_assoc, (hcomm U u hu _).eq.symm,
     ← mul_assoc, hU _ u hu]
 
-theorem upperLieDerivative_smooth (w : InfinitePlace F) (b : Bool) (f : Functions R)
+theorem upperLieDerivative_smooth  
     (hf : KPLiteralRaw.Smooth F R.A.zeta12 R.A.primitive_zeta12 f) :
     KPLiteralRaw.Smooth F R.A.zeta12 R.A.primitive_zeta12 (upperLieDerivative R w b f) := by
   obtain ⟨U, hU⟩ := hf.2.2
@@ -191,6 +199,8 @@ theorem upperLieDerivative_smooth (w : InfinitePlace F) (b : Bool) (f : Function
   change upperLieDerivative R w b f z ∈ O
   rw [hz, hlevel _ u hu]
   exact (hW hx).1
+end
+
 
 end DedekindZetaZeroFree.RootDerivatives
 

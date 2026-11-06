@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Geometry.Cusps.AffineTorusBundles.QuotientCoordinates
 
 @[expose] public section
+
 
 section
 noncomputable section
@@ -16,9 +19,8 @@ namespace DedekindZetaZeroFree.KPCuspChart
   map_one' := by ext i; simp [embedding]
   map_mul' := by intro x y; ext i; simp [embedding]
 
-theorem raw_translation_lattice_stable (F : Type*) [Field F] [NumberField F]
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S) :
-    ∀ (u : D.E) (x : F), x ∈ D.L → ((u : Fˣ) : F) * x ∈ D.L :=
+def raw_translation_lattice_stable (F : Type*) [Field F] [NumberField F]
+    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)  :=
   KPCuspLogShape.actual_translation_lattice_stable F S D.upper D.L D.E
     D.inclusion D.ratio D.surjective D.exact D.unipotentFormula D.ratioFormula
 
@@ -29,14 +31,14 @@ variable (hinv : ∀ (u : E) (x : F), x ∈ L → ((u : Fˣ) : F) * x ∈ L)
 
  def scalarMap (u : E) : Torus F L →+ Torus F L :=
   QuotientAddGroup.map (translationLattice F L) (translationLattice F L)
-    (AddMonoidHom.mulLeft (placeRing F ((u : Fˣ) : F))) (by
+    (AddMonoidHom.mulLeft (placeRing F ((u : Fˣ)))) (by
       intro x hx
       obtain ⟨a, ha, rfl⟩ := hx
       exact ⟨((u : Fˣ) : F) * a, hinv u a ha, (placeRing F).map_mul _ _⟩)
 
 private theorem scalarMap_mk (u : E) (x : Horizontal F) :
     scalarMap F L E hinv u (QuotientAddGroup.mk x) =
-      QuotientAddGroup.mk (placeRing F ((u : Fˣ) : F) * x) := rfl
+      QuotientAddGroup.mk (placeRing F ((u : Fˣ)) * x) := rfl
 
 private theorem scalarMap_one : scalarMap F L E hinv 1 = AddMonoidHom.id _ := by
   ext x
@@ -52,18 +54,21 @@ private theorem scalarMap_continuous (u : E) : Continuous (scalarMap F L E hinv 
   exact QuotientAddGroup.continuous_mk.comp (continuous_const.mul continuous_id)
 end
 
-theorem raw_parabolic_torus_action (F : Type*) [Field F] [NumberField F]
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S) :
+section
+variable (F : Type*) [Field F] [NumberField F]
+    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)
+include F S D
+theorem raw_parabolic_torus_action   :
     ∃ α : S →* (Torus F D.L ≃ₜ Torus F D.L),
       ∀ (g : S) (A : Matrix.GeneralLinearGroup (Fin 2) F) (x : Horizontal F),
         Matrix.ProjGenLinGroup.mk A = (g : KPCuspArithmetic.PGL2 F) → A 1 0 = 0 →
         α g (QuotientAddGroup.mk x) = QuotientAddGroup.mk
-          (fun i => embedding F ((D.ratio g : Fˣ) : F) i * x i +
+          (fun i => embedding F ((D.ratio g : Fˣ)) i * x i +
             embedding F (A 0 1 / A 1 1) i) := by
   let hinv := raw_translation_lattice_stable F S D
   obtain ⟨τ, hτ1, hτmul, hτformula⟩ :=
     KPCuspLogShape.upper_translation_cocycle F S D.upper D.E D.ratio D.ratioFormula
-  let b : S → Torus F D.L → Torus F D.L := fun g x =>
+  let b  := fun g x =>
     scalarMap F D.L D.E hinv (D.ratio g) x + QuotientAddGroup.mk (placeRing F (τ g))
   have hb1 (x : Torus F D.L) : b 1 x = x := by
     simp only [b, map_one, hτ1, map_zero, QuotientAddGroup.mk_zero, add_zero]
@@ -73,7 +78,7 @@ theorem raw_parabolic_torus_action (F : Type*) [Field F] [NumberField F]
     rw [scalarMap_mul]
     change scalarMap F D.L D.E hinv (D.ratio g)
       (scalarMap F D.L D.E hinv (D.ratio k) x) +
-      (QuotientAddGroup.mk (placeRing F ((D.ratio g : Fˣ) : F) * placeRing F (τ k)) +
+      (QuotientAddGroup.mk (placeRing F ((D.ratio g : Fˣ)) * placeRing F (τ k)) +
         QuotientAddGroup.mk (placeRing F (τ g))) = _
     rw [scalarMap_mk]
     abel
@@ -96,13 +101,12 @@ theorem raw_parabolic_torus_action (F : Type*) [Field F] [NumberField F]
   simp only [b, scalarMap_mk, ← QuotientAddGroup.mk_add, hτformula g A hA]
   rfl
 
-theorem raw_parabolic_torus_kernel (F : Type*) [Field F] [NumberField F]
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)
+theorem raw_parabolic_torus_kernel  
     (α : S →* (Torus F D.L ≃ₜ Torus F D.L))
     (hα : ∀ (g : S) (A : Matrix.GeneralLinearGroup (Fin 2) F) (x : Horizontal F),
       Matrix.ProjGenLinGroup.mk A = (g : KPCuspArithmetic.PGL2 F) → A 1 0 = 0 →
       α g (QuotientAddGroup.mk x) = QuotientAddGroup.mk
-        (fun i => embedding F ((D.ratio g : Fˣ) : F) i * x i +
+        (fun i => embedding F ((D.ratio g : Fˣ)) i * x i +
           embedding F (A 0 1 / A 1 1) i)) : D.ratio.ker ≤ α.ker := by
   intro g hg
   rw [MonoidHom.mem_ker] at hg ⊢
@@ -118,20 +122,19 @@ theorem raw_parabolic_torus_kernel (F : Type*) [Field F] [NumberField F]
   intro z
   obtain ⟨x, rfl⟩ := QuotientAddGroup.mk_surjective z
   rw [hα _ A x hA hc, hg, hv]
-  change QuotientAddGroup.mk (placeRing F 1 * x + placeRing F (v.toAdd : F)) = _
+  change QuotientAddGroup.mk (placeRing F 1 * x + placeRing F v.toAdd) = _
   rw [map_one, one_mul, QuotientAddGroup.mk_add]
-  have hz : (QuotientAddGroup.mk (placeRing F (v.toAdd : F)) : Torus F D.L) = 0 :=
+  have hz : (QuotientAddGroup.mk (placeRing F v.toAdd) : Torus F D.L) = 0 :=
     (QuotientAddGroup.eq_zero_iff _).mpr ⟨v.toAdd, v.toAdd.property, rfl⟩
   rw [hz, add_zero]
   rfl
 
-theorem raw_ratio_torus_action (F : Type*) [Field F] [NumberField F]
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S) :
+theorem raw_ratio_torus_action   :
     ∃ β : D.E →* (Torus F D.L ≃ₜ Torus F D.L),
       ∀ (g : S) (A : Matrix.GeneralLinearGroup (Fin 2) F) (x : Horizontal F),
         Matrix.ProjGenLinGroup.mk A = (g : KPCuspArithmetic.PGL2 F) → A 1 0 = 0 →
         β (D.ratio g) (QuotientAddGroup.mk x) = QuotientAddGroup.mk
-          (fun i => embedding F ((D.ratio g : Fˣ) : F) i * x i +
+          (fun i => embedding F ((D.ratio g : Fˣ)) i * x i +
             embedding F (A 0 1 / A 1 1) i) := by
   obtain ⟨α, hα⟩ := raw_parabolic_torus_action F S D
   have hk := raw_parabolic_torus_kernel F S D α hα
@@ -148,7 +151,9 @@ theorem raw_ratio_torus_action (F : Type*) [Field F] [NumberField F]
   intro g A x hA hc
   change α (σ (D.ratio g)) (QuotientAddGroup.mk x) = _
   rw [heq _ g (hσ _)]
-  exact hα g A x hA hc
+  apply hα <;> assumption
+end
+
 
 end DedekindZetaZeroFree.KPCuspChart
 
@@ -169,19 +174,22 @@ private theorem upper_action (g : Matrix.GeneralLinearGroup (Fin 2) ℂ)
     intro h
     apply g.det_ne_zero
     simp [Matrix.det_fin_two, hc, h]
-  have hdR : ‖g 1 1‖ ≠ 0 := norm_ne_zero_iff.mpr hd
-  have huR : ‖u‖ ≠ 0 := norm_ne_zero_iff.mpr hu
+  
+  
   apply Prod.ext
   · simp only [KPArch.action, KPArch.actionDenominator, hc, zero_mul, zero_add,
       norm_zero, zero_pow (by norm_num : 2 ≠ 0), star_zero, mul_zero, add_zero]
-    have hn : (‖g 1 1‖ ^ 2 : ℝ) = (g 1 1 * star (g 1 1) : ℂ) := by
+    have hn : (‖g 1 1‖ ^ 2 : ℝ) = (g 1 1 * star (g 1 1)) := by
       simpa [Complex.normSq_eq_norm_sq] using (Complex.mul_conj (g 1 1)).symm
     rw [hn, ha]
     have hds : star (g 1 1) ≠ 0 := star_ne_zero.mpr hd
     field_simp
-  · exact KPCuspLogShape.upper_action_snd g hc u hu ha z
+  · apply KPCuspLogShape.upper_action_snd <;> assumption
 
-theorem raw_actual_cross_action (F : Type*) [Field F] [NumberField F]
+section
+variable (F : Type*) [Field F] [NumberField F]
+include F
+theorem raw_actual_cross_action  
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)
     (g : S) (A : Matrix.GeneralLinearGroup (Fin 2) F)
@@ -189,33 +197,33 @@ theorem raw_actual_cross_action (F : Type*) [Field F] [NumberField F]
     (hc : A 1 0 = 0) (p : Cross F) :
     g • toArch F (p, 0) = toArch F
       (crossAffine F hF D.E D.integralUnits (D.ratio g) (A 0 1 / A 1 1) p, 0) := by
-  change KPCuspSiegel.action F (g : KPCuspArithmetic.PGL2 F) _ = _
+  change KPCuspSiegel.action F g _ = _
   rw [← hA, KPCuspSiegel.action_mk]
   funext i
   let σ := (KPCusp.complexPlace F i).embedding
   have hi : (Matrix.GeneralLinearGroup.map σ A) 1 0 = 0 := by
     change σ (A 1 0) = 0
     simp [hc]
-  have hu : σ ((D.ratio g : Fˣ) : F) ≠ 0 :=
+  have hu : σ ((D.ratio g : Fˣ)) ≠ 0 :=
     (map_ne_zero σ).mpr (Units.ne_zero _)
   have ha : (Matrix.GeneralLinearGroup.map σ A) 0 0 =
-      σ ((D.ratio g : Fˣ) : F) * (Matrix.GeneralLinearGroup.map σ A) 1 1 := by
+      σ ((D.ratio g : Fˣ)) * (Matrix.GeneralLinearGroup.map σ A) 1 1 := by
     change σ (A 0 0) = _
     rw [D.ratioFormula g A hA hc, map_mul]
     rfl
   change KPArch.action (Matrix.GeneralLinearGroup.map σ A) (toArch F (p, 0) i) = _
   rw [upper_action _ hi _ hu ha]
   apply Prod.ext
-  · change σ ((D.ratio g : Fˣ) : F) * p.1 i + σ (A 0 1) / σ (A 1 1) =
-      σ ((D.ratio g : Fˣ) : F) * p.1 i + σ (A 0 1 / A 1 1)
+  · change σ ((D.ratio g : Fˣ)) * p.1 i + σ (A 0 1) / σ (A 1 1) =
+      σ ((D.ratio g : Fˣ)) * p.1 i + σ (A 0 1 / A 1 1)
     rw [map_div₀]
   · change 0 + (p.2 : Fin (KPCuspLogShape.dimension F) → ℝ) i + Real.log ‖σ _‖ =
       0 + ((p.2 : Fin (KPCuspLogShape.dimension F) → ℝ) i +
-        Real.log ((KPCusp.complexPlace F i) ((D.ratio g : Fˣ) : F)))
+        Real.log ((KPCusp.complexPlace F i) ((D.ratio g : Fˣ))))
     rw [NumberField.InfinitePlace.norm_embedding_eq]
     ring
 
-theorem raw_toArch_cross_injective (F : Type*) [Field F] [NumberField F] :
+theorem raw_toArch_cross_injective   :
     Function.Injective (fun p : Cross F => toArch F (p, 0)) := by
   intro p q h
   apply Prod.ext
@@ -225,9 +233,12 @@ theorem raw_toArch_cross_injective (F : Type*) [Field F] [NumberField F] :
     funext i
     simpa [toArch] using congrArg Prod.snd (congrFun h i)
 
-theorem raw_cross_action (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S) :
+section
+variable (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
+    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)
+include hF S D
+theorem raw_cross_action  
+      :
     ∃ α : S →* (Cross F ≃ₜ Cross F),
       ∀ (g : S) (A : Matrix.GeneralLinearGroup (Fin 2) F),
         Matrix.ProjGenLinGroup.mk A = (g : KPCuspArithmetic.PGL2 F) → A 1 0 = 0 →
@@ -235,7 +246,7 @@ theorem raw_cross_action (F : Type*) [Field F] [NumberField F]
           crossAffine F hF D.E D.integralUnits (D.ratio g) (A 0 1 / A 1 1) p := by
   obtain ⟨τ, hτ1, hτmul, hτformula⟩ :=
     KPCuspLogShape.upper_translation_cocycle F S D.upper D.E D.ratio D.ratioFormula
-  let b : S → Cross F → Cross F := fun g =>
+  let b  := fun g =>
     crossAffine F hF D.E D.integralUnits (D.ratio g) (τ g)
   have hb1 (p : Cross F) : b 1 p = p := by
     ext i <;> simp [b, crossAffine, affine, embedding, hτ1]
@@ -270,9 +281,8 @@ theorem raw_cross_action (F : Type*) [Field F] [NumberField F]
   dsimp only [b]
   rw [hτformula g A hA]
 
-theorem raw_cross_relation_iff (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)
+theorem raw_cross_relation_iff  
+     
     (α : S →* (Cross F ≃ₜ Cross F))
     (hα : ∀ (g : S) (A : Matrix.GeneralLinearGroup (Fin 2) F),
       Matrix.ProjGenLinGroup.mk A = (g : KPCuspArithmetic.PGL2 F) → A 1 0 = 0 →
@@ -283,7 +293,7 @@ theorem raw_cross_relation_iff (F : Type*) [Field F] [NumberField F]
       g • toArch F (p, 0) = toArch F (α g p, 0) := by
     obtain ⟨A, hA, hc⟩ := D.upper g g.property
     rw [hα g A hA hc]
-    exact raw_actual_cross_action F hF S D g A hA hc p
+    apply raw_actual_cross_action <;> assumption
   change MulAction.orbitRel S _ _ _ ↔ _
   rw [MulAction.orbitRel_apply, MulAction.mem_orbit_symm, MulAction.mem_orbit_iff]
   constructor
@@ -291,6 +301,10 @@ theorem raw_cross_relation_iff (F : Type*) [Field F] [NumberField F]
     exact ⟨g, raw_toArch_cross_injective F ((heq g p).symm.trans hg)⟩
   · rintro ⟨g, rfl⟩
     exact ⟨g, heq g p⟩
+end
+
+end
+
 
 end DedekindZetaZeroFree.KPCuspChart
 
@@ -341,7 +355,7 @@ theorem raw_cross_action_torus
     (hβ : ∀ (g : S) (A : Matrix.GeneralLinearGroup (Fin 2) F) (x : Horizontal F),
       Matrix.ProjGenLinGroup.mk A = (g : KPCuspArithmetic.PGL2 F) → A 1 0 = 0 →
       β (D.ratio g) (QuotientAddGroup.mk x) = QuotientAddGroup.mk
-        (fun i => embedding F ((D.ratio g : Fˣ) : F) i * x i +
+        (fun i => embedding F ((D.ratio g : Fˣ)) i * x i +
           embedding F (A 0 1 / A 1 1) i))
     (g : S) (p : Cross F) :
     (QuotientAddGroup.mk (α g p).1 : Torus F D.L) = β (D.ratio g) (QuotientAddGroup.mk p.1) := by
@@ -351,14 +365,14 @@ theorem raw_cross_action_torus
 
 theorem raw_cross_eq_of_torus_eq (x y : Horizontal F) (b : Shape F)
     (h : (QuotientAddGroup.mk x : Torus F D.L) = QuotientAddGroup.mk y) :
-    (Quotient.mk (crossRelation F S) (x, b) : CrossQuotient F S) = Quotient.mk _ (y, b) := by
+    (Quotient.mk (crossRelation F S) (x, b)) = Quotient.mk _ (y, b) := by
   have hm : y - x ∈ translationLattice F D.L := by
     apply (QuotientAddGroup.eq_zero_iff _).mp
     rw [QuotientAddGroup.mk_sub, h, sub_self]
   obtain ⟨v, hv, hvec⟩ := hm
   apply Quotient.sound
   apply (raw_cross_relation_iff F hF S D α hα _ _).mpr
-  refine ⟨D.inclusion (Multiplicative.ofAdd (⟨v, hv⟩ : D.L)), ?_⟩
+  refine ⟨D.inclusion (Multiplicative.ofAdd (⟨v, hv⟩)), ?_⟩
   rw [raw_cross_action_translation F hF S D α hα]
   apply Prod.ext
   · change x + embedding F v = y
@@ -367,7 +381,7 @@ theorem raw_cross_eq_of_torus_eq (x y : Horizontal F) (b : Shape F)
   · rfl
 
 theorem raw_cross_quotient_open :
-    IsOpenQuotientMap (Quotient.mk (crossRelation F S) : Cross F → CrossQuotient F S) := by
+    IsOpenQuotientMap (Quotient.mk (crossRelation F S)) := by
   letI := homeomorphAction α
   haveI : ContinuousConstSMul S (Cross F) := ⟨fun g => (α g).continuous⟩
   let e : Quotient (MulAction.orbitRel S (Cross F)) ≃ₜ CrossQuotient F S :=
@@ -417,7 +431,7 @@ theorem rawLift_orbit_equivalence
     (hβ : ∀ (g : S) (A : Matrix.GeneralLinearGroup (Fin 2) F) (x : Horizontal F),
       Matrix.ProjGenLinGroup.mk A = (g : KPCuspArithmetic.PGL2 F) → A 1 0 = 0 →
       β (D.ratio g) (QuotientAddGroup.mk x) = QuotientAddGroup.mk
-        (fun i => embedding F ((D.ratio g : Fˣ) : F) i * x i +
+        (fun i => embedding F ((D.ratio g : Fˣ)) i * x i +
           embedding F (A 0 1 / A 1 1) i))
     (z z' : Torus F D.L) (b b' : Shape F) :
     rawLift F hF S D α hα (z, b) = rawLift F hF S D α hα (z', b') ↔
@@ -436,10 +450,10 @@ theorem rawLift_orbit_equivalence
     obtain ⟨g, rfl⟩ := D.surjective u
     have htor : (QuotientAddGroup.mk (α g (x, b)).1 : Torus F D.L) = QuotientAddGroup.mk y := by
       rw [raw_cross_action_torus F hF S D α hα β hβ, hu]
-    have hs : (α g (x, b)).2 = b' :=
+    have hs  :=
       (raw_cross_action_shape F hF S D α hα g (x, b)).trans hb.symm
     have he := raw_cross_eq_of_torus_eq F hF S D α hα (α g (x, b)).1 y b' htor
-    have he' : (Quotient.mk (crossRelation F S) (x, b) : CrossQuotient F S) =
+    have he' : (Quotient.mk (crossRelation F S) (x, b)) =
         Quotient.mk _ (α g (x, b)) :=
       Quotient.sound ((raw_cross_relation_iff F hF S D α hα _ _).mpr ⟨g, rfl⟩)
     apply Quotient.exact
@@ -479,7 +493,7 @@ private theorem finite_local_charts {X Y : Type*} [TopologicalSpace X]
     simp only [Set.mem_iUnion] at hy
     obtain ⟨z, hz, _⟩ := hy
     exact ⟨z, hz⟩
-  let a : Fin (Fintype.card t) ≃ t := (Fintype.equivFin t).symm
+  let a  := (Fintype.equivFin t).symm
   refine ⟨Fintype.card t, by simpa using Finset.card_pos.mpr htn,
     fun i => e (a i).val, fun i => hfe _, fun i => ⟨x _, he _⟩, ?_⟩
   apply Set.Subset.antisymm (Set.subset_univ _)
@@ -540,8 +554,7 @@ theorem rawShapeCover_exists (F : Type*) [Field F] [NumberField F]
   }⟩
   · intro i b b' u hb hb' h
     have hlog : KPCuspLogShape.logarithm F hF E hE (Additive.ofMul u) ∈
-        Λ.toAddSubgroup := by
-      exact AddMonoidHom.mem_range.mpr ⟨Additive.ofMul u, rfl⟩
+        Λ.toAddSubgroup := AddMonoidHom.mem_range.mpr ⟨Additive.ofMul u, rfl⟩
     have heq : f b = f b' := by
       rw [h]
       change (QuotientAddGroup.mk b : Base F hF E hE) = QuotientAddGroup.mk (b + _)
@@ -569,10 +582,13 @@ noncomputable section
 open scoped Classical
 namespace DedekindZetaZeroFree.KPCuspChart
 
-theorem raw_coarse_eq_iff (F : Type*) [Field F] [NumberField F]
+section
+variable (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (L : AddSubgroup F) (E : Subgroup Fˣ) (hE : E ≤ KPCuspArithmetic.rationalUnits F)
-    (β : E →* (Torus F L ≃ₜ Torus F L)) (z z' : Torus F L) :
+    (β : E →* (Torus F L ≃ₜ Torus F L))
+include F hF L E hE β
+theorem raw_coarse_eq_iff   (z z' : Torus F L) :
     coarseProjection F hF L E hE β z = coarseProjection F hF L E hE β z' ↔
       ∃ u : kernelUnits F hF E hE, β u.val z = z' := by
   letI := homeomorphAction (β.comp (kernelUnits F hF E hE).subtype)
@@ -582,15 +598,14 @@ theorem raw_coarse_eq_iff (F : Type*) [Field F] [NumberField F]
   rw [MulAction.mem_orbit_symm, MulAction.mem_orbit_iff]
   rfl
 
-theorem raw_coarse_open (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (L : AddSubgroup F) (E : Subgroup Fˣ) (hE : E ≤ KPCuspArithmetic.rationalUnits F)
-    (β : E →* (Torus F L ≃ₜ Torus F L)) :
+theorem raw_coarse_open   :
     IsOpenQuotientMap (coarseProjection F hF L E hE β) := by
   letI := homeomorphAction (β.comp (kernelUnits F hF E hE).subtype)
   haveI : ContinuousConstSMul (kernelUnits F hF E hE) (Torus F L) :=
     ⟨fun u => (β u.val).continuous⟩
   exact MulAction.isOpenQuotientMap_quotientMk
+end
+
 
 section
 variable (F : Type*) [Field F] [NumberField F]
@@ -617,7 +632,7 @@ include hlopen in
 private theorem chartLift_surjective : Function.Surjective (chartLift F hF S D π l hπl V W hW) := by
   intro c
   obtain ⟨⟨z, b⟩, hz⟩ := hlopen.surjective c.val
-  have hb : (QuotientAddGroup.mk b : Base F hF D.E D.integralUnits) ∈ W := by
+  have hb : (QuotientAddGroup.mk b) ∈ W := by
     rw [← hπl z b, hz]; exact c.property
   rw [hW] at hb
   obtain ⟨b', hb', hbb⟩ := hb
@@ -694,8 +709,11 @@ open scoped Classical Matrix
 open MeasureTheory
 namespace DedekindZetaZeroFree.KPCuspChart
 
+section
+variable (F : Type*) [Field F] [NumberField F]
+include F
 theorem finite_kernelUnits_of_logarithm
-    (F : Type*) [Field F] [NumberField F]
+     
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (E : Subgroup Fˣ) (hE : E ≤ KPCuspArithmetic.rationalUnits F) :
     Finite (kernelUnits F hF E hE) := by
@@ -705,10 +723,10 @@ theorem finite_kernelUnits_of_logarithm
       (⟨Additive.ofMul u.val, u.property⟩ : (KPCuspLogShape.logarithm F hF E hE).ker)) ?_
   intro u v huv
   have h : Additive.ofMul u.val = Additive.ofMul v.val := congrArg Subtype.val huv
-  exact Subtype.ext (Additive.ofMul.injective h)
+  apply Subtype.ext <;> assumption
 
 theorem compact_torus_of_lattice
-    (F : Type*) [Field F] [NumberField F]
+     
     (L : AddSubgroup F)
     (hdisc : DiscreteTopology (translationLattice F L).toIntSubmodule)
     (hlattice : letI := hdisc; IsZLattice ℝ (translationLattice F L).toIntSubmodule) :
@@ -717,16 +735,15 @@ theorem compact_torus_of_lattice
   haveI := hlattice
   exact KPCuspLogShape.compact_quotient_of_isZLattice (translationLattice F L).toIntSubmodule
 
-theorem compact_base_of_shape
-    (F : Type*) [Field F] [NumberField F]
+def compact_base_of_shape
+     
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (E : Subgroup Fˣ) (hE : E ≤ KPCuspArithmetic.rationalUnits F)
-    (hindex : (E.subgroupOf (KPCuspArithmetic.rationalUnits F)).FiniteIndex) :
-    CompactSpace (Base F hF E hE) :=
+    (hindex : (E.subgroupOf (KPCuspArithmetic.rationalUnits F)).FiniteIndex)  :=
   (DedekindZetaZeroFree.kp_cusp_log_unit_shape F hF E hE hindex).2.1
 
 theorem finite_affine_bundle_atlas
-    (F : Type*) [Field F] [NumberField F]
+     
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)
     (hdisc : DiscreteTopology (translationLattice F D.L).toIntSubmodule)
@@ -813,6 +830,8 @@ theorem finite_affine_bundle_atlas
     compact_cross := hcompact
     crossAction := α
     crossAction_formula := hα }⟩
+end
+
 
 end DedekindZetaZeroFree.KPCuspChart
 

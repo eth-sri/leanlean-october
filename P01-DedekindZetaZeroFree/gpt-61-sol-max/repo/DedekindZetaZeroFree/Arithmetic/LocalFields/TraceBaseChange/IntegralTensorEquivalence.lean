@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.LocalFields.TraceBaseChange.IntegralApproximation
 public import DedekindZetaZeroFree.Arithmetic.LocalFields.TraceDecomposition
 
 @[expose] public section
+
 
 noncomputable section
 open scoped NumberField TensorProduct
@@ -52,9 +55,9 @@ def integerScalarMap (p : Nat.Primes) (v : PlacesAbove F p) :
 instance integerAlgebra (p : Nat.Primes) (v : PlacesAbove F p) :
     Algebra ℤ_[p] (v.val.adicCompletionIntegers F) := (integerScalarMap F p v).toAlgebra
 
-instance integerTower (p : Nat.Primes) (v : PlacesAbove F p) :
-    IsScalarTower ℤ ℤ_[p] (v.val.adicCompletionIntegers F) :=
-  IsScalarTower.of_algebraMap_eq fun z => by simp
+
+
+
 
 def integralDiagonalAt (p : Nat.Primes) : 𝓞 F →+* IntegralProduct F p :=
   Pi.ringHom fun v => algebraMap (𝓞 F) (v.val.adicCompletionIntegers F)
@@ -64,12 +67,15 @@ abbrev IntegralTensor (p : Nat.Primes) := ℤ_[p] ⊗[ℤ] 𝓞 F
 instance integralTensorTopology (p : Nat.Primes) : TopologicalSpace (IntegralTensor F p) :=
   moduleTopology ℤ_[p] (IntegralTensor F p)
 
-def integralTensorMap (p : Nat.Primes) :
+section
+variable (p : Nat.Primes)
+include p
+def integralTensorMap   :
     IntegralTensor F p →ₐ[ℤ_[p]] IntegralProduct F p :=
   Algebra.TensorProduct.lift (Algebra.ofId _ _)
     (integralDiagonalAt F p).toIntAlgHom (fun _ _ => Commute.all _ _)
 
-def fieldTensorEquiv (p : Nat.Primes) :
+def fieldTensorEquiv   :
     (ℚ_[p] ⊗[ℚ] F) ≃+* FieldProduct F p :=
   letI : Algebra ℚ ((Rat.HeightOneSpectrum.primesEquiv.symm p).adicCompletion ℚ) :=
     HeightOneSpectrum.instAlgebraAdicCompletion (𝓞 ℚ) ℚ _
@@ -77,13 +83,12 @@ def fieldTensorEquiv (p : Nat.Primes) :
     (AlgEquiv.refl : F ≃ₐ[ℚ] F)).toRingEquiv.trans
       (finitePlaceTensorRingEquivAboveAdic (K := ℚ) (L := F) _)
 
-def integralToFieldTensor (p : Nat.Primes) :
-    IntegralTensor F p →ₗ[ℤ] (ℚ_[p] ⊗[ℚ] F) :=
+def integralToFieldTensor    :=
   (TensorProduct.mapOfCompatibleSMul ℚ ℤ ℤ ℚ_[p] F).comp
     (TensorProduct.map (algebraMap ℤ_[p] ℚ_[p]).toIntAlgHom.toLinearMap
       (algebraMap (𝓞 F) F).toIntAlgHom.toLinearMap)
 
-theorem scalarMap_continuous (p : Nat.Primes) (v : PlacesAbove F p) :
+theorem scalarMap_continuous   (v : PlacesAbove F p) :
     Continuous (integerScalarMap F p v) := by
   unfold integerScalarMap
   apply Continuous.subtype_mk
@@ -91,7 +96,7 @@ theorem scalarMap_continuous (p : Nat.Primes) (v : PlacesAbove F p) :
     (Rat.HeightOneSpectrum.primesEquiv.symm p) v).comp ?_
   exact continuous_subtype_val.comp (PadicInt.adicCompletionIntegersEquiv (𝓞 ℚ) p).continuous
 
-theorem scalarMap_continuousSMul (p : Nat.Primes) (v : PlacesAbove F p) :
+theorem scalarMap_continuousSMul   (v : PlacesAbove F p) :
     ContinuousSMul ℤ_[p] (v.val.adicCompletionIntegers F) := by
   refine ⟨?_⟩
   have hcont := scalarMap_continuous F p v
@@ -99,16 +104,18 @@ theorem scalarMap_continuousSMul (p : Nat.Primes) (v : PlacesAbove F p) :
       fun q => integerScalarMap F p v q.1 * q.2 from by
     funext q; rw [Algebra.smul_def]; rfl]
   exact (hcont.comp continuous_fst).mul continuous_snd
+end
+
 
 instance integralProduct_continuousSMul (p : Nat.Primes) :
     ContinuousSMul ℤ_[p] (IntegralProduct F p) := by
-  haveI : ∀ v : PlacesAbove F p, ContinuousSMul ℤ_[p] (v.val.adicCompletionIntegers F) :=
+  haveI  :=
     fun v => scalarMap_continuousSMul F p v
   exact inferInstance
 
 theorem integralTensorMap_field_square (p : Nat.Primes) (x : IntegralTensor F p) :
     fieldTensorEquiv F p (integralToFieldTensor F p x) =
-      fun v => ((integralTensorMap F p x v : v.val.adicCompletionIntegers F) :
+      fun v => ((integralTensorMap F p x v) :
         v.val.adicCompletion F) := by
   letI : Algebra ℚ ((Rat.HeightOneSpectrum.primesEquiv.symm p).adicCompletion ℚ) :=
     HeightOneSpectrum.instAlgebraAdicCompletion (𝓞 ℚ) ℚ _
@@ -139,7 +146,7 @@ theorem integralTensorMap_topology_bijective (p : Nat.Primes) :
   classical
   letI : IsModuleTopology ℤ_[p] (IntegralTensor F p) := ⟨rfl⟩
   letI := IsModuleTopology.toContinuousAdd ℤ_[p] (IntegralTensor F p)
-  letI : CompactSpace (IntegralTensor F p) :=
+  letI  :=
     Module.Finite.compactSpace ℤ_[p] (IntegralTensor F p)
   letI : ∀ v : PlacesAbove F p, ContinuousSMul ℤ_[p] (v.val.adicCompletionIntegers F) :=
     fun v => ⟨by
@@ -152,7 +159,7 @@ theorem integralTensorMap_topology_bijective (p : Nat.Primes) :
       exact (h.comp continuous_fst).mul continuous_snd⟩
   have hc : Continuous (integralTensorMap F p) :=
     IsModuleTopology.continuous_of_linearMap (integralTensorMap F p).toLinearMap
-  have hclosed : IsClosed (Set.range (integralTensorMap F p)) :=
+  have hclosed  :=
     (isCompact_range hc).isClosed
   have hd : DenseRange (integralTensorMap F p) := by
     let r : DedekindZetaZeroFree.finiteIntegralAdeles F → IntegralProduct F p :=
@@ -189,8 +196,7 @@ theorem integralTensorMap_topology_bijective (p : Nat.Primes) :
     rw [← hclosed.closure_eq]
     exact hd.closure_range
 
-def integralTensorEquiv (p : Nat.Primes) :
-    IntegralTensor F p ≃ₐ[ℤ_[p]] IntegralProduct F p :=
+def integralTensorEquiv (p : Nat.Primes)  :=
   AlgEquiv.ofBijective (integralTensorMap F p)
     (integralTensorMap_topology_bijective F p).2.2.2.2.2.2
 

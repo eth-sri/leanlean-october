@@ -83,12 +83,15 @@ theorem modulus_pos (A : SArithmeticData F) (D : ComparisonPoissonCoefficientDat
   rw [modulus, FiniteTransform.exteriorNorm, Nat.card_eq_fintype_card]
   exact_mod_cast Fintype.card_pos_iff.mpr inferInstance
 
-theorem exact_normalized_poisson_row_of_coset_dilation
-    (A : SArithmeticData F) (σ : F →+* ℂ)
+section
+variable (A : SArithmeticData F) (σ : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
     (P : NormalizedProbe.PrincipalData A σ η hS) (N : Normalization A σ η hS P)
     (s a : A.R) (hs : s ≠ 0) (ha : a ≠ 0)
     (X : ℝ) (hX : 0 < X) (t : A.G1)
+include A σ η hS P N s a hs ha X hX t in
+theorem exact_normalized_poisson_row_of_coset_dilation
+     
     (hsumOrig : Summable (fun m : A.R =>
       ‖originalTerm A P.coefficients P.W0 s a hs X t m‖))
     (hsumFreq : Summable (fun h : A.R =>
@@ -162,12 +165,9 @@ theorem normalized_dilation_scalar {qs qa X : ℝ}
       rw [hsq]; ring
     _ = Real.sqrt qs * Real.sqrt X * (Real.sqrt X / qa) := by ring
 
+include A σ η hS P N s a hs ha X hX t in
 theorem exact_normalized_poisson_row_of_unnormalized_coset
-    (A : SArithmeticData F) (σ : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (P : NormalizedProbe.PrincipalData A σ η hS) (N : Normalization A σ η hS P)
-    (s a : A.R) (hs : s ≠ 0) (ha : a ≠ 0)
-    (X : ℝ) (hX : 0 < X) (t : A.G1)
+     
     (hcoset :
       Summable (fun m : A.R => ‖originalTerm A P.coefficients P.W0 s a hs X t m‖) ∧
       Summable (fun h : A.R =>
@@ -198,11 +198,8 @@ theorem exact_normalized_poisson_row_of_unnormalized_coset
     normalized_dilation_scalar (modulus_pos A P.coefficients hs)
       (modulus_pos A P.coefficients ha) hX]
 
-theorem exact_normalized_poisson_row (A : SArithmeticData F) (σ : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (P : NormalizedProbe.PrincipalData A σ η hS) (N : Normalization A σ η hS P)
-    (s a : A.R) (hs : s ≠ 0) (ha : a ≠ 0)
-    (X : ℝ) (hX : 0 < X) (t : A.G1) :
+include A σ η hS P N s a hs ha X hX t in
+theorem exact_normalized_poisson_row   :
     Summable (fun m : A.R => ‖originalTerm A P.coefficients P.W0 s a hs X t m‖) ∧
     Summable (fun h : A.R =>
       ‖frequencyTerm A P.coefficients P.finiteTrace P.additiveMeasure P.W0
@@ -222,6 +219,8 @@ theorem exact_normalized_poisson_row (A : SArithmeticData F) (σ : F →+* ℂ)
   apply exact_normalized_poisson_row_of_unnormalized_coset
     A σ η hS P N s a hs ha X hX t
   exact ProbeCoset.raw_exact_coset_poisson A σ η hS P Nraw s a hs ha X hX t
+end
+
 
 end
 end DedekindZetaZeroFree.PoissonNormalizedRow

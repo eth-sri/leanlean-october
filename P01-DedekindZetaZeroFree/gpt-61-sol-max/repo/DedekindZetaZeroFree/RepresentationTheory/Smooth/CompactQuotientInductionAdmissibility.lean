@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.EquivariantSmoothSections
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 
@@ -14,14 +17,17 @@ variable {G E : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
     [T2Space G] [AddCommGroup E] [Module ℂ E]
     (H : Subgroup G) (τ : Representation ℂ H E) (d : H →* (ℝ≥0)ˣ)
 
-theorem section_doubleCoset_finite_of_compact_quotient
-    (hH : IsClosed (H : Set G))
+section
+variable (hH : IsClosed (H : Set G))
     (hquotient : IsCompact (Set.univ : Set (SectionCosetSpace H)))
-    (J : OpenSubgroup G) :
+    (J : OpenSubgroup G)
+include hH hquotient J
+theorem section_doubleCoset_finite_of_compact_quotient
+      :
     Finite (DoubleCoset.Quotient (H : Set G) (J : Set G)) := by
   classical
   let q : G → SectionCosetSpace H := Quotient.mk (QuotientGroup.rightRel H)
-  let O : G → Set (SectionCosetSpace H) := fun g => q '' ((fun u => g * u) '' (J : Set G))
+  let O  := fun g => q '' ((fun u => g * u) '' (J : Set G))
   have hopen : ∀ g, IsOpen (O g) := fun g =>
     isOpenMap_quotient_mk'_mul _ (isOpenMap_mul_left g _ J.isOpen)
   have hcover : (Set.univ : Set (SectionCosetSpace H)) ⊆ ⋃ g, O g := by
@@ -40,9 +46,7 @@ theorem section_doubleCoset_finite_of_compact_quotient
   exact ⟨g * (a * u)⁻¹, hrel, u, hu, by simp [g, mul_assoc]⟩
 
 theorem section_finite_doubleCoset_representatives
-    (hH : IsClosed (H : Set G))
-    (hquotient : IsCompact (Set.univ : Set (SectionCosetSpace H)))
-    (J : OpenSubgroup G) :
+      :
     ∃ (n : ℕ) (r : Fin n → G),
       Function.Bijective (fun i => DoubleCoset.mk H (J : Subgroup G) (r i)) := by
   classical
@@ -52,6 +56,8 @@ theorem section_finite_doubleCoset_representatives
   refine ⟨Fintype.card (DoubleCoset.Quotient (H : Set G) (J : Set G)),
     fun i => (e i).out, ?_⟩
   simpa only [DoubleCoset.out_eq'] using e.bijective
+end
+
 
 end CompactQuotient
 
@@ -61,19 +67,20 @@ variable {G E : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
     [AddCommGroup E] [Module ℂ E]
     (H : Subgroup G) (τ : Representation ℂ H E) (d : H →* (ℝ≥0)ˣ)
 
-def smoothIndFixedEvaluation {ι : Type*} (J : Subgroup G) (r : ι → G) :
+section
+variable {ι : Type*} (J : Subgroup G) (r : ι → G)
+include ι J r
+def smoothIndFixedEvaluation   :
     fixedSubmodule (V := SmoothInd H τ d) (smoothIndRepresentation H τ d) J →ₗ[ℂ] (ι → E) where
   toFun f i := f.val.val.val (r i)
   map_add' := by intros; rfl
   map_smul' := by intros; rfl
 
-@[simp] theorem smoothIndFixedEvaluation_apply {ι : Type*}
-    (J : Subgroup G) (r : ι → G)
+@[simp] theorem smoothIndFixedEvaluation_apply  
     (f : fixedSubmodule (V := SmoothInd H τ d) (smoothIndRepresentation H τ d) J) (i : ι) :
     smoothIndFixedEvaluation H τ d J r f i = f.val.val.val (r i) := rfl
 
-theorem smoothIndFixedEvaluation_injective {ι : Type*}
-    (J : Subgroup G) (r : ι → G)
+theorem smoothIndFixedEvaluation_injective  
     (hr : Function.Surjective (fun i => DoubleCoset.mk H J (r i))) :
     Function.Injective (smoothIndFixedEvaluation H τ d J r) := by
   intro x y hxy
@@ -96,6 +103,8 @@ theorem smoothIndFixedEvaluation_injective {ι : Type*}
     x.val.val.val (r i * j) = x.val.val.val (r i) := hfix x (r i) j hj
     _ = y.val.val.val (r i) := congrFun hxy i
     _ = y.val.val.val (r i * j) := (hfix y (r i) j hj).symm
+end
+
 
 end Evaluation
 
@@ -105,10 +114,13 @@ variable {G E : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
     [T2Space G] [AddCommGroup E] [Module ℂ E]
     (H : Subgroup G) (τ : Representation ℂ H E) (d : H →* (ℝ≥0)ˣ)
 
-theorem smoothInd_open_fixed_finite_of_compact_quotient
-    [Module.Finite ℂ E]
+section
+variable [Module.Finite ℂ E]
     (hH : IsClosed (H : Set G))
     (hquotient : IsCompact (Set.univ : Set (SectionCosetSpace H)))
+include hH hquotient
+theorem smoothInd_open_fixed_finite_of_compact_quotient
+     
     (J : OpenSubgroup G) :
     Module.Finite ℂ
       (fixedSubmodule (V := SmoothInd H τ d) (smoothIndRepresentation H τ d) (J : Subgroup G)) := by
@@ -117,12 +129,12 @@ theorem smoothInd_open_fixed_finite_of_compact_quotient
     (smoothIndFixedEvaluation_injective H τ d (J : Subgroup G) r hr.2)
 
 theorem smoothInd_admissible_of_compact_quotient
-    [Module.Finite ℂ E]
-    (hH : IsClosed (H : Set G))
-    (hquotient : IsCompact (Set.univ : Set (SectionCosetSpace H))) :
+      :
     Admissible (G := G) (V := SmoothInd H τ d) (smoothIndRepresentation H τ d) := by
   intro J
-  exact smoothInd_open_fixed_finite_of_compact_quotient H τ d hH hquotient J.toOpenSubgroup
+  apply smoothInd_open_fixed_finite_of_compact_quotient <;> assumption
+end
+
 
 end Admissibility
 

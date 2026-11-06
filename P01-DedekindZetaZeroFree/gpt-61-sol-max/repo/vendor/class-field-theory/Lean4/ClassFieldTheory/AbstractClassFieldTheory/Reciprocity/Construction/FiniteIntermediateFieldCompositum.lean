@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction.CoreFrobeniusNorm
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -45,16 +48,14 @@ definition lets later fixed-field constructions use the cardinality without
 adding a second finiteness parameter. -/
 noncomputable def quotientCard {E K : ClosedSubgroup G}
     (M : FiniteIntermediateField E K) : ℕ := by
-  letI : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K M.field M.below) := M.finite
+  letI  := M.finite
   exact Nat.card
     (K.toSubgroup ⧸ extensionSubgroup K M.field M.below)
 
 /-- The finite quotient used in the descent construction has positive cardinality. -/
 theorem quotientCard_pos {E K : ClosedSubgroup G}
     (M : FiniteIntermediateField E K) : 0 < M.quotientCard := by
-  let : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K M.field M.below) := M.finite
+  let  := M.finite
   exact Nat.card_pos
 
 /-- An initial finite stage and finitely many further stages have a common

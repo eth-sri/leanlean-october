@@ -177,16 +177,19 @@ attribute [local instance 2000] KPContSectorQuotientRelationsComparison.instMeas
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
 variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ} {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ} {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+
+local notation:max "current_fromActual" => fromActual (ζ := ζ) (hζ := hζ)
+
 private theorem subchart_ball (a : KPContActualSectorSmoothTestModules.ActualChart (U:=U) (H:=H))
     (ha : a.center ∈ a.domain) (B : LocalBall (3*d F))
-    (hB : fromActual (ζ:=ζ) (hζ:=hζ) a.center ∈ B.carrier) :
+    (hB : current_fromActual a.center ∈ B.carrier) :
     ∃ c : KPContActualSectorSmoothTestModules.ActualChart (U:=U) (H:=H),
       c.component = a.component ∧ c.center = a.center ∧ c.center ∈ c.domain ∧
       c.domain ⊆ a.domain ∧ chart c ⊆ B.carrier := by
   letI : Finite a.Isotropy := (every_shrunkChart_properties F ζ hζ U R P H a).finite_isotropy
   letI := Fintype.ofFinite a.Isotropy
-  let W := a.domain ∩ (fromActual (ζ:=ζ) (hζ:=hζ)) ⁻¹' B.carrier
-  have hc : Continuous (fromActual (ζ:=ζ) (hζ:=hζ)) := by
+  let W := a.domain ∩ (current_fromActual) ⁻¹' B.carrier
+  have hc : Continuous (current_fromActual) := by
     unfold fromActual labeledAInv
     fun_prop
   have hWo : IsOpen W := a.domain_open.inter (B.toOpens.isOpen.preimage hc)
@@ -223,8 +226,8 @@ private theorem subchart_ball (a : KPContActualSectorSmoothTestModules.ActualCha
   refine ⟨c,rfl,rfl,hp,fun x hx => (hVW hx).1, ?_⟩
   intro x hx
   have hh := (hVW hx).2
-  change fromActual (ζ:=ζ) (hζ:=hζ) (toActual (ζ:=ζ) (hζ:=hζ) x) ∈ B.carrier at hh
-  have he : fromActual (ζ:=ζ) (hζ:=hζ) (toActual (ζ:=ζ) (hζ:=hζ) x) = x := by
+  change current_fromActual (toActual (ζ:=ζ) (hζ:=hζ) x) ∈ B.carrier at hh
+  have he : current_fromActual (toActual (ζ:=ζ) (hζ:=hζ) x) = x := by
     unfold fromActual toActual
     have hi : ∀ z : M F, labeledAInv (placeEquiv F ζ hζ) (labeledA (placeEquiv F ζ hζ) z) = z := by
       intro z
@@ -269,7 +272,7 @@ private theorem subchart_integrable
     apply hi.congr
     filter_upwards [ae_restrict_mem (scalarData c).open_chart.measurableSet] with x hx
     rw [ENNReal.toReal_ofReal (show 0 ≤ weight c x from le_of_lt ((scalarData c).positive_weight x hx)), mul_comm]
-  let emb := fun y : c.domain => fromActual (ζ:=ζ) (hζ:=hζ) y.val
+  let emb := fun y : c.domain => current_fromActual y.val
   have hme : Measure.map emb c.liftedMeasure = KPContActualSectorChartEquivariantInputs.measure c := lifted_measure_transport (a:=c)
   have hcomp : Integrable (fun y : c.domain => g (emb y)) c.liftedMeasure := by
     change Integrable (g ∘ emb) c.liftedMeasure
@@ -278,7 +281,7 @@ private theorem subchart_integrable
     · exact hme.symm ▸ hgc.aestronglyMeasurable
     · apply Continuous.aemeasurable
       exact (by
-        have hc : Continuous (fromActual (ζ:=ζ) (hζ:=hζ)) := by
+        have hc : Continuous (current_fromActual) := by
           unfold fromActual labeledAInv
           fun_prop
         exact hc.comp continuous_subtype_val)
@@ -311,7 +314,7 @@ private theorem subchart_integrable
   exact hcomp
 
 private theorem to_from (y : SymmetricSpace F) :
-    toActual (ζ:=ζ) (hζ:=hζ) (fromActual (ζ:=ζ) (hζ:=hζ) y) = y := by
+    toActual (ζ:=ζ) (hζ:=hζ) (current_fromActual y) = y := by
   unfold fromActual toActual
   rw [LinearIsometryEquiv.symm_apply_apply]
   funext k
@@ -327,10 +330,10 @@ theorem weakChartData_normSquare_locallyIntegrable
   obtain ⟨p,rfl⟩ := Quotient.exists_rep w
   obtain ⟨a,hai,hap,ha⟩ := chart_around (H:=H) i p
   have hac : a.center ∈ a.domain := hap.symm ▸ ha
-  have hx : fromActual (ζ:=ζ) (hζ:=hζ) a.center ∈ coordinateDomain a := by
+  have hx : current_fromActual a.center ∈ coordinateDomain a := by
     change labeledA (placeEquiv F ζ hζ) ((baseReindex (F:=F)).symm
-      (fromActual (ζ:=ζ) (hζ:=hζ) a.center)) ∈ a.domain
-    change toActual (ζ:=ζ) (hζ:=hζ) (fromActual (ζ:=ζ) (hζ:=hζ) a.center) ∈ a.domain
+      (current_fromActual a.center)) ∈ a.domain
+    change toActual (ζ:=ζ) (hζ:=hζ) (current_fromActual a.center) ∈ a.domain
     rw [to_from]
     exact hac
   obtain ⟨B,hB,hmem⟩ := ball_around a _ hx

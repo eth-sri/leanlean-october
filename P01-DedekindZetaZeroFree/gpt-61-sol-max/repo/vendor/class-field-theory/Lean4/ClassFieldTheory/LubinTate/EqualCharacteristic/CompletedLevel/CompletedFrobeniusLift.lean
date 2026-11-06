@@ -45,11 +45,14 @@ noncomputable local instance equalCharacteristicCompletedFrobeniusLiftBaseAlgebr
       (equalCharacteristicCompletedUnramifiedField F.residueField) :=
   laurentSeriesCoefficientAlgebra
 
+section
+variable (F : LocalField.{u, v} K) (n : ℕ)
+include F n
 /-- The ordinary completed-base algebra structure on the splitting field,
 named explicitly so it can coexist with its Frobenius twist. -/
 @[reducible]
 noncomputable def equalCharacteristicCompletedLevelOriginalAlgebra
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      :
     Algebra (equalCharacteristicCompletedUnramifiedField F.residueField)
       (equalCharacteristicCompletedLevelField F n) :=
   inferInstance
@@ -58,7 +61,7 @@ noncomputable def equalCharacteristicCompletedLevelOriginalAlgebra
 Frobenius followed by the ordinary scalar inclusion. -/
 @[reducible]
 noncomputable def equalCharacteristicCompletedLevelFrobeniusAlgebra
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      :
     Algebra (equalCharacteristicCompletedUnramifiedField F.residueField)
       (equalCharacteristicCompletedLevelField F n) :=
   RingHom.toAlgebra
@@ -67,24 +70,24 @@ noncomputable def equalCharacteristicCompletedLevelFrobeniusAlgebra
         (equalCharacteristicCompletedLevelField F n)).comp
       (equalCharacteristicCompletedUnramifiedFrobenius F.residueField).toAlgHom.toRingHom)
 
-/-- The twisted level algebra map applies completed Frobenius before scalar extension. -/
-theorem equalCharacteristicCompletedLevelFrobeniusAlgebra_algebraMap
-    (F : LocalField.{u, v} K) (n : ℕ)
-    (a : equalCharacteristicCompletedUnramifiedField F.residueField) :
-    @algebraMap
-        (equalCharacteristicCompletedUnramifiedField F.residueField)
-        (equalCharacteristicCompletedLevelField F n)
-        _ _ (equalCharacteristicCompletedLevelFrobeniusAlgebra F n) a =
-      algebraMap
-        (equalCharacteristicCompletedUnramifiedField F.residueField)
-        (equalCharacteristicCompletedLevelField F n)
-        (equalCharacteristicCompletedUnramifiedFrobenius F.residueField a) :=
-  rfl
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- Arithmetic Frobenius fixes the completed primitive polynomial because
 all of its coefficients descend to `κ((T))`. -/
 theorem equalCharacteristicCompletedPrimitivePolynomial_frobenius
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      :
     (equalCharacteristicCompletedPrimitivePolynomial F n).map
         (equalCharacteristicCompletedUnramifiedFrobenius F.residueField).toAlgHom.toRingHom =
       equalCharacteristicCompletedPrimitivePolynomial F n := by
@@ -100,13 +103,18 @@ theorem equalCharacteristicCompletedPrimitivePolynomial_frobenius
     exact
       (equalCharacteristicCompletedUnramifiedFrobenius F.residueField).commutes a
   rw [Polynomial.map_map, hcomp]
+end
 
+
+section
+variable (F : LocalField.{u, v} K)
+    [CharP K F.residueCharacteristic]
+    (n : ℕ) (a : F.residueField⟦X⟧ˣ)
+include F n a
 /-- A unit bracket is a root of the primitive minimal polynomial for the
 Frobenius-twisted codomain algebra structure. -/
 theorem equalCharacteristicCompletedUnitRoot_aeval_minpoly_frobenius
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) (a : F.residueField⟦X⟧ˣ) :
+      :
     @Polynomial.aeval
         (equalCharacteristicCompletedUnramifiedField F.residueField)
         (equalCharacteristicCompletedLevelField F n)
@@ -130,9 +138,7 @@ theorem equalCharacteristicCompletedUnitRoot_aeval_minpoly_frobenius
 /-- The semilinear algebra homomorphism extending arithmetic Frobenius and
 sending the primitive point to the prescribed unit bracket. -/
 noncomputable def equalCharacteristicCompletedFrobeniusLiftAlgHom
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) (a : F.residueField⟦X⟧ˣ) :
+      :
     @AlgHom
       (equalCharacteristicCompletedUnramifiedField F.residueField)
       (equalCharacteristicCompletedLevelField F n)
@@ -154,9 +160,7 @@ noncomputable def equalCharacteristicCompletedFrobeniusLiftAlgHom
 /-- The semilinear Frobenius homomorphism sends the primitive root to its unit transform. -/
 @[simp]
 theorem equalCharacteristicCompletedFrobeniusLiftAlgHom_primitiveRoot
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) (a : F.residueField⟦X⟧ˣ) :
+      :
     equalCharacteristicCompletedFrobeniusLiftAlgHom F n a
         (equalCharacteristicCompletedPrimitiveRoot F n) =
       equalCharacteristicCompletedUnitRoot F n a := by
@@ -174,9 +178,7 @@ theorem equalCharacteristicCompletedFrobeniusLiftAlgHom_primitiveRoot
 
 /-- The underlying field homomorphism of the prescribed Frobenius lift. -/
 noncomputable def equalCharacteristicCompletedFrobeniusLift
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) (a : F.residueField⟦X⟧ˣ) :
+      :
     equalCharacteristicCompletedLevelField F n →+*
       equalCharacteristicCompletedLevelField F n :=
   @AlgHom.toRingHom
@@ -191,9 +193,7 @@ noncomputable def equalCharacteristicCompletedFrobeniusLift
 /-- The Frobenius lift acts on base scalars by completed Frobenius. -/
 @[simp]
 theorem equalCharacteristicCompletedFrobeniusLift_algebraMap
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) (a : F.residueField⟦X⟧ˣ)
+     
     (b : equalCharacteristicCompletedUnramifiedField F.residueField) :
     equalCharacteristicCompletedFrobeniusLift F n a
         (algebraMap (equalCharacteristicCompletedUnramifiedField F.residueField)
@@ -222,9 +222,7 @@ theorem equalCharacteristicCompletedFrobeniusLift_algebraMap
 /-- The Frobenius lift sends the primitive root to the corresponding unit root. -/
 @[simp]
 theorem equalCharacteristicCompletedFrobeniusLift_primitiveRoot
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) (a : F.residueField⟦X⟧ˣ) :
+      :
     equalCharacteristicCompletedFrobeniusLift F n a
         (equalCharacteristicCompletedPrimitiveRoot F n) =
       equalCharacteristicCompletedUnitRoot F n a :=
@@ -237,9 +235,7 @@ theorem equalCharacteristicCompletedFrobeniusLift_primitiveRoot
 the whole completed base and the primitive generator given by the unit
 bracket. -/
 theorem equalCharacteristicCompletedFrobeniusLift_surjective
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) (a : F.residueField⟦X⟧ˣ) :
+      :
     Function.Surjective (equalCharacteristicCompletedFrobeniusLift F n a) := by
   let A := equalCharacteristicCompletedUnramifiedField F.residueField
   let E := equalCharacteristicCompletedLevelField F n
@@ -280,9 +276,7 @@ theorem equalCharacteristicCompletedFrobeniusLift_surjective
 /-- The actual field automorphism extending arithmetic Frobenius and acting
 on the primitive point by the prescribed unit bracket. -/
 noncomputable def equalCharacteristicCompletedFrobeniusLiftEquiv
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) (a : F.residueField⟦X⟧ˣ) :
+      :
     equalCharacteristicCompletedLevelField F n ≃+*
       equalCharacteristicCompletedLevelField F n :=
   RingEquiv.ofBijective (equalCharacteristicCompletedFrobeniusLift F n a)
@@ -292,9 +286,7 @@ noncomputable def equalCharacteristicCompletedFrobeniusLiftEquiv
 /-- The Frobenius lift equivalence acts on base scalars by completed Frobenius. -/
 @[simp]
 theorem equalCharacteristicCompletedFrobeniusLiftEquiv_algebraMap
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) (a : F.residueField⟦X⟧ˣ)
+     
     (b : equalCharacteristicCompletedUnramifiedField F.residueField) :
     equalCharacteristicCompletedFrobeniusLiftEquiv F n a
         (algebraMap (equalCharacteristicCompletedUnramifiedField F.residueField)
@@ -307,13 +299,13 @@ theorem equalCharacteristicCompletedFrobeniusLiftEquiv_algebraMap
 /-- The Frobenius lift equivalence sends the primitive root to its unit transform. -/
 @[simp]
 theorem equalCharacteristicCompletedFrobeniusLiftEquiv_primitiveRoot
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) (a : F.residueField⟦X⟧ˣ) :
+      :
     equalCharacteristicCompletedFrobeniusLiftEquiv F n a
         (equalCharacteristicCompletedPrimitiveRoot F n) =
       equalCharacteristicCompletedUnitRoot F n a :=
   equalCharacteristicCompletedFrobeniusLift_primitiveRoot F n a
+end
+
 
 end EqualCharacteristic
 end LubinTate

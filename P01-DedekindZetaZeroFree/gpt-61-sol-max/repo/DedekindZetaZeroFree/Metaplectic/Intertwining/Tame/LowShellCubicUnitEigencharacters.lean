@@ -137,8 +137,11 @@ theorem compact_normalizes_splitCongruenceSet
     simpa only [map_inv, inv_inv, mul_assoc, mul_inv_cancel, mul_one,
       inv_mul_cancel, one_mul, mul_inv_cancel_left] using h
 
-def unitDilation (F : Type) [Field F] [NumberField F]
-    (q : HeightOneSpectrum (𝓞 F)) (u : (KPTameCompact.O F q)ˣ) :
+section
+variable (F : Type) [Field F] [NumberField F]
+    (q : HeightOneSpectrum (𝓞 F)) (u : (KPTameCompact.O F q)ˣ)
+include F q u
+def unitDilation   :
     LocalField F q ≃ₜ+ LocalField F q :=
   { (LinearEquiv.smulOfUnit (R := LocalField F q) (M := LocalField F q)
       (KPTameCompact.unitInclusion F q u)).toAddEquiv with
@@ -146,8 +149,7 @@ def unitDilation (F : Type) [Field F] [NumberField F]
     continuous_invFun := continuous_const.mul continuous_id }
 
 private theorem unitDilation_preimage_lowShell
-    (F : Type) [Field F] [NumberField F]
-    (q : HeightOneSpectrum (𝓞 F)) (u : (KPTameCompact.O F q)ˣ) :
+      :
     unitDilation F q u ⁻¹' lowShell F q = lowShell F q := by
   ext x
   change valuation (LocalField F q)
@@ -157,13 +159,18 @@ private theorem unitDilation_preimage_lowShell
       (KPTameCompact.unitInclusion F q u : LocalField F q) = 1 :=
     (Valuation.integer.integers (valuation (LocalField F q))).valuation_unit u
   rw [map_mul, hu, one_mul]
+end
 
-private theorem unitDilation_preservesHaar
-    (F : Type) [Field F] [NumberField F]
+
+section
+variable (F : Type) [Field F] [NumberField F]
     (q : HeightOneSpectrum (𝓞 F))
     (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
     (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
-    (u : (KPTameCompact.O F q)ˣ) :
+    (u : (KPTameCompact.O F q)ˣ)
+include F q μ hμ u
+private theorem unitDilation_preservesHaar
+      :
     MeasurePreserving (unitDilation F q u) μ μ := by
   let e := unitDilation F q u
   let : (μ.map e).IsAddHaarMeasure := e.isAddHaarMeasure_map μ
@@ -184,23 +191,24 @@ private theorem unitDilation_preservesHaar
   rw [hscalar, hone, one_smul]
 
 theorem unitDilation_preservesLowShellHaar
-    (F : Type) [Field F] [NumberField F]
-    (q : HeightOneSpectrum (𝓞 F))
-    (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
-    (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
-    (u : (KPTameCompact.O F q)ˣ) :
+      :
     MeasurePreserving (unitDilation F q u)
       (μ.restrict (lowShell F q)) (μ.restrict (lowShell F q)) := by
   have h := (unitDilation_preservesHaar F q μ hμ u).restrict_preimage
     (show MeasurableSet (lowShell F q) from
       (valuation (LocalField F q)).isOpen_integer.measurableSet)
   rwa [unitDilation_preimage_lowShell] at h
+end
+
 
 set_option backward.isDefEq.respectTransparency false in
-private theorem actual_compact_normalizers
-    (F : Type) [Field F] [NumberField F]
+section
+variable (F : Type) [Field F] [NumberField F]
     (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
     (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
+include F ζ hζ q ht
+private theorem actual_compact_normalizers
+     
     (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F q m) :
     (∀ k ∈ splitCongruenceSet F ζ hζ q m,
       (KPPGLLocalCover.W F ζ hζ (Sum.inr q))⁻¹ * k *
@@ -234,9 +242,7 @@ private theorem actual_compact_normalizers
       (KPStandardLocalRootLifts.integralA F q u) k
 
 theorem eventual_actual_compact_normalizers
-    (F : Type) [Field F] [NumberField F]
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
-    (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3) :
+      :
     ∃ M : ℕ, ∀ m ≥ M,
     (∀ k ∈ splitCongruenceSet F ζ hζ q m,
       (KPPGLLocalCover.W F ζ hζ (Sum.inr q))⁻¹ * k *
@@ -248,6 +254,8 @@ theorem eventual_actual_compact_normalizers
             splitCongruenceSet F ζ hζ q m := by
   obtain ⟨M, hM⟩ := KPTameJacquetBruhatTests.TestConstruction.eventually_matrixChartDepth F q
   exact ⟨M, fun m hm => actual_compact_normalizers F ζ hζ q ht m (hM m hm)⟩
+end
+
 
 end DedekindZetaZeroFree.KPTameTransposeLowShellSupport
 

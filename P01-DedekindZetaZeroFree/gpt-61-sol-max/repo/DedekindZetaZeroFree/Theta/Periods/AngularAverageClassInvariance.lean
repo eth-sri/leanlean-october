@@ -13,16 +13,19 @@ namespace DedekindZetaZeroFree.Hecke
 
 open DedekindZetaZeroFree.AbelianQuotient.Theta
 
-private theorem continuous_slice (F : Type) [Field F] [NumberField F]
-    (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (t : ℝ) (ht : 0 < t) :
+section
+variable (F : Type) [Field F] [NumberField F]
+    (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (t : ℝ)
+include F I t in
+private theorem continuous_slice   (ht : 0 < t) :
     Continuous (mixedRadialTheta F I t) := by
   change Continuous ((fun p : ℝ × Angular F ↦ mixedRadialTheta F I p.1 p.2) ∘
     (fun u : Angular F ↦ (t, u)))
   exact (continuousOn_mixedRadialTheta F I).comp_continuous
     (continuous_const.prodMk continuous_id) (fun _ ↦ ⟨ht, Set.mem_univ _⟩)
 
-private theorem periodic_slice (F : Type) [Field F] [NumberField F]
-    (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (t : ℝ)
+include F I t in
+private theorem periodic_slice  
     (z : {v : InfinitePlace F // v ≠ Units.dirichletUnitTheorem.w₀} → ℤ)
     (u : Angular F) :
     mixedRadialTheta F I t (u + fun i => (z i : ℝ)) = mixedRadialTheta F I t u := by
@@ -67,13 +70,15 @@ theorem mixedAngularAverage_class_invariant (F : Type) [Field F] [NumberField F]
   exact (periodicCubeIntegral_translation (mixedRadialTheta F I t)
     (continuous_slice F I t ht) (periodic_slice F I t) d).symm
 
+include F I t in
 theorem mixedNegAngularAverage_eq_mixedAngularAverage
-    (F : Type) [Field F] [NumberField F]
-    (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (t : ℝ) (ht : 0 < t) :
+      (ht : 0 < t) :
     DedekindZetaZeroFree.AbelianQuotient.Theta.mixedNegAngularAverage F I t =
       DedekindZetaZeroFree.AbelianQuotient.Theta.mixedAngularAverage F I t := by
   classical
   exact periodicCubeIntegral_negation (mixedRadialTheta F I t)
     (continuous_slice F I t ht) (periodic_slice F I t)
+end
+
 
 end DedekindZetaZeroFree.Hecke

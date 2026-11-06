@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import Mathlib.NumberTheory.Padics.RingHoms
 public import Mathlib.Topology.Algebra.Group.Basic
 public import Mathlib.Topology.MetricSpace.Ultra.Basic
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -37,8 +40,7 @@ theorem isOpen_ker_padicIntToZModPow
   have hp0 : (p : ℝ) ≠ 0 := by
     exact_mod_cast (Fact.out : p.Prime).ne_zero
   have hr : (p : ℝ) ^ (-n : ℤ) ≠ 0 := zpow_ne_zero (-n : ℤ) hp0
-  have hball :
-      IsOpen (Metric.closedBall (0 : ℤ_[p]) ((p : ℝ) ^ (-n : ℤ))) :=
+  have hball  :=
     IsUltrametricDist.isOpen_closedBall (0 : ℤ_[p]) hr
   have heq :
       ((Ideal.span {(p : ℤ_[p]) ^ n} : Ideal ℤ_[p]) : Set ℤ_[p]) =

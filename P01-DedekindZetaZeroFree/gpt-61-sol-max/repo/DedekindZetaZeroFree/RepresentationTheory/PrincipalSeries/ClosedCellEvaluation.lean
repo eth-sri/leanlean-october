@@ -21,16 +21,22 @@ variable (hm : KPLocalChartTopology.MatrixChartDepth F w m)
 variable {E : Type*} [AddCommGroup E] [Module ℂ E]
   (τB : Representation ℂ (Borel F ζ hζ w) E)
 
-def inducingRepresentation : Representation ℂ (Borel F ζ hζ w) E :=
-  letI := finiteCoverTopology F ζ hζ w m
+
+local notation:max "current_Borel" => Borel F ζ hζ
+
+
+local notation:max "current_finiteCoverTopology" => finiteCoverTopology F ζ hζ
+
+def inducingRepresentation : Representation ℂ (current_Borel w) E :=
+  letI := current_finiteCoverTopology w m
   letI := (KPPGLLocalCover.finite_topological_cover F ζ hζ w m hm).2.2.1
-  normalizedSectionRepresentation (Borel F ζ hζ w) τB (dB F ζ hζ w)
+  normalizedSectionRepresentation (current_Borel w) τB (dB F ζ hζ w)
 
 def inducedRepresentation :
     Representation ℂ (FiniteCover F ζ hζ w) (Induced F ζ hζ w m τB) :=
-  letI := finiteCoverTopology F ζ hζ w m
+  letI := current_finiteCoverTopology w m
   letI := (KPPGLLocalCover.finite_topological_cover F ζ hζ w m hm).2.2.1
-  smoothIndRepresentation (Borel F ζ hζ w) τB (dB F ζ hζ w)
+  smoothIndRepresentation (current_Borel w) τB (dB F ζ hζ w)
 
 def ev1 : Induced F ζ hζ w m τB →ₗ[ℂ] E where
   toFun f := f.val.val 1
@@ -40,9 +46,9 @@ def ev1 : Induced F ζ hζ w m τB →ₗ[ℂ] E where
 include hm
 
 private theorem projection_continuous :
-    letI := finiteCoverTopology F ζ hζ w m
+    letI := current_finiteCoverTopology w m
     Continuous (projection F ζ hζ w) := by
-  letI := finiteCoverTopology F ζ hζ w m
+  letI := current_finiteCoverTopology w m
   have ho : Continuous (ordinaryPGLMap F w) := by
     apply (QuotientGroup.isQuotientMap_mk (KPPGLLocalCover.scalarSubgroup F (Sum.inr w))).continuous_iff.mpr
     change Continuous (Matrix.ProjGenLinGroup.mk (n := Fin 2) (R := KPRankOneInduction.LocalField F w))
@@ -50,14 +56,14 @@ private theorem projection_continuous :
   exact ho.comp (KPPGLLocalCover.finite_topological_cover F ζ hζ w m hm).2.2.2.1.continuous
 
 theorem inducingRepresentation_smooth (hm : KPLocalChartTopology.MatrixChartDepth F w m)
-    (hτB : letI := finiteCoverTopology F ζ hζ w m; SmoothRepresentation τB) :
-    letI := finiteCoverTopology F ζ hζ w m
+    (hτB : letI := current_finiteCoverTopology w m; SmoothRepresentation τB) :
+    letI := current_finiteCoverTopology w m
     SmoothRepresentation (inducingRepresentation F ζ hζ w τB) := by
-  letI := finiteCoverTopology F ζ hζ w m
+  letI := current_finiteCoverTopology w m
   letI := (KPPGLLocalCover.finite_topological_cover F ζ hζ w m hm).2.2.1
   have hd := KPRankOneInduction.dB_locallyConstant F w (projection F ζ hζ w)
     (projection_continuous F ζ hζ w m hm)
-  let D : OpenSubgroup (Borel F ζ hζ w) := ⟨(dB F ζ hζ w).ker, hd.isOpen_fiber 1⟩
+  let D : OpenSubgroup (current_Borel w) := ⟨(dB F ζ hζ w).ker, hd.isOpen_fiber 1⟩
   intro e
   obtain ⟨J, hJ⟩ := hτB e
   refine ⟨J ⊓ D, ?_⟩
@@ -67,32 +73,32 @@ theorem inducingRepresentation_smooth (hm : KPLocalChartTopology.MatrixChartDept
   rw [hbD, hJ b hb.1]
   simp
 
-theorem ev1_borel (b : Borel F ζ hζ w) (f : Induced F ζ hζ w m τB) :
+theorem ev1_borel (b : current_Borel w) (f : Induced F ζ hζ w m τB) :
     ev1 F ζ hζ w m τB
       (inducedRepresentation F ζ hζ w m hm τB b.val f) =
     inducingRepresentation F ζ hζ w τB b (ev1 F ζ hζ w m τB f) := by
-  letI := finiteCoverTopology F ζ hζ w m
+  letI := current_finiteCoverTopology w m
   letI := (KPPGLLocalCover.finite_topological_cover F ζ hζ w m hm).2.2.1
   change f.val.val (1 * b.val) = inducingRepresentation F ζ hζ w τB b (f.val.val 1)
   simpa [inducingRepresentation] using f.val.property b 1
 
-theorem ev1_smooth_borel (hτB : letI := finiteCoverTopology F ζ hζ w m; SmoothRepresentation τB) :
-    letI := finiteCoverTopology F ζ hζ w m
+theorem ev1_smooth_borel (hτB : letI := current_finiteCoverTopology w m; SmoothRepresentation τB) :
+    letI := current_finiteCoverTopology w m
     SmoothRepresentation
       (G := FiniteCover F ζ hζ w) (V := Induced F ζ hζ w m τB)
       (inducedRepresentation F ζ hζ w m hm τB) ∧
     SmoothRepresentation (inducingRepresentation F ζ hζ w τB) := by
-  letI := finiteCoverTopology F ζ hζ w m
+  letI := current_finiteCoverTopology w m
   letI := (KPPGLLocalCover.finite_topological_cover F ζ hζ w m hm).2.2.1
   exact ⟨smoothIndRepresentation_smooth _ _ _,
     inducingRepresentation_smooth F ζ hζ w m hm τB hm hτB⟩
 
 private theorem exists_compact_open_in (U : Set (FiniteCover F ζ hζ w))
-    (hU : letI := finiteCoverTopology F ζ hζ w m; U ∈ nhds 1) :
-    letI := finiteCoverTopology F ζ hζ w m
+    (hU : letI := current_finiteCoverTopology w m; U ∈ nhds 1) :
+    letI := current_finiteCoverTopology w m
     ∃ L : compactOpenLevel F ζ hζ w m, (L.toOpenSubgroup : Set _) ⊆ U := by
   letI := KPLocalChartTopology.translatedTopology F ζ hζ w m
-  letI := finiteCoverTopology F ζ hζ w m
+  letI := current_finiteCoverTopology w m
   letI := (KPLocalChartTopology.finite_topological_group F ζ hζ w m hm).2.2
   letI := (KPPGLLocalCover.finite_topological_cover F ζ hζ w m hm).2.2.1
   obtain ⟨s, hs, hi, hp⟩ := KPDeepRawSplitting.raw_section_splitting F ζ hζ w m
@@ -146,15 +152,15 @@ private theorem exists_compact_open_in (U : Set (FiniteCover F ζ hζ w))
   exact hVU (hrV k.property)
 
 theorem exists_bump_level (hm : KPLocalChartTopology.MatrixChartDepth F w m)
-    (hτB : letI := finiteCoverTopology F ζ hζ w m; SmoothRepresentation τB) (e : E) :
-    letI := finiteCoverTopology F ζ hζ w m
+    (hτB : letI := current_finiteCoverTopology w m; SmoothRepresentation τB) (e : E) :
+    letI := current_finiteCoverTopology w m
     ∃ L : compactOpenLevel F ζ hζ w m,
-      ∀ b : Borel F ζ hζ w, b.val ∈ L.toOpenSubgroup →
+      ∀ b : current_Borel w, b.val ∈ L.toOpenSubgroup →
         inducingRepresentation F ζ hζ w τB b e = e := by
-  letI := finiteCoverTopology F ζ hζ w m
+  letI := current_finiteCoverTopology w m
   letI := (KPPGLLocalCover.finite_topological_cover F ζ hζ w m hm).2.2.1
   obtain ⟨J, hJ⟩ := inducingRepresentation_smooth F ζ hζ w m hm τB hm hτB e
-  have hJn : (J : Set (Borel F ζ hζ w)) ∈ nhds (1 : Borel F ζ hζ w) := J.mem_nhds_one
+  have hJn : (J : Set (current_Borel w)) ∈ nhds (1 : current_Borel w) := J.mem_nhds_one
   rw [nhds_subtype] at hJn
   obtain ⟨U, hU, hUJ⟩ := Filter.mem_comap.mp hJn
   obtain ⟨L, hLU⟩ := exists_compact_open_in F ζ hζ w m hm U hU
@@ -162,8 +168,8 @@ theorem exists_bump_level (hm : KPLocalChartTopology.MatrixChartDepth F w m)
 
 def InBorelLevel (L : compactOpenLevel F ζ hζ w m)
     (g : FiniteCover F ζ hζ w) : Prop :=
-  letI := finiteCoverTopology F ζ hζ w m
-  ∃ b : Borel F ζ hζ w, ∃ l : L.toOpenSubgroup, g = b.val * l.val
+  letI := current_finiteCoverTopology w m
+  ∃ b : current_Borel w, ∃ l : L.toOpenSubgroup, g = b.val * l.val
 
 def bumpFunction (e : E) (L : compactOpenLevel F ζ hζ w m)
     (g : FiniteCover F ζ hζ w) : E :=
@@ -177,12 +183,12 @@ variable (e : E) (L : compactOpenLevel F ζ hζ w m)
 
 include hL
 
-theorem bump_well_defined (b b' : Borel F ζ hζ w)
-    (l l' : letI := finiteCoverTopology F ζ hζ w m; L.toOpenSubgroup) (h : b.val * l.val = b'.val * l'.val) :
+theorem bump_well_defined (b b' : current_Borel w)
+    (l l' : letI := current_finiteCoverTopology w m; L.toOpenSubgroup) (h : b.val * l.val = b'.val * l'.val) :
     inducingRepresentation F ζ hζ w τB b e =
       inducingRepresentation F ζ hζ w τB b' e := by
-  letI := finiteCoverTopology F ζ hζ w m
-  let c : Borel F ζ hζ w := b'⁻¹ * b
+  letI := current_finiteCoverTopology w m
+  let c : current_Borel w := b'⁻¹ * b
   have hc : c.val ∈ L.toOpenSubgroup := by
     have heq : c.val = l'.val * l.val⁻¹ := by
       change b'.val⁻¹ * b.val = l'.val * l.val⁻¹
@@ -194,10 +200,10 @@ theorem bump_well_defined (b b' : Borel F ζ hζ w)
   have hb : b = b' * c := by dsimp [c]; group
   rw [hb, map_mul, Module.End.mul_apply, hL c hc]
 
-theorem bumpFunction_on (b : Borel F ζ hζ w) (l : letI := finiteCoverTopology F ζ hζ w m; L.toOpenSubgroup) :
+theorem bumpFunction_on (b : current_Borel w) (l : letI := current_finiteCoverTopology w m; L.toOpenSubgroup) :
     bumpFunction F ζ hζ w m τB e L (b.val * l.val) =
       inducingRepresentation F ζ hζ w τB b e := by
-  letI := finiteCoverTopology F ζ hζ w m
+  letI := current_finiteCoverTopology w m
   have hg : InBorelLevel F ζ hζ w m L (b.val * l.val) := ⟨b, l, rfl⟩
   rw [bumpFunction, dif_pos hg]
   obtain ⟨l', hl'⟩ := Classical.choose_spec hg
@@ -209,10 +215,10 @@ theorem bumpFunction_off (g : FiniteCover F ζ hζ w)
   exact dif_neg hg
 
 theorem bumpFunction_right_fixed (g : FiniteCover F ζ hζ w)
-    (l : letI := finiteCoverTopology F ζ hζ w m; L.toOpenSubgroup) :
+    (l : letI := current_finiteCoverTopology w m; L.toOpenSubgroup) :
     bumpFunction F ζ hζ w m τB e L (g * l.val) =
       bumpFunction F ζ hζ w m τB e L g := by
-  letI := finiteCoverTopology F ζ hζ w m
+  letI := current_finiteCoverTopology w m
   by_cases hg : InBorelLevel F ζ hζ w m L g
   · obtain ⟨b, k, rfl⟩ := hg
     have heq : b.val * k.val * l.val = b.val * (k * l).val := mul_assoc _ _ _
@@ -228,12 +234,12 @@ theorem bumpFunction_right_fixed (g : FiniteCover F ζ hζ w)
     rw [bumpFunction_off F ζ hζ w m hm τB e L hL _ hgl,
       bumpFunction_off F ζ hζ w m hm τB e L hL _ hg]
 
-theorem bumpFunction_covariance (b : Borel F ζ hζ w)
+theorem bumpFunction_covariance (b : current_Borel w)
     (g : FiniteCover F ζ hζ w) :
     bumpFunction F ζ hζ w m τB e L (b.val * g) =
       inducingRepresentation F ζ hζ w τB b
         (bumpFunction F ζ hζ w m τB e L g) := by
-  letI := finiteCoverTopology F ζ hζ w m
+  letI := current_finiteCoverTopology w m
   by_cases hg : InBorelLevel F ζ hζ w m L g
   · obtain ⟨c, l, rfl⟩ := hg
     have heq : b.val * (c.val * l.val) = (b * c).val * l.val := (mul_assoc _ _ _).symm
@@ -251,15 +257,15 @@ theorem bumpFunction_covariance (b : Borel F ζ hζ w)
       bumpFunction_off F ζ hζ w m hm τB e L hL _ hg, map_zero]
 
 def bumpSection (hm : KPLocalChartTopology.MatrixChartDepth F w m) (e : E) (L : compactOpenLevel F ζ hζ w m)
-    (hL : letI := finiteCoverTopology F ζ hζ w m
-      ∀ b : Borel F ζ hζ w, b.val ∈ L.toOpenSubgroup →
+    (hL : letI := current_finiteCoverTopology w m
+      ∀ b : current_Borel w, b.val ∈ L.toOpenSubgroup →
         inducingRepresentation F ζ hζ w τB b e = e) :
     Induced F ζ hζ w m τB :=
   ⟨⟨bumpFunction F ζ hζ w m τB e L, by
-    letI := finiteCoverTopology F ζ hζ w m
+    letI := current_finiteCoverTopology w m
     letI := (KPPGLLocalCover.finite_topological_cover F ζ hζ w m hm).2.2.1
     exact bumpFunction_covariance F ζ hζ w m hm τB e L hL⟩, by
-    letI := finiteCoverTopology F ζ hζ w m
+    letI := current_finiteCoverTopology w m
     letI := (KPPGLLocalCover.finite_topological_cover F ζ hζ w m hm).2.2.1
     apply Submodule.subset_span
     refine ⟨L.toOpenSubgroup, ?_⟩
@@ -270,14 +276,14 @@ def bumpSection (hm : KPLocalChartTopology.MatrixChartDepth F w m) (e : E) (L : 
 
 theorem ev1_bumpSection :
     ev1 F ζ hζ w m τB (bumpSection F ζ hζ w m τB hm e L hL) = e := by
-  letI := finiteCoverTopology F ζ hζ w m
+  letI := current_finiteCoverTopology w m
   change bumpFunction F ζ hζ w m τB e L 1 = e
   simpa using bumpFunction_on F ζ hζ w m hm τB e L hL 1 1
 
 omit hL
 
 theorem ev1_surjective (hm : KPLocalChartTopology.MatrixChartDepth F w m)
-    (hτB : letI := finiteCoverTopology F ζ hζ w m; SmoothRepresentation τB) :
+    (hτB : letI := current_finiteCoverTopology w m; SmoothRepresentation τB) :
     Function.Surjective (ev1 F ζ hζ w m τB) := by
   intro e
   obtain ⟨L, hL⟩ := exists_bump_level F ζ hζ w m hm τB hm hτB e
@@ -287,7 +293,7 @@ theorem ev1_surjective (hm : KPLocalChartTopology.MatrixChartDepth F w m)
 omit hL hm in
 
 theorem upperRoot_mem_borel (x : Multiplicative (KPRankOneInduction.LocalField F w)) :
-    upperRoot F ζ hζ w x ∈ Borel F ζ hζ w := by
+    upperRoot F ζ hζ w x ∈ current_Borel w := by
   change projection F ζ hζ w (upperRoot F ζ hζ w x) ∈ KPRankOneInduction.upperBorel F w
   have hn : projection F ζ hζ w (upperRoot F ζ hζ w x) =
       KPRankOneInduction.upperRootElement F w (Multiplicative.toAdd x) := by
@@ -297,15 +303,15 @@ theorem upperRoot_mem_borel (x : Multiplicative (KPRankOneInduction.LocalField F
   rw [hn]
   exact KPRankOneInduction.upperRootElement_mem F w _
 
-def torusInBorel (h : Torus F ζ hζ w) : Borel F ζ hζ w :=
+def torusInBorel (h : Torus F ζ hζ w) : current_Borel w :=
   ⟨h.val, by
-    letI := finiteCoverTopology F ζ hζ w m
+    letI := current_finiteCoverTopology w m
     letI := (KPPGLLocalCover.finite_topological_cover F ζ hζ w m hm).2.2.1
     exact KPRankOneInduction.coveredTorus_le_Borel F w
       (projection F ζ hζ w) h.property⟩
 
 def rootInBorel (x : Multiplicative (KPRankOneInduction.LocalField F w)) :
-    Borel F ζ hζ w :=
+    current_Borel w :=
   ⟨upperRoot F ζ hζ w x, upperRoot_mem_borel F ζ hζ w x⟩
 
 section TorusInduction

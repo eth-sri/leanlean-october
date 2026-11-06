@@ -2,7 +2,10 @@ module
 
 public import Mathlib
 
+public import Mathlib
+
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 
@@ -10,23 +13,26 @@ noncomputable section
 open MeasureTheory
 open scoped ContDiff InnerProductSpace
 
-def complexTracePairing (x y : ℂ) : ℝ := 2 * (x * y).re
+def complexTracePairing (x y : ℂ)  := 2 * (x * y).re
 
-def complexTraceFourier (f : ℂ → ℂ) (y : ℂ) : ℂ :=
+section
+variable (f : ℂ → ℂ)
+include f
+def complexTraceFourier   (y : ℂ)  :=
   2 * ∫ x : ℂ, f x * Complex.exp (((-4 * Real.pi * (x * y).re : ℝ) : ℂ) * Complex.I)
 
-def complexNormMellinIntegrand (f : ℂ → ℂ) (s : ℝ) (x : ℂ) : ℂ :=
+def complexNormMellinIntegrand   (s : ℝ) (x : ℂ)  :=
   if x = 0 then 0 else f x * ((‖x‖ ^ 2) ^ (s - 1) : ℝ)
 
-def complexNormMellin (f : ℂ → ℂ) (s : ℝ) : ℂ :=
+def complexNormMellin   (s : ℝ)  :=
   (Real.pi : ℂ)⁻¹ * ∫ x : ℂ, complexNormMellinIntegrand f s x
 
-def IsComplexAnnular (f : ℂ → ℂ) : Prop :=
+def IsComplexAnnular    :=
   ContDiff ℝ ∞ f ∧ HasCompactSupport f ∧
     ∃ a b : ℝ, 0 < a ∧ a ≤ b ∧
       tsupport f ⊆ {x : ℂ | a ≤ ‖x‖ ∧ ‖x‖ ≤ b}
 
-theorem complexTraceFourier_eq_fourier (f : ℂ → ℂ) (y : ℂ) :
+theorem complexTraceFourier_eq_fourier   (y : ℂ) :
     complexTraceFourier f y =
       2 * FourierTransform.fourier f (2 * (starRingEnd ℂ) y) := by
   rw [complexTraceFourier, Real.fourier_eq']
@@ -46,6 +52,8 @@ theorem complexTraceFourier_eq_fourier (f : ℂ → ℂ) (y : ℂ) :
   congr 1
   push_cast
   ring
+end
+
 
 end
 end DedekindZetaZeroFree

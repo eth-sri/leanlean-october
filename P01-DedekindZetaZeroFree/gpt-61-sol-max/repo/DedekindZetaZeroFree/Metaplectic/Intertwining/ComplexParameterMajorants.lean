@@ -148,15 +148,15 @@ noncomputable def forwardSection (s : ℂ) (φ : CompactPicture) (g : ComplexGL2
   simp [Matrix.GeneralLinearGroup.det, Matrix.GeneralLinearGroup.coe_mul,
     Matrix.mul_apply, Fin.sum_univ_two, Matrix.det_fin_two]
 
-structure CompactGroupChart (n : ℕ) where
-  domain : Set (Fin n → ℝ)
-  domain_open : IsOpen domain
-  closedSet : Set (Fin n → ℝ)
-  closedSet_compact : IsCompact closedSet
-  closedSet_subset : closedSet ⊆ domain
-  lift : (Fin n → ℝ) → ComplexSU2
-  lift_smooth : ContDiffOn ℝ ∞
-    (fun u => (lift u : Matrix (Fin 2) (Fin 2) ℂ)) domain
+
+
+
+
+
+
+
+
+
 
 structure ChartDifferentialOperator (n j : ℕ) (U : Set (Fin n → ℝ)) where
   coefficient : (q : Fin (j + 1)) → (Fin q.val → Fin n) → (Fin n → ℝ) → ℂ

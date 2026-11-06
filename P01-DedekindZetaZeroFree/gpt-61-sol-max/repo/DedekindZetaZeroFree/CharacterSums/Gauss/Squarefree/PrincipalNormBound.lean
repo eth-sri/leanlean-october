@@ -12,19 +12,20 @@ open scoped NumberField Classical
 
 variable {F : Type} [Field F] [NumberField F]
 
-private lemma norm_mulChar_unit {R : Type*} [CommRing R] [Fintype R]
-    (χ : MulChar R ℂ) (u : Rˣ) : ‖χ u‖ = 1 := by
+section
+variable {R : Type*} [CommRing R] [Fintype R]
+    (χ : MulChar R ℂ)
+include R χ
+private lemma norm_mulChar_unit   (u : Rˣ) : ‖χ u‖ = 1 := by
   change ‖((MulChar.equivToUnitHom χ) u : ℂ)‖ = 1
   exact Complex.norm_eq_one_of_mem_rootsOfUnity (χ.apply_mem_rootsOfUnity u)
 
-private lemma norm_mulChar {R : Type*} [CommRing R] [Fintype R]
-    (χ : MulChar R ℂ) (x : R) : ‖χ x‖ ^ 2 = if IsUnit x then 1 else 0 := by
+private lemma norm_mulChar   (x : R) : ‖χ x‖ ^ 2 = if IsUnit x then 1 else 0 := by
   split_ifs with hx
   · rw [← hx.unit_spec, norm_mulChar_unit]; norm_num
   · rw [χ.map_nonunit hx]; norm_num
 
-private lemma gauss_parseval {R : Type*} [CommRing R] [Fintype R]
-    (χ : MulChar R ℂ) (ψ : AddChar R ℂ) (hψ : ψ.IsPrimitive) :
+private lemma gauss_parseval   (ψ : AddChar R ℂ) (hψ : ψ.IsPrimitive) :
     ∑ a : R, ‖gaussSum χ (ψ.mulShift a)‖ ^ 2 =
       (Fintype.card R : ℝ) * ∑ x : R, ‖χ x‖ ^ 2 := by
   apply Complex.ofReal_injective
@@ -54,8 +55,7 @@ private lemma gauss_parseval {R : Type*} [CommRing R] [Fintype R]
   simp only [Finset.mem_univ, if_true]
   ring
 
-theorem norm_gauss_le_sqrt_card {R : Type*} [CommRing R] [Fintype R]
-    (χ : MulChar R ℂ) (ψ : AddChar R ℂ) (hψ : ψ.IsPrimitive) :
+theorem norm_gauss_le_sqrt_card   (ψ : AddChar R ℂ) (hψ : ψ.IsPrimitive) :
     ‖gaussSum χ ψ‖ ≤ Real.sqrt (Fintype.card R) := by
   classical
   have hshift (u : Rˣ) : ‖gaussSum χ (ψ.mulShift u)‖ = ‖gaussSum χ ψ‖ := by
@@ -83,6 +83,8 @@ theorem norm_gauss_le_sqrt_card {R : Type*} [CommRing R] [Fintype R]
   have hs : ‖gaussSum χ ψ‖ ^ 2 ≤ (Fintype.card R : ℝ) := by
     nlinarith
   exact (Real.le_sqrt (norm_nonneg _) (by positivity)).mpr hs
+end
+
 
 theorem norm_idealGauss_le_one (A : SArithmeticData F) (ι : F →+* ℂ)
     (hS : A.ContainsTraceBadPlaces) (I : A.Exterior)
@@ -122,9 +124,12 @@ theorem norm_idealGauss_le_one (A : SArithmeticData F) (ι : F →+* ℂ)
   rw [norm_mul, norm_inv, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hs]
   exact (inv_mul_le_iff₀ hs).mpr (by simpa using hg)
 
-private lemma additiveCharacter_eq_fieldTrace (A : SArithmeticData F) (ι : F →+* ℂ)
+section
+variable (A : SArithmeticData F) (ι : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (P : NormalizedProbe.PrincipalData A ι η hS) (x : F) :
+    (P : NormalizedProbe.PrincipalData A ι η hS)
+include A ι η hS P
+private lemma additiveCharacter_eq_fieldTrace   (x : F) :
     P.coefficients.additiveCharacter x = (A.fieldTraceCharacter x : ℂ) := by
   rw [P.sameTrace]
   have harch (y : NumberField.InfiniteAdeleRing F) :
@@ -144,9 +149,7 @@ private lemma additiveCharacter_eq_fieldTrace (A : SArithmeticData F) (ι : F �
   rw [map_mul, map_prod, map_prod]
   rfl
 
-theorem gammaTwo_eq_idealGauss (A : SArithmeticData F) (ι : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (P : NormalizedProbe.PrincipalData A ι η hS)
+theorem gammaTwo_eq_idealGauss  
     (c : ExteriorSquarefreeIdeal A.cS) :
     P.coefficients.gammaTwo c =
       A.idealGauss ι hS c.val (P.coefficients.generator c.val)
@@ -183,14 +186,14 @@ theorem gammaTwo_eq_idealGauss (A : SArithmeticData F) (ι : F →+* ℂ)
       (A.residueTraceCharacter hS c.val a ha (e x) : ℂ)
     rw [he, A.residueTraceCharacter_apply]
 
-theorem norm_gammaTwo_le_one (A : SArithmeticData F) (ι : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (P : NormalizedProbe.PrincipalData A ι η hS)
+theorem norm_gammaTwo_le_one  
     (c : ExteriorSquarefreeIdeal A.cS) :
     ‖P.coefficients.gammaTwo c‖ ≤ 1 := by
   rw [gammaTwo_eq_idealGauss A ι η hS P c]
   exact norm_idealGauss_le_one A ι hS c.val
     (P.coefficients.generator c.val) (P.coefficients.generates c.val) 2
+end
+
 
 end
 end DedekindZetaZeroFree.NormalizedProbe.PrincipalData

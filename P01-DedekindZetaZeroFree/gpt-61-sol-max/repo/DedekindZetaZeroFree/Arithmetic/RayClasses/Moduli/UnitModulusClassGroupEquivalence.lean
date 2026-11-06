@@ -14,8 +14,11 @@ namespace DedekindZetaZeroFree.Hecke.Theta
 
 variable (F : Type) [Field F] [NumberField F]
 
- theorem topNarrowModulus_eq_ordinary (hF : NumberField.IsTotallyComplex F)
-    (ht : (⊤ : Ideal (𝓞 F)) ≠ ⊥) :
+ section
+variable (hF : NumberField.IsTotallyComplex F)
+    (ht : (⊤ : Ideal (𝓞 F)) ≠ ⊥)
+include hF ht in
+theorem topNarrowModulus_eq_ordinary   :
     narrowIdealModulus F ⊤ ht = ClassFieldTheory.ordinaryRayClassModulus F := by
   classical
   apply ClassFieldTheory.RayClassModulus.ext
@@ -47,14 +50,14 @@ private theorem ordinaryComparison_apply (m : ClassFieldTheory.RayClassModulus F
   simp only [FractionalIdeal.canonicalEquiv_self, RingEquiv.coe_mulEquiv_refl]
   rfl
 
-def topRayClassEquivClassGroup (hF : NumberField.IsTotallyComplex F)
-    (ht : (⊤ : Ideal (𝓞 F)) ≠ ⊥) :
+include hF ht in
+def topRayClassEquivClassGroup   :
     RayIdealClass F ⊤ ht ≃* ClassGroup (𝓞 F) :=
   ordinaryComparison F (narrowIdealModulus F ⊤ ht)
     (topNarrowModulus_eq_ordinary F hF ht)
 
-theorem topRayClassEquivClassGroup_rayIdealClass (hF : NumberField.IsTotallyComplex F)
-    (ht : (⊤ : Ideal (𝓞 F)) ≠ ⊥)
+include hF ht in
+theorem topRayClassEquivClassGroup_rayIdealClass  
     (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (c : RayIdealClass F ⊤ ht)
     (hc : rayIdealClass F ⊤ ht I = some c) :
     topRayClassEquivClassGroup F hF ht c =
@@ -67,8 +70,8 @@ theorem topRayClassEquivClassGroup_rayIdealClass (hF : NumberField.IsTotallyComp
     (topNarrowModulus_eq_ordinary F hF ht)
     (rayIdealClassRepresentative F ⊤ ht I hI hcoprime)
 
-theorem topRayClassEquivClassGroup_representatives (hF : NumberField.IsTotallyComplex F)
-    (ht : (⊤ : Ideal (𝓞 F)) ≠ ⊥) (D : RayThetaRepresentatives F ⊤ ht)
+include hF ht in
+theorem topRayClassEquivClassGroup_representatives   (D : RayThetaRepresentatives F ⊤ ht)
     (c : RayIdealClass F ⊤ ht) :
     ClassGroup.mk F
       (rayIdealFractionalIdeal F (D.coset c).a (D.coset c).ideal_ne_bot) =
@@ -76,6 +79,8 @@ theorem topRayClassEquivClassGroup_representatives (hF : NumberField.IsTotallyCo
   rw [← topRayClassEquivClassGroup_rayIdealClass F hF ht (D.coset c).a
     (D.coset c).ideal_ne_bot (c⁻¹) (D.inverse_class c)]
   exact map_inv (topRayClassEquivClassGroup F hF ht) c
+end
+
 
 end DedekindZetaZeroFree.Hecke.Theta
 

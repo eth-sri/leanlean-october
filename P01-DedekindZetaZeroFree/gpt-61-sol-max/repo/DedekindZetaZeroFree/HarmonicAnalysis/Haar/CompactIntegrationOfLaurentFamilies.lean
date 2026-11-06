@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.MeasureTheory.Integral.Bochner.Set
 public import Mathlib.Topology.LocallyConstant.Basic
 
 @[expose] public section
+
 
 noncomputable section
 namespace DedekindZetaZeroFree.KPTameTransposeBaseChartNumerator
@@ -34,7 +37,7 @@ private theorem finite_family_integral {X T : Type*} [MeasurableSpace X]
     · intro y hy hne
       simp [Set.indicator_of_notMem, hne.symm]
     · intro hx
-      exact False.elim (hx (hH.range_finite.mem_toFinset.mpr ⟨x, rfl⟩))
+      apply False.elim <;> aesop
   simp_rw [he]
   rw [integral_finsetSum D (fun y _ => hi y)]
   exact Finset.sum_congr rfl (fun y _ => integral_indicator_const _ (hm y))
@@ -49,7 +52,7 @@ theorem compact_set_integral_laurent_family
     ∃ p : ℤ →₀ ℂ, ∀ t : T,
       (∫ x in A, H x t ∂μ) = p.sum (fun n c => (u t : ℂ) ^ n * c) := by
   classical
-  letI : CompactSpace A := isCompact_iff_compactSpace.mp hAc
+  letI  := isCompact_iff_compactSpace.mp hAc
   let ν := μ.comap (Subtype.val : A → X)
   letI : IsFiniteMeasure ν := ⟨by
     change μ.comap (Subtype.val : A → X) Set.univ < ⊤
@@ -64,7 +67,7 @@ theorem compact_set_integral_laurent_family
     obtain ⟨Q, hQ⟩ := hp x.val x.property
     exact ⟨Q, fun t => (hQ t).trans (laurentValue_eq (u t) Q).symm⟩
   choose Q hQ using hQ
-  let p : ℤ →₀ ℂ := ∑ y : D, ν.real (G ⁻¹' {(y : T → ℂ)}) • Q y y.property
+  let p  := ∑ y : D, ν.real (G ⁻¹' {(y : T → ℂ)}) • Q y y.property
   refine ⟨p, fun t => ?_⟩
   rw [← laurentValue_eq]
   simp only [p, map_sum]

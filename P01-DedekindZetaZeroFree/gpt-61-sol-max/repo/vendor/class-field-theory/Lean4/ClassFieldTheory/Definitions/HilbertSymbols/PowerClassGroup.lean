@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Algebra.Field.Basic
 public import Mathlib.GroupTheory.QuotientGroup.Basic
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -25,7 +28,7 @@ namespace ClassFieldTheory
 universe u
 
 /-- The multiplicative group of a field modulo its `n`-th powers. -/
-def PowerClassGroup (K : Type u) [Field K] (n : ℕ+) : Type u :=
+def PowerClassGroup (K : Type u) [Field K] (n : ℕ+)  :=
   Kˣ ⧸ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range
 
 instance instCommGroupPowerClassGroup

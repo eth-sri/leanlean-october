@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Fourier.Lattices.DualBasisCoordinates
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
 public import Mathlib.Algebra.Module.ZLattice.Summable
 
 @[expose] public section
+
 
 noncomputable section
 open scoped FourierTransform SchwartzMap
@@ -12,9 +15,12 @@ open Filter
 
 namespace DedekindZetaZeroFree.PoissonArch
 
-theorem summable_norm_schwartz_translate
-    {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
+section
+variable {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
     [FiniteDimensional ℝ V]
+include V
+theorem summable_norm_schwartz_translate
+     
     (L : Submodule ℤ V) [DiscreteTopology L] [IsZLattice ℝ L]
     (f : 𝓢(V, ℂ)) (a : V) :
     Summable (fun v : L => ‖f (a + (v : V))‖) := by
@@ -48,17 +54,17 @@ theorem summable_norm_schwartz_translate
     _ ≤ max c 0 * ‖a + (v : V)‖ ^ s :=
         mul_le_mul_of_nonneg_right (le_max_left c 0) h2
     _ = max c 0 * ‖(v : V) - (-a)‖ ^ s := by
-        have : a + (v : V) = (v : V) - (-a) := by rw [sub_neg_eq_add, add_comm]
-        rw [this]
+        abel
 
 theorem summable_norm_fourier_schwartz_translate
-    {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
-    [FiniteDimensional ℝ V] [MeasurableSpace V] [BorelSpace V]
+      [MeasurableSpace V] [BorelSpace V]
     (L : Submodule ℤ V) [DiscreteTopology L] [IsZLattice ℝ L]
     (f : 𝓢(V, ℂ)) (b : V) :
     Summable (fun w : dualLattice L => ‖(𝓕 (f : V → ℂ)) (b + (w : V))‖) := by
   have h := summable_norm_schwartz_translate (dualLattice L) (𝓕 f) b
   simpa only [SchwartzMap.fourier_coe] using h
+end
+
 
 end DedekindZetaZeroFree.PoissonArch
 

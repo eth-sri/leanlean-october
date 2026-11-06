@@ -122,11 +122,14 @@ private theorem cauchySections_coordinate (w : ℂ → smoothSections F ζ hζ U
   funext s
   exact (coefficient_identity F ζ hζ U R P H (w s).val A hphase p).symm
 
- theorem cauchySections_smooth (w : ℂ → smoothSections F ζ hζ U R P H)
+ section
+variable (w : ℂ → smoothSections F ζ hζ U R P H)
     (Ω : Set ℂ)
     (hlocal : ∀ A : ChartBall F ζ hζ U R P H, KPCutoffSource.ChartSmoothHolomorphicOn A.ball
       (fun s => coefficient F ζ hζ U R P H (w s).val A) Ω)
-    (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (hclosed : Metric.closedBall c ρ ⊆ Ω) (j : ℕ) :
+    (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (hclosed : Metric.closedBall c ρ ⊆ Ω)
+include w Ω hlocal c ρ hρ hclosed in
+theorem cauchySections_smooth   (j : ℕ) :
     IsSmoothSections F ζ hζ U R P H (cauchySections F ζ hζ U R P H w c ρ j) := by
   intro i
   have hsp : ContDiff ℝ (⊤ : ℕ∞) (fun p =>
@@ -156,10 +159,8 @@ private theorem cauchySections_coordinate (w : ℂ → smoothSections F ζ hζ U
     (coordinates F p)) ∘ (coordinates F).symm) at hc
   rwa [he] at hc
 
- def cauchySmoothSections (w : ℂ → smoothSections F ζ hζ U R P H) (Ω : Set ℂ)
-    (hlocal : ∀ A : ChartBall F ζ hζ U R P H, KPCutoffSource.ChartSmoothHolomorphicOn A.ball
-      (fun s => coefficient F ζ hζ U R P H (w s).val A) Ω)
-    (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (hclosed : Metric.closedBall c ρ ⊆ Ω) (j : ℕ) :
+ include w Ω hlocal c ρ hρ hclosed in
+def cauchySmoothSections   (j : ℕ) :
     smoothSections F ζ hζ U R P H :=
   ⟨cauchySections F ζ hζ U R P H w c ρ j,
     cauchySections_smooth F ζ hζ U R P H w Ω hlocal c ρ hρ hclosed j⟩
@@ -182,10 +183,8 @@ private theorem cauchySections_coefficient (w : ℂ → smoothSections F ζ hζ 
   funext s
   exact (hcoef (w s).val).symm
 
-private theorem genuineCommonDisk (w : ℂ → smoothSections F ζ hζ U R P H) (Ω : Set ℂ)
-    (hlocal : ∀ A : ChartBall F ζ hζ U R P H, KPCutoffSource.ChartSmoothHolomorphicOn A.ball
-      (fun s => coefficient F ζ hζ U R P H (w s).val A) Ω)
-    (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (hclosed : Metric.closedBall c ρ ⊆ Ω) :
+include w Ω hlocal c ρ hρ hclosed in
+private theorem genuineCommonDisk   :
     ∃ b : ℕ → smoothSections F ζ hζ U R P H, ∀ A : ChartBall F ζ hζ U R P H,
       SmoothPowerSeriesOn A.ball c ρ (fun j => coefficient F ζ hζ U R P H (b j).val A)
         (fun s => coefficient F ζ hζ U R P H (w s).val A) := by
@@ -198,6 +197,8 @@ private theorem genuineCommonDisk (w : ℂ → smoothSections F ζ hζ U R P H) 
     exact cauchySections_coefficient F ζ hζ U R P H w c ρ j A p
   rw [he]
   exact scalarCauchySeries A.ball Ω _ (hlocal A) c ρ hρ hclosed
+end
+
 
 end CauchyHelpers
 

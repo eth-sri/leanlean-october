@@ -86,10 +86,13 @@ noncomputable def equalCharacteristicThetaSourceUnit
     {k : Type*} [Field k] (u : k⟦X⟧ˣ) : k⟦X⟧ˣ :=
   u⁻¹
 
+section
+variable (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ) (n : ℕ)
+include F u n
 /-- The primitive polynomial for source parameter `u⁻¹T`, after base change
 to `(AlgebraicClosure κ)((T))`. -/
 noncomputable def equalCharacteristicChangedCompletedPrimitivePolynomial
-    (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      :
     Polynomial (equalCharacteristicCompletedUnramifiedField F.residueField) :=
   (equalCharacteristicChangedPrimitivePolynomial F
       (equalCharacteristicThetaSourceUnit u) n).map
@@ -98,14 +101,14 @@ noncomputable def equalCharacteristicChangedCompletedPrimitivePolynomial
 
 /-- The changed primitive polynomial remains monic after completion. -/
 theorem equalCharacteristicChangedCompletedPrimitivePolynomial_monic
-    (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      :
     (equalCharacteristicChangedCompletedPrimitivePolynomial F u n).Monic :=
   (equalCharacteristicChangedPrimitivePolynomial_monic F
     (equalCharacteristicThetaSourceUnit u) n).map _
 
 /-- The completed changed primitive polynomial has degree `(q - 1) * q ^ n`. -/
 theorem equalCharacteristicChangedCompletedPrimitivePolynomial_natDegree
-    (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      :
     (equalCharacteristicChangedCompletedPrimitivePolynomial F u n).natDegree =
       (Nat.card F.residueField - 1) * Nat.card F.residueField ^ n := by
   rw [equalCharacteristicChangedCompletedPrimitivePolynomial,
@@ -115,8 +118,10 @@ theorem equalCharacteristicChangedCompletedPrimitivePolynomial_natDegree
 
 /-- The genuine splitting field of the source primitive polynomial. -/
 def equalCharacteristicChangedCompletedLevelField
-    (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ) (n : ℕ) :=
+      :=
   (equalCharacteristicChangedCompletedPrimitivePolynomial F u n).SplittingField
+end
+
 
 /-- The splitting field of the completed changed primitive polynomial is a field. -/
 instance equalCharacteristicChangedCompletedLevelField_field
@@ -184,10 +189,13 @@ instance equalCharacteristicChangedCompletedLevelField_charP
       (equalCharacteristicChangedCompletedLevelField F u n)).injective
     F.residueCharacteristic
 
+section
+variable (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ) (n : ℕ)
+include F u n
 /-- Comparison with the library splitting-field model. -/
 noncomputable def
     equalCharacteristicChangedCompletedLevelFieldEquivSplittingField
-    (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      :
     equalCharacteristicChangedCompletedLevelField F u n ≃ₐ[
       equalCharacteristicCompletedUnramifiedField F.residueField]
       (equalCharacteristicChangedCompletedPrimitivePolynomial F u n).SplittingField :=
@@ -197,46 +205,46 @@ noncomputable def
 model. -/
 noncomputable def
     equalCharacteristicChangedCompletedLevelFieldOfSplittingField
-    (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      :
     (equalCharacteristicChangedCompletedPrimitivePolynomial F u n).SplittingField
       →ₐ[equalCharacteristicCompletedUnramifiedField F.residueField]
         equalCharacteristicChangedCompletedLevelField F u n :=
   (equalCharacteristicChangedCompletedLevelFieldEquivSplittingField
     F u n).symm.toAlgHom
 
-/-- The changed primitive polynomial splits over the named completed level
-field. -/
-theorem equalCharacteristicChangedCompletedPrimitivePolynomial_splits
-    (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
-    ((equalCharacteristicChangedCompletedPrimitivePolynomial F u n).map
-      (algebraMap (equalCharacteristicCompletedUnramifiedField F.residueField)
-        (equalCharacteristicChangedCompletedLevelField F u n))).Splits := by
-  exact Polynomial.SplittingField.splits
-    (equalCharacteristicChangedCompletedPrimitivePolynomial F u n)
 
-/-- The roots of the changed primitive polynomial generate the named
-completed level field. -/
-theorem
-    equalCharacteristicChangedCompletedPrimitivePolynomial_adjoin_rootSet
-    (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
-    Algebra.adjoin
-        (equalCharacteristicCompletedUnramifiedField F.residueField)
-        ((equalCharacteristicChangedCompletedPrimitivePolynomial F u n).rootSet
-          (equalCharacteristicChangedCompletedLevelField F u n) :
-          Set (equalCharacteristicChangedCompletedLevelField F u n)) = ⊤ := by
-  exact Polynomial.SplittingField.adjoin_rootSet
-    (equalCharacteristicChangedCompletedPrimitivePolynomial F u n)
 
-/-- Supplies finite-dimensionality of the changed completed level field explicitly. -/
-theorem equalCharacteristicChangedCompletedLevelField_finiteDimensional
-    (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
-    FiniteDimensional
-      (equalCharacteristicCompletedUnramifiedField F.residueField)
-      (equalCharacteristicChangedCompletedLevelField F u n) := by
-  infer_instance
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
  theorem equalCharacteristicChangedCompletedPrimitivePolynomial_map_degree_ne_zero
-    (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      :
     ((equalCharacteristicChangedCompletedPrimitivePolynomial F u n).map
       (algebraMap (equalCharacteristicCompletedUnramifiedField F.residueField)
         (equalCharacteristicChangedCompletedLevelField F u n))).degree ≠ 0 := by
@@ -255,7 +263,7 @@ theorem equalCharacteristicChangedCompletedLevelField_finiteDimensional
 /-- A chosen primitive division-level `n + 1` point for source parameter
 `u⁻¹T`. -/
 noncomputable def equalCharacteristicChangedCompletedPrimitiveRoot
-    (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      :
     equalCharacteristicChangedCompletedLevelField F u n :=
   equalCharacteristicChangedCompletedLevelFieldOfSplittingField F u n
     (Polynomial.rootOfSplits
@@ -265,7 +273,7 @@ noncomputable def equalCharacteristicChangedCompletedPrimitiveRoot
 
 /-- The distinguished completed primitive element is a root of the changed polynomial. -/
 theorem equalCharacteristicChangedCompletedPrimitiveRoot_isRoot
-    (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      :
     ((equalCharacteristicChangedCompletedPrimitivePolynomial F u n).map
       (algebraMap (equalCharacteristicCompletedUnramifiedField F.residueField)
         (equalCharacteristicChangedCompletedLevelField F u n))).IsRoot
@@ -278,12 +286,14 @@ theorem equalCharacteristicChangedCompletedPrimitiveRoot_isRoot
 /-- The spectral norm on the changed completed level field. -/
 @[reducible]
 noncomputable def equalCharacteristicChangedCompletedLevelNormedField
-    (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      :
     NontriviallyNormedField
       (equalCharacteristicChangedCompletedLevelField F u n) :=
   spectralNorm.nontriviallyNormedField
     (equalCharacteristicCompletedUnramifiedField F.residueField)
     (equalCharacteristicChangedCompletedLevelField F u n)
+end
+
 
 noncomputable local instance equalCharacteristicChangedCompletedLevelNormedFieldInstance
     (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
@@ -333,27 +343,30 @@ noncomputable local instance equalCharacteristicChangedCompletedLevelValuedInsta
     Valued (equalCharacteristicChangedCompletedLevelField F u n) ℝ≥0 :=
   equalCharacteristicChangedCompletedLevelValued F u n
 
+section
+variable (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ)
+include F u
 /-- The source parameter `u⁻¹T` in the completed maximal-unramified base. -/
 noncomputable def equalCharacteristicChangedCompletedBaseUniformizer
-    (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ) :
+      :
     equalCharacteristicCompletedUnramifiedField F.residueField :=
   algebraMap F.residueField⸨X⸩
     (equalCharacteristicCompletedUnramifiedField F.residueField)
     (equalCharacteristicChangedLaurentUniformizer F
       (equalCharacteristicThetaSourceUnit u))
 
-/-- The changed base uniformizer remains nonzero after completion. -/
-theorem equalCharacteristicChangedCompletedBaseUniformizer_ne_zero
-    (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ) :
-    equalCharacteristicChangedCompletedBaseUniformizer F u ≠ 0 := by
-  exact (map_ne_zero
-    (algebraMap F.residueField⸨X⸩
-      (equalCharacteristicCompletedUnramifiedField F.residueField))).2
-    (equalCharacteristicChangedLaurentUniformizer_ne_zero F
-      (equalCharacteristicThetaSourceUnit u))
+
+
+
+
+
+
+
+
+
 
 private theorem equalCharacteristicChangedLaurentUniformizer_valuation_le_exp_neg_one
-    (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ) :
+      :
     (Valued.v : Valuation F.residueField⸨X⸩ ℤᵐ⁰)
         (equalCharacteristicChangedLaurentUniformizer F
           (equalCharacteristicThetaSourceUnit u)) ≤
@@ -371,7 +384,7 @@ private theorem equalCharacteristicChangedLaurentUniformizer_valuation_le_exp_ne
 
 /-- The completed source parameter `u⁻¹T` is topologically nilpotent. -/
 theorem equalCharacteristicChangedCompletedBaseUniformizer_norm_lt_one
-    (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ) :
+      :
     ‖equalCharacteristicChangedCompletedBaseUniformizer F u‖ < 1 := by
   rw [Valued.toNormedField.norm_lt_one_iff]
   have hval :
@@ -399,24 +412,24 @@ theorem equalCharacteristicChangedCompletedBaseUniformizer_norm_lt_one
 
 /-- The image of the source parameter in its completed splitting field. -/
 noncomputable def equalCharacteristicChangedCompletedLevelUniformizer
-    (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      (n : ℕ) :
     equalCharacteristicChangedCompletedLevelField F u n :=
   algebraMap (equalCharacteristicCompletedUnramifiedField F.residueField)
     (equalCharacteristicChangedCompletedLevelField F u n)
     (equalCharacteristicChangedCompletedBaseUniformizer F u)
 
-/-- The image of the changed uniformizer in the level field is nonzero. -/
-theorem equalCharacteristicChangedCompletedLevelUniformizer_ne_zero
-    (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
-    equalCharacteristicChangedCompletedLevelUniformizer F u n ≠ 0 := by
-  exact (map_ne_zero
-    (algebraMap (equalCharacteristicCompletedUnramifiedField F.residueField)
-      (equalCharacteristicChangedCompletedLevelField F u n))).2
-    (equalCharacteristicChangedCompletedBaseUniformizer_ne_zero F u)
+
+
+
+
+
+
+
+
 
 /-- The changed spectral norm extends the completed-base norm. -/
 theorem equalCharacteristicChangedCompletedLevelUniformizer_norm
-    (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      (n : ℕ) :
     ‖equalCharacteristicChangedCompletedLevelUniformizer F u n‖ =
       ‖equalCharacteristicChangedCompletedBaseUniformizer F u‖ := by
   change spectralNorm
@@ -429,17 +442,22 @@ theorem equalCharacteristicChangedCompletedLevelUniformizer_norm
 
 /-- The changed level uniformizer has norm strictly below one. -/
 theorem equalCharacteristicChangedCompletedLevelUniformizer_norm_lt_one
-    (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      (n : ℕ) :
     ‖equalCharacteristicChangedCompletedLevelUniformizer F u n‖ < 1 := by
   rw [equalCharacteristicChangedCompletedLevelUniformizer_norm]
   exact equalCharacteristicChangedCompletedBaseUniformizer_norm_lt_one F u
+end
 
-private theorem equalCharacteristicChangedPiPolynomial_eval₂
-    (F : LocalField.{u, v} K)
+
+section
+variable (F : LocalField.{u, v} K)
     [CharP K F.residueCharacteristic]
     (u : F.residueField⟦X⟧ˣ)
     {A : Type*} [Field A] [CharP A F.residueCharacteristic]
-    (φ : F.residueField⸨X⸩ →+* A) (x : A) :
+    (φ : F.residueField⸨X⸩ →+* A)
+include F u A φ
+private theorem equalCharacteristicChangedPiPolynomial_eval₂
+      (x : A) :
     Polynomial.eval₂ φ x
         (equalCharacteristicChangedPiPolynomial F
           (equalCharacteristicThetaSourceUnit u)) =
@@ -450,11 +468,7 @@ private theorem equalCharacteristicChangedPiPolynomial_eval₂
   simp [equalCharacteristicLubinTateAmbientPiEnd_apply]
 
 private theorem equalCharacteristicChangedPiPolynomialIterate_eval₂
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ)
-    {A : Type*} [Field A] [CharP A F.residueCharacteristic]
-    (φ : F.residueField⸨X⸩ →+* A) (n : ℕ) (x : A) :
+      (n : ℕ) (x : A) :
     Polynomial.eval₂ φ x
         (equalCharacteristicChangedPiPolynomialIterate F
           (equalCharacteristicThetaSourceUnit u) n) =
@@ -491,11 +505,7 @@ private theorem equalCharacteristicChangedPiPolynomialIterate_eval₂
           (equalCharacteristicThetaSourceUnit u))) n x).symm
 
 private theorem equalCharacteristicChangedPrimitivePolynomial_eval₂
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ)
-    {A : Type*} [Field A] [CharP A F.residueCharacteristic]
-    (φ : F.residueField⸨X⸩ →+* A) (n : ℕ) (x : A) :
+      (n : ℕ) (x : A) :
     Polynomial.eval₂ φ x
         (equalCharacteristicChangedPrimitivePolynomial F
           (equalCharacteristicThetaSourceUnit u) n) =
@@ -509,12 +519,17 @@ private theorem equalCharacteristicChangedPrimitivePolynomial_eval₂
     Polynomial.eval₂_add, Polynomial.eval₂_pow,
     equalCharacteristicChangedPiPolynomialIterate_eval₂,
     Polynomial.eval₂_C]
+end
 
+
+section
+variable (F : LocalField.{u, v} K)
+    [CharP K F.residueCharacteristic]
+    (u : F.residueField⟦X⟧ˣ)
+include F u
 /-- The chosen source point satisfies the primitive `u⁻¹T` equation. -/
 theorem equalCharacteristicChangedCompletedPrimitiveRoot_equation
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      (n : ℕ) :
     equalCharacteristicLubinTateAmbientPiIterate F
         (equalCharacteristicChangedCompletedLevelUniformizer F u n) n
         (equalCharacteristicChangedCompletedPrimitiveRoot F u n) ^
@@ -542,51 +557,49 @@ theorem equalCharacteristicChangedCompletedPrimitiveRoot_equation
     rfl
   rwa [ht] at hroot
 
-/-- The root is killed at division level `n + 1`. -/
-theorem equalCharacteristicChangedCompletedPrimitiveRoot_torsion
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
-    IsEqualCharacteristicLubinTateAmbientTorsion F
-      (equalCharacteristicChangedCompletedLevelUniformizer F u n) (n + 1)
-      (equalCharacteristicChangedCompletedPrimitiveRoot F u n) := by
-  let z := equalCharacteristicLubinTateAmbientPiIterate F
-    (equalCharacteristicChangedCompletedLevelUniformizer F u n) n
-    (equalCharacteristicChangedCompletedPrimitiveRoot F u n)
-  have hz := equalCharacteristicChangedCompletedPrimitiveRoot_equation F u n
-  change equalCharacteristicLubinTateAmbientPiIterate F
-      (equalCharacteristicChangedCompletedLevelUniformizer F u n) (n + 1)
-      (equalCharacteristicChangedCompletedPrimitiveRoot F u n) = 0
-  rw [show n + 1 = 1 + n by omega,
-    equalCharacteristicLubinTateAmbientPiIterate_add,
-    equalCharacteristicLubinTateAmbientPiIterate_one,
-    equalCharacteristicLubinTateAmbientPiEnd_apply]
-  change z ^ Nat.card F.residueField +
-      equalCharacteristicChangedCompletedLevelUniformizer F u n * z = 0
-  have hq : Nat.card F.residueField ≠ 0 := Nat.card_pos.ne'
-  rw [← pow_sub_one_mul hq, ← add_mul, hz, zero_mul]
 
-/-- The chosen root is not already a division-level `n` point. -/
-theorem equalCharacteristicChangedCompletedPrimitiveRoot_not_torsion_pred
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
-    ¬ IsEqualCharacteristicLubinTateAmbientTorsion F
-      (equalCharacteristicChangedCompletedLevelUniformizer F u n) n
-      (equalCharacteristicChangedCompletedPrimitiveRoot F u n) := by
-  intro hpred
-  have heq := equalCharacteristicChangedCompletedPrimitiveRoot_equation F u n
-  rw [hpred, zero_pow, zero_add] at heq
-  · exact equalCharacteristicChangedCompletedLevelUniformizer_ne_zero F u n heq
-  · exact Nat.sub_ne_zero_of_lt
-      (Finite.one_lt_card : 1 < Nat.card F.residueField)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- If `x` is on or outside the unit sphere, the changed Lubin--Tate
 endomorphism has the norm of its leading term. -/
 private theorem equalCharacteristicChangedCompletedAmbientPiEnd_norm_of_one_le
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n : ℕ)
+      (n : ℕ)
     (x : equalCharacteristicChangedCompletedLevelField F u n)
     (hx : 1 ≤ ‖x‖) :
     ‖equalCharacteristicLubinTateAmbientPiEnd F
@@ -621,9 +634,7 @@ private theorem equalCharacteristicChangedCompletedAmbientPiEnd_norm_of_one_le
 /-- On or outside the unit sphere, every iterate has the norm of its
 leading `q`-power term. -/
 private theorem equalCharacteristicChangedCompletedAmbientPiIterate_norm_of_one_le
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (level i : ℕ)
+      (level i : ℕ)
     (x : equalCharacteristicChangedCompletedLevelField F u level)
     (hx : 1 ≤ ‖x‖) :
     ‖equalCharacteristicLubinTateAmbientPiIterate F
@@ -648,9 +659,7 @@ private theorem equalCharacteristicChangedCompletedAmbientPiIterate_norm_of_one_
 /-- The primitive `u⁻¹T`-point lies strictly inside the spectral unit
 ball. -/
 theorem equalCharacteristicChangedCompletedPrimitiveRoot_norm_lt_one
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      (n : ℕ) :
     ‖equalCharacteristicChangedCompletedPrimitiveRoot F u n‖ < 1 := by
   by_contra hnot
   have hrootge : 1 ≤
@@ -684,9 +693,7 @@ theorem equalCharacteristicChangedCompletedPrimitiveRoot_norm_lt_one
 /-- The changed primitive root as an element of the spectral valuation
 ring. -/
 noncomputable def equalCharacteristicChangedCompletedPrimitiveRootInteger
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      (n : ℕ) :
     Valued.integer (equalCharacteristicChangedCompletedLevelField F u n) :=
   ⟨equalCharacteristicChangedCompletedPrimitiveRoot F u n, by
     change ‖equalCharacteristicChangedCompletedPrimitiveRoot F u n‖₊ ≤ 1
@@ -696,50 +703,50 @@ noncomputable def equalCharacteristicChangedCompletedPrimitiveRootInteger
 /-- Coercing the integral primitive root returns the underlying completed root. -/
 @[simp]
 theorem equalCharacteristicChangedCompletedPrimitiveRootInteger_coe
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      (n : ℕ) :
     ((equalCharacteristicChangedCompletedPrimitiveRootInteger F u n :
       Valued.integer
         (equalCharacteristicChangedCompletedLevelField F u n)) :
           equalCharacteristicChangedCompletedLevelField F u n) =
       equalCharacteristicChangedCompletedPrimitiveRoot F u n :=
   rfl
+end
 
-/-- The integral primitive point lies in the maximal ideal. -/
-theorem equalCharacteristicChangedCompletedPrimitiveRootInteger_mem_maximalIdeal
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
-    equalCharacteristicChangedCompletedPrimitiveRootInteger F u n ∈
-      Valued.maximalIdeal
-        (equalCharacteristicChangedCompletedLevelField F u n) := by
-  change equalCharacteristicChangedCompletedPrimitiveRootInteger F u n ∈
-    IsLocalRing.maximalIdeal
-      (Valued.integer
-        (equalCharacteristicChangedCompletedLevelField F u n))
-  apply (Valuation.mem_maximalIdeal_iff
-    (equalCharacteristicChangedCompletedLevelField F u n)
-    (Valued.v : Valuation
-      (equalCharacteristicChangedCompletedLevelField F u n) ℝ≥0)).2
-  change ‖equalCharacteristicChangedCompletedPrimitiveRoot F u n‖₊ < 1
-  exact_mod_cast
-    equalCharacteristicChangedCompletedPrimitiveRoot_norm_lt_one F u n
 
-/-- The maximal-ideal primitive point supports convergent power-series
-evaluation. -/
-theorem equalCharacteristicChangedCompletedPrimitiveRootInteger_hasEval
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
-    PowerSeries.HasEval
-      (equalCharacteristicChangedCompletedPrimitiveRootInteger F u n) := by
-  change Tendsto
-    (fun i : ℕ ↦ equalCharacteristicChangedCompletedPrimitiveRootInteger F u n ^ i)
-    atTop (nhds 0)
-  apply tendsto_pow_atTop_nhds_zero_of_norm_lt_one
-  change ‖equalCharacteristicChangedCompletedPrimitiveRoot F u n‖ < 1
-  exact equalCharacteristicChangedCompletedPrimitiveRoot_norm_lt_one F u n
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end
 

@@ -1,29 +1,35 @@
 module
 
+public import Mathlib
+
 public import Mathlib.NumberTheory.LSeries.AbstractFuncEq
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.Hecke
 
 noncomputable section
 
-def poleCleared (P : WeakFEPair ℂ) (s : ℂ) : ℂ :=
+def poleCleared (P : WeakFEPair ℂ) (s : ℂ)  :=
   s * (s - 1) * P.Λ₀ s - (s - 1) * P.f₀ + s * P.ε * P.g₀
 
-theorem weakFEPair_differentiableOn_weightOne (P : WeakFEPair ℂ) (hk : P.k = 1) :
+section
+variable (P : WeakFEPair ℂ) (hk : P.k = 1)
+include P hk
+theorem weakFEPair_differentiableOn_weightOne   :
     DifferentiableOn ℂ P.Λ {s : ℂ | s ≠ 0 ∧ s ≠ 1} := by
   intro s hs
   apply DifferentiableAt.differentiableWithinAt
-  exact P.differentiableAt_Λ (Or.inl hs.1) (Or.inl (by simpa [hk] using hs.2))
+  apply P.differentiableAt_Λ <;> aesop
 
-theorem poleCleared_differentiable (P : WeakFEPair ℂ) (hk : P.k = 1) :
+theorem poleCleared_differentiable   :
     Differentiable ℂ (poleCleared P) := by
   unfold poleCleared
   have hΛ := P.differentiable_Λ₀
   fun_prop
 
-theorem poleCleared_eq (P : WeakFEPair ℂ) (hk : P.k = 1) :
+theorem poleCleared_eq   :
     ∀ s : ℂ, s ≠ 0 → s ≠ 1 → poleCleared P s = s * (s - 1) * P.Λ s := by
   intro s hs₀ hs₁
   simp only [poleCleared, WeakFEPair.Λ, hk, Complex.ofReal_one, smul_eq_mul]
@@ -31,7 +37,7 @@ theorem poleCleared_eq (P : WeakFEPair ℂ) (hk : P.k = 1) :
   field_simp
   <;> ring
 
-theorem weakFEPair_selfDual_reflection (P : WeakFEPair ℂ) (hk : P.k = 1)
+theorem weakFEPair_selfDual_reflection  
     (hg : P.g = P.f) (hg₀ : P.g₀ = P.f₀) (hε : P.ε = 1) :
     ∀ s : ℂ, s ≠ 0 → s ≠ 1 → P.Λ s = P.Λ (1 - s) := by
   have hsymm : P.symm.Λ = P.Λ := by
@@ -41,6 +47,8 @@ theorem weakFEPair_selfDual_reflection (P : WeakFEPair ℂ) (hk : P.k = 1)
   intro s _ _
   have h := P.functional_equation (1 - s)
   simpa [hk, hε, hsymm] using h
+end
+
 
 end
 

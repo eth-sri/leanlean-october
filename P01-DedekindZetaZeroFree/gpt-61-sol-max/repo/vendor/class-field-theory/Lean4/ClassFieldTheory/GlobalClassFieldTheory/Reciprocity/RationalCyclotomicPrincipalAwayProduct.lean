@@ -73,19 +73,19 @@ local instance rationalCyclotomicPrincipalPrimePowerIsAbelianGalois
     (KummerTheory.rationalCyclotomicLevel
       ⟨p.1 ^ k, pow_pos p.2.pos k⟩).val
 
-noncomputable local instance
-    rationalCyclotomicPrincipalLevelFiniteDimensional
-    (m : ℕ+) :
-    FiniteDimensional ℚ
-      (KummerTheory.rationalCyclotomicLevel m) :=
-  rationalCyclotomicPrincipalPrimeLevelFiniteDimensional m
 
-noncomputable local instance
-    rationalCyclotomicPrincipalLevelIsAbelianGalois
-    (m : ℕ+) :
-    IsAbelianGalois ℚ
-      (KummerTheory.rationalCyclotomicLevel m) :=
-  rationalCyclotomicPrincipalPrimeLevelIsAbelianGalois m
+
+
+
+
+
+
+
+
+
+
+
+
 
  noncomputable def rationalCyclotomicPrincipalHeightOneArtinInput
     (p : Nat.Primes) (k : ℕ) (x : ℚˣ)

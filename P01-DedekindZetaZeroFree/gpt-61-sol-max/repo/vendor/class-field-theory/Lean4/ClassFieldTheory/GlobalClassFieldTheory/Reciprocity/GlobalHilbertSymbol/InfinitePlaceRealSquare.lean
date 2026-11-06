@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.GlobalClassFieldTheory.Reciprocity.GlobalHilbertSymbol.InfinitePlace
 public import Mathlib.NumberTheory.NumberField.Completion.InfinitePlace
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -42,14 +45,7 @@ theorem realInfinitePlace_globalUnit_realCoordinate
         (Units.map (algebraMap K v.Completion).toMonoidHom b :
           v.Completionˣ) =
       InfinitePlace.embedding_of_isReal hv (b : K) := by
-  change
-    InfinitePlace.Completion.ringEquivRealOfIsReal hv
-        (algebraMap K v.Completion (b : K)) =
-      InfinitePlace.embedding_of_isReal hv (b : K)
-  rw [InfinitePlace.Completion.ringEquivRealOfIsReal_apply]
-  rw [InfinitePlace.Completion.algebraMap_apply]
-  rw [InfinitePlace.Completion.extensionEmbeddingOfIsReal_coe]
-  simp only [WithAbs.equiv_apply]
+  simp_all
 
 omit [NumberField K] in
 /-- A global unit whose image at a real infinite place is positive becomes a
@@ -59,22 +55,22 @@ theorem realInfinitePlace_globalUnit_mem_squareSubgroup_of_pos
     (hb : 0 < InfinitePlace.embedding_of_isReal hv (b : K)) :
     Units.map (algebraMap K v.Completion).toMonoidHom b ∈
       (powMonoidHom 2 : v.Completionˣ →* v.Completionˣ).range := by
-  let e : v.Completion ≃+* ℝ :=
+  let e  :=
     InfinitePlace.Completion.ringEquivRealOfIsReal hv
-  let eU : v.Completionˣ ≃* ℝˣ :=
+  let eU  :=
     Units.mapEquiv e.toMulEquiv
-  let b_v : v.Completionˣ :=
+  let b_v  :=
     Units.map (algebraMap K v.Completion).toMonoidHom b
   have hcoord :
       (eU b_v : ℝ) = InfinitePlace.embedding_of_isReal hv (b : K) := by
-    exact realInfinitePlace_globalUnit_realCoordinate K v hv b
+    apply realInfinitePlace_globalUnit_realCoordinate
   have hpos : 0 < (eU b_v : ℝ) := by
     rw [hcoord]
     exact hb
   let t : ℝˣ :=
     Units.mk0 (Real.sqrt (eU b_v : ℝ))
       (ne_of_gt (Real.sqrt_pos.2 hpos))
-  let y : v.Completionˣ := eU.symm t
+  let y  := eU.symm t
   refine ⟨y, ?_⟩
   rw [powMonoidHom_apply]
   apply eU.injective

@@ -1,22 +1,29 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Ideals.InverseNormPowerSums
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve.Sieve
 
 open scoped NumberField Classical
 
-private lemma absNorm_pos_of_ne_bot {F : Type*} [Field F] [NumberField F]
-    {I : Ideal (𝓞 F)} (h : I ≠ ⊥) : (0 : ℝ) < (Ideal.absNorm I : ℝ) := by
+section
+variable {F : Type*} [Field F] [NumberField F]
+    {I : Ideal (𝓞 F)} (h : I ≠ ⊥)
+include F I h
+private lemma absNorm_pos_of_ne_bot   : (0 : ℝ) < (Ideal.absNorm I : ℝ) := by
   have h0 : Ideal.absNorm I ≠ 0 := fun hh => h (Ideal.absNorm_eq_zero_iff.mp hh)
   exact_mod_cast Nat.pos_of_ne_zero h0
 
-private lemma one_le_absNorm_of_ne_bot {F : Type*} [Field F] [NumberField F]
-    {I : Ideal (𝓞 F)} (h : I ≠ ⊥) : (1 : ℝ) ≤ (Ideal.absNorm I : ℝ) := by
+private lemma one_le_absNorm_of_ne_bot   : (1 : ℝ) ≤ (Ideal.absNorm I : ℝ) := by
   have h0 : Ideal.absNorm I ≠ 0 := fun hh => h (Ideal.absNorm_eq_zero_iff.mp hh)
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr h0
+end
+
 
 private lemma div_rpow_neg_half {x Y : ℝ} (hx : 0 < x) (hY : 0 < Y) :
     (x / Y) ^ (-(1 / 2 : ℝ)) = Y ^ (1 / 2 : ℝ) * x ^ (-(1 / 2 : ℝ)) := by
@@ -26,37 +33,43 @@ private lemma div_rpow_neg_two {x Y : ℝ} (hx : 0 < x) (hY : 0 < Y) :
     (x / Y) ^ (-(2 : ℝ)) = Y ^ 2 * x ^ (-(2 : ℝ)) := by
   rw [Real.div_rpow hx.le hY.le, Real.rpow_neg hY.le, div_inv_eq_mul, Real.rpow_two, mul_comm]
 
-noncomputable def nearScaled (F : Type*) [Field F] [NumberField F] (Y : ℝ)
-    (I : Ideal (𝓞 F)) : ℝ :=
+section
+variable (F : Type*) [Field F] [NumberField F] (Y : ℝ)
+    (I : Ideal (𝓞 F))
+include F Y I
+noncomputable def nearScaled    :=
   if I ≠ ⊥ ∧ (Ideal.absNorm I : ℝ) ≤ Y then (Ideal.absNorm I : ℝ) ^ (-(1 / 2 : ℝ)) else 0
 
-noncomputable def farScaled (F : Type*) [Field F] [NumberField F] (Y : ℝ)
-    (I : Ideal (𝓞 F)) : ℝ :=
+noncomputable def farScaled    :=
   if I ≠ ⊥ ∧ Y < (Ideal.absNorm I : ℝ) then (Ideal.absNorm I : ℝ) ^ (-(2 : ℝ)) else 0
 
-noncomputable def nearPart (F : Type*) [Field F] [NumberField F] (Y : ℝ)
-    (I : Ideal (𝓞 F)) : ℝ :=
+noncomputable def nearPart    :=
   if I ≠ ⊥ ∧ (Ideal.absNorm I : ℝ) ≤ Y then ((Ideal.absNorm I : ℝ) / Y) ^ (-(1 / 2 : ℝ)) else 0
 
-noncomputable def farPart (F : Type*) [Field F] [NumberField F] (Y : ℝ)
-    (I : Ideal (𝓞 F)) : ℝ :=
+noncomputable def farPart    :=
   if I ≠ ⊥ ∧ Y < (Ideal.absNorm I : ℝ) then ((Ideal.absNorm I : ℝ) / Y) ^ (-(2 : ℝ)) else 0
+end
 
-private lemma nearPart_eq_mul (F : Type*) [Field F] [NumberField F] {Y : ℝ} (hY : 0 < Y)
-    (I : Ideal (𝓞 F)) : nearPart F Y I = Y ^ (1 / 2 : ℝ) * nearScaled F Y I := by
+
+section
+variable (F : Type*) [Field F] [NumberField F] {Y : ℝ} (hY : 0 < Y)
+    (I : Ideal (𝓞 F))
+include F Y hY I
+private lemma nearPart_eq_mul   : nearPart F Y I = Y ^ (1 / 2 : ℝ) * nearScaled F Y I := by
   unfold nearPart nearScaled
   by_cases hc : I ≠ ⊥ ∧ (Ideal.absNorm I : ℝ) ≤ Y
   · rw [if_pos hc, if_pos hc]
     exact div_rpow_neg_half (absNorm_pos_of_ne_bot hc.1) hY
   · rw [if_neg hc, if_neg hc, mul_zero]
 
-private lemma farPart_eq_mul (F : Type*) [Field F] [NumberField F] {Y : ℝ} (hY : 0 < Y)
-    (I : Ideal (𝓞 F)) : farPart F Y I = Y ^ 2 * farScaled F Y I := by
+private lemma farPart_eq_mul   : farPart F Y I = Y ^ 2 * farScaled F Y I := by
   unfold farPart farScaled
   by_cases hc : I ≠ ⊥ ∧ Y < (Ideal.absNorm I : ℝ)
   · rw [if_pos hc, if_pos hc]
     exact div_rpow_neg_two (absNorm_pos_of_ne_bot hc.1) hY
   · rw [if_neg hc, if_neg hc, mul_zero]
+end
+
 
 theorem initial_two_ended_ideal_sum (F : Type*) [Field F] [NumberField F] :
     ∃ B : ℝ, 0 ≤ B ∧ ∀ Y : ℝ, 0 < Y →
@@ -71,18 +84,12 @@ theorem initial_two_ended_ideal_sum (F : Type*) [Field F] [NumberField F] :
     exists_ideal_inverse_power_initial_bound F (1 / 2) (by norm_num) (by norm_num)
   obtain ⟨Btail, hBtail0, hBtail⟩ :=
     exists_filtered_ideal_inverse_power_tail_bound F 2 (by norm_num)
-  have hsum2 : Summable (fun I : Ideal (𝓞 F) =>
-      if I = ⊥ then (0 : ℝ) else (Ideal.absNorm I : ℝ) ^ (-(2 : ℝ))) :=
+  have hsum2  :=
     summable_ideal_inverse_power F 2 (by norm_num)
   set Z2 : ℝ := ∑' I : Ideal (𝓞 F),
       (if I = ⊥ then (0 : ℝ) else (Ideal.absNorm I : ℝ) ^ (-(2 : ℝ))) with hZ2def
   have hZ2nn : 0 ≤ Z2 := by
-    rw [hZ2def]
-    exact tsum_nonneg fun I => by
-      by_cases h : I = ⊥
-      · simp [h]
-      · simp only [h, if_false]
-        exact Real.rpow_nonneg (Nat.cast_nonneg _) _
+    positivity
   refine ⟨Bhalf + Btail + Z2, by linarith, ?_⟩
   intro Y hY g hg0 hg
 

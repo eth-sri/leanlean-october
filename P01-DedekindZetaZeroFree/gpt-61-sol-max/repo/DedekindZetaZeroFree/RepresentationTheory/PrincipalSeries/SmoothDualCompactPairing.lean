@@ -13,26 +13,26 @@ set_option maxHeartbeats 1200000
 open scoped Topology NNReal
 namespace DedekindZetaZeroFree.KPLocalInducedCompactPairing
 
-def bidualMap {G V : Type*} [Group G] [TopologicalSpace G]
-    [IsTopologicalGroup G] [AddCommGroup V] [Module ℂ V]
-    (ρ : Representation ℂ G V) (hρ : SmoothRepresentation ρ) :
-    V →ₗ[ℂ] smoothSubmodule (smoothPart ρ.dual).dual := by
-  let j : V →ₗ[ℂ] Module.Dual ℂ (smoothSubmodule ρ.dual) :=
-    { toFun := fun v =>
-        { toFun := fun ℓ => ℓ.val v
-          map_add' := by intros; rfl
-          map_smul' := by intros; rfl }
-      map_add' := by intros; ext; simp
-      map_smul' := by intros; ext; simp }
-  refine j.codRestrict _ ?_
-  intro v
-  rw [mem_smoothSubmodule]
-  obtain ⟨U, hU⟩ := hρ v
-  refine ⟨U, ?_⟩
-  intro g hg
-  ext ℓ
-  change ℓ.val (ρ (g⁻¹)⁻¹ v) = ℓ.val v
-  rw [inv_inv, hU g hg]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end DedekindZetaZeroFree.KPLocalInducedCompactPairing
 
@@ -55,9 +55,9 @@ variable {G V : Type*} [Group G] [TopologicalSpace G]
 
 abbrev SmoothDual (ρ : Representation ℂ G V) := smoothSubmodule ρ.dual
 
-abbrev smoothDualRepresentation [IsTopologicalGroup G]
-    (ρ : Representation ℂ G V) : Representation ℂ G (SmoothDual ρ) :=
-  smoothPart ρ.dual
+
+
+
 
 end Dual
 
@@ -96,9 +96,9 @@ theorem smooth_orbit_locallyConstant (ρ : Representation ℂ G V) (v : V)
 end AlgebraicAveraging
 
 variable (F : Type) [Field F] [NumberField F]
-  (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+  (ζ : F) 
   (w : HeightOneSpectrum (RingOfIntegers F)) (m : ℕ)
-  (hm : KPLocalChartTopology.MatrixChartDepth F w m)
+  
 
 end DedekindZetaZeroFree.KPLocalInducedCompactPairing
 

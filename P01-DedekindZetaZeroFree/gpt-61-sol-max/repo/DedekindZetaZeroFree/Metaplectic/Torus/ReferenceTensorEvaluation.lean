@@ -22,32 +22,32 @@ theorem localReference_one (q : KPFinitePlace F) :
   change (((C.polarization q).ωL 1 : ℂˣ) : ℂ) = 1
   rw [map_one, Units.val_one]
 
-theorem localUntwistedEvaluation_reference_one (q : KPFinitePlace F) :
-    localUntwistedEvaluation F ζ hζ P C q (localReference F ζ hζ P C q) 1 = 1 := by
-  unfold localUntwistedEvaluation
-  rw [localReference_one, map_one]
-  simp [KPGlobalCenterRationalCharacter.localAbs]
 
-def finiteReference (T : Finset (KPFinitePlace F)) (hT : C.exceptional ⊆ T) :
-    KPGlobalTorusFunctionData.TorusSmoothUnion F ζ hζ (productModel F ζ hζ P) :=
-  finiteTensorRealization F ζ hζ P C T hT
-    (PiTensorProduct.tprod ℂ (fun q : T => localReference F ζ hζ P C q.val))
 
-theorem finiteReference_one (T : Finset (KPFinitePlace F)) (hT : C.exceptional ⊆ T) :
-    (finiteReference F ζ hζ P C T hT).val.val 1 = 1 := by
-  have he := finiteTensorRealization_formula F ζ hζ P C T hT
-    (fun q : T => localReference F ζ hζ P C q.val)
-    1 (fun _ => 1) 1 (by intro w; rfl) (by intro q; simp) (by simp)
-  change (finiteReference F ζ hζ P C T hT).val.val 1 = _ at he
-  rw [he]
-  have hvalues : (fun q : KPFinitePlace F => localUntwistedEvaluation F ζ hζ P C q
-      (if h : q ∈ T then localReference F ζ hζ P C q else localReference F ζ hζ P C q) 1) =
-      fun _ => (1 : ℂ) := by
-    funext q
-    simp only [dite_eq_ite, ite_self]
-    exact localUntwistedEvaluation_reference_one F ζ hζ P C q
-  rw [hvalues]
-  exact finprod_one
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end DedekindZetaZeroFree.EisensteinReferenceSections.TorusReference
 

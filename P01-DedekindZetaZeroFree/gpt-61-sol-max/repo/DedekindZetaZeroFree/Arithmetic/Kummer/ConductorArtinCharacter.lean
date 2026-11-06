@@ -35,8 +35,11 @@ instance extensionAbelianGalois (F : Type) [Field F] [NumberField F]
   KummerTheory.chosenSimpleKummerExtension_isAbelianGalois F (2 : ℕ+)
     (rmKummerTwo_ne_zero F) (rmKummerPrimitiveTwo F h12) x
 
-def kappa (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ) :
+section
+variable (F : Type) [Field F] [NumberField F]
+    (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ)
+include F h12 x in
+def kappa   :
     (E F h12 x ≃ₐ[F] E F h12 x) →* ℂˣ :=
   (rmKummerQuadraticRootsComplexMap F h12 (E F h12 x)).comp
     ((KummerTheory.nthRootsSubgroupEquivRootsOfUnity (E F h12 x) 2).toMonoidHom.comp
@@ -48,54 +51,54 @@ theorem totallyComplex (F : Type) [Field F] [NumberField F]
   primitive12_totallyComplex F h12.choose
     ((mem_primitiveRoots (by decide)).1 h12.choose_spec)
 
-def m (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ) : Ideal (𝓞 F) :=
+include F h12 x in
+def m   : Ideal (𝓞 F) :=
   let c := ClassFieldTheory.GlobalClassFieldComparison.normConductorRayClassModulus
     F (E F h12 x)
   c.finitePart.support.prod (fun v => v.asIdeal ^ c.finitePart v)
 
-theorem m_ne_bot (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ) : m F h12 x ≠ ⊥ := by
+include F h12 x in
+theorem m_ne_bot   : m F h12 x ≠ ⊥ := by
   exact PrimitiveRay.modulusIdeal_ne_bot _
 
-theorem modulus_eq_normConductor (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ) :
+include F h12 x in
+theorem modulus_eq_normConductor   :
     M F (m F h12 x) (m_ne_bot F h12 x) =
       ClassFieldTheory.GlobalClassFieldComparison.normConductorRayClassModulus
         F (E F h12 x) := by
   exact KummerConductorProduct.modulus_eq F (totallyComplex F h12) _
 
-theorem isAbelianConductor (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ) :
+include F h12 x in
+theorem isAbelianConductor   :
     ClassFieldTheory.IsAbelianConductor F (E F h12 x)
       (M F (m F h12 x) (m_ne_bot F h12 x)) := by
   rw [modulus_eq_normConductor F h12 x]
   exact KummerConductorLeast.publicIsAbelianConductor F (E F h12 x)
     (totallyComplex F h12)
 
-@[simp] theorem conductor_infinitePart (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ) :
+include F h12 x in
+@[simp] theorem conductor_infinitePart   :
     (M F (m F h12 x) (m_ne_bot F h12 x)).infinitePart = ∅ := rfl
 
-def arithmeticArtin (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ) :
+include F h12 x in
+def arithmeticArtin   :
     ClassFieldTheory.RayClassGroup (M F (m F h12 x) (m_ne_bot F h12 x)) →*
       (E F h12 x ≃ₐ[F] E F h12 x) :=
   (modulus_eq_normConductor F h12 x).symm ▸
     ClassFieldTheory.GlobalClassFieldComparison.normConductorArtin F (E F h12 x)
 
-def rho (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ) :
+include F h12 x in
+def rho   :
     ClassFieldTheory.RayClassGroup (M F (m F h12 x) (m_ne_bot F h12 x)) →* ℂˣ :=
   (kappa F h12 x).comp (arithmeticArtin F h12 x)
 
-def Xi (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ) :
+include F h12 x in
+def Xi   :
     RayClassCharacter F (m F h12 x) :=
   frozenRay F (totallyComplex F h12) (m F h12 x) (m_ne_bot F h12 x) (rho F h12 x)
 
-theorem rho_prime (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ)
+include F h12 x in
+theorem rho_prime  
     (v : HeightOneSpectrum (𝓞 F))
     (hv : v ∉ (M F (m F h12 x) (m_ne_bot F h12 x)).finitePart.support)
     (w : HeightOneSpectrum (𝓞 (E F h12 x)))
@@ -110,6 +113,8 @@ theorem rho_prime (F : Type) [Field F] [NumberField F]
   unfold arithmeticArtin
   rw [KummerConductorFrobenius.transport_prime (modulus_eq_normConductor F h12 x)]
   rw [KummerConductorFrobenius.normConductorArtin_prime F (E F h12 x) v _ w hw]
+end
+
 
 end
 end DedekindZetaZeroFree.RMKummerConductor

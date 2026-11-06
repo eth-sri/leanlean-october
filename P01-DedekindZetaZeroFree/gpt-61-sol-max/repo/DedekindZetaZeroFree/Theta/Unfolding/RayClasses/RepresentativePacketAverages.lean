@@ -78,8 +78,8 @@ private theorem coset_dual_integrand (E : RayCoset.Data F)
   rw [normalizedCosetDualIndex_tracePhase, normalizedCosetDualIndexEquiv_apply]
   rfl
 
-theorem rayTheta_fδ_eq_affineResidueAverage
-    (hF : NumberField.IsTotallyComplex F)
+section
+variable (hF : NumberField.IsTotallyComplex F)
     (m a : Ideal (𝓞 F)) (hm : m ≠ ⊥) (ha : a ≠ ⊥)
     (hcop : a ⊔ m = ⊤) (hmt : m ≠ ⊤)
     (D : RayThetaRepresentatives F m hm)
@@ -90,7 +90,10 @@ theorem rayTheta_fδ_eq_affineResidueAverage
       (rayIdealFractionalIdeal F a ha : FractionalIdeal (𝓞 F)⁰ F)
       ((rayIdealFractionalIdeal F a ha * rayIdealFractionalIdeal F m hm) :
         FractionalIdeal (𝓞 F)⁰ F) x = q.val)
-    (u : ℝ) (hu : 0 < u) :
+    (u : ℝ) (hu : 0 < u)
+include hF m a hm ha hcop hmt D q x hx u hu
+theorem rayTheta_fδ_eq_affineResidueAverage
+      :
     let c := (coprimeIdealResidueRayClass hF m a hm ha hcop hmt q).val
     RayTheta.fδ (D.coset c) ∅ u =
       (RayCoset.rayUnitTorsionCard F m : ℂ)⁻¹ *
@@ -131,18 +134,7 @@ theorem rayTheta_fδ_eq_affineResidueAverage
     (principalNormalizedLogShift hF γ)
 
 theorem rayTheta_gδDual_eq_affineResidueDualAverage
-    (hF : NumberField.IsTotallyComplex F)
-    (m a : Ideal (𝓞 F)) (hm : m ≠ ⊥) (ha : a ≠ ⊥)
-    (hcop : a ⊔ m = ⊤) (hmt : m ≠ ⊤)
-    (D : RayThetaRepresentatives F m hm)
-    (q : coprimeIdealResidueUnits F m a hm ha hcop hmt)
-    (x : {x : F // x ∈
-      (rayIdealFractionalIdeal F a ha : FractionalIdeal (𝓞 F)⁰ F)})
-    (hx : fractionalIdealQuotientMk
-      (rayIdealFractionalIdeal F a ha : FractionalIdeal (𝓞 F)⁰ F)
-      ((rayIdealFractionalIdeal F a ha * rayIdealFractionalIdeal F m hm) :
-        FractionalIdeal (𝓞 F)⁰ F) x = q.val)
-    (u : ℝ) (hu : 0 < u) :
+      :
     let c := (coprimeIdealResidueRayClass hF m a hm ha hcop hmt q).val
     RayTheta.gδDual (D.coset c) ∅ u =
       ((RayCoset.rayUnitTorsionCard F m : ℂ) *
@@ -181,6 +173,8 @@ theorem rayTheta_gδDual_eq_affineResidueDualAverage
     (affineResidueDualTheta_continuous m hm I x u hu)
     (affineResidueDualTheta_rayUnit_periodic hF m hm I x u hu)
     (principalNormalizedLogShift hF γ)
+end
+
 
 end DedekindZetaZeroFree.Hecke.Theta
 

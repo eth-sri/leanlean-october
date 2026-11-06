@@ -17,21 +17,21 @@ variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ
 open MomentSources
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
-def realizationScalarResidue {R : PrincipalMellin.ActualRecipe S η}
-    {Q : AdmissibleFlatSources R} (T : Realization R Q) (v : R.A.UnitQuotient) :
-    FlatScalarResidue F R.A.zeta12 R.A.primitive_zeta12 (Q.flat v) where
-  E := fun z => T.E v z
-  meromorphic := T.meromorphic v
-  chamber := T.chamber v
-  radius := T.radius
-  radius_pos := T.radius_pos
-  numerator := T.cleared v
-  analytic := T.analytic v
-  clears := by
-    intro g
-    filter_upwards [nhdsWithin_le_nhds (Metric.ball_mem_nhds (0 : ℂ) T.radius_pos),
-      self_mem_nhdsWithin] with z hz hn
-    exact congrFun (T.clears v z hz hn) g
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end DedekindZetaZeroFree.FiniteWhittakerProjectors
 

@@ -19,10 +19,13 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 local instance (K : Subgroup (KPLiteralRaw.G F ζ hζ)) : MeasurableSpace K := borel K
 local instance (K : Subgroup (KPLiteralRaw.G F ζ hζ)) : BorelSpace K := ⟨rfl⟩
 
-theorem translated_word_continuous
-    (K : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK : IsCompact (K : Set (KPLiteralRaw.G F ζ hζ)))
+section
+variable (K : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK : IsCompact (K : Set (KPLiteralRaw.G F ζ hζ)))
     (μ : Measure K) [IsFiniteMeasure μ] (u : KPLiteralRaw.G F ζ hζ → ℂ)
-    (hu : Smooth F ζ hζ u) (w : List (Fin (groupDimension F))) (g : KPLiteralRaw.G F ζ hζ) :
+    (hu : Smooth F ζ hζ u) (w : List (Fin (groupDimension F))) (g : KPLiteralRaw.G F ζ hζ)
+include K hK μ u hu w g
+theorem translated_word_continuous
+      :
     Continuous (fun k : K => actualRightWord F ζ hζ w (fun a => u (a*k.val)) g) := by
   letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
   letI : IsFiniteMeasureOnCompacts μ := ⟨fun _ _ => measure_lt_top μ _⟩
@@ -53,9 +56,7 @@ theorem translated_word_continuous
   exact continuous_finsetSum _ (fun i _ => continuous_const.mul (hc i))
 
 theorem word_average
-    (K : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK : IsCompact (K : Set (KPLiteralRaw.G F ζ hζ)))
-    (μ : Measure K) [IsFiniteMeasure μ] (u : KPLiteralRaw.G F ζ hζ → ℂ)
-    (hu : Smooth F ζ hζ u) (w : List (Fin (groupDimension F))) (g : KPLiteralRaw.G F ζ hζ) :
+      :
     actualRightWord F ζ hζ w (ResidualRawAverage.average F ζ hζ K μ u) g =
       ∫ k : K, actualRightWord F ζ hζ w (fun a => u (a*k.val)) g ∂μ := by
   letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
@@ -103,6 +104,8 @@ theorem word_average
   apply integral_congr_ae
   filter_upwards with k
   exact (hword (fun a => u (a*k.val)) (hs k) g).symm
+end
+
 
 end DedekindZetaZeroFree.FourierContinuation.ResidualAverageWord
 

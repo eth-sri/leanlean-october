@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Algebra.TensorProduct.RestrictedTensorSimplicity
 
 @[expose] public section
+
 
 noncomputable section
 open scoped Classical TensorProduct
@@ -26,7 +29,10 @@ def stageFunctional (s : Finset J) : RestrictedTensorSimple.Stage V s →ₗ[ℂ
     stageFunctional V ell s (PiTensorProduct.tprod ℂ x) = ∏ j : s, ell j (x j) := by
   simp [stageFunctional, PiTensorProduct.lift.tprod]
 
-theorem stageFunctional_insert (hnorm : ∀ j ∉ bad, ell j (e j) = 1)
+section
+variable (hnorm : ∀ j ∉ bad, ell j (e j) = 1)
+include hnorm
+theorem stageFunctional_insert  
     (s t : RestrictedTensorSimple.Level bad) (hst : s ≤ t) :
     (stageFunctional V ell t.val).comp (RestrictedTensorSimple.transition V e bad s t hst) =
       stageFunctional V ell s.val := by
@@ -38,7 +44,7 @@ theorem stageFunctional_insert (hnorm : ∀ j ∉ bad, ell j (e j) = 1)
   have he : ∀ j : t.val, (j : J) ∉ s.val → ell j (e j) = 1 := by
     intro j hj
     exact hnorm j (fun hb => hj (s.property hb))
-  let f : J → ℂ := fun j => if h : j ∈ s.val then ell j (x ⟨j, h⟩) else 1
+  let f  := fun j => if h : j ∈ s.val then ell j (x ⟨j, h⟩) else 1
   have hleft : (∏ j : t.val, ell j
       (if h : (j : J) ∈ s.val then x ⟨j, h⟩ else e j)) = ∏ j : t.val, f j := by
     apply Finset.prod_congr rfl
@@ -49,27 +55,27 @@ theorem stageFunctional_insert (hnorm : ∀ j ∉ bad, ell j (e j) = 1)
   rw [hleft]
   change (∏ j : t.val, f j) = ∏ j : s.val, ell j (x j)
   rw [Finset.prod_coe_sort]
-  have hprod : (∏ j ∈ t.val, f j) = ∏ j ∈ s.val, f j := by
-    exact (Finset.prod_subset hst (fun j _ hj => by simp [f, hj])).symm
+  have hprod : (∏ j ∈ t.val, f j) = ∏ j ∈ s.val, f j := (Finset.prod_subset hst (fun j _ hj => by simp [f, hj])).symm
   rw [hprod, ← Finset.prod_coe_sort]
   apply Finset.prod_congr rfl
   intro j _
   simp [f, j.property]
 
-def productFunctional (hnorm : ∀ j ∉ bad, ell j (e j) = 1) :
-    RestrictedTensorSimple.Core V e bad →ₗ[ℂ] ℂ :=
+def productFunctional    :=
   Module.DirectLimit.lift ℂ _ _ _
     (fun s => stageFunctional V ell s.val)
     (fun s t hst x => LinearMap.congr_fun (stageFunctional_insert V e bad ell hnorm s t hst) x)
 
-@[simp] theorem productFunctional_stage (hnorm : ∀ j ∉ bad, ell j (e j) = 1)
+@[simp] theorem productFunctional_stage  
     (s : RestrictedTensorSimple.Level bad) (x : ∀ j : s.val, V j) :
     productFunctional V e bad ell hnorm
       (RestrictedTensorSimple.stageInclusion V e bad s (PiTensorProduct.tprod ℂ x)) =
         ∏ j : s.val, ell j (x j) := by
   unfold productFunctional RestrictedTensorSimple.stageInclusion
   rw [Module.DirectLimit.lift_of]
-  exact stageFunctional_pure V ell s.val x
+  apply stageFunctional_pure
+end
+
 
 theorem stageFunctional_absorb (slot : bad) (c : ℂ)
     (s : RestrictedTensorSimple.Level bad) (x : ∀ j : s.val, V j) :
@@ -86,14 +92,17 @@ theorem stageFunctional_absorb (slot : bad) (c : ℂ)
       simp [i, LinearMap.smul_apply, smul_eq_mul]
     · have hj' : j.val ≠ slot.val := by
         intro hh
-        exact hj (Subtype.ext hh)
+        apply hj <;> aesop
       simp [Function.update_of_ne hj, Function.update_of_ne hj']
   rw [hi, Finset.prod_update_of_mem (Finset.mem_univ i)]
   rw [← Finset.mul_prod_erase _ _ (Finset.mem_univ i)]
   rw [Finset.sdiff_singleton_eq_erase]
   ring
 
-theorem productFunctional_unique (hnorm : ∀ j ∉ bad, ell j (e j) = 1)
+section
+variable (hnorm : ∀ j ∉ bad, ell j (e j) = 1)
+include hnorm
+theorem productFunctional_unique  
     (L : RestrictedTensorSimple.Core V e bad →ₗ[ℂ] ℂ)
     (hL : ∀ (s : RestrictedTensorSimple.Level bad) (x : ∀ j : s.val, V j),
       L (RestrictedTensorSimple.stageInclusion V e bad s (PiTensorProduct.tprod ℂ x)) =
@@ -113,16 +122,16 @@ theorem productFunctional_unique (hnorm : ∀ j ∉ bad, ell j (e j) = 1)
       productFunctional_stage]
   exact LinearMap.congr_fun heq w
 
-theorem absorb_reference_value (hnorm : ∀ j ∉ bad, ell j (e j) = 1)
+theorem absorb_reference_value  
     (slot : bad) (c : ℂ) (j : J) (hj : j ∉ bad) :
     Function.update ell slot.val (c • ell slot.val) j (e j) = 1 := by
   have hjs : j ≠ slot.val := by
     intro h
-    exact hj (h ▸ slot.property)
+    apply hj <;> aesop
   rw [Function.update_of_ne hjs]
   exact hnorm j hj
 
-theorem absorb_global_coefficient (hnorm : ∀ j ∉ bad, ell j (e j) = 1)
+theorem absorb_global_coefficient  
     (slot : bad) (c : ℂ)
     (L : RestrictedTensorSimple.Core V e bad →ₗ[ℂ] ℂ)
     (hL : ∀ (s : RestrictedTensorSimple.Level bad) (x : ∀ j : s.val, V j),
@@ -135,6 +144,8 @@ theorem absorb_global_coefficient (hnorm : ∀ j ∉ bad, ell j (e j) = 1)
   rw [hL]
   have h := stageFunctional_absorb V bad ell slot c s x
   simpa only [stageFunctional_pure] using h.symm
+end
+
 
 end DedekindZetaZeroFree.FourierContinuation
 

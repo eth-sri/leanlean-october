@@ -151,11 +151,11 @@ theorem sInteger_trace_annihilator (F : Type) [Field F] [NumberField F]
   · intro h
     obtain ⟨n, hn⟩ := sAnnihilator_arch_rational F S hS' y h
     let z := y - sIntegerDiagonal F S n
-    have hz : z.1 = 0 := by dsimp [z]; rw [hn, sub_self]
+    have hz : z.1 = 0 := by change y.1 - (sIntegerDiagonal F S n).1 = 0; rw [hn, sub_self]
     have hdiag : ∀ m : sIntegerRing F S,
         sLocalTraceCharacter F S (z * sIntegerDiagonal F S m) = 1 := by
       intro m
-      dsimp [z]
+      change sLocalTraceCharacter F S ((y - sIntegerDiagonal F S n) * sIntegerDiagonal F S m) = 1
       rw [sub_mul, AddChar.map_sub_eq_div, h,
         sLocalTraceCharacter_sIntegerDiagonal_mul_eq_one F S hS' n m, div_self']
     have hf : ∀ a : PoissonSFiniteDensity.Space F S,

@@ -275,7 +275,7 @@ namespace DedekindZetaZeroFree
 
 open KPContActualSphericalFlatStage
 
-variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+variable (F : Type) [Field F] [NumberField F] (ζ : F) 
 
 end DedekindZetaZeroFree
 

@@ -50,10 +50,10 @@ theorem canonical_borel_half_torus (b : S.borel.B) :
       KPLocalPrincipalSeries.deltaHalf S.borel (S.borel.torus (S.borel.retract b)) := by
   simp only [KPLocalPrincipalSeries.deltaHalf, S.borel.retract_torus]
 
-variable (K : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-variable (C : KPGlobalTorusBorelTwistCompatibility.ModelData F ζ hζ) (f : Flat F ζ hζ K)
+variable (K : Subgroup (KPLiteralRaw.G F ζ hζ)) 
 
-variable (T : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
+
+
 
 end DedekindZetaZeroFree.KPLiteralScalarHCFiniteBorel
 

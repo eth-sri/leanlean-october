@@ -44,35 +44,34 @@ structure MellinNormalizationData (A : SArithmeticData F) (σ : F →+* ℂ)
   disintegration : @ProbeSheet.HaarDisintegration F _ _ A
     P.multiplicativeMeasure P.domain.measure
 
-def principalMellinWeights (A : SArithmeticData F) (σ : F →+* ℂ)
+section
+variable (A : SArithmeticData F) (σ : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (P : PrincipalData A σ η hS) : ComparisonMellinWeights :=
+    (P : PrincipalData A σ η hS)
+include A σ η hS P
+def principalMellinWeights   : ComparisonMellinWeights :=
   comparisonMellinWeightsFromProbe F A P.finiteTrace P.additiveMeasure
     P.multiplicativeMeasure P.W0 P.W1
 
-def principalMellinFrequencySum (A : SArithmeticData F) (σ : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (P : PrincipalData A σ η hS) (ξ w z : ℂ) : ℂ :=
+def principalMellinFrequencySum   (ξ w z : ℂ) : ℂ :=
   ∑' u : {u // u ∈ P.frequencies.reps},
     comparisonRealPower
       (FiniteTransform.exteriorNorm A.R.toSubring u.val.val : ℝ) (-z) *
       principalSeparatedMellinSeries A σ η hS P u ξ w z
 
-def principalTripleMellinKernel (A : SArithmeticData F) (σ : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (P : PrincipalData A σ η hS) (X Y Z : ℝ) (ξ w z : ℂ) : ℂ :=
+def principalTripleMellinKernel   (X Y Z : ℝ) (ξ w z : ℂ) : ℂ :=
   comparisonRealPower X (1 / 2 - z) *
     comparisonRealPower Z (ξ + z - 1) * comparisonRealPower Y (w - 1) *
     Complex.exp ((ξ + z - 1) ^ 2) * (principalMellinWeights A σ η hS P).M z *
     (principalMellinWeights A σ η hS P).W1Hat w *
     principalMellinFrequencySum A σ η hS P ξ w z
 
-def principalTripleMellinHeights (A : SArithmeticData F) (σ : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (P : PrincipalData A σ η hS) (X Y Z : ℝ) (t : Fin 3 → ℝ) : ℂ :=
+def principalTripleMellinHeights   (X Y Z : ℝ) (t : Fin 3 → ℝ) : ℂ :=
   principalTripleMellinKernel A σ η hS P X Y Z
     (4 + (t 0 : ℂ) * Complex.I) (4 + (t 1 : ℂ) * Complex.I)
     (2 + (t 2 : ℂ) * Complex.I)
+end
+
 
 def tripleMellinNormalization : ℂ := ((2 * Real.pi : ℝ) : ℂ)⁻¹ ^ 3
 

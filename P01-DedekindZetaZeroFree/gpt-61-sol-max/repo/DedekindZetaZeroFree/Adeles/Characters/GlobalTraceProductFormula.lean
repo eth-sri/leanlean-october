@@ -273,12 +273,15 @@ private theorem residuePrime_eq_adapter (v : HeightOneSpectrum (𝓞 F)) :
       ((PlaceTraceAdapter.prime F v).1 : 𝓞 ℚ)) ∈ v.asIdeal := h
   simpa using h'
 
-private theorem traceFactor_eq_localFiniteCharacter
-    (ι : (v : HeightOneSpectrum (𝓞 F)) →
+section
+variable (ι : (v : HeightOneSpectrum (𝓞 F)) →
       ℚ_[residuePrime v] →+* v.adicCompletion F)
     (hι : ∀ v, Continuous (ι v))
     (hℚ : ∀ v (q : ℚ), ι v (q : ℚ_[residuePrime v]) =
       algebraMap F (v.adicCompletion F) (algebraMap ℚ F q))
+include ι hι hℚ in
+private theorem traceFactor_eq_localFiniteCharacter
+     
     (v : HeightOneSpectrum (𝓞 F)) :
     traceFactor v (ι v) = localFiniteCharacter F v := by
   letI (p : Nat.Primes) : Fact p.1.Prime := ⟨p.2⟩
@@ -321,12 +324,9 @@ private theorem character_cast (p q : Nat.Primes) (h : p = q) (x : ℚ_[p]) :
   subst q
   rfl
 
+include ι hι hℚ in
 private theorem traceFactor_fiber_product
-    (ι : (v : HeightOneSpectrum (𝓞 F)) →
-      ℚ_[residuePrime v] →+* v.adicCompletion F)
-    (hι : ∀ v, Continuous (ι v))
-    (hℚ : ∀ v (q : ℚ), ι v (q : ℚ_[residuePrime v]) =
-      algebraMap F (v.adicCompletion F) (algebraMap ℚ F q))
+     
     (x : F) (p : Nat.Primes) :
     letI := finitePlacesAboveRationalPrimeFintype F p
     (∏ v : FinitePlacesAbove ℚ F (Rat.HeightOneSpectrum.primesEquiv.symm p),
@@ -343,12 +343,9 @@ private theorem traceFactor_fiber_product
       (PlaceTraceAdapter.traceAbove F p v (algebraMap F (v.val.adicCompletion F) x))
   exact character_cast _ p (PlaceTraceAdapter.prime_eq_of_above F p v) _
 
+include ι hι hℚ in
 private theorem traceFactor_finprod_eq_rational
-    (ι : (v : HeightOneSpectrum (𝓞 F)) →
-      ℚ_[residuePrime v] →+* v.adicCompletion F)
-    (hι : ∀ v, Continuous (ι v))
-    (hℚ : ∀ v (q : ℚ), ι v (q : ℚ_[residuePrime v]) =
-      algebraMap F (v.adicCompletion F) (algebraMap ℚ F q))
+     
     (hsupport : ∀ x : F, Function.HasFiniteMulSupport
       (fun v : HeightOneSpectrum (𝓞 F) =>
         traceFactor v (ι v) (algebraMap F (v.adicCompletion F) x)))
@@ -382,12 +379,9 @@ private theorem traceFactor_finprod_eq_rational
     PlaceTraceAdapter.prime F v = p
   exact Rat.HeightOneSpectrum.primesEquiv.apply_eq_iff_eq_symm_apply.symm
 
+include ι hι hℚ in
 theorem traceFactors_product_formula
-    (ι : (v : HeightOneSpectrum (𝓞 F)) →
-      ℚ_[residuePrime v] →+* v.adicCompletion F)
-    (hι : ∀ v, Continuous (ι v))
-    (hℚ : ∀ v (q : ℚ), ι v (q : ℚ_[residuePrime v]) =
-      algebraMap F (v.adicCompletion F) (algebraMap ℚ F q))
+     
     (hsupport : ∀ x : F, Function.HasFiniteMulSupport
       (fun v : HeightOneSpectrum (𝓞 F) =>
         traceFactor v (ι v) (algebraMap F (v.adicCompletion F) x)))
@@ -398,6 +392,8 @@ theorem traceFactors_product_formula
   rw [archTraceCharacter_product_eq_trace x,
     traceFactor_finprod_eq_rational ι hι hℚ hsupport x]
   exact rational_diagonal_additive_product (Algebra.trace ℚ F x)
+end
+
 
 end DedekindZetaZeroFree.ResidueTraceFactorProductFormula
 

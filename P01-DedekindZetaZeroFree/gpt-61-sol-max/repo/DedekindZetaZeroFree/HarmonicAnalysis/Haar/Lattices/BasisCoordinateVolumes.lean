@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Fourier.Lattices.DualBasisCoordinates
 public import Mathlib.Algebra.Module.ZLattice.Covolume
 
 @[expose] public section
+
 
 noncomputable section
 open scoped Classical
@@ -15,25 +18,30 @@ def coordinateBoxIco (ι : Type*) : Set (ι → ℝ) := {x | ∀ i, x i ∈ Set.
 
 def coordinateBoxIoc (ι : Type*) : Set (ι → ℝ) := {x | ∀ i, x i ∈ Set.Ioc 0 1}
 
-def basisDomain
-    {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
+section
+variable {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
     [FiniteDimensional ℝ V]
+include V
+def basisDomain
+     
     (L : Submodule ℤ V) [DiscreteTopology L] [IsZLattice ℝ L]
-    {ι : Type*} [Fintype ι] (b : Basis ι ℤ L) : Set V :=
+    {ι : Type*} [Fintype ι] (b : Basis ι ℤ L)  :=
   (b.ofZLatticeBasis ℝ L).equivFun.symm '' coordinateBoxIco ι
 
-theorem coordinate_covolume_pos
-    {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
-    [FiniteDimensional ℝ V] [MeasurableSpace V] [BorelSpace V]
-    (L : Submodule ℤ V) [DiscreteTopology L] [IsZLattice ℝ L] :
-    0 < ZLattice.covolume L volume := by
-  exact ZLattice.covolume_pos L volume
+def coordinate_covolume_pos
+      [MeasurableSpace V] [BorelSpace V]
+    (L : Submodule ℤ V) [DiscreteTopology L] [IsZLattice ℝ L]  := ZLattice.covolume_pos L volume
+end
 
-theorem basisDomain_isAddFundamentalDomain
-    {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
+
+section
+variable {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
     [FiniteDimensional ℝ V] [MeasurableSpace V] [BorelSpace V]
     (L : Submodule ℤ V) [DiscreteTopology L] [IsZLattice ℝ L]
-    {ι : Type*} [Fintype ι] (b : Basis ι ℤ L) :
+    {ι : Type*} [Fintype ι] (b : Basis ι ℤ L)
+include V L ι b
+theorem basisDomain_isAddFundamentalDomain
+      :
     IsAddFundamentalDomain L (basisDomain L b) volume := by
   have hd : basisDomain L b = ZSpan.fundamentalDomain (b.ofZLatticeBasis ℝ L) := by
     rw [basisDomain, LinearEquiv.image_eq_preimage_symm]
@@ -43,14 +51,11 @@ theorem basisDomain_isAddFundamentalDomain
   exact ZLattice.isAddFundamentalDomain b volume
 
 theorem basis_coordinates_map_volume
-    {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
-    [FiniteDimensional ℝ V] [MeasurableSpace V] [BorelSpace V]
-    (L : Submodule ℤ V) [DiscreteTopology L] [IsZLattice ℝ L]
-    {ι : Type*} [Fintype ι] (b : Basis ι ℤ L) :
+      :
     Measure.map (b.ofZLatticeBasis ℝ L).equivFun volume =
       ENNReal.ofReal (ZLattice.covolume L volume) • (volume : Measure (ι → ℝ)) := by
   let e := (b.ofZLatticeBasis ℝ L).equivFun.toContinuousLinearEquiv.toHomeomorph.toMeasurableEquiv
-  have hc : ENNReal.ofReal (ZLattice.covolume L volume) ≠ 0 :=
+  have hc  :=
     ne_of_gt (ENNReal.ofReal_pos.mpr (coordinate_covolume_pos L))
   change Measure.map e volume = _
   ext s hs
@@ -63,10 +68,7 @@ theorem basis_coordinates_map_volume
   exact ((ENNReal.eq_div_iff hc ENNReal.ofReal_ne_top).mp h).symm
 
 private theorem coordinate_restricted_map
-    {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
-    [FiniteDimensional ℝ V] [MeasurableSpace V] [BorelSpace V]
-    (L : Submodule ℤ V) [DiscreteTopology L] [IsZLattice ℝ L]
-    {ι : Type*} [Fintype ι] (b : Basis ι ℤ L) :
+      :
     Measure.map (b.ofZLatticeBasis ℝ L).equivFun (volume.restrict (basisDomain L b)) =
       ENNReal.ofReal (ZLattice.covolume L volume) • volume.restrict (coordinateBoxIco ι) := by
   let e := (b.ofZLatticeBasis ℝ L).equivFun.toContinuousLinearEquiv.toHomeomorph.toMeasurableEquiv
@@ -79,10 +81,7 @@ private theorem coordinate_restricted_map
   rw [basis_coordinates_map_volume, Measure.restrict_smul]
 
 theorem integral_basis_coordinates_Ico
-    {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
-    [FiniteDimensional ℝ V] [MeasurableSpace V] [BorelSpace V]
-    (L : Submodule ℤ V) [DiscreteTopology L] [IsZLattice ℝ L]
-    {ι : Type*} [Fintype ι] (b : Basis ι ℤ L)
+     
     (g : V → ℂ) (hg : IntegrableOn g (basisDomain L b) volume) :
     (∫ x in coordinateBoxIco ι, g ((b.ofZLatticeBasis ℝ L).equivFun.symm x)) =
       (ZLattice.covolume L volume : ℂ)⁻¹ * ∫ v in basisDomain L b, g v := by
@@ -101,6 +100,8 @@ theorem integral_basis_coordinates_Ico
   change (∫ x in coordinateBoxIco ι, g (e.symm x)) = _
   rw [← h]
   rw [← mul_assoc, inv_mul_cancel₀ hc, one_mul]
+end
+
 
 private theorem coordinate_boxes_ae_eq (ι : Type*) [Fintype ι] :
     coordinateBoxIco ι =ᵐ[volume] coordinateBoxIoc ι := by
@@ -119,7 +120,7 @@ theorem integral_basis_coordinates_Ioc
     (∫ x in coordinateBoxIoc ι, g ((b.ofZLatticeBasis ℝ L).equivFun.symm x)) =
       (ZLattice.covolume L volume : ℂ)⁻¹ * ∫ v in basisDomain L b, g v := by
   rw [setIntegral_congr_set (coordinate_boxes_ae_eq ι).symm]
-  exact integral_basis_coordinates_Ico L b g hg
+  apply integral_basis_coordinates_Ico <;> assumption
 
 end DedekindZetaZeroFree.PoissonArch
 

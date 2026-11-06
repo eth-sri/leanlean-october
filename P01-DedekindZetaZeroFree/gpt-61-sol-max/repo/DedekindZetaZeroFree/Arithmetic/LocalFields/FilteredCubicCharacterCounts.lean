@@ -2,7 +2,10 @@ module
 
 public import Mathlib
 
+public import Mathlib
+
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 namespace CubicCharacters
@@ -11,14 +14,14 @@ abbrev Mu3 := rootsOfUnity 3 ℂ
 
 abbrev Character (U : Type*) [CommGroup U] [TopologicalSpace U] := U →ₜ* Mu3
 
-def cubes (U : Type*) [CommGroup U] : Subgroup U :=
+def cubes (U : Type*) [CommGroup U]  :=
   (powMonoidHom (α := U) 3).range
 
-noncomputable def levelIndex {U : Type*} [CommGroup U] (V : ℕ → Subgroup U) (j : ℕ) : ℕ :=
+noncomputable def levelIndex {U : Type*} [CommGroup U] (V : ℕ → Subgroup U) (j : ℕ)  :=
   (cubes U ⊔ V j).index
 
 noncomputable def conductor {U : Type*} [CommGroup U] [TopologicalSpace U]
-    (V : ℕ → Subgroup U) (χ : Character U) : ℕ :=
+    (V : ℕ → Subgroup U) (χ : Character U)  :=
   sInf {j | V j ≤ χ.toMonoidHom.ker}
 
 private lemma cube (z : Mu3) : z ^ 3 = 1 := by
@@ -33,7 +36,7 @@ private lemma homCard (Q : Type*) [CommGroup Q] [Finite Q]
         rw [mem_rootsOfUnity, ← map_pow, hp, map_one])
       left_inv := fun f => by ext q; rfl
       right_inv := fun f => by ext q; rfl }
-  letI : HasEnoughRootsOfUnity ℂ (Monoid.exponent Q) :=
+  letI  :=
     HasEnoughRootsOfUnity.of_dvd ℂ (Monoid.exponent_dvd_of_forall_pow_eq_one hp)
   exact (Nat.card_congr e).trans (CommGroup.card_monoidHom_of_hasEnoughRootsOfUnity Q ℂ)
 
@@ -43,8 +46,11 @@ lemma killsCube {U : Type*} [CommGroup U] (χ : U →* Mu3) :
   change χ (y ^ 3) = 1
   rw [map_pow, cube]
 
-noncomputable def levelEquiv {U : Type*} [CommGroup U] [TopologicalSpace U]
-    [IsTopologicalGroup U] (V : Subgroup U) (hopen : IsOpen (V : Set U)) :
+section
+variable {U : Type*} [CommGroup U] [TopologicalSpace U]
+    [IsTopologicalGroup U] (V : Subgroup U) (hopen : IsOpen (V : Set U))
+include U V hopen
+noncomputable def levelEquiv   :
     {χ : Character U // V ≤ χ.toMonoidHom.ker} ≃ ((U ⧸ (cubes U ⊔ V)) →* Mu3) := by
   let H := cubes U ⊔ V
   letI : DiscreteTopology (U ⧸ H) := QuotientGroup.discreteTopology
@@ -64,8 +70,7 @@ noncomputable def levelEquiv {U : Type*} [CommGroup U] [TopologicalSpace U]
         obtain ⟨x, rfl⟩ := QuotientGroup.mk'_surjective H q
         rfl }
 
-private lemma levelCount {U : Type*} [CommGroup U] [TopologicalSpace U]
-    [IsTopologicalGroup U] (V : Subgroup U) (hopen : IsOpen (V : Set U))
+private lemma levelCount  
     [hfin : (cubes U ⊔ V).FiniteIndex] :
     Finite {χ : Character U // V ≤ χ.toMonoidHom.ker} ∧
     Nat.card {χ : Character U // V ≤ χ.toMonoidHom.ker} = (cubes U ⊔ V).index := by
@@ -79,6 +84,8 @@ private lemma levelCount {U : Type*} [CommGroup U] [TopologicalSpace U]
     (fun f : (U ⧸ H) →* Mu3 => (f : (U ⧸ H) → Mu3)) DFunLike.coe_injective
   exact ⟨Finite.of_equiv _ (levelEquiv V hopen).symm,
     (Nat.card_congr (levelEquiv V hopen)).trans (homCard (U ⧸ H) hp)⟩
+end
+
 
 end CubicCharacters
 
@@ -133,7 +140,7 @@ theorem kp_filtered_cubic_character_count
     let f : {χ : Character U // conductor V χ ≤ N} →
         {χ : Character U // conductor V χ ≤ k} :=
       fun χ => ⟨χ.val, le_trans χ.property (le_max_left _ _)⟩
-    have hf : Function.Bijective f :=
+    have hf  :=
       (Nat.bijective_iff_injective_and_card f).mpr
         ⟨fun a b h => Subtype.ext (congrArg
             (fun c : {χ : Character U // conductor V χ ≤ k} => c.val) h),
@@ -142,7 +149,7 @@ theorem kp_filtered_cubic_character_count
     have he : ψ.val = χ := congrArg Subtype.val hψ
     simpa [he] using ψ.property
   letI := (hcount N).1
-  letI : Finite (Character U) := Finite.of_injective
+  letI  := Finite.of_injective
     (fun χ : Character U => (⟨χ, hbound χ⟩ : {χ : Character U // conductor V χ ≤ N}))
     (fun a b h => congrArg Subtype.val h)
   have hdiff : ∀ j, 1 ≤ j → Nat.card {χ : Character U // conductor V χ = j} =

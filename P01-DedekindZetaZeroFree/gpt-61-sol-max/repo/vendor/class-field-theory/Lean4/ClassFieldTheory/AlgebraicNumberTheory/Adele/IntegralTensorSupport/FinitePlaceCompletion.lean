@@ -36,11 +36,14 @@ variable
     [Field L] [NumberField L] [Algebra K L]
     [FiniteDimensional K L]
 
+section
+variable (w : HeightOneSpectrum (𝓞 K))
+include w
 /-- The canonical dense map from the absolute-value model at a finite
 place to mathlib's adic-completion model, universe-polymorphic in the
 number field. -/
 noncomputable def relativeFinitePlaceCompletionBaseMap
-    (w : HeightOneSpectrum (𝓞 K)) :
+      :
     WithAbs (NumberField.HeightOneSpectrum.adicAbv K w) →+*
       w.adicCompletion K :=
   (FinitePlace.embedding w).comp
@@ -51,7 +54,7 @@ noncomputable def relativeFinitePlaceCompletionBaseMap
 
 @[simp]
 theorem relativeFinitePlaceCompletionBaseMap_apply
-    (w : HeightOneSpectrum (𝓞 K))
+     
     (x : WithAbs
       (NumberField.HeightOneSpectrum.adicAbv K w)) :
     relativeFinitePlaceCompletionBaseMap w x =
@@ -62,7 +65,7 @@ theorem relativeFinitePlaceCompletionBaseMap_apply
 
 /-- The canonical finite-place map preserves norms. -/
 theorem relativeFinitePlaceCompletionBaseMap_norm
-    (w : HeightOneSpectrum (𝓞 K))
+     
     (x : WithAbs
       (NumberField.HeightOneSpectrum.adicAbv K w)) :
     ‖relativeFinitePlaceCompletionBaseMap w x‖ = ‖x‖ := by
@@ -72,14 +75,14 @@ theorem relativeFinitePlaceCompletionBaseMap_norm
 
 /-- The canonical finite-place map is an isometry. -/
 theorem relativeFinitePlaceCompletionBaseMap_isometry
-    (w : HeightOneSpectrum (𝓞 K)) :
+      :
     Isometry (relativeFinitePlaceCompletionBaseMap w) :=
   AddMonoidHomClass.isometry_of_norm _
     (relativeFinitePlaceCompletionBaseMap_norm w)
 
 /-- Extension of the preceding dense map to the completion. -/
 noncomputable def relativeFinitePlaceCompletionRingHom
-    (w : HeightOneSpectrum (𝓞 K)) :
+      :
     (NumberField.HeightOneSpectrum.adicAbv K w).Completion →+*
       w.adicCompletion K :=
   UniformSpace.Completion.extensionHom
@@ -90,7 +93,7 @@ noncomputable def relativeFinitePlaceCompletionRingHom
 
 @[simp]
 theorem relativeFinitePlaceCompletionRingHom_coe
-    (w : HeightOneSpectrum (𝓞 K))
+     
     (x : WithAbs
       (NumberField.HeightOneSpectrum.adicAbv K w)) :
     relativeFinitePlaceCompletionRingHom w
@@ -103,13 +106,13 @@ theorem relativeFinitePlaceCompletionRingHom_coe
 
 /-- The canonical finite-place ring homomorphism is an isometry. -/
 theorem relativeFinitePlaceCompletionRingHom_isometry
-    (w : HeightOneSpectrum (𝓞 K)) :
+      :
     Isometry (relativeFinitePlaceCompletionRingHom w) :=
   (relativeFinitePlaceCompletionBaseMap_isometry w).completion_extension
 
 /-- The canonical finite-place ring homomorphism is surjective. -/
 theorem relativeFinitePlaceCompletionRingHom_surjective
-    (w : HeightOneSpectrum (𝓞 K)) :
+      :
     Function.Surjective
       (relativeFinitePlaceCompletionRingHom w) := by
   let f := relativeFinitePlaceCompletionRingHom w
@@ -142,7 +145,7 @@ theorem relativeFinitePlaceCompletionRingHom_surjective
 
 /-- Canonical ring equivalence between the two models of `K_w`. -/
 noncomputable def relativeFinitePlaceCompletionRingEquiv
-    (w : HeightOneSpectrum (𝓞 K)) :
+      :
     (NumberField.HeightOneSpectrum.adicAbv K w).Completion ≃+*
       w.adicCompletion K :=
   RingEquiv.ofBijective
@@ -152,7 +155,7 @@ noncomputable def relativeFinitePlaceCompletionRingEquiv
 
 /-- The same comparison as a `K`-algebra equivalence. -/
 noncomputable def relativeFinitePlaceCompletionAlgEquiv
-    (w : HeightOneSpectrum (𝓞 K)) :
+      :
     (NumberField.HeightOneSpectrum.adicAbv K w).Completion ≃ₐ[K]
       w.adicCompletion K where
   __ := relativeFinitePlaceCompletionRingEquiv w
@@ -171,7 +174,7 @@ noncomputable def relativeFinitePlaceCompletionAlgEquiv
 /-- Base change in the first tensor factor, now without a universe
 restriction. -/
 noncomputable def relativeFinitePlaceLocalTensorAlgEquiv
-    (w : HeightOneSpectrum (𝓞 K)) :
+      :
     (NumberField.HeightOneSpectrum.adicAbv K w).Completion ⊗[K] L
         ≃ₐ[K]
       w.adicCompletion K ⊗[K] L :=
@@ -182,7 +185,7 @@ noncomputable def relativeFinitePlaceLocalTensorAlgEquiv
 /-- Membership in the concrete finite-place valuation ring implies the
 usual norm bound. -/
 theorem norm_le_one_of_mem_adicCompletionIntegers
-    (w : HeightOneSpectrum (𝓞 K))
+     
     {x : w.adicCompletion K}
     (hx : x ∈ w.adicCompletionIntegers K) :
     ‖x‖ ≤ 1 := by
@@ -194,7 +197,7 @@ theorem norm_le_one_of_mem_adicCompletionIntegers
 /-- The concrete adic completion integers are exactly the elements of
 norm at most one. -/
 theorem mem_adicCompletionIntegers_of_norm_le_one
-    (w : HeightOneSpectrum (𝓞 K))
+     
     {x : w.adicCompletion K}
     (hx : ‖x‖ ≤ 1) :
     x ∈ w.adicCompletionIntegers K := by
@@ -206,7 +209,7 @@ theorem mem_adicCompletionIntegers_of_norm_le_one
 /-- The inverse of the universe-polymorphic completion comparison is
 also an isometry. -/
 theorem relativeFinitePlaceCompletionAlgEquiv_symm_norm
-    (w : HeightOneSpectrum (𝓞 K))
+     
     (x : w.adicCompletion K) :
     ‖(relativeFinitePlaceCompletionAlgEquiv w).symm x‖ =
       ‖x‖ := by
@@ -224,6 +227,8 @@ theorem relativeFinitePlaceCompletionAlgEquiv_symm_norm
       (relativeFinitePlaceCompletionAlgEquiv w).apply_symm_apply x
   rw [hy] at h
   exact h.symm
+end
+
 
 /-- Cramer's rule over an integrally closed base: coordinates are
 integral once the trace matrix, the trace vector, and the inverse

@@ -90,20 +90,20 @@ theorem
       F hπ n a k hkn,
     standardLubinTateUnitParameterToGal_mem_galoisParameterSubgroup_iff]
 
-/-- The lower ramification group at `q ^ k - 1` has order
-`q ^ (n + 1 - k)`. -/
-theorem standardLubinTateRealLowerRamificationGroup_pow_sub_one_natCard
-    (F : LocalField.{u, v} K) {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n k : ℕ) (hk : 1 ≤ k) (hkn : k ≤ n + 1) :
-    Nat.card
-        (standardLubinTateRealLowerRamificationGroup hπ n
-          ((Nat.card F.residueField ^ k - 1 : ℕ) : ℝ)) =
-      Nat.card F.residueField ^ (n + 1 - k) := by
-  rw [
-    standardLubinTateRealLowerRamificationGroup_pow_sub_one_eq_galoisParameterSubgroup
-      F hπ n k hk hkn,
-    standardLubinTateGaloisParameterSubgroup_natCard F hπ n k hk hkn]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- On a full power interval, the primitive-point displacement threshold for
 a finite parameter is equivalent to membership in the `k`-th finite

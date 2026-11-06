@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.RepresentationTheory.RankOne.SU2.SymmetricPower
 public import DedekindZetaZeroFree.Geometry.Circle.ArcAndChord
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 The Tau Ceti contributors. All rights reserved.
@@ -32,7 +35,7 @@ variable (d : ℕ)
 theorem sub_inv_mul_character_symPower_torusHom (z : Circle) :
     ((z : ℂ) - (z : ℂ)⁻¹) * (symPower d).character (torusHom z)
       = (z : ℂ) ^ (d + 1) - ((z : ℂ)⁻¹) ^ (d + 1) := by
-  have hz : (z : ℂ) ≠ 0 := z.coe_ne_zero
+  have hz  := z.coe_ne_zero
   rw [character_symPower_torusHom_zpow, mul_sum]
   have key : ∀ i ∈ range (d + 1),
       ((z : ℂ) - (z : ℂ)⁻¹) * (z : ℂ) ^ (2 * (i : ℤ) - d)
@@ -51,7 +54,7 @@ theorem sub_inv_mul_character_symPower_torusHom (z : Circle) :
 
 theorem character_symPower_torusHom_of_sq_eq_one {z : Circle} (hz : (z : ℂ) ^ 2 = 1) :
     (symPower d).character (torusHom z) = ((d : ℂ) + 1) * (z : ℂ) ^ d := by
-  have hz0 : (z : ℂ) ≠ 0 := z.coe_ne_zero
+  have hz0  := z.coe_ne_zero
   have hpow : ((z : ℂ) ^ d) * ((z : ℂ) ^ d) = 1 := by
     rw [← pow_add, ← two_mul, pow_mul, hz, one_pow]
   rw [character_symPower_torusHom_zpow]
@@ -83,7 +86,7 @@ theorem sin_mul_character_symPower_torusExp (θ : ℝ) :
   have hI : (2 : ℂ) * Complex.I ≠ 0 := by
     simp [Complex.I_ne_zero]
   refine mul_left_cancel₀ hI ?_
-  have hz : ((Circle.exp θ : Circle) : ℂ) = Complex.exp ((θ : ℂ) * Complex.I) :=
+  have hz  :=
     Circle.coe_exp θ
   have hden : ((Circle.exp θ : Circle) : ℂ) - ((Circle.exp θ : Circle) : ℂ)⁻¹
       = 2 * Complex.I * (Real.sin θ : ℂ) := by

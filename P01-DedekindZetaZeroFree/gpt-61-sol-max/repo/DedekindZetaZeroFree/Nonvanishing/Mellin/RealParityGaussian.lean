@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Schwartz.ArchimedeanGaussianMellin
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -43,8 +46,11 @@ private theorem parity_odd_cpow (a : ℝ) (ha : a ≠ 0) (s : ℂ) :
     Complex.cpow_sub _ _ habs, Complex.cpow_one, hsign]
   field_simp
 
+section
+variable (s : ℂ) (hs : 0 < s.re) (a : ℝ) (ha : a ≠ 0) (e : Bool)
+include s hs a ha e
 theorem real_parityGaussian_integrableOn
-    (s : ℂ) (hs : 0 < s.re) (a : ℝ) (ha : a ≠ 0) (e : Bool) :
+      :
     IntegrableOn (fun q : ℝ =>
       (if e then ((q * a : ℝ) : ℂ) else 1) * (q : ℂ) ^ (s - 1) *
         Complex.exp (-((Real.pi * a ^ 2 * q ^ 2 : ℝ) : ℂ)))
@@ -53,7 +59,7 @@ theorem real_parityGaussian_integrableOn
   | false =>
     simpa using integrableOn_gaussian_real_place_mellin s (a ^ 2) hs (sq_pos_of_ne_zero ha)
   | true =>
-    have hs' : 0 < (s + 1).re := by simpa using (by linarith : 0 < s.re + 1)
+    have hs' : 0 < (s + 1).re := (by linarith : 0 < s.re + 1)
     have h := (integrableOn_gaussian_real_place_mellin (s + 1) (a ^ 2)
       hs' (sq_pos_of_ne_zero ha)).const_mul (a : ℂ)
     apply IntegrableOn.congr_fun h _ measurableSet_Ioi
@@ -64,7 +70,7 @@ theorem real_parityGaussian_integrableOn
     ring
 
 theorem real_parityGaussian_mellin
-    (s : ℂ) (hs : 0 < s.re) (a : ℝ) (ha : a ≠ 0) (e : Bool) :
+      :
     let η : ℂ := if e then 1 else 0
     let χ : ℂ := if e then (Real.sign a : ℂ) else 1
     (∫ q : ℝ in Set.Ioi 0,
@@ -78,7 +84,7 @@ theorem real_parityGaussian_mellin
     ring
   | true =>
     simp only [Bool.true_eq, ↓reduceIte]
-    have hs' : 0 < (s + 1).re := by simpa using (by linarith : 0 < s.re + 1)
+    have hs' : 0 < (s + 1).re := (by linarith : 0 < s.re + 1)
     have hk : (∫ q : ℝ in Set.Ioi 0,
         ((q * a : ℝ) : ℂ) * (q : ℂ) ^ (s - 1) *
           Complex.exp (-((Real.pi * a ^ 2 * q ^ 2 : ℝ) : ℂ))) =
@@ -96,6 +102,8 @@ theorem real_parityGaussian_mellin
       _ = (2 : ℂ)⁻¹ * Complex.Gammaℝ (s + 1) *
           ((a : ℂ) * ((a ^ 2 : ℝ) : ℂ) ^ (-(s + 1) / 2)) := by ring
       _ = _ := by rw [parity_odd_cpow a ha s]; ring
+end
+
 
 end DedekindZetaZeroFree.AbelianQuotient
 

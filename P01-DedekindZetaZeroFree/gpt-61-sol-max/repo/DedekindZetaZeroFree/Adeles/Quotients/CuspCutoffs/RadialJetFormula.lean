@@ -22,7 +22,7 @@ namespace DedekindZetaZeroFree.KPMsGreenFlux.ActualSharpStokes.GradientCollar
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
 variable {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
 variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+
 
  theorem balancedArch_basepoint
     (p : KPCuspCharts.Cross F) (k : K F) (r : ℝ) : KPMsFixedHaarDisintegration.archBasepoint F

@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 namespace LogAbsorption
@@ -13,12 +16,10 @@ lemma one_add_log_le_mul_rpow {δ : ℝ} (hδ : 0 < δ) :
     ∃ C : ℝ, 0 < C ∧ ∀ x : ℝ, 1 ≤ x → 1 + Real.log x ≤ C * x ^ δ := by
   refine ⟨1 + 1 / δ, by positivity, fun x hx => ?_⟩
   have hx0 : 0 < x := lt_of_lt_of_le one_pos hx
-  have h1 : Real.log x ≤ x ^ δ / δ := Real.log_le_rpow_div hx0.le hδ
-  have h2 : (1 : ℝ) ≤ x ^ δ := Real.one_le_rpow hx hδ.le
+  have h1  := Real.log_le_rpow_div hx0.le hδ
+  have h2  := Real.one_le_rpow hx hδ.le
   have h3 : 1 + x ^ δ / δ ≤ (1 + 1 / δ) * x ^ δ := by
-    have : (1 + 1 / δ) * x ^ δ = x ^ δ + x ^ δ / δ := by ring
-    rw [this]
-    linarith
+    grind
   linarith
 
 lemma one_add_log_two_mul_le {δ : ℝ} (hδ : 0 < δ) :
@@ -35,11 +36,14 @@ lemma one_add_log_two_mul_le {δ : ℝ} (hδ : 0 < δ) :
     calc 1 + Real.log (2 * N) ≤ C * (2 ^ δ * N ^ δ) := h1
       _ = C * (2 : ℝ) ^ δ * N ^ δ := by ring
 
-lemma one_add_log_succ_le_poly (d : ℕ) (A : ℝ) (hA : 0 ≤ A) {δ : ℝ} (hδ : 0 < δ) :
+section
+variable (d : ℕ) (A : ℝ) (hA : 0 ≤ A)
+include d A hA
+lemma one_add_log_succ_le_poly   {δ : ℝ} (hδ : 0 < δ) :
     ∃ C : ℝ, 0 < C ∧ ∀ (m : ℕ) (N : ℝ), 2 ≤ N → (m : ℝ) ≤ A * N ^ d →
       1 + Real.log ((m : ℝ) + 1) ≤ C * N ^ δ := by
   obtain ⟨C₁, hC₁pos, hC₁⟩ := one_add_log_le_mul_rpow hδ
-  let B : ℝ := 2 * (A + 1)
+  let B  := 2 * (A + 1)
   have hB1 : (1 : ℝ) ≤ B := by dsimp [B]; linarith
   have hBpos : 0 < B := lt_of_lt_of_le one_pos hB1
   refine ⟨C₁ * B ^ δ / (2 : ℝ) ^ δ + (d : ℝ) / δ, ?_, ?_⟩
@@ -54,20 +58,14 @@ lemma one_add_log_succ_le_poly (d : ℕ) (A : ℝ) (hA : 0 ≤ A) {δ : ℝ} (h�
     have hNpos : 0 < N := by linarith
     have hNd : (1 : ℝ) ≤ N ^ d := one_le_pow₀ hN1
     have hm1 : (m : ℝ) + 1 ≤ B * N ^ d := by
-      have h1 : (m : ℝ) + 1 ≤ A * N ^ d + 1 := by linarith
-      have h2 : A * N ^ d + 1 ≤ A * N ^ d + N ^ d := by linarith
-      have h3 : A * N ^ d + N ^ d = (A + 1) * N ^ d := by ring
-      have hAB : A + 1 ≤ B := by dsimp [B]; linarith
-      have h4 : (A + 1) * N ^ d ≤ B * N ^ d :=
-        mul_le_mul_of_nonneg_right hAB (by positivity)
       linarith
     have hmpos : 0 < (m : ℝ) + 1 := by positivity
-    have hlog : Real.log ((m : ℝ) + 1) ≤ Real.log (B * N ^ d) :=
+    have hlog  :=
       Real.log_le_log hmpos hm1
     have hsplit : Real.log (B * N ^ d) = Real.log B + (d : ℝ) * Real.log N := by
-      rw [Real.log_mul (ne_of_gt hBpos) (by positivity : (N : ℝ) ^ d ≠ 0), Real.log_pow]
-    have hlogN : Real.log N ≤ N ^ δ / δ := Real.log_le_rpow_div hNpos.le hδ
-    have hBbound : 1 + Real.log B ≤ C₁ * B ^ δ := hC₁ B hB1
+      rw [Real.log_mul (ne_of_gt hBpos) (by positivity : N ^ d ≠ 0), Real.log_pow]
+    have hlogN  := Real.log_le_rpow_div hNpos.le hδ
+    have hBbound  := hC₁ B hB1
     have hmain : 1 + Real.log ((m : ℝ) + 1) ≤ C₁ * B ^ δ + (d : ℝ) / δ * N ^ δ := by
       rw [hsplit] at hlog
       have hdl : (d : ℝ) * Real.log N ≤ (d : ℝ) * (N ^ δ / δ) :=
@@ -75,7 +73,7 @@ lemma one_add_log_succ_le_poly (d : ℕ) (A : ℝ) (hA : 0 ≤ A) {δ : ℝ} (h�
       have hdδ : (d : ℝ) * (N ^ δ / δ) = (d : ℝ) / δ * N ^ δ := by ring
       linarith [hlog, hBbound, hdl, hdδ.le, hdδ.ge]
     have h2δ : 0 < (2 : ℝ) ^ δ := Real.rpow_pos_of_pos (by norm_num) δ
-    have hNδ : (2 : ℝ) ^ δ ≤ N ^ δ := Real.rpow_le_rpow (by norm_num) hN hδ.le
+    have hNδ  := Real.rpow_le_rpow (by norm_num) hN hδ.le
     have hK : C₁ * B ^ δ ≤ (C₁ * B ^ δ / (2 : ℝ) ^ δ) * N ^ δ := by
       have hge : (1 : ℝ) ≤ N ^ δ / 2 ^ δ := by
         rw [← div_self (ne_of_gt h2δ)]
@@ -88,7 +86,7 @@ lemma one_add_log_succ_le_poly (d : ℕ) (A : ℝ) (hA : 0 ≤ A) {δ : ℝ} (h�
       _ ≤ (C₁ * B ^ δ / (2 : ℝ) ^ δ) * N ^ δ + (d : ℝ) / δ * N ^ δ := by linarith
       _ = (C₁ * B ^ δ / (2 : ℝ) ^ δ + (d : ℝ) / δ) * N ^ δ := by ring
 
-theorem log_absorption_polynomial_sq (d : ℕ) (A : ℝ) (hA : 0 ≤ A) {ε : ℝ} (hε : 0 < ε) :
+theorem log_absorption_polynomial_sq   {ε : ℝ} (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ (m : ℕ) (N U : ℝ), 2 ≤ N → 2 ≤ U →
       (m : ℝ) ≤ A * N ^ d →
       (1 + Real.log ((m : ℝ) + 1)) ^ 2 * (1 + Real.log (2 * N)) ^ 2 * (N * U) ^ (ε / 2)
@@ -102,8 +100,8 @@ theorem log_absorption_polynomial_sq (d : ℕ) (A : ℝ) (hA : 0 ≤ A) {ε : �
   have hNpos : 0 < N := by linarith
   have hNU1 : (1 : ℝ) ≤ N * U := by nlinarith
   have hNUpos : 0 < N * U := by nlinarith
-  have ha : 1 + Real.log ((m : ℝ) + 1) ≤ C₁ * N ^ (ε / 16) := hC₁ m N hN hm
-  have hb : 1 + Real.log (2 * N) ≤ C₂ * N ^ (ε / 16) := hC₂ N hN1
+  have ha  := hC₁ m N hN hm
+  have hb  := hC₂ N hN1
   have ha0 : 0 ≤ 1 + Real.log ((m : ℝ) + 1) := by
     have hle : (1 : ℝ) ≤ (m : ℝ) + 1 := by
       have : (0 : ℝ) ≤ (m : ℝ) := Nat.cast_nonneg m
@@ -147,7 +145,7 @@ theorem log_absorption_polynomial_sq (d : ℕ) (A : ℝ) (hA : 0 ≤ A) {ε : �
       (Real.rpow_le_rpow_of_exponent_le hNU1 (by linarith)) (by positivity)
   linarith [hstep, hcomb.le, hcomb.ge, hfin]
 
-theorem log_absorption_polynomial (d : ℕ) (A : ℝ) (hA : 0 ≤ A) {ε : ℝ} (hε : 0 < ε) :
+theorem log_absorption_polynomial   {ε : ℝ} (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ (m : ℕ) (N U : ℝ), 2 ≤ N → 2 ≤ U →
       (m : ℝ) ≤ A * N ^ d →
       (1 + Real.log ((m : ℝ) + 1)) ^ 2 * (1 + Real.log (2 * N) ^ 2) * (N * U) ^ (ε / 2)
@@ -163,15 +161,20 @@ theorem log_absorption_polynomial (d : ℕ) (A : ℝ) (hA : 0 ≤ A) {ε : ℝ} 
     mul_le_mul_of_nonneg_left hb (sq_nonneg _)
   have hstep2 := mul_le_mul_of_nonneg_right hstep (Real.rpow_nonneg hNUpos.le (ε / 2))
   linarith [hstep2, h m N U hN hU hm]
+end
 
-theorem log_absorption_linear (D : ℝ) (hD : 0 ≤ D) {ε : ℝ} (hε : 0 < ε) :
+
+section
+variable (D : ℝ) (hD : 0 ≤ D) {ε : ℝ} (hε : 0 < ε)
+include D hD ε hε
+theorem log_absorption_linear   :
     ∃ C : ℝ, 0 < C ∧ ∀ (m : ℕ) (N U : ℝ), 2 ≤ N → 2 ≤ U → (m : ℝ) ≤ D * N →
       (1 + Real.log ((m : ℝ) + 1)) ^ 2 * (1 + Real.log (2 * N) ^ 2) * (N * U) ^ (ε / 2)
         ≤ C * (N * U) ^ ε := by
   obtain ⟨C, hC, h⟩ := log_absorption_polynomial 1 D hD hε
   exact ⟨C, hC, fun m N U hN hU hm => h m N U hN hU (by simpa using hm)⟩
 
-theorem log_absorption_linear_two (D : ℝ) (hD : 0 ≤ D) {ε : ℝ} (hε : 0 < ε) :
+theorem log_absorption_linear_two   :
     ∃ C : ℝ, 0 < C ∧ ∀ (m : ℕ) (N U : ℝ), 2 ≤ N → 2 ≤ U → (m : ℝ) ≤ D * N →
       (1 + Real.log ((m : ℝ) + 1)) ^ 2 * (1 + Real.log (2 * N) ^ 2) * (2 * N * U) ^ (ε / 2)
         ≤ C * (N * U) ^ ε := by
@@ -191,6 +194,8 @@ theorem log_absorption_linear_two (D : ℝ) (hD : 0 ≤ D) {ε : ℝ} (hε : 0 <
       _ ≤ (2 : ℝ) ^ (ε / 2) * (C * (N * U) ^ ε) :=
           mul_le_mul_of_nonneg_left (h m N U hN hU hm) h2.le
       _ = ((2 : ℝ) ^ (ε / 2) * C) * (N * U) ^ ε := by ring
+end
+
 
 end LogAbsorption
 end DedekindZetaZeroFree

@@ -14,11 +14,11 @@ namespace DedekindZetaZeroFree
 
 variable (F : Type) [Field F] [NumberField F]
 
-local instance invCompletionMeasurable (v : HeightOneSpectrum (𝓞 F)) :
-    MeasurableSpace (v.adicCompletion F) := borel _
 
-local instance invCompletionBorel (v : HeightOneSpectrum (𝓞 F)) :
-    BorelSpace (v.adicCompletion F) := ⟨rfl⟩
+
+
+
+
 
  def dualDepth (v : HeightOneSpectrum (𝓞 F)) (n : ℤ) : ℤ :=
   -n - (localDifferentExponent F v : ℤ)

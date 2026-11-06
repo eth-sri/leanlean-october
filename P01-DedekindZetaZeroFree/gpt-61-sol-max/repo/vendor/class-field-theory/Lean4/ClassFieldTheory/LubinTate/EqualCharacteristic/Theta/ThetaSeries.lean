@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import Mathlib.SetTheory.Cardinal.Finite
 public import ClassFieldTheory.LubinTate.EqualCharacteristic.Theta.ThetaCoefficients
 public import Mathlib.RingTheory.PowerSeries.Expand
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -47,30 +50,29 @@ variable (k : Type u) [Field k] [Finite k]
 
 /-- The predicate saying that a degree is one of the additive exponents
 `q^j`, where `q = #k`. -/
-def IsEqualCharacteristicAdditiveExponent (n : ℕ) : Prop :=
+def IsEqualCharacteristicAdditiveExponent (n : ℕ)  :=
   ∃ j : ℕ, Nat.card k ^ j = n
 
 /-- The unique index of an additive exponent.  It is only used under a proof
 that the degree really has the required form. -/
 noncomputable def equalCharacteristicAdditiveExponentIndex
-    (n : ℕ) (hn : IsEqualCharacteristicAdditiveExponent k n) : ℕ :=
+    (n : ℕ) (hn : IsEqualCharacteristicAdditiveExponent k n)  :=
   Nat.find hn
 
 omit [Field k] [Finite k] in
 /-- The chosen additive exponent index realizes `n` as a power of `q`. -/
-theorem equalCharacteristicAdditiveExponentIndex_spec
-    (n : ℕ) (hn : IsEqualCharacteristicAdditiveExponent k n) :
-    Nat.card k ^ equalCharacteristicAdditiveExponentIndex k n hn = n :=
+def equalCharacteristicAdditiveExponentIndex_spec
+    (n : ℕ) (hn : IsEqualCharacteristicAdditiveExponent k n)  :=
   Nat.find_spec hn
 
-omit [Field k] [Finite k] in
-/-- The selected additive-exponent index is no larger than any index
-realizing the same exponent. -/
-theorem equalCharacteristicAdditiveExponentIndex_min
-    (n : ℕ) (hn : IsEqualCharacteristicAdditiveExponent k n)
-    (j : ℕ) (hj : Nat.card k ^ j = n) :
-    equalCharacteristicAdditiveExponentIndex k n hn ≤ j :=
-  Nat.find_min' hn hj
+
+
+
+
+
+
+
+
 
 /-- The selected additive-exponent index equals every index representing
 the same power.  In particular it is independent of the existence proof
@@ -84,14 +86,12 @@ theorem equalCharacteristicAdditiveExponentIndex_eq_of_pow_eq
   exact (equalCharacteristicAdditiveExponentIndex_spec k n hn).trans hj.symm
 
 /-- The chosen index of `q ^ j` is `j`. -/
-theorem equalCharacteristicAdditiveExponentIndex_pow (j : ℕ) :
-    equalCharacteristicAdditiveExponentIndex k (Nat.card k ^ j) ⟨j, rfl⟩ = j := by
-  exact equalCharacteristicAdditiveExponentIndex_eq_of_pow_eq
+def equalCharacteristicAdditiveExponentIndex_pow (j : ℕ)  := equalCharacteristicAdditiveExponentIndex_eq_of_pow_eq
     k (Nat.card k ^ j) ⟨j, rfl⟩ j rfl
 
 /-- Powers of the cardinality of a nontrivial finite field have unique
 exponents. -/
-theorem natCard_pow_injective : Function.Injective (Nat.card k ^ ·) :=
+def natCard_pow_injective  :=
   Nat.pow_right_injective (Finite.one_lt_card : 2 ≤ Nat.card k)
 
 /-- A power of the nontrivial finite-field cardinality is one only at exponent zero. -/
@@ -104,7 +104,7 @@ variable {R : Type v} [CommRing R]
 /-- The `q`-additive sparse power series attached to a coefficient sequence
 `b`: its coefficient at `q^j` is `b_j`, and every other coefficient is zero.
 -/
-noncomputable def equalCharacteristicQAdditiveSeries (b : ℕ → R) : R⟦X⟧ :=
+noncomputable def equalCharacteristicQAdditiveSeries (b : ℕ → R)  :=
   PowerSeries.mk fun n ↦
     if hn : IsEqualCharacteristicAdditiveExponent k n then
       b (equalCharacteristicAdditiveExponentIndex k n hn)
@@ -155,8 +155,7 @@ theorem equalCharacteristicQAdditiveSeries_constantCoeff
 @[simp]
 theorem equalCharacteristicQAdditiveSeries_coeff_one
     (b : ℕ → R) :
-    PowerSeries.coeff 1 (equalCharacteristicQAdditiveSeries k b) = b 0 := by
-  simpa using equalCharacteristicQAdditiveSeries_coeff_pow k b 0
+    PowerSeries.coeff 1 (equalCharacteristicQAdditiveSeries k b) = b 0 := equalCharacteristicQAdditiveSeries_coeff_pow k b 0
 
 variable {S : Type w} [CommRing S]
 
@@ -212,7 +211,7 @@ additive power series. -/
 theorem add_pow_natCard_pow (a b : A) (j : ℕ) :
     (a + b) ^ (Nat.card k ^ j) =
       a ^ (Nat.card k ^ j) + b ^ (Nat.card k ^ j) := by
-  let : Fintype k := Fintype.ofFinite k
+  let  := Fintype.ofFinite k
   induction j with
   | zero => simp
   | succ j ih =>
@@ -222,54 +221,52 @@ theorem add_pow_natCard_pow (a b : A) (j : ℕ) :
         map_add (FiniteField.frobeniusAlgHom k A)
           (a ^ Nat.card k ^ j) (b ^ Nat.card k ^ j)
 
+section
+variable {B : Type w} [CommRing B]
+include B
 /-- The `q`-power Frobenius on an algebra over the finite field `k`.  Unlike
 the completed-unramified Frobenius used above, this raises the whole algebra
 element to its `q`-th power. -/
 noncomputable def equalCharacteristicCardFrobenius
-    {B : Type w} [CommRing B] [Algebra k B] : B →+* B := by
-  letI : Fintype k := Fintype.ofFinite k
+      [Algebra k B] : B →+* B := by
+  letI  := Fintype.ofFinite k
   exact (FiniteField.frobeniusAlgHom k B).toRingHom
 
 /-- Cardinal Frobenius raises an element to the finite-field cardinality. -/
 theorem equalCharacteristicCardFrobenius_apply
-    {B : Type w} [CommRing B] [Algebra k B] (x : B) :
+      [Algebra k B] (x : B) :
     equalCharacteristicCardFrobenius k x = x ^ Nat.card k := by
-  let : Fintype k := Fintype.ofFinite k
+  let  := Fintype.ofFinite k
   simp [equalCharacteristicCardFrobenius, Nat.card_eq_fintype_card]
 
 /-- Frobenius on a power-series algebra is coefficient Frobenius followed by
 the exponent expansion `Y ↦ Y^q`. -/
 theorem powerSeries_pow_natCard_eq_expand_map_cardFrobenius
-    {B : Type w} [CommRing B] [Nontrivial B] [Algebra k B]
+      [Nontrivial B] [Algebra k B]
     (f : B⟦X⟧) :
     f ^ Nat.card k =
       PowerSeries.expand (Nat.card k) Nat.card_pos.ne'
         (PowerSeries.map (equalCharacteristicCardFrobenius k) f) := by
-  let : Fintype k := Fintype.ofFinite k
+  let  := Fintype.ofFinite k
   obtain ⟨p, hpchar, n, hp, hcard⟩ := FiniteField.card' k
-  let : CharP k p := hpchar
+  let  := hpchar
   let : ExpChar k p := ExpChar.prime hp
   let : ExpChar B p :=
     expChar_of_injective_algebraMap (algebraMap k B).injective p
   have hiter :
-      iterateFrobenius B p (n : ℕ) =
+      iterateFrobenius B p n =
         equalCharacteristicCardFrobenius k := by
     ext x
     rw [equalCharacteristicCardFrobenius_apply]
     rw [Nat.card_eq_fintype_card, hcard]
-    rw [show (iterateFrobenius B p (n : ℕ)) x = x ^ p ^ (n : ℕ) by
-      rw [congrFun (coe_iterateFrobenius B p (n : ℕ)) x]
-      rw [show (⇑(frobenius B p) : B → B) = fun y ↦ y ^ p by
-        funext y
-        exact frobenius_def p y]
-      exact congrFun (pow_iterate p (n : ℕ)) x]
+    rfl
   have hmain := MvPowerSeries.map_iterateFrobenius_expand
-    (R := B) p hp.ne_zero (f : MvPowerSeries Unit B) (n : ℕ)
+    (R := B) p hp.ne_zero f n
   rw [hiter] at hmain
   change
     PowerSeries.map (equalCharacteristicCardFrobenius k)
         (PowerSeries.expand (p ^ (n : ℕ))
-          (pow_ne_zero (n : ℕ) hp.ne_zero) f) =
+          (pow_ne_zero n hp.ne_zero) f) =
       f ^ p ^ (n : ℕ) at hmain
   have hcardNat : Nat.card k = p ^ (n : ℕ) := by
     simpa only [Nat.card_eq_fintype_card] using hcard
@@ -279,8 +276,9 @@ theorem powerSeries_pow_natCard_eq_expand_map_cardFrobenius
         f ^ Nat.card k := by
     simpa only [hcardNat] using hmain
   rw [← hmain']
-  exact PowerSeries.map_expand (Nat.card k) Nat.card_pos.ne'
-    (equalCharacteristicCardFrobenius k) f
+  apply PowerSeries.map_expand
+end
+
 
 end FrobeniusPowers
 
@@ -307,7 +305,7 @@ theorem equalCharacteristicQAdditiveSeries_expand
           equalCharacteristicQAdditiveSeries_coeff_one]
         have hnot : ¬ Nat.card k ∣ 1 := by
           intro h
-          have hq : Nat.card k = 1 := Nat.eq_one_of_dvd_one h
+          have hq  := Nat.eq_one_of_dvd_one h
           exact (Finite.one_lt_card : 1 < Nat.card k).ne hq.symm
         simp [hnot, equalCharacteristicQAdditiveShift]
     | succ j =>
@@ -358,80 +356,82 @@ theorem equalCharacteristicQAdditiveSeries_pow_card
     equalCharacteristicQAdditiveSeries_expand]
   congr 2
   funext j
-  exact equalCharacteristicCardFrobenius_apply k (b j)
+  apply equalCharacteristicCardFrobenius_apply
 
 variable {k}
 
-/-- The actual outer theta series from the completed theta-intertwining theorem. -/
-noncomputable def equalCharacteristicThetaSeries
-    (u : k⟦X⟧ˣ) : ((AlgebraicClosure k)⟦X⟧)⟦X⟧ :=
-  equalCharacteristicQAdditiveSeries k
-    (equalCharacteristicThetaCoefficient u)
 
-/-- The theta series coefficient at `q ^ j` is the `j`th theta coefficient. -/
-@[simp]
-theorem equalCharacteristicThetaSeries_coeff_pow
-    (u : k⟦X⟧ˣ) (j : ℕ) :
-    PowerSeries.coeff (Nat.card k ^ j)
-        (equalCharacteristicThetaSeries u) =
-      equalCharacteristicThetaCoefficient u j := by
-  exact equalCharacteristicQAdditiveSeries_coeff_pow k
-    (equalCharacteristicThetaCoefficient u) j
 
-/-- The equal-characteristic theta series has zero constant coefficient. -/
-@[simp]
-theorem equalCharacteristicThetaSeries_constantCoeff
-    (u : k⟦X⟧ˣ) :
-    PowerSeries.constantCoeff (equalCharacteristicThetaSeries u) = 0 := by
-  exact equalCharacteristicQAdditiveSeries_constantCoeff k _
 
-/-- The zero constant coefficient makes theta a valid formal substitution.
--/
-theorem equalCharacteristicThetaSeries_hasSubst
-    (u : k⟦X⟧ˣ) :
-    PowerSeries.HasSubst (equalCharacteristicThetaSeries u) :=
-  PowerSeries.HasSubst.of_constantCoeff_zero'
-    (equalCharacteristicThetaSeries_constantCoeff u)
 
-/-- Frobenius acts on the completed-unramified coefficients of theta. -/
-noncomputable def equalCharacteristicThetaSeriesFrobenius
-    (u : k⟦X⟧ˣ) : ((AlgebraicClosure k)⟦X⟧)⟦X⟧ :=
-  PowerSeries.map (equalCharacteristicPowerSeriesFrobenius k)
-    (equalCharacteristicThetaSeries u)
 
-/-- Coefficientwise Frobenius of theta is the `q`-additive series of Frobenius coefficients. -/
-theorem equalCharacteristicThetaSeriesFrobenius_eq_qAdditiveSeries
-    (u : k⟦X⟧ˣ) :
-    equalCharacteristicThetaSeriesFrobenius u =
-      equalCharacteristicQAdditiveSeries k
-        (fun j ↦ equalCharacteristicPowerSeriesFrobenius k
-          (equalCharacteristicThetaCoefficient u j)) := by
-  exact equalCharacteristicQAdditiveSeries_map k
-    (equalCharacteristicPowerSeriesFrobenius k)
-    (equalCharacteristicThetaCoefficient u)
 
-/-- The Frobenius theta coefficient at `q ^ j` is Frobenius of the `j`th coefficient. -/
-@[simp]
-theorem equalCharacteristicThetaSeriesFrobenius_coeff_pow
-    (u : k⟦X⟧ˣ) (j : ℕ) :
-    PowerSeries.coeff (Nat.card k ^ j)
-        (equalCharacteristicThetaSeriesFrobenius u) =
-      equalCharacteristicPowerSeriesFrobenius k
-        (equalCharacteristicThetaCoefficient u j) := by
-  rw [equalCharacteristicThetaSeriesFrobenius_eq_qAdditiveSeries,
-    equalCharacteristicQAdditiveSeries_coeff_pow]
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+section
+variable (pi : (AlgebraicClosure k)⟦X⟧)
+include pi
 /-- The additive Lubin--Tate series `Y^q + pi Y`, now with coefficients in
 the completed maximal-unramified integer ring. -/
 noncomputable def equalCharacteristicCompletedLubinTateSeries
-    (pi : (AlgebraicClosure k)⟦X⟧) :
-    ((AlgebraicClosure k)⟦X⟧)⟦X⟧ :=
+       :=
   PowerSeries.X ^ Nat.card k + PowerSeries.C pi * PowerSeries.X
 
 /-- The completed Lubin–Tate series has zero constant coefficient. -/
 @[simp]
 theorem equalCharacteristicCompletedLubinTateSeries_constantCoeff
-    (pi : (AlgebraicClosure k)⟦X⟧) :
+      :
     PowerSeries.constantCoeff
         (equalCharacteristicCompletedLubinTateSeries (k := k) pi) = 0 := by
   have hq : Nat.card k ≠ 0 := Nat.card_pos.ne'
@@ -439,17 +439,15 @@ theorem equalCharacteristicCompletedLubinTateSeries_constantCoeff
 
 /-- A Lubin--Tate series has zero constant coefficient and can therefore be
 substituted into theta. -/
-theorem equalCharacteristicCompletedLubinTateSeries_hasSubst
-    (pi : (AlgebraicClosure k)⟦X⟧) :
-    PowerSeries.HasSubst
-      (equalCharacteristicCompletedLubinTateSeries (k := k) pi) :=
+def equalCharacteristicCompletedLubinTateSeries_hasSubst
+       :=
   PowerSeries.HasSubst.of_constantCoeff_zero'
     (equalCharacteristicCompletedLubinTateSeries_constantCoeff pi)
 
 /-- A `q^j`-th power of `Y^q + pi Y` has exactly the two expected additive
 monomials. -/
 theorem equalCharacteristicCompletedLubinTateSeries_pow_card_pow
-    (pi : (AlgebraicClosure k)⟦X⟧) (j : ℕ) :
+      (j : ℕ) :
     equalCharacteristicCompletedLubinTateSeries (k := k) pi ^
         (Nat.card k ^ j) =
       PowerSeries.X ^ (Nat.card k ^ (j + 1)) +
@@ -462,7 +460,7 @@ theorem equalCharacteristicCompletedLubinTateSeries_pow_card_pow
 
 /-- Coefficient form of the preceding two-monomial calculation. -/
 theorem equalCharacteristicCompletedLubinTateSeries_pow_card_pow_coeff
-    (pi : (AlgebraicClosure k)⟦X⟧) (j n : ℕ) :
+      (j n : ℕ) :
     PowerSeries.coeff n
         (equalCharacteristicCompletedLubinTateSeries (k := k) pi ^
           (Nat.card k ^ j)) =
@@ -471,12 +469,17 @@ theorem equalCharacteristicCompletedLubinTateSeries_pow_card_pow_coeff
   rw [equalCharacteristicCompletedLubinTateSeries_pow_card_pow]
   simp only [map_add, PowerSeries.coeff_X_pow, PowerSeries.coeff_C_mul]
   split_ifs <;> simp_all
+end
 
+
+section
+variable (pi : (AlgebraicClosure k)⟦X⟧)
+    (b : ℕ → (AlgebraicClosure k)⟦X⟧)
+include pi b
 /-- Coefficients obtained by substituting `Y^q + pi Y` into a `q`-additive
 series. -/
 def equalCharacteristicLubinTateSubstitutionCoefficient
-    (pi : (AlgebraicClosure k)⟦X⟧)
-    (b : ℕ → (AlgebraicClosure k)⟦X⟧) :
+      :
     ℕ → (AlgebraicClosure k)⟦X⟧
   | 0 => b 0 * pi
   | j + 1 => b j + b (j + 1) * pi ^ (Nat.card k ^ (j + 1))
@@ -484,8 +487,7 @@ def equalCharacteristicLubinTateSubstitutionCoefficient
 /-- Substitution into an additive series cannot create a non-additive
 exponent. -/
 theorem equalCharacteristicQAdditiveSeries_subst_coeff_eq_zero
-    (pi : (AlgebraicClosure k)⟦X⟧)
-    (b : ℕ → (AlgebraicClosure k)⟦X⟧)
+     
     (n : ℕ) (hn : ¬ IsEqualCharacteristicAdditiveExponent k n) :
     PowerSeries.coeff n
         (PowerSeries.subst
@@ -510,8 +512,7 @@ theorem equalCharacteristicQAdditiveSeries_subst_coeff_eq_zero
 
 /-- The linear coefficient after substitution is `b_0 pi`. -/
 theorem equalCharacteristicQAdditiveSeries_subst_coeff_one
-    (pi : (AlgebraicClosure k)⟦X⟧)
-    (b : ℕ → (AlgebraicClosure k)⟦X⟧) :
+      :
     PowerSeries.coeff 1
         (PowerSeries.subst
           (equalCharacteristicCompletedLubinTateSeries (k := k) pi)
@@ -520,12 +521,12 @@ theorem equalCharacteristicQAdditiveSeries_subst_coeff_one
     (equalCharacteristicCompletedLubinTateSeries_hasSubst pi),
     finsum_eq_single _ 1]
   · rw [equalCharacteristicQAdditiveSeries_coeff_one]
-    have hpow : (1 : ℕ) = Nat.card k ^ 0 := by simp
+    have hpow : (1) = Nat.card k ^ 0 := rfl
     conv_lhs =>
       rhs
       rw [hpow,
         equalCharacteristicCompletedLubinTateSeries_pow_card_pow_coeff]
-    have hq : (1 : ℕ) ≠ Nat.card k :=
+    have hq  :=
       ne_of_lt (Finite.one_lt_card : 1 < Nat.card k)
     simp [hq]
   · intro d hd
@@ -536,12 +537,12 @@ theorem equalCharacteristicQAdditiveSeries_subst_coeff_one
         intro hj
         subst j
         simp at hd
-      have hSelf : (1 : ℕ) ≠ Nat.card k ^ j := by
+      have hSelf : (1) ≠ Nat.card k ^ j := by
         intro h
-        exact hj ((natCard_pow_eq_one_iff k j).1 h.symm)
-      have hSucc : (1 : ℕ) ≠ Nat.card k ^ (j + 1) := by
+        apply hj <;> aesop
+      have hSucc : (1) ≠ Nat.card k ^ (j + 1) := by
         intro h
-        have : j + 1 = 0 :=
+        have  :=
           (natCard_pow_eq_one_iff k (j + 1)).1 h.symm
         omega
       simp [hSelf, hSucc]
@@ -551,8 +552,7 @@ theorem equalCharacteristicQAdditiveSeries_subst_coeff_one
 /-- At the next additive exponent, substitution receives one contribution
 from the preceding `q`-power term and one from the linear term. -/
 theorem equalCharacteristicQAdditiveSeries_subst_coeff_pow_succ
-    (pi : (AlgebraicClosure k)⟦X⟧)
-    (b : ℕ → (AlgebraicClosure k)⟦X⟧) (r : ℕ) :
+      (r : ℕ) :
     PowerSeries.coeff (Nat.card k ^ (r + 1))
         (PowerSeries.subst
           (equalCharacteristicCompletedLubinTateSeries (k := k) pi)
@@ -560,13 +560,13 @@ theorem equalCharacteristicQAdditiveSeries_subst_coeff_pow_succ
       b r + b (r + 1) * pi ^ (Nat.card k ^ (r + 1)) := by
   rw [PowerSeries.coeff_subst'
     (equalCharacteristicCompletedLubinTateSeries_hasSubst pi)]
-  let F : ℕ → (AlgebraicClosure k)⟦X⟧ := fun d ↦
+  let F  := fun d ↦
     PowerSeries.coeff d (equalCharacteristicQAdditiveSeries k b) •
       PowerSeries.coeff (Nat.card k ^ (r + 1))
         (equalCharacteristicCompletedLubinTateSeries (k := k) pi ^ d)
   change ∑ᶠ d : ℕ, F d = _
   have hsupport : Function.support F ⊆
-      (({Nat.card k ^ r, Nat.card k ^ (r + 1)} : Finset ℕ) : Set ℕ) := by
+      (({Nat.card k ^ r, Nat.card k ^ (r + 1)} : Finset ℕ)) := by
     intro d hd
     change F d ≠ 0 at hd
     by_cases hde : IsEqualCharacteristicAdditiveExponent k d
@@ -606,8 +606,7 @@ theorem equalCharacteristicQAdditiveSeries_subst_coeff_pow_succ
 
 /-- Formal substitution formula for a `q`-additive series. -/
 theorem equalCharacteristicQAdditiveSeries_subst_completedLubinTateSeries
-    (pi : (AlgebraicClosure k)⟦X⟧)
-    (b : ℕ → (AlgebraicClosure k)⟦X⟧) :
+      :
     PowerSeries.subst
         (equalCharacteristicCompletedLubinTateSeries (k := k) pi)
         (equalCharacteristicQAdditiveSeries k b) =
@@ -633,8 +632,7 @@ theorem equalCharacteristicQAdditiveSeries_subst_completedLubinTateSeries
 /-- Coefficients obtained by applying `Y^q + pi Y` after a `q`-additive
 series. -/
 def equalCharacteristicLubinTatePostcompositionCoefficient
-    (pi : (AlgebraicClosure k)⟦X⟧)
-    (b : ℕ → (AlgebraicClosure k)⟦X⟧) :
+      :
     ℕ → (AlgebraicClosure k)⟦X⟧
   | 0 => pi * b 0
   | j + 1 => b j ^ Nat.card k + pi * b (j + 1)
@@ -642,14 +640,12 @@ def equalCharacteristicLubinTatePostcompositionCoefficient
 /-- Formal postcomposition formula
 `(Y^q + pi Y) ∘ (Σ b_j Y^(q^j))`. -/
 theorem equalCharacteristicCompletedLubinTateSeries_subst_qAdditiveSeries
-    (pi : (AlgebraicClosure k)⟦X⟧)
-    (b : ℕ → (AlgebraicClosure k)⟦X⟧) :
+      :
     PowerSeries.subst (equalCharacteristicQAdditiveSeries k b)
         (equalCharacteristicCompletedLubinTateSeries (k := k) pi) =
       equalCharacteristicQAdditiveSeries k
         (equalCharacteristicLubinTatePostcompositionCoefficient pi b) := by
-  have hsubst : PowerSeries.HasSubst
-      (equalCharacteristicQAdditiveSeries k b) :=
+  have hsubst  :=
     PowerSeries.HasSubst.of_constantCoeff_zero'
       (equalCharacteristicQAdditiveSeries_constantCoeff k b)
   rw [equalCharacteristicCompletedLubinTateSeries,
@@ -667,71 +663,73 @@ theorem equalCharacteristicCompletedLubinTateSeries_subst_qAdditiveSeries
   cases j <;>
     simp [equalCharacteristicQAdditiveShift,
       equalCharacteristicLubinTatePostcompositionCoefficient]
+end
 
-/-- The completed theta-intertwining theorem, the second theta identity
-`theta^phi o e_bar_pi = e_T o theta`.
 
-Both sides are genuine formal substitutions.  At the linear coefficient the
-claim is the semilinear unit equation `phi(b_0) = u b_0`; at every higher
-`q`-power coefficient it is exactly the contracting recursion defining
-`b_(j+1)`. -/
-theorem equalCharacteristicThetaSeries_intertwines
-    (u : k⟦X⟧ˣ) :
-    PowerSeries.subst
-        (equalCharacteristicCompletedLubinTateSeries (k := k)
-          (equalCharacteristicCompletedSourceUniformizer u))
-        (equalCharacteristicThetaSeriesFrobenius u) =
-      PowerSeries.subst (equalCharacteristicThetaSeries u)
-        (equalCharacteristicCompletedLubinTateSeries (k := k) PowerSeries.X) := by
-  rw [equalCharacteristicThetaSeriesFrobenius_eq_qAdditiveSeries,
-    equalCharacteristicQAdditiveSeries_subst_completedLubinTateSeries,
-    equalCharacteristicThetaSeries,
-    equalCharacteristicCompletedLubinTateSeries_subst_qAdditiveSeries]
-  congr 1
-  funext j
-  cases j with
-  | zero =>
-      rw [equalCharacteristicLubinTateSubstitutionCoefficient,
-        equalCharacteristicLubinTatePostcompositionCoefficient,
-        equalCharacteristicThetaCoefficient_zero,
-        equalCharacteristicPowerSeriesFrobenius_semilinearUnit,
-        equalCharacteristicCompletedSourceUniformizer]
-      have huinv :
-          PowerSeries.map (algebraMap k (AlgebraicClosure k)) (u : k⟦X⟧) *
-              PowerSeries.map (algebraMap k (AlgebraicClosure k))
-                ((u⁻¹ : k⟦X⟧ˣ) : k⟦X⟧) = 1 := by
-        rw [← map_mul]
-        simp
-      calc
-        _ = (PowerSeries.map (algebraMap k (AlgebraicClosure k)) (u : k⟦X⟧) *
-              PowerSeries.map (algebraMap k (AlgebraicClosure k))
-                ((u⁻¹ : k⟦X⟧ˣ) : k⟦X⟧)) *
-              (equalCharacteristicSemilinearUnit (u : k⟦X⟧) _ * PowerSeries.X) := by
-            ring
-        _ = _ := by rw [huinv]; simp [mul_comm]
-  | succ j =>
-      rw [equalCharacteristicLubinTateSubstitutionCoefficient,
-        equalCharacteristicLubinTatePostcompositionCoefficient]
-      have h := equalCharacteristicThetaCoefficient_succ_comparison u j
-      rw [equalCharacteristicThetaBetaNumerator] at h
-      linear_combination -h
 
-/-- The linear coefficient of theta is the semilinear unit constructed from
-`phi(epsilon) = u * epsilon`. -/
-theorem equalCharacteristicThetaSeries_coeff_one
-    (u : k⟦X⟧ˣ) :
-    PowerSeries.coeff 1 (equalCharacteristicThetaSeries u) =
-      equalCharacteristicSemilinearUnit (u : k⟦X⟧)
-        (by
-          intro hzero
-          have hunit := PowerSeries.isUnit_constantCoeff (u : k⟦X⟧) u.isUnit
-          apply hunit.ne_zero
-          simpa [PowerSeries.coeff_zero_eq_constantCoeff_apply] using hzero) := by
-  calc
-    PowerSeries.coeff 1 (equalCharacteristicThetaSeries u) =
-        equalCharacteristicThetaCoefficient u 0 := by
-      simpa only [pow_zero] using equalCharacteristicThetaSeries_coeff_pow u 0
-    _ = _ := equalCharacteristicThetaCoefficient_zero u
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end EqualCharacteristic
 end LubinTate

@@ -10,49 +10,6 @@ section
 
 noncomputable section
 
-namespace DedekindZetaZeroFree.KPKirillovFiniteTensor.ActualGauge
-
-open scoped NumberField Classical
-
-open NumberField IsDedekindDomain KPKirillovGenuineSectionCharts
-
-variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-  (w : HeightOneSpectrum (RingOfIntegers F)) (m : ℕ)
-  (ψ : Multiplicative (K F w) →* ℂˣ)
-
-def diagonalLift (t : (K F w)ˣ) : P F ζ hζ w :=
-  ⟨KPPGLLocalCover.A F ζ hζ (Sum.inr w) t,
-    KPRankOneInduction.diagonalElement_mem F w t⟩
-
-theorem diagonalLift_slope (t : (K F w)ˣ) :
-    slope F ζ hζ w (diagonalLift F ζ hζ w t) = t := by
-  apply Units.ext
-  change (KPRankOneInduction.borelRatio F w _ : K F w) = t
-  rw [KPRankOneInduction.borelRatio_eq F w _ (KPRankOneInduction.diagonalMatrix F w t)
-    rfl (by simp [KPRankOneInduction.diagonalMatrix, KubotaRankTwo.d])]
-  simp [KPRankOneInduction.diagonalMatrix, KubotaRankTwo.d]
-
-variable (lift : (K F w)ˣ → P F ζ hζ w)
-  (hslope : ∀ t, slope F ζ hζ w (lift t) = t)
-
-def gaugeCoordinate (t : (K F w)ˣ) : H F ζ hζ w :=
-  ⟨lift t * (diagonalLift F ζ hζ w t)⁻¹, by
-    change slope F ζ hζ w _ = 1
-    simp only [map_mul, map_inv, hslope, diagonalLift_slope, mul_inv_cancel]⟩
-
-def gauge (t : (K F w)ˣ) : ℂˣ :=
-  inducingCharacter F ζ hζ w ψ (gaugeCoordinate F ζ hζ w lift hslope t)
-
-end DedekindZetaZeroFree.KPKirillovFiniteTensor.ActualGauge
-
-end
-
-end
-
-section
-
-noncomputable section
-
 set_option maxHeartbeats 10000000
 
 set_option maxRecDepth 4096

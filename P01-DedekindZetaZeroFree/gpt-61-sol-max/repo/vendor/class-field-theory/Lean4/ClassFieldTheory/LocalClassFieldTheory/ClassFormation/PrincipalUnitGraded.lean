@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import GaloisCohomology.Cyclic.Herbrand.NormalBasisLattice
 public import ValuedFieldTheory.LocalField.NonarchimedeanLocalField.PrincipalUnitQuotients
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -48,8 +51,8 @@ theorem chosenNormalBasisPrincipalUnitSuccQuotToLatticeSuccQuotHom_injective
     (hmul_error : ∀ u : 𝒪[L]ˣ, u ∈ chosenNormalBasisPrincipalUnitSet K L n →
       ∀ v : 𝒪[L]ˣ, v ∈ chosenNormalBasisPrincipalUnitSet K L n →
         (((((u * v : 𝒪[L]ˣ) : 𝒪[L]) - 1 : 𝒪[L]) : L) -
-            (((((u : 𝒪[L]ˣ) : 𝒪[L]) - 1 : 𝒪[L]) : L) +
-              ((((v : 𝒪[L]ˣ) : 𝒪[L]) - 1 : 𝒪[L]) : L))) ∈
+            ((((u : 𝒪[L]) - 1 : 𝒪[L]) : L) +
+              (((v : 𝒪[L]) - 1 : 𝒪[L]) : L))) ∈
           chosenBaseUniformizerPowSubmodule K L (n + 1)
             (chosenNormalBasisIntegerLattice K L)) :
     Function.Injective
@@ -73,17 +76,11 @@ theorem chosenNormalBasisPrincipalUnitSuccQuotToLatticeSuccQuotHom_injective
         K L n hVn hVsucc hV hmul_error
         (chosenNormalBasisPrincipalUnitSuccQuotMk (L := L) hV u) = 1 at hu
     rw [chosenNormalBasisPrincipalUnitSuccQuotToLatticeSuccQuotHom_mk] at hu
-    have hu_n : (u : 𝒪[L]ˣ) ∈ chosenNormalBasisPrincipalUnitSet K L n := by
-      exact hVn ▸ u.2
+    have hu_n : (u : 𝒪[L]ˣ) ∈ chosenNormalBasisPrincipalUnitSet K L n := hVn ▸ u.2
     have hzero :
         chosenNormalBasisPrincipalUnitLatticeClass K L n (u : 𝒪[L]ˣ) hu_n = 0 := by
-      have h := congrArg
-        (fun x : Multiplicative (chosenNormalBasisLatticeSuccQuot K L n) => x.toAdd) hu
-      change
-        chosenNormalBasisPrincipalUnitLatticeClass K L n (u : 𝒪[L]ˣ) hu_n = 0 at h
-      exact h
-    have hu_succ :
-        (u : 𝒪[L]ˣ) ∈ chosenNormalBasisPrincipalUnitSet K L (n + 1) :=
+      assumption
+    have hu_succ  :=
       (chosenNormalBasisPrincipalUnitLatticeClass_eq_zero_iff
         (K := K) (L := L) (u : 𝒪[L]ˣ) hu_n).1 hzero
     change chosenNormalBasisPrincipalUnitSuccQuotMk (L := L) hV u = 1
@@ -105,8 +102,8 @@ theorem chosenNormalBasisPrincipalUnitSuccQuotToLatticeSuccQuotHom_surjective_of
     (hmul_error : ∀ u : 𝒪[L]ˣ, u ∈ chosenNormalBasisPrincipalUnitSet K L n →
       ∀ v : 𝒪[L]ˣ, v ∈ chosenNormalBasisPrincipalUnitSet K L n →
         (((((u * v : 𝒪[L]ˣ) : 𝒪[L]) - 1 : 𝒪[L]) : L) -
-            (((((u : 𝒪[L]ˣ) : 𝒪[L]) - 1 : 𝒪[L]) : L) +
-              ((((v : 𝒪[L]ˣ) : 𝒪[L]) - 1 : 𝒪[L]) : L))) ∈
+            ((((u : 𝒪[L]) - 1 : 𝒪[L]) : L) +
+              (((v : 𝒪[L]) - 1 : 𝒪[L]) : L))) ∈
           chosenBaseUniformizerPowSubmodule K L (n + 1)
             (chosenNormalBasisIntegerLattice K L))
     (hle : chosenBaseUniformizerPowSubmodule K L n
@@ -129,18 +126,17 @@ theorem chosenNormalBasisPrincipalUnitSuccQuotToLatticeSuccQuotHom_surjective_of
           Multiplicative.ofAdd yadd)
     yadd ?_
   intro x
-  have hxmax : (x : L) ∈ maximalIdealFieldSubmodule K L := hle x.2
+  have hxmax  := hle x.2
   rcases (mem_maximalIdealFieldSubmodule_iff
       (K := K) (L := L) (x : L)).1 hxmax with ⟨a, ha, hax⟩
   have ha_pow : a ∈ (𝓂[L] ^ (1 : Nat) : Ideal 𝒪[L]) := by
     simpa using ha
-  let hunit : IsUnit (1 + a) :=
+  let hunit  :=
     isUnit_one_add_of_mem_maximalIdeal_pow L (n := 1) (by rfl) a ha_pow
-  let u : 𝒪[L]ˣ := hunit.unit
-  have huval : ((u : 𝒪[L]ˣ) : 𝒪[L]) = 1 + a := by
-    exact IsUnit.unit_spec hunit
+  let u  := hunit.unit
+  have huval : (u : 𝒪[L]) = 1 + a := IsUnit.unit_spec hunit
   have hu_sub_one :
-      (((((u : 𝒪[L]ˣ) : 𝒪[L]) - 1 : 𝒪[L]) : L) = (x : L)) := by
+      ((((u : 𝒪[L]) - 1 : 𝒪[L]) : L) = (x : L)) := by
     rw [huval]
     simpa using hax
   have hu_set : u ∈ chosenNormalBasisPrincipalUnitSet K L n := by
@@ -173,8 +169,8 @@ noncomputable def chosenNormalBasisPrincipalUnitSuccQuotMulEquivLatticeSuccQuot
     (hmul_error : ∀ u : 𝒪[L]ˣ, u ∈ chosenNormalBasisPrincipalUnitSet K L n →
       ∀ v : 𝒪[L]ˣ, v ∈ chosenNormalBasisPrincipalUnitSet K L n →
         (((((u * v : 𝒪[L]ˣ) : 𝒪[L]) - 1 : 𝒪[L]) : L) -
-            (((((u : 𝒪[L]ˣ) : 𝒪[L]) - 1 : 𝒪[L]) : L) +
-              ((((v : 𝒪[L]ˣ) : 𝒪[L]) - 1 : 𝒪[L]) : L))) ∈
+            ((((u : 𝒪[L]) - 1 : 𝒪[L]) : L) +
+              (((v : 𝒪[L]) - 1 : 𝒪[L]) : L))) ∈
           chosenBaseUniformizerPowSubmodule K L (n + 1)
             (chosenNormalBasisIntegerLattice K L))
     (hle : chosenBaseUniformizerPowSubmodule K L n
@@ -201,8 +197,8 @@ theorem chosenNormalBasisPrincipalUnitSuccQuotMulEquivLatticeSuccQuot_mk
     (hmul_error : ∀ u : 𝒪[L]ˣ, u ∈ chosenNormalBasisPrincipalUnitSet K L n →
       ∀ v : 𝒪[L]ˣ, v ∈ chosenNormalBasisPrincipalUnitSet K L n →
         (((((u * v : 𝒪[L]ˣ) : 𝒪[L]) - 1 : 𝒪[L]) : L) -
-            (((((u : 𝒪[L]ˣ) : 𝒪[L]) - 1 : 𝒪[L]) : L) +
-              ((((v : 𝒪[L]ˣ) : 𝒪[L]) - 1 : 𝒪[L]) : L))) ∈
+            ((((u : 𝒪[L]) - 1 : 𝒪[L]) : L) +
+              (((v : 𝒪[L]) - 1 : 𝒪[L]) : L))) ∈
           chosenBaseUniformizerPowSubmodule K L (n + 1)
             (chosenNormalBasisIntegerLattice K L))
     (hle : chosenBaseUniformizerPowSubmodule K L n
@@ -214,7 +210,7 @@ theorem chosenNormalBasisPrincipalUnitSuccQuotMulEquivLatticeSuccQuot_mk
         (chosenNormalBasisPrincipalUnitSuccQuotMk (L := L) hV u) =
       Multiplicative.ofAdd
         (chosenNormalBasisPrincipalUnitLatticeClass K L n (u : 𝒪[L]ˣ)
-          (by exact hVn ▸ u.2)) :=
+          (hVn ▸ u.2)) :=
   rfl
 
 /-- Existential high-degree boundary used in the proof of the local class-field-axiom theorem:
@@ -235,7 +231,7 @@ theorem exists_chosenNormalBasisPrincipalUnitSuccQuotMulEquivLatticeSuccQuot
                     Φ (chosenNormalBasisPrincipalUnitSuccQuotMk (L := L) hV u) =
                       Multiplicative.ofAdd
                         (chosenNormalBasisPrincipalUnitLatticeClass K L n
-                          (u : 𝒪[L]ˣ) (by exact hVn ▸ u.2)) := by
+                          (u : 𝒪[L]ˣ) (hVn ▸ u.2)) := by
   rcases exists_chosenNormalBasisPrincipalUnitSubgroupSuccPair
       (K := K) (L := L) with ⟨c₁, hc₁⟩
   rcases exists_chosenNormalBasisPrincipalUnitSet_mul_error_mem_succ
@@ -255,8 +251,7 @@ theorem exists_chosenNormalBasisPrincipalUnitSuccQuotMulEquivLatticeSuccQuot
   rcases hc₁ n hc₁n with ⟨Vn, Vsucc, hVn, hVsucc, hV, hVnle⟩
   let hmul_error := hc₂ n hc₂n
   let hle := (hc₃ n hc₃n).1
-  let Φ : chosenNormalBasisPrincipalUnitSuccQuot (L := L) hV ≃*
-      Multiplicative (chosenNormalBasisLatticeSuccQuot K L n) :=
+  let Φ  :=
     chosenNormalBasisPrincipalUnitSuccQuotMulEquivLatticeSuccQuot
       K L hVn hVsucc hV hmul_error hle
   refine ⟨Vn, Vsucc, hV, hVn, hVsucc, Φ, hVnle, ?_⟩

@@ -14,9 +14,12 @@ open KPGlobalEisensteinData
 variable {G V J : Type*} [TopologicalSpace G] [AddCommGroup V] [Module ℂ V]
 variable (D : J → V →ₗ[ℂ] C(G,ℂ))
 
-private theorem series_uniform {z₀ : ℂ} {ρ : ℝ} {a : ℕ → V} {f : ℂ → V}
+section
+variable {z₀ : ℂ} {ρ : ℝ} {a : ℕ → V} {f : ℂ → V}
     (ha : SmoothPowerSeriesOn D z₀ ρ a f)
-    (i : DifferentialCompact G J) {r : ℝ} (hr : 0 ≤ r) (hrρ : r < ρ) :
+    (i : DifferentialCompact G J) {r : ℝ} (hr : 0 ≤ r) (hrρ : r < ρ)
+include z₀ ρ a f ha i r hr hrρ
+private theorem series_uniform   :
     TendstoUniformlyOn
       (fun M z => ∑ k ∈ Finset.range M, (z-z₀)^k • derivativeRestriction D i (a k))
       (fun z => derivativeRestriction D i (f z)) atTop (Metric.closedBall z₀ r) := by
@@ -30,9 +33,7 @@ private theorem series_uniform {z₀ : ℂ} {ρ : ℝ} {a : ℕ → V} {f : ℂ 
     ((∑ k ∈ Finset.range M, (z-z₀)^k • a k) - f z)‖ < ε at h
   simpa only [map_sub, map_sum, map_smul, dist_eq_norm, norm_sub_rev] using h
 
-private theorem series_terms_zero {z₀ : ℂ} {ρ : ℝ} {a : ℕ → V} {f : ℂ → V}
-    (ha : SmoothPowerSeriesOn D z₀ ρ a f)
-    (i : DifferentialCompact G J) {r : ℝ} (hr : 0 ≤ r) (hrρ : r < ρ) :
+private theorem series_terms_zero   :
     Tendsto (fun k => ‖derivativeRestriction D i (a k)‖ * r^k) atTop (𝓝 0) := by
   let z := z₀ + (r:ℂ)
   have hz : z ∈ Metric.closedBall z₀ r := by simp [z, dist_eq_norm, abs_of_nonneg hr]
@@ -51,13 +52,18 @@ private theorem series_terms_zero {z₀ : ℂ} {ρ : ℝ} {a : ℕ → V} {f : �
   rw [heq, sub_self] at hd
   have hn := hd.norm
   simpa [z, norm_smul, norm_pow, abs_of_nonneg hr, mul_comm] using hn
+end
+
 
  def compactSeries (i : DifferentialCompact G J) (a : ℕ → V) :
     FormalMultilinearSeries ℂ ℂ C(i.compact,ℂ) :=
   fun k => ContinuousMultilinearMap.mkPiRing ℂ (Fin k) (derivativeRestriction D i (a k))
 
-private theorem series_radius {z₀ : ℂ} {ρ : ℝ} {a : ℕ → V} {f : ℂ → V}
-    (ha : SmoothPowerSeriesOn D z₀ ρ a f) (_hρ : 0 < ρ) (i : DifferentialCompact G J) :
+section
+variable {z₀ : ℂ} {ρ : ℝ} {a : ℕ → V} {f : ℂ → V}
+    (ha : SmoothPowerSeriesOn D z₀ ρ a f)
+include z₀ ρ a f ha
+private theorem series_radius   (_hρ : 0 < ρ) (i : DifferentialCompact G J) :
     ENNReal.ofReal ρ ≤ (compactSeries D i a).radius := by
   apply ENNReal.le_of_forall_nnreal_lt
   intro r hr
@@ -66,8 +72,7 @@ private theorem series_radius {z₀ : ℂ} {ρ : ℝ} {a : ℕ → V} {f : ℂ �
   apply (compactSeries D i a).le_radius_of_tendsto (l := 0)
   simpa only [compactSeries, ContinuousMultilinearMap.norm_mkPiRing] using ht
 
- theorem series_onBall {z₀ : ℂ} {ρ : ℝ} {a : ℕ → V} {f : ℂ → V}
-    (ha : SmoothPowerSeriesOn D z₀ ρ a f) (hρ : 0 < ρ) (i : DifferentialCompact G J) :
+ theorem series_onBall   (hρ : 0 < ρ) (i : DifferentialCompact G J) :
     HasFPowerSeriesOnBall (fun z => derivativeRestriction D i (f z))
       (compactSeries D i a) z₀ (ENNReal.ofReal ρ) := by
   refine ⟨series_radius D ha hρ i, by positivity, ?_⟩
@@ -85,6 +90,8 @@ private theorem series_radius {z₀ : ℂ} {ρ : ℝ} {a : ℕ → V} {f : ℂ �
   apply (hasSum_iff_tendsto_nat_of_summable_norm hs).mpr
   simpa only [compactSeries, ContinuousMultilinearMap.mkPiRing_apply, Fin.prod_const,
     add_sub_cancel_left] using ht
+end
+
 
 end DedekindZetaZeroFree.KPGlobalResidualConstruction.CoherentTaylorCalculus
 

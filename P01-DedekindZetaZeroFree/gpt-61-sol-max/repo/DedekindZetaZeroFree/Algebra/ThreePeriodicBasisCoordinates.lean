@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Theta.Whittaker.CubicShellVectorIdentities
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.KPExteriorSpherical
 noncomputable section
@@ -22,13 +25,7 @@ theorem periodic_basis_coordinate_equiv
       Fin.ext_iff, eq_comm]
   have hcoord (i : Fin 3) :
       B.equivFun.symm (KPThreeShell.basis (i.val : ℤ)) = B i := by
-    apply B.equivFun.injective
-    rw [B.equivFun.apply_symm_apply]
-    ext k
-    have hm : (i.val : ℤ) % 3 = i.val := by omega
-    simp only [KPThreeShell.basis, hm, Int.toNat_natCast,
-      Module.Basis.equivFun_self]
-    simp only [Fin.ext_iff, eq_comm]
+    simp_all
   refine ⟨B.equivFun.symm, ?_, ?_⟩
   · intro j
     let i : Fin 3 := ⟨(j % 3).toNat, by omega⟩

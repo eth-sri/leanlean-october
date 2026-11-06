@@ -12,7 +12,10 @@ namespace DedekindZetaZeroFree.KPLiteralExceptionalResidue.NormDiscrepancy
 open KPLiteralRaw KPLiteralChamber
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
- def discrepancy (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
+ section
+variable (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
+include K hK in
+def discrepancy  
     (g : G F ζ hζ) : ℝ :=
   Real.log (((KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ
     (literalIwasawa F ζ hζ K hK) g : NNReal) : ℝ)) -
@@ -29,7 +32,8 @@ private theorem log_borel (D : KPGlobalTorusBorelTwistCompatibility.IwasawaData 
   exact Real.log_mul (NNReal.coe_ne_zero.mpr (Units.ne_zero _))
     (NNReal.coe_ne_zero.mpr (Units.ne_zero _))
 
- theorem discrepancy_borel (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
+ include K hK in
+theorem discrepancy_borel  
     (t : KPGlobalTorusFunctionData.E F ζ hζ) (x : KPAdeles F) (g : G F ζ hζ) :
     discrepancy F ζ hζ K hK ((t.val * KPGlobalTorusFunctionData.N F ζ hζ x) * g) =
       discrepancy F ζ hζ K hK g := by
@@ -51,8 +55,8 @@ private theorem insertion_mem (K : Subgroup (G F ζ hζ))
   obtain ⟨w, hw, rfl⟩ := List.mem_map.mp hk
   exact h w (u w)
 
-private theorem discrepancy_eq_finiteComponent (K : Subgroup (G F ζ hζ))
-    (hK : IwasawaCompact F ζ hζ K) (g : G F ζ hζ) :
+include K hK in
+private theorem discrepancy_eq_finiteComponent   (g : G F ζ hζ) :
     discrepancy F ζ hζ K hK g = discrepancy F ζ hζ K hK
       (KPContFlatLogNormSmooth.finiteComponent F ζ hζ g) := by
   let a := PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ g
@@ -92,8 +96,8 @@ private theorem discrepancy_eq_finiteComponent (K : Subgroup (G F ζ hζ))
       KPGlobalTorusFunctionData.N F ζ hζ x * KPContFlatLogNormSmooth.finiteComponent F ζ hζ g) = _
   exact discrepancy_borel F ζ hζ K hK _ _ _
 
- theorem discrepancy_locallyConstant (K : Subgroup (G F ζ hζ))
-    (hK : IwasawaCompact F ζ hζ K) :
+ include K hK in
+theorem discrepancy_locallyConstant   :
     IsLocallyConstant (discrepancy F ζ hζ K hK) := by
   let c : G F ζ hζ → KPGlobalTorusFunctionData.finitePart F ζ hζ := fun g =>
     ⟨KPContFlatLogNormSmooth.finiteComponent F ζ hζ g,
@@ -113,8 +117,8 @@ private theorem discrepancy_eq_finiteComponent (K : Subgroup (G F ζ hζ))
   funext g
   exact discrepancy_eq_finiteComponent F ζ hζ K hK g
 
- theorem discrepancy_range_finite (K : Subgroup (G F ζ hζ))
-    (hK : IwasawaCompact F ζ hζ K) :
+ include K hK in
+theorem discrepancy_range_finite   :
     (Set.range (discrepancy F ζ hζ K hK)).Finite := by
   let D := KPContFlatFullProductIwasawa.iwasawaData F ζ hζ
   let : CompactSpace D.K := isCompact_iff_compactSpace.mp D.compact
@@ -126,6 +130,8 @@ private theorem discrepancy_eq_finiteComponent (K : Subgroup (G F ζ hζ))
   refine ⟨k, ?_⟩
   rw [hg, discrepancy_borel]
   rfl
+end
+
 
 end DedekindZetaZeroFree.KPLiteralExceptionalResidue.NormDiscrepancy
 

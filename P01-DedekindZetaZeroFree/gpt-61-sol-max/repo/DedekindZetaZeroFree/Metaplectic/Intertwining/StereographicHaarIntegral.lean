@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.HopfMatrixCoordinates
 public import DedekindZetaZeroFree.RepresentationTheory.RankOne.PGLComplex.BruhatHopfCoordinates
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.ComplexFractionalInverse.CompactCharts
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts KPCplxIntertwinerEigenvalues
@@ -19,7 +22,7 @@ theorem haar_fractionalIntegral_of_stereographic_pushforward (β : ℂˣ) (p : �
     (∫ z, g z ∂characterHaar β) =
       (sphericalScalar β : ℂ) * fractionalIntegral (1 / 3) F x := by
   let d : ℂ → ℝ := fun z => (1 + ‖z‖ ^ 2) ^ (-2 : ℝ) / Real.pi
-  let K : Sphere → ℂ := fun y => (fractionalKernel (1 / 3) x y : ℂ) * F y
+  let K  := fun y => (fractionalKernel (1 / 3) x y : ℂ) * F y
   have hd : Measurable (fun z => ENNReal.ofReal (d z)) := by
     dsimp [d]
     fun_prop

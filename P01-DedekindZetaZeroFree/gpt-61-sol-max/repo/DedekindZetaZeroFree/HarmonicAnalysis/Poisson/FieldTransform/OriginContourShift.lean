@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.ContourIntegration.FiniteOrderPole
 public import DedekindZetaZeroFree.HarmonicAnalysis.Mellin.OriginLaurentAndLogarithmicResidues
 public import DedekindZetaZeroFree.HarmonicAnalysis.Poisson.FieldTransform.NegativeStripBounds
@@ -7,13 +9,14 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Poisson.FieldTransform.Euler
 
 @[expose] public section
 
+
 noncomputable section
 open scoped Classical ContDiff Topology
 open MeasureTheory Filter
 
 namespace DedekindZetaZeroFree.LargeSieve
 
-def originPolynomial (D : ℝ) (r : ℕ) (h : ℝ → ℂ) : Polynomial ℂ :=
+def originPolynomial (D : ℝ) (r : ℕ) (h : ℝ → ℂ)  :=
   Vendor.originLogResiduePolynomial (A D r h) r
 
 private lemma exists_support_bound {h : ℝ → ℂ} (hhc : HasCompactSupport h) :
@@ -57,7 +60,7 @@ private lemma eulerIter_contDiffOn (j : ℕ) {g : ℝ → ℂ}
     (hg : ContDiffOn ℝ ∞ g (Set.Ioi 0)) :
     ContDiffOn ℝ ∞ (Vendor.EulerIter j g) (Set.Ioi 0) := by
   induction j with
-  | zero => simpa using hg
+  | zero => exact hg
   | succ j ih =>
     rw [show Vendor.EulerIter (j + 1) g =
       fun y : ℝ => if 0 < y then (y : ℂ) * deriv (Vendor.EulerIter j g) y else 0 from rfl]
@@ -93,11 +96,9 @@ private lemma eulerIter_sub (j : ℕ) {g₁ g₂ : ℝ → ℂ}
     rw [heq.deriv_eq, deriv_sub hd₁ hd₂]
     ring
 
-theorem originPolynomial_natDegree_le (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
+def originPolynomial_natDegree_le (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
     (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
-    (hhc : HasCompactSupport h) :
-    (originPolynomial D r h).natDegree ≤ r - 1 := by
-  exact Vendor.originLogResiduePolynomial_natDegree_le (A D r h) r hr
+    (hhc : HasCompactSupport h)  := Vendor.originLogResiduePolynomial_natDegree_le (A D r h) r hr
 
 theorem originPolynomial_coeff_top (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
     (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
@@ -124,9 +125,7 @@ theorem B_euler_negative_inverse_integrable
   obtain ⟨b, hb, hsupp⟩ := exists_support_bound hhc
   obtain ⟨N, C, hC, hbd⟩ :=
     B_negative_line_uniform_integral_bound D r b δ j hD hr hb hδ hδ1
-  have hint : MeasureTheory.Integrable (fun t : ℝ =>
-      (-((-δ : ℂ) + (t : ℂ) * Complex.I)) ^ j *
-        B D r h ((-δ : ℂ) + (t : ℂ) * Complex.I)) MeasureTheory.volume :=
+  have hint  :=
     (hbd h hh hhc hsupp).1
   have hmeas : AEStronglyMeasurable
       (fun t : ℝ => (x : ℂ) ^ (-((-δ : ℂ) + (t : ℂ) * Complex.I))) MeasureTheory.volume :=
@@ -159,7 +158,7 @@ theorem EulerIter_fieldTransform_sub_originPolynomial_eq_mellinInv
 
   have hUopen : IsOpen {s : ℂ | -1 < s.re} := isOpen_lt continuous_const Complex.continuous_re
   have hU0 : (0 : ℂ) ∈ {s : ℂ | -1 < s.re} := by simp
-  have hAan : AnalyticOnNhd ℂ (A D r h) {s : ℂ | -1 < s.re} :=
+  have hAan  :=
     A_analyticOnNhd D r h hD hr hh hhc
   obtain ⟨cc, G, hGan, hGid, hc1⟩ :=
     Vendor.origin_exists_analytic_twisted_laurent {s : ℂ | -1 < s.re} hUopen hU0
@@ -216,7 +215,7 @@ theorem EulerIter_fieldTransform_sub_originPolynomial_eq_mellinInv
     obtain ⟨b, hb0, hsupp⟩ := exists_support_bound hhc
     obtain ⟨N, C₀, hC₀, hbd⟩ :=
       B_uniform_rapid_bound_negative_strip D r b (-δ) 1 j hD hr hb0 (by linarith) (by linarith)
-    have hS : 0 ≤ Vendor.S b N h := Vendor.S_nonneg b hb0 N h hh
+    have hS  := Vendor.S_nonneg b hb0 N h hh
     have hXnn : 0 ≤ max (x ^ (-1 : ℝ)) (x ^ δ) :=
       le_max_iff.mpr (Or.inl (Real.rpow_nonneg (le_of_lt hx) _))
     refine ⟨max (x ^ (-1 : ℝ)) (x ^ δ) * (C₀ * Vendor.S b N h), j,

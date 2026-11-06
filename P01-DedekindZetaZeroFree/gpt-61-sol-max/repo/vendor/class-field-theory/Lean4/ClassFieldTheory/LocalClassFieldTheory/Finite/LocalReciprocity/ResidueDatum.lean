@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.LocalClassFieldTheory.Finite.LocalReciprocity.ResidueAlgebraicallyClosed
 public import ClassFieldTheory.AbstractClassFieldTheory.Degree.Fields
 public import ValuedFieldTheory.Ramification.GaloisValuation.ClosedFixingSubgroup
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -68,7 +71,7 @@ private theorem mem_fixingSubgroup_iff_restrictNormalHom_eq_one
     have hy := congrArg (fun tau : E ≃ₐ[k] E => tau y) hsigma
     have hyval := congrArg Subtype.val hy
     rw [AlgEquiv.restrictNormalHom_apply] at hyval
-    simpa [y] using hyval
+    exact hyval
 
 /-- The degree image of the subgroup fixing a finite residue extension of
 degree `n` is exactly `n ℤ̂`. -/

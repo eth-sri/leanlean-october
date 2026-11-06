@@ -14,29 +14,29 @@ open ClassFieldTheory.GlobalClassFieldComparison
 
 noncomputable section
 
-private theorem exp_zero_iff (F : Type) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (𝓞 F)) (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) :
+section
+variable (F : Type) [Field F] [NumberField F]
+    (v : HeightOneSpectrum (𝓞 F))
+include F v
+private theorem exp_zero_iff   (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) :
     idealPrimeExponent v.asIdeal I = 0 ↔ ¬ I ≤ v.asIdeal := by
   rw [idealPrimeExponent, Multiset.count_eq_zero,
     UniqueFactorizationMonoid.mem_normalizedFactors_iff hI]
   simp [v.prime, Ideal.dvd_iff_le]
 
-private theorem exp_mul (F : Type) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (𝓞 F)) (I J : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hJ : J ≠ ⊥) :
+private theorem exp_mul   (I J : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hJ : J ≠ ⊥) :
     idealPrimeExponent v.asIdeal (I * J) =
       idealPrimeExponent v.asIdeal I + idealPrimeExponent v.asIdeal J := by
   simp [idealPrimeExponent, UniqueFactorizationMonoid.normalizedFactors_mul hI hJ,
     Multiset.count_add]
 
-private theorem le_pow_exp (F : Type) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (𝓞 F)) (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) :
+private theorem le_pow_exp   (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) :
     I ≤ v.asIdeal ^ idealPrimeExponent v.asIdeal I := by
   rw [← Ideal.dvd_iff_le, pow_dvd_iff_le_emultiplicity,
     UniqueFactorizationMonoid.emultiplicity_eq_count_normalizedFactors v.irreducible hI]
   simp [idealPrimeExponent]
 
-private theorem ratio_higher (F : Type) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (𝓞 F)) (a b : 𝓞 F) (ha : a ≠ 0) (hb : b ≠ 0)
+private theorem ratio_higher   (a b : 𝓞 F) (ha : a ≠ 0) (hb : b ≠ 0)
     (hav : a ∉ v.asIdeal) (hbv : b ∉ v.asIdeal) (k : ℕ)
     (hab : a - b ∈ v.asIdeal ^ k) :
     integralElementLocalUnit F v a ha / integralElementLocalUnit F v b hb ∈
@@ -84,6 +84,8 @@ private theorem ratio_higher (F : Type) [Field F] [NumberField F]
       rw [sub_mul, hbi]
     rw [heq]
     exact Ideal.mul_mem_right _ _ hmem
+end
+
 
 theorem crt_removed_ratio_mem_primeTo
     (F : Type) [Field F] [NumberField F] (A : SArithmeticData F)
@@ -309,8 +311,11 @@ theorem exterior_removed_idele_ideal
 
 open RayClassBridge ClassFieldTheory.GlobalClassFieldComparison
 
+section
+variable (F : Type) [Field F] [NumberField F]
+include F
 theorem finite_component_eq_idelic
-    (F : Type) [Field F] [NumberField F] (A : SArithmeticData F)
+      (A : SArithmeticData F)
     (omega : PrimitiveFrequencyCharacter F)
     (sigma : FixedSResidue.FullLocalCharacters A)
     (hlocal : ∀ v : {v // v ∈ A.Sf},
@@ -333,13 +338,13 @@ theorem finite_component_eq_idelic
   rfl
 
 def finiteDiagonalIdele
-    (F : Type) [Field F] [NumberField F] (A : SArithmeticData F) (x : Fˣ) :
+      (A : SArithmeticData F) (x : Fˣ) :
     IdeleGroup F :=
   ∏ v : {v // v ∈ A.Sf}, IdeleGroup.finitePlaceIdele v.val
     (ClassFieldTheory.finitePlaceUnitEmbedding v.val x)
 
 theorem localInverseProduct_eq_finiteDiagonal
-    (F : Type) [Field F] [NumberField F] (A : SArithmeticData F)
+      (A : SArithmeticData F)
     (omega : PrimitiveFrequencyCharacter F)
     (sigma : FixedSResidue.FullLocalCharacters A)
     (hinfinite : ∀ w : InfinitePlace F, sigma.1 w = 1)
@@ -362,7 +367,7 @@ theorem localInverseProduct_eq_finiteDiagonal
   rw [finite_component_eq_idelic F A omega sigma hlocal v]
   rfl
 
-theorem primeTo_idele_evaluation (F : Type) [Field F] [NumberField F] (hc : NumberField.IsTotallyComplex F)
+theorem primeTo_idele_evaluation   (hc : NumberField.IsTotallyComplex F)
  (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (η : RayClassCharacter F m)
  (a : IdeleGroup F) (ha : a ∈ RayClass.idelePrimeToModulusSubgroup
   (rayClassModulusToOriginal F (narrowIdealModulus F m hm))) :
@@ -405,7 +410,7 @@ theorem primeTo_idele_evaluation (F : Type) [Field F] [NumberField F] (hc : Numb
  exact DFunLike.congr_fun (rayCharacter_comp_quotient F hc m hm η) I
 
 theorem principal_ratio_transfer
-    (F : Type) [Field F] [NumberField F] (A : SArithmeticData F)
+      (A : SArithmeticData F)
     (omega : PrimitiveFrequencyCharacter F)
     (sigma : FixedSResidue.FullLocalCharacters A)
     (hinfinite : ∀ w : InfinitePlace F, sigma.1 w = 1)
@@ -459,7 +464,7 @@ theorem principal_ratio_transfer
     (rayClassCharacter_ne_zero_iff F omega.conductor omega.character J).mpr ⟨hJ, hcJ⟩
   exact (div_eq_iff hJval).mp hval.symm
 
-theorem sFiniteInsertion_component (F : Type) [Field F] [NumberField F] (A : SArithmeticData F)
+theorem sFiniteInsertion_component   (A : SArithmeticData F)
   (x : Fˣ) (v : HeightOneSpectrum (𝓞 F)) :
   IdeleGroup.finiteComponent v
     (∏ w : {w // w ∈ A.Sf}, IdeleGroup.finitePlaceIdele w.val
@@ -482,7 +487,7 @@ theorem sFiniteInsertion_component (F : Type) [Field F] [NumberField F] (A : SAr
     intro he
     exact hv (he ▸ w.property)
 
-theorem s_removed_principal_ideal (F : Type) [Field F] [NumberField F] (A : SArithmeticData F)
+theorem s_removed_principal_ideal   (A : SArithmeticData F)
   (a : 𝓞 F) (ha : a ≠ 0) (e : A.Exterior)
   (he : Ideal.span {algebraMap (𝓞 F) A.R a} = A.extendIdeal e) :
   IdeleGroup.fractionalIdeal
@@ -508,6 +513,8 @@ theorem s_removed_principal_ideal (F : Type) [Field F] [NumberField F] (A : SAri
     rw [map_div, sFiniteInsertion_component, if_neg hv, div_one, hu]
     apply Units.ext
     rfl
+end
+
 
 private theorem unit_quotient_coprime {R : Type*} [CommRing R]
     (q : Ideal R) (x : R) :
@@ -526,8 +533,11 @@ private theorem unit_quotient_coprime {R : Type*} [CommRing R]
     simpa only [Ideal.map_sup, Ideal.map_top, Ideal.map_quotient_self,
       sup_bot_eq, Ideal.map_span, Set.image_singleton, Ideal.span_singleton_eq_top] using hh
 
+section
+variable (F : Type) [Field F] [NumberField F] (A : SArithmeticData F)
+include F A
 private theorem exterior_map_top_reflect
-    (F : Type) [Field F] [NumberField F] (A : SArithmeticData F)
+     
     (J : Ideal (𝓞 F)) (hJ : J ⊔ A.cS = ⊤)
     (hmap : Ideal.map (algebraMap (𝓞 F) A.R) J = ⊤) : J = ⊤ := by
   have h := congrArg (fun I : Ideal A.R => I.under (𝓞 F)) hmap
@@ -535,7 +545,7 @@ private theorem exterior_map_top_reflect
   simpa only [Ideal.comap_top] using h
 
 private theorem exterior_coprime_supported
-    (F : Type) [Field F] [NumberField F] (A : SArithmeticData F)
+     
     (J : Ideal (𝓞 F)) (hJ0 : J ≠ ⊥) (hJ : J ⊔ A.cS = ⊤)
     (fS : Ideal (𝓞 F))
     (hsupp : ∀ v : HeightOneSpectrum (𝓞 F), fS ≤ v.asIdeal → v ∈ A.Sf) :
@@ -555,7 +565,7 @@ private theorem exterior_coprime_supported
   exact hM.ne_top (top_unique htop)
 
 theorem integral_exterior_crt_coprime
-    (F : Type) [Field F] [NumberField F] (A : SArithmeticData F)
+     
     (f fS qO : Ideal (𝓞 F)) (hsplit : FixedSResidue.ConductorSplit A f fS qO)
     (a b : 𝓞 F) (hb : b ≠ 0)
     (haunit : IsUnit (Ideal.Quotient.mk (FixedSResidue.residueModulus A qO)
@@ -596,7 +606,7 @@ theorem integral_exterior_crt_coprime
       (Ideal.isCoprime_iff_sup_eq.mpr hbq))⟩
 
 theorem integral_exterior_crt_transfer
-    (F : Type) [Field F] [NumberField F] (A : SArithmeticData F)
+     
     (omega : PrimitiveFrequencyCharacter F) (fS qO : Ideal (𝓞 F))
     (hsplit : FixedSResidue.ConductorSplit A omega.conductor fS qO)
     (sigma : FixedSResidue.FullLocalCharacters A)
@@ -657,6 +667,8 @@ theorem integral_exterior_crt_transfer
     rw [s_removed_principal_ideal F A a ha e he]
   exact principal_ratio_transfer F A omega sigma hinfinite hlocal n y
     e.val (Ideal.span {b}) e.property.1 (by simpa using hb) hcI hcJ hprime hideal
+end
+
 
 end
 end DedekindZetaZeroFree.Detector.ExteriorDyadic.ResidueFiberAdapter.ExteriorCharacterSteps

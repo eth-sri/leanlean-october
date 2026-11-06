@@ -78,18 +78,18 @@ theorem idealClassQuotientEquivNormQuotient_mk
       idealArtinMap m N hm a :=
   rfl
 
-/-- The Artin kernel is exactly the equivalence relation defining the
-ideal class-field quotient. -/
-theorem idealClassQuotient_mk_eq_one_iff
-    (m : RayClass.Modulus K)
-    (N : Subgroup (IdeleClassGroup K))
-    (hm : RayClass.Modulus.congruenceSubgroup m ≤ N)
-    (a : RayClass.primeToModulusIdeals m) :
-    QuotientGroup.mk' (idealArtinKernel m N hm) a = 1 ↔
-      idealArtinMap m N hm a = 1 := by
-  exact
-    (QuotientGroup.eq_one_iff a).trans
-      (((idealArtin_exact m N hm).1 a).symm)
+
+
+
+
+
+
+
+
+
+
+
+
 
 section ActualGaloisQuotient
 
@@ -133,25 +133,25 @@ theorem idealClassQuotientEquivGaloisGroup_mk
       idealArtinGaloisMap (K := K) (L := L) m hm a :=
   rfl
 
-/-- An ideal class is trivial in the class-field quotient exactly when
-its actual Galois-valued Artin symbol is trivial. -/
-theorem idealClassQuotient_mk_eq_one_iff_galoisArtin_eq_one
-    (m : RayClass.Modulus K)
-    (hm :
-      RayClass.Modulus.congruenceSubgroup m ≤
-        (_root_.ideleClassNorm K L).range)
-    (a : RayClass.primeToModulusIdeals m) :
-    QuotientGroup.mk'
-          (idealArtinKernel m
-            ((_root_.ideleClassNorm K L).range) hm) a =
-        1 ↔
-      idealArtinGaloisMap
-          (K := K) (L := L) m hm a =
-        1 := by
-  exact
-    (QuotientGroup.eq_one_iff a).trans
-      (((idealArtinGalois_exact
-        (K := K) (L := L) m hm).1 a).symm)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end ActualGaloisQuotient
 

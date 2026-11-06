@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import Mathlib.GroupTheory.Index
 public import GaloisCohomology.Cyclic.IntegralRepUniverse
 public import GaloisCohomology.Kummer.Abstract.KummerDelta
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -40,13 +43,16 @@ open scoped BigOperators
 -- Mathlib's `Rep ℤ G` currently fixes `G` to universe zero.
 variable {G : IntegralRepGroupType} [Group G] [TopologicalSpace G]
 
+section
+variable (A : Rep ℤ G) (K L : ClosedSubgroup G)
+    (hLK : L.toSubgroup ≤ K.toSubgroup)
+    (a : ambientFixedAddSubgroup A L)
+include A K L hLK a
 /-- The value of a fixed coefficient at a left coset.  This is independent
 of the representative precisely because the coefficient is fixed by the
 smaller abstract-field subgroup. -/
 def relativeCosetAction
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (a : ambientFixedAddSubgroup A L)
+     
     (q : K.toSubgroup ⧸ extensionSubgroup K L hLK) : A.V :=
   Quotient.liftOn' q (fun k : K.toSubgroup => A.ρ k.1 a.1) (by
     intro x y hxy
@@ -65,11 +71,11 @@ def relativeCosetAction
 /-- The relative coset action on a quotient representative is the corresponding group action. -/
 @[simp]
 theorem relativeCosetAction_mk
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (a : ambientFixedAddSubgroup A L) (k : K.toSubgroup) :
+      (k : K.toSubgroup) :
     relativeCosetAction A K L hLK a (QuotientGroup.mk k) = A.ρ k.1 a.1 :=
   rfl
+end
+
 
 /-- Left multiplication permutes the cosets of an arbitrary subgroup. -/
 def leftMulCosetEquiv {G : Type*} [Group G]
@@ -85,10 +91,13 @@ def leftMulCosetEquiv {G : Type*} [Group G]
     leftMulCosetEquiv H g (QuotientGroup.mk x) = QuotientGroup.mk (g * x) :=
   rfl
 
+section
+variable (A : Rep ℤ G) (K L : ClosedSubgroup G)
+    (hLK : L.toSubgroup ≤ K.toSubgroup)
+include A K L hLK
 /-- The additive norm value from `A_L` to the ambient module. -/
 def relativeNormValue
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
+     
     [Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
     (a : ambientFixedAddSubgroup A L) : A.V := by
   letI := Fintype.ofFinite (K.toSubgroup ⧸ extensionSubgroup K L hLK)
@@ -96,8 +105,7 @@ def relativeNormValue
 
 /-- The relative coset action is additive in the represented fixed element. -/
 theorem relativeCosetAction_add
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
+     
     (a b : ambientFixedAddSubgroup A L)
     (q : K.toSubgroup ⧸ extensionSubgroup K L hLK) :
     relativeCosetAction A K L hLK (a + b) q =
@@ -106,24 +114,22 @@ theorem relativeCosetAction_add
   refine Quotient.inductionOn' q ?_
   intro k
   simp only [relativeCosetAction_mk]
-  exact map_add (A.ρ k.1) a.1 b.1
+  apply map_add
 
 /-- Every relative coset acts trivially on the zero fixed element. -/
 @[simp]
 theorem relativeCosetAction_zero
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
+     
     (q : K.toSubgroup ⧸ extensionSubgroup K L hLK) :
     relativeCosetAction A K L hLK 0 q = 0 := by
   refine Quotient.inductionOn' q ?_
   intro k
   simp only [relativeCosetAction_mk]
-  exact map_zero (A.ρ k.1)
+  apply map_zero
 
 /-- The relative norm value is fixed by the base subgroup action. -/
 theorem relativeNormValue_fixed
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
+     
     [Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
     (a : ambientFixedAddSubgroup A L) (k : K.toSubgroup) :
     A.ρ k.1 (relativeNormValue A K L hLK a) =
@@ -151,8 +157,7 @@ In the multiplicative notation of the construction this additive sum is the prod
 over a system of representatives of `G_K / G_L`.  Its codomain is the
 actual fixed module `A_K`, with fixedness proved by coset reindexing. -/
 def relativeNorm
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
+     
     [Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)] :
     ambientFixedAddSubgroup A L →+ ambientFixedAddSubgroup A K where
   toFun a := ⟨relativeNormValue A K L hLK a,
@@ -168,18 +173,19 @@ def relativeNorm
     rw [← Finset.sum_add_distrib]
     apply Finset.sum_congr rfl
     intro q _
-    exact relativeCosetAction_add A K L hLK a b q
+    apply relativeCosetAction_add
 
 /-- Coercing a relative norm gives the explicit sum over quotient representatives. -/
 @[simp]
 theorem relativeNorm_apply_coe
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
+     
     [Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
     (a : ambientFixedAddSubgroup A L) :
     ((relativeNorm A K L hLK a : ambientFixedAddSubgroup A K) : A.V) =
       relativeNormValue A K L hLK a :=
   rfl
+end
+
 
 end
 end ClassFormation

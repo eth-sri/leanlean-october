@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Algebra.Module.MinimalAxioms
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.PrincipalUnitPadicAction.FiniteQuotientPadicModule
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -102,8 +105,7 @@ noncomputable instance Internal.principalUnitInverseLimitCarrierPadicModule
       apply Additive.toMul.injective
       apply Subtype.ext
       funext n
-      let : Module ℤ_[F.residueCharacteristic]
-          (Additive (Internal.principalUnitQuotientCarrier F.toCompleteDVF n)) :=
+      let  :=
         principalUnitQuotientCarrierPadicModule F n
       apply Additive.ofMul.injective
       change
@@ -120,8 +122,7 @@ noncomputable instance Internal.principalUnitInverseLimitCarrierPadicModule
       apply Additive.toMul.injective
       apply Subtype.ext
       funext n
-      let : Module ℤ_[F.residueCharacteristic]
-          (Additive (Internal.principalUnitQuotientCarrier F.toCompleteDVF n)) :=
+      let  :=
         principalUnitQuotientCarrierPadicModule F n
       apply Additive.ofMul.injective
       change
@@ -136,8 +137,7 @@ noncomputable instance Internal.principalUnitInverseLimitCarrierPadicModule
       apply Additive.toMul.injective
       apply Subtype.ext
       funext n
-      let : Module ℤ_[F.residueCharacteristic]
-          (Additive (Internal.principalUnitQuotientCarrier F.toCompleteDVF n)) :=
+      let  :=
         principalUnitQuotientCarrierPadicModule F n
       apply Additive.ofMul.injective
       change
@@ -150,8 +150,7 @@ noncomputable instance Internal.principalUnitInverseLimitCarrierPadicModule
       apply Additive.toMul.injective
       apply Subtype.ext
       funext n
-      let : Module ℤ_[F.residueCharacteristic]
-          (Additive (Internal.principalUnitQuotientCarrier F.toCompleteDVF n)) :=
+      let  :=
         principalUnitQuotientCarrierPadicModule F n
       apply Additive.ofMul.injective
       change
@@ -196,15 +195,7 @@ PrincipalUnitProdiscreteLimit.coordinate F.toCompleteDVF n x`.
     (x : PrincipalUnitProdiscreteLimit F.toCompleteDVF) :
     PrincipalUnitProdiscreteLimit.coordinate F.toCompleteDVF n (a • x) =
       a • PrincipalUnitProdiscreteLimit.coordinate F.toCompleteDVF n x := by
-  apply (DiscretePrincipalUnitQuotient.addEquiv F.toCompleteDVF n).injective
-  rw [DiscretePrincipalUnitQuotient.addEquiv_map_smul,
-    PrincipalUnitProdiscreteLimit.coordinate_apply,
-    PrincipalUnitProdiscreteLimit.coordinate_apply,
-    DiscretePrincipalUnitQuotient.addEquiv_of,
-    DiscretePrincipalUnitQuotient.addEquiv_of,
-    PrincipalUnitProdiscreteLimit.addEquiv_map_smul]
-  exact Internal.principalUnitInverseLimitCarrierPadic_smul_apply F a
-    (PrincipalUnitProdiscreteLimit.addEquiv F.toCompleteDVF x) n
+  rfl
 
 /-- Evaluation at a wrapped coordinate as a `Z_p`-linear map. -/
 noncomputable def PrincipalUnitProdiscreteLimit.coordinateLinear
@@ -232,8 +223,7 @@ theorem Internal.continuous_principalUnitInverseLimitCarrierPadic_smul
       (Internal.principalUnitQuotientCarrier F.toCompleteDVF n) := fun _ => ⟨rfl⟩
   have hmul : Continuous fun z : ℤ_[F.residueCharacteristic] ×
       Additive (Internal.principalUnitInverseLimitCarrier F.toCompleteDVF) =>
-      Additive.toMul (z.1 • z.2) := by
-    exact Continuous.subtype_mk
+      Additive.toMul (z.1 • z.2) := Continuous.subtype_mk
       (continuous_pi fun n => by
         have hlimval : Continuous fun x : Additive
             (Internal.principalUnitInverseLimitCarrier F.toCompleteDVF) =>

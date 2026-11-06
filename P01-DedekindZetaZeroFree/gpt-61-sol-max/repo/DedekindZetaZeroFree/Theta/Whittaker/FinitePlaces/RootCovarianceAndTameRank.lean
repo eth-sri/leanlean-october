@@ -54,10 +54,13 @@ theorem core_rational_root (D : TensorActions R N) (x) (t : F) (g : Group R) :
   rw [← KPLiteralExceptionalResidue.rationalLift_unipotent]
   exact (D.toTensorHC.same_residue x).2.2.1 _ _
 
-theorem finite_period_translate (D : TensorActions R N)
+section
+variable (D : TensorActions R N)
     (s : RestrictedTensorSimple.Level D.bad)
     (x : ∀ p : s.val, actualLocal R D.finiteData p)
     (q : KPFinitePlace F) (hq : Sum.inr q ∈ s.val)
+include D s x q hq
+theorem finite_period_translate  
     (a : KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q))
     (g : Group R) :
     fourier R D.sources.dq (D.coreMap (RestrictedTensorSimple.stageInclusion _ D.references D.bad s
@@ -80,10 +83,7 @@ theorem finite_period_translate (D : TensorActions R N)
   filter_upwards [] with t
   rw [D.finite_intertwining q a s hq x, mul_assoc]
 
-theorem finite_slice_root (D : TensorActions R N)
-    (s : RestrictedTensorSimple.Level D.bad)
-    (x : ∀ p : s.val, actualLocal R D.finiteData p)
-    (q : KPFinitePlace F) (hq : Sum.inr q ∈ s.val)
+theorem finite_slice_root  
     (t : q.adicCompletion F) (b : actualLocal R D.finiteData (Sum.inr q)) :
     (coreStageMultilinear _ D.references D.bad (D.toTensorHC.literalPeriod 1) s).toLinearMap x ⟨Sum.inr q, hq⟩
       (KPRankOneShellRepair.actualCanonicalImageRepresentation F R.A.zeta12 R.A.primitive_zeta12
@@ -122,8 +122,13 @@ theorem finite_slice_root (D : TensorActions R N)
       (KPRationalAdelicSplitting.localAdele F (Sum.inr q) t)) = localFiniteCharacter F q t :=
     (adelicTraceQuotientCharacter_mk F _).trans (adelicTraceCharacter_finite_single F q t)
   simpa only [ht, mul_one, c] using h
+end
 
-def finiteWhittaker (D : TensorActions R N) (q : KPFinitePlace F) :
+
+section
+variable (D : TensorActions R N) (q : KPFinitePlace F)
+include D q
+def finiteWhittaker   :
     Submodule ℂ (actualLocal R D.finiteData (Sum.inr q) →ₗ[ℂ] ℂ) :=
   RootEquivariantMaps
     (KPRankOneShellRepair.actualCanonicalImageRepresentation F R.A.zeta12 R.A.primitive_zeta12
@@ -132,7 +137,7 @@ def finiteWhittaker (D : TensorActions R N) (q : KPFinitePlace F) :
     (KPLocalJacquetImage.root (D.finiteData q).inducing.borel)
     (finiteTrace (F := F) q).toMonoidHom ℂ
 
-theorem sliceLine_le_finiteWhittaker (D : TensorActions R N) (q : KPFinitePlace F) :
+theorem sliceLine_le_finiteWhittaker   :
     D.toTensorHC.sliceLine (Sum.inr q) ≤ D.finiteWhittaker q := by
   apply Submodule.span_le.mpr
   rintro l ⟨s, x, hq, rfl⟩
@@ -143,7 +148,7 @@ theorem sliceLine_le_finiteWhittaker (D : TensorActions R N) (q : KPFinitePlace 
   rw [hroot]
   exact D.finite_slice_root s x q hq t.toAdd b
 
-theorem finite_slice_rank_le_one_of_tame (D : TensorActions R N) (q : KPFinitePlace F)
+theorem finite_slice_rank_le_one_of_tame  
     (ht : (3 : (ValuativeRel.valuation (q.adicCompletion F)).integer) ∉
       IsLocalRing.maximalIdeal (ValuativeRel.valuation (q.adicCompletion F)).integer) :
     Module.rank ℂ (D.toTensorHC.sliceLine (Sum.inr q)) ≤ 1 := by
@@ -152,6 +157,8 @@ theorem finite_slice_rank_le_one_of_tame (D : TensorActions R N) (q : KPFinitePl
       q (D.finiteData q).inducing (D.finiteData q).inducing.polarization
       (D.finiteData q).haar (D.finiteData q).haar_integer ht
       (finiteTrace (F := F) q) (finiteTrace_ne_one q))
+end
+
 
 end TensorActions
 end DedekindZetaZeroFree.FourierContinuation

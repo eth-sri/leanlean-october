@@ -20,7 +20,7 @@ theorem globalDifferentExponent_eq_localDifferentExponent
     localHalfDifferentFactor_eq_inv_sqrt, localDifferentNorm, Nat.cast_pow] at hmass
   have hs : Real.sqrt ((Ideal.absNorm v.asIdeal : ℝ) ^ localDifferentExponent F v) =
       Real.sqrt ((Ideal.absNorm v.asIdeal : ℝ) ^ DifferentMass.exponent F v) := by
-    simpa only [one_div, inv_inj] using hmass
+    simpa only [DifferentMass.halfNormMass, one_div, inv_inj] using hmass
   have hp := (Real.sqrt_inj (by positivity) (by positivity)).mp hs
   have hexponent : localDifferentExponent F v = DifferentMass.exponent F v :=
     (pow_right_strictMono₀

@@ -2,7 +2,10 @@ module
 
 public import Mathlib
 
+public import Mathlib
+
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 
@@ -10,19 +13,23 @@ noncomputable section
 open scoped BigOperators
 open Classical
 
-def sexticMaskGaussSum {k : Type*} [Field k] [Fintype k]
-    (χ : MulChar k ℂ) (ψ : AddChar k ℂ) (j : Fin 6) : ℂ :=
+section
+variable {k : Type*} [Field k] [Fintype k]
+    (χ : MulChar k ℂ) (ψ : AddChar k ℂ) (j : Fin 6)
+include k χ ψ j
+def sexticMaskGaussSum    :=
   gaussSum (χ⁻¹ ^ j.val) ψ
 
-def sexticFourierMask {k : Type*} [Field k] [Fintype k]
-    (χ : MulChar k ℂ) (ψ : AddChar k ℂ) (j : Fin 6) (v : k) : ℂ :=
+def sexticFourierMask   (v : k)  :=
   if j.val = 0 then
     if v = 0 then 1 - (Fintype.card k : ℂ)⁻¹ else -(Fintype.card k : ℂ)⁻¹
   else if v = 0 then 0
   else (χ⁻¹ ^ j.val) v / sexticMaskGaussSum χ ψ j
+end
+
 
 def sexticUnitPower {k : Type*} [Field k] (χ : MulChar k ℂ)
-    (j : Fin 6) (t : k) : ℂ :=
+    (j : Fin 6) (t : k)  :=
   if IsUnit t then χ t ^ j.val else 0
 
 private theorem mask_power_ne_one {k : Type*} [Field k] [Fintype k]
@@ -31,11 +38,14 @@ private theorem mask_power_ne_one {k : Type*} [Field k] [Fintype k]
   apply pow_ne_one_of_lt_orderOf hj
   simpa [orderOf_inv, hχ] using j.isLt
 
-theorem sexticMaskGaussSum_norm {k : Type*} [Field k] [Fintype k]
+section
+variable {k : Type*} [Field k] [Fintype k]
     (χ : MulChar k ℂ) (ψ : AddChar k ℂ)
     (hχ : orderOf χ = 6) (hψ : ψ.IsPrimitive)
     (hQ : Nat.Coprime (Fintype.card k) 6)
-    (j : Fin 6) (hj : j.val ≠ 0) :
+    (j : Fin 6)
+include k χ ψ hχ hψ hQ j
+theorem sexticMaskGaussSum_norm   (hj : j.val ≠ 0) :
     ‖sexticMaskGaussSum χ ψ j‖ = Real.sqrt (Fintype.card k : ℝ) := by
   have h := gaussSum_mul_gaussSum_eq_card (mask_power_ne_one χ hχ j hj) hψ
   rw [← star_gaussSum_eq, Complex.star_def, Complex.mul_conj'] at h
@@ -43,20 +53,11 @@ theorem sexticMaskGaussSum_norm {k : Type*} [Field k] [Fintype k]
     exact_mod_cast h
   exact ((Real.sqrt_eq_iff_eq_sq (by positivity) (norm_nonneg _)).mpr hs.symm).symm
 
-theorem sexticMaskGaussSum_ne_zero {k : Type*} [Field k] [Fintype k]
-    (χ : MulChar k ℂ) (ψ : AddChar k ℂ)
-    (hχ : orderOf χ = 6) (hψ : ψ.IsPrimitive)
-    (hQ : Nat.Coprime (Fintype.card k) 6)
-    (j : Fin 6) (hj : j.val ≠ 0) :
-    sexticMaskGaussSum χ ψ j ≠ 0 := by
-  exact gaussSum_ne_zero_of_nontrivial (by exact_mod_cast Fintype.card_ne_zero)
+theorem sexticMaskGaussSum_ne_zero   (hj : j.val ≠ 0) :
+    sexticMaskGaussSum χ ψ j ≠ 0 := gaussSum_ne_zero_of_nontrivial (by exact_mod_cast Fintype.card_ne_zero)
     (mask_power_ne_one χ hχ j hj) hψ
 
-theorem sexticFourierMask_sum {k : Type*} [Field k] [Fintype k]
-    (χ : MulChar k ℂ) (ψ : AddChar k ℂ)
-    (hχ : orderOf χ = 6) (hψ : ψ.IsPrimitive)
-    (hQ : Nat.Coprime (Fintype.card k) 6)
-    (j : Fin 6) (t : k) :
+theorem sexticFourierMask_sum   (t : k) :
     (∑ v : k, sexticFourierMask χ ψ j v * ψ (t * v)) =
       sexticUnitPower χ j t := by
   by_cases hj : j.val = 0
@@ -90,6 +91,8 @@ theorem sexticFourierMask_sum {k : Type*} [Field k] [Fintype k]
         simpa [gaussSum, AddChar.mulShift_apply, u, inv_pow, sexticMaskGaussSum] using h
       rw [hs, mul_div_cancel_right₀ _ (sexticMaskGaussSum_ne_zero χ ψ hχ hψ hQ j hj)]
       simp [sexticUnitPower, isUnit_iff_ne_zero, ht, MulChar.pow_apply' χ hj]
+end
+
 
 end
 end DedekindZetaZeroFree

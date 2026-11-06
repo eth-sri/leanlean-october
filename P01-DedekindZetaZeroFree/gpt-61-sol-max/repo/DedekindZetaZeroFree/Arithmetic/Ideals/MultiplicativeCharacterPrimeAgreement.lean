@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Characters.CharacterOperations
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve.RootNumber
 
@@ -18,11 +21,10 @@ theorem prime_agreement {F : Type} [Field F] [NumberField F]
     ∀ I : Ideal (𝓞 F), I ≠ ⊥ → I ⊔ r = ⊤ → η I = θ I := by
   classical
   intro I hI hrI
-  have hI0 : I ≠ 0 := by simpa using hI
-  have hfac : ∏ᶠ v : HeightOneSpectrum (𝓞 F), v.maxPowDividing I = I :=
+  have hI0 : I ≠ 0 := hI
+  have hfac  :=
     Ideal.finprod_heightOneSpectrum_factorization hI0
-  have hfin : Function.HasFiniteMulSupport fun v : HeightOneSpectrum (𝓞 F) =>
-      v.maxPowDividing I :=
+  have hfin  :=
     Ideal.hasFiniteMulSupport hI0
 
   have hpow : ∀ {M : Ideal (𝓞 F)} (ψ : DedekindZetaZeroFree.RayClassCharacter F M)
@@ -43,7 +45,7 @@ theorem prime_agreement {F : Type} [Field F] [NumberField F]
 
   have hpt : ∀ v ∈ hfin.toFinset, η (v.maxPowDividing I) = θ (v.maxPowDividing I) := by
     intro v hv
-    have hne1 : v.maxPowDividing I ≠ 1 :=
+    have hne1  :=
       Function.mem_mulSupport.mp ((hfin.mem_toFinset).1 hv)
     have hk : (Associates.mk v.asIdeal).count (Associates.mk I).factors ≠ 0 := by
       intro h0
@@ -56,7 +58,7 @@ theorem prime_agreement {F : Type} [Field F] [NumberField F]
       rw [IsDedekindDomain.HeightOneSpectrum.maxPowDividing] at h1
       exact dvd_trans (dvd_pow_self _ hk) h1
     have hsup : v.asIdeal ⊔ r = ⊤ := by
-      have hle : I ≤ v.asIdeal := Ideal.dvd_iff_le.1 hdvd
+      have hle  := Ideal.dvd_iff_le.1 hdvd
       have h : (⊤ : Ideal (𝓞 F)) ≤ v.asIdeal ⊔ r := by
         rw [← hrI]
         exact sup_le_sup_right hle r

@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Ideals.Counting.NormSeries
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 
@@ -35,10 +38,10 @@ private lemma threshold_bound (σ₀ ε : ℝ) (hσ₀ : 0 < σ₀) (hε : 0 < �
       _ = 1 / 2 := by norm_num
   constructor
   · linarith
-  · have hpos : 0 < 1 - x ^ (-σ₀) := by linarith
+  · 
     have h := inv_anti₀ (by norm_num : (0 : ℝ) < 1 / 2) (by linarith :
       (1 : ℝ) / 2 ≤ 1 - x ^ (-σ₀))
-    have h2 : ((1 : ℝ) / 2)⁻¹ = 2 := by norm_num
+    
     linarith
 
 private lemma small_case (σ₀ : ℝ) (hσ₀ : 0 < σ₀) (x : ℝ) (hx : 2 ≤ x) :
@@ -51,8 +54,11 @@ private lemma small_case (σ₀ : ℝ) (hσ₀ : 0 < σ₀) (x : ℝ) (hx : 2 �
   have hb : 0 < 1 - (2 : ℝ) ^ (-σ₀) := by linarith
   exact ⟨by linarith, inv_anti₀ hb (by linarith)⟩
 
-private lemma support_norm_prod_le {F : Type} [Field F] [NumberField F]
-    (𝔲 : Ideal (𝓞 F)) (h𝔲 : 𝔲 ≠ ⊥) :
+section
+variable {F : Type} [Field F] [NumberField F]
+    (𝔲 : Ideal (𝓞 F)) (h𝔲 : 𝔲 ≠ ⊥)
+include F 𝔲 h𝔲
+private lemma support_norm_prod_le   :
     (∏ p ∈ idealPrimeSupport 𝔲, idealNorm p) ≤ idealNorm 𝔲 := by
   have hd : idealRadical 𝔲 ∣ 𝔲 := by
     have H := Multiset.prod_dvd_prod_of_le (Multiset.dedup_le (normalizedFactors 𝔲))
@@ -68,11 +74,10 @@ private lemma support_norm_prod_le {F : Type} [Field F] [NumberField F]
     exact_mod_cast Nat.le_of_dvd hpos hnorm
   simpa only [idealNorm, idealRadical, map_prod, Nat.cast_prod] using H
 
-private lemma prod_norm_le_of_dvd {F : Type} [Field F] [NumberField F]
-    (𝔲 : Ideal (𝓞 F)) (h𝔲 : 𝔲 ≠ ⊥) (T : Finset (Ideal (𝓞 F)))
+private lemma prod_norm_le_of_dvd   (T : Finset (Ideal (𝓞 F)))
     (hT : ∀ 𝔭 ∈ T, Prime 𝔭 ∧ 𝔭 ∣ 𝔲) :
     (∏ 𝔭 ∈ T, idealNorm 𝔭) ≤ idealNorm 𝔲 := by
-  have h𝔲0 : 𝔲 ≠ 0 := fun h => h𝔲 (by simpa using h)
+  have h𝔲0 : 𝔲 ≠ 0 := fun h => h𝔲 (h)
   have hsub : T ⊆ idealPrimeSupport 𝔲 := fun p hp =>
     Multiset.mem_toFinset.mpr
       ((UniqueFactorizationMonoid.mem_normalizedFactors_iff (α := Ideal (𝓞 F)) h𝔲0).mpr
@@ -83,6 +88,8 @@ private lemma prod_norm_le_of_dvd {F : Type} [Field F] [NumberField F]
   · intro p hp _
     exact le_trans (by norm_num)
       (idealNorm_prime_ge_two p (prime_of_normalized_factor p (Multiset.mem_toFinset.mp hp)))
+end
+
 
 theorem omitted_prime_euler_subpolynomial
     (F : Type) [Field F] [NumberField F]
@@ -96,26 +103,26 @@ theorem omitted_prime_euler_subpolynomial
         (∏ 𝔭 ∈ T, (1 - (idealNorm 𝔭) ^ (-σ₀))⁻¹) ≤ C * (idealNorm 𝔲) ^ ε := by
   classical
   set Q : ℝ := (2 : ℝ) ^ (1 / ε) + (2 : ℝ) ^ (1 / σ₀) with hQdef
-  have hQeq : (2 : ℝ) ^ (1 / ε) + (2 : ℝ) ^ (1 / σ₀) = Q := hQdef.symm
-  let B : ℝ := max (1 + (2 : ℝ) ^ (-σ₀)) ((1 - (2 : ℝ) ^ (-σ₀))⁻¹)
+  have hQeq  := hQdef.symm
+  let B  := max (1 + (2 : ℝ) ^ (-σ₀)) ((1 - (2 : ℝ) ^ (-σ₀))⁻¹)
   have hB1 : 1 ≤ B := by
     refine le_trans ?_ (le_max_left _ _)
     have := Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2) (-σ₀)
     linarith
-  have hefin : (Subtype.val '' normBoundedIdeals F Q).Finite :=
+  have hefin  :=
     (normBoundedIdeals_finite F Q).image Subtype.val
-  let e : Finset (Ideal (𝓞 F)) := hefin.toFinset
+  let e  := hefin.toFinset
   refine ⟨B ^ e.card, pow_pos (lt_of_lt_of_le zero_lt_one hB1) _, ?_⟩
   intro 𝔲 h𝔲 T hT
-  have hnorm : (∏ 𝔭 ∈ T, idealNorm 𝔭) ≤ idealNorm 𝔲 := prod_norm_le_of_dvd 𝔲 h𝔲 T hT
+  have hnorm  := prod_norm_le_of_dvd 𝔲 h𝔲 T hT
   have hmem_e : ∀ 𝔭 : Ideal (𝓞 F), Prime 𝔭 → idealNorm 𝔭 ≤ Q → 𝔭 ∈ e := fun 𝔭 hp hle =>
-    hefin.mem_toFinset.mpr ⟨⟨𝔭, by simpa using hp.ne_zero⟩, hle, rfl⟩
+    hefin.mem_toFinset.mpr ⟨⟨𝔭, hp.ne_zero⟩, hle, rfl⟩
   have hloc1 : ∀ 𝔭 ∈ T, 1 + (idealNorm 𝔭) ^ (-σ₀) ≤
       (if 𝔭 ∈ e then B else 1) * (idealNorm 𝔭) ^ ε := by
     intro 𝔭 h𝔭
     have hp := (hT 𝔭 h𝔭).1
-    have hp2 : (2 : ℝ) ≤ idealNorm 𝔭 := idealNorm_prime_ge_two 𝔭 hp
-    have hpow : 1 ≤ (idealNorm 𝔭) ^ ε := Real.one_le_rpow (by linarith) hε.le
+    have hp2  := idealNorm_prime_ge_two 𝔭 hp
+    have hpow  := Real.one_le_rpow (by linarith) hε.le
     split_ifs with hpe
     · have hb : 1 + (idealNorm 𝔭) ^ (-σ₀) ≤ B :=
         (small_case σ₀ hσ₀ (idealNorm 𝔭) hp2).1.trans (le_max_left _ _)
@@ -129,8 +136,8 @@ theorem omitted_prime_euler_subpolynomial
       (if 𝔭 ∈ e then B else 1) * (idealNorm 𝔭) ^ ε := by
     intro 𝔭 h𝔭
     have hp := (hT 𝔭 h𝔭).1
-    have hp2 : (2 : ℝ) ≤ idealNorm 𝔭 := idealNorm_prime_ge_two 𝔭 hp
-    have hpow : 1 ≤ (idealNorm 𝔭) ^ ε := Real.one_le_rpow (by linarith) hε.le
+    have hp2  := idealNorm_prime_ge_two 𝔭 hp
+    have hpow  := Real.one_le_rpow (by linarith) hε.le
     split_ifs with hpe
     · have hb : (1 - (idealNorm 𝔭) ^ (-σ₀))⁻¹ ≤ B :=
         (small_case σ₀ hσ₀ (idealNorm 𝔭) hp2).2.trans (le_max_right _ _)

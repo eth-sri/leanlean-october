@@ -143,7 +143,8 @@ private lemma param_smooth (ζ : F) (hζ : IsPrimitiveRoot ζ 12) :
       filter_upwards [hh] with y hy
       simpa only [hM, PGLComplex.affineChart_target, Set.mem_preimage] using hy
     filter_upwards [hme,hmt] with y hy hyt
-    rw [← hM, PGLComplex.affineChart_symm_apply _ hyt, PGLComplex.matrixRatios_mk, hy]
+    rw [← hM, PGLComplex.affineChart_symm_apply _ hyt, PGLComplex.matrixRatios_mk]
+    exact congrArg PGLComplex.matrixRatios hy
   have hfinal := (LocalQuotientCharts.ExponentialHaarFrame.coordinateReindex F).symm.contDiff.comp_contDiffAt x
     ((PGLComplex.productCoordinatesFlatten (NumberField.InfinitePlace F)).contDiff.comp_contDiffAt x hd)
   have hself {V : Type} [NormedAddCommGroup V] [NormedSpace ℝ V] :

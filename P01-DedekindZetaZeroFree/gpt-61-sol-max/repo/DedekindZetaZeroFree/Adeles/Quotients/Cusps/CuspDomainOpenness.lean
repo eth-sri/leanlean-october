@@ -41,8 +41,8 @@ variable {C : ModelData F ζ hζ} {D : Iwasawa F ζ hζ}
 variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
-variable {A : KPMsRationalCompactCrossPairing.RawCompactComparison F ζ hζ C D R P H}
-variable {U : Level F ζ hζ}
+
+
 
 end DedekindZetaZeroFree.KPMsResidualTailRestoration.OutgoingTailL2.CoordinateDescent
 

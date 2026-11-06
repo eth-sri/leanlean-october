@@ -17,13 +17,15 @@ variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable (R : PrincipalMellin.ActualRecipe S η)
 
-lemma kernel_continuous (N : TraceHaarTransport R) {Q : AdmissibleFlatSources R}
-    (P : Packet R Q) : Continuous (fun t : PositiveAxis => P.kernel t.val) :=
+section
+variable (N : TraceHaarTransport R) {Q : AdmissibleFlatSources R}
+    (P : Packet R Q)
+include N Q P
+lemma kernel_continuous   : Continuous (fun t : PositiveAxis => P.kernel t.val) :=
   (thetaProfileGaussianKernel_continuousOn _ _ _ (GaussianSmoothing.C0_pos N P) P.A₀_pos
     (Fintype.card_pos_iff.mpr ⟨P.v₀⟩)).comp_continuous continuous_subtype_val (fun t => t.property)
 
-lemma kernel_square_moment_integrable (N : TraceHaarTransport R) {Q : AdmissibleFlatSources R}
-    (P : Packet R Q) : Integrable (fun t : PositiveAxis => ‖P.kernel t.val‖ * t.val ^ 2) positiveHaar := by
+lemma kernel_square_moment_integrable   : Integrable (fun t : PositiveAxis => ‖P.kernel t.val‖ * t.val ^ 2) positiveHaar := by
   have hi := thetaProfileGaussianKernel_absolute_moment P.C₀ P.A₀ (Fintype.card (InfinitePlace F))
     (GaussianSmoothing.C0_pos N P) P.A₀_pos (Fintype.card_pos_iff.mpr ⟨P.v₀⟩) 2
   let f : ℝ → ℝ := fun t => ‖P.kernel t‖ * t ^ 2
@@ -40,8 +42,7 @@ lemma kernel_square_moment_integrable (N : TraceHaarTransport R) {Q : Admissible
   change ‖thetaProfileGaussianKernel P.C₀ P.A₀ (Fintype.card (InfinitePlace F)) t‖ * (t ^ (2 : ℝ)) * t⁻¹ = _
   rw [Real.rpow_two]
   ring
-lemma kernel_inverse_square_moment_integrable (N : TraceHaarTransport R) {Q : AdmissibleFlatSources R}
-    (P : Packet R Q) : Integrable (fun t : PositiveAxis => ‖P.kernel t.val‖ * (t.val ^ 2)⁻¹) positiveHaar := by
+lemma kernel_inverse_square_moment_integrable   : Integrable (fun t : PositiveAxis => ‖P.kernel t.val‖ * (t.val ^ 2)⁻¹) positiveHaar := by
   have hi := thetaProfileGaussianKernel_absolute_moment P.C₀ P.A₀ (Fintype.card (InfinitePlace F))
     (GaussianSmoothing.C0_pos N P) P.A₀_pos (Fintype.card_pos_iff.mpr ⟨P.v₀⟩) (-2)
   let f : ℝ → ℝ := fun t => ‖P.kernel t‖ * (t ^ 2)⁻¹
@@ -58,6 +59,8 @@ lemma kernel_inverse_square_moment_integrable (N : TraceHaarTransport R) {Q : Ad
   change ‖thetaProfileGaussianKernel P.C₀ P.A₀ (Fintype.card (InfinitePlace F)) t‖ * (t ^ (-2 : ℝ)) * t⁻¹ = _
   rw [Real.rpow_neg ht.le, Real.rpow_two]
   ring
+end
+
 end DedekindZetaZeroFree.OrbitFrequencies
 end
 
@@ -186,19 +189,22 @@ open scoped NumberField Classical Topology
 variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable (R : PrincipalMellin.ActualRecipe S η)
-def orbitMass (N : TraceHaarTransport R) {Q : AdmissibleFlatSources R}
+section
+variable (N : TraceHaarTransport R) {Q : AdmissibleFlatSources R}
     (T : Realization R Q) (P : Packet R Q) (v : R.A.UnitQuotient)
-    (m : ThetaReflectionData.Row R.A) (b : Bool) (ξ : ThetaReflectionData.Frequency R.A)
+    (m : ThetaReflectionData.Row R.A)
+include N Q T P v m
+def orbitMass   (b : Bool) (ξ : ThetaReflectionData.Frequency R.A)
     (γ : ThetaReflectionData.rationalGamma R.A) (d : ThetaDigitAverage.Dig (RowPrime R m))
     (l : PositiveAxis) : ℝ := by
   letI := N.groupHaar_isHaar
   exact ∫ y : Sheet R.A l, ‖orbitFrequencyValue R Q T v (ξ, γ)
     (signedArgument R m b y.val d)‖ ∂pregroupingSheetHaar R.A P.v₀ N.groupHaar l
-lemma orbitMass_nonneg (N : TraceHaarTransport R) {Q : AdmissibleFlatSources R}
-    (T : Realization R Q) (P : Packet R Q) (v : R.A.UnitQuotient)
-    (m : ThetaReflectionData.Row R.A) b ξ γ d l : 0 ≤ orbitMass R N T P v m b ξ γ d l := by
+lemma orbitMass_nonneg   b ξ γ d l : 0 ≤ orbitMass R N T P v m b ξ γ d l := by
   unfold orbitMass
   exact integral_nonneg (fun _ => norm_nonneg _)
+end
+
 lemma sheet_coordinates_continuous (w : InfinitePlace F) (Z : ℝ) (hZ : 0 < Z) :
     Continuous (fun p : PositiveAxis × R.A.G1 =>
       (sheetTranslation R.A w ⟨p.1.val / Z, div_pos p.1.property hZ⟩ p.2).val) := by
@@ -225,8 +231,11 @@ variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable (R : PrincipalMellin.ActualRecipe S η)
 
-lemma orbitMass_measurable (N : TraceHaarTransport R) {Q : AdmissibleFlatSources R}
-    (T : Realization R Q) (P : Packet R Q) (v : R.A.UnitQuotient)
+section
+variable (N : TraceHaarTransport R) {Q : AdmissibleFlatSources R}
+    (T : Realization R Q) (P : Packet R Q)
+include N Q T P
+lemma orbitMass_measurable   (v : R.A.UnitQuotient)
     (m : ThetaReflectionData.Row R.A) b ξ γ d (Z : ℝ) (hZ : 0 < Z) :
     StronglyMeasurable (fun t : PositiveAxis =>
       orbitMass R N T P v m b ξ γ d ⟨t.val / Z, div_pos t.property hZ⟩) := by
@@ -249,8 +258,7 @@ lemma orbitMass_measurable (N : TraceHaarTransport R) {Q : AdmissibleFlatSources
   simp_rw [he]
   exact hc.norm.stronglyMeasurable.integral_prod_right'
 
-lemma orbit_product_continuous (N : TraceHaarTransport R) {Q : AdmissibleFlatSources R}
-    (T : Realization R Q) (P : Packet R Q) (v : R.A.UnitQuotient)
+lemma orbit_product_continuous   (v : R.A.UnitQuotient)
     (m : ThetaReflectionData.Row R.A) b ξ γ d (Z : ℝ) (hZ : 0 < Z) :
     Continuous (fun p : PositiveAxis × R.A.G1 =>
       P.kernel p.1.val * digitWeight R m d * orbitFrequencyValue R Q T v (ξ, γ)
@@ -260,8 +268,7 @@ lemma orbit_product_continuous (N : TraceHaarTransport R) {Q : AdmissibleFlatSou
     ((orbitFrequencyValue_continuous R T v (ξ, γ)).comp
       ((DigitMasks.signedArgument_continuous R m b d).comp (sheet_coordinates_continuous R P.v₀ Z hZ)))
 
-lemma orbitMass_reverse_bound (N : TraceHaarTransport R) {Q : AdmissibleFlatSources R}
-    (T : Realization R Q) (P : Packet R Q)
+lemma orbitMass_reverse_bound  
     (D : SourceFactorization R Q T) (E : ExteriorCoefficients R Q T D)
     (v : R.A.UnitQuotient) (ξ : ThetaReflectionData.Frequency R.A)
     (γ : ThetaReflectionData.rationalGamma R.A) (m : ThetaReflectionData.Row R.A)
@@ -293,8 +300,7 @@ lemma orbitMass_reverse_bound (N : TraceHaarTransport R) {Q : AdmissibleFlatSour
   change ‖digitExterior R D m (γ.val * Quotient.out ξ) d‖ * _ ≤ _
   exact mul_le_of_le_one_left (norm_nonneg _) (digitExterior_norm_le_one R D E m _ d)
 
-theorem orbitMass_reverse_summable_bound (N : TraceHaarTransport R)
-    {Q : AdmissibleFlatSources R} (T : Realization R Q) (P : Packet R Q)
+theorem orbitMass_reverse_summable_bound  
     (D : SourceFactorization R Q T) (E : ExteriorCoefficients R Q T D)
     (H : SameResidueProfiles R Q T P) :
     ∃ K : ℝ, 0 ≤ K ∧ ∀ v m ξ d (l : PositiveAxis),
@@ -329,5 +335,7 @@ theorem orbitMass_reverse_summable_bound (N : TraceHaarTransport R)
       simp only [orbit_reverse_zero_off_support R D E v ξ γ _ m d hx, norm_zero, integral_zero]
     simp only [he, tsum_zero, frequencyMajorant, ite_eq_right hx, mul_zero, le_refl]
     exact ⟨summable_zero, trivial⟩
+end
+
 end DedekindZetaZeroFree.OrbitFrequencies
 end

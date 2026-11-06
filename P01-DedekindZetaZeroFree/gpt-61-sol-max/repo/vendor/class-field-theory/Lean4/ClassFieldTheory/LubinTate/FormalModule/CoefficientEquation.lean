@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.LubinTate.FormalModule.Series
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -34,16 +37,19 @@ open LocalFieldTheory.DiscreteValuationField
 variable {K : Type u} [Field K]
 variable {F : LocalField.{u, v} K} {π : F.valuationSubring}
 
+section
+variable (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
+include hπ
 /-- A chosen uniformizer reduces to zero in the residue field. -/
 theorem residueMap_uniformizer_eq_zero
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) :
+      :
     F.residueMap π = 0 :=
   (F.toCompleteDVF.residue_eq_zero_iff π).2
     (F.toCompleteDVF.uniformizer_mem_maximalIdeal hπ)
 
 /-- An element reducing to zero is divisible by the chosen uniformizer. -/
 theorem uniformizer_dvd_of_residueMap_eq_zero
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
+     
     {a : F.valuationSubring} (ha : F.residueMap a = 0) :
     π ∣ a := by
   have hmem : a ∈ F.maximalIdeal :=
@@ -55,14 +61,14 @@ theorem uniformizer_dvd_of_residueMap_eq_zero
 
 /-- Every positive power of a uniformizer reduces to zero. -/
 theorem residueMap_uniformizer_pow_eq_zero
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
+     
     {r : ℕ} (hr : r ≠ 0) :
     F.residueMap (π ^ r) = 0 := by
   simp [map_pow, residueMap_uniformizer_eq_zero hπ, hr]
 
 /-- For positive `r`, the factor `1 - pi ^ r` is a unit of `O_K`. -/
 theorem isUnit_one_sub_uniformizer_pow
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
+     
     {r : ℕ} (hr : r ≠ 0) :
     IsUnit (1 - π ^ r) := by
   apply IsLocalRing.isUnit_one_sub_self_of_mem_nonunits
@@ -70,6 +76,8 @@ theorem isUnit_one_sub_uniformizer_pow
   have hresidue_ne : F.residueMap (π ^ r) ≠ 0 :=
     (F.toCompleteDVF.residue_ne_zero_iff_isUnit (π ^ r)).2 hunit
   exact hresidue_ne (residueMap_uniformizer_pow_eq_zero hπ hr)
+end
+
 
 /-- Left multiplication by a unit has a unique preimage for every
 right-hand side. -/
@@ -78,18 +86,13 @@ theorem existsUnique_mul_eq_of_isUnit
     ∃! x : R, a * x = b := by
   rcases ha with ⟨u, rfl⟩
   refine ⟨(↑(u⁻¹) : R) * b, by simp, ?_⟩
-  intro y hy
-  calc
-    y = ((↑(u⁻¹) : R) * (u : R)) * y := by simp
-    _ = (↑(u⁻¹) : R) * ((u : R) * y) := by rw [mul_assoc]
-    _ = (↑(u⁻¹) : R) * b := by rw [hy]
+  aesop
 
 /-- The scalar coefficient equation in positive total degree has a
 unique solution in the valuation ring. -/
-theorem existsUnique_one_sub_uniformizer_pow_mul_eq
+def existsUnique_one_sub_uniformizer_pow_mul_eq
     (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    {r : ℕ} (hr : r ≠ 0) (b : F.valuationSubring) :
-    ∃! x : F.valuationSubring, (1 - π ^ r) * x = b :=
+    {r : ℕ} (hr : r ≠ 0) (b : F.valuationSubring)  :=
   existsUnique_mul_eq_of_isUnit
     (isUnit_one_sub_uniformizer_pow hπ hr) b
 

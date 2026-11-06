@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.Sobolev.Embedding.FiniteOrderRepresentatives
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -12,13 +15,16 @@ open MeasureTheory
 open scoped ContDiff
 open KPContLocalNorm
 
-def euclideanSobolevNorm {n : ℕ} (k : ℕ) (w : Space n → ℂ) : ℝ :=
-  Real.sqrt (∑ α : MultiIndex n k, ∫ x, ‖coordinateDerivative α w x‖ ^ 2)
 
-def closedCarrier {n : ℕ} (B : LocalBall n) : Set (Space n) :=
+
+
+section
+variable {n : ℕ}
+include n
+def closedCarrier   (B : LocalBall n)  :=
   Metric.closedBall B.center B.radius
 
-theorem ball_sobolev_embedding {n : ℕ} (A B : LocalBall n)
+theorem ball_sobolev_embedding   (A B : LocalBall n)
     (hAB : closedCarrier A ⊆ B.carrier) (m : ℕ) :
     ∃ C : ℝ, 0 < C ∧ ∀ u : IntegerSobolev B (m + n),
       ∃ (f : Space n → ℂ) (j : CompactJets (closedCarrier A) m),
@@ -44,13 +50,13 @@ theorem ball_sobolev_embedding {n : ℕ} (A B : LocalBall n)
   exact Measure.eqOn_open_of_ae_eq (hgu.trans hfu.symm) Metric.isOpen_ball
     hg.continuousOn hf.continuousOn
 
-def LocallyAllIntegerSobolev {n : ℕ} (U : Set (Space n)) (u : Space n → ℂ) : Prop :=
+def LocallyAllIntegerSobolev   (U : Set (Space n)) (u : Space n → ℂ) : Prop :=
   ∀ B : LocalBall n, closedCarrier B ⊆ U → ∀ k : ℕ,
     ∃ v : IntegerSobolev B k,
       u =ᵐ[volume.restrict B.carrier]
         (fun x => v.derivatives (⟨fun _ => 0, by simp⟩ : MultiIndex n k) x)
 
-private theorem smooth_on_local_ball {n : ℕ} (B : LocalBall n)
+private theorem smooth_on_local_ball   (B : LocalBall n)
     (u : Space n → ℂ)
     (hu : ∀ k : ℕ, ∃ v : IntegerSobolev B k,
       u =ᵐ[volume.restrict B.carrier]
@@ -75,7 +81,7 @@ private theorem smooth_on_local_ball {n : ℕ} (B : LocalBall n)
   exact Measure.eqOn_open_of_ae_eq ((hfu 0).trans (hfu m).symm)
     Metric.isOpen_ball (hf 0).continuousOn (hf m).continuousOn
 
-theorem locally_all_orders_smooth_representative {n : ℕ} (hn : 0 < n)
+theorem locally_all_orders_smooth_representative   (hn : 0 < n)
     (U : Set (Space n)) (hU : IsOpen U) (u : Space n → ℂ)
     (hu : LocallyAllIntegerSobolev U u) :
     ∃ f : Space n → ℂ, ContDiffOn ℝ (⊤ : ℕ∞) f U ∧
@@ -112,10 +118,10 @@ theorem locally_all_orders_smooth_representative {n : ℕ} (hn : 0 < n)
       ((hBopen p).inter (hBopen q))
       ((hv p).continuousOn.mono Set.inter_subset_left)
       ((hv q).continuousOn.mono Set.inter_subset_right)
-  let f : Space n → ℂ := fun x => if hx : x ∈ U then v ⟨x, hx⟩ x else 0
+  let f  := fun x => if hx : x ∈ U then v ⟨x, hx⟩ x else 0
   have hfB : ∀ p : U, Set.EqOn f (v p) (B p).carrier := by
     intro p x hx
-    have hxU : x ∈ U := hBsub p hx
+    have hxU  := hBsub p hx
     dsimp [f]
     rw [dif_pos hxU]
     exact hcompat ⟨x, hxU⟩ p ⟨hBmem ⟨x, hxU⟩, hx⟩
@@ -143,6 +149,8 @@ theorem locally_all_orders_smooth_representative {n : ℕ} (hn : 0 < n)
   intro g hg hgu
   exact Measure.eqOn_open_of_ae_eq (hgu.trans hfae.symm) hU hg.continuousOn
     hfsmooth.continuousOn
+end
+
 
 end DedekindZetaZeroFree.KPContLocalCubeEmbedding
 

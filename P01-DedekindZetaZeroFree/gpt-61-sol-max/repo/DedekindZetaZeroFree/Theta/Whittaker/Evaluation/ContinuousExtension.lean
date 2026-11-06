@@ -22,16 +22,21 @@ def CompactBound : Prop := ∀K : Set α, IsCompact K →
 
 def evaluation (a : α) : complexCore →ₗ[ℂ] ℂ := (LinearMap.proj a).comp E
 
-theorem evaluation_continuous (hb : CompactBound E) (a : α) : Continuous (evaluation E a) := by
+section
+variable (hb : CompactBound E) (a : α)
+include hb a
+theorem evaluation_continuous   : Continuous (evaluation E a) := by
   obtain ⟨orders,B,h⟩ := hb {a} isCompact_singleton
   exact continuous_of_native_bound (evaluation E a) orders B (fun v=>h v a (Set.mem_singleton a))
 
-def extendedEvaluation (hb : CompactBound E) (a : α) : PrincipalSeries negativeParameter →L[ℂ] ℂ :=
+def extendedEvaluation   : PrincipalSeries negativeParameter →L[ℂ] ℂ :=
   (⟨evaluation E a,evaluation_continuous E hb a⟩ : complexCore →L[ℂ] ℂ).extend smoothInclusion
 
-theorem extendedEvaluation_core (hb : CompactBound E) (a : α) (v : complexCore) :
+theorem extendedEvaluation_core   (v : complexCore) :
     extendedEvaluation E hb a (smoothInclusion v)=E v a := by
   exact ContinuousLinearMap.extend_eq _ smoothInclusion_denseRange smoothInclusion_isUniformInducing v
+end
+
 
 def compactObservation (he : ∀v,Continuous (E v)) (K : Set α) : complexCore →ₗ[ℂ] C(K,ℂ) where
   toFun v := ⟨fun a=>E v a.val,(he v).comp continuous_subtype_val⟩
@@ -39,8 +44,11 @@ def compactObservation (he : ∀v,Continuous (E v)) (K : Set α) : complexCore �
   map_smul' c v := by ext a;exact congrFun (E.map_smul c v) a.val
 
 include E in
-theorem compactObservation_continuous (he : ∀v,Continuous (E v)) (hb : CompactBound E)
-    (K : Set α) (hK : IsCompact K) : Continuous (compactObservation E he K) := by
+section
+variable (he : ∀v,Continuous (E v)) (hb : CompactBound E)
+    (K : Set α) (hK : IsCompact K)
+include he hb K hK
+theorem compactObservation_continuous   : Continuous (compactObservation E he K) := by
   letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
   obtain ⟨orders,B,h⟩ := hb K hK
   apply core_withSeminorms.continuous_normedSpace_rng C(K,ℂ)
@@ -49,20 +57,17 @@ theorem compactObservation_continuous (he : ∀v,Continuous (E v)) (hb : Compact
   intro a
   exact h v a.val a.property
 
-def extendedCompact (he : ∀v,Continuous (E v)) (hb : CompactBound E)
-    (K : Set α) (hK : IsCompact K) : PrincipalSeries negativeParameter →L[ℂ] C(K,ℂ) := by
+def extendedCompact   : PrincipalSeries negativeParameter →L[ℂ] C(K,ℂ) := by
   letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
   exact (⟨compactObservation E he K,compactObservation_continuous E he hb K hK⟩ :
     complexCore →L[ℂ] C(K,ℂ)).extend smoothInclusion
 
-theorem extendedCompact_core (he : ∀v,Continuous (E v)) (hb : CompactBound E)
-    (K : Set α) (hK : IsCompact K) (v : complexCore) :
+theorem extendedCompact_core   (v : complexCore) :
     extendedCompact E he hb K hK (smoothInclusion v)=compactObservation E he K v := by
   letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
   exact ContinuousLinearMap.extend_eq _ smoothInclusion_denseRange smoothInclusion_isUniformInducing v
 
-theorem extendedCompact_eval (he : ∀v,Continuous (E v)) (hb : CompactBound E)
-    (K : Set α) (hK : IsCompact K) (v : PrincipalSeries negativeParameter) (a : K) :
+theorem extendedCompact_eval   (v : PrincipalSeries negativeParameter) (a : K) :
     extendedCompact E he hb K hK v a = extendedEvaluation E hb a.val v := by
   letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
   refine smoothInclusion_denseRange.induction_on v ?_ ?_
@@ -71,6 +76,8 @@ theorem extendedCompact_eval (he : ∀v,Continuous (E v)) (hb : CompactBound E)
   · intro u
     rw [extendedCompact_core,extendedEvaluation_core]
     rfl
+end
+
 end DedekindZetaZeroFree.FourierContinuation.CurrentOutputExtension
 
 end

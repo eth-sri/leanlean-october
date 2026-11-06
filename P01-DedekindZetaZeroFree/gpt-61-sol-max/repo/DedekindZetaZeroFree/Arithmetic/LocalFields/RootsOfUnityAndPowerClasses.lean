@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Units.SArithmeticData
 public import DedekindZetaZeroFree.Algebra.PowerQuotientModules
 
 @[expose] public section
+
 
 open scoped NumberField Classical
 open NumberField IsDedekindDomain
@@ -15,36 +18,35 @@ noncomputable section
 
 variable {F : Type} [Field F] [NumberField F]
 
-def IsLocalRootOrder (n : ℕ) : Prop := n = 2 ∨ n = 3 ∨ n = 6
+def IsLocalRootOrder (n : ℕ)  := n = 2 ∨ n = 3 ∨ n = 6
 
 theorem primitive_root (A : SArithmeticData F) (n : ℕ) (hn : IsLocalRootOrder n) :
     IsPrimitiveRoot (A.zeta12 ^ (12 / n)) n := by
   rcases hn with rfl | rfl | rfl
-  · exact A.primitive_zeta12.pow (by decide) (by decide : 12 = 12 / 2 * 2)
-  · exact A.primitive_zeta12.pow (by decide) (by decide : 12 = 12 / 3 * 3)
-  · exact A.primitive_zeta12.pow (by decide) (by decide : 12 = 12 / 6 * 6)
+  · apply A.primitive_zeta12.pow <;> aesop
+  · apply A.primitive_zeta12.pow <;> aesop
+  · apply A.primitive_zeta12.pow <;> aesop
 
-theorem finite_primitive_root (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F)) (n : ℕ)
-    (hn : IsLocalRootOrder n) :
-    IsPrimitiveRoot ((algebraMap F (v.adicCompletion F)) (A.zeta12 ^ (12 / n))) n :=
+section
+variable (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F)) (n : ℕ)
+    (hn : IsLocalRootOrder n)
+include A v n hn
+def finite_primitive_root    :=
   (A.primitive_root n hn).map_of_injective (RingHom.injective (algebraMap F (v.adicCompletion F)))
 
-def finiteRootsEquiv (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F)) (n : ℕ)
-    (hn : IsLocalRootOrder n) :
+def finiteRootsEquiv   :
     rootsOfUnity n F ≃* rootsOfUnity n (v.adicCompletion F) := by
   haveI : NeZero n := ⟨by rcases hn with rfl | rfl | rfl <;> decide⟩
   exact rootsOfUnityEquivOfPrimitiveRoots
     (RingHom.injective (algebraMap F (v.adicCompletion F)))
     ⟨_, (mem_primitiveRoots (NeZero.pos n)).2 (A.primitive_root n hn)⟩
 
-theorem finiteRootsEquiv_apply (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F)) (n : ℕ)
-    (hn : IsLocalRootOrder n) (η : rootsOfUnity n F) :
+theorem finiteRootsEquiv_apply   (η : rootsOfUnity n F) :
     ((A.finiteRootsEquiv v n hn η : (v.adicCompletion F)ˣ) : v.adicCompletion F) =
       (algebraMap F (v.adicCompletion F)) ((η : Fˣ) : F) := by
-  haveI : NeZero n := ⟨by rcases hn with rfl | rfl | rfl <;> decide⟩
-  exact val_rootsOfUnityEquivOfPrimitiveRoots_apply_coe
-    (RingHom.injective (algebraMap F (v.adicCompletion F)))
-    ⟨_, (mem_primitiveRoots (NeZero.pos n)).2 (A.primitive_root n hn)⟩ η
+  rfl
+end
+
 
 theorem neg_one_isPower (A : SArithmeticData F) (n : ℕ) (hn : IsLocalRootOrder n) :
     ∃ x : F, x ^ n = -1 := by
@@ -61,13 +63,15 @@ theorem finite_neg_one_isPower (A : SArithmeticData F) (v : HeightOneSpectrum (�
   refine ⟨algebraMap F (v.adicCompletion F) x, ?_⟩
   rw [← map_pow, hx, map_neg, map_one]
 
-theorem infinite_isComplex (A : SArithmeticData F) (w : InfinitePlace F) : w.IsComplex :=
-  A.complex_place w
+alias infinite_isComplex := _root_.DedekindZetaZeroFree.SArithmeticData.complex_place
 
-theorem infinite_unit_isPower (A : SArithmeticData F) (w : InfinitePlace F) (n : ℕ)
-    (hn : IsLocalRootOrder n) (u : w.Completionˣ) :
+section
+variable (A : SArithmeticData F) (w : InfinitePlace F) (n : ℕ)
+    (hn : IsLocalRootOrder n)
+include A w n hn
+theorem infinite_unit_isPower   (u : w.Completionˣ) :
     ∃ x : w.Completionˣ, x ^ n = u := by
-  haveI hw : w.IsComplex := A.infinite_isComplex w
+  haveI hw  := A.infinite_isComplex w
   have hn0 : 0 < n := by rcases hn with rfl | rfl | rfl <;> decide
   set e := InfinitePlace.Completion.ringEquivComplexOfIsComplex hw with he
   obtain ⟨y, hy⟩ := IsAlgClosed.exists_pow_nat_eq (e (u : w.Completion)) hn0
@@ -82,13 +86,14 @@ theorem infinite_unit_isPower (A : SArithmeticData F) (w : InfinitePlace F) (n :
   rw [Units.val_pow_eq_pow_val, Units.val_mk0]
   exact hroot
 
-theorem infinite_power_quotient_subsingleton (A : SArithmeticData F) (w : InfinitePlace F) (n : ℕ)
-    (hn : IsLocalRootOrder n) :
+theorem infinite_power_quotient_subsingleton   :
     Subsingleton (PowerQuotient w.Completionˣ n) := by
   rw [QuotientGroup.subsingleton_iff, Subgroup.eq_top_iff']
   intro u
   obtain ⟨x, hx⟩ := A.infinite_unit_isPower w n hn u
   exact MonoidHom.mem_range.mpr ⟨x, hx⟩
+end
+
 
 theorem finite_natCast_ne_zero (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F)) (n : ℕ)
     (hn : IsLocalRootOrder n) :

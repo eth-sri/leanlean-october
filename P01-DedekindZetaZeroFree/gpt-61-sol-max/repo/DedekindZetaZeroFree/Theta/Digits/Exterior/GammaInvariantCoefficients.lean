@@ -24,8 +24,11 @@ private theorem value_right_fixed {G V : Type*} [Group G] [AddCommGroup V] [Modu
     (h : a = b * k) (hk : ρ k r = r) : ell (ρ a r) = ell (ρ b r) := by
   rw [h, map_mul, Module.End.mul_apply, hk]
 
- theorem exteriorDigitFactor_eq_slot {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
+ section
+variable {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
     (m : ThetaReflectionData.Row R.A) (x : Fˣ)
+include N C m x
+theorem exteriorDigitFactor_eq_slot  
     (d : ThetaDigitAverage.Dig (ThetaDigitAverage.rowPrimes R.A m.val m.property))
     (p : ThetaBranch.ExteriorPrime R.A) :
     exteriorDigitFactor R C m x d p = exteriorSlotValue R C.factorization p.val
@@ -49,8 +52,7 @@ private theorem value_right_fixed {G V : Type*} [Group G] [AddCommGroup V] [Modu
     KPStandardLocalRootLifts.N F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val)
       (KPAdelicCoverRestrictedProduct.adeleEval F (Sum.inr p.val) (digitParameter R m d))) h
 
- theorem exteriorDigitFactor_reindex {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
-    (m : ThetaReflectionData.Row R.A) (x : Fˣ) (u : R.A.U)
+ theorem exteriorDigitFactor_reindex   (u : R.A.U)
     (d : ThetaDigitAverage.Dig (ThetaDigitAverage.rowPrimes R.A m.val m.property))
     (p : ThetaBranch.ExteriorPrime R.A) :
     exteriorDigitFactor R C m (u.val ^ 6 * x) (DigitMasks.digitReindex R m u d) p =
@@ -128,19 +130,19 @@ private theorem value_right_fixed {G V : Type*} [Group G] [AddCommGroup V] [Modu
   exact (congrArg (fun g => C.factorization.ell v (ρ g (C.factorization.references v))) hl).trans
     (hv.trans (congrArg (fun g => C.factorization.ell v (ρ g (C.factorization.references v))) hr).symm)
 
- theorem exteriorDigitCoefficient_sixth {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
-    (m : ThetaReflectionData.Row R.A) (x : Fˣ) (u : R.A.U) :
+ theorem exteriorDigitCoefficient_sixth   (u : R.A.U) :
     exteriorDigitCoefficient R C m (u.val ^ 6 * x) = exteriorDigitCoefficient R C m x := by
   unfold exteriorDigitCoefficient
   rw [← (DigitMasks.digitReindex R m u).sum_comp]
   simp_rw [DigitMasks.digitWeight_reindex, exteriorDigitFactor_reindex]
 
- theorem exteriorDigitCoefficient_gamma {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
-    (m : ThetaReflectionData.Row R.A) (x : Fˣ) (γ : ThetaReflectionData.rationalGamma R.A) :
+ theorem exteriorDigitCoefficient_gamma   (γ : ThetaReflectionData.rationalGamma R.A) :
     exteriorDigitCoefficient R C m (γ.val * x) = exteriorDigitCoefficient R C m x := by
   obtain ⟨u, hu, he⟩ := Subgroup.mem_map.mp γ.property
   rw [← he]
   exact exteriorDigitCoefficient_sixth R C m x ⟨u, hu⟩
+end
+
 
 end DedekindZetaZeroFree.OrbitExpansion
 

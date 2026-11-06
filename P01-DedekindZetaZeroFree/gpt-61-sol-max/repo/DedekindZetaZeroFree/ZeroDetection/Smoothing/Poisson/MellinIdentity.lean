@@ -29,7 +29,10 @@ def mellinIntegrand (U : ℝ) (ω : Detector.PrimitiveFrequencyCharacter F) (β 
 
 namespace Aux
 
-lemma gamma_vertical_continuous (a : ℝ) (ha : 0 < a) :
+section
+variable (a : ℝ) (ha : 0 < a)
+include a ha
+lemma gamma_vertical_continuous   :
     Continuous (fun t : ℝ => Complex.Gamma ((a : ℂ) + (t : ℂ) * Complex.I)) := by
   apply continuous_iff_continuousAt.mpr
   intro t
@@ -41,7 +44,7 @@ lemma gamma_vertical_continuous (a : ℝ) (ha : 0 < a) :
   have : (0 : ℝ) ≤ n := Nat.cast_nonneg n
   linarith
 
-lemma gamma_vertical_integrable (a : ℝ) (ha : 0 < a) :
+lemma gamma_vertical_integrable   :
     Integrable (fun t : ℝ => Complex.Gamma ((a : ℂ) + (t : ℂ) * Complex.I)) := by
   obtain ⟨C, hC, h⟩ := detector_sz_gamma_decay a a le_rfl 2
   refine ComparisonShiftProof.integrable_tail _ (4 * C) (gamma_vertical_continuous a ha) ?_
@@ -64,7 +67,7 @@ lemma gamma_vertical_integrable (a : ℝ) (ha : 0 < a) :
     _ ≤ C * (4 * (1 + |t|) ^ (-2 : ℝ)) := mul_le_mul_of_nonneg_left key hC.le
     _ = 4 * C * (1 + |t|) ^ (-2 : ℝ) := by ring
 
-lemma gamma_power_integrable (a : ℝ) (ha : 0 < a) (x : ℝ) (hx : 0 < x) :
+lemma gamma_power_integrable   (x : ℝ) (hx : 0 < x) :
     Integrable (fun t : ℝ => Complex.Gamma ((a : ℂ) + (t : ℂ) * Complex.I) *
       (x : ℂ) ^ (-((a : ℂ) + (t : ℂ) * Complex.I))) := by
   have hp : Continuous (fun t : ℝ => (x : ℂ) ^ (-((a : ℂ) + (t : ℂ) * Complex.I))) :=
@@ -82,7 +85,7 @@ lemma gamma_power_integrable (a : ℝ) (ha : 0 < a) (x : ℝ) (hx : 0 < x) :
   filter_upwards [] with t
   exact hbound t
 
-lemma exp_inversion (a : ℝ) (ha : 0 < a) (x : ℝ) (hx : 0 < x) :
+lemma exp_inversion   (x : ℝ) (hx : 0 < x) :
     (Real.exp (-x) : ℂ) = ((1 / (2 * Real.pi) : ℝ) : ℂ) *
       ∫ t : ℝ, Complex.Gamma ((a : ℂ) + (t : ℂ) * Complex.I) *
         (x : ℂ) ^ (-((a : ℂ) + (t : ℂ) * Complex.I)) := by
@@ -104,6 +107,8 @@ lemma exp_inversion (a : ℝ) (ha : 0 < a) (x : ℝ) (hx : 0 < x) :
   simp only [mellinInv, smul_eq_mul, Complex.real_smul] at hi
   simp_rw [hline] at hi
   simpa only [mul_comm] using hi
+end
+
 
 lemma power_id (q : ℕ) (X : ℝ) (hq : 0 < q) (hX : 0 < X) (s z : ℂ) :
     (q : ℂ) ^ (-s) * ((((q : ℝ) / X : ℝ)) : ℂ) ^ (-z) =
@@ -124,17 +129,20 @@ lemma ideals_countable : Countable (Ideal (𝓞 F)) := by
     exact ⟨Ideal.absNorm n, le_rfl⟩
   rwa [he] at h
 
-def coef (U : ℝ) {m : Ideal (𝓞 F)} (ω : RayClassCharacter F m) (w : ℂ)
+section
+variable (U : ℝ) {m : Ideal (𝓞 F)} (ω : RayClassCharacter F m)
+include U m ω
+def coef   (w : ℂ)
     (n : Ideal (𝓞 F)) : ℂ :=
   if n ≠ ⊥ then (DetectorDef.a F U n : ℂ) * ω n * (Ideal.absNorm n : ℂ) ^ (-w) else 0
 
-def profile (U : ℝ) {m : Ideal (𝓞 F)} (ω : RayClassCharacter F m) (β γ v₀ : ℝ)
+def profile   (β γ v₀ : ℝ)
     (n : Ideal (𝓞 F)) (t : ℝ) : ℂ :=
   Complex.Gamma ((v₀ : ℂ) + (t : ℂ) * Complex.I) *
     ((((U ^ DetectorDef.r : ℝ)) : ℂ)) ^ ((v₀ : ℂ) + (t : ℂ) * Complex.I) *
     coef F U ω ((β : ℂ) + (γ : ℂ) * Complex.I + ((v₀ : ℂ) + (t : ℂ) * Complex.I)) n
 
-lemma coef_norm_eq (U : ℝ) {m : Ideal (𝓞 F)} (ω : RayClassCharacter F m) (z w : ℂ)
+lemma coef_norm_eq   (z w : ℂ)
     (h : z.re = w.re) (n : Ideal (𝓞 F)) :
     ‖coef F U ω z n‖ = ‖coef F U ω w n‖ := by
   by_cases hn : n = ⊥
@@ -143,9 +151,14 @@ lemma coef_norm_eq (U : ℝ) {m : Ideal (𝓞 F)} (ω : RayClassCharacter F m) (
     have hN : 0 < Ideal.absNorm n :=
       Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hn')
     simp only [coef, if_pos hn', norm_mul, Complex.norm_natCast_cpow_of_pos hN, Complex.neg_re, h]
+end
 
-lemma profile_norm (U : ℝ) (hU : 0 < U) {m : Ideal (𝓞 F)} (ω : RayClassCharacter F m)
-    (β γ v₀ : ℝ) (n : Ideal (𝓞 F)) (t : ℝ) :
+
+section
+variable (U : ℝ) (hU : 0 < U) {m : Ideal (𝓞 F)} (ω : RayClassCharacter F m)
+    (β γ v₀ : ℝ)
+include U hU m ω β γ v₀
+lemma profile_norm   (n : Ideal (𝓞 F)) (t : ℝ) :
     ‖profile F U ω β γ v₀ n t‖ =
       ‖Complex.Gamma ((v₀ : ℂ) + (t : ℂ) * Complex.I)‖ * (U ^ DetectorDef.r) ^ v₀ *
         ‖coef F U ω ((β : ℂ) + (γ : ℂ) * Complex.I + (v₀ : ℂ)) n‖ := by
@@ -157,8 +170,7 @@ lemma profile_norm (U : ℝ) (hU : 0 < U) {m : Ideal (𝓞 F)} (ω : RayClassCha
   rw [norm_mul, norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hX,
     coef_norm_eq F U ω _ _ hre, hz]
 
-lemma profile_eq (U : ℝ) (hU : 0 < U) {m : Ideal (𝓞 F)} (ω : RayClassCharacter F m)
-    (β γ v₀ : ℝ) (n : Ideal (𝓞 F)) (hn : n ≠ ⊥) (t : ℝ) :
+lemma profile_eq   (n : Ideal (𝓞 F)) (hn : n ≠ ⊥) (t : ℝ) :
     profile F U ω β γ v₀ n t =
       ((DetectorDef.a F U n : ℂ) * ω n *
         (Ideal.absNorm n : ℂ) ^ (-((β : ℂ) + (γ : ℂ) * Complex.I))) *
@@ -175,8 +187,7 @@ lemma profile_eq (U : ℝ) (hU : 0 < U) {m : Ideal (𝓞 F)} (ω : RayClassChara
   linear_combination (-((DetectorDef.a F U n : ℂ) * ω n *
     Complex.Gamma ((v₀ : ℂ) + (t : ℂ) * Complex.I))) * he
 
-lemma profile_integrable (U : ℝ) (hU : 0 < U) {m : Ideal (𝓞 F)} (ω : RayClassCharacter F m)
-    (β γ v₀ : ℝ) (hv : 0 < v₀) (n : Ideal (𝓞 F)) :
+lemma profile_integrable   (hv : 0 < v₀) (n : Ideal (𝓞 F)) :
     Integrable (profile F U ω β γ v₀ n) := by
   by_cases hn : n = ⊥
   · have h0 : profile F U ω β γ v₀ n = fun _ => 0 := by
@@ -197,8 +208,7 @@ lemma profile_integrable (U : ℝ) (hU : 0 < U) {m : Ideal (𝓞 F)} (ω : RayCl
     filter_upwards [] with t
     exact (profile_eq F U hU ω β γ v₀ n hn' t).symm
 
-lemma summand_eq (U : ℝ) (hU : 0 < U) {m : Ideal (𝓞 F)} (ω : RayClassCharacter F m)
-    (β γ v₀ : ℝ) (hv : 0 < v₀) (n : Ideal (𝓞 F)) :
+lemma summand_eq   (hv : 0 < v₀) (n : Ideal (𝓞 F)) :
     smoothedSummand F U ω β γ n =
       ((1 / (2 * Real.pi) : ℝ) : ℂ) * ∫ t : ℝ, profile F U ω β γ v₀ n t := by
   by_cases hn : n = ⊥
@@ -231,6 +241,8 @@ lemma summand_eq (U : ℝ) (hU : 0 < U) {m : Ideal (𝓞 F)} (ω : RayClassChara
     rw [if_pos hn', hI]
     linear_combination ((DetectorDef.a F U n : ℂ) * ω n *
       (Ideal.absNorm n : ℂ) ^ (-((β : ℂ) + (γ : ℂ) * Complex.I))) * hi
+end
+
 
 end Aux
 

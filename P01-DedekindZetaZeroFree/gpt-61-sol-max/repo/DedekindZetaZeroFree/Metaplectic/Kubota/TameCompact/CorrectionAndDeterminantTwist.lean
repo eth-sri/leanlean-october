@@ -51,8 +51,8 @@ abbrev unitInclusion : (O F v)ˣ →* (K F v)ˣ :=
 
 omit hv
 
-def active (g : K0 F v) : Prop :=
-  c F v g ≠ 0 ∧ d F v g ≠ 0 ∧ ‖c F v g‖ < 1
+
+
 
 def kappa (g : K0 F v) : rootsOfUnity 3 F :=
   if hc : c F v g ≠ 0 then

@@ -23,28 +23,35 @@ variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable (R : PrincipalMellin.ActualRecipe S η)
 
-def forwardIdeal (c : ExteriorSquarefreeIdeal R.A.cS) (n : R.A.Exterior) : R.A.Exterior :=
+section
+variable (c : ExteriorSquarefreeIdeal R.A.cS) (n : R.A.Exterior)
+include c n in
+def forwardIdeal   : R.A.Exterior :=
   ⟨c.val.val * n.val ^ 3, mul_ne_zero c.val.property.1 (pow_ne_zero 3 n.property.1), by
     rw [Ideal.mul_sup_eq_of_coprime_left c.val.property.2]
     exact Ideal.pow_sup_eq_top n.property.2⟩
 
-def forwardGenerator (c : ExteriorSquarefreeIdeal R.A.cS) (n : R.A.Exterior) : Fˣ :=
+include c n in
+def forwardGenerator   : Fˣ :=
   R.probe.allowed.generator c.val * R.probe.allowed.generator n ^ 3
 
-lemma forwardGenerator_val (c : ExteriorSquarefreeIdeal R.A.cS) (n : R.A.Exterior) :
+include c n in
+lemma forwardGenerator_val   :
     (forwardGenerator R c n : F) =
       (ThetaReflectionData.forwardModulus R.A R.probe.coefficients c n : F) := by
   simp only [forwardGenerator, ThetaReflectionData.forwardModulus, Units.val_mul,
     Units.val_pow_eq_pow_val, R.probe.sameGenerator]
   rfl
 
-lemma forwardGenerator_allowed (c : ExteriorSquarefreeIdeal R.A.cS) (n : R.A.Exterior) :
+include c n in
+lemma forwardGenerator_allowed   :
     ThetaReflectionData.rationalClass R.A (forwardGenerator R c n) ∈ R.probe.correction.B := by
   rw [forwardGenerator, map_mul, map_pow, ← R.probe.sameComplement]
   exact R.probe.allowed.B.mul_mem (R.probe.allowed.allowed c.val)
     (R.probe.allowed.B.pow_mem (R.probe.allowed.allowed n) 3)
 
-lemma forwardGenerator_integral (c : ExteriorSquarefreeIdeal R.A.cS) (n : R.A.Exterior) :
+include c n in
+lemma forwardGenerator_integral   :
     (forwardGenerator R c n : F) ∈ R.A.R := by
   rw [forwardGenerator_val]
   exact (ThetaReflectionData.forwardModulus R.A R.probe.coefficients c n).property
@@ -62,7 +69,8 @@ lemma allowed_frequency_eq (a b : Fˣ)
   have hg := allowed_unit_mem_gamma R e he
   exact QuotientGroup.eq_iff_div_mem.mpr hg
 
-lemma forwardGenerator_order (c : ExteriorSquarefreeIdeal R.A.cS) (n : R.A.Exterior)
+include c n in
+lemma forwardGenerator_order  
     (p : ThetaBranch.ExteriorPrime R.A) :
     ThetaBranch.order p.val (forwardGenerator R c n) =
       (idealPrimeExponent p.val.asIdeal c.val.val : ℤ) +
@@ -70,9 +78,14 @@ lemma forwardGenerator_order (c : ExteriorSquarefreeIdeal R.A.cS) (n : R.A.Exter
   rw [forwardGenerator, ThetaBranch.ord_mul, ← zpow_natCast, ThetaBranch.ord_zpow, ThetaBranch.generator_order,
     ThetaBranch.generator_order]
   norm_num
+end
 
-lemma row_primes_eq_support (m : ThetaReflectionData.Row R.A)
-    (D : ThetaBranch.RowFactorization R.A R.probe.allowed m) :
+
+section
+variable (m : ThetaReflectionData.Row R.A)
+    (D : ThetaBranch.RowFactorization R.A R.probe.allowed m)
+include m D in
+lemma row_primes_eq_support   :
     ThetaDigitAverage.rowPrimes R.A m.val m.property = ThetaBranch.support D.rowIdeal.val := by
   ext p
   have hs : p ∈ ThetaBranch.support D.rowIdeal.val ↔ idealPrimeExponent p.asIdeal D.rowIdeal.val ≠ 0 := by
@@ -92,8 +105,8 @@ lemma row_primes_eq_support (m : ThetaReflectionData.Row R.A)
     rw [← WithZero.exp_zero, WithZero.exp_lt_exp]
     omega
 
-lemma forwardMask_eq_rowIdeal_character (m : ThetaReflectionData.Row R.A)
-    (D : ThetaBranch.RowFactorization R.A R.probe.allowed m) (a : Fˣ) (r : R.A.R)
+include m D in
+lemma forwardMask_eq_rowIdeal_character   (a : Fˣ) (r : R.A.R)
     (hr : (a : F) = (r : F))
     (ha : ∀ p ∈ ThetaDigitAverage.rowPrimes R.A m.val m.property, ThetaBranch.order p a = 0) :
     forwardMask R m a = NormalizedProbe.exteriorSexticRowCharacter R.A R.σ D.rowIdeal r := by
@@ -144,8 +157,8 @@ lemma exteriorCharacter_eq_sextic (I : R.A.Exterior) (r : R.A.R) :
     rfl
   · rw [MulChar.map_nonunit _ hq, MulChar.map_nonunit _ hq, map_zero]
 
-lemma forwardMask_eq_sextic (m : ThetaReflectionData.Row R.A)
-    (D : ThetaBranch.RowFactorization R.A R.probe.allowed m) (a : Fˣ) (r : R.A.R)
+include m D in
+lemma forwardMask_eq_sextic   (a : Fˣ) (r : R.A.R)
     (hr : (a : F) = (r : F)) :
     forwardMask R m a = R.σ (R.A.sexticResidue D.rowIdeal r) := by
   by_cases ha : ∀ p ∈ ThetaDigitAverage.rowPrimes R.A m.val m.property, ThetaBranch.order p a = 0
@@ -175,8 +188,8 @@ lemma forwardMask_eq_sextic (m : ThetaReflectionData.Row R.A)
         zero_pow he.ne']
     rw [hm, ← exteriorCharacter_eq_sextic, hc]
 
-lemma forwardMask_mul_L (m : ThetaReflectionData.Row R.A)
-    (D : ThetaBranch.RowFactorization R.A R.probe.allowed m)
+include m D in
+lemma forwardMask_mul_L  
     (I : R.A.Exterior) (r : R.A.R) (a : Fˣ) (hr : R.A.Generates I r)
     (har : (a : F) = (r : F))
     (ha : ThetaReflectionData.rationalClass R.A a ∈ R.probe.correction.B) :
@@ -209,6 +222,8 @@ lemma forwardMask_mul_L (m : ThetaReflectionData.Row R.A)
   rw [forwardMask_eq_sextic R m D a r har, Characters.compatible R |>.2 D.epsilon a,
     ht, map_mul, hu']
   ring
+end
+
 
 end DedekindZetaZeroFree.OrbitExpansion
 

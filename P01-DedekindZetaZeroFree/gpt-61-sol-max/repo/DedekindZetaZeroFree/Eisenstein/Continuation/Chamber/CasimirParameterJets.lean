@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.RepresentationTheory.RankOne.Iwasawa.LocalSmoothFrame
 public import DedekindZetaZeroFree.Adeles.Quotients.Cusps.CompactKernelRepresentatives
 public import DedekindZetaZeroFree.Eisenstein.Continuation.Chamber.NormalSeries
@@ -7,6 +9,7 @@ public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.GenuineSector.TestF
 public import DedekindZetaZeroFree.Geometry.Hyperbolic.Laplacian.IsometryNaturality
 
 @[expose] public section
+
 
 noncomputable section
 open scoped Classical NumberField BigOperators
@@ -21,14 +24,14 @@ variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
 variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 
-abbrev V : Set ℂ := KPContActualChamberNormalSeries.V
-abbrev d : ℕ := Module.finrank ℚ F / 2
+abbrev V  := KPContActualChamberNormalSeries.V
+abbrev d  := Module.finrank ℚ F / 2
 abbrev level := KPContActualChamberNormalSeries.atlasLevel F ζ hζ C R P H U
 abbrev M := HyperbolicChart.Space (d F)
 
-def lambda (s : ℂ) : ℂ := KPContinuation.spectralCoordinate (d F : ℤ) s
+def lambda (s : ℂ)  := KPContinuation.spectralCoordinate (d F : ℤ) s
 
-def lambdaJet (j : ℕ) (s : ℂ) : ℂ := iteratedDerivWithin j (lambda F) V s
+def lambdaJet (j : ℕ) (s : ℂ)  := iteratedDerivWithin j (lambda F) V s
 
 theorem spectral_jets (s : ℂ) (hs : s ∈ V) :
     lambda F s = (d F : ℂ) * (1 - (1 / 3 + 2 * s) ^ 2) ∧
@@ -75,10 +78,7 @@ theorem spectral_jets (s : ℂ) (hs : s ∈ V) :
         rw [iteratedDeriv_succ, ih]
         funext z; simp
   refine ⟨?_, ?_, ?_, ?_, ?_⟩
-  · show KPContinuation.spectralCoordinate (d F : ℤ) s =
-      (d F : ℂ) * (1 - (1 / 3 + 2 * s) ^ 2)
-    unfold KPContinuation.spectralCoordinate
-    simp only [Int.cast_natCast]
+  · rfl
   · show iteratedDerivWithin 0 (lambda F) V s = lambda F s
     simp only [key 0, iteratedDeriv_zero]
   · show iteratedDerivWithin 1 (lambda F) V s = -4 * (d F : ℂ) * (1 / 3 + 2 * s)
@@ -94,37 +94,46 @@ variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimension
 variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
 variable (f : ℂ → S)
 
-def jet (k : ℕ) (s : ℂ) (g : KPContActualChamberNormalSeries.G F ζ hζ) : ℂ :=
+def jet (k : ℕ) (s : ℂ) (g : KPContActualChamberNormalSeries.G F ζ hζ)  :=
   iteratedDerivWithin k (fun z => KPContActualChamberNormalSeries.E F ζ hζ U ι f z g) V s
 
-theorem jet_genuine (hι : Function.Injective ι)
+section
+variable (hι : Function.Injective ι)
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
-    (k : ℕ) (s : ℂ) (hs : s ∈ V) :
+    (k : ℕ) (s : ℂ)
+include hι hf k s
+
+local notation:max "current_coveredRepresentative" => KPContActualChamberNormalSeries.coveredRepresentative F ζ hζ C R P H U
+
+
+local notation:max "current_level" => level F ζ hζ C R P H U
+
+theorem jet_genuine   (hs : s ∈ V) :
     (fun x => jet F ζ hζ U ι f k s
-      (KPContActualChamberNormalSeries.coveredRepresentative F ζ hζ C R P H U x)) ∈
+      (current_coveredRepresentative x)) ∈
         KPContSectorScalarLineAlgebra.GenuineCoveredScalars F ζ hζ
-          (level F ζ hζ C R P H U) := by
+          (current_level) := by
   obtain ⟨e, he, -, -⟩ :=
     KPContActualChamberNormalSeries.descent_series F ζ hζ C R P H U ι f hι hf
   have hval : ∀ w ∈ V, ∀ x,
       (e w).val x = KPContActualChamberNormalSeries.E F ζ hζ U ι f w
-        (KPContActualChamberNormalSeries.coveredRepresentative F ζ hζ C R P H U x) := by
+        (current_coveredRepresentative x) := by
     intro w hw x
-    rw [← he w hw (KPContActualChamberNormalSeries.coveredRepresentative F ζ hζ C R P H U x),
+    rw [← he w hw (current_coveredRepresentative x),
       KPContActualChamberNormalSeries.coveredRepresentative_projection]
   intro ε v
   have hB : iteratedDerivWithin k
         (fun w => KPContActualChamberNormalSeries.E F ζ hζ U ι f w
-          (KPContActualChamberNormalSeries.coveredRepresentative F ζ hζ C R P H U
-            (KPContSectorCoveredQuotientVocabulary.z F ζ hζ (level F ζ hζ C R P H U) ε v))) V s =
+          (current_coveredRepresentative
+            (KPContSectorCoveredQuotientVocabulary.z F ζ hζ (current_level) ε v))) V s =
       iteratedDerivWithin k
         (fun w => (e w).val
-          (KPContSectorCoveredQuotientVocabulary.z F ζ hζ (level F ζ hζ C R P H U) ε v)) V s :=
+          (KPContSectorCoveredQuotientVocabulary.z F ζ hζ (current_level) ε v)) V s :=
     ((iteratedDerivWithin_congr (fun w hw => hval w hw
-      (KPContSectorCoveredQuotientVocabulary.z F ζ hζ (level F ζ hζ C R P H U) ε v))) hs).symm
+      (KPContSectorCoveredQuotientVocabulary.z F ζ hζ (current_level) ε v))) hs).symm
   have hgen : iteratedDerivWithin k
         (fun w => (e w).val
-          (KPContSectorCoveredQuotientVocabulary.z F ζ hζ (level F ζ hζ C R P H U) ε v)) V s =
+          (KPContSectorCoveredQuotientVocabulary.z F ζ hζ (current_level) ε v)) V s =
       iteratedDerivWithin k
         (fun w => (KPContSectorCoveredQuotientVocabulary.chi F ζ hζ ε : ℂ) * (e w).val v) V s :=
     (iteratedDerivWithin_congr (fun w _ => (e w).property ε v)) hs
@@ -136,62 +145,55 @@ theorem jet_genuine (hι : Function.Injective ι)
   have hA : iteratedDerivWithin k (fun w => (e w).val v) V s =
       iteratedDerivWithin k
         (fun w => KPContActualChamberNormalSeries.E F ζ hζ U ι f w
-          (KPContActualChamberNormalSeries.coveredRepresentative F ζ hζ C R P H U v)) V s :=
+          (current_coveredRepresentative v)) V s :=
     (iteratedDerivWithin_congr (fun w hw => hval w hw v)) hs
   show jet F ζ hζ U ι f k s
-      (KPContActualChamberNormalSeries.coveredRepresentative F ζ hζ C R P H U
-        (KPContSectorCoveredQuotientVocabulary.z F ζ hζ (level F ζ hζ C R P H U) ε v)) =
+      (current_coveredRepresentative
+        (KPContSectorCoveredQuotientVocabulary.z F ζ hζ (current_level) ε v)) =
     (KPContSectorCoveredQuotientVocabulary.chi F ζ hζ ε : ℂ) *
       jet F ζ hζ U ι f k s
-        (KPContActualChamberNormalSeries.coveredRepresentative F ζ hζ C R P H U v)
+        (current_coveredRepresentative v)
   unfold jet
   rw [hB, hgen, hcm, hA]
 
-def coveredJet (hι : Function.Injective ι)
-    (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain) (k : ℕ) (s : ℂ) :
-    KPContSectorScalarLineAlgebra.GenuineCoveredScalars F ζ hζ (level F ζ hζ C R P H U) :=
+def coveredJet   :
+    KPContSectorScalarLineAlgebra.GenuineCoveredScalars F ζ hζ (current_level) :=
   if hs : s ∈ V then
     ⟨_, jet_genuine F ζ hζ C R P H U ι f hι hf k s hs⟩
   else 0
 
-def lineJet (hι : Function.Injective ι)
-    (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain) (k : ℕ) (s : ℂ) :=
-  KPContSectorScalarLineAlgebra.S F ζ hζ (level F ζ hζ C R P H U) R P H
+def lineJet   :=
+  KPContSectorScalarLineAlgebra.S F ζ hζ (current_level) R P H
     (coveredJet F ζ hζ C R P H U ι f hι hf k s)
 
-theorem coveredJet_projection (hι : Function.Injective ι)
-    (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
-    (k : ℕ) (s : ℂ) (hs : s ∈ V) (g : KPContActualChamberNormalSeries.G F ζ hζ) :
+theorem coveredJet_projection   (hs : s ∈ V) (g : KPContActualChamberNormalSeries.G F ζ hζ) :
     (coveredJet F ζ hζ C R P H U ι f hι hf k s).val
-      (KPContSectorQuotientRelationsComparison.piTilde F ζ hζ (level F ζ hζ C R P H U)
+      (KPContSectorQuotientRelationsComparison.piTilde F ζ hζ (current_level)
         (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g)) =
           jet F ζ hζ U ι f k s g := by
   obtain ⟨e, he, -, -⟩ :=
     KPContActualChamberNormalSeries.descent_series F ζ hζ C R P H U ι f hι hf
   have hval : ∀ w ∈ V, ∀ x,
       (e w).val x = KPContActualChamberNormalSeries.E F ζ hζ U ι f w
-        (KPContActualChamberNormalSeries.coveredRepresentative F ζ hζ C R P H U x) := by
+        (current_coveredRepresentative x) := by
     intro w hw x
-    rw [← he w hw (KPContActualChamberNormalSeries.coveredRepresentative F ζ hζ C R P H U x),
+    rw [← he w hw (current_coveredRepresentative x),
       KPContActualChamberNormalSeries.coveredRepresentative_projection]
   have hEq : iteratedDerivWithin k
         (fun w => KPContActualChamberNormalSeries.E F ζ hζ U ι f w
-          (KPContActualChamberNormalSeries.coveredRepresentative F ζ hζ C R P H U
-            (KPContSectorQuotientRelationsComparison.piTilde F ζ hζ (level F ζ hζ C R P H U)
+          (current_coveredRepresentative
+            (KPContSectorQuotientRelationsComparison.piTilde F ζ hζ (current_level)
               (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g)))) V s =
       iteratedDerivWithin k
         (fun w => KPContActualChamberNormalSeries.E F ζ hζ U ι f w g) V s :=
     (iteratedDerivWithin_congr (fun w hw =>
       (hval w hw (KPContSectorQuotientRelationsComparison.piTilde F ζ hζ
-        (level F ζ hζ C R P H U) (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g))).symm.trans
+        (current_level) (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g))).symm.trans
         (he w hw g))) hs
   simp only [coveredJet, dif_pos hs]
-  show jet F ζ hζ U ι f k s
-      (KPContActualChamberNormalSeries.coveredRepresentative F ζ hζ C R P H U
-        (KPContSectorQuotientRelationsComparison.piTilde F ζ hζ (level F ζ hζ C R P H U)
-          (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g))) = jet F ζ hζ U ι f k s g
-  unfold jet
-  rw [hEq]
+  assumption
+end
+
 
 namespace FrameCalculus
 open RightFrame.PullbackWords
@@ -213,8 +215,7 @@ private theorem cauchy_identify (O : Set ℂ) (hO : IsOpen O)
   unfold RightFrame.CauchyCoefficient.cauchyCoefficient
   rw [hkernel, hi, smul_eq_mul]
   have hfac : (k.factorial : ℂ) ≠ 0 := by exact_mod_cast k.factorial_ne_zero
-  have hpi : (2 * (Real.pi : ℂ) * Complex.I) ≠ 0 := by
-    exact mul_ne_zero (mul_ne_zero (by norm_num) (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero)) Complex.I_ne_zero
+  have hpi : (2 * (Real.pi : ℂ) * Complex.I) ≠ 0 := mul_ne_zero (mul_ne_zero (by norm_num) (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero)) Complex.I_ne_zero
   field_simp
 
 private theorem parameter_jet_smooth
@@ -382,8 +383,8 @@ private theorem compact_right_pullback (hι : Function.Injective ι)
         (KPContActualChamberNormalSeries.E F ζ hζ U ι f z) (ℓ x.val) := by
   let A := ℓ '' K
   have hA : IsCompact A := hK.image_of_continuousOn (hℓ.mono hKO)
-  letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
-  letI : CompactSpace A := isCompact_iff_compactSpace.mp hA
+  letI  := isCompact_iff_compactSpace.mp hK
+  letI  := isCompact_iff_compactSpace.mp hA
   let c : C(K,A) := ⟨fun x => ⟨ℓ x.val, ⟨x.val,x.property,rfl⟩⟩,
     (continuousOn_iff_continuous_restrict.mp (hℓ.mono hKO)).subtype_mk _⟩
   let g := KPContActualChamberNormalSeries.compactMixedJet F ζ hζ U ι f hι hf 0 w A
@@ -396,8 +397,11 @@ private theorem compact_right_pullback (hι : Function.Injective ι)
   rfl
 
 open scoped Manifold in
-private theorem actualTerm_smooth (hι : Function.Injective ι)
+section
+variable (hι : Function.Injective ι)
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
+include hι hf
+private theorem actualTerm_smooth  
     (r : KPContActualChamberNormalSeries.Q F) (s : ℂ) (hs : s ∈ V) :
     KPMsGreenFlux.Smooth F ζ hζ (KPContActualChamberNormalSeries.term F ζ hζ U ι f r s) := by
   refine ⟨?_, ?_⟩
@@ -447,15 +451,14 @@ private theorem actualTerm_smooth (hι : Function.Injective ι)
         (((KPContinuation.ChamberNormalTerm.actual_term_mixed_flow F ζ hζ U ι f hι hf r 0 w s hs).1).comp
           (continuous_const.mul (KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.2.1))
         (fun b => ih (b::w)) (hder w)
-  have htop : ContMDiff 𝓘(ℝ, KPSmoothActualFlowData.LieCoordinates F) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (q []) :=
+  have htop  :=
     contMDiff_infty.mpr (fun n => hq n [])
   have he : ContMDiff 𝓘(ℝ, KPSmoothActualFlowData.LieCoordinates F)
       𝓘(ℝ, KPSmoothActualFlowData.LieCoordinates F) (⊤ : ℕ∞) (KPSmoothActualFlowData.exponential F) :=
     hD ▸ D.exponential_smooth
   exact (htop.comp he).contDiff
 
-private theorem group_chart_analytic (hι : Function.Injective ι)
-    (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
+private theorem group_chart_analytic  
     (O : Set (KPSmoothActualFlowData.B F → ℝ))
     (ℓ : (KPSmoothActualFlowData.B F → ℝ) → KPContActualChamberNormalSeries.G F ζ hζ)
     (fields : KPSmoothActualFlowData.B F → (KPSmoothActualFlowData.B F → ℝ) → (KPSmoothActualFlowData.B F → ℝ))
@@ -476,7 +479,7 @@ private theorem group_chart_analytic (hι : Function.Injective ι)
   have hj : ∀ w K, IsCompact K → K ⊆ O →
       ContinuousOn (fun p => RightFrame.PullbackWords.directionalWord fields w (h p.1) p.2) (V ×ˢ K) := by
     intro w K hK hKO
-    letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
+    letI  := isCompact_iff_compactSpace.mp hK
     obtain ⟨j,hj,heq⟩ := compact_right_pullback F ζ hζ U ι f hι hf O ℓ hℓ K hK hKO w
     have hcont : ContinuousOn (fun p : ℂ × K => j p.1 p.2) (V ×ˢ Set.univ) :=
       continuous_eval.comp_continuousOn ((hj.continuousOn.comp continuous_fst.continuousOn
@@ -505,8 +508,7 @@ private theorem group_chart_analytic (hι : Function.Injective ι)
     exact ((hpull _ (KPContActualChamberNormalSeries.smooth F ζ hζ U ι f hι hf z hz)).2 w x hx).symm
   exact ⟨hsp,hj,hhol⟩
 
-private theorem iwasawa_jet_smooth_from_geometry (hι : Function.Injective ι)
-    (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
+private theorem iwasawa_jet_smooth_from_geometry  
     (c : KPContSectorCoveredQuotientVocabulary.FiniteCover F ζ hζ)
     (k : ℕ) (s : ℂ) (hs : s ∈ V)
     (z₀ : KPContSectorCoveredQuotientVocabulary.SymmetricSpace F)
@@ -535,7 +537,7 @@ private theorem iwasawa_jet_smooth_from_geometry (hι : Function.Injective ι)
   have hj : ∀ w K, IsCompact K → K ⊆ O →
       ContinuousOn (fun p => RightFrame.PullbackWords.directionalWord fields w (h p.1) p.2) (V ×ˢ K) := by
     intro w K hK hKO
-    letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
+    letI  := isCompact_iff_compactSpace.mp hK
     obtain ⟨j,hj,heq⟩ := compact_right_pullback F ζ hζ U ι f hι hf O ℓ hℓ K hK hKO w
     have hcont : ContinuousOn (fun p : ℂ × K => j p.1 p.2) (V ×ˢ Set.univ) :=
       continuous_eval.comp_continuousOn ((hj.continuousOn.comp continuous_fst.continuousOn
@@ -570,8 +572,7 @@ private theorem iwasawa_jet_smooth_from_geometry (hι : Function.Injective ι)
   simp only [Function.comp_def, h, jet]
   rw [hrec z hz]
 
-private theorem line_jet_smooth_from_iwasawa (hι : Function.Injective ι)
-    (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain) (k : ℕ) (s : ℂ) (hs : s ∈ V)
+private theorem line_jet_smooth_from_iwasawa   (k : ℕ) (s : ℂ) (hs : s ∈ V)
     (hsmooth : ∀ c : KPContSectorCoveredQuotientVocabulary.FiniteCover F ζ hζ,
       ContDiff ℝ (⊤ : ℕ∞) (fun z => jet F ζ hζ U ι f k s
         (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
@@ -593,8 +594,7 @@ private theorem line_jet_smooth_from_iwasawa (hι : Function.Injective ι)
   rw [he]
   exact hsmooth _
 
-theorem lineJet_smooth (hι : Function.Injective ι)
-    (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
+theorem lineJet_smooth  
     (k : ℕ) (s : ℂ) (hs : s ∈ V) :
     KPContSectorSmoothFramesSupport.IsSmoothSections F ζ hζ (level F ζ hζ C R P H U)
       R P H (lineJet F ζ hζ C R P H U ι f hι hf k s) := by
@@ -604,17 +604,24 @@ theorem lineJet_smooth (hι : Function.Injective ι)
   intro z₀
   obtain ⟨O, W, ℓ, ψ, fields, hO, hW, hz₀, hℓ, hψ, hψO, hfields, hframe, hrec, hpull⟩ :=
     KPContinuation.ChamberJetGeometry.local_iwasawa_frame F ζ hζ c z₀
-  exact iwasawa_jet_smooth_from_geometry F ζ hζ U ι f hι hf c k s hs z₀
-    O W ℓ ψ fields hO hW hz₀ hℓ hψ hψO hfields hframe hrec hpull
+  apply iwasawa_jet_smooth_from_geometry <;> assumption
+end
 
-abbrev Frame (i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount) :=
+
+
+local notation:max "current_levelLocal" => level F ζ hζ C R P H U
+
+abbrev Frame (i : Fin (H.atlas (current_levelLocal)).componentCount) :=
   KPContCotangentActualOverlap.LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
-    (U := level F ζ hζ C R P H U) (R := R) (P := P) (H := H) i
+    (U := current_levelLocal) (R := R) (P := P) (H := H) i
+
+
+local notation:max "current_Frame" => Frame F ζ hζ C R P H U
 
 def frameJet (hι : Function.Injective ι)
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain) (k : ℕ) (s : ℂ)
-    {i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount}
-    (a : Frame F ζ hζ C R P H U i) (x : M F) : ℂ :=
+    {i : Fin (H.atlas (current_levelLocal)).componentCount}
+    (a : current_Frame i) (x : M F)  :=
   a.coefficient (lineJet F ζ hζ C R P H U ι f hι hf k s) x
 
 namespace FlatCalculation
@@ -634,22 +641,23 @@ private theorem meanCLM_dir (d : ℕ) (i : Fin d) (j : Fin 3) :
   · intro k _ hk
     simp [coordinateDirection, Pi.single_eq_of_ne hk]
   · simp
-private theorem exp_mean_fderiv {V : Type*} [NormedAddCommGroup V] [NormedSpace ℂ V]
-    (d : ℕ) (c : ℂ) (b : V) (z w : KPArch.Space d) :
+section
+variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℂ V]
+    (d : ℕ)
+include V d
+private theorem exp_mean_fderiv   (c : ℂ) (b : V) (z w : KPArch.Space d) :
     fderiv ℝ (fun y => Complex.exp (c * (meanCLM d y : ℂ)) • b) z w =
       (c * (meanCLM d w : ℂ) * Complex.exp (c * (meanCLM d z : ℂ))) • b := by
   have hm := (Complex.ofRealCLM.comp (meanCLM d)).hasFDerivAt (x := z)
   have he := (hm.const_smul c).cexp.smul_const b
   have he' : HasFDerivAt (fun y => Complex.exp (c * (meanCLM d y : ℂ)) • b)
-      ((Complex.exp (c * (meanCLM d z : ℂ)) • c • (Complex.ofRealCLM.comp (meanCLM d))).smulRight b) z := by
-    simpa [ContinuousLinearMap.comp_apply, smul_eq_mul] using he
+      ((Complex.exp (c * (meanCLM d z : ℂ)) • c • (Complex.ofRealCLM.comp (meanCLM d))).smulRight b) z := he
   rw [he'.fderiv]
   simp only [ContinuousLinearMap.smulRight_apply, ContinuousLinearMap.smul_apply,
     ContinuousLinearMap.comp_apply, Complex.ofRealCLM_apply, smul_eq_mul]
   congr 1
   ring
-private theorem exp_mean_second {V : Type*} [NormedAddCommGroup V] [NormedSpace ℂ V]
-    (d : ℕ) (c : ℂ) (b : V) (z w : KPArch.Space d) :
+private theorem exp_mean_second   (c : ℂ) (b : V) (z w : KPArch.Space d) :
     fderiv ℝ (fun y => fderiv ℝ (fun x => Complex.exp (c * (meanCLM d x : ℂ)) • b) y w) z w =
       ((c * (meanCLM d w : ℂ)) ^ 2 * Complex.exp (c * (meanCLM d z : ℂ))) • b := by
   have hfun : (fun y => fderiv ℝ (fun x => Complex.exp (c * (meanCLM d x : ℂ)) • b) y w) =
@@ -662,8 +670,7 @@ private theorem exp_mean_second {V : Type*} [NormedAddCommGroup V] [NormedSpace 
   rw [hfun, exp_mean_fderiv, smul_smul]
   congr 1
   ring
-private theorem exp_mean_laplacian {V : Type*} [NormedAddCommGroup V] [NormedSpace ℂ V]
-    (d : ℕ) (hd : 0 < d) (s : ℂ) (b : V) (z : KPArch.Space d) :
+private theorem exp_mean_laplacian   (hd : 0 < d) (s : ℂ) (b : V) (z : KPArch.Space d) :
     Δloc d (fun y => KPIncomingCasimir.heightFactor d s (KPCuspLogShape.meanHeight d y) • b) z =
       KPContinuation.spectralCoordinate (d : ℤ) s •
         (KPIncomingCasimir.heightFactor d s (KPCuspLogShape.meanHeight d z) • b) := by
@@ -690,6 +697,8 @@ private theorem exp_mean_laplacian {V : Type*} [NormedAddCommGroup V] [NormedSpa
   simp only [KPContinuation.spectralCoordinate, Int.cast_natCast]
   field_simp
   ring
+end
+
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
@@ -758,7 +767,7 @@ theorem flat_casimir (s : ℂ) (hs : s ∈ V) (v : S)
         (KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) x) •
           KPContActualSphericalFlatStage.L F ζ hζ U ι s v c.val := by
     funext x
-    exact FlatCalculation.flat_height_formula F ζ hζ U ι s v c x
+    apply FlatCalculation.flat_height_formula
   rw [hfun]
   have hΔ := FlatCalculation.exp_mean_laplacian (KPCuspLogShape.dimension F)
     (KPCuspLogShape.dimension_pos F
@@ -770,26 +779,28 @@ theorem flat_casimir (s : ℂ) (hs : s ∈ V) (v : S)
     KPContFlatArchDiagonalMultiplier.complexDimension_eq F ζ hζ
   simp only [smul_eq_mul, lambda, hd]
 
-private theorem frameJet_eq (hι : Function.Injective ι)
+section
+variable (hι : Function.Injective ι)
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain) (k : ℕ) (s : ℂ) (hs : s ∈ V)
     {i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount}
-    (a : Frame F ζ hζ C R P H U i) (x : M F) :
+    (a : Frame F ζ hζ C R P H U i) (x : M F)
+include hι hf k s hs i a x
+
+local notation:max "current_levelLocalLocal" => level F ζ hζ C R P H U
+
+private theorem frameJet_eq   :
     frameJet F ζ hζ C R P H U ι f hι hf k s a x =
       (KPCuspGenuineMonodromy.chi F ζ hζ (a.splitting x) : ℂ) *
         jet F ζ hζ U ι f k s
           (KPContActualChamberNormalSeries.coveredRepresentative F ζ hζ C R P H U
             (Quotient.mk (KPContSectorCoveredQuotientVocabulary.coveredRelation F ζ hζ
-              (level F ζ hζ C R P H U))
+              (current_levelLocalLocal))
               (a.kind.representative • KPContCotangentActualOverlap.labeledA a.places x,
-                (H.atlas (level F ζ hζ C R P H U)).representative i))) := by
+                (H.atlas (current_levelLocalLocal)).representative i))) := by
   simp only [frameJet, lineJet, KPContCotangentActualOverlap.LiftedChart.coefficient,
     KPContSectorScalarLineAlgebra.S_apply, coveredJet, dif_pos hs]
 
-theorem frameJet_eq_derivative (hι : Function.Injective ι)
-    (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
-    (k : ℕ) (s : ℂ) (hs : s ∈ V)
-    {i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount}
-    (a : Frame F ζ hζ C R P H U i) (x : M F) (hx : x ∈ a.omega) :
+theorem frameJet_eq_derivative   (hx : x ∈ a.omega) :
     iteratedDerivWithin k
       (fun z => frameJet F ζ hζ C R P H U ι f hι hf 0 z a x) V s =
         frameJet F ζ hζ C R P H U ι f hι hf k s a x := by
@@ -798,42 +809,46 @@ theorem frameJet_eq_derivative (hι : Function.Injective ι)
         jet F ζ hζ U ι f 0 z
           (KPContActualChamberNormalSeries.coveredRepresentative F ζ hζ C R P H U
             (Quotient.mk (KPContSectorCoveredQuotientVocabulary.coveredRelation F ζ hζ
-              (level F ζ hζ C R P H U))
+              (current_levelLocalLocal))
               (a.kind.representative • KPContCotangentActualOverlap.labeledA a.places x,
-                (H.atlas (level F ζ hζ C R P H U)).representative i)))) V :=
+                (H.atlas (current_levelLocalLocal)).representative i)))) V :=
     fun z hz => frameJet_eq F ζ hζ C R P H U ι f hι hf 0 z hz a x
   have heq2 : Set.EqOn (fun z => jet F ζ hζ U ι f 0 z
         (KPContActualChamberNormalSeries.coveredRepresentative F ζ hζ C R P H U
           (Quotient.mk (KPContSectorCoveredQuotientVocabulary.coveredRelation F ζ hζ
-            (level F ζ hζ C R P H U))
+            (current_levelLocalLocal))
             (a.kind.representative • KPContCotangentActualOverlap.labeledA a.places x,
-              (H.atlas (level F ζ hζ C R P H U)).representative i))))
+              (H.atlas (current_levelLocalLocal)).representative i))))
       (fun z => KPContActualChamberNormalSeries.E F ζ hζ U ι f z
         (KPContActualChamberNormalSeries.coveredRepresentative F ζ hζ C R P H U
           (Quotient.mk (KPContSectorCoveredQuotientVocabulary.coveredRelation F ζ hζ
-            (level F ζ hζ C R P H U))
+            (current_levelLocalLocal))
             (a.kind.representative • KPContCotangentActualOverlap.labeledA a.places x,
-              (H.atlas (level F ζ hζ C R P H U)).representative i)))) V :=
-    fun z _ => by simp only [jet, iteratedDerivWithin_zero]
+              (H.atlas (current_levelLocalLocal)).representative i)))) V :=
+    fun z _ => rfl
   rw [(iteratedDerivWithin_congr heq) hs, iteratedDerivWithin_const_mul_field,
     frameJet_eq F ζ hζ C R P H U ι f hι hf k s hs a x, (iteratedDerivWithin_congr heq2) hs]
   rfl
+end
+
 
 def coordinateWord (w : List (Fin (d F) × Fin 3)) (u : M F → ℂ) : M F → ℂ :=
   w.foldr (fun b v => HyperbolicChart.coordinateDerivative (d F) b.1 b.2 v) u
 
 def spatialOperator (J : Finset (List (Fin (d F) × Fin 3)))
-    (c : List (Fin (d F) × Fin 3) → M F → ℂ) (u : M F → ℂ) (x : M F) : ℂ :=
+    (c : List (Fin (d F) × Fin 3) → M F → ℂ) (u : M F → ℂ) (x : M F)  :=
   ∑ w ∈ J, c w x * coordinateWord F w u x
 
- def frameGroup {i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount}
-    (a : Frame F ζ hζ C R P H U i) (x : M F) : KPContActualChamberNormalSeries.G F ζ hζ :=
+ section
+variable {i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount}
+    (a : Frame F ζ hζ C R P H U i) (x : M F)
+include i a x
+def frameGroup   : KPContActualChamberNormalSeries.G F ζ hζ :=
   KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
     (KPContSectorArchSphericalFibers.iwasawaSection F ζ hζ
       (a.kind.representative • KPContCotangentActualOverlap.labeledA a.places x)) *
         (H.atlas (level F ζ hζ C R P H U)).representative i
-private theorem frameGroup_projection {i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount}
-    (a : Frame F ζ hζ C R P H U i) (x : M F) :
+private theorem frameGroup_projection   :
     KPContSectorQuotientRelationsComparison.piTilde F ζ hζ (level F ζ hζ C R P H U)
       (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ (frameGroup F ζ hζ C R P H U a x)) =
     Quotient.mk (KPContSectorCoveredQuotientVocabulary.coveredRelation F ζ hζ (level F ζ hζ C R P H U))
@@ -842,13 +857,24 @@ private theorem frameGroup_projection {i : Fin (H.atlas (level F ζ hζ C R P H 
   unfold frameGroup
   rw [KPContSectorQuotientRelationsComparison.piTilde_quotientMap]
   rw [KPContSectorArchSphericalFibers.archBasepoint_iwasawaSection]
+end
+
+
+local notation:max "current_chi" => KPCuspGenuineMonodromy.chi F ζ hζ
+
+
+local notation:max "current_frameGroup" => frameGroup F ζ hζ C R P H U
+
+
+local notation:max "current_frameJet" => frameJet F ζ hζ C R P H U ι
+
 private theorem frameJet_literal (hι : Function.Injective ι)
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain) (k : ℕ) (s : ℂ) (hs : s ∈ V)
-    {i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount}
-    (a : Frame F ζ hζ C R P H U i) (x : M F) :
-    frameJet F ζ hζ C R P H U ι f hι hf k s a x =
-      (KPCuspGenuineMonodromy.chi F ζ hζ (a.splitting x) : ℂ) *
-        jet F ζ hζ U ι f k s (frameGroup F ζ hζ C R P H U a x) := by
+    {i : Fin (H.atlas (current_levelLocal)).componentCount}
+    (a : current_Frame i) (x : M F) :
+    current_frameJet f hι hf k s a x =
+      (current_chi (a.splitting x) : ℂ) *
+        jet F ζ hζ U ι f k s (current_frameGroup a x) := by
   rw [← coveredJet_projection F ζ hζ C R P H U ι f hι hf k s hs,
     frameGroup_projection]
   simp [frameJet, lineJet, KPContCotangentActualOverlap.LiftedChart.coefficient,
@@ -868,15 +894,15 @@ private theorem E_holo (hι : Function.Injective ι)
     KPContActualChamberNormalSeries.mixedJet, KPContActualChamberNormalSeries.rightWord]
 private theorem frame_holo (hι : Function.Injective ι)
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
-    {i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount}
-    (a : Frame F ζ hζ C R P H U i) (x : M F) (hx : x ∈ a.omega) :
-    DifferentiableOn ℂ (fun s => frameJet F ζ hζ C R P H U ι f hι hf 0 s a x) V := by
+    {i : Fin (H.atlas (current_levelLocal)).componentCount}
+    (a : current_Frame i) (x : M F) (hx : x ∈ a.omega) :
+    DifferentiableOn ℂ (fun s => current_frameJet f hι hf 0 s a x) V := by
   let g := KPContActualChamberNormalSeries.coveredRepresentative F ζ hζ C R P H U
-    (Quotient.mk (KPContSectorCoveredQuotientVocabulary.coveredRelation F ζ hζ (level F ζ hζ C R P H U))
+    (Quotient.mk (KPContSectorCoveredQuotientVocabulary.coveredRelation F ζ hζ (current_levelLocal))
       (a.kind.representative • KPContCotangentActualOverlap.labeledA a.places x,
-        (H.atlas (level F ζ hζ C R P H U)).representative i))
+        (H.atlas (current_levelLocal)).representative i))
   have hh := (E_holo F ζ hζ U ι f hι hf g).const_mul
-    (KPCuspGenuineMonodromy.chi F ζ hζ (a.splitting x) : ℂ)
+    (current_chi (a.splitting x) : ℂ)
   apply hh.congr
   intro s hs
 
@@ -1001,16 +1027,16 @@ private theorem term_arch_formula (s : ℂ) (hs : s ∈ V)
   rfl
 
 private theorem frame_expansion
-    {i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount}
-    (a : Frame F ζ hζ C R P H U i) (w : List (Fin (d F) × Fin 3))
+    {i : Fin (H.atlas (current_levelLocal)).componentCount}
+    (a : current_Frame i) (w : List (Fin (d F) × Fin 3))
     (x : M F) (hx : x ∈ a.omega) :
     ∃ N : ℕ, ∃ c : Fin N → ℂ, ∃ r : Fin N → KPContActualChamberNormalSeries.Word F,
       (∀ j, (r j).length ≤ w.length) ∧
       ∀ u : KPContActualChamberNormalSeries.G F ζ hζ → ℂ, KPMsGreenFlux.Smooth F ζ hζ u →
-        coordinateWord F w (fun y => (KPCuspGenuineMonodromy.chi F ζ hζ (a.splitting y) : ℂ) *
-          u (frameGroup F ζ hζ C R P H U a y)) x =
+        coordinateWord F w (fun y => (current_chi (a.splitting y) : ℂ) *
+          u (current_frameGroup a y)) x =
           ∑ j : Fin N, c j * KPContActualChamberNormalSeries.rightWord F ζ hζ (r j) u
-            (frameGroup F ζ hζ C R P H U a x) := by
+            (current_frameGroup a x) := by
   let Lmap : M F → KPContSectorCoveredQuotientVocabulary.SymmetricSpace F :=
     fun y => a.kind.representative • KPContCotangentActualOverlap.labeledA a.places y
   have hA : ContDiff ℝ (⊤ : ℕ∞) (KPContCotangentActualOverlap.labeledA a.places) := by
@@ -1022,18 +1048,18 @@ private theorem frame_expansion
       F a.kind.representative).comp hA
   obtain ⟨O,W,ℓ,ψ,fields,hO,hW,hxW,hℓ,hψ,hψO,hfields,hframe,hrec,hpull⟩ :=
     KPContinuation.ChamberJetGeometry.local_iwasawa_frame F ζ hζ
-      ((H.atlas (level F ζ hζ C R P H U)).representative i) (Lmap x)
+      ((H.atlas (current_levelLocal)).representative i) (Lmap x)
   let D : Set (M F) := a.omega ∩ Lmap ⁻¹' W
   have hD : IsOpen D := a.isOpen_omega.inter (hW.preimage hLmap.continuous)
   have hxD : x ∈ D := ⟨hx,hxW⟩
   let Ψ : M F → (KPSmoothActualFlowData.B F → ℝ) := ψ ∘ Lmap
   have hΨ : ContDiffOn ℝ (⊤ : ℕ∞) Ψ D := hψ.comp hLmap.contDiffOn (fun y hy => hy.2)
   have hΨO : Set.MapsTo Ψ D O := fun y hy => hψO hy.2
-  let c₀ : ℂ := (KPCuspGenuineMonodromy.chi F ζ hζ (a.splitting x) : ℂ)
-  have hphase : (fun y => (KPCuspGenuineMonodromy.chi F ζ hζ (a.splitting y) : ℂ)) =ᶠ[𝓝 x] (fun _ => c₀) := by
-    have he := a.splitting_locallyConstant.comp (fun ε => (KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ))
+  let c₀  := (current_chi (a.splitting x) : ℂ)
+  have hphase : (fun y => (current_chi (a.splitting y) : ℂ)) =ᶠ[𝓝 x] (fun _ => c₀) := by
+    have he := a.splitting_locallyConstant.comp (fun ε => (current_chi ε : ℂ))
     have hh := he.eventually_eq (⟨x,hx⟩ : a.omega)
-    have hw : (fun y => (KPCuspGenuineMonodromy.chi F ζ hζ (a.splitting y) : ℂ)) =ᶠ[𝓝[a.omega] x] (fun _ => c₀) := by
+    have hw : (fun y => (current_chi (a.splitting y) : ℂ)) =ᶠ[𝓝[a.omega] x] (fun _ => c₀) := by
       rw [nhdsWithin_eq_map_subtype_coe hx]
       exact hh
     rwa [a.isOpen_omega.nhdsWithin_eq hx] at hw
@@ -1041,8 +1067,8 @@ private theorem frame_expansion
   obtain ⟨N,c,r,hc,hr,he⟩ := RightFrame.PullbackWords.transport O D hO hD fields hfields hframe Ψ hΨ hΨO w'
   refine ⟨N,fun j => c₀ * (c j x : ℂ),r,fun j => by simpa [w'] using hr j,?_⟩
   intro u hu
-  have hlocal : (fun y => (KPCuspGenuineMonodromy.chi F ζ hζ (a.splitting y) : ℂ) *
-      u (frameGroup F ζ hζ C R P H U a y)) =ᶠ[𝓝 x] (fun y => c₀ * u (ℓ (Ψ y))) := by
+  have hlocal : (fun y => (current_chi (a.splitting y) : ℂ) *
+      u (current_frameGroup a y)) =ᶠ[𝓝 x] (fun y => c₀ * u (ℓ (Ψ y))) := by
     filter_upwards [hD.mem_nhds hxD,hphase] with y hy hp
     rw [hp]
     dsimp only [Ψ,Function.comp_def]
@@ -1058,34 +1084,34 @@ private theorem frame_expansion
   apply Finset.sum_congr rfl
   intro j hj
   rw [← (hpull u hu).2 (r j) (Ψ x) (hΨO hxD)]
-  have hrex : ℓ (Ψ x) = frameGroup F ζ hζ C R P H U a x := hrec (Lmap x) hxW
+  have hrex : ℓ (Ψ x) = current_frameGroup a x := hrec (Lmap x) hxW
   rw [hrex]
   simp only [smul_eq_mul, Complex.real_smul]
   ring
 
 private theorem coordinateWord_frame_tsum (hι : Function.Injective ι)
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain) (s : ℂ) (hs : s ∈ V)
-    {i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount}
-    (a : Frame F ζ hζ C R P H U i) (w : List (Fin (d F) × Fin 3))
+    {i : Fin (H.atlas (current_levelLocal)).componentCount}
+    (a : current_Frame i) (w : List (Fin (d F) × Fin 3))
     (x : M F) (hx : x ∈ a.omega) :
-    coordinateWord F w (frameJet F ζ hζ C R P H U ι f hι hf 0 s a) x =
+    coordinateWord F w (current_frameJet f hι hf 0 s a) x =
       ∑' q : KPContActualChamberNormalSeries.Q F, coordinateWord F w
-        (fun y => (KPCuspGenuineMonodromy.chi F ζ hζ (a.splitting y) : ℂ) *
+        (fun y => (current_chi (a.splitting y) : ℂ) *
           KPContActualChamberNormalSeries.term F ζ hζ U ι f q s
-            (frameGroup F ζ hζ C R P H U a y)) x := by
-  have hfun : frameJet F ζ hζ C R P H U ι f hι hf 0 s a =
-      fun y => (KPCuspGenuineMonodromy.chi F ζ hζ (a.splitting y) : ℂ) *
-        KPContActualChamberNormalSeries.E F ζ hζ U ι f s (frameGroup F ζ hζ C R P H U a y) := by
+            (current_frameGroup a y)) x := by
+  have hfun : current_frameJet f hι hf 0 s a =
+      fun y => (current_chi (a.splitting y) : ℂ) *
+        KPContActualChamberNormalSeries.E F ζ hζ U ι f s (current_frameGroup a y) := by
     funext y
-    simpa only [jet,iteratedDerivWithin_zero] using frameJet_literal F ζ hζ C R P H U ι f hι hf 0 s hs a y
+    apply frameJet_literal <;> assumption
   obtain ⟨N,c,r,hr,he⟩ := frame_expansion F ζ hζ C R P H U a w x hx
   rw [hfun, he _ (KPContActualChamberNormalSeries.smooth F ζ hζ U ι f hι hf s hs)]
   simp_rw [he _ (actualTerm_smooth F ζ hζ U ι f hι hf _ s hs)]
   have hj (j : Fin N) : Summable (fun q => c j * KPContActualChamberNormalSeries.rightWord F ζ hζ (r j)
-      (KPContActualChamberNormalSeries.term F ζ hζ U ι f q s) (frameGroup F ζ hζ C R P H U a x)) := by
+      (KPContActualChamberNormalSeries.term F ζ hζ U ι f q s) (current_frameGroup a x)) := by
     have hh := (KPContActualChamberNormalSeries.mixed_summable F ζ hζ U ι f hι hf 0 (r j) s hs
-      (frameGroup F ζ hζ C R P H U a x)).of_norm
-    simpa only [KPContActualChamberNormalSeries.mixedJet,iteratedDerivWithin_zero] using hh.mul_left (c j)
+      (current_frameGroup a x)).of_norm
+    apply hh.mul_left
   rw [Summable.tsum_finsetSum (s := Finset.univ) (fun j _ => hj j)]
   apply Finset.sum_congr rfl
   intro j hjmem
@@ -1093,17 +1119,17 @@ private theorem coordinateWord_frame_tsum (hι : Function.Injective ι)
   congr 1
   simpa only [KPContActualChamberNormalSeries.mixedJet,iteratedDerivWithin_zero] using
     KPContActualChamberNormalSeries.mixedJet_eq_tsum F ζ hζ U ι f hι hf 0 (r j) s hs
-      (frameGroup F ζ hζ C R P H U a x)
+      (current_frameGroup a x)
 
 private theorem frameWord_data (hι : Function.Injective ι)
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
-    {i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount}
-    (a : Frame F ζ hζ C R P H U i) (w : List (Fin (d F) × Fin 3))
+    {i : Fin (H.atlas (current_levelLocal)).componentCount}
+    (a : current_Frame i) (w : List (Fin (d F) × Fin 3))
     (x : M F) (hx : x ∈ a.omega) :
-    DifferentiableOn ℂ (fun z => coordinateWord F w (frameJet F ζ hζ C R P H U ι f hι hf 0 z a) x) V ∧
-    ∀ k s, s ∈ V → coordinateWord F w (frameJet F ζ hζ C R P H U ι f hι hf k s a) x =
+    DifferentiableOn ℂ (fun z => coordinateWord F w (current_frameJet f hι hf 0 z a) x) V ∧
+    ∀ k s, s ∈ V → coordinateWord F w (current_frameJet f hι hf k s a) x =
       iteratedDerivWithin k
-        (fun z => coordinateWord F w (frameJet F ζ hζ C R P H U ι f hι hf 0 z a) x) V s := by
+        (fun z => coordinateWord F w (current_frameJet f hι hf 0 z a) x) V s := by
   let Lmap : M F → KPContSectorCoveredQuotientVocabulary.SymmetricSpace F :=
     fun y => a.kind.representative • KPContCotangentActualOverlap.labeledA a.places y
   have hA : ContDiff ℝ (⊤ : ℕ∞) (KPContCotangentActualOverlap.labeledA a.places) := by
@@ -1115,7 +1141,7 @@ private theorem frameWord_data (hι : Function.Injective ι)
       F a.kind.representative).comp hA
   obtain ⟨O,W,ℓ,ψ,fields,hO,hW,hxW,hℓ,hψ,hψO,hfields,hframe,hrec,hpull⟩ :=
     KPContinuation.ChamberJetGeometry.local_iwasawa_frame F ζ hζ
-      ((H.atlas (level F ζ hζ C R P H U)).representative i) (Lmap x)
+      ((H.atlas (current_levelLocal)).representative i) (Lmap x)
   let D : Set (M F) := a.omega ∩ Lmap ⁻¹' W
   have hD : IsOpen D := a.isOpen_omega.inter (hW.preimage hLmap.continuous)
   have hxD : x ∈ D := ⟨hx,hxW⟩
@@ -1124,16 +1150,16 @@ private theorem frameWord_data (hι : Function.Injective ι)
   have hΨO : Set.MapsTo Ψ D O := fun y hy => hψO hy.2
   let h := fun z y => KPContActualChamberNormalSeries.E F ζ hζ U ι f z (ℓ y)
   obtain ⟨hsp,hj,hhol⟩ := group_chart_analytic F ζ hζ U ι f hι hf O ℓ fields hℓ hpull
-  let c : ℂ := (KPCuspGenuineMonodromy.chi F ζ hζ (a.splitting x) : ℂ)
-  have hphase : (fun y => (KPCuspGenuineMonodromy.chi F ζ hζ (a.splitting y) : ℂ)) =ᶠ[𝓝 x] (fun _ => c) := by
-    have he := a.splitting_locallyConstant.comp (fun ε => (KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ))
+  let c  := (current_chi (a.splitting x) : ℂ)
+  have hphase : (fun y => (current_chi (a.splitting y) : ℂ)) =ᶠ[𝓝 x] (fun _ => c) := by
+    have he := a.splitting_locallyConstant.comp (fun ε => (current_chi ε : ℂ))
     have hh := he.eventually_eq (⟨x,hx⟩ : a.omega)
-    have hw : (fun y => (KPCuspGenuineMonodromy.chi F ζ hζ (a.splitting y) : ℂ)) =ᶠ[𝓝[a.omega] x] (fun _ => c) := by
+    have hw : (fun y => (current_chi (a.splitting y) : ℂ)) =ᶠ[𝓝[a.omega] x] (fun _ => c) := by
       rw [nhdsWithin_eq_map_subtype_coe hx]
       exact hh
     rwa [a.isOpen_omega.nhdsWithin_eq hx] at hw
   have he (k : ℕ) (s : ℂ) (hs : s ∈ V) :
-      frameJet F ζ hζ C R P H U ι f hι hf k s a =ᶠ[𝓝 x]
+      current_frameJet f hι hf k s a =ᶠ[𝓝 x]
         (fun y => c * iteratedDerivWithin k (fun z => h z (Ψ y)) V s) := by
     filter_upwards [hD.mem_nhds hxD,hphase] with y hy hp
     rw [frameJet_literal F ζ hζ C R P H U ι f hι hf k s hs a y, hp]
@@ -1142,7 +1168,7 @@ private theorem frameWord_data (hι : Function.Injective ι)
     rfl
   let w' := w.map (fun b => HyperbolicChart.coordinateVector (d F) b.1 b.2)
   have hw (k : ℕ) (s : ℂ) (hs : s ∈ V) :
-      coordinateWord F w (frameJet F ζ hζ C R P H U ι f hι hf k s a) x =
+      coordinateWord F w (current_frameJet f hι hf k s a) x =
         c * RightFrame.PullbackWords.constantDirectionWord w'
           (fun y => iteratedDerivWithin k (fun z => h z (Ψ y)) V s) x := by
     rw [coordinateWord_local F w (he k s hs), coordinateWord_eq]
@@ -1152,38 +1178,38 @@ private theorem frameWord_data (hι : Function.Injective ι)
         KPChamberL2Defect.chamber_isOpen h hsp hj hhol k s hs).comp hΨ hΨO) c w' x hxD
   have hg := FrameCalculus.pullback_word_holomorphic O hO fields hfields hframe V
     KPChamberL2Defect.chamber_isOpen h hsp hhol D hD Ψ hΨ hΨO w' x hxD
-  refine ⟨(hg.const_mul c).congr (fun z hz => by simpa only [iteratedDerivWithin_zero, Function.comp_def] using hw 0 z hz), ?_⟩
+  refine ⟨(hg.const_mul c).congr (fun z hz => hw 0 z hz), ?_⟩
   intro k s hs
   rw [hw k s hs, FrameCalculus.pullback_parameter_word_commute O hO fields hfields hframe V
     KPChamberL2Defect.chamber_isOpen h hsp hj hhol D hD Ψ hΨ hΨO k s hs w' x hxD]
   have he0 : Set.EqOn
-      (fun z => coordinateWord F w (frameJet F ζ hζ C R P H U ι f hι hf 0 z a) x)
+      (fun z => coordinateWord F w (current_frameJet f hι hf 0 z a) x)
       (fun z => c * RightFrame.PullbackWords.constantDirectionWord w' (h z ∘ Ψ) x) V :=
-    fun z hz => by simpa only [iteratedDerivWithin_zero, Function.comp_def] using hw 0 z hz
+    fun z hz => hw 0 z hz
   rw [iteratedDerivWithin_congr he0 hs, iteratedDerivWithin_const_mul_field]
 
 theorem spatial_commute (hι : Function.Injective ι)
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
     (k : ℕ) (s : ℂ) (hs : s ∈ V)
-    {i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount}
-    (a : Frame F ζ hζ C R P H U i)
+    {i : Fin (H.atlas (current_levelLocal)).componentCount}
+    (a : current_Frame i)
     (J : Finset (List (Fin (d F) × Fin 3)))
     (c : List (Fin (d F) × Fin 3) → M F → ℂ)
     (hc : ∀ w ∈ J, ContDiffOn ℝ (⊤ : ℕ∞) (c w) a.omega)
     (x : M F) (hx : x ∈ a.omega) :
     iteratedDerivWithin k
-      (fun z => spatialOperator F J c (frameJet F ζ hζ C R P H U ι f hι hf 0 z a) x) V s =
-    spatialOperator F J c (frameJet F ζ hζ C R P H U ι f hι hf k s a) x := by
+      (fun z => spatialOperator F J c (current_frameJet f hι hf 0 z a) x) V s =
+    spatialOperator F J c (current_frameJet f hι hf k s a) x := by
   unfold spatialOperator
   have hd : ∀ w ∈ J, ContDiffWithinAt ℂ (k : ℕ∞)
-      (fun z => c w x * coordinateWord F w (frameJet F ζ hζ C R P H U ι f hι hf 0 z a) x) V s := by
+      (fun z => c w x * coordinateWord F w (current_frameJet f hι hf 0 z a) x) V s := by
     intro w hw
     exact (((frameWord_data F ζ hζ C R P H U ι f hι hf a w x hx).1.const_mul (c w x)).contDiffOn
       KPChamberL2Defect.chamber_isOpen).contDiffWithinAt hs
   rw [show iteratedDerivWithin k
-      (fun z => ∑ w ∈ J, c w x * coordinateWord F w (frameJet F ζ hζ C R P H U ι f hι hf 0 z a) x) V s =
+      (fun z => ∑ w ∈ J, c w x * coordinateWord F w (current_frameJet f hι hf 0 z a) x) V s =
       ∑ w ∈ J, iteratedDerivWithin k
-        (fun z => c w x * coordinateWord F w (frameJet F ζ hζ C R P H U ι f hι hf 0 z a) x) V s by
+        (fun z => c w x * coordinateWord F w (current_frameJet f hι hf 0 z a) x) V s by
     simpa only [Finset.sum_fn] using iteratedDerivWithin_sum hs
       KPChamberL2Defect.chamber_isOpen.uniqueDiffOn hd]
   apply Finset.sum_congr rfl
@@ -1193,7 +1219,7 @@ theorem spatial_commute (hι : Function.Injective ι)
 
  def lapWords (d : ℕ) : Finset (List (Fin d × Fin 3)) :=
   Finset.univ.biUnion (fun i => {[(i,2),(i,2)], [(i,2)], [(i,0),(i,0)], [(i,1),(i,1)]})
- def lapCoeff (d : ℕ) (w : List (Fin d × Fin 3)) (x : HyperbolicChart.Space d) : ℂ :=
+ def lapCoeff (d : ℕ) (w : List (Fin d × Fin 3)) (x : HyperbolicChart.Space d)  :=
   ∑ i : Fin d, ((if w = [(i,2),(i,2)] then -1 else 0) +
     (if w = [(i,2)] then 2 else 0) +
     (if w = [(i,0),(i,0)] then -(Real.exp (2 * x (i,2)) : ℂ) else 0) +
@@ -1230,7 +1256,7 @@ private theorem rational_pullback (γ : KPCuspArithmetic.PGL2 F)
         (fun i => Matrix.GeneralLinearGroup.map (KPCusp.complexPlace F i).embedding B) := by
     funext y
     rw [← hB]
-    exact KPCuspSiegel.action_mk F B y
+    apply KPCuspSiegel.action_mk
   simp_rw [show ∀ y, γ • y = KPArch.productAction (KPCuspLogShape.dimension F)
     (fun i => Matrix.GeneralLinearGroup.map (KPCusp.complexPlace F i).embedding B) y from
       fun y => congrFun he y]
@@ -1264,35 +1290,35 @@ private theorem term_arch_casimir (s : ℂ) (hs : s ∈ V)
 
 private theorem term_frame_casimir (s : ℂ) (hs : s ∈ V)
     (q : KPContActualChamberNormalSeries.Q F)
-    {i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount}
-    (a : Frame F ζ hζ C R P H U i) (x : M F) (hx : x ∈ a.omega) :
+    {i : Fin (H.atlas (current_levelLocal)).componentCount}
+    (a : current_Frame i) (x : M F) (hx : x ∈ a.omega) :
     HyperbolicChart.laplacian (d F)
-      (fun y => (KPCuspGenuineMonodromy.chi F ζ hζ (a.splitting y) : ℂ) *
-        KPContActualChamberNormalSeries.term F ζ hζ U ι f q s (frameGroup F ζ hζ C R P H U a y)) x =
-    lambda F s * ((KPCuspGenuineMonodromy.chi F ζ hζ (a.splitting x) : ℂ) *
-      KPContActualChamberNormalSeries.term F ζ hζ U ι f q s (frameGroup F ζ hζ C R P H U a x)) := by
+      (fun y => (current_chi (a.splitting y) : ℂ) *
+        KPContActualChamberNormalSeries.term F ζ hζ U ι f q s (current_frameGroup a y)) x =
+    lambda F s * ((current_chi (a.splitting x) : ℂ) *
+      KPContActualChamberNormalSeries.term F ζ hζ U ι f q s (current_frameGroup a x)) := by
   let u : KPArch.Space (KPCuspLogShape.dimension F) → ℂ := fun z =>
     KPContActualChamberNormalSeries.term F ζ hζ U ι f q s
       (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
         (KPContSectorArchSphericalFibers.iwasawaSection F ζ hζ z) *
-          (H.atlas (level F ζ hζ C R P H U)).representative i)
+          (H.atlas (current_levelLocal)).representative i)
   have hu : ContDiff ℝ (⊤ : ℕ∞) u := by
-    obtain ⟨c',he⟩ := term_arch_formula F ζ hζ U ι f s hs q ((H.atlas (level F ζ hζ C R P H U)).representative i)
+    obtain ⟨c',he⟩ := term_arch_formula F ζ hζ U ι f s hs q ((H.atlas (current_levelLocal)).representative i)
     change ContDiff ℝ (⊤ : ℕ∞) (fun z => _)
     simp_rw [he]
     exact (flat_arch_smooth F ζ hζ U ι s (f s) c').comp
       (CoreChartLocalizers.CutoffConstruction.StabilizerLinearization.rational_action_contDiff F (Quotient.out q))
-  let v : KPArch.Space (KPCuspLogShape.dimension F) → ℂ := fun z => u (a.kind.representative • z)
+  let v  := fun z => u (a.kind.representative • z)
   have hv : ContDiff ℝ (⊤ : ℕ∞) v := hu.comp
     (CoreChartLocalizers.CutoffConstruction.StabilizerLinearization.rational_action_contDiff F a.kind.representative)
-  let c₀ := (KPCuspGenuineMonodromy.chi F ζ hζ (a.splitting x) : ℂ)
-  have hp : (fun y => (KPCuspGenuineMonodromy.chi F ζ hζ (a.splitting y) : ℂ)) =ᶠ[𝓝 x] (fun _ => c₀) := by
-    have he := (a.splitting_locallyConstant.comp (fun ε => (KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ))).eventually_eq (⟨x,hx⟩ : a.omega)
-    have hw : (fun y => (KPCuspGenuineMonodromy.chi F ζ hζ (a.splitting y) : ℂ)) =ᶠ[𝓝[a.omega] x] (fun _ => c₀) := by
+  let c₀ := (current_chi (a.splitting x) : ℂ)
+  have hp : (fun y => (current_chi (a.splitting y) : ℂ)) =ᶠ[𝓝 x] (fun _ => c₀) := by
+    have he := (a.splitting_locallyConstant.comp (fun ε => (current_chi ε : ℂ))).eventually_eq (⟨x,hx⟩ : a.omega)
+    have hw : (fun y => (current_chi (a.splitting y) : ℂ)) =ᶠ[𝓝[a.omega] x] (fun _ => c₀) := by
       rw [nhdsWithin_eq_map_subtype_coe hx]; exact he
     rwa [a.isOpen_omega.nhdsWithin_eq hx] at hw
-  have he : (fun y => (KPCuspGenuineMonodromy.chi F ζ hζ (a.splitting y) : ℂ) *
-        KPContActualChamberNormalSeries.term F ζ hζ U ι f q s (frameGroup F ζ hζ C R P H U a y)) =ᶠ[𝓝 x]
+  have he : (fun y => (current_chi (a.splitting y) : ℂ) *
+        KPContActualChamberNormalSeries.term F ζ hζ U ι f q s (current_frameGroup a y)) =ᶠ[𝓝 x]
       (fun y => c₀ * v (KPContCotangentActualOverlap.labeledA a.places y)) := by
     filter_upwards [hp] with y hy
     rw [hy]; rfl
@@ -1314,10 +1340,13 @@ private theorem term_frame_casimir (s : ℂ) (hs : s ∈ V)
   dsimp [c₀,u,frameGroup]
   ring
 
-private theorem coordinateWord_term_summable (hι : Function.Injective ι)
+section
+variable (hι : Function.Injective ι)
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain) (s : ℂ) (hs : s ∈ V)
     {i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount}
-    (a : Frame F ζ hζ C R P H U i) (w : List (Fin (d F) × Fin 3))
+    (a : Frame F ζ hζ C R P H U i)
+include hι hf s hs i a
+private theorem coordinateWord_term_summable   (w : List (Fin (d F) × Fin 3))
     (x : M F) (hx : x ∈ a.omega) :
     Summable (fun q : KPContActualChamberNormalSeries.Q F => coordinateWord F w
       (fun y => (KPCuspGenuineMonodromy.chi F ζ hζ (a.splitting y) : ℂ) *
@@ -1328,13 +1357,9 @@ private theorem coordinateWord_term_summable (hι : Function.Injective ι)
   intro j hj
   have hh := (KPContActualChamberNormalSeries.mixed_summable F ζ hζ U ι f hι hf 0 (r j) s hs
     (frameGroup F ζ hζ C R P H U a x)).of_norm
-  simpa only [KPContActualChamberNormalSeries.mixedJet,iteratedDerivWithin_zero] using hh.mul_left (c j)
+  apply hh.mul_left
 
-theorem casimir (hι : Function.Injective ι)
-    (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
-    (s : ℂ) (hs : s ∈ V)
-    {i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount}
-    (a : Frame F ζ hζ C R P H U i) (x : M F) (hx : x ∈ a.omega) :
+theorem casimir   (x : M F) (hx : x ∈ a.omega) :
     HyperbolicChart.laplacian (d F)
       (frameJet F ζ hζ C R P H U ι f hι hf 0 s a) x =
     lambda F s * frameJet F ζ hζ C R P H U ι f hι hf 0 s a x := by
@@ -1353,53 +1378,57 @@ theorem casimir (hι : Function.Injective ι)
   rw [tsum_mul_left, tsum_mul_left]
   rw [frameJet_literal F ζ hζ C R P H U ι f hι hf 0 s hs a x]
   simp only [jet,iteratedDerivWithin_zero, KPContActualChamberNormalSeries.E]
+end
 
-private theorem laplacian_commute (hι : Function.Injective ι)
+
+section
+variable (hι : Function.Injective ι)
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
     (k : ℕ) (s : ℂ) (hs : s ∈ V)
     {i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount}
-    (a : Frame F ζ hζ C R P H U i) (x : M F) (hx : x ∈ a.omega) :
+    (a : Frame F ζ hζ C R P H U i) (x : M F) (hx : x ∈ a.omega)
+include hι hf k s hs i a x hx
+
+local notation:max "current_frameJetLocal" => frameJet F ζ hζ C R P H U ι
+
+private theorem laplacian_commute   :
     iteratedDerivWithin k
-      (fun z => HyperbolicChart.laplacian (d F) (frameJet F ζ hζ C R P H U ι f hι hf 0 z a) x) V s =
-    HyperbolicChart.laplacian (d F) (frameJet F ζ hζ C R P H U ι f hι hf k s a) x := by
+      (fun z => HyperbolicChart.laplacian (d F) (current_frameJetLocal f hι hf 0 z a) x) V s =
+    HyperbolicChart.laplacian (d F) (current_frameJetLocal f hι hf k s a) x := by
   simp_rw [← lapOperator F]
   exact spatial_commute F ζ hζ C R P H U ι f hι hf k s hs a _ _
     (fun w hw => (lapCoeff_smooth F w).contDiffOn) x hx
 
-theorem casimir_jets (hι : Function.Injective ι)
-    (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
-    (k : ℕ) (s : ℂ) (hs : s ∈ V)
-    {i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount}
-    (a : Frame F ζ hζ C R P H U i) (x : M F) (hx : x ∈ a.omega) :
+theorem casimir_jets   :
     HyperbolicChart.laplacian (d F)
-      (frameJet F ζ hζ C R P H U ι f hι hf k s a) x =
-    lambda F s * frameJet F ζ hζ C R P H U ι f hι hf k s a x +
+      (current_frameJetLocal f hι hf k s a) x =
+    lambda F s * current_frameJetLocal f hι hf k s a x +
       ∑ j ∈ Finset.Icc 1 (min k 2), (Nat.choose k j : ℂ) * lambdaJet F j s *
-        frameJet F ζ hζ C R P H U ι f hι hf (k - j) s a x := by
+        current_frameJetLocal f hι hf (k - j) s a x := by
   have hV : UniqueDiffOn ℂ V := KPChamberL2Defect.chamber_isOpen.uniqueDiffOn
   rw [← laplacian_commute F ζ hζ C R P H U ι f hι hf k s hs a x hx]
   have he : Set.EqOn
-      (fun z => HyperbolicChart.laplacian (d F) (frameJet F ζ hζ C R P H U ι f hι hf 0 z a) x)
-      (fun z => lambda F z * frameJet F ζ hζ C R P H U ι f hι hf 0 z a x) V :=
+      (fun z => HyperbolicChart.laplacian (d F) (current_frameJetLocal f hι hf 0 z a) x)
+      (fun z => lambda F z * current_frameJetLocal f hι hf 0 z a x) V :=
     fun z hz => casimir F ζ hζ C R P H U ι f hι hf z hz a x hx
   rw [(iteratedDerivWithin_congr he) hs]
   have hl : ContDiffWithinAt ℂ k (lambda F) V s := by
     unfold lambda KPContinuation.spectralCoordinate; fun_prop
-  have ht : ContDiffWithinAt ℂ k (fun z => frameJet F ζ hζ C R P H U ι f hι hf 0 z a x) V s :=
+  have ht : ContDiffWithinAt ℂ k (fun z => current_frameJetLocal f hι hf 0 z a x) V s :=
     ((frame_holo F ζ hζ C R P H U ι f hι hf a x hx).contDiffOn KPChamberL2Defect.chamber_isOpen).contDiffWithinAt hs
-  rw [show iteratedDerivWithin k (fun z => lambda F z * frameJet F ζ hζ C R P H U ι f hι hf 0 z a x) V s =
+  rw [show iteratedDerivWithin k (fun z => lambda F z * current_frameJetLocal f hι hf 0 z a x) V s =
       ∑ j ∈ Finset.range (k+1), (Nat.choose k j : ℂ) * iteratedDerivWithin j (lambda F) V s *
-        iteratedDerivWithin (k-j) (fun z => frameJet F ζ hζ C R P H U ι f hι hf 0 z a x) V s by
-    exact iteratedDerivWithin_mul hs hV hl ht]
+        iteratedDerivWithin (k-j) (fun z => current_frameJetLocal f hι hf 0 z a x) V s by
+    apply iteratedDerivWithin_mul <;> assumption]
   simp_rw [frameJet_eq_derivative F ζ hζ C R P H U ι f hι hf _ s hs a x hx]
   rw [Finset.sum_range_succ']
   simp only [Nat.choose_zero_right, Nat.sub_zero, iteratedDerivWithin_zero, Nat.cast_one, one_mul]
   rw [add_comm]
-  apply congrArg (fun z => lambda F s * frameJet F ζ hζ C R P H U ι f hι hf k s a x + z)
+  apply congrArg (fun z => lambda F s * current_frameJetLocal f hι hf k s a x + z)
   have hb (j : ℕ) : iteratedDerivWithin j (lambda F) V s = lambdaJet F j s := rfl
   simp_rw [hb]
   let T := fun j => (Nat.choose k j : ℂ) * lambdaJet F j s *
-    frameJet F ζ hζ C R P H U ι f hι hf (k-j) s a x
+    current_frameJetLocal f hι hf (k-j) s a x
   change (∑ j ∈ Finset.range k, T (j+1)) = ∑ j ∈ Finset.Icc 1 (min k 2), T j
   have hshift : (∑ j ∈ Finset.range k, T (j+1)) = ∑ j ∈ Finset.Icc 1 k, T j := by
     rw [← Finset.Ico_add_one_right_eq_Icc, Finset.sum_Ico_eq_sum_range]
@@ -1417,12 +1446,14 @@ theorem casimir_jets (hι : Function.Injective ι)
     dsimp [T]
     rw [(spectral_jets F s hs).2.2.2.2 j hlarge]
     simp
+end
+
 
 abbrev Cusps := KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U
 
 def cuspSheet (a : Cusps F ζ hζ C R P H U) (k : ℕ) (s : ℂ)
     (t : ℝ) (x : KPCuspCharts.Horizontal F) (b : KPCuspCharts.Shape F)
-    (ε : rootsOfUnity 3 F) : ℂ :=
+    (ε : rootsOfUnity 3 F)  :=
   jet F ζ hζ U ι f k s
     (KPContFlatCuspIncomingEvaluation.cuspGroup F ζ hζ C R P H U a t x b ε)
 
@@ -1432,15 +1463,16 @@ theorem cusp_restriction_commute (hι : Function.Injective ι)
     (t : ℝ) (x : KPCuspCharts.Horizontal F) (b : KPCuspCharts.Shape F)
     (ε : rootsOfUnity 3 F) :
     iteratedDerivWithin k (fun z => cuspSheet F ζ hζ C R P H U ι f a 0 z t x b ε) V s =
-      cuspSheet F ζ hζ C R P H U ι f a k s t x b ε := by
-  simp only [cuspSheet, jet, iteratedDerivWithin_zero]
+      cuspSheet F ζ hζ C R P H U ι f a k s t x b ε := rfl
+
+
+local notation:max "current_KernelTorus" => KPContFlatCuspIncomingEvaluation.KernelTorus F ζ hζ C R P H U
 
 def cuspProjection (a : Cusps F ζ hζ C R P H U)
-    (μ : Measure (KPContFlatCuspIncomingEvaluation.KernelTorus F ζ hζ C R P H U a))
-    (k : ℕ) (s : ℂ) (t : ℝ) (b : KPCuspCharts.Shape F) :
-    KPContFlatCuspIncomingEvaluation.ZeroFiber F ζ hζ C R P H U a :=
+    (μ : Measure (current_KernelTorus a))
+    (k : ℕ) (s : ℂ) (t : ℝ) (b : KPCuspCharts.Shape F)  :=
   KPContFlatCuspIncomingEvaluation.zeroProjection F ζ hζ C R P H U a
-    (fun ε => ∫ z : KPContFlatCuspIncomingEvaluation.KernelTorus F ζ hζ C R P H U a,
+    (fun ε => ∫ z : current_KernelTorus a,
       cuspSheet F ζ hζ C R P H U ι f a k s t (Quotient.out z) b ε ∂μ)
 
 namespace CuspAnalytic
@@ -1585,7 +1617,7 @@ private theorem actualCuspSheet_kernel_representative
 omit ι hι f hf s hs in
 private theorem kernel_borel : BorelSpace (KernelTorus F ζ hζ C R P H U a) := by
   obtain ⟨hd, -⟩ := (geometry F ζ hζ C R P H U a).lattice
-  let N : AddSubgroup (KPCuspCharts.Horizontal F) :=
+  let N  :=
     KPCuspCharts.translationLattice F
       (KPCuspGenuineMonodromy.kernelLattice
         (KPContFlatCuspIncomingEvaluation.stabilizer F ζ hζ C R P H U a)
@@ -1595,12 +1627,12 @@ private theorem kernel_borel : BorelSpace (KernelTorus F ζ hζ C R P H U a) := 
       (KPContFlatCuspIncomingEvaluation.parabolic F ζ hζ C R P H U a).L :=
     AddSubgroup.map_mono
       (KPContFlatCuspIncomingEvaluation.monodromy F ζ hζ C R P H U a).kernel_le
-  letI : DiscreteTopology (N : Set (KPCuspCharts.Horizontal F)) :=
+  letI  :=
     DiscreteTopology.of_subset hd hle
   haveI : IsClosed (N : Set (KPCuspCharts.Horizontal F)) :=
     AddSubgroup.isClosed_of_discreteTopology
-  haveI : N.Normal := AddSubgroup.normal_of_isAddCommutative N
-  haveI : T3Space (KPCuspCharts.Horizontal F ⧸ N) := QuotientAddGroup.instT3Space N
+  haveI  := AddSubgroup.normal_of_isAddCommutative N
+  haveI  := QuotientAddGroup.instT3Space N
   exact AddCosetSpace.borelSpace
 
 omit s hs in
@@ -1621,7 +1653,7 @@ private theorem jet_continuous (k : ℕ) (s : ℂ) (hs : s ∈ V)
     (t : ℝ) (b : KPCuspCharts.Shape F) (ε : rootsOfUnity 3 F) :
     Continuous (fun z : KernelTorus F ζ hζ C R P H U a =>
       cuspSheet F ζ hζ C R P H U ι f a k s t (Quotient.out z) b ε) := by
-  let u : KPCuspCharts.Horizontal F → ℂ := fun x =>
+  let u  := fun x =>
     cuspSheet F ζ hζ C R P H U ι f a k s t x b ε
   have hu : Continuous u := by
     have hh := KPContActualChamberNormalSeries.mixedJet_continuous F ζ hζ U ι f hι hf k [] s hs
@@ -1715,7 +1747,7 @@ private theorem integral_model
   letI := kernel_borel F ζ hζ C R P H U a
   obtain ⟨B,hB,hrep⟩ := KPContinuation.ChamberModerateGrowth.compact_kernel_representatives
     F ζ hζ C R P H U a
-  letI : CompactSpace B := isCompact_iff_compactSpace.mp hB
+  letI  := isCompact_iff_compactSpace.mp hB
   let π : C(B, KernelTorus F ζ hζ C R P H U a) :=
     ⟨fun x => QuotientAddGroup.mk x.val, QuotientAddGroup.continuous_mk.comp continuous_subtype_val⟩
   have hπ : Function.Surjective π := fun q => by
@@ -1733,10 +1765,10 @@ private theorem integral_model
     exact continuous_const.mul (hins.mul continuous_const)
   let A := c '' B
   have hA : IsCompact A := hB.image hc
-  letI : CompactSpace A := isCompact_iff_compactSpace.mp hA
+  letI  := isCompact_iff_compactSpace.mp hA
   let cB : C(B,A) := ⟨fun x => ⟨c x.val, ⟨x.val,x.property,rfl⟩⟩,
     (hc.comp continuous_subtype_val).subtype_mk _⟩
-  let g : ℂ → C(B,ℂ) := fun z =>
+  let g  := fun z =>
     (KPContActualChamberNormalSeries.compactMixedJet F ζ hζ U ι f hι hf 0 [] A z).comp cB
   have hg : DifferentiableOn ℂ g V :=
     (ContinuousMap.compCLM ℂ ℂ cB).differentiable.comp_differentiableOn
@@ -1767,10 +1799,13 @@ private theorem integral_model
 
 end CuspAnalytic
 
-theorem cusp_fiber_integrable (hι : Function.Injective ι)
+section
+variable (hι : Function.Injective ι)
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
     (a : Cusps F ζ hζ C R P H U)
     (μ : Measure (KPContFlatCuspIncomingEvaluation.KernelTorus F ζ hζ C R P H U a))
+include hι hf a μ
+theorem cusp_fiber_integrable  
     [μ.IsAddHaarMeasure] [IsProbabilityMeasure μ]
     (k : ℕ) (s : ℂ) (hs : s ∈ V) (t : ℝ) (b : KPCuspCharts.Shape F)
     (ε : rootsOfUnity 3 F) :
@@ -1781,10 +1816,7 @@ theorem cusp_fiber_integrable (hι : Function.Injective ι)
   exact (CuspAnalytic.jet_continuous F ζ hζ C R P H U ι hι f hf a k s hs t b ε).integrable_of_hasCompactSupport
     (HasCompactSupport.of_compactSpace _)
 
-theorem cusp_integral_commute (hι : Function.Injective ι)
-    (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
-    (a : Cusps F ζ hζ C R P H U)
-    (μ : Measure (KPContFlatCuspIncomingEvaluation.KernelTorus F ζ hζ C R P H U a))
+theorem cusp_integral_commute  
     [μ.IsAddHaarMeasure] [IsProbabilityMeasure μ]
     (k : ℕ) (s : ℂ) (hs : s ∈ V) (t : ℝ) (b : KPCuspCharts.Shape F)
     (ε : rootsOfUnity 3 F) :
@@ -1794,7 +1826,7 @@ theorem cusp_integral_commute (hι : Function.Injective ι)
     ∫ q : KPContFlatCuspIncomingEvaluation.KernelTorus F ζ hζ C R P H U a,
       cuspSheet F ζ hζ C R P H U ι f a k s t (Quotient.out q) b ε ∂μ := by
   obtain ⟨B,hB,g,I,hg,hI⟩ := CuspAnalytic.integral_model F ζ hζ C R P H U ι hι f hf a μ t b ε
-  letI : CompactSpace B := isCompact_iff_compactSpace.mp hB
+  letI  := isCompact_iff_compactSpace.mp hB
   calc
     _ = iteratedDerivWithin k (fun z => I (g z)) V s :=
       iteratedDerivWithin_congr (fun z hz => (hI 0 z hz).symm) hs
@@ -1802,20 +1834,19 @@ theorem cusp_integral_commute (hι : Function.Injective ι)
       CuspAnalytic.clm_jet I g V KPChamberL2Defect.chamber_isOpen hg k s hs
     _ = _ := hI k s hs
 
-private theorem cusp_integral_holomorphic (hι : Function.Injective ι)
-    (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
-    (a : Cusps F ζ hζ C R P H U)
-    (μ : Measure (KPContFlatCuspIncomingEvaluation.KernelTorus F ζ hζ C R P H U a))
+private theorem cusp_integral_holomorphic  
     [IsProbabilityMeasure μ] (t : ℝ) (b : KPCuspCharts.Shape F) (ε : rootsOfUnity 3 F) :
     DifferentiableOn ℂ (fun z =>
       ∫ q : KPContFlatCuspIncomingEvaluation.KernelTorus F ζ hζ C R P H U a,
         cuspSheet F ζ hζ C R P H U ι f a 0 z t (Quotient.out q) b ε ∂μ) V := by
   obtain ⟨B,hB,g,I,hg,hI⟩ := CuspAnalytic.integral_model F ζ hζ C R P H U ι hι f hf a μ t b ε
-  letI : CompactSpace B := isCompact_iff_compactSpace.mp hB
+  letI  := isCompact_iff_compactSpace.mp hB
   exact (I.differentiable.comp_differentiableOn hg).congr (fun z hz => (hI 0 z hz).symm)
+end
+
 
  def projectionFunctional (a : Cusps F ζ hζ C R P H U)
-    (q : KPContFlatCuspIncomingEvaluation.KernelTorus F ζ hζ C R P H U a) :
+    (q : current_KernelTorus a) :
     (rootsOfUnity 3 F → ℂ) →L[ℂ] ℂ := by
   letI : Fintype (rootsOfUnity 3 F) := Fintype.ofFinite _
   let l : (rootsOfUnity 3 F → ℂ) →ₗ[ℂ] ℂ :=
@@ -1829,31 +1860,30 @@ private theorem cusp_integral_holomorphic (hι : Function.Injective ι)
 theorem cusp_projection_commute (hι : Function.Injective ι)
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
     (a : Cusps F ζ hζ C R P H U)
-    (μ : Measure (KPContFlatCuspIncomingEvaluation.KernelTorus F ζ hζ C R P H U a))
+    (μ : Measure (current_KernelTorus a))
     [μ.IsAddHaarMeasure] [IsProbabilityMeasure μ]
     (k : ℕ) (s : ℂ) (hs : s ∈ V) (t : ℝ) (b : KPCuspCharts.Shape F)
-    (q : KPContFlatCuspIncomingEvaluation.KernelTorus F ζ hζ C R P H U a) :
+    (q : current_KernelTorus a) :
     iteratedDerivWithin k
       (fun z => (cuspProjection F ζ hζ C R P H U ι f a μ 0 z t b).val q) V s =
         (cuspProjection F ζ hζ C R P H U ι f a μ k s t b).val q := by
   letI : Fintype (rootsOfUnity 3 F) := Fintype.ofFinite _
-  let e : ℂ → rootsOfUnity 3 F → ℂ := fun z ε =>
-    ∫ r : KPContFlatCuspIncomingEvaluation.KernelTorus F ζ hζ C R P H U a,
+  let e  := fun z ε =>
+    ∫ r : current_KernelTorus a,
       cuspSheet F ζ hζ C R P H U ι f a 0 z t (Quotient.out r) b ε ∂μ
-  have he : DifferentiableOn ℂ e V := by
-    exact differentiableOn_pi.mpr (fun ε => cusp_integral_holomorphic F ζ hζ C R P H U ι f hι hf a μ t b ε)
+  have he : DifferentiableOn ℂ e V := differentiableOn_pi.mpr (fun ε => cusp_integral_holomorphic F ζ hζ C R P H U ι f hι hf a μ t b ε)
   let L := projectionFunctional F ζ hζ C R P H U a q
   change iteratedDerivWithin k (fun z => L (e z)) V s = _
   rw [CuspAnalytic.clm_jet L e V KPChamberL2Defect.chamber_isOpen he k s hs]
   have hj : iteratedDerivWithin k e V s = fun ε =>
-      ∫ r : KPContFlatCuspIncomingEvaluation.KernelTorus F ζ hζ C R P H U a,
+      ∫ r : current_KernelTorus a,
         cuspSheet F ζ hζ C R P H U ι f a k s t (Quotient.out r) b ε ∂μ := by
     funext ε
     have h := CuspAnalytic.clm_jet (ContinuousLinearMap.proj ε) e V
       KPChamberL2Defect.chamber_isOpen he k s hs
     simp only [ContinuousLinearMap.proj_apply] at h
     rw [← h]
-    exact cusp_integral_commute F ζ hζ C R P H U ι f hι hf a μ k s hs t b ε
+    apply cusp_integral_commute <;> assumption
   rw [hj]
   rfl
 

@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.RepresentationTheory.FiniteAbelian.RegularCharacterEulerPolynomial
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.AbelianQuotient
 
@@ -32,10 +35,7 @@ theorem inertiaCharacterDeterminant
 
   have heval : ∀ (ρ : {ρ : ComplexDual G // H ≤ ρ.ker}),
       (e ρ) ((QuotientGroup.mk' H) g) = ρ.val g := by
-    intro ρ
-    change (MonoidHom.domRestrictHomKerEquiv ℂˣ H (e1 ρ)) (g : G ⧸ H) = ρ.val g
-    rw [MonoidHom.domRestrictHomKerEquiv_apply_coe]
-    rfl
+    (intros; simp_all [MonoidHom.domRestrictHomKerEquiv_apply_coe] <;> aesop)
 
   have hprod : (∏ ρ : ComplexDual G, (1 - (if H ≤ ρ.ker then (ρ g : ℂ) else 0) * x))
       = ∏ ρ : {ρ : ComplexDual G // H ≤ ρ.ker}, (1 - (ρ.val g : ℂ) * x) := by
@@ -46,10 +46,7 @@ theorem inertiaCharacterDeterminant
       by_cases hp : H ≤ ρ.ker
       · rw [if_pos hp]
       · exact absurd (show H ≤ ρ.ker from hρ) hp
-    · intro ρ hρ
-      by_cases hp : H ≤ ρ.ker
-      · exact absurd hp (show ¬ (H ≤ ρ.ker) from hρ)
-      · rw [if_neg hp]; ring
+    · aesop
   rw [hprod]
   have hstep : (∏ ρ : {ρ : ComplexDual G // H ≤ ρ.ker}, (1 - (ρ.val g : ℂ) * x))
       = ∏ τ : ComplexDual (G ⧸ H), (1 - (τ ((QuotientGroup.mk' H) g) : ℂ) * x) := by
@@ -59,6 +56,6 @@ theorem inertiaCharacterDeterminant
     intro ρ _
     rw [heval]
   rw [hstep]
-  exact regularCharacterDeterminant ((QuotientGroup.mk' H) g) x
+  apply regularCharacterDeterminant
 
 end DedekindZetaZeroFree.AbelianQuotient

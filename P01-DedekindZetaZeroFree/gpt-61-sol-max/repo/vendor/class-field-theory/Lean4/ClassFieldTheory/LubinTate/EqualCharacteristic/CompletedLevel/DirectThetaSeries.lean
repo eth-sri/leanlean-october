@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.SetTheory.Cardinal.Finite
 public import ClassFieldTheory.LubinTate.EqualCharacteristic.Theta.ThetaSeries
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -46,16 +49,16 @@ variable {k : Type u} [Field k] [Finite k]
 /-- The target prime `bar_pi = uT` in the completed maximal-unramified
 coefficient ring. -/
 noncomputable def equalCharacteristicDirectCompletedTargetUniformizer
-    (u : k⟦X⟧ˣ) : (AlgebraicClosure k)⟦X⟧ :=
-  PowerSeries.map (algebraMap k (AlgebraicClosure k)) (u : k⟦X⟧) *
+    (u : k⟦X⟧ˣ)  :=
+  PowerSeries.map (algebraMap k (AlgebraicClosure k)) u *
     PowerSeries.X
 
 /-- The direct-orientation contracting coefficient
 `gamma_j = u⁻¹ T^(q^j-1)`. -/
 noncomputable def equalCharacteristicDirectThetaGamma
-    (u : k⟦X⟧ˣ) (j : ℕ) : (AlgebraicClosure k)⟦X⟧ :=
+    (u : k⟦X⟧ˣ) (j : ℕ)  :=
   PowerSeries.map (algebraMap k (AlgebraicClosure k))
-      ((u⁻¹ : k⟦X⟧ˣ) : k⟦X⟧) *
+      ((u⁻¹ : k⟦X⟧ˣ)) *
     PowerSeries.X ^ (Nat.card k ^ j - 1)
 
 /-- Positive-index direct theta gamma terms have zero constant coefficient. -/
@@ -78,15 +81,15 @@ theorem equalCharacteristicDirectTargetUniformizer_mul_gamma
   have hpow : 1 ≤ Nat.card k ^ j :=
     (Nat.one_lt_pow hj.ne' hq).le
   have huinv :
-      PowerSeries.map (algebraMap k (AlgebraicClosure k)) (u : k⟦X⟧) *
+      PowerSeries.map (algebraMap k (AlgebraicClosure k)) u *
           PowerSeries.map (algebraMap k (AlgebraicClosure k))
-            ((u⁻¹ : k⟦X⟧ˣ) : k⟦X⟧) = 1 := by
+            ((u⁻¹ : k⟦X⟧ˣ)) = 1 := by
     rw [← map_mul]
     simp
   rw [equalCharacteristicDirectCompletedTargetUniformizer,
     equalCharacteristicDirectThetaGamma]
   calc
-    (PowerSeries.map (algebraMap k (AlgebraicClosure k)) (u : k⟦X⟧) *
+    (PowerSeries.map (algebraMap k (AlgebraicClosure k)) u *
           PowerSeries.X) *
         (PowerSeries.map (algebraMap k (AlgebraicClosure k))
             ((u⁻¹ : k⟦X⟧ˣ) : k⟦X⟧) *
@@ -102,10 +105,9 @@ theorem equalCharacteristicDirectTargetUniformizer_mul_gamma
 /-- The direct right-hand side
 `beta(b) = u⁻¹ (phi(b)-b^q)/T` of the contracting recursion. -/
 noncomputable def equalCharacteristicDirectThetaBeta
-    (u : k⟦X⟧ˣ) (b : (AlgebraicClosure k)⟦X⟧) :
-    (AlgebraicClosure k)⟦X⟧ :=
+    (u : k⟦X⟧ˣ) (b : (AlgebraicClosure k)⟦X⟧)  :=
   PowerSeries.map (algebraMap k (AlgebraicClosure k))
-      ((u⁻¹ : k⟦X⟧ˣ) : k⟦X⟧) *
+      ((u⁻¹ : k⟦X⟧ˣ)) *
     equalCharacteristicPowerSeriesTail
       (equalCharacteristicPowerSeriesFrobenius k b - b ^ Nat.card k)
 
@@ -117,15 +119,15 @@ theorem equalCharacteristicDirectTargetUniformizer_mul_beta
         equalCharacteristicDirectThetaBeta u b =
       equalCharacteristicPowerSeriesFrobenius k b - b ^ Nat.card k := by
   have huinv :
-      PowerSeries.map (algebraMap k (AlgebraicClosure k)) (u : k⟦X⟧) *
+      PowerSeries.map (algebraMap k (AlgebraicClosure k)) u *
           PowerSeries.map (algebraMap k (AlgebraicClosure k))
-            ((u⁻¹ : k⟦X⟧ˣ) : k⟦X⟧) = 1 := by
+            ((u⁻¹ : k⟦X⟧ˣ)) = 1 := by
     rw [← map_mul]
     simp
   rw [equalCharacteristicDirectCompletedTargetUniformizer,
     equalCharacteristicDirectThetaBeta]
   calc
-    (PowerSeries.map (algebraMap k (AlgebraicClosure k)) (u : k⟦X⟧) *
+    (PowerSeries.map (algebraMap k (AlgebraicClosure k)) u *
           PowerSeries.X) *
         (PowerSeries.map (algebraMap k (AlgebraicClosure k))
             ((u⁻¹ : k⟦X⟧ˣ) : k⟦X⟧) *
@@ -226,7 +228,7 @@ theorem equalCharacteristicDirectThetaCoefficient_succ_comparison
 /-- The genuine sparse outer theta series for the direct orientation
 `T → uT`. -/
 noncomputable def equalCharacteristicDirectThetaSeries
-    (u : k⟦X⟧ˣ) : ((AlgebraicClosure k)⟦X⟧)⟦X⟧ :=
+    (u : k⟦X⟧ˣ)  :=
   equalCharacteristicQAdditiveSeries k
     (equalCharacteristicDirectThetaCoefficient u)
 
@@ -248,15 +250,14 @@ theorem equalCharacteristicDirectThetaSeries_constantCoeff
   equalCharacteristicQAdditiveSeries_constantCoeff k _
 
 /-- The direct theta series is valid as a substitution series. -/
-theorem equalCharacteristicDirectThetaSeries_hasSubst
-    (u : k⟦X⟧ˣ) :
-    PowerSeries.HasSubst (equalCharacteristicDirectThetaSeries u) :=
+def equalCharacteristicDirectThetaSeries_hasSubst
+    (u : k⟦X⟧ˣ)  :=
   PowerSeries.HasSubst.of_constantCoeff_zero'
     (equalCharacteristicDirectThetaSeries_constantCoeff u)
 
 /-- Arithmetic Frobenius on every coefficient of the direct theta series. -/
 noncomputable def equalCharacteristicDirectThetaSeriesFrobenius
-    (u : k⟦X⟧ˣ) : ((AlgebraicClosure k)⟦X⟧)⟦X⟧ :=
+    (u : k⟦X⟧ˣ)  :=
   PowerSeries.map (equalCharacteristicPowerSeriesFrobenius k)
     (equalCharacteristicDirectThetaSeries u)
 
@@ -267,9 +268,7 @@ theorem equalCharacteristicDirectThetaSeriesFrobenius_eq_qAdditiveSeries
       equalCharacteristicQAdditiveSeries k
         (fun j ↦ equalCharacteristicPowerSeriesFrobenius k
           (equalCharacteristicDirectThetaCoefficient u j)) := by
-  exact equalCharacteristicQAdditiveSeries_map k
-    (equalCharacteristicPowerSeriesFrobenius k)
-    (equalCharacteristicDirectThetaCoefficient u)
+  apply equalCharacteristicQAdditiveSeries_map
 
 /-- Direct the completed theta-intertwining theorem second identity:
 `theta^φ ∘ e_T = e_(uT) ∘ theta`. -/
@@ -277,7 +276,7 @@ theorem equalCharacteristicDirectThetaSeries_intertwines
     (u : k⟦X⟧ˣ) :
     PowerSeries.subst
         (equalCharacteristicCompletedLubinTateSeries (k := k)
-          (PowerSeries.X : (AlgebraicClosure k)⟦X⟧))
+          PowerSeries.X)
         (equalCharacteristicDirectThetaSeriesFrobenius u) =
       PowerSeries.subst (equalCharacteristicDirectThetaSeries u)
         (equalCharacteristicCompletedLubinTateSeries (k := k)
@@ -307,7 +306,7 @@ coefficient. -/
 theorem equalCharacteristicDirectThetaSeries_coeff_one
     (u : k⟦X⟧ˣ) :
     PowerSeries.coeff 1 (equalCharacteristicDirectThetaSeries u) =
-      equalCharacteristicSemilinearUnit (u : k⟦X⟧)
+      equalCharacteristicSemilinearUnit u
         (by
           intro hzero
           have hunit := PowerSeries.isUnit_constantCoeff (u : k⟦X⟧) u.isUnit

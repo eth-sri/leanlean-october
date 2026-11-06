@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.Sobolev.WeightedCovariant.CoordinateData
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -11,14 +14,16 @@ namespace DedekindZetaZeroFree.KPCompactInteriorH1
 open MeasureTheory TopologicalSpace Filter
 open scoped Topology ContDiff
 
-private theorem locallyL2_of_memLp {n r : ℕ} {Ω : Opens (E n)}
-    {f : E n → V r} (hf : MemLp f 2 (volume.restrict (Ω : Set (E n)))) :
+section
+variable {n r : ℕ} {Ω : Opens (E n)}
+    {f : E n → V r}
+include n r Ω f
+private theorem locallyL2_of_memLp   (hf : MemLp f 2 (volume.restrict (Ω : Set (E n)))) :
     LocallyL2 Ω f := by
   refine ⟨hf.aestronglyMeasurable, fun L _ hL => ?_⟩
   exact hf.mono_measure (Measure.restrict_mono hL le_rfl)
 
-private theorem locallyL2_component_integrable {n r : ℕ} {Ω : Opens (E n)}
-    {f : E n → V r} (hf : LocallyL2 Ω f) (a : Fin r) :
+private theorem locallyL2_component_integrable   (hf : LocallyL2 Ω f) (a : Fin r) :
     LocallyIntegrableOn (fun x => (f x) a) (Ω : Set (E n))
       (volume.restrict (Ω : Set (E n))) := by
   rw [locallyIntegrableOn_iff Ω.isOpen.isLocallyClosed]
@@ -30,13 +35,14 @@ private theorem locallyL2_component_integrable {n r : ℕ} {Ω : Opens (E n)}
   show Integrable _ ((volume.restrict (Ω : Set (E n))).restrict k)
   rw [Measure.restrict_restrict hkc.measurableSet, Set.inter_eq_left.mpr hk]
   simpa only [Function.comp_apply, EuclideanSpace.coe_proj] using hi
+end
+
 
 private theorem partial_continuous {n : ℕ} {ψ : E n → ℂ}
-    (hψ : ContDiff ℝ ∞ ψ) (j : Fin n) : Continuous (coordinatePartial j ψ) := by
-  exact (hψ.continuous_fderiv (by simp)).clm_apply continuous_const
+    (hψ : ContDiff ℝ ∞ ψ) (j : Fin n) : Continuous (coordinatePartial j ψ) := (hψ.continuous_fderiv (by simp)).clm_apply continuous_const
 
-private theorem partial_compact {n : ℕ} {ψ : E n → ℂ}
-    (hψ : HasCompactSupport ψ) (j : Fin n) : HasCompactSupport (coordinatePartial j ψ) :=
+private def partial_compact {n : ℕ} {ψ : E n → ℂ}
+    (hψ : HasCompactSupport ψ) (j : Fin n)  :=
   hψ.fderiv_apply ℝ (coordinateDirection j)
 
 private theorem pairing_tendsto {n r : ℕ} (μ : Measure (E n))
@@ -118,9 +124,7 @@ theorem WeakFirst.derivative_ae_eq {n r : ℕ} {Ω : Opens (E n)}
         ⟨fun x => (φ x : ℂ), hcast, by change IsCompact _; rw [hsupp]; exact hφc,
           hsupp ▸ hφs⟩
       let ψR : TestFunction Ω ℝ ⊤ := ⟨φ, hφ, hφc, hφs⟩
-      have heq : (∫ x in (Ω : Set (E n)), (q j x) a * ψ x) =
-          ∫ x in (Ω : Set (E n)), (g j x) a * ψ x := by
-        exact neg_injective ((hq.weak_identity j ψ a).symm.trans
+      have heq  := neg_injective ((hq.weak_identity j ψ a).symm.trans
           (hg.weak_identity j ψ a))
       have heq' : (∫ x in (Ω : Set (E n)), φ x • (q j x) a) =
           ∫ x in (Ω : Set (E n)), φ x • (g j x) a := by
@@ -133,7 +137,7 @@ theorem WeakFirst.derivative_ae_eq {n r : ℕ} {Ω : Opens (E n)}
         (∫ x in (Ω : Set (E n)), φ x • (g j x) a) = 0
       rw [heq', sub_self]
     filter_upwards [hz, ae_restrict_mem Ω.isOpen.measurableSet] with x hx hxΩ
-    exact sub_eq_zero.mp (hx hxΩ)
+    apply sub_eq_zero.mp <;> aesop
   filter_upwards [Filter.eventually_all.mpr hcomp] with x hx
   ext a
   exact hx a
@@ -141,8 +145,7 @@ theorem WeakFirst.derivative_ae_eq {n r : ℕ} {Ω : Opens (E n)}
 private theorem smooth_derivative_memLp {n r : ℕ} {u : E n → V r}
     (hu : ContDiff ℝ ∞ u) (hc : HasCompactSupport u) (j : Fin n)
     (S : Set (E n)) :
-    MemLp (fun x => fderiv ℝ u x (coordinateDirection j)) 2 (volume.restrict S) := by
-  exact ((hu.continuous_fderiv (by simp)).clm_apply continuous_const).memLp_of_hasCompactSupport
+    MemLp (fun x => fderiv ℝ u x (coordinateDirection j)) 2 (volume.restrict S) := ((hu.continuous_fderiv (by simp)).clm_apply continuous_const).memLp_of_hasCompactSupport
     (hc.fderiv_apply ℝ (coordinateDirection j))
 
 theorem weakFirst_smooth_compactSupport {n r : ℕ} (Ω : Opens (E n))
@@ -183,7 +186,7 @@ theorem weakFirst_smooth_compactSupport {n r : ℕ} (Ω : Opens (E n))
     intro x hx
     have hz : ua x = 0 := image_eq_zero_of_notMem_tsupport
       (fun hh => hx (hu_support ((tsupport_comp_subset
-        (g := (EuclideanSpace.proj a : V r →L[ℂ] ℂ)) (by simp) u) hh)))
+        (g := (EuclideanSpace.proj a : V r →L[ℂ] ℂ)) (rfl) u) hh)))
     simp [hz]
   have hright : (∫ x in (Ω : Set (E n)), fderiv ℝ ua x (coordinateDirection j) * ψ x) =
       ∫ x, fderiv ℝ ua x (coordinateDirection j) * ψ x := by

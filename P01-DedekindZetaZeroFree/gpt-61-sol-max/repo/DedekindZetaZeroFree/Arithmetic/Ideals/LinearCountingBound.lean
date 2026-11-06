@@ -1,14 +1,20 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Ideals.BoundedNormFinsets
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve
 
 open scoped NumberField Classical
 
-private theorem card_boundedNormIdeals_eq_natCard (F : Type*) [Field F] [NumberField F] (X : ℝ) :
+section
+variable (F : Type*) [Field F] [NumberField F]
+include F
+private theorem card_boundedNormIdeals_eq_natCard   (X : ℝ) :
     Nat.card {I : Ideal (𝓞 F) // (Ideal.absNorm I : ℝ) ≤ X} = (boundedNormIdeals F X).card := by
   change Nat.card (setOf (fun I : Ideal (𝓞 F) => (Ideal.absNorm I : ℝ) ≤ X)) =
     (boundedNormIdeals F X).card
@@ -17,7 +23,7 @@ private theorem card_boundedNormIdeals_eq_natCard (F : Type*) [Field F] [NumberF
   rw [Nat.card_coe_set_eq, h]
   rfl
 
-theorem exists_ideal_count_bound_finset (F : Type*) [Field F] [NumberField F] :
+theorem exists_ideal_count_bound_finset   :
     ∃ C : ℝ, 1 ≤ C ∧
       (∀ X : ℝ, 1 ≤ X → ((boundedNormIdeals F X).card : ℝ) ≤ C * X) ∧
       (∀ X : ℝ, 1 ≤ X → ∀ s : Finset (Ideal (𝓞 F)),
@@ -51,7 +57,7 @@ theorem exists_ideal_count_bound_finset (F : Type*) [Field F] [NumberField F] :
       have hKb : b ≤ K := by
         rw [hK]; exact le_trans (le_max_left _ _) (le_max_right _ _)
       exact le_trans hb' (mul_le_mul_of_nonneg_right hKb (le_of_lt hXpos))
-    · have hmono : boundedNormIdeals F X ⊆ boundedNormIdeals F T' :=
+    · have hmono  :=
         boundedNormIdeals_mono F (le_of_lt h)
       have hcard : ((boundedNormIdeals F X).card : ℝ) ≤ ((boundedNormIdeals F T').card : ℝ) := by
         exact_mod_cast Finset.card_le_card hmono
@@ -68,10 +74,12 @@ theorem exists_ideal_count_bound_finset (F : Type*) [Field F] [NumberField F] :
     exact_mod_cast Finset.card_le_card hsub
   exact le_trans hcard (hglob X hX1)
 
-theorem exists_ideal_count_bound (F : Type*) [Field F] [NumberField F] :
+theorem exists_ideal_count_bound   :
     ∃ C : ℝ, 1 ≤ C ∧ ∀ X : ℝ, 1 ≤ X →
       ((boundedNormIdeals F X).card : ℝ) ≤ C * X := by
   obtain ⟨C, hC, hglobal, _⟩ := exists_ideal_count_bound_finset F
   exact ⟨C, hC, hglobal⟩
+end
+
 
 end DedekindZetaZeroFree.LargeSieve

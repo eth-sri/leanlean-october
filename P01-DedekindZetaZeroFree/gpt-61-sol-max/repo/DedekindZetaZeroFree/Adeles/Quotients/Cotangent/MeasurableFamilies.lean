@@ -34,12 +34,15 @@ abbrev ChartFields (F : Type) [Field F] [NumberField F] (ζ : F)
     (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P) :=
   ∀ a : ShrunkChart F ζ hζ U R P H, omega a → Coefficients F
 
-theorem omega_subset_larger (a : Chart (U := U) (H := H)) :
+
+local notation:max "current_Chart" => Chart (U := U) (H := H)
+
+theorem omega_subset_larger (a : current_Chart) :
     omega a ⊆ (isotropyChart a).omega := by
   intro x hx
   exact a.closure_subset (subset_closure hx)
 
-theorem isotropy_mem (a : Chart (U := U) (H := H)) (γ : Gamma a)
+theorem isotropy_mem (a : current_Chart) (γ : Gamma a)
     (x : M F) (hx : x ∈ omega a) : (isotropyArrow a γ).psi x ∈ omega a := by
   have hm := (a.action γ.val.1 ⟨labeledA (placeEquiv F ζ hζ) x, hx⟩).property
   change labeledA (placeEquiv F ζ hζ)
@@ -55,10 +58,10 @@ theorem isotropy_mem (a : Chart (U := U) (H := H)) (γ : Gamma a)
 
 def IsMeasurableCotangentFamily (v : ChartFields F ζ hζ U R P H) : Prop :=
   (∀ a, Measurable (v a)) ∧
-  (∀ (a : Chart (U := U) (H := H)) (γ : Gamma a) (x : M F) (hx : x ∈ omega a),
+  (∀ (a : current_Chart) (γ : Gamma a) (x : M F) (hx : x ∈ omega a),
     v a ⟨(isotropyArrow a γ).psi x, isotropy_mem a γ x hx⟩ =
       T (isotropyArrow a γ) x (omega_subset_larger a hx) (v a ⟨x, hx⟩)) ∧
-  (∀ (a b : Chart (U := U) (H := H)) (e : ActualBranch a b) (x : M F)
+  (∀ (a b : current_Chart) (e : ActualBranch a b) (x : M F)
       (hx : x ∈ e.arrow.domain),
     v b ⟨e.arrow.psi x, e.target_shrinking hx⟩ =
       T e.arrow x hx (v a ⟨x, e.source_shrinking hx⟩))
@@ -95,12 +98,15 @@ abbrev MeasurableCotangentFamily (F : Type) [Field F] [NumberField F] (ζ : F)
 
 abbrev Family := MeasurableCotangentFamily F ζ hζ U R P H
 
-def coefficient (v : Family (U := U) (H := H)) (a : Chart (U := U) (H := H)) (x : omega a) :
+
+local notation:max "current_Family" => Family (U := U) (H := H)
+
+def coefficient (v : current_Family) (a : current_Chart) (x : omega a) :
     Coefficients F := v.val a x
 
-theorem normSquare_descends (v : Family (U := U) (H := H)) :
+theorem normSquare_descends (v : current_Family) :
     ∃! f : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ≥0,
-      Measurable f ∧ ∀ (a : Chart (U := U) (H := H)) (x : omega a),
+      Measurable f ∧ ∀ (a : current_Chart) (x : omega a),
         f (q a x.val) = ‖coefficient v a x‖₊ ^ 2 := by
   apply KPContActualCotangentMeasurableMeasure.scalar_descends
     (fun a x => ‖coefficient v a x‖₊ ^ 2)
@@ -111,12 +117,12 @@ theorem normSquare_descends (v : Family (U := U) (H := H)) :
     rw [v.property.2.2 a b e x hx, LinearIsometryEquiv.nnnorm_map]
     rfl
 
-def normSquare (v : Family (U := U) (H := H)) : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ≥0 :=
+def normSquare (v : current_Family) : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ≥0 :=
   Classical.choose (normSquare_descends v)
 
-theorem pairing_descends (v w : Family (U := U) (H := H)) :
+theorem pairing_descends (v w : current_Family) :
     ∃! f : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℂ,
-      Measurable f ∧ ∀ (a : Chart (U := U) (H := H)) (x : omega a),
+      Measurable f ∧ ∀ (a : current_Chart) (x : omega a),
         f (q a x.val) = inner ℂ (coefficient v a x) (coefficient w a x) := by
   apply KPContActualCotangentMeasurableMeasure.scalar_descends
     (fun a x => inner ℂ (coefficient v a x) (coefficient w a x))
@@ -129,31 +135,31 @@ theorem pairing_descends (v w : Family (U := U) (H := H)) :
       LinearIsometryEquiv.inner_map_map]
     rfl
 
-def pair (v w : Family (U := U) (H := H)) : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℂ :=
+def pair (v w : current_Family) : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℂ :=
   Classical.choose (pairing_descends v w)
 
-theorem measurable_normSquare (v : Family (U := U) (H := H)) : Measurable (normSquare v) := by
+theorem measurable_normSquare (v : current_Family) : Measurable (normSquare v) := by
   exact (Classical.choose_spec (normSquare_descends v)).1.1
 
-theorem normSquare_chart (v : Family (U := U) (H := H)) (a : Chart (U := U) (H := H)) (x : omega a) :
+theorem normSquare_chart (v : current_Family) (a : current_Chart) (x : omega a) :
     normSquare v (q a x.val) = ‖coefficient v a x‖₊ ^ 2 := by
   exact (Classical.choose_spec (normSquare_descends v)).1.2 a x
 
-theorem measurable_pair (v w : Family (U := U) (H := H)) : Measurable (pair v w) := by
+theorem measurable_pair (v w : current_Family) : Measurable (pair v w) := by
   exact (Classical.choose_spec (pairing_descends v w)).1.1
 
-theorem pair_chart (v w : Family (U := U) (H := H)) (a : Chart (U := U) (H := H)) (x : omega a) :
+theorem pair_chart (v w : current_Family) (a : current_Chart) (x : omega a) :
     pair v w (q a x.val) = inner ℂ (coefficient v a x) (coefficient w a x) := by
   exact (Classical.choose_spec (pairing_descends v w)).1.2 a x
 
 abbrev baseMeasure := KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U
 
-def chartMeasure (a : Chart (U := U) (H := H)) : Measure (omega a) :=
+def chartMeasure (a : current_Chart) : Measure (omega a) :=
   Measure.comap (Subtype.val : omega a → M F)
     ((KPContCotangentOverlapNullEquivalence.liftedMeasure a).restrict (omega a))
 
 private theorem exists_lift (x : KPFiniteCuspAtlas.rawXU F ζ hζ U) :
-    ∃ (a : Chart (U := U) (H := H)) (y : omega a), q a y.val = x := by
+    ∃ (a : current_Chart) (y : omega a), q a y.val = x := by
   let cover := Classical.choice (kp_cont_actual_cotangent_countable_shrinking F ζ hζ U R P H).2
   have hx : x ∈ ⋃ n, (cover.chart n).baseDomain := by rw [cover.covers]; trivial
   obtain ⟨n, hn⟩ := Set.mem_iUnion.mp hx
@@ -172,14 +178,14 @@ private theorem exists_lift (x : KPFiniteCuspAtlas.rawXU F ζ hζ U) :
   simp [y, labeledA, labeledAInv]
 
  theorem normSquare_zero_point (x : KPFiniteCuspAtlas.rawXU F ζ hζ U) :
-    normSquare (0 : Family (U := U) (H := H)) x = 0 := by
+    normSquare (0 : current_Family) x = 0 := by
   obtain ⟨a, y, rfl⟩ := exists_lift (H := H) x
   rw [normSquare_chart]
   simp [coefficient]
 
-private theorem normSquare_eq_zero_iff (v : Family (U := U) (H := H))
+private theorem normSquare_eq_zero_iff (v : current_Family)
     (x : KPFiniteCuspAtlas.rawXU F ζ hζ U) :
-    normSquare v x = 0 ↔ ∀ (a : Chart (U := U) (H := H)) (y : omega a),
+    normSquare v x = 0 ↔ ∀ (a : current_Chart) (y : omega a),
       q a y.val = x → coefficient v a y = 0 := by
   constructor
   · intro hv a y hy
@@ -190,7 +196,7 @@ private theorem normSquare_eq_zero_iff (v : Family (U := U) (H := H))
     rw [← hy, normSquare_chart, hv a y hy]
     simp
 
- theorem normSquare_add_zero (v w : Family (U := U) (H := H))
+ theorem normSquare_add_zero (v w : current_Family)
     (x : KPFiniteCuspAtlas.rawXU F ζ hζ U) (hv : normSquare v x = 0)
     (hw : normSquare w x = 0) : normSquare (v + w) x = 0 := by
   apply (normSquare_eq_zero_iff _ _).mpr
@@ -200,7 +206,7 @@ private theorem normSquare_eq_zero_iff (v : Family (U := U) (H := H))
   change coefficient v a y + coefficient w a y = 0
   rw [h1, h2, add_zero]
 
- theorem normSquare_smul_zero (c : ℂ) (v : Family (U := U) (H := H))
+ theorem normSquare_smul_zero (c : ℂ) (v : current_Family)
     (x : KPFiniteCuspAtlas.rawXU F ζ hζ U) (hv : normSquare v x = 0) :
     normSquare (c • v) x = 0 := by
   apply (normSquare_eq_zero_iff _ _).mpr
@@ -208,7 +214,7 @@ private theorem normSquare_eq_zero_iff (v : Family (U := U) (H := H))
   change c • coefficient v a y = 0
   rw [(normSquare_eq_zero_iff v x).mp hv a y hy, smul_zero]
 
- theorem normSquare_add_bound (v w : Family (U := U) (H := H))
+ theorem normSquare_add_bound (v w : current_Family)
     (x : KPFiniteCuspAtlas.rawXU F ζ hζ U) :
     (normSquare (v + w) x : ℝ) ≤ 2 * ((normSquare v x : ℝ) + (normSquare w x : ℝ)) := by
   obtain ⟨a, y, rfl⟩ := exists_lift (H := H) x
@@ -218,7 +224,7 @@ private theorem normSquare_eq_zero_iff (v : Family (U := U) (H := H))
   change ‖coefficient v a y + coefficient w a y‖ ^ 2 ≤ _
   nlinarith [sq_nonneg ‖coefficient v a y - coefficient w a y‖]
 
- theorem normSquare_smul_point (c : ℂ) (v : Family (U := U) (H := H))
+ theorem normSquare_smul_point (c : ℂ) (v : current_Family)
     (x : KPFiniteCuspAtlas.rawXU F ζ hζ U) :
     (normSquare (c • v) x : ℝ) = ‖c‖ ^ 2 * (normSquare v x : ℝ) := by
   obtain ⟨a, y, rfl⟩ := exists_lift (H := H) x
@@ -227,13 +233,13 @@ private theorem normSquare_eq_zero_iff (v : Family (U := U) (H := H))
   change ‖c • coefficient v a y‖ ^ 2 = _
   rw [norm_smul, mul_pow]
 
-def squareFinite (v : Family (U := U) (H := H)) : Prop :=
+def squareFinite (v : current_Family) : Prop :=
   (∫⁻ x, ENNReal.ofReal ((normSquare v x : ℝ)) ∂(baseMeasure (R := R) (P := P) (U := U))) < ⊤
 
-def squareFiniteSubmodule : Submodule ℂ (Family (U := U) (H := H)) where
+def squareFiniteSubmodule : Submodule ℂ (current_Family) where
   carrier := {v | squareFinite v}
   zero_mem' := by
-    change squareFinite (0 : Family (U := U) (H := H))
+    change squareFinite (0 : current_Family)
     unfold squareFinite
     simp only [normSquare_zero_point, NNReal.coe_zero, ENNReal.ofReal_zero, lintegral_zero]
     exact ENNReal.zero_lt_top
@@ -266,13 +272,16 @@ def squareFiniteSubmodule : Submodule ℂ (Family (U := U) (H := H)) where
 
 abbrev SquareFiniteFamily := ↥(squareFiniteSubmodule (U := U) (H := H))
 
-def AeEquivalent (v w : Family (U := U) (H := H)) : Prop :=
+def AeEquivalent (v w : current_Family) : Prop :=
   ∀ᵐ x ∂(baseMeasure (R := R) (P := P) (U := U)), normSquare (v - w) x = 0
 
-def nullSubmodule : Submodule ℂ (SquareFiniteFamily (U := U) (H := H)) where
+
+local notation:max "current_SquareFiniteFamily" => SquareFiniteFamily (U := U) (H := H)
+
+def nullSubmodule : Submodule ℂ (current_SquareFiniteFamily) where
   carrier := {v | AeEquivalent v.val 0}
   zero_mem' := by
-    change ∀ᵐ x ∂baseMeasure, normSquare (0 - 0 : Family (U := U) (H := H)) x = 0
+    change ∀ᵐ x ∂baseMeasure, normSquare (0 - 0 : current_Family) x = 0
     simp only [sub_self]
     exact Filter.Eventually.of_forall normSquare_zero_point
   add_mem' := by
@@ -293,19 +302,19 @@ def nullSubmodule : Submodule ℂ (SquareFiniteFamily (U := U) (H := H)) where
 
 abbrev CotangentAeQuotient :=
   Quotient (Submodule.quotientRel (R := ℂ)
-    (M := SquareFiniteFamily (U := U) (H := H)) (nullSubmodule (U := U) (H := H)))
+    (M := current_SquareFiniteFamily) (nullSubmodule (U := U) (H := H)))
 
 instance quotientAddCommGroup : AddCommGroup (CotangentAeQuotient (U := U) (H := H)) := by
-  exact @Submodule.Quotient.addCommGroup ℂ (SquareFiniteFamily (U := U) (H := H))
+  exact @Submodule.Quotient.addCommGroup ℂ (current_SquareFiniteFamily)
     _ (Submodule.addCommGroup (squareFiniteSubmodule (U := U) (H := H)))
     (Submodule.module (squareFiniteSubmodule (U := U) (H := H))) nullSubmodule
 
 instance quotientModule : Module ℂ (CotangentAeQuotient (U := U) (H := H)) := by
-  exact @Submodule.Quotient.module ℂ (SquareFiniteFamily (U := U) (H := H))
+  exact @Submodule.Quotient.module ℂ (current_SquareFiniteFamily)
     _ (Submodule.addCommGroup (squareFiniteSubmodule (U := U) (H := H)))
     (Submodule.module (squareFiniteSubmodule (U := U) (H := H))) nullSubmodule
 
-def toAeQuotient : SquareFiniteFamily (U := U) (H := H) →ₗ[ℂ] CotangentAeQuotient (U := U) (H := H) where
+def toAeQuotient : current_SquareFiniteFamily →ₗ[ℂ] CotangentAeQuotient (U := U) (H := H) where
   toFun := Quotient.mk''
   map_add' := by intro v w; rfl
   map_smul' := by intro c v; rfl
@@ -315,25 +324,25 @@ theorem toAeQuotient_surjective :
   intro q
   exact Quotient.inductionOn q (fun v => ⟨v, rfl⟩)
 
-theorem toAeQuotient_add (v w : SquareFiniteFamily (U := U) (H := H)) :
+theorem toAeQuotient_add (v w : current_SquareFiniteFamily) :
     toAeQuotient (v + w) = toAeQuotient v + toAeQuotient w := by
   exact map_add toAeQuotient v w
 
-theorem toAeQuotient_smul (c : ℂ) (v : SquareFiniteFamily (U := U) (H := H)) :
+theorem toAeQuotient_smul (c : ℂ) (v : current_SquareFiniteFamily) :
     toAeQuotient (c • v) = c • toAeQuotient v := by
   exact map_smul toAeQuotient c v
 
-theorem toAeQuotient_eq_iff (v w : SquareFiniteFamily (U := U) (H := H)) :
+theorem toAeQuotient_eq_iff (v w : current_SquareFiniteFamily) :
     toAeQuotient v = toAeQuotient w ↔ AeEquivalent v.val w.val := by
   change Submodule.Quotient.mk v = Submodule.Quotient.mk w ↔ _
   rw [Submodule.Quotient.eq]
   change AeEquivalent (v - w).val 0 ↔ AeEquivalent v.val w.val
   simp only [AeEquivalent, Submodule.coe_sub, sub_zero]
 
-theorem aeEquivalent_iff_all_charts (v w : Family (U := U) (H := H)) :
-    AeEquivalent v w ↔ ∀ a : Chart (U := U) (H := H),
+theorem aeEquivalent_iff_all_charts (v w : current_Family) :
+    AeEquivalent v w ↔ ∀ a : current_Chart,
       ∀ᵐ x ∂chartMeasure a, coefficient v a x = coefficient w a x := by
-  have hzero (a : Chart (U := U) (H := H)) (x : omega a) :
+  have hzero (a : current_Chart) (x : omega a) :
       normSquare (v - w) (q a x.val) = 0 ↔ coefficient v a x = coefficient w a x := by
     rw [normSquare_chart]
     simp only [pow_eq_zero_iff (by decide : 2 ≠ 0), nnnorm_eq_zero]

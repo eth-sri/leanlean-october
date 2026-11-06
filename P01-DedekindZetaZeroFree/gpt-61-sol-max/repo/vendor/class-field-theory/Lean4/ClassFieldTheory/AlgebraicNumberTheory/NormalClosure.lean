@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import Mathlib.FieldTheory.Galois.Basic
 public import Mathlib.FieldTheory.Normal.Closure
 public import Mathlib.NumberTheory.NumberField.Basic
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -49,7 +52,7 @@ noncomputable instance finiteNormalClosure_isGalois :
     IsGalois K (finiteNormalClosure K L) := by
   let f : L →ₐ[K] AlgebraicClosure K :=
     IsAlgClosed.lift
-  let : Algebra L (AlgebraicClosure K) :=
+  let  :=
     f.toRingHom.toAlgebra
   let : IsScalarTower K L (AlgebraicClosure K) :=
     IsScalarTower.of_algebraMap_eq'
@@ -68,8 +71,7 @@ noncomputable def finiteNormalClosureEmbedding :
         (show f x ∈ f.fieldRange from ⟨x, rfl⟩))
 
 /-- The distinguished copy of `L` in its finite normal closure. -/
-noncomputable def finiteNormalClosureOriginalField :
-    IntermediateField K (finiteNormalClosure K L) :=
+noncomputable def finiteNormalClosureOriginalField  :=
   (finiteNormalClosureEmbedding K L).fieldRange
 
 /-- The original extension is canonically equivalent to its
@@ -95,7 +97,7 @@ theorem normalClosure_eq_top_of_source_algEquiv
     (normalClosure_le_iff
       (K := L)).2
   intro f
-  let g : E →ₐ[K] M :=
+  let g  :=
     f.comp e.symm.toAlgHom
   have hRange :
       f.fieldRange = g.fieldRange := by
@@ -104,7 +106,7 @@ theorem normalClosure_eq_top_of_source_algEquiv
     · rintro ⟨y, rfl⟩
       exact ⟨e y, by simp [g]⟩
     · rintro ⟨y, rfl⟩
-      exact ⟨e.symm y, by simp [g]⟩
+      exact ⟨e.symm y, rfl⟩
   rw [hRange]
   exact g.fieldRange_le_normalClosure
 
@@ -117,10 +119,7 @@ theorem finiteNormalClosureOriginalField_normalClosure_eq_top :
       ⊤ := by
   let : Nonempty (L →ₐ[K] AlgebraicClosure K) :=
     ⟨IsAlgClosed.lift⟩
-  have hAbstract :
-      IntermediateField.normalClosure K L
-          (finiteNormalClosure K L) =
-        ⊤ :=
+  have hAbstract  :=
     (Algebra.IsAlgebraic.isNormalClosure_iff.mp
       (show IsNormalClosure K L
           (finiteNormalClosure K L) from inferInstance)).2
@@ -132,22 +131,18 @@ theorem finiteNormalClosureOriginalField_normalClosure_eq_top :
 
 /-- The degree of the original extension is bounded by the degree of
 its finite normal closure. -/
-theorem finrank_le_finiteNormalClosure :
-    Module.finrank K L ≤
-      Module.finrank K (finiteNormalClosure K L) := by
-  exact
-    (finiteNormalClosureEmbedding K L).toLinearMap
+def finrank_le_finiteNormalClosure  := (finiteNormalClosureEmbedding K L).toLinearMap
       |>.finrank_le_finrank_of_injective
         (finiteNormalClosureEmbedding K L).injective
 
-/-- A degree-one finite field extension is the base field as an
-algebra. -/
-noncomputable def algEquivBaseOfFinrankEqOne
-    (hdegree : Module.finrank K L = 1) :
-    L ≃ₐ[K] K :=
-  (AlgEquiv.ofBijective
-    (Algebra.ofId K L)
-    ((Algebra.finrank_eq_one_iff_bijective_algebraMap).mp
-      hdegree)).symm
+
+
+
+
+
+
+
+
+
 
 end

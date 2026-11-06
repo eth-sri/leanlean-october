@@ -75,8 +75,8 @@ theorem tensor_complex_slot_word_recovery
   change _root_.DedekindZetaZeroFree.FiniteWhittakerProjectors.tensorFunction R D s (Function.update x ⟨Sum.inl w,hw⟩ (x ⟨Sum.inl w,hw⟩)) ∈ wordRecovery R T'
   simpa only [Function.update_eq_self] using hm
 
-theorem tensor_slots_word_recovery
-    (B : Fin 6 → Module.End ℂ complexCore)
+section
+variable (B : Fin 6 → Module.End ℂ complexCore)
     (hcyc : ∀ v : complexCore, v ≠ 0 →
       Submodule.span ℂ (Set.range (fun a : NativeComplexHCSource.algebra B => a.val v)) = ⊤)
     (s : RestrictedTensorSimple.Level D.bad)
@@ -90,6 +90,9 @@ theorem tensor_slots_word_recovery
       _root_.DedekindZetaZeroFree.FiniteWhittakerProjectors.tensorFunction R D s x ∈ wordRecovery R T' →
       _root_.DedekindZetaZeroFree.FiniteWhittakerProjectors.tensorFunction R D s (Function.update x ⟨Sum.inl w,hw⟩
         (B i (x ⟨Sum.inl w,hw⟩))) ∈ wordRecovery R T')
+include B hcyc s hcompact hderiv
+theorem tensor_slots_word_recovery
+     
     (x y : ∀ p : s.val, actualLocal R D.finiteData p)
     (C : Finset s.val) (hy : ∀ p ∈ C, y p ≠ 0)
     (hm : tensorFunction R D s y ∈ wordRecovery R T') :
@@ -121,20 +124,7 @@ theorem tensor_slots_word_recovery
         simpa only [Function.update_self, Function.update_idem] using h
 
 theorem tensor_stage_word_recovery
-    (B : Fin 6 → Module.End ℂ complexCore)
-    (hcyc : ∀ v : complexCore, v ≠ 0 →
-      Submodule.span ℂ (Set.range (fun a : NativeComplexHCSource.algebra B => a.val v)) = ⊤)
-    (s : RestrictedTensorSimple.Level D.bad)
-    (hcompact : ∀ (x : ∀ p : s.val, actualLocal R D.finiteData p)
-      (w : InfinitePlace F) (hw : Sum.inl w ∈ s.val) k,
-      _root_.DedekindZetaZeroFree.FiniteWhittakerProjectors.tensorFunction R D s x ∈ wordRecovery R T' →
-      _root_.DedekindZetaZeroFree.FiniteWhittakerProjectors.tensorFunction R D s (Function.update x ⟨Sum.inl w,hw⟩
-        (complexCoreCompactLinearMap k (x ⟨Sum.inl w,hw⟩))) ∈ wordRecovery R T')
-    (hderiv : ∀ (x : ∀ p : s.val, actualLocal R D.finiteData p)
-      (w : InfinitePlace F) (hw : Sum.inl w ∈ s.val) i,
-      _root_.DedekindZetaZeroFree.FiniteWhittakerProjectors.tensorFunction R D s x ∈ wordRecovery R T' →
-      _root_.DedekindZetaZeroFree.FiniteWhittakerProjectors.tensorFunction R D s (Function.update x ⟨Sum.inl w,hw⟩
-        (B i (x ⟨Sum.inl w,hw⟩))) ∈ wordRecovery R T')
+     
     (y : ∀ p : s.val, actualLocal R D.finiteData p) (hy : ∀ p, y p ≠ 0)
     (hm : _root_.DedekindZetaZeroFree.FiniteWhittakerProjectors.tensorFunction R D s y ∈ wordRecovery R T')
     (x : ∀ p : s.val, actualLocal R D.finiteData p) :
@@ -143,6 +133,8 @@ theorem tensor_stage_word_recovery
     _root_.DedekindZetaZeroFree.FiniteWhittakerProjectors.tensorFunction] using
     tensor_slots_word_recovery R D T' B hcyc s hcompact hderiv x y
     Finset.univ (fun p _ => hy p) hm
+end
+
 
 end DedekindZetaZeroFree.RootDerivatives
 

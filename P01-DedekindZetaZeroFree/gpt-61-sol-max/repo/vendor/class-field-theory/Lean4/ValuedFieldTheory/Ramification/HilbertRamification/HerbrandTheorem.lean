@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import Mathlib.SetTheory.Cardinal.Finite
 public import ValuedFieldTheory.Ramification.HilbertRamification.RamificationNumberFormula
 public import ValuedFieldTheory.Ramification.Herbrand.FixedField
@@ -9,6 +11,7 @@ public import ValuedFieldTheory.Ramification.HilbertRamification.RamificationDep
 public import ValuedFieldTheory.Valuation.LocalRingEquiv
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -87,15 +90,17 @@ theorem fixedFieldRamificationIdeal_antitone
     fixedFieldRamificationIdealDVF
         (K := K) (target := target) H t ≤
       fixedFieldRamificationIdealDVF
-        (K := K) (target := target) H s := by
-  exact Ideal.pow_le_pow_right (realRamificationExponent_mono hst)
+        (K := K) (target := target) H s := Ideal.pow_le_pow_right (realRamificationExponent_mono hst)
 
-/-- States the theorem `fixedFieldLowerRamificationGroup_antitone`. -/
-theorem fixedFieldLowerRamificationGroup_antitone
-    (huniq :
+section
+variable (huniq :
       RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
         base target)
-    (H : Subgroup Gal(L/K)) [H.Normal] :
+    (H : Subgroup Gal(L/K)) [H.Normal]
+include huniq H
+/-- States the theorem `fixedFieldLowerRamificationGroup_antitone`. -/
+theorem fixedFieldLowerRamificationGroup_antitone
+      :
     Antitone (fixedFieldLowerRamificationGroup
       (base := base) (target := target) huniq H) := by
   intro s t hst q hq a
@@ -104,10 +109,7 @@ theorem fixedFieldLowerRamificationGroup_antitone
 
 /-- States the theorem `fixedFieldLowerRamificationGroup_normal`. -/
 theorem fixedFieldLowerRamificationGroup_normal
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) [H.Normal] (s : ℝ) :
+      (s : ℝ) :
     (fixedFieldLowerRamificationGroup
       (base := base) (target := target) huniq H s).Normal := by
   refine Subgroup.Normal.mk ?_
@@ -127,8 +129,7 @@ theorem fixedFieldLowerRamificationGroup_normal
           (fixedFieldValuationSubringAutDVF
             (base := base) (target := target) huniq H q b - b) ∈
         fixedFieldRamificationIdealDVF
-          (K := K) (target := target) H s := by
-    exact (ValuationTheory.ringEquiv_mem_maximalIdeal_pow_iff eqv
+          (K := K) (target := target) H s := (ValuationTheory.ringEquiv_mem_maximalIdeal_pow_iff eqv
       (realRamificationExponent s) _).2 hb
   have hrewrite :
       fixedFieldValuationSubringAutDVF
@@ -141,10 +142,7 @@ theorem fixedFieldLowerRamificationGroup_normal
 
 /-- The integral fixed-field lower groups, packaged as a lower filtration. -/
 def fixedFieldLowerRamificationFiltration
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) [H.Normal] :
+      :
     AntitoneNormalSubgroupFiltration Gal((fixedFieldDVF (K := K) H)/K) where
   lower n := fixedFieldLowerRamificationGroup
     (base := base) (target := target) huniq H (n : ℝ)
@@ -159,10 +157,7 @@ def fixedFieldLowerRamificationFiltration
 
 /-- States the theorem `fixedFieldLowerRamificationFiltration_lower`. -/
 @[simp] theorem fixedFieldLowerRamificationFiltration_lower
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) [H.Normal] (n : ℕ) :
+      (n : ℕ) :
     (fixedFieldLowerRamificationFiltration
       (base := base) (target := target) huniq H).lower n =
       fixedFieldLowerRamificationGroup
@@ -171,28 +166,19 @@ def fixedFieldLowerRamificationFiltration
 
 /-- Herbrand's eta function for the actual fixed extension `(L ^ H)/K`. -/
 def fixedFieldHerbrandFunction
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) [H.Normal] (s : ℝ) : ℝ :=
+      (s : ℝ)  :=
   (fixedFieldLowerRamificationFiltration
     (base := base) (target := target) huniq H).herbrandFunction s
 
 /-- The inverse Herbrand function for the actual fixed extension. -/
 def fixedFieldInverseHerbrandFunction
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) [H.Normal] (t : ℝ) : ℝ :=
+      (t : ℝ)  :=
   (fixedFieldLowerRamificationFiltration
     (base := base) (target := target) huniq H).inverseHerbrandFunction t
 
 /-- States the theorem `fixedFieldHerbrandFunction_inverseHerbrandFunction`. -/
 @[simp] theorem fixedFieldHerbrandFunction_inverseHerbrandFunction
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) [H.Normal] (t : ℝ) :
+      (t : ℝ) :
     fixedFieldHerbrandFunction
         (base := base) (target := target) huniq H
         (fixedFieldInverseHerbrandFunction
@@ -200,78 +186,76 @@ def fixedFieldInverseHerbrandFunction
   (fixedFieldLowerRamificationFiltration
     (base := base) (target := target) huniq H).herbrandFunction_inverseHerbrandFunction t
 
-/-- States the theorem `fixedFieldInverseHerbrandFunction_herbrandFunction`. -/
-@[simp] theorem fixedFieldInverseHerbrandFunction_herbrandFunction
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) [H.Normal] (s : ℝ) :
-    fixedFieldInverseHerbrandFunction
-        (base := base) (target := target) huniq H
-        (fixedFieldHerbrandFunction
-          (base := base) (target := target) huniq H s) = s :=
-  (fixedFieldLowerRamificationFiltration
-    (base := base) (target := target) huniq H).inverseHerbrandFunction_herbrandFunction s
 
-/-- States the theorem `fixedFieldHerbrandFunction_strictMono`. -/
-theorem fixedFieldHerbrandFunction_strictMono
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) [H.Normal] :
-    StrictMono (fixedFieldHerbrandFunction
-      (base := base) (target := target) huniq H) :=
-  (fixedFieldLowerRamificationFiltration
-    (base := base) (target := target) huniq H).herbrandFunction_strictMono
 
-/-- States the theorem `fixedFieldInverseHerbrandFunction_strictMono`. -/
-theorem fixedFieldInverseHerbrandFunction_strictMono
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) [H.Normal] :
-    StrictMono (fixedFieldInverseHerbrandFunction
-      (base := base) (target := target) huniq H) :=
-  (fixedFieldLowerRamificationFiltration
-    (base := base) (target := target) huniq H).inverseHerbrandFunction_strictMono
 
-/-- States the theorem `fixedFieldInverseHerbrandFunction_ge_neg_one_iff`. -/
-theorem fixedFieldInverseHerbrandFunction_ge_neg_one_iff
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) [H.Normal] {t : ℝ} :
-    -1 ≤ fixedFieldInverseHerbrandFunction
-        (base := base) (target := target) huniq H t ↔ -1 ≤ t :=
-  (fixedFieldLowerRamificationFiltration
-    (base := base) (target := target) huniq H).inverseHerbrandFunction_mem_Ici_neg_one_iff
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- Upper ramification groups of the actual fixed extension. -/
 def fixedFieldUpperRamificationGroup
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) [H.Normal] (t : ℝ) :
-    Subgroup Gal((fixedFieldDVF (K := K) H)/K) :=
+      (t : ℝ)  :=
   fixedFieldLowerRamificationGroup
     (base := base) (target := target) huniq H
     (fixedFieldInverseHerbrandFunction
       (base := base) (target := target) huniq H t)
+end
 
-/-- States the theorem `fixedFieldUpperRamificationGroup_herbrandFunction`. -/
-@[simp] theorem fixedFieldUpperRamificationGroup_herbrandFunction
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) [H.Normal] (s : ℝ) :
-    fixedFieldUpperRamificationGroup
-        (base := base) (target := target) huniq H
-        (fixedFieldHerbrandFunction
-          (base := base) (target := target) huniq H s) =
-      fixedFieldLowerRamificationGroup
-        (base := base) (target := target) huniq H s := by
-  unfold fixedFieldUpperRamificationGroup
-  rw [fixedFieldInverseHerbrandFunction_herbrandFunction]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 noncomputable local instance lowerMembershipDecidable
     {G : Type*} [Group G] (F : AntitoneNormalSubgroupFiltration G)
     (n : ℕ) (sigma : G) : Decidable (sigma ∈ F.lower n) :=
@@ -281,11 +265,14 @@ noncomputable local instance finiteSubgroupFintype
     {G : Type*} [Group G] [Finite G] (H : Subgroup G) : Fintype H :=
   Fintype.ofFinite H
 
-private theorem truncate_depth_eq_intrinsic_summand_of_mem
-    {G : Type*} [Group G] [Fintype G]
+section
+variable {G : Type*} [Group G] [Fintype G]
     (F : AntitoneNormalSubgroupFiltration G) (depth : G → ℕ∞)
     (hmem : ∀ n sigma,
-      sigma ∈ F.lower n ↔ (((n + 1 : ℕ) : ℕ∞) ≤ depth sigma))
+      sigma ∈ F.lower n ↔ (((n + 1) : ℕ∞) ≤ depth sigma))
+include G F depth hmem
+private theorem truncate_depth_eq_intrinsic_summand_of_mem
+     
     (m : ℕ) {s : ℝ} (hms : (m : ℝ) ≤ s) (hsm : s ≤ m + 1)
     (sigma : F.lower 0) :
     truncateENatAtDVF (depth (sigma : G)) (s + 1) =
@@ -293,31 +280,29 @@ private theorem truncate_depth_eq_intrinsic_summand_of_mem
         (s - m) * (if (sigma : G) ∈ F.lower (m + 1) then 1 else 0) := by
   classical
   let i := depth (sigma : G)
-  have hi_one : (1 : ℕ∞) ≤ i := by
-    simpa [i] using (hmem 0 (sigma : G)).1 sigma.property
-  by_cases hhigh : ((m + 2 : ℕ) : ℕ∞) ≤ i
+  have hi_one : (1 : ℕ∞) ≤ i := (hmem 0 (sigma : G)).1 sigma.property
+  by_cases hhigh : ((m + 2) : ℕ∞) ≤ i
   · have hsigma : (sigma : G) ∈ F.lower (m + 1) := by
       apply (hmem (m + 1) (sigma : G)).2
-      simpa [i, Nat.add_assoc] using hhigh
+      exact hhigh
     have hdepth : F.truncatedLowerDepth m sigma = m := by
       rw [AntitoneNormalSubgroupFiltration.truncatedLowerDepth]
       rw [Finset.filter_eq_self.2]
       · simp
       · intro j hj
         apply (hmem (j + 1) (sigma : G)).2
-        have hjm : j < m := Finset.mem_range.1 hj
+        have hjm  := Finset.mem_range.1 hj
         have hjle : ((j + 2 : ℕ) : ℕ∞) ≤ ((m + 2 : ℕ) : ℕ∞) :=
           ENat.natCast_le_natCast.2 (by omega)
-        simpa [i, Nat.add_assoc] using hjle.trans hhigh
-    have htrunc : truncateENatAtDVF i (s + 1) = s + 1 := by
-      exact truncateENatAtDVF_eq_right_of_natCast_le
+        exact hjle.trans hhigh
+    have htrunc : truncateENatAtDVF i (s + 1) = s + 1 := truncateENatAtDVF_eq_right_of_natCast_le
         (m := m + 2) (by
           norm_num [Nat.cast_add, Nat.cast_ofNat] at hsm ⊢
           linarith) hhigh
     rw [htrunc, hdepth]
     simp [hsigma]
     ring
-  · have hlt : i < ((m + 2 : ℕ) : ℕ∞) := lt_of_not_ge hhigh
+  · have hlt : i < ((m + 2) : ℕ∞) := lt_of_not_ge hhigh
     have hine : i ≠ ⊤ := ne_top_of_lt hlt
     obtain ⟨k, hk⟩ := ENat.ne_top_iff_exists.1 hine
     have hk_one : 1 ≤ k := by
@@ -328,7 +313,7 @@ private theorem truncate_depth_eq_intrinsic_summand_of_mem
     have hsigma : (sigma : G) ∉ F.lower (m + 1) := by
       intro hsigma
       apply hhigh
-      simpa [i, Nat.add_assoc] using (hmem (m + 1) (sigma : G)).1 hsigma
+      exact (hmem (m + 1) (sigma : G)).1 hsigma
     have hdepth : F.truncatedLowerDepth m sigma = k - 1 := by
       rw [AntitoneNormalSubgroupFiltration.truncatedLowerDepth]
       have hfilter :
@@ -340,7 +325,7 @@ private theorem truncate_depth_eq_intrinsic_summand_of_mem
         have hthreshold :
             ((sigma : G) ∈ F.lower (j + 1)) ↔ j + 2 ≤ k := by
           rw [hmem]
-          change (((j + 1 + 1 : ℕ) : ℕ∞) ≤ i) ↔ j + 2 ≤ k
+          change (((j + 1 + 1) : ℕ∞) ≤ i) ↔ j + 2 ≤ k
           rw [← hk]
           norm_cast
         rw [hthreshold]
@@ -355,33 +340,27 @@ private theorem truncate_depth_eq_intrinsic_summand_of_mem
     exact_mod_cast (by omega : k = 1 + (k - 1))
 
 private theorem truncate_depth_eq_zero_of_not_mem_lower_zero
-    {G : Type*} [Group G] [Fintype G]
-    (F : AntitoneNormalSubgroupFiltration G) (depth : G → ℕ∞)
-    (hmem : ∀ n sigma,
-      sigma ∈ F.lower n ↔ (((n + 1 : ℕ) : ℕ∞) ≤ depth sigma))
+     
     {s : ℝ} (hs : -1 ≤ s) {sigma : G}
     (hsigma : sigma ∉ F.lower 0) :
     truncateENatAtDVF (depth sigma) (s + 1) = 0 := by
   have hi : depth sigma < 1 := by
     rw [← not_le]
     intro hi
-    exact hsigma ((hmem 0 sigma).2 (by simpa using hi))
+    apply hsigma <;> aesop
   have hi0 : depth sigma = 0 := Order.lt_one_iff.1 hi
   rw [hi0]
   simp [truncateENatAtDVF,
     min_eq_left (show (0 : ℝ) ≤ s + 1 by linarith)]
 
 private theorem sum_truncate_depth_eq_sum_lower_zero_of_mem
-    {G : Type*} [Group G] [Fintype G]
-    (F : AntitoneNormalSubgroupFiltration G) (depth : G → ℕ∞)
-    (hmem : ∀ n sigma,
-      sigma ∈ F.lower n ↔ (((n + 1 : ℕ) : ℕ∞) ≤ depth sigma))
+     
     {s : ℝ} (hs : -1 ≤ s) :
     (∑ sigma : G, truncateENatAtDVF (depth sigma) (s + 1)) =
       ∑ sigma : F.lower 0,
         truncateENatAtDVF (depth (sigma : G)) (s + 1) := by
   classical
-  let q : G → ℝ := fun sigma =>
+  let q  := fun sigma =>
     truncateENatAtDVF (depth sigma) (s + 1)
   calc
     ∑ sigma : G, q sigma =
@@ -391,8 +370,7 @@ private theorem sum_truncate_depth_eq_sum_lower_zero_of_mem
       by_cases hsigma : sigma ∈ F.lower 0
       · simp [hsigma]
       · rw [ite_eq_right hsigma]
-        exact truncate_depth_eq_zero_of_not_mem_lower_zero
-          F depth hmem hs hsigma
+        apply truncate_depth_eq_zero_of_not_mem_lower_zero <;> assumption
     _ = ∑ sigma : F.lower 0, q (sigma : G) := by
       rw [← Finset.sum_filter (p := fun sigma : G => sigma ∈ F.lower 0)]
       simpa using
@@ -401,10 +379,7 @@ private theorem sum_truncate_depth_eq_sum_lower_zero_of_mem
           (p := fun sigma : G => sigma ∈ F.lower 0)).symm
 
 private theorem sum_lower_zero_truncate_depth_eq_intrinsic_of_mem
-    {G : Type*} [Group G] [Fintype G]
-    (F : AntitoneNormalSubgroupFiltration G) (depth : G → ℕ∞)
-    (hmem : ∀ n sigma,
-      sigma ∈ F.lower n ↔ (((n + 1 : ℕ) : ℕ∞) ≤ depth sigma))
+     
     (m : ℕ) {s : ℝ} (hms : (m : ℝ) ≤ s) (hsm : s ≤ m + 1) :
     (∑ sigma : F.lower 0,
         truncateENatAtDVF (depth (sigma : G)) (s + 1)) =
@@ -428,10 +403,7 @@ private theorem sum_lower_zero_truncate_depth_eq_intrinsic_of_mem
   simp
 
 private theorem herbrandFunction_eq_depth_sum_of_mem
-    {G : Type*} [Group G] [Fintype G]
-    (F : AntitoneNormalSubgroupFiltration G) (depth : G → ℕ∞)
-    (hmem : ∀ n sigma,
-      sigma ∈ F.lower n ↔ (((n + 1 : ℕ) : ℕ∞) ≤ depth sigma))
+     
     {s : ℝ} (hs : -1 ≤ s) :
     (RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.herbrandFunction F) s =
       (1 / Nat.card (F.lower 0) : ℝ) *
@@ -455,8 +427,7 @@ private theorem herbrandFunction_eq_depth_sum_of_mem
     have hpoint : ∀ sigma : F.lower 0,
         truncateENatAtDVF (depth (sigma : G)) (s + 1) = s + 1 := by
       intro sigma
-      have hi : (1 : ℕ∞) ≤ depth (sigma : G) := by
-        simpa using (hmem 0 (sigma : G)).1 sigma.property
+      have hi : (1 : ℕ∞) ≤ depth (sigma : G) := (hmem 0 (sigma : G)).1 sigma.property
       exact truncateENatAtDVF_eq_right_of_natCast_le
         (m := 1) (by
           norm_num at hsle ⊢
@@ -466,6 +437,8 @@ private theorem herbrandFunction_eq_depth_sum_of_mem
     rw [Finset.card_univ, ← Nat.card_eq_fintype_card]
     field_simp
     ring
+end
+
 
 private theorem fixedField_herbrandFunction_formula_dvf
     (huniq :
@@ -486,8 +459,7 @@ private theorem fixedField_herbrandFunction_formula_dvf
     (fixedFieldRamificationNumber
       (base := base) (target := target) huniq H)
   · intro n q
-    exact mem_fixedFieldLowerRamificationGroup_nat_iff
-      (base := base) (target := target) huniq H n q
+    apply mem_fixedFieldLowerRamificationGroup_nat_iff
   · exact hs
 
 
@@ -497,9 +469,12 @@ noncomputable local instance finiteQuotientFiberFintype
     (q : G ⧸ H) : Fintype (NonarchimedeanDepth.QuotientFiber H q) :=
   Fintype.ofFinite _
 
-private theorem truncate_depth_eq_intrinsic_summand
-    {G : Type*} [Group G] [Fintype G]
+section
+variable {G : Type*} [Group G] [Fintype G]
     (D : NonarchimedeanDepth G) (H : Subgroup G) [H.Normal]
+include G D H
+private theorem truncate_depth_eq_intrinsic_summand
+     
     (m : ℕ) {s : ℝ} (hms : (m : ℝ) ≤ s) (hsm : s ≤ m + 1)
     (tau : (D.depthLowerFiltration H).lower 0) :
     truncateENatAtDVF (D.depth ((tau : H) : G)) (s + 1) =
@@ -511,7 +486,7 @@ private theorem truncate_depth_eq_intrinsic_summand
   let F := D.depthLowerFiltration H
   let i := D.depth ((tau : H) : G)
   have hi_one : (1 : ℕ∞) ≤ i := tau.property
-  by_cases hhigh : ((m + 2 : ℕ) : ℕ∞) ≤ i
+  by_cases hhigh : ((m + 2) : ℕ∞) ≤ i
   · have hmem : (tau : H) ∈
         (D.depthLowerFiltration H).lower (m + 1) := hhigh
     have hdepth : F.truncatedLowerDepth m tau = m := by
@@ -519,20 +494,19 @@ private theorem truncate_depth_eq_intrinsic_summand
       rw [Finset.filter_eq_self.2]
       · simp
       · intro j hj
-        change ((j + 2 : ℕ) : ℕ∞) ≤ i
-        have hjm : j < m := Finset.mem_range.1 hj
+        change ((j + 2) : ℕ∞) ≤ i
+        have hjm  := Finset.mem_range.1 hj
         have hjm' : ((j + 2 : ℕ) : ℕ∞) ≤ ((m + 2 : ℕ) : ℕ∞) :=
           ENat.natCast_le_natCast.2 (by omega)
         exact hjm'.trans hhigh
-    have htrunc : truncateENatAtDVF i (s + 1) = s + 1 := by
-      exact truncateENatAtDVF_eq_right_of_natCast_le
+    have htrunc : truncateENatAtDVF i (s + 1) = s + 1 := truncateENatAtDVF_eq_right_of_natCast_le
         (m := m + 2) (by
           norm_num [Nat.cast_add, Nat.cast_ofNat] at hsm ⊢
           linarith) hhigh
     rw [htrunc, hdepth]
     rw [ite_eq_left hmem]
     ring
-  · have hlt : i < ((m + 2 : ℕ) : ℕ∞) := lt_of_not_ge hhigh
+  · have hlt : i < ((m + 2) : ℕ∞) := lt_of_not_ge hhigh
     have hine : i ≠ ⊤ := ne_top_of_lt hlt
     obtain ⟨k, hk⟩ := ENat.ne_top_iff_exists.1 hine
     have hk_one : 1 ≤ k := by
@@ -552,7 +526,7 @@ private theorem truncate_depth_eq_intrinsic_summand
         simp only [Finset.mem_filter, Finset.mem_range]
         have hthreshold :
             ((tau : H) ∈ F.lower (j + 1)) ↔ j + 2 ≤ k := by
-          change (((j + 2 : ℕ) : ℕ∞) ≤ i) ↔ j + 2 ≤ k
+          change (((j + 2) : ℕ∞) ≤ i) ↔ j + 2 ≤ k
           rw [← hk]
           norm_cast
         rw [hthreshold]
@@ -568,8 +542,7 @@ private theorem truncate_depth_eq_intrinsic_summand
     exact_mod_cast (by omega : k = 1 + (k - 1))
 
 private theorem sum_truncate_depth_eq_sum_lower_zero
-    {G : Type*} [Group G] [Fintype G]
-    (D : NonarchimedeanDepth G) (H : Subgroup G) [H.Normal]
+     
     {s : ℝ} (hs : -1 ≤ s) :
     (∑ tau : H, truncateENatAtDVF (D.depth (tau : G)) (s + 1)) =
       ∑ tau : (D.depthLowerFiltration H).lower 0,
@@ -585,8 +558,7 @@ private theorem sum_truncate_depth_eq_sum_lower_zero
       by_cases htau : tau ∈ F.lower 0
       · simp [htau]
       · rw [ite_eq_right htau]
-        have hzero : D.depth (tau : G) = (0 : ℕ∞) := by
-          exact D.depth_eq_zero_of_not_mem_lower_zero H tau htau
+        have hzero : D.depth (tau : G) = (0 : ℕ∞) := D.depth_eq_zero_of_not_mem_lower_zero H tau htau
         change truncateENatAtDVF (D.depth (tau : G)) (s + 1) = 0
         rw [hzero]
         simp [truncateENatAtDVF, show (0 : ℝ) ≤ s + 1 by linarith]
@@ -601,8 +573,7 @@ private theorem sum_truncate_depth_eq_sum_lower_zero
           (p := fun tau : H => tau ∈ F.lower 0)).symm
 
 private theorem sum_lower_zero_truncate_depth_eq_intrinsic
-    {G : Type*} [Group G] [Fintype G]
-    (D : NonarchimedeanDepth G) (H : Subgroup G) [H.Normal]
+     
     (m : ℕ) {s : ℝ} (hms : (m : ℝ) ≤ s) (hsm : s ≤ m + 1) :
     (∑ tau : (D.depthLowerFiltration H).lower 0,
         truncateENatAtDVF (D.depth ((tau : H) : G)) (s + 1)) =
@@ -613,7 +584,7 @@ private theorem sum_lower_zero_truncate_depth_eq_intrinsic
   classical
   let F := D.depthLowerFiltration H
   change (∑ tau : F.lower 0,
-      truncateENatAtDVF (D.depth (((tau : F.lower 0) : H) : G)) (s + 1)) =
+      truncateENatAtDVF (D.depth ((tau : H) : G)) (s + 1)) =
     Nat.card (F.lower 0) +
       (∑ tau : F.lower 0, (F.truncatedLowerDepth m tau : ℝ)) +
       (s - m) * Nat.card (F.lower (m + 1))
@@ -633,8 +604,7 @@ private theorem sum_lower_zero_truncate_depth_eq_intrinsic
 /-- The Herbrand-function sum formula for an abstract nonarchimedean depth, in the form used
 to compare the subgroup Herbrand parameter with a normalized depth sum. -/
 private theorem depth_herbrandFunction_add_one_eq_average
-    {G : Type*} [Group G] [Fintype G]
-    (D : NonarchimedeanDepth G) (H : Subgroup G) [H.Normal]
+     
     {s : ℝ} (hs : -1 ≤ s) :
     (D.depthLowerFiltration H).herbrandFunction s + 1 =
       (1 / D.depthRamificationIndex H : ℝ) *
@@ -658,7 +628,7 @@ private theorem depth_herbrandFunction_add_one_eq_average
   · have hsle : s ≤ 0 := le_of_not_ge hs0
     rw [(RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.herbrandFunction_of_nonpos F) hsle]
     have hpoint : ∀ tau : F.lower 0,
-        truncateENatAtDVF (D.depth (((tau : F.lower 0) : H) : G)) (s + 1) =
+        truncateENatAtDVF (D.depth ((tau : H) : G)) (s + 1) =
           s + 1 := by
       intro tau
       exact truncateENatAtDVF_eq_right_of_natCast_le
@@ -671,6 +641,8 @@ private theorem depth_herbrandFunction_add_one_eq_average
     change s + 1 = (1 / (Nat.card (F.lower 0) : ℝ)) *
       (Nat.card (F.lower 0) * (s + 1))
     field_simp
+end
+
 
 private theorem truncate_min_coe_eq_of_le
     {i : ℕ∞} {m : ℕ} {r : ℝ} (hr : r ≤ m) :
@@ -681,8 +653,7 @@ private theorem truncate_min_coe_eq_of_le
         truncateENatAtDVF_coe]
       exact min_eq_right hr
   | coe n =>
-      have hmin : min (n : ℕ∞) (m : ℕ∞) = ((min n m : ℕ) : ℕ∞) := by
-        norm_cast
+      have hmin : min (n : ℕ∞) (m : ℕ∞) = ((min n m : ℕ) : ℕ∞) := rfl
       rw [hmin, truncateENatAtDVF_coe, truncateENatAtDVF_coe]
       push_cast
       rw [min_assoc, min_eq_right hr]
@@ -705,13 +676,8 @@ private theorem min_quotientFiberAverage_eq_average_truncate
     (D.coe_quotientFiberDepth H hq ⟨sigma, hsigmaq⟩).symm
   have havg : D.quotientFiberAverage H hq - 1 =
       (D.depthLowerFiltration H).herbrandFunction ((m : ℝ) - 1) := by
-    simpa [m] using
-      D.quotientFiberAverage_sub_one_eq_herbrandFunction_of_maximal
-        H hq hsigmaq hmax
-  have he : (D.depthRamificationIndex H : ℝ) ≠ 0 := by
-    exact_mod_cast
-      (show 0 < Nat.card ((D.depthLowerFiltration H).lower 0) from
-        Finite.card_pos).ne'
+    apply D.quotientFiberAverage_sub_one_eq_herbrandFunction_of_maximal <;> assumption
+  
   by_cases hms : (m : ℝ) - 1 ≤ s
   · have heta :
         (D.depthLowerFiltration H).herbrandFunction ((m : ℝ) - 1) ≤
@@ -722,7 +688,7 @@ private theorem min_quotientFiberAverage_eq_average_truncate
         truncateENatAtDVF (D.depth (gamma : G)) (s + 1) =
           (D.quotientFiberDepth H hq gamma : ℝ) := by
       intro gamma
-      have hle : D.depth (gamma : G) ≤ D.depth sigma :=
+      have hle  :=
         hmax gamma gamma.property
       rw [hdepth] at hle
       have hnat : D.quotientFiberDepth H hq gamma ≤ m := by
@@ -768,7 +734,7 @@ private theorem min_quotientFiberAverage_eq_average_truncate
       H trunc
         (by
           intro gamma hgamma
-          exact hmax gamma (hgamma.trans hsigmaq))
+          apply hmax <;> aesop)
     rw [hsigmaq] at hsum
     have hr : s + 1 ≤ (m : ℝ) := by linarith
     have htrunc_min (tau : H) :
@@ -795,91 +761,75 @@ private theorem min_quotientFiberAverage_eq_average_truncate
           intro tau _
           exact htrunc_min tau
     rw [hsum']
-    exact depth_herbrandFunction_add_one_eq_average D H hs
+    apply depth_herbrandFunction_add_one_eq_average <;> assumption
+
+section
+variable [Algebra.IsSeparable base.residueField target.residueField]
+    (huniq :
+      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
+        base target)
+    (H : Subgroup Gal(L/K)) [H.Normal]
+include huniq H
+
+local notation:max "current_lowerRamificationFiltrationOfUniqueExtension" => lowerRamificationFiltrationOfUniqueExtension (base := base) (target := target)
+
+
+local notation:max "current_ramificationNumberDepthOfUniqueExtension" => ramificationNumberDepthOfUniqueExtension (base := base) (target := target)
 
 private theorem subgroupFiltration_lower_eq_depthLowerFiltration_dvf
-    [Algebra.IsSeparable base.residueField target.residueField]
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) [H.Normal] (n : ℕ) :
-    ((lowerRamificationFiltrationOfUniqueExtension
-      (base := base) (target := target) huniq).subgroupFiltration H).lower n =
-      ((ramificationNumberDepthOfUniqueExtension
-        (base := base) (target := target) huniq).depthLowerFiltration H).lower n := by
+      (n : ℕ) :
+    ((current_lowerRamificationFiltrationOfUniqueExtension huniq).subgroupFiltration H).lower n =
+      ((current_ramificationNumberDepthOfUniqueExtension huniq).depthLowerFiltration H).lower n := by
   ext tau
-  change ((tau : H) : Gal(L/K)) ∈
+  change (tau : Gal(L/K)) ∈
       lowerRamificationGroup
         (base := base) (target := target) huniq (n : ℝ) ↔
-    (((n + 1 : ℕ) : ℕ∞) ≤
+    (((n + 1) : ℕ∞) ≤
       intrinsicRamificationNumberOfUniqueExtension
-        (base := base) (target := target) huniq ((tau : H) : Gal(L/K)))
-  exact mem_lowerRamificationGroup_nat_iff_intrinsicRamificationNumberOfUniqueExtension_ge
-    (base := base) (target := target) huniq n ((tau : H) : Gal(L/K))
+        (base := base) (target := target) huniq (tau : Gal(L/K)))
+  apply mem_lowerRamificationGroup_nat_iff_intrinsicRamificationNumberOfUniqueExtension_ge
 
 private theorem fixedFieldSubextension_herbrandFunction_eq_depth_dvf
-    [Algebra.IsSeparable base.residueField target.residueField]
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) [H.Normal] (s : ℝ) :
+      (s : ℝ) :
     (fixedFieldSubextensionFiltration
-      (lowerRamificationFiltrationOfUniqueExtension
-        (base := base) (target := target) huniq) H).herbrandFunction s =
-      ((ramificationNumberDepthOfUniqueExtension
-        (base := base) (target := target) huniq).depthLowerFiltration H).herbrandFunction s := by
+      (current_lowerRamificationFiltrationOfUniqueExtension huniq) H).herbrandFunction s =
+      ((current_ramificationNumberDepthOfUniqueExtension huniq).depthLowerFiltration H).herbrandFunction s := by
   rw [fixedFieldSubextension_herbrandFunction]
   apply
-    ((lowerRamificationFiltrationOfUniqueExtension
-      (base := base) (target := target) huniq).subgroupFiltration H).herbrandFunction_eq_of_card_lower_eq
-      ((ramificationNumberDepthOfUniqueExtension
-        (base := base) (target := target) huniq).depthLowerFiltration H)
+    ((current_lowerRamificationFiltrationOfUniqueExtension huniq).subgroupFiltration H).herbrandFunction_eq_of_card_lower_eq
+      ((current_ramificationNumberDepthOfUniqueExtension huniq).depthLowerFiltration H)
   intro n
   rw [subgroupFiltration_lower_eq_depthLowerFiltration_dvf
     (base := base) (target := target) huniq H n]
 
 private theorem card_fixedFieldSubextension_lower_eq_depth_dvf
-    [Algebra.IsSeparable base.residueField target.residueField]
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) [H.Normal] (n : ℕ) :
+      (n : ℕ) :
     Nat.card ((fixedFieldSubextensionFiltration
-      (lowerRamificationFiltrationOfUniqueExtension
-        (base := base) (target := target) huniq) H).lower n) =
-      Nat.card (((ramificationNumberDepthOfUniqueExtension
-        (base := base) (target := target) huniq).depthLowerFiltration H).lower n) := by
+      (current_lowerRamificationFiltrationOfUniqueExtension huniq) H).lower n) =
+      Nat.card (((current_ramificationNumberDepthOfUniqueExtension huniq).depthLowerFiltration H).lower n) := by
   change Nat.card
-      ((((lowerRamificationFiltrationOfUniqueExtension
-        (base := base) (target := target) huniq).subgroupFiltration H).transportEquiv
+      ((((current_lowerRamificationFiltrationOfUniqueExtension huniq).subgroupFiltration H).transportEquiv
           (IntermediateField.subgroupEquivAlgEquiv H)).lower n) = _
   rw [AntitoneNormalSubgroupFiltration.card_lower_transportEquiv
-    ((lowerRamificationFiltrationOfUniqueExtension
-      (base := base) (target := target) huniq).subgroupFiltration H)
+    ((current_lowerRamificationFiltrationOfUniqueExtension huniq).subgroupFiltration H)
     (IntermediateField.subgroupEquivAlgEquiv H) n]
   rw [subgroupFiltration_lower_eq_depthLowerFiltration_dvf
     (base := base) (target := target) huniq H n]
+
+local notation:max "current_fixedFieldRamificationNumber" => fixedFieldRamificationNumber (base := base) (target := target)
+
 private theorem fixedFieldRamificationNumber_untop_eq_quotientFiberAverage
-    [Algebra.IsSeparable base.residueField target.residueField]
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) [H.Normal]
+     
     (sigma : Gal(L/K)) (hq : QuotientGroup.mk' H sigma ≠ 1) :
     ∃ hfinite :
-        fixedFieldRamificationNumber
-          (base := base) (target := target) huniq H
+        current_fixedFieldRamificationNumber huniq H
           (IsGalois.normalAutEquivQuotient H sigma) ≠ ⊤,
-      ((fixedFieldRamificationNumber
-          (base := base) (target := target) huniq H
+      ((current_fixedFieldRamificationNumber huniq H
           (IsGalois.normalAutEquivQuotient H sigma)).untop hfinite : ℝ) =
-        (ramificationNumberDepthOfUniqueExtension
-          (base := base) (target := target) huniq).quotientFiberAverage H hq := by
+        (current_ramificationNumberDepthOfUniqueExtension huniq).quotientFiberAverage H hq := by
   classical
-  let D := ramificationNumberDepthOfUniqueExtension
-    (base := base) (target := target) huniq
-  let iM := fixedFieldRamificationNumber
-    (base := base) (target := target) huniq H
+  let D := current_ramificationNumberDepthOfUniqueExtension huniq
+  let iM := current_fixedFieldRamificationNumber huniq H
     (IsGalois.normalAutEquivQuotient H sigma)
   let S := ∑ gamma : NonarchimedeanDepth.QuotientFiber
       H (QuotientGroup.mk' H sigma), D.quotientFiberDepth H hq gamma
@@ -921,8 +871,7 @@ private theorem fixedFieldRamificationNumber_untop_eq_quotientFiberAverage
   have hiM : (m : ℕ∞) = iM := WithTop.coe_untop iM hfinite
   rw [← hiM] at hprop
   have hnat : D.depthRamificationIndex H * m = S := by
-    have hcast : ((D.depthRamificationIndex H * m : ℕ) : ℕ∞) = (S : ℕ∞) := by
-      simpa [nsmul_eq_mul] using hprop
+    have hcast : ((D.depthRamificationIndex H * m) : ℕ∞) = (S : ℕ∞) := hprop
     exact_mod_cast hcast
   change (m : ℝ) = D.quotientFiberAverage H hq
   rw [NonarchimedeanDepth.quotientFiberAverage]
@@ -947,11 +896,7 @@ private theorem fixedFieldRamificationNumber_untop_eq_quotientFiberAverage
 hypotheses.  The image of the ambient lower group is the lower group of the
 actual fixed extension at the subgroup Herbrand parameter. -/
 theorem lowerRamificationGroup_quotient
-    [Algebra.IsSeparable base.residueField target.residueField]
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) [H.Normal] (s : ℝ) :
+      (s : ℝ) :
     Subgroup.map (QuotientGroup.mk' H)
         (lowerRamificationGroup
           (base := base) (target := target) huniq s) =
@@ -959,13 +904,10 @@ theorem lowerRamificationGroup_quotient
         (fixedFieldLowerRamificationGroup
           (base := base) (target := target) huniq H
           ((fixedFieldSubextensionFiltration
-            (lowerRamificationFiltrationOfUniqueExtension
-              (base := base) (target := target) huniq) H).herbrandFunction s)) := by
+            (current_lowerRamificationFiltrationOfUniqueExtension huniq) H).herbrandFunction s)) := by
   classical
-  let D := ramificationNumberDepthOfUniqueExtension
-    (base := base) (target := target) huniq
-  let F := lowerRamificationFiltrationOfUniqueExtension
-    (base := base) (target := target) huniq
+  let D := current_ramificationNumberDepthOfUniqueExtension huniq
+  let F := current_lowerRamificationFiltrationOfUniqueExtension huniq
   have hetaSub (r : ℝ) :
       (fixedFieldSubextensionFiltration F H).herbrandFunction r =
         (D.depthLowerFiltration H).herbrandFunction r := by
@@ -977,14 +919,13 @@ theorem lowerRamificationGroup_quotient
         (F.subgroupFiltration H).lower n =
           (D.depthLowerFiltration H).lower n := by
       ext tau
-      change ((tau : H) : Gal(L/K)) ∈
+      change (tau : Gal(L/K)) ∈
           lowerRamificationGroup
             (base := base) (target := target) huniq (n : ℝ) ↔
-        (((n + 1 : ℕ) : ℕ∞) ≤
+        (((n + 1) : ℕ∞) ≤
           intrinsicRamificationNumberOfUniqueExtension
-            (base := base) (target := target) huniq ((tau : H) : Gal(L/K)))
-      exact mem_lowerRamificationGroup_nat_iff_intrinsicRamificationNumberOfUniqueExtension_ge
-        (base := base) (target := target) huniq n ((tau : H) : Gal(L/K))
+            (base := base) (target := target) huniq (tau : Gal(L/K)))
+      apply mem_lowerRamificationGroup_nat_iff_intrinsicRamificationNumberOfUniqueExtension_ge
     rw [hlevel]
   ext q
   by_cases hq : q = 1
@@ -1013,7 +954,7 @@ theorem lowerRamificationGroup_quotient
               (base := base) (target := target) huniq gamma
           exact (mem_lowerRamificationGroup_iff_ramificationNumber_dvf
             (base := base) (target := target) huniq s gamma).1 hgamma
-        have hle : D.depth gamma ≤ D.depth sigma :=
+        have hle  :=
           hmax gamma hgammaq
         have : (realRamificationExponent s : ℕ∞) ≤ (m : ℕ∞) := by
           rw [hdepth]
@@ -1042,8 +983,7 @@ theorem lowerRamificationGroup_quotient
             (base := base) (target := target) huniq H
             ((fixedFieldSubextensionFiltration F H).herbrandFunction s) ↔ _
       rw [mem_fixedFieldLowerRamificationGroup_iff_ramificationNumber]
-      let iM := fixedFieldRamificationNumber
-        (base := base) (target := target) huniq H
+      let iM := current_fixedFieldRamificationNumber huniq H
         (IsGalois.normalAutEquivQuotient H sigma)
       let k := iM.untop hfinite
       have hcoe : (k : ℕ∞) = iM := WithTop.coe_untop iM hfinite
@@ -1075,26 +1015,19 @@ theorem lowerRamificationGroup_quotient
 /-- The quotient-filtration comparison over the stated discretely valued field hypotheses
 hypotheses: Herbrand eta is transitive in the actual fixed-field tower. -/
 private theorem herbrandFunction_trans_of_neg_one_le
-    [Algebra.IsSeparable base.residueField target.residueField]
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) [H.Normal]
+     
     {s : ℝ} (hs : -1 ≤ s) :
     herbrandFunctionOfUniqueExtension
         (base := base) (target := target) huniq s =
       fixedFieldHerbrandFunction
         (base := base) (target := target) huniq H
         ((fixedFieldSubextensionFiltration
-          (lowerRamificationFiltrationOfUniqueExtension
-            (base := base) (target := target) huniq) H).herbrandFunction s) := by
+          (current_lowerRamificationFiltrationOfUniqueExtension huniq) H).herbrandFunction s) := by
   classical
   let : Fintype Gal(L/K) := Fintype.ofFinite _
   let : Fintype (Gal(L/K) ⧸ H) := Fintype.ofFinite _
-  let F := lowerRamificationFiltrationOfUniqueExtension
-    (base := base) (target := target) huniq
-  let D := ramificationNumberDepthOfUniqueExtension
-    (base := base) (target := target) huniq
+  let F := current_lowerRamificationFiltrationOfUniqueExtension huniq
+  let D := current_ramificationNumberDepthOfUniqueExtension huniq
   let t := (fixedFieldSubextensionFiltration F H).herbrandFunction s
   let e0 := Nat.card (F.lower 0)
   let e1 := Nat.card ((fixedFieldLowerRamificationFiltration
@@ -1102,15 +1035,11 @@ private theorem herbrandFunction_trans_of_neg_one_le
   let e2 := D.depthRamificationIndex H
   have ht : -1 ≤ t :=
     ((fixedFieldSubextensionFiltration F H).herbrandFunction_mem_Ici_neg_one_iff).2 hs
-  have heta2 : (D.depthLowerFiltration H).herbrandFunction s = t := by
-    simpa [F, D, t] using
-      (fixedFieldSubextension_herbrandFunction_eq_depth_dvf
+  have heta2 : (D.depthLowerFiltration H).herbrandFunction s = t := (fixedFieldSubextension_herbrandFunction_eq_depth_dvf
         (base := base) (target := target) huniq H s).symm
   have hcard2 :
       Nat.card ((fixedFieldSubextensionFiltration F H).lower 0) = e2 := by
-    simpa [F, D, e2, NonarchimedeanDepth.depthRamificationIndex] using
-      card_fixedFieldSubextension_lower_eq_depth_dvf
-        (base := base) (target := target) huniq H 0
+    apply card_fixedFieldSubextension_lower_eq_depth_dvf
   have hquot0 :
       (fixedFieldQuotientImageFiltration F H).lower 0 =
         (fixedFieldLowerRamificationFiltration
@@ -1128,10 +1057,7 @@ private theorem herbrandFunction_trans_of_neg_one_le
   rw [hcard2, hquot0] at hfactor
   have hetower : e0 = e1 * e2 := by
     simpa [e0, e1, Nat.mul_comm] using hfactor.symm
-  have he0 : (e0 : ℝ) ≠ 0 := by
-    exact_mod_cast (show 0 < e0 by
-      dsimp [e0]
-      exact Finite.card_pos).ne'
+  
   have he1 : (e1 : ℝ) ≠ 0 := by
     exact_mod_cast (show 0 < e1 by
       dsimp [e1]
@@ -1142,8 +1068,7 @@ private theorem herbrandFunction_trans_of_neg_one_le
       exact Finite.card_pos).ne'
   have hpoint : ∀ q : Gal(L/K) ⧸ H,
       truncateENatAtDVF
-          (fixedFieldRamificationNumber
-            (base := base) (target := target) huniq H
+          (current_fixedFieldRamificationNumber huniq H
             (IsGalois.normalAutEquivQuotient H q)) (t + 1) =
         (1 / e2 : ℝ) *
           ∑ gamma : NonarchimedeanDepth.QuotientFiber H q,
@@ -1153,8 +1078,7 @@ private theorem herbrandFunction_trans_of_neg_one_le
     · subst q
       rw [map_one]
       have hone :
-          fixedFieldRamificationNumber
-              (base := base) (target := target) huniq H 1 = ⊤ := by
+          current_fixedFieldRamificationNumber huniq H 1 = ⊤ := by
         rw [ENat.eq_top_iff_forall_ge]
         intro m
         cases m with
@@ -1189,13 +1113,11 @@ private theorem herbrandFunction_trans_of_neg_one_le
         fixedFieldRamificationNumber_untop_eq_quotientFiberAverage
           (base := base) (target := target) huniq H sigma hq
       rw [← WithTop.coe_untop
-        (fixedFieldRamificationNumber
-          (base := base) (target := target) huniq H
+        (current_fixedFieldRamificationNumber huniq H
           (IsGalois.normalAutEquivQuotient H (QuotientGroup.mk' H sigma)))
         hfinite]
       change min
-          ((fixedFieldRamificationNumber
-            (base := base) (target := target) huniq H
+          ((current_fixedFieldRamificationNumber huniq H
             (IsGalois.normalAutEquivQuotient H
               (sigma : Gal(L/K) ⧸ H))).untop hfinite : ℝ) (t + 1) = _
       rw [havg, ← heta2]
@@ -1205,20 +1127,18 @@ private theorem herbrandFunction_trans_of_neg_one_le
           ∑ gamma : NonarchimedeanDepth.QuotientFiber
               H (QuotientGroup.mk' H sigma),
             truncateENatAtDVF (D.depth (gamma : Gal(L/K))) (s + 1)
-      exact min_quotientFiberAverage_eq_average_truncate D H hq hs
+      apply min_quotientFiberAverage_eq_average_truncate <;> assumption
   have hsum :
       (∑ alpha : Gal((fixedFieldDVF (K := K) H)/K),
           truncateENatAtDVF
-            (fixedFieldRamificationNumber
-              (base := base) (target := target) huniq H alpha) (t + 1)) =
+            (current_fixedFieldRamificationNumber huniq H alpha) (t + 1)) =
         (1 / e2 : ℝ) *
           ∑ sigma : Gal(L/K),
             truncateENatAtDVF (D.depth sigma) (s + 1) := by
     calc
       _ = ∑ q : Gal(L/K) ⧸ H,
           truncateENatAtDVF
-            (fixedFieldRamificationNumber
-              (base := base) (target := target) huniq H
+            (current_fixedFieldRamificationNumber huniq H
               (IsGalois.normalAutEquivQuotient H q)) (t + 1) :=
         (Equiv.sum_comp (IsGalois.normalAutEquivQuotient H).toEquiv _).symm
       _ = ∑ q : Gal(L/K) ⧸ H,
@@ -1260,24 +1180,17 @@ private theorem herbrandFunction_trans_of_neg_one_le
 
 /-- States the theorem `herbrandFunction_trans`. -/
 theorem herbrandFunction_trans
-    [Algebra.IsSeparable base.residueField target.residueField]
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) [H.Normal] (s : ℝ) :
+      (s : ℝ) :
     herbrandFunctionOfUniqueExtension
         (base := base) (target := target) huniq s =
       fixedFieldHerbrandFunction
         (base := base) (target := target) huniq H
         ((fixedFieldSubextensionFiltration
-          (lowerRamificationFiltrationOfUniqueExtension
-            (base := base) (target := target) huniq) H).herbrandFunction s) := by
+          (current_lowerRamificationFiltrationOfUniqueExtension huniq) H).herbrandFunction s) := by
   by_cases hs : -1 ≤ s
-  · exact herbrandFunction_trans_of_neg_one_le
-      (base := base) (target := target) huniq H hs
+  · apply herbrandFunction_trans_of_neg_one_le <;> assumption
   · have hs0 : s ≤ 0 := by linarith
-    let F := lowerRamificationFiltrationOfUniqueExtension
-      (base := base) (target := target) huniq
+    let F := current_lowerRamificationFiltrationOfUniqueExtension huniq
     let Q := fixedFieldLowerRamificationFiltration
       (base := base) (target := target) huniq H
     let S := fixedFieldSubextensionFiltration F H
@@ -1289,29 +1202,21 @@ theorem herbrandFunction_trans
 /-- The quotient-filtration comparison over the stated discretely valued field hypotheses
 hypotheses: inverse Herbrand functions compose in reverse tower order. -/
 theorem inverseHerbrandFunction_trans
-    [Algebra.IsSeparable base.residueField target.residueField]
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) [H.Normal] (t : ℝ) :
+      (t : ℝ) :
     inverseHerbrandFunctionOfUniqueExtension
         (base := base) (target := target) huniq t =
       (fixedFieldSubextensionFiltration
-        (lowerRamificationFiltrationOfUniqueExtension
-          (base := base) (target := target) huniq) H).inverseHerbrandFunction
+        (current_lowerRamificationFiltrationOfUniqueExtension huniq) H).inverseHerbrandFunction
         (fixedFieldInverseHerbrandFunction
           (base := base) (target := target) huniq H t) := by
-  let F := lowerRamificationFiltrationOfUniqueExtension
-    (base := base) (target := target) huniq
+  let F := current_lowerRamificationFiltrationOfUniqueExtension huniq
   let Q := fixedFieldLowerRamificationFiltration
     (base := base) (target := target) huniq H
   let S := fixedFieldSubextensionFiltration F H
   have heta : ∀ s : ℝ,
       (RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.herbrandFunction F) s = Q.herbrandFunction (S.herbrandFunction s) := by
     intro s
-    simpa [F, Q, S, fixedFieldHerbrandFunction] using
-      herbrandFunction_trans
-        (base := base) (target := target) huniq H s
+    apply herbrandFunction_trans
   change (RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.inverseHerbrandFunction F) t = S.inverseHerbrandFunction (Q.inverseHerbrandFunction t)
   apply (RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.herbrandFunction_strictMono F).injective
   rw [(RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.herbrandFunction_inverseHerbrandFunction F)]
@@ -1322,11 +1227,7 @@ theorem inverseHerbrandFunction_trans
 /-- The tower-filtration comparison over the stated discretely valued field hypotheses
 hypotheses: upper numbering is invariant under a Galois quotient. -/
 theorem upperRamificationGroup_quotient
-    [Algebra.IsSeparable base.residueField target.residueField]
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) [H.Normal] (t : ℝ) :
+      (t : ℝ) :
     Subgroup.map (QuotientGroup.mk' H)
         (upperRamificationGroupOfUniqueExtension
           (base := base) (target := target) huniq t) =
@@ -1341,8 +1242,7 @@ theorem upperRamificationGroup_quotient
       (base := base) (target := target) huniq t)
   have hparam :
       (fixedFieldSubextensionFiltration
-        (lowerRamificationFiltrationOfUniqueExtension
-          (base := base) (target := target) huniq) H).herbrandFunction
+        (current_lowerRamificationFiltrationOfUniqueExtension huniq) H).herbrandFunction
         (inverseHerbrandFunctionOfUniqueExtension
           (base := base) (target := target) huniq t) =
         fixedFieldInverseHerbrandFunction
@@ -1351,10 +1251,11 @@ theorem upperRamificationGroup_quotient
       (base := base) (target := target) huniq H t]
     exact
       (fixedFieldSubextensionFiltration
-        (lowerRamificationFiltrationOfUniqueExtension
-          (base := base) (target := target) huniq) H).herbrandFunction_inverseHerbrandFunction _
+        (current_lowerRamificationFiltrationOfUniqueExtension huniq) H).herbrandFunction_inverseHerbrandFunction _
   rw [hparam] at h107
   exact h107
+end
+
 end Higher
 end RamificationTheory.HilbertRamification
 

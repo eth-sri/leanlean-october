@@ -156,8 +156,11 @@ def HasFixedFullSLocalTuple (F : Type) [Field F] [NumberField F]
 
 namespace ExteriorDyadicTransport
 
-theorem local_twist_energy {F : Type} [Field F] [NumberField F]
+section
+variable {F : Type} [Field F] [NumberField F]
     (A : SArithmeticData F) (B : Subgroup A.V) (K_bal : Set A.G)
+include F A B K_bal in
+theorem local_twist_energy  
     (s : A.BalancedIdealSection B K_bal)
     (sigma : FixedSResidue.FullLocalCharacters A)
     (hSigma : FixedSResidue.HasFiniteOrder A sigma)
@@ -169,8 +172,8 @@ theorem local_twist_energy {F : Type} [Field F] [NumberField F]
   intro a ha
   rw [norm_mul, FixedSResidue.localInverseProduct_norm A sigma hSigma, mul_one]
 
-theorem row_energy {F : Type} [Field F] [NumberField F]
-    (A : SArithmeticData F) (B : Subgroup A.V) (K_bal : Set A.G)
+include F A B K_bal in
+theorem row_energy  
     (hK : IsCompact K_bal) (s : A.BalancedIdealSection B K_bal)
     (sigma : FixedSResidue.FullLocalCharacters A)
     (hSigma : FixedSResidue.HasFiniteOrder A sigma)
@@ -185,8 +188,8 @@ theorem row_energy {F : Type} [Field F] [NumberField F]
   exact (A.balanced_ideal_section_energy B K_bal hK s X hX T hT _).2.trans
     (local_twist_energy A B K_bal s sigma hSigma T c)
 
-theorem row_sum {F : Type} [Field F] [NumberField F]
-    (A : SArithmeticData F) (B : Subgroup A.V) (K_bal : Set A.G)
+include F A B K_bal in
+theorem row_sum  
     (hK : IsCompact K_bal) (s : A.BalancedIdealSection B K_bal)
     (X : ℝ) (hX : 1 ≤ X) (T : Finset A.Exterior)
     (hT : ∀ a ∈ T, a ∈ A.balancedDyadicIdeals X)
@@ -266,9 +269,9 @@ theorem conductor_scale_energy_bound (D C0 X U E : ℝ)
   have hd := mul_le_mul_of_nonneg_left hscale hD
   simpa only [mul_assoc] using mul_le_mul_of_nonneg_right hd hE
 
+include F A B K_bal in
 theorem row_gauss_to_ideal_bound
-    {F : Type} [Field F] [NumberField F]
-    (A : SArithmeticData F) (B : Subgroup A.V) (K_bal : Set A.G)
+     
     (hK : IsCompact K_bal) (s : A.BalancedIdealSection B K_bal)
     (sigma : FixedSResidue.FullLocalCharacters A)
     (hSigma : FixedSResidue.HasFiniteOrder A sigma)
@@ -328,6 +331,8 @@ theorem row_gauss_to_ideal_bound
     _ = D * (X + (max 1 (C0 * U)) ^ 2) * ∑ a ∈ T, ‖c a‖ ^ 2 := by rw [henergy]
     _ ≤ _ := conductor_scale_energy_bound D C0 X U _ hD (by linarith) hU
       (Finset.sum_nonneg (fun a _ => sq_nonneg ‖c a‖))
+end
+
 
 end ExteriorDyadicTransport
 

@@ -19,8 +19,11 @@ private lemma amplitude_diff (β κ : ℂˣ) (f : PrincipalSeries positiveParame
   exact ((amplitudeDerivative_contDiffAt β κ f u j h (ρ, x) hρ).differentiableAt
     (by simp)).comp x (by fun_prop)
 
-private lemma amplitude_next (β κ : ℂˣ) (f : PrincipalSeries positiveParameter)
+section
+variable (β κ : ℂˣ) (f : PrincipalSeries positiveParameter)
     (hf : HasInducedAmplitudeEstimates β κ f) (u : ℂˣ) (hu : ‖(u : ℂ)‖ = 1)
+include β κ f hf u hu in
+private lemma amplitude_next  
     (j h : ℕ) (ρ : ℝ) (hρ : 0 < ρ) (x : ℂ) :
     amplitudeDerivative β κ f u j (h + 1) ρ x =
       fderiv ℝ (amplitudeDerivative β κ f u j h ρ) x 1 := by
@@ -67,9 +70,8 @@ private lemma phase_deriv (c : ℝ) (x : ℂ) :
     phase_hasDerivAt c x
   simpa using ht'.unique hh
 
-private lemma weighted_amplitude_integrable (β κ : ℂˣ)
-    (f : PrincipalSeries positiveParameter) (hf : HasInducedAmplitudeEstimates β κ f)
-    (u : ℂˣ) (hu : ‖(u : ℂ)‖ = 1) (j h : ℕ) (hj : j ≤ 2)
+include β κ f hf u hu in
+private lemma weighted_amplitude_integrable   (j h : ℕ) (hj : j ≤ 2)
     (ρ : ℝ) (hρ : 0 < ρ) :
     Integrable (fun x : ℂ =>
       Complex.exp (-Complex.I * ((characterScale β * x.re : ℝ) : ℂ)) *
@@ -147,9 +149,8 @@ private lemma amplitude_radius_hasDerivAt (β κ : ℂˣ)
   rw [← mul_assoc, inv_mul_cancel₀ (Complex.ofReal_ne_zero.mpr hρ.ne'), one_mul]
   rfl
 
-lemma hasDerivAt_integral_exp_mul_amplitudeDerivative (β κ : ℂˣ)
-    (f : PrincipalSeries positiveParameter) (hf : HasInducedAmplitudeEstimates β κ f)
-    (u : ℂˣ) (hu : ‖(u : ℂ)‖ = 1) (j : ℕ) (hj : j + 1 ≤ 2)
+include β κ f hf u hu in
+lemma hasDerivAt_integral_exp_mul_amplitudeDerivative   (j : ℕ) (hj : j + 1 ≤ 2)
     (ρ : ℝ) (hρ : 0 < ρ) :
     HasDerivAt (fun r : ℝ => ∫ x : ℂ,
       Complex.exp (-Complex.I * ((characterScale β * x.re : ℝ) : ℂ)) *
@@ -187,6 +188,8 @@ lemma hasDerivAt_integral_exp_mul_amplitudeDerivative (β κ : ℂˣ)
         (by linarith [hr.1]) x).const_mul
         (Complex.exp (-Complex.I * ((characterScale β * x.re : ℝ) : ℂ))) using 1; ring))
   simpa only [integral_const_mul] using hd.2
+end
+
 
 end DedekindZetaZeroFree.ThetaArchInducedMajorant
 

@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Metaplectic.Weil.Complex.SchwartzFourierModel
 public import DedekindZetaZeroFree.Metaplectic.Weil.Complex.DampedFourierComposition
 public import DedekindZetaZeroFree.Metaplectic.Weil.Complex.AbelKernelConvergence
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.ComplexWeil
 
@@ -50,10 +53,7 @@ theorem FT_M_FT_schwartz (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)
   have hC : F β (M β a (F β (⇑f))) y
       = ∫ z : ℂ, f z * ((1 / (2 * ‖a‖) : ℝ) : ℂ) *
           psi β (-(y + z) ^ 2 / (4 * a)) ∂mu β := by
-    have h1 : Tendsto (fun ε : ℝ => F β (fun x : ℂ =>
-        Complex.exp (((-ε * ‖x‖ ^ 2 : ℝ) : ℂ)) * psi β (a * x ^ 2) *
-          F β (⇑f) x) y)
-        (nhdsWithin 0 (Set.Ioi 0)) (nhds (F β (M β a (F β (⇑f))) y)) :=
+    have h1  :=
       tendsto_F_damped_M_F β a hβ ha f y
     have h2 : Tendsto (fun ε : ℝ => F β (fun x : ℂ =>
         Complex.exp (((-ε * ‖x‖ ^ 2 : ℝ) : ℂ)) * psi β (a * x ^ 2) *

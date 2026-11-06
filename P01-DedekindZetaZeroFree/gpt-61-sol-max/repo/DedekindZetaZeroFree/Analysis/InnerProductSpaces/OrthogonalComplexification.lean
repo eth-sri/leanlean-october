@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.CStarAlgebra.Matrix
 public import Mathlib.Analysis.Calculus.ContDiff.Basic
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -69,10 +72,7 @@ theorem operatorComplexification_apply
     (v : EuclideanSpace ℂ I) (i : I) :
     operatorComplexification I A v i =
       ∑ j, (((A (EuclideanSpace.basisFun I ℝ j)) i : ℝ) : ℂ) * v j := by
-  rw [show operatorComplexification I A = Matrix.toEuclideanCLM (n := I) (𝕜 := ℂ)
-      (Matrix.of fun i j => (((A (EuclideanSpace.basisFun I ℝ j)) i : ℝ) : ℂ)) from rfl]
-  rw [Matrix.ofLp_toEuclideanCLM]
-  simp [Matrix.mulVec, dotProduct]
+  rfl
 
 @[simp] theorem operatorComplexification_id :
     operatorComplexification I (ContinuousLinearMap.id ℝ (EuclideanSpace ℝ I)) =
@@ -119,8 +119,11 @@ theorem operatorComplexification_comp
   ext v
   simp [ContinuousLinearMap.mul_apply]
 
+section
+variable (q : EuclideanSpace ℝ I ≃ₗᵢ[ℝ] EuclideanSpace ℝ I)
+include q
 private lemma conjTranspose_mul_self_orthogonalMatrix
-    (q : EuclideanSpace ℝ I ≃ₗᵢ[ℝ] EuclideanSpace ℝ I) :
+      :
     Matrix.conjTranspose (Matrix.of fun i j => (((q (EuclideanSpace.basisFun I ℝ j)) i : ℝ) : ℂ)) *
       (Matrix.of fun i j => (((q (EuclideanSpace.basisFun I ℝ j)) i : ℝ) : ℂ)) = 1 := by
   ext j k
@@ -136,12 +139,12 @@ private lemma conjTranspose_mul_self_orthogonalMatrix
       simp only [star_trivial]
       exact Finset.sum_congr rfl (fun i _ => mul_comm _ _)]
     rw [q.inner_map_map]
-    exact (orthonormal_iff_ite.mp (EuclideanSpace.basisFun I ℝ).orthonormal) j k
+    apply orthonormal_iff_ite.mp <;> aesop
   rw [hsum]
   by_cases h : j = k <;> simp [h]
 
 private lemma star_mul_self_operatorComplexification_orthogonal
-    (q : EuclideanSpace ℝ I ≃ₗᵢ[ℝ] EuclideanSpace ℝ I) :
+      :
     star (operatorComplexification I q.toContinuousLinearEquiv.toContinuousLinearMap) *
       operatorComplexification I q.toContinuousLinearEquiv.toContinuousLinearMap = 1 := by
   rw [show operatorComplexification I q.toContinuousLinearEquiv.toContinuousLinearMap =
@@ -151,7 +154,7 @@ private lemma star_mul_self_operatorComplexification_orthogonal
     conjTranspose_mul_self_orthogonalMatrix I q, map_one]
 
  lemma inner_operatorComplexification_orthogonal
-    (q : EuclideanSpace ℝ I ≃ₗᵢ[ℝ] EuclideanSpace ℝ I) (v w : EuclideanSpace ℂ I) :
+      (v w : EuclideanSpace ℂ I) :
     inner ℂ (operatorComplexification I q.toContinuousLinearEquiv.toContinuousLinearMap v)
       (operatorComplexification I q.toContinuousLinearEquiv.toContinuousLinearMap w) =
       inner ℂ v w := by
@@ -162,7 +165,7 @@ private lemma star_mul_self_operatorComplexification_orthogonal
   rw [← mul_apply_eq_comp, hKK, one_apply_eq_self]
 
 def orthogonalComplexification
-    (q : EuclideanSpace ℝ I ≃ₗᵢ[ℝ] EuclideanSpace ℝ I) :
+      :
     EuclideanSpace ℂ I ≃ₗᵢ[ℂ] EuclideanSpace ℂ I where
   toLinearEquiv :=
     { toLinearMap :=
@@ -201,11 +204,13 @@ def orthogonalComplexification
       ← norm_eq_sqrt_re_inner (𝕜 := ℂ)]
 
 theorem orthogonalComplexification_toContinuousLinearMap
-    (q : EuclideanSpace ℝ I ≃ₗᵢ[ℝ] EuclideanSpace ℝ I) :
+      :
     (orthogonalComplexification I q).toContinuousLinearEquiv.toContinuousLinearMap =
       operatorComplexification I q.toContinuousLinearEquiv.toContinuousLinearMap := by
   ext v
   rfl
+end
+
 
 @[simp] theorem orthogonalComplexification_refl :
     orthogonalComplexification I (LinearIsometryEquiv.refl ℝ (EuclideanSpace ℝ I)) =
@@ -216,11 +221,11 @@ theorem orthogonalComplexification_toContinuousLinearMap
   rw [operatorComplexification_id]
   rfl
 
-@[simp] theorem orthogonalComplexification_symm
-    (q : EuclideanSpace ℝ I ≃ₗᵢ[ℝ] EuclideanSpace ℝ I) :
-    orthogonalComplexification I q.symm = (orthogonalComplexification I q).symm := by
-  ext v
-  rfl
+
+
+
+
+
 
 theorem contDiffOn_operatorComplexification
     {X : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X]

@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Extension.ClassGroup
 public import GaloisCohomology.Kummer.Concrete.GaloisCohomology
 public import Mathlib.Algebra.Group.Action.Basic
 public import Mathlib.GroupTheory.GroupAction.Quotient
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -142,10 +145,9 @@ theorem exists_fixed_representative_of_fixed_class
             (σ • a) / a := by
     intro σ
     have hmem :
-        (σ • a) / a ∈ principalSubgroup K L := by
-      exact (QuotientGroup.eq_iff_div_mem).1 (ha σ)
+        (σ • a) / a ∈ principalSubgroup K L := (QuotientGroup.eq_iff_div_mem).1 (ha σ)
     exact hmem
-  let f : (L ≃ₐ[K] L) → Lˣ :=
+  let f  :=
     fun σ ↦ Classical.choose (hex σ)
   have hf_spec :
       ∀ σ : L ≃ₐ[K] L,
@@ -158,15 +160,7 @@ theorem exists_fixed_representative_of_fixed_class
     apply principalIdele_injective K L
     have hsmul :
         principalIdele K L (σ • f τ) =
-          σ • principalIdele K L (f τ) := by
-      calc
-        principalIdele K L (σ • f τ) =
-            principalIdele K L
-              (Units.map
-                σ.toRingEquiv.toMonoidHom (f τ)) := by
-          congr 1
-        _ = σ • principalIdele K L (f τ) :=
-          (smul_principalIdele K L σ (f τ)).symm
+          σ • principalIdele K L (f τ) := rfl
     rw [map_mul, hsmul,
       hf_spec (σ * τ), hf_spec τ, hf_spec σ,
       smul_div', ← mul_smul]
@@ -174,7 +168,7 @@ theorem exists_fixed_representative_of_fixed_class
   obtain ⟨β, hβ⟩ :=
     groupCohomology.isMulCoboundary₁_of_isMulCocycle₁_of_aut_to_units
       f hf_cocycle
-  let a' : RelativeIdeleGroup K L :=
+  let a'  :=
     a / principalIdele K L β
   have hratio :
       ∀ σ : L ≃ₐ[K] L,
@@ -187,8 +181,7 @@ theorem exists_fixed_representative_of_fixed_class
           f σ := by
       calc
         Units.map σ.toRingEquiv.toMonoidHom β / β =
-            σ • β / β := by
-          congr 2
+            σ • β / β := rfl
         _ = f σ := hβ σ
     rw [smul_principalIdele,
       ← map_div, hβ', hf_spec σ]
@@ -202,14 +195,12 @@ theorem exists_fixed_representative_of_fixed_class
     calc
       (σ • a) / (σ • principalIdele K L β) =
           ((σ • a) / a) *
-            (a / (σ • principalIdele K L β)) := by
-        exact (div_mul_div_cancel _ _ _).symm
+            (a / (σ • principalIdele K L β)) := (div_mul_div_cancel _ _ _).symm
       _ = ((σ • principalIdele K L β) /
             principalIdele K L β) *
           (a / (σ • principalIdele K L β)) := by
         rw [← hratio σ]
-      _ = a / principalIdele K L β := by
-        exact div_mul_div_cancel' _ _ _
+      _ = a / principalIdele K L β := div_mul_div_cancel' _ _ _
   refine ⟨a', ?_, ha'fixed⟩
   apply (QuotientGroup.eq_iff_div_mem).2
   refine ⟨β⁻¹, ?_⟩

@@ -25,9 +25,9 @@ variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
 variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
-variable {μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ)} {hμG : μG.IsHaarMeasure}
-variable {hR : R.adelicHaar = μG}
-variable {realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H}
+variable {μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ)} 
+
+
 
 section FirstJetHelpers
 open scoped ContDiff

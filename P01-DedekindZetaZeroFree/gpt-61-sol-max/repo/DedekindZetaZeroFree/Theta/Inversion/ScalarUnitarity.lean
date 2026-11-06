@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.Complex.Basic
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.Hecke
 
@@ -27,14 +30,10 @@ theorem thetaInversionScalar_norm_eq_one (f : ℝ → ℂ) (w : ℂ)
     simp
 
   have h4 : f t = (w * (starRingEnd ℂ) w) * f t := by
-    calc f t = w * (t : ℂ)⁻¹ * (starRingEnd ℂ) (f t⁻¹) := h1
-      _ = w * (t : ℂ)⁻¹ * ((starRingEnd ℂ) w * (t : ℂ) * f t) := by rw [h3]
-      _ = (w * (starRingEnd ℂ) w) * f t := by
-            field_simp
+    grind
 
   have hw : w * (starRingEnd ℂ) w = 1 := by
-    have h5 : (w * (starRingEnd ℂ) w) * f t = 1 * f t := by rw [← h4, one_mul]
-    exact mul_right_cancel₀ hft h5
+    grind
 
   have hnorm : ‖w‖ ^ 2 = 1 := by
     have h := congrArg (fun z : ℂ => ‖z‖) hw

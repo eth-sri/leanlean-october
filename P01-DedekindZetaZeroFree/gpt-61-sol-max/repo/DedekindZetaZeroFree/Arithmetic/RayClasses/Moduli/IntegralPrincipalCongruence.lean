@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Moduli.FullModulusAndIntegralIdealUnits
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.IsRayCongruent
 public import ClassFieldTheory.Theorems.ConductorsAndRayClassFields.RayLocalHigherUnitMembership
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -25,7 +28,7 @@ private lemma loc_maximalIdeal_pow_mem_iff_exp (v : IsDedekindDomain.HeightOneSp
   haveI : IsDiscreteValuationRing (v.adicCompletionIntegers F) := inferInstance
   haveI hw : ((Valued.v : Valuation (v.adicCompletion F) ℤᵐ⁰)).IsRankOneDiscrete := inferInstance
   let O := v.adicCompletionIntegers F
-  let ϖ : O := Submodule.IsPrincipal.generator (IsLocalRing.maximalIdeal O)
+  let ϖ  := Submodule.IsPrincipal.generator (IsLocalRing.maximalIdeal O)
   have hspan : IsLocalRing.maximalIdeal O = Ideal.span {ϖ} :=
     (Ideal.span_singleton_generator _).symm
   have hunif : Valuation.IsUniformizer (Valued.v : Valuation (v.adicCompletion F) ℤᵐ⁰) ϖ :=
@@ -34,7 +37,7 @@ private lemma loc_maximalIdeal_pow_mem_iff_exp (v : IsDedekindDomain.HeightOneSp
   have hsurj : Function.Surjective (Valued.v : v.adicCompletion F → ℤᵐ⁰) :=
     IsDedekindDomain.HeightOneSpectrum.valuedAdicCompletion_surjective F v
   have hirr : Irreducible ϖ := (IsDiscreteValuationRing.irreducible_iff_uniformizer ϖ).mpr hspan
-  have hval : Valued.v (ϖ : v.adicCompletion F) = WithZero.exp (-1 : ℤ) := by
+  have hval : Valued.v (ϖ : v.adicCompletion F) = WithZero.exp (-1) := by
     rw [Valuation.IsUniformizer.iff.mp hunif,
       Valuation.IsRankOneDiscrete.generator_eq_exp_neg_one_of_surjective
         (v := (Valued.v : Valuation (v.adicCompletion F) ℤᵐ⁰)) hsurj, Units.val_mk0]
@@ -44,10 +47,9 @@ private lemma loc_maximalIdeal_pow_mem_iff_exp (v : IsDedekindDomain.HeightOneSp
       (v := (Valued.v : Valuation (v.adicCompletion F) ℤᵐ⁰)) hvint hirr n]
   simp only [Set.mem_setOf_eq]
   have hval' : (Valued.v : Valuation (v.adicCompletion F) ℤᵐ⁰)
-      (algebraMap O (v.adicCompletion F) ϖ) = WithZero.exp (-1 : ℤ) := by
-    simpa using hval
+      (algebraMap O (v.adicCompletion F) ϖ) = WithZero.exp (-1) := hval
   rw [hval']
-  have hpow : (WithZero.exp (-1 : ℤ) : ℤᵐ⁰) ^ n = WithZero.exp (-(n : ℤ)) := by
+  have hpow : (WithZero.exp (-1) : ℤᵐ⁰) ^ n = WithZero.exp (-(n : ℤ)) := by
     rw [← WithZero.exp_nsmul, nsmul_eq_mul]
     norm_num
   rw [hpow]
@@ -57,8 +59,7 @@ private lemma loc_valued_algebraMap_eq_intValuation (v : IsDedekindDomain.Height
     (a : 𝓞 F) :
     Valued.v (algebraMap (𝓞 F) (v.adicCompletionIntegers F) a : v.adicCompletion F) =
       v.intValuation a := by
-  have h1 : (algebraMap (𝓞 F) (v.adicCompletionIntegers F) a : v.adicCompletion F) =
-      (algebraMap (𝓞 F) F a : v.adicCompletion F) :=
+  have h1  :=
     IsDedekindDomain.HeightOneSpectrum.algebraMap_adicCompletionIntegers_apply (𝓞 F) F v a
   rw [h1, IsDedekindDomain.HeightOneSpectrum.valuedAdicCompletion_eq_valuation' v
       (algebraMap (𝓞 F) F a),
@@ -80,7 +81,7 @@ theorem integral_isRayCongruent (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
   refine ⟨?_, ?_⟩
   · intro v hv
     set n : ℕ := (fullModulus m hm).finitePart v with hn
-    have hn_eq : n = (Associates.mk v.asIdeal).count (Associates.mk m).factors :=
+    have hn_eq  :=
       hn.trans (fullModulus_finitePart m hm v)
     have hn_pos : n ≠ 0 := by
       rw [hn]
@@ -91,7 +92,7 @@ theorem integral_isRayCongruent (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
         exact iInf_le _ v
       rwa [IsDedekindDomain.HeightOneSpectrum.maxPowDividing, ← hn_eq] at h1
     have hmem : a - 1 ∈ v.asIdeal ^ n := hle ha1
-    let b : v.adicCompletionIntegers F := algebraMap (𝓞 F) (v.adicCompletionIntegers F) a
+    let b  := algebraMap (𝓞 F) (v.adicCompletionIntegers F) a
     have hb1 : b - 1 ∈ IsLocalRing.maximalIdeal (v.adicCompletionIntegers F) ^ n := by
       have h := (loc_local_power_mem_iff v n (a - 1)).mpr hmem
       simpa [b] using h
@@ -115,7 +116,7 @@ theorem integral_isRayCongruent (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     · rw [IsUnit.unit_spec]
       exact hb1
   · intro v _
-    simpa using hpos (v.1.embedding_of_isReal v.2)
+    apply hpos
 
 theorem principal_integral_span (a : 𝓞 F) (ha : a ≠ 0) :
     toPrincipalIdeal (𝓞 F) F (Units.mk0 (a : F) (by exact_mod_cast ha)) =

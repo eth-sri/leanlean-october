@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import GaloisCohomology.Cyclic.Herbrand.HerbrandFiniteness
 public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.ValueGroupCohomology
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -83,8 +86,7 @@ trivial. -/
 theorem galoisGroupValueGroup_herbrandQuotientDefined
     (g : Gal(L / K)) :
     letI := galoisGroupValueGroupMulDistribMulAction K L
-    HerbrandQuotientDefined (Gal(L / K)) (Multiplicative Int) g := by
-  exact ⟨galoisGroupValueGroupHerbrandH0Finite K L,
+    HerbrandQuotientDefined (Gal(L / K)) (Multiplicative Int) g := ⟨galoisGroupValueGroupHerbrandH0Finite K L,
     galoisGroupValueGroupHerbrandHMinusOneFinite K L g⟩
 
 /-- Herbrand-quotient multiplicativity for the actual valuation sequence.  Once the
@@ -136,12 +138,10 @@ theorem valuationHerbrand_multiplicativity_of_integerUnits_defined
   let : Finite
       (HerbrandHMinusOne (Gal(L / K))
         (ValuativeRel.valuation L).integerˣ g) := hU.2
-  let : Finite (HerbrandH0 (Gal(L / K)) Lˣ) := hField.1
-  let : Finite (HerbrandHMinusOne (Gal(L / K)) Lˣ g) := hField.2
-  let : Finite
-      (HerbrandH0 (Gal(L / K)) (Multiplicative Int)) := hZ.1
-  let : Finite
-      (HerbrandHMinusOne (Gal(L / K)) (Multiplicative Int) g) := hZ.2
+  let  := hField.1
+  let  := hField.2
+  let  := hZ.1
+  let  := hZ.2
   exact herbrandQuotient_multiplicative_of_shortExact
     (G := Gal(L / K))
     (A := (ValuativeRel.valuation L).integerˣ)

@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.RepresentationTheory.Smooth.RightInvariantDifferentialWords
 public import DedekindZetaZeroFree.Geometry.SymmetricSpaces.ArchimedeanSphericalQuotients
 
 @[expose] public section
+
 
 noncomputable section
 open scoped Classical NumberField
@@ -13,7 +16,7 @@ namespace DedekindZetaZeroFree.KPContSectorCoveredQuotientVocabulary
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-abbrev FiniteCover := KPFiniteCuspAtlas.FiniteCover F ζ hζ
+abbrev FiniteCover := @_root_.DedekindZetaZeroFree.KPFiniteCuspAtlas.FiniteCover
 abbrev SymmetricSpace := KPFiniteCuspAtlas.SymmetricSpace F
 
 def coveredRelation (U : CompactOpenLevel (FiniteCover F ζ hζ)) :
@@ -57,8 +60,11 @@ private theorem central_comm (ε : rootsOfUnity 3 F) (c : FiniteCover F ζ hζ) 
     (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ
       ⟨ε, rfl⟩) c).symm
 
- theorem central_translation_respects
-    (U : CompactOpenLevel (FiniteCover F ζ hζ)) (ε : rootsOfUnity 3 F)
+ section
+variable (U : CompactOpenLevel (FiniteCover F ζ hζ)) (ε : rootsOfUnity 3 F)
+include U ε
+theorem central_translation_respects
+     
     (p p' : SymmetricSpace F × FiniteCover F ζ hζ)
     (h : (coveredRelation F ζ hζ U).r p p') :
     Quotient.mk (coveredRelation F ζ hζ U)
@@ -73,7 +79,7 @@ private theorem central_comm (ε : rootsOfUnity 3 F) (c : FiniteCover F ζ hζ) 
     central_comm F ζ hζ ε (KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ γ)]
   simp only [mul_assoc]
 
-def z (U : CompactOpenLevel (FiniteCover F ζ hζ)) (ε : rootsOfUnity 3 F) :
+def z   :
     CoveredSpherical F ζ hζ U ≃ₜ CoveredSpherical F ζ hζ U where
   toFun := Quotient.lift (fun p => Quotient.mk (coveredRelation F ζ hζ U)
     (p.1, KPCuspGenuineMonodromy.central F ζ hζ ε * p.2))
@@ -106,11 +112,12 @@ def z (U : CompactOpenLevel (FiniteCover F ζ hζ)) (ε : rootsOfUnity 3 F) :
     exact continuous_quotient_mk'.comp
       (continuous_fst.prodMk (continuous_const.mul continuous_snd))
 
-theorem z_mk (U : CompactOpenLevel (FiniteCover F ζ hζ))
-    (ε : rootsOfUnity 3 F) (x : SymmetricSpace F) (c : FiniteCover F ζ hζ) :
+theorem z_mk   (x : SymmetricSpace F) (c : FiniteCover F ζ hζ) :
     z F ζ hζ U ε (Quotient.mk (coveredRelation F ζ hζ U) (x, c)) =
       Quotient.mk (coveredRelation F ζ hζ U)
         (x, KPCuspGenuineMonodromy.central F ζ hζ ε * c) := rfl
+end
+
 
 def centralAction (U : CompactOpenLevel (FiniteCover F ζ hζ)) :
     rootsOfUnity 3 F →* (CoveredSpherical F ζ hζ U ≃ₜ CoveredSpherical F ζ hζ U) where
@@ -141,7 +148,10 @@ instance instMulActionCoveredSpherical (U : CompactOpenLevel (FiniteCover F ζ h
     exact congrArg (fun e : CoveredSpherical F ζ hζ U ≃ₜ CoveredSpherical F ζ hζ U => e a)
       ((centralAction F ζ hζ U).map_mul ε δ)
 
-def q (U : CompactOpenLevel (FiniteCover F ζ hζ)) :
+section
+variable (U : CompactOpenLevel (FiniteCover F ζ hζ))
+include U
+def q   :
     CoveredSpherical F ζ hζ U → KPFiniteCuspAtlas.rawXU F ζ hζ U :=
   Quotient.lift (fun p => Quotient.mk (KPFiniteCuspAtlas.sphericalRelation F ζ hζ U) p)
     (by
@@ -149,12 +159,12 @@ def q (U : CompactOpenLevel (FiniteCover F ζ hζ)) :
       apply Quotient.sound
       exact ⟨γ, 1, u, hx, by simpa using hc⟩)
 
-theorem q_mk (U : CompactOpenLevel (FiniteCover F ζ hζ))
+theorem q_mk  
     (x : SymmetricSpace F) (c : FiniteCover F ζ hζ) :
     q F ζ hζ U (Quotient.mk (coveredRelation F ζ hζ U) (x, c)) =
       Quotient.mk (KPFiniteCuspAtlas.sphericalRelation F ζ hζ U) (x, c) := rfl
 
-theorem q_z (U : CompactOpenLevel (FiniteCover F ζ hζ))
+theorem q_z  
     (ε : rootsOfUnity 3 F) (a : CoveredSpherical F ζ hζ U) :
     q F ζ hζ U (z F ζ hζ U ε a) = q F ζ hζ U a := by
   induction a using Quotient.inductionOn with
@@ -164,9 +174,10 @@ theorem q_z (U : CompactOpenLevel (FiniteCover F ζ hζ))
     apply Eq.symm
     apply Quotient.sound
     exact ⟨1, ε, 1, by simp, by simp⟩
+end
 
-abbrev Gamma : Subgroup (ActualCover F ζ hζ) :=
-  KPSmoothLocalQuotientCharts.rationalSubgroup F ζ hζ
+
+abbrev Gamma := @_root_.DedekindZetaZeroFree.KPSmoothLocalQuotientCharts.rationalSubgroup
 
 def K_U (U : CompactOpenLevel (FiniteCover F ζ hζ)) :
     Subgroup (ActualCover F ζ hζ) :=
@@ -184,8 +195,8 @@ instance instTopologicalSpaceCoveredActual (U : CompactOpenLevel (FiniteCover F 
     TopologicalSpace (CoveredActual F ζ hζ U) :=
   inferInstanceAs (TopologicalSpace (Quotient _))
 
-instance instMeasurableSpaceCoveredActual (U : CompactOpenLevel (FiniteCover F ζ hζ)) :
-    MeasurableSpace (CoveredActual F ζ hζ U) := borel _
+
+
 
 def coveredActualMap (U : CompactOpenLevel (FiniteCover F ζ hζ)) :
     KPSmoothLocalQuotientCharts.X F ζ hζ → CoveredActual F ζ hζ U :=

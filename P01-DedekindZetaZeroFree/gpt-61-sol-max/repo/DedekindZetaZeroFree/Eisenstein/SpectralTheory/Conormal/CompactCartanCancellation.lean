@@ -17,7 +17,7 @@ namespace DedekindZetaZeroFree.KPMsGreenFlux.FramedConormal.NativeShellStokes
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
 variable {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
 variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+
 
 noncomputable local instance : NormedAlgebra ℚ (Matrix (Fin 2) (Fin 2) ℂ) :=
   NormedAlgebra.restrictScalars ℚ ℝ _

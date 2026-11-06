@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Fourier.ParityAffineCovariance
 public import DedekindZetaZeroFree.HarmonicAnalysis.Poisson.SchwartzLattice
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -58,9 +61,7 @@ theorem poisson (L : Submodule ℤ (euclidean.mixedSpace K))
   refine ⟨?_, ?_, ?_⟩
   · refine hprimal.congr (fun ℓ => ?_)
     rw [AffineFourier.shiftedSchwartz_apply]
-  · have hA : Summable (fun ξ : Theta.dualLattice L =>
-        |J K q|⁻¹ * ‖gδ K δ (Q K (fun v ↦ (q v)⁻¹)
-          (ξ : euclidean.mixedSpace K))‖) :=
+  · have hA  :=
       hdual.congr (fun ξ => norm_fourier K δ q hq z (ξ : euclidean.mixedSpace K))
     have hbase : Summable (fun ξ : Theta.dualLattice L =>
         ‖gδ K δ (Q K (fun v ↦ (q v)⁻¹) (ξ : euclidean.mixedSpace K))‖) := by

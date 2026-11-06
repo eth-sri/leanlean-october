@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Representatives.CosetSignsAndNorms
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -45,15 +48,14 @@ def rayUnitSigns : (𝓞 K)ˣ →* (RealPlaces K → Multiplicative (ZMod 2)) wh
   map_one' := funext (rayUnitRealSign_one K)
   map_mul' u w := funext (rayUnitRealSign_mul K u w)
 
-def rayUnitResidueSign (m : Ideal (𝓞 K)) :
-    (𝓞 K)ˣ →* (𝓞 K ⧸ m)ˣ × (RealPlaces K → Multiplicative (ZMod 2)) :=
+def rayUnitResidueSign (m : Ideal (𝓞 K))  :=
   (Units.map (Ideal.Quotient.mk m).toMonoidHom).prod (rayUnitSigns K)
 
 private theorem realPlaces_totallyPositive (α : 𝓞 K) :
     (∀ v : RealPlaces K, 0 < realEmbedding K v (α : K)) ↔ TotallyPositive K α := by
   constructor
   · intro h φ
-    let ψ : K →+* ℂ := Complex.ofRealHom.comp φ
+    let ψ  := Complex.ofRealHom.comp φ
     have hψ : NumberField.ComplexEmbedding.IsReal ψ := by
       ext x
       simp [ψ]
@@ -67,7 +69,7 @@ private theorem realPlaces_totallyPositive (α : 𝓞 K) :
       rfl
     exact he ▸ h v
   · intro h v
-    exact h (realEmbedding K v)
+    apply h
 
 theorem rayUnitResidueSign_ker (m : Ideal (𝓞 K)) :
     (rayUnitResidueSign K m).ker = positiveRayUnits K m := by
@@ -94,24 +96,29 @@ theorem rayUnitResidueSign_ker (m : Ideal (𝓞 K)) :
   rw [Prod.mk.injEq, hres, hsign]
   rfl
 
-theorem finite_rayUnit_quotient (m : Ideal (𝓞 K)) (hm : m ≠ ⊥) :
+section
+variable (m : Ideal (𝓞 K)) (hm : m ≠ ⊥)
+include m hm
+theorem finite_rayUnit_quotient   :
     Finite ((𝓞 K)ˣ ⧸ positiveRayUnits K m) := by
-  letI : Finite (𝓞 K ⧸ m) := Ideal.finiteQuotientOfFreeOfNeBot m hm
+  letI  := Ideal.finiteQuotientOfFreeOfNeBot m hm
   rw [← rayUnitResidueSign_ker K m]
   exact Finite.of_equiv (rayUnitResidueSign K m).range
     (QuotientGroup.quotientKerEquivRange (rayUnitResidueSign K m)).symm
 
-theorem positiveRayUnits_finiteIndex (m : Ideal (𝓞 K)) (hm : m ≠ ⊥) :
+theorem positiveRayUnits_finiteIndex   :
     (positiveRayUnits K m).FiniteIndex := by
   letI := finite_rayUnit_quotient K m hm
   exact Subgroup.finiteIndex_of_finite_quotient
 
 theorem exists_pos_pow_mem_positiveRayUnits
-    (m : Ideal (𝓞 K)) (hm : m ≠ ⊥) (u : (𝓞 K)ˣ) :
+      (u : (𝓞 K)ˣ) :
     ∃ k : ℕ, 0 < k ∧ u ^ k ∈ positiveRayUnits K m := by
   obtain ⟨k, hk, _, hmem⟩ := (positiveRayUnits K m).exists_pow_mem_of_index_ne_zero
     (positiveRayUnits_finiteIndex K m hm).index_ne_zero u
   exact ⟨k, hk, hmem⟩
+end
+
 
 end DedekindZetaZeroFree.AbelianQuotient.RayCoset
 

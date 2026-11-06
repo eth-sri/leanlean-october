@@ -17,8 +17,11 @@ def t (ε : rootsOfUnity 3 F) :
   KPSmoothActualFlowData.rightTranslate F ζ hζ
     (KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε)
 
+
+local notation:max "current_ActualCover" => KPSmoothLocalQuotientCharts.ActualCover F ζ hζ
+
 theorem t_quotientMap (ε : rootsOfUnity 3 F)
-    (g : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ) :
+    (g : current_ActualCover) :
     t F ζ hζ ε (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g) =
       KPSmoothLocalQuotientCharts.quotientMap F ζ hζ
         (g * KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε) := rfl
@@ -38,57 +41,57 @@ theorem t_measurePreserving
       (KPRationalAdelicSplitting.rationalScalars F))).countable
   letI : Countable (KPSmoothLocalQuotientCharts.rationalSubgroup F ζ hζ) :=
     Set.Countable.to_subtype (Set.countable_range (KPSmoothLocalQuotientCharts.rationalSplit F ζ hζ))
-  letI : IsTopologicalGroup (KPSmoothLocalQuotientCharts.ActualCover F ζ hζ) :=
+  letI : IsTopologicalGroup (current_ActualCover) :=
     (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.1
-  letI : BorelSpace (KPSmoothLocalQuotientCharts.ActualCover F ζ hζ) := ⟨rfl⟩
+  letI : BorelSpace (current_ActualCover) := ⟨rfl⟩
   letI := R.adelic_isHaar
   set c := KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε with hc
-  have hmem : c ∈ Subgroup.center (KPSmoothLocalQuotientCharts.ActualCover F ζ hζ) :=
+  have hmem : c ∈ Subgroup.center (current_ActualCover) :=
     KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ ⟨ε, rfl⟩
-  have hcentral : ∀ g : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ, g * c = c * g :=
+  have hcentral : ∀ g : current_ActualCover, g * c = c * g :=
     fun g => Subgroup.mem_center_iff.mp hmem g
-  have hmulc_meas : Measurable (fun g : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ => g * c) :=
+  have hmulc_meas : Measurable (fun g : current_ActualCover => g * c) :=
     (continuous_id.mul continuous_const).measurable
-  have hmp : MeasurePreserving (fun g : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ => g * c)
+  have hmp : MeasurePreserving (fun g : current_ActualCover => g * c)
       R.adelicHaar R.adelicHaar := by
-    have heq : (fun g : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ => g * c) =
+    have heq : (fun g : current_ActualCover => g * c) =
         fun g => c * g := by
       funext g; exact hcentral g
     rw [heq]
     exact measurePreserving_mul_left R.adelicHaar c
-  have hmp_inv : MeasurePreserving (fun g : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ => g * c⁻¹)
+  have hmp_inv : MeasurePreserving (fun g : current_ActualCover => g * c⁻¹)
       R.adelicHaar R.adelicHaar := by
-    have hmem' : c⁻¹ ∈ Subgroup.center (KPSmoothLocalQuotientCharts.ActualCover F ζ hζ) :=
+    have hmem' : c⁻¹ ∈ Subgroup.center (current_ActualCover) :=
       Subgroup.inv_mem _ hmem
-    have hc' : ∀ g : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ, g * c⁻¹ = c⁻¹ * g :=
+    have hc' : ∀ g : current_ActualCover, g * c⁻¹ = c⁻¹ * g :=
       fun g => Subgroup.mem_center_iff.mp hmem' g
-    have heq : (fun g : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ => g * c⁻¹) =
+    have heq : (fun g : current_ActualCover => g * c⁻¹) =
         fun g => c⁻¹ * g := by
       funext g; exact hc' g
     rw [heq]
     exact measurePreserving_mul_left R.adelicHaar c⁻¹
   have hD' : IsFundamentalDomain (KPSmoothLocalQuotientCharts.rationalSubgroup F ζ hζ)
-      ((fun g : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ => g * c) '' R.domain) R.adelicHaar := by
+      ((fun g : current_ActualCover => g * c) '' R.domain) R.adelicHaar := by
     refine IsFundamentalDomain.image_of_equiv (ν := R.adelicHaar) (μ := R.adelicHaar)
       R.domain_fundamental (Equiv.mulRight c) ?_ (Equiv.refl _) ?_
     · exact hmp_inv.quasiMeasurePreserving
     · intro g x
-      show ((g : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ) * x) * c =
-        (g : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ) * (x * c)
+      show ((g : current_ActualCover) * x) * c =
+        (g : current_ActualCover) * (x * c)
       rw [mul_assoc]
   have hmap_mulc :
-      Measure.map (fun g : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ => g * c)
+      Measure.map (fun g : current_ActualCover => g * c)
         (R.adelicHaar.restrict R.domain) =
       R.adelicHaar.restrict
-        ((fun g : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ => g * c) '' R.domain) := by
-    let e : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ ≃ᵐ
-        KPSmoothLocalQuotientCharts.ActualCover F ζ hζ :=
+        ((fun g : current_ActualCover => g * c) '' R.domain) := by
+    let e : current_ActualCover ≃ᵐ
+        current_ActualCover :=
       (Homeomorph.mulRight c).toMeasurableEquiv
-    have he : ⇑e = (fun g : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ => g * c) := rfl
+    have he : ⇑e = (fun g : current_ActualCover => g * c) := rfl
     have hmap_e : Measure.map (⇑e) R.adelicHaar = R.adelicHaar := by
       rw [he]; exact hmp.map_eq
     have hpre : ⇑e ⁻¹'
-        ((fun g : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ => g * c) '' R.domain)
+        ((fun g : current_ActualCover => g * c) '' R.domain)
         = R.domain := by
       rw [he]
       ext x
@@ -100,7 +103,7 @@ theorem t_measurePreserving
       · intro hx
         exact ⟨x, hx, rfl⟩
     have h := MeasurableEquiv.restrict_map e R.adelicHaar
-      ((fun g : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ => g * c) '' R.domain)
+      ((fun g : current_ActualCover => g * c) '' R.domain)
     rw [hmap_e, hpre] at h
     rw [h, he]
   have hcont : Continuous (KPSmoothActualFlowData.rightTranslate F ζ hζ
@@ -109,7 +112,7 @@ theorem t_measurePreserving
   have ht_meas : Measurable (t F ζ hζ ε) := hcont.borel_measurable
   have hdom_eq : Measure.map (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ)
         (R.adelicHaar.restrict
-          ((fun g : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ => g * c) '' R.domain)) =
+          ((fun g : current_ActualCover => g * c) '' R.domain)) =
       Measure.map (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ)
         (R.adelicHaar.restrict R.domain) := by
     ext A hA
@@ -119,11 +122,11 @@ theorem t_measurePreserving
     refine IsFundamentalDomain.measure_set_eq hD' R.domain_fundamental hA₀ (fun γ => ?_)
     ext x
     simp only [Set.mem_preimage]
-    have hsmul : (γ • x : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ) =
-        (γ : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ) * x := rfl
+    have hsmul : (γ • x : current_ActualCover) =
+        (γ : current_ActualCover) * x := rfl
     rw [hsmul]
     have h : KPSmoothLocalQuotientCharts.quotientMap F ζ hζ
-        ((γ : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ) * x) =
+        ((γ : current_ActualCover) * x) =
       KPSmoothLocalQuotientCharts.quotientMap F ζ hζ x := by
       apply Quotient.sound
       apply QuotientGroup.rightRel_apply.mpr
@@ -131,7 +134,7 @@ theorem t_measurePreserving
     rw [h]
   have hcomp : t F ζ hζ ε ∘ KPSmoothLocalQuotientCharts.quotientMap F ζ hζ =
       KPSmoothLocalQuotientCharts.quotientMap F ζ hζ ∘
-        (fun g : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ => g * c) := by
+        (fun g : current_ActualCover => g * c) := by
     funext g
     exact t_quotientMap F ζ hζ ε g
   refine ⟨ht_meas, ?_⟩
@@ -140,11 +143,11 @@ theorem t_measurePreserving
     ← Measure.map_map hq_meas hmulc_meas, hmap_mulc, hdom_eq]
 
 private theorem exists_arch_mul_finite
-    (g : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ) :
+    (g : current_ActualCover) :
     ∃ (a : KPSmoothActualFlowData.GInfinity F)
       (c : KPContSectorCoveredQuotientVocabulary.FiniteCover F ζ hζ),
       g = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a *
-        (c : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ) := by
+        (c : current_ActualCover) := by
   obtain ⟨e, he, _, _, hker, _, _⟩ :=
     PGLComplex.AdelicSlicesRaw.actualArchFiniteSplitting F ζ hζ
   let p := e.symm g
@@ -172,7 +175,7 @@ theorem piTilde_t (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
     (t F ζ hζ ε (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g)) = _
   obtain ⟨a, c, rfl⟩ := exists_arch_mul_finite F ζ hζ g
   rw [t_quotientMap]
-  have hcentral : (c : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ) *
+  have hcentral : (c : current_ActualCover) *
       KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε =
       KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε * c :=
     Subgroup.mem_center_iff.mp
@@ -183,7 +186,7 @@ theorem piTilde_t (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
       (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a *
         ((KPCuspGenuineMonodromy.central F ζ hζ ε * c :
           KPContSectorCoveredQuotientVocabulary.FiniteCover F ζ hζ) :
-            KPSmoothLocalQuotientCharts.ActualCover F ζ hζ))) = _
+            current_ActualCover))) = _
   rw [KPContSectorQuotientRelationsComparison.piTilde_quotientMap]
   change _ = KPContSectorCoveredQuotientVocabulary.z F ζ hζ U ε
     (KPContSectorQuotientRelationsComparison.piTilde F ζ hζ U

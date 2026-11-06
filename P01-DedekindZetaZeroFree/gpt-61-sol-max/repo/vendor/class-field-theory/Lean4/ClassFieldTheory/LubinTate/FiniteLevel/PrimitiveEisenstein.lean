@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.LubinTate.FiniteLevel.DivisionPolynomial
 public import Mathlib.RingTheory.Polynomial.Eisenstein.Basic
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -48,11 +51,14 @@ open LocalFieldTheory.DiscreteValuationField
 
 variable {K : Type u} [Field K]
 
+section
+variable {F : LocalField.{u, v} K} {π : F.valuationSubring}
+    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
+include F π hπ
 /-- Reduction modulo the maximal ideal sends the standard Lubin--Tate
 polynomial to `X ^ q`. -/
 theorem standardLubinTatePolynomial_map_residue
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) :
+      :
     (standardLubinTatePolynomial F π).map F.residueMap =
       Polynomial.X ^ Nat.card F.residueField := by
   simp [standardLubinTatePolynomial,
@@ -61,8 +67,7 @@ theorem standardLubinTatePolynomial_map_residue
 /-- Reduction modulo the maximal ideal sends the `n`-fold standard iterate
 to `X ^ (q ^ n)`. -/
 theorem standardLubinTatePolynomialIterate_map_residue
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+      (n : ℕ) :
     (standardLubinTatePolynomialIterate F π n).map F.residueMap =
       Polynomial.X ^ (Nat.card F.residueField ^ n) := by
   induction n with
@@ -78,8 +83,7 @@ theorem standardLubinTatePolynomialIterate_map_residue
 /-- Reduction modulo the maximal ideal sends the primitive quotient
 polynomial to its leading monomial. -/
 theorem standardLubinTatePrimitivePolynomial_map_residue
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+      (n : ℕ) :
     (standardLubinTatePrimitivePolynomial F π n).map F.residueMap =
       Polynomial.X ^
         ((Nat.card F.residueField - 1) *
@@ -92,8 +96,7 @@ theorem standardLubinTatePrimitivePolynomial_map_residue
 /-- The standard primitive quotient polynomial is Eisenstein at the maximal
 ideal of the valuation ring. -/
 theorem standardLubinTatePrimitivePolynomial_isEisensteinAt
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+      (n : ℕ) :
     (standardLubinTatePrimitivePolynomial F π n).IsEisensteinAt
       F.maximalIdeal := by
   let Q := standardLubinTatePrimitivePolynomial F π n
@@ -121,11 +124,12 @@ theorem standardLubinTatePrimitivePolynomial_isEisensteinAt
     exact (F.toCompleteDVF.residue_eq_zero_iff (Q.coeff i)).1 hzero
   · simpa [Q] using
       F.toCompleteDVF.uniformizer_not_mem_maximalIdeal_sq hπ
+end
+
 
 /-- Every standard primitive quotient polynomial is primitive. -/
-theorem standardLubinTatePrimitivePolynomial_isPrimitive
-    (F : LocalField.{u, v} K) (π : F.valuationSubring) (n : ℕ) :
-    (standardLubinTatePrimitivePolynomial F π n).IsPrimitive :=
+def standardLubinTatePrimitivePolynomial_isPrimitive
+    (F : LocalField.{u, v} K) (π : F.valuationSubring) (n : ℕ)  :=
   (standardLubinTatePrimitivePolynomial_monic F π n).isPrimitive
 
 /-- The standard primitive quotient polynomial is irreducible by

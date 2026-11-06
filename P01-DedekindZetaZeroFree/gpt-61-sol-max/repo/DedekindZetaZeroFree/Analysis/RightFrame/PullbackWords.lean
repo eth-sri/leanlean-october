@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.Complex.Basic
 public import Mathlib.Analysis.Calculus.ContDiff.Operations
 public import Mathlib.Analysis.Normed.Module.FiniteDimension
 public import Mathlib.Analysis.Calculus.FDeriv.Mul
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -21,17 +24,20 @@ def directionalWord (fields : B → E → E) : List B → (E → ℂ) → E → 
   | [], u => u
   | b :: r, u => fun x => fderiv ℝ (directionalWord fields r u) x (fields b x)
 
-def constantDirectionWord (w : List P) (u : P → ℂ) : P → ℂ :=
+def constantDirectionWord (w : List P) (u : P → ℂ)  :=
   directionalWord (fun (v : P) (_ : P) => v) w u
 
 section TransportProof
 open Topology
 variable [FiniteDimensional ℝ E] [FiniteDimensional ℝ P] [Fintype B]
 
-private lemma inverse_coefficients (U : Set E) (O : Set P) (hU : IsOpen U) (hO : IsOpen O)
+section
+variable (U : Set E) (O : Set P) (hU : IsOpen U) (hO : IsOpen O)
     (fields : B → E → E) (hfields : ∀ b, ContDiffOn ℝ (⊤ : ℕ∞) (fields b) U)
     (hframe : ∀ x ∈ U, ∃ e : Module.Basis B ℝ E, ∀ b, e b = fields b x)
     (ψ : P → E) (hψ : ContDiffOn ℝ (⊤ : ℕ∞) ψ O) (hψU : Set.MapsTo ψ O U)
+include U O hU hO fields hfields hframe ψ hψ hψU in
+private lemma inverse_coefficients  
     (v : P) :
     ∃ a : B → P → ℝ, (∀ b, ContDiffOn ℝ (⊤ : ℕ∞) (a b) O) ∧
       ∀ x ∈ O, fderiv ℝ ψ x v = ∑ b, a b x • fields b (ψ x) := by
@@ -60,15 +66,14 @@ private lemma inverse_coefficients (U : Set E) (O : Set P) (hU : IsOpen U) (hO :
       rw [he]
       exact contDiffAt_map_inverse e
     exact hInv.comp_contDiffWithinAt x (hA x hx)
-  let a : B → P → ℝ := fun b x => ContinuousLinearMap.inverse (A (ψ x)) (fderiv ℝ ψ x v) b
+  let a  := fun b x => ContinuousLinearMap.inverse (A (ψ x)) (fderiv ℝ ψ x v) b
   refine ⟨a, ?_, ?_⟩
   · intro b
     exact (contDiff_apply ℝ ℝ b).comp_contDiffOn
       ((hi.comp hψ hψU).clm_apply ((hψ.fderiv_of_isOpen hO (by simp)).clm_apply contDiffOn_const))
   · intro x hx
     obtain ⟨e, he⟩ := hAe (ψ x) (hψU hx)
-    have hh : A (ψ x) (ContinuousLinearMap.inverse (A (ψ x)) (fderiv ℝ ψ x v)) = fderiv ℝ ψ x v := by
-      exact (show (A (ψ x)).IsInvertible from ⟨e, he.symm⟩).self_apply_inverse _
+    have hh : A (ψ x) (ContinuousLinearMap.inverse (A (ψ x)) (fderiv ℝ ψ x v)) = fderiv ℝ ψ x v := (show (A (ψ x)).IsInvertible from ⟨e, he.symm⟩).self_apply_inverse _
     simpa only [A, a, ContinuousLinearMap.sum_apply, ContinuousLinearMap.smulRight_apply,
       ContinuousLinearMap.proj_apply] using hh.symm
  lemma word_smooth (U : Set E) (hU : IsOpen U)
@@ -107,13 +112,11 @@ private lemma list_derivative {α : Type*} (ts : List α) (f : α → P → ℂ)
     HasFDerivAt (fun y => (ts.map (fun t => f t y)).sum)
       (ts.map (fun t => fderiv ℝ (f t) x)).sum x := by
   induction ts with
-  | nil => simpa using hasFDerivAt_const (𝕜 := ℝ) (0 : ℂ) x
+  | nil => apply hasFDerivAt_const
   | cons t ts ih =>
     exact (hf t (by simp)).hasFDerivAt.fun_add (ih (fun r hr => hf r (by simp [hr])))
-private lemma list_transport (U : Set E) (O : Set P) (hU : IsOpen U) (hO : IsOpen O)
-    (fields : B → E → E) (hfields : ∀ b, ContDiffOn ℝ (⊤ : ℕ∞) (fields b) U)
-    (hframe : ∀ x ∈ U, ∃ e : Module.Basis B ℝ E, ∀ b, e b = fields b x)
-    (ψ : P → E) (hψ : ContDiffOn ℝ (⊤ : ℕ∞) ψ O) (hψU : Set.MapsTo ψ O U) (w : List P) :
+include U O hU hO fields hfields hframe ψ hψ hψU in
+private lemma list_transport   (w : List P) :
     ∃ ts : List ((P → ℝ) × List B),
       (∀ t ∈ ts, ContDiffOn ℝ (⊤ : ℕ∞) t.1 O ∧ t.2.length ≤ w.length) ∧
       ∀ u : E → ℂ, ContDiffOn ℝ (⊤ : ℕ∞) u U → ∀ x ∈ O,
@@ -173,6 +176,8 @@ private lemma list_transport (U : Set E) (O : Set P) (hU : IsOpen U) (hO : IsOpe
         Finset.sum_toList]
       congr 1
       exact (Finset.sum_map_toList _ _).symm
+end
+
 
 end TransportProof
 

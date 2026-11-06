@@ -50,17 +50,19 @@ variable
 /-- The actual idèle-class norm subgroup is exactly the ray congruence
 subgroup at its narrow finite conductor if and only if the conductor ray
 class group and the actual norm quotient have the same order. -/
+
+local notation:max "current_ideleClassNormNarrowFiniteConductor" => ideleClassNormNarrowFiniteConductor (K := K) (L := L)
+
 theorem
     ideleClassNorm_range_eq_narrowFiniteConductorCongruenceSubgroup_iff_rayClassGroup_card_eq_normQuotient_card :
     (_root_.ideleClassNorm K L).range =
         RayClass.Modulus.congruenceSubgroup
           (RayClass.Modulus.narrowOfFinite
-            (ideleClassNormNarrowFiniteConductor (K := K) (L := L))) ↔
+            (current_ideleClassNormNarrowFiniteConductor)) ↔
       Nat.card
           (RayClass.RayClassGroup
             (RayClass.Modulus.narrowOfFinite
-              (ideleClassNormNarrowFiniteConductor
-                (K := K) (L := L)))) =
+              (current_ideleClassNormNarrowFiniteConductor))) =
         Nat.card
           (IdeleClassGroup K ⧸
             (_root_.ideleClassNorm K L).range) := by
@@ -70,12 +72,10 @@ theorem
       Nat.card
           (RayClass.RayClassGroup
             (RayClass.Modulus.narrowOfFinite
-              (ideleClassNormNarrowFiniteConductor
-                (K := K) (L := L)))) =
+              (current_ideleClassNormNarrowFiniteConductor))) =
           (RayClass.Modulus.congruenceSubgroup
             (RayClass.Modulus.narrowOfFinite
-              (ideleClassNormNarrowFiniteConductor
-                (K := K) (L := L)))).index :=
+              (current_ideleClassNormNarrowFiniteConductor))).index :=
         (Subgroup.index_eq_card _).symm
       _ = ((_root_.ideleClassNorm K L).range).index := by
         rw [← hnorm]
@@ -99,66 +99,65 @@ theorem
           Nat.card
             (RayClass.RayClassGroup
               (RayClass.Modulus.narrowOfFinite
-                (ideleClassNormNarrowFiniteConductor
-                  (K := K) (L := L)))) := by
+                (current_ideleClassNormNarrowFiniteConductor))) := by
       simpa only [Subgroup.index_eq_card] using hstrict
     rw [hcard] at hstrict'
     exact lt_irrefl _ hstrict'
 
-/-- The canonical narrow finite conductor ray-class map to the actual
-idèle-class norm quotient is injective if and only if its finite source and
-target have the same order. -/
-theorem
-    narrowFiniteConductorRayClassGroupToIdeleClassNormQuotient_injective_iff_card_eq_normQuotient_card :
-    Function.Injective
-        (narrowFiniteConductorRayClassGroupToIdeleClassNormQuotient
-          (K := K) (L := L)) ↔
-      Nat.card
-          (RayClass.RayClassGroup
-            (RayClass.Modulus.narrowOfFinite
-              (ideleClassNormNarrowFiniteConductor
-                (K := K) (L := L)))) =
-        Nat.card
-          (IdeleClassGroup K ⧸
-            (_root_.ideleClassNorm K L).range) := by
-  let f :=
-    narrowFiniteConductorRayClassGroupToIdeleClassNormQuotient
-      (K := K) (L := L)
-  change Function.Injective f ↔ _
-  have hfSurjective : Function.Surjective f :=
-    narrowFiniteConductorRayClassGroupToIdeleClassNormQuotient_surjective
-      (K := K) (L := L)
-  constructor
-  · intro hfInjective
-    exact
-      Nat.card_congr
-        (Equiv.ofBijective f
-          ⟨hfInjective, hfSurjective⟩)
-  · intro hcard
-    exact
-      (hfSurjective.bijective_of_nat_card_le hcard.le).1
 
-/-- If the narrow finite conductor ray class group and the actual
-idèle-class norm quotient have the same order, the latter is canonically
-the full ray class group at its narrow finite conductor. -/
-def normQuotientEquivNarrowFiniteConductorRayClassGroup
-    (hcard :
-      Nat.card
-          (RayClass.RayClassGroup
-            (RayClass.Modulus.narrowOfFinite
-              (ideleClassNormNarrowFiniteConductor
-                (K := K) (L := L)))) =
-        Nat.card
-          (IdeleClassGroup K ⧸
-            (_root_.ideleClassNorm K L).range)) :
-    (IdeleClassGroup K ⧸
-        (_root_.ideleClassNorm K L).range) ≃*
-      RayClass.RayClassGroup
-        (RayClass.Modulus.narrowOfFinite
-          (ideleClassNormNarrowFiniteConductor (K := K) (L := L))) :=
-  QuotientGroup.quotientMulEquivOfEq
-    ((ideleClassNorm_range_eq_narrowFiniteConductorCongruenceSubgroup_iff_rayClassGroup_card_eq_normQuotient_card
-      (K := K) (L := L)).2 hcard)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- Two finite Galois extensions with the same exact narrow finite
 conductor and maximal ray-class presentations have the same actual
@@ -169,14 +168,13 @@ theorem
     [Field M] [NumberField M] [Algebra K M]
     [FiniteDimensional K M] [IsGalois K M]
     (hconductor :
-      ideleClassNormNarrowFiniteConductor (K := K) (L := L) =
+      current_ideleClassNormNarrowFiniteConductor =
         ideleClassNormNarrowFiniteConductor (K := K) (L := M))
     (hLcard :
       Nat.card
           (RayClass.RayClassGroup
             (RayClass.Modulus.narrowOfFinite
-              (ideleClassNormNarrowFiniteConductor
-                (K := K) (L := L)))) =
+              (current_ideleClassNormNarrowFiniteConductor))) =
         Nat.card
           (IdeleClassGroup K ⧸
             (_root_.ideleClassNorm K L).range))
@@ -195,7 +193,7 @@ theorem
     (_root_.ideleClassNorm K L).range =
         RayClass.Modulus.congruenceSubgroup
           (RayClass.Modulus.narrowOfFinite
-            (ideleClassNormNarrowFiniteConductor (K := K) (L := L))) :=
+            (current_ideleClassNormNarrowFiniteConductor)) :=
       (ideleClassNorm_range_eq_narrowFiniteConductorCongruenceSubgroup_iff_rayClassGroup_card_eq_normQuotient_card
         (K := K) (L := L)).2 hLcard
     _ =
@@ -218,14 +216,13 @@ def normQuotientEquivOfNarrowFiniteConductorsEqOfRayClassGroupCardsEqNormQuotien
     [Field M] [NumberField M] [Algebra K M]
     [FiniteDimensional K M] [IsGalois K M]
     (hconductor :
-      ideleClassNormNarrowFiniteConductor (K := K) (L := L) =
+      current_ideleClassNormNarrowFiniteConductor =
         ideleClassNormNarrowFiniteConductor (K := K) (L := M))
     (hLcard :
       Nat.card
           (RayClass.RayClassGroup
             (RayClass.Modulus.narrowOfFinite
-              (ideleClassNormNarrowFiniteConductor
-                (K := K) (L := L)))) =
+              (current_ideleClassNormNarrowFiniteConductor))) =
         Nat.card
           (IdeleClassGroup K ⧸
             (_root_.ideleClassNorm K L).range))
@@ -256,14 +253,13 @@ theorem
     [Field M] [NumberField M] [Algebra K M]
     [FiniteDimensional K M] [IsGalois K M]
     (hconductor :
-      ideleClassNormNarrowFiniteConductor (K := K) (L := L) =
+      current_ideleClassNormNarrowFiniteConductor =
         ideleClassNormNarrowFiniteConductor (K := K) (L := M))
     (hLcard :
       Nat.card
           (RayClass.RayClassGroup
             (RayClass.Modulus.narrowOfFinite
-              (ideleClassNormNarrowFiniteConductor
-                (K := K) (L := L)))) =
+              (current_ideleClassNormNarrowFiniteConductor))) =
         Nat.card
           (IdeleClassGroup K ⧸
             (_root_.ideleClassNorm K L).range))

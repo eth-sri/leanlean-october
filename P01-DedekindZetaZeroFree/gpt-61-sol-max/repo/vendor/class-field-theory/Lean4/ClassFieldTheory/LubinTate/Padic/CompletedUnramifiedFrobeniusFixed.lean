@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.FieldTheory.Finite.Basic
 public import ClassFieldTheory.LubinTate.Padic.CompletedUnramifiedField
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -58,8 +61,8 @@ theorem padicCompletedUnramifiedWittRing_frobenius_fixed_iff
         (Subfield.mem_bot_iff_pow_eq_self
           (AlgebraicClosure (ZMod p)) p).2
           (hcoeffPow n)
-    let c : ℕ → ℤ := fun n ↦ Classical.choose (hcoeffInt n)
-    let y : WittVector p (ZMod p) :=
+    let c  := fun n ↦ Classical.choose (hcoeffInt n)
+    let y  :=
       WittVector.mk p (fun n ↦ (c n : ZMod p))
     refine ⟨WittVector.equiv p y, ?_⟩
     apply WittVector.ext
@@ -74,11 +77,8 @@ theorem padicCompletedUnramifiedWittRing_frobenius_fixed_iff
       algebraMap (ZMod p) (AlgebraicClosure (ZMod p))
           (c n : ZMod p) = x.coeff n
     calc
-      _ = (c n : AlgebraicClosure (ZMod p)) := by
-        simp only [map_intCast]
-      _ = x.coeff n := by
-        simpa only [c] using
-          (Classical.choose_spec (hcoeffInt n))
+      _ = (c n : AlgebraicClosure (ZMod p)) := rfl
+      _ = x.coeff n := (Classical.choose_spec (hcoeffInt n))
   · rintro ⟨z, rfl⟩
     exact padicIntToCompletedUnramifiedWittRing_frobenius p z
 
@@ -100,18 +100,16 @@ theorem padicCompletedUnramifiedFrobenius_fixed_iff
     have hb0 : b ≠ 0 := nonZeroDivisors.ne_zero hb
     obtain ⟨m, u, hbu⟩ :=
       WittVector.exists_eq_pow_p_mul' b hb0
-    let c : W := a * (u⁻¹ : Wˣ)
+    let c  := a * (u⁻¹)
     have hpW : (p : W) ≠ 0 := by
-      exact
-        WittVector.p_nonzero p
-          (AlgebraicClosure (ZMod p))
+      apply WittVector.p_nonzero
     have hpE :
         algebraMap W E ((p : W) ^ m) ≠ 0 := by
       simpa only [map_zero] using
         (IsFractionRing.injective W E).ne
           (pow_ne_zero m hpW)
     have huE :
-        algebraMap W E (u : W) ≠ 0 := by
+        algebraMap W E u ≠ 0 := by
       simpa only [map_zero] using
         (IsFractionRing.injective W E).ne u.ne_zero
     have hbE :
@@ -124,7 +122,7 @@ theorem padicCompletedUnramifiedFrobenius_fixed_iff
       rw [show
         algebraMap W E c =
             algebraMap W E a *
-              (algebraMap W E (u : W))⁻¹ by
+              (algebraMap W E u)⁻¹ by
           simp only [c, map_mul, map_units_inv]]
       rw [← div_eq_mul_inv]
       apply (div_eq_iff huE).2
@@ -137,39 +135,37 @@ theorem padicCompletedUnramifiedFrobenius_fixed_iff
         algebraMap W E a =
             x *
               (algebraMap W E ((p : W) ^ m) *
-                algebraMap W E (u : W)) :=
+                algebraMap W E u) :=
           habMul
         _ =
             (algebraMap W E ((p : W) ^ m) * x) *
-              algebraMap W E (u : W) := by
+              algebraMap W E u := by
           ac_rfl
     have hpBase :
-        algebraMap W E (p : W) =
-          algebraMap ℚ_[p] E (p : ℚ_[p]) := by
+        algebraMap W E p =
+          algebraMap ℚ_[p] E p := by
       calc
-        algebraMap W E (p : W) =
+        algebraMap W E p =
             algebraMap W E
               (padicIntToCompletedUnramifiedWittRing p
-                (p : ℤ_[p])) := by
-          exact congrArg (algebraMap W E)
+                p) := congrArg (algebraMap W E)
             (map_natCast
               (padicIntToCompletedUnramifiedWittRing p) p).symm
         _ =
             algebraMap ℚ_[p] E
-              (algebraMap ℤ_[p] ℚ_[p] (p : ℤ_[p])) :=
+              (algebraMap ℤ_[p] ℚ_[p] p) :=
           (padicCompletedUnramifiedField_algebraMap_padicInt
             p (p : ℤ_[p])).symm
-        _ = algebraMap ℚ_[p] E (p : ℚ_[p]) := by
-          exact congrArg (algebraMap ℚ_[p] E)
+        _ = algebraMap ℚ_[p] E p := congrArg (algebraMap ℚ_[p] E)
             (map_natCast (algebraMap ℤ_[p] ℚ_[p]) p)
     have hpowBridge :
         algebraMap W E ((p : W) ^ m) =
           (p : E) ^ m := by
       calc
         algebraMap W E ((p : W) ^ m) =
-            (algebraMap W E (p : W)) ^ m :=
+            (algebraMap W E p) ^ m :=
           map_pow (algebraMap W E) (p : W) m
-        _ = (algebraMap ℚ_[p] E (p : ℚ_[p])) ^ m := by
+        _ = (algebraMap ℚ_[p] E p) ^ m := by
           rw [hpBase]
         _ = (p : E) ^ m := by
           rw [map_natCast]
@@ -187,7 +183,7 @@ theorem padicCompletedUnramifiedFrobenius_fixed_iff
               algebraMap ℚ_[p] E ((p : ℚ_[p]) ^ m) := by
             rw [map_pow, map_natCast]
       rw [hbase]
-      exact φ.commutes ((p : ℚ_[p]) ^ m)
+      apply φ.commutes
     have hcFieldFixed :
         φ (algebraMap W E c) = algebraMap W E c := by
       rw [hclear, map_mul, hpowFixed, hx]

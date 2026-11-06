@@ -17,7 +17,10 @@ variable {K : Type} [Field K] [NumberField K]
   change SFinite RayParity.«μ₊»
   infer_instance
 
- def cosetLatticeEquiv (D : RayCoset.Data K) :
+ section
+variable (D : RayCoset.Data K)
+include D
+def cosetLatticeEquiv   :
     RayCoset.C D ≃ RayCoset.normalizedLattice D :=
   (RayCoset.normalizedEmbedding_bijOn D).equiv (RayCoset.normalizedEmbedding D) |>.trans
     { toFun := fun x => ⟨x.val - RayCoset.normalizedBasepoint D, x.property⟩
@@ -27,21 +30,21 @@ variable {K : Type} [Field K] [NumberField K]
       left_inv := fun x => by apply Subtype.ext; dsimp; abel
       right_inv := fun x => by apply Subtype.ext; dsimp; abel }
 
-private theorem cosetLatticeEquiv_apply (D : RayCoset.Data K) (α : RayCoset.C D) :
+private theorem cosetLatticeEquiv_apply   (α : RayCoset.C D) :
     RayCoset.normalizedBasepoint D + (cosetLatticeEquiv D α).val =
       RayCoset.normalizedEmbedding D α.val := by
   change RayCoset.normalizedBasepoint D +
     (RayCoset.normalizedEmbedding D α.val - RayCoset.normalizedBasepoint D) = _
   abel
 
- def nonzeroCosetEquiv (D : RayCoset.Data K) :
+ def nonzeroCosetEquiv   :
     RayCoset.Cx D ≃ {α : RayCoset.C D // α.val ≠ 0} where
   toFun α := ⟨⟨α.val, α.property.1⟩, by simpa using α.property.2⟩
   invFun α := ⟨α.val.val, α.val.property, by simpa using α.property⟩
   left_inv _ := rfl
   right_inv _ := rfl
 
-private theorem zero_mem_iff (D : RayCoset.Data K) :
+private theorem zero_mem_iff   :
     (0 : 𝓞 K) ∈ RayCoset.C D ↔
       (0 : NumberField.mixedEmbedding.euclidean.mixedSpace K) ∈
         RayCoset.normalizedAffineCoset D := by
@@ -59,7 +62,7 @@ private theorem zero_mem_iff (D : RayCoset.Data K) :
     have : α = 0 := hi (he.trans (map_zero _).symm)
     simpa [this] using hα
 
-private theorem theta_sum_split (D : RayCoset.Data K)
+private theorem theta_sum_split  
     (δ : Finset (RayCoset.RealPlaces K)) (t : ℝ) (ht : 0 < t)
     (h : RayCoset.logHyperplane K) :
     (∑' ℓ : RayCoset.normalizedLattice D,
@@ -112,9 +115,14 @@ private theorem theta_sum_split (D : RayCoset.Data K)
         right_inv := fun _ => rfl }
     rw [← e.tsum_eq]
     simp [hz, e]
+end
 
-theorem ae_weighted_tail_eq (D : RayCoset.Data K)
-    (δ : Finset (RayCoset.RealPlaces K)) (s : ℂ) (hs : 1 < s.re) :
+
+section
+variable (D : RayCoset.Data K)
+    (δ : Finset (RayCoset.RealPlaces K)) (s : ℂ) (hs : 1 < s.re)
+include D δ s hs
+theorem ae_weighted_tail_eq   :
     ∀ᵐ t : ℝ ∂OrbitSlabMellin.μrad,
       (t : ℂ) ^ s * (RayTheta.fδ D δ t - RayTheta.f0δ D δ) =
         (RayCoset.rayUnitTorsionCard K D.m : ℂ)⁻¹ *
@@ -173,13 +181,11 @@ theorem ae_weighted_tail_eq (D : RayCoset.Data K)
   rw [hsum, ← hc]
   ring
 
-theorem mellinConvergent (D : RayCoset.Data K)
-    (δ : Finset (RayCoset.RealPlaces K)) (s : ℂ) (hs : 1 < s.re) :
+theorem mellinConvergent   :
     MellinConvergent (fun t : ℝ => RayTheta.fδ D δ t - RayTheta.f0δ D δ) s := by
   exact (RayTheta.Pδ D δ).hasMellin (s := s) hs |>.1
 
-theorem mellin_eq_integral_tsum (D : RayCoset.Data K)
-    (δ : Finset (RayCoset.RealPlaces K)) (s : ℂ) (hs : 1 < s.re) :
+theorem mellin_eq_integral_tsum   :
     mellin (fun t : ℝ => RayTheta.fδ D δ t - RayTheta.f0δ D δ) s =
       (RayCoset.rayUnitTorsionCard K D.m : ℂ)⁻¹ *
         ∫ p, (∑' α : RayCoset.Cx D, OrbitSlabMellin.integrand D δ α s p)
@@ -210,8 +216,7 @@ theorem mellin_eq_integral_tsum (D : RayCoset.Data K)
   congr 1
   exact (integral_prod _ (SlabAbsoluteSummability.integrable_tsum D δ s hs)).symm
 
-theorem hasMellin (D : RayCoset.Data K)
-    (δ : Finset (RayCoset.RealPlaces K)) (s : ℂ) (hs : 1 < s.re) :
+theorem hasMellin   :
     HasMellin (fun t : ℝ => RayTheta.fδ D δ t - RayTheta.f0δ D δ) s
       (κδ K δ s * RayCoset.Zδ D δ s) := by
   refine ⟨mellinConvergent D δ s hs, ?_⟩
@@ -220,6 +225,8 @@ theorem hasMellin (D : RayCoset.Data K)
   have hw : (RayCoset.rayUnitTorsionCard K D.m : ℂ) ≠ 0 :=
     Nat.cast_ne_zero.mpr (ne_of_gt (RayCoset.rayUnitTorsionCard_pos K D.m))
   field_simp
+end
+
 
 end DedekindZetaZeroFree.AbelianQuotient.RayParity.ThetaMellinIntegral
 

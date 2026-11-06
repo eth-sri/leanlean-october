@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import GaloisCohomology.Kummer.Concrete.RootCharacters
 public import Mathlib.NumberTheory.NumberField.InfinitePlace.Basic
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -63,36 +66,36 @@ theorem infinitePlaceHilbertSymbol_eq_one_of_isComplex
     (n : ℕ+) (v : InfinitePlace K) (a b : Kˣ)
     (hv : v.IsComplex) :
     infinitePlaceHilbertSymbol K n v a b = 1 := by
-  have hvNotReal : ¬v.IsReal :=
+  have hvNotReal  :=
     InfinitePlace.not_isReal_iff_isComplex.mpr hv
   simp [infinitePlaceHilbertSymbol, hvNotReal]
 
-omit [NumberField K] in
-/-- Away from the quadratic exponent, every infinite-place factor is
-trivial. -/
-@[simp]
-theorem infinitePlaceHilbertSymbol_eq_one_of_ne_two
-    (n : ℕ+) (v : InfinitePlace K) (a b : Kˣ)
-    (hn : (n : ℕ) ≠ 2) :
-    infinitePlaceHilbertSymbol K n v a b = 1 := by
-  simp [infinitePlaceHilbertSymbol, hn]
 
-omit [NumberField K] in
-/-- Explicit real-place evaluation of the quadratic Hilbert symbol. -/
-theorem infinitePlaceHilbertSymbol_real_apply
-    (n : ℕ+) (v : InfinitePlace K) (a b : Kˣ)
-    (hn : (n : ℕ) = 2) (hv : v.IsReal) :
-    (infinitePlaceHilbertSymbol K n v a b).1 =
-      if InfinitePlace.embedding_of_isReal hv (a : K) < 0 ∧
-          InfinitePlace.embedding_of_isReal hv (b : K) < 0 then
-        (-1 : Kˣ)
-      else
-        1 := by
-  by_cases ha : InfinitePlace.embedding_of_isReal hv (a : K) < 0
-  · by_cases hb : InfinitePlace.embedding_of_isReal hv (b : K) < 0
-    · simp [infinitePlaceHilbertSymbol, hn, hv, ha, hb]
-    · simp [infinitePlaceHilbertSymbol, hn, hv, ha, hb]
-  · simp [infinitePlaceHilbertSymbol, hn, hv, ha]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end Reciprocity
 end GlobalClassFieldTheory

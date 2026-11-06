@@ -12,13 +12,15 @@ open scoped Classical nonZeroDivisors
 
 namespace DedekindZetaZeroFree.PoissonSUniformBallPartition
 
-def coset (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (k : S → ℤ) (t : F) :
+section
+variable (F : Type) [Field F] [NumberField F]
+    (S : Finset (HeightOneSpectrum (𝓞 F)))
+include F S
+def coset   (k : S → ℤ) (t : F) :
     Set (PoissonFinite.Space F S) :=
   {z | z - PoissonFinite.diagonal F S t ∈ PoissonS.finiteBall F S k}
 
-theorem finiteBall_eq_valuation_product (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (k : S → ℤ) :
+theorem finiteBall_eq_valuation_product   (k : S → ℤ) :
     PoissonS.finiteBall F S k =
       {z | ∀ v : S, z v ∈ PoissonSLocalBalls.ball F v.val (k v)} := by
   ext z
@@ -27,8 +29,7 @@ theorem finiteBall_eq_valuation_product (F : Type) [Field F] [NumberField F]
   intro v
   exact (Set.ext_iff.mp (PoissonSLocalBalls.ball_eq_normBall F v.val (k v)) (z v)).symm
 
-private theorem ideal_fiber (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (k : S → ℤ) :
+private theorem ideal_fiber   (k : S → ℤ) :
     (↑(PoissonS.ballFractionalIdeal F S k) : Set F) =
       {i : F | i ∈ sIntegerRing F S ∧
         PoissonFinite.diagonal F S i ∈ PoissonS.finiteBall F S k} := by
@@ -42,8 +43,7 @@ private theorem ideal_fiber (F : Type) [Field F] [NumberField F]
     HeightOneSpectrum.adicCompletion.valued_coe _ _ _
   simp_rw [hv]
 
-theorem exists_uniform_ball_partition (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F)))
+theorem exists_uniform_ball_partition  
     (φ : (v : S) → v.val.adicCompletion F → ℂ)
     (hlocal : ∀ v : S, IsLocallyConstant (φ v))
     (hsupport : ∀ v : S, HasCompactSupport (φ v)) :
@@ -189,6 +189,8 @@ theorem exists_uniform_ball_partition (F : Type) [Field F] [NumberField F]
         simp [PoissonFinite.diagonal, map_add]
       rw [hd]
       exact hi.2
+end
+
 
 end DedekindZetaZeroFree.PoissonSUniformBallPartition
 

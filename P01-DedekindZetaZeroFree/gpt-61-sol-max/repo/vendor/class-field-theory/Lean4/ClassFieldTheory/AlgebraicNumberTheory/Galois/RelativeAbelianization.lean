@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AlgebraicNumberTheory.Galois.AbsoluteAbelianization
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -44,7 +47,7 @@ local instance relativeCommutatorClosure_normal :
   infer_instance
 
 /-- Maximal abelian intermediate field of a relative Galois extension. -/
-def relativeMaximalAbelianSubextension : IntermediateField F M :=
+def relativeMaximalAbelianSubextension  :=
   IntermediateField.fixedField (relativeCommutatorClosure F M).toSubgroup
 
 /-- The relative maximal abelian subextension is Galois. -/
@@ -63,9 +66,7 @@ local instance relativeMaximalAbelianSubextension.instIsGalois :
   relativeMaximalAbelianSubextension_isGalois F M
 
 /-- Algebraic quotient equivalence for relative abelianization. -/
-noncomputable def relativeAbelianizationMulEquiv :
-    TopologicalAbelianization Gal(M / F) ≃*
-      Gal(relativeMaximalAbelianSubextension F M / F) :=
+noncomputable def relativeAbelianizationMulEquiv  :=
   InfiniteGalois.normalAutEquivQuotient (relativeCommutatorClosure F M)
 
 /-- The quotient equivalence sends a class to restriction. -/
@@ -75,27 +76,27 @@ theorem relativeAbelianizationMulEquiv_mk (sigma : Gal(M / F)) :
       AlgEquiv.restrictNormalHom (relativeMaximalAbelianSubextension F M) sigma :=
   rfl
 
-/-- The algebraic relative-abelianization equivalence is continuous. -/
-theorem relativeAbelianizationMulEquiv_continuous :
-    Continuous (relativeAbelianizationMulEquiv F M) := by
-  apply (QuotientGroup.isQuotientMap_mk
-    (relativeCommutatorClosure F M).toSubgroup).continuous_iff.2
-  refine (InfiniteGalois.restrictNormalHom_continuous
-    (relativeMaximalAbelianSubextension F M)).congr ?_
-  intro sigma
-  exact (relativeAbelianizationMulEquiv_mk F M sigma).symm
 
-/-- The topological abelianization is the Galois group of the maximal
-relative abelian subfield. -/
-noncomputable def relativeTopologicalAbelianizationEquiv :
-    TopologicalAbelianization Gal(M / F) ≃ₜ*
-      Gal(relativeMaximalAbelianSubextension F M / F) := by
-  let h := Continuous.homeoOfEquivCompactToT2
-    (relativeAbelianizationMulEquiv_continuous F M)
-  exact
-    { toMulEquiv := relativeAbelianizationMulEquiv F M
-      continuous_toFun := h.continuous
-      continuous_invFun := h.symm.continuous }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end ClassFieldTower.Martinet
 

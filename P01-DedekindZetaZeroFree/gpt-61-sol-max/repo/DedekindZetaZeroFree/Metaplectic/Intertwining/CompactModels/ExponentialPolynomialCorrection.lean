@@ -17,12 +17,15 @@ variable (S : CanonicalFiniteInducingData F ζ hζ q)
 def forwardAbs (J : IwasawaData S.borel) (g : ActualCover F ζ hζ q) : ℝ :=
   localAbs (LocalField F q) (S.borel.coordinate (S.borel.retract (J.borelPart g)))
 
+
+local notation:max "current_forwardAbs" => forwardAbs F ζ hζ
+
 theorem forwardAbs_pos (J : IwasawaData S.borel) (g : ActualCover F ζ hζ q) :
-    0 < forwardAbs F ζ hζ q S J g := localAbs_pos _ _
+    0 < current_forwardAbs q S J g := localAbs_pos _ _
 
 theorem forwardAbs_factorization (J : IwasawaData S.borel)
     (b : S.borel.B) (k : J.compact.toOpenSubgroup) :
-    forwardAbs F ζ hζ q S J ((b : ActualCover F ζ hζ q) * k.val) =
+    current_forwardAbs q S J ((b : ActualCover F ζ hζ q) * k.val) =
       localAbs (LocalField F q) (S.borel.coordinate (S.borel.retract b)) := by
   let g : ActualCover F ζ hζ q := (b : ActualCover F ζ hζ q) * k.val
   let d : S.borel.B := (J.borelPart g)⁻¹ * b
@@ -44,17 +47,17 @@ theorem forwardAbs_factorization (J : IwasawaData S.borel)
       (J.compact.toOpenSubgroup.inv_mem k.property)
   have hnorm := J.intersection_norm d hmem
   have hb : b = J.borelPart g * d := by simp [d]
-  change forwardAbs F ζ hζ q S J g = _
+  change current_forwardAbs q S J g = _
   conv_rhs => rw [hb, map_mul, map_mul, localAbs_mul, hnorm, mul_one]
   rfl
 
 theorem forwardAbs_compact (J : IwasawaData S.borel) (k : J.compact.toOpenSubgroup) :
-    forwardAbs F ζ hζ q S J k.val = 1 := by
+    current_forwardAbs q S J k.val = 1 := by
   simp [forwardAbs, J.borelPart_compact, localAbs_one]
 
 theorem forwardAbs_mul_compact (J : IwasawaData S.borel)
     (g : ActualCover F ζ hζ q) (k : J.compact.toOpenSubgroup) :
-    forwardAbs F ζ hζ q S J (g * k.val) = forwardAbs F ζ hζ q S J g := by
+    current_forwardAbs q S J (g * k.val) = current_forwardAbs q S J g := by
   have hg : g * k.val = (J.borelPart g).val * (J.compactPart g * k).val := by
     conv_lhs => rw [J.decomposition g]
     exact mul_assoc _ _ _
@@ -63,9 +66,9 @@ theorem forwardAbs_mul_compact (J : IwasawaData S.borel)
 
 theorem forwardAbs_borel_mul (J : IwasawaData S.borel)
     (b : S.borel.B) (g : ActualCover F ζ hζ q) :
-    forwardAbs F ζ hζ q S J (b.val * g) =
+    current_forwardAbs q S J (b.val * g) =
       localAbs (LocalField F q) (S.borel.coordinate (S.borel.retract b)) *
-        forwardAbs F ζ hζ q S J g := by
+        current_forwardAbs q S J g := by
   have hg : b.val * g = (b * J.borelPart g).val * (J.compactPart g).val := by
     conv_lhs => rw [J.decomposition g]
     exact (mul_assoc _ _ _).symm
@@ -73,7 +76,7 @@ theorem forwardAbs_borel_mul (J : IwasawaData S.borel)
   rfl
 
 theorem forwardAbs_locallyConstant (J : IwasawaData S.borel) :
-    IsLocallyConstant (forwardAbs F ζ hζ q S J) := by
+    IsLocallyConstant (current_forwardAbs q S J) := by
   apply (IsLocallyConstant.iff_exists_open _).mpr
   intro g
   let U : Set (ActualCover F ζ hζ q) :=
@@ -88,16 +91,19 @@ theorem forwardAbs_locallyConstant (J : IwasawaData S.borel) :
     exact forwardAbs_mul_compact F ζ hζ q S J g k
 
 def logCorrection (J J' : IwasawaData S.borel) (g : ActualCover F ζ hζ q) : ℝ :=
-  Real.log (forwardAbs F ζ hζ q S J' g) - Real.log (forwardAbs F ζ hζ q S J g)
+  Real.log (current_forwardAbs q S J' g) - Real.log (current_forwardAbs q S J g)
+
+
+local notation:max "current_logCorrection" => logCorrection F ζ hζ
 
 theorem logCorrection_locallyConstant (J J' : IwasawaData S.borel) :
-    IsLocallyConstant (logCorrection F ζ hζ q S J J') := by
+    IsLocallyConstant (current_logCorrection q S J J') := by
   exact ((forwardAbs_locallyConstant F ζ hζ q S J').comp Real.log).sub
     ((forwardAbs_locallyConstant F ζ hζ q S J).comp Real.log)
 
 theorem logCorrection_compact_range_finite (J J' : IwasawaData S.borel) :
     (Set.range (fun k : J.compact.toOpenSubgroup =>
-      logCorrection F ζ hζ q S J J' k.val)).Finite := by
+      current_logCorrection q S J J' k.val)).Finite := by
   letI : CompactSpace J.compact.toOpenSubgroup :=
     isCompact_iff_compactSpace.mp J.compact.isCompact
   exact ((logCorrection_locallyConstant F ζ hζ q S J J').comp_continuous
@@ -105,8 +111,8 @@ theorem logCorrection_compact_range_finite (J J' : IwasawaData S.borel) :
 
 theorem logCorrection_borel_mul (J J' : IwasawaData S.borel)
     (b : S.borel.B) (g : ActualCover F ζ hζ q) :
-    logCorrection F ζ hζ q S J J' (b.val * g) =
-      logCorrection F ζ hζ q S J J' g := by
+    current_logCorrection q S J J' (b.val * g) =
+      current_logCorrection q S J J' g := by
   unfold logCorrection
   rw [forwardAbs_borel_mul, forwardAbs_borel_mul,
     Real.log_mul (localAbs_pos _ _).ne' (forwardAbs_pos F ζ hζ q S J' g).ne',
@@ -116,8 +122,8 @@ theorem logCorrection_borel_mul (J J' : IwasawaData S.borel)
 theorem logCorrection_mul_common_compact (J J' : IwasawaData S.borel)
     (g : ActualCover F ζ hζ q) (k : J.compact.toOpenSubgroup)
     (hk : k.val ∈ J'.compact.toOpenSubgroup) :
-    logCorrection F ζ hζ q S J J' (g * k.val) =
-      logCorrection F ζ hζ q S J J' g := by
+    current_logCorrection q S J J' (g * k.val) =
+      current_logCorrection q S J J' g := by
   unfold logCorrection
   rw [forwardAbs_mul_compact F ζ hζ q S J g k,
     forwardAbs_mul_compact F ζ hζ q S J' g ⟨k.val,hk⟩]
@@ -127,16 +133,16 @@ open KPLocalStoneVonNeumann
 def correctedCompact (J J' : IwasawaData S.borel)
     (P : Polarization S.heisenberg) (s : ℂ) :
     compactPicture S.borel P J .plus →ₗ[ℂ] compactPicture S.borel P J .plus where
-  toFun φ := ⟨fun k => Complex.exp (s * (logCorrection F ζ hζ q S J J' k.val : ℂ)) • φ.val k, by
+  toFun φ := ⟨fun k => Complex.exp (s * (current_logCorrection q S J J' k.val : ℂ)) • φ.val k, by
     constructor
     · intro b k k' hk
-      have he : logCorrection F ζ hζ q S J J' k'.val =
-          logCorrection F ζ hζ q S J J' k.val := by
+      have he : current_logCorrection q S J J' k'.val =
+          current_logCorrection q S J J' k.val := by
         rw [hk]
         exact logCorrection_borel_mul F ζ hζ q S J J' b k.val
-      change Complex.exp (s * (logCorrection F ζ hζ q S J J' k'.val : ℂ)) • φ.val k' =
+      change Complex.exp (s * (current_logCorrection q S J J' k'.val : ℂ)) • φ.val k' =
         inducingAction S.borel P .plus 0 b
-          (Complex.exp (s * (logCorrection F ζ hζ q S J J' k.val : ℂ)) • φ.val k)
+          (Complex.exp (s * (current_logCorrection q S J J' k.val : ℂ)) • φ.val k)
       rw [he, φ.property.1 b k k' hk, map_smul]
     · obtain ⟨U,hU⟩ := φ.property.2
       let V := J'.compact.toOpenSubgroup.comap J.compact.toOpenSubgroup.subtype
@@ -147,9 +153,9 @@ def correctedCompact (J J' : IwasawaData S.borel)
       intro x
       have hφ := congrFun (hU k hk.1) x
       change φ.val (x * k) = φ.val x at hφ
-      change Complex.exp (s * (logCorrection F ζ hζ q S J J' (x * k).val : ℂ)) • φ.val (x * k) = _
+      change Complex.exp (s * (current_logCorrection q S J J' (x * k).val : ℂ)) • φ.val (x * k) = _
       rw [hφ]
-      change Complex.exp (s * (logCorrection F ζ hζ q S J J' (x.val * k.val) : ℂ)) • φ.val x = _
+      change Complex.exp (s * (current_logCorrection q S J J' (x.val * k.val) : ℂ)) • φ.val x = _
       rw [logCorrection_mul_common_compact F ζ hζ q S J J' x.val k hk.2]⟩
   map_add' φ ψ := by
     apply Subtype.ext
@@ -158,8 +164,8 @@ def correctedCompact (J J' : IwasawaData S.borel)
   map_smul' c φ := by
     apply Subtype.ext
     funext k
-    change Complex.exp (s * (logCorrection F ζ hζ q S J J' k.val : ℂ)) • (c • φ.val k) =
-      c • (Complex.exp (s * (logCorrection F ζ hζ q S J J' k.val : ℂ)) • φ.val k)
+    change Complex.exp (s * (current_logCorrection q S J J' k.val : ℂ)) • (c • φ.val k) =
+      c • (Complex.exp (s * (current_logCorrection q S J J' k.val : ℂ)) • φ.val k)
     exact smul_comm _ _ _
 
 @[simp] theorem correctedCompact_zero (J J' : IwasawaData S.borel)
@@ -174,21 +180,21 @@ theorem correctedCompact_displacement (J J' : IwasawaData S.borel)
     (s : ℂ) (g : ActualCover F ζ hζ q) :
     (compactTrivialization S.borel P J .plus s
       (correctedCompact F ζ hζ q S J J' P s φ)).val g =
-      Complex.exp (s * (Real.log (forwardAbs F ζ hζ q S J' g) : ℂ)) •
+      Complex.exp (s * (Real.log (current_forwardAbs q S J' g) : ℂ)) •
         (compactTrivialization S.borel P J .plus 0 φ).val g := by
-  have hcorr : logCorrection F ζ hζ q S J J' g =
-      logCorrection F ζ hζ q S J J' (J.compactPart g).val := by
+  have hcorr : current_logCorrection q S J J' g =
+      current_logCorrection q S J J' (J.compactPart g).val := by
     conv_lhs => rw [J.decomposition g]
     exact logCorrection_borel_mul F ζ hζ q S J J' (J.borelPart g) (J.compactPart g).val
   change inducingAction S.borel P .plus s (J.borelPart g)
-    (Complex.exp (s * (logCorrection F ζ hζ q S J J' (J.compactPart g).val : ℂ)) • φ.val (J.compactPart g)) = _
+    (Complex.exp (s * (current_logCorrection q S J J' (J.compactPart g).val : ℂ)) • φ.val (J.compactPart g)) = _
   rw [map_smul, ← hcorr]
-  change _ = Complex.exp (s * (Real.log (forwardAbs F ζ hζ q S J' g) : ℂ)) •
+  change _ = Complex.exp (s * (Real.log (current_forwardAbs q S J' g) : ℂ)) •
     (inducingAction S.borel P .plus 0 (J.borelPart g) (φ.val (J.compactPart g)))
-  change Complex.exp (s * (logCorrection F ζ hζ q S J J' g : ℂ)) •
+  change Complex.exp (s * (current_logCorrection q S J J' g : ℂ)) •
       ((inducingScalar S.borel s (J.borelPart g)) •
         borelAction S.borel P .plus (J.borelPart g) (φ.val (J.compactPart g))) =
-    Complex.exp (s * (Real.log (forwardAbs F ζ hζ q S J' g) : ℂ)) •
+    Complex.exp (s * (Real.log (current_forwardAbs q S J' g) : ℂ)) •
       ((inducingScalar S.borel 0 (J.borelPart g)) •
         borelAction S.borel P .plus (J.borelPart g) (φ.val (J.compactPart g)))
   simp only [inducingScalar, normPower, zero_mul, Complex.exp_zero, mul_one, smul_smul]
@@ -204,14 +210,14 @@ theorem correctedCompact_displacement (J J' : IwasawaData S.borel)
 def correctionComponent (J J' : IwasawaData S.borel)
     (P : Polarization S.heisenberg) (r : ℝ) :
     compactPicture S.borel P J .plus →ₗ[ℂ] compactPicture S.borel P J .plus where
-  toFun φ := ⟨fun k => if logCorrection F ζ hζ q S J J' k.val = r then φ.val k else 0, by
+  toFun φ := ⟨fun k => if current_logCorrection q S J J' k.val = r then φ.val k else 0, by
     constructor
     · intro b k k' hk
-      change (if logCorrection F ζ hζ q S J J' k'.val = r then φ.val k' else 0) =
+      change (if current_logCorrection q S J J' k'.val = r then φ.val k' else 0) =
         inducingAction S.borel P .plus 0 b
-          (if logCorrection F ζ hζ q S J J' k.val = r then φ.val k else 0)
-      have he : logCorrection F ζ hζ q S J J' k'.val =
-          logCorrection F ζ hζ q S J J' k.val := by
+          (if current_logCorrection q S J J' k.val = r then φ.val k else 0)
+      have he : current_logCorrection q S J J' k'.val =
+          current_logCorrection q S J J' k.val := by
         rw [hk]
         exact logCorrection_borel_mul F ζ hζ q S J J' b k.val
       rw [he]
@@ -223,8 +229,8 @@ def correctionComponent (J J' : IwasawaData S.borel)
       funext x
       have hφ := congrFun (hU k hk.1) x
       change φ.val (x * k) = φ.val x at hφ
-      change (if logCorrection F ζ hζ q S J J' (x.val * k.val) = r then φ.val (x * k) else 0) =
-        (if logCorrection F ζ hζ q S J J' x.val = r then φ.val x else 0)
+      change (if current_logCorrection q S J J' (x.val * k.val) = r then φ.val (x * k) else 0) =
+        (if current_logCorrection q S J J' x.val = r then φ.val x else 0)
       rw [hφ, logCorrection_mul_common_compact F ζ hζ q S J J' x.val k hk.2]⟩
   map_add' φ ψ := by
     apply Subtype.ext
@@ -247,10 +253,10 @@ theorem correctedCompact_expansion (J J' : IwasawaData S.borel)
         correctionComponent F ζ hζ q S J J' P r φ := by
   apply Subtype.ext
   funext k
-  change Complex.exp (s * (logCorrection F ζ hζ q S J J' k.val : ℂ)) • φ.val k = _
+  change Complex.exp (s * (current_logCorrection q S J J' k.val : ℂ)) • φ.val k = _
   simp only [Submodule.coe_sum, Finset.sum_apply, Submodule.coe_smul, Pi.smul_apply,
     correctionComponent, LinearMap.coe_mk, AddHom.coe_mk]
-  rw [Finset.sum_eq_single (logCorrection F ζ hζ q S J J' k.val)]
+  rw [Finset.sum_eq_single (current_logCorrection q S J J' k.val)]
   · simp
   · intro r hr hne
     rw [if_neg (Ne.symm hne), smul_zero]

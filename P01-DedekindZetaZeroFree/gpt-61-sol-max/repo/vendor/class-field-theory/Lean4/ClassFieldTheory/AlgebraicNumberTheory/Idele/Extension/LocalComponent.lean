@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Extension.GaloisNorm
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -45,8 +48,7 @@ variable
 homomorphism. -/
 def infiniteAdeleComponentAlgHom
     (v : InfinitePlace K) :
-    NumberField.AdeleRing (𝓞 K) K →ₐ[K]
-      v.Completion :=
+    NumberField.AdeleRing (𝓞 K) K →ₐ[K] v.Completion :=
   (Pi.evalAlgHom K
       (fun w : InfinitePlace K => w.Completion) v).comp
     (AlgHom.fst K
@@ -86,8 +88,7 @@ theorem relativeAdeleInfiniteComponent_tmul
     (a : NumberField.AdeleRing (𝓞 K) K) (x : L) :
     relativeAdeleInfiniteComponent
         (K := K) (L := L) v (a ⊗ₜ[K] x) =
-      a.1 v ⊗ₜ[K] x := by
-  simp [relativeAdeleInfiniteComponent]
+      a.1 v ⊗ₜ[K] x := rfl
 
 /-- Evaluation of an adele at a finite place, as a `K`-algebra
 homomorphism. -/
@@ -140,8 +141,7 @@ theorem relativeAdeleFiniteComponent_tmul
     (a : NumberField.AdeleRing (𝓞 K) K) (x : L) :
     relativeAdeleFiniteComponent (K := K) (L := L) v
         (a ⊗ₜ[K] x) =
-      a.2 v ⊗ₜ[K] x := by
-  simp [relativeAdeleFiniteComponent]
+      a.2 v ⊗ₜ[K] x := rfl
 
 omit [NumberField K] [NumberField L] in
 /-- Determinant norm commutes with scalar extension along a homomorphism
@@ -279,10 +279,7 @@ theorem RelativeIdeleGroup.finiteComponent_norm
         (relativeAdeleFiniteComponent
           (K := K) (L := L) v
           (a : RelativeAdeleRing K L))
-  exact map_norm_tensorProduct_baseChange
-    (K := K) (L := L)
-    (finiteAdeleComponentAlgHom v)
-    (a : RelativeAdeleRing K L)
+  apply map_norm_tensorProduct_baseChange
 
 omit [NumberField L] in
 /-- The infinite component of the global relative-idele norm is the
@@ -306,10 +303,7 @@ theorem RelativeIdeleGroup.infiniteComponent_norm
         (relativeAdeleInfiniteComponent
           (K := K) (L := L) v
           (a : RelativeAdeleRing K L))
-  exact map_norm_tensorProduct_baseChange
-    (K := K) (L := L)
-    (infiniteAdeleComponentAlgHom v)
-    (a : RelativeAdeleRing K L)
+  apply map_norm_tensorProduct_baseChange
 
 /-- Scalar extension of an archimedean base-field unit into its local
 tensor algebra. -/

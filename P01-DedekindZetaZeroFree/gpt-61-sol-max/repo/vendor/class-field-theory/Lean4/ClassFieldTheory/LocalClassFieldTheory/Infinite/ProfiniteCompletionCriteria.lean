@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.LocalClassFieldTheory.Infinite.ProfiniteCompletion
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -92,8 +95,7 @@ theorem topologicalProfiniteCompletionLift_injective_of_preimage_cofinal
       have he := congrArg e hx
       simpa [topologicalProfiniteCompletionLift, e] using he
     have hfinite :
-        topologicalProfiniteCompletionFiniteProjection P f N x = 1 := by
-      exact congrFun (congrArg Subtype.val hlimit) N
+        topologicalProfiniteCompletionFiniteProjection P f N x = 1 := congrFun (congrArg Subtype.val hlimit) N
     have hpreimage :
         topologicalProfiniteCompletionProjection G
           (topologicalProfiniteCompletionPreimageIndex P f N) x = 1 := by
@@ -101,7 +103,7 @@ theorem topologicalProfiniteCompletionLift_injective_of_preimage_cofinal
           (topologicalProfiniteCompletionFiniteQuotientMorphism P f N) := by
         change Function.Injective
           (topologicalProfiniteCompletionFiniteQuotientMap P f N)
-        exact topologicalProfiniteCompletionFiniteQuotientMap_injective P f N
+        apply topologicalProfiniteCompletionFiniteQuotientMap_injective
       change
         topologicalProfiniteCompletionFiniteQuotientMorphism P f N
             (topologicalProfiniteCompletionProjection G
@@ -129,7 +131,7 @@ theorem topologicalProfiniteCompletionLift_injective_of_preimage_cofinal
               (topologicalProfiniteCompletionPreimageIndex P f N)) =
           (1 : (openFiniteQuotientDiagram G).obj H) :=
       map_one _
-    exact htransition.symm.trans (hmap.trans hone)
+    apply htransition.symm.trans <;> assumption
   · exact bot_le
 
 end LocalClassFieldTheory

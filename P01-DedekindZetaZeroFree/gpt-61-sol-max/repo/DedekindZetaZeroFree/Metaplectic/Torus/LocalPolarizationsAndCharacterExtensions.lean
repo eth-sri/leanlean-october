@@ -266,7 +266,10 @@ theorem complex_full_maximal_isotropic (w : InfinitePlace F) :
   · intro N hN _
     exact le_antisymm le_top hN
 
-theorem local_maximal_isotropic_exists (v : KPHilbert.Place F) :
+section
+variable (v : KPHilbert.Place F)
+include v
+theorem local_maximal_isotropic_exists   :
     ∃ L : Subgroup (LocalD F v),
       IsMaximalIsotropic F (KPGlobalCubicIdelePairing.localPairing F ζ hζ v) L := by
   classical
@@ -297,13 +300,13 @@ theorem local_maximal_isotropic_exists (v : KPHilbert.Place F) :
   intro N hLN hN
   exact le_antisymm (hmax hN hLN) hLN
 
-theorem localProjection_cube (v : KPHilbert.Place F) (b : LocalE F ζ hζ v) :
+theorem localProjection_cube   (b : LocalE F ζ hζ v) :
     localProjection F ζ hζ v (b ^ 3) = 1 := by
   change KPGlobalCubicIdelePairing.localClass F v (localRatio F ζ hζ v (b ^ 3)) = 1
   rw [map_pow]
   exact (QuotientGroup.eq_one_iff _).mpr ⟨localRatio F ζ hζ v b, rfl⟩
 
-theorem localAbs_cube (v : KPHilbert.Place F) (y : (KPHilbert.Completion F v)ˣ) :
+theorem localAbs_cube   (y : (KPHilbert.Completion F v)ˣ) :
     KPGlobalCenterRationalCharacter.localAbs F v (y ^ 3) =
       KPGlobalCenterRationalCharacter.localAbs F v y ^ 3 := by
   cases v with
@@ -313,7 +316,7 @@ theorem localAbs_cube (v : KPHilbert.Place F) (y : (KPHilbert.Completion F v)ˣ)
   | inr q =>
     simp only [KPGlobalCenterRationalCharacter.localAbs, Units.val_pow_eq_pow_val, nnnorm_pow]
 
-theorem modulus_of_extends_center (v : KPHilbert.Place F)
+theorem modulus_of_extends_center  
     (L : Subgroup (LocalD F v))
     (lambda : localPreimage F ζ hζ v L →ₜ* ℂˣ)
     (hext : ∀ (b : localPreimage F ζ hζ v L) (z : localCenter F ζ hζ v),
@@ -336,7 +339,7 @@ theorem modulus_of_extends_center (v : KPHilbert.Place F)
   rw [map_pow, localAbs_cube, NNReal.coe_pow, ← Real.rpow_pow_comm (by positivity)] at hn
   exact (pow_left_inj₀ (norm_nonneg _) (Real.rpow_nonneg (by positivity) _) (by decide : (3 : ℕ) ≠ 0)).mp hn
 
-theorem local_polarization_of_open_abelian_preimage (v : KPHilbert.Place F)
+theorem local_polarization_of_open_abelian_preimage  
     [IsTopologicalGroup (LocalE F ζ hζ v)]
     (L : Subgroup (LocalD F v))
     (hL : IsMaximalIsotropic F (KPGlobalCubicIdelePairing.localPairing F ζ hζ v) L)
@@ -369,7 +372,7 @@ theorem local_polarization_of_open_abelian_preimage (v : KPHilbert.Place F)
            extends_center := hext
            modulus := modulus_of_extends_center F ζ hζ v L lambda hext hcenter }, rfl⟩
 
-private theorem normal_word_exists (v : KPHilbert.Place F) (g : LocalE F ζ hζ v) :
+private theorem normal_word_exists   (g : LocalE F ζ hζ v) :
     ∃ e, g.val = KPPGLLocalCover.centralInjection F ζ hζ v e *
       KPPGLLocalCover.A F ζ hζ v (localRatio F ζ hζ v g) := by
   letI : (KPPGLLocalCover.scalarSubgroup F v).Normal :=
@@ -385,7 +388,7 @@ private theorem normal_word_exists (v : KPHilbert.Place F) (g : LocalE F ζ hζ 
   obtain ⟨e, he⟩ := hk
   exact ⟨e, by rw [he]; simp⟩
 
-theorem local_center_modulus (v : KPHilbert.Place F) (z : localCenter F ζ hζ v) :
+theorem local_center_modulus   (z : localCenter F ζ hζ v) :
     ‖(localOmega F ζ hζ v z : ℂ)‖ = Real.rpow
       (KPGlobalCenterRationalCharacter.localAbs F v (localRatio F ζ hζ v z.val))
       (1 / 6 : ℝ) := by
@@ -422,6 +425,8 @@ theorem local_center_modulus (v : KPHilbert.Place F) (z : localCenter F ζ hζ v
     KPGlobalCenterRationalCharacter.sixthPower, NNReal.coe_rpow,
     Real.rpow_nonneg (NNReal.coe_nonneg _) (1 / 6 : ℝ), y]
   positivity
+end
+
 
 theorem complex_local_polarization (w : InfinitePlace F) :
     ∃ P : LocalPolarization F ζ hζ (Sum.inl w), P.L = ⊤ := by
@@ -446,7 +451,10 @@ theorem complex_local_polarization (w : InfinitePlace F) :
            modulus := modulus_of_extends_center F ζ hζ (Sum.inl w) ⊤ lambda hext
              (local_center_modulus F ζ hζ (Sum.inl w)) }, rfl⟩
 
- theorem finite_torus_eq (q : HeightOneSpectrum (𝓞 F)) :
+ section
+variable (q : HeightOneSpectrum (𝓞 F))
+include q
+theorem finite_torus_eq   :
     localTorus F ζ hζ (Sum.inr q) = ActualFiniteTorus.H F ζ hζ q := by
   letI : (KPPGLLocalCover.scalarSubgroup F (Sum.inr q)).Normal :=
     KPPGLLocalCover.scalarSubgroup_normal F (Sum.inr q)
@@ -473,11 +481,11 @@ theorem complex_local_polarization (w : InfinitePlace F) :
     rw [hp, one_mul]
     rfl
 
- def finite_torus_equiv (q : HeightOneSpectrum (𝓞 F)) :
+ def finite_torus_equiv   :
     LocalE F ζ hζ (Sum.inr q) ≃* ActualFiniteTorus.H F ζ hζ q :=
   MulEquiv.subgroupCongr (finite_torus_eq F ζ hζ q)
 
-private theorem finite_ratio_eq (q : HeightOneSpectrum (𝓞 F))
+private theorem finite_ratio_eq  
     (g : LocalE F ζ hζ (Sum.inr q)) :
     ActualFiniteTorus.coordinate F ζ hζ q (finite_torus_equiv F ζ hζ q g) =
       localRatio F ζ hζ (Sum.inr q) g := by
@@ -490,7 +498,7 @@ private theorem finite_ratio_eq (q : HeightOneSpectrum (𝓞 F))
       (localRatioValue_spec F ζ hζ (Sum.inr q) g)
   · simp [diagonalHom, KubotaRankTwo.d]
 
-theorem finite_local_center_open (q : HeightOneSpectrum (𝓞 F)) :
+theorem finite_local_center_open   :
     IsOpen (localCenter F ζ hζ (Sum.inr q) : Set (LocalE F ζ hζ (Sum.inr q))) := by
   have hc : Continuous (localRatio F ζ hζ (Sum.inr q)) := by
     have he : Continuous (finite_torus_equiv F ζ hζ q) :=
@@ -512,6 +520,8 @@ theorem finite_local_center_open (q : HeightOneSpectrum (𝓞 F)) :
     exact QuotientGroup.eq_one_iff _
   rw [heq]
   exact hopen.preimage hc
+end
+
 
 theorem local_preimage_abelian (v : KPHilbert.Place F) (L : Subgroup (LocalD F v))
     (hL : IsMaximalIsotropic F (KPGlobalCubicIdelePairing.localPairing F ζ hζ v) L) :

@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.Cutoffs.NormalizedCharactersAndMoebiusSums
 
 @[expose] public section
+
 
 open scoped NumberField Classical BigOperators NNReal
 namespace DedekindZetaZeroFree.LargeSieve.Vendor.CutoffDifference
@@ -23,8 +26,8 @@ private theorem moebius_finset_prod_prime (S : Finset R) (hS : ∀ p ∈ S, Prim
   induction S using Finset.induction_on with
   | empty => simp
   | insert a S ha ih =>
-    have hSa : Prime a := hS a (Finset.mem_insert_self a S)
-    have hS' : ∀ p ∈ S, Prime p := fun p hp => hS p (Finset.mem_insert_of_mem hp)
+    have hSa  := hS a (Finset.mem_insert_self a S)
+    have hS'  := fun p hp => hS p (Finset.mem_insert_of_mem hp)
     have hrel : IsRelPrime a (∏ p ∈ S, p) := by
       refine hSa.irreducible.isRelPrime_iff_not_dvd.mpr ?_
       rw [Prime.dvd_finsetProd_iff hSa]
@@ -47,7 +50,7 @@ theorem squarefree_divisor_dictionary (g : R) (hg0 : g ≠ 0) (hg : Squarefree g
   have hnd : (UniqueFactorizationMonoid.factors g).Nodup := by
     rw [UniqueFactorizationMonoid.factors_eq_normalizedFactors g]
     exact (UniqueFactorizationMonoid.squarefree_iff_nodup_normalizedFactors hg0).mp hg
-  have hprod : (UniqueFactorizationMonoid.factors g).prod = g :=
+  have hprod  :=
     associated_iff_eq.mp (UniqueFactorizationMonoid.factors_prod hg0)
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_⟩
   ·

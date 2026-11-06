@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 
 @[expose] public section
+
 
 /-
 https://github.com/openai/math
@@ -14,12 +17,12 @@ Goldmakher–Louvel, A quadratic large sieve inequality over number fields (arXi
 
 namespace DedekindZetaZeroFree.LargeSieve
 
-def HasExponent (B : ℝ → ℝ → ℝ) (α : ℝ) : Prop :=
+def HasExponent (B : ℝ → ℝ → ℝ) (α : ℝ)  :=
   ∀ ε : ℝ, 0 < ε → ∃ C : ℝ, 0 < C ∧
     ∀ M N : ℝ, 1 ≤ M → 1 ≤ N →
       B M N ≤ C * (M * N) ^ ε * (M + N ^ α)
 
-def HasRecursiveEnvelope (B : ℝ → ℝ → ℝ) (α : ℝ) : Prop :=
+def HasRecursiveEnvelope (B : ℝ → ℝ → ℝ) (α : ℝ)  :=
   ∀ ε : ℝ, 0 < ε → ∃ C : ℝ, 0 < C ∧
     ∀ M N : ℝ, 1 ≤ M → 1 ≤ N →
       B M N ≤ C * (M * N) ^ ε *

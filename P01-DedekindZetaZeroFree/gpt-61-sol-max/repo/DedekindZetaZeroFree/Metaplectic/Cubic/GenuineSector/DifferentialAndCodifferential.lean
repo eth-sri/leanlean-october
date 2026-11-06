@@ -21,21 +21,27 @@ variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
-def liftExtension {W : Type*} [Zero W] (a : ActualChart (U := U) (H := H))
+
+local notation:max "current_ActualChart" => ActualChart (U := U) (H := H)
+
+def liftExtension {W : Type*} [Zero W] (a : current_ActualChart)
     (f : omega a → W) (x : M F) : W :=
   if hx : x ∈ omega a then f ⟨x, hx⟩ else 0
 
-def chartDifferential (a : ActualChart (U := U) (H := H)) (f : omega a → ℂ)
+def chartDifferential (a : current_ActualChart) (f : omega a → ℂ)
     (x : omega a) : E F :=
   CotangentLogCoframe.j (d F)
     (HyperbolicChart.differential (d F) (liftExtension a f) x.val)
 
-def chartCodifferential (a : ActualChart (U := U) (H := H)) (W : omega a → E F)
+def chartCodifferential (a : current_ActualChart) (W : omega a → E F)
     (x : omega a) : ℂ :=
   HyperbolicChart.codifferential (d F)
     (fun y => (CotangentLogCoframe.j (d F)).symm (liftExtension a W y)) x.val
 
- theorem differential_descent (f : S_U F ζ hζ U R P H) :
+
+local notation:max "current_S_U" => S_U F ζ hζ U R P H
+
+ theorem differential_descent (f : current_S_U) :
     IsMeasurableCotangentFamily (fun a => chartDifferential a (f.val a)) ∧
     ∀ hv : IsMeasurableCotangentFamily (fun a => chartDifferential a (f.val a)),
       (⟨fun a => chartDifferential a (f.val a), hv⟩ : Family (U := U) (H := H)) ∈
@@ -44,17 +50,20 @@ def chartCodifferential (a : ActualChart (U := U) (H := H)) (W : omega a → E F
         scalarSupport f.val := by
   exact KPContActualSectorTestDifferentialDescentCalculus.scalar_differential_descent.1 f
 
- theorem chart_differential_add (a : ActualChart (U := U) (H := H))
+ theorem chart_differential_add (a : current_ActualChart)
     (f g : omega a → ℂ) (hf : SmoothOnLift a f) (hg : SmoothOnLift a g) :
     chartDifferential a (f + g) = chartDifferential a f + chartDifferential a g := by
   exact KPContActualSectorTestDifferentialDescentCalculus.coframe_calculus.1 a f g hf hg
 
- theorem chart_differential_smul (a : ActualChart (U := U) (H := H))
+ theorem chart_differential_smul (a : current_ActualChart)
     (c : ℂ) (f : omega a → ℂ) (hf : SmoothOnLift a f) :
     chartDifferential a (c • f) = c • chartDifferential a f := by
   exact KPContActualSectorTestDifferentialDescentCalculus.coframe_calculus.2.1 a c f hf
 
-def D_U : S_U F ζ hζ U R P H →ₗ[ℂ] T_U F ζ hζ U R P H where
+
+local notation:max "current_T_U" => T_U F ζ hζ U R P H
+
+def D_U : current_S_U →ₗ[ℂ] current_T_U where
   toFun f := ⟨⟨fun a => chartDifferential a (f.val a), (differential_descent f).1⟩,
     ((differential_descent f).2 _).1⟩
   map_add' f g := by
@@ -68,23 +77,23 @@ def D_U : S_U F ζ hζ U R P H →ₗ[ℂ] T_U F ζ hζ U R P H where
     funext a
     exact chart_differential_smul a c (f.val a) (f.property.1 a)
 
- theorem codifferential_descent (W : T_U F ζ hζ U R P H) :
+ theorem codifferential_descent (W : current_T_U) :
     (fun a => chartCodifferential a (coefficient W.val a)) ∈ scalarTests ∧
     scalarSupport (fun a => chartCodifferential a (coefficient W.val a)) ⊆
       cotangentSupport W.val := by
   exact KPContActualSectorTestDifferentialDescentCalculus.metric_codifferential_descent.1 W
 
- theorem chart_codifferential_add (a : ActualChart (U := U) (H := H))
+ theorem chart_codifferential_add (a : current_ActualChart)
     (V W : omega a → E F) (hV : SmoothOnLift a V) (hW : SmoothOnLift a W) :
     chartCodifferential a (V + W) = chartCodifferential a V + chartCodifferential a W := by
   exact KPContActualSectorTestDifferentialDescentCalculus.coframe_calculus.2.2.1 a V W hV hW
 
- theorem chart_codifferential_smul (a : ActualChart (U := U) (H := H))
+ theorem chart_codifferential_smul (a : current_ActualChart)
     (c : ℂ) (W : omega a → E F) (hW : SmoothOnLift a W) :
     chartCodifferential a (c • W) = c • chartCodifferential a W := by
   exact KPContActualSectorTestDifferentialDescentCalculus.coframe_calculus.2.2.2.1 a c W hW
 
-def δ_U : T_U F ζ hζ U R P H →ₗ[ℂ] S_U F ζ hζ U R P H where
+def δ_U : current_T_U →ₗ[ℂ] current_S_U where
   toFun W := ⟨fun a => chartCodifferential a (coefficient W.val a),
     (codifferential_descent W).1⟩
   map_add' V W := by
@@ -106,21 +115,27 @@ structure RealSmoothCutoff (F : Type) [Field F] [NumberField F] (ζ : F)
   smooth : ∀ a : ActualChart (U := U) (H := H),
     SmoothOnLift a (fun x => val (q a x.val))
 
-def cutoffLift (η : RealSmoothCutoff F ζ hζ U R P H)
+section
+variable (η : RealSmoothCutoff F ζ hζ U R P H)
+include η in
+def cutoffLift  
     (a : ActualChart (U := U) (H := H)) (x : omega a) : ℂ :=
   (η.val (q a x.val) : ℂ)
 
-def cutoffDifferential (η : RealSmoothCutoff F ζ hζ U R P H)
+include η in
+def cutoffDifferential  
     (a : ActualChart (U := U) (H := H)) (x : omega a) : E F :=
   chartDifferential a (cutoffLift η a) x
 
- theorem cutoff_scalar_mem (η : RealSmoothCutoff F ζ hζ U R P H)
+ include η in
+theorem cutoff_scalar_mem  
     (f : S_U F ζ hζ U R P H) :
     (fun a x => cutoffLift η a x * f.val a x) ∈ scalarTests := by
   exact (KPContActualSectorTestDifferentialDescentCalculus.scalar_differential_descent.2
     η.val η.smooth).1 f
 
- theorem cutoff_tensor_mem (η : RealSmoothCutoff F ζ hζ U R P H)
+ include η in
+theorem cutoff_tensor_mem  
     (W : T_U F ζ hζ U R P H) :
     IsMeasurableCotangentFamily (fun a x => cutoffLift η a x • coefficient W.val a x) ∧
     ∀ hv : IsMeasurableCotangentFamily (fun a x => cutoffLift η a x • coefficient W.val a x),
@@ -129,7 +144,8 @@ def cutoffDifferential (η : RealSmoothCutoff F ζ hζ U R P H)
   exact (KPContActualSectorTestDifferentialDescentCalculus.scalar_differential_descent.2
     η.val η.smooth).2.1 W
 
- theorem cutoff_gradient_mem (η : RealSmoothCutoff F ζ hζ U R P H)
+ include η in
+theorem cutoff_gradient_mem  
     (f : S_U F ζ hζ U R P H) :
     IsMeasurableCotangentFamily (fun a x => f.val a x • cutoffDifferential η a x) ∧
     ∀ hv : IsMeasurableCotangentFamily (fun a x => f.val a x • cutoffDifferential η a x),
@@ -138,7 +154,8 @@ def cutoffDifferential (η : RealSmoothCutoff F ζ hζ U R P H)
   exact (KPContActualSectorTestDifferentialDescentCalculus.scalar_differential_descent.2
     η.val η.smooth).2.2 f
 
-def scalarMultiply (η : RealSmoothCutoff F ζ hζ U R P H) :
+include η in
+def scalarMultiply   :
     S_U F ζ hζ U R P H →ₗ[ℂ] S_U F ζ hζ U R P H where
   toFun f := ⟨fun a x => cutoffLift η a x * f.val a x, cutoff_scalar_mem η f⟩
   map_add' f g := by
@@ -151,7 +168,8 @@ def scalarMultiply (η : RealSmoothCutoff F ζ hζ U R P H) :
     change cutoffLift η a x * (c * f.val a x) = c * (cutoffLift η a x * f.val a x)
     ring
 
-def cotangentMultiply (η : RealSmoothCutoff F ζ hζ U R P H) :
+include η in
+def cotangentMultiply   :
     T_U F ζ hζ U R P H →ₗ[ℂ] T_U F ζ hζ U R P H where
   toFun W := ⟨⟨fun a x => cutoffLift η a x • coefficient W.val a x,
     (cutoff_tensor_mem η W).1⟩, (cutoff_tensor_mem η W).2 _⟩
@@ -166,7 +184,8 @@ def cotangentMultiply (η : RealSmoothCutoff F ζ hζ U R P H) :
     funext a x
     exact smul_comm (cutoffLift η a x) c (coefficient W.val a x)
 
-def cutoffGradientTimes (η : RealSmoothCutoff F ζ hζ U R P H) :
+include η in
+def cutoffGradientTimes   :
     S_U F ζ hζ U R P H →ₗ[ℂ] T_U F ζ hζ U R P H where
   toFun f := ⟨⟨fun a x => f.val a x • cutoffDifferential η a x,
     (cutoff_gradient_mem η f).1⟩, (cutoff_gradient_mem η f).2 _⟩
@@ -184,7 +203,8 @@ def cutoffGradientTimes (η : RealSmoothCutoff F ζ hζ U R P H) :
 def contraction (v W : E F) : ℂ :=
   ∑ i : Fin (d F), ∑ k : Fin 3, v (i, k) * W (i, k)
 
-def cutoffContraction (η : RealSmoothCutoff F ζ hζ U R P H) :
+include η in
+def cutoffContraction   :
     T_U F ζ hζ U R P H →ₗ[ℂ] S_U F ζ hζ U R P H where
   toFun W := ⟨fun a x => contraction (cutoffDifferential η a x) (coefficient W.val a x),
     KPContActualSectorTestDifferentialDescentCalculus.metric_codifferential_descent.2
@@ -197,50 +217,52 @@ def cutoffContraction (η : RealSmoothCutoff F ζ hζ U R P H) :
     apply Subtype.ext
     funext a x
     simp [contraction, coefficient, Finset.mul_sum, mul_left_comm]
+end
+
 
 structure Properties : Prop where
-  differential_chart : ∀ (f : S_U F ζ hζ U R P H)
-      (a : ActualChart (U := U) (H := H)) (x : omega a),
+  differential_chart : ∀ (f : current_S_U)
+      (a : current_ActualChart) (x : omega a),
     coefficient (D_U f).val a x = chartDifferential a (f.val a) x
-  codifferential_chart : ∀ (W : T_U F ζ hζ U R P H)
-      (a : ActualChart (U := U) (H := H)) (x : omega a),
+  codifferential_chart : ∀ (W : current_T_U)
+      (a : current_ActualChart) (x : omega a),
     (δ_U W).val a x = chartCodifferential a (coefficient W.val a) x
-  differential_isotropy : ∀ (f : S_U F ζ hζ U R P H)
-      (a : ActualChart (U := U) (H := H)) (γ : Gamma a) (x : M F) (hx : x ∈ omega a),
+  differential_isotropy : ∀ (f : current_S_U)
+      (a : current_ActualChart) (γ : Gamma a) (x : M F) (hx : x ∈ omega a),
     coefficient (D_U f).val a ⟨(isotropyArrow a γ).psi x, isotropy_mem a γ x hx⟩ =
       T (isotropyArrow a γ) x (omega_subset_larger a hx)
         (coefficient (D_U f).val a ⟨x, hx⟩)
-  differential_overlap : ∀ (f : S_U F ζ hζ U R P H)
-      (a b : ActualChart (U := U) (H := H)) (e : ActualBranch a b)
+  differential_overlap : ∀ (f : current_S_U)
+      (a b : current_ActualChart) (e : ActualBranch a b)
       (x : M F) (hx : x ∈ e.arrow.domain),
     coefficient (D_U f).val b ⟨e.arrow.psi x, e.target_shrinking hx⟩ =
       T e.arrow x hx (coefficient (D_U f).val a ⟨x, e.source_shrinking hx⟩)
-  codifferential_isotropy : ∀ (W : T_U F ζ hζ U R P H)
-      (a : ActualChart (U := U) (H := H)) (γ : Gamma a) (x : M F) (hx : x ∈ omega a),
+  codifferential_isotropy : ∀ (W : current_T_U)
+      (a : current_ActualChart) (γ : Gamma a) (x : M F) (hx : x ∈ omega a),
     (δ_U W).val a ⟨(isotropyArrow a γ).psi x, isotropy_mem a γ x hx⟩ =
       (isotropyArrow a γ).phase x * (δ_U W).val a ⟨x, hx⟩
-  codifferential_overlap : ∀ (W : T_U F ζ hζ U R P H)
-      (a b : ActualChart (U := U) (H := H)) (e : ActualBranch a b)
+  codifferential_overlap : ∀ (W : current_T_U)
+      (a b : current_ActualChart) (e : ActualBranch a b)
       (x : M F) (hx : x ∈ e.arrow.domain),
     (δ_U W).val b ⟨e.arrow.psi x, e.target_shrinking hx⟩ =
       e.arrow.phase x * (δ_U W).val a ⟨x, e.source_shrinking hx⟩
-  differential_support : ∀ f : S_U F ζ hζ U R P H,
+  differential_support : ∀ f : current_S_U,
     cotangentSupport (D_U f).val ⊆ scalarSupport f.val
-  codifferential_support : ∀ W : T_U F ζ hζ U R P H,
+  codifferential_support : ∀ W : current_T_U,
     scalarSupport (δ_U W).val ⊆ cotangentSupport W.val
-  laplacian_chart : ∀ (f : S_U F ζ hζ U R P H)
-      (a : ActualChart (U := U) (H := H)) (x : omega a),
+  laplacian_chart : ∀ (f : current_S_U)
+      (a : current_ActualChart) (x : omega a),
     (δ_U (D_U f)).val a x =
       HyperbolicChart.laplacian (d F) (liftExtension a (f.val a)) x.val
   cutoff_real : ∀ (η : RealSmoothCutoff F ζ hζ U R P H)
-      (a : ActualChart (U := U) (H := H)) (x : omega a)
+      (a : current_ActualChart) (x : omega a)
       (i : Fin (d F)) (k : Fin 3),
     (cutoffDifferential η a x (i, k)).im = 0
   differential_product : ∀ (η : RealSmoothCutoff F ζ hζ U R P H)
-      (f : S_U F ζ hζ U R P H),
+      (f : current_S_U),
     D_U (scalarMultiply η f) = cotangentMultiply η (D_U f) + cutoffGradientTimes η f
   codifferential_product : ∀ (η : RealSmoothCutoff F ζ hζ U R P H)
-      (W : T_U F ζ hζ U R P H),
+      (W : current_T_U),
     δ_U (cotangentMultiply η W) = scalarMultiply η (δ_U W) - cutoffContraction η W
 
 end DedekindZetaZeroFree.KPContActualSectorTestDifferentialDescent

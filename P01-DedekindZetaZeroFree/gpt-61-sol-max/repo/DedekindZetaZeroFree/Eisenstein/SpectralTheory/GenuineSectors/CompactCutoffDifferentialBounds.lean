@@ -26,9 +26,12 @@ private theorem continuous_labeledA_self :
   intro k
   exact (continuous_apply (placeEquiv F ζ hζ |>.symm k)).comp
     (CotangentLogCoframe.A (d F)).continuous
-private theorem isOpen_omega (a : ActualChart (U := U) (H := H)) : IsOpen (omega a) :=
+
+local notation:max "current_ActualChart" => ActualChart (U := U) (H := H)
+
+private theorem isOpen_omega (a : current_ActualChart) : IsOpen (omega a) :=
   a.domain_open.preimage continuous_labeledA_self
-private theorem continuous_q (a : ActualChart (U := U) (H := H)) : Continuous (q a) := by
+private theorem continuous_q (a : current_ActualChart) : Continuous (q a) := by
   have hp : Continuous (KPCuspSiegel.projection F
       (KPContSectorPhaseComponentCharts.Component F ζ hζ U R P H a.component)) :=
     continuous_quotient_mk'
@@ -37,24 +40,24 @@ private theorem continuous_q (a : ActualChart (U := U) (H := H)) : Continuous (q
     have hh := (H.atlas U).components.continuous.comp (continuous_sigmaMk (i := a.component))
     simpa only [Function.comp_def, (H.atlas U).components_formula] using hh
   exact hc.comp (hp.comp continuous_labeledA_self)
-private lemma q_coordinates (a : ActualChart (U := U) (H := H)) (y : a.domain) :
+private lemma q_coordinates (a : current_ActualChart) (y : a.domain) :
     q a (coordinates a y).val = a.toBase y := by
   have hi : ∀ z : KPCuspGenuineMonodromy.SymmetricSpace F,
       labeledA (placeEquiv F ζ hζ) (labeledAInv (placeEquiv F ζ hζ) z) = z := by
     intro z; funext k; simp [labeledA, labeledAInv]
   simp only [ShrunkChart.toBase, KPContCotangentOverlapRationalBranches.q, coordinates]
   rw [hi]
- def zext (a : ActualChart (U := U) (H := H)) (f : omega a → ℂ) : M F → ℂ :=
+ def zext (a : current_ActualChart) (f : omega a → ℂ) : M F → ℂ :=
   fun x => if hx : x ∈ omega a then f ⟨x, hx⟩ else 0
 
-private theorem smooth_zext {a : ActualChart (U := U) (H := H)} {f : omega a → ℂ}
+private theorem smooth_zext {a : current_ActualChart} {f : omega a → ℂ}
     (hf : SmoothOnLift a f) : ContDiffOn ℝ (⊤ : ℕ∞) (zext a f) (omega a) := by
   obtain ⟨g, hg, he⟩ := hf
   refine hg.congr (f₁ := zext a f) ?_
   intro x hx
   simpa [zext, hx] using (he ⟨x, hx⟩).symm
 
-private theorem smooth_differential {a : ActualChart (U := U) (H := H)} {f : omega a → ℂ}
+private theorem smooth_differential {a : current_ActualChart} {f : omega a → ℂ}
     (hf : SmoothOnLift a f) : SmoothOnLift a (fun x => CotangentLogCoframe.j (d F)
       (HyperbolicChart.differential (d F) (zext a f) x.val)) := by
   refine ⟨fun x => CotangentLogCoframe.j (d F)
@@ -175,13 +178,13 @@ private theorem differential_arrow_const {i : Fin (H.atlas U).componentCount}
       EuclideanSpace.basisFun_apply, Pi.single_apply] using hi.symm
   rw [hv]
 
-private theorem smooth_ofReal {a : ActualChart (U := U) (H := H)} {f : omega a → ℝ}
+private theorem smooth_ofReal {a : current_ActualChart} {f : omega a → ℝ}
     (hf : SmoothOnLift a f) : SmoothOnLift a (fun x => (f x : ℂ)) := by
   obtain ⟨g, hg, he⟩ := hf
   exact ⟨fun x => (g x : ℂ), Complex.ofRealCLM.contDiff.comp_contDiffOn hg,
     fun x => by dsimp; rw [he x]⟩
 
-private theorem differentiable_zext {a : ActualChart (U := U) (H := H)}
+private theorem differentiable_zext {a : current_ActualChart}
     {f : omega a → ℂ} (hf : SmoothOnLift a f) (x : omega a) :
     DifferentiableAt ℝ (zext a f) x.val :=
   ((smooth_zext hf).differentiableOn (by simp) x.val x.property).differentiableAt
@@ -206,9 +209,12 @@ local notation "cmap" => coord (ζ:=ζ) (hζ:=hζ)
     apply continuous_pi
     intro k
     exact (continuous_apply _).comp (CotangentLogCoframe.A (d F)).continuous))
- theorem chart_coord (a b : ShrunkChart F ζ hζ U R P H)
+ section
+variable (a b : ShrunkChart F ζ hζ U R P H)
     (h : a.component = b.component)
-    (g : KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative a.component)) :
+    (g : KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative a.component))
+include a b h g in
+theorem chart_coord   :
     coordinateMap (isotropyChart a) (targetChart a b h) g = cmap g.val := by
   rcases a with ⟨i,ca,oa,da,dao,dac,das,dai⟩
   rcases b with ⟨j,cb,ob,db,dbo,dbc,dbs,dbi⟩
@@ -233,8 +239,8 @@ local notation "cmap" => coord (ζ:=ζ) (hζ:=hζ)
     omega a ⊆ (isotropyChart a).omega := by
   intro x hx
   exact a.closure_subset (subset_closure hx)
- def make (a b : ShrunkChart F ζ hζ U R P H) (h : a.component = b.component)
-    (g : KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative a.component)) :
+ include a b h g in
+def make   :
     ActualBranch a b := by
   let he := KPCuspGenuineMonodromy.finiteComparison_exists F ζ hζ U _ g
   let r := he.choose
@@ -260,9 +266,8 @@ local notation "cmap" => coord (ζ:=ζ) (hζ:=hζ)
       rw [chart_coord a b h g]
       exact fun _ hx => hx.2
     target_larger := ht }
-private theorem q_coord (a b : ShrunkChart F ζ hζ U R P H)
-    (h : a.component = b.component)
-    (g : KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative a.component))
+include a b h g in
+private theorem q_coord  
     (x : M F) : q b (cmap g.val x) = q a x := by
   rcases a with ⟨i,ca,oa,da,dao,dac,das,dai⟩
   rcases b with ⟨j,cb,ob,db,dbo,dbc,dbs,dbi⟩
@@ -272,13 +277,18 @@ private theorem q_coord (a b : ShrunkChart F ζ hζ U R P H)
   simp only [coord, la]
   apply Quotient.sound
   exact ⟨g, rfl⟩
+end
 
-private theorem q_branch {a b : ActualChart (U := U) (H := H)} (e : ActualBranch a b)
+
+private theorem q_branch {a b : current_ActualChart} (e : ActualBranch a b)
     (x : M F) : q b (e.arrow.psi x) = q a x := by
   rw [show e.arrow.psi = cmap e.arrow.gamma.val from chart_coord a b e.component_eq e.arrow.gamma]
   exact q_coord a b e.component_eq e.arrow.gamma x
 
-private theorem cutoff_norm_branch (η : RealSmoothCutoff F ζ hζ U R P H)
+section
+variable (η : RealSmoothCutoff F ζ hζ U R P H)
+include η in
+private theorem cutoff_norm_branch  
     {a b : ActualChart (U := U) (H := H)} (e : ActualBranch a b)
     (x : M F) (hx : x ∈ e.arrow.domain) :
     ‖cutoffDifferential η b ⟨e.arrow.psi x, e.target_shrinking hx⟩‖ =
@@ -301,7 +311,8 @@ private theorem cutoff_norm_branch (η : RealSmoothCutoff F ζ hζ U R P H)
   exact (KPContCotangentRealOrthogonalComplexification.orthogonalComplexification _
     (KPContCotangentActualGenuineTwistIsotropy.q e.arrow x hx)).norm_map _
 
-private theorem cutoff_norm_fiber (η : RealSmoothCutoff F ζ hζ U R P H)
+include η in
+private theorem cutoff_norm_fiber  
     (a b : ActualChart (U := U) (H := H)) (x : omega a) (y : omega b)
     (hxy : q a x.val = q b y.val) :
     ‖cutoffDifferential η a x‖ = ‖cutoffDifferential η b y‖ := by
@@ -337,7 +348,8 @@ private theorem cutoff_norm_fiber (η : RealSmoothCutoff F ζ hζ U R P H)
   · change coordinateMap (isotropyChart a) (targetChart a b rfl) g⁻¹ x.val = y.val
     rw [chart_coord, Subgroup.coe_inv, he]
 
-private theorem cutoff_norm_continuous (η : RealSmoothCutoff F ζ hζ U R P H)
+include η in
+private theorem cutoff_norm_continuous  
     (a : ActualChart (U := U) (H := H)) : Continuous (fun x : omega a => ‖cutoffDifferential η a x‖ ^ 2) := by
   obtain ⟨g,hg,he⟩ := smooth_differential (smooth_ofReal (η.smooth a))
   have h : (fun x : omega a => cutoffDifferential η a x) = (omega a).domRestrict g := by
@@ -381,13 +393,15 @@ private theorem continuous_of_all_lifts (f : KPFiniteCuspAtlas.rawXU F ζ hζ U 
       exact congrArg f (q_coordinates a y).symm
     rw [continuousOn_iff_continuous_domRestrict]
     exact (continuous_iff_isQuotientMap (cover.properties n).quotient _).mpr hloc
-private theorem cutoff_continuous (η : RealSmoothCutoff F ζ hζ U R P H) : Continuous η.val := by
+include η in
+private theorem cutoff_continuous   : Continuous η.val := by
   apply continuous_of_all_lifts
   intro a
   obtain ⟨g,hg,he⟩ := η.smooth a
   convert hg.continuousOn.domRestrict using 1
   exact funext (fun y => (he y).symm)
-private theorem cutoffDifferential_zero (η : RealSmoothCutoff F ζ hζ U R P H)
+include η in
+private theorem cutoffDifferential_zero  
     (a : ActualChart (U := U) (H := H)) (y : omega a)
     (hy : q a y.val ∉ tsupport η.val) : cutoffDifferential η a y = 0 := by
   have hz : η.val =ᶠ[𝓝 (q a y.val)] 0 := by
@@ -402,7 +416,8 @@ private theorem cutoffDifferential_zero (η : RealSmoothCutoff F ζ hζ U R P H)
   fin_cases k <;> simp [cutoffDifferential, chartDifferential, CotangentLogCoframe.j,
     HyperbolicChart.differential, HyperbolicChart.coordinateDerivative, hext.fderiv_eq]
 
-private theorem cutoffNorm_descends (η : RealSmoothCutoff F ζ hζ U R P H) :
+include η in
+private theorem cutoffNorm_descends   :
     ∃ f : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ, Continuous f ∧
       ∀ (a : ActualChart (U := U) (H := H)) (y : omega a),
         f (q a y.val) = ‖cutoffDifferential η a y‖ ^ 2 := by
@@ -418,7 +433,8 @@ private theorem cutoffNorm_descends (η : RealSmoothCutoff F ζ hζ U R P H) :
   convert cutoff_norm_continuous η a using 1
   exact funext (hf a)
 
-private theorem compactBounds (η : RealSmoothCutoff F ζ hζ U R P H) (hcompact : HasCompactSupport η.val) :
+include η in
+private theorem compactBounds   (hcompact : HasCompactSupport η.val) :
     ∃ B D : ℝ, 0 ≤ B ∧ 0 ≤ D ∧ (∀ x, |η.val x| ≤ B) ∧
       ∀ (a : ActualChart (U := U) (H := H)) (y : omega a), ‖cutoffDifferential η a y‖ ≤ D := by
   obtain ⟨f,hf,hchart⟩ := cutoffNorm_descends η
@@ -450,6 +466,8 @@ private theorem compactBounds (η : RealSmoothCutoff F ζ hζ U R P H) (hcompact
       · rw [image_eq_zero_of_notMem_tsupport hx]; exact le_max_right _ _
     rw [hchart] at hs
     exact (Real.le_sqrt (norm_nonneg _) (le_max_right _ _)).mpr hs
+end
+
 
 theorem compactCutoff_bounds
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)

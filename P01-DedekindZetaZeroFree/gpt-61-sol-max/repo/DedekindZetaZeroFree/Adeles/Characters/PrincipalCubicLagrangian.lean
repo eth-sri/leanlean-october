@@ -92,9 +92,12 @@ set_option backward.isDefEq.respectTransparency false
     | inl w => simp at h
     | inr r => simp only [Finset.mem_singleton] at h; subst r; exact hv
   · intro h; exact ⟨Sum.inr q, h, by simp⟩
- def data (F : Type) [Field F] [NumberField F] (ζ : F)
+ section
+variable (F : Type) [Field F] [NumberField F] (ζ : F)
     (hζ : IsPrimitiveRoot ζ 12) (S : Finset (KPHilbert.Place F))
-    (hS : rawClassKillingS F S) : SArithmeticData F where
+    (hS : rawClassKillingS F S)
+include F ζ hζ S hS in
+def data   : SArithmeticData F where
   zeta12 := ζ
   primitive_zeta12 := hζ
   Sf := rawFinitePrimes F S
@@ -104,9 +107,8 @@ set_option backward.isDefEq.respectTransparency false
   modulus_ne_zero := top_ne_bot
   above_six q hq := (mem_fp F S q).mpr (hS.2.1 q hq)
   modulus_support q hq := False.elim (q.isPrime.ne_top (top_le_iff.mp hq))
- def classesEquiv (F : Type) [Field F] [NumberField F] (ζ : F)
-    (hζ : IsPrimitiveRoot ζ 12) (S : Finset (KPHilbert.Place F))
-    (hS : rawClassKillingS F S) :
+ include F ζ hζ S hS in
+def classesEquiv   :
     KPGlobalCubicIdelePairing.FiniteSClasses F S ≃*
       SArithmeticData.Vn F (data F ζ hζ S hS) 3 where
   toFun x := by
@@ -122,15 +124,13 @@ set_option backward.isDefEq.respectTransparency false
   left_inv x := by ext ⟨v,hv⟩; cases v <;> rfl
   right_inv y := by ext v; cases v <;> rfl
   map_mul' x y := by ext v; cases v <;> rfl
-private theorem classes_unit (F : Type) [Field F] [NumberField F] (ζ : F)
-    (hζ : IsPrimitiveRoot ζ 12) (S : Finset (KPHilbert.Place F))
-    (hS : rawClassKillingS F S) (u : rawSUnits F S) :
+include F ζ hζ S hS in
+private theorem classes_unit   (u : rawSUnits F S) :
     classesEquiv F ζ hζ S hS (rawFiniteClass F S u.val) =
       SArithmeticData.GaussCorrection.unitPrimeHom (data F ζ hζ S hS) 3 u := by
   ext v; cases v <;> rfl
-private theorem local_compare (F : Type) [Field F] [NumberField F] (ζ : F)
-    (hζ : IsPrimitiveRoot ζ 12) (S : Finset (KPHilbert.Place F))
-    (hS : rawClassKillingS F S) (q : HeightOneSpectrum (𝓞 F))
+include F ζ hζ S hS in
+private theorem local_compare   (q : HeightOneSpectrum (𝓞 F))
     (a b : KPGlobalCubicIdelePairing.LocalD F (Sum.inr q)) :
     KPGlobalCubicIdelePairing.localPairing F ζ hζ (Sum.inr q) a b =
       (data F ζ hζ S hS).actualLocalHilbert q 3 (Or.inr (Or.inl rfl)) a b := by
@@ -141,9 +141,8 @@ private theorem local_compare (F : Type) [Field F] [NumberField F] (ζ : F)
       change KPHilbert.B3 F ζ hζ (Sum.inr q) a b = _
       rw [KPHilbert.B3_canonical]
       rfl
-private theorem pairing_compare (F : Type) [Field F] [NumberField F] (ζ : F)
-    (hζ : IsPrimitiveRoot ζ 12) (S : Finset (KPHilbert.Place F))
-    (hS : rawClassKillingS F S) (x y : KPGlobalCubicIdelePairing.FiniteSClasses F S) :
+include F ζ hζ S hS in
+private theorem pairing_compare   (x y : KPGlobalCubicIdelePairing.FiniteSClasses F S) :
     rawBetaS F ζ hζ S x y =
       (data F ζ hζ S hS).H_Sn 3 (Or.inr (Or.inl rfl))
         (classesEquiv F ζ hζ S hS x) (classesEquiv F ζ hζ S hS y) := by
@@ -218,9 +217,8 @@ private theorem prime_criterion {F : Type} [Field F] [NumberField F]
   · rintro ⟨u,rfl⟩ v
     exact hi _ ((hE _).mpr ⟨u,rfl⟩) _ ((hE _).mpr ⟨v,rfl⟩)
 
-theorem finite_sunit_orthogonality_iff (F : Type) [Field F] [NumberField F]
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (S : Finset (KPHilbert.Place F))
-    (hS : rawClassKillingS F S) (x : KPGlobalCubicIdelePairing.FiniteSClasses F S) :
+include F ζ hζ S hS in
+theorem finite_sunit_orthogonality_iff   (x : KPGlobalCubicIdelePairing.FiniteSClasses F S) :
     (∀ u : rawSUnits F S, rawBetaS F ζ hζ S x (rawFiniteClass F S u.val) = 1) ↔
       ∃ u : rawSUnits F S, rawFiniteClass F S u.val = x := by
   have hc := prime_criterion (data F ζ hζ S hS) hS.2.2 (classesEquiv F ζ hζ S hS x)
@@ -236,6 +234,8 @@ theorem finite_sunit_orthogonality_iff (F : Type) [Field F] [NumberField F]
   · rintro ⟨u,rfl⟩ v
     rw [pairing_compare, classes_unit, classes_unit]
     exact hc.mpr ⟨u,(classes_unit F ζ hζ S hS u).symm⟩ v
+end
+
 end
 end DedekindZetaZeroFree.RepresentationTheory.KPPrincipalCubic
 

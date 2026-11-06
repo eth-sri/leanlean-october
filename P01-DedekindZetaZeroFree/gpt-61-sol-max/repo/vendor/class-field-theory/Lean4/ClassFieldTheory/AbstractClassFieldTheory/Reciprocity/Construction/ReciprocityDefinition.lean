@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction.FrobeniusField
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction.FrobeniusSemigroup
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction.NormSubgroup
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction.PrimeChoice
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -70,17 +73,14 @@ theorem frobeniusFixedField_absoluteFinite (D : DegreeData G)
     [hLfinite : Finite
       (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
     (σ : D.FrobeniusElements (K.toFiniteResidueAbstractField D) L hLK
-      (hLnormal := by
-        simpa only [FiniteAbstractField.toFiniteResidueAbstractField] using hLnormal)) :
+      (hLnormal := hLnormal)) :
     Finite ((baseField G).toSubgroup ⧸
       extensionSubgroup (baseField G)
         (D.frobeniusFixedField (K.toFiniteResidueAbstractField D) L hLK
-          (hLnormal := by
-            simpa only [FiniteAbstractField.toFiniteResidueAbstractField] using hLnormal) σ)
+          (hLnormal := hLnormal) σ)
         (le_baseField
           (D.frobeniusFixedField (K.toFiniteResidueAbstractField D) L hLK
-            (hLnormal := by
-              simpa only [FiniteAbstractField.toFiniteResidueAbstractField] using hLnormal) σ))) := by
+            (hLnormal := hLnormal) σ))) := by
   let KR := K.toFiniteResidueAbstractField D
   let hLnormalKR : (extensionSubgroup KR.field L hLK).Normal := by
     simpa only [KR, FiniteAbstractField.toFiniteResidueAbstractField] using hLnormal
@@ -119,9 +119,7 @@ def reciprocityValueOfPrime (D : DegreeData G) (A : Rep ℤ G)
     (π : ambientFixedAddSubgroup A
       (D.frobeniusFixedField K L hLK σ)) :
     D.MaximalUnramifiedNormQuotient A K.field L := by
-  letI : Finite (K.field.toSubgroup ⧸
-      extensionSubgroup K.field (D.frobeniusFixedField K L hLK σ)
-        (D.frobeniusFixedField_le K L hLK σ)) :=
+  letI  :=
     D.frobeniusFixedField_finite K L hLK σ
   exact D.maximalUnramifiedNormClass A K.field L
     (relativeNorm A K.field (D.frobeniusFixedField K L hLK σ)
@@ -145,11 +143,9 @@ def reciprocityMap (D : DegreeData G) (A : Rep ℤ G)
       D.MaximalUnramifiedNormQuotient A K.field L :=
   fun σ => by
     let KR := K.toFiniteResidueAbstractField D
-    letI hLnormalKR : (extensionSubgroup KR.field L hLK).Normal := by
-      simpa only [KR, FiniteAbstractField.toFiniteResidueAbstractField] using hLnormal
+    letI hLnormalKR : (extensionSubgroup KR.field L hLK).Normal := hLnormal
     letI hLfiniteKR : Finite
-        (KR.field.toSubgroup ⧸ extensionSubgroup KR.field L hLK) := by
-      simpa only [KR, FiniteAbstractField.toFiniteResidueAbstractField] using hLfinite
+        (KR.field.toSubgroup ⧸ extensionSubgroup KR.field L hLK) := hLfinite
     letI : Finite ((baseField G).toSubgroup ⧸
         extensionSubgroup (baseField G)
           (D.frobeniusFixedField KR L hLK σ)
@@ -177,11 +173,9 @@ theorem reciprocityMap_eq_chosenPrime (D : DegreeData G) (A : Rep ℤ G)
         simpa only [FiniteAbstractField.toFiniteResidueAbstractField] using hLnormal)) :
     D.reciprocityMap A v K L hLK σ = by
       let KR := K.toFiniteResidueAbstractField D
-      letI : (extensionSubgroup KR.field L hLK).Normal := by
-        simpa only [KR, FiniteAbstractField.toFiniteResidueAbstractField] using hLnormal
+      letI : (extensionSubgroup KR.field L hLK).Normal := hLnormal
       letI hLfiniteKR : Finite
-          (KR.field.toSubgroup ⧸ extensionSubgroup KR.field L hLK) := by
-        simpa only [KR, FiniteAbstractField.toFiniteResidueAbstractField] using hLfinite
+          (KR.field.toSubgroup ⧸ extensionSubgroup KR.field L hLK) := hLfinite
       letI : Finite ((baseField G).toSubgroup ⧸
           extensionSubgroup (baseField G)
             (D.frobeniusFixedField KR L hLK σ)

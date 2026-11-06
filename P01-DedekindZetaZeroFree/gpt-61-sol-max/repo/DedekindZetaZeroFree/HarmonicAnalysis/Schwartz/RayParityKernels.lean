@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Theta.Profiles.RayParityKernels
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -17,7 +20,7 @@ theorem exists_rayParitySchwartz (δ : Finset (RayCoset.RealPlaces K)) :
     ∃ f : SchwartzMap (euclidean.mixedSpace K) ℂ,
       ∀ x, f x = gδ K δ x := by
 
-  let g : euclidean.mixedSpace K → ℂ :=
+  let g  :=
     fun x ↦ ∏ v ∈ δ, (Theta.traceRealCoordinateCLM K v x : ℂ)
   have hP : Function.HasTemperateGrowth g := by
     change Function.HasTemperateGrowth
@@ -25,7 +28,7 @@ theorem exists_rayParitySchwartz (δ : Finset (RayCoset.RealPlaces K)) :
         ∏ v ∈ δ, (Theta.traceRealCoordinateCLM K v x : ℂ))
     classical
     induction δ using Finset.induction_on with
-    | empty => simpa using Function.HasTemperateGrowth.const (1 : ℂ)
+    | empty => apply Function.HasTemperateGrowth.const
     | insert a s ha ih =>
       have ha' : Function.HasTemperateGrowth
           (fun x : euclidean.mixedSpace K ↦
@@ -44,8 +47,7 @@ theorem exists_rayParitySchwartz (δ : Finset (RayCoset.RealPlaces K)) :
   change g x * Theta.latticeGaussian Real.pi x = gδ K δ x
   rw [gδ]
 
-def rayParitySchwartz (δ : Finset (RayCoset.RealPlaces K)) :
-    SchwartzMap (euclidean.mixedSpace K) ℂ :=
+def rayParitySchwartz (δ : Finset (RayCoset.RealPlaces K))  :=
   Classical.choose (exists_rayParitySchwartz K δ)
 
 @[simp] theorem rayParitySchwartz_apply (δ : Finset (RayCoset.RealPlaces K))

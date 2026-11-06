@@ -54,13 +54,13 @@ noncomputable local instance
       (algebraMap F.residueField⸨X⸩
         (equalCharacteristicCompletedUnramifiedField F.residueField)))
 
-local instance
-    equalCharacteristicCompletedFrobeniusFixedFieldDegreeScalarTower
-    (F : LocalField.{u, v} K) (n : ℕ) :
-    IsScalarTower F.residueField⸨X⸩
-      (equalCharacteristicCompletedUnramifiedField F.residueField)
-      (equalCharacteristicCompletedLevelField F n) :=
-  IsScalarTower.of_algebraMap_eq' rfl
+
+
+
+
+
+
+
 
 noncomputable local instance
     equalCharacteristicCompletedFrobeniusFixedFieldDegreeAlgebra
@@ -72,15 +72,15 @@ noncomputable local instance
   Subalgebra.algebra
     (equalCharacteristicCompletedFrobeniusFixedField F a n).toSubalgebra
 
-noncomputable local instance
-    equalCharacteristicCompletedFrobeniusFixedFieldDegreeSMul
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
-    SMul F.residueField⸨X⸩
-      (equalCharacteristicCompletedFrobeniusFixedField F a n) :=
-  @Algebra.toSMul _ _ _ _
-    (equalCharacteristicCompletedFrobeniusFixedFieldDegreeAlgebra F a n)
+
+
+
+
+
+
+
+
+
 
 noncomputable local instance
     equalCharacteristicCompletedFrobeniusFixedFieldDegreeModule

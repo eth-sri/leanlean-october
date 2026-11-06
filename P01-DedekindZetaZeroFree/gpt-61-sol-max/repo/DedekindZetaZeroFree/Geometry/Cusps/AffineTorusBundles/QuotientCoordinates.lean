@@ -10,70 +10,81 @@ open MeasureTheory
 namespace DedekindZetaZeroFree
 namespace KPCuspChart
 
-abbrev Horizontal (F : Type*) [Field F] [NumberField F] :=
+section
+variable (F : Type*) [Field F] [NumberField F]
+include F
+abbrev Horizontal   :=
   Fin (KPCuspLogShape.dimension F) → ℂ
 
-abbrev Shape (F : Type*) [Field F] [NumberField F] :=
+abbrev Shape   :=
   KPCuspLogShape.hyperplane (KPCuspLogShape.dimension F)
 
-abbrev Cross (F : Type*) [Field F] [NumberField F] := Horizontal F × Shape F
+abbrev Cross   := Horizontal F × Shape F
 
-abbrev Coordinates (F : Type*) [Field F] [NumberField F] := Cross F × ℝ
+abbrev Coordinates   := Cross F × ℝ
 
-def embedding (F : Type*) [Field F] [NumberField F] : F →+ Horizontal F where
+def embedding   : F →+ Horizontal F where
   toFun x := fun i => (KPCusp.complexPlace F i).embedding x
   map_zero' := by ext i; simp
   map_add' x y := by ext i; simp
 
-def translationLattice (F : Type*) [Field F] [NumberField F] (L : AddSubgroup F) :
+def translationLattice   (L : AddSubgroup F) :
     AddSubgroup (Horizontal F) := L.map (embedding F)
 
-abbrev Torus (F : Type*) [Field F] [NumberField F] (L : AddSubgroup F) :=
+abbrev Torus   (L : AddSubgroup F) :=
   Horizontal F ⧸ translationLattice F L
 
-abbrev Base (F : Type*) [Field F] [NumberField F]
+abbrev Base  
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (E : Subgroup Fˣ) (hE : E ≤ KPCuspArithmetic.rationalUnits F) :=
   Shape F ⧸ (KPCuspLogShape.logLattice F hF E hE).toAddSubgroup
 
-def toArch (F : Type*) [Field F] [NumberField F] (p : Coordinates F) :
+def toArch   (p : Coordinates F) :
     KPArch.Space (KPCuspLogShape.dimension F) :=
   fun i => (p.1.1 i, p.2 + (p.1.2 : Fin (KPCuspLogShape.dimension F) → ℝ) i)
 
-def affine (F : Type*) [Field F] [NumberField F]
+def affine  
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (E : Subgroup Fˣ) (hE : E ≤ KPCuspArithmetic.rationalUnits F)
     (u : E) (v : F) (p : Coordinates F) : Coordinates F :=
   ((fun i => embedding F ((u : Fˣ) : F) i * p.1.1 i + embedding F v i,
     p.1.2 + KPCuspLogShape.logarithm F hF E hE (Additive.ofMul u)), p.2)
+end
 
-def crossRelation (F : Type*) [Field F] [NumberField F]
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) : Setoid (Cross F) :=
+
+section
+variable (F : Type*) [Field F] [NumberField F]
+    (S : Subgroup (KPCuspArithmetic.PGL2 F))
+include F S
+def crossRelation   : Setoid (Cross F) :=
   Setoid.comap (fun p => toArch F (p, 0))
     (MulAction.orbitRel S (KPArch.Space (KPCuspLogShape.dimension F)))
 
-abbrev CrossQuotient (F : Type*) [Field F] [NumberField F]
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) := Quotient (crossRelation F S)
+abbrev CrossQuotient   := Quotient (crossRelation F S)
 
-def highRelation (F : Type*) [Field F] [NumberField F]
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (T : ℝ) :
+def highRelation   (T : ℝ) :
     Setoid {p : Coordinates F // T < p.2} :=
   Setoid.comap (fun p => toArch F p.val)
     (MulAction.orbitRel S (KPArch.Space (KPCuspLogShape.dimension F)))
 
-abbrev HighQuotient (F : Type*) [Field F] [NumberField F]
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (T : ℝ) := Quotient (highRelation F S T)
+abbrev HighQuotient   (T : ℝ) := Quotient (highRelation F S T)
+end
 
-@[instance_reducible] def homeomorphAction {G X : Type*} [Group G] [TopologicalSpace X]
-    (β : G →* (X ≃ₜ X)) : MulAction G X where
+
+section
+variable {G X : Type*} [Group G] [TopologicalSpace X]
+    (β : G →* (X ≃ₜ X))
+include G X β
+@[instance_reducible] def homeomorphAction   : MulAction G X where
   smul g x := β g x
   one_smul x := by change (β 1) x = x; rw [map_one]; rfl
   mul_smul g h x := by change (β (g * h)) x = (β g) ((β h) x); rw [map_mul]; rfl
 
-abbrev AffineOrbit {G X : Type*} [Group G] [TopologicalSpace X]
-    (β : G →* (X ≃ₜ X)) :=
+abbrev AffineOrbit   :=
   letI := homeomorphAction β
   Quotient (MulAction.orbitRel G X)
+end
+
 
 def kernelUnits (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
@@ -90,17 +101,19 @@ def kernelUnits (F : Type*) [Field F] [NumberField F]
     change KPCuspLogShape.logarithm F hF E hE (-Additive.ofMul a) = 0
     rw [map_neg, ha, neg_zero]
 
-abbrev CoarseFiber (F : Type*) [Field F] [NumberField F]
+section
+variable (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (L : AddSubgroup F) (E : Subgroup Fˣ) (hE : E ≤ KPCuspArithmetic.rationalUnits F)
-    (β : E →* (Torus F L ≃ₜ Torus F L)) :=
+    (β : E →* (Torus F L ≃ₜ Torus F L))
+include F hF L E hE β
+abbrev CoarseFiber   :=
   AffineOrbit (β.comp (kernelUnits F hF E hE).subtype)
 
-def coarseProjection (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (L : AddSubgroup F) (E : Subgroup Fˣ) (hE : E ≤ KPCuspArithmetic.rationalUnits F)
-    (β : E →* (Torus F L ≃ₜ Torus F L)) :
+def coarseProjection   :
     Torus F L → CoarseFiber F hF L E hE β := Quotient.mk _
+end
+
 
 structure ExtensionData (F : Type*) [Field F] [NumberField F]
     (S : Subgroup (KPCuspArithmetic.PGL2 F)) where
@@ -122,19 +135,24 @@ structure ExtensionData (F : Type*) [Field F] [NumberField F]
     Matrix.ProjGenLinGroup.mk A = (g : KPCuspArithmetic.PGL2 F) →
     A 1 0 = 0 → A 0 0 = ((ratio g : Fˣ) : F) * A 1 1
 
-def totalRelation (F : Type*) [Field F] [NumberField F]
+section
+variable (F : Type*) [Field F] [NumberField F]
+include F
+def totalRelation  
     (S : Subgroup (KPCuspArithmetic.PGL2 F)) : Setoid (Coordinates F) :=
   Setoid.comap (toArch F)
     (MulAction.orbitRel S (KPArch.Space (KPCuspLogShape.dimension F)))
 
-abbrev TotalQuotient (F : Type*) [Field F] [NumberField F]
+abbrev TotalQuotient  
     (S : Subgroup (KPCuspArithmetic.PGL2 F)) := Quotient (totalRelation F S)
 
-def crossAffine (F : Type*) [Field F] [NumberField F]
+def crossAffine  
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (E : Subgroup Fˣ) (hE : E ≤ KPCuspArithmetic.rationalUnits F)
     (u : E) (v : F) (p : Cross F) : Cross F :=
   (affine F hF E hE u v (p, 0)).1
+end
+
 
 def radialMeasure (d : ℕ) : Measure ℝ :=
   volume.withDensity (fun t => ENNReal.ofReal (Real.exp (-2 * (d : ℝ) * t)))

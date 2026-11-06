@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.MellinVerticalIntegral
 
 @[expose] public section
+
 
 /-
 Repository: openai/math.
@@ -16,7 +19,7 @@ open scoped NumberField Classical Topology Interval
 
 namespace DedekindZetaZeroFree.LargeSieve.Vendor
 
-def stripReg (f : ℂ → ℂ) (ε : ℝ) (s : ℂ) : ℂ :=
+def stripReg (f : ℂ → ℂ) (ε : ℝ) (s : ℂ)  :=
   f s * Complex.exp ((ε : ℂ) * s ^ 2)
 
 private lemma norm_exp_eps_sq (ε x T : ℝ) :
@@ -158,7 +161,7 @@ theorem integral_eq_of_exponential_strip_growth {a b : ℝ} (hab : a ≤ b)
         have h := hx
         rw [Set.uIoc_of_le hab] at h
         exact Set.Ioc_subset_Icc_self h
-      exact hbound x hx' T
+      apply hbound <;> assumption
     have hHAm : Tendsto
         (fun T : ℝ => ∫ x in a..b, stripReg f ε ((x : ℂ) + ((-T : ℝ) : ℂ) * Complex.I))
         atTop (𝓝 0) := by
@@ -193,8 +196,7 @@ theorem integral_eq_of_exponential_strip_growth {a b : ℝ} (hab : a ≤ b)
             (∫ x in a..b, stripReg f ε ((x : ℂ) + ((-T : ℝ) : ℂ) * Complex.I)))
           atTop (𝓝 0) := by simpa using hHA.sub hHAm
       exact Tendsto.congr' (Eventually.of_forall fun T => (hC T).symm) h3
-    have hlim : Complex.I * ((∫ y : ℝ, stripReg f ε ((b : ℂ) + y * Complex.I)) -
-        (∫ y : ℝ, stripReg f ε ((a : ℂ) + y * Complex.I))) = 0 :=
+    have hlim  :=
       tendsto_nhds_unique t1 t2
     rcases mul_eq_zero.mp hlim with h0 | h0
     · exact absurd h0 Complex.I_ne_zero
@@ -224,11 +226,9 @@ theorem integral_eq_of_exponential_strip_growth {a b : ℝ} (hab : a ≤ b)
       (∫ y : ℝ, stripReg f ε ((b : ℂ) + y * Complex.I)) := by
     filter_upwards [self_mem_nhdsWithin] with ε hε
     exact key ε hε
-  have hBeq : Tendsto (fun ε : ℝ => ∫ y : ℝ, stripReg f ε ((b : ℂ) + y * Complex.I))
-      (𝓝[>] (0 : ℝ)) (𝓝 (∫ y : ℝ, f ((a : ℂ) + y * Complex.I))) :=
+  have hBeq  :=
     Tendsto.congr' hev (hlimit a ha)
-  have heq : (∫ y : ℝ, f ((a : ℂ) + y * Complex.I)) =
-      (∫ y : ℝ, f ((b : ℂ) + y * Complex.I)) :=
+  have heq  :=
     tendsto_nhds_unique hBeq (hlimit b hb)
   simp only [verticalIntegral, heq]
 

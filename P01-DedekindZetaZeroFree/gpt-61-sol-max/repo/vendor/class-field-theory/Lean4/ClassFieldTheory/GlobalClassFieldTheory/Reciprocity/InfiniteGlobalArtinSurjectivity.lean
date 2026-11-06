@@ -39,39 +39,39 @@ namespace Reciprocity
 
 variable {K : Type} [Field K] [NumberField K]
 
-/-- Compatibility name for the positive archimedean section. -/
-noncomputable def numberFieldPositiveArchimedeanIdele
-    (K : Type) [Field K] [NumberField K] :
-    ℝ≥0ˣ →* IdeleGroup K :=
-  IdeleGroup.positiveArchimedeanSection K
 
-/-- Compatibility evaluation of the finite components of the positive
-archimedean section. -/
-@[simp]
-theorem numberFieldPositiveArchimedeanIdele_finiteComponent
-    (r : ℝ≥0ˣ)
-    (v : HeightOneSpectrum (𝓞 K)) :
-    IdeleGroup.finiteComponent v
-        (numberFieldPositiveArchimedeanIdele K r) =
-      1 :=
-  IdeleGroup.positiveArchimedeanSection_finiteComponent r v
 
-/-- Compatibility form of positivity at every infinite component. -/
-theorem numberFieldPositiveArchimedeanIdele_infiniteComponent_mem_positive
-    (r : ℝ≥0ˣ) (v : InfinitePlace K) :
-    IdeleGroup.infiniteComponent v
-        (numberFieldPositiveArchimedeanIdele K r) ∈
-      RayClass.infinitePositiveSubgroup v :=
-  IdeleGroup.positiveArchimedeanSection_infiniteComponent_mem_positive r v
 
-/-- Compatibility form of the absolute-norm evaluation. -/
-@[simp]
-theorem numberFieldPositiveArchimedeanIdele_absoluteNorm
-    (r : ℝ≥0ˣ) :
-    IdeleGroup.absoluteNorm
-        (numberFieldPositiveArchimedeanIdele K r) =
-      r⁻¹ :=
-  IdeleGroup.positiveArchimedeanSection_absoluteNorm r
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 private theorem globalArtinMonoidHom_positiveArchimedeanSection
     {L : Type}
@@ -154,18 +154,18 @@ theorem infiniteGlobalArtinMonoidHom_positiveArchimedeanSection
     globalArtinMonoidHom_positiveArchimedeanSection
       (K := K) (L := E.unop) r
 
-/-- Compatibility form of the Artin evaluation on the positive archimedean
-section. -/
-@[simp]
-theorem infiniteGlobalArtinMonoidHom_numberFieldPositiveArchimedeanIdele
-    (K Ω : Type)
-    [Field K] [NumberField K]
-    [Field Ω] [Algebra K Ω] [IsAbelianGalois K Ω]
-    (r : ℝ≥0ˣ) :
-    infiniteGlobalArtinMonoidHom K Ω
-        (numberFieldPositiveArchimedeanIdele K r) =
-      1 :=
-  infiniteGlobalArtinMonoidHom_positiveArchimedeanSection K Ω r
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- Every idele has the same infinite global Artin symbol as a norm-one
 idele. -/
@@ -267,32 +267,32 @@ theorem infiniteGlobalIdeleClassArtinContinuousMonoidHom_surjective
       K Ω σ
   exact ⟨(c : IdeleClassGroup K), hc⟩
 
-/-- The infinite global Artin homomorphism is surjective. -/
-theorem infiniteGlobalArtinMonoidHom_surjective
-    (K Ω : Type)
-    [Field K] [NumberField K]
-    [Field Ω] [Algebra K Ω] [IsAbelianGalois K Ω] :
-    Function.Surjective
-      (infiniteGlobalArtinMonoidHom K Ω) := by
-  intro σ
-  obtain ⟨c, hc⟩ :=
-    infiniteGlobalIdeleClassArtinContinuousMonoidHom_surjective
-      K Ω σ
-  obtain ⟨a, ha⟩ :=
-    QuotientGroup.mk'_surjective
-      (IdeleGroup.principalSubgroup K) c
-  refine ⟨a, ?_⟩
-  calc
-    infiniteGlobalArtinMonoidHom K Ω a =
-        infiniteGlobalIdeleClassArtinContinuousMonoidHom
-          (K := K) (Ω := Ω)
-          (QuotientGroup.mk'
-            (IdeleGroup.principalSubgroup K) a) :=
-      (infiniteGlobalIdeleClassArtinMonoidHom_mk
-        (K := K) (Ω := Ω) a).symm
-    _ = infiniteGlobalIdeleClassArtinContinuousMonoidHom
-          (K := K) (Ω := Ω) c := by rw [ha]
-    _ = σ := hc
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end Reciprocity
 end GlobalClassFieldTheory

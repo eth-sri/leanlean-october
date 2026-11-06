@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.SmoothFunctions.CompactOpenHolomorphyAndMeromorphy
 
 @[expose] public section
+
 
 noncomputable section
 namespace DedekindZetaZeroFree.KPContActualLocalSolutionFamily.CoefficientRestriction
@@ -17,15 +20,14 @@ theorem continuous_covariance_of_ae {n : ℕ} (A : LocalBall n)
       q (τ p) = χ * q p) :
     ∀ p ∈ A.carrier ∩ τ ⁻¹' A.carrier, f (τ p) = χ * f p := by
   have hball : IsOpen A.carrier := Metric.isOpen_ball
-  have hU : IsOpen (A.carrier ∩ τ ⁻¹' A.carrier) := hball.inter (hball.preimage hτ)
+  have hU  := hball.inter (hball.preimage hτ)
   have hmaps : Set.MapsTo τ (A.carrier ∩ τ ⁻¹' A.carrier) A.carrier := fun _ hx => hx.2
 
   have h1 : f =ᵐ[volume.restrict (A.carrier ∩ τ ⁻¹' A.carrier)] q :=
     ae_restrict_of_ae_restrict_of_subset Set.inter_subset_left hrep
-  have hqmp : Measure.QuasiMeasurePreserving τ
-      (volume.restrict (A.carrier ∩ τ ⁻¹' A.carrier)) (volume.restrict A.carrier) :=
+  have hqmp  :=
     hτμ.restrict hmaps
-  have h3 : f ∘ τ =ᵐ[volume.restrict (A.carrier ∩ τ ⁻¹' A.carrier)] q ∘ τ :=
+  have h3  :=
     hqmp.ae_eq_comp hrep
   have h4 : (fun p => f (τ p)) =ᵐ[volume.restrict (A.carrier ∩ τ ⁻¹' A.carrier)]
       (fun p => χ * f p) :=

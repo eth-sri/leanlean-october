@@ -70,6 +70,22 @@ open SameUniformizer
       (padicMultiplicativeLubinTateSeries_isUniformizer p) n
     ).maximalIdeal
 
+@[reducible] noncomputable local instance
+    padicStandardLevelTransportSourceUniformSpace
+    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+    UniformSpace
+      (standardLubinTateLevelCompleteDVF
+        (padicMultiplicativeLubinTateSeries_isUniformizer p) n).valuationSubring :=
+  @WithIdeal.instUniformSpace _ _ (padicStandardLevelTransportSourceWithIdeal p n)
+
+@[reducible] noncomputable local instance
+    padicStandardLevelTransportSourceTopologicalSpace
+    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+    TopologicalSpace
+      (standardLubinTateLevelCompleteDVF
+        (padicMultiplicativeLubinTateSeries_isUniformizer p) n).valuationSubring :=
+  (padicStandardLevelTransportSourceUniformSpace p n).toTopologicalSpace
+
  noncomputable local instance
     padicStandardLevelTransportTargetWithIdeal
     (p : ℕ) [Fact p.Prime] (n : ℕ) :

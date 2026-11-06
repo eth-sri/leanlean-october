@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.RepresentationTheory.RankOne.SU2.IrreducibleClassification
 public import DedekindZetaZeroFree.RepresentationTheory.Compact.IntegratedOperators
 public import DedekindZetaZeroFree.RepresentationTheory.Compact.CompactCharacterProjectors
 public import Mathlib
 
 @[expose] public section
+
 
 section
 
@@ -25,11 +28,11 @@ noncomputable def rawSymmetricPowerTrace (n : ℕ) (g : RawU2) : ℂ :=
   | n + 2 => Matrix.trace g.val * rawSymmetricPowerTrace (n + 1) g -
       Matrix.det g.val * rawSymmetricPowerTrace n g
 
-noncomputable def rawRankOneCharacter (ℓ : ℕ) (g : RawU2) : ℂ :=
+noncomputable def rawRankOneCharacter (ℓ : ℕ) (g : RawU2)  :=
   rawSymmetricPowerTrace (2 * ℓ) g / Matrix.det g.val ^ ℓ
 
 noncomputable def rawCharacter {d : ℕ} (ℓ : RawHarmonicType d)
-    (g : Fin d → RawU2) : ℂ :=
+    (g : Fin d → RawU2)  :=
   ∏ j, rawRankOneCharacter (ℓ j) (g j)
 
 end DedekindZetaZeroFree.RepresentationTheory.KPCompactHarmonicTruncation

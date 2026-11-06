@@ -107,11 +107,14 @@ private theorem actual_translation_action
   rw [G.crossAction_formula s A hA hc]
   exact (congrArg Prod.fst hp).symm
 
-theorem existsUnique_ratio_horizontal_representative
-    (G : KPCuspCharts.ChartOutput F hF S D)
+section
+variable (G : KPCuspCharts.ChartOutput F hF S D)
     (A : Set (KPCuspCharts.Horizontal F))
     (hA : ∀ y : KPCuspCharts.Horizontal F, ∃! l : D.L,
       y + KPCuspCharts.embedding F l.val ∈ A)
+include G A hA in
+theorem existsUnique_ratio_horizontal_representative
+     
     (u : D.E) (x : KPCuspCharts.Cross F) :
     ∃! s : S, D.ratio s = u ∧ (G.crossAction s x).1 ∈ A := by
   obtain ⟨t, ht⟩ := D.surjective u
@@ -152,10 +155,8 @@ theorem crossAction_shape (G : KPCuspCharts.ChartOutput F hF S D)
   rw [G.crossAction_formula s A hA hc]
   rfl
 
-def orbitRatioEquiv (G : KPCuspCharts.ChartOutput F hF S D)
- (A : Set (KPCuspCharts.Horizontal F))
- (hA : ∀ y : KPCuspCharts.Horizontal F, ∃! l : D.L,
-   y + KPCuspCharts.embedding F l.val ∈ A)
+include G A hA in
+def orbitRatioEquiv  
  (B : Set (KPCuspCharts.Shape F)) (x : KPCuspCharts.Cross F) :
  {s : S // G.crossAction s x ∈ A ×ˢ B} ≃
  {u : D.E // x.2 + KPCuspLogShape.logarithm F hF D.E D.integralUnits (Additive.ofMul u) ∈ B} := by
@@ -216,10 +217,8 @@ def shapeUnitEquivKernel
    apply Subtype.ext
    exact mul_inv_cancel_right _ _
 
-theorem rectangle_orbit_multiplicity (G : KPCuspCharts.ChartOutput F hF S D)
- (A : Set (KPCuspCharts.Horizontal F))
- (hA : ∀ y : KPCuspCharts.Horizontal F, ∃! l : D.L,
-   y + KPCuspCharts.embedding F l.val ∈ A)
+include G A hA in
+theorem rectangle_orbit_multiplicity  
  (B : Set (KPCuspCharts.Shape F))
  (hB : ∀ b : KPCuspCharts.Shape F, ∃! v : KPCuspLogShape.logLattice F hF D.E D.integralUnits,
    b + v.val ∈ B)
@@ -244,6 +243,8 @@ theorem rectangle_orbit_multiplicity (G : KPCuspCharts.ChartOutput F hF S D)
  change (∑' _ : T, (1 : ℝ≥0∞)) = _
  rw [ENNReal.tsum_one]
  exact congrArg (fun n : ℕ∞ => (n : ℝ≥0∞)) (ENat.card_congr e)
+end
+
 
 end DedekindZetaZeroFree.KPMeanZeroWeightedEnergy.GapCoercivity.CrossSection
 

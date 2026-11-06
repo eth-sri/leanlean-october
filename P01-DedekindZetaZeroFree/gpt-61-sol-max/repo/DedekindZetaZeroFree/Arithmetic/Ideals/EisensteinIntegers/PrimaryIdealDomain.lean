@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.NumberTheory.NumberField.Cyclotomic.PID
 public import Mathlib.NumberTheory.NumberField.Cyclotomic.Three
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.Eisenstein
 
@@ -18,15 +21,14 @@ noncomputable abbrev η (E : Type) [Field E] [NumberField E]
 
 noncomputable abbrev «λ» (E : Type) [Field E] [NumberField E]
     [IsCyclotomicExtension {3} ℚ E]
-    (ω : E) (hω : IsPrimitiveRoot ω 3) : R E := η E ω hω - 1
+    (ω : E) (hω : IsPrimitiveRoot ω 3)  := η E ω hω - 1
 
 def m3 (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] : Ideal (R E) :=
+    [IsCyclotomicExtension {3} ℚ E]  :=
   Ideal.span {(3 : R E)}
 
 abbrev red3 (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] :
-    R E →+* (R E ⧸ m3 E) := Ideal.Quotient.mk (m3 E)
+    [IsCyclotomicExtension {3} ℚ E]  := Ideal.Quotient.mk (m3 E)
 
 abbrev ιR (E : Type) [Field E] [NumberField E]
     [IsCyclotomicExtension {3} ℚ E] (ι : E →+* ℂ) : R E →+* ℂ :=

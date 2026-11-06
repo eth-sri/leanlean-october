@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Topology
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.RestrictedProductUnitsTopology
 public import Mathlib.Topology.Algebra.RestrictedProduct.TopologicalSpace
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -38,9 +41,7 @@ variable (K : Type*) [Field K] [NumberField K]
 
 /-- The finite restricted-product idèles and finite adele units are
 canonically isomorphic as topological groups. -/
-noncomputable def finiteEquivFiniteAdeleUnitsContinuousMulEquiv :
-    FiniteIdeleGroup K ≃ₜ*
-      (IsDedekindDomain.FiniteAdeleRing (𝓞 K) K)ˣ :=
+noncomputable def finiteEquivFiniteAdeleUnitsContinuousMulEquiv  :=
   (RestrictedProduct.unitsContinuousMulEquiv
     (R := fun v : HeightOneSpectrum (𝓞 K) => v.adicCompletion K)
     (B := fun v : HeightOneSpectrum (𝓞 K) => v.adicCompletionIntegers K)
@@ -86,10 +87,7 @@ theorem continuous_finiteEquivFiniteAdeleUnits :
       apply RestrictedProduct.mapAlong_continuous
       intro v
       exact Units.continuous_val
-    exact h.congr (fun a => by
-      apply RestrictedProduct.ext
-      intro v
-      rfl)
+    apply h.congr <;> aesop
   · have h : Continuous (RestrictedProduct.mapAlong
         (fun v : HeightOneSpectrum (𝓞 K) => (v.adicCompletion K)ˣ)
         (fun v : HeightOneSpectrum (𝓞 K) => v.adicCompletion K)

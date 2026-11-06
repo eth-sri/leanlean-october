@@ -64,12 +64,15 @@ variable
 /-- Pulling the canonical global norm-residue homomorphism back from
 idele classes to ideles gives exactly the product of the chosen local
 Artin homomorphisms. -/
+
+local notation:max "current_globalArtinMonoidHom" => globalArtinMonoidHom (K := K) (L := L)
+
 theorem
     globalNormResidueMonoidHom_comp_ideleClassQuotient_eq_globalArtin :
     (globalNormResidueMonoidHom K L).comp
         (QuotientGroup.mk'
           (IdeleGroup.principalSubgroup K)) =
-      globalArtinMonoidHom (K := K) (L := L) := by
+      current_globalArtinMonoidHom := by
   apply MonoidHom.ext
   intro a
   let a₀ :=
@@ -112,8 +115,7 @@ theorem
             (IdeleGroup.principalSubgroup K) a₀) :=
       hnormApprox
     _ =
-        globalArtinMonoidHom
-          (K := K) (L := L) a₀ := by
+        current_globalArtinMonoidHom a₀ := by
       dsimp only [a₀]
       rw [artinFiniteSupportApproximation]
       simp only [map_mul, map_prod]
@@ -124,8 +126,7 @@ theorem
           globalNormResidueMonoidHom K L
               (IdeleGroup.infinitePlaceIdeleClass v
                 (IdeleGroup.infiniteComponent v a)) =
-            globalArtinMonoidHom
-              (K := K) (L := L)
+            current_globalArtinMonoidHom
               (infinitePlaceIdele v
                 (IdeleGroup.infiniteComponent v a))
         rw [globalArtinMonoidHom_infinitePlaceIdele]
@@ -140,8 +141,7 @@ theorem
           globalNormResidueMonoidHom K L
               (IdeleGroup.finitePlaceIdeleClass v.1
                 (IdeleGroup.finiteComponent v.1 a)) =
-            globalArtinMonoidHom
-              (K := K) (L := L)
+            current_globalArtinMonoidHom
               (finitePlaceIdele v.1
                 (IdeleGroup.finiteComponent v.1 a))
         rw [globalArtinMonoidHom_finitePlaceIdele]
@@ -151,8 +151,7 @@ theorem
               (K := K) (L := L) v.1)
             (IdeleGroup.finiteComponent v.1 a)
     _ =
-        globalArtinMonoidHom
-          (K := K) (L := L) a :=
+        current_globalArtinMonoidHom a :=
       (globalArtinMonoidHom_eq_artinFiniteSupportApproximation
         (K := K) (L := L) a).symm
 
@@ -162,8 +161,7 @@ Frobenius normalization used by the local maps. -/
 @[simp]
 theorem globalArtinMonoidHom_principalIdele
     (x : Kˣ) :
-    globalArtinMonoidHom
-        (K := K) (L := L)
+    current_globalArtinMonoidHom
         (IdeleGroup.principalIdele K x) =
       1 := by
   rw [← DFunLike.congr_fun
@@ -213,11 +211,11 @@ noncomputable def globalIdeleClassArtinMonoidHom :
     IdeleClassGroup K →* (L ≃ₐ[K] L) :=
   QuotientGroup.lift
     (IdeleGroup.principalSubgroup K)
-    (globalArtinMonoidHom (K := K) (L := L))
+    (current_globalArtinMonoidHom)
     (by
       intro a ha
       change
-        globalArtinMonoidHom (K := K) (L := L) a = 1
+        current_globalArtinMonoidHom a = 1
       rcases ha with ⟨x, rfl⟩
       exact
         globalArtinMonoidHom_principalIdele
@@ -232,37 +230,37 @@ theorem globalIdeleClassArtinMonoidHom_mk
         (K := K) (L := L)
         (QuotientGroup.mk'
           (IdeleGroup.principalSubgroup K) a) =
-      globalArtinMonoidHom (K := K) (L := L) a := by
+      current_globalArtinMonoidHom a := by
   rw [globalIdeleClassArtinMonoidHom]
   exact QuotientGroup.lift_mk _ _ _
 
-/-- The descended global Artin homomorphism is continuous for the
-ordinary quotient topology on the idele class group. -/
-theorem globalIdeleClassArtinMonoidHom_continuous :
-    Continuous
-      (globalIdeleClassArtinMonoidHom
-        (K := K) (L := L)) := by
-  refine
-    (QuotientGroup.isQuotientMap_mk
-      (G := IdeleGroup K)
-      (N := IdeleGroup.principalSubgroup K)).continuous_iff.2 ?_
-  convert
-    (globalArtinMonoidHom_continuous
-      (K := K) (L := L)) using 1
-  funext a
-  exact globalIdeleClassArtinMonoidHom_mk
-    (K := K) (L := L) a
 
-/-- The descended global Artin map, retaining its ordinary topological
-group structure. -/
-noncomputable def globalIdeleClassArtinContinuousMonoidHom :
-    IdeleClassGroup K →ₜ* (L ≃ₐ[K] L) where
-  toMonoidHom :=
-    globalIdeleClassArtinMonoidHom
-      (K := K) (L := L)
-  continuous_toFun :=
-    globalIdeleClassArtinMonoidHom_continuous
-      (K := K) (L := L)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The descended local-product Artin homomorphism is the canonical
 global norm-residue homomorphism. -/
@@ -289,43 +287,43 @@ theorem
       (globalNormResidueMonoidHom_comp_ideleClassQuotient_eq_globalArtin
         (K := K) (L := L)) a).symm
 
-/-- The independently descended continuous local-product Artin map is
-the canonical topological global norm-residue map. -/
-theorem
-    globalIdeleClassArtinContinuousMonoidHom_eq_globalNormResidueContinuousMonoidHom :
-    globalIdeleClassArtinContinuousMonoidHom
-        (K := K) (L := L) =
-      globalNormResidueContinuousMonoidHom K L := by
-  apply ContinuousMonoidHom.ext
-  intro c
-  change
-    globalIdeleClassArtinMonoidHom
-        (K := K) (L := L) c =
-      globalNormResidueMonoidHom K L c
-  exact
-    DFunLike.congr_fun
-      (globalIdeleClassArtinMonoidHom_eq_globalNormResidueMonoidHom
-        (K := K) (L := L)) c
 
-/-- The descended global Artin homomorphism is surjective. -/
-theorem globalIdeleClassArtinMonoidHom_surjective :
-    Function.Surjective
-      (globalIdeleClassArtinMonoidHom
-        (K := K) (L := L)) := by
-  rw [
-    globalIdeleClassArtinMonoidHom_eq_globalNormResidueMonoidHom]
-  exact globalNormResidueMonoidHom_surjective K L
 
-/-- The kernel of the descended global Artin homomorphism is exactly
-the genuine idele-class norm range. -/
-@[simp]
-theorem globalIdeleClassArtinMonoidHom_ker :
-    (globalIdeleClassArtinMonoidHom
-      (K := K) (L := L)).ker =
-      (_root_.ideleClassNorm K L).range := by
-  rw [
-    globalIdeleClassArtinMonoidHom_eq_globalNormResidueMonoidHom,
-    globalNormResidueMonoidHom_ker]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- An idele class has trivial global Artin symbol exactly when it is
 the norm of an idele class from the extension. -/

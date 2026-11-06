@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.LubinTate.FormalModule.Series
 public import ClassFieldTheory.LubinTate.FormalModule.LinearTerm
 public import Mathlib.RingTheory.MvPowerSeries.Substitution
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -47,9 +50,7 @@ noncomputable def inVariable (e : LubinTateSeries F π) (i : σ) :
 @[simp]
 theorem constantCoeff_inVariable (e : LubinTateSeries F π) (i : σ) :
     MvPowerSeries.constantCoeff (inVariable e i) = 0 := by
-  exact PowerSeries.constantCoeff_subst_eq_zero
-    (MvPowerSeries.constantCoeff_X (R := F.valuationSubring) i)
-    e.toPowerSeries e.constantCoeff_eq_zero
+  apply PowerSeries.constantCoeff_subst_eq_zero <;> aesop
 
 /-- The family `i |-> e(X_i)` admits genuine multivariable
 substitution. -/
@@ -58,27 +59,29 @@ theorem inVariable_hasSubst [Finite σ] (e : LubinTateSeries F π) :
   MvPowerSeries.hasSubst_of_constantCoeff_zero
     (fun i ↦ constantCoeff_inVariable e i)
 
+section
+variable (e ebar : LubinTateSeries F π)
+    (H : MvPowerSeries σ F.valuationSubring)
+include e ebar H
 /-- The literal same-uniformizer equation
 `e(H(X_i)) = H(ebar(X_i))`. -/
-def Intertwines (e ebar : LubinTateSeries F π)
-    (H : MvPowerSeries σ F.valuationSubring) : Prop :=
+def Intertwines    :=
   PowerSeries.subst H e.toPowerSeries =
     MvPowerSeries.subst (fun i : σ ↦ inVariable ebar i) H
 
 /-- The coefficientwise defect whose vanishing is the intertwining
 equation. -/
-noncomputable def defect (e ebar : LubinTateSeries F π)
-    (H : MvPowerSeries σ F.valuationSubring) :
-    MvPowerSeries σ F.valuationSubring :=
+noncomputable def defect    :=
   PowerSeries.subst H e.toPowerSeries -
     MvPowerSeries.subst (fun i : σ ↦ inVariable ebar i) H
 
 /-- States the theorem `intertwines_iff_defect_eq_zero`. -/
 theorem intertwines_iff_defect_eq_zero
-    (e ebar : LubinTateSeries F π)
-    (H : MvPowerSeries σ F.valuationSubring) :
+      :
     Intertwines e ebar H ↔ defect e ebar H = 0 := by
   simp only [Intertwines, defect, sub_eq_zero]
+end
+
 
 /-- Each variable itself intertwines a Lubin--Tate series with itself. -/
 theorem intertwines_X [Finite σ]

@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LargeSieve.Exponents.ExponentOneByApproximation
 
 @[expose] public section
+
 
 /-
 https://github.com/openai/math
@@ -12,14 +15,12 @@ Source: lean/OAI/NumberTheory/DirichletL/QuadraticSieve/PoissonComparison.lean.
 
 namespace DedekindZetaZeroFree.LargeSieve
 
-noncomputable def bootstrapExponent (n : ℕ) : ℝ := 1 + 1 / ((n : ℝ) + 1)
+noncomputable def bootstrapExponent (n : ℕ)  := 1 + 1 / ((n : ℝ) + 1)
 
 theorem bootstrapExponent_bounds (n : ℕ) :
     1 < bootstrapExponent n ∧ bootstrapExponent n ≤ 2 := by
   have hpos : (0 : ℝ) < (n : ℝ) + 1 := by positivity
-  have hle : (1 : ℝ) ≤ (n : ℝ) + 1 := by
-    have : (0 : ℝ) ≤ n := Nat.cast_nonneg n
-    linarith
+  
   constructor
   · rw [bootstrapExponent]
     have : 0 < 1 / ((n : ℝ) + 1) := one_div_pos.mpr hpos
@@ -34,12 +35,7 @@ theorem bootstrapExponent_bounds (n : ℕ) :
 
 theorem bootstrapExponent_succ (n : ℕ) :
     bootstrapExponent (n + 1) = 2 - 1 / bootstrapExponent n := by
-  have hn : ((n : ℝ) + 1) ≠ 0 := by positivity
-  have hn1 : ((n : ℝ) + 1) + 1 ≠ 0 := by positivity
-  rw [bootstrapExponent, bootstrapExponent]
-  push_cast
-  field_simp
-  ring
+  grind [DedekindZetaZeroFree.LargeSieve.bootstrapExponent]
 
 theorem hasExponent_one_of_improvement (B : ℝ → ℝ → ℝ)
     (hTwo : HasExponent B 2)

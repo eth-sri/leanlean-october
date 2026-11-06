@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Valuation.HenselLemma
 public import ValuedFieldTheory.Ramification.HilbertRamification.UniqueExtensionIntegralClosure
 public import ValuedFieldTheory.Ramification.HilbertRamification.Polynomial
@@ -7,6 +9,7 @@ public import Mathlib.NumberTheory.RamificationInertia.Inertia
 public import Mathlib.NumberTheory.RamificationInertia.Ramification
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -80,7 +83,7 @@ theorem map_maximalIdeal_eq_pow_ramificationIdx_dvf :
     exact not_le_of_gt
       (Ideal.pow_succ_lt_pow
         (IsDiscreteValuationRing.not_a_field target.valuationSubring) m)
-  have he : Ideal.ramificationIdx' p P = m :=
+  have he  :=
     Ideal.ramificationIdx'_spec (by rw [hmapPow]) hnot
   change Ideal.map i p = P ^ Ideal.ramificationIdx' p P
   rw [he]
@@ -106,9 +109,8 @@ theorem residueField_finiteDimensional_of_moduleFinite_dvf
 
 omit [FiniteDimensional K L] [IsGalois K L] in
 /-- Lift a residue polynomial coefficientwise to the base valuation ring. -/
-theorem exists_base_polynomial_lift_residue_eq_dvf
-    (fbar : base.residueField[X]) :
-    ∃ P : base.valuationSubring[X], P.map base.residueMap = fbar :=
+def exists_base_polynomial_lift_residue_eq_dvf
+    (fbar : base.residueField[X])  :=
   Polynomial.map_surjective base.residueMap base.residue_surjective fbar
 
 omit [FiniteDimensional K L] [IsGalois K L] in
@@ -138,9 +140,7 @@ theorem polynomial_eval_mem_maximalIdeal_of_reduced_eval_eq_zero_dvf
   rw [← target.residue_eq_zero_iff]
   calc
     target.residueMap (P.eval a) =
-        (P.map target.residueMap).eval (target.residueMap a) := by
-      exact
-        (Polynomial.eval_map_apply
+        (P.map target.residueMap).eval (target.residueMap a) := (Polynomial.eval_map_apply
           (f := target.residueMap) (p := P) a).symm
     _ = 0 := hroot
 
@@ -156,9 +156,7 @@ theorem polynomial_derivative_eval_isUnit_of_reduced_ne_zero_dvf
   calc
     target.residueMap (P.derivative.eval a) =
         (P.derivative.map target.residueMap).eval
-          (target.residueMap a) := by
-      exact
-        (Polynomial.eval_map_apply
+          (target.residueMap a) := (Polynomial.eval_map_apply
           (f := target.residueMap) (p := P.derivative) a).symm
     _ = ((P.map target.residueMap).derivative).eval
           (target.residueMap a) := by
@@ -198,12 +196,10 @@ theorem polynomial_eval_add_uniformizer_isUniformizer_dvf
     rw [hdecomp]
     simp [Polynomial.eval_add, Polynomial.eval_mul, Polynomial.eval_sub]
   have hqEval : q.eval a = P.derivative.eval a := by
-    simpa [q] using
-      ValuationTheory.DiscreteValuationField.divByMonic_X_sub_C_eval_eq_derivative_eval
-        (p := P) a
+    apply ValuationTheory.DiscreteValuationField.divByMonic_X_sub_C_eval_eq_derivative_eval
   have hqUnit : IsUnit (q.eval a) := by
     simpa [hqEval] using hderiv
-  have hpiMem : pi ∈ target.maximalIdeal :=
+  have hpiMem  :=
     target.uniformizer_mem_maximalIdeal hpi
   have hPMem : P.eval (a + pi) ∈ target.maximalIdeal := by
     have haMem : P.eval a ∈ target.maximalIdeal := by
@@ -216,11 +212,7 @@ theorem polynomial_eval_add_uniformizer_isUniformizer_dvf
       q.eval (a + pi) - q.eval a ∈ target.maximalIdeal := by
     have harg : (a + pi) - a ∈ target.maximalIdeal := by
       simpa using hpiMem
-    simpa using
-      polynomial_eval₂_sub_mem_of_sub_mem
-        (f := RingHom.id target.valuationSubring)
-        (I := target.maximalIdeal)
-        (x := a + pi) (y := a) harg q
+    apply polynomial_eval₂_sub_mem_of_sub_mem <;> assumption
   have hpiqdiff :
       pi * (q.eval (a + pi) - q.eval a) ∈ target.maximalIdeal ^ 2 := by
     simpa [pow_two] using
@@ -242,8 +234,7 @@ theorem polynomial_eval_add_uniformizer_isUniformizer_dvf
       have hsub := Ideal.sub_mem _ hsquare herr
       convert hsub using 1
       ring
-    exact target.uniformizer_mul_unit_not_mem_maximalIdeal_sq
-      hpi hqUnit hmain
+    apply target.uniformizer_mul_unit_not_mem_maximalIdeal_sq <;> assumption
   exact target.isUniformizer_of_mem_maximalIdeal_of_not_mem_maximalIdeal_sq
     hPMem hnot
 
@@ -263,8 +254,7 @@ theorem exists_residue_eq_polynomial_eval_isUniformizer_dvf
     · rw [residue_eq_residue_iff_sub_mem_maximalIdeal
         (R := target.valuationSubring)]
       simpa using target.uniformizer_mem_maximalIdeal hpi
-    · exact polynomial_eval_add_uniformizer_isUniformizer_dvf
-        (target := target) hpi hdeep hderiv
+    · apply polynomial_eval_add_uniformizer_isUniformizer_dvf <;> assumption
   · exact
       ⟨a, rfl,
         target.isUniformizer_of_mem_maximalIdeal_of_not_mem_maximalIdeal_sq
@@ -284,13 +274,7 @@ theorem base_polynomial_aeval_residue_eq_dvf
         ((P.map
           (algebraMap base.valuationSubring target.valuationSubring)).map
             target.residueMap).eval (target.residueMap a) := by
-      rw [Polynomial.aeval_def, Polynomial.eval₂_eq_eval_map]
-      exact
-        (Polynomial.eval_map_apply
-          (f := target.residueMap)
-          (p := P.map
-            (algebraMap base.valuationSubring target.valuationSubring))
-          a).symm
+      simp_all
     _ =
         ((P.map base.residueMap).map
           (algebraMap base.residueField target.residueField)).eval
@@ -314,10 +298,7 @@ theorem exists_mem_adjoin_residue_eq_dvf
       z ∈ Algebra.adjoin base.valuationSubring
           ({a} : Set target.valuationSubring) ∧
         target.residueMap z = zbar := by
-  have htop :
-      Algebra.adjoin base.residueField
-          ({target.residueMap a} : Set target.residueField) =
-        (⊤ : Subalgebra base.residueField target.residueField) :=
+  have htop  :=
     Algebra.adjoin_eq_top_of_primitive_element
       (Algebra.IsAlgebraic.isAlgebraic (target.residueMap a)) hprim
   have hz :
@@ -331,9 +312,7 @@ theorem exists_mem_adjoin_residue_eq_dvf
       (base := base) fbar with
     ⟨P, hP⟩
   refine ⟨Polynomial.aeval a P, ?_, ?_⟩
-  · exact
-      Polynomial.aeval_mem_adjoin_singleton
-        (R := base.valuationSubring) (p := P) a
+  · apply Polynomial.aeval_mem_adjoin_singleton
   · rw [base_polynomial_aeval_residue_eq_dvf
       (base := base) (target := target) P a, hP]
     simpa [Polynomial.aeval_def] using hfbar
@@ -378,22 +357,18 @@ theorem exists_mem_adjoin_sub_mem_maximalIdeal_pow_dvf
       y ∈ Algebra.adjoin base.valuationSubring
           ({a} : Set target.valuationSubring) ∧
         z - y ∈ target.maximalIdeal ^ n := by
-  let pi : target.valuationSubring := Polynomial.aeval a P
-  let A : Subalgebra base.valuationSubring target.valuationSubring :=
+  let pi  := Polynomial.aeval a P
+  let A  :=
     Algebra.adjoin base.valuationSubring ({a} : Set target.valuationSubring)
   have hpiA : pi ∈ A := by
-    exact
-      Polynomial.aeval_mem_adjoin_singleton
-        (R := base.valuationSubring) (p := P) a
+    apply Polynomial.aeval_mem_adjoin_singleton
   induction n generalizing z with
   | zero =>
       refine ⟨0, A.zero_mem, ?_⟩
       simp
   | succ n ih =>
       rcases ih z with ⟨y, hyA, hdiff⟩
-      have hdiv : pi ^ n ∣ z - y := by
-        exact
-          (target.mem_maximalIdeal_pow_iff_uniformizer_pow_dvd
+      have hdiv  := (target.mem_maximalIdeal_pow_iff_uniformizer_pow_dvd
             (pi := pi) (x := z - y) hpi n).1
             (by simpa [pi] using hdiff)
       rcases hdiv with ⟨b, hb⟩
@@ -402,9 +377,7 @@ theorem exists_mem_adjoin_sub_mem_maximalIdeal_pow_dvf
         ⟨c, hcA, hbc⟩
       refine ⟨y + pi ^ n * c, ?_, ?_⟩
       · exact A.add_mem hyA (A.mul_mem (A.pow_mem hpiA n) hcA)
-      · have hpiPow : pi ^ n ∈ target.maximalIdeal ^ n := by
-          exact
-            (target.mem_maximalIdeal_pow_iff_uniformizer_pow_dvd
+      · have hpiPow  := (target.mem_maximalIdeal_pow_iff_uniformizer_pow_dvd
               (pi := pi) (x := pi ^ n) hpi n).2
               ⟨1, by rw [mul_one]⟩
         have hmul :
@@ -417,7 +390,7 @@ theorem exists_mem_adjoin_sub_mem_maximalIdeal_pow_dvf
             _ = pi ^ n * b - pi ^ n * c := by rw [hb]
             _ = pi ^ n * (b - c) := by ring
         rw [hre]
-        simpa [pow_succ] using hmul
+        exact hmul
 
 omit [FiniteDimensional K L] [IsGalois K L] in
 /-- A primitive residue lift can be adjusted so that its lifted minimal
@@ -436,7 +409,7 @@ theorem exists_primitive_residue_lift_polynomial_uniformizer_dvf
   rcases Field.exists_primitive_element
       base.residueField target.residueField with
     ⟨xbar, hprim⟩
-  have hsep : IsSeparable base.residueField xbar :=
+  have hsep  :=
     Algebra.IsSeparable.isSeparable base.residueField xbar
   let fbar : base.residueField[X] := minpoly base.residueField xbar
   rcases exists_base_polynomial_lift_residue_eq_dvf
@@ -444,13 +417,12 @@ theorem exists_primitive_residue_lift_polynomial_uniformizer_dvf
     ⟨P, hP⟩
   rcases target.residue_surjective xbar with ⟨a0, ha0⟩
   rcases target.exists_uniformizer with ⟨pi, hpi⟩
-  let Q : target.valuationSubring[X] :=
+  let Q  :=
     P.map (algebraMap base.valuationSubring target.valuationSubring)
   have hred :
       Q.map target.residueMap =
         fbar.map (algebraMap base.residueField target.residueField) := by
-    exact base_polynomial_lift_target_reduction_eq_dvf
-      (base := base) (target := target) hP
+    apply base_polynomial_lift_target_reduction_eq_dvf <;> assumption
   have hrootbar :
       (fbar.map
         (algebraMap base.residueField target.residueField)).eval xbar = 0 := by
@@ -474,10 +446,10 @@ theorem exists_primitive_residue_lift_polynomial_uniformizer_dvf
           (target.residueMap a0) ≠ 0 := by
     rw [hred, ha0]
     exact hsimplebar
-  have hQmem : Q.eval a0 ∈ target.maximalIdeal :=
+  have hQmem  :=
     polynomial_eval_mem_maximalIdeal_of_reduced_eval_eq_zero_dvf
       (target := target) hroot
-  have hQderiv : IsUnit (Q.derivative.eval a0) :=
+  have hQderiv  :=
     polynomial_derivative_eval_isUnit_of_reduced_ne_zero_dvf
       (target := target) hsimple
   rcases exists_residue_eq_polynomial_eval_isUniformizer_dvf
@@ -489,7 +461,7 @@ theorem exists_primitive_residue_lift_polynomial_uniformizer_dvf
           (target.residueMap a) ≠ 0 := by
     rw [hares]
     exact hsimple
-  have hderivA : IsUnit (Q.derivative.eval a) :=
+  have hderivA  :=
     polynomial_derivative_eval_isUnit_of_reduced_ne_zero_dvf
       (target := target) hsimpleA
   refine ⟨P, a, ?_, ?_, ?_⟩
@@ -501,14 +473,17 @@ theorem exists_primitive_residue_lift_polynomial_uniformizer_dvf
     exact hauniform
   · exact hderivA
 
+section
+variable (huniq :
+      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
+        base target)
+    [Algebra.IsSeparable base.residueField target.residueField]
+include huniq
 /-- The full noncomplete generator data used by the monogenic integral-generator theorem and the first ramification-quotient homomorphism: a primitive residue lift, a lifted polynomial whose value is a
 uniformizer, its unit derivative, and generation of the entire target
 valuation ring. -/
 theorem exists_valuationSubring_generator_data_of_uniqueExtension
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    [Algebra.IsSeparable base.residueField target.residueField] :
+      :
     ∃ P : base.valuationSubring[X], ∃ a : target.valuationSubring,
       IntermediateField.adjoin base.residueField
           ({target.residueMap a} : Set target.residueField) =
@@ -520,25 +495,24 @@ theorem exists_valuationSubring_generator_data_of_uniqueExtension
       Algebra.adjoin base.valuationSubring
           ({a} : Set target.valuationSubring) =
         (⊤ : Subalgebra base.valuationSubring target.valuationSubring) := by
-  let : Module.Finite base.valuationSubring target.valuationSubring :=
+  let  :=
     target_valuationSubring_moduleFinite_of_uniqueExtension
       (base := base) (target := target) huniq
-  let : FiniteDimensional base.residueField target.residueField :=
+  let  :=
     residueField_finiteDimensional_of_moduleFinite_dvf
       (base := base) (target := target)
   rcases exists_primitive_residue_lift_polynomial_uniformizer_dvf
       (base := base) (target := target) with
     ⟨P, a, hprim, hpi, hderiv⟩
-  let A : Subalgebra base.valuationSubring target.valuationSubring :=
+  let A  :=
     Algebra.adjoin base.valuationSubring ({a} : Set target.valuationSubring)
-  let e : ℕ :=
+  let e  :=
     Ideal.ramificationIdx' base.maximalIdeal target.maximalIdeal
   have hmap :
       Ideal.map (algebraMap base.valuationSubring target.valuationSubring)
           base.maximalIdeal =
         target.maximalIdeal ^ e := by
-    exact map_maximalIdeal_eq_pow_ramificationIdx_dvf
-      (base := base) (target := target)
+    apply map_maximalIdeal_eq_pow_ramificationIdx_dvf
   have htop :
       (⊤ : Submodule base.valuationSubring target.valuationSubring) ≤
         A.toSubmodule ⊔
@@ -549,8 +523,7 @@ theorem exists_valuationSubring_generator_data_of_uniqueExtension
         (base := base) (target := target) (P := P) (a := a)
         hprim hpi e z with
       ⟨y, hyA, hdiff⟩
-    have hySub : y ∈ A.toSubmodule := by
-      simpa [A] using hyA
+    have hySub : y ∈ A.toSubmodule := hyA
     have hdiffMap :
         z - y ∈
           Ideal.map
@@ -575,9 +548,7 @@ theorem exists_valuationSubring_generator_data_of_uniqueExtension
   have hjac :
       base.maximalIdeal ≤
         Ideal.jacobson (⊥ : Ideal base.valuationSubring) := by
-    simpa using
-      (IsLocalRing.maximalIdeal_le_jacobson
-        (⊥ : Ideal base.valuationSubring))
+    apply IsLocalRing.maximalIdeal_le_jacobson
   have hle :
       (⊤ : Submodule base.valuationSubring target.valuationSubring) ≤
         A.toSubmodule :=
@@ -590,10 +561,7 @@ theorem exists_valuationSubring_generator_data_of_uniqueExtension
 
 /-- A noncomplete monogeneity theorem for integral valuation rings. -/
 theorem exists_valuationSubring_adjoin_eq_top_of_uniqueExtension
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    [Algebra.IsSeparable base.residueField target.residueField] :
+      :
     ∃ a : target.valuationSubring,
       Algebra.adjoin base.valuationSubring
           ({a} : Set target.valuationSubring) =
@@ -602,6 +570,8 @@ theorem exists_valuationSubring_adjoin_eq_top_of_uniqueExtension
       (base := base) (target := target) huniq with
     ⟨_P, a, _hprim, _hpi, _hderiv, ha⟩
   exact ⟨a, ha⟩
+end
+
 
 end Higher
 end RamificationTheory.HilbertRamification

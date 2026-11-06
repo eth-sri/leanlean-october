@@ -25,49 +25,54 @@ def finiteTraceAnnihilator (v : HeightOneSpectrum (𝓞 F))
     intro y hy x hx
     rw [mul_neg, AddChar.map_neg_eq_inv, hy x hx, inv_one]
 
-def finiteStationarySubgroup (v : HeightOneSpectrum (𝓞 F))
-    (a : (v.adicCompletion F)ˣ) (H : AddSubgroup (v.adicCompletion F)) :
+section
+variable (v : HeightOneSpectrum (𝓞 F))
+    (a : (v.adicCompletion F)ˣ) (H : AddSubgroup (v.adicCompletion F))
+include v a H
+def finiteStationarySubgroup   :
     AddSubgroup (v.adicCompletion F) :=
   (finiteTraceAnnihilator v H).comap
     (AddMonoidHom.mulLeft ((2 : v.adicCompletion F) * (a : v.adicCompletion F)))
 
-def FiniteQuadraticAdmissible (v : HeightOneSpectrum (𝓞 F))
-    (a : (v.adicCompletion F)ˣ) (H : AddSubgroup (v.adicCompletion F)) : Prop :=
+def FiniteQuadraticAdmissible   : Prop :=
   (∃ c : (v.adicCompletion F)ˣ,
     H = (v.adicCompletionIntegers F).toSubring.toAddSubgroup.map
       (AddMonoidHom.mulLeft (c : v.adicCompletion F))) ∧
   (∀ h ∈ H, ResidueTrace.localTraceCharacter v ((a : v.adicCompletion F) * h ^ 2) = 1) ∧
   H ≤ finiteStationarySubgroup v a H
 
-abbrev finiteStationaryQuotient (v : HeightOneSpectrum (𝓞 F))
-    (a : (v.adicCompletion F)ˣ) (H : AddSubgroup (v.adicCompletion F)) :=
+abbrev finiteStationaryQuotient   :=
   finiteStationarySubgroup v a H ⧸
     H.comap (finiteStationarySubgroup v a H).subtype
 
-def finiteStationaryPhase (v : HeightOneSpectrum (𝓞 F))
-    (a : (v.adicCompletion F)ˣ) (H : AddSubgroup (v.adicCompletion F))
+def finiteStationaryPhase  
     (x : finiteStationaryQuotient v a H) : Circle :=
   ResidueTrace.localTraceCharacter v
     ((a : v.adicCompletion F) * ((Quotient.out x : finiteStationarySubgroup v a H) : v.adicCompletion F) ^ 2)
+end
 
-def finiteStationaryGauss (A : SArithmeticData F)
+
+section
+variable (A : SArithmeticData F)
     (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ)
+include A v a
+def finiteStationaryGauss  
     (H : AddSubgroup (v.adicCompletion F)) : ℂ := by
   letI : MeasurableSpace (v.adicCompletion F) := borel _
   exact (((A.finiteTraceHaar v) (H : Set (v.adicCompletion F))).toReal : ℂ) *
     ∑ᶠ x : finiteStationaryQuotient v a H, (finiteStationaryPhase v a H x : ℂ)
 
-def finiteOscillatoryIntegral (A : SArithmeticData F)
-    (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ) (n : ℕ) : ℂ := by
+def finiteOscillatoryIntegral   (n : ℕ) : ℂ := by
   letI : MeasurableSpace (v.adicCompletion F) := borel _
   exact ∫ x in exteriorQuadraticCutoff v n,
     (ResidueTrace.localTraceCharacter v ((a : v.adicCompletion F) * x ^ 2) : ℂ)
       ∂A.finiteTraceHaar v
 
-def finiteOscillatoryValue (A : SArithmeticData F)
-    (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ) : ℂ :=
+def finiteOscillatoryValue   : ℂ :=
   A.finiteGamma v a /
     (Real.sqrt ‖(2 : v.adicCompletion F) * (a : v.adicCompletion F)‖ : ℂ)
+end
+
 
 private theorem prime_eq (v : HeightOneSpectrum (𝓞 F)) :
     ResidueTrace.rationalPrimeBelow v = PlaceTraceAdapter.prime F v := by
@@ -129,13 +134,15 @@ private theorem char_eq (v : HeightOneSpectrum (𝓞 F)) :
   rw [← hb]
   exact traceChar_cast hp (PlaceTraceAdapter.padicMap F v)
 
- def twoA (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ) :
+ section
+variable (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ)
+include v a
+def twoA   :
     (v.adicCompletion F)ˣ :=
   Units.mk0 ((2 : v.adicCompletion F) * (a : v.adicCompletion F))
     (mul_ne_zero (by exact_mod_cast (show (2 : F) ≠ 0 from two_ne_zero)) a.ne_zero)
 
-private theorem stationary_ball (v : HeightOneSpectrum (𝓞 F))
-    (a : (v.adicCompletion F)ˣ) (m : ℤ) :
+private theorem stationary_ball   (m : ℤ) :
     finiteStationarySubgroup v a (finiteCompletionBall F v m) =
       localScaledBallDual F v (twoA v a) m := by
   ext x
@@ -144,8 +151,7 @@ private theorem stationary_ball (v : HeightOneSpectrum (𝓞 F))
   simp only [char_eq]
   rfl
 
-private theorem admissible_ball (v : HeightOneSpectrum (𝓞 F))
-    (a : (v.adicCompletion F)ˣ) (H : AddSubgroup (v.adicCompletion F))
+private theorem admissible_ball   (H : AddSubgroup (v.adicCompletion F))
     (hH : FiniteQuadraticAdmissible v a H) :
     ∃ m : ℤ, H = finiteCompletionBall F v m := by
   obtain ⟨c, rfl⟩ := hH.1
@@ -163,8 +169,7 @@ private theorem admissible_ball (v : HeightOneSpectrum (𝓞 F))
     rw [map_mul, Units.val_inv_eq_inv_val, map_inv₀, finiteCompletionUnitOrder_valuation]
     exact (inv_mul_le_one₀ WithZero.exp_pos).mpr hx
 
-private theorem phase_ball (v : HeightOneSpectrum (𝓞 F))
-    (a : (v.adicCompletion F)ˣ) (m : ℤ)
+private theorem phase_ball   (m : ℤ)
     (hq : ∀ h ∈ finiteCompletionBall F v m,
       localFiniteCharacter F v ((a : v.adicCompletion F) * h ^ 2) = 1)
     (hHL : finiteCompletionBall F v m ≤ localScaledBallDual F v (twoA v a) m) :
@@ -177,6 +182,8 @@ private theorem phase_ball (v : HeightOneSpectrum (𝓞 F))
   change localFinitePerfectQuadraticPhase F v a (twoA v a) rfl m hq hHL
     (QuotientAddGroup.mk (Quotient.out x)) = _
   exact congrArg _ (Quotient.out_eq x)
+end
+
 
  local instance stabilizationMeasurable (v : HeightOneSpectrum (𝓞 F)) :
     MeasurableSpace (v.adicCompletion F) := borel _
@@ -248,8 +255,11 @@ private theorem gauss_ball (A : SArithmeticData F)
   simp only [Complex.ofReal_mul, localFiniteStationaryGaussSum]
   ring
 
-theorem exists_finiteQuadraticAdmissible (v : HeightOneSpectrum (𝓞 F))
-    (a : (v.adicCompletion F)ˣ) :
+section
+variable (v : HeightOneSpectrum (𝓞 F))
+    (a : (v.adicCompletion F)ˣ)
+include v a
+theorem exists_finiteQuadraticAdmissible   :
     ∃ H : AddSubgroup (v.adicCompletion F), FiniteQuadraticAdmissible v a H := by
   letI : Fact (ResidueTrace.rationalPrimeBelow v).1.Prime :=
     ⟨(ResidueTrace.rationalPrimeBelow v).2⟩
@@ -290,8 +300,7 @@ theorem exists_finiteQuadraticAdmissible (v : HeightOneSpectrum (𝓞 F))
       one_mul, one_mul] at hz
     exact hz
 
-theorem finiteStationaryQuotient_finite (v : HeightOneSpectrum (𝓞 F))
-    (a : (v.adicCompletion F)ˣ) (H : AddSubgroup (v.adicCompletion F))
+theorem finiteStationaryQuotient_finite   (H : AddSubgroup (v.adicCompletion F))
     (hH : FiniteQuadraticAdmissible v a H) : Finite (finiteStationaryQuotient v a H) := by
   obtain ⟨m, rfl⟩ := admissible_ball v a H hH
   unfold finiteStationaryQuotient
@@ -299,8 +308,7 @@ theorem finiteStationaryQuotient_finite (v : HeightOneSpectrum (𝓞 F))
   apply finite_localScaledBallDualQuotient F v (twoA v a) m
   simpa only [stationary_ball] using hH.2.2
 
-theorem finiteStationaryPhase_mk (v : HeightOneSpectrum (𝓞 F))
-    (a : (v.adicCompletion F)ˣ) (H : AddSubgroup (v.adicCompletion F))
+theorem finiteStationaryPhase_mk   (H : AddSubgroup (v.adicCompletion F))
     (hH : FiniteQuadraticAdmissible v a H) (x : finiteStationarySubgroup v a H) :
     finiteStationaryPhase v a H
         (QuotientAddGroup.mk' (H.comap (finiteStationarySubgroup v a H).subtype) x) =
@@ -328,9 +336,14 @@ theorem finiteStationaryPhase_mk (v : HeightOneSpectrum (𝓞 F))
     exact congrArg q (Quotient.out_eq t)
   rw [hq]
   rfl
+end
 
-theorem finiteOscillatoryIntegral_eventually_eq_gauss (A : SArithmeticData F)
+
+section
+variable (A : SArithmeticData F)
     (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ)
+include A v a
+theorem finiteOscillatoryIntegral_eventually_eq_gauss  
     (H : AddSubgroup (v.adicCompletion F)) (hH : FiniteQuadraticAdmissible v a H) :
     ∀ᶠ n : ℕ in atTop, A.finiteOscillatoryIntegral v a n = A.finiteStationaryGauss v a H := by
   obtain ⟨m, rfl⟩ := admissible_ball v a H hH
@@ -350,8 +363,7 @@ theorem finiteOscillatoryIntegral_eventually_eq_gauss (A : SArithmeticData F)
   rw [hN n hn]
   simp only [Complex.real_smul]
 
-theorem finiteQuadratic_stabilizes (A : SArithmeticData F)
-    (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ) :
+theorem finiteQuadratic_stabilizes   :
     A.FiniteQuadraticStabilizes v a := by
   obtain ⟨H, hH⟩ := exists_finiteQuadraticAdmissible v a
   refine ⟨(Real.sqrt ‖(2 : v.adicCompletion F) * (a : v.adicCompletion F)‖ : ℂ) *
@@ -361,8 +373,7 @@ theorem finiteQuadratic_stabilizes (A : SArithmeticData F)
     A.finiteOscillatoryIntegral v a n = _
   rw [hn]
 
-theorem finiteOscillatoryIntegral_eventually_eq_value (A : SArithmeticData F)
-    (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ) :
+theorem finiteOscillatoryIntegral_eventually_eq_value   :
     ∀ᶠ n : ℕ in atTop, A.finiteOscillatoryIntegral v a n = A.finiteOscillatoryValue v a := by
   have hb : (2 : v.adicCompletion F) * (a : v.adicCompletion F) ≠ 0 :=
     mul_ne_zero (by exact_mod_cast (show (2 : F) ≠ 0 from two_ne_zero)) a.ne_zero
@@ -374,13 +385,14 @@ theorem finiteOscillatoryIntegral_eventually_eq_value (A : SArithmeticData F)
     A.finiteOscillatoryIntegral v a n = A.finiteGamma v a at hn
   exact (eq_div_iff hs).mpr (by simpa [mul_comm] using hn)
 
-theorem finiteOscillatoryValue_eq_gauss (A : SArithmeticData F)
-    (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ)
+theorem finiteOscillatoryValue_eq_gauss  
     (H : AddSubgroup (v.adicCompletion F)) (hH : FiniteQuadraticAdmissible v a H) :
     A.finiteOscillatoryValue v a = A.finiteStationaryGauss v a H := by
   obtain ⟨n, hv, hg⟩ := ((A.finiteOscillatoryIntegral_eventually_eq_value v a).and
     (A.finiteOscillatoryIntegral_eventually_eq_gauss v a H hH)).exists
   exact hv.symm.trans hg
+end
+
 
 private theorem localStationaryGauss_norm (v : HeightOneSpectrum (𝓞 F))
     (a b : (v.adicCompletion F)ˣ)
@@ -421,8 +433,11 @@ private theorem localStationaryGauss_norm (v : HeightOneSpectrum (𝓞 F))
   nlinarith [norm_nonneg (localFiniteStationaryGaussSum F v a b hb m hq hHL),
     inv_pos.mpr (Real.sqrt_pos.mpr hbpos)]
 
-private theorem value_norm_of_haar (A : SArithmeticData F)
+section
+variable (A : SArithmeticData F)
     (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ)
+include A v a
+private theorem value_norm_of_haar  
     (hhaar : A.finiteTraceHaar v = localNormalizedHaar F v) :
     ‖A.finiteOscillatoryValue v a‖ =
       (Real.sqrt ‖(2 : v.adicCompletion F) * (a : v.adicCompletion F)‖)⁻¹ := by
@@ -438,8 +453,7 @@ private theorem value_norm_of_haar (A : SArithmeticData F)
   simpa only [ENNReal.toReal_one, Complex.ofReal_one, one_mul, twoA, Units.val_mk0] using
     (localStationaryGauss_norm v a (twoA v a) rfl m hq hHL)
 
-theorem norm_finiteOscillatoryValue (A : SArithmeticData F)
-    (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ) :
+theorem norm_finiteOscillatoryValue   :
     ‖A.finiteOscillatoryValue v a‖ =
       (Real.sqrt ‖(2 : v.adicCompletion F) * (a : v.adicCompletion F)‖)⁻¹ := by
   have hvolume : PoissonS.integerVolume F v = localHalfDifferentFactor F v := by
@@ -451,8 +465,7 @@ theorem norm_finiteOscillatoryValue (A : SArithmeticData F)
     (FiniteOscillatoryStabilization.finiteTraceHaar_eq_localNormalizedHaar_of_integerVolume
       A v hvolume)
 
-theorem norm_finiteGamma (A : SArithmeticData F)
-    (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ) :
+theorem norm_finiteGamma   :
     ‖A.finiteGamma v a‖ = 1 := by
   have hb : (2 : v.adicCompletion F) * (a : v.adicCompletion F) ≠ 0 :=
     mul_ne_zero (by exact_mod_cast (show (2 : F) ≠ 0 from two_ne_zero)) a.ne_zero
@@ -461,6 +474,8 @@ theorem norm_finiteGamma (A : SArithmeticData F)
   rw [finiteOscillatoryValue, norm_div, Complex.norm_real,
     Real.norm_eq_abs, abs_of_pos hs] at hv
   exact (div_eq_iff hs.ne').mp hv |>.trans (inv_mul_cancel₀ hs.ne')
+end
+
 
 end DedekindZetaZeroFree.SArithmeticData
 

@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Fourier.MellinStripInversion
 public import DedekindZetaZeroFree.HarmonicAnalysis.Mellin.LogarithmicWeights
 
 @[expose] public section
+
 
 /-
 Repository: openai/math.
@@ -20,11 +23,11 @@ noncomputable section
 
 namespace DedekindZetaZeroFree.LargeSieve.Vendor.LogReflection
 
-def multiplier (D : ℝ) (r : ℕ) (s : ℂ) : ℂ :=
+def multiplier (D : ℝ) (r : ℕ) (s : ℂ)  :=
   (D : ℂ) ^ (s - 1 / 2) * Complex.Gammaℂ s ^ r *
     (Complex.Gammaℂ (1 - s))⁻¹ ^ r
 
-def spectrum (D : ℝ) (r : ℕ) (H : ℂ → ℂ) (s : ℂ) : ℂ :=
+def spectrum (D : ℝ) (r : ℕ) (H : ℂ → ℂ) (s : ℂ)  :=
   multiplier D r s * H (1 - s)
 
 theorem reflection_regularity {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ}
@@ -42,7 +45,7 @@ theorem reflection_regularity {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ}
   rw [hform]
   constructor
   · intro s hs hsδ
-    have hq : DifferentiableAt ℂ (gammaQuotient r) s :=
+    have hq  :=
       (gammaQuotient_differentiableOn r).differentiableAt
         ((isOpen_lt continuous_const Complex.continuous_re).mem_nhds
           (show 0 < s.re by linarith))
@@ -65,11 +68,11 @@ theorem reflection_regularity {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ}
       (show 0 < u by linarith) huv r
     obtain ⟨Ch, hCh, hH⟩ := h.rapid_vertical_decay (1 - v) (1 - u)
       (by linarith) (by linarith) (N + k)
-    let B : ℝ := Real.rpow D (u - 1 / 2) + Real.rpow D (v - 1 / 2)
+    let B  := Real.rpow D (u - 1 / 2) + Real.rpow D (v - 1 / 2)
     have hB : 0 ≤ B := by dsimp [B]; positivity
     refine ⟨B * Cq * Ch, by positivity, ?_⟩
     intro σ t hσ hσv ht
-    let s : ℂ := (σ : ℂ) + (t : ℂ) * Complex.I
+    let s  := (σ : ℂ) + (t : ℂ) * Complex.I
     have hsre : s.re = σ := by simp [s]
     have hsim : s.im = t := by simp [s]
     have hp : ‖(D : ℂ) ^ (s - 1 / 2)‖ ≤ B := by
@@ -100,8 +103,7 @@ theorem reflection_regularity {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ}
     calc
       (1 + |t|) ^ N *
           (‖(D : ℂ) ^ (s - 1 / 2)‖ * ‖gammaQuotient r s‖ * ‖H (1 - s)‖)
-          ≤ (1 + |t|) ^ N * (B * (Cq * (1 + |t|) ^ k) * ‖H (1 - s)‖) := by
-            exact mul_le_mul_of_nonneg_left
+          ≤ (1 + |t|) ^ N * (B * (Cq * (1 + |t|) ^ k) * ‖H (1 - s)‖) := mul_le_mul_of_nonneg_left
               (mul_le_mul_of_nonneg_right
                 (mul_le_mul hp hg (norm_nonneg _) hB) (norm_nonneg _)) (by positivity)
       _ = B * Cq * ((1 + |t|) ^ (N + k) * ‖H (1 - s)‖) := by
@@ -127,45 +129,38 @@ open scoped Classical
 
 namespace DedekindZetaZeroFree.LargeSieve.Vendor
 
-def logReflectionMultiplier (D : ℝ) (r : ℕ) (s : ℂ) : ℂ :=
+def logReflectionMultiplier (D : ℝ) (r : ℕ) (s : ℂ)  :=
   (D : ℂ) ^ (s - 1 / 2) * Complex.Gammaℂ s ^ r *
     (Complex.Gammaℂ (1 - s))⁻¹ ^ r
 
-def reflectedLogSpectrum (D : ℝ) (r : ℕ) (H : ℂ → ℂ) (s : ℂ) : ℂ :=
+def reflectedLogSpectrum (D : ℝ) (r : ℕ) (H : ℂ → ℂ) (s : ℂ)  :=
   logReflectionMultiplier D r s * H (1 - s)
 
-def reflectedLogDual (D : ℝ) (r : ℕ) (H : ℂ → ℂ) (δ x : ℝ) : ℂ :=
+def reflectedLogDual (D : ℝ) (r : ℕ) (H : ℂ → ℂ) (δ x : ℝ)  :=
   if 0 < x then mellinInv (1 + δ / 2) (reflectedLogSpectrum D r H) x else 0
 
 variable {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ} {H : ℂ → ℂ}
 
-private theorem reflected_regularity (D : ℝ) (r : ℕ)
-    (hD : 0 < D) (hr : 1 ≤ r) (h : LogMellinAdmissible f δ P H) :
-    (∀ s : ℂ, 1 < s.re → s.re < 1 + δ →
-      DifferentiableAt ℂ (reflectedLogSpectrum D r H) s) ∧
-    (∀ u v : ℝ, 1 < u → u ≤ v → v < 1 + δ → ∀ N : ℕ,
-      ∃ C : ℝ, 0 ≤ C ∧ ∀ σ t : ℝ, u ≤ σ → σ ≤ v → 1 ≤ |t| →
-        (1 + |t|) ^ N *
-          ‖reflectedLogSpectrum D r H ((σ : ℂ) + (t : ℂ) * Complex.I)‖ ≤ C) := by
-  exact LogReflection.reflection_regularity D r hD hr h
+private alias reflected_regularity := _root_.DedekindZetaZeroFree.LargeSieve.Vendor.LogReflection.reflection_regularity
 
-theorem reflectedLogSpectrum_differentiableOn (D : ℝ) (r : ℕ)
-    (hD : 0 < D) (hr : 1 ≤ r) (h : LogMellinAdmissible f δ P H) :
+section
+variable (D : ℝ) (r : ℕ)
+    (hD : 0 < D) (hr : 1 ≤ r) (h : LogMellinAdmissible f δ P H)
+include D r hD hr h
+theorem reflectedLogSpectrum_differentiableOn   :
     DifferentiableOn ℂ (reflectedLogSpectrum D r H)
       {s : ℂ | 1 < s.re ∧ s.re < 1 + δ} := by
   intro s hs
   exact ((reflected_regularity D r hD hr h).1 s hs.1 hs.2).differentiableWithinAt
 
-theorem reflectedLogSpectrum_verticalIntegrable (D : ℝ) (r : ℕ)
-    (hD : 0 < D) (hr : 1 ≤ r) (h : LogMellinAdmissible f δ P H)
+theorem reflectedLogSpectrum_verticalIntegrable  
     (c : ℝ) (hc : 1 < c) (hcδ : c < 1 + δ) :
     Complex.VerticalIntegrable (reflectedLogSpectrum D r H) c volume := by
   obtain ⟨hhol, hrapid⟩ := reflected_regularity D r hD hr h
   exact (LogReflection.strip_integrability (reflectedLogSpectrum D r H)
     1 (1 + δ) hhol hrapid c hc hcδ).1
 
-theorem reflectedLogDual_eq_mellinInv (D : ℝ) (r : ℕ)
-    (hD : 0 < D) (hr : 1 ≤ r) (h : LogMellinAdmissible f δ P H)
+theorem reflectedLogDual_eq_mellinInv  
     (c x : ℝ) (hc : 1 < c) (hcδ : c < 1 + δ) (hx : 0 < x) :
     reflectedLogDual D r H δ x = mellinInv c (reflectedLogSpectrum D r H) x := by
   obtain ⟨hhol, hrapid⟩ := reflected_regularity D r hD hr h
@@ -174,6 +169,8 @@ theorem reflectedLogDual_eq_mellinInv (D : ℝ) (r : ℕ)
   exact (LogReflection.strip_inverse_api (reflectedLogSpectrum D r H)
     1 (1 + δ) hhol hrapid).1 (1 + δ / 2) c x
     (by linarith) (by linarith) hc hcδ hx
+end
+
 
 end DedekindZetaZeroFree.LargeSieve.Vendor
 

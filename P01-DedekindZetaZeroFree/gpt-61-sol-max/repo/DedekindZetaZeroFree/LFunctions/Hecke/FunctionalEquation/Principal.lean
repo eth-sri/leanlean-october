@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LFunctions.Hecke.Growth.PoleClearedOrderOne
 public import DedekindZetaZeroFree.LFunctions.Hecke.PrincipalCompletedIdealSeries
 public import DedekindZetaZeroFree.Theta.Profiles.MixedPairExponentialTails
 public import DedekindZetaZeroFree.Theta.Inversion.MixedPairGlobalSelfDuality
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.Hecke
 
@@ -39,7 +42,7 @@ theorem heckeFunctionalEquation_principal
     exact weakFEPair_selfDual_reflection P hk (mixedThetaPair_global_selfDual F)
       (mixedThetaPair_global_g₀_eq_f₀ F) (mixedThetaPair_global_ε_eq_one F) s hs0 hs1
   · intro s hs0 hs1
-    exact poleCleared_eq P hk s hs0 hs1
+    apply poleCleared_eq <;> assumption
   · intro ε hε
     obtain ⟨hp, A, B, hA, hB, htail⟩ := mixedThetaPair_exponential_tail F
     refine WeakFEPair.orderOneBound_poleClear P hk

@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Fourier.FiniteRings.Orthogonality
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.Hecke
 
@@ -10,22 +13,22 @@ noncomputable section
 
 open scoped BigOperators Classical
 
-def unitCharExtend {R : Type*} [CommMonoid R] (χ : Rˣ →* ℂ) (x : R) : ℂ :=
+section
+variable {R : Type*} [CommMonoid R] (χ : Rˣ →* ℂ)
+include R χ
+def unitCharExtend   (x : R)  :=
   if hx : IsUnit x then χ hx.unit else 0
 
-@[simp] theorem unitCharExtend_coe {R : Type*} [CommMonoid R]
-    (χ : Rˣ →* ℂ) (u : Rˣ) : unitCharExtend χ (u : R) = χ u := by
+@[simp] theorem unitCharExtend_coe   (u : Rˣ) : unitCharExtend χ (u : R) = χ u := by
   simp only [unitCharExtend, dif_pos u.isUnit]
   congr 1
   apply Units.val_injective
   exact u.isUnit.unit_spec
 
-theorem unitCharExtend_nonunit {R : Type*} [CommMonoid R]
-    (χ : Rˣ →* ℂ) {x : R} (hx : ¬ IsUnit x) : unitCharExtend χ x = 0 := by
+theorem unitCharExtend_nonunit   {x : R} (hx : ¬ IsUnit x) : unitCharExtend χ x = 0 := by
   simp [unitCharExtend, hx]
 
-private theorem unitCharExtend_mul_unit {R : Type*} [CommMonoid R]
-    (χ : Rˣ →* ℂ) (u : Rˣ) (x : R) :
+private theorem unitCharExtend_mul_unit   (u : Rˣ) (x : R) :
     unitCharExtend χ ((u : R) * x) = χ u * unitCharExtend χ x := by
   by_cases hx : IsUnit x
   · obtain ⟨v, rfl⟩ := hx
@@ -33,16 +36,18 @@ private theorem unitCharExtend_mul_unit {R : Type*} [CommMonoid R]
   · rw [unitCharExtend_nonunit χ hx, mul_zero]
     apply unitCharExtend_nonunit
     intro h
-    exact hx (isUnit_of_mul_isUnit_right h)
+    apply hx <;> aesop
+end
 
-def IsPrimitiveRingUnitChar {R : Type*} [CommRing R] (χ : Rˣ →* ℂ) : Prop :=
+
+def IsPrimitiveRingUnitChar {R : Type*} [CommRing R] (χ : Rˣ →* ℂ)  :=
   ∀ J : Ideal R, J ≠ ⊥ → ∃ u : Rˣ, (u : R) - 1 ∈ J ∧ χ u ≠ 1
 
 variable {R : Type*} [CommRing R] [Fintype R] [hR : Nontrivial R]
 
 include hR
 
-def finiteRingGaussSum (e : AddChar R ℂ) (χ : Rˣ →* ℂ) : ℂ :=
+def finiteRingGaussSum (e : AddChar R ℂ) (χ : Rˣ →* ℂ)  :=
   ∑ x : R, unitCharExtend χ x * e x
 
 private theorem unitChar_inv_conj (χ : Rˣ →* ℂ) (u : Rˣ) :
@@ -51,7 +56,7 @@ private theorem unitChar_inv_conj (χ : Rˣ →* ℂ) (u : Rˣ) :
     { toFun := fun v => χ v.toMul
       map_zero_eq_one' := χ.map_one
       map_add_eq_mul' := fun a b => χ.map_mul a.toMul b.toMul }
-  exact ψ.map_neg_eq_conj (Additive.ofMul u)
+  apply ψ.map_neg_eq_conj
 
 private theorem unitChar_nonunit_transform (e : AddChar R ℂ)
     (χ : Rˣ →* ℂ) (hχ : IsPrimitiveRingUnitChar χ) (k : R)
@@ -61,13 +66,11 @@ private theorem unitChar_nonunit_transform (e : AddChar R ℂ)
     apply hk
     rw [isUnit_iff_mem_nonZeroDivisors_of_finite, mem_nonZeroDivisors_iff_right]
     intro x hx
-    have hm : x ∈ Ideal.torsionOf R R k := by
-      simpa [Ideal.mem_torsionOf_iff] using hx
+    have hm : x ∈ Ideal.torsionOf R R k := hx
     simpa [h] using hm
   obtain ⟨u, hu, hne⟩ := hχ (Ideal.torsionOf R R k) hJ
   have huk : k * (u : R) = k := by
-    have h : ((u : R) - 1) * k = 0 := by
-      simpa [Ideal.mem_torsionOf_iff] using hu
+    have h : ((u : R) - 1) * k = 0 := hu
     calc
       k * (u : R) = ((u : R) - 1) * k + k := by ring
       _ = k := by rw [h, zero_add]
@@ -76,8 +79,7 @@ private theorem unitChar_nonunit_transform (e : AddChar R ℂ)
     unfold finiteRingFourier
     calc
       (∑ x : R, unitCharExtend χ x * e (k * x)) =
-          ∑ x : R, unitCharExtend χ ((u : R) * x) * e (k * ((u : R) * x)) := by
-        exact (Equiv.sum_comp (Units.mulLeft u) _).symm
+          ∑ x : R, unitCharExtend χ ((u : R) * x) * e (k * ((u : R) * x)) := (Equiv.sum_comp (Units.mulLeft u) _).symm
       _ = χ u * ∑ x : R, unitCharExtend χ x * e (k * x) := by
         simp only [unitCharExtend_mul_unit, ← mul_assoc, huk, Finset.mul_sum]
   have hz : (1 - χ u) * finiteRingFourier e (unitCharExtend χ) k = 0 := by
@@ -96,8 +98,7 @@ theorem primitiveUnitChar_fourier (e : AddChar R ℂ)
     calc
       (∑ x : R, unitCharExtend χ x * e ((u : R) * x)) =
           ∑ x : R, unitCharExtend χ ((↑u⁻¹ : R) * x) *
-            e ((u : R) * ((↑u⁻¹ : R) * x)) := by
-        exact (Equiv.sum_comp (Units.mulLeft u⁻¹) _).symm
+            e ((u : R) * ((↑u⁻¹ : R) * x)) := (Equiv.sum_comp (Units.mulLeft u⁻¹) _).symm
       _ = χ u⁻¹ * ∑ x : R, unitCharExtend χ x * e x := by
         simp only [unitCharExtend_mul_unit, Units.mul_inv_cancel_left,
           Finset.mul_sum, mul_assoc]

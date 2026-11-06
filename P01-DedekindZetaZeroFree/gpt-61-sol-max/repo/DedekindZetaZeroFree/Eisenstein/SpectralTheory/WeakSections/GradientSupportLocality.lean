@@ -112,14 +112,17 @@ private lemma continuous_toActual : Continuous (toActual (F := F) (ζ := ζ) (h�
   unfold toActual labeledA
   fun_prop
 
-private lemma isOpen_chart (a : ActualChart (U := U) (H := H)) : IsOpen (chart a) := a.domain_open.preimage continuous_toActual
+
+local notation:max "current_ActualChart" => ActualChart (U := U) (H := H)
+
+private lemma isOpen_chart (a : current_ActualChart) : IsOpen (chart a) := a.domain_open.preimage continuous_toActual
 private lemma toActual_fromActual (y : KPCuspGenuineMonodromy.SymmetricSpace F) :
     toActual (ζ := ζ) (hζ := hζ) (fromActual (ζ := ζ) (hζ := hζ) y) = y := by
   simp only [toActual, fromActual, LinearIsometryEquiv.symm_apply_apply]
   funext k
   simp [labeledA, labeledAInv]
 private theorem sectionFields_apply_actual (s : Sections F ζ hζ U R P H)
-    (a : ActualChart (U := U) (H := H)) (x : omega a) :
+    (a : current_ActualChart) (x : omega a) :
     sectionFields s a x = (s a.component).val (labeledA (placeEquiv F ζ hζ) x.val) := by
   have hcoe : (isotropyChart a).coefficient s x.val =
       (KPCuspGenuineMonodromy.chi F ζ hζ ((isotropyChart a).splitting x.val) : ℂ) *
@@ -128,15 +131,15 @@ private theorem sectionFields_apply_actual (s : Sections F ζ hζ U R P H)
   rw [sectionFields, hcoe]
   simp [isotropyChart, KPContCotangentActualOverlap.ChartKind.representative]
 private lemma scalar_eq_on_chart (s : BorelL2Sections F ζ hζ U R P H)
-    (a : ActualChart (U := U) (H := H)) (x : Space (3 * d F)) (hx : x ∈ chart a) :
+    (a : current_ActualChart) (x : Space (3 * d F)) (hx : x ∈ chart a) :
     scalar s a x = (s.val a.component).val (toActual (ζ := ζ) (hζ := hζ) x) := by
   have hx' : (baseReindex (F := F)).symm x ∈ omega a := hx
   unfold scalar liftExtension
   rw [dif_pos hx', sectionFields_apply_actual]
   rfl
- def baseFlat (a : ActualChart (U := U) (H := H)) (x : Space (3 * d F)) :=
+ def baseFlat (a : current_ActualChart) (x : Space (3 * d F)) :=
   (H.atlas U).components ⟨a.component, Quotient.mk _ (toActual (ζ := ζ) (hζ := hζ) x)⟩
-private theorem baseFlat_continuous (a : ActualChart (U := U) (H := H)) : Continuous (baseFlat a) := by
+private theorem baseFlat_continuous (a : current_ActualChart) : Continuous (baseFlat a) := by
   have he : baseFlat a = KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative a.component) ∘
     KPCuspSiegel.projection F (Component F ζ hζ U R P H a.component) ∘ toActual (ζ := ζ) (hζ := hζ) := by
     funext x; exact (H.atlas U).components_formula a.component _
@@ -147,19 +150,22 @@ private theorem baseFlat_continuous (a : ActualChart (U := U) (H := H)) : Contin
       funext p; exact ((H.atlas U).components_formula a.component p).symm
     rw [he]; exact (H.atlas U).components.continuous.comp continuous_sigmaMk
   exact hc.comp (continuous_quotient_mk'.comp continuous_toActual)
-private theorem baseFlat_measurable (a : ActualChart (U := U) (H := H)) : Measurable (baseFlat a) := (baseFlat_continuous a).measurable
-private theorem baseFlat_lift (a : ActualChart (U := U) (H := H)) (y : a.domain) :
+private theorem baseFlat_measurable (a : current_ActualChart) : Measurable (baseFlat a) := (baseFlat_continuous a).measurable
+private theorem baseFlat_lift (a : current_ActualChart) (y : a.domain) :
     baseFlat a (fromActual (ζ := ζ) (hζ := hζ) y.val) = a.toBase y := by
   unfold baseFlat
   rw [toActual_fromActual]
   exact (H.atlas U).components_formula a.component _
+
+local notation:max "current_squaredNorm" => squaredNorm F ζ hζ U R P H
+
 private theorem normFlat (s : BorelL2Sections F ζ hζ U R P H)
-    (a : ActualChart (U := U) (H := H)) (x : Space (3 * d F)) (hx : x ∈ chart a) :
-    squaredNorm F ζ hζ U R P H s.val (baseFlat a x) = ENNReal.ofReal (‖scalar s a x‖ ^ 2) := by
+    (a : current_ActualChart) (x : Space (3 * d F)) (hx : x ∈ chart a) :
+    current_squaredNorm s.val (baseFlat a x) = ENNReal.ofReal (‖scalar s a x‖ ^ 2) := by
   unfold squaredNorm baseFlat
   rw [sectionNorm_component, scalar_eq_on_chart s a x hx]
 private theorem coefficientFlat (W : Family (U := U) (H := H))
-    (a : ActualChart (U := U) (H := H)) (x : Space (3 * d F)) (hx : x ∈ chart a) :
+    (a : current_ActualChart) (x : Space (3 * d F)) (hx : x ∈ chart a) :
     normSquare W (baseFlat a x) = ‖liftExtension a (coefficient W a) ((baseReindex (F := F)).symm x)‖₊ ^ 2 := by
   have hx' : (baseReindex (F := F)).symm x ∈ omega a := hx
   have hq : baseFlat a x = q a ((baseReindex (F := F)).symm x) := by
@@ -168,7 +174,7 @@ private theorem coefficientFlat (W : Family (U := U) (H := H))
   rw [hq, normSquare_chart W a ⟨_, hx'⟩]
   simp only [liftExtension, dif_pos hx']
 private theorem decode_zero (W : Family (U := U) (H := H))
-    (a : ActualChart (U := U) (H := H)) (x : Space (3 * d F)) (h : ∀ j, coordinateW W a x j = 0) :
+    (a : current_ActualChart) (x : Space (3 * d F)) (h : ∀ j, coordinateW W a x j = 0) :
     liftExtension a (coefficient W a) ((baseReindex (F := F)).symm x) = 0 := by
   apply PiLp.ext
   rintro ⟨i,k⟩
@@ -208,7 +214,7 @@ private theorem weakDerivative_zero {n k : ℕ} (B : LocalBall n) (α : MultiInd
 
 theorem weakChartData_zero_on_ball (s : BorelL2Sections F ζ hζ U R P H)
     (W : Family (U := U) (H := H)) (hs : WeakChartData s W)
-    (a : ActualChart (U := U) (H := H)) (B : LocalBall (3*d F)) (hB : InteriorBall a B)
+    (a : current_ActualChart) (B : LocalBall (3*d F)) (hB : InteriorBall a B)
     (hzero : scalarCoordinate s a =ᵐ[volume.restrict B.carrier] (fun _ => 0)) :
     ∀ j, (fun x => covariantCoordinate W a x j) =ᵐ[volume.restrict B.carrier] (fun _ => 0) := by
   obtain ⟨h,hv,hg⟩ := hs a B hB 1
@@ -222,8 +228,8 @@ theorem weakChartData_zero_on_ball (s : BorelL2Sections F ζ hζ U R P H)
 theorem zero_off_closed_of_balls (s : BorelL2Sections F ζ hζ U R P H)
     (W : Family (U := U) (H := H)) (K : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U)) (hK : IsClosed K)
     (hs : ∀ᵐ b ∂KPContActualSectorCotangentL2.muU F ζ hζ U R P,
-      b ∉ K → squaredNorm F ζ hζ U R P H s.val b = 0)
-    (hlocal : ∀ (a : ActualChart (U := U) (H := H)) (B : LocalBall (3*d F)),
+      b ∉ K → current_squaredNorm s.val b = 0)
+    (hlocal : ∀ (a : current_ActualChart) (B : LocalBall (3*d F)),
       InteriorBall a B → (scalar s a =ᵐ[volume.restrict B.carrier] (fun _ => 0)) →
         ∀ j, (fun x => coordinateW W a x j) =ᵐ[volume.restrict B.carrier] (fun _ => 0)) :
     ∀ᵐ b ∂KPContActualSectorCotangentL2.muU F ζ hζ U R P, b ∉ K → normSquare W b = 0 := by
@@ -236,8 +242,8 @@ theorem zero_off_closed_of_balls (s : BorelL2Sections F ζ hζ U R P H)
     intro n
     let a := cover.chart n
     have hp := every_shrunkChart_properties F ζ hζ U R P H a
-    have hsLift : ∀ᵐ y ∂a.liftedMeasure, a.toBase y ∉ K → squaredNorm F ζ hζ U R P H s.val (a.toBase y) = 0 := by
-      have hm : MeasurableSet {b | b ∉ K → squaredNorm F ζ hζ U R P H s.val b = 0} := by
+    have hsLift : ∀ᵐ y ∂a.liftedMeasure, a.toBase y ∉ K → current_squaredNorm s.val (a.toBase y) = 0 := by
+      have hm : MeasurableSet {b | b ∉ K → current_squaredNorm s.val b = 0} := by
         have ht := hK.measurableSet.union (measurableSet_eq_fun (squaredNorm_measurable F ζ hζ U R P H s.val s.property.1)
           (measurable_const (a := (0 : ℝ≥0∞))))
         convert ht using 1; ext b; simp; tauto
@@ -251,19 +257,19 @@ theorem zero_off_closed_of_balls (s : BorelL2Sections F ζ hζ U R P H)
           (continuous_pi fun k => (continuous_apply _).comp continuous_subtype_val))
       exact hc.measurable
     have hsFlat : ∀ᵐ x ∂volume.restrict (chart a), baseFlat a x ∉ K → scalar s a x = 0 := by
-      have hmeas : MeasurableSet {x | baseFlat a x ∉ K → squaredNorm F ζ hζ U R P H s.val (baseFlat a x) = 0} := by
+      have hmeas : MeasurableSet {x | baseFlat a x ∉ K → current_squaredNorm s.val (baseFlat a x) = 0} := by
         have ht := ((baseFlat_measurable a) hK.measurableSet).union
           (measurableSet_eq_fun ((squaredNorm_measurable F ζ hζ U R P H s.val s.property.1).comp (baseFlat_measurable a))
             (measurable_const (a := (0 : ℝ≥0∞))))
         convert ht using 1; ext x; simp; tauto
       have hw : ∀ᵐ x ∂KPChartL2.weightedMeasure (3*d F) (chart a) (weight a),
-          baseFlat a x ∉ K → squaredNorm F ζ hζ U R P H s.val (baseFlat a x) = 0 := by
+          baseFlat a x ∉ K → current_squaredNorm s.val (baseFlat a x) = 0 := by
         rw [← lifted_measure_transport (a := a)]
         apply (ae_map_iff hΦ.aemeasurable hmeas).mpr
         simpa only [baseFlat_lift] using hsLift
       rw [KPChartL2.weightedMeasure] at hw
       change ∀ᵐ x ∂(volume.restrict (scalarData a).chart).withDensity (ENNReal.ofReal ∘ (scalarData a).weight),
-        baseFlat a x ∉ K → squaredNorm F ζ hζ U R P H s.val (baseFlat a x) = 0 at hw
+        baseFlat a x ∉ K → current_squaredNorm s.val (baseFlat a x) = 0 at hw
       have hac := withDensity_absolutelyContinuous' (μ := volume.restrict (chart a))
         (ENNReal.measurable_ofReal.comp_aemeasurable ((scalarData a).smooth_weight.continuousOn.aemeasurable (isOpen_chart a).measurableSet))
         (by filter_upwards [ae_restrict_mem (isOpen_chart a).measurableSet] with x hx
@@ -315,7 +321,7 @@ theorem weakChartData_zero_off_closed (s : BorelL2Sections F ζ hζ U R P H)
     (W : Family (U := U) (H := H)) (hs : WeakChartData s W)
     (K : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U)) (hK : IsClosed K)
     (hsupp : ∀ᵐ b ∂KPContActualSectorCotangentL2.muU F ζ hζ U R P,
-      b ∉ K → squaredNorm F ζ hζ U R P H s.val b = 0) :
+      b ∉ K → current_squaredNorm s.val b = 0) :
     ∀ᵐ b ∂KPContActualSectorCotangentL2.muU F ζ hζ U R P, b ∉ K → normSquare W b = 0 := by
   apply zero_off_closed_of_balls s W K hK hsupp
   intro a B hB hzero

@@ -1,7 +1,10 @@
 module
 
+public import Mathlib
+
 public import Mathlib.MeasureTheory.Integral.Bochner.Basic
 import DedekindZetaZeroFree.Algebra.LinearAlgebra.FunctionInterpolation
+
 
 public section
 
@@ -44,6 +47,6 @@ theorem integral_mem_finite_linear_image
     (hi : ∀ y, Integrable (fun x => f x y) μ) :
     (fun y => ∫ x, f x y ∂μ) ∈ J.range := by
   let : FiniteDimensional ℂ J.range := Module.Finite.range J
-  exact integral_mem_finite_function_space μ J.range f hf hi
+  apply integral_mem_finite_function_space <;> assumption
 
 end DedekindZetaZeroFree.FiniteFunctionSpaces

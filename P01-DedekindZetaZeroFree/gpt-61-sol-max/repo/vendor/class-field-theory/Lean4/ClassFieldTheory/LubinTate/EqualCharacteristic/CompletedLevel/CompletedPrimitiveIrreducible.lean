@@ -50,10 +50,13 @@ noncomputable local instance equalCharacteristicCompletedPrimitiveIrreducibleBas
       (equalCharacteristicCompletedUnramifiedField F.residueField) :=
   laurentSeriesCoefficientAlgebra
 
+section
+variable (F : LocalField.{u, v} K)
+include F
 /-- Coefficientwise extension of the integral primitive polynomial from
 `κ[[T]]` to `(AlgebraicClosure κ)[[T]]`. -/
 noncomputable def equalCharacteristicCompletedIntegralPrimitivePolynomial
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      (n : ℕ) :
     Polynomial (AlgebraicClosure F.residueField)⟦X⟧ :=
   (equalCharacteristicLubinTateIntegralPrimitivePolynomial F n).map
     (PowerSeries.map
@@ -61,13 +64,13 @@ noncomputable def equalCharacteristicCompletedIntegralPrimitivePolynomial
 
 /-- States the theorem `equalCharacteristicCompletedIntegralPrimitivePolynomial_monic`. -/
 theorem equalCharacteristicCompletedIntegralPrimitivePolynomial_monic
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      (n : ℕ) :
     (equalCharacteristicCompletedIntegralPrimitivePolynomial F n).Monic := by
   exact (equalCharacteristicLubinTateIntegralPrimitivePolynomial_monic F n).map _
 
 /-- States the theorem `equalCharacteristicCompletedIntegralPrimitivePolynomial_natDegree`. -/
 theorem equalCharacteristicCompletedIntegralPrimitivePolynomial_natDegree
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      (n : ℕ) :
     (equalCharacteristicCompletedIntegralPrimitivePolynomial F n).natDegree =
       (Nat.card F.residueField - 1) * Nat.card F.residueField ^ n := by
   rw [equalCharacteristicCompletedIntegralPrimitivePolynomial,
@@ -77,7 +80,7 @@ theorem equalCharacteristicCompletedIntegralPrimitivePolynomial_natDegree
 /-- The power-series coefficient map commutes with passage to Laurent
 series. -/
 theorem equalCharacteristicPowerSeriesLaurent_baseChange_commutes
-    (F : LocalField.{u, v} K) :
+      :
     (algebraMap (AlgebraicClosure F.residueField)⟦X⟧
         (equalCharacteristicCompletedUnramifiedField F.residueField)).comp
         (PowerSeries.map
@@ -99,11 +102,16 @@ theorem equalCharacteristicPowerSeriesLaurent_baseChange_commutes
             ((↑f : F.residueField⸨X⸩).coeff (Int.negSucc i))
       rw [PowerSeries.coeff_coe, PowerSeries.coeff_coe]
       simp
+end
 
+
+section
+variable (F : LocalField.{u, v} K) (n : ℕ)
+include F n
 /-- Passing the integral polynomial to the Laurent fraction field gives
 exactly the completed primitive polynomial. -/
 theorem equalCharacteristicCompletedIntegralPrimitivePolynomial_map
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      :
     (equalCharacteristicCompletedIntegralPrimitivePolynomial F n).map
         (algebraMap (AlgebraicClosure F.residueField)⟦X⟧
           (equalCharacteristicCompletedUnramifiedField F.residueField)) =
@@ -117,7 +125,7 @@ theorem equalCharacteristicCompletedIntegralPrimitivePolynomial_map
 
 /-- Reduction modulo `T` is the single leading monomial. -/
 theorem equalCharacteristicCompletedIntegralPrimitivePolynomial_map_constantCoeff
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      :
     (equalCharacteristicCompletedIntegralPrimitivePolynomial F n).map
         (PowerSeries.constantCoeff
           (R := AlgebraicClosure F.residueField)) =
@@ -142,7 +150,7 @@ theorem equalCharacteristicCompletedIntegralPrimitivePolynomial_map_constantCoef
 
 /-- States the theorem `equalCharacteristicCompletedIntegralPrimitivePolynomial_coeff_zero`. -/
 theorem equalCharacteristicCompletedIntegralPrimitivePolynomial_coeff_zero
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      :
     (equalCharacteristicCompletedIntegralPrimitivePolynomial F n).coeff 0 =
       (PowerSeries.X : (AlgebraicClosure F.residueField)⟦X⟧) := by
   rw [equalCharacteristicCompletedIntegralPrimitivePolynomial,
@@ -152,7 +160,7 @@ theorem equalCharacteristicCompletedIntegralPrimitivePolynomial_coeff_zero
 
 /-- The completed integral primitive polynomial is Eisenstein at `(T)`. -/
 theorem equalCharacteristicCompletedIntegralPrimitivePolynomial_isEisensteinAt
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      :
     (equalCharacteristicCompletedIntegralPrimitivePolynomial F n).IsEisensteinAt
       (Ideal.span
         ({PowerSeries.X} :
@@ -185,7 +193,7 @@ theorem equalCharacteristicCompletedIntegralPrimitivePolynomial_isEisensteinAt
 
 /-- States the theorem `equalCharacteristicCompletedIntegralPrimitivePolynomial_irreducible`. -/
 theorem equalCharacteristicCompletedIntegralPrimitivePolynomial_irreducible
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      :
     Irreducible (equalCharacteristicCompletedIntegralPrimitivePolynomial F n) := by
   apply
     (equalCharacteristicCompletedIntegralPrimitivePolynomial_isEisensteinAt F n).irreducible
@@ -200,7 +208,7 @@ theorem equalCharacteristicCompletedIntegralPrimitivePolynomial_irreducible
 /-- The primitive polynomial remains irreducible over the completed maximal
 unramified Laurent field. -/
 theorem equalCharacteristicCompletedPrimitivePolynomial_irreducible
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      :
     Irreducible (equalCharacteristicCompletedPrimitivePolynomial F n) := by
   have hmap :
       Irreducible
@@ -210,6 +218,8 @@ theorem equalCharacteristicCompletedPrimitivePolynomial_irreducible
     (equalCharacteristicCompletedIntegralPrimitivePolynomial_monic F n).irreducible_iff_irreducible_map_fraction_map.mp
       (equalCharacteristicCompletedIntegralPrimitivePolynomial_irreducible F n)
   rwa [equalCharacteristicCompletedIntegralPrimitivePolynomial_map] at hmap
+end
+
 
 end EqualCharacteristic
 end LubinTate

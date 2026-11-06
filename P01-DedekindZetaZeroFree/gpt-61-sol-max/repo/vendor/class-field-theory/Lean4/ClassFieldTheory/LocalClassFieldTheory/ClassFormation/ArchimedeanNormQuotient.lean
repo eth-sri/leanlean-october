@@ -259,29 +259,29 @@ theorem herbrandH0_card_eq_one_of_group_card_eq_one
         simp)
   exact Nat.card_unique
 
-/-- At a complex place above a real place, the completion norm quotient
-is the concrete quotient for `ℂ/ℝ`. -/
-def infiniteCompletionNormQuotientEquivRealComplex
-    (v : InfinitePlace K) (w : InfinitePlace L)
-    (hw : w.comap (algebraMap K L) = v)
-    (hv : v.IsReal) (hwc : w.IsComplex) :
-    letI : w.1.LiesOver v.1 :=
-      ⟨congrArg (fun q : InfinitePlace K => q.1) hw⟩
-    NormQuotient v.Completion w.Completion ≃*
-      NormQuotient ℝ ℂ := by
-  letI : w.1.LiesOver v.1 :=
-    ⟨congrArg (fun q : InfinitePlace K => q.1) hw⟩
-  letI :
-      NumberField.ComplexEmbedding.LiesOver
-        (InfinitePlace.Completion.extensionEmbedding w)
-        (InfinitePlace.Completion.extensionEmbedding v) :=
-    InfinitePlace.LiesOver.extensionEmbedding_liesOver_of_isReal
-      w hv
-  exact
-    normQuotientEquivOfRingEquiv
-      (InfinitePlace.Completion.ringEquivRealOfIsReal hv)
-      (InfinitePlace.Completion.ringEquivComplexOfIsComplex hwc)
-      (by ext; simp)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The algebraic localization used in the local cohomology block is
 canonically the whole absolute-value completion, also at an infinite

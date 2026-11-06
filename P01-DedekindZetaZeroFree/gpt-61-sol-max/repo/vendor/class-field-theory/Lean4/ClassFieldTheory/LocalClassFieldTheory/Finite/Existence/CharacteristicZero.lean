@@ -75,12 +75,12 @@ noncomputable def finiteAbelianNormSubgroupOrderIso_of_charZero :
         finiteAbelianNormSubgroup K L₁ ↔ L₁ ≤ L₂
     exact (finiteAbelianSubextension_le_iff_normSubgroup_le K L₁ L₂).symm
 
-/-- Underlying equivalence of the characteristic-zero local existence
-order isomorphism. -/
-noncomputable def finiteAbelianNormSubgroupEquiv_of_charZero :
-    FiniteAbelianSubextension (intrinsicAbstractBase K) ≃
-      OpenFiniteIndexSubgroup K :=
-  (finiteAbelianNormSubgroupOrderIso_of_charZero K).toEquiv
+
+
+
+
+
+
 
 /-- States the theorem `finiteAbelianNormSubgroupOrderIso_of_charZero_apply`. -/
 @[simp]

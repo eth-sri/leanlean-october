@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.Complex.Basic
 public import Mathlib.Analysis.Complex.Exponential
 public import Mathlib.Analysis.Calculus.IteratedDeriv.Defs
@@ -8,13 +10,14 @@ import Mathlib.Analysis.Calculus.Deriv.Shift
 
 @[expose] public section
 
+
 namespace DedekindZetaZeroFree.KPCplxRotatedRapidDecay
 
 noncomputable def logarithmicRadialFlow (t : ℝ) (y : ℂˣ) : ℂˣ :=
   Units.mk0 ((Real.exp (t / 2) : ℂ) * (y : ℂ)) (by
-    exact mul_ne_zero (by exact_mod_cast Real.exp_ne_zero (t / 2)) y.ne_zero)
+    apply mul_ne_zero <;> aesop)
 
-noncomputable def logarithmicDerivative (F : ℂˣ → ℂ) : ℂˣ → ℂ :=
+noncomputable def logarithmicDerivative (F : ℂˣ → ℂ)  :=
   fun y => deriv (fun t : ℝ => F (logarithmicRadialFlow t y)) 0
 
 lemma logarithmicRadialFlow_add (s t : ℝ) (z : ℂˣ) :
@@ -53,8 +56,7 @@ lemma iteratedDeriv_scale (g : ℝ → ℂ) (c : ℝ) (j : ℕ) (t : ℝ) :
   induction j generalizing t with
   | zero => simp only [iteratedDeriv_zero, pow_zero, one_mul]
   | succ j ih =>
-    have he : iteratedDeriv j (fun s => g (c * s)) =
-        fun s => (c : ℂ) ^ j * iteratedDeriv j g (c * s) := funext ih
+    have he  := funext ih
     rw [iteratedDeriv_succ, he, deriv_const_mul_field]
     rw [deriv_comp_mul_left c (iteratedDeriv j g) t]
     rw [iteratedDeriv_succ]

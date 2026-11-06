@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Geometry.HyperbolicActionMetricAndVolume
 public import DedekindZetaZeroFree.Geometry.Hyperbolic.Laplacian.ChartGreenIdentities
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -11,13 +14,16 @@ open scoped ContDiff
 
 namespace DedekindZetaZeroFree.CotangentLogCoframe
 
-abbrev Index (d : ℕ) := Fin d × Fin 3
+section
+variable (d : ℕ)
+include d
+abbrev Index   := Fin d × Fin 3
 
-abbrev RealCoefficients (d : ℕ) := EuclideanSpace ℝ (Index d)
+abbrev RealCoefficients   := EuclideanSpace ℝ (Index d)
 
-abbrev ComplexCoefficients (d : ℕ) := EuclideanSpace ℂ (Index d)
+abbrev ComplexCoefficients   := EuclideanSpace ℂ (Index d)
 
-def C (d : ℕ) (p : HyperbolicChart.Space d) :
+def C   (p : HyperbolicChart.Space d) :
     HyperbolicChart.Space d ≃L[ℝ] RealCoefficients d :=
   LinearEquiv.toContinuousLinearEquiv
     { toFun := fun u => WithLp.toLp 2 (fun ik =>
@@ -49,24 +55,23 @@ def C (d : ℕ) (p : HyperbolicChart.Space d) :
         fin_cases k <;> simp [← mul_assoc, ← Real.exp_add, neg_add_cancel, Real.exp_zero,
           one_mul] }
 
-def H (d : ℕ) (p : HyperbolicChart.Space d) :
-    RealCoefficients d ≃L[ℝ] HyperbolicChart.Space d :=
+def H   (p : HyperbolicChart.Space d)  :=
   (C d p).symm
 
-theorem C_apply (d : ℕ) (p u : HyperbolicChart.Space d) (i : Fin d) :
+theorem C_apply   (p u : HyperbolicChart.Space d) (i : Fin d) :
     (C d p u) (i, 0) = u (i, 2) ∧
     (C d p u) (i, 1) = Real.exp (-p (i, 2)) * u (i, 0) ∧
     (C d p u) (i, 2) = Real.exp (-p (i, 2)) * u (i, 1) := by
   refine ⟨?_, ?_, ?_⟩ <;> simp [C]
 
-theorem H_apply (d : ℕ) (p : HyperbolicChart.Space d)
+theorem H_apply   (p : HyperbolicChart.Space d)
     (v : RealCoefficients d) (i : Fin d) :
     (H d p v) (i, 0) = Real.exp (p (i, 2)) * v (i, 1) ∧
     (H d p v) (i, 1) = Real.exp (p (i, 2)) * v (i, 2) ∧
     (H d p v) (i, 2) = v (i, 0) := by
   refine ⟨?_, ?_, ?_⟩ <;> simp [H, C]
 
-theorem contDiff_C (d : ℕ) :
+theorem contDiff_C   :
     ContDiff ℝ ∞ (fun p : HyperbolicChart.Space d =>
       (C d p).toContinuousLinearMap) := by
   rw [contDiff_clm_apply_iff]
@@ -80,7 +85,7 @@ theorem contDiff_C (d : ℕ) :
   obtain ⟨i, k⟩ := ik
   fin_cases k <;> simp <;> fun_prop
 
-theorem contDiff_H (d : ℕ) :
+theorem contDiff_H   :
     ContDiff ℝ ∞ (fun p : HyperbolicChart.Space d =>
       (H d p).toContinuousLinearMap) := by
   rw [contDiff_clm_apply_iff]
@@ -93,6 +98,8 @@ theorem contDiff_H (d : ℕ) :
   intro ik
   obtain ⟨i, k⟩ := ik
   fin_cases k <;> simp <;> fun_prop
+end
+
 
 private lemma exp_mul_exp (t a b : ℝ) :
     (Real.exp (-t) * a) * (Real.exp (-t) * b) = Real.exp (-2 * t) * (a * b) := by
@@ -103,7 +110,10 @@ private lemma exp_mul_exp (t a b : ℝ) :
       = (Real.exp (-t) * Real.exp (-t)) * (a * b) := by ring
     _ = Real.exp (-2 * t) * (a * b) := by rw [h]
 
-theorem inner_C (d : ℕ) (p u w : HyperbolicChart.Space d) :
+section
+variable (d : ℕ)
+include d
+theorem inner_C   (p u w : HyperbolicChart.Space d) :
     inner ℝ (C d p u) (C d p w) = HyperbolicChart.metric d p u w := by
   rw [PiLp.inner_apply, Fintype.sum_prod_type, HyperbolicChart.metric]
   apply Finset.sum_congr rfl
@@ -116,7 +126,7 @@ theorem inner_C (d : ℕ) (p u w : HyperbolicChart.Space d) :
   rw [exp_mul_exp, exp_mul_exp]
   ring
 
-def A (d : ℕ) : HyperbolicChart.Space d ≃L[ℝ] KPArch.Space d :=
+def A   : HyperbolicChart.Space d ≃L[ℝ] KPArch.Space d :=
   LinearEquiv.toContinuousLinearEquiv
     { toFun := fun p i =>
         ((p (i, 0) : ℂ) + Complex.I * (p (i, 1) : ℂ), p (i, 2))
@@ -140,11 +150,10 @@ def A (d : ℕ) : HyperbolicChart.Space d ≃L[ℝ] KPArch.Space d :=
         · simp [Complex.re_add_im, mul_comm Complex.I]
         · simp }
 
-theorem A_apply (d : ℕ) (p : HyperbolicChart.Space d) (i : Fin d) :
-    A d p i = ((p (i, 0) : ℂ) + Complex.I * (p (i, 1) : ℂ), p (i, 2)) := by
-  rfl
+theorem A_apply   (p : HyperbolicChart.Space d) (i : Fin d) :
+    A d p i = ((p (i, 0) : ℂ) + Complex.I * (p (i, 1) : ℂ), p (i, 2)) := rfl
 
-theorem metric_A (d : ℕ) (p u : HyperbolicChart.Space d) :
+theorem metric_A   (p u : HyperbolicChart.Space d) :
     KPArch.metric d (A d p) (A d u) = HyperbolicChart.metric d p u u := by
   rw [KPArch.metric, HyperbolicChart.metric]
   apply Finset.sum_congr rfl
@@ -159,7 +168,7 @@ theorem metric_A (d : ℕ) (p u : HyperbolicChart.Space d) :
     Complex.ofReal_re, Complex.ofReal_im]
   ring
 
-def j (d : ℕ) : HyperbolicChart.Cotangent d ≃ₗ[ℂ] ComplexCoefficients d where
+def j   : HyperbolicChart.Cotangent d ≃ₗ[ℂ] ComplexCoefficients d where
   toFun W := WithLp.toLp 2 (fun ik => W ik.1 ik.2)
   invFun v := fun i k => v (i, k)
   map_add' := by
@@ -179,12 +188,11 @@ def j (d : ℕ) : HyperbolicChart.Cotangent d ≃ₗ[ℂ] ComplexCoefficients d 
     ext ik
     simp
 
-theorem j_apply (d : ℕ) (W : HyperbolicChart.Cotangent d)
+theorem j_apply   (W : HyperbolicChart.Cotangent d)
     (i : Fin d) (k : Fin 3) :
-    j d W (i, k) = W i k := by
-  rfl
+    j d W (i, k) = W i k := rfl
 
-theorem inner_j (d : ℕ) (U W : HyperbolicChart.Cotangent d) :
+theorem inner_j   (U W : HyperbolicChart.Cotangent d) :
     inner ℂ (j d U) (j d W) = HyperbolicChart.pairing d U W := by
   rw [PiLp.inner_apply, Fintype.sum_prod_type, HyperbolicChart.pairing]
   apply Finset.sum_congr rfl
@@ -193,6 +201,8 @@ theorem inner_j (d : ℕ) (U W : HyperbolicChart.Cotangent d) :
   intro k _
   rw [j_apply, j_apply, RCLike.inner_apply']
   rfl
+end
+
 
 end DedekindZetaZeroFree.CotangentLogCoframe
 

@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.RayClassSubgroupQuotientEquiv
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -36,8 +39,7 @@ theorem rayClassSubgroupQuotientEquiv_mk
     (R : RayClassSubgroupRealization K m H)
     (x : RayClassGroup m) :
     rayClassSubgroupQuotientEquiv K m H R
-        (QuotientGroup.mk' H x) = R.artin x := by
-  rfl
+        (QuotientGroup.mk' H x) = R.artin x := rfl
 
 end ClassFieldTheory
 

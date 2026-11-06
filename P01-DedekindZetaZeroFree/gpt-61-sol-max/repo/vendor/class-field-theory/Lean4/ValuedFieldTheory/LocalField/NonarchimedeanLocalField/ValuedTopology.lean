@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Topology.Algebra.Valued.ValuativeRel
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -57,7 +60,7 @@ theorem isValuativeTopology_of_valued_ofValuation
     exact
       (ValuativeRel.valuation_lt_symm_orderMonoidIso
         v δ.1 z).1
-        (by simpa using hz)
+        (hz)
   · rintro ⟨γ, hγ⟩
     refine
       ⟨γ.mapEquiv
@@ -67,8 +70,7 @@ theorem isValuativeTopology_of_valued_ofValuation
     have hz' :
         v.restrict z <
           (ValuativeRel.ValueGroupWithZero.orderMonoidIso v)
-            γ.1 := by
-      exact hz
+            γ.1 := hz
     exact
       (ValuativeRel.restrict_lt_orderMonoidIso
         v γ.1 z).1 hz'

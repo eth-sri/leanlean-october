@@ -10,8 +10,11 @@ namespace DedekindZetaZeroFree.Detector.ExteriorDyadic.ResidueFiberAdapter
 open scoped NumberField
 open NumberField IsDedekindDomain UniqueFactorizationMonoid
 
+section
+variable (F : Type) [Field F] [NumberField F]
+include F
 theorem conductor_eq_primePart_mul_away
-    (F : Type) [Field F] [NumberField F]
+     
     (v : HeightOneSpectrum (𝓞 F)) (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) :
     I = v.asIdeal ^ idealPrimeExponent v.asIdeal I * idealAwayPrimePart F v I := by
   classical
@@ -21,7 +24,7 @@ theorem conductor_eq_primePart_mul_away
   simpa only [eq_comm, prod_normalizedFactors_eq hI, normalize_eq] using heq.symm
 
 theorem away_span_eq_of_not_mem
-    (F : Type) [Field F] [NumberField F]
+     
     (v : HeightOneSpectrum (𝓞 F)) (a : 𝓞 F) (ha : a ≠ 0)
     (hav : a ∉ v.asIdeal) :
     idealAwayPrimePart F v (Ideal.span {a}) = Ideal.span {a} := by
@@ -36,7 +39,7 @@ theorem away_span_eq_of_not_mem
   simpa only [normalize_eq] using prod_normalizedFactors_eq hspan
 
 theorem integral_unit_mem_higherUnits
-    (F : Type) [Field F] [NumberField F]
+     
     (v : HeightOneSpectrum (𝓞 F)) (a : 𝓞 F) (ha : a ≠ 0)
     (hav : a ∉ v.asIdeal) (k : ℕ) (hak : a - 1 ∈ v.asIdeal ^ k) :
     CRTLocalHigherUnits F v k (integralElementLocalUnit F v a ha) := by
@@ -57,7 +60,7 @@ theorem integral_unit_mem_higherUnits
       (CRT_completed_power_mem_iff F v (a - 1) k).mpr hak
 
 theorem frequency_local_component_nontrivial_below_conductor
-    (F : Type) [Field F] [NumberField F]
+     
     (omega : PrimitiveFrequencyCharacter F) (v : HeightOneSpectrum (𝓞 F))
     (delta : (v.adicCompletion F)ˣ →ₜ* ℂˣ)
     (hlocal : IsFrequencyLocalComponent F omega v delta)
@@ -102,7 +105,7 @@ theorem frequency_local_component_nontrivial_below_conductor
     simpa only [inv_eq_one] using hi
   exact hane hone
 
-private theorem positive_representative (F : Type) [Field F] [NumberField F]
+private theorem positive_representative  
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (a : 𝓞 F) :
     ∃ b : 𝓞 F, b - a ∈ m ∧ ∀ φ : F →+* ℝ, 0 < φ (b : F) := by
   have hn : 0 < Ideal.absNorm m := Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hm)
@@ -128,7 +131,7 @@ private theorem positive_representative (F : Type) [Field F] [NumberField F]
   simpa [b] using hh
 
 private theorem completed_power_criterion
-    (F : Type) [Field F] [NumberField F]
+     
     (v : HeightOneSpectrum (𝓞 F)) (b : v.adicCompletionIntegers F) (n : ℕ) :
     b ∈ IsLocalRing.maximalIdeal (v.adicCompletionIntegers F) ^ n ↔
       Valued.v (b : v.adicCompletion F) ≤ WithZero.exp (-(n : ℤ)) := by
@@ -148,11 +151,16 @@ private theorem completed_power_criterion
   change Valued.v (b : v.adicCompletion F) ≤ Valued.v (π : v.adicCompletion F) ^ n ↔ _
   rw [hπval, ← WithZero.exp_nsmul]
   simp
+end
+
 
 set_option maxHeartbeats 800000 in
 
+section
+variable (F : Type) [Field F] [NumberField F]
+include F
 theorem higherUnits_mem_closure_positive_congruence
-    (F : Type) [Field F] [NumberField F]
+     
     (v : HeightOneSpectrum (𝓞 F)) (f : Ideal (𝓞 F)) (hf : f ≠ ⊥)
     (x : (v.adicCompletion F)ˣ)
     (hx : CRTLocalHigherUnits F v (idealPrimeExponent v.asIdeal f) x) :
@@ -229,7 +237,7 @@ theorem higherUnits_mem_closure_positive_congruence
   exact ⟨integralElementLocalUnit F v a ha, ⟨a, ha, haf, hpos, hav, rfl⟩, rfl⟩
 
 theorem frequency_local_component_trivial_on_conductor
-    (F : Type) [Field F] [NumberField F]
+     
     (omega : PrimitiveFrequencyCharacter F) (v : HeightOneSpectrum (𝓞 F))
     (delta : (v.adicCompletion F)ˣ →ₜ* ℂˣ)
     (hlocal : IsFrequencyLocalComponent F omega v delta)
@@ -253,7 +261,7 @@ theorem frequency_local_component_trivial_on_conductor
     (higherUnits_mem_closure_positive_congruence F v omega.conductor omega.conductor_ne_zero x hx)
 
 private theorem exponent_zero_of_coprime
-    (F : Type) [Field F] [NumberField F]
+     
     (v : HeightOneSpectrum (𝓞 F)) (f : Ideal (𝓞 F)) (hf : f ≠ ⊥)
     (hcop : v.asIdeal ⊔ f = ⊤) : idealPrimeExponent v.asIdeal f = 0 := by
   classical
@@ -263,7 +271,7 @@ private theorem exponent_zero_of_coprime
   exact v.isPrime.ne_top (heq.symm.trans hcop)
 
 private theorem higherUnits_zero_of_norm_one
-    (F : Type) [Field F] [NumberField F]
+     
     (v : HeightOneSpectrum (𝓞 F)) (x : (v.adicCompletion F)ˣ)
     (hx : ‖(x : v.adicCompletion F)‖ = 1) : CRTLocalHigherUnits F v 0 x := by
   have hv : Valued.v (x : v.adicCompletion F) = 1 :=
@@ -280,7 +288,7 @@ private theorem higherUnits_zero_of_norm_one
   rw [ha.unit_spec]
 
 theorem frequency_local_component_uniformizer
-    (F : Type) [Field F] [NumberField F]
+     
     (omega : PrimitiveFrequencyCharacter F) (v : HeightOneSpectrum (𝓞 F))
     (delta : (v.adicCompletion F)ˣ →ₜ* ℂˣ)
     (hlocal : IsFrequencyLocalComponent F omega v delta)
@@ -351,7 +359,7 @@ theorem frequency_local_component_uniformizer
   exact (eq_inv_of_mul_eq_one_left hprincipal).trans hvalue.symm
 
 theorem sprime_compatibility_of_frequency_local_components
-    (F : Type) [Field F] [NumberField F] (A : SArithmeticData F)
+      (A : SArithmeticData F)
     (omega : PrimitiveFrequencyCharacter F)
     (sigma : FixedSResidue.FullLocalCharacters A)
     (hlocal : ∀ v : {v // v ∈ A.Sf},
@@ -375,5 +383,7 @@ theorem sprime_compatibility_of_frequency_local_components
   · intro hcop pi hpi
     rw [← hdelta]
     exact frequency_local_component_uniformizer F omega v.val delta hcomp hcop pi hpi
+end
+
 
 end DedekindZetaZeroFree.Detector.ExteriorDyadic.ResidueFiberAdapter

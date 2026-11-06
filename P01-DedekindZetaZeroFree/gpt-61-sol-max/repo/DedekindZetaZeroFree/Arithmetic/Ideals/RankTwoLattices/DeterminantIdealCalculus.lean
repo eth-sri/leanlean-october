@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Ideals.RankTwoLattices.FullLatticesAndRationalLines
 public import Mathlib.LinearAlgebra.Determinant
 
 @[expose] public section
+
 
 open scoped nonZeroDivisors
 
@@ -101,9 +104,12 @@ private lemma det₂_linearEquiv (g : (K × K) ≃ₗ[K] (K × K)) (x y : K × K
 
 end DeterminantLinearEquiv
 
-theorem kp_cusp_determinantSubmodule_fg
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
+section
+variable (R : Type*) [CommRing R] [IsDedekindDomain R]
     (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
+include R K
+theorem kp_cusp_determinantSubmodule_fg
+     
     (M : FullLattice R K) :
     (determinantSubmodule R K M.val).FG := by
   obtain ⟨S, hS⟩ := M.property.fg
@@ -139,15 +145,12 @@ theorem kp_cusp_determinantSubmodule_fg
         hx hy
 
 theorem kp_cusp_determinantSubmodule_isFractional
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
+     
     (M : FullLattice R K) :
-    IsFractional R⁰ (determinantSubmodule R K M.val) := by
-  exact FractionalIdeal.isFractional_of_fg (kp_cusp_determinantSubmodule_fg R K M)
+    IsFractional R⁰ (determinantSubmodule R K M.val) := FractionalIdeal.isFractional_of_fg (kp_cusp_determinantSubmodule_fg R K M)
 
 theorem kp_cusp_determinantSubmodule_ne_bot
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
+     
     (M : FullLattice R K) :
     determinantSubmodule R K M.val ≠ ⊥ := by
   intro hbot
@@ -162,7 +165,7 @@ theorem kp_cusp_determinantSubmodule_ne_bot
     have hy : y ∈ Submodule.span K (M.val : Set (K × K)) := by
       rw [M.property.span_eq_top]; trivial
     induction hy using Submodule.span_induction with
-    | mem z hz => exact hzero x hx z hz
+    | mem z hz => apply hzero <;> assumption
     | zero => rw [det₂_zero_right]
     | add z w _ _ hz hw => rw [det₂_add_right, hz, hw, add_zero]
     | smul a z _ hz => rw [det₂_smul_right, hz, mul_zero]
@@ -171,7 +174,7 @@ theorem kp_cusp_determinantSubmodule_ne_bot
     have hx : x ∈ Submodule.span K (M.val : Set (K × K)) := by
       rw [M.property.span_eq_top]; trivial
     induction hx using Submodule.span_induction with
-    | mem z hz => exact hspan1 z hz y
+    | mem z hz => apply hspan1 <;> assumption
     | zero => rw [det₂_zero_left]
     | add z w _ _ hz hw => rw [det₂_add_left, hz, hw, add_zero]
     | smul a z _ hz => rw [det₂_smul_left, hz, mul_zero]
@@ -180,14 +183,12 @@ theorem kp_cusp_determinantSubmodule_ne_bot
   exact one_ne_zero hstd
 
 theorem kp_cusp_determinantSubmodule_map
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
+     
     (M : Submodule R (K × K)) (g : (K × K) ≃ₗ[K] (K × K)) :
     determinantSubmodule R K (Submodule.map (g.toLinearMap.restrictScalars R) M) =
       Submodule.map (LinearMap.mulLeft R (LinearMap.det g.toLinearMap))
         (determinantSubmodule R K M) := by
-  have key : ∀ x y : K × K,
-      det₂ K (g x) (g y) = LinearMap.det g.toLinearMap * det₂ K x y :=
+  have key  :=
     fun x y => det₂_linearEquiv K g x y
   rw [determinantSubmodule, determinantSubmodule, Submodule.map_span]
   refine le_antisymm ?_ ?_
@@ -209,8 +210,7 @@ theorem kp_cusp_determinantSubmodule_map
       ⟨g x, Submodule.mem_map_of_mem hx, g y, Submodule.mem_map_of_mem hy, rfl⟩
 
 theorem kp_cusp_determinantSubmodule_ideal_coordinates
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
+     
     (M : Submodule R (K × K))
     (I J : FractionalIdeal R⁰ K) (hI : I ≠ 0) (hJ : J ≠ 0)
     (v w : K × K) (hvw : det₂ K v w ≠ 0)
@@ -267,8 +267,7 @@ theorem kp_cusp_determinantSubmodule_ideal_coordinates
   exact hcoec.symm
 
 theorem kp_cusp_determinantSubmodule_coordinateLattice
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
+     
     (I J : FractionalIdeal R⁰ K) :
     determinantSubmodule R K (coordinateLattice R K I J) =
       (I * J : FractionalIdeal R⁰ K).val := by
@@ -300,5 +299,7 @@ theorem kp_cusp_determinantSubmodule_coordinateLattice
          rfl⟩
   rw [hmain]
   exact hcoe.symm
+end
+
 
 end DedekindZetaZeroFree

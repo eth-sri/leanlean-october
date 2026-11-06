@@ -45,10 +45,13 @@ private theorem contDiffOn_tsum_of_chart_locally_finite
     have hzK : z ∈ Metric.closedBall x (r / 2) := interior_subset hz.2
     rw [hφ z, tsum_eq_sum (fun a ha => hS z hzK a ha)]
 
-theorem functionsP_chart_contDiff (C : ModelData F ζ hζ) (s : ℂ)
+section
+variable (C : ModelData F ζ hζ) (s : ℂ)
     (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
     (f : InducedFunctions F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s))
     (hf : f ∈ InducedLevel F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s) J)
+include C s J f hf
+theorem functionsP_chart_contDiff  
     (g : G F ζ hζ) :
     ContDiffOn ℝ (⊤ : ℕ∞)
       (fun z => ((functionsP F ζ hζ C s f).val (groupArchChart F ζ hζ z * g)).val.val 1)
@@ -60,10 +63,7 @@ theorem functionsP_chart_contDiff (C : ModelData F ζ hζ) (s : ℂ)
     (fun a => TorusChartTransport.chartTerm_contDiffOn F ζ hζ C s J f hf g a)
     (fun K hK hKU => TorusChartTransport.chartTerm_eventually_zero F ζ hζ C s J f hf g K hK hKU)
 
-theorem functionsP_preserves_level (C : ModelData F ζ hζ) (s : ℂ)
-    (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
-    (f : InducedFunctions F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s))
-    (hf : f ∈ InducedLevel F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s) J) :
+theorem functionsP_preserves_level   :
     functionsP F ζ hζ C s f ∈
       InducedLevel F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s) J := by
   constructor
@@ -72,6 +72,8 @@ theorem functionsP_preserves_level (C : ModelData F ζ hζ) (s : ℂ)
   · intro g j
     change twistedP F ζ hζ C s (f.val (g * j.val)) = twistedP F ζ hζ C s (f.val g)
     rw [hf.2 g j]
+end
+
 
 end
 end DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibilityBorelInduction
@@ -224,7 +226,10 @@ theorem rationalLift_split (y : Fˣ) :
   · change q r = q a * q (a⁻¹ * r)
     simp
 
-theorem chartTerm_transport (C : ModelData F ζ hζ) (s : ℂ)
+section
+variable (C : ModelData F ζ hζ) (s : ℂ)
+include C s
+theorem chartTerm_transport  
     (g : G F ζ hζ) (a : KPGlobalTorusPeriodizationInverse.PeriodizationIndex F ζ hζ C) :
     ∃ (u : InfinitePlace F → ℂˣ) (b : G F ζ hζ),
       ∀ (f : InducedFunctions F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s))
@@ -252,7 +257,7 @@ theorem chartTerm_transport (C : ModelData F ζ hζ) (s : ℂ)
     group
   rw [hm, TorusChartTransport.groupArchDiagonalTransport_absorption F ζ hζ _ z hz]
 
-theorem chartTerm_contDiffOn_from_transport (C : ModelData F ζ hζ) (s : ℂ)
+theorem chartTerm_contDiffOn_from_transport  
     (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
     (f : InducedLevel F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s) J)
     (g : G F ζ hζ) (a : KPGlobalTorusPeriodizationInverse.PeriodizationIndex F ζ hζ C) :
@@ -264,7 +269,7 @@ theorem chartTerm_contDiffOn_from_transport (C : ModelData F ζ hζ) (s : ℂ)
     (fun z hz => (TorusChartTransport.groupArchDiagonalTransport_domain F u z).2 hz)
   exact hc.congr (fun z hz => he f.val z hz)
 
-theorem chartTerm_jet_bound (C : ModelData F ζ hζ) (s : ℂ)
+theorem chartTerm_jet_bound  
     (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
     (g : G F ζ hζ) (n : ℕ)
     (K : KPGlobalTorusFunctionData.JetCompact (groupArchDomain F))
@@ -287,6 +292,8 @@ theorem chartTerm_jet_bound (C : ModelData F ζ hζ) (s : ℂ)
     Filter.mem_of_superset self_mem_nhdsWithin (fun y hy => he f.val y hy)
   rw [he'.iteratedFDerivWithin_eq (he f.val z (K.inside hz)) n]
   exact TorusChartTransport.groupArchDiagonalTransport_jet_bound F ζ hζ u _ J b n K f z hz
+end
+
 
 end
 end DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibilityBorelInduction.UniformFiberLevel
@@ -319,8 +326,11 @@ local instance functionsPLevelAddGroup (P : Polarization F ζ hζ)
   @Submodule.addCommGroup ℂ (InducedFunctions F ζ hζ P)
     inferInstance inferInstance inferInstance (InducedLevel F ζ hζ P J)
 
-theorem functionsP_jet_le_of_finite_chart_terms (C : ModelData F ζ hζ) (s : ℂ)
+section
+variable (C : ModelData F ζ hζ) (s : ℂ)
     (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
+include C s J
+theorem functionsP_jet_le_of_finite_chart_terms  
     (g : G F ζ hζ) (n : ℕ)
     (K : KPGlobalTorusFunctionData.JetCompact (groupArchDomain F))
     (f : InducedLevel F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s) J)
@@ -361,8 +371,7 @@ theorem functionsP_jet_le_of_finite_chart_terms (C : ModelData F ζ hζ) (s : �
     simp only [hE, Set.image_empty, Real.sSup_empty]
     positivity
 
-theorem functionsP_level_isBounded (C : ModelData F ζ hζ) (s : ℂ)
-    (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ) :
+theorem functionsP_level_isBounded   :
     Seminorm.IsBounded
       (fun i : G F ζ hζ × ℕ × KPGlobalTorusFunctionData.JetCompact (groupArchDomain F) =>
         inducedJet F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s) J i.1 i.2.1 i.2.2)
@@ -403,8 +412,7 @@ theorem functionsP_level_isBounded (C : ModelData F ζ hζ) (s : ℂ)
     (fun z hz a ha => hjet a ha z hz)
   exact ht.trans_eq (by ring)
 
-theorem functionsP_level_continuous (C : ModelData F ζ hζ) (s : ℂ)
-    (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ) :
+theorem functionsP_level_continuous   :
     @Continuous
       (InducedLevel F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s) J)
       (InducedLevel F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s) J)
@@ -416,6 +424,8 @@ theorem functionsP_level_continuous (C : ModelData F ζ hζ) (s : ℂ)
     (Continuity.inducedLevelTopology_withSeminorms F ζ hζ _ J)
     (Continuity.inducedLevelTopology_withSeminorms F ζ hζ _ J)
     (functionsP_level_isBounded F ζ hζ C s J)
+end
+
 
 end
 end DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibilityBorelInduction

@@ -14,13 +14,18 @@ noncomputable section
 
 variable {F : Type} [Field F] [NumberField F]
 
-abbrev badIdeal (Sf : Finset (HeightOneSpectrum (𝓞 F))) : Ideal (𝓞 F) :=
+section
+variable (Sf : Finset (HeightOneSpectrum (𝓞 F)))
+include Sf in
+abbrev badIdeal   : Ideal (𝓞 F) :=
   ∏ v ∈ Sf, v.asIdeal
 
-abbrev SupportedIdeal (Sf : Finset (HeightOneSpectrum (𝓞 F))) :=
+include Sf in
+abbrev SupportedIdeal   :=
   {h : NonzeroIdeal F // IdealSupportedOn h.val (badIdeal Sf)}
 
-abbrev Exterior (Sf : Finset (HeightOneSpectrum (𝓞 F))) :=
+include Sf in
+abbrev Exterior   :=
   ExteriorIdeal (badIdeal Sf)
 
 def DyadicBand (k : ℕ) (x : ℝ) : Prop :=
@@ -123,7 +128,8 @@ private theorem dyadic_upper (x : ℝ) (hx : 1 ≤ x) (k : ℕ) (hk : DyadicBand
     rw [he, pow_succ]
     linarith [hk.1]
 
-private theorem bad_factors (Sf : Finset (HeightOneSpectrum (𝓞 F))) :
+include Sf in
+private theorem bad_factors   :
     normalizedFactors (badIdeal Sf) = Sf.val.map HeightOneSpectrum.asIdeal := by
   change normalizedFactors (∏ v ∈ Sf, v.asIdeal) = _
   rw [Finset.prod_eq_multiset_prod]
@@ -131,7 +137,8 @@ private theorem bad_factors (Sf : Finset (HeightOneSpectrum (𝓞 F))) :
   intro p hp
   obtain ⟨v, hv, rfl⟩ := Multiset.mem_map.mp hp
   exact v.prime
-private theorem supported_exponent_injective (Sf : Finset (HeightOneSpectrum (𝓞 F))) :
+include Sf in
+private theorem supported_exponent_injective   :
     Function.Injective (fun h : SupportedIdeal Sf =>
       fun v : Sf => idealPrimeExponent v.val.asIdeal h.val.val) := by
   intro h g he
@@ -174,7 +181,8 @@ private theorem exponent_cutoff (n p : Ideal (𝓞 F)) (hn : n ≠ ⊥) (hp : Pr
   apply (le_div_iff₀ (Real.log_pos (by norm_num : (1 : ℝ) < 2))).mpr
   simpa only [Real.log_pow] using
     Real.log_le_log (by positivity : (0 : ℝ) < 2^idealPrimeExponent p n) (hb.trans hX)
-private theorem label_card_nat (Sf : Finset (HeightOneSpectrum (𝓞 F)))
+include Sf in
+private theorem label_card_nat  
     (L : Finset (SupportedIdeal Sf × ℕ)) (m : ℕ)
     (hs : ∀ l ∈ L, ∀ v : Sf, idealPrimeExponent v.val.asIdeal l.1.val.val ≤ m)
     (hk : ∀ l ∈ L, l.2 ≤ m) : L.card ≤ (m+1)^(Sf.card+1) := by
@@ -203,7 +211,8 @@ private theorem finite_norm_set (N : ℝ) :
   intro n hn
   exact Nat.le_floor hn
 
-private theorem label_card_real (Sf : Finset (HeightOneSpectrum (𝓞 F)))
+include Sf in
+private theorem label_card_real  
     (L : Finset (SupportedIdeal Sf × ℕ)) (N : ℝ) (hN : 2 ≤ N)
     (hs : ∀ l ∈ L, idealNorm l.1.val.val ≤ N)
     (hk : ∀ l ∈ L, (2 : ℝ)^l.2 ≤ 2*N) :
@@ -244,7 +253,8 @@ private theorem label_card_real (Sf : Finset (HeightOneSpectrum (𝓞 F)))
       pow_le_pow_left₀ (by positivity) hm _
     _ = _ := by rw [mul_pow]
 
-theorem factor_unique (Sf : Finset (HeightOneSpectrum (𝓞 F)))
+include Sf in
+theorem factor_unique  
     (n : NonzeroIdeal F) :
     ∃! ha : SupportedIdeal Sf × Exterior Sf,
       n.val = ha.1.val.val * ha.2.val ∧
@@ -271,15 +281,17 @@ theorem factor_unique (Sf : Finset (HeightOneSpectrum (𝓞 F)))
     · exact Subtype.ext (Subtype.ext eh)
     · exact Subtype.ext ea
 
-theorem mul_exterior_injective (Sf : Finset (HeightOneSpectrum (𝓞 F)))
+include Sf in
+theorem mul_exterior_injective  
     (h : SupportedIdeal Sf) :
     Function.Injective (fun a : Exterior Sf => h.val.val * a.val) := by
   intro a b hab
   apply Subtype.ext
   exact mul_left_cancel₀ h.val.property hab
 
+include Sf in
 theorem finite_dyadic_partition
-    (Sf : Finset (HeightOneSpectrum (𝓞 F))) :
+      :
     ∃ D : ℝ, 0 < D ∧ ∀ N : ℝ, 2 ≤ N →
       ∃ (T : Finset (NonzeroIdeal F))
         (L : Finset (SupportedIdeal Sf × ℕ))
@@ -357,6 +369,8 @@ theorem finite_dyadic_partition
       (fun l hl => (hbounds l hl).2.2)
   · intro b
     exact Finset.sum_fiberwise_of_maps_to hL (fun n => ‖b n‖^2)
+end
+
 
 end
 end DedekindZetaZeroFree.Detector.SSupportedPartition

@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.SmoothFunctions.CompactOpenHolomorphyAndMeromorphy
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -40,13 +43,13 @@ theorem exists_smooth_cutoff {n : ℕ} (hn : 0 < n)
 
   let bump : ∀ x : K, ContDiffBump (x : Space n) := fun x =>
     { rIn := e x, rOut := 2 * e x, rIn_pos := he_pos x, rIn_lt_rOut := by linarith [he_pos x] }
-  let N : Set (Space n) := ⋃ x ∈ t, Metric.ball (x : Space n) (e x)
-  let η : Space n → ℝ := fun y => 1 - ∏ x ∈ t, (1 - bump x y)
+  let N  := ⋃ x ∈ t, Metric.ball (x : Space n) (e x)
+  let η  := fun y => 1 - ∏ x ∈ t, (1 - bump x y)
   have hNopen : IsOpen N := isOpen_biUnion fun _ _ => Metric.isOpen_ball
   have hηone : ∀ y ∈ N, η y = 1 := by
     intro y hy
     rcases mem_iUnion₂.1 hy with ⟨x, hxt, hyx⟩
-    have h1 : bump x y = 1 :=
+    have h1  :=
       (bump x).one_of_mem_closedBall (Metric.mem_closedBall.2 (Metric.mem_ball.1 hyx).le)
     have hz : (∏ z ∈ t, (1 - bump z y)) = 0 := Finset.prod_eq_zero hxt (by rw [h1, sub_self])
     simp only [η, hz, sub_zero]
@@ -59,7 +62,7 @@ theorem exists_smooth_cutoff {n : ℕ} (hn : 0 < n)
         rw [Finset.prod_apply]
       rw [hfun]
       refine Finset.induction_on t ?_ ?_
-      · have : (∏ x ∈ (∅ : Finset K), (fun y => 1 - bump x y)) = (1 : Space n → ℝ) := by simp
+      · have : (∏ x ∈ (∅ : Finset K), (fun y => 1 - bump x y)) = (1 : Space n → ℝ) := rfl
         rw [this]
         exact contDiff_const
       · intro a s has ih

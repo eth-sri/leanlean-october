@@ -17,7 +17,7 @@ variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ
 variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
-variable (S : SourceRecipe F ζ hζ R P H) (U : KPMsActualAngularSource.Level F ζ hζ)
+
 
 theorem continuous_archBasepoint :
     Continuous (KPMsFixedHaarDisintegration.archBasepoint F) := by

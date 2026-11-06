@@ -48,8 +48,8 @@ def observation {X Y : Type*} [TopologicalSpace X] [CompactSpace X]
         exact mul_le_mul (h.norm_coe_le_norm k) (f.norm_coe_le_norm (q k))
           (norm_nonneg _) (norm_nonneg _))))
 
-theorem residue_expansion
-    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+section
+variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
     (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
     (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
@@ -57,7 +57,10 @@ theorem residue_expansion
     (A : TensorActionSource.LiteralResidueFamily hK)
     (μ : Measure K) [μ.IsHaarMeasure] [IsProbabilityMeasure μ]
     (f : Flat F ζ hζ K) (a : G F ζ hζ)
-    (h : C(K,ℂ)) (hh : h ∈ TauCeti.representativeSubmodule ℂ K) :
+    (h : C(K,ℂ)) (hh : h ∈ TauCeti.representativeSubmodule ℂ K)
+include C R P H K hK A μ f a h hh
+theorem residue_expansion
+      :
     ∃ (n : ℕ) (b : Fin n → Flat F ζ hζ K) (c : Fin n → ℂ),
       ∀ g, (∫ k:K, h k * A.cleared f 0 (g*k.val*a) ∂μ) =
         ∑ i, c i * A.cleared (b i) 0 g := by
@@ -130,15 +133,7 @@ theorem residue_expansion
   exact integral_congr_ae (Filter.Eventually.of_forall (fun k => by change h k * _ = h k * _; rw [hpin]; rfl))
 
 theorem convolution_mem_owned_range
-    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-    (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (A : TensorActionSource.LiteralResidueFamily hK)
-    (μ : Measure K) [μ.IsHaarMeasure] [IsProbabilityMeasure μ]
-    (f : Flat F ζ hζ K) (a : G F ζ hζ)
-    (h : C(K,ℂ)) (hh : h ∈ TauCeti.representativeSubmodule ℂ K) :
+      :
     (fun g => ∫ k:K, h k * A.cleared f 0 (g*k.val*a) ∂μ) ∈ A.residue.range := by
   obtain ⟨n,b,c,he⟩ := residue_expansion F ζ hζ C R P H K hK A μ f a h hh
   refine ⟨∑ i, c i • TensorActionSource.literalZeroProfileEquiv hK
@@ -147,6 +142,8 @@ theorem convolution_mem_owned_range
   simp only [map_sum,map_smul,Finset.sum_apply,Pi.smul_apply,smul_eq_mul,
     TensorActionSource.LiteralResidueFamily.residue_flat]
   exact (he g).symm
+end
+
 
 end DedekindZetaZeroFree.FourierContinuation.ResidualCompactConvolution
 

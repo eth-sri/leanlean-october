@@ -1,25 +1,28 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.OperatorTheory.Resolvents.IsolatedLaurentExpansion
 public import DedekindZetaZeroFree.Analysis.OperatorTheory.Resolvents.BoundedUnboundedSpectrumCorrespondence
 
 @[expose] public section
 
+
 namespace DedekindZetaZeroFree
 
 namespace KPBelowThresholdResolvent
 
-def domain (d : ℝ) : Set ℂ :=
+def domain (d : ℝ)  :=
   (Complex.ofReal '' Set.Ici d)ᶜ
 
 def poleSet
     {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
-    (Δ : H →ₗ.[ℂ] H) (d : ℝ) : Set ℂ :=
+    (Δ : H →ₗ.[ℂ] H) (d : ℝ)  :=
   {z | ∃ μ : ℝ, μ < d ∧ KPBelowThreshold.eigenspace Δ μ ≠ ⊥ ∧ z = (μ : ℂ)}
 
 noncomputable def poleProjection
     {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (B : H →L[ℂ] H) (μ : ℝ) : H →L[ℂ] H :=
+    (B : H →L[ℂ] H) (μ : ℝ)  :=
   KPIsolatedProjection.projection B ((1 + μ)⁻¹)
 
 private theorem isOpen_domain (d : ℝ) : IsOpen (domain d) := by
@@ -29,13 +32,16 @@ private theorem isOpen_domain (d : ℝ) : IsOpen (domain d) := by
     · rintro ⟨t, ht, rfl⟩
       simpa using ht
     · rintro ⟨hi, hr⟩
-      exact ⟨z.re, hr, Complex.ext (by simp) (by simpa using hi.symm)⟩
+      exact ⟨z.re, hr, Complex.ext (rfl) (hi.symm)⟩
   rw [domain, he]
   exact ((isClosed_eq Complex.continuous_im continuous_const).inter
     (isClosed_le continuous_const Complex.continuous_re)).isOpen_compl
 
- theorem eigen_nonneg
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+ section
+variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+include H
+theorem eigen_nonneg
+     
     (Δ : H →ₗ.[ℂ] H)
     (hpos : ∀ v : Δ.domain, 0 ≤ (inner ℂ (v : H) (Δ v)).re)
     (μ : ℝ) (he : KPBelowThreshold.eigenspace Δ μ ≠ ⊥) : 0 ≤ μ := by
@@ -52,7 +58,7 @@ private theorem isOpen_domain (d : ℝ) : IsOpen (domain d) := by
   nlinarith
 
 private theorem eigen_not_resolvent
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+     
     (Δ : H →ₗ.[ℂ] H) (μ : ℝ)
     (he : KPBelowThreshold.eigenspace Δ μ ≠ ⊥) :
     (μ : ℂ) ∉ KPResolventPencil.resolventSet Δ := by
@@ -66,7 +72,7 @@ private theorem eigen_not_resolvent
   exact hx0 h.symm
 
 private theorem nonresolvent_mem_poleSet
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+      [CompleteSpace H]
     (Δ : H →ₗ.[ℂ] H) (hDense : Dense (Δ.domain : Set H))
     (B : H →L[ℂ] H) (hbase : KPResolventPencil.GenuineInverse Δ (-1) B)
     (d : ℝ) (hB : IsSelfAdjoint B)
@@ -91,7 +97,7 @@ private theorem nonresolvent_mem_poleSet
   push_neg at hu
   obtain ⟨w, hw, hwzero⟩ := hu
   obtain ⟨t, ⟨ht0, ht1⟩, rfl⟩ := hspec hw
-  have hmul : (z + 1) * (t : ℂ) = 1 := (sub_eq_zero.mp hwzero).symm
+  have hmul  := (sub_eq_zero.mp hwzero).symm
   have ht : t ≠ 0 := by
     intro ht
     simp [ht] at hmul
@@ -99,8 +105,7 @@ private theorem nonresolvent_mem_poleSet
     simpa using congrArg Complex.re hmul
   have him : z.im * t = 0 := by
     simpa using congrArg Complex.im hmul
-  have hzreal : z = (z.re : ℂ) := Complex.ext (by simp) (by
-    simpa using (mul_eq_zero.mp him).resolve_right ht)
+  have hzreal : z = (z.re : ℂ) := Complex.ext (rfl) ((mul_eq_zero.mp him).resolve_right ht)
   have hz0 : 0 ≤ z.re := by
     have hzt : 0 ≤ z.re * t := by nlinarith
     exact (mul_nonneg_iff_of_pos_right (lt_of_le_of_ne ht0 (Ne.symm ht))).mp hzt
@@ -111,6 +116,8 @@ private theorem nonresolvent_mem_poleSet
   have hzr : (z.re : ℂ) ∉ KPResolventPencil.resolventSet Δ := by
     rwa [← hzreal]
   exact ⟨z.re, hzd, ((htransfer z.re hz0 hzd).mp hzr).1, hzreal⟩
+end
+
 
 end KPBelowThresholdResolvent
 

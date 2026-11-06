@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.RayClassIdealModulusProjection
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.RayClassOfFinitePrime
 public import Mathlib.Data.Finsupp.Order
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -46,8 +49,7 @@ theorem rayClassIdealModulusProjection_prime
       rayClassOfFinitePrime m v
         (by
           intro hvm
-          exact hvn (Finsupp.support_mono hmn.1 hvm)) := by
-  rfl
+          exact hvn (Finsupp.support_mono hmn.1 hvm)) := rfl
 
 end ClassFieldTheory
 

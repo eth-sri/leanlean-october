@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import Mathlib.GroupTheory.Index
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -59,9 +62,7 @@ def quotientSubgroupOfEquiv {H K M : Subgroup G} (hHK : H ≤ K) :
 
 /-- A quotient by the bottom of a subgroup tower is equivalent to the product
 of the two successive quotient types. -/
-def quotientTowerEquiv {M L K : Subgroup G} (hML : M ≤ L) (hLK : L ≤ K) :
-    (K ⧸ M.subgroupOf K) ≃
-      (K ⧸ L.subgroupOf K) × (L ⧸ M.subgroupOf L) :=
+def quotientTowerEquiv {M L K : Subgroup G} (hML : M ≤ L) (hLK : L ≤ K)  :=
   (quotientEquivProdOfLE (subgroupOf_mono K hML)).trans
     (Equiv.prodCongr (Equiv.refl _) (quotientSubgroupOfEquiv hLK))
 

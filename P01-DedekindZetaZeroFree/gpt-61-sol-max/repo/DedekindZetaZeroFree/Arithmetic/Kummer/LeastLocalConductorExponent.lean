@@ -10,9 +10,12 @@ noncomputable section
 open scoped NumberField Classical
 open IsDedekindDomain
 
-theorem finiteExponent_isLeast (F : Type) [Field F] [NumberField F]
+section
+variable (F : Type) [Field F] [NumberField F]
     (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ)
-    (v : HeightOneSpectrum (𝓞 F)) :
+    (v : HeightOneSpectrum (𝓞 F))
+include F h12 x v
+theorem finiteExponent_isLeast   :
     IsLeast (fun n : ℕ =>
       ClassFieldTheory.rayLocalHigherUnitGroup v n ≤
         (RMKummerLocalNormCharacter.lambda F h12 x v).ker)
@@ -24,17 +27,13 @@ theorem finiteExponent_isLeast (F : Type) [Field F] [NumberField F]
     (RMKummerConductor.isAbelianConductor F h12 x) v
   simpa only [RMKummerLocalNormCharacter.lambda_ker_eq_norm_range] using h
 
-theorem finiteExponent_eq_ord (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ)
-    (v : HeightOneSpectrum (𝓞 F)) :
+theorem finiteExponent_eq_ord   :
     (M F (RMKummerConductor.m F h12 x)
       (RMKummerConductor.m_ne_bot F h12 x)).finitePart v =
       idealPrimeExponent v.asIdeal (RMKummerConductor.m F h12 x) := by
   exact M_finitePart F (RMKummerConductor.m F h12 x) (RMKummerConductor.m_ne_bot F h12 x) v
 
-theorem lambda_trivial_on_conductor_units (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ)
-    (v : HeightOneSpectrum (𝓞 F))
+theorem lambda_trivial_on_conductor_units  
     (t : (v.adicCompletion F)ˣ)
     (ht : t ∈ ClassFieldTheory.rayLocalHigherUnitGroup v
       (idealPrimeExponent v.asIdeal (RMKummerConductor.m F h12 x))) :
@@ -43,9 +42,7 @@ theorem lambda_trivial_on_conductor_units (F : Type) [Field F] [NumberField F]
   rw [finiteExponent_eq_ord F h12 x v] at hle
   exact MonoidHom.mem_ker.mp (hle ht)
 
-theorem lambda_nontrivial_below_conductor (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ)
-    (v : HeightOneSpectrum (𝓞 F)) (k : ℕ)
+theorem lambda_nontrivial_below_conductor   (k : ℕ)
     (hk : k < idealPrimeExponent v.asIdeal (RMKummerConductor.m F h12 x)) :
     ∃ t : (v.adicCompletion F)ˣ,
       t ∈ ClassFieldTheory.rayLocalHigherUnitGroup v k ∧
@@ -58,6 +55,8 @@ theorem lambda_nontrivial_below_conductor (F : Type) [Field F] [NumberField F]
     exact absurd h2 (not_le.mpr hk)
   obtain ⟨t, ht, htk⟩ := Set.not_subset.mp hnot
   exact ⟨t, ht, htk⟩
+end
+
 
 theorem higherUnitGroup_zero (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (𝓞 F)) :

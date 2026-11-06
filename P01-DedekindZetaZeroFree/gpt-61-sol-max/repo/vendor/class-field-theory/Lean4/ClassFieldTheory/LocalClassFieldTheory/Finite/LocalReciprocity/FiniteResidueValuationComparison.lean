@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Valuation.DiscreteValuationField.FiniteIntegralClosure
 public import ValuedFieldTheory.Ramification.GaloisValuation.AbsoluteGalois.FiniteExtensionCorrespondence
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -57,10 +60,10 @@ theorem ValuationSubring.restrictIntermediateField_eq_of_finite_separable
     DiscreteValuationField.ValuedExtension.exists_integralClosure_standard_fundamental_identity
       (K := K) (L := E) base
   let : base.valuation.HasExtension target.valuation := hExt
-  have hB : target.valuation.valuationSubring = B :=
+  have hB  :=
     DiscreteValuationField.ValuedExtension.target_valuationSubring_eq_of_finite_separable
       base target B
-  have hC : target.valuation.valuationSubring = C :=
+  have hC  :=
     DiscreteValuationField.ValuedExtension.target_valuationSubring_eq_of_finite_separable
       base target C
   exact hB.symm.trans hC

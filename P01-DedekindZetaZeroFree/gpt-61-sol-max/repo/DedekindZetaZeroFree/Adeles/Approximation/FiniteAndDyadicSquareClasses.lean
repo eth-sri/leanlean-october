@@ -25,7 +25,9 @@ theorem weil_finite_squareclass_approximation
       (fun v => finiteSquareSubgroup_isOpen v.val)
   refine ⟨a, fun v => ?_⟩
   have hv := ha v
-  rw [IdeleGroup.ideleOfFiniteLocalFamily_finiteComponent] at hv
+  have ht : (IdeleGroup.ideleOfFiniteLocalFamily T aLocal).2 v.val = aLocal v :=
+    IdeleGroup.ideleOfFiniteLocalFamily_finiteComponent T aLocal v
+  rw [ht] at hv
   have he : ((IdeleGroup.principalIdele F a).2 v.val) =
       Units.map (algebraMap F (v.val.adicCompletion F)).toMonoidHom a := by
     apply Units.ext

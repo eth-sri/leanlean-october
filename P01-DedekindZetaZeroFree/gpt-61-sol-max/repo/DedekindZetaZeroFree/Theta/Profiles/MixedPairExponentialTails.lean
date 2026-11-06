@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Theta.Profiles.MixedThetaFunctionalEquationPair
 
 @[expose] public section
+
 
 noncomputable section
 open Classical MeasureTheory NumberField
@@ -13,8 +16,7 @@ namespace DedekindZetaZeroFree.Hecke
 open DedekindZetaZeroFree.AbelianQuotient.Theta
 
 theorem mixedThetaPair_tailExponent_pos (F : Type) [Field F] [NumberField F] :
-    0 < 2 / (Module.finrank ℚ F : ℝ) := by
-  exact div_pos (by norm_num) (Nat.cast_pos.mpr (Module.finrank_pos (R := ℚ) (M := F)))
+    0 < 2 / (Module.finrank ℚ F : ℝ) := div_pos (by norm_num) (Nat.cast_pos.mpr (Module.finrank_pos (R := ℚ) (M := F)))
 
 private theorem centered_integral_tail (F : Type) [Field F] [NumberField F]
     (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (q : Angular F → Angular F)

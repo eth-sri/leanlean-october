@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Valuation.DiscreteValuationField.Complete
 public import ValuedFieldTheory.Valuation.DiscreteValuationField.ResidueField
 public import Mathlib.Algebra.CharP.Lemmas
 public import Mathlib.Algebra.Group.Units.Hom
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -104,7 +107,7 @@ F.valuationSubring) - 1 ∈ F.maximalIdeal ^ n`.
 theorem antitone {m n : ℕ} (h : m ≤ n) :
     higherPrincipalUnitGroup F n ≤ higherPrincipalUnitGroup F m := by
   intro u hu
-  exact (Ideal.pow_le_pow_right h) hu
+  apply Ideal.pow_le_pow_right <;> assumption
 
 /-- Prime-binomial containment in an ideal.  If `p ∈ I` and `a ∈ I^n` with
 `n ≥ 1`, then `(1 + a)^p - 1` is one level deeper. -/
@@ -114,18 +117,17 @@ theorem one_add_pow_prime_sub_one_mem_pow_succ
     (hp_mem : (p : R) ∈ I) {a : R} (ha : a ∈ I ^ n) :
     (1 + a) ^ p - 1 ∈ I ^ (n + 1) := by
   rcases exists_add_pow_prime_eq hp (1 : R) a with ⟨r, hr⟩
-  have hnp : n + 1 ≤ n * p := by
-    exact (Nat.add_le_add_left hn n).trans
+  have hnp : n + 1 ≤ n * p := (Nat.add_le_add_left hn n).trans
       (by simpa [Nat.mul_two] using Nat.mul_le_mul_left n hp.two_le)
   have ha_pow_np : a ^ p ∈ I ^ (n * p) := by
     simpa [pow_mul] using (Ideal.pow_mem_pow ha p)
   have ha_pow_succ : a ^ p ∈ I ^ (n + 1) :=
     Ideal.pow_le_pow_right hnp ha_pow_np
   have ha_p_succ : a * (p : R) ∈ I ^ (n + 1) := by
-    simpa [pow_succ] using (Ideal.mul_mem_mul ha hp_mem)
+    apply Ideal.mul_mem_mul <;> assumption
   have hp_a_succ : (p : R) * a ∈ I ^ (n + 1) := by
     simpa [mul_comm] using ha_p_succ
-  have hp_a_r_succ : (p : R) * a * r ∈ I ^ (n + 1) :=
+  have hp_a_r_succ  :=
     (I ^ (n + 1)).mul_mem_right r hp_a_succ
   have hbinom : (1 + a) ^ p - 1 = a ^ p + (p : R) * a * r := by
     rw [hr]
@@ -152,27 +154,23 @@ theorem pow_mem_succ_of_natCast_mem_maximalIdeal
     (hu : u ∈ higherPrincipalUnitGroup F n) :
     u ^ p ∈ higherPrincipalUnitGroup F (n + 1) := by
   rw [higherPrincipalUnitGroup.mem_iff] at hu ⊢
-  let a : F.valuationSubring := (u : F.valuationSubring) - 1
+  let a  := (u : F.valuationSubring) - 1
   have hu_eq : (u : F.valuationSubring) = 1 + a := by
     simp [a]
   have hpow :
       ((u ^ p : F.valuationSubringˣ) : F.valuationSubring) =
-        (u : F.valuationSubring) ^ p := by
-    simp
+        (u : F.valuationSubring) ^ p := rfl
   rw [hpow, hu_eq]
-  exact
-    higherPrincipalUnitGroup.one_add_pow_prime_sub_one_mem_pow_succ
-      F.maximalIdeal hp hn hp_mem hu
+  apply higherPrincipalUnitGroup.one_add_pow_prime_sub_one_mem_pow_succ <;> assumption
 
 /-- Residue-characteristic form of `pow_mem_succ_of_natCast_mem_maximalIdeal`:
 if the residue field has characteristic `p`, then `p`th powers move principal
 units one step deeper. -/
-theorem pow_mem_succ_of_residue_ringChar_eq
+def pow_mem_succ_of_residue_ringChar_eq
     {p n : ℕ} (hp : Nat.Prime p) (hn : 1 ≤ n)
     (hchar : ringChar F.residueField = p)
     {u : F.valuationSubringˣ}
-    (hu : u ∈ higherPrincipalUnitGroup F n) :
-    u ^ p ∈ higherPrincipalUnitGroup F (n + 1) :=
+    (hu : u ∈ higherPrincipalUnitGroup F n)  :=
   higherPrincipalUnitGroup.pow_mem_succ_of_natCast_mem_maximalIdeal
     F hp hn
     (higherPrincipalUnitGroup.natCast_mem_maximalIdeal_of_residue_ringChar_eq
@@ -187,8 +185,7 @@ theorem pow_mem_succ_of_residue_ringChar_eq
 
 /-- The residue of a valuation-ring unit, viewed as a unit of the residue
 field. -/
-def residueUnitHom :
-    F.valuationSubringˣ →* F.residueFieldˣ :=
+def residueUnitHom  :=
   Units.map F.residueMap.toMonoidHom
 
 /--
@@ -210,16 +207,14 @@ theorem mem_one_iff_residue_eq_one (u : F.valuationSubringˣ) :
   constructor
   · intro hu
     have hres :
-        F.residueMap (u : F.valuationSubring) = F.residueMap 1 := by
-      exact
-        (residue_eq_residue_iff_sub_mem_maximalIdeal
+        F.residueMap (u : F.valuationSubring) = F.residueMap 1 := (residue_eq_residue_iff_sub_mem_maximalIdeal
           (R := F.valuationSubring) (u : F.valuationSubring) 1).2 hu
     simpa using hres
   · intro hu
     exact
       (residue_eq_residue_iff_sub_mem_maximalIdeal
         (R := F.valuationSubring) (u : F.valuationSubring) 1).1
-        (by simpa using hu)
+        (hu)
 
 /--
 Characterizes `higherPrincipalUnitGroup.residueUnitHom F u = 1` by the equivalent condition `u ∈
@@ -238,23 +233,23 @@ theorem residueUnitHom_eq_one_iff (u : F.valuationSubringˣ) :
     apply Units.ext
     simpa using (higherPrincipalUnitGroup.mem_one_iff_residue_eq_one F u).1 hu
 
-/--
-Characterizes `higherPrincipalUnitGroup.residueUnitHom F u =
-higherPrincipalUnitGroup.residueUnitHom F v` by the equivalent condition `F.residueMap (u :
-F.valuationSubring) = F.residueMap (v : F.valuationSubring)`.
--/
-theorem residueUnitHom_eq_iff_residue_eq
-    (u v : F.valuationSubringˣ) :
-    higherPrincipalUnitGroup.residueUnitHom F u =
-        higherPrincipalUnitGroup.residueUnitHom F v ↔
-      F.residueMap (u : F.valuationSubring) =
-        F.residueMap (v : F.valuationSubring) := by
-  constructor
-  · intro h
-    exact congrArg (fun z : F.residueFieldˣ => (z : F.residueField)) h
-  · intro h
-    apply Units.ext
-    simpa using h
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 end higherPrincipalUnitGroup
 
 end CompleteDVF

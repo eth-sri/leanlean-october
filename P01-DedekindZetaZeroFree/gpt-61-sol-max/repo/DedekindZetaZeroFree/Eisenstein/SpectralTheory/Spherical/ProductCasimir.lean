@@ -25,14 +25,17 @@ private theorem curve_entries (i : Fin 6) (r s : Fin 2) :
     HasDerivAt (fun t : ℝ => curve i t r s) (basisMatrix i r s) 0 := by
   simpa [curve] using matrix_path_components (1 : Mat) (basisMatrix i) r s
 
-private theorem curve_mul_entries (i j : Fin 6) (r s : Fin 2) :
+section
+variable (i j : Fin 6)
+include i j
+private theorem curve_mul_entries   (r s : Fin 2) :
     HasDerivAt (fun t : ℝ => (curve i t * basisMatrix j) r s)
       ((basisMatrix i * basisMatrix j) r s) 0 := by
   convert ((curve_entries i r 0).mul_const (basisMatrix j 0 s)).add
       ((curve_entries i r 1).mul_const (basisMatrix j 1 s)) using 1 <;>
     simp [Matrix.mul_apply, Fin.sum_univ_two, Pi.add_apply] <;> rfl
 
- def numeratorSecond (i j : Fin 6) : ℂ :=
+ def numeratorSecond   : ℂ :=
   (basisMatrix j 0 0) * star (basisMatrix i 1 0) +
     (basisMatrix i 0 0) * star (basisMatrix j 1 0) +
     star ((basisMatrix i * basisMatrix j) 1 0) +
@@ -40,7 +43,7 @@ private theorem curve_mul_entries (i j : Fin 6) (r s : Fin 2) :
     basisMatrix j 0 1 * star (basisMatrix i 1 1) +
     basisMatrix i 0 1 * star (basisMatrix j 1 1)
 
-private theorem numerator_second (i j : Fin 6) :
+private theorem numerator_second   :
     HasDerivAt (fun t => horizontalNumeratorJet (curve i t) j)
       (numeratorSecond i j) 0 := by
   have h := curve_entries i
@@ -51,12 +54,12 @@ private theorem numerator_second (i j : Fin 6) :
   · rfl
   · simp [numeratorSecond, curve, Matrix.one_apply]; ring
 
- def denominatorSecond (i j : Fin 6) : ℝ :=
+ def denominatorSecond   : ℝ :=
   ![-4 * (basisMatrix i 1 1).re, 0,
     2 * (basisMatrix i 1 0).re, -2 * (basisMatrix i 1 0).im,
     2 * (basisMatrix i 1 0).re, 2 * (basisMatrix i 1 0).im] j
 
-private theorem denominator_second (i j : Fin 6) :
+private theorem denominator_second   :
     HasDerivAt (fun t => bottomDenominatorJet (curve i t) j)
       (denominatorSecond i j) 0 := by
   have h := curve_entries i
@@ -72,14 +75,14 @@ private theorem denominator_second (i j : Fin 6) :
   · simpa [bottomDenominatorJet, denominatorSecond, curve, Matrix.one_apply] using hr
   · simpa [bottomDenominatorJet, denominatorSecond, curve, Matrix.one_apply] using hi
 
- def horizontalSecond (i j : Fin 6) : ℂ :=
+ def horizontalSecond   : ℂ :=
   numeratorSecond i j - horizontalNumeratorJet (1 : Mat) i * (bottomDenominatorJet (1 : Mat) j : ℂ)
     - horizontalNumeratorJet (1 : Mat) j * (bottomDenominatorJet (1 : Mat) i : ℂ)
 
- def verticalSecond (i j : Fin 6) : ℝ :=
+ def verticalSecond   : ℝ :=
   -denominatorSecond i j + bottomDenominatorJet (1 : Mat) j * bottomDenominatorJet (1 : Mat) i
 
-private theorem horizontal_second (i j : Fin 6) :
+private theorem horizontal_second   :
     HasDerivAt (fun t => horizontalFieldJet (curve i t) j) (horizontalSecond i j) 0 := by
   have hN : HasDerivAt (fun t => horizontalNumerator (curve i t))
       (horizontalNumeratorJet (1 : Mat) i) 0 := by
@@ -94,7 +97,7 @@ private theorem horizontal_second (i j : Fin 6) :
   · rfl
   · simp [horizontalSecond, curve, bottomDenominator, horizontalNumerator]; ring
 
-private theorem vertical_second (i j : Fin 6) :
+private theorem vertical_second   :
     HasDerivAt (fun t => verticalFieldJet (curve i t) j) (verticalSecond i j) 0 := by
   have hD : HasDerivAt (fun t => bottomDenominator (curve i t))
       (bottomDenominatorJet (1 : Mat) i) 0 := by
@@ -103,6 +106,8 @@ private theorem vertical_second (i j : Fin 6) :
   convert hd using 1
   · rfl
   · simp [verticalSecond, curve, bottomDenominator]
+end
+
 
  def tangent (i : Fin 6) : KPArch.H3 :=
   (horizontalFieldJet (1 : Mat) i, verticalFieldJet (1 : Mat) i)
@@ -202,8 +207,11 @@ private theorem contraction
   simp_rw [localD_second φ hφ]
   exact contraction _ _
 
-private theorem second_apply {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    (f : E → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) (x v w : E) :
+section
+variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+    (f : E → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f)
+include E f hf
+private theorem second_apply   (x v w : E) :
     fderiv ℝ (fun y => fderiv ℝ f y w) x v =
       fderiv ℝ (fderiv ℝ f) x v w := by
   have hd : DifferentiableAt ℝ (fderiv ℝ f) x :=
@@ -212,15 +220,13 @@ private theorem second_apply {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ
   have hh := congrArg (fun A : E →L[ℝ] ℂ => A v) he.fderiv
   simpa using hh
 
- theorem first_precomp {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    (f : E → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) (L : KPArch.H3 →L[ℝ] E)
+ theorem first_precomp   (L : KPArch.H3 →L[ℝ] E)
     (x v : KPArch.H3) :
     fderiv ℝ (f ∘ L) x v = fderiv ℝ f (L x) (L v) := by
   rw [fderiv_comp x ((hf.differentiable (by simp)) (L x)) L.differentiableAt]
   simp
 
-private theorem second_precomp {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    (f : E → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) (L : KPArch.H3 →L[ℝ] E)
+private theorem second_precomp   (L : KPArch.H3 →L[ℝ] E)
     (x v w : KPArch.H3) :
     fderiv ℝ (fderiv ℝ (f ∘ L)) x v w = fderiv ℝ (fderiv ℝ f) (L x) (L v) (L w) := by
   rw [← second_apply (f ∘ L) (hf.comp L.contDiff) x v w]
@@ -233,6 +239,8 @@ private theorem second_precomp {E : Type*} [NormedAddCommGroup E] [NormedSpace �
   rw [fderiv_comp x hd L.differentiableAt]
   simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.fderiv]
   exact second_apply f hf (L x) (L v) (L w)
+end
+
 
 def localCasimir (f : Matrix.GeneralLinearGroup (Fin 2) ℂ → ℂ)
     (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) : ℂ :=

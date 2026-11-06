@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Moduli.FullModulusAndIntegralIdealUnits
 public import Mathlib.NumberTheory.NumberField.InfinitePlace.TotallyRealComplex
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -13,7 +16,7 @@ open scoped NumberField Classical
 
 variable {F : Type*} [Field F] [NumberField F]
 
-def finiteModulusIdeal (c : ClassFieldTheory.RayClassModulus F) : Ideal (𝓞 F) :=
+def finiteModulusIdeal (c : ClassFieldTheory.RayClassModulus F)  :=
   c.finitePart.prod (fun p n => p.asIdeal ^ n)
 
 private lemma coe_finiteModulusIdeal (c : ClassFieldTheory.RayClassModulus F) :
@@ -42,7 +45,7 @@ private lemma count_coe_finiteModulusIdeal (c : ClassFieldTheory.RayClassModulus
     · rfl
     · have hv' : c.finitePart v = 0 := by
         by_contra h
-        exact hv (Finsupp.mem_support_iff.mpr h)
+        apply hv <;> aesop
       simp [hv']
   · intro p _
     exact pow_ne_zero _ (FractionalIdeal.coeIdeal_ne_zero.mpr p.ne_bot)
@@ -51,7 +54,7 @@ private lemma sup_eq_top_iff_of_isMaximal {I J : Ideal (𝓞 F)} (hI : I.IsMaxim
     I ⊔ J = ⊤ ↔ ¬ J ≤ I := by
   constructor
   · intro h hle
-    exact hI.ne_top (top_le_iff.mp (h ▸ sup_le le_rfl hle))
+    apply hI.ne_top <;> aesop
   · intro h
     by_contra hne
     exact h ((hI.eq_of_le hne le_sup_left) ▸ le_sup_right)

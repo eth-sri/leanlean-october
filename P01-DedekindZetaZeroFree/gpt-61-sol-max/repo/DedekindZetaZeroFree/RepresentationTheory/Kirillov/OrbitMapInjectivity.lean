@@ -69,8 +69,11 @@ variable (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F w m)
   (hρ : IsSmooth F ζ hζ w m ρ)
   (hgen : KPLocalSmoothRepresentation.genuine F ζ hζ w ρ)
 
-private theorem borel_conjugates_root (m : ℕ)
-    (hm : KPLocalChartTopology.MatrixChartDepth F w m) (p : P F ζ hζ w) (x : K F w) :
+section
+variable (m : ℕ)
+    (hm : KPLocalChartTopology.MatrixChartDepth F w m) (p : P F ζ hζ w)
+include m hm p
+private theorem borel_conjugates_root   (x : K F w) :
     p.val * KPLocalSmoothRepresentation.upperRoot F ζ hζ w (Multiplicative.ofAdd x) *
       p.val⁻¹ = KPLocalSmoothRepresentation.upperRoot F ζ hζ w
         (Multiplicative.ofAdd ((slope F ζ hζ w p : K F w) * x)) := by
@@ -102,8 +105,7 @@ private theorem borel_conjugates_root (m : ℕ)
       group
     _ = _ := KPJacquetOpenCell.torus_conjugates_root F ζ hζ w m hm a x
 
-private def quotientTransport (m : ℕ)
-    (hm : KPLocalChartTopology.MatrixChartDepth F w m) (p : P F ζ hζ w)
+private def quotientTransport  
     (t s : K F w) (h : t * (slope F ζ hζ w p : K F w) = s) :
     Fiber F ζ hζ w ρ s →ₗ[ℂ] Fiber F ζ hζ w ρ t :=
   rootCoinvariantsLift ρ (KPLocalSmoothRepresentation.upperRoot F ζ hζ w)
@@ -132,8 +134,7 @@ private def quotientTransport (m : ℕ)
       rw [he]
       rfl⟩
 
-private theorem quotient_orbit_zero_iff (m : ℕ)
-    (hm : KPLocalChartTopology.MatrixChartDepth F w m) (p : P F ζ hζ w) (v : V) :
+private theorem quotient_orbit_zero_iff   (v : V) :
     quotientMap F ζ hζ w ρ 1 (ρ p.val v) = 0 ↔
       quotientMap F ζ hζ w ρ (slope F ζ hζ w p : K F w) v = 0 := by
   constructor
@@ -157,6 +158,8 @@ private theorem quotient_orbit_zero_iff (m : ℕ)
     have hh := congrArg L hv
     change quotientMap F ζ hζ w ρ 1 (ρ p.val v) = L 0 at hh
     simpa only [map_zero] using hh
+end
+
 
 include hgen in
 
@@ -323,7 +326,10 @@ private theorem quotientMap_projector_indicator (u : ℤ) (t s : K F w) (v : V) 
       (projector F ζ hζ w ρ m hm hρ u s v) = 0 at hh
     rw [hh, map_zero]
 
-theorem rawOrbitMap_projector_chart (u : ℤ) (t₀ : (K F w)ˣ)
+section
+variable (u : ℤ) (t₀ : (K F w)ˣ)
+include u t₀
+theorem rawOrbitMap_projector_chart  
     (v : V) (c : LocalChart F ζ hζ w m) (t : c.ball.domain) :
     rawOrbitMap F ζ hζ w ρ (projector F ζ hζ w ρ m hm hρ u (t₀ : K F w) v)
         (c.lift t) =
@@ -348,7 +354,7 @@ theorem rawOrbitMap_projector_chart (u : ℤ) (t₀ : (K F w)ˣ)
   · rw [if_neg h, map_zero] at hh
     exact hh
 
-theorem projector_mem_ordinaryKernel (u : ℤ) (t₀ : (K F w)ˣ)
+theorem projector_mem_ordinaryKernel  
     (hzero : (0 : K F w) ∉ frequencyCoset F w u t₀) (v : V) :
     projector F ζ hζ w ρ m hm hρ u (t₀ : K F w) v ∈
       ordinaryKernel F ζ hζ w ρ := by
@@ -388,7 +394,7 @@ theorem projector_mem_ordinaryKernel (u : ℤ) (t₀ : (K F w)ˣ)
     exact sub_self _
   exact (smul_eq_zero.mp hz).resolve_left (sub_ne_zero.mpr hχ')
 
-theorem projector_preserves_ordinaryKernel (u : ℤ) (t₀ : (K F w)ˣ)
+theorem projector_preserves_ordinaryKernel  
     (v : ordinaryKernel F ζ hζ w ρ) :
     projector F ζ hζ w ρ m hm hρ u (t₀ : K F w) v.val ∈
       ordinaryKernel F ζ hζ w ρ := by
@@ -398,7 +404,7 @@ theorem projector_preserves_ordinaryKernel (u : ℤ) (t₀ : (K F w)ˣ)
   rw [hv]
   split_ifs <;> rfl
 
-theorem orbitSectionMap_projector_chart (u : ℤ) (t₀ : (K F w)ˣ)
+theorem orbitSectionMap_projector_chart  
     (v : ordinaryKernel F ζ hζ w ρ) (c : LocalChart F ζ hζ w m)
     (t : c.ball.domain) :
     chartValue F ζ hζ w m (ψ F w) c
@@ -413,6 +419,8 @@ theorem orbitSectionMap_projector_chart (u : ℤ) (t₀ : (K F w)ˣ)
     if (t.val : K F w) ∈ frequencyCoset F w u t₀ then
       rawOrbitMap F ζ hζ w ρ v.val (c.lift t) else 0
   exact rawOrbitMap_projector_chart F ζ hζ w ρ m hm hρ u t₀ v.val c t
+end
+
 
 end DedekindZetaZeroFree.KPKirillovOrbitMapFaithful
 

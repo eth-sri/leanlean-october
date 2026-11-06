@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Fourier.Lattices.DualBasisCoordinates
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
 
 @[expose] public section
+
 
 noncomputable section
 open scoped FourierTransform SchwartzMap
@@ -24,7 +27,7 @@ theorem periodisation_fourierCoefficient_eq_fourier
   classical
   letI : VAddInvariantMeasure L V (volume : Measure V) := ⟨fun v s hs => by
     change volume ((fun x : V => (v : V) + x) ⁻¹' s) = volume s
-    exact measure_preimage_add volume (v : V) s⟩
+    apply measure_preimage_add⟩
   have hc : Countable L := inferInstance
   let F : L → V → ℂ := fun v x => 𝐞 (-inner ℝ x (w : V)) • f (x + (v : V))
   have hmeas (v : L) : AEStronglyMeasurable (F v) (volume.restrict D) := by

@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import Mathlib.MeasureTheory.Function.LpSeminorm.LpNorm
 public import Mathlib.MeasureTheory.Integral.Prod
 public import Mathlib.Tactic
 
 @[expose] public section
+
 
 noncomputable section
 open MeasureTheory
@@ -30,7 +33,7 @@ theorem exists_full_tube_l2_transfer_constant_ae {E V X : Type*}
   intro f hf g hinv
   have hfm := hf.of_measure_le_smul ha hdom
   have hfp := (hfm.comp_of_map htube).ae_eq hinv
-  have hν' : ν ≠ 0 := by intro h; exact hν (by simp [h])
+  have hν' : ν ≠ 0 := by intro h; apply hν <;> aesop
   have hga := hfp.aestronglyMeasurable.of_comp_fst hν'
   have hgm : MemLp g 2 (w • μ) := by
     rw [← Measure.map_fst_prod]

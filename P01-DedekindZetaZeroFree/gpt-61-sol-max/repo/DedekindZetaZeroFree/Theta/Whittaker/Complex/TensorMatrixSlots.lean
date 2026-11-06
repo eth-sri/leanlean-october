@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Eisenstein.Induction.RestrictedTensorRealization
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.Complex.InverseTensorSlots
 public import DedekindZetaZeroFree.Metaplectic.Kubota.Induction.UnitaryRationalFiberComparison
 
 @[expose] public section
+
 
 noncomputable section
 open scoped Classical NumberField Topology NNReal BigOperators
@@ -30,10 +33,10 @@ abbrev Plus : KPHilbert.Place F → Type
   | Sum.inl _ => KPLiteralTensor.harmonicPlus
   | Sum.inr q => KPLocalPrincipalSeries.sectionSpace (C.canonical q).borel (C.polarization q) .plus 0
 
-instance plusAdd (v : KPHilbert.Place F) : AddCommGroup (Plus A P C v) := by
-  cases v <;> dsimp [Plus] <;> infer_instance
-instance plusModule (v : KPHilbert.Place F) : Module ℂ (Plus A P C v) := by
-  cases v <;> dsimp [Plus] <;> infer_instance
+
+
+
+
 
 def matrix (w : InfinitePlace F)
     (g : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl w)) : ComplexGL2 :=
@@ -45,7 +48,7 @@ variable (x : ∀ j : s.val, Plus A P C j.val)
 variable (g : KPAdelicCoverRestrictedProduct.RestrictedCover F A.zeta12 A.primitive_zeta12)
 
 def finiteTuple (x : ∀ j : s.val, Plus A P C j.val)
-    (g : KPAdelicCoverRestrictedProduct.RestrictedCover F ζ hζ) (q : s.val.toRight) : LocalFiber F ζ hζ P C q.val :=
+    (g : KPAdelicCoverRestrictedProduct.RestrictedCover F ζ hζ) (q : s.val.toRight)  :=
   (x ⟨Sum.inr q.val, Finset.mem_toRight.mp q.property⟩).val
     (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q.val) (g (Sum.inr q.val)))
 
@@ -56,17 +59,17 @@ def finiteFiber (x : ∀ j : s.val, Plus A P C j.val)
       (localReference F ζ hζ P C) C.exceptional (ScalarAbsorption.rightLevel C.exceptional s)
       (PiTensorProduct.tprod ℂ (finiteTuple A P C s x g)))
 
-def finiteScalar : ℂ :=
+def finiteScalar  :=
   (productUnitaryToRational F ζ hζ P (finiteFiber A P C s x g)).val.val 1
 
-def archComplement (w : InfinitePlace F) : ℂ :=
+def archComplement (w : InfinitePlace F)  :=
   ∏ j : s.val, match j with
     | ⟨Sum.inl u, hu⟩ => if u = w then 1 else
         (KPSourceConvention.ordinaryGenuineCharacter F ζ hζ (g (Sum.inl u)).epsilon : ℂ) *
           (x ⟨Sum.inl u, hu⟩).val (matrix A u (g (Sum.inl u)))
     | ⟨Sum.inr _, _⟩ => 1
 
-def coefficient (w : InfinitePlace F) : ℂ :=
+def coefficient (w : InfinitePlace F)  :=
   archComplement A P C s x g w * finiteScalar A P C s x g *
     (KPSourceConvention.ordinaryGenuineCharacter F ζ hζ (g (Sum.inl w)).epsilon : ℂ)
 
@@ -78,7 +81,7 @@ def positive (w : InfinitePlace F) : PrincipalSeries positiveParameter →L[ℂ]
      KPCplxHarmonicExtraction.principalSeries_evaluation_continuous
        positiveParameter (matrix A w (g (Sum.inl w)))⟩
 
-def negative (w : InfinitePlace F) : PrincipalSeries negativeParameter →L[ℂ] ℂ :=
+def negative (w : InfinitePlace F)  :=
   (positive A P C s x g w).comp inverse
 
 @[simp] theorem negative_apply (w : InfinitePlace F) (f : PrincipalSeries negativeParameter) :

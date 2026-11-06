@@ -101,76 +101,76 @@ theorem u_unique {r r' : D.Row} (h : r.u = r'.u) : r = r' := u_injective h
 
 end Row
 
-def q (u : D.Row) : ℝ :=
+section
+variable (u : D.Row)
+include u
+def q   : ℝ :=
   (FiniteTransform.exteriorNorm D.recipe.A.R.toSubring u.u : ℝ)
 
-def inducers (u : D.Row) : FrequencyCharacterMasks.PrimitiveInducers u.toFrequency :=
+def inducers   : FrequencyCharacterMasks.PrimitiveInducers u.toFrequency :=
   (MaskedHeckeMeromorphic.masked_hecke_meromorphic u.toFrequency).choose
 
-def rowContinuation (u : D.Row) (i : MaskedHeckeMeromorphic.Row) :
+def rowContinuation   (i : MaskedHeckeMeromorphic.Row) :
     MaskedHeckeMeromorphic.RowContinuation u.toFrequency (D.inducers u) i :=
   ((MaskedHeckeMeromorphic.masked_hecke_meromorphic u.toFrequency).choose_spec i).some
 
-def omega (u : D.Row) : Detector.PrimitiveFrequencyCharacter F :=
+def omega   : Detector.PrimitiveFrequencyCharacter F :=
   (D.inducers u).minus
 
-def LpsiRaw (u : D.Row) (s : ℂ) : ℂ :=
+def LpsiRaw   (s : ℂ) : ℂ :=
   MaskedHeckeMeromorphic.incompleteL u.toFrequency MaskedHeckeMeromorphic.Row.plus s
 
-def LlamRaw (u : D.Row) (s : ℂ) : ℂ :=
+def LlamRaw   (s : ℂ) : ℂ :=
   MaskedHeckeMeromorphic.incompleteL u.toFrequency MaskedHeckeMeromorphic.Row.minus s
 
-def Lpsi (u : D.Row) (s : ℂ) : ℂ :=
+def Lpsi   (s : ℂ) : ℂ :=
   MaskedHeckeMeromorphic.quotientRepresentative u.toFrequency (D.inducers u)
     MaskedHeckeMeromorphic.Row.plus (D.rowContinuation u .plus).J s
 
-def Llam (u : D.Row) (s : ℂ) : ℂ :=
+def Llam   (s : ℂ) : ℂ :=
   MaskedHeckeMeromorphic.quotientRepresentative u.toFrequency (D.inducers u)
     MaskedHeckeMeromorphic.Row.minus (D.rowContinuation u .minus).J s
 
-abbrev rowDeletionSet (u : D.Row) (i : MaskedHeckeMeromorphic.Row) :
+abbrev rowDeletionSet   (i : MaskedHeckeMeromorphic.Row) :
     Set (IsDedekindDomain.HeightOneSpectrum (𝓞 F)) :=
   MaskedHeckeMeromorphic.deletionSet u.toFrequency i
 
-theorem Lpsi_eq_raw (u : D.Row) (s : ℂ) (hs : 1 < s.re) : D.Lpsi u s = D.LpsiRaw u s :=
+theorem Lpsi_eq_raw   (s : ℂ) (hs : 1 < s.re) : D.Lpsi u s = D.LpsiRaw u s :=
   ((D.rowContinuation u .plus).regular_equality s hs).symm
 
-theorem Llam_eq_raw (u : D.Row) (s : ℂ) (hs : 1 < s.re) : D.Llam u s = D.LlamRaw u s :=
+theorem Llam_eq_raw   (s : ℂ) (hs : 1 < s.re) : D.Llam u s = D.LlamRaw u s :=
   ((D.rowContinuation u .minus).regular_equality s hs).symm
 
-theorem Lpsi_eq_J_mask (u : D.Row) (s : ℂ) :
+theorem Lpsi_eq_J_mask   (s : ℂ) :
     D.Lpsi u s = (D.rowContinuation u .plus).J s *
       Detector.finiteEulerDeletionMask F (D.rowDeletionSet u .plus)
         (fun p => (D.inducers u).plus.character p.asIdeal) s /
       (s - 1) ^ MaskedHeckeMeromorphic.poleIndicator (D.inducers u).plus := rfl
 
-theorem Llam_eq_J_mask (u : D.Row) (s : ℂ) :
+theorem Llam_eq_J_mask   (s : ℂ) :
     D.Llam u s = (D.rowContinuation u .minus).J s *
       Detector.finiteEulerDeletionMask F (D.rowDeletionSet u .minus)
         (fun p => (D.omega u).character p.asIdeal) s /
       (s - 1) ^ MaskedHeckeMeromorphic.poleIndicator (D.omega u) := rfl
 
-theorem Lpsi_analyticOnNhd (u : D.Row) :
-    AnalyticOnNhd ℂ (D.Lpsi u) ({s : ℂ | 0 < s.re} \ {1}) := by
+private theorem row_analyticOnNhd (i : MaskedHeckeMeromorphic.Row) :
+    AnalyticOnNhd ℂ (MaskedHeckeMeromorphic.quotientRepresentative u.toFrequency
+      (D.inducers u) i (D.rowContinuation u i).J) ({s : ℂ | 0 < s.re} \ {1}) := by
   intro s hs
-  have hJ := (D.rowContinuation u .plus).J_holomorphic s hs.1
-  have hB := (D.rowContinuation u .plus).B_holomorphic s hs.1
-  have hne : s - 1 ≠ 0 := sub_ne_zero.mpr hs.2
-  have hp : AnalyticAt ℂ (fun z : ℂ => (z - 1) ^ MaskedHeckeMeromorphic.poleIndicator
-      (D.inducers u).plus) s :=
-    ((analyticAt_id.sub analyticAt_const).pow _)
-  exact (hJ.mul hB).div hp (pow_ne_zero _ hne)
+  exact ((D.rowContinuation u i).J_holomorphic s hs.1).mul
+    ((D.rowContinuation u i).B_holomorphic s hs.1) |>.div
+      ((analyticAt_id.sub analyticAt_const).pow _) (pow_ne_zero _ (sub_ne_zero.mpr hs.2))
 
-theorem Llam_analyticOnNhd (u : D.Row) :
-    AnalyticOnNhd ℂ (D.Llam u) ({s : ℂ | 0 < s.re} \ {1}) := by
-  intro s hs
-  have hJ := (D.rowContinuation u .minus).J_holomorphic s hs.1
-  have hB := (D.rowContinuation u .minus).B_holomorphic s hs.1
-  have hne : s - 1 ≠ 0 := sub_ne_zero.mpr hs.2
-  have hp : AnalyticAt ℂ (fun z : ℂ => (z - 1) ^ MaskedHeckeMeromorphic.poleIndicator
-      (D.omega u)) s :=
-    ((analyticAt_id.sub analyticAt_const).pow _)
-  exact (hJ.mul hB).div hp (pow_ne_zero _ hne)
+theorem Lpsi_analyticOnNhd :
+    AnalyticOnNhd ℂ (D.Lpsi u) ({s : ℂ | 0 < s.re} \ {1}) :=
+  row_analyticOnNhd D u .plus
+
+theorem Llam_analyticOnNhd :
+    AnalyticOnNhd ℂ (D.Llam u) ({s : ℂ | 0 < s.re} \ {1}) :=
+  row_analyticOnNhd D u .minus
+
+end
+
 
 def zetaS (s : ℂ) : ℂ := InitialSeparatedEuler.zetaS D.recipe.A s
 
@@ -202,14 +202,8 @@ theorem M_vertical_decay (a b : ℝ) (ha : 0 < a) (hab : a ≤ b) (k : ℕ) :
   refine ⟨C, fun z hza hzb => ?_⟩
   have h := hb z.re ⟨hza, hzb⟩ z.im
   rw [Complex.re_add_im] at h
-  have h' : ‖D.M z‖ ≤ C * (1 + |z.im|) ^ (-(k : ℝ)) := h
-  have hpos : (0 : ℝ) < 1 + |z.im| := by positivity
-  have hk : (1 + |z.im|) ^ k * (1 + |z.im|) ^ (-(k : ℝ)) = 1 := by
-    rw [Real.rpow_neg hpos.le, Real.rpow_natCast, mul_inv_cancel₀ (pow_ne_zero _ hpos.ne')]
-  calc (1 + |z.im|) ^ k * ‖D.M z‖ ≤ (1 + |z.im|) ^ k * (C * (1 + |z.im|) ^ (-(k : ℝ))) :=
-        mul_le_mul_of_nonneg_left h' (by positivity)
-    _ = C * ((1 + |z.im|) ^ k * (1 + |z.im|) ^ (-(k : ℝ))) := by ring
-    _ = C := by rw [hk, mul_one]
+  rw [Real.rpow_neg (by positivity), Real.rpow_natCast, ← div_eq_mul_inv] at h
+  exact (le_div_iff₀' (by positivity)).mp h
 
 theorem W1Hat_vertical_decay (a b : ℝ) (hab : a ≤ b) (k : ℕ) :
     ∃ C : ℝ, ∀ z : ℂ, a ≤ z.re → z.re ≤ b →
@@ -219,13 +213,8 @@ theorem W1Hat_vertical_decay (a b : ℝ) (hab : a ≤ b) (k : ℕ) :
   refine ⟨C, fun z hza hzb => ?_⟩
   have hz : z ∈ DedekindZetaZeroFree.comparisonClosedStrip a b := ⟨hza, hzb⟩
   have h := hb z hz
-  have hpos : (0 : ℝ) < 1 + |z.im| := by positivity
-  have hk : (1 + |z.im|) ^ k * (1 + |z.im|) ^ (-(k : ℝ)) = 1 := by
-    rw [Real.rpow_neg hpos.le, Real.rpow_natCast, mul_inv_cancel₀ (pow_ne_zero _ hpos.ne')]
-  calc (1 + |z.im|) ^ k * ‖D.W1Hat z‖ ≤ (1 + |z.im|) ^ k * (C * (1 + |z.im|) ^ (-(k : ℝ))) :=
-        mul_le_mul_of_nonneg_left h (by positivity)
-    _ = C * ((1 + |z.im|) ^ k * (1 + |z.im|) ^ (-(k : ℝ))) := by ring
-    _ = C := by rw [hk, mul_one]
+  rw [Real.rpow_neg (by positivity), Real.rpow_natCast, ← div_eq_mul_inv] at h
+  exact (le_div_iff₀' (by positivity)).mp h
 
 end FixedData
 

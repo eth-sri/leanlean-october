@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.ContinuousAveraging
 public import DedekindZetaZeroFree.RepresentationTheory.Continuous.Characters
 public import DedekindZetaZeroFree.RepresentationTheory.Continuous.SchurLemma
 public import DedekindZetaZeroFree.RepresentationTheory.Irreducible.SubrepresentationsAndEigenvectors
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 The Tau Ceti contributors. All rights reserved.
@@ -35,7 +38,7 @@ section Conjugation
 
 variable {𝕜 G : Type*} [RCLike 𝕜] [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
 
-def conjMap (h : G) : C(G, G) :=
+def conjMap (h : G)  :=
   (ContinuousMap.mulLeft h⁻¹).comp (ContinuousMap.mulRight h)
 
 private theorem conjMap_apply (h g : G) : conjMap h g = h⁻¹ * (g * h) :=
@@ -89,45 +92,45 @@ theorem integratedOperator_apply (f : C(G, 𝕜)) (v : V) :
   simp only [ContinuousMap.comp_apply, ContinuousMap.coe_coe, ContinuousLinearMap.apply_apply,
     weightFamily_apply, smul_apply]
 
-omit [CompleteSpace V] in
-@[simp]
-theorem integratedOperator_zero : integratedOperator π hπ (0 : C(G, 𝕜)) = 0 := by
-  have hzero : weightFamily π hπ (0 : C(G, 𝕜)) = 0 := by
-    ext g v
-    simp
-  rw [integratedOperator, hzero, map_zero]
 
-omit [CompleteSpace V] in
-@[simp]
-theorem integratedOperator_add (f₁ f₂ : C(G, 𝕜)) :
-    integratedOperator π hπ (f₁ + f₂)
-      = integratedOperator π hπ f₁ + integratedOperator π hπ f₂ := by
-  have hadd : weightFamily π hπ (f₁ + f₂) = weightFamily π hπ f₁ + weightFamily π hπ f₂ := by
-    ext g v
-    simp [add_smul]
-  rw [integratedOperator, integratedOperator, integratedOperator, hadd, map_add]
 
-omit [CompleteSpace V] in
-@[simp]
-theorem integratedOperator_smul (c : 𝕜) (f : C(G, 𝕜)) :
-    integratedOperator π hπ (c • f) = c • integratedOperator π hπ f := by
-  have hsmul : weightFamily π hπ (c • f) = c • weightFamily π hπ f := by
-    ext g v
-    simp [mul_smul]
-  rw [integratedOperator, integratedOperator, hsmul, map_smul]
 
-omit [CompleteSpace V] in
 
-noncomputable def integratedOperatorₗ : C(G, 𝕜) →ₗ[𝕜] V →L[𝕜] V where
-  toFun := integratedOperator π hπ
-  map_add' := integratedOperator_add π hπ
-  map_smul' := integratedOperator_smul π hπ
 
-omit [CompleteSpace V] in
-@[simp]
-theorem integratedOperatorₗ_apply (f : C(G, 𝕜)) :
-    integratedOperatorₗ π hπ f = integratedOperator π hπ f :=
-  (rfl)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 noncomputable def conjOp (h : G) : (V →L[𝕜] V) →L[𝕜] V →L[𝕜] V :=
   (ContinuousLinearMap.compL 𝕜 V V V (π h⁻¹)).comp
@@ -137,8 +140,7 @@ omit hπ [TopologicalSpace G] [IsTopologicalGroup G] [CompactSpace G] [Measurabl
   [BorelSpace G] [NormedSpace ℝ V] [SMulCommClass ℝ 𝕜 V] [CompleteSpace V] in
 
 private theorem conjOp_apply (h : G) (S : V →L[𝕜] V) :
-    conjOp π h S = (π h⁻¹).comp (S.comp (π h)) := by
-  simp [conjOp, ContinuousLinearMap.compL_apply]
+    conjOp π h S = (π h⁻¹).comp (S.comp (π h)) := rfl
 
 variable {f : C(G, 𝕜)} (hf : ∀ g h : G, f (h * g * h⁻¹) = f g)
 
@@ -171,8 +173,7 @@ theorem integratedOperator_comp (h : G) :
     rw [← ContinuousLinearMap.mul_def, ← map_mul, mul_inv_cancel, map_one,
       ContinuousLinearMap.one_def]
   calc (integratedOperator π hπ f).comp (π h)
-      = (ContinuousLinearMap.id 𝕜 V).comp ((integratedOperator π hπ f).comp (π h)) := by
-        rw [ContinuousLinearMap.id_comp]
+      = (ContinuousLinearMap.id 𝕜 V).comp ((integratedOperator π hπ f).comp (π h)) := rfl
     _ = ((π h).comp (π h⁻¹)).comp ((integratedOperator π hπ f).comp (π h)) := by rw [hid]
     _ = (π h).comp ((π h⁻¹).comp ((integratedOperator π hπ f).comp (π h))) :=
         ContinuousLinearMap.comp_assoc _ _ _
@@ -220,7 +221,7 @@ theorem integratedOperator_eq_smul_id
     integratedOperator π hπ f
       = ((Module.finrank 𝕜 V : 𝕜)⁻¹ * ∫ g, f g * character π hπ g ∂haarProb G) •
         ContinuousLinearMap.id 𝕜 V := by
-  have hdim : (Module.finrank 𝕜 V : 𝕜) ≠ 0 :=
+  have hdim  :=
     Representation.IsIrreducible.natCast_finrank_ne_zero hirr
   have h := π.eq_finrank_inv_mul_trace_smul_id_of_isIrreducible hdim hirr
     (integratedIntertwiner π hπ hf)

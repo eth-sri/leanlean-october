@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import Mathlib.SetTheory.Cardinal.Finite
 public import ClassFieldTheory.LubinTate.EqualCharacteristic.FiniteLevel.DivisionPolynomial
 public import Mathlib.RingTheory.Polynomial.Eisenstein.Basic
 public import Mathlib.RingTheory.PowerSeries.Ideal
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -42,27 +45,29 @@ open LocalFieldTheory.DiscreteValuationField
 
 variable {K : Type u} [Field K]
 
+section
+variable (F : LocalField.{u, v} K)
+include F
 /-- The integral lift `Y ^ q + T * Y` of the equal-characteristic
 Lubin--Tate polynomial. -/
 noncomputable def equalCharacteristicLubinTateIntegralPiPolynomial
-    (F : LocalField.{u, v} K) :
-    Polynomial F.residueField⟦X⟧ :=
+       :=
   Polynomial.X ^ Nat.card F.residueField +
     Polynomial.C (PowerSeries.X : F.residueField⟦X⟧) * Polynomial.X
 
 /-- The integral Lubin–Tate `π`-polynomial is monic. -/
 theorem equalCharacteristicLubinTateIntegralPiPolynomial_monic
-    (F : LocalField.{u, v} K) :
+      :
     (equalCharacteristicLubinTateIntegralPiPolynomial F).Monic := by
   rw [equalCharacteristicLubinTateIntegralPiPolynomial]
   refine (Polynomial.monic_X_pow _).add_of_left ?_
   rw [Polynomial.degree_C_mul_X (PowerSeries.X_ne_zero),
     Polynomial.degree_X_pow]
-  exact_mod_cast (Finite.one_lt_card : 1 < Nat.card F.residueField)
+  exact_mod_cast Finite.one_lt_card
 
 /-- The integral Lubin–Tate `π`-polynomial has degree equal to the residue-field cardinality. -/
 theorem equalCharacteristicLubinTateIntegralPiPolynomial_natDegree
-    (F : LocalField.{u, v} K) :
+      :
     (equalCharacteristicLubinTateIntegralPiPolynomial F).natDegree =
       Nat.card F.residueField := by
   rw [equalCharacteristicLubinTateIntegralPiPolynomial]
@@ -70,17 +75,16 @@ theorem equalCharacteristicLubinTateIntegralPiPolynomial_natDegree
   · exact Polynomial.natDegree_X_pow _
   · rw [Polynomial.natDegree_X_pow,
       Polynomial.natDegree_C_mul_X _ (PowerSeries.X_ne_zero)]
-    exact (Finite.one_lt_card : 1 < Nat.card F.residueField)
+    exact Finite.one_lt_card
 
 /-- The compositional division polynomial over `κ[[T]]`. -/
 noncomputable def equalCharacteristicLubinTateIntegralPiPolynomialIterate
-    (F : LocalField.{u, v} K) (n : ℕ) :
-    Polynomial F.residueField⟦X⟧ :=
+      (n : ℕ)  :=
   (equalCharacteristicLubinTateIntegralPiPolynomial F).comp^[n] Polynomial.X
 
 /-- The `n`-fold integral `π`-iterate has degree `q ^ n`. -/
 theorem equalCharacteristicLubinTateIntegralPiPolynomialIterate_natDegree
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      (n : ℕ) :
     (equalCharacteristicLubinTateIntegralPiPolynomialIterate F n).natDegree =
       Nat.card F.residueField ^ n := by
   rw [equalCharacteristicLubinTateIntegralPiPolynomialIterate,
@@ -90,7 +94,7 @@ theorem equalCharacteristicLubinTateIntegralPiPolynomialIterate_natDegree
 
 /-- A successor integral `π`-iterate is obtained by one further composition. -/
 theorem equalCharacteristicLubinTateIntegralPiPolynomialIterate_succ
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      (n : ℕ) :
     equalCharacteristicLubinTateIntegralPiPolynomialIterate F (n + 1) =
       (equalCharacteristicLubinTateIntegralPiPolynomial F).comp
         (equalCharacteristicLubinTateIntegralPiPolynomialIterate F n) := by
@@ -100,7 +104,7 @@ theorem equalCharacteristicLubinTateIntegralPiPolynomialIterate_succ
 
 /-- Every iterate of the integral Lubin–Tate `π`-polynomial is monic. -/
 theorem equalCharacteristicLubinTateIntegralPiPolynomialIterate_monic
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      (n : ℕ) :
     (equalCharacteristicLubinTateIntegralPiPolynomialIterate F n).Monic := by
   induction n with
   | zero => simp [equalCharacteristicLubinTateIntegralPiPolynomialIterate]
@@ -111,11 +115,11 @@ theorem equalCharacteristicLubinTateIntegralPiPolynomialIterate_monic
           rw [equalCharacteristicLubinTateIntegralPiPolynomialIterate_natDegree]
           exact pow_ne_zero n (ne_of_gt
             (Nat.zero_lt_one.trans
-              (Finite.one_lt_card : 1 < Nat.card F.residueField))))
+              Finite.one_lt_card)))
 
 /-- Base change carries the integral `π`-polynomial to the Laurent-field `π`-polynomial. -/
 theorem equalCharacteristicLubinTateIntegralPiPolynomial_map
-    (F : LocalField.{u, v} K) :
+      :
     (equalCharacteristicLubinTateIntegralPiPolynomial F).map
         (algebraMap F.residueField⟦X⟧ F.residueField⸨X⸩) =
       equalCharacteristicLubinTatePiPolynomial F := by
@@ -125,7 +129,7 @@ theorem equalCharacteristicLubinTateIntegralPiPolynomial_map
 
 /-- Base change commutes with iteration of the integral `π`-polynomial. -/
 theorem equalCharacteristicLubinTateIntegralPiPolynomialIterate_map
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      (n : ℕ) :
     (equalCharacteristicLubinTateIntegralPiPolynomialIterate F n).map
         (algebraMap F.residueField⟦X⟧ F.residueField⸨X⸩) =
       equalCharacteristicLubinTatePiPolynomialIterate F n := by
@@ -141,15 +145,20 @@ theorem equalCharacteristicLubinTateIntegralPiPolynomialIterate_map
 
 /-- Reducing coefficients sends the integral `π`-polynomial to `X ^ q`. -/
 theorem equalCharacteristicLubinTateIntegralPiPolynomial_map_constantCoeff
-    (F : LocalField.{u, v} K) :
+      :
     (equalCharacteristicLubinTateIntegralPiPolynomial F).map
         (PowerSeries.constantCoeff (R := F.residueField)) =
       Polynomial.X ^ Nat.card F.residueField := by
   simp [equalCharacteristicLubinTateIntegralPiPolynomial]
+end
 
+
+section
+variable (F : LocalField.{u, v} K) (n : ℕ)
+include F n
 /-- Reducing coefficients sends the `n`-fold integral `π`-iterate to `X ^ (q ^ n)`. -/
 theorem equalCharacteristicLubinTateIntegralPiPolynomialIterate_map_constantCoeff
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      :
     (equalCharacteristicLubinTateIntegralPiPolynomialIterate F n).map
         (PowerSeries.constantCoeff (R := F.residueField)) =
       Polynomial.X ^ (Nat.card F.residueField ^ n) := by
@@ -165,7 +174,7 @@ theorem equalCharacteristicLubinTateIntegralPiPolynomialIterate_map_constantCoef
 
 /-- Every integral `π`-iterate vanishes at zero. -/
 theorem equalCharacteristicLubinTateIntegralPiPolynomialIterate_eval_zero
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      :
     (equalCharacteristicLubinTateIntegralPiPolynomialIterate F n).eval 0 = 0 := by
   induction n with
   | zero =>
@@ -175,19 +184,18 @@ theorem equalCharacteristicLubinTateIntegralPiPolynomialIterate_eval_zero
         Polynomial.eval_comp, ih]
       simp [equalCharacteristicLubinTateIntegralPiPolynomial,
         ne_of_gt (Nat.zero_lt_one.trans
-          (Finite.one_lt_card : 1 < Nat.card F.residueField))]
+          Finite.one_lt_card)]
 
 /-- The integral lift of the primitive level-`n+1` polynomial. -/
 noncomputable def equalCharacteristicLubinTateIntegralPrimitivePolynomial
-    (F : LocalField.{u, v} K) (n : ℕ) :
-    Polynomial F.residueField⟦X⟧ :=
+       :=
   equalCharacteristicLubinTateIntegralPiPolynomialIterate F n ^
       (Nat.card F.residueField - 1) +
-    Polynomial.C (PowerSeries.X : F.residueField⟦X⟧)
+    Polynomial.C PowerSeries.X
 
 /-- The integral primitive polynomial has degree `(q - 1) * q ^ n`. -/
 theorem equalCharacteristicLubinTateIntegralPrimitivePolynomial_natDegree
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      :
     (equalCharacteristicLubinTateIntegralPrimitivePolynomial F n).natDegree =
       (Nat.card F.residueField - 1) * Nat.card F.residueField ^ n := by
   rw [equalCharacteristicLubinTateIntegralPrimitivePolynomial]
@@ -195,7 +203,7 @@ theorem equalCharacteristicLubinTateIntegralPrimitivePolynomial_natDegree
       0 < (Nat.card F.residueField - 1) *
         Nat.card F.residueField ^ n :=
     Nat.mul_pos (Nat.sub_pos_of_lt
-      (Finite.one_lt_card : 1 < Nat.card F.residueField))
+      Finite.one_lt_card)
       (Nat.pow_pos Nat.card_pos)
   rw [Polynomial.natDegree_add_eq_left_of_natDegree_lt]
   · rw [Polynomial.natDegree_pow,
@@ -207,7 +215,7 @@ theorem equalCharacteristicLubinTateIntegralPrimitivePolynomial_natDegree
 
 /-- The integral primitive polynomial is monic. -/
 theorem equalCharacteristicLubinTateIntegralPrimitivePolynomial_monic
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      :
     (equalCharacteristicLubinTateIntegralPrimitivePolynomial F n).Monic := by
   rw [equalCharacteristicLubinTateIntegralPrimitivePolynomial]
   let A := equalCharacteristicLubinTateIntegralPiPolynomialIterate F n
@@ -222,12 +230,12 @@ theorem equalCharacteristicLubinTateIntegralPrimitivePolynomial_monic
     equalCharacteristicLubinTateIntegralPiPolynomialIterate_natDegree]
   exact_mod_cast Nat.mul_pos
     (Nat.sub_pos_of_lt
-      (Finite.one_lt_card : 1 < Nat.card F.residueField))
+      Finite.one_lt_card)
     (Nat.pow_pos Nat.card_pos)
 
 /-- Base change carries the integral primitive polynomial to its Laurent-field counterpart. -/
 theorem equalCharacteristicLubinTateIntegralPrimitivePolynomial_map
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      :
     (equalCharacteristicLubinTateIntegralPrimitivePolynomial F n).map
         (algebraMap F.residueField⟦X⟧ F.residueField⸨X⸩) =
       equalCharacteristicLubinTatePrimitivePolynomial F n := by
@@ -238,7 +246,7 @@ theorem equalCharacteristicLubinTateIntegralPrimitivePolynomial_map
 
 /-- Reducing the integral primitive polynomial yields its leading monomial. -/
 theorem equalCharacteristicLubinTateIntegralPrimitivePolynomial_map_constantCoeff
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      :
     (equalCharacteristicLubinTateIntegralPrimitivePolynomial F n).map
         (PowerSeries.constantCoeff (R := F.residueField)) =
       Polynomial.X ^
@@ -249,20 +257,22 @@ theorem equalCharacteristicLubinTateIntegralPrimitivePolynomial_map_constantCoef
 
 /-- The integral primitive polynomial has constant coefficient `X`. -/
 theorem equalCharacteristicLubinTateIntegralPrimitivePolynomial_coeff_zero
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      :
     (equalCharacteristicLubinTateIntegralPrimitivePolynomial F n).coeff 0 =
       (PowerSeries.X : F.residueField⟦X⟧) := by
   rw [Polynomial.coeff_zero_eq_eval_zero]
   simp [equalCharacteristicLubinTateIntegralPrimitivePolynomial,
     equalCharacteristicLubinTateIntegralPiPolynomialIterate_eval_zero,
     ne_of_gt (Nat.sub_pos_of_lt
-      (Finite.one_lt_card : 1 < Nat.card F.residueField))]
+      Finite.one_lt_card)]
+end
+
 
 /-- The power-series parameter `X` does not lie in the square of its principal ideal. -/
 theorem powerSeries_X_notMem_span_X_sq
     (k : Type*) [Field k] :
     (PowerSeries.X : k⟦X⟧) ∉
-      (Ideal.span ({PowerSeries.X} : Set k⟦X⟧)) ^ 2 := by
+      (Ideal.span ({PowerSeries.X})) ^ 2 := by
   rw [Ideal.span_singleton_pow, Ideal.mem_span_singleton]
   intro h
   obtain ⟨a, ha⟩ := h
@@ -273,11 +283,14 @@ theorem powerSeries_X_notMem_span_X_sq
     simpa [pow_two, mul_assoc] using ha.symm
   exact PowerSeries.X_prime.not_isUnit hunit
 
+section
+variable (F : LocalField.{u, v} K) (n : ℕ)
+include F n
 /-- The integral primitive polynomial is Eisenstein at `(T)`. -/
 theorem equalCharacteristicLubinTateIntegralPrimitivePolynomial_isEisensteinAt
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      :
     (equalCharacteristicLubinTateIntegralPrimitivePolynomial F n).IsEisensteinAt
-      (Ideal.span ({PowerSeries.X} : Set F.residueField⟦X⟧)) := by
+      (Ideal.span ({PowerSeries.X})) := by
   let Q := equalCharacteristicLubinTateIntegralPrimitivePolynomial F n
   let d := (Nat.card F.residueField - 1) * Nat.card F.residueField ^ n
   have hmonic : Q.Monic :=
@@ -302,7 +315,7 @@ theorem equalCharacteristicLubinTateIntegralPrimitivePolynomial_isEisensteinAt
 
 /-- The integral primitive polynomial is irreducible by Eisenstein's criterion. -/
 theorem equalCharacteristicLubinTateIntegralPrimitivePolynomial_irreducible
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      :
     Irreducible (equalCharacteristicLubinTateIntegralPrimitivePolynomial F n) := by
   apply (equalCharacteristicLubinTateIntegralPrimitivePolynomial_isEisensteinAt F n).irreducible
     PowerSeries.span_X_isPrime
@@ -310,19 +323,19 @@ theorem equalCharacteristicLubinTateIntegralPrimitivePolynomial_irreducible
   rw [equalCharacteristicLubinTateIntegralPrimitivePolynomial_natDegree]
   exact Nat.mul_pos
     (Nat.sub_pos_of_lt
-      (Finite.one_lt_card : 1 < Nat.card F.residueField))
+      Finite.one_lt_card)
     (Nat.pow_pos Nat.card_pos)
 
 /-- The primitive polynomial over `κ((T))` is monic. -/
 theorem equalCharacteristicLubinTatePrimitivePolynomial_monic
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      :
     (equalCharacteristicLubinTatePrimitivePolynomial F n).Monic := by
   rw [← equalCharacteristicLubinTateIntegralPrimitivePolynomial_map]
   exact (equalCharacteristicLubinTateIntegralPrimitivePolynomial_monic F n).map _
 
 /-- The primitive level-`n+1` polynomial over `κ((T))` is irreducible. -/
 theorem equalCharacteristicLubinTatePrimitivePolynomial_irreducible
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      :
     Irreducible (equalCharacteristicLubinTatePrimitivePolynomial F n) := by
   have hmap :
       Irreducible
@@ -331,6 +344,8 @@ theorem equalCharacteristicLubinTatePrimitivePolynomial_irreducible
     (equalCharacteristicLubinTateIntegralPrimitivePolynomial_monic F n).irreducible_iff_irreducible_map_fraction_map.mp
       (equalCharacteristicLubinTateIntegralPrimitivePolynomial_irreducible F n)
   simpa [equalCharacteristicLubinTateIntegralPrimitivePolynomial_map] using hmap
+end
+
 
 end EqualCharacteristic
 end LubinTate

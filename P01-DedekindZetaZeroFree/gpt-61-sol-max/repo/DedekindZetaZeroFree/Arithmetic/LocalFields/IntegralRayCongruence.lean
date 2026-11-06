@@ -1,19 +1,25 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.LocalFields.CompletionIdealPowerPullback
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.IsRayCongruent
 public import ClassFieldTheory.Theorems.ConductorsAndRayClassFields.RayLocalHigherUnitOneAdd
 
 @[expose] public section
 
+
 open scoped NumberField
 
 namespace DedekindZetaZeroFree.AbelianQuotient
 
-theorem localIntegralRayCongruence
-    (K : Type) [Field K] [NumberField K]
+section
+variable (K : Type) [Field K] [NumberField K]
     (v : IsDedekindDomain.HeightOneSpectrum (𝓞 K))
-    (n : ℕ) (hn : 1 ≤ n) (a : 𝓞 K) (ha : (a : K) ≠ 0) :
+    (n : ℕ)
+include K v n
+theorem localIntegralRayCongruence
+      (hn : 1 ≤ n) (a : 𝓞 K) (ha : (a : K) ≠ 0) :
     ClassFieldTheory.finitePlaceUnitEmbedding v (Units.mk0 (a : K) ha) ∈
         ClassFieldTheory.rayLocalHigherUnitGroup v n ↔
       a - 1 ∈ v.asIdeal ^ n := by
@@ -21,8 +27,7 @@ theorem localIntegralRayCongruence
   have himage :
       ((ClassFieldTheory.finitePlaceUnitEmbedding v (Units.mk0 (a : K) ha)) :
         v.adicCompletion K) =
-      ((algebraMap (𝓞 K) (v.adicCompletionIntegers K) a) : v.adicCompletion K) := by
-    rfl
+      ((algebraMap (𝓞 K) (v.adicCompletionIntegers K) a) : v.adicCompletion K) := rfl
   constructor
   · rintro ⟨t, ht, heq⟩
     have heq' : algebraMap (𝓞 K) (v.adicCompletionIntegers K) a = 1 + t := by
@@ -37,14 +42,12 @@ theorem localIntegralRayCongruence
   · intro ha'
     refine ⟨algebraMap (𝓞 K) (v.adicCompletionIntegers K) (a - 1),
       (completionIdealPowerPullback K v (a - 1) n).mpr ha', ?_⟩
-    rw [himage]
-    congr 1
-    rw [map_sub, map_one]
+    rw [himage, map_sub, map_one]
+    push_cast
     ring
 
 theorem valuation_le_one_of_localRayCongruence
-    (K : Type) [Field K] [NumberField K]
-    (v : IsDedekindDomain.HeightOneSpectrum (𝓞 K)) (n : ℕ) (x : Kˣ)
+      (x : Kˣ)
     (hx : ClassFieldTheory.finitePlaceUnitEmbedding v x ∈
       ClassFieldTheory.rayLocalHigherUnitGroup v n) :
     v.valuation K (x : K) ≤ 1 := by
@@ -62,5 +65,7 @@ theorem valuation_le_one_of_localRayCongruence
     (𝓞 K) K v).mp hmem
   change Valued.v ((x : K) : v.adicCompletion K) ≤ 1 at hle
   rwa [IsDedekindDomain.HeightOneSpectrum.valuedAdicCompletion_eq_valuation'] at hle
+end
+
 
 end DedekindZetaZeroFree.AbelianQuotient

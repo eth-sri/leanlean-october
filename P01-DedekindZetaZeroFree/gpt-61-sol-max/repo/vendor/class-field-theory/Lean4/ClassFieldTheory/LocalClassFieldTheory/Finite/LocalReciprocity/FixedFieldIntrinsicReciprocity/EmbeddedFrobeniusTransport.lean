@@ -159,13 +159,16 @@ theorem intrinsicBaseEquivAmbientFixedField_continuous
       ((Field.absoluteGaloisGroup.algEquiv_autCongr_continuous e).comp
         continuous_subtype_val)
 
+section
+variable (K F : Type) [Field K] [Field F]
+    [Algebra K F] [FiniteDimensional K F] [Algebra.IsSeparable K F]
+    (i : F →ₐ[K] SeparableClosure K)
+include K F i
 /-- The intrinsic absolute Galois equivalence induced by an embedding into the
 ambient separable closure is continuous. -/
 theorem
     intrinsicBaseEquivAmbientEmbeddedField_continuous
-    (K F : Type) [Field K] [Field F]
-    [Algebra K F] [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    (i : F →ₐ[K] SeparableClosure K) :
+      :
     letI : Algebra F (SeparableClosure F) :=
       (separableClosure F (AlgebraicClosure F)).algebra
     letI : Algebra F (SeparableClosure K) :=
@@ -299,9 +302,7 @@ theorem
 multiplicative equivalence. -/
 noncomputable def
     intrinsicBaseContinuousEquivAmbientEmbeddedField
-    (K F : Type) [Field K] [Field F]
-    [Algebra K F] [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    (i : F →ₐ[K] SeparableClosure K) :
+      :
     letI : Algebra F (SeparableClosure F) :=
       (separableClosure F (AlgebraicClosure F)).algebra
     letI : Algebra F (SeparableClosure K) :=
@@ -326,12 +327,11 @@ noncomputable def
       continuous_toFun := hpsi
       continuous_invFun :=
         hpsi.continuous_symm_of_equiv_compact_to_t2 }
+end
 
-/-- Descends the intrinsic-to-ambient Galois equivalence to a continuous
-multiplicative equivalence between the quotients by extension inertia. -/
-noncomputable def
-    intrinsicFrobeniusQuotientContinuousEquivAmbientEmbeddedField
-    (K F E : Type)
+
+section
+variable (K F E : Type)
     [Field K] [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K]
     [Field F] [ValuativeRel F] [TopologicalSpace F]
@@ -342,7 +342,13 @@ noncomputable def
     [Valuation.HasExtension
       (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
     [FiniteDimensional F E] [IsGalois F E]
-    (j : E →ₐ[K] SeparableClosure K) :
+    (j : E →ₐ[K] SeparableClosure K)
+include K F E j
+/-- Descends the intrinsic-to-ambient Galois equivalence to a continuous
+multiplicative equivalence between the quotients by extension inertia. -/
+noncomputable def
+    intrinsicFrobeniusQuotientContinuousEquivAmbientEmbeddedField
+      :
     let i :=
       j.comp (IsScalarTower.toAlgHom K F E)
     letI : Algebra F (SeparableClosure F) :=
@@ -485,18 +491,7 @@ noncomputable def
 degree of extension Frobenius classes. -/
 theorem
     intrinsicFrobeniusQuotientContinuousEquivAmbientEmbeddedField_normalizedDegree
-    (K F E : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field F] [ValuativeRel F] [TopologicalSpace F]
-    [IsNonarchimedeanLocalField F]
-    [Field E] [Algebra K F] [Algebra F E] [Algebra K E]
-    [IsScalarTower K F E]
-    [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [Valuation.HasExtension
-      (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
-    [FiniteDimensional F E] [IsGalois F E]
-    (j : E →ₐ[K] SeparableClosure K) :
+      :
     let i :=
       j.comp (IsScalarTower.toAlgHom K F E)
     letI : Algebra F (SeparableClosure F) :=
@@ -644,18 +639,7 @@ theorem
 intrinsic separable closure of `F` to the ambient separable closure of `K`. -/
 noncomputable def
     intrinsicFrobeniusElementToAmbientEmbeddedField
-    (K F E : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field F] [ValuativeRel F] [TopologicalSpace F]
-    [IsNonarchimedeanLocalField F]
-    [Field E] [Algebra K F] [Algebra F E] [Algebra K E]
-    [IsScalarTower K F E]
-    [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [Valuation.HasExtension
-      (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
-    [FiniteDimensional F E] [IsGalois F E]
-    (j : E →ₐ[K] SeparableClosure K) :
+      :
     let i :=
       j.comp (IsScalarTower.toAlgHom K F E)
     letI : Algebra F (SeparableClosure F) :=
@@ -789,18 +773,7 @@ noncomputable def
 equivalence and the corresponding quotient-to-Galois equivalences. -/
 theorem
     intrinsicExtensionRestriction_compatibility_ambientEmbeddedField
-    (K F E : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field F] [ValuativeRel F] [TopologicalSpace F]
-    [IsNonarchimedeanLocalField F]
-    [Field E] [Algebra K F] [Algebra F E] [Algebra K E]
-    [IsScalarTower K F E]
-    [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [Valuation.HasExtension
-      (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
-    [FiniteDimensional F E] [IsGalois F E]
-    (j : E →ₐ[K] SeparableClosure K) :
+      :
     let i :=
       j.comp (IsScalarTower.toAlgHom K F E)
     letI : Algebra F (SeparableClosure F) :=
@@ -963,18 +936,7 @@ and ambient quotient--Galois equivalences, with restriction of the original
 intrinsic lift. -/
 theorem
     intrinsicFrobeniusRestriction_compatibility_ambientEmbeddedField
-    (K F E : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field F] [ValuativeRel F] [TopologicalSpace F]
-    [IsNonarchimedeanLocalField F]
-    [Field E] [Algebra K F] [Algebra F E] [Algebra K E]
-    [IsScalarTower K F E]
-    [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [Valuation.HasExtension
-      (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
-    [FiniteDimensional F E] [IsGalois F E]
-    (j : E →ₐ[K] SeparableClosure K) :
+      :
     let i :=
       j.comp (IsScalarTower.toAlgHom K F E)
     letI : Algebra F (SeparableClosure F) :=
@@ -1050,6 +1012,8 @@ theorem
   exact
     intrinsicExtensionRestriction_compatibility_ambientEmbeddedField
       K F E j e sigma.1
+end
+
 
 section EmbeddedFrobeniusTransport
 
@@ -1065,11 +1029,14 @@ variable (K F E : Type)
       (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
     [FiniteDimensional F E] [IsGalois F E]
 
+section
+variable (j : E →ₐ[K] SeparableClosure K)
+include j
 /-- The intrinsic-to-ambient quotient equivalence preserves and reflects
 membership in the Frobenius closure generated by a Frobenius element. -/
 theorem
     intrinsicFrobeniusClosure_iff_ambientEmbeddedField
-    (j : E →ₐ[K] SeparableClosure K) :
+      :
     let i :=
       j.comp (IsScalarTower.toAlgHom K F E)
     letI : Algebra F (SeparableClosure F) :=
@@ -1285,7 +1252,7 @@ theorem
 membership in the Frobenius fixed subgroup. -/
 theorem
     intrinsicFrobeniusFixedSubgroup_iff_ambientEmbeddedField
-    (j : E →ₐ[K] SeparableClosure K) :
+      :
     let i :=
       j.comp (IsScalarTower.toAlgHom K F E)
     letI : Algebra F (SeparableClosure F) :=
@@ -1444,7 +1411,7 @@ theorem
 fields. -/
 noncomputable def
     intrinsicFrobeniusFixedFieldEquivAmbientEmbeddedField
-    (j : E →ₐ[K] SeparableClosure K) :
+      :
     let i :=
       j.comp (IsScalarTower.toAlgHom K F E)
     letI : Algebra F (SeparableClosure F) :=
@@ -1750,7 +1717,7 @@ equivalence acts as the original separable-closure equivalence. -/
 @[simp]
 theorem
     intrinsicFrobeniusFixedFieldEquivAmbientEmbeddedField_apply_val
-    (j : E →ₐ[K] SeparableClosure K) :
+      :
     let i :=
       j.comp (IsScalarTower.toAlgHom K F E)
     letI : Algebra F (SeparableClosure F) :=
@@ -1866,6 +1833,8 @@ theorem
   dsimp only
   intro e sigma x
   rfl
+end
+
 
 end EmbeddedFrobeniusTransport
 

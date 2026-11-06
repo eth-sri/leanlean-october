@@ -119,30 +119,30 @@ theorem chosenFinitePlaceNormQuotientEquivDecompositionGroup_mk
         (K := K) (L := L) v x := by
   rfl
 
-/-- The order of the chosen finite-place norm quotient is the actual
-local extension degree. -/
-theorem chosenFinitePlaceNormQuotient_card_eq_finitePlaceLocalDegree
-    (v : HeightOneSpectrum (𝓞 K)) :
-    Nat.card
-        (_root_.ChosenFinitePlaceNormQuotient
-          (K := K) (L := L) v) =
-      _root_.finitePlaceLocalDegree
-        (K := K) (L := L) v := by
-  calc
-    Nat.card
-        (_root_.ChosenFinitePlaceNormQuotient
-          (K := K) (L := L) v) =
-        Nat.card
-          (_root_.finitePlaceDecompositionGroup
-            (K := K) (L := L) v) :=
-      Nat.card_congr
-        (chosenFinitePlaceNormQuotientEquivDecompositionGroup
-          (K := K) (L := L) v).toEquiv
-    _ =
-        _root_.finitePlaceLocalDegree
-          (K := K) (L := L) v :=
-      _root_.finitePlaceDecompositionGroup_card_eq_localDegree
-        (K := K) (L := L) v
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end GlobalClassFields
 end GlobalClassFieldTheory

@@ -2,7 +2,10 @@ module
 
 public import Mathlib
 
+public import Mathlib
+
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 noncomputable section
@@ -11,12 +14,12 @@ open MeasureTheory
 def logConvolutionMeasure : Measure ℝ :=
   (volume.withDensity (fun T : ℝ => ENNReal.ofReal T⁻¹)).restrict (Set.Ioi 0)
 
-def logProfile (H : ℝ → ℂ) : ℝ → ℂ := fun u => H (Real.exp u)
+def logProfile (H : ℝ → ℂ)  := fun u => H (Real.exp u)
 
-def logConvolution (K H : ℝ → ℂ) (x : ℝ) : ℂ :=
+def logConvolution (K H : ℝ → ℂ) (x : ℝ)  :=
   ∫ T, K T * H (x / T) ∂logConvolutionMeasure
 
-def logConvolutionMoment (K : ℝ → ℂ) (σ : ℝ) : ℝ :=
+def logConvolutionMoment (K : ℝ → ℂ) (σ : ℝ)  :=
   ∫ T, ‖K T‖ * T ^ σ ∂logConvolutionMeasure
 
 theorem logConvolution_c2 {I : Type*} [Fintype I]
@@ -49,9 +52,9 @@ theorem logConvolution_c2 {I : Type*} [Fintype I]
   have hzero : -(1 / 4 : ℝ) < 0 := by norm_num
   have hKint : Integrable (fun T => ‖K T‖) logConvolutionMeasure := by
     simpa using hmoments 0
-  let F : I → ℕ → ℝ → ℝ → ℂ := fun i j u T =>
+  let F  := fun i j u T =>
     K T * iteratedDeriv j (logProfile (H i)) (u - Real.log T)
-  let A : I → ℕ → ℝ → ℂ := fun i j u => ∫ T, F i j u T ∂logConvolutionMeasure
+  let A  := fun i j u => ∫ T, F i j u T ∂logConvolutionMeasure
   have hc : ∀ i j, j ≤ 2 → Continuous (iteratedDeriv j (logProfile (H i))) := by
     intro i j hj
     exact (hH i).continuous_iteratedDeriv j (by exact_mod_cast hj)
@@ -115,7 +118,7 @@ theorem logConvolution_c2 {I : Type*} [Fintype I]
     constructor
     · intro j hj
       rw [heq i j hj]
-      exact haCont i j hj
+      apply haCont <;> assumption
     · intro j hj
       rw [heq i j (by omega)]
       exact fun u => (haDeriv i j hj u).differentiableAt

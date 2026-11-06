@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.SpecialFunctions.Pow.Complex
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.Hecke
 
@@ -16,7 +19,7 @@ theorem rlogrBound_poleClear (H : ℂ → ℂ) (a b w : ℂ)
   obtain ⟨C, K, hC, hK, hH⟩ := hH
   refine ⟨C + ‖a‖ + ‖w‖ * ‖b‖, K + 2, by positivity, by positivity, ?_⟩
   intro s
-  let t : ℝ := (1 + ‖s‖) * Real.log (2 + ‖s‖)
+  let t  := (1 + ‖s‖) * Real.log (2 + ‖s‖)
   have hR : 0 ≤ ‖s‖ := norm_nonneg s
   have hlog : 0 ≤ Real.log (2 + ‖s‖) := Real.log_nonneg (by linarith)
   have ht : 0 ≤ t := mul_nonneg (by positivity) hlog

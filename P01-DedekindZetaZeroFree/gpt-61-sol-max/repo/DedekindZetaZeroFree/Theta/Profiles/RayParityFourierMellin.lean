@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Schwartz.RayParityKernels
 public import DedekindZetaZeroFree.HarmonicAnalysis.Fourier.RayParityTensorTransform
 public import DedekindZetaZeroFree.LFunctions.Hecke.ParityReciprocalGammaFactors
 public import DedekindZetaZeroFree.Theta.Unfolding.RayParityProductMellin
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -19,12 +22,9 @@ variable (K : Type) [Field K] [NumberField K]
 theorem fourier (δ : Finset (RayCoset.RealPlaces K)) :
     FourierTransform.fourier (gδ K δ) = fun x ↦ εδ K δ * gδ K δ x := by
   funext x
-  exact fourier_gδ K δ x
+  apply fourier_gδ
 
-theorem mellinFactor_mul_reciprocalGamma (δ : Finset (RayCoset.RealPlaces K))
-    (s : ℂ) (hs : 1 < s.re) :
-    κδ K δ s * hδ K δ s = 1 :=
-  κδ_mul_hδ K δ s hs
+alias mellinFactor_mul_reciprocalGamma := _root_.DedekindZetaZeroFree.AbelianQuotient.RayParity.κδ_mul_hδ
 
 end DedekindZetaZeroFree.AbelianQuotient.RayParity.FourierMellin
 

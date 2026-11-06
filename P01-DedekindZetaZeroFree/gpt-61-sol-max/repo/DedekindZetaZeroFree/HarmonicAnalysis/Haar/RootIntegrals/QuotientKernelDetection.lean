@@ -25,12 +25,12 @@ def rootMeasure : ∀ p, Measure (RootPoint R p)
   | Sum.inl _ => KPCplxCharacterHaar.characterHaar (1 : ℂˣ)
   | Sum.inr q => (M q).haar
 
-instance rootMeasureSigmaFinite (p : KPHilbert.Place F) : SigmaFinite (rootMeasure R M p) := by
-  cases p with
-  | inl w =>
-    letI := KPCplxCharacterHaar.characterHaar_isAddHaarMeasure (1 : ℂˣ)
-    exact inferInstanceAs (SigmaFinite (KPCplxCharacterHaar.characterHaar (1 : ℂˣ)))
-  | inr q => exact inferInstanceAs (SigmaFinite (M q).haar)
+
+
+
+
+
+
 
 end DedekindZetaZeroFree.FourierContinuation.FaithfulSource
 

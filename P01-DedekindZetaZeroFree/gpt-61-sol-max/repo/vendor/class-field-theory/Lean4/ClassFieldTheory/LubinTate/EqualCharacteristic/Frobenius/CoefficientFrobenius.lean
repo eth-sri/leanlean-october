@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import Mathlib.SetTheory.Cardinal.Finite
 public import ClassFieldTheory.LubinTate.EqualCharacteristic.Frobenius.LaurentSeriesFrobenius
 public import Mathlib.RingTheory.PowerSeries.Basic
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -45,7 +48,7 @@ variable (k : Type u) [Field k] [Finite k]
 field. -/
 noncomputable def equalCharacteristicCoefficientFrobenius :
     AlgebraicClosure k ≃ₐ[k] AlgebraicClosure k := by
-  letI : Fintype k := Fintype.ofFinite k
+  letI  := Fintype.ofFinite k
   exact FiniteField.frobeniusAlgEquivOfAlgebraic k (AlgebraicClosure k)
 
 /-- States the theorem `equalCharacteristicCoefficientFrobenius_apply`. -/
@@ -53,14 +56,13 @@ noncomputable def equalCharacteristicCoefficientFrobenius :
 theorem equalCharacteristicCoefficientFrobenius_apply
     (x : AlgebraicClosure k) :
     equalCharacteristicCoefficientFrobenius k x = x ^ Nat.card k := by
-  let : Fintype k := Fintype.ofFinite k
+  let  := Fintype.ofFinite k
   simp [equalCharacteristicCoefficientFrobenius,
     Nat.card_eq_fintype_card]
 
 /-- Arithmetic Frobenius on the completed maximal-unramified coefficient
 ring, acting coefficientwise and fixing `T`. -/
-noncomputable def equalCharacteristicPowerSeriesFrobenius :
-    (AlgebraicClosure k)⟦X⟧ →+* (AlgebraicClosure k)⟦X⟧ :=
+noncomputable def equalCharacteristicPowerSeriesFrobenius  :=
   PowerSeries.map (equalCharacteristicCoefficientFrobenius k).toRingHom
 
 /-- States the theorem `equalCharacteristicPowerSeriesFrobenius_coeff`. -/

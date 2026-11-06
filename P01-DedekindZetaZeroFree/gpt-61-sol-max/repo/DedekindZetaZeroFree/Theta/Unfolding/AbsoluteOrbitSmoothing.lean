@@ -23,8 +23,11 @@ lemma branch_norm {Q : AdmissibleFlatSources R} (P : Packet R Q)
     (R.A.H_S (R.A.diagonal (R.probe.unitReps.representative v).val) y).property
   simpa only [Units.val_pow_eq_pow_val, Units.val_one, map_one] using congrArg R.σ h
 
-lemma smoothing_orbitSheet_norm_le {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
+section
+variable {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
     (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A) (b : Bool)
+include N C v m b
+lemma smoothing_orbitSheet_norm_le  
     (i : OrbitIndex R) (l : PositiveAxis) (z : Sheet R.A l) (k : ℂ) :
     ‖k * orbitSheet R C v m b i l z‖ ≤
       ∑ d : ThetaDigitAverage.Dig (ThetaDigitAverage.rowPrimes R.A m.val m.property),
@@ -42,8 +45,7 @@ lemma smoothing_orbitSheet_norm_le {N : TraceHaarTransport R} (C : JointUpperVan
   · simp only [zero_mul, mul_zero, norm_zero]
     exact Finset.sum_nonneg (fun _ _ => norm_nonneg _)
 
-def orbitMass {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
-    (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A) (b : Bool)
+def orbitMass  
     (Z : ℝ) (hZ : 0 < Z) (i : OrbitIndex R) (t : PositiveAxis) : ℝ := by
   letI := C.transport.groupHaar_isHaar
   exact ∑ d : ThetaDigitAverage.Dig (ThetaDigitAverage.rowPrimes R.A m.val m.property),
@@ -52,15 +54,13 @@ def orbitMass {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
         (signedArgument R m b z.val d)‖
       ∂pregroupingSheetHaar R.A C.packet.v₀ C.transport.groupHaar ⟨t.val / Z, div_pos t.property hZ⟩
 
-lemma orbitMass_integrable {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
-    (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A) (b : Bool)
+lemma orbitMass_integrable  
     (Z : ℝ) (hZ : 0 < Z) (i : OrbitIndex R) :
     Integrable (orbitMass R C v m b Z hZ i) positiveHaar := by
   letI := C.transport.groupHaar_isHaar
   exact integrable_finset_sum _ (fun d _ => C.absolute.orbit_smoothing_integrable v m b Z hZ i d)
 
-lemma orbitMass_integral_summable {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
-    (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A) (b : Bool)
+lemma orbitMass_integral_summable  
     (Z : ℝ) (hZ : 0 < Z) :
     Summable (fun i : OrbitIndex R => ∫ t, orbitMass R C v m b Z hZ i t ∂positiveHaar) := by
   letI := C.transport.groupHaar_isHaar
@@ -75,10 +75,15 @@ lemma orbitMass_integral_summable {N : TraceHaarTransport R} (C : JointUpperVani
     exact integral_finset_sum _ (fun d _ => C.absolute.orbit_smoothing_integrable v m b Z hZ i d)
   simp_rw [he]
   exact C.absolute.orbit_pregrouping v m b Z hZ
+end
 
-lemma smoothed_orbit_norm_le {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
+
+section
+variable {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
     (hx : AbsoluteExtraction R C) (v : R.A.UnitQuotient)
     (m : ThetaReflectionData.Row R.A) (b : Bool) (Z : ℝ) (hZ : 0 < Z)
+include N C hx v m b Z hZ
+lemma smoothed_orbit_norm_le  
     (i : OrbitIndex R) (t : PositiveAxis) :
     ‖C.packet.kernel t.val * orbitIntegral R C v m b i ⟨t.val / Z, div_pos t.property hZ⟩‖ ≤
       orbitMass R C v m b Z hZ i t := by
@@ -99,9 +104,7 @@ lemma smoothed_orbit_norm_le {N : TraceHaarTransport R} (C : JointUpperVanishing
     (fun z => smoothing_orbitSheet_norm_le R C v m b i l z (C.packet.kernel t.val))
   exact hm.trans_eq (integral_finset_sum _ (fun d _ => hd d))
 
-theorem smoothed_orbit_integral_norm_summable {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
-    (hx : AbsoluteExtraction R C) (v : R.A.UnitQuotient)
-    (m : ThetaReflectionData.Row R.A) (b : Bool) (Z : ℝ) (hZ : 0 < Z) :
+theorem smoothed_orbit_integral_norm_summable   :
     Summable (fun i : OrbitIndex R => ∫ t : PositiveAxis,
       ‖C.packet.kernel t.val * orbitIntegral R C v m b i ⟨t.val / Z, div_pos t.property hZ⟩‖
       ∂positiveHaar) := by
@@ -113,9 +116,7 @@ theorem smoothed_orbit_integral_norm_summable {N : TraceHaarTransport R} (C : Jo
       (orbitMass_integrable R C v m b Z hZ i)
       (smoothed_orbit_norm_le R C hx v m b Z hZ i)
 
-theorem groupedOrbitTerm_eq_integral {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
-    (hx : AbsoluteExtraction R C) (v : R.A.UnitQuotient)
-    (m : ThetaReflectionData.Row R.A) (b : Bool) (Z : ℝ) (hZ : 0 < Z)
+theorem groupedOrbitTerm_eq_integral  
     (ξ : ThetaReflectionData.Frequency R.A) :
     groupedOrbitTerm R C v m b Z hZ ξ =
       ∫ t : PositiveAxis, C.packet.kernel t.val *
@@ -130,6 +131,8 @@ theorem groupedOrbitTerm_eq_integral {N : TraceHaarTransport R} (C : JointUpperV
     ∫ t : PositiveAxis, C.packet.kernel t.val *
       orbitIntegral R C v m b (ξ, γ) ⟨t.val / Z, div_pos t.property hZ⟩ ∂positiveHaar) = _
   simpa only [tsum_mul_left] using hi
+end
+
 
 end DedekindZetaZeroFree.OrbitExpansion
 

@@ -1,16 +1,22 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.RepresentationTheory.Smooth.CompactOpenFixedExactness
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 
 open scoped Topology
 
-private theorem average_action_invariant
-    {G V : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
+section
+variable {G V : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
     [T2Space G] [AddCommGroup V] [Module ℂ V]
+include G V
+private theorem average_action_invariant
+     
     (ρ : Representation ℂ G V) (hρ : SmoothRepresentation ρ)
     (U : CompactOpenLevel G) (u : U.toOpenSubgroup) (v : V) :
     compactOpenAverage ρ hρ U (ρ (u : G) v) = compactOpenAverage ρ hρ U v := by
@@ -30,7 +36,7 @@ private theorem average_action_invariant
           simpa using K.isNormal.conj_mem k.val k.property u⁻¹
         have hfix := K.fixes ⟨u⁻¹ * k.val * u, hk⟩
         calc
-          ρ (k.val.val : G) (ρ (u : G) v) =
+          ρ k.val.val (ρ (u : G) v) =
               ρ (u : G) (ρ ((u⁻¹ * k.val * u : U.toOpenSubgroup) : G) v) := by
                 simp [map_mul, Module.End.mul_apply]
           _ = ρ (u : G) v := by rw [hfix] }
@@ -45,8 +51,8 @@ private theorem average_action_invariant
   congr 1
   apply Fintype.sum_equiv (Equiv.mulRight (QuotientGroup.mk u))
   intro q
-  let a : U.toOpenSubgroup := Quotient.out (q * QuotientGroup.mk u)
-  let b : U.toOpenSubgroup := Quotient.out q * u
+  let a  := Quotient.out (q * QuotientGroup.mk u)
+  let b  := Quotient.out q * u
   have hab : (a : U.toOpenSubgroup ⧸ K.subgroup) = (b : U.toOpenSubgroup ⧸ K.subgroup) := by
     simp [a, b, QuotientGroup.mk_mul, QuotientGroup.out_eq']
   have hk : a⁻¹ * b ∈ K.subgroup := QuotientGroup.eq.mp hab
@@ -60,8 +66,7 @@ private theorem average_action_invariant
     _ = ρ (a : G) v := by rw [hfix]
 
 theorem exists_smooth_dual_separating
-    {G V : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
-    [T2Space G] [AddCommGroup V] [Module ℂ V]
+     
     (hcompactOpen : ∀ U ∈ nhds (1 : G),
       ∃ J : CompactOpenLevel G, (J.toOpenSubgroup : Set G) ⊆ U)
     (ρ : Representation ℂ G V) (hρ : SmoothRepresentation ρ)
@@ -72,9 +77,9 @@ theorem exists_smooth_dual_separating
   let W := fixedSubmodule ρ U.toOpenSubgroup.toSubgroup
   have hvW : (⟨v, hU⟩ : W) ≠ 0 := by
     intro he
-    exact hv (congrArg Subtype.val he)
+    apply hv <;> aesop
   obtain ⟨f, hf⟩ := Module.Projective.exists_dual_ne_zero ℂ hvW
-  let Av : V →ₗ[ℂ] W := (compactOpenAverage ρ hρ U).codRestrict W (by
+  let Av  := (compactOpenAverage ρ hρ U).codRestrict W (by
     intro x
     change compactOpenAverage ρ hρ U x ∈ fixedSubmodule ρ U.toOpenSubgroup.toSubgroup
     rw [← compactOpenAverage_range ρ hρ U]
@@ -90,14 +95,13 @@ theorem exists_smooth_dual_separating
     have h := average_action_invariant ρ hρ U ⟨u⁻¹, hu'⟩ x
     exact congrArg f (Subtype.ext h)
   · change f (Av v) ≠ 0
-    have hAv : compactOpenAverage ρ hρ U v = v := compactOpenAverage_fixed ρ hρ U v hU
+    have hAv  := compactOpenAverage_fixed ρ hρ U v hU
     have he : Av v = ⟨v, hU⟩ := Subtype.ext hAv
     rw [he]
     exact hf
 
 theorem admissible_irreducible_endomorphism_scalar
-    {G V : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
-    [T2Space G] [AddCommGroup V] [Module ℂ V] [Nontrivial V]
+      [Nontrivial V]
     (hcompactOpen : ∀ U ∈ nhds (1 : G),
       ∃ J : CompactOpenLevel G, (J.toOpenSubgroup : Set G) ⊆ U)
     (ρ : Representation ℂ G V) [ρ.IsIrreducible]
@@ -111,7 +115,7 @@ theorem admissible_irreducible_endomorphism_scalar
   letI : Module.Finite ℂ W := hadmissible U
   have hvW : (⟨v, hU⟩ : W) ≠ 0 := by
     intro h
-    exact hv (congrArg Subtype.val h)
+    apply hv <;> aesop
   letI : Nontrivial W := ⟨⟨⟨v, hU⟩, 0, hvW⟩⟩
   let TW : Module.End ℂ W := fixedSpaceMap ρ ρ T U.toOpenSubgroup.toSubgroup
   obtain ⟨c, hc⟩ := TW.exists_eigenvalue
@@ -120,7 +124,7 @@ theorem admissible_irreducible_endomorphism_scalar
     intro h
     exact hw.2 (Subtype.ext h)
   have heq : T (w : V) = c • (w : V) := congrArg Subtype.val hw.apply_eq_smul
-  let S : Representation.IntertwiningMap ρ ρ := T - c • Representation.IntertwiningMap.id ρ
+  let S  := T - c • Representation.IntertwiningMap.id ρ
   have hS : S (w : V) = 0 := by
     change T (w : V) - c • (w : V) = 0
     exact sub_eq_zero.mpr heq
@@ -131,5 +135,7 @@ theorem admissible_irreducible_endomorphism_scalar
   refine ⟨c, ?_⟩
   have hT := sub_eq_zero.mp hzero
   exact congrArg Representation.IntertwiningMap.toLinearMap hT
+end
+
 
 end DedekindZetaZeroFree

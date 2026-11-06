@@ -25,18 +25,20 @@ def frozenNorm (A : SArithmeticData F) (T : Frozen A)
     (c : ExteriorSquarefreeIdeal A.cS) : ℝ :=
   rowNorm T.a c.val T.n
 
-def retained (A : SArithmeticData F) (G : AllowedRecipe A)
+section
+variable (A : SArithmeticData F) (G : AllowedRecipe A)
     (U : UnitRepresentatives A) (σ : F →+* ℂ)
     (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
+include A G U σ ψ in
+def retained  
     (L : Fˣ →* ℂ) (H : A.V → ℝ → ℂ)
     (h d : A.Exterior) (Z P D θ : ℝ) : ℂ :=
   ∑' i : Index A h,
     if frozenNorm A i.1.val i.2 ≤ threshold Z P D θ then
       summand A G U σ ψ L H i.1.val d i.2 Z else 0
 
-def tail (A : SArithmeticData F) (G : AllowedRecipe A)
-    (U : UnitRepresentatives A) (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
+include A G U σ ψ in
+def tail  
     (L : Fˣ →* ℂ) (H : A.V → ℝ → ℂ)
     (h d : A.Exterior) (Z P D θ : ℝ) : ℂ :=
   ∑' i : Index A h,
@@ -148,9 +150,8 @@ private theorem mulChar_norm_le_one {k : Type*} [Field k] [Fintype k]
       simpa [MulChar.coe_equivToUnitHom, u] using hn
     exact hn'.le
 
-private theorem summand_norm_le (A : SArithmeticData F) (G : AllowedRecipe A)
-    (U : UnitRepresentatives A) (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
+include A G U σ ψ in
+private theorem summand_norm_le  
     (hψ : ∀ p : ExteriorPrime A, (ψ p).IsPrimitive)
     (L : Fˣ →* ℂ) (hL : ∀ x : Fˣ, ‖L x‖ = 1)
     (H : A.V → ℝ → ℂ) (T : Frozen A) (d : A.Exterior)
@@ -184,9 +185,8 @@ private theorem summand_norm_le (A : SArithmeticData F) (G : AllowedRecipe A)
   · simp only [norm_zero]
     positivity
 
-private theorem tail_summand_majorant (A : SArithmeticData F) (G : AllowedRecipe A)
-    (U : UnitRepresentatives A) (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
+include A G U σ ψ in
+private theorem tail_summand_majorant  
     (hψ : ∀ p : ExteriorPrime A, (ψ p).IsPrimitive)
     (L : Fˣ →* ℂ) (hL : ∀ x : Fˣ, ‖L x‖ = 1)
     (H : A.V → ℝ → ℂ) (K B : ℝ) (hK : 0 < K) (hB : 1 < B)
@@ -249,10 +249,8 @@ private theorem tail_summand_majorant (A : SArithmeticData F) (G : AllowedRecipe
           (Real.sqrt (A.exteriorNorm i.2.val) * A.exteriorNorm i.1.val.n))
     positivity
 
-theorem numerical_tail_from_joint_majorant (A : SArithmeticData F)
-    (G : AllowedRecipe A)
-    (U : UnitRepresentatives A) (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
+include A G U σ ψ in
+theorem numerical_tail_from_joint_majorant  
     (hψ : ∀ p : ExteriorPrime A, (ψ p).IsPrimitive)
     (L : A.UnitQuotient → Fˣ →* ℂ)
     (hL : ∀ u : A.UnitQuotient, ∀ x : Fˣ, ‖L u x‖ = 1)
@@ -301,6 +299,8 @@ theorem numerical_tail_from_joint_majorant (A : SArithmeticData F)
     _ = k * ∑' i : Index A h, W i := tsum_mul_left
     _ ≤ k * (Kj * A.exteriorNorm h ^ b) := mul_le_mul_of_nonneg_left hsum hk
     _ = _ := by dsimp [k]; ring
+end
+
 
 namespace Reindex
 set_option maxHeartbeats 1000000
@@ -310,13 +310,18 @@ theorem unit_finite (A : SArithmeticData F) : Finite A.UnitQuotient := by
   exact Finite.of_equiv (PowerQuotient A.Rˣ 6)
     (LocalFieldTheory.nthPowerQuotientEquivOfMulEquiv A.U A.Rˣ 6 A.unitEquiv).symm.toEquiv
 
-abbrev ActiveIndex (A : SArithmeticData F) (h : A.Exterior) :=
+section
+variable (A : SArithmeticData F) (h : A.Exterior)
+include A h in
+abbrev ActiveIndex   :=
   {f : ExteriorSquarefreeIdeal A.cS // f.val.val ∈ activeSquarefreeDivisors h.val}
 
-abbrev MajorantIndex (A : SArithmeticData F) (h : A.Exterior) :=
+include A h in
+abbrev MajorantIndex   :=
   Σ f : ActiveIndex A h, PositiveRowIndex f.val × A.UnitQuotient
 
-def encode (A : SArithmeticData F) (h : A.Exterior) (i : Index A h) : MajorantIndex A h :=
+include A h in
+def encode   (i : Index A h) : MajorantIndex A h :=
   ⟨⟨activeSupport A i.1.val, (mem_activeSquarefreeDivisors_iff h.val h.property.1 _).mpr
     ⟨i.1.val.f.property.1, i.1.val.f_squarefree, by simpa only [activeSupport, i.1.property] using i.1.val.f_divides_radical⟩⟩,
     (⟨⟨i.1.val.a, i.1.val.a_supported⟩, i.2, i.1.val.n⟩, i.1.val.epsilon)⟩
@@ -328,7 +333,8 @@ private theorem frozen_ext (A : SArithmeticData F) (T S : Frozen A)
   cases S
   simp_all
 
-theorem encode_injective (A : SArithmeticData F) (h : A.Exterior) : Function.Injective (encode A h) := by
+include A h in
+theorem encode_injective   : Function.Injective (encode A h) := by
   intro i j hij
   have hf : i.1.val.f = j.1.val.f := congrArg (fun x : MajorantIndex A h => x.1.val.val) hij
   have ha : i.1.val.a = j.1.val.a := congrArg (fun x : MajorantIndex A h => x.2.1.1.val) hij
@@ -339,7 +345,8 @@ theorem encode_injective (A : SArithmeticData F) (h : A.Exterior) : Function.Inj
   have ht : i.1.val = j.1.val := frozen_ext A _ _ hh hf ha hn he
   exact Prod.ext (Subtype.ext ht) hc
 
-theorem active_finite (A : SArithmeticData F) (h : A.Exterior) : Finite (ActiveIndex A h) := by
+include A h in
+theorem active_finite   : Finite (ActiveIndex A h) := by
   let f : ActiveIndex A h → {f // f ∈ activeSquarefreeDivisors h.val} := fun f => ⟨f.val.val.val, f.property⟩
   apply Finite.of_injective f
   intro i j hij
@@ -348,7 +355,8 @@ theorem active_finite (A : SArithmeticData F) (h : A.Exterior) : Finite (ActiveI
   apply Subtype.ext
   exact congrArg (fun f : {f // f ∈ activeSquarefreeDivisors h.val} => f.val) hij
 
-def weight (A : SArithmeticData F) (h : A.Exterior) (i : MajorantIndex A h) : ℝ :=
+include A h in
+def weight   (i : MajorantIndex A h) : ℝ :=
   positiveRowWeight i.1.val 1 i.2.1
 
 theorem rowWeight_nonneg {cS : Ideal (𝓞 F)} (f : ExteriorSquarefreeIdeal cS)
@@ -363,7 +371,8 @@ theorem rowWeight_nonneg {cS : Ideal (𝓞 F)} (f : ExteriorSquarefreeIdeal cS)
   · unfold idealNorm
     positivity
 
-theorem weight_summable (A : SArithmeticData F) (h : A.Exterior) : Summable (weight A h) := by
+include A h in
+theorem weight_summable   : Summable (weight A h) := by
   letI := unit_finite A
   letI := active_finite A h
   apply (summable_sigma_of_nonneg (f := weight A h) (fun x => rowWeight_nonneg x.1.val x.2.1)).mpr
@@ -374,7 +383,8 @@ theorem weight_summable (A : SArithmeticData F) (h : A.Exterior) : Summable (wei
   simp only [weight, tsum_const, nsmul_eq_mul]
   exact (positiveRowWeight_summable_le f.val 1 (by norm_num)).1.mul_left _
 
-theorem weight_tsum_le (A : SArithmeticData F) (h : A.Exterior) :
+include A h in
+theorem weight_tsum_le   :
     (∑' i : MajorantIndex A h, weight A h i) ≤
       (Nat.card A.UnitQuotient : ℝ) * exteriorNormZeta A.cS (3 / 2) *
         exteriorNormZeta A.cS 4 * activeEulerSum h.val 1 := by
@@ -430,7 +440,8 @@ theorem weight_tsum_le (A : SArithmeticData F) (h : A.Exterior) :
       simp only [activeEulerSum, tsum_fintype]
       exact (Finset.sum_attach _ _).symm
 
-theorem jointWeight_summable_le (A : SArithmeticData F) (h : A.Exterior) :
+include A h in
+theorem jointWeight_summable_le   :
     Summable (fun i : Index A h => positiveRowWeight (activeSupport A i.1.val) 1
       (⟨i.1.val.a, i.1.val.a_supported⟩, i.2, i.1.val.n)) ∧
     (∑' i : Index A h, positiveRowWeight (activeSupport A i.1.val) 1
@@ -442,6 +453,8 @@ theorem jointWeight_summable_le (A : SArithmeticData F) (h : A.Exterior) :
   apply le_trans _ (weight_tsum_le A h)
   exact Summable.tsum_le_tsum_of_inj (encode A h) (encode_injective A h)
     (fun i _ => rowWeight_nonneg i.1.val i.2.1) (fun _ => le_rfl) hs (weight_summable A h)
+end
+
 
 theorem jointWeight_subpower (A : SArithmeticData F) (b : ℝ) (hb : 0 < b) :
     ∃ K : ℝ, 0 < K ∧ ∀ h : A.Exterior,

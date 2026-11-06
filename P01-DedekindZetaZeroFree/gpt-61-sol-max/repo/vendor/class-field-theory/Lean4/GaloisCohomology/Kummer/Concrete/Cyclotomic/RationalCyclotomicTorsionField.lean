@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import GaloisCohomology.Kummer.Concrete.Cyclotomic.RationalCyclotomicField
 public import Mathlib.FieldTheory.Galois.Profinite
 public import Mathlib.GroupTheory.Torsion
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -48,8 +51,7 @@ def rationalCyclotomicTorsionClosure :
 
 /-- The actual subfield of `ℚ(μ∞)` fixed by the closure of all
 finite-order cyclotomic automorphisms. -/
-def rationalCyclotomicTorsionFixedField :
-    IntermediateField ℚ rationalCyclotomicField :=
+def rationalCyclotomicTorsionFixedField  :=
   IntermediateField.fixedField
     rationalCyclotomicTorsionClosure.toSubgroup
 

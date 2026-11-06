@@ -15,11 +15,14 @@ set_option autoImplicit false
 set_option maxHeartbeats 1000000
 set_option backward.isDefEq.respectTransparency false
 
- def conjugate_root_map
-    {G N V : Type*} [Group G] [Group N] [AddCommGroup V] [Module ℂ V]
+ section
+variable {G N V : Type*} [Group G] [Group N] [AddCommGroup V] [Module ℂ V]
     (ρ : Representation ℂ G V) (n : N →* G) (e : N ≃* N) (g : G)
     (hconj : ∀ x, g * n x = n (e x) * g)
-    (ψ χ : N →* ℂˣ) (hchar : ∀ x, χ (e x) = ψ x) :
+    (ψ χ : N →* ℂˣ) (hchar : ∀ x, χ (e x) = ψ x)
+include G N V ρ n e g hconj ψ χ hchar
+def conjugate_root_map
+      :
     RootCoinvariants ρ n ψ →ₗ[ℂ] RootCoinvariants ρ n χ :=
   rootCoinvariantsLift ρ n ψ ⟨(rootCoinvariantsMk ρ n χ).comp (ρ g), by
     intro x v
@@ -29,10 +32,7 @@ set_option backward.isDefEq.respectTransparency false
       rootCoinvariantsMk_equivariant, hchar]⟩
 
  def conjugate_root_equiv
-    {G N V : Type*} [Group G] [Group N] [AddCommGroup V] [Module ℂ V]
-    (ρ : Representation ℂ G V) (n : N →* G) (e : N ≃* N) (g : G)
-    (hconj : ∀ x, g * n x = n (e x) * g)
-    (ψ χ : N →* ℂˣ) (hchar : ∀ x, χ (e x) = ψ x) :
+      :
     RootCoinvariants ρ n ψ ≃ₗ[ℂ] RootCoinvariants ρ n χ := by
   have hinv : ∀ x, g⁻¹ * n x = n (e.symm x) * g⁻¹ := by
     intro x
@@ -56,6 +56,8 @@ set_option backward.isDefEq.respectTransparency false
         change rootCoinvariantsMk ρ n χ (ρ g (ρ g⁻¹ v)) = _
         rw [← Module.End.mul_apply, ← map_mul, mul_inv_cancel, map_one,
           Module.End.one_apply] }
+end
+
 
 variable (F : Type) [Field F] [NumberField F]
   (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
@@ -95,11 +97,14 @@ variable (F : Type) [Field F] [NumberField F]
       (Circle.toUnits ((localFiniteCharacter F q) (a * Multiplicative.toAdd x)) : ℂ)
     rw [← mul_assoc, hab]
 
-private theorem actual_reverse_frequency_square
-    (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
+section
+variable (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
     (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
     (t : actualTorus F ζ hζ q) (a b : LocalField F q)
     (hab : b * (S.borel.coordinate t : LocalField F q) = a)
+include μ hμ t a b hab
+private theorem actual_reverse_frequency_square
+     
     (v : sectionSpace S.borel P .minus 0) :
     frequency_quotient_equiv F ζ hζ q S P .plus t a b hab
       (rootCoinvariantsMk (IPlus S.borel P) (S.borel.B.subtype.comp S.borel.upperRoot)
@@ -116,10 +121,7 @@ private theorem actual_reverse_frequency_square
   exact (actualCanonicalReverseLinear_intertwines F ζ hζ q S P μ hμ _ v).symm
 
 theorem actual_reverse_frequency_pair_transport
-    (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
-    (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
-    (t : actualTorus F ζ hζ q) (a b : LocalField F q)
-    (hab : b * (S.borel.coordinate t : LocalField F q) = a)
+     
     (v₁ v₂ : sectionSpace S.borel P .minus 0)
     (h : LinearIndependent ℂ ![
       rootCoinvariantsMk (IPlus S.borel P) (S.borel.B.subtype.comp S.borel.upperRoot)
@@ -143,6 +145,8 @@ theorem actual_reverse_frequency_pair_transport
   funext i
   fin_cases i <;>
     exact (actual_reverse_frequency_square F ζ hζ q S P μ hμ t a b hab _).symm
+end
+
 
 end DedekindZetaZeroFree.ActualReverseMinorFrequency
 

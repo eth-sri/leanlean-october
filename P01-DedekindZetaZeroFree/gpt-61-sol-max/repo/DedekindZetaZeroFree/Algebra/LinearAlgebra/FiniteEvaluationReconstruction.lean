@@ -1,18 +1,23 @@
 module
 
+public import Mathlib
+
 public import Mathlib.LinearAlgebra.Dual.Lemmas
 public import Mathlib.Analysis.Complex.Basic
 
 @[expose] public section
 
+
 noncomputable section
 open scoped Classical BigOperators
 namespace DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.FiniteScalarEvaluation
- def pointEvaluation {X : Type*} (S : Submodule ℂ (X → ℂ)) (x : X) :
+ section
+variable {X : Type*} (S : Submodule ℂ (X → ℂ))
+include X S
+def pointEvaluation   (x : X) :
     Module.Dual ℂ S := (LinearMap.proj x).comp S.subtype
 
-private theorem finite_evaluation_dual_span {X : Type*}
-    (S : Submodule ℂ (X → ℂ)) [FiniteDimensional ℂ S] :
+private theorem finite_evaluation_dual_span   [FiniteDimensional ℂ S] :
     ∃ (m : ℕ) (x : Fin m → X),
       Submodule.span ℂ (Set.range (fun i => pointEvaluation S (x i))) = ⊤ := by
   have htop : Submodule.span ℂ (Set.range (pointEvaluation S)) = ⊤ := by
@@ -46,11 +51,10 @@ private theorem finite_evaluation_dual_span {X : Type*}
     · intro he
       refine ⟨E ⟨e, he⟩, ?_⟩
       simp only [Equiv.symm_apply_apply]
-      exact hx ⟨e, he⟩
+      apply hx
   rw [hr, ← he, htop]
 
- theorem finite_evaluation_reconstruction {X : Type*}
-    (S : Submodule ℂ (X → ℂ)) [FiniteDimensional ℂ S] :
+ theorem finite_evaluation_reconstruction   [FiniteDimensional ℂ S] :
     ∃ (n m : ℕ) (x : Fin m → X) (A : Fin n → Fin m → ℂ)
       (b : Fin n → S),
       ∀ (h : S) (y : X), h.val y = ∑ j, (∑ i, A j i * h.val (x i)) * (b j).val y := by
@@ -76,6 +80,8 @@ private theorem finite_evaluation_dual_span {X : Type*}
   simpa only [LinearMap.sum_apply, LinearMap.smul_apply, smul_eq_mul,
     pointEvaluation, LinearMap.comp_apply, LinearMap.proj_apply,
     Submodule.subtype_apply, Module.Basis.coord_apply] using he.symm
+end
+
 
 end DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.FiniteScalarEvaluation
 

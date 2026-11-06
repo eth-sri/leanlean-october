@@ -13,62 +13,70 @@ noncomputable section
 open scoped NumberField Topology
 open Filter IsDedekindDomain
 
- def principalCharacter (F : Type) [Field F] [NumberField F] :
+ section
+variable (F : Type) [Field F] [NumberField F]
+include F
+def principalCharacter   :
     RayClassCharacter F (⊤ : Ideal (𝓞 F)) :=
   Classical.choose (PrincipalMu12Pointwise.principal_primitive_top_character_exists F)
 
- theorem principalCharacter_principal (F : Type) [Field F] [NumberField F] :
+ theorem principalCharacter_principal   :
     (principalCharacter F).IsPrincipal :=
   (Classical.choose_spec
     (PrincipalMu12Pointwise.principal_primitive_top_character_exists F)).1
 
- theorem principalCharacter_primitive (F : Type) [Field F] [NumberField F] :
+ theorem principalCharacter_primitive   :
     (principalCharacter F).IsPrimitive :=
   (Classical.choose_spec
     (PrincipalMu12Pointwise.principal_primitive_top_character_exists F)).2
+end
 
+
+section
+variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+include F ζ hζ
 def principalData
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12) :
+      :
     PrincipalRayHeckeData F ⊤ (principalCharacter F) :=
   principalRayHeckeData  F (primitive12_totallyComplex F ζ hζ) ⊤ top_ne_bot
     (principalCharacter F) (principalCharacter_primitive F) (principalCharacter_principal F)
 
 def zetaRegularization
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+     
     (z : ℂ) : ℂ :=
   principalHeckeEntireRegularization F ⊤ (principalCharacter F)
     (principalData  F ζ hζ) z
 
 def zeta
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+     
     (z : ℂ) : ℂ :=
   zetaRegularization  F ζ hζ z / (z - 1)
 
 def exteriorZeta
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+     
     (S : Finset (HeightOneSpectrum (𝓞 F))) (z : ℂ) : ℂ :=
   zeta  F ζ hζ z * PositiveZetaResidue.exteriorEulerFactor F S z
 
 def exteriorRegularization
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+     
     (S : Finset (HeightOneSpectrum (𝓞 F))) (z : ℂ) : ℂ :=
   zetaRegularization  F ζ hζ z * PositiveZetaResidue.exteriorEulerFactor F S z
 
 def exceptionalNormalizer
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+     
     (S : Finset (HeightOneSpectrum (𝓞 F))) (s : ℂ) : ℂ :=
   exteriorZeta  F ζ hζ S (1 + 6 * s) /
     exteriorZeta  F ζ hζ S (2 + 6 * s)
 
 def exceptionalRegularization
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+     
     (S : Finset (HeightOneSpectrum (𝓞 F))) (s : ℂ) : ℂ :=
   exteriorRegularization  F ζ hζ S (1 + 6 * s) /
     (6 * exteriorZeta  F ζ hζ S (2 + 6 * s))
 
 theorem actual_principal_continuation
 
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12) :
+      :
     let Z := zeta  F ζ hζ
     let R := zetaRegularization  F ζ hζ
     let P := principalData  F ζ hζ
@@ -119,7 +127,7 @@ theorem actual_principal_continuation
 
 theorem exterior_zeta_at_two_pos
 
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+     
     (S : Finset (HeightOneSpectrum (𝓞 F))) :
     (exteriorZeta  F ζ hζ S 2).im = 0 ∧
     0 < (exteriorZeta  F ζ hζ S 2).re := by
@@ -150,6 +158,8 @@ theorem exterior_zeta_at_two_pos
   simp only [exteriorZeta, he, Complex.mul_im, Complex.mul_re, Complex.ofReal_im,
     Complex.ofReal_re, hZi, mul_zero, zero_mul, add_zero, sub_zero]
   exact ⟨trivial, mul_pos hZp hep⟩
+end
+
 
 private theorem euler_differentiable (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (𝓞 F))) :
@@ -163,10 +173,13 @@ private theorem euler_differentiable (F : Type) [Field F] [NumberField F]
   exact_mod_cast (zero_lt_one.trans
     (NumberField.RingOfIntegers.HeightOneSpectrum.one_lt_absNorm p)).ne'
 
+section
+variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (S : Finset (HeightOneSpectrum (𝓞 F)))
+include F ζ hζ S
 theorem exterior_positive_simple_residue
 
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (S : Finset (HeightOneSpectrum (𝓞 F))) :
+      :
     let ZS := exteriorZeta  F ζ hζ S
     let RS := exteriorRegularization  F ζ hζ S
     let rS := PositiveZetaResidue.exteriorResidue F S
@@ -210,8 +223,7 @@ theorem exterior_positive_simple_residue
 
 theorem positive_simple_exceptional_normalizer
 
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (S : Finset (HeightOneSpectrum (𝓞 F))) :
+      :
     let ZS := exteriorZeta  F ζ hζ S
     let rS := PositiveZetaResidue.exteriorResidue F S
     let cS := exceptionalNormalizer  F ζ hζ S
@@ -310,6 +322,8 @@ theorem positive_simple_exceptional_normalizer
     exact Complex.ofReal_im _
   · change 0 < (gS 0).re
     rw [hvreal]; exact hp
+end
+
 
 end
 end DedekindZetaZeroFree.GlobalZetaNormalizer

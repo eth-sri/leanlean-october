@@ -73,10 +73,8 @@ theorem abelianizationCongr_symm_eq_primeTarget
           (Abelianization.of qAmbient) := by
       rw [q₀.abelianizationCongr.symm_apply_apply]
 
-/-- A prime-norm unit in the intrinsic base field chosen from a Frobenius
-lift of an abelianized Galois element. -/
-noncomputable def ambientEmbeddedPrimeWitness
-    (K F E : Type)
+section
+variable (K F E : Type)
     [Field K] [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K]
     [Field F] [ValuativeRel F] [TopologicalSpace F]
@@ -89,7 +87,12 @@ noncomputable def ambientEmbeddedPrimeWitness
     [FiniteDimensional F E] [IsAbelianGalois F E]
     (j : E →ₐ[K] SeparableClosure K)
     (e : ambientEmbeddedSeparableClosureEquiv K F E j)
-    (z : Abelianization Gal(E / F)) : Fˣ := by
+    (z : Abelianization Gal(E / F))
+include K F E j e z
+/-- A prime-norm unit in the intrinsic base field chosen from a Frobenius
+lift of an abelianized Galois element. -/
+noncomputable def ambientEmbeddedPrimeWitness
+      : Fˣ := by
   let i :=
     j.comp (IsScalarTower.toAlgHom K F E)
   letI : Algebra F (SeparableClosure K) :=
@@ -267,20 +270,7 @@ noncomputable def ambientEmbeddedPrimeWitness
 /-- The ambient abelianized Frobenius target associated with the same
 chosen intrinsic Frobenius lift as the prime witness. -/
 noncomputable def ambientEmbeddedPrimeTarget
-    (K F E : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field F] [ValuativeRel F] [TopologicalSpace F]
-    [IsNonarchimedeanLocalField F]
-    [Field E] [Algebra K F] [Algebra F E] [Algebra K E]
-    [IsScalarTower K F E]
-    [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [Valuation.HasExtension
-      (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
-    [FiniteDimensional F E] [IsAbelianGalois F E]
-    (j : E →ₐ[K] SeparableClosure K)
-    (e : ambientEmbeddedSeparableClosureEquiv K F E j)
-    (z : Abelianization Gal(E / F)) :
+      :
     Abelianization Gal(E / F) := by
   let i :=
     j.comp (IsScalarTower.toAlgHom K F E)
@@ -367,6 +357,8 @@ noncomputable def ambientEmbeddedPrimeTarget
   exact
     qE.abelianizationCongr
       (Abelianization.of qAmbient)
+end
+
 
 end LocalClassFieldTheory
 

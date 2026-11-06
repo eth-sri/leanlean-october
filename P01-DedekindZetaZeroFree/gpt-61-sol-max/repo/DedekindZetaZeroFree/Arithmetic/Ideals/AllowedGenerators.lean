@@ -16,20 +16,23 @@ namespace SArithmeticData
 
 variable {F : Type} [Field F] [NumberField F]
 
-def sClass (A : SArithmeticData F) : Fˣ →* A.V :=
+section
+variable (A : SArithmeticData F)
+include A
+def sClass   : Fˣ →* A.V :=
   (QuotientGroup.mk' A.sixthPowers).comp A.diagonal
 
-def IsAllowed (A : SArithmeticData F) (B : Subgroup A.V) (a : Fˣ) : Prop :=
+def IsAllowed   (B : Subgroup A.V) (a : Fˣ) : Prop :=
   A.sClass a ∈ B
 
-def IsAllowedGenerator (A : SArithmeticData F) (B : Subgroup A.V)
+def IsAllowedGenerator   (B : Subgroup A.V)
     (I : FractionalIdeal A.R⁰ F) (a : Fˣ) : Prop :=
   I = FractionalIdeal.spanSingleton A.R⁰ (a : F) ∧ A.IsAllowed B a
 
-def sUnitSixthPowers (A : SArithmeticData F) : Subgroup Fˣ :=
+def sUnitSixthPowers   : Subgroup Fˣ :=
   A.U.map (powMonoidHom 6)
 
-private lemma mem_E_iff (A : SArithmeticData F) (v : A.V) :
+private lemma mem_E_iff   (v : A.V) :
     v ∈ A.E ↔ ∃ u : A.U, A.sClass (u : Fˣ) = v := by
   have hE : A.E = Subgroup.map A.sClass A.U := by
     show (A.U.map A.diagonal).map (QuotientGroup.mk' A.sixthPowers) = _
@@ -38,16 +41,21 @@ private lemma mem_E_iff (A : SArithmeticData F) (v : A.V) :
   rw [hE, Subgroup.mem_map]
   exact ⟨fun ⟨x, hx, hxe⟩ => ⟨⟨x, hx⟩, hxe⟩, fun ⟨u, hu⟩ => ⟨u.val, u.property, hu⟩⟩
 
-private lemma spanSingleton_unit (A : SArithmeticData F) (u : A.U) :
+private lemma spanSingleton_unit   (u : A.U) :
     FractionalIdeal.spanSingleton A.R⁰ ((u : Fˣ) : F) = 1 := by
   have h : ((u : Fˣ) : F) = algebraMap A.R F ((A.unitEquiv u : A.Rˣ) : A.R) := rfl
   rw [h, ← FractionalIdeal.coeIdeal_span_singleton,
     Ideal.span_singleton_eq_top.mpr (Units.isUnit _), FractionalIdeal.coeIdeal_top]
+end
 
-theorem exists_allowed_generator_of_isUnit (A : SArithmeticData F)
+
+section
+variable (A : SArithmeticData F)
     (hCl : Subsingleton (ClassGroup A.R)) (H : A.V → A.V → Fˣ)
     (B : Subgroup A.V) (hB : A.IsSUnitIsotropicComplement H B)
-    (I : FractionalIdeal A.R⁰ F) (hI : IsUnit I) :
+    (I : FractionalIdeal A.R⁰ F)
+include A hCl H B hB I
+theorem exists_allowed_generator_of_isUnit   (hI : IsUnit I) :
     ∃ a : Fˣ, A.IsAllowedGenerator B I a := by
   letI : Subsingleton (ClassGroup A.R) := hCl
   letI : Submodule.IsPrincipal (I : Submodule A.R F) :=
@@ -72,10 +80,7 @@ theorem exists_allowed_generator_of_isUnit (A : SArithmeticData F)
     rw [mul_comm p.1.val p.2.val, mul_assoc, mul_inv_cancel, mul_one]
     exact p.2.property
 
-theorem exists_allowed_generator (A : SArithmeticData F)
-    (hCl : Subsingleton (ClassGroup A.R)) (H : A.V → A.V → Fˣ)
-    (B : Subgroup A.V) (hB : A.IsSUnitIsotropicComplement H B)
-    (I : FractionalIdeal A.R⁰ F) (hI : I ≠ 0) :
+theorem exists_allowed_generator   (hI : I ≠ 0) :
     ∃ a : Fˣ, A.IsAllowedGenerator B I a := by
   have hnum : I.num ≠ ⊥ := (FractionalIdeal.num_eq_zero_iff.not).mpr hI
   let E : A.Exterior := A.exteriorIdealEquiv.symm ⟨I.num, hnum⟩
@@ -96,10 +101,7 @@ theorem exists_allowed_generator (A : SArithmeticData F)
   exact A.exists_allowed_generator_of_isUnit hCl H B hB I
     (isUnit_of_mul_isUnit_right hprod)
 
-theorem allowed_generator_unique_mod_sixth (A : SArithmeticData F)
-    (hCl : Subsingleton (ClassGroup A.R)) (H : A.V → A.V → Fˣ)
-    (B : Subgroup A.V) (hB : A.IsSUnitIsotropicComplement H B)
-    (I : FractionalIdeal A.R⁰ F) (a a' : Fˣ)
+theorem allowed_generator_unique_mod_sixth   (a a' : Fˣ)
     (ha : A.IsAllowedGenerator B I a) (ha' : A.IsAllowedGenerator B I a') :
     a / a' ∈ A.sUnitSixthPowers := by
   have heq : FractionalIdeal.spanSingleton A.R⁰ (a' : F) =
@@ -136,6 +138,8 @@ theorem allowed_generator_unique_mod_sixth (A : SArithmeticData F)
   obtain ⟨b, hb⟩ := A.local_power_injection F hCl 6 (by simp) ε hloc
   rw [hratio]
   exact ⟨b.val, b.property, congrArg Subtype.val hb⟩
+end
+
 
 theorem allowed_generator_mul (A : SArithmeticData F) (B : Subgroup A.V)
     (I J : FractionalIdeal A.R⁰ F) (a b : Fˣ)

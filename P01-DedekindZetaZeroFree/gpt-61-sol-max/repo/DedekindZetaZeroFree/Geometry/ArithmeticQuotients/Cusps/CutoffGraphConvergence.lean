@@ -153,7 +153,7 @@ theorem cutoff_hyperbolic_laplacian_error_bound (d : ℕ)
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
   (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
   (U : CompactOpenLevel (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
-  (a : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+  
 
  theorem cutoff_toArch_contDiff : ContDiff ℝ (⊤ : ℕ∞) (toArch F) := by
   apply contDiff_pi.mpr

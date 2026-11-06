@@ -160,26 +160,29 @@ lemma numerator_norm_le (q : ℝ) (hq : 2 ≤ q) (v w d e : ℂ) (hv : ‖v‖ �
   have a8 : ‖d * w‖ = ‖d‖ * ‖w‖ := norm_mul _ _
   linarith
 
+
+local notation:max "current_D" => CorrectionFactors.D (σ := σ) (η := η)
+
 lemma goodFactor_sub_one_eq (C : A.GeneralArithmeticContext σ η hS)
     (pr : LocalFiniteSums.ExteriorPrime A) (uu : A.R) (ξ w z : ℂ)
     (hnv : 1 - CorrectionFactors.V pr z ≠ 0)
     (hnw : 1 - CorrectionFactors.W (σ := σ) pr uu w ≠ 0)
-    (hnd : 1 - CorrectionFactors.D (σ := σ) (η := η) pr uu ξ ≠ 0)
+    (hnd : 1 - current_D pr uu ξ ≠ 0)
     (hne : 1 - CorrectionFactors.E C pr ξ z ≠ 0) :
     CorrectionFactors.goodFactor C pr uu ξ w z - 1 =
       (-CorrectionFactors.V pr z * CorrectionFactors.W (σ := σ) pr uu w +
-        CorrectionFactors.D (σ := σ) (η := η) pr uu ξ * CorrectionFactors.V pr z +
-        CorrectionFactors.D (σ := σ) (η := η) pr uu ξ * CorrectionFactors.W (σ := σ) pr uu w -
-        ((LocalFiniteSums.Q pr : ℝ) : ℂ) * CorrectionFactors.D (σ := σ) (η := η) pr uu ξ *
+        current_D pr uu ξ * CorrectionFactors.V pr z +
+        current_D pr uu ξ * CorrectionFactors.W (σ := σ) pr uu w -
+        ((LocalFiniteSums.Q pr : ℝ) : ℂ) * current_D pr uu ξ *
           CorrectionFactors.W (σ := σ) pr uu w * CorrectionFactors.V pr z +
-        (((LocalFiniteSums.Q pr : ℝ) : ℂ) - 1) * CorrectionFactors.D (σ := σ) (η := η) pr uu ξ *
+        (((LocalFiniteSums.Q pr : ℝ) : ℂ) - 1) * current_D pr uu ξ *
           CorrectionFactors.W (σ := σ) pr uu w ^ 2 * CorrectionFactors.V pr z +
         CorrectionFactors.E C pr ξ z * ((1 - ((LocalFiniteSums.Q pr : ℝ) : ℂ)⁻¹) +
           ((LocalFiniteSums.Q pr : ℝ) : ℂ)⁻¹ * CorrectionFactors.W (σ := σ) pr uu w -
           CorrectionFactors.W (σ := σ) pr uu w ^ 2 +
           CorrectionFactors.W (σ := σ) pr uu w ^ 2 * CorrectionFactors.V pr z -
-          CorrectionFactors.D (σ := σ) (η := η) pr uu ξ)) /
-        ((1 - CorrectionFactors.E C pr ξ z) * (1 - CorrectionFactors.D (σ := σ) (η := η) pr uu ξ)) := by
+          current_D pr uu ξ)) /
+        ((1 - CorrectionFactors.E C pr ξ z) * (1 - current_D pr uu ξ)) := by
   unfold CorrectionFactors.goodFactor CorrectionFactors.goodRational
   exact good_algebra _ _ _ _ _ hnv hnw hnd hne
 
@@ -214,13 +217,13 @@ lemma good_bound (C : A.GeneralArithmeticContext σ η hS) (pr : LocalFiniteSums
     ne_zero_of_norm_lt_one _ (lt_of_le_of_lt hvn1 hρ)
   have hnw : 1 - CorrectionFactors.W (σ := σ) pr uu w ≠ 0 :=
     ne_zero_of_norm_lt_one _ (lt_of_le_of_lt hwn1 hρ)
-  have hnd : 1 - CorrectionFactors.D (σ := σ) (η := η) pr uu ξ ≠ 0 :=
+  have hnd : 1 - current_D pr uu ξ ≠ 0 :=
     ne_zero_of_norm_lt_one _ (lt_of_le_of_lt hdn1 hρ)
   have hne : 1 - CorrectionFactors.E C pr ξ z ≠ 0 :=
     ne_zero_of_norm_lt_one _ (lt_of_le_of_lt hen1 hρ)
   rw [goodFactor_sub_one_eq C pr uu ξ w z hnv hnw hnd hne, norm_div, norm_mul]
   have hN := numerator_norm_le (LocalFiniteSums.Q pr) hQ2 (CorrectionFactors.V pr z)
-    (CorrectionFactors.W (σ := σ) pr uu w) (CorrectionFactors.D (σ := σ) (η := η) pr uu ξ)
+    (CorrectionFactors.W (σ := σ) pr uu w) (current_D pr uu ξ)
     (CorrectionFactors.E C pr ξ z) (by linarith) (by linarith) (by linarith)
   have t1 : ‖CorrectionFactors.V pr z‖ * ‖CorrectionFactors.W (σ := σ) pr uu w‖ ≤
       LocalFiniteSums.Q pr ^ (-(6 * z.re)) * LocalFiniteSums.Q pr ^ (-w.re) := by
@@ -248,17 +251,17 @@ lemma good_bound (C : A.GeneralArithmeticContext σ η hS) (pr : LocalFiniteSums
     (hpow (-(6 * z.re))))
   have n5 := hpow (4 - 6 * ξ.re - 6 * z.re)
   have hNS : ‖-CorrectionFactors.V pr z * CorrectionFactors.W (σ := σ) pr uu w +
-        CorrectionFactors.D (σ := σ) (η := η) pr uu ξ * CorrectionFactors.V pr z +
-        CorrectionFactors.D (σ := σ) (η := η) pr uu ξ * CorrectionFactors.W (σ := σ) pr uu w -
-        ((LocalFiniteSums.Q pr : ℝ) : ℂ) * CorrectionFactors.D (σ := σ) (η := η) pr uu ξ *
+        current_D pr uu ξ * CorrectionFactors.V pr z +
+        current_D pr uu ξ * CorrectionFactors.W (σ := σ) pr uu w -
+        ((LocalFiniteSums.Q pr : ℝ) : ℂ) * current_D pr uu ξ *
           CorrectionFactors.W (σ := σ) pr uu w * CorrectionFactors.V pr z +
-        (((LocalFiniteSums.Q pr : ℝ) : ℂ) - 1) * CorrectionFactors.D (σ := σ) (η := η) pr uu ξ *
+        (((LocalFiniteSums.Q pr : ℝ) : ℂ) - 1) * current_D pr uu ξ *
           CorrectionFactors.W (σ := σ) pr uu w ^ 2 * CorrectionFactors.V pr z +
         CorrectionFactors.E C pr ξ z * ((1 - ((LocalFiniteSums.Q pr : ℝ) : ℂ)⁻¹) +
           ((LocalFiniteSums.Q pr : ℝ) : ℂ)⁻¹ * CorrectionFactors.W (σ := σ) pr uu w -
           CorrectionFactors.W (σ := σ) pr uu w ^ 2 +
           CorrectionFactors.W (σ := σ) pr uu w ^ 2 * CorrectionFactors.V pr z -
-          CorrectionFactors.D (σ := σ) (η := η) pr uu ξ)‖ ≤
+          current_D pr uu ξ)‖ ≤
       6 * (LocalFiniteSums.Q pr ^ (-(6 * z.re)) * LocalFiniteSums.Q pr ^ (-w.re) +
           LocalFiniteSums.Q pr ^ (-ξ.re) * LocalFiniteSums.Q pr ^ (-(6 * z.re)) +
           LocalFiniteSums.Q pr ^ (-ξ.re) * LocalFiniteSums.Q pr ^ (-w.re) +
@@ -269,8 +272,8 @@ lemma good_bound (C : A.GeneralArithmeticContext σ η hS) (pr : LocalFiniteSums
   have hA : 1 - ρ ≤ ‖1 - CorrectionFactors.E C pr ξ z‖ := by
     have := norm_sub_norm_le (1 : ℂ) (CorrectionFactors.E C pr ξ z)
     rw [norm_one] at this; linarith
-  have hB : 1 - ρ ≤ ‖1 - CorrectionFactors.D (σ := σ) (η := η) pr uu ξ‖ := by
-    have := norm_sub_norm_le (1 : ℂ) (CorrectionFactors.D (σ := σ) (η := η) pr uu ξ)
+  have hB : 1 - ρ ≤ ‖1 - current_D pr uu ξ‖ := by
+    have := norm_sub_norm_le (1 : ℂ) (current_D pr uu ξ)
     rw [norm_one] at this; linarith
   have hS0 : 0 ≤ LocalFiniteSums.Q pr ^ (-(6 * z.re)) * LocalFiniteSums.Q pr ^ (-w.re) +
           LocalFiniteSums.Q pr ^ (-ξ.re) * LocalFiniteSums.Q pr ^ (-(6 * z.re)) +

@@ -30,10 +30,13 @@ namespace ClassFieldTheory
 
 universe u v
 
+section
+variable {F : Type u} {G : Type v} [Field F] [Field G]
+    (e : F ≃+* G) (n : ℕ+)
+include F G e n
 /-- A field equivalence identifies the groups of `n`-th power classes. -/
 noncomputable def powerClassGroupEquivOfRingEquiv
-    {F : Type u} {G : Type v} [Field F] [Field G]
-    (e : F ≃+* G) (n : ℕ+) :
+      :
     PowerClassGroup F n ≃* PowerClassGroup G n := by
   let eu : Fˣ ≃* Gˣ := Units.mapEquiv e.toMulEquiv
   let NF : Subgroup Fˣ := (powMonoidHom (n : ℕ) : Fˣ →* Fˣ).range
@@ -61,8 +64,7 @@ noncomputable def powerClassGroupEquivOfRingEquiv
 
 /-- A field equivalence identifies the `n`-th roots of unity. -/
 noncomputable def rootsOfUnityEquivOfRingEquiv
-    {F : Type u} {G : Type v} [Field F] [Field G]
-    (e : F ≃+* G) (n : ℕ+)
+     
     (hmu : (primitiveRoots (n : ℕ) F).Nonempty) :
     rootsOfUnity (n : ℕ) F ≃* rootsOfUnity (n : ℕ) G := by
   letI : NeZero (n : ℕ) := ⟨n.pos.ne'⟩
@@ -70,16 +72,14 @@ noncomputable def rootsOfUnityEquivOfRingEquiv
 
 /-- The image of a representative under the induced power-class equivalence. -/
 theorem powerClassGroupEquivOfRingEquiv_powerClass
-    {F : Type u} {G : Type v} [Field F] [Field G]
-    (e : F ≃+* G) (n : ℕ+) (a : Fˣ) :
+      (a : Fˣ) :
     powerClassGroupEquivOfRingEquiv e n (powerClass F n a) =
       powerClass G n (Units.mapEquiv e.toMulEquiv a) := by
   rfl
 
 /-- A representative pulled back from the target power-class group. -/
 theorem powerClassGroupEquivOfRingEquiv_symm_powerClass
-    {F : Type u} {G : Type v} [Field F] [Field G]
-    (e : F ≃+* G) (n : ℕ+) (a : Gˣ) :
+      (a : Gˣ) :
     (powerClassGroupEquivOfRingEquiv e n).symm (powerClass G n a) =
       powerClass F n ((Units.mapEquiv e.toMulEquiv).symm a) := by
   apply (powerClassGroupEquivOfRingEquiv e n).injective
@@ -89,8 +89,7 @@ theorem powerClassGroupEquivOfRingEquiv_symm_powerClass
 /-- Kummer-algebra norm membership is invariant under a field equivalence,
 even when the Kummer polynomial is reducible. -/
 theorem isKummerNorm_iff_of_ringEquiv
-    {F : Type u} {G : Type v} [Field F] [Field G]
-    (e : F ≃+* G) (n : ℕ+) (a b : Fˣ) :
+      (a b : Fˣ) :
     IsKummerNorm F n a b ↔
       IsKummerNorm G n
         (Units.mapEquiv e.toMulEquiv a)
@@ -135,13 +134,18 @@ theorem isKummerNorm_iff_of_ringEquiv
             simp [y]
       _ = (eu b : G) := hz
       _ = e (b : F) := by simp [eu]
+end
 
-/-- Pull a pairing on power classes across an equivalence of base fields. -/
-noncomputable def hilbertPairingOfRingEquiv
-    {F : Type u} {G : Type v} [Field F] [Field G]
+
+section
+variable {F : Type u} {G : Type v} [Field F] [Field G]
     (e : F ≃+* G) (n : ℕ+)
     (hmu : (primitiveRoots (n : ℕ) F).Nonempty)
-    (B : HilbertPairing F n) : HilbertPairing G n :=
+    (B : HilbertPairing F n)
+include F G e n hmu B
+/-- Pull a pairing on power classes across an equivalence of base fields. -/
+noncomputable def hilbertPairingOfRingEquiv
+      : HilbertPairing G n :=
   let pF := PowerClassGroup F n
   let pG := PowerClassGroup G n
   let rF := rootsOfUnity (n : ℕ) F
@@ -154,10 +158,7 @@ noncomputable def hilbertPairingOfRingEquiv
 
 /-- Evaluation of a transported Hilbert pairing. -/
 theorem hilbertPairingOfRingEquiv_apply
-    {F : Type u} {G : Type v} [Field F] [Field G]
-    (e : F ≃+* G) (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) F).Nonempty)
-    (B : HilbertPairing F n)
+     
     (x y : PowerClassGroup G n) :
     hilbertPairingOfRingEquiv e n hmu B x y =
       rootsOfUnityEquivOfRingEquiv e n hmu
@@ -167,10 +168,7 @@ theorem hilbertPairingOfRingEquiv_apply
 
 /-- The Steinberg relation is preserved by base-field equivalence. -/
 theorem hilbertPairingOfRingEquiv_isSteinberg
-    {F : Type u} {G : Type v} [Field F] [Field G]
-    (e : F ≃+* G) (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) F).Nonempty)
-    (B : HilbertPairing F n) (hB : B.IsSteinberg) :
+      (hB : B.IsSteinberg) :
     (hilbertPairingOfRingEquiv e n hmu B).IsSteinberg := by
   let eu : Fˣ ≃* Gˣ := Units.mapEquiv e.toMulEquiv
   let er := rootsOfUnityEquivOfRingEquiv e n hmu
@@ -196,10 +194,7 @@ theorem hilbertPairingOfRingEquiv_isSteinberg
 
 /-- Skew-symmetry is preserved by base-field equivalence. -/
 theorem hilbertPairingOfRingEquiv_isSkewSymmetric
-    {F : Type u} {G : Type v} [Field F] [Field G]
-    (e : F ≃+* G) (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) F).Nonempty)
-    (B : HilbertPairing F n) (hB : B.IsSkewSymmetric) :
+      (hB : B.IsSkewSymmetric) :
     (hilbertPairingOfRingEquiv e n hmu B).IsSkewSymmetric := by
   intro x y
   rw [hilbertPairingOfRingEquiv_apply, hilbertPairingOfRingEquiv_apply]
@@ -208,10 +203,7 @@ theorem hilbertPairingOfRingEquiv_isSkewSymmetric
 
 /-- Nondegeneracy in both variables is preserved by field equivalence. -/
 theorem hilbertPairingOfRingEquiv_isNondegenerate
-    {F : Type u} {G : Type v} [Field F] [Field G]
-    (e : F ≃+* G) (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) F).Nonempty)
-    (B : HilbertPairing F n) (hB : B.IsNondegenerate) :
+      (hB : B.IsNondegenerate) :
     (hilbertPairingOfRingEquiv e n hmu B).IsNondegenerate := by
   let ep := powerClassGroupEquivOfRingEquiv e n
   let er := rootsOfUnityEquivOfRingEquiv e n hmu
@@ -243,10 +235,7 @@ theorem hilbertPairingOfRingEquiv_isNondegenerate
 
 /-- The canonical Kummer norm-residue law is preserved by field equivalence. -/
 theorem hilbertPairingOfRingEquiv_satisfiesNormResidueCriterion
-    {F : Type u} {G : Type v} [Field F] [Field G]
-    (e : F ≃+* G) (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) F).Nonempty)
-    (B : HilbertPairing F n) (hB : B.SatisfiesNormResidueCriterion) :
+      (hB : B.SatisfiesNormResidueCriterion) :
     (hilbertPairingOfRingEquiv e n hmu B).SatisfiesNormResidueCriterion := by
   let eu : Fˣ ≃* Gˣ := Units.mapEquiv e.toMulEquiv
   let er := rootsOfUnityEquivOfRingEquiv e n hmu
@@ -277,10 +266,7 @@ theorem hilbertPairingOfRingEquiv_satisfiesNormResidueCriterion
 /-- All public local-pairing properties are invariant under a field
 equivalence. -/
 theorem hilbertPairingOfRingEquiv_isLocalHilbertPairing
-    {F : Type u} {G : Type v} [Field F] [Field G]
-    (e : F ≃+* G) (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) F).Nonempty)
-    (B : HilbertPairing F n)
+     
     (hB : HilbertPairing.IsLocalHilbertPairing B) :
     HilbertPairing.IsLocalHilbertPairing
       (hilbertPairingOfRingEquiv e n hmu B) := by
@@ -288,6 +274,8 @@ theorem hilbertPairingOfRingEquiv_isLocalHilbertPairing
     hilbertPairingOfRingEquiv_isSkewSymmetric e n hmu B hB.2.1,
     hilbertPairingOfRingEquiv_isNondegenerate e n hmu B hB.2.2.1,
     hilbertPairingOfRingEquiv_satisfiesNormResidueCriterion e n hmu B hB.2.2.2⟩
+end
+
 
 end ClassFieldTheory
 

@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.SpecialFunctions.Gamma.Deligne
 public import DedekindZetaZeroFree.Analysis.Gamma.ElementaryNormBounds
 
 @[expose] public section
+
 
 /- The beta comparison proofs below are adapted (namespace and explicit shift
 binder changed) from openai/math, adc7f1241b42e322a6451854ab7e4b4c146bf78a,
@@ -28,7 +31,7 @@ private lemma beta_real_integral_eq (x y : ℝ) (hx : 0 < x) (hy : 0 < y) :
     rw [uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)] at ht
     simp only [Complex.ofReal_mul,Complex.ofReal_cpow ht.1,
       Complex.ofReal_cpow (sub_nonneg.mpr ht.2),Complex.ofReal_sub,Complex.ofReal_one]
-  rw [he,Complex.betaIntegral_eq_Gamma_mul_div _ _ (by simpa using hx) (by simpa using hy)]
+  rw [he,Complex.betaIntegral_eq_Gamma_mul_div _ _ (hx) (hy)]
   simp only [Complex.ofReal_div,Complex.ofReal_mul,← Complex.ofReal_add,Complex.Gamma_ofReal]
 
 private lemma beta_norm_le_real (s : ℂ) {d : ℝ} (hs : 0 < s.re) (hd : 0 < d) :
@@ -54,8 +57,8 @@ theorem gamma_real_shift_ratio_bound (s : ℂ) (d : ℝ)
     ‖Complex.Gamma s‖ / ‖Complex.Gamma (s + (d : ℂ))‖ ≤
       Real.Gamma s.re / Real.Gamma (s.re + d) := by
   have h := beta_norm_le_real s hs hd
-  have hg : 0 < Real.Gamma d := Real.Gamma_pos_of_pos hd
-  rw [Complex.betaIntegral_eq_Gamma_mul_div _ _ hs (by simpa using hd),
+  have hg  := Real.Gamma_pos_of_pos hd
+  rw [Complex.betaIntegral_eq_Gamma_mul_div _ _ hs (hd),
     norm_div,norm_mul,Complex.Gamma_ofReal,Complex.norm_real,Real.norm_eq_abs,
     abs_of_pos hg] at h
   apply (mul_le_mul_iff_right₀ hg).mp
@@ -69,8 +72,8 @@ theorem gammaC_reflected_ratio_left_bound (δ : ℝ)
   have hgap : 0 < 1 - 2 * δ := by linarith
   have hx : 0 < 1 + δ := by linarith
   have hy : 0 < 2 - δ := by linarith
-  let A : ℝ := Real.Gamma (1 + δ) / Real.Gamma (2 - δ)
-  let B : ℝ := (2 * Real.pi) ^ (- (1 + δ)) / (2 * Real.pi) ^ δ
+  let A  := Real.Gamma (1 + δ) / Real.Gamma (2 - δ)
+  let B  := (2 * Real.pi) ^ (- (1 + δ)) / (2 * Real.pi) ^ δ
   have hA : 0 < A := div_pos (Real.Gamma_pos_of_pos hx) (Real.Gamma_pos_of_pos hy)
   have hbase : 0 < 2 * Real.pi := by positivity
   have hB : 0 < B := div_pos (Real.rpow_pos_of_pos hbase _) (Real.rpow_pos_of_pos hbase _)

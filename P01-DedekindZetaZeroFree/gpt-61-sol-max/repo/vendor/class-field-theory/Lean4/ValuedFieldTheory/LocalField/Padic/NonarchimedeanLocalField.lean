@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.LocalField.NonarchimedeanLocalField.Basic
 public import Mathlib.NumberTheory.Padics.ProperSpace
 public import Mathlib.NumberTheory.Padics.ValuativeRel
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -41,10 +44,7 @@ theorem mulValuation_le_one_iff_norm_le_one
   classical
   by_cases hx : x = 0
   · simp [hx]
-  · rw [Padic.norm_le_one_iff_val_nonneg]
-    change (if x = 0 then 0 else WithZero.exp (-x.valuation)) ≤ 1 ↔
-      0 ≤ x.valuation
-    rw [ite_eq_right hx, ← WithZero.exp_zero, WithZero.exp_le_exp, neg_nonpos]
+  · simp_all [Padic.norm_le_one_iff_val_nonneg, ite_eq_right, WithZero.exp_zero, WithZero.exp_le_exp, neg_nonpos] <;> aesop
 
 /-- The integer ring defined by the canonical valuative relation on `ℚ_p`
 consists exactly of the elements of norm at most one. -/

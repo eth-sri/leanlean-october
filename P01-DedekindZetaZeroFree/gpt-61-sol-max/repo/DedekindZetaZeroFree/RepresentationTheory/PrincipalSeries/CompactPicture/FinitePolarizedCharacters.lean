@@ -57,8 +57,8 @@ theorem lambdaB_single_finite_heisenberg
   apply C.character_matches q a (rawCoordinate F ζ hζ P.localData x (Sum.inr q))
   exact ha.trans (rawCoordinate_val F ζ hζ P.localData x (Sum.inr q)).symm
 
-variable (K : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-variable (f : Flat F ζ hζ K)
+variable (K : Subgroup (KPLiteralRaw.G F ζ hζ)) 
+
 
 end DedekindZetaZeroFree.KPLiteralScalarHCFiniteCharacter
 

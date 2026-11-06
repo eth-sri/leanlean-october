@@ -45,10 +45,13 @@ open ClassFormation LocalClassFieldTheory
 of the ground field, making the main proof insensitive to proof terms carried
 by extensionSubgroup. -/
 
-private theorem valuationAt_coe_eq_of_closedSubgroup_eq
-    {G : Type} [Group G] [TopologicalSpace G]
+section
+variable {G : Type} [Group G] [TopologicalSpace G]
     {D : DegreeData G} {A : Rep ℤ G}
     (v : ValuationData D A)
+include G D A v
+private theorem valuationAt_coe_eq_of_closedSubgroup_eq
+     
     (H H' : FiniteAbstractField G)
     (hHH' : H.field = H'.field)
     (x : ambientFixedAddSubgroup A H.field)
@@ -69,9 +72,7 @@ private theorem valuationAt_coe_eq_of_closedSubgroup_eq
 /-- At the distinguished abstract base field, the normalized valuation is
 the original henselian valuation. -/
 private theorem valuationAt_baseField_coe
-    {G : Type} [Group G] [TopologicalSpace G]
-    {D : DegreeData G} {A : Rep ℤ G}
-    (v : ValuationData D A)
+     
     (x : ambientFixedAddSubgroup A (baseField G)) :
     ((v.valuationAt (FiniteAbstractField.base G) x : v.valueGroup) : ZHat) =
       v.toAddMonoidHom x := by
@@ -90,14 +91,19 @@ private theorem valuationAt_baseField_coe
       (le_refl (baseField G).toSubgroup) :=
     Subsingleton.elim _ _
   rw [hle, relativeNorm_self]
+end
 
+
+section
+variable (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
+    [IsNonarchimedeanLocalField K]
+    (d : ℕ) (hd : 0 < d)
+include K d hd
 /-- The norm subgroup of the canonical unramified extension of degree d,
 transported from fixed coefficients to the ordinary multiplicative group, is
 contained in the subgroup whose normalized valuation is divisible by d. -/
 theorem finiteUnramifiedNormSubgroup_map_le_unramifiedNormSubgroup
-    (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    (d : ℕ) (hd : 0 < d) :
+      :
     let D := localResidueDatum K
     let Kfinite : FiniteAbstractField (intrinsicAbsoluteGalois K) :=
       intrinsicFiniteAbstractBase K
@@ -222,9 +228,7 @@ theorem finiteUnramifiedNormSubgroup_map_le_unramifiedNormSubgroup
 Galois subextension whose transported norm subgroup consists of elements with
 valuation divisible by that degree. -/
 theorem exists_unramifiedFiniteGaloisExtension_normSubgroup_map_le
-    (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    (d : ℕ) (hd : 0 < d) :
+      :
     ∃ U : FiniteGaloisSubextension (intrinsicAbstractBase K),
       (U.normSubgroup (intrinsicAbsoluteUnits K)).map
           (baseUnitsEquivGaloisAmbientFixed K (SeparableClosure K)).symm.toAddMonoidHom ≤
@@ -248,9 +252,7 @@ theorem exists_unramifiedFiniteGaloisExtension_normSubgroup_map_le
 /-- The canonical degree-`d` unramified factor, retained as a named finite
 abelian subextension of the local absolute Galois group. -/
 noncomputable def localFiniteUnramifiedAbelianSubextension
-    (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    (d : ℕ) (hd : 0 < d) :
+      :
     FiniteAbelianSubextension (intrinsicAbstractBase K) := by
   let D := localResidueDatum K
   let Bfinite : FiniteAbstractField (intrinsicAbsoluteGalois K) :=
@@ -261,9 +263,7 @@ noncomputable def localFiniteUnramifiedAbelianSubextension
 /-- The named finite unramified abelian factor satisfies the expected
 valuation-divisibility norm containment. -/
 theorem localFiniteUnramifiedAbelianSubextension_normSubgroup_map_le
-    (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    (d : ℕ) (hd : 0 < d) :
+      :
     let U := localFiniteUnramifiedAbelianSubextension K d hd
     (U.normSubgroup (intrinsicAbsoluteUnits K)).map
           (baseUnitsEquivGaloisAmbientFixed K (SeparableClosure K)).symm.toAddMonoidHom ≤
@@ -284,21 +284,23 @@ theorem localFiniteUnramifiedAbelianSubextension_normSubgroup_map_le
     FiniteGaloisSubextension.normSubgroup] using
     (finiteUnramifiedNormSubgroup_map_le_unramifiedNormSubgroup
       K d hd)
+end
 
-/-- The canonical unramified extension can be retained as a finite abelian
-subextension, with the same norm-subgroup containment. -/
-theorem exists_unramifiedFiniteAbelianExtension_normSubgroup_map_le
-    (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    (d : ℕ) (hd : 0 < d) :
-    ∃ U : FiniteAbelianSubextension (intrinsicAbstractBase K),
-      (U.normSubgroup (intrinsicAbsoluteUnits K)).map
-          (baseUnitsEquivGaloisAmbientFixed K (SeparableClosure K)).symm.toAddMonoidHom ≤
-        (unramifiedNormSubgroup K d).toAddSubgroup := by
-  exact
-    ⟨localFiniteUnramifiedAbelianSubextension K d hd,
-      localFiniteUnramifiedAbelianSubextension_normSubgroup_map_le
-        K d hd⟩
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end LocalClassFieldTheory
 

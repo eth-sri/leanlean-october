@@ -372,7 +372,6 @@ private theorem raw_minus_prime_value
   · rw [if_neg hp]
     unfold rawMinusCoefficient
     rw [raw_plus_prime_value C U χ ψ hχ hψ htwist p, if_neg hp, star_zero, mul_zero]
-
 end Raw
 
 theorem actual_raw_masked_inducers

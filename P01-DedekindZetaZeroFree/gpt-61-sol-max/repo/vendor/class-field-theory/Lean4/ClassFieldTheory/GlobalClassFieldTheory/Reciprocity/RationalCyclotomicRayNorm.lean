@@ -233,16 +233,19 @@ noncomputable local instance
     (padicLocalField q.1)
     (padicMultiplicativeLubinTateSeries_isUniformizer q.1) n
 
+section
+variable (q : Nat.Primes) (n : ℕ)
+    (x : ((RayClass.rationalPrime q).adicCompletion ℚ)ˣ)
+    (hx :
+      x ∈ RayClass.localHigherUnitGroup
+        (RayClass.rationalPrime q) (n + 1))
+include q n x hx in
 /-- A rational higher unit has trivial local Artin image in the standard
 multiplicative Lubin--Tate level.  This is the purely `q`-adic part of the
 prime-power argument; the semilinear transport to the localized global
 cyclotomic field is handled separately below. -/
 private theorem rationalPrimePowerPadicAbelianLocalArtin_eq_one
-    (q : Nat.Primes) (n : ℕ)
-    (x : ((RayClass.rationalPrime q).adicCompletion ℚ)ˣ)
-    (hx :
-      x ∈ RayClass.localHigherUnitGroup
-        (RayClass.rationalPrime q) (n + 1)) :
+      :
     abelianLocalArtinMonoidHom ℚ_[q.1]
         (RationalCyclotomicPrincipalPrimePadicLevel q n)
         (Units.map
@@ -313,14 +316,11 @@ and its instance arguments frozen behind a named boundary. -/
         (rationalCyclotomicPrincipalPrimeModulus q n))
     (RayClass.rationalPrime q) x
 
+include q n x hx in
 /-- The standard `q`-adic calculation evaluated on the canonical input used
 by the finite-place Artin construction. -/
 private theorem rationalPrimePowerFinitePlaceLocalInputPadicArtin_eq_one
-    (q : Nat.Primes) (n : ℕ)
-    (x : ((RayClass.rationalPrime q).adicCompletion ℚ)ˣ)
-    (hx :
-      x ∈ RayClass.localHigherUnitGroup
-        (RayClass.rationalPrime q) (n + 1)) :
+      :
     abelianLocalArtinMonoidHom ℚ_[q.1]
         (RationalCyclotomicPrincipalPrimePadicLevel q n)
         (Units.map
@@ -336,15 +336,11 @@ private theorem rationalPrimePowerFinitePlaceLocalInputPadicArtin_eq_one
             (RayClass.rationalPrime q)).symm x)) = 1
   exact rationalPrimePowerPadicAbelianLocalArtin_eq_one q n x hx
 
+include q n x hx in
 /-- The normalized local calculation, transported through the decomposition
 group inclusion.  This bridge contains no semilinear instance search. -/
 private theorem rationalPrimePowerFinitePlaceArtinOfExtension_eq_one
-    (q : Nat.Primes) (n : ℕ)
-    (x :
-      ((RayClass.rationalPrime q).adicCompletion ℚ)ˣ)
-    (hx :
-      x ∈ RayClass.localHigherUnitGroup
-        (RayClass.rationalPrime q) (n + 1)) :
+      :
     finitePlaceArtinMonoidHomOfExtension
         (K := ℚ)
         (L := KummerTheory.rationalCyclotomicLevel
@@ -358,32 +354,24 @@ private theorem rationalPrimePowerFinitePlaceArtinOfExtension_eq_one
       q n x
       (rationalPrimePowerFinitePlaceLocalInputPadicArtin_eq_one q n x hx)
 
+include q n x hx in
 /-- The local semilinear calculation for a ramified prime-power level.  Its
 statement only exposes the named global Artin value. -/
 private theorem
     rationalPrimePowerChosenFinitePlaceArtinValue_eq_one_of_mem_localHigherUnitGroup
-    (q : Nat.Primes) (n : ℕ)
-    (x :
-      ((RayClass.rationalPrime q).adicCompletion ℚ)ˣ)
-    (hx :
-      x ∈ RayClass.localHigherUnitGroup
-        (RayClass.rationalPrime q) (n + 1)) :
+      :
     rationalPrimePowerChosenFinitePlaceArtinValue q n x = 1 := by
   simpa only [rationalPrimePowerChosenFinitePlaceArtinValue,
     chosenFinitePlaceArtinMonoidHom,
     rationalCyclotomicChosenFinitePlaceExtension] using
     rationalPrimePowerFinitePlaceArtinOfExtension_eq_one q n x hx
 
+include q n x hx in
 /-- A principal unit of depth `n + 1` has trivial chosen finite-place
 Artin symbol in the genuine `q ^ (n + 1)`-st rational cyclotomic level. -/
 theorem
     rationalPrimePowerChosenFinitePlaceArtin_eq_one_of_mem_localHigherUnitGroup
-    (q : Nat.Primes) (n : ℕ)
-    (x :
-      ((RayClass.rationalPrime q).adicCompletion ℚ)ˣ)
-    (hx :
-      x ∈ RayClass.localHigherUnitGroup
-        (RayClass.rationalPrime q) (n + 1)) :
+      :
     chosenFinitePlaceArtinMonoidHom
         (K := ℚ)
         (L :=
@@ -394,6 +382,8 @@ theorem
   simpa only [rationalPrimePowerChosenFinitePlaceArtinValue] using
     rationalPrimePowerChosenFinitePlaceArtinValue_eq_one_of_mem_localHigherUnitGroup
       q n x hx
+end
+
 
 /-- The positive-depth form of the prime-power calculation.  Eliminating
 the successor before introducing a cyclotomic level avoids transporting its

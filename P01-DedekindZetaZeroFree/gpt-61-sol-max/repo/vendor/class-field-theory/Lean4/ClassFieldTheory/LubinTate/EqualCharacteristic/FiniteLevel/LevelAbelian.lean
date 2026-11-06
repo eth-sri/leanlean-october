@@ -44,10 +44,13 @@ open LocalFieldTheory.DiscreteValuationField
 
 variable {K : Type u} [Field K]
 
+section
+variable (F : LocalField.{u, v} K)
+include F
 /-- Since the finite parameter injection and the Galois group have the same
 cardinality, every level-field automorphism comes from a parameter. -/
 theorem equalCharacteristicLubinTateUnitParameterToGal_surjective
-    (F : LocalField.{u, v} K)
+     
     [CharP K F.residueCharacteristic]
     (n : ℕ) :
     Function.Surjective
@@ -74,7 +77,7 @@ theorem equalCharacteristicLubinTateUnitParameterToGal_surjective
 
 /-- Explicit exhaustion statement for the automorphisms of a level field. -/
 theorem equalCharacteristicLubinTateLevelField_exists_unitParameter
-    (F : LocalField.{u, v} K)
+     
     [CharP K F.residueCharacteristic]
     (n : ℕ)
     (σ : Gal((equalCharacteristicLubinTateLevelField F n) /
@@ -88,7 +91,7 @@ theorem equalCharacteristicLubinTateLevelField_exists_unitParameter
 /-- The polynomial over the Laurent-series base whose evaluation is a
 truncated Lubin--Tate bracket. -/
 noncomputable def equalCharacteristicLubinTateBracketPolynomial
-    (F : LocalField.{u, v} K)
+     
     (m : ℕ) (a : F.residueField⟦X⟧) :
     Polynomial F.residueField⸨X⸩ :=
   ∑ i ∈ Finset.range m,
@@ -100,7 +103,7 @@ noncomputable def equalCharacteristicLubinTateBracketPolynomial
 /-- Evaluating the bracket polynomial in any ambient field gives the genuine
 truncated bracket. -/
 theorem equalCharacteristicLubinTateBracketPolynomial_eval₂
-    (F : LocalField.{u, v} K)
+     
     [CharP K F.residueCharacteristic]
     {A : Type w} [Field A] [CharP A F.residueCharacteristic]
     (φ : F.residueField⸨X⸩ →+* A)
@@ -118,14 +121,19 @@ theorem equalCharacteristicLubinTateBracketPolynomial_eval₂
   rw [Polynomial.eval₂_mul, Polynomial.eval₂_C,
     equalCharacteristicLubinTatePiPolynomialIterate_eval₂]
   rfl
+end
 
+
+section
+variable (F : LocalField.{u, v} K)
+    [CharP K F.residueCharacteristic]
+    (n m : ℕ) (a : F.residueField⟦X⟧)
+include F n m a
 /-- A truncated bracket, regarded as an endomorphism of the simple level
 field.  Its membership proof is the previously established closure of the
 level field under brackets. -/
 noncomputable def equalCharacteristicLubinTateLevelBracket
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n m : ℕ) (a : F.residueField⟦X⟧)
+     
     (x : equalCharacteristicLubinTateLevelField F n) :
     equalCharacteristicLubinTateLevelField F n :=
   ⟨equalCharacteristicLubinTateAmbientBracket F
@@ -137,9 +145,7 @@ noncomputable def equalCharacteristicLubinTateLevelBracket
 /-- States the theorem `equalCharacteristicLubinTateLevelBracket_coe`. -/
 @[simp]
 theorem equalCharacteristicLubinTateLevelBracket_coe
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n m : ℕ) (a : F.residueField⟦X⟧)
+     
     (x : equalCharacteristicLubinTateLevelField F n) :
     (equalCharacteristicLubinTateLevelBracket F n m a x :
       SeparableClosure F.residueField⸨X⸩) =
@@ -151,9 +157,7 @@ theorem equalCharacteristicLubinTateLevelBracket_coe
 /-- Inside the level field, a truncated bracket is evaluation of its bracket
 polynomial. -/
 theorem equalCharacteristicLubinTateLevelBracket_eq_aeval
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n m : ℕ) (a : F.residueField⟦X⟧)
+     
     (x : equalCharacteristicLubinTateLevelField F n) :
     equalCharacteristicLubinTateLevelBracket F n m a x =
       Polynomial.aeval x
@@ -180,9 +184,7 @@ theorem equalCharacteristicLubinTateLevelBracket_eq_aeval
 /-- Algebra endomorphisms of the level field commute with its bracket
 polynomials. -/
 theorem equalCharacteristicLubinTateLevelBracket_map
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n m : ℕ) (a : F.residueField⟦X⟧)
+     
     (σ : equalCharacteristicLubinTateLevelField F n →ₐ[F.residueField⸨X⸩]
       equalCharacteristicLubinTateLevelField F n)
     (x : equalCharacteristicLubinTateLevelField F n) :
@@ -200,14 +202,19 @@ theorem equalCharacteristicLubinTateLevelBracket_map
         (equalCharacteristicLubinTateBracketPolynomial F m a)).symm
     _ = equalCharacteristicLubinTateLevelBracket F n m a (σ x) :=
       (equalCharacteristicLubinTateLevelBracket_eq_aeval F n m a (σ x)).symm
+end
 
+
+section
+variable (F : LocalField.{u, v} K)
+    [CharP K F.residueCharacteristic]
+    (n : ℕ)
+include F n
 /-- The power-basis generator is the chosen primitive point in the ambient
 separable closure. -/
 @[simp]
 theorem equalCharacteristicLubinTateLevelPowerBasis_gen_coe
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) :
+      :
     ((equalCharacteristicLubinTateLevelPowerBasis F n).gen :
       SeparableClosure F.residueField⸨X⸩) =
         chosenEqualCharacteristicLubinTatePrimitiveRoot F n :=
@@ -216,9 +223,7 @@ theorem equalCharacteristicLubinTateLevelPowerBasis_gen_coe
 /-- Bracketing the power-basis generator with a parameter series gives the
 corresponding parameter root. -/
 theorem equalCharacteristicLubinTateLevelBracket_gen
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) (a : equalCharacteristicLubinTateUnitParameter F n) :
+      (a : equalCharacteristicLubinTateUnitParameter F n) :
     equalCharacteristicLubinTateLevelBracket F n (n + 1)
         (equalCharacteristicLubinTateUnitParameterSeries F n a)
         (equalCharacteristicLubinTateLevelPowerBasis F n).gen =
@@ -229,9 +234,7 @@ theorem equalCharacteristicLubinTateLevelBracket_gen
 /-- A parameter automorphism sends any parameter root by applying that
 parameter's bracket to the automorphism's generator image. -/
 theorem equalCharacteristicLubinTateUnitParameterAlgEquiv_apply_levelRoot
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) (a b : equalCharacteristicLubinTateUnitParameter F n) :
+      (a b : equalCharacteristicLubinTateUnitParameter F n) :
     equalCharacteristicLubinTateUnitParameterAlgEquiv F n a
         (equalCharacteristicLubinTateUnitParameterLevelRoot F n b) =
       equalCharacteristicLubinTateLevelBracket F n (n + 1)
@@ -262,9 +265,7 @@ theorem equalCharacteristicLubinTateUnitParameterAlgEquiv_apply_levelRoot
 /-- Commutativity of power-series multiplication makes the two possible
 iterated parameter brackets agree on the primitive point. -/
 theorem equalCharacteristicLubinTateUnitParameterLevelBracket_comm
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) (a b : equalCharacteristicLubinTateUnitParameter F n) :
+      (a b : equalCharacteristicLubinTateUnitParameter F n) :
     equalCharacteristicLubinTateLevelBracket F n (n + 1)
         (equalCharacteristicLubinTateUnitParameterSeries F n b)
         (equalCharacteristicLubinTateUnitParameterLevelRoot F n a) =
@@ -309,9 +310,7 @@ theorem equalCharacteristicLubinTateUnitParameterLevelBracket_comm
 
 /-- Any two automorphisms arising from finite unit parameters commute. -/
 theorem equalCharacteristicLubinTateUnitParameterAlgEquiv_comm
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) (a b : equalCharacteristicLubinTateUnitParameter F n) :
+      (a b : equalCharacteristicLubinTateUnitParameter F n) :
     equalCharacteristicLubinTateUnitParameterAlgEquiv F n a *
         equalCharacteristicLubinTateUnitParameterAlgEquiv F n b =
       equalCharacteristicLubinTateUnitParameterAlgEquiv F n b *
@@ -334,15 +333,15 @@ theorem equalCharacteristicLubinTateUnitParameterAlgEquiv_comm
 
 /-- The full finite-level Galois group is commutative. -/
 theorem equalCharacteristicLubinTateLevelField_gal_comm
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ)
+     
     (σ τ : Gal((equalCharacteristicLubinTateLevelField F n) /
       F.residueField⸨X⸩)) :
     σ * τ = τ * σ := by
   obtain ⟨a, rfl⟩ := equalCharacteristicLubinTateLevelField_exists_unitParameter F n σ
   obtain ⟨b, rfl⟩ := equalCharacteristicLubinTateLevelField_exists_unitParameter F n τ
   exact equalCharacteristicLubinTateUnitParameterAlgEquiv_comm F n a b
+end
+
 
 /-- The Galois group of the explicit level field is a commutative group. -/
 instance equalCharacteristicLubinTateLevelField_isMulCommutative

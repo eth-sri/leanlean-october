@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Geometry.HyperbolicActionMetricAndVolume
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -11,8 +14,7 @@ open scoped Classical nonZeroDivisors
 namespace DedekindZetaZeroFree.KPCusp
 
 def complexPlace (F : Type*) [Field F] [NumberField F]
-    (i : Fin (NumberField.InfinitePlace.nrComplexPlaces F)) :
-    NumberField.InfinitePlace F :=
+    (i : Fin (NumberField.InfinitePlace.nrComplexPlaces F))  :=
   ((Fintype.equivFin {w : NumberField.InfinitePlace F // w.IsComplex}).symm i).val
 
 end DedekindZetaZeroFree.KPCusp
@@ -26,12 +28,15 @@ open scoped Classical nonZeroDivisors
 
 namespace DedekindZetaZeroFree.KPCusp
 
-abbrev Row (F : Type*) [Field F] := {r : F × F // r ≠ 0}
+section
+variable (F : Type*) [Field F]
+include F
+abbrev Row   := {r : F × F // r ≠ 0}
 
-def scaleRow (F : Type*) [Field F] (a : Fˣ) (r : Row F) : Row F :=
+def scaleRow   (a : Fˣ) (r : Row F) : Row F :=
   ⟨(a : F) • r.val, smul_ne_zero (Units.ne_zero a) r.property⟩
 
-def flag (F : Type*) [Field F] (r : Row F) : Submodule F (F × F) :=
+def flag   (r : Row F) : Submodule F (F × F) :=
   LinearMap.ker
     ({ toFun := fun v => r.val.1 * v.1 + r.val.2 * v.2
        map_add' := by intros; simp only [Prod.fst_add, Prod.snd_add]; ring
@@ -39,31 +44,34 @@ def flag (F : Type*) [Field F] (r : Row F) : Submodule F (F × F) :=
          intros
          simp only [RingHom.id_apply, Prod.smul_fst, Prod.smul_snd, smul_eq_mul]
          ring } : (F × F) →ₗ[F] F)
+end
 
-def content (F : Type*) [Field F] [NumberField F]
-    (J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) (r : Row F) :
-    FractionalIdeal (NumberField.RingOfIntegers F)⁰ F :=
+
+section
+variable (F : Type*) [Field F] [NumberField F]
+include F
+def content  
+    (J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) (r : Row F)  :=
   FractionalIdeal.spanSingleton (NumberField.RingOfIntegers F)⁰ r.val.1 +
     FractionalIdeal.spanSingleton (NumberField.RingOfIntegers F)⁰ r.val.2 * J
 
-def rowDenominator (F : Type*) [Field F] [NumberField F] (r : Row F)
-    (i : Fin (NumberField.InfinitePlace.nrComplexPlaces F)) (z : KPArch.H3) : ℝ :=
+def rowDenominator   (r : Row F)
+    (i : Fin (NumberField.InfinitePlace.nrComplexPlaces F)) (z : KPArch.H3)  :=
   ‖(complexPlace F i).embedding r.val.1 * z.1 +
       (complexPlace F i).embedding r.val.2‖ ^ 2 +
     ‖(complexPlace F i).embedding r.val.1‖ ^ 2 * KPArch.height z ^ 2
 
-def normalizedHeight (F : Type*) [Field F] [NumberField F]
+def normalizedHeight  
     (J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) (r : Row F)
-    (z : KPArch.Space (NumberField.InfinitePlace.nrComplexPlaces F)) : ℝ :=
+    (z : KPArch.Space (NumberField.InfinitePlace.nrComplexPlaces F))  :=
   (FractionalIdeal.absNorm (content F J r) : ℝ) *
     (∏ i, KPArch.height (z i)) / (∏ i, rowDenominator F r i (z i))
 
-def horoball (F : Type*) [Field F] [NumberField F]
-    (J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) (r : Row F) (T : ℝ) :
-    Set (KPArch.Space (NumberField.InfinitePlace.nrComplexPlaces F)) :=
+def horoball  
+    (J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) (r : Row F) (T : ℝ)  :=
   {z | T < normalizedHeight F J r z}
 
-private theorem content_ne_zero (F : Type*) [Field F] [NumberField F]
+private theorem content_ne_zero  
     (J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) (hJ : J ≠ 0)
     (r : Row F) : content F J r ≠ 0 := by
   intro h
@@ -73,16 +81,16 @@ private theorem content_ne_zero (F : Type*) [Field F] [NumberField F]
   have hc : r.val.1 = 0 := FractionalIdeal.spanSingleton_eq_zero_iff.mp hs.1
   have hd : r.val.2 = 0 := FractionalIdeal.spanSingleton_eq_zero_iff.mp
     ((mul_eq_zero.mp hs.2).resolve_right hJ)
-  exact r.property (Prod.ext hc hd)
+  apply r.property <;> aesop
 
-private theorem rowDenominator_pos (F : Type*) [Field F] [NumberField F]
+private theorem rowDenominator_pos  
     (r : Row F) (i : Fin (NumberField.InfinitePlace.nrComplexPlaces F))
     (z : KPArch.H3) : 0 < rowDenominator F r i z := by
   have hy : 0 < KPArch.height z := Real.exp_pos _
   by_cases hc : r.val.1 = 0
   · have hd : r.val.2 ≠ 0 := by
       intro hd
-      exact r.property (Prod.ext hc hd)
+      apply r.property <;> aesop
     have hd' : (complexPlace F i).embedding r.val.2 ≠ 0 :=
       (map_ne_zero (complexPlace F i).embedding).mpr hd
     simpa [rowDenominator, hc] using sq_pos_of_pos (norm_pos_iff.mpr hd')
@@ -90,7 +98,7 @@ private theorem rowDenominator_pos (F : Type*) [Field F] [NumberField F]
     exact add_pos_of_nonneg_of_pos (sq_nonneg _)
       (mul_pos (sq_pos_of_pos (norm_pos_iff.mpr hc')) (sq_pos_of_pos hy))
 
-theorem normalizedHeight_pos (F : Type*) [Field F] [NumberField F]
+theorem normalizedHeight_pos  
     (J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) (hJ : J ≠ 0)
     (r : Row F) (z : KPArch.Space (NumberField.InfinitePlace.nrComplexPlaces F)) :
     0 < normalizedHeight F J r z := by
@@ -102,10 +110,10 @@ theorem normalizedHeight_pos (F : Type*) [Field F] [NumberField F]
     (Finset.prod_pos fun i _ => Real.exp_pos _))
     (Finset.prod_pos fun i _ => rowDenominator_pos F r i (z i))
 
-private theorem complex_norm_product (F : Type*) [Field F] [NumberField F]
+private theorem complex_norm_product  
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0) (x : F) :
     (∏ i, ‖(complexPlace F i).embedding x‖ ^ 2) = (|Algebra.norm ℚ x| : ℝ) := by
-  letI : NumberField.IsTotallyComplex F := NumberField.nrRealPlaces_eq_zero_iff.mp hF
+  letI  := NumberField.nrRealPlaces_eq_zero_iff.mp hF
   rw [← Rat.cast_abs, ← NumberField.InfinitePlace.prod_eq_abs_norm]
   simp only [NumberField.IsTotallyComplex.mult_eq]
   let e : Fin (NumberField.InfinitePlace.nrComplexPlaces F) ≃ NumberField.InfinitePlace F :=
@@ -114,14 +122,14 @@ private theorem complex_norm_product (F : Type*) [Field F] [NumberField F]
   exact Fintype.prod_equiv e _ _ (fun i => by
     simp [e, complexPlace, NumberField.InfinitePlace.norm_embedding_eq])
 
-private theorem content_scale (F : Type*) [Field F] [NumberField F]
+private theorem content_scale  
     (J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)
     (a : Fˣ) (r : Row F) : content F J (scaleRow F a r) =
       FractionalIdeal.spanSingleton (NumberField.RingOfIntegers F)⁰ (a : F) * content F J r := by
   simp only [content, scaleRow, Prod.smul_fst, Prod.smul_snd, smul_eq_mul,
     mul_add, ← mul_assoc, FractionalIdeal.spanSingleton_mul_spanSingleton]
 
-private theorem rowDenominator_scale (F : Type*) [Field F] [NumberField F]
+private theorem rowDenominator_scale  
     (a : Fˣ) (r : Row F) (i : Fin (NumberField.InfinitePlace.nrComplexPlaces F))
     (z : KPArch.H3) : rowDenominator F (scaleRow F a r) i z =
       ‖(complexPlace F i).embedding (a : F)‖ ^ 2 * rowDenominator F r i z := by
@@ -133,8 +141,13 @@ private theorem rowDenominator_scale (F : Type*) [Field F] [NumberField F]
         ((complexPlace F i).embedding r.val.1 * z.1 + (complexPlace F i).embedding r.val.2) by ring]
   simp only [norm_mul]
   ring
+end
 
-theorem normalizedHeight_scale (F : Type*) [Field F] [NumberField F]
+
+section
+variable (F : Type*) [Field F]
+include F
+theorem normalizedHeight_scale   [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)
     (a : Fˣ) (r : Row F)
@@ -148,7 +161,7 @@ theorem normalizedHeight_scale (F : Type*) [Field F] [NumberField F]
     Finset.prod_mul_distrib, complex_norm_product F hF]
   rw [Rat.cast_abs, mul_assoc, mul_div_mul_left _ _ hn]
 
-private theorem row_proportional (F : Type*) [Field F] (r r' : Row F)
+private theorem row_proportional   (r r' : Row F)
     (hq : flag F r = flag F r') : ∃ a : Fˣ, r' = scaleRow F a r := by
   have hv : (-r.val.2, r.val.1) ∈ flag F r := by
     change r.val.1 * (-r.val.2) + r.val.2 * r.val.1 = 0
@@ -181,7 +194,7 @@ private theorem row_proportional (F : Type*) [Field F] (r r' : Row F)
       field_simp
       linear_combination hv
 
-theorem normalizedHeight_eq_of_flag_eq (F : Type*) [Field F] [NumberField F]
+theorem normalizedHeight_eq_of_flag_eq   [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)
     (r r' : Row F) (hq : flag F r = flag F r')
@@ -189,6 +202,8 @@ theorem normalizedHeight_eq_of_flag_eq (F : Type*) [Field F] [NumberField F]
     normalizedHeight F J r z = normalizedHeight F J r' z := by
   obtain ⟨a, rfl⟩ := row_proportional F r r' hq
   exact (normalizedHeight_scale F hF J a r z).symm
+end
+
 
 private theorem gram (a b c d : ℂ) : ‖a * d - b * c‖ ^ 2 ≤
     (‖a‖ ^ 2 + ‖b‖ ^ 2) * (‖c‖ ^ 2 + ‖d‖ ^ 2) := by
@@ -197,7 +212,10 @@ private theorem gram (a b c d : ℂ) : ‖a * d - b * c‖ ^ 2 ≤
     Complex.add_re, Complex.add_im, Complex.sub_re, Complex.sub_im,
     Complex.mul_re, Complex.mul_im, Complex.star_def, Complex.conj_re, Complex.conj_im] at *
   nlinarith
-private theorem rowDenominator_product_lower_bound (F : Type*) [Field F] [NumberField F] (r r' : Row F)
+section
+variable (F : Type*) [Field F]
+include F
+private theorem rowDenominator_product_lower_bound   [NumberField F] (r r' : Row F)
     (i : Fin (NumberField.InfinitePlace.nrComplexPlaces F)) (z : KPArch.H3) :
     ‖(complexPlace F i).embedding (r.val.1 * r'.val.2 - r.val.2 * r'.val.1)‖ ^ 2 *
       KPArch.height z ^ 2 ≤ rowDenominator F r i z * rowDenominator F r' i z := by
@@ -215,7 +233,7 @@ private theorem rowDenominator_product_lower_bound (F : Type*) [Field F] [Number
   simpa only [rowDenominator, e, norm_neg, norm_mul, Complex.norm_real,
     Real.norm_eq_abs, abs_of_pos (Real.exp_pos z.2), KPArch.height, mul_pow] using h
 
-private theorem norm_antitone (F : Type*) [Field F] [NumberField F]
+private theorem norm_antitone   [NumberField F]
     {I J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F}
     (hI : I ≠ 0) (h : I ≤ J) : FractionalIdeal.absNorm J ≤ FractionalIdeal.absNorm I := by
   have hJ : J ≠ 0 := fun hj => hI (le_antisymm (hj ▸ h) bot_le)
@@ -236,7 +254,7 @@ private theorem norm_antitone (F : Type*) [Field F] [NumberField F]
   rw [map_mul, map_inv₀, ← div_eq_mul_inv] at hn
   simpa only [one_mul] using (le_div_iff₀ hjpos).mp hn
 
-private theorem determinant_ne_zero (F : Type*) [Field F] (r r' : Row F)
+private theorem determinant_ne_zero   (r r' : Row F)
     (hq : flag F r ≠ flag F r') : r.val.1 * r'.val.2 - r.val.2 * r'.val.1 ≠ 0 := by
   intro hd
   apply hq
@@ -266,7 +284,7 @@ private theorem determinant_ne_zero (F : Type*) [Field F] (r r' : Row F)
       have hz : r'.val.1 * (r.val.1 * v.1 + r.val.2 * v.2) = 0 := by rw [← he, hv, mul_zero]
       exact (mul_eq_zero.mp hz).resolve_left hc'
 
-private theorem determinant_content_le (F : Type*) [Field F] [NumberField F]
+private theorem determinant_content_le   [NumberField F]
     (J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) (r r' : Row F) :
     FractionalIdeal.spanSingleton (NumberField.RingOfIntegers F)⁰
       (r.val.1 * r'.val.2 - r.val.2 * r'.val.1) * J ≤ content F J r * content F J r' := by
@@ -288,7 +306,7 @@ private theorem determinant_content_le (F : Type*) [Field F] [NumberField F]
   change r.val.1 * (r'.val.2 * v) - r.val.2 * v * r'.val.1 ∈ content F J r * content F J r' at hs
   convert hs using 1 <;> ring
 
-theorem normalizedHeight_product_le_norm_twist (F : Type*) [Field F] [NumberField F]
+theorem normalizedHeight_product_le_norm_twist   [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) (hJ : J ≠ 0)
     (r r' : Row F) (hq : flag F r ≠ flag F r')
@@ -328,6 +346,8 @@ theorem normalizedHeight_product_le_norm_twist (F : Type*) [Field F] [NumberFiel
     _ = (FractionalIdeal.absNorm J : ℝ) *
         ((|Algebra.norm ℚ δ| : ℝ) * (∏ i, KPArch.height (z i)) ^ 2) := by ring
     _ ≤ _ := mul_le_mul_of_nonneg_left hg hj
+end
+
 
 end DedekindZetaZeroFree.KPCusp
 

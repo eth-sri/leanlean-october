@@ -38,14 +38,17 @@ open LocalFieldTheory.DiscreteValuationField
 
 variable {K : Type u} [Field K]
 
-/-- Evaluation of the changed Lubin--Tate polynomial in any compatible
-ambient field is the corresponding distinguished endomorphism. -/
-theorem equalCharacteristicChangedPiPolynomial_eval₂
-    (F : LocalField.{u, v} K)
+section
+variable (F : LocalField.{u, v} K)
     [CharP K F.residueCharacteristic]
     (a : F.residueField⟦X⟧ˣ)
     {A : Type*} [Field A] [CharP A F.residueCharacteristic]
-    (φ : F.residueField⸨X⸩ →+* A) (x : A) :
+    (φ : F.residueField⸨X⸩ →+* A)
+include F a A φ
+/-- Evaluation of the changed Lubin--Tate polynomial in any compatible
+ambient field is the corresponding distinguished endomorphism. -/
+theorem equalCharacteristicChangedPiPolynomial_eval₂
+      (x : A) :
     Polynomial.eval₂ φ x (equalCharacteristicChangedPiPolynomial F a) =
       equalCharacteristicLubinTateAmbientPiEnd F
         (φ (equalCharacteristicChangedLaurentUniformizer F a)) x := by
@@ -55,11 +58,7 @@ theorem equalCharacteristicChangedPiPolynomial_eval₂
 /-- Evaluation commutes with every compositional iterate of the changed
 Lubin--Tate polynomial. -/
 theorem equalCharacteristicChangedPiPolynomialIterate_eval₂
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (a : F.residueField⟦X⟧ˣ)
-    {A : Type*} [Field A] [CharP A F.residueCharacteristic]
-    (φ : F.residueField⸨X⸩ →+* A) (n : ℕ) (x : A) :
+      (n : ℕ) (x : A) :
     Polynomial.eval₂ φ x
         (equalCharacteristicChangedPiPolynomialIterate F a n) =
       equalCharacteristicLubinTateAmbientPiIterate F
@@ -89,11 +88,7 @@ theorem equalCharacteristicChangedPiPolynomialIterate_eval₂
 /-- The changed primitive polynomial evaluates to the defining primitive
 Lubin--Tate equation in every compatible ambient field. -/
 theorem equalCharacteristicChangedPrimitivePolynomial_eval₂
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (a : F.residueField⟦X⟧ˣ)
-    {A : Type*} [Field A] [CharP A F.residueCharacteristic]
-    (φ : F.residueField⸨X⸩ →+* A) (n : ℕ) (x : A) :
+      (n : ℕ) (x : A) :
     Polynomial.eval₂ φ x
         (equalCharacteristicChangedPrimitivePolynomial F a n) =
       equalCharacteristicLubinTateAmbientPiIterate F
@@ -108,11 +103,7 @@ theorem equalCharacteristicChangedPrimitivePolynomial_eval₂
 /-- A point killed exactly at division level `n + 1` is a root of the changed
 primitive polynomial indexed by `n`. -/
 theorem equalCharacteristicChangedPrimitivePolynomial_isRoot_of_primitive
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (a : F.residueField⟦X⟧ˣ)
-    {A : Type*} [Field A] [CharP A F.residueCharacteristic]
-    (φ : F.residueField⸨X⸩ →+* A) (n : ℕ) (x : A)
+      (n : ℕ) (x : A)
     (htors : IsEqualCharacteristicLubinTateAmbientTorsion F
       (φ (equalCharacteristicChangedLaurentUniformizer F a)) (n + 1) x)
     (hprimitive : ¬ IsEqualCharacteristicLubinTateAmbientTorsion F
@@ -141,6 +132,8 @@ theorem equalCharacteristicChangedPrimitivePolynomial_isRoot_of_primitive
   rw [Polynomial.eval_map,
     equalCharacteristicChangedPrimitivePolynomial_eval₂]
   exact hequation
+end
+
 
 end EqualCharacteristic
 end LubinTate

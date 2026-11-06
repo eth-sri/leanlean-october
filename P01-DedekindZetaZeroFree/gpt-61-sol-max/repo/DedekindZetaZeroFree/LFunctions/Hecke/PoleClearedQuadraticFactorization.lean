@@ -26,14 +26,17 @@ private theorem norm_le_one_of_cube {F : Type} [Field F] [NumberField F]
       rw [← norm_mul, ← pow_two, hsq]; simp
     nlinarith [norm_nonneg (η I)]
 
-private theorem quadratic_idealHeckeL_factorization_aux
-    (F : Type) [Field F] [NumberField F]
+section
+variable (F : Type) [Field F] [NumberField F]
     (hF : NumberField.IsTotallyComplex F)
     (f : Ideal (𝓞 F)) (hf : f ≠ ⊥)
     (η : DedekindZetaZeroFree.RayClassCharacter F f)
     (hq : ∀ I : Ideal (𝓞 F), η I ^ 3 = η I)
     (hn : ¬ η.IsPrincipal) (hp : η.IsPrimitive)
-    (d : QuadraticRayExtensionData η) (s : ℂ) (hs : 1 < s.re) :
+    (d : QuadraticRayExtensionData η)
+include F hF f hf η hq hn hp d in
+private theorem quadratic_idealHeckeL_factorization_aux
+      (s : ℂ) (hs : 1 < s.re) :
     idealHeckeL (principalUnitRayCharacter d.extension) s =
       idealHeckeL (principalUnitRayCharacter F) s * idealHeckeL η s := by
   have hη : ∀ I, ‖η I‖ ≤ 1 := fun I => norm_le_one_of_cube η hq I
@@ -52,14 +55,9 @@ private theorem quadratic_idealHeckeL_factorization_aux
     exact quadratic_local_euler_factors F hF f hf η hq hn hp d p s hs
   exact HasProd.unique hgrouped.2 (hfun.symm ▸ hprod)
 
+include F hF f hf η hq hn hp d in
 private theorem poleCleared_agrees_on_halfplane
-    (F : Type) [Field F] [NumberField F]
-    (hF : NumberField.IsTotallyComplex F)
-    (f : Ideal (𝓞 F)) (hf : f ≠ ⊥)
-    (η : DedekindZetaZeroFree.RayClassCharacter F f)
-    (hq : ∀ I : Ideal (𝓞 F), η I ^ 3 = η I)
-    (hn : ¬ η.IsPrincipal) (hp : η.IsPrimitive)
-    (d : QuadraticRayExtensionData η)
+     
     (pF : PrincipalHeckeWitness (principalUnitRayCharacter F))
     (pE : PrincipalHeckeWitness (principalUnitRayCharacter d.extension))
     (w : EntireHeckeWitness η) :
@@ -107,14 +105,9 @@ private theorem eq_of_agrees_on_halfplane {A B : ℂ → ℂ}
   have hEq := AnalyticOnNhd.eq_of_eventuallyEq hA' hB' hev
   exact fun s => congr_fun hEq s
 
+include F hF f hf η hq hn hp d in
 theorem poleClearedHecke_factorization
-    (F : Type) [Field F] [NumberField F]
-    (hF : NumberField.IsTotallyComplex F)
-    (f : Ideal (𝓞 F)) (hf : f ≠ ⊥)
-    (η : DedekindZetaZeroFree.RayClassCharacter F f)
-    (hq : ∀ I : Ideal (𝓞 F), η I ^ 3 = η I)
-    (hn : ¬ η.IsPrincipal) (hp : η.IsPrimitive)
-    (d : QuadraticRayExtensionData η)
+     
     (pF : PrincipalHeckeWitness (principalUnitRayCharacter F))
     (pE : PrincipalHeckeWitness (principalUnitRayCharacter d.extension))
     (w : EntireHeckeWitness η) :
@@ -144,6 +137,8 @@ theorem poleClearedHecke_factorization
   have hU_F := pF.poleClearing s hs0 hs1
   rw [hU_E, hU_F, hE, hFb, hW, hzeta, hscale]
   ring
+end
+
 
 end
 

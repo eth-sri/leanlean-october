@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Mellin.OriginContinuationCharts
 
 @[expose] public section
+
 
 noncomputable section
 open Filter
@@ -10,7 +13,7 @@ open scoped NumberField Classical ContDiff Topology
 
 namespace DedekindZetaZeroFree.LargeSieve.Vendor
 
-def originMellinShift (s : ℂ) : ℕ :=
+def originMellinShift (s : ℂ)  :=
   Nat.ceil (max 0 (-s.re)) + 1
 
 theorem originMellinShift_spec (s : ℂ) :
@@ -22,21 +25,19 @@ theorem originMellinShift_spec (s : ℂ) :
   have hmax : -s.re ≤ max 0 (-s.re) := le_max_right _ _
   linarith
 
-def originMellinQ (h : ℝ → ℂ) (s : ℂ) : ℂ :=
+def originMellinQ (h : ℝ → ℂ) (s : ℂ)  :=
   originMellinChart h (originMellinShift s) s
 
-private theorem originMellinChart_eq_of_lt (h : ℝ → ℂ)
-    (hh : ContDiff ℝ ∞ h) (hc : HasCompactSupport h) {m n : ℕ} {s : ℂ}
+section
+variable (h : ℝ → ℂ)
+    (hh : ContDiff ℝ ∞ h) (hc : HasCompactSupport h)
+include h hh hc
+private theorem originMellinChart_eq_of_lt   {m n : ℕ} {s : ℂ}
     (hm : -(m : ℝ) < s.re) (hn : -(n : ℝ) < s.re) :
     originMellinChart h m s = originMellinChart h n s := by
   suffices key : ∀ n m : ℕ, m ≤ n → -(m : ℝ) < s.re → -(n : ℝ) < s.re →
       originMellinChart h n s = originMellinChart h m s by
-    have hk1 : m ≤ max m n := le_max_left _ _
-    have hk2 : n ≤ max m n := le_max_right _ _
-    have hmk : -((max m n : ℕ) : ℝ) < s.re := by
-      have : ((m : ℕ) : ℝ) ≤ ((max m n : ℕ) : ℝ) := by exact_mod_cast hk1
-      linarith
-    exact (key (max m n) m hk1 hm hmk).symm.trans (key (max m n) n hk2 hn hmk)
+    grind
   intro n
   induction n with
   | zero =>
@@ -46,20 +47,18 @@ private theorem originMellinChart_eq_of_lt (h : ℝ → ℂ)
       intro m hm hms hns
       rcases Nat.eq_or_lt_of_le hm with rfl | hlt
       · rfl
-      · have hmn : m ≤ n := Nat.lt_succ_iff.mp hlt
+      · have hmn  := Nat.lt_succ_iff.mp hlt
         have hn' : -(n : ℝ) < s.re := by
-          have : ((m : ℕ) : ℝ) ≤ ((n : ℕ) : ℝ) := by exact_mod_cast hmn
+          have : (m : ℝ) ≤ (n : ℝ) := by exact_mod_cast hmn
           linarith
         rw [originMellinChart_succ h hh hc n s hn']
-        exact ih m hmn hms hn'
+        apply ih <;> assumption
 
-theorem originMellinQ_differentiable (h : ℝ → ℂ)
-    (hh : ContDiff ℝ ∞ h) (hc : HasCompactSupport h) :
+theorem originMellinQ_differentiable   :
     Differentiable ℂ (originMellinQ h) := by
   intro s
-  have hn : -((originMellinShift s : ℕ) : ℝ) < s.re := originMellinShift_spec s
-  have hchart : DifferentiableAt ℂ
-      (originMellinChart h (originMellinShift s)) s :=
+  have hn  := originMellinShift_spec s
+  have hchart  :=
     originMellinChart_differentiableAt h hh hc (originMellinShift s) s hn
   refine hchart.congr_of_eventuallyEq ?_
   have hmem : {z : ℂ | -((originMellinShift s : ℕ) : ℝ) < z.re} ∈ 𝓝 s :=
@@ -67,17 +66,16 @@ theorem originMellinQ_differentiable (h : ℝ → ℂ)
   filter_upwards [hmem] with z hz
   exact originMellinChart_eq_of_lt h hh hc (originMellinShift_spec z) hz
 
-theorem originMellinQ_eq_chart (h : ℝ → ℂ)
-    (hh : ContDiff ℝ ∞ h) (hc : HasCompactSupport h) (n : ℕ) (s : ℂ)
+theorem originMellinQ_eq_chart   (n : ℕ) (s : ℂ)
     (hs : -(n : ℝ) < s.re) :
-    originMellinQ h s = originMellinChart h n s := by
-  exact originMellinChart_eq_of_lt h hh hc (originMellinShift_spec s) hs
+    originMellinQ h s = originMellinChart h n s := originMellinChart_eq_of_lt h hh hc (originMellinShift_spec s) hs
 
-theorem originMellinQ_eq_mellin_div_Gammaℂ (h : ℝ → ℂ)
-    (hh : ContDiff ℝ ∞ h) (hc : HasCompactSupport h) (s : ℂ) (hs : 0 < s.re) :
+theorem originMellinQ_eq_mellin_div_Gammaℂ   (s : ℂ) (hs : 0 < s.re) :
     originMellinQ h s = mellin h s / Complex.Gammaℂ s := by
   rw [originMellinQ_eq_chart h hh hc 0 s (by simpa using hs)]
   simp [originMellinChart, div_eq_mul_inv]
+end
+
 
 end DedekindZetaZeroFree.LargeSieve.Vendor
 

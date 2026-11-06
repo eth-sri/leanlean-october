@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Topology
 public import Mathlib.LinearAlgebra.FreeModule.IdealQuotient
 public import Mathlib.Topology.Algebra.Valued.LocallyCompact
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -41,7 +44,7 @@ theorem exists_ringOfIntegers_approximation
     (v : HeightOneSpectrum (𝓞 K)) (y : K)
     (hy : v.valuation K y ≤ 1) :
     ∃ r : 𝓞 K, v.valuation K (y - algebraMap (𝓞 K) K r) < 1 := by
-  let : Field (𝓞 K ⧸ v.asIdeal) := Ideal.Quotient.field v.asIdeal
+  let  := Ideal.Quotient.field v.asIdeal
   have hy' : y ∈ v.valuationSubringAtPrime K := by
     rw [v.valuationSubringAtPrime_eq_valuationSubring]
     exact hy
@@ -62,12 +65,10 @@ theorem exists_ringOfIntegers_approximation
   have hvalard :
       v.valuation K (algebraMap (𝓞 K) K (a - r * d.1)) < 1 :=
     (v.valuation_lt_one_iff_mem (K := K) (a - r * d.1)).2 hard
-  have hdval : v.valuation K (algebraMap (𝓞 K) K d.1) = 1 := by
-    exact le_antisymm (v.valuation_le_one d.1)
+  have hdval : v.valuation K (algebraMap (𝓞 K) K d.1) = 1 := le_antisymm (v.valuation_le_one d.1)
       (not_lt.mp ((v.valuation_lt_one_iff_mem (K := K) d.1).not.mpr hd))
   have hadK :
-      y * algebraMap (𝓞 K) K d.1 = algebraMap (𝓞 K) K a := by
-    exact congrArg Subtype.val had
+      y * algebraMap (𝓞 K) K d.1 = algebraMap (𝓞 K) K a := congrArg Subtype.val had
   rw [← mul_lt_mul_iff_right₀ (show
     0 < v.valuation K (algebraMap (𝓞 K) K d.1) by simp [hdval])]
   rw [← map_mul, mul_sub, mul_comm _ y, hadK, mul_comm _ (algebraMap (𝓞 K) K r),
@@ -148,7 +149,7 @@ noncomputable def ringOfIntegersQuotientEquivAdicResidueField
           (algebraMap (𝓞 K) K r) from
       HeightOneSpectrum.valuedAdicCompletion_eq_valuation
         (v := v) r]
-    exact v.valuation_lt_one_iff_mem (K := K) r
+    apply v.valuation_lt_one_iff_mem
   have hsur : Function.Surjective residueMap := by
     intro z
     obtain ⟨x, hx⟩ :=
@@ -254,7 +255,7 @@ finite. -/
 theorem finite_adicCompletion_residueField
     (v : HeightOneSpectrum (𝓞 K)) :
     Finite (Valued.ResidueField (v.adicCompletion K)) := by
-  let : Finite (𝓞 K ⧸ v.asIdeal) :=
+  let  :=
     Ideal.finiteQuotientOfFreeOfNeBot v.asIdeal v.ne_bot
   exact Finite.of_equiv (𝓞 K ⧸ v.asIdeal)
     (GlobalClassFieldTheory.ClassFieldAxiom.ringOfIntegersQuotientEquivAdicResidueField
@@ -284,22 +285,22 @@ theorem isCompact_finiteLocalUnits
   exact isCompact_iff_compactSpace.mpr
     (Valued.integer.properSpace_iff_compactSpace_integer.mp inferInstance)
 
-/-- The correctly topologized finite idele group is locally compact. -/
-instance finiteIdeleGroupLocallyCompactSpace :
-    LocallyCompactSpace (FiniteIdeleGroup K) := by
-  apply RestrictedProduct.locallyCompactSpace_of_group
-    (fun v : HeightOneSpectrum (𝓞 K) ↦ (v.adicCompletion K)ˣ)
-  exact Filter.Eventually.of_forall (isCompact_finiteLocalUnits K)
 
-/-- The archimedean factor of the idele group is locally compact. -/
-instance infiniteIdeleGroupLocallyCompactSpace :
-    LocallyCompactSpace (InfiniteIdeleGroup K) :=
-  inferInstance
 
-/-- The idele group, with its restricted-product topology, is
-locally compact. -/
-instance ideleGroupLocallyCompactSpace :
-    LocallyCompactSpace (IdeleGroup K) :=
-  inferInstance
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end

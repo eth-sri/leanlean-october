@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.CoreGcdRestriction
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.WeightedIdealSectorGcdBound
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.ShellUnitEnvelopeComparison
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.DivisorIncidenceEnergy
 
 @[expose] public section
+
 
 noncomputable section
 namespace DedekindZetaZeroFree.LargeSieve.Sieve.GcdReduction
@@ -26,16 +29,16 @@ theorem core_coefficient_estimate
               (B2env F c Q W M (N / H) K + M +
                 ∑ d ∈ (DedekindZetaZeroFree.LargeSieve.boundedNormIdeals F H).filter (fun d => d ≠ ⊥),
                   B3 F c Q W M N K d)) * energy F c N lam := by
-  letI : Finite Q.G := Q.instFinite
-  letI : Fintype Q.G := Fintype.ofFinite Q.G
+  letI  := Q.instFinite
+  letI  := Fintype.ofFinite Q.G
   let ε := δ / 2
   have hε : 0 < ε := by dsimp [ε]; linarith
   obtain ⟨A, hA, ha⟩ := DedekindZetaZeroFree.LargeSieve.bilinear_gcd_tail F c Q W hW c hc (dvd_refl c)
     (CoreCoefficient.gcdPairTransport hGood hc) ε hε
   obtain ⟨D, hD, hd⟩ := CoreCoefficient.divisor_incidence_sum F ε hε
   obtain ⟨U, hU, hu⟩ := CoreCoefficient.envelope_comparison F c Q W hW
-  let J : ℝ := 1 + A * D * (1 + U)
-  have hJ : 0 ≤ J := by dsimp [J]; positivity
+  let J  := 1 + A * D * (1 + U)
+  
   refine ⟨(Fintype.card Q.G : ℝ) ^ 2 * J, by positivity, ?_⟩
   intro M N K H hM hN hK hH hHN lam
   have hM0 : 0 ≤ M := by linarith
@@ -46,7 +49,7 @@ theorem core_coefficient_estimate
   let pool := (DedekindZetaZeroFree.LargeSieve.boundedNormIdeals F (2 * N)).filter (fun d => d ≠ ⊥)
   let small := pool.filter (fun d => (Ideal.absNorm d : ℝ) ≤ H)
   let large := pool.filter (fun d => ¬ (Ideal.absNorm d : ℝ) ≤ H)
-  let S : ℝ := ∑ d ∈ (DedekindZetaZeroFree.LargeSieve.boundedNormIdeals F H).filter (fun d => d ≠ ⊥),
+  let S  := ∑ d ∈ (DedekindZetaZeroFree.LargeSieve.boundedNormIdeals F H).filter (fun d => d ≠ ⊥),
     B3 F c Q W M N K d
   let B := B2env F c Q W M (N / H) K
   let E := energy F c N lam
@@ -58,18 +61,17 @@ theorem core_coefficient_estimate
   have hp : ∀ b1 ∈ paperShell F c N, ∀ b2 ∈ paperShell F c N, b1 ⊔ b2 ∈ pool := by
     intro b1 hb1 b2 hb2
     have hb := (mem_paperShell F c N b1).mp hb1
-    have hb0 : b1 ≠ ⊥ := by simpa [Ideal.zero_eq_bot] using hb.1.ne_zero
+    have hb0 : b1 ≠ ⊥ := hb.1.ne_zero
     have hp0 : b1 ⊔ b2 ≠ ⊥ := fun h => hb0 (le_bot_iff.mp (h ▸ le_sup_left))
     have hn : Ideal.absNorm (b1 ⊔ b2) ≤ Ideal.absNorm b1 :=
       Nat.le_of_dvd (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hb0))
         (Ideal.absNorm_dvd_absNorm_of_le le_sup_left)
     exact Finset.mem_filter.mpr ⟨DedekindZetaZeroFree.LargeSieve.mem_boundedNormIdeals.mpr
       ((Nat.cast_le.mpr hn).trans hb.2.2.2), hp0⟩
-  let lam' : Ideal (𝓞 F) → ℂ := fun b => if b ∈ paperShell F c N then lam b else 0
+  let lam'  := fun b => if b ∈ paperShell F c N then lam b else 0
   have hlam : ∀ b ∈ paperShell F c N, lam' b = lam b := by
     intro b hb; exact if_pos hb
-  have henergy : energy F c N lam' = E := by
-    unfold energy; exact Finset.sum_congr rfl fun b hb => by rw [hlam b hb]
+  
   have htailenergy : ∀ d, gcdTailEnergy F c N d lam' = gcdTailEnergy F c N d lam := by
     intro d; unfold gcdTailEnergy
     exact Finset.sum_congr rfl fun b hb => by rw [hlam b hb]
@@ -109,7 +111,7 @@ theorem core_coefficient_estimate
           obtain ⟨hdp, hdH⟩ := Finset.mem_filter.mp hds
           exact Finset.mem_filter.mpr ⟨DedekindZetaZeroFree.LargeSieve.mem_boundedNormIdeals.mpr hdH,
             (Finset.mem_filter.mp hdp).2⟩
-        · intro d _ _; exact B3_nonneg Q W M N K d
+        · intro d _ _; apply B3_nonneg
   have hlargeSum : ∀ g, (∑ d ∈ large, ‖T3 F c Q W M N K d g lam‖) ≤
       A * D * Real.rpow N δ * (B + U * M) * E := by
     intro g

@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.LocalField.NonarchimedeanLocalField.FiniteExtensionCompleteDVF
 public import ValuedFieldTheory.Ramification.HilbertRamification.InertiaRamificationCard
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -53,7 +56,7 @@ theorem chosenLocalExtension_inertia_card_eq_ramificationIndex
     chosenLocalExtensionCompleteDVF_hasExtension K L
   let : Module.Finite base.valuationSubring target.valuationSubring :=
     moduleFinite_target_valuationSubring_of_finite_separable base target
-  let : FiniteDimensional base.residueField target.residueField :=
+  let  :=
     residueField_finiteDimensional_of_moduleFinite base target
   let : Finite base.residueField := by
     change Finite 𝓀[K]

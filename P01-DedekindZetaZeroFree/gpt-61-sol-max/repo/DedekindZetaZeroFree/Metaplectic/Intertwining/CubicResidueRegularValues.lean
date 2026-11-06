@@ -330,29 +330,32 @@ set_option synthInstance.maxHeartbeats 100000
 set_option backward.isDefEq.respectTransparency false
 set_option linter.style.haveILetI false
 
- abbrev CubicResidueDenominatorRegular {F : Type*} [Field F] (u : F) (r : RatFunc F) : Prop :=
+ section
+variable {F : Type*} [Field F]
+include F
+abbrev CubicResidueDenominatorRegular   (u : F) (r : RatFunc F) : Prop :=
   r.denom.eval u ≠ 0
 
-private lemma cubicResidueDenominatorRegular_constant {F : Type*} [Field F] (u c : F) : CubicResidueDenominatorRegular u (RatFunc.C c) := by
+private lemma cubicResidueDenominatorRegular_constant   (u c : F) : CubicResidueDenominatorRegular u (RatFunc.C c) := by
   simp [CubicResidueDenominatorRegular]
-private lemma cubicResidueDenominatorRegular_indeterminate {F : Type*} [Field F] (u : F) : CubicResidueDenominatorRegular u (RatFunc.X : RatFunc F) := by
+private lemma cubicResidueDenominatorRegular_indeterminate   (u : F) : CubicResidueDenominatorRegular u (RatFunc.X : RatFunc F) := by
   simp [CubicResidueDenominatorRegular]
-private lemma cubicResidueDenominatorRegular_add {F : Type*} [Field F] {u : F} {r s : RatFunc F}
+private lemma cubicResidueDenominatorRegular_add   {u : F} {r s : RatFunc F}
     (hr : CubicResidueDenominatorRegular u r) (hs : CubicResidueDenominatorRegular u s) : CubicResidueDenominatorRegular u (r+s) := by
   exact fun h => (mul_ne_zero hr hs) (by
     simpa using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_add_dvd r s) h)
-private lemma cubicResidueDenominatorRegular_mul {F : Type*} [Field F] {u : F} {r s : RatFunc F}
+private lemma cubicResidueDenominatorRegular_mul   {u : F} {r s : RatFunc F}
     (hr : CubicResidueDenominatorRegular u r) (hs : CubicResidueDenominatorRegular u s) : CubicResidueDenominatorRegular u (r*s) := by
   exact fun h => (mul_ne_zero hr hs) (by
     simpa using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_mul_dvd r s) h)
-private lemma cubicResidueDenominatorRegular_inv_of_value_ne_zero {F : Type*} [Field F] {u : F} {r : RatFunc F}
+private lemma cubicResidueDenominatorRegular_inv_of_value_ne_zero   {u : F} {r : RatFunc F}
     (_hr : CubicResidueDenominatorRegular u r) (hv : RatFunc.eval (RingHom.id F) u r ≠ 0) : CubicResidueDenominatorRegular u r⁻¹ := by
   have hr0 : r ≠ 0 := by intro h; simp [h] at hv
   intro h
   have hn := Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_inv_dvd hr0) h
   apply hv
   simp [RatFunc.eval, hn]
-private lemma cubicResidue_eval_inv_of_regular_nonzero {F : Type*} [Field F] {u : F} {r : RatFunc F}
+private lemma cubicResidue_eval_inv_of_regular_nonzero   {u : F} {r : RatFunc F}
     (hr : CubicResidueDenominatorRegular u r) (hv : RatFunc.eval (RingHom.id F) u r ≠ 0) :
     RatFunc.eval (RingHom.id F) u r⁻¹ = (RatFunc.eval (RingHom.id F) u r)⁻¹ := by
   have hr0 : r ≠ 0 := by intro h; simp [h] at hv
@@ -360,8 +363,10 @@ private lemma cubicResidue_eval_inv_of_regular_nonzero {F : Type*} [Field F] {u 
   rw [mul_inv_cancel₀ hr0, RatFunc.eval_one] at hm
   exact eq_inv_of_mul_eq_one_right hm.symm
 
- abbrev cubicResidue_regularityAtValue {F : Type*} [Field F] (u : F) (r : RatFunc F) (v : F) : Prop :=
+ abbrev cubicResidue_regularityAtValue   (u : F) (r : RatFunc F) (v : F) : Prop :=
   CubicResidueDenominatorRegular u r ∧ RatFunc.eval (RingHom.id F) u r = v
+end
+
 private lemma cubicResidue_regularityAtValue.constant {F : Type*} [Field F] (u v : F) : cubicResidue_regularityAtValue u (RatFunc.C v) v :=
   ⟨cubicResidueDenominatorRegular_constant u v, by simp⟩
 private lemma cubicResidue_regularityAtValue.indeterminate {F : Type*} [Field F] (u : F) : cubicResidue_regularityAtValue u RatFunc.X u :=

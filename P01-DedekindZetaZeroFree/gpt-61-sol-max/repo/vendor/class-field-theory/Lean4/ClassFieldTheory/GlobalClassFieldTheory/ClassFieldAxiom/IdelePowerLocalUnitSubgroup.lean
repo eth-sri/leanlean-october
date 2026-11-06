@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Principal
 public import ClassFieldTheory.KummerTheory.Concrete.SUnitPreparation.SUnitPowerQuotient
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -34,12 +37,14 @@ namespace GlobalClassFieldTheory.ClassFieldAxiom
 
 variable {K : Type*} [Field K] [NumberField K]
 
+section
+variable (n : ℕ+)
+    (S T : Finset (HeightOneSpectrum (𝓞 K)))
+include n S T
 /-- Ideles that are local `n`-th powers at the prescribed places and
 integral units away from `S ∪ T`. -/
 def idelePowerLocalUnitSubgroup
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K))) :
-    Subgroup (IdeleGroup K) :=
+       :=
   (⨅ w : InfinitePlace K,
       ((powMonoidHom (n : ℕ) :
         w.Completionˣ →* w.Completionˣ).range).comap
@@ -57,8 +62,7 @@ def idelePowerLocalUnitSubgroup
 
 /-- Membership in `idelePowerLocalUnitSubgroup` expressed componentwise. -/
 theorem mem_idelePowerLocalUnitSubgroup_iff
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K)))
+     
     (a : IdeleGroup K) :
     a ∈ idelePowerLocalUnitSubgroup (K := K) n S T ↔
       (∀ w : InfinitePlace K,
@@ -79,17 +83,16 @@ theorem mem_idelePowerLocalUnitSubgroup_iff
 /-- Field units whose principal ideles lie in the local power-unit
 subgroup. -/
 def principalIdelePowerLocalUnitSubgroup
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K))) :
-    Subgroup Kˣ :=
+       :=
   (idelePowerLocalUnitSubgroup (K := K) n S T).comap
     (IdeleGroup.principalIdele K)
+end
+
 
 /-- The subgroup of field units obtained as `n`-th powers of `U`-units. -/
 def sUnitNthPowersInField
     (n : ℕ+)
-    (U : Finset (HeightOneSpectrum (𝓞 K))) :
-    Subgroup Kˣ :=
+    (U : Finset (HeightOneSpectrum (𝓞 K)))  :=
   ((powMonoidHom (n : ℕ) :
       SUnitGroup (K := K) U →*
         SUnitGroup (K := K) U).range).map
@@ -124,14 +127,14 @@ theorem mem_sUnitNthPowersInField_iff
         (G := Kˣ)).mp hxPow
     rw [powMonoidHom_apply] at hz
     subst x
-    have hzU : z ∈ SUnitGroup (K := K) U :=
+    have hzU  :=
       mem_sUnitGroup_of_pow_mem (K := K) U n z hxU
     let zU : SUnitGroup (K := K) U := ⟨z, hzU⟩
     refine ⟨zU ^ (n : ℕ), ?_, ?_⟩
     · exact
         (MonoidHom.mem_range
           (G := SUnitGroup (K := K) U)).mpr
-          ⟨zU, by rw [powMonoidHom_apply]⟩
+          ⟨zU, rfl⟩
     · simp [zU]
 
 /-- An `n`-th power of an `(S ∪ T)`-unit satisfies all local
@@ -177,8 +180,7 @@ theorem sUnitNthPowersInField_le_principalIdelePowerLocalUnitSubgroup
       rfl
     rw [hxcoe]
   · intro v hv
-    have hxUnit :
-        v.valuation K ((x : Kˣ) : K) = 1 :=
+    have hxUnit  :=
       (mem_SUnitGroup_iff (K := K) (S ∪ T) x).mp x.2 v hv
     rw [HeightOneSpectrum.adicCompletionIntegers.mem_units_iff_valued_eq_one]
     rw [IdeleGroup.finiteComponent_principalIdele,

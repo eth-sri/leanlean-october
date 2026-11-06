@@ -18,24 +18,29 @@ set_option maxHeartbeats 800000
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-def weightedChartIntegrand (C : ModelData F ζ hζ) (s : ℂ)
+section
+variable (C : ModelData F ζ hζ) (s : ℂ)
     (r : KPGlobalTorusPeriodizationInverse.AveragingRepresentatives F ζ hζ C)
     (f : InducedFunctions F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s))
     (g : G F ζ hζ) (z : GroupArch F)
+include C s r f g z
+def weightedChartIntegrand  
     (x : KPGlobalTorusPeriodizationInverse.CompactIndex F ζ hζ C) : ℂ :=
   (((twist F ζ hζ (productModel F ζ hζ C) s).character (r.lift x))⁻¹ : ℂˣ) *
     (f.val (groupArchChart F ζ hζ z * g)).val.val (r.lift x).val
 
-theorem weightedChartIntegrand_eq (C : ModelData F ζ hζ) (s : ℂ)
-    (r : KPGlobalTorusPeriodizationInverse.AveragingRepresentatives F ζ hζ C)
-    (f : InducedFunctions F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s))
-    (g : G F ζ hζ) (z : GroupArch F) :
+theorem weightedChartIntegrand_eq   :
     weightedChartIntegrand F ζ hζ C s r f g z =
       twistedIntegrand F ζ hζ C s r (f.val (groupArchChart F ζ hζ z * g)) 1 := by
   funext x
   simp [weightedChartIntegrand, twistedIntegrand]
+end
 
-theorem weightedChartIntegrand_independent (C : ModelData F ζ hζ) (s : ℂ)
+
+section
+variable (C : ModelData F ζ hζ)
+include C
+theorem weightedChartIntegrand_independent   (s : ℂ)
     (r r' : KPGlobalTorusPeriodizationInverse.AveragingRepresentatives F ζ hζ C)
     (f : InducedFunctions F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s))
     (g : G F ζ hζ) (z : GroupArch F) :
@@ -44,7 +49,7 @@ theorem weightedChartIntegrand_independent (C : ModelData F ζ hζ) (s : ℂ)
   rw [weightedChartIntegrand_eq, weightedChartIntegrand_eq]
   exact twistedIntegrand_independent F ζ hζ C s r r' _ 1
 
-theorem weightedChart_integral_eq (C : ModelData F ζ hζ) (s : ℂ)
+theorem weightedChart_integral_eq   (s : ℂ)
     (r : KPGlobalTorusPeriodizationInverse.AveragingRepresentatives F ζ hζ C)
     (f : InducedFunctions F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s))
     (g : G F ζ hζ) (z : GroupArch F) :
@@ -53,20 +58,22 @@ theorem weightedChart_integral_eq (C : ModelData F ζ hζ) (s : ℂ)
       (twistedQ F ζ hζ C s (f.val (groupArchChart F ζ hζ z * g))).val.val 1 := by
   rw [weightedChartIntegrand_eq, twistedQ_formula F ζ hζ C s r]
 
- abbrev FinB (C : ModelData F ζ hζ) :=
+ abbrev FinB   :=
   (finiteTorusClassProjection F ζ hζ) ⁻¹' (KPGlobalTorusPeriodizationInverse.M F ζ hζ C : Set _)
- def finBRep (C : ModelData F ζ hζ) (b : FinB F ζ hζ C) :
+ def finBRep   (b : FinB F ζ hζ C) :
     KPGlobalTorusPeriodizationInverse.B F ζ hζ C := ⟨b.val.val, b.property⟩
- def finBClass (C : ModelData F ζ hζ) (b : FinB F ζ hζ C) :
+ def finBClass   (b : FinB F ζ hζ C) :
     KPGlobalTorusPeriodizationInverse.CompactIndex F ζ hζ C :=
   KPGlobalTorusPeriodizationInverse.averagingClass F ζ hζ C (finBRep F ζ hζ C b)
-private theorem finBClass_openQuotient (C : ModelData F ζ hζ) :
+private theorem finBClass_openQuotient   :
     IsOpenQuotientMap (finBClass F ζ hζ C) := by
   have hs := finiteTorusClassProjection_surjective F ζ hζ
   have hq : IsOpenQuotientMap (finiteTorusClassProjection F ζ hζ) :=
     ⟨hs, finiteTorusClassProjection_continuous F ζ hζ,
       finiteTorusClassProjection_open_of_surjective F ζ hζ hs⟩
   exact QuotientGroup.isOpenQuotientMap_mk.comp (hq.restrictPreimage _)
+end
+
 private theorem finite_commutes (a : G F ζ hζ)
     (ha : a ∈ KPGlobalTorusFunctionData.finitePart F ζ hζ) (z : GroupArch F) :
     Commute (groupArchChart F ζ hζ z) a := by
@@ -175,10 +182,13 @@ private theorem coef_continuous (C : ModelData F ζ hζ) (s : ℂ) :
     exact_mod_cast (ne_of_gt (Real.sqrt_pos.2
       (NNReal.coe_pos.2 (pos_iff_ne_zero.2
         (Units.ne_zero (KPGlobalTorusFunctionData.delta F ζ hζ b.val.val))))))
-private theorem source_locally_constant (C : ModelData F ζ hζ) (s : ℂ)
+section
+variable (C : ModelData F ζ hζ) (s : ℂ)
     (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
     (f : InducedFunctions F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s))
     (hf : f ∈ InducedLevel F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s) J)
+include C s J f hf
+private theorem source_locally_constant  
     (g : G F ζ hζ) (b : FinB F ζ hζ C) :
     ∀ᶠ b' in 𝓝 b, ∀ y : GroupArch F,
       (f.val (groupArchChart F ζ hζ y * (b'.val.val.val * g))).val.val 1 =
@@ -219,10 +229,7 @@ private theorem source_locally_constant (C : ModelData F ζ hζ) (s : ℂ)
     group
   rw [hm, hf.2 _ j]
 
-theorem weightedChart_local_extension (C : ModelData F ζ hζ) (s : ℂ)
-    (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
-    (f : InducedFunctions F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s))
-    (hf : f ∈ InducedLevel F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s) J)
+theorem weightedChart_local_extension  
     (r : KPGlobalTorusPeriodizationInverse.AveragingRepresentatives F ζ hζ C)
     (g : G F ζ hζ) (z : GroupArch F) (hz : z ∈ groupArchDomain F) :
     ∃ U : Set (GroupArch F), IsOpen U ∧ z ∈ U ∧ U ⊆ groupArchDomain F ∧
@@ -278,6 +285,8 @@ theorem weightedChart_local_extension (C : ModelData F ζ hζ) (s : ℂ)
   · intro y hy x
     have he := η.one_of_mem_closedBall (Metric.ball_subset_closedBall hy)
     simp only [A, he, one_smul]
+end
+
 
 end
 end DedekindZetaZeroFree.TorusChartTransport

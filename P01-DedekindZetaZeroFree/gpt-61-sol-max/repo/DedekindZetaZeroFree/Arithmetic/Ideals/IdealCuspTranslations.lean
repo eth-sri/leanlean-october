@@ -259,9 +259,12 @@ private theorem conjugated_membership (Γ : Subgroup (KPCuspArithmetic.PGL2 F))
     rw [mul_smul, mul_smul, ← hσ, inv_smul_smul, unipotent_fixes]
   exact and_iff_left hf
  def rootMatrix : Matrix (Fin 2) (Fin 2) F := !![0, 1; 0, 0]
- def coefficient (B : Matrix.GeneralLinearGroup (Fin 2) F) : Matrix (Fin 2) (Fin 2) F :=
+ section
+variable (B : Matrix.GeneralLinearGroup (Fin 2) F)
+include B
+def coefficient   : Matrix (Fin 2) (Fin 2) F :=
   (B : Matrix (Fin 2) (Fin 2) F) * rootMatrix F * (↑(B⁻¹) : Matrix (Fin 2) (Fin 2) F)
-private theorem coefficient_ne (B : Matrix.GeneralLinearGroup (Fin 2) F) : coefficient F B ≠ 0 := by
+private theorem coefficient_ne   : coefficient F B ≠ 0 := by
   intro h
   have he := congrArg (fun M : Matrix (Fin 2) (Fin 2) F =>
     (↑(B⁻¹) : Matrix (Fin 2) (Fin 2) F) * M * (↑B : Matrix (Fin 2) (Fin 2) F)) h
@@ -273,7 +276,7 @@ private theorem coefficient_ne (B : Matrix.GeneralLinearGroup (Fin 2) F) : coeff
   rw [Matrix.mul_assoc, hb, Matrix.mul_one] at he
   have := congrArg (fun M : Matrix (Fin 2) (Fin 2) F => M 0 1) he
   simpa [rootMatrix] using this
-private theorem conjugate_formula (B : Matrix.GeneralLinearGroup (Fin 2) F) (x : F) :
+private theorem conjugate_formula   (x : F) :
     (↑(B * unipotent F x * B⁻¹) : Matrix (Fin 2) (Fin 2) F) =
       1 + x • coefficient F B := by
   have hn : (↑(unipotent F x) : Matrix (Fin 2) (Fin 2) F) = 1 + x • rootMatrix F := by
@@ -281,6 +284,8 @@ private theorem conjugate_formula (B : Matrix.GeneralLinearGroup (Fin 2) F) (x :
     fin_cases i <;> fin_cases j <;> simp [unipotent, rootMatrix]
   rw [Units.val_mul, Units.val_mul, hn, Matrix.mul_add, Matrix.add_mul]
   simp [coefficient, Matrix.mul_smul, Matrix.smul_mul]
+end
+
 private theorem one_add_mem (z : F) : 1 + z ∈ (1 : FI) ↔ z ∈ (1 : FI) := by
   constructor
   · intro h

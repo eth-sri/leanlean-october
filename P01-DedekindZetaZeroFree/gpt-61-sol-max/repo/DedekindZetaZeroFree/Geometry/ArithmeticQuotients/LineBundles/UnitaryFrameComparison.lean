@@ -14,9 +14,12 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 variable (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
 variable (U : CompactOpenLevel (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
 
-private theorem chart_component_eq (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+section
+variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (C : FiniteCutoffs F ζ hζ hF U A K) (i : Fin C.count) :
+    (C : FiniteCutoffs F ζ hζ hF U A K)
+include A M K C in
+private theorem chart_component_eq   (i : Fin C.count) :
     ∀ x : E (C.chart i).n,
       M.component ((C.chart i).toBase F ζ hζ hF U x) = (C.chart i).component := by
   intro x
@@ -33,9 +36,8 @@ private theorem chart_component_eq (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
   have := A.components.injective (h1.trans h2.symm)
   exact congrArg Sigma.fst this
 
-private theorem phase_value (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (C : FiniteCutoffs F ζ hζ hF U A K) (i : Fin C.count) (x : E (C.chart i).n)
+include A M K C in
+private theorem phase_value   (i : Fin C.count) (x : E (C.chart i).n)
     (s : KPFiniteCuspAtlas.genuineScalars F ζ hζ U)
     (γ : KPCuspArithmetic.PGL2 F) (ε : rootsOfUnity 3 F) (u : U.toOpenSubgroup)
     (h1 : M.lift ((C.chart i).toBase F ζ hζ hF U x) = γ • (C.chart i).coordinates x)
@@ -74,9 +76,8 @@ private theorem phase_value (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
   rw [hsec, h1, key, ← mul_assoc,
     inv_mul_cancel₀ (Units.ne_zero ((KPCuspGenuineMonodromy.chi F ζ hζ) ε)), one_mul]
 
-private theorem transition_exists (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (C : FiniteCutoffs F ζ hζ hF U A K) (i : Fin C.count) (x : E (C.chart i).n) :
+include A M K C in
+private theorem transition_exists   (i : Fin C.count) (x : E (C.chart i).n) :
     ∃ γ : KPCuspGenuineMonodromy.Component F ζ hζ U
       (A.representative (C.chart i).component),
       (γ : KPCuspArithmetic.PGL2 F) • (C.chart i).coordinates x =
@@ -119,9 +120,8 @@ private theorem arithmetic_smul_continuous (γ : KPCuspArithmetic.PGL2 F) :
   simp only [KPCuspSiegel.action_mk]
   exact (KPArch.productAction_contDiff _ _).continuous
 
-private theorem measurable_transition (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (C : FiniteCutoffs F ζ hζ hF U A K) (i : Fin C.count) :
+include A M K C in
+private theorem measurable_transition   (i : Fin C.count) :
     ∃ γ : E (C.chart i).n → KPCuspGenuineMonodromy.Component F ζ hζ U
         (A.representative (C.chart i).component),
       (∀ f : KPCuspGenuineMonodromy.Component F ζ hζ U
@@ -178,9 +178,8 @@ private theorem measurable_transition (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U
     rw [dif_pos hx]
     exact Nat.find_spec (hp ⟨x, hx⟩)
 
-theorem frame_comparison (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (C : FiniteCutoffs F ζ hζ hF U A K) :
+include A M K C in
+theorem frame_comparison   :
     Nonempty (FrameComparison F ζ hζ hF U A M C) := by
   choose γ hmeas hγ using measurable_transition F ζ hζ hF U A M C
   let phase : ∀ i, E (C.chart i).n → ℂˣ := fun i x =>
@@ -257,6 +256,8 @@ theorem frame_comparison (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
   · intro i
     filter_upwards [ae_restrict_mem Metric.isOpen_ball.measurableSet] with x hx
     exact hframe i x ((C.chart i).closed_ball_in_extension (subset_closure hx))
+end
+
 
 end DedekindZetaZeroFree.CoreChartLocalizers
 

@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import Mathlib.FieldTheory.Galois.Basic
 public import Mathlib.FieldTheory.PrimitiveElement
 public import ClassFieldTheory.LocalClassFieldTheory.Finite.LocalReciprocity.AbstractFixedFieldUnits
 public import ClassFieldTheory.LocalClassFieldTheory.Finite.LocalReciprocity.SeparableNormProduct
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -71,7 +74,7 @@ def abstractFixedFieldCosetToAlgHom
         simp [η]
       apply AlgHom.ext
       intro x
-      have hηfix : η.1 (x : Ω) = (x : Ω) :=
+      have hηfix  :=
         (IntermediateField.mem_fixedField_iff L.toSubgroup
           (x : Ω)).1 x.property η.1 η.2
       change σ.1 (x : Ω) = τ.1 (x : Ω)
@@ -104,12 +107,11 @@ theorem abstractFixedFieldCosetToAlgHom_mk
     Function.Surjective
       (abstractFixedFieldCosetToAlgHom k Ω K L hLK) := by
   intro f
-  let : Algebra.IsSeparable (abstractFixedField k Ω K)
-      (abstractRelativeFixedField k Ω hLK) :=
+  let  :=
     Algebra.isSeparable_tower_bot_of_isSeparable
       (abstractFixedField k Ω K)
       (abstractRelativeFixedField k Ω hLK) Ω
-  let : Algebra.IsSeparable (abstractRelativeFixedField k Ω hLK) Ω :=
+  let  :=
     Algebra.isSeparable_tower_top_of_isSeparable
       (abstractFixedField k Ω K)
       (abstractRelativeFixedField k Ω hLK) Ω
@@ -122,7 +124,7 @@ theorem abstractFixedFieldCosetToAlgHom_mk
     AlgEquiv.ofBijective φ
       (Normal.toIsAlgebraic.algHom_bijective₂
         φ (AlgHom.id (abstractFixedField k Ω K) Ω)).1
-  let σ : K.toSubgroup :=
+  let σ  :=
     (abstractSubgroupEquivGaloisGroup k Ω K).symm σReal
   refine ⟨QuotientGroup.mk σ, ?_⟩
   apply AlgHom.ext
@@ -215,12 +217,10 @@ theorem relativeNorm_abstractFixedFieldUnit_eq_normUnits
         (Additive.ofMul
           (normUnits (abstractFixedField k Ω K)
             (abstractRelativeFixedField k Ω hLK) x)) := by
-  let : FiniteDimensional (abstractFixedField k Ω K)
-      (abstractRelativeFixedField k Ω hLK) :=
+  let  :=
     abstractRelativeFixedField_finiteDimensional
       k Ω K L hLK hKabsolute hfinite
-  let : Algebra.IsSeparable (abstractFixedField k Ω K)
-      (abstractRelativeFixedField k Ω hLK) :=
+  let  :=
     Algebra.isSeparable_tower_bot_of_isSeparable
       (abstractFixedField k Ω K)
       (abstractRelativeFixedField k Ω hLK) Ω

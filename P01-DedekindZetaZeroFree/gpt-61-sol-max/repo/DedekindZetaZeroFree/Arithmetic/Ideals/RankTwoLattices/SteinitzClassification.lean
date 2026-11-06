@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Ideals.RankTwoLattices.BezoutSteinitzEquivalence
 public import DedekindZetaZeroFree.Arithmetic.Ideals.RankTwoLattices.DeterminantAndLineClasses
 public import Mathlib.NumberTheory.NumberField.ClassNumber
 
 @[expose] public section
+
 
 open scoped nonZeroDivisors
 
@@ -155,7 +158,7 @@ theorem kp_cusp_rank_two_normal_form
       ClassGroup.mk K (Units.mk0 D hD) = determinantClass R K M := by
   obtain ⟨I, J, w, hI, hJ, hcoeff, hdet, hcoords, hproj, e, he⟩ :=
     kp_cusp_line_adapted_ideal_splitting R K M (1, 0) (by simp)
-  let D : FractionalIdeal R⁰ K := I * J
+  let D  := I * J
   have hD : D ≠ 0 := mul_ne_zero hI hJ
   let N := coordinate_full_lattice R K 1 D one_ne_zero hD
   letI : Submodule.IsLattice K M.val := M.property
@@ -179,7 +182,7 @@ theorem kp_cusp_latticeEquivalent_iff_determinantClass_eq
       determinantClass R K M = determinantClass R K N := by
   constructor
   · rintro ⟨g, hg⟩
-    exact determinant_class_map R K M N g hg
+    apply determinant_class_map <;> assumption
   · intro h
     obtain ⟨D, hD, g, hg, hcD⟩ := kp_cusp_rank_two_normal_form R K M
     obtain ⟨E, hE, k, hk, hcE⟩ := kp_cusp_rank_two_normal_form R K N
@@ -215,8 +218,7 @@ noncomputable def latticeDeterminantClass
     (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
     (M : FullLattice R K) :
     latticeDeterminantClass R K (Quotient.mk (latticeSetoid R K) M) =
-      determinantClass R K M := by
-  rfl
+      determinantClass R K M := rfl
 
 theorem kp_cusp_latticeDeterminantClass_bijective
     (R : Type*) [CommRing R] [IsDedekindDomain R]
@@ -241,7 +243,7 @@ theorem kp_cusp_latticeDeterminantClass_bijective
 theorem kp_cusp_numberField_lattice_quotient_finite
     (F : Type*) [Field F] [NumberField F] :
     Finite (Quotient (latticeSetoid (NumberField.RingOfIntegers F) F)) := by
-  letI : Fintype (ClassGroup (NumberField.RingOfIntegers F)) :=
+  letI  :=
     NumberField.RingOfIntegers.instFintypeClassGroup F
   exact Finite.of_injective (latticeDeterminantClass (NumberField.RingOfIntegers F) F)
     (kp_cusp_latticeDeterminantClass_bijective _ _).1

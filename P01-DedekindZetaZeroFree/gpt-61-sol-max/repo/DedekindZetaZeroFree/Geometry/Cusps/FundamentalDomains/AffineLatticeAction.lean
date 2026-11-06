@@ -156,10 +156,13 @@ theorem properlyDiscontinuous_of_equivariant
     ext g
     simp
 
-private theorem translation_formula
-    (F : Type*) [Field F] [NumberField F]
+section
+variable (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)
+include F hF S D
+private theorem translation_formula
+     
     (G : GeometryData F hF S D) (x : D.L) (p : Cross F) :
     G.crossAction (D.inclusion (Multiplicative.ofAdd x)) p =
       (p.1 + embedding F x.val, p.2) := by
@@ -184,9 +187,7 @@ private theorem translation_formula
   · simp [crossAffine, affine]
 
 theorem actual_ratio_kernel_properly_discontinuous
-    (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)
+     
     (hdisc : DiscreteTopology (translationLattice F D.L).toIntSubmodule)
     (G : GeometryData F hF S D) :
     letI := homeomorphAction G.crossAction
@@ -230,9 +231,7 @@ theorem actual_ratio_kernel_properly_discontinuous
   simpa [b, add_comm] using this.symm
 
 theorem actual_cross_action_properly_discontinuous
-    (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)
+     
     (hdisc : DiscreteTopology (translationLattice F D.L).toIntSubmodule)
     (G : GeometryData F hF S D) :
     letI := homeomorphAction G.crossAction
@@ -278,6 +277,8 @@ theorem actual_cross_action_properly_discontinuous
   rw [G.crossAction_formula g A hA hc]
   change p.2 + ell (Additive.ofMul (D.ratio g)) = ell (Additive.ofMul (D.ratio g)) + p.2
   exact add_comm _ _
+end
+
 
 private theorem actual_group_countable (F : Type*) [Field F] [NumberField F]
     (S : Subgroup (KPCuspArithmetic.PGL2 F)) : Countable S := by
@@ -287,10 +288,13 @@ private theorem actual_group_countable (F : Type*) [Field F] [NumberField F]
   letI : Countable (KPCuspArithmetic.PGL2 F) := Function.Surjective.countable Matrix.ProjGenLinGroup.mk_surjective
   infer_instance
 
-theorem actual_fixed_locus_null
-    (F : Type*) [Field F] [NumberField F]
+section
+variable (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)
+include F hF S D
+theorem actual_fixed_locus_null
+     
     (G : GeometryData F hF S D) (μ : Measure (Shape F)) [SFinite μ]
     (g : S) (hg : g ≠ 1) :
     (volume.prod μ) {p : Cross F | G.crossAction g p = p} = 0 := by
@@ -351,9 +355,7 @@ theorem actual_fixed_locus_null
     rw [hz, zero_mul]
 
 theorem actual_cross_action_ae_free
-    (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)
+     
     (G : GeometryData F hF S D) (μ : Measure (Shape F)) [SFinite μ] :
     ∀ᵐ p ∂(volume.prod μ), ∀ g : S, G.crossAction g p = p → g = 1 := by
   letI : Countable S := actual_group_countable F S
@@ -367,9 +369,7 @@ theorem actual_cross_action_ae_free
     exact hn.mono fun p hp he => (hp he).elim
 
 theorem actual_measurable_fundamental_domain
-    (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)
+     
     (hdisc : DiscreteTopology (translationLattice F D.L).toIntSubmodule)
     (hlattice : letI := hdisc; IsZLattice ℝ (translationLattice F D.L).toIntSubmodule)
     (G : GeometryData F hF S D)
@@ -384,6 +384,8 @@ theorem actual_measurable_fundamental_domain
     actual_cross_action_properly_discontinuous F hF S D hdisc G
   exact measurable_fundamental_domain_of_properly_discontinuous_ae_free
     (volume.prod μ) (actual_cross_action_ae_free F hF S D G μ)
+end
+
 
 end DedekindZetaZeroFree.KPCuspChart.SectionConstruction
 

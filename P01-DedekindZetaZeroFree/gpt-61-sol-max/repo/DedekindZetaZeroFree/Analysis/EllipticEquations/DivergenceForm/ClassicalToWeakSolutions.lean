@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.EllipticEquations.DivergenceForm.WeakSolutions
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -31,7 +34,7 @@ theorem coordinateDerivative_memLp_of_closedBall {n k : ℕ} (B : LocalBall n)
   obtain ⟨C, hC⟩ := hcompact.exists_bound_of_continuousOn (hc.mono hclosed)
   have hfinite : volume B.carrier < ⊤ :=
     lt_of_le_of_lt (measure_mono hsub) hcompact.measure_lt_top
-  letI : IsFiniteMeasure (volume.restrict B.carrier) :=
+  letI  :=
     isFiniteMeasure_restrict.mpr hfinite.ne
   apply MemLp.of_enorm_bound ((hc.mono (hsub.trans hclosed)).aestronglyMeasurable
     Metric.isOpen_ball.measurableSet) ENNReal.ofReal_ne_top
@@ -77,22 +80,26 @@ theorem l2_norm_eq_functionL2Norm_of_ae {n : ℕ} (B : LocalBall n)
           rw [if_neg (by intro he; subst j; exact hn.1 hj)]
         simp [hz]
       · rw [if_neg hj]
-        simpa using ih hn.2 (hi.resolve_left (Ne.symm hj))
+        apply ih <;> aesop
   rw [MultiIndex.directions]
   convert h (List.finRange n) (List.nodup_finRange n) (List.mem_finRange i) using 1
   apply List.flatMap_congr
   intro j _
   by_cases hj : j = i <;> simp [firstIndex, hj]
 
-def derivativeTest {n : ℕ} {B : LocalBall n}
-    (φ : TestFunction B.toOpens ℂ ⊤) (i : Fin n) : TestFunction B.toOpens ℂ ⊤ :=
+section
+variable {n : ℕ} {B : LocalBall n}
+    (φ : TestFunction B.toOpens ℂ ⊤) (i : Fin n)
+include n B φ i
+def derivativeTest   : TestFunction B.toOpens ℂ ⊤ :=
   TestFunction.lineDerivCLM ℝ (EuclideanSpace.single i 1) φ
 
-@[simp] theorem derivativeTest_apply {n : ℕ} {B : LocalBall n}
-    (φ : TestFunction B.toOpens ℂ ⊤) (i : Fin n) (x : Space n) :
+@[simp] theorem derivativeTest_apply   (x : Space n) :
     derivativeTest φ i x = coordinateDerivativeList [i] (fun y => φ y) x := by
   rw [derivativeTest, TestFunction.lineDerivCLM_apply_of_le (by simp)]
   exact (φ.contDiff.differentiable (by simp) x).lineDeriv_eq_fderiv
+end
+
 
 theorem integral_mul_coordinateDerivative_test {n : ℕ} (B : LocalBall n)
     {f : Space n → ℂ} (hf : ContDiffOn ℝ (⊤ : ℕ∞) f B.carrier)
@@ -130,23 +137,26 @@ theorem integrable_mul_test {n : ℕ} (B : LocalBall n) {g : Space n → ℂ}
     ψ.integrable_bilin (ContinuousLinearMap.mul ℝ ℂ)
       (hg.locallyIntegrableOn Metric.isOpen_ball.measurableSet)
 
-def conjugateTest {n : ℕ} {B : LocalBall n}
-    (φ : TestFunction B.toOpens ℂ ⊤) : TestFunction B.toOpens ℂ ⊤ :=
+section
+variable {n : ℕ} {B : LocalBall n}
+    (φ : TestFunction B.toOpens ℂ ⊤)
+include n B φ
+def conjugateTest    :=
   TestFunction.postcompCLM Complex.conjCLE.toContinuousLinearMap φ
 
-@[simp] theorem conjugateTest_apply {n : ℕ} {B : LocalBall n}
-    (φ : TestFunction B.toOpens ℂ ⊤) (x : Space n) :
+@[simp] theorem conjugateTest_apply   (x : Space n) :
     conjugateTest φ x = star (φ x) := rfl
 
-@[simp] theorem coordinateDerivative_conjugateTest {n : ℕ} {B : LocalBall n}
-    (φ : TestFunction B.toOpens ℂ ⊤) (i : Fin n) (x : Space n) :
+@[simp] theorem coordinateDerivative_conjugateTest   (i : Fin n) (x : Space n) :
     coordinateDerivativeList [i] (fun y => conjugateTest φ y) x =
       star (coordinateDerivativeList [i] (fun y => φ y) x) := by
   simp only [coordinateDerivativeList, conjugateTest_apply, fderiv_star]
   rfl
+end
+
 
 def classicalFlux {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
-    (D : Coefficients B cρ Cρ κ Λ) (u : Space n → ℂ) (i : Fin n) : Space n → ℂ :=
+    (D : Coefficients B cρ Cρ κ Λ) (u : Space n → ℂ) (i : Fin n)  :=
   fun x => (D.density x : ℂ) * ∑ j, (D.matrix x i j : ℂ) *
     coordinateDerivativeList [j] u x
 
@@ -178,9 +188,7 @@ theorem classical_weighted_weak {n : ℕ} (B : LocalBall n)
   have hdi (i) : IntegrableOn (fun x => coordinateDerivativeList [i] (classicalFlux D u i) x * ψ x)
       B.carrier volume := (integrable_mul_test B (hd i).continuousOn ψ).integrableOn
   have hfi (i) : IntegrableOn (fun x => classicalFlux D u i x *
-      coordinateDerivativeList [i] (fun y => ψ y) x) B.carrier volume := by
-    simpa only [derivativeTest_apply] using
-      (integrable_mul_test B (hf i).continuousOn (derivativeTest ψ i)).integrableOn
+      coordinateDerivativeList [i] (fun y => ψ y) x) B.carrier volume := (integrable_mul_test B (hf i).continuousOn (derivativeTest ψ i)).integrableOn
   have hmass : IntegrableOn (fun x => (D.density x : ℂ) * u x * ψ x) B.carrier volume :=
     (integrable_mul_test B ((Complex.ofRealCLM.continuous.comp_continuousOn
       D.density_smooth.continuousOn).mul hu.continuousOn) ψ).integrableOn

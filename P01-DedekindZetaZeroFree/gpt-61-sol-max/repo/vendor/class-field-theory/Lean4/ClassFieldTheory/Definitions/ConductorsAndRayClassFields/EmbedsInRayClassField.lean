@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.RayClassFieldRealization
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -27,7 +30,7 @@ formulation avoids making a global choice of ray class field. -/
 def EmbedsInRayClassField
     (K : Type u) [Field K] [NumberField K]
     (L : Type v) [Field L] [NumberField L] [Algebra K L]
-    (m : RayClassModulus K) : Prop :=
+    (m : RayClassModulus K)  :=
   ∃ R : RayClassFieldRealization K m,
     Nonempty (L →ₐ[K] R.extension)
 

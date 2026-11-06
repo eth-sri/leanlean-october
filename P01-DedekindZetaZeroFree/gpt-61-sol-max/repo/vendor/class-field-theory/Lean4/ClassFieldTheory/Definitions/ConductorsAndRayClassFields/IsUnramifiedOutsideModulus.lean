@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.RayClassModulus
 public import Mathlib.NumberTheory.NumberField.InfinitePlace.Ramification
 public import Mathlib.RingTheory.Unramified.Locus
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -36,7 +39,7 @@ def IsUnramifiedOutsideModulus
     (K : Type u) (L : Type v)
     [Field K] [NumberField K]
     [Field L] [NumberField L] [Algebra K L]
-    (m : RayClassModulus K) : Prop :=
+    (m : RayClassModulus K)  :=
   (∀ v : HeightOneSpectrum (𝓞 K), v ∉ m.finitePart.support →
       Algebra.IsUnramifiedIn (𝓞 L) v.asIdeal) ∧
     ∀ (v : InfinitePlace K) (hv : v.IsReal),

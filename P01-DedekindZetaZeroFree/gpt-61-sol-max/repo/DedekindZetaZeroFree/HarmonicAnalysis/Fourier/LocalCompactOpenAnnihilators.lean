@@ -13,13 +13,13 @@ namespace DedekindZetaZeroFree
 
 variable (F : Type) [Field F] [NumberField F]
 
-local instance compactOpenDualCompletionMeasurable
-    (v : HeightOneSpectrum (𝓞 F)) :
-    MeasurableSpace (v.adicCompletion F) := borel _
 
-local instance compactOpenDualCompletionBorel
-    (v : HeightOneSpectrum (𝓞 F)) :
-    BorelSpace (v.adicCompletion F) := ⟨rfl⟩
+
+
+
+
+
+
 
 private theorem dual_antitone (v : HeightOneSpectrum (𝓞 F))
     {U V : AddSubgroup (v.adicCompletion F)} (h : U ≤ V) :

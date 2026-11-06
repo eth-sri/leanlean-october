@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LargeSieve.Exponents.FinitePrimeTransfer
 
 @[expose] public section
+
 
 open scoped NumberField Classical
 
@@ -84,12 +87,12 @@ theorem finite_band_average
           (∑ a : R, ‖∑ b : S, v b * A a.val b.val‖ ^ 2) ≤ B * ∑ b : S, ‖v b‖ ^ 2 := by
         simp_rw [hsum]
         rw [Finset.sum_coe_sort R (fun a => ‖∑ b ∈ S, extend v b * A a b‖ ^ 2), henergy]
-        exact hbound (extend v)
+        apply hbound
       have hH (v : S → ℂ) :
           (∑ a : T, ‖∑ b : S, v b * H a.val b.val‖ ^ 2) ≤ B_T * ∑ b : S, ‖v b‖ ^ 2 := by
         simp_rw [hsum]
         rw [Finset.sum_coe_sort T (fun a => ‖∑ b ∈ S, extend v b * H a b‖ ^ 2), henergy]
-        exact htarget (extend v)
+        apply htarget
       let f' : {a : R // a ∈ Finset.univ ∧ ¬¬rowGood i a.val} → T :=
         fun a => f i ⟨a.val.val, a.val.property, not_not.mp a.property.2⟩
       have hf' : Function.Injective f' := by
@@ -129,7 +132,7 @@ theorem finite_band_average
       (fun a => ‖∑ b ∈ S, lam b * A a b‖ ^ 2) (fun i a => inferInstance) (fun _ _ => sq_nonneg _) (by intro a ha; simpa using hbad_row a ha)
     have hc := band_incidence L t S (fun i b => ¬colGood i b)
       (fun b => ‖lam b‖ ^ 2) (fun i b => inferInstance) (fun _ _ => sq_nonneg _) (by intro b hb; simpa using hbad_col b hb)
-    have he : 0 ≤ ∑ b ∈ S, ‖lam b‖ ^ 2 := by positivity
+    
     have hb := hbound lam
     have hsum : (L : ℝ) * (∑ a ∈ R, ‖∑ b ∈ S, lam b * A a b‖ ^ 2) ≤
         2 * (L : ℝ) * B_T * (∑ b ∈ S, ‖lam b‖ ^ 2) +

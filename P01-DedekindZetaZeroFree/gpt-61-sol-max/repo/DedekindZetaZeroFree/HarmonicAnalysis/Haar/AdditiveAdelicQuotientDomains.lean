@@ -11,8 +11,8 @@ noncomputable section
 open scoped NumberField Classical Pointwise
 open NumberField IsDedekindDomain MeasureTheory NumberField.InfinitePlace
 
-local instance tilingInfiniteMeasurable (F : Type) [Field F] [NumberField F] :
-    MeasurableSpace (InfiniteAdeleRing F) := borel _
+
+
 
 attribute [local instance] quotientProbability_finiteMeasurable
   quotientProbability_adeleMeasurable quotientProbability_quotientMeasurable

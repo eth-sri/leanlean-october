@@ -40,7 +40,9 @@ theorem exterior_rational_completion_decomposition (R : PrincipalMellin.ActualRe
       (valuation (p.val.adicCompletion F))).eq_one_iff_eq_one).mp huv
   let ui : p.val.adicCompletionIntegers F := ⟨u.val, huv.le⟩
   let red := PrincipalMellinSource.ProfileCore.FixedSupport.standardReduction p.val
-  let eqv := PrincipalMellinSource.ProfileCore.FixedSupport.standardResidueFieldEquiv p.val
+  let eqv : PrincipalMellinSource.ProfileCore.FixedSupport.StandardResidue p.val ≃+*
+      𝓞 F ⧸ p.val.asIdeal :=
+    PrincipalMellinSource.ProfileCore.FixedSupport.standardResidueFieldEquiv p.val
   have hred (a : 𝓞 F) : eqv (red ⟨algebraMap (𝓞 F) (p.val.adicCompletion F) a,
       p.val.coe_mem_adicCompletionIntegers (K := F) a⟩) = Ideal.Quotient.mk p.val.asIdeal a := by
     apply eqv.symm.injective

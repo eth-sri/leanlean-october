@@ -284,13 +284,16 @@ private theorem abs_unit_eq (u : (LocalField F q)ˣ) :
  unfold localAbs KPCubicUnitIndices.residueCard residueCardinality
  exact (Real.rpow_intCast _ _).symm
 
-theorem eventual_diagonalDoubleKernel_product_integrable
- (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
+section
+variable (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
  (htame : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
  (hnormalized : RawNormalizedExtension F ζ hζ q S P)
  (π : (LocalField F q)ˣ)
  (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-   (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ)) :
+   (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
+include μ htame hnormalized π hπ
+theorem eventual_diagonalDoubleKernel_product_integrable
+   :
  ∃ M : ℕ, ∀ m ≥ M, ∀ (i : Fin 3)
  (f : scalarSections F ζ hζ q S P hP .minus),
  IsMinusTest F ζ hζ q S P hP (diagonalLift F ζ hζ q π ((i.val : ℤ),0)) m f →
@@ -356,12 +359,7 @@ theorem eventual_diagonalDoubleKernel_product_integrable
     _ = _ := by ring
 
 theorem eventual_u_first_transport
- (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
- (htame : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
- (hnormalized : RawNormalizedExtension F ζ hζ q S P)
- (π : (LocalField F q)ˣ)
- (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-   (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ)) :
+   :
  ∃ M : ℕ, ∀ m ≥ M, ∀ (i : Fin 3)
  (f₀ fᵢ : scalarSections F ζ hζ q S P hP .minus),
  IsMinusTest F ζ hζ q S P hP (diagonalLift F ζ hζ q π (0,0)) m f₀ →
@@ -378,6 +376,8 @@ theorem eventual_u_first_transport
  apply hM m ((le_max_left M D).trans hm) i f₀ fᵢ hf₀ hfᵢ s
  · exact hD m ((le_max_right M D).trans hm) 0 f₀ (by simpa only [Fin.val_zero, Int.ofNat_zero] using hf₀) s hs
  · exact hD m ((le_max_right M D).trans hm) i fᵢ hfᵢ s hs
+end
+
 
 end DedekindZetaZeroFree.KPTameTransposeLiteralMassTransport.DiagonalLiftGeometry
 

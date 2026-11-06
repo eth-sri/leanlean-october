@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Theta.Profiles.UniformMixedThetaTail
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -29,32 +32,37 @@ private theorem measurable_cube : MeasurableSet (angularCube K) :=
 private theorem volume_cube : volume (angularCube K) = 1 := by
   simp [angularCube, Real.volume_pi_Ico]
 
-private theorem continuous_slice (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ)
-    (t : ℝ) (ht : 0 < t) : Continuous (mixedRadialTheta K I t) := by
+section
+variable (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ)
+    (t : ℝ) (ht : 0 < t)
+include I t ht
+private theorem continuous_slice   : Continuous (mixedRadialTheta K I t) := by
   change Continuous ((fun p : ℝ × Angular K ↦ mixedRadialTheta K I p.1 p.2) ∘
     (fun u : Angular K ↦ (t, u)))
   exact (continuousOn_mixedRadialTheta K I).comp_continuous
-    (show Continuous (fun u : Angular K ↦ (t, u)) from
-      continuous_const.prodMk continuous_id) (fun _ ↦ ⟨ht, Set.mem_univ _⟩)
+    ((continuous_const.prodMk continuous_id)) (fun _ ↦ ⟨ht, Set.mem_univ _⟩)
 
 theorem integrableOn_mixedRadialTheta
-    (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) (t : ℝ) (ht : 0 < t) :
-    IntegrableOn (fun u ↦ mixedRadialTheta K I t u) (angularCube K) := by
-  exact ((continuous_slice K I t ht).continuousOn.integrableOn_compact
+      :
+    IntegrableOn (fun u ↦ mixedRadialTheta K I t u) (angularCube K) := ((continuous_slice K I t ht).continuousOn.integrableOn_compact
     (compact_angularBox K)).mono_set (cube_subset_box K)
 
 theorem integrableOn_mixedRadialTheta_neg
-    (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) (t : ℝ) (ht : 0 < t) :
-    IntegrableOn (fun u ↦ mixedRadialTheta K I t (-u)) (angularCube K) := by
-  exact (((continuous_slice K I t ht).comp continuous_neg).continuousOn.integrableOn_compact
+      :
+    IntegrableOn (fun u ↦ mixedRadialTheta K I t (-u)) (angularCube K) := (((continuous_slice K I t ht).comp continuous_neg).continuousOn.integrableOn_compact
     (compact_angularBox K)).mono_set (cube_subset_box K)
+end
+
 
 theorem integral_one_angularCube :
     (∫ _u in angularCube K, (1 : ℂ)) = 1 := by
   simp [setIntegral_const, volume_cube K, Measure.real]
 
+section
+variable (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) (t : ℝ) (ht : 0 < t)
+include I t ht
 theorem mixedAngularAverage_sub_one
-    (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) (t : ℝ) (ht : 0 < t) :
+      :
     mixedAngularAverage K I t - 1 =
       ∫ u in angularCube K, (mixedRadialTheta K I t u - 1) := by
   rw [integral_sub (integrableOn_mixedRadialTheta K I t ht)
@@ -62,12 +70,14 @@ theorem mixedAngularAverage_sub_one
   rfl
 
 theorem mixedNegAngularAverage_sub_one
-    (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) (t : ℝ) (ht : 0 < t) :
+      :
     mixedNegAngularAverage K I t - 1 =
       ∫ u in angularCube K, (mixedRadialTheta K I t (-u) - 1) := by
   rw [integral_sub (integrableOn_mixedRadialTheta_neg K I t ht)
     (integrableOn_const (by simp [volume_cube K])), integral_one_angularCube]
   rfl
+end
+
 
 private theorem continuousOn_average
     (f : ℝ × Angular K → ℂ)
@@ -105,8 +115,7 @@ private theorem continuousOn_average
 
 theorem locallyIntegrableOn_mixedAngularAverage
     (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) :
-    LocallyIntegrableOn (mixedAngularAverage K I) (Set.Ioi (0 : ℝ)) := by
-  exact (continuousOn_average K _ (continuousOn_mixedRadialTheta K I)).locallyIntegrableOn
+    LocallyIntegrableOn (mixedAngularAverage K I) (Set.Ioi (0 : ℝ)) := (continuousOn_average K _ (continuousOn_mixedRadialTheta K I)).locallyIntegrableOn
     measurableSet_Ioi
 
 theorem locallyIntegrableOn_mixedNegAngularAverage
@@ -130,8 +139,11 @@ private theorem exp_rpow_isBigO (b p r : ℝ) (hb : 0 < b) (hp : 0 < p) :
   change (t ^ p) ^ (r / p) = t ^ r
   rw [← Real.rpow_mul ht, mul_div_cancel₀ r hp.ne']
 
+section
+variable (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ)
+include I
 private theorem integral_centered_isBigO
-    (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) (q : Angular K → Angular K)
+      (q : Angular K → Angular K)
     (hq : Continuous q) (r : ℝ) :
     Asymptotics.IsBigO Filter.atTop
       (fun t : ℝ ↦ ∫ u in angularCube K, (mixedRadialTheta K I t (q u) - 1))
@@ -150,7 +162,7 @@ private theorem integral_centered_isBigO
     (div_pos (by norm_num) (Nat.cast_pos.mpr (Module.finrank_pos (R := ℚ) (M := K)))))
 
 theorem mixedAngularAverage_isBigO_rpow
-    (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) (r : ℝ) :
+      (r : ℝ) :
     Asymptotics.IsBigO Filter.atTop
       (fun t : ℝ ↦ mixedAngularAverage K I t - 1)
       (fun t : ℝ ↦ t ^ r) := by
@@ -160,7 +172,7 @@ theorem mixedAngularAverage_isBigO_rpow
   exact (mixedAngularAverage_sub_one K I t ht).symm
 
 theorem mixedNegAngularAverage_isBigO_rpow
-    (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) (r : ℝ) :
+      (r : ℝ) :
     Asymptotics.IsBigO Filter.atTop
       (fun t : ℝ ↦ mixedNegAngularAverage K I t - 1)
       (fun t : ℝ ↦ t ^ r) := by
@@ -168,6 +180,8 @@ theorem mixedNegAngularAverage_isBigO_rpow
     _ (Filter.Eventually.of_forall (fun _ ↦ rfl))
   filter_upwards [Filter.eventually_gt_atTop (0 : ℝ)] with t ht
   exact (mixedNegAngularAverage_sub_one K I t ht).symm
+end
+
 
 end DedekindZetaZeroFree.AbelianQuotient.Theta
 

@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.FilteredLiftingSequence
 public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.NormalBasisGradedLifting
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -84,41 +87,37 @@ theorem exists_chosenNormalBasisPrincipalUnit_fixed_is_tateNorm :
     le_trans (le_trans (le_max_left cProd (b + 1)) hrest) hn
   have hbn : b + 1 ≤ n :=
     le_trans (le_trans (le_max_right cProd (b + 1)) hrest) hn
-  let P : Nat → 𝒪[L]ˣ → Prop := fun k x =>
+  let P  := fun k x =>
     x ∈ chosenNormalBasisPrincipalUnitSet K L k
   let R : 𝒪[L]ˣ → Prop := fun x =>
     ∀ sigma : Gal(L / K), sigma • x = x
   let F : 𝒪[L]ˣ →* 𝒪[L]ˣ :=
     tateNormHom (G := Gal(L / K)) (A := 𝒪[L]ˣ)
   let initial : FilteredLiftState 𝒪[L]ˣ P R n 0 :=
-    ⟨a, by simpa [P] using ha, hfixed⟩
+    ⟨a, ha, hfixed⟩
   let step : ∀ i (s : FilteredLiftState 𝒪[L]ˣ P R n i),
       Nonempty (FilteredLiftStep 𝒪[L]ˣ P R F n i s) := by
     intro i s
     have hlevel : cStep ≤ n + i :=
       le_trans hcStep (Nat.le_add_right n i)
-    rcases hStep (n + i) hlevel s.value (by simpa [P] using s.mem)
-        (by simpa [R] using s.stable) with
+    rcases hStep (n + i) hlevel s.value (s.mem)
+        (s.stable) with
       ⟨z, a', hz, ha', hfixed', heq⟩
     refine ⟨⟨z, ?_, ⟨a', ?_, ?_⟩, ?_⟩⟩
-    · simpa [P] using hz
-    · simpa [P, Nat.add_assoc] using ha'
-    · simpa [R] using hfixed'
-    · simpa [F] using heq
-  let states : (i : Nat) → FilteredLiftState 𝒪[L]ˣ P R n i :=
+    · exact hz
+    · exact ha'
+    · exact hfixed'
+    · exact heq
+  let states  :=
     chosenFilteredLiftStateSequence 𝒪[L]ˣ P R F n initial step
-  let z : Nat → 𝒪[L]ˣ :=
+  let z  :=
     chosenFilteredLiftCorrectionSequence 𝒪[L]ˣ P R F n initial step
   have hz (i : Nat) : z i ∈ chosenNormalBasisPrincipalUnitSet K L (n + i) := by
-    exact chosenFilteredLiftCorrectionSequence_mem
-      𝒪[L]ˣ P R F n initial step i
+    exact chosenFilteredLiftCorrectionSequence_mem 𝒪[L]ˣ P R F n initial step i
   rcases hProd n hcProd z hz with ⟨x, hx, hxmem⟩
   have hstates (i : Nat) :
-      (states i).value ∈ chosenNormalBasisPrincipalUnitSet K L (n + i) := by
-    exact (states i).mem
-  have hrem : Tendsto
-      (fun i : Nat => (((states i).value : 𝒪[L]ˣ) : 𝒪[L])) atTop
-      (nhds (1 : 𝒪[L])) :=
+      (states i).value ∈ chosenNormalBasisPrincipalUnitSet K L (n + i) := (states i).mem
+  have hrem  :=
     tendsto_chosenNormalBasisPrincipalUnitSequence_one_of_lattice_bound
       (K := K) (L := L) hb hbn (fun i => (states i).value) hstates
   have hnorm := tendsto_galoisGroupIntegerUnits_tateNorm_of_tendsto
@@ -132,22 +131,20 @@ theorem exists_chosenNormalBasisPrincipalUnit_fixed_is_tateNorm :
       𝒪[L]ˣ P R F n initial step d
     rw [filteredCorrectionProduct_eq_chosenNormalBasisProduct
       (L := L) z d] at h
-    simpa [initial, states, F] using h
+    exact h
   have hmul : Tendsto
       (fun d : Nat =>
         ((tateNorm (Gal(L / K)) 𝒪[L]ˣ
-            (chosenNormalBasisPrincipalUnitCorrectionProduct (L := L) z d) :
-          𝒪[L]ˣ) : 𝒪[L]) * (((states d).value : 𝒪[L]ˣ) : 𝒪[L]))
+            (chosenNormalBasisPrincipalUnitCorrectionProduct (L := L) z d)) : 𝒪[L]) * (((states d).value) : 𝒪[L]))
       atTop
-      (nhds (((tateNorm (Gal(L / K)) 𝒪[L]ˣ x : 𝒪[L]ˣ) : 𝒪[L]) * 1)) :=
+      (nhds (((tateNorm (Gal(L / K)) 𝒪[L]ˣ x) : 𝒪[L]) * 1)) :=
     hnorm.mul hrem
-  have hconst : Tendsto (fun _d : Nat => ((a : 𝒪[L]ˣ) : 𝒪[L])) atTop
-      (nhds ((a : 𝒪[L]ˣ) : 𝒪[L])) := tendsto_const_nhds
-  have heqO : ((a : 𝒪[L]ˣ) : 𝒪[L]) =
-      ((tateNorm (Gal(L / K)) 𝒪[L]ˣ x : 𝒪[L]ˣ) : 𝒪[L]) * 1 := by
+  have hconst : Tendsto (fun _d : Nat => (a : 𝒪[L])) atTop
+      (nhds (a : 𝒪[L])) := tendsto_const_nhds
+  have heqO : (a : 𝒪[L]) =
+      ((tateNorm (Gal(L / K)) 𝒪[L]ˣ x) : 𝒪[L]) * 1 := by
     apply tendsto_nhds_unique hconst
-    exact hmul.congr' (Eventually.of_forall (fun d => by
-      simpa using congrArg (fun q : 𝒪[L]ˣ => (q : 𝒪[L])) (hrec d).symm))
+    exact hmul.congr' (Eventually.of_forall (fun d => congrArg (fun q : 𝒪[L]ˣ => (q : 𝒪[L])) (hrec d).symm))
   refine ⟨x, hxmem, ?_⟩
   apply Units.ext
   simpa using heqO
@@ -181,41 +178,38 @@ theorem exists_chosenNormalBasisPrincipalUnit_normOne_is_sigmaMinusOne
     le_trans (le_trans (le_max_left cProd (b + 1)) hrest) hn
   have hbn : b + 1 ≤ n :=
     le_trans (le_trans (le_max_right cProd (b + 1)) hrest) hn
-  let P : Nat → 𝒪[L]ˣ → Prop := fun k x =>
+  let P  := fun k x =>
     x ∈ chosenNormalBasisPrincipalUnitSet K L k
-  let R : 𝒪[L]ˣ → Prop := fun x =>
+  let R  := fun x =>
     tateNorm (Gal(L / K)) 𝒪[L]ˣ x = 1
   let F : 𝒪[L]ˣ →* 𝒪[L]ˣ :=
     sigmaMinusOneHom (G := Gal(L / K)) (A := 𝒪[L]ˣ) g
   let initial : FilteredLiftState 𝒪[L]ˣ P R n 0 :=
-    ⟨a, by simpa [P] using ha, hnorma⟩
+    ⟨a, ha, hnorma⟩
   let step : ∀ i (s : FilteredLiftState 𝒪[L]ˣ P R n i),
       Nonempty (FilteredLiftStep 𝒪[L]ˣ P R F n i s) := by
     intro i s
     have hlevel : cStep ≤ n + i :=
       le_trans hcStep (Nat.le_add_right n i)
-    rcases hStep (n + i) hlevel s.value (by simpa [P] using s.mem)
-        (by simpa [R] using s.stable) with
+    rcases hStep (n + i) hlevel s.value (s.mem)
+        (s.stable) with
       ⟨z, a', hz, ha', hnorm', heq⟩
     refine ⟨⟨z, ?_, ⟨a', ?_, ?_⟩, ?_⟩⟩
-    · simpa [P] using hz
-    · simpa [P, Nat.add_assoc] using ha'
-    · simpa [R] using hnorm'
-    · simpa [F] using heq
-  let states : (i : Nat) → FilteredLiftState 𝒪[L]ˣ P R n i :=
+    · exact hz
+    · exact ha'
+    · exact hnorm'
+    · exact heq
+  let states  :=
     chosenFilteredLiftStateSequence 𝒪[L]ˣ P R F n initial step
-  let z : Nat → 𝒪[L]ˣ :=
+  let z  :=
     chosenFilteredLiftCorrectionSequence 𝒪[L]ˣ P R F n initial step
   have hz (i : Nat) : z i ∈ chosenNormalBasisPrincipalUnitSet K L (n + i) := by
-    exact chosenFilteredLiftCorrectionSequence_mem
-      𝒪[L]ˣ P R F n initial step i
+    exact chosenFilteredLiftCorrectionSequence_mem 𝒪[L]ˣ P R F n initial step i
   rcases hProd n hcProd z hz with ⟨x, hx, hxmem⟩
   have hstates (i : Nat) :
       (states i).value ∈ chosenNormalBasisPrincipalUnitSet K L (n + i) :=
     (states i).mem
-  have hrem : Tendsto
-      (fun i : Nat => (((states i).value : 𝒪[L]ˣ) : 𝒪[L])) atTop
-      (nhds (1 : 𝒪[L])) :=
+  have hrem  :=
     tendsto_chosenNormalBasisPrincipalUnitSequence_one_of_lattice_bound
       (K := K) (L := L) hb hbn (fun i => (states i).value) hstates
   have hcob := tendsto_galoisGroupIntegerUnits_sigmaMinusOne_of_tendsto
@@ -229,22 +223,20 @@ theorem exists_chosenNormalBasisPrincipalUnit_normOne_is_sigmaMinusOne
       𝒪[L]ˣ P R F n initial step d
     rw [filteredCorrectionProduct_eq_chosenNormalBasisProduct
       (L := L) z d] at h
-    simpa [initial, states, F] using h
+    exact h
   have hmul : Tendsto
       (fun d : Nat =>
         ((sigmaMinusOne (Gal(L / K)) 𝒪[L]ˣ g
-            (chosenNormalBasisPrincipalUnitCorrectionProduct (L := L) z d) :
-          𝒪[L]ˣ) : 𝒪[L]) * (((states d).value : 𝒪[L]ˣ) : 𝒪[L]))
+            (chosenNormalBasisPrincipalUnitCorrectionProduct (L := L) z d)) : 𝒪[L]) * (((states d).value) : 𝒪[L]))
       atTop
-      (nhds (((sigmaMinusOne (Gal(L / K)) 𝒪[L]ˣ g x : 𝒪[L]ˣ) : 𝒪[L]) * 1)) :=
+      (nhds (((sigmaMinusOne (Gal(L / K)) 𝒪[L]ˣ g x) : 𝒪[L]) * 1)) :=
     hcob.mul hrem
-  have hconst : Tendsto (fun _d : Nat => ((a : 𝒪[L]ˣ) : 𝒪[L])) atTop
-      (nhds ((a : 𝒪[L]ˣ) : 𝒪[L])) := tendsto_const_nhds
-  have heqO : ((a : 𝒪[L]ˣ) : 𝒪[L]) =
-      ((sigmaMinusOne (Gal(L / K)) 𝒪[L]ˣ g x : 𝒪[L]ˣ) : 𝒪[L]) * 1 := by
+  have hconst : Tendsto (fun _d : Nat => (a : 𝒪[L])) atTop
+      (nhds (a : 𝒪[L])) := tendsto_const_nhds
+  have heqO : (a : 𝒪[L]) =
+      ((sigmaMinusOne (Gal(L / K)) 𝒪[L]ˣ g x) : 𝒪[L]) * 1 := by
     apply tendsto_nhds_unique hconst
-    exact hmul.congr' (Eventually.of_forall (fun d => by
-      simpa using congrArg (fun q : 𝒪[L]ˣ => (q : 𝒪[L])) (hrec d).symm))
+    exact hmul.congr' (Eventually.of_forall (fun d => congrArg (fun q : 𝒪[L]ˣ => (q : 𝒪[L])) (hrec d).symm))
   refine ⟨x, hxmem, ?_⟩
   apply Units.ext
   simpa using heqO

@@ -23,15 +23,16 @@ def rootProjectorWord (l : List R.A.Sf) : Functions R →ₗ[ℂ] Functions R :=
   l.foldr (fun q a => (rightTranslateSum R Finset.univ (c q)
     (fun i => finiteRoot R q.val (t q i))).comp a) LinearMap.id
 
-def rootTensorWord (s : RestrictedTensorSimple.Level D.bad)
+section
+variable (s : RestrictedTensorSimple.Level D.bad)
     (hS : ∀ q : R.A.Sf, Sum.inr q.val ∈ s.val)
-    (l : List R.A.Sf) (x : ∀ p : s.val, actualLocal R D.finiteData p) :
+    (l : List R.A.Sf) (x : ∀ p : s.val, actualLocal R D.finiteData p)
+include s hS l x
+def rootTensorWord   :
     ∀ p : s.val, actualLocal R D.finiteData p :=
   l.foldr (fun q x => rootSlotSum R D s x q (hS q) (c q) (t q)) x
 
-theorem rootTensorWord_function (s : RestrictedTensorSimple.Level D.bad)
-    (hS : ∀ q : R.A.Sf, Sum.inr q.val ∈ s.val)
-    (l : List R.A.Sf) (x : ∀ p : s.val, actualLocal R D.finiteData p) :
+theorem rootTensorWord_function   :
     tensorFunction R D s (rootTensorWord R D I c t s hS l x) =
       rootProjectorWord R I c t l (tensorFunction R D s x) := by
   induction l with
@@ -44,9 +45,7 @@ theorem rootTensorWord_function (s : RestrictedTensorSimple.Level D.bad)
     rw [ih]
     rfl
 
-theorem rootTensorWord_arch (s : RestrictedTensorSimple.Level D.bad)
-    (hS : ∀ q : R.A.Sf, Sum.inr q.val ∈ s.val)
-    (l : List R.A.Sf) (x : ∀ p : s.val, actualLocal R D.finiteData p)
+theorem rootTensorWord_arch  
     (w : InfinitePlace F) (hw : Sum.inl w ∈ s.val) :
     rootTensorWord R D I c t s hS l x ⟨Sum.inl w, hw⟩ = x ⟨Sum.inl w, hw⟩ := by
   induction l with
@@ -57,13 +56,13 @@ theorem rootTensorWord_arch (s : RestrictedTensorSimple.Level D.bad)
         intro h; have := congrArg Subtype.val h; cases this)]
     exact ih
 
-theorem rootTensorWord_integrable (s : RestrictedTensorSimple.Level D.bad)
-    (hS : ∀ q : R.A.Sf, Sum.inr q.val ∈ s.val)
-    (l : List R.A.Sf) (x : ∀ p : s.val, actualLocal R D.finiteData p)
+theorem rootTensorWord_integrable  
     (g : Group R) :
     PeriodIntegrable R Q.dq (rootProjectorWord R I c t l (tensorFunction R D s x)) g := by
   rw [← rootTensorWord_function R D I c t s hS l x]
   exact core_period_integrable R D _ g
+end
+
 
 theorem selected_rootProjectorWord_frozen (l : List R.A.Sf) (v : R.A.UnitQuotient) :
     ∃ (s : RestrictedTensorSimple.Level D.bad)

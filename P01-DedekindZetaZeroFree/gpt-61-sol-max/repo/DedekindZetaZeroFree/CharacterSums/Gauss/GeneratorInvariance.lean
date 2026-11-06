@@ -12,24 +12,26 @@ noncomputable section
 
 namespace GeneratorInvariance
 
-def transportCharacter {T : Type*} [CommRing T] (I J : Ideal T)
-    (h : I = J) (χ : MulChar (T ⧸ I) ℂ) : MulChar (T ⧸ J) ℂ :=
+section
+variable {T : Type*} [CommRing T] (I J : Ideal T)
+    (h : I = J)
+include T I J h
+def transportCharacter   (χ : MulChar (T ⧸ I) ℂ) : MulChar (T ⧸ J) ℂ :=
   h ▸ χ
 
- def quotientEq {T : Type*} [CommRing T] (I J : Ideal T)
-    (h : I = J) : T ⧸ I ≃+* T ⧸ J := h ▸ RingEquiv.refl _
+ def quotientEq   : T ⧸ I ≃+* T ⧸ J := h ▸ RingEquiv.refl _
 
-private theorem quotientEq_mk {T : Type*} [CommRing T] (I J : Ideal T)
-    (h : I = J) (x : T) :
+private theorem quotientEq_mk   (x : T) :
     quotientEq I J h (Ideal.Quotient.mk I x) = Ideal.Quotient.mk J x := by
   subst J
   rfl
 
-private theorem transport_apply {T : Type*} [CommRing T] (I J : Ideal T)
-    (h : I = J) (χ : MulChar (T ⧸ I) ℂ) (x : T ⧸ I) :
+private theorem transport_apply   (χ : MulChar (T ⧸ I) ℂ) (x : T ⧸ I) :
     transportCharacter I J h χ (quotientEq I J h x) = χ x := by
   subst J
   rfl
+end
+
 
 private theorem sixth_character {T : Type*} [CommRing T]
     (χ : MulChar T ℂ) (hχ : χ ^ 6 = 1) (u : Tˣ) :
@@ -39,10 +41,13 @@ private theorem sixth_character {T : Type*} [CommRing T]
 
 variable {K : Type*} [Field K]
 
-theorem finiteCoefficient_first_sixth_unit (R : Subring K) (s a h : R)
+section
+variable (R : Subring K) (s a h : R)
     (hs : s ≠ 0) (ha : a ≠ 0) (ε : Rˣ)
     [Fintype (FiniteTransform.Residue R s)]
     [Fintype (FiniteTransform.Residue R a)]
+include R s a h hs ha ε
+theorem finiteCoefficient_first_sixth_unit  
     [Fintype (FiniteTransform.Residue R (((ε ^ 6 : Rˣ) : R) * s))]
     (χs : MulChar (FiniteTransform.Residue R s) ℂ)
     (χa : MulChar (FiniteTransform.Residue R a) ℂ)
@@ -110,10 +115,7 @@ theorem finiteCoefficient_first_sixth_unit (R : Subring K) (s a h : R)
     <;> ring
   · rw [if_neg hd, if_neg (fun hn => hd (hc.mp hn))]
 
-theorem finiteCoefficient_second_sixth_unit (R : Subring K) (s a h : R)
-    (hs : s ≠ 0) (ha : a ≠ 0) (ε : Rˣ)
-    [Fintype (FiniteTransform.Residue R s)]
-    [Fintype (FiniteTransform.Residue R a)]
+theorem finiteCoefficient_second_sixth_unit  
     [Fintype (FiniteTransform.Residue R (((ε ^ 6 : Rˣ) : R) * a))]
     (χs : MulChar (FiniteTransform.Residue R s) ℂ)
     (χa : MulChar (FiniteTransform.Residue R a) ℂ)
@@ -199,26 +201,30 @@ theorem finiteCoefficient_second_sixth_unit (R : Subring K) (s a h : R)
       ((FiniteTransform.canonicalLifts R s).val d : K) *
       ((FiniteTransform.canonicalLifts R a).val v : K)) * hi
   · rw [if_neg hd, if_neg (fun hn => hd (hc.mp hn))]
+end
+
 
 variable {F : Type} [Field F] [NumberField F]
 
-def HasCompatibleCharacters (A : SArithmeticData F)
-    (D : ComparisonPoissonCoefficientData F A) : Prop :=
+section
+variable (A : SArithmeticData F)
+    (D : ComparisonPoissonCoefficientData F A)
+include A D
+def HasCompatibleCharacters   : Prop :=
   FiniteTransform.IsTrivialOn A.R.toSubring D.additiveCharacter ∧
   (∀ (a : A.R), a ≠ 0 → D.character a ^ 6 = 1) ∧
   (∀ (a b : A.R) (ha : a ≠ 0) (hb : b ≠ 0)
     (hab : Ideal.span ({a} : Set A.R) = Ideal.span {b}),
       D.character b = transportCharacter _ _ hab (D.character a))
 
-def coefficient (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+def coefficient  
     (s a h : A.R) (hs : s ≠ 0) (ha : a ≠ 0) : ℂ := by
   letI := D.finiteResidue s hs
   letI := D.finiteResidue a ha
   exact FiniteTransform.finiteCoefficient A.R.toSubring s a h
     (D.character s) (D.character a) D.additiveCharacter
 
-theorem coefficient_sixth_sUnit_invariant (A : SArithmeticData F)
-    (D : ComparisonPoissonCoefficientData F A) (hD : HasCompatibleCharacters A D)
+theorem coefficient_sixth_sUnit_invariant   (hD : HasCompatibleCharacters A D)
     (s a h : A.R) (hs : s ≠ 0) (ha : a ≠ 0) (ε : A.U) :
     let v : A.Rˣ := A.unitEquiv ε ^ 6
     coefficient A D ((v : A.R) * s) a h (mul_ne_zero v.ne_zero hs) ha =
@@ -251,14 +257,15 @@ theorem coefficient_sixth_sUnit_invariant (A : SArithmeticData F)
       s a h hs ha (D.character s) (D.character a) (hD.2.1 s hs)
       (hD.2.1 a ha) D.additiveCharacter hD.1 (A.unitEquiv ε)
 
-theorem coefficient_eq_comparison (A : SArithmeticData F)
-    (D : ComparisonPoissonCoefficientData F A)
+theorem coefficient_eq_comparison  
     (c : ExteriorSquarefreeIdeal A.cS) (n s : A.Exterior) (h : A.R) :
     coefficient A D (D.generator s) (D.generator c.val * D.generator n ^ 3) h
       (D.generates s).1
       (mul_ne_zero (D.generates c.val).1 (pow_ne_zero _ (D.generates n).1)) =
       comparisonPoissonFiniteCoefficient F A D c n s h := by
   rfl
+end
+
 
 private theorem allowed_translate (A : SArithmeticData F)
     (hCl : Subsingleton (ClassGroup A.R)) (H : A.V → A.V → Fˣ)

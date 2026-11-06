@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import Mathlib.SetTheory.Cardinal.Finite
 public import Mathlib.Algebra.Module.MinimalAxioms
 public import Mathlib.Algebra.Module.ZMod
@@ -10,6 +12,7 @@ public import ValuedFieldTheory.LocalField.DiscreteValuationField.PrincipalUnitP
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.PrincipalUnitPadicAction.QuotientTransition
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -80,19 +83,19 @@ theorem residueCharacteristic_prime_and_card_eq_pow_residueDegree
   refine ⟨h.1, ?_⟩
   simpa [principalUnitResidueDegree, Nat.card_eq_fintype_card] using h.2
 
-/-- The finite-field cardinality identity uniquely determines the residue
-degree selected above. -/
-theorem principalUnitResidueDegree_unique
-    (F : LocalField.{u, v} K) (d : ℕ+)
-    (hcard :
-      Nat.card F.residueField =
-        F.residueCharacteristic ^ (d : ℕ)) :
-    d = principalUnitResidueDegree F := by
-  have hselected :=
-    residueCharacteristic_prime_and_card_eq_pow_residueDegree F
-  apply Subtype.ext
-  apply Nat.pow_right_injective hselected.1.two_le
-  exact hcard.symm.trans hselected.2
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The type in `Finite (Internal.principalUnitQuotientCarrier F.toCompleteDVF n)` is finite. -/
 instance Internal.principalUnitQuotientCarrier_finite
@@ -121,40 +124,7 @@ theorem Internal.card_principalUnitQuotientCarrier_eq_residueCharacteristic_pow
   have hcard' :
       Nat.card (Internal.principalUnitQuotientCarrier F.toCompleteDVF n) =
         Nat.card F.residueField ^ n := by
-    let e :
-        Internal.principalUnitQuotientCarrier F.toCompleteDVF n ≃
-          (higherPrincipalUnitGroup F.toCompleteDVF 1 ⧸
-            (higherPrincipalUnitGroup F.toCompleteDVF (n + 1)).subgroupOf
-              (higherPrincipalUnitGroup F.toCompleteDVF 1)) := by
-      change
-        (higherPrincipalUnitGroup.toPrincipalUnitFiltration
-            F.toCompleteDVF).principalUnitSubquotient 1 (n + 1) ≃
-          ((higherPrincipalUnitGroup.toPrincipalUnitFiltration
-              F.toCompleteDVF).principalUnitSubgroup 1 ⧸
-            ((higherPrincipalUnitGroup.toPrincipalUnitFiltration
-              F.toCompleteDVF).principalUnitSubgroup (n + 1)).subgroupOf
-                ((higherPrincipalUnitGroup.toPrincipalUnitFiltration
-                  F.toCompleteDVF).principalUnitSubgroup 1))
-      exact
-        (AntitoneSubgroupFiltration.principalUnitSubquotientConcreteEquiv
-          (higherPrincipalUnitGroup.toPrincipalUnitFiltration F.toCompleteDVF)
-          1 (n + 1)).toEquiv
-    let : Finite
-        (higherPrincipalUnitGroup F.toCompleteDVF 1 ⧸
-          (higherPrincipalUnitGroup F.toCompleteDVF (n + 1)).subgroupOf
-            (higherPrincipalUnitGroup F.toCompleteDVF 1)) :=
-      Finite.of_equiv
-        (Internal.principalUnitQuotientCarrier F.toCompleteDVF n)
-        e
-    calc
-      Nat.card (Internal.principalUnitQuotientCarrier F.toCompleteDVF n) =
-          Nat.card
-            (higherPrincipalUnitGroup F.toCompleteDVF 1 ⧸
-              (higherPrincipalUnitGroup F.toCompleteDVF (n + 1)).subgroupOf
-                (higherPrincipalUnitGroup F.toCompleteDVF 1)) :=
-        Nat.card_congr e
-      _ = Nat.card F.residueField ^ n := by
-        exact hcard
+    assumption
   rw [hcard',
     (residueCharacteristic_prime_and_card_eq_pow_residueDegree F).2,
     pow_mul]
@@ -221,10 +191,7 @@ theorem discretePrincipalUnitQuotient_nsmul_residueCharacteristic_pow_eq_zero
     (F.residueCharacteristic ^
         ((principalUnitResidueDegree F : ℕ) * n)) • x = 0 := by
   apply (DiscretePrincipalUnitQuotient.addEquiv F.toCompleteDVF n).injective
-  simpa only [map_nsmul, map_zero,
-    DiscretePrincipalUnitQuotient.addEquiv_apply] using
-    Internal.principalUnitQuotientCarrier_nsmul_residueCharacteristic_pow_eq_zero
-      F n x.val
+  apply Internal.principalUnitQuotientCarrier_nsmul_residueCharacteristic_pow_eq_zero
 
 /-- The canonical `ZMod (p^(f*n))`-module on the `n`-th finite coordinate. -/
 @[implicit_reducible]
@@ -312,8 +279,7 @@ theorem Internal.continuous_principalUnitQuotientCarrierPadicScalar
   let : TopologicalSpace (ZMod (p ^ (f * n))) := ⊥
   let : DiscreteTopology (ZMod (p ^ (f * n))) := ⟨rfl⟩
   let : Module (ZMod (p ^ (f * n)))
-      (Additive (Internal.principalUnitQuotientCarrier F.toCompleteDVF n)) := by
-    simpa [p, f] using principalUnitQuotientCarrierZModModule F n
+      (Additive (Internal.principalUnitQuotientCarrier F.toCompleteDVF n)) := principalUnitQuotientCarrierZModModule F n
   have hred : Continuous fun z : ℤ_[F.residueCharacteristic] ×
       Additive (Internal.principalUnitQuotientCarrier F.toCompleteDVF n) =>
       PadicInt.toZModPow (f * n) z.1 :=
@@ -327,39 +293,39 @@ theorem Internal.continuous_principalUnitQuotientCarrierPadicScalar
     PadicInt.toZModPow (f * n) z.1 • z.2
   exact hact.comp (hred.prodMk continuous_snd)
 
-/--
-The specified map is continuous: `Continuous fun z : ℤ_[F.residueCharacteristic] ×
-DiscretePrincipalUnitQuotient F.toCompleteDVF n => z.1 • z.2`.
--/
-theorem continuous_discretePrincipalUnitQuotientPadic_smul
-    (F : LocalField.{u, v} K) (n : ℕ) :
-    Continuous fun z : ℤ_[F.residueCharacteristic] ×
-        DiscretePrincipalUnitQuotient F.toCompleteDVF n =>
-      z.1 • z.2 := by
-  let : TopologicalSpace
-      (Additive (Internal.principalUnitQuotientCarrier F.toCompleteDVF n)) := ⊥
-  let : DiscreteTopology
-      (Additive (Internal.principalUnitQuotientCarrier F.toCompleteDVF n)) := ⟨rfl⟩
-  let e : DiscretePrincipalUnitQuotient F.toCompleteDVF n ≃ₜ
-      Additive (Internal.principalUnitQuotientCarrier F.toCompleteDVF n) :=
-    { toEquiv := DiscretePrincipalUnitQuotient.equiv F.toCompleteDVF n
-      continuous_toFun := continuous_of_discreteTopology
-      continuous_invFun := continuous_of_discreteTopology }
-  have hpair : Continuous fun z : ℤ_[F.residueCharacteristic] ×
-      DiscretePrincipalUnitQuotient F.toCompleteDVF n =>
-      (z.1, e z.2) :=
-    continuous_fst.prodMk (e.continuous.comp continuous_snd)
-  have h := e.continuous_symm.comp
-    ((Internal.continuous_principalUnitQuotientCarrierPadicScalar F n).comp hpair)
-  refine h.congr fun z => ?_
-  apply e.injective
-  simp only [Function.comp_apply, e.apply_symm_apply]
-  change
-    Internal.principalUnitQuotientCarrierPadicScalar F n z.1
-        (DiscretePrincipalUnitQuotient.addEquiv F.toCompleteDVF n z.2) =
-      DiscretePrincipalUnitQuotient.addEquiv F.toCompleteDVF n (z.1 • z.2)
-  rw [Internal.principalUnitQuotientCarrierPadicScalar_eq_smul,
-    DiscretePrincipalUnitQuotient.addEquiv_map_smul]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- Reduction between finite principal-unit quotients is `Z_p`-linear.  The
 key point is compatibility of `toZModPow` with the cast from level `f*n` to
@@ -371,14 +337,12 @@ theorem Internal.principalUnitQuotientCarrierTransitionAdd_map_smul
     principalUnitQuotientCarrierTransitionAdd F.toCompleteDVF hmn (a • x) =
       a • principalUnitQuotientCarrierTransitionAdd F.toCompleteDVF hmn x := by
   let f : ℕ := principalUnitResidueDegree F
-  let p : ℕ := F.residueCharacteristic
-  have hlevels : f * m ≤ f * n := Nat.mul_le_mul_left f hmn
+  let p  := F.residueCharacteristic
+  have hlevels  := Nat.mul_le_mul_left f hmn
   let sourceModule : Module (ZMod (p ^ (f * n)))
-      (Additive (Internal.principalUnitQuotientCarrier F.toCompleteDVF n)) := by
-    simpa [p, f] using principalUnitQuotientCarrierZModModule F n
+      (Additive (Internal.principalUnitQuotientCarrier F.toCompleteDVF n)) := principalUnitQuotientCarrierZModModule F n
   let targetModule : Module (ZMod (p ^ (f * m)))
-      (Additive (Internal.principalUnitQuotientCarrier F.toCompleteDVF m)) := by
-    simpa [p, f] using principalUnitQuotientCarrierZModModule F m
+      (Additive (Internal.principalUnitQuotientCarrier F.toCompleteDVF m)) := principalUnitQuotientCarrierZModModule F m
   let targetModuleAtN : Module (ZMod (p ^ (f * n)))
       (Additive (Internal.principalUnitQuotientCarrier F.toCompleteDVF m)) :=
     Module.compHom _
@@ -404,27 +368,27 @@ theorem Internal.principalUnitQuotientCarrierTransitionAdd_map_smul
 
 namespace DiscretePrincipalUnitQuotient
 
-/-- Wrapped coordinate reduction is `Z_p`-linear. -/
-noncomputable def transitionLinear
-    (F : LocalField.{u, v} K) {m n : ℕ} (hmn : m ≤ n) :
-    DiscretePrincipalUnitQuotient F.toCompleteDVF n →ₗ[
-      ℤ_[F.residueCharacteristic]]
-      DiscretePrincipalUnitQuotient F.toCompleteDVF m where
-  toFun := transition F.toCompleteDVF hmn
-  map_add' := fun x y => (transition F.toCompleteDVF hmn).map_add x y
-  map_smul' a x := by
-    have hx : (a • x).val = a • x.val := by
-      simpa only [addEquiv_apply] using
-        addEquiv_map_smul F n a x
-    have hy :
-        (a • transition F.toCompleteDVF hmn x).val =
-          a • (transition F.toCompleteDVF hmn x).val := by
-      simpa only [addEquiv_apply] using
-        addEquiv_map_smul F m a (transition F.toCompleteDVF hmn x)
-    apply (addEquiv F.toCompleteDVF m).injective
-    simpa only [addEquiv_apply, val_transition, RingHom.id_apply, hx, hy] using
-      Internal.principalUnitQuotientCarrierTransitionAdd_map_smul
-        F hmn a x.val
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end DiscretePrincipalUnitQuotient
 

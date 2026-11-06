@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Representatives.CoprimeInverseRepresentatives
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Characters.CharacterOperations
 
 @[expose] public section
+
 
 open scoped NumberField Classical
 
@@ -31,9 +34,9 @@ theorem rayCharacter_eq_of_eq_away {m q : Ideal (𝓞 F)}
     have hJne : η J ≠ 0 := fun hz =>
       (η.eq_zero_iff' J).mp hz |>.elim hJ0 (fun hc => hc hJm)
 
-    have hJ_eq : η J = θ J := h J hJ0 hJcop
-    have hspanη : η (Ideal.span {a}) = 1 := η.map_span' a ha0 ha1 hpos
-    have hspanθ : θ (Ideal.span {a}) = 1 := θ.map_span' a ha0 ha1 hpos
+    have hJ_eq  := h J hJ0 hJcop
+    have hspanη  := η.map_span' a ha0 ha1 hpos
+    have hspanθ  := θ.map_span' a ha0 ha1 hpos
     have eη : η I * η J = 1 := by
       rw [← RayOperations.map_mul η I J, hIJ, hspanη]
     have eθ : θ I * θ J = 1 := by

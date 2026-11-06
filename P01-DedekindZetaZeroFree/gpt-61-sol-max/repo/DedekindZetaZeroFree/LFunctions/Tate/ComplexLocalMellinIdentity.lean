@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LFunctions.Tate.ComplexFourierGaussianPairing
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 
@@ -27,8 +30,8 @@ theorem complexAnnular_normMellin_integrable (f : ℂ → ℂ) (hf : IsComplexAn
   filter_upwards with x
   by_cases hx : f x = 0
   · simp [complexNormMellinIntegrand, hx]
-  · have hxs : x ∈ tsupport f := subset_tsupport f hx
-    have hax : a ≤ ‖x‖ := (hsupp hxs).1
+  · have hxs  := subset_tsupport f hx
+    have hax  := (hsupp hxs).1
     have hx0 : x ≠ 0 := by
       intro hx0
       simpa [hx0] using ha.trans_le hax
@@ -84,7 +87,7 @@ theorem complexTraceFourier_normMellin_integrable (f : ℂ → ℂ)
     (hf : IsComplexAnnular f) (s : ℝ) (hs : 0 < s) (hs1 : s < 1) :
     Integrable (complexNormMellinIntegrand (complexTraceFourier f) s)
       (volume : Measure ℂ) := by
-  let fS : SchwartzMap ℂ ℂ := hf.2.1.toSchwartzMap hf.1
+  let fS  := hf.2.1.toSchwartzMap hf.1
   let L : ℂ ≃L[ℝ] ℂ := (Units.mk0 (2 : ℝ) (by norm_num)) • Complex.conjCLE
   let g : SchwartzMap ℂ ℂ := (2 : ℂ) •
     (SchwartzMap.compCLMOfContinuousLinearEquiv ℂ L (FourierTransform.fourier fS))
@@ -95,7 +98,7 @@ theorem complexTraceFourier_normMellin_integrable (f : ℂ → ℂ)
       smul_eq_mul, SchwartzMap.fourier_coe, complexTraceFourier_eq_fourier]
     congr 2
   rw [← hg]
-  exact schwartz_normMellin_integrable g s hs hs1
+  apply schwartz_normMellin_integrable <;> assumption
 
 namespace ComplexTateLaplace
 open Set
@@ -135,9 +138,12 @@ lemma laplace_norm (g : ℂ → ℂ) (a : ℝ) (ha : 0 < a) (x : ℂ) (hx : x �
     Real.norm_eq_abs, abs_of_nonneg (Real.rpow_nonneg (sq_nonneg _) _)]
   ring
 
-lemma laplace_prod_integrable (g : ℂ → ℂ) (hg : AEStronglyMeasurable g volume)
+section
+variable (g : ℂ → ℂ) (hg : AEStronglyMeasurable g volume)
     (a : ℝ) (ha : 0 < a)
-    (hi : Integrable (complexNormMellinIntegrand g (1 - a)) volume) :
+    (hi : Integrable (complexNormMellinIntegrand g (1 - a)) volume)
+include g hg a ha hi
+lemma laplace_prod_integrable   :
     Integrable (fun p : ℂ × ℝ =>
       g p.1 * ((p.2 ^ (a - 1) * Real.exp (-(2 * Real.pi * ‖p.1‖ ^ 2 * p.2)) : ℝ) : ℂ))
         (volume.prod (volume.restrict (Ioi 0))) := by
@@ -153,9 +159,7 @@ lemma laplace_prod_integrable (g : ℂ → ℂ) (hg : AEStronglyMeasurable g vol
         ((measurable_snd.pow_const _).mul
           (Real.measurable_exp.comp (by fun_prop)))).aestronglyMeasurable)
 
-lemma laplace_mellin (g : ℂ → ℂ) (hg : AEStronglyMeasurable g volume)
-    (a : ℝ) (ha : 0 < a)
-    (hi : Integrable (complexNormMellinIntegrand g (1 - a)) volume) :
+lemma laplace_mellin   :
     (∫ t : ℝ in Ioi 0, ((t ^ (a - 1) : ℝ) : ℂ) *
       (∫ x : ℂ, g x * (Real.exp (-(2 * Real.pi * ‖x‖ ^ 2 * t)) : ℂ))) =
       (((2 * Real.pi) ^ (-a) * Real.Gamma a : ℝ) : ℂ) *
@@ -189,6 +193,8 @@ lemma laplace_mellin (g : ℂ → ℂ) (hg : AEStronglyMeasurable g volume)
       apply integral_congr_ae
       filter_upwards [(volume : Measure ℂ).ae_ne (0 : ℂ)] with x hx
       exact he x hx
+end
+
 lemma reciprocal_pairing_mellin (f : ℂ → ℂ) (s : ℝ) (hs : 0 < s)
     (hi : Integrable (complexNormMellinIntegrand f (1 - s)) volume)
     (hm : AEStronglyMeasurable f volume) :
@@ -301,10 +307,10 @@ theorem complexGamma_ratio_ne_zero (s : ℝ) (hs : 0 < s) (hs1 : s < 1) :
   apply div_ne_zero
   · exact mul_ne_zero
       (mul_ne_zero (by norm_num) (Complex.cpow_ne_zero_iff.mpr (Or.inl hpi)))
-      (Complex.Gamma_ne_zero_of_re_pos (by simpa using hs))
+      (Complex.Gamma_ne_zero_of_re_pos (hs))
   · exact mul_ne_zero
       (mul_ne_zero (by norm_num) (Complex.cpow_ne_zero_iff.mpr (Or.inl hpi)))
-      (Complex.Gamma_ne_zero_of_re_pos (by simpa using sub_pos.mpr hs1))
+      (Complex.Gamma_ne_zero_of_re_pos (sub_pos.mpr hs1))
 
 end
 end DedekindZetaZeroFree

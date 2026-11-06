@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.MeasureTheory.Measure.Haar.Unique
 public import Mathlib.MeasureTheory.Measure.ProbabilityMeasure
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 The Tau Ceti contributors. All rights reserved.
@@ -42,7 +45,7 @@ theorem haar_univ_ne_zero : (Measure.haar : Measure G) univ ≠ 0 :=
 theorem isMulRightInvariant_of_isHaarMeasure_of_isProbabilityMeasure (μ : Measure G)
     [μ.IsHaarMeasure] [IsProbabilityMeasure μ] : μ.IsMulRightInvariant where
   map_mul_right_eq_self g := by
-    have : (Measure.map (· * g) μ).IsHaarMeasure :=
+    have  :=
       Measure.isHaarMeasure_map_mul_right μ g
     have : IsProbabilityMeasure (Measure.map (· * g) μ) :=
       inferInstance
@@ -50,7 +53,7 @@ theorem isMulRightInvariant_of_isHaarMeasure_of_isProbabilityMeasure (μ : Measu
 
 theorem isInvInvariant_of_isHaarMeasure_of_isProbabilityMeasure (μ : Measure G)
     [μ.IsHaarMeasure] [IsProbabilityMeasure μ] : μ.IsInvInvariant := by
-  have : μ.IsMulRightInvariant :=
+  have  :=
     isMulRightInvariant_of_isHaarMeasure_of_isProbabilityMeasure (G := G) μ
   constructor
   let : μ.inv.IsHaarMeasure := {

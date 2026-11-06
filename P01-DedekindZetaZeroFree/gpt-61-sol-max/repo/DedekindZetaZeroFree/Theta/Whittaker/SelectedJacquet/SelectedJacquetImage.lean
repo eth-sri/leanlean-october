@@ -208,7 +208,7 @@ open NumberField MeasureTheory KPCplxCharacterHaar KPCplxPrincipalSeriesCharts
 open KPLiteralRaw KPLiteralScalarHCCompactOrbit MomentSources
 open KPReferenceChange.StandardComplexImage.FamilyCorrect
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+variable {S : SArithmeticData F} 
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 local instance : BorelSpace (InfiniteAdeleRing F) := ⟨rfl⟩

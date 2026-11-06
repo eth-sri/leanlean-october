@@ -41,45 +41,45 @@ variable (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
   exact ((QuotientGroup.continuous_mk.comp QuotientGroup.continuous_mk).comp
     (finiteProjection_continuous F ζ hζ)).subtype_mk _
 
- theorem finite_scalar_locallyConstant : IsLocallyConstant
-    (fun g : KPGlobalTorusFunctionData.finitePart F ζ hζ => RawSource.scalarValue F ζ hζ P C g.val) := by
-  rw [IsLocallyConstant.iff_eventually_eq]
-  intro g
-  let U := SourceLevels.level F ζ hζ P C
-  have hc : Continuous (fun y : KPGlobalTorusFunctionData.finitePart F ζ hζ => g⁻¹*y) :=
-    continuous_const.mul continuous_id
-  have he : ∀ᶠ y in nhds g, g⁻¹*y ∈ U.toOpenSubgroup :=
-    hc.continuousAt.preimage_mem_nhds (by simpa using U.toOpenSubgroup.isOpen.mem_nhds U.toOpenSubgroup.one_mem)
-  filter_upwards [he] with y hy
-  have hmem : (g⁻¹*y).val ∈ KPGlobalTorusFunctionData.globalLevel F ζ hζ U :=
-    Subgroup.mem_map.mpr ⟨g⁻¹*y, hy, rfl⟩
-  have hf := SourceLevels.scalar_fixed F ζ hζ P C g.val (g⁻¹*y).val hmem
-  simpa using hf
 
- theorem finite_scalar_continuous : Continuous
-    (fun g : KPGlobalTorusFunctionData.finitePart F ζ hζ => RawSource.scalarValue F ζ hζ P C g.val) :=
-  (finite_scalar_locallyConstant F ζ hζ P C).continuous
 
- theorem value_factor (g : RestrictedCover F ζ hζ) :
-    RawSource.value F ζ hζ P C g = RawSource.archProduct F ζ hζ g •
-      RawSource.value F ζ hζ P C (finiteProjection F ζ hζ g) := by
-  have ht : SourceTensor.evaluatedTensor F ζ hζ P C g =
-      SourceTensor.evaluatedTensor F ζ hζ P C (finiteProjection F ζ hζ g) := by
-    apply SourceTensor.evaluatedTensor_congr
-    intro q
-    rfl
-  have ha : RawSource.archProduct F ζ hζ (finiteProjection F ζ hζ g) = 1 := by
-    unfold RawSource.archProduct
-    simp only [show ∀ w, (finiteProjection F ζ hζ g) (Sum.inl w) = 1 from fun _ => rfl,
-      LocalCovariance.arch_one, Finset.prod_const_one]
-  rw [RawSource.value, RawSource.value, ht, ha, one_smul]
 
- theorem scalar_raw_factor (g : RestrictedCover F ζ hζ) :
-    RawSource.scalarValue F ζ hζ P C (scalarQuotient F ζ hζ (amalgamation F ζ hζ g)) =
-      RawSource.archProduct F ζ hζ g * RawSource.scalarValue F ζ hζ P C (finiteQuotient F ζ hζ g).val := by
-  unfold RawSource.scalarValue
-  rw [RawSource.quotientValue_raw, value_factor, map_smul]
-  rfl
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end DedekindZetaZeroFree.EisensteinReferenceSections.FiniteSourceTopology
 

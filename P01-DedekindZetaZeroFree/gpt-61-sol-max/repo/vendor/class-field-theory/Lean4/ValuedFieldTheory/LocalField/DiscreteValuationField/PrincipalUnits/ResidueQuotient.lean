@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.PrincipalUnits.AutomorphismTransport
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -55,9 +58,7 @@ noncomputable def unitsModOneEquivResidueFieldUnits :
     F.valuationSubringˣ ⧸ higherPrincipalUnitGroup F 1 ≃* F.residueFieldˣ :=
   QuotientGroup.liftEquiv
     (higherPrincipalUnitGroup F 1)
-    (by
-      simpa [higherPrincipalUnitGroup.residueUnitHom] using
-        (IsLocalRing.surjective_units_map_of_local_ringHom
+    ((IsLocalRing.surjective_units_map_of_local_ringHom
           F.residueMap F.residue_surjective
           (inferInstanceAs (IsLocalHom F.residueMap))))
     (higherPrincipalUnitGroup.residueUnitHom_ker_eq F).symm
@@ -71,30 +72,29 @@ u`.
     (u : F.valuationSubringˣ) :
     higherPrincipalUnitGroup.unitsModOneEquivResidueFieldUnits F
         (QuotientGroup.mk' (higherPrincipalUnitGroup F 1) u) =
-      higherPrincipalUnitGroup.residueUnitHom F u := by
-  rfl
+      higherPrincipalUnitGroup.residueUnitHom F u := rfl
 
-/-- Compatibility of the induced action on `O^*/U^1` with the induced action
-on residue-field units. -/
-theorem unitsModOneEquivResidueFieldUnits_unitsModPrincipalUnitEquivOfPreserves_one
-    (e : K ≃+* K)
-    (hmem :
-      ∀ x : K,
-        x ∈ F.valuation.valuationSubring ↔
-          e x ∈ F.valuation.valuationSubring)
-    (q : F.valuationSubringˣ ⧸ higherPrincipalUnitGroup F 1) :
-    higherPrincipalUnitGroup.unitsModOneEquivResidueFieldUnits F
-        (higherPrincipalUnitGroup.unitsModPrincipalUnitEquivOfPreserves
-          F e hmem 1 q) =
-      Units.map
-        (valuationSubringResidueFieldEquivOfPreserves F e hmem).toMonoidHom
-        (higherPrincipalUnitGroup.unitsModOneEquivResidueFieldUnits F q) := by
-  obtain ⟨u, rfl⟩ := QuotientGroup.mk'_surjective
-    (higherPrincipalUnitGroup F 1) q
-  rw [higherPrincipalUnitGroup.unitsModPrincipalUnitEquivOfPreserves_mk,
-    higherPrincipalUnitGroup.unitsModOneEquivResidueFieldUnits_mk,
-    higherPrincipalUnitGroup.unitsModOneEquivResidueFieldUnits_mk,
-    residueUnitHom_valuationSubringUnitEquivOfPreserves]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 end higherPrincipalUnitGroup
 
 end CompleteDVF

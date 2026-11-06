@@ -16,9 +16,9 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 variable (P₀ : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
 variable (C₀ : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P₀)
 variable (E : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
-variable (φ : ∀ q : E, compactPicture (C₀.canonical q.val).borel (C₀.polarization q.val) (C₀.canonical q.val).iwasawa .plus)
-variable (k : ∀ q : E, (C₀.canonical q.val).iwasawa.compact.toOpenSubgroup)
-variable (t : ∀ q : E, actualTorus F ζ hζ q.val)
+
+
+
 
 def complexIntegrand (s : ℂ) (x : ℂ) : ℂ :=
   KPComplexIntertwinerParameterMajorant.forwardSection s

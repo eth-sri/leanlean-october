@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Ramification.LocalField.Core
 public import ValuedFieldTheory.LocalField.NonarchimedeanLocalField.FiniteUnramified
 public import ValuedFieldTheory.LocalField.NonarchimedeanLocalField.GaloisIntegerRing
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -47,10 +50,8 @@ private theorem localCompleteDVF_valuation_eq_valuativeRel
   unfold ValuationTheory.Valuations.completeDVFOfCompleteValuedField
   rfl
 
-/-- The inertia group, equivalently the lower ramification group at zero, is
-trivial for an actual finite unramified Galois extension of local fields. -/
-private theorem localLowerRamificationGroup_zero_eq_bot_of_unramifiedValuation
-    (K L : Type)
+section
+variable (K L : Type)
     [Field K] [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K]
     [Field L] [ValuativeRel L] [TopologicalSpace L]
@@ -60,7 +61,12 @@ private theorem localLowerRamificationGroup_zero_eq_bot_of_unramifiedValuation
       (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
     [IsIntegralClosure 𝒪[L] 𝒪[K] L]
     [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L] :
+    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L]
+include K L
+/-- The inertia group, equivalently the lower ramification group at zero, is
+trivial for an actual finite unramified Galois extension of local fields. -/
+private theorem localLowerRamificationGroup_zero_eq_bot_of_unramifiedValuation
+      :
     localLowerRamificationGroup K L 0 = ⊥ := by
   let base := localCompleteDVF K
   let target := localCompleteDVF L
@@ -134,26 +140,7 @@ private theorem localLowerRamificationGroup_zero_eq_bot_of_unramifiedValuation
                 huniqTarget σ y - y ∈
             target.maximalIdeal := by
         simpa only [Nat.zero_add, pow_one] using hx
-      have hxMapped :
-          eInteger
-                (valuationSubringAutOfUniqueExtension
-                    (base := base.toDVF) (target := target.toDVF)
-                    huniqTarget σ y - y) ∈
-            (𝓂[L] : Ideal 𝒪[L]) := by
-        rw [IsLocalRing.mem_maximalIdeal,
-          map_mem_nonunits_iff eInteger,
-          ← IsLocalRing.mem_maximalIdeal]
-        exact hxMaximal
-      have hunderlying :
-          eInteger
-                (valuationSubringAutOfUniqueExtension
-                    (base := base.toDVF) (target := target.toDVF)
-                    huniqTarget σ y - y) =
-            galoisGroupIntegerRingEquivOfIsIntegralClosure K L σ x - x := by
-        apply Subtype.ext
-        rfl
-      rw [← hunderlying]
-      exact hxMapped
+      assumption
     have hinjective :=
       galoisGroupResidueAlgEquivHomOfIsIntegralClosure_injective_of_unramifiedValuation
         K L
@@ -170,17 +157,7 @@ private theorem localLowerRamificationGroup_zero_eq_bot_of_unramifiedValuation
 /-- Every nonnegative upper ramification group of an actual finite
 unramified Galois extension of local fields is trivial. -/
 theorem localUpperRamificationGroup_eq_bot_of_unramifiedValuation
-    (K L : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L]
-    [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension
-      (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L]
+     
     (t : ℝ) (ht : 0 ≤ t) :
     localUpperRamificationGroup K L t = ⊥ := by
   apply le_antisymm
@@ -194,6 +171,8 @@ theorem localUpperRamificationGroup_eq_bot_of_unramifiedValuation
       _ = ⊥ :=
         localLowerRamificationGroup_zero_eq_bot_of_unramifiedValuation K L
   · exact bot_le
+end
+
 
 end RamificationTheory.LocalField
 

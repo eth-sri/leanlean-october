@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.CharacterSums.Gauss.SexticFourierMasks
 public import DedekindZetaZeroFree.Arithmetic.Units.SArithmeticData
 public import DedekindZetaZeroFree.Arithmetic.LocalFields.PlacesAndCompletions
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 namespace ThetaDigitAverage
@@ -15,10 +18,13 @@ open scoped NumberField BigOperators Classical
 
 variable {F : Type} [Field F] [NumberField F]
 
-def RowPrimes (A : SArithmeticData F) (m : A.R) : Set (KPFinitePlace F) :=
+section
+variable (A : SArithmeticData F) (m : A.R)
+include A m
+def RowPrimes   : Set (KPFinitePlace F) :=
   {p | p ∉ A.Sf ∧ p.valuation F (m : F) < 1}
 
-theorem rowPrimes_finite (A : SArithmeticData F) (m : A.R) (hm : m ≠ 0) :
+theorem rowPrimes_finite   (hm : m ≠ 0) :
     (RowPrimes A m).Finite := by
   have hmF : (m : F) ≠ 0 := by
     intro h
@@ -31,16 +37,17 @@ theorem rowPrimes_finite (A : SArithmeticData F) (m : A.R) (hm : m ≠ 0) :
   rw [map_inv₀]
   exact (one_lt_inv₀ ((p.valuation F).pos_iff.mpr hmF)).2 hp.2
 
-def rowPrimes (A : SArithmeticData F) (m : A.R) (hm : m ≠ 0) :
-    Finset (KPFinitePlace F) := (rowPrimes_finite A m hm).toFinset
+def rowPrimes   (hm : m ≠ 0)  := (rowPrimes_finite A m hm).toFinset
 
-def rowExponent (A : SArithmeticData F) (m : A.R) (p : KPFinitePlace F) : Fin 6 :=
+def rowExponent   (p : KPFinitePlace F) : Fin 6 :=
   ⟨Int.toNat (-WithZero.log (p.valuation F (m : F))) % 6, Nat.mod_lt _ (by decide)⟩
+end
+
 
 abbrev Residue (p : KPFinitePlace F) := (𝓞 F) ⧸ p.asIdeal
 
 instance residueField (p : KPFinitePlace F) : Field (Residue p) := by
-  letI : p.asIdeal.IsMaximal := p.isMaximal
+  letI  := p.isMaximal
   exact Ideal.Quotient.field p.asIdeal
 
 instance residueFintype (p : KPFinitePlace F) : Fintype (Residue p) := Fintype.ofFinite _
@@ -83,7 +90,7 @@ theorem residueLifts_nonempty (P : Finset (KPFinitePlace F)) :
   exact ⟨⟨fun p => Function.surjInv Ideal.Quotient.mk_surjective,
     fun p => Function.surjInv_eq Ideal.Quotient.mk_surjective⟩⟩
 
-def residueLifts (P : Finset (KPFinitePlace F)) : ResidueLifts P :=
+def residueLifts (P : Finset (KPFinitePlace F))  :=
   Classical.choice (residueLifts_nonempty P)
 
 end

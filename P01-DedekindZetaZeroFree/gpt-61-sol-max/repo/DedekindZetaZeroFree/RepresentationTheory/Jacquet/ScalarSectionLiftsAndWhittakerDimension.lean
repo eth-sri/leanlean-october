@@ -202,8 +202,11 @@ private theorem chiH_one (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign) :
     chiH F ζ hζ q S P hP ε 1 = 1 := by
   cases ε <;> simp [chiH, normPower, localAbs_one]
 
-private theorem borel_reduce (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
-    (φ : scalarSections F ζ hζ q S P hP ε) (b : S.borel.B)
+section
+variable (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
+    (φ : scalarSections F ζ hζ q S P hP ε)
+include hP ε φ
+private theorem borel_reduce   (b : S.borel.B)
     (g : ActualCover F ζ hζ q) :
     φ.val ((b : ActualCover F ζ hζ q) * g) =
       φ.val ((S.borel.torus (S.borel.retract b) : ActualCover F ζ hζ q) * g) := by
@@ -223,14 +226,12 @@ private theorem borel_reduce (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign
   simpa only [d', d, Subgroup.coe_mul, Subgroup.coe_inv, ← mul_assoc,
     inv_mul_cancel_right] using hh
 
- def liftValue (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
-    (φ : scalarSections F ζ hζ q S P hP ε) (g : ActualCover F ζ hζ q)
+ def liftValue   (g : ActualCover F ζ hζ q)
     (x : actualTorus F ζ hζ q) : ℂ :=
   (half F ζ hζ q S (twist F ζ hζ q S ε x))⁻¹ *
     φ.val ((S.borel.torus (twist F ζ hζ q S ε x) : ActualCover F ζ hζ q) * g)
 
- theorem liftValue_mem (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
-    (φ : scalarSections F ζ hζ q S P hP ε) (g : ActualCover F ζ hζ q) :
+ theorem liftValue_mem   (g : ActualCover F ζ hζ q) :
     liftValue F ζ hζ q S P hP ε φ g ∈ InducedModule P := by
   intro a x
   change liftValue F ζ hζ q S P hP ε φ g (a * x) =
@@ -240,13 +241,11 @@ private theorem borel_reduce (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign
   have ha := half_ne F ζ hζ q S (twist F ζ hζ q S ε a)
   field_simp
 
- def liftFiber (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
-    (φ : scalarSections F ζ hζ q S P hP ε) (g : ActualCover F ζ hζ q) :
+ def liftFiber   (g : ActualCover F ζ hζ q) :
     InducedModule P :=
   ⟨liftValue F ζ hζ q S P hP ε φ g, liftValue_mem F ζ hζ q S P hP ε φ g⟩
 
-private theorem liftFiber_cov (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
-    (φ : scalarSections F ζ hζ q S P hP ε) (b : S.borel.B)
+private theorem liftFiber_cov   (b : S.borel.B)
     (g : ActualCover F ζ hζ q) :
     liftFiber F ζ hζ q S P hP ε φ ((b : ActualCover F ζ hζ q) * g) =
       inducingAction S.borel P ε 0 b (liftFiber F ζ hζ q S P hP ε φ g) := by
@@ -274,8 +273,7 @@ private theorem liftFiber_cov (hP : IsTamePolarization F ζ hζ q S P) (ε : Sig
     field_simp [half_ne]
 
 theorem scalar_section_lift
-    (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
-    (φ : scalarSections F ζ hζ q S P hP ε) :
+      :
     ∃ f : sectionSpace S.borel P ε 0,
       ∀ g : ActualCover F ζ hζ q, (f.val g).val 1 = φ.val g := by
   let f : ActualCover F ζ hζ q → InducedModule P :=
@@ -299,6 +297,8 @@ theorem scalar_section_lift
   intro g
   change liftValue F ζ hζ q S P hP ε φ g 1 = φ.val g
   simp [liftValue, half_one]
+end
+
 
 end DedekindZetaZeroFree.KPTameJacquetTestDualityScalarization
 
@@ -364,9 +364,12 @@ open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 open KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPLocalPrincipalSeries
 open Raw
 
- def whittakerDualEquiv {K G V : Type*} [AddCommGroup K] [Group G]
+ section
+variable {K G V : Type*} [AddCommGroup K] [Group G]
     [AddCommGroup V] [Module ℂ V] (ρ : Representation ℂ G V)
-    (n : Multiplicative K →* G) (ψ : Multiplicative K →* ℂˣ) :
+    (n : Multiplicative K →* G) (ψ : Multiplicative K →* ℂˣ)
+include K G V ρ n ψ
+def whittakerDualEquiv   :
     Module.Dual ℂ (RootCoinvariants ρ n ψ) ≃ₗ[ℂ] algebraicWhittaker ρ n ψ := by
   let e : RootEquivariantMaps ρ n ψ ℂ ≃ₗ[ℂ] algebraicWhittaker ρ n ψ :=
     { toFun := fun L => ⟨L.val, by
@@ -381,9 +384,7 @@ open Raw
       map_smul' := by intros; rfl }
   exact (rootCoinvariantsUniversalEquiv ρ n ψ ℂ).trans e
 
-private theorem whittaker_bound_of_jacquet_bound {K G V : Type*} [AddCommGroup K]
-    [Group G] [AddCommGroup V] [Module ℂ V] (ρ : Representation ℂ G V)
-    (n : Multiplicative K →* G) (ψ : Multiplicative K →* ℂˣ)
+private theorem whittaker_bound_of_jacquet_bound  
     (hfinite : FiniteDimensional ℂ (RootCoinvariants ρ n ψ))
     (hbound : Module.finrank ℂ (RootCoinvariants ρ n ψ) ≤ 3) :
     FiniteDimensional ℂ (algebraicWhittaker ρ n ψ) ∧
@@ -393,12 +394,17 @@ private theorem whittaker_bound_of_jacquet_bound {K G V : Type*} [AddCommGroup K
   refine ⟨Module.Finite.equiv e, ?_⟩
   rw [← e.finrank_eq, Subspace.dual_finrank_eq]
   exact hbound
+end
 
- def whittakerPullback {K G V W : Type*} [AddCommGroup K] [Group G]
+
+ section
+variable {K G V W : Type*} [AddCommGroup K] [Group G]
     [AddCommGroup V] [Module ℂ V] [AddCommGroup W] [Module ℂ W]
     (ρ : Representation ℂ G V) (σ : Representation ℂ G W)
     (n : Multiplicative K →* G) (ψ : Multiplicative K →* ℂˣ)
-    (f : V →ₗ[ℂ] W) (hf : ∀ t v, f (ρ (n t) v) = σ (n t) (f v)) :
+    (f : V →ₗ[ℂ] W) (hf : ∀ t v, f (ρ (n t) v) = σ (n t) (f v))
+include K G V W ρ σ n ψ f hf
+def whittakerPullback   :
     algebraicWhittaker σ n ψ →ₗ[ℂ] algebraicWhittaker ρ n ψ where
   toFun L := ⟨L.val.comp f, by
     intro t v
@@ -408,11 +414,7 @@ private theorem whittaker_bound_of_jacquet_bound {K G V : Type*} [AddCommGroup K
   map_add' := by intros; rfl
   map_smul' := by intros; rfl
 
-private theorem whittakerPullback_injective {K G V W : Type*} [AddCommGroup K] [Group G]
-    [AddCommGroup V] [Module ℂ V] [AddCommGroup W] [Module ℂ W]
-    (ρ : Representation ℂ G V) (σ : Representation ℂ G W)
-    (n : Multiplicative K →* G) (ψ : Multiplicative K →* ℂˣ)
-    (f : V →ₗ[ℂ] W) (hf : ∀ t v, f (ρ (n t) v) = σ (n t) (f v))
+private theorem whittakerPullback_injective  
     (hsurj : Function.Surjective f) : Function.Injective (whittakerPullback ρ σ n ψ f hf) := by
   intro L M h
   apply Subtype.ext
@@ -421,11 +423,7 @@ private theorem whittakerPullback_injective {K G V W : Type*} [AddCommGroup K] [
   obtain ⟨v, rfl⟩ := hsurj w
   exact congrArg (fun J : algebraicWhittaker ρ n ψ => J.val v) h
 
-private theorem whittaker_bound_of_surjective {K G V W : Type*} [AddCommGroup K]
-    [Group G] [AddCommGroup V] [Module ℂ V] [AddCommGroup W] [Module ℂ W]
-    (ρ : Representation ℂ G V) (σ : Representation ℂ G W)
-    (n : Multiplicative K →* G) (ψ : Multiplicative K →* ℂˣ)
-    (f : V →ₗ[ℂ] W) (hf : ∀ t v, f (ρ (n t) v) = σ (n t) (f v))
+private theorem whittaker_bound_of_surjective  
     (hsurj : Function.Surjective f)
     (hfinite : FiniteDimensional ℂ (algebraicWhittaker ρ n ψ))
     (hbound : Module.finrank ℂ (algebraicWhittaker ρ n ψ) ≤ 3) :
@@ -436,6 +434,8 @@ private theorem whittaker_bound_of_surjective {K G V W : Type*} [AddCommGroup K]
   have ha := whittakerPullback_injective ρ σ n ψ f hf hsurj
   exact ⟨Module.Finite.of_injective a ha,
     (LinearMap.finrank_le_finrank_of_injective ha).trans hbound⟩
+end
+
 
 private theorem uniformizer_exists (K : Type*) [Field K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K] : ∃ π : Kˣ,
@@ -514,11 +514,14 @@ omit ζ hζ S P in
     rw [ho.interior_eq]
     exact ⟨0, by simp⟩
 
-private theorem whittaker_dimension_bound_of_scalarization
-    (hP : IsTamePolarization F ζ hζ q S P)
+section
+variable (hP : IsTamePolarization F ζ hζ q S P)
     (htame : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
     (ψ : Multiplicative (LocalField F q) →* ℂˣ)
-    (hψ : Continuous ψ) (hconductor : HasConductorIntegers F q ψ) (ε : Sign)
+    (hψ : Continuous ψ)
+include hP htame ψ hψ
+private theorem whittaker_dimension_bound_of_scalarization
+      (hconductor : HasConductorIntegers F q ψ) (ε : Sign)
     (e : sectionSpace S.borel P ε 0 ≃ₗ[ℂ] scalarSections F ζ hζ q S P hP ε)
     (he : ∀ (f : sectionSpace S.borel P ε 0) (g : ActualCover F ζ hζ q),
       (e f).val g = (f.val g).val 1) :
@@ -583,10 +586,7 @@ private theorem whittaker_dimension_bound_of_scalarization
   exact (he f _).symm
 
 theorem whittaker_dimension_bound
-    (hP : IsTamePolarization F ζ hζ q S P)
-    (htame : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
-    (ψ : Multiplicative (LocalField F q) →* ℂˣ)
-    (hψ : Continuous ψ) (hunitary : ∀ x, ‖(ψ x : ℂ)‖ = 1)
+      (hunitary : ∀ x, ‖(ψ x : ℂ)‖ = 1)
     (hconductor : HasConductorIntegers F q ψ) (ε : Sign) :
     FiniteDimensional ℂ (whittakerSpace F ζ hζ q S P hP ε ψ) ∧
       Module.finrank ℂ (whittakerSpace F ζ hζ q S P hP ε ψ) ≤ 3 := by
@@ -613,6 +613,8 @@ theorem whittaker_dimension_bound
   let e := LinearEquiv.ofBijective a ⟨ha, hs⟩
   exact whittaker_dimension_bound_of_scalarization F ζ hζ q S P hP htame
     ψ hψ hconductor ε e (by intros; rfl)
+end
+
 
 end DedekindZetaZeroFree.KPTameJacquetBruhatTests
 

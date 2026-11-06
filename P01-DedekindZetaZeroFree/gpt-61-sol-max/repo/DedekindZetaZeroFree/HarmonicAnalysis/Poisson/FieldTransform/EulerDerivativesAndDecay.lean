@@ -88,8 +88,11 @@ def line (c t : ℝ) : ℂ := (c : ℂ) + (t : ℂ) * Complex.I
 def integrand (D : ℝ) (r : ℕ) (h : ℝ → ℂ) (j : ℕ) (c x t : ℝ) : ℂ :=
   (x : ℂ) ^ (-line c t) * (-line c t) ^ j * B D r h (line c t)
 
-private lemma integrand_integrable (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
+section
+variable (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
     (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h) (hhc : HasCompactSupport h)
+include D r h hD hr hh hhc in
+private lemma integrand_integrable  
     (j : ℕ) (c x : ℝ) (hc : 0 < c) (hx : 0 < x) :
     Integrable (integrand D r h j c x) :=
   B_euler_inverse_integrable D r h hD hr hh hhc j c x hc hx
@@ -102,8 +105,8 @@ private lemma integrand_norm (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
   rw [mul_assoc, norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hx]
   simp [line, Complex.mul_re]
 
-private lemma weighted_integrable (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
-    (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h) (hhc : HasCompactSupport h)
+include D r h hD hr hh hhc in
+private lemma weighted_integrable  
     (j : ℕ) (c : ℝ) (hc : 0 < c) :
     Integrable (fun t => (-line c t) ^ j * B D r h (line c t)) := by
   convert integrand_integrable D r h hD hr hh hhc j c 1 hc (by norm_num) using 1
@@ -122,8 +125,8 @@ private lemma integrand_deriv (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
     simp only [integrand, pow_succ, div_eq_mul_inv]
     ring
 
-private lemma inverse_deriv (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
-    (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h) (hhc : HasCompactSupport h)
+include D r h hD hr hh hhc in
+private lemma inverse_deriv  
     (j : ℕ) (c x : ℝ) (hc : 0 < c) (hx : 0 < x) :
     HasDerivAt (mellinInv c (fun s => (-s) ^ j * B D r h s))
       ((x : ℂ)⁻¹ * mellinInv c (fun s => (-s) ^ (j + 1) * B D r h s) x) x := by
@@ -162,8 +165,8 @@ private lemma inverse_deriv (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
     simp [mellinInv, integrand, line, RCLike.real_smul_eq_coe_mul, mul_assoc]
   · simp [mellinInv, integrand, line, RCLike.real_smul_eq_coe_mul, mul_assoc, mul_left_comm]
 
-private lemma inverse_smooth (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
-    (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h) (hhc : HasCompactSupport h)
+include D r h hD hr hh hhc in
+private lemma inverse_smooth  
     (c : ℝ) (hc : 0 < c) :
     ∀ (k j : ℕ), ContDiffOn ℝ (k : ℕ∞ω)
       (mellinInv c (fun s => (-s) ^ j * B D r h s)) (Set.Ioi 0) := by
@@ -184,9 +187,8 @@ private lemma inverse_smooth (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
     exact (hinv.mul (ih (j + 1))).congr fun x hx =>
       (inverse_deriv D r h hD hr hh hhc j c x hc hx).deriv
 
-theorem fieldTransform_contDiffOn (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
-    (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
-    (hhc : HasCompactSupport h) :
+include D r h hD hr hh hhc in
+theorem fieldTransform_contDiffOn   :
     ContDiffOn ℝ ∞ (fieldTransform D r h) (Set.Ioi 0) := by
   have hs : ContDiffOn ℝ ∞ (mellinInv 2 (B D r h)) (Set.Ioi 0) := by
     apply contDiffOn_infty.mpr
@@ -194,10 +196,9 @@ theorem fieldTransform_contDiffOn (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
     simpa using inverse_smooth D r h hD hr hh hhc 2 (by norm_num) k 0
   exact hs.congr fun x hx => by simp [fieldTransform, Set.mem_Ioi.mp hx]
 
+include D r h hD hr hh hhc in
 theorem EulerIter_fieldTransform_eq_mellinInv
-    (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
-    (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
-    (hhc : HasCompactSupport h) (j : ℕ) (c x : ℝ)
+      (j : ℕ) (c x : ℝ)
     (hc : 0 < c) (hx : 0 < x) :
     Vendor.EulerIter j (fieldTransform D r h) x =
       mellinInv c (fun s : ℂ => (-s) ^ j * B D r h s) x := by
@@ -212,8 +213,8 @@ theorem EulerIter_fieldTransform_eq_mellinInv
     rw [heq.deriv_eq, (inverse_deriv D r h hD hr hh hhc j c x hc hx).deriv]
     rw [← mul_assoc, mul_inv_cancel₀ (Complex.ofReal_ne_zero.mpr hx.ne'), one_mul]
 
-private lemma inverse_bound (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
-    (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h) (hhc : HasCompactSupport h)
+include D r h hD hr hh hhc in
+private lemma inverse_bound  
     (j : ℕ) (c : ℝ) (hc : 0 < c) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ x : ℝ, 0 < x →
       ‖mellinInv c (fun s => (-s) ^ j * B D r h s) x‖ ≤ C * x ^ (-c) := by
@@ -232,10 +233,9 @@ private lemma inverse_bound (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
         mul_le_mul_of_nonneg_left (norm_integral_le_integral_norm _) (abs_nonneg _)
     _ = (|1 / (2 * Real.pi)| * A) * x ^ (-c) := by rw [hi]; ring
 
+include D r h hD hr hh hhc in
 theorem fieldTransform_euler_two_ended_bound
-    (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
-    (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
-    (hhc : HasCompactSupport h) (j n : ℕ) (δ : ℝ) (hδ : 0 < δ) :
+      (j n : ℕ) (δ : ℝ) (hδ : 0 < δ) :
     ∃ C : ℝ, 0 < C ∧
       (∀ x : ℝ, 0 < x → x ≤ 1 →
         ‖Vendor.EulerIter j (fieldTransform D r h) x‖ ≤ C * Real.rpow x (-δ)) ∧
@@ -257,6 +257,8 @@ theorem fieldTransform_euler_two_ended_bound
         (Real.rpow_le_rpow_of_exponent_le hx (by linarith)) hC₂
       _ ≤ (C₁ + C₂ + 1) * x ^ (-(n : ℝ)) :=
         mul_le_mul_of_nonneg_right (by linarith) (Real.rpow_nonneg hxpos.le _)
+end
+
 
 end DedekindZetaZeroFree.LargeSieve
 

@@ -17,10 +17,13 @@ namespace DedekindZetaZeroFree.Hecke.Theta
 variable {F : Type} [Field F] [NumberField F]
 variable {m : Ideal (𝓞 F)} {hm : m ≠ ⊥}
 
-theorem normalizedRayTheta_continuousOn
-    (D : RayThetaRepresentatives F m hm)
+section
+variable (D : RayThetaRepresentatives F m hm)
     {η : DedekindZetaZeroFree.RayClassCharacter F m}
-    (χ : RayCharacterData F m hm η) :
+    (χ : RayCharacterData F m hm η)
+include D η χ in
+theorem normalizedRayTheta_continuousOn
+      :
     ContinuousOn (normalizedRayTheta D χ.ψ) (Set.Ioi (0 : ℝ)) := by
   classical
   letI : Fintype (RayIdealClass F m hm) := Fintype.ofFinite _
@@ -33,10 +36,9 @@ theorem normalizedRayTheta_continuousOn
     (continuous_id.div_const _).continuousOn
     (fun t ht => div_pos ht (conductorScale_pos hm))
 
+include D η χ in
 theorem normalizedRayConjugateTheta_continuousOn
-    (D : RayThetaRepresentatives F m hm)
-    {η : DedekindZetaZeroFree.RayClassCharacter F m}
-    (χ : RayCharacterData F m hm η) :
+      :
     ContinuousOn (normalizedRayConjugateTheta D χ.ψ) (Set.Ioi (0 : ℝ)) := by
   classical
   letI : Fintype (RayIdealClass F m hm) := Fintype.ofFinite _
@@ -49,17 +51,15 @@ theorem normalizedRayConjugateTheta_continuousOn
     (continuous_id.div_const _).continuousOn
     (fun t ht => div_pos ht (conductorScale_pos hm))
 
+include D η χ in
 theorem normalizedRayTheta_locallyIntegrableOn
-    (D : RayThetaRepresentatives F m hm)
-    {η : DedekindZetaZeroFree.RayClassCharacter F m}
-    (χ : RayCharacterData F m hm η) :
+      :
     LocallyIntegrableOn (normalizedRayTheta D χ.ψ) (Set.Ioi (0 : ℝ)) := by
   exact (normalizedRayTheta_continuousOn D χ).locallyIntegrableOn measurableSet_Ioi
 
+include D η χ in
 theorem normalizedRayConjugateTheta_locallyIntegrableOn
-    (D : RayThetaRepresentatives F m hm)
-    {η : DedekindZetaZeroFree.RayClassCharacter F m}
-    (χ : RayCharacterData F m hm η) :
+      :
     LocallyIntegrableOn (normalizedRayConjugateTheta D χ.ψ) (Set.Ioi (0 : ℝ)) := by
   exact (normalizedRayConjugateTheta_continuousOn D χ).locallyIntegrableOn measurableSet_Ioi
 
@@ -153,10 +153,9 @@ private theorem tail_sum {ι : Type*} (s : Finset ι) (f : ι → ℝ → ℂ) (
             (mul_le_mul_of_nonneg_left (tail_rate_mono _ _ _ _ (min_le_right _ _) ht0) hC.le)
         _ = _ := (add_mul _ _ _).symm
 
+include D η χ in
 theorem normalizedRayTheta_tail_bound
-    (D : RayThetaRepresentatives F m hm)
-    {η : DedekindZetaZeroFree.RayClassCharacter F m}
-    (χ : RayCharacterData F m hm η) (hη : ¬ η.IsPrincipal) :
+      (hη : ¬ η.IsPrincipal) :
     0 < 2 / (Module.finrank ℚ F : ℝ) ∧
     ∃ C b : ℝ, 0 < C ∧ 0 < b ∧ ∀ t : ℝ, 1 ≤ t →
       ‖normalizedRayTheta D χ.ψ t‖ ≤
@@ -227,6 +226,8 @@ theorem normalizedRayTheta_tail_bound
     (hb2 t ht).trans (H A2 B2 hA2 ?_ ((min_le_right _ _).trans (min_le_left _ _))),
     (hb3 t ht).trans (H A3 B3 hA3 ?_ ((min_le_right _ _).trans (min_le_right _ _)))⟩
   all_goals dsimp [C]; linarith
+end
+
 
 end DedekindZetaZeroFree.Hecke.Theta
 

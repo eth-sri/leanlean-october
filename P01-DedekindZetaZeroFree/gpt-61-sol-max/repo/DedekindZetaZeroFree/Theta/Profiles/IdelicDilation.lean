@@ -13,37 +13,42 @@ open NumberField MeasureTheory
 variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
-abbrev Group (R : PrincipalMellin.ActualRecipe S η) :=
+section
+variable (R : PrincipalMellin.ActualRecipe S η)
+include R
+abbrev Group   :=
   KPGlobalTorusFunctionData.G F R.A.zeta12 R.A.primitive_zeta12
-abbrev Functions (R : PrincipalMellin.ActualRecipe S η) := Group R → ℂ
+abbrev Functions   := Group R → ℂ
 
-def localIdele (R : PrincipalMellin.ActualRecipe S η) (y : R.A.G) :
+def localIdele   (y : R.A.G) :
     KPAdelicCoverRestrictedProduct.Ideles F :=
   (∏ w : InfinitePlace F, KPRationalAdelicSplitting.localIdele F (Sum.inl w) (y.1 w)) *
     ∏ p : R.A.Sf, KPRationalAdelicSplitting.localIdele F (Sum.inr p.val) (y.2 p)
-def diagonal (R : PrincipalMellin.ActualRecipe S η) (y : R.A.G) : Group R :=
+def diagonal   (y : R.A.G) : Group R :=
   KPRationalAdelicSplitting.pglA F R.A.zeta12 R.A.primitive_zeta12 (localIdele R y)
-def fourier (R : PrincipalMellin.ActualRecipe S η)
+def fourier  
     (dq : Measure (KPAdditiveQuotient F)) (theta : Functions R) (g : Group R) : ℂ :=
   ∫ q, theta (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12
     (Quotient.out q) * g) * star (adelicTraceQuotientCharacter F q : ℂ) ∂dq
-def upper (R : PrincipalMellin.ActualRecipe S η)
+def upper  
     (dq : Measure (KPAdditiveQuotient F)) (theta : Functions R) (g : Group R) : ℂ :=
   ∫ q, theta (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12
     (Quotient.out q) * g) ∂dq
 
-def upperLieDirection (R : PrincipalMellin.ActualRecipe S η)
+def upperLieDirection  
     (w : InfinitePlace F) (imaginary : Bool) : w.Completion :=
   if imaginary then
     (InfinitePlace.Completion.ringEquivComplexOfIsComplex (R.A.complex_place w)).symm Complex.I
   else 1
 
-def upperLieDerivative (R : PrincipalMellin.ActualRecipe S η)
+def upperLieDerivative  
     (w : InfinitePlace F) (imaginary : Bool) (f : Functions R) : Functions R := fun g =>
   deriv (fun t : ℝ => f (g * KPRationalAdelicSplitting.pglN F R.A.zeta12 R.A.primitive_zeta12
     (KPRationalAdelicSplitting.localAdele F (Sum.inl w)
       ((InfinitePlace.Completion.ringEquivComplexOfIsComplex (R.A.complex_place w)).symm (t : ℂ) *
         upperLieDirection R w imaginary)))) 0
+end
+
 
 inductive FlatOperation (R : PrincipalMellin.ActualRecipe S η)
     (K : Subgroup (Group R)) (seed : R.A.UnitQuotient → KPLiteralRaw.Flat F R.A.zeta12 R.A.primitive_zeta12 K) :
@@ -147,33 +152,36 @@ structure Packet (R : PrincipalMellin.ActualRecipe S η) (Q : AdmissibleFlatSour
 namespace Packet
 variable {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
 def scale (_P : Packet R Q) (_w : InfinitePlace F) : ℝ := 4 * Real.pi
-theorem scale_pos (P : Packet R Q) (w : InfinitePlace F) : 0 < P.scale w := by
+section
+variable (P : Packet R Q)
+include P
+theorem scale_pos   (w : InfinitePlace F) : 0 < P.scale w := by
   dsimp [scale]; positivity
-def forwardProfile (P : Packet R Q) (v : R.A.UnitQuotient) (y : R.A.G) : ℂ :=
+def forwardProfile   (v : R.A.UnitQuotient) (y : R.A.G) : ℂ :=
   (if ∀ p : R.A.Sf, y.2 p ∈ P.cutoff p then 1 else 0) *
     ∏ w : InfinitePlace F, ((‖(y.1 w : w.Completion)‖ ^ 2 : ℝ) : ℂ) *
       DHCubic.angular (InfinitePlace.Completion.extensionEmbedding w (y.1 w : w.Completion)) ^ P.exponents v w *
       (KThird (P.scale w * Real.sqrt (‖(y.1 w : w.Completion)‖ ^ 2)) : ℂ)
-def positiveSheet (P : Packet R Q) (x : ThetaProfileHaarSheets.PositiveAxis) : ℝ := by
+def positiveSheet   (x : ThetaProfileHaarSheets.PositiveAxis) : ℝ := by
   letI : MeasurableSpace R.A.G1 := borel _
   exact MeasureTheory.integral R.probe.domain.measure (fun z : R.A.G1 =>
     let y := z.val * R.A.radialSection x.val x.property
     (if ∀ p : R.A.Sf, y.2 p ∈ P.cutoff p then 1 else 0) *
       ∏ w : InfinitePlace F, ‖(y.1 w : w.Completion)‖ ^ 2 *
         KThird (P.scale w * Real.sqrt (‖(y.1 w : w.Completion)‖ ^ 2)))
-def A₀ (P : Packet R Q) : ℝ := ∏ w : InfinitePlace F, (4 / P.scale w ^ 2)
+def A₀   : ℝ := ∏ w : InfinitePlace F, (4 / P.scale w ^ 2)
 
-theorem A₀_pos (P : Packet R Q) : 0 < P.A₀ := by
+theorem A₀_pos   : 0 < P.A₀ := by
   unfold A₀
   exact Finset.prod_pos (fun w _ => div_pos (by norm_num) (sq_pos_of_pos (P.scale_pos w)))
 
-def C₀ (P : Packet R Q) : ℝ :=
+def C₀   : ℝ :=
   (∫ x : ThetaProfileHaarSheets.PositiveAxis, P.positiveSheet x ∂ThetaProfileHaarSheets.positiveHaar) /
     (Real.Gamma (5 / 6) * Real.Gamma (7 / 6)) ^ Fintype.card (InfinitePlace F)
-def kernel (P : Packet R Q) (x : ℝ) : ℂ :=
+def kernel   (x : ℝ) : ℂ :=
   thetaProfileGaussianKernel P.C₀ P.A₀ (Fintype.card (InfinitePlace F)) x
 
-theorem forwardProfile_one_ne_zero (P : Packet R Q) (v : R.A.UnitQuotient) :
+theorem forwardProfile_one_ne_zero   (v : R.A.UnitQuotient) :
     P.forwardProfile v 1 ≠ 0 := by
   unfold forwardProfile
   have hcut : ∀ p : R.A.Sf, (1 : R.A.G).2 p ∈ P.cutoff p := fun p => (P.cutoff p).one_mem
@@ -190,24 +198,30 @@ theorem forwardProfile_one_ne_zero (P : Packet R Q) (v : R.A.UnitQuotient) :
     apply zpow_ne_zero
     simp [DHCubic.angular]
   · exact Complex.ofReal_ne_zero.mpr (KThird_pos _ (P.scale_pos w)).ne'
+end
+
 end Packet
 
 namespace Realization
 variable {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
-def sheetIntegrand (T : Realization R Q) (P : Packet R Q)
-    (v : R.A.UnitQuotient) (κ : R.A.V) (y : R.A.G) : ℂ :=
+section
+variable (T : Realization R Q) (P : Packet R Q)
+    (v : R.A.UnitQuotient) (κ : R.A.V)
+include T P v κ
+def sheetIntegrand   (y : R.A.G) : ℂ :=
   (if κ * (QuotientGroup.mk' R.A.sixthPowers y)⁻¹ ∈ R.probe.correction.B then 1 else 0) *
     (R.σ ((R.probe.correction.H κ (QuotientGroup.mk' R.A.sixthPowers y) : Fˣ) : F) ^ 2)⁻¹ *
     P.branch v y * fourier R Q.dq (T.theta v)
       (diagonal R y * KPRationalAdelicSplitting.pglW F R.A.zeta12 R.A.primitive_zeta12)
-def sheet (T : Realization R Q) (P : Packet R Q)
-    (v : R.A.UnitQuotient) (κ : R.A.V) (x : ThetaProfileHaarSheets.PositiveAxis) : ℂ := by
+def sheet   (x : ThetaProfileHaarSheets.PositiveAxis) : ℂ := by
   letI : MeasurableSpace R.A.G1 := borel _
   exact MeasureTheory.integral R.probe.domain.measure (fun y : R.A.G1 =>
     T.sheetIntegrand P v κ (y.val * R.A.radialSection x.val x.property))
-def H (T : Realization R Q) (P : Packet R Q) (v : R.A.UnitQuotient) (κ : R.A.V) (x : ℝ) : ℂ :=
+def H   (x : ℝ) : ℂ :=
   if hx : 0 < x then ∫ t : ThetaProfileHaarSheets.PositiveAxis,
     P.kernel t.val * T.sheet P v κ ⟨x / t.val, div_pos hx t.property⟩ ∂ThetaProfileHaarSheets.positiveHaar else 0
+end
+
 end Realization
 end DedekindZetaZeroFree.MomentSources
 

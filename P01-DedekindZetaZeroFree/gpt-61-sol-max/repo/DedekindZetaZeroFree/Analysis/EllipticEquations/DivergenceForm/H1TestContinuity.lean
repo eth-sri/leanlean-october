@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.EllipticEquations.DivergenceForm.WeakSolutions
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -14,9 +17,12 @@ private theorem norm_sq_integral {α : Type*} [MeasurableSpace α] {μ : Measure
     (v : Lp ℂ 2 μ) : ‖v‖ ^ 2 = ∫ x, ‖v x‖ ^ 2 ∂μ := by
   rw [← real_inner_self_eq_norm_sq, L2.inner_def]
   simp only [real_inner_self_eq_norm_sq]
-private theorem lp_tendsto {α : Type*} [MeasurableSpace α] {μ : Measure α}
+section
+variable {α : Type*} [MeasurableSpace α] {μ : Measure α}
     (f : ℕ → α → ℂ) (hf : ∀ m, MemLp (f m) 2 μ) (w : Lp ℂ 2 μ)
-    (ht : Tendsto (fun m => ∫ x, ‖f m x - w x‖ ^ 2 ∂μ) atTop (𝓝 0)) :
+    (ht : Tendsto (fun m => ∫ x, ‖f m x - w x‖ ^ 2 ∂μ) atTop (𝓝 0))
+include α μ f hf w ht
+private theorem lp_tendsto   :
     Tendsto (fun m => (hf m).toLp (f m)) atTop (𝓝 w) := by
   apply tendsto_iff_norm_sub_tendsto_zero.mpr
   have he (m : ℕ) : ‖(hf m).toLp (f m) - w‖ ^ 2 =
@@ -30,9 +36,7 @@ private theorem lp_tendsto {α : Type*} [MeasurableSpace α] {μ : Measure α}
     simpa only [he] using ht
   simpa only [Function.comp_def, Real.sqrt_sq_eq_abs, abs_norm, Real.sqrt_zero] using
     (Real.continuous_sqrt.tendsto 0).comp ht'
-private theorem integral_tendsto {α : Type*} [MeasurableSpace α] {μ : Measure α}
-    (f : ℕ → α → ℂ) (hf : ∀ m, MemLp (f m) 2 μ) (w : Lp ℂ 2 μ)
-    (ht : Tendsto (fun m => ∫ x, ‖f m x - w x‖ ^ 2 ∂μ) atTop (𝓝 0))
+private theorem integral_tendsto  
     (g : α → ℂ) (hg : MemLp g 2 μ) :
     Tendsto (fun m => ∫ x, g x * star (f m x) ∂μ) atTop
       (𝓝 (∫ x, g x * star (w x) ∂μ)) := by
@@ -49,6 +53,8 @@ private theorem integral_tendsto {α : Type*} [MeasurableSpace α] {μ : Measure
     simp [RCLike.inner_apply, hx]
   simp only [he, hw]
   exact (lp_tendsto f hf w ht).inner tendsto_const_nhds
+end
+
 private theorem test_derivative_memLp {n : ℕ} (B : LocalBall n)
     (φ : TestFunction B.toOpens ℂ ⊤) (l : List (Fin n)) :
     MemLp (coordinateDerivativeList l (fun y => φ y)) 2 (volume.restrict B.carrier) := by
@@ -58,7 +64,7 @@ private theorem test_derivative_memLp {n : ℕ} (B : LocalBall n)
     | nil => exact ⟨φ.contDiff, φ.hasCompactSupport⟩
     | cons i l ih =>
       refine ⟨(ih.1.fderiv_right (by simp)).clm_apply contDiff_const, ?_⟩
-      exact (ih.2.fderiv ℝ).comp_left (g := fun f => f (EuclideanSpace.single i 1)) (by simp)
+      exact (ih.2.fderiv ℝ).comp_left (g := fun f => f (EuclideanSpace.single i 1)) (rfl)
   exact (hs.1.continuous.memLp_of_hasCompactSupport hs.2).mono_measure Measure.restrict_le_self
 
 private theorem first_directions {n : ℕ} (i : Fin n) : (firstIndex i).directions = [i] := by
@@ -81,7 +87,7 @@ private theorem first_directions {n : ℕ} (i : Fin n) : (firstIndex i).directio
           exact fun e => hn.1 (e ▸ hj)
         simp [hz]
       · rw [List.flatMap_cons, if_neg h]
-        simpa using ih hn.2 (hi.resolve_left (Ne.symm h))
+        apply ih <;> aesop
   unfold MultiIndex.directions firstIndex
   simp only [apply_ite Fin.val, Fin.val_one, Fin.val_zero]
   have he : (fun j : Fin n => List.replicate (if j = i then 1 else 0) j) =
@@ -91,7 +97,10 @@ private theorem first_directions {n : ℕ} (i : Fin n) : (firstIndex i).directio
   rw [he]
   exact aux (List.finRange n) (List.nodup_finRange _) (List.mem_finRange i)
 
-private theorem matrix_bound {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ} (D : Coefficients B cρ Cρ κ Λ)
+section
+variable {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ} (D : Coefficients B cρ Cρ κ Λ)
+include n B cρ Cρ κ Λ D
+private theorem matrix_bound  
     (hκ : 0 < κ) (x : Space n) (hx : x ∈ B.carrier) (i j : Fin n) :
     |D.matrix x i j| ≤ |Λ| := by
   classical
@@ -122,8 +131,7 @@ private theorem matrix_bound {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ} (
   apply abs_le.mpr
   constructor <;> nlinarith [hq 1, hq (-1), hd i, hd j, le_abs_self Λ]
 
-private theorem density_memLp {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
-    (D : Coefficients B cρ Cρ κ Λ) (hcρ : 0 < cρ) :
+private theorem density_memLp   (hcρ : 0 < cρ) :
     MemLp (fun x => (D.density x : ℂ)) ⊤ (volume.restrict B.carrier) := by
   apply memLp_top_of_bound
     ((Complex.continuous_ofReal.comp_continuousOn D.density_smooth.continuousOn).aestronglyMeasurable
@@ -133,14 +141,15 @@ private theorem density_memLp {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
   rw [abs_of_nonneg (le_trans hcρ.le (D.density_bounds x hx).1)]
   exact (D.density_bounds x hx).2
 
-private theorem matrix_memLp {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
-    (D : Coefficients B cρ Cρ κ Λ) (hκ : 0 < κ) (i j : Fin n) :
+private theorem matrix_memLp   (hκ : 0 < κ) (i j : Fin n) :
     MemLp (fun x => (D.matrix x i j : ℂ)) ⊤ (volume.restrict B.carrier) := by
   apply memLp_top_of_bound
     ((Complex.continuous_ofReal.comp_continuousOn (D.matrix_smooth i j).continuousOn).aestronglyMeasurable
       Metric.isOpen_ball.measurableSet) |Λ|
   filter_upwards [ae_restrict_mem Metric.isOpen_ball.measurableSet] with x hx
   simpa using matrix_bound D hκ x hx i j
+end
+
 
 private theorem zero_directions (n k : ℕ) : (zeroIndex n k).directions = [] := by
   simp [MultiIndex.directions, zeroIndex]

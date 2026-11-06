@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.Definitions.HilbertSymbols.GlobalHilbertPairingFamily
 public import ClassFieldTheory.Definitions.HilbertSymbols.PowerClass
 public import Mathlib.RingTheory.RootsOfUnity.PrimitiveRoots
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -40,7 +43,7 @@ def finiteFactor
     (v : HeightOneSpectrum (𝓞 F)) (a b : Fˣ) :
     rootsOfUnity (n : ℕ) F := by
   letI : NeZero (n : ℕ) := ⟨n.ne_zero⟩
-  let e : rootsOfUnity (n : ℕ) F ≃* rootsOfUnity (n : ℕ) (v.adicCompletion F) :=
+  let e  :=
     rootsOfUnityEquivOfPrimitiveRoots
       (algebraMap F (v.adicCompletion F)).injective hmu
   exact e.symm

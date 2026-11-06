@@ -16,11 +16,11 @@ open KPKirillovOrbitMapFaithful
 
 variable (F : Type) [Field F] [NumberField F]
   (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : KPFinitePlace F)
-  (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
+  (S : CanonicalFiniteInducingData F ζ hζ q) 
   (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
-  (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
-  (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F q m)
-  (s : Sections F ζ hζ q m (phase F q) ℂ)
+  
+  (m : ℕ) 
+  
 
 end DedekindZetaZeroFree.FourierContinuation.ActualKirillov
 

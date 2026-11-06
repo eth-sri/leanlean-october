@@ -43,8 +43,11 @@ private lemma initial_boundary_vartheta_norm (C : A.GeneralArithmeticContext σ 
 private lemma initial_boundary_qPower_norm (p : ExteriorPrime A) (s : ℂ) :
     ‖qPower p s‖ = Real.exp (s.re * Real.log (Q p)) := by
   simp [qPower, Complex.norm_exp]
-private lemma initial_boundary_term_bound (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
-    (j : Fin 6) (θ : {θ : ℂ // ‖θ‖ = 1}) (e : Fin 2) (l k m : ℕ) (ξ w z : ℂ) :
+section
+variable (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
+    (j : Fin 6) (θ : {θ : ℂ // ‖θ‖ = 1})
+include C p j θ
+private lemma initial_boundary_term_bound   (e : Fin 2) (l k m : ℕ) (ξ w z : ℂ) :
     ‖seriesTerm C p j θ e l k m ξ w z‖ ≤
       (‖gammaTwo C p‖ * Real.exp ((1/2 - ξ.re) * Real.log (Q p))) ^ e.val *
       (Real.exp ((2 - 3 * ξ.re) * Real.log (Q p))) ^ l *
@@ -71,8 +74,7 @@ private lemma initial_boundary_term_bound (C : A.GeneralArithmeticContext σ η 
       push_cast
       ring
 
-theorem good_euler_series_summable_initial_boundary (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
-    (j : Fin 6) (θ : {θ : ℂ // ‖θ‖ = 1})
+theorem good_euler_series_summable_initial_boundary  
     (ξ w z : ℂ) (hξ : 4 ≤ ξ.re) (hw : 4 ≤ w.re) (hz : 2 ≤ z.re) :
     Summable (fun i : Fin 2 × ℕ × ℕ × ℕ =>
       ‖seriesTerm C p j θ i.1 i.2.1 i.2.2.1 i.2.2.2 ξ w z‖) := by
@@ -104,15 +106,20 @@ theorem good_euler_series_summable_initial_boundary (C : A.GeneralArithmeticCont
   apply Summable.of_nonneg_of_le (fun _ => norm_nonneg _) (fun i => ?_) sall
   simpa only [a, b, c, d, mul_assoc] using
     initial_boundary_term_bound C p j θ i.1 i.2.1 i.2.2.1 i.2.2.2 ξ w z
+end
+
 
 open CanonicalLocalGaussTable CanonicalGaussInversePower
 
-private lemma tau_period (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
+section
+variable (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
+include C p
+private lemma tau_period  
     (a b : ℤ) (h : a % 6 = b % 6) : tau C p a = tau C p b := by
   unfold tau
   rw [T_eq_finiteField, T_eq_finiteField]
   simp only [SArithmeticData.sexticExponent, h]
-private lemma shell_six_kzero (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
+private lemma shell_six_kzero  
     (d m : ℕ) (hd : 0 < d) :
     Ctk C p (6*d) 0 (6*m) =
       if d ≤ m then (Q p : ℂ)^(6*d-1)*((Q p : ℂ)-1) else 0 := by
@@ -124,7 +131,7 @@ private lemma shell_six_kzero (C : A.GeneralArithmeticContext σ η hS) (p : Ext
   · have hne : 6*m-(6*d-1) ≠ 0 := by omega
     simp [hle, hdm, hne]
   · simp [hle, hdm]
-private lemma shell_six_kone (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
+private lemma shell_six_kone  
     (d m : ℕ) (hd : 0 < d) :
     Ctk C p (6*d) 1 (6*m) =
       if d = m then (Q p : ℂ)^(6*d) else 0 := by
@@ -143,7 +150,7 @@ private lemma shell_six_kone (C : A.GeneralArithmeticContext σ η hS) (p : Exte
     · have hne : 6*m-6*d ≠ 0 := by omega
       simp [hdm, hle, hne]
     · simp [hdm, hle]
-private lemma shell_one_kzero (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
+private lemma shell_one_kzero  
     (d m : ℕ) :
     Ctk C p (6*d+1) 0 (6*m) =
       if d = m then (Q p : ℂ)^(6*d)*tau C p 1 else 0 := by
@@ -159,7 +166,7 @@ private lemma shell_one_kzero (C : A.GeneralArithmeticContext σ η hS) (p : Ext
     · have hne : 6*m-6*d ≠ 0 := by omega
       simp [hdm, hle, hne]
     · simp [hdm, hle]
-private lemma shell_one_kone (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
+private lemma shell_one_kone  
     (d m : ℕ) :
     Ctk C p (6*d+1) 1 (6*m) =
       if d < m then tau C p 1 * (Q p : ℂ)^(6*d)*((Q p : ℂ)-1) else 0 := by
@@ -172,7 +179,7 @@ private lemma shell_one_kone (C : A.GeneralArithmeticContext σ η hS) (p : Exte
   · have hne : 6*m-(6*d+1) ≠ 0 := by omega
     simp [hdm, hne]
   · simp [hdm]
-private lemma shell_odd_zero (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
+private lemma shell_odd_zero  
     (e : Fin 2) (d k m : ℕ) : Ctk C p (e.val+3*(2*d+1)) k (6*m) = 0 := by
   have ht : 0 < e.val+3*(2*d+1) := by omega
   have hndvd : ¬ (6 : ℤ) ∣ (e.val+3*(2*d+1) : ℕ) := by
@@ -193,6 +200,8 @@ private lemma shell_odd_zero (C : A.GeneralArithmeticContext σ η hS) (p : Exte
       simp [hle, hne, hndvd']
     · simp [hle]
   · exact Ctk_eq_zero_of_two_le C p _ _ _ ht (by omega)
+end
+
 private lemma qp_add (p : ExteriorPrime A) (s t : ℂ) : qPower p (s+t) = qPower p s * qPower p t := by
   unfold qPower; rw [add_mul, Complex.exp_add]
 private lemma qp_nat_mul (p : ExteriorPrime A) (s : ℂ) (n : ℕ) : qPower p (n*s) = qPower p s ^ n := by
@@ -241,7 +250,10 @@ private lemma geom_tail (V : ℂ) (hV : ‖V‖ < 1) (d : ℕ) :
 private lemma geom_strict_tail (V : ℂ) (hV : ‖V‖ < 1) (d : ℕ) :
     (∑' m : ℕ, if d < m then V^m else 0) = V^(d+1)/(1-V) := by
   simpa only [Nat.succ_le_iff] using geom_tail V hV (d+1)
-private lemma even_shell_sum_zero (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
+section
+variable (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
+include C p
+private lemma even_shell_sum_zero  
     (B W V : ℂ) (hV : ‖V‖ < 1) (d : ℕ) (hd : 0 < d) :
     (∑' k : ℕ, ∑' m : ℕ, B^d*W^k*V^m*Ctk C p (6*d) k (6*m)) =
       (B*(Q p : ℂ)^6*V)^d * ((1-(Q p : ℂ)⁻¹)/(1-V)+W) := by
@@ -280,7 +292,7 @@ private lemma even_shell_sum_zero (C : A.GeneralArithmeticContext σ η hS) (p :
   simp only [mul_pow, ← pow_mul]
   field_simp
   <;> ring
-private lemma even_shell_sum_one (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
+private lemma even_shell_sum_one  
     (H B W V : ℂ) (hV : ‖V‖ < 1) (d : ℕ) :
     (∑' k : ℕ, ∑' m : ℕ, H*B^d*W^k*V^m*Ctk C p (6*d+1) k (6*m)) =
       H*tau C p 1*(B*(Q p : ℂ)^6*V)^d * (1+((Q p : ℂ)-1)*W*V/(1-V)) := by
@@ -306,13 +318,13 @@ private lemma even_shell_sum_one (C : A.GeneralArithmeticContext σ η hS) (p : 
   rw [ht]
   simp only [mul_pow, ← pow_mul, pow_succ, div_eq_mul_inv]
   ring
-private lemma BQV (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) (ξ z : ℂ) :
+private lemma BQV   (ξ z : ℂ) :
     (vartheta C p^6*qPower p (-2-6*ξ))*(Q p : ℂ)^6*qPower p (-6*z) =
       vartheta C p^6*qPower p (4-6*ξ)*qPower p (-6*z) := by
   rw [← qp_nat p 6]
   rw [mul_assoc (vartheta C p^6), ← qp_add]
   congr 2; congr 1; ring
-private lemma Htau (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
+private lemma Htau  
     (θ : {θ : ℂ // ‖θ‖ = 1}) (ξ : ℂ) :
     (gammaTwo C p*vartheta C p*θ.val⁻¹*qPower p (-1/2-ξ))*tau C p 1 =
       -(η p.val.asIdeal*star θ.val*qPower p (-ξ)) := by
@@ -325,7 +337,7 @@ private lemma Htau (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime 
   calc
     _ = (gammaTwo C p*vartheta C p*tau C p 1*qPower p (-1/2))*θ.val⁻¹*qPower p (-ξ) := by ring
     _ = _ := by rw [hh, hinv]; ring
-private lemma even_shell_sum_origin (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
+private lemma even_shell_sum_origin  
     (W V : ℂ) (hW : ‖W‖ < 1) (hV : ‖V‖ < 1) :
     (∑' k : ℕ, ∑' m : ℕ, W^k*V^m*Ctk C p 0 k (6*m)) = 1/(1-V)+W/(1-W) := by
   have hterm (k m : ℕ) : W^k*V^m*Ctk C p 0 k (6*m) =
@@ -349,7 +361,7 @@ private lemma even_shell_sum_origin (C : A.GeneralArithmeticContext σ η hS) (p
   simp only [if_true, Nat.succ_ne_zero, if_false, pow_succ,
     tsum_mul_right, tsum_geometric_of_norm_lt_one hW, div_eq_mul_inv]
   ring
-private lemma boundary_norms (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
+private lemma boundary_norms  
     (θ : {θ : ℂ // ‖θ‖ = 1}) (ξ w z : ℂ) (hξ : 4 ≤ ξ.re) (hw : 4 ≤ w.re) (hz : 2 ≤ z.re) :
     ‖qPower p (-6*z)‖ < 1 ∧ ‖θ.val*qPower p (-w)‖ < 1 ∧
     ‖vartheta C p^6*qPower p (4-6*ξ)*qPower p (-6*z)‖ < 1 := by
@@ -369,10 +381,15 @@ private lemma boundary_norms (C : A.GeneralArithmeticContext σ η hS) (p : Exte
   · simp only [norm_mul, norm_pow, hv, one_pow, one_mul, hn, ← Real.exp_add]
     apply Real.exp_lt_one_iff.mpr
     simp; nlinarith
-private lemma ib_evaluation (C : A.GeneralArithmeticContext σ η hS)
+end
+
+section
+variable (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (u : A.R)
     (hu : IsUnit (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) u))
     (θ : {θ : ℂ // ‖θ‖ = 1})
+include C p u hu θ
+private lemma ib_evaluation  
     (hθ : θ.val = chi (σ := σ) p (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) u))
     (ξ w z : ℂ) (hξ : 4 ≤ ξ.re) (hw : 4 ≤ w.re) (hz : 2 ≤ z.re) :
     let V := qPower p (-6*z)
@@ -459,10 +476,7 @@ private lemma ib_evaluation (C : A.GeneralArithmeticContext σ η hS)
   rw [← sp.tsum_sub sg, good_euler_geometric_shell_sum V W D E (Q p : ℂ) hE]
   ring
 
-theorem good_euler_series_initial_boundary (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (u : A.R)
-    (hu : IsUnit (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) u))
-    (θ : {θ : ℂ // ‖θ‖ = 1})
+theorem good_euler_series_initial_boundary  
     (hθ : θ.val = chi (σ := σ) p
       (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) u))
     (ξ w z : ℂ) (hξ : 4 ≤ ξ.re) (hw : 4 ≤ w.re) (hz : 2 ≤ z.re) :
@@ -479,6 +493,8 @@ theorem good_euler_series_initial_boundary (C : A.GeneralArithmeticContext σ η
   dsimp only
   refine ⟨good_euler_series_summable_initial_boundary C p 0 θ ξ w z hξ hw hz, ?_⟩
   exact ib_evaluation C p u hu θ hθ ξ w z hξ hw hz
+end
+
 
 end DedekindZetaZeroFree.LocalFiniteSums
 

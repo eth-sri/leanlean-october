@@ -13,7 +13,7 @@ open KPGlobalTorusFiniteStages KPGlobalResidualConstruction KPLiteralRaw
 variable {F : Type} [Field F] [NumberField F]
 variable (A : SArithmeticData F)
 variable (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
-variable (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
+
 local notation "ζ" => A.zeta12
 local notation "hζ" => A.primitive_zeta12
 set_option backward.isDefEq.respectTransparency false

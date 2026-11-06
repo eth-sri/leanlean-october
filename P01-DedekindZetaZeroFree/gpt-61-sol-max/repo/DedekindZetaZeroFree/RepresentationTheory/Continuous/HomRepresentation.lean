@@ -55,17 +55,17 @@ section Invariants
 
 variable {𝕜 G V W : Type*} [NontriviallyNormedField 𝕜] [Group G]
   [NormedAddCommGroup V] [NormedSpace 𝕜 V] [NormedAddCommGroup W] [NormedSpace 𝕜 W]
-  (π : ContRepresentation 𝕜 G V) (ρ : ContRepresentation 𝕜 G W)
+   
 
-@[simp]
-theorem linHom_apply_eq_self_iff_isIntertwining (T : V →L[𝕜] W) :
-    (∀ g : G, (ρ g).comp (T.comp (π g⁻¹)) = T) ↔ ∀ g : G, T.comp (π g) = (ρ g).comp T := by
-  have key := Representation.mem_linHom_invariants_iff_isIntertwining (ρ := π.toRepresentation)
-    (σ := ρ.toRepresentation) (T : V →ₗ[𝕜] W)
-  rw [Representation.isIntertwiningMap_iff] at key
-  simp only [LinearMap.ext_iff, LinearMap.comp_apply, ContinuousLinearMap.coe_coe] at key
-  simp only [ContinuousLinearMap.ext_iff, ContinuousLinearMap.comp_apply]
-  exact key
+
+
+
+
+
+
+
+
+
 
 end Invariants
 

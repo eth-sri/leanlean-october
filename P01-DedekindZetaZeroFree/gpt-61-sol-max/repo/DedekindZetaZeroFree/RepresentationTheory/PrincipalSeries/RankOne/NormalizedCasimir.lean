@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.RankOne.RightDerivedAction
 
 @[expose] public section
+
 
 section
 noncomputable section
@@ -13,7 +16,7 @@ open DedekindZetaZeroFree.RepresentationTheory.KPSmoothCoreCasimirEnergy.Infinit
  abbrev M := Matrix (Fin 2) (Fin 2) ℂ
  abbrev Idx := Fin 2 × Fin 2 × Bool
  def e (p : Idx) : M := Matrix.single p.1 p.2.1 (if p.2.2 then Complex.I else 1)
- def c (x : M) (p : Idx) : ℝ := if p.2.2 then (x p.1 p.2.1).im else (x p.1 p.2.1).re
+ def c (x : M) (p : Idx)  := if p.2.2 then (x p.1 p.2.1).im else (x p.1 p.2.1).re
 private lemma expansion (x : M) : x = ∑ p : Idx, c x p • e p := by
   ext i j
   fin_cases i <;> fin_cases j <;>
@@ -87,22 +90,25 @@ open KPCplxPrincipalSeriesCharts
 
  abbrev Mat := Matrix (Fin 2) (Fin 2) ℂ
 
- def diagFlow (c : ℂ) (t : ℝ) : KPCplxCharacterHaar.ComplexGL2 :=
+ def diagFlow (c : ℂ) (t : ℝ)  :=
   upperTriangular (Units.mk0 (Complex.exp (t * c)) (Complex.exp_ne_zero _))
     (Units.mk0 (Complex.exp (-(t * c))) (Complex.exp_ne_zero _)) 0
 
- def diagPath (c : ℂ) (m : Mat) (t : ℝ) : Mat :=
+ section
+variable (c : ℂ) (m : Mat)
+include c m
+def diagPath   (t : ℝ) : Mat :=
   !![Complex.exp (t * c), 0; 0, Complex.exp (-(t * c))] * m
 
- def diagVel (c : ℂ) (m : Mat) (t : ℝ) : Mat :=
+ def diagVel   (t : ℝ) : Mat :=
   !![c * Complex.exp (t * c), 0; 0, -c * Complex.exp (-(t * c))] * m
 
-private theorem diagPath_zero (c : ℂ) (m : Mat) : diagPath c m 0 = m := by
+private theorem diagPath_zero   : diagPath c m 0 = m := by
   simp [diagPath, Matrix.mul_apply, Fin.sum_univ_two]
   ext i j
   fin_cases i <;> fin_cases j <;> simp [Matrix.vecMul, dotProduct, Fin.sum_univ_two]
 
-private theorem diagPath_deriv (c : ℂ) (m : Mat) (t : ℝ) :
+private theorem diagPath_deriv   (t : ℝ) :
     HasDerivAt (diagPath c m) (diagVel c m t) t := by
   have h := ((Complex.hasDerivAt_exp (t * c)).hasFDerivAt.restrictScalars ℝ).comp_hasDerivAt t
     (Complex.ofRealCLM.hasDerivAt.mul_const c)
@@ -119,7 +125,7 @@ private theorem diagPath_deriv (c : ℂ) (m : Mat) (t : ℝ) :
   · simpa [diagPath, diagVel, Matrix.mul_apply, Fin.sum_univ_two, mul_comm, mul_left_comm, mul_assoc] using h.mul_const (m 0 j)
   · simpa [diagPath, diagVel, Matrix.mul_apply, Fin.sum_univ_two, mul_comm, mul_left_comm, mul_assoc] using hn.mul_const (m 1 j)
 
-private theorem diagVel_deriv (c : ℂ) (m : Mat) :
+private theorem diagVel_deriv   :
     HasDerivAt (diagVel c m) ((c ^ 2) • m) 0 := by
   have h := ((Complex.hasDerivAt_exp (0 * c)).hasFDerivAt.restrictScalars ℝ).comp_hasDerivAt 0
     (Complex.ofRealCLM.hasDerivAt.mul_const c)
@@ -135,6 +141,8 @@ private theorem diagVel_deriv (c : ℂ) (m : Mat) :
   fin_cases i
   · simpa [diagVel, Matrix.mul_apply, Fin.sum_univ_two, smul_eq_mul, pow_two, mul_assoc] using (h.const_mul c).mul_const (m 0 j)
   · simpa [diagVel, Matrix.mul_apply, Fin.sum_univ_two, smul_eq_mul, pow_two, mul_assoc] using (hn.const_mul (-c)).mul_const (m 1 j)
+end
+
 
 private theorem diag_weight (s : ℝ) (c : ℂ) (t : ℝ) :
     inductionWeight s (Units.mk0 (Complex.exp (t * c)) (Complex.exp_ne_zero _))
@@ -151,15 +159,14 @@ private theorem diag_weight (s : ℝ) (c : ℂ) (t : ℝ) :
 
 private theorem diag_covariance (s : ℝ) (f : PrincipalSeries s)
     (g : KPCplxCharacterHaar.ComplexGL2) (c : ℂ) (t : ℝ) :
-    matrixFunction f.val (diagPath c (g : Mat) t) =
+    matrixFunction f.val (diagPath c g t) =
       (Real.exp ((2 * (1 + 2 * s) * c.re) * t) : ℂ) * f g := by
-  have he : diagPath c (g : Mat) t = ((diagFlow c t * g) : Mat) := by
-    rfl
+  have he : diagPath c g t = ((diagFlow c t * g) : Mat) := rfl
   rw [he]
   unfold matrixFunction
   rw [dif_pos (show ((diagFlow c t : Mat) * (g : Mat)).det ≠ 0 from Matrix.GeneralLinearGroup.det_ne_zero (diagFlow c t * g))]
   have hh : Matrix.GeneralLinearGroup.mkOfDetNeZero
-      ((diagFlow c t * g) : Mat) (show ((diagFlow c t : Mat) * (g : Mat)).det ≠ 0 from Matrix.GeneralLinearGroup.det_ne_zero (diagFlow c t * g)) = diagFlow c t * g := by
+      ((diagFlow c t * g) : Mat) ((Matrix.GeneralLinearGroup.det_ne_zero (diagFlow c t * g))) = diagFlow c t * g := by
     apply Units.ext
     rfl
   rw [hh]
@@ -170,17 +177,16 @@ private theorem diag_covariance (s : ℝ) (f : PrincipalSeries s)
 
 private theorem diag_hessian (s : ℝ) (f : PrincipalSeries s)
     (g : KPCplxCharacterHaar.ComplexGL2) (c : ℂ) :
-    fderiv ℝ (fderiv ℝ (matrixFunction f.val)) (g : Mat)
-      (diagVel c (g : Mat) 0) (diagVel c (g : Mat) 0) +
-    fderiv ℝ (matrixFunction f.val) (g : Mat) ((c ^ 2) • (g : Mat)) =
+    fderiv ℝ (fderiv ℝ (matrixFunction f.val)) g
+      (diagVel c g 0) (diagVel c g 0) +
+    fderiv ℝ (matrixFunction f.val) g ((c ^ 2) • (g : Mat)) =
       (((2 * (1 + 2 * s) * c.re) ^ 2 : ℝ) : ℂ) * f g := by
   letI : NormedAddCommGroup (Mat →L[ℝ] ℂ) := ContinuousLinearMap.toNormedAddCommGroup
   letI : NormedSpace ℝ (Mat →L[ℝ] ℂ) := ContinuousLinearMap.toNormedSpace
   let F := matrixFunction f.val
   let m : Mat := g
-  let k : ℝ := 2 * (1 + 2 * s) * c.re
-  have ho : IsOpen {m : Mat | m.det ≠ 0} := by
-    exact isOpen_ne.preimage (by fun_prop)
+  let k  := 2 * (1 + 2 * s) * c.re
+  have ho : IsOpen {m : Mat | m.det ≠ 0} := isOpen_ne.preimage (by fun_prop)
   have hf := ((principalSeries_mem_iff s f.val).mp f.property).2
   have hd := hf.fderiv_of_isOpen ho (m := (⊤ : ℕ∞)) (by simp)
   have hpdet (t : ℝ) : (diagPath c m t).det ≠ 0 :=
@@ -195,7 +201,7 @@ private theorem diag_hessian (s : ℝ) (f : PrincipalSeries s)
     have heq : (fun t : ℝ => F (diagPath c m t)) =
         (fun t : ℝ => (Real.exp (k * t) : ℂ) * f g) := by
       funext t
-      exact diag_covariance s f g c t
+      apply diag_covariance
     have hx := (Complex.ofRealCLM.hasFDerivAt.comp_hasDerivAt t
       ((Real.hasDerivAt_exp (k * t)).comp t ((hasDerivAt_id t).const_mul k))).mul_const (f g)
     dsimp only [Function.comp_def] at hh hx
@@ -205,8 +211,7 @@ private theorem diag_hessian (s : ℝ) (f : PrincipalSeries s)
     rw [diagPath_zero]; exact hD
   have hchain := HasFDerivAt.comp_hasDerivAt (E := Matrix (Fin 2) (Fin 2) ℂ →L[ℝ] ℂ) 0 hD0.hasFDerivAt (diagPath_deriv c m 0)
   have ha := hchain.clm_apply (diagVel_deriv c m)
-  have heq : (fun t : ℝ => fderiv ℝ F (diagPath c m t) (diagVel c m t)) =
-      (fun t : ℝ => (k : ℂ) * (Real.exp (k * t) : ℂ) * f g) := funext he
+  have heq  := funext he
   dsimp only [Function.comp_def] at ha
   erw [heq] at ha
   have hx := ((Complex.ofRealCLM.hasFDerivAt.comp_hasDerivAt 0
@@ -218,27 +223,27 @@ theorem diagonal_hessian_covariance (s : ℝ)
     (f : KPCplxPrincipalSeriesCharts.PrincipalSeries s)
     (g : KPCplxCharacterHaar.ComplexGL2) :
     fderiv ℝ (fderiv ℝ (KPCplxPrincipalSeriesCharts.matrixFunction f.val))
-      (g : Matrix (Fin 2) (Fin 2) ℂ)
+      g
       (noncompactMatrix 0 * (g : Matrix (Fin 2) (Fin 2) ℂ))
       (noncompactMatrix 0 * (g : Matrix (Fin 2) (Fin 2) ℂ)) -
     fderiv ℝ (fderiv ℝ (KPCplxPrincipalSeriesCharts.matrixFunction f.val))
-      (g : Matrix (Fin 2) (Fin 2) ℂ)
+      g
       (compactMatrix 0 * (g : Matrix (Fin 2) (Fin 2) ℂ))
       (compactMatrix 0 * (g : Matrix (Fin 2) (Fin 2) ℂ)) =
     ((2 * (1 + 2 * s) ^ 2 : ℝ) : ℂ) * f g -
       fderiv ℝ (KPCplxPrincipalSeriesCharts.matrixFunction f.val)
-        (g : Matrix (Fin 2) (Fin 2) ℂ) (g : Matrix (Fin 2) (Fin 2) ℂ) := by
-  let r : ℝ := 1 / Real.sqrt 2
+        g g := by
+  let r  := 1 / Real.sqrt 2
   have hr : r ^ 2 = 1 / 2 := by
     dsimp [r]
     rw [div_pow, Real.sq_sqrt (by norm_num)]
     norm_num
-  have hv : diagVel (r : ℂ) (g : Mat) 0 = noncompactMatrix 0 * (g : Mat) := by
+  have hv : diagVel r g 0 = noncompactMatrix 0 * (g : Mat) := by
     congr 1
     ext i j
     fin_cases i <;> fin_cases j <;>
       simp [diagVel, noncompactMatrix, r, Matrix.smul_apply, smul_eq_mul]
-  have hvi : diagVel (Complex.I * r) (g : Mat) 0 = compactMatrix 0 * (g : Mat) := by
+  have hvi : diagVel (Complex.I * r) g 0 = compactMatrix 0 * (g : Mat) := by
     congr 1
     ext i j
     fin_cases i <;> fin_cases j <;>
@@ -251,7 +256,7 @@ theorem diagonal_hessian_covariance (s : ℝ)
   have hk : (2 * (1 + 2 * s) * r) ^ 2 = 2 * (1 + 2 * s) ^ 2 := by
     rw [mul_pow, hr]
     ring
-  have h1 := diag_hessian s f g (r : ℂ)
+  have h1 := diag_hessian s f g r
   have h2 := diag_hessian s f g (Complex.I * r)
   rw [hv, hc] at h1
   rw [hvi, hci] at h2
@@ -297,7 +302,7 @@ theorem offdiagonal_pauli_contraction
     (B (upperRoot * m) (lowerRoot * m) + B (lowerRoot * m) (upperRoot * m)) -
       (B ((Complex.I • upperRoot) * m) ((Complex.I • lowerRoot) * m) +
         B ((Complex.I • lowerRoot) * m) ((Complex.I • upperRoot) * m)) := by
-  let a : ℝ := (Real.sqrt 2)⁻¹
+  let a  := (Real.sqrt 2)⁻¹
   have h1 : noncompactMatrix 1 = a • (upperRoot + lowerRoot) := by
     ext i j
     fin_cases i <;> fin_cases j <;>
@@ -345,7 +350,7 @@ namespace DedekindZetaZeroFree.RepresentationTheory.KPSmoothCoreCasimirEnergyHes
 open DedekindZetaZeroFree.RepresentationTheory.KPSmoothCoreCasimirEnergyHessianCovariance.RootDirections
 open KPCplxPrincipalSeriesCharts
 
- def a (t : ℝ) : ℂˣ := Units.mk0 (Real.exp t : ℂ) (by exact_mod_cast Real.exp_ne_zero t)
+ def a (t : ℝ) : ℂˣ := Units.mk0 (Real.exp t) (by exact_mod_cast Real.exp_ne_zero t)
 private lemma weight (t s : ℝ) : inductionWeight s (a t) 1 = Real.exp ((1 + 2*s)*t) := by
   simp only [inductionWeight, complexAbs, a, Units.val_mk0, Units.val_one, div_one,
     Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos t)]
@@ -389,7 +394,7 @@ private lemma cov (s t : ℝ) (f : PrincipalSeries s) (g : KPCplxCharacterHaar.C
   rfl
 
 private lemma firstDerivative (s : ℝ) (f : PrincipalSeries s) (g : KPCplxCharacterHaar.ComplexGL2) :
-    fderiv ℝ (matrixFunction f.val) (g : Matrix (Fin 2) (Fin 2) ℂ)
+    fderiv ℝ (matrixFunction f.val) g
       (upperRoot * (lowerRoot * (g : Matrix (Fin 2) (Fin 2) ℂ))) =
       ((1+2*s : ℝ) : ℂ) * f g := by
   have hf := ((principalSeries_mem_iff s f.val).mp f.property).2
@@ -397,13 +402,13 @@ private lemma firstDerivative (s : ℝ) (f : PrincipalSeries s) (g : KPCplxChara
   have hd := (hf.differentiableOn (by simp)).differentiableAt
     ((isOpen_ne.preimage hcont).mem_nhds (Matrix.GeneralLinearGroup.det_ne_zero g))
   have hp := path g
-  have hz : !![(Real.exp (0 : ℝ) : ℂ), 0; 0, 1] * (g : Matrix (Fin 2) (Fin 2) ℂ) = g := by
-    have h1 : !![(Real.exp (0 : ℝ) : ℂ), 0; 0, 1] = (1 : Matrix (Fin 2) (Fin 2) ℂ) := by
+  have hz : !![(Real.exp (0) : ℂ), 0; 0, 1] * (g : Matrix (Fin 2) (Fin 2) ℂ) = g := by
+    have h1 : !![(Real.exp (0) : ℂ), 0; 0, 1] = (1 : Matrix (Fin 2) (Fin 2) ℂ) := by
       ext i j; fin_cases i <;> fin_cases j <;> simp [Matrix.one_apply]
     rw [h1, one_mul]
   have hdf : HasFDerivAt (matrixFunction f.val)
-      (fderiv ℝ (matrixFunction f.val) (g : Matrix (Fin 2) (Fin 2) ℂ))
-      (!![(Real.exp (0 : ℝ) : ℂ), 0; 0, 1] * (g : Matrix (Fin 2) (Fin 2) ℂ)) := by
+      (fderiv ℝ (matrixFunction f.val) g)
+      (!![(Real.exp (0) : ℂ), 0; 0, 1] * (g : Matrix (Fin 2) (Fin 2) ℂ)) := by
     rw [hz]
     exact hd.hasFDerivAt
   have hc := hdf.comp_hasDerivAt 0 hp
@@ -417,7 +422,7 @@ private lemma firstDerivative (s : ℝ) (f : PrincipalSeries s) (g : KPCplxChara
   have hh : (matrixFunction f.val ∘ (fun t : ℝ => !![(Real.exp t : ℂ), 0; 0, 1] * (g : Matrix (Fin 2) (Fin 2) ℂ))) =
       (fun t : ℝ => (Real.exp ((1+2*s)*t) : ℂ) * f g) := by
     funext t
-    exact cov s t f g
+    apply cov
   rw [hh] at hc
   exact hc.unique he
 
@@ -425,10 +430,10 @@ theorem root_product_fderiv_covariance (s : ℝ)
     (f : KPCplxPrincipalSeriesCharts.PrincipalSeries s)
     (g : KPCplxCharacterHaar.ComplexGL2) :
     fderiv ℝ (KPCplxPrincipalSeriesCharts.matrixFunction f.val)
-      (g : Matrix (Fin 2) (Fin 2) ℂ)
+      g
       (upperRoot * (lowerRoot * (g : Matrix (Fin 2) (Fin 2) ℂ))) -
     fderiv ℝ (KPCplxPrincipalSeriesCharts.matrixFunction f.val)
-      (g : Matrix (Fin 2) (Fin 2) ℂ)
+      g
       ((Complex.I • upperRoot) *
         ((Complex.I • lowerRoot) * (g : Matrix (Fin 2) (Fin 2) ℂ))) =
     ((2 * (1 + 2 * s) : ℝ) : ℂ) * f g := by
@@ -461,7 +466,7 @@ private theorem invertible_open : IsOpen {m : Mat | m.det ≠ 0} := by
   exact isOpen_ne_fun hc continuous_const
 
 private theorem matrixFunction_coe (f : ComplexGL2 → ℂ) (g : ComplexGL2) :
-    matrixFunction f (g : Mat) = f g := by
+    matrixFunction f g = f g := by
   unfold matrixFunction
   rw [dif_pos (Matrix.GeneralLinearGroup.det_ne_zero g)]
   congr 1
@@ -478,8 +483,8 @@ private theorem affine_upper (z : ℂ) (t : ℝ) :
 
 private theorem upper_invariant (s : ℝ) (f : PrincipalSeries s)
     (g : ComplexGL2) (x : ℂ) : f.val (upperUnipotent x * g) = f.val g := by
-  have hc := ((principalSeries_mem_iff s f.val).mp f.property).1 (1 : ℂˣ) 1 x g
-  have he : upperTriangular (1 : ℂˣ) 1 x = upperUnipotent x := by
+  have hc := ((principalSeries_mem_iff s f.val).mp f.property).1 (1) 1 x g
+  have he : upperTriangular (1) 1 x = upperUnipotent x := by
     apply Matrix.GeneralLinearGroup.ext
     intro i j
     rfl
@@ -487,7 +492,7 @@ private theorem upper_invariant (s : ℝ) (f : PrincipalSeries s)
 
 private theorem upper_differential_zero (s : ℝ) (f : PrincipalSeries s)
     (g : ComplexGL2) (z : ℂ) :
-    fderiv ℝ (matrixFunction f.val) (g : Mat) ((z • upperRoot) * (g : Mat)) = 0 := by
+    fderiv ℝ (matrixFunction f.val) g ((z • upperRoot) * (g : Mat)) = 0 := by
   let X := (z • upperRoot) * (g : Mat)
   have hf := ((principalSeries_mem_iff s f.val).mp f.property).2
   have hsm := hf.contDiffAt (invertible_open.mem_nhds (Matrix.GeneralLinearGroup.det_ne_zero g))
@@ -514,30 +519,30 @@ theorem upper_unipotent_hessian_covariance (s : ℝ)
     (g : KPCplxCharacterHaar.ComplexGL2)
     (z : ℂ) (V : Matrix (Fin 2) (Fin 2) ℂ) :
     fderiv ℝ (fderiv ℝ (KPCplxPrincipalSeriesCharts.matrixFunction f.val))
-      (g : Matrix (Fin 2) (Fin 2) ℂ)
+      g
       ((z • upperRoot) * (g : Matrix (Fin 2) (Fin 2) ℂ)) V +
     fderiv ℝ (fderiv ℝ (KPCplxPrincipalSeriesCharts.matrixFunction f.val))
-      (g : Matrix (Fin 2) (Fin 2) ℂ)
+      g
       V ((z • upperRoot) * (g : Matrix (Fin 2) (Fin 2) ℂ)) =
     -(2 : ℂ) * fderiv ℝ (KPCplxPrincipalSeriesCharts.matrixFunction f.val)
-      (g : Matrix (Fin 2) (Fin 2) ℂ) ((z • upperRoot) * V) := by
+      g ((z • upperRoot) * V) := by
   let m : Mat := g
-  let F : Mat → ℂ := matrixFunction f.val
+  let F  := matrixFunction f.val
   let L : Mat →L[ℝ] Mat := (LinearMap.mulLeft ℝ (z • upperRoot)).toContinuousLinearMap
-  have hL (a : Mat) : L a = (z • upperRoot) * a := rfl
+  
   have hsm : ContDiffAt ℝ (⊤ : ℕ∞) F m :=
     ((principalSeries_mem_iff s f.val).mp f.property).2.contDiffAt
       (invertible_open.mem_nhds (Matrix.GeneralLinearGroup.det_ne_zero g))
   have hD : DifferentiableAt ℝ (fderiv ℝ F) m :=
     (hsm.fderiv_right (m := 1) (by simp)).differentiableAt (by norm_num)
-  have he : (fun a : Mat => fderiv ℝ F a (L a)) =ᶠ[nhds m] (fun _ => (0 : ℂ)) := by
+  have he : (fun a : Mat => fderiv ℝ F a (L a)) =ᶠ[nhds m] (fun _ => (0)) := by
     filter_upwards [invertible_open.mem_nhds (Matrix.GeneralLinearGroup.det_ne_zero g)] with a ha
     let ga : ComplexGL2 := Matrix.GeneralLinearGroup.mkOfDetNeZero a ha
     exact upper_differential_zero s f ga z
   have hh := hD.hasFDerivAt.clm_apply (L.hasFDerivAt (x := m))
   have hzero : fderiv ℝ (fun a : Mat => fderiv ℝ F a (L a)) m = 0 := by
     rw [he.fderiv_eq]
-    exact (hasFDerivAt_const (0 : ℂ) m).fderiv
+    exact (hasFDerivAt_const (0) m).fderiv
   have hv := congrArg (fun A : Mat →L[ℝ] ℂ => A V) (hh.fderiv.symm.trans hzero)
   have hsum : fderiv ℝ F m (L V) + fderiv ℝ (fderiv ℝ F) m V (L m) = 0 := by
     convert hv using 1 <;> rfl
@@ -548,7 +553,7 @@ theorem upper_unipotent_hessian_covariance (s : ℝ)
       fderiv ℝ (fderiv ℝ F) m V (L m) := by
     convert hsym using 1 <;> rfl
   rw [hsym']
-  linear_combination (2 : ℂ) * hsum
+  linear_combination (2) * hsum
 
 end DedekindZetaZeroFree.RepresentationTheory.KPSmoothCoreCasimirEnergyHessianCovariance.UpperUnipotent
 
@@ -568,7 +573,7 @@ theorem pauli_square_sum :
         (3 : ℂ) • (1 : Matrix (Fin 2) (Fin 2) ℂ) := by
   have hsq : (Real.sqrt 2 : ℂ) ^ 2 = 2 := by
     norm_cast
-    exact Real.sq_sqrt (by norm_num)
+    apply Real.sq_sqrt <;> aesop
   have hn : (Real.sqrt 2 : ℂ) ≠ 0 := by
     intro h
     rw [h] at hsq
@@ -591,14 +596,14 @@ private theorem casimir_path_hasDeriv_components (g : KPCplxCharacterHaar.Comple
   have hj := (ContinuousLinearMap.proj j : (Fin 2 → ℂ) →L[ℝ] ℂ).hasFDerivAt.comp_hasDerivAt 0 hi
   change HasDerivAt (fun t : ℝ => ((g : Matrix (Fin 2) (Fin 2) ℂ) * NormedSpace.exp ((t : ℂ) • M)) i j)
     (((g : Matrix (Fin 2) (Fin 2) ℂ) *
-      (ContinuousLinearMap.restrictScalars ℝ (ContinuousLinearMap.toSpanSingleton ℂ (NormedSpace.exp (((0 : ℝ) : ℂ) • M) * M))) 1) i j) 0 at hj
+      (ContinuousLinearMap.restrictScalars ℝ (ContinuousLinearMap.toSpanSingleton ℂ (NormedSpace.exp (((0) : ℂ) • M) * M))) 1) i j) 0 at hj
   simpa using hj
 
 open scoped Matrix.Norms.Elementwise in
 theorem rightDerivative_fderiv (s : ℝ) (f : KPCplxPrincipalSeriesCharts.PrincipalSeries s)
     (g : KPCplxCharacterHaar.ComplexGL2) (M : Matrix (Fin 2) (Fin 2) ℂ) :
     deriv (fun t : ℝ => f (g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • M))) 0 =
-      fderiv ℝ (KPCplxPrincipalSeriesCharts.matrixFunction f.val) (g : Matrix (Fin 2) (Fin 2) ℂ)
+      fderiv ℝ (KPCplxPrincipalSeriesCharts.matrixFunction f.val) g
         ((g : Matrix (Fin 2) (Fin 2) ℂ) * M) := by
   have hf := ((KPCplxPrincipalSeriesCharts.principalSeries_mem_iff s f.val).mp f.property).2
   have hmat : HasDerivAt (fun t : ℝ => (g : Matrix (Fin 2) (Fin 2) ℂ) * NormedSpace.exp ((t : ℂ) • M))
@@ -613,13 +618,12 @@ theorem rightDerivative_fderiv (s : ℝ) (f : KPCplxPrincipalSeriesCharts.Princi
     funext t
     have hu := Matrix.GeneralLinearGroup.det_ne_zero (g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • M))
     have he : ((g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • M)) : Matrix (Fin 2) (Fin 2) ℂ) =
-        (g : Matrix (Fin 2) (Fin 2) ℂ) * NormedSpace.exp ((t : ℂ) • M) := by congr 1
+        (g : Matrix (Fin 2) (Fin 2) ℂ) * NormedSpace.exp ((t : ℂ) • M) := rfl
     dsimp only [Function.comp_def]
     rw [← he]
     unfold KPCplxPrincipalSeriesCharts.matrixFunction
-    rw [dif_pos (show ((g : Matrix (Fin 2) (Fin 2) ℂ) *
-      (KPSmoothActualFlowData.matrixExponential ((t : ℂ) • M) : Matrix (Fin 2) (Fin 2) ℂ)).det ≠ 0 from by
-        simpa only [Units.val_mul] using hu)]
+    rw [dif_pos ((by
+        simpa only [Units.val_mul] using hu))]
     apply congrArg f.val
     apply Units.ext
     rfl
@@ -635,9 +639,9 @@ theorem localDerivative_fderiv (s : ℝ) (b : LocalBasis)
     (g : KPCplxCharacterHaar.ComplexGL2) :
     localDerivative s b f g =
       fderiv ℝ (KPCplxPrincipalSeriesCharts.matrixFunction f.val)
-        (g : Matrix (Fin 2) (Fin 2) ℂ)
+        g
         ((g : Matrix (Fin 2) (Fin 2) ℂ) * cartanMatrix b) := by
-  exact rightDerivative_fderiv s f g (cartanMatrix b)
+  apply rightDerivative_fderiv
 
 open scoped Matrix.Norms.Elementwise in
 
@@ -646,11 +650,11 @@ theorem localDerivative_twice_fderiv (s : ℝ) (b : LocalBasis)
     (g : KPCplxCharacterHaar.ComplexGL2) :
     localDerivative s b (localDerivative s b f) g =
       fderiv ℝ (fderiv ℝ (KPCplxPrincipalSeriesCharts.matrixFunction f.val))
-        (g : Matrix (Fin 2) (Fin 2) ℂ)
+        g
         ((g : Matrix (Fin 2) (Fin 2) ℂ) * cartanMatrix b)
         ((g : Matrix (Fin 2) (Fin 2) ℂ) * cartanMatrix b) +
       fderiv ℝ (KPCplxPrincipalSeriesCharts.matrixFunction f.val)
-        (g : Matrix (Fin 2) (Fin 2) ℂ)
+        g
         ((g : Matrix (Fin 2) (Fin 2) ℂ) * (cartanMatrix b * cartanMatrix b)) := by
   let m : Matrix (Fin 2) (Fin 2) ℂ := g
   let F := KPCplxPrincipalSeriesCharts.matrixFunction f.val
@@ -676,7 +680,7 @@ theorem localDerivative_twice_fderiv (s : ℝ) (b : LocalBasis)
     filter_upwards [hmem] with y hy
     unfold KPCplxPrincipalSeriesCharts.matrixFunction
     rw [dif_pos hy]
-    exact localDerivative_fderiv s b f (Matrix.GeneralLinearGroup.mkOfDetNeZero y hy)
+    apply localDerivative_fderiv
   rw [localDerivative_fderiv, he.fderiv_eq]
   have hh := (hd.hasFDerivAt.clm_apply hmul).fderiv
   have hh' := congrArg (fun D : Matrix (Fin 2) (Fin 2) ℂ →L[ℝ] ℂ => D (m * X)) hh
@@ -692,7 +696,7 @@ theorem radial_fderiv_zero (s : ℝ)
     (f : KPCplxPrincipalSeriesCharts.PrincipalSeries s)
     (g : KPCplxCharacterHaar.ComplexGL2) :
     fderiv ℝ (KPCplxPrincipalSeriesCharts.matrixFunction f.val)
-      (g : Matrix (Fin 2) (Fin 2) ℂ) (g : Matrix (Fin 2) (Fin 2) ℂ) = 0 := by
+      g g = 0 := by
   let m : Matrix (Fin 2) (Fin 2) ℂ := g
   let F := KPCplxPrincipalSeriesCharts.matrixFunction f.val
   have hcont : Continuous (fun m : Matrix (Fin 2) (Fin 2) ℂ => m.det) := by fun_prop
@@ -708,11 +712,10 @@ theorem radial_fderiv_zero (s : ℝ)
     intro j
     simpa using ((hasDerivAt_id (0 : ℝ)).add_const 1).smul_const (m i j)
   have hh := hd.hasFDerivAt.comp_hasDerivAt_of_eq 0 hp (by simp)
-  have hn : ∀ᶠ t : ℝ in nhds 0, t + 1 ≠ 0 := by
-    exact (isOpen_ne.preimage (by fun_prop : Continuous (fun t : ℝ => t + 1))).mem_nhds (by norm_num)
+  have hn : ∀ᶠ t : ℝ in nhds 0, t + 1 ≠ 0 := (isOpen_ne.preimage (by fun_prop : Continuous (fun t : ℝ => t + 1))).mem_nhds (by norm_num)
   have he : F ∘ (fun t : ℝ => (t + 1) • m) =ᶠ[nhds 0] (fun _ => f g) := by
     filter_upwards [hn] with t ht
-    let c : ℂˣ := Units.mk0 ((t + 1 : ℝ) : ℂ) (by exact_mod_cast ht)
+    let c : ℂˣ := Units.mk0 ((t + 1 : ℝ)) (by exact_mod_cast ht)
     have hc : ((Matrix.GeneralLinearGroup.scalar (Fin 2) c * g) : Matrix (Fin 2) (Fin 2) ℂ) =
         (t + 1) • m := by
       simp only [Units.val_mul, Matrix.GeneralLinearGroup.coe_scalar, c, Units.val_mk0]
@@ -730,9 +733,9 @@ theorem radial_fderiv_zero (s : ℝ)
       apply Units.ext
       exact hc.symm
     rw [hg]
-    exact KPCplxPrincipalSeriesCharts.central_invariance s f c g
+    apply KPCplxPrincipalSeriesCharts.central_invariance
   have hh' := hh.congr_of_eventuallyEq he.symm
-  exact hh'.unique (hasDerivAt_const (0 : ℝ) (f g))
+  exact hh'.unique (hasDerivAt_const (0) (f g))
 
 open scoped Matrix.Norms.Elementwise in
 
@@ -743,12 +746,12 @@ theorem casimir_hessian (s : ℝ)
       (∑ j : Fin 3, localDerivative s (true, j) (localDerivative s (true, j) f))) g =
     (∑ j : Fin 3,
       fderiv ℝ (fderiv ℝ (KPCplxPrincipalSeriesCharts.matrixFunction f.val))
-        (g : Matrix (Fin 2) (Fin 2) ℂ)
+        g
         ((g : Matrix (Fin 2) (Fin 2) ℂ) * noncompactMatrix j)
         ((g : Matrix (Fin 2) (Fin 2) ℂ) * noncompactMatrix j)) -
     (∑ j : Fin 3,
       fderiv ℝ (fderiv ℝ (KPCplxPrincipalSeriesCharts.matrixFunction f.val))
-        (g : Matrix (Fin 2) (Fin 2) ℂ)
+        g
         ((g : Matrix (Fin 2) (Fin 2) ℂ) * compactMatrix j)
         ((g : Matrix (Fin 2) (Fin 2) ℂ) * compactMatrix j)) := by
   let m : Matrix (Fin 2) (Fin 2) ℂ := g

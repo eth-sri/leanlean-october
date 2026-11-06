@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LFunctions.Hecke.QuadraticFamilies.GcdPairCharacterIdentities
 public import DedekindZetaZeroFree.LFunctions.Hecke.QuadraticFamilies.PrimitiveProductValues
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Characters.CharacterLift
 
 @[expose] public section
+
 
 /-
 Repository: openai/math.
@@ -42,7 +45,7 @@ private theorem reference_character_exists (hc : c ≠ ⊥)
     letI := Q.instGroup
     have ha := congrArg Q.cls hx
     have hb := congrArg Q.cls hy
-    have hdc : (u ⊔ u₀) ⊔ c = ⊤ :=
+    have hdc  :=
       (SquarefreeGcd.strip_coprime_aux hu hu₀ hx hy huc hu₀c).1
     rw [Q.cls_mul _ _ hdc hxc] at ha
     rw [Q.cls_mul _ _ hdc hyc] at hb
@@ -118,8 +121,7 @@ theorem primitive_pair_phase_separation
     let θ := RayOperations.mul (Γ ⟨u, hu⟩).character (Γ ⟨v, hv⟩).character
     let R := (Γ ⟨u, hu⟩).comparison * (Γ ⟨v, hv⟩).comparison *
       (Q.cond u * Q.cond v) * Q.cond u₀
-    have hR : R ≠ ⊥ := by
-      exact mul_ne_zero (mul_ne_zero
+    have hR : R ≠ ⊥ := mul_ne_zero (mul_ne_zero
         (mul_ne_zero (Γ ⟨u, hu⟩).comparison_ne (Γ ⟨v, hv⟩).comparison_ne)
         (mul_ne_zero (Q.primitive u (hS u hu).1 (hS u hu).2).1
           (Q.primitive v (hS v hv).1 (hS v hv).2).1))

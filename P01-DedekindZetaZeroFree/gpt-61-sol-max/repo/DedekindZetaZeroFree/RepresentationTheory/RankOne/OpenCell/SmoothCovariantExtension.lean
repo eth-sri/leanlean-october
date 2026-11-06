@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Metaplectic.Intertwining.RankOne.OpenCellKernelData
 public import DedekindZetaZeroFree.RepresentationTheory.Jacquet.BruhatChartsAndCompactTransversal
 public import DedekindZetaZeroFree.RepresentationTheory.Smooth.CovariantFunctionsWithCompactRepresentatives
 
 @[expose] public section
+
 
 section
 
@@ -71,20 +74,20 @@ theorem open_cell_decomposition_unique (B : Binding F ζ hζ q A P)
       (A.torus (A.retract b₂) : Cover F ζ hζ q) *
         (A.upperRoot t₂ : Cover F ζ hζ q) := congrArg Subtype.val ht₂
 
-  have hp₁ : A.projection (b₁ : Cover F ζ hζ q) =
+  have hp₁ : A.projection b₁ =
       Matrix.ProjGenLinGroup.mk
         (KubotaRankTwo.d (LocalField F q) (A.coordinate (A.retract b₁)) 1 *
           KubotaRankTwo.n (LocalField F q) (Multiplicative.toAdd t₁)) := by
     rw [hb₁, map_mul, A.torus_projection, A.upperRoot_projection, ← map_mul]
-  have hp₂ : A.projection (b₂ : Cover F ζ hζ q) =
+  have hp₂ : A.projection b₂ =
       Matrix.ProjGenLinGroup.mk
         (KubotaRankTwo.d (LocalField F q) (A.coordinate (A.retract b₂)) 1 *
           KubotaRankTwo.n (LocalField F q) (Multiplicative.toAdd t₂)) := by
     rw [hb₂, map_mul, A.torus_projection, A.upperRoot_projection, ← map_mul]
 
-  have hproj : A.projection (b₁ : Cover F ζ hζ q) *
+  have hproj : A.projection b₁ *
         A.projection (openCoordinate F ζ hζ q s₁) =
-      A.projection (b₂ : Cover F ζ hζ q) *
+      A.projection b₂ *
         A.projection (openCoordinate F ζ hζ q s₂) := by
     rw [← map_mul, ← map_mul, h]
   rw [proj_openCoordinate F ζ hζ q A P B s₁, proj_openCoordinate F ζ hζ q A P B s₂,
@@ -138,7 +141,7 @@ theorem covariant_extension_of_unique_coordinates
     intro b x h
     obtain ⟨hb, hx⟩ := hunique b b₀ x x₀ (h.symm.trans h₀)
     simp only [hb, hx]
-  let f : G → V := fun g =>
+  let f  := fun g =>
     if h : ∃ (b : S) (x : X), g = (b : G) * c x then (key g h).choose else 0
   refine ⟨f, ?_, ?_, ?_⟩
   ·
@@ -205,12 +208,12 @@ private theorem localAbs_lc : IsLocallyConstant (fun y : (LocalField F q)ˣ => l
   intro y
   have he : {x : LocalField F q | valuation (LocalField F q) x = valuation (LocalField F q) (y : LocalField F q)} ∈ nhds (y : LocalField F q) := by
     rw [IsValuativeTopology.mem_nhds_iff]
-    refine ⟨Units.mk0 (valuation (LocalField F q) (y : LocalField F q)) (by simp), ?_⟩
+    refine ⟨Units.mk0 (valuation (LocalField F q) y) (by simp), ?_⟩
     rintro x ⟨t, ht, rfl⟩
     exact Valuation.map_eq_of_sub_lt _ (by simpa using ht)
   have hc := (Units.continuous_val (M := LocalField F q)).continuousAt (x := y)
   filter_upwards [hc.preimage_mem_nhds he] with x hx
-  change valuation (LocalField F q) (x : LocalField F q) = valuation (LocalField F q) (y : LocalField F q) at hx
+  change valuation (LocalField F q) x = valuation (LocalField F q) y at hx
   simp only [localAbs, hx]
 
 private theorem smooth_pullback {G V J : Type*} [Group G] [TopologicalSpace G]
@@ -222,7 +225,7 @@ private theorem smooth_pullback {G V J : Type*} [Group G] [TopologicalSpace G]
   obtain ⟨U, hU⟩ := hρ v
   refine ⟨U.comap j hj, ?_⟩
   intro x hx
-  exact hU (j x) hx
+  apply hU <;> assumption
 
 private theorem inducingAction_smooth (ε : Sign) (z : ℂ) : SmoothRepresentation (inducingAction A P ε z) := by
   have hb : SmoothRepresentation (borelAction A P ε) := by
@@ -263,14 +266,17 @@ private theorem inducingAction_smooth (ε : Sign) (z : ℂ) : SmoothRepresentati
   change inducingScalar A z b • borelAction A P ε b v = v
   rw [he, hJ b hb.1, one_smul]
 
-private theorem kernel_mem (B : Binding F ζ hζ q A P) (g : Cover F ζ hζ q)
+section
+variable (B : Binding F ζ hζ q A P)
+include B
+private theorem kernel_mem   (g : Cover F ζ hζ q)
     (hg : A.projection g = 1) : g ∈ A.B := by
   induction g using QuotientGroup.induction_on with
   | _ g =>
     change A.projection (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) g) = 1 at hg
     rw [B.projection_eq] at hg
     letI := KPPGLLocalCover.scalarSubgroup_normal F (Sum.inr q)
-    have he : Matrix.ProjGenLinGroup.mk g.g = Matrix.ProjGenLinGroup.mk 1 := by simpa using hg
+    have he : Matrix.ProjGenLinGroup.mk g.g = Matrix.ProjGenLinGroup.mk 1 := hg
     obtain ⟨u, hu⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp he
     have he' : KPPGLLocalCover.projection F ζ hζ (Sum.inr q)
         (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) g) = 1 := by
@@ -287,13 +293,13 @@ private theorem kernel_mem (B : Binding F ζ hζ q A P) (g : Cover F ζ hζ q)
     rw [← he, ← B.central_eq]
     exact (A.torus (B.centralTorus e)).property
 
-private theorem torus_surj (B : Binding F ζ hζ q A P) (y : (LocalField F q)ˣ) :
+private theorem torus_surj   (y : (LocalField F q)ˣ) :
     ∃ h : H, A.coordinate h = y := by
   refine ⟨(A.cubeLift y : H) * (B.rootTorus y)⁻¹, ?_⟩
   rw [map_mul, map_inv, A.cube_coordinate, B.coordinate_eq]
   group
 
-private theorem projection_eq_concrete (B : Binding F ζ hζ q A P) :
+private theorem projection_eq_concrete   :
     A.projection = KPLocalSmoothRepresentation.projection F ζ hζ q := by
   apply MonoidHom.ext
   intro g
@@ -306,7 +312,7 @@ private theorem projection_eq_concrete (B : Binding F ζ hζ q A P) :
     rw [KPLocalSmoothRepresentation.ordinaryPGLMap]
     rfl
 
-private theorem borel_eq (B : Binding F ζ hζ q A P) :
+private theorem borel_eq   :
     A.B = KPLocalSmoothRepresentation.Borel F ζ hζ q := by
   apply le_antisymm
   · intro b hb
@@ -330,7 +336,7 @@ private theorem borel_eq (B : Binding F ζ hζ q A P) :
     have hh : M 1 1 ≠ 0 := (mul_ne_zero_iff.mp hd).2
     let y : (LocalField F q)ˣ := Units.mk0 (M 0 0 / M 1 1) (div_ne_zero ha hh)
     obtain ⟨h, he⟩ := torus_surj F ζ hζ q A P B y
-    let b' : A.B := A.torus h * A.upperRoot (Multiplicative.ofAdd (M 0 1 / M 0 0))
+    let b'  := A.torus h * A.upperRoot (Multiplicative.ofAdd (M 0 1 / M 0 0))
     have hm : Matrix.ProjGenLinGroup.mk M = Matrix.ProjGenLinGroup.mk
         (KubotaRankTwo.d (LocalField F q) y 1 *
           KubotaRankTwo.n (LocalField F q) (M 0 1 / M 0 0)) := by
@@ -346,7 +352,7 @@ private theorem borel_eq (B : Binding F ζ hζ q A P) :
           Fin.sum_univ_two, Matrix.GeneralLinearGroup.mkOfDetNeZero,
           Matrix.GeneralLinearGroup.coe_scalar, Matrix.scalar, Matrix.diagonal_apply,
           y, h10] <;> try field_simp [ha, hh]
-    have hp : A.projection b = A.projection (b' : Cover F ζ hζ q) := by
+    have hp : A.projection b = A.projection b' := by
       rw [projection_eq_concrete F ζ hζ q A P B] at ⊢
       rw [← hM, hm]
       rw [← projection_eq_concrete F ζ hζ q A P B]
@@ -356,6 +362,8 @@ private theorem borel_eq (B : Binding F ζ hζ q A P) :
     have hk : b * (b' : Cover F ζ hζ q)⁻¹ ∈ A.B :=
       kernel_mem F ζ hζ q A P B _ (by rw [map_mul, map_inv, hp, mul_inv_cancel])
     simpa using A.B.mul_mem hk b'.property
+end
+
 
 private theorem orbit_lc {G V : Type*} [Group G] [TopologicalSpace G]
     [IsTopologicalGroup G] [AddCommGroup V] [Module ℂ V]
@@ -377,7 +385,7 @@ private theorem compact_avoids_inverse {K : Type*} [Field K] [TopologicalSpace K
   have hO : IsOpen {p : K × K | p.1 * p.2 ≠ 1} :=
     isClosed_singleton.isOpen_compl.preimage (continuous_fst.mul continuous_snd)
   obtain ⟨U, V, hU, hV, h0, hSV, hUV⟩ :=
-    generalized_tube_lemma (isCompact_singleton (x := (0 : K))) hS hO
+    generalized_tube_lemma (isCompact_singleton (x := (0))) hS hO
       (by rintro ⟨y, x⟩ ⟨hy, hx⟩; change y = 0 at hy; simp [hy])
   refine ⟨U, hU, h0 (Set.mem_singleton 0), ?_⟩
   intro y hy x hx
@@ -447,7 +455,7 @@ private theorem chart_local_constancy
         have hh := (charts_cover F ζ hζ q) ▸ Set.mem_univ g
         exact hh.resolve_left hg
       let q0 : delta F ζ hζ q := ⟨g, hgΔ⟩
-      have hy0 : deltaCoordinate F ζ hζ q q0 = 0 :=
+      have hy0  :=
         (closed_cell_coordinate F ζ hζ q q0).mp hgB
       obtain ⟨U, hU, h0U, havoid⟩ := compact_avoids_inverse hcs
       have hy : Continuous (deltaCoordinate F ζ hζ q) :=
@@ -466,7 +474,7 @@ private theorem chart_local_constancy
             congrArg Subtype.val ((omegaHomeomorph F ζ hζ q m hm).apply_symm_apply s)
           have hpx : p.2 = (deltaCoordinate F ζ hζ q r)⁻¹ :=
             (overlap_coordinates F ζ hζ q r.val hrΩ r.property).1
-          have hxS : p.2 ∉ tsupport (ψ : KPRankOneInduction.LocalField F q → E) := by
+          have hxS : p.2 ∉ tsupport ψ := by
             intro hxS
             have hn := havoid _ hr _ hxS
             rw [hpx, mul_inv_cancel₀
@@ -514,13 +522,6 @@ theorem local_constancy_of_open_cell_data (B : Binding F ζ hζ q A P)
           (KPStandardLocalRootLifts.weylSwap (LocalField F q) *
             (KubotaRankTwo.d (LocalField F q) (-1) 1 *
               KPStandardLocalRootLifts.weylSwap (LocalField F q))) := by
-      rw [← projection_eq_concrete F ζ hζ q A P B]
-      change A.projection (KPPGLLocalCover.W F ζ hζ (Sum.inr q) * signedWeyl F ζ hζ q) = _
-      rw [map_mul, signedWeyl, B.projection_eq]
-      have hw : A.projection (KPPGLLocalCover.W F ζ hζ (Sum.inr q)) =
-          Matrix.ProjGenLinGroup.mk (KPStandardLocalRootLifts.weylSwap (LocalField F q)) := by
-        exact B.projection_eq _
-      rw [hw, ← map_mul]
       rfl
     refine ⟨_, hp.symm, ?_⟩
     simp [KubotaRankTwo.d, KPStandardLocalRootLifts.weylSwap, Units.val_mul,
@@ -658,14 +659,13 @@ theorem open_cell_covariant_smooth (B : Binding F ζ hζ q A P)
       (¬ ∃ (b : A.B) (s : LocalField F q),
         g = (b : Cover F ζ hζ q) * openCoordinate F ζ hζ q s) → f g = 0) :
     SmoothVector vectorRightTranslation f := by
-  have hlocal : IsLocallyConstant f :=
+  have hlocal  :=
     OpenCellSmoothnessSteps.local_constancy_of_open_cell_data
       F ζ hζ q A P B ε z f hcov hlc hcs hoff
   obtain ⟨C, hC, hrep⟩ :=
     OpenCellSmoothnessSteps.compact_representatives_of_open_cell_support
       F ζ hζ q A P B ε z f hcov hcs hoff
-  exact OpenCellSmoothnessSteps.covariant_smooth_of_compact_representatives
-    A.B (inducingAction A P ε z) f hcov hlocal C hC hrep
+  apply OpenCellSmoothnessSteps.covariant_smooth_of_compact_representatives <;> assumption
 
 end
 end DedekindZetaZeroFree.KPRankOneBruhatKernelTransport
@@ -702,10 +702,8 @@ theorem open_cell_extension (B : Binding F ζ hζ q A P) (ε : Sign) (z : ℂ)
         open_cell_decomposition_unique F ζ hζ q A P B b₁ b₂ s₁ s₂ h) φ
   have hrestriction : (fun s : LocalField F q =>
       f (openCoordinate F ζ hζ q s)) = φ := funext hvalues
-  have hlc : IsLocallyConstant (fun s : LocalField F q =>
-      f (openCoordinate F ζ hζ q s)) := hrestriction ▸ hφlc
-  have hcs : HasCompactSupport (fun s : LocalField F q =>
-      f (openCoordinate F ζ hζ q s)) := hrestriction ▸ hφcs
+  have hlc  := hrestriction ▸ hφlc
+  have hcs  := hrestriction ▸ hφcs
   have hsmooth := open_cell_covariant_smooth F ζ hζ q A P B ε z f
     hcov hlc hcs hoff
   refine ⟨⟨f, hcov, hsmooth⟩, ?_, hvalues⟩

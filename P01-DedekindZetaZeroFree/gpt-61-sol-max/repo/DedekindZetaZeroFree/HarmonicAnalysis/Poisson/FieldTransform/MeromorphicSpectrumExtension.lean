@@ -56,17 +56,19 @@ private lemma differentiableAt_A (D : ℝ) (r : ℕ) (h : ℝ → ℂ) (hD : 0 <
       ((differentiableAt_const (1 : ℂ)).sub differentiableAt_id)
   exact (((hDcp.mul hG).mul hG2).mul hQ)
 
-theorem A_analyticOnNhd (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
+section
+variable (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
     (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
-    (hhc : HasCompactSupport h) :
+    (hhc : HasCompactSupport h)
+include D r h hD hr hh hhc in
+theorem A_analyticOnNhd   :
     AnalyticOnNhd ℂ (A D r h) {s : ℂ | -1 < s.re} :=
   DifferentiableOn.analyticOnNhd
     (fun s hs => (differentiableAt_A D r h hD hh hhc hs).differentiableWithinAt)
     (isOpen_lt continuous_const Complex.continuous_re)
 
-theorem B_eq_A_div (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
-    (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
-    (hhc : HasCompactSupport h) (s : ℂ) (hs : -1 < s.re) (hs0 : s ≠ 0) :
+include D r h hD hr hh hhc in
+theorem B_eq_A_div   (s : ℂ) (hs : -1 < s.re) (hs0 : s ≠ 0) :
     B D r h s = A D r h s / s ^ r := by
   have hpow : (((2 * Real.pi : ℝ) : ℂ) * Complex.Gammaℂ (s + 1)) ^ r =
       Complex.Gammaℂ s ^ r * s ^ r := by
@@ -74,9 +76,8 @@ theorem B_eq_A_div (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
   simp only [B, A, hpow]
   field_simp
 
-theorem A_div_analyticOnNhd (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
-    (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
-    (hhc : HasCompactSupport h) :
+include D r h hD hr hh hhc in
+theorem A_div_analyticOnNhd   :
     AnalyticOnNhd ℂ (fun s : ℂ => A D r h s / s ^ r)
       {s : ℂ | -1 < s.re ∧ s ≠ 0} := by
   refine AnalyticOnNhd.div ?_ ?_ ?_
@@ -105,15 +106,16 @@ private lemma A_zero_aux (D : ℝ) (r : ℕ) (hr : 1 ≤ r) (m : ℂ) :
   rw [← hpow]
   ring
 
-theorem A_zero (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
-    (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
-    (hhc : HasCompactSupport h) :
+include D r h hD hr hh hhc in
+theorem A_zero   :
     A D r h 0 = (D : ℂ) ^ (-(1 / 2 : ℂ)) *
       (((2 * Real.pi : ℝ) : ℂ) ^ r) * mellin h 1 := by
   have hQ1 : Vendor.originMellinQ h 1 = mellin h 1 / Complex.Gammaℂ 1 :=
     Vendor.originMellinQ_eq_mellin_div_Gammaℂ h hh hhc 1 (by norm_num)
   simp only [A, zero_sub, zero_add, sub_zero, hQ1]
   exact A_zero_aux D r hr (mellin h 1)
+end
+
 
 theorem A_uniform_disk_bound (D : ℝ) (r : ℕ) (b : ℝ)
     (hD : 0 < D) (hr : 1 ≤ r) (hb : 0 < b) :

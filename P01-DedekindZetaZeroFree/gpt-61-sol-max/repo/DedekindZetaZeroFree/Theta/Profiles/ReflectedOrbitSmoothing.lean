@@ -40,8 +40,11 @@ def gammaEquiv : ThetaReflectionData.rationalGamma R.A ≃* R.A.Gamma1 :=
 @[simp] lemma gammaEquiv_val (γ : ThetaReflectionData.rationalGamma R.A) :
     (gammaEquiv R γ).val.val = R.A.diagonal γ.val := rfl
 
-lemma uniform_sheet_integrable {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
-    (v : R.A.UnitQuotient) (κ : R.A.V) (x : PositiveAxis) :
+section
+variable {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
+    (v : R.A.UnitQuotient)
+include N C v in
+lemma uniform_sheet_integrable   (κ : R.A.V) (x : PositiveAxis) :
     letI : MeasurableSpace R.A.G1 := borel _;
     Integrable (fun y : R.A.G1 => C.realization.sheetIntegrand C.packet v κ
       (y.val * R.A.radialSection x.val x.property)) R.probe.domain.measure := by
@@ -80,8 +83,8 @@ lemma complex_integral_uniform_eq (N : TraceHaarTransport R) (w : InfinitePlace 
   exact N.section_independent x (GaussianSmoothing.sectionRatio R.A w x) f
     ((GaussianSmoothing.probeHaar_integrable _).mp hf)
 
-lemma selected_sheet_integrable {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
-    (v : R.A.UnitQuotient) (κ : R.A.V) (x : PositiveAxis) :
+include N C v in
+lemma selected_sheet_integrable   (κ : R.A.V) (x : PositiveAxis) :
     letI := C.transport.groupHaar_isHaar;
     Integrable (fun y : Sheet R.A x => C.realization.sheetIntegrand C.packet v κ y.val)
       (sheetHaar R.A C.packet.v₀ C.transport.groupHaar x) := by
@@ -91,8 +94,8 @@ lemma selected_sheet_integrable {N : TraceHaarTransport R} (C : JointUpperVanish
   rw [sheetHaar, GaussianSmoothing.kernelHaar_eq_probe]
   exact (sheetTranslation R.A C.packet.v₀ x).toMeasurableEquiv.measurableEmbedding.integrable_map_iff.mpr ht
 
-lemma selected_sheet_integral {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
-    (v : R.A.UnitQuotient) (κ : R.A.V) (x : PositiveAxis) :
+include N C v in
+lemma selected_sheet_integral   (κ : R.A.V) (x : PositiveAxis) :
     letI := C.transport.groupHaar_isHaar;
     (∫ y : Sheet R.A x, C.realization.sheetIntegrand C.packet v κ y.val
       ∂sheetHaar R.A C.packet.v₀ C.transport.groupHaar x) =
@@ -109,8 +112,8 @@ lemma selected_sheet_integral {N : TraceHaarTransport R} (C : JointUpperVanishin
   · have h := (selected_sheet_integrable R C v κ x).aestronglyMeasurable
     simpa only [sheetHaar, GaussianSmoothing.kernelHaar_eq_probe] using h
 
-theorem reverse_sheet_orbit {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
-    (v : R.A.UnitQuotient) (x : Fˣ) (l : PositiveAxis)
+include N C v in
+theorem reverse_sheet_orbit   (x : Fˣ) (l : PositiveAxis)
     (Ω : Set (Sheet R.A l))
     (hΩ : letI := C.transport.groupHaar_isHaar;
       IsFundamentalDomain R.A.Gamma1 Ω (sheetHaar R.A C.packet.v₀ C.transport.groupHaar l)) :
@@ -150,8 +153,8 @@ theorem reverse_sheet_orbit {N : TraceHaarTransport R} (C : JointUpperVanishingS
     dsimp [f]
     rw [integral_const_mul, selected_sheet_integral]
 
-theorem reverse_sheet_smoothing {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
-    (v : R.A.UnitQuotient) (ξ : ThetaReflectionData.Frequency R.A)
+include N C v in
+theorem reverse_sheet_smoothing   (ξ : ThetaReflectionData.Frequency R.A)
     (Z : ℝ) (hZ : 0 < Z) :
     Integrable (fun t : PositiveAxis => C.packet.kernel t.val *
       C.realization.sheet C.packet v (ThetaReflectionData.frequencyClass R.A ξ)
@@ -170,8 +173,8 @@ theorem reverse_sheet_smoothing {N : TraceHaarTransport R} (C : JointUpperVanish
   · simpa only [iteratedDeriv_zero, Real.exp_log hx] using hi
   · rw [Realization.H, dif_pos hx]
 
-theorem reverse_sheet_word_integrable {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
-    (v : R.A.UnitQuotient) (x : Fˣ) (γ : ThetaReflectionData.rationalGamma R.A)
+include N C v in
+theorem reverse_sheet_word_integrable   (x : Fˣ) (γ : ThetaReflectionData.rationalGamma R.A)
     (l : PositiveAxis) :
     letI := C.transport.groupHaar_isHaar;
     Integrable (fun y : Sheet R.A l => reverseSheetWord R C.realization C.packet v x γ y.val)
@@ -186,6 +189,8 @@ theorem reverse_sheet_word_integrable {N : TraceHaarTransport R} (C : JointUpper
   have hp := sheetDiv_measurePreserving R.A C.packet.v₀ C.transport.groupHaar a l
   have hi := (hp.integrable_comp hf.aestronglyMeasurable).mpr hf
   simpa only [Function.comp_def, sheetDiv_val, f, a, reverseSheetWord_eq] using hi
+end
+
 
 lemma reflected_scale (ξ : ThetaReflectionData.Frequency R.A) (Z : ℝ) (hZ : 0 < Z)
     (t : PositiveAxis) :

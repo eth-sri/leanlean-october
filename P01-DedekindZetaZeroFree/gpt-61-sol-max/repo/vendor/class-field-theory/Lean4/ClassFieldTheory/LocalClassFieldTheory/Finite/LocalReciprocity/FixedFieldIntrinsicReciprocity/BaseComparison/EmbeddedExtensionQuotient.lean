@@ -30,17 +30,20 @@ open LocalFieldTheory RamificationTheory CyclicCohomology KummerTheory
 open ClassFormation
 open scoped ValuativeRel
 
+section
+variable (K F E : Type) [Field K] [Field F] [Field E]
+    [Algebra K F] [Algebra F E] [Algebra K E]
+    [IsScalarTower K F E]
+    [FiniteDimensional K F] [Algebra.IsSeparable K F]
+    [FiniteDimensional F E] [IsGalois F E]
+    (j : E →ₐ[K] SeparableClosure K)
+include K F E j
 /-- Under the embedded-field base equivalence, membership in the intrinsic
 extension subgroup for `E / F` is equivalent to membership in the ambient
 extension subgroup determined by the two field ranges. -/
 theorem
     intrinsicExtensionSubgroup_iff_ambientEmbeddedField
-    (K F E : Type) [Field K] [Field F] [Field E]
-    [Algebra K F] [Algebra F E] [Algebra K E]
-    [IsScalarTower K F E]
-    [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [FiniteDimensional F E] [IsGalois F E]
-    (j : E →ₐ[K] SeparableClosure K) :
+      :
     let i :=
       j.comp (IsScalarTower.toAlgHom K F E)
     letI : Algebra F (SeparableClosure F) :=
@@ -133,12 +136,7 @@ theorem
 for `E / F` onto the ambient subgroup fixing the field range of `E`. -/
 theorem
     map_intrinsicExtensionSubgroup_eq_ambientEmbeddedField
-    (K F E : Type) [Field K] [Field F] [Field E]
-    [Algebra K F] [Algebra F E] [Algebra K E]
-    [IsScalarTower K F E]
-    [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [FiniteDimensional F E] [IsGalois F E]
-    (j : E →ₐ[K] SeparableClosure K) :
+      :
     let i :=
       j.comp (IsScalarTower.toAlgHom K F E)
     letI : Algebra F (SeparableClosure F) :=
@@ -224,12 +222,7 @@ theorem
 /-- The fixing subgroup cut out by an embedded finite Galois extension is
 normal inside the fixing subgroup of its embedded base field. -/
 theorem ambientEmbeddedExtensionSubgroup_normal
-    (K F E : Type) [Field K] [Field F] [Field E]
-    [Algebra K F] [Algebra F E] [Algebra K E]
-    [IsScalarTower K F E]
-    [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [FiniteDimensional F E] [IsGalois F E]
-    (j : E →ₐ[K] SeparableClosure K) :
+      :
     let i :=
       j.comp (IsScalarTower.toAlgHom K F E)
     letI : Algebra F (SeparableClosure F) :=
@@ -303,12 +296,7 @@ theorem ambientEmbeddedExtensionSubgroup_normal
 /-- The relative quotient of fixing subgroups attached to an embedded
 finite Galois extension is finite. -/
 theorem ambientEmbeddedExtensionQuotient_finite
-    (K F E : Type) [Field K] [Field F] [Field E]
-    [Algebra K F] [Algebra F E] [Algebra K E]
-    [IsScalarTower K F E]
-    [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [FiniteDimensional F E] [IsGalois F E]
-    (j : E →ₐ[K] SeparableClosure K) :
+      :
     let i :=
       j.comp (IsScalarTower.toAlgHom K F E)
     letI : Algebra F (SeparableClosure F) :=
@@ -400,12 +388,7 @@ theorem ambientEmbeddedExtensionQuotient_finite
 finite Galois extension is canonically its actual Galois group. -/
 noncomputable def
     ambientEmbeddedExtensionQuotientEquivGaloisGroup
-    (K F E : Type) [Field K] [Field F] [Field E]
-    [Algebra K F] [Algebra F E] [Algebra K E]
-    [IsScalarTower K F E]
-    [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [FiniteDimensional F E] [IsGalois F E]
-    (j : E →ₐ[K] SeparableClosure K) :
+      :
     let i :=
       j.comp (IsScalarTower.toAlgHom K F E)
     letI : Algebra F (SeparableClosure F) :=
@@ -490,12 +473,7 @@ noncomputable def
 intrinsic automorphism to its class in the finite Galois quotient. -/
 theorem
     ambientEmbeddedExtensionQuotientEquivGaloisGroup_mk
-    (K F E : Type) [Field K] [Field F] [Field E]
-    [Algebra K F] [Algebra F E] [Algebra K E]
-    [IsScalarTower K F E]
-    [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [FiniteDimensional F E] [IsGalois F E]
-    (j : E →ₐ[K] SeparableClosure K) :
+      :
     let i :=
       j.comp (IsScalarTower.toAlgHom K F E)
     letI : Algebra F (SeparableClosure F) :=
@@ -604,12 +582,7 @@ theorem
 agrees, after applying the embedding, with the original ambient automorphism. -/
 theorem
     ambientEmbeddedExtensionQuotientEquivGaloisGroup_mk_apply
-    (K F E : Type) [Field K] [Field F] [Field E]
-    [Algebra K F] [Algebra F E] [Algebra K E]
-    [IsScalarTower K F E]
-    [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [FiniteDimensional F E] [IsGalois F E]
-    (j : E →ₐ[K] SeparableClosure K) :
+      :
     let i :=
       j.comp (IsScalarTower.toAlgHom K F E)
     letI : Algebra F (SeparableClosure F) :=
@@ -726,6 +699,8 @@ theorem
       rfl
     _ = rho.1.1 (j x) := by
       rw [hpsi]
+end
+
 
 end LocalClassFieldTheory
 

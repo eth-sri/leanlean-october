@@ -45,13 +45,16 @@ variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable (R : PrincipalMellin.ActualRecipe S η)
 variable {Q : AdmissibleFlatSources R} {T : Realization R Q}
 
-def tensorFunction (D : SourceFactorization R Q T)
-    (s : RestrictedTensorSimple.Level D.bad) (x : ∀ p : s.val, actualLocal R D.finiteData p) :
+section
+variable (D : SourceFactorization R Q T)
+    (s : RestrictedTensorSimple.Level D.bad) (x : ∀ p : s.val, actualLocal R D.finiteData p)
+include D s x in
+def tensorFunction   :
     Functions R :=
   D.coreMap (RestrictedTensorSimple.stageInclusion _ D.references D.bad s (PiTensorProduct.tprod ℂ x))
 
-theorem tensorFunction_update_smul (D : SourceFactorization R Q T)
-    (s : RestrictedTensorSimple.Level D.bad) (x : ∀ p : s.val, actualLocal R D.finiteData p)
+include D s x in
+theorem tensorFunction_update_smul  
     (p : s.val) (c : ℂ) :
     _root_.DedekindZetaZeroFree.FiniteWhittakerProjectors.tensorFunction R D s (Function.update x p (c • x p)) = c • _root_.DedekindZetaZeroFree.FiniteWhittakerProjectors.tensorFunction R D s x := by
   unfold _root_.DedekindZetaZeroFree.FiniteWhittakerProjectors.tensorFunction
@@ -65,9 +68,8 @@ theorem core_period_integrable (D : SourceFactorization R Q T)
         star (adelicTraceQuotientCharacter F q : ℂ)) Q.dq := by
   exact FourierContinuation.sameResidue_period_integrable T (D.core_same_residue x) g
 
-theorem tensorFunction_ne_zero (D : SourceFactorization R Q T)
-    (s : RestrictedTensorSimple.Level D.bad)
-    (x : ∀ p : s.val, actualLocal R D.finiteData p) (hx : ∀ p, x p ≠ 0) :
+include D s x in
+theorem tensorFunction_ne_zero   (hx : ∀ p, x p ≠ 0) :
     _root_.DedekindZetaZeroFree.FiniteWhittakerProjectors.tensorFunction R D s x ≠ 0 := by
   classical
   let φ : ∀ p : s.val, Module.Dual ℂ (actualLocal R D.finiteData p) := fun p =>
@@ -141,9 +143,8 @@ theorem spherical_frozen_tensor (D : SourceFactorization R Q T) :
       rw [hz, map_zero] at hh
       exact zero_ne_one hh
 
-theorem tensorFunction_spherical_compact (D : SourceFactorization R Q T)
-    (s : RestrictedTensorSimple.Level D.bad)
-    (x : ∀ p : s.val, actualLocal R D.finiteData p)
+include D s x in
+theorem tensorFunction_spherical_compact  
     (w : InfinitePlace F) (hw : Sum.inl w ∈ s.val)
     (hx : x ⟨Sum.inl w, hw⟩ = sphericalCoreSeed)
     (k : KPCplxCharacterHaar.ComplexSU2) (g : Group R) :
@@ -157,6 +158,8 @@ theorem tensorFunction_spherical_compact (D : SourceFactorization R Q T)
       x ⟨Sum.inl w, hw⟩ := by rw [hx, sphericalCoreSeed_SU2_fixed]
   rw [hfix, Function.update_eq_self] at hi
   exact hi.symm
+end
+
 
 end DedekindZetaZeroFree.RootDerivatives
 

@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.Sobolev.Approximation.CompactMollificationBounds
 public import DedekindZetaZeroFree.Analysis.Sobolev.Embedding.IteratedCoordinateIntegralBound
 public import DedekindZetaZeroFree.Analysis.Sobolev.Embedding.CompactMixedDerivativeBound
 
 @[expose] public section
+
 
 section
 
@@ -104,7 +107,7 @@ theorem exists_compact_finite_order_extension_germ {n m : ℕ} (U : Set (Space n
     ∃ g : Space n → ℂ, ContDiff ℝ m g ∧ HasCompactSupport g ∧ f =ᶠ[nhds x] g := by
   obtain ⟨r, hr, hball⟩ := Metric.isOpen_iff.mp hU x hx
   let χ : ContDiffBump x := ⟨r / 4, r / 2, by linarith, by linarith⟩
-  let g : Space n → ℂ := fun y => χ y • f y
+  let g  := fun y => χ y • f y
   have hsub : tsupport (fun y => χ y) ⊆ U := by
     rw [χ.tsupport_eq]
     intro y hy
@@ -137,7 +140,10 @@ private theorem mollify_eq_scaled_convolution {n : ℕ} (φ : Space n → ℝ) (
   have hi : c⁻¹ * c = 1 := inv_mul_cancel₀ hc
   simp only [smul_smul, hi, one_smul] at he
   simpa only [mollify, c, convolution_def, ContinuousLinearMap.lsmul_apply, Complex.real_smul] using he
-private theorem coordinateDerivativeList_contDiff_global {n : ℕ} (l : List (Fin n)) (q : ℕ) {f : Space n → ℂ}
+section
+variable {n : ℕ} (l : List (Fin n))
+include n l
+private theorem coordinateDerivativeList_contDiff_global   (q : ℕ) {f : Space n → ℂ}
     (hf : ContDiff ℝ (q + l.length : ℕ) f) :
     ContDiff ℝ q (coordinateDerivativeList l f) := by
   induction l generalizing q with
@@ -149,31 +155,31 @@ private theorem coordinateDerivativeList_contDiff_global {n : ℕ} (l : List (Fi
     apply h'.fderiv_right ?_ |>.clm_apply contDiff_const
     simp only [Nat.cast_add, Nat.cast_one]
     exact le_rfl
-private theorem coordinateDerivativeList_compact_global {n : ℕ} (l : List (Fin n)) {f : Space n → ℂ}
+private theorem coordinateDerivativeList_compact_global   {f : Space n → ℂ}
     (hf : HasCompactSupport f) : HasCompactSupport (coordinateDerivativeList l f) := by
   induction l with
   | nil => exact hf
   | cons i l ih => exact ih.fderiv_apply ℝ _
-private theorem coordinateDerivativeList_convolution_global {n : ℕ} (l : List (Fin n)) {f : Space n → ℂ}
-    (hf : ContDiff ℝ (l.length : ℕ) f) (hs : HasCompactSupport f)
+private theorem coordinateDerivativeList_convolution_global   {f : Space n → ℂ}
+    (hf : ContDiff ℝ l.length f) (hs : HasCompactSupport f)
     (φ : Space n → ℝ) (hφ : Continuous φ) :
     coordinateDerivativeList l (φ ⋆[ContinuousLinearMap.lsmul ℝ ℝ] f) =
       φ ⋆[ContinuousLinearMap.lsmul ℝ ℝ] (coordinateDerivativeList l f) := by
   induction l with
   | nil => rfl
   | cons i l ih =>
-    have hf' : ContDiff ℝ (l.length : ℕ) f := hf.of_le (by simp)
+    have hf' : ContDiff ℝ l.length f := hf.of_le (by simp)
     rw [coordinateDerivativeList, ih hf']
     funext x
     have hcd : ContDiff ℝ (1 : ℕ) (coordinateDerivativeList l f) := by
       apply coordinateDerivativeList_contDiff_global l 1
       convert hf using 1 <;> simp [List.length_cons, Nat.add_comm]
     rw [(coordinateDerivativeList_compact_global l hs |>.hasFDerivAt_convolution_right
-      (ContinuousLinearMap.lsmul ℝ ℝ) hφ.locallyIntegrable (by simpa using hcd) x).fderiv]
+      (ContinuousLinearMap.lsmul ℝ ℝ) hφ.locallyIntegrable (hcd) x).fderiv]
     rw [convolution_precompR_apply (ContinuousLinearMap.lsmul ℝ ℝ) hφ.locallyIntegrable
       (coordinateDerivativeList_compact_global l hs |>.fderiv ℝ) (hcd.continuous_fderiv (by simp))]
     rfl
-private theorem coordinateDerivativeList_real_smul {n : ℕ} (l : List (Fin n)) (c : ℝ) (f : Space n → ℂ) :
+private theorem coordinateDerivativeList_real_smul   (c : ℝ) (f : Space n → ℂ) :
     coordinateDerivativeList l (fun y => c • f y) = fun y => c • coordinateDerivativeList l f y := by
   induction l with
   | nil => rfl
@@ -184,13 +190,15 @@ private theorem coordinateDerivativeList_real_smul {n : ℕ} (l : List (Fin n)) 
       congrArg (fun L : Space n →L[ℝ] ℂ => L (EuclideanSpace.single i 1))
         (congrFun (fderiv_const_smul_field (𝕜 := ℝ) (f := coordinateDerivativeList l f) c) x)
 
-theorem coordinateDerivativeList_mollify_global {n : ℕ} (l : List (Fin n)) {f : Space n → ℂ}
-    (hf : ContDiff ℝ (l.length : ℕ) f) (hs : HasCompactSupport f)
+theorem coordinateDerivativeList_mollify_global   {f : Space n → ℂ}
+    (hf : ContDiff ℝ l.length f) (hs : HasCompactSupport f)
     (φ : Space n → ℝ) (hφ : Continuous φ) (δ : ℝ) (t : ℕ)
     (hc : δ / (t + 1 : ℕ) ≠ 0) :
     coordinateDerivativeList l (mollify φ δ f t) = mollify φ δ (coordinateDerivativeList l f) t := by
   rw [mollify_eq_scaled_convolution φ f δ t hc, coordinateDerivativeList_real_smul,
     coordinateDerivativeList_convolution_global l hf hs _ (by fun_prop), mollify_eq_scaled_convolution φ _ δ t hc]
+end
+
 
 theorem mollify_finite_jet_tendsto {n m : ℕ} (U : Set (Space n))
     (hU : IsOpen U) (f : Space n → ℂ) (hf : ContDiffOn ℝ m f U)
@@ -205,7 +213,7 @@ theorem mollify_finite_jet_tendsto {n m : ℕ} (U : Set (Space n))
   obtain ⟨r, hr, heq⟩ := Metric.eventually_nhds_iff.mp hfg
   have hfg' : f =ᵐ[volume.restrict (Metric.ball x r)] g := by
     apply (ae_restrict_iff' Metric.isOpen_ball.measurableSet).mpr
-    exact Filter.Eventually.of_forall (fun y hy => heq (Metric.mem_ball.mp hy))
+    apply Filter.Eventually.of_forall <;> assumption
   have hhg : (fun y => h y) =ᵐ[volume.restrict (U ∩ Metric.ball x r)] g := by
     have hhr := ae_restrict_of_ae_restrict_of_subset (Set.inter_subset_left : U ∩ Metric.ball x r ⊆ U) hh
     have hfr := ae_restrict_of_ae_restrict_of_subset (Set.inter_subset_right : U ∩ Metric.ball x r ⊆ Metric.ball x r) hfg'
@@ -217,9 +225,8 @@ theorem mollify_finite_jet_tendsto {n m : ℕ} (U : Set (Space n))
         List.finRange, List.sum_ofFn, Function.comp_def]
     rw [he]
     exact α.property
-  have hgl : ContDiff ℝ (α.directions.length : ℕ) g := hg.of_le (by exact_mod_cast hlen)
-  have hc : Continuous (coordinateDerivative α g) := by
-    exact (coordinateDerivativeList_contDiff_global α.directions 0 (by simpa using hgl)).continuous
+  have hgl : ContDiff ℝ α.directions.length g := hg.of_le (by exact_mod_cast hlen)
+  have hc : Continuous (coordinateDerivative α g) := (coordinateDerivativeList_contDiff_global α.directions 0 (by simpa using hgl)).continuous
   have ht := mollify_tendsto_of_continuous (coordinateDerivative α g) hc φ hφ.continuous hs hunit δ x
   have hj : coordinateDerivative α f x = coordinateDerivative α g x :=
     (coordinateDerivativeList_germ α.directions hfg).eq_of_nhds
@@ -279,50 +286,46 @@ open scoped ContDiff
     (hf.of_le hle)
   exact hd.continuousOn
 
-def finiteCompactJet {n m : ℕ} (B : LocalBall n) (K : Set (Space n))
+section
+variable {n m : ℕ} (B : LocalBall n) (K : Set (Space n))
     (hK : K ⊆ B.carrier) (f : Space n → ℂ)
-    (hf : ContDiffOn ℝ m f B.carrier) : CompactJets K m :=
+    (hf : ContDiffOn ℝ m f B.carrier)
+include n m B K hK f hf
+def finiteCompactJet   : CompactJets K m :=
   fun α => ⟨fun x => coordinateDerivative α f x,
     ((coordinateDerivative_continuousOn_finite Metric.isOpen_ball hf α).mono hK).restrict⟩
 
-@[simp] theorem finiteCompactJet_apply {n m : ℕ} (B : LocalBall n)
-    (K : Set (Space n)) (hK : K ⊆ B.carrier) (f : Space n → ℂ)
-    (hf : ContDiffOn ℝ m f B.carrier) (α : MultiIndex n m) (x : K) :
+@[simp] theorem finiteCompactJet_apply   (α : MultiIndex n m) (x : K) :
     finiteCompactJet B K hK f hf α x = coordinateDerivative α f x := rfl
+end
+
 
 theorem jetMaxNorm_le_iff {n m : ℕ} {K : Set (Space n)} (hK : IsCompact K)
     (j : CompactJets K m) {R : ℝ} (hR : 0 ≤ R) :
     jetMaxNorm hK j ≤ R ↔ ∀ α : MultiIndex n m, ∀ x : K, ‖j α x‖ ≤ R := by
-  letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
+  letI  := isCompact_iff_compactSpace.mp hK
   change ‖j‖ ≤ R ↔ _
   rw [pi_norm_le_iff_of_nonneg hR]
   exact forall_congr' (fun α => ContinuousMap.norm_le (j α) hR)
 
-theorem coordinateDerivativeList_eventuallyEq {n : ℕ} (l : List (Fin n))
-    {f g : Space n → ℂ} {x : Space n} (hfg : f =ᶠ[nhds x] g) :
-    coordinateDerivativeList l f =ᶠ[nhds x] coordinateDerivativeList l g := by
-  induction l with
-  | nil => exact hfg
-  | cons i l ih =>
-    filter_upwards [ih.fderiv (𝕜 := ℝ)] with y hy
-    exact congrArg (fun L => L (EuclideanSpace.single i 1)) hy
+alias coordinateDerivativeList_eventuallyEq := _root_.DedekindZetaZeroFree.KPLocalCubeSobolevJets.Interior.coordinateDerivativeList_germ
 
-theorem coordinateDerivative_eqOn_of_ae_representatives {n k m : ℕ}
-    (B : LocalBall n) (u : IntegerSobolev B k) (f g : Space n → ℂ)
-    (hf : ContinuousOn f B.carrier) (hg : ContinuousOn g B.carrier)
-    (hfu : f =ᵐ[volume.restrict B.carrier]
-      (fun x => u.derivatives (⟨fun _ => 0, by simp⟩ : MultiIndex n k) x))
-    (hgu : g =ᵐ[volume.restrict B.carrier]
-      (fun x => u.derivatives (⟨fun _ => 0, by simp⟩ : MultiIndex n k) x))
-    (α : MultiIndex n m) :
-    Set.EqOn (coordinateDerivative α f) (coordinateDerivative α g) B.carrier := by
-  have hfg := Measure.eqOn_open_of_ae_eq (hfu.trans hgu.symm)
-    (show IsOpen B.carrier from Metric.isOpen_ball) hf hg
-  intro x hx
-  have hnear : f =ᶠ[nhds x] g := by
-    filter_upwards [(show IsOpen B.carrier from Metric.isOpen_ball).mem_nhds hx] with y hy
-    exact hfg hy
-  exact (coordinateDerivativeList_eventuallyEq α.directions hnear).eq_of_nhds
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 theorem exists_smooth_interior_cutoff {n : ℕ} (A B : LocalBall n)
     (hAB : Metric.closedBall A.center A.radius ⊆ B.carrier) :
@@ -381,9 +384,12 @@ theorem compact_support_pointwise_jet_bound {n : ℕ} (hn : 0 < n)
   exact (norm_le_integral_full_mixed_derivative hn _ hd hdcomp x).trans
     (hbound w hw hs hsub α)
 
-theorem finite_order_jet_bound_of_smooth_approximation {n : ℕ}
+section
+variable {n : ℕ}
     (A B : LocalBall n)
     (hAB : Metric.closedBall A.center A.radius ⊆ B.carrier) (m : ℕ)
+include n A B hAB m
+theorem finite_order_jet_bound_of_smooth_approximation  
     (lower upper : Fin n → ℝ) (hbox : ∀ i, lower i < upper i) :
     ∃ C : ℝ, 0 < C ∧ ∀ (f : Space n → ℂ)
       (hf : ContDiffOn ℝ m f B.carrier) (R : ℝ), 0 ≤ R →
@@ -413,49 +419,47 @@ theorem finite_order_jet_bound_of_smooth_approximation {n : ℕ}
     (hbound (w t) (hw t) (hs t) (hsub t) α x).trans
       (mul_le_mul_of_nonneg_left (hnorm t) hC.le))
 
-theorem coordinateDerivativeList_zero {n : ℕ} (l : List (Fin n)) :
-    coordinateDerivativeList l (fun _ : Space n => (0 : ℂ)) = fun _ => 0 := by
-  induction l with
-  | nil => rfl
-  | cons i l ih => simp [coordinateDerivativeList, ih]
 
-theorem sobolevNorm_zero_derivative {n k : ℕ} {B : LocalBall n}
-    (u : IntegerSobolev B k) (hu : u.sobolevNorm = 0) (α : MultiIndex n k) :
-    u.derivatives α = 0 := by
-  have hs : u.normSq = 0 := by rw [← u.sobolevNorm_sq, hu]; simp
-  have hα : ‖u.derivatives α‖ ^ 2 = 0 :=
-    (Finset.sum_eq_zero_iff_of_nonneg (fun β _ => sq_nonneg ‖u.derivatives β‖)).mp hs α
-      (Finset.mem_univ α)
-  exact norm_eq_zero.mp (by nlinarith [norm_nonneg (u.derivatives α)])
 
-theorem finite_order_representative_zero_norm {n : ℕ}
-    (A B : LocalBall n)
-    (hAB : Metric.closedBall A.center A.radius ⊆ B.carrier) (m : ℕ)
-    (u : IntegerSobolev B (m + n)) (hu : u.sobolevNorm = 0)
-    (f : Space n → ℂ) (hf : ContDiffOn ℝ m f B.carrier)
-    (hfu : f =ᵐ[volume.restrict B.carrier]
-      (fun x => u.derivatives (⟨fun _ => 0, by simp⟩ : MultiIndex n (m+n)) x)) :
-    ∃ j : CompactJets (Metric.closedBall A.center A.radius) m,
-      (∀ α : MultiIndex n m, ∀ x : Metric.closedBall A.center A.radius,
-        j α x = coordinateDerivative α f x) ∧
-      jetMaxNorm (isCompact_closedBall A.center A.radius) j = 0 := by
-  have hzero : (fun _ : Space n => (0 : ℂ)) =ᵐ[volume.restrict B.carrier]
-      (fun x => u.derivatives (⟨fun _ => 0, by simp⟩ : MultiIndex n (m+n)) x) := by
-    rw [sobolevNorm_zero_derivative u hu]
-    exact (Lp.coeFn_zero ℂ 2 (volume.restrict B.carrier)).symm
-  have hd := coordinateDerivative_eqOn_of_ae_representatives (m := m) B u f (fun _ => 0)
-    hf.continuousOn continuousOn_const hfu hzero
-  refine ⟨finiteCompactJet B _ hAB f hf, (fun _ _ => rfl), ?_⟩
-  apply le_antisymm
-  · apply (jetMaxNorm_le_iff (isCompact_closedBall A.center A.radius) _ le_rfl).mpr
-    intro α x
-    rw [finiteCompactJet_apply, hd α (hAB x.property)]
-    simp [coordinateDerivative, coordinateDerivativeList_zero]
-  · exact norm_nonneg _
 
-theorem finite_order_representative_interior_jet_bound {n : ℕ}
-    (A B : LocalBall n)
-    (hAB : Metric.closedBall A.center A.radius ⊆ B.carrier) (m : ℕ) :
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+theorem finite_order_representative_interior_jet_bound   :
     ∃ C : ℝ, 0 < C ∧ ∀ (u : IntegerSobolev B (m + n)) (f : Space n → ℂ),
       ContDiffOn ℝ m f B.carrier →
       (f =ᵐ[volume.restrict B.carrier]
@@ -502,6 +506,8 @@ theorem finite_order_representative_interior_jet_bound {n : ℕ}
     (fun t => (hwt t).1) (fun t => (hwt t).2.1) (fun t => (hwt t).2.2.1)
     (fun t => (hwt t).2.2.2.trans hnorm) hlim
   exact ⟨j, hj, by simpa only [mul_assoc] using hbound⟩
+end
+
 
 end DedekindZetaZeroFree.KPLocalCubeSobolevJets
 

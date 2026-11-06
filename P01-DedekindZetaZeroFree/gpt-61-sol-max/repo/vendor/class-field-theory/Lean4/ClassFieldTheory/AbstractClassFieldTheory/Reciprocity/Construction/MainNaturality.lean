@@ -961,23 +961,23 @@ noncomputable def finiteReciprocityNaturalityFrobeniusConjugationEquiv
     exact ((continuous_const.mul continuous_subtype_val).mul
       continuous_const).subtype_mk _
 
-/-- The Frobenius conjugation equivalence has the expected value on quotient representatives. -/
-@[simp]
-theorem finiteReciprocityNaturalityFrobeniusConjugationEquiv_mk
-    (D : DegreeData G) [IsTopologicalGroup G]
-    (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup) (s : G)
-    [(extensionSubgroup K L hLK).Normal]
-    (k : K.toSubgroup) :
-    D.finiteReciprocityNaturalityFrobeniusConjugationEquiv K L hLK s
-        (QuotientGroup.mk k) =
-      QuotientGroup.mk (conjugateSubgroupEquiv K s k) := by
-  exact QuotientGroup.congr_mk
-    (D.extensionInertiaWithin K L hLK)
-    (D.extensionInertiaWithin (conjugateClosedSubgroup K s)
-      (conjugateClosedSubgroup L s) (conjugateClosedSubgroup_mono hLK s))
-    (conjugateSubgroupEquiv K s)
-    (D.finiteReciprocityNaturalityMap_extensionInertiaWithin_conjugate K L hLK s) k
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The normality transported by conjugation is exposed at the
 residue-finite field boundary.  Keeping this bridge as an instance prevents
@@ -1047,43 +1047,43 @@ theorem finiteReciprocityNaturalityFrobeniusConjugationLift_coe
       D.finiteReciprocityNaturalityFrobeniusConjugationEquiv K.field L hLK s σ.1 := by
   rfl
 
-/-- The Frobenius conjugation lift preserves the selected exponent. -/
-@[simp]
-theorem finiteReciprocityNaturalityFrobeniusConjugationLift_exponent
-    (D : DegreeData G) [IsTopologicalGroup G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup) (s : G)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK) :
-    D.frobeniusExponent (K.conjugate s : D.FiniteResidueAbstractField)
-        (conjugateClosedSubgroup L s)
-        (conjugateClosedSubgroup_mono hLK s)
-        (D.finiteReciprocityNaturalityFrobeniusConjugationLift K L hLK s σ) =
-      D.frobeniusExponent K L hLK σ := by
-  apply proCIntegerOne_pow_nat_injective
-  calc
-    (Multiplicative.ofAdd (1 : ZHat)) ^
-        D.frobeniusExponent
-          (K.conjugate s : D.FiniteResidueAbstractField)
-          (conjugateClosedSubgroup L s)
-          (conjugateClosedSubgroup_mono hLK s)
-          (D.finiteReciprocityNaturalityFrobeniusConjugationLift K L hLK s σ) =
-      D.extensionNormalizedDegree
-        (K.conjugate s : D.FiniteResidueAbstractField)
-        (conjugateClosedSubgroup L s)
-        (conjugateClosedSubgroup_mono hLK s)
-        (D.finiteReciprocityNaturalityFrobeniusConjugationLift K L hLK s σ).1 :=
-      (D.extensionNormalizedDegree_frobenius_eq_pow
-        (K.conjugate s : D.FiniteResidueAbstractField)
-        (conjugateClosedSubgroup L s)
-        (conjugateClosedSubgroup_mono hLK s)
-        _).symm
-    _ = D.extensionNormalizedDegree K L hLK σ.1 := by
-      rw [D.finiteReciprocityNaturalityFrobeniusConjugationLift_coe,
-        D.finiteReciprocityNaturalityFrobeniusConjugationEquiv_degree]
-    _ = (Multiplicative.ofAdd (1 : ZHat)) ^
-        D.frobeniusExponent K L hLK σ :=
-      D.extensionNormalizedDegree_frobenius_eq_pow K L hLK σ
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 section ConjugateFrobeniusQuotients
 
@@ -1147,32 +1147,32 @@ theorem finiteReciprocityNaturalityFrobeniusConjugationEquiv_mem_closure_iff
     simpa [DegreeData.frobeniusClosure,
       D.finiteReciprocityNaturalityFrobeniusConjugationLift_coe, e] using hmap
 
-/-- Conjugation of a Frobenius lift commutes with restriction to the finite
-Galois quotient. -/
-theorem finiteReciprocityNaturalityConjugation_frobeniusRestriction
-    (D : DegreeData G) [IsTopologicalGroup G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup) (s : G)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK) :
-    finiteReciprocityNaturalityConjugation K.field L hLK s
-        (D.frobeniusRestriction K L hLK σ) =
-      D.frobeniusRestriction
-        (K.conjugate s : D.FiniteResidueAbstractField)
-        (conjugateClosedSubgroup L s)
-        (conjugateClosedSubgroup_mono hLK s)
-        (D.finiteReciprocityNaturalityFrobeniusConjugationLift K L hLK s σ) := by
-  change finiteReciprocityNaturalityConjugation K.field L hLK s
-      (D.extensionRestriction K.field L hLK σ.1) =
-    D.extensionRestriction
-      (K.conjugate s : D.FiniteResidueAbstractField).field
-      (conjugateClosedSubgroup L s)
-      (conjugateClosedSubgroup_mono hLK s)
-      (D.finiteReciprocityNaturalityFrobeniusConjugationLift K L hLK s σ).1
-  rw [D.finiteReciprocityNaturalityFrobeniusConjugationLift_coe]
-  refine Quotient.inductionOn' σ.1 ?_
-  intro k
-  rfl
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The fixed field of the conjugated Frobenius lift is the conjugate of
 the original fixed field. -/

@@ -15,26 +15,29 @@ variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable (R : PrincipalMellin.ActualRecipe S η)
 
-def thetaFiber {Q : AdmissibleFlatSources R} (T : Realization R Q)
-    (v : R.A.UnitQuotient) (g : Group R) (q : KPAdditiveQuotient F) : ℂ :=
+section
+variable {Q : AdmissibleFlatSources R} (T : Realization R Q)
+    (v : R.A.UnitQuotient)
+include Q T v in
+def thetaFiber   (g : Group R) (q : KPAdditiveQuotient F) : ℂ :=
   T.theta v (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12
     (Quotient.out q) * g)
 
-theorem thetaFiber_mk {Q : AdmissibleFlatSources R} (T : Realization R Q)
-    (v : R.A.UnitQuotient) (g : Group R) (x : KPAdeles F) :
+include Q T v in
+theorem thetaFiber_mk   (g : Group R) (x : KPAdeles F) :
     thetaFiber R T v g (QuotientAddGroup.mk x) =
       T.theta v (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 x * g) :=
   CompactPeriodAnalyticity.CompactPeriod.cleared_integrand_mk T v 0
     (Metric.mem_ball_self T.radius_pos) x g
 
-theorem thetaFiber_zero {Q : AdmissibleFlatSources R} (T : Realization R Q)
-    (v : R.A.UnitQuotient) (g : Group R) : thetaFiber R T v g 0 = T.theta v g := by
+include Q T v in
+theorem thetaFiber_zero   (g : Group R) : thetaFiber R T v g 0 = T.theta v g := by
   have hn : KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 0 = 1 :=
     (KPGlobalTorusFunctionData.Nhom F R.A.zeta12 R.A.primitive_zeta12).map_one
   simpa only [QuotientAddGroup.mk_zero, hn, one_mul] using thetaFiber_mk R T v g 0
 
-theorem thetaFiber_continuous {Q : AdmissibleFlatSources R} (T : Realization R Q)
-    (v : R.A.UnitQuotient) (g : Group R) : Continuous (thetaFiber R T v g) :=
+include Q T v in
+theorem thetaFiber_continuous   (g : Group R) : Continuous (thetaFiber R T v g) :=
   CompactPeriodAnalyticity.CompactPeriod.cleared_integrand_continuous T v 0
     (Metric.mem_ball_self T.radius_pos) g
 
@@ -45,27 +48,27 @@ theorem rationalCharacter_out (a : F) (q : KPAdditiveQuotient F) :
   simpa only [QuotientAddGroup.mk'_apply, Quotient.out_eq] using
     congrArg (fun z : Circle => (z : ℂ)) h
 
-def rationalPeriod {Q : AdmissibleFlatSources R} (T : Realization R Q)
-    (v : R.A.UnitQuotient) (a : F) (g : Group R) : ℂ :=
+include Q T v in
+def rationalPeriod   (a : F) (g : Group R) : ℂ :=
   ∫ q, thetaFiber R T v g q *
     star (adelicRationalFrequencyQuotientCharacter F a q : ℂ) ∂Q.dq
 
-theorem orbitFrequencyValue_eq_rationalPeriod {Q : AdmissibleFlatSources R}
-    (T : Realization R Q) (v : R.A.UnitQuotient)
+include Q T v in
+theorem orbitFrequencyValue_eq_rationalPeriod  
     (i : ThetaExpansion.SignedExpansion.OrbitIndex R) (g : Group R) :
     orbitFrequencyValue R Q T v i g = rationalPeriod R T v (orbitFrequency R i : F) g := by
   unfold orbitFrequencyValue orbitFrequencyIntegrand rationalPeriod
   simp only [rationalCharacter_out, thetaFiber, orbitFrequency]
 
-theorem rationalPeriod_zero {Q : AdmissibleFlatSources R} (T : Realization R Q)
-    (v : R.A.UnitQuotient) (g : Group R) :
+include Q T v in
+theorem rationalPeriod_zero   (g : Group R) :
     rationalPeriod R T v 0 g = upper R Q.dq (T.theta v) g := by
   unfold rationalPeriod upper thetaFiber
   apply integral_congr_ae
   exact Filter.Eventually.of_forall (fun q => by simp [rationalCharacter_out])
 
-theorem thetaFiber_joint_continuous {Q : AdmissibleFlatSources R} (T : Realization R Q)
-    (v : R.A.UnitQuotient) :
+include Q T v in
+theorem thetaFiber_joint_continuous   :
     Continuous (fun p : Group R × KPAdditiveQuotient F => thetaFiber R T v p.1 p.2) := by
   letI : IsTopologicalGroup (Group R) :=
     (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover
@@ -81,8 +84,8 @@ theorem thetaFiber_joint_continuous {Q : AdmissibleFlatSources R} (T : Realizati
           (continuous_snd : Continuous (Prod.snd : Group R × KPAdeles F → KPAdeles F))).mul
         continuous_fst)
 
-theorem rationalPeriod_continuous {Q : AdmissibleFlatSources R} (T : Realization R Q)
-    (v : R.A.UnitQuotient) (a : F) : Continuous (rationalPeriod R T v a) := by
+include Q T v in
+theorem rationalPeriod_continuous   (a : F) : Continuous (rationalPeriod R T v a) := by
   letI : IsProbabilityMeasure Q.dq := ⟨Q.probability⟩
   letI : IsFiniteMeasureOnCompacts Q.dq := ⟨fun K _ => measure_lt_top Q.dq K⟩
   have hc : Continuous (fun q : KPAdditiveQuotient F =>
@@ -95,14 +98,16 @@ theorem rationalPeriod_continuous {Q : AdmissibleFlatSources R} (T : Realization
   · intro p x hp hx
     exact False.elim (hx (Set.mem_univ x))
 
-theorem orbitFrequencyValue_continuous {Q : AdmissibleFlatSources R} (T : Realization R Q)
-    (v : R.A.UnitQuotient) (i : ThetaExpansion.SignedExpansion.OrbitIndex R) :
+include Q T v in
+theorem orbitFrequencyValue_continuous   (i : ThetaExpansion.SignedExpansion.OrbitIndex R) :
     Continuous (orbitFrequencyValue R Q T v i) := by
   have he : orbitFrequencyValue R Q T v i =
       rationalPeriod R T v (orbitFrequency R i : F) :=
     funext (orbitFrequencyValue_eq_rationalPeriod R T v i)
   rw [he]
   exact rationalPeriod_continuous R T v (orbitFrequency R i : F)
+end
+
 
 end DedekindZetaZeroFree.OrbitExpansion
 

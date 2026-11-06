@@ -25,11 +25,14 @@ private lemma fourS_eq_square : fourS (F := F) = twoS ^ 2 := by
 def rawFourS (A : SArithmeticData F) : A.V →* rootsOfUnity 6 F :=
   A.H_S6 (QuotientGroup.mk' A.sixthPowers (A.diagonal fourS))
 
-def cubicUnits (A : SArithmeticData F) (σ : F →+* ℂ) : A.V →* ℂˣ :=
+section
+variable (A : SArithmeticData F) (σ : F →+* ℂ)
+include A σ
+def cubicUnits   : A.V →* ℂˣ :=
   ((Units.map σ.toMonoidHom).comp
     ((rootsOfUnity 6 F).subtype.comp (rawFourS A)))⁻¹
 
-lemma cubicUnits_cube (A : SArithmeticData F) (σ : F →+* ℂ) (x : A.V) :
+lemma cubicUnits_cube   (x : A.V) :
     cubicUnits A σ x ^ 3 = 1 := by
   have hf : rawFourS A x ^ 3 = 1 := by
     have hx : (A.H_S6 (QuotientGroup.mk' A.sixthPowers (A.diagonal twoS)) x : Fˣ) ^ 6 = 1 :=
@@ -45,22 +48,22 @@ lemma cubicUnits_cube (A : SArithmeticData F) (σ : F →+* ℂ) (x : A.V) :
   simp only [SubmonoidClass.coe_pow, OneMemClass.coe_one] at he
   rw [he, map_one, inv_one]
 
- lemma cubicUnits_norm (A : SArithmeticData F) (σ : F →+* ℂ) (x : A.V) :
+ lemma cubicUnits_norm   (x : A.V) :
     ‖(cubicUnits A σ x : ℂ)‖ = 1 := by
   apply (pow_eq_one_iff_of_nonneg (norm_nonneg _) (by decide : (3 : ℕ) ≠ 0)).mp
   rw [← Complex.norm_pow]
   have h := congrArg (fun u : ℂˣ => (u : ℂ)) (cubicUnits_cube A σ x)
   simpa using congrArg (fun z : ℂ => ‖z‖) h
 
-def cubicClass (A : SArithmeticData F) (σ : F →+* ℂ) : A.V →* Circle where
+def cubicClass   : A.V →* Circle where
   toFun x := ⟨cubicUnits A σ x, mem_sphere_zero_iff_norm.mpr (cubicUnits_norm A σ x)⟩
   map_one' := by apply Circle.ext; exact congrArg Units.val (map_one (cubicUnits A σ))
   map_mul' x y := by apply Circle.ext; exact congrArg Units.val (map_mul (cubicUnits A σ) x y)
 
-def cubicS (A : SArithmeticData F) (σ : F →+* ℂ) : A.G →* Circle :=
+def cubicS   : A.G →* Circle :=
   (cubicClass A σ).comp (QuotientGroup.mk' A.sixthPowers)
 
-lemma cubicS_coe (A : SArithmeticData F) (σ : F →+* ℂ) (y : A.G) :
+lemma cubicS_coe   (y : A.G) :
     (cubicS A σ y : ℂ) =
       (σ (((A.H_S (A.diagonal fourS) y : Fˣ) : F)))⁻¹ := by
   change (cubicUnits A σ (QuotientGroup.mk' A.sixthPowers y) : ℂ) = _
@@ -68,6 +71,8 @@ lemma cubicS_coe (A : SArithmeticData F) (σ : F →+* ℂ) (y : A.G) :
     Units.val_inv_eq_inv_val, Units.coe_map]
   change (σ (((rawFourS A (QuotientGroup.mk' A.sixthPowers y) : Fˣ) : F)))⁻¹ = _
   rw [rawFourS, A.H_S6_on_representatives]
+end
+
 
 theorem phaseClassExtension (A : SArithmeticData F)
     (hCl : Subsingleton (ClassGroup A.R)) (σ : F →+* ℂ)

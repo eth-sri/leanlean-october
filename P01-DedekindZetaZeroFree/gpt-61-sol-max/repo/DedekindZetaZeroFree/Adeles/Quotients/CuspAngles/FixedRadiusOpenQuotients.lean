@@ -15,7 +15,7 @@ open KPGlobalTorusBorelTwistCompatibility
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
 variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+
 
 private theorem root_zero : KPGlobalTorusFunctionData.N F ζ hζ 0 = 1 :=
   (KPGlobalTorusFunctionData.Nhom F ζ hζ).map_one

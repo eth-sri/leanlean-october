@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import Mathlib.SetTheory.Cardinal.Finite
 public import ClassFieldTheory.AbstractClassFieldTheory.Degree.Fields
 public import Mathlib.FieldTheory.Finite.Extension
 public import Mathlib.FieldTheory.Galois.Profinite
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -118,8 +121,7 @@ theorem finiteResidueFrobeniusExponentHom_injective :
     hcard.le).1
 
 /-- Canonical finite-level Frobenius coordinates. -/
-def finiteResidueFrobeniusExponentEquiv :
-    Multiplicative (ZMod (Module.finrank k L)) ≃* (L ≃ₐ[k] L) :=
+def finiteResidueFrobeniusExponentEquiv  :=
   MulEquiv.ofBijective (finiteResidueFrobeniusExponentHom k L)
     ⟨finiteResidueFrobeniusExponentHom_injective k L,
       finiteResidueFrobeniusExponentHom_surjective k L⟩
@@ -131,13 +133,13 @@ theorem finiteResidueFrobeniusExponentEquiv_apply (z) :
       finiteResidueFrobeniusExponentHom k L z :=
   rfl
 
-/-- The Frobenius exponent equivalence sends one to arithmetic Frobenius. -/
-@[simp]
-theorem finiteResidueFrobeniusExponentEquiv_one :
-    finiteResidueFrobeniusExponentEquiv k L
-        (Multiplicative.ofAdd (1 : ZMod (Module.finrank k L))) =
-      FiniteField.frobeniusAlgEquivOfAlgebraic k L :=
-  finiteResidueFrobeniusExponentHom_one k L
+
+
+
+
+
+
+
 
 /-- A profinite exponent acts on a finite residue extension through reduction
 modulo its degree. -/
@@ -146,8 +148,7 @@ def finiteResidueFrobeniusFromZHat :
   toFun z := finiteResidueFrobeniusExponentHom k L
     (Multiplicative.ofAdd
       (zHatReduction (Module.finrank k L) Module.finrank_pos z.toAdd))
-  map_one' := by
-    apply (finiteResidueFrobeniusExponentHom k L).map_one
+  map_one' := (finiteResidueFrobeniusExponentHom k L).map_one
   map_mul' x y := by
     apply (finiteResidueFrobeniusExponentHom k L).map_mul
   continuous_toFun := by
@@ -174,40 +175,40 @@ theorem finiteResidueFrobeniusFromZHat_one :
   rw [finiteResidueFrobeniusFromZHat_apply]
   exact finiteResidueFrobeniusExponentHom_one k L
 
-/-- Every automorphism of a finite residue extension is induced by a
-profinite Frobenius exponent. -/
-theorem finiteResidueFrobeniusFromZHat_surjective :
-    Function.Surjective (finiteResidueFrobeniusFromZHat k L) := by
-  intro sigma
-  obtain ⟨a, ha⟩ := finiteResidueFrobeniusExponentHom_surjective k L sigma
-  obtain ⟨z, hz⟩ := zHatReduction_surjective
-    (Module.finrank k L) Module.finrank_pos a.toAdd
-  refine ⟨Multiplicative.ofAdd z, ?_⟩
-  rw [finiteResidueFrobeniusFromZHat_apply]
-  change finiteResidueFrobeniusExponentHom k L
-      (Multiplicative.ofAdd
-        (zHatReduction (Module.finrank k L) Module.finrank_pos z)) = sigma
-  rw [hz]
-  exact ha
 
-/-- A profinite exponent acts trivially on a finite residue extension exactly
-when it is zero modulo the extension degree. -/
-theorem finiteResidueFrobeniusFromZHat_eq_one_iff (z : ZHatMul) :
-    finiteResidueFrobeniusFromZHat k L z = 1 ↔
-      zHatReduction (Module.finrank k L) Module.finrank_pos z.toAdd = 0 := by
-  rw [finiteResidueFrobeniusFromZHat_apply]
-  constructor
-  · intro h
-    have h' :
-        Multiplicative.ofAdd
-            (zHatReduction (Module.finrank k L) Module.finrank_pos z.toAdd) =
-          1 := by
-      apply finiteResidueFrobeniusExponentHom_injective k L
-      simpa using h
-    exact congrArg Multiplicative.toAdd h'
-  · intro h
-    rw [h]
-    exact (finiteResidueFrobeniusExponentHom k L).map_one
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 section Tower
 
@@ -269,8 +270,7 @@ theorem restrictNormalHom_finiteResidueFrobeniusExponentHom
               (Module.finrank_mul_finrank k E F).symm⟩)
           (ZMod (Module.finrank k E))
           (m : ZMod (Module.finrank k F)) =
-        (m : ZMod (Module.finrank k E)) := by
-    exact map_intCast _ m
+        (m : ZMod (Module.finrank k E)) := map_intCast _ m
   rw [hred, finiteResidueFrobeniusExponentHom_intCast]
   have hfrob := restrictNormalHom_finiteResidueFrobenius
     (k := k) (E := E) (F := F)

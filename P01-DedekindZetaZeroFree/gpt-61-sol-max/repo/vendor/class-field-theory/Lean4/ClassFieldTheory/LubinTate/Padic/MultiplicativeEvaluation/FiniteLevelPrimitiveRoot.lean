@@ -19,6 +19,8 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 
 
 set_option autoImplicit false
+set_option synthInstance.maxHeartbeats 100000
+set_option maxHeartbeats 2000000
 
 /-!
 # Primitive roots from finite p-adic Lubin--Tate levels
@@ -249,9 +251,12 @@ private theorem padicMultiplicativeScalarEndomorphism_nat
           (m : (padicLocalField p).valuationSubring)))
       hAlinear hAintertwines
 
+section
+variable (p : ℕ) [Fact p.Prime] (n : ℕ)
+include p n in
 private theorem
     padicValuationSubring_sub_toZModPow_val_mem_maximalIdeal_pow
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
+     
     (a : (padicLocalField p).valuationSubring) :
     let z :=
       (padicIntEquivValuationSubring p).symm
@@ -289,9 +294,10 @@ private theorem
   simpa only [map_sub, map_natCast, e, z, m,
     RingEquiv.apply_symm_apply] using hmapped
 
+include p n in
 private theorem
     padicStandardPrimitivePointIntegerAction_eq_toZModPow_val
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
+     
     (u : (padicLocalField p).valuationSubringˣ) :
     let m :=
       (PadicInt.toZModPow (p := p) (n + 1)
@@ -386,9 +392,10 @@ private theorem padicStandardLubinTateSeries_eval_iterate
     (standardLubinTatePolynomial (padicLocalField p) π)).trans
       (hpoly.trans (standardLubinTatePrimitivePointIterateInteger_succ hπ n i).symm)
 
+include p n in
 private theorem
     padicStandardLubinTatePrimitivePointIterateInteger_ne_zero
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+      :
     standardLubinTatePrimitivePointIterateInteger
         (padicMultiplicativeLubinTateSeries_isUniformizer p) n n ≠
       0 := by
@@ -491,21 +498,23 @@ private theorem padicMultiplicativePrimitivePoint_pow_primePower
         _ = (1 + evalH (points i)) ^ p := by rw [ih]
         _ = 1 + evalH (points (i + 1)) := hstep
 
+include p n in
 /-- The root of unity obtained from the standard primitive Lubin--Tate
 point through the multiplicative comparison.  Level `n` corresponds to
 exact order `p ^ (n + 1)`. -/
 noncomputable def padicMultiplicativePrimitiveRoot
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+      :
     standardLubinTateLevelField
       (padicMultiplicativeLubinTateSeries_isUniformizer p) n :=
   1 + (padicMultiplicativePrimitivePoint p n).val
 
+include p n in
 /-- The finite Lubin--Tate unit action becomes the usual power action on
 the actual primitive `p ^ (n + 1)`-st root.  The exponent is the canonical
 mathlib reduction of the corresponding `p`-adic integer modulo
 `p ^ (n + 1)`. This is the finite-level cyclotomic action formula. -/
 private theorem padicMultiplicativePrimitiveRoot_unitAction
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
+     
     (u : (padicLocalField p).valuationSubringˣ) :
     1 +
         (standardLubinTateLevelPowerSeriesEval
@@ -623,8 +632,9 @@ private theorem padicMultiplicativePrimitiveRoot_unitAction
   simpa [padicMultiplicativePrimitiveRoot, hπ, H, m,
     lambdaU, hlambdaU, zetaMinusOne] using hrootField
 
- theorem padicMultiplicativeLevelAlgEquiv_mem_valuationSubring_iff
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
+ include p n in
+theorem padicMultiplicativeLevelAlgEquiv_mem_valuationSubring_iff
+     
     (σ : Gal((standardLubinTateLevelField
       (padicMultiplicativeLubinTateSeries_isUniformizer p) n) / ℚ_[p]))
     (x : standardLubinTateLevelField
@@ -643,6 +653,7 @@ private theorem padicMultiplicativePrimitiveRoot_unitAction
       (F := padicLocalField p)
       (π := show (padicLocalField p).valuationSubring from
         padicIntEquivValuationSubring p (p : ℤ_[p])) hπ n
+  letI : UniformSpace target.valuationSubring := WithIdeal.instUniformSpace target.valuationSubring
   let : IsScalarTower
       (padicLocalField p).valuationSubring target.valuationSubring L :=
     IsScalarTower.of_algebraMap_eq' rfl
@@ -677,9 +688,10 @@ private theorem padicMultiplicativePrimitiveRoot_unitAction
     have hback := hforward σ.symm hσx
     simpa using hback
 
- noncomputable def
+ include p n in
+noncomputable def
     padicMultiplicativeLevelAutomorphismIntegerRingEquiv
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
+     
     (σ : Gal((standardLubinTateLevelField
       (padicMultiplicativeLubinTateSeries_isUniformizer p) n) / ℚ_[p])) :
     (standardLubinTateLevelCompleteDVF
@@ -692,10 +704,11 @@ private theorem padicMultiplicativePrimitiveRoot_unitAction
     σ.toRingEquiv
     (padicMultiplicativeLevelAlgEquiv_mem_valuationSubring_iff p n σ)
 
+include p n in
 @[simp]
 private theorem
     padicMultiplicativeLevelAutomorphismIntegerRingEquiv_apply
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
+     
     (σ : Gal((standardLubinTateLevelField
       (padicMultiplicativeLubinTateSeries_isUniformizer p) n) / ℚ_[p]))
     (x : (standardLubinTateLevelCompleteDVF
@@ -704,9 +717,10 @@ private theorem
       σ x.val :=
   rfl
 
+include p n in
 private theorem
     padicMultiplicativeLevelAutomorphismIntegerRingEquiv_continuous
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
+     
     (σ : Gal((standardLubinTateLevelField
       (padicMultiplicativeLubinTateSeries_isUniformizer p) n) / ℚ_[p])) :
     Continuous (padicMultiplicativeLevelAutomorphismIntegerRingEquiv p n σ) := by
@@ -717,6 +731,7 @@ private theorem
       (F := padicLocalField p)
       (π := show (padicLocalField p).valuationSubring from
         padicIntEquivValuationSubring p (p : ℤ_[p])) hπ n
+  letI : UniformSpace target.valuationSubring := WithIdeal.instUniformSpace target.valuationSubring
   let r := padicMultiplicativeLevelAutomorphismIntegerRingEquiv p n σ
   apply continuous_of_continuousAt_zero r
   rw [ContinuousAt, map_zero]
@@ -732,9 +747,10 @@ private theorem
       (padicMultiplicativeLevelAlgEquiv_mem_valuationSubring_iff p n σ)
       m x).2 hx
 
+include p n in
 private theorem
     padicMultiplicativeLevelAutomorphismIntegerRingEquiv_comp_coefficientHom
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
+     
     (σ : Gal((standardLubinTateLevelField
       (padicMultiplicativeLubinTateSeries_isUniformizer p) n) / ℚ_[p])) :
     (padicMultiplicativeLevelAutomorphismIntegerRingEquiv p n σ :
@@ -751,9 +767,10 @@ private theorem
   simp only [RingHom.comp_apply]
   exact σ.commutes (a : ℚ_[p])
 
+include p n in
 private theorem
     padicMultiplicativeLevelAutomorphismIntegerRingEquiv_primitivePointEvaluation
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
+     
     (u : (padicLocalField p).valuationSubringˣ) :
     padicMultiplicativeLevelAutomorphismIntegerRingEquiv p n
         ((standardLubinTateUnitParameterEquivGal
@@ -789,6 +806,7 @@ private theorem
       (F := padicLocalField p)
       (π := show (padicLocalField p).valuationSubring from
         padicIntEquivValuationSubring p (p : ℤ_[p])) hπ n
+  letI : UniformSpace target.valuationSubring := WithIdeal.instUniformSpace target.valuationSubring
   have hrLambda : r lambda = lambdaInv := by
     apply Subtype.ext
     rw [padicMultiplicativeLevelAutomorphismIntegerRingEquiv_apply]
@@ -853,12 +871,13 @@ private theorem
     PowerSeries.coe_eval₂Hom, Function.comp_apply,
     target, lambda, H] using happ
 
+include p n in
 /-- For the finite Galois element supplied by the Lubin--Tate unit
 parameter, the inverse automorphism acts on the actual primitive
 `p ^ (n + 1)`-st root by the inverse unit exponent modulo `p ^ (n + 1)`.
 This is the explicit cyclotomic norm-residue formula. -/
 theorem padicMultiplicativePrimitiveRoot_galoisAction
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
+     
     (u : (padicLocalField p).valuationSubringˣ) :
     (standardLubinTateUnitParameterEquivGal
         (padicLocalField p)
@@ -929,6 +948,7 @@ theorem padicMultiplicativePrimitiveRoot_galoisAction
       simpa only [hπ, H, lambdaInv, hlambdaInv] using
         padicMultiplicativePrimitiveRoot_unitAction p n u⁻¹
 
+include p n in
 /-- The finite Lubin--Tate parameter automorphism itself acts on the
 genuine primitive `p ^ (n + 1)`-st root by the direct unit exponent.
 
@@ -936,7 +956,7 @@ This is the direct-orientation companion to
 `padicMultiplicativePrimitiveRoot_galoisAction`: applying that theorem
 to the inverse unit cancels both inversions. -/
 theorem padicMultiplicativePrimitiveRoot_unitParameterGaloisAction
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
+     
     (u : (padicLocalField p).valuationSubringˣ) :
     standardLubinTateUnitParameterEquivGal
         (padicLocalField p)
@@ -952,10 +972,11 @@ theorem padicMultiplicativePrimitiveRoot_unitParameterGaloisAction
   simpa only [map_inv, inv_inv] using
     padicMultiplicativePrimitiveRoot_galoisAction p n u⁻¹
 
+include p n in
 /-- The multiplicative comparison identifies the standard level-`n`
 Lubin--Tate generator with a primitive `p ^ (n + 1)`-st root of unity. -/
 theorem padicMultiplicativePrimitiveRoot_isPrimitiveRoot
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+      :
     IsPrimitiveRoot (padicMultiplicativePrimitiveRoot p n) (p ^ (n + 1)) := by
   let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
   let H := padicStandardToMultiplicativeIntertwiner p
@@ -1043,6 +1064,8 @@ theorem padicMultiplicativePrimitiveRoot_isPrimitiveRoot
         hiterateZero
   rw [IsPrimitiveRoot.iff_orderOf]
   exact orderOf_eq_prime_pow hprevious hfinal
+end
+
 
 end LubinTate
 

@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.LubinTate.EqualCharacteristic.CompletedLevel.DirectThetaSeries
 public import ClassFieldTheory.LubinTate.EqualCharacteristic.Theta.ThetaFirstIdentity
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -71,10 +74,8 @@ theorem equalCharacteristicDirectThetaSeriesFrobeniusIterate_constantCoeff
         PowerSeries.coeff_map, ih, map_zero]
 
 /-- States the theorem `equalCharacteristicDirectThetaSeriesFrobeniusIterate_hasSubst`. -/
-theorem equalCharacteristicDirectThetaSeriesFrobeniusIterate_hasSubst
-    {k : Type*} [Field k] [Finite k] (u : k⟦X⟧ˣ) (i : ℕ) :
-    PowerSeries.HasSubst
-      (equalCharacteristicDirectThetaSeriesFrobeniusIterate u i) :=
+def equalCharacteristicDirectThetaSeriesFrobeniusIterate_hasSubst
+    {k : Type*} [Field k] [Finite k] (u : k⟦X⟧ˣ) (i : ℕ)  :=
   PowerSeries.HasSubst.of_constantCoeff_zero'
     (equalCharacteristicDirectThetaSeriesFrobeniusIterate_constantCoeff u i)
 
@@ -99,7 +100,7 @@ private theorem equalCharacteristicDirectSourceLubinTateSeries_frobenius
     {k : Type*} [Field k] [Finite k] :
     PowerSeries.map (equalCharacteristicPowerSeriesFrobenius k)
         (equalCharacteristicCompletedLubinTateSeries (k := k)
-          (PowerSeries.X : (AlgebraicClosure k)⟦X⟧)) =
+          PowerSeries.X) =
       equalCharacteristicCompletedLubinTateSeries (k := k) PowerSeries.X := by
   rw [equalCharacteristicDirectCompletedLubinTateSeries_map_frobenius,
     equalCharacteristicPowerSeriesFrobenius_X]
@@ -120,7 +121,7 @@ theorem equalCharacteristicDirectThetaSeriesFrobeniusIterate_intertwines
     {k : Type*} [Field k] [Finite k] (u : k⟦X⟧ˣ) (i : ℕ) :
     PowerSeries.subst
         (equalCharacteristicCompletedLubinTateSeries (k := k)
-          (PowerSeries.X : (AlgebraicClosure k)⟦X⟧))
+          PowerSeries.X)
         (equalCharacteristicDirectThetaSeriesFrobeniusIterate u (i + 1)) =
       PowerSeries.subst
         (equalCharacteristicDirectThetaSeriesFrobeniusIterate u i)
@@ -128,16 +129,14 @@ theorem equalCharacteristicDirectThetaSeriesFrobeniusIterate_intertwines
           (equalCharacteristicDirectCompletedTargetUniformizer u)) := by
   induction i with
   | zero =>
-      simpa [equalCharacteristicDirectThetaSeriesFrobeniusIterate_succ,
-        equalCharacteristicDirectThetaSeriesFrobenius]
-        using equalCharacteristicDirectThetaSeries_intertwines u
+      exact equalCharacteristicDirectThetaSeries_intertwines u
   | succ i ih =>
       have h := congrArg
         (PowerSeries.map (equalCharacteristicPowerSeriesFrobenius k)) ih
       change
         (PowerSeries.subst
           (equalCharacteristicCompletedLubinTateSeries (k := k)
-            (PowerSeries.X : (AlgebraicClosure k)⟦X⟧))
+            PowerSeries.X)
           (equalCharacteristicDirectThetaSeriesFrobeniusIterate
             u (i + 1))).map
               (equalCharacteristicPowerSeriesFrobenius k) =
@@ -148,19 +147,19 @@ theorem equalCharacteristicDirectThetaSeriesFrobeniusIterate_intertwines
               (equalCharacteristicPowerSeriesFrobenius k) at h
       rw [PowerSeries.map_subst
           (equalCharacteristicCompletedLubinTateSeries_hasSubst
-            (PowerSeries.X : (AlgebraicClosure k)⟦X⟧)),
+            PowerSeries.X),
         PowerSeries.map_subst
           (equalCharacteristicDirectThetaSeriesFrobeniusIterate_hasSubst
             u i)] at h
       have hsource :
           MvPowerSeries.map (equalCharacteristicPowerSeriesFrobenius k)
               (equalCharacteristicCompletedLubinTateSeries (k := k)
-                (PowerSeries.X : (AlgebraicClosure k)⟦X⟧)) =
+                PowerSeries.X) =
             equalCharacteristicCompletedLubinTateSeries (k := k)
               PowerSeries.X := by
         change PowerSeries.map (equalCharacteristicPowerSeriesFrobenius k)
             (equalCharacteristicCompletedLubinTateSeries (k := k)
-              (PowerSeries.X : (AlgebraicClosure k)⟦X⟧)) = _
+              PowerSeries.X) = _
         exact equalCharacteristicDirectSourceLubinTateSeries_frobenius
       have htwist :
           MvPowerSeries.map (equalCharacteristicPowerSeriesFrobenius k)
@@ -172,8 +171,7 @@ theorem equalCharacteristicDirectThetaSeriesFrobeniusIterate_intertwines
           (equalCharacteristicDirectThetaSeriesFrobeniusIterate_succ u i).symm
       rw [hsource, htwist,
         equalCharacteristicDirectTargetLubinTateSeries_frobenius] at h
-      simpa only [← equalCharacteristicDirectThetaSeriesFrobeniusIterate_succ]
-        using h
+      exact h
 
 end EqualCharacteristic
 end LubinTate

@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import Mathlib.RepresentationTheory.Homological.GroupCohomology.FiniteCyclic
 public import Mathlib.RepresentationTheory.Homological.GroupCohomology.Hilbert90
 public import GaloisCohomology.Cyclic.TateComparison
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -37,8 +40,11 @@ noncomputable section
 
 open CategoryTheory
 
-private theorem zpowers_eq_top_of_forall_mem_zpowers {G : Type} [Group G] (g : G)
-    (hg : ∀ x : G, x ∈ Subgroup.zpowers g) :
+section
+variable {G : Type} [Group G] (g : G)
+    (hg : ∀ x : G, x ∈ Subgroup.zpowers g)
+include G g hg
+private theorem zpowers_eq_top_of_forall_mem_zpowers   :
     Subgroup.zpowers g = ⊤ := by
   ext x
   constructor
@@ -47,11 +53,12 @@ private theorem zpowers_eq_top_of_forall_mem_zpowers {G : Type} [Group G] (g : G
   · intro _
     exact hg x
 
- theorem isCyclic_of_forall_mem_zpowers {G : Type} [Group G] (g : G)
-    (hg : ∀ x : G, x ∈ Subgroup.zpowers g) :
+ theorem isCyclic_of_forall_mem_zpowers   :
     IsCyclic G := by
   rw [isCyclic_iff_exists_zpowers_eq_top]
   exact ⟨g, zpowers_eq_top_of_forall_mem_zpowers g hg⟩
+end
+
 
 /-- Low-degree Tate periodicity in degree one:
 for a finite cyclic group, `H¹(G,A)` is canonically isomorphic to mathlib's
@@ -60,25 +67,24 @@ noncomputable def cyclic_H1_iso_HminusOne {k G : Type} [CommRing k] [Group G]
     [Fintype G] (A : Rep k G) (g : G)
     (hg : ∀ x : G, x ∈ Subgroup.zpowers g) :
     groupCohomology A 1 ≅ tateCohomology A (-1) := by
-  letI : IsCyclic G := isCyclic_of_forall_mem_zpowers g hg
-  letI : CommGroup G := IsCyclic.commGroup (α := G)
+  letI  := isCyclic_of_forall_mem_zpowers g hg
+  letI  := IsCyclic.commGroup (α := G)
   exact Rep.FiniteCyclicGroup.groupCohomologyIsoOdd A g hg 1 (by decide) ≪≫
     (TateCohomology.isoFiniteCyclicNegOne A g hg).symm
 
-/-- The cyclic low-degree comparison for the unit representation. -/
-noncomputable def unitsH1IsoTateHminusOne (K L : Type) [Field K] [Field L]
+section
+variable (K L : Type) [Field K] [Field L]
     [Algebra K L] [FiniteDimensional K L] (g : Gal(L / K))
-    (hg : ∀ x : Gal(L / K), x ∈ Subgroup.zpowers g) :
-    groupCohomology.H1 (Rep.ofAlgebraAutOnUnits K L) ≅
-      tateCohomology (Rep.ofAlgebraAutOnUnits K L) (-1) :=
+    (hg : ∀ x : Gal(L / K), x ∈ Subgroup.zpowers g)
+include K L g hg
+/-- The cyclic low-degree comparison for the unit representation. -/
+noncomputable def unitsH1IsoTateHminusOne    :=
   cyclic_H1_iso_HminusOne (Rep.ofAlgebraAutOnUnits K L) g hg
 
 /-- Hilbert 90 transported through the cyclic `H¹ ≅ H^{-1}` comparison.
 This is low-degree cyclic Tate cohomology for the coefficient group `Lˣ`: the vanishing of
 `H¹(G,Lˣ)` gives the vanishing of `H^{-1}(G,Lˣ)`. -/
-theorem hilbert90_unitsTateHminusOne_isZero (K L : Type) [Field K]
-    [Field L] [Algebra K L] [FiniteDimensional K L] (g : Gal(L / K))
-    (hg : ∀ x : Gal(L / K), x ∈ Subgroup.zpowers g) :
+theorem hilbert90_unitsTateHminusOne_isZero   :
     CategoryTheory.Limits.IsZero
       (tateCohomology (Rep.ofAlgebraAutOnUnits K L) (-1)) := by
   have hzero :
@@ -88,6 +94,8 @@ theorem hilbert90_unitsTateHminusOne_isZero (K L : Type) [Field K]
     exact ModuleCat.isZero_of_subsingleton _
   exact hzero.of_iso
     (unitsH1IsoTateHminusOne K L g hg).symm
+end
+
 
 end
 end CyclicCohomology

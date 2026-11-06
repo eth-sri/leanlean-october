@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AbstractClassFieldTheory.Degree.FrobeniusFixedField
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.FiniteAbelianSubextension
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.NormTopology
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -42,32 +45,29 @@ variable {G : Type u} [Group G] [TopologicalSpace G]
 
 namespace DegreeData
 
+section
+variable (D : DegreeData G)
+    (K : FiniteResidueAbstractField D) (f : ℕ) (hf : 0 < f)
+include D K f hf
 /-- Reduction modulo `f` after the normalized degree `d_K`. -/
-def unramifiedDegreeHom (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (f : ℕ) (hf : 0 < f) :
+def unramifiedDegreeHom   :
     K.toSubgroup →ₜ* Multiplicative (ZMod f) :=
   (zHatReductionMul f hf).comp (D.normalizedDegree K)
 
 /-- The subgroup of `G_K` fixing the degree-`f` unramified extension. -/
-def unramifiedDegreeKernelWithin (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (f : ℕ) (hf : 0 < f) :
-    Subgroup K.toSubgroup :=
+def unramifiedDegreeKernelWithin    :=
   (unramifiedDegreeHom D K f hf).toMonoidHom.ker
 
 /-- The defining kernel equation for the reduction subgroup. -/
-theorem unramifiedDegreeKernelWithin_eq_ker (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (f : ℕ) (hf : 0 < f) :
+theorem unramifiedDegreeKernelWithin_eq_ker   :
     unramifiedDegreeKernelWithin D K f hf =
-      (unramifiedDegreeHom D K f hf).toMonoidHom.ker := by
-  rfl
+      (unramifiedDegreeHom D K f hf).toMonoidHom.ker := rfl
 
 /--
 The kernel of normalized degree modulo a positive integer is closed inside the finite-residue
 field subgroup.
 -/
-theorem unramifiedDegreeKernelWithin_isClosed (D : DegreeData G)
-    (K : FiniteResidueAbstractField D)
-    (f : ℕ) (hf : 0 < f) :
+theorem unramifiedDegreeKernelWithin_isClosed   :
     IsClosed (unramifiedDegreeKernelWithin D K f hf :
       Set K.toSubgroup) := by
   change IsClosed
@@ -75,6 +75,8 @@ theorem unramifiedDegreeKernelWithin_isClosed (D : DegreeData G)
       Set (Multiplicative (ZMod f))))
   exact isClosed_singleton.preimage
     (unramifiedDegreeHom D K f hf).continuous_toFun
+end
+
 
 /-- The actual fixed field of the reduction-modulo-`f` kernel of `d_K`. -/
 def unramifiedExtensionOfDegree (D : DegreeData G) [IsTopologicalGroup G]
@@ -89,18 +91,18 @@ def unramifiedExtensionOfDegree (D : DegreeData G) [IsTopologicalGroup G]
     exact K.field.isClosed'.isClosedEmbedding_subtypeVal.isClosedMap _
       (unramifiedDegreeKernelWithin_isClosed D K f hf)
 
-/--
-Characterizes `g ∈ unramifiedExtensionOfDegree D K f hf` by the equivalent condition `∃ k :
-K.toSubgroup, k ∈ unramifiedDegreeKernelWithin D K f hf ∧ k.1 = g`.
--/
-@[simp]
-theorem mem_unramifiedExtensionOfDegree_iff (D : DegreeData G)
-    [IsTopologicalGroup G] (K : FiniteResidueAbstractField D)
-    (f : ℕ) (hf : 0 < f) (g : G) :
-    g ∈ unramifiedExtensionOfDegree D K f hf ↔
-      ∃ k : K.toSubgroup,
-        k ∈ unramifiedDegreeKernelWithin D K f hf ∧ k.1 = g :=
-  Iff.rfl
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- Proves the bound `(unramifiedExtensionOfDegree D K f hf).toSubgroup ≤ K.toSubgroup`. -/
 theorem unramifiedExtensionOfDegree_le (D : DegreeData G)
@@ -187,8 +189,7 @@ theorem extensionSubgroup_finiteUnramifiedExtension
     extensionSubgroup K.field (D.finiteUnramifiedExtension K f hf).field
         (D.finiteUnramifiedExtension K f hf).below =
       unramifiedDegreeKernelWithin D K f hf := by
-  simpa only [finiteUnramifiedExtension] using
-    extensionSubgroup_unramifiedExtensionOfDegree D K f hf
+  apply extensionSubgroup_unramifiedExtensionOfDegree
 
 /-- The finite unramified extension is abelian: its Galois quotient is the
 cyclic quotient detected by the normalized degree modulo `f`. -/
@@ -197,10 +198,7 @@ def finiteUnramifiedAbelianExtension (D : DegreeData G) [IsTopologicalGroup G]
     (f : ℕ) (hf : 0 < f) : FiniteAbelianSubextension K.field where
   toFiniteGaloisExtension := finiteUnramifiedExtension D K f hf
   commutative := by
-    let :
-        (extensionSubgroup K.field
-          (D.finiteUnramifiedExtension K f hf).field
-          (D.finiteUnramifiedExtension K f hf).below).Normal :=
+    let  :=
       (D.finiteUnramifiedExtension K f hf).normal
     change IsMulCommutative
       (K.toSubgroup ⧸
@@ -271,7 +269,7 @@ theorem finiteUnramifiedExtension_degree (D : DegreeData G)
     (f : ℕ) (hf : 0 < f) :
     (((finiteUnramifiedExtension D K f hf).toFiniteAbstractExtension.degree : ℕ)) = f := by
   let : NeZero f := ⟨hf.ne'⟩
-  let : Fintype (ZMod f) := ZMod.fintype f
+  let  := ZMod.fintype f
   let q := (unramifiedDegreeHom D K f hf).toMonoidHom
   rw [← (finiteUnramifiedExtension D K f hf).toFiniteAbstractExtension.extensionSubgroup_index_eq_degree]
   change (extensionSubgroup K.field
@@ -309,7 +307,7 @@ theorem finiteUnramifiedExtension_residueDegree (D : DegreeData G)
       FiniteGaloisSubextension.toFiniteAbstractExtension] using
       unramifiedExtensionOfDegree_isUnramified D K f hf
   rw [E.residueDegree_eq_degree_of_isUnramified D hE]
-  exact finiteUnramifiedExtension_degree D K f hf
+  apply finiteUnramifiedExtension_degree
 
 end DegreeData
 
@@ -322,109 +320,109 @@ variable {G : IntegralRepGroupType} [Group G] [TopologicalSpace G]
 
 namespace ValuationData
 
-variable {D : DegreeData G} {A : Rep ℤ G}
 
-/-- Every neighbourhood of zero in the value group contains all `f`-fold
-multiples for some `f > 0`.  This is the subspace-topology form of the
-neighbourhood basis `f ℤ̂`. -/
-theorem exists_nsmul_mem_of_valueGroup_mem_nhds
-    (v : ValuationData D A) {U : Set v.valueGroup}
-    (hU : U ∈ 𝓝 (0 : v.valueGroup)) :
-    ∃ f : ℕ, 0 < f ∧ ∀ z : v.valueGroup, f • z ∈ U := by
-  rcases (mem_nhds_subtype (v.valueGroup : Set ZHat)
-    (0 : v.valueGroup) U).1 hU with ⟨W, hW, hWU⟩
-  rcases mem_nhds_iff.mp hW with ⟨W₀, hW₀W, hW₀open, hzero⟩
-  let Wm : Set ZHatMul := {z | z.toAdd ∈ W₀}
-  have hWmOpen : IsOpen Wm := by
-    change IsOpen W₀
-    exact hW₀open
-  have hone : (1 : ZHatMul) ∈ Wm := by
-    change (0 : ZHat) ∈ W₀
-    exact hzero
-  let : TotallyDisconnectedSpace ZHatMul := by
-    change TotallyDisconnectedSpace ZHat
-    infer_instance
-  obtain ⟨H, hHWm⟩ :=
-    ProfiniteGrp.exist_openNormalSubgroup_sub_open_nhds_of_one
-      (G := ZHatMul) hWmOpen hone
-  let HAdd : AddSubgroup ZHat :=
-    Subgroup.toAddSubgroup' (H : Subgroup ZHatMul)
-  let : Finite (ZHatMul ⧸ (H : Subgroup ZHatMul)) :=
-    Subgroup.quotient_finite_of_isOpen (H : Subgroup ZHatMul)
-      H.toOpenSubgroup.isOpen'
-  have hindex : HAdd.index ≠ 0 := by
-    change (H : Subgroup ZHatMul).index ≠ 0
-    exact (H : Subgroup ZHatMul).index_ne_zero_of_finite
-  let f := HAdd.index
-  have hf : f ≠ 0 := hindex
-  have hHAdd :
-      HAdd = (zHatMulNat f).toAddMonoidHom.range := by
-    simpa only [f] using
-      zHatAddSubgroup_eq_mulNat_range_of_index_ne_zero HAdd hindex
-  refine ⟨f, Nat.pos_of_ne_zero hf, ?_⟩
-  intro z
-  apply hWU
-  apply hW₀W
-  have hzHAdd : f • (z.1 : ZHat) ∈ HAdd := by
-    rw [hHAdd]
-    exact ⟨z.1, zHatMulNat_apply f z.1⟩
-  have hzH : Multiplicative.ofAdd (f • (z.1 : ZHat)) ∈
-      (H : Subgroup ZHatMul) := hzHAdd
-  exact hHWm hzH
 
-/-- **continuity of the normalized valuation.** The normalized valuation is continuous from the
-norm topology on `A_K` to the value group with its `ℤ̂`-subspace topology. -/
-theorem normTopology_valuation_continuous
-    [IsTopologicalGroup G] (v : ValuationData D A)
-    (K : FiniteAbstractField G) :
-    IsContinuousFromNormTopology A K.field (v.valuationAt K) := by
-  unfold IsContinuousFromNormTopology
-  let : TopologicalSpace (ambientFixedAddSubgroup A K.field) :=
-    normTopology A K.field
-  let : IsTopologicalAddGroup (ambientFixedAddSubgroup A K.field) :=
-    (normFilterBasis A K.field).isTopologicalAddGroup
-  apply continuous_of_continuousAt_zero (v.valuationAt K)
-  rw [ContinuousAt, map_zero]
-  rw [(normFilterBasis A K.field).nhds_zero_hasBasis.tendsto_left_iff]
-  intro U hU
-  obtain ⟨f, hf, hfU⟩ := exists_nsmul_mem_of_valueGroup_mem_nhds v hU
-  let Kresidue : DegreeData.FiniteResidueAbstractField D :=
-    K.toFiniteResidueAbstractField D
-  let L : FiniteGaloisSubextension K.field :=
-    DegreeData.finiteUnramifiedExtension D Kresidue f hf
-  let hLfinite : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field L.field L.below) := L.finite
-  let hLabsoluteFinite : Finite ((baseField G).toSubgroup ⧸
-      extensionSubgroup (baseField G) L.field (le_baseField L.field)) :=
-    relativeTowerQuotientFinite (baseField G) K.field L.field L.below
-      (le_baseField K.field)
-  let Lfinite : FiniteAbstractField G := ⟨L.field, hLabsoluteFinite⟩
-  let E : FiniteAbstractFieldExtension G :=
-    { field := Lfinite
-      base := K
-      below := L.below
-      finiteQuotient := L.finite }
-  refine ⟨(FiniteGaloisSubextension.normSubgroup A L :
-      Set (ambientFixedAddSubgroup A K.field)),
-    ⟨L, rfl⟩, ?_⟩
-  intro x hx
-  change x ∈ FiniteGaloisSubextension.normSubgroup A L at hx
-  rcases hx with ⟨a, rfl⟩
-  have hres : (E.residueDegree D : ℕ) = f := by
-    change ((L.toFiniteAbstractExtension.residueDegree D : ℕ)) = f
-    simpa only [L] using
-      DegreeData.finiteUnramifiedExtension_residueDegree D Kresidue f hf
-  have hvaluation :
-      v.valuationAt K (relativeNorm A K.field L.field L.below a) =
-        f • v.valuationAt Lfinite a := by
-    apply Subtype.ext
-    change ((v.valuationAt K
-      (relativeNorm A K.field L.field L.below a) : v.valueGroup) : ZHat) =
-        f • ((v.valuationAt Lfinite a : v.valueGroup) : ZHat)
-    rw [← hres]
-    exact (v.normalizedValuation_tower E a).symm
-  rw [hvaluation]
-  exact hfU (v.valuationAt Lfinite a)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end ValuationData
 

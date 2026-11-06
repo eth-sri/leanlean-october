@@ -21,8 +21,11 @@ variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
 variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
 variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 
+
+local notation:max "current_rawXU" => KPFiniteCuspAtlas.rawXU F ζ hζ U
+
 def lineNorm (f : GenuineCoveredScalars F ζ hζ U) :
-    KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ≥0∞ :=
+    current_rawXU → ℝ≥0∞ :=
   fun b => ENNReal.ofReal (sectionNorm F ζ hζ U R P H (S F ζ hζ U R P H f) b ^ 2)
 
 def componentLineNorm (f : GenuineCoveredScalars F ζ hζ U)
@@ -32,43 +35,46 @@ def componentLineNorm (f : GenuineCoveredScalars F ζ hζ U)
   fun x => ENNReal.ofReal
     (componentNorm F ζ hζ U R P H (S F ζ hζ U R P H f) i x ^ 2)
 
+
+local notation:max "current_lineNorm" => lineNorm F ζ hζ U R P H
+
 structure NormIdentities (f : GenuineCoveredScalars F ζ hζ U) : Prop where
 
   fiber_norm : ∀ v w : CoveredSpherical F ζ hζ U,
     q F ζ hζ U v = q F ζ hζ U w → ‖f.val v‖ ^ 2 = ‖f.val w‖ ^ 2
 
   pullback : ∀ v : CoveredSpherical F ζ hζ U,
-    lineNorm F ζ hζ U R P H f (q F ζ hζ U v) = ENNReal.ofReal (‖f.val v‖ ^ 2)
+    current_lineNorm f (q F ζ hζ U v) = ENNReal.ofReal (‖f.val v‖ ^ 2)
 
-  borel : Measurable (lineNorm F ζ hζ U R P H f)
+  borel : Measurable (current_lineNorm f)
 
-  unique : ∀ n : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ≥0∞,
+  unique : ∀ n : current_rawXU → ℝ≥0∞,
     (∀ v, n (q F ζ hζ U v) = ENNReal.ofReal (‖f.val v‖ ^ 2)) →
-      n = lineNorm F ζ hζ U R P H f
+      n = current_lineNorm f
   component : ∀ (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F),
-    lineNorm F ζ hζ U R P H f ((H.atlas U).components ⟨i, Quotient.mk _ x⟩) =
+    current_lineNorm f ((H.atlas U).components ⟨i, Quotient.mk _ x⟩) =
       ENNReal.ofReal (‖(S F ζ hζ U R P H f i).val x‖ ^ 2)
   component_pullback : ∀ (i : Fin (H.atlas U).componentCount)
       (x : KPCuspSiegel.OrbitQuotient F
         (KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative i))),
-    lineNorm F ζ hζ U R P H f
+    current_lineNorm f
       (KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative i) x) =
         componentLineNorm F ζ hζ U R P H f i x
   component_borel : ∀ i, Measurable (componentLineNorm F ζ hζ U R P H f i)
 
-  restricted_pushforward : ∀ E : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U), MeasurableSet E →
+  restricted_pushforward : ∀ E : Set (current_rawXU), MeasurableSet E →
     (∫⁻ v in (q F ζ hζ U) ⁻¹' E, ENNReal.ofReal (‖f.val v‖ ^ 2)
       ∂coveredMeasure F ζ hζ R U) =
-    ∫⁻ b in E, lineNorm F ζ hζ U R P H f b ∂sphericalMeasure F ζ hζ R P U
+    ∫⁻ b in E, current_lineNorm f b ∂sphericalMeasure F ζ hζ R P U
 
-  cutoff_pushforward : ∀ (c : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ≥0∞), Measurable c →
-    ∀ E : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U), MeasurableSet E →
+  cutoff_pushforward : ∀ (c : current_rawXU → ℝ≥0∞), Measurable c →
+    ∀ E : Set (current_rawXU), MeasurableSet E →
     (∫⁻ v in (q F ζ hζ U) ⁻¹' E,
       c (q F ζ hζ U v) * ENNReal.ofReal (‖f.val v‖ ^ 2) ∂coveredMeasure F ζ hζ R U) =
-    ∫⁻ b in E, c b * lineNorm F ζ hζ U R P H f b ∂sphericalMeasure F ζ hζ R P U
+    ∫⁻ b in E, c b * current_lineNorm f b ∂sphericalMeasure F ζ hζ R P U
 
-  component_integral : ∀ E : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U), MeasurableSet E →
-    (∫⁻ b in E, lineNorm F ζ hζ U R P H f b ∂sphericalMeasure F ζ hζ R P U) =
+  component_integral : ∀ E : Set (current_rawXU), MeasurableSet E →
+    (∫⁻ b in E, current_lineNorm f b ∂sphericalMeasure F ζ hζ R P U) =
     ∑ i : Fin (H.atlas U).componentCount, (H.disintegration U).componentWeight i *
       ∫⁻ x in (KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative i)) ⁻¹' E,
         componentLineNorm F ζ hζ U R P H f i x
@@ -76,9 +82,9 @@ structure NormIdentities (f : GenuineCoveredScalars F ζ hζ U) : Prop where
           (KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative i))
           ((H.atlas U).cuspAtlas i).fundamentalDomain
   cutoff_component_integral :
-    ∀ (c : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ≥0∞), Measurable c →
-    ∀ E : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U), MeasurableSet E →
-    (∫⁻ b in E, c b * lineNorm F ζ hζ U R P H f b ∂sphericalMeasure F ζ hζ R P U) =
+    ∀ (c : current_rawXU → ℝ≥0∞), Measurable c →
+    ∀ E : Set (current_rawXU), MeasurableSet E →
+    (∫⁻ b in E, c b * current_lineNorm f b ∂sphericalMeasure F ζ hζ R P U) =
     ∑ i : Fin (H.atlas U).componentCount, (H.disintegration U).componentWeight i *
       ∫⁻ x in (KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative i)) ⁻¹' E,
         c (KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative i) x) *
@@ -88,48 +94,48 @@ structure NormIdentities (f : GenuineCoveredScalars F ζ hζ U) : Prop where
           ((H.atlas U).cuspAtlas i).fundamentalDomain
 
   cusp_integral : ∀ (Y : ℝ) (hY : AdmissibleCutoff (H.atlas U) Y),
-    (∫⁻ b in cuspEnds (H.atlas U) Y, lineNorm F ζ hζ U R P H f b
+    (∫⁻ b in cuspEnds (H.atlas U) Y, current_lineNorm f b
       ∂sphericalMeasure F ζ hζ R P U) =
     (H.disintegration U).beta Set.univ *
       ∫⁻ r : Set.Ioi Y, ∫⁻ ω, ∫⁻ x,
-        lineNorm F ζ hζ U R P H f ((H.disintegration U).chart Y hY (x,r))
+        current_lineNorm f ((H.disintegration U).chart Y hY (x,r))
         ∂(H.disintegration U).unipotent ω ∂probability (H.atlas U) (H.disintegration U).beta
         ∂Measure.comap (Subtype.val : Set.Ioi Y → ℝ) radialMeasure
 
   cutoff_cusp_integral : ∀ (Y : ℝ) (hY : AdmissibleCutoff (H.atlas U) Y)
-      (c : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ≥0∞), Measurable c →
-    ∀ E : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U), MeasurableSet E →
+      (c : current_rawXU → ℝ≥0∞), Measurable c →
+    ∀ E : Set (current_rawXU), MeasurableSet E →
     (∫⁻ b in cuspEnds (H.atlas U) Y ∩ E,
-      c b * lineNorm F ζ hζ U R P H f b ∂sphericalMeasure F ζ hζ R P U) =
+      c b * current_lineNorm f b ∂sphericalMeasure F ζ hζ R P U) =
     (H.disintegration U).beta Set.univ *
       ∫⁻ r : Set.Ioi Y, ∫⁻ ω, ∫⁻ x,
-        E.indicator (fun b => c b * lineNorm F ζ hζ U R P H f b)
+        E.indicator (fun b => c b * current_lineNorm f b)
           ((H.disintegration U).chart Y hY (x,r))
         ∂(H.disintegration U).unipotent ω ∂probability (H.atlas U) (H.disintegration U).beta
         ∂Measure.comap (Subtype.val : Set.Ioi Y → ℝ) radialMeasure
 
   chart_coefficient : ∀ (Y : ℝ) (hY : AdmissibleCutoff (H.atlas U) Y)
       (j : CuspIndex (H.atlas U)) (p : KPCuspCharts.Cross F) (r : Set.Ioi Y),
-    lineNorm F ζ hζ U R P H f ((H.disintegration U).chart Y hY (⟨j, Quotient.mk _ p⟩,r)) =
+    current_lineNorm f ((H.disintegration U).chart Y hY (⟨j, Quotient.mk _ p⟩,r)) =
     ENNReal.ofReal (‖cuspCoefficient F ζ hζ U R P H (S F ζ hζ U R P H f) j.1 j.2
       ((p.1, p.2 + sectionShape F H.totallyComplex (H.disintegration U).radial.slot
         ⟨r.val, lt_trans hY.1 r.property⟩), logHeight (F := F) r.val)‖ ^ 2)
 
   cutoff_section_integral : ∀ (Y : ℝ) (hY : AdmissibleCutoff (H.atlas U) Y)
-      (c : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ≥0∞), Measurable c →
-    (∫⁻ b in cuspEnds (H.atlas U) Y, c b * lineNorm F ζ hζ U R P H f b
+      (c : current_rawXU → ℝ≥0∞), Measurable c →
+    (∫⁻ b in cuspEnds (H.atlas U) Y, c b * current_lineNorm f b
       ∂sphericalMeasure F ζ hζ R P U) =
     ∫⁻ r : Set.Ioi Y, ∑ j : CuspIndex (H.atlas U),
       ((H.disintegration U).componentWeight j.1 /
         ENNReal.ofReal (2 * (KPCuspLogShape.dimension F : ℝ))) *
         ∫⁻ x, c ((H.disintegration U).chart Y hY (⟨j,x⟩,r)) *
-          lineNorm F ζ hζ U R P H f ((H.disintegration U).chart Y hY (⟨j,x⟩,r))
+          current_lineNorm f ((H.disintegration U).chart Y hY (⟨j,x⟩,r))
           ∂(Geometry (H.atlas U) j).sectionMeasure
       ∂Measure.comap (Subtype.val : Set.Ioi Y → ℝ) radialMeasure
 
   lp_norm : ∀ hf : MemLp f.val 2 (coveredMeasure F ζ hζ R U),
     ‖hf.toLp f.val‖ ^ 2 =
-      (∫⁻ b, lineNorm F ζ hζ U R P H f b ∂sphericalMeasure F ζ hζ R P U).toReal
+      (∫⁻ b, current_lineNorm f b ∂sphericalMeasure F ζ hζ R P U).toReal
 
 end DedekindZetaZeroFree.KPContSectorFixedLineNormIntegrals
 

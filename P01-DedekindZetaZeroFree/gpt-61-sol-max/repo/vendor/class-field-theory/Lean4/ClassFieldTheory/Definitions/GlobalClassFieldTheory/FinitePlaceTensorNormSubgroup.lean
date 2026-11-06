@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import Mathlib.NumberTheory.NumberField.Completion.FinitePlace
 public import Mathlib.RingTheory.Norm.Basic
 public import Mathlib.RingTheory.TensorProduct.Basic
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -42,8 +45,7 @@ def finitePlaceTensorNormSubgroup
     (K : Type u) (L : Type v)
     [Field K] [NumberField K]
     [Field L] [Algebra K L] [FiniteDimensional K L]
-    (v : HeightOneSpectrum (𝓞 K)) :
-    Subgroup (v.adicCompletion K)ˣ :=
+    (v : HeightOneSpectrum (𝓞 K))  :=
   (Units.map (Algebra.norm (v.adicCompletion K) :
     (v.adicCompletion K ⊗[K] L) →* v.adicCompletion K)).range
 

@@ -76,7 +76,10 @@ def Iz (u : D.Row) (Z v : ℝ) (ξ w : ℂ) : ℂ :=
 def Iwz (u : D.Row) (Z y v : ℝ) (ξ : ℂ) : ℂ :=
   comparisonVerticalIntegral y (fun w => Iz D u Z v ξ w)
 
-theorem initial_z_shift (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z)
+section
+variable (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z)
+include u hu Z hZ
+theorem initial_z_shift  
     (x y : ℝ) (hx : x ∈ Icc Scales.rightLine 4) (hy : y ∈ Icc Scales.rightLine 4) (s t : ℝ) :
     Iz D u Z 2 ((x : ℂ) + (s : ℂ) * I) ((y : ℂ) + (t : ℂ) * I) =
       Iz D u Z (1 / 6 + Scales.contourOffset) ((x : ℂ) + (s : ℂ) * I) ((y : ℂ) + (t : ℂ) * I) := by
@@ -89,7 +92,7 @@ theorem initial_z_shift (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z)
   exact verticalIntegral_eq_of_decay hlt
     (PrincipalStripControls.kern_z_holo D u hu Z hZ _ _ hξ hw) C T0 hb
 
-theorem initial_w_shift (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z)
+theorem initial_w_shift  
     (x : ℝ) (hx : x ∈ Icc Scales.rightLine 4) (s : ℝ) :
     Iwz D u Z 4 (1 / 6 + Scales.contourOffset) ((x : ℂ) + (s : ℂ) * I) =
       Iwz D u Z Scales.rightLine (1 / 6 + Scales.contourOffset) ((x : ℂ) + (s : ℂ) * I) := by
@@ -100,7 +103,7 @@ theorem initial_w_shift (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z)
   exact verticalIntegral_eq_of_decay hlt
     (PrincipalStripControls.Iz_w_holo D u hu Z hZ _ hξ) C T0 hb
 
-theorem initial_xi_shift (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) :
+theorem initial_xi_shift   :
     comparisonVerticalIntegral 4 (fun ξ => Iwz D u Z Scales.rightLine (1 / 6 + Scales.contourOffset) ξ) =
       comparisonVerticalIntegral Scales.rightLine
         (fun ξ => Iwz D u Z Scales.rightLine (1 / 6 + Scales.contourOffset) ξ) := by
@@ -109,7 +112,7 @@ theorem initial_xi_shift (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) :
   exact verticalIntegral_eq_of_decay hlt
     (PrincipalStripControls.Iwz_xi_holo D u hu Z hZ) C T0 hb
 
-theorem w_shift_across_one (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) (s t : ℝ) :
+theorem w_shift_across_one   (s t : ℝ) :
     comparisonVerticalIntegral Scales.rightLine
         (fun w => kern D u Z ((Scales.rightLine : ℂ) + (s : ℂ) * I) w
           (((1 / 6 + Scales.contourOffset : ℝ) : ℂ) + (t : ℂ) * I)) -
@@ -133,7 +136,7 @@ theorem w_shift_across_one (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) (
   exact SimplePoleVerticalShift.verticalIntegral_sub_eq_residue_of_decay hap hpb
     (PrincipalStripControls.kern_w_holo D u hu Z hZ s t) hres C T0 hb
 
-theorem wResidue_z_shift_across (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) (s : ℝ) :
+theorem wResidue_z_shift_across   (s : ℝ) :
     comparisonVerticalIntegral (1 / 6 + Scales.contourOffset)
         (fun z => wResidueLocal D u ((Scales.rightLine : ℂ) + (s : ℂ) * I) z Z) -
       comparisonVerticalIntegral (1 / 20)
@@ -153,7 +156,7 @@ theorem wResidue_z_shift_across (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤
   exact SimplePoleVerticalShift.verticalIntegral_sub_eq_residue_of_decay hap hpb
     (PrincipalStripControls.wResidue_z_holo D u hu Z hZ s) hres C T0 hb
 
-theorem zResidue_xi_shift (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) :
+theorem zResidue_xi_shift   :
     comparisonVerticalIntegral Scales.rightLine (fun ξ => zResidueLocal D u ξ Z) =
       Spectral.c₀ D * Spectral.f D Z := by
   have hZ0 : 0 < Z := by linarith
@@ -187,6 +190,8 @@ theorem zResidue_xi_shift (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) :
   simp only [comparisonVerticalIntegral]
   rw [MeasureTheory.integral_const_mul]
   ring
+end
+
 
 end
 

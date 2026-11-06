@@ -34,8 +34,11 @@ private theorem pderiv_linearSubstitution (A : Matrix (Fin 3) (Fin 3) ℂ)
       simp [Finset.sum_mul, Finset.mul_sum, Finset.sum_add_distrib,
         Pi.single_apply, mul_add, mul_ite, mul_assoc, mul_comm, mul_left_comm]
 
-private theorem polynomialLaplacian_linearSubstitution (A : Matrix (Fin 3) (Fin 3) ℂ)
+section
+variable (A : Matrix (Fin 3) (Fin 3) ℂ)
     (hA : ∀ i k, ∑ j, A i j * A k j = if i = k then 1 else 0)
+include A hA in
+private theorem polynomialLaplacian_linearSubstitution  
     (p : MvPolynomial (Fin 3) ℂ) :
     polynomialLaplacian (linearSubstitution A p) = linearSubstitution A (polynomialLaplacian p) := by
   classical
@@ -61,8 +64,8 @@ private theorem linearSubstitution_homogeneous (A : Matrix (Fin 3) (Fin 3) ℂ)
     (fun i => MvPolynomial.IsHomogeneous.sum _ _ 1 (fun j _ =>
       MvPolynomial.isHomogeneous_C_mul_X _ _))
 
-private theorem linearSubstitution_harmonic (A : Matrix (Fin 3) (Fin 3) ℂ)
-    (hA : ∀ i k, ∑ j, A i j * A k j = if i = k then 1 else 0)
+include A hA in
+private theorem linearSubstitution_harmonic  
     (ℓ : ℕ) (p : MvPolynomial (Fin 3) ℂ) (hp : p ∈ harmonicPolynomials ℓ) :
     linearSubstitution A p ∈ harmonicPolynomials ℓ := by
   refine ⟨linearSubstitution_homogeneous A p ℓ hp.1, ?_⟩
@@ -70,6 +73,8 @@ private theorem linearSubstitution_harmonic (A : Matrix (Fin 3) (Fin 3) ℂ)
   rw [polynomialLaplacian_linearSubstitution A hA]
   have hh : polynomialLaplacian p = 0 := hp.2
   rw [hh, map_zero]
+end
+
 
 private theorem su2_entries (k : ComplexSU2) : (k : Matrix (Fin 2) (Fin 2) ℂ) 0 0 = star ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 1) ∧
   (k : Matrix (Fin 2) (Fin 2) ℂ) 0 1 = -star ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 0) := by
@@ -712,7 +717,10 @@ theorem compactRestriction_pi_su2 (s : ℝ) (k h : ComplexSU2) (f : PrincipalSer
   change f (complexSU2Embedding h * complexSU2Embedding k) = f (complexSU2Embedding (h * k))
   rw [map_mul]
 
-theorem harmonicKType_mem_iff (s : ℝ) (ℓ : ℕ) (f : PrincipalSeries s) :
+section
+variable (s : ℝ) (ℓ : ℕ)
+include s ℓ in
+theorem harmonicKType_mem_iff   (f : PrincipalSeries s) :
     f ∈ harmonicKType s ℓ ↔ ∃ p : MvPolynomial (Fin 3) ℂ,
       p ∈ harmonicPolynomials ℓ ∧ ∀ k : ComplexSU2,
         f (complexSU2Embedding k) = MvPolynomial.eval (compactSphereCoordinate k) p := by
@@ -724,7 +732,8 @@ theorem harmonicKType_mem_iff (s : ℝ) (ℓ : ℕ) (f : PrincipalSeries s) :
   · rintro ⟨p, hp, he⟩
     exact ⟨p, hp, funext fun k => (he k).symm⟩
 
-theorem harmonicKType_invariant_of_polynomial_translation (s : ℝ) (ℓ : ℕ)
+include s ℓ in
+theorem harmonicKType_invariant_of_polynomial_translation  
     (hstable : ∀ (k : ComplexSU2) (p : MvPolynomial (Fin 3) ℂ),
       p ∈ harmonicPolynomials ℓ → ∃ q : MvPolynomial (Fin 3) ℂ,
         q ∈ harmonicPolynomials ℓ ∧ ∀ h : ComplexSU2,
@@ -828,20 +837,23 @@ theorem compactRestriction_injective (s : ℝ) : Function.Injective (compactRest
   congr 1
   exact congrFun hfh (openSU2 x)
 
-noncomputable def harmonicKTypeRestrictionEquiv (s : ℝ) (ℓ : ℕ)
+include s ℓ in
+noncomputable def harmonicKTypeRestrictionEquiv  
     (h : (harmonicPolynomials ℓ).map polynomialCompactRestriction ≤
       (compactRestriction s).range) :
     harmonicKType s ℓ ≃ₗ[ℂ] (harmonicPolynomials ℓ).map polynomialCompactRestriction :=
   Submodule.comap_equiv_self_of_inj_of_le (compactRestriction_injective s) h
 
-theorem harmonicKType_finrank_of_extension (s : ℝ) (ℓ : ℕ)
+include s ℓ in
+theorem harmonicKType_finrank_of_extension  
     (h : (harmonicPolynomials ℓ).map polynomialCompactRestriction ≤
       (compactRestriction s).range) :
     Module.finrank ℂ (harmonicKType s ℓ) =
       Module.finrank ℂ ((harmonicPolynomials ℓ).map polynomialCompactRestriction) :=
   (harmonicKTypeRestrictionEquiv s ℓ h).finrank_eq
 
-theorem harmonicKType_finite (s : ℝ) (ℓ : ℕ) : Module.Finite ℂ (harmonicKType s ℓ) := by
+include s ℓ in
+theorem harmonicKType_finite   : Module.Finite ℂ (harmonicKType s ℓ) := by
   letI := polynomialCompactHarmonics_finiteDimensional ℓ
   let r : harmonicKType s ℓ →ₗ[ℂ]
       (harmonicPolynomials ℓ).map polynomialCompactRestriction :=
@@ -853,7 +865,8 @@ theorem harmonicKType_finite (s : ℝ) (ℓ : ℕ) : Module.Finite ℂ (harmonic
   apply compactRestriction_injective s
   exact congrArg Subtype.val hfg
 
-theorem harmonicKType_structure (s : ℝ) (ℓ : ℕ) :
+include s ℓ in
+theorem harmonicKType_structure   :
     IsKInvariant s (harmonicKType s ℓ) ∧
     Module.finrank ℂ (harmonicKType s ℓ) = 2 * ℓ + 1 ∧
     (∀ U : Submodule ℂ (PrincipalSeries s), U ≤ harmonicKType s ℓ →
@@ -890,6 +903,8 @@ theorem harmonicKType_structure (s : ℝ) (ℓ : ℕ) :
     · right
       apply Submodule.map_injective_of_injective (compactRestriction_injective s)
       exact hfull.trans hmap.symm
+end
+
 
 end DedekindZetaZeroFree.KPCplxHarmonicIntertwinerSpectrum
 

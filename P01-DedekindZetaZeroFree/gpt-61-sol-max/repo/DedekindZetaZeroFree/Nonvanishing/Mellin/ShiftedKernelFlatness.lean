@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Fourier.GaussianMellinContourShift
 
 @[expose] public section
+
 
 open Filter Asymptotics
 open scoped Topology
@@ -75,7 +78,7 @@ theorem mellin_right_shift_flat
     (∀ c : ℝ, 2 < c → ∃ C : ℝ, 0 ≤ C ∧
       ∀ x : ℝ, 0 < x → x ≤ 1 → ‖g x‖ ≤ C * Real.rpow x c) := by
   have hcont : ContinuousOn g (Set.Ioi (0 : ℝ)) := by
-    let H : ℝ → ℂ := fun y => G (-(((-2 : ℝ) : ℂ) + ((2 * Real.pi * y : ℝ) : ℂ) * Complex.I))
+    let H  := fun y => G (-(((-2 : ℝ) : ℂ) + ((2 * Real.pi * y : ℝ) : ℂ) * Complex.I))
     have hH : Integrable H :=
       (line_integrable G hG hdecay 2 (by norm_num)).comp_mul_left'
         (R := 2 * Real.pi) (by positivity)

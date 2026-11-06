@@ -11,9 +11,12 @@ open Filter
 set_option maxHeartbeats 1600000
 set_option backward.isDefEq.respectTransparency false
 
+section
+variable {V Y : Type*} [AddCommGroup V] [Module ℂ V] [FiniteDimensional ℂ V]
+    (J : ℂ → V →ₗ[ℂ] (Y → ℂ))
+include V Y J
 private theorem frame_observation_analytic
-    {V Y : Type*} [AddCommGroup V] [Module ℂ V] [FiniteDimensional ℂ V]
-    (J : ℂ → V →ₗ[ℂ] (Y → ℂ)) (b : ℂ → V) {z : ℂ}
+      (b : ℂ → V) {z : ℂ}
     (hJ : ∀ v y, AnalyticAt ℂ (fun s => J s v y) z)
     (hb : ∀ l : V →ₗ[ℂ] ℂ, AnalyticAt ℂ (fun s => l (b s)) z) (y : Y) :
     AnalyticAt ℂ (fun s => J s (b s) y) z := by
@@ -29,8 +32,7 @@ private theorem frame_observation_analytic
   exact (hb ((Finsupp.lapply k).comp B.repr.toLinearMap)).mul (hJ (B k) y)
 
 private theorem frame_observation_meromorphic
-    {V Y : Type*} [AddCommGroup V] [Module ℂ V] [FiniteDimensional ℂ V]
-    (J : ℂ → V →ₗ[ℂ] (Y → ℂ)) (b : ℂ → V) {Ω : Set ℂ}
+      (b : ℂ → V) {Ω : Set ℂ}
     (hJ : ∀ v y, AnalyticOnNhd ℂ (fun s => J s v y) Ω)
     (hb : ∀ l : V →ₗ[ℂ] ℂ, MeromorphicOn (fun s => l (b s)) Ω) (y : Y) :
     MeromorphicOn (fun s => J s (b s) y) Ω := by
@@ -46,8 +48,7 @@ private theorem frame_observation_meromorphic
   exact (hb ((Finsupp.lapply k).comp B.repr.toLinearMap)).mul (hJ (B k) y).meromorphicOn
 
 theorem residue_mem_analytic_function_image
-    {V Y : Type*} [AddCommGroup V] [Module ℂ V] [FiniteDimensional ℂ V]
-    (J : ℂ → V →ₗ[ℂ] (Y → ℂ)) (hJ0 : Function.Injective (J 0))
+      (hJ0 : Function.Injective (J 0))
     {Ω U : Set ℂ} (h0 : (0 : ℂ) ∈ Ω) (hΩ : IsPreconnected Ω)
     (hU : IsOpen U) (hUΩ : U ⊆ Ω) (q : ℂ) (hq : q ∈ U)
     (hJa : ∀ v y, AnalyticOnNhd ℂ (fun s => J s v y) Ω)
@@ -96,6 +97,8 @@ theorem residue_mem_analytic_function_image
   have hz := ((hH y).continuousAt.eventuallyEq_nhds_iff_eventuallyEq_nhdsNE ha.continuousAt).mp he
   have hz0 := hz.eq_of_nhds
   simpa only [v, map_sum, map_smul, Finset.sum_apply, Pi.smul_apply, smul_eq_mul] using hz0.symm
+end
+
 
 end DedekindZetaZeroFree.SheetRescaling
 

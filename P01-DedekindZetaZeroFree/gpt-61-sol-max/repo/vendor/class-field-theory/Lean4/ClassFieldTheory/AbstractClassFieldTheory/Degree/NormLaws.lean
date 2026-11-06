@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AbstractClassFieldTheory.Degree.Valuation
 public import GaloisCohomology.GroupTheory.QuotientTower
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -46,7 +49,7 @@ def conjugateClosedSubgroup {G : Type*} [Group G] [TopologicalSpace G]
     convert IsClosed.preimage
       (IsTopologicalGroup.continuous_conj (G := G) σ) K.isClosed' using 1
     ext x
-    change x ∈ (ConjAct.toConjAct σ⁻¹ • K.toSubgroup : Subgroup G) ↔
+    change x ∈ (ConjAct.toConjAct σ⁻¹ • K.toSubgroup) ↔
       σ * x * σ⁻¹ ∈ K.toSubgroup
     rw [Subgroup.mem_pointwise_smul_iff_inv_smul_mem]
     simp only [ConjAct.toConjAct_inv, inv_inv, ConjAct.toConjAct_smul]
@@ -59,7 +62,7 @@ theorem conjugateClosedSubgroup_mem {G : Type*} [Group G] [TopologicalSpace G]
     [ContinuousMul G]
     (K : ClosedSubgroup G) (σ x : G) :
     x ∈ conjugateClosedSubgroup K σ ↔ σ * x * σ⁻¹ ∈ K := by
-  change x ∈ (ConjAct.toConjAct σ⁻¹ • K.toSubgroup : Subgroup G) ↔
+  change x ∈ (ConjAct.toConjAct σ⁻¹ • K.toSubgroup) ↔
     σ * x * σ⁻¹ ∈ K.toSubgroup
   rw [Subgroup.mem_pointwise_smul_iff_inv_smul_mem]
   simp only [ConjAct.toConjAct_inv, inv_inv, ConjAct.toConjAct_smul]
@@ -211,11 +214,7 @@ theorem relativeNorm_absoluteConjugate_apply [ContinuousMul G]
     ((baseField G).toSubgroup ⧸
       extensionSubgroup (baseField G) K
         (le_baseField K))
-  let conjugateFintype : Fintype
-      ((baseField G).toSubgroup ⧸
-        extensionSubgroup (baseField G)
-          (conjugateClosedSubgroup K σ)
-          (le_baseField (conjugateClosedSubgroup K σ))) :=
+  let conjugateFintype  :=
     Fintype.ofEquiv
       ((baseField G).toSubgroup ⧸
         extensionSubgroup (baseField G) K
@@ -240,7 +239,7 @@ theorem relativeNorm_absoluteConjugate_apply [ContinuousMul G]
           (absoluteConjugateCosetEquiv K σ q)) := by
             apply Finset.sum_congr rfl
             intro q _
-            exact relativeCosetAction_absoluteConjugate A K σ a q
+            apply relativeCosetAction_absoluteConjugate
     _ = A.ρ σ⁻¹
         (∑ q, relativeCosetAction A (baseField G) K
           (le_baseField K) a
@@ -251,22 +250,25 @@ theorem relativeNorm_absoluteConjugate_apply [ContinuousMul G]
           (le_baseField K) a q) := by
             rw [(absoluteConjugateCosetEquiv K σ).sum_comp]
 
+section
+variable (A : Rep ℤ G) (K L : ClosedSubgroup G)
+    (hLK : L.toSubgroup ≤ K.toSubgroup)
+    (hnormal : (extensionSubgroup K L hLK).Normal)
+include A K L hLK hnormal
 /-- The action of an element of `G_K` on `A_L`, when `L | K` is Galois.
 
 Normality is used only to prove that the translate is still fixed by `G_L`. -/
 def normalExtensionAction
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal)
+     
     (k : K.toSubgroup) (a : ambientFixedAddSubgroup A L) :
     ambientFixedAddSubgroup A L := by
   refine ⟨A.ρ k.1 a.1, ?_⟩
   intro l
-  let lK : K.toSubgroup := Subgroup.inclusion hLK l
+  let lK  := Subgroup.inclusion hLK l
   have hc : k⁻¹ * lK * k ∈ extensionSubgroup K L hLK :=
     by simpa using hnormal.conj_mem lK l.2 k⁻¹
   let l' : L.toSubgroup := ⟨(k⁻¹ * lK * k).1, hc⟩
-  have hl'val : (l' : G) = (k⁻¹ * lK * k : K.toSubgroup) :=
+  have hl'val : (l' : G) = (k⁻¹ * lK * k) :=
     rfl
   calc
     A.ρ l.1 (A.ρ k.1 a.1) = A.ρ (l.1 * k.1) a.1 := by rw [map_mul]; rfl
@@ -280,9 +282,7 @@ A L) : A.V) = A.ρ k.1 a.1`.
 -/
 @[simp]
 theorem normalExtensionAction_coe
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal)
+     
     (k : K.toSubgroup) (a : ambientFixedAddSubgroup A L) :
     ((normalExtensionAction A K L hLK hnormal k a : ambientFixedAddSubgroup A L) : A.V) =
       A.ρ k.1 a.1 :=
@@ -291,9 +291,7 @@ theorem normalExtensionAction_coe
 /-- For a finite Galois abstract extension, the relative norm is invariant under
 the `G_K`-conjugacy action on `A_L`. -/
 theorem relativeNorm_normalExtensionAction
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal)
+     
     [Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
     (k : K.toSubgroup) (a : ambientFixedAddSubgroup A L) :
     relativeNorm A K L hLK (normalExtensionAction A K L hLK hnormal k a) =
@@ -317,18 +315,18 @@ theorem relativeNorm_normalExtensionAction
     rfl
   simp only [relativeNorm_apply_coe, relativeNormValue]
   simp_rw [hterm]
-  exact e.sum_comp (relativeCosetAction A K L hLK a)
+  apply e.sum_comp
+end
+
 
 /-- Finiteness is closed under composition in a tower of closed subgroups. -/
-theorem relativeTowerQuotientFinite
+def relativeTowerQuotientFinite
     {G : Type*} [Group G] [TopologicalSpace G]
     (K L M : ClosedSubgroup G)
     (hML : M.toSubgroup ≤ L.toSubgroup)
     (hLK : L.toSubgroup ≤ K.toSubgroup)
     [Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
-    [Finite (L.toSubgroup ⧸ extensionSubgroup L M hML)] :
-    Finite
-      (K.toSubgroup ⧸ extensionSubgroup K M (hML.trans hLK)) :=
+    [Finite (L.toSubgroup ⧸ extensionSubgroup L M hML)]  :=
   Finite.of_equiv
     ((K.toSubgroup ⧸ extensionSubgroup K L hLK) ×
       (L.toSubgroup ⧸ extensionSubgroup L M hML))
@@ -353,10 +351,13 @@ instance totalQuotientFinite :
 
 end DegreeData.FiniteTower
 
-private theorem relativeCosetAction_towerProductEquiv
-    (A : Rep ℤ G) (K L M : ClosedSubgroup G)
+section
+variable (A : Rep ℤ G) (K L M : ClosedSubgroup G)
     (hML : M.toSubgroup ≤ L.toSubgroup)
     (hLK : L.toSubgroup ≤ K.toSubgroup)
+include A K L M hML hLK
+private theorem relativeCosetAction_towerProductEquiv
+     
     (a : ambientFixedAddSubgroup A M)
     (q : K.toSubgroup ⧸ extensionSubgroup K L hLK)
     (r : L.toSubgroup ⧸ extensionSubgroup L M hML) :
@@ -375,9 +376,7 @@ private theorem relativeCosetAction_towerProductEquiv
   rfl
 
 private theorem finiteTowerNormTransApplyAux
-    (A : Rep ℤ G) (K L M : ClosedSubgroup G)
-    (hML : M.toSubgroup ≤ L.toSubgroup)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
+     
     [Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
     [Finite (L.toSubgroup ⧸ extensionSubgroup L M hML)]
     (a : ambientFixedAddSubgroup A M) :
@@ -405,15 +404,12 @@ private theorem finiteTowerNormTransApplyAux
       relativeCosetAction A K L hLK (relativeNorm A L M hML a) q =
           relativeCosetAction A K L hLK (relativeNorm A L M hML a)
             (QuotientGroup.mk (Quotient.out q)) := by
-              exact congrArg
-                (relativeCosetAction A K L hLK (relativeNorm A L M hML a))
-                (Quotient.out_eq' q).symm
+              apply congrArg <;> aesop
       _ = A.ρ (Quotient.out q).1
-          ((relativeNorm A L M hML a : ambientFixedAddSubgroup A L) : A.V) :=
+          ((relativeNorm A L M hML a) : A.V) :=
         relativeCosetAction_mk A K L hLK (relativeNorm A L M hML a)
           (Quotient.out q)
-      _ = A.ρ (Quotient.out q).1 (relativeNormValue A L M hML a) := by
-        rw [relativeNorm_apply_coe]
+      _ = A.ρ (Quotient.out q).1 (relativeNormValue A L M hML a) := rfl
   simp only [relativeNorm_apply_coe, relativeNormValue]
   rw [htotalFintype]
   rw [Finset.sum_congr rfl (fun q _ ↦ houter q)]
@@ -436,6 +432,8 @@ private theorem finiteTowerNormTransApplyAux
     _ = ∑ q, relativeCosetAction A K M (hML.trans hLK) a q :=
       (Subgroup.quotientTowerEquiv hML hLK).symm.sum_comp
         (relativeCosetAction A K M (hML.trans hLK) a)
+end
+
 
 namespace DegreeData.FiniteTower
 
@@ -452,15 +450,15 @@ theorem norm_trans_apply (A : Rep ℤ G)
   exact finiteTowerNormTransApplyAux A T.base T.middle T.top
     T.top_le_middle T.middle_le_base a
 
-/-- Homomorphism form of norm transitivity along a finite tower. -/
-theorem norm_trans (A : Rep ℤ G) :
-    (relativeNorm A T.base T.middle T.middle_le_base).comp
-        (relativeNorm A T.middle T.top T.top_le_middle) =
-      relativeNorm A T.base T.top
-        (T.top_le_middle.trans T.middle_le_base) := by
-  apply AddMonoidHom.ext
-  intro a
-  exact T.norm_trans_apply A a
+
+
+
+
+
+
+
+
+
 
 end DegreeData.FiniteTower
 

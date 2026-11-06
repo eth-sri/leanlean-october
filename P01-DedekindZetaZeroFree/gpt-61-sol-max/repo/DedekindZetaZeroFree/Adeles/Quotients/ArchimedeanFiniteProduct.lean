@@ -495,16 +495,19 @@ abbrev ActualCover := KPCubicCoverConstruction.AdelicPGL2Cover F ζ hζ
 
 abbrev rationalSplit := KPRationalAdelicSplitting.rationalPGLHom F ζ hζ
 
-abbrev rationalSubgroup : Subgroup (ActualCover F ζ hζ) :=
+
+local notation:max "current_ActualCover" => ActualCover F ζ hζ
+
+abbrev rationalSubgroup : Subgroup (current_ActualCover) :=
   (rationalSplit F ζ hζ).range
 
 abbrev X := _root_.Quotient (QuotientGroup.rightRel (rationalSubgroup F ζ hζ))
 
-instance : MeasurableSpace (ActualCover F ζ hζ) := borel _
+instance : MeasurableSpace (current_ActualCover) := borel _
 
 instance : MeasurableSpace (X F ζ hζ) := borel _
 
-instance : BorelSpace (ActualCover F ζ hζ) := ⟨rfl⟩
+instance : BorelSpace (current_ActualCover) := ⟨rfl⟩
 
 instance : BorelSpace (X F ζ hζ) := ⟨rfl⟩
 
@@ -514,26 +517,26 @@ def finiteTuples : Subgroup (KPAdelicCoverRestrictedProduct.RestrictedCover F ζ
   mul_mem' := by intro g h hg hh w; simp [hg w, hh w]
   inv_mem' := by intro g hg w; simp [hg w]
 
-def finiteSubgroup : Subgroup (ActualCover F ζ hζ) :=
+def finiteSubgroup : Subgroup (current_ActualCover) :=
   (finiteTuples F ζ hζ).map
     ((KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ).comp
       (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ))
 
 abbrev FiniteLevel := CompactOpenLevel (finiteSubgroup F ζ hζ)
 
-def levelSubgroup (U : FiniteLevel F ζ hζ) : Subgroup (ActualCover F ζ hζ) :=
+def levelSubgroup (U : FiniteLevel F ζ hζ) : Subgroup (current_ActualCover) :=
   U.toOpenSubgroup.toSubgroup.map (finiteSubgroup F ζ hζ).subtype
 
 abbrev centreMap := KPAdelicCoverRestrictedProduct.pglCentralInjection F ζ hζ
 
 def rightSubgroup (U : FiniteLevel F ζ hζ) (geometric : Bool) :
-    Subgroup (ActualCover F ζ hζ) :=
+    Subgroup (current_ActualCover) :=
   if geometric then levelSubgroup F ζ hζ U ⊔ (centreMap F ζ hζ).range
   else levelSubgroup F ζ hζ U
 
 abbrev LevelSpace (U : FiniteLevel F ζ hζ) (geometric : Bool) :=
-  DoubleCoset.Quotient (rationalSubgroup F ζ hζ : Set (ActualCover F ζ hζ))
-    (rightSubgroup F ζ hζ U geometric : Set (ActualCover F ζ hζ))
+  DoubleCoset.Quotient (rationalSubgroup F ζ hζ : Set (current_ActualCover))
+    (rightSubgroup F ζ hζ U geometric : Set (current_ActualCover))
 
 instance (U : FiniteLevel F ζ hζ) (geometric : Bool) :
     TopologicalSpace (LevelSpace F ζ hζ U geometric) :=
@@ -566,12 +569,12 @@ theorem scalars_le_arch_kernel : KPAdelicCoverRestrictedProduct.scalarSubgroup F
     (Matrix.GeneralLinearGroup.scalar (Fin 2) u)) = 1
   rw [Matrix.GeneralLinearGroup.map_scalar, Matrix.ProjGenLinGroup.mk_scalar]
 
-def archProjection : ActualCover F ζ hζ →* ArchGroup F :=
+def archProjection : current_ActualCover →* ArchGroup F :=
   (QuotientGroup.lift (KPAdelicCoverRestrictedProduct.scalarSubgroup F)
     (glArchProjection F ζ hζ) (scalars_le_arch_kernel F ζ hζ)).comp
       (KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ)
 
-def archimedeanInsertion (g : ArchGroup F) : ActualCover F ζ hζ :=
+def archimedeanInsertion (g : ArchGroup F) : current_ActualCover :=
   ((Finset.univ : Finset (InfinitePlace F)).toList.map fun v =>
     KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
       (KPAdelicCoverRestrictedProduct.localInjection F ζ hζ (Sum.inl v)
@@ -581,8 +584,11 @@ def archimedeanInsertion (g : ArchGroup F) : ActualCover F ζ hζ :=
               (KPHilbert.infinite_isComplex F ζ hζ v)).symm.toRingHom (g v).out)))).prod
 
 open KPAdelicCoverRestrictedProduct
+
+local notation:max "current_archProjection" => archProjection F ζ hζ
+
 theorem archProjection_restricted_eval (x : RestrictedCover F ζ hζ) (w : InfinitePlace F) :
-  archProjection F ζ hζ (scalarQuotient F ζ hζ (amalgamation F ζ hζ x)) w =
+  current_archProjection (scalarQuotient F ζ hζ (amalgamation F ζ hζ x)) w =
     Matrix.ProjGenLinGroup.mk (Matrix.GeneralLinearGroup.map
       (InfinitePlace.Completion.ringEquivComplexOfIsComplex
         (KPHilbert.infinite_isComplex F ζ hζ w)).toRingHom (x (Sum.inl w)).g) := by
@@ -594,7 +600,7 @@ theorem archProjection_restricted_eval (x : RestrictedCover F ζ hζ) (w : Infin
     (restrictedProjection F ζ hζ x) = (x (Sum.inl w)).g from
       restrictedProjection_eval F ζ hζ x (Sum.inl w)]
 private theorem splitting_local_arch (v w : InfinitePlace F) (g : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl v)) :
- archProjection F ζ hζ (scalarQuotient F ζ hζ (localInjection F ζ hζ (Sum.inl v) g)) w =
+ current_archProjection (scalarQuotient F ζ hζ (localInjection F ζ hζ (Sum.inl v) g)) w =
  Matrix.ProjGenLinGroup.mk (Matrix.GeneralLinearGroup.map
  (InfinitePlace.Completion.ringEquivComplexOfIsComplex (KPHilbert.infinite_isComplex F ζ hζ w)).toRingHom
  ((localToRestricted F ζ hζ (Sum.inl v) g (Sum.inl w)).g)) := by
@@ -602,7 +608,7 @@ private theorem splitting_local_arch (v w : InfinitePlace F) (g : KPLocalCover.C
  rw [Matrix.GeneralLinearGroup.map_comp, MonoidHom.comp_apply]
  congr 2
 private theorem splitting_local_arch_same (v : InfinitePlace F) (a : Matrix.ProjGenLinGroup (Fin 2) ℂ) :
- archProjection F ζ hζ (scalarQuotient F ζ hζ (localInjection F ζ hζ (Sum.inl v)
+ current_archProjection (scalarQuotient F ζ hζ (localInjection F ζ hζ (Sum.inl v)
  (KPLocalCover.sectionMap F ζ hζ (Sum.inl v) (Matrix.GeneralLinearGroup.map
  (InfinitePlace.Completion.ringEquivComplexOfIsComplex (KPHilbert.infinite_isComplex F ζ hζ v)).symm.toRingHom a.out)))) v = a := by
  rw [splitting_local_arch]
@@ -620,7 +626,7 @@ private theorem splitting_local_arch_same (v : InfinitePlace F) (a : Matrix.Proj
  exact Quotient.out_eq a
 private theorem splitting_local_arch_ne (v w : InfinitePlace F) (hne : v ≠ w)
  (g : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl v)) :
- archProjection F ζ hζ (scalarQuotient F ζ hζ (localInjection F ζ hζ (Sum.inl v) g)) w = 1 := by
+ current_archProjection (scalarQuotient F ζ hζ (localInjection F ζ hζ (Sum.inl v) g)) w = 1 := by
  rw [splitting_local_arch]
  change Matrix.ProjGenLinGroup.mk (Matrix.GeneralLinearGroup.map _
    ((RestrictedProduct.mulSingle (compact F ζ hζ) (Sum.inl v) g (Sum.inl w)).g)) = 1
@@ -629,15 +635,15 @@ private theorem splitting_local_arch_ne (v w : InfinitePlace F) (hne : v ≠ w)
  rw [h]
  simp
 
-theorem archProjection_archimedeanInsertion (a : ArchGroup F) : archProjection F ζ hζ (archimedeanInsertion F ζ hζ a) = a := by
+theorem archProjection_archimedeanInsertion (a : ArchGroup F) : current_archProjection (archimedeanInsertion F ζ hζ a) = a := by
  ext w
- let f : InfinitePlace F → ActualCover F ζ hζ := fun v =>
+ let f : InfinitePlace F → current_ActualCover := fun v =>
    scalarQuotient F ζ hζ (localInjection F ζ hζ (Sum.inl v)
      (KPLocalCover.sectionMap F ζ hζ (Sum.inl v) (Matrix.GeneralLinearGroup.map
        (InfinitePlace.Completion.ringEquivComplexOfIsComplex
          (KPHilbert.infinite_isComplex F ζ hζ v)).symm.toRingHom (a v).out)))
- let p : ActualCover F ζ hζ →* Matrix.ProjGenLinGroup (Fin 2) ℂ :=
-   (Pi.evalMonoidHom _ w).comp (archProjection F ζ hζ)
+ let p : current_ActualCover →* Matrix.ProjGenLinGroup (Fin 2) ℂ :=
+   (Pi.evalMonoidHom _ w).comp (current_archProjection)
  change p ((Finset.univ.toList.map f).prod) = a w
  rw [map_list_prod]
  simp only [List.map_map, Function.comp_def]
@@ -662,9 +668,9 @@ theorem centreMap_range_le_finiteSubgroup : (centreMap F ζ hζ).range ≤ finit
    rw [localInjection_central]
    rfl
 
-theorem finiteSubgroup_le_archProjection_ker : finiteSubgroup F ζ hζ ≤ (archProjection F ζ hζ).ker := by
+theorem finiteSubgroup_le_archProjection_ker : finiteSubgroup F ζ hζ ≤ (current_archProjection).ker := by
  rintro c ⟨x, hx, rfl⟩
- change archProjection F ζ hζ (scalarQuotient F ζ hζ (amalgamation F ζ hζ x)) = 1
+ change current_archProjection (scalarQuotient F ζ hζ (amalgamation F ζ hζ x)) = 1
  ext w
  change Matrix.ProjGenLinGroup.mk (Matrix.GeneralLinearGroup.map _
    (restrictedProjection F ζ hζ x)) = 1
@@ -675,38 +681,38 @@ theorem finiteSubgroup_le_archProjection_ker : finiteSubgroup F ζ hζ ≤ (arch
  simp
 
 theorem actualArchFiniteSplitting :
-    ∃ e : (ArchGroup F × finiteSubgroup F ζ hζ) ≃ₜ* ActualCover F ζ hζ,
+    ∃ e : (ArchGroup F × finiteSubgroup F ζ hζ) ≃ₜ* current_ActualCover,
       (∀ a h, e (a, h) = archimedeanInsertion F ζ hζ a * h) ∧
-      (∀ g, (e.symm g).1 = archProjection F ζ hζ g) ∧
-      (∀ a, archProjection F ζ hζ (archimedeanInsertion F ζ hζ a) = a) ∧
-      (archProjection F ζ hζ).ker = finiteSubgroup F ζ hζ ∧
+      (∀ g, (e.symm g).1 = current_archProjection g) ∧
+      (∀ a, current_archProjection (archimedeanInsertion F ζ hζ a) = a) ∧
+      (current_archProjection).ker = finiteSubgroup F ζ hζ ∧
       (centreMap F ζ hζ).range ≤ finiteSubgroup F ζ hζ ∧
       LocallyCompactSpace (finiteSubgroup F ζ hζ) := by
-  letI : IsTopologicalGroup (ActualCover F ζ hζ) :=
+  letI : IsTopologicalGroup (current_ActualCover) :=
     (KPCubicCoverConstruction.adelic_topological_covers F ζ hζ).2.2.2.1
   obtain ⟨s, hs⟩ := RepresentationTheory.ArchFiniteSplitting.insertion_hom F ζ hζ
   have hsraw : ∀ a, s a = archimedeanInsertion F ζ hζ a := hs
-  have hker : (archProjection F ζ hζ).ker = finiteSubgroup F ζ hζ := by
+  have hker : (current_archProjection).ker = finiteSubgroup F ζ hζ := by
     apply le_antisymm
     · exact RepresentationTheory.ArchFiniteSplitting.arch_kernel_le_finite F ζ hζ
     · exact finiteSubgroup_le_archProjection_ker F ζ hζ
   obtain ⟨hinsertion, hprojection⟩ :=
     RepresentationTheory.ArchFiniteSplitting.splitting_maps_continuous F ζ hζ
   have hscont : Continuous s := by
-    have heq : (s : ArchGroup F → ActualCover F ζ hζ) =
+    have heq : (s : ArchGroup F → current_ActualCover) =
         RepresentationTheory.ArchFiniteSplitting.insertion F ζ hζ := funext hs
     rw [heq]
     exact hinsertion
-  have hsec : ∀ a, archProjection F ζ hζ (s a) = a := by
+  have hsec : ∀ a, current_archProjection (s a) = a := by
     intro a
     rw [hsraw]
     exact archProjection_archimedeanInsertion F ζ hζ a
-  have hcomm : ∀ a (h : finiteSubgroup F ζ hζ), Commute (s a) (h : ActualCover F ζ hζ) := by
+  have hcomm : ∀ a (h : finiteSubgroup F ζ hζ), Commute (s a) (h : current_ActualCover) := by
     intro a h
     rw [hsraw]
     exact RepresentationTheory.ArchFiniteSplitting.insertion_commutes_finite F ζ hζ a h
   obtain ⟨e, he, hep⟩ := RepresentationTheory.ArchFiniteSplitting.commuting_split_product
-    (archProjection F ζ hζ) s (finiteSubgroup F ζ hζ)
+    (current_archProjection) s (finiteSubgroup F ζ hζ)
     hprojection hscont hsec hker hcomm
   refine ⟨e, ?_, hep, archProjection_archimedeanInsertion F ζ hζ,
     hker, centreMap_range_le_finiteSubgroup F ζ hζ, ?_⟩

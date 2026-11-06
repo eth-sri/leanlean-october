@@ -21,27 +21,37 @@ variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 variable (q : HeightOneSpectrum (𝓞 F))
 
-private lemma winv (K : Type*) [Field K] : (KubotaRankTwo.w K)⁻¹ = KubotaRankTwo.d K (-1) (-1) * KubotaRankTwo.w K := by
+section
+variable (K : Type*) [Field K]
+include K
+private lemma winv   : (KubotaRankTwo.w K)⁻¹ = KubotaRankTwo.d K (-1) (-1) * KubotaRankTwo.w K := by
   apply inv_eq_of_mul_eq_one_right
   apply Units.ext
   ext i j
   fin_cases i <;> fin_cases j <;> simp [Matrix.mul_apply]
-private lemma Xwinv (K : Type*) [Field K] : KubotaRankTwo.X K (KubotaRankTwo.w K)⁻¹ = -1 := by
+private lemma Xwinv   : KubotaRankTwo.X K (KubotaRankTwo.w K)⁻¹ = -1 := by
   rw [winv]
   apply Units.ext
   simp [KubotaRankTwo.X, KubotaRankTwo.x, Matrix.mul_apply]
-private lemma Xwnw (K : Type*) [Field K] (v : Kˣ) :
+private lemma Xwnw   (v : Kˣ) :
     KubotaRankTwo.X K ((KubotaRankTwo.w K)⁻¹ * KubotaRankTwo.n K (-((v⁻¹ : Kˣ) : K)) * (KubotaRankTwo.w K)⁻¹) = -v⁻¹ := by
   rw [winv]
   apply Units.ext
   simp [KubotaRankTwo.X, KubotaRankTwo.x, Matrix.mul_apply, Units.ne_zero]
+end
 
-private lemma BoneL (a : (LocalField F q)ˣ) : KPHilbert.B3 F ζ hζ (Sum.inr q) 1 a = 1 :=
+
+section
+variable (a : (LocalField F q)ˣ)
+include a
+private lemma BoneL   : KPHilbert.B3 F ζ hζ (Sum.inr q) 1 a = 1 :=
   KubotaDefectSymbolAlgebra.one_left _ _ _ (KPHilbert.B3_laws F ζ hζ (Sum.inr q)).1 a
-private lemma BoneR (a : (LocalField F q)ˣ) : KPHilbert.B3 F ζ hζ (Sum.inr q) a 1 = 1 :=
+private lemma BoneR   : KPHilbert.B3 F ζ hζ (Sum.inr q) a 1 = 1 :=
   KubotaDefectSymbolAlgebra.one_right _ _ _ (KPHilbert.B3_laws F ζ hζ (Sum.inr q)).2.1 a
-private lemma BnegR (a : (LocalField F q)ˣ) : KPHilbert.B3 F ζ hζ (Sum.inr q) a (-1) = 1 :=
+private lemma BnegR   : KPHilbert.B3 F ζ hζ (Sum.inr q) a (-1) = 1 :=
   (KPHilbert.B3_laws F ζ hζ (Sum.inr q)).2.2.2.2.2 a |>.2.1
+end
+
 private lemma sigmanR (g : KubotaRankTwo.GL2 (LocalField F q)) (s : LocalField F q) :
     KPLocalCover.sigmaTwo F ζ hζ (Sum.inr q) g (KubotaRankTwo.n (LocalField F q) s) = 1 := by
   simp [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, BoneL, BoneR]
@@ -274,9 +284,12 @@ private lemma ratio_phase (c x y : (LocalField F q)ˣ) :
   norm_num only [Nat.reduceMul]
   rw [show 4=3+1 by omega, pow_add, hw]; simp
 
+section
+variable (S : ActualKPBinding F ζ hζ q) (P : Polarization S.heisenberg)
+    (c x y : (LocalField F q)ˣ)
+include S P c x y
 private lemma actual_word
-    (S : ActualKPBinding F ζ hζ q) (P : Polarization S.heisenberg)
-    (c x y : (LocalField F q)ˣ) :
+      :
     S.borel.weyl ((S.openCell P).rootTorus (c*x)) *
       (S.openCell P).rootTorus (x*y^3) =
     (S.central (KPHilbert.B3 F ζ hζ (Sum.inr q) c x) : _) *
@@ -312,8 +325,7 @@ private lemma actual_word
   simp
 
 private lemma center_word_action
-    (S : ActualKPBinding F ζ hζ q) (P : Polarization S.heisenberg)
-    (c x y : (LocalField F q)ˣ)
+     
     (V : CenterModule S.heisenberg) (h : KPExceptionalRaw.actualTorus F ζ hζ q) :
     ((centerTorus F ζ hζ q S.heisenberg S.borel .minus ((S.openCell P).rootTorus (c*x)))
       ((centerTorus F ζ hζ q S.heisenberg S.borel .plus
@@ -341,6 +353,8 @@ private lemma center_word_action
   change _ = _ * _ * V.val (h * S.borel.weyl ((S.openCell P).rootTorus c) *
     (S.openCell P).rootTorus 1)
   simp [W, C, e, mul_assoc]
+end
+
 
 private lemma norm_unram_direct (s : ℂ) (r t : ℂˣ)
     (hr : (r : ℂ) = KPRankOneRootParameter.r (LocalField F q) s)

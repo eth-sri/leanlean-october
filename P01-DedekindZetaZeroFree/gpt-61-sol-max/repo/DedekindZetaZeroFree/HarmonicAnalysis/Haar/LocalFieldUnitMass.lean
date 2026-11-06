@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.ResidueFieldScaling
 
 @[expose] public section
+
 
 noncomputable section
 namespace DedekindZetaZeroFree.KPTameTransposeBaseMassSteps
@@ -19,7 +22,7 @@ theorem normalized_unit_complement_mass (μ : Measure K) [μ.IsAddHaarMeasure]
   letI := IsTopologicalAddGroup.rightUniformSpace K
   haveI := isUniformAddGroup_of_addCommGroup (G := K)
   let R := (valuation K).integer
-  let p : Set K := R.subtype '' (IsLocalRing.maximalIdeal R : Set R)
+  let p  := R.subtype '' (IsLocalRing.maximalIdeal R : Set R)
   have hp : p ⊆ (R : Set K) := by
     rintro x ⟨y, hy, rfl⟩
     exact y.property

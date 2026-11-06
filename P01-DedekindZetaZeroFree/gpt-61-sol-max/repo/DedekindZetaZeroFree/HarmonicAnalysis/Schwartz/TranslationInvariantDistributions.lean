@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.Calculus.FDeriv.Symmetric
 public import Mathlib.Analysis.Distribution.TestFunction
 
 @[expose] public section
+
 
 section
 
@@ -22,7 +25,7 @@ theorem compactly_supported_directional_quotient_tendstoUniformly
     (hc.fderiv ℝ).uniformContinuous_of_continuous (hf.continuous_fderiv one_ne_zero)
   rw [Metric.tendstoUniformly_iff]
   intro ε hε
-  let C : ℝ := ε / (‖v‖ + 1)
+  let C  := ε / (‖v‖ + 1)
   have hC : 0 < C := div_pos hε (by positivity)
   obtain ⟨δ, hδ, hδbound⟩ := Metric.uniformContinuous_iff.mp hu C hC
   have htend : Filter.Tendsto (fun t : ℝ => ‖t • v‖) (𝓝[≠] 0) (𝓝 0) := by
@@ -123,47 +126,51 @@ noncomputable def translationForDifferenceQuotient (t : ℂ)
   hasCompactSupport' := φ.hasCompactSupport.comp_homeomorph (Homeomorph.addRight t)
   tsupport_subset' := by simp
 
-theorem invariant_annihilates_translation_difference
-    (D : 𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ) →L[ℂ] ℂ)
+section
+variable (D : 𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ) →L[ℂ] ℂ)
     (hD : ∀ (t : ℂ) (φ χ : 𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ)),
       (∀ x : ℂ, χ x = φ (x + t)) → D χ = D φ)
+include D hD in
+theorem invariant_annihilates_translation_difference
+     
     (t : ℂ) (φ : 𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ)) :
     D (translationForDifferenceQuotient t φ - φ) = 0 := by
-  have ht : D (translationForDifferenceQuotient t φ) = D φ := hD t φ (translationForDifferenceQuotient t φ) (fun _ => rfl)
+  have ht  := hD t φ (translationForDifferenceQuotient t φ) (fun _ => rfl)
   rw [map_sub, ht, sub_self]
 
 noncomputable def translationDifferenceQuotient (t : ℝ) (v : ℂ)
-    (φ : 𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ)) :
-    𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ) :=
+    (φ : 𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ))  :=
   (↑(t⁻¹) : ℂ) • (translationForDifferenceQuotient (t • v) φ - φ)
 
+include D hD in
 theorem invariant_annihilates_translation_difference_quotient
-    (D : 𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ) →L[ℂ] ℂ)
-    (hD : ∀ (t : ℂ) (φ χ : 𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ)),
-      (∀ x : ℂ, χ x = φ (x + t)) → D χ = D φ)
+     
     (t : ℝ) (v : ℂ) (φ : 𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ)) :
     D (translationDifferenceQuotient t v φ) = 0 := by
   simp only [translationDifferenceQuotient, map_smul]
   rw [invariant_annihilates_translation_difference D hD]
   simp
+end
+
 
 noncomputable def differenceQuotientCompact (v : ℂ)
     (φ : 𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ)) : TopologicalSpace.Compacts ℂ :=
   ⟨Metric.cthickening ‖v‖ (tsupport φ), φ.hasCompactSupport.cthickening⟩
 
-lemma translation_support_subset_differenceQuotientCompact (t : ℝ) (v : ℂ)
-    (φ : 𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ)) (ht : ‖t‖ ≤ 1) :
+section
+variable (t : ℝ) (v : ℂ)
+    (φ : 𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ)) (ht : ‖t‖ ≤ 1)
+include t v φ ht
+lemma translation_support_subset_differenceQuotientCompact   :
     tsupport (translationForDifferenceQuotient (t • v) φ) ⊆
       differenceQuotientCompact v φ := by
   apply closure_minimal _ Metric.isClosed_cthickening
   intro x hx
-  have hy : x + t • v ∈ tsupport φ := subset_tsupport φ (by
-    simpa [Function.mem_support, translationForDifferenceQuotient] using hx)
+  have hy : x + t • v ∈ tsupport φ := subset_tsupport φ (hx)
   apply Metric.mem_cthickening_of_dist_le x (x + t • v) ‖v‖ (tsupport φ) hy
   simpa [dist_eq_norm, norm_smul] using mul_le_of_le_one_left (norm_nonneg v) ht
 
-lemma quotient_support_subset_differenceQuotientCompact (t : ℝ) (v : ℂ)
-    (φ : 𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ)) (ht : ‖t‖ ≤ 1) :
+lemma quotient_support_subset_differenceQuotientCompact   :
     tsupport (translationDifferenceQuotient t v φ) ⊆ differenceQuotientCompact v φ := by
   apply closure_minimal _ Metric.isClosed_cthickening
   intro x hx
@@ -177,9 +184,14 @@ lemma quotient_support_subset_differenceQuotientCompact (t : ℝ) (v : ℂ)
     apply subset_tsupport
     simpa [Function.mem_support, hφ] using hdiff
   · exact Metric.self_subset_cthickening (δ := ‖v‖) (tsupport φ) (subset_tsupport φ hφ)
+end
 
-lemma derivative_support_subset_differenceQuotientCompact (v : ℂ)
-    (φ : 𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ)) :
+
+section
+variable (v : ℂ)
+    (φ : 𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ))
+include v φ in
+lemma derivative_support_subset_differenceQuotientCompact   :
     tsupport (TestFunction.lineDerivCLM ℂ v φ :
       𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ)) ⊆ differenceQuotientCompact v φ := by
   apply closure_minimal _ Metric.isClosed_cthickening
@@ -193,15 +205,13 @@ lemma derivative_support_subset_differenceQuotientCompact (v : ℂ)
   rfl
 
 noncomputable def supportedDifferenceQuotient (t : ℝ) (v : ℂ)
-    (φ : 𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ)) (ht : ‖t‖ ≤ 1) :
-    𝓓_{differenceQuotientCompact v φ}(ℂ, ℂ) :=
+    (φ : 𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ)) (ht : ‖t‖ ≤ 1)  :=
   ContDiffMapSupportedIn.of_support_subset
     (translationDifferenceQuotient t v φ).contDiff
     (subset_tsupport _ |>.trans (quotient_support_subset_differenceQuotientCompact t v φ ht))
 
-noncomputable def supportedDirectionalDerivative (v : ℂ)
-    (φ : 𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ)) :
-    𝓓_{differenceQuotientCompact v φ}(ℂ, ℂ) :=
+include v φ in
+noncomputable def supportedDirectionalDerivative    :=
   ContDiffMapSupportedIn.of_support_subset
     (TestFunction.lineDerivCLM ℂ v φ : 𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ)).contDiff
     (subset_tsupport _ |>.trans (derivative_support_subset_differenceQuotientCompact v φ))
@@ -221,13 +231,13 @@ lemma supported_smooth_tendsto_of_all_jets
   apply BoundedContinuousFunction.tendsto_iff_tendstoUniformly.mpr
   simpa only [Function.comp_apply, ContDiffMapSupportedIn.structureMapLM_top_apply] using h i
 
-noncomputable def supportedDifferenceQuotientFamily (v : ℂ)
-    (φ : 𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ))
-    (t : ℝ) : 𝓓_{differenceQuotientCompact v φ}(ℂ, ℂ) :=
+include v φ in
+noncomputable def supportedDifferenceQuotientFamily  
+    (t : ℝ)  :=
   if ht : ‖t‖ ≤ 1 then supportedDifferenceQuotient t v φ ht else 0
 
-lemma translationDifferenceQuotient_tendsto_of_all_jets (v : ℂ)
-    (φ : 𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ))
+include v φ in
+lemma translationDifferenceQuotient_tendsto_of_all_jets  
     (h : ∀ i : ℕ, TendstoUniformly
       (fun t : ℝ => iteratedFDeriv ℝ i (supportedDifferenceQuotientFamily v φ t))
       (iteratedFDeriv ℝ i (supportedDirectionalDerivative v φ)) (𝓝[≠] 0)) :
@@ -252,12 +262,17 @@ lemma translationDifferenceQuotient_tendsto_of_all_jets (v : ℂ)
   change supportedDifferenceQuotientFamily v φ t x = translationDifferenceQuotient t v φ x
   rw [supportedDifferenceQuotientFamily, dif_pos ht]
   rfl
+end
 
-lemma invariant_annihilates_directional_derivatives_of_all_jets
-    (D : 𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ) →L[ℂ] ℂ)
+
+section
+variable (D : 𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ) →L[ℂ] ℂ)
     (hD : ∀ (t : ℂ) (φ χ : 𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ)),
       (∀ x : ℂ, χ x = φ (x + t)) → D χ = D φ)
     (v : ℂ) (φ : 𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ))
+include D hD v φ in
+lemma invariant_annihilates_directional_derivatives_of_all_jets
+     
     (h : ∀ i : ℕ, TendstoUniformly
       (fun t : ℝ => iteratedFDeriv ℝ i (supportedDifferenceQuotientFamily v φ t))
       (iteratedFDeriv ℝ i (supportedDirectionalDerivative v φ)) (𝓝[≠] 0)) :
@@ -265,7 +280,7 @@ lemma invariant_annihilates_directional_derivatives_of_all_jets
       𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ)) = 0 := by
   have hl := D.continuous.tendsto _ |>.comp
     (translationDifferenceQuotient_tendsto_of_all_jets v φ h)
-  have hz : (fun t : ℝ => D (translationDifferenceQuotient t v φ)) = fun _ => 0 :=
+  have hz  :=
     funext fun t => invariant_annihilates_translation_difference_quotient D hD t v φ
   simp only [Function.comp_def] at hl
   rw [hz] at hl
@@ -280,19 +295,17 @@ lemma translationDifferenceQuotient_iteratedFDeriv (t : ℝ) (v : ℂ)
     funext y
     simp [translationDifferenceQuotient, translationForDifferenceQuotient,
       Complex.real_smul]
-  have hf : ContDiff ℝ (i : ℕ) (φ : ℂ → ℂ) := φ.contDiff.of_le (by simp)
-  have htr : ContDiff ℝ (i : ℕ) (fun y : ℂ => φ (y + t • v)) :=
+  have hf : ContDiff ℝ i (φ : ℂ → ℂ) := φ.contDiff.of_le (by simp)
+  have htr : ContDiff ℝ i (fun y : ℂ => φ (y + t • v)) :=
     hf.comp (contDiff_id.add contDiff_const)
-  have hsub : ContDiff ℝ (i : ℕ) (fun y : ℂ => φ (y + t • v) - φ y) := htr.sub hf
+  have hsub : ContDiff ℝ i (fun y : ℂ => φ (y + t • v) - φ y) := htr.sub hf
   rw [he, iteratedFDeriv_const_smul_apply hsub.contDiffAt,
     fun_iteratedFDeriv_sub_apply htr.contDiffAt hf.contDiffAt,
     iteratedFDeriv_comp_add_right]
 
+include D hD v φ in
 theorem invariant_annihilates_directional_derivatives
-    (D : 𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ) →L[ℂ] ℂ)
-    (hD : ∀ (t : ℂ) (φ χ : 𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ)),
-      (∀ x : ℂ, χ x = φ (x + t)) → D χ = D φ)
-    (v : ℂ) (φ : 𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ)) :
+      :
     D (TestFunction.lineDerivCLM ℂ v φ :
       𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ)) = 0 := by
   apply invariant_annihilates_directional_derivatives_of_all_jets D hD v φ
@@ -303,11 +316,7 @@ theorem invariant_annihilates_directional_derivatives
       (iteratedFDeriv ℝ i φ) hjet (φ.hasCompactSupport.iteratedFDeriv i) v
   have hder : (supportedDirectionalDerivative v φ : ℂ → ℂ) =
       fun x => fderiv ℝ φ x v := by
-    funext x
-    change (TestFunction.lineDerivCLM ℂ v φ :
-      𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ)) x = _
-    rw [TestFunction.lineDerivCLM_apply_of_le (by simp),
-      (φ.contDiff.differentiable (by simp)).differentiableAt.lineDeriv_eq_fderiv]
+    rfl
   have hderjet : iteratedFDeriv ℝ i (supportedDirectionalDerivative v φ) =
       fun x => fderiv ℝ (iteratedFDeriv ℝ i φ) x v := by
     rw [hder]
@@ -332,7 +341,9 @@ theorem invariant_annihilates_directional_derivatives
     rfl
   rw [hquot]
   funext x
-  exact translationDifferenceQuotient_iteratedFDeriv t v φ i x
+  apply translationDifferenceQuotient_iteratedFDeriv
+end
+
 
 end DedekindZetaZeroFree.KPCplxOpenCellTranslationInvariance
 

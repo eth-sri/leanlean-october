@@ -53,9 +53,9 @@ instance ideleGroupIsTopologicalGroup :
     IsTopologicalGroup (IdeleGroup K) :=
   inferInstance
 
-instance finiteIdeleGroupT2Space :
-    T2Space (FiniteIdeleGroup K) :=
-  inferInstance
+
+
+
 
 instance infiniteAdeleRingT2Space :
     T2Space (NumberField.InfiniteAdeleRing K) := by
@@ -66,9 +66,9 @@ instance infiniteIdeleGroupT2Space :
     T2Space (InfiniteIdeleGroup K) :=
   inferInstance
 
-instance ideleGroupT2Space :
-    T2Space (IdeleGroup K) :=
-  inferInstance
+
+
+
 
 namespace IdeleGroup
 

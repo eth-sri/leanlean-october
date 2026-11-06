@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LFunctions.Hecke.QuadraticFamilies.ClassTwists
 public import DedekindZetaZeroFree.Arithmetic.Ideals.SquarefreeGcdDecomposition
 public import DedekindZetaZeroFree.LFunctions.Hecke.QuadraticFamilies.CharacterValues
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Conductors.ProductConductorComparison
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve
 
@@ -41,7 +44,7 @@ theorem rawGcdPairTransport
           ψ n = (Q.χ a) n * (Q.χ b) n) ∧
       u * v ∣ Q.cond a * Q.cond b ∧
       Q.cond a ∣ u * v * Q.cond b := by
-  letI : Group Q.G := Q.instGroup
+  letI  := Q.instGroup
   obtain ⟨hd, hu, hv, huv, hdu, hdv⟩ :=
     SquarefreeGcd.strip_squarefree_and_coprime ha hb hau hbv
   obtain ⟨hdc, huc, hvc⟩ :=
@@ -73,8 +76,8 @@ theorem rawGcdPairTransport
     dsimp [R] at hn
     simp only [coprime_mul_iff] at hn
     tauto
-  have hu_dvd : u ∣ a := by rw [hau]; exact dvd_mul_left u (a ⊔ b)
-  have hv_dvd : v ∣ b := by rw [hbv]; exact dvd_mul_left v (a ⊔ b)
+  have hu_dvd : u ∣ a := by rw [hau]; apply dvd_mul_left
+  have hv_dvd : v ∣ b := by rw [hbv]; apply dvd_mul_left
   have prime_eq (p : Ideal (𝓞 F)) (hp : Prime p) (hpR : p ⊔ R = ⊤) :
       (Q.χ a) p * (Q.χ b) p = (Q.χ u) p * (Q.χ v) p := by
     obtain ⟨hpc, hpa, hpb, hpca, hpcb, hpcu, hpcv⟩ := parts p hpR
@@ -84,8 +87,7 @@ theorem rawGcdPairTransport
     have rbp := Q.reciprocity b p hb hbc hp.squarefree hpc (by simpa [sup_comm] using hpb)
     have rup := Q.reciprocity u p hu huc hp.squarefree hpc (by simpa [sup_comm] using hpu)
     have rvp := Q.reciprocity v p hv hvc hp.squarefree hpc (by simpa [sup_comm] using hpv)
-    have hap0 : (Q.χ a) p ≠ 0 := by
-      exact fun hz => ((Q.χ a).eq_zero_iff' p).mp hz |>.elim hp.ne_zero
+    have hap0 : (Q.χ a) p ≠ 0 := fun hz => ((Q.χ a).eq_zero_iff' p).mp hz |>.elim hp.ne_zero
         (fun h => h hpca)
     have hpd0 : (Q.χ p) (a ⊔ b) ≠ 0 := by
       intro hz
@@ -125,7 +127,7 @@ theorem rawGcdPairTransport
     induction n using UniqueFactorizationMonoid.induction_on_prime with
     | h₁ => intro hn; exact (hn rfl).elim
     | h₂ n hn =>
-        have hn' : n = ⊤ := Ideal.isUnit_iff.mp hn
+        have hn'  := Ideal.isUnit_iff.mp hn
         subst n
         simp only [(Q.χ a).map_top', (Q.χ b).map_top', (Q.χ u).map_top', (Q.χ v).map_top']
         intro _ _; trivial
@@ -160,7 +162,7 @@ theorem rawGcdPairTransport
     apply RayComparison.primitive_product_conductor_dvd hca huv0 hcb hR0
       (Q.χ a) ψ (Q.χ b) (Q.primitive a ha hac).2
     intro n hn hnmod
-    have hnR : n ⊔ R = ⊤ := coprime_of_dvd hnmod (dvd_mul_left R _)
+    have hnR  := coprime_of_dvd hnmod (dvd_mul_left R _)
     have hncb := (parts n hnR).2.2.2.2.1
     rw [ψeq n hn hnR]
     have hs := quadraticFamily_value_sq_eq_one Q hb hbc n hn hncb

@@ -32,8 +32,11 @@ theorem sexticExtension_isAbelianGalois (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     ⟨ζ ^ 2, (mem_primitiveRoots (by decide)).2
       (hζ.pow (by decide) (by decide : 12 = 2 * 6))⟩ u
 
-def sexticRootCharacter (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (σ : F →+* ℂ) (u : Fˣ) :
+section
+variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (σ : F →+* ℂ) (u : Fˣ)
+include ζ hζ σ u
+def sexticRootCharacter   :
     (sexticExtension u ≃ₐ[F] sexticExtension u) →* ℂˣ :=
   let hμ : (primitiveRoots 6 F).Nonempty :=
     ⟨ζ ^ 2, (mem_primitiveRoots (by decide)).2
@@ -46,8 +49,7 @@ def sexticRootCharacter (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (sexticExtension u) 6).toMonoidHom.comp
       (KummerTheory.chosenSimpleKummerRootCharacter F 6 six_ne_zero hμ u))
 
-def sexticArtinCharacter (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (σ : F →+* ℂ) (u : Fˣ) : IdeleClassGroup F →ₜ* ℂˣ :=
+def sexticArtinCharacter   : IdeleClassGroup F →ₜ* ℂˣ :=
   letI := sexticExtension_isAbelianGalois ζ hζ u
   let κ : (sexticExtension u ≃ₐ[F] sexticExtension u) →ₜ* ℂˣ :=
     { sexticRootCharacter ζ hζ σ u with
@@ -55,16 +57,14 @@ def sexticArtinCharacter (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
   κ.comp (GlobalClassFieldTheory.Reciprocity.globalNormResidueContinuousMonoidHom
     F (sexticExtension u))
 
-theorem sexticArtinCharacter_apply (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (σ : F →+* ℂ) (u : Fˣ) (c : IdeleClassGroup F) :
+theorem sexticArtinCharacter_apply   (c : IdeleClassGroup F) :
     sexticArtinCharacter ζ hζ σ u c =
       sexticRootCharacter ζ hζ σ u
         (letI := sexticExtension_isAbelianGalois ζ hζ u
          GlobalClassFieldTheory.Reciprocity.globalNormResidueContinuousMonoidHom
            F (sexticExtension u) c) := rfl
 
-theorem sexticArtinCharacter_pow_six (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (σ : F →+* ℂ) (u : Fˣ) (c : IdeleClassGroup F) :
+theorem sexticArtinCharacter_pow_six   (c : IdeleClassGroup F) :
     sexticArtinCharacter ζ hζ σ u c ^ 6 = 1 := by
   rw [sexticArtinCharacter_apply]
   unfold sexticRootCharacter
@@ -74,8 +74,7 @@ theorem sexticArtinCharacter_pow_six (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (mem_rootsOfUnity _ _).mp (Subtype.property _), map_one]
 
 theorem sexticArtinCharacter_prime_eq_inverse_arithmetic
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (σ : F →+* ℂ)
-    (u : Fˣ) (v : HeightOneSpectrum (𝓞 F)) :
+      (v : HeightOneSpectrum (𝓞 F)) :
     sexticArtinCharacter ζ hζ σ u
       (QuotientGroup.mk' (IdeleGroup.principalSubgroup F) (IdeleGroup.finitePrimeIdele v)) =
       (sexticRootCharacter ζ hζ σ u
@@ -94,6 +93,8 @@ theorem sexticArtinCharacter_prime_eq_inverse_arithmetic
   rw [he]
   simp only [GlobalClassFieldTheory.GlobalClassFields.arithmeticFinitePlacePrimeArtin,
     GlobalClassFieldTheory.Reciprocity.arithmeticGlobalArtinMonoidHom_apply, map_inv, inv_inv]
+end
+
 
 private theorem valuation_six (v : HeightOneSpectrum (𝓞 F))
     (hSix : (Ideal.absNorm v.asIdeal).Coprime 6) : v.valuation F (6 : F) = 1 := by
@@ -159,10 +160,13 @@ private theorem frob_congruence {E : Type} [Field E] [NumberField E]
     exact hcon d.val
   simpa only [map_mul, map_pow, hd, one_pow, mul_one] using hlt
 
-theorem sexticArtinCharacter_prime (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+section
+variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (σ : F →+* ℂ) (u : Fˣ) (v : HeightOneSpectrum (𝓞 F))
     (hSix : (Ideal.absNorm v.asIdeal).Coprime 6)
-    (hu : v.valuation F (u : F) = 1) :
+    (hu : v.valuation F (u : F) = 1)
+include ζ hζ σ u v hSix hu
+theorem sexticArtinCharacter_prime   :
     ∃ j : Fin 6,
       v.valuation F ((u : F) ^ ((Ideal.absNorm v.asIdeal - 1) / 6) -
         (ζ ^ 2) ^ j.val) < 1 ∧
@@ -228,10 +232,7 @@ theorem sexticArtinCharacter_prime (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     have hval : (sexticRootCharacter ζ hζ σ u g : ℂ) = σ (r.val : F) := rfl
     rw [Units.val_inv_eq_inv_val, hval, hjr]
 
-theorem sexticArtinCharacter_unramified (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (σ : F →+* ℂ) (u : Fˣ) (v : HeightOneSpectrum (𝓞 F))
-    (hSix : (Ideal.absNorm v.asIdeal).Coprime 6)
-    (hu : v.valuation F (u : F) = 1)
+theorem sexticArtinCharacter_unramified  
     (t : (v.adicCompletion F)ˣ)
     (ht : t ∈ (v.adicCompletionIntegers F).units) :
     sexticArtinCharacter ζ hζ σ u (IdeleGroup.finitePlaceIdeleClass v t) = 1 := by
@@ -253,6 +254,8 @@ theorem sexticArtinCharacter_unramified (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
       (IdeleGroup.finitePlaceIdeleClass v t)) = 1
   rw [GlobalClassFieldTheory.Reciprocity.globalNormResidueMonoidHom_finitePlaceIdeleClass_eq_one_of_localArtin_eq_one
     (K := F) (L := sexticExtension u) v t hlocal, map_one]
+end
+
 
 end DedekindZetaZeroFree.PrimitiveRay
 

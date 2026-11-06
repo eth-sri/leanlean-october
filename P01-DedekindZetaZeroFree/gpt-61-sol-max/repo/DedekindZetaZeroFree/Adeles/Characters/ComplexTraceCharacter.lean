@@ -15,7 +15,7 @@ open NumberField KPReferenceChange.StandardComplexImage
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts KPCplxActualImage
 open KPInterface.ResidueConstruction.Raw
 variable {F : Type} [Field F] [NumberField F]
-variable (A : SArithmeticData F) (w : InfinitePlace F)
+variable  (w : InfinitePlace F)
 
 def complexLocalPsi : ContinuousAddChar (KPCompletion F (Sum.inr w)) :=
   by

@@ -31,17 +31,22 @@ private theorem labeled_roundtrip (y : KPCuspGenuineMonodromy.SymmetricSpace F) 
   funext k
   simp [labeledA, labeledAInv]
 
- def geometricLift (a : ShrunkChart F ζ hζ U R P H) (σ : a.Isotropy) : Gamma a :=
+ section
+variable (a : ShrunkChart F ζ hζ U R P H) (σ : a.Isotropy)
+include a σ in
+def geometricLift   : Gamma a :=
   ⟨(σ, ((H.atlas U).line a.component).rho σ.val),
     ((H.atlas U).line a.component).finite_comparison σ.val⟩
 
-private theorem geometricLift_phase (a : ShrunkChart F ζ hζ U R P H) (σ : a.Isotropy)
+include a σ in
+private theorem geometricLift_phase  
     (x : M F) :
     (isotropyArrow a (geometricLift a σ)).phase x =
       (chi F ζ hζ (((H.atlas U).line a.component).rho σ.val) : ℂ) := by
   simp [Arrow.phase, isotropyArrow, geometricLift, isotropyChart, chi_coe]
 
-private theorem geometricLift_psi (a : ShrunkChart F ζ hζ U R P H) (σ : a.Isotropy)
+include a σ in
+private theorem geometricLift_psi  
     (x : M F) :
     (isotropyArrow a (geometricLift a σ)).psi x =
       labeledAInv (placeEquiv F ζ hζ)
@@ -49,7 +54,8 @@ private theorem geometricLift_psi (a : ShrunkChart F ζ hζ U R P H) (σ : a.Iso
   simp [Arrow.psi, coordinateMap, isotropyArrow, geometricLift, isotropyChart,
     ChartKind.representative]
 
-private theorem geometric_mem (a : ShrunkChart F ζ hζ U R P H) (σ : a.Isotropy)
+include a σ in
+private theorem geometric_mem  
     (p : Space (KPCuspLogShape.dimension F * 3))
     (hp : coordinates F p ∈ a.domain) :
     coordinates F (overlapCoordinate F ζ hζ U R P H a.component σ.val p) ∈ a.domain := by
@@ -58,7 +64,8 @@ private theorem geometric_mem (a : ShrunkChart F ζ hζ U R P H) (σ : a.Isotrop
   rw [a.invariant σ] at h
   simpa only [overlapCoordinate, Homeomorph.apply_symm_apply] using h
 
-private theorem geometric_preserving (a : ShrunkChart F ζ hζ U R P H) (σ : a.Isotropy) :
+include a σ in
+private theorem geometric_preserving   :
     MeasurePreserving (overlapCoordinate F ζ hζ U R P H a.component σ.val)
       ((volume.withDensity (fun p => ENNReal.ofReal (density F p))).restrict
         ((coordinates F) ⁻¹' a.domain))
@@ -158,8 +165,8 @@ private theorem orthGradient_pair_transport
         (((q (EuclideanSpace.basisFun I ℝ j) i : ℝ) : ℂ) * v j)
   ring
 
-private theorem orthGradient_arrow_pair (a : ShrunkChart F ζ hζ U R P H)
-    (σ : a.Isotropy) (x : M F) (hx : x ∈ omega a)
+include a σ in
+private theorem orthGradient_arrow_pair   (x : M F) (hx : x ∈ omega a)
     (f : M F → ℂ) (hf : DifferentiableAt ℝ f ((isotropyArrow a (geometricLift a σ)).psi x))
     (W : Family (U := U) (H := H)) :
     inner ℂ (orthGradient (f ∘ (isotropyArrow a (geometricLift a σ)).psi) x)
@@ -193,26 +200,31 @@ private theorem orthGradient_arrow_pair (a : ShrunkChart F ζ hζ U R P H)
     rfl
   rw [hgrad]
   exact orthGradient_pair_transport (q e x hx') _ _
+end
+
 
  def flatIndex : Fin (KPCuspLogShape.dimension F * 3) ≃ (Fin (d F) × Fin 3) :=
   finProdFinEquiv.symm.trans
     (Equiv.prodCongr (placeEquiv F ζ hζ).symm (Equiv.refl (Fin 3)))
  def flatMap : Space (KPCuspLogShape.dimension F * 3) ≃ₗᵢ[ℝ] M F :=
   LinearIsometryEquiv.piLpCongrLeft 2 ℝ ℝ (flatIndex (F := F) (ζ := ζ) (hζ := hζ))
+
+local notation:max "current_flatMap" => flatMap (ζ := ζ) (hζ := hζ)
+
 private theorem flatMap_apply (p : Space (KPCuspLogShape.dimension F * 3)) :
-    flatMap (ζ := ζ) (hζ := hζ) p = labeledAInv (placeEquiv F ζ hζ) (coordinates F p) := by
+    current_flatMap p = labeledAInv (placeEquiv F ζ hζ) (coordinates F p) := by
   apply PiLp.ext
   rintro ⟨i,k⟩
   fin_cases k <;> simp [flatMap, flatIndex, labeledAInv, coordinates,
     KPArchRealCoordinates.coordinates, CotangentLogCoframe.A, Equiv.piCongrLeft']
 private theorem flatMap_action (a : ShrunkChart F ζ hζ U R P H) (σ : a.Isotropy)
     (p : Space (KPCuspLogShape.dimension F * 3)) :
-    flatMap (ζ := ζ) (hζ := hζ) (overlapCoordinate F ζ hζ U R P H a.component σ.val p) =
-      (isotropyArrow a (geometricLift a σ)).psi (flatMap (ζ := ζ) (hζ := hζ) p) := by
+    current_flatMap (overlapCoordinate F ζ hζ U R P H a.component σ.val p) =
+      (isotropyArrow a (geometricLift a σ)).psi (current_flatMap p) := by
   rw [flatMap_apply, flatMap_apply, geometricLift_psi, labeled_roundtrip]
   simp only [overlapCoordinate, Homeomorph.apply_symm_apply]
 private theorem flatMap_single (i : Fin (d F)) (k : Fin 3) :
-    (flatMap (ζ := ζ) (hζ := hζ)).symm (EuclideanSpace.single (i,k) 1) =
+    (current_flatMap).symm (EuclideanSpace.single (i,k) 1) =
       EuclideanSpace.single (finProdFinEquiv ((placeEquiv F ζ hζ) i,k)) 1 := by
   ext j
   simp [flatMap, flatIndex, LinearIsometryEquiv.piLpCongrLeft_symm,
@@ -220,17 +232,17 @@ private theorem flatMap_single (i : Fin (d F)) (k : Fin 3) :
 set_option maxHeartbeats 1200000 in
 private theorem flatMap_H (p : Space (KPCuspLogShape.dimension F * 3))
     (i : Fin (d F)) (k : Fin 3) :
-    (flatMap (ζ := ζ) (hζ := hζ)).symm
-      (CotangentLogCoframe.H (d F) (flatMap (ζ := ζ) (hζ := hζ) p)
+    (current_flatMap).symm
+      (CotangentLogCoframe.H (d F) (current_flatMap p)
         (EuclideanSpace.basisFun _ ℝ (i,k))) =
       (if k = 0 then 1 else Real.exp ((coordinates F p ((placeEquiv F ζ hζ) i)).2)) •
         EuclideanSpace.single
           (finProdFinEquiv ((placeEquiv F ζ hζ) i, ![2,0,1] k)) 1 := by
-  have hheight : flatMap (ζ := ζ) (hζ := hζ) p (i,2) =
+  have hheight : current_flatMap p (i,2) =
       (coordinates F p ((placeEquiv F ζ hζ) i)).2 := by
     rw [flatMap_apply]
     simp [labeledAInv, CotangentLogCoframe.A]
-  have hh : CotangentLogCoframe.H (d F) (flatMap (ζ := ζ) (hζ := hζ) p)
+  have hh : CotangentLogCoframe.H (d F) (current_flatMap p)
       (EuclideanSpace.basisFun _ ℝ (i,k)) =
       (if k = 0 then 1 else Real.exp ((coordinates F p ((placeEquiv F ζ hζ) i)).2)) •
         EuclideanSpace.single (i, ![2,0,1] k) 1 := by
@@ -243,30 +255,34 @@ private theorem flatMap_H (p : Space (KPCuspLogShape.dimension F * 3))
 private theorem orthGradient_flat (f : Space (KPCuspLogShape.dimension F * 3) → ℂ)
     (hf : Differentiable ℝ f) (p : Space (KPCuspLogShape.dimension F * 3))
     (i : Fin (d F)) (k : Fin 3) :
-    orthGradient (f ∘ (flatMap (ζ := ζ) (hζ := hζ)).symm) (flatMap (ζ := ζ) (hζ := hζ) p) (i,k) =
+    orthGradient (f ∘ (current_flatMap).symm) (current_flatMap p) (i,k) =
       (if k = 0 then 1 else (Real.exp ((coordinates F p ((placeEquiv F ζ hζ) i)).2) : ℂ)) *
         coordinateDerivativeList [finProdFinEquiv ((placeEquiv F ζ hζ) i, ![2,0,1] k)] f p := by
-  change fderiv ℝ (f ∘ (flatMap (ζ := ζ) (hζ := hζ)).symm)
-    (flatMap (ζ := ζ) (hζ := hζ) p) _ = _
-  rw [fderiv_comp _ hf.differentiableAt (flatMap (ζ := ζ) (hζ := hζ)).symm.differentiableAt]
-  have hd : fderiv ℝ (fun x => (flatMap (ζ := ζ) (hζ := hζ)).symm x)
-      (flatMap (ζ := ζ) (hζ := hζ) p) =
-      (flatMap (ζ := ζ) (hζ := hζ)).symm.toContinuousLinearEquiv.toContinuousLinearMap :=
-    (flatMap (ζ := ζ) (hζ := hζ)).symm.toContinuousLinearEquiv.toContinuousLinearMap.fderiv
+  change fderiv ℝ (f ∘ (current_flatMap).symm)
+    (current_flatMap p) _ = _
+  rw [fderiv_comp _ hf.differentiableAt (current_flatMap).symm.differentiableAt]
+  have hd : fderiv ℝ (fun x => (current_flatMap).symm x)
+      (current_flatMap p) =
+      (current_flatMap).symm.toContinuousLinearEquiv.toContinuousLinearMap :=
+    (current_flatMap).symm.toContinuousLinearEquiv.toContinuousLinearMap.fderiv
   rw [hd]
   simp only [ContinuousLinearMap.comp_apply, LinearIsometryEquiv.symm_apply_apply]
-  change fderiv ℝ f p ((flatMap (ζ := ζ) (hζ := hζ)).symm _) = _
+  change fderiv ℝ f p ((current_flatMap).symm _) = _
   rw [flatMap_H, map_smul]
   fin_cases k <;> simp [coordinateDerivativeList, RCLike.real_smul_eq_coe_mul]
 
- def flatPair (a : ShrunkChart F ζ hζ U R P H) (W : Family (U := U) (H := H))
+ section
+variable (a : ShrunkChart F ζ hζ U R P H)
+include a in
+def flatPair   (W : Family (U := U) (H := H))
     (f : Space (KPCuspLogShape.dimension F * 3) → ℂ)
     (p : Space (KPCuspLogShape.dimension F * 3)) : ℂ :=
   inner ℂ (orthGradient (f ∘ (flatMap (ζ := ζ) (hζ := hζ)).symm)
     (flatMap (ζ := ζ) (hζ := hζ) p))
     (liftExtension a (coefficient W a) (flatMap (ζ := ζ) (hζ := hζ) p))
 
-private theorem flatPair_action (a : ShrunkChart F ζ hζ U R P H) (W : Family (U := U) (H := H))
+include a in
+private theorem flatPair_action   (W : Family (U := U) (H := H))
     (σ : a.Isotropy) (f : Space (KPCuspLogShape.dimension F * 3) → ℂ)
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (p : Space (KPCuspLogShape.dimension F * 3))
     (hp : coordinates F p ∈ a.domain) :
@@ -301,7 +317,8 @@ private theorem flatPair_action (a : ShrunkChart F ζ hζ U R P H) (W : Family (
   exact orthGradient_arrow_pair a σ _ hx _
     ((hf.comp L.symm.contDiff).differentiable (by simp)).differentiableAt W
 
-private theorem orthGradient_project_pair (a : ShrunkChart F ζ hζ U R P H)
+include a in
+private theorem orthGradient_project_pair  
     (W : Family (U := U) (H := H)) (x : omega a)
     (f : M F → ℂ) (hf : Differentiable ℝ f) :
     inner ℂ (orthGradient ((KPCuspGenuineMonodromy.scalarFiber F ζ hζ U).starProjection ∘ f) x.val)
@@ -323,7 +340,8 @@ private theorem orthGradient_project_pair (a : ShrunkChart F ζ hζ U R P H)
   exact Submodule.inner_starProjection_left_eq_right _ _ _ |>.trans
     (by rw [Submodule.starProjection_eq_self_iff.mpr (coefficient_mem_scalarFiber a W x k)])
 
-private theorem flatPair_project (a : ShrunkChart F ζ hζ U R P H) (W : Family (U := U) (H := H))
+include a in
+private theorem flatPair_project   (W : Family (U := U) (H := H))
     (f : Space (KPCuspLogShape.dimension F * 3) → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f)
     (p : Space (KPCuspLogShape.dimension F * 3)) (hp : coordinates F p ∈ a.domain) :
     flatPair a W ((KPCuspGenuineMonodromy.scalarFiber F ζ hζ U).starProjection ∘ f) p =
@@ -337,7 +355,8 @@ private theorem flatPair_project (a : ShrunkChart F ζ hζ U R P H) (W : Family 
   exact orthGradient_project_pair a W ⟨_,hx⟩ _
     ((hf.comp (flatMap (ζ := ζ) (hζ := hζ)).symm.contDiff).differentiable (by simp))
 
-private theorem flatPair_const_mul (a : ShrunkChart F ζ hζ U R P H) (W : Family (U := U) (H := H))
+include a in
+private theorem flatPair_const_mul   (W : Family (U := U) (H := H))
     (f : Space (KPCuspLogShape.dimension F * 3) → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) (c : ℂ)
     (p : Space (KPCuspLogShape.dimension F * 3)) :
     flatPair a W (fun y => c * f y) p = star c * flatPair a W f p := by
@@ -379,13 +398,15 @@ private theorem flatPair_sum {I : Type*} (s : Finset I)
     simp
   rw [hg, sum_inner]
 
-private theorem overlap_smooth (a : ShrunkChart F ζ hζ U R P H) (σ : a.Isotropy) :
+include a in
+private theorem overlap_smooth   (σ : a.Isotropy) :
     ContDiff ℝ (⊤ : ℕ∞) (overlapCoordinate F ζ hζ U R P H a.component σ.val) := by
   exact (CoreChartLocalizers.CutoffConstruction.ChartDensityConstruction.coordinates_symm_contDiff _).comp
     ((CoreChartLocalizers.CutoffConstruction.StabilizerLinearization.rational_action_contDiff F σ.val.val).comp
       (CoreChartLocalizers.CutoffConstruction.ChartDensityConstruction.coordinates_contDiff _))
 
-private theorem flatPair_reynolds_term (a : ShrunkChart F ζ hζ U R P H)
+include a in
+private theorem flatPair_reynolds_term  
     (W : Family (U := U) (H := H)) (σ : a.Isotropy)
     (f : Space (KPCuspLogShape.dimension F * 3) → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f)
     (p : Space (KPCuspLogShape.dimension F * 3)) (hp : coordinates F p ∈ a.domain) :
@@ -411,7 +432,8 @@ private theorem flatPair_reynolds_term (a : ShrunkChart F ζ hζ U R P H)
     rw [← Circle.coe_inv, Complex.star_def, ← Circle.coe_inv_eq_conj, inv_inv]
   rw [hc, ← mul_assoc, mul_inv_cancel₀ (Circle.coe_ne_zero _), one_mul]
 
-private theorem flat_field_memLp (a : ShrunkChart F ζ hζ U R P H)
+include a in
+private theorem flat_field_memLp  
     (W : SquareFiniteFamily (U := U) (H := H)) :
     MemLp (fun p => liftExtension a (coefficient W.val a) (flatMap (ζ := ζ) (hζ := hζ) p)) 2
       ((volume.withDensity (fun p => ENNReal.ofReal (density F p))).restrict
@@ -460,6 +482,8 @@ private theorem flat_field_memLp (a : ShrunkChart F ζ hζ U R P H)
     simp only [g, Function.comp_apply, flatMap_apply]
   rw [he] at h
   exact h
+end
+
 
 private theorem weighted_finite_compacts :
     IsFiniteMeasureOnCompacts (volume.withDensity (fun p : Space (KPCuspLogShape.dimension F * 3) =>
@@ -477,7 +501,10 @@ private theorem weighted_finite_compacts :
   change ENNReal.ofReal (density F p) ≤ ‖density F p‖ₑ
   rw [Real.enorm_eq_ofReal (density_positive F p).le]
 
-private theorem flat_gradient_memLp (a : ShrunkChart F ζ hζ U R P H)
+section
+variable (a : ShrunkChart F ζ hζ U R P H)
+include a in
+private theorem flat_gradient_memLp  
     (f : Space (KPCuspLogShape.dimension F * 3) → ℂ)
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (hfc : HasCompactSupport f) :
     MemLp (fun p => orthGradient (f ∘ (flatMap (ζ := ζ) (hζ := hζ)).symm)
@@ -508,7 +535,8 @@ private theorem flat_gradient_memLp (a : ShrunkChart F ζ hζ U R P H)
       simp
     exact hfc.of_isClosed_subset isClosed_closure hs
 
-private theorem flatPair_integrable (a : ShrunkChart F ζ hζ U R P H)
+include a in
+private theorem flatPair_integrable  
     (W : SquareFiniteFamily (U := U) (H := H))
     (f : Space (KPCuspLogShape.dimension F * 3) → ℂ)
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (hfc : HasCompactSupport f) :
@@ -517,7 +545,8 @@ private theorem flatPair_integrable (a : ShrunkChart F ζ hζ U R P H)
         ((coordinates F) ⁻¹' a.domain)) :=
   KPTestL2.integrable_pairing _ _ _ (flat_gradient_memLp a f hf hfc) (flat_field_memLp a W)
 
-private theorem flatPair_reynolds (a : ShrunkChart F ζ hζ U R P H)
+include a in
+private theorem flatPair_reynolds  
     (W : SquareFiniteFamily (U := U) (H := H))
     (f : Space (KPCuspLogShape.dimension F * 3) → ℂ)
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (hfc : HasCompactSupport f)
@@ -582,7 +611,8 @@ private theorem flatPair_reynolds (a : ShrunkChart F ζ hζ U R P H)
   let k := (placeEquiv F ζ hζ).symm ik.1
   ![(Real.exp (-q (k, 2)) : ℂ) * v (k, 1),
     (Real.exp (-q (k, 2)) : ℂ) * v (k, 2), v (k, 0)] ik.2
- def coordinatePair (a : ShrunkChart F ζ hζ U R P H) (W : Family (U := U) (H := H))
+ include a in
+def coordinatePair   (W : Family (U := U) (H := H))
     (f : Space (KPCuspLogShape.dimension F * 3) → ℂ)
     (p : Space (KPCuspLogShape.dimension F * 3)) : ℂ :=
   ∑ j : Fin (KPCuspLogShape.dimension F * 3),
@@ -592,7 +622,8 @@ private theorem flatPair_reynolds (a : ShrunkChart F ζ hζ U R P H)
         (liftExtension a (coefficient W a) (flatMap (ζ := ζ) (hζ := hζ) p)) j *
         star (coordinateDerivativeList [j] f p)
 
-private theorem coordinatePair_eq (a : ShrunkChart F ζ hζ U R P H) (W : Family (U := U) (H := H))
+include a in
+private theorem coordinatePair_eq   (W : Family (U := U) (H := H))
     (f : Space (KPCuspLogShape.dimension F * 3) → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f)
     (p : Space (KPCuspLogShape.dimension F * 3)) :
     coordinatePair a W f p = flatPair a W f p := by
@@ -631,7 +662,8 @@ private theorem coordinatePair_eq (a : ShrunkChart F ζ hζ U R P H) (W : Family
         starRingEnd ℂ (coordinateDerivativeList [finProdFinEquiv ((placeEquiv F ζ hζ) i,2)] f p) := by ring
     _ = _ := by rw [hex]; ring
 
-private theorem flatPair_zero (a : ShrunkChart F ζ hζ U R P H)
+include a in
+private theorem flatPair_zero  
     (W : Family (U := U) (H := H)) (f : Space (KPCuspLogShape.dimension F * 3) → ℂ)
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (p : Space (KPCuspLogShape.dimension F * 3))
     (hp : p ∉ tsupport f) : flatPair a W f p = 0 := by
@@ -646,7 +678,8 @@ private theorem flatPair_zero (a : ShrunkChart F ζ hζ U R P H)
     simp
   rw [hz, inner_zero_left]
 
-private theorem weighted_integral (a : ShrunkChart F ζ hζ U R P H)
+include a in
+private theorem weighted_integral  
     (f : Space (KPCuspLogShape.dimension F * 3) → ℂ) :
     (∫ p in (coordinates F) ⁻¹' a.domain, f p
       ∂volume.withDensity (fun p => ENNReal.ofReal (density F p))) =
@@ -659,8 +692,9 @@ private theorem weighted_integral (a : ShrunkChart F ζ hζ U R P H)
   simp only [ENNReal.toReal_ofReal (density_positive F _).le, RCLike.real_smul_eq_coe_mul] at hd
   exact hd
 
+include a in
 theorem tensor_reynolds_integral
-    (a : ShrunkChart F ζ hζ U R P H)
+     
     (A : LocalBall (KPCuspLogShape.dimension F * 3))
     (hA : coordinates F '' KPContLocalCubeEmbedding.closedCarrier A ⊆ a.domain)
     (ε : rootsOfUnity 3 F) (W : SquareFiniteFamily (U := U) (H := H))
@@ -773,6 +807,8 @@ theorem tensor_reynolds_integral
     ring
   rw [hleft, hright, integral_const_mul, integral_const_mul]
   exact congrArg ((KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ) * ·) he
+end
+
 
 end DedekindZetaZeroFree.KPContFriedrichsTensorReynolds
 

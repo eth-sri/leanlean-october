@@ -15,15 +15,15 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-structure FlatScalarResidue {K : Subgroup (G F ζ hζ)} (f : Flat F ζ hζ K) where
-  E : ℂ → Functions F ζ hζ
-  meromorphic : ∀ g, MeromorphicOn (fun z => E z g) KPContinuation.spectralDomain
-  chamber : ∀ z, (1 / 3 : ℝ) < z.re → ∀ g, E z g = eisenstein F ζ hζ K f z g
-  radius : ℝ
-  radius_pos : 0 < radius
-  numerator : ℂ → Functions F ζ hζ
-  analytic : ∀ g, AnalyticOnNhd ℂ (fun z => numerator z g) (Metric.ball 0 radius)
-  clears : ∀ g, (fun z => numerator z g) =ᶠ[𝓝[≠] (0 : ℂ)] (fun z => z * E z g)
+
+
+
+
+
+
+
+
+
 
 variable {F ζ hζ}
 

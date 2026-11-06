@@ -102,24 +102,24 @@ theorem arithmeticGlobalNormResidueAbelianizationMonoidHom_apply
       (globalNormResidueAbelianizationMonoidHom K L c)⁻¹ := by
   rfl
 
-/-- Arithmetic normalization does not change the genuine norm kernel. -/
-@[simp]
-theorem arithmeticGlobalNormResidueAbelianizationMonoidHom_ker :
-    (arithmeticGlobalNormResidueAbelianizationMonoidHom K L).ker =
-      (_root_.ideleClassNorm K L).range := by
-  ext c
-  simp only [MonoidHom.mem_ker,
-    arithmeticGlobalNormResidueAbelianizationMonoidHom_apply,
-    inv_eq_one]
-  exact globalNormResidueAbelianizationMonoidHom_eq_one_iff K L c
 
-/-- The arithmetic global norm-residue homomorphism is surjective. -/
-theorem arithmeticGlobalNormResidueAbelianizationMonoidHom_surjective :
-    Function.Surjective
-      (arithmeticGlobalNormResidueAbelianizationMonoidHom K L) :=
-  (MulEquiv.inv
-      (Abelianization (Gal(L / K)))).surjective.comp
-    (globalNormResidueAbelianizationMonoidHom_surjective K L)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The arithmetic finite-Galois norm-residue isomorphism, with the
 native idèle-class quotient topology and the finite Krull quotient
@@ -155,49 +155,49 @@ theorem
     _ = (globalNormResidueAbelianizationContinuousMulEquiv K L q)⁻¹ :=
       rfl
 
-/-- The canonical reciprocity isomorphism
-`Gal(L/K)ᵃᵇ ≃ₜ* C_K / N_{L/K}(C_L)`, in the direction stated in the
-global reciprocity theorem. -/
-noncomputable def
-    arithmeticGlobalReciprocityAbelianizationContinuousMulEquiv :
-    Abelianization (Gal(L / K)) ≃ₜ*
-      (IdeleClassGroup K ⧸
-        (_root_.ideleClassNorm K L).range) :=
-  (arithmeticGlobalNormResidueAbelianizationContinuousMulEquiv
-    K L).symm
 
-/-- The inverse of arithmetic reciprocity is literally the arithmetic
-global norm-residue symbol on every idèle class. -/
-@[simp]
-theorem
-    arithmeticGlobalReciprocityAbelianizationContinuousMulEquiv_symm_mk
-    (c : IdeleClassGroup K) :
-    (arithmeticGlobalReciprocityAbelianizationContinuousMulEquiv
-        K L).symm
-      (QuotientGroup.mk'
-        (_root_.ideleClassNorm K L).range c) =
-      arithmeticGlobalNormResidueAbelianizationMonoidHom K L c := by
-  let q :=
-    QuotientGroup.mk'
-      (_root_.ideleClassNorm K L).range c
-  calc
-    (arithmeticGlobalReciprocityAbelianizationContinuousMulEquiv
-        K L).symm q =
-        arithmeticGlobalNormResidueAbelianizationContinuousMulEquiv
-          K L q :=
-      DFunLike.congr_fun
-        (ContinuousMulEquiv.symm_symm
-          (arithmeticGlobalNormResidueAbelianizationContinuousMulEquiv
-            K L)) q
-    _ = (globalNormResidueAbelianizationContinuousMulEquiv K L q)⁻¹ :=
-      arithmeticGlobalNormResidueAbelianizationContinuousMulEquiv_apply
-        K L q
-    _ = (globalNormResidueAbelianizationMonoidHom K L c)⁻¹ := by
-      rw [globalNormResidueAbelianizationContinuousMulEquiv_apply,
-        globalNormResidueAbelianizationMonoidHom_apply]
-    _ = arithmeticGlobalNormResidueAbelianizationMonoidHom K L c :=
-      (arithmeticGlobalNormResidueAbelianizationMonoidHom_apply
-        K L c).symm
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end FiniteGalois
 
@@ -234,19 +234,19 @@ theorem arithmeticGlobalNormResidueMonoidHom_ker :
     arithmeticGlobalNormResidueMonoidHom_apply, inv_eq_one]
   exact globalNormResidueMonoidHom_eq_one_iff K L c
 
-/-- The arithmetic global norm-residue homomorphism is surjective. -/
-theorem arithmeticGlobalNormResidueMonoidHom_surjective :
-    Function.Surjective
-      (arithmeticGlobalNormResidueMonoidHom K L) :=
-  (MulEquiv.inv (Gal(L / K))).surjective.comp
-    (globalNormResidueMonoidHom_surjective K L)
 
-/-- The arithmetic global norm-residue map is continuous for the
-ordinary idèle-class topology and the finite Krull topology. -/
-theorem arithmeticGlobalNormResidueMonoidHom_continuous :
-    Continuous (arithmeticGlobalNormResidueMonoidHom K L) := by
-  exact continuous_inv.comp
-    (globalNormResidueMonoidHom_continuous K L)
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- Arithmetic global norm-residue as a homeomorphic multiplicative
 equivalence of the native norm quotient with the finite Krull Galois
@@ -289,28 +289,28 @@ theorem arithmeticGlobalReciprocityContinuousMulEquiv_symm_mk
       arithmeticGlobalNormResidueMonoidHom K L c := by
   rfl
 
-/-- Arithmetic reciprocity sends the arithmetic norm-residue symbol of an
-idèle class to its literal representative in the norm quotient. -/
-@[simp]
-theorem arithmeticGlobalReciprocityContinuousMulEquiv_globalNormResidue
-    (c : IdeleClassGroup K) :
-    arithmeticGlobalReciprocityContinuousMulEquiv K L
-        (arithmeticGlobalNormResidueMonoidHom K L c) =
-      QuotientGroup.mk'
-        (_root_.ideleClassNorm K L).range c := by
-  let e := arithmeticGlobalReciprocityContinuousMulEquiv K L
-  calc
-    e (arithmeticGlobalNormResidueMonoidHom K L c) =
-        e
-          (e.symm
-            (QuotientGroup.mk'
-              (_root_.ideleClassNorm K L).range c)) :=
-      congrArg e
-        (arithmeticGlobalReciprocityContinuousMulEquiv_symm_mk
-          K L c).symm
-    _ = QuotientGroup.mk'
-          (_root_.ideleClassNorm K L).range c :=
-      e.apply_symm_apply _
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The chosen finite-place Artin homomorphism in arithmetic
 normalization.  A usual local uniformizer therefore maps to arithmetic
@@ -376,26 +376,26 @@ theorem arithmeticChosenInfinitePlaceArtinMonoidHom_apply
         (K := K) (L := L) v x)⁻¹ := by
   rfl
 
-/-- Infinite-place local-global compatibility in arithmetic
-normalization. -/
-theorem
-    arithmeticGlobalNormResidueMonoidHom_comp_infinitePlaceIdeleClass
-    (v : InfinitePlace K) :
-    (arithmeticGlobalNormResidueMonoidHom K L).comp
-        (IdeleGroup.infinitePlaceIdeleClass v) =
-      arithmeticChosenInfinitePlaceArtinMonoidHom K L v := by
-  apply MonoidHom.ext
-  intro x
-  change
-    (globalNormResidueMonoidHom K L
-      (IdeleGroup.infinitePlaceIdeleClass v x))⁻¹ =
-      (chosenInfinitePlaceArtinMonoidHom
-        (K := K) (L := L) v x)⁻¹
-  simpa only [MonoidHom.comp_apply] using
-    congrArg (fun σ : Gal(L / K) => σ⁻¹)
-      (DFunLike.congr_fun
-        (globalNormResidueMonoidHom_comp_infinitePlaceIdeleClass
-          (K := K) (L := L) v) x)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The idèle-level global Artin product in arithmetic normalization. -/
 noncomputable def arithmeticGlobalArtinMonoidHom :
@@ -426,29 +426,29 @@ theorem arithmeticGlobalArtinMonoidHom_finitePlaceIdele
     globalArtinMonoidHom_finitePlaceIdele,
     arithmeticChosenFinitePlaceArtinMonoidHom_apply]
 
-omit [FiniteDimensional K L] in
-/-- The arithmetic global Artin symbol of an infinite one-place idèle
-is literally the arithmetic chosen local Artin symbol. -/
-@[simp]
-theorem arithmeticGlobalArtinMonoidHom_infinitePlaceIdele
-    (v : InfinitePlace K)
-    (x : v.Completionˣ) :
-    arithmeticGlobalArtinMonoidHom K L
-        (infinitePlaceIdele v x) =
-      arithmeticChosenInfinitePlaceArtinMonoidHom K L v x := by
-  rw [arithmeticGlobalArtinMonoidHom_apply,
-    globalArtinMonoidHom_infinitePlaceIdele,
-    arithmeticChosenInfinitePlaceArtinMonoidHom_apply]
 
-/-- Arithmetic global Artin kills every principal idèle. -/
-@[simp]
-theorem arithmeticGlobalArtinMonoidHom_principalIdele
-    (x : Kˣ) :
-    arithmeticGlobalArtinMonoidHom K L
-        (IdeleGroup.principalIdele K x) =
-      1 := by
-  rw [arithmeticGlobalArtinMonoidHom_apply,
-    globalArtinMonoidHom_principalIdele, inv_one]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- Descending the arithmetic local-product Artin map through principal
 idèles gives the arithmetic global norm-residue homomorphism literally. -/

@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.ClassGroup.Core
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.SPlaces
 public import Mathlib.Topology.Algebra.IsUniformGroup.Basic
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -41,8 +44,7 @@ variable {K : Type*} [Field K] [NumberField K]
 namespace IdeleGroup
 
 /-- The infinite component of an idele, written in Minkowski space. -/
-def infiniteMixedEmbedding (a : IdeleGroup K) :
-    NumberField.mixedEmbedding.mixedSpace K :=
+def infiniteMixedEmbedding (a : IdeleGroup K)  :=
   NumberField.InfiniteAdeleRing.ringEquiv_mixedSpace K
     (a.1 : NumberField.InfiniteAdeleRing K)
 
@@ -63,9 +65,7 @@ theorem continuous_infiniteMixedEmbedding :
     have hcomponent :
         Continuous (fun a : IdeleGroup K =>
           ((a.1 : NumberField.InfiniteAdeleRing K)
-            (v : InfinitePlace K))) := by
-      exact
-        Units.continuous_val.comp
+            (v : InfinitePlace K))) := Units.continuous_val.comp
           (infiniteComponentContinuous
             (v : InfinitePlace K)).continuous
     exact
@@ -76,9 +76,7 @@ theorem continuous_infiniteMixedEmbedding :
     have hcomponent :
         Continuous (fun a : IdeleGroup K =>
           ((a.1 : NumberField.InfiniteAdeleRing K)
-            (v : InfinitePlace K))) := by
-      exact
-        Units.continuous_val.comp
+            (v : InfinitePlace K))) := Units.continuous_val.comp
           (infiniteComponentContinuous
             (v : InfinitePlace K)).continuous
     exact
@@ -154,17 +152,15 @@ instance principalSubgroupDiscreteTopology :
   obtain ⟨U, hU, hUeq⟩ := hzOpen
   have hzU :
       (z : NumberField.mixedEmbedding.mixedSpace K) ∈ U := by
-    have hz :
-        z ∈ Subtype.val ⁻¹' U :=
+    have hz  :=
       hUeq.symm ▸ Set.mem_singleton z
     exact hz
-  let V : Set (IdeleGroup K) :=
+  let V  :=
     (integralAtFinitePlaces (K := K) : Set (IdeleGroup K)) ∩
       infiniteMixedEmbedding ⁻¹' U
   have hIntegralOpen :
       IsOpen
-        ((integralAtFinitePlaces (K := K) :
-          Subgroup (IdeleGroup K)) : Set (IdeleGroup K)) := by
+        ((integralAtFinitePlaces (K := K)) : Set (IdeleGroup K)) := by
     have h :=
       isOpen_supportedAt (K := K)
         (∅ : Finset (HeightOneSpectrum (𝓞 K)))
@@ -202,7 +198,7 @@ instance principalSubgroupDiscreteTopology :
           Set (NumberField.mixedEmbedding.integerLattice K)) := by
         rw [← hUeq]
         exact hyU
-      have hyz : y = z := Set.mem_singleton_iff.mp hySingleton
+      have hyz  := Set.mem_singleton_iff.mp hySingleton
       have hmix :
           NumberField.mixedEmbedding K (x : K) =
             NumberField.mixedEmbedding K (1 : K) := by
@@ -215,7 +211,7 @@ instance principalSubgroupDiscreteTopology :
       rw [← hx, hxOne, map_one]
       rfl
     · intro hp
-      have hpOne : p = 1 := Set.mem_singleton_iff.mp hp
+      have hpOne  := Set.mem_singleton_iff.mp hp
       subst p
       change (1 : IdeleGroup K) ∈ V
       constructor
@@ -230,8 +226,7 @@ instance principalSubgroupDiscreteTopology :
 /-- The principal ideles form a closed subgroup. -/
 theorem principalSubgroup_isClosed :
     IsClosed
-      ((principalSubgroup K :
-        Subgroup (IdeleGroup K)) : Set (IdeleGroup K)) :=
+      ((principalSubgroup K) : Set (IdeleGroup K)) :=
   Subgroup.isClosed_of_discreteTopology
 
 end IdeleGroup

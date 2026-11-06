@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Valuation.AbsoluteValue.Completion
 public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.Core
 public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.FiniteNormExtension
@@ -24,6 +26,7 @@ public import ValuedFieldTheory.Valuation.AbsoluteValue.ValuationSubring
 public import ValuedFieldTheory.Valuation.Completion.AbsoluteValueExtensions
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -70,15 +73,18 @@ universe u v
 namespace AlgebraicNumberTheory
 namespace Valuations
 
+section
+variable {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
+include K L
 /-- Pull an absolute value back by a field automorphism.  This is the canonical
 right action `w ↦ w ∘ σ`. -/
 def absoluteValueConjugate
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    (w : AbsoluteValue L ℝ) (σ : L ≃ₐ[K] L) : AbsoluteValue L ℝ :=
+     
+    (w : AbsoluteValue L ℝ) (σ : L ≃ₐ[K] L)  :=
   w.comp (f := σ.toRingEquiv.toRingHom) σ.injective
 
 @[simp] theorem absoluteValueConjugate_apply
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
+     
     (w : AbsoluteValue L ℝ) (σ : L ≃ₐ[K] L) (x : L) :
     absoluteValueConjugate w σ x = w (σ x) :=
   rfl
@@ -86,7 +92,7 @@ def absoluteValueConjugate
 /-- Conjugating an extension by a ground-field automorphism gives another
 exact extension of the same base absolute value. -/
 theorem absoluteValueConjugate_extends
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
+     
     (vK : AbsoluteValue K ℝ) (w : AbsoluteValueExtension vK L)
     (σ : L ≃ₐ[K] L) :
     AbsoluteValue.Extends vK (absoluteValueConjugate w.1 σ) := by
@@ -95,7 +101,7 @@ theorem absoluteValueConjugate_extends
 
 /-- The conjugated extension as an element of the exact-extension type. -/
 def absoluteValueExtensionConjugate
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
+     
     (vK : AbsoluteValue K ℝ) (w : AbsoluteValueExtension vK L)
     (σ : L ≃ₐ[K] L) : AbsoluteValueExtension vK L :=
   ⟨absoluteValueConjugate w.1 σ,
@@ -105,7 +111,7 @@ def absoluteValueExtensionConjugate
 Thus `AbsoluteValueExtension vK L` is a faithful normalized model for the
 absolute-value classes lying over the class of `vK`. -/
 theorem equivalent_exactExtensions_eq
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
+     
     (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
     (w w' : AbsoluteValueExtension vK L)
     (h : LubinTate.Valuations.EquivalentAbsoluteValues w.1 w'.1) :
@@ -127,7 +133,7 @@ theorem equivalent_exactExtensions_eq
 extensions differ by an actual `K`-automorphism of `L`, not merely by an
 automorphism of the ambient algebraic closure. -/
 theorem absoluteValueConjugacy_exists_conjugatingAlgEquiv
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
+     
     [IsGalois K L]
     (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
     (w w' : AbsoluteValueExtension vK L) :
@@ -135,10 +141,10 @@ theorem absoluteValueConjugacy_exists_conjugatingAlgEquiv
   let A := absoluteValueExtension_algebraicCompletionClosure vK
   let τ : L →ₐ[K] A := absoluteValueExtension_embeddingOfExtension vK w
   let τ' : L →ₐ[K] A := absoluteValueExtension_embeddingOfExtension vK w'
-  let : Algebra L A := τ.toRingHom.toAlgebra
+  let  := τ.toRingHom.toAlgebra
   let : IsScalarTower K L A :=
     IsScalarTower.of_algebraMap_eq' τ.comp_algebraMap.symm
-  let σ : L ≃ₐ[K] L := Normal.algHomEquivAut K A L τ'
+  let σ  := Normal.algHomEquivAut K A L τ'
   refine ⟨σ, ?_⟩
   rw [absoluteValueExtension_extension_eq_pullback_embeddingOfExtension vK hvK w',
     absoluteValueExtension_extension_eq_pullback_embeddingOfExtension vK hvK w]
@@ -147,15 +153,14 @@ theorem absoluteValueConjugacy_exists_conjugatingAlgEquiv
     absoluteValueExtension_algebraicClosureAbsoluteValue vK hvK (τ' x) =
       absoluteValueExtension_algebraicClosureAbsoluteValue vK hvK (τ (σ x))
   congr 1
-  simpa [σ, τ, AlgHom.restrictNormal', RingHom.algebraMap_toAlgebra] using
-    (τ'.restrictNormal_commutes L x).symm
+  exact (τ'.restrictNormal_commutes L x).symm
 
 /-- The valuation-conjugacy theorem: the Galois group acts transitively
 on the exact extensions of a nontrivial valuation.  This statement covers
 finite and infinite Galois extensions and both archimedean and
 nonarchimedean absolute values. -/
 theorem absoluteValueConjugacy
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
+     
     [IsGalois K L]
     (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
     (w w' : AbsoluteValueExtension vK L) :
@@ -164,22 +169,24 @@ theorem absoluteValueConjugacy
   rcases absoluteValueConjugacy_exists_conjugatingAlgEquiv vK hvK w w' with
     ⟨σ, hσ⟩
   exact ⟨σ, Subtype.ext hσ⟩
+end
 
-/-- Class-level form of the valuation-conjugacy theorem.  The exact-representative equality
-above in particular gives equality of the corresponding absolute value
-classes. -/
-theorem absoluteValueConjugacy_valuationClass
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    [IsGalois K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    (w w' : AbsoluteValueExtension vK L) :
-    ∃ σ : L ≃ₐ[K] L,
-      LubinTate.Valuations.EquivalentAbsoluteValues w'.1
-        (absoluteValueExtensionConjugate vK w σ).1 := by
-  rcases absoluteValueConjugacy vK hvK w w' with ⟨σ, hσ⟩
-  refine ⟨σ, ?_⟩
-  rw [← hσ]
-  exact LubinTate.Valuations.equivalentAbsoluteValues_refl w'.1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end Valuations
 end AlgebraicNumberTheory

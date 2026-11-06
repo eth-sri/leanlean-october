@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Basic
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -66,18 +69,18 @@ theorem principalIdele_injective :
     (NumberField.AdeleRing.algebraMap_injective (R := 𝓞 K) (K := K))
 
 /-- The subgroup of principal ideles. -/
-def principalSubgroup : Subgroup (IdeleGroup K) :=
+def principalSubgroup  :=
   (principalIdele K).range
 
-/-- The multiplicative group `Kˣ`, identified with the subgroup of principal
-ideles. -/
-def principalEquiv : Kˣ ≃* principalSubgroup K :=
-  MonoidHom.ofInjective (principalIdele_injective K)
 
-@[simp]
-theorem coe_principalEquiv (x : Kˣ) :
-    (principalEquiv K x : IdeleGroup K) = principalIdele K x :=
-  MonoidHom.ofInjective_apply (principalIdele_injective K)
+
+
+
+
+
+
+
+
 
 end IdeleGroup
 

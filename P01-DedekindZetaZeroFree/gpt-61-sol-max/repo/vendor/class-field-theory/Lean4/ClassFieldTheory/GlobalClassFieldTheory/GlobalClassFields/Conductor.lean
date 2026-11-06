@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AlgebraicNumberTheory.RayClass.Topology
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -72,66 +75,61 @@ theorem exists_definingFiniteExponent
 
 namespace ConductorialSubgroup
 
+section
+variable (H : ConductorialSubgroup K)
+include H
 /-- A chosen full modulus defining a conductorial subgroup. -/
 noncomputable def chosenDefiningModulus
-    (H : ConductorialSubgroup K) :
-    RayClass.Modulus K :=
+       :=
   Classical.choose H.2
 
 /-- The chosen full defining modulus has the advertised defining property. -/
-theorem chosenDefiningModulus_spec
-    (H : ConductorialSubgroup K) :
-    IsDefiningModulus H.1 H.chosenDefiningModulus :=
+def chosenDefiningModulus_spec
+       :=
   Classical.choose_spec H.2
 
 /-- The finite part of one chosen defining modulus, used to bound the
 support of the narrow finite conductor. -/
 noncomputable def narrowFiniteConductorBoundingModulus
-    (H : ConductorialSubgroup K) :
-    RayClass.FiniteModulus K :=
+       :=
   H.chosenDefiningModulus.finitePart
 
-/-- The finite bounding modulus comes from an actual defining full modulus. -/
-theorem narrowFiniteConductorBoundingModulus_spec
-    (H : ConductorialSubgroup K) :
-    ∃ m : RayClass.Modulus K,
-      IsDefiningModulus H.1 m ∧
-        m.finitePart = H.narrowFiniteConductorBoundingModulus :=
-  ⟨H.chosenDefiningModulus, H.chosenDefiningModulus_spec, rfl⟩
+
+
+
+
+
+
+
 
 /-- The least narrow finite conductor exponent at `v` among all defining
 moduli. -/
 noncomputable def narrowFiniteConductorExponent
-  (H : ConductorialSubgroup K)
-    (v : HeightOneSpectrum (𝓞 K)) : ℕ :=
+   
+    (v : HeightOneSpectrum (𝓞 K))  :=
   Nat.find (exists_definingFiniteExponent H.1 H.2 v)
 
 /-- The least narrow finite conductor exponent is attained by an actual
 defining modulus. -/
-theorem narrowFiniteConductorExponent_spec
-    (H : ConductorialSubgroup K)
-    (v : HeightOneSpectrum (𝓞 K)) :
-    ∃ m : RayClass.Modulus K,
-      IsDefiningModulus H.1 m ∧
-        m.finitePart v = H.narrowFiniteConductorExponent v :=
+def narrowFiniteConductorExponent_spec
+     
+    (v : HeightOneSpectrum (𝓞 K))  :=
   Nat.find_spec (exists_definingFiniteExponent H.1 H.2 v)
 
 /-- The narrow finite conductor exponent is no larger than the exponent in
 any defining modulus. -/
 theorem narrowFiniteConductorExponent_le
-    (H : ConductorialSubgroup K)
+     
     {m : RayClass.Modulus K}
     (hm : IsDefiningModulus H.1 m)
     (v : HeightOneSpectrum (𝓞 K)) :
     H.narrowFiniteConductorExponent v ≤ m.finitePart v := by
-  exact Nat.find_min'
-    (exists_definingFiniteExponent H.1 H.2 v)
-    ⟨m, hm, rfl⟩
+  apply Nat.find_min' <;> aesop
 
 /-- The finite part of the conductor in the all-real-positive (narrow)
 convention. -/
 noncomputable def narrowFiniteConductor
-    (H : ConductorialSubgroup K) :
+      :
     RayClass.FiniteModulus K where
   toFun := H.narrowFiniteConductorExponent
   support :=
@@ -147,18 +145,16 @@ noncomputable def narrowFiniteConductor
       intro hbound
       have hle :
           H.narrowFiniteConductorExponent v ≤
-            H.narrowFiniteConductorBoundingModulus v := by
-        simpa only [narrowFiniteConductorBoundingModulus] using
-        H.narrowFiniteConductorExponent_le
+            H.narrowFiniteConductorBoundingModulus v := H.narrowFiniteConductorExponent_le
           H.chosenDefiningModulus_spec v
       rw [hbound] at hle
-      exact hv (Nat.eq_zero_of_le_zero hle)
+      apply hv <;> aesop
 
 /-- Evaluating the narrow finite conductor returns its finite local
 conductor exponent. -/
 @[simp]
 theorem narrowFiniteConductor_apply
-    (H : ConductorialSubgroup K)
+     
     (v : HeightOneSpectrum (𝓞 K)) :
     H.narrowFiniteConductor v = H.narrowFiniteConductorExponent v :=
   rfl
@@ -166,42 +162,44 @@ theorem narrowFiniteConductor_apply
 /-- The narrow finite conductor divides every defining modulus
 (equivalently, its exponents are pointwise no larger). -/
 theorem narrowFiniteConductor_le
-    (H : ConductorialSubgroup K)
+     
     {m : RayClass.Modulus K}
     (hm : IsDefiningModulus H.1 m) :
     H.narrowFiniteConductor ≤ m.finitePart := by
   intro v
   exact H.narrowFiniteConductorExponent_le hm v
 
-/-- Universal gcd characterization of the narrow finite conductor. -/
-theorem le_narrowFiniteConductor_iff
-    (H : ConductorialSubgroup K)
-    (d : RayClass.FiniteModulus K) :
-    d ≤ H.narrowFiniteConductor ↔
-      ∀ m, IsDefiningModulus H.1 m → d ≤ m.finitePart := by
-  constructor
-  · intro hd m hm
-    exact hd.trans (H.narrowFiniteConductor_le hm)
-  · intro hd v
-    obtain ⟨m, hm, hmv⟩ :=
-      H.narrowFiniteConductorExponent_spec v
-    change d v ≤ H.narrowFiniteConductorExponent v
-    rw [← hmv]
-    exact hd m hm v
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- A conductorial subgroup is open because it contains a ray congruence
 subgroup. -/
 theorem isOpen
-    (H : ConductorialSubgroup K) :
+      :
     IsOpen ((H.1 : Subgroup (IdeleClassGroup K)) : Set (IdeleClassGroup K)) := by
   obtain ⟨m, hm⟩ := H.2
   exact Subgroup.isOpen_mono hm (RayClass.isOpen_congruenceSubgroup m)
 
 /-- A conductorial subgroup is closed. -/
 theorem isClosed
-    (H : ConductorialSubgroup K) :
+      :
     IsClosed ((H.1 : Subgroup (IdeleClassGroup K)) : Set (IdeleClassGroup K)) :=
   H.1.isClosed_of_isOpen H.isOpen
+end
+
 
 /-- A conductorial subgroup has finite index. -/
 instance finiteIndex
@@ -210,18 +208,18 @@ instance finiteIndex
   obtain ⟨m, hm⟩ := H.2
   exact Subgroup.finiteIndex_of_le hm
 
-/-- The narrow finite conductor is the gcd of the finite parts of the
-defining full moduli. -/
-theorem narrowFiniteConductor_is_gcd
-    (H : ConductorialSubgroup K) :
-    (∀ m, IsDefiningModulus H.1 m → H.narrowFiniteConductor ≤ m.finitePart) ∧
-      (∀ d, (∀ m, IsDefiningModulus H.1 m → d ≤ m.finitePart) →
-        d ≤ H.narrowFiniteConductor) := by
-  constructor
-  · intro m hm
-    exact H.narrowFiniteConductor_le hm
-  · intro d hd
-    exact (H.le_narrowFiniteConductor_iff d).2 hd
+
+
+
+
+
+
+
+
+
+
+
+
 
 end ConductorialSubgroup
 
@@ -233,9 +231,7 @@ theorem exists_definingModulus_of_isClosed_finiteIndex
     [H.FiniteIndex] :
     ∃ m, IsDefiningModulus H m :=
   ⟨RayClass.modulusInsideClosedFiniteIndex H hclosed,
-    by
-      simpa only [IsDefiningModulus] using
-        RayClass.modulusInsideClosedFiniteIndex_spec H hclosed⟩
+    RayClass.modulusInsideClosedFiniteIndex_spec H hclosed⟩
 
 namespace ConductorialSubgroup
 

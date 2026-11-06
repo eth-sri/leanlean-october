@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AlgebraicNumberTheory.Galois.CyclicPrimeSubextension
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Extension.OnePlaceBaseNorm
 public import ClassFieldTheory.AbstractClassFieldTheory.Degree.FrobeniusLift
@@ -12,6 +14,7 @@ public import Mathlib.GroupTheory.Nilpotent
 public import Mathlib.Topology.Algebra.ContinuousMonoidHom
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -134,16 +137,10 @@ noncomputable def absoluteValueDecompositionGroupRestrictionHom
         exact τ.2 (algebraMap L Ω x)⟩
   map_one' := by
     apply Subtype.ext
-    exact
-      map_one
-        (AlgEquiv.restrictNormalHom
-          (F := K) (K₁ := Ω) L)
+    apply map_one
   map_mul' τ η := by
     apply Subtype.ext
-    exact
-      map_mul
-        (AlgEquiv.restrictNormalHom
-          (F := K) (K₁ := Ω) L) τ.1 η.1
+    apply map_mul
 
 /-- Restriction from a Galois overfield is surjective on the actual
 decomposition groups of a nontrivial valuation.
@@ -199,7 +196,7 @@ theorem
       absoluteValueDecompositionGroup F wA.1 := by
   rw [mem_absoluteValueDecompositionGroup_iff]
   intro y
-  let M : IntermediateField F A :=
+  let M  :=
     IntermediateField.adjoin F {y}
   let : FiniteDimensional F M :=
     IntermediateField.adjoin.finiteDimensional
@@ -212,19 +209,19 @@ theorem
         normalClosure.is_finiteDimensional F M A
       isGalois :=
         IsGalois.normalClosure F M A }
-  let : NumberField E :=
+  let  :=
     NumberField.of_module_finite F E
-  let : IsAbelianGalois F E :=
+  let  :=
     IsAbelianGalois.of_algHom
       (E : IntermediateField F A).val
   let vF :=
     NumberField.HeightOneSpectrum.adicAbv F v
-  let wE : AbsoluteValueExtension vF E :=
+  let wE  :=
     restrictAbsoluteValueExtensionToIntermediate
       vF wA E
   have hyM : y ∈ M :=
     IntermediateField.subset_adjoin
-      (F := F) (S := {y}) (by rfl)
+      (F := F) (S := {y}) (rfl)
   have hyE : y ∈ E.toIntermediateField :=
     IntermediateField.le_normalClosure M hyM
   have hrestriction :
@@ -278,454 +275,454 @@ section FiniteCyclotomicBaseChange
 variable
     {F : Type*} [Field F] [NumberField F]
 
-/-- Restriction from a finite cyclotomic compositum over a number
-field to its rational cyclotomic layer. -/
-noncomputable def
-    numberFieldCyclotomicZHatFiniteCompositumRestriction
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
-    Gal(numberFieldCyclotomicZHatFiniteCompositum F E / F) →*
-      Gal(E / ℚ) := by
-  letI : Normal ℚ E := E.isGalois.to_normal
-  exact
-    IntermediateField.restrictRestrictAlgEquivMapHom
-      ℚ E F
-        (numberFieldCyclotomicZHatFiniteCompositum F E)
 
-/-- Restriction to the rational factor is injective on the actual
-finite compositum: an automorphism fixing both generating fields fixes
-their supremum. -/
-theorem
-    numberFieldCyclotomicZHatFiniteCompositumRestriction_injective
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
-    Function.Injective
-      (numberFieldCyclotomicZHatFiniteCompositumRestriction
-        (F := F) E) := by
-  let : Normal ℚ E := E.isGalois.to_normal
-  let C :=
-    numberFieldCyclotomicZHatFiniteCompositum F E
-  let : Algebra ℚ C := C.algebra'
-  let : Algebra F C :=
-    numberFieldCyclotomicZHatFiniteCompositum_algebra F E
-  let : IsScalarTower ℚ F C :=
-    numberFieldCyclotomicZHatFiniteCompositum_scalarTower F E
-  let : Algebra E C :=
-    rationalCyclotomicZHatFiniteLayerCompositum_algebra F E
-  let : IsScalarTower ℚ E C :=
-    rationalCyclotomicZHatFiniteLayerCompositum_scalarTower F E
-  let A : IntermediateField ℚ C :=
-    (numberFieldInRationalSeparableClosure F).restrict
-      (show
-        numberFieldInRationalSeparableClosure F ≤ C from
-        le_sup_left)
-  let B : IntermediateField ℚ C :=
-    (IntermediateField.lift E.toIntermediateField).restrict
-      (show
-        IntermediateField.lift E.toIntermediateField ≤ C from
-        le_sup_right)
-  let : Algebra ℚ B := B.algebra'
-  let eF : F ≃ₐ[ℚ] A :=
-    (numberFieldSeparableClosureEmbedding F).equivFieldRange.trans
-      (IntermediateField.restrictAlgEquiv le_sup_left)
-  let eE : E ≃ₐ[ℚ] B :=
-    (IntermediateField.liftAlgEquiv E.toIntermediateField).trans
-      (IntermediateField.restrictAlgEquiv le_sup_right)
-  let : Normal ℚ B := Normal.of_algEquiv eE
-  have hsup : B ⊔ A = ⊤ := by
-    apply IntermediateField.lift_injective C
-    rw [IntermediateField.lift_sup,
-      IntermediateField.lift_restrict,
-      IntermediateField.lift_restrict,
-      IntermediateField.lift_top]
-    exact sup_comm _ _
-  let rB :
-      (C ≃ₐ[A] C) →* (B ≃ₐ[ℚ] B) :=
-    IntermediateField.restrictRestrictAlgEquivMapHom ℚ B A C
-  have hrB : Function.Injective rB :=
-    IntermediateField.restrictRestrictAlgEquivMapHom_injective
-      B A hsup
-  have heF (x : F) :
-      algebraMap F C x = algebraMap A C (eF x) := by
-    apply Subtype.ext
-    rfl
-  let changeBase :
-      (C ≃ₐ[F] C) →* (C ≃ₐ[A] C) :=
-    { toFun := fun σ =>
-        { σ.toRingEquiv with
-          commutes' := by
-            intro y
-            have hy :
-                algebraMap F C (eF.symm y) =
-                  algebraMap A C y := by
-              simpa using heF (eF.symm y)
-            rw [← hy]
-            change σ (algebraMap F C (eF.symm y)) =
-              algebraMap F C (eF.symm y)
-            exact σ.commutes _ }
-      map_one' := rfl
-      map_mul' := fun _ _ => rfl }
-  have hchangeBase : Function.Injective changeBase := by
-    intro σ τ hστ
-    apply AlgEquiv.ext
-    intro x
-    exact congrArg (fun f : C ≃ₐ[A] C => f x) hστ
-  let transportE : Gal(E / ℚ) →* (B ≃ₐ[ℚ] B) :=
-    (AlgEquiv.autCongr eE).toMonoidHom
-  have raw_restriction_commutes
-      (σ : C ≃ₐ[F] C) (x : E) :
-      (eE
-          (numberFieldCyclotomicZHatFiniteCompositumRestriction
-            (F := F) E σ x) : C) =
-        σ (eE x : C) := by
-    change
-      algebraMap E C
-          (numberFieldCyclotomicZHatFiniteCompositumRestriction
-            (F := F) E σ x) =
-        σ (algebraMap E C x)
-    change
-      algebraMap E C
-          ((AlgEquiv.restrictNormal
-            (MulSemiringAction.toAlgEquiv ℚ C σ) E) x) =
-        (MulSemiringAction.toAlgEquiv ℚ C σ)
-          (algebraMap E C x)
-    exact
-      AlgEquiv.restrictNormal_commutes
-        (MulSemiringAction.toAlgEquiv ℚ C σ) E x
-  have hcomm (σ : C ≃ₐ[F] C) :
-      transportE
-          (numberFieldCyclotomicZHatFiniteCompositumRestriction
-            (F := F) E σ) =
-        rB (changeBase σ) := by
-    apply AlgEquiv.ext
-    intro x
-    obtain ⟨y, rfl⟩ := eE.surjective x
-    apply Subtype.ext
-    have hBrestrict :
-        (rB (changeBase σ) (eE y) : C) =
-          changeBase σ (eE y : C) := by
-      exact
-        IntermediateField.restrictRestrictAlgEquivMapHom_apply
-          B A (changeBase σ) (eE y)
-    calc
-      (transportE
-            (numberFieldCyclotomicZHatFiniteCompositumRestriction
-              (F := F) E σ) (eE y) : C) =
-          (eE
-            (numberFieldCyclotomicZHatFiniteCompositumRestriction
-              (F := F) E σ y) : C) := by
-        change
-          ((eE.symm.trans
-            ((numberFieldCyclotomicZHatFiniteCompositumRestriction
-              (F := F) E σ).trans eE)) (eE y) : C) =
-            (eE
-              (numberFieldCyclotomicZHatFiniteCompositumRestriction
-                (F := F) E σ y) : C)
-        simp only [AlgEquiv.trans_apply, AlgEquiv.symm_apply_apply]
-      _ = σ (eE y : C) := raw_restriction_commutes σ y
-      _ = changeBase σ (eE y : C) := rfl
-      _ = (rB (changeBase σ) (eE y) : C) := hBrestrict.symm
-  intro σ τ hστ
-  apply hchangeBase
-  apply hrB
-  rw [← hcomm σ, ← hcomm τ, hστ]
 
-/-- The Galois group of the finite compositum is canonically the
-subgroup of the rational finite-layer Galois group fixing the actual
-intersection with the number field. -/
-noncomputable def
-    numberFieldCyclotomicZHatFiniteCompositumGalEquivFixingSubgroup
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
-    Gal(numberFieldCyclotomicZHatFiniteCompositum F E / F) ≃*
-      (numberFieldCyclotomicZHatFiniteIntersection F E).fixingSubgroup := by
-  letI : Normal ℚ E := E.isGalois.to_normal
-  let r :=
-    numberFieldCyclotomicZHatFiniteCompositumRestriction
-      (F := F) E
-  let eRange :
-      Gal(numberFieldCyclotomicZHatFiniteCompositum F E / F) ≃*
-        r.range :=
-    MulEquiv.ofBijective r.rangeRestrict
-      ⟨fun σ τ h =>
-          numberFieldCyclotomicZHatFiniteCompositumRestriction_injective
-            (F := F) E (congrArg Subtype.val h),
-        MonoidHom.rangeRestrict_surjective _⟩
-  have hrange :
-      r.range =
-        (numberFieldCyclotomicZHatFiniteIntersection F E).fixingSubgroup := by
-    simpa only [r,
-      numberFieldCyclotomicZHatFiniteCompositumRestriction] using
-      (numberFieldCyclotomicZHatFiniteCompositum_restriction_range
-        (K := F) E)
-  exact
-    eRange.trans
-      (MulEquiv.subgroupCongr hrange)
 
-/-- The finite compositum Galois group and the intersection-fixing
-subgroup have the same cardinality. -/
-theorem
-    numberFieldCyclotomicZHatFiniteCompositum_galois_card
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
-    Nat.card
-        (Gal(numberFieldCyclotomicZHatFiniteCompositum F E / F)) =
-      Nat.card
-        (numberFieldCyclotomicZHatFiniteIntersection F E).fixingSubgroup :=
-  Nat.card_congr
-    (numberFieldCyclotomicZHatFiniteCompositumGalEquivFixingSubgroup
-      (F := F) E).toEquiv
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end FiniteCyclotomicBaseChange
 
-/-- Restriction from the full actual cyclotomic `ZHat`-compositum over
-a number field has image exactly the subgroup fixing the genuine
-intersection with the rational cyclotomic `ZHat`-field. -/
-theorem numberFieldCyclotomicZHatCompositumRestriction_range
-    (F : Type*) [Field F] [NumberField F] :
-    (numberFieldCyclotomicZHatCompositumRestriction F).range =
-      ((numberFieldCyclotomicZHatIntersection F).restrict
-        (show
-          numberFieldCyclotomicZHatIntersection F ≤
-            rationalCyclotomicZHatField from
-          by
-            dsimp only [numberFieldCyclotomicZHatIntersection]
-            exact inf_le_right)).fixingSubgroup := by
-  let C := numberFieldCyclotomicZHatCompositum F
-  let : Algebra ℚ C := C.algebra'
-  let : Algebra F C :=
-    numberFieldCyclotomicZHatCompositum_algebra F
-  let : IsScalarTower ℚ F C :=
-    numberFieldCyclotomicZHatCompositum_scalarTower F
-  let : Algebra rationalCyclotomicZHatField C :=
-    rationalCyclotomicZHatCompositum_algebra F
-  let : IsScalarTower ℚ rationalCyclotomicZHatField C :=
-    rationalCyclotomicZHatCompositum_scalarTower F
-  let : Normal ℚ rationalCyclotomicZHatField :=
-    rationalCyclotomicZHatField_normal
-  let eF : F →ₐ[ℚ] C :=
-    numberFieldCyclotomicZHatCompositumEmbedding F
-  let eT : rationalCyclotomicZHatField →ₐ[ℚ] C :=
-    rationalCyclotomicZHatCompositumEmbedding F
-  let r := numberFieldCyclotomicZHatCompositumRestriction F
-  have hIntersection_le :
-      numberFieldCyclotomicZHatIntersection F ≤
-        rationalCyclotomicZHatField := by
-    change
-      numberFieldInRationalSeparableClosure F ⊓
-          rationalCyclotomicZHatField ≤
-        rationalCyclotomicZHatField
-    exact inf_le_right
-  let J : IntermediateField ℚ rationalCyclotomicZHatField :=
-    (numberFieldCyclotomicZHatIntersection F).restrict
-      hIntersection_le
-  have eF_eq_algebraMap (y : F) :
-      eF y = algebraMap F C y := by
-    rfl
-  have restriction_commutes
-      (τ : C ≃ₐ[F] C) (z : rationalCyclotomicZHatField) :
-      eT (r τ z) = τ (eT z) := by
-    change
-      algebraMap rationalCyclotomicZHatField C (r τ z) =
-        τ (algebraMap rationalCyclotomicZHatField C z)
-    change
-      algebraMap rationalCyclotomicZHatField C
-          ((AlgEquiv.restrictNormal
-            (MulSemiringAction.toAlgEquiv ℚ C τ)
-            rationalCyclotomicZHatField) z) =
-        (MulSemiringAction.toAlgEquiv ℚ C τ)
-          (algebraMap rationalCyclotomicZHatField C z)
-    exact
-      AlgEquiv.restrictNormal_commutes
-        (MulSemiringAction.toAlgEquiv ℚ C τ)
-        rationalCyclotomicZHatField z
-  have hJ (x : rationalCyclotomicZHatField) :
-      x ∈ J ↔ eT x ∈ eF.fieldRange := by
-    change
-      x ∈ (numberFieldCyclotomicZHatIntersection F).restrict
-          hIntersection_le ↔
-        eT x ∈ eF.fieldRange
-    rw [IntermediateField.mem_restrict]
-    change
-      x.1 ∈
-          numberFieldInRationalSeparableClosure F ⊓
-            rationalCyclotomicZHatField ↔
-        eT x ∈ eF.fieldRange
-    rw [IntermediateField.mem_inf]
-    simp only [x.2, and_true]
-    change
-      x.1 ∈ (numberFieldSeparableClosureEmbedding F).fieldRange ↔
-        eT x ∈ eF.fieldRange
-    rw [AlgHom.mem_fieldRange, AlgHom.mem_fieldRange]
-    constructor
-    · rintro ⟨y, hy⟩
-      refine ⟨y, ?_⟩
-      apply Subtype.ext
-      change numberFieldSeparableClosureEmbedding F y = x.1
-      exact hy
-    · rintro ⟨y, hy⟩
-      refine ⟨y, ?_⟩
-      change numberFieldSeparableClosureEmbedding F y = x.1
-      exact congrArg Subtype.val hy
-  have hfixedField :
-      IntermediateField.fixedField r.range = J := by
-    ext x
-    rw [IntermediateField.mem_fixedField_iff]
-    rw [hJ]
-    constructor
-    · intro hx
-      have hfixed :
-          ∀ τ : C ≃ₐ[F] C, τ (eT x) = eT x := by
-        intro τ
-        have hxτ : r τ x = x :=
-          hx (r τ) ⟨τ, rfl⟩
-        have hrestrict :
-            eT (r τ x) = τ (eT x) := by
-          exact restriction_commutes τ x
-        exact hrestrict.symm.trans (congrArg eT hxτ)
-      have hmem :
-          eT x ∈ Set.range (algebraMap F C) :=
-        (InfiniteGalois.mem_range_algebraMap_iff_fixed
-          (eT x)).2 hfixed
-      rw [AlgHom.mem_fieldRange]
-      obtain ⟨y, hy⟩ := hmem
-      exact ⟨y, (eF_eq_algebraMap y).trans hy⟩
-    · intro hx σ hσ
-      obtain ⟨τ, rfl⟩ := hσ
-      rw [AlgHom.mem_fieldRange] at hx
-      obtain ⟨y, hy⟩ := hx
-      apply eT.injective
-      have hrestrict :
-          eT (r τ x) = τ (eT x) := by
-        exact restriction_commutes τ x
-      calc
-        eT (r τ x) = τ (eT x) := hrestrict
-        _ = τ (eF y) := congrArg τ hy.symm
-        _ = eF y := by
-          rw [eF_eq_algebraMap]
-          exact τ.commutes y
-        _ = eT x := hy
-  let H : ClosedSubgroup
-      (rationalCyclotomicZHatField ≃ₐ[ℚ]
-        rationalCyclotomicZHatField) :=
-    { toSubgroup := r.range
-      isClosed' := by
-        change IsClosed (Set.range r)
-        have hrClosed :
-            IsClosed
-              (Set.range
-                (numberFieldCyclotomicZHatCompositumRestriction F)) :=
-          (isCompact_range
-            (numberFieldCyclotomicZHatCompositumRestriction_continuous F)).isClosed
-        simpa only [r] using hrClosed }
-  change r.range = J.fixingSubgroup
-  calc
-    r.range =
-        (IntermediateField.fixedField r.range).fixingSubgroup :=
-      (by
-        have hH := InfiniteGalois.fixingSubgroup_fixedField H
-        change
-          (IntermediateField.fixedField r.range).fixingSubgroup =
-            r.range at hH
-        exact hH.symm)
-    _ = J.fixingSubgroup :=
-      congrArg
-        (fun E : IntermediateField ℚ rationalCyclotomicZHatField =>
-          E.fixingSubgroup)
-        hfixedField
 
-/-- The genuine cyclotomic `ZHat` coordinate on the full compositum
-over a number field. -/
-noncomputable def numberFieldCyclotomicZHatCompositumCoordinate
-    (F : Type*) [Field F] [NumberField F] :
-    Gal(numberFieldCyclotomicZHatCompositum F / F) →*
-      Multiplicative ZHat :=
-  rationalCyclotomicZHatFieldGalEquivZHat.toMonoidHom.comp
-    (numberFieldCyclotomicZHatCompositumRestriction F)
 
-/-- The genuine cyclotomic coordinate on the full compositum is
-injective. -/
-theorem numberFieldCyclotomicZHatCompositumCoordinate_injective
-    (F : Type*) [Field F] [NumberField F] :
-    Function.Injective
-      (numberFieldCyclotomicZHatCompositumCoordinate F) :=
-  rationalCyclotomicZHatFieldGalEquivZHat.injective.comp
-    (numberFieldCyclotomicZHatCompositumRestriction_injective F)
 
-/-- The actual cyclotomic `ZHat`-compositum over every number field
-has torsion-free Galois group. -/
-noncomputable instance
-    numberFieldCyclotomicZHatCompositumGal_isMulTorsionFree
-    (F : Type*) [Field F] [NumberField F] :
-    IsMulTorsionFree
-      (Gal(numberFieldCyclotomicZHatCompositum F / F)) :=
-  Function.Injective.isMulTorsionFree
-    (numberFieldCyclotomicZHatCompositumCoordinate F)
-    (numberFieldCyclotomicZHatCompositumCoordinate_injective F)
 
-/-- The image of the actual cyclotomic compositum over `F` is precisely
-`f_F ZHat`, where `f_F` is the degree of the genuine intersection
-`F ∩ ℚ̃`. -/
-theorem
-    numberFieldCyclotomicZHatCompositumCoordinate_range_toAddSubgroup
-    (F : Type*) [Field F] [NumberField F] :
-    (numberFieldCyclotomicZHatCompositumCoordinate F).range.toAddSubgroup' =
-      (zHatMulNat
-        (cyclotomicZHatIntersectionDegree F)).toAddMonoidHom.range := by
-  rw [numberFieldCyclotomicZHatCompositumCoordinate,
-    MonoidHom.range_comp,
-    numberFieldCyclotomicZHatCompositumRestriction_range]
-  exact
-    rationalCyclotomicZHatFieldGal_fixingSubgroup_image_eq_mulNat_range
-      F
 
-/-- A surjective restriction map admits positive cyclotomic-degree
-lifts as soon as the degrees contributed by its kernel have finite
-index in `ZHat`.
 
-This is the group-theoretic core of the decomposition-compatible
-Frobenius lift: the initial preimage is corrected inside the genuine
-restriction kernel, so its prescribed image is unchanged. -/
-theorem exists_positiveZHatDegree_lift_of_surjective
-    {D A : Type*} [Group D] [Group A]
-    (restriction : D →* A)
-    (hrestriction : Function.Surjective restriction)
-    (degree : D →* Multiplicative ZHat)
-    (hdegree :
-      ((restriction.ker.map degree).toAddSubgroup').index ≠ 0)
-    (σ : A) :
-    ∃ τ : D,
-      restriction τ = σ ∧
-        ∃ n : ℕ, 0 < n ∧
-          degree τ =
-            (Multiplicative.ofAdd (1 : ZHat)) ^ n := by
-  obtain ⟨s, hs⟩ := hrestriction σ
-  let H : AddSubgroup ZHat :=
-    (restriction.ker.map degree).toAddSubgroup'
-  obtain ⟨n, hn, hmem⟩ :=
-    exists_positive_nsmul_one_sub_mem_of_index_ne_zero
-      H hdegree (Multiplicative.toAdd (degree s))
-  have hcorrection :
-      n • (1 : ZHat) -
-          Multiplicative.toAdd (degree s) ∈ H := by
-    simpa only [neg_sub] using H.neg_mem hmem
-  rw [Subgroup.mem_toAddSubgroup'] at hcorrection
-  obtain ⟨k, hk, hdk⟩ := hcorrection
-  refine ⟨s * k, ?_, ⟨n, hn, ?_⟩⟩
-  · rw [map_mul, hs]
-    change restriction k = 1 at hk
-    rw [hk, mul_one]
-  · apply Multiplicative.ext
-    rw [map_mul]
-    rw [toAdd_mul, toAdd_pow, toAdd_ofAdd]
-    have hdk' := congrArg Multiplicative.toAdd hdk
-    rw [toAdd_ofAdd] at hdk'
-    rw [hdk']
-    abel
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- Two homomorphisms out of a finite commutative group agree once
 they agree on every primary component.
@@ -747,9 +744,7 @@ theorem MonoidHom.ext_of_eq_on_finitePrimaryComponents
   classical
   let sylowFintype (p : ℕ) : Fintype (Sylow p G) :=
     Fintype.ofFinite _
-  let e :
-      (∀ p : (Nat.card G).primeFactors,
-        ∀ P : Sylow p.1 G, P) ≃* G :=
+  let e  :=
     Sylow.directProductOfNormal
       (G := G)
       (fun P =>
@@ -805,7 +800,7 @@ theorem MonoidHom.ext_of_eq_on_finitePrimaryComponents
           ∀ Q : Sylow q.1 G, Q :=
       Pi.mulSingle p
         (Pi.mulSingle P (y p P))
-    let z : G := e u
+    let z  := e u
     have hz :
         z ∈ CommGroup.primaryComponent G p.1 := by
       obtain ⟨n, hn⟩ :=
@@ -819,8 +814,7 @@ theorem MonoidHom.ext_of_eq_on_finitePrimaryComponents
           Pi.mulSingle_one,
           Pi.mulSingle_one]
       calc
-        z ^ p.1 ^ n = e (u ^ p.1 ^ n) := by
-          exact (map_pow e u (p.1 ^ n)).symm
+        z ^ p.1 ^ n = e (u ^ p.1 ^ n) := (map_pow e u (p.1 ^ n)).symm
         _ = e 1 := by rw [hu]
         _ = 1 := map_one e
     exact
@@ -829,22 +823,22 @@ theorem MonoidHom.ext_of_eq_on_finitePrimaryComponents
   rw [hy]
   simp only [map_prod, hfactor]
 
-/-- Every individual `p`-adic coordinate of the profinite integers is
-surjective.  This is extracted from the genuine Chinese-remainder
-equivalence `ZHat ≃ ∏ p, ℤ_p`. -/
-theorem zHatToPadicInt_surjective
-    (p : Nat.Primes) :
-    Function.Surjective (zHatToPadicInt p) := by
-  classical
-  intro x
-  let y : ProfiniteIntegerPrimeProduct :=
-    Pi.single p x
-  obtain ⟨z, hz⟩ :=
-    zHatToProfiniteIntegerPrimeProduct_surjective y
-  refine ⟨z, ?_⟩
-  have hp := congrFun hz p
-  simpa only [zHatToProfiniteIntegerPrimeProduct_apply,
-    y, Pi.single_eq_same] using hp
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The genuine `p`-adic cyclotomic coordinate on the actual Galois
 group of the rational cyclotomic `ZHat`-extension. -/
@@ -881,6 +875,12 @@ theorem rationalCyclotomicPadicCoordinate_apply
           (rationalCyclotomicZHatFieldGalEquivZHat σ)) :=
   rfl
 
+section
+variable (F : Type) [Field F] [NumberField F]
+    (wC : AbsoluteValue
+      (numberFieldCyclotomicZHatCompositum F) ℝ)
+    (p : Nat.Primes)
+include F wC p
 /-- The `p`-adic cyclotomic coordinate on the actual decomposition
 group of an arbitrary absolute value of the number-field cyclotomic
 `ZHat`-compositum.
@@ -891,10 +891,7 @@ The source is the valuation stabilizer itself, rather than an abstract
 copy of a local Galois group. -/
 noncomputable def
     numberFieldCyclotomicPadicDecompositionCoordinate
-    (F : Type) [Field F] [NumberField F]
-    (wC : AbsoluteValue
-      (numberFieldCyclotomicZHatCompositum F) ℝ)
-    (p : Nat.Primes) :
+      :
     absoluteValueDecompositionGroup F wC →ₜ*
       Multiplicative ℤ_[p.1] where
   toMonoidHom :=
@@ -910,10 +907,7 @@ noncomputable def
 of the restricted global automorphism. -/
 @[simp]
 theorem numberFieldCyclotomicPadicDecompositionCoordinate_apply
-    (F : Type) [Field F] [NumberField F]
-    (wC : AbsoluteValue
-      (numberFieldCyclotomicZHatCompositum F) ℝ)
-    (p : Nat.Primes)
+     
     (σ : absoluteValueDecompositionGroup F wC) :
     numberFieldCyclotomicPadicDecompositionCoordinate
         F wC p σ =
@@ -926,10 +920,7 @@ the decomposition coordinate is the `p`-adic coordinate of the
 rational cyclotomic idèle value of the ordinary field norm. -/
 theorem
     numberFieldCyclotomicPadicDecompositionCoordinate_infiniteGlobalArtin
-    (F : Type) [Field F] [NumberField F]
-    (wC : AbsoluteValue
-      (numberFieldCyclotomicZHatCompositum F) ℝ)
-    (p : Nat.Primes) (a : IdeleGroup F)
+      (a : IdeleGroup F)
     (ha :
       infiniteGlobalArtinMonoidHom F
           (numberFieldCyclotomicZHatCompositum F) a ∈
@@ -956,10 +947,7 @@ closed.  This is the compact image of the actual closed decomposition
 group in the Krull topology. -/
 theorem
     numberFieldCyclotomicPadicDecompositionCoordinate_range_isClosed
-    (F : Type) [Field F] [NumberField F]
-    (wC : AbsoluteValue
-      (numberFieldCyclotomicZHatCompositum F) ℝ)
-    (p : Nat.Primes) :
+      :
     IsClosed
       ((numberFieldCyclotomicPadicDecompositionCoordinate
         F wC p).range :
@@ -974,6 +962,8 @@ theorem
     (isCompact_range
       (numberFieldCyclotomicPadicDecompositionCoordinate
         F wC p).continuous_toFun).isClosed
+end
+
 
 /-- Reduction of the full cyclotomic character of a rational one-place
 idèle whose component is a power of a principal local component.  The
@@ -995,8 +985,7 @@ theorem
   have hprime :
       RayClass.rationalPrime q =
         ((Rat.HeightOneSpectrum.primesEquiv
-          (R := NumberField.RingOfIntegers ℚ)).symm q) := by
-    rfl
+          (R := NumberField.RingOfIntegers ℚ)).symm q) := rfl
   rw [
     rationalCyclotomicGlobalArtin_character_toZModPow,
     globalArtinMonoidHom_finitePlaceIdele,
@@ -1058,7 +1047,7 @@ theorem
     rw [padicIntUnitOfRat_coe,
       padicNatUnit_val,
       hprimeUnit]
-    exact PadicInt.coe_natCast (p.1 + 1)
+    apply PadicInt.coe_natCast
   apply Units.ext
   apply PadicInt.ext_of_toZModPow.mp
   intro k
@@ -1073,8 +1062,8 @@ theorem
   simp only [Units.coe_map, Units.val_pow_eq_pow_val] at hredVal
   have htoZModPow (z : ℤ_[p.1]) :
       (PadicInt.toZModPow
-          (p := p.1) (k : ℕ)).toMonoidHom z =
-        PadicInt.toZModPow (p := p.1) (k : ℕ) z :=
+          (p := p.1) k).toMonoidHom z =
+        PadicInt.toZModPow (p := p.1) k z :=
     rfl
   simp only [htoZModPow] at hredVal
   simpa only [x, Units.val_pow_eq_pow_val, map_pow] using hredVal
@@ -1102,7 +1091,7 @@ theorem
   let x : ℚˣ :=
     Units.mk0 (q.1 : ℚ)
       (by exact_mod_cast q.2.ne_zero)
-  let hcoprime : p.1.Coprime q.1 :=
+  let hcoprime  :=
     (Nat.coprime_primes p.2 q.2).2
       (fun hpq =>
         hqp (Subtype.ext hpq.symm))
@@ -1132,7 +1121,7 @@ theorem
   have htarget :
       Units.map
           (PadicInt.toZModPow
-            (p := p.1) (k : ℕ)).toMonoidHom
+            (p := p.1) k).toMonoidHom
           (((padicNatUnit p q.1 hcoprime)⁻¹) ^ d) =
         ((ZMod.unitOfCoprime q.1
           (hcoprime.symm.pow_right k))⁻¹) ^ d := by
@@ -1140,16 +1129,12 @@ theorem
       padicNatUnit_toZModPow]
   have hredVal :=
     congrArg Units.val (hred.trans htarget.symm)
-  simp only [Units.coe_map, Units.val_pow_eq_pow_val] at hredVal
-  have htoZModPow (z : ℤ_[p.1]) :
-      (PadicInt.toZModPow
-          (p := p.1) (k : ℕ)).toMonoidHom z =
-        PadicInt.toZModPow (p := p.1) (k : ℕ) z :=
-    rfl
-  simp only [htoZModPow] at hredVal
-  simpa only [x, hcoprime, Units.val_pow_eq_pow_val,
-    Units.val_inv_eq_inv_val] using hredVal
+  assumption
 
+section
+variable (F : Type) [Field F] [NumberField F]
+    (v : HeightOneSpectrum (𝓞 F))
+include F v
 /-- The image of the actual decomposition group has a nonzero
 `p`-adic cyclotomic coordinate.
 
@@ -1162,8 +1147,7 @@ local formulas show that its full `p`-adic cyclotomic character is
 non-torsion, so its torsion-free coordinate cannot vanish. -/
 theorem
     numberFieldCyclotomicPadicDecompositionCoordinate_range_toAddSubgroup_ne_bot
-    (F : Type) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (𝓞 F))
+     
     (wC : AbsoluteValueExtension
       (NumberField.HeightOneSpectrum.adicAbv F v)
       (numberFieldCyclotomicZHatCompositum F))
@@ -1171,15 +1155,13 @@ theorem
     (numberFieldCyclotomicPadicDecompositionCoordinate
         F wC.1 p).range.toAddSubgroup' ≠
       (⊥ : AddSubgroup ℤ_[p.1]) := by
-  let q₀ : HeightOneSpectrum (𝓞 ℚ) :=
+  let q₀  :=
     _root_.finitePlaceBelow (K := ℚ) v
-  let q : Nat.Primes :=
+  let q  :=
     Rat.HeightOneSpectrum.primesEquiv
       (R := 𝓞 ℚ) q₀
   have hq :
-      RayClass.rationalPrime q = q₀ := by
-    simpa only [q] using
-      (Rat.HeightOneSpectrum.primesEquiv
+      RayClass.rationalPrime q = q₀ := (Rat.HeightOneSpectrum.primesEquiv
         (R := 𝓞 ℚ)).symm_apply_apply q₀
   let x : ℚˣ :=
     if q = p then
@@ -1189,34 +1171,28 @@ theorem
     else
       Units.mk0 (q.1 : ℚ)
         (by exact_mod_cast q.2.ne_zero)
-  let b : (q₀.adicCompletion ℚ)ˣ :=
+  let b  :=
     IdeleGroup.finiteComponent q₀
       (IdeleGroup.principalIdele ℚ x)
-  let d : ℕ :=
+  let d  :=
     IdeleGroup.finitePlaceCompletionDegree
       (K := ℚ) (L := F) v
   have hd : 0 < d :=
     IdeleGroup.finitePlaceCompletionDegree_pos
       (K := ℚ) (L := F) v
-  let a : IdeleGroup F :=
+  let a  :=
     IdeleGroup.finitePlaceIdele v
       (IdeleGroup.finitePlaceBaseUnitExtension
         (K := ℚ) (L := F) v b)
   have hnorm :
       IdeleGroup.norm ℚ F a =
         IdeleGroup.finitePlaceIdele q₀ (b ^ d) := by
-    exact
-      IdeleGroup.norm_finitePlaceIdele_finitePlaceBaseUnitExtension
-        (K := ℚ) (L := F) v b
+    apply IdeleGroup.norm_finitePlaceIdele_finitePlaceBaseUnitExtension
   have hArtin :
       infiniteGlobalArtinMonoidHom F
           (numberFieldCyclotomicZHatCompositum F) a ∈
         absoluteValueDecompositionGroup F wC.1 := by
-    exact
-      infiniteGlobalArtinMonoidHom_finitePlaceIdele_mem_absoluteValueDecompositionGroup
-        v wC
-        (IdeleGroup.finitePlaceBaseUnitExtension
-          (K := ℚ) (L := F) v b)
+    apply infiniteGlobalArtinMonoidHom_finitePlaceIdele_mem_absoluteValueDecompositionGroup
   let τ :
       absoluteValueDecompositionGroup F wC.1 :=
     ⟨infiniteGlobalArtinMonoidHom F
@@ -1251,7 +1227,7 @@ theorem
       infiniteGlobalArtinMonoidHom
         ℚ KummerTheory.rationalCyclotomicField
         (IdeleGroup.finitePlaceIdele q₀ (b ^ d))
-    let u : ZHatˣ :=
+    let u  :=
       KummerTheory.rationalCyclotomicCharacterContinuousMulEquiv σQ
     have hfree :
         zHatToPadicInt p
@@ -1297,7 +1273,7 @@ theorem
             (Nat.coprime_one_right p.1))
           (Nat.lt_trans p.2.one_lt
             (Nat.lt_succ_self p.1))) hbaseFinite
-    · let hcoprime : p.1.Coprime q.1 :=
+    · let hcoprime  :=
         (Nat.coprime_primes p.2 q.2).2
           (fun hpq =>
             hqp (Subtype.ext hpq.symm))
@@ -1307,9 +1283,7 @@ theorem
             ((padicNatUnit p q.1 hcoprime)⁻¹) ^ d := by
         dsimp only [σQ, b, x]
         rw [ite_eq_right hqp, ← hq]
-        simpa only [hcoprime] using
-          rationalCyclotomicCharacterPrimeProduct_finitePlaceIdele_primeAway
-            p q hqp d
+        apply rationalCyclotomicCharacterPrimeProduct_finitePlaceIdele_primeAway <;> assumption
       have hinversePowerFinite :
           IsOfFinOrder
             (((padicNatUnit p q.1 hcoprime)⁻¹) ^ d) := by
@@ -1330,25 +1304,21 @@ theorem
     rw [Subgroup.mem_toAddSubgroup', ofAdd_toAdd]
     exact ⟨τ, rfl⟩
   rw [hbot] at hmem
-  exact
-    hτne
-      (congrArg Multiplicative.ofAdd
-        (AddSubgroup.mem_bot.mp hmem))
+  apply hτne <;> assumption
 
 /-- The actual `p`-adic coordinate of a finite-place decomposition
 group has finite index in `ℤ_[p]`.  This is the precise nonvanishing
 input used to correct a Frobenius lift inside the restriction kernel. -/
 theorem
     numberFieldCyclotomicPadicDecompositionCoordinate_range_index_ne_zero
-    (F : Type) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (𝓞 F))
+     
     (wC : AbsoluteValueExtension
       (NumberField.HeightOneSpectrum.adicAbv F v)
       (numberFieldCyclotomicZHatCompositum F))
     (p : Nat.Primes) :
     ((numberFieldCyclotomicPadicDecompositionCoordinate
         F wC.1 p).range.toAddSubgroup').index ≠ 0 := by
-  let H : AddSubgroup ℤ_[p.1] :=
+  let H  :=
     (numberFieldCyclotomicPadicDecompositionCoordinate
       F wC.1 p).range.toAddSubgroup'
   have hclosed :
@@ -1358,16 +1328,14 @@ theorem
         ((numberFieldCyclotomicPadicDecompositionCoordinate
           F wC.1 p).range :
           Set (Multiplicative ℤ_[p.1]))
-    exact
-      numberFieldCyclotomicPadicDecompositionCoordinate_range_isClosed
-        F wC.1 p
+    apply numberFieldCyclotomicPadicDecompositionCoordinate_range_isClosed
   have hne : H ≠ ⊥ :=
     numberFieldCyclotomicPadicDecompositionCoordinate_range_toAddSubgroup_ne_bot
       F v wC p
-  have hopen : IsOpen (H : Set ℤ_[p.1]) :=
+  have hopen  :=
     PadicInt.addSubgroup_isOpen_of_isClosed_of_ne_bot
       p.1 H hclosed hne
-  let : Finite (ℤ_[p.1] ⧸ H) :=
+  let  :=
     AddSubgroup.quotient_finite_of_isOpen H hopen
   exact H.index_ne_zero_of_finite
 
@@ -1375,8 +1343,7 @@ theorem
 class of the chosen absolute value on the cyclotomic compositum. -/
 theorem
     numberFieldCyclotomicPadicDecompositionCoordinate_range_index_ne_zero_of_isEquiv
-    (F : Type) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (𝓞 F))
+     
     (wC : AbsoluteValue
       (numberFieldCyclotomicZHatCompositum F) ℝ)
     (wC' : AbsoluteValueExtension
@@ -1413,9 +1380,7 @@ theorem
           exact σ.2⟩
       exact ⟨σ', rfl⟩
   rw [hrange]
-  exact
-    numberFieldCyclotomicPadicDecompositionCoordinate_range_index_ne_zero
-      F v wC' p
+  apply numberFieldCyclotomicPadicDecompositionCoordinate_range_index_ne_zero
 
 /-- The finite-index conclusion for an arbitrary representative of the
 valuation class above `v`.
@@ -1426,8 +1391,7 @@ nonarchimedean absolute value to the unique positive normalizing exponent,
 obtaining an exact extension without changing its decomposition group. -/
 theorem
     numberFieldCyclotomicPadicDecompositionCoordinate_range_index_ne_zero_of_base_isEquiv
-    (F : Type) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (𝓞 F))
+     
     (wC : AbsoluteValue
       (numberFieldCyclotomicZHatCompositum F) ℝ)
     (hbase :
@@ -1440,9 +1404,9 @@ theorem
     (p : Nat.Primes) :
     ((numberFieldCyclotomicPadicDecompositionCoordinate
         F wC p).range.toAddSubgroup').index ≠ 0 := by
-  let vF : AbsoluteValue F ℝ :=
+  let vF  :=
     NumberField.HeightOneSpectrum.adicAbv F v
-  let wF : AbsoluteValue F ℝ :=
+  let wF  :=
     wC.comp
       (f := algebraMap F
         (numberFieldCyclotomicZHatCompositum F))
@@ -1469,9 +1433,7 @@ theorem
         (n : numberFieldCyclotomicZHatCompositum F) =
           algebraMap F
             (numberFieldCyclotomicZHatCompositum F)
-            (n : F) := by
-      exact
-        (map_natCast
+            (n : F) := (map_natCast
           (algebraMap F
             (numberFieldCyclotomicZHatCompositum F)) n).symm
     rw [hn]
@@ -1497,26 +1459,26 @@ theorem
   have hwwC' : wC.IsEquiv wC'.1 :=
     AbsoluteValue.isEquiv_nonarchimedeanRpow
       wC hwCna c hc
-  exact
-    numberFieldCyclotomicPadicDecompositionCoordinate_range_index_ne_zero_of_isEquiv
-      F v wC wC' hwwC' p
+  apply numberFieldCyclotomicPadicDecompositionCoordinate_range_index_ne_zero_of_isEquiv <;> assumption
+end
 
-/-- The actual cyclotomic `p`-adic coordinate is onto. -/
-theorem rationalCyclotomicPadicCoordinate_surjective
-    (p : Nat.Primes) :
-    Function.Surjective
-      (rationalCyclotomicPadicCoordinate p) := by
-  intro y
-  obtain ⟨z, hz⟩ :=
-    zHatToPadicInt_surjective p
-      (Multiplicative.toAdd y)
-  obtain ⟨σ, hσ⟩ :=
-    rationalCyclotomicZHatFieldGalEquivZHat.surjective
-      (Multiplicative.ofAdd z)
-  refine ⟨σ, ?_⟩
-  apply Multiplicative.ext
-  rw [rationalCyclotomicPadicCoordinate_apply, hσ]
-  exact hz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The closed subgroup fixing the `p`-primary cyclotomic direction. -/
 noncomputable def rationalCyclotomicPadicKernel
@@ -1535,62 +1497,60 @@ noncomputable def rationalCyclotomicPadicKernel
       isClosed_singleton.preimage
         (rationalCyclotomicPadicCoordinate p).continuous_toFun
 
-/-- The closed `p`-adic coordinate kernel is normal because it is the
-kernel of a group homomorphism. -/
-instance rationalCyclotomicPadicKernel_normal
-    (p : Nat.Primes) :
-    (rationalCyclotomicPadicKernel p).toSubgroup.Normal := by
-  change
-    (rationalCyclotomicPadicCoordinate p).toMonoidHom.ker.Normal
-  exact MonoidHom.normal_ker _
+
+
+
+
+
+
+
+
 
 /-- The `p`-primary cyclotomic field inside the rational cyclotomic
 `ZHat`-extension.  Its defining subgroup is the kernel of the actual
 coordinate to `ℤ_p`. -/
 abbrev rationalCyclotomicPadicFieldWithinZHat
-    (p : Nat.Primes) :
-    IntermediateField ℚ rationalCyclotomicZHatField :=
+    (p : Nat.Primes)  :=
   IntermediateField.fixedField
     (rationalCyclotomicPadicKernel p).toSubgroup
 
-/-- The internal `p`-primary fixed field is Galois over `ℚ`. -/
-noncomputable instance
-    rationalCyclotomicPadicFieldWithinZHat_isGalois
-    (p : Nat.Primes) :
-    IsGalois ℚ (rationalCyclotomicPadicFieldWithinZHat p) := by
-  change
-    IsGalois ℚ
-      (IntermediateField.fixedField
-        (rationalCyclotomicPadicKernel p).toSubgroup)
-  exact
-    IsGalois.of_fixedField_normal_subgroup
-      (rationalCyclotomicPadicKernel p).toSubgroup
 
-/-- The canonical algebra maps through the internal `p`-primary fixed
-field form a scalar tower. -/
-instance rationalCyclotomicPadicFieldWithinZHat_scalarTower
-    (p : Nat.Primes) :
-    IsScalarTower ℚ (rationalCyclotomicPadicFieldWithinZHat p)
-      rationalCyclotomicZHatField := by
-  apply IsScalarTower.of_algebraMap_eq'
-  rfl
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The actual `p`-primary cyclotomic field in the fixed rational
 separable closure. -/
 def rationalCyclotomicPadicField
-    (p : Nat.Primes) :
-    IntermediateField ℚ (SeparableClosure ℚ) :=
+    (p : Nat.Primes)  :=
   IntermediateField.lift
     (rationalCyclotomicPadicFieldWithinZHat p)
 
-/-- The actual `p`-primary field is contained in the cyclotomic
-`ZHat`-extension. -/
-theorem rationalCyclotomicPadicField_le_cyclotomicZHatField
-    (p : Nat.Primes) :
-    rationalCyclotomicPadicField p ≤
-      rationalCyclotomicZHatField :=
-  IntermediateField.lift_le
-    (rationalCyclotomicPadicFieldWithinZHat p)
+
+
+
+
+
+
+
+
 
 /-- The fixing subgroup of the internal `p`-primary field is exactly
 the kernel of the `p`-adic cyclotomic coordinate. -/
@@ -1598,394 +1558,392 @@ theorem rationalCyclotomicPadicFieldWithinZHat_fixingSubgroup
     (p : Nat.Primes) :
     (rationalCyclotomicPadicFieldWithinZHat p).fixingSubgroup =
       (rationalCyclotomicPadicKernel p).toSubgroup := by
-  exact
-    InfiniteGalois.fixingSubgroup_fixedField
-      (rationalCyclotomicPadicKernel p)
+  apply InfiniteGalois.fixingSubgroup_fixedField
 
-/-- The Galois group of the internal `p`-primary cyclotomic field is
-the actual additive group of `p`-adic integers, written
-multiplicatively. -/
-noncomputable def
-    rationalCyclotomicPadicFieldWithinZHatGalEquivPadicInt
-    (p : Nat.Primes) :
-    (rationalCyclotomicPadicFieldWithinZHat p ≃ₐ[ℚ]
-        rationalCyclotomicPadicFieldWithinZHat p) ≃*
-      Multiplicative ℤ_[p.1] :=
-  (InfiniteGalois.normalAutEquivQuotient
-      (rationalCyclotomicPadicKernel p)).symm.trans
-    (QuotientGroup.quotientKerEquivOfSurjective
-      (rationalCyclotomicPadicCoordinate p).toMonoidHom
-      (rationalCyclotomicPadicCoordinate_surjective p))
 
-/-- Under the `ℤ_p` coordinate, restriction to the internal
-`p`-primary field is exactly the original cyclotomic coordinate. -/
-theorem
-    rationalCyclotomicPadicFieldWithinZHatGalEquivPadicInt_restrict
-    (p : Nat.Primes)
-    (σ :
-      rationalCyclotomicZHatField ≃ₐ[ℚ]
-        rationalCyclotomicZHatField) :
-    rationalCyclotomicPadicFieldWithinZHatGalEquivPadicInt p
-        (AlgEquiv.restrictNormalHom
-          (rationalCyclotomicPadicFieldWithinZHat p) σ) =
-      rationalCyclotomicPadicCoordinate p σ := by
-  let e :=
-    InfiniteGalois.normalAutEquivQuotient
-      (rationalCyclotomicPadicKernel p)
-  let q :=
-    QuotientGroup.quotientKerEquivOfSurjective
-      (rationalCyclotomicPadicCoordinate p).toMonoidHom
-      (rationalCyclotomicPadicCoordinate_surjective p)
-  change
-    q
-        (e.symm (e σ)) =
-      rationalCyclotomicPadicCoordinate p σ
-  rw [e.symm_apply_apply]
-  rfl
 
-/-- The actual `p`-primary cyclotomic field is an abelian Galois
-extension of `ℚ`. -/
-noncomputable instance
-    rationalCyclotomicPadicField_isAbelianGalois
-    (p : Nat.Primes) :
-    IsAbelianGalois ℚ (rationalCyclotomicPadicField p) := by
-  exact
-    @IsAbelianGalois.of_algHom
-      ℚ (rationalCyclotomicPadicField p)
-      rationalCyclotomicZHatField
-      _ _ _ _ _
-      (IntermediateField.inclusion
-        (rationalCyclotomicPadicField_le_cyclotomicZHatField p))
-      rationalCyclotomicZHatField_isAbelianGalois
 
-/-- Reduction from `p`-adic integers to a finite `p`-power quotient is
-surjective. -/
-theorem padicIntToZModPow_surjective
-    (p : Nat.Primes) (n : ℕ) :
-    Function.Surjective
-      (PadicInt.toZModPow
-        (p := p.1) n) := by
-  intro x
-  refine ⟨(x.val : ℤ_[p.1]), ?_⟩
-  calc
-    PadicInt.toZModPow n (x.val : ℤ_[p.1]) =
-        (x.val : ZMod (p.1 ^ n)) := by
-      exact map_natCast
-        (PadicInt.toZModPow
-          (p := p.1) n) x.val
-    _ = x := ZMod.natCast_zmod_val x
 
-/-- The finite `p^n` cyclotomic coordinate on the genuine
-cyclotomic `ZHat` Galois group. -/
-noncomputable def rationalCyclotomicPadicReduction
-    (p : Nat.Primes) (n : ℕ) :
-    (rationalCyclotomicZHatField ≃ₐ[ℚ]
-        rationalCyclotomicZHatField) →*
-      Multiplicative (ZMod (p.1 ^ n)) :=
-  (AddMonoidHom.toMultiplicative
-      (PadicInt.toZModPow
-        (p := p.1) n).toAddMonoidHom).comp
-    (rationalCyclotomicPadicCoordinate p).toMonoidHom
 
-/-- Finite cyclotomic reduction is obtained by reducing the `p`-adic
-cyclotomic coordinate modulo `p^n`. -/
-@[simp]
-theorem rationalCyclotomicPadicReduction_apply
-    (p : Nat.Primes) (n : ℕ)
-    (σ :
-      rationalCyclotomicZHatField ≃ₐ[ℚ]
-        rationalCyclotomicZHatField) :
-    Multiplicative.toAdd
-        (rationalCyclotomicPadicReduction p n σ) =
-      PadicInt.toZModPow n
-        (Multiplicative.toAdd
-          (rationalCyclotomicPadicCoordinate p σ)) :=
-  rfl
 
-/-- Every finite `p^n` cyclotomic coordinate is onto. -/
-theorem rationalCyclotomicPadicReduction_surjective
-    (p : Nat.Primes) (n : ℕ) :
-    Function.Surjective
-      (rationalCyclotomicPadicReduction p n) := by
-  intro y
-  obtain ⟨a, ha⟩ :=
-    padicIntToZModPow_surjective p n
-      (Multiplicative.toAdd y)
-  obtain ⟨σ, hσ⟩ :=
-    rationalCyclotomicPadicCoordinate_surjective p
-      (Multiplicative.ofAdd a)
-  refine ⟨σ, ?_⟩
-  apply Multiplicative.ext
-  rw [rationalCyclotomicPadicReduction_apply, hσ]
-  exact ha
 
-/-- The closed subgroup cutting out the finite `p^n` cyclotomic
-layer. -/
-noncomputable def rationalCyclotomicPadicLevelKernel
-    (p : Nat.Primes) (n : ℕ) :
-    ClosedSubgroup
-      (rationalCyclotomicZHatField ≃ₐ[ℚ]
-        rationalCyclotomicZHatField) where
-  toSubgroup :=
-    (rationalCyclotomicPadicReduction p n).ker
-  isClosed' := by
-    let c :=
-      fun σ :
-          rationalCyclotomicZHatField ≃ₐ[ℚ]
-            rationalCyclotomicZHatField =>
-        Multiplicative.toAdd
-          (rationalCyclotomicPadicCoordinate p σ)
-    have hc : Continuous c :=
-      continuous_toAdd.comp
-        (rationalCyclotomicPadicCoordinate p).continuous_toFun
-    have hspan :
-        IsClosed
-          ((Ideal.span
-            ({(p.1 : ℤ_[p.1]) ^ n} :
-              Set ℤ_[p.1]) :
-            Ideal ℤ_[p.1]) :
-            Set ℤ_[p.1]) := by
-      have hset :
-          ((Ideal.span
-              ({(p.1 : ℤ_[p.1]) ^ n} :
-                Set ℤ_[p.1]) :
-              Ideal ℤ_[p.1]) :
-              Set ℤ_[p.1]) =
-            Metric.closedBall 0
-              ((p.1 : ℝ) ^ (-n : ℤ)) := by
-        ext x
-        change
-          x ∈
-              (Ideal.span
-                ({(p.1 : ℤ_[p.1]) ^ n} : Set ℤ_[p.1]) :
-                Ideal ℤ_[p.1]) ↔
-            dist x 0 ≤ (p.1 : ℝ) ^ (-n : ℤ)
-        rw [dist_zero_right,
-          PadicInt.norm_le_pow_iff_mem_span_pow]
-      rw [hset]
-      exact Metric.isClosed_closedBall
-    change
-      IsClosed
-        {σ |
-          rationalCyclotomicPadicReduction p n σ = 1}
-    rw [show
-      {σ |
-        rationalCyclotomicPadicReduction p n σ = 1} =
-          c ⁻¹'
-            ((Ideal.span
-              ({(p.1 : ℤ_[p.1]) ^ n} :
-                Set ℤ_[p.1]) :
-              Ideal ℤ_[p.1]) :
-              Set ℤ_[p.1]) by
-      ext σ
-      change
-        PadicInt.toZModPow n (c σ) = 0 ↔
-          c σ ∈
-            (Ideal.span
-              ({(p.1 : ℤ_[p.1]) ^ n} :
-                Set ℤ_[p.1]) :
-              Ideal ℤ_[p.1])
-      rw [← PadicInt.ker_toZModPow n,
-        RingHom.mem_ker]]
-    exact hspan.preimage hc
 
-/-- The finite-coordinate kernel is normal because it is the kernel of
-a group homomorphism. -/
-instance rationalCyclotomicPadicLevelKernel_normal
-    (p : Nat.Primes) (n : ℕ) :
-    (rationalCyclotomicPadicLevelKernel p n).toSubgroup.Normal := by
-  change (rationalCyclotomicPadicReduction p n).ker.Normal
-  exact MonoidHom.normal_ker _
 
-/-- The finite-coordinate kernel is open in the cyclotomic Galois
-group. -/
-theorem rationalCyclotomicPadicLevelKernel_isOpen
-    (p : Nat.Primes) (n : ℕ) :
-    IsOpen
-      ((rationalCyclotomicPadicLevelKernel p n :
-          Subgroup
-            (rationalCyclotomicZHatField ≃ₐ[ℚ]
-              rationalCyclotomicZHatField)) :
-        Set
-          (rationalCyclotomicZHatField ≃ₐ[ℚ]
-            rationalCyclotomicZHatField)) := by
-  let q :=
-    rationalCyclotomicPadicReduction p n
-  let :
-      Finite
-        ((rationalCyclotomicZHatField ≃ₐ[ℚ]
-            rationalCyclotomicZHatField) ⧸ q.ker) :=
-    Finite.of_injective
-      (QuotientGroup.quotientKerEquivOfSurjective
-        q
-        (rationalCyclotomicPadicReduction_surjective p n))
-      (QuotientGroup.quotientKerEquivOfSurjective
-        q
-        (rationalCyclotomicPadicReduction_surjective p n)).injective
-  let : q.ker.FiniteIndex :=
-    Subgroup.finiteIndex_of_finite_quotient
-  change
-    IsOpen
-      (q.ker :
-        Set
-          (rationalCyclotomicZHatField ≃ₐ[ℚ]
-            rationalCyclotomicZHatField))
-  exact
-    q.ker.isOpen_of_isClosed_of_finiteIndex
-      (rationalCyclotomicPadicLevelKernel p n).isClosed'
 
-/-- The genuine finite cyclotomic `p^n` layer inside the actual
-cyclotomic `ZHat`-extension. -/
-noncomputable abbrev rationalCyclotomicPadicFiniteLevel
-    (p : Nat.Primes) (n : ℕ) :
-    FiniteGaloisIntermediateField
-      ℚ rationalCyclotomicZHatField where
-  toIntermediateField :=
-    IntermediateField.fixedField
-      (rationalCyclotomicPadicLevelKernel p n).toSubgroup
-  finiteDimensional := by
-    apply
-      (InfiniteGalois.isOpen_iff_finite
-        (IntermediateField.fixedField
-          (rationalCyclotomicPadicLevelKernel p n).toSubgroup)).mp
-    rw [
-      InfiniteGalois.fixingSubgroup_fixedField
-        (rationalCyclotomicPadicLevelKernel p n)]
-    exact
-      rationalCyclotomicPadicLevelKernel_isOpen p n
-  isGalois := by infer_instance
 
-/-- The bundled finite `p^n` layer exposes its constructed Galois
-instance across the opaque field definition. -/
-noncomputable instance rationalCyclotomicPadicFiniteLevel_isGalois
-    (p : Nat.Primes) (n : ℕ) :
-    IsGalois ℚ (rationalCyclotomicPadicFiniteLevel p n) :=
-  (rationalCyclotomicPadicFiniteLevel p n).isGalois
 
-/-- The canonical algebra maps through the finite `p^n` layer form a
-scalar tower. -/
-instance rationalCyclotomicPadicFiniteLevel_scalarTower
-    (p : Nat.Primes) (n : ℕ) :
-    IsScalarTower ℚ (rationalCyclotomicPadicFiniteLevel p n)
-      rationalCyclotomicZHatField := by
-  apply IsScalarTower.of_algebraMap_eq'
-  rfl
 
-/-- The Galois group of the finite `p^n` cyclotomic level is the
-actual cyclic group `ZMod (p^n)`. -/
-noncomputable def
-    rationalCyclotomicPadicFiniteLevelGalEquivZMod
-    (p : Nat.Primes) (n : ℕ) :
-    (rationalCyclotomicPadicFiniteLevel p n ≃ₐ[ℚ]
-        rationalCyclotomicPadicFiniteLevel p n) ≃*
-      Multiplicative (ZMod (p.1 ^ n)) :=
-  (InfiniteGalois.normalAutEquivQuotient
-      (rationalCyclotomicPadicLevelKernel p n)).symm.trans
-    (QuotientGroup.quotientKerEquivOfSurjective
-      (rationalCyclotomicPadicReduction p n)
-      (rationalCyclotomicPadicReduction_surjective p n))
 
-/-- Restriction to a finite `p^n` level is exactly reduction of the
-genuine `p`-adic cyclotomic coordinate modulo `p^n`. -/
-theorem
-    rationalCyclotomicPadicFiniteLevelGalEquivZMod_restrict
-    (p : Nat.Primes) (n : ℕ)
-    (σ :
-      rationalCyclotomicZHatField ≃ₐ[ℚ]
-        rationalCyclotomicZHatField) :
-    rationalCyclotomicPadicFiniteLevelGalEquivZMod p n
-        (AlgEquiv.restrictNormalHom
-          (rationalCyclotomicPadicFiniteLevel p n) σ) =
-      rationalCyclotomicPadicReduction p n σ := by
-  let e :=
-    InfiniteGalois.normalAutEquivQuotient
-      (rationalCyclotomicPadicLevelKernel p n)
-  let q :=
-    QuotientGroup.quotientKerEquivOfSurjective
-      (rationalCyclotomicPadicReduction p n)
-      (rationalCyclotomicPadicReduction_surjective p n)
-  change
-    q
-        (e.symm (e σ)) =
-      rationalCyclotomicPadicReduction p n σ
-  rw [e.symm_apply_apply]
-  rfl
 
-/-- The Galois group of the base-changed finite `p`-primary
-cyclotomic layer, embedded in its genuine `ZMod (p^n)` coordinate. -/
-noncomputable def
-    numberFieldCyclotomicPadicFiniteCompositumCoordinate
-    (F : Type*) [Field F] [NumberField F]
-    (p : Nat.Primes) (n : ℕ) :
-    Gal(numberFieldCyclotomicZHatFiniteCompositum F
-          (rationalCyclotomicPadicFiniteLevel p n) / F) →*
-      Multiplicative (ZMod (p.1 ^ n)) :=
-  (rationalCyclotomicPadicFiniteLevelGalEquivZMod
-      p n).toMonoidHom.comp
-    (numberFieldCyclotomicZHatFiniteCompositumRestriction
-      (F := F)
-      (rationalCyclotomicPadicFiniteLevel p n))
 
-/-- The finite base-changed cyclotomic coordinate is injective.  Thus
-the actual compositum Galois group is realized as a subgroup of the
-cyclic `p`-power coordinate, with no abstract replacement field. -/
-theorem
-    numberFieldCyclotomicPadicFiniteCompositumCoordinate_injective
-    (F : Type*) [Field F] [NumberField F]
-    (p : Nat.Primes) (n : ℕ) :
-    Function.Injective
-      (numberFieldCyclotomicPadicFiniteCompositumCoordinate
-        F p n) :=
-  (rationalCyclotomicPadicFiniteLevelGalEquivZMod p n).injective.comp
-    (numberFieldCyclotomicZHatFiniteCompositumRestriction_injective
-      (F := F)
-      (rationalCyclotomicPadicFiniteLevel p n))
 
-/-- Every actual finite base-changed `p`-primary cyclotomic layer has
-cyclic Galois group.  The statement is about the genuine compositum
-over `F`: cyclicity follows by embedding its Galois group into the
-standard cyclic `ZMod (p^n)` coordinate. -/
-theorem
-    numberFieldCyclotomicPadicFiniteCompositum_isCyclic
-    (F : Type*) [Field F] [NumberField F]
-    (p : Nat.Primes) (n : ℕ) :
-    IsCyclic
-      (Gal(numberFieldCyclotomicZHatFiniteCompositum F
-        (rationalCyclotomicPadicFiniteLevel p n) / F)) :=
-  isCyclic_of_injective
-    (numberFieldCyclotomicPadicFiniteCompositumCoordinate
-      F p n)
-    (numberFieldCyclotomicPadicFiniteCompositumCoordinate_injective
-      F p n)
 
-/-- The degree of the genuine finite `p^n` cyclotomic level is
-exactly `p^n`. -/
-theorem rationalCyclotomicPadicFiniteLevel_finrank
-    (p : Nat.Primes) (n : ℕ) :
-    Module.finrank ℚ
-        (rationalCyclotomicPadicFiniteLevel p n) =
-      p.1 ^ n := by
-  let :
-      FiniteDimensional ℚ
-        (rationalCyclotomicPadicFiniteLevel p n).toIntermediateField :=
-    (rationalCyclotomicPadicFiniteLevel p n).finiteDimensional
-  calc
-    Module.finrank ℚ
-        (rationalCyclotomicPadicFiniteLevel p n) =
-        Nat.card
-          (rationalCyclotomicPadicFiniteLevel p n ≃ₐ[ℚ]
-            rationalCyclotomicPadicFiniteLevel p n) :=
-      (IsGalois.card_aut_eq_finrank
-        ℚ (rationalCyclotomicPadicFiniteLevel p n)).symm
-    _ =
-        Nat.card
-          (Multiplicative (ZMod (p.1 ^ n))) :=
-      Nat.card_congr
-        (rationalCyclotomicPadicFiniteLevelGalEquivZMod
-          p n).toEquiv
-    _ = Nat.card (ZMod (p.1 ^ n)) :=
-      Nat.card_congr Multiplicative.toAdd
-    _ = p.1 ^ n := Nat.card_zmod (p.1 ^ n)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end Reciprocity
 end GlobalClassFieldTheory

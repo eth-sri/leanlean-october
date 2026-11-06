@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Ramification.HilbertRamification.UniqueExtensionIntegralClosure
 public import Mathlib.RingTheory.DiscreteValuationRing.TFAE
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -41,19 +44,21 @@ variable {base : ValuationTheory.DiscreteValuationField.DVF.{u, v} K}
 variable {target : ValuationTheory.DiscreteValuationField.DVF.{w, x} L}
 variable [base.valuation.HasExtension target.valuation]
 
+section
+variable (H : Subgroup Gal(L/K))
+include H
 /-- The actual fixed field of a subgroup. -/
-abbrev fixedFieldDVF (H : Subgroup Gal(L/K)) :=
+abbrev fixedFieldDVF   :=
   IntermediateField.fixedField H
 
 /-- Restriction of the chosen top valuation ring to the actual fixed field. -/
-def fixedFieldValuationSubringDVF (H : Subgroup Gal(L/K)) :
-    ValuationSubring (fixedFieldDVF (K := K) H) :=
+def fixedFieldValuationSubringDVF    :=
   target.valuation.valuationSubring.comap
     (algebraMap (fixedFieldDVF (K := K) H) L)
 
 /-- States the theorem `mem_fixedFieldValuationSubringDVF_iff`. -/
 @[simp] theorem mem_fixedFieldValuationSubringDVF_iff
-    (H : Subgroup Gal(L/K)) (a : fixedFieldDVF (K := K) H) :
+      (a : fixedFieldDVF (K := K) H) :
     a ∈ fixedFieldValuationSubringDVF (K := K) (target := target) H ↔
       algebraMap (fixedFieldDVF (K := K) H) L a ∈
         target.valuation.valuationSubring :=
@@ -62,7 +67,7 @@ def fixedFieldValuationSubringDVF (H : Subgroup Gal(L/K)) :
 /-- Inclusion of the restricted fixed-field valuation ring into the top
 valuation ring. -/
 def fixedFieldValuationSubringDVFToTarget
-    (H : Subgroup Gal(L/K)) :
+      :
     fixedFieldValuationSubringDVF (K := K) (target := target) H →+*
       target.valuationSubring :=
   (algebraMap (fixedFieldDVF (K := K) H) L).restrict
@@ -71,7 +76,7 @@ def fixedFieldValuationSubringDVFToTarget
 
 /-- States the theorem `fixedFieldValuationSubringDVFToTarget_apply_coe`. -/
 @[simp] theorem fixedFieldValuationSubringDVFToTarget_apply_coe
-    (H : Subgroup Gal(L/K))
+     
     (a : fixedFieldValuationSubringDVF (K := K) (target := target) H) :
     ((fixedFieldValuationSubringDVFToTarget
       (K := K) (target := target) H a : target.valuationSubring) : L) =
@@ -80,7 +85,7 @@ def fixedFieldValuationSubringDVFToTarget
 
 /-- States the theorem `fixedFieldValuationSubringDVFToTarget_injective`. -/
 theorem fixedFieldValuationSubringDVFToTarget_injective
-    (H : Subgroup Gal(L/K)) :
+      :
     Function.Injective
       (fixedFieldValuationSubringDVFToTarget
         (K := K) (target := target) H) := by
@@ -92,16 +97,18 @@ theorem fixedFieldValuationSubringDVFToTarget_injective
 /-- The base valuation-ring map into the restricted valuation ring of the
 fixed field. -/
 def baseToFixedFieldValuationSubringDVF
-    (H : Subgroup Gal(L/K)) :
+      :
     base.valuationSubring →+*
       fixedFieldValuationSubringDVF (K := K) (target := target) H :=
   (algebraMap K (fixedFieldDVF (K := K) H)).restrict
     base.valuation.valuationSubring
     (fixedFieldValuationSubringDVF (K := K) (target := target) H)
     (fun a _ha => by
-      change target.valuation (algebraMap K L (a : K)) ≤ 1
+      change target.valuation (algebraMap K L a) ≤ 1
       exact (_root_.Valuation.HasExtension.val_map_le_one_iff
-        (vR := base.valuation) (vA := target.valuation) (a : K)).2 _ha)
+        (vR := base.valuation) (vA := target.valuation) a).2 _ha)
+end
+
 
 /-- Provides the instance `instAlgebraBaseFixedFieldValuationSubringDVF`. -/
 noncomputable instance instAlgebraBaseFixedFieldValuationSubringDVF
@@ -111,31 +118,33 @@ noncomputable instance instAlgebraBaseFixedFieldValuationSubringDVF
   (baseToFixedFieldValuationSubringDVF
     (base := base) (target := target) H).toAlgebra
 
+section
+variable (H : Subgroup Gal(L/K))
+include H
 /-- The restricted valuation on the fixed field extends the base valuation. -/
 theorem base_hasExtension_fixedFieldValuationSubringDVF
-    (H : Subgroup Gal(L/K)) :
+      :
     base.valuation.HasExtension
       (fixedFieldValuationSubringDVF
         (K := K) (target := target) H).valuation := by
   apply _root_.Valuation.HasExtension.ofComapInteger
   ext a
   simp [ValuationSubring.integer_valuation, _root_.Valuation.mem_integer_iff]
-  exact _root_.Valuation.HasExtension.val_map_le_one_iff
-    (vR := base.valuation) (vA := target.valuation) a
+  apply _root_.Valuation.HasExtension.val_map_le_one_iff
 
-/-- Provides the instance `instBaseHasExtensionFixedFieldValuationSubringDVF`. -/
-instance instBaseHasExtensionFixedFieldValuationSubringDVF
-    (H : Subgroup Gal(L/K)) :
-    base.valuation.HasExtension
-      (fixedFieldValuationSubringDVF
-        (K := K) (target := target) H).valuation :=
-  base_hasExtension_fixedFieldValuationSubringDVF
-    (base := base) (target := target) H
+
+
+
+
+
+
+
+
 
 /-- The inclusion of valuation rings, as an algebra homomorphism over the
 base valuation ring. -/
 def fixedFieldValuationSubringDVFToTargetAlgHom
-    (H : Subgroup Gal(L/K)) :
+      :
     fixedFieldValuationSubringDVF (K := K) (target := target) H →ₐ[
       base.valuationSubring] target.valuationSubring where
   toRingHom := fixedFieldValuationSubringDVFToTarget
@@ -146,25 +155,33 @@ def fixedFieldValuationSubringDVFToTargetAlgHom
 
 /-- States the theorem `fixedFieldValuationSubringDVFToTargetAlgHom_injective`. -/
 theorem fixedFieldValuationSubringDVFToTargetAlgHom_injective
-    (H : Subgroup Gal(L/K)) :
+      :
     Function.Injective
       (fixedFieldValuationSubringDVFToTargetAlgHom
         (K := K) (base := base) (target := target) H) :=
   fixedFieldValuationSubringDVFToTarget_injective
     (K := K) (target := target) H
+end
+
 
 variable [FiniteDimensional K L]
 variable [IsGalois K L]
 
-/-- The restricted fixed-field valuation ring is integral over the base
-valuation ring. -/
-theorem fixedFieldValuationSubringDVF_isIntegral
-    (huniq :
+section
+variable (huniq :
       HasUniqueValuationExtension.{u, v, w, x, x}
         base target)
-    (H : Subgroup Gal(L/K)) :
+    (H : Subgroup Gal(L/K))
+include huniq H
+/-- The restricted fixed-field valuation ring is integral over the base
+valuation ring. -/
+
+local notation:max "current_fixedFieldValuationSubringDVF" => fixedFieldValuationSubringDVF (K := K) (target := target)
+
+theorem fixedFieldValuationSubringDVF_isIntegral
+      :
     Algebra.IsIntegral base.valuationSubring
-      (fixedFieldValuationSubringDVF (K := K) (target := target) H) := by
+      (current_fixedFieldValuationSubringDVF H) := by
   let : Algebra.IsIntegral base.valuationSubring target.valuationSubring :=
     target_valuationSubring_isIntegral_of_uniqueExtension
       (base := base) (target := target) huniq
@@ -177,20 +194,16 @@ theorem fixedFieldValuationSubringDVF_isIntegral
 /-- The restricted fixed-field valuation ring is the actual integral closure
 of the base valuation ring in the fixed field. -/
 theorem fixedFieldValuationSubringDVF_isIntegralClosure
-    (huniq :
-      HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) :
+      :
     IsIntegralClosure
-      (fixedFieldValuationSubringDVF (K := K) (target := target) H)
+      (current_fixedFieldValuationSubringDVF H)
       base.valuationSubring (fixedFieldDVF (K := K) H) := by
-  let B := fixedFieldValuationSubringDVF (K := K) (target := target) H
+  let B := current_fixedFieldValuationSubringDVF H
   let M := fixedFieldDVF (K := K) H
   let : Algebra.IsIntegral base.valuationSubring B :=
     fixedFieldValuationSubringDVF_isIntegral
       (base := base) (target := target) huniq H
-  let hTarget : IsIntegralClosure target.valuationSubring
-      base.valuationSubring L :=
+  let hTarget  :=
     target_valuationSubring_isIntegralClosure_of_uniqueExtension
       (base := base) (target := target) huniq
   let : IsScalarTower base.valuationSubring M L := by
@@ -220,23 +233,20 @@ theorem fixedFieldValuationSubringDVF_isIntegralClosure
 
 /-- Module finiteness of the restricted integral closure. -/
 theorem fixedFieldValuationSubringDVF_moduleFinite
-    (huniq :
-      HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) [H.Normal] :
+      [H.Normal] :
     Module.Finite base.valuationSubring
-      (fixedFieldValuationSubringDVF (K := K) (target := target) H) := by
-  let : IsNoetherianRing base.valuationSubring :=
+      (current_fixedFieldValuationSubringDVF H) := by
+  let  :=
     base.valuationSubring_isNoetherianRing
   let : IsIntegralClosure
-      (fixedFieldValuationSubringDVF (K := K) (target := target) H)
+      (current_fixedFieldValuationSubringDVF H)
       base.valuationSubring (fixedFieldDVF (K := K) H) :=
     fixedFieldValuationSubringDVF_isIntegralClosure
       (base := base) (target := target) huniq H
-  let : IsFractionRing base.valuationSubring K :=
+  let  :=
     base.valuationSubring_isFractionRing
   let : IsScalarTower base.valuationSubring
-      (fixedFieldValuationSubringDVF (K := K) (target := target) H)
+      (current_fixedFieldValuationSubringDVF H)
       (fixedFieldDVF (K := K) H) := by
     apply IsScalarTower.of_algebraMap_eq; intro; rfl
   exact IsIntegralClosure.finite base.valuationSubring K (fixedFieldDVF (K := K) H) _
@@ -245,17 +255,14 @@ theorem fixedFieldValuationSubringDVF_moduleFinite
 DVR.  This is an algebraic consequence of module finiteness and does not use
 completeness. -/
 theorem fixedFieldValuationSubringDVF_isDiscreteValuationRing
-    (huniq :
-      HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) [H.Normal] :
+      [H.Normal] :
     IsDiscreteValuationRing
-      (fixedFieldValuationSubringDVF (K := K) (target := target) H) := by
-  let B := fixedFieldValuationSubringDVF (K := K) (target := target) H
+      (current_fixedFieldValuationSubringDVF H) := by
+  let B := current_fixedFieldValuationSubringDVF H
   let : Module.Finite base.valuationSubring B :=
     fixedFieldValuationSubringDVF_moduleFinite
       (base := base) (target := target) huniq H
-  let : IsNoetherianRing base.valuationSubring :=
+  let  :=
     base.valuationSubring_isNoetherianRing
   let : IsNoetherianRing B :=
     IsNoetherianRing.of_finite base.valuationSubring B
@@ -273,6 +280,8 @@ theorem fixedFieldValuationSubringDVF_isDiscreteValuationRing
       (isField_of_isIntegral_of_isField hinj hB)
   exact ((IsDiscreteValuationRing.TFAE B hnotField).out 2 1).mp
     (inferInstance : ValuationRing B)
+end
+
 
 /-- The quotient automorphism on the fixed field commutes with inclusion into
 the top field. -/
@@ -286,16 +295,22 @@ theorem algebraMap_normalAutEquivQuotient_apply_dvf
   exact AlgEquiv.restrictNormal_commutes sigma
     (fixedFieldDVF (K := K) H) a
 
-/-- Restriction of the quotient automorphism to the actual fixed-field
-valuation ring. -/
-def fixedFieldValuationSubringLiftedAutDVF
-    (huniq :
+section
+variable (huniq :
       HasUniqueValuationExtension.{u, v, w, x, x}
         base target)
     (H : Subgroup Gal(L/K)) [H.Normal]
+include huniq H
+/-- Restriction of the quotient automorphism to the actual fixed-field
+valuation ring. -/
+
+local notation:max "current_fixedFieldValuationSubringDVFLocal" => fixedFieldValuationSubringDVF (K := K) (target := target)
+
+def fixedFieldValuationSubringLiftedAutDVF
+     
     (sigma : Gal(L/K)) :
-    fixedFieldValuationSubringDVF (K := K) (target := target) H ≃+*
-      fixedFieldValuationSubringDVF (K := K) (target := target) H where
+    current_fixedFieldValuationSubringDVFLocal H ≃+*
+      current_fixedFieldValuationSubringDVFLocal H where
   toFun a :=
     ⟨IsGalois.normalAutEquivQuotient H sigma (a : fixedFieldDVF (K := K) H), by
       rw [mem_fixedFieldValuationSubringDVF_iff,
@@ -334,12 +349,9 @@ def fixedFieldValuationSubringLiftedAutDVF
 
 /-- States the theorem `fixedFieldValuationSubringDVFToTarget_aut_apply`. -/
 @[simp] theorem fixedFieldValuationSubringDVFToTarget_aut_apply
-    (huniq :
-      HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) [H.Normal]
+     
     (sigma : Gal(L/K))
-    (a : fixedFieldValuationSubringDVF (K := K) (target := target) H) :
+    (a : current_fixedFieldValuationSubringDVFLocal H) :
     fixedFieldValuationSubringDVFToTarget
         (K := K) (target := target) H
         (fixedFieldValuationSubringLiftedAutDVF
@@ -349,30 +361,23 @@ def fixedFieldValuationSubringLiftedAutDVF
         (fixedFieldValuationSubringDVFToTarget
           (K := K) (target := target) H a) := by
   apply Subtype.ext
-  exact algebraMap_normalAutEquivQuotient_apply_dvf
-    (K := K) H sigma (a : fixedFieldDVF (K := K) H)
+  apply algebraMap_normalAutEquivQuotient_apply_dvf
 
 /-- Every automorphism of the fixed field preserves its restricted
 valuation ring.  Surjectivity in the finite Galois correspondence is used
 only to prove preservation; the automorphism appearing in the statement is
 an automorphism of `L ^ H` itself. -/
 theorem fixedFieldDVF_aut_mem_valuationSubring_iff
-    (huniq :
-      HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) [H.Normal]
+     
     (q : Gal((fixedFieldDVF (K := K) H)/K))
     (a : fixedFieldDVF (K := K) H) :
-    a ∈ fixedFieldValuationSubringDVF (K := K) (target := target) H ↔
-      q a ∈ fixedFieldValuationSubringDVF (K := K) (target := target) H := by
-  let qbar : Gal(L/K) ⧸ H :=
+    a ∈ current_fixedFieldValuationSubringDVFLocal H ↔
+      q a ∈ current_fixedFieldValuationSubringDVFLocal H := by
+  let qbar  :=
     (IsGalois.normalAutEquivQuotient H).symm q
   obtain ⟨sigma, hsigma⟩ := QuotientGroup.mk'_surjective H qbar
   have hq : IsGalois.normalAutEquivQuotient H sigma = q := by
-    change (IsGalois.normalAutEquivQuotient H)
-      ((QuotientGroup.mk' H) sigma) = q
-    rw [hsigma]
-    exact (IsGalois.normalAutEquivQuotient H).apply_symm_apply q
+    aesop
   rw [mem_fixedFieldValuationSubringDVF_iff,
     mem_fixedFieldValuationSubringDVF_iff]
   rw [← hq, algebraMap_normalAutEquivQuotient_apply_dvf]
@@ -383,13 +388,10 @@ theorem fixedFieldDVF_aut_mem_valuationSubring_iff
 /-- The canonical action of the fixed-field Galois group on its restricted
 valuation ring. -/
 def fixedFieldValuationSubringAutDVF
-    (huniq :
-      HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) [H.Normal]
+     
     (q : Gal((fixedFieldDVF (K := K) H)/K)) :
-    fixedFieldValuationSubringDVF (K := K) (target := target) H ≃+*
-      fixedFieldValuationSubringDVF (K := K) (target := target) H where
+    current_fixedFieldValuationSubringDVFLocal H ≃+*
+      current_fixedFieldValuationSubringDVFLocal H where
   toFun a := ⟨q (a : fixedFieldDVF (K := K) H),
     (fixedFieldDVF_aut_mem_valuationSubring_iff
       (base := base) (target := target) huniq H q _).1 a.property⟩
@@ -403,26 +405,20 @@ def fixedFieldValuationSubringAutDVF
 
 /-- States the theorem `fixedFieldValuationSubringAutDVF_apply_coe`. -/
 @[simp] theorem fixedFieldValuationSubringAutDVF_apply_coe
-    (huniq :
-      HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) [H.Normal]
+     
     (q : Gal((fixedFieldDVF (K := K) H)/K))
-    (a : fixedFieldValuationSubringDVF (K := K) (target := target) H) :
+    (a : current_fixedFieldValuationSubringDVFLocal H) :
     ((fixedFieldValuationSubringAutDVF
       (base := base) (target := target) huniq H q a :
-        fixedFieldValuationSubringDVF (K := K) (target := target) H) :
+        current_fixedFieldValuationSubringDVFLocal H) :
       fixedFieldDVF (K := K) H) = q (a : fixedFieldDVF (K := K) H) :=
   rfl
 
 /-- States the theorem `fixedFieldValuationSubringAutDVF_mul_apply`. -/
 @[simp] theorem fixedFieldValuationSubringAutDVF_mul_apply
-    (huniq :
-      HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) [H.Normal]
+     
     (q r : Gal((fixedFieldDVF (K := K) H)/K))
-    (a : fixedFieldValuationSubringDVF (K := K) (target := target) H) :
+    (a : current_fixedFieldValuationSubringDVFLocal H) :
     fixedFieldValuationSubringAutDVF
         (base := base) (target := target) huniq H (q * r) a =
       fixedFieldValuationSubringAutDVF
@@ -435,12 +431,9 @@ def fixedFieldValuationSubringAutDVF
 /-- The fixed-field action agrees with the lifted action obtained from any
 chosen lift in the top Galois group. -/
 theorem fixedFieldValuationSubringAutDVF_normalAutEquivQuotient
-    (huniq :
-      HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) [H.Normal]
+     
     (sigma : Gal(L/K))
-    (a : fixedFieldValuationSubringDVF (K := K) (target := target) H) :
+    (a : current_fixedFieldValuationSubringDVFLocal H) :
     fixedFieldValuationSubringAutDVF
         (base := base) (target := target) huniq H
         (IsGalois.normalAutEquivQuotient H sigma) a =
@@ -448,6 +441,8 @@ theorem fixedFieldValuationSubringAutDVF_normalAutEquivQuotient
         (base := base) (target := target) huniq H sigma a := by
   ext
   rfl
+end
+
 
 end Higher
 end RamificationTheory.HilbertRamification

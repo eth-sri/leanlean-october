@@ -208,53 +208,48 @@ theorem complexUnits_haar_integral_density (ν : Measure ℂˣ) [ν.IsHaarMeasur
   continuous_toFun := (Homeomorph.prodAssoc M N P).continuous
   continuous_invFun := (Homeomorph.prodAssoc M N P).symm.continuous
 
-def rawCompletionIsolation {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (v : InfinitePlace F) :
+section
+variable {F : Type} [Field F] [NumberField F]
+    (S : Finset (HeightOneSpectrum (𝓞 F))) (v : InfinitePlace F)
+include F S v
+def rawCompletionIsolation   :
     (SLocalProduct F S)ˣ ≃ₜ* v.Completionˣ × RemainingCoordinates S v :=
   ((rawProdUnits _ _).trans
     (rawProdCongr ContinuousMulEquiv.piUnits ContinuousMulEquiv.piUnits)).trans
       ((rawProdCongr (rawSplitAt (fun w : InfinitePlace F => w.Completionˣ) v)
         (ContinuousMulEquiv.refl _)).trans (rawAssoc _ _ _))
-@[simp] theorem rawCompletionIsolation_fst {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (v : InfinitePlace F)
+@[simp] theorem rawCompletionIsolation_fst  
     (y : (SLocalProduct F S)ˣ) :
     ((rawCompletionIsolation S v y).1).val = y.val.1 v := rfl
-@[simp] theorem rawCompletionIsolation_remaining_arch {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (v : InfinitePlace F)
+@[simp] theorem rawCompletionIsolation_remaining_arch  
     (y : (SLocalProduct F S)ˣ) (w : {w : InfinitePlace F // w ≠ v}) :
     (((rawCompletionIsolation S v y).2).1 w).val = y.val.1 w := rfl
-@[simp] theorem rawCompletionIsolation_remaining_finite {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (v : InfinitePlace F)
+@[simp] theorem rawCompletionIsolation_remaining_finite  
     (y : (SLocalProduct F S)ˣ) (w : S) :
     (((rawCompletionIsolation S v y).2).2 w).val = y.val.2 w := rfl
 
-def remainingModulus {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (v : InfinitePlace F)
+def remainingModulus  
     (p : RemainingCoordinates S v) : ℝ :=
   (∏ w : {w : InfinitePlace F // w ≠ v}, ‖(p.1 w).val‖ ^ 2) *
     ∏ w : S, ‖(p.2 w).val‖
 
-theorem remainingModulus_pos {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (v : InfinitePlace F)
+theorem remainingModulus_pos  
     (p : RemainingCoordinates S v) : 0 < remainingModulus S v p := by
   apply mul_pos
   · exact Finset.prod_pos fun w _ => pow_pos (Units.norm_pos (p.1 w)) _
   · exact Finset.prod_pos fun w _ => Units.norm_pos (p.2 w)
 
-theorem remainingModulus_continuous {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (v : InfinitePlace F) :
+theorem remainingModulus_continuous   :
     Continuous (remainingModulus S v) := by
   unfold remainingModulus
   fun_prop
 
-theorem remainingLogModulus_measurable {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (v : InfinitePlace F) :
+theorem remainingLogModulus_measurable   :
     Measurable (fun p => Real.log (remainingModulus S v p)) := by
   letI : BorelSpace (RemainingCoordinates S v) := ⟨rfl⟩
   exact Real.measurable_log.comp (remainingModulus_continuous S v).measurable
 
-theorem rawCompletionIsolation_modulus {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (v : InfinitePlace F)
+theorem rawCompletionIsolation_modulus  
     (y : (SLocalProduct F S)ˣ) :
     ProbeWeight.modulus F S y = ‖y.val.1 v‖ ^ 2 *
       remainingModulus S v (rawCompletionIsolation S v y).2 := by
@@ -267,14 +262,15 @@ theorem rawCompletionIsolation_modulus {F : Type} [Field F] [NumberField F]
   rw [he]
   ring
 
-theorem rawCompletionIsolation_log_modulus {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (v : InfinitePlace F)
+theorem rawCompletionIsolation_log_modulus  
     (y : (SLocalProduct F S)ˣ) :
     Real.log (ProbeWeight.modulus F S y) = Real.log (‖y.val.1 v‖ ^ 2) +
       Real.log (remainingModulus S v (rawCompletionIsolation S v y).2) := by
   rw [rawCompletionIsolation_modulus, Real.log_mul]
   · exact pow_ne_zero _ (Units.norm_pos (rawCompletionIsolation S v y).1).ne'
   · exact (remainingModulus_pos S v _).ne'
+end
+
 
 theorem isolate_integral_of_scaled_product
     {G X Y : Type*} [MeasurableSpace G] [MeasurableSpace X] [MeasurableSpace Y]
@@ -328,23 +324,26 @@ private lemma fieldUnitsBorel {K : Type*} [Field K] [TopologicalSpace K]
   change MeasurableSpace.comap Units.val ‹MeasurableSpace K› = borel Kˣ
   rw [BorelSpace.measurable_eq (α := K), Units.isEmbedding_val₀.isInducing.eq_induced,
     borel_comap]⟩
-def realCompletionUnitEquiv {F : Type} [Field F] [NumberField F]
-    (v : InfinitePlace F) (hv : v.IsReal) : v.Completionˣ ≃ₜ* ℝˣ :=
-  Units.mapContinuousMulEquiv {
-    toMulEquiv := (InfinitePlace.Completion.ringEquivRealOfIsReal hv).toMulEquiv
-    continuous_toFun := (InfinitePlace.Completion.isometryEquivRealOfIsReal hv).continuous
-    continuous_invFun := (InfinitePlace.Completion.isometryEquivRealOfIsReal hv).symm.continuous }
-def complexCompletionUnitEquiv {F : Type} [Field F] [NumberField F]
-    (v : InfinitePlace F) (hv : v.IsComplex) : v.Completionˣ ≃ₜ* ℂˣ :=
-  Units.mapContinuousMulEquiv {
-    toMulEquiv := (InfinitePlace.Completion.ringEquivComplexOfIsComplex hv).toMulEquiv
-    continuous_toFun := (InfinitePlace.Completion.isometryEquivComplexOfIsComplex hv).continuous
-    continuous_invFun := (InfinitePlace.Completion.isometryEquivComplexOfIsComplex hv).symm.continuous }
+
+
+
+
+
+
+
+
+
+
+
+
 
 local instance {F : Type} [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (𝓞 F))) : MeasurableSpace (SLocalProduct F S) := borel _
-private lemma rawUnitsBorel {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) :
+section
+variable {F : Type} [Field F] [NumberField F]
+    (S : Finset (HeightOneSpectrum (𝓞 F)))
+include F S
+private lemma rawUnitsBorel   :
     @BorelSpace (SLocalProduct F S)ˣ _
       (@Units.instMeasurableSpace (SLocalProduct F S) _ (borel _)) := by
   have he : Topology.IsEmbedding (Units.val : (SLocalProduct F S)ˣ → SLocalProduct F S) := by
@@ -359,8 +358,7 @@ private lemma rawUnitsBorel {F : Type} [Field F] [NumberField F]
     change MeasurableSpace.comap Units.val (borel (SLocalProduct F S)) = borel _
     rw [he.isInducing.eq_induced, borel_comap]⟩
 
-theorem rawCompletionIsolation_haar {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (v : InfinitePlace F)
+theorem rawCompletionIsolation_haar   (v : InfinitePlace F)
     (ν : @Measure (SLocalProduct F S)ˣ
       (@Units.instMeasurableSpace (SLocalProduct F S) _ (borel _)))
     (hν : @Measure.IsHaarMeasure (SLocalProduct F S)ˣ _ _
@@ -397,29 +395,31 @@ theorem rawCompletionIsolation_haar {F : Type} [Field F] [NumberField F]
   let ν' := ν.map e
   letI : ν'.IsHaarMeasure := e.isHaarMeasure_map ν
   exact ⟨ν'.haarScalarFactor (μ.prod η), Measure.isMulLeftInvariant_eq_smul ν' (μ.prod η)⟩
+end
 
-def completionTensorFactor {F : Type} [Field F] [NumberField F]
-    (gR : {v : InfinitePlace F // v.IsReal} → SchwartzMap ℝ ℂ)
-    (gC : {v : InfinitePlace F // v.IsComplex} → SchwartzMap ℂ ℂ)
-    (v : InfinitePlace F) (x : v.Completion) : ℂ :=
-  if hv : v.IsReal then gR ⟨v, hv⟩ (InfinitePlace.Completion.extensionEmbeddingOfIsReal hv x)
-  else gC ⟨v, v.not_isReal_iff_isComplex.mp hv⟩ (InfinitePlace.Completion.extensionEmbedding v x)
 
-@[simp] theorem completionTensorFactor_real {F : Type} [Field F] [NumberField F]
-    (gR : {v : InfinitePlace F // v.IsReal} → SchwartzMap ℝ ℂ)
-    (gC : {v : InfinitePlace F // v.IsComplex} → SchwartzMap ℂ ℂ)
-    (v : InfinitePlace F) (hv : v.IsReal) (x : v.Completion) :
-    completionTensorFactor gR gC v x =
-      gR ⟨v, hv⟩ (InfinitePlace.Completion.extensionEmbeddingOfIsReal hv x) := by
-  simp [completionTensorFactor, hv]
 
-@[simp] theorem completionTensorFactor_complex {F : Type} [Field F] [NumberField F]
-    (gR : {v : InfinitePlace F // v.IsReal} → SchwartzMap ℝ ℂ)
-    (gC : {v : InfinitePlace F // v.IsComplex} → SchwartzMap ℂ ℂ)
-    (v : InfinitePlace F) (hv : v.IsComplex) (x : v.Completion) :
-    completionTensorFactor gR gC v x =
-      gC ⟨v, hv⟩ (InfinitePlace.Completion.extensionEmbedding v x) := by
-  simp [completionTensorFactor, v.not_isReal_iff_isComplex.mpr hv]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 set_option maxHeartbeats 1000000
 

@@ -20,7 +20,10 @@ variable (D : FixedData S η)
 
 private lemma re_line (v s : ℝ) : ((v : ℂ) + (s : ℂ) * Complex.I).re = v := by simp
 
-private lemma kern_norm (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 0 < Z) (ξ w z : ℂ) :
+section
+variable (u : D.Row) (hu : u.u = 1) (Z : ℝ)
+include u hu Z
+private lemma kern_norm   (hZ : 0 < Z) (ξ w z : ℂ) :
     ‖kern D u Z ξ w z‖ =
       Z ^ (Scales.xExponent / 2 + ξ.re - 1 + Scales.smoothingExponent * z.re + Scales.yExponent * (w.re - 1)) *
         ‖Complex.exp ((ξ + z - 1) ^ 2) * D.M z * D.W1Hat w‖ *
@@ -45,7 +48,7 @@ private lemma kern_norm (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 0 < Z) (ξ w 
   rw [e]
   simp only [norm_mul, norm_inv, hZn, hre] <;> ring
 
-private lemma kern_bound (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) :
+private lemma kern_bound   (hZ : 2 ≤ Z) :
     ∃ Cc : ℝ, 0 ≤ Cc ∧ ∀ ξ w z : ℂ, Scales.rightLine - Scales.contourOffset / 2 ≤ ξ.re → ξ.re ≤ 5 →
       Scales.rightLine - Scales.contourOffset / 2 ≤ w.re → w.re ≤ 5 → z.re = 1 / 6 + Scales.contourOffset →
         ‖kern D u Z ξ w z‖ ≤ Cc * ‖Complex.exp ((ξ + z - 1) ^ 2) * D.M z * D.W1Hat w‖ := by
@@ -111,13 +114,13 @@ private lemma kern_bound (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) :
         exact mul_le_mul_of_nonneg_right hZe hW0
     _ = _ := by ring
 
-theorem kern_differentiableOn (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 0 < Z) :
+theorem kern_differentiableOn   (hZ : 0 < Z) :
     DifferentiableOn ℂ (fun p : Coordinates => kern D u Z p.1 p.2.1 p.2.2)
       ((paddedBox₂ ∩ {p : Coordinates | Scales.rightLine - Scales.contourOffset / 2 < p.1.re} ∩
         {p : Coordinates | 1 / 6 + Scales.contourOffset / 2 < p.2.2.re}) \ {p : Coordinates | p.2.1 = 1}) :=
   PrincipalKernelMajorants.kernel_analytic_paddedBox₂ D u hu Z hZ
 
-theorem kernel_weight_bound_strip (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) :
+theorem kernel_weight_bound_strip   (hZ : 2 ≤ Z) :
     ∃ Cc : ℝ, 0 ≤ Cc ∧ ∀ ξ : ℂ, Scales.rightLine - Scales.contourOffset / 2 ≤ ξ.re → ξ.re ≤ 5 →
       ∀ y : ℝ, Scales.rightLine - Scales.contourOffset / 2 ≤ y → y ≤ 5 → ∀ s t : ℝ,
         ‖kern D u Z ξ ((y : ℂ) + (t : ℂ) * Complex.I)
@@ -127,7 +130,7 @@ theorem kernel_weight_bound_strip (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 �
   refine ⟨Cc, hCc, fun ξ h1 h2 y hy1 hy2 s t => ?_⟩
   exact h ξ _ _ h1 h2 (by rw [re_line]; exact hy1) (by rw [re_line]; exact hy2) (by exact re_line _ _)
 
-theorem kernel_weight_bound (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) :
+theorem kernel_weight_bound   (hZ : 2 ≤ Z) :
     ∃ Cc : ℝ, 0 ≤ Cc ∧ ∃ k : ℝ, 0 ≤ k ∧
       ∀ ξ : ℂ, Scales.rightLine - Scales.contourOffset / 2 ≤ ξ.re → ξ.re ≤ 5 → ∀ s t : ℝ,
         ‖kern D u Z ξ ((Scales.rightLine : ℂ) + (t : ℂ) * Complex.I)
@@ -141,7 +144,7 @@ theorem kernel_weight_bound (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) 
   have := h ξ h1 h2 Scales.rightLine (by rw [hx, hd]; norm_num) (by rw [hx, hd]; norm_num) s t
   simpa using this
 
-theorem kernel_factor_bound (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) :
+theorem kernel_factor_bound   (hZ : 2 ≤ Z) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ ξ w z : ℂ, Scales.rightLine ≤ ξ.re → ξ.re ≤ 4 →
       Scales.rightLine - Scales.contourOffset / 2 ≤ w.re → w.re ≤ 5 → z.re = 1 / 6 + Scales.contourOffset →
         ‖kern D u Z ξ w z‖ ≤
@@ -175,6 +178,8 @@ theorem kernel_factor_bound (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) 
     _ ≤ Cc * ((Real.exp 25 * Real.exp (-(ξ.im + z.im) ^ 2)) * ‖D.M z‖ * ‖D.W1Hat w‖) := by
         gcongr
     _ = _ := by ring
+end
+
 
 end
 

@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.EllipticEquations.DivergenceForm.WeakSolutions
 
 @[expose] public section
+
 
 noncomputable section
 namespace DedekindZetaZeroFree.WeakJets.Raw
@@ -17,12 +20,12 @@ def indexOfCounts {n k : ℕ} (γ : Counts n) (hγ : (∑ i, γ i) ≤ k) : Mult
         Finset.single_le_sum (fun j _ => Nat.zero_le (γ j)) (Finset.mem_univ i)
       omega⟩, hγ⟩
 def jet {n k : ℕ} {B : LocalBall n} (u : IntegerSobolev B k)
-    (γ : Counts n) : BallL2 B :=
+    (γ : Counts n)  :=
   if hγ : (∑ i, γ i) ≤ k then u.derivatives (indexOfCounts γ hγ) else 0
-def coefficientJet {n : ℕ} (γ : Counts n) (f : Space n → ℂ) : Space n → ℂ :=
+def coefficientJet {n : ℕ} (γ : Counts n) (f : Space n → ℂ)  :=
   coordinateDerivativeList ((List.finRange n).flatMap (fun i => List.replicate (γ i) i)) f
 def unitCount {n : ℕ} (i : Fin n) : Counts n := fun j => if j = i then 1 else 0
-def multiChoose {n k : ℕ} (α β : MultiIndex n k) : ℕ :=
+def multiChoose {n k : ℕ} (α β : MultiIndex n k)  :=
   ∏ i, Nat.choose (counts α i) (counts β i)
 
  theorem list_tsupport_subset {n : ℕ} (l : List (Fin n))
@@ -69,11 +72,16 @@ private theorem directions_count {n k : ℕ} (α : MultiIndex n k) (i : Fin n) :
     ← List.sum_toFinset _ (List.nodup_finRange n)]
   simp [Function.comp_def, List.count_replicate, counts]
 
-private theorem counts_index {n k : ℕ} (γ : Counts n) (hγ : (∑ i, γ i) ≤ k) :
+section
+variable {n k : ℕ} (γ : Counts n) (hγ : (∑ i, γ i) ≤ k)
+include n k γ hγ
+private theorem counts_index   :
     counts (indexOfCounts γ hγ) = γ := rfl
 
-private theorem degree_index {n k : ℕ} (γ : Counts n) (hγ : (∑ i, γ i) ≤ k) :
+private theorem degree_index   :
     (indexOfCounts γ hγ).degree = ∑ i, γ i := rfl
+end
+
 
 private theorem coordinate_add {n a b k : ℕ} (α : MultiIndex n a) (β : MultiIndex n b)
     (hab : (∑ i, (counts α + counts β) i) ≤ k) {f : Space n → ℂ}
@@ -104,8 +112,7 @@ private theorem coordinate_add {n a b k : ℕ} (α : MultiIndex n a) (β : Multi
   have h₁ := u.weak_derivatives A (derivativeTest β φ)
   have h₂ := u.weak_derivatives AB φ
   have hcomp : coordinateDerivative A (coordinateDerivative β (fun y => φ y)) =
-      coordinateDerivative AB (fun y => φ y) := by
-    exact coordinate_add A β hab φ.contDiff
+      coordinateDerivative AB (fun y => φ y) := coordinate_add A β hab φ.contDiff
   change (∫ x in B.carrier, u.derivatives (KPContLocalEnergy.SobolevEnergyEstimates.Raw.zeroIndex n k) x *
     coordinateDerivative A (coordinateDerivative β (fun y => φ y)) x) =
     (-1 : ℂ) ^ A.degree *
@@ -161,8 +168,11 @@ theorem zero_degree {n r : ℕ} :
     (KPContLocalEnergy.SobolevEnergyEstimates.Raw.zeroIndex n r).degree = 0 := by
   simp [MultiIndex.degree, KPContLocalEnergy.SobolevEnergyEstimates.Raw.zeroIndex]
 
- theorem local_mul_smooth {n : ℕ} {B : LocalBall n}
+ section
+variable {n : ℕ} {B : LocalBall n}
     {a : Space n → ℂ} (ha : ContDiffOn ℝ (⊤ : ℕ∞) a B.carrier)
+include n B a ha
+theorem local_mul_smooth  
     (φ : TestFunction B.toOpens ℂ ⊤) :
     ContDiff ℝ (⊤ : ℕ∞) (fun x => a x * φ x) := by
   rw [contDiff_iff_contDiffAt]
@@ -173,23 +183,20 @@ theorem zero_degree {n r : ℕ} :
       filter_upwards [(isClosed_tsupport (f := fun y => φ y)).isOpen_compl.mem_nhds hx] with y hy
       rw [image_eq_zero_of_notMem_tsupport hy, mul_zero]
     exact contDiffAt_const.congr_of_eventuallyEq he
- def localProductTest {n : ℕ} {B : LocalBall n}
-    {a : Space n → ℂ} (ha : ContDiffOn ℝ (⊤ : ℕ∞) a B.carrier)
+ def localProductTest  
     (φ : TestFunction B.toOpens ℂ ⊤) : TestFunction B.toOpens ℂ ⊤ :=
   ⟨fun x => a x * φ x, local_mul_smooth ha φ,
     φ.hasCompactSupport.mul_left, (tsupport_mul_subset_right (f := a) (g := fun x => φ x)).trans φ.tsupport_subset⟩
 
-private theorem local_partial_smooth {n : ℕ} {B : LocalBall n}
-    {a : Space n → ℂ} (ha : ContDiffOn ℝ (⊤ : ℕ∞) a B.carrier) (i : Fin n) :
-    ContDiffOn ℝ (⊤ : ℕ∞) (coordinateDerivativeList [i] a) B.carrier := by
-  exact ((contDiffOn_infty_iff_fderiv_of_isOpen Metric.isOpen_ball).mp ha).2.clm_apply contDiffOn_const
+private theorem local_partial_smooth   (i : Fin n) :
+    ContDiffOn ℝ (⊤ : ℕ∞) (coordinateDerivativeList [i] a) B.carrier := ((contDiffOn_infty_iff_fderiv_of_isOpen Metric.isOpen_ball).mp ha).2.clm_apply contDiffOn_const
 
-private theorem localTest_integrable {n : ℕ} {B : LocalBall n}
-    {a : Space n → ℂ} (ha : ContDiffOn ℝ (⊤ : ℕ∞) a B.carrier)
+private theorem localTest_integrable  
     (φ : TestFunction B.toOpens ℂ ⊤) (v : BallL2 B) :
-    Integrable (fun x => v x * (a x * φ x)) (volume.restrict B.carrier) := by
-  exact (Lp.memLp v).integrable_mul ((localProductTest ha φ).continuous.memLp_of_hasCompactSupport
+    Integrable (fun x => v x * (a x * φ x)) (volume.restrict B.carrier) := (Lp.memLp v).integrable_mul ((localProductTest ha φ).continuous.memLp_of_hasCompactSupport
     (p := 2) (localProductTest ha φ).hasCompactSupport |>.restrict _)
+end
+
 
 private theorem counts_first {n : ℕ} (i : Fin n) :
     counts (KPContLocalEnergy.SobolevEnergyEstimates.Raw.firstIndex i) = unitCount i := by
@@ -211,16 +218,20 @@ private theorem first_dirs {n : ℕ} (i : Fin n) : (KPContLocalEnergy.SobolevEne
   rw [h, List.filter_eq]
   simp
 
- def firstDerivativeTest {n : ℕ} {B : LocalBall n}
-    (i : Fin n) (φ : TestFunction B.toOpens ℂ ⊤) : TestFunction B.toOpens ℂ ⊤ :=
+ section
+variable {n : ℕ} {B : LocalBall n}
+    (i : Fin n) (φ : TestFunction B.toOpens ℂ ⊤)
+include n B i φ
+def firstDerivativeTest   : TestFunction B.toOpens ℂ ⊤ :=
   TestFunction.lineDerivCLM ℝ (EuclideanSpace.single i 1) φ
-private theorem firstDerivativeTest_eq {n : ℕ} {B : LocalBall n}
-    (i : Fin n) (φ : TestFunction B.toOpens ℂ ⊤) :
+private theorem firstDerivativeTest_eq   :
     (fun x => firstDerivativeTest i φ x) = coordinateDerivativeList [i] (fun x => φ x) := by
   funext x
   rw [firstDerivativeTest, TestFunction.lineDerivCLM_eq_fderivCLM]
   rw [TestFunction.fderivCLM_apply_of_le _ (by simp)]
   rfl
+end
+
 
 theorem weak_product_rule_first {n k : ℕ} {B : LocalBall n}
     (u : IntegerSobolev B k) (γ : Counts n) (i : Fin n)
@@ -342,7 +353,7 @@ theorem jet_unique_of_represents {n k l a : ℕ} {B : LocalBall n}
   simp only [jet, dif_pos hk, dif_pos hl]
   exact mul_left_cancel₀ (pow_ne_zero _ (by norm_num)) hi
 
-def WeakProductRule {n : ℕ} (B : LocalBall n) (k : ℕ) : Prop :=
+def WeakProductRule {n : ℕ} (B : LocalBall n) (k : ℕ)  :=
   ∀ (u : IntegerSobolev B k) (γ : Counts n) (r : ℕ) (α : MultiIndex n r),
     (∑ i, (γ + counts α) i) ≤ k →
     ∀ (a : Space n → ℂ), ContDiffOn ℝ (⊤ : ℕ∞) a B.carrier →
@@ -355,7 +366,10 @@ def WeakProductRule {n : ℕ} (B : LocalBall n) (k : ℕ) : Prop :=
             (multiChoose α β : ℂ) * coefficientJet (counts β) a x *
               jet u (γ + counts α - counts β) x) * φ x)
 
-theorem coordinateDerivativeList_smooth_on {n : ℕ} {B : LocalBall n}
+section
+variable {n : ℕ} {B : LocalBall n}
+include n B
+theorem coordinateDerivativeList_smooth_on  
     (l : List (Fin n)) {a : Space n → ℂ}
     (ha : ContDiffOn ℝ (⊤ : ℕ∞) a B.carrier) :
     ContDiffOn ℝ (⊤ : ℕ∞) (coordinateDerivativeList l a) B.carrier := by
@@ -363,7 +377,7 @@ theorem coordinateDerivativeList_smooth_on {n : ℕ} {B : LocalBall n}
   | nil => exact ha
   | cons i l ih => exact local_partial_smooth ih i
 
-theorem coordinateDerivativeList_congr_on {n : ℕ} {B : LocalBall n}
+theorem coordinateDerivativeList_congr_on  
     (l : List (Fin n)) {a b : Space n → ℂ} (hab : Set.EqOn a b B.carrier) :
     Set.EqOn (coordinateDerivativeList l a) (coordinateDerivativeList l b) B.carrier := by
   induction l with
@@ -376,7 +390,7 @@ theorem coordinateDerivativeList_congr_on {n : ℕ} {B : LocalBall n}
         Filter.eventuallyEq_of_mem (Metric.isOpen_ball.mem_nhds hx) ih
       rw [he.fderiv_eq]
 
-theorem coordinateDerivativeList_perm_on {n : ℕ} {B : LocalBall n}
+theorem coordinateDerivativeList_perm_on  
     {l k : List (Fin n)} (hp : l.Perm k) {a : Space n → ℂ}
     (ha : ContDiffOn ℝ (⊤ : ℕ∞) a B.carrier) :
     Set.EqOn (coordinateDerivativeList l a) (coordinateDerivativeList k a) B.carrier := by
@@ -395,17 +409,19 @@ theorem coordinateDerivativeList_perm_on {n : ℕ} {B : LocalBall n}
           (EuclideanSpace.single j 1) (EuclideanSpace.single i 1)
   | trans hp hq ih ij => exact ih.trans ij
 
-theorem coefficientJet_smooth_on {n : ℕ} {B : LocalBall n}
+theorem coefficientJet_smooth_on  
     (γ : Counts n) {a : Space n → ℂ}
     (ha : ContDiffOn ℝ (⊤ : ℕ∞) a B.carrier) :
     ContDiffOn ℝ (⊤ : ℕ∞) (coefficientJet γ a) B.carrier :=
   coordinateDerivativeList_smooth_on _ ha
 
-theorem jet_localTest_integrable {n : ℕ} {B : LocalBall n}
+theorem jet_localTest_integrable  
     {a : Space n → ℂ} (ha : ContDiffOn ℝ (⊤ : ℕ∞) a B.carrier)
     (φ : TestFunction B.toOpens ℂ ⊤) (v : BallL2 B) :
     Integrable (fun x => a x * v x * φ x) (volume.restrict B.carrier) := by
   simpa only [mul_assoc, mul_comm (a _) (v _)] using localTest_integrable ha φ v
+end
+
 
 theorem smooth_jet_test_integrable {n k : ℕ} {B : LocalBall n}
     (u : IntegerSobolev B k) (γ : Counts n) {a : Space n → ℂ}
@@ -415,13 +431,16 @@ theorem smooth_jet_test_integrable {n k : ℕ} {B : LocalBall n}
   simpa only [mul_assoc, mul_comm (a _) (jet u γ _)] using
     localTest_integrable ha φ (jet u γ)
 
-def coordinateDerivativeTest {n r : ℕ} {B : LocalBall n}
-    (α : MultiIndex n r) (φ : TestFunction B.toOpens ℂ ⊤) :
-    TestFunction B.toOpens ℂ ⊤ := derivativeTest α φ
+section
+variable {n r : ℕ} {B : LocalBall n}
+    (α : MultiIndex n r) (φ : TestFunction B.toOpens ℂ ⊤)
+include n r B α φ
+def coordinateDerivativeTest    := derivativeTest α φ
 
-@[simp] theorem coordinateDerivativeTest_apply {n r : ℕ} {B : LocalBall n}
-    (α : MultiIndex n r) (φ : TestFunction B.toOpens ℂ ⊤) (x : Space n) :
+@[simp] theorem coordinateDerivativeTest_apply   (x : Space n) :
     coordinateDerivativeTest α φ x = coordinateDerivative α (fun y => φ y) x := rfl
+end
+
 
 def conjugateTest {n : ℕ} {B : LocalBall n} (φ : TestFunction B.toOpens ℂ ⊤) :
     TestFunction B.toOpens ℂ ⊤ := by
@@ -467,9 +486,12 @@ private theorem coefficientDirections_counts {n : ℕ} (γ : Counts n) (i : Fin 
   rw [List.count_flatMap, ← List.sum_toFinset _ (List.nodup_finRange n)]
   simp [Function.comp_def, List.count_replicate]
 
-theorem coefficientJet_add_unit_on {n : ℕ} {B : LocalBall n}
+section
+variable {n : ℕ} {B : LocalBall n}
     (γ : Counts n) (i : Fin n) {a : Space n → ℂ}
-    (ha : ContDiffOn ℝ (⊤ : ℕ∞) a B.carrier) :
+    (ha : ContDiffOn ℝ (⊤ : ℕ∞) a B.carrier)
+include n B γ i a ha
+theorem coefficientJet_add_unit_on   :
     Set.EqOn (coefficientJet (γ + unitCount i) a)
       (coordinateDerivativeList [i] (coefficientJet γ a)) B.carrier := by
   simp only [coefficientJet, ← list_append, List.singleton_append]
@@ -482,9 +504,7 @@ theorem coefficientJet_add_unit_on {n : ℕ} {B : LocalBall n}
   · subst j; simp
   · simp [h, Ne.symm h]
 
-theorem coefficientJet_partial_on {n : ℕ} {B : LocalBall n}
-    (γ : Counts n) (i : Fin n) {a : Space n → ℂ}
-    (ha : ContDiffOn ℝ (⊤ : ℕ∞) a B.carrier) :
+theorem coefficientJet_partial_on   :
     Set.EqOn (coefficientJet γ (coordinateDerivativeList [i] a))
       (coefficientJet (γ + unitCount i) a) B.carrier := by
   rw [coefficientJet, ← list_append]
@@ -496,6 +516,8 @@ theorem coefficientJet_partial_on {n : ℕ} {B : LocalBall n}
   by_cases h : j = i
   · subst j; simp
   · simp [h, Ne.symm h]
+end
+
 
 def productExpansion {n k : ℕ} {B : LocalBall n} (u : IntegerSobolev B k) :
     List (Fin n) → (Space n → ℂ) → Counts n → Space n → ℂ
@@ -587,22 +609,25 @@ theorem weak_product_rule_uncollected {n k r : ℕ} {B : LocalBall n}
   simpa only [directionCounts_directions, hlen, coordinateDerivative] using
     weak_product_rule_list u α.directions γ (directionCounts_directions α ▸ hγ) ha φ
 
-def countsChoose {n : ℕ} (δ β : Counts n) : ℕ := ∏ i, Nat.choose (δ i) (β i)
+def countsChoose {n : ℕ} (δ β : Counts n)  := ∏ i, Nat.choose (δ i) (β i)
 
 theorem countsChoose_eq_multiChoose {n r : ℕ} (α β : MultiIndex n r) :
     countsChoose (counts α) (counts β) = multiChoose α β := rfl
 
-theorem countsChoose_zero_right {n : ℕ} (δ : Counts n) : countsChoose δ 0 = 1 := by
+section
+variable {n : ℕ}
+include n
+theorem countsChoose_zero_right   (δ : Counts n) : countsChoose δ 0 = 1 := by
   simp [countsChoose]
 
-theorem countsChoose_eq_zero {n : ℕ} {δ β : Counts n} (h : ¬ ∀ i, β i ≤ δ i) :
+theorem countsChoose_eq_zero   {δ β : Counts n} (h : ¬ ∀ i, β i ≤ δ i) :
     countsChoose δ β = 0 := by
   classical
   obtain ⟨i, hi⟩ := not_forall.mp h
   apply Finset.prod_eq_zero (Finset.mem_univ i)
-  exact Nat.choose_eq_zero_of_lt (by omega)
+  apply Nat.choose_eq_zero_of_lt <;> aesop
 
-theorem countsChoose_add_unit {n : ℕ} (δ β : Counts n) (i : Fin n) (hi : 0 < β i) :
+theorem countsChoose_add_unit   (δ β : Counts n) (i : Fin n) (hi : 0 < β i) :
     countsChoose (δ + unitCount i) β =
       countsChoose δ (β - unitCount i) + countsChoose δ β := by
   classical
@@ -614,19 +639,19 @@ theorem countsChoose_add_unit {n : ℕ} (δ β : Counts n) (i : Fin n) (hi : 0 <
       ∏ j ∈ Finset.univ.erase i, Nat.choose (δ j) (β j) := by
     apply Finset.prod_congr rfl
     intro j hj
-    have hji : j ≠ i := (Finset.mem_erase.mp hj).1
+    have hji  := (Finset.mem_erase.mp hj).1
     simp [unitCount, hji]
   have h₂ : (∏ j ∈ Finset.univ.erase i, Nat.choose (δ j) ((β - unitCount i) j)) =
       ∏ j ∈ Finset.univ.erase i, Nat.choose (δ j) (β j) := by
     apply Finset.prod_congr rfl
     intro j hj
-    have hji : j ≠ i := (Finset.mem_erase.mp hj).1
+    have hji  := (Finset.mem_erase.mp hj).1
     simp [unitCount, hji]
   rw [h₁, h₂]
   simp only [Pi.add_apply, Pi.sub_apply, unitCount, if_pos rfl, ite_true]
   rw [Nat.choose_succ_left _ _ hi, add_mul]
 
-theorem countsChoose_add_unit_zero {n : ℕ} (δ β : Counts n) (i : Fin n) (hi : β i = 0) :
+theorem countsChoose_add_unit_zero   (δ β : Counts n) (i : Fin n) (hi : β i = 0) :
     countsChoose (δ + unitCount i) β = countsChoose δ β := by
   classical
   apply Finset.prod_congr rfl
@@ -636,12 +661,14 @@ theorem countsChoose_add_unit_zero {n : ℕ} (δ β : Counts n) (i : Fin n) (hi 
     simp [hi, unitCount]
   · simp [unitCount, hji]
 
-def countsBox {n : ℕ} (δ : Counts n) : Finset (Counts n) :=
+def countsBox   (δ : Counts n) : Finset (Counts n) :=
   Fintype.piFinset (fun i => Finset.range (δ i + 1))
 
-@[simp] theorem mem_countsBox {n : ℕ} (δ β : Counts n) :
+@[simp] theorem mem_countsBox   (δ β : Counts n) :
     β ∈ countsBox δ ↔ ∀ i, β i ≤ δ i := by
   simp [countsBox, Nat.lt_succ_iff]
+end
+
 
 theorem sum_below_countsBox {n r : ℕ} (α : MultiIndex n r) (f : Counts n → ℂ) :
     (∑ β ∈ Finset.univ.filter (fun β : MultiIndex n r => ∀ i, counts β i ≤ counts α i),
@@ -660,7 +687,10 @@ theorem sum_below_countsBox {n r : ℕ} (α : MultiIndex n r) (f : Counts n → 
   · intro β hβ
     rfl
 
-theorem countsBox_shift {n : ℕ} (δ : Counts n) (i : Fin n) (f : Counts n → ℂ) :
+section
+variable {n : ℕ} (δ : Counts n) (i : Fin n) (f : Counts n → ℂ)
+include n δ i f
+theorem countsBox_shift   :
     (∑ β ∈ countsBox δ, f (β + unitCount i)) =
       ∑ β ∈ (countsBox (δ + unitCount i)).filter (fun β => 0 < β i), f β := by
   classical
@@ -700,7 +730,7 @@ theorem countsBox_shift {n : ℕ} (δ : Counts n) (i : Fin n) (f : Counts n → 
   · intro β hβ
     rfl
 
-theorem countsBox_pascal {n : ℕ} (δ : Counts n) (i : Fin n) (f : Counts n → ℂ) :
+theorem countsBox_pascal   :
     (∑ β ∈ countsBox (δ + unitCount i), (countsChoose (δ + unitCount i) β : ℂ) * f β) =
       (∑ β ∈ countsBox δ, (countsChoose δ β : ℂ) * f β) +
       (∑ β ∈ countsBox δ, (countsChoose δ β : ℂ) * f (β + unitCount i)) := by
@@ -712,7 +742,7 @@ theorem countsBox_pascal {n : ℕ} (δ : Counts n) (i : Fin n) (f : Counts n →
       ∑ β ∈ countsBox (δ + unitCount i), (countsChoose δ β : ℂ) * f β := by
     apply Finset.sum_subset hs
     intro β hβ hnot
-    have hz : countsChoose δ β = 0 := countsChoose_eq_zero (by simpa only [mem_countsBox] using hnot)
+    have hz  := countsChoose_eq_zero (by simpa only [mem_countsBox] using hnot)
     simp [hz]
   have hshift : (∑ β ∈ countsBox δ, (countsChoose δ β : ℂ) * f (β + unitCount i)) =
       ∑ β ∈ (countsBox (δ + unitCount i)).filter (fun β => 0 < β i),
@@ -728,6 +758,8 @@ theorem countsBox_pascal {n : ℕ} (δ : Counts n) (i : Fin n) (f : Counts n →
   · rw [if_pos hi, countsChoose_add_unit δ β i hi, Nat.cast_add]
     ring
   · rw [if_neg hi, countsChoose_add_unit_zero δ β i (by omega), add_zero]
+end
+
 
 theorem productExpansion_countsBox {n k : ℕ} {B : LocalBall n}
     (u : IntegerSobolev B k) (l : List (Fin n)) (γ : Counts n) {a : Space n → ℂ}
@@ -748,7 +780,7 @@ theorem productExpansion_countsBox {n k : ℕ} {B : LocalBall n}
     rw [he]
   | cons i l ih =>
     let δ := directionCounts l
-    have hp : ContDiffOn ℝ (⊤ : ℕ∞) (coordinateDerivativeList [i] a) B.carrier :=
+    have hp  :=
       coordinateDerivativeList_smooth_on [i] ha
     simp only [productExpansion]
     rw [ih γ hp, ih (γ + unitCount i) ha, directionCounts_cons]

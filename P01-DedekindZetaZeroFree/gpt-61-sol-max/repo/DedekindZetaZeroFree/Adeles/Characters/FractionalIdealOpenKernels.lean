@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Adeles.RestrictedProduct.LocalTopology
 public import Mathlib.Analysis.SpecialFunctions.Complex.Circle
 public import Mathlib.NumberTheory.LegendreSymbol.AddCharacter
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -15,7 +18,7 @@ namespace DedekindZetaZeroFree.KPAdelicCharacter
 
 def idealExponent (F : Type) [Field F] [NumberField F]
     (T : Finset (HeightOneSpectrum (RingOfIntegers F)))
-    (k : T → ℤ) (v : HeightOneSpectrum (RingOfIntegers F)) : ℤ :=
+    (k : T → ℤ) (v : HeightOneSpectrum (RingOfIntegers F))  :=
   if h : v ∈ T then k ⟨v, h⟩ else 0
 
 def finiteIdealNeighborhood (F : Type) [Field F] [NumberField F]
@@ -26,7 +29,7 @@ def finiteIdealNeighborhood (F : Type) [Field F] [NumberField F]
 
 def diagonalIdealFiber (F : Type) [Field F] [NumberField F]
     (T : Finset (HeightOneSpectrum (RingOfIntegers F)))
-    (k : T → ℤ) : Set F :=
+    (k : T → ℤ)  :=
   {r | algebraMap F (KPAdelicTopology.FiniteAdeles F) r ∈
     finiteIdealNeighborhood F T k}
 
@@ -46,17 +49,22 @@ private lemma ball_open (v : HeightOneSpectrum (𝓞 F)) (k : ℤ) :
   ext x
   simp only [Set.mem_setOf_eq, Valuation.restrict_le_iff, ha]
 
-private lemma exponent_nonneg (T : Finset (HeightOneSpectrum (𝓞 F))) (k : T → ℕ) (v) :
+section
+variable (T : Finset (HeightOneSpectrum (𝓞 F))) (k : T → ℕ)
+include T k in
+private lemma exponent_nonneg   (v) :
     0 ≤ idealExponent F T (fun w => k w) v := by
   unfold idealExponent
   split <;> positivity
 
-private lemma bound_le_one (T : Finset (HeightOneSpectrum (𝓞 F))) (k : T → ℕ) (v) :
+include T k in
+private lemma bound_le_one   (v) :
     WithZero.exp (-idealExponent F T (fun w => k w) v) ≤ 1 := by
   rw [← WithZero.exp_zero, WithZero.exp_le_exp]
   exact neg_nonpos.mpr (exponent_nonneg F T k v)
 
-lemma finiteIdealNeighborhood_open_nat (T : Finset (HeightOneSpectrum (𝓞 F))) (k : T → ℕ) :
+include T k in
+lemma finiteIdealNeighborhood_open_nat   :
     IsOpen (finiteIdealNeighborhood F T (fun w => k w)) := by
   let s : Set (KPAdelicTopology.FiniteAdeles F) :=
     {a | ∀ v : T, Valued.v (a v.val) ≤ WithZero.exp (-(k v : ℤ))}
@@ -130,7 +138,8 @@ lemma finiteIdealNeighborhood_basis_nat {U : Set (KPAdelicTopology.FiniteAdeles 
   rw [← hsx]
   exact hts hx
 
- def fiberSubmodule (T : Finset (HeightOneSpectrum (𝓞 F))) (k : T → ℕ) :
+ include T k in
+def fiberSubmodule   :
     Submodule (𝓞 F) F where
   carrier := diagonalIdealFiber F T (fun w => k w)
   zero_mem' := by
@@ -151,7 +160,8 @@ lemma finiteIdealNeighborhood_basis_nat {U : Set (KPAdelicTopology.FiniteAdeles 
       HeightOneSpectrum.valuedAdicCompletion_eq_valuation,
       HeightOneSpectrum.valuation_of_algebraMap] using v.intValuation_le_one r
 
-lemma diagonalIdealFiber_fractional_nat (T : Finset (HeightOneSpectrum (𝓞 F))) (k : T → ℕ) :
+include T k in
+lemma diagonalIdealFiber_fractional_nat   :
     ∃ I : (FractionalIdeal (𝓞 F)⁰ F)ˣ,
       (I : Set F) = diagonalIdealFiber F T (fun w => k w) := by
   let M := fiberSubmodule F T k
@@ -164,9 +174,8 @@ lemma diagonalIdealFiber_fractional_nat (T : Finset (HeightOneSpectrum (𝓞 F))
     exact (ha v).trans (bound_le_one F T k v)
   let I : FractionalIdeal (𝓞 F)⁰ F := ⟨M, FractionalIdeal.isFractional_of_le_one M hM⟩
   have hI : I ≠ 0 := by
-    let J : Ideal (𝓞 F) := ∏ v : T, v.val.asIdeal ^ k v
-    have hJ : J ≠ ⊥ := by
-      exact Finset.prod_ne_zero_iff.mpr (fun v _ => pow_ne_zero _ v.val.ne_bot)
+    let J  := ∏ v : T, v.val.asIdeal ^ k v
+    have hJ : J ≠ ⊥ := Finset.prod_ne_zero_iff.mpr (fun v _ => pow_ne_zero _ v.val.ne_bot)
     obtain ⟨a, ha, hane⟩ := (Submodule.ne_bot_iff J).mp hJ
     have hIa : algebraMap (𝓞 F) F a ∈ I := by
       intro v
@@ -181,8 +190,10 @@ lemma diagonalIdealFiber_fractional_nat (T : Finset (HeightOneSpectrum (𝓞 F))
       · simpa [idealExponent, hv] using v.intValuation_le_one a
     intro hz
     have hz' : algebraMap (𝓞 F) F a = 0 := by simpa [hz] using hIa
-    exact hane ((IsFractionRing.injective (𝓞 F) F).eq_iff.mp (by simpa using hz'))
+    exact hane ((IsFractionRing.injective (𝓞 F) F).eq_iff.mp (hz'))
   exact ⟨Units.mk0 I hI, rfl⟩
+end
+
 
 end KPAdelicCharacter
 

@@ -21,20 +21,23 @@ local instance (A : SArithmeticData F) : MeasurableSpace A.G1 := borel _
 
 local instance (A : SArithmeticData F) : BorelSpace A.G1 := ⟨rfl⟩
 
-def fieldUnit (A : SArithmeticData F) (r : A.R) (hr : r ≠ 0) : Fˣ :=
+section
+variable (A : SArithmeticData F)
+include A
+def fieldUnit   (r : A.R) (hr : r ≠ 0) : Fˣ :=
   Units.mk0 (r : F) (by exact_mod_cast hr)
 
-def q (A : SArithmeticData F) (r : A.R) (hr : r ≠ 0) : ℝ :=
+def q   (r : A.R) (hr : r ≠ 0) : ℝ :=
   A.norm (A.diagonal (fieldUnit A r hr))
 
-def translatedFourier (A : SArithmeticData F)
+def translatedFourier  
     (e : (v : ↥A.Sf) → AddChar (v.val.adicCompletion F) Circle)
     (μ : Measure (SLocalProduct F A.Sf))
     (W0 : SLocalProduct F A.Sf → ℂ)
     (x : (SLocalProduct F A.Sf)ˣ) (t : A.G1) : ℂ :=
   ProbeWeight.fourier F A.Sf e μ W0 ((ProbeSheet.localUnits A t.val * x).val)
 
-def fractionPoint (A : SArithmeticData F) (X : ℝ) (hX : 0 < X)
+def fractionPoint   (X : ℝ) (hX : 0 < X)
     (s a h : A.R) (hs : s ≠ 0) (ha : a ≠ 0) (hh : h ≠ 0) :
     (SLocalProduct F A.Sf)ˣ :=
   ProbeSheet.ell A (q A s hs * X) *
@@ -42,18 +45,18 @@ def fractionPoint (A : SArithmeticData F) (X : ℝ) (hX : 0 < X)
     (ProbeSheet.localUnits A (A.diagonal (fieldUnit A s hs)) *
       ProbeSheet.localUnits A (A.diagonal (fieldUnit A a ha)))
 
-private theorem norm_mul (A : SArithmeticData F) (x y : A.G) :
+private theorem norm_mul   (x y : A.G) :
     A.norm (x * y) = A.norm x * A.norm y := by
   simp only [SArithmeticData.norm, Prod.fst_mul, Prod.snd_mul, Pi.mul_apply,
     Units.val_mul, _root_.norm_mul, mul_pow, Finset.prod_mul_distrib]
   ring
 
-private theorem norm_div (A : SArithmeticData F) (x y : A.G) :
+private theorem norm_div   (x y : A.G) :
     A.norm (x / y) = A.norm x / A.norm y := by
   simp [SArithmeticData.norm, norm_div, div_pow, Finset.prod_div_distrib,
     mul_div_mul_comm]
 
-private theorem norm_pos (A : SArithmeticData F) (x : A.G) : 0 < A.norm x := by
+private theorem norm_pos   (x : A.G) : 0 < A.norm x := by
   apply mul_pos
   · apply Finset.prod_pos
     intro w hw
@@ -62,10 +65,12 @@ private theorem norm_pos (A : SArithmeticData F) (x : A.G) : 0 < A.norm x := by
     intro v hv
     exact norm_pos_iff.mpr (x.2 v).ne_zero
 
-private theorem norm_ell (A : SArithmeticData F) (T : ℝ) (hT : 0 < T) :
+private theorem norm_ell   (T : ℝ) (hT : 0 < T) :
     A.norm ((ProbeSheet.localUnits A).symm (ProbeSheet.ell A T)) = T := by
   simp only [ProbeSheet.ell, dif_pos hT, MulEquiv.symm_apply_apply]
   exact A.norm_radialSection T hT
+end
+
 
 end ProbeSheetTranslation
 
@@ -76,7 +81,8 @@ local instance instTranslationG1Borel {F : Type} [Field F] [NumberField F]
 
 set_option maxHeartbeats 1000000
 
-theorem probe_sheet_shape_translation (F : Type) [Field F] [NumberField F]
+section
+variable (F : Type) [Field F] [NumberField F]
     (A : SArithmeticData F)
     (e : (v : ↥A.Sf) → AddChar (v.val.adicCompletion F) Circle)
     (he : ∀ v, Continuous (e v)) (htrace : ProbeAdditive.TraceCompatible F A.Sf e)
@@ -94,7 +100,9 @@ theorem probe_sheet_shape_translation (F : Type) [Field F] [NumberField F]
     (W0 : SLocalProduct F A.Sf → ℂ) (W1 : ProbeRealAnnularWeight)
     (hW0 : ProbeWeight.IsAnnularTensor F A.Sf W0)
     (hcompact : HasCompactSupport W0) (hannular : tsupport W0 ⊆ {x | IsUnit x})
-    (σ : ℝ) (hσ : 0 < σ) :
+    (σ : ℝ) (hσ : 0 < σ)
+include F A e he htrace hne μ ν dt hμ hν hdt hnormalized w W0 W1 hW0 hcompact hannular σ hσ
+theorem probe_sheet_shape_translation   :
     ∃ C : ℝ, 0 ≤ C ∧
       ∀ (x : (SLocalProduct F A.Sf)ˣ) (T : ℝ),
         0 < T → A.norm ((ProbeSheet.localUnits A).symm x) = T →
@@ -166,25 +174,7 @@ theorem probe_sheet_shape_translation (F : Type) [Field F] [NumberField F]
   · rw [hnorm]
     exact hb.2
 
-theorem probe_sheet_shape_translation_fraction (F : Type) [Field F] [NumberField F]
-    (A : SArithmeticData F)
-    (e : (v : ↥A.Sf) → AddChar (v.val.adicCompletion F) Circle)
-    (he : ∀ v, Continuous (e v)) (htrace : ProbeAdditive.TraceCompatible F A.Sf e)
-    (hne : ∀ v, e v ≠ 1)
-    (μ : @Measure (SLocalProduct F A.Sf) (borel _))
-    (ν : @Measure (SLocalProduct F A.Sf)ˣ
-      (@Units.instMeasurableSpace (SLocalProduct F A.Sf) _ (borel _)))
-    (dt : @Measure A.G1 (borel _))
-    (hμ : @Measure.IsAddHaarMeasure (SLocalProduct F A.Sf) _ _ (borel _) μ)
-    (hν : @Measure.IsHaarMeasure (SLocalProduct F A.Sf)ˣ _ _
-      (@Units.instMeasurableSpace (SLocalProduct F A.Sf) _ (borel _)) ν)
-    (hdt : @Measure.IsHaarMeasure A.G1 _ _ (borel _) dt)
-    (hnormalized : ProbeSheet.HaarDisintegration A ν dt)
-    (w : InfinitePlace F)
-    (W0 : SLocalProduct F A.Sf → ℂ) (W1 : ProbeRealAnnularWeight)
-    (hW0 : ProbeWeight.IsAnnularTensor F A.Sf W0)
-    (hcompact : HasCompactSupport W0) (hannular : tsupport W0 ⊆ {x | IsUnit x})
-    (σ : ℝ) (hσ : 0 < σ) :
+theorem probe_sheet_shape_translation_fraction   :
     ∃ C : ℝ, 0 ≤ C ∧
       ∀ (X : ℝ) (hX : 0 < X) (s a h : A.R)
         (hs : s ≠ 0) (ha : a ≠ 0) (hh : h ≠ 0),
@@ -224,6 +214,8 @@ theorem probe_sheet_shape_translation_fraction (F : Type) [Field F] [NumberField
     dsimp [T]
     field_simp
   exact ⟨hT, hx, hbound x T hT hx⟩
+end
+
 
 end
 end DedekindZetaZeroFree

@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.SpecialFunctions.Complex.Log
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -15,21 +18,22 @@ def rationalTracePhase : AddChar ℚ ℂ where
     intro q r
     simp only [Rat.cast_add, mul_add, Complex.exp_add]
 
-@[simp] theorem rationalTracePhase_apply (q : ℚ) :
+section
+variable (q : ℚ)
+include q
+@[simp] theorem rationalTracePhase_apply   :
     rationalTracePhase q = Complex.exp ((2 * (Real.pi : ℂ) * Complex.I) * (q : ℂ)) :=
   rfl
 
-theorem rationalTracePhase_apply_real (q : ℚ) :
+theorem rationalTracePhase_apply_real   :
     rationalTracePhase q =
-      Complex.exp ((2 * (Real.pi : ℂ) * Complex.I) * ((q : ℝ) : ℂ)) := by
-  simp
+      Complex.exp ((2 * (Real.pi : ℂ) * Complex.I) * ((q : ℝ) : ℂ)) := rfl
 
-theorem rationalTracePhase_eq_one_iff (q : ℚ) :
+theorem rationalTracePhase_eq_one_iff   :
     rationalTracePhase q = 1 ↔ ∃ n : ℤ, (n : ℚ) = q := by
   rw [rationalTracePhase_apply, Complex.exp_eq_one_iff]
   have hc : (2 * (Real.pi : ℂ) * Complex.I) ≠ 0 := by
-    exact mul_ne_zero (mul_ne_zero (by norm_num) (by exact_mod_cast Real.pi_ne_zero))
-      Complex.I_ne_zero
+    apply mul_ne_zero <;> aesop
   constructor
   · rintro ⟨n, hn⟩
     refine ⟨n, ?_⟩
@@ -42,14 +46,15 @@ theorem rationalTracePhase_eq_one_iff (q : ℚ) :
     have h : (n : ℂ) = (q : ℂ) := by exact_mod_cast hn
     rw [← h, mul_comm]
 
-@[simp] theorem norm_rationalTracePhase (q : ℚ) :
+@[simp] theorem norm_rationalTracePhase   :
     ‖rationalTracePhase q‖ = 1 := by
   rw [rationalTracePhase_apply, Complex.norm_exp]
   simp
 
-theorem rationalTracePhase_ne_zero (q : ℚ) :
-    rationalTracePhase q ≠ 0 := by
-  exact Complex.exp_ne_zero _
+theorem rationalTracePhase_ne_zero   :
+    rationalTracePhase q ≠ 0 := Complex.exp_ne_zero _
+end
+
 
 end DedekindZetaZeroFree.Hecke
 

@@ -29,9 +29,12 @@ theorem complex_uniform_integrable_iff (w : InfinitePlace F) (x : PositiveAxis)
     (Homeomorph.mulLeft q).measurableEmbedding
     (g := fun z : R.A.G1 => f (z.val * R.A.radialSection x.val x.property))
 
-theorem selected_full_sheet_integrable (N : TraceHaarTransport R)
+section
+variable (N : TraceHaarTransport R)
     {Q : AdmissibleFlatSources R} (T : Realization R Q) (P : Packet R Q)
-    (H : SameResidueProfiles R Q T P) (v : R.A.UnitQuotient) (κ : R.A.V)
+    (H : SameResidueProfiles R Q T P)
+include N Q T P H
+theorem selected_full_sheet_integrable   (v : R.A.UnitQuotient) (κ : R.A.V)
     (x : PositiveAxis) :
     letI := N.groupHaar_isHaar;
     Integrable (fun y : Sheet R.A x => T.sheetIntegrand P v κ y.val)
@@ -46,9 +49,7 @@ theorem selected_full_sheet_integrable (N : TraceHaarTransport R)
   rw [sheetHaar, GaussianSmoothing.kernelHaar_eq_probe]
   exact (sheetTranslation R.A P.v₀ x).measurableEmbedding.integrable_map_iff.mpr ht
 
-theorem selected_full_sheet_norm_eq (N : TraceHaarTransport R)
-    {Q : AdmissibleFlatSources R} (T : Realization R Q) (P : Packet R Q)
-    (H : SameResidueProfiles R Q T P) (v : R.A.UnitQuotient) (κ : R.A.V)
+theorem selected_full_sheet_norm_eq   (v : R.A.UnitQuotient) (κ : R.A.V)
     (x : PositiveAxis) :
     letI := N.groupHaar_isHaar;
     (∫ y : Sheet R.A x, ‖T.sheetIntegrand P v κ y.val‖
@@ -68,9 +69,7 @@ theorem selected_full_sheet_norm_eq (N : TraceHaarTransport R)
   rw [GaussianSmoothing.integral_uniform_eq N P.v₀ x (fun y => ‖T.sheetIntegrand P v κ y‖) ht,
     GaussianSmoothing.probeHaar_integral]
 
-theorem selected_full_sheet_norm_bound (N : TraceHaarTransport R)
-    {Q : AdmissibleFlatSources R} (T : Realization R Q) (P : Packet R Q)
-    (H : SameResidueProfiles R Q T P) (B : ℝ) (hB : 0 < B) :
+theorem selected_full_sheet_norm_bound   (B : ℝ) (hB : 0 < B) :
     ∃ K : ℝ, 0 ≤ K ∧ ∀ v κ (x : PositiveAxis),
       letI := N.groupHaar_isHaar;
       (∫ y : Sheet R.A x, ‖T.sheetIntegrand P v κ y.val‖
@@ -82,6 +81,8 @@ theorem selected_full_sheet_norm_bound (N : TraceHaarTransport R)
   letI := N.groupHaar_isHaar
   rw [selected_full_sheet_norm_eq R N T P H]
   simpa only [iteratedDeriv_zero, Real.exp_log x.property] using hb v κ x.val x.property
+end
+
 
 end DedekindZetaZeroFree.OrbitFrequencies
 

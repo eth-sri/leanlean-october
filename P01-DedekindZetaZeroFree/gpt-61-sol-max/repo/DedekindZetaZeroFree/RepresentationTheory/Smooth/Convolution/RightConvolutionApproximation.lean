@@ -38,10 +38,13 @@ open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming actual_k
   rw [← h]
   exact e.continuous.comp (continuous_id.prodMk continuous_const)
 
- theorem rightConv_integrable
-    (D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ)
+ section
+variable (D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ)
     (μL : Measure (L F)) [μL.IsHaarMeasure] (μK : Measure D.K)
-    (b : ContDiffBump (e0 F)) (v : G F ζ hζ → ℂ)
+    (b : ContDiffBump (e0 F))
+include D μL μK b
+theorem rightConv_integrable
+      (v : G F ζ hζ → ℂ)
     (hv : Continuous v)
     (hc : Continuous (kappa F ζ hζ D μL μK b))
     (hs : HasCompactSupport (kappa F ζ hζ D μL μK b)) (g : G F ζ hζ) :
@@ -57,9 +60,7 @@ open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming actual_k
     (arch_insertion_continuous F ζ hζ)))).integrable_of_hasCompactSupport hk'.mul_right
 
  theorem rightConv_linear
-    (D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ)
-    (μL : Measure (L F)) [μL.IsHaarMeasure] (μK : Measure D.K)
-    (b : ContDiffBump (e0 F))
+     
     (hc : Continuous (kappa F ζ hζ D μL μK b))
     (hs : HasCompactSupport (kappa F ζ hζ D μL μK b))
     (u v : G F ζ hζ → ℂ) (c : ℂ) (hu : Continuous u) (hv : Continuous v) :
@@ -78,9 +79,7 @@ open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming actual_k
     exact integral_const_mul c _
 
  theorem rightConv_continuous
-    (D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ)
-    (μL : Measure (L F)) [μL.IsHaarMeasure] (μK : Measure D.K)
-    (b : ContDiffBump (e0 F)) (v : G F ζ hζ → ℂ)
+      (v : G F ζ hζ → ℂ)
     (hv : Continuous v)
     (hc : Continuous (kappa F ζ hζ D μL μK b))
     (hs : HasCompactSupport (kappa F ζ hζ D μL μK b)) :
@@ -94,6 +93,8 @@ open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming actual_k
         ((arch_insertion_continuous F ζ hζ).comp continuous_snd)))).continuousOn
   · intro g a _ ha
     simp [image_eq_zero_of_notMem_tsupport ha]
+end
+
 
  theorem globalLevel_le_finite
     (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ) :

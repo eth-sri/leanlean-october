@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.NarrowRayClassModulus
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.OrdinaryRayClassModulus
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.RayClassGroup
 public import ClassFieldTheory.Definitions.FrobeniusAndHilbertClassFields.FinitePrimeFractionalIdeal
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -33,40 +36,42 @@ namespace ClassFieldTheory
 
 universe u
 
- lemma finitePrimeFractionalIdeal_mem_primeTo
-    {K : Type u} [Field K] [NumberField K]
+ section
+variable {K : Type u} [Field K] [NumberField K]
     (m : RayClassModulus K)
     (v : HeightOneSpectrum (𝓞 K))
-    (hv : v ∉ m.finitePart.support) :
+    (hv : v ∉ m.finitePart.support)
+include K m v hv
+lemma finitePrimeFractionalIdeal_mem_primeTo
+      :
     finitePrimeFractionalIdeal v ∈ rayClassPrimeToIdeals m := by
   intro w hw
-  exact FractionalIdeal.count_maximal_coprime K w fun h => (h ▸ hv) hw
+  apply FractionalIdeal.count_maximal_coprime <;> aesop
 
 /-- The class in the ray class group represented by a finite prime away from
 the modulus. -/
 def rayClassOfFinitePrime
-    {K : Type u} [Field K] [NumberField K]
-    (m : RayClassModulus K)
-    (v : HeightOneSpectrum (𝓞 K))
-    (hv : v ∉ m.finitePart.support) : RayClassGroup m :=
+       :=
   QuotientGroup.mk' (rayPrincipalIdealSubgroupInPrimeTo m)
     ⟨finitePrimeFractionalIdeal v, finitePrimeFractionalIdeal_mem_primeTo m v hv⟩
+end
 
-/-- The ordinary ideal class represented by a finite prime. -/
-def ordinaryRayClassOfFinitePrime
-    {K : Type u} [Field K] [NumberField K]
-    (v : HeightOneSpectrum (𝓞 K)) :
-    RayClassGroup (ordinaryRayClassModulus K) :=
-  rayClassOfFinitePrime (ordinaryRayClassModulus K) v (by
-    simp [ordinaryRayClassModulus])
 
-/-- The narrow ideal class represented by a finite prime. -/
-def narrowRayClassOfFinitePrime
-    {K : Type u} [Field K] [NumberField K]
-    (v : HeightOneSpectrum (𝓞 K)) :
-    RayClassGroup (narrowRayClassModulus K) :=
-  rayClassOfFinitePrime (narrowRayClassModulus K) v (by
-    simp [narrowRayClassModulus])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end ClassFieldTheory
 

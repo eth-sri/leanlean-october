@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import GaloisCohomology.Cyclic.Herbrand.HerbrandLowDegree.Basic
 public import GaloisCohomology.Cyclic.TateComparison
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -26,10 +29,9 @@ noncomputable section
 
 universe u w
 
-private theorem repExact_of_hom_exact {k G : Type u} [CommRing k] [Group G]
+private def repExact_of_hom_exact {k G : Type u} [CommRing k] [Group G]
     (S : ShortComplex (Rep.{w} k G))
-    (h : ∀ b : S.X₂, S.g.hom b = 0 → ∃ a : S.X₁, S.f.hom a = b) :
-    S.Exact :=
+    (h : ∀ b : S.X₂, S.g.hom b = 0 → ∃ a : S.X₁, S.f.hom a = b)  :=
   (forget₂ (Rep.{w} k G) (ModuleCat.{w} k)).reflects_exact_of_faithful _ <|
     (ShortComplex.moduleCat_exact_iff _).2 h
 
@@ -87,23 +89,13 @@ theorem equivariantShortComplex_shortExact
       epi_g := (Rep.epi_iff_surjective _).2 ?_ }
   · intro b hb
     change Additive.ofMul (j b.toMul) = 0 at hb
-    have hb' : j b.toMul = 1 := Additive.ofMul.injective hb
+    have hb'  := Additive.ofMul.injective hb
     rcases (hker b.toMul).1 hb' with ⟨a, ha⟩
     refine ⟨Additive.ofMul a, ?_⟩
     change Additive.ofMul (i a) = b
     apply Additive.toMul.injective
     exact ha
-  · intro a a' h
-    change Additive.ofMul (i a.toMul) = Additive.ofMul (i a'.toMul) at h
-    apply Additive.toMul.injective
-    apply hinj
-    exact Additive.ofMul.injective h
-  · intro c
-    rcases hsurj c.toMul with ⟨b, hb⟩
-    refine ⟨Additive.ofMul b, ?_⟩
-    change Additive.ofMul (j b) = c
-    apply Additive.toMul.injective
-    exact hb
+  all_goals (assumption)
 
  theorem repNorm_toMul (a : Additive A) :
     Additive.toMul
@@ -197,12 +189,12 @@ noncomputable def tateH0IsoHerbrandH0 :
         ModuleCat.of ℤ
           (LinearMap.ker
             (groupCohomology.d₀₁ (Rep.ofMulDistribMulAction G A)).hom) :=
-    eqToIso (by rfl)
+    eqToIso (rfl)
   let eK :=
     (eKOwner ≪≫
       ((fixedCyclesAddEquiv (G := G) (A := A)).toIntLinearEquiv
         (modM := inferInstance) (modM₂ := inferInstance)).toModuleIso).toLinearEquiv
-  let q : Additive (fixedSubgroup G A) →+ Additive (HerbrandH0 G A) :=
+  let q  :=
     MonoidHom.toAdditive (HerbrandH0.mk (G := G) (A := A))
   have hboundary :
       (LinearMap.range S.moduleCatToCycles).map eK.toLinearMap =
@@ -279,8 +271,7 @@ noncomputable def tateH0IsoHerbrandH0 :
           ((Representation.ofMulDistribMulAction G A).norm a) = (1 : A)
       exact
         (Representation.norm_ofMulDistribMulAction_eq
-          (G := G) (M := A) a).trans <| by
-            simpa [tateNorm] using hx⟩
+          (G := G) (M := A) a).trans <| hx⟩
   left_inv x := by
     apply Subtype.ext
     rfl
@@ -311,8 +302,7 @@ noncomputable def tateH0IsoHerbrandH0 :
     (eKOwner ≪≫
       ((normKernelCyclesAddEquiv (G := G) (A := A)).toIntLinearEquiv
         (modM := inferInstance) (modM₂ := inferInstance)).toModuleIso).toLinearEquiv
-  let q : Additive (normKernelSubgroup G A) →+
-      Additive (HerbrandHMinusOne G A σ) :=
+  let q  :=
     MonoidHom.toAdditive (HerbrandHMinusOne.mk (G := G) (A := A) σ)
   have hboundary :
       (LinearMap.range S.moduleCatToCycles).map eK.toLinearMap =

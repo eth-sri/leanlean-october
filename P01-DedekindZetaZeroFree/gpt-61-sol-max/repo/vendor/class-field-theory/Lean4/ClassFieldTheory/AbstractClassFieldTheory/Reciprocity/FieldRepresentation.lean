@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AbstractClassFieldTheory.Degree.NormLaws
 public import GaloisCohomology.Cyclic.IntegralRepUniverse
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -37,12 +40,15 @@ open scoped BigOperators
 -- Mathlib's `Rep ℤ G` currently fixes the acting group to universe zero.
 variable {G : IntegralRepGroupType} [Group G] [TopologicalSpace G]
 
+section
+variable (A : Rep ℤ G) (K L : ClosedSubgroup G)
+    (hLK : L.toSubgroup ≤ K.toSubgroup)
+    (hnormal : (extensionSubgroup K L hLK).Normal)
+include A K L hLK hnormal
 /-- The invariant carrier in the descended quotient representation is the
 actual fixed group `A_L`. -/
 def extensionFixedRepresentationEquiv
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal) :
+      :
     (extensionFixedRepresentation A K L hLK hnormal).V ≃+
       ambientFixedAddSubgroup A L where
   toFun x := ⟨x.1, by
@@ -69,12 +75,9 @@ ambientFixedAddSubgroup A L) : A.V) = a.1`.
 -/
 @[simp]
 theorem extensionFixedRepresentationEquiv_apply_coe
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal)
+     
     (a : (extensionFixedRepresentation A K L hLK hnormal).V) :
-    ((extensionFixedRepresentationEquiv A K L hLK hnormal a :
-        ambientFixedAddSubgroup A L) : A.V) = a.1 :=
+    ((extensionFixedRepresentationEquiv A K L hLK hnormal a) : A.V) = a.1 :=
   rfl
 
 /--
@@ -82,9 +85,7 @@ Establishes the identity `((extensionFixedRepresentationEquiv A K L hLK hnormal)
 -/
 @[simp]
 theorem extensionFixedRepresentationEquiv_symm_apply_coe
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal)
+     
     (a : ambientFixedAddSubgroup A L) :
     ((extensionFixedRepresentationEquiv A K L hLK hnormal).symm a).1 = a.1 :=
   rfl
@@ -92,9 +93,7 @@ theorem extensionFixedRepresentationEquiv_symm_apply_coe
 /-- The quotient action on `A_L` is the same coset action used by the
 relative norm. -/
 theorem extensionFixedRepresentation_action_coe
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal)
+     
     (q : K.toSubgroup ⧸ extensionSubgroup K L hLK)
     (a : (extensionFixedRepresentation A K L hLK hnormal).V) :
     ((extensionFixedRepresentation A K L hLK hnormal).ρ q a).1 =
@@ -109,9 +108,7 @@ theorem extensionFixedRepresentation_action_coe
 /-- The norm in the descended representation is the actual relative norm
 on the underlying fixed coefficient. -/
 theorem extensionFixedRepresentation_norm_coe
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal)
+     
     [Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
     (a : (extensionFixedRepresentation A K L hLK hnormal).V) :
     letI := hnormal
@@ -119,15 +116,14 @@ theorem extensionFixedRepresentation_norm_coe
       (K.toSubgroup ⧸ extensionSubgroup K L hLK)
     ((extensionFixedRepresentation A K L hLK hnormal).norm.hom a).1 =
       ((relativeNorm A K L hLK
-        (extensionFixedRepresentationEquiv A K L hLK hnormal a) :
-          ambientFixedAddSubgroup A K) : A.V) := by
+        (extensionFixedRepresentationEquiv A K L hLK hnormal a)) : A.V) := by
   let := hnormal
   let := Fintype.ofFinite
     (K.toSubgroup ⧸ extensionSubgroup K L hLK)
   rw [relativeNorm_apply_coe]
   simp only [Rep.norm, Representation.norm, relativeNormValue]
   let M := extensionFixedRepresentation A K L hLK hnormal
-  let : Module ℤ M.V := M.hV2
+  let  := M.hV2
   change ((∑ q, M.ρ q) a).1 =
     ∑ q, relativeCosetAction A K L hLK
       (extensionFixedRepresentationEquiv A K L hLK hnormal a) q
@@ -143,7 +139,9 @@ theorem extensionFixedRepresentation_norm_coe
   rw [map_sum]
   apply Finset.sum_congr rfl
   intro q _
-  exact extensionFixedRepresentation_action_coe A K L hLK hnormal q a
+  apply extensionFixedRepresentation_action_coe
+end
+
 
 end
 end ClassFormation

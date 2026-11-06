@@ -90,8 +90,8 @@ def sourceFlat (x : PlusCore R N P C) :
   · rw [sourceTwist_zero]
     exact scalarSource_kfinite R N P C x
 
-@[simp] theorem sourceFlat_zero (x : PlusCore R N P C) :
-    (sourceFlat R N P C x).val 0 = scalarSourceEvaluator R N P C x := sourceTwist_zero R N P C x
+
+
 
 theorem sourceFlat_value (x : PlusCore R N P C) (s : ℂ) (g : Group R) :
     (sourceFlat R N P C x).val s g =

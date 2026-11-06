@@ -19,25 +19,30 @@ variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable (D : DedekindZetaZeroFree.Quantitative.FixedData S η)
 
-def rawCentral (u : Frequency D.recipe) (ρ U Z : ℝ) : ℂ :=
+section
+variable (u : Frequency D.recipe) (ρ U Z : ℝ)
+include u ρ U Z
+def rawCentral   : ℂ :=
   (2 * (Real.pi : ℂ))⁻¹ *
     ∫ t in Set.Icc (-(U ^ ρ)) (U ^ ρ),
       Iwz D u ((Scales.goodLine : ℂ) + (t : ℂ) * Complex.I) Scales.wLine Scales.zLine Z
 
-def rawUpper (u : Frequency D.recipe) (ρ U Z : ℝ) : ℂ :=
+def rawUpper   : ℂ :=
   (2 * (Real.pi : ℂ) * Complex.I)⁻¹ *
     ∫ σ in Scales.goodLine..Scales.rightLine,
       Iwz D u ((σ : ℂ) + ((1 * U ^ ρ : ℝ) : ℂ) * Complex.I) Scales.wLine Scales.zLine Z
 
-def rawLower (u : Frequency D.recipe) (ρ U Z : ℝ) : ℂ :=
+def rawLower   : ℂ :=
   (2 * (Real.pi : ℂ) * Complex.I)⁻¹ *
     ∫ σ in Scales.rightLine..Scales.goodLine,
       Iwz D u ((σ : ℂ) + (((-1) * U ^ ρ : ℝ) : ℂ) * Complex.I) Scales.wLine Scales.zLine Z
 
-def rawRightTail (u : Frequency D.recipe) (ρ U Z : ℝ) : ℂ :=
+def rawRightTail   : ℂ :=
   (2 * (Real.pi : ℂ))⁻¹ *
     ∫ t in {t : ℝ | U ^ ρ < |t|},
       Iwz D u ((Scales.rightLine : ℂ) + (t : ℂ) * Complex.I) Scales.wLine Scales.zLine Z
+end
+
 
 theorem rawGood_rectangle_decomp (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExponent D A)
     (hρ : HeightSpec D A ρ) :
@@ -145,8 +150,11 @@ private theorem norm_inv_two_pi_I :
   rw [norm_inv, norm_mul, norm_mul]
   simp [abs_of_pos Real.pi_pos]
 
-theorem rawGood_central_bound (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExponent D A)
-    (hρ : HeightSpec D A ρ) (ε : ℝ) (hε : 0 < ε) :
+section
+variable (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExponent D A)
+    (hρ : HeightSpec D A ρ)
+include A ρ hA hconv hρ
+theorem rawGood_central_bound   (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∃ U₀ : ℝ, 2 ≤ U₀ ∧ ∀ U : ℝ, U₀ ≤ U → ∀ u : Frequency D.recipe,
       u ≠ principalFrequency D.recipe → U ≤ frequencyNorm D.recipe u →
       frequencyNorm D.recipe u < 2 * U → u ∉ FixedData.rawExceptionalSet D ρ U →
@@ -200,8 +208,7 @@ theorem rawGood_central_bound (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityE
       U ^ ((1 / 25 : ℝ) + ε)) := by positivity
   nlinarith [h1, h2]
 
-theorem rawGood_horiz_bound (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExponent D A)
-    (hρ : HeightSpec D A ρ) (B : ℝ) (hB : 0 < B) :
+theorem rawGood_horiz_bound   (B : ℝ) (hB : 0 < B) :
     ∃ C : ℝ, 0 < C ∧ ∃ U₀ : ℝ, 2 ≤ U₀ ∧ ∀ U : ℝ, U₀ ≤ U → ∀ u : Frequency D.recipe,
       u ≠ principalFrequency D.recipe → U ≤ frequencyNorm D.recipe u →
       frequencyNorm D.recipe u < 2 * U → u ∉ FixedData.rawExceptionalSet D ρ U →
@@ -288,8 +295,7 @@ theorem rawGood_horiz_bound (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExp
     rw [Set.uIoc_of_ge hab] at hσ
     exact hσ
 
-theorem rawGood_tail_bound (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExponent D A)
-    (hρ : HeightSpec D A ρ) (B : ℝ) (hB : 0 < B) :
+theorem rawGood_tail_bound   (B : ℝ) (hB : 0 < B) :
     ∃ C : ℝ, 0 < C ∧ ∃ U₀ : ℝ, 2 ≤ U₀ ∧ ∀ U : ℝ, U₀ ≤ U → ∀ u : Frequency D.recipe,
       u ≠ principalFrequency D.recipe → U ≤ frequencyNorm D.recipe u →
       frequencyNorm D.recipe u < 2 * U →
@@ -322,6 +328,8 @@ theorem rawGood_tail_bound (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExpo
   rw [norm_mul, norm_inv_two_pi]
   refine (mul_le_mul_of_nonneg_left hint hpi.le).trans ?_
   exact final_mul hpi hC.le (by positivity) hK (by positivity) hpw
+end
+
 
 end
 

@@ -63,9 +63,12 @@ def kummerRootSet (n : ℕ+) (Delta : Subgroup Kˣ) : Set Omega :=
     beta ^ (n : ℕ) = algebraMap K Omega (a.1 : K)}
 
 /-- The field `K(√[n]{Delta})` inside the chosen separable closure. -/
+
+local notation:max "current_kummerRootSet" => kummerRootSet (K := K) (Omega := Omega)
+
 def kummerRadicalExtension (n : ℕ+) (Delta : Subgroup Kˣ) :
     IntermediateField K Omega :=
-  IntermediateField.adjoin K (kummerRootSet (K := K) (Omega := Omega) n Delta)
+  IntermediateField.adjoin K (current_kummerRootSet n Delta)
 
 /-- Every prescribed Kummer equation has a root in the separable closure.
 This is the only point where the characteristic hypothesis is needed. -/
@@ -73,7 +76,7 @@ theorem exists_kummerRootSet
     [IsSepClosure K Omega]
     (n : ℕ+) (hn : ((n : ℕ) : K) ≠ 0) (Delta : Subgroup Kˣ) (a : Delta) :
     ∃ beta : Omega,
-      beta ∈ kummerRootSet (K := K) (Omega := Omega) n Delta ∧
+      beta ∈ current_kummerRootSet n Delta ∧
         beta ^ (n : ℕ) = algebraMap K Omega (a.1 : K) := by
   let aOmega : Omega := algebraMap K Omega (a.1 : K)
   have haOmega : aOmega ≠ 0 :=
@@ -94,19 +97,23 @@ theorem exists_kummerRootSet
 /-- Every element of `Delta` acquires an `n`-th root in the constructed
 field.  This is the elementary inclusion `Delta ≤ Delta_{K(√[n]{Delta})}`
 in the Kummer correspondence. -/
+
+local notation:max "current_kummerRadicalExtension" => kummerRadicalExtension (K := K) (Omega := Omega)
+
 theorem le_finiteKummerRadicalSubgroup_kummerRadicalExtension
     [IsSepClosure K Omega]
     (n : ℕ+) (hn : ((n : ℕ) : K) ≠ 0) (Delta : Subgroup Kˣ) :
     Delta ≤ finiteKummerRadicalSubgroup
-      (K := K) (L := kummerRadicalExtension (K := K) (Omega := Omega) n Delta) n := by
+      (K := K) (L := current_kummerRadicalExtension n Delta) n := by
   intro a ha
   let aDelta : Delta := ⟨a, ha⟩
   obtain ⟨beta, hbeta, hpow⟩ :=
     exists_kummerRootSet (K := K) (Omega := Omega) n hn Delta aDelta
-  let E := kummerRadicalExtension (K := K) (Omega := Omega) n Delta
+  let E := current_kummerRadicalExtension n Delta
+  letI : SMul Gal(E/K) Eˣ := (AlgEquiv.instMulDistribMulActionUnits (R := K) (A₁ := E)).toMulAction.toSemigroupAction.toSMul
   let betaE : E :=
     ⟨beta, IntermediateField.subset_adjoin K
-      (kummerRootSet (K := K) (Omega := Omega) n Delta) hbeta⟩
+      (current_kummerRootSet n Delta) hbeta⟩
   have hbetaE : betaE ≠ 0 := by
     intro hzero
     have hbeta_zero : beta = 0 := congrArg Subtype.val hzero
@@ -118,21 +125,21 @@ theorem le_finiteKummerRadicalSubgroup_kummerRadicalExtension
   apply Subtype.ext
   exact hpow
 
-/-- In particular, for an admissible subgroup-side object, the radical
-subgroup recovered from its field still contains `Kˣ^n`. -/
-theorem unitNthPowersSubgroup_le_constructedRadical
-    [IsSepClosure K Omega]
-    (n : ℕ+) (hn : ((n : ℕ) : K) ≠ 0) (Delta : KummerSubgroup K n) :
-    unitNthPowersSubgroup K n ≤ finiteKummerRadicalSubgroup
-      (K := K)
-      (L := kummerRadicalExtension (K := K) (Omega := Omega) n Delta.1) n :=
-  Delta.2.trans
-    (le_finiteKummerRadicalSubgroup_kummerRadicalExtension n hn Delta.1)
+
+
+
+
+
+
+
+
+
+
 
 /-- A Kummer root is nonzero because its prescribed power is a unit. -/
 theorem kummerRootSet_ne_zero
     (n : ℕ+) (Delta : Subgroup Kˣ) {beta : Omega}
-    (hbeta : beta ∈ kummerRootSet (K := K) (Omega := Omega) n Delta) :
+    (hbeta : beta ∈ current_kummerRootSet n Delta) :
     beta ≠ 0 := by
   obtain ⟨a, ha⟩ := hbeta
   intro hzero
@@ -145,8 +152,8 @@ set. -/
 theorem kummerRootSet_mapsTo
     (n : ℕ+) (Delta : Subgroup Kˣ) (sigma : Gal(Omega/K)) :
     Set.MapsTo sigma
-      (kummerRootSet (K := K) (Omega := Omega) n Delta)
-      (kummerRootSet (K := K) (Omega := Omega) n Delta) := by
+      (current_kummerRootSet n Delta)
+      (current_kummerRootSet n Delta) := by
   rintro beta ⟨a, hbeta⟩
   refine ⟨a, ?_⟩
   calc
@@ -159,8 +166,8 @@ theorem kummerRootSet_mapsTo
 is carried onto itself, not merely into itself. -/
 theorem kummerRootSet_image
     (n : ℕ+) (Delta : Subgroup Kˣ) (sigma : Gal(Omega/K)) :
-    sigma '' kummerRootSet (K := K) (Omega := Omega) n Delta =
-      kummerRootSet (K := K) (Omega := Omega) n Delta := by
+    sigma '' current_kummerRootSet n Delta =
+      current_kummerRootSet n Delta := by
   apply Set.Subset.antisymm
   · rintro _ ⟨beta, hbeta, rfl⟩
     exact kummerRootSet_mapsTo n Delta sigma hbeta
@@ -172,8 +179,8 @@ theorem kummerRootSet_image
 separable closure. -/
 theorem kummerRadicalExtension_map
     (n : ℕ+) (Delta : Subgroup Kˣ) (sigma : Gal(Omega/K)) :
-    (kummerRadicalExtension (K := K) (Omega := Omega) n Delta).map sigma =
-      kummerRadicalExtension (K := K) (Omega := Omega) n Delta := by
+    (current_kummerRadicalExtension n Delta).map sigma =
+      current_kummerRadicalExtension n Delta := by
   rw [kummerRadicalExtension, IntermediateField.adjoin_map]
   congr 1
   exact kummerRootSet_image n Delta sigma
@@ -182,7 +189,7 @@ theorem kummerRadicalExtension_map
 theorem kummerRadicalExtension_normal
     [IsSepClosure K Omega]
     (n : ℕ+) (Delta : Subgroup Kˣ) :
-    Normal K (kummerRadicalExtension (K := K) (Omega := Omega) n Delta) := by
+    Normal K (current_kummerRadicalExtension n Delta) := by
   rw [IntermediateField.normal_iff_forall_map_eq']
   exact kummerRadicalExtension_map n Delta
 
@@ -192,7 +199,7 @@ set. -/
 theorem kummerRadicalExtension_isGalois
     [IsSepClosure K Omega]
     (n : ℕ+) (Delta : Subgroup Kˣ) :
-    IsGalois K (kummerRadicalExtension (K := K) (Omega := Omega) n Delta) := by
+    IsGalois K (current_kummerRadicalExtension n Delta) := by
   rw [isGalois_iff]
   exact ⟨inferInstance, kummerRadicalExtension_normal n Delta⟩
 
@@ -203,19 +210,20 @@ theorem kummerRadicalExtension_generator_commute
     [IsSepClosure K Omega]
     (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
     (Delta : Subgroup Kˣ)
-    (sigma tau : Gal(kummerRadicalExtension (K := K) (Omega := Omega) n Delta/K))
+    (sigma tau : Gal(current_kummerRadicalExtension n Delta/K))
     {beta : Omega}
-    (hbeta : beta ∈ kummerRootSet (K := K) (Omega := Omega) n Delta) :
+    (hbeta : beta ∈ current_kummerRootSet n Delta) :
     (sigma * tau)
         ⟨beta, IntermediateField.subset_adjoin K
-          (kummerRootSet (K := K) (Omega := Omega) n Delta) hbeta⟩ =
+          (current_kummerRootSet n Delta) hbeta⟩ =
       (tau * sigma)
         ⟨beta, IntermediateField.subset_adjoin K
-          (kummerRootSet (K := K) (Omega := Omega) n Delta) hbeta⟩ := by
-  let E := kummerRadicalExtension (K := K) (Omega := Omega) n Delta
+          (current_kummerRootSet n Delta) hbeta⟩ := by
+  let E := current_kummerRadicalExtension n Delta
+  letI : SMul Gal(E/K) Eˣ := (AlgEquiv.instMulDistribMulActionUnits (R := K) (A₁ := E)).toMulAction.toSemigroupAction.toSMul
   let betaE : E :=
     ⟨beta, IntermediateField.subset_adjoin K
-      (kummerRootSet (K := K) (Omega := Omega) n Delta) hbeta⟩
+      (current_kummerRootSet n Delta) hbeta⟩
   let betaUnit : Eˣ := Units.mk0 betaE (by
     intro hzero
     apply kummerRootSet_ne_zero n Delta hbeta
@@ -257,7 +265,7 @@ theorem kummerRadicalExtension_isMulCommutative
     [IsSepClosure K Omega]
     (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
     (Delta : Subgroup Kˣ) :
-    IsMulCommutative Gal(kummerRadicalExtension (K := K) (Omega := Omega) n Delta/K) := by
+    IsMulCommutative Gal(current_kummerRadicalExtension n Delta/K) := by
   refine ⟨⟨fun sigma tau => ?_⟩⟩
   apply AlgEquiv.coe_toAlgHom_injective
   apply IntermediateField.adjoin_algHom_ext K
@@ -270,18 +278,19 @@ theorem kummerRadicalExtension_generator_pow_eq_one
     [IsSepClosure K Omega]
     (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
     (Delta : Subgroup Kˣ)
-    (sigma : Gal(kummerRadicalExtension (K := K) (Omega := Omega) n Delta/K))
+    (sigma : Gal(current_kummerRadicalExtension n Delta/K))
     {beta : Omega}
-    (hbeta : beta ∈ kummerRootSet (K := K) (Omega := Omega) n Delta) :
+    (hbeta : beta ∈ current_kummerRootSet n Delta) :
     (sigma ^ (n : ℕ))
         ⟨beta, IntermediateField.subset_adjoin K
-          (kummerRootSet (K := K) (Omega := Omega) n Delta) hbeta⟩ =
+          (current_kummerRootSet n Delta) hbeta⟩ =
       ⟨beta, IntermediateField.subset_adjoin K
-        (kummerRootSet (K := K) (Omega := Omega) n Delta) hbeta⟩ := by
-  let E := kummerRadicalExtension (K := K) (Omega := Omega) n Delta
+        (current_kummerRootSet n Delta) hbeta⟩ := by
+  let E := current_kummerRadicalExtension n Delta
+  letI : SMul Gal(E/K) Eˣ := (AlgEquiv.instMulDistribMulActionUnits (R := K) (A₁ := E)).toMulAction.toSemigroupAction.toSMul
   let betaE : E :=
     ⟨beta, IntermediateField.subset_adjoin K
-      (kummerRootSet (K := K) (Omega := Omega) n Delta) hbeta⟩
+      (current_kummerRootSet n Delta) hbeta⟩
   let betaUnit : Eˣ := Units.mk0 betaE (by
     intro hzero
     apply kummerRootSet_ne_zero n Delta hbeta
@@ -325,7 +334,7 @@ theorem kummerRadicalExtension_galois_pow_eq_one
     [IsSepClosure K Omega]
     (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
     (Delta : Subgroup Kˣ)
-    (sigma : Gal(kummerRadicalExtension (K := K) (Omega := Omega) n Delta/K)) :
+    (sigma : Gal(current_kummerRadicalExtension n Delta/K)) :
     sigma ^ (n : ℕ) = 1 := by
   apply AlgEquiv.coe_toAlgHom_injective
   apply IntermediateField.adjoin_algHom_ext K
@@ -339,7 +348,7 @@ theorem kummerRadicalExtension_isAbelianGalois
     (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
     (Delta : Subgroup Kˣ) :
     IsAbelianGalois K
-      (kummerRadicalExtension (K := K) (Omega := Omega) n Delta) where
+      (current_kummerRadicalExtension n Delta) where
   toIsGalois := kummerRadicalExtension_isGalois n Delta
   toIsMulCommutative := kummerRadicalExtension_isMulCommutative n hmu Delta
 

@@ -1,17 +1,23 @@
 module
 
+public import Mathlib
+
 public import Mathlib.NumberTheory.Padics.RingHoms
 public import Mathlib.Analysis.SpecialFunctions.Complex.Circle
 
 @[expose] public section
+
 
 noncomputable section
 namespace DedekindZetaZeroFree.RationalPadicArithmetic
 variable (p : Nat.Primes)
 instance : Fact p.1.Prime := ⟨p.2⟩
 
-lemma denominator_power (q : ℚ)
-    (hq : q ∈ Subring.closure ({((p.1 : ℚ)⁻¹)} : Set ℚ)) :
+section
+variable (q : ℚ)
+    (hq : q ∈ Subring.closure ({((p.1 : ℚ)⁻¹)} : Set ℚ))
+include q hq
+lemma denominator_power   :
     ∃ n : ℕ, ∃ a : ℤ, q * (p.1 : ℚ)^n = a := by
   induction hq using Subring.closure_induction with
   | mem q hq =>
@@ -43,8 +49,7 @@ lemma denominator_power (q : ℚ)
       (x*y) * ((p.1:ℚ)^n * (p.1:ℚ)^m) = (x*(p.1:ℚ)^n)*(y*(p.1:ℚ)^m) := by ring
       _ = _ := by rw [ha, hb]
 
-lemma integral_of_norm_le (q : ℚ)
-    (hq : q ∈ Subring.closure ({((p.1 : ℚ)⁻¹)} : Set ℚ))
+lemma integral_of_norm_le  
     (hn : ‖(q : ℚ_[p])‖ ≤ 1) : ∃ a : ℤ, q = a := by
   obtain ⟨n, a, ha⟩ := denominator_power p q hq
   have hcast : (q : ℚ_[p]) * (p.1 : ℚ_[p]) ^ n = (a : ℚ_[p]) := by exact_mod_cast ha
@@ -58,6 +63,8 @@ lemma integral_of_norm_le (q : ℚ)
   rw [ha, hb]
   push_cast
   ring
+end
+
 
 lemma range_iff_norm (z : ℚ_[p]) :
     z ∈ Set.range (fun x : ℤ_[p] => (x : ℚ_[p])) ↔ ‖z‖ ≤ 1 := by
@@ -76,7 +83,7 @@ lemma exists_representative (z : ℚ_[p]) :
     rw [norm_mul, Padic.norm_p_pow, zpow_neg, zpow_natCast]
     exact (inv_mul_le_one₀ (by positivity)).mpr hn.le
   let x : ℤ_[p] := ⟨(p.1 : ℚ_[p])^n * z, hn'⟩
-  let a : ℕ := x.appr n
+  let a  := x.appr n
   refine ⟨(a : ℚ) / (p.1 : ℚ)^n, ?_, by positivity, ?_, ?_⟩
   · rw [div_eq_mul_inv, ← inv_pow]
     exact Subring.mul_mem _ (natCast_mem _ a)

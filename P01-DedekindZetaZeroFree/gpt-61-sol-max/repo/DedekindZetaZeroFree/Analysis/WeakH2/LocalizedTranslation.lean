@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.Sobolev.Restriction.IntegerOrderWeakDerivatives
 public import DedekindZetaZeroFree.Analysis.Sobolev.LocalEmbeddingAndSmoothRepresentatives
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -12,40 +15,46 @@ namespace DedekindZetaZeroFree.WeakH2
 open MeasureTheory KPContLocalNorm
 open KPContLocalEnergy.SobolevEnergyEstimates.Raw
 
-def zeroExtension {n : ℕ} {B : LocalBall n} (f : BallL2 B) : Space n → ℂ :=
+def zeroExtension {n : ℕ} {B : LocalBall n} (f : BallL2 B)  :=
   B.carrier.indicator (fun x => f x)
 
-def differenceQuotient {n : ℕ} (k : Fin n) (t : ℝ) (f : Space n → ℂ) :
-    Space n → ℂ :=
+def differenceQuotient {n : ℕ} (k : Fin n) (t : ℝ) (f : Space n → ℂ)  :=
   fun x => (t : ℂ)⁻¹ * (f (x + t • EuclideanSpace.single k 1) - f x)
 
-theorem zeroExtension_memLp {n : ℕ} {B : LocalBall n} (f : BallL2 B) :
-    MemLp (zeroExtension f) 2 volume := by
-  exact (memLp_indicator_iff_restrict Metric.isOpen_ball.measurableSet.nullMeasurableSet).2 (Lp.memLp f)
+section
+variable {n : ℕ} {B : LocalBall n} (f : BallL2 B)
+include n B f
+theorem zeroExtension_memLp   :
+    MemLp (zeroExtension f) 2 volume := (memLp_indicator_iff_restrict Metric.isOpen_ball.measurableSet.nullMeasurableSet).2 (Lp.memLp f)
 
-theorem zeroExtension_norm {n : ℕ} {B : LocalBall n} (f : BallL2 B) :
+theorem zeroExtension_norm   :
     ‖(zeroExtension_memLp f).toLp (zeroExtension f)‖ = ‖f‖ := by
   rw [Lp.norm_toLp, Lp.norm_def, zeroExtension,
     eLpNorm_indicator_eq_eLpNorm_restrict (show MeasurableSet B.carrier from
       Metric.isOpen_ball.measurableSet).nullMeasurableSet]
 
-theorem differenceQuotient_memLp {n : ℕ} {B : LocalBall n}
-    (f : BallL2 B) (k : Fin n) (t : ℝ) :
+theorem differenceQuotient_memLp   (k : Fin n) (t : ℝ) :
     MemLp (differenceQuotient k t (zeroExtension f)) 2 volume := by
   have hshift := (zeroExtension_memLp f).comp_measurePreserving
     (measurePreserving_add_right volume (t • EuclideanSpace.single k 1))
   exact (hshift.sub (zeroExtension_memLp f)).const_mul (t : ℂ)⁻¹
+end
 
-def differenceClass {n : ℕ} (inner : LocalBall n) {outer : LocalBall n}
-    (f : BallL2 outer) (k : Fin n) (t : ℝ) : BallL2 inner :=
+
+section
+variable {n : ℕ} (inner : LocalBall n) {outer : LocalBall n}
+    (f : BallL2 outer) (k : Fin n) (t : ℝ)
+include n inner outer f k t
+def differenceClass   : BallL2 inner :=
   ((differenceQuotient_memLp f k t).mono_measure Measure.restrict_le_self).toLp
     (differenceQuotient k t (zeroExtension f))
 
-theorem differenceClass_ae {n : ℕ} (inner : LocalBall n) {outer : LocalBall n}
-    (f : BallL2 outer) (k : Fin n) (t : ℝ) :
+theorem differenceClass_ae   :
     ∀ᵐ x ∂volume.restrict inner.carrier,
       differenceClass inner f k t x = differenceQuotient k t (zeroExtension f) x :=
   MemLp.coeFn_toLp _
+end
+
 
 theorem safe_segment_mem {n : ℕ} (inner outer : LocalBall n)
     (hcenter : inner.center = outer.center) (k : Fin n) (t : ℝ)
@@ -63,23 +72,20 @@ theorem safe_segment_mem {n : ℕ} (inner outer : LocalBall n)
     _ = |s| + dist x outer.center := by rw [dist_eq_norm, add_sub_cancel_left, hnorm]
     _ < outer.radius := by linarith
 
-private theorem derivative_support {n : ℕ} (l : List (Fin n)) (f : Space n → ℂ) :
-    tsupport (coordinateDerivativeList l f) ⊆ tsupport f := by
-  induction l with
-  | nil => exact Set.Subset.rfl
-  | cons i l ih => exact (tsupport_fderiv_apply_subset ℝ
-      (EuclideanSpace.single i 1)).trans ih
+private alias derivative_support := _root_.DedekindZetaZeroFree.WeakJets.Raw.list_tsupport_subset
 
-private theorem derivative_smooth {n : ℕ} (l : List (Fin n))
-    (f : Space n → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
+section
+variable {n : ℕ} (l : List (Fin n))
+    (f : Space n → ℂ)
+include n l f
+private theorem derivative_smooth   (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
     ContDiff ℝ (⊤ : ℕ∞) (coordinateDerivativeList l f) := by
   induction l with
   | nil => exact hf
   | cons i l ih =>
     exact (ih.fderiv_right (m := (⊤ : ℕ∞)) (by simp)).clm_apply contDiff_const
 
-private theorem derivative_translate {n : ℕ} (l : List (Fin n))
-    (f : Space n → ℂ) (a x : Space n) :
+private theorem derivative_translate   (a x : Space n) :
     coordinateDerivativeList l (fun y => f (y - a)) x =
       coordinateDerivativeList l f (x - a) := by
   induction l generalizing x with
@@ -89,9 +95,11 @@ private theorem derivative_translate {n : ℕ} (l : List (Fin n))
     have he : coordinateDerivativeList l (fun y => f (y - a)) =
         fun y => coordinateDerivativeList l f (y + -a) := by
       funext y
-      simpa only [sub_eq_add_neg] using ih y
+      exact ih y
     rw [he, fderiv_comp_add_right]
     rfl
+end
+
 
  def translatedTest {n : ℕ} {inner outer : LocalBall n}
     (a : Space n) (h : ∀ x ∈ inner.carrier, x + a ∈ outer.carrier)
@@ -148,9 +156,12 @@ private theorem shift_pair_integrable {n : ℕ} (inner : LocalBall n)
     (p := 2) (μ := volume.restrict inner.carrier) (φ.hasCompactSupport.of_isClosed_subset isClosed_closure (derivative_support l _))
   exact hf.integrable_mul hd
 
-theorem differenceClass_weakDerivative {n m : ℕ} (inner outer : LocalBall n)
+section
+variable {n m : ℕ} (inner outer : LocalBall n)
     (hsub : inner.carrier ⊆ outer.carrier) (k : Fin n) (t : ℝ)
     (hshift : ∀ x ∈ inner.carrier, x + t • EuclideanSpace.single k 1 ∈ outer.carrier)
+include n m inner outer hsub k t hshift
+theorem differenceClass_weakDerivative  
     (α : MultiIndex n m) (f g : BallL2 outer) (hfg : IsWeakDerivative outer α f g) :
     IsWeakDerivative inner α (differenceClass inner f k t)
       (differenceClass inner g k t) := by
@@ -208,13 +219,13 @@ theorem differenceClass_weakDerivative {n m : ℕ} (inner outer : LocalBall n)
   rw [hleft, hright, coordinateDerivative, ht, h0]
   ring
 
-def translatedDifferenceSobolev {n m : ℕ} (inner outer : LocalBall n)
-    (hsub : inner.carrier ⊆ outer.carrier) (k : Fin n) (t : ℝ)
-    (hshift : ∀ x ∈ inner.carrier, x + t • EuclideanSpace.single k 1 ∈ outer.carrier)
+def translatedDifferenceSobolev  
     (u : IntegerSobolev outer m) : IntegerSobolev inner m where
   derivatives α := differenceClass inner (u.derivatives α) k t
   weak_derivatives α := differenceClass_weakDerivative inner outer hsub k t hshift
     α _ _ (u.weak_derivatives α)
+end
+
 
 theorem localized_difference_quotient_data {n : ℕ} (inner outer : LocalBall n)
     (hcenter : inner.center = outer.center) (hgap : inner.radius < outer.radius)
@@ -232,17 +243,20 @@ theorem localized_difference_quotient_data {n : ℕ} (inner outer : LocalBall n)
       x + t • EuclideanSpace.single k 1 ∈ outer.carrier :=
     fun x hx => safe_segment_mem inner outer hcenter k t hsafe hx (le_refl |t|)
   refine ⟨translatedDifferenceSobolev inner outer hsub k t hshift u, ?_, ?_⟩
-  · exact differenceClass_ae inner (value u) k t
+  · apply differenceClass_ae
   · intro j
-    exact differenceClass_ae inner (gradient u j) k t
+    apply differenceClass_ae
 
 def globalRestriction {n : ℕ} (inner : LocalBall n) :
     Lp ℂ 2 (volume : Measure (Space n)) →L[ℝ] BallL2 inner :=
   Lp.LpToLpOfMeasureLeSMul (c := 1) (by norm_num)
     (by simpa only [one_smul] using (Measure.restrict_le_self (s := inner.carrier)))
 
-theorem globalRestriction_norm_le {n : ℕ} (inner : LocalBall n)
-    (f : Lp ℂ 2 (volume : Measure (Space n))) : ‖globalRestriction inner f‖ ≤ ‖f‖ := by
+section
+variable {n : ℕ} (inner : LocalBall n)
+    (f : Lp ℂ 2 (volume : Measure (Space n)))
+include n inner f
+theorem globalRestriction_norm_le   : ‖globalRestriction inner f‖ ≤ ‖f‖ := by
   have h : ‖globalRestriction inner‖ ≤ 1 := by
     simpa [globalRestriction] using
       (Lp.norm_LpToLpOfMeasureLeSMul_le (E := ℂ) (p := 2)
@@ -250,24 +264,18 @@ theorem globalRestriction_norm_le {n : ℕ} (inner : LocalBall n)
         (by simpa only [one_smul] using (Measure.restrict_le_self (μ := volume) (s := inner.carrier))))
   exact (globalRestriction inner).le_opNorm f |>.trans (by nlinarith [norm_nonneg f])
 
-def translatedGlobalClass {n : ℕ} (inner : LocalBall n)
-    (f : Lp ℂ 2 (volume : Measure (Space n))) (a : Space n) : BallL2 inner :=
+def translatedGlobalClass   (a : Space n)  :=
   globalRestriction inner
     (KPContLocalEnergy.SobolevEnergyEstimates.CompactApproximation.translateL2 f (-a))
 
-theorem translatedGlobalClass_continuous {n : ℕ} (inner : LocalBall n)
-    (f : Lp ℂ 2 (volume : Measure (Space n))) : Continuous (translatedGlobalClass inner f) := by
+theorem translatedGlobalClass_continuous   : Continuous (translatedGlobalClass inner f) := by
   exact (globalRestriction inner).continuous.comp
     ((KPContLocalEnergy.SobolevEnergyEstimates.CompactApproximation.translateL2_continuous f).comp continuous_neg)
 
-theorem translatedGlobalClass_norm_le {n : ℕ} (inner : LocalBall n)
-    (f : Lp ℂ 2 (volume : Measure (Space n))) (a : Space n) :
-    ‖translatedGlobalClass inner f a‖ ≤ ‖f‖ := by
-  exact (globalRestriction_norm_le inner _).trans_eq
+def translatedGlobalClass_norm_le   (a : Space n)  := (globalRestriction_norm_le inner _).trans_eq
     (KPContLocalEnergy.SobolevEnergyEstimates.CompactApproximation.translateL2_norm f (-a))
 
-theorem translatedGlobalClass_ae {n : ℕ} (inner : LocalBall n)
-    (f : Lp ℂ 2 (volume : Measure (Space n))) (a : Space n) :
+theorem translatedGlobalClass_ae   (a : Space n) :
     ∀ᵐ x ∂volume.restrict inner.carrier, translatedGlobalClass inner f a x = f (x + a) := by
   have hr := Lp.coeFn_LpToLpOfMeasureLeSMul (E := ℂ) (p := 2) (c := 1)
     (by norm_num) (by simpa only [one_smul] using
@@ -279,14 +287,18 @@ theorem translatedGlobalClass_ae {n : ℕ} (inner : LocalBall n)
   apply hx.trans
   change ((Lp.compMeasurePreserving (fun x => x - -a) _ f) x) = f (x + a)
   simpa only [sub_neg_eq_add, Function.comp_apply] using hy
+end
 
-def segmentAverage {n : ℕ} (inner : LocalBall n) {outer : LocalBall n}
-    (f : BallL2 outer) (k : Fin n) (t : ℝ) : BallL2 inner :=
+
+section
+variable {n : ℕ} (inner : LocalBall n) {outer : LocalBall n}
+    (f : BallL2 outer) (k : Fin n) (t : ℝ)
+include n inner outer f k t
+def segmentAverage    :=
   t⁻¹ • ∫ s in (0 : ℝ)..t, translatedGlobalClass inner
     ((zeroExtension_memLp f).toLp (zeroExtension f)) (s • EuclideanSpace.single k 1)
 
-theorem segmentAverage_norm_le {n : ℕ} (inner : LocalBall n) {outer : LocalBall n}
-    (f : BallL2 outer) (k : Fin n) (t : ℝ) (ht : t ≠ 0) :
+theorem segmentAverage_norm_le   (ht : t ≠ 0) :
     ‖segmentAverage inner f k t‖ ≤ ‖f‖ := by
   have hbound : ∀ s ∈ Set.uIoc (0 : ℝ) t,
       ‖translatedGlobalClass inner ((zeroExtension_memLp f).toLp (zeroExtension f))
@@ -303,15 +315,20 @@ theorem segmentAverage_norm_le {n : ℕ} (inner : LocalBall n) {outer : LocalBal
     _ = ‖f‖ := by
       simp only [Real.norm_eq_abs, abs_inv, sub_zero]
       rw [mul_comm ‖f‖ |t|, ← mul_assoc, inv_mul_cancel₀ (abs_ne_zero.mpr ht), one_mul]
+end
 
-def testPairing {n : ℕ} {inner : LocalBall n}
+
+section
+variable {n : ℕ}
+include n
+def testPairing   {inner : LocalBall n}
     (φ : TestFunction inner.toOpens ℂ ⊤) : BallL2 inner →L[ℝ] ℂ :=
   let hφ : MemLp (fun x => φ x) 2 (volume.restrict inner.carrier) :=
     φ.continuous.memLp_of_hasCompactSupport φ.hasCompactSupport
   let L := (ContinuousLinearMap.mul ℂ ℂ).lpPairing (volume.restrict inner.carrier) 2 2
   (L.flip (hφ.toLp (fun x => φ x))).restrictScalars ℝ
 
-theorem testPairing_eq_integral {n : ℕ} {inner : LocalBall n}
+theorem testPairing_eq_integral   {inner : LocalBall n}
     (φ : TestFunction inner.toOpens ℂ ⊤) (f : BallL2 inner) :
     testPairing φ f = ∫ x in inner.carrier, f x * φ x := by
   change ((ContinuousLinearMap.mul ℂ ℂ).lpPairing (volume.restrict inner.carrier) 2 2)
@@ -325,7 +342,7 @@ theorem testPairing_eq_integral {n : ℕ} {inner : LocalBall n}
   simp only [ContinuousLinearMap.mul_apply']
   rw [hx]
 
-theorem segmentAverage_testPairing {n : ℕ} (inner : LocalBall n) {outer : LocalBall n}
+theorem segmentAverage_testPairing   (inner : LocalBall n) {outer : LocalBall n}
     (f : BallL2 outer) (k : Fin n) (t : ℝ)
     (φ : TestFunction inner.toOpens ℂ ⊤) :
     testPairing φ (segmentAverage inner f k t) =
@@ -352,7 +369,7 @@ theorem segmentAverage_testPairing {n : ℕ} (inner : LocalBall n) {outer : Loca
   rw [map_smul, ← (testPairing φ).intervalIntegral_comp_comm (hc.intervalIntegrable 0 t)]
   simp_rw [hp]
 
-private theorem zeroExtension_integrable {n : ℕ} {B : LocalBall n} (f : BallL2 B) :
+private theorem zeroExtension_integrable   {B : LocalBall n} (f : BallL2 B) :
     Integrable (zeroExtension f) volume := by
   apply (integrable_indicator_iff (show MeasurableSet B.carrier from
     Metric.isOpen_ball.measurableSet)).2
@@ -361,18 +378,18 @@ private theorem zeroExtension_integrable {n : ℕ} {B : LocalBall n} (f : BallL2
       (Metric.isBounded_ball (x := B.center) (r := B.radius)).measure_lt_top⟩
   exact (Lp.memLp f).integrable (by norm_num)
 
-private theorem translated_test_hasDerivAt {n : ℕ} {inner outer : LocalBall n}
+private theorem translated_test_hasDerivAt   {inner outer : LocalBall n}
     (f : BallL2 outer) (φ : TestFunction inner.toOpens ℂ ⊤) (k : Fin n) (s : ℝ) :
     HasDerivAt (fun s : ℝ => ∫ x, zeroExtension f x * φ (x - s • EuclideanSpace.single k 1))
       (∫ x, -(zeroExtension f x * coordinateDerivativeList [k] (fun y => φ y)
         (x - s • EuclideanSpace.single k 1))) s := by
-  let d : Space n → ℂ := coordinateDerivativeList [k] (fun y => φ y)
+  let d  := coordinateDerivativeList [k] (fun y => φ y)
   have hd : Continuous d := (derivative_smooth [k] (fun y => φ y) φ.contDiff).continuous
   have hdc : HasCompactSupport d := φ.hasCompactSupport.of_isClosed_subset isClosed_closure
     (derivative_support [k] _)
   obtain ⟨C, hC⟩ := (hdc.isCompact_range hd).isBounded.exists_norm_le
   have hb : ∀ x, ‖d x‖ ≤ C := fun x => hC _ (Set.mem_range_self x)
-  have hc : 0 ≤ C := (norm_nonneg (d 0)).trans (hb 0)
+  
   obtain ⟨D, hD⟩ := (φ.hasCompactSupport.isCompact_range φ.continuous).isBounded.exists_norm_le
   have hDb : ∀ x, ‖φ x‖ ≤ D := fun x => hD _ (Set.mem_range_self x)
   have hi := zeroExtension_integrable f
@@ -405,7 +422,7 @@ private theorem translated_test_hasDerivAt {n : ℕ} {inner outer : LocalBall n}
     (hi.norm.mul_const C)
     (Filter.Eventually.of_forall fun x s _ => hderiv x s)).2
 
-private theorem first_dirs {n : ℕ} (i : Fin n) : (firstIndex i).directions = [i] := by
+private theorem first_dirs   (i : Fin n) : (firstIndex i).directions = [i] := by
   classical
   simp only [MultiIndex.directions, firstIndex, apply_ite Fin.val, Fin.val_one,
     Fin.val_zero, List.replicate_one, List.replicate_zero]
@@ -419,11 +436,11 @@ private theorem first_dirs {n : ℕ} (i : Fin n) : (firstIndex i).directions = [
   rw [h, List.filter_eq]
   simp
 
-private theorem first_degree {n : ℕ} (i : Fin n) : (firstIndex i).degree = 1 := by
+private theorem first_degree   (i : Fin n) : (firstIndex i).degree = 1 := by
   simp only [firstIndex, MultiIndex.degree, apply_ite Fin.val, Fin.val_one, Fin.val_zero]
   simp
 
-private theorem global_shift_pair {n : ℕ} {inner outer : LocalBall n}
+private theorem global_shift_pair   {inner outer : LocalBall n}
     (f : BallL2 outer) (a : Space n)
     (h : ∀ x ∈ inner.carrier, x + a ∈ outer.carrier)
     (φ : TestFunction inner.toOpens ℂ ⊤) (l : List (Fin n)) :
@@ -435,6 +452,8 @@ private theorem global_shift_pair {n : ℕ} {inner outer : LocalBall n}
   simp_rw [zeroExtension, ← Set.indicator_mul_left]
   rw [integral_indicator (show MeasurableSet outer.carrier from Metric.isOpen_ball.measurableSet)]
   rfl
+end
+
 
 set_option maxHeartbeats 800000 in
 
@@ -442,9 +461,7 @@ theorem differenceClass_eq_segmentAverage {n : ℕ} (inner outer : LocalBall n)
     (hcenter : inner.center = outer.center) (u : IntegerSobolev outer 1)
     (k : Fin n) (t : ℝ) (hsafe : |t| < outer.radius - inner.radius) :
     differenceClass inner (value u) k t = segmentAverage inner (gradient u k) k t := by
-  have hsub : inner.carrier ⊆ outer.carrier := by
-    rw [LocalBall.carrier, LocalBall.carrier, hcenter]
-    exact Metric.ball_subset_ball (by linarith [abs_nonneg t])
+  
   have hshift (s : ℝ) (hs : |s| ≤ |t|) :
       ∀ x ∈ inner.carrier, x + s • EuclideanSpace.single k 1 ∈ outer.carrier :=
     fun x hx => safe_segment_mem inner outer hcenter k t hsafe hx hs
@@ -501,8 +518,7 @@ theorem differenceClass_eq_segmentAverage {n : ℕ} (inner outer : LocalBall n)
       exact he ▸ hd0
     have hFTC := intervalIntegral.integral_eq_sub_of_hasDerivAt hd (hG.intervalIntegrable 0 t)
     have he (s : ℝ) (hs : |s| ≤ |t|) : P s =
-        ∫ x in inner.carrier, zeroExtension (value u) (x + s • EuclideanSpace.single k 1) * φ x := by
-      exact global_shift_pair (value u) _ (hshift s hs) φ []
+        ∫ x in inner.carrier, zeroExtension (value u) (x + s • EuclideanSpace.single k 1) * φ x := global_shift_pair (value u) _ (hshift s hs) φ []
     rw [he t le_rfl, he 0 (by simpa using abs_nonneg t)] at hFTC
     rw [testPairing_eq_integral, segmentAverage_testPairing]
     have hleft : (∫ x in inner.carrier, differenceClass inner (value u) k t x * φ x) =
@@ -536,7 +552,7 @@ theorem differenceClass_eq_segmentAverage {n : ℕ} (inner outer : LocalBall n)
     intro g hg hgc hgs
     let φ : TestFunction inner.toOpens ℂ ⊤ :=
       ⟨fun x => (g x : ℂ), Complex.ofRealCLM.contDiff.comp hg,
-        by simpa only [Function.comp_def] using hgc.comp_left (g := Complex.ofReal) rfl, by
+        hgc.comp_left (g := Complex.ofReal) rfl, by
           change tsupport (fun x => (g x : ℂ)) ⊆ inner.carrier
           have hsupp : tsupport (fun x => (g x : ℂ)) = tsupport g := by
             unfold tsupport
@@ -565,7 +581,7 @@ theorem differenceClass_eq_segmentAverage {n : ℕ} (inner outer : LocalBall n)
     exact sub_eq_zero.mpr hp
   have hz := hzero htests
   apply Lp.ext
-  filter_upwards [hz, ae_restrict_mem (show MeasurableSet inner.carrier from Metric.isOpen_ball.measurableSet)] with x hx hm
+  filter_upwards [hz, ae_restrict_mem (Metric.isOpen_ball.measurableSet)] with x hx hm
   exact sub_eq_zero.mp (hx hm)
 
 theorem localized_difference_quotient {n : ℕ} (inner outer : LocalBall n)
@@ -589,7 +605,7 @@ theorem localized_difference_quotient {n : ℕ} (inner outer : LocalBall n)
     fun j => differenceClass_ae inner (gradient u j) k t, ?_⟩
   change ‖differenceClass inner (value u) k t‖ ≤ ‖gradient u k‖
   rw [differenceClass_eq_segmentAverage inner outer hcenter u k t hsafe]
-  exact segmentAverage_norm_le inner (gradient u k) k t ht
+  apply segmentAverage_norm_le <;> assumption
 
 end DedekindZetaZeroFree.WeakH2
 

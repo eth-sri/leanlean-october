@@ -11,7 +11,10 @@ namespace DedekindZetaZeroFree
 noncomputable section
 open scoped NumberField
 
-private lemma principal_E_reflection (F : Type) [Field F] [NumberField F]
+section
+variable (F : Type) [Field F] [NumberField F]
+include F
+private lemma principal_E_reflection  
     (m : Ideal (𝓞 F)) (η : RayClassCharacter F m) (D : PrincipalRayHeckeData F m η) :
     ∀ s, D.E s = D.E (1-s) := by
   have he : ∀ s : ℂ, 0 < s.re → s ≠ 1 → D.E s = s*(s-1)*D.Λ s := by
@@ -41,7 +44,7 @@ private lemma principal_E_reflection (F : Type) [Field F] [NumberField F]
   intro s
   exact eqn hh (Set.mem_univ s)
 
-private lemma principal_prefactor (F : Type) [Field F] [NumberField F]
+private lemma principal_prefactor  
     (hF : NumberField.IsTotallyComplex F) (m : Ideal (𝓞 F)) (s : ℂ) :
     s * ((heckeConductorScale F m : ℂ) ^ (-s / 2) *
       (((2 * Real.pi : ℝ) : ℂ))⁻¹ * (Complex.Gammaℂ (s + 1))⁻¹ *
@@ -65,7 +68,7 @@ private lemma principal_prefactor (F : Type) [Field F] [NumberField F]
   rw [hg]
   ring
 
-private lemma completion_ratio_norm (F : Type) [Field F] [NumberField F]
+private lemma completion_ratio_norm  
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (δ : ℝ) (s : ℂ) (hs : s.re = -δ) :
     ‖heckeReciprocalCompletionFactor F m s * heckeCompletionFactor F m (1-s)‖ =
       heckeConductorScale F m ^ ((1:ℝ)/2+δ) *
@@ -82,7 +85,7 @@ private lemma completion_ratio_norm (F : Type) [Field F] [NumberField F]
   rw [show (1:ℝ)/2+δ = δ/2 + (1+δ)/2 by ring, Real.rpow_add hQ, mul_pow]
   ring
 
-private lemma nonprincipal_left_formula (F : Type) [Field F] [NumberField F]
+private lemma nonprincipal_left_formula  
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (η : RayClassCharacter F m)
     (D : NonprincipalRayHeckeData F m η) (δ : ℝ) (hδ : 0 < δ)
     (s : ℂ) (hs : s.re = -δ) :
@@ -96,7 +99,7 @@ private lemma nonprincipal_left_formula (F : Type) [Field F] [NumberField F]
   rw [nonprincipalHeckeEntireContinuation, D.reflection, hx]
   ring
 
-private lemma principal_left_formula (F : Type) [Field F] [NumberField F]
+private lemma principal_left_formula  
     (hF : NumberField.IsTotallyComplex F) (m : Ideal (𝓞 F))
     (η : RayClassCharacter F m) (D : PrincipalRayHeckeData F m η)
     (δ : ℝ) (hδ : 0 < δ) (s : ℂ) (hs : s.re = -δ) :
@@ -113,7 +116,7 @@ private lemma principal_left_formula (F : Type) [Field F] [NumberField F]
   have hp := principal_prefactor F hF m s
   linear_combination (s-1) * heckeCompletionFactor F m (1-s) * D.L (1-s) * hp
 
-private lemma left_ratio_bound (F : Type) [Field F] [NumberField F]
+private lemma left_ratio_bound  
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (δ K : ℝ) (hδ : 0 < δ) (hK : 0 ≤ K)
     (hb : ∀ s : ℂ, s.re = -δ → ‖Complex.Gammaℂ (1-s) * (Complex.Gammaℂ s)⁻¹‖ ≤ K*(2+|s.im|)^2)
     (s : ℂ) (hs : s.re = -δ) :
@@ -130,7 +133,7 @@ private lemma left_ratio_bound (F : Type) [Field F] [NumberField F]
       mul_le_mul_of_nonneg_left hx (by positivity)
     _ = _ := by rw [mul_pow, ← pow_mul]; ring
 
-private lemma principal_strip_bound (F : Type) [Field F] [NumberField F]
+private lemma principal_strip_bound  
     (hF : NumberField.IsTotallyComplex F) (η : RayClassCharacter F (⊤ : Ideal (𝓞 F)))
     (D : PrincipalRayHeckeData F ⊤ η) (δ : ℝ) (hδ : 0 < δ)
     (s : ℂ) (hs : 1+δ ≤ s.re) (hs4 : s.re ≤ 4) :
@@ -152,7 +155,7 @@ private lemma principal_strip_bound (F : Type) [Field F] [NumberField F]
       mul_le_mul hn hb (norm_nonneg _) (by positivity)
     _ = _ := by ring
 
-private lemma nonprincipal_strip_bound (F : Type) [Field F] [NumberField F]
+private lemma nonprincipal_strip_bound  
     (hF : NumberField.IsTotallyComplex F) (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     (η : RayClassCharacter F m) (D : NonprincipalRayHeckeData F m η)
     (δ : ℝ) (hδ : 0 < δ) (s : ℂ) (hs : 1+δ ≤ s.re) :
@@ -161,7 +164,7 @@ private lemma nonprincipal_strip_bound (F : Type) [Field F] [NumberField F]
   exact heckeDirichlet_hasSum_norm_le F (1+δ) (by linarith) m hm η s hs (D.L s)
     (D.series s (by linarith))
 
-private lemma nonprincipal_left_bound (F : Type) [Field F] [NumberField F]
+private lemma nonprincipal_left_bound  
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (η : RayClassCharacter F m)
     (D : NonprincipalRayHeckeData F m η) (δ K : ℝ) (hδ : 0 < δ) (hK : 0 ≤ K)
     (hb : ∀ s : ℂ, s.re = -δ → ‖Complex.Gammaℂ (1-s) * (Complex.Gammaℂ s)⁻¹‖ ≤ K*(2+|s.im|)^2)
@@ -177,7 +180,7 @@ private lemma nonprincipal_left_bound (F : Type) [Field F] [NumberField F]
     _ ≤ _ * idealAbsoluteSum F (1+δ) := mul_le_mul hx hd (norm_nonneg _) (by positivity)
     _ = _ := by ring
 
-private lemma principal_left_bound (F : Type) [Field F] [NumberField F]
+private lemma principal_left_bound  
     (hF : NumberField.IsTotallyComplex F)
     (η : RayClassCharacter F (⊤ : Ideal (𝓞 F))) (D : PrincipalRayHeckeData F ⊤ η)
     (δ K : ℝ) (hδ : 0 < δ) (hδu : δ ≤ 1/10) (hK : 0 ≤ K)
@@ -204,7 +207,7 @@ private lemma principal_left_bound (F : Type) [Field F] [NumberField F]
     _ = _ := by rw [pow_succ]; ring
 
 theorem heckeEntireRegularizations_uniform_boundaries
-    (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
+      (hF : NumberField.IsTotallyComplex F)
     (δ : ℝ) (hδ : 0 < δ) (hδ_upper : δ ≤ 1 / 10) :
     ∃ C : ℝ, 0 < C ∧
       (∀ (𝔪 : Ideal (𝓞 F)) (hm : 𝔪 ≠ ⊥) (η : RayClassCharacter F 𝔪)
@@ -272,6 +275,8 @@ theorem heckeEntireRegularizations_uniform_boundaries
         (mul_le_mul_of_nonneg_right hCA (by positivity))
     · have hx := principal_strip_bound F hF η D δ hδ s hs.ge (by linarith)
       exact hx.trans (mul_le_mul hC4 (hHbase s) (by positivity) hC.le)
+end
+
 
 end
 end DedekindZetaZeroFree

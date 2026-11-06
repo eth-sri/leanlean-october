@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.QuadraticFormsAndSieveExponents
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.DivisorIncidenceRectangles
 
 @[expose] public section
+
 
 noncomputable section
 open scoped NumberField Classical
@@ -13,7 +16,7 @@ namespace DedekindZetaZeroFree.LargeSieve.Sieve.DivisorSeparation
 def idealDivisorRectangle (F : Type) [Field F] [NumberField F]
     (c : Ideal (𝓞 F)) (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
     (S T R U V : Finset (Ideal (𝓞 F)))
-    (x y : Ideal (𝓞 F) → ℂ) : ℝ :=
+    (x y : Ideal (𝓞 F) → ℂ)  :=
   ∑ d ∈ S, ∑ e ∈ T, ∑ a ∈ R,
     ‖∑ u ∈ U, ∑ v ∈ V,
       if u ⊔ v = ⊤ ∧ d ∣ u ∧ e ∣ v then
@@ -35,8 +38,7 @@ private lemma rectangle_support_disjoint
     rw [Finset.disjoint_left]
     intro x hxu hxv
     rw [Multiset.mem_toFinset] at hxu hxv
-    have hxmem : x ∈ UniqueFactorizationMonoid.normalizedFactors u ∩
-        UniqueFactorizationMonoid.normalizedFactors v := Multiset.mem_inter.mpr ⟨hxu, hxv⟩
+    have hxmem  := Multiset.mem_inter.mpr ⟨hxu, hxv⟩
     have hdvd : x ∣ (UniqueFactorizationMonoid.normalizedFactors u ∩
         UniqueFactorizationMonoid.normalizedFactors v).prod := Multiset.dvd_prod hxmem
     rw [hprod] at hdvd
@@ -113,7 +115,7 @@ theorem rectangle_operator_bound
   have hAA : ∀ d (z : U → ℂ),
       (∑ a : R, ‖∑ u : U, A d a u * z u‖ ^ 2) ≤ UA * ∑ u : U, ‖z u‖ ^ 2 := by
     intro d z
-    let zz : Ideal (𝓞 F) → ℂ := fun u => if hu : u ∈ U then z ⟨u, hu⟩ else 0
+    let zz  := fun u => if hu : u ∈ U then z ⟨u, hu⟩ else 0
     have hz : ∀ u : U, zz u = z u := by intro u; simp [zz, u.property]
     have hh := hA d d.property zz
     rw [← Finset.sum_coe_sort R, ← Finset.sum_coe_sort U] at hh
@@ -122,7 +124,7 @@ theorem rectangle_operator_bound
   have hBB : ∀ e (z : V → ℂ),
       (∑ a : R, ‖∑ v : V, B e a v * z v‖ ^ 2) ≤ UB * ∑ v : V, ‖z v‖ ^ 2 := by
     intro e z
-    let zz : Ideal (𝓞 F) → ℂ := fun v => if hv : v ∈ V then z ⟨v, hv⟩ else 0
+    let zz  := fun v => if hv : v ∈ V then z ⟨v, hv⟩ else 0
     have hz : ∀ v : V, zz v = z v := by intro v; simp [zz, v.property]
     have hh := hB e e.property zz
     rw [← Finset.sum_coe_sort R, ← Finset.sum_coe_sort V] at hh

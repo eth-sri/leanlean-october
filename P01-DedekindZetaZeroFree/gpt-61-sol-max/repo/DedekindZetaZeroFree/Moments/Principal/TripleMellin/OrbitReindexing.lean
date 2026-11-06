@@ -14,18 +14,24 @@ variable {F : Type} [Field F] [NumberField F]
 variable {A : SArithmeticData F} {σ : F →+* ℂ}
 variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
-abbrev FrequencyIndex (P : PrincipalData A σ η hS) :=
+section
+variable (P : PrincipalData A σ η hS)
+include P in
+abbrev FrequencyIndex   :=
   {u // u ∈ P.frequencies.reps} × A.Exterior
 
-def frequencyRow (P : PrincipalData A σ η hS) (j : FrequencyIndex P) :
+include P in
+def frequencyRow   (j : FrequencyIndex P) :
     ProbeOrbitNormSum.Nonzero A :=
   ⟨j.1.val.val * P.coefficients.generator j.2 ^ 6,
     mul_ne_zero j.1.val.property (pow_ne_zero _ (P.coefficients.generates j.2).1)⟩
 
-def frequencyOrbit (P : PrincipalData A σ η hS) (j : FrequencyIndex P) :
+include P in
+def frequencyOrbit   (j : FrequencyIndex P) :
     ProbeOrbitNormSum.Orbit A := ProbeOrbitNormSum.orbitMk A (frequencyRow P j)
 
-private lemma rowUnit_frequencyRow (P : PrincipalData A σ η hS) (j : FrequencyIndex P) :
+include P in
+private lemma rowUnit_frequencyRow   (j : FrequencyIndex P) :
     ThetaReflectionData.rowUnit A (frequencyRow P j) =
       ThetaReflectionData.rowUnit A j.1.val * P.allowed.generator j.2 ^ 6 := by
   apply Units.ext
@@ -40,7 +46,8 @@ private lemma gamma_val_eq_sixth (γ : ProbeOrbitNormSum.Gamma A) :
   refine ⟨δ, ?_⟩
   rw [← hδ, powMonoidHom_apply, Subgroup.coe_pow]
 
-theorem frequencyOrbit_bijective (P : PrincipalData A σ η hS) :
+include P in
+theorem frequencyOrbit_bijective   :
     Function.Bijective (frequencyOrbit P) := by
   refine ⟨?_, ?_⟩
   · rintro ⟨u, I⟩ ⟨u', I'⟩ heq
@@ -101,7 +108,8 @@ theorem frequencyOrbit_bijective (P : PrincipalData A σ η hS) :
         hrow, hγF]
       ring
 
-def frequencyEquiv (P : PrincipalData A σ η hS) :
+include P in
+def frequencyEquiv   :
     FrequencyIndex P ≃ ProbeOrbitNormSum.Orbit A :=
   Equiv.ofBijective (frequencyOrbit P) (frequencyOrbit_bijective P)
 
@@ -134,7 +142,8 @@ private theorem normPow (A : SArithmeticData F) (x : A.G) (n : ℕ) :
   | zero => simp [SArithmeticData.norm]
   | succ n ih => rw [pow_succ, ProbeSheet.norm_mul, ih, pow_succ]
 
-theorem frequencyOrbit_norm (P : PrincipalData A σ η hS) (j : FrequencyIndex P) :
+include P in
+theorem frequencyOrbit_norm   (j : FrequencyIndex P) :
     ProbeOrbitNormSum.orbitNorm A (frequencyOrbit P j) =
       (FiniteTransform.exteriorNorm A.R.toSubring j.1.val.val : ℝ) *
         A.exteriorNorm j.2 ^ 6 := by
@@ -160,16 +169,19 @@ theorem frequencyOrbit_norm (P : PrincipalData A σ η hS) (j : FrequencyIndex P
     norm_diagonal_rowUnit A ⟨P.coefficients.generator j.2, (P.coefficients.generates j.2).1⟩,
     hg]
 
-def frequencySection (P : PrincipalData A σ η hS) (o : ProbeOrbitNormSum.Orbit A) :
+include P in
+def frequencySection   (o : ProbeOrbitNormSum.Orbit A) :
     ProbeOrbitNormSum.Nonzero A := frequencyRow P ((frequencyEquiv P).symm o)
 
-theorem frequencySection_leftInverse (P : PrincipalData A σ η hS) :
+include P in
+theorem frequencySection_leftInverse   :
     Function.LeftInverse (ProbeOrbitNormSum.orbitMk A) (frequencySection P) := by
   intro o
   change frequencyEquiv P ((frequencyEquiv P).symm o) = o
   simp
 
-def orbitIndexEquiv (P : PrincipalData A σ η hS) :
+include P in
+def orbitIndexEquiv   :
     MellinSeriesIndex P ≃ ProbePoissonOrbitFormula.Index A where
   toFun i := (i.2.2.2.1, i.2.1, i.2.2.1, frequencyEquiv P (i.1, i.2.2.2.2))
   invFun i := ((frequencyEquiv P).symm i.2.2.2 |>.1,
@@ -177,7 +189,8 @@ def orbitIndexEquiv (P : PrincipalData A σ η hS) :
   left_inv i := by simp
   right_inv i := by simp
 
-theorem probe_eq_reindexed_sum (P : PrincipalData A σ η hS)
+include P in
+theorem probe_eq_reindexed_sum  
     (N : MellinNormalizationData A σ η hS P)
     (ρ : ProbeOrbitNormSum.Orbit A → ProbeOrbitNormSum.Nonzero A)
     (hρ : Function.LeftInverse (ProbeOrbitNormSum.orbitMk A) ρ)
@@ -187,6 +200,8 @@ theorem probe_eq_reindexed_sum (P : PrincipalData A σ η hS)
         X.val Y.val Z.val (orbitIndexEquiv P i) := by
   rw [(probe_eq_orbit_sum P N ρ hρ X Y Z).2]
   exact ((orbitIndexEquiv P).tsum_eq _).symm
+end
+
 
 end
 end DedekindZetaZeroFree.NormalizedProbe.TripleMellin

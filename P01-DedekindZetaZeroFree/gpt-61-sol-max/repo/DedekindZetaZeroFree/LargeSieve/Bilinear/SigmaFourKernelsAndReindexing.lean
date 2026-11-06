@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LFunctions.Hecke.QuadraticFamilies.NormalizedReciprocity
 public import DedekindZetaZeroFree.Arithmetic.Ideals.FinitePrimeSupportDecomposition
 public import DedekindZetaZeroFree.Arithmetic.Ideals.SquarefreeKernelNorm
@@ -8,6 +10,7 @@ public import DedekindZetaZeroFree.Arithmetic.RayClasses.Characters.CharacterFin
 
 @[expose] public section
 
+
 section
 
 noncomputable section
@@ -15,48 +18,56 @@ open scoped NumberField Classical
 namespace DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4
 variable {F : Type} [Field F] [NumberField F]
 
-def primeToSquarefreeKernel (c I : Ideal (𝓞 F)) : Ideal (𝓞 F) :=
+def primeToSquarefreeKernel (c I : Ideal (𝓞 F))  :=
   ∏ p ∈ (UniqueFactorizationMonoid.normalizedFactors
     (DedekindZetaZeroFree.LargeSieve.Sieve.squarefreeKernel I)).toFinset.filter (fun p => ¬ p ∣ c), p
 
-def sc (c I : Ideal (𝓞 F)) : ℝ :=
-  (Ideal.absNorm (primeToSquarefreeKernel c I) : ℝ)
+def sc (c I : Ideal (𝓞 F))  :=
+  (Ideal.absNorm (primeToSquarefreeKernel c I))
 
-def HasRapidDecayAtInfinity (h : ℝ → ℂ) : Prop :=
+def HasRapidDecayAtInfinity (h : ℝ → ℂ)  :=
   ∀ A : ℝ, 0 ≤ A → ∃ C R : ℝ, 0 ≤ C ∧ 1 ≤ R ∧
     ∀ t : ℝ, R ≤ t → ‖h t‖ ≤ C * Real.rpow t (-A)
 
-def S4Term (c m : Ideal (𝓞 F)) (K : ℝ) (h : ℝ → ℂ) (X : ℝ)
+section
+variable (c m : Ideal (𝓞 F)) (K : ℝ) (h : ℝ → ℂ) (X : ℝ)
     {f : Ideal (𝓞 F)} (η : DedekindZetaZeroFree.RayClassCharacter F f)
-    (I : Ideal (𝓞 F)) : ℂ :=
+include c m K h X f η
+def S4Term  
+    (I : Ideal (𝓞 F))  :=
   if I ≠ ⊥ ∧ I ⊔ m = ⊤ ∧ sc c I ≤ K then
     h ((Ideal.absNorm I : ℝ) / X) * η I else 0
 
-def S4 (c m : Ideal (𝓞 F)) (K : ℝ) (h : ℝ → ℂ) (X : ℝ)
-    {f : Ideal (𝓞 F)} (η : DedekindZetaZeroFree.RayClassCharacter F f) : ℂ :=
+def S4    :=
   ∑' I, S4Term c m K h X η I
+end
 
-def S4allTerm (m : Ideal (𝓞 F)) (h : ℝ → ℂ) (X : ℝ)
+
+section
+variable (m : Ideal (𝓞 F)) (h : ℝ → ℂ) (X : ℝ)
     {f : Ideal (𝓞 F)} (η : DedekindZetaZeroFree.RayClassCharacter F f)
-    (I : Ideal (𝓞 F)) : ℂ :=
+include m h X f η
+def S4allTerm  
+    (I : Ideal (𝓞 F))  :=
   if I ≠ ⊥ ∧ I ⊔ m = ⊤ then h ((Ideal.absNorm I : ℝ) / X) * η I else 0
 
-def S4all (m : Ideal (𝓞 F)) (h : ℝ → ℂ) (X : ℝ)
-    {f : Ideal (𝓞 F)} (η : DedekindZetaZeroFree.RayClassCharacter F f) : ℂ :=
+def S4all    :=
   ∑' I, S4allTerm m h X η I
+end
+
 
 def S4finite (c m : Ideal (𝓞 F)) (K : ℝ) (h : ℝ → ℂ) (X R : ℝ)
-    {f : Ideal (𝓞 F)} (η : DedekindZetaZeroFree.RayClassCharacter F f) : ℂ :=
+    {f : Ideal (𝓞 F)} (η : DedekindZetaZeroFree.RayClassCharacter F f)  :=
   ∑ I ∈ DedekindZetaZeroFree.LargeSieve.boundedNormIdeals F (R * X), S4Term c m K h X η I
 
 def weightedSquareSeries (m : Ideal (𝓞 F)) (h : ℝ → ℂ) (X : ℝ)
     {f : Ideal (𝓞 F)} (η : DedekindZetaZeroFree.RayClassCharacter F f)
-    (a : Ideal (𝓞 F)) : ℂ :=
+    (a : Ideal (𝓞 F))  :=
   ∑' b : Ideal (𝓞 F), if b ≠ ⊥ ∧ b ⊔ (m * f) = ⊤ then
     h ((Ideal.absNorm a : ℝ) * (Ideal.absNorm b : ℝ) ^ 2 / X) * (η b) ^ 2 else 0
 
 def squareWeightSeries (m f : Ideal (𝓞 F)) (h : ℝ → ℂ) (X : ℝ)
-    (a : Ideal (𝓞 F)) : ℂ :=
+    (a : Ideal (𝓞 F))  :=
   ∑' b : Ideal (𝓞 F), if b ≠ ⊥ ∧ b ⊔ (m * f) = ⊤ then
     h ((Ideal.absNorm a : ℝ) * (Ideal.absNorm b : ℝ) ^ 2 / X) else 0
 
@@ -189,10 +200,10 @@ theorem kernel_algebra :
     have hcopc : a ⊔ c = ⊤ := by
       by_contra hne
       obtain ⟨p, hp_max, hp_le⟩ := Ideal.exists_le_maximal (a ⊔ c) hne
-      have hp_prime : p.IsPrime := hp_max.isPrime
+      have hp_prime  := hp_max.isPrime
       have ha_le : a ≤ p := le_trans le_sup_left hp_le
       have hc_le : c ≤ p := le_trans le_sup_right hp_le
-      have hm_le : m ≤ p :=
+      have hm_le  :=
         le_trans (Ideal.dvd_iff_le.mp hcm)
           ((Ideal.IsPrime.radical_le_iff hp_prime).mpr hc_le)
       have htop : (⊤ : Ideal (𝓞 F)) ≤ p := by
@@ -239,7 +250,7 @@ private lemma rapid_summable (h : ℝ → ℂ) (hh : HasRapidDecayAtInfinity h)
     Summable (fun I => if I = ⊥ then (0 : ℝ) else ‖h (t I)‖) := by
   obtain ⟨C, R, hC, hR, hdec⟩ := hh 2 (by norm_num)
   let s := DedekindZetaZeroFree.LargeSieve.boundedNormIdeals F (R / u)
-  let g : Ideal (𝓞 F) → ℝ := fun I => if I = ⊥ then 0 else ‖h (t I)‖
+  let g  := fun I => if I = ⊥ then 0 else ‖h (t I)‖
   have hsmall : Summable (fun I => if I ∈ s then g I else 0) := by
     apply summable_of_ne_finset_zero (s := s)
     intro I hI
@@ -289,7 +300,7 @@ theorem rapid_convergence_api :
     Summable (fun b : Ideal (𝓞 F) => ‖if b ≠ ⊥ ∧ b ⊔ (m * f) = ⊤ then
       h ((Ideal.absNorm a : ℝ) * (Ideal.absNorm b : ℝ) ^ 2 / X) else 0‖)) := by
   have hlinear (h : ℝ → ℂ) (hh : HasRapidDecayAtInfinity h) (X : ℝ) (hX : 0 < X) :
-      Summable (fun I : Ideal (𝓞 F) => if I = ⊥ then (0 : ℝ) else
+      Summable (fun I : Ideal (𝓞 F) => if I = ⊥ then (0) else
         ‖h ((Ideal.absNorm I : ℝ) / X)‖) := by
     apply rapid_summable h hh _ X⁻¹ (inv_pos.mpr hX)
     intro I _
@@ -357,7 +368,7 @@ variable {F : Type} [Field F] [NumberField F]
  abbrev NzIdeals (F : Type) [Field F] [NumberField F] :=
   {b : Ideal (𝓞 F) // b ≠ ⊥}
 
- def squareMap (p : SfIdeals F × NzIdeals F) : Ideal (𝓞 F) :=
+ def squareMap (p : SfIdeals F × NzIdeals F)  :=
   p.1.val * p.2.val ^ 2
 
 private theorem squareMap_injective : Function.Injective (squareMap (F := F)) := by
@@ -386,10 +397,10 @@ private theorem squareMap_injective : Function.Injective (squareMap (F := F)) :=
     have := hp a
     have := hq a
     omega
-  have ha : p.1.val = q.1.val := associated_iff_eq.mp
+  have ha  := associated_iff_eq.mp
     ((UniqueFactorizationMonoid.associated_iff_normalizedFactors_eq_normalizedFactors
       p.1.property.1 q.1.property.1).mpr (Multiset.ext.mpr fun a => (hcount a).1))
-  have hb : p.2.val = q.2.val := associated_iff_eq.mp
+  have hb  := associated_iff_eq.mp
     ((UniqueFactorizationMonoid.associated_iff_normalizedFactors_eq_normalizedFactors
       p.2.property q.2.property).mpr (Multiset.ext.mpr fun a => (hcount a).2))
   exact Prod.ext (Subtype.ext ha) (Subtype.ext hb)
@@ -428,7 +439,7 @@ private theorem reindex (m : Ideal (𝓞 F)) {f : Ideal (𝓞 F)}
     ∑' a : Ideal (𝓞 F), if a ≠ ⊥ ∧ Squarefree a ∧ a ⊔ m = ⊤ ∧ P a then
       η a * weightedSquareSeries m h X η a else 0 := by
   classical
-  let T : Ideal (𝓞 F) → ℂ := fun I =>
+  let T  := fun I =>
     if I ≠ ⊥ ∧ I ⊔ m = ⊤ ∧ P I then h ((Ideal.absNorm I : ℝ) / X) * η I else 0
   have ht (a : SfIdeals F) (b : NzIdeals F) :
       T (squareMap (a, b)) =
@@ -799,71 +810,79 @@ namespace DedekindZetaZeroFree.LargeSieve.Bilinear
 
 variable {F : Type} [Field F] [NumberField F]
 
-def primeToSquarefreeKernel (c I : Ideal (𝓞 F)) : Ideal (𝓞 F) :=
+def primeToSquarefreeKernel (c I : Ideal (𝓞 F))  :=
   ∏ p ∈ (UniqueFactorizationMonoid.normalizedFactors
     (DedekindZetaZeroFree.LargeSieve.Sieve.squarefreeKernel I)).toFinset.filter (fun p => ¬ p ∣ c), p
 
-def sc (c I : Ideal (𝓞 F)) : ℝ :=
-  (Ideal.absNorm (primeToSquarefreeKernel c I) : ℝ)
+def sc (c I : Ideal (𝓞 F))  :=
+  (Ideal.absNorm (primeToSquarefreeKernel c I))
 
-def HasRapidDecayAtInfinity (h : ℝ → ℂ) : Prop :=
+def HasRapidDecayAtInfinity (h : ℝ → ℂ)  :=
   ∀ A : ℝ, 0 ≤ A → ∃ C R : ℝ, 0 ≤ C ∧ 1 ≤ R ∧
     ∀ t : ℝ, R ≤ t → ‖h t‖ ≤ C * Real.rpow t (-A)
 
-def S4Term (c m : Ideal (𝓞 F)) (K : ℝ) (h : ℝ → ℂ) (X : ℝ)
+section
+variable (c m : Ideal (𝓞 F)) (K : ℝ) (h : ℝ → ℂ) (X : ℝ)
     {f : Ideal (𝓞 F)} (η : DedekindZetaZeroFree.RayClassCharacter F f)
-    (I : Ideal (𝓞 F)) : ℂ :=
+include c m K h X f η
+def S4Term  
+    (I : Ideal (𝓞 F))  :=
   if I ≠ ⊥ ∧ I ⊔ m = ⊤ ∧ sc c I ≤ K then
     h ((Ideal.absNorm I : ℝ) / X) * η I else 0
 
-def S4 (c m : Ideal (𝓞 F)) (K : ℝ) (h : ℝ → ℂ) (X : ℝ)
-    {f : Ideal (𝓞 F)} (η : DedekindZetaZeroFree.RayClassCharacter F f) : ℂ :=
+def S4    :=
   ∑' I, S4Term c m K h X η I
+end
 
-def S4allTerm (m : Ideal (𝓞 F)) (h : ℝ → ℂ) (X : ℝ)
+
+section
+variable (m : Ideal (𝓞 F)) (h : ℝ → ℂ) (X : ℝ)
     {f : Ideal (𝓞 F)} (η : DedekindZetaZeroFree.RayClassCharacter F f)
-    (I : Ideal (𝓞 F)) : ℂ :=
+include m h X f η
+def S4allTerm  
+    (I : Ideal (𝓞 F))  :=
   if I ≠ ⊥ ∧ I ⊔ m = ⊤ then h ((Ideal.absNorm I : ℝ) / X) * η I else 0
 
-def S4all (m : Ideal (𝓞 F)) (h : ℝ → ℂ) (X : ℝ)
-    {f : Ideal (𝓞 F)} (η : DedekindZetaZeroFree.RayClassCharacter F f) : ℂ :=
+def S4all    :=
   ∑' I, S4allTerm m h X η I
+end
+
 
 def squareWeightSeries (m f : Ideal (𝓞 F)) (h : ℝ → ℂ) (X : ℝ)
-    (a : Ideal (𝓞 F)) : ℂ :=
+    (a : Ideal (𝓞 F))  :=
   ∑' b : Ideal (𝓞 F), if b ≠ ⊥ ∧ b ⊔ (m * f) = ⊤ then
     h ((Ideal.absNorm a : ℝ) * (Ideal.absNorm b : ℝ) ^ 2 / X) else 0
 
 theorem finite_support_S4allTerm {m f : Ideal (𝓞 F)}
     (h : ℝ → ℂ) (hh : HasCompactSupport h) {X : ℝ} (hX : 0 < X)
     (η : DedekindZetaZeroFree.RayClassCharacter F f) :
-    (Function.support (S4allTerm m h X η)).Finite := by
-  exact (DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4.compact_support_api (F := F)).2.1 h hh hX η
+    (Function.support (S4allTerm m h X η)).Finite := (DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4.compact_support_api (F := F)).2.1 h hh hX η
 
 theorem rapidDecay_of_compactSupport (h : ℝ → ℂ) (hh : HasCompactSupport h) :
-    HasRapidDecayAtInfinity h := by
-  exact (DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4.compact_support_api (F := ℚ)).2.2.2 h hh
+    HasRapidDecayAtInfinity h := (DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4.compact_support_api (F := ℚ)).2.2.2 h hh
 
-theorem S4_reindex_quadratic_of_radical_dvd {c m f : Ideal (𝓞 F)}
-    (hc : c ≠ ⊥) (hm : m ≠ ⊥) (hf : f ≠ ⊥) (hcm : c.radical ∣ m)
+section
+variable {c m f : Ideal (𝓞 F)}
+    (hc : c ≠ ⊥) (hm : m ≠ ⊥) (hf : f ≠ ⊥)
+include c m f hc hm hf
+theorem S4_reindex_quadratic_of_radical_dvd   (hcm : c.radical ∣ m)
     {K X : ℝ} (hK : 1 ≤ K) (hX : 0 < X)
     (h : ℝ → ℂ) (hh : HasRapidDecayAtInfinity h)
     (η : DedekindZetaZeroFree.RayClassCharacter F f) (hprim : η.IsPrimitive)
     (hquad : ∀ I : Ideal (𝓞 F), (η I) ^ 3 = η I) :
     S4 c m K h X η = ∑ a ∈ DedekindZetaZeroFree.LargeSieve.Sieve.idealAdmissibleFinset F m K,
-      η a * squareWeightSeries m f h X a := by
-  exact (DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4.radical_reindex_api (F := F)).2 hc hm hf hcm hK hX h hh η hprim hquad
+      η a * squareWeightSeries m f h X a := (DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4.radical_reindex_api (F := F)).2 hc hm hf hcm hK hX h hh η hprim hquad
 
-theorem S4_reindex_fixed_primes_quadratic {c m f : Ideal (𝓞 F)}
-    (hc : c ≠ ⊥) (hm : m ≠ ⊥) (hf : f ≠ ⊥)
+theorem S4_reindex_fixed_primes_quadratic  
     {K X : ℝ} (hK : 1 ≤ K) (hX : 0 < X)
     (h : ℝ → ℂ) (hh : HasRapidDecayAtInfinity h)
     (η : DedekindZetaZeroFree.RayClassCharacter F f) (hprim : η.IsPrimitive)
     (hquad : ∀ I : Ideal (𝓞 F), (η I) ^ 3 = η I) :
     S4 c m K h X η = ∑ e ∈ squarefreeBadPool c, if e ⊔ m = ⊤ then
       η e * (∑ z ∈ DedekindZetaZeroFree.LargeSieve.Sieve.idealAdmissibleFinset F (m * c) K,
-        η z * squareWeightSeries m f h X (e * z)) else 0 := by
-  exact (DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4.fixed_primes_reindex_api (F := F)).2 hc hm hf hK hX h hh η hprim hquad
+        η z * squareWeightSeries m f h X (e * z)) else 0 := (DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4.fixed_primes_reindex_api (F := F)).2 hc hm hf hK hX h hh η hprim hquad
+end
+
 
 end DedekindZetaZeroFree.LargeSieve.Bilinear
 

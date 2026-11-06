@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Poisson.FieldTransform.MellinSpectrumRecovery
 
 @[expose] public section
+
 
 noncomputable section
 open scoped Classical ContDiff Topology
@@ -30,14 +33,13 @@ private theorem mellinConvergent_of_contDiff_hasCompactSupport {h : ℝ → ℂ}
 private theorem mellinConvergent_comp_sq {f : ℝ → ℂ} (hf : MellinConvergent f (1 / 2)) :
     MellinConvergent (fun t : ℝ => f (t ^ 2)) 1 := by
   have h2 := (MellinConvergent.comp_rpow (f := f) (s := 1) (a := 2) (by norm_num)).mpr
-    (by simpa using hf)
+    (hf)
   simpa [MellinConvergent, Complex.cpow_zero, sub_self, one_smul, Real.rpow_ofNat] using h2
 
 private lemma Gammaℂ_half_ne_zero : Complex.Gammaℂ (1 / 2 : ℂ) ≠ 0 := by
   rw [Complex.Gammaℂ_def]
   refine mul_ne_zero (mul_ne_zero two_ne_zero ?_) (Complex.Gamma_ne_zero_of_re_pos ?_)
-  · exact Complex.cpow_ne_zero_iff.mpr
-      (Or.inl (mul_ne_zero two_ne_zero (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero)))
+  · apply Complex.cpow_ne_zero_iff.mpr <;> aesop
   · norm_num
 
 private lemma Gammaℂ_half_pow_mul_inv_pow_mul_div (r : ℕ) (hr : 1 ≤ r) (m : ℂ) :

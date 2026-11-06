@@ -105,9 +105,12 @@ private theorem phase_eq_eS (A : SArithmeticData F) (y : SLocalProduct F A.Sf) :
     rfl
   rw [ProbeAdditive.phase, archPhase_eq_trace A, key]
 
+section
+variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+include S η R
 theorem additiveCharacter_eq_eS
-    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-    (R : PrincipalMellin.ActualRecipe S η) (x : F) :
+      (x : F) :
     R.probe.coefficients.additiveCharacter x =
       (R.A.eS (sLocalDiagonal F R.A.Sf x) : ℂ) := by
   rw [R.probe.sameTrace]
@@ -119,15 +122,13 @@ theorem additiveCharacter_eq_eS
   exact phase_eq_eS R.A _
 
 theorem additiveCharacter_eq_fieldTrace
-    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-    (R : PrincipalMellin.ActualRecipe S η) (x : F) :
+      (x : F) :
     R.probe.coefficients.additiveCharacter x = (R.A.fieldTraceCharacter x : ℂ) := by
   rw [additiveCharacter_eq_eS R x]
   rfl
 
 def SourceCharacterCompatibility
-    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-    (R : PrincipalMellin.ActualRecipe S η)
+     
     (ψ : ∀ p : ThetaBranch.ExteriorPrime R.A, AddChar (DHCubic.Residue F p.val) ℂ)
     (L : R.A.UnitQuotient → Fˣ →* ℂ) : Prop :=
   (∀ (p : ThetaBranch.ExteriorPrime R.A) (t : 𝓞 F),
@@ -141,8 +142,7 @@ def SourceCharacterCompatibility
       R.σ ((R.A.H_S (R.A.diagonal ε.val) (R.A.diagonal x) : Fˣ) : F)
 
  noncomputable def representativeSourceCharacter
-    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-    (R : PrincipalMellin.ActualRecipe S η) (ε : R.A.U) : Fˣ →* ℂ where
+      (ε : R.A.U) : Fˣ →* ℂ where
   toFun x :=
     (R.A.correctionLS R.probe.correction.Λ R.probe.correction.G
       R.probe.correction.η_id (R.A.diagonal x) : ℂ) *
@@ -171,8 +171,7 @@ def SourceCharacterCompatibility
     simp [SArithmeticData.correctionLS, SArithmeticData.ideleSInverseProduct, hH]
 
 private theorem representativeSourceCharacter_eq
-    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-    (R : PrincipalMellin.ActualRecipe S η) (ε δ : R.A.U)
+      (ε δ : R.A.U)
     (h : (QuotientGroup.mk ε : R.A.UnitQuotient) = QuotientGroup.mk δ) :
     representativeSourceCharacter R ε = representativeSourceCharacter R δ := by
   have hc := congrArg R.A.unitQuotientClass h
@@ -187,8 +186,7 @@ private theorem representativeSourceCharacter_eq
   rw [hc]
 
 theorem exists_rational_source_characters
-    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-    (R : PrincipalMellin.ActualRecipe S η) :
+      :
     ∃ L : R.A.UnitQuotient → Fˣ →* ℂ,
       (∀ v x, ‖L v x‖ = 1) ∧
       ∀ (ε : R.A.U) (x : Fˣ),
@@ -221,8 +219,7 @@ theorem exists_rational_source_characters
       (representativeSourceCharacter_eq R (rep (QuotientGroup.mk ε)) ε (hrep _)) x)
 
 theorem exists_primitive_source_characters
-    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-    (R : PrincipalMellin.ActualRecipe S η) :
+      :
     ∃ ψ : ∀ p : ThetaBranch.ExteriorPrime R.A,
         AddChar (DHCubic.Residue F p.val) ℂ,
       (∀ p, (ψ p).IsPrimitive) ∧
@@ -258,6 +255,8 @@ theorem exists_primitive_source_characters
     rfl
   choose ψ hprim htrace using hp
   exact ⟨ψ, hprim, htrace⟩
+end
+
 
 end DedekindZetaZeroFree.PrincipalMellinSource
 

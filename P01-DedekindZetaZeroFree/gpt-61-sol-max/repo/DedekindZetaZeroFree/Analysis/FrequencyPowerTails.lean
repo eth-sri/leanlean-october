@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Algebra.Order.Floor.Extended
 public import Mathlib.Algebra.Order.Floor.Semifield
 public import Mathlib.Algebra.Order.Interval.Basic
@@ -42,6 +44,7 @@ public import Mathlib.Tactic.ReduceModChar
 public import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
+
 
 open scoped ENNReal
 open Filter
@@ -99,7 +102,7 @@ private lemma shell_term_le (q : α → ℝ) (p K X : ℝ) (hp : 1 < p) (hX : 1 
   apply ENNReal.ofReal_le_ofReal
   have heq : max K 1 * Y * (((2:ℝ)^k * X) ^ (-p))
       = 2 * max K 1 * X ^ (1 - p) * ((2:ℝ) ^ (1 - p)) ^ k := by
-    have h2k : ((2:ℝ)^k) ^ (-p) * ((2:ℝ)^(k:ℕ)) = ((2:ℝ) ^ (1 - p)) ^ k := by
+    have h2k : ((2:ℝ)^k) ^ (-p) * ((2:ℝ)^k) = ((2:ℝ) ^ (1 - p)) ^ k := by
       rw [← Real.rpow_natCast (2:ℝ) k, ← Real.rpow_natCast ((2:ℝ)^(1-p)) k,
         ← Real.rpow_mul (by norm_num), ← Real.rpow_mul (by norm_num), ← Real.rpow_add (by norm_num)]
       congr 1; ring
@@ -127,9 +130,12 @@ private lemma dyadic_index (q : α → ℝ) (X : ℝ) (hX : 0 < X) (a : α) (h :
   · have : q a / X < (2:ℝ)^(Nat.log 2 m + 1) := lt_of_lt_of_le hfl2 hlt'
     rwa [div_lt_iff₀ hX] at this
 
-theorem tail_tsum_enn_le (q : α → ℝ) (p K : ℝ) (hp : 1 < p)
+section
+variable (q : α → ℝ) (p K : ℝ) (hp : 1 < p)
     (hfin : ∀ Y : ℝ, {a | q a ≤ Y}.Finite)
     (hK : ∀ Y : ℝ, 1 ≤ Y → ((({a | q a ≤ Y} : Set α).ncard : ℕ) : ℝ) ≤ K * Y)
+include q p K hp hfin hK
+theorem tail_tsum_enn_le  
     (X : ℝ) (hX : 1 ≤ X) :
     ∑' a, (if X < q a then ENNReal.ofReal (q a ^ (-p)) else 0)
       ≤ ENNReal.ofReal (2 * max K 1 / (1 - (2:ℝ) ^ (1 - p)) * X ^ (1 - p)) := by
@@ -159,9 +165,7 @@ theorem tail_tsum_enn_le (q : α → ℝ) (p K : ℝ) (hp : 1 < p)
         have : 1 - r ≠ 0 := by linarith
         field_simp
 
-theorem tail_dominated (q : α → ℝ) (p K : ℝ) (hp : 1 < p)
-    (hfin : ∀ Y : ℝ, {a | q a ≤ Y}.Finite)
-    (hK : ∀ Y : ℝ, 1 ≤ Y → ((({a | q a ≤ Y} : Set α).ncard : ℕ) : ℝ) ≤ K * Y) :
+theorem tail_dominated   :
     ∃ C : ℝ, 0 < C ∧ ∀ X : ℝ, 1 ≤ X → ∀ (B : ℝ), 0 ≤ B → ∀ (S : Set α) (w : α → ℝ),
       (∀ a ∈ S, X < q a) → (∀ a ∈ S, 0 ≤ w a ∧ w a ≤ B * q a ^ (-p)) →
       Summable (fun a : S => w a) ∧ ∑' a : S, w a ≤ B * C * X ^ (1 - p) := by
@@ -199,6 +203,8 @@ theorem tail_dominated (q : α → ℝ) (p K : ℝ) (hp : 1 < p)
   rw [← h2] at hbound
   have := (ENNReal.ofReal_le_ofReal_iff (by positivity)).1 hbound
   linarith [this]
+end
+
 
 end FrequencyPowerTails
 end DedekindZetaZeroFree.Quantitative

@@ -48,10 +48,13 @@ def backward (e : Branch a b) (he : e.Properties) : e.targetDomain → e.domain 
   Measure.map (coordHomeomorph (F := F) (ζ := ζ) (hζ := hζ)).symm
     (KPArch.hyperbolicVolume (KPCuspLogShape.dimension F))
 
+
+local notation:max "current_coordinateMeasure" => coordinateMeasure (F := F) (ζ := ζ) (hζ := hζ)
+
 private theorem lifted_formula (a : ShrunkChart F ζ hζ U R P H) :
     liftedMeasure a =
       ((H.disintegration U).componentWeight a.component / (Nat.card a.Isotropy : ℝ≥0∞)) •
-        (coordinateMeasure (F := F) (ζ := ζ) (hζ := hζ)).restrict (omega a) := by
+        (current_coordinateMeasure).restrict (omega a) := by
   let c := coordHomeomorph (F := F) (ζ := ζ) (hζ := hζ)
   rw [liftedMeasure, ShrunkChart.liftedMeasure, Measure.map_smul]
   · congr 1
@@ -70,8 +73,8 @@ private theorem lifted_formula (a : ShrunkChart F ζ hζ U R P H) :
   · exact (c.symm.measurable.comp measurable_subtype_coe).aemeasurable
 
 private theorem lifted_equivalent (a : ShrunkChart F ζ hζ U R P H) :
-    liftedMeasure a ≪ (coordinateMeasure (F := F) (ζ := ζ) (hζ := hζ)).restrict (omega a) ∧
-    (coordinateMeasure (F := F) (ζ := ζ) (hζ := hζ)).restrict (omega a) ≪ liftedMeasure a := by
+    liftedMeasure a ≪ (current_coordinateMeasure).restrict (omega a) ∧
+    (current_coordinateMeasure).restrict (omega a) ≪ liftedMeasure a := by
   rw [lifted_formula]
   refine ⟨Measure.smul_absolutelyContinuous, Measure.absolutelyContinuous_smul ?_⟩
   exact ENNReal.div_ne_zero.mpr ⟨ne_of_gt ((H.disintegration U).positive_componentWeight a.component),
@@ -80,8 +83,8 @@ private theorem lifted_equivalent (a : ShrunkChart F ζ hζ U R P H) :
 private theorem rational_preserving (g : KPCuspArithmetic.PGL2 F) :
     MeasurePreserving (fun x => labeledAInv (placeEquiv F ζ hζ)
       (g • labeledA (placeEquiv F ζ hζ) x))
-      (coordinateMeasure (F := F) (ζ := ζ) (hζ := hζ))
-      (coordinateMeasure (F := F) (ζ := ζ) (hζ := hζ)) := by
+      (current_coordinateMeasure)
+      (current_coordinateMeasure) := by
   let c := coordHomeomorph (F := F) (ζ := ζ) (hζ := hζ)
   have hs : MeasurePreserving c.symm
       (KPArch.hyperbolicVolume (KPCuspLogShape.dimension F)) coordinateMeasure :=
@@ -104,11 +107,11 @@ private theorem target_chart_fields (a b : ShrunkChart F ζ hζ U R P H)
 
 private theorem branch_quasi (e : Branch a b) :
     Measure.QuasiMeasurePreserving e.psi
-      (coordinateMeasure (F := F) (ζ := ζ) (hζ := hζ))
-      (coordinateMeasure (F := F) (ζ := ζ) (hζ := hζ)) ∧
+      (current_coordinateMeasure)
+      (current_coordinateMeasure) ∧
     Measure.QuasiMeasurePreserving e.inverse
-      (coordinateMeasure (F := F) (ζ := ζ) (hζ := hζ))
-      (coordinateMeasure (F := F) (ζ := ζ) (hζ := hζ)) := by
+      (current_coordinateMeasure)
+      (current_coordinateMeasure) := by
   cases e with
   | none => exact ⟨Measure.QuasiMeasurePreserving.id _, Measure.QuasiMeasurePreserving.id _⟩
   | some e =>

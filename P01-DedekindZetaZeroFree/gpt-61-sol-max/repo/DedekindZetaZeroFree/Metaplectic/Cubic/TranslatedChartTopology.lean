@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Topology.Algebra.Group.Neighborhood
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.CubicCoverTranslatedCharts
 
@@ -11,7 +14,10 @@ open Set Topology
 variable {G H : Type*} [Group G] [Group H]
   [TopologicalSpace H] [IsTopologicalGroup H]
 
-def topology (s : H →* G) : TopologicalSpace G where
+section
+variable (s : H →* G)
+include s
+def topology   : TopologicalSpace G where
   IsOpen U := ∀ g, IsOpen ((fun h => g * s h) ⁻¹' U)
   isOpen_univ := by intro g; simp
   isOpen_inter := by
@@ -20,23 +26,23 @@ def topology (s : H →* G) : TopologicalSpace G where
   isOpen_sUnion := by
     intro S hS g
     rw [preimage_sUnion]
-    exact isOpen_biUnion (fun U hU => hS U hU g)
+    apply isOpen_biUnion <;> aesop
 
-theorem isOpenEmbedding (s : H →* G) (hs : Function.Injective s) (g : G) :
+theorem isOpenEmbedding   (hs : Function.Injective s) (g : G) :
     letI := topology s
     IsOpenEmbedding (fun h => g * s h) := by
   letI := topology s
   apply IsOpenEmbedding.of_continuous_injective_isOpenMap
-  · exact continuous_def.mpr (fun U hU => hU g)
+  · apply continuous_def.mpr <;> aesop
   · intro x y hxy
-    exact hs (mul_left_cancel hxy)
+    apply hs <;> aesop
   · intro U hU
     intro t
     by_cases hex : ∃ k u, u ∈ U ∧ t * s k = g * s u
     · obtain ⟨k₀, u₀, hu₀, he⟩ := hex
       have htr : ∀ k, t * s k = g * s (u₀ * k₀⁻¹ * k) := by
         intro k
-        have ht : t = g * s u₀ * (s k₀)⁻¹ := (eq_mul_inv_iff_mul_eq).mpr he
+        have ht  := (eq_mul_inv_iff_mul_eq).mpr he
         rw [ht]
         simp only [map_mul, map_inv]
         simp only [mul_assoc]
@@ -59,7 +65,7 @@ theorem isOpenEmbedding (s : H →* G) (hs : Function.Injective s) (g : G) :
       rw [heq]
       exact isOpen_empty
 
-theorem continuous_left (s : H →* G) (g : G) :
+theorem continuous_left   (g : G) :
     letI := topology s
     Continuous (fun x => g * x) := by
   letI := topology s
@@ -67,7 +73,7 @@ theorem continuous_left (s : H →* G) (g : G) :
   intro U hU t
   simpa only [preimage_preimage, Function.comp_def, mul_assoc] using hU (g * t)
 
-def leftHomeomorph (s : H →* G) (g : G) :
+def leftHomeomorph   (g : G) :
     letI := topology s
     G ≃ₜ G :=
   letI := topology s
@@ -75,7 +81,7 @@ def leftHomeomorph (s : H →* G) (g : G) :
     continuous_toFun := continuous_left s g
     continuous_invFun := continuous_left s g⁻¹ }
 
-theorem topologicalGroup (s : H →* G) (hs : Function.Injective s)
+theorem topologicalGroup   (hs : Function.Injective s)
     (hconj : letI := topology s
       ∀ g : G, Filter.Tendsto (fun x => g * x * g⁻¹) (nhds 1) (nhds 1)) :
     letI := topology s
@@ -102,7 +108,7 @@ theorem topologicalGroup (s : H →* G) (hs : Function.Injective s)
     change nhds (g * (1 : G)) = Filter.map (fun x => g * x) (nhds 1) at hh
     simpa only [mul_one] using hh
 
-theorem conjugation_tendsto (s : H →* G) (hs : Function.Injective s) (g : G)
+theorem conjugation_tendsto   (hs : Function.Injective s) (g : G)
     (J : Subgroup H) (hJ : IsOpen (J : Set H)) (c : J → H) (hc : Continuous c)
     (he : ∀ k : J, g * s k.val * g⁻¹ = s (c k)) :
     letI := topology s
@@ -122,5 +128,7 @@ theorem conjugation_tendsto (s : H →* G) (hs : Function.Injective s) (g : G)
     exact he k
   have hh := hj.tendsto_nhds_iff'.mp (hfun ▸ ht)
   simpa only [Function.comp_apply, OneMemClass.coe_one, map_one] using hh
+end
+
 
 end DedekindZetaZeroFree.CubicCoverTranslatedCharts

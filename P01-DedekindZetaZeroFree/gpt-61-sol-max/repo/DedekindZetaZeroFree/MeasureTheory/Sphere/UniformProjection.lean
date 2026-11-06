@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.MeasureTheory.SphereCoordinateDistribution
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.ComplexFractionalInverse
 
@@ -10,12 +13,14 @@ open MeasureTheory
 open Set
 open scoped Pointwise RealInnerProductSpace ENNReal
 
-noncomputable def sphereRotation (g : Ambient ≃ₗᵢ[ℝ] Ambient) (x : Sphere) : Sphere :=
+section
+variable (g : Ambient ≃ₗᵢ[ℝ] Ambient)
+include g
+noncomputable def sphereRotation   (x : Sphere) : Sphere :=
   ⟨g x, by simpa only [mem_sphere_zero_iff_norm, g.norm_map] using x.property⟩
-lemma sphereRotation_continuous (g : Ambient ≃ₗᵢ[ℝ] Ambient) :
-    Continuous (sphereRotation g) := by
-  exact (g.continuous.comp continuous_subtype_val).subtype_mk _
-lemma sphereRotation_cone_preimage (g : Ambient ≃ₗᵢ[ℝ] Ambient) (s : Set Sphere) :
+lemma sphereRotation_continuous   :
+    Continuous (sphereRotation g) := (g.continuous.comp continuous_subtype_val).subtype_mk _
+lemma sphereRotation_cone_preimage   (s : Set Sphere) :
     g ⁻¹' (Ioo (0 : ℝ) 1 • (Subtype.val '' s)) =
     Ioo (0 : ℝ) 1 • (Subtype.val '' (sphereRotation g ⁻¹' s)) := by
   ext z
@@ -27,7 +32,7 @@ lemma sphereRotation_cone_preimage (g : Ambient ≃ₗᵢ[ℝ] Ambient) (s : Set
       simpa using this
   · rintro ⟨r, hr, w, ⟨y, hy, rfl⟩, rfl⟩
     exact ⟨r, hr, g y, ⟨sphereRotation g y, hy, rfl⟩, by simp⟩
-lemma sphereRotation_preserving (g : Ambient ≃ₗᵢ[ℝ] Ambient) :
+lemma sphereRotation_preserving   :
     MeasurePreserving (sphereRotation g) (volume : Measure Ambient).toSphere
       (volume : Measure Ambient).toSphere := by
   refine ⟨(sphereRotation_continuous g).measurable, ?_⟩
@@ -37,10 +42,9 @@ lemma sphereRotation_preserving (g : Ambient ≃ₗᵢ[ℝ] Ambient) :
     Measure.toSphere_apply' _ ((sphereRotation_continuous g).measurable hs),
     Measure.toSphere_apply' _ hs, ← sphereRotation_cone_preimage]
   rw [g.measurePreserving.measure_preimage_emb g.toHomeomorph.measurableEmbedding]
-lemma sphereArea_rotation_preserving (g : Ambient ≃ₗᵢ[ℝ] Ambient) :
-    MeasurePreserving (sphereRotation g) sphereArea sphereArea := by
-  exact (sphereRotation_preserving g).smul_measure _
-lemma sphereArea_projection_rotation (g : Ambient ≃ₗᵢ[ℝ] Ambient) (x : Sphere) :
+lemma sphereArea_rotation_preserving   :
+    MeasurePreserving (sphereRotation g) sphereArea sphereArea := (sphereRotation_preserving g).smul_measure _
+lemma sphereArea_projection_rotation   (x : Sphere) :
     Measure.map (fun y : Sphere => (1 - inner ℝ (g x) (y : Ambient)) / 2) sphereArea =
     Measure.map (fun y : Sphere => (1 - inner ℝ (x : Ambient) (y : Ambient)) / 2) sphereArea := by
   have hp : Measurable (fun y : Sphere => (1 - inner ℝ (g x) (y : Ambient)) / 2) := by fun_prop
@@ -53,6 +57,8 @@ lemma sphereArea_projection_rotation (g : Ambient ≃ₗᵢ[ℝ] Ambient) (x : S
       congr 1
       ext y
       simp [Function.comp_def, sphereRotation, g.inner_map_map]
+end
+
 lemma sphereArea_projection_independent (x z : Sphere) :
     Measure.map (fun y : Sphere => (1 - inner ℝ (x : Ambient) (y : Ambient)) / 2) sphereArea =
     Measure.map (fun y : Sphere => (1 - inner ℝ (z : Ambient) (y : Ambient)) / 2) sphereArea := by
@@ -76,8 +82,7 @@ noncomputable def sphereProjection_split : Ambient ≃ᵐ ℝ × EuclideanSpace 
     ((MeasurableEquiv.piFinSuccAbove (fun _ : Fin 3 => ℝ) 0).trans
       (MeasurableEquiv.prodCongr (MeasurableEquiv.refl ℝ)
         (MeasurableEquiv.toLp 2 (Fin 2 → ℝ))))
-lemma sphereProjection_split_preserving : MeasurePreserving sphereProjection_split := by
-  exact (PiLp.volume_preserving_ofLp (Fin 3)).trans
+lemma sphereProjection_split_preserving : MeasurePreserving sphereProjection_split := (PiLp.volume_preserving_ofLp (Fin 3)).trans
     ((volume_preserving_piFinSuccAbove (fun _ : Fin 3 => ℝ) 0).trans
       ((MeasurePreserving.id volume).prod (PiLp.volume_preserving_toLp (Fin 2))))
 lemma sphereProjection_split_symm_apply (z : ℝ) (w : EuclideanSpace ℝ (Fin 2)) :
@@ -123,7 +128,10 @@ lemma sphereProjection_north_cone_Fubini (t : ℝ) :
   rw [← sphereProjection_split_preserving.symm.measure_preimage hm.nullMeasurableSet]
   rw [Measure.volume_eq_prod, Measure.prod_apply (sphereProjection_split.symm.measurable hm)]
   congr 1
-lemma sphereProjection_north_slice_lower {t z : ℝ} (ht : 0 < t) (ht1 : t ≤ 1)
+section
+variable {t z : ℝ} (ht : 0 < t)
+include t z ht
+lemma sphereProjection_north_slice_lower   (ht1 : t ≤ 1)
     (hz : 0 < z) (hzt : z < t) :
     {w : EuclideanSpace ℝ (Fin 2) |
         0 < ‖sphereProjection_split.symm (z,w)‖ ∧
@@ -159,7 +167,7 @@ lemma sphereProjection_north_slice_lower {t z : ℝ} (ht : 0 < t) (ht1 : t ≤ 1
     · nlinarith [sq_pos_of_pos hz]
     · have := (le_div_iff₀ ht).mp hnle
       simpa only [mul_comm] using this
-lemma sphereProjection_north_slice_upper {t z : ℝ} (ht : 0 < t) (htz : t ≤ z)
+lemma sphereProjection_north_slice_upper   (htz : t ≤ z)
     (hz1 : z < 1) :
     {w : EuclideanSpace ℝ (Fin 2) |
         0 < ‖sphereProjection_split.symm (z,w)‖ ∧
@@ -187,7 +195,7 @@ lemma sphereProjection_north_slice_upper {t z : ℝ} (ht : 0 < t) (htz : t ≤ z
     · calc
         _ ≤ t * 1 := mul_le_mul_of_nonneg_left hnlt.le ht.le
         _ ≤ z := by simpa using htz
-lemma sphereProjection_north_slice_empty {t z : ℝ} (ht : 0 < t)
+lemma sphereProjection_north_slice_empty  
     (hz : z ≤ 0 ∨ 1 ≤ z) :
     {w : EuclideanSpace ℝ (Fin 2) |
         0 < ‖sphereProjection_split.symm (z,w)‖ ∧
@@ -198,11 +206,11 @@ lemma sphereProjection_north_slice_empty {t z : ℝ} (ht : 0 < t)
   rintro ⟨hnpos, hnlt, hc⟩
   have hn := sphereProjection_split_norm_sq z w
   have hw := sq_nonneg ‖w‖
-  have hn0 := norm_nonneg (sphereProjection_split.symm (z,w))
+  
   rcases hz with hz | hz
   · nlinarith
   · nlinarith
-lemma sphereProjection_north_slice_volume_lower {t z : ℝ} (ht : 0 < t) (ht1 : t ≤ 1)
+lemma sphereProjection_north_slice_volume_lower   (ht1 : t ≤ 1)
     (hz : 0 < z) (hzt : z < t) :
     volume {w : EuclideanSpace ℝ (Fin 2) |
         0 < ‖sphereProjection_split.symm (z,w)‖ ∧
@@ -215,7 +223,7 @@ lemma sphereProjection_north_slice_volume_lower {t z : ℝ} (ht : 0 < t) (ht1 : 
     nlinarith [div_pos hz ht]
   rw [← ENNReal.ofReal_pow (Real.sqrt_nonneg _), Real.sq_sqrt hpos,
     ← ENNReal.ofReal_mul hpos, mul_comm]
-lemma sphereProjection_north_slice_volume_upper {t z : ℝ} (ht : 0 < t) (htz : t ≤ z)
+lemma sphereProjection_north_slice_volume_upper   (htz : t ≤ z)
     (hz1 : z < 1) :
     volume {w : EuclideanSpace ℝ (Fin 2) |
         0 < ‖sphereProjection_split.symm (z,w)‖ ∧
@@ -223,10 +231,12 @@ lemma sphereProjection_north_slice_volume_upper {t z : ℝ} (ht : 0 < t) (htz : 
         t * ‖sphereProjection_split.symm (z,w)‖ ≤ z} =
       ENNReal.ofReal (Real.pi * (1 - z ^ 2)) := by
   rw [sphereProjection_north_slice_upper ht htz hz1, EuclideanSpace.volume_ball_fin_two]
-  have hz : 0 < z := lt_of_lt_of_le ht htz
+  
   have hpos : 0 ≤ 1 - z ^ 2 := by nlinarith
   rw [← ENNReal.ofReal_pow (Real.sqrt_nonneg _), Real.sq_sqrt hpos,
     ← ENNReal.ofReal_mul hpos, mul_comm]
+end
+
 
 lemma sphereProjection_north_cone_integrals {t : ℝ} (ht : 0 < t) (ht1 : t ≤ 1) :
     volume (Ioo (0 : ℝ) 1 • (Subtype.val '' {y : Sphere | t ≤ (y : Ambient) 0})) =

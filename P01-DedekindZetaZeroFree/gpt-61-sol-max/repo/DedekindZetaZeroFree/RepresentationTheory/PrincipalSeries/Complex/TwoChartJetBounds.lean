@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.InnerProductSpace.Calculus
 public import DedekindZetaZeroFree.Analysis.Jets.Seminorms
 public import Mathlib.Analysis.Calculus.ContDiff.Bounds
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.KPCplxPrincipalSeriesTransitionBounds
 open Set
@@ -23,7 +26,7 @@ lemma compact_jet_bound (U K : Set ℂ) (hU : IsOpen U) (hK : IsCompact K)
   | zero =>
     obtain ⟨D, hD⟩ := hb 0
     exact ⟨max 1 D, le_max_left _ _, fun k hk x hx => by
-      have : k = 0 := Nat.eq_zero_of_le_zero hk
+      have  := Nat.eq_zero_of_le_zero hk
       subst k
       exact (hD x hx).trans (le_max_right _ _)⟩
   | succ n ih =>
@@ -63,10 +66,10 @@ lemma weighted_inversion_jet_bound (a : ℝ) (K : Set ℂ) (hK : IsCompact K)
   have hw := weight_smooth a
   obtain ⟨D, hD, hDb⟩ := compact_jet_bound U K hU hK hKU _ hi n
   obtain ⟨B, hB, hBb⟩ := compact_jet_bound U K hU hK hKU _ hw n
-  let C : ℝ := ∑ i ∈ Finset.range (n+1),
+  let C  := ∑ i ∈ Finset.range (n+1),
     (n.choose i : ℝ) * B * ((n-i).factorial : ℝ) * D ^ (n-i)
   refine ⟨max 1 C, le_max_left _ _, fun H hH z hz => ?_⟩
-  let S : ℝ := ∑ k ∈ Finset.range (n+1), KPCplxPrincipalSeriesJets.jetSup k H
+  let S  := ∑ k ∈ Finset.range (n+1), KPCplxPrincipalSeriesJets.jetSup k H
   have hS : 0 ≤ S := Finset.sum_nonneg fun k hk =>
     KPCplxPrincipalSeriesJets.jetNonneg k H hH
   have hzi : z⁻¹ ∈ Metric.closedBall (0 : ℂ) 1 := by
@@ -121,7 +124,7 @@ lemma compatible_twoChart_jet_bound (a R : ℝ) (n : ℕ) :
   have hK : IsCompact K := (isCompact_closedBall _ _).diff Metric.isOpen_ball
   have hKext : ∀ z ∈ K, 1 ≤ ‖z‖ := by
     intro z hz
-    exact le_of_not_gt (by simpa only [Metric.mem_ball, dist_zero_right] using hz.2)
+    apply le_of_not_gt <;> aesop
   obtain ⟨C, hC, hCb⟩ := weighted_inversion_jet_bound a K hK hKext n
   refine ⟨C, hC, fun F H hF hH ht z hz => ?_⟩
   let S := ∑ k ∈ Finset.range (n+1),

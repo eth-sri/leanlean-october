@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Ideals.SIntegerLocalization.GeneratorValuation
 
 @[expose] public section
+
 
 open scoped NumberField Classical WithZero
 open NumberField IsDedekindDomain
@@ -11,8 +14,11 @@ namespace DedekindZetaZeroFree.SIntegerLocalization
 noncomputable section
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem exponent_eq_zero (S : Finset (HeightOneSpectrum (𝓞 F)))
+section
+variable (S : Finset (HeightOneSpectrum (𝓞 F)))
     (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hext : I ⊔ (∏ v ∈ S, v.asIdeal) = ⊤)
+include S I hI hext
+private theorem exponent_eq_zero  
     (v : HeightOneSpectrum (𝓞 F)) (hv : v ∈ S) : idealPrimeExponent v.asIdeal I = 0 := by
   apply Multiset.count_eq_zero.mpr
   intro hf
@@ -20,8 +26,7 @@ private theorem exponent_eq_zero (S : Finset (HeightOneSpectrum (𝓞 F)))
   have hs : (∏ w ∈ S, w.asIdeal) ≤ v.asIdeal := v.isPrime.prod_le.mpr ⟨v, hv, le_rfl⟩
   exact v.isPrime.ne_top (top_le_iff.mp (hext ▸ sup_le hle hs))
 
-theorem finite_norm_compensation (S : Finset (HeightOneSpectrum (𝓞 F)))
-    (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hext : I ⊔ (∏ v ∈ S, v.asIdeal) = ⊤)
+theorem finite_norm_compensation  
     (r : (S : Set (HeightOneSpectrum (𝓞 F))).integer F) (hr : r ≠ 0)
     (hspan : Ideal.span {r} = Ideal.map (algebraMap (𝓞 F) _) I) :
     (∏ᶠ w : FinitePlace F, w (r : F)) * (Ideal.absNorm I : ℝ) =
@@ -37,7 +42,7 @@ theorem finite_norm_compensation (S : Finset (HeightOneSpectrum (𝓞 F)))
       simp only [Set.mem_preimage, Function.mem_mulSupport, f,
         FinitePlace.equivHeightOneSpectrum_symm_apply, FinitePlace.norm_embedding]
     rw [Function.HasFiniteMulSupport, heq]
-    exact hh.preimage (FinitePlace.equivHeightOneSpectrum.symm.injective.injOn)
+    apply hh.preimage <;> aesop
   have hg : g.HasFiniteMulSupport := by
     apply (Ideal.finite_factors hI).subset
     intro v hv
@@ -86,8 +91,7 @@ theorem finite_norm_compensation (S : Finset (HeightOneSpectrum (𝓞 F)))
     by_contra hn
     exact hv (hout v hn)
 
-theorem generator_norm (S : Finset (HeightOneSpectrum (𝓞 F)))
-    (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hext : I ⊔ (∏ v ∈ S, v.asIdeal) = ⊤)
+theorem generator_norm  
     (r : (S : Set (HeightOneSpectrum (𝓞 F))).integer F) (hr : r ≠ 0)
     (hspan : Ideal.span {r} = Ideal.map (algebraMap (𝓞 F) _) I) :
     (∏ w : InfinitePlace F, w (r : F) ^ w.mult) *
@@ -95,6 +99,8 @@ theorem generator_norm (S : Finset (HeightOneSpectrum (𝓞 F)))
   have hprod := NumberField.prod_abs_eq_one (fun h => hr (Subtype.ext h))
   rw [← finite_norm_compensation S I hI hext r hr hspan,
     ← mul_assoc, hprod, one_mul]
+end
+
 
 end
 end DedekindZetaZeroFree.SIntegerLocalization

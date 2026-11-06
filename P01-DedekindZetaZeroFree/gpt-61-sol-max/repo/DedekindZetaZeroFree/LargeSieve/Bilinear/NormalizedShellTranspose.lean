@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LFunctions.Hecke.QuadraticFamilies.NormalizedReciprocity
 public import DedekindZetaZeroFree.LargeSieve.Exponents.EndpointExtension
 public import DedekindZetaZeroFree.Analysis.FiniteMatrixDualityAndPhases
@@ -9,30 +11,27 @@ public import DedekindZetaZeroFree.LargeSieve.CharacterBounds.AdmissibleRangeBou
 
 @[expose] public section
 
+
 namespace DedekindZetaZeroFree.LargeSieve.Sieve
 
 open scoped NumberField Classical
 
-private lemma transpose_partition {A : Type*} [DecidableEq A]
-    (R : Finset A) (blocks : ℕ → Finset A) (P : Finset ℕ) (U : Finset A)
+section
+variable {A : Type*} [DecidableEq A]
+    (R : Finset A) (blocks : ℕ → Finset A) (P : Finset ℕ)
+include A R blocks P
+private lemma transpose_partition   (U : Finset A)
     (hU : P.biUnion blocks = U) (hR : R ⊆ U) :
     R = P.biUnion (fun i => R ∩ blocks i) := by
-  ext a
-  simp only [Finset.mem_biUnion, Finset.mem_inter]
-  constructor
-  · intro ha
-    have := hR ha
-    rw [← hU, Finset.mem_biUnion] at this
-    obtain ⟨i, hi, hai⟩ := this
-    exact ⟨i, hi, ha, hai⟩
-  · rintro ⟨i, hi, ha, _⟩; exact ha
+  grind [Finset.mem_biUnion]
 
-private lemma transpose_partition_disjoint {A : Type*} [DecidableEq A]
-    (R : Finset A) (blocks : ℕ → Finset A) (P : Finset ℕ)
+private lemma transpose_partition_disjoint  
     (h : Set.PairwiseDisjoint (↑P : Set ℕ) blocks) :
     Set.PairwiseDisjoint (↑P : Set ℕ) (fun i => R ∩ blocks i) := by
   intro i hi j hj hij
   exact (h hi hj hij).mono Finset.inter_subset_right Finset.inter_subset_right
+end
+
 
 private lemma transpose_admissible
     (F : Type) [Field F] [NumberField F] (c q : Ideal (𝓞 F))
@@ -40,7 +39,7 @@ private lemma transpose_admissible
     (hR : R ⊆ paperShell F q B ∨ (B = 1 ∧ R ⊆ {⊤})) :
     R ⊆ idealAdmissibleFinset F c (2 * B) ∧
       ∀ a ∈ R, Squarefree a ∧ a ⊔ q = ⊤ := by
-  have hc : q ≤ c := Ideal.dvd_iff_le.mp hcq
+  have hc  := Ideal.dvd_iff_le.mp hcq
   rcases hR with hR | ⟨rfl, hR⟩
   · have ha : ∀ a ∈ R, Squarefree a ∧ a ⊔ q = ⊤ ∧
         (Ideal.absNorm a : ℝ) ≤ 2 * B := by
@@ -93,7 +92,7 @@ private lemma transpose_norm_bound {A B : Type*} [DecidableEq A] [DecidableEq B]
   have hT : ‖T‖ ≤ Real.sqrt D := by
     apply ContinuousLinearMap.opNorm_le_bound _ (Real.sqrt_nonneg D)
     intro v
-    let lam : B → ℂ := fun b => if hb : b ∈ S then v ⟨b, hb⟩ else 0
+    let lam  := fun b => if hb : b ∈ S then v ⟨b, hb⟩ else 0
     have hv : (WithLp.toLp 2 (fun b : S => lam b) : EuclideanSpace ℂ S) = v := by
       ext b
       simp [lam]
@@ -166,8 +165,7 @@ private lemma transpose_reverse_bound
       exact mul_le_mul (mul_le_mul_of_nonneg_left hp hC0) hs
         (by simp only [Real.rpow_eq_pow]; positivity)
         (by simp only [Real.rpow_eq_pow]; positivity))
-  have hk : 0 ≤ 2 + 1 / (e * Real.log 2) :=
-    (Vendor.dyadicLength_small_power_constant_pos he).le
+  
   have hp : (P.card : ℝ) * (T.card : ℝ) ≤
       (2 + 1 / (e * Real.log 2)) ^ 2 * Real.rpow (4 * B * X) e := by
     have hh := mul_le_mul (Vendor.dyadicLength_small_power he h2X)
@@ -197,15 +195,18 @@ private lemma transpose_reverse_bound
     convert hh using 1 <;> dsimp [U] <;> ring
   exact mul_le_mul_of_nonneg_right hh' (Finset.sum_nonneg (fun _ _ => sq_nonneg _))
 
-theorem bilinear_normalized_shell_transpose
-    (F : Type) [Field F] [NumberField F]
+section
+variable (F : Type) [Field F] [NumberField F]
     (c : Ideal (𝓞 F)) (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
     (q : Ideal (𝓞 F)) (hq : q ≠ ⊥) (hcq : c ∣ q)
     (hreciprocity : ∀ a b : Ideal (𝓞 F), Squarefree a → a ⊔ q = ⊤ →
       Squarefree b → b ⊔ q = ⊤ →
       (Q.χ a) b = (Q.χ b) a * Q.C (Q.cls a) (Q.cls b))
     (α : ℝ) (hα : α ∈ Set.Icc (1 : ℝ) 2)
-    (hExponent : HasSieveExponent F c Q α) :
+    (hExponent : HasSieveExponent F c Q α)
+include F c Q q hq hcq hreciprocity α hα hExponent
+theorem bilinear_normalized_shell_transpose
+      :
     ∀ η : ℝ, 0 < η → ∃ C : ℝ, 1 ≤ C ∧
       ∀ (B X : ℝ), 1 ≤ B → 1 ≤ X →
       ∀ (R S : Finset (Ideal (𝓞 F))),
@@ -219,9 +220,9 @@ theorem bilinear_normalized_shell_transpose
   let e := η / 2
   have he : 0 < e := by dsimp [e]; linarith
   obtain ⟨Cext, hCext, hexp⟩ := bilinear_endpoint_exponent_extension F c Q α hα hExponent e he
-  letI : Group Q.G := Q.instGroup
-  letI : Finite Q.G := Q.instFinite
-  letI : Fintype Q.G := Fintype.ofFinite Q.G
+  letI  := Q.instGroup
+  letI  := Q.instFinite
+  letI  := Fintype.ofFinite Q.G
   let k := 2 + 1 / (e * Real.log 2)
   let D := (Fintype.card Q.G : ℝ) ^ 2 * k ^ 2 * Cext * (4 : ℝ) ^ η * (2 : ℝ) ^ α
   refine ⟨max 1 D, le_max_left _ _, ?_⟩
@@ -292,14 +293,7 @@ theorem bilinear_normalized_shell_transpose
       mul_le_mul_of_nonneg_right (hbound.trans harith) (sq_nonneg _)
 
 theorem bilinear_normalized_shell_transpose_contractions
-    (F : Type) [Field F] [NumberField F]
-    (c : Ideal (𝓞 F)) (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (q : Ideal (𝓞 F)) (hq : q ≠ ⊥) (hcq : c ∣ q)
-    (hreciprocity : ∀ a b : Ideal (𝓞 F), Squarefree a → a ⊔ q = ⊤ →
-      Squarefree b → b ⊔ q = ⊤ →
-      (Q.χ a) b = (Q.χ b) a * Q.C (Q.cls a) (Q.cls b))
-    (α : ℝ) (hα : α ∈ Set.Icc (1 : ℝ) 2)
-    (hExponent : HasSieveExponent F c Q α) :
+      :
     ∀ η : ℝ, 0 < η → ∃ C : ℝ, 1 ≤ C ∧
       ∀ (B X : ℝ), 1 ≤ B → 1 ≤ X →
       ∀ (R S : Finset (Ideal (𝓞 F))),
@@ -322,7 +316,7 @@ theorem bilinear_normalized_shell_transpose_contractions
       rw [Finset.mul_sum]
       refine Finset.sum_congr rfl (fun b _ => ?_); ring
     rw [hrow, norm_mul]
-    have hu' : ‖u a‖ ≤ 1 := hu a ha
+    have hu'  := hu a ha
     calc (‖u a‖ * ‖∑ b ∈ S, (lam b * v b) * (Q.χ b) a‖) ^ 2
         = ‖u a‖ ^ 2 * ‖∑ b ∈ S, (lam b * v b) * (Q.χ b) a‖ ^ 2 := by ring
       _ ≤ 1 * ‖∑ b ∈ S, (lam b * v b) * (Q.χ b) a‖ ^ 2 :=
@@ -331,17 +325,19 @@ theorem bilinear_normalized_shell_transpose_contractions
   have henergy_le : ∑ b ∈ S, ‖lam b * v b‖ ^ 2 ≤ ∑ b ∈ S, ‖lam b‖ ^ 2 := by
     refine Finset.sum_le_sum (fun b hb => ?_)
     rw [norm_mul]
-    have hv' : ‖v b‖ ≤ 1 := hv b hb
+    have hv'  := hv b hb
     calc (‖lam b‖ * ‖v b‖) ^ 2 = ‖lam b‖ ^ 2 * ‖v b‖ ^ 2 := by ring
       _ ≤ ‖lam b‖ ^ 2 * 1 :=
           mul_le_mul_of_nonneg_left (pow_le_one₀ (norm_nonneg _) hv') (by positivity)
       _ = ‖lam b‖ ^ 2 := by ring
-  have hC0 : 0 ≤ C := le_trans zero_le_one hC
+  
   have hK0 : 0 ≤ C * Real.rpow (B * X) η * (X + Real.rpow B α) := by
     simp only [Real.rpow_eq_pow]
     positivity
   exact le_trans (Finset.sum_le_sum hnorm)
     (le_trans (hmain B X hB hX R S hR hS (fun b => lam b * v b))
       (mul_le_mul_of_nonneg_left henergy_le hK0))
+end
+
 
 end DedekindZetaZeroFree.LargeSieve.Sieve

@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import Mathlib.GroupTheory.QuotientGroup.Basic
 public import GaloisCohomology.Cyclic.IntegralRepUniverse
 public import GaloisCohomology.Cyclic.NormKernelVanishing
@@ -7,6 +9,7 @@ public import ClassFieldTheory.AbstractClassFieldTheory.Degree.Indices
 public import GaloisCohomology.ProfiniteIntegers.ProfiniteInteger
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -41,7 +44,7 @@ universe u
 
 /-- The multiplicative presentation of `ℤ̂`; multiplication here is addition
 in the profinite integers. -/
-abbrev ZHatMul : Type 0 := Multiplicative ZHat
+abbrev ZHatMul  := Multiplicative ZHat
 
 /-- The degree datum on a topological group: a continuous surjection
 `d : G → ℤ̂`.  Profinite hypotheses belong to the ambient group and are
@@ -87,24 +90,27 @@ theorem mem_inertia_iff (D : DegreeData G) (g : G) :
     g ∈ D.inertia ↔ D.degree g = 1 :=
   Iff.rfl
 
+section
+variable (D : DegreeData G) (K : ClosedSubgroup G)
+include D K
 /-- The restriction of `d` to the subgroup representing an abstract field. -/
-def restrictedDegree (D : DegreeData G) (K : ClosedSubgroup G) :
+def restrictedDegree   :
     K.toSubgroup →ₜ* ZHatMul where
   toMonoidHom := D.degree.toMonoidHom.comp K.toSubgroup.subtype
   continuous_toFun := D.degree.continuous_toFun.comp continuous_subtype_val
 
 /-- The restricted degree map evaluates through the underlying ambient element. -/
 @[simp]
-theorem restrictedDegree_apply (D : DegreeData G) (K : ClosedSubgroup G)
+theorem restrictedDegree_apply  
     (k : K.toSubgroup) : D.restrictedDegree K k = D.degree k.1 :=
   rfl
 
 /-- The image `d(G_K)` in `ℤ̂`. -/
-def fieldImage (D : DegreeData G) (K : ClosedSubgroup G) : Subgroup ZHatMul :=
+def fieldImage    :=
   (D.restrictedDegree K).toMonoidHom.range
 
 /-- The field's degree image is the image of its subgroup under the ambient degree map. -/
-theorem fieldImage_eq_map (D : DegreeData G) (K : ClosedSubgroup G) :
+theorem fieldImage_eq_map   :
     D.fieldImage K = K.toSubgroup.map D.degree.toMonoidHom := by
   ext z
   constructor
@@ -114,19 +120,20 @@ theorem fieldImage_eq_map (D : DegreeData G) (K : ClosedSubgroup G) :
     exact ⟨⟨g, hg⟩, rfl⟩
 
 /-- The inertia group `I_K = G_K ∩ I` over `K`. -/
-def fieldInertia (D : DegreeData G) (K : ClosedSubgroup G) : ClosedSubgroup G :=
+def fieldInertia    :=
   K ⊓ D.inertia
 
 /-- Field inertia consists of field elements whose ambient degree is one. -/
 @[simp]
-theorem mem_fieldInertia_iff (D : DegreeData G) (K : ClosedSubgroup G) (g : G) :
+theorem mem_fieldInertia_iff   (g : G) :
     g ∈ D.fieldInertia K ↔ g ∈ K ∧ D.degree g = 1 :=
   Iff.rfl
 
 /-- `I_K` viewed inside `G_K`; equivalently, the kernel of `d|G_K`. -/
-def fieldInertiaWithin (D : DegreeData G) (K : ClosedSubgroup G) :
-    Subgroup K.toSubgroup :=
+def fieldInertiaWithin    :=
   (D.restrictedDegree K).toMonoidHom.ker
+end
+
 
 /-- The degree kernel defining inertia inside a field subgroup is normal. -/
 instance fieldInertiaWithin_normal (D : DegreeData G) (K : ClosedSubgroup G) :
@@ -134,28 +141,32 @@ instance fieldInertiaWithin_normal (D : DegreeData G) (K : ClosedSubgroup G) :
   rw [fieldInertiaWithin]
   infer_instance
 
+section
+variable (D : DegreeData G) (K : ClosedSubgroup G)
+include D K
 /-- Membership in internal field inertia is equivalent to having ambient degree one. -/
 @[simp]
-theorem mem_fieldInertiaWithin_iff (D : DegreeData G) (K : ClosedSubgroup G)
+theorem mem_fieldInertiaWithin_iff  
     (k : K.toSubgroup) : k ∈ D.fieldInertiaWithin K ↔ D.degree k.1 = 1 :=
   Iff.rfl
 
 /-- The absolute residue degree as the cardinality of the actual quotient of
 `ZHat` by the degree image. -/
-noncomputable def residueDegreeCardinal (D : DegreeData G)
-    (K : ClosedSubgroup G) : Cardinal :=
+noncomputable def residueDegreeCardinal   : Cardinal :=
   relativeIndexCardinal
     (show D.fieldImage K ≤ (⊤ : Subgroup ZHatMul) from le_top)
 
 /-- The actual quotient whose cardinality is the absolute residue degree. -/
-def residueQuotient (D : DegreeData G) (K : ClosedSubgroup G) : Type :=
+def residueQuotient    :=
   (⊤ : Subgroup ZHatMul) ⧸ (D.fieldImage K).subgroupOf ⊤
 
 /-- The cardinal residue degree is the cardinality of the concrete residue quotient. -/
 @[simp] theorem residueDegreeCardinal_eq_mk_residueQuotient
-    (D : DegreeData G) (K : ClosedSubgroup G) :
+      :
     D.residueDegreeCardinal K = Cardinal.mk (D.residueQuotient K) :=
   rfl
+end
+
 
 /-- The distinguished base field has absolute residue degree one, without
 passing through a natural-valued subgroup index. -/
@@ -184,17 +195,17 @@ namespace FiniteResidueAbstractField
 
 variable {D : DegreeData G}
 
-/-- Bundle a field at the boundary where its actual residue quotient is known
-to be finite. -/
-def ofField (D : DegreeData G) (K : ClosedSubgroup G)
-    [hfinite : Finite (D.residueQuotient K)] :
-    FiniteResidueAbstractField D where
-  field := K
-  finiteResidueQuotient := hfinite
+
+
+
+
+
+
+
 
 /-- The underlying subgroup. -/
 @[implicit_reducible]
-def toSubgroup (K : FiniteResidueAbstractField D) : Subgroup G :=
+def toSubgroup (K : FiniteResidueAbstractField D)  :=
   K.field.toSubgroup
 
 /-- A finite-residue abstract field supplies finiteness of its residue quotient. -/
@@ -240,23 +251,26 @@ structure AbstractExtension (G : Type*) [Group G] [TopologicalSpace G] where
 
 namespace AbstractExtension
 
+section
+variable (E : AbstractExtension G)
+include E
 /-- The subgroup of the base group represented by the extension field.  This
 projection packages the proof-dependent `subgroupOf` construction behind the
 extension object. -/
-def subgroup (E : AbstractExtension G) : Subgroup E.base.toSubgroup :=
+def subgroup    :=
   extensionSubgroup E.base E.field E.below
 
 /-- The actual relative coset space of an abstract extension. -/
-def quotient (E : AbstractExtension G) : Type u :=
+def quotient    :=
   E.base.toSubgroup ⧸ E.subgroup
 
 /-- The honest cardinal degree of an arbitrary abstract extension.  Unlike
 the raw natural-valued subgroup index, this does not encode infinity as zero. -/
-noncomputable def degreeCardinal (E : AbstractExtension G) : Cardinal :=
+noncomputable def degreeCardinal   : Cardinal :=
   relativeIndexCardinal E.below
 
 /-- The cardinal degree of an abstract extension is the cardinality of its coset space. -/
-@[simp] theorem degreeCardinal_eq_mk_quotient (E : AbstractExtension G) :
+@[simp] theorem degreeCardinal_eq_mk_quotient   :
     E.degreeCardinal = Cardinal.mk E.quotient :=
   rfl
 
@@ -264,14 +278,19 @@ noncomputable def degreeCardinal (E : AbstractExtension G) : Cardinal :=
 cardinality of the actual coset type of degree images.  This is the canonical
 general API: an infinite residue degree remains an infinite cardinal. -/
 noncomputable def relativeResidueDegreeCardinal
-    (E : AbstractExtension G) (D : DegreeData G) : Cardinal :=
+      (D : DegreeData G) : Cardinal :=
   relativeIndexCardinal (Subgroup.map_mono (f := D.degree.toMonoidHom) E.below)
+end
 
+
+section
+variable (E : AbstractExtension G) (D : DegreeData G)
+include E D
 /-- The relative ramification index of an arbitrary abstract extension, as
 the cardinality of the actual coset type inside the degree kernel.  In
 particular, infinity is not encoded as zero. -/
 noncomputable def relativeRamificationIndexCardinal
-    (E : AbstractExtension G) (D : DegreeData G) : Cardinal :=
+      : Cardinal :=
   relativeIndexCardinal
     (show E.field.toSubgroup ⊓ D.degree.toMonoidHom.ker ≤
       E.base.toSubgroup ⊓ D.degree.toMonoidHom.ker from
@@ -281,7 +300,7 @@ noncomputable def relativeRamificationIndexCardinal
 extension.  The residue cardinal is lifted from the universe of `ZHat`; no
 finiteness assumption or infinite-index convention is involved. -/
 theorem degreeCardinal_eq_relativeResidueDegreeCardinal_mul_relativeRamificationIndexCardinal
-    (E : AbstractExtension G) (D : DegreeData G) :
+      :
     E.degreeCardinal =
       Cardinal.lift.{u} (E.relativeResidueDegreeCardinal D) *
         E.relativeRamificationIndexCardinal D := by
@@ -294,7 +313,7 @@ theorem degreeCardinal_eq_relativeResidueDegreeCardinal_mul_relativeRamification
 cardinal times the absolute residue cardinal of the base is the absolute
 residue cardinal of the extension field. -/
 theorem relativeResidueDegreeCardinal_mul_residueDegreeCardinal
-    (E : AbstractExtension G) (D : DegreeData G) :
+      :
     E.relativeResidueDegreeCardinal D * D.residueDegreeCardinal E.base =
       D.residueDegreeCardinal E.field := by
   change
@@ -310,6 +329,8 @@ theorem relativeResidueDegreeCardinal_mul_residueDegreeCardinal
       (Subgroup.map_mono (f := D.degree.toMonoidHom) E.below)
       (show E.base.toSubgroup.map D.degree.toMonoidHom ≤
         (⊤ : Subgroup ZHatMul) from le_top))
+end
+
 
 /-- A composable tower of abstract extensions, represented by three closed
 subgroups and the two adjacent containments. -/
@@ -350,116 +371,120 @@ def totalExtension : AbstractExtension G where
 /-- Cardinal degrees multiply in an arbitrary abstract-extension tower. -/
 theorem degreeCardinal_mul :
     T.topExtension.degreeCardinal * T.baseExtension.degreeCardinal =
-      T.totalExtension.degreeCardinal := by
-  exact relativeIndexCardinal_mul T.top_le_middle T.middle_le_base
+      T.totalExtension.degreeCardinal := relativeIndexCardinal_mul T.top_le_middle T.middle_le_base
 
-/-- Cardinal residue degrees multiply in an arbitrary abstract-extension
-tower. -/
-theorem relativeResidueDegreeCardinal_mul (D : DegreeData G) :
-    T.topExtension.relativeResidueDegreeCardinal D *
-        T.baseExtension.relativeResidueDegreeCardinal D =
-      T.totalExtension.relativeResidueDegreeCardinal D := by
-  exact relativeIndexCardinal_mul
-    (Subgroup.map_mono (f := D.degree.toMonoidHom) T.top_le_middle)
-    (Subgroup.map_mono (f := D.degree.toMonoidHom) T.middle_le_base)
 
-/-- Cardinal ramification indices multiply in an arbitrary
-abstract-extension tower. -/
-theorem relativeRamificationIndexCardinal_mul (D : DegreeData G) :
-    T.topExtension.relativeRamificationIndexCardinal D *
-        T.baseExtension.relativeRamificationIndexCardinal D =
-      T.totalExtension.relativeRamificationIndexCardinal D := by
-  exact relativeIndexCardinal_mul
-    (show T.top.toSubgroup ⊓ D.degree.toMonoidHom.ker ≤
-      T.middle.toSubgroup ⊓ D.degree.toMonoidHom.ker from
-        inf_le_inf T.top_le_middle le_rfl)
-    (show T.middle.toSubgroup ⊓ D.degree.toMonoidHom.ker ≤
-      T.base.toSubgroup ⊓ D.degree.toMonoidHom.ker from
-        inf_le_inf T.middle_le_base le_rfl)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end Tower
 
+section
+variable (E : AbstractExtension G) (D : DegreeData G)
+include E D
 /-- An abstract extension is unramified when the inertia subgroup of its base
 is already contained in the subgroup representing its field.  This
 containment is the definition; it does not pass through a natural-valued index
 that would encode an infinite index as zero. -/
-def IsUnramified (E : AbstractExtension G) (D : DegreeData G) : Prop :=
+def IsUnramified    :=
   E.base.toSubgroup ⊓ D.degree.toMonoidHom.ker ≤ E.field.toSubgroup
 
 /-- An abstract extension is totally ramified when the degree image of its
 base is contained in the degree image of its field. -/
-def IsTotallyRamified (E : AbstractExtension G) (D : DegreeData G) : Prop :=
+def IsTotallyRamified    :=
   E.base.toSubgroup.map D.degree.toMonoidHom ≤
     E.field.toSubgroup.map D.degree.toMonoidHom
 
 /-- An extension is unramified exactly when the inertia subgroup of its base
 is contained in the subgroup representing its field.  The containment needed
 to form the extension is carried by `E`. -/
-theorem isUnramified_iff_inertia_le (E : AbstractExtension G) (D : DegreeData G) :
+theorem isUnramified_iff_inertia_le   :
     E.IsUnramified D ↔
       E.base.toSubgroup ⊓ D.degree.toMonoidHom.ker ≤ E.field.toSubgroup :=
   Iff.rfl
 
 /-- An extension is totally ramified exactly when the degree image of its
 base is contained in the degree image of its field. -/
-theorem isTotallyRamified_iff_image_le (E : AbstractExtension G) (D : DegreeData G) :
+theorem isTotallyRamified_iff_image_le   :
     E.IsTotallyRamified D ↔
       E.base.toSubgroup.map D.degree.toMonoidHom ≤
         E.field.toSubgroup.map D.degree.toMonoidHom :=
   Iff.rfl
+end
 
-/-- An unramified extension has cardinal ramification index one. -/
-theorem relativeRamificationIndexCardinal_eq_one_of_isUnramified
-    (E : AbstractExtension G) (D : DegreeData G) (hE : E.IsUnramified D) :
-    E.relativeRamificationIndexCardinal D = 1 := by
-  have heq :
-      E.field.toSubgroup ⊓ D.degree.toMonoidHom.ker =
-        E.base.toSubgroup ⊓ D.degree.toMonoidHom.ker := by
-    apply le_antisymm
-    · exact inf_le_inf E.below le_rfl
-    · intro x hx
-      exact ⟨hE hx, hx.2⟩
-  change
-    intersectionIndexCardinal
-      (E.field.toSubgroup ⊓ D.degree.toMonoidHom.ker)
-      (E.base.toSubgroup ⊓ D.degree.toMonoidHom.ker) = 1
-  rw [heq]
-  exact relativeIndexCardinal_self _
 
-/-- A totally ramified extension has cardinal residue degree one. -/
-theorem relativeResidueDegreeCardinal_eq_one_of_isTotallyRamified
-    (E : AbstractExtension G) (D : DegreeData G)
-    (hE : E.IsTotallyRamified D) :
-    E.relativeResidueDegreeCardinal D = 1 := by
-  have heq :
-      E.field.toSubgroup.map D.degree.toMonoidHom =
-        E.base.toSubgroup.map D.degree.toMonoidHom :=
-    le_antisymm (Subgroup.map_mono (f := D.degree.toMonoidHom) E.below) hE
-  change
-    intersectionIndexCardinal
-      (E.field.toSubgroup.map D.degree.toMonoidHom)
-      (E.base.toSubgroup.map D.degree.toMonoidHom) = 1
-  rw [heq]
-  exact relativeIndexCardinal_self _
 
-/-- For an unramified extension, its cardinal degree is its lifted residue
-degree. -/
-theorem degreeCardinal_eq_lift_relativeResidueDegreeCardinal_of_isUnramified
-    (E : AbstractExtension G) (D : DegreeData G) (hE : E.IsUnramified D) :
-    E.degreeCardinal =
-      Cardinal.lift.{u} (E.relativeResidueDegreeCardinal D) := by
-  rw [E.degreeCardinal_eq_relativeResidueDegreeCardinal_mul_relativeRamificationIndexCardinal D,
-    E.relativeRamificationIndexCardinal_eq_one_of_isUnramified D hE, mul_one]
 
-/-- For a totally ramified extension, its cardinal degree is its
-ramification cardinal. -/
-theorem degreeCardinal_eq_relativeRamificationIndexCardinal_of_isTotallyRamified
-    (E : AbstractExtension G) (D : DegreeData G)
-    (hE : E.IsTotallyRamified D) :
-    E.degreeCardinal = E.relativeRamificationIndexCardinal D := by
-  rw [E.degreeCardinal_eq_relativeResidueDegreeCardinal_mul_relativeRamificationIndexCardinal D,
-    E.relativeResidueDegreeCardinal_eq_one_of_isTotallyRamified D hE]
-  simp
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end AbstractExtension
 
@@ -487,15 +512,15 @@ def toAbstractExtension (L : GaloisSubextension K) :
 
 /-- The actual quotient represented by a Galois subextension.  This is a
 named object boundary rather than a transparent abbreviation. -/
-def extensionQuotient (L : GaloisSubextension K) : Type u :=
+def extensionQuotient (L : GaloisSubextension K)  :=
   K.toSubgroup ⧸ extensionSubgroup K L.field L.below
 
 /-- Structural unramifiedness of a Galois subextension. -/
-def IsUnramified (L : GaloisSubextension K) (D : DegreeData G) : Prop :=
+def IsUnramified (L : GaloisSubextension K) (D : DegreeData G)  :=
   L.toAbstractExtension.IsUnramified D
 
 /-- Structural total ramification of a Galois subextension. -/
-def IsTotallyRamified (L : GaloisSubextension K) (D : DegreeData G) : Prop :=
+def IsTotallyRamified (L : GaloisSubextension K) (D : DegreeData G)  :=
   L.toAbstractExtension.IsTotallyRamified D
 
 /-- A Galois subextension has a normal subgroup inside its base subgroup. -/
@@ -510,52 +535,57 @@ instance extensionQuotient_groupInstance (L : GaloisSubextension K) :
     (K.toSubgroup ⧸ extensionSubgroup K L.field L.below)
   infer_instance
 
+section
+variable (L : GaloisSubextension K)
+include L
 /-- Comparison with the quotient presentation used by the underlying group
 library. -/
-def extensionQuotientMulEquiv (L : GaloisSubextension K) :
+def extensionQuotientMulEquiv   :
     L.extensionQuotient ≃*
       (K.toSubgroup ⧸ extensionSubgroup K L.field L.below) :=
   MulEquiv.refl _
 
 /-- The canonical quotient projection for a Galois subextension. -/
-def extensionQuotientMk (L : GaloisSubextension K) :
+def extensionQuotientMk   :
     K.toSubgroup →* L.extensionQuotient :=
   QuotientGroup.mk' (extensionSubgroup K L.field L.below)
 
 /-- The named quotient projection agrees with `QuotientGroup.mk` under the
 comparison equivalence. -/
 @[simp]
-theorem extensionQuotientMk_apply (L : GaloisSubextension K)
+theorem extensionQuotientMk_apply  
     (k : K.toSubgroup) :
     L.extensionQuotientMulEquiv (L.extensionQuotientMk k) =
       (QuotientGroup.mk k :
         K.toSubgroup ⧸ extensionSubgroup K L.field L.below) :=
   rfl
 
-/-- Eliminate a Galois quotient without exposing a chosen representative. -/
-protected theorem extensionQuotient_inductionOn
-    (L : GaloisSubextension K) {motive : L.extensionQuotient → Prop}
-    (q : L.extensionQuotient)
-    (mk : ∀ k : K.toSubgroup, motive (L.extensionQuotientMk k)) :
-    motive q := by
-  exact @Quotient.inductionOn' K.toSubgroup
-    (QuotientGroup.leftRel (extensionSubgroup K L.field L.below))
-    motive q mk
+
+
+
+
+
+
+
+
+
 
 /-- Unramifiedness is the canonical inertia-containment condition. -/
-theorem isUnramified_iff_inertia_le (L : GaloisSubextension K)
+theorem isUnramified_iff_inertia_le  
     (D : DegreeData G) :
     L.IsUnramified D ↔
       K.toSubgroup ⊓ D.degree.toMonoidHom.ker ≤ L.field.toSubgroup :=
   L.toAbstractExtension.isUnramified_iff_inertia_le D
 
 /-- Total ramification is the canonical equality of degree images. -/
-theorem isTotallyRamified_iff_image_le (L : GaloisSubextension K)
+theorem isTotallyRamified_iff_image_le  
     (D : DegreeData G) :
     L.IsTotallyRamified D ↔
       K.toSubgroup.map D.degree.toMonoidHom ≤
         L.field.toSubgroup.map D.degree.toMonoidHom :=
   L.toAbstractExtension.isTotallyRamified_iff_image_le D
+end
+
 
 end GaloisSubextension
 
@@ -577,19 +607,22 @@ namespace FiniteAbstractExtension
 variable (E : FiniteAbstractExtension G)
 
 /-- The subgroup of the base represented by a finite extension. -/
-def subgroup : Subgroup E.base.toSubgroup :=
+def subgroup  :=
   extensionSubgroup E.base E.field E.below
 
 /-- The finite extension's actual relative coset space. -/
-def quotient : Type u :=
+def quotient  :=
   E.base.toSubgroup ⧸ E.subgroup
 
+section
+variable (field base : ClosedSubgroup G)
+    (below : field.toSubgroup ≤ base.toSubgroup)
+include field base below
 /-- Bundle an inclusion once its actual relative coset type is known to be
 finite.  This is the canonical boundary from subgroup data to the finite
 extension API; numerical invariants are obtained only from the resulting
 object. -/
-def ofInclusion (field base : ClosedSubgroup G)
-    (below : field.toSubgroup ≤ base.toSubgroup)
+def ofInclusion  
     [hfinite : Finite
       (base.toSubgroup ⧸ extensionSubgroup base field below)] :
     FiniteAbstractExtension G where
@@ -599,54 +632,59 @@ def ofInclusion (field base : ClosedSubgroup G)
   finiteQuotient := hfinite
 
 /-- The field endpoint of an extension bundled from an inclusion is the supplied field. -/
-@[simp] theorem ofInclusion_field (field base : ClosedSubgroup G)
-    (below : field.toSubgroup ≤ base.toSubgroup)
+@[simp] theorem ofInclusion_field  
     [Finite (base.toSubgroup ⧸ extensionSubgroup base field below)] :
     (ofInclusion field base below).field = field :=
   rfl
 
 /-- The base endpoint of an extension bundled from an inclusion is the supplied base. -/
-@[simp] theorem ofInclusion_base (field base : ClosedSubgroup G)
-    (below : field.toSubgroup ≤ base.toSubgroup)
+@[simp] theorem ofInclusion_base  
     [Finite (base.toSubgroup ⧸ extensionSubgroup base field below)] :
     (ofInclusion field base below).base = base :=
   rfl
+end
 
+
+section
+variable (D : DegreeData G)
+include D
 /-- The unramified predicate for a finite extension is the predicate on its
 underlying abstract extension. -/
-def IsUnramified (D : DegreeData G) : Prop :=
+def IsUnramified    :=
   E.toAbstractExtension.IsUnramified D
 
 /-- The totally ramified predicate for a finite extension is the predicate on
 its underlying abstract extension. -/
-def IsTotallyRamified (D : DegreeData G) : Prop :=
+def IsTotallyRamified    :=
   E.toAbstractExtension.IsTotallyRamified D
 
 /-- Finite-extension unramifiedness is exactly unramifiedness of the underlying
 abstract extension. -/
-@[simp] theorem isUnramified_iff (D : DegreeData G) :
+@[simp] theorem isUnramified_iff   :
     E.IsUnramified D ↔ E.toAbstractExtension.IsUnramified D :=
   Iff.rfl
 
 /-- Finite-extension total ramification is inherited from the underlying abstract extension. -/
-@[simp] theorem isTotallyRamified_iff (D : DegreeData G) :
+@[simp] theorem isTotallyRamified_iff   :
     E.IsTotallyRamified D ↔ E.toAbstractExtension.IsTotallyRamified D :=
   Iff.rfl
 
 /-- Finite unramified extensions satisfy the same inertia-containment
 characterization as their underlying abstract extensions. -/
-theorem isUnramified_iff_inertia_le (D : DegreeData G) :
+theorem isUnramified_iff_inertia_le   :
     E.IsUnramified D ↔
       E.base.toSubgroup ⊓ D.degree.toMonoidHom.ker ≤ E.field.toSubgroup :=
   E.toAbstractExtension.isUnramified_iff_inertia_le D
 
 /-- Finite totally ramified extensions satisfy the same degree-image
 characterization as their underlying abstract extensions. -/
-theorem isTotallyRamified_iff_image_le (D : DegreeData G) :
+theorem isTotallyRamified_iff_image_le   :
     E.IsTotallyRamified D ↔
       E.base.toSubgroup.map D.degree.toMonoidHom ≤
         E.field.toSubgroup.map D.degree.toMonoidHom :=
   E.toAbstractExtension.isTotallyRamified_iff_image_le D
+end
+
 
 /-- The coset space carried by a finite abstract extension is finite. -/
 instance quotientFinite :
@@ -683,7 +721,7 @@ private theorem relativeDegreeCardinals_lt_aleph0 (D : DegreeData G) :
       Cardinal.lift.{u}
           (E.toAbstractExtension.relativeResidueDegreeCardinal D) ≠ 0 := by
     intro hzero
-    exact hresidueUnlifted (Cardinal.lift_eq_zero.mp hzero)
+    apply hresidueUnlifted <;> aesop
   have hramification :
       E.toAbstractExtension.relativeRamificationIndexCardinal D ≠ 0 := by
     rw [AbstractExtension.relativeRamificationIndexCardinal,
@@ -759,23 +797,23 @@ def ramificationIndex (D : DegreeData G) : ℕ+ :=
     (E.degree : ℕ) = Nat.card E.quotient :=
   rfl
 
-/-- The positive residue degree coerces to the cardinality of the mapped-subgroup quotient. -/
-@[simp] theorem residueDegree_coe (D : DegreeData G) :
-    (E.residueDegree D : ℕ) =
-      Nat.card
-        (↥(E.base.toSubgroup.map D.degree.toMonoidHom) ⧸
-          (E.field.toSubgroup.map D.degree.toMonoidHom).subgroupOf
-            (E.base.toSubgroup.map D.degree.toMonoidHom)) :=
-  rfl
 
-/-- The positive ramification index coerces to the cardinality of the inertia quotient. -/
-@[simp] theorem ramificationIndex_coe (D : DegreeData G) :
-    (E.ramificationIndex D : ℕ) =
-      Nat.card
-        (↥(E.base.toSubgroup ⊓ D.degree.toMonoidHom.ker) ⧸
-          (E.field.toSubgroup ⊓ D.degree.toMonoidHom.ker).subgroupOf
-            (E.base.toSubgroup ⊓ D.degree.toMonoidHom.ker)) :=
-  rfl
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The underlying subgroup index of a finite extension is the natural
 coercion of its positive degree.  This theorem is a finite-only bridge, not a
@@ -792,25 +830,26 @@ degree. -/
   rw [Subgroup.index, E.degree_coe]
   rfl
 
+section
+variable (D : DegreeData G)
+include D
 /-- The relative index of the mapped field subgroups is the positive residue
 degree of a finite extension. -/
-@[simp] theorem mapped_relIndex_eq_residueDegree (D : DegreeData G) :
+@[simp] theorem mapped_relIndex_eq_residueDegree   :
     (E.field.toSubgroup.map D.degree.toMonoidHom).relIndex
         (E.base.toSubgroup.map D.degree.toMonoidHom) =
-      (E.residueDegree D : ℕ) := by
-  rw [Subgroup.relIndex, Subgroup.index, E.residueDegree_coe]
+      (E.residueDegree D : ℕ) := rfl
 
 /-- The relative index inside the degree kernel is the positive ramification
 index of a finite extension. -/
-@[simp] theorem inertia_relIndex_eq_ramificationIndex (D : DegreeData G) :
+@[simp] theorem inertia_relIndex_eq_ramificationIndex   :
     (E.field.toSubgroup ⊓ D.degree.toMonoidHom.ker).relIndex
         (E.base.toSubgroup ⊓ D.degree.toMonoidHom.ker) =
-      (E.ramificationIndex D : ℕ) := by
-  rw [Subgroup.relIndex, Subgroup.index, E.ramificationIndex_coe]
+      (E.ramificationIndex D : ℕ) := rfl
 
 /-- The finite fundamental identity, stated only in terms of the positive
 invariants carried by a finite extension object. -/
-theorem degree_eq_residueDegree_mul_ramificationIndex (D : DegreeData G) :
+theorem degree_eq_residueDegree_mul_ramificationIndex   :
     (E.degree : ℕ) =
       (E.residueDegree D : ℕ) * (E.ramificationIndex D : ℕ) := by
   rw [← E.relIndex_eq_degree, ← E.mapped_relIndex_eq_residueDegree D,
@@ -819,7 +858,7 @@ theorem degree_eq_residueDegree_mul_ramificationIndex (D : DegreeData G) :
     D.degree.toMonoidHom E.below
 
 /-- An unramified finite extension has ramification index one. -/
-theorem ramificationIndex_eq_one_of_isUnramified (D : DegreeData G)
+theorem ramificationIndex_eq_one_of_isUnramified  
     (hE : E.IsUnramified D) :
     (E.ramificationIndex D : ℕ) = 1 := by
   rw [← E.inertia_relIndex_eq_ramificationIndex D,
@@ -828,7 +867,7 @@ theorem ramificationIndex_eq_one_of_isUnramified (D : DegreeData G)
   exact ⟨hE hx, hx.2⟩
 
 /-- A totally ramified finite extension has residue degree one. -/
-theorem residueDegree_eq_one_of_isTotallyRamified (D : DegreeData G)
+theorem residueDegree_eq_one_of_isTotallyRamified  
     (hE : E.IsTotallyRamified D) :
     (E.residueDegree D : ℕ) = 1 := by
   rw [← E.mapped_relIndex_eq_residueDegree D,
@@ -838,7 +877,7 @@ theorem residueDegree_eq_one_of_isTotallyRamified (D : DegreeData G)
 /-- A finite extension has residue degree one exactly when it is totally
 ramified.  This keeps callers on the structural predicate API instead of
 unfolding the image-index implementation. -/
-theorem isTotallyRamified_iff_residueDegree_eq_one (D : DegreeData G) :
+theorem isTotallyRamified_iff_residueDegree_eq_one   :
     E.IsTotallyRamified D ↔ (E.residueDegree D : ℕ) = 1 := by
   constructor
   · exact E.residueDegree_eq_one_of_isTotallyRamified D
@@ -850,42 +889,42 @@ theorem isTotallyRamified_iff_residueDegree_eq_one (D : DegreeData G) :
 
 /-- Converse form convenient for constructing the structural predicate from
 the positive finite invariant. -/
-theorem isTotallyRamified_of_residueDegree_eq_one (D : DegreeData G)
-    (h : (E.residueDegree D : ℕ) = 1) : E.IsTotallyRamified D :=
+def isTotallyRamified_of_residueDegree_eq_one  
+    (h : (E.residueDegree D : ℕ) = 1)  :=
   (E.isTotallyRamified_iff_residueDegree_eq_one D).2 h
 
 /-- In an unramified finite extension, residue degree equals extension
 degree. -/
-theorem residueDegree_eq_degree_of_isUnramified (D : DegreeData G)
+theorem residueDegree_eq_degree_of_isUnramified  
     (hE : E.IsUnramified D) :
     (E.residueDegree D : ℕ) = (E.degree : ℕ) := by
   rw [E.degree_eq_residueDegree_mul_ramificationIndex D,
     E.ramificationIndex_eq_one_of_isUnramified D hE, mul_one]
 
-/-- In a totally ramified finite extension, ramification index equals
-extension degree. -/
-theorem ramificationIndex_eq_degree_of_isTotallyRamified (D : DegreeData G)
-    (hE : E.IsTotallyRamified D) :
-    (E.ramificationIndex D : ℕ) = (E.degree : ℕ) := by
-  rw [E.degree_eq_residueDegree_mul_ramificationIndex D,
-    E.residueDegree_eq_one_of_isTotallyRamified D hE, one_mul]
 
-/-- For a finite extension, its cardinal-valued degree is the cardinal cast
-of its positive natural degree. -/
-@[simp] theorem degreeCardinal_eq_coe :
-    E.toAbstractExtension.degreeCardinal =
-      ((E.degree : ℕ) : Cardinal) := by
-  change Cardinal.mk
-      (E.base.toSubgroup ⧸ extensionSubgroup E.base E.field E.below) =
-    (Nat.card
-      (E.base.toSubgroup ⧸ extensionSubgroup E.base E.field E.below) : Cardinal)
-  simpa [quotient, subgroup] using
-    ((Nat.cast_card :
-      (Nat.card E.quotient : Cardinal) = Cardinal.mk E.quotient).symm)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- For a finite extension, the cardinal-valued relative residue degree is
 the cardinal cast of the positive natural residue degree. -/
-@[simp] theorem relativeResidueDegreeCardinal_eq_coe (D : DegreeData G) :
+@[simp] theorem relativeResidueDegreeCardinal_eq_coe   :
     E.toAbstractExtension.relativeResidueDegreeCardinal D =
       ((E.residueDegree D : ℕ) : Cardinal) := by
   change Cardinal.mk
@@ -897,21 +936,23 @@ the cardinal cast of the positive natural residue degree. -/
           (E.field.toSubgroup.map D.degree.toMonoidHom).subgroupOf
             (E.base.toSubgroup.map D.degree.toMonoidHom)) : Cardinal)
   exact (Nat.cast_card).symm
+end
 
-/-- For a finite extension, the cardinal-valued relative ramification index
-is the cardinal cast of the positive natural ramification index. -/
-@[simp] theorem relativeRamificationIndexCardinal_eq_coe (D : DegreeData G) :
-    E.toAbstractExtension.relativeRamificationIndexCardinal D =
-      ((E.ramificationIndex D : ℕ) : Cardinal) := by
-  change Cardinal.mk
-    (↥(E.base.toSubgroup ⊓ D.degree.toMonoidHom.ker) ⧸
-      (E.field.toSubgroup ⊓ D.degree.toMonoidHom.ker).subgroupOf
-        (E.base.toSubgroup ⊓ D.degree.toMonoidHom.ker)) =
-      (Nat.card
-        (↥(E.base.toSubgroup ⊓ D.degree.toMonoidHom.ker) ⧸
-          (E.field.toSubgroup ⊓ D.degree.toMonoidHom.ker).subgroupOf
-            (E.base.toSubgroup ⊓ D.degree.toMonoidHom.ker)) : Cardinal)
-  exact (Nat.cast_card).symm
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end FiniteAbstractExtension
 
@@ -942,15 +983,15 @@ instance baseQuotientFinite :
       extensionSubgroup T.base T.middle T.middle_le_base) :=
   T.finiteBaseQuotient
 
-/-- The upper finite extension represented by a finite tower. -/
-def topExtension : FiniteAbstractExtension G where
-  toAbstractExtension := T.toTower.topExtension
-  finiteQuotient := T.finiteTopQuotient
 
-/-- The lower finite extension represented by a finite tower. -/
-def baseExtension : FiniteAbstractExtension G where
-  toAbstractExtension := T.toTower.baseExtension
-  finiteQuotient := T.finiteBaseQuotient
+
+
+
+
+
+
+
+
 
 end FiniteTower
 
@@ -1059,26 +1100,29 @@ instance (E : FiniteResidueAbstractExtension D) :
         extensionSubgroup E.base.field E.field.field E.below) :=
   E.finiteQuotient
 
+section
+variable (E : FiniteResidueAbstractExtension D)
+include E
 /-- The positive relative degree. -/
-noncomputable def degree (E : FiniteResidueAbstractExtension D) : ℕ+ :=
+noncomputable def degree    :=
   E.toFiniteAbstractExtension.degree
 
 /-- The positive relative residue degree. -/
-noncomputable def residueDegree (E : FiniteResidueAbstractExtension D) : ℕ+ :=
+noncomputable def residueDegree    :=
   E.toFiniteAbstractExtension.residueDegree D
 
 /-- The positive relative ramification index. -/
 noncomputable def ramificationIndex
-    (E : FiniteResidueAbstractExtension D) : ℕ+ :=
+       :=
   E.toFiniteAbstractExtension.ramificationIndex D
 
 /-- The residue-enriched extension degree agrees with the underlying finite-extension degree. -/
-@[simp] theorem degree_coe (E : FiniteResidueAbstractExtension D) :
+@[simp] theorem degree_coe   :
     (E.degree : ℕ) = (E.toFiniteAbstractExtension.degree : ℕ) :=
   rfl
 
 /-- The residue-enriched residue degree agrees with the underlying finite-extension invariant. -/
-@[simp] theorem residueDegree_coe (E : FiniteResidueAbstractExtension D) :
+@[simp] theorem residueDegree_coe   :
     (E.residueDegree : ℕ) =
       (E.toFiniteAbstractExtension.residueDegree D : ℕ) :=
   rfl
@@ -1086,10 +1130,12 @@ noncomputable def ramificationIndex
 /-- The residue-enriched ramification index agrees with the underlying
 finite-extension invariant. -/
 @[simp] theorem ramificationIndex_coe
-    (E : FiniteResidueAbstractExtension D) :
+      :
     (E.ramificationIndex : ℕ) =
       (E.toFiniteAbstractExtension.ramificationIndex D : ℕ) :=
   rfl
+end
+
 
 end FiniteResidueAbstractExtension
 
@@ -1125,11 +1171,7 @@ noncomputable def base (G : Type u) [Group G] [TopologicalSpace G] :
   finite := by
     let : (extensionSubgroup (baseField G) (baseField G)
         (le_baseField (baseField G))).Normal := by
-      rw [show extensionSubgroup (baseField G) (baseField G)
-          (le_baseField (baseField G)) = ⊤ by
-        ext x
-        exact Iff.rfl]
-      infer_instance
+      norm_num
     let : Subsingleton
         ((baseField G).toSubgroup ⧸
           extensionSubgroup (baseField G) (baseField G)
@@ -1260,9 +1302,12 @@ noncomputable def ofInclusion (field : ClosedSubgroup G)
   below := below
   finiteQuotient := finiteQuotient
 
+section
+variable (E : FiniteAbstractFieldExtension G)
+include E
 /-- Forget endpoint finiteness over the distinguished base. -/
 @[implicit_reducible]
-def toFiniteAbstractExtension (E : FiniteAbstractFieldExtension G) :
+def toFiniteAbstractExtension   :
     DegreeData.FiniteAbstractExtension G where
   field := E.field.field
   base := E.base.field
@@ -1271,35 +1316,37 @@ def toFiniteAbstractExtension (E : FiniteAbstractFieldExtension G) :
 
 /-- Structural unramifiedness of the represented relative extension. -/
 @[implicit_reducible]
-def IsUnramified (E : FiniteAbstractFieldExtension G) (D : DegreeData G) : Prop :=
+def IsUnramified   (D : DegreeData G)  :=
   E.toFiniteAbstractExtension.IsUnramified D
 
 /-- Structural total ramification of the represented relative extension. -/
-def IsTotallyRamified (E : FiniteAbstractFieldExtension G)
-    (D : DegreeData G) : Prop :=
+def IsTotallyRamified  
+    (D : DegreeData G)  :=
   E.toFiniteAbstractExtension.IsTotallyRamified D
 
 /-- The positive relative degree. -/
-noncomputable def degree (E : FiniteAbstractFieldExtension G) : ℕ+ :=
+noncomputable def degree    :=
   E.toFiniteAbstractExtension.degree
 
 /-- The positive relative residue degree. -/
-noncomputable def residueDegree (E : FiniteAbstractFieldExtension G)
-    (D : DegreeData G) : ℕ+ :=
+noncomputable def residueDegree  
+    (D : DegreeData G)  :=
   E.toFiniteAbstractExtension.residueDegree D
 
-/-- The positive relative ramification index. -/
-noncomputable def ramificationIndex (E : FiniteAbstractFieldExtension G)
-    (D : DegreeData G) : ℕ+ :=
-  E.toFiniteAbstractExtension.ramificationIndex D
+
+
+
+
 
 /-- In an unramified finite field extension, the positive relative residue
 degree is the positive extension degree. -/
 theorem residueDegree_eq_degree_of_isUnramified
-    (E : FiniteAbstractFieldExtension G) (D : DegreeData G)
+      (D : DegreeData G)
     (hE : E.IsUnramified D) :
     (E.residueDegree D : ℕ) = (E.degree : ℕ) :=
   E.toFiniteAbstractExtension.residueDegree_eq_degree_of_isUnramified D hE
+end
+
 
 /-- A finite abstract field extension supplies finiteness of its relative quotient. -/
 instance (E : FiniteAbstractFieldExtension G) :

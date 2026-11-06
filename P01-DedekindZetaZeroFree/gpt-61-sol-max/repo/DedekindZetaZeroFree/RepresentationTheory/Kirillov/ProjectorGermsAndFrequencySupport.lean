@@ -77,10 +77,13 @@ theorem ordinaryKernel_eq_ker_ordinaryQuotientMap :
   exact congrArg (fun ψ => LinearMap.ker (rootCoinvariantsMk ρ
     (KPLocalSmoothRepresentation.upperRoot F ζ hζ w) ψ)) (frequencyCharacter_zero F w)
 
+
+local notation:max "current_rootRepresentation" => rootRepresentation F ζ hζ
+
 theorem ordinaryKernel_eq_span :
     ordinaryKernel F ζ hζ w ρ =
       Submodule.span ℂ (Set.range fun xv : w.adicCompletion F × V =>
-        rootRepresentation F ζ hζ w ρ (Multiplicative.ofAdd xv.1) xv.2 - xv.2) := by
+        current_rootRepresentation w ρ (Multiplicative.ofAdd xv.1) xv.2 - xv.2) := by
   rw [ordinaryKernel_eq_ker_ordinaryQuotientMap, ordinaryQuotientMap, rootCoinvariantsMk_ker]
   unfold rootRelationSpan
   congr 1
@@ -119,8 +122,8 @@ theorem ordinaryKernel_borel_stable
         (Multiplicative.ofAdd x) =
         KPLocalSmoothRepresentation.upperRoot F ζ hζ w y * p.val := by
       rw [← hy]; group
-    have he : ρ p.val (rootRepresentation F ζ hζ w ρ (Multiplicative.ofAdd x) v) =
-        rootRepresentation F ζ hζ w ρ y (ρ p.val v) := by
+    have he : ρ p.val (current_rootRepresentation w ρ (Multiplicative.ofAdd x) v) =
+        current_rootRepresentation w ρ y (ρ p.val v) := by
       change ρ p.val (ρ _ v) = ρ _ (ρ p.val v)
       rw [← Module.End.mul_apply, ← ρ.map_mul, heq, ρ.map_mul, Module.End.mul_apply]
     rw [map_sub, he]
@@ -137,8 +140,11 @@ theorem ordinaryKernel_borel_stable
 variable (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F w m)
   (hρ : IsSmooth F ζ hζ w m ρ)
 
+
+local notation:max "current_projector" => projector F ζ hζ
+
 theorem quotientMap_projector (u : ℤ) (t : w.adicCompletion F) (v : V) :
-    quotientMap F ζ hζ w ρ t (projector F ζ hζ w ρ m hm hρ u t v) =
+    quotientMap F ζ hζ w ρ t (current_projector w ρ m hm hρ u t v) =
       quotientMap F ζ hζ w ρ t v := by
   let l := averagingDepth F ζ hζ w ρ m hm hρ u t v
   have hl := averagingDepth_spec F ζ hζ w ρ m hm hρ u t v
@@ -147,7 +153,7 @@ theorem quotientMap_projector (u : ℤ) (t : w.adicCompletion F) (v : V) :
   have hterm (x : w.adicCompletion F) :
       quotientMap F ζ hζ w ρ t
           ((localFiniteCharacter F w (-t * x) : ℂ) •
-            rootRepresentation F ζ hζ w ρ (Multiplicative.ofAdd x) v) =
+            current_rootRepresentation w ρ (Multiplicative.ofAdd x) v) =
         quotientMap F ζ hζ w ρ t v := by
     rw [map_smul]
     change _ • rootCoinvariantsMk ρ (KPLocalSmoothRepresentation.upperRoot F ζ hζ w)
@@ -164,30 +170,30 @@ theorem quotientMap_projector (u : ℤ) (t : w.adicCompletion F) (v : V) :
     ∑ q : finiteCompletionBallQuotient F w u l,
       quotientMap F ζ hζ w ρ t ((localFiniteCharacter F w
         (-t * ((Quotient.out q : finiteCompletionBall F w u) : w.adicCompletion F)) : ℂ) •
-        rootRepresentation F ζ hζ w ρ (Multiplicative.ofAdd
+        current_rootRepresentation w ρ (Multiplicative.ofAdd
           ((Quotient.out q : finiteCompletionBall F w u) : w.adicCompletion F)) v) = _
   simp only [hterm, Finset.sum_const]
   rw [← Nat.cast_smul_eq_nsmul ℂ, smul_smul]
   simp [Nat.card_eq_fintype_card]
 
 private theorem projector_root_commutes (u : ℤ) (t x : w.adicCompletion F) (v : V) :
-    projector F ζ hζ w ρ m hm hρ u t
-        (rootRepresentation F ζ hζ w ρ (Multiplicative.ofAdd x) v) =
-      rootRepresentation F ζ hζ w ρ (Multiplicative.ofAdd x)
-        (projector F ζ hζ w ρ m hm hρ u t v) := by
+    current_projector w ρ m hm hρ u t
+        (current_rootRepresentation w ρ (Multiplicative.ofAdd x) v) =
+      current_rootRepresentation w ρ (Multiplicative.ofAdd x)
+        (current_projector w ρ m hm hρ u t v) := by
   let l := averagingDepth F ζ hζ w ρ m hm hρ u t v
   have hl := averagingDepth_spec F ζ hζ w ρ m hm hρ u t v
   have hc (y : w.adicCompletion F) :
-      (rootRepresentation F ζ hζ w ρ (Multiplicative.ofAdd y))
-        (rootRepresentation F ζ hζ w ρ (Multiplicative.ofAdd x) v) =
-      (rootRepresentation F ζ hζ w ρ (Multiplicative.ofAdd x))
-        (rootRepresentation F ζ hζ w ρ (Multiplicative.ofAdd y) v) := by
-    change ((rootRepresentation F ζ hζ w ρ _ * rootRepresentation F ζ hζ w ρ _) v) =
-      ((rootRepresentation F ζ hζ w ρ _ * rootRepresentation F ζ hζ w ρ _) v)
-    rw [← (rootRepresentation F ζ hζ w ρ).map_mul,
-      ← (rootRepresentation F ζ hζ w ρ).map_mul, mul_comm]
+      (current_rootRepresentation w ρ (Multiplicative.ofAdd y))
+        (current_rootRepresentation w ρ (Multiplicative.ofAdd x) v) =
+      (current_rootRepresentation w ρ (Multiplicative.ofAdd x))
+        (current_rootRepresentation w ρ (Multiplicative.ofAdd y) v) := by
+    change ((current_rootRepresentation w ρ _ * current_rootRepresentation w ρ _) v) =
+      ((current_rootRepresentation w ρ _ * current_rootRepresentation w ρ _) v)
+    rw [← (current_rootRepresentation w ρ).map_mul,
+      ← (current_rootRepresentation w ρ).map_mul, mul_comm]
   have hfix : FixedByBall F ζ hζ w ρ l
-      (rootRepresentation F ζ hζ w ρ (Multiplicative.ofAdd x) v) := by
+      (current_rootRepresentation w ρ (Multiplicative.ofAdd x) v) := by
     intro y hy
     rw [hc, hl.2.1 y hy]
   simp only [projector_apply]
@@ -199,20 +205,20 @@ private theorem projector_root_commutes (u : ℤ) (t x : w.adicCompletion F) (v 
     LinearMap.sum_apply, map_smul, map_sum, hc]
 
 private theorem projector_commutes (u u' : ℤ) (t : w.adicCompletion F) :
-    Commute (projector F ζ hζ w ρ m hm hρ u t)
-      (projector F ζ hζ w ρ m hm hρ u' t) := by
+    Commute (current_projector w ρ m hm hρ u t)
+      (current_projector w ρ m hm hρ u' t) := by
   apply LinearMap.ext
   intro v
   let l := averagingDepth F ζ hζ w ρ m hm hρ u' t v
   have hl := averagingDepth_spec F ζ hζ w ρ m hm hρ u' t v
   have hfix : FixedByBall F ζ hζ w ρ l
-      (projector F ζ hζ w ρ m hm hρ u t v) := by
+      (current_projector w ρ m hm hρ u t v) := by
     intro x hx
     rw [← projector_root_commutes, hl.2.1 x hx]
-  change projector F ζ hζ w ρ m hm hρ u t
+  change current_projector w ρ m hm hρ u t
     (projectorValue F ζ hζ w ρ m hm hρ u' t v) =
       projectorValue F ζ hζ w ρ m hm hρ u' t
-        (projector F ζ hζ w ρ m hm hρ u t v)
+        (current_projector w ρ m hm hρ u t v)
   rw [projectorValue_eq_levelAverage F ζ hζ w ρ m hm hρ u' l hl.1 t hl.2.2 v hl.2.1,
     projectorValue_eq_levelAverage F ζ hζ w ρ m hm hρ u' l hl.1 t hl.2.2 _ hfix]
   letI := finite_finiteCompletionBallQuotient F w u' l hl.1
@@ -223,16 +229,16 @@ private theorem projector_commutes (u u' : ℤ) (t : w.adicCompletion F) :
 theorem quotientMap_eq_zero_iff_exists_projector_eq_zero
     (t : w.adicCompletion F) (v : V) :
     quotientMap F ζ hζ w ρ t v = 0 ↔
-      ∃ u : ℤ, projector F ζ hζ w ρ m hm hρ u t v = 0 := by
+      ∃ u : ℤ, current_projector w ρ m hm hρ u t v = 0 := by
   have href (u u' : ℤ) (h : u' ≤ u) (v : V)
-      (hv : projector F ζ hζ w ρ m hm hρ u t v = 0) :
-      projector F ζ hζ w ρ m hm hρ u' t v = 0 := by
+      (hv : current_projector w ρ m hm hρ u t v = 0) :
+      current_projector w ρ m hm hρ u' t v = 0 := by
     have he := projector_refinement_eq F ζ hζ w ρ m hm hρ u u' h t t (by simp)
     have hc := projector_commutes F ζ hζ w ρ m hm hρ u u' t
     have he' := LinearMap.congr_fun (hc.symm.eq.trans he) v
-    change projector F ζ hζ w ρ m hm hρ u' t
-      (projector F ζ hζ w ρ m hm hρ u t v) =
-        projector F ζ hζ w ρ m hm hρ u' t v at he'
+    change current_projector w ρ m hm hρ u' t
+      (current_projector w ρ m hm hρ u t v) =
+        current_projector w ρ m hm hρ u' t v at he'
     rw [hv, map_zero] at he'
     exact he'.symm
   constructor
@@ -252,8 +258,8 @@ theorem quotientMap_eq_zero_iff_exists_projector_eq_zero
       obtain ⟨n, hn⟩ := Set.mem_iUnion.mp hxall
       refine ⟨-(n : ℤ), ?_⟩
       rw [map_sub, map_smul]
-      change projector F ζ hζ w ρ m hm hρ (-(n : ℤ)) t
-        (rootRepresentation F ζ hζ w ρ (Multiplicative.ofAdd (Multiplicative.toAdd x)) v) - _ = 0
+      change current_projector w ρ m hm hρ (-(n : ℤ)) t
+        (current_rootRepresentation w ρ (Multiplicative.ofAdd (Multiplicative.toAdd x)) v) - _ = 0
       rw [projector_root_commutes, projector_eigen F ζ hζ w ρ m hm hρ _ _ _ hn]
       change _ • _ - (frequencyCharacter F w t (Multiplicative.ofAdd (Multiplicative.toAdd x)) : ℂ) • _ = 0
       rw [frequencyCharacter_apply, sub_self]
@@ -280,7 +286,7 @@ theorem eq_zero_of_all_quotientMap_eq_zero (v : V)
     Classical.choose ((quotientMap_eq_zero_iff_exists_projector_eq_zero
       F ζ hζ w ρ m hm hρ t v).mp (hv t))
   have hz (t : w.adicCompletion F) :
-      projector F ζ hζ w ρ m hm hρ (depth t) t v = 0 :=
+      current_projector w ρ m hm hρ (depth t) t v = 0 :=
     Classical.choose_spec ((quotientMap_eq_zero_iff_exists_projector_eq_zero
       F ζ hζ w ρ m hm hρ t v).mp (hv t))
   let O : w.adicCompletion F → Set (w.adicCompletion F) := fun t =>
@@ -299,18 +305,18 @@ theorem eq_zero_of_all_quotientMap_eq_zero (v : V)
   let u' : ℤ := min u l
   have hall (t : w.adicCompletion F)
       (ht : t ∈ localFiniteAnnihilator F w (finiteCompletionBall F w l)) :
-      projector F ζ hζ w ρ m hm hρ u' t v = 0 := by
+      current_projector w ρ m hm hρ u' t v = 0 := by
     obtain ⟨s, hs⟩ := Set.mem_iUnion.mp (hS ht)
     obtain ⟨hsS, hts⟩ := Set.mem_iUnion.mp hs
     have hsmall : u' ≤ depth s := le_trans (min_le_left _ _) (hu _ (Finset.mem_image.mpr ⟨s, hsS, rfl⟩))
-    have hzero : projector F ζ hζ w ρ m hm hρ (depth s) t v = 0 := by
+    have hzero : current_projector w ρ m hm hρ (depth s) t v = 0 := by
       rw [projector_eq_of_sub_mem_annihilator F ζ hζ w ρ m hm hρ _ t s hts, hz]
     have he := projector_refinement_eq F ζ hζ w ρ m hm hρ (depth s) u' hsmall t t (by simp)
     have hc := projector_commutes F ζ hζ w ρ m hm hρ (depth s) u' t
     have he' := LinearMap.congr_fun (hc.symm.eq.trans he) v
-    change projector F ζ hζ w ρ m hm hρ u' t
-      (projector F ζ hζ w ρ m hm hρ (depth s) t v) =
-        projector F ζ hζ w ρ m hm hρ u' t v at he'
+    change current_projector w ρ m hm hρ u' t
+      (current_projector w ρ m hm hρ (depth s) t v) =
+        current_projector w ρ m hm hρ u' t v at he'
     rw [hzero, map_zero] at he'
     exact he'.symm
   letI := finite_dualQuotient F w u' l (min_le_right _ _)
@@ -321,7 +327,7 @@ theorem eq_zero_of_all_quotientMap_eq_zero (v : V)
   exact hall _ (Quotient.out q).property
 
 def characterProjectorSupport (v : V) : Set (w.adicCompletion F) :=
-  {t | ∀ u : ℤ, projector F ζ hζ w ρ m hm hρ u t v ≠ 0}
+  {t | ∀ u : ℤ, current_projector w ρ m hm hρ u t v ≠ 0}
 
 theorem mem_characterProjectorSupport_iff (t : w.adicCompletion F) (v : V) :
     t ∈ characterProjectorSupport F ζ hζ w ρ m hm hρ v ↔
@@ -337,7 +343,7 @@ theorem characterProjectorSupport_subset_annihilator (l : ℤ) (v : V)
         Set (w.adicCompletion F)) := by
   intro t ht
   by_contra hnot
-  have hfix : projector F ζ hζ w ρ m hm hρ l 0 v = v :=
+  have hfix : current_projector w ρ m hm hρ l 0 v = v :=
     projector_eq_self F ζ hζ w ρ m hm hρ l 0 v (by
       intro x hx
       simpa using hv x hx)

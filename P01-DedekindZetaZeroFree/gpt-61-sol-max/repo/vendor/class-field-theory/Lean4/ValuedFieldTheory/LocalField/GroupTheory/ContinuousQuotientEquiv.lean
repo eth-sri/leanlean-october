@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Topology.Algebra.Group.Quotient
 public import Mathlib.Topology.Algebra.ContinuousMonoidHom
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -36,13 +39,16 @@ variable {G : Type u} {H : Type v}
 variable [Group G] [TopologicalSpace G]
 variable [Group H] [TopologicalSpace H]
 
+section
+variable (N : Subgroup G) (M : Subgroup H) [N.Normal] [M.Normal]
+    (e : G ≃ₜ* H) (h : N.map e.toMulEquiv.toMonoidHom = M)
+include N M e h
 /-- A continuous multiplicative equivalence descends to continuously
 equivalent quotients when it maps one normal subgroup onto the other. -/
 noncomputable def continuousCongr
-    (N : Subgroup G) (M : Subgroup H) [N.Normal] [M.Normal]
-    (e : G ≃ₜ* H) (h : N.map e.toMulEquiv.toMonoidHom = M) :
+      :
     G ⧸ N ≃ₜ* H ⧸ M := by
-  let eAlg : G ⧸ N ≃* H ⧸ M :=
+  let eAlg  :=
     QuotientGroup.congr (G' := N) (H' := M) e.toMulEquiv h
   refine
     { toMulEquiv := eAlg
@@ -61,11 +67,12 @@ noncomputable def continuousCongr
 /-- The descended equivalence acts on quotient classes through the original
 equivalence. -/
 @[simp] theorem continuousCongr_mk
-    (N : Subgroup G) (M : Subgroup H) [N.Normal] [M.Normal]
-    (e : G ≃ₜ* H) (h : N.map e.toMulEquiv.toMonoidHom = M) (g : G) :
+      (g : G) :
     continuousCongr N M e h (QuotientGroup.mk' N g) =
       QuotientGroup.mk' M (e g) :=
   rfl
+end
+
 
 end LocalFieldTheory.QuotientGroup
 

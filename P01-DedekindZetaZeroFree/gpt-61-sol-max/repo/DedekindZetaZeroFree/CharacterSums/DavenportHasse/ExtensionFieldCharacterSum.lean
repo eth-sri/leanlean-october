@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.CharacterSums.DavenportHasse.PolynomialWeights
 
 @[expose] public section
+
 
 open Polynomial IntermediateField
 
@@ -62,11 +65,11 @@ lemma card_minpoly_eq {P : k[X]} (hP : P.Monic) (hirr : Irreducible P)
     (hK ▸ hdvd)
   have hroot : aeval (f (AdjoinRoot.root P)) P = 0 := by
     rw [aeval_algHom_apply, AdjoinRoot.aeval_eq, AdjoinRoot.mk_self, map_zero]
-  have hmin : P = minpoly k (f (AdjoinRoot.root P)) :=
+  have hmin  :=
     minpoly.eq_of_irreducible_of_monic hirr hroot hP
   have hsplit : Splits (P.map (algebraMap k E)) := by
     rw [hmin]; exact Normal.splits inferInstance _
-  have hsep : P.Separable := PerfectField.separable_of_irreducible hirr
+  have hsep  := PerfectField.separable_of_irreducible hirr
   rw [← card_rootSet_eq_natDegree hsep hsplit, ← Fintype.card_subtype]
   refine Fintype.card_congr (Equiv.subtypeEquivRight fun α => ?_)
   rw [mem_rootSet_of_ne hirr.ne_zero]
@@ -79,7 +82,7 @@ lemma norm_trace_eq (χ : MulChar k ℂ) (ψ : AddChar k ℂ) (α : E) :
     χ (Algebra.norm k α) * ψ (Algebra.trace k E α) =
       wt χ ψ (minpoly k α) ^ (Module.finrank k E / (minpoly k α).natDegree) := by
   have hx : IsIntegral k α := .of_finite k α
-  have hd : Module.finrank k k⟮α⟯ = (minpoly k α).natDegree := adjoin.finrank hx
+  have hd  := adjoin.finrank hx
   have hm : Module.finrank k E / (minpoly k α).natDegree = Module.finrank k⟮α⟯ E := by
     rw [← Module.finrank_mul_finrank k k⟮α⟯ E, hd,
       Nat.mul_div_cancel_left _ (minpoly.natDegree_pos hx)]

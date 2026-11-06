@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.IdealMap
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Topology
 public import Mathlib.RingTheory.DedekindDomain.SInteger
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -73,22 +76,22 @@ theorem mem_supportedAt_nonLocalUnits
 theorem exists_finset_supportedAt (a : FiniteIdeleGroup K) :
     ∃ S : Finset (HeightOneSpectrum (𝓞 K)),
       a ∈ supportedAt (K := K) (S : Set _) := by
-  let T : Set (HeightOneSpectrum (𝓞 K)) :=
+  let T  :=
     {v | a v ∉ (v.adicCompletionIntegers K).units}
   have hT : T.Finite := Filter.eventually_cofinite.mp a.2
   exact ⟨hT.toFinset, by
     rw [Set.Finite.coe_toFinset]
     exact mem_supportedAt_nonLocalUnits a⟩
 
-/-- The union of the finite-support subgroups is the full finite idele
-group. -/
-theorem iSup_finset_supportedAt :
-    ⨆ S : Finset (HeightOneSpectrum (𝓞 K)),
-      supportedAt (K := K) (S : Set _) = ⊤ := by
-  apply top_unique
-  intro a _
-  obtain ⟨S, ha⟩ := exists_finset_supportedAt a
-  exact Subgroup.mem_iSup_of_mem S ha
+
+
+
+
+
+
+
+
+
 
 /-- The everywhere-integral subgroup is the subgroup supported at the empty
 set. -/
@@ -138,18 +141,16 @@ theorem supportedAt_mono {S T : Set (HeightOneSpectrum (𝓞 K))}
     (FiniteIdeleGroup.supportedAt_mono hST)
 
 /-- Every idele lies in `I_K^S` for some finite set `S`. -/
-theorem exists_finset_supportedAt (a : IdeleGroup K) :
-    ∃ S : Finset (HeightOneSpectrum (𝓞 K)),
-      a ∈ supportedAt (K := K) (S : Set _) :=
+def exists_finset_supportedAt (a : IdeleGroup K)  :=
   FiniteIdeleGroup.exists_finset_supportedAt a.2
 
-theorem iSup_finset_supportedAt :
-    ⨆ S : Finset (HeightOneSpectrum (𝓞 K)),
-      supportedAt (K := K) (S : Set _) = ⊤ := by
-  apply top_unique
-  intro a _
-  obtain ⟨S, ha⟩ := exists_finset_supportedAt a
-  exact Subgroup.mem_iSup_of_mem S ha
+
+
+
+
+
+
+
 
 theorem supportedAt_empty :
     supportedAt (K := K)

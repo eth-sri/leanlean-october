@@ -326,39 +326,39 @@ theorem
       (standardLubinTateCanonicalLocalUpperRamificationGroup_succ_eq_bot
         K n)
 
-/-- The canonical standard subgroup and the canonical standard norm
-subgroup have the same index. -/
-theorem
-    standardLubinTateCanonicalUniformizerPrincipalSubgroup_index_eq_normSubgroup_index
-    (n : ℕ) :
-    (LocalFieldTheory.uniformizerPrincipalSubgroup K
-        (standardLubinTateBaseUniformizerUnit
-          (standardLocalFieldUniformizer_isUniformizer K))
-        1 (n + 1)).index =
-      (standardLubinTateNormSubgroup
-        (standardLocalFieldUniformizer_isUniformizer K) n).index := by
-  rw [
-    standardLubinTateCanonicalUniformizerPrincipalSubgroup_index,
-    standardLubinTateCanonicalNormSubgroup_index]
 
-/-- The index of the canonical uniformizer-principal subgroup is nonzero,
-so equality with a containing subgroup of the same index may be concluded
-using `subgroup_eq_of_le_of_index_eq_of_ne_zero`. -/
-theorem
-    standardLubinTateCanonicalUniformizerPrincipalSubgroup_index_ne_zero
-    (n : ℕ) :
-    (LocalFieldTheory.uniformizerPrincipalSubgroup K
-        (standardLubinTateBaseUniformizerUnit
-          (standardLocalFieldUniformizer_isUniformizer K))
-        1 (n + 1)).index ≠ 0 := by
-  rw [standardLubinTateCanonicalUniformizerPrincipalSubgroup_index]
-  have hq : 1 < Nat.card 𝓀[K] := by
-    exact Finite.one_lt_card
-  exact
-    Nat.ne_of_gt
-      (Nat.mul_pos
-        (Nat.sub_pos_of_lt hq)
-        (Nat.pow_pos (Nat.zero_lt_one.trans hq)))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 omit [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K] in

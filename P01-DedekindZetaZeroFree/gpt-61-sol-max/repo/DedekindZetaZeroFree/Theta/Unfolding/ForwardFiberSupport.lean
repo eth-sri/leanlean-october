@@ -109,9 +109,12 @@ lemma forwardMask_gamma (m : ThetaReflectionData.Row R.A) (a : Fˣ)
     simp only [ThetaBranch.unitResidue, dif_neg ha, dif_neg haa,
       sexticUnitPower, isUnit_iff_ne_zero, ne_eq, not_true_eq_false, ↓reduceIte]
 
-lemma orbitSheet_forward_factor {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
+section
+variable {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
     (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A)
     (i : OrbitIndex R) (l : PositiveAxis) (y : Sheet R.A l)
+include N C v m i l y
+lemma orbitSheet_forward_factor  
     (ha : (orbitFrequency R i : F) ∈ R.A.R) :
     orbitSheet R C v m true i l y =
       (forwardMask R m (orbitFrequency R i) * forwardExterior R C (orbitFrequency R i)) *
@@ -130,12 +133,12 @@ lemma orbitSheet_forward_factor {N : TraceHaarTransport R} (C : JointUpperVanish
   unfold forwardMask
   ring
 
-lemma orbitSheet_forward_nonintegral {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
-    (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A)
-    (i : OrbitIndex R) (l : PositiveAxis) (y : Sheet R.A l)
+lemma orbitSheet_forward_nonintegral  
     (ha : (orbitFrequency R i : F) ∉ R.A.R) : orbitSheet R C v m true i l y = 0 := by
   unfold orbitSheet
   rw [forward_digits_nonintegral R C v m i y.val ha, mul_zero]
+end
+
 
 lemma forwardSheetWord_nonallowed {Q : AdmissibleFlatSources R} (P : Packet R Q)
     (v : R.A.UnitQuotient) (x : Fˣ)
@@ -181,10 +184,13 @@ lemma orbitFrequency_integral_iff (ξ : ThetaReflectionData.Frequency R.A)
     have hg := gamma_valuation R γ ⟨p, hp⟩
     simpa only [orbitFrequency, Units.val_mul, map_mul, hg, mul_one] using h p hp
 
-lemma orbitIntegral_forward_factor {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
+section
+variable {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
     (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A)
     (ξ : ThetaReflectionData.Frequency R.A) (γ : ThetaReflectionData.rationalGamma R.A)
-    (l : PositiveAxis) (ha : (Quotient.out ξ : Fˣ).val ∈ R.A.R) :
+    (l : PositiveAxis)
+include N C v m ξ γ l
+lemma orbitIntegral_forward_factor   (ha : (Quotient.out ξ : Fˣ).val ∈ R.A.R) :
     letI := C.transport.groupHaar_isHaar;
     orbitIntegral R C v m true (ξ, γ) l =
       (forwardMask R m (Quotient.out ξ) * forwardExterior R C (Quotient.out ξ)) *
@@ -197,16 +203,15 @@ lemma orbitIntegral_forward_factor {N : TraceHaarTransport R} (C : JointUpperVan
   simp_rw [orbitFrequency, forwardMask_gamma, forwardExterior_gamma]
   exact integral_const_mul _ _
 
-lemma orbitIntegral_forward_nonintegral {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
-    (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A)
-    (ξ : ThetaReflectionData.Frequency R.A) (γ : ThetaReflectionData.rationalGamma R.A)
-    (l : PositiveAxis) (ha : (Quotient.out ξ : Fˣ).val ∉ R.A.R) :
+lemma orbitIntegral_forward_nonintegral   (ha : (Quotient.out ξ : Fˣ).val ∉ R.A.R) :
     orbitIntegral R C v m true (ξ, γ) l = 0 := by
   letI := C.transport.groupHaar_isHaar
   unfold orbitIntegral
   simp_rw [orbitSheet_forward_nonintegral R C v m (ξ, γ) l _
     (fun h => ha ((orbitFrequency_integral_iff R ξ γ).mp h))]
   exact integral_zero _ _
+end
+
 
 lemma groupedOrbitTerm_forward_allowed {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
     (hx : AbsoluteExtraction R C) (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A)
@@ -236,18 +241,19 @@ lemma groupedOrbitTerm_forward_allowed {N : TraceHaarTransport R} (C : JointUppe
   simp_rw [hm]
   rw [integral_const_mul, (forward_sheet_smoothing R C (Quotient.out ξ) Z hZ).2]
 
-lemma groupedOrbitTerm_forward_nonintegral {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
+section
+variable {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
     (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A)
     (ξ : ThetaReflectionData.Frequency R.A) (Z : ℝ) (hZ : 0 < Z)
+include N C v m ξ Z hZ
+lemma groupedOrbitTerm_forward_nonintegral  
     (ha : (Quotient.out ξ : Fˣ).val ∉ R.A.R) :
     groupedOrbitTerm R C v m true Z hZ ξ = 0 := by
   unfold groupedOrbitTerm orbitTerm
   simp_rw [orbitIntegral_forward_nonintegral R C v m ξ _ _ ha, mul_zero]
   simp
 
-lemma groupedOrbitTerm_forward_nonallowed {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
-    (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A)
-    (ξ : ThetaReflectionData.Frequency R.A) (Z : ℝ) (hZ : 0 < Z)
+lemma groupedOrbitTerm_forward_nonallowed  
     (ha : (Quotient.out ξ : Fˣ).val ∈ R.A.R)
     (hb : ThetaReflectionData.rationalClass R.A (Quotient.out ξ) ∉ R.probe.correction.B) :
     groupedOrbitTerm R C v m true Z hZ ξ = 0 := by
@@ -256,6 +262,8 @@ lemma groupedOrbitTerm_forward_nonallowed {N : TraceHaarTransport R} (C : JointU
   simp_rw [orbitIntegral_forward_factor R C v m ξ _ _ ha,
     forwardSheetWord_nonallowed R C.packet v (Quotient.out ξ) hb]
   simp
+end
+
 
 end DedekindZetaZeroFree.OrbitExpansion
 

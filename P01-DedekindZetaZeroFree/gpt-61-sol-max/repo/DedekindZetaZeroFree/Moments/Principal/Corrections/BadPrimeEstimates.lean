@@ -212,9 +212,12 @@ private lemma norm_V_bound (p : ExteriorPrime A) (x : Coordinates) (hx : x ∈ O
   exact (Real.rpow_le_rpow_of_exponent_le (by linarith [two_le_Q p]) he).trans
     (Real.rpow_le_rpow_of_nonpos (by norm_num) (two_le_Q p) (by norm_num))
 
-private lemma zero_term (C : A.GeneralArithmeticContext σ η hS)
+section
+variable (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (j : Fin 6) (hj : j.val ≠ 0)
-    (θ : {θ : ℂ // ‖θ‖ = 1}) (k m : ℕ) (x : Coordinates) :
+    (θ : {θ : ℂ // ‖θ‖ = 1})
+include C p j hj θ
+private lemma zero_term   (k m : ℕ) (x : Coordinates) :
     seriesTerm C p j θ 0 0 k m x.1 x.2.1 x.2.2 =
       if k = 0 then V p x.2.2 ^ m else 0 := by
   by_cases hk : k = 0
@@ -234,9 +237,7 @@ private lemma zero_term (C : A.GeneralArithmeticContext σ η hS)
       Ctk_zero_pos C p k _ (Nat.pos_of_ne_zero hk), if_neg hJ]
     simp only [mul_zero, zero_mul, if_neg hk]
 
-private lemma term_bound (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (j : Fin 6) (hj : j.val ≠ 0)
-    (θ : {θ : ℂ // ‖θ‖ = 1}) (i : Fin 2 × ℕ × ℕ × ℕ)
+private lemma term_bound   (i : Fin 2 × ℕ × ℕ × ℕ)
     (x : Coordinates) (hx : x ∈ Omega) :
     ‖seriesTerm C p j θ i.1 i.2.1 i.2.2.1 i.2.2.2 x.1 x.2.1 x.2.2‖ ≤ weight i / 2 := by
   have hr := ratio_pos
@@ -255,9 +256,7 @@ private lemma term_bound (C : A.GeneralArithmeticContext σ η hS)
     · simp only [norm_zero]
       exact div_nonneg (weight_nonneg _) (by norm_num)
 
-theorem bad_factor_normal_majorants (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (j : Fin 6) (hj : j.val ≠ 0)
-    (θ : {θ : ℂ // ‖θ‖ = 1}) :
+theorem bad_factor_normal_majorants   :
     ∀ K : Set Coordinates, K ⊆ Omega → IsCompact K →
       ∃ M : (Fin 2 × ℕ × ℕ × ℕ) → ℝ, Summable M ∧
         ∀ (i : Fin 2 × ℕ × ℕ × ℕ) (x : Coordinates), x ∈ K →
@@ -275,9 +274,7 @@ theorem bad_factor_normal_majorants (C : A.GeneralArithmeticContext σ η hS)
   have ht := term_bound C p j hj θ i x (hKO hx)
   nlinarith [norm_nonneg (seriesTerm C p j θ i.1 i.2.1 i.2.2.1 i.2.2.2 x.1 x.2.1 x.2.2)]
 
-theorem bad_factor_holomorphic (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (j : Fin 6) (hj : j.val ≠ 0)
-    (θ : {θ : ℂ // ‖θ‖ = 1}) :
+theorem bad_factor_holomorphic   :
     DifferentiableOn ℂ
       (fun x : Coordinates => badFactor C p j θ x.1 x.2.1 x.2.2) Omega := by
   have hg : ∀ i : Fin 2 × ℕ × ℕ × ℕ, Differentiable ℂ
@@ -289,6 +286,8 @@ theorem bad_factor_holomorphic (C : A.GeneralArithmeticContext σ η hS)
   have h := normal_holomorphic _ hg Omega isOpen_Omega
     (bad_factor_normal_majorants C p j hj θ)
   simpa only [badFactor, f, tsum_mul_left] using h
+end
+
 
 end DedekindZetaZeroFree.CorrectionFactors
 

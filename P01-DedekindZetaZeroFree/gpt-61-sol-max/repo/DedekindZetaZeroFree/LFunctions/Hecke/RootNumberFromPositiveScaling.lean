@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve
 
@@ -34,26 +37,17 @@ theorem rootNumber_eq_one_of_positive_scaling
     exact hA2
   have hB2 : B 2 ≠ 0 := fun h => hprod (by rw [h]; ring)
   have hL2 : L 2 ≠ 0 := fun h => hprod (by rw [h]; ring)
-  have hBL : B 2 * L 2 ≠ 0 := mul_ne_zero hB2 hL2
+  
 
   have heq :
       Complex.exp ((c : ℂ) * 2) * B 2 * L 2 =
         Complex.exp ((c : ℂ) * (-1)) * B 2 * (W * L 2) := by
-    calc Complex.exp ((c : ℂ) * 2) * B 2 * L 2 = A 2 := (hfactor 2).symm
-      _ = A (-1) := hA21
-      _ = Complex.exp ((c : ℂ) * (-1)) * B (-1) * L (-1) := hfactor (-1)
-      _ = Complex.exp ((c : ℂ) * (-1)) * B 2 * (W * L 2) := by rw [← hB21, hLm1]
+    grind
   have hc' : Complex.exp ((c : ℂ) * 2) = Complex.exp ((c : ℂ) * (-1)) * W := by
-    have h := heq
-    rw [show Complex.exp ((c : ℂ) * 2) * B 2 * L 2 =
-          Complex.exp ((c : ℂ) * 2) * (B 2 * L 2) by ring,
-        show Complex.exp ((c : ℂ) * (-1)) * B 2 * (W * L 2) =
-          (Complex.exp ((c : ℂ) * (-1)) * W) * (B 2 * L 2) by ring] at h
-    exact mul_right_cancel₀ hBL h
+    grind [Complex.exp]
 
   have hW3 : W = Complex.exp ((3 * c : ℝ) : ℂ) := by
-    have hm : Complex.exp (c : ℂ) * Complex.exp ((c : ℂ) * 2) =
-        Complex.exp (c : ℂ) * (Complex.exp ((c : ℂ) * (-1)) * W) :=
+    have hm  :=
       congrArg (fun z => Complex.exp (c : ℂ) * z) hc'
     have hLHS : Complex.exp (c : ℂ) * Complex.exp ((c : ℂ) * 2) =
         Complex.exp ((3 * c : ℝ) : ℂ) := by

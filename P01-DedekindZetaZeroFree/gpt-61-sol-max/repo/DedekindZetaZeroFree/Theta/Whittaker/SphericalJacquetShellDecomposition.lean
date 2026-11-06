@@ -1232,14 +1232,14 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
   (P : Polarization inducingData.heisenberg)
 variable [NormedAddCommGroup (Fiber F ζ hζ v inducingData P)]
 
-local instance fiberUniformStep2 : UniformSpace (Fiber F ζ hζ v inducingData P) :=
-  @PseudoMetricSpace.toUniformSpace _
-    (inferInstance : PseudoMetricSpace (Fiber F ζ hζ v inducingData P))
 
-local instance contributionTopologyStep2 : TopologicalSpace (Fiber F ζ hζ v inducingData P) :=
-  @UniformSpace.toTopologicalSpace _
-    (@PseudoMetricSpace.toUniformSpace _
-      (inferInstance : PseudoMetricSpace (Fiber F ζ hζ v inducingData P)))
+
+
+
+
+
+
+
 
 variable [NormedSpace ℂ (Fiber F ζ hζ v inducingData P)]
 
@@ -1575,9 +1575,9 @@ abbrev sphericalShell (π : (valuation (LocalField F v)).integer) (e : ℕ) (l :
 
 variable [NormedAddCommGroup (Fiber F ζ hζ v inducingData P)]
 
-local instance contributionTopology : TopologicalSpace (Fiber F ζ hζ v inducingData P) :=
-  @UniformSpace.toTopologicalSpace _
-    (@PseudoMetricSpace.toUniformSpace _ (inferInstance : PseudoMetricSpace (Fiber F ζ hζ v inducingData P)))
+
+
+
 
 variable [NormedSpace ℂ (Fiber F ζ hζ v inducingData P)]
 

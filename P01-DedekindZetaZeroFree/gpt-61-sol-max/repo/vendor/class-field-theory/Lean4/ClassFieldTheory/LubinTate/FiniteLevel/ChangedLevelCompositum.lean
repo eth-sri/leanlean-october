@@ -183,47 +183,50 @@ noncomputable instance
   standardLubinTateChangedLevelCompositumCompleteDVF_hasExtension
     hπ u n
 
-/-- The chosen compositum valuation ring is the integral closure of the base
-valuation ring. -/
-theorem
-    standardLubinTateChangedLevelCompositumCompleteDVF_isIntegralClosure
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ) :
-    IsIntegralClosure
-      (standardLubinTateChangedLevelCompositumCompleteDVF
-        hπ u n).valuationSubring
-      F.valuationSubring
-      (standardLubinTateChangedLevelCompositumField hπ u n) :=
-  (Classical.choose_spec
-    (Classical.choose_spec
-      (standardLubinTateChangedLevelCompositumCompleteDVFData_exists
-        hπ u n))).1
 
-/-- The chosen compositum valuation satisfies the finite-extension
-fundamental identity. -/
-theorem
-    standardLubinTateChangedLevelCompositumCompleteDVF_fundamentalIdentity
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ) :
-    let target :=
-      standardLubinTateChangedLevelCompositumCompleteDVF hπ u n
-    degree F.toCompleteDVF.toDVF target.toDVF =
-      ramificationIndex F.toCompleteDVF.toDVF target.toDVF *
-        residueDegree F.toCompleteDVF.toDVF target.toDVF :=
-  (Classical.choose_spec
-    (Classical.choose_spec
-      (standardLubinTateChangedLevelCompositumCompleteDVFData_exists
-        hπ u n))).2
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+section
+variable {F : LocalField.{u, v} K} {π : F.valuationSubring}
+    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
+    (u : F.valuationSubringˣ) (n : ℕ)
+include F π hπ u n in
 /-- Completeness of the base makes the chosen compositum valuation the unique
 extension of the base valuation. -/
 theorem
     standardLubinTateChangedLevelCompositumCompleteDVF_hasUniqueValuationExtension
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ) :
+      :
     ValuationTheory.DiscreteValuationField.ValuedExtension.HasUniqueValuationExtension.{u, v, u, 0, 0}
       (base := F.toCompleteDVF)
       (target :=
@@ -240,12 +243,11 @@ theorem
       F.toCompleteDVF
       (standardLubinTateChangedLevelCompositumCompleteDVF hπ u n)) v'
 
+include F π hπ u n in
 /-- The same uniqueness statement after forgetting completeness. -/
 theorem
     standardLubinTateChangedLevelCompositumCompleteDVF_hasUniqueDVFValuationExtension
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ) :
+      :
     RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, u, 0, 0}
       F.toCompleteDVF.toDVF
       (standardLubinTateChangedLevelCompositumCompleteDVF
@@ -253,47 +255,44 @@ theorem
   standardLubinTateChangedLevelCompositumCompleteDVF_hasUniqueValuationExtension
     hπ u n
 
+include F π hπ u n in
 /-- The literal inclusion of the original level into the common
 compositum. -/
 noncomputable def standardLubinTateLevelToChangedLevelCompositum
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ) :
+      :
     standardLubinTateLevelField hπ n →ₐ[K]
       standardLubinTateChangedLevelCompositumField hπ u n :=
   IntermediateField.inclusion le_sup_left
 
+include F π hπ u n in
 /-- The literal inclusion of the changed level into the common
 compositum. -/
 noncomputable def standardLubinTateChangedLevelToCompositum
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ) :
+      :
     standardLubinTateChangedLevelField hπ u n →ₐ[K]
       standardLubinTateChangedLevelCompositumField hπ u n :=
   IntermediateField.inclusion le_sup_right
 
-/-- The original-level inclusion is the ambient identity on separable-closure
-elements. -/
-@[simp]
-theorem standardLubinTateLevelToChangedLevelCompositum_coe
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ)
-    (x : standardLubinTateLevelField hπ n) :
-    ((standardLubinTateLevelToChangedLevelCompositum hπ u n x :
-        standardLubinTateChangedLevelCompositumField hπ u n) :
-      SeparableClosure K) =
-        (x : SeparableClosure K) :=
-  IntermediateField.coe_inclusion le_sup_left x
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+include F π hπ u n in
 /-- The changed-level inclusion is the ambient identity on
 separable-closure elements. -/
 @[simp]
 theorem standardLubinTateChangedLevelToCompositum_coe
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ)
+     
     (x : standardLubinTateChangedLevelField hπ u n) :
     ((standardLubinTateChangedLevelToCompositum hπ u n x :
         standardLubinTateChangedLevelCompositumField hπ u n) :
@@ -301,67 +300,64 @@ theorem standardLubinTateChangedLevelToCompositum_coe
         (x : SeparableClosure K) :=
   IntermediateField.coe_inclusion le_sup_right x
 
-/-- The original primitive generator has the same ambient value after
-inclusion in the compositum. -/
-@[simp]
-theorem
-    standardLubinTateLevelToChangedLevelCompositum_levelGenerator_coe
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ) :
-    ((standardLubinTateLevelToChangedLevelCompositum hπ u n
-          (standardLubinTateLevelGenerator hπ n) :
-        standardLubinTateChangedLevelCompositumField hπ u n) :
-      SeparableClosure K) =
-        chosenStandardLubinTatePrimitiveRoot hπ n := by
-  simp
 
-/-- The changed primitive generator has the same ambient value after
-inclusion in the compositum. -/
-@[simp]
-theorem
-    standardLubinTateChangedLevelToCompositum_levelGenerator_coe
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ) :
-    ((standardLubinTateChangedLevelToCompositum hπ u n
-          (standardLubinTateChangedLevelGenerator hπ u n) :
-        standardLubinTateChangedLevelCompositumField hπ u n) :
-      SeparableClosure K) =
-        chosenStandardLubinTatePrimitiveRoot
-          (standardLubinTateChangedUniformizer_isUniformizer hπ u) n := by
-  simp
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+include F π hπ u n in
 /-- The algebra structure corresponding to the original-level inclusion. -/
 @[reducible]
 noncomputable def standardLubinTateLevelToChangedLevelCompositumAlgebra
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ) :
+      :
     Algebra (standardLubinTateLevelField hπ n)
       (standardLubinTateChangedLevelCompositumField hπ u n) :=
   RingHom.toAlgebra
     (standardLubinTateLevelToChangedLevelCompositum
       hπ u n).toRingHom
 
+include F π hπ u n in
 /-- The algebra structure corresponding to the changed-level inclusion. -/
 @[reducible]
 noncomputable def standardLubinTateChangedLevelToCompositumAlgebra
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ) :
+      :
     Algebra (standardLubinTateChangedLevelField hπ u n)
       (standardLubinTateChangedLevelCompositumField hπ u n) :=
   RingHom.toAlgebra
     (standardLubinTateChangedLevelToCompositum
       hπ u n).toRingHom
 
+include F π hπ u n in
 /-- The compositum valuation extends the chosen valuation on the original
 level. -/
 theorem standardLubinTateLevelToChangedLevelCompositum_hasExtension
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ) :
+      :
     letI : Algebra (standardLubinTateLevelField hπ n)
         (standardLubinTateChangedLevelCompositumField hπ u n) :=
       standardLubinTateLevelToChangedLevelCompositumAlgebra hπ u n
@@ -397,12 +393,11 @@ theorem standardLubinTateLevelToChangedLevelCompositum_hasExtension
           standardLubinTateLevelCompleteDVF_hasUniqueValuationExtension
             hπ n vcomap }
 
+include F π hπ u n in
 /-- The compositum valuation extends the chosen valuation on the changed
 level. -/
 theorem standardLubinTateChangedLevelToCompositum_hasExtension
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ) :
+      :
     letI : Algebra (standardLubinTateChangedLevelField hπ u n)
         (standardLubinTateChangedLevelCompositumField hπ u n) :=
       standardLubinTateChangedLevelToCompositumAlgebra hπ u n
@@ -442,137 +437,136 @@ theorem standardLubinTateChangedLevelToCompositum_hasExtension
           standardLubinTateLevelCompleteDVF_hasUniqueValuationExtension
             hπ' n vcomap }
 
-/-- The common valuation detects integrality of an original-level element
-exactly as the chosen original-level valuation does. -/
-theorem
-    standardLubinTateLevelToChangedLevelCompositum_val_le_one_iff
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ)
-    (x : standardLubinTateLevelField hπ n) :
-    (standardLubinTateChangedLevelCompositumCompleteDVF
-        hπ u n).valuation
-        (standardLubinTateLevelToChangedLevelCompositum
-          hπ u n x) ≤ 1 ↔
-      (standardLubinTateLevelCompleteDVF hπ n).valuation x ≤ 1 := by
-  let L := standardLubinTateLevelField hπ n
-  let M := standardLubinTateChangedLevelCompositumField hπ u n
-  let level := standardLubinTateLevelCompleteDVF hπ n
-  let target :=
-    standardLubinTateChangedLevelCompositumCompleteDVF hπ u n
-  let : Algebra L M :=
-    standardLubinTateLevelToChangedLevelCompositumAlgebra hπ u n
-  let : level.valuation.HasExtension target.valuation :=
-    standardLubinTateLevelToChangedLevelCompositum_hasExtension
-      hπ u n
-  change
-    target.valuation (algebraMap L M x) ≤ 1 ↔
-      level.valuation x ≤ 1
-  exact
-    _root_.Valuation.HasExtension.val_map_le_one_iff
-      (vR := level.valuation) (vA := target.valuation) x
 
-/-- The common valuation detects maximal-ideal membership of an
-original-level element. -/
-theorem
-    standardLubinTateLevelToChangedLevelCompositum_val_lt_one_iff
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ)
-    (x : standardLubinTateLevelField hπ n) :
-    (standardLubinTateChangedLevelCompositumCompleteDVF
-        hπ u n).valuation
-        (standardLubinTateLevelToChangedLevelCompositum
-          hπ u n x) < 1 ↔
-      (standardLubinTateLevelCompleteDVF hπ n).valuation x < 1 := by
-  let L := standardLubinTateLevelField hπ n
-  let M := standardLubinTateChangedLevelCompositumField hπ u n
-  let level := standardLubinTateLevelCompleteDVF hπ n
-  let target :=
-    standardLubinTateChangedLevelCompositumCompleteDVF hπ u n
-  let : Algebra L M :=
-    standardLubinTateLevelToChangedLevelCompositumAlgebra hπ u n
-  let : level.valuation.HasExtension target.valuation :=
-    standardLubinTateLevelToChangedLevelCompositum_hasExtension
-      hπ u n
-  change
-    target.valuation (algebraMap L M x) < 1 ↔
-      level.valuation x < 1
-  exact
-    _root_.Valuation.HasExtension.val_map_lt_one_iff
-      (vR := level.valuation) (vA := target.valuation) x
 
-/-- The common valuation detects integrality of a changed-level element
-exactly as the chosen changed-level valuation does. -/
-theorem
-    standardLubinTateChangedLevelToCompositum_val_le_one_iff
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ)
-    (x : standardLubinTateChangedLevelField hπ u n) :
-    (standardLubinTateChangedLevelCompositumCompleteDVF
-        hπ u n).valuation
-        (standardLubinTateChangedLevelToCompositum hπ u n x) ≤ 1 ↔
-      (standardLubinTateLevelCompleteDVF
-        (standardLubinTateChangedUniformizer_isUniformizer
-          hπ u) n).valuation x ≤ 1 := by
-  let hπ' :=
-    standardLubinTateChangedUniformizer_isUniformizer hπ u
-  let L' := standardLubinTateChangedLevelField hπ u n
-  let M := standardLubinTateChangedLevelCompositumField hπ u n
-  let level := standardLubinTateLevelCompleteDVF hπ' n
-  let target :=
-    standardLubinTateChangedLevelCompositumCompleteDVF hπ u n
-  let : Algebra L' M :=
-    standardLubinTateChangedLevelToCompositumAlgebra hπ u n
-  let : level.valuation.HasExtension target.valuation :=
-    standardLubinTateChangedLevelToCompositum_hasExtension hπ u n
-  change
-    target.valuation (algebraMap L' M x) ≤ 1 ↔
-      level.valuation x ≤ 1
-  exact
-    _root_.Valuation.HasExtension.val_map_le_one_iff
-      (vR := level.valuation) (vA := target.valuation) x
 
-/-- The common valuation detects maximal-ideal membership of a changed-level
-element. -/
-theorem
-    standardLubinTateChangedLevelToCompositum_val_lt_one_iff
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ)
-    (x : standardLubinTateChangedLevelField hπ u n) :
-    (standardLubinTateChangedLevelCompositumCompleteDVF
-        hπ u n).valuation
-        (standardLubinTateChangedLevelToCompositum hπ u n x) < 1 ↔
-      (standardLubinTateLevelCompleteDVF
-        (standardLubinTateChangedUniformizer_isUniformizer
-          hπ u) n).valuation x < 1 := by
-  let hπ' :=
-    standardLubinTateChangedUniformizer_isUniformizer hπ u
-  let L' := standardLubinTateChangedLevelField hπ u n
-  let M := standardLubinTateChangedLevelCompositumField hπ u n
-  let level := standardLubinTateLevelCompleteDVF hπ' n
-  let target :=
-    standardLubinTateChangedLevelCompositumCompleteDVF hπ u n
-  let : Algebra L' M :=
-    standardLubinTateChangedLevelToCompositumAlgebra hπ u n
-  let : level.valuation.HasExtension target.valuation :=
-    standardLubinTateChangedLevelToCompositum_hasExtension hπ u n
-  change
-    target.valuation (algebraMap L' M x) < 1 ↔
-      level.valuation x < 1
-  exact
-    _root_.Valuation.HasExtension.val_map_lt_one_iff
-      (vR := level.valuation) (vA := target.valuation) x
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+include F π hπ u n in
 /-- The ramification index of the original level inside the common
 compositum. -/
 noncomputable def
     standardLubinTateLevelToChangedLevelCompositumRamificationIndex
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ) : ℕ := by
+      : ℕ := by
   let L := standardLubinTateLevelField hπ n
   let M := standardLubinTateChangedLevelCompositumField hπ u n
   let level := standardLubinTateLevelCompleteDVF hπ n
@@ -585,13 +579,12 @@ noncomputable def
       hπ u n
   exact ramificationIndex level.toDVF target.toDVF
 
+include F π hπ u n in
 /-- The ramification index of the changed level inside the common
 compositum. -/
 noncomputable def
     standardLubinTateChangedLevelToCompositumRamificationIndex
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ) : ℕ := by
+      : ℕ := by
   let hπ' :=
     standardLubinTateChangedUniformizer_isUniformizer hπ u
   let L' := standardLubinTateChangedLevelField hπ u n
@@ -605,12 +598,11 @@ noncomputable def
     standardLubinTateChangedLevelToCompositum_hasExtension hπ u n
   exact ramificationIndex level.toDVF target.toDVF
 
+include F π hπ u n in
 /-- The valuation-ring map induced by the original-level inclusion. -/
 noncomputable def
     standardLubinTateLevelToChangedLevelCompositumIntegerMap
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ) :
+      :
     (standardLubinTateLevelCompleteDVF hπ n).valuationSubring →+*
       (standardLubinTateChangedLevelCompositumCompleteDVF
         hπ u n).valuationSubring := by
@@ -626,12 +618,11 @@ noncomputable def
       hπ u n
   exact integerMap level.toDVF target.toDVF
 
+include F π hπ u n in
 /-- The valuation-ring map induced by the changed-level inclusion. -/
 noncomputable def
     standardLubinTateChangedLevelToCompositumIntegerMap
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ) :
+      :
     (standardLubinTateLevelCompleteDVF
         (standardLubinTateChangedUniformizer_isUniformizer
           hπ u) n).valuationSubring →+*
@@ -650,13 +641,12 @@ noncomputable def
     standardLubinTateChangedLevelToCompositum_hasExtension hπ u n
   exact integerMap level.toDVF target.toDVF
 
+include F π hπ u n in
 /-- Coercion of the original-level integer map is the field inclusion. -/
 @[simp]
 theorem
     standardLubinTateLevelToChangedLevelCompositumIntegerMap_apply_coe
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ)
+     
     (a :
       (standardLubinTateLevelCompleteDVF hπ n).valuationSubring) :
     (((standardLubinTateLevelToChangedLevelCompositumIntegerMap
@@ -684,13 +674,12 @@ theorem
   rw [integerMap_apply]
   rfl
 
+include F π hπ u n in
 /-- Coercion of the changed-level integer map is the field inclusion. -/
 @[simp]
 theorem
     standardLubinTateChangedLevelToCompositumIntegerMap_apply_coe
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ)
+     
     (a :
       (standardLubinTateLevelCompleteDVF
         (standardLubinTateChangedUniformizer_isUniformizer
@@ -721,12 +710,11 @@ theorem
   rw [integerMap_apply]
   rfl
 
+include F π hπ u n in
 /-- Normalized additive valuation along the original-level inclusion scales
 by its ramification index in the compositum. -/
 theorem standardLubinTateLevelToChangedLevelCompositum_addVal
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ)
+     
     (a :
       (standardLubinTateLevelCompleteDVF hπ n).valuationSubring) :
     IsDiscreteValuationRing.addVal
@@ -757,12 +745,11 @@ theorem standardLubinTateLevelToChangedLevelCompositum_addVal
   exact
     addVal_integerMap_eq_ramificationIndex_nsmul level target a
 
+include F π hπ u n in
 /-- Normalized additive valuation along the changed-level inclusion scales
 by its ramification index in the compositum. -/
 theorem standardLubinTateChangedLevelToCompositum_addVal
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ)
+     
     (a :
       (standardLubinTateLevelCompleteDVF
         (standardLubinTateChangedUniformizer_isUniformizer
@@ -809,6 +796,7 @@ private theorem nat_eq_of_nsmul_enat_eq
     simpa only [ENat.toNat_mul, ENat.toNat_natCast] using hmulNat
   exact Nat.eq_of_mul_eq_mul_right hd habd
 
+include F π hπ u n in
 /-- The original and changed levels have the same ramification index inside
 their common compositum.
 
@@ -819,9 +807,7 @@ compositum agree.  Positivity of the finite-level degree then permits
 cancellation. -/
 theorem
     standardLubinTateLevelToChangedLevelCompositumRamificationIndex_eq
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ) :
+      :
     standardLubinTateLevelToChangedLevelCompositumRamificationIndex
         hπ u n =
       standardLubinTateChangedLevelToCompositumRamificationIndex
@@ -916,80 +902,82 @@ theorem
         (Nat.zero_lt_one.trans (Finite.one_lt_card :
           1 < Nat.card F.residueField)) n)
   exact nat_eq_of_nsmul_enat_eq hdpos hscaled
+end
 
-/-- Original-level maximal-ideal depth scales by the ramification index in
-the compositum. -/
-theorem
-    standardLubinTateLevelToChangedLevelCompositumIntegerMap_mem_maximalIdeal_pow
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n r : ℕ)
-    {a :
-      (standardLubinTateLevelCompleteDVF hπ n).valuationSubring}
-    (ha :
-      a ∈ (standardLubinTateLevelCompleteDVF
-        hπ n).maximalIdeal ^ r) :
-    standardLubinTateLevelToChangedLevelCompositumIntegerMap hπ u n a ∈
-      (standardLubinTateChangedLevelCompositumCompleteDVF
-        hπ u n).maximalIdeal ^
-          (standardLubinTateLevelToChangedLevelCompositumRamificationIndex
-            hπ u n * r) := by
-  let L := standardLubinTateLevelField hπ n
-  let M := standardLubinTateChangedLevelCompositumField hπ u n
-  let level := standardLubinTateLevelCompleteDVF hπ n
-  let target :=
-    standardLubinTateChangedLevelCompositumCompleteDVF hπ u n
-  let : Algebra L M :=
-    standardLubinTateLevelToChangedLevelCompositumAlgebra hπ u n
-  let : level.valuation.HasExtension target.valuation :=
-    standardLubinTateLevelToChangedLevelCompositum_hasExtension
-      hπ u n
-  change
-    integerMap level.toDVF target.toDVF a ∈
-      target.maximalIdeal ^
-        (ramificationIndex level.toDVF target.toDVF * r)
-  exact
-    integerMap_mem_target_maximalIdeal_pow_mul_ramificationIndex
-      level target ha
 
-/-- Changed-level maximal-ideal depth scales by the ramification index in
-the compositum. -/
-theorem
-    standardLubinTateChangedLevelToCompositumIntegerMap_mem_maximalIdeal_pow
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n r : ℕ)
-    {a :
-      (standardLubinTateLevelCompleteDVF
-        (standardLubinTateChangedUniformizer_isUniformizer
-          hπ u) n).valuationSubring}
-    (ha :
-      a ∈ (standardLubinTateLevelCompleteDVF
-        (standardLubinTateChangedUniformizer_isUniformizer
-          hπ u) n).maximalIdeal ^ r) :
-    standardLubinTateChangedLevelToCompositumIntegerMap hπ u n a ∈
-      (standardLubinTateChangedLevelCompositumCompleteDVF
-        hπ u n).maximalIdeal ^
-          (standardLubinTateChangedLevelToCompositumRamificationIndex
-            hπ u n * r) := by
-  let hπ' :=
-    standardLubinTateChangedUniformizer_isUniformizer hπ u
-  let L' := standardLubinTateChangedLevelField hπ u n
-  let M := standardLubinTateChangedLevelCompositumField hπ u n
-  let level := standardLubinTateLevelCompleteDVF hπ' n
-  let target :=
-    standardLubinTateChangedLevelCompositumCompleteDVF hπ u n
-  let : Algebra L' M :=
-    standardLubinTateChangedLevelToCompositumAlgebra hπ u n
-  let : level.valuation.HasExtension target.valuation :=
-    standardLubinTateChangedLevelToCompositum_hasExtension hπ u n
-  change
-    integerMap level.toDVF target.toDVF a ∈
-      target.maximalIdeal ^
-        (ramificationIndex level.toDVF target.toDVF * r)
-  exact
-    integerMap_mem_target_maximalIdeal_pow_mul_ramificationIndex
-      level target ha
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end LubinTate
 

@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.Jets.EvaluationContinuity
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.KPCplxPrincipalSeriesJointBS
 open Set Filter Topology
@@ -26,12 +29,12 @@ lemma joint_continuous {ι : Type*} (p : SeminormFamily ℂ V ι) (hp : WithSemi
       rintro _ ⟨k,rfl⟩
       exact hC ⟨k,k.property,rfl⟩
     let qs : K → Seminorm ℂ V := fun k => (p i).comp (T k)
-    let q : Seminorm ℂ V := iSup qs
+    let q  := iSup qs
     have hc (k : K) : Continuous ((p i).comp (T k)) :=
       (hp.continuous_seminorm i).comp (hT k)
     have hq : Continuous q := by
       rw [show (q : V → ℝ) = ⨆ k, (qs k : V → ℝ) from Seminorm.coe_iSup_eq hb]
-      exact Seminorm.continuous_iSup qs hc hb
+      apply Seminorm.continuous_iSup <;> assumption
     refine ⟨q, hq, ?_⟩
     filter_upwards [hKg] with h hh
     intro v
@@ -43,14 +46,13 @@ lemma joint_continuous {ι : Type*} (p : SeminormFamily ℂ V ι) (hp : WithSemi
   obtain ⟨q, hq, hb⟩ := hbound g i
   have hqzero : ContinuousAt (fun z : P × V => q (z.2 - v)) (g, v) :=
     (hq.comp (continuous_snd.sub continuous_const)).continuousAt
-  have hsmall : ∀ᶠ z : P × V in 𝓝 (g, v), q (z.2 - v) < ε / 2 := by
-    simpa using hqzero.eventually (Iio_mem_nhds (show q (v - v) < ε / 2 by
+  have hsmall : ∀ᶠ z : P × V in 𝓝 (g, v), q (z.2 - v) < ε / 2 := hqzero.eventually (Iio_mem_nhds (show q (v - v) < ε / 2 by
       simpa using half_pos hε))
   have ho : ∀ᶠ h in 𝓝 g, p i (T h v - T g v) < ε / 2 :=
     (hp.tendsto_nhds _ _).mp (horbit v).continuousAt i (ε / 2) (half_pos hε)
-  have hb' : ∀ᶠ z : P × V in 𝓝 (g, v), ∀ w, p i (T z.1 w) ≤ q w :=
+  have hb'  :=
     (continuous_fst.continuousAt (x := (g, v))).tendsto.eventually hb
-  have ho' : ∀ᶠ z : P × V in 𝓝 (g, v), p i (T z.1 v - T g v) < ε / 2 :=
+  have ho'  :=
     (continuous_fst.continuousAt (x := (g, v))).tendsto.eventually ho
   filter_upwards [hsmall, hb', ho'] with z hz hzb hzo
   have heq : T z.1 z.2 - T g v = T z.1 (z.2 - v) + (T z.1 v - T g v) := by

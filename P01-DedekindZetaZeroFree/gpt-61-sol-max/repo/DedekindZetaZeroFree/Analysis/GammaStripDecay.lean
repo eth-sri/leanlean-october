@@ -1,14 +1,15 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.Gamma.ElementaryNormBounds
 
 @[expose] public section
 
+
 namespace DedekindZetaZeroFree
 
-theorem detector_sz_gamma_norm_le_real (z : ℂ) (hz : 0 < z.re) :
-    ‖Complex.Gamma z‖ ≤ Real.Gamma z.re := by
-  exact gamma_norm_le_real hz
+def detector_sz_gamma_norm_le_real (z : ℂ) (hz : 0 < z.re)  := gamma_norm_le_real hz
 
 theorem detector_sz_gamma_decay (a b : ℝ) (hab : a ≤ b) (m : ℕ) :
     ∃ C : ℝ, 0 < C ∧
@@ -23,7 +24,7 @@ theorem detector_sz_gamma_decay (a b : ℝ) (hab : a ≤ b) (m : ℕ) :
     (a := a + (m + n : ℕ)) (b := b + (m + n : ℕ)) hpos
   refine ⟨M, hM, ?_⟩
   intro σ hσ t ht
-  let z : ℂ := (σ : ℂ) + (t : ℂ) * Complex.I
+  let z  := (σ : ℂ) + (t : ℂ) * Complex.I
   have him : z.im = t := by simp [z]
   have hshift : ∀ j : ℕ, |t| ^ j * ‖Complex.Gamma z‖ ≤ ‖Complex.Gamma (z + (j : ℂ))‖ := by
     intro j

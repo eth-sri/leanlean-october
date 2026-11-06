@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.HolomorphicFunctions.SmoothFamilies.ScalarMultiplication
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -26,7 +29,7 @@ theorem scalar_jet_cauchy_uniform {n : ℕ} (B : LocalBall n)
           ((cauchyPowerSeries (fun w => coordinateDerivative α (f w) x) c ρ j)
             (fun _ => (1 : ℂ)))) - coordinateDerivative α (f z) x‖ < ε := by
   classical
-  letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
+  letI  := isCompact_iff_compactSpace.mp hK
   let J : ℂ → CompactJets K m := fun z =>
     if hz : z ∈ O then fun α =>
       ⟨fun x => coordinateDerivative α (f z) x,
@@ -65,7 +68,7 @@ theorem scalar_jet_cauchy_uniform {n : ℕ} (B : LocalBall n)
   have hcirc : Continuous (fun θ => J (circleMap c ρ θ)) :=
     hJ.comp_continuous (continuous_circleMap c ρ)
       (fun θ => hclosed (Metric.sphere_subset_closedBall (circleMap_mem_sphere c hρ.le θ)))
-  let A : ℝ := (2 * Real.pi)⁻¹ * ∫ θ : ℝ in 0..2 * Real.pi, ‖J (circleMap c ρ θ)‖
+  let A  := (2 * Real.pi)⁻¹ * ∫ θ : ℝ in 0..2 * Real.pi, ‖J (circleMap c ρ θ)‖
   have hcoef (j : ℕ) (α : MultiIndex n m) (x : K) :
       ‖(cauchyPowerSeries (fun w => coordinateDerivative α (f w) x) c ρ j)
         (fun _ => (1 : ℂ))‖ ≤ A * ρ⁻¹ ^ j := by
@@ -82,8 +85,7 @@ theorem scalar_jet_cauchy_uniform {n : ℕ} (B : LocalBall n)
         _ ≤ _ := norm_le_pi_norm _ α
     calc
       _ ≤ ‖cauchyPowerSeries (fun w => coordinateDerivative α (f w) x) c ρ j‖ := by
-        simpa using (cauchyPowerSeries (fun w => coordinateDerivative α (f w) x) c ρ j).le_opNorm
-          (fun _ => (1 : ℂ))
+        norm_num
       _ ≤ ((2 * Real.pi)⁻¹ * ∫ θ : ℝ in 0..2 * Real.pi,
           ‖coordinateDerivative α (f (circleMap c ρ θ)) x‖) * ρ⁻¹ ^ j := by
         simpa [abs_of_pos hρ] using norm_cauchyPowerSeries_le
@@ -120,7 +122,7 @@ theorem scalar_jet_cauchy_uniform {n : ℕ} (B : LocalBall n)
       refine ⟨hhol m p.2.1 p.2.2 (hKB p.2.2.property), ?_⟩
       exact ((hscalar p.2.1 p.2.2).mono hclosed).mono
         (closure_minimal Metric.ball_subset_closedBall Metric.isClosed_closedBall)
-    have hp := hd.hasFPowerSeriesOnBall (show 0 < R from hρ)
+    have hp := hd.hasFPowerSeriesOnBall (hρ)
     have hz : p.1.val ∈ Metric.eball c (R : ENNReal) := by
       rw [Metric.eball_coe]
       exact Metric.mem_ball.mpr ((Metric.mem_closedBall.mp p.1.property).trans_lt hrρ)

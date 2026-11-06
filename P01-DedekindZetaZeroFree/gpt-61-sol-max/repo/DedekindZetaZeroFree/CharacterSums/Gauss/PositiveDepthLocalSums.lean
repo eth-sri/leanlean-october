@@ -19,8 +19,11 @@ variable {A : SArithmeticData F} {σ : F →+* ℂ}
 variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
 open LocalFiniteSumCompatibility CanonicalLocalGaussTable
-private theorem mask_unit_zpow (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n : ℕ) (hn : n ≠ 0) (a : ℤ) (x : Residue C p n)
+section
+variable (C : A.GeneralArithmeticContext σ η hS)
+    (p : ExteriorPrime A)
+include C p
+private theorem mask_unit_zpow   (n : ℕ) (hn : n ≠ 0) (a : ℤ) (x : Residue C p n)
     (hx : IsUnit x) :
     maskedPower C p n a x = chi (σ := σ) p (reduction C p n hn x) ^ a := by
   rw [maskedPower_eq_reduction C p n hn]
@@ -40,21 +43,18 @@ private theorem mask_unit_zpow (C : A.GeneralArithmeticContext σ η hS)
   have hh := congrArg (fun z : ℂˣ => (z : ℂ)) h
   simpa [v] using hh.symm
 
-private theorem psi_mk_global (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n : ℕ) (x : A.R) :
+private theorem psi_mk_global   (n : ℕ) (x : A.R) :
     psi C p n (residueMap C p n x) =
       (A.fieldTraceCharacter ((x : F) / (generator C p : F) ^ n) : ℂ) := by
   unfold psi
   rw [quotientTrace_mk, ← fieldTrace_eq_negative_localTrace]
 
-private theorem reduction_lift (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n : ℕ) (hn : n ≠ 0) (x : Residue C p n) :
+private theorem reduction_lift   (n : ℕ) (hn : n ≠ 0) (x : Residue C p n) :
     reduction C p n hn x = Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) ((lifts C p n).val x) := by
   conv_lhs => rw [← (lifts C p n).property x]
   rfl
 
-private theorem phase_split (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (t J : ℕ) (hJ : 1 ≤ J)
+private theorem phase_split   (t J : ℕ) (hJ : 1 ≤ J)
     (d : Residue C p 1) (v : Residue C p t) :
     psi C p (1 + t) (residueMap C p (1 + t)
       ((generator C p ^ J - generator C p ^ t * (lifts C p 1).val d) * (lifts C p t).val v)) =
@@ -84,12 +84,17 @@ private theorem phase_split (C : A.GeneralArithmeticContext σ η hS)
     <;> ring
   rw [he, AddChar.map_add_eq_mul]
   simp
+end
+
 
 local instance (p : ExteriorPrime A) : Field (A.R ⧸ A.extendIdeal (primeIdeal p)) :=
   Ideal.Quotient.field _
 
-private theorem inner_transform (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (t : ℕ) (ht : 0 < t) (v : Residue C p t) :
+section
+variable (C : A.GeneralArithmeticContext σ η hS)
+    (p : ExteriorPrime A)
+include C p
+private theorem inner_transform   (t : ℕ) (ht : 0 < t) (v : Residue C p t) :
     maskedPower C p t t v * T C p 1 (-residueMap C p 1 ((lifts C p t).val v)) =
       tau C p 1 * maskedPower C p t ((t : ℤ) - 1) v := by
   by_cases hv : IsUnit v
@@ -117,8 +122,7 @@ private theorem inner_transform (C : A.GeneralArithmeticContext σ η hS)
       maskedPower_nonunit C p t (Nat.ne_of_gt ht) _ v hv]
     simp
 
-private theorem generator_residue_zero (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n : ℕ) (hn : 0 < n) :
+private theorem generator_residue_zero   (n : ℕ) (hn : 0 < n) :
     residueMap C p 1 (generator C p ^ n) = 0 := by
   have hg : residueMap C p 1 (generator C p) = 0 := by
     change Ideal.Quotient.mk (Ideal.span {generator C p ^ 1}) (generator C p) = 0
@@ -126,8 +130,7 @@ private theorem generator_residue_zero (C : A.GeneralArithmeticContext σ η hS)
     simpa using Ideal.subset_span (Set.mem_singleton (generator C p))
   rw [map_pow, hg, zero_pow (Nat.ne_of_gt hn)]
 
-theorem regroup (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (t J : ℕ) (ht : 0 < t) :
+theorem regroup   (t J : ℕ) (ht : 0 < t) :
     Ctk C p t 1 J =
       if 1 ≤ J then
         tau C p 1 *
@@ -173,6 +176,8 @@ theorem regroup (C : A.GeneralArithmeticContext σ η hS)
       have hh := congrArg (depthOneEquiv C p) h
       simpa using hh
     simp [generator_residue_zero C p t ht, hne]
+end
+
 
 end DedekindZetaZeroFree.LocalFiniteSums.DepthOneShell
 
@@ -194,20 +199,21 @@ variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
 open LocalFiniteSumCompatibility
 
-private theorem map_deep_zero (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n m : ℕ) (hnm : n ≤ m) (r : A.R) :
+section
+variable (C : A.GeneralArithmeticContext σ η hS)
+    (p : ExteriorPrime A)
+include C p
+private theorem map_deep_zero   (n m : ℕ) (hnm : n ≤ m) (r : A.R) :
     residueMap C p n (generator C p ^ m * r) = 0 := by
   apply Ideal.Quotient.eq_zero_iff_mem.mpr
   apply Ideal.mem_span_singleton.mpr
   refine ⟨generator C p ^ (m-n) * r, ?_⟩
   rw [← mul_assoc, ← pow_add, Nat.add_sub_of_le hnm]
-private theorem lift_difference (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n : ℕ) (x y : A.R)
+private theorem lift_difference   (n : ℕ) (x y : A.R)
     (h : residueMap C p n x = residueMap C p n y) :
     ∃ r : A.R, x - y = generator C p ^ n * r := by
   exact Ideal.mem_span_singleton.mp (Ideal.Quotient.eq.mp h)
-private theorem generator_not_unit (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) : ¬ IsUnit (generator C p) := by
+private theorem generator_not_unit   : ¬ IsUnit (generator C p) := by
   letI : Nontrivial (A.R ⧸ A.extendIdeal (primeIdeal p)) :=
     (cftResidueEquiv p).toEquiv.nontrivial
   intro h
@@ -218,8 +224,7 @@ private theorem generator_not_unit (C : A.GeneralArithmeticContext σ η hS)
   have hu := h.map (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)))
   rw [hz] at hu
   exact not_isUnit_zero hu
-private theorem penultimate_ne_zero (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n : ℕ) :
+private theorem penultimate_ne_zero   (n : ℕ) :
     residueMap C p (n+1) (generator C p ^ n) ≠ 0 := by
   intro h
   obtain ⟨r, hr⟩ := Ideal.mem_span_singleton.mp (Ideal.Quotient.eq_zero_iff_mem.mp h)
@@ -228,8 +233,7 @@ private theorem penultimate_ne_zero (C : A.GeneralArithmeticContext σ η hS)
   have hi : 1 = generator C p * r := mul_left_cancel₀ (pow_ne_zero _ (generator_generates C p).1) he
   apply generator_not_unit C p
   exact isUnit_iff_exists_inv.mpr ⟨r, hi.symm⟩
-private theorem lifted_unit (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (t n : ℕ) (ht : t ≠ 0) (hn : n ≠ 0)
+private theorem lifted_unit   (t n : ℕ) (ht : t ≠ 0) (hn : n ≠ 0)
     (v : Residue C p t) (hv : IsUnit v) :
     IsUnit (residueMap C p n ((lifts C p t).val v)) := by
   apply (reduction_isUnit C p n hn _).mp
@@ -240,8 +244,7 @@ private theorem lifted_unit (C : A.GeneralArithmeticContext σ η hS)
     exact congrArg (reduction C p t ht) hx
   rw [he]
   exact hv.map (reduction C p t ht)
-private theorem masked_translate (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (k : ℕ) (hk : 2 ≤ k) (b : ℤ)
+private theorem masked_translate   (k : ℕ) (hk : 2 ≤ k) (b : ℤ)
     (d : Residue C p k) (r : A.R) :
     maskedPower C p k b (d + residueMap C p k (generator C p ^ (k-1) * r)) =
       maskedPower C p k b d := by
@@ -259,8 +262,7 @@ private theorem masked_translate (C : A.GeneralArithmeticContext σ η hS)
     congr 1
     omega
   rw [hz, add_zero]
-private theorem phase_translate (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (t k : ℕ) (a r : A.R) (d : Residue C p k)
+private theorem phase_translate   (t k : ℕ) (a r : A.R) (d : Residue C p k)
     (v : Residue C p t) :
     psi C p (k+t) (residueMap C p (k+t)
       ((a - generator C p ^ t * (lifts C p k).val
@@ -287,8 +289,7 @@ private theorem phase_translate (C : A.GeneralArithmeticContext σ η hS)
     ring
   rw [hraw, map_sub, map_add, map_deep_zero C p (k+t) (k+t) le_rfl, sub_zero]
   exact congrArg (fun z : Circle => (z : ℂ)) ((quotientTrace C p (k+t)).map_add_eq_mul _ _)
-private theorem nontrivial_translation (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (t k : ℕ) (ht : 0 < t) (hk : 2 ≤ k)
+private theorem nontrivial_translation   (t k : ℕ) (ht : 0 < t) (hk : 2 ≤ k)
     (v : Residue C p t) (hv : IsUnit v) :
     ∃ r : A.R, psi C p (k+t) (residueMap C p (k+t)
       (-(generator C p ^ t * (generator C p ^ (k-1) * r) * (lifts C p t).val v))) ≠ 1 := by
@@ -323,8 +324,7 @@ private theorem nontrivial_translation (C : A.GeneralArithmeticContext σ η hS)
   rw [← hr]
   exact hh
 
-theorem unit_column_eq_zero (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (t k : ℕ) (ht : 0 < t) (hk : 2 ≤ k)
+theorem unit_column_eq_zero   (t k : ℕ) (ht : 0 < t) (hk : 2 ≤ k)
     (a : A.R) (b : ℤ) (v : Residue C p t) (hv : IsUnit v) :
     (∑ d : Residue C p k,
       if residueMap C p k a = residueMap C p k (generator C p ^ t) * d then
@@ -367,6 +367,8 @@ theorem unit_column_eq_zero (C : A.GeneralArithmeticContext σ η hS)
   have hz : (∑ d, f d) * (c-1) = 0 := by
     rw [mul_sub, mul_one, ← hs, sub_self]
   exact (mul_eq_zero.mp hz).resolve_right (sub_ne_zero.mpr hr)
+end
+
 
 end DedekindZetaZeroFree.LocalFiniteSums.HigherTranslationCancellation
 
@@ -386,15 +388,17 @@ variable {F : Type} [Field F] [NumberField F]
 variable {A : SArithmeticData F} {σ : F →+* ℂ}
 variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
- noncomputable def fiberMap (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) (n : ℕ) :
+ section
+variable (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
+include C p
+noncomputable def fiberMap   (n : ℕ) :
     Residue C p 1 × Residue C p n → Residue C p (n+1) :=
   fun v => residueMap C p (n+1) ((lifts C p 1).val v.1 + generator C p * (lifts C p n).val v.2)
-private lemma difference (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
+private lemma difference  
     (n : ℕ) (x y : A.R) (h : residueMap C p n x = residueMap C p n y) :
     ∃ r : A.R, x-y = generator C p ^ n * r := by
   exact Ideal.mem_span_singleton.mp (Ideal.Quotient.eq.mp h)
-private theorem fiberMap_bijective (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n : ℕ) : Function.Bijective (fiberMap C p n) := by
+private theorem fiberMap_bijective   (n : ℕ) : Function.Bijective (fiberMap C p n) := by
   have hg := (generator_generates C p).1
   have hl (m : ℕ) (v : Residue C p m) : residueMap C p m ((lifts C p m).val v) = v :=
     (lifts C p m).property v
@@ -443,15 +447,13 @@ private theorem fiberMap_bijective (C : A.GeneralArithmeticContext σ η hS)
         linear_combination generator C p * hr - hj
       _ = _ := by rw [pow_succ]; ring
 
-private lemma unit_power_iff (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n : ℕ) (x : A.R) :
+private lemma unit_power_iff   (n : ℕ) (x : A.R) :
     IsUnit (residueMap C p (n+1) x) ↔ IsUnit (residueMap C p 1 x) := by
   change IsUnit (Ideal.Quotient.mk (Ideal.span {generator C p ^ (n+1)}) x) ↔
     IsUnit (Ideal.Quotient.mk (Ideal.span {generator C p ^ 1}) x)
   rw [pow_one, ← Ideal.span_singleton_pow]
   exact Ideal.Quotient.isUnit_mk_pow_iff_isUnit_mk _ (by omega)
-private lemma fiber_mask (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n : ℕ) (a : ℤ) (x : Residue C p 1) (y : Residue C p n) :
+private lemma fiber_mask   (n : ℕ) (a : ℤ) (x : Residue C p 1) (y : Residue C p n) :
     maskedPower C p (n+1) a (fiberMap C p n (x,y)) = maskedPower C p 1 a x := by
   have hl (m : ℕ) (v : Residue C p m) : residueMap C p m ((lifts C p m).val v) = v :=
     (lifts C p m).property v
@@ -479,8 +481,7 @@ private lemma fiber_mask (C : A.GeneralArithmeticContext σ η hS)
     simp only [map_add, map_mul, hg', zero_mul, add_zero]
   simp only [maskedPower, Nat.succ_ne_zero, dif_neg, hu, hred, one_ne_zero]
 
-private lemma fiber_phase (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n J : ℕ) (x : Residue C p 1) (y : Residue C p n) :
+private lemma fiber_phase   (n J : ℕ) (x : Residue C p 1) (y : Residue C p n) :
     psi C p (n+1) (residueMap C p (n+1) (generator C p ^ J) * fiberMap C p n (x,y)) =
       psi C p (n+1) (residueMap C p (n+1)
         (generator C p ^ J * (lifts C p 1).val x)) *
@@ -503,8 +504,7 @@ private lemma fiber_phase (C : A.GeneralArithmeticContext σ η hS)
     <;> ring
   rw [heq, AddChar.map_add_eq_mul]
   rfl
-private lemma phase_descend (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n J : ℕ) (hJ : n ≤ J) (x : Residue C p 1) :
+private lemma phase_descend   (n J : ℕ) (hJ : n ≤ J) (x : Residue C p 1) :
     psi C p (n+1) (residueMap C p (n+1) (generator C p ^ J * (lifts C p 1).val x)) =
       psi C p 1 (residueMap C p 1 (generator C p ^ (J-n)) * x) := by
   have hl : residueMap C p 1 ((lifts C p 1).val x) = x := (lifts C p 1).property x
@@ -519,8 +519,7 @@ private lemma phase_descend (C : A.GeneralArithmeticContext σ η hS)
   rw [he, pow_succ, pow_one]
   field_simp
 
-private lemma generator_nonunit (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) : ¬ IsUnit (generator C p) := by
+private lemma generator_nonunit   : ¬ IsUnit (generator C p) := by
   have hI : A.extendIdeal (primeIdeal p) ≠ ⊤ :=
     A.residue_extendIdeal_ne_top (primeIdeal p) p.val.isPrime.ne_top
   letI : Nontrivial (A.R ⧸ A.extendIdeal (primeIdeal p)) :=
@@ -533,14 +532,12 @@ private lemma generator_nonunit (C : A.GeneralArithmeticContext σ η hS)
     exact Ideal.subset_span (by simp)
   rw [hg] at hh
   exact not_isUnit_zero hh
-private lemma residue_pow_zero (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n J : ℕ) :
+private lemma residue_pow_zero   (n J : ℕ) :
     residueMap C p n (generator C p ^ J) = 0 ↔ n ≤ J := by
   change Ideal.Quotient.mk (Ideal.span {generator C p ^ n}) (generator C p ^ J) = 0 ↔ _
   rw [Ideal.Quotient.eq_zero_iff_mem, Ideal.mem_span_singleton]
   exact pow_dvd_pow_iff (generator_generates C p).1 (generator_nonunit C p)
-private lemma residue_card (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n : ℕ) :
+private lemma residue_card   (n : ℕ) :
     (Fintype.card (Residue C p n) : ℂ) = (Q p : ℂ) ^ n := by
   have hgen : A.Generates (powerIdeal p n) (generator C p ^ n) := by
     refine ⟨pow_ne_zero _ (generator_generates C p).1, ?_⟩
@@ -554,8 +551,7 @@ private lemma residue_card (C : A.GeneralArithmeticContext σ η hS)
   rw [he]
   simp [Q, SArithmeticData.exteriorNorm, idealNorm, primeIdeal, map_pow]
 
-theorem masked_fourier_prime_power (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n M : ℕ) (hn : 0 < n) (a : ℤ) :
+theorem masked_fourier_prime_power   (n M : ℕ) (hn : 0 < n) (a : ℤ) :
     (∑ v : Residue C p n, maskedPower C p n a v *
       psi C p n (residueMap C p n (generator C p ^ M) * v)) =
       if n - 1 ≤ M then
@@ -587,6 +583,8 @@ theorem masked_fourier_prime_power (C : A.GeneralArithmeticContext σ η hS)
     intro x _
     ring
   · simp [hM]
+end
+
 
 end DedekindZetaZeroFree.LocalFiniteSums.PrimePowerFourier
 
@@ -616,8 +614,11 @@ private theorem norm_char_le {R : Type*} [CommRing R] [Finite R]
     have h := Complex.norm_eq_one_of_mem_rootsOfUnity (χ.apply_mem_rootsOfUnity u)
     simpa only [MulChar.coe_equivToUnitHom] using h.le
   · simp [MulChar.map_nonunit χ hx]
-private theorem norm_mask_le (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n : ℕ) (a : ℤ) (x : Residue C p n) :
+section
+variable (C : A.GeneralArithmeticContext σ η hS)
+    (p : ExteriorPrime A)
+include C p
+private theorem norm_mask_le   (n : ℕ) (a : ℤ) (x : Residue C p n) :
     ‖maskedPower C p n a x‖ ≤ 1 := by
   unfold maskedPower
   split_ifs with hn hx
@@ -625,8 +626,7 @@ private theorem norm_mask_le (C : A.GeneralArithmeticContext σ η hS)
   · letI := A.exteriorResidue_finite (primeIdeal p)
     exact norm_char_le _ _
   · simp
-private theorem card_residue (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n : ℕ) : (Fintype.card (Residue C p n) : ℝ) = Q p ^ n := by
+private theorem card_residue   (n : ℕ) : (Fintype.card (Residue C p n) : ℝ) = Q p ^ n := by
   have hg : A.Generates (powerIdeal p n) (generator C p ^ n) := by
     refine ⟨pow_ne_zero _ (generator_generates C p).1, ?_⟩
     rw [← Ideal.span_singleton_pow, (generator_generates C p).2]
@@ -638,8 +638,7 @@ private theorem card_residue (C : A.GeneralArithmeticContext σ η hS)
   rw [hc]
   simp [Q, SArithmeticData.exteriorNorm, powerIdeal, ExteriorIdealEuler.pow, idealNorm]
 
-private theorem tau_norm_le (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) : ‖tau C p 1‖ ≤ Real.sqrt (Q p) := by
+private theorem tau_norm_le   : ‖tau C p 1‖ ≤ Real.sqrt (Q p) := by
   have h := NormalizedProbe.PrincipalData.norm_idealGauss_le_one A σ hS (primeIdeal p)
     (generator C p) (generator_generates C p) 1
   have hg : A.Generates (primeIdeal p) (generator C p) := generator_generates C p
@@ -704,8 +703,7 @@ private theorem tau_norm_le (C : A.GeneralArithmeticContext σ η hS)
     exact_mod_cast Nat.pos_of_ne_zero (fun hz => (primeIdeal p).property.1 (Ideal.absNorm_eq_zero_iff.mp hz))
   have hh := (inv_mul_le_iff₀ (Real.sqrt_pos.mpr hpos)).mp h
   simpa only [mul_one] using hh
-private theorem norm_T_le_test (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (a : ℤ) (y : Residue C p 1) : ‖T C p a y‖ ≤ Q p := by
+private theorem norm_T_le_test   (a : ℤ) (y : Residue C p 1) : ‖T C p a y‖ ≤ Q p := by
   unfold T
   calc
     _ ≤ ∑ x : Residue C p 1, ‖maskedPower C p 1 a x * psi C p 1 (y * x)‖ := norm_sum_le _ _
@@ -715,8 +713,7 @@ private theorem norm_T_le_test (C : A.GeneralArithmeticContext σ η hS)
       simpa only [norm_mul, psi, Circle.norm_coe, mul_one] using norm_mask_le C p 1 a x
     _ = Q p := by simp [card_residue C p 1]
 
-theorem Ctk_one (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (t J : ℕ) (ht : 0 < t) :
+theorem Ctk_one   (t J : ℕ) (ht : 0 < t) :
     Ctk C p t 1 J =
       if t ≤ J then
         tau C p 1 * (Q p : ℂ) ^ (t - 1) *
@@ -735,8 +732,7 @@ theorem Ctk_one (C : A.GeneralArithmeticContext σ η hS)
   · have hnot : ¬t ≤ J := by omega
     rw [if_neg hJ, if_neg hnot]
 
-theorem Ctk_eq_zero_of_two_le (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (t k J : ℕ) (ht : 0 < t) (hk : 2 ≤ k) :
+theorem Ctk_eq_zero_of_two_le   (t k J : ℕ) (ht : 0 < t) (hk : 2 ≤ k) :
     Ctk C p t k J = 0 := by
   classical
   unfold Ctk
@@ -779,8 +775,7 @@ theorem Ctk_eq_zero_of_two_le (C : A.GeneralArithmeticContext σ η hS)
           simp [maskedPower, Nat.ne_of_gt ht, hu]
         rw [hm, zero_mul]
 
-theorem norm_Ctk_zero_le (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (t J : ℕ) (ht : 0 < t) :
+theorem norm_Ctk_zero_le   (t J : ℕ) (ht : 0 < t) :
     ‖Ctk C p t 0 J‖ ≤ Q p ^ t := by
   classical
   unfold Ctk
@@ -804,8 +799,7 @@ theorem norm_Ctk_zero_le (C : A.GeneralArithmeticContext σ η hS)
         exact pow_nonneg (by simp [Q, SArithmeticData.exteriorNorm, idealNorm]) _
     _ = Q p ^ t := by simp [card_residue C p 0]
 
-theorem norm_Ctk_one_le (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (t J : ℕ) (ht : 0 < t) :
+theorem norm_Ctk_one_le   (t J : ℕ) (ht : 0 < t) :
     ‖Ctk C p t 1 J‖ ≤ Real.rpow (Q p) ((t : ℝ) + 1 / 2) := by
   have hpos : 0 < Q p := by
     change 0 < (Ideal.absNorm (primeIdeal p).val : ℝ)
@@ -824,6 +818,8 @@ theorem norm_Ctk_one_le (C : A.GeneralArithmeticContext σ η hS)
         ring
   · simp only [norm_zero]
     exact Real.rpow_nonneg hpos.le _
+end
+
 
 end DedekindZetaZeroFree.LocalFiniteSums
 

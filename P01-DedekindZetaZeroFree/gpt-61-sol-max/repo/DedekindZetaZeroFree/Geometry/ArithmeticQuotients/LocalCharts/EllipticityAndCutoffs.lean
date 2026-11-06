@@ -19,14 +19,17 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 variable (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
 variable (U : CompactOpenLevel (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
 
- def scaleTFun (d : ℕ) (z : KPArch.Space d) (v : KPArch.Space d) :
+ section
+variable (d : ℕ) (z : KPArch.Space d)
+include d z
+def scaleTFun   (v : KPArch.Space d) :
     HyperbolicChart.Space d :=
   WithLp.toLp 2 (fun ik : Fin d × Fin 3 =>
     if ik.2 = 2 then (v ik.1).2
     else (KPArch.height (z ik.1))⁻¹ *
       (if ik.2 = 0 then (v ik.1).1.re else (v ik.1).1.im))
 
- def scaleTLin (d : ℕ) (z : KPArch.Space d) :
+ def scaleTLin   :
     KPArch.Space d →ₗ[ℝ] HyperbolicChart.Space d where
   toFun := scaleTFun d z
   map_add' := by
@@ -50,14 +53,14 @@ variable (U : CompactOpenLevel (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
       · simp [h2, h0, mul_comm, mul_left_comm, mul_assoc]
       · simp [h2, h0, mul_comm, mul_left_comm, mul_assoc]
 
- def scaleT (d : ℕ) (z : KPArch.Space d) :
+ def scaleT   :
     KPArch.Space d →L[ℝ] HyperbolicChart.Space d :=
   (scaleTLin d z).toContinuousLinearMap
 
-private lemma scaleT_apply (d : ℕ) (z : KPArch.Space d) (v : KPArch.Space d) :
+private lemma scaleT_apply   (v : KPArch.Space d) :
     scaleT d z v = scaleTFun d z v := rfl
 
-private lemma scaleT_norm_sq (d : ℕ) (z : KPArch.Space d) (v : KPArch.Space d) :
+private lemma scaleT_norm_sq   (v : KPArch.Space d) :
     ‖scaleT d z v‖ ^ 2 = KPArch.metric d z v := by
   rw [EuclideanSpace.real_norm_sq_eq, Fintype.sum_prod_type, KPArch.metric]
   simp only [scaleT_apply, scaleTFun, PiLp.toLp_apply, Fin.sum_univ_three]
@@ -66,6 +69,8 @@ private lemma scaleT_norm_sq (d : ℕ) (z : KPArch.Space d) (v : KPArch.Space d)
   rw [← Complex.normSq_eq_norm_sq, Complex.normSq_apply]
   norm_num
   ring
+end
+
 
 private lemma gram_quadform {n d : ℕ}
     (S : EuclideanSpace ℝ (Fin n) →L[ℝ] HyperbolicChart.Space d)
@@ -307,8 +312,11 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 variable (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
 variable (U : CompactOpenLevel (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
 
-private theorem toBase_continuousOn (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (C : Chart F ζ hζ hF U A) :
+section
+variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+    (C : Chart F ζ hζ hF U A)
+include A C
+private theorem toBase_continuousOn   :
     ContinuousOn (C.toBase F ζ hζ hF U) C.extendedDomain := by
   have h1 : Continuous (fun z : KPFiniteCuspAtlas.SymmetricSpace F =>
       A.components ⟨C.component, KPCuspSiegel.projection F
@@ -323,8 +331,7 @@ private theorem toBase_continuousOn (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
   rw [← hfun]
   exact h1.comp_continuousOn C.smooth_coordinates.continuousOn
 
-private theorem toBase_orthogonal (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (C : Chart F ζ hζ hF U A) (g : C.G F ζ hζ hF U) (x : E C.n)
+private theorem toBase_orthogonal   (g : C.G F ζ hζ hF U) (x : E C.n)
     (hx : x ∈ C.extendedDomain) :
     C.toBase F ζ hζ hF U (C.orthogonal g x) = C.toBase F ζ hζ hF U x := by
   unfold Chart.toBase
@@ -334,8 +341,7 @@ private theorem toBase_orthogonal (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
   apply MulAction.orbitRel_apply.mpr
   exact MulAction.mem_orbit_iff.mpr ⟨g.val, rfl⟩
 
-private theorem mem_ball_of_toBase_mem_O (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (C : Chart F ζ hζ hF U A) {x : E C.n} (hx : x ∈ C.extendedDomain)
+private theorem mem_ball_of_toBase_mem_O   {x : E C.n} (hx : x ∈ C.extendedDomain)
     (hO : C.toBase F ζ hζ hF U x ∈ C.O F ζ hζ hF U) :
     x ∈ Metric.ball 0 C.radius := by
   obtain ⟨y, hy, hyx⟩ := hO
@@ -382,8 +388,7 @@ private theorem mem_ball_of_toBase_mem_O (A : KPFiniteCuspAtlas.Atlas F ζ hζ h
   rw [hnorm]
   exact hy
 
-theorem chart_lifted_cutoff (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (C : Chart F ζ hζ hF U A) (f : X F ζ hζ U → ℝ)
+theorem chart_lifted_cutoff   (f : X F ζ hζ U → ℝ)
     (hcompact : HasCompactSupport f)
     (hsupport : tsupport f ⊆ C.O F ζ hζ hF U)
     (hsmooth : ∀ j, ContDiff ℝ (⊤ : ℕ∞)
@@ -521,6 +526,8 @@ theorem chart_lifted_cutoff (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
           rw [Metric.mem_ball, dist_zero_right] at h ⊢
           rwa [← LinearIsometryEquiv.norm_map (C.orthogonal g) x])
       simp only [cutoff, Set.indicator_of_notMem hx', Set.indicator_of_notMem hx]
+end
+
 
 end DedekindZetaZeroFree.CoreChartLocalizers.CutoffConstruction
 

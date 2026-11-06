@@ -18,13 +18,16 @@ variable {G H D : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
     [Group H] [TopologicalSpace H] [IsTopologicalGroup H] [CommGroup D] [Finite D]
 variable {T : LocalHeisenbergData H D}
 
-def compactTorus (A : LocalBorelData (K := K) (G := G) T) (I : IwasawaData A) :
+
+local notation:max "current_LocalBorelData" => LocalBorelData (K := K) (G := G)
+
+def compactTorus (A : current_LocalBorelData T) (I : IwasawaData A) :
     Subgroup H :=
   (I.compact.toOpenSubgroup : Subgroup G).comap
     ((Subgroup.subtype A.B).comp A.torus)
 
 structure UnramifiedCompactInducingData
-    (A : LocalBorelData (K := K) (G := G) T)
+    (A : current_LocalBorelData T)
     (P : Polarization T) (I : IwasawaData A) : Prop where
   tame : (3 : 𝒪[K]) ∉ 𝓂[K]
   polarization_image : (compactTorus A I).map T.π = P.L
@@ -61,7 +64,7 @@ private lemma orth_mem (P : Polarization T) (d : D)
     (fun l hl => Subgroup.subset_closure (Set.mem_insert_of_mem d hl)) hc
   rw [← he]
   exact Subgroup.subset_closure (Set.mem_insert d _)
-private lemma fixed_support (A : LocalBorelData (K := K) (G := G) T)
+private lemma fixed_support (A : current_LocalBorelData T)
     (P : Polarization T) (I : IwasawaData A)
     (h : UnramifiedCompactInducingData A P I)
     (v : InducedModule P) (hv : v ∈ fixedSubmodule (tau P) (compactTorus A I))
@@ -111,7 +114,7 @@ private lemma fixed_support (A : LocalBorelData (K := K) (G := G) T)
         rw [map_mul, P.L.mul_mem_cancel_left a.property]; exact hx
       simp only [dif_neg hx, dif_neg hax, mul_zero]⟩
 
- lemma baseVector_fixed (A : LocalBorelData (K := K) (G := G) T)
+ lemma baseVector_fixed (A : current_LocalBorelData T)
     (P : Polarization T) (I : IwasawaData A)
     (h : UnramifiedCompactInducingData A P I) :
     baseVector P ∈ fixedSubmodule (tau P) (compactTorus A I) := by
@@ -134,7 +137,7 @@ private lemma fixed_support (A : LocalBorelData (K := K) (G := G) T)
       rw [map_mul, P.L.mul_mem_cancel_right hj]; exact hx
     simp only [baseVector, dif_neg hx, dif_neg hxj]
 
- lemma fixed_vector_formula (A : LocalBorelData (K := K) (G := G) T)
+ lemma fixed_vector_formula (A : current_LocalBorelData T)
     (P : Polarization T) (I : IwasawaData A)
     (h : UnramifiedCompactInducingData A P I)
     (v : InducedModule P) (hv : v ∈ fixedSubmodule (tau P) (compactTorus A I)) :
@@ -157,7 +160,7 @@ private lemma fixed_support (A : LocalBorelData (K := K) (G := G) T)
   simp
 
 theorem normalized_inducing_vector
-    (A : LocalBorelData (K := K) (G := G) T)
+    (A : current_LocalBorelData T)
     (P : Polarization T) (I : IwasawaData A)
     (_h : UnramifiedCompactInducingData A P I) :
     ∃! v : InducedModule P,
@@ -166,7 +169,7 @@ theorem normalized_inducing_vector
   intro v hv
   rw [fixed_vector_formula A P I _h v hv.1, hv.2, one_smul]
 
- lemma action_compact (A : LocalBorelData (K := K) (G := G) T)
+ lemma action_compact (A : current_LocalBorelData T)
     (P : Polarization T) (I : IwasawaData A)
     (b : A.B) (hb : (b : G) ∈ I.compact.toOpenSubgroup) (v : InducedModule P) :
     inducingAction A P .plus 0 b v = tau P (A.retract b) v := by
@@ -176,7 +179,7 @@ theorem normalized_inducing_vector
   rw [hs, one_smul]
   rfl
 
- def constantPicture (A : LocalBorelData (K := K) (G := G) T)
+ def constantPicture (A : current_LocalBorelData T)
     (P : Polarization T) (I : IwasawaData A)
     (h : UnramifiedCompactInducingData A P I)
     (v : InducedModule P) (hv : v ∈ fixedSubmodule (tau P) (compactTorus A I)) :
@@ -196,21 +199,21 @@ theorem normalized_inducing_vector
       intro k
       rfl⟩
 
- lemma constantPicture_level (A : LocalBorelData (K := K) (G := G) T)
+ lemma constantPicture_level (A : current_LocalBorelData T)
     (P : Polarization T) (I : IwasawaData A)
     (h : UnramifiedCompactInducingData A P I)
     (v : InducedModule P) (hv : v ∈ fixedSubmodule (tau P) (compactTorus A I)) :
     constantPicture A P I h v hv ∈ compactLevel A P I .plus I.compact := by
   intro j k k' he; rfl
 
- lemma picture_constant (A : LocalBorelData (K := K) (G := G) T)
+ lemma picture_constant (A : current_LocalBorelData T)
     (P : Polarization T) (I : IwasawaData A)
     (φ : compactPicture A P I .plus)
     (hφ : φ ∈ compactLevel A P I .plus I.compact)
     (k : I.compact.toOpenSubgroup) : φ.val k = φ.val 1 := by
   exact hφ k 1 k (by simp)
 
- lemma picture_fiber_fixed (A : LocalBorelData (K := K) (G := G) T)
+ lemma picture_fiber_fixed (A : current_LocalBorelData T)
     (P : Polarization T) (I : IwasawaData A)
     (φ : compactPicture A P I .plus)
     (hφ : φ ∈ compactLevel A P I .plus I.compact) :
@@ -223,7 +226,7 @@ theorem normalized_inducing_vector
     A.retract_torus] at hc
   exact hc.symm
 
- def compactSectionEquiv (A : LocalBorelData (K := K) (G := G) T)
+ def compactSectionEquiv (A : current_LocalBorelData T)
     (P : Polarization T) (I : IwasawaData A) :
     compactLevel A P I .plus I.compact ≃ₗ[ℂ]
       fixedSubmodule (V := sectionSpace A P .plus 0) (IPlus A P)
@@ -242,7 +245,7 @@ theorem normalized_inducing_vector
   map_add' := by intros; apply Subtype.ext; simp
   map_smul' := by intros; apply Subtype.ext; simp
 
-private lemma section_equiv_one (A : LocalBorelData (K := K) (G := G) T)
+private lemma section_equiv_one (A : current_LocalBorelData T)
     (P : Polarization T) (I : IwasawaData A)
     (φ : compactLevel A P I .plus I.compact) :
     ((compactSectionEquiv A P I φ).val.val 1) = φ.val.val 1 := by
@@ -254,7 +257,7 @@ private lemma section_equiv_one (A : LocalBorelData (K := K) (G := G) T)
   simp
 
 theorem normalized_plus_spherical_vector
-    (A : LocalBorelData (K := K) (G := G) T)
+    (A : current_LocalBorelData T)
     (P : Polarization T) (I : IwasawaData A)
     (_h : UnramifiedCompactInducingData A P I) :
     ∃! f : sectionSpace A P .plus 0,

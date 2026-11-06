@@ -40,9 +40,9 @@ theorem monicResidualCoprimeFactorLifting_of_henselianRing :
       (I := IsLocalRing.maximalIdeal V) f gbar hbar hf hgbar hhbar hfac hcop
   exact ⟨g, h, hg, hh, hgh, hgmap, hhmap⟩
 
-/-- A Henselian valuation ring satisfies the full primitive factorization
-form of Hensel's lemma, without completeness or rank assumptions. -/
-theorem henselFactorization_of_henselianRing : HenselFactorizationProperty V :=
-  henselianValuationExtension V (monicResidualCoprimeFactorLifting_of_henselianRing V)
+
+
+
+
 
 end DiscreteValuationField

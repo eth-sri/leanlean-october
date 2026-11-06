@@ -68,19 +68,24 @@ def theta (C : A.GeneralArithmeticContext σ η hS)
 
 end RawFrequency
 
-def plusExteriorCoefficient (σ : F →+* ℂ) (U : RawFrequency A) (I : A.Exterior) : ℂ :=
+section
+variable (σ : F →+* ℂ)
+include σ
+def plusExteriorCoefficient   (U : RawFrequency A) (I : A.Exterior) : ℂ :=
   UnitCovariance.residueCoefficient σ I U.u
 
-def minusExteriorCoefficient (σ : F →+* ℂ) (η : RayClassCharacter F A.modulus)
+def minusExteriorCoefficient   (η : RayClassCharacter F A.modulus)
     (U : RawFrequency A) (I : A.Exterior) : ℂ :=
   η I.val * star (plusExteriorCoefficient σ U I)
 
-def plusL (σ : F →+* ℂ) (U : RawFrequency A) (s : ℂ) : ℂ :=
+def plusL   (U : RawFrequency A) (s : ℂ) : ℂ :=
   InitialSeparatedEuler.dirichletSeries (plusExteriorCoefficient σ U) s
 
-def minusL (σ : F →+* ℂ) (η : RayClassCharacter F A.modulus)
+def minusL   (η : RayClassCharacter F A.modulus)
     (U : RawFrequency A) (s : ℂ) : ℂ :=
   InitialSeparatedEuler.dirichletSeries (minusExteriorCoefficient σ η U) s
+end
+
 
 def localCorrection (C : A.GeneralArithmeticContext σ η hS)
     (U : RawFrequency A) (p : ExteriorPrime A) (ξ w z : ℂ) : ℂ :=
@@ -248,11 +253,14 @@ theorem comparisonSeries_summable
   (fixedMajorant_summable A ξ w z hξ hw hz).of_nonneg_of_le
     (fun i => norm_nonneg _) (summand_bound A D σ η hS G hD u ξ w z)
 
-private lemma plus_base_raw (U : RawFrequency A) (I : A.Exterior) :
+section
+variable (U : RawFrequency A)
+include U
+private lemma plus_base_raw   (I : A.Exterior) :
     plusExteriorCoefficient σ U I = σ (A.sexticResidue I U.u) :=
   UnitCovariance.residueCoefficient_eq I U.u
 
-private lemma plus_ext_mul_raw (U : RawFrequency A) (I J : A.Exterior) :
+private lemma plus_ext_mul_raw   (I J : A.Exterior) :
     plusExteriorCoefficient σ U (ExteriorIdealEuler.mul I J) =
       plusExteriorCoefficient σ U I * plusExteriorCoefficient σ U J := by
   simp only [plus_base_raw]
@@ -260,13 +268,13 @@ private lemma plus_ext_mul_raw (U : RawFrequency A) (I J : A.Exterior) :
     A.sexticResidue I U.u * A.sexticResidue J U.u from
       A.sexticResidueFamily_normalized.2.2 I J _ rfl U.u, map_mul]
 
-private lemma plus_ext_one_raw (U : RawFrequency A) :
+private lemma plus_ext_one_raw   :
     plusExteriorCoefficient σ U (ExteriorIdealEuler.one A.cS) = 1 := by
   rw [plus_base_raw]
   rw [show A.sexticResidue (ExteriorIdealEuler.one A.cS) U.u = 1 from
     A.residueValue_top _ _ rfl _, map_one]
 
-private lemma plus_ext_norm_raw (U : RawFrequency A) (I : A.Exterior) :
+private lemma plus_ext_norm_raw   (I : A.Exterior) :
     ‖plusExteriorCoefficient σ U I‖ ≤ 1 := by
   rw [plus_base_raw]
   by_cases hx : IsUnit (Ideal.Quotient.mk (A.extendIdeal I) U.u)
@@ -281,7 +289,7 @@ private lemma plus_ext_norm_raw (U : RawFrequency A) (I : A.Exterior) :
     rw [MulChar.map_nonunit _ hx, map_zero, norm_zero]
     exact zero_le_one
 
-private lemma plus_ext_pow_raw (U : RawFrequency A) (I : A.Exterior) (k : ℕ) :
+private lemma plus_ext_pow_raw   (I : A.Exterior) (k : ℕ) :
     plusExteriorCoefficient σ U (ExteriorIdealEuler.pow I k) =
       plusExteriorCoefficient σ U I ^ k := by
   induction k with
@@ -292,12 +300,12 @@ private lemma plus_ext_pow_raw (U : RawFrequency A) (I : A.Exterior) (k : ℕ) :
       apply Subtype.ext; simp [ExteriorIdealEuler.pow, ExteriorIdealEuler.mul, pow_succ]
     rw [he, plus_ext_mul_raw, ih, pow_succ]
 
-theorem raw_plus_isCoefficient (U : RawFrequency A) :
+theorem raw_plus_isCoefficient   :
     ExteriorIdealEuler.IsCoefficient (plusExteriorCoefficient σ U) :=
   ⟨plus_ext_one_raw U, fun I J _ => plus_ext_mul_raw U I J,
     plus_ext_norm_raw U, fun p k => plus_ext_pow_raw U p.val k⟩
 
-theorem raw_minus_isCoefficient (U : RawFrequency A) :
+theorem raw_minus_isCoefficient   :
     ExteriorIdealEuler.IsCoefficient (minusExteriorCoefficient σ η U) := by
   refine ⟨?_, ?_, ?_, ?_⟩
   · rw [minusExteriorCoefficient, plus_ext_one_raw]
@@ -319,13 +327,13 @@ theorem raw_minus_isCoefficient (U : RawFrequency A) :
     rw [minusExteriorCoefficient, plus_ext_pow_raw]
     simp only [minusExteriorCoefficient, ExteriorIdealEuler.pow, hη, star_pow, mul_pow]
 
-theorem raw_minusL_ne_zero (U : RawFrequency A) (s : ℂ) (hs : 1 < s.re) :
+theorem raw_minusL_ne_zero   (s : ℂ) (hs : 1 < s.re) :
     minusL σ η U s ≠ 0 := by
   have h := (ExteriorIdealEuler.exterior_ideal_euler (minusExteriorCoefficient σ η U)
     (raw_minus_isCoefficient U) s hs).2.2.1
   simpa [minusL, InitialSeparatedEuler.dirichletSeries] using h
 
-private theorem raw_good_cofinite (U : RawFrequency A) :
+private theorem raw_good_cofinite   :
     ∀ᶠ p : ExteriorPrime A in Filter.cofinite, (U.j p).val = 0 := by
   apply Filter.eventually_cofinite.mpr
   have hinj : Function.Injective (fun p : ExteriorPrime A => p.val.asIdeal) :=
@@ -333,6 +341,8 @@ private theorem raw_good_cofinite (U : RawFrequency A) :
   simpa [RawFrequency.j, idealPrimeExponent, Multiset.count_eq_zero] using
     (UniqueFactorizationMonoid.normalizedFactors U.ideal.val).finite_toSet.preimage
       hinj.injOn
+end
+
 
 private theorem raw_good_unit (C : A.GeneralArithmeticContext σ η hS)
     (U : RawFrequency A) (p : ExteriorPrime A) (hp : (U.j p).val = 0) :
@@ -483,6 +493,7 @@ private theorem raw_global_pair_cancel
       simp only [Finset.mem_compl, Finset.mem_singleton]
     · intro w _
       rfl
+  push_cast at hCancel'
   rw [hCancel', mul_one, ← Finset.prod_mul_distrib]
   simp only [mul_assoc]
 
@@ -526,8 +537,11 @@ private theorem local_unit_one (p : ExteriorPrime A) (n : ℕ) :
   have hu : uniformizer C p ≠ 0 := (map_ne_zero (algebraMap F (LocalField p))).mpr hπ
   have hu' : algebraMap F (LocalField p) (generator C p : F) ≠ 0 := hu
   simp [MaskedQuotientCRT.primeExponent, exponent_power, uniformizer, map_pow, hπ, hu']
-private theorem prime_sum_eq (D : ComparisonPoissonCoefficientData F A)
+section
+variable (D : ComparisonPoissonCoefficientData F A)
     (hD : WeightedFiniteCoefficient.ArithmeticCompatibility A D σ η hS C.correction)
+include D hD
+private theorem prime_sum_eq  
     (p : ExteriorPrime A) (t k J : ℕ) :
     GlobalPairCancel.primePowerSum A D (generator C p) (generator_generates C p).1 t k J =
       Ctk C p t k J := by
@@ -553,8 +567,7 @@ private theorem prime_sum_eq (D : ComparisonPoissonCoefficientData F A)
       split_ifs at hq with h <;> simp_all)
   simpa [GlobalPairCancel.primePowerSum, MaskedQuotientCRT.primeExponent,
     exponent_power, local_unit_one, CompatiblePrimeRawLocal.R_one_eq_Ctk] using hc
-private theorem theta_prime (D : ComparisonPoissonCoefficientData F A)
-    (hD : WeightedFiniteCoefficient.ArithmeticCompatibility A D σ η hS C.correction)
+private theorem theta_prime  
     (p : ExteriorPrime A) : D.theta (D.generator (primeIdeal p)) = vartheta C p := by
   rw [hD.theta_recipe _ (D.generates _).1]
   change WeightedFiniteCoefficient.Proof.thetaHom A
@@ -564,8 +577,7 @@ private theorem theta_prime (D : ComparisonPoissonCoefficientData F A)
     _ _ (D.generates _).1 (generator_generates C p).1
     ((D.generates _).2.trans (generator_generates C p).2.symm)]
   rfl
-private theorem theta_split (D : ComparisonPoissonCoefficientData F A)
-    (hD : WeightedFiniteCoefficient.ArithmeticCompatibility A D σ η hS C.correction)
+private theorem theta_split  
     (c n : A.Exterior) (P : Finset (ExteriorPrime A))
     (hc : ∀ p, p ∉ P → idealPrimeExponent p.val.asIdeal c.val = 0)
     (hn : ∀ p, p ∉ P → idealPrimeExponent p.val.asIdeal n.val = 0) :
@@ -598,6 +610,8 @@ private theorem theta_split (D : ComparisonPoissonCoefficientData F A)
   change D.theta (D.generator (primeIdeal p)) ^ _ *
     (D.theta (D.generator (primeIdeal p)) ^ _) ^ 3 = _
   rw [theta_prime D hD p, ← pow_mul, ← pow_add, Nat.mul_comm]
+end
+
 
 private theorem phase_eq (U : RawFrequency A) (p : ExteriorPrime A) :
     (U.theta C p).val = GlobalPairCancel.frequencyTheta A σ (primeIdeal p) (U.unitPart C p) := by
@@ -783,17 +797,20 @@ theorem weighted_summand_factorization (U : RawFrequency A)
 
 open CRTEulerSeparation.EulerIndex
 
-def digit (U : RawFrequency A) (ξ w z : ℂ)
+section
+variable (U : RawFrequency A)
+include U
+def digit   (ξ w z : ℂ)
     (p : LocalFiniteSums.ExteriorPrime A) (d : FinsuppEulerProduct.Digit) : ℂ :=
   if d.1 ≤ 1 then localCoefficient C U p d.1 d.2.1 d.2.2.1 d.2.2.2 *
     LocalFiniteSums.qPower p (-(d.1 : ℂ) * (1 / 2 + ξ) - (d.2.1 : ℂ) * (1 + 3 * ξ) -
       (d.2.2.1 : ℂ) * w - 6 * (d.2.2.2 : ℂ) * z) else 0
 
-theorem digit_zero (U : RawFrequency A) (ξ w z : ℂ)
+theorem digit_zero   (ξ w z : ℂ)
     (p : LocalFiniteSums.ExteriorPrime A) : digit (C := C) U ξ w z p 0 = 1 := by
   simp [digit, localCoefficient, LocalFiniteSums.Ctk_zero_zero, LocalFiniteSums.qPower]
 
-theorem coefficient_index (U : RawFrequency A)
+theorem coefficient_index  
     (D : ComparisonPoissonCoefficientData F A)
     (hD : WeightedFiniteCoefficient.ArithmeticCompatibility A D σ η hS C.correction)
     (ξ w z : ℂ) (i : CRTAbsoluteSeries.ExteriorIndex A) :
@@ -838,7 +855,7 @@ theorem coefficient_index (U : RawFrequency A)
   · exact Finset.prod_congr rfl (fun p hp => he p)
   · rw [Finsupp.notMem_support_iff.mp hpd, digit_zero]
 
-theorem coefficient_invalid (U : RawFrequency A) (ξ w z : ℂ)
+theorem coefficient_invalid   (ξ w z : ℂ)
     (d : LocalFiniteSums.ExteriorPrime A →₀ FinsuppEulerProduct.Digit)
     (hd : ¬ ∀ p, (d p).1 ≤ 1) :
     FinsuppEulerProduct.coefficient (digit (C := C) U ξ w z) d = 0 := by
@@ -850,7 +867,7 @@ theorem coefficient_invalid (U : RawFrequency A) (ξ w z : ℂ)
     simp [h] at hp
   exact Finset.prod_eq_zero hps (by simp [digit, not_le.mpr hp])
 
-theorem coefficient_summable (U : RawFrequency A)
+theorem coefficient_summable  
     (D : ComparisonPoissonCoefficientData F A)
     (hD : WeightedFiniteCoefficient.ArithmeticCompatibility A D σ η hS C.correction)
     (ξ w z : ℂ) (hξ : 3 / 2 < ξ.re) (hw : 2 < w.re) (hz : 1 / 6 < z.re) :
@@ -867,7 +884,7 @@ theorem coefficient_summable (U : RawFrequency A)
       exact hd ⟨⟨d, h⟩, rfl⟩
     rw [coefficient_invalid (C := C) U ξ w z d hn, norm_zero])).mp hsub
 
-theorem coefficient_tsum (U : RawFrequency A)
+theorem coefficient_tsum  
     (D : ComparisonPoissonCoefficientData F A)
     (hD : WeightedFiniteCoefficient.ArithmeticCompatibility A D σ η hS C.correction)
     (ξ w z : ℂ) :
@@ -887,7 +904,7 @@ theorem coefficient_tsum (U : RawFrequency A)
         (digit (C := C) U ξ w z) d.val)).symm
     _ = _ := tsum_congr (coefficient_index U D hD ξ w z)
 
-theorem local_tsum (U : RawFrequency A) (ξ w z : ℂ)
+theorem local_tsum   (ξ w z : ℂ)
     (p : LocalFiniteSums.ExteriorPrime A) :
     (∑' d : FinsuppEulerProduct.Digit, digit (C := C) U ξ w z p d) =
       LocalFiniteSums.f C p (U.j p) (U.theta C p) ξ w z := by
@@ -906,6 +923,8 @@ theorem local_tsum (U : RawFrequency A) (ξ w z : ℂ)
       unfold digit
       rw [if_pos (localIndexEquiv i).property]
       rfl
+end
+
 
 theorem hasProd_local_series (C : A.GeneralArithmeticContext σ η hS) (U : RawFrequency A)
     (D : ComparisonPoissonCoefficientData F A)

@@ -1,10 +1,13 @@
 module
 
 public import Mathlib
+
+public import Mathlib
 public import DedekindZetaZeroFree.Adeles.Approximation.FiniteDenominatorClearing
 public import DedekindZetaZeroFree.Adeles.Approximation.IntegralProductCRTDensity
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 noncomputable section
@@ -24,7 +27,7 @@ theorem finiteAdele_dense (F : Type*) [Field F] [NumberField F] :
     RestrictedProduct.structureMap
     (fun v : HeightOneSpectrum (𝓞 F) => v.adicCompletion F)
     (fun v : HeightOneSpectrum (𝓞 F) => v.adicCompletionIntegers F) Filter.cofinite
-  let c : A := algebraMap F A (algebraMap (𝓞 F) F d)⁻¹
+  let c  := algebraMap F A (algebraMap (𝓞 F) F d)⁻¹
   have hdF : algebraMap (𝓞 F) F d ≠ 0 :=
     (map_ne_zero_iff _ (IsFractionRing.injective (𝓞 F) F)).mpr hd
   have hc : c * algebraMap (𝓞 F) A d = 1 := by

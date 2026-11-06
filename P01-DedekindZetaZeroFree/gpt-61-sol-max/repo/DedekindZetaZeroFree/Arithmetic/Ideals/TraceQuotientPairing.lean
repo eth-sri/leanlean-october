@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Ideals.TracePhaseAnnihilator
 
 @[expose] public section
+
 
 /-
 https://github.com/LeanPool/lean-pool
@@ -35,9 +38,12 @@ def representativeChar
     intro y z
     simp only [Submodule.coe_add, mul_add, map_add, AddChar.map_add_eq_mul]
 
+section
+variable (I J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)
+    (hI : I ≠ 0)
+include I J hI
 def rightDescendedChar
-    (I J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)
-    (hI : I ≠ 0) (x : I.coeToSubmodule) :
+      (x : I.coeToSubmodule) :
     AddChar (fractionalIdealQuotient
       (traceDualFractionalIdeal J) (traceDualFractionalIdeal I)) ℂ :=
   quotientChar
@@ -48,7 +54,7 @@ def rightDescendedChar
       exact tracePhase_eq_one_of_mem_dual I hI x.property hy)
 
 def representativePairing
-    (I J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) (hI : I ≠ 0) :
+      :
     I.coeToSubmodule →+ AddChar (fractionalIdealQuotient
       (traceDualFractionalIdeal J) (traceDualFractionalIdeal I)) ℂ where
   toFun := rightDescendedChar I J hI
@@ -71,12 +77,10 @@ def representativePairing
     rw [add_mul, map_add, AddChar.map_add_eq_mul]
 
 def traceQuotientPairing
-    (I J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)
-    (hI : I ≠ 0) (hJ : J ≠ 0) (hJI : J ≤ I) :
+      (hJ : J ≠ 0) (hJI : J ≤ I) :
     fractionalIdealQuotient I J →+
       AddChar (fractionalIdealQuotient
-        (traceDualFractionalIdeal J) (traceDualFractionalIdeal I)) ℂ := by
-  exact QuotientAddGroup.lift
+        (traceDualFractionalIdeal J) (traceDualFractionalIdeal I)) ℂ := QuotientAddGroup.lift
     (J.coeToSubmodule.comap I.coeToSubmodule.subtype).toAddSubgroup
     (representativePairing I J hI) (by
       intro x hx
@@ -86,6 +90,8 @@ def traceQuotientPairing
         (traceDualFractionalIdeal J) (traceDualFractionalIdeal I) y
       change rationalTracePhase (Algebra.trace ℚ F ((x : F) * (y : F))) = 1
       exact tracePhase_eq_one_of_mem_dual J hJ hx y.property)
+end
+
 
 variable (I J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)
     (hI : I ≠ 0) (hJ : J ≠ 0) (hJI : J ≤ I)
@@ -96,8 +102,7 @@ variable (I J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)
       (fractionalIdealQuotientMk I J x)
       (fractionalIdealQuotientMk
         (traceDualFractionalIdeal J) (traceDualFractionalIdeal I) y) =
-      rationalTracePhase (Algebra.trace ℚ F ((x : F) * (y : F))) := by
-  rfl
+      rationalTracePhase (Algebra.trace ℚ F ((x : F) * (y : F))) := rfl
 
 theorem traceQuotientPairing_balance
     (r : NumberField.RingOfIntegers F) (x : fractionalIdealQuotient I J)
@@ -126,8 +131,7 @@ theorem traceQuotientPairing_balance
     (y y' : fractionalIdealQuotient (traceDualFractionalIdeal J) (traceDualFractionalIdeal I)) :
     traceQuotientPairing I J hI hJ hJI x (y + y') =
       traceQuotientPairing I J hI hJ hJI x y *
-        traceQuotientPairing I J hI hJ hJI x y' := by
-  exact AddChar.map_add_eq_mul _ _ _
+        traceQuotientPairing I J hI hJ hJI x y' := AddChar.map_add_eq_mul _ _ _
 
 @[simp] theorem traceQuotientPairing_zero_left
     (y : fractionalIdealQuotient (traceDualFractionalIdeal J) (traceDualFractionalIdeal I)) :
@@ -135,17 +139,16 @@ theorem traceQuotientPairing_balance
   rw [map_zero, AddChar.zero_apply]
 
 @[simp] theorem traceQuotientPairing_zero_right (x : fractionalIdealQuotient I J) :
-    traceQuotientPairing I J hI hJ hJI x 0 = 1 := by
-  exact AddChar.map_zero_eq_one _
+    traceQuotientPairing I J hI hJ hJI x 0 = 1 := AddChar.map_zero_eq_one _
 
-@[simp] theorem norm_traceQuotientPairing
-    (x : fractionalIdealQuotient I J)
-    (y : fractionalIdealQuotient (traceDualFractionalIdeal J) (traceDualFractionalIdeal I)) :
-    ‖traceQuotientPairing I J hI hJ hJI x y‖ = 1 := by
-  obtain ⟨x, rfl⟩ := fractionalIdealQuotientMk_surjective I J x
-  obtain ⟨y, rfl⟩ := fractionalIdealQuotientMk_surjective
-    (traceDualFractionalIdeal J) (traceDualFractionalIdeal I) y
-  rw [traceQuotientPairing_mk, norm_rationalTracePhase]
+
+
+
+
+
+
+
+
 
 end DedekindZetaZeroFree.Hecke
 

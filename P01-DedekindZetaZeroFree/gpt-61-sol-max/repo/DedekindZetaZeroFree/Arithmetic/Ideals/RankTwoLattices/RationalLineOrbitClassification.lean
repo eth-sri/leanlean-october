@@ -1,16 +1,22 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Ideals.RankTwoLattices.SteinitzClassification
 
 @[expose] public section
+
 
 open scoped nonZeroDivisors
 
 namespace DedekindZetaZeroFree
 
-theorem kp_cusp_coefficientIdeal_smul
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
+section
+variable (R : Type*) [CommRing R] [IsDedekindDomain R]
     (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
+include R K
+theorem kp_cusp_coefficientIdeal_smul
+     
     (M : FullLattice R K) (v : K × K) (hv : v ≠ 0)
     (c : K) (hc : c ≠ 0) :
     coefficientIdeal R K M (c • v) (smul_ne_zero hc hv) =
@@ -31,8 +37,7 @@ theorem kp_cusp_coefficientIdeal_smul
     exact hs
 
 theorem kp_cusp_lineClass_mk
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
+     
     (M : FullLattice R K) (v : K × K) (hv : v ≠ 0) :
     lineClass R K M (Projectivization.mk K v hv) =
       ClassGroup.mk K (Units.mk0 (coefficientIdeal R K M v hv) (by
@@ -56,8 +61,7 @@ theorem kp_cusp_lineClass_mk
     mul_inv_cancel₀ a.ne_zero, FractionalIdeal.spanSingleton_one, one_mul]
 
 private theorem cusp_lineClass_map
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
+     
     (M N : FullLattice R K) (g : (K × K) ≃ₗ[K] (K × K))
     (hg : Submodule.map (g.toLinearMap.restrictScalars R) M.val = N.val)
     (q : RationalLine K) :
@@ -77,8 +81,7 @@ private theorem cusp_lineClass_map
     exact Submodule.mem_map_of_mem ht
 
 private theorem cusp_determinantClass_coordinates
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
+     
     (M : FullLattice R K) (I J : FractionalIdeal R⁰ K) (hI : I ≠ 0) (hJ : J ≠ 0)
     (v w : K × K) (hd : det₂ K v w ≠ 0)
     (hM : ∀ x : K × K, x ∈ M.val ↔
@@ -96,8 +99,7 @@ private theorem cusp_determinantClass_coordinates
     inv_mul_cancel₀ hd, FractionalIdeal.spanSingleton_one, one_mul]
 
 theorem kp_cusp_lineEquivalent_iff_lineClass_eq
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
+     
     (M : FullLattice R K) (q q' : RationalLine K) :
     lineEquivalent R K M.val q q' ↔ lineClass R K M q = lineClass R K M q' := by
   classical
@@ -162,43 +164,23 @@ theorem kp_cusp_lineEquivalent_iff_lineClass_eq
     rw [← hqv, Projectivization.map_mk, ← Projectivization.mk_rep q']
     apply (Projectivization.mk_eq_mk_iff K _ _ _ _).mpr
     exact ⟨Units.mk0 (eI s : K) hsi, hgv.symm⟩
+end
 
-private theorem cusp_coordinate_isLattice
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
+
+private alias cusp_coordinate_isLattice := _root_.DedekindZetaZeroFree.coordinate_full
+
+section
+variable (R : Type*) [CommRing R] [IsDedekindDomain R]
     (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
-    (I J : FractionalIdeal R⁰ K) (hI : I ≠ 0) (hJ : J ≠ 0) :
-    Submodule.IsLattice K (coordinateLattice R K I J) := by
-  have hn : ∀ L : FractionalIdeal R⁰ K, L ≠ 0 → ∃ t ∈ L, t ≠ (0 : K) := by
-    intro L hL
-    apply (Submodule.ne_bot_iff L.val).mp
-    intro h
-    exact hL (Subtype.ext (h.trans FractionalIdeal.coe_zero.symm))
-  obtain ⟨s, hs, hs0⟩ := hn I hI
-  obtain ⟨t, ht, ht0⟩ := hn J hJ
-  refine ⟨(FractionalIdeal.fg_of_isNoetherianRing le_rfl I).prod
-    (FractionalIdeal.fg_of_isNoetherianRing le_rfl J), ?_⟩
-  apply top_unique
-  intro x _
-  have h₁ : ((s, 0) : K × K) ∈ coordinateLattice R K I J :=
-    ⟨hs, Submodule.zero_mem _⟩
-  have h₂ : ((0, t) : K × K) ∈ coordinateLattice R K I J :=
-    ⟨Submodule.zero_mem _, ht⟩
-  have he : x = (x.1 / s) • (s, 0) + (x.2 / t) • (0, t) := by
-    ext <;> simp [hs0, ht0]
-  rw [he]
-  exact Submodule.add_mem _
-    (Submodule.smul_mem _ _ (Submodule.subset_span h₁))
-    (Submodule.smul_mem _ _ (Submodule.subset_span h₂))
-
+    (M : FullLattice R K)
+include R K M
 theorem kp_cusp_lineClass_surjective
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
-    (M : FullLattice R K) :
+      :
     Function.Surjective (lineClass R K M) := by
   classical
   intro c
   refine ClassGroup.induction K (fun U => ?_) c
-  let I : FractionalIdeal R⁰ K := U.val
+  let I  := U.val
   have hI : I ≠ 0 := U.ne_zero
   let D := determinantIdeal R K M
   have hD : D ≠ 0 := by
@@ -236,9 +218,7 @@ theorem kp_cusp_lineClass_surjective
   exact Units.ext hcoeff
 
 theorem kp_cusp_lineOrbit_classGroup_equiv
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
-    (M : FullLattice R K) :
+      :
     ∃ e : Quotient (lineSetoid R K M.val) ≃ ClassGroup R,
       ∀ q : RationalLine K,
         e (Quotient.mk (lineSetoid R K M.val) q) = lineClass R K M q := by
@@ -256,6 +236,8 @@ theorem kp_cusp_lineOrbit_classGroup_equiv
       obtain ⟨q, hq⟩ := kp_cusp_lineClass_surjective R K M c
       exact ⟨Quotient.mk _ q, hq⟩
   exact ⟨Equiv.ofBijective f hf, fun _ => rfl⟩
+end
+
 
 theorem kp_cusp_numberField_finite_lineOrbits
     (F : Type*) [Field F] [NumberField F]

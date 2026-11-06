@@ -57,7 +57,10 @@ private theorem smooth_slice (F : Mat × ℂ → ℂ)
     · exact hasDerivAt_const (0 : ℝ) x
   exact (hx.hasFDerivAt.comp_hasDerivAt_of_eq 0 ht (by simp)).deriv
 
-theorem realUpperRootDerivativeFunction_mem (β : ℂˣ) (z : ℂ) (h : Theta β) :
+section
+variable (β : ℂˣ) (z : ℂ) (h : Theta β)
+include β z h
+theorem realUpperRootDerivativeFunction_mem   :
     realUpperRootDerivativeFunction β z h ∈ principalSeriesSubmodule negativeParameter := by
   change HasCovariance negativeParameter _ ∧ ContDiff ℝ ∞ (openCoordinate _) ∧ ContDiff ℝ ∞ (infinityCoordinate _)
   refine ⟨?_, ?_, ?_⟩
@@ -100,18 +103,20 @@ theorem realUpperRootDerivativeFunction_mem (β : ℂˣ) (z : ℂ) (h : Theta β
     apply Units.ext
     rfl
 
-noncomputable def ambientRealUpperRootDerivative (β : ℂˣ) (z : ℂ) (h : Theta β) :
+noncomputable def ambientRealUpperRootDerivative   :
     PrincipalSeries negativeParameter :=
   ⟨realUpperRootDerivativeFunction β z h, realUpperRootDerivativeFunction_mem β z h⟩
 
-theorem ambientRealUpperRootDerivative_mem_image (β : ℂˣ) (z : ℂ) (h : Theta β) :
+theorem ambientRealUpperRootDerivative_mem_image   :
     ambientRealUpperRootDerivative β z h ∈ imageSubmodule β := by
   rw [imageSubmodule_eq_top]
   trivial
 
-noncomputable def dPiRealUpperRoot (β : ℂˣ) (z : ℂ) (h : Theta β) : Theta β :=
+noncomputable def dPiRealUpperRoot   : Theta β :=
   ⟨ambientRealUpperRootDerivative β z h,
     ambientRealUpperRootDerivative_mem_image β z h⟩
+end
+
 
 noncomputable def dPiComplexUpperRoot (β : ℂˣ) (X : ComplexifiedUpperRoot)
     (h : Theta β) : Theta β :=
@@ -288,8 +293,11 @@ private theorem realUpperRootDerivative_hasDerivAt (β : ℂˣ) (z : ℂ)
     (g * upperUnipotent ((t : ℂ) * z))) := hc
   exact (hc'.differentiable (by simp) (0 : ℝ)).hasDerivAt
 
-theorem whittaker_realUpperRootDerivative (c : ℝ) (hc : 0 < c)
-    (β : ℂˣ) (hβ : (β : ℂ) = (c : ℂ)) (z : ℂ) (h : Theta β) (y : ℂˣ) :
+section
+variable (c : ℝ) (hc : 0 < c)
+    (β : ℂˣ) (hβ : (β : ℂ) = (c : ℂ))
+include c hc β hβ
+theorem whittaker_realUpperRootDerivative   (z : ℂ) (h : Theta β) (y : ℂˣ) :
     whittakerValue β (dPiRealUpperRoot β z h) y =
       Complex.I * (c : ℂ) * (((y : ℂ) * z).re : ℂ) * whittakerValue β h y := by
   apply whittaker_realUpperRootDerivative_of_tendsto c β hβ z h y
@@ -299,8 +307,7 @@ theorem whittaker_realUpperRootDerivative (c : ℝ) (hc : 0 < c)
     β h z (ambientRealUpperRootDerivative β z h)
     (realUpperRootDerivative_hasDerivAt β z h)
 
-theorem whittaker_complexUpperRootDerivatives (c : ℝ) (hc : 0 < c)
-    (β : ℂˣ) (hβ : (β : ℂ) = (c : ℂ)) (h : Theta β) (y : ℂˣ) :
+theorem whittaker_complexUpperRootDerivatives   (h : Theta β) (y : ℂˣ) :
     whittakerValue β (dPiComplexUpperRoot β Z_plus h) y =
         (Complex.I * (c : ℂ) / 2) * (y : ℂ) * whittakerValue β h y ∧
     whittakerValue β (dPiComplexUpperRoot β Z_minus h) y =
@@ -315,8 +322,7 @@ theorem whittaker_complexUpperRootDerivatives (c : ℝ) (hc : 0 < c)
   constructor <;> apply Complex.ext <;>
     simp [Complex.mul_re, Complex.mul_im, Complex.div_re, Complex.div_im] <;> ring
 
-theorem whittaker_vZero (c : ℝ) (hc : 0 < c)
-    (β : ℂˣ) (hβ : (β : ℂ) = (c : ℂ)) (y : ℂˣ) :
+theorem whittaker_vZero   (y : ℂˣ) :
     whittakerValue β (vZero c β) y =
       ((radius y * besselKThird (c * radius y) : ℝ) : ℂ) := by
   rw [vZero, whittakerValue_smul]
@@ -327,6 +333,8 @@ theorem whittaker_vZero (c : ℝ) (hc : 0 < c)
     Complex.ofReal_ne_zero.mpr (ne_of_gt (besselCoefficient_pos c hc))
   simp only [Complex.ofReal_mul, radius]
   field_simp
+end
+
 
 end DedekindZetaZeroFree.KPCplxRootDerivativeVectors
 

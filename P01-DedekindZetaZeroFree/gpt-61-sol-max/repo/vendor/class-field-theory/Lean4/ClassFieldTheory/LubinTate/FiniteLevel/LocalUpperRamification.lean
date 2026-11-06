@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Ramification.LocalField.Core
 public import ValuedFieldTheory.Ramification.LocalField.BaseChange
 public import ValuedFieldTheory.Ramification.LocalField.Unramified
@@ -8,6 +10,7 @@ public import ClassFieldTheory.LubinTate.FiniteLevel.HerbrandFormula
 public import ClassFieldTheory.LubinTate.FiniteLevel.LevelFieldTower
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -60,7 +63,7 @@ theorem
     {π : (standardLocalField K).valuationSubring}
     (hπ :
       (standardLocalField K).toCompleteDVF.valuation.IsUniformizer
-        (π : K))
+        π)
     (n : ℕ) (t : ℝ) :
     let F := standardLocalField K
     let L := standardLubinTateLevelField hπ n
@@ -97,9 +100,7 @@ theorem
         hπ n
   have hvaluationSubring :
       targetLocal.valuation.valuationSubring =
-        targetLT.valuation.valuationSubring := by
-    exact
-      (_root_.Valuation.isEquiv_iff_valuationSubring
+        targetLT.valuation.valuationSubring := (_root_.Valuation.isEquiv_iff_valuationSubring
         targetLocal.valuation targetLT.valuation).1
         (chosenLocalExtensionCompleteDVF_hasUniqueValuationExtension
           K L targetLT.valuation)
@@ -120,7 +121,7 @@ theorem standardLubinTateRealUpperRamificationGroup_eq_restrictKer
     {π : (standardLocalField K).valuationSubring}
     (hπ :
       (standardLocalField K).toCompleteDVF.valuation.IsUniformizer
-        (π : K))
+        π)
     (n k : ℕ) (hk : 1 ≤ k) (hkn : k ≤ n + 1) :
     let F := standardLocalField K
     let m := k - 1
@@ -136,7 +137,7 @@ theorem standardLubinTateRealUpperRamificationGroup_eq_restrictKer
       standardLubinTateLevelField_isGalois (F := F) hπ n
     let hEL : E ≤ L :=
       standardLubinTateLevelField_mono hπ (by omega)
-    standardLubinTateRealUpperRamificationGroup hπ n (k : ℝ) =
+    standardLubinTateRealUpperRamificationGroup hπ n k =
       (RamificationTheory.intermediateFieldRestrictNormalHom E L hEL).ker := by
   let F := standardLocalField K
   let m := k - 1
@@ -158,22 +159,22 @@ theorem standardLubinTateRealUpperRamificationGroup_eq_restrictKer
   have hmap :
       Subgroup.map ψ
           (standardLubinTateRealUpperRamificationGroup
-            hπ n (k : ℝ)) =
+            hπ n k) =
         standardLubinTateRealUpperRamificationGroup
-          hπ m (k : ℝ) := by
+          hπ m k := by
     rw [
       standardLubinTateRealUpperRamificationGroup_eq_localUpperRamificationGroup
-        K hπ n (k : ℝ),
+        K hπ n k,
       standardLubinTateRealUpperRamificationGroup_eq_localUpperRamificationGroup
-        K hπ m (k : ℝ)]
-    exact localUpperRamificationGroup_map_restrict K E L hEL (k : ℝ)
+        K hπ m k]
+    apply localUpperRamificationGroup_map_restrict
   have hkm : k ≤ m + 1 := by
     dsimp only [m]
     omega
   have hcardLower :
       Nat.card
           (standardLubinTateRealUpperRamificationGroup
-            hπ m (k : ℝ)) = 1 := by
+            hπ m k) = 1 := by
     rw [
       standardLubinTateRealUpperRamificationGroup_natCard
         F hπ m k hk hkm]
@@ -183,14 +184,13 @@ theorem standardLubinTateRealUpperRamificationGroup_eq_restrictKer
     rw [hmkeq, Nat.sub_self, pow_zero]
   have hLowerBot :
       standardLubinTateRealUpperRamificationGroup
-          hπ m (k : ℝ) = ⊥ := by
-    exact Subgroup.eq_bot_of_card_le _ (by omega)
+          hπ m k = ⊥ := Subgroup.eq_bot_of_card_le _ (by omega)
   have hUpperLeKer :
       standardLubinTateRealUpperRamificationGroup
-          hπ n (k : ℝ) ≤ ψ.ker := by
+          hπ n k ≤ ψ.ker := by
     apply (Subgroup.map_eq_bot_iff
       (standardLubinTateRealUpperRamificationGroup
-        hπ n (k : ℝ))).1
+        hπ n k)).1
     exact hmap.trans hLowerBot
   have hψ_surjective : Function.Surjective ψ := by
     let : Algebra E L :=
@@ -209,25 +209,17 @@ theorem standardLubinTateRealUpperRamificationGroup_eq_restrictKer
     calc
       Nat.card (Gal(E / K)) =
           Module.finrank K E := by
-            simpa [E] using
-              standardLubinTateLevelField_natCard_gal
-                (F := F) hπ m
+            apply standardLubinTateLevelField_natCard_gal
       _ = (q - 1) * q ^ m := by
-            simpa [E, q] using
-              standardLubinTateLevelField_finrank
-                (F := F) hπ m
+            apply standardLubinTateLevelField_finrank
   have hcardGalL :
       Nat.card (Gal(L / K)) = (q - 1) * q ^ n := by
     calc
       Nat.card (Gal(L / K)) =
           Module.finrank K L := by
-            simpa [L] using
-              standardLubinTateLevelField_natCard_gal
-                (F := F) hπ n
+            apply standardLubinTateLevelField_natCard_gal
       _ = (q - 1) * q ^ n := by
-            simpa [L, q] using
-              standardLubinTateLevelField_finrank
-                (F := F) hπ n
+            apply standardLubinTateLevelField_finrank
   have hindex :
       ψ.ker.index = Nat.card (Gal(E / K)) := by
     rw [Subgroup.index_ker,
@@ -242,7 +234,7 @@ theorem standardLubinTateRealUpperRamificationGroup_eq_restrictKer
   have hfactor_pos : 0 < (q - 1) * q ^ m := by
     exact Nat.mul_pos
       (Nat.sub_pos_of_lt
-        (Finite.one_lt_card : 1 < Nat.card F.residueField))
+        Finite.one_lt_card)
       (Nat.pow_pos Nat.card_pos)
   have hcardKer :
       Nat.card ψ.ker = q ^ (n - m) := by
@@ -251,8 +243,7 @@ theorem standardLubinTateRealUpperRamificationGroup_eq_restrictKer
     apply Nat.eq_of_mul_eq_mul_left hfactor_pos
     calc
       ((q - 1) * q ^ m) * Nat.card ψ.ker =
-          Nat.card ψ.ker * ((q - 1) * q ^ m) := by
-            exact Nat.mul_comm _ _
+          Nat.card ψ.ker * ((q - 1) * q ^ m) := Nat.mul_comm _ _
       _ = (q - 1) * q ^ n := hcardKerMul
       _ = ((q - 1) * q ^ m) * q ^ (n - m) := by
         rw [hpow, Nat.mul_assoc]
@@ -262,11 +253,9 @@ theorem standardLubinTateRealUpperRamificationGroup_eq_restrictKer
   have hcardUpper :
       Nat.card
           (standardLubinTateRealUpperRamificationGroup
-            hπ n (k : ℝ)) =
+            hπ n k) =
         q ^ (n + 1 - k) := by
-    simpa [q] using
-      standardLubinTateRealUpperRamificationGroup_natCard
-        F hπ n k hk hkn
+    apply standardLubinTateRealUpperRamificationGroup_natCard <;> assumption
   apply Subgroup.eq_of_le_of_card_ge hUpperLeKer
   rw [hcardKer, hexponent, hcardUpper]
 

@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AlgebraicNumberTheory.Adele.RestrictedProduct
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Topology
 public import ClassFieldTheory.AlgebraicNumberTheory.RayClass.Approximation
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -40,8 +43,7 @@ variable {K : Type*} [Field K] [NumberField K]
 elsewhere. -/
  def infinitePlaceValue
     (v : InfinitePlace K)
-    (x : v.Completionˣ) :
-    (w : InfinitePlace K) → w.Completionˣ :=
+    (x : v.Completionˣ)  :=
   Pi.mulSingle
     (M := fun u : InfinitePlace K ↦ u.Completionˣ)
     v x
@@ -52,8 +54,7 @@ omit [NumberField K] in
     (v : InfinitePlace K)
     (x : v.Completionˣ) :
     infinitePlaceValue v x v = x := by
-  exact Pi.mulSingle_eq_same
-    (M := fun u : InfinitePlace K ↦ u.Completionˣ) v x
+  apply Pi.mulSingle_eq_same
 
 omit [NumberField K] in
 @[simp]
@@ -62,13 +63,15 @@ omit [NumberField K] in
     (x : v.Completionˣ)
     (h : w ≠ v) :
     infinitePlaceValue v x w = 1 := by
-  exact Pi.mulSingle_eq_of_ne
-    (M := fun u : InfinitePlace K ↦ u.Completionˣ) h x
+  apply Pi.mulSingle_eq_of_ne <;> assumption
 
+section
+variable (v : InfinitePlace K)
+include v
 /-- The idele whose `v`-component is prescribed and whose other
 components are `1`, for an archimedean place `v`. -/
 def infinitePlaceIdele
-    (v : InfinitePlace K) :
+      :
     v.Completionˣ →* IdeleGroup K where
   toFun x :=
     (ContinuousMulEquiv.piUnits.symm
@@ -79,7 +82,7 @@ def infinitePlaceIdele
       by_cases hw : w = v
       · subst w
         exact infinitePlaceValue_same v 1
-      · exact infinitePlaceValue_of_ne v w 1 hw
+      · apply infinitePlaceValue_of_ne <;> assumption
     apply Prod.ext
     · change
         ContinuousMulEquiv.piUnits.symm
@@ -110,7 +113,7 @@ def infinitePlaceIdele
 
 /-- Inserting a unit at one archimedean place is continuous. -/
 theorem continuous_infinitePlaceIdele
-    (v : InfinitePlace K) :
+      :
     Continuous (infinitePlaceIdele v) := by
   change Continuous
     (fun x : v.Completionˣ ↦
@@ -119,9 +122,7 @@ theorem continuous_infinitePlaceIdele
   have hvalue :
       Continuous
         (fun x : v.Completionˣ ↦
-          infinitePlaceValue v x) := by
-    simpa only [infinitePlaceValue] using
-      (continuous_mulSingle
+          infinitePlaceValue v x) := (continuous_mulSingle
         (A := fun u : InfinitePlace K ↦ u.Completionˣ) v)
   exact
     (ContinuousMulEquiv.piUnits.symm.continuous.comp
@@ -129,14 +130,14 @@ theorem continuous_infinitePlaceIdele
 
 /-- The continuous homomorphism inserting a unit at one archimedean place. -/
 def infinitePlaceIdeleContinuous
-    (v : InfinitePlace K) :
+      :
     v.Completionˣ →ₜ* IdeleGroup K where
   __ := infinitePlaceIdele v
   continuous_toFun := continuous_infinitePlaceIdele v
 
 @[simp]
 theorem infinitePlaceIdeleContinuous_apply
-    (v : InfinitePlace K) (x : v.Completionˣ) :
+      (x : v.Completionˣ) :
     infinitePlaceIdeleContinuous v x =
       infinitePlaceIdele v x :=
   rfl
@@ -145,7 +146,7 @@ theorem infinitePlaceIdeleContinuous_apply
 at the supporting place. -/
 @[simp]
 theorem infinitePlaceIdele_infiniteComponent_same
-    (v : InfinitePlace K)
+     
     (x : v.Completionˣ) :
     IdeleGroup.infiniteComponent v
         (infinitePlaceIdele v x) = x := by
@@ -155,6 +156,8 @@ theorem infinitePlaceIdele_infiniteComponent_same
           (infinitePlaceValue v x)) v = x
   rw [ContinuousMulEquiv.piUnits.apply_symm_apply]
   exact infinitePlaceValue_same v x
+end
+
 
 /-- An archimedean one-place idele has component one at every other
 archimedean place. -/
@@ -170,7 +173,7 @@ theorem infinitePlaceIdele_infiniteComponent_of_ne
         (ContinuousMulEquiv.piUnits.symm
           (infinitePlaceValue v x)) w = 1
   rw [ContinuousMulEquiv.piUnits.apply_symm_apply]
-  exact infinitePlaceValue_of_ne v w x h
+  apply infinitePlaceValue_of_ne <;> assumption
 
 /-- An archimedean one-place idele has component one at every finite
 place. -/
@@ -180,8 +183,7 @@ theorem infinitePlaceIdele_finiteComponent
     (w : HeightOneSpectrum (𝓞 K))
     (x : v.Completionˣ) :
     IdeleGroup.finiteComponent w
-        (infinitePlaceIdele v x) = 1 := by
-  rfl
+        (infinitePlaceIdele v x) = 1 := rfl
 
 /-- Insert one archimedean-place element and then pass to the idele
 class group. -/
@@ -196,8 +198,7 @@ def infinitePlaceIdeleClass
  def finitePlaceValue
     (v : HeightOneSpectrum (𝓞 K))
     (x : (v.adicCompletion K)ˣ)
-    (w : HeightOneSpectrum (𝓞 K)) :
-    (w.adicCompletion K)ˣ :=
+    (w : HeightOneSpectrum (𝓞 K))  :=
   if h : w = v then h.symm ▸ x else 1
 
 @[simp]
@@ -282,8 +283,7 @@ theorem finitePlaceIdele_infiniteComponent
     (w : InfinitePlace K)
     (x : (v.adicCompletion K)ˣ) :
     IdeleGroup.infiniteComponent w
-        (finitePlaceIdele v x) = 1 := by
-  rfl
+        (finitePlaceIdele v x) = 1 := rfl
 
 /-- Insert one finite-place element and then pass to the idele class
 group. -/
@@ -310,8 +310,7 @@ variable
  def relativeInfinitePlaceValue
     (v : InfinitePlace K)
     (z : (v.Completion ⊗[K] L)ˣ)
-    (w : InfinitePlace K) :
-    (w.Completion ⊗[K] L)ˣ :=
+    (w : InfinitePlace K)  :=
   if h : w = v then h.symm ▸ z else 1
 
 omit [NumberField K] [NumberField L] [FiniteDimensional K L] in
@@ -376,8 +375,7 @@ private theorem relativeInfinitePlaceValue_of_ne
 /-- A relative idele supported at the single archimedean place `v`. -/
 def relativeInfinitePlaceIdele
     (v : InfinitePlace K)
-    (z : (v.Completion ⊗[K] L)ˣ) :
-    RelativeIdeleGroup K L :=
+    (z : (v.Completion ⊗[K] L)ˣ)  :=
   relativeIdeleOfLocalData
     (K := K) (L := L)
     (relativeInfinitePlaceData (K := K) (L := L) v z)
@@ -395,7 +393,7 @@ theorem relativeInfinitePlaceIdele_infiniteComponent_same
       z := by
   rw [relativeInfinitePlaceIdele,
     relativeIdeleOfLocalData_infiniteComponent]
-  exact relativeInfinitePlaceValue_same (L := L) v z
+  apply relativeInfinitePlaceValue_same
 
 omit [NumberField L] in
 /-- A relative archimedean one-place idele has component one at every
@@ -411,7 +409,7 @@ theorem relativeInfinitePlaceIdele_infiniteComponent_of_ne
       1 := by
   rw [relativeInfinitePlaceIdele,
     relativeIdeleOfLocalData_infiniteComponent]
-  exact relativeInfinitePlaceValue_of_ne (L := L) v w z h
+  apply relativeInfinitePlaceValue_of_ne <;> assumption
 
 omit [NumberField L] in
 /-- A relative archimedean one-place idele has component one at every
@@ -434,8 +432,7 @@ elsewhere. -/
  def relativeFinitePlaceValue
     (v : HeightOneSpectrum (𝓞 K))
     (z : (v.adicCompletion K ⊗[K] L)ˣ)
-    (w : HeightOneSpectrum (𝓞 K)) :
-    (w.adicCompletion K ⊗[K] L)ˣ :=
+    (w : HeightOneSpectrum (𝓞 K))  :=
   if h : w = v then h.symm ▸ z else 1
 
 omit [NumberField L] [FiniteDimensional K L] in
@@ -455,10 +452,13 @@ omit [NumberField L] [FiniteDimensional K L] in
     relativeFinitePlaceValue (L := L) v z w = 1 := by
   simp [relativeFinitePlaceValue, h]
 
+section
+variable (v : HeightOneSpectrum (𝓞 K))
+    (z : (v.adicCompletion K ⊗[K] L)ˣ)
+include v z
 /-- Restricted local data supported at one finite place. -/
  noncomputable def relativeFinitePlaceData
-    (v : HeightOneSpectrum (𝓞 K))
-    (z : (v.adicCompletion K ⊗[K] L)ˣ) :
+      :
     RelativeLocalIdeleData (K := K) (L := L) where
   infinite _ := 1
   finite w := relativeFinitePlaceValue (L := L) v z w
@@ -511,12 +511,12 @@ omit [NumberField L] [FiniteDimensional K L] in
 
 /-- A relative idele supported at the single finite place `v`. -/
 def relativeFinitePlaceIdele
-    (v : HeightOneSpectrum (𝓞 K))
-    (z : (v.adicCompletion K ⊗[K] L)ˣ) :
-    RelativeIdeleGroup K L :=
+       :=
   relativeIdeleOfLocalData
     (K := K) (L := L)
     (relativeFinitePlaceData (K := K) (L := L) v z)
+end
+
 
 omit [NumberField L] in
 /-- A relative finite-place idele recovers its prescribed tensor component
@@ -531,7 +531,7 @@ theorem relativeFinitePlaceIdele_finiteComponent_same
       z := by
   rw [relativeFinitePlaceIdele,
     relativeIdeleOfLocalData_finiteComponent]
-  exact relativeFinitePlaceValue_same (L := L) v z
+  apply relativeFinitePlaceValue_same
 
 omit [NumberField L] in
 /-- A relative finite-place idele has component one at every other finite
@@ -547,7 +547,7 @@ theorem relativeFinitePlaceIdele_finiteComponent_of_ne
       1 := by
   rw [relativeFinitePlaceIdele,
     relativeIdeleOfLocalData_finiteComponent]
-  exact relativeFinitePlaceValue_of_ne (L := L) v w z h
+  apply relativeFinitePlaceValue_of_ne <;> assumption
 
 omit [NumberField L] in
 /-- A relative finite-place idele has component one at every infinite

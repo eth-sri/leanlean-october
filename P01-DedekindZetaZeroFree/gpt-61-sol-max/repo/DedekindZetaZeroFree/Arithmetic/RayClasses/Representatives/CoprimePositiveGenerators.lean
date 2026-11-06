@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Representatives.PrimeToFractionalIdealRatios
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Representatives.PositiveChineseRemainder
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Moduli.LocalCongruenceAndPositivity
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -23,7 +26,7 @@ private theorem sup_eq_top_of_forall_count_zero
     I ⊔ m = ⊤ := by
   by_contra hne
   obtain ⟨P, hPmax, hle⟩ := Ideal.exists_le_maximal (I ⊔ m) hne
-  have hPprime : P.IsPrime := hPmax.isPrime
+  have hPprime  := hPmax.isPrime
   have hPne : P ≠ ⊥ := by
     intro hbot
     exact hI (le_bot_iff.mp (le_trans le_sup_left (hbot ▸ hle)))
@@ -67,8 +70,7 @@ theorem exists_mixed_integral_generator
   have hspanb : (Ideal.span {b} : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) =
       FractionalIdeal.spanSingleton (nonZeroDivisors (𝓞 F)) (b : F) := by
     rw [FractionalIdeal.coeIdeal_span_singleton]
-  have hb_le_B : (Ideal.span {b} : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) ≤
-      (B : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) :=
+  have hb_le_B  :=
     (FractionalIdeal.coeIdeal_le_coeIdeal F).mpr ((Ideal.span_singleton_le_iff_mem (I := B)).mpr hbB)
 
   have hkey : FractionalIdeal.spanSingleton (nonZeroDivisors (𝓞 F)) ((x : F) * (b : F)) ≤
@@ -82,7 +84,7 @@ theorem exists_mixed_integral_generator
             (B : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) := by gcongr
       _ = (A : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) := hval'
       _ ≤ 1 := FractionalIdeal.coeIdeal_le_one
-  have hmem : ((x : F) * (b : F)) ∈ (1 : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) :=
+  have hmem  :=
     FractionalIdeal.spanSingleton_le_iff_mem.mp hkey
   obtain ⟨a, ha⟩ := (FractionalIdeal.mem_one_iff (nonZeroDivisors (𝓞 F))).mp hmem
 
@@ -93,14 +95,14 @@ theorem exists_mixed_integral_generator
     have : (x : F) * (b : F) = 0 := by rw [← ha, hzero, map_zero]
     exact mul_ne_zero hxF hbF this
 
-  have hposx : ∀ φ : F →+* ℝ, 0 < φ (x : F) := ray_congruent_pos f hf x hx
+  have hposx  := ray_congruent_pos f hf x hx
   have hapos : ∀ φ : F →+* ℝ, 0 < φ (a : F) := by
     intro φ
     have h1 : (a : F) = (x : F) * (b : F) := ha
     rw [h1, map_mul]
     exact mul_pos (hposx φ) (hbpos φ)
 
-  have hsub : a - b ∈ f := ray_congruent_sub_mem f hf x hx a b ha
+  have hsub  := ray_congruent_sub_mem f hf x hx a b ha
   have hb1f : b - 1 ∈ f := hmf hb1m
   have ha1f : a - 1 ∈ f := by
     have heq : a - 1 = (a - b) + (b - 1) := by ring
@@ -111,7 +113,7 @@ theorem exists_mixed_integral_generator
     apply (Ideal.eq_top_iff_one _).mpr
     have hb_in : b ∈ Ideal.span {b} ⊔ m := Submodule.mem_sup_left (Ideal.mem_span_singleton_self b)
     have hb1_in : b - 1 ∈ Ideal.span {b} ⊔ m := Submodule.mem_sup_right hb1m
-    have hthis : b - (b - 1) ∈ Ideal.span {b} ⊔ m := sub_mem hb_in hb1_in
+    have hthis  := sub_mem hb_in hb1_in
     have h1eq : b - (b - 1) = (1 : 𝓞 F) := by ring
     rwa [h1eq] at hthis
 
@@ -120,7 +122,7 @@ theorem exists_mixed_integral_generator
   have hcount_a : ∀ v : IsDedekindDomain.HeightOneSpectrum (𝓞 F),
       v ∈ (fullModulus m hm).finitePart.support →
       FractionalIdeal.count F v
-        ((Ideal.span {a} : Ideal (𝓞 F)) : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) = 0 := by
+        ((Ideal.span {a}) : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) = 0 := by
     intro v hv
     have hxcount : FractionalIdeal.count F v
         (FractionalIdeal.spanSingleton (nonZeroDivisors (𝓞 F)) (x : F)) = 0 := by
@@ -143,7 +145,7 @@ theorem exists_mixed_integral_generator
         have := sub_mem hb_mem_v hb1_mem_v
         simpa using this
       exact v.isPrime.ne_top ((Ideal.eq_top_iff_one _).mpr h1)
-    have hcoe : ((Ideal.span {a} : Ideal (𝓞 F)) :
+    have hcoe : ((Ideal.span {a}) :
         FractionalIdeal (nonZeroDivisors (𝓞 F)) F) =
         FractionalIdeal.spanSingleton (nonZeroDivisors (𝓞 F)) ((x : F) * (b : F)) := by
       rw [FractionalIdeal.coeIdeal_span_singleton, ha]
@@ -152,7 +154,7 @@ theorem exists_mixed_integral_generator
         ((FractionalIdeal.spanSingleton_ne_zero_iff (S := nonZeroDivisors (𝓞 F))).mpr hxF)
         ((FractionalIdeal.spanSingleton_ne_zero_iff (S := nonZeroDivisors (𝓞 F))).mpr hbF),
       hxcount, hbcount, add_zero]
-  have hspana : Ideal.span {a} ⊔ m = ⊤ :=
+  have hspana  :=
     sup_eq_top_of_forall_count_zero m hm (Ideal.span {a}) hspan_a_ne hcount_a
   exact ⟨a, b, ha0, hb0, ha, ha1f, hb1f, hapos, hbpos, hspana, hspanb_cop⟩
 

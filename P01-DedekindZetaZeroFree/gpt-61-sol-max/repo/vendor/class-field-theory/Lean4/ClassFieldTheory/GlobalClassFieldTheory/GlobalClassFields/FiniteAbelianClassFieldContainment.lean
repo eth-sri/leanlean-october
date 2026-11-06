@@ -85,13 +85,16 @@ private theorem subgroup_toAddSubgroup_map_mono_mulEquiv
         (MulEquiv.toAdditive e).toAddMonoidHom :=
   AddSubgroup.map_mono h
 
+section
+variable (H : Subgroup (IdeleClassGroup K))
+    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
+    [H.FiniteIndex]
+include H hclosed
 /-- The distinguished embedding of the original number field into the
 rational separable closure underlying the class field selected by
 `H`. -/
 noncomputable def closedFiniteIndexClassFieldBaseEmbedding
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex] :
+      :
     K →ₐ[ℚ] SeparableClosure ℚ :=
   numberFieldTowerLowerEmbedding K
     (closedFiniteIndexClassFieldNormAmbient
@@ -101,9 +104,7 @@ noncomputable def closedFiniteIndexClassFieldBaseEmbedding
 embedding as its underlying map into the rational separable closure. -/
 @[simp]
 theorem closedFiniteIndexClassFieldBaseEquiv_coe
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex]
+     
     (x : K) :
     ((closedFiniteIndexClassFieldBaseEquiv
         (K := K) H hclosed x :
@@ -116,9 +117,7 @@ theorem closedFiniteIndexClassFieldBaseEquiv_coe
 
  noncomputable def
     finiteAbelianClassFieldContainmentIdeleClassEquiv
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex] :
+      :
     IdeleClassGroup K ≃*
       IdeleClassGroup
         (closedFiniteIndexClassFieldBase
@@ -126,16 +125,21 @@ theorem closedFiniteIndexClassFieldBaseEquiv_coe
   ideleClassCongr
     (closedFiniteIndexClassFieldBaseEquiv
       (K := K) H hclosed)
+end
 
+
+section
+variable (H : Subgroup (IdeleClassGroup K))
+    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
+    [H.FiniteIndex]
+    (E : Type) [Field E] [NumberField E]
+    [Algebra K E] [FiniteDimensional K E]
+include H hclosed E
 /-- An actual finite extension of `K`, embedded into the rational
 separable closure compatibly with the selected class-field copy of
 `K`. -/
 noncomputable def closedFiniteIndexClassFieldCompatibleEmbedding
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex]
-    (E : Type) [Field E] [NumberField E]
-    [Algebra K E] [FiniteDimensional K E] :
+      :
     E →ₐ[ℚ] SeparableClosure ℚ :=
   Classical.choose
     (IsAlgClosed.surjective_domRestrict_of_isAlgebraic
@@ -149,11 +153,7 @@ embedding of the original base field. -/
 @[simp]
 theorem
     closedFiniteIndexClassFieldCompatibleEmbedding_restrictDomain
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex]
-    (E : Type) [Field E] [NumberField E]
-    [Algebra K E] [FiniteDimensional K E] :
+      :
     (closedFiniteIndexClassFieldCompatibleEmbedding
       (K := K) H hclosed E).domRestrict K =
       closedFiniteIndexClassFieldBaseEmbedding
@@ -169,11 +169,7 @@ theorem
 distinguished base embedding. -/
 @[simp]
 theorem closedFiniteIndexClassFieldCompatibleEmbedding_algebraMap
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex]
-    (E : Type) [Field E] [NumberField E]
-    [Algebra K E] [FiniteDimensional K E]
+     
     (x : K) :
     closedFiniteIndexClassFieldCompatibleEmbedding
         (K := K) H hclosed E
@@ -190,11 +186,7 @@ theorem closedFiniteIndexClassFieldCompatibleEmbedding_algebraMap
 base subgroup used by the selected class field. -/
 @[simp]
 theorem closedFiniteIndexClassFieldCompatibleEmbedding_baseSubgroup
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex]
-    (E : Type) [Field E] [NumberField E]
-    [Algebra K E] [FiniteDimensional K E] :
+      :
     numberFieldEmbeddedBaseSubgroup K E
         (closedFiniteIndexClassFieldCompatibleEmbedding
           (K := K) H hclosed E) =
@@ -215,11 +207,7 @@ theorem closedFiniteIndexClassFieldCompatibleEmbedding_baseSubgroup
 rational absolute Galois group as the class field selected by `H`. -/
 noncomputable def
     closedFiniteIndexClassFieldEmbeddedAbelianSubextension
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex]
-    (E : Type) [Field E] [NumberField E]
-    [Algebra K E] [FiniteDimensional K E]
+     
     [IsAbelianGalois K E] :
     FiniteAbelianSubextension
       (closedFiniteIndexClassFieldBaseSubgroup
@@ -237,11 +225,7 @@ the fixing subgroup of the compatible embedded copy of `E`. -/
 @[simp]
 theorem
     closedFiniteIndexClassFieldEmbeddedAbelianSubextension_field
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex]
-    (E : Type) [Field E] [NumberField E]
-    [Algebra K E] [FiniteDimensional K E]
+     
     [IsAbelianGalois K E] :
     (closedFiniteIndexClassFieldEmbeddedAbelianSubextension
       (K := K) H hclosed E).field =
@@ -262,11 +246,7 @@ the genuine idèle-class norm range of the original extension,
 transported through the selected base-field equivalence. -/
 private theorem
     ordinaryIdeleClassNormSubgroup_embeddedAbelianSubextension_named
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex]
-    (E : Type) [Field E] [NumberField E]
-    [Algebra K E] [FiniteDimensional K E]
+     
     [IsAbelianGalois K E] :
     ordinaryIdeleClassNormSubgroup
         (numberFieldTowerFiniteAbstractField K
@@ -388,43 +368,45 @@ private theorem
             (K := K) H hclosed) A).range
         (finiteAbelianClassFieldContainmentIdeleClassEquiv
           (K := K) H hclosed) hRange
+end
 
-/-- The abstract norm subgroup of the compatibly embedded extension is
-the genuine idèle-class norm range of the original extension, expressed at
-the concrete selected base-field endpoint. -/
-theorem
-    ordinaryIdeleClassNormSubgroup_embeddedAbelianSubextension
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex]
-    (E : Type) [Field E] [NumberField E]
-    [Algebra K E] [FiniteDimensional K E]
-    [IsAbelianGalois K E] :
-    ordinaryIdeleClassNormSubgroup
-        (numberFieldTowerFiniteAbstractField K
-          (closedFiniteIndexClassFieldNormAmbient
-            (K := K) H hclosed))
-        (closedFiniteIndexClassFieldEmbeddedAbelianSubextension
-          (K := K) H hclosed E) =
-      (_root_.ideleClassNorm K E).range.toAddSubgroup.map
-        (MulEquiv.toAdditive
-          (ideleClassCongr
-            (closedFiniteIndexClassFieldBaseEquiv
-              (K := K) H hclosed))).toAddMonoidHom := by
-  change
-    ordinaryIdeleClassNormSubgroup
-        (numberFieldTowerFiniteAbstractField K
-          (closedFiniteIndexClassFieldNormAmbient
-            (K := K) H hclosed))
-        (closedFiniteIndexClassFieldEmbeddedAbelianSubextension
-          (K := K) H hclosed E) =
-      (_root_.ideleClassNorm K E).range.toAddSubgroup.map
-        (MulEquiv.toAdditive
-          (finiteAbelianClassFieldContainmentIdeleClassEquiv
-            (K := K) H hclosed)).toAddMonoidHom
-  exact
-    ordinaryIdeleClassNormSubgroup_embeddedAbelianSubextension_named
-      (K := K) H hclosed E
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 private theorem
     ordinaryIdeleClassNormSubgroup_closedFiniteIndexClassFieldSubextension_named
@@ -456,16 +438,19 @@ private theorem
     ordinaryIdeleClassNormSubgroup_closedFiniteIndexClassFieldSubextension
       (K := K) H hclosed
 
+section
+variable (H : Subgroup (IdeleClassGroup K))
+    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
+    [H.FiniteIndex]
+    (E : Type) [Field E] [NumberField E]
+    [Algebra K E] [FiniteDimensional K E]
+include H hclosed E
 /-- If `H` is contained in the genuine norm range of an actual finite
 abelian extension, its compatible embedded subextension lies below the
 finite abelian subextension selected by `H`. -/
 theorem
     embeddedAbelianSubextension_le_closedFiniteIndexClassFieldSubextension
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex]
-    (E : Type) [Field E] [NumberField E]
-    [Algebra K E] [FiniteDimensional K E]
+     
     [IsAbelianGalois K E]
     (hH :
       H ≤ (_root_.ideleClassNorm K E).range) :
@@ -519,11 +504,7 @@ theorem
 equivalence on scalars from the original number field. -/
  theorem
     finiteAbelianExtensionEmbedding_ambient_algebraMap_eq_baseEquiv
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex]
-    (E : Type) [Field E] [NumberField E]
-    [Algebra K E] [FiniteDimensional K E]
+     
     (x : K) :
     closedFiniteIndexClassFieldCompatibleEmbedding
         (K := K) H hclosed E (algebraMap K E x) =
@@ -543,11 +524,7 @@ selected class field whenever the corresponding finite abelian
 subextension lies below the selected one. -/
  theorem
     finiteAbelianExtensionEmbedding_codRestrict_mem
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex]
-    (E : Type) [Field E] [NumberField E]
-    [Algebra K E] [FiniteDimensional K E]
+     
     [IsAbelianGalois K E]
     (hcontain :
       closedFiniteIndexClassFieldEmbeddedAbelianSubextension
@@ -590,11 +567,7 @@ subextension lies below the selected one. -/
 by `H`. -/
 noncomputable def
     finiteAbelianExtensionEmbeddingIntoClosedFiniteIndexClassField
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex]
-    (E : Type) [Field E] [NumberField E]
-    [Algebra K E] [FiniteDimensional K E]
+     
     [IsAbelianGalois K E]
     (hH :
       H ≤ (_root_.ideleClassNorm K E).range) :
@@ -627,25 +600,27 @@ noncomputable def
         Subtype.ext
           (finiteAbelianExtensionEmbedding_ambient_algebraMap_eq_baseEquiv
             (K := K) H hclosed E x) }
+end
 
-/-- Containment in a selected finite abelian class field, stated as
-existence of an actual algebra embedding over the original base. -/
-theorem
-    finiteAbelianExtension_nonempty_algHom_closedFiniteIndexClassField
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex]
-    (E : Type) [Field E] [NumberField E]
-    [Algebra K E] [FiniteDimensional K E]
-    [IsAbelianGalois K E]
-    (hH :
-      H ≤ (_root_.ideleClassNorm K E).range) :
-    Nonempty
-      (E →ₐ[K]
-        closedFiniteIndexClassField
-          (K := K) H hclosed) :=
-  ⟨finiteAbelianExtensionEmbeddingIntoClosedFiniteIndexClassField
-    (K := K) H hclosed E hH⟩
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- A finite abelian extension is isomorphic over the original base to
 the class field selected by its own genuine idèle-class norm range. -/
@@ -695,15 +670,18 @@ noncomputable def
     AlgEquiv.ofBijective f
       ⟨f.injective, hsurjective⟩
 
-/-- An algebra embedding of finite extensions reverses inclusion of
-their genuine idèle-class norm ranges. -/
-theorem ideleClassNorm_range_le_of_algHom
-    (L₁ L₂ : Type)
+section
+variable (L₁ L₂ : Type)
     [Field L₁] [NumberField L₁]
     [Field L₂] [NumberField L₂]
     [Algebra K L₁] [Algebra K L₂]
     [FiniteDimensional K L₁] [FiniteDimensional K L₂]
     [IsAbelianGalois K L₁] [IsAbelianGalois K L₂]
+include L₁ L₂
+/-- An algebra embedding of finite extensions reverses inclusion of
+their genuine idèle-class norm ranges. -/
+theorem ideleClassNorm_range_le_of_algHom
+     
     (f : L₁ →ₐ[K] L₂) :
     (_root_.ideleClassNorm K L₂).range ≤
       (_root_.ideleClassNorm K L₁).range := by
@@ -722,12 +700,7 @@ theorem ideleClassNorm_range_le_of_algHom
 actual algebra embedding of the corresponding finite abelian
 extensions over the original base field. -/
 noncomputable def finiteAbelianExtensionEmbeddingOfNormRangeLE
-    (L₁ L₂ : Type)
-    [Field L₁] [NumberField L₁]
-    [Field L₂] [NumberField L₂]
-    [Algebra K L₁] [Algebra K L₂]
-    [FiniteDimensional K L₁] [FiniteDimensional K L₂]
-    [IsAbelianGalois K L₁] [IsAbelianGalois K L₂]
+     
     (h :
       (_root_.ideleClassNorm K L₂).range ≤
         (_root_.ideleClassNorm K L₁).range) :
@@ -757,12 +730,7 @@ noncomputable def finiteAbelianExtensionEmbeddingOfNormRangeLE
 /-- Reverse norm-range inclusion implies actual field containment over
 the original number field. -/
 theorem finiteAbelianExtension_nonempty_algHom_of_normRange_le
-    (L₁ L₂ : Type)
-    [Field L₁] [NumberField L₁]
-    [Field L₂] [NumberField L₂]
-    [Algebra K L₁] [Algebra K L₂]
-    [FiniteDimensional K L₁] [FiniteDimensional K L₂]
-    [IsAbelianGalois K L₁] [IsAbelianGalois K L₂]
+     
     (h :
       (_root_.ideleClassNorm K L₂).range ≤
         (_root_.ideleClassNorm K L₁).range) :
@@ -770,36 +738,31 @@ theorem finiteAbelianExtension_nonempty_algHom_of_normRange_le
   ⟨finiteAbelianExtensionEmbeddingOfNormRangeLE
     (K := K) L₁ L₂ h⟩
 
-/-- Actual containment of finite abelian extensions is equivalent to
-reverse inclusion of their genuine idèle-class norm ranges. -/
-theorem nonempty_algHom_iff_ideleClassNorm_range_le
-    (L₁ L₂ : Type)
-    [Field L₁] [NumberField L₁]
-    [Field L₂] [NumberField L₂]
-    [Algebra K L₁] [Algebra K L₂]
-    [FiniteDimensional K L₁] [FiniteDimensional K L₂]
-    [IsAbelianGalois K L₁] [IsAbelianGalois K L₂] :
-    Nonempty (L₁ →ₐ[K] L₂) ↔
-      (_root_.ideleClassNorm K L₂).range ≤
-        (_root_.ideleClassNorm K L₁).range := by
-  constructor
-  · rintro ⟨f⟩
-    exact
-      ideleClassNorm_range_le_of_algHom
-        (K := K) L₁ L₂ f
-  · exact
-      finiteAbelianExtension_nonempty_algHom_of_normRange_le
-        (K := K) L₁ L₂
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- Equality of genuine norm ranges characterizes isomorphism of
 finite abelian extensions over the original number field. -/
 theorem nonempty_algEquiv_iff_ideleClassNorm_range_eq
-    (L₁ L₂ : Type)
-    [Field L₁] [NumberField L₁]
-    [Field L₂] [NumberField L₂]
-    [Algebra K L₁] [Algebra K L₂]
-    [FiniteDimensional K L₁] [FiniteDimensional K L₂]
-    [IsAbelianGalois K L₁] [IsAbelianGalois K L₂] :
+      :
     Nonempty (L₁ ≃ₐ[K] L₂) ↔
       (_root_.ideleClassNorm K L₁).range =
         (_root_.ideleClassNorm K L₂).range := by
@@ -839,6 +802,8 @@ theorem nonempty_algEquiv_iff_ideleClassNorm_range_eq
     exact
       ⟨AlgEquiv.ofBijective f
         ⟨f.injective, hsurjective⟩⟩
+end
+
 
 end GlobalClassFields
 end GlobalClassFieldTheory

@@ -188,26 +188,34 @@ private theorem component_holomorphy (b : Bool) (O : Set ℂ) (hO : IsOpen O)
     funext (fun x => hvalue t x)
   rw [he, iteratedFDerivWithin_of_isOpen n hD (hCD y.property), iteratedFDerivWithin_univ]
 
-private theorem labeled_smooth (p : Fin (d F) ≃ Fin (KPCuspLogShape.dimension F)) :
+section
+variable (p : Fin (d F) ≃ Fin (KPCuspLogShape.dimension F))
+include p
+private theorem labeled_smooth   :
     ContDiff ℝ (⊤ : ℕ∞) (labeledA p) := by
   apply contDiff_pi.mpr
   intro k
   exact ((contDiff_apply ℝ (ℂ × ℝ) (p.symm k)).comp (CotangentLogCoframe.A (d F)).contDiff)
 
-private theorem inverse_smooth (p : Fin (d F) ≃ Fin (KPCuspLogShape.dimension F)) :
+private theorem inverse_smooth   :
     ContDiff ℝ (⊤ : ℕ∞) (labeledAInv p) := by
   apply (CotangentLogCoframe.A (d F)).symm.contDiff.comp
   apply contDiff_pi.mpr
   intro k
   exact contDiff_apply ℝ (ℂ × ℝ) (p k)
 
-private theorem inverse_pin (p : Fin (d F) ≃ Fin (KPCuspLogShape.dimension F))
+private theorem inverse_pin  
     (y : KPFiniteCuspAtlas.SymmetricSpace F) : labeledA p (labeledAInv p y) = y := by
   funext k
   simp [labeledA, labeledAInv]
+end
 
-private theorem component_calculus (b : Bool) (O : Set ℂ) (hO : IsOpen O)
-    (hOΩ : O ⊆ KPContinuation.spectralDomain) (k : ℕ) (s : ℂ) (hs : s ∈ O)
+
+section
+variable (b : Bool) (O : Set ℂ) (hO : IsOpen O)
+    (hOΩ : O ⊆ KPContinuation.spectralDomain)
+include b O hO hOΩ
+private theorem component_calculus   (k : ℕ) (s : ℂ) (hs : s ∈ O)
     (i : Fin (H.atlas (KPContActualAllCuspSource.level F ζ hζ C R P H U)).componentCount) :
     ContDiff ℝ (⊤ : ℕ∞)
         (fun y => iteratedDerivWithin k (fun z => ((original source b z).val i).val y) O s) ∧
@@ -256,8 +264,7 @@ private theorem component_calculus (b : Bool) (O : Set ℂ) (hO : IsOpen O)
   rw [inverse_pin] at hb
   exact hb.symm
 
-private theorem component_point_holo (b : Bool) (O : Set ℂ) (hO : IsOpen O)
-    (hOΩ : O ⊆ KPContinuation.spectralDomain)
+private theorem component_point_holo  
     (i : Fin (H.atlas (KPContActualAllCuspSource.level F ζ hζ C R P H U)).componentCount)
     (y : KPFiniteCuspAtlas.SymmetricSpace F) :
     DifferentiableOn ℂ (fun z => ((original source b z).val i).val y) O := by
@@ -269,6 +276,8 @@ private theorem component_point_holo (b : Bool) (O : Set ℂ) (hO : IsOpen O)
   apply hd.congr
   intro z hz
   simpa [iteratedFDerivWithin_zero_apply, x, inverse_pin] using (he z hz ⟨x,rfl⟩).symm
+end
+
 
 private theorem cd_congr (f g : M F → ℂ) (x : M F) (he : f =ᶠ[𝓝 x] g)
     (i : Fin (d F)) (k : Fin 3) :

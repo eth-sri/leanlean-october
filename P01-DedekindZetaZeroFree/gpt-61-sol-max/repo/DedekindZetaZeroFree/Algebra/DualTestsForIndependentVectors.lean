@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import Mathlib.LinearAlgebra.Basis.VectorSpace
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.KPExceptionalRaw.FiniteSource.TameWhittakerSteps.Uniqueness.ReverseMinor
 noncomputable section
@@ -16,9 +19,9 @@ theorem exists_dual_diagonal_pairings_of_independent
       ell₁ x₁ = c₁ ∧ ell₁ x₂ = 0 ∧ ell₂ x₁ = 0 ∧ ell₂ x₂ = c₂ := by
   classical
 
-  have hli : LinearIndepOn K id (![x₁, x₂] '' (Set.univ : Set (Fin 2))) :=
+  have hli  :=
     LinearIndepOn.id_image (h.linearIndepOn (Set.univ : Set (Fin 2)))
-  let t : Set X := hli.extend (Set.subset_univ _)
+  let t  := hli.extend (Set.subset_univ _)
   let b : Basis t K X := .mk (hli.linearIndepOn_extend (Set.subset_univ _)) <| by
     simpa using hli.span_extend_eq_span (Set.subset_univ _)
   have mem1 : x₁ ∈ t :=

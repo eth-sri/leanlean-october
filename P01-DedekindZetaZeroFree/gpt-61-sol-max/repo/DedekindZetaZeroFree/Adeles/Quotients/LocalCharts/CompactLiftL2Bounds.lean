@@ -9,10 +9,13 @@ open MeasureTheory
 open scoped ENNReal Pointwise
 namespace DedekindZetaZeroFree.KPSmoothAutomorphicEvaluation.OrbitTubeComparison
 
-theorem compact_orbit_count_bound {G : Type*} [Group G] [TopologicalSpace G]
+section
+variable {G : Type*} [Group G] [TopologicalSpace G]
     [IsTopologicalGroup G] [T2Space G]
     (Γ : Subgroup G) (hΓ : IsClosed (Γ : Set G)) (dΓ : IsDiscrete (Γ : Set G))
-    (C : Set G) (hC : IsCompact C) :
+    (C : Set G) (hC : IsCompact C)
+include G Γ hΓ dΓ C hC
+theorem compact_orbit_count_bound   :
     ∃ N : ℕ, ∀ x : G, ∀ S : Finset Γ,
       (∀ γ ∈ S, (γ : G) * x ∈ C) → S.card ≤ N := by
   classical
@@ -39,10 +42,7 @@ theorem compact_orbit_count_bound {G : Type*} [Group G] [TopologicalSpace G]
     exact Finset.card_le_card_of_injOn j hjT (hj.injOn)
   · simp_all
 
-theorem compact_orbit_indicator_bound {G : Type*} [Group G] [TopologicalSpace G]
-    [IsTopologicalGroup G] [T2Space G]
-    (Γ : Subgroup G) (hΓ : IsClosed (Γ : Set G)) (dΓ : IsDiscrete (Γ : Set G))
-    (C : Set G) (hC : IsCompact C) :
+theorem compact_orbit_indicator_bound   :
     ∃ N : ℕ, ∀ x : G,
       (∑' γ : Γ, C.indicator (fun _ => (1 : ℝ≥0∞)) ((γ : G) * x)) ≤ N := by
   classical
@@ -61,8 +61,10 @@ theorem compact_orbit_indicator_bound {G : Type*} [Group G] [TopologicalSpace G]
         (S'.card : ℝ≥0∞) := by
       simp [S', Set.indicator, Finset.sum_boole]
     _ ≤ N := by exact_mod_cast hc
+end
 
-variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+
+variable (F : Type) [Field F] [NumberField F] (ζ : F) 
 
 end DedekindZetaZeroFree.KPSmoothAutomorphicEvaluation.OrbitTubeComparison
 

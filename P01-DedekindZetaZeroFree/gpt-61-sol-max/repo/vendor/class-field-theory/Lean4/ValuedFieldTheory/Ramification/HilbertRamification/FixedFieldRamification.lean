@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Ramification.HilbertRamification.FixedFieldValuationRing
 public import ValuedFieldTheory.Ramification.HilbertRamification.RealLowerGroups
 public import ValuedFieldTheory.Valuation.LocalRingEquiv
 public import ValuedFieldTheory.Valuation.DiscreteValuationField.AddVal
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -44,13 +47,16 @@ variable {target : ValuationTheory.DiscreteValuationField.DVF.{w, x} L}
 variable [base.valuation.HasExtension target.valuation]
 variable [FiniteDimensional K L] [IsGalois K L]
 
-/-- The displacement ideal in the literal restricted valuation ring of the
-actual fixed field. -/
-def fixedFieldDisplacementIdealDVF
-    (huniq :
+section
+variable (huniq :
       RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
         base target)
     (H : Subgroup Gal(L/K)) [H.Normal]
+include huniq H
+/-- The displacement ideal in the literal restricted valuation ring of the
+actual fixed field. -/
+def fixedFieldDisplacementIdealDVF
+     
     (q : Gal((fixedFieldDVF (K := K) H)/K)) :
     Ideal (fixedFieldValuationSubringDVF (K := K) (target := target) H) :=
   Ideal.span
@@ -63,10 +69,7 @@ def fixedFieldDisplacementIdealDVF
 valuation ring is a DVR, its displacement ideal is principal; the additive
 value of an ideal generator is independent of the chosen generator. -/
 def fixedFieldRamificationNumber
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) [H.Normal]
+     
     (q : Gal((fixedFieldDVF (K := K) H)/K)) : ℕ∞ := by
   let B := fixedFieldValuationSubringDVF (K := K) (target := target) H
   letI : IsDiscreteValuationRing B :=
@@ -76,28 +79,34 @@ def fixedFieldRamificationNumber
     (Submodule.IsPrincipal.generator
       (fixedFieldDisplacementIdealDVF
         (base := base) (target := target) huniq H q))
+end
+
 
 /-- The real-index ideal on the actual restricted valuation ring. -/
 def fixedFieldRamificationIdealDVF
-    (H : Subgroup Gal(L/K)) (s : ℝ) :
-    Ideal (fixedFieldValuationSubringDVF (K := K) (target := target) H) :=
+    (H : Subgroup Gal(L/K)) (s : ℝ)  :=
   IsLocalRing.maximalIdeal
       (fixedFieldValuationSubringDVF (K := K) (target := target) H) ^
     realRamificationExponent s
 
-/-- The real lower ramification group of the actual Galois extension
-`(L ^ H)/K`, formed using the literal restricted valuation ring. -/
-def fixedFieldLowerRamificationGroup
-    (huniq :
+section
+variable (huniq :
       RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
         base target)
     (H : Subgroup Gal(L/K)) [H.Normal]
+include huniq H
+/-- The real lower ramification group of the actual Galois extension
+`(L ^ H)/K`, formed using the literal restricted valuation ring. -/
+
+local notation:max "current_fixedFieldValuationSubringAutDVF" => fixedFieldValuationSubringAutDVF (base := base) (target := target)
+
+def fixedFieldLowerRamificationGroup
+     
     (s : ℝ) : Subgroup Gal((fixedFieldDVF (K := K) H)/K) where
   carrier :=
     {q | ∀ a : fixedFieldValuationSubringDVF
         (K := K) (target := target) H,
-      fixedFieldValuationSubringAutDVF
-          (base := base) (target := target) huniq H q a - a ∈
+      current_fixedFieldValuationSubringAutDVF huniq H q a - a ∈
         fixedFieldRamificationIdealDVF
           (K := K) (target := target) H s}
   one_mem' := by
@@ -105,23 +114,19 @@ def fixedFieldLowerRamificationGroup
     simp [fixedFieldValuationSubringAutDVF]
   mul_mem' := by
     intro q r hq hr a
-    let eqv := fixedFieldValuationSubringAutDVF
-      (base := base) (target := target) huniq H q
+    let eqv := current_fixedFieldValuationSubringAutDVF huniq H q
     have hra := hr a
     have hmap : eqv
-        (fixedFieldValuationSubringAutDVF
-            (base := base) (target := target) huniq H r a - a) ∈
+        (current_fixedFieldValuationSubringAutDVF huniq H r a - a) ∈
         fixedFieldRamificationIdealDVF
           (K := K) (target := target) H s :=
       (ValuationTheory.ringEquiv_mem_maximalIdeal_pow_iff eqv
         (realRamificationExponent s) _).2 hra
     have hqa := hq a
     have hdecomp :
-        fixedFieldValuationSubringAutDVF
-              (base := base) (target := target) huniq H (q * r) a - a =
+        current_fixedFieldValuationSubringAutDVF huniq H (q * r) a - a =
           eqv
-              (fixedFieldValuationSubringAutDVF
-                (base := base) (target := target) huniq H r a - a) +
+              (current_fixedFieldValuationSubringAutDVF huniq H r a - a) +
             (eqv a - a) := by
       rw [fixedFieldValuationSubringAutDVF_mul_apply, map_sub]
       ring
@@ -129,14 +134,11 @@ def fixedFieldLowerRamificationGroup
     exact Ideal.add_mem _ hmap hqa
   inv_mem' := by
     intro q hq a
-    let b := fixedFieldValuationSubringAutDVF
-      (base := base) (target := target) huniq H q⁻¹ a
+    let b := current_fixedFieldValuationSubringAutDVF huniq H q⁻¹ a
     have hb := hq b
     have hqb :
-        fixedFieldValuationSubringAutDVF
-          (base := base) (target := target) huniq H q b = a := by
-      rw [show b = fixedFieldValuationSubringAutDVF
-        (base := base) (target := target) huniq H q⁻¹ a by rfl]
+        current_fixedFieldValuationSubringAutDVF huniq H q b = a := by
+      rw [show b = current_fixedFieldValuationSubringAutDVF huniq H q⁻¹ a by rfl]
       rw [← fixedFieldValuationSubringAutDVF_mul_apply]
       simp [fixedFieldValuationSubringAutDVF]
     have hab : a - b ∈ fixedFieldRamificationIdealDVF
@@ -147,21 +149,17 @@ def fixedFieldLowerRamificationGroup
       simpa [sub_eq_add_neg, add_comm] using
         (fixedFieldRamificationIdealDVF
           (K := K) (target := target) H s).neg_mem hab
-    simpa [b] using hba
+    exact hba
 
 /-- States the theorem `mem_fixedFieldLowerRamificationGroup_iff`. -/
 @[simp] theorem mem_fixedFieldLowerRamificationGroup_iff
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) [H.Normal]
+     
     (s : ℝ) (q : Gal((fixedFieldDVF (K := K) H)/K)) :
     q ∈ fixedFieldLowerRamificationGroup
         (base := base) (target := target) huniq H s ↔
       ∀ a : fixedFieldValuationSubringDVF
           (K := K) (target := target) H,
-        fixedFieldValuationSubringAutDVF
-            (base := base) (target := target) huniq H q a - a ∈
+        current_fixedFieldValuationSubringAutDVF huniq H q a - a ∈
           fixedFieldRamificationIdealDVF
             (K := K) (target := target) H s :=
   Iff.rfl
@@ -169,10 +167,7 @@ def fixedFieldLowerRamificationGroup
 /-- Real lower-group membership is exactly the threshold imposed by the
 canonical fixed-field ramification number. -/
 theorem mem_fixedFieldLowerRamificationGroup_iff_ramificationNumber
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) [H.Normal]
+     
     (s : ℝ) (q : Gal((fixedFieldDVF (K := K) H)/K)) :
     q ∈ fixedFieldLowerRamificationGroup
         (base := base) (target := target) huniq H s ↔
@@ -194,8 +189,7 @@ theorem mem_fixedFieldLowerRamificationGroup_iff_ramificationNumber
   dsimp only
   change
     (∀ a : B,
-      fixedFieldValuationSubringAutDVF
-            (base := base) (target := target) huniq H q a - a ∈
+      current_fixedFieldValuationSubringAutDVF huniq H q a - a ∈
         IsLocalRing.maximalIdeal B ^ realRamificationExponent s) ↔
       (realRamificationExponent s : ℕ∞) ≤
         IsDiscreteValuationRing.addVal B g
@@ -224,10 +218,7 @@ theorem mem_fixedFieldLowerRamificationGroup_iff_ramificationNumber
 /-- At integral lower indices, actual fixed-field group membership is
 equivalent to the canonical ramification-number inequality. -/
 theorem mem_fixedFieldLowerRamificationGroup_nat_iff
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) [H.Normal]
+     
     (n : ℕ) (q : Gal((fixedFieldDVF (K := K) H)/K)) :
     q ∈ fixedFieldLowerRamificationGroup
         (base := base) (target := target) huniq H (n : ℝ) ↔
@@ -241,8 +232,7 @@ theorem mem_fixedFieldLowerRamificationGroup_nat_iff
     fixedFieldValuationSubringDVF_isDiscreteValuationRing
       (base := base) (target := target) huniq H
   let g : B := Submodule.IsPrincipal.generator J
-  have hspan : Ideal.span ({g} : Set B) = J := by
-    exact Submodule.IsPrincipal.span_singleton_generator J
+  have hspan : Ideal.span ({g} : Set B) = J := Submodule.IsPrincipal.span_singleton_generator J
   rw [mem_fixedFieldLowerRamificationGroup_iff]
   simp only [fixedFieldRamificationIdealDVF,
     realRamificationExponent_nat]
@@ -250,8 +240,7 @@ theorem mem_fixedFieldLowerRamificationGroup_nat_iff
   dsimp only
   change
     (∀ a : B,
-      fixedFieldValuationSubringAutDVF
-            (base := base) (target := target) huniq H q a - a ∈
+      current_fixedFieldValuationSubringAutDVF huniq H q a - a ∈
         IsLocalRing.maximalIdeal B ^ (n + 1)) ↔
       ((n + 1 : ℕ) : ℕ∞) ≤ IsDiscreteValuationRing.addVal B g
   constructor
@@ -272,6 +261,8 @@ theorem mem_fixedFieldLowerRamificationGroup_nat_iff
     intro a
     apply hJle
     exact Ideal.subset_span ⟨a, rfl⟩
+end
+
 
 end Higher
 end RamificationTheory.HilbertRamification

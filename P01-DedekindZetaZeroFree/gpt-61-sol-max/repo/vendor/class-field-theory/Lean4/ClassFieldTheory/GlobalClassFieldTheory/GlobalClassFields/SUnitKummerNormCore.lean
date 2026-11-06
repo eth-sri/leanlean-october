@@ -89,12 +89,15 @@ theorem even_or_no_realInfinitePlace_of_primitiveRoots
       Fintype.card_pos_iff.mpr ⟨⟨w, hwReal⟩⟩
     omega
 
+section
+variable (n : ℕ+)
+    (S : Finset (HeightOneSpectrum (𝓞 K)))
+include n S
 /-- The chosen finite support used for the full `S`-unit Kummer
 construction: it contains the prescribed seed, a support large enough to
 represent every idele class, and the finite support of the exponent. -/
 noncomputable def sUnitKummerNormSupport
-    (n : ℕ+)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+      :
     Finset (HeightOneSpectrum (𝓞 K)) :=
   let hnK : ((n : ℕ) : K) ≠ 0 := by
     exact_mod_cast n.ne_zero
@@ -105,8 +108,7 @@ noncomputable def sUnitKummerNormSupport
 /-- The prescribed seed is contained in the chosen Kummer norm
 support. -/
 theorem subset_sUnitKummerNormSupport
-    (n : ℕ+)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+      :
     S ⊆ sUnitKummerNormSupport (K := K) n S := by
   intro v hv
   exact Finset.mem_union_left _
@@ -116,8 +118,7 @@ theorem subset_sUnitKummerNormSupport
 unit.  This is the local input needed for the unramifiedness of the full
 `S`-unit Kummer extension. -/
 theorem valuation_natCast_eq_one_of_not_mem_sUnitKummerNormSupport
-    (n : ℕ+)
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
+     
     {w : HeightOneSpectrum (𝓞 K)}
     (hw : w ∉ sUnitKummerNormSupport (K := K) n S) :
     w.valuation K ((n : ℕ) : K) = 1 := by
@@ -143,8 +144,7 @@ theorem valuation_natCast_eq_one_of_not_mem_sUnitKummerNormSupport
 /-- Every finite place dividing the exponent belongs to the chosen
 Kummer norm support. -/
 theorem mem_sUnitKummerNormSupport_of_asIdeal_dvd_natCast
-    (n : ℕ+)
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
+     
     {w : HeightOneSpectrum (𝓞 K)}
     (hw : w.asIdeal ∣ Ideal.span {((n : ℕ) : 𝓞 K)}) :
     w ∈ sUnitKummerNormSupport (K := K) n S := by
@@ -162,8 +162,7 @@ theorem mem_sUnitKummerNormSupport_of_asIdeal_dvd_natCast
 /-- The chosen Kummer norm support is large enough to represent every
 idele class by an idele supported on it. -/
 theorem supportedAt_sUnitKummerNormSupport_sup_principalSubgroup_eq_top
-    (n : ℕ+)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+      :
     IdeleGroup.supportedAt
           (K := K)
           (sUnitKummerNormSupport (K := K) n S : Set _) ⊔
@@ -179,14 +178,19 @@ theorem supportedAt_sUnitKummerNormSupport_sup_principalSubgroup_eq_top
     exact Finset.mem_union_left _
       (Finset.mem_union_right _ hv)
   · exact le_rfl
+end
 
+
+section
+variable (n : ℕ+)
+    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
+    (S : Finset (HeightOneSpectrum (𝓞 K)))
+include n hmu S
 /-- On the chosen Kummer norm support, the principal part of the
 local power subgroup consists exactly of powers of `S`-units. -/
 theorem
     principalIdelePowerLocalUnitSubgroup_eq_sUnitNthPowers_on_kummerNormSupport
-    (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+      :
     let S' := sUnitKummerNormSupport (K := K) n S
     principalIdelePowerLocalUnitSubgroup (K := K) n S' ∅ =
       sUnitNthPowersInField (K := K) n S' := by
@@ -417,9 +421,7 @@ theorem
 /-- The idele-class power quotient attached to the chosen Kummer norm
 support has cardinality `n` to the number of supported places. -/
 theorem card_ideleClassPowerLocalUnitQuotient_on_kummerNormSupport
-    (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+      :
     let S' := sUnitKummerNormSupport (K := K) n S
     Nat.card
         (IdeleClassPowerLocalUnitQuotient
@@ -487,6 +489,8 @@ theorem card_ideleClassPowerLocalUnitQuotient_on_kummerNormSupport
     Nat.eq_of_mul_eq_mul_left
       (pow_pos n.pos (totalPlaceCard (K := K) S'))
       (hProduct.trans hPower)
+end
+
 
 /-- The power quotient on the chosen support has the same cardinality
 as the degree of the full `S`-unit Kummer extension. -/

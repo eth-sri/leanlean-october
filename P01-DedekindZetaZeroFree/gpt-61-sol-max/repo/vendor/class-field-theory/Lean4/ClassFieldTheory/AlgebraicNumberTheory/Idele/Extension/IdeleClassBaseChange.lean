@@ -102,16 +102,16 @@ theorem relativeIdeleClassBaseChangeMulEquiv_classInclusion
   intro a
   rfl
 
-/-- Homomorphism form of the compatibility between relative class
-inclusion and ordinary idele-class extension. -/
-theorem relativeIdeleClassBaseChange_comp_classInclusion :
-    (relativeIdeleClassBaseChangeMulEquiv
-        (K := K) (L := L)).toMonoidHom.comp
-      (RelativeIdeleGroup.classInclusion K L) =
-        ideleClassExtension K L := by
-  ext c
-  exact
-    relativeIdeleClassBaseChangeMulEquiv_classInclusion
-      (K := K) (L := L) c
+
+
+
+
+
+
+
+
+
+
+
 
 end

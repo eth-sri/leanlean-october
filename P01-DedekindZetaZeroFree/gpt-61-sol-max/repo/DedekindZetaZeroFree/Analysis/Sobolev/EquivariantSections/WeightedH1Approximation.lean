@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.Sobolev.Approximation.CompactInteriorSmoothDensity
 public import DedekindZetaZeroFree.Analysis.Sobolev.EquivariantSections.SmoothAveragingBounds
 public import DedekindZetaZeroFree.Analysis.Sobolev.WeakDerivatives.L2ClosednessAndUniqueness
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -15,8 +18,6 @@ open scoped ContDiff ENNReal Topology
 
 namespace KPCompactInteriorH1
 
-private lemma enorm_eq (r : ℕ) (v : V r) : ‖v‖ₑ = ENNReal.ofReal ‖v‖ :=
-  (ofReal_norm v).symm
 
 private lemma eLpNorm_two_eq_ofReal_l2Norm {n r : ℕ} (μ : Measure (E n))
     (f : E n → V r) (hf : MemLp f 2 μ) :
@@ -26,15 +27,11 @@ private lemma eLpNorm_two_eq_ofReal_l2Norm {n r : ℕ} (μ : Measure (E n))
   have hnn : 0 ≤ᵐ[μ] fun x => ‖f x‖ ^ (2 : ℕ) :=
     Filter.Eventually.of_forall fun x => by positivity
   rw [eLpNorm_eq_lintegral_rpow_enorm_toReal (by norm_num) (by norm_num) hf.aestronglyMeasurable]
-  have hto : ENNReal.toReal (2 : ℝ≥0∞) = 2 := by norm_num
+  have hto : ENNReal.toReal (2 : ℝ≥0∞) = 2 := rfl
   rw [hto]
   have hcongr : (∫⁻ x, ‖f x‖ₑ ^ (2 : ℝ) ∂μ)
       = ∫⁻ x, ENNReal.ofReal (‖f x‖ ^ (2 : ℕ)) ∂μ := by
-    apply lintegral_congr
-    intro x
-    rw [enorm_eq]
-    rw [ENNReal.ofReal_rpow_of_nonneg (norm_nonneg _) (by norm_num : (0:ℝ) ≤ 2)]
-    norm_num
+    simp_all
   rw [hcongr, ← ofReal_integral_eq_lintegral_ofReal hint hnn]
   rw [ENNReal.ofReal_rpow_of_nonneg (by positivity) (by norm_num : (0:ℝ) ≤ 1/2)]
   rw [l2Norm, Real.sqrt_eq_rpow]
@@ -53,8 +50,7 @@ private lemma tendsto_l2Norm_of_tendsto_eLpNorm {n r : ℕ} (μ : Measure (E n))
     (herr : ∀ m, MemLp (fm m - f) 2 μ)
     (h : Tendsto (fun m => eLpNorm (fm m - f) 2 μ) atTop (𝓝 0)) :
     Tendsto (fun m => l2Norm μ (fm m - f) (herr m)) atTop (𝓝 0) := by
-  have heq : (fun m => l2Norm μ (fm m - f) (herr m))
-      = fun m => (eLpNorm (fm m - f) 2 μ).toReal :=
+  have heq  :=
     funext fun m => l2Norm_eq_toReal μ (fm m - f) (herr m)
   rw [heq]
   exact (ENNReal.tendsto_toReal ENNReal.zero_ne_top).comp h
@@ -63,8 +59,7 @@ private lemma tendsto_eLpNorm_of_tendsto_l2Norm {n r : ℕ} (μ : Measure (E n))
     (fm : ℕ → E n → V r) (herr : ∀ m, MemLp (fm m) 2 μ)
     (h : Tendsto (fun m => l2Norm μ (fm m) (herr m)) atTop (𝓝 0)) :
     Tendsto (fun m => eLpNorm (fm m) 2 μ) atTop (𝓝 0) := by
-  have heq : (fun m => eLpNorm (fm m) 2 μ)
-      = fun m => ENNReal.ofReal (l2Norm μ (fm m) (herr m)) :=
+  have heq  :=
     funext fun m => eLpNorm_two_eq_ofReal_l2Norm μ (fm m) (herr m)
   rw [heq, show (0 : ℝ≥0∞) = ENNReal.ofReal 0 by simp]
   exact ENNReal.tendsto_ofReal h
@@ -90,8 +85,8 @@ private lemma l2Norm_deriv_le_H0 {n r : ℕ} (f : E n → V r) (g : Fin n → E 
     h2.trans (le_add_of_nonneg_left (l2Norm_nonneg (volume.restrict Set.univ) f h.1))
   exact h3
 
-private lemma memLp_restrict_univ {n r : ℕ} {f : E n → V r}
-    (h : MemLp f 2 (volume.restrict Set.univ)) : MemLp f 2 volume :=
+private def memLp_restrict_univ {n r : ℕ} {f : E n → V r}
+    (h : MemLp f 2 (volume.restrict Set.univ))  :=
   (Measure.restrict_univ (μ := (volume : Measure (E n)))) ▸ h
 
 private lemma cauchySeq_Lp_of_tendsto_l2Norm {n r : ℕ} (fm : ℕ → E n → V r)
@@ -146,7 +141,7 @@ theorem kp_cont_compact_interior_equivariant_h1_approximation
       Hw D.chart D.weight Q A (fun x => f x - h x)
         (fun j x => g j x - fderiv ℝ h x (coordinateDirection j)) herror < ε := by
   classical
-  let Ω : Opens (E n) := chartOpens D
+  let Ω  := chartOpens D
   have hKΩ : K ⊆ (Ω : Set (E n)) := fun x hx => hOchart (subset_closure (hKO hx))
   have hOΩ : (O : Set (E n)) ⊆ (Ω : Set (E n)) := fun x hx => hOchart (subset_closure hx)
   have hzero' : ∀ᵐ x ∂volume.restrict (Ω : Set (E n)),
@@ -154,8 +149,7 @@ theorem kp_cont_compact_interior_equivariant_h1_approximation
     hzero.mono (fun x hx hxK => hx hxK.2)
   obtain ⟨hFmemLp, hGmemLp, hFint, hGint, hFzero, hGzero, hFts, hGts, hFeq, hGeq⟩ :=
     compactZeroExtension_properties hKcompact hKΩ hweak hzero'
-  have hFweak : WeakFirst (⊤ : Opens (E n)) (compactZeroExtension K f)
-      (fun j => compactZeroExtension K (g j)) :=
+  have hFweak  :=
     compactZeroExtension_weakFirst hKcompact hKΩ hweak hzero'
   obtain ⟨u, hu_smooth, hu_comp, hu_supp, hFmemLp2, hGmemLp2, hu_memLp, hud_memLp,
       herr_u, hderr_u, hFu_tend, hGd_tend⟩ :=
@@ -172,7 +166,7 @@ theorem kp_cont_compact_interior_equivariant_h1_approximation
     fun m => KPChartL2.average n r Γ D.chart D.act D.cocycle (u m)
   have hvm (m : ℕ) :=
     (hlast (O : Set (E n)) O.isOpen (fun x hx => hOchart (subset_closure hx))
-      hOinvariant (by rw [hCdef])).1
+      hOinvariant (rfl)).1
       (u m) (hu_smooth m) (hu_comp m) (hu_supp m)
   have hv_smooth (m : ℕ) : ContDiff ℝ ∞ (v m) := (hvm m).1
   have hv_comp (m : ℕ) : HasCompactSupport (v m) := (hvm m).2.1
@@ -222,7 +216,7 @@ theorem kp_cont_compact_interior_equivariant_h1_approximation
           B * H0 Set.univ (fun x => u m x - u m' x)
             (fun j x => fderiv ℝ (fun y => u m y - u m' y) x (coordinateDirection j)) h0u' := by
     have hd := (hlast (O : Set (E n)) O.isOpen (fun x hx => hOchart (subset_closure hx))
-      hOinvariant (by rw [hCdef])).1 (fun x => u m x - u m' x)
+      hOinvariant (rfl)).1 (fun x => u m x - u m' x)
       ((hu_smooth m).sub (hu_smooth m')) ((hu_comp m).sub (hu_comp m'))
       ((tsupport_sub (u m) (u m')).trans (Set.union_subset (hu_supp m) (hu_supp m')))
     obtain ⟨h0u', h0v', _huμ, _hvμ, hb, _hP⟩ := hd.2.2.2.2
@@ -261,10 +255,8 @@ theorem kp_cont_compact_interior_equivariant_h1_approximation
       atTop (𝓝 ((hGmemLp j).toLp (compactZeroExtension K (g j)))) := by
     apply tendsto_iff_norm_sub_tendsto_zero.mpr
     simpa only [hnorm, l2Norm, Pi.sub_apply] using hGd_tend j
-  have hfst : Tendsto (fun p : ℕ × ℕ => p.1) atTop atTop := by
-    exact tendsto_atTop.mpr fun b => eventually_atTop.mpr ⟨(b, 0), fun p hp => hp.1⟩
-  have hsnd : Tendsto (fun p : ℕ × ℕ => p.2) atTop atTop := by
-    exact tendsto_atTop.mpr fun b => eventually_atTop.mpr ⟨(0, b), fun p hp => hp.2⟩
+  have hfst : Tendsto (fun p : ℕ × ℕ => p.1) atTop atTop := tendsto_atTop.mpr fun b => eventually_atTop.mpr ⟨(b, 0), fun p hp => hp.1⟩
+  have hsnd : Tendsto (fun p : ℕ × ℕ => p.2) atTop atTop := tendsto_atTop.mpr fun b => eventually_atTop.mpr ⟨(0, b), fun p hp => hp.2⟩
   have hu_diff_tend : Tendsto (fun p : ℕ × ℕ =>
       l2Norm volume (u p.1 - u p.2) ((hu_memLp p.1).sub (hu_memLp p.2))) atTop (𝓝 0) := by
     have ht := ((huLp_tend.comp hfst).sub (huLp_tend.comp hsnd)).norm

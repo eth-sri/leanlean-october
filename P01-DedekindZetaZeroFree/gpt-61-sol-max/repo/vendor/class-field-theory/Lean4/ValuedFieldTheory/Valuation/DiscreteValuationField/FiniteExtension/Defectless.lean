@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Valuation.DiscreteValuationField.Extensions
 public import Mathlib.LinearAlgebra.Dimension.Localization
 public import Mathlib.RingTheory.RamificationInertia.Basic
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -51,7 +54,7 @@ theorem isDefectless_of_moduleFinite
   have hq : target.maximalIdeal ∈ base.maximalIdeal.primesOver target.valuationSubring := by
     rw [hprimes]
     exact Set.mem_singleton target.maximalIdeal
-  let : target.maximalIdeal.LiesOver base.maximalIdeal := hq.2
+  let  := hq.2
   let : Subsingleton (base.maximalIdeal.primesOver target.valuationSubring) :=
     Set.Subsingleton.coe_sort (by
       rw [hprimes]

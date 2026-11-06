@@ -20,18 +20,21 @@ local instance (A : SArithmeticData F) : BorelSpace A.G1 := ⟨rfl⟩
 
 local instance (A : SArithmeticData F) : MeasurableSpace (SLocalProduct F A.Sf) := borel _
 
-def qA (A : SArithmeticData F) (c : ExteriorSquarefreeIdeal A.cS)
+section
+variable (A : SArithmeticData F)
+include A
+def qA   (c : ExteriorSquarefreeIdeal A.cS)
     (n : A.Exterior) : ℝ :=
   A.exteriorNorm c.val * A.exteriorNorm n ^ 3
 
-def arithmeticFactor (A : SArithmeticData F)
+def arithmeticFactor  
     (D : ComparisonPoissonCoefficientData F A)
     (Z : ℝ) (c : ExteriorSquarefreeIdeal A.cS) (n : A.Exterior) : ℂ :=
   (D.gammaTwo c * D.theta (ThetaReflectionData.forwardModulus A D c n) /
     (((Real.sqrt (A.exteriorNorm c.val) : ℂ) * (A.exteriorNorm n : ℂ)) *
       (qA A c n : ℂ))) * (thetaReflectionGaussian (qA A c n / Z) : ℂ)
 
-def orbitRow (A : SArithmeticData F) (σ : F →+* ℂ)
+def orbitRow   (σ : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
     (P : NormalizedProbe.PrincipalData A σ η hS)
     (X : ℝ) (s : A.Exterior) (c : ExteriorSquarefreeIdeal A.cS)
@@ -40,10 +43,10 @@ def orbitRow (A : SArithmeticData F) (σ : F →+* ℂ)
     ProbeSheet.envelope A P.finiteTrace P.additiveMeasure P.domain.measure P.W0
       (X * ProbeOrbitNormSum.orbitNorm A (ProbeOrbitNormSum.orbitMk A h) / qA A c n)
 
-abbrev Index (A : SArithmeticData F) :=
+abbrev Index   :=
   A.Exterior × ExteriorSquarefreeIdeal A.cS × A.Exterior × ProbeOrbitNormSum.Orbit A
 
-def term (A : SArithmeticData F) (σ : F →+* ℂ)
+def term   (σ : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
     (P : NormalizedProbe.PrincipalData A σ η hS)
     (ρ : ProbeOrbitNormSum.Orbit A → ProbeOrbitNormSum.Nonzero A)
@@ -52,12 +55,14 @@ def term (A : SArithmeticData F) (σ : F →+* ℂ)
     arithmeticFactor A P.coefficients Z i.2.1 i.2.2.1 *
     orbitRow A σ η hS P X i.1 i.2.1 i.2.2.1 (ρ i.2.2.2)
 
-private theorem q_nonzero (A : SArithmeticData F)
+private theorem q_nonzero  
     (h : ProbeOrbitNormSum.Nonzero A) :
     ProbeSheetTranslation.q A h.val h.property =
       ProbeOrbitNormSum.orbitNorm A (ProbeOrbitNormSum.orbitMk A h) :=
   (ProbeOrbitNormSum.orbitNorm_eq_snorm A h
     (ProbeSheetTranslation.fieldUnit A h.val h.property) rfl).symm
+end
+
 
 section Assembly
 variable (A : SArithmeticData F) (σ : F →+* ℂ)
@@ -121,10 +126,13 @@ private theorem modulus_generator (A : SArithmeticData F)
     PoissonNormalizedRow.modulus A (D.generator s) = A.exteriorNorm s :=
   ProbePoissonDualAbsolute.principalNorm_generator A D s
 
-theorem originalRow_eq_dual (A : SArithmeticData F) (σ : F →+* ℂ)
+section
+variable (A : SArithmeticData F) (σ : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
     (P : NormalizedProbe.PrincipalData A σ η hS)
     (N : PoissonNormalizedRow.Normalization A σ η hS P)
+include A σ η hS P N
+theorem originalRow_eq_dual  
     (X : ℝ) (hX : 0 < X) (s : A.Exterior)
     (c : ExteriorSquarefreeIdeal A.cS) (n : A.Exterior) (t : A.G1) :
     NormalizedProbe.originalRow A P.coefficients P.W0 X s
@@ -185,10 +193,7 @@ theorem originalRow_eq_dual (A : SArithmeticData F) (σ : F →+* ℂ)
   simp_rw [horig, hfreq] at ht
   exact ht
 
-theorem exact_poisson_transformation (A : SArithmeticData F) (σ : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (P : NormalizedProbe.PrincipalData A σ η hS)
-    (N : PoissonNormalizedRow.Normalization A σ η hS P)
+theorem exact_poisson_transformation  
     (hnontrivial : ∀ v : ↥A.Sf, P.finiteTrace v ≠ 1)
     (hnormalized : ProbeSheet.HaarDisintegration A
       P.multiplicativeMeasure P.domain.measure)
@@ -241,10 +246,7 @@ theorem exact_poisson_transformation (A : SArithmeticData F) (σ : F →+* ℂ)
   simp only [ProbeJointAbsoluteMass.kernel, mul_assoc, tsum_mul_left]
   rfl
 
-theorem exact_orbit_formula (A : SArithmeticData F) (σ : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (P : NormalizedProbe.PrincipalData A σ η hS)
-    (N : PoissonNormalizedRow.Normalization A σ η hS P)
+theorem exact_orbit_formula  
     (hnontrivial : ∀ v : ↥A.Sf, P.finiteTrace v ≠ 1)
     (hnormalized : ProbeSheet.HaarDisintegration A
       P.multiplicativeMeasure P.domain.measure)
@@ -284,5 +286,7 @@ theorem exact_orbit_formula (A : SArithmeticData F) (σ : F →+* ℂ)
     (hn.of_norm.prod_factor s).comp_injective e.injective
   rw [← e.tsum_eq (fun i => term A σ η hS P ρ X Y Z (s,i)), hs.tsum_prod]
   simp only [term, e, Equiv.prodAssoc_apply, mul_assoc, tsum_mul_left]
+end
+
 end
 end DedekindZetaZeroFree.ProbePoissonOrbitFormula

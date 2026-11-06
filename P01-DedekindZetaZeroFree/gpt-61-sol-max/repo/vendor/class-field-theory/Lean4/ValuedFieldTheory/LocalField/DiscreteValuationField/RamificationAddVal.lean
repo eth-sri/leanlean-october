@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.RamificationIdeal
 public import ValuedFieldTheory.Valuation.DiscreteValuationField.AddVal
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -97,9 +100,7 @@ theorem addVal_integerMap_eq_ramificationIndex_nsmul
             rw [show base.maximalIdeal =
                 IsLocalRing.maximalIdeal base.valuationSubring from rfl,
               hpi.maximalIdeal_eq]
-      _ = target.maximalIdeal ^ e := by
-            exact
-              maximalIdeal_map_eq_target_maximalIdeal_pow_ramificationIndex
+      _ = target.maximalIdeal ^ e := maximalIdeal_map_eq_target_maximalIdeal_pow_ramificationIndex
                 base target
       _ = Ideal.span ({varpi ^ e} : Set target.valuationSubring) := by
             rw [show target.maximalIdeal =
@@ -126,9 +127,7 @@ theorem addVal_integerMap_eq_ramificationIndex_nsmul
   have hmap_unit :
       IsDiscreteValuationRing.addVal target.valuationSubring
           (integerMap base.toDVF target.toDVF
-            (unit : base.valuationSubring)) = 0 := by
-    exact
-      IsDiscreteValuationRing.addVal_eq_zero_iff.mpr
+            (unit : base.valuationSubring)) = 0 := IsDiscreteValuationRing.addVal_eq_zero_iff.mpr
         ((unit.isUnit : IsUnit (unit : base.valuationSubring)).map
           (integerMap base.toDVF target.toDVF))
   rw [hmap_unit, zero_add]

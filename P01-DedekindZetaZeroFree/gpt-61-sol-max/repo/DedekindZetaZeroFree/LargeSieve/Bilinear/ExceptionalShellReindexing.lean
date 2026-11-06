@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LargeSieve.CharacterBounds.AdmissibleIdealRanges
 public import DedekindZetaZeroFree.Arithmetic.Ideals.ExceptionalSquarefreeDecomposition
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve.Sieve
 
@@ -16,35 +19,41 @@ private lemma absNorm_mul_cast (a b : Ideal (𝓞 F)) :
     (Ideal.absNorm (a * b) : ℝ) = (Ideal.absNorm a : ℝ) * (Ideal.absNorm b : ℝ) := by
   rw [map_mul, Nat.cast_mul]
 
-private lemma lt_mul_of_div_lt {A B X : ℝ} (hA : 0 < A) (h : X / A < B) : X < A * B :=
+section
+variable {A B X : ℝ} (hA : 0 < A)
+include A B X hA
+private def lt_mul_of_div_lt   (h : X / A < B)  :=
   (div_lt_iff₀' hA).mp h
 
-private lemma mul_le_two_mul_of_le_div {A B X : ℝ} (hA : 0 < A)
+private lemma mul_le_two_mul_of_le_div  
     (h : B ≤ 2 * (X / A)) : A * B ≤ 2 * X := by
   have h' : B * A ≤ (2 * (X / A)) * A := mul_le_mul_of_nonneg_right h hA.le
   have h2 : (2 * (X / A)) * A = 2 * X := by
     rw [mul_assoc, div_mul_cancel₀ X hA.ne']
   linarith [mul_comm B A]
 
-private lemma div_lt_of_lt_mul {A B X : ℝ} (hA : 0 < A) (h : X < A * B) : X / A < B :=
+private def div_lt_of_lt_mul   (h : X < A * B)  :=
   (div_lt_iff₀' hA).mpr h
 
-private lemma le_div_of_mul_le {A B X : ℝ} (hA : 0 < A) (h : A * B ≤ 2 * X) :
+private lemma le_div_of_mul_le   (h : A * B ≤ 2 * X) :
     B ≤ 2 * (X / A) := by
   rw [← mul_div_assoc]
   exact (le_div_iff₀ hA).mpr (by linarith [mul_comm A B])
+end
 
-theorem exceptionalShell_norm_pos (hq : q ≠ ⊥)
-    {t : Ideal (𝓞 F)} (ht : t ∈ exceptionalDivisors F c q) :
-    0 < (Ideal.absNorm t : ℝ) := by
-  exact lt_of_lt_of_le zero_lt_one (exceptionalDivisors_properties hq ht).2.2.2.2
 
-theorem mem_shellMul (hq : q ≠ ⊥) (hcq : c ∣ q) (X : ℝ) (hX : 0 < X)
+def exceptionalShell_norm_pos (hq : q ≠ ⊥)
+    {t : Ideal (𝓞 F)} (ht : t ∈ exceptionalDivisors F c q)  := lt_of_lt_of_le zero_lt_one (exceptionalDivisors_properties hq ht).2.2.2.2
+
+section
+variable (hq : q ≠ ⊥) (hcq : c ∣ q) (X : ℝ) (hX : 0 < X)
+include hq hcq X hX
+theorem mem_shellMul  
     {t u : Ideal (𝓞 F)} (ht : t ∈ exceptionalDivisors F c q)
     (hu : u ∈ paperShell F q (X / (Ideal.absNorm t : ℝ))) :
     t * u ∈ paperShell F c X := by
   obtain ⟨hsf, hsupq, hlt, hle⟩ := (mem_paperShell F q (X / (Ideal.absNorm t : ℝ)) u).mp hu
-  have hNt : 0 < (Ideal.absNorm t : ℝ) := exceptionalShell_norm_pos hq ht
+  have hNt  := exceptionalShell_norm_pos hq ht
   obtain ⟨hsfb, hsupb⟩ := exceptional_decomposition_converse hq hcq ht hsf hsupq
   rw [mem_paperShell F c X (t * u)]
   refine ⟨hsfb, hsupb, ?_, ?_⟩
@@ -53,15 +62,15 @@ theorem mem_shellMul (hq : q ≠ ⊥) (hcq : c ∣ q) (X : ℝ) (hX : 0 < X)
   · rw [absNorm_mul_cast]
     exact mul_le_two_mul_of_le_div hNt hle
 
-private theorem shellMul_mem_sigma (hq : q ≠ ⊥) (hcq : c ∣ q) (X : ℝ) (hX : 0 < X)
+private theorem shellMul_mem_sigma  
     {x : Σ _ : Ideal (𝓞 F), Ideal (𝓞 F)}
     (hx : x ∈ (exceptionalDivisors F c q).sigma
       (fun t => paperShell F q (X / (Ideal.absNorm t : ℝ)))) :
     x.1 * x.2 ∈ paperShell F c X := by
   obtain ⟨hx1, hx2⟩ := Finset.mem_sigma.mp hx
-  exact mem_shellMul hq hcq X hX hx1 hx2
+  apply mem_shellMul <;> assumption
 
-private theorem shellMul_inj_sigma (hq : q ≠ ⊥) (hcq : c ∣ q) (X : ℝ) (hX : 0 < X)
+private theorem shellMul_inj_sigma  
     {x₁ x₂ : Σ _ : Ideal (𝓞 F), Ideal (𝓞 F)}
     (hx₁ : x₁ ∈ (exceptionalDivisors F c q).sigma
       (fun t => paperShell F q (X / (Ideal.absNorm t : ℝ))))
@@ -81,20 +90,20 @@ private theorem shellMul_inj_sigma (hq : q ≠ ⊥) (hcq : c ∣ q) (X : ℝ) (h
   have hP₂ : (a₂, b₂) = w :=
     huniq _ ⟨hx21, (mem_paperShell F q _ b₂).mp hx22 |>.1,
       (mem_paperShell F q _ b₂).mp hx22 |>.2.1, heq⟩
-  have hpair : (a₁, b₁) = (a₂, b₂) := hP₁.trans hP₂.symm
+  have hpair  := hP₁.trans hP₂.symm
   have h1 : a₁ = a₂ := congrArg Prod.fst hpair
   have h2 : b₁ = b₂ := congrArg Prod.snd hpair
   subst h1
   subst h2
   rfl
 
-private theorem shellMul_surj_sigma (hq : q ≠ ⊥) (hcq : c ∣ q) (X : ℝ) (hX : 0 < X)
+private theorem shellMul_surj_sigma  
     {b : Ideal (𝓞 F)} (hb : b ∈ paperShell F c X) :
     ∃ x ∈ (exceptionalDivisors F c q).sigma
       (fun t => paperShell F q (X / (Ideal.absNorm t : ℝ))), x.1 * x.2 = b := by
   obtain ⟨hsf, hsupc, hlt, hle⟩ := (mem_paperShell F c X b).mp hb
   obtain ⟨w, hw, -⟩ := existsUnique_exceptional_decomposition hq hcq hsf hsupc
-  have hNt : 0 < (Ideal.absNorm w.1 : ℝ) := exceptionalShell_norm_pos hq hw.1
+  have hNt  := exceptionalShell_norm_pos hq hw.1
   have hnorm : (Ideal.absNorm b : ℝ) =
       (Ideal.absNorm w.1 : ℝ) * (Ideal.absNorm w.2 : ℝ) := by
     rw [hw.2.2.2, absNorm_mul_cast]
@@ -102,6 +111,8 @@ private theorem shellMul_surj_sigma (hq : q ≠ ⊥) (hcq : c ∣ q) (X : ℝ) (
   rw [mem_paperShell F q (X / (Ideal.absNorm w.1 : ℝ)) w.2]
   exact ⟨hw.2.1, hw.2.2.1,
     div_lt_of_lt_mul hNt (hnorm ▸ hlt), le_div_of_mul_le hNt (hnorm ▸ hle)⟩
+end
+
 
 theorem exceptional_shell_sum {Z : Type} [AddCommMonoid Z]
     (hq : q ≠ ⊥) (hcq : c ∣ q) (X : ℝ) (hX : 0 < X)
@@ -123,11 +134,7 @@ theorem exceptional_shell_sum {Z : Type} [AddCommMonoid Z]
       exact ⟨x, hx, hprod⟩
   · exact fun x _ => rfl
 
-theorem exceptional_shell_energy (hq : q ≠ ⊥) (hcq : c ∣ q)
-    (X : ℝ) (hX : 0 < X) (lam : Ideal (𝓞 F) → ℂ) :
-    (∑ t ∈ exceptionalDivisors F c q,
-      ∑ u ∈ paperShell F q (X / (Ideal.absNorm t : ℝ)), ‖lam (t * u)‖ ^ 2) =
-      ∑ b ∈ paperShell F c X, ‖lam b‖ ^ 2 := by
-  exact (exceptional_shell_sum hq hcq X hX (fun b => ‖lam b‖ ^ 2)).symm
+def exceptional_shell_energy (hq : q ≠ ⊥) (hcq : c ∣ q)
+    (X : ℝ) (hX : 0 < X) (lam : Ideal (𝓞 F) → ℂ)  := (exceptional_shell_sum hq hcq X hX (fun b => ‖lam b‖ ^ 2)).symm
 
 end DedekindZetaZeroFree.LargeSieve.Sieve

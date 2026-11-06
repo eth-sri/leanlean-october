@@ -220,57 +220,57 @@ noncomputable def finitePlaceTensorNormClass
     (chosenFinitePlaceLocalNormSubgroup
       (K := K) (L := L) v)
 
-omit [NumberField L] in
-/-- A concrete local class is trivial exactly when its representative
-is a determinant norm from `K_v ⊗[K] L`. -/
-theorem finitePlaceTensorNormClass_eq_one_iff
-    (v : HeightOneSpectrum (𝓞 K))
-    (x : (v.adicCompletion K)ˣ) :
-    finitePlaceTensorNormClass
-        (K := K) (L := L) v x = 1 ↔
-      ∃ z : (v.adicCompletion K ⊗[K] L)ˣ,
-        _root_.localTensorNorm
-          (K := K) (L := L) v z = x := by
-  change
-    QuotientGroup.mk'
-        (chosenFinitePlaceLocalNormSubgroup
-          (K := K) (L := L) v) x = 1 ↔ _
-  constructor
-  · intro hx
-    have hxmem :
-        x ∈ chosenFinitePlaceLocalNormSubgroup
-          (K := K) (L := L) v :=
-      (QuotientGroup.eq_one_iff
-        (N := chosenFinitePlaceLocalNormSubgroup
-          (K := K) (L := L) v)
-        (x := x)).mp hx
-    rw [← finitePlaceLocalTensorNorm_range_eq_chosenLocalNormSubgroup
-      (K := K) (L := L) v] at hxmem
-    exact hxmem
-  · intro hx
-    apply
-      (QuotientGroup.eq_one_iff
-        (N := chosenFinitePlaceLocalNormSubgroup
-          (K := K) (L := L) v)
-        (x := x)).mpr
-    rw [← finitePlaceLocalTensorNorm_range_eq_chosenLocalNormSubgroup
-      (K := K) (L := L) v]
-    exact hx
 
-omit [NumberField L] in
-/-- The kernel of the concrete quotient projection is precisely the
-finite-place determinant norm image. -/
-theorem finitePlaceTensorNormClass_ker
-    (v : HeightOneSpectrum (𝓞 K)) :
-    (finitePlaceTensorNormClass
-      (K := K) (L := L) v).ker =
-      (_root_.localTensorNorm
-        (K := K) (L := L) v).range := by
-  ext x
-  rw [MonoidHom.mem_ker,
-    finitePlaceTensorNormClass_eq_one_iff
-      (K := K) (L := L) v]
-  rfl
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 omit [NumberField L] in
 /-- Every finite component of a global relative-idele norm lies in the
@@ -290,23 +290,23 @@ theorem relativeIdeleNorm_finiteComponent_mem_chosenLocalNormSubgroup
       (RelativeIdeleGroup.finiteComponent_norm
         (K := K) (L := L) v a).symm⟩
 
-omit [NumberField L] in
-/-- Hence the local tensor-norm class of every finite component of a
-global relative-idele norm is trivial. -/
-@[simp]
-theorem finitePlaceTensorNormClass_relativeIdeleNorm
-    (v : HeightOneSpectrum (𝓞 K))
-    (a : RelativeIdeleGroup K L) :
-    finitePlaceTensorNormClass
-        (K := K) (L := L) v
-        (IdeleGroup.finiteComponent v
-          (RelativeIdeleGroup.norm K L a)) = 1 := by
-  rw [finitePlaceTensorNormClass_eq_one_iff
-    (K := K) (L := L) v]
-  exact
-    ⟨RelativeIdeleGroup.finiteComponent
-        (K := K) (L := L) v a,
-      (RelativeIdeleGroup.finiteComponent_norm
-        (K := K) (L := L) v a).symm⟩
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end

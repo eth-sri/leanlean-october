@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Poisson.FieldTransform.EulerDerivativesAndDecay
 public import DedekindZetaZeroFree.Arithmetic.Ideals.TwoEndedPowerEnvelopeSums
 public import DedekindZetaZeroFree.HarmonicAnalysis.Schwartz.SmoothAnnularWeight
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve.Sieve
 
@@ -13,7 +16,7 @@ open scoped NumberField Classical ContDiff
 theorem initial_annular_transform_mass
     (F : Type) [Field F] [NumberField F]
     (hTC : NumberField.IsTotallyComplex F) :
-    let D : ℝ := (|NumberField.discr F| : ℤ)
+    let D : ℝ := (|NumberField.discr F|)
     let r : ℕ := NumberField.InfinitePlace.nrComplexPlaces F
     let h : ℝ → ℂ := fun x => (DedekindZetaZeroFree.LargeSieve.Vendor.annularWeight x : ℂ)
     ∃ B : ℝ, 0 ≤ B ∧ ∀ Y : ℝ, 0 < Y →
@@ -23,10 +26,10 @@ theorem initial_annular_transform_mass
             v I * DedekindZetaZeroFree.LargeSieve.fieldTransform D r h ((Ideal.absNorm I : ℝ) / Y)
         Summable (fun I => ‖g I‖) ∧ Summable g ∧ (∑' I, ‖g I‖) ≤ B * Y := by
   classical
-  letI : NumberField.IsTotallyComplex F := hTC
+  letI  := hTC
 
-  have hD : (0 : ℝ) < ((|NumberField.discr F| : ℤ) : ℝ) := by
-    have hne : NumberField.discr F ≠ 0 := NumberField.discr_ne_zero F
+  have hD : (0 : ℝ) < ((|NumberField.discr F|) : ℝ) := by
+    have hne  := NumberField.discr_ne_zero F
     have hpos : (0 : ℤ) < |NumberField.discr F| := by
       rw [Int.abs_eq_natAbs]
       exact_mod_cast Int.natAbs_pos.mpr hne
@@ -37,9 +40,7 @@ theorem initial_annular_transform_mass
     have h2 := NumberField.IsTotallyComplex.finrank F
     omega
 
-  have hh : ContDiff ℝ ∞ (fun x : ℝ => (DedekindZetaZeroFree.LargeSieve.Vendor.annularWeight x : ℂ)) := by
-    simpa [Function.comp_def] using
-      (Complex.ofRealCLM.contDiff (n := ∞)).comp DedekindZetaZeroFree.LargeSieve.Vendor.annularWeight_contDiff
+  have hh : ContDiff ℝ ∞ (fun x : ℝ => (DedekindZetaZeroFree.LargeSieve.Vendor.annularWeight x : ℂ)) := (Complex.ofRealCLM.contDiff (n := ∞)).comp DedekindZetaZeroFree.LargeSieve.Vendor.annularWeight_contDiff
   have hhc : HasCompactSupport (fun x : ℝ => (DedekindZetaZeroFree.LargeSieve.Vendor.annularWeight x : ℂ)) := by
     have hsupp : Function.support (fun x : ℝ => (DedekindZetaZeroFree.LargeSieve.Vendor.annularWeight x : ℂ))
         = Function.support DedekindZetaZeroFree.LargeSieve.Vendor.annularWeight := by
@@ -51,14 +52,14 @@ theorem initial_annular_transform_mass
 
   obtain ⟨C, hCpos, hCle, hCge⟩ :=
     DedekindZetaZeroFree.LargeSieve.fieldTransform_euler_two_ended_bound
-      ((|NumberField.discr F| : ℤ) : ℝ) (NumberField.InfinitePlace.nrComplexPlaces F)
+      ((|NumberField.discr F|) : ℝ) (NumberField.InfinitePlace.nrComplexPlaces F)
       (fun x : ℝ => (DedekindZetaZeroFree.LargeSieve.Vendor.annularWeight x : ℂ)) hD hr hh hhc 0 2 (1 / 2)
       (by norm_num)
   obtain ⟨Bc, hBcnonneg, hBc⟩ := initial_two_ended_ideal_sum F
   dsimp only
   refine ⟨C * Bc, mul_nonneg hCpos.le hBcnonneg, ?_⟩
   intro Y hY v hv
-  set T : ℝ → ℂ := DedekindZetaZeroFree.LargeSieve.fieldTransform ((|NumberField.discr F| : ℤ) : ℝ)
+  set T : ℝ → ℂ := DedekindZetaZeroFree.LargeSieve.fieldTransform ((|NumberField.discr F|) : ℝ)
       (NumberField.InfinitePlace.nrComplexPlaces F)
       (fun x : ℝ => (DedekindZetaZeroFree.LargeSieve.Vendor.annularWeight x : ℂ)) with hTdef
   have hCnorm : ‖(C : ℂ)‖ = C := by
@@ -67,19 +68,11 @@ theorem initial_annular_transform_mass
     have h2 : 0 ≤ ‖((C : ℂ))‖ := norm_nonneg _
     nlinarith [h, hCpos, h2]
   have hCinvnorm : ‖((C : ℂ))⁻¹‖ = C⁻¹ := by rw [norm_inv, hCnorm]
-  have hCne : (C : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (ne_of_gt hCpos)
+  have hCne  := Complex.ofReal_ne_zero.mpr (ne_of_gt hCpos)
 
-  have hb1 : ∀ x : ℝ, 0 < x → x ≤ 1 → ‖T x‖ ≤ C * x ^ (-(1 / 2 : ℝ)) := by
-    intro x hx hx1
-    have h := hCle x hx hx1
-    simp only [DedekindZetaZeroFree.LargeSieve.Vendor.EulerIter_zero, ← hTdef] at h
-    exact h
-  have hb2 : ∀ x : ℝ, 1 ≤ x → ‖T x‖ ≤ C * x ^ (-(2 : ℝ)) := by
-    intro x hx
-    have h := hCge x hx
-    simp only [DedekindZetaZeroFree.LargeSieve.Vendor.EulerIter_zero, ← hTdef] at h
-    exact h
-  let gfun : Ideal (𝓞 F) → ℂ := fun I =>
+  have hb1 : ∀ x : ℝ, 0 < x → x ≤ 1 → ‖T x‖ ≤ C * x ^ (-(1 / 2 : ℝ)) := (hCle)
+  have hb2 : ∀ x : ℝ, 1 ≤ x → ‖T x‖ ≤ C * x ^ (-(2 : ℝ)) := (hCge)
+  let gfun  := fun I =>
     if I = ⊥ then (0 : ℂ) else v I * T ((Ideal.absNorm I : ℝ) / Y)
   change Summable (fun I : Ideal (𝓞 F) => ‖gfun I‖) ∧ Summable gfun ∧
     (∑' I : Ideal (𝓞 F), ‖gfun I‖) ≤ (C * Bc) * Y

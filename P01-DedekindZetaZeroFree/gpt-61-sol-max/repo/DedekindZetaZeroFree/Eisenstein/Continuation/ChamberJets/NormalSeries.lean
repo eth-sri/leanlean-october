@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Eisenstein.Continuation.CompactJets.Defs
 public import DedekindZetaZeroFree.Eisenstein.Continuation.Chamber.CasimirParameterJets
 
 @[expose] public section
+
 
 noncomputable section
 open scoped Classical NumberField ContDiff BigOperators
@@ -28,9 +31,9 @@ theorem normalSeries_compact_holomorphic {X : Type*} [TopologicalSpace X] [Compa
   have hR : 0 < R := by dsimp [R]; positivity
   have hclosed : Metric.closedBall s R ⊆ O :=
     (Metric.closedBall_subset_ball (by dsimp [R]; linarith)).trans hrO
-  have hcircle : CircleIntegrable j s R :=
+  have hcircle  :=
     (hj.mono (Metric.sphere_subset_closedBall.trans hclosed)).circleIntegrable hR.le
-  let g : ℂ → C(X,ℂ) := fun w => (2 * Real.pi * Complex.I : ℂ)⁻¹ •
+  let g  := fun w => (2 * Real.pi * Complex.I)⁻¹ •
     circleIntegral (fun z => (z-w)⁻¹ • j z) s R
   have heq : Set.EqOn g j (Metric.ball s R) := by
     intro w hw
@@ -46,15 +49,15 @@ theorem normalSeries_compact_holomorphic {X : Type*} [TopologicalSpace X] [Compa
       rw [circleIntegral, circleIntegral, ← L.intervalIntegral_comp_comm (by simpa using hi.out)]
       simp only [map_smul]
       rfl
-    change L ((2 * Real.pi * Complex.I : ℂ)⁻¹ • _) = _
+    change L ((2 * Real.pi * Complex.I)⁻¹ • _) = _
     rw [map_smul, hL]
     exact (((hd x).mono hclosed).mono Metric.closure_ball_subset_closedBall).diffContOnCl
       |>.two_pi_i_inv_smul_circleIntegral_sub_inv_smul hw
   have hg : DifferentiableAt ℂ g s := by
-    change DifferentiableAt ℂ (fun w => (2 * Real.pi * Complex.I : ℂ)⁻¹ •
+    change DifferentiableAt ℂ (fun w => (2 * Real.pi * Complex.I)⁻¹ •
       circleIntegral (fun z => (z-w)⁻¹ • j z) s R) s
     exact ((Complex.hasDerivAt_circleIntegral_sub_inv_smul (w := s) hcircle (by
-      simpa [abs_of_pos hR] using (ne_of_gt hR).symm)).const_smul (2 * Real.pi * Complex.I : ℂ)⁻¹).differentiableAt
+      simpa [abs_of_pos hR] using (ne_of_gt hR).symm)).const_smul (2 * Real.pi * Complex.I)⁻¹).differentiableAt
   have he : g =ᶠ[𝓝 s] j := Filter.eventually_of_mem (Metric.ball_mem_nhds s hR) (fun w hw => heq hw)
   exact (hg.congr_of_eventuallyEq he.symm).differentiableWithinAt
 
@@ -69,7 +72,7 @@ theorem normalSeries_compact_family_of_local {E : Type*} [TopologicalSpace E]
   have hc : ContinuousOn (fun p : ℂ × E => f p.1 p.2) (O ×ˢ U) := by
     intro p hp
     obtain ⟨K,hK,hpK,hKU,j,hj,heq⟩ := hl p.2 hp.2
-    letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
+    letI  := isCompact_iff_compactSpace.mp hK
     have hcont : ContinuousOn (fun q : ℂ × K => j q.1 q.2) (O ×ˢ Set.univ) :=
       continuous_eval.comp_continuousOn ((hj.continuousOn.comp continuous_fst.continuousOn
         (fun _ hq => hq.1)).prodMk continuous_snd.continuousOn)
@@ -86,11 +89,11 @@ theorem normalSeries_compact_family_of_local {E : Type*} [TopologicalSpace E]
   have hd : ∀ x ∈ U, DifferentiableOn ℂ (fun z => f z x) O := by
     intro x hx
     obtain ⟨K,hK,hxK,hKU,j,hj,heq⟩ := hl x hx
-    letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
+    letI  := isCompact_iff_compactSpace.mp hK
     let L : C(K,ℂ) →L[ℂ] ℂ := ContinuousMap.evalCLM ℂ ⟨x, interior_subset hxK⟩
     exact (L.differentiable.comp_differentiableOn hj).congr
       (fun z hz => (heq z hz ⟨x,interior_subset hxK⟩).symm)
-  letI : CompactSpace C := isCompact_iff_compactSpace.mp hC
+  letI  := isCompact_iff_compactSpace.mp hC
   have hcC : ContinuousOn (fun p : ℂ × C => f p.1 p.2.val) (O ×ˢ Set.univ) :=
     hc.comp (continuous_fst.prodMk (continuous_subtype_val.comp continuous_snd)).continuousOn
       (fun p hp => ⟨hp.1,hCU p.2.property⟩)
@@ -127,12 +130,11 @@ private theorem cauchy_identify (O : Set ℂ) (hO : IsOpen O)
   unfold RightFrame.CauchyCoefficient.cauchyCoefficient
   rw [hkernel, hi, smul_eq_mul]
   have hfac : (k.factorial : ℂ) ≠ 0 := by exact_mod_cast k.factorial_ne_zero
-  have hpi : (2 * (Real.pi : ℂ) * Complex.I) ≠ 0 := by
-    exact mul_ne_zero (mul_ne_zero (by norm_num) (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero)) Complex.I_ne_zero
+  
   field_simp
 
-private theorem parameter_jet_smooth
-    (U : Set E) (hU : IsOpen U) (fields : B → E → E)
+section
+variable (U : Set E) (hU : IsOpen U) (fields : B → E → E)
     (hf : ∀ b, ContDiffOn ℝ (⊤ : ℕ∞) (fields b) U)
     (hframe : ∀ x ∈ U, ∃ e : Module.Basis B ℝ E, ∀ b, e b = fields b x)
     (O : Set ℂ) (hO : IsOpen O) (h : ℂ → E → ℂ)
@@ -141,7 +143,10 @@ private theorem parameter_jet_smooth
       ContinuousOn (fun p : ℂ × E => directionalWord fields w (h p.1) p.2) (O ×ˢ K))
     (hhol : ∀ w x, x ∈ U →
       DifferentiableOn ℂ (fun z => directionalWord fields w (h z) x) O)
-    (k : ℕ) (s : ℂ) (hs : s ∈ O) :
+    (k : ℕ) (s : ℂ) (hs : s ∈ O)
+include U hU fields hf hframe O hO h hsp hj hhol k s hs in
+private theorem parameter_jet_smooth
+      :
     ContDiffOn ℝ (⊤ : ℕ∞) (fun x => iteratedDerivWithin k (fun z => h z x) O s) U := by
   obtain ⟨ε,hε,hεO⟩ := Metric.isOpen_iff.mp hO s hs
   let r := ε/2
@@ -181,17 +186,9 @@ private theorem word_const_mul (U : Set E) (hU : IsOpen U) (fields : B → E →
         fun y => c • directionalWord fields w u y := rfl
     rw [he', fderiv_fun_const_smul (hd.differentiableAt (by simp))]
     rfl
- theorem parameter_word_commute
-    (U : Set E) (hU : IsOpen U) (fields : B → E → E)
-    (hf : ∀ b, ContDiffOn ℝ (⊤ : ℕ∞) (fields b) U)
-    (hframe : ∀ x ∈ U, ∃ e : Module.Basis B ℝ E, ∀ b, e b = fields b x)
-    (O : Set ℂ) (hO : IsOpen O) (h : ℂ → E → ℂ)
-    (hsp : ∀ z ∈ O, ContDiffOn ℝ (⊤ : ℕ∞) (h z) U)
-    (hj : ∀ w K, IsCompact K → K ⊆ U →
-      ContinuousOn (fun p : ℂ × E => directionalWord fields w (h p.1) p.2) (O ×ˢ K))
-    (hhol : ∀ w x, x ∈ U →
-      DifferentiableOn ℂ (fun z => directionalWord fields w (h z) x) O)
-    (k : ℕ) (s : ℂ) (hs : s ∈ O) (w : List B) (x : E) (hx : x ∈ U) :
+ include U hU fields hf hframe O hO h hsp hj hhol k s hs in
+theorem parameter_word_commute
+      (w : List B) (x : E) (hx : x ∈ U) :
     directionalWord fields w (fun y => iteratedDerivWithin k (fun z => h z y) O s) x =
       iteratedDerivWithin k (fun z => directionalWord fields w (h z) x) O s := by
   obtain ⟨ε,hε,hεO⟩ := Metric.isOpen_iff.mp hO s hs
@@ -224,6 +221,8 @@ private theorem word_const_mul (U : Set E) (hU : IsOpen U) (fields : B → E →
       hsp hj' (fun y hy => hhol [] y hy) k w x hx]
   exact (cauchy_identify O hO (fun z => directionalWord fields w (h z)) s hs r hr hdisk
     x (hhol w x hx) k).symm
+end
+
 
  theorem joint_of_compact_family
     (O : Set ℂ) (U : Set E) (h : ℂ → E → ℂ)
@@ -233,7 +232,7 @@ private theorem word_const_mul (U : Set E) (hU : IsOpen U) (fields : B → E →
         ∀ z ∈ O, ∀ x : K, j z x = h z x.val)
     (K : Set E) (hK : IsCompact K) (hKU : K ⊆ U) :
     ContinuousOn (fun p : ℂ × E => h p.1 p.2) (O ×ˢ K) := by
-  letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
+  letI  := isCompact_iff_compactSpace.mp hK
   obtain ⟨j,hj,heq⟩ := hh K hK hKU
   have hc : ContinuousOn (fun p : ℂ × K => j p.1 p.2) (O ×ˢ Set.univ) :=
     continuous_eval.comp_continuousOn ((hj.continuousOn.comp continuous_fst.continuousOn
@@ -308,14 +307,14 @@ theorem normalSeries_transported_compact_jet {P : Type*} [NormedAddCommGroup P]
   let A := ψ '' K
   have hA : IsCompact A := hK.image_of_continuousOn (hψ.continuousOn.mono hKW)
   have hAU : A ⊆ U := by rintro _ ⟨x,hx,rfl⟩; exact hψU (hKW hx)
-  letI : CompactSpace A := isCompact_iff_compactSpace.mp hA
-  letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
+  letI  := isCompact_iff_compactSpace.mp hA
+  letI  := isCompact_iff_compactSpace.mp hK
   let q : C(K,A) := ⟨fun x => ⟨ψ x.val, ⟨x.val,x.property,rfl⟩⟩,
     (continuousOn_iff_continuous_restrict.mp (hψ.continuousOn.mono hKW)).subtype_mk _⟩
   obtain ⟨N,c,w,hc,_,heq⟩ := RightFrame.PullbackWords.transport U W hU hW
     fields hfields hframe ψ hψ hψU (List.ofFn v)
   choose j hj hjval using fun i : Fin N => hw (w i) A hA hAU
-  let a : Fin N → C(K,ℂ) := fun i => ⟨fun x => (c i x.val : ℂ),
+  let a : Fin N → C(K,ℂ) := fun i => ⟨fun x => (c i x.val),
     Complex.continuous_ofReal.comp (continuousOn_iff_continuous_restrict.mp ((hc i).continuousOn.mono hKW))⟩
   refine ⟨fun z => ∑ i : Fin N, a i * (j i z).comp q, ?_, ?_⟩
   · apply DifferentiableOn.fun_sum
@@ -343,8 +342,11 @@ variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
 variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U) (f : ℂ → S)
 
-private theorem compact_mixed_pullback (hι : Function.Injective ι)
+section
+variable (hι : Function.Injective ι)
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
+include hι hf
+private theorem compact_mixed_pullback  
     {X : Type*} [TopologicalSpace X] (O : Set X)
     (ℓ : X → KPContActualChamberNormalSeries.G F ζ hζ) (hℓ : ContinuousOn ℓ O)
     (K : Set X) (hK : IsCompact K) (hKO : K ⊆ O)
@@ -355,8 +357,8 @@ private theorem compact_mixed_pullback (hι : Function.Injective ι)
         (KPContActualChamberNormalSeries.E F ζ hζ U ι f) k w z (ℓ x.val) := by
   let A := ℓ '' K
   have hA : IsCompact A := hK.image_of_continuousOn (hℓ.mono hKO)
-  letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
-  letI : CompactSpace A := isCompact_iff_compactSpace.mp hA
+  letI  := isCompact_iff_compactSpace.mp hK
+  letI  := isCompact_iff_compactSpace.mp hA
   let c : C(K,A) := ⟨fun x => ⟨ℓ x.val, ⟨x.val,x.property,rfl⟩⟩,
     (continuousOn_iff_continuous_restrict.mp (hℓ.mono hKO)).subtype_mk _⟩
   let g := KPContActualChamberNormalSeries.compactMixedJet F ζ hζ U ι f hι hf k w A
@@ -369,7 +371,7 @@ private theorem compact_mixed_pullback (hι : Function.Injective ι)
   rfl
 
 private theorem iwasawa_compact_jet
-    (hι : Function.Injective ι) (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
+     
     {X : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X] [FiniteDimensional ℝ X]
     (O : Set (KPSmoothActualFlowData.B F → ℝ)) (hO : IsOpen O)
     (ℓ : (KPSmoothActualFlowData.B F → ℝ) → KPContActualChamberNormalSeries.G F ζ hζ)
@@ -428,8 +430,7 @@ private theorem iwasawa_compact_jet
   exact normalSeries_transported_compact_jet O hO W hW fields hfields hframe ψ hψ hψO
     V hk hks hwk K hK hKW n v
 
-private theorem component_value (hι : Function.Injective ι)
-    (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain) (k : ℕ) (s : ℂ) (hs : s ∈ V)
+private theorem component_value   (k : ℕ) (s : ℂ) (hs : s ∈ V)
     (i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount)
     (z : KPContSectorCoveredQuotientVocabulary.SymmetricSpace F) :
     (lineJet F ζ hζ C R P H U ι f hι hf k s i).val z =
@@ -443,7 +444,7 @@ private theorem component_value (hι : Function.Injective ι)
   exact KPContSectorScalarLineAlgebra.S_apply F ζ hζ (level F ζ hζ C R P H U) R P H _ i z
 
 private theorem actual_compact_jet_local
-    (hι : Function.Injective ι) (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
+     
     (k : ℕ) (a : KPContActualSectorSmoothTestModules.ActualChart
       (U := level F ζ hζ C R P H U) (H := H))
     (x : M F) (hx : x ∈ KPContCotangentOverlapRationalBranches.omega a)
@@ -478,7 +479,7 @@ private theorem actual_compact_jet_local
   have hKW : K ⊆ D := fun y hy => (hKD hy).1
   have hKω : K ⊆ KPContCotangentOverlapRationalBranches.omega a := fun y hy => (hKD hy).2
   refine ⟨K,hK,hxK,hKω,?_⟩
-  letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
+  letI  := isCompact_iff_compactSpace.mp hK
   have hψA : ContDiffOn ℝ (⊤ : ℕ∞) (ψ ∘ A) D := hψ.comp hA.contDiffOn (fun y hy => hy)
   have hψAO : Set.MapsTo (ψ ∘ A) D O := fun y hy => hψO hy
   obtain ⟨j,hj,hjval⟩ := iwasawa_compact_jet F ζ hζ U ι f hι hf
@@ -497,6 +498,8 @@ private theorem actual_compact_jet_local
     simp only [map_one, Units.val_one, one_mul, one_smul]
     exact (component_value F ζ hζ C R P H U ι f hι hf k z hz a.component (A t)).symm
   exact congrArg (fun t => t v) (jet_germ_eq n _ _ D _ hD hω y.val (hKW y.property) (hKω y.property) heq)
+end
+
 
 end Actual
 

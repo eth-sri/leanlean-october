@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.NormalBasisRecursiveLifting
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -68,16 +71,16 @@ theorem exists_chosenNormalBasisPrincipalUnit_herbrand_subsingleton
       tateNormSubgroup (Gal(L / K)) V := by
     intro a ha
     have haSet : ((a : V) : 𝒪[L]ˣ) ∈ (V : Set 𝒪[L]ˣ) := (a : V).2
-    have haLevel : ((a : V) : 𝒪[L]ˣ) ∈
+    have haLevel : (a : 𝒪[L]ˣ) ∈
         chosenNormalBasisPrincipalUnitSet K L n := by
       rw [← hV]
       exact haSet
     have haFixed : ∀ sigma : Gal(L / K),
         letI := galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure K L
-        sigma • ((a : V) : 𝒪[L]ˣ) = ((a : V) : 𝒪[L]ˣ) := by
+        sigma • (a : 𝒪[L]ˣ) = (a : 𝒪[L]ˣ) := by
       intro sigma
       exact congrArg (fun z : V => (z : 𝒪[L]ˣ)) (ha sigma)
-    rcases hc0 n hc0n ((a : V) : 𝒪[L]ˣ) haLevel haFixed with
+    rcases hc0 n hc0n (a : 𝒪[L]ˣ) haLevel haFixed with
       ⟨b, hb, hab⟩
     let bv : V := ⟨b, by
       change b ∈ (V : Set 𝒪[L]ˣ)
@@ -97,10 +100,10 @@ theorem exists_chosenNormalBasisPrincipalUnit_herbrand_subsingleton
       exact (a : V).2
     have haNorm :
         letI := galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure K L
-        tateNorm (Gal(L / K)) 𝒪[L]ˣ ((a : V) : 𝒪[L]ˣ) = 1 := by
+        tateNorm (Gal(L / K)) 𝒪[L]ˣ (a : 𝒪[L]ˣ) = 1 := by
       rw [← chosenNormalBasisPrincipalUnitSubgroup_tateNorm_coe K L n V hV]
       exact congrArg (fun z : V => (z : 𝒪[L]ˣ)) ha
-    rcases hcm n hcmn ((a : V) : 𝒪[L]ˣ) haLevel haNorm with
+    rcases hcm n hcmn (a : 𝒪[L]ˣ) haLevel haNorm with
       ⟨b, hb, hab⟩
     let bv : V := ⟨b, by
       change b ∈ (V : Set 𝒪[L]ˣ)

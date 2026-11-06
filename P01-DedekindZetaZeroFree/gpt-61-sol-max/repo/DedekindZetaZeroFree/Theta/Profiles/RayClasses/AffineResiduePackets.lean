@@ -19,19 +19,19 @@ def affineResidueScale (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ) : ℝ :=
   (FractionalIdeal.absNorm (I : FractionalIdeal (𝓞 F)⁰ F) : ℝ) ^
     (-(Module.finrank ℚ F : ℝ)⁻¹)
 
-def affineResidueTheta (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
+section
+variable (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
     (x : {x : F // x ∈ (I : FractionalIdeal (𝓞 F)⁰ F)})
-    (u : ℝ) (h : RayCoset.logHyperplane F) : ℂ :=
+    (u : ℝ)
+include m hm I x u
+def affineResidueTheta   (h : RayCoset.logHyperplane F) : ℂ :=
   ∑' l : {l : F // l ∈
       ((I * rayIdealFractionalIdeal F m hm) : FractionalIdeal (𝓞 F)⁰ F)},
     RayParity.gδ F ∅ (RayParity.Q F (RayTheta.q F u h)
       (affineResidueScale I • Theta.traceEmbedding F (x.val + l.val)))
 
-def affineResidueDualTheta (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
-    (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
-    (x : {x : F // x ∈ (I : FractionalIdeal (𝓞 F)⁰ F)})
-    (u : ℝ) (h : RayCoset.logHyperplane F) : ℂ :=
+def affineResidueDualTheta   (h : RayCoset.logHyperplane F) : ℂ :=
   ∑' β : {β : F // β ∈
       (Theta.traceDualIdealUnit F (I * rayIdealFractionalIdeal F m hm) :
         FractionalIdeal (𝓞 F)⁰ F)},
@@ -40,17 +40,15 @@ def affineResidueDualTheta (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
         ((affineResidueScale I)⁻¹ •
           Theta.traceConjugation F (Theta.traceEmbedding F β.val)))
 
-def affineResidueAverage (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
-    (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
-    (x : {x : F // x ∈ (I : FractionalIdeal (𝓞 F)⁰ F)}) (u : ℝ) : ℂ :=
+def affineResidueAverage   : ℂ :=
   ∫ h in RayCoset.rayUnitHalfOpenDomain F m hm,
     affineResidueTheta m hm I x u h ∂Theta.normalizedLogHaar F
 
-def affineResidueDualAverage (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
-    (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
-    (x : {x : F // x ∈ (I : FractionalIdeal (𝓞 F)⁰ F)}) (u : ℝ) : ℂ :=
+def affineResidueDualAverage   : ℂ :=
   ∫ h in RayCoset.rayUnitHalfOpenDomain F m hm,
     affineResidueDualTheta m hm I x u h ∂Theta.normalizedLogHaar F
+end
+
 
  theorem residue_trace_phase_congr
     (I J : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
@@ -72,7 +70,10 @@ def affineResidueDualAverage (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
   rw [AddChar.map_sub_eq_div] at hp
   exact (div_eq_one_iff_eq (rationalTracePhase_ne_zero _)).mp hp
 
-def coprimeIdealResiduePhase (m a : Ideal (𝓞 F)) (hm : m ≠ ⊥) (ha : a ≠ ⊥) :
+section
+variable (m a : Ideal (𝓞 F)) (hm : m ≠ ⊥) (ha : a ≠ ⊥)
+include m a hm ha
+def coprimeIdealResiduePhase   :
     coprimeIdealResidue F m a hm ha →
       {β : F // β ∈ (Theta.traceDualIdealUnit F
         (rayIdealFractionalIdeal F a ha * rayIdealFractionalIdeal F m hm) :
@@ -93,7 +94,7 @@ def coprimeIdealResiduePhase (m a : Ideal (𝓞 F)) (hm : m ≠ ⊥) (ha : a ≠
     (Quotient.sound hxy)
 
 theorem coprimeIdealResiduePhase_mk
-    (m a : Ideal (𝓞 F)) (hm : m ≠ ⊥) (ha : a ≠ ⊥)
+     
     (x : {x : F // x ∈
       (rayIdealFractionalIdeal F a ha : FractionalIdeal (𝓞 F)⁰ F)})
     (β : {β : F // β ∈ (Theta.traceDualIdealUnit F
@@ -106,6 +107,8 @@ theorem coprimeIdealResiduePhase_mk
           FractionalIdeal (𝓞 F)⁰ F) x) β =
       rationalTracePhase (Algebra.trace ℚ F (x.val * β.val)) := by
   rfl
+end
+
 
 def coprimeIdealResiduePacket (hF : NumberField.IsTotallyComplex F)
     (m a : Ideal (𝓞 F)) (hm : m ≠ ⊥) (ha : a ≠ ⊥)

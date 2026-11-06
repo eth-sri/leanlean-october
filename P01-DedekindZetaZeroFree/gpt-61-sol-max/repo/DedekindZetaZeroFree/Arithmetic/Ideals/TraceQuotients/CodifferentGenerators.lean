@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Ideals.PerfectTraceQuotientPairing
 public import DedekindZetaZeroFree.Arithmetic.Ideals.TraceQuotients.DualResidueGenerators
 public import DedekindZetaZeroFree.Arithmetic.ResidueSymbols.BalancedPairingGeneratorCharacter
 
 @[expose] public section
+
 
 /-
 https://github.com/LeanPool/lean-pool
@@ -21,21 +24,25 @@ variable {F : Type} [Field F] [hNF : NumberField F]
 
 include hNF
 
+section
+variable (I J I' J' : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)
+    (hI : I = I') (hJ : J = J')
+include I J I' J' hI hJ
 def quotientPresentationEquiv
-    (I J I' J' : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)
-    (hI : I = I') (hJ : J = J') :
+      :
     fractionalIdealQuotient I J ≃ₗ[NumberField.RingOfIntegers F]
       fractionalIdealQuotient I' J' := by
   subst I' J'
   exact LinearEquiv.refl _ _
 
 private theorem quotientPresentationEquiv_mk
-    (I J I' J' : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)
-    (hI : I = I') (hJ : J = J') (β : I.coeToSubmodule) :
+      (β : I.coeToSubmodule) :
     quotientPresentationEquiv I J I' J' hI hJ (fractionalIdealQuotientMk I J β) =
       fractionalIdealQuotientMk I' J' ⟨(β : F), by rw [← hI]; exact β.property⟩ := by
   subst I' J'
   rfl
+end
+
 
 theorem traceNumerator_eq
     (m : Ideal (NumberField.RingOfIntegers F)) :
@@ -46,18 +53,21 @@ theorem traceDenominator_eq :
     codifferentFractionalIdeal F = rayDualFractionalIdeal (1 : FractionalIdeal
       (NumberField.RingOfIntegers F)⁰ F) := rayDualFractionalIdeal_one.symm
 
+section
+variable (m : Ideal (NumberField.RingOfIntegers F)) (hm : m ≠ ⊥)
+include m hm
 theorem traceQuotient_torsion
-    (m : Ideal (NumberField.RingOfIntegers F)) (hm : m ≠ ⊥) :
+      :
     Module.IsTorsionBySet (NumberField.RingOfIntegers F) (rayTraceQuotient m)
       (m : Set (NumberField.RingOfIntegers F)) := by
   apply fractionalIdealQuotient_isTorsionBySet m
   · rw [traceNumerator_eq m, traceDenominator_eq]
-    exact rayDualResidue_denominator_le m 1 hm one_ne_zero
+    apply rayDualResidue_denominator_le <;> aesop
   · rw [traceNumerator_eq m, traceDenominator_eq, mul_comm]
-    exact rayDualResidue_mul_eq m 1 hm one_ne_zero
+    apply rayDualResidue_mul_eq <;> aesop
 
 def rayTraceQuotientDualResidueEquiv
-    (m : Ideal (NumberField.RingOfIntegers F)) (hm : m ≠ ⊥) :
+      :
     letI := rayTraceQuotientModule m hm
     rayTraceQuotient m ≃ₗ[NumberField.RingOfIntegers F ⧸ m]
       rayDualResidueModule m (1 : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) := by
@@ -69,7 +79,7 @@ def rayTraceQuotientDualResidueEquiv
     (quotientPresentationEquiv _ _ _ _ (traceNumerator_eq m) traceDenominator_eq)
 
 @[simp] theorem rayTraceQuotientDualResidueEquiv_mk
-    (m : Ideal (NumberField.RingOfIntegers F)) (hm : m ≠ ⊥)
+     
     (β : ((m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)⁻¹ *
       codifferentFractionalIdeal F).coeToSubmodule) :
     rayTraceQuotientDualResidueEquiv m hm
@@ -77,16 +87,15 @@ def rayTraceQuotientDualResidueEquiv
       Submodule.Quotient.mk (p := rayDualResidueDenominator m 1)
         ⟨(β : F), by
           rw [rayDualResidueNumerator_one]
-          exact β.property⟩ := by
-  exact quotientPresentationEquiv_mk _ _ _ _ (traceNumerator_eq m) traceDenominator_eq β
+          exact β.property⟩ := quotientPresentationEquiv_mk _ _ _ _ (traceNumerator_eq m) traceDenominator_eq β
 
 def rayTraceQuotientGenerator
-    (m : Ideal (NumberField.RingOfIntegers F)) (hm : m ≠ ⊥) : rayTraceQuotient m :=
+       :=
   (rayTraceQuotientDualResidueEquiv m hm).symm
     (rayDualResidueGenerator m 1 hm one_ne_zero)
 
 theorem rayTraceQuotientGenerator_bijective
-    (m : Ideal (NumberField.RingOfIntegers F)) (hm : m ≠ ⊥) :
+      :
     letI := rayTraceQuotientModule m hm
     Function.Bijective (LinearMap.toSpanSingleton (NumberField.RingOfIntegers F ⧸ m)
       (rayTraceQuotient m) (rayTraceQuotientGenerator m hm)) := by
@@ -103,18 +112,18 @@ theorem rayTraceQuotientGenerator_bijective
     (rayDualResidueGenerator_bijective m 1 hm one_ne_zero)
 
 def rayTraceGeneratorChar
-    (m : Ideal (NumberField.RingOfIntegers F)) (hm : m ≠ ⊥)
-    (z : rayTraceQuotient m) : AddChar (NumberField.RingOfIntegers F ⧸ m) ℂ :=
+     
+    (z : rayTraceQuotient m)  :=
   rayTraceQuotientPairingTransposeEquiv m hm z
 
 @[simp] theorem rayTraceGeneratorChar_apply
-    (m : Ideal (NumberField.RingOfIntegers F)) (hm : m ≠ ⊥)
+     
     (z : rayTraceQuotient m) (k : NumberField.RingOfIntegers F ⧸ m) :
     rayTraceGeneratorChar m hm z k = rayTraceQuotientPairing m hm k z := by
-  exact rayTraceQuotientPairingTransposeEquiv_apply m hm z k
+  apply rayTraceQuotientPairingTransposeEquiv_apply
 
 theorem rayTraceGeneratorChar_primitive
-    (m : Ideal (NumberField.RingOfIntegers F)) (hm : m ≠ ⊥) :
+      :
     letI := rayTraceQuotientModule m hm
     ∀ (z : rayTraceQuotient m)
       (hz : Function.Bijective (LinearMap.toSpanSingleton (NumberField.RingOfIntegers F ⧸ m)
@@ -128,10 +137,10 @@ theorem rayTraceGeneratorChar_primitive
     (rayTraceQuotientPairing_balance m hm)
     (fun k h => (rayTraceQuotientPairing_left_radical m hm k).mp h) z hz.2 J
   intro k hk
-  simpa only [balancedPairingGeneratorChar_apply, rayTraceGeneratorChar_apply] using hJ k hk
+  exact hJ k hk
 
 theorem rayTraceQuotientGenerator_lift_coprime
-    (m : Ideal (NumberField.RingOfIntegers F)) (hm : m ≠ ⊥) (hm1 : m ≠ ⊤) :
+      (hm1 : m ≠ ⊤) :
     letI := rayTraceQuotientModule m hm
     ∀ (z : rayTraceQuotient m)
       (hz : Function.Bijective (LinearMap.toSpanSingleton (NumberField.RingOfIntegers F ⧸ m)
@@ -170,7 +179,7 @@ theorem rayTraceQuotientGenerator_lift_coprime
       (β : F) hβ hlift'
 
 theorem rayTraceQuotientGenerator_exists_coprime_lift
-    (m : Ideal (NumberField.RingOfIntegers F)) (hm : m ≠ ⊥) (hm1 : m ≠ ⊤) :
+      (hm1 : m ≠ ⊤) :
     ∃ (β : ((m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)⁻¹ *
         codifferentFractionalIdeal F).coeToSubmodule) (b : Ideal (NumberField.RingOfIntegers F)),
       fractionalIdealQuotientMk _ (codifferentFractionalIdeal F) β =
@@ -189,6 +198,8 @@ theorem rayTraceQuotientGenerator_exists_coprime_lift
     m hm hm1 (rayTraceQuotientGenerator m hm)
       (rayTraceQuotientGenerator_bijective m hm) β hlift
   exact ⟨β, b, hlift, hn, hb0, hcop, hb, hp⟩
+end
+
 
 end DedekindZetaZeroFree.Hecke
 

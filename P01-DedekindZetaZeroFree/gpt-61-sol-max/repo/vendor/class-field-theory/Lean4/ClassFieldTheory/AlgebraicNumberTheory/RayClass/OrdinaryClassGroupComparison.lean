@@ -102,21 +102,21 @@ noncomputable def ordinaryRayClassGroupEquivClassGroup :
       ordinary_rayPrincipalIdealSubgroup_map).trans
     (ClassGroup.equiv K).symm
 
-/-- The equivalence takes the ordinary ray class of a finite prime to the
-usual prime ideal class. -/
-theorem ordinaryRayClassGroupEquivClassGroup_prime
-    (v : HeightOneSpectrum (𝓞 K)) :
-    ordinaryRayClassGroupEquivClassGroup
-        (ordinaryRayClassOfFinitePrime v) =
-      ClassGroup.mk K (finitePrimeFractionalIdeal v) := by
-  apply (ClassGroup.equiv K).injective
-  simp only [ordinaryRayClassGroupEquivClassGroup, MulEquiv.trans_apply,
-    MulEquiv.apply_symm_apply, ordinaryRayClassOfFinitePrime,
-    rayClassOfFinitePrime, ClassGroup.equiv_mk]
-  rw [QuotientGroup.congr_mk']
-  simp only [ordinaryRayIdealsEquiv_apply]
-  simp only [FractionalIdeal.canonicalEquiv_self, RingEquiv.coe_mulEquiv_refl]
-  congr 1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end ClassFieldTheory
 

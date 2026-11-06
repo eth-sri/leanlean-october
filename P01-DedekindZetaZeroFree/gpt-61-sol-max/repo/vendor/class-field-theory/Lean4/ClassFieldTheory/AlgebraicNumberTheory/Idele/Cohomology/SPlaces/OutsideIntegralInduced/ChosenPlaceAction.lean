@@ -53,21 +53,24 @@ variable
 
 section ChosenFinitePlace
 
+section
+variable (w₀ : HeightOneSpectrum (𝓞 K))
+include w₀
 /-- The decomposition group at the chosen extension of a finite place. -/
 abbrev ChosenFinitePlaceDecompositionGroup
-    (w₀ : HeightOneSpectrum (𝓞 K)) :=
+      :=
   absoluteValueDecompositionGroup K
     (chosenFinitePlaceExtension (L := L) w₀).1
 
 /-- Integer units in the chosen localized completion. -/
 abbrev ChosenFinitePlaceLocalizedIntegerUnits
-    (w₀ : HeightOneSpectrum (𝓞 K)) :=
+      :=
   𝒪[ChosenFinitePlaceLocalizedCompletion
     (K := K) (L := L) w₀]ˣ
 
 /-- Field units in the chosen localized completion. -/
 abbrev ChosenFinitePlaceLocalizedFieldUnits
-    (w₀ : HeightOneSpectrum (𝓞 K)) :=
+      :=
   (ChosenFinitePlaceLocalizedCompletion
     (K := K) (L := L) w₀)ˣ
 
@@ -78,7 +81,7 @@ declarations stop expanding the chosen-localization construction. -/
 @[implicit_reducible]
 noncomputable def
     chosenFinitePlaceDecompositionGroupIntegerUnitsAction
-    (w₀ : HeightOneSpectrum (𝓞 K)) :
+      :
     MulDistribMulAction
       (ChosenFinitePlaceDecompositionGroup
         (K := K) (L := L) w₀)
@@ -94,7 +97,7 @@ noncomputable def
 /-- The decomposition-group action on the chosen local field units. -/
 @[implicit_reducible]
 noncomputable def chosenFinitePlaceDecompositionGroupLocalUnitsAction
-    (w₀ : HeightOneSpectrum (𝓞 K)) :
+      :
     MulDistribMulAction
       (ChosenFinitePlaceDecompositionGroup
         (K := K) (L := L) w₀)
@@ -107,7 +110,7 @@ noncomputable def chosenFinitePlaceDecompositionGroupLocalUnitsAction
 
 /-- The induced module of integer units at the chosen finite place. -/
 abbrev ChosenFinitePlaceInducedIntegerUnits
-    (w₀ : HeightOneSpectrum (𝓞 K)) :=
+      :=
   @InducedModule
     (G := L ≃ₐ[K] L)
     (B := ChosenFinitePlaceLocalizedIntegerUnits
@@ -121,7 +124,7 @@ abbrev ChosenFinitePlaceInducedIntegerUnits
 
 /-- The local multiplicative block attached to the chosen finite place. -/
 abbrev ChosenFinitePlaceLocalPlaceBlock
-    (w₀ : HeightOneSpectrum (𝓞 K)) :=
+      :=
   LocalPlaceBlock
     (HeightOneSpectrum.adicAbv K w₀)
     (RayClass.adicAbv_isNontrivial w₀)
@@ -130,7 +133,7 @@ abbrev ChosenFinitePlaceLocalPlaceBlock
 /-- The global action on the chosen induced integer-unit block. -/
 @[implicit_reducible]
 noncomputable def chosenFinitePlaceInducedIntegerUnitsAction
-    (w₀ : HeightOneSpectrum (𝓞 K)) :
+      :
     MulDistribMulAction (L ≃ₐ[K] L)
       (ChosenFinitePlaceInducedIntegerUnits
         (K := K) (L := L) w₀) := by
@@ -148,7 +151,7 @@ noncomputable def chosenFinitePlaceInducedIntegerUnitsAction
 /-- The global action on the chosen local multiplicative block. -/
 @[implicit_reducible]
 noncomputable def chosenFinitePlaceLocalPlaceBlockAction
-    (w₀ : HeightOneSpectrum (𝓞 K)) :
+      :
     MulDistribMulAction (L ≃ₐ[K] L)
       (ChosenFinitePlaceLocalPlaceBlock
         (K := K) (L := L) w₀) := by
@@ -162,6 +165,8 @@ noncomputable def chosenFinitePlaceLocalPlaceBlockAction
   exact inducedMulDistribMulAction
     (ChosenFinitePlaceDecompositionGroup
       (K := K) (L := L) w₀)
+end
+
 
 omit [NumberField L] in
 /-- On the actual chosen localization, the decomposition-group action on

@@ -128,12 +128,15 @@ theorem codifferential_star_mul (d : ℕ) (f : Space d → ℂ)
     Matrix.vecHead, Matrix.vecTail, Function.comp_def, Fin.succ_zero_eq_one, star_mul, Complex.star_def, Complex.conj_ofReal]
   ring
 
-private theorem derivative_smoothAt (d : ℕ) (g : Space d → ℂ) (x : Space d)
+section
+variable (d : ℕ) (g : Space d → ℂ) (x : Space d)
+include d g x
+private theorem derivative_smoothAt  
     (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x) (i : Fin d) (k : Fin 3) :
     ContDiffAt ℝ (⊤ : ℕ∞) (coordinateDerivative d i k g) x := by
   exact (hg.fderiv_right (by simp)).clm_apply contDiffAt_const
 
-private theorem exp_mul_derivative (d : ℕ) (g : Space d → ℂ) (x : Space d)
+private theorem exp_mul_derivative  
     (hg : DifferentiableAt ℝ g x) (i : Fin d) (k : Fin 3) (hk : k ≠ 2) :
     coordinateDerivative d i k (fun q => (Real.exp (q (i,2)) : ℂ) * g q) x =
       (Real.exp (x (i,2)) : ℂ) * coordinateDerivative d i k g x := by
@@ -143,7 +146,7 @@ private theorem exp_mul_derivative (d : ℕ) (g : Space d → ℂ) (x : Space d)
     (he.mul hg.hasFDerivAt).fderiv
   simpa [coordinateDerivative, coordinateVector, hk, Ne.symm hk, Pi.mul_def] using hh
 
-theorem codifferential_differential_at (d : ℕ) (g : Space d → ℂ) (x : Space d)
+theorem codifferential_differential_at  
     (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x) :
     codifferential d (differential d g) x = laplacian d g x := by
   unfold codifferential laplacian
@@ -159,7 +162,7 @@ theorem codifferential_differential_at (d : ℕ) (g : Space d → ℂ) (x : Spac
     rw [two_mul, Real.exp_add, Complex.ofReal_mul]]
   ring
 
-private theorem differential_smoothAt (d : ℕ) (g : Space d → ℂ) (x : Space d)
+private theorem differential_smoothAt  
     (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x) (i : Fin d) (k : Fin 3) :
     ContDiffAt ℝ (⊤ : ℕ∞) (fun q => differential d g q i k) x := by
   have he : ContDiffAt ℝ (⊤ : ℕ∞) (fun q : Space d => (Real.exp (q (i,2)) : ℂ)) x :=
@@ -169,6 +172,8 @@ private theorem differential_smoothAt (d : ℕ) (g : Space d → ℂ) (x : Space
   · simpa [differential] using derivative_smoothAt d g x hg i 2
   · simpa [differential] using he.mul (derivative_smoothAt d g x hg i 0)
   · simpa [differential] using he.mul (derivative_smoothAt d g x hg i 1)
+end
+
 
 private theorem arch_real (d : ℕ) (z : KPArch.Space d) : arch d (real d z) = z := by
   ext i <;> simp [arch, real]
@@ -208,13 +213,15 @@ private theorem representative_smoothAt (v : Representative ζ hζ S ρ V T)
     isOpen_lt continuous_const (continuous_height _)
   exact (v.smooth.contDiffAt (hopen.mem_nhds hx)).comp x (smooth_arch _).contDiffAt
 
-def radialFlux (v : Representative ζ hζ S ρ V T) (η : ℝ → ℝ) :
+section
+variable (v : Representative ζ hζ S ρ V T) (η : ℝ → ℝ)
+include v η
+def radialFlux   :
     Space (KPCuspLogShape.dimension F) → Cotangent (KPCuspLogShape.dimension F) :=
   fun x i k => star (cutoffUpstairs v (fun t => η t ^ 2) x) *
     differential (KPCuspLogShape.dimension F) (v.val ∘ arch (KPCuspLogShape.dimension F)) x i k
 
-private theorem cutoff_eventually_zero (v : Representative ζ hζ S ρ V T)
-    (η : ℝ → ℝ) (x : Space (KPCuspLogShape.dimension F))
+private theorem cutoff_eventually_zero   (x : Space (KPCuspLogShape.dimension F))
     (hx : KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F)
       (arch (KPCuspLogShape.dimension F) x) ∉ tsupport η) :
     cutoffUpstairs v (fun t => η t ^ 2) =ᶠ[nhds x] 0 := by
@@ -225,8 +232,7 @@ private theorem cutoff_eventually_zero (v : Representative ζ hζ S ρ V T)
     (arch (KPCuspLogShape.dimension F) q)) = 0 at hq
   simp [cutoffUpstairs, hq]
 
-private theorem flux_eventually_zero (v : Representative ζ hζ S ρ V T)
-    (η : ℝ → ℝ) (x : Space (KPCuspLogShape.dimension F))
+private theorem flux_eventually_zero   (x : Space (KPCuspLogShape.dimension F))
     (hx : KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F)
       (arch (KPCuspLogShape.dimension F) x) ∉ tsupport η) :
     radialFlux v η =ᶠ[nhds x] 0 := by
@@ -234,7 +240,7 @@ private theorem flux_eventually_zero (v : Representative ζ hζ S ρ V T)
   funext i k
   simp [radialFlux, hq]
 
-theorem radialFlux_smooth (v : Representative ζ hζ S ρ V T) (η : ℝ → ℝ)
+theorem radialFlux_smooth  
     (hη : CompactRadialTest T η) :
     ContDiff ℝ (⊤ : ℕ∞) (radialFlux v η) := by
   apply contDiff_iff_contDiffAt.mpr
@@ -252,6 +258,8 @@ theorem radialFlux_smooth (v : Representative ζ hζ S ρ V T) (η : ℝ → ℝ
     exact ((starL' ℝ : ℂ ≃L[ℝ] ℂ).contDiff.contDiffAt.comp x hc).mul
       (differential_smoothAt _ _ x hv i k)
   · exact contDiffAt_const.congr_of_eventuallyEq (flux_eventually_zero v η x hx)
+end
+
 
 theorem compact_radial_green_defect
     (hd : 0 < KPCuspLogShape.dimension F)
@@ -343,8 +351,11 @@ theorem compact_radial_green_integral_defect
   apply integral_congr_ae
   exact Filter.Eventually.of_forall (compact_radial_green_defect G.positive_dimension v η hη)
 
-theorem coordinateDerivative_half_norm_sq (d : ℕ) (g : Space d → ℂ) (x : Space d)
-    (hg : DifferentiableAt ℝ g x) (i : Fin d) (k : Fin 3) :
+section
+variable (d : ℕ) (g : Space d → ℂ) (x : Space d)
+    (hg : DifferentiableAt ℝ g x) (i : Fin d) (k : Fin 3)
+include d g x hg i k
+theorem coordinateDerivative_half_norm_sq   :
     coordinateDerivative d i k (fun q => ((‖g q‖ ^ 2 / 2 : ℝ) : ℂ)) x =
       ((star (g x) * coordinateDerivative d i k g x).re : ℂ) := by
   have hh := Complex.ofRealCLM.hasFDerivAt.comp x (hg.hasFDerivAt.norm_sq.mul_const (2 : ℝ)⁻¹)
@@ -352,8 +363,7 @@ theorem coordinateDerivative_half_norm_sq (d : ℕ) (g : Space d → ℂ) (x : S
   simpa [coordinateDerivative, Function.comp_def, ContinuousLinearMap.comp_apply,
     RCLike.inner_apply, Complex.star_def, div_eq_mul_inv, mul_comm] using he
 
-theorem differential_half_norm_sq (d : ℕ) (g : Space d → ℂ) (x : Space d)
-    (hg : DifferentiableAt ℝ g x) (i : Fin d) (k : Fin 3) :
+theorem differential_half_norm_sq   :
     differential d (fun q => ((‖g q‖ ^ 2 / 2 : ℝ) : ℂ)) x i k =
       ((star (g x) * differential d g x i k).re : ℂ) := by
   have hexp (j : Fin 3) :
@@ -370,13 +380,14 @@ theorem differential_half_norm_sq (d : ℕ) (g : Space d → ℂ) (x : Space d)
   · exact hexp 0
   · exact hexp 1
 
-theorem coordinateDerivative_realPart (d : ℕ) (g : Space d → ℂ) (x : Space d)
-    (hg : DifferentiableAt ℝ g x) (i : Fin d) (k : Fin 3) :
+theorem coordinateDerivative_realPart   :
     coordinateDerivative d i k (fun q => ((g q).re : ℂ)) x =
       ((coordinateDerivative d i k g x).re : ℂ) := by
   have hh := Complex.ofRealCLM.hasFDerivAt.comp x
     (Complex.reCLM.hasFDerivAt.comp x hg.hasFDerivAt)
   exact congrArg (fun A : Space d →L[ℝ] ℂ => A (coordinateVector d i k)) hh.fderiv
+end
+
 
 theorem codifferential_realPart (d : ℕ) (W : Space d → Cotangent d) (x : Space d)
     (hW : ∀ i k, DifferentiableAt ℝ (fun q => W q i k) x) :
@@ -395,14 +406,17 @@ theorem codifferential_realPart (d : ℕ) (W : Space d → Cotangent d) (x : Spa
   intro i hi
   simp
 
-def scalarRadialFlux (v : Representative ζ hζ S ρ V T) (η : ℝ → ℝ) :
+section
+variable (v : Representative ζ hζ S ρ V T) (η : ℝ → ℝ)
+include v η
+def scalarRadialFlux   :
     Space (KPCuspLogShape.dimension F) → Cotangent (KPCuspLogShape.dimension F) :=
   fun x i k => ((η (KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F)
       (arch (KPCuspLogShape.dimension F) x)) ^ 2 : ℝ) : ℂ) *
     differential (KPCuspLogShape.dimension F)
       (fun q => ((‖v.val (arch (KPCuspLogShape.dimension F) q)‖ ^ 2 / 2 : ℝ) : ℂ)) x i k
 
-theorem scalarRadialFlux_eq_realPart (v : Representative ζ hζ S ρ V T) (η : ℝ → ℝ)
+theorem scalarRadialFlux_eq_realPart  
     (hη : CompactRadialTest T η) :
     scalarRadialFlux v η = fun x i k => ((radialFlux v η x i k).re : ℂ) := by
   funext x i k
@@ -426,7 +440,7 @@ theorem scalarRadialFlux_eq_realPart (v : Representative ζ hζ S ρ V T) (η : 
     push_cast
     ring
 
-theorem scalarRadialFlux_codifferential (v : Representative ζ hζ S ρ V T) (η : ℝ → ℝ)
+theorem scalarRadialFlux_codifferential  
     (hη : CompactRadialTest T η) (x : Space (KPCuspLogShape.dimension F)) :
     codifferential (KPCuspLogShape.dimension F) (scalarRadialFlux v η) x =
       ((codifferential (KPCuspLogShape.dimension F) (radialFlux v η) x).re : ℂ) := by
@@ -436,6 +450,8 @@ theorem scalarRadialFlux_codifferential (v : Representative ζ hζ S ρ V T) (η
   have hs : ContDiff ℝ (⊤ : ℕ∞) (fun q => radialFlux v η q i k) :=
     contDiff_pi.mp (contDiff_pi.mp (radialFlux_smooth v η hη) i) k
   exact hs.contDiffAt.differentiableAt (by simp)
+end
+
 
 theorem compact_radial_scalar_flux_criterion
     (G : KPCuspCharts.ChartOutput F hF S D)

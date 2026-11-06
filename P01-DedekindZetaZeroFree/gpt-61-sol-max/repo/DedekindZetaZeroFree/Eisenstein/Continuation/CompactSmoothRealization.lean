@@ -48,8 +48,11 @@ theorem cleared_covariance (C : ScalarContinuation R Q) (v : R.A.UnitQuotient)
     (convex_ball (0 : ℂ) G.radius).isPreconnected
     (Metric.mem_ball_self G.radius_pos) heN.frequently hs
 
-theorem cleared_level (C : ScalarContinuation R Q) (v : R.A.UnitQuotient)
+section
+variable (C : ScalarContinuation R Q) (v : R.A.UnitQuotient)
     (G : IndividualSmoothGerm C v) (s : ℂ) (hs : s ∈ Metric.ball 0 G.radius)
+include C v G s hs
+theorem cleared_level  
     (g u : Group R)
     (hu : u ∈ KPGlobalTorusFunctionData.globalLevel F R.A.zeta12 R.A.primitive_zeta12 Q.level) :
     G.cleared s (g * u) = G.cleared s g := by
@@ -62,8 +65,7 @@ theorem cleared_level (C : ScalarContinuation R Q) (v : R.A.UnitQuotient)
     rw [← mul_assoc]
     exact Q.common_level v z _ u hu) s hs
 
-theorem cleared_rational (C : ScalarContinuation R Q) (v : R.A.UnitQuotient)
-    (G : IndividualSmoothGerm C v) (s : ℂ) (hs : s ∈ Metric.ball 0 G.radius)
+theorem cleared_rational  
     (a : Matrix.ProjGenLinGroup (Fin 2) F) (g : Group R) :
     G.cleared s (KPLiteralRaw.rationalLift F R.A.zeta12 R.A.primitive_zeta12 a * g) =
       G.cleared s g := by
@@ -71,8 +73,7 @@ theorem cleared_rational (C : ScalarContinuation R Q) (v : R.A.UnitQuotient)
     intro z _
     simpa only [one_mul] using literal_rational_invariant (Q.flat v) z a g) s hs
 
-theorem cleared_genuine (C : ScalarContinuation R Q) (v : R.A.UnitQuotient)
-    (G : IndividualSmoothGerm C v) (s : ℂ) (hs : s ∈ Metric.ball 0 G.radius)
+theorem cleared_genuine  
     (ε : rootsOfUnity 3 F) (g : Group R) :
     G.cleared s (KPAdelicCoverRestrictedProduct.pglCentralInjection
       F R.A.zeta12 R.A.primitive_zeta12 ε * g) =
@@ -81,6 +82,8 @@ theorem cleared_genuine (C : ScalarContinuation R Q) (v : R.A.UnitQuotient)
   intro z hz
   exact KPLiteralExceptionalResidue.ResidueAutomorphy.eisenstein_genuine
     F R.A.zeta12 R.A.primitive_zeta12 Q.K (Q.flat v) z hz ε g
+end
+
 
 def assemble (C : ScalarContinuation R Q) (G : ∀ v, IndividualSmoothGerm C v) :
     Realization R Q := by

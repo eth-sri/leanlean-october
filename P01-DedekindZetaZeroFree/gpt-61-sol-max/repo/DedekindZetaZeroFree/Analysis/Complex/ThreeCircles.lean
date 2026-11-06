@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Algebra.Order.Floor.Extended
 public import Mathlib.Algebra.Order.Floor.Semifield
 public import Mathlib.Algebra.Order.Interval.Basic
@@ -40,6 +42,7 @@ public import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
+
 namespace DedekindZetaZeroFree.Quantitative.ThreeCircles
 
 open Complex Set Metric
@@ -52,7 +55,7 @@ theorem three_circles (ℓ : ℂ → ℂ) (c : ℂ) (R r₀ r₁ r₂ : ℝ) (hr
     (hbig : ∀ s ∈ closedBall c r₂, ‖ℓ s‖ ≤ A * L)
     (w : ℝ) (hw0 : r₀ < |w|) (hw : |w| ≤ r₁) :
     ‖ℓ (c + w)‖ ≤ A * L ^ ((Real.log r₁ - Real.log r₀) / (Real.log r₂ - Real.log r₀)) := by
-  have hlu : Real.log r₀ < Real.log r₂ := Real.log_lt_log hr₀ hr₀₂
+  have hlu  := Real.log_lt_log hr₀ hr₀₂
   have hsub : 0 < Real.log r₂ - Real.log r₀ := by linarith
   have hexp_le : ∀ z : ℂ, z.re ≤ Real.log r₂ → ‖Complex.exp z‖ ≤ r₂ := by
     intro z hz
@@ -63,7 +66,7 @@ theorem three_circles (ℓ : ℂ → ℂ) (c : ℂ) (R r₀ r₁ r₂ : ℝ) (hr
     intro z hz
     rw [mem_closedBall, dist_eq_norm, add_sub_cancel_left]
     exact hexp_le z hz
-  let f : ℂ → ℂ := fun z => ℓ (c + Complex.exp z)
+  let f  := fun z => ℓ (c + Complex.exp z)
   have hd : DiffContOnCl ℂ f (verticalStrip (Real.log r₀) (Real.log r₂)) := by
     apply DifferentiableOn.diffContOnCl
     have hcl : closure (verticalStrip (Real.log r₀) (Real.log r₂)) =
@@ -103,10 +106,10 @@ theorem three_circles (ℓ : ℂ → ℂ) (c : ℂ) (R r₀ r₁ r₂ : ℝ) (hr
   have hre : (Complex.log (w : ℂ)).re = Real.log |w| := by
     rw [Complex.log_re, Complex.norm_real, Real.norm_eq_abs]
   have hr₁pos : 0 < |w| := by linarith
-  have hlog1 : Real.log |w| ≤ Real.log r₁ := Real.log_le_log hr₁pos hw
-  have hlog2 : Real.log r₁ ≤ Real.log r₂ :=
+  have hlog1  := Real.log_le_log hr₁pos hw
+  have hlog2  :=
     Real.log_le_log (by linarith) hr₁₂
-  have hlog0 : Real.log r₀ ≤ Real.log |w| := Real.log_le_log hr₀ hw0.le
+  have hlog0  := Real.log_le_log hr₀ hw0.le
   have hz0 : Complex.log (w : ℂ) ∈ verticalClosedStrip (Real.log r₀) (Real.log r₂) := by
     show (Complex.log (w : ℂ)).re ∈ Icc (Real.log r₀) (Real.log r₂)
     rw [hre]

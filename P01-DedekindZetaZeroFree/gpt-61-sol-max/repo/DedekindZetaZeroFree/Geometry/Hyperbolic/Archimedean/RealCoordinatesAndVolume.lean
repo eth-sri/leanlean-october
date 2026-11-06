@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Geometry.HyperbolicActionMetricAndVolume
 
 @[expose] public section
+
 
 noncomputable section
 open scoped Classical ENNReal
@@ -51,7 +54,7 @@ def coordinates : EuclideanSpace ℝ (Fin (d * 3)) ≃ₜ KPArch.Space d where
     · exact Complex.continuous_im.comp (continuous_fst.comp (continuous_apply _))
     · exact continuous_snd.comp (continuous_apply _)
 
-def density (p : EuclideanSpace ℝ (Fin (d * 3))) : ℝ :=
+def density (p : EuclideanSpace ℝ (Fin (d * 3)))  :=
   KPArch.volumeDensity (d) (coordinates d p)
 
 theorem coordinate_volume : Measure.map (coordinates d) volume =
@@ -80,12 +83,7 @@ theorem coordinate_volume : Measure.map (coordinates d) volume =
         exact ⟨⟨by simpa using h (finProdFinEquiv (i, 0)),
           by simpa using h (finProdFinEquiv (i, 1))⟩,
           by simpa using h (finProdFinEquiv (i, 2))⟩
-      · intro h k
-        obtain ⟨⟨i,j⟩, rfl⟩ := finProdFinEquiv.surjective k
-        fin_cases j
-        · simpa using (h i).1.1
-        · simpa using (h i).1.2
-        · simpa using (h i).2
+      · (intros; grind)
     rw [hpre, volume_pi_pi]
     simp_rw [Measure.volume_eq_prod, Measure.prod_prod]
     simp_rw [Complex.volume_preserving_equiv_real_prod.measure_preimage

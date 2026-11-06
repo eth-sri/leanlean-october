@@ -29,27 +29,34 @@ variable {U : Level F ζ hζ} (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
 theorem angularProjection_measurable : Measurable (angularProjection A) :=
   angular_measurable A
 
-def actualKernel (D : Disintegration A R P) : KPMsFixedHaar.FiberKernel A where
+section
+variable (D : Disintegration A R P)
+include D in
+def actualKernel   : KPMsFixedHaar.FiberKernel A where
   unipotent := D.unipotent
   probability_unipotent := D.probability_unipotent
   fiber_support := D.fiber_support
   measurable_kernel := D.measurable_kernel
   fiber_formula := D.fiber_formula
 
-theorem kernel_angular (D : Disintegration A R P) (ω : Omega A)
+include D in
+theorem kernel_angular   (ω : Omega A)
     (f : Omega A → ℝ≥0∞) (hf : Measurable f) :
     (∫⁻ x, f (angularProjection A x) ∂D.unipotent ω) = f ω :=
   kernel_angular_lintegral A (actualKernel A D) ω f hf
 
-abbrev sectionMeasure (D : Disintegration A R P) : Measure (CrossSection A) :=
+include D in
+abbrev sectionMeasure   : Measure (CrossSection A) :=
   KPMsFixedHaar.WeightedSectionGlobalization.weightedSectionMeasure A D.componentWeight
 
-theorem section_shape_measure (D : Disintegration A R P) :
+include D in
+theorem section_shape_measure   :
     Measure.map (angularProjection A) (sectionMeasure A D) = D.beta :=
   angular_marginal_of_disintegration A (actualKernel A D) D.componentWeight D.beta
     D.section_disintegration
 
-theorem offset_section_shape_measure (D : Disintegration A R P)
+include D in
+theorem offset_section_shape_measure  
     (density : Omega A → ℝ≥0∞) (hdensity : Measurable density) :
     Measure.map (angularProjection A)
       ((sectionMeasure A D).withDensity (density ∘ angularProjection A)) =
@@ -68,7 +75,8 @@ theorem offset_section_shape_measure (D : Disintegration A R P)
   rw [lintegral_map (hdensity.mul hf) (angularProjection_measurable A)] at hmap
   exact hmap
 
-theorem spherical_shell_shape_measure (D : Disintegration A R P) (Y : ℝ)
+include D in
+theorem spherical_shell_shape_measure   (Y : ℝ)
     (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff A Y) :
     ∃ s : KPMsFixedHaarDisintegration.Spherical F ζ hζ U →
         KPMsFixedHaarDisintegration.Omega A,
@@ -199,14 +207,16 @@ theorem cuspDensity_measurable (c : CuspIndex A → ℝ≥0∞) :
         (Parabolic A j).E (Parabolic A j).integralUnits) (y := c j)))
   exact hc.measurable
 
-def cuspWeightedSection (D : Disintegration A R P) (c : CuspIndex A → ℝ≥0∞) :
+include D in
+def cuspWeightedSection   (c : CuspIndex A → ℝ≥0∞) :
     Measure (CrossSection A) :=
   ∑ j : CuspIndex A,
     (c j * (D.componentWeight j.1 /
       ENNReal.ofReal (2 * (KPCuspLogShape.dimension F : ℝ)))) •
       Measure.map (fun x => (⟨j,x⟩ : CrossSection A)) (Geometry A j).sectionMeasure
 
-theorem cuspWeightedSection_eq_withDensity (D : Disintegration A R P)
+include D in
+theorem cuspWeightedSection_eq_withDensity  
     (c : CuspIndex A → ℝ≥0∞) :
     cuspWeightedSection A D c = (sectionMeasure A D).withDensity
       (fun x => c (angularProjection A x).1) := by
@@ -231,17 +241,20 @@ theorem cuspWeightedSection_eq_withDensity (D : Disintegration A R P)
   rw [lintegral_const_mul (c j) hfj]
   ring
 
-theorem cusp_section_shape_measure (D : Disintegration A R P)
+include D in
+theorem cusp_section_shape_measure  
     (c : CuspIndex A → ℝ≥0∞) :
     Measure.map (angularProjection A) (cuspWeightedSection A D c) =
       D.beta.withDensity (fun ω => c ω.1) := by
   rw [cuspWeightedSection_eq_withDensity A D c]
   exact offset_section_shape_measure A D (fun ω => c ω.1) (cuspDensity_measurable A c)
 
-def sphericalShell (D : Disintegration A R P) (Y : ℝ) : Set (Spherical F ζ hζ U) :=
+include D in
+def sphericalShell   (Y : ℝ) : Set (Spherical F ζ hζ U) :=
   cuspEnds A Y ∩ {v | Y < D.modulus v ∧ D.modulus v ≤ 2 * Y}
 
-theorem sphericalShell_measurable (D : Disintegration A R P) (Y : ℝ) :
+include D in
+theorem sphericalShell_measurable   (Y : ℝ) :
     MeasurableSet (sphericalShell A D Y) := by
   apply MeasurableSet.inter
   · apply IsOpen.measurableSet
@@ -257,6 +270,8 @@ theorem sphericalShell_measurable (D : Disintegration A R P) (Y : ℝ) :
     exact hm _ (KPFiniteAdelicCuspEnds.component_open_end F _ _ _)
   · exact (measurableSet_lt measurable_const D.measurable_modulus).inter
       (measurableSet_le D.measurable_modulus measurable_const)
+end
+
 
 end DedekindZetaZeroFree.KPMsActualNativeWeightedShapeMeasure
 

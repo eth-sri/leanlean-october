@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Mellin.LogarithmicEndpointIntegrability
 
 @[expose] public section
+
 
 /-
 Repository: openai/math.
@@ -22,7 +25,7 @@ private theorem contDiffOn_eulerIter {f : ℝ → ℂ} (hf : ContDiffOn ℝ ∞ 
     ∀ j : ℕ, ContDiffOn ℝ ∞ (EulerIter j f) (Set.Ioi 0) := by
   intro j
   induction j with
-  | zero => simpa using hf
+  | zero => exact hf
   | succ j ih =>
     have hderiv : ContDiffOn ℝ ∞ (deriv (EulerIter j f)) (Set.Ioi 0) :=
       ((contDiffOn_infty_iff_deriv_of_isOpen isOpen_Ioi).mp ih).2
@@ -33,7 +36,7 @@ private theorem contDiffOn_eulerIter {f : ℝ → ℂ} (hf : ContDiffOn ℝ ∞ 
 
 private theorem cpow_sub_one_mul (s : ℂ) {x : ℝ} (hx : 0 < x) :
     (x : ℂ) ^ (s - 1) * (x : ℂ) = (x : ℂ) ^ s := by
-  have hx0 : (x : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (ne_of_gt hx)
+  have hx0  := Complex.ofReal_ne_zero.mpr (ne_of_gt hx)
   have h1 : (x : ℂ) ^ s = (x : ℂ) ^ (s - 1) * (x : ℂ) ^ (1 : ℂ) := by
     rw [← Complex.cpow_add (s - 1) 1 hx0, show s - 1 + 1 = s by ring]
   rw [h1, Complex.cpow_one]
@@ -42,7 +45,7 @@ theorem euler_succ_mellin_eq (h : LogMellinPhysical f δ P) (j : ℕ)
     (s : ℂ) (hs : 0 < s.re) :
     mellin (EulerIter (j + 1) f) s = -s * mellin (EulerIter j f) s := by
   have hsne : s ≠ 0 := by rintro rfl; simp at hs
-  have hg : ContDiffOn ℝ ∞ (EulerIter j f) (Set.Ioi 0) := contDiffOn_eulerIter h.contDiffOn j
+  have hg  := contDiffOn_eulerIter h.contDiffOn j
   have hgd : DifferentiableOn ℝ (EulerIter j f) (Set.Ioi 0) :=
     ((contDiffOn_infty_iff_deriv_of_isOpen isOpen_Ioi).mp hg).1
   have hv : ∀ x ∈ Set.Ioi (0 : ℝ),
@@ -55,7 +58,7 @@ theorem euler_succ_mellin_eq (h : LogMellinPhysical f δ P) (j : ℕ)
       (x : ℂ) ^ (s - 1) * EulerIter (j + 1) f x = (x : ℂ) ^ s * deriv (EulerIter j f) x := by
     intro x hx
     rw [EulerIter_succ_of_pos j f x hx, ← mul_assoc, cpow_sub_one_mul s hx]
-  have hconv : MellinConvergent (EulerIter (j + 1) f) s := euler_mellinConvergent h (j + 1) s hs
+  have hconv  := euler_mellinConvergent h (j + 1) s hs
   have huv' : IntegrableOn (fun x : ℝ => (x : ℂ) ^ s * deriv (EulerIter j f) x)
       (Set.Ioi 0) := by
     rw [MellinConvergent] at hconv
@@ -67,7 +70,7 @@ theorem euler_succ_mellin_eq (h : LogMellinPhysical f δ P) (j : ℕ)
     have h0 : IntegrableOn (fun x : ℝ => (x : ℂ) ^ (s - 1) * EulerIter j f x)
         (Set.Ioi 0) := by
       have := euler_mellinConvergent h j s hs
-      simpa only [MellinConvergent, smul_eq_mul] using this
+      exact this
     have h1 : Integrable (fun x : ℝ => s * ((x : ℂ) ^ (s - 1) * EulerIter j f x))
         (volume.restrict (Set.Ioi 0)) := h0.const_mul s
     simpa only [mul_assoc, IntegrableOn] using h1

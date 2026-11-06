@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction.UnitCohomologyAxiom
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -63,7 +66,7 @@ with `K` finite over the distinguished base field,
 Both the base field and the cyclic extension are bundled, so containment,
 finiteness, normality, and the chosen generator cannot become detached from
 the subgroups to which they belong. -/
-def SatisfiesClassFieldAxiom (A : Rep ℤ G) : Prop :=
+def SatisfiesClassFieldAxiom (A : Rep ℤ G)  :=
   ∀ (K : FiniteAbstractField G) (E : FiniteCyclicSubextension K),
     ClassFieldAxiomCohomologyData A K E
 
@@ -71,35 +74,34 @@ namespace SatisfiesClassFieldAxiom
 
 variable {A : Rep ℤ G}
 
+section
+variable (hcf : SatisfiesClassFieldAxiom A)
+    (K : FiniteAbstractField G) (E : FiniteCyclicSubextension K)
+include hcf K E
 /-- The degree-zero half of the class-field axiom for a bundled cyclic
 extension. -/
-theorem tateHZero_card
-    (hcf : SatisfiesClassFieldAxiom A)
-    (K : FiniteAbstractField G) (E : FiniteCyclicSubextension K) :
-    Nat.card (tateCohomology (E.fixedRepresentation A) 0) =
-      (E.toFiniteAbstractExtension.degree : ℕ) :=
+def tateHZero_card
+       :=
   (hcf K E).tateHZero_card
 
 /-- The degree-minus-one half of the class-field axiom for a bundled cyclic
 extension. -/
-theorem tateHMinusOne_card
-    (hcf : SatisfiesClassFieldAxiom A)
-    (K : FiniteAbstractField G) (E : FiniteCyclicSubextension K) :
-    Nat.card (tateCohomology (E.fixedRepresentation A) (-1)) = 1 :=
+def tateHMinusOne_card
+       :=
   (hcf K E).tateHMinusOne_card
 
 /-- The order-one assertion in the class-field axiom gives actual vanishing of
 `H⁻¹(G(L/K), A_L)`. -/
 theorem tateHMinusOne_isZero
-    (hcf : SatisfiesClassFieldAxiom A)
-    (K : FiniteAbstractField G) (E : FiniteCyclicSubextension K) :
+      :
     Limits.IsZero (tateCohomology (E.fixedRepresentation A) (-1)) := by
   let H := tateCohomology (E.fixedRepresentation A) (-1)
   let : Finite H := (hcf K E).finiteTateHMinusOne
-  have hcard : Nat.card H = 1 := by
-    simpa [H] using hcf.tateHMinusOne_card K E
-  let : Subsingleton H := (Nat.card_eq_one_iff_unique.mp hcard).1
+  have hcard : Nat.card H = 1 := hcf.tateHMinusOne_card K E
+  let  := (Nat.card_eq_one_iff_unique.mp hcard).1
   exact ModuleCat.isZero_of_subsingleton H
+end
+
 
 end SatisfiesClassFieldAxiom
 

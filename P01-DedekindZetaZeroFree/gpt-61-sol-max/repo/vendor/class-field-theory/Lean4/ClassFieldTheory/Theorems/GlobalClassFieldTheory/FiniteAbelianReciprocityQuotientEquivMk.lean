@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.Definitions.GlobalClassFieldTheory.FiniteAbelianReciprocityQuotientEquiv
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -38,8 +41,7 @@ theorem finiteAbelianReciprocityQuotientEquiv_mk
     (D : FiniteAbelianReciprocityData K L)
     (x : RayClassGroup D.modulus) :
     finiteAbelianReciprocityQuotientEquiv K L D
-        (QuotientGroup.mk' D.artin.ker x) = D.artin x := by
-  rfl
+        (QuotientGroup.mk' D.artin.ker x) = D.artin x := rfl
 
 end ClassFieldTheory
 

@@ -31,17 +31,26 @@ variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
+
+local notation:max "current_ActualChart" => ActualChart (U := U) (H := H)
+
+
+local notation:max "current_CompactMultiplier" => CompactMultiplier (U := U) (H := H)
+
 private theorem compactMultiplier_bounded
-    (η : CompactMultiplier (U := U) (H := H)) :
+    (η : current_CompactMultiplier) :
     ∃ B D : ℝ, 0 ≤ B ∧ 0 ≤ D ∧ (∀ x, |η.val.val x| ≤ B) ∧
-      ∀ (a : ActualChart (U := U) (H := H)) (y : KPContCotangentOverlapRationalBranches.omega a),
+      ∀ (a : current_ActualChart) (y : KPContCotangentOverlapRationalBranches.omega a),
         ‖cutoffDifferential η.val a y‖ ≤ D :=
   KPContActualSectorMultiplier.compactCutoff_bounds
     F ζ hζ U R P H η.val η.property
 
- def actualBorelProduct (η : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ)
+ section
+variable (η : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ)
     (hη : Measurable η) (B : ℝ) (hB : ∀ x, |η x| ≤ B)
-    (s : BorelL2Sections F ζ hζ U R P H) : BorelL2Sections F ζ hζ U R P H := by
+    (s : BorelL2Sections F ζ hζ U R P H)
+include η hη B hB s
+def actualBorelProduct   : BorelL2Sections F ζ hζ U R P H := by
   let v := scalarRepresentative F ζ hζ U R P H s.val
   let f : GenuineCoveredScalars F ζ hζ U :=
     ⟨fun x => (η (KPContSectorCoveredQuotientVocabulary.q F ζ hζ U x) : ℂ) * v.val x, by
@@ -62,9 +71,7 @@ private theorem compactMultiplier_bounded
   exact borelS F ζ hζ U R P H ⟨f, hf, hlp⟩
 
 private theorem actualBorelProduct_coefficient
-    (η : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ)
-    (hη : Measurable η) (B : ℝ) (hB : ∀ x, |η x| ≤ B)
-    (s : BorelL2Sections F ζ hζ U R P H) (a : ActualChart (U := U) (H := H))
+      (a : ActualChart (U := U) (H := H))
     (y : a.domain) :
     (a.coefficient (actualBorelProduct η hη B hB s).val y : ℂ) =
       (η (a.toBase y) : ℂ) * (a.coefficient s.val y : ℂ) := by
@@ -83,6 +90,8 @@ private theorem actualBorelProduct_coefficient
     (Quotient.mk _ (y.val, (H.atlas U).representative a.component)) = _ at he
   rw [he]
   congr 2
+end
+
 
 private theorem continuous_labeledA_self :
     Continuous (labeledA (placeEquiv F ζ hζ) : M F → KPCuspGenuineMonodromy.SymmetricSpace F) := by
@@ -90,10 +99,10 @@ private theorem continuous_labeledA_self :
   intro k
   exact (continuous_apply (placeEquiv F ζ hζ |>.symm k)).comp
     (CotangentLogCoframe.A (d F)).continuous
-private theorem isOpen_omega (a : ActualChart (U := U) (H := H)) : IsOpen (omega a) :=
+private theorem isOpen_omega (a : current_ActualChart) : IsOpen (omega a) :=
   a.domain_open.preimage continuous_labeledA_self
 
-private lemma q_coordinates (a : ActualChart (U := U) (H := H)) (y : a.domain) :
+private lemma q_coordinates (a : current_ActualChart) (y : a.domain) :
     q a (coordinates a y).val = a.toBase y := by
   have hi : ∀ z : KPCuspGenuineMonodromy.SymmetricSpace F,
       labeledA (placeEquiv F ζ hζ) (labeledAInv (placeEquiv F ζ hζ) z) = z := by
@@ -108,7 +117,7 @@ private theorem continuous_iff_isQuotientMap {X Y Z : Type*} [TopologicalSpace X
     rw [← hq.isOpen_preimage]
     exact h.isOpen_preimage s hs
 private theorem continuous_of_all_lifts (f : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ)
-    (hf : ∀ a : ActualChart (U := U) (H := H), Continuous (fun y : omega a => f (q a y.val))) :
+    (hf : ∀ a : current_ActualChart, Continuous (fun y : omega a => f (q a y.val))) :
     Continuous f := by
   obtain ⟨cover⟩ := (kp_cont_actual_cotangent_countable_shrinking F ζ hζ U R P H).2
   refine continuous_of_cover_nhds (s := fun n => (cover.chart n).baseDomain) ?_ ?_
@@ -130,14 +139,14 @@ private theorem cutoff_continuous (η : RealSmoothCutoff F ζ hζ U R P H) : Con
   obtain ⟨g,hg,he⟩ := η.smooth a
   convert hg.continuousOn.domRestrict using 1
   exact funext (fun y => (he y).symm)
-private theorem smooth_liftExtension {a : ActualChart (U := U) (H := H)} {f : omega a → ℂ}
+private theorem smooth_liftExtension {a : current_ActualChart} {f : omega a → ℂ}
     (hf : SmoothOnLift a f) : ContDiffOn ℝ (⊤ : ℕ∞) (liftExtension a f) (omega a) := by
   obtain ⟨g, hg, he⟩ := hf
   refine hg.congr (f₁ := liftExtension a f) ?_
   intro x hx
   simpa [liftExtension, hx] using (he ⟨x, hx⟩).symm
 
-private theorem smooth_differential {a : ActualChart (U := U) (H := H)} {f : omega a → ℂ}
+private theorem smooth_differential {a : current_ActualChart} {f : omega a → ℂ}
     (hf : SmoothOnLift a f) : SmoothOnLift a (fun x => CotangentLogCoframe.j (d F)
       (HyperbolicChart.differential (d F) (liftExtension a f) x.val)) := by
   refine ⟨fun x => CotangentLogCoframe.j (d F)
@@ -159,7 +168,7 @@ private theorem smooth_differential {a : ActualChart (U := U) (H := H)} {f : ome
 
 private theorem measurable_smooth {W : Type*} [NormedAddCommGroup W] [NormedSpace ℝ W]
     [MeasurableSpace W] [BorelSpace W]
-    {a : ActualChart (U := U) (H := H)} {f : omega a → W} (hf : SmoothOnLift a f) :
+    {a : current_ActualChart} {f : omega a → W} (hf : SmoothOnLift a f) :
     Measurable f := by
   obtain ⟨g, hg, he⟩ := hf
   have h : f = (omega a).domRestrict g := funext (fun x => (he x).symm)
@@ -267,20 +276,20 @@ private theorem differential_arrow_const {i : Fin (H.atlas U).componentCount}
       EuclideanSpace.basisFun_apply, Pi.single_apply] using hi.symm
   rw [hv]
 
-private theorem smooth_ofReal {a : ActualChart (U := U) (H := H)} {f : omega a → ℝ}
+private theorem smooth_ofReal {a : current_ActualChart} {f : omega a → ℝ}
     (hf : SmoothOnLift a f) : SmoothOnLift a (fun x => (f x : ℂ)) := by
   obtain ⟨g, hg, he⟩ := hf
   exact ⟨fun x => (g x : ℂ), Complex.ofRealCLM.contDiff.comp_contDiffOn hg,
     fun x => by dsimp; rw [he x]⟩
 
-private theorem differentiable_liftExtension {a : ActualChart (U := U) (H := H)}
+private theorem differentiable_liftExtension {a : current_ActualChart}
     {f : omega a → ℂ} (hf : SmoothOnLift a f) (x : omega a) :
     DifferentiableAt ℝ (liftExtension a f) x.val :=
   ((smooth_liftExtension hf).differentiableOn (by simp) x.val x.property).differentiableAt
     ((isOpen_omega a).mem_nhds x.property)
 
 private theorem sectionFields_apply (s : KPContSectorSmoothFramesSupport.Sections F ζ hζ U R P H)
-    (a : ActualChart (U := U) (H := H)) (x : omega a) :
+    (a : current_ActualChart) (x : omega a) :
     sectionFields s a x = (s a.component).val (labeledA (placeEquiv F ζ hζ) x.val) := by
   have hcoe : (KPContCotangentActualGenuineTwistIsotropy.isotropyChart a).coefficient s x.val =
       (KPCuspGenuineMonodromy.chi F ζ hζ
@@ -308,7 +317,7 @@ private theorem section_compatible (s : KPContSectorSmoothFramesSupport.Sections
         exact (unitary_phase arr).2.2.2 s x hx
 
 private theorem measurable_sectionFields
-    (s : BorelL2Sections F ζ hζ U R P H) (a : ActualChart (U := U) (H := H)) :
+    (s : BorelL2Sections F ζ hζ U R P H) (a : current_ActualChart) :
     Measurable (sectionFields s.val a) := by
   have he : sectionFields s.val a = fun x =>
       (s.val a.component).val (labeledA (placeEquiv F ζ hζ) x.val) :=
@@ -317,7 +326,7 @@ private theorem measurable_sectionFields
   exact (s.property.1 a.component).comp
     (continuous_labeledA_self.measurable.comp measurable_subtype_coe)
 
-private theorem q_isotropy (a : ActualChart (U := U) (H := H)) (γ : Gamma a) (x : M F) :
+private theorem q_isotropy (a : current_ActualChart) (γ : Gamma a) (x : M F) :
     q a ((isotropyArrow a γ).psi x) = q a x := by
   apply congrArg (KPFiniteCuspAtlas.componentMap F ζ hζ U
     ((H.atlas U).representative a.component))
@@ -333,7 +342,7 @@ private theorem q_isotropy (a : ActualChart (U := U) (H := H)) (γ : Gamma a) (x
   apply Quotient.sound
   exact ⟨γ.val.1.val, rfl⟩
 
-private theorem q_branch {a b : ActualChart (U := U) (H := H)} (e : ActualBranch a b)
+private theorem q_branch {a b : current_ActualChart} (e : ActualBranch a b)
     (x : M F) : q b (e.arrow.psi x) = q a x := by
   rcases e with ⟨h, e, hs, ht, hl⟩
   rcases a with ⟨i, ca, oa, da, dao, dac, das, dai⟩
@@ -352,7 +361,10 @@ private theorem q_branch {a b : ActualChart (U := U) (H := H)} (e : ActualBranch
   apply Quotient.sound
   exact ⟨e.gamma, rfl⟩
 
- theorem cutoff_gradient (η : RealSmoothCutoff F ζ hζ U R P H)
+ section
+variable (η : RealSmoothCutoff F ζ hζ U R P H)
+include η
+theorem cutoff_gradient  
     (s : BorelL2Sections F ζ hζ U R P H) :
     IsMeasurableCotangentFamily (fun a x => sectionFields s.val a x • CotangentLogCoframe.j (d F)
       (HyperbolicChart.differential (d F) (liftExtension a (fun y => (η.val (q a y.val) : ℂ))) x.val)) := by
@@ -385,7 +397,7 @@ private theorem q_branch {a b : ActualChart (U := U) (H := H)} (e : ActualBranch
         (Q e.arrow x) (sectionFields s.val a ⟨x, e.source_shrinking hx⟩ • _)
     rw [map_smul, smul_smul]
 
- theorem cutoff_family (η : RealSmoothCutoff F ζ hζ U R P H)
+ theorem cutoff_family  
     (W : Family (U := U) (H := H)) :
     IsMeasurableCotangentFamily (fun a x => cutoffLift η a x • coefficient W a x) := by
   refine ⟨fun a => (measurable_smooth (smooth_ofReal (η.smooth a))).smul
@@ -399,11 +411,13 @@ private theorem q_branch {a b : ActualChart (U := U) (H := H)} (e : ActualBranch
     simp only [cutoffLift, coefficient]
     rw [q_branch, W.property.2.2 a b e x hx, map_smul]
 
- def productFamily (η : RealSmoothCutoff F ζ hζ U R P H)
+ def productFamily  
     (s : BorelL2Sections F ζ hζ U R P H) (W : Family (U := U) (H := H)) :
     Family (U := U) (H := H) :=
   (⟨fun a x => cutoffLift η a x • coefficient W a x, cutoff_family η W⟩ : Family) +
     ⟨fun a x => sectionFields s.val a x • cutoffDifferential η a x, cutoff_gradient η s⟩
+end
+
 
 private theorem base_direction (j : Fin (3*d F)) :
     (baseReindex (F:=F)).symm (EuclideanSpace.single j 1) =
@@ -414,7 +428,7 @@ private theorem base_direction (j : Fin (3*d F)) :
     LinearIsometryEquiv.piLpCongrLeft_apply, Equiv.symm_symm, HyperbolicChart.coordinateVector,
     WithLp.ofLp_toLp]
   simp [EuclideanSpace.single_apply, Pi.single_apply, ← Equiv.apply_eq_iff_eq_symm_apply]
-private theorem decoder_differential (a : ActualChart (U:=U) (H:=H)) (f : omega a → ℂ)
+private theorem decoder_differential (a : current_ActualChart) (f : omega a → ℂ)
     (x : Space (3*d F)) (hx : x ∈ coordinateDomain a) (j : Fin (3*d F)) :
     (let p := (baseReindex (F:=F)).symm x
      let ik := (coefficientIndex (F:=F)).symm j
@@ -429,7 +443,7 @@ private theorem decoder_differential (a : ActualChart (U:=U) (H:=H)) (f : omega 
     HyperbolicChart.differential, ← mul_assoc, ← Complex.ofReal_mul, ← Real.exp_add,
     ← Complex.exp_add]
 
-private theorem flattened_differential (a : ActualChart (U := U) (H := H))
+private theorem flattened_differential (a : current_ActualChart)
     (f : omega a → ℂ) (x : Space (3 * d F)) (hx : x ∈ coordinateDomain a)
     (hf : DifferentiableAt ℝ (liftExtension a f) ((baseReindex (F := F)).symm x))
     (j : Fin (3 * d F)) :
@@ -447,14 +461,14 @@ private theorem flattened_differential (a : ActualChart (U := U) (H := H))
   rw [base_direction]
   rfl
 
-private theorem coordinateDomain_isOpen (a : ActualChart (U := U) (H := H)) :
+private theorem coordinateDomain_isOpen (a : current_ActualChart) :
     IsOpen (coordinateDomain a) := by
   change IsOpen ((toActual (F := F) (ζ := ζ) (hζ := hζ)) ⁻¹' a.domain)
   apply a.domain_open.preimage
   unfold toActual labeledA
   fun_prop
 
-private theorem smooth_liftExtension_flat (a : ActualChart (U := U) (H := H))
+private theorem smooth_liftExtension_flat (a : current_ActualChart)
     (f : omega a → ℂ) (hf : SmoothOnLift a f) :
     ContDiffOn ℝ (⊤ : ℕ∞) (liftExtension a f) (omega a) := by
   obtain ⟨g, hg, he⟩ := hf
@@ -462,23 +476,27 @@ private theorem smooth_liftExtension_flat (a : ActualChart (U := U) (H := H))
   intro x hx
   simpa only [liftExtension, dite_eq_left hx] using (he ⟨x, hx⟩).symm
 
-private theorem smooth_flattened (a : ActualChart (U := U) (H := H))
+private theorem smooth_flattened (a : current_ActualChart)
     (f : omega a → ℂ) (hf : SmoothOnLift a f) :
     ContDiffOn ℝ (⊤ : ℕ∞) (fun x => liftExtension a f ((baseReindex (F := F)).symm x))
       (coordinateDomain a) :=
   (smooth_liftExtension_flat a f hf).comp (baseReindex (F := F)).symm.contDiff.contDiffOn
     (fun _ hx => hx)
 
- def mulBall {n : ℕ} (B : LocalBall n) (b : Space n → ℂ)
-    (hb : MemLp b ⊤ (volume.restrict B.carrier)) : BallL2 B →L[ℂ] BallL2 B :=
+ section
+variable {n : ℕ} (B : LocalBall n) (b : Space n → ℂ)
+    (hb : MemLp b ⊤ (volume.restrict B.carrier))
+include n B b hb
+def mulBall   : BallL2 B →L[ℂ] BallL2 B :=
   (ContinuousLinearMap.mul ℂ ℂ).holderL (volume.restrict B.carrier) ⊤ 2 2 (hb.toLp b)
- theorem mulBall_ae {n : ℕ} (B : LocalBall n) (b : Space n → ℂ)
-    (hb : MemLp b ⊤ (volume.restrict B.carrier)) (u : BallL2 B) :
+ theorem mulBall_ae   (u : BallL2 B) :
     (fun x => mulBall B b hb u x) =ᵐ[volume.restrict B.carrier] (fun x => b x * u x) := by
   have he := (ContinuousLinearMap.mul ℂ ℂ).coeFn_holder (r := 2) (hb.toLp b) u
   filter_upwards [he, hb.coeFn_toLp] with x hx hxb
   simpa only [mulBall, ContinuousLinearMap.holderL_apply_apply,
     ContinuousLinearMap.mul_apply', hxb] using hx
+end
+
  theorem memLp_top_on_ball {n : ℕ} (B : LocalBall n) (Ω : Set (Space n))
     (hΩ : IsOpen Ω) (hB : IsCompact (closure B.carrier) ∧ closure B.carrier ⊆ Ω)
     (b : Space n → ℂ) (hb : ContinuousOn b Ω) :
@@ -487,33 +505,38 @@ private theorem smooth_flattened (a : ActualChart (U := U) (H := H))
   apply memLp_top_of_bound (hb.mono (subset_closure.trans hB.2) |>.aestronglyMeasurable B.toOpens.isOpen.measurableSet) C
   exact ae_restrict_of_forall_mem B.toOpens.isOpen.measurableSet (fun x hx => hC x (subset_closure hx))
 
-private theorem smooth_cutoff_flat (η : CompactMultiplier (U := U) (H := H))
-    (a : ActualChart (U := U) (H := H)) :
+private theorem smooth_cutoff_flat (η : current_CompactMultiplier)
+    (a : current_ActualChart) :
     ContDiffOn ℝ (⊤ : ℕ∞) (multiplierCoordinate η a) (coordinateDomain a) := by
   apply smooth_flattened
   obtain ⟨g,hg,he⟩ := η.val.smooth a
   exact ⟨fun x => (g x : ℂ), Complex.ofRealCLM.contDiff.comp_contDiffOn hg,
     fun x => congrArg Complex.ofReal (he x)⟩
 
- def decode (x : Space (3*d F)) (j : Fin (3*d F)) (v : KPContCotangentActualGenuineTwistIsotropy.E F) : ℂ :=
+ section
+variable (x : Space (3*d F)) (j : Fin (3*d F))
+include x j
+def decode   (v : KPContCotangentActualGenuineTwistIsotropy.E F) : ℂ :=
   let p := (baseReindex (F := F)).symm x
   let ik := (coefficientIndex (F := F)).symm j
   ![(Real.exp (-p (ik.1,2)) : ℂ) * v (ik.1,1),
     (Real.exp (-p (ik.1,2)) : ℂ) * v (ik.1,2), v (ik.1,0)] ik.2
 
-private theorem decode_add_smul (x : Space (3*d F)) (j : Fin (3*d F))
+private theorem decode_add_smul  
     (b c : ℂ) (v w : KPContCotangentActualGenuineTwistIsotropy.E F) :
     decode x j (b • v + c • w) = b * decode x j v + c * decode x j w := by
   generalize hi : (coefficientIndex (F := F)).symm j = ik
   rcases ik with ⟨i,k⟩
   fin_cases k <;> simp [decode, hi, PiLp.add_apply, PiLp.smul_apply, smul_eq_mul] <;> ring
+end
 
- def cutoffPartial (η : CompactMultiplier (U := U) (H := H))
-    (a : ActualChart (U := U) (H := H)) (j : Fin (3*d F)) (x : Space (3*d F)) : ℂ :=
+
+ def cutoffPartial (η : current_CompactMultiplier)
+    (a : current_ActualChart) (j : Fin (3*d F)) (x : Space (3*d F)) : ℂ :=
   fderiv ℝ (multiplierCoordinate η a) x (EuclideanSpace.single j 1)
 
-private theorem cutoffPartial_decode (η : CompactMultiplier (U := U) (H := H))
-    (a : ActualChart (U := U) (H := H)) (j : Fin (3*d F))
+private theorem cutoffPartial_decode (η : current_CompactMultiplier)
+    (a : current_ActualChart) (j : Fin (3*d F))
     (x : Space (3*d F)) (hx : x ∈ coordinateDomain a) :
     cutoffPartial η a j x = decode x j
       (cutoffDifferential η.val a ⟨(baseReindex (F := F)).symm x, hx⟩) := by
@@ -557,10 +580,13 @@ open WeakJets.Raw
   by_cases hji : j = i <;>
     simp [counts, KPContLocalEnergy.SobolevEnergyEstimates.Raw.firstIndex, unitCount, hji]
 
- def multipliedSobolev {n : ℕ} (B : LocalBall n) (Ω : Set (Space n))
+ section
+variable {n : ℕ} (B : LocalBall n) (Ω : Set (Space n))
     (hΩ : IsOpen Ω) (hB : IsCompact (closure B.carrier) ∧ closure B.carrier ⊆ Ω)
     (b : Space n → ℂ) (hb : ContDiffOn ℝ (⊤ : ℕ∞) b Ω)
-    (u : IntegerSobolev B 1) : IntegerSobolev B 1 := by
+    (u : IntegerSobolev B 1)
+include n B Ω hΩ hB b hb u
+def multipliedSobolev   : IntegerSobolev B 1 := by
   let db := fun j x => fderiv ℝ b x (EuclideanSpace.single j 1)
   have hpartial j : ContinuousOn (db j) Ω :=
     ((hb.fderiv_of_isOpen hΩ (m := (⊤ : ℕ∞)) (by simp)).clm_apply contDiffOn_const).continuousOn
@@ -629,19 +655,13 @@ open WeakJets.Raw
         change N j _ x = _ at h3
         rw [h2, h3, add_comm]
 
-private theorem multipliedSobolev_zero {n : ℕ} (B : LocalBall n) (Ω : Set (Space n))
-    (hΩ : IsOpen Ω) (hB : IsCompact (closure B.carrier) ∧ closure B.carrier ⊆ Ω)
-    (b : Space n → ℂ) (hb : ContDiffOn ℝ (⊤ : ℕ∞) b Ω)
-    (u : IntegerSobolev B 1) :
+private theorem multipliedSobolev_zero   :
     (fun x => (multipliedSobolev B Ω hΩ hB b hb u).derivatives (zeroIndex n) x)
       =ᵐ[volume.restrict B.carrier] fun x => b x * u.derivatives (zeroIndex n) x := by
   simp only [multipliedSobolev, ↓reduceIte]
   exact mulBall_ae B b _ _
 
-private theorem multipliedSobolev_first {n : ℕ} (B : LocalBall n) (Ω : Set (Space n))
-    (hΩ : IsOpen Ω) (hB : IsCompact (closure B.carrier) ∧ closure B.carrier ⊆ Ω)
-    (b : Space n → ℂ) (hb : ContDiffOn ℝ (⊤ : ℕ∞) b Ω)
-    (u : IntegerSobolev B 1) (j : Fin n) :
+private theorem multipliedSobolev_first   (j : Fin n) :
     (fun x => (multipliedSobolev B Ω hΩ hB b hb u).derivatives
       (KPContLocalEnergy.SobolevEnergyEstimates.Raw.firstIndex j) x) =ᵐ[volume.restrict B.carrier]
       fun x => b x * u.derivatives (KPContLocalEnergy.SobolevEnergyEstimates.Raw.firstIndex j) x +
@@ -664,11 +684,13 @@ private theorem multipliedSobolev_first {n : ℕ} (B : LocalBall n) (Ω : Set (S
   rw [h1]
   simp only [Pi.add_apply]
   rw [h2, h3]
+end
+
 
 private theorem actualBorelProduct_fields
     (η : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ)
     (hη : Measurable η) (B : ℝ) (hB : ∀ x, |η x| ≤ B)
-    (s : BorelL2Sections F ζ hζ U R P H) (a : ActualChart (U := U) (H := H))
+    (s : BorelL2Sections F ζ hζ U R P H) (a : current_ActualChart)
     (x : omega a) :
     sectionFields (actualBorelProduct η hη B hB s).val a x =
       (η (q a x.val) : ℂ) * sectionFields s.val a x := by
@@ -676,9 +698,9 @@ private theorem actualBorelProduct_fields
   exact actualBorelProduct_coefficient η hη B hB s a ⟨_, x.property⟩
 
 private theorem scalarCoordinate_product
-    (η : CompactMultiplier (U := U) (H := H))
+    (η : current_CompactMultiplier)
     (hη : Measurable η.val.val) (C : ℝ) (hC : ∀ x, |η.val.val x| ≤ C)
-    (s : BorelL2Sections F ζ hζ U R P H) (a : ActualChart (U := U) (H := H))
+    (s : BorelL2Sections F ζ hζ U R P H) (a : current_ActualChart)
     (x : Space (3*d F)) (hx : x ∈ coordinateDomain a) :
     scalarCoordinate (actualBorelProduct η.val.val hη C hC s) a x =
       multiplierCoordinate η a x * scalarCoordinate s a x := by
@@ -686,9 +708,9 @@ private theorem scalarCoordinate_product
   exact actualBorelProduct_fields η.val.val hη C hC s a ⟨_, hx⟩
 
 private theorem covariantCoordinate_product
-    (η : CompactMultiplier (U := U) (H := H))
+    (η : current_CompactMultiplier)
     (s : BorelL2Sections F ζ hζ U R P H) (W : Family (U := U) (H := H))
-    (a : ActualChart (U := U) (H := H)) (x : Space (3*d F))
+    (a : current_ActualChart) (x : Space (3*d F))
     (hx : x ∈ coordinateDomain a) (j : Fin (3*d F)) :
     covariantCoordinate (productFamily η.val s W) a x j =
       multiplierCoordinate η a x * covariantCoordinate W a x j +
@@ -706,7 +728,7 @@ private theorem covariantCoordinate_product
   ring
 
 private theorem product_weakChartData
-    (η : CompactMultiplier (U := U) (H := H))
+    (η : current_CompactMultiplier)
     (hη : Measurable η.val.val) (C : ℝ) (hC : ∀ x, |η.val.val x| ≤ C)
     (s : BorelL2Sections F ζ hζ U R P H) (W : Family (U := U) (H := H))
     (hw : WeakChartData s W) :
@@ -740,7 +762,7 @@ private theorem product_weakChartData
     ring
 
 private theorem actualBorelProduct_supported
-    (η : CompactMultiplier (U := U) (H := H))
+    (η : current_CompactMultiplier)
     (hη : Measurable η.val.val) (C : ℝ) (hC : ∀ x, |η.val.val x| ≤ C)
     (s : BorelL2Sections F ζ hζ U R P H) (x : KPFiniteCuspAtlas.rawXU F ζ hζ U)
     (hx : x ∉ tsupport η.val.val) :
@@ -758,7 +780,7 @@ private theorem actualBorelProduct_supported
   simp [he]
 
 theorem compactMultiplier_product_weakH1
-    (η : CompactMultiplier (U := U) (H := H))
+    (η : current_CompactMultiplier)
     (u : KPContSectorClosedLpSubspace.H F ζ hζ R U)
     (hweak : ActualWeakH1Loc (H := H) u) :
     ∃ v : KPContSectorClosedLpSubspace.H F ζ hζ R U,

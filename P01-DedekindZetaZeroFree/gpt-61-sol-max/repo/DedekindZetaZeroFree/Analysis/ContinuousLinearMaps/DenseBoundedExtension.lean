@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.Normed.Operator.Extend
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -23,7 +26,7 @@ theorem dense_bounded_extension
   set L : V →L[𝕜] W := LinearMap.extendOfNorm (σ₁₂ := RingHom.id 𝕜) S e with hL
   refine ⟨L, ?_, ?_, ?_⟩
   · rw [hL]
-    exact LinearMap.opNorm_extendOfNorm_le he hC hbound
+    apply LinearMap.opNorm_extendOfNorm_le <;> assumption
   · intro u
     rw [hL]
     exact LinearMap.extendOfNorm_eq he ⟨C, hbound⟩ u

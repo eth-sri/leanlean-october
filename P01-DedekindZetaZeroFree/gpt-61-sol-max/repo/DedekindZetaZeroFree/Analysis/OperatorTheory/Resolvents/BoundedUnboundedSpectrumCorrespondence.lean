@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.IsolatedSpectralProjections
 public import DedekindZetaZeroFree.Analysis.SpectralTheory.ExteriorCoercivity.BelowThresholdDiscreteness
 public import DedekindZetaZeroFree.Analysis.OperatorTheory.Resolvents.ShiftedPencilHolomorphy
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 
@@ -27,15 +30,13 @@ theorem spectrum_iff_pencil
     {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
     (B : H →L[ℂ] H) (μ : ℝ) (hμ : 0 ≤ μ) :
     (((1 + μ)⁻¹ : ℝ) : ℂ) ∈ spectrum ℂ B ↔ ¬ IsUnit (1 - (μ + 1) • B) := by
-  have hne : ((1 + μ : ℝ) : ℂ) ≠ 0 := by
-    rw [Complex.ofReal_ne_zero]; positivity
+  
   have hc : (((1 + μ)⁻¹ : ℝ) : ℂ) ≠ 0 := by
     rw [Complex.ofReal_ne_zero]; exact inv_ne_zero (by positivity)
   have hinv : ((((1 + μ)⁻¹ : ℝ) : ℂ))⁻¹ = ((1 + μ : ℝ) : ℂ) := by
     rw [← Complex.ofReal_inv, inv_inv]
   have h1 : ((Units.mk0 (((1 + μ)⁻¹ : ℝ) : ℂ) hc) • (1 : H →L[ℂ] H))
-      = algebraMap ℂ (H →L[ℂ] H) (((1 + μ)⁻¹ : ℝ) : ℂ) := by
-    rw [Units.smul_def, Units.val_mk0, Algebra.algebraMap_eq_smul_one]
+      = algebraMap ℂ (H →L[ℂ] H) (((1 + μ)⁻¹ : ℝ) : ℂ) := rfl
   have h2 : ((Units.mk0 (((1 + μ)⁻¹ : ℝ) : ℂ) hc)⁻¹ • B)
       = ((1 + μ : ℝ) : ℂ) • B := by
     rw [Units.smul_def, Units.val_inv_eq_inv_val, Units.val_mk0, hinv]
@@ -50,10 +51,13 @@ theorem spectrum_iff_pencil
     rfl
   rw [heq]
 
-theorem spectrum_mem_iff_resolventSet
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+section
+variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
     (Δ : H →ₗ.[ℂ] H) (hDense : Dense (Δ.domain : Set H))
-    (B : H →L[ℂ] H) (hbase : KPResolventPencil.GenuineInverse Δ (-1) B)
+    (B : H →L[ℂ] H)
+include H Δ hDense B
+theorem spectrum_mem_iff_resolventSet
+      (hbase : KPResolventPencil.GenuineInverse Δ (-1) B)
     (μ : ℝ) (hμ : 0 ≤ μ) :
     (((1 + μ)⁻¹ : ℝ) : ℂ) ∈ spectrum ℂ B ↔
       (μ : ℂ) ∉ KPResolventPencil.resolventSet Δ := by
@@ -62,9 +66,7 @@ theorem spectrum_mem_iff_resolventSet
   exact Iff.rfl
 
 theorem eigenspace_transfer
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (Δ : H →ₗ.[ℂ] H) (hDense : Dense (Δ.domain : Set H))
-    (B : H →L[ℂ] H) (hbase : KPResolventPencil.GenuineInverse Δ (-1) B)
+      (hbase : KPResolventPencil.GenuineInverse Δ (-1) B)
     (μ : ℝ) (hμ : 0 ≤ μ) :
     KPBelowThreshold.eigenspace Δ μ =
       KPIsolatedProjection.eigenspace B ((1 + μ)⁻¹) := by
@@ -77,7 +79,7 @@ theorem eigenspace_transfer
     intro u
     have h := hleft0 u
     rwa [neg_smul, one_smul, sub_neg_eq_add] at h
-  have hcinv : (((1 + μ : ℝ) : ℂ))⁻¹ = (((1 + μ)⁻¹ : ℝ) : ℂ) :=
+  have hcinv  :=
     (Complex.ofReal_inv (1 + μ)).symm
   have hβc : (((1 + μ)⁻¹ : ℝ) : ℂ) * ((1 + μ : ℝ) : ℂ) = 1 := by
     rw [← Complex.ofReal_mul, inv_mul_cancel₀ (by positivity), Complex.ofReal_one]
@@ -123,14 +125,12 @@ theorem eigenspace_transfer
       simp only [Submodule.coe_smul]
       exact hx1
     have hDx : Δ ⟨x, hxdom⟩ = ((1 + μ : ℝ) : ℂ) • Δ ⟨B x, hR x⟩ := by
-      rw [hdom]; exact map_smul Δ.toFun ((1 + μ : ℝ) : ℂ) ⟨B x, hR x⟩
-    have hl : Δ ⟨B x, hR x⟩ = x - B x := eq_sub_iff_add_eq.mpr (hleft x)
+      rw [hdom]; apply map_smul
+    have hl  := eq_sub_iff_add_eq.mpr (hleft x)
     rw [hDx, hl, hx, smul_sub, smul_smul, hcβ, one_smul, hs, hμc, sub_self]
 
 private theorem inverse_isPositive
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (Δ : H →ₗ.[ℂ] H) (hDense : Dense (Δ.domain : Set H))
-    (B : H →L[ℂ] H) (hΔ : IsSelfAdjoint Δ)
+      (hΔ : IsSelfAdjoint Δ)
     (hpos : ∀ v : Δ.domain, 0 ≤ (inner ℂ (v : H) (Δ v)).re)
     (hdom : ∀ u : H, B u ∈ Δ.domain)
     (hleft : ∀ u : H, Δ ⟨B u, hdom u⟩ + B u = u) : B.IsPositive := by
@@ -148,9 +148,14 @@ private theorem inverse_isPositive
       dsimp at hf
       rw [hf]
     _ = inner ℂ x (B y) := by rw [hleft]
+end
 
+
+section
+variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+include H
 private theorem positive_spectrum_interval
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+     
     (B : H →L[ℂ] H) (hp : B.IsPositive) (hn : ‖B‖ ≤ 1) :
     spectrum ℂ B ⊆ Complex.ofReal '' Set.Icc (0 : ℝ) 1 := by
   intro z hz
@@ -171,7 +176,7 @@ private theorem positive_spectrum_interval
   exact ⟨z.re, ⟨h0, hz1⟩, he.symm⟩
 
 private theorem reciprocal_isolated
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+     
     (Δ : H →ₗ.[ℂ] H) (B : H →L[ℂ] H)
     (hspec : spectrum ℂ B ⊆ Complex.ofReal '' Set.Icc (0 : ℝ) 1)
     (μ : ℝ) (hμ : 0 ≤ μ)
@@ -205,13 +210,13 @@ private theorem reciprocal_isolated
   have hclose : |(t⁻¹ - 1) - μ| < η := by
     have hh := hc (lt_of_lt_of_le hdist (min_le_left _ _))
     simpa only [inv_inv, show (1 + μ) - 1 = μ by ring, Real.dist_eq] using hh
-  have he : t⁻¹ - 1 = μ := hi _ hνspec hclose
+  have he  := hi _ hνspec hclose
   have htβ : t = (1 + μ)⁻¹ := by
     rw [← he, heq]
   rw [htβ]
 
 theorem kp_cont_resolvent_spectrum_transfer
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+     
     (Δ : H →ₗ.[ℂ] H) (hDense : Dense (Δ.domain : Set H))
     (B : H →L[ℂ] H) (d : ℝ) (hd : 0 < d)
     (hΔ : IsSelfAdjoint Δ)
@@ -290,7 +295,7 @@ theorem kp_cont_resolvent_spectrum_transfer
       simp [h]
     have htpos : 0 < t := lt_of_le_of_ne ht.1 (Ne.symm ht0)
     have hμ : 0 ≤ t⁻¹ - 1 := sub_nonneg.mpr ((one_le_inv₀ htpos).mpr ht.2)
-    refine ⟨by simp, by simpa using htpos, by simpa using hμ, ?_⟩
+    refine ⟨rfl, htpos, hμ, ?_⟩
     have hm := (hrecip (t⁻¹ - 1) hμ).mp
     have he : (1 + (t⁻¹ - 1))⁻¹ = t := by
       rw [show 1 + (t⁻¹ - 1) = t⁻¹ by ring, inv_inv]
@@ -314,5 +319,7 @@ theorem kp_cont_resolvent_spectrum_transfer
     rw [Filter.principal_mono]
     intro y hy
     exact ⟨hy.1, lt_of_le_of_lt hy.2.2 hbd⟩
+end
+
 
 end DedekindZetaZeroFree

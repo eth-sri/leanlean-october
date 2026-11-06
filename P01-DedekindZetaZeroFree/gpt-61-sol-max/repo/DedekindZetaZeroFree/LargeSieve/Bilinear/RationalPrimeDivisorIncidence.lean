@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LargeSieve.CharacterBounds.AdmissibleIdealRanges
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve.Sieve
 
@@ -19,13 +22,8 @@ private theorem prod_dvd_of_pairwise_coprime {ι : Type*} (t : Finset ι) (f : �
   · intro a s ha ih hcop hdvd
     rw [Finset.prod_insert ha]
     refine Nat.Coprime.mul_dvd_of_dvd_of_dvd ?_ (hdvd a (Finset.mem_insert_self a s)) ?_
-    · rw [Nat.coprime_prod_right_iff]
-      intro i hi
-      exact hcop a (Finset.mem_insert_self a s) i (Finset.mem_insert_of_mem hi)
-        (fun h : a = i => ha (h.symm ▸ hi))
-    · exact ih (fun i hi j hj hij =>
-          hcop i (Finset.mem_insert_of_mem hi) j (Finset.mem_insert_of_mem hj) hij)
-        (fun i hi => hdvd i (Finset.mem_insert_of_mem hi))
+    · grind [Nat.coprime_prod_right_iff]
+    · grind
 
 theorem exists_rationalBertrand_sequence (x : ℝ) (hx : 2 ≤ x)
     (L : ℕ) (hL : 1 ≤ L) :
@@ -40,12 +38,10 @@ theorem exists_rationalBertrand_sequence (x : ℝ) (hx : 2 ≤ x)
     intro i
     have hge : (1 : ℝ) ≤ (2 : ℝ) ^ (i : ℕ) * x := by
       have h2 : (1 : ℝ) ≤ (2 : ℝ) ^ (i : ℕ) := one_le_pow₀ (by norm_num)
-      have hx1 : (1 : ℝ) ≤ x := by linarith
+      
       nlinarith
     have hfloor : ⌊(2 : ℝ) ^ (i : ℕ) * x⌋₊ ≠ 0 := by
-      have : 1 ≤ ⌊(2 : ℝ) ^ (i : ℕ) * x⌋₊ :=
-          Nat.le_floor (show ((1 : ℕ) : ℝ) ≤ (2 : ℝ) ^ (i : ℕ) * x by exact_mod_cast hge)
-      omega
+      simp_all
     obtain ⟨q, hqp, hqgt, hqle⟩ :=
       Nat.exists_prime_lt_and_le_two_mul ⌊(2 : ℝ) ^ (i : ℕ) * x⌋₊ hfloor
     refine ⟨q, hqp, ?_, ?_⟩
@@ -78,7 +74,7 @@ theorem exists_rationalBertrand_sequence (x : ℝ) (hx : 2 ≤ x)
   intro i j hij
   by_contra hne
   rcases lt_trichotomy (i : ℕ) (j : ℕ) with hlt | heq | hgt
-  · exact key i j hlt hij
+  · apply key <;> assumption
   · exact hne (Fin.ext heq)
   · exact key j i hgt hij.symm
 
@@ -91,17 +87,11 @@ theorem rationalPrime_divisor_incidence {ι : Type*} (S : Finset ι)
   classical
   set T : Finset ι := S.filter (fun i => p i ∣ n) with hT
   have hTS : T ⊆ S := by rw [hT]; exact Finset.filter_subset _ _
-  have hprime : ∀ i ∈ T, (p i).Prime := fun i hi => (hp i (hTS hi)).1
-  have hlarge : ∀ i ∈ T, Z ^ (δ / d) < (p i : ℝ) := fun i hi => (hp i (hTS hi)).2
+  have hprime  := fun i hi => (hp i (hTS hi)).1
+  have hlarge  := fun i hi => (hp i (hTS hi)).2
   have hdvd : ∀ i ∈ T, p i ∣ n := fun i hi => (Finset.mem_filter.mp hi).2
 
-  have hprod_dvd : (∏ i ∈ T, p i) ∣ n := by
-    refine prod_dvd_of_pairwise_coprime T p n ?_ hdvd
-    intro i hi j hj hij
-    have hpi := hprime i hi
-    have hpj := hprime j hj
-    have hne : p i ≠ p j := fun h => hij (hinj (hTS hi) (hTS hj) h)
-    exact (Nat.coprime_primes hpi hpj).mpr hne
+  have hprod_dvd : (∏ i ∈ T, p i) ∣ n := (prod_dvd_of_pairwise_coprime T p n (fun i hi j hj hij => (Nat.coprime_primes (hprime i hi) (hprime j hj)).mpr fun h => hij (hinj (hTS hi) (hTS hj) h)) hdvd)
 
   have hZ1 : (1 : ℝ) < Z := by linarith
   have hZpos : (0 : ℝ) < Z := by linarith
@@ -116,7 +106,7 @@ theorem rationalPrime_divisor_incidence {ι : Type*} (S : Finset ι)
         (fun i hi => le_of_lt (hlarge i hi))
     rwa [Finset.prod_const] at h
   have hprod_le : (∏ i ∈ T, (p i : ℝ)) ≤ Z := by
-    have hnat : (∏ i ∈ T, p i) ≤ n := Nat.le_of_dvd (by omega) hprod_dvd
+    have hnat  := Nat.le_of_dvd (by omega) hprod_dvd
     have hreal : (∏ i ∈ T, (p i : ℝ)) ≤ (n : ℝ) := by exact_mod_cast hnat
     linarith
   have hkey : t ^ T.card ≤ Z := le_trans hprod_ge hprod_le

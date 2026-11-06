@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Algebra.Polynomial.Eval.Defs
 public import Mathlib.Algebra.Ring.GeomSum
 public import Mathlib.RingTheory.Ideal.Defs
 public import Mathlib.Tactic.Ring
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -40,8 +43,7 @@ theorem polynomial_eval₂_sub_mem_of_sub_mem
   induction P using Polynomial.induction_on' with
   | add P Q hP hQ =>
       rw [Polynomial.eval₂_add, Polynomial.eval₂_add]
-      have hsum : (P.eval₂ f x - P.eval₂ f y) +
-          (Q.eval₂ f x - Q.eval₂ f y) ∈ I :=
+      have hsum  :=
         Ideal.add_mem I hP hQ
       convert hsum using 1
       ring
@@ -50,12 +52,12 @@ theorem polynomial_eval₂_sub_mem_of_sub_mem
       have hpow : x ^ n - y ^ n ∈ I := by
         rcases sub_dvd_pow_sub_pow x y n with ⟨c, hc⟩
         rw [hc]
-        exact Ideal.mul_mem_right c I hxy
+        apply Ideal.mul_mem_right <;> assumption
       have hrewrite : f a * x ^ n - f a * y ^ n =
           f a * (x ^ n - y ^ n) := by
         ring
       rw [hrewrite]
-      exact Ideal.mul_mem_left I (f a) hpow
+      apply Ideal.mul_mem_left <;> assumption
 
 end Higher
 end RamificationTheory.HilbertRamification

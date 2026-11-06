@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Sphere.FractionalIntegrals.InverseBounds
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.Complex.HarmonicPropagationAndOrbitDifferentiation
 
 @[expose] public section
+
 
 section
 
@@ -14,7 +17,7 @@ open scoped NNReal
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts KPCplxIntertwinerEigenvalues
 open scoped NNReal
 
-private theorem chart_topology (s : ℝ) : WithSeminorms (chartSeminorm s) := ⟨rfl⟩
+private alias chart_topology := _root_.DedekindZetaZeroFree.KPCplxPrincipalSeriesCharts.topology_withSeminorms
 
 theorem standardIntertwiner_isInducing_of_chart_bounds (β : ℂˣ)
     (hbound : ∀ n : ℕ, ∃ (orders : Finset ℕ) (C : ℝ≥0),
@@ -25,7 +28,7 @@ theorem standardIntertwiner_isInducing_of_chart_bounds (β : ℂˣ)
   have hp : WithSeminorms (chartSeminorm positiveParameter) := chart_topology _
   have hq : WithSeminorms (chartSeminorm negativeParameter) := chart_topology _
   let f := (standardIntertwiner β).toLinearMap
-  let t : TopologicalSpace (PrincipalSeries positiveParameter) :=
+  let t  :=
     TopologicalSpace.induced f inferInstance
   have ht : WithSeminorms (topology := t)
       (SeminormFamily.comp (chartSeminorm negativeParameter) f) :=
@@ -39,7 +42,7 @@ theorem standardIntertwiner_isInducing_of_chart_bounds (β : ℂˣ)
     refine ⟨orders, C, ?_⟩
     simpa only [Seminorm.comp_id, Seminorm.smul_comp,
       SeminormFamily.finset_sup_comp] using hC
-  letI : TopologicalSpace (PrincipalSeries positiveParameter) :=
+  letI  :=
     principalSeriesTopology positiveParameter
   have heq : principalSeriesTopology positiveParameter = t := by
     apply le_antisymm
@@ -84,7 +87,7 @@ theorem nonzero_term_of_partial_sums_tendsto {E : Type*}
     funext N
     exact Finset.sum_eq_zero fun ℓ _ => h ℓ
   rw [hzero] at hlim
-  have h0 : (0 : E) = f := tendsto_nhds_unique tendsto_const_nhds hlim
+  have h0  := tendsto_nhds_unique tendsto_const_nhds hlim
   exact hne h0.symm
 
 end DedekindZetaZeroFree.KPCplxHarmonicExtraction
@@ -104,8 +107,11 @@ theorem extraction_invariant_inf (s : ℝ)
   intro k f hf
   exact ⟨hU k f hf.1, hV k f hf.2⟩
 
-theorem extraction_harmonic_le_of_inf_ne_bot (s : ℝ)
+section
+variable (s : ℝ)
     (U : Submodule ℂ (PrincipalSeries s)) (hinv : IsKInvariant s U)
+include s U hinv
+theorem extraction_harmonic_le_of_inf_ne_bot  
     (ℓ : ℕ) (hne : U ⊓ harmonicKType s ℓ ≠ ⊥) :
     harmonicKType s ℓ ≤ U := by
   have htype := harmonicKType_multiplicity_one s ℓ
@@ -114,46 +120,42 @@ theorem extraction_harmonic_le_of_inf_ne_bot (s : ℝ)
   rw [← heq]
   exact inf_le_left
 
-theorem extraction_compact_orbit_span_le (s : ℝ)
-    (U : Submodule ℂ (PrincipalSeries s)) (hinv : IsKInvariant s U)
+theorem extraction_compact_orbit_span_le  
     (f : PrincipalSeries s) (hf : f ∈ U) :
     Submodule.span ℂ (Set.range (fun k : compactSubgroup => pi s k f)) ≤ U := by
   apply Submodule.span_le.mpr
   rintro _ ⟨k, rfl⟩
-  exact hinv k f hf
+  apply hinv <;> assumption
+end
 
-theorem extraction_closed_compact_orbit_closure_mem (s : ℝ)
+
+section
+variable (s : ℝ)
     (U : Submodule ℂ (PrincipalSeries s))
     (hclosed : IsClosed (U : Set (PrincipalSeries s)))
-    (hinv : IsKInvariant s U) (f : PrincipalSeries s) (hf : f ∈ U)
+    (hinv : IsKInvariant s U)
+include s U hclosed hinv
+def extraction_closed_compact_orbit_closure_mem   (f : PrincipalSeries s) (hf : f ∈ U)
     (v : PrincipalSeries s)
     (hv : v ∈ closure ((Submodule.span ℂ
-      (Set.range (fun k : compactSubgroup => pi s k f))) : Set (PrincipalSeries s))) :
-    v ∈ U := by
-  exact (closure_minimal (extraction_compact_orbit_span_le s U hinv f hf) hclosed) hv
+      (Set.range (fun k : compactSubgroup => pi s k f)))))  := (closure_minimal (extraction_compact_orbit_span_le s U hinv f hf) hclosed) hv
 
-theorem extraction_harmonic_le_of_orbit_closure (s : ℝ)
-    (U : Submodule ℂ (PrincipalSeries s))
-    (hclosed : IsClosed (U : Set (PrincipalSeries s)))
-    (hinv : IsKInvariant s U) (f : PrincipalSeries s) (hf : f ∈ U)
+theorem extraction_harmonic_le_of_orbit_closure   (f : PrincipalSeries s) (hf : f ∈ U)
     (ℓ : ℕ) (v : PrincipalSeries s) (hne : v ≠ 0)
     (hvtype : v ∈ harmonicKType s ℓ)
     (hvorbit : v ∈ closure ((Submodule.span ℂ
-      (Set.range (fun k : compactSubgroup => pi s k f))) : Set (PrincipalSeries s))) :
+      (Set.range (fun k : compactSubgroup => pi s k f))))) :
     harmonicKType s ℓ ≤ U := by
   apply extraction_harmonic_le_of_inf_ne_bot s U hinv ℓ
   intro heq
   have hvU := extraction_closed_compact_orbit_closure_mem s U hclosed hinv f hf v hvorbit
   have hvmem : v ∈ U ⊓ harmonicKType s ℓ := ⟨hvU, hvtype⟩
   rw [heq] at hvmem
-  exact hne (by simpa using hvmem)
+  apply hne <;> assumption
 
-theorem closed_invariant_harmonic_extraction (s : ℝ)
-    (U : Submodule ℂ (PrincipalSeries s))
-    (hclosed : IsClosed (U : Set (PrincipalSeries s)))
-    (hinv : IsKInvariant s U) (hne : U ≠ ⊥) :
+theorem closed_invariant_harmonic_extraction   (hne : U ≠ ⊥) :
     ∃ ℓ : ℕ, harmonicKType s ℓ ≤ U := by
-  letI : T2Space (PrincipalSeries s) := principalSeries_t2 s
+  letI  := principalSeries_t2 s
   obtain ⟨f, hfU, hf⟩ := Submodule.exists_mem_ne_zero_of_ne_bot hne
   obtain ⟨μ, hhaar, hprob⟩ :=
     KPCplxHarmonicExtraction.exists_su2_probability_haar
@@ -165,6 +167,8 @@ theorem closed_invariant_harmonic_extraction (s : ℝ)
     f hfU ℓ (a ℓ) hneℓ (htype ℓ) ?_⟩
   exact KPCplxHarmonicExtraction.character_average_mem_orbit_closure
     s μ hhaar hprob ℓ f (a ℓ) (hint ℓ) (havg ℓ)
+end
+
 
 end DedekindZetaZeroFree.KPCplxActualImageProof
 
@@ -230,42 +234,45 @@ namespace DedekindZetaZeroFree.KPCplxActualImage
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts KPCplxIntertwinerEigenvalues
 open scoped ContDiff Matrix.Norms.Elementwise
 
-noncomputable def imageSubmodule (β : ℂˣ) : Submodule ℂ (PrincipalSeries negativeParameter) :=
+section
+variable (β : ℂˣ)
+include β
+noncomputable def imageSubmodule    :=
   (standardIntertwiner β).toLinearMap.range
 
-abbrev Theta (β : ℂˣ) := ↥(imageSubmodule β)
+abbrev Theta   := ↥(imageSubmodule β)
 
-theorem mem_imageSubmodule_iff (β : ℂˣ) (h : PrincipalSeries negativeParameter) :
+theorem mem_imageSubmodule_iff   (h : PrincipalSeries negativeParameter) :
     h ∈ imageSubmodule β ↔ ∃ f : PrincipalSeries positiveParameter,
       standardIntertwiner β f = h := Iff.rfl
 
-theorem imageSubmodule_invariant (β : ℂˣ) (g : ComplexPGL2)
+theorem imageSubmodule_invariant   (g : ComplexPGL2)
     (h : PrincipalSeries negativeParameter) (hh : h ∈ imageSubmodule β) :
     pi negativeParameter g h ∈ imageSubmodule β := by
   obtain ⟨f, rfl⟩ := hh
   exact ⟨pi positiveParameter g f, standardIntertwiner_equivariant β g f⟩
 
-noncomputable def imageAction (β : ℂˣ) (g : ComplexPGL2) (h : Theta β) : Theta β :=
+noncomputable def imageAction   (g : ComplexPGL2) (h : Theta β) : Theta β :=
   ⟨pi negativeParameter g h, imageSubmodule_invariant β g h h.property⟩
 
-@[simp] theorem imageAction_coe (β : ℂˣ) (g : ComplexPGL2) (h : Theta β) :
+@[simp] theorem imageAction_coe   (g : ComplexPGL2) (h : Theta β) :
     (imageAction β g h : PrincipalSeries negativeParameter) = pi negativeParameter g h := rfl
 
-noncomputable def intertwinerToImage (β : ℂˣ)
+noncomputable def intertwinerToImage  
     (f : PrincipalSeries positiveParameter) : Theta β :=
   ⟨standardIntertwiner β f, ⟨f, rfl⟩⟩
 
-@[simp] theorem intertwinerToImage_coe (β : ℂˣ) (f : PrincipalSeries positiveParameter) :
+@[simp] theorem intertwinerToImage_coe   (f : PrincipalSeries positiveParameter) :
     (intertwinerToImage β f : PrincipalSeries negativeParameter) = standardIntertwiner β f := rfl
 
-theorem intertwinerToImage_equivariant (β : ℂˣ) (g : ComplexPGL2)
+theorem intertwinerToImage_equivariant   (g : ComplexPGL2)
     (f : PrincipalSeries positiveParameter) :
     intertwinerToImage β (pi positiveParameter g f) =
       imageAction β g (intertwinerToImage β f) := by
   apply Subtype.ext
-  exact standardIntertwiner_equivariant β g f
+  apply standardIntertwiner_equivariant
 
-theorem standardIntertwiner_topological_image_isomorphism (β : ℂˣ) :
+theorem standardIntertwiner_topological_image_isomorphism   :
     ∃ e : PrincipalSeries positiveParameter ≃L[ℂ] Theta β,
       (∀ f : PrincipalSeries positiveParameter, e f = intertwinerToImage β f) ∧
       (∀ (g : ComplexPGL2) (f : PrincipalSeries positiveParameter),
@@ -292,21 +299,23 @@ theorem standardIntertwiner_topological_image_isomorphism (β : ℂˣ) :
   refine ⟨e, he, ?_⟩
   intro g f
   rw [he, he]
-  exact intertwinerToImage_equivariant β g f
+  apply intertwinerToImage_equivariant
 
-theorem imageAction_continuous (β : ℂˣ) :
+theorem imageAction_continuous   :
     Continuous (fun p : ComplexPGL2 × Theta β => imageAction β p.1 p.2) := by
   have hbase : Continuous (fun p : ComplexPGL2 × Theta β =>
       pi negativeParameter p.1 (p.2 : PrincipalSeries negativeParameter)) :=
     (pi_continuous negativeParameter).comp
       (by continuity : Continuous (fun p : ComplexPGL2 × Theta β =>
         (p.1, (p.2 : PrincipalSeries negativeParameter))))
-  exact hbase.subtype_mk (fun p => imageSubmodule_invariant β p.1 p.2 p.2.property)
+  apply hbase.subtype_mk
+end
 
-def IsGInvariant (s : ℝ) (U : Submodule ℂ (PrincipalSeries s)) : Prop :=
+
+def IsGInvariant (s : ℝ) (U : Submodule ℂ (PrincipalSeries s))  :=
   ∀ (g : ComplexPGL2) (f : PrincipalSeries s), f ∈ U → pi s g f ∈ U
 
-def IsTopologicallyIrreducible (s : ℝ) : Prop :=
+def IsTopologicallyIrreducible (s : ℝ)  :=
   (∃ f : PrincipalSeries s, f ≠ 0) ∧
     ∀ U : Submodule ℂ (PrincipalSeries s),
       IsClosed (U : Set (PrincipalSeries s)) → IsGInvariant s U → U = ⊥ ∨ U = ⊤
@@ -329,8 +338,7 @@ private theorem principalSeries_irreducible_of_exceptional (s : ℝ)
 
 theorem exceptional_principalSeries_irreducible :
     IsTopologicallyIrreducible positiveParameter ∧
-      IsTopologicallyIrreducible negativeParameter := by
-  exact ⟨principalSeries_irreducible_of_exceptional positiveParameter (Or.inl rfl),
+      IsTopologicallyIrreducible negativeParameter := ⟨principalSeries_irreducible_of_exceptional positiveParameter (Or.inl rfl),
     principalSeries_irreducible_of_exceptional negativeParameter (Or.inr rfl)⟩
 
 private theorem imageSubmodule_closed (β : ℂˣ) : IsClosed (imageSubmodule β : Set (PrincipalSeries negativeParameter)) := by
@@ -344,7 +352,7 @@ private theorem imageSubmodule_closed (β : ℂˣ) : IsClosed (imageSubmodule β
     IsUniformInducing.isUniformAddGroup (Submodule.subtype (imageSubmodule β))
       isUniformEmbedding_subtype_val.isUniformInducing
   obtain ⟨e, _, _⟩ := standardIntertwiner_topological_image_isomorphism β
-  have hemb : IsUniformEmbedding (e : PrincipalSeries positiveParameter → Theta β) := by
+  have hemb : IsUniformEmbedding e := by
     exact e.toLinearEquiv.toEquiv.isUniformEmbedding
       (uniformContinuous_addMonoidHom_of_continuous (f := e.toLinearEquiv.toAddEquiv) e.continuous)
       (uniformContinuous_addMonoidHom_of_continuous (f := e.symm.toLinearEquiv.toAddEquiv) e.symm.continuous)
@@ -378,22 +386,26 @@ theorem imageSubmodule_eq_top (β : ℂˣ) : imageSubmodule β = ⊤ := by
   · exact False.elim (imageSubmodule_ne_bot β h)
   · exact h
 
-noncomputable def orbitOpenCoordinate (s : ℝ) (f : PrincipalSeries s)
-    (p : Matrix (Fin 2) (Fin 2) ℂ × ℂ) : ℂ :=
+section
+variable (s : ℝ) (f : PrincipalSeries s)
+    (p : Matrix (Fin 2) (Fin 2) ℂ × ℂ)
+include s f p
+noncomputable def orbitOpenCoordinate   : ℂ :=
   matrixFunction f ((weyl * upperUnipotent p.2 : ComplexGL2) * p.1)
 
-noncomputable def orbitInfinityCoordinate (s : ℝ) (f : PrincipalSeries s)
-    (p : Matrix (Fin 2) (Fin 2) ℂ × ℂ) : ℂ :=
+noncomputable def orbitInfinityCoordinate    :=
   matrixFunction f ((lowerUnipotent p.2 : ComplexGL2) * p.1)
+end
 
-def HasSmoothOrbit (s : ℝ) (f : PrincipalSeries s) : Prop :=
+
+def HasSmoothOrbit (s : ℝ) (f : PrincipalSeries s)  :=
   ContDiffOn ℝ ∞ (orbitOpenCoordinate s f) {p | p.1.det ≠ 0} ∧
     ContDiffOn ℝ ∞ (orbitInfinityCoordinate s f) {p | p.1.det ≠ 0}
 
 private theorem lowerSmooth : ContDiff ℝ ∞ (fun p : Matrix (Fin 2) (Fin 2) ℂ × ℂ =>
   (lowerUnipotent p.2 : Matrix (Fin 2) (Fin 2) ℂ) * p.1) := by
   change ContDiff ℝ ∞ (fun p : Matrix (Fin 2) (Fin 2) ℂ × ℂ =>
-    (fun i j => ((lowerUnipotent p.2 : Matrix (Fin 2) (Fin 2) ℂ) * p.1) i j : Fin 2 → Fin 2 → ℂ))
+    (fun i j => ((lowerUnipotent p.2 : Matrix (Fin 2) (Fin 2) ℂ) * p.1) i j))
   rw [contDiff_pi]
   intro i
   rw [contDiff_pi]
@@ -401,25 +413,29 @@ private theorem lowerSmooth : ContDiff ℝ ∞ (fun p : Matrix (Fin 2) (Fin 2) �
   fin_cases i <;> fin_cases j <;>
     simp [lowerUnipotent, Matrix.mul_apply, Fin.sum_univ_two] <;> fun_prop
 private theorem openSmooth : ContDiff ℝ ∞ (fun p : Matrix (Fin 2) (Fin 2) ℂ × ℂ =>
-  ((weyl * upperUnipotent p.2 : ComplexGL2) : Matrix (Fin 2) (Fin 2) ℂ) * p.1) := by
+  ((weyl * upperUnipotent p.2) : Matrix (Fin 2) (Fin 2) ℂ) * p.1) := by
   change ContDiff ℝ ∞ (fun p : Matrix (Fin 2) (Fin 2) ℂ × ℂ =>
-    (fun i j => (((weyl * upperUnipotent p.2 : ComplexGL2) : Matrix (Fin 2) (Fin 2) ℂ) * p.1) i j : Fin 2 → Fin 2 → ℂ))
+    (fun i j => (((weyl * upperUnipotent p.2 : ComplexGL2) : Matrix (Fin 2) (Fin 2) ℂ) * p.1) i j))
   rw [contDiff_pi]
   intro i
   rw [contDiff_pi]
   intro j
   fin_cases i <;> fin_cases j <;>
     simp [weyl, upperUnipotent, Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two] <;> fun_prop
-private theorem lowerMaps (p : Matrix (Fin 2) (Fin 2) ℂ × ℂ)
-    (hp : p.1.det ≠ 0) :
-    (((lowerUnipotent p.2 : ComplexGL2) : Matrix (Fin 2) (Fin 2) ℂ) * p.1).det ≠ 0 := by
+section
+variable (p : Matrix (Fin 2) (Fin 2) ℂ × ℂ)
+    (hp : p.1.det ≠ 0)
+include p hp
+private theorem lowerMaps   :
+    (((lowerUnipotent p.2) : Matrix (Fin 2) (Fin 2) ℂ) * p.1).det ≠ 0 := by
   rw [Matrix.det_mul]
   exact mul_ne_zero (Matrix.GeneralLinearGroup.det_ne_zero _) hp
-private theorem openMaps (p : Matrix (Fin 2) (Fin 2) ℂ × ℂ)
-    (hp : p.1.det ≠ 0) :
+private theorem openMaps   :
     ((((weyl * upperUnipotent p.2 : ComplexGL2) : Matrix (Fin 2) (Fin 2) ℂ) * p.1)).det ≠ 0 := by
   rw [Matrix.det_mul]
   exact mul_ne_zero (Matrix.GeneralLinearGroup.det_ne_zero _) hp
+end
+
 private theorem principalSeries_hasSmoothOrbit (s : ℝ) (f : PrincipalSeries s) :
     HasSmoothOrbit s f := by
   obtain ⟨_, hf⟩ := (principalSeries_mem_iff s f).mp f.property
@@ -435,12 +451,10 @@ theorem exceptional_principalSeries_continuous_smooth :
       ∀ f : PrincipalSeries positiveParameter, HasSmoothOrbit positiveParameter f) ∧
     (Continuous (fun p : ComplexPGL2 × PrincipalSeries negativeParameter =>
       pi negativeParameter p.1 p.2) ∧
-      ∀ f : PrincipalSeries negativeParameter, HasSmoothOrbit negativeParameter f) := by
-  exact ⟨⟨pi_continuous positiveParameter, principalSeries_hasSmoothOrbit positiveParameter⟩,
+      ∀ f : PrincipalSeries negativeParameter, HasSmoothOrbit negativeParameter f) := ⟨⟨pi_continuous positiveParameter, principalSeries_hasSmoothOrbit positiveParameter⟩,
     ⟨pi_continuous negativeParameter, principalSeries_hasSmoothOrbit negativeParameter⟩⟩
 
-theorem image_smooth (β : ℂˣ) (h : Theta β) :
-    HasSmoothOrbit negativeParameter h :=
+def image_smooth (β : ℂˣ) (h : Theta β)  :=
   (exceptional_principalSeries_continuous_smooth.2.2) h
 
 theorem spherical_image (β : ℂˣ) :
@@ -451,7 +465,7 @@ theorem spherical_image (β : ℂˣ) :
       imageAction β k (intertwinerToImage β (sphericalSection positiveParameter)) =
         intertwinerToImage β (sphericalSection positiveParameter) := by
   refine ⟨standardIntertwiner_spherical β, fun k => ?_⟩
-  rw [← intertwinerToImage_equivariant β (k : ComplexPGL2)
+  rw [← intertwinerToImage_equivariant β k
     (sphericalSection positiveParameter), sphericalSection_fixed]
 
 theorem harmonicKType_source (β : ℂˣ) (ℓ : ℕ)

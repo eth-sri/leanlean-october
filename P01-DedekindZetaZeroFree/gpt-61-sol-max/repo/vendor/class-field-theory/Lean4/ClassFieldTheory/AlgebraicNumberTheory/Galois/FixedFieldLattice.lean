@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import Mathlib.FieldTheory.Galois.Basic
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -38,7 +41,7 @@ theorem fixedField_sup_eq_inf
   · intro x hx
     rw [IntermediateField.mem_fixedField_iff]
     intro σ hσ
-    let stabilizer : Subgroup (Gal(Ω / k)) :=
+    let stabilizer  :=
       MulAction.stabilizer (Gal(Ω / k)) x
     have hS : S ≤ stabilizer := by
       intro τ hτ
@@ -48,7 +51,7 @@ theorem fixedField_sup_eq_inf
       intro τ hτ
       change τ x = x
       exact (IntermediateField.mem_fixedField_iff T x).1 hx.2 τ hτ
-    have hfix : σ ∈ stabilizer := (sup_le hS hT) hσ
+    have hfix  := (sup_le hS hT) hσ
     exact hfix
 
 end IntermediateField

@@ -26,8 +26,11 @@ open KPContSectorCoveredQuotientVocabulary KPContSectorScalarLineAlgebra
   calc _ = ((u : ℂ) * star (u : ℂ)) * (z * star w) := by ring
        _ = _ := by rw [hu, one_mul]
 
- def componentPair {V : KPMsFixedHaarDisintegration.Level F ζ hζ}
-    (s t : Sections F ζ hζ V R P H) (i : Fin (H.atlas V).componentCount) :
+ section
+variable {V : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    (s t : Sections F ζ hζ V R P H)
+include V s t
+def componentPair   (i : Fin (H.atlas V).componentCount) :
     KPCuspSiegel.OrbitQuotient F
       (KPCuspGenuineMonodromy.Component F ζ hζ V ((H.atlas V).representative i)) → ℂ :=
   Quotient.lift (fun x => (s i).val x * star ((t i).val x)) (by
@@ -40,20 +43,17 @@ open KPContSectorCoveredQuotientVocabulary KPContSectorScalarLineAlgebra
     rw [← chi_coe F ζ hζ]
     exact unit_product _ _ _)
 
- def basePair {V : KPMsFixedHaarDisintegration.Level F ζ hζ}
-    (s t : Sections F ζ hζ V R P H) : KPMsFixedHaarDisintegration.Spherical F ζ hζ V → ℂ :=
+ def basePair   : KPMsFixedHaarDisintegration.Spherical F ζ hζ V → ℂ :=
   fun b => let p := (H.atlas V).components.symm b; componentPair s t p.1 p.2
 
-private theorem basePair_component {V : KPMsFixedHaarDisintegration.Level F ζ hζ}
-    (s t : Sections F ζ hζ V R P H) (i : Fin (H.atlas V).componentCount)
+private theorem basePair_component   (i : Fin (H.atlas V).componentCount)
     (x : SymmetricSpace F) :
     basePair s t ((H.atlas V).components ⟨i, Quotient.mk _ x⟩) =
       (s i).val x * star ((t i).val x) := by
   simp only [basePair, componentPair]
   rw [Homeomorph.symm_apply_apply, Quotient.lift_mk]
 
-private theorem basePair_continuous {V : KPMsFixedHaarDisintegration.Level F ζ hζ}
-    (s t : Sections F ζ hζ V R P H)
+private theorem basePair_continuous  
     (hs : ∀ i, Continuous (s i).val) (ht : ∀ i, Continuous (t i).val) :
     Continuous (basePair s t) := by
   have hc : Continuous (fun p : Σ i, KPCuspSiegel.OrbitQuotient F
@@ -66,8 +66,7 @@ private theorem basePair_continuous {V : KPMsFixedHaarDisintegration.Level F ζ 
     exact (hs i).mul (ht i).star
   exact hc.comp (H.atlas V).components.symm.continuous
 
-private theorem basePair_pullback {V : KPMsFixedHaarDisintegration.Level F ζ hζ}
-    (s t : Sections F ζ hζ V R P H) (v : CoveredSpherical F ζ hζ V) :
+private theorem basePair_pullback   (v : CoveredSpherical F ζ hζ V) :
     basePair s t (q F ζ hζ V v) =
       ((S F ζ hζ V R P H).symm s).val v *
       star (((S F ζ hζ V R P H).symm t).val v) := by
@@ -83,8 +82,7 @@ private theorem basePair_pullback {V : KPMsFixedHaarDisintegration.Level F ζ h�
   simp only [LinearEquiv.apply_symm_apply, phaseCoefficient_class]
   exact (unit_product _ _ _).symm
 
-private theorem basePair_zero {V : KPMsFixedHaarDisintegration.Level F ζ hζ}
-    (s t : Sections F ζ hζ V R P H)
+private theorem basePair_zero  
     (K : Set (KPFiniteCuspAtlas.rawXU F ζ hζ V))
     (hT : ∀ j z, KPCuspCutoffGraph.basePoint F ζ hζ H.totallyComplex V (H.atlas V) j z ∉ K →
       (t j).val z = 0) (b : KPFiniteCuspAtlas.rawXU F ζ hζ V) (hb : b ∉ K) :
@@ -95,8 +93,7 @@ private theorem basePair_zero {V : KPMsFixedHaarDisintegration.Level F ζ hζ}
   simpa only [KPCuspCutoffGraph.basePoint, KPCuspSiegel.projection,
     (H.atlas V).components_formula] using hb
 
-private theorem basePair_chart {V : KPMsFixedHaarDisintegration.Level F ζ hζ}
-    (s t : Sections F ζ hζ V R P H) (a : ShrunkChart F ζ hζ V R P H) (y : a.domain) :
+private theorem basePair_chart   (a : ShrunkChart F ζ hζ V R P H) (y : a.domain) :
     basePair s t (a.toBase y) = sectionFields s a (coordinates a y) *
       star (sectionFields t a (coordinates a y)) := by
   have hf : a.toBase y = (H.atlas V).components ⟨a.component, Quotient.mk _ y.val⟩ :=
@@ -112,6 +109,8 @@ private theorem basePair_chart {V : KPMsFixedHaarDisintegration.Level F ζ hζ}
   simp [sectionFields, KPContCotangentActualOverlap.LiftedChart.coefficient,
     KPContCotangentActualGenuineTwistIsotropy.isotropyChart, coordinates, hi,
     KPContCotangentActualOverlap.ChartKind.representative]
+end
+
 
 theorem compact_original_scalar_chart_transport
     (V : KPMsFixedHaarDisintegration.Level F ζ hζ)

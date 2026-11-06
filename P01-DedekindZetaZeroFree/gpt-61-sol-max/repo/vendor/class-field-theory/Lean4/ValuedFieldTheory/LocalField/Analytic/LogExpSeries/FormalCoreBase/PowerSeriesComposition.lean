@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.RingTheory.PowerSeries.Log
 public import Mathlib.RingTheory.PowerSeries.WellKnown
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -30,27 +33,30 @@ attribute [local instance] Classical.propDecidable
 
 namespace PowerSeries
 
-/-- The alternating geometric series is the formal inverse of `1 + X`. -/
-theorem alternating_mul_one_add_X
-    (A : Type*) [CommRing A] :
-    (PowerSeries.mk fun n : ℕ => (-1 : A) ^ n) *
-        (1 + PowerSeries.X : PowerSeries A) = 1 := by
-  have h :=
-    congrArg (PowerSeries.evalNegHom (A := A))
-      (PowerSeries.mk_one_mul_one_sub_eq_one A)
-  have hmk' :
-      PowerSeries.evalNegHom (PowerSeries.mk (1 : ℕ → A)) =
-        PowerSeries.mk fun n : ℕ => (-1 : A) ^ n := by
-    ext n
-    simp [PowerSeries.evalNegHom, PowerSeries.rescale_mk]
-  simpa [hmk', sub_eq_add_neg] using h
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+section
+variable (A : Type*) [CommRing A] [IsAddTorsionFree A] {f : PowerSeries A}
+    (hD :
+      PowerSeries.derivative f * (1 + PowerSeries.X : PowerSeries A) = f)
+include A f hD
 /-- A torsion-free power series with zero constant coefficient satisfying
 `f' * (1 + X) = f` is zero. -/
 theorem eq_zero_of_derivative_mul_one_add_X_eq_self
-    (A : Type*) [CommRing A] [IsAddTorsionFree A] {f : PowerSeries A}
-    (hD :
-      PowerSeries.derivative f * (1 + PowerSeries.X : PowerSeries A) = f)
+     
     (hc : PowerSeries.constantCoeff f = 0) :
     f = 0 := by
   ext n
@@ -96,9 +102,7 @@ theorem eq_zero_of_derivative_mul_one_add_X_eq_self
 /-- A torsion-free power series with constant coefficient one satisfying
 `f' * (1 + X) = f` is `1 + X`. -/
 theorem eq_one_add_X_of_derivative_mul_one_add_X_eq_self
-    (A : Type*) [CommRing A] [IsAddTorsionFree A] {f : PowerSeries A}
-    (hD :
-      PowerSeries.derivative f * (1 + PowerSeries.X : PowerSeries A) = f)
+     
     (hc : PowerSeries.constantCoeff f = 1) :
     f = 1 + PowerSeries.X := by
   have hbase :
@@ -118,10 +122,15 @@ theorem eq_one_add_X_of_derivative_mul_one_add_X_eq_self
   have h := eq_zero_of_derivative_mul_one_add_X_eq_self
     A hzero hczero
   exact sub_eq_zero.mp h
+end
 
+
+section
+variable (A : Type*) [CommRing A]
+include A
 /-- A power series with derivative one and constant coefficient zero is `X`. -/
 theorem eq_X_of_derivative_eq_one
-    (A : Type*) [CommRing A] [IsAddTorsionFree A] {f : PowerSeries A}
+      [IsAddTorsionFree A] {f : PowerSeries A}
     (hD : PowerSeries.derivative f = 1)
     (hc : PowerSeries.constantCoeff f = 0) :
     f = PowerSeries.X := by
@@ -132,14 +141,14 @@ theorem eq_X_of_derivative_eq_one
 /-- Substituting Mathlib's formal logarithm into its exponential yields
 `1 + X`. -/
 theorem exp_subst_log_eq_one_add_X
-    (A : Type*) [CommRing A] [Algebra ℚ A] [IsAddTorsionFree A] :
+      [Algebra ℚ A] [IsAddTorsionFree A] :
     PowerSeries.subst (PowerSeries.log A) (PowerSeries.exp A) =
       (1 + PowerSeries.X : PowerSeries A) := by
-  let l : PowerSeries A := PowerSeries.log A
+  let l  := PowerSeries.log A
   have hl0 : PowerSeries.constantCoeff l = 0 :=
     PowerSeries.constantCoeff_log
   have hl : PowerSeries.HasSubst l := by
-    simpa [l] using PowerSeries.HasSubst.log (A := A)
+    apply PowerSeries.HasSubst.log
   let f : PowerSeries A := PowerSeries.subst l (PowerSeries.exp A)
   have hD :
       PowerSeries.derivative f * (1 + PowerSeries.X : PowerSeries A) = f := by
@@ -158,8 +167,7 @@ theorem exp_subst_log_eq_one_add_X
           rw [show
             PowerSeries.derivative l *
               (1 + PowerSeries.X : PowerSeries A) = 1 by
-              simpa [l] using
-                PowerSeries.derivative_log_mul_one_add_X (A := A)]
+              apply PowerSeries.derivative_log_mul_one_add_X]
       _ = PowerSeries.subst l (PowerSeries.exp A) := by
           rw [mul_one]
   have hc : PowerSeries.constantCoeff f = 1 := by
@@ -168,21 +176,19 @@ theorem exp_subst_log_eq_one_add_X
       (PowerSeries.subst l (PowerSeries.exp A)) = 1
     rw [PowerSeries.constantCoeff_subst_of_constantCoeff_zero hl0]
     exact PowerSeries.constantCoeff_exp
-  exact
-    eq_one_add_X_of_derivative_mul_one_add_X_eq_self
-      A hD hc
+  apply eq_one_add_X_of_derivative_mul_one_add_X_eq_self <;> assumption
 
 /-- Substituting `exp - 1` into Mathlib's formal logarithm yields `X`. -/
 theorem log_subst_exp_sub_one_eq_X
-    (A : Type*) [CommRing A] [Algebra ℚ A] [IsAddTorsionFree A] :
+      [Algebra ℚ A] [IsAddTorsionFree A] :
     PowerSeries.subst ((PowerSeries.exp A) - 1) (PowerSeries.log A) =
       (PowerSeries.X : PowerSeries A) := by
-  let e : PowerSeries A := PowerSeries.exp A - 1
+  let e  := PowerSeries.exp A - 1
   have he0 : PowerSeries.constantCoeff e = 0 := by
     simp [e]
-  have he : PowerSeries.HasSubst e :=
+  have he  :=
     PowerSeries.HasSubst.of_constantCoeff_zero' he0
-  let l : PowerSeries A := PowerSeries.log A
+  let l  := PowerSeries.log A
   let f : PowerSeries A := PowerSeries.subst e l
   have hde : PowerSeries.derivative e = PowerSeries.exp A := by
     simp [e, PowerSeries.derivative_exp]
@@ -192,8 +198,7 @@ theorem log_subst_exp_sub_one_eq_X
     have hlog :
         PowerSeries.derivative l *
             (1 + PowerSeries.X : PowerSeries A) = 1 := by
-      simpa [l] using
-        PowerSeries.derivative_log_mul_one_add_X (A := A)
+      apply PowerSeries.derivative_log_mul_one_add_X
     have hsubst :=
       congrArg (fun q : PowerSeries A => PowerSeries.subst e q) hlog
     have hone : PowerSeries.subst e (1 : PowerSeries A) = 1 := by
@@ -224,7 +229,9 @@ theorem log_subst_exp_sub_one_eq_X
     change MvPowerSeries.constantCoeff (PowerSeries.subst e l) = 0
     rw [PowerSeries.constantCoeff_subst_of_constantCoeff_zero he0]
     exact PowerSeries.constantCoeff_log
-  exact eq_X_of_derivative_eq_one A hD hc
+  apply eq_X_of_derivative_eq_one <;> assumption
+end
+
 
 
 end PowerSeries

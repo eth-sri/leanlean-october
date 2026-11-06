@@ -236,15 +236,16 @@ end ProbeAdditive
 
  instance infiniteAdeleT2 (F : Type) [Field F] [NumberField F] :
     T2Space (InfiniteAdeleRing F) := inferInstanceAs (T2Space ((v : InfinitePlace F) → v.Completion))
- def localSize (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (x : SLocalProduct F S) : ℝ :=
+ section
+variable (F : Type) [Field F] [NumberField F]
+    (S : Finset (HeightOneSpectrum (𝓞 F)))
+include F S
+def localSize   (x : SLocalProduct F S) : ℝ :=
   (∏ v : InfinitePlace F, ‖x.1 v‖ ^ v.mult) * ∏ v : S, ‖x.2 v‖
-private lemma localSize_continuous (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) : Continuous (localSize F S) := by
+private lemma localSize_continuous   : Continuous (localSize F S) := by
   unfold localSize
   fun_prop
-private lemma localSize_diagonal (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (m : F) :
+private lemma localSize_diagonal   (m : F) :
     localSize F S (sLocalDiagonal F S m) = ProbeSeparation.productNorm F S m := by
   unfold localSize ProbeSeparation.productNorm
   congr 1
@@ -256,20 +257,17 @@ private lemma localSize_diagonal (F : Type) [Field F] [NumberField F]
     rfl
   · simp only [sLocalDiagonal_finite, FinitePlace.mk_apply]
     exact Finset.prod_coe_sort S (fun v => ‖algebraMap F (v.adicCompletion F) m‖)
-private lemma localSize_zero (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) : localSize F S 0 = 0 := by
+private lemma localSize_zero   : localSize F S 0 = 0 := by
   unfold localSize
   have : ∀ v : InfinitePlace F, (0:ℝ) ^ v.mult = 0 := by
     intro v
     exact zero_pow (by have := v.mult_pos; omega)
   change (∏ v : InfinitePlace F, ‖(0 : v.Completion)‖ ^ v.mult) * _ = 0
   simp [this]
-private lemma diagonal_injective (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) :
+private lemma diagonal_injective   :
     Function.Injective (sIntegerDiagonal F S) := by
   exact (RingHom.injective (sLocalDiagonal F S)).comp Subtype.val_injective
-private lemma diagonal_discrete (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) :
+private lemma diagonal_discrete   :
     IsDiscrete ((sIntegerDiagonal F S).toAddMonoidHom.range : Set (SLocalProduct F S)) := by
   let G := (sIntegerDiagonal F S).toAddMonoidHom.range
   letI : IsTopologicalAddGroup G := inferInstance
@@ -296,8 +294,7 @@ private lemma diagonal_discrete (F : Type) [Field F] [NumberField F]
     rw [show ((0 : G) : SLocalProduct F S) = 0 from rfl, localSize_zero]
     norm_num
 
-theorem probe_additive_box_rows_finite (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (N : ℝ)
+theorem probe_additive_box_rows_finite   (N : ℝ)
     (K : Set (SLocalProduct F S)) (hK : IsCompact K) :
     (ProbeAdditive.boxRows F S N K).Finite := by
   let G := (sIntegerDiagonal F S).toAddMonoidHom.range
@@ -311,6 +308,8 @@ theorem probe_additive_box_rows_finite (F : Type) [Field F] [NumberField F]
   apply hf.subset
   intro m hm
   exact ⟨hm, ⟨m, rfl⟩⟩
+end
+
 
 open scoped ComplexConjugate
 

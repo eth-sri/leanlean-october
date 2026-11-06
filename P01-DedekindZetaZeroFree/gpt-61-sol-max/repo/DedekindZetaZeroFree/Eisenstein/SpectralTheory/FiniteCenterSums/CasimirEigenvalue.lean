@@ -84,10 +84,13 @@ private theorem finiteCenterVector_val :
   rw [← finiteCenterVector_val]
   exact (finiteCenterVector F ζ hζ M R P H U m w a Z).property
 
-theorem finiteCenterSum_native_eigen (eig : ℂ)
+section
+variable (eig : ℂ)
     (he : ∀ i j g, KPMsGreenFlux.casimir F ζ hζ
       (KPContActualCutoffPlusClearedGerm.groupScalar F ζ hζ M R P H (U i) (Z i j)) g =
       eig * KPContActualCutoffPlusClearedGerm.groupScalar F ζ hζ M R P H (U i) (Z i j) g)
+include eig he
+theorem finiteCenterSum_native_eigen  
     (g : G) :
     KPMsGreenFlux.casimir F ζ hζ (fun x => finiteCenterSum F ζ hζ M R P H U m w a Z
       (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ x)) g =
@@ -126,10 +129,7 @@ theorem finiteCenterSum_native_eigen (eig : ℂ)
   simpa only [nativeCasimir_val, Submodule.coe_smul, Pi.smul_apply,
     smul_eq_mul, finiteCenterVector_val] using h
 
-theorem finiteCenterSum_word_eigen (eig : ℂ)
-    (he : ∀ i j g, KPMsGreenFlux.casimir F ζ hζ
-      (KPContActualCutoffPlusClearedGerm.groupScalar F ζ hζ M R P H (U i) (Z i j)) g =
-      eig * KPContActualCutoffPlusClearedGerm.groupScalar F ζ hζ M R P H (U i) (Z i j) g)
+theorem finiteCenterSum_word_eigen  
     (q : List (KPSmoothActualFlowData.B F)) (g : G) :
     KPMsGreenFlux.casimir F ζ hζ (fun x => KPSmoothActualFlowData.wordDerivative F ζ hζ q
       (finiteCenterSum F ζ hζ M R P H U m w a Z) (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ x)) g =
@@ -137,6 +137,8 @@ theorem finiteCenterSum_word_eigen (eig : ℂ)
         (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g) := by
   exact original_word_eigen _ (finiteCenterSum_native_smooth F ζ hζ M R P H U m w a Z) eig
     (finiteCenterSum_native_eigen F ζ hζ M R P H U m w a Z eig he) q g
+end
+
 
 end DedekindZetaZeroFree.FourierContinuation.ResidualHilbertCenters
 

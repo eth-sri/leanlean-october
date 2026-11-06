@@ -179,38 +179,38 @@ variable
     (w : AbsoluteValueExtension
       (HeightOneSpectrum.adicAbv K v) L)
 
-local instance finitePlaceDecompositionGroupAction :
-    MulDistribMulAction
-      (absoluteValueDecompositionGroup K w.1)
-      (AlgebraicNumberTheory.Valuations.LocalizedCompletion
-        (HeightOneSpectrum.adicAbv K v) w)ˣ :=
-  decompositionGroupLocalUnitsAction
-    (HeightOneSpectrum.adicAbv K v)
-    (RayClass.adicAbv_isNontrivial v) w
 
-local instance finitePlaceExtensionCompletionAlgebra :
-    Algebra K w.1.Completion :=
-  AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
 
-local instance finitePlaceExtensionCompletionSMul :
-    SMul K w.1.Completion :=
-  (finitePlaceExtensionCompletionAlgebra v w).toSMul
 
-local instance finitePlaceLocalizedCompletionAlgebra :
-    Algebra
-      (HeightOneSpectrum.adicAbv K v).Completion
-      w.1.Completion :=
-  AbsoluteValue.completionAlgebra
-    (HeightOneSpectrum.adicAbv K v) w.1 w.2
 
-local instance finitePlaceAllCompletionAlgebra
-    (w' : AbsoluteValueExtension
-      (HeightOneSpectrum.adicAbv K v) L) :
-    Algebra
-      (HeightOneSpectrum.adicAbv K v).Completion
-      w'.1.Completion :=
-  AbsoluteValue.completionAlgebra
-    (HeightOneSpectrum.adicAbv K v) w'.1 w'.2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 local instance finitePlaceScalarTensorUnitsAction :
     MulDistribMulAction

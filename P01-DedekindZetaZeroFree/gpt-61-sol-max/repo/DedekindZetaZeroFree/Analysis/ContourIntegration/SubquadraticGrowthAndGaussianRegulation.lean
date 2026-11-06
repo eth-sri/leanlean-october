@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.ContourIntegration.SimplePoleResidueSums
 
 @[expose] public section
+
 
 section
 
@@ -18,11 +21,7 @@ private lemma norm_exp_ofReal_mul_sq_le (ε : ℝ) (hε : 0 ≤ ε) (c t : ℝ) 
   rw [Complex.norm_exp]
   apply Real.exp_le_exp.mpr
   have hre : (((c : ℂ) + (t : ℂ) * Complex.I) ^ 2).re = c ^ 2 - t ^ 2 := by
-    rw [pow_two, Complex.mul_re]
-    simp only [Complex.add_re, Complex.add_im, Complex.ofReal_re, Complex.ofReal_im,
-      Complex.mul_I_re, Complex.mul_I_im, Complex.I_re, Complex.I_im, mul_zero, sub_zero,
-      zero_add, zero_sub, neg_zero]
-    ring
+    simp_all [pow_two, Complex.mul_re] <;> aesop
   rw [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, zero_mul, sub_zero, hre]
   nlinarith [sq_nonneg t]
 
@@ -97,7 +96,7 @@ theorem gaussianRegulator_boundary (f : ℂ → ℂ) (c : ℝ)
           ext ε; simp only [gaussianRegulator]
         rw [hfun]
         simpa using tendsto_const_nhds.mul hexp
-    exact hconv.const_mul (1 / (2 * Real.pi) : ℂ)
+    apply hconv.const_mul
 
 end DedekindZetaZeroFree.LargeSieve.Vendor.Subquadratic
 
@@ -168,10 +167,7 @@ private theorem one_add_rpow_le_quadratic (c : ℝ) (hc : 0 < c) :
       rw [← hcd]
       ring
     rw [hexp] at hmul2
-    have hk : 2 ^ (3 / 2 : ℝ) / (4 * d ^ 3)
-        ≤ 2 ^ (3 / 2 : ℝ) + 2 ^ (3 / 2 : ℝ) / (4 * d ^ 3) := by
-      have : (0 : ℝ) ≤ 2 ^ (3 / 2 : ℝ) := le_of_lt h2pos
-      linarith
+    
     linarith
 
 theorem subquadratic_quadratic_absorption (A ε : ℝ) (hA : 0 ≤ A) (hε : 0 < ε) :
@@ -227,7 +223,7 @@ theorem gaussianRegulator_regular_part (n : ℕ) (p : Fin n → ℝ) (R : Fin n 
           have hd : DifferentiableOn ℂ (dslope Fz (p j : ℂ)) U :=
             ((Complex.differentiableOn_dslope (s := Set.univ) (c := (p j : ℂ))
               (by simp)).mpr hF.differentiableOn).mono (Set.subset_univ _)
-          exact hd.const_mul (R j))
+          apply hd.const_mul)
       simpa only [Finset.sum_fn] using h
   · intro s hs hne
     have hφ : ∀ j : Fin n, dslope Fz (p j : ℂ) s =
@@ -315,7 +311,7 @@ theorem gaussianRegulator_bounded_tails {a b : ℝ} (f : ℂ → ℂ)
   intro σ t hσ ht
   have hfbound := hf σ t hσ ht
   have habs := hAbs |t| (abs_nonneg t)
-  have ht2 : (0 : ℝ) ≤ t ^ 2 := sq_nonneg t
+  
   have hσ2 := hσM σ hσ
   have hexpσ : Real.exp (ε * (σ ^ 2 - t ^ 2)) ≤ Real.exp (ε * M - ε * t ^ 2) := by
     apply Real.exp_le_exp.mpr

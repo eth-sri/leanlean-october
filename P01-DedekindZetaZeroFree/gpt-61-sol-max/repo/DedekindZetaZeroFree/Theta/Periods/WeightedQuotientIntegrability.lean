@@ -250,28 +250,30 @@ theorem root_norm (R : PrincipalMellin.ActualRecipe S η) (h : rootsOfUnity 6 F)
   rw [hh]
   simp
 
-theorem branch_norm (R : PrincipalMellin.ActualRecipe S η)
-    {Q : AdmissibleFlatSources R} (P : Packet R Q) (v : R.A.UnitQuotient) (y : R.A.G) :
+section
+variable (R : PrincipalMellin.ActualRecipe S η)
+    {Q : AdmissibleFlatSources R} (P : Packet R Q) (v : R.A.UnitQuotient)
+include R Q P v
+theorem branch_norm   (y : R.A.G) :
     ‖P.branch v y‖ = 1 := by
   rw [P.branch_global, norm_mul, Circle.norm_coe, root_norm, one_mul]
 
-def thetaWeight (R : PrincipalMellin.ActualRecipe S η)
-    {Q : AdmissibleFlatSources R} (P : Packet R Q) (v : R.A.UnitQuotient) (y : R.A.G) : ℂ :=
+def thetaWeight   (y : R.A.G) : ℂ :=
   (if QuotientGroup.mk' R.A.sixthPowers y ∈ R.probe.correction.B then 1 else 0) *
     (P.branch v y)⁻¹
 
-theorem thetaWeight_measurable (R : PrincipalMellin.ActualRecipe S η)
-    {Q : AdmissibleFlatSources R} (P : Packet R Q) (v : R.A.UnitQuotient) :
+theorem thetaWeight_measurable   :
     Measurable (thetaWeight R P v) :=
   (finite_class_measurable R.A (fun q => if q ∈ R.probe.correction.B then 1 else 0)).mul
     (branch_measurable R P v).inv
 
-theorem thetaWeight_norm_le_one (R : PrincipalMellin.ActualRecipe S η)
-    {Q : AdmissibleFlatSources R} (P : Packet R Q) (v : R.A.UnitQuotient) (y : R.A.G) :
+theorem thetaWeight_norm_le_one   (y : R.A.G) :
     ‖thetaWeight R P v y‖ ≤ 1 := by
   unfold thetaWeight
   rw [norm_mul, norm_inv, branch_norm, inv_one, mul_one]
   split_ifs <;> norm_num
+end
+
 
  instance sheetFiniteOnCompacts (A : SArithmeticData F) (v₀ : InfinitePlace F)
     (μG : Measure A.G) [μG.IsHaarMeasure] (l : PositiveAxis) :

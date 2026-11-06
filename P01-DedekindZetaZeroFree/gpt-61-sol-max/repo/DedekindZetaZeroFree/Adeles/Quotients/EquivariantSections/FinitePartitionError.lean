@@ -103,8 +103,11 @@ private theorem q_coordinates (a : Chart (U := U) (H := H)) (y : a.domain) :
   simp only [ShrunkChart.toBase, KPContCotangentOverlapRationalBranches.q, coordinates]
   rw [hi]
 
- def tensorMultiply (η : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ)
-    (hη : Measurable η) (r : Family (U := U) (H := H)) : Family (U := U) (H := H) :=
+ section
+variable (η : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ)
+    (hη : Measurable η)
+include η hη
+def tensorMultiply   (r : Family (U := U) (H := H)) : Family (U := U) (H := H) :=
   ⟨fun a x => (η (KPContCotangentOverlapRationalBranches.q a x.val) : ℂ) • coefficient r a x, by
     refine ⟨?_, ?_, ?_⟩
     · intro a
@@ -117,8 +120,7 @@ private theorem q_coordinates (a : Chart (U := U) (H := H)) (y : a.domain) :
       simp only [q_actualBranch e x, coefficient]
       rw [r.property.2.2 a b e x hx, map_smul]⟩
 
- theorem tensorMultiply_norm (η : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ)
-    (hη : Measurable η) (r : Family (U := U) (H := H)) :
+ theorem tensorMultiply_norm   (r : Family (U := U) (H := H)) :
     ∀ b, (normSquare (tensorMultiply η hη r) b : ℝ) = η b ^ 2 * (normSquare r b : ℝ) := by
   have huniq := (Classical.choose_spec (normSquare_descends (tensorMultiply η hη r))).2
   let v : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ≥0 := fun b =>
@@ -139,8 +141,7 @@ private theorem q_coordinates (a : Chart (U := U) (H := H)) (y : a.domain) :
   rw [hv]
   rfl
 
- def tensorMultiplySquare (η : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ)
-    (hη : Measurable η) (hη0 : ∀ b, 0 ≤ η b) (hη1 : ∀ b, η b ≤ 1)
+ def tensorMultiplySquare   (hη0 : ∀ b, 0 ≤ η b) (hη1 : ∀ b, η b ≤ 1)
     (r : SquareFiniteFamily (U := U) (H := H)) : SquareFiniteFamily (U := U) (H := H) :=
   ⟨tensorMultiply η hη r.val, by
     refine lt_of_le_of_lt (lintegral_mono (fun b => ?_)) r.property
@@ -148,6 +149,8 @@ private theorem q_coordinates (a : Chart (U := U) (H := H)) (y : a.domain) :
     rw [tensorMultiply_norm]
     have hsq : η b ^ 2 ≤ 1 := by nlinarith [hη0 b, hη1 b]
     nlinarith [show (0 : ℝ) ≤ normSquare r.val b from NNReal.coe_nonneg _]⟩
+end
+
 
 private theorem lp_norm_sq {α E : Type*} [MeasurableSpace α]
     [NormedAddCommGroup E] [InnerProductSpace ℝ E] {μ : Measure α}
@@ -222,27 +225,30 @@ private theorem tensor_local_enorm (a : Chart (U := U) (H := H))
       Real.sqrt_sq_eq_abs, abs_of_nonneg (norm_nonneg _), Real.norm_of_nonneg (norm_nonneg _)]
     rfl
 
+
+local notation:max "current_sectionNorm" => sectionNorm F ζ hζ U R P H
+
 private theorem scalar_chart_norm (a : Chart (U := U) (H := H))
     (s : Sections F ζ hζ U R P H) (y : a.domain) :
-    sectionNorm F ζ hζ U R P H s (a.toBase y) = ‖(a.coefficient s y : ℂ)‖ := by
-  change sectionNorm F ζ hζ U R P H s
+    current_sectionNorm s (a.toBase y) = ‖(a.coefficient s y : ℂ)‖ := by
+  change current_sectionNorm s
     (KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative a.component)
       (Quotient.mk _ y.val)) = ‖(s a.component).val y.val‖
   rw [← (H.atlas U).components_formula]
   exact sectionNorm_component F ζ hζ U R P H s a.component y.val
 
 private theorem scalar_section_memLp (s : BorelL2Sections F ζ hζ U R P H) :
-    MemLp (sectionNorm F ζ hζ U R P H s.val) 2
+    MemLp (current_sectionNorm s.val) 2
       (baseMeasure (R := R) (P := P) (U := U)) := by
-  have hme : Measurable (sectionNorm F ζ hζ U R P H s.val) := by
+  have hme : Measurable (current_sectionNorm s.val) := by
     let f := scalarRepresentative F ζ hζ U R P H s.val
     have hnorm := (kp_cont_sector_fixed_line_norm_integrals F ζ hζ U R P H f
       ((borel_iff F ζ hζ U R P H s.val).mp s.property.1)).borel
-    have hh : sectionNorm F ζ hζ U R P H s.val =
+    have hh : current_sectionNorm s.val =
         fun b => Real.sqrt (KPContSectorFixedLineNormIntegrals.lineNorm F ζ hζ U R P H f b).toReal := by
       funext b
       change _ = Real.sqrt (ENNReal.ofReal
-        (sectionNorm F ζ hζ U R P H (KPContSectorScalarLineAlgebra.S F ζ hζ U R P H f) b ^ 2)).toReal
+        (current_sectionNorm (KPContSectorScalarLineAlgebra.S F ζ hζ U R P H f) b ^ 2)).toReal
       rw [show KPContSectorScalarLineAlgebra.S F ζ hζ U R P H f = s.val from
         (KPContSectorScalarLineAlgebra.S F ζ hζ U R P H).apply_symm_apply s.val]
       rw [ENNReal.toReal_ofReal (sq_nonneg _), Real.sqrt_sq_eq_abs]
@@ -252,7 +258,7 @@ private theorem scalar_section_memLp (s : BorelL2Sections F ζ hζ U R P H) :
         rw [sectionNorm_component]; exact norm_nonneg _)).symm
     rw [hh]
     exact hnorm.ennreal_toReal.sqrt
-  have hn : ∀ b, 0 ≤ sectionNorm F ζ hζ U R P H s.val b := by
+  have hn : ∀ b, 0 ≤ current_sectionNorm s.val b := by
     intro b
     obtain ⟨⟨i,q⟩,rfl⟩ := (H.atlas U).components.surjective b
     obtain ⟨x,rfl⟩ := Quotient.exists_rep q
@@ -265,7 +271,7 @@ private theorem scalar_section_memLp (s : BorelL2Sections F ζ hζ U R P H) :
 
 private theorem scalar_enorm (s : BorelL2Sections F ζ hζ U R P H) :
     ‖toSector F ζ hζ U R P H s‖ₑ =
-      eLpNorm (sectionNorm F ζ hζ U R P H s.val) 2
+      eLpNorm (current_sectionNorm s.val) 2
       (baseMeasure (R := R) (P := P) (U := U)) := by
   have hm := scalar_section_memLp s
   have hh := lp_norm_sq hm
@@ -283,14 +289,17 @@ private theorem scalar_enorm (s : BorelL2Sections F ζ hζ U R P H) :
     rw [← KPContSectorLineL2Isometry.norm_sq F ζ hζ U R P H s]
     rfl
   have he : ‖toSector F ζ hζ U R P H s‖ =
-      ‖hm.toLp (sectionNorm F ζ hζ U R P H s.val)‖ := by
+      ‖hm.toLp (current_sectionNorm s.val)‖ := by
     nlinarith [norm_nonneg (toSector F ζ hζ U R P H s),
-      norm_nonneg (hm.toLp (sectionNorm F ζ hζ U R P H s.val))]
+      norm_nonneg (hm.toLp (current_sectionNorm s.val))]
   rw [← ofReal_norm_eq_enorm, he, ofReal_norm_eq_enorm, Lp.enorm_toLp]
 
- def scalarMultiplyBorel (η : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ)
+ section
+variable (η : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ)
     (hη : Measurable η) (hη0 : ∀ b, 0 ≤ η b) (hη1 : ∀ b, η b ≤ 1)
-    (s : BorelL2Sections F ζ hζ U R P H) : BorelL2Sections F ζ hζ U R P H := by
+    (s : BorelL2Sections F ζ hζ U R P H)
+include η hη hη0 hη1 s
+def scalarMultiplyBorel   : BorelL2Sections F ζ hζ U R P H := by
   let v := scalarRepresentative F ζ hζ U R P H s.val
   let f : KPContSectorScalarLineAlgebra.GenuineCoveredScalars F ζ hζ U :=
     ⟨fun x => (η (KPContSectorCoveredQuotientVocabulary.q F ζ hζ U x) : ℂ) * v.val x, by
@@ -312,9 +321,7 @@ private theorem scalar_enorm (s : BorelL2Sections F ζ hζ U R P H) :
   exact KPContSectorLineL2Isometry.borelS F ζ hζ U R P H ⟨f, hf, hlp⟩
 
 private theorem scalarMultiplyBorel_coefficient
-    (η : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ)
-    (hη : Measurable η) (hη0 : ∀ b, 0 ≤ η b) (hη1 : ∀ b, η b ≤ 1)
-    (s : BorelL2Sections F ζ hζ U R P H) (a : Chart (U := U) (H := H)) (y : a.domain) :
+      (a : Chart (U := U) (H := H)) (y : a.domain) :
     (a.coefficient (scalarMultiplyBorel η hη hη0 hη1 s).val y : ℂ) =
       (η (a.toBase y) : ℂ) * (a.coefficient s.val y : ℂ) := by
   change (KPContSectorScalarLineAlgebra.S F ζ hζ U R P H
@@ -332,23 +339,25 @@ private theorem scalarMultiplyBorel_coefficient
     (Quotient.mk _ (y.val, (H.atlas U).representative a.component)) = _ at he
   rw [he]
   congr 2
+end
+
 
 private theorem scalar_local_enorm (a : Chart (U := U) (H := H))
     (s : BorelL2Sections F ζ hζ U R P H)
-    (hz : ∀ b, b ∉ a.baseDomain → sectionNorm F ζ hζ U R P H s.val b = 0) :
+    (hz : ∀ b, b ∉ a.baseDomain → current_sectionNorm s.val b = 0) :
     ‖toSector F ζ hζ U R P H s‖ₑ =
       eLpNorm (fun y : a.domain => (a.coefficient s.val y : ℂ)) 2 a.liftedMeasure := by
   rw [scalar_enorm]
   have ha := every_shrunkChart_properties F ζ hζ U R P H a
   have hm := scalar_section_memLp s
-  have he : sectionNorm F ζ hζ U R P H s.val =
-      a.baseDomain.indicator (sectionNorm F ζ hζ U R P H s.val) := by
+  have he : current_sectionNorm s.val =
+      a.baseDomain.indicator (current_sectionNorm s.val) := by
     funext b
     by_cases hb : b ∈ a.baseDomain
     · exact (Set.indicator_of_mem hb _).symm
     · rw [Set.indicator_of_notMem hb, hz b hb]
-  rw [show eLpNorm (sectionNorm F ζ hζ U R P H s.val) 2 baseMeasure =
-      eLpNorm (sectionNorm F ζ hζ U R P H s.val) 2 (baseMeasure.restrict a.baseDomain) from by
+  rw [show eLpNorm (current_sectionNorm s.val) 2 baseMeasure =
+      eLpNorm (current_sectionNorm s.val) 2 (baseMeasure.restrict a.baseDomain) from by
     conv_lhs => rw [he]
     exact eLpNorm_indicator_eq_eLpNorm_restrict ha.base_measurable.nullMeasurableSet]
   rw [← ha.exact_pushforward, eLpNorm_map_measure
@@ -380,8 +389,8 @@ end Helpers
 
 set_option maxHeartbeats 800000 in
 
-theorem scalar
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+section
+variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
     (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
@@ -389,6 +398,12 @@ theorem scalar
     (K O : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U)) (hK : IsCompact K)
     (n : ℕ) (C : Fin n → ShrunkChart F ζ hζ U R P H)
     (partition : FinitePartition F ζ hζ U R P H C K O)
+include F ζ hζ U R P H K O hK n C partition
+
+local notation:max "current_toSector" => toSector F ζ hζ U R P H
+
+theorem scalar
+     
     (s : BorelL2Sections F ζ hζ U R P H)
     (hs : ∀ᵐ b ∂KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U,
       b ∉ K → sectionNorm F ζ hζ U R P H s.val b = 0)
@@ -420,12 +435,12 @@ theorem scalar
     intro i y
     rw [ht, ← scalar_field_coefficient, S.scalar_represented]
     exact congrFun (S.scalar_restriction_extension (C i) (f i)) (coordinates (C i) y)
-  have hemb : ∀ i, toSector F ζ hζ U R P H (t i) = iota (scalarZeroExtension (C i) (f i)) := by
+  have hemb : ∀ i, current_toSector (t i) = iota (scalarZeroExtension (C i) (f i)) := by
     intro i
     apply Subtype.ext
     exact scalarEmbedding_coe F ζ hζ U R P H _
   let d := fun i => z i - t i
-  have hrec : toSector F ζ hζ U R P H s = toSector F ζ hζ U R P H (∑ i, z i) := by
+  have hrec : current_toSector s = current_toSector (∑ i, z i) := by
     change lineToSector F ζ hζ U R P H (mk F ζ hζ U R P H s) =
       lineToSector F ζ hζ U R P H (mk F ζ hζ U R P H (∑ i,z i))
     apply congrArg (lineToSector F ζ hζ U R P H)
@@ -478,31 +493,24 @@ theorem scalar
     change ( (C i).coefficient (z i).val y : ℂ) - ((C i).coefficient (t i).val y : ℂ) = _
     dsimp only [z]
     rw [scalarMultiplyBorel_coefficient, hcoef]
-  have he : toSector F ζ hζ U R P H s - iota (∑ i,scalarZeroExtension (C i) (f i)) =
-      ∑ i, toSector F ζ hζ U R P H (d i) := by
+  have he : current_toSector s - iota (∑ i,scalarZeroExtension (C i) (f i)) =
+      ∑ i, current_toSector (d i) := by
     rw [hrec, map_sum, map_sum, ← Finset.sum_sub_distrib]
     apply Finset.sum_congr rfl
     intro i _
     rw [← hemb]
-    exact (map_sub (toSector F ζ hζ U R P H) (z i) (t i)).symm
+    exact (map_sub (current_toSector) (z i) (t i)).symm
   rw [he]
-  calc ‖∑ i, toSector F ζ hζ U R P H (d i)‖ₑ
+  calc ‖∑ i, current_toSector (d i)‖ₑ
       ≤ ∑ i, ‖toSector F ζ hζ U R P H (d i)‖ₑ := by
         simpa only [← ofReal_norm_eq_enorm,
-          ENNReal.ofReal_sum_of_nonneg (fun i _ => norm_nonneg (toSector F ζ hζ U R P H (d i)))]
+          ENNReal.ofReal_sum_of_nonneg (fun i _ => norm_nonneg (current_toSector (d i)))]
           using ENNReal.ofReal_le_ofReal (norm_sum_le Finset.univ
-            (fun i => toSector F ζ hζ U R P H (d i)))
+            (fun i => current_toSector (d i)))
     _ = _ := Finset.sum_congr rfl (fun i _ => hlocal i)
 
 theorem cotangent
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-    (K O : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U)) (hK : IsCompact K)
-    (n : ℕ) (C : Fin n → ShrunkChart F ζ hζ U R P H)
-    (partition : FinitePartition F ζ hζ U R P H C K O)
+     
     (r : SquareFiniteFamily (U := U) (H := H))
     (hr : ∀ᵐ b ∂KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U,
       b ∉ K → normSquare r.val b = 0)
@@ -593,6 +601,8 @@ theorem cotangent
   calc ‖∑ i, KPContActualSectorCotangentL2.ofFamily F ζ hζ U R P H (d i)‖ₑ
       ≤ ∑ i, ‖KPContActualSectorCotangentL2.ofFamily F ζ hζ U R P H (d i)‖ₑ := enorm_sum_le _ _
     _ = _ := Finset.sum_congr rfl (fun i _ => hlocal i)
+end
+
 
 end DedekindZetaZeroFree.KPContActualFinitePartitionError
 

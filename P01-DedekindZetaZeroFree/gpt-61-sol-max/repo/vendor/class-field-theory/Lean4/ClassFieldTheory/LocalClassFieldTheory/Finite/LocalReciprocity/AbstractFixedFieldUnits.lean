@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import Mathlib.FieldTheory.Galois.Basic
 public import ClassFieldTheory.LocalClassFieldTheory.Finite.LocalReciprocity.FiniteAbstractFixedField
 public import ClassFieldTheory.LocalClassFieldTheory.Finite.LocalReciprocity.TateTransport
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.FieldRepresentation
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -127,10 +130,7 @@ the actual unit group of the upper concrete fixed field. -/
 def abstractExtensionFixedRepresentationUnitsEquiv
     (K L : ClosedSubgroup (Gal(Ω / k)))
     (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal) :
-    (extensionFixedRepresentation (galoisAmbientUnitsRep k Ω)
-        K L hLK hnormal).V ≃+
-      Additive (abstractRelativeFixedField k Ω hLK)ˣ :=
+    (hnormal : (extensionSubgroup K L hLK).Normal)  :=
   (extensionFixedRepresentationEquiv (galoisAmbientUnitsRep k Ω)
       K L hLK hnormal).trans
     (abstractRelativeFixedFieldUnitsEquivGaloisFixed
@@ -149,8 +149,7 @@ theorem abstractRelativeUnitsEquiv_extensionUnitsEquiv
         (abstractExtensionFixedRepresentationUnitsEquiv
           k Ω K L hLK hnormal x) =
       extensionFixedRepresentationEquiv
-        (galoisAmbientUnitsRep k Ω) K L hLK hnormal x := by
-  exact (abstractRelativeFixedFieldUnitsEquivGaloisFixed
+        (galoisAmbientUnitsRep k Ω) K L hLK hnormal x := (abstractRelativeFixedFieldUnitsEquivGaloisFixed
     k Ω K L hLK).apply_symm_apply
       (extensionFixedRepresentationEquiv
         (galoisAmbientUnitsRep k Ω) K L hLK hnormal x)
@@ -167,10 +166,9 @@ theorem abstractExtensionQuotientEquivGaloisGroup_mk_apply_val
     σ.1 (x : Ω) =
       (((abstractExtensionQuotientEquivGaloisGroup
           k Ω K L hLK hnormal
-          (QuotientGroup.mk' (extensionSubgroup K L hLK) σ)) x :
-        abstractRelativeFixedField k Ω hLK) : Ω) := by
+          (QuotientGroup.mk' (extensionSubgroup K L hLK) σ)) x) : Ω) := by
   let := hnormal
-  let : (abstractRelativeFixedField k Ω hLK).fixingSubgroup.Normal :=
+  let  :=
     abstractRelativeFixingSubgroup_normal k Ω K L hLK hnormal
   let H : ClosedSubgroup (Gal(Ω / abstractFixedField k Ω K)) :=
     closedFixingSubgroup (abstractFixedField k Ω K) Ω
@@ -182,8 +180,7 @@ theorem abstractExtensionQuotientEquivGaloisGroup_mk_apply_val
           (QuotientGroup.mk' (extensionSubgroup K L hLK) σ) =
         QuotientGroup.mk'
           (abstractRelativeFixedField k Ω hLK).fixingSubgroup
-          (abstractSubgroupEquivGaloisGroup k Ω K σ) := by
-    rfl
+          (abstractSubgroupEquivGaloisGroup k Ω K σ) := rfl
   rw [abstractExtensionQuotientEquivGaloisGroup, MulEquiv.trans_apply, hq,
     MulEquiv.trans_apply]
   change σ.1 (x : Ω) =
@@ -193,8 +190,7 @@ theorem abstractExtensionQuotientEquivGaloisGroup_mk_apply_val
       (InfiniteGalois.normalAutEquivQuotient
         (closedFixingSubgroup (abstractFixedField k Ω K) Ω
           (abstractRelativeFixedField k Ω hLK))
-        ((abstractSubgroupEquivGaloisGroup k Ω K σ :
-            Gal(Ω / abstractFixedField k Ω K)) :
+        ((abstractSubgroupEquivGaloisGroup k Ω K σ) :
           Gal(Ω / abstractFixedField k Ω K) ⧸
             (abstractRelativeFixedField k Ω hLK).fixingSubgroup))) x :
       abstractRelativeFixedField k Ω hLK) : Ω)
@@ -277,10 +273,7 @@ theorem abstractExtensionFixedRepresentationUnitsEquiv_action
   rw [haction]
   rw [← abstractRelativeUnitsEquiv_extensionUnitsEquiv
     k Ω K L hLK hnormal x]
-  exact relativeCosetAction_abstractRelativeFixedFieldUnit_val
-    k Ω K L hLK hnormal
-      (abstractExtensionFixedRepresentationUnitsEquiv
-        k Ω K L hLK hnormal x) q
+  apply relativeCosetAction_abstractRelativeFixedFieldUnit_val
 
 /-- Representation-level form of the fixed-field unit comparison.  The
 concrete unit representation is reindexed along the canonical isomorphism
@@ -304,8 +297,7 @@ def abstractExtensionFixedRepresentationIsoUnitsRes
   intro q
   apply LinearMap.ext
   intro x
-  exact abstractExtensionFixedRepresentationUnitsEquiv_action
-    k Ω K L hLK hnormal q x
+  apply abstractExtensionFixedRepresentationUnitsEquiv_action
 
 end
 end LocalClassFieldTheory

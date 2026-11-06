@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.RepresentationTheory.Continuous.Basic
 public import Mathlib.Topology.Algebra.Module.Spaces.ContinuousLinearMap
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 The Tau Ceti contributors. All rights reserved.
@@ -46,8 +49,7 @@ theorem coe_subrepresentation_apply (g : G) (v : W) :
 
 @[simp]
 theorem toRepresentation_subrepresentation : (subrepresentation π W hW).toRepresentation
-      = π.toRepresentation.subrepresentation W fun g _ hv => hW g _ hv := by
-  rfl
+      = π.toRepresentation.subrepresentation W fun g _ hv => hW g _ hv := rfl
 
 end Restriction
 

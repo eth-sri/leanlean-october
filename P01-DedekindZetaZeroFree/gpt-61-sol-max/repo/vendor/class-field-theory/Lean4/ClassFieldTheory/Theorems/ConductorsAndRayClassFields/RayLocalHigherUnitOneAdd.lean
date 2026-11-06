@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.RayLocalHigherUnitGroup
 public import ClassFieldTheory.Theorems.ConductorsAndRayClassFields.RayLocalHigherUnitMembership
 public import Mathlib.RingTheory.Ideal.Operations
@@ -8,6 +10,7 @@ public import Mathlib.RingTheory.LocalRing.MaximalIdeal.Basic
 public import Mathlib.Tactic.Ring
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -52,7 +55,7 @@ theorem mem_rayLocalHigherUnitGroup_iff_exists_one_add
       ∃ t : v.adicCompletionIntegers K,
         t ∈ (IsLocalRing.maximalIdeal (v.adicCompletionIntegers K)) ^ n ∧
           (x : v.adicCompletion K) =
-            ((1 + t : v.adicCompletionIntegers K) : v.adicCompletion K) := by
+            ((1 + t) : v.adicCompletion K) := by
   constructor
   · intro hx
     obtain ⟨y, hxy, hcong⟩ :=
@@ -64,8 +67,7 @@ theorem mem_rayLocalHigherUnitGroup_iff_exists_one_add
     calc
       (x : v.adicCompletion K) =
           ((y : v.adicCompletionIntegers K) : v.adicCompletion K) := hval.symm
-      _ = ((1 + ((y : v.adicCompletionIntegers K) - 1) :
-            v.adicCompletionIntegers K) : v.adicCompletion K) := by
+      _ = ((1 + ((y : v.adicCompletionIntegers K) - 1)) : v.adicCompletion K) := by
         congr 1
         ring
   · rintro ⟨t, ht, hx⟩
@@ -74,7 +76,7 @@ theorem mem_rayLocalHigherUnitGroup_iff_exists_one_add
     have hnon : -t ∈ nonunits (v.adicCompletionIntegers K) :=
       (IsLocalRing.mem_maximalIdeal (-t)).mp
         ((IsLocalRing.maximalIdeal (v.adicCompletionIntegers K)).neg_mem htmax)
-    have hunit : IsUnit (1 + t : v.adicCompletionIntegers K) := by
+    have hunit : IsUnit (1 + t) := by
       simpa only [sub_neg_eq_add] using
         (IsLocalRing.isUnit_one_sub_self_of_mem_nonunits (-t) hnon)
     obtain ⟨y, hy⟩ := hunit
@@ -85,7 +87,7 @@ theorem mem_rayLocalHigherUnitGroup_iff_exists_one_add
         (x : v.adicCompletion K)
       calc
         ((y : v.adicCompletionIntegers K) : v.adicCompletion K) =
-            ((1 + t : v.adicCompletionIntegers K) : v.adicCompletion K) :=
+            ((1 + t) : v.adicCompletion K) :=
           congrArg
             (fun z : v.adicCompletionIntegers K =>
               (z : v.adicCompletion K)) hy

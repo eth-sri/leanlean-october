@@ -44,11 +44,11 @@ omit [TopologicalSpace G] in
 theorem conjugate_apply (g : G) : conjugate e π g = conjCLM e (π g) :=
   (rfl)
 
-omit [TopologicalSpace G] in
 
-@[simp]
-theorem conjugate_conjugate : conjugate e (conjugate e π) = π :=
-  DFunLike.ext _ _ fun g ↦ by simp
+
+
+
+
 
 theorem continuous_conjugate (hπ : Continuous π) : Continuous (conjugate e π) :=
   (lipschitzWith_one_conjCLM e).continuous.comp hπ

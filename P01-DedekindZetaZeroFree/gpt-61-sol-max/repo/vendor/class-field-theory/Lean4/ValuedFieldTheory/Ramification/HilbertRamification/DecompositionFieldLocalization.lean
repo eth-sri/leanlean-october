@@ -49,11 +49,11 @@ variable [IsGalois K L]
 variable (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
   (w : AbsoluteValueExtension vK L)
 
-local instance proposition98CompletionBaseAlgebra : Algebra K w.1.Completion :=
-  AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
 
-local instance proposition98CompletionBaseSMul : SMul K w.1.Completion :=
-  (AbsoluteValue.extensionCompletionAlgebra (K := K) w.1).toSMul
+
+
+
+
 
 local instance proposition98CompletionAlgebra : Algebra vK.Completion w.1.Completion :=
   AbsoluteValue.completionAlgebra vK w.1 w.2
@@ -241,26 +241,26 @@ theorem decompositionField_decompositionField_eq_completionImage_comap :
           vK hvK w δ x
       _ = decompositionFieldAlgebraicLocalizationEmbedding vK w x := congrArg (decompositionFieldAlgebraicLocalizationEmbedding vK w) hδ
 
-/-- The decomposition-field extension comparison, literal intersection form inside `L_w`:
-the image of `Z_w` is the infimum of the images of `L` and `K_v`. -/
-theorem decompositionField_decompositionField_image_eq_intersection :
-    (decompositionFieldAlgebraicLocalizationEmbedding vK w).fieldRange ⊓
-        decompositionField_completionImageSubfield vK w =
-      (absoluteValueDecompositionField K w.1).toSubfield.map
-        (decompositionFieldAlgebraicLocalizationEmbedding vK w) := by
-  calc
-    (decompositionFieldAlgebraicLocalizationEmbedding vK w).fieldRange ⊓
-        decompositionField_completionImageSubfield vK w =
-      decompositionField_completionImageSubfield vK w ⊓
-        (decompositionFieldAlgebraicLocalizationEmbedding vK w).fieldRange := by rw [inf_comm]
-    _ = ((decompositionField_completionImageSubfield vK w).comap
-        (decompositionFieldAlgebraicLocalizationEmbedding vK w)).map (decompositionFieldAlgebraicLocalizationEmbedding vK w) :=
-      (Subfield.map_comap_eq (decompositionFieldAlgebraicLocalizationEmbedding vK w)
-        (decompositionField_completionImageSubfield vK w)).symm
-    _ = (absoluteValueDecompositionField K w.1).toSubfield.map
-        (decompositionFieldAlgebraicLocalizationEmbedding vK w) := by
-      rw [decompositionField_decompositionField_eq_completionImage_comap
-        vK hvK w]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 omit hvK
 
@@ -295,49 +295,49 @@ theorem decompositionField_completion_nonarchimedean
     (AbsoluteValue.completionAbsoluteValue_isNonarchimedean vK
       ((AbsoluteValue.isNonarchimedean_iff_bounded_nat vK).2 hv))
 
-/-- Completion does not enlarge the range of a nonarchimedean absolute
-value.  This provides the value-group equality used in the decomposition-field extension comparison. -/
-theorem decompositionField_completionAbsoluteValue_range_eq
-    (hv : LubinTate.Valuations.NonarchimedeanAbsoluteValue vK) :
-    Set.range (AbsoluteValue.completionAbsoluteValue vK) = Set.range vK :=
-  AbsoluteValue.completionAbsoluteValue_range_eq vK
-    ((AbsoluteValue.isNonarchimedean_iff_bounded_nat vK).2 hv)
+
+
+
+
+
+
+
 
 include hvK
 
-/-- The decomposition-field extension comparison, value-group form: `w|Z_w` and `v` have literally
-the same range in `ℝ`. -/
-theorem decompositionField_decompositionField_valueRange_eq
-    (hv : LubinTate.Valuations.NonarchimedeanAbsoluteValue vK) :
-    Set.range
-        (AlgebraicNumberTheory.Valuations.absoluteValueRestrictIntermediateField w.1
-          (absoluteValueDecompositionField K w.1)) =
-      Set.range vK := by
-  let Z := absoluteValueDecompositionField K w.1
-  let wZ := AlgebraicNumberTheory.Valuations.absoluteValueRestrictIntermediateField w.1 Z
-  let aE := AbsoluteValue.algebraicLocalizationAbsoluteValue vK w.1 w.2
-  apply Set.Subset.antisymm
-  · rintro r ⟨z, rfl⟩
-    have hz : (z : L) ∈ Z.toSubfield := z.property
-    rw [← decompositionField_decompositionField_eq_completionImage_comap
-      vK hvK w] at hz
-    rcases hz with ⟨y, hy⟩
-    have hvalue : wZ z = AbsoluteValue.completionAbsoluteValue vK y := by
-      calc
-        wZ z = aE (decompositionFieldAlgebraicLocalizationEmbedding vK w (z : L)) :=
-          (AbsoluteValue.algebraicLocalizationAbsoluteValue_toAlgebraicLocalization vK w.1 w.2 (z : L)).symm
-        _ = aE (algebraMap vK.Completion (decompositionFieldAlgebraicLocalization vK w) y) := by
-          rw [hy]
-        _ = AbsoluteValue.completionAbsoluteValue vK y :=
-          AbsoluteValue.algebraicLocalizationAbsoluteValue_extends vK w.1 w.2 y
-    rw [hvalue]
-    exact (Set.ext_iff.mp
-      (decompositionField_completionAbsoluteValue_range_eq vK hv)
-      (AbsoluteValue.completionAbsoluteValue vK y)).mp ⟨y, rfl⟩
-  · rintro r ⟨x, rfl⟩
-    refine ⟨algebraMap K Z x, ?_⟩
-    change w.1 (algebraMap Z L (algebraMap K Z x)) = vK x
-    rw [← IsScalarTower.algebraMap_apply K Z L, w.2 x]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 omit hvK
 

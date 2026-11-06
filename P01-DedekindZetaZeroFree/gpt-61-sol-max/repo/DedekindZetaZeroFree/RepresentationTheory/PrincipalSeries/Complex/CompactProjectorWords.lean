@@ -204,7 +204,7 @@ theorem universal_polynomial_compact_words (p : Polynomial ℂ) :
 
 variable {M : Type*} [AddCommGroup M] [Module ℂ M]
 
-variable {α : Type*}
+
 
 end FixedWords
 

@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.SmoothFunctions.CompactOpenHolomorphyAndMeromorphy
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -18,11 +21,11 @@ def firstIndex {n : ℕ} (i : Fin n) : MultiIndex n 1 :=
     simp only [apply_ite Fin.val, Fin.val_one, Fin.val_zero]
     simp⟩
 
-def value {n k : ℕ} {B : LocalBall n} (u : IntegerSobolev B k) : BallL2 B :=
+def value {n k : ℕ} {B : LocalBall n} (u : IntegerSobolev B k)  :=
   u.derivatives (zeroIndex n k)
 
 def gradient {n : ℕ} {B : LocalBall n} (u : IntegerSobolev B 1)
-    (i : Fin n) : BallL2 B :=
+    (i : Fin n)  :=
   u.derivatives (firstIndex i)
 
 structure Coefficients {n : ℕ} (B : LocalBall n) (cρ Cρ κ Λ : ℝ) where
@@ -38,7 +41,7 @@ structure Coefficients {n : ℕ} (B : LocalBall n) (cρ Cρ κ Λ : ℝ) where
     (∑ i, ∑ j, matrix x i j * ξ i * ξ j) ≤ Λ * ‖ξ‖ ^ 2
 
 def divergenceOperator {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
-    (D : Coefficients B cρ Cρ κ Λ) (u : Space n → ℂ) : Space n → ℂ :=
+    (D : Coefficients B cρ Cρ κ Λ) (u : Space n → ℂ)  :=
   fun x => -(D.density x : ℂ)⁻¹ * ∑ i,
     fderiv ℝ (fun y => (D.density y : ℂ) *
       ∑ j, (D.matrix y i j : ℂ) * coordinateDerivativeList [j] u y) x
@@ -46,7 +49,7 @@ def divergenceOperator {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
 
 def WeakEquation {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
     (D : Coefficients B cρ Cρ κ Λ) (z : ℂ)
-    (u : IntegerSobolev B 1) (h : BallL2 B) : Prop :=
+    (u : IntegerSobolev B 1) (h : BallL2 B)  :=
   ∀ φ : TestFunction B.toOpens ℂ ⊤,
     (∫ x in B.carrier, (D.density x : ℂ) *
       ∑ i, ∑ j, (D.matrix x i j : ℂ) * gradient u j x *
@@ -54,16 +57,20 @@ def WeakEquation {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
       z * (∫ x in B.carrier, (D.density x : ℂ) * value u x * star (φ x)) =
         ∫ x in B.carrier, (D.density x : ℂ) * h x * star (φ x)
 
-def Represents {n k : ℕ} {B : LocalBall n} (u : IntegerSobolev B k)
-    (f : Space n → ℂ) : Prop :=
+section
+variable {n k : ℕ} {B : LocalBall n} (u : IntegerSobolev B k)
+    (f : Space n → ℂ)
+include n k B u f
+def Represents    :=
   ∀ᵐ x ∂volume.restrict B.carrier, value u x = f x
 
-def RepresentsClassicalDerivatives {n k : ℕ} {B : LocalBall n}
-    (u : IntegerSobolev B k) (f : Space n → ℂ) : Prop :=
+def RepresentsClassicalDerivatives    :=
   ∀ α : MultiIndex n k,
     ∀ᵐ x ∂volume.restrict B.carrier, u.derivatives α x = coordinateDerivative α f x
+end
 
-def functionL2Norm {n : ℕ} (B : LocalBall n) (f : Space n → ℂ) : ℝ :=
+
+def functionL2Norm {n : ℕ} (B : LocalBall n) (f : Space n → ℂ)  :=
   Real.sqrt (∫ x in B.carrier, ‖f x‖ ^ 2)
 
 end DedekindZetaZeroFree.KPContLocalEnergy.SobolevEnergyEstimates.Raw

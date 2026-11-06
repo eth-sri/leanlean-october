@@ -15,8 +15,11 @@ namespace DedekindZetaZeroFree.ExteriorWhittakerValues.ShellArithmetic
 variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
-theorem allowedGenerator_integer_irreducible (R : PrincipalMellin.ActualRecipe S η)
-    (p : ThetaBranch.ExteriorPrime R.A) :
+section
+variable (R : PrincipalMellin.ActualRecipe S η)
+    (p : ThetaBranch.ExteriorPrime R.A)
+include R p in
+theorem allowedGenerator_integer_irreducible   :
     ∃ π : (valuation (p.val.adicCompletion F)).integer, Irreducible π ∧
       (π : p.val.adicCompletion F) = (ThetaExpansion.exteriorCompletionGenerator R p : p.val.adicCompletion F) := by
   let x := R.probe.allowed.generator (ThetaBranch.primeIdeal R.A p)
@@ -59,8 +62,8 @@ theorem tracePsi_continuous (p : KPFinitePlace F) : Continuous (tracePsi p) :=
 theorem tracePsi_unitary (p : KPFinitePlace F) (x : p.adicCompletion F) :
     ‖tracePsi p x‖ = 1 := Circle.norm_coe _
 
-theorem tracePsi_conductorZero (R : PrincipalMellin.ActualRecipe S η)
-    (p : ThetaBranch.ExteriorPrime R.A)
+include R p in
+theorem tracePsi_conductorZero  
     (π : (valuation (p.val.adicCompletion F)).integer) (hπ : Irreducible π) :
     KPExteriorUnitShellIntegrals.ConductorZero (tracePsi p.val) π := by
   let J := LocalFiniteSumCompatibility.integerRingEquiv (UnitCovarianceCompletion.localPrime p)
@@ -96,8 +99,8 @@ theorem tracePsi_conductorZero (R : PrincipalMellin.ActualRecipe S η)
     apply Subtype.ext
     exact h
 
-def residueChi (R : PrincipalMellin.ActualRecipe S η)
-    (p : ThetaBranch.ExteriorPrime R.A) :
+include R p in
+def residueChi   :
     MulChar (IsLocalRing.ResidueField (valuation (p.val.adicCompletion F)).integer) ℂ :=
   MulChar.ofUnitHom
     ((LocalFiniteSums.chi (σ := R.σ) (UnitCovarianceCompletion.localPrime p)).toUnitHom.comp
@@ -134,28 +137,28 @@ theorem residueChi_unitCharacter (R : PrincipalMellin.ActualRecipe S η)
   rw [← hx]
   exact hh.trans hr
 
-theorem exterior_tame_char (R : PrincipalMellin.ActualRecipe S η)
-    (p : ThetaBranch.ExteriorPrime R.A) :
+include R p in
+theorem exterior_tame_char   :
     ringChar (KPTameCompact.O F p.val ⧸ KPTameCompact.p F p.val) ≠ 3 :=
   fun h => exterior_not_bad p (Or.inr h)
 
-theorem negativeGenerator_integer_irreducible (R : PrincipalMellin.ActualRecipe S η)
-    (p : ThetaBranch.ExteriorPrime R.A) :
+include R p in
+theorem negativeGenerator_integer_irreducible   :
     ∃ π : (valuation (p.val.adicCompletion F)).integer, Irreducible π ∧
       (π : p.val.adicCompletion F) = -(ThetaExpansion.exteriorCompletionGenerator R p : p.val.adicCompletion F) := by
   obtain ⟨π, hi, hp⟩ := allowedGenerator_integer_irreducible R p
   have hneg : Associated π (-π) := ⟨-1, by simp⟩
   exact ⟨-π, hneg.irreducible_iff.mp hi, congrArg Neg.neg hp⟩
 
-def residueEquiv (R : PrincipalMellin.ActualRecipe S η)
-    (p : ThetaBranch.ExteriorPrime R.A) :
+include R p in
+def residueEquiv   :
     DHCubic.Residue F p.val ≃+*
       IsLocalRing.ResidueField (valuation (p.val.adicCompletion F)).integer :=
   (ArithGaussCRT.exteriorQuotientEquiv R.A (ThetaBranch.primeIdeal R.A p)).trans
     (LocalFiniteSumCompatibility.cftResidueEquiv (UnitCovarianceCompletion.localPrime p))
 
-theorem residueEquiv_mk (R : PrincipalMellin.ActualRecipe S η)
-    (p : ThetaBranch.ExteriorPrime R.A) (t : 𝓞 F) :
+include R p in
+theorem residueEquiv_mk   (t : 𝓞 F) :
     residueEquiv R p (Ideal.Quotient.mk p.val.asIdeal t) =
       IsLocalRing.residue _ (LocalFiniteSumCompatibility.integerRingEquiv
         (UnitCovarianceCompletion.localPrime p)
@@ -163,13 +166,13 @@ theorem residueEquiv_mk (R : PrincipalMellin.ActualRecipe S η)
             (algebraMap (𝓞 F) R.A.R t))) := by
   exact LocalFiniteSumCompatibility.cftResidueEquiv_mk _ _
 
-def residuePsi (R : PrincipalMellin.ActualRecipe S η)
-    (p : ThetaBranch.ExteriorPrime R.A) :
+include R p in
+def residuePsi   :
     AddChar (IsLocalRing.ResidueField (valuation (p.val.adicCompletion F)).integer) ℂ :=
   (MomentSources.Characters.psi R p).compAddMonoidHom (residueEquiv R p).symm.toAddMonoidHom
 
-theorem residuePsi_trace (R : PrincipalMellin.ActualRecipe S η)
-    (p : ThetaBranch.ExteriorPrime R.A)
+include R p in
+theorem residuePsi_trace  
     (π : (valuation (p.val.adicCompletion F)).integer) (hπ : Irreducible π)
     (hp : (π : p.val.adicCompletion F) = -(ThetaExpansion.exteriorCompletionGenerator R p : p.val.adicCompletion F))
     (u : (valuation (p.val.adicCompletion F)).integer) :
@@ -198,8 +201,8 @@ theorem residuePsi_trace (R : PrincipalMellin.ActualRecipe S η)
         algebraMap (𝓞 F) (p.val.adicCompletion F) t
   simp [div_eq_mul_inv, mul_comm]
 
-theorem residueChi_transport (R : PrincipalMellin.ActualRecipe S η)
-    (p : ThetaBranch.ExteriorPrime R.A) (x : DHCubic.Residue F p.val) :
+include R p in
+theorem residueChi_transport   (x : DHCubic.Residue F p.val) :
     residueChi R p (residueEquiv R p x) = ThetaBranch.residueCharacter R.A R.σ p x := by
   rw [NormalizedProbe.principal_prime_residueCharacter_transport]
   by_cases hx : x = 0
@@ -218,14 +221,14 @@ theorem residueChi_transport (R : PrincipalMellin.ActualRecipe S η)
       (e.symm (e u.val)) = _
     rw [e.symm_apply_apply]
 
-@[simp] theorem residuePsi_transport (R : PrincipalMellin.ActualRecipe S η)
-    (p : ThetaBranch.ExteriorPrime R.A) (x : DHCubic.Residue F p.val) :
+include R p in
+@[simp] theorem residuePsi_transport   (x : DHCubic.Residue F p.val) :
     residuePsi R p (residueEquiv R p x) = MomentSources.Characters.psi R p x := by
   change MomentSources.Characters.psi R p ((residueEquiv R p).symm (residueEquiv R p x)) = _
   rw [RingEquiv.symm_apply_apply]
 
-theorem gauss_two_transport (R : PrincipalMellin.ActualRecipe S η)
-    (p : ThetaBranch.ExteriorPrime R.A)
+include R p in
+theorem gauss_two_transport  
     [Fintype (IsLocalRing.ResidueField (valuation (p.val.adicCompletion F)).integer)] :
     gaussSum (residueChi R p ^ 2) (residuePsi R p) =
       gaussSum (ThetaBranch.residueCharacter R.A R.σ p ^ 2) (MomentSources.Characters.psi R p) := by
@@ -236,6 +239,8 @@ theorem gauss_two_transport (R : PrincipalMellin.ActualRecipe S η)
   simp only [MulChar.pow_apply' _ (by norm_num : (2 : ℕ) ≠ 0)]
   change _ = residueChi R p (residueEquiv R p x) ^ 2 * residuePsi R p (residueEquiv R p x)
   rw [residueChi_transport, residuePsi_transport]
+end
+
 
 end DedekindZetaZeroFree.ExteriorWhittakerValues.ShellArithmetic
 

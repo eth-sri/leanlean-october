@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Topology.Algebra.ContinuousMonoidHom
 public import Mathlib.Topology.Algebra.OpenSubgroup
 public import GaloisCohomology.Kummer.Concrete.FiniteCharacterEquiv
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -40,8 +43,7 @@ open Filter
 
 /-- The group `μₙ(L)` equipped explicitly with the discrete topology used for
 continuous characters in the infinite form of the finite Kummer character equivalence. -/
-def DiscreteNthRootsSubgroup (L : Type*) [Field L] (n : ℕ) :=
-  nthRootsSubgroup L n
+alias DiscreteNthRootsSubgroup := _root_.KummerTheory.nthRootsSubgroup
 
 namespace DiscreteNthRootsSubgroup
 
@@ -134,90 +136,90 @@ theorem infiniteKummerRootCharacter_continuous
     tendsto_pure]
   exact (infiniteKummerRootCharacter_isOpen_ker n hmu a).mem_nhds (by simp)
 
-/-- The continuous Kummer character attached to one radical element. -/
-def infiniteKummerContinuousRootCharacter
-    (n : ℕ+) (hmu : NthRootsOfUnityInBase (K := K) (L := Ω) n)
-    (a : (chosenFiniteKummerRadicalDatum (K := K) (L := Ω) n).carrier) :
-    Gal(Ω/K) →ₜ* DiscreteNthRootsSubgroup Ω (n : ℕ) :=
-  ⟨infiniteKummerRootCharacter n hmu a,
-    infiniteKummerRootCharacter_continuous n hmu a⟩
 
-/-- Radical elements map multiplicatively to continuous Kummer characters. -/
-def infiniteKummerContinuousCharacter
-    (n : ℕ+) (hmu : NthRootsOfUnityInBase (K := K) (L := Ω) n) :
-    (chosenFiniteKummerRadicalDatum (K := K) (L := Ω) n).carrier →*
-      (Gal(Ω/K) →ₜ* DiscreteNthRootsSubgroup Ω (n : ℕ)) where
-  toFun := infiniteKummerContinuousRootCharacter n hmu
-  map_one' := by
-    apply ContinuousMonoidHom.ext
-    intro σ
-    exact congrArg
-      (fun χ : Gal(Ω/K) →* nthRootsSubgroup Ω (n : ℕ) => χ σ)
-      (map_one
-        ((chosenFiniteKummerRadicalDatum (K := K) (L := Ω) n).kummerCharacterWithoutSection
-          (nthRootsOfUnity_fixed (K := K) (L := Ω) n hmu)))
-  map_mul' := by
-    intro a b
-    apply ContinuousMonoidHom.ext
-    intro σ
-    exact congrArg
-      (fun χ : Gal(Ω/K) →* nthRootsSubgroup Ω (n : ℕ) => χ σ)
-      (map_mul
-        ((chosenFiniteKummerRadicalDatum (K := K) (L := Ω) n).kummerCharacterWithoutSection
-          (nthRootsOfUnity_fixed (K := K) (L := Ω) n hmu)) a b)
 
-/-- The infinite continuous Kummer character map on the ambient-power quotient
-`Δ / (Δ ∩ Kˣⁿ)`.  This is the canonical map; surjectivity is not asserted,
-and injectivity is proved below from the existing algebraic kernel result. -/
-def infiniteKummerContinuousQuotientCharacter
-    (n : ℕ+) (hmu : NthRootsOfUnityInBase (K := K) (L := Ω) n) :
-    (chosenFiniteKummerRadicalDatum (K := K) (L := Ω) n).RadicalQuotient →*
-      (Gal(Ω/K) →ₜ* DiscreteNthRootsSubgroup Ω (n : ℕ)) :=
-  (chosenFiniteKummerRadicalDatum (K := K) (L := Ω) n).radicalQuotientLift
-    (infiniteKummerContinuousCharacter n hmu)
-    (by
-      let D := chosenFiniteKummerRadicalDatum (K := K) (L := Ω) n
-      let hfixed := nthRootsOfUnity_fixed (K := K) (L := Ω) n hmu
-      intro a ha
-      change infiniteKummerContinuousRootCharacter n hmu a = 1
-      apply ContinuousMonoidHom.ext
-      intro σ
-      have hker : D.kummerCharacterWithoutSection hfixed a = 1 :=
-        D.ambientNthPowersSubgroup_le_ker hfixed ha
-      exact congrArg
-        (fun χ : Gal(Ω/K) →* nthRootsSubgroup Ω (n : ℕ) => χ σ) hker)
 
-/-- Forgetting continuity recovers the previously constructed algebraic
-Kummer character on the same ambient-power quotient. -/
-@[simp] theorem infiniteKummerContinuousQuotientCharacter_toMonoidHom
-    (n : ℕ+) (hmu : NthRootsOfUnityInBase (K := K) (L := Ω) n)
-    (q : (chosenFiniteKummerRadicalDatum (K := K) (L := Ω) n).RadicalQuotient) :
-    (infiniteKummerContinuousQuotientCharacter n hmu q).toMonoidHom =
-      (chosenFiniteKummerRadicalDatum (K := K) (L := Ω) n).quotientKummerCharacterWithoutSection
-        (nthRootsOfUnity_fixed (K := K) (L := Ω) n hmu) q := by
-  let D := chosenFiniteKummerRadicalDatum (K := K) (L := Ω) n
-  obtain ⟨a, rfl⟩ := D.radicalQuotientMk_surjective q
-  apply MonoidHom.ext
-  intro σ
-  rfl
 
-/-- The continuous character map on the ambient-power quotient is injective.  This is
-the existing algebraic kernel computation with the continuity structure
-forgotten; it does not use or assert surjectivity. -/
-theorem infiniteKummerContinuousQuotientCharacter_injective
-    (n : ℕ+) (hmu : NthRootsOfUnityInBase (K := K) (L := Ω) n) :
-    Function.Injective (infiniteKummerContinuousQuotientCharacter n hmu) := by
-  let D := chosenFiniteKummerRadicalDatum (K := K) (L := Ω) n
-  let hfixed := nthRootsOfUnity_fixed (K := K) (L := Ω) n hmu
-  intro q r hqr
-  apply D.quotientKummerCharacterWithoutSection_injective hfixed
-  have hforget := congrArg
-    (fun χ : Gal(Ω/K) →ₜ* DiscreteNthRootsSubgroup Ω (n : ℕ) => χ.toMonoidHom) hqr
-  change (infiniteKummerContinuousQuotientCharacter n hmu q).toMonoidHom =
-    (infiniteKummerContinuousQuotientCharacter n hmu r).toMonoidHom at hforget
-  rw [infiniteKummerContinuousQuotientCharacter_toMonoidHom n hmu q,
-    infiniteKummerContinuousQuotientCharacter_toMonoidHom n hmu r] at hforget
-  exact hforget
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end InfiniteKummerContinuity
 

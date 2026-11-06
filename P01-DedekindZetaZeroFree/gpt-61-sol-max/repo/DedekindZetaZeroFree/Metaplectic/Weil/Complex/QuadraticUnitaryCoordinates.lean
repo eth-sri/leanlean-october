@@ -2,7 +2,10 @@ module
 
 public import Mathlib
 
+public import Mathlib
+
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.ComplexWeil
 
@@ -16,20 +19,16 @@ def unitMulCLE (u : ℂ) (hu : ‖u‖ = 1) : ℂ ≃L[ℝ] ℂ :=
 theorem unitMulCLE_apply (u : ℂ) (hu : ‖u‖ = 1) (z : ℂ) :
     unitMulCLE u hu z = u * z := rfl
 
-theorem quadratic_radius_pos (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) :
-    0 < ‖β * a‖ := by
-  exact norm_pos_iff.mpr (mul_ne_zero hβ ha)
+def quadratic_radius_pos (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)  := norm_pos_iff.mpr (mul_ne_zero hβ ha)
 
 theorem exists_quadratic_unit (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) :
     ∃ u : ℂ, ‖u‖ = 1 ∧ β * a * u ^ 2 = (‖β * a‖ : ℂ) := by
-  have hba : β * a ≠ 0 := mul_ne_zero hβ ha
+  have hba  := mul_ne_zero hβ ha
   have hr : 0 < ‖β * a‖ := norm_pos_iff.mpr hba
 
   set d := (‖β * a‖ : ℂ) / (β * a) with hdd
   have hdnorm : ‖d‖ = 1 := by
-    rw [hdd, norm_div]
-    have h1 : ‖((‖β * a‖ : ℝ) : ℂ)‖ = ‖β * a‖ := by simp
-    rw [h1, div_self (norm_ne_zero_iff.mpr hba)]
+    simp_all
   have hdexp : Complex.exp (d.arg * Complex.I) = d := by
     simpa [hdnorm] using Complex.norm_mul_exp_arg_mul_I d
   refine ⟨Complex.exp ((d.arg / 2 : ℝ) * Complex.I), ?_, ?_⟩
@@ -93,15 +92,11 @@ theorem frequency_square_difference (β a u ξ : ℂ) (hβ : β ≠ 0) (ha : a �
     (hrotate : β * a * u ^ 2 = (‖β * a‖ : ℂ)) :
     ((β * u * ξ).re ^ 2 - (β * u * ξ).im ^ 2) / ‖β * a‖ =
       (β * ξ ^ 2 / a).re := by
-  have hba : β * a ≠ 0 := mul_ne_zero hβ ha
+  have hba  := mul_ne_zero hβ ha
   have hrne : (‖β * a‖) ≠ 0 := norm_ne_zero_iff.mpr hba
 
   have key : (β * u * ξ) ^ 2 = (‖β * a‖ : ℂ) * (β * ξ ^ 2 / a) := by
-    have h : (β * u * ξ) ^ 2 * a = (‖β * a‖ : ℂ) * (β * ξ ^ 2) := by
-      rw [mul_pow]
-      linear_combination (β * ξ ^ 2) * hrotate
-    field_simp at h ⊢
-    linear_combination h
+    grind [mul_pow]
   have hre := congrArg Complex.re key
   rw [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, zero_mul, sub_zero] at hre
   rw [sq, Complex.mul_re] at hre

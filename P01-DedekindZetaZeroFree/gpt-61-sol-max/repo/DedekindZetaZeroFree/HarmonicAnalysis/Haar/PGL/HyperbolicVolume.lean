@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.PGLHyperbolic.CompactStabilizer
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.KPCompactStabilizerHaarSources
 
@@ -37,7 +40,7 @@ theorem hyperbolic_volume_properties (d : ℕ) :
     have he : (fun z : X d => g • z) = KPArch.productAction d h := by
       funext z
       rw [hg]
-      exact KPArithmeticAction.productProjectiveAction_mk d h z
+      apply KPArithmeticAction.productProjectiveAction_mk
     rw [he]
     have hm := congrArg (fun μ : Measure (X d) => μ s)
       (KPArch.hyperbolicVolume_invariant d h)

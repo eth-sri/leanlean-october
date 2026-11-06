@@ -15,11 +15,14 @@ set_option maxHeartbeats 1600000
 namespace DedekindZetaZeroFree.KPGlobalResidualKernel.ScatteringResidue
 variable {F : Type} [Field F] [NumberField F]
 
+abbrev finiteUnitEquiv : FiniteIdeleGroup F ≃* (FiniteAdeleRing (𝓞 F) F)ˣ :=
+  IdeleGroup.finiteEquivFiniteAdeleUnits
+
 private theorem integral_preimage (a : FiniteIdeleGroup F)
     (S : Finset (HeightOneSpectrum (𝓞 F)))
     (ha : a ∈ FiniteIdeleGroup.supportedAt (S : Set _)) :
     (fun x : FiniteHaarCharts.Adeles F =>
-      (IdeleGroup.finiteEquivFiniteAdeleUnits a).val * x) ⁻¹'
+      (finiteUnitEquiv a).val * x) ⁻¹'
       FiniteHaarNormalization.integralCompact F =
       FiniteHaarCharts.cylinder F S
         (fun v => (fun x => (a v.val).val * x) ⁻¹' v.val.adicCompletionIntegers F) := by
@@ -58,10 +61,10 @@ private theorem finite_intrinsic_char (a : FiniteIdeleGroup F)
     (S : Finset (HeightOneSpectrum (𝓞 F)))
     (ha : a ∈ FiniteIdeleGroup.supportedAt (S : Set _)) :
     (addEquivAddHaarChar (ContinuousAddEquiv.mulLeft
-      (IdeleGroup.finiteEquivFiniteAdeleUnits a)) : ℝ) =
+      (finiteUnitEquiv a)) : ℝ) =
       ∏ v : S, ‖(a v.val).val‖ := by
   let μ := FiniteHaarNormalization.measure F
-  let e := ContinuousAddEquiv.mulLeft (IdeleGroup.finiteEquivFiniteAdeleUnits a)
+  let e := ContinuousAddEquiv.mulLeft (finiteUnitEquiv a)
   have hm := addEquivAddHaarChar_smul_preimage μ
     (X := FiniteHaarNormalization.integralCompact F) e
   have hmass := congrArg ENNReal.toReal hm
@@ -73,7 +76,7 @@ private theorem finite_intrinsic_char (a : FiniteIdeleGroup F)
   have hp : (μ (e ⁻¹' FiniteHaarNormalization.integralCompact F)).toReal =
       (∏ v : S, ‖(a v.val).val‖)⁻¹ * FiniteHaarNormalization.kappa F := by
     change (FiniteHaarNormalization.measure F ((fun x =>
-      (IdeleGroup.finiteEquivFiniteAdeleUnits a).val * x) ⁻¹'
+      (finiteUnitEquiv a).val * x) ⁻¹'
       FiniteHaarNormalization.integralCompact F)).toReal = _
     rw [integral_preimage a S ha, hc, ENNReal.toReal_mul,
       ENNReal.toReal_ofReal (FiniteHaarCharts.tailMass_pos F S).le, ENNReal.toReal_prod]
@@ -126,26 +129,26 @@ private theorem finite_arithmetic_norm (S : Finset (HeightOneSpectrum (𝓞 F)))
 
 theorem finite_idele_intrinsicHaarChar (a : FiniteIdeleGroup F) :
     (addEquivAddHaarChar (ContinuousAddEquiv.mulLeft
-      (IdeleGroup.finiteEquivFiniteAdeleUnits a)) : ℝ) =
+      (finiteUnitEquiv a)) : ℝ) =
       (((FiniteIdeleGroup.absoluteNorm a : ℝ≥0) : ℝ))⁻¹ := by
   obtain ⟨S, hS⟩ := FiniteIdeleGroup.exists_finset_supportedAt a
   rw [finite_intrinsic_char a S hS, finite_arithmetic_norm S a hS]
 
 theorem finite_idele_map_mul (a : FiniteIdeleGroup F)
     (μ : Measure (FiniteAdeleRing (𝓞 F) F)) [μ.IsAddHaarMeasure] :
-    Measure.map (fun x => (IdeleGroup.finiteEquivFiniteAdeleUnits a).val * x) μ =
+    Measure.map (fun x => (finiteUnitEquiv a).val * x) μ =
       (ENNReal.ofReal (((FiniteIdeleGroup.absoluteNorm a : ℝ≥0) : ℝ))) • μ := by
   have h := addEquivAddHaarChar_smul_map μ
-    (ContinuousAddEquiv.mulLeft (IdeleGroup.finiteEquivFiniteAdeleUnits a))
+    (ContinuousAddEquiv.mulLeft (finiteUnitEquiv a))
   have hc : addEquivAddHaarChar (ContinuousAddEquiv.mulLeft
-      (IdeleGroup.finiteEquivFiniteAdeleUnits a)) = (FiniteIdeleGroup.absoluteNorm a : ℝ≥0)⁻¹ := by
+      (finiteUnitEquiv a)) = (FiniteIdeleGroup.absoluteNorm a : ℝ≥0)⁻¹ := by
     apply NNReal.coe_injective
     simpa using finite_idele_intrinsicHaarChar a
   rw [hc] at h
   have hn : (FiniteIdeleGroup.absoluteNorm a : ℝ≥0) ≠ 0 := Units.ne_zero _
   have hh := congrArg (fun ν => (FiniteIdeleGroup.absoluteNorm a : ℝ≥0) • ν) h
   rw [smul_smul, mul_inv_cancel₀ hn, one_smul] at hh
-  change Measure.map (fun x => (IdeleGroup.finiteEquivFiniteAdeleUnits a).val * x) μ =
+  change Measure.map (fun x => (finiteUnitEquiv a).val * x) μ =
     (FiniteIdeleGroup.absoluteNorm a : ℝ≥0) • μ at hh
   simpa only [ENNReal.ofReal_coe_nnreal, ENNReal.smul_def] using hh
 
@@ -162,7 +165,7 @@ private theorem global_map_arithmetic (a : (KPGlobalTorusFunctionData.Adeles F)�
   let : μf.IsAddHaarMeasure := KPAdditiveHaar.finiteMeasure_isAddHaarMeasure F
   let d : (InfiniteAdeleRing F)ˣ := Units.map (RingHom.fst _ _).toMonoidHom a
   let b := ((IdeleGroup.equivAdeleRingUnitsContinuousMulEquiv F).symm a).2
-  have hb : (IdeleGroup.finiteEquivFiniteAdeleUnits b).val = a.val.2 := by
+  have hb : (finiteUnitEquiv b).val = a.val.2 := by
     exact congrArg (fun u : KPAdelicCoverRestrictedProduct.Ideles F => u.val.2)
       ((IdeleGroup.equivAdeleRingUnitsContinuousMulEquiv F).apply_symm_apply a)
   let cast : InfiniteAdeleRing F × IsDedekindDomain.FiniteAdeleRing (𝓞 F) F →

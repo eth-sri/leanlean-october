@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.LocalField.Analytic.LogExpComposition
 public import ValuedFieldTheory.LocalField.Analytic.LogExpContinuity
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -54,30 +57,29 @@ noncomputable def chosenExpLogContinuousMulEquiv
       ((completeDVFOfWithZeroValuation v).maximalIdeal ^ n :
         Ideal (completeDVFOfWithZeroValuation v).valuationSubring) ≃ₜ*
       LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup (completeDVFOfWithZeroValuation v) n := by
-  let F : ValuationTheory.DiscreteValuationField.CompleteDVF.{u, 0} K := completeDVFOfWithZeroValuation v
-  let LF : LocalField.{u, 0} K := LocalField.ofWithZeroValuation v
+  let F  := completeDVFOfWithZeroValuation v
+  let LF  := LocalField.ofWithZeroValuation v
   let hnormalized :=
     WithZeroValuation.exists_valuationSubring_valuation_eq_exp_neg_one_of_surjective
       v hv
   let π : (completeDVFOfWithZeroValuation v).valuationSubring :=
     Classical.choose hnormalized
-  have hπval : v (π : K) = WithZero.exp (-1 : ℤ) :=
+  have hπval : v π = WithZero.exp (-1) :=
     Classical.choose_spec hnormalized
-  let hπ : v.IsUniformizer (π : K) :=
+  let hπ  :=
     WithZeroValuation.isUniformizer_of_valuation_eq_exp_neg_one
-      v (π : K) hπval
-  let p : ℕ := LF.residueCharacteristic
-  let e : ℕ := LocalField.ramificationIndexOfWithZeroValuation v
+      v π hπval
+  let p  := LF.residueCharacteristic
+  let e  := LocalField.ramificationIndexOfWithZeroValuation v
   haveI : Finite F.residueField := by
     change Finite (IsLocalRing.ResidueField v.valuationSubring)
     infer_instance
   letI : Fact p.Prime := by
     dsimp [p, LF]
     infer_instance
-  have hlevel' : (e : ℚ) / ((p : ℚ) - 1) < (n : ℚ) := by
-    simpa [e, p, LF] using hlevel
+  have hlevel' : (e : ℚ) / ((p : ℚ) - 1) < (n : ℚ) := hlevel
   have hpden : (0 : ℚ) < (p : ℚ) - 1 := by
-    have hp : 1 < p := (Fact.out : Nat.Prime p).one_lt
+    have hp  := (Fact.out : Nat.Prime p).one_lt
     exact sub_pos.mpr (by exact_mod_cast hp)
   have hepos : (0 : ℚ) < (e : ℚ) := by
     exact_mod_cast LocalField.ramificationIndexOfWithZeroValuation_pos v
@@ -86,27 +88,23 @@ noncomputable def chosenExpLogContinuousMulEquiv
       lt_trans (div_pos hepos hpden) hlevel'
     exact_mod_cast hnq
   have hn : 1 ≤ n := hnpos
-  let hnKexp : ∀ m : ℕ, (((m.factorial : ℕ) : K) ≠ 0) :=
+  let hnKexp : ∀ m : ℕ, ((m.factorial : K) ≠ 0) :=
     fun m => Nat.cast_ne_zero.mpr (Nat.factorial_ne_zero m)
   let hnKlog : ∀ m : ℕ, (((m + 1 : ℕ) : K) ≠ 0) :=
     fun m => Nat.cast_ne_zero.mpr (Nat.succ_ne_zero m)
   let hnvalExp : ∀ m : ℕ,
-      v (((m.factorial : ℕ) : K)) =
+      v ((m.factorial : K)) =
         WithZero.exp (-((e : ℤ) * (padicValNat p m.factorial : ℤ))) := by
     intro m
-    simpa [e, p, LF] using
-      LocalField.valuation_natCast_factorial_eq_exp_neg_ramificationIndex_mul_padicValNat
+    exact LocalField.valuation_natCast_factorial_eq_exp_neg_ramificationIndex_mul_padicValNat
         v m
   let hnvalLog : ∀ m : ℕ,
-      v (((m + 1 : ℕ) : K)) =
+      v (((m + 1 : ℕ))) =
         WithZero.exp (-((e : ℤ) * (padicValNat p (m + 1) : ℤ))) := by
     intro m
-    simpa [e, p, LF] using
-      LocalField.valuation_natCast_succ_eq_exp_neg_ramificationIndex_mul_padicValNat
+    exact LocalField.valuation_natCast_succ_eq_exp_neg_ramificationIndex_mul_padicValNat
         v m
-  have hcomplete :
-      letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-      CompleteSpace K :=
+  have hcomplete  :=
     WithZeroValuationTopology.completeSpace_ofWithZeroValuation v
   have hlevelR : (e : ℝ) / ((p : ℝ) - 1) < (n : ℝ) := by
     exact_mod_cast hlevel'
@@ -114,14 +112,12 @@ noncomputable def chosenExpLogContinuousMulEquiv
       ∀ (a : F.valuationSubring), a ∈ F.maximalIdeal ^ n →
         ∀ hx : (a : K) ≠ 0,
           (e : ℝ) / ((p : ℝ) - 1) <
-            ((ofWithZeroValuation v).val (Units.mk0 (a : K) hx) : ℝ) := by
+            ((ofWithZeroValuation v).val (Units.mk0 a hx) : ℝ) := by
     intro a ha hx
     have hge :
         (n : ℤ) ≤
-          (ofWithZeroValuation v).val (Units.mk0 (a : K) hx) := by
-      simpa [F] using
-        ofWithZeroValuation_val_ge_of_mem_maximalIdeal_pow
-          (v := v) (π := π) hπ hπval n a ha hx
+          (ofWithZeroValuation v).val (Units.mk0 a hx) := by
+      apply ofWithZeroValuation_val_ge_of_mem_maximalIdeal_pow <;> assumption
     exact lt_of_lt_of_le hlevelR (by exact_mod_cast hge)
   have hlog_exp :
       ∀ a : (F.maximalIdeal ^ n : Ideal F.valuationSubring),
@@ -137,9 +133,9 @@ noncomputable def chosenExpLogContinuousMulEquiv
     simpa [principalUnitLogSeriesOfHigherPrincipalUnitGroupOfWithZeroValuationScaled,
       principalUnitExpSeriesOfMaximalIdealPowOfWithZeroValuationScaled, F] using
       logOnePlusSeries_expSeries_sub_one_eq_self_ofWithZeroValuation_scaled_of_threshold
-        (v := v) (p := p) e (((a : F.valuationSubring) : K))
+        (v := v) (p := p) e ((a : K))
         hnKexp hnvalExp hnKlog hnvalLog
-        (hthreshold_of_mem (a : F.valuationSubring) a.property) hcomplete
+        (hthreshold_of_mem a a.property) hcomplete
   have hexp_log :
       ∀ u : LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F n,
         principalUnitExpSeriesOfMaximalIdealPowOfWithZeroValuationScaled
@@ -149,15 +145,13 @@ noncomputable def chosenExpLogContinuousMulEquiv
             (v := v) (p := p) e n (π := π) hπ hπval hn hlevel'
             hnKlog hnvalLog hcomplete u) = u := by
     intro u
-    let a : F.valuationSubring :=
+    let a  :=
       ((u : F.valuationSubringˣ) : F.valuationSubring) - 1
-    have ha : a ∈ F.maximalIdeal ^ n := by
-      simpa [a] using
-        (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup.mem_iff
+    have ha : a ∈ F.maximalIdeal ^ n := (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup.mem_iff
           (F := F) n (u : F.valuationSubringˣ)).1 u.property
     have hexact :=
       expSeries_logOnePlusSeries_eq_one_add_ofWithZeroValuation_scaled_of_threshold
-        (v := v) (p := p) e (a : K) hnKlog hnvalLog hnKexp hnvalExp
+        (v := v) (p := p) e a hnKlog hnvalLog hnKexp hnvalExp
         (hthreshold_of_mem a ha) hcomplete
     apply Subtype.ext
     apply Units.ext

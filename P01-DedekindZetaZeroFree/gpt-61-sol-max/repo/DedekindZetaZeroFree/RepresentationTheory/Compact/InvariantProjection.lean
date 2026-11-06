@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.RepresentationTheory.Compact.IntegratedOperators
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 The Tau Ceti contributors. All rights reserved.
@@ -45,7 +48,7 @@ omit [IsTopologicalGroup G] [CompactSpace G] [MeasurableSpace G] [BorelSpace G]
 private theorem orbitMap_apply (v : V) (g : G) : orbitMap π hπ v g = π g v :=
   (rfl)
 
-noncomputable def haarAverageMap : V →L[𝕜] V :=
+noncomputable def haarAverageMap  :=
   integratedOperator π hπ 1
 
 theorem haarAverageMap_apply (v : V) :
@@ -67,13 +70,13 @@ private theorem orbitMap_comp_mulLeft (h : G) (v : V) :
   ext g
   simp [map_mul, mul_apply_eq_comp]
 
-omit [CompactSpace G] [MeasurableSpace G] [BorelSpace G] [NormedSpace ℝ V]
-  [SMulCommClass ℝ 𝕜 V] [CompleteSpace V] in
 
-private theorem orbitMap_comp_mulRight (h : G) (v : V) :
-    (orbitMap π hπ v).comp (ContinuousMap.mulRight h) = orbitMap π hπ (π h v) := by
-  ext g
-  simp [map_mul, mul_apply_eq_comp]
+
+
+
+
+
+
 
 @[simp]
 theorem comp_haarAverageMap (h : G) :
@@ -91,22 +94,22 @@ theorem comp_haarAverageMap_apply (h : G) (v : V) :
     π h (haarAverageMap π hπ v) = haarAverageMap π hπ v :=
   DFunLike.congr_fun (comp_haarAverageMap π hπ h) v
 
-@[simp]
-theorem haarAverageMap_comp (h : G) :
-    (haarAverageMap π hπ).comp (π h) = haarAverageMap π hπ := by
-  ext v
-  calc haarAverageMap π hπ (π h v)
-      = haarAverage G (𝕜 := 𝕜) ((orbitMap π hπ v).comp (ContinuousMap.mulRight h)) := by
-        rw [orbitMap_comp_mulRight, haarAverageMap_apply_eq_haarAverage]
-    _ = haarAverage G (𝕜 := 𝕜) (orbitMap π hπ v) := haarAverage_comp_mulRight G _ _
-    _ = haarAverageMap π hπ v := (haarAverageMap_apply_eq_haarAverage π hπ v).symm
 
-@[simp]
-theorem haarAverageMap_comp_apply (h : G) (v : V) :
-    haarAverageMap π hπ (π h v) = haarAverageMap π hπ v :=
-  DFunLike.congr_fun (haarAverageMap_comp π hπ h) v
 
-theorem haarAverageMap_invariant (v : V) : haarAverageMap π hπ v ∈ π.invariants :=
+
+
+
+
+
+
+
+
+
+
+
+
+
+def haarAverageMap_invariant (v : V)  :=
   fun h ↦ comp_haarAverageMap_apply π hπ h v
 
 @[simp]
@@ -121,15 +124,15 @@ theorem isProj_haarAverageMap :
   map_mem := haarAverageMap_invariant π hπ
   map_id _ hv := haarAverageMap_id π hπ hv
 
-@[simp]
-theorem haarAverageMap_comp_self :
-    (haarAverageMap π hπ).comp (haarAverageMap π hπ) = haarAverageMap π hπ :=
-  ContinuousLinearMap.coe_injective (isProj_haarAverageMap π hπ).isIdempotentElem
 
-@[simp]
-theorem range_haarAverageMap :
-    LinearMap.range (haarAverageMap π hπ : V →ₗ[𝕜] V) = π.invariants :=
-  (isProj_haarAverageMap π hπ).range
+
+
+
+
+
+
+
+
 
 end Projection
 

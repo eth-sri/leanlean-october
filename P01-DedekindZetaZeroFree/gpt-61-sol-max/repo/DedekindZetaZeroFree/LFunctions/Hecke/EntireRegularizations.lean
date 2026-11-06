@@ -10,11 +10,14 @@ namespace DedekindZetaZeroFree
 noncomputable section
 open scoped NumberField
 
-def heckeConductorScale (F : Type*) [Field F] [NumberField F]
+section
+variable (F : Type*) [Field F] [NumberField F]
+include F
+def heckeConductorScale  
     (𝔪 : Ideal (𝓞 F)) : ℝ :=
   (|NumberField.discr F| : ℤ) * (Ideal.absNorm 𝔪 : ℝ)
 
-theorem one_le_heckeConductorScale (F : Type*) [Field F] [NumberField F]
+theorem one_le_heckeConductorScale  
     (𝔪 : Ideal (𝓞 F)) (hm : 𝔪 ≠ ⊥) :
     1 ≤ heckeConductorScale F 𝔪 := by
   unfold heckeConductorScale
@@ -32,32 +35,38 @@ theorem one_le_heckeConductorScale (F : Type*) [Field F] [NumberField F]
     _ ≤ ((|NumberField.discr F| : ℤ) : ℝ) * (Ideal.absNorm 𝔪 : ℝ) := by gcongr
 
 theorem one_le_nrComplexPlaces_of_totallyComplex
-    (F : Type*) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F) :
+      (hF : NumberField.IsTotallyComplex F) :
     1 ≤ NumberField.InfinitePlace.nrComplexPlaces F := by
   haveI := hF
   have hrank := NumberField.IsTotallyComplex.finrank F
   have hpos : 0 < Module.finrank ℚ F := Module.finrank_pos
   omega
 
-def heckeReciprocalCompletionFactor (F : Type*) [Field F] [NumberField F]
+def heckeReciprocalCompletionFactor  
     (𝔪 : Ideal (𝓞 F)) (s : ℂ) : ℂ :=
   (heckeConductorScale F 𝔪 : ℂ) ^ (-s / 2) *
     ((Complex.Gammaℂ s)⁻¹) ^ NumberField.InfinitePlace.nrComplexPlaces F
+end
+
 
 section Helpers
 
-private lemma heckeConductorScale_cast_eq (F : Type*) [Field F] [NumberField F]
-    (𝔪 : Ideal (𝓞 F)) :
+section
+variable (F : Type*) [Field F] [NumberField F]
+    (𝔪 : Ideal (𝓞 F))
+include F 𝔪
+private lemma heckeConductorScale_cast_eq   :
     (heckeConductorScale F 𝔪 : ℂ) =
       ((|NumberField.discr F| : ℤ) : ℂ) * (Ideal.absNorm 𝔪 : ℂ) := by
   unfold heckeConductorScale
   rw [Complex.ofReal_mul, Complex.ofReal_intCast, Complex.ofReal_natCast]
 
-private lemma heckeConductorScale_ne_zero (F : Type*) [Field F] [NumberField F]
-    (𝔪 : Ideal (𝓞 F)) (hm : 𝔪 ≠ ⊥) : (heckeConductorScale F 𝔪 : ℂ) ≠ 0 := by
+private lemma heckeConductorScale_ne_zero   (hm : 𝔪 ≠ ⊥) : (heckeConductorScale F 𝔪 : ℂ) ≠ 0 := by
   have h0 : 0 < heckeConductorScale F 𝔪 :=
     lt_of_lt_of_le zero_lt_one (one_le_heckeConductorScale F 𝔪 hm)
   exact Complex.ofReal_ne_zero.mpr (ne_of_gt h0)
+end
+
 
 private lemma Gammaℂ_ne_zero_of_re_pos {s : ℂ} (hs : 0 < s.re) : Complex.Gammaℂ s ≠ 0 := by
   rw [Complex.Gammaℂ_def]
@@ -65,15 +74,17 @@ private lemma Gammaℂ_ne_zero_of_re_pos {s : ℂ} (hs : 0 < s.re) : Complex.Gam
   exact Complex.cpow_ne_zero_iff.mpr
     (Or.inl (mul_ne_zero two_ne_zero (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero)))
 
-private lemma heckeCompletionFactor_eq_scale (F : Type*) [Field F] [NumberField F]
-    (𝔪 : Ideal (𝓞 F)) (s : ℂ) :
+section
+variable (F : Type*) [Field F] [NumberField F]
+    (𝔪 : Ideal (𝓞 F))
+include F 𝔪
+private lemma heckeCompletionFactor_eq_scale   (s : ℂ) :
     heckeCompletionFactor F 𝔪 s =
       (heckeConductorScale F 𝔪 : ℂ) ^ (s / 2) *
         Complex.Gammaℂ s ^ NumberField.InfinitePlace.nrComplexPlaces F := by
   rw [heckeCompletionFactor, heckeConductorScale_cast_eq F 𝔪]
 
-private lemma reciprocalCompletion_mul_completion (F : Type*) [Field F] [NumberField F]
-    (𝔪 : Ideal (𝓞 F)) (hm : 𝔪 ≠ ⊥) (s : ℂ) (hs : 0 < s.re) :
+private lemma reciprocalCompletion_mul_completion   (hm : 𝔪 ≠ ⊥) (s : ℂ) (hs : 0 < s.re) :
     heckeReciprocalCompletionFactor F 𝔪 s * heckeCompletionFactor F 𝔪 s = 1 := by
   have hQ : (heckeConductorScale F 𝔪 : ℂ) ≠ 0 := heckeConductorScale_ne_zero F 𝔪 hm
   have hG : Complex.Gammaℂ s ≠ 0 := Gammaℂ_ne_zero_of_re_pos hs
@@ -94,6 +105,8 @@ private lemma reciprocalCompletion_mul_completion (F : Type*) [Field F] [NumberF
         (((Complex.Gammaℂ s)⁻¹) ^ NumberField.InfinitePlace.nrComplexPlaces F *
           Complex.Gammaℂ s ^ NumberField.InfinitePlace.nrComplexPlaces F) := by ring
     _ = 1 := by rw [hpow, hgam, mul_one]
+end
+
 
 private lemma inv_pow_mul_pow_sub_one (r : ℕ) (hr : 1 ≤ r) {g : ℂ} (hg : g ≠ 0) :
     (g⁻¹) ^ (r - 1) * g ^ r = g := by
@@ -169,20 +182,23 @@ def nonprincipalHeckeEntireContinuation
     (s : ℂ) : ℂ :=
   heckeReciprocalCompletionFactor F 𝔪 s * D.Λ s
 
-theorem nonprincipalHeckeEntireContinuation_differentiable
-    (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
+section
+variable (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
     (𝔪 : Ideal (𝓞 F)) (hm : 𝔪 ≠ ⊥) (η : RayClassCharacter F 𝔪)
-    (D : NonprincipalRayHeckeData F 𝔪 η) :
+    (D : NonprincipalRayHeckeData F 𝔪 η)
+include F hF 𝔪 hm η D
+theorem nonprincipalHeckeEntireContinuation_differentiable
+      :
     Differentiable ℂ (nonprincipalHeckeEntireContinuation F 𝔪 η D) := by
   refine (heckeReciprocalCompletionFactor_differentiable F 𝔪 hm).mul D.Λ_entire
 
 theorem nonprincipalHeckeEntireContinuation_eq
-    (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
-    (𝔪 : Ideal (𝓞 F)) (hm : 𝔪 ≠ ⊥) (η : RayClassCharacter F 𝔪)
-    (D : NonprincipalRayHeckeData F 𝔪 η) (s : ℂ) (hs : 0 < s.re) :
+      (s : ℂ) (hs : 0 < s.re) :
     nonprincipalHeckeEntireContinuation F 𝔪 η D s = D.L s := by
   rw [nonprincipalHeckeEntireContinuation, D.completed s hs, ← mul_assoc,
     reciprocalCompletion_mul_completion F 𝔪 hm s hs, one_mul]
+end
+
 
 def principalHeckeEntireRegularization
     (F : Type) [Field F] [NumberField F] (𝔪 : Ideal (𝓞 F))
@@ -192,10 +208,13 @@ def principalHeckeEntireRegularization
     (((2 * Real.pi : ℝ) : ℂ))⁻¹ * (Complex.Gammaℂ (s + 1))⁻¹ *
     ((Complex.Gammaℂ s)⁻¹) ^ (NumberField.InfinitePlace.nrComplexPlaces F - 1) * D.E s
 
-theorem principalHeckeEntireRegularization_differentiable
-    (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
+section
+variable (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
     (𝔪 : Ideal (𝓞 F)) (hm : 𝔪 ≠ ⊥) (η : RayClassCharacter F 𝔪)
-    (D : PrincipalRayHeckeData F 𝔪 η) :
+    (D : PrincipalRayHeckeData F 𝔪 η)
+include F hF 𝔪 hm η D
+theorem principalHeckeEntireRegularization_differentiable
+      :
     Differentiable ℂ (principalHeckeEntireRegularization F 𝔪 η D) := by
   have hQ : (heckeConductorScale F 𝔪 : ℂ) ≠ 0 := heckeConductorScale_ne_zero F 𝔪 hm
   have hA : Differentiable ℂ
@@ -216,9 +235,7 @@ theorem principalHeckeEntireRegularization_differentiable
   exact hpre.mul D.E_entire
 
 theorem principalHeckeEntireRegularization_eq
-    (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
-    (𝔪 : Ideal (𝓞 F)) (hm : 𝔪 ≠ ⊥) (η : RayClassCharacter F 𝔪)
-    (D : PrincipalRayHeckeData F 𝔪 η) (s : ℂ) (hs : 0 < s.re) (hs1 : s ≠ 1) :
+      (s : ℂ) (hs : 0 < s.re) (hs1 : s ≠ 1) :
     principalHeckeEntireRegularization F 𝔪 η D s = (s - 1) * D.L s := by
   rw [principalHeckeEntireRegularization, D.E_eq s hs, D.regularized s hs hs1]
   have hpre := principal_prefactor_mul F hF 𝔪 hm s hs
@@ -233,9 +250,7 @@ theorem principalHeckeEntireRegularization_eq
     _ = (s - 1) * D.L s := by rw [hpre, one_mul]
 
 theorem principalHeckeEntireRegularization_eq_bridge
-    (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
-    (𝔪 : Ideal (𝓞 F)) (hm : 𝔪 ≠ ⊥) (η : RayClassCharacter F 𝔪)
-    (D : PrincipalRayHeckeData F 𝔪 η) (s : ℂ) (hs : 0 < s.re) :
+      (s : ℂ) (hs : 0 < s.re) :
     principalHeckeEntireRegularization F 𝔪 η D s = D.R s := by
   rw [principalHeckeEntireRegularization, D.E_eq s hs]
   have hpre := principal_prefactor_mul F hF 𝔪 hm s hs
@@ -248,6 +263,8 @@ theorem principalHeckeEntireRegularization_eq_bridge
           ((Complex.Gammaℂ s)⁻¹) ^ (NumberField.InfinitePlace.nrComplexPlaces F - 1) *
           (s * heckeCompletionFactor F 𝔪 s)) * D.R s := by ac_rfl
     _ = D.R s := by rw [hpre, one_mul]
+end
+
 
 end
 end DedekindZetaZeroFree

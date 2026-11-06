@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Poisson.GaussianLattice
 public import DedekindZetaZeroFree.Arithmetic.Ideals.TraceDualIdeal
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 The FLT Project. All rights reserved.
@@ -79,7 +82,7 @@ variable (K : Type*) [Field K] [NumberField K]
 open Classical in
 
 noncomputable def mixedTracePairing
-    (x y : mixedEmbedding.mixedSpace K) : ℝ :=
+    (x y : mixedEmbedding.mixedSpace K)  :=
   (∑ w : {w : InfinitePlace K // IsReal w}, x.1 w * y.1 w) +
     ∑ w : {w : InfinitePlace K // IsComplex w},
       2 * (x.2 w * y.2 w).re
@@ -109,8 +112,7 @@ private theorem sum_embeddings_eq_sum_places (z : K) :
       · intro h
         exact (mk_eq_iff.mpr h).trans (mk_embedding w)
     by_cases hw : IsReal w
-    · have hconj :
-          ComplexEmbedding.conjugate w.embedding = w.embedding :=
+    · have hconj  :=
         ComplexEmbedding.isReal_iff.mp (isReal_iff.mp hw)
       have hfilter :
           Finset.univ.filter (fun φ : K →+* ℂ ↦
@@ -249,8 +251,7 @@ noncomputable def traceToMixed :
 
 open Classical in
 
-noncomputable def traceEmbedding (x : K) :
-    mixedEmbedding.euclidean.mixedSpace K :=
+noncomputable def traceEmbedding (x : K)  :=
   (traceToMixed K).symm (mixedEmbedding K x)
 
 open Classical in
@@ -505,7 +506,7 @@ theorem map_traceEmbeddingIntLinearMap_fractionalIdeal
   · intro hv
     obtain ⟨x, hx, hxv⟩ :=
       exists_traceEmbedding_eq_of_mem_traceIdealLattice K I hv
-    exact ⟨x, hx, by simpa using hxv⟩
+    exact ⟨x, hx, hxv⟩
 
 open Classical in
 theorem span_conjugate_traceDual_basisOfFractionalIdeal
@@ -565,7 +566,7 @@ theorem dualLattice_traceIdealLattice
             ((basisOfFractionalIdeal K I).traceDual i))) by
     congr 1
     funext i
-    exact innerDualBasis_traceIdealRealBasis_apply K I i]
+    apply innerDualBasis_traceIdealRealBasis_apply]
   exact span_conjugate_traceDual_basisOfFractionalIdeal K I
 
 end DedekindZetaZeroFree.AbelianQuotient.Theta

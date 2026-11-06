@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import Mathlib.SetTheory.Cardinal.Finite
 public import GaloisCohomology.Cyclic.Herbrand.HerbrandFiniteness
 public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.NormalBasisFiniteQuotient
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -51,11 +54,14 @@ variable (K L : Type) [Field K] [Field L] [Algebra K L]
   [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
   [IsIntegralClosure 𝒪[L] 𝒪[K] L]
 
+section
+variable (n : Nat) (V : Subgroup 𝒪[L]ˣ)
+    (hV : (V : Set 𝒪[L]ˣ) = chosenNormalBasisPrincipalUnitSet K L n)
+include n V hV
 /-- The normal-basis subgroup sequence is short exact and equivariant for
 the actual actions used in the local class-field-axiom argument. -/
 theorem chosenNormalBasisIntegerUnitsHerbrand_shortExact
-    (n : Nat) (V : Subgroup 𝒪[L]ˣ)
-    (hV : (V : Set 𝒪[L]ˣ) = chosenNormalBasisPrincipalUnitSet K L n) :
+      :
     letI := chosenNormalBasisPrincipalUnitSubgroupMulDistribMulAction K L n V hV
     letI := galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure K L
     letI := chosenNormalBasisIntegerUnitsQuotMulDistribMulAction K L n V hV
@@ -104,8 +110,7 @@ level.  The only low-degree cohomology input is the proved vanishing of
 `H⁰(G,V)` and `H⁻¹(G,V)`; finiteness of `𝒪_Lˣ/V` is the other honest
 input. -/
 theorem integerUnits_herbrandQuotient_eq_one_of_chosenNormalBasis
-    (n : Nat) (V : Subgroup 𝒪[L]ˣ)
-    (hV : (V : Set 𝒪[L]ˣ) = chosenNormalBasisPrincipalUnitSet K L n)
+     
     (hfinite : Finite (𝒪[L]ˣ ⧸ V))
     (g : Gal(L / K))
     (hg : ∀ sigma : Gal(L / K), sigma ∈ Subgroup.zpowers g)
@@ -125,7 +130,7 @@ theorem integerUnits_herbrandQuotient_eq_one_of_chosenNormalBasis
   let := chosenNormalBasisPrincipalUnitSubgroupMulDistribMulAction K L n V hV
   let := galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure K L
   let := chosenNormalBasisIntegerUnitsQuotMulDistribMulAction K L n V hV
-  let : Finite (𝒪[L]ˣ ⧸ V) := hfinite
+  let  := hfinite
   let : Subsingleton (HerbrandH0 (Gal(L / K)) V) := hH0
   let : Subsingleton (HerbrandHMinusOne (Gal(L / K)) V g) := hHminusOne
   let hVdefined : HerbrandQuotientDefined (Gal(L / K)) V g :=
@@ -147,13 +152,10 @@ theorem integerUnits_herbrandQuotient_eq_one_of_chosenNormalBasis
   let : Finite (HerbrandH0 (Gal(L / K)) 𝒪[L]ˣ) := hU.1
   let : Finite (HerbrandHMinusOne (Gal(L / K)) 𝒪[L]ˣ g) := hU.2
   have hVone : herbrandQuotient (G := Gal(L / K)) (A := V) g = 1 := by
-    exact herbrandQuotient_eq_one_of_card_eq
-      (G := Gal(L / K)) (A := V) g
-      (by simp only [Nat.card_unique])
+    apply herbrandQuotient_eq_one_of_card_eq <;> aesop
   have hQone :
       herbrandQuotient (G := Gal(L / K)) (A := 𝒪[L]ˣ ⧸ V) g = 1 := by
-    exact herbrandQuotient_eq_one_of_finite_module
-      (G := Gal(L / K)) (A := 𝒪[L]ˣ ⧸ V) g hg
+    apply herbrandQuotient_eq_one_of_finite_module <;> assumption
   have hmul : herbrandQuotient (G := Gal(L / K)) (A := 𝒪[L]ˣ) g =
       herbrandQuotient (G := Gal(L / K)) (A := V) g *
         herbrandQuotient (G := Gal(L / K)) (A := 𝒪[L]ˣ ⧸ V) g :=
@@ -162,7 +164,9 @@ theorem integerUnits_herbrandQuotient_eq_one_of_chosenNormalBasis
       (chosenNormalBasisPrincipalUnitSubgroupInclusion (L := L) V)
       (chosenNormalBasisIntegerUnitsQuotientMap (L := L) V)
       hseq.1 hseq.2.1 hseq.2.2.1 hseq.2.2.2.1 hsurj g hg
-  exact hmul.trans (by rw [hVone, hQone, one_mul])
+  apply hmul.trans <;> aesop
+end
+
 
 variable [TopologicalSpace L] [IsNonarchimedeanLocalField L]
   [Module.Finite 𝒪[K] 𝒪[L]]

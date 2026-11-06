@@ -25,13 +25,13 @@ local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 
 open CurrentOutputExtension
-local instance completedPeriodCoreAdd : AddCommGroup complexCore := Submodule.addCommGroup complexCore
-local instance completedPeriodCoreModule : Module ℂ complexCore := Submodule.module complexCore
-local instance completedPeriodCoreTopology : TopologicalSpace complexCore := instTopologicalSpaceSubtype
-local instance completedPeriodPrincipalUniform : IsUniformAddGroup (PrincipalSeries negativeParameter) :=
-  isUniformAddGroup_of_addCommGroup
-local instance completedPeriodCoreUniform : IsUniformAddGroup complexCore :=
-  complexCore.toAddSubgroup.isUniformAddGroup
+
+
+
+
+
+
+
 
 variable (s : RestrictedTensorSimple.Level (LiteralSource.bad R.A P C))
 variable (x : ∀j : s.val,LiteralSource.Plus R.A P C j.val)

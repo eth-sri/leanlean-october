@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.LubinTate.FormalModule.CoefficientEquation
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -40,8 +43,7 @@ variable {F : LocalField.{u, v} K} {π : F.valuationSubring}
 /-- The polynomial power series `π X + X ^ q`, where `q` is the residue
 field cardinality. -/
 noncomputable def standardLubinTatePowerSeries
-    (F : LocalField.{u, v} K) (π : F.valuationSubring) :
-    PowerSeries F.valuationSubring :=
+    (F : LocalField.{u, v} K) (π : F.valuationSubring)  :=
   PowerSeries.C π * PowerSeries.X +
     PowerSeries.X ^ Nat.card F.residueField
 
@@ -51,12 +53,12 @@ noncomputable def standardLubinTateSeries
     LubinTateSeries F π where
   toPowerSeries := standardLubinTatePowerSeries F π
   constantCoeff_eq_zero := by
-    have hq0 : Nat.card F.residueField ≠ 0 :=
+    have hq0  :=
       Nat.ne_of_gt (lt_trans Nat.zero_lt_one
         (Finite.one_lt_card (α := F.residueField)))
     simp [standardLubinTatePowerSeries, hq0]
   coeff_one_eq_uniformizer := by
-    have hq : 1 ≠ Nat.card F.residueField :=
+    have hq  :=
       (Finite.one_lt_card (α := F.residueField)).ne
     simp [standardLubinTatePowerSeries, PowerSeries.coeff_X_pow, hq]
   map_residue_eq_frobenius := by

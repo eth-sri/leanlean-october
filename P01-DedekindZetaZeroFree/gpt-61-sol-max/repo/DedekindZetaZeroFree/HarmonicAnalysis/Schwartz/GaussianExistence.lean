@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Poisson.GaussianLattice
 public import DedekindZetaZeroFree.HarmonicAnalysis.Schwartz.PolynomialGaussianAbsorption
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -46,8 +49,7 @@ private theorem real_gaussian_decay
         ((1 + ‖x‖) ^ (k + m * n) * Real.exp (-a * ‖x‖ ^ 2)) := by
       rw [mul_pow, ← pow_mul, pow_add]; ring
     _ ≤ (n.factorial : ℝ) * (max C 1) ^ n *
-        (P * Real.exp (-(a / 2) * ‖x‖ ^ 2)) := by
-      exact mul_le_mul_of_nonneg_left (hbound ‖x‖ (norm_nonneg _)) (by positivity)
+        (P * Real.exp (-(a / 2) * ‖x‖ ^ 2)) := mul_le_mul_of_nonneg_left (hbound ‖x‖ (norm_nonneg _)) (by positivity)
     _ ≤ (n.factorial : ℝ) * (max C 1) ^ n * P := by
       have he : Real.exp (-(a / 2) * ‖x‖ ^ 2) ≤ 1 := by
         rw [Real.exp_le_one_iff]

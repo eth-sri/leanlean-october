@@ -42,12 +42,15 @@ private theorem localEnergy_left (f : Matrix.GeneralLinearGroup (Fin 2) ℂ → 
     localEnergy (fun x => f (a*x)) g = localEnergy f (a*g) := by
   simp only [localEnergy, localD_left]
 
-def productEnergy (d : ℕ) (f : KPArch.Space d → ℂ)
+section
+variable (d : ℕ) (f : KPArch.Space d → ℂ)
+include d f
+def productEnergy  
     (g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ) : ℝ :=
   ∑ i : Fin d, localEnergy
     (fun a => f (fun k => KPArch.action (Function.update g i a k) (0,0))) (g i)
 
-theorem product_basepoint_energy (d : ℕ) (f : KPArch.Space d → ℂ)
+theorem product_basepoint_energy  
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
     productEnergy d f (fun _ => 1) =
       ∑ i : Fin d, ∑ j : Fin 3,
@@ -72,7 +75,7 @@ theorem product_basepoint_energy (d : ℕ) (f : KPArch.Space d → ℂ)
   norm_num [Fin.sum_univ_three, KPContFlatCuspCasimirSpecialization.coordinateDirection, L]
   ring
 
-theorem product_energy_pullback (d : ℕ) (f : KPArch.Space d → ℂ)
+theorem product_energy_pullback  
     (hf : ContDiff ℝ (⊤ : ℕ∞) f)
     (g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ) :
     productEnergy d f g = ∑ i : Fin d, ∑ j : Fin 3,
@@ -102,6 +105,8 @@ theorem product_energy_pullback (d : ℕ) (f : KPArch.Space d → ℂ)
   have hb := product_basepoint_energy d (f ∘ KPArch.productAction d g)
     (hf.comp ((KPArch.productAction_contDiff d g).of_le (by simp)))
   exact hb
+end
+
 
 open _root_.DedekindZetaZeroFree.KPContThreeL2CotangentHelpers renaming arch_coframe_norm → arch_coframe_norm
 open _root_.DedekindZetaZeroFree.KPContThreeL2CotangentHelpers renaming differential_norm_isometry → differential_norm_isometry
@@ -109,7 +114,10 @@ open _root_.DedekindZetaZeroFree.KPContArchLaplacianNaturality renaming act → 
 open _root_.DedekindZetaZeroFree.KPContArchLaplacianNaturality renaming act_smooth → act_smooth
 open _root_.DedekindZetaZeroFree.KPContArchLaplacianNaturality renaming act_metric → act_metric
 
-private theorem coframe_norm_A (d : ℕ) (f : KPArch.Space d → ℂ)
+section
+variable (d : ℕ) (f : KPArch.Space d → ℂ)
+include d f
+private theorem coframe_norm_A  
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (z : KPArch.Space d) :
     (∑ i, ∑ j, ‖HyperbolicChart.differential d (f ∘ CotangentLogCoframe.A d)
       ((CotangentLogCoframe.A d).symm z) i j‖^2) =
@@ -131,7 +139,7 @@ private theorem coframe_norm_A (d : ℕ) (f : KPArch.Space d → ℂ)
     · rfl
   simpa only [ha, hr] using arch_coframe_norm d f hf z
 
- theorem covariantNorm_pullback (d : ℕ) (f : KPArch.Space d → ℂ)
+ theorem covariantNorm_pullback  
     (hf : ContDiff ℝ (⊤ : ℕ∞) f)
     (g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ) (z : KPArch.Space d) :
     KPContActualChamberOutgoingAdapter.covariantNorm d 1
@@ -152,7 +160,7 @@ private theorem coframe_norm_A (d : ℕ) (f : KPArch.Space d → ℂ)
     (f ∘ CotangentLogCoframe.A d) ((hf.comp (CotangentLogCoframe.A d).contDiff).differentiable (by simp) _)
   simpa only [he, hx] using hd
 
-private theorem basepoint_norm (d : ℕ) (f : KPArch.Space d → ℂ) :
+private theorem basepoint_norm   :
     KPContActualChamberOutgoingAdapter.covariantNorm d 1 f 0 ^ 2 =
       ∑ i : Fin d, ∑ j : Fin 3,
         ‖fderiv ℝ f 0 (KPContFlatCuspCasimirSpecialization.coordinateDirection d i j)‖^2 := by
@@ -165,13 +173,15 @@ private theorem basepoint_norm (d : ℕ) (f : KPArch.Space d → ℂ) :
     KPContActualSphericalFlatStage.coordinateDirection, KPContFlatCuspCasimirSpecialization.coordinateDirection]
   ring
 
- theorem product_energy (d : ℕ) (f : KPArch.Space d → ℂ)
+ theorem product_energy  
     (hf : ContDiff ℝ (⊤ : ℕ∞) f)
     (g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ) :
     productEnergy d f g = KPContActualChamberOutgoingAdapter.covariantNorm d 1 f
       (fun i => KPArch.action (g i) (0,0)) ^ 2 := by
   rw [product_energy_pullback d f hf g, ← basepoint_norm]
   exact covariantNorm_pullback d f hf g 0
+end
+
 
 end DedekindZetaZeroFree.FourierContinuation.ResidualSphericalMetric
 

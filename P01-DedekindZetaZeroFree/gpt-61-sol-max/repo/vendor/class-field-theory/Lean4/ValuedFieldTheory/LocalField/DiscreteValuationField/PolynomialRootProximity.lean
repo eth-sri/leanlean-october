@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Algebra.Polynomial.Splits
 public import Mathlib.Data.Finset.Max
 public import Mathlib.RingTheory.DiscreteValuationRing.Basic
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -57,10 +60,10 @@ private theorem addVal_multiset_prod_le
         IsDiscreteValuationRing.addVal_mul,
         IsDiscreteValuationRing.addVal_mul]
       apply add_le_add
-      · exact h z (by simp)
+      · apply h <;> aesop
       · apply ih
         intro t ht
-        exact h t (by simp [ht])
+        apply h <;> aesop
 
 /-- Let `p` be a nonconstant monic polynomial that splits over a discrete
 valuation ring.  For every `x`, some root `y` satisfies
@@ -91,7 +94,7 @@ theorem exists_root_addVal_eval_le_sub_add_derivative
         IsDiscreteValuationRing.addVal R (x - z) ≤
           IsDiscreteValuationRing.addVal R (y - z) := by
     intro z hz
-    have hzroot : z ∈ p.roots :=
+    have hzroot  :=
       Multiset.mem_of_mem_erase hz
     have hmax :
         IsDiscreteValuationRing.addVal R (x - z) ≤
@@ -114,11 +117,7 @@ theorem exists_root_addVal_eval_le_sub_add_derivative
       ring
     rw [min_eq_right hmax', hsum] at hultra
     exact hultra
-  have hprod :
-      IsDiscreteValuationRing.addVal R
-          (((p.roots.erase y).map (x - ·)).prod) ≤
-        IsDiscreteValuationRing.addVal R
-          (((p.roots.erase y).map (y - ·)).prod) :=
+  have hprod  :=
     addVal_multiset_prod_le (p.roots.erase y)
       (x - ·) (y - ·) hfactor
   have hroot_prod :

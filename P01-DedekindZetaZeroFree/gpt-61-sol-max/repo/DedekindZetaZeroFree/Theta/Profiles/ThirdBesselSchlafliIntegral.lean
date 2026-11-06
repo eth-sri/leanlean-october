@@ -2,7 +2,10 @@ module
 
 public import Mathlib
 
+public import Mathlib
+
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 
@@ -10,13 +13,16 @@ open MeasureTheory Asymptotics Filter
 
 noncomputable section
 
-def thirdBesselSchlafliIntegrand (z u : ℝ) : ℝ :=
+def thirdBesselSchlafliIntegrand (z u : ℝ)  :=
   Real.exp (-z * Real.cosh u) * Real.cosh (u / 3)
 
-def KThird (z : ℝ) : ℝ :=
+def KThird (z : ℝ)  :=
   if 0 < z then ∫ u in Set.Ioi (0 : ℝ), thirdBesselSchlafliIntegrand z u else 0
 
-private lemma thirdBesselSchlafliIntegrand_le (z : ℝ) (hz : 0 < z) (u : ℝ) (hu : 0 ≤ u) :
+section
+variable (z : ℝ) (hz : 0 < z)
+include z hz
+private lemma thirdBesselSchlafliIntegrand_le   (u : ℝ) (hu : 0 ≤ u) :
     Real.exp (-z * Real.cosh u) * Real.cosh (u / 3)
       ≤ (Real.exp (-1) / (z / 2)) * Real.exp (-(2 / 3) * u) := by
   have hcosh_ge : (z / 2) * Real.exp u ≤ z * Real.cosh u := by
@@ -54,7 +60,7 @@ private lemma thirdBesselSchlafliIntegrand_le (z : ℝ) (hz : 0 < z) (u : ℝ) (
     ring
   exact hmul.trans hkey
 
-theorem thirdBesselSchlafliIntegrand_integrable (z : ℝ) (hz : 0 < z) :
+theorem thirdBesselSchlafliIntegrand_integrable   :
     IntegrableOn (thirdBesselSchlafliIntegrand z) (Set.Ioi (0 : ℝ)) := by
   refine integrable_of_isBigO_exp_neg (a := 0) (b := 2 / 3) (by norm_num) ?_ ?_
   · apply Continuous.continuousOn
@@ -68,11 +74,11 @@ theorem thirdBesselSchlafliIntegrand_integrable (z : ℝ) (hz : 0 < z) :
     rw [Real.norm_eq_abs, abs_of_nonneg hFnn, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
     simpa only [thirdBesselSchlafliIntegrand] using h
 
-theorem KThird_eq_integral (z : ℝ) (hz : 0 < z) :
+theorem KThird_eq_integral   :
     KThird z = ∫ u in Set.Ioi (0 : ℝ), thirdBesselSchlafliIntegrand z u := by
   simp [KThird, hz]
 
-theorem KThird_pos (z : ℝ) (hz : 0 < z) : 0 < KThird z := by
+theorem KThird_pos   : 0 < KThird z := by
   rw [KThird_eq_integral z hz]
   refine (setIntegral_pos_iff_support_of_nonneg_ae ?_
     (thirdBesselSchlafliIntegrand_integrable z hz)).2 ?_
@@ -85,6 +91,8 @@ theorem KThird_pos (z : ℝ) (hz : 0 < z) : 0 < KThird z := by
       exact mul_ne_zero (Real.exp_ne_zero _) (Real.cosh_pos _).ne'
     rw [hsupp, Real.volume_Ioi]
     exact ENNReal.zero_lt_top
+end
+
 
 theorem KThird_continuousOn : ContinuousOn KThird (Set.Ioi (0 : ℝ)) := by
   rw [isOpen_Ioi.continuousOn_iff]

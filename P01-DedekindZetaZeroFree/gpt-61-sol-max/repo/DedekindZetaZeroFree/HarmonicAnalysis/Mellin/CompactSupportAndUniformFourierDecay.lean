@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.MellinVerticalIntegral
 
 @[expose] public section
+
 
 section
 
@@ -59,11 +62,9 @@ open Asymptotics
 
 namespace DedekindZetaZeroFree.LargeSieve.Vendor
 
-theorem compact_mellin_differentiable (h : ℝ → ℂ) (a b : ℝ)
+def compact_mellin_differentiable (h : ℝ → ℂ) (a b : ℝ)
     (hh : ContDiff ℝ ∞ h) (hsupp : Function.support h ⊆ Set.Icc a b)
-    (ha : 0 < a) (hab : a < b) :
-    Differentiable ℂ (mellin h) := by
-  exact CompactMellin.entire_of_positive_compact_support h a b hh.continuous hsupp ha
+    (ha : 0 < a) (hab : a < b)  := CompactMellin.entire_of_positive_compact_support h a b hh.continuous hsupp ha
 
 end DedekindZetaZeroFree.LargeSieve.Vendor
 

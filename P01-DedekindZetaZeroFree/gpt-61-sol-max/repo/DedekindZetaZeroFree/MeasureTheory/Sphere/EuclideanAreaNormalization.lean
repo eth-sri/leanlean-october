@@ -1,9 +1,12 @@
 module
+
+public import Mathlib
 public import Mathlib.MeasureTheory.Constructions.HaarToSphere
 
 public import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.ComplexFractionalInverse.RawSphereProjection
 open MeasureTheory Set
@@ -45,8 +48,7 @@ noncomputable def split : rawAmbient ≃ᵐ ℝ × EuclideanSpace ℝ (Fin 2) :=
     ((MeasurableEquiv.piFinSuccAbove (fun _ : Fin 3 => ℝ) 0).trans
       (MeasurableEquiv.prodCongr (MeasurableEquiv.refl ℝ)
         (MeasurableEquiv.toLp 2 (Fin 2 → ℝ))))
-lemma split_preserving : MeasurePreserving split := by
-  exact (PiLp.volume_preserving_ofLp (Fin 3)).trans
+lemma split_preserving : MeasurePreserving split := (PiLp.volume_preserving_ofLp (Fin 3)).trans
     ((volume_preserving_piFinSuccAbove (fun _ : Fin 3 => ℝ) 0).trans
       ((MeasurePreserving.id volume).prod (PiLp.volume_preserving_toLp (Fin 2))))
 lemma split_symm_apply (z : ℝ) (w : EuclideanSpace ℝ (Fin 2)) :
@@ -92,7 +94,10 @@ lemma north_cone_Fubini (t : ℝ) :
   rw [← split_preserving.symm.measure_preimage hm.nullMeasurableSet]
   rw [Measure.volume_eq_prod, Measure.prod_apply (split.symm.measurable hm)]
   congr 1
-lemma north_slice_lower {t z : ℝ} (ht : 0 < t) (ht1 : t ≤ 1)
+section
+variable {t z : ℝ} (ht : 0 < t)
+include t z ht
+lemma north_slice_lower   (ht1 : t ≤ 1)
     (hz : 0 < z) (hzt : z < t) :
     {w : EuclideanSpace ℝ (Fin 2) |
         0 < ‖split.symm (z,w)‖ ∧
@@ -128,7 +133,7 @@ lemma north_slice_lower {t z : ℝ} (ht : 0 < t) (ht1 : t ≤ 1)
     · nlinarith [sq_pos_of_pos hz]
     · have := (le_div_iff₀ ht).mp hnle
       simpa only [mul_comm] using this
-lemma north_slice_upper {t z : ℝ} (ht : 0 < t) (htz : t ≤ z)
+lemma north_slice_upper   (htz : t ≤ z)
     (hz1 : z < 1) :
     {w : EuclideanSpace ℝ (Fin 2) |
         0 < ‖split.symm (z,w)‖ ∧
@@ -156,7 +161,7 @@ lemma north_slice_upper {t z : ℝ} (ht : 0 < t) (htz : t ≤ z)
     · calc
         _ ≤ t * 1 := mul_le_mul_of_nonneg_left hnlt.le ht.le
         _ ≤ z := by simpa using htz
-lemma north_slice_empty {t z : ℝ} (ht : 0 < t)
+lemma north_slice_empty  
     (hz : z ≤ 0 ∨ 1 ≤ z) :
     {w : EuclideanSpace ℝ (Fin 2) |
         0 < ‖split.symm (z,w)‖ ∧
@@ -171,7 +176,7 @@ lemma north_slice_empty {t z : ℝ} (ht : 0 < t)
   rcases hz with hz | hz
   · nlinarith
   · nlinarith
-lemma north_slice_volume_lower {t z : ℝ} (ht : 0 < t) (ht1 : t ≤ 1)
+lemma north_slice_volume_lower   (ht1 : t ≤ 1)
     (hz : 0 < z) (hzt : z < t) :
     volume {w : EuclideanSpace ℝ (Fin 2) |
         0 < ‖split.symm (z,w)‖ ∧
@@ -184,7 +189,7 @@ lemma north_slice_volume_lower {t z : ℝ} (ht : 0 < t) (ht1 : t ≤ 1)
     nlinarith [div_pos hz ht]
   rw [← ENNReal.ofReal_pow (Real.sqrt_nonneg _), Real.sq_sqrt hpos,
     ← ENNReal.ofReal_mul hpos, mul_comm]
-lemma north_slice_volume_upper {t z : ℝ} (ht : 0 < t) (htz : t ≤ z)
+lemma north_slice_volume_upper   (htz : t ≤ z)
     (hz1 : z < 1) :
     volume {w : EuclideanSpace ℝ (Fin 2) |
         0 < ‖split.symm (z,w)‖ ∧
@@ -196,6 +201,8 @@ lemma north_slice_volume_upper {t z : ℝ} (ht : 0 < t) (htz : t ≤ z)
   have hpos : 0 ≤ 1 - z ^ 2 := by nlinarith
   rw [← ENNReal.ofReal_pow (Real.sqrt_nonneg _), Real.sq_sqrt hpos,
     ← ENNReal.ofReal_mul hpos, mul_comm]
+end
+
 
 lemma north_cone_integrals {t : ℝ} (ht : 0 < t) (ht1 : t ≤ 1) :
     volume (Ioo (0 : ℝ) 1 • (Subtype.val '' {y : rawSphere | t ≤ (y : rawAmbient) 0})) =
@@ -266,12 +273,14 @@ lemma north_cone_volume {t : ℝ} (ht : 0 < t) (ht1 : t ≤ 1) :
   field_simp
   <;> ring
 
-noncomputable def rotation (g : rawAmbient ≃ₗᵢ[ℝ] rawAmbient) (x : rawSphere) : rawSphere :=
+section
+variable (g : rawAmbient ≃ₗᵢ[ℝ] rawAmbient)
+include g
+noncomputable def rotation   (x : rawSphere) : rawSphere :=
   ⟨g x, by simpa only [mem_sphere_zero_iff_norm, g.norm_map] using x.property⟩
-lemma rotation_continuous (g : rawAmbient ≃ₗᵢ[ℝ] rawAmbient) :
-    Continuous (rotation g) := by
-  exact (g.continuous.comp continuous_subtype_val).subtype_mk _
-lemma rotation_cone_preimage (g : rawAmbient ≃ₗᵢ[ℝ] rawAmbient) (s : Set rawSphere) :
+lemma rotation_continuous   :
+    Continuous (rotation g) := (g.continuous.comp continuous_subtype_val).subtype_mk _
+lemma rotation_cone_preimage   (s : Set rawSphere) :
     g ⁻¹' (Ioo (0 : ℝ) 1 • (Subtype.val '' s)) =
     Ioo (0 : ℝ) 1 • (Subtype.val '' (rotation g ⁻¹' s)) := by
   ext z
@@ -283,7 +292,7 @@ lemma rotation_cone_preimage (g : rawAmbient ≃ₗᵢ[ℝ] rawAmbient) (s : Set
       simpa using this
   · rintro ⟨r, hr, w, ⟨y, hy, rfl⟩, rfl⟩
     exact ⟨r, hr, g y, ⟨rotation g y, hy, rfl⟩, by simp⟩
-lemma rotation_preserving (g : rawAmbient ≃ₗᵢ[ℝ] rawAmbient) :
+lemma rotation_preserving   :
     MeasurePreserving (rotation g) (volume : Measure rawAmbient).toSphere
       (volume : Measure rawAmbient).toSphere := by
   refine ⟨(rotation_continuous g).measurable, ?_⟩
@@ -293,5 +302,7 @@ lemma rotation_preserving (g : rawAmbient ≃ₗᵢ[ℝ] rawAmbient) :
     Measure.toSphere_apply' _ ((rotation_continuous g).measurable hs),
     Measure.toSphere_apply' _ hs, ← rotation_cone_preimage]
   rw [g.measurePreserving.measure_preimage_emb g.toHomeomorph.measurableEmbedding]
+end
+
 
 end DedekindZetaZeroFree.ComplexFractionalInverse.RawSphereProjection

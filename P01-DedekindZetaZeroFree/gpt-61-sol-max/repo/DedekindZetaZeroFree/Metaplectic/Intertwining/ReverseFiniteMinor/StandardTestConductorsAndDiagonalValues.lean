@@ -257,8 +257,11 @@ variable (F : Type) [Field F] [NumberField F]
   (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
   (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
 
-def standardConductorIntegral (π : (LocalField F q)ˣ)
+section
+variable (π : (LocalField F q)ˣ)
     (ψ : Multiplicative (LocalField F q) →* ℂˣ) (i : Fin 3)
+include π ψ i
+def standardConductorIntegral  
     (f : scalarSections F ζ hζ q S P hP .minus) : ℂ :=
   ∫ x in conductorOneShell F q π,
     ((actualCanonicalReverseMap F ζ hζ q S P μ hμ
@@ -268,22 +271,26 @@ def standardConductorIntegral (π : (LocalField F q)ˣ)
       (ψ (Multiplicative.ofAdd (-x)) : ℂ) ∂μ
 
 private theorem standardConductorIntegral_smul
-    (π : (LocalField F q)ˣ) (ψ : Multiplicative (LocalField F q) →* ℂˣ)
-    (i : Fin 3) (c : ℂ) (f : scalarSections F ζ hζ q S P hP .minus) :
+      (c : ℂ) (f : scalarSections F ζ hζ q S P hP .minus) :
     standardConductorIntegral F ζ hζ q S P hP μ hμ π ψ i (c • f) =
       c * standardConductorIntegral F ζ hζ q S P hP μ hμ π ψ i f := by
   simp only [standardConductorIntegral, map_smul]
   change (∫ x in conductorOneShell F q π, (c * _) * _ ∂μ) = _
   simp_rw [mul_assoc]
   exact integral_const_mul c _
+end
 
-theorem eventual_actual_standard_conductor_shell_value
-    (htame : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
+
+section
+variable (htame : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
     (hnormalized : RawNormalizedExtension F ζ hζ q S P)
     (π : (LocalField F q)ˣ)
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
       (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
     (ψ : Multiplicative (LocalField F q) →* ℂˣ) (hψ : Continuous ψ)
+include htame hnormalized π hπ ψ hψ
+theorem eventual_actual_standard_conductor_shell_value
+     
     [Fintype (Residue F q)]
     (κ : MulChar (Residue F q) ℂ) (hκ : HasPiFirstOrientation F ζ hζ q π κ)
     (ψbar : AddChar (Residue F q) ℂ) (hbar : HasConductorOneResidue F q π ψ ψbar) :
@@ -328,12 +335,7 @@ theorem eventual_actual_standard_conductor_shell_value
       ring
 
 private theorem eventual_actual_standard_conductor_diag_two
-    (htame : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
-    (hnormalized : RawNormalizedExtension F ζ hζ q S P)
-    (π : (LocalField F q)ˣ)
-    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
-    (ψ : Multiplicative (LocalField F q) →* ℂˣ) (hψ : Continuous ψ)
+     
     [Fintype (Residue F q)]
     (κ : MulChar (Residue F q) ℂ) (hκ : HasPiFirstOrientation F ζ hζ q π κ)
     (ψbar : AddChar (Residue F q) ℂ) (hbar : HasConductorOneResidue F q π ψ ψbar) :
@@ -360,12 +362,7 @@ private theorem eventual_actual_standard_conductor_diag_two
   convert he using 1
 
 theorem eventual_actual_first_two_shells_diag_two
-    (htame : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
-    (hnormalized : RawNormalizedExtension F ζ hζ q S P)
-    (π : (LocalField F q)ˣ)
-    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
-    (ψ : Multiplicative (LocalField F q) →* ℂˣ) (hψ : Continuous ψ)
+     
     (hconductor : HasConductorIntegers F q ψ)
     [Fintype (Residue F q)]
     (κ : MulChar (Residue F q) ℂ) (hκ : HasPiFirstOrientation F ζ hζ q π κ)
@@ -415,6 +412,8 @@ theorem eventual_actual_first_two_shells_diag_two
   rw [hi, hv, hB m ((le_max_right _ _).trans hm) f hf]
   simp only [div_eq_mul_inv]
   ring
+end
+
 
 include S P hμ in
 

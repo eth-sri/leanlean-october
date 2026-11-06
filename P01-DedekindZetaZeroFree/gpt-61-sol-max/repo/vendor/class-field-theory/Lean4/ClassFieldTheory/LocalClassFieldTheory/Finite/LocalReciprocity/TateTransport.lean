@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction.UnitCohomologyAxiom
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -53,7 +56,10 @@ section GroupEquiv
 variable {R Q P : Type} [CommRing R]
   [CommGroup Q] [CommGroup P] [Fintype Q] [Fintype P]
 
- theorem res_norm_eq (e : Q ≃* P) (A : Rep R P) :
+ section
+variable (e : Q ≃* P) (A : Rep R P)
+include e A
+theorem res_norm_eq   :
     let Ares : Rep R Q :=
       Rep.res e.toMonoidHom A
     ModuleCat.ofHom Ares.norm.hom.toLinearMap =
@@ -70,7 +76,7 @@ variable {R Q P : Type} [CommRing R]
 /-- Reindexing along a group isomorphism preserves the cyclic `H⁰`
 short complex. -/
 def normHomCompSubResEquivIso
-    (e : Q ≃* P) (A : Rep R P) (g : Q) :
+      (g : Q) :
     Rep.FiniteCyclicGroup.normHomCompSub
         (Rep.res e.toMonoidHom A) g ≅
       Rep.FiniteCyclicGroup.normHomCompSub A (e g) := by
@@ -84,7 +90,7 @@ def normHomCompSubResEquivIso
 /-- Reindexing along a group isomorphism preserves the cyclic `H⁻¹`
 short complex. -/
 def subCompNormHomResEquivIso
-    (e : Q ≃* P) (A : Rep R P) (g : Q) :
+      (g : Q) :
     Rep.FiniteCyclicGroup.subCompNormHom
         (Rep.res e.toMonoidHom A) g ≅
       Rep.FiniteCyclicGroup.subCompNormHom A (e g) := by
@@ -97,7 +103,7 @@ def subCompNormHomResEquivIso
 
 /-- Homology-level group-reindexing comparison in degree zero. -/
 def normHomCompSubHomologyResEquivIso
-    (e : Q ≃* P) (A : Rep R P) (g : Q) :
+      (g : Q) :
     (Rep.FiniteCyclicGroup.normHomCompSub
         (Rep.res e.toMonoidHom A) g).homology ≅
       (Rep.FiniteCyclicGroup.normHomCompSub A (e g)).homology :=
@@ -105,11 +111,13 @@ def normHomCompSubHomologyResEquivIso
 
 /-- Homology-level group-reindexing comparison in degree minus one. -/
 def subCompNormHomHomologyResEquivIso
-    (e : Q ≃* P) (A : Rep R P) (g : Q) :
+      (g : Q) :
     (Rep.FiniteCyclicGroup.subCompNormHom
         (Rep.res e.toMonoidHom A) g).homology ≅
       (Rep.FiniteCyclicGroup.subCompNormHom A (e g)).homology :=
   ShortComplex.homologyMapIso (subCompNormHomResEquivIso e A g)
+end
+
 
 end GroupEquiv
 
@@ -117,10 +125,13 @@ section RepresentationIso
 
 variable {R Q : Type} [CommRing R] [CommGroup Q] [Fintype Q]
 
+section
+variable {M N : Rep R Q} (e : M ≅ N) (g : Q)
+include M N e g
 /-- Isomorphic representations have isomorphic cyclic `H⁰` short
 complexes. -/
 def normHomCompSubIsoOfRepIso
-    {M N : Rep R Q} (e : M ≅ N) (g : Q) :
+      :
     Rep.FiniteCyclicGroup.normHomCompSub M g ≅
       Rep.FiniteCyclicGroup.normHomCompSub N g := by
   let i : ModuleCat.of R M.V ≅ ModuleCat.of R N.V :=
@@ -129,7 +140,7 @@ def normHomCompSubIsoOfRepIso
   · have h := congrArg
       (fun f : M ⟶ N => ModuleCat.ofHom f.hom.toLinearMap)
       (Rep.norm_comm e.hom)
-    simpa [i, Rep.norm] using h
+    exact h
   · have hrep :
         e.hom ≫ (Rep.applyAsHom N g - 𝟙 N) =
           (Rep.applyAsHom M g - 𝟙 M) ≫ e.hom := by
@@ -143,7 +154,7 @@ def normHomCompSubIsoOfRepIso
 /-- Isomorphic representations have isomorphic cyclic `H⁻¹` short
 complexes. -/
 def subCompNormHomIsoOfRepIso
-    {M N : Rep R Q} (e : M ≅ N) (g : Q) :
+      :
     Rep.FiniteCyclicGroup.subCompNormHom M g ≅
       Rep.FiniteCyclicGroup.subCompNormHom N g := by
   let i : ModuleCat.of R M.V ≅ ModuleCat.of R N.V :=
@@ -161,11 +172,11 @@ def subCompNormHomIsoOfRepIso
   · have h := congrArg
       (fun f : M ⟶ N => ModuleCat.ofHom f.hom.toLinearMap)
       (Rep.norm_comm e.hom)
-    simpa [i, Rep.norm] using h
+    exact h
 
 /-- Homology-level representation-isomorphism comparison in degree zero. -/
 def normHomCompSubHomologyIsoOfRepIso
-    {M N : Rep R Q} (e : M ≅ N) (g : Q) :
+      :
     (Rep.FiniteCyclicGroup.normHomCompSub M g).homology ≅
       (Rep.FiniteCyclicGroup.normHomCompSub N g).homology :=
   ShortComplex.homologyMapIso (normHomCompSubIsoOfRepIso e g)
@@ -173,10 +184,12 @@ def normHomCompSubHomologyIsoOfRepIso
 /-- Homology-level representation-isomorphism comparison in degree
 minus one. -/
 def subCompNormHomHomologyIsoOfRepIso
-    {M N : Rep R Q} (e : M ≅ N) (g : Q) :
+      :
     (Rep.FiniteCyclicGroup.subCompNormHom M g).homology ≅
       (Rep.FiniteCyclicGroup.subCompNormHom N g).homology :=
   ShortComplex.homologyMapIso (subCompNormHomIsoOfRepIso e g)
+end
+
 
 end RepresentationIso
 

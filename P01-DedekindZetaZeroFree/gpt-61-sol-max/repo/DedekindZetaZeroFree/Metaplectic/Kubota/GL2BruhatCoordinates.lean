@@ -1,26 +1,32 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Tactic
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 namespace KubotaRankTwo
 
 universe u
 
-abbrev GL2 (K : Type u) [Field K] := Matrix.GeneralLinearGroup (Fin 2) K
+section
+variable (K : Type u) [Field K]
+include K
+abbrev GL2   := Matrix.GeneralLinearGroup (Fin 2) K
 
-abbrev det (K : Type u) [Field K] : GL2 K →* Kˣ :=
+abbrev det   : GL2 K →* Kˣ :=
   Matrix.GeneralLinearGroup.det
 
-noncomputable def x (K : Type u) [Field K] (g : GL2 K) : K := by
+noncomputable def x   (g : GL2 K) : K := by
   classical
   exact if (g : Matrix (Fin 2) (Fin 2) K) 1 0 = 0 then
     (g : Matrix (Fin 2) (Fin 2) K) 1 1 else
     (g : Matrix (Fin 2) (Fin 2) K) 1 0
 
-theorem x_ne_zero (K : Type u) [Field K] (g : GL2 K) : x K g ≠ 0 := by
+theorem x_ne_zero   (g : GL2 K) : x K g ≠ 0 := by
   classical
   unfold x
   split_ifs with hc
@@ -30,10 +36,10 @@ theorem x_ne_zero (K : Type u) [Field K] (g : GL2 K) : x K g ≠ 0 := by
     exact hdet rfl
   · exact hc
 
-noncomputable def X (K : Type u) [Field K] (g : GL2 K) : Kˣ :=
+noncomputable def X   (g : GL2 K) : Kˣ :=
   Units.mk0 (x K g) (x_ne_zero K g)
 
-private theorem x_congr (K : Type u) [Field K] {g h : GL2 K}
+private theorem x_congr   {g h : GL2 K}
     (h10 : (g : Matrix (Fin 2) (Fin 2) K) 1 0 = (h : Matrix (Fin 2) (Fin 2) K) 1 0)
     (h11 : (g : Matrix (Fin 2) (Fin 2) K) 1 1 = (h : Matrix (Fin 2) (Fin 2) K) 1 1) :
     x K g = x K h := by
@@ -44,63 +50,63 @@ private theorem x_congr (K : Type u) [Field K] {g h : GL2 K}
   · rw [if_neg hc, if_neg (fun hh => hc (h10.symm ▸ hh))]
     exact h10
 
-def n (K : Type u) [Field K] (t : K) : GL2 K :=
+def n   (t : K) : GL2 K :=
   Matrix.GeneralLinearGroup.mkOfDetNeZero !![1, t; 0, 1] (by
     simp [Matrix.det_fin_two])
 
-def d (K : Type u) [Field K] (u v : Kˣ) : GL2 K :=
+def d   (u v : Kˣ) : GL2 K :=
   Matrix.GeneralLinearGroup.mkOfDetNeZero !![(u : K), 0; 0, (v : K)] (by
     simpa [Matrix.det_fin_two] using mul_ne_zero u.ne_zero v.ne_zero)
 
-def w (K : Type u) [Field K] : GL2 K :=
+def w   : GL2 K :=
   Matrix.GeneralLinearGroup.mkOfDetNeZero !![0, -1; 1, 0] (by
     simp [Matrix.det_fin_two])
 
-@[simp] theorem coe_n (K : Type u) [Field K] (t : K) :
+@[simp] theorem coe_n   (t : K) :
     (n K t : Matrix (Fin 2) (Fin 2) K) = !![1, t; 0, 1] := rfl
 
-@[simp] theorem coe_d (K : Type u) [Field K] (u v : Kˣ) :
+@[simp] theorem coe_d   (u v : Kˣ) :
     (d K u v : Matrix (Fin 2) (Fin 2) K) = !![(u : K), 0; 0, (v : K)] := rfl
 
-@[simp] theorem coe_w (K : Type u) [Field K] :
+@[simp] theorem coe_w   :
     (w K : Matrix (Fin 2) (Fin 2) K) = !![0, -1; 1, 0] := rfl
 
-@[simp] theorem det_n (K : Type u) [Field K] (t : K) : det K (n K t) = 1 := by
+@[simp] theorem det_n   (t : K) : det K (n K t) = 1 := by
   ext
   simp [Matrix.GeneralLinearGroup.val_det_apply, coe_n, Matrix.det_fin_two]
 
-@[simp] theorem det_d (K : Type u) [Field K] (u v : Kˣ) :
+@[simp] theorem det_d   (u v : Kˣ) :
     det K (d K u v) = u * v := by
   ext
   simp [Matrix.GeneralLinearGroup.val_det_apply, coe_d, Matrix.det_fin_two]
 
-@[simp] theorem det_w (K : Type u) [Field K] : det K (w K) = 1 := by
+@[simp] theorem det_w   : det K (w K) = 1 := by
   ext
   simp [Matrix.GeneralLinearGroup.val_det_apply, coe_w, Matrix.det_fin_two]
 
-@[simp] theorem X_one (K : Type u) [Field K] : X K (1 : GL2 K) = 1 := by
+@[simp] theorem X_one   : X K (1 : GL2 K) = 1 := by
   ext
   simp [X, x]
 
-@[simp] theorem X_n (K : Type u) [Field K] (t : K) : X K (n K t) = 1 := by
+@[simp] theorem X_n   (t : K) : X K (n K t) = 1 := by
   ext
   simp [X, x, coe_n]
 
-@[simp] theorem X_d (K : Type u) [Field K] (u v : Kˣ) : X K (d K u v) = v := by
+@[simp] theorem X_d   (u v : Kˣ) : X K (d K u v) = v := by
   ext
   simp [X, x, coe_d]
 
-@[simp] theorem X_w (K : Type u) [Field K] : X K (w K) = 1 := by
+@[simp] theorem X_w   : X K (w K) = 1 := by
   ext
   simp [X, x, coe_w]
 
-@[simp] theorem X_n_mul (K : Type u) [Field K] (g : GL2 K) (t : K) :
+@[simp] theorem X_n_mul   (g : GL2 K) (t : K) :
     X K (n K t * g) = X K g := by
   apply Units.ext
   show x K (n K t * g) = x K g
   exact x_congr K (by simp [Matrix.mul_apply]) (by simp [Matrix.mul_apply])
 
-@[simp] theorem X_mul_n (K : Type u) [Field K] (g : GL2 K) (t : K) :
+@[simp] theorem X_mul_n   (g : GL2 K) (t : K) :
     X K (g * n K t) = X K g := by
   apply Units.ext
   show x K (g * n K t) = x K g
@@ -112,48 +118,48 @@ def w (K : Type u) [Field K] : GL2 K :=
   unfold x
   simp only [Matrix.GeneralLinearGroup.coe_mul]
   by_cases hc : (g : Matrix (Fin 2) (Fin 2) K) 1 0 = 0
-  · have hc' : ((g : Matrix (Fin 2) (Fin 2) K) *
-        (n K t : Matrix (Fin 2) (Fin 2) K)) 1 0 = 0 := by rw [h10]; exact hc
-    rw [if_pos hc', if_pos hc, h11, hc]
-    ring
-  · have hc' : ¬ (((g : Matrix (Fin 2) (Fin 2) K) *
-        (n K t : Matrix (Fin 2) (Fin 2) K)) 1 0 = 0) := by rw [h10]; exact hc
-    rw [if_neg hc', if_neg hc, h10]
+  · simp_all
+  simp_all
 
-theorem X_n_mul_mul_n (K : Type u) [Field K] (g h : GL2 K) (t t' : K) :
+theorem X_n_mul_mul_n   (g h : GL2 K) (t t' : K) :
     X K (n K t * g * h * n K t') = X K (g * h) := by
   rw [show n K t * g * h * n K t' = n K t * (g * h) * n K t' from by group]
   rw [X_mul_n, X_n_mul]
+end
 
-theorem topLeft_ne_zero (K : Type u) [Field K] (g : GL2 K)
-    (hc : (g : Matrix (Fin 2) (Fin 2) K) 1 0 = 0) :
+
+section
+variable (K : Type u) [Field K] (g : GL2 K)
+    (hc : (g : Matrix (Fin 2) (Fin 2) K) 1 0 = 0)
+include K g hc
+theorem topLeft_ne_zero   :
     (g : Matrix (Fin 2) (Fin 2) K) 0 0 ≠ 0 := by
   intro ha
   have hdet := Matrix.GeneralLinearGroup.det_ne_zero g
   simp only [Matrix.det_fin_two, hc, ha, mul_zero, zero_mul, sub_self] at hdet
   exact hdet rfl
 
-theorem bottomRight_ne_zero (K : Type u) [Field K] (g : GL2 K)
-    (hc : (g : Matrix (Fin 2) (Fin 2) K) 1 0 = 0) :
+theorem bottomRight_ne_zero   :
     (g : Matrix (Fin 2) (Fin 2) K) 1 1 ≠ 0 := by
   intro hd
   have hdet := Matrix.GeneralLinearGroup.det_ne_zero g
   simp only [Matrix.det_fin_two, hc, hd, mul_zero, zero_mul, sub_self] at hdet
   exact hdet rfl
 
-theorem bruhat_closed (K : Type u) [Field K] (g : GL2 K)
-    (hc : (g : Matrix (Fin 2) (Fin 2) K) 1 0 = 0) :
+theorem bruhat_closed   :
     g = d K
       (Units.mk0 ((g : Matrix (Fin 2) (Fin 2) K) 0 0) (topLeft_ne_zero K g hc))
       (Units.mk0 ((g : Matrix (Fin 2) (Fin 2) K) 1 1) (bottomRight_ne_zero K g hc)) *
       n K (((g : Matrix (Fin 2) (Fin 2) K) 0 1) /
         ((g : Matrix (Fin 2) (Fin 2) K) 0 0)) := by
-  have ha : (g : Matrix (Fin 2) (Fin 2) K) 0 0 ≠ 0 := topLeft_ne_zero K g hc
+  have ha  := topLeft_ne_zero K g hc
   apply Matrix.GeneralLinearGroup.ext
   intro i j
   fin_cases i <;> fin_cases j <;>
     simp [Matrix.mul_apply, coe_d, coe_n, hc] <;>
     field_simp <;> ring
+end
+
 
 theorem bruhat_open (K : Type u) [Field K] (g : GL2 K)
     (hc : (g : Matrix (Fin 2) (Fin 2) K) 1 0 ≠ 0) :

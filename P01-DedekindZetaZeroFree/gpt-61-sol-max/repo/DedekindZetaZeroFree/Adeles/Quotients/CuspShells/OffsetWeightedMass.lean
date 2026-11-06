@@ -19,8 +19,8 @@ open _root_.DedekindZetaZeroFree.KPMsFixedHaarDisintegration renaming toRawTrans
 
 namespace DedekindZetaZeroFree.KPMsNativeOffsetMass
 
- theorem pinned_cusp_lintegral
-    {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
+ section
+variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
     {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
     {U : KPMsFixedHaar.Level F ζ hζ}
     (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
@@ -29,6 +29,9 @@ namespace DedekindZetaZeroFree.KPMsNativeOffsetMass
     (D : KPMsFixedHaar.GeometricDisintegration A R P)
     (j : KPMsFixedHaar.CuspIndex A) (Z : ℝ)
     (hZ : KPMsFixedHaar.AdmissibleCutoff A Z)
+include F ζ hζ hF U A R P D j Z hZ
+theorem pinned_cusp_lintegral
+     
     (φ : KPMsFixedHaar.Spherical F ζ hζ U → ℝ≥0∞) (hφ : Measurable φ) :
     (∫⁻ x in component A j.1 '' ends A j (KPMsFixedHaar.logHeight (F := F) Z),
       φ x ∂KPMsFixedHaar.sphericalMeasure F ζ hζ R P U) =
@@ -52,15 +55,7 @@ namespace DedekindZetaZeroFree.KPMsNativeOffsetMass
   simp only [div_eq_mul_inv, mul_assoc, smul_eq_mul]
 
 private theorem pinned_cusp_shell_mass
-    {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-    {U : KPMsFixedHaar.Level F ζ hζ}
-    (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-    (P : KPMsFixedHaar.SphericalTransport F ζ hζ)
-    (D : KPMsFixedHaar.GeometricDisintegration A R P)
-    (j : KPMsFixedHaar.CuspIndex A) (Z : ℝ)
-    (hZ : KPMsFixedHaar.AdmissibleCutoff A Z) :
+      :
     KPMsFixedHaar.sphericalMeasure F ζ hζ R P U
       ((component A j.1 '' ends A j (KPMsFixedHaar.logHeight (F := F) Z)) ∩
         {x | Z < D.modulus x ∧ D.modulus x ≤ 2 * Z}) =
@@ -95,6 +90,8 @@ private theorem pinned_cusp_shell_mass
   rw [hI, KPMsFixedHaar.RadialIntegrationSteps.radial_shell Z hZ.1] at hi
   have hpos : 0 < 2 * Z := mul_pos (by norm_num) hZ.1
   simpa only [E, mul_assoc, ENNReal.ofReal_inv_of_pos hpos] using hi
+end
+
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)

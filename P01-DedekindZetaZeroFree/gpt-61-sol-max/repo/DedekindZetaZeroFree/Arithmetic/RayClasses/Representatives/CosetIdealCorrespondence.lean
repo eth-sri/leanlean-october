@@ -14,14 +14,18 @@ namespace DedekindZetaZeroFree.AbelianQuotient.RayCoset
 
 variable {K : Type} [Field K] [NumberField K]
 
-private theorem elementIdeal_mul (D : Data K) (α : Cx D) :
+section
+variable (D : Data K) (α : Cx D)
+include D α in
+private theorem elementIdeal_mul   :
     elementIdeal D α * D.a = Ideal.span {α.val} := by
   apply FractionalIdeal.coeIdeal_injective (K := K)
   change ((elementIdeal D α * D.a : Ideal (𝓞 K)) : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) = _
   rw [FractionalIdeal.coeIdeal_mul, elementIdeal_fractionalImage]
   rw [mul_assoc, inv_mul_cancel₀ (FractionalIdeal.coeIdeal_ne_zero.mpr D.ideal_ne_bot), mul_one]
 
-theorem elementIdeal_ne_bot (D : Data K) (α : Cx D) :
+include D α in
+theorem elementIdeal_ne_bot   :
     elementIdeal D α ≠ ⊥ := by
   intro h
   have he := elementIdeal_mul D α
@@ -29,7 +33,8 @@ theorem elementIdeal_ne_bot (D : Data K) (α : Cx D) :
   have hz : α.val = 0 := by simpa using he.symm
   exact (mem_Cnonzero_iff D α.val).mp α.property |>.2 hz
 
-theorem elementIdeal_coprime (D : Data K) (α : Cx D) :
+include D α in
+theorem elementIdeal_coprime   :
     elementIdeal D α ⊔ D.m = ⊤ := by
   apply (Ideal.eq_top_iff_one _).mpr
   have hα : α.val ∈ elementIdeal D α := by
@@ -43,7 +48,8 @@ theorem elementIdeal_coprime (D : Data K) (α : Cx D) :
     (show α.val - 1 ∈ elementIdeal D α ⊔ D.m from Ideal.mem_sup_right hm)
   simpa using h
 
-theorem elementIdeal_absNorm (D : Data K) (α : Cx D) :
+include D α in
+theorem elementIdeal_absNorm   :
     (Ideal.absNorm (elementIdeal D α) : ℝ) =
       |(Algebra.norm ℚ (α.val : K) : ℝ)| / (Ideal.absNorm D.a : ℝ) := by
   have ha : (Ideal.absNorm D.a : ℝ) ≠ 0 := by
@@ -66,17 +72,23 @@ def orbitIdeal (D : Data K) : X D → Ideal (𝓞 K) :=
     obtain ⟨u, hu⟩ := h
     exact hu ▸ elementIdeal_smul D u β)
 
-@[simp] theorem orbitIdeal_orbitMk (D : Data K) (α : Cx D) :
+include D α in
+@[simp] theorem orbitIdeal_orbitMk   :
     orbitIdeal D (orbitMk D α) = elementIdeal D α := rfl
+end
+
 
 theorem orbitIdeal_absNorm (D : Data K) (x : X D) :
     (Ideal.absNorm (orbitIdeal D x) : ℝ) = normWeight D x := by
   induction x using Quotient.inductionOn with
   | h α => exact elementIdeal_absNorm D α
 
-theorem orbitIdeal_rayIdealClass (D : Data K)
+section
+variable (D : Data K)
     (c : RayIdealClass K D.m D.modulus_ne_bot)
     (hc : rayIdealClass K D.m D.modulus_ne_bot D.a = some (c⁻¹))
+include D c hc in
+theorem orbitIdeal_rayIdealClass  
     (x : Xpos D) :
     rayIdealClass K D.m D.modulus_ne_bot (orbitIdeal D x.val) = some c := by
   obtain ⟨x, hx⟩ := x
@@ -95,9 +107,8 @@ theorem orbitIdeal_rayIdealClass (D : Data K)
     apply congrArg some
     exact (mul_inv_eq_iff_eq_mul.mp hmul.symm).trans (one_mul c)
 
-def positiveIdealMap (D : Data K)
-    (c : RayIdealClass K D.m D.modulus_ne_bot)
-    (hc : rayIdealClass K D.m D.modulus_ne_bot D.a = some (c⁻¹)) :
+include D c hc in
+def positiveIdealMap   :
     Xpos D → {I : Ideal (𝓞 K) | rayIdealClass K D.m D.modulus_ne_bot I = some c} :=
   fun x => ⟨orbitIdeal D x.val, orbitIdeal_rayIdealClass D c hc x⟩
 
@@ -265,9 +276,8 @@ private theorem positive_signVector (D : Data K) (x : Xpos D) :
     change decide (0 < realEmbedding K v (α.val : K)) = true
     exact decide_eq_true (hp (realEmbedding K v))
 
-theorem positiveIdealMap_bijective (D : Data K)
-    (c : RayIdealClass K D.m D.modulus_ne_bot)
-    (hc : rayIdealClass K D.m D.modulus_ne_bot D.a = some (c⁻¹)) :
+include D c hc in
+theorem positiveIdealMap_bijective   :
     Function.Bijective (positiveIdealMap D c hc) := by
   refine ⟨?_, positiveIdealMap_surjective D c hc⟩
   intro x y h
@@ -278,16 +288,16 @@ theorem positiveIdealMap_bijective (D : Data K)
     (a₁ := ⟨x.val, hi⟩) (a₂ := ⟨y.val, rfl⟩) hs
   exact Subtype.ext (congrArg (fun z : {z : X D | orbitIdeal D z = orbitIdeal D y.val} => z.val) he)
 
-def positiveIdealEquiv (D : Data K)
-    (c : RayIdealClass K D.m D.modulus_ne_bot)
-    (hc : rayIdealClass K D.m D.modulus_ne_bot D.a = some (c⁻¹)) :
+include D c hc in
+def positiveIdealEquiv   :
     Xpos D ≃ {I : Ideal (𝓞 K) | rayIdealClass K D.m D.modulus_ne_bot I = some c} :=
   Equiv.ofBijective (positiveIdealMap D c hc) (positiveIdealMap_bijective D c hc)
 
-@[simp] theorem positiveIdealEquiv_apply_val (D : Data K)
-    (c : RayIdealClass K D.m D.modulus_ne_bot)
-    (hc : rayIdealClass K D.m D.modulus_ne_bot D.a = some (c⁻¹)) (x : Xpos D) :
+include D c hc in
+@[simp] theorem positiveIdealEquiv_apply_val   (x : Xpos D) :
     (positiveIdealEquiv D c hc x).val = orbitIdeal D x.val := rfl
+end
+
 
 end DedekindZetaZeroFree.AbelianQuotient.RayCoset
 

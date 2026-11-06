@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.WeakH2.LocalizedTranslation
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -23,11 +26,11 @@ theorem uniform_concentric_cutoff (n : ℕ) (r R : ℝ)
         (∀ (j : Fin n) (x : Space n),
           ‖coordinateDerivativeList [j] (fun y => (η y : ℂ)) x‖ ≤ G) ∧
         Metric.cthickening ((R - r) / 8) (tsupport (fun x => η x)) ⊆ mid.carrier := by
-  let s : ℝ := r + (R - r) / 4
+  let s  := r + (R - r) / 4
   have hrs : r < s := by dsimp [s]; linarith
   have hs : 0 < s := hr.trans hrs
   let b : ContDiffBump (0 : Space n) := ⟨r, s, hr, hrs⟩
-  let f : Space n → ℂ := fun x => (b x : ℂ)
+  let f  := fun x => (b x : ℂ)
   have hf : ContDiff ℝ (⊤ : ℕ∞) f :=
     Complex.ofRealCLM.contDiff.comp b.contDiff
   have hfc : HasCompactSupport f :=
@@ -36,7 +39,7 @@ theorem uniform_concentric_cutoff (n : ℕ) (r R : ℝ)
     (hf.fderiv_right (m := (⊤ : ℕ∞)) (by simp)).continuous
   refine ⟨max C 1, lt_of_lt_of_le zero_lt_one (le_max_right _ _), ?_⟩
   intro inner mid outer hic hmc hir hmr hor
-  let g : Space n → ℝ := fun x => b (x - outer.center)
+  let g  := fun x => b (x - outer.center)
   have hg : ContDiff ℝ (⊤ : ℕ∞) g :=
     b.contDiff.comp (contDiff_id.sub contDiff_const)
   have hgc : HasCompactSupport g :=

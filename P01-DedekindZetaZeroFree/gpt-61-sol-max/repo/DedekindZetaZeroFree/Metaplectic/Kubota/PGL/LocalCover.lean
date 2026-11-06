@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Metaplectic.Kubota.CentralScalarSplitting
 public import DedekindZetaZeroFree.Metaplectic.Kubota.LocalRootLifts
 public import DedekindZetaZeroFree.Metaplectic.Kubota.TameCompact.IntegralCompactSplitting
 
 @[expose] public section
+
 
 open scoped NumberField Classical
 open NumberField IsDedekindDomain
@@ -18,7 +21,7 @@ variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 variable (v : KPHilbert.Place F)
 
-def scalarSubgroup : Subgroup (KPLocalCover.LocalGL2 F v) :=
+def scalarSubgroup  :=
   (KPScalarSplitCentral.scalarMatrix F v).range
 
 theorem scalarSubgroup_le_center :
@@ -32,7 +35,7 @@ instance scalarSubgroup_normal : (scalarSubgroup F v).Normal :=
 
 abbrev LocalPGL2 := KPLocalCover.LocalGL2 F v ⧸ scalarSubgroup F v
 
-def splitScalarSubgroup : Subgroup (KPLocalCover.CubicGL2Raw F ζ hζ v) :=
+def splitScalarSubgroup  :=
   (KPScalarSplitCentral.scalarHom F ζ hζ v).range
 
 instance splitScalarSubgroup_normal : (splitScalarSubgroup F ζ hζ v).Normal :=
@@ -60,13 +63,18 @@ def projection : CubicPGL2 F ζ hζ v →* LocalPGL2 F v :=
     ((baseQuotient F v).comp (KPLocalCover.projection F ζ hζ v))
     (splitScalarSubgroup_le_ker F ζ hζ v)
 
-def centralInjection : rootsOfUnity 3 F →* CubicPGL2 F ζ hζ v :=
-  (coverQuotient F ζ hζ v).comp (KPLocalCover.centralInjection F ζ hζ v)
+
+local notation:max "current_coverQuotient" => coverQuotient F ζ hζ
+
+
+local notation:max "current_projectionLocal" => projection F ζ hζ
+
+def centralInjection  :=
+  (current_coverQuotient v).comp (KPLocalCover.centralInjection F ζ hζ v)
 
 @[simp] theorem projection_coverQuotient (g : KPLocalCover.CubicGL2Raw F ζ hζ v) :
-    projection F ζ hζ v (coverQuotient F ζ hζ v g) =
-      baseQuotient F v (KPLocalCover.projection F ζ hζ v g) := by
-  rfl
+    current_projectionLocal v (current_coverQuotient v g) =
+      baseQuotient F v (KPLocalCover.projection F ζ hζ v g) := rfl
 
 theorem splitScalar_inf_kernel :
     splitScalarSubgroup F ζ hζ v ⊓ (KPLocalCover.projection F ζ hζ v).ker = ⊥ := by
@@ -88,7 +96,7 @@ theorem centralInjection_injective : Function.Injective (centralInjection F ζ h
   have hs : KPLocalCover.centralInjection F ζ hζ v e ∈ splitScalarSubgroup F ζ hζ v :=
     (QuotientGroup.eq_one_iff _).mp he
   have hk : KPLocalCover.centralInjection F ζ hζ v e ∈
-      (KPLocalCover.projection F ζ hζ v).ker := by rfl
+      (KPLocalCover.projection F ζ hζ v).ker := rfl
   have h1 : KPLocalCover.centralInjection F ζ hζ v e = 1 := by
     have hmem : KPLocalCover.centralInjection F ζ hζ v e ∈
         splitScalarSubgroup F ζ hζ v ⊓ (KPLocalCover.projection F ζ hζ v).ker := ⟨hs, hk⟩
@@ -96,14 +104,14 @@ theorem centralInjection_injective : Function.Injective (centralInjection F ζ h
     exact hmem
   exact (map_eq_one_iff _ (KPLocalCover.centralInjection_injective F ζ hζ v)).mp h1
 
-theorem projection_surjective : Function.Surjective (projection F ζ hζ v) := by
+theorem projection_surjective : Function.Surjective (current_projectionLocal v) := by
     intro x
     induction x using QuotientGroup.induction_on with | _ g =>
       obtain ⟨h, rfl⟩ := KPLocalCover.projection_surjective F ζ hζ v g
       exact ⟨coverQuotient F ζ hζ v h, projection_coverQuotient F ζ hζ v h⟩
 
 theorem range_centralInjection_eq_ker_projection :
-    (centralInjection F ζ hζ v).range = (projection F ζ hζ v).ker := by
+    (centralInjection F ζ hζ v).range = (current_projectionLocal v).ker := by
   ext x
   induction x using QuotientGroup.induction_on with | _ g =>
     constructor
@@ -123,17 +131,17 @@ theorem range_centralInjection_eq_ker_projection :
           simp [KPScalarSplitCentral.scalarHom, KPScalarSplitCentral.scalarLift,
             KPLocalCover.sectionMap, hz]
       refine ⟨g.epsilon, ?_⟩
-      change coverQuotient F ζ hζ v (KPLocalCover.centralInjection F ζ hζ v g.epsilon) = _
+      change current_coverQuotient v (KPLocalCover.centralInjection F ζ hζ v g.epsilon) = _
       calc
-        coverQuotient F ζ hζ v (KPLocalCover.centralInjection F ζ hζ v g.epsilon) =
-            1 * coverQuotient F ζ hζ v (KPLocalCover.centralInjection F ζ hζ v g.epsilon) :=
+        current_coverQuotient v (KPLocalCover.centralInjection F ζ hζ v g.epsilon) =
+            1 * current_coverQuotient v (KPLocalCover.centralInjection F ζ hζ v g.epsilon) :=
           (one_mul _).symm
-        _ = coverQuotient F ζ hζ v (KPScalarSplitCentral.scalarHom F ζ hζ v z) *
-            coverQuotient F ζ hζ v (KPLocalCover.centralInjection F ζ hζ v g.epsilon) := by
-          have hs : coverQuotient F ζ hζ v (KPScalarSplitCentral.scalarHom F ζ hζ v z) = 1 :=
+        _ = current_coverQuotient v (KPScalarSplitCentral.scalarHom F ζ hζ v z) *
+            current_coverQuotient v (KPLocalCover.centralInjection F ζ hζ v g.epsilon) := by
+          have hs : current_coverQuotient v (KPScalarSplitCentral.scalarHom F ζ hζ v z) = 1 :=
             (QuotientGroup.eq_one_iff _).mpr ⟨z, rfl⟩
           rw [hs]
-        _ = coverQuotient F ζ hζ v g := by rw [← map_mul, he]
+        _ = current_coverQuotient v g := by rw [← map_mul, he]
 
 theorem centralInjection_range_le_center :
     (centralInjection F ζ hζ v).range ≤ Subgroup.center (CubicPGL2 F ζ hζ v) := by
@@ -141,7 +149,7 @@ theorem centralInjection_range_le_center :
     rw [Subgroup.mem_center_iff]
     intro y
     induction y using QuotientGroup.induction_on with | _ g =>
-      exact congrArg (coverQuotient F ζ hζ v)
+      exact congrArg (current_coverQuotient v)
         ((Subgroup.mem_center_iff.mp
           (KPLocalCover.centralInjection_range_le_center F ζ hζ v
             ⟨e, rfl⟩)) g)
@@ -151,10 +159,10 @@ def finiteTopology (w : HeightOneSpectrum (𝓞 F)) (m : ℕ) :
   letI := KPLocalChartTopology.translatedTopology F ζ hζ w m
   inferInstance
 
-def complexTopology (w : InfinitePlace F) :
-    TopologicalSpace (CubicPGL2 F ζ hζ (Sum.inl w)) :=
-  letI := KPLocalChartTopology.complexTopology F ζ hζ w
-  inferInstance
+
+
+
+
 
 theorem finiteTopology_independent (w : HeightOneSpectrum (𝓞 F)) (m n : ℕ)
     (hm : KPLocalChartTopology.MatrixChartDepth F w m)
@@ -163,7 +171,7 @@ theorem finiteTopology_independent (w : HeightOneSpectrum (𝓞 F)) (m n : ℕ)
     unfold finiteTopology
     rw [KPLocalChartTopology.translatedTopology_independent F ζ hζ w m n hm hn]
 
- def kernelEquiv : rootsOfUnity 3 F ≃ (projection F ζ hζ v).ker :=
+ def kernelEquiv : rootsOfUnity 3 F ≃ (current_projectionLocal v).ker :=
   Equiv.ofBijective
     (fun ε => ⟨centralInjection F ζ hζ v ε, by
       rw [← range_centralInjection_eq_ker_projection]
@@ -176,20 +184,20 @@ theorem finiteTopology_independent (w : HeightOneSpectrum (𝓞 F)) (m n : ℕ)
       obtain ⟨ε, hε⟩ := hx
       exact ⟨ε, Subtype.ext hε⟩⟩
 
-private theorem kernel_finite : Finite (projection F ζ hζ v).ker :=
+private def kernel_finite  :=
   Finite.of_equiv (rootsOfUnity 3 F) (kernelEquiv F ζ hζ v)
 
 private theorem fiber_card (g : LocalPGL2 F v) :
-    Nat.card {x : CubicPGL2 F ζ hζ v | projection F ζ hζ v x = g} = 3 := by
+    Nat.card {x : CubicPGL2 F ζ hζ v | current_projectionLocal v x = g} = 3 := by
   obtain ⟨a, ha⟩ := projection_surjective F ζ hζ v g
-  let e : (projection F ζ hζ v).ker ≃
-      {x : CubicPGL2 F ζ hζ v | projection F ζ hζ v x = g} := {
+  let e : (current_projectionLocal v).ker ≃
+      {x : CubicPGL2 F ζ hζ v | current_projectionLocal v x = g} := {
     toFun x := ⟨x.val * a, by
-      change projection F ζ hζ v (x.val * a) = g
-      rw [map_mul, show projection F ζ hζ v x.val = 1 from x.property, one_mul, ha]⟩
+      change current_projectionLocal v (x.val * a) = g
+      rw [map_mul, show current_projectionLocal v x.val = 1 from x.property, one_mul, ha]⟩
     invFun x := ⟨x.val * a⁻¹, by
-      change projection F ζ hζ v (x.val * a⁻¹) = 1
-      rw [map_mul, map_inv, show projection F ζ hζ v x.val = g from x.property, ha,
+      change current_projectionLocal v (x.val * a⁻¹) = 1
+      rw [map_mul, map_inv, show current_projectionLocal v x.val = g from x.property, ha,
         mul_inv_cancel]⟩
     left_inv x := Subtype.ext (by simp)
     right_inv x := Subtype.ext (by simp)
@@ -208,18 +216,18 @@ private theorem quotient_cover
     T2Space (CubicPGL2 F ζ hζ v) ∧
       LocallyCompactSpace (CubicPGL2 F ζ hζ v) ∧
       IsTopologicalGroup (CubicPGL2 F ζ hζ v) ∧
-      IsLocalHomeomorph (projection F ζ hζ v) ∧
+      IsLocalHomeomorph (current_projectionLocal v) ∧
       ∀ g : LocalPGL2 F v,
-        Nat.card {x : CubicPGL2 F ζ hζ v | projection F ζ hζ v x = g} = 3 := by
+        Nat.card {x : CubicPGL2 F ζ hζ v | current_projectionLocal v x = g} = 3 := by
   letI : IsClosed (splitScalarSubgroup F ζ hζ v :
       Set (KPLocalCover.CubicGL2Raw F ζ hζ v)) := hs
   haveI : T2Space (CubicPGL2 F ζ hζ v) := inferInstance
-  haveI : Finite (projection F ζ hζ v).ker := kernel_finite F ζ hζ v
-  haveI : DiscreteTopology (projection F ζ hζ v).ker := inferInstance
-  have hc : Continuous (projection F ζ hζ v) :=
+  haveI  := kernel_finite F ζ hζ v
+  haveI : DiscreteTopology (current_projectionLocal v).ker := inferInstance
+  have hc : Continuous (current_projectionLocal v) :=
     (QuotientGroup.isQuotientMap_mk (splitScalarSubgroup F ζ hζ v)).continuous_iff.mpr
       (QuotientGroup.continuous_mk.comp hp.continuous)
-  have ho : IsOpenMap (projection F ζ hζ v) :=
+  have ho : IsOpenMap (current_projectionLocal v) :=
     IsOpenMap.of_comp QuotientGroup.continuous_mk
       (QuotientGroup.mk'_surjective (splitScalarSubgroup F ζ hζ v))
       (QuotientGroup.isOpenMap_coe.comp hp.isOpenMap)
@@ -229,8 +237,11 @@ private theorem quotient_cover
       (SetLike.isDiscrete_iff_discreteTopology.mpr inferInstance)).isLocalHomeomorph,
     fiber_card F ζ hζ v⟩
 
-theorem finite_topological_cover (w : HeightOneSpectrum (𝓞 F)) (m : ℕ)
-    (hm : KPLocalChartTopology.MatrixChartDepth F w m) :
+section
+variable (w : HeightOneSpectrum (𝓞 F)) (m : ℕ)
+    (hm : KPLocalChartTopology.MatrixChartDepth F w m)
+include w m hm
+theorem finite_topological_cover   :
     letI := finiteTopology F ζ hζ w m
     T2Space (CubicPGL2 F ζ hζ (Sum.inr w)) ∧
       LocallyCompactSpace (CubicPGL2 F ζ hζ (Sum.inr w)) ∧
@@ -247,24 +258,23 @@ theorem finite_topological_cover (w : HeightOneSpectrum (𝓞 F)) (m : ℕ)
     (KPScalarSplitCentral.finite_continuous_closed F ζ hζ w m hm).2
     (KPLocalChartTopology.finite_projection F ζ hζ w m hm).1
 
-theorem complex_topological_cover (w : InfinitePlace F) :
-    letI := complexTopology F ζ hζ w
-    T2Space (CubicPGL2 F ζ hζ (Sum.inl w)) ∧
-      LocallyCompactSpace (CubicPGL2 F ζ hζ (Sum.inl w)) ∧
-      IsTopologicalGroup (CubicPGL2 F ζ hζ (Sum.inl w)) ∧
-      IsLocalHomeomorph (projection F ζ hζ (Sum.inl w)) ∧
-      ∀ g : LocalPGL2 F (Sum.inl w),
-        Nat.card {x : CubicPGL2 F ζ hζ (Sum.inl w) | projection F ζ hζ (Sum.inl w) x = g} = 3 := by
-  letI := KPLocalChartTopology.complexTopology F ζ hζ w
-  obtain ⟨ht, hl, hg, hp, _⟩ := KPLocalChartTopology.complex_topological_cover F ζ hζ w
-  letI := ht
-  letI := hl
-  letI := hg
-  exact quotient_cover F ζ hζ (Sum.inl w)
-    (KPScalarSplitCentral.complex_continuous_closed F ζ hζ w).2 hp
 
-theorem finite_discrete_kernel (w : HeightOneSpectrum (𝓞 F)) (m : ℕ)
-    (hm : KPLocalChartTopology.MatrixChartDepth F w m) :
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+theorem finite_discrete_kernel   :
     letI := finiteTopology F ζ hζ w m
     letI : Group (LocalPGL2 F (Sum.inr w)) :=
       @QuotientGroup.Quotient.group _ _ (scalarSubgroup F (Sum.inr w))
@@ -286,48 +296,50 @@ theorem finite_discrete_kernel (w : HeightOneSpectrum (𝓞 F)) (m : ℕ)
     ⟨{ kernelEquiv F ζ hζ (Sum.inr w) with
         continuous_toFun := continuous_of_discreteTopology
         continuous_invFun := continuous_of_discreteTopology }, fun _ => rfl⟩⟩
+end
 
-def N (t : KPHilbert.Completion F v) : CubicPGL2 F ζ hζ v :=
-  coverQuotient F ζ hζ v (KPStandardLocalRootLifts.N F ζ hζ v t)
 
-def LowerN (t : KPHilbert.Completion F v) : CubicPGL2 F ζ hζ v :=
-  coverQuotient F ζ hζ v (KPStandardLocalRootLifts.LowerN F ζ hζ v t)
+def N (t : KPHilbert.Completion F v)  :=
+  current_coverQuotient v (KPStandardLocalRootLifts.N F ζ hζ v t)
 
-def A (y : (KPHilbert.Completion F v)ˣ) : CubicPGL2 F ζ hζ v :=
-  coverQuotient F ζ hζ v (KPStandardLocalRootLifts.A F ζ hζ v y)
+def LowerN (t : KPHilbert.Completion F v)  :=
+  current_coverQuotient v (KPStandardLocalRootLifts.LowerN F ζ hζ v t)
 
-def W : CubicPGL2 F ζ hζ v :=
-  coverQuotient F ζ hζ v (KPStandardLocalRootLifts.W F ζ hζ v)
+def A (y : (KPHilbert.Completion F v)ˣ)  :=
+  current_coverQuotient v (KPStandardLocalRootLifts.A F ζ hζ v y)
 
-def signedW : CubicPGL2 F ζ hζ v :=
-  coverQuotient F ζ hζ v (KPStandardLocalRootLifts.signedW F ζ hζ v)
+def W  :=
+  current_coverQuotient v (KPStandardLocalRootLifts.W F ζ hζ v)
+
+def signedW  :=
+  current_coverQuotient v (KPStandardLocalRootLifts.signedW F ζ hζ v)
 
 theorem N_add (t u : KPHilbert.Completion F v) :
     N F ζ hζ v (t + u) = N F ζ hζ v t * N F ζ hζ v u := by
-    change coverQuotient F ζ hζ v (KPStandardLocalRootLifts.N F ζ hζ v (t + u)) = _
+    change current_coverQuotient v (KPStandardLocalRootLifts.N F ζ hζ v (t + u)) = _
     rw [KPStandardLocalRootLifts.N_add, map_mul]
     rfl
 
 theorem LowerN_add (t u : KPHilbert.Completion F v) :
     LowerN F ζ hζ v (t + u) = LowerN F ζ hζ v t * LowerN F ζ hζ v u := by
-    change coverQuotient F ζ hζ v (KPStandardLocalRootLifts.LowerN F ζ hζ v (t + u)) = _
+    change current_coverQuotient v (KPStandardLocalRootLifts.LowerN F ζ hζ v (t + u)) = _
     rw [KPStandardLocalRootLifts.LowerN_add, map_mul]
     rfl
 
 theorem A_mul (x y : (KPHilbert.Completion F v)ˣ) :
     A F ζ hζ v x * A F ζ hζ v y =
       centralInjection F ζ hζ v (KPHilbert.B3 F ζ hζ v x y ^ 2) * A F ζ hζ v (x * y) := by
-    change coverQuotient F ζ hζ v (KPStandardLocalRootLifts.A F ζ hζ v x) *
-      coverQuotient F ζ hζ v (KPStandardLocalRootLifts.A F ζ hζ v y) = _
+    change current_coverQuotient v (KPStandardLocalRootLifts.A F ζ hζ v x) *
+      current_coverQuotient v (KPStandardLocalRootLifts.A F ζ hζ v y) = _
     rw [← map_mul, KPStandardLocalRootLifts.A_mul, map_mul]
     rfl
 
 theorem W_sq : W F ζ hζ v ^ 2 = 1 := by
-    change (coverQuotient F ζ hζ v (KPStandardLocalRootLifts.W F ζ hζ v)) ^ 2 = 1
+    change (current_coverQuotient v (KPStandardLocalRootLifts.W F ζ hζ v)) ^ 2 = 1
     rw [← map_pow, KPStandardLocalRootLifts.W_sq, map_one]
 
 theorem signedW_sq : signedW F ζ hζ v ^ 2 = 1 := by
-    change (coverQuotient F ζ hζ v (KPStandardLocalRootLifts.signedW F ζ hζ v)) ^ 2 = 1
+    change (current_coverQuotient v (KPStandardLocalRootLifts.signedW F ζ hζ v)) ^ 2 = 1
     rw [← map_pow, KPStandardLocalRootLifts.signedW_sq]
     have h : KubotaRankTwo.d (KPHilbert.Completion F v) (-1) (-1) =
         KPScalarSplitCentral.scalarMatrix F v (-1) := by
@@ -336,7 +348,7 @@ theorem signedW_sq : signedW F ζ hζ v ^ 2 = 1 := by
       fin_cases i <;> fin_cases j <;> simp [KubotaRankTwo.d, KPScalarSplitCentral.scalarMatrix,
         Matrix.GeneralLinearGroup.coe_scalar, Matrix.GeneralLinearGroup.mkOfDetNeZero]
     rw [h]
-    change coverQuotient F ζ hζ v (KPScalarSplitCentral.scalarHom F ζ hζ v (-1)) = 1
+    change current_coverQuotient v (KPScalarSplitCentral.scalarHom F ζ hζ v (-1)) = 1
     exact (QuotientGroup.eq_one_iff _).mpr ⟨_, rfl⟩
 
 theorem finite_lifts_continuous (w : HeightOneSpectrum (𝓞 F)) (m : ℕ)
@@ -345,12 +357,12 @@ theorem finite_lifts_continuous (w : HeightOneSpectrum (𝓞 F)) (m : ℕ)
     Continuous (N F ζ hζ (Sum.inr w)) ∧ Continuous (LowerN F ζ hζ (Sum.inr w)) ∧
       Continuous (A F ζ hζ (Sum.inr w)) := by
   letI := KPLocalChartTopology.translatedTopology F ζ hζ w m
-  have hq : Continuous (coverQuotient F ζ hζ (Sum.inr w)) := QuotientGroup.continuous_mk
+  have hq : Continuous (current_coverQuotient (Sum.inr w)) := QuotientGroup.continuous_mk
   exact ⟨hq.comp (KPStandardLocalRootLifts.finite_N_continuous F ζ hζ w m hm),
     hq.comp (KPStandardLocalRootLifts.finite_LowerN_continuous F ζ hζ w m hm),
     hq.comp (KPStandardLocalRootLifts.finite_A_continuous F ζ hζ w m hm)⟩
 
-def compactScalarSubgroup (w : HeightOneSpectrum (𝓞 F)) : Subgroup (KPTameCompact.K0 F w) :=
+def compactScalarSubgroup (w : HeightOneSpectrum (𝓞 F))  :=
   (Matrix.GeneralLinearGroup.scalar (Fin 2) : (KPTameCompact.O F w)ˣ →*
     KPTameCompact.K0 F w).range
 
@@ -366,8 +378,11 @@ attribute [instance] compactScalarSubgroup_normal
 abbrev CompactPGL2 (w : HeightOneSpectrum (𝓞 F)) :=
   KPTameCompact.K0 F w ⧸ compactScalarSubgroup F w
 
-theorem compactScalarSubgroup_le_ker (w : HeightOneSpectrum (𝓞 F))
-    (hw : ringChar (KPTameCompact.O F w ⧸ KPTameCompact.p F w) ≠ 3) :
+section
+variable (w : HeightOneSpectrum (𝓞 F))
+    (hw : ringChar (KPTameCompact.O F w ⧸ KPTameCompact.p F w) ≠ 3)
+include w hw
+theorem compactScalarSubgroup_le_ker   :
     compactScalarSubgroup F w ≤
       ((coverQuotient F ζ hζ (Sum.inr w)).comp
         (KPGoodCompactSplitting.kStar F ζ hζ w hw)).ker := by
@@ -379,22 +394,17 @@ theorem compactScalarSubgroup_le_ker (w : HeightOneSpectrum (𝓞 F))
     rw [← KPScalarSplitCentral.good_compact_unit_scalar F ζ hζ w hw u]
     exact (QuotientGroup.eq_one_iff _).mpr ⟨_, rfl⟩
 
-def compactSplitting (w : HeightOneSpectrum (𝓞 F))
-    (hw : ringChar (KPTameCompact.O F w ⧸ KPTameCompact.p F w) ≠ 3) :
-    CompactPGL2 F w →* CubicPGL2 F ζ hζ (Sum.inr w) :=
+def compactSplitting    :=
   QuotientGroup.lift (compactScalarSubgroup F w)
     ((coverQuotient F ζ hζ (Sum.inr w)).comp (KPGoodCompactSplitting.kStar F ζ hζ w hw))
     (compactScalarSubgroup_le_ker F ζ hζ w hw)
 
-@[simp] theorem compactSplitting_mk (w : HeightOneSpectrum (𝓞 F))
-    (hw : ringChar (KPTameCompact.O F w ⧸ KPTameCompact.p F w) ≠ 3)
+@[simp] theorem compactSplitting_mk  
     (g : KPTameCompact.K0 F w) :
     compactSplitting F ζ hζ w hw (QuotientGroup.mk g) =
-      coverQuotient F ζ hζ (Sum.inr w) (KPGoodCompactSplitting.kStar F ζ hζ w hw g) := by
-  rfl
+      coverQuotient F ζ hζ (Sum.inr w) (KPGoodCompactSplitting.kStar F ζ hζ w hw g) := rfl
 
-theorem compactSplitting_topology (w : HeightOneSpectrum (𝓞 F))
-    (hw : ringChar (KPTameCompact.O F w ⧸ KPTameCompact.p F w) ≠ 3)
+theorem compactSplitting_topology  
     (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F w m) :
     letI := finiteTopology F ζ hζ w m
     Continuous (compactSplitting F ζ hζ w hw) ∧
@@ -420,6 +430,8 @@ theorem compactSplitting_topology (w : HeightOneSpectrum (𝓞 F))
   · rw [hr]
     exact QuotientGroup.isOpenMap_coe _
       (KPGoodCompactSplitting.kStar_open_image F ζ hζ w hw m hm)
+end
+
 
 end
 end DedekindZetaZeroFree.KPPGLLocalCover

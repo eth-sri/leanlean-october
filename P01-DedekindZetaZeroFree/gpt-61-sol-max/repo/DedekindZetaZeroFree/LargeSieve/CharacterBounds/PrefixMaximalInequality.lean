@@ -1,18 +1,21 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 
 noncomputable section
 open scoped BigOperators
 
-def detector_prefixSum {m : ℕ} (a b : Fin m → ℂ) (l : Fin (m + 1)) : ℂ :=
+def detector_prefixSum {m : ℕ} (a b : Fin m → ℂ) (l : Fin (m + 1))  :=
   ∑ k : Fin m, if k.val < l.val then a k * b k else 0
 
-def detector_prefixMaxSq {m : ℕ} (a b : Fin m → ℂ) : ℝ :=
+def detector_prefixMaxSq {m : ℕ} (a b : Fin m → ℂ)  :=
   (Finset.univ : Finset (Fin (m + 1))).sup' Finset.univ_nonempty
     (fun l => ‖detector_prefixSum a b l‖ ^ 2)
 
@@ -25,16 +28,19 @@ private lemma weighted_norm (t : ℝ) (ht : 0 < t) (u v : ℂ) :
   have hs := sq_nonneg (t * ‖u‖ - ‖v‖)
   nlinarith [sq_le_sq₀ huv (add_nonneg hu hv) |>.mpr hn]
 
-private lemma max_nonneg {m : ℕ} (a b : Fin m → ℂ) : 0 ≤ detector_prefixMaxSq a b := by
+section
+variable {m : ℕ} (a b : Fin m → ℂ)
+include m a b
+private lemma max_nonneg   : 0 ≤ detector_prefixMaxSq a b := by
   classical
   exact (sq_nonneg _).trans (Finset.le_sup' (s := Finset.univ) (f := fun l => ‖detector_prefixSum a b l‖ ^ 2) (Finset.mem_univ (0 : Fin (m + 1))))
 
-private lemma prefix_le_max {m : ℕ} (a b : Fin m → ℂ) (l : Fin (m+1)) :
+private lemma prefix_le_max   (l : Fin (m+1)) :
     ‖detector_prefixSum a b l‖ ^ 2 ≤ detector_prefixMaxSq a b := by
   classical
   exact Finset.le_sup' (f := fun l => ‖detector_prefixSum a b l‖ ^ 2) (Finset.mem_univ l)
 
-private lemma split_max {m : ℕ} (a b : Fin m → ℂ) (p : ℕ) (t : ℝ) (ht : 0 < t) :
+private lemma split_max   (p : ℕ) (t : ℝ) (ht : 0 < t) :
     let b₁ := fun k : Fin m => if k.val < p then b k else 0
     let b₂ := fun k : Fin m => if k.val < p then 0 else b k
     t * detector_prefixMaxSq a b ≤
@@ -79,7 +85,7 @@ private lemma split_max {m : ℕ} (a b : Fin m → ℂ) (p : ℕ) (t : ℝ) (ht 
     have h2 := prefix_le_max a (fun k => if k.val < p then 0 else b k) l
     nlinarith
 
-private lemma base_max {m : ℕ} (a b : Fin m → ℂ) (r : ℕ)
+private lemma base_max   (r : ℕ)
     (hb : ∀ k : Fin m, b k ≠ 0 → r ≤ k.val ∧ k.val < r+1) :
     detector_prefixMaxSq a b ≤ ‖∑ k, a k * b k‖ ^ 2 := by
   classical
@@ -105,6 +111,8 @@ private lemma base_max {m : ℕ} (a b : Fin m → ℂ) (r : ℕ)
         simp [hkl]
     rw [he]
     simp
+end
+
 
 private lemma recursive_max (m : ℕ) (J : Type) [Fintype J] (A : J → Fin m → ℂ)
     (K : ℝ) (hK : 0 ≤ K)
@@ -116,27 +124,16 @@ private lemma recursive_max (m : ℕ) (J : Type) [Fintype J] (A : J → Fin m �
   induction n with
   | zero =>
     intro r b hb
-    simpa using (Finset.sum_le_sum (fun j _ => base_max (A j) b r (by simpa using hb))).trans (hop b)
+    simpa using (Finset.sum_le_sum (fun j _ => base_max (A j) b r (hb))).trans (hop b)
   | succ n ih =>
     intro r b hb
     let p := r + 2^n
     let b₁ := fun k : Fin m => if k.val < p then b k else 0
     let b₂ := fun k : Fin m => if k.val < p then 0 else b k
     have hb₁ : ∀ k : Fin m, b₁ k ≠ 0 → r ≤ k.val ∧ k.val < r + 2^n := by
-      intro k hk
-      dsimp [b₁] at hk
-      split_ifs at hk with hkp
-      · exact ⟨(hb k hk).1, hkp⟩
-      · contradiction
+      (intros; grind)
     have hb₂ : ∀ k : Fin m, b₂ k ≠ 0 → p ≤ k.val ∧ k.val < p + 2^n := by
-      intro k hk
-      dsimp [b₂] at hk
-      split_ifs at hk with hkp
-      · contradiction
-      · have := hb k hk
-        rw [pow_succ] at this
-        dsimp [p]
-        omega
+      (intros; grind)
     have h1 := ih r b₁ hb₁
     have h2 := ih p b₂ hb₂
     have h3 := hop b₁
@@ -192,9 +189,9 @@ theorem detector_prefix_maximal :
   have hn : (n+1 : ℝ) ≤ 4 * (1 + Real.log (m+1)) := by
     dsimp [n]
     push_cast
-    have hnl : 0 ≤ (Nat.log2 (m+1) : ℝ) := Nat.cast_nonneg _
+    
     nlinarith
-  have hn0 : 0 ≤ (n+1 : ℝ) := by positivity
+  
   have hs : (n+1 : ℝ)^2 ≤ 16 * (1+Real.log (m+1))^2 := by nlinarith
   have he : 0 ≤ K * ∑ k, ‖b k‖^2 := mul_nonneg hK (Finset.sum_nonneg (fun _ _ => sq_nonneg _))
   calc
@@ -217,7 +214,7 @@ theorem detector_normCutoff_eq_prefix (m : ℕ) (q : Fin m → ℝ)
   · intro hk
     have hsub : (Finset.univ.filter fun i : Fin m => i.val ≤ k.val) ⊆ s := by
       intro i hi
-      exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, (hq (by simpa using (Finset.mem_filter.mp hi).2)).trans hk⟩
+      exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, (hq ((Finset.mem_filter.mp hi).2)).trans hk⟩
     have hc := Finset.card_le_card hsub
     have he : (Finset.univ.filter fun i : Fin m => i.val ≤ k.val).card = k.val + 1 := by
       rw [show (Finset.univ.filter fun i : Fin m => i.val ≤ k.val) = Finset.Iic k by ext i; simp]
@@ -230,7 +227,7 @@ theorem detector_normCutoff_eq_prefix (m : ℕ) (q : Fin m → ℝ)
       change i ∈ Finset.univ.filter (fun k : Fin m => q k ≤ x) at hi
       simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hi ⊢
       by_contra hlt
-      exact h ((hq (by simpa using Nat.le_of_not_gt hlt)).trans hi)
+      exact h ((hq (Nat.le_of_not_gt hlt)).trans hi)
     have hc := Finset.card_le_card hsub
     have he : (Finset.univ.filter fun i : Fin m => i.val < k.val).card = k.val := by
       rw [show (Finset.univ.filter fun i : Fin m => i.val < k.val) = Finset.Iio k by ext i; simp]

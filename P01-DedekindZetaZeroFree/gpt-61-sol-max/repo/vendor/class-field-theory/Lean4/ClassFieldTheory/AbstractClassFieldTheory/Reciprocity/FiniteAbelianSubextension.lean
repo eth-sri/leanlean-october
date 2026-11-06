@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.FiniteGaloisSubextension
 public import Mathlib.Algebra.Group.Subgroup.Pointwise
 public import Mathlib.Topology.Algebra.Group.Pointwise
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -59,22 +62,25 @@ namespace FiniteAbelianSubextension
 
 variable {K : ClosedSubgroup G}
 
+section
+variable (L : FiniteAbelianSubextension K)
+include L
 /-- Introduces the abbreviation `field`. -/
-abbrev field (L : FiniteAbelianSubextension K) : ClosedSubgroup G :=
+abbrev field    :=
   L.toFiniteGaloisExtension.field
 
 /-- Introduces the abbreviation `below`. -/
-abbrev below (L : FiniteAbelianSubextension K) :
+abbrev below   :
     L.field.toSubgroup ≤ K.toSubgroup :=
   L.toFiniteGaloisExtension.below
 
 /-- Introduces the abbreviation `normal`. -/
-abbrev normal (L : FiniteAbelianSubextension K) :
+abbrev normal   :
     (extensionSubgroup K L.field L.below).Normal :=
   L.toFiniteGaloisExtension.normal
 
 /-- Introduces the abbreviation `finite`. -/
-abbrev finite (L : FiniteAbelianSubextension K) :
+abbrev finite   :
     Finite (K.toSubgroup ⧸ extensionSubgroup K L.field L.below) :=
   L.toFiniteGaloisExtension.finite
 
@@ -82,16 +88,17 @@ abbrev finite (L : FiniteAbelianSubextension K) :
 is inherited through the finite Galois extension boundary rather than exposed
 as a transparent quotient abbreviation. -/
 @[implicit_reducible]
-def extensionQuotient (L : FiniteAbelianSubextension K) : Type u :=
+def extensionQuotient    :=
   L.toFiniteGaloisExtension.extensionQuotient
+end
+
 
 /-- The quotient attached to a finite abelian subextension is a commutative group. -/
 @[implicit_reducible]
 instance extensionQuotient_commGroup (L : FiniteAbelianSubextension K) :
     CommGroup L.extensionQuotient := by
   unfold extensionQuotient
-  letI : IsMulCommutative
-      L.toFiniteGaloisExtension.extensionQuotient := L.commutative
+  letI  := L.commutative
   exact
     { (inferInstance :
         Group L.toFiniteGaloisExtension.extensionQuotient) with
@@ -124,13 +131,13 @@ theorem extensionQuotientMk_apply (L : FiniteAbelianSubextension K)
         K.toSubgroup ⧸ extensionSubgroup K L.field L.below) :=
   L.toFiniteGaloisExtension.extensionQuotientMk_apply k
 
-/-- Eliminate an abelian extension quotient without choosing a representative. -/
-protected theorem extensionQuotient_inductionOn
-    (L : FiniteAbelianSubextension K)
-    {motive : L.extensionQuotient → Prop} (q : L.extensionQuotient)
-    (mk : ∀ k : K.toSubgroup, motive (L.extensionQuotientMk k)) :
-    motive q := by
-  exact L.toFiniteGaloisExtension.extensionQuotient_inductionOn q mk
+
+
+
+
+
+
+
 
 /-- Two packages with the same closed subgroup represent the same finite
 abelian extension. -/
@@ -158,14 +165,14 @@ instance : PartialOrder (FiniteAbelianSubextension K) where
   le_antisymm L₁ L₂ h₁₂ h₂₁ := by
     apply ext
     apply ClosedSubgroup.ext
-    have hs : L₁.field.toSubgroup = L₂.field.toSubgroup :=
+    have hs  :=
       le_antisymm h₂₁ h₁₂
-    exact congrArg (fun H : Subgroup G => H.carrier) hs
+    apply congrArg <;> aesop
 
-/-- The order on finite abelian subextensions is characterized by containment of their fields. -/
-theorem le_iff (L₁ L₂ : FiniteAbelianSubextension K) :
-    L₁ ≤ L₂ ↔ L₂.field.toSubgroup ≤ L₁.field.toSubgroup :=
-  Iff.rfl
+
+
+
+
 
 /-- Base change of a finite abelian extension to an arbitrary
 intermediate abstract field.  Contravariantly the new top subgroup is
@@ -179,11 +186,9 @@ def baseChange (M : FiniteAbelianSubextension K)
   commutative := by
     let P :=
       M.toFiniteGaloisExtension.baseChange L hLK
-    let :
-        (extensionSubgroup K M.field M.below).Normal :=
+    let  :=
       M.normal
-    let :
-        (extensionSubgroup L P.field P.below).Normal :=
+    let  :=
       P.normal
     refine ⟨⟨?_⟩⟩
     intro x y
@@ -201,9 +206,9 @@ def baseChange (M : FiniteAbelianSubextension K)
     apply (mem_extensionSubgroup_iff L P.field P.below _).2
     constructor
     · exact ((a * b)⁻¹ * (b * a)).property
-    · let aK : K.toSubgroup :=
+    · let aK  :=
         Subgroup.inclusion hLK a
-      let bK : K.toSubgroup :=
+      let bK  :=
         Subgroup.inclusion hLK b
       have hcomm :=
         M.commutative.is_comm.comm
@@ -226,9 +231,9 @@ def compositum (L₁ L₂ : FiniteAbelianSubextension K) :
   commutative := by
     let P := L₁.toFiniteGaloisExtension.compositum
       L₂.toFiniteGaloisExtension
-    let : (extensionSubgroup K L₁.field L₁.below).Normal := L₁.normal
-    let : (extensionSubgroup K L₂.field L₂.below).Normal := L₂.normal
-    let : (extensionSubgroup K P.field P.below).Normal := P.normal
+    let  := L₁.normal
+    let  := L₂.normal
+    let  := P.normal
     refine ⟨⟨?_⟩⟩
     intro x y
     refine P.extensionQuotient_inductionOn
@@ -272,136 +277,136 @@ theorem le_compositum_right (L₁ L₂ : FiniteAbelianSubextension K) :
       L₂.field.toSubgroup
     exact inf_le_right
 
-/-- The compositum is the least subextension containing both inputs. -/
-theorem compositum_le {L₁ L₂ P : FiniteAbelianSubextension K}
-    (h₁ : L₁ ≤ P) (h₂ : L₂ ≤ P) :
-    L₁.compositum L₂ ≤ P :=
-  fun _ hp => ⟨h₁ hp, h₂ hp⟩
+
+
+
+
+
 
 section Intersection
 
 variable [IsTopologicalGroup G] [CompactSpace G]
 
-omit [IsTopologicalGroup G] [CompactSpace G] in
-/-- Each field subgroup normalizes the other one.  This is not an
-ambient-normality assumption: it is obtained from the packaged normality of
-`G_L` inside `G_K`. -/
-theorem field_le_normalizer (L₁ L₂ : FiniteAbelianSubextension K) :
-    L₁.field.toSubgroup ≤ Subgroup.normalizer L₂.field.toSubgroup := by
-  have hnormal :
-      (L₂.field.toSubgroup.subgroupOf K.toSubgroup).Normal := by
-    exact L₂.normal
-  let : (L₂.field.toSubgroup.subgroupOf K.toSubgroup).Normal := hnormal
-  exact L₁.below.trans
-    (Subgroup.le_normalizer_of_normal_subgroupOf L₂.below)
 
-/-- The field intersection `L₁ ∩ L₂`, contravariantly represented by
-the subgroup generated by `G_{L₁}` and `G_{L₂}`.  Its closedness follows
-from the product description and compactness. -/
-def intersectionField (L₁ L₂ : FiniteAbelianSubextension K) :
-    ClosedSubgroup G where
-  toSubgroup := L₁.field.toSubgroup ⊔ L₂.field.toSubgroup
-  isClosed' := by
-    change IsClosed
-      ((↑(L₁.field.toSubgroup ⊔ L₂.field.toSubgroup) : Set G))
-    rw [Subgroup.coe_mul_of_left_le_normalizer_right _ _
-      (field_le_normalizer L₁ L₂)]
-    exact L₂.field.isClosed'.mul_left_of_isCompact
-      L₁.field.isClosed'.isCompact
 
-/-- The intersection field remains above the fixed base field. -/
-theorem intersectionField_below (L₁ L₂ : FiniteAbelianSubextension K) :
-    (intersectionField L₁ L₂).toSubgroup ≤ K.toSubgroup :=
-  sup_le L₁.below L₂.below
 
-/-- Viewing the generated ambient subgroup inside `G_K` agrees with taking
-the supremum of the two actual extension subgroups. -/
-theorem extensionSubgroup_intersectionField (L₁ L₂ :
-    FiniteAbelianSubextension K) :
-    extensionSubgroup K (intersectionField L₁ L₂)
-        (intersectionField_below L₁ L₂) =
-      extensionSubgroup K L₁.field L₁.below ⊔
-        extensionSubgroup K L₂.field L₂.below := by
-  simpa [intersectionField] using
-    (Subgroup.subgroupOf_sup L₁.below L₂.below)
 
-/-- The finite Galois package underlying the intersection field. -/
-def intersectionGalois (L₁ L₂ : FiniteAbelianSubextension K) :
-    FiniteGaloisSubextension K where
-  field := intersectionField L₁ L₂
-  below := intersectionField_below L₁ L₂
-  normal := by
-    rw [extensionSubgroup_intersectionField]
-    let : (extensionSubgroup K L₁.field L₁.below).Normal := L₁.normal
-    let : (extensionSubgroup K L₂.field L₂.below).Normal := L₂.normal
-    exact Subgroup.sup_normal _ _
-  finite := by
-    rw [extensionSubgroup_intersectionField]
-    let : (extensionSubgroup K L₁.field L₁.below).FiniteIndex :=
-      @Subgroup.finiteIndex_of_finite_quotient K.toSubgroup _
-        (extensionSubgroup K L₁.field L₁.below) L₁.finite
-    let : (extensionSubgroup K L₁.field L₁.below ⊔
-        extensionSubgroup K L₂.field L₂.below).FiniteIndex :=
-      Subgroup.finiteIndex_of_le le_sup_left
-    exact Subgroup.finite_quotient_of_finiteIndex
 
-/-- The intersection of two finite abelian extensions. -/
-def intersection (L₁ L₂ : FiniteAbelianSubextension K) :
-    FiniteAbelianSubextension K where
-  toFiniteGaloisExtension := intersectionGalois L₁ L₂
-  commutative := by
-    let P := intersectionGalois L₁ L₂
-    let : (extensionSubgroup K L₁.field L₁.below).Normal := L₁.normal
-    let : (extensionSubgroup K L₂.field L₂.below).Normal := L₂.normal
-    let : (extensionSubgroup K P.field P.below).Normal := P.normal
-    refine ⟨⟨?_⟩⟩
-    intro x y
-    refine P.extensionQuotient_inductionOn
-      (motive := fun x => x * y = y * x) x ?_
-    intro a
-    refine P.extensionQuotient_inductionOn
-      (motive := fun y => P.extensionQuotientMk a * y =
-        y * P.extensionQuotientMk a) y ?_
-    intro b
-    apply P.extensionQuotientMulEquiv.injective
-    simp only [map_mul, P.extensionQuotientMk_apply]
-    apply QuotientGroup.eq.mpr
-    change (a * b)⁻¹ * (b * a) ∈
-      extensionSubgroup K (intersectionField L₁ L₂)
-        (intersectionField_below L₁ L₂)
-    rw [extensionSubgroup_intersectionField]
-    have hcomm := L₁.commutative.is_comm.comm
-      (L₁.extensionQuotientMk a) (L₁.extensionQuotientMk b)
-    have hcommRaw := congrArg L₁.extensionQuotientMulEquiv hcomm
-    simp only [map_mul, L₁.extensionQuotientMk_apply] at hcommRaw
-    have hin : (a * b)⁻¹ * (b * a) ∈
-        extensionSubgroup K L₁.field L₁.below :=
-      QuotientGroup.eq.mp hcommRaw
-    exact (show extensionSubgroup K L₁.field L₁.below ≤
-      extensionSubgroup K L₁.field L₁.below ⊔
-        extensionSubgroup K L₂.field L₂.below from le_sup_left) hin
 
-/-- The intersection subextension lies below its left input. -/
-theorem intersection_le_left (L₁ L₂ : FiniteAbelianSubextension K) :
-    L₁.intersection L₂ ≤ L₁ := by
-  change L₁.field.toSubgroup ≤
-    L₁.field.toSubgroup ⊔ L₂.field.toSubgroup
-  exact le_sup_left
 
-/-- The intersection subextension lies below its right input. -/
-theorem intersection_le_right (L₁ L₂ : FiniteAbelianSubextension K) :
-    L₁.intersection L₂ ≤ L₂ := by
-  change L₂.field.toSubgroup ≤
-    L₁.field.toSubgroup ⊔ L₂.field.toSubgroup
-  exact le_sup_right
 
-/-- A subextension below both inputs lies below their intersection. -/
-theorem le_intersection {P L₁ L₂ : FiniteAbelianSubextension K}
-    (h₁ : P ≤ L₁) (h₂ : P ≤ L₂) :
-    P ≤ L₁.intersection L₂ := by
-  change L₁.field.toSubgroup ⊔ L₂.field.toSubgroup ≤
-    P.field.toSubgroup
-  exact sup_le h₁ h₂
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end Intersection
 
@@ -422,8 +427,7 @@ variable {K : ClosedSubgroup G}
 `N_L = N_{L/K} A_L` in the finite abelian class-field classification. -/
 def normSubgroup (A : Rep ℤ G) (L : FiniteAbelianSubextension K) :
     AddSubgroup (ambientFixedAddSubgroup A K) := by
-  letI : Finite (K.toSubgroup ⧸
-      extensionSubgroup K L.field L.below) := L.finite
+  letI  := L.finite
   exact finiteNormSubgroup A K L.field L.below
 
 /-- The source-level implication in the order formula:
@@ -431,12 +435,9 @@ an inclusion of fields gives the reverse inclusion of norm subgroups. -/
 theorem normSubgroup_antitone (A : Rep ℤ G)
     {L₁ L₂ : FiniteAbelianSubextension K} (h : L₁ ≤ L₂) :
     normSubgroup A L₂ ≤ normSubgroup A L₁ := by
-  let : Finite (K.toSubgroup ⧸
-      extensionSubgroup K L₂.field L₂.below) := L₂.finite
-  let : Finite (K.toSubgroup ⧸
-      extensionSubgroup K L₁.field L₁.below) := L₁.finite
-  let hL₂L₁finite : Finite (L₁.field.toSubgroup ⧸
-      extensionSubgroup L₁.field L₂.field h) :=
+  let  := L₂.finite
+  let  := L₁.finite
+  let hL₂L₁finite  :=
     FiniteGaloisSubextension.finite_extension_over_intermediate
       L₂.below L₁.below h
   let T : DegreeData.FiniteTower G := {
@@ -466,16 +467,16 @@ theorem normSubgroup_compositum_le_inf (A : Rep ℤ G)
   exact ⟨normSubgroup_antitone A (le_compositum_left L₁ L₂) hx,
     normSubgroup_antitone A (le_compositum_right L₁ L₂) hx⟩
 
-/-- The unconditional half of
-`N_{L₁∩L₂} = N_{L₁}N_{L₂}` in additive notation. -/
-theorem sup_normSubgroup_le_intersection
-    [IsTopologicalGroup G] [CompactSpace G]
-    (A : Rep ℤ G) (L₁ L₂ : FiniteAbelianSubextension K) :
-    normSubgroup A L₁ ⊔ normSubgroup A L₂ ≤
-      normSubgroup A (L₁.intersection L₂) := by
-  apply sup_le
-  · exact normSubgroup_antitone A (intersection_le_left L₁ L₂)
-  · exact normSubgroup_antitone A (intersection_le_right L₁ L₂)
+
+
+
+
+
+
+
+
+
+
 
 
 end FiniteAbelianSubextension

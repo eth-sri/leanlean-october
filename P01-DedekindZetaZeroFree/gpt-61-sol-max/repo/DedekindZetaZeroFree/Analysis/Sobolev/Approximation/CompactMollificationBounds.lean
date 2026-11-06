@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.Sobolev.WeakDerivatives.CutoffZeroExtension
 public import DedekindZetaZeroFree.Analysis.Sobolev.Approximation.CompactInteriorH1Density
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -14,7 +17,10 @@ namespace DedekindZetaZeroFree.KPLocalCubeSobolevJets.Interior
 open MeasureTheory KPContLocalNorm
 open scoped Convolution
 
-theorem exists_box_for_compact_thickening {n : ℕ} (K : Set (Space n)) (hK : IsCompact K) :
+section
+variable {n : ℕ}
+include n
+theorem exists_box_for_compact_thickening   (K : Set (Space n)) (hK : IsCompact K) :
     ∃ lower upper : Fin n → ℝ, (∀ i, lower i < upper i) ∧
       Metric.cthickening 1 K ⊆ {x | ∀ i, lower i < x i ∧ x i < upper i} := by
   have hc : IsCompact (Metric.cthickening 1 K) := hK.cthickening
@@ -25,10 +31,7 @@ theorem exists_box_for_compact_thickening {n : ℕ} (K : Set (Space n)) (hK : Is
   choose l hl using hlow
   choose u hu using hupp
   refine ⟨fun i => min (l i) (u i) - 1, fun i => max (l i) (u i) + 1, ?_, ?_⟩
-  · intro i
-    have : min (l i) (u i) ≤ max (l i) (u i) := min_le_max
-    dsimp only
-    linarith
+  · grind
   · intro x hx i
     have hlx := hl i (Set.mem_image_of_mem (fun x : Space n => x i) hx)
     have hux := hu i (Set.mem_image_of_mem (fun x : Space n => x i) hx)
@@ -36,7 +39,7 @@ theorem exists_box_for_compact_thickening {n : ℕ} (K : Set (Space n)) (hK : Is
     have hmax := le_max_right (l i) (u i)
     constructor <;> dsimp only <;> linarith
 
-theorem norm_averaged_translateL2_le {n : ℕ}
+theorem norm_averaged_translateL2_le  
     (f : Lp ℂ 2 (volume : Measure (Space n))) (φ : ContDiffBump (0 : Space n)) :
     ‖∫ t, φ.normed volume t • KPContLocalEnergy.SobolevEnergyEstimates.CompactApproximation.translateL2 f t‖ ≤ ‖f‖ := by
   calc
@@ -48,12 +51,12 @@ theorem norm_averaged_translateL2_le {n : ℕ}
         rw [norm_smul, Real.norm_eq_abs, abs_of_nonneg (φ.nonneg_normed t), KPContLocalEnergy.SobolevEnergyEstimates.CompactApproximation.translateL2_norm]
     _ = ‖f‖ := by rw [integral_mul_const, φ.integral_normed, one_mul]
 
-theorem convolution_integral_norm_sq_le {n : ℕ}
+theorem convolution_integral_norm_sq_le  
     (g : Space n → ℂ) (hg : MemLp g 2 volume) (hg1 : Integrable g volume)
     (φ : ContDiffBump (0 : Space n)) :
     (∫ x, ‖(φ.normed volume ⋆[ContinuousLinearMap.lsmul ℝ ℝ, volume] g) x‖ ^ 2) ≤
       ‖hg.toLp g‖ ^ 2 := by
-  let a : Lp ℂ 2 (volume : Measure (Space n)) :=
+  let a  :=
     ∫ t, φ.normed volume t • KPContLocalEnergy.SobolevEnergyEstimates.CompactApproximation.translateL2 (hg.toLp g) t
   have hae := KPContLocalEnergy.SobolevEnergyEstimates.CompactApproximation.averaged_translateL2_ae g hg hg1 φ
   have heq : (∫ x, ‖(φ.normed volume ⋆[ContinuousLinearMap.lsmul ℝ ℝ, volume] g) x‖ ^ 2) = ‖a‖ ^ 2 := by
@@ -65,7 +68,7 @@ theorem convolution_integral_norm_sq_le {n : ℕ}
   rw [heq]
   exact pow_le_pow_left₀ (norm_nonneg a) (norm_averaged_translateL2_le _ φ) 2
 
-private theorem smooth_coordinateDerivativeList {n : ℕ} (l : List (Fin n))
+private theorem smooth_coordinateDerivativeList   (l : List (Fin n))
     {φ : Space n → ℂ} (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) :
     ContDiff ℝ (⊤ : ℕ∞) (coordinateDerivativeList l φ) := by
   induction l with
@@ -73,7 +76,7 @@ private theorem smooth_coordinateDerivativeList {n : ℕ} (l : List (Fin n))
   | cons i l ih =>
       exact (ih.fderiv_right (m := (⊤ : ℕ∞)) (by simp)).clm_apply contDiff_const
 
-private theorem compactSupport_coordinateDerivativeList {n : ℕ} (l : List (Fin n))
+private theorem compactSupport_coordinateDerivativeList   (l : List (Fin n))
     {f : Space n → ℂ} (hf : HasCompactSupport f) :
     HasCompactSupport (coordinateDerivativeList l f) := by
   induction l with
@@ -81,9 +84,14 @@ private theorem compactSupport_coordinateDerivativeList {n : ℕ} (l : List (Fin
   | cons i l ih =>
       exact ih.of_isClosed_subset isClosed_closure
         ((tsupport_fderiv_apply_subset ℝ (EuclideanSpace.single i 1)) : _)
+end
 
-private theorem coordinateDerivativeList_convolution_smooth_left {n : ℕ}
+
+section
+variable {n : ℕ}
     (φ : Space n → ℂ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
+include n φ hφ
+private theorem coordinateDerivativeList_convolution_smooth_left  
     (hc : HasCompactSupport φ) (g : Space n → ℂ)
     (hg : LocallyIntegrable g volume) (l : List (Fin n)) (x : Space n) :
     coordinateDerivativeList l
@@ -108,8 +116,7 @@ private theorem coordinateDerivativeList_convolution_smooth_left {n : ℕ}
         (hD.fderiv_right (m := (1 : ℕ∞)) (by simp)).continuous hg x
       rw [ContinuousLinearMap.integral_apply h_int]
       simp only [ContinuousLinearMap.precompL_apply, coordinateDerivativeList]
-private theorem coordinateDerivativeList_reflection {n : ℕ}
-    (φ : Space n → ℂ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
+private theorem coordinateDerivativeList_reflection  
     (l : List (Fin n)) (x y : Space n) :
     coordinateDerivativeList l (fun z => φ (x-z)) y =
       (-1 : ℂ) ^ l.length * coordinateDerivativeList l φ (x-y) := by
@@ -119,8 +126,7 @@ private theorem coordinateDerivativeList_reflection {n : ℕ}
       have hd := smooth_coordinateDerivativeList l hφ
       have hcomp := ((hd.differentiable (by simp)).differentiableAt.hasFDerivAt).comp y
         ((hasFDerivAt_const x y).sub (hasFDerivAt_id y))
-      have heq : coordinateDerivativeList l (fun z => φ (x-z)) =
-        fun z => (-1 : ℂ)^l.length * coordinateDerivativeList l φ (x-z) := funext ih
+      have heq  := funext ih
       change fderiv ℝ (coordinateDerivativeList l (fun z => φ (x-z))) y
         (EuclideanSpace.single i 1) = _
       rw [heq]
@@ -128,6 +134,8 @@ private theorem coordinateDerivativeList_reflection {n : ℕ}
       dsimp only [Function.comp_def, Pi.sub_apply, id_eq] at hd'
       rw [hd']
       simp [coordinateDerivativeList, pow_succ, mul_neg, mul_assoc]
+end
+
 
 private theorem multiIndex_directions_length {n k : ℕ} (α : MultiIndex n k) :
     α.directions.length = α.degree := by
@@ -166,23 +174,24 @@ def unitBump (n : ℕ) : ContDiffBump (0 : Space n) := ⟨1/2, 1, by norm_num, b
 def radiusBump (n : ℕ) (r : ℝ) (hr : 0 < r) : ContDiffBump (0 : Space n) :=
   ⟨r/2, r, by positivity, by linarith⟩
 
-theorem radiusBump_eq_scaled {n : ℕ} (r : ℝ) (hr : 0 < r) (x : Space n) :
+section
+variable {n : ℕ} (r : ℝ) (hr : 0 < r)
+include n r hr
+theorem radiusBump_eq_scaled   (x : Space n) :
     radiusBump n r hr x = unitBump n (r⁻¹ • x) := by
   rw [ContDiffBump.apply, ContDiffBump.apply]
   change (someContDiffBumpBase (Space n)).toFun (r / (r / 2)) ((r / 2)⁻¹ • (x - 0)) =
     (someContDiffBumpBase (Space n)).toFun (1 / (1 / 2)) ((1 / 2)⁻¹ • (r⁻¹ • x - 0))
   rw [sub_zero, sub_zero, smul_smul]
-  have h₁ : r / (r / 2) = (1 : ℝ) / (1 / 2) := by field_simp
-  have h₂ : (r / 2)⁻¹ = (1 / 2 : ℝ)⁻¹ * r⁻¹ := by field_simp
-  rw [h₁, h₂]
+  field_simp <;> ring
 
-theorem radiusBump_integral {n : ℕ} (r : ℝ) (hr : 0 < r) :
+theorem radiusBump_integral   :
     (∫ x, radiusBump n r hr x) = r^n * (∫ x, unitBump n x) := by
   simp_rw [radiusBump_eq_scaled]
   rw [Measure.integral_comp_inv_smul_of_nonneg volume _ hr.le]
   simp [finrank_euclideanSpace, smul_eq_mul]
 
-theorem mollify_eq_radiusBump_convolution {n : ℕ} (r : ℝ) (hr : 0 < r)
+theorem mollify_eq_radiusBump_convolution  
     (h : Space n → ℂ) (x : Space n) :
     (∫ y, ((unitBump n).normed volume y : ℂ) * h (x - r • y)) =
     ((radiusBump n r hr).normed volume ⋆[ContinuousLinearMap.lsmul ℝ ℝ, volume] h) x := by
@@ -200,6 +209,8 @@ theorem mollify_eq_radiusBump_convolution {n : ℕ} (r : ℝ) (hr : 0 < r)
   simp only [Space, finrank_euclideanSpace, Fintype.card_fin] at heq
   have heq' := (smul_right_injective ℂ hrn) heq
   simpa only [convolution_def, ContinuousLinearMap.lsmul_apply, Complex.real_smul] using heq'
+end
+
 
 private theorem complex_convolution_eq_real {n : ℕ} (φ : Space n → ℝ) (h : Space n → ℂ) :
     ((fun y => (φ y : ℂ)) ⋆[ContinuousLinearMap.mul ℝ ℂ, volume] h) =
@@ -221,24 +232,28 @@ private theorem weak_derivative_real_convolution {n k : ℕ} (g : GlobalWeakSobo
     (show HasCompactSupport (fun y => (φ y : ℂ)) from hc.comp_left (g := Complex.ofReal) rfl) α x
   simpa only [complex_convolution_eq_real] using heq
 
-private theorem compact_representative {n : ℕ} (f : Lp ℂ 2 (volume : Measure (Space n)))
-    {K : Set (Space n)} (hK : IsCompact K) (hf : ∀ᵐ x ∂volume, x ∉ K → f x = 0) :
+section
+variable {n : ℕ} (f : Lp ℂ 2 (volume : Measure (Space n)))
+    {K : Set (Space n)} (hK : IsCompact K) (hf : ∀ᵐ x ∂volume, x ∉ K → f x = 0)
+include n f K hK hf
+private theorem compact_representative   :
     K.indicator (fun x => f x) =ᵐ[volume] (fun x => f x) := by
   filter_upwards [hf] with x hx
   by_cases h : x ∈ K <;> simp [h, hx]
 
-private theorem compact_lp_integrable {n : ℕ} (f : Lp ℂ 2 (volume : Measure (Space n)))
-    {K : Set (Space n)} (hK : IsCompact K) (hf : ∀ᵐ x ∂volume, x ∉ K → f x = 0) :
+private theorem compact_lp_integrable   :
     Integrable (fun x => f x) volume := by
   have he := compact_representative f hK hf
   apply Integrable.congr _ he
   apply (integrableOn_iff_integrable_of_support_subset Set.support_indicator_subset).mp
   exact ((Lp.memLp f).locallyIntegrable (by norm_num)).integrableOn_isCompact hK |>.indicator hK.measurableSet
+end
+
 
 private theorem lp_toLp_norm {n : ℕ} (f : Lp ℂ 2 (volume : Measure (Space n))) :
     ‖(Lp.memLp f).toLp (fun x => f x)‖ = ‖f‖ := by
   congr 1
-  exact Lp.toLp_coeFn f (Lp.memLp f)
+  apply Lp.toLp_coeFn
 
 private theorem compact_ae_convolution_tsupport {n : ℕ}
     (φ : ContDiffBump (0 : Space n))
@@ -253,7 +268,7 @@ private theorem compact_ae_convolution_tsupport {n : ℕ}
     (closure_minimal Set.support_indicator_subset hK.isClosed) le_rfl
 
 def mollify {n : ℕ} (φ : Space n → ℝ) (δ : ℝ)
-    (h : Space n → ℂ) (t : ℕ) (x : Space n) : ℂ :=
+    (h : Space n → ℂ) (t : ℕ) (x : Space n)  :=
   ∫ y, (φ y : ℂ) * h (x - (δ / (t + 1 : ℕ)) • y)
 
 theorem compact_weak_mollification_on_box {n : ℕ} (hn : 0 < n)
@@ -286,7 +301,7 @@ theorem compact_weak_mollification_on_box {n : ℕ} (hn : 0 < n)
     have hr : 0 < r := by dsimp [r]; positivity
     have hr1 : r ≤ 1 := by dsimp [r]; exact div_le_self (by norm_num) (by norm_cast; omega)
     let a := radiusBump n r hr
-    let f : Lp ℂ 2 (volume : Measure (Space n)) :=
+    let f  :=
       g.derivatives (⟨fun _ => 0, by simp⟩ : MultiIndex n k)
     have hw : mollify (b.normed volume) 1 (fun x => f x) t =
       (a.normed volume ⋆[ContinuousLinearMap.lsmul ℝ ℝ, volume] (fun x => f x)) := by

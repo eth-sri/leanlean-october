@@ -235,8 +235,8 @@ theorem outsideStage_commute_product (b : outsideStage F ζ hζ T)
 open KPLiteralScalarHCLocalCovariance
 
 open KPLiteralScalarHCCompactOrbit KPCplxPrincipalSeriesCharts KPCplxCharacterHaar
-variable (K : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-variable (C : KPGlobalTorusBorelTwistCompatibility.ModelData F ζ hζ) (f : Flat F ζ hζ K)
+variable (K : Subgroup (KPLiteralRaw.G F ζ hζ)) 
+
 
 open KPLiteralScalarHCFiniteRoot
 

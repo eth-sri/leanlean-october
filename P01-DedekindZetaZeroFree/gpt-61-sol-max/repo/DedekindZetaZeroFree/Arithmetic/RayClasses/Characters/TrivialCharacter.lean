@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LFunctions.Hecke.PrimeArtinValues
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.AbelianQuotient
 
@@ -25,9 +28,7 @@ noncomputable def trivialRayCharacter : RayClassCharacter K ⊤ := by
     simp [Ideal.span_singleton_eq_bot, hα]
 
 theorem trivialRayCharacter_apply (I : Ideal (𝓞 K)) :
-    trivialRayCharacter K I = if I = ⊥ then 0 else 1 := by
-  classical
-  rfl
+    trivialRayCharacter K I = if I = ⊥ then 0 else 1 := rfl
 
 theorem trivialRayCharacter_eq_primeArtinValue
     (L : Type) [Field L] [NumberField L] [Algebra K L] [IsAbelianGalois K L]

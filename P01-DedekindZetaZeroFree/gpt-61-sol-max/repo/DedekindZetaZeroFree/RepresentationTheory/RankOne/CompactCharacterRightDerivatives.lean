@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.PU2TracePeakApproximation
 public import DedekindZetaZeroFree.RepresentationTheory.RankOne.HarmonicPolynomials.SymmetricPowerAction
 public import DedekindZetaZeroFree.Analysis.FiniteDimensional.CompatibleComplexNorm
 public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.SU2.WeylIntegration
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.RepresentationTheory.KPCompactHarmonicTruncation.Casimir
 
@@ -26,13 +29,13 @@ noncomputable def basisExp {d : ℕ}
 noncomputable def basisLift {d : ℕ}
     (B : Fin d → Fin 3 → Matrix (Fin 2) (Fin 2) ℂ)
     (hskew : ∀ j a, star (B j a) = -B j a)
-    (b : Fin d × Fin 3) (t : ℝ) : Fin d → RawU2 :=
+    (b : Fin d × Fin 3) (t : ℝ)  :=
   fun j => if j = b.1 then basisExp B hskew b t else 1
 
 noncomputable def characterSecondDerivative {d : ℕ}
     (B : Fin d → Fin 3 → Matrix (Fin 2) (Fin 2) ℂ)
     (hskew : ∀ j a, star (B j a) = -B j a)
-    (ℓ : RawHarmonicType d) (b : Fin d × Fin 3) (g : Fin d → RawU2) : ℂ :=
+    (ℓ : RawHarmonicType d) (b : Fin d × Fin 3) (g : Fin d → RawU2)  :=
   deriv (fun t : ℝ => deriv (fun s : ℝ =>
     star (rawCharacter ℓ (g * basisLift B hskew b t * basisLift B hskew b s))) 0) 0
 

@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 The FLT Project. All rights reserved.
@@ -22,17 +25,19 @@ open NumberField
 
 namespace DedekindZetaZeroFree.Odlyzko
 
-theorem tsum_sigma_of_summable {β E : Type*} [AddCommMonoid E] [TopologicalSpace E]
+def tsum_sigma_of_summable {β E : Type*} [AddCommMonoid E] [TopologicalSpace E]
     [ContinuousAdd E] [T3Space E]
     {γ : β → Type*} (w : (Σ b, γ b) → E)
     (hfiber : ∀ b, Summable (fun x : γ b ↦ w ⟨b, x⟩))
-    (hw : Summable w) :
-    (∑' x, w x) = ∑' b, ∑' x, w ⟨b, x⟩ :=
+    (hw : Summable w)  :=
   Summable.tsum_sigma' hfiber hw
 
-theorem hasSum_inversePower_eq_lSeries_fiberCard
-    {α : Type*} (ν : α → ℕ) [∀ n, Finite {a : α // ν a = n}]
+section
+variable {α : Type*} (ν : α → ℕ) [∀ n, Finite {a : α // ν a = n}]
     (hν : ∀ a, ν a ≠ 0) {s : ℂ}
+include α ν hν s
+theorem hasSum_inversePower_eq_lSeries_fiberCard
+     
     (hsum : Summable (fun a ↦ ((ν a : ℂ) ^ (-s)))) :
     HasSum (fun a ↦ ((ν a : ℂ) ^ (-s)))
       (LSeries (fun n ↦ (Nat.card {a : α // ν a = n} : ℂ)) s) := by
@@ -77,8 +82,7 @@ theorem hasSum_inversePower_eq_lSeries_fiberCard
   exact heq ▸ hsigma.hasSum
 
 theorem summable_inversePower_of_lSeriesSummable_fiberCard
-    {α : Type*} (ν : α → ℕ) [∀ n, Finite {a : α // ν a = n}]
-    (hν : ∀ a, ν a ≠ 0) {s : ℂ}
+     
     (hsum :
       LSeriesSummable
         (fun n ↦ (Nat.card {a : α // ν a = n} : ℂ)) s) :
@@ -114,5 +118,7 @@ theorem summable_inversePower_of_lSeriesSummable_fiberCard
           Complex.cpow_neg, norm_inv, div_eq_mul_inv]
     rw [houter]
     exact hsum.norm
+end
+
 
 end DedekindZetaZeroFree.Odlyzko

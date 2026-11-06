@@ -34,11 +34,14 @@ def diagonalAnchorTwist (π : (LocalField F q)ˣ) (i : Fin 3) (s : ℂ) : ℂ :=
       (eta F ζ hζ q π i * KPPGLLocalCover.W F ζ hζ (Sum.inr q)))))
     (sourceParameter .minus s)
 
-theorem eventual_deformed_test_root_profile
-    (htame : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
+section
+variable (htame : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
     (π : (LocalField F q)ˣ)
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ)) :
+      (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
+include htame π hπ in
+theorem eventual_deformed_test_root_profile
+      :
     ∃ M : ℕ, ∀ m ≥ M, ∀ (i : Fin 3)
       (f : scalarSections F ζ hζ q S P hP .minus),
       IsMinusTest F ζ hζ q S P hP
@@ -97,11 +100,9 @@ theorem diagonalAnchorTwist_eq
   push_cast
   rw [mul_add, Complex.exp_add]
 
+include htame π hπ in
 theorem eventual_deformed_test_kernel_profile
-    (htame : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
-    (π : (LocalField F q)ˣ)
-    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ)) :
+      :
     ∃ M : ℕ, ∀ m ≥ M, ∀ (i : Fin 3)
       (f : scalarSections F ζ hζ q S P hP .minus),
       IsMinusTest F ζ hζ q S P hP
@@ -146,6 +147,8 @@ theorem eventual_deformed_test_kernel_profile
     _ * ((deformedTest F ζ hζ q S P hP f s).val _).val 1 at hcov
   rw [hcov, hc, ← mul_assoc, hM m hm i f hf]
   ring
+end
+
 
 theorem eventual_deformed_test_outer_mass_transport
     (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
@@ -228,9 +231,9 @@ theorem diagonal_deformation_eq_evaluation_monomial
   push_cast
   ring
 
-@[simp] theorem diagonalAnchorTwist_zero (π : (LocalField F q)ˣ) (i : Fin 3) :
-    diagonalAnchorTwist F ζ hζ q S π i 0 = 1 := by
-  simp [diagonalAnchorTwist, normPower, sourceParameter]
+
+
+
 
 end DedekindZetaZeroFree.KPTameTransposeLiteralMassTransport.DiagonalLiftGeometry
 

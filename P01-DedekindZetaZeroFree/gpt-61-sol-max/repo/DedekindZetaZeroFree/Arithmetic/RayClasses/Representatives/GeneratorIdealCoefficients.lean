@@ -66,13 +66,16 @@ private theorem generator_injective
     simpa using congrArg e.symm hab
   exact hunit.mul_right_cancel he
 
-theorem integralElementIdeal_generator_coprime
-    {m : Ideal (𝓞 F)} (hm : m ≠ ⊥) (hmt : m ≠ ⊤)
+section
+variable {m : Ideal (𝓞 F)} (hm : m ≠ ⊥) (hmt : m ≠ ⊤)
     (L : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
     (ξ₀ : {x : F // x ∈ (L : FractionalIdeal (𝓞 F)⁰ F)})
     (hgen : Function.Surjective (fun k : 𝓞 F ⧸ m =>
       k • fractionalIdealQuotientMk (L : FractionalIdeal (𝓞 F)⁰ F)
-        ((m : FractionalIdeal (𝓞 F)⁰ F) * (L : FractionalIdeal (𝓞 F)⁰ F)) ξ₀)) :
+        ((m : FractionalIdeal (𝓞 F)⁰ F) * (L : FractionalIdeal (𝓞 F)⁰ F)) ξ₀))
+include m hm hmt L ξ₀ hgen in
+theorem integralElementIdeal_generator_coprime
+      :
     ξ₀.val ≠ 0 ∧ integralElementIdeal L ξ₀ ≠ ⊥ ∧
       integralElementIdeal L ξ₀ ⊔ m = ⊤ := by
   have hne : (L : FractionalIdeal (𝓞 F)⁰ F) ≠ 0 := Units.ne_zero L
@@ -241,13 +244,9 @@ theorem integralElementIdeal_residue_coefficient
     scalar_character_extend hF hm hmt η γ, hres] at heval
   exact heval
 
+include m hm hmt L ξ₀ hgen in
 theorem integralElementIdeal_residue_coprime_iff
-    {m : Ideal (𝓞 F)} (hm : m ≠ ⊥) (hmt : m ≠ ⊤)
-    (L : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
-    (ξ₀ : {x : F // x ∈ (L : FractionalIdeal (𝓞 F)⁰ F)})
-    (hgen : Function.Surjective (fun k : 𝓞 F ⧸ m =>
-      k • fractionalIdealQuotientMk (L : FractionalIdeal (𝓞 F)⁰ F)
-        ((m : FractionalIdeal (𝓞 F)⁰ F) * (L : FractionalIdeal (𝓞 F)⁰ F)) ξ₀))
+     
     (ξ : {x : F // x ∈ (L : FractionalIdeal (𝓞 F)⁰ F)}) (k : 𝓞 F ⧸ m)
     (hcong : fractionalIdealQuotientMk (L : FractionalIdeal (𝓞 F)⁰ F)
       ((m : FractionalIdeal (𝓞 F)⁰ F) * (L : FractionalIdeal (𝓞 F)⁰ F)) ξ =
@@ -274,6 +273,8 @@ theorem integralElementIdeal_residue_coprime_iff
       rw [hcong]
       exact hs.2
     exact (integralElementIdeal_generator_coprime hm hmt L ξ hs').2
+end
+
 
 theorem traceCoefficient_denominator_eq
     {m : Ideal (𝓞 F)} (hm : m ≠ ⊥)

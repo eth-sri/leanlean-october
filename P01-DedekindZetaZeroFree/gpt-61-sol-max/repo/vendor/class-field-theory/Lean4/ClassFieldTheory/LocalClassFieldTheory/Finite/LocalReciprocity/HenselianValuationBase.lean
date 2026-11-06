@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.LocalClassFieldTheory.Finite.LocalReciprocity.GaloisExtensionQuotient
 public import ClassFieldTheory.LocalClassFieldTheory.Finite.LocalReciprocity.SeparableUnitsNorm
 public import ValuedFieldTheory.LocalField.NonarchimedeanLocalField.SeparableNormValuation
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -62,13 +65,7 @@ theorem baseFieldUnitsEquiv_val (x : Kˣ) :
       ((baseFieldUnitsEquiv K (Additive.ofMul x)).1 :
         Additive (SeparableClosure K)ˣ) : (SeparableClosure K)ˣ) :
       SeparableClosure K) = algebraMap K (SeparableClosure K) (x : K) := by
-  change
-    ((Additive.toMul
-      ((baseUnitsEquivGaloisAmbientFixed K (SeparableClosure K)
-          (Additive.ofMul x)).1 :
-        Additive (SeparableClosure K)ˣ) : (SeparableClosure K)ˣ) :
-      SeparableClosure K) = algebraMap K (SeparableClosure K) (x : K)
-  exact baseUnitsEquivGaloisAmbientFixed_val K (SeparableClosure K) x
+  rfl
 
 /-- The normalized valuation `v_K : Kˣ → ℤ`, embedded in `ℤ̂` and written on
 the actual fixed coefficient group. -/
@@ -99,8 +96,8 @@ theorem localBaseValuation_range :
     obtain ⟨x, hx⟩ :=
       LocalFieldTheory.IsNonarchimedeanLocalField.valuationMap_surjective K m
     refine ⟨baseFieldUnitsEquiv K x, ?_⟩
-    rw [localBaseValuation_baseFieldUnitsEquiv, hx]
-    rfl
+    rw [localBaseValuation_baseFieldUnitsEquiv]
+    exact congrArg (fun t : ℤ => Int.castRingHom ZHat t) hx
 
 /-- Every ordinary integer occurs as a value, as required in the Henselian valuation condition. -/
 theorem intToProCInteger_mem_localBaseValuation_range (m : ℤ) :
@@ -109,14 +106,16 @@ theorem intToProCInteger_mem_localBaseValuation_range (m : ℤ) :
   rw [localBaseValuation_range]
   exact ⟨m, rfl⟩
 
+section
+variable (n : ℕ) (hn : 0 < n)
+include n hn
 /-- Reduction modulo `n` on the actual value group. -/
-def localValueGroupReduction (n : ℕ) (hn : 0 < n) :
-    (localBaseValuation K).range →+ ZMod n :=
+def localValueGroupReduction    :=
   (zHatReduction n hn).toAddMonoidHom.comp
     (localBaseValuation K).range.subtype
 
 /-- States the theorem `localValueGroupReduction_surjective`. -/
-theorem localValueGroupReduction_surjective (n : ℕ) (hn : 0 < n) :
+theorem localValueGroupReduction_surjective   :
     Function.Surjective (localValueGroupReduction K n hn) := by
   intro a
   obtain ⟨m, rfl⟩ := ZMod.intCast_surjective a
@@ -124,10 +123,10 @@ theorem localValueGroupReduction_surjective (n : ℕ) (hn : 0 < n) :
     ⟨Int.castRingHom ZHat m,
       intToProCInteger_mem_localBaseValuation_range K m⟩
   refine ⟨z, ?_⟩
-  exact zHatReduction_int n hn m
+  apply zHatReduction_int
 
 /-- The kernel of reduction on the value group is precisely `nZ`. -/
-theorem localValueGroupReduction_ker (n : ℕ) (hn : 0 < n) :
+theorem localValueGroupReduction_ker   :
     (localValueGroupReduction K n hn).ker =
       nsmulWithin (localBaseValuation K).range n := by
   apply le_antisymm
@@ -153,28 +152,27 @@ theorem localValueGroupReduction_ker (n : ℕ) (hn : 0 < n) :
     apply Subtype.ext
     change n • Int.castRingHom ZHat k = (z : ZHat)
     rw [← map_nsmul]
-    have hnk : n • k = m := by
-      simpa [nsmul_eq_mul] using hk.symm
+    have hnk : n • k = m := hk.symm
     rw [hnk, hm]
   · rintro z ⟨w, rfl⟩
     change zHatReduction n hn (n • (w : ZHat)) = 0
     rw [map_nsmul]
     simp [nsmul_eq_mul]
 
-/-- The cyclic quotient condition in the Henselian valuation condition, for the actual local value
-group. -/
-def localValueGroupQuotientEquivZMod (n : ℕ) (hn : 0 < n) :
-    ((localBaseValuation K).range ⧸
-        nsmulWithin (localBaseValuation K).range n) ≃+ ZMod n :=
-  (QuotientAddGroup.quotientAddEquivOfEq
-      (localValueGroupReduction_ker K n hn).symm).trans
-    (QuotientAddGroup.quotientKerEquivOfSurjective
-      (localValueGroupReduction K n hn)
-      (localValueGroupReduction_surjective K n hn))
+
+
+
+
+
+
+
+
+
+
 
 /-- The inclusion-and-reduction quotient map of the Henselian valuation condition is
 bijective for the actual local value group. -/
-theorem localCanonicalValueQuotientMap_bijective (n : ℕ) (hn : 0 < n) :
+theorem localCanonicalValueQuotientMap_bijective   :
     Function.Bijective
       (canonicalValueQuotientMap (localBaseValuation K).range n hn) := by
   constructor
@@ -195,6 +193,8 @@ theorem localCanonicalValueQuotientMap_bijective (n : ℕ) (hn : 0 < n) :
     refine ⟨QuotientAddGroup.mk'
       (nsmulWithin (localBaseValuation K).range n) z, ?_⟩
     exact hz
+end
+
 
 end
 end LocalClassFieldTheory

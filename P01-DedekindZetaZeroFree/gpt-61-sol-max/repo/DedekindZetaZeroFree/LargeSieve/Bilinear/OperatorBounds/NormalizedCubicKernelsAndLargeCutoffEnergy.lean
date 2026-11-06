@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.CoprimePoissonExpansion
 public import DedekindZetaZeroFree.LargeSieve.Exponents.BilinearErrorOptimization
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.MainTermBoundaryIdentity
 
 @[expose] public section
+
 
 section
 
@@ -14,14 +17,17 @@ open scoped NumberField Classical
 namespace DedekindZetaZeroFree.LargeSieve.Sieve.NormalizedKernelProfiles
 
 def normalizedKernelRows (F : Type) [Field F] [NumberField F]
-    (c bad : Ideal (𝓞 F)) (M K : ℝ) : Finset (Ideal (𝓞 F)) :=
+    (c bad : Ideal (𝓞 F)) (M K : ℝ)  :=
   (kernelRows F c M K).filter (fun a => a ⊔ bad = ⊤)
 
-def T3normalizedMasked (F : Type) [Field F] [NumberField F]
+section
+variable (F : Type) [Field F] [NumberField F]
     (c : Ideal (𝓞 F)) (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
     (bad : Ideal (𝓞 F)) (W : ℝ → ℝ) (M N K : ℝ)
-    (d : Ideal (𝓞 F)) (g : Q.G)
-    (U : Finset (Ideal (𝓞 F))) (τ lam : Ideal (𝓞 F) → ℂ) : ℂ :=
+    (d : Ideal (𝓞 F))
+include F c Q bad W M N K d
+def T3normalizedMasked   (g : Q.G)
+    (U : Finset (Ideal (𝓞 F))) (τ lam : Ideal (𝓞 F) → ℂ)  :=
   ∑ u ∈ paperShell F c N, ∑ v ∈ paperShell F c N,
     if u ⊔ v = d ∧ Q.cls u = g ∧ Q.cls v = g then
       (if u ∈ U then τ u * lam u else 0) *
@@ -31,14 +37,13 @@ def T3normalizedMasked (F : Type) [Field F] [NumberField F]
             (Q.χ u) a * (starRingEnd ℂ) ((Q.χ v) a))
     else 0
 
-def B3normalizedMasked (F : Type) [Field F] [NumberField F]
-    (c : Ideal (𝓞 F)) (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (bad : Ideal (𝓞 F)) (W : ℝ → ℝ) (M N K : ℝ)
-    (d : Ideal (𝓞 F)) (U : Finset (Ideal (𝓞 F)))
-    (τ : Ideal (𝓞 F) → ℂ) : ℝ :=
+def B3normalizedMasked   (U : Finset (Ideal (𝓞 F)))
+    (τ : Ideal (𝓞 F) → ℂ)  :=
   sSup ({0} ∪ {x : ℝ | ∃ (g : Q.G) (lam : Ideal (𝓞 F) → ℂ),
     energy F c N lam ≤ 1 ∧
       x = ‖T3normalizedMasked F c Q bad W M N K d g U τ lam‖})
+end
+
 
 end DedekindZetaZeroFree.LargeSieve.Sieve.NormalizedKernelProfiles
 
@@ -111,7 +116,7 @@ theorem canonical_operator_of_large_cutoff_energy
             intro hd
             have : u = ⊥ := bot_unique (le_sup_left.trans (le_of_eq (huv.trans hd)))
             exact hu.1.ne_zero this
-          have hdsf : Squarefree d := huv ▸
+          have hdsf  := huv ▸
             hu.1.squarefree_of_dvd (Ideal.dvd_iff_le.mpr le_sup_left)
           have hdc : d ⊔ c = ⊤ := by
             rw [← huv]
@@ -184,20 +189,7 @@ namespace DedekindZetaZeroFree.LargeSieve.Sieve.CoreNormalizedEstimate
 
 open DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms
 
-theorem assembly_tail_uniform_small_delta
-    {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
-    (D : AllIndexNormalizedFamilyData Q) (W : ℝ → ℝ)
-    (ε : ℝ) (hε : 0 < ε) (δ : ℝ) (hδ : 0 < δ) (hδε : δ ≤ ε / 100) :
-    ∃ A : ℝ, 0 < A ∧
-      ∀ C : Context Q, C.D = D → C.W = W → C.δ = δ →
-        1 ≤ C.M → 1 ≤ C.N →
-        max 1 (C.N ^ 2 / C.M * Real.rpow (C.M * C.N) ε) ≤ C.K →
-        C.K ≤ C.M * Real.rpow (C.M * C.N) (-ε) →
-        1 ≤ norm C.d → norm C.d ≤ 2 * C.N →
-        ‖totalRemainder C‖ ≤ A * energy F c C.N C.lam := by
-  exact DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitAssembly.uniform_remainder_small_delta
-    D W ε hε δ hδ hδε
+alias assembly_tail_uniform_small_delta := _root_.DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitAssembly.uniform_remainder_small_delta
 
 end DedekindZetaZeroFree.LargeSieve.Sieve.CoreNormalizedEstimate
 
@@ -219,7 +211,7 @@ open DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms
 namespace DedekindZetaZeroFree.LargeSieve.Sieve.CoreNormalizedEstimate
 
  def errComb {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c} (C : Context Q) : ℂ :=
+    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c} (C : Context Q)  :=
   (E1 C 1 true + E2 C 1 true - E3 C 1 true - E4 C 1 true + E5 C 1 true) +
     ∑ B ∈ dyadicScales C,
       (E1 C B + E2 C B - E3 C B - E4 C B + E5 C B)
@@ -232,9 +224,12 @@ private theorem norm_five_le (a b c d e : ℂ) :
   have hD := norm_add_le a b
   linarith
 
+section
+variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
+    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c} (C : Context Q)
+include F c Q C
 private theorem sevenTermSum_eq_mainDifference_sub_errComb
-    {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c} (C : Context Q) :
+      :
     sevenTermSum C = MainBoundary.mainDifference C - errComb C := by
   have hblock : ∀ (B : ℝ) (unit : Bool), sevenTermBlock C B unit =
       (T C B unit - Tprime C B unit) -
@@ -250,8 +245,7 @@ private theorem sevenTermSum_eq_mainDifference_sub_errComb
   rw [hblock 1 true, hsum]
   ring
 
-private theorem norm_errComb_le {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c} (C : Context Q) :
+private theorem norm_errComb_le   :
     ‖errComb C‖ ≤
       (‖E1 C 1 true‖ + ‖E2 C 1 true‖ + ‖E3 C 1 true‖ + ‖E4 C 1 true‖ +
         ‖E5 C 1 true‖) +
@@ -266,9 +260,7 @@ private theorem norm_errComb_le {F : Type} [Field F] [NumberField F] {c : Ideal 
           (‖E1 C B‖ + ‖E2 C B‖ + ‖E3 C B‖ + ‖E4 C B‖ + ‖E5 C B‖) :=
         Finset.sum_le_sum (fun B _ => norm_five_le _ _ _ _ _)
 
-private theorem norm_sevenTermSum_le {F : Type} [Field F] [NumberField F]
-    {c : Ideal (𝓞 F)} {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
-    (C : Context Q) :
+private theorem norm_sevenTermSum_le   :
     ‖sevenTermSum C‖ ≤
       ‖MainBoundary.mainDifference C‖ +
       ((‖E1 C 1 true‖ + ‖E2 C 1 true‖ + ‖E3 C 1 true‖ + ‖E4 C 1 true‖ +
@@ -277,6 +269,8 @@ private theorem norm_sevenTermSum_le {F : Type} [Field F] [NumberField F]
           (‖E1 C B‖ + ‖E2 C B‖ + ‖E3 C B‖ + ‖E4 C B‖ + ‖E5 C B‖)) := by
   rw [sevenTermSum_eq_mainDifference_sub_errComb C]
   exact le_trans (norm_sub_le _ _) (add_le_add le_rfl (norm_errComb_le C))
+end
+
 
 theorem large_cutoff_energy_bound
     {F : Type} [Field F] [NumberField F]
@@ -303,16 +297,16 @@ theorem large_cutoff_energy_bound
   obtain ⟨δ, A₁, hδpos, hδlt, hA₁, herr⟩ :=
     bilinear_error_optimization hF Q D hcore W hW hα₁ hα₂ hE ε' hε'
   have hδle : δ ≤ ε / 100 := by
-    have hden : (1 : ℝ) ≤ 8 * (α + 1) := by nlinarith [hα₁]
+    
     have h1 : ε' / (8 * (α + 1)) ≤ ε' := by
       rw [div_le_iff₀ (by positivity)]
       nlinarith [hε'.le]
     have h2 : δ ≤ ε' := le_trans hδlt.le h1
-    simpa only [hε'def] using h2
+    exact h2
   obtain ⟨A₂, hA₂, hassem⟩ :=
     assembly_tail_uniform_small_delta D W ε hε δ hδpos hδle
   obtain ⟨A₃, hA₃, hdiag⟩ := bilinear_explicit_assembly_diagonal (F := F) (c := c) (Q := Q) W hW
-  let κ : ℂ := DedekindZetaZeroFree.LargeSieve.SquareSecondPass.kappa (DedekindZetaZeroFree.LargeSieve.principalHeckeData F hF)
+  let κ  := DedekindZetaZeroFree.LargeSieve.SquareSecondPass.kappa (DedekindZetaZeroFree.LargeSieve.principalHeckeData F hF)
   obtain ⟨A₄, hA₄, hmain⟩ :=
     Sieve.MainBoundary.cancelledMainTerms_le_of_exponent Q D.toNormalizedFamilyData W hW κ
       α hα₁ hα₂ hE ε' hε'
@@ -347,20 +341,17 @@ theorem large_cutoff_energy_bound
     have hdiagC : ‖T3 F c Q W M N K d g lam -
         offDiagonalT3 Q W M N K d g lam‖ ≤ A₃ * M * energy F c N lam := by
       have h := hdiag C rfl hM hN hKpos
-      simpa only [C] using h
+      exact h
 
     have hassemC : ‖totalRemainder C‖ ≤ A₂ * energy F c N lam := by
       have hmax : max 1 (C.N ^ 2 / C.M * Real.rpow (C.M * C.N) ε) ≤ C.K := by
         have h : max 1 (N ^ 2 / M * Real.rpow (M * N) ε) ≤ K := max_le hK hlower
-        simpa only [C] using h
-      have hupperC : C.K ≤ C.M * Real.rpow (C.M * C.N) (-ε) := by
-        simpa only [C] using hupper
-      have hnd1C : 1 ≤ DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.norm C.d := by
-        simpa only [C, DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.norm] using hnd1
-      have hnd2C : DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.norm C.d ≤ 2 * C.N := by
-        simpa only [C, DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.norm] using hdn
+        exact h
+      have hupperC : C.K ≤ C.M * Real.rpow (C.M * C.N) (-ε) := hupper
+      have hnd1C : 1 ≤ DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.norm C.d := hnd1
+      have hnd2C : DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.norm C.d ≤ 2 * C.N := hdn
       have h := hassem C rfl rfl rfl hM hN hmax hupperC hnd1C hnd2C
-      simpa only [C] using h
+      exact h
 
     have herrC :
         (‖E1 C 1 true‖ + ‖E2 C 1 true‖ + ‖E3 C 1 true‖ + ‖E4 C 1 true‖ +
@@ -376,7 +367,7 @@ theorem large_cutoff_energy_bound
       have hupE : K ≤ M * Real.rpow (M * N) (-ε') :=
         le_trans hupper (mul_le_mul_of_nonneg_left hrpow_neg_le (by linarith))
       have h := herr M N K hM hN hmaxE hupE d hd0 hd hdc hdn g lam
-      simpa only [C] using h
+      exact h
 
     have hdc' : d ⊔ D.bad = ⊤ := by rw [hcore]; exact hdc
     have hmainC : ‖Sieve.MainBoundary.cancelledMainTerms Q D.bad W κ M N K d g lam‖ ≤
@@ -394,7 +385,7 @@ theorem large_cutoff_energy_bound
       exact h
 
     have hnd4nn : 0 ≤ (Ideal.absNorm d : ℝ) ^ 4 := by positivity
-    have hrpowεnn : 0 ≤ Real.rpow (M * N) ε := Real.rpow_nonneg hMNpos.le ε
+    
     have henn : 0 ≤ energy F c N lam := by
       unfold energy
       exact Finset.sum_nonneg (fun b _ => by positivity)
@@ -424,14 +415,14 @@ theorem large_cutoff_energy_bound
                 energy F c N lam
             = (A₄ * (Ideal.absNorm d : ℝ) ^ 4 * Real.rpow (M * N) ε') *
                 (Real.sqrt M * Real.rpow K (α - 1 / 2) + Real.sqrt (M / K) * N) *
-                energy F c N lam := by ring
+                energy F c N lam := rfl
           _ ≤ (A₄ * (Ideal.absNorm d : ℝ) ^ 4 * Real.rpow (M * N) ε') *
                 (M + N + Real.sqrt M * Real.rpow K (α - 1 / 2) +
                   Real.sqrt (M / K) * N) * energy F c N lam :=
               mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hsqrt_le ha) henn
           _ = A₄ * (Ideal.absNorm d : ℝ) ^ 4 * Real.rpow (M * N) ε' *
                 (M + N + Real.sqrt M * Real.rpow K (α - 1 / 2) +
-                  Real.sqrt (M / K) * N) * energy F c N lam := by ring
+                  Real.sqrt (M / K) * N) * energy F c N lam := rfl
       calc ‖sevenTermSum C‖ ≤ ‖MainBoundary.mainDifference C‖ +
             ((‖E1 C 1 true‖ + ‖E2 C 1 true‖ + ‖E3 C 1 true‖ + ‖E4 C 1 true‖ +
                 ‖E5 C 1 true‖) +
@@ -449,8 +440,8 @@ theorem large_cutoff_energy_bound
               (M + N + Real.sqrt M * Real.rpow K (α - 1 / 2) +
                 Real.sqrt (M / K) * N) * energy F c N lam := by ring
 
-    have hKM' : C.K ≤ C.M := by simpa only [C] using hKM
-    have hδ' : 0 < C.δ := by simpa only [C] using hδpos
+    have hKM' : C.K ≤ C.M := hKM
+    have hδ' : 0 < C.δ := hδpos
     have hoff : ‖offDiagonalT3 Q W M N K d g lam‖ ≤
         (A₄ + A₁) * (Ideal.absNorm d : ℝ) ^ 4 * Real.rpow (M * N) ε' *
           (M + N + Real.sqrt M * Real.rpow K (α - 1 / 2) +
@@ -507,7 +498,7 @@ theorem large_cutoff_energy_bound
               (one_le_mul_of_one_le_of_one_le hnd41 hrpow1)
         _ = (Ideal.absNorm d : ℝ) ^ 4 * Real.rpow (M * N) ε *
               (M + N + Real.sqrt M * Real.rpow K (α - 1 / 2) +
-                Real.sqrt (M / K) * N) := by ring
+                Real.sqrt (M / K) * N) := rfl
     have ha : A₃ * M * energy F c N lam ≤
         A₃ * ((Ideal.absNorm d : ℝ) ^ 4 * Real.rpow (M * N) ε *
           (M + N + Real.sqrt M * Real.rpow K (α - 1 / 2) +
@@ -603,7 +594,7 @@ theorem masked_le_canonical
   · rintro x (hx | ⟨g, lam, hlam, rfl⟩)
     · rw [Set.mem_singleton_iff] at hx
       rw [hx]
-      exact B3_nonneg Q W M N K d
+      apply B3_nonneg
     · rw [hT g lam]
 
       have henergy :

@@ -29,15 +29,18 @@ variable {T : ℝ}
 variable (B : KPContActualCollarBuffer.CollarBuffer F ζ hζ
   (level F ζ hζ C R P H U) R P H T)
 
-def ends (a : Cusps F ζ hζ C R P H U) : Set (Covered F ζ hζ C R P H U) :=
+section
+variable (a : Cusps F ζ hζ C R P H U)
+include a
+def ends   : Set (Covered F ζ hζ C R P H U) :=
   KPContSectorCoveredQuotientVocabulary.q F ζ hζ (level F ζ hζ C R P H U) ⁻¹'
     KPContActualCollarBuffer.endSet F ζ hζ (level F ζ hζ C R P H U) R P H B.τ a
 
-def height (a : Cusps F ζ hζ C R P H U) (x : Covered F ζ hζ C R P H U) : ℝ :=
+def height   (x : Covered F ζ hζ C R P H U) : ℝ :=
   KPContActualCollarBuffer.height F ζ hζ (level F ζ hζ C R P H U) R P H B.τ a
     (KPContSectorCoveredQuotientVocabulary.q F ζ hζ (level F ζ hζ C R P H U) x)
 
-def coveredPoint (a : Cusps F ζ hζ C R P H U) (ε : rootsOfUnity 3 F)
+def coveredPoint   (ε : rootsOfUnity 3 F)
     (z : KPCuspCharts.Coordinates F) : Covered F ζ hζ C R P H U :=
   Quotient.mk (KPContSectorCoveredQuotientVocabulary.coveredRelation F ζ hζ
     (level F ζ hζ C R P H U))
@@ -46,10 +49,12 @@ def coveredPoint (a : Cusps F ζ hζ C R P H U) (ε : rootsOfUnity 3 F)
       KPCuspGenuineMonodromy.central F ζ hζ ε *
         (KPContFlatCuspIncomingEvaluation.atlas F ζ hζ C R P H U).representative a.1)
 
-def incomingValue (a : Cusps F ζ hζ C R P H U) (s : ℂ) (v : S)
+def incomingValue   (s : ℂ) (v : S)
     (z : KPCuspCharts.Coordinates F) : ℂ :=
   (KPContFlatCuspIncomingEvaluation.W F ζ hζ C R P H U a ι s v z.2 z.1.2).val
     (QuotientAddGroup.mk z.1.1)
+end
+
 
 structure EndLift (x : Covered F ζ hζ C R P H U) where
   cusp : Cusps F ζ hζ C R P H U
@@ -58,7 +63,10 @@ structure EndLift (x : Covered F ζ hζ C R P H U) where
   high : B.τ < coordinates.2
   point : coveredPoint F ζ hζ C R P H U cusp sheet coordinates = x
 
- def identitySheet_add (a : Cusps F ζ hζ C R P H U) (s : ℂ) (v w : S) (t : ℝ)
+ section
+variable (a : Cusps F ζ hζ C R P H U) (s : ℂ)
+include a s
+def identitySheet_add   (v w : S) (t : ℝ)
     (x : KPCuspCharts.Horizontal F) (b : KPCuspCharts.Shape F) (ε : rootsOfUnity 3 F) :
     KPContFlatCuspIncomingEvaluation.identitySheet F ζ hζ C R P H U a ι s (v+w) t x b ε =
       KPContFlatCuspIncomingEvaluation.identitySheet F ζ hζ C R P H U a ι s v t x b ε +
@@ -69,7 +77,7 @@ structure EndLift (x : Covered F ζ hζ C R P H U) where
   exact congr_fun (map_add (KPContFlatCommonLevelKernel.L F ζ hζ U ι s) v w)
     (KPContFlatCuspIncomingEvaluation.localGroup F ζ hζ C R P H U a t x b ε)
 
- def identitySheet_smul (a : Cusps F ζ hζ C R P H U) (s : ℂ) (c : ℂ) (v : S) (t : ℝ)
+ def identitySheet_smul   (c : ℂ) (v : S) (t : ℝ)
     (x : KPCuspCharts.Horizontal F) (b : KPCuspCharts.Shape F) (ε : rootsOfUnity 3 F) :
     KPContFlatCuspIncomingEvaluation.identitySheet F ζ hζ C R P H U a ι s (c • v) t x b ε =
       c * KPContFlatCuspIncomingEvaluation.identitySheet F ζ hζ C R P H U a ι s v t x b ε := by
@@ -78,7 +86,7 @@ structure EndLift (x : Covered F ζ hζ C R P H U) where
   exact congr_fun (map_smul (KPContFlatCommonLevelKernel.L F ζ hζ U ι s) c v)
     (KPContFlatCuspIncomingEvaluation.localGroup F ζ hζ C R P H U a t x b ε)
 
- def incomingValue_add (a : Cusps F ζ hζ C R P H U) (s : ℂ) (v w : S)
+ def incomingValue_add   (v w : S)
     (z : KPCuspCharts.Coordinates F) :
     incomingValue F ζ hζ C R P H U ι a s (v + w) z =
       incomingValue F ζ hζ C R P H U ι a s v z + incomingValue F ζ hζ C R P H U ι a s w z := by
@@ -90,7 +98,7 @@ structure EndLift (x : Covered F ζ hζ C R P H U) where
   rw [hfun, map_add]
   rfl
 
- def incomingValue_smul (a : Cusps F ζ hζ C R P H U) (s : ℂ) (c : ℂ) (v : S)
+ def incomingValue_smul   (c : ℂ) (v : S)
     (z : KPCuspCharts.Coordinates F) :
     incomingValue F ζ hζ C R P H U ι a s (c • v) z =
       c * incomingValue F ζ hζ C R P H U ι a s v z := by
@@ -100,6 +108,8 @@ structure EndLift (x : Covered F ζ hζ C R P H U) where
     funext ε; rw [identitySheet_smul F ζ hζ C R P H U ι a s c v z.2 0 z.1.2 ε]; rfl
   rw [hfun, map_smul]
   rfl
+end
+
 
 def incomingRealization (s : ℂ) : S →ₗ[ℂ] (Covered F ζ hζ C R P H U → ℂ) where
   toFun v x := if h : Nonempty (EndLift F ζ hζ C R P H U B x) then

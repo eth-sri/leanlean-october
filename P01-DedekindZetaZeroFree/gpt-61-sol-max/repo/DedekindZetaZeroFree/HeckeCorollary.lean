@@ -18,10 +18,7 @@ theorem heckeL_ne_zero
         χ I * (Ideal.absNorm I : ℂ) ^ (-s)) (f s)) ∧
       ∀ s, 31 / 32 < s.re → (s ≠ 1 ∨ ¬ χ.IsPrincipal) → f s ≠ 0 := by
   by_cases hχ : χ.IsPrincipal
-  · obtain ⟨f, hf, hsum, hnz⟩ := HeckeCorollary.principalRayCharacter_ne_zero K m hm χ hχ
-    refine ⟨f, hf, fun h => (h hχ).elim, hsum, ?_⟩
-    intro s hs hregular
-    exact hnz s hs (hregular.resolve_right (not_not.mpr hχ))
+  · simpa [hχ] using HeckeCorollary.principalRayCharacter_ne_zero K m hm χ hχ
   · obtain ⟨f, hf, hsum, hnz⟩ := HeckeCorollary.nonprincipalRayCharacter_ne_zero K m hm χ hχ
     exact ⟨f, hf.differentiableOn, fun _ => hf, hsum, fun s hs _ => hnz s hs⟩
 

@@ -26,19 +26,22 @@ variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
-def pieceCoefficient (cover : CountableCover F ζ hζ U R P H)
-    (f : PieceSequence cover) (n : ℕ) (y : (cover.chart n).domain) : E F :=
+section
+variable (cover : CountableCover F ζ hζ U R P H)
+    (f : PieceSequence cover)
+include cover f
+def pieceCoefficient   (n : ℕ) (y : (cover.chart n).domain) : E F :=
   f.val n (coordinates (cover.chart n) y)
 
-def pieceSquareIntegral (cover : CountableCover F ζ hζ U R P H)
-    (f : PieceSequence cover) (n : ℕ) : ℝ≥0∞ :=
+def pieceSquareIntegral   (n : ℕ) : ℝ≥0∞ :=
   ∫⁻ y in liftedPiece cover n, ENNReal.ofReal (‖pieceCoefficient cover f n y‖ ^ 2)
     ∂(cover.chart n).liftedMeasure
 
-def RepresentsComponents (cover : CountableCover F ζ hζ U R P H)
-    (f : PieceSequence cover) (u : PieceHilbert cover) : Prop :=
+def RepresentsComponents   (u : PieceHilbert cover) : Prop :=
   ∀ n : ℕ, pieceCoefficient cover f n =ᵐ[(cover.chart n).liftedMeasure]
     ((u n).val : (cover.chart n).domain → E F)
+end
+
 
 structure Properties (cover : CountableCover F ζ hζ U R P H) : Prop where
   integral_eq_tsum : ∀ f : PieceSequence cover,
@@ -95,11 +98,14 @@ private lemma lintegral_ofReal_norm_sq_eq {X : Type*} [MeasurableSpace X]
     _ = ENNReal.ofReal (‖w‖ ^ 2) := by
         rw [h1, ENNReal.ofReal_toReal hfin.ne]
 
-private lemma glued_integral_eq_tsum
-    (cover : CountableCover F ζ hζ U R P H)
+section
+variable (cover : CountableCover F ζ hζ U R P H)
     (hb : KPContActualCotangentBorelRefinement.Properties cover)
     (hg : KPContActualCotangentExactMeasurableGluing.Properties cover)
-    (f : PieceSequence cover) :
+    (f : PieceSequence cover)
+include cover hb hg f
+private lemma glued_integral_eq_tsum
+      :
     (∫⁻ x, ENNReal.ofReal ((normSquare (G cover f) x : ℝ))
         ∂(baseMeasure (R := R) (P := P) (U := U))) =
       ∑' n, pieceSquareIntegral cover f n := by
@@ -131,10 +137,7 @@ private lemma glued_integral_eq_tsum
     _ = ∑' n, pieceSquareIntegral cover f n := tsum_congr hstep
 
 private lemma glued_piece_eq
-    (cover : CountableCover F ζ hζ U R P H)
-    (hb : KPContActualCotangentBorelRefinement.Properties cover)
-    (hg : KPContActualCotangentExactMeasurableGluing.Properties cover)
-    (f : PieceSequence cover) (u : PieceHilbert cover)
+      (u : PieceHilbert cover)
     (hf : RepresentsComponents cover f u) (n : ℕ) :
     pieceSquareIntegral cover f n = ENNReal.ofReal (‖u n‖ ^ 2) := by
   have hA : pieceSquareIntegral cover f n
@@ -168,10 +171,7 @@ private lemma glued_piece_eq
   exact hA.trans (hB.trans hC)
 
 private lemma glued_tsum_eq
-    (cover : CountableCover F ζ hζ U R P H)
-    (hb : KPContActualCotangentBorelRefinement.Properties cover)
-    (hg : KPContActualCotangentExactMeasurableGluing.Properties cover)
-    (f : PieceSequence cover) (u : PieceHilbert cover)
+      (u : PieceHilbert cover)
     (hf : RepresentsComponents cover f u) :
     (∑' n, pieceSquareIntegral cover f n) = ENNReal.ofReal (‖u‖ ^ 2) := by
   have hsumm : Summable (fun n => ‖u n‖ ^ 2) := by
@@ -184,14 +184,13 @@ private lemma glued_tsum_eq
     ← norm_sq_eq_tsum cover u]
 
 private lemma glued_tsum_lt_top
-    (cover : CountableCover F ζ hζ U R P H)
-    (hb : KPContActualCotangentBorelRefinement.Properties cover)
-    (hg : KPContActualCotangentExactMeasurableGluing.Properties cover)
-    (f : PieceSequence cover) (u : PieceHilbert cover)
+      (u : PieceHilbert cover)
     (hf : RepresentsComponents cover f u) :
     (∑' n, pieceSquareIntegral cover f n) < ⊤ := by
   rw [glued_tsum_eq cover hb hg f u hf]
   exact ENNReal.ofReal_lt_top
+end
+
 
 end DedekindZetaZeroFree.KPContActualCotangentGluedPieceIntegral
 

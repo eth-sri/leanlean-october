@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.Friedrichs.TestCodifferential
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.Friedrichs.VariationalChartEquation
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.GenuineSector.TestFriedrichsRealization
 
 @[expose] public section
+
 
 attribute [-instance] DedekindZetaZeroFree.PGLComplex.AdelicSlices.instMeasurableSpaceActualCover
 
@@ -58,9 +61,6 @@ structure ChartCoefficients (A : LocalBall (KPCuspLogShape.dimension F * 3)) whe
     ∀ v : Space (KPCuspLogShape.dimension F * 3),
       (∑ i, ∑ j, data.matrix p i j * v i * v j) ≤ upperEllipticity * ‖v‖ ^ 2
 
-private lemma coordinates_snd (p : Space (KPCuspLogShape.dimension F * 3))
-    (i : Fin (KPCuspLogShape.dimension F)) :
-    (coordinates F p i).2 = p (finProdFinEquiv (i, 2)) := rfl
 
  def diagFun (p : Space (KPCuspLogShape.dimension F * 3)) :
     Fin (KPCuspLogShape.dimension F * 3) → ℝ :=
@@ -69,11 +69,7 @@ private lemma coordinates_snd (p : Space (KPCuspLogShape.dimension F * 3))
 
  lemma inverseMetric_eq_diagonal (p : Space (KPCuspLogShape.dimension F * 3)) :
     inverseMetric F p = Matrix.diagonal (diagFun F p) := by
-  funext i j
-  rw [inverseMetric, Matrix.diagonal_apply, Matrix.diagonal_apply]
-  by_cases h : i = j
-  · rw [if_pos h, if_pos h]; simp only [diagFun, coordinates_snd]
-  · rw [if_neg h, if_neg h]
+  rfl
 
 private lemma contDiff_diagFun (j : Fin (KPCuspLogShape.dimension F * 3)) :
     ContDiff ℝ (⊤ : ℕ∞) (fun p : Space (KPCuspLogShape.dimension F * 3) => diagFun F p j) := by
@@ -91,25 +87,31 @@ private lemma contDiff_diagFun (j : Fin (KPCuspLogShape.dimension F * 3)) :
       funext p; rw [inverseMetric_eq_diagonal, Matrix.diagonal_apply_ne _ h]
     rw [he]; exact contDiff_const
 
- def entryLo (A : LocalBall (KPCuspLogShape.dimension F * 3))
-    (j : Fin (KPCuspLogShape.dimension F * 3)) : ℝ :=
+ section
+variable (A : LocalBall (KPCuspLogShape.dimension F * 3))
+include A in
+def entryLo  
+    (j : Fin (KPCuspLogShape.dimension F * 3))  :=
   let ik := finProdFinEquiv.symm j
   if ik.2 = 2 then 1
   else Real.exp (2 * (A.center (finProdFinEquiv (ik.1, 2)) - A.radius))
 
- def entryHi (A : LocalBall (KPCuspLogShape.dimension F * 3))
-    (j : Fin (KPCuspLogShape.dimension F * 3)) : ℝ :=
+ include A in
+def entryHi  
+    (j : Fin (KPCuspLogShape.dimension F * 3))  :=
   let ik := finProdFinEquiv.symm j
   if ik.2 = 2 then 1
   else Real.exp (2 * (A.center (finProdFinEquiv (ik.1, 2)) + A.radius))
 
- lemma entryLo_pos (A : LocalBall (KPCuspLogShape.dimension F * 3))
+ include A in
+lemma entryLo_pos  
     (j : Fin (KPCuspLogShape.dimension F * 3)) : 0 < entryLo F A j := by
   by_cases h : (finProdFinEquiv.symm j).2 = 2
   · simp only [entryLo, h, if_true]; norm_num
   · simp only [entryLo, h, if_false]; exact Real.exp_pos _
 
- lemma entry_bounds (A : LocalBall (KPCuspLogShape.dimension F * 3))
+ include A in
+lemma entry_bounds  
     (j : Fin (KPCuspLogShape.dimension F * 3))
     {p : Space (KPCuspLogShape.dimension F * 3)} (hp : p ∈ KPContLocalCubeEmbedding.closedCarrier A) :
     entryLo F A j ≤ diagFun F p j ∧ diagFun F p j ≤ entryHi F A j := by
@@ -123,7 +125,7 @@ private lemma contDiff_diagFun (j : Fin (KPCuspLogShape.dimension F * 3)) :
         (finProdFinEquiv ((finProdFinEquiv.symm j).1, 2))
       rw [PiLp.sub_apply] at h1
       rw [dist_eq_norm] at hd
-      simpa using h1.trans hd
+      exact h1.trans hd
     have hlo : A.center (finProdFinEquiv ((finProdFinEquiv.symm j).1, 2)) - A.radius ≤
         p (finProdFinEquiv ((finProdFinEquiv.symm j).1, 2)) := by
       have := (abs_le.mp hk).1; linarith
@@ -132,7 +134,8 @@ private lemma contDiff_diagFun (j : Fin (KPCuspLogShape.dimension F * 3)) :
       have := (abs_le.mp hk).2; linarith
     exact ⟨Real.exp_le_exp.mpr (by linarith), Real.exp_le_exp.mpr (by linarith)⟩
 
- lemma entryHi_pos (A : LocalBall (KPCuspLogShape.dimension F * 3))
+ include A in
+lemma entryHi_pos  
     (j : Fin (KPCuspLogShape.dimension F * 3)) : 0 < entryHi F A j := by
   by_cases h : (finProdFinEquiv.symm j).2 = 2
   · simp only [entryHi, h, if_true]; norm_num
@@ -147,12 +150,13 @@ private lemma contDiff_diagFun (j : Fin (KPCuspLogShape.dimension F * 3)) :
   · intro j _ hj; rw [Matrix.diagonal_apply_ne' _ hj]; ring
   · intro hi; exact absurd (Finset.mem_univ i) hi
 
-def chartCoefficients (A : LocalBall (KPCuspLogShape.dimension F * 3)) :
+include A in
+def chartCoefficients   :
     ChartCoefficients F A := by
   classical
   let hbnd := density_bounds F A
-  let a : ℝ := hbnd.choose
-  let b : ℝ := hbnd.choose_spec.choose
+  let a  := hbnd.choose
+  let b  := hbnd.choose_spec.choose
   have ha : 0 < a := hbnd.choose_spec.choose_spec.1
   have hb : ∀ p ∈ KPContLocalCubeEmbedding.closedCarrier A, a ≤ density F p ∧ density F p ≤ b :=
     hbnd.choose_spec.choose_spec.2
@@ -161,8 +165,8 @@ def chartCoefficients (A : LocalBall (KPCuspLogShape.dimension F * 3)) :
     exact (lt_of_lt_of_le ha (hb A.center hmem).1).trans_le (hb A.center hmem).2
   haveI : Nonempty (Fin (KPCuspLogShape.dimension F * 3)) :=
     ⟨⟨0, A.dimension_pos⟩⟩
-  let κ : ℝ := Finset.univ.inf' Finset.univ_nonempty (entryLo F A)
-  let Λ : ℝ := Finset.univ.sup' Finset.univ_nonempty (entryHi F A)
+  let κ  := Finset.univ.inf' Finset.univ_nonempty (entryLo F A)
+  let Λ  := Finset.univ.sup' Finset.univ_nonempty (entryHi F A)
   have hκpos : 0 < κ :=
     (Finset.lt_inf'_iff Finset.univ_nonempty).mpr (fun j _ => entryLo_pos F A j)
   have hΛpos : 0 < Λ := by
@@ -235,21 +239,22 @@ def chartCoefficients (A : LocalBall (KPCuspLogShape.dimension F * 3)) :
           _ = Λ * ∑ i, (v i) ^ 2 := by rw [Finset.mul_sum]
           _ = Λ * ‖v‖ ^ 2 := by rw [EuclideanSpace.real_norm_sq_eq] }
 
-private theorem matrix_pin (A : LocalBall (KPCuspLogShape.dimension F * 3)) :
+include A in
+private theorem matrix_pin   :
     (chartCoefficients F A).data.matrix =
       (fun p => Matrix.diagonal (fun j =>
         let ik := finProdFinEquiv.symm j
         if ik.2 = 2 then 1 else Real.exp (2 * (coordinates F p ik.1).2))) := by
-  funext p
-  rw [show (chartCoefficients F A).data.matrix = inverseMetric F from
-    (chartCoefficients F A).matrix_exact, inverseMetric_eq_diagonal F p]
-  apply congrArg Matrix.diagonal
-  funext j
-  simp only [diagFun, coordinates_snd]
+  rfl
+end
 
-private theorem restriction_section
-    (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
+
+section
+variable (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
     (O : OrbifoldChart F ζ hζ U R P H i x) (m : PhaseSheets F ζ hζ U)
+include i x O m in
+private theorem restriction_section
+     
     (A : LocalBall (KPCuspLogShape.dimension F * 3))
     (hA : KPContLocalCubeEmbedding.closedCarrier A ⊆ chartDomain F ζ hζ U R P H i x O)
     (u : KPContSectorClosedLpSubspace.H F ζ hζ R U)
@@ -264,8 +269,7 @@ private theorem restriction_section
     apply (sectorLineIsometry F ζ hζ U R P H).injective
     change sectorLineIsometry F ζ hζ U R P H
       (toSector F ζ hζ U R P H (borelS F ζ hζ U R P H f)) = _
-    rw [sectorLineIsometry_toSector, show borelS F ζ hζ U R P H f = s from
-      (borelS F ζ hζ U R P H).apply_symm_apply s, hs]
+    rw [sectorLineIsometry_toSector, ((borelS F ζ hζ U R P H).apply_symm_apply s), hs]
   have ha := restriction_representative F ζ hζ U R P H i x O m A hA u f hf
   have hS : KPContSectorScalarLineAlgebra.S F ζ hζ U R P H f.val = s.val :=
     congrArg Subtype.val ((borelS F ζ hζ U R P H).apply_symm_apply s)
@@ -276,9 +280,9 @@ private theorem restriction_section
   rw [hS] at hp
   exact hp
 
+include i x O m in
 private theorem value_stabilizer
-    (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) (m : PhaseSheets F ζ hζ U)
+     
     (A : LocalBall (KPCuspLogShape.dimension F * 3))
     (hA : KPContLocalCubeEmbedding.closedCarrier A ⊆ chartDomain F ζ hζ U R P H i x O)
     (u : KPContSectorClosedLpSubspace.H F ζ hζ R U) (ξ : IntegerSobolev A 1)
@@ -338,7 +342,7 @@ private theorem weakDerivative_unique {n k : ℕ} (B : LocalBall n) (α : MultiI
     rw [heq', sub_self]
   apply Lp.ext
   filter_upwards [hz, ae_restrict_mem Metric.isOpen_ball.measurableSet] with x hx hxB
-  exact sub_eq_zero.mp (hx hxB)
+  apply sub_eq_zero.mp <;> aesop
 
 private theorem derivatives_smaller_ball {n k : ℕ} (A B : LocalBall n)
     (hBA : B.carrier ⊆ A.carrier) (ξA : IntegerSobolev A k) (ξB : IntegerSobolev B k)
@@ -358,9 +362,9 @@ private theorem derivatives_smaller_ball {n k : ℕ} (A B : LocalBall n)
   rw [heq]
   exact hR α
 
+include i x O m in
 private theorem actual_derivatives_smaller_ball
-    (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) (m : PhaseSheets F ζ hζ U)
+     
     (A B : LocalBall (KPCuspLogShape.dimension F * 3))
     (hA : KPContLocalCubeEmbedding.closedCarrier A ⊆ chartDomain F ζ hζ U R P H i x O)
     (hB : KPContLocalCubeEmbedding.closedCarrier B ⊆ chartDomain F ζ hζ U R P H i x O)
@@ -373,7 +377,9 @@ private theorem actual_derivatives_smaller_ball
       ∀ᵐ p ∂volume.restrict B.carrier, ξB.derivatives α p = ξA.derivatives α p := by
   apply derivatives_smaller_ball A B hBA ξA ξB
   rw [hξA, hξB]
-  exact restriction_smaller_ball F ζ hζ U R P H i x O m B A hB hA hBA u
+  apply restriction_smaller_ball <;> assumption
+end
+
 
 variable (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ))
 variable (hμG : μG.IsHaarMeasure) (hR : R.adelicHaar = μG)
@@ -399,7 +405,7 @@ structure SolutionFamily where
         (fun q => (liftFrame F ζ hζ U (coordinates F q)
           (phaseCoefficient F ζ hζ U R P H
             (KPContActualSectorSmoothTestModules.scalarSections f) i m
-              (coordinates F q)) : ℂ)) p
+              (coordinates F q)))) p
   xi : ∀ (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
     (O : OrbifoldChart F ζ hζ U R P H i x) (m : PhaseSheets F ζ hζ U)
     (A : LocalBall (KPCuspLogShape.dimension F * 3))
@@ -474,8 +480,7 @@ theorem kp_cont_actual_friedrichs_weak_chart
       F ζ hζ U R P H μG hμG hR realization) := by
   classical
   let Δ := KPContActualSectorFriedrichsSynthesis.Δ_U F ζ hζ U R P H μG hμG hR realization
-  let coeffs : ∀ A : KPContLocalNorm.LocalBall (KPCuspLogShape.dimension F * 3),
-      KPContActualFriedrichsWeakChart.ChartCoefficients F A :=
+  let coeffs  :=
     fun A => KPContActualFriedrichsWeakChart.chartCoefficients F A
   have hpin : ∀ A : KPContLocalNorm.LocalBall (KPCuspLogShape.dimension F * 3),
       (coeffs A).data.matrix =
@@ -535,9 +540,9 @@ theorem kp_cont_actual_friedrichs_weak_chart
         i x O m B hB (coeffs B).data (coeffs B).density_exact (hpin B) u z).choose_spec.1)
       hBA α
   · intro i x O m A B hA hB u z hBA
-    exact KPContActualChartRestrictionDensity.restriction_smaller_ball F ζ hζ U R P H i x O m B A hB hA hBA ((Δ) u - z • u.val)
+    apply KPContActualChartRestrictionDensity.restriction_smaller_ball <;> assumption
   · intro i x O m A hA u z f hf
-    exact KPContActualChartRestrictionDensity.restriction_representative F ζ hζ U R P H i x O m A hA ((Δ) u - z • u.val) f hf
+    apply KPContActualChartRestrictionDensity.restriction_representative <;> assumption
   · intro i x O m A hA u z s localH hs hcont hloc
     filter_upwards [KPContActualFriedrichsWeakChart.restriction_section F ζ hζ U R P H i x O m A hA
       ((Δ) u - z • u.val) s hs, hloc] with p h1 h2

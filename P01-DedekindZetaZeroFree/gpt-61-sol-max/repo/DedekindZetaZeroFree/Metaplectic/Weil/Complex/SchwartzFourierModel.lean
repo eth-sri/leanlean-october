@@ -1,15 +1,18 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Metaplectic.Weil.Complex.TraceFourierNormalization
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.ComplexWeil
 
 noncomputable section
 open MeasureTheory
 
-def FT (β : ℂ) (h : ℂ → ℂ) (y : ℂ) : ℂ :=
+def FT (β : ℂ) (h : ℂ → ℂ) (y : ℂ)  :=
   (‖β‖ : ℂ) * ∫ z : ℂ, h z * psi β (-z * y) ∂(volume : Measure ℂ)
 
 theorem FT_eq_F (β : ℂ) (h : ℂ → ℂ) (y : ℂ) :

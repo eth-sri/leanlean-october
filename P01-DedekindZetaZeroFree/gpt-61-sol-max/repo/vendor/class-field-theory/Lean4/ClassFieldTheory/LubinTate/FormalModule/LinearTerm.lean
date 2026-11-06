@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.RingTheory.MvPowerSeries.Order
 public import Mathlib.RingTheory.PowerSeries.Substitution
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -32,7 +35,7 @@ variable {R : Type*} [CommRing R]
 variable {σ : Type*} [Fintype σ]
 
 /-- The multivariable linear form `sum_i L_i X_i`. -/
-noncomputable def linearForm (L : σ → R) : MvPowerSeries σ R :=
+noncomputable def linearForm (L : σ → R)  :=
   ∑ i, MvPowerSeries.C (L i) * MvPowerSeries.X i
 
 /-- States the theorem `constantCoeff_linearForm`. -/
@@ -43,7 +46,7 @@ theorem constantCoeff_linearForm (L : σ → R) :
 
 /-- A series has prescribed linear term `L` when its difference from
 `sum_i L_i X_i` has total order at least two. -/
-def HasLinearTerm (H : MvPowerSeries σ R) (L : σ → R) : Prop :=
+def HasLinearTerm (H : MvPowerSeries σ R) (L : σ → R)  :=
   (2 : ℕ∞) ≤ (H - linearForm L).order
 
 namespace HasLinearTerm
@@ -62,8 +65,7 @@ theorem constantCoeff_eq_zero (h : HasLinearTerm H L) :
 
 /-- Consequently the series can genuinely be substituted into a
 one-variable power series. -/
-theorem hasSubst (h : HasLinearTerm H L) :
-    PowerSeries.HasSubst H :=
+def hasSubst (h : HasLinearTerm H L)  :=
   PowerSeries.HasSubst.of_constantCoeff_zero h.constantCoeff_eq_zero
 
 end HasLinearTerm

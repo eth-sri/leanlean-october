@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 
 @[expose] public section
+
 
 noncomputable section
 open scoped Classical FourierTransform SchwartzMap
@@ -15,7 +18,7 @@ variable (F : Type) [Field F] [NumberField F]
 
 abbrev Space := NumberField.mixedEmbedding.euclidean.mixedSpace F
 
-def tracePairing (x y : Space F) : ℝ :=
+def tracePairing (x y : Space F)  :=
   let x' := NumberField.mixedEmbedding.euclidean.toMixed F x
   let y' := NumberField.mixedEmbedding.euclidean.toMixed F y
   (∑ v, x'.1 v * y'.1 v) + 2 * ∑ v, (x'.2 v * y'.2 v).re
@@ -27,11 +30,11 @@ def traceAdapter : Space F ≃L[ℝ] Space F :=
         Units.mk0 (2 : ℝ) (by norm_num) • Complex.conjCLE)) |>.trans
     (NumberField.mixedEmbedding.euclidean.toMixed F).symm
 
-def haarScalar : ℝ := (2 : ℝ) ^ NumberField.InfinitePlace.nrComplexPlaces F
+def haarScalar  := (2 : ℝ) ^ NumberField.InfinitePlace.nrComplexPlaces F
 
 def traceMeasure : Measure (Space F) := ENNReal.ofReal (haarScalar F) • volume
 
-def traceFourier (f : Space F → ℂ) (y : Space F) : ℂ :=
+def traceFourier (f : Space F → ℂ) (y : Space F)  :=
   ∫ x, f x * Complex.exp (-2 * (Real.pi : ℂ) * Complex.I * (tracePairing F x y : ℂ))
     ∂traceMeasure F
 
@@ -39,7 +42,7 @@ def fieldMul (a : F) (x : Space F) : Space F :=
   (NumberField.mixedEmbedding.euclidean.toMixed F).symm
     (NumberField.mixedEmbedding F a * NumberField.mixedEmbedding.euclidean.toMixed F x)
 
-def fieldModule (a : F) : ℝ :=
+def fieldModule (a : F)  :=
   (∏ v : {v : NumberField.InfinitePlace F // v.IsReal},
     |(NumberField.mixedEmbedding F a).1 v|) *
   ∏ v : {v : NumberField.InfinitePlace F // v.IsComplex},
@@ -73,8 +76,7 @@ theorem tracePairing_eq_inner (x y : Space F) :
   intro v hv
   ring
 
-theorem haarScalar_pos : 0 < haarScalar F := by
-  exact pow_pos (by norm_num) _
+theorem haarScalar_pos : 0 < haarScalar F := pow_pos (by norm_num) _
 
 theorem traceFourier_eq_euclidean (f : 𝓢(Space F, ℂ)) (y : Space F) :
     traceFourier F f y = (haarScalar F : ℂ) * (𝓕 f) (traceAdapter F y) := by

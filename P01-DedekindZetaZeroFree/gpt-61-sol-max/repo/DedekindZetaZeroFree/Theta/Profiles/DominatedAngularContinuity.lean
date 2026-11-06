@@ -2,7 +2,10 @@ module
 
 public import Mathlib
 
+public import Mathlib
+
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 
@@ -47,7 +50,7 @@ theorem thetaDominatedAngularContinuity
         ∀ᵐ h ∂(ν.restrict D), ‖∑' i : ι, F t h i‖ ≤ ∑' i : ι, u i := by
       intro t ht
       filter_upwards [ae_restrict_mem hD] with h hh
-      have hS' : h ∈ S := hDS hh
+      have hS'  := hDS hh
       have hn : Summable (fun i : ι => ‖F t h i‖) :=
         Summable.of_norm_bounded hu_sum (fun i => by simpa using hu_bound t ht h hS' i)
       calc ‖∑' i : ι, F t h i‖ ≤ ∑' i : ι, ‖F t h i‖ := norm_tsum_le_tsum_norm hn
@@ -59,19 +62,19 @@ theorem thetaDominatedAngularContinuity
     have hcont_ae : ∀ᵐ h ∂(ν.restrict D),
         ContinuousOn (fun t : ℝ => ∑' i : ι, F t h i) (Set.Icc a b) := by
       filter_upwards [ae_restrict_mem hD] with h hh
-      have hS' : h ∈ S := hDS hh
+      have hS'  := hDS hh
       refine continuousOn_tsum (u := u) (fun i => ?_) hu_sum
         (fun i t ht => hu_bound t ht h hS' i)
       exact (hF i).comp ((continuous_id.prodMk continuous_const).continuousOn)
         (fun t ht => ⟨lt_of_lt_of_le ha ht.1, hS'⟩)
-    exact continuousOn_of_dominated hmeas hbound hbound_int hcont_ae
+    apply continuousOn_of_dominated <;> assumption
   have hcontIoi : ContinuousOn (fun t : ℝ => ∫ h in D, ∑' i : ι, F t h i ∂ν)
       (Set.Ioi 0) := by
     intro t ht
     have ht0 : (0 : ℝ) < t := ht
     have ha : (0 : ℝ) < t / 2 := by linarith
     have hab : t / 2 ≤ 2 * t := by linarith
-    have hca : ContinuousAt (fun t : ℝ => ∫ h in D, ∑' i : ι, F t h i ∂ν) t :=
+    have hca  :=
       (hIcc (t / 2) (2 * t) ha hab).continuousAt
         (Icc_mem_nhds (show t / 2 < t by linarith) (show t < 2 * t by linarith))
     exact hca.continuousWithinAt

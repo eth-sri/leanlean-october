@@ -11,27 +11,3 @@ public import ClassFieldTheory.AlgebraicNumberTheory.Galois.MaximalAbelianSubext
 public import ClassFieldTheory.AlgebraicNumberTheory.Galois.NormalFieldRange
 public import ClassFieldTheory.AlgebraicNumberTheory.Galois.RelativeAbelianization
 public import ClassFieldTheory.AlgebraicNumberTheory.Galois.UnboundedDegree
-
-@[expose] public section
-
-/-
-Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
--/
-
-
-
-
-
-
-
-
-
-
-
-
-
-set_option autoImplicit false
-
-/-! # Galois subextensions and fixed-field constructions -/

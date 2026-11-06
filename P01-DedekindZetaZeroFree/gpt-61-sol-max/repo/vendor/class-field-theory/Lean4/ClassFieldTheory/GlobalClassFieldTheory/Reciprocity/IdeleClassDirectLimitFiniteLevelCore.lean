@@ -19,6 +19,7 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 
 
 set_option autoImplicit false
+set_option maxHeartbeats 2000000
 
 /-!
 # Finite levels of the rational idele-class direct limit
@@ -45,25 +46,25 @@ local instance rationalIntermediateNumberField
     [FiniteDimensional ℚ K] : NumberField K :=
   NumberField.of_module_finite ℚ K
 
-instance rationalTowerClassGroupCommGroup
-    (K N : IntermediateField ℚ (SeparableClosure ℚ))
-    [FiniteDimensional ℚ K] [FiniteDimensional ℚ N]
-    [Algebra K N] [IsScalarTower ℚ K N] [FiniteDimensional K N] :
-    CommGroup (TowerRelativeIdeleGroup.ClassGroup ℚ K N) := by
-  letI : CommGroup (TowerRelativeIdeleGroup ℚ K N) := inferInstance
-  exact
-    QuotientGroup.Quotient.commGroup
-      (TowerRelativeIdeleGroup.principalSubgroup ℚ K N)
 
-instance rationalTowerClassGroupMul
-    (K N : IntermediateField ℚ (SeparableClosure ℚ))
-    [FiniteDimensional ℚ K] [FiniteDimensional ℚ N]
-    [Algebra K N] [IsScalarTower ℚ K N] [FiniteDimensional K N] :
-    Mul (TowerRelativeIdeleGroup.ClassGroup ℚ K N) := by
-  letI : CommGroup (TowerRelativeIdeleGroup ℚ K N) := inferInstance
-  exact
-    (QuotientGroup.Quotient.commGroup
-      (TowerRelativeIdeleGroup.principalSubgroup ℚ K N)).toMul
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The canonical finite Galois closure, inside `SeparableClosure ℚ`,
 of a finite rational intermediate field. -/

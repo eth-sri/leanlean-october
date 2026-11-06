@@ -251,12 +251,15 @@ theorem liftFrame_equivariant (i : Fin (H.atlas U).componentCount)
       (liftFrame F ζ hζ U x v) := by
   simp [liftFrame]
 
-def liftCoefficient (s : Sections F ζ hζ U R P H)
-    (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F) :
+section
+variable (s : Sections F ζ hζ U R P H)
+    (i : Fin (H.atlas U).componentCount)
+include s i in
+def liftCoefficient   (x : SymmetricSpace F) :
     Coefficient F ζ hζ U := ⟨(s i).val x, (s i).property.1 x⟩
 
-theorem liftCoefficient_transition (s : Sections F ζ hζ U R P H)
-    (i : Fin (H.atlas U).componentCount)
+include s i in
+theorem liftCoefficient_transition  
     (γ : KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative i))
     (x : SymmetricSpace F) :
     liftCoefficient F ζ hζ U R P H s i ((γ : KPCuspArithmetic.PGL2 F) • x) =
@@ -275,8 +278,8 @@ theorem liftCoefficient_transition (s : Sections F ζ hζ U R P H)
   exact (phaseTransport F ζ hζ U (((H.atlas U).line i).rho γ)).norm_map
     (liftCoefficient F ζ hζ U R P H s i x)
 
-def phaseCoefficient (s : Sections F ζ hζ U R P H)
-    (i : Fin (H.atlas U).componentCount)
+include s i in
+def phaseCoefficient  
     (m : KPContSectorPhaseComponentCharts.PhaseSheets F ζ hζ U)
     (x : SymmetricSpace F) : Coefficient F ζ hζ U :=
   Quotient.lift (fun ε => phaseTransport F ζ hζ U ε
@@ -294,8 +297,8 @@ def phaseCoefficient (s : Sections F ζ hζ U R P H)
     exact phaseTransport_level_ambiguity F ζ hζ U a b hmem'
       (liftCoefficient F ζ hζ U R P H s i x)) m
 
-theorem phaseCoefficient_class (s : Sections F ζ hζ U R P H)
-    (i : Fin (H.atlas U).componentCount) (ε : rootsOfUnity 3 F)
+include s i in
+theorem phaseCoefficient_class   (ε : rootsOfUnity 3 F)
     (x : SymmetricSpace F) :
     (phaseCoefficient F ζ hζ U R P H s i
       (KPContSectorPhaseComponentCharts.phaseClass F ζ hζ U ε) x : ℂ) =
@@ -352,8 +355,8 @@ def cuspPoint (i : Fin (H.atlas U).componentCount)
     SymmetricSpace F :=
   ((H.atlas U).cuspAtlas i).representative j • KPCuspCharts.toArch F p
 
-def cuspCoefficient (s : Sections F ζ hζ U R P H)
-    (i : Fin (H.atlas U).componentCount)
+include s i in
+def cuspCoefficient  
     (j : Fin ((H.atlas U).cuspAtlas i).cuspCount) (p : KPCuspCharts.Coordinates F) :
     Coefficient F ζ hζ U :=
   liftCoefficient F ζ hζ U R P H s i (cuspPoint F ζ hζ U R P H i j p)
@@ -380,8 +383,8 @@ theorem cuspCoefficient_smooth (s : Sections F ζ hζ U R P H)
     (((H.atlas U).cuspAtlas i).representative j)).comp
       ((KPCuspCharts.toArch_contDiff F).of_le le_top))
 
-theorem cuspCoefficient_transition (s : Sections F ζ hζ U R P H)
-    (i : Fin (H.atlas U).componentCount)
+include s i in
+theorem cuspCoefficient_transition  
     (j : Fin ((H.atlas U).cuspAtlas i).cuspCount)
     (g : KPCuspArithmetic.conjugatedStabilizer F
       (KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative i))
@@ -425,8 +428,8 @@ theorem cuspCoefficient_transition (s : Sections F ζ hζ U R P H)
   exact liftCoefficient_transition F ζ hζ U R P H s i γ
     (cuspPoint F ζ hζ U R P H i j (p,t))
 
-theorem actual_cusp_atlas_overlap (s : Sections F ζ hζ U R P H)
-    (i : Fin (H.atlas U).componentCount)
+include s i in
+theorem actual_cusp_atlas_overlap  
     (j : Fin ((H.atlas U).cuspAtlas i).cuspCount) :
     let D := ((H.atlas U).cuspAtlas i).parabolic j
     let G := ((H.atlas U).cuspAtlas i).geometry j
@@ -485,8 +488,8 @@ theorem cusp_restriction_commutes (f : GenuineCoveredScalars F ζ hζ U)
       (H.atlas U).representative i)
   rw [S_apply, J_apply]
 
-def componentNorm (s : Sections F ζ hζ U R P H)
-    (i : Fin (H.atlas U).componentCount) :
+include s i in
+def componentNorm   :
     KPCuspSiegel.OrbitQuotient F
       (KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative i)) → ℝ :=
   Quotient.lift (fun x => ‖(s i).val x‖) (by
@@ -502,12 +505,14 @@ def sectionNorm (s : Sections F ζ hζ U R P H) :
     KPMsFixedHaarDisintegration.Spherical F ζ hζ U → ℝ :=
   fun b => let p := (H.atlas U).components.symm b; componentNorm F ζ hζ U R P H s p.1 p.2
 
-theorem sectionNorm_component (s : Sections F ζ hζ U R P H)
-    (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F) :
+include s i in
+theorem sectionNorm_component   (x : SymmetricSpace F) :
     sectionNorm F ζ hζ U R P H s
       ((H.atlas U).components ⟨i, Quotient.mk _ x⟩) = ‖(s i).val x‖ := by
   simp only [sectionNorm, componentNorm]
   rw [Homeomorph.symm_apply_apply, Quotient.lift_mk]
+end
+
 
 theorem sectionNorm_pullback (f : GenuineCoveredScalars F ζ hζ U)
     (v : CoveredSpherical F ζ hζ U) :

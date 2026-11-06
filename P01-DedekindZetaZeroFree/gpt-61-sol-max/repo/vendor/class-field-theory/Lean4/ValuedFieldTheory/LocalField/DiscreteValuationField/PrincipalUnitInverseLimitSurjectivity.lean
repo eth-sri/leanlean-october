@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.PrincipalUnitPadicAction.Core
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -59,7 +62,7 @@ theorem Internal.surjective_principalUnitInverseLimitCarrier_of_surjective_coord
   let : (n : ℕ) → DiscreteTopology (Internal.principalUnitQuotientCarrier F n) :=
     fun _ => ⟨rfl⟩
   intro hg hsur y
-  let C : ℕ → Set A := fun n => {a | (g a).1 n = y.1 n}
+  let C  := fun n => {a | (g a).1 n = y.1 n}
   have hcoord : ∀ n, Continuous (fun a : A => (g a).1 n) := by
     intro n
     exact ((continuous_apply n).comp continuous_subtype_val).comp hg
@@ -81,7 +84,7 @@ theorem Internal.surjective_principalUnitInverseLimitCarrier_of_surjective_coord
             (y.1 (n + 1)) := congrArg
               (principalUnitQuotientCarrierTransition F (Nat.le_succ n)) ha
       _ = y.1 n := y.2 (Nat.le_succ n)
-  have hintersection : (⋂ n, C n).Nonempty :=
+  have hintersection  :=
     IsCompact.nonempty_iInter_of_sequence_nonempty_isCompact_isClosed
       C hdecreasing hnonempty (hclosed 0).isCompact hclosed
   obtain ⟨a, ha⟩ := hintersection
@@ -106,14 +109,14 @@ theorem Internal.surjective_additive_principalUnitInverseLimitCarrier_of_surject
   let : (n : ℕ) → TopologicalSpace (Internal.principalUnitQuotientCarrier F n) :=
     fun _ => ⊥
   intro hg hsur
-  let gm : A → Internal.principalUnitInverseLimitCarrier F := fun a =>
+  let gm  := fun a =>
     Additive.toMul (g a)
   have hgm : Continuous gm := hg
   have hsurm : ∀ n, Function.Surjective (fun a : A => (gm a).1 n) := by
     intro n y
     obtain ⟨a, ha⟩ := hsur n (Additive.ofMul y)
     exact ⟨a, Additive.ofMul.injective ha⟩
-  have hgmSur : Function.Surjective gm :=
+  have hgmSur  :=
     Internal.surjective_principalUnitInverseLimitCarrier_of_surjective_coordinates
       F gm hgm hsurm
   intro y

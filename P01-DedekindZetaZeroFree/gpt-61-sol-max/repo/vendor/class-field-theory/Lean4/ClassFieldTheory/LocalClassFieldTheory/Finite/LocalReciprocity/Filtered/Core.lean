@@ -35,14 +35,17 @@ namespace LocalClassFieldTheory
 
 open LocalClassFieldTheory LocalFieldTheory RamificationTheory
 
-/-- The image of the `n`-th principal-unit group under finite Abelian local
-reciprocity. -/
-def artinPrincipalUnitGroup
-    (K L : Type) [Field K] [Field L] [Algebra K L]
+section
+variable (K L : Type) [Field K] [Field L] [Algebra K L]
     [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K]
     [FiniteDimensional K L] [IsAbelianGalois K L]
-    (n : ℕ) : Subgroup (Gal(L / K)) :=
+    (n : ℕ)
+include K L n in
+/-- The image of the `n`-th principal-unit group under finite Abelian local
+reciprocity. -/
+def artinPrincipalUnitGroup
+      : Subgroup (Gal(L / K)) :=
   (LocalFieldTheory.fieldPrincipalUnits K n).map (abelianLocalArtinMonoidHom K L)
 
 /-- The Artin images of principal units form an antitone filtration. -/
@@ -55,14 +58,11 @@ theorem artinPrincipalUnitGroup_antitone
     artinPrincipalUnitGroup K L n ≤ artinPrincipalUnitGroup K L m :=
   Subgroup.map_mono (fieldPrincipalUnits_antitone K hmn)
 
+include K L n in
 /-- The Artin image of the `n`-th principal units is trivial exactly from the
 conductor exponent onward. -/
 theorem artinPrincipalUnitGroup_eq_bot_iff
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [FiniteDimensional K L] [IsAbelianGalois K L]
-    (n : ℕ) :
+      :
     artinPrincipalUnitGroup K L n = ⊥ ↔
       localConductorExponent K L ≤ n := by
   rw [localConductorExponent_le_iff]
@@ -81,29 +81,34 @@ theorem artinPrincipalUnitGroup_eq_bot_iff
       rw [← abelianLocalArtinMonoidHom_ker K L] at h
       exact h hx
     · exact bot_le
+end
 
-/-- Before the conductor exponent the Artin image of principal units is
-nontrivial, and only then. -/
-theorem artinPrincipalUnitGroup_ne_bot_iff
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [FiniteDimensional K L] [IsAbelianGalois K L]
-    (n : ℕ) :
-    artinPrincipalUnitGroup K L n ≠ ⊥ ↔
-      n < localConductorExponent K L := by
-  simpa only [not_le] using
-    not_congr (artinPrincipalUnitGroup_eq_bot_iff K L n)
 
-/-- Restriction along a tower of finite Abelian extensions carries the Artin
-image of each principal-unit group onto the corresponding image downstairs. -/
-theorem artinPrincipalUnitGroup_map_intermediateFieldRestrict
-    (K : Type) [Field K]
+
+
+
+
+
+
+
+
+
+
+
+
+
+section
+variable (K : Type) [Field K]
     [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K]
     (E F : IntermediateField K (SeparableClosure K)) (hEF : E ≤ F)
     [FiniteDimensional K E] [FiniteDimensional K F]
     [IsAbelianGalois K E] [IsAbelianGalois K F]
+include K E F hEF in
+/-- Restriction along a tower of finite Abelian extensions carries the Artin
+image of each principal-unit group onto the corresponding image downstairs. -/
+theorem artinPrincipalUnitGroup_map_intermediateFieldRestrict
+     
     (n : ℕ) :
     Subgroup.map
         (intermediateFieldRestrictNormalHom E F hEF)
@@ -123,15 +128,11 @@ def artinPrincipalUnitStepGroup
     (t : ℝ) : Subgroup (Gal(L / K)) :=
   natCeilStepFiltration (artinPrincipalUnitGroup K L) t
 
+include K E F hEF in
 /-- Restriction along a tower carries the real-indexed Artin principal-unit
 step filtration onto the corresponding filtration downstairs. -/
 theorem artinPrincipalUnitStepGroup_map_intermediateFieldRestrict
-    (K : Type) [Field K]
-    [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    (E F : IntermediateField K (SeparableClosure K)) (hEF : E ≤ F)
-    [FiniteDimensional K E] [FiniteDimensional K F]
-    [IsAbelianGalois K E] [IsAbelianGalois K F]
+     
     (t : ℝ) :
     Subgroup.map
         (intermediateFieldRestrictNormalHom E F hEF)
@@ -140,17 +141,13 @@ theorem artinPrincipalUnitStepGroup_map_intermediateFieldRestrict
   exact artinPrincipalUnitGroup_map_intermediateFieldRestrict
     K E F hEF ⌈t⌉₊
 
+include K E F hEF in
 /-- Filtered reciprocity at nonnegative indices descends through a finite
 Abelian tower whenever the chosen upper filtrations are compatible with
 restriction.  The index `-1` is outside the principal-unit comparison and is
 handled separately in Hasse--Arf. -/
 theorem filteredLocalReciprocity_descends
-    (K : Type) [Field K]
-    [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    (E F : IntermediateField K (SeparableClosure K)) (hEF : E ≤ F)
-    [FiniteDimensional K E] [FiniteDimensional K F]
-    [IsAbelianGalois K E] [IsAbelianGalois K F]
+     
     (upperE : ℝ → Subgroup (Gal(E / K)))
     (upperF : ℝ → Subgroup (Gal(F / K)))
     (hupper : ∀ t,
@@ -165,69 +162,71 @@ theorem filteredLocalReciprocity_descends
   rw [← hupper t, ← hcover t ht]
   exact (artinPrincipalUnitStepGroup_map_intermediateFieldRestrict
     K E F hEF t).symm
+end
 
-/-- A jump of the Artin principal-unit step filtration. -/
-def IsArtinPrincipalUnitJump
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [FiniteDimensional K L] [IsAbelianGalois K L]
-    (t : ℝ) : Prop :=
-  IsNatCeilStepFiltrationJump (artinPrincipalUnitGroup K L) t
 
-/-- At an integer index, an Artin principal-unit jump is exactly a change
-between two consecutive principal-unit images. -/
-theorem isArtinPrincipalUnitJump_natCast_iff
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [FiniteDimensional K L] [IsAbelianGalois K L]
-    (n : ℕ) :
-    IsArtinPrincipalUnitJump K L (n : ℝ) ↔
-      artinPrincipalUnitGroup K L n ≠
-        artinPrincipalUnitGroup K L (n + 1) := by
-  exact isNatCeilStepFiltrationJump_natCast_iff
-    (fun _ _ hmn => artinPrincipalUnitGroup_antitone K L hmn) n
 
-/-- Every jump of the Artin principal-unit filtration is an integer.  The
-remaining filtered-reciprocity task is to identify this filtration with the
-actual upper ramification filtration. -/
-theorem isArtinPrincipalUnitJump_integer
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [FiniteDimensional K L] [IsAbelianGalois K L]
-    {t : ℝ} (ht : IsArtinPrincipalUnitJump K L t) :
-    ∃ n : ℕ, t = n := by
-  exact isNatCeilStepFiltrationJump_integer
-    (fun _ _ hmn => artinPrincipalUnitGroup_antitone K L hmn) ht
 
-/-- A positive conductor exponent produces a final nontrivial Artin
-principal-unit jump one step before the conductor. -/
-theorem exists_lastArtinPrincipalUnitJump_of_conductor_pos
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [FiniteDimensional K L] [IsAbelianGalois K L]
-    (hcond : 0 < localConductorExponent K L) :
-    ∃ n : ℕ,
-      localConductorExponent K L = n + 1 ∧
-        IsArtinPrincipalUnitJump K L (n : ℝ) := by
-  obtain ⟨n, hn⟩ :=
-    Nat.exists_eq_succ_of_ne_zero (Nat.ne_of_gt hcond)
-  refine ⟨n, hn, ?_⟩
-  rw [isArtinPrincipalUnitJump_natCast_iff]
-  have hn_ne :
-      artinPrincipalUnitGroup K L n ≠ ⊥ := by
-    rw [artinPrincipalUnitGroup_ne_bot_iff]
-    omega
-  have hsucc :
-      artinPrincipalUnitGroup K L (n + 1) = ⊥ := by
-    rw [artinPrincipalUnitGroup_eq_bot_iff]
-    omega
-  intro hsame
-  apply hn_ne
-  rw [hsame, hsucc]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end LocalClassFieldTheory
 

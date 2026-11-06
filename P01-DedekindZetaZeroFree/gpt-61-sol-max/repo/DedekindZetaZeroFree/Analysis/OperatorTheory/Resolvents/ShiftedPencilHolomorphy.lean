@@ -2,36 +2,47 @@ module
 
 public import Mathlib
 
+public import Mathlib
+
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.KPResolventPencil
 
 noncomputable section
 
-def GenuineInverse {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
-    (D : H →ₗ.[ℂ] H) (z : ℂ) (R : H →L[ℂ] H) : Prop :=
+section
+variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+include H
+def GenuineInverse  
+    (D : H →ₗ.[ℂ] H) (z : ℂ) (R : H →L[ℂ] H)  :=
   ∃ hR : ∀ x : H, R x ∈ D.domain,
     (∀ x : H, D ⟨R x, hR x⟩ - z • R x = x) ∧
     (∀ y : D.domain, R (D y - z • (y : H)) = (y : H))
 
-def shiftedPencil {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
-    (B : H →L[ℂ] H) (z : ℂ) : H →L[ℂ] H :=
+def shiftedPencil  
+    (B : H →L[ℂ] H) (z : ℂ)  :=
   1 - (z + 1) • B
 
-def resolventSet {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
-    (D : H →ₗ.[ℂ] H) : Set ℂ :=
+def resolventSet  
+    (D : H →ₗ.[ℂ] H)  :=
   {z | ∃ R : H →L[ℂ] H, GenuineInverse D z R}
 
-def shiftedResolvent {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
-    (B : H →L[ℂ] H) (z : ℂ) : H →L[ℂ] H :=
+def shiftedResolvent  
+    (B : H →L[ℂ] H) (z : ℂ)  :=
   B * Ring.inverse (shiftedPencil B z)
+end
+
 
 section Algebra
 
 variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
 
-private lemma base_left (D : H →ₗ.[ℂ] H) (B : H →L[ℂ] H)
-    (hB : GenuineInverse D (-1) B) :
+section
+variable (D : H →ₗ.[ℂ] H) (B : H →L[ℂ] H)
+    (hB : GenuineInverse D (-1) B)
+include D B hB
+private lemma base_left   :
     ∃ h : ∀ x : H, B x ∈ D.domain,
       (∀ x, D ⟨B x, h x⟩ = x - B x) ∧
       (∀ y : D.domain, B (D y + (y : H)) = (y : H)) := by
@@ -43,8 +54,7 @@ private lemma base_left (D : H →ₗ.[ℂ] H) (B : H →L[ℂ] H)
     exact eq_sub_of_add_eq hx
   · simpa only [neg_smul, one_smul, sub_neg_eq_add] using h2
 
-private lemma genuine_formula (D : H →ₗ.[ℂ] H) (B : H →L[ℂ] H)
-    (hB : GenuineInverse D (-1) B) (z : ℂ)
+private lemma genuine_formula   (z : ℂ)
     (hz : IsUnit (shiftedPencil B z)) :
     GenuineInverse D z (shiftedResolvent B z) := by
   rcases base_left D B hB with ⟨h, h1, h2⟩
@@ -58,7 +68,7 @@ private lemma genuine_formula (D : H →ₗ.[ℂ] H) (B : H →L[ℂ] H)
   have hCB : C * B = B * C := by
     calc
       C * B = C * B * (A * C) := by rw [hAC, mul_one]
-      _ = C * (B * A) * C := by simp only [mul_assoc]
+      _ = C * (B * A) * C := rfl
       _ = C * (A * B) * C := by rw [hAB]
       _ = B * C := by rw [← mul_assoc, hCA, one_mul]
   change GenuineInverse D z (B * C)
@@ -76,7 +86,7 @@ private lemma genuine_formula (D : H →ₗ.[ℂ] H) (B : H →L[ℂ] H)
     have he : B (D y - z • (y : H)) = A (y : H) := by
       have hb := h2 y
       simp only [map_add] at hb
-      have hd : B (D y) = (y : H) - B (y : H) := eq_sub_of_add_eq hb
+      have hd  := eq_sub_of_add_eq hb
       simp only [map_sub, map_smul, A, shiftedPencil, sub_apply,
         one_apply_eq_self, smul_apply]
       rw [hd]
@@ -86,8 +96,7 @@ private lemma genuine_formula (D : H →ₗ.[ℂ] H) (B : H →L[ℂ] H)
     rw [he]
     exact DFunLike.congr_fun hCA (y : H)
 
-private lemma genuine_unit (D : H →ₗ.[ℂ] H) (B : H →L[ℂ] H)
-    (hB : GenuineInverse D (-1) B) (z : ℂ) (R : H →L[ℂ] H)
+private lemma genuine_unit   (z : ℂ) (R : H →L[ℂ] H)
     (hR : GenuineInverse D z R) : IsUnit (shiftedPencil B z) := by
   rcases base_left D B hB with ⟨h, h1, h2⟩
   rcases hR with ⟨hr, hr1, hr2⟩
@@ -117,6 +126,8 @@ private lemma genuine_unit (D : H →ₗ.[ℂ] H) (B : H →L[ℂ] H)
     simp [shiftedPencil]
   · rw [add_mul, one_mul, smul_mul_assoc, hRA]
     simp [shiftedPencil]
+end
+
 
 private lemma genuine_unique (D : H →ₗ.[ℂ] H) (z : ℂ)
     (R S : H →L[ℂ] H) (hR : GenuineInverse D z R) (hS : GenuineInverse D z S) :
@@ -130,39 +141,44 @@ private lemma genuine_unique (D : H →ₗ.[ℂ] H) (z : ℂ)
 
 end Algebra
 
-theorem isUnit_shiftedPencil_iff
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+section
+variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
     (D : H →ₗ.[ℂ] H) (hDense : Dense (D.domain : Set H))
-    (B : H →L[ℂ] H) (hB : GenuineInverse D (-1) B) (z : ℂ) :
+    (B : H →L[ℂ] H) (hB : GenuineInverse D (-1) B) (z : ℂ)
+include H D hDense B hB z
+theorem isUnit_shiftedPencil_iff
+      :
     IsUnit (shiftedPencil B z) ↔ z ∈ resolventSet D := by
   constructor
   · intro hz
     exact ⟨shiftedResolvent B z, genuine_formula D B hB z hz⟩
   · rintro ⟨R, hR⟩
-    exact genuine_unit D B hB z R hR
+    apply genuine_unit <;> assumption
 
 theorem shiftedResolvent_genuine_unique
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (D : H →ₗ.[ℂ] H) (hDense : Dense (D.domain : Set H))
-    (B : H →L[ℂ] H) (hB : GenuineInverse D (-1) B)
-    (z : ℂ) (hz : IsUnit (shiftedPencil B z)) :
+      (hz : IsUnit (shiftedPencil B z)) :
     GenuineInverse D z (shiftedResolvent B z) ∧
       ∀ R : H →L[ℂ] H, GenuineInverse D z R → R = shiftedResolvent B z := by
   have hg := genuine_formula D B hB z hz
   exact ⟨hg, fun R hR => genuine_unique D z R (shiftedResolvent B z) hR hg⟩
+end
 
+
+section
+variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+include H
 @[simp] theorem shiftedPencil_neg_one
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+     
     (B : H →L[ℂ] H) : shiftedPencil B (-1) = 1 := by
   simp [shiftedPencil]
 
 @[simp] theorem shiftedResolvent_neg_one
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+     
     (B : H →L[ℂ] H) : shiftedResolvent B (-1) = B := by
   simp [shiftedResolvent]
 
 theorem analyticOnNhd_shiftedResolvent
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+      [CompleteSpace H]
     (D : H →ₗ.[ℂ] H) (hDense : Dense (D.domain : Set H))
     (B : H →L[ℂ] H) (hB : GenuineInverse D (-1) B) :
     AnalyticOnNhd ℂ (shiftedResolvent B) (resolventSet D) := by
@@ -174,6 +190,8 @@ theorem analyticOnNhd_shiftedResolvent
     analyticOnNhd_inverse (𝕜 := ℂ) (shiftedPencil B z)
       ((isUnit_shiftedPencil_iff D hDense B hB z).mpr hz)
   exact analyticAt_const.mul (hi.comp hA)
+end
+
 
 end
 end DedekindZetaZeroFree.KPResolventPencil

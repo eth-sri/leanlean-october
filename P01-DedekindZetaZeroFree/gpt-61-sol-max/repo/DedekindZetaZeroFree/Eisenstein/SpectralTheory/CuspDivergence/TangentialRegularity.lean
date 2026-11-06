@@ -47,10 +47,13 @@ private theorem differential_smoothAt (d : ℕ) (g : Space d → ℂ) (x : Space
   · simpa [differential] using he.mul (hd 0)
   · simpa [differential] using he.mul (hd 1)
 
-private theorem flux_component_contDiff
-    (d : ℕ) {T : ℝ} (u : KPArch.Space d → ℝ)
+section
+variable (d : ℕ) {T : ℝ} (u : KPArch.Space d → ℝ)
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) u {z | T < KPCuspLogShape.meanHeight d z})
-    (a : ℝ → ℝ) (ha : CompactRadialTest T a) (i : Fin d) (k : Fin 3) :
+    (a : ℝ → ℝ) (ha : CompactRadialTest T a) (i : Fin d) (k : Fin 3)
+include d T u hu a ha i k
+private theorem flux_component_contDiff
+      :
     ContDiff ℝ (⊤ : ℕ∞) (fun x : Space d =>
       (a (KPCuspLogShape.meanHeight d (arch d x)) : ℂ) *
         differential d (fun q => (u (arch d q) : ℂ)) x i k) := by
@@ -75,11 +78,11 @@ private theorem flux_component_contDiff
     exact contDiffAt_const.congr_of_eventuallyEq he
 
 theorem cutoff_flux_component_contDiff
-    (d : ℕ) {T : ℝ} (u : KPArch.Space d → ℝ)
-    (hu : ContDiffOn ℝ (⊤ : ℕ∞) u {z | T < KPCuspLogShape.meanHeight d z})
-    (a : ℝ → ℝ) (ha : CompactRadialTest T a) (i : Fin d) (k : Fin 3) :
+      :
     ContDiff ℝ (⊤ : ℕ∞) (fun x => cutoffScalarFlux d u a x i k) :=
   flux_component_contDiff d u hu a ha i k
+end
+
 
 theorem cutoff_tangentialDivergence_contDiff
     {F : Type} [Field F] [NumberField F]

@@ -69,31 +69,34 @@ private lemma gaussian_contour (u : ℝ) :
     exact_mod_cast (Real.sq_sqrt Real.pi_pos.le).symm
   rw [hp]; field_simp
 
-theorem C0_pos (N : TraceHaarTransport R) (P : Packet R Q) : 0 < P.C₀ := by
+section
+variable (N : TraceHaarTransport R) (P : Packet R Q)
+include N P
+theorem C0_pos   : 0 < P.C₀ := by
   rw [C0_exact N P]
   exact polarC0_pos N P
 
-theorem positiveSheet_pos (N : TraceHaarTransport R) (P : Packet R Q) (x : PositiveAxis) :
+theorem positiveSheet_pos   (x : PositiveAxis) :
     0 < P.positiveSheet x := by
   rw [positiveSheet_eq N P]
   exact sheet_pos N P x
 
-theorem positiveSheet_nonneg (N : TraceHaarTransport R) (P : Packet R Q) (x : PositiveAxis) :
+theorem positiveSheet_nonneg   (x : PositiveAxis) :
     0 ≤ P.positiveSheet x := by
   rw [positiveSheet_eq N P]
   exact integral_nonneg (fun z => radial_nonneg P _)
 
-theorem positiveSheet_continuous (N : TraceHaarTransport R) (P : Packet R Q) :
+theorem positiveSheet_continuous   :
     Continuous P.positiveSheet := by
   rw [positiveSheet_eq N P]
   exact continuous_sheet N P
 
-theorem positiveSheet_integrable (N : TraceHaarTransport R) (P : Packet R Q) :
+theorem positiveSheet_integrable   :
     Integrable P.positiveSheet positiveHaar := by
   have hi := Complex.reCLM.integrable_comp ((sheet_mellin N P 0 (by norm_num)).1)
   simpa using hi
 
-theorem gaussian_smoothing (N : TraceHaarTransport R) (P : Packet R Q) (x : PositiveAxis) :
+theorem gaussian_smoothing   (x : PositiveAxis) :
     Integrable (fun t : PositiveAxis => P.kernel t.val *
       (P.positiveSheet ⟨x.val*t.val, mul_pos x.property t.property⟩ : ℂ)) positiveHaar ∧
     (∫ t : PositiveAxis, P.kernel t.val *
@@ -213,13 +216,15 @@ theorem gaussian_smoothing (N : TraceHaarTransport R) (P : Packet R Q) (x : Posi
     simp_rw [hshift]
     rw [gaussian_contour, thetaReflectionGaussian_of_pos _ x.property]
 
-theorem mellinGaussian (N : TraceHaarTransport R) (P : Packet R Q) : MellinGaussian R N Q P := by
+theorem mellinGaussian   : MellinGaussian R N Q P := by
   refine ⟨C0_exact N P, positive_sheet_integrable N P, C0_pos N P,
     fun s hs => (sheet_mellin N P s hs).1, ?_,
     fun x => (gaussian_smoothing N P x).1, fun x => (gaussian_smoothing N P x).2⟩
   intro s hs
   rw [C0_exact N P]
   exact (sheet_mellin N P s hs).2
+end
+
 end DedekindZetaZeroFree.GaussianSmoothing
 
 end

@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Ideals.Counting.NormSeries
 public import DedekindZetaZeroFree.Moments.Reflected.BetaEulerSeries
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 noncomputable section
@@ -11,22 +14,25 @@ open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
 open UniqueFactorizationMonoid
 
-private theorem support_prod (s : Finset (Ideal (𝓞 F)))
-    (hs : ∀ p ∈ s, Prime p) : idealPrimeSupport (∏ p ∈ s, p) = s := by
+section
+variable (s : Finset (Ideal (𝓞 F)))
+    (hs : ∀ p ∈ s, Prime p)
+include s hs
+private theorem support_prod   : idealPrimeSupport (∏ p ∈ s, p) = s := by
   unfold idealPrimeSupport
   have H : normalizedFactors s.val.prod = s.val :=
-    normalizedFactors_prod_of_prime (by simpa using hs)
+    normalizedFactors_prod_of_prime (hs)
   simpa using congrArg Multiset.toFinset H
 
-private theorem prod_ne_bot (s : Finset (Ideal (𝓞 F)))
-    (hs : ∀ p ∈ s, Prime p) : (∏ p ∈ s, p) ≠ ⊥ := by
-  exact Finset.prod_ne_zero_iff.mpr (fun p hp => (hs p hp).ne_zero)
+private def prod_ne_bot    := Finset.prod_ne_zero_iff.mpr (fun p hp => (hs p hp).ne_zero)
+end
 
-private theorem prime_of_support (h : Ideal (𝓞 F)) {p : Ideal (𝓞 F)}
-    (hp : p ∈ idealPrimeSupport h) : Prime p :=
+
+private def prime_of_support (h : Ideal (𝓞 F)) {p : Ideal (𝓞 F)}
+    (hp : p ∈ idealPrimeSupport h)  :=
   prime_of_normalized_factor p (Multiset.mem_toFinset.mp hp)
 
-def activeSquarefreeDivisors (h : Ideal (𝓞 F)) : Finset (Ideal (𝓞 F)) :=
+def activeSquarefreeDivisors (h : Ideal (𝓞 F))  :=
   (idealPrimeSupport h).powerset.image (fun s => ∏ p ∈ s, p)
 
 theorem mem_activeSquarefreeDivisors_iff (h : Ideal (𝓞 F)) (hh : h ≠ ⊥)
@@ -43,17 +49,17 @@ theorem mem_activeSquarefreeDivisors_iff (h : Ideal (𝓞 F)) (hh : h ≠ ⊥)
   · intro hf
     obtain ⟨s, hs, rfl⟩ := Finset.mem_image.mp hf
     have hs' := Finset.mem_powerset.mp hs
-    have hp' : ∀ p ∈ s, Prime p := fun p hps => hp p (hs' hps)
+    have hp'  := fun p hps => hp p (hs' hps)
     have hn := prod_ne_bot s hp'
     refine ⟨hn, ?_, ?_⟩
     · apply (squarefree_iff_nodup_normalizedFactors hn).mpr
       have H : normalizedFactors s.val.prod = s.val :=
-        normalizedFactors_prod_of_prime (by simpa using hp')
+        normalizedFactors_prod_of_prime (hp')
       simpa only [Finset.prod_eq_multiset_prod, Multiset.map_id', H] using s.nodup
     · apply (dvd_iff_normalizedFactors_le_normalizedFactors hn hr).mpr
       rw [hrad]
       have H : normalizedFactors s.val.prod = s.val :=
-        normalizedFactors_prod_of_prime (by simpa using hp')
+        normalizedFactors_prod_of_prime (hp')
       simpa only [Finset.prod_eq_multiset_prod, Multiset.map_id', H] using
         (Finset.val_le_iff.mpr hs')
   · rintro ⟨hf, hsf, hdiv⟩
@@ -70,16 +76,15 @@ theorem mem_activeSquarefreeDivisors_iff (h : Ideal (𝓞 F)) (hh : h ≠ ⊥)
     simpa only [idealPrimeSupport, Finset.prod_eq_multiset_prod, Multiset.map_id',
       Multiset.toFinset_val, hn.dedup] using H
 
-def activeEulerFactor (f : Ideal (𝓞 F)) (σ : ℝ) : ℝ :=
+def activeEulerFactor (f : Ideal (𝓞 F)) (σ : ℝ)  :=
   ∏ p ∈ idealPrimeSupport f, eulerLocal (idealNorm p) σ
 
-def activeEulerSum (h : Ideal (𝓞 F)) (σ : ℝ) : ℝ :=
+def activeEulerSum (h : Ideal (𝓞 F)) (σ : ℝ)  :=
   ∑ f ∈ activeSquarefreeDivisors h, activeEulerFactor f σ
 
 theorem activeEulerFactor_eq_eulerIdeal {cS : Ideal (𝓞 F)}
     (f : ExteriorSquarefreeIdeal cS) (σ : ℝ) :
-    activeEulerFactor f.val.val σ = eulerIdeal f σ := by
-  rfl
+    activeEulerFactor f.val.val σ = eulerIdeal f σ := rfl
 
 theorem activeEulerSum_eq_prod (h : Ideal (𝓞 F)) (hh : h ≠ ⊥) (σ : ℝ) :
     activeEulerSum h σ =
@@ -94,7 +99,7 @@ theorem activeEulerSum_eq_prod (h : Ideal (𝓞 F)) (hh : h ≠ ⊥) (σ : ℝ) 
   · intro s hs t ht hst
     have Hs := support_prod s (fun p hp => prime_of_support h (Finset.mem_powerset.mp hs hp))
     have Ht := support_prod t (fun p hp => prime_of_support h (Finset.mem_powerset.mp ht hp))
-    exact Hs.symm.trans ((congrArg idealPrimeSupport hst).trans Ht)
+    apply Hs.symm.trans <;> aesop
 
 theorem activeEulerFactor_nonneg (f : Ideal (𝓞 F)) (hf : f ≠ ⊥)
     (σ : ℝ) (hσ : 0 ≤ σ) :
@@ -135,12 +140,12 @@ theorem active_subpower (b : ℝ) (hb : 0 < b) :
           activeEulerSum h σ ≤ K * Real.rpow (idealNorm h) b ∧
           ∀ t : Finset (Ideal (𝓞 F)), t ⊆ activeSquarefreeDivisors h →
             (∑ f ∈ t, activeEulerFactor f σ) ≤ K * Real.rpow (idealNorm h) b := by
-  let C : ℝ := 4 + Real.sqrt 2
+  let C  := 4 + Real.sqrt 2
   have hC : 1 ≤ C := by dsimp [C]; have := Real.sqrt_nonneg 2; linarith
-  let X : ℝ := Real.rpow C b⁻¹
-  have hefin : (Subtype.val '' normBoundedIdeals F X).Finite :=
+  let X  := Real.rpow C b⁻¹
+  have hefin  :=
     (normBoundedIdeals_finite F X).image Subtype.val
-  let e : Finset (Ideal (𝓞 F)) := hefin.toFinset
+  let e  := hefin.toFinset
   refine ⟨C ^ e.card, pow_pos (lt_of_lt_of_le zero_lt_one hC) _, ?_⟩
   intro h hh σ hσ
   have hp : ∀ p ∈ idealPrimeSupport h, Prime p := fun p hp => prime_of_support h hp

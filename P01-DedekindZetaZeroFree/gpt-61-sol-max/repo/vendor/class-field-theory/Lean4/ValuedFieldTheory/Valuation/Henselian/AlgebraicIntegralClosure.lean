@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Valuation.Henselian.SimpleRootFactorization
 public import ValuedFieldTheory.Valuation.Henselian.MonicFactorization
 public import ValuedFieldTheory.Valuation.DiscreteValuationField.ChevalleyExtension
@@ -8,6 +10,7 @@ public import Mathlib.FieldTheory.IsAlgClosed.AlgebraicClosure
 public import Mathlib.RingTheory.IntegralClosure.IsIntegral.Basic
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -36,17 +39,20 @@ No restriction on the rank or value group is imposed.
 
 namespace ValuationTheory.Henselian
 
-private theorem minpoly_coeff_mem_of_mem_extension
-    {K Ω : Type*} [Field K] [Field Ω] [Algebra K Ω] [IsAlgClosure K Ω]
+section
+variable {K Ω : Type*} [Field K] [Field Ω] [Algebra K Ω] [IsAlgClosure K Ω]
     (V : ValuationSubring K) [HenselianRing V (IsLocalRing.maximalIdeal V)]
     (B : ValuationSubring Ω) [V.valuation.HasExtension B.valuation]
-    (α : Ω) (hαB : α ∈ B) :
+    (α : Ω) (hαB : α ∈ B)
+include K Ω V B α hαB
+private theorem minpoly_coeff_mem_of_mem_extension
+      :
     ∀ i : ℕ, (minpoly K α).coeff i ∈ V := by
-  have hα : IsIntegral K α :=
+  have hα  :=
     (Algebra.IsAlgebraic.isAlgebraic (R := K) α).isIntegral
-  have hmonic : ((minpoly K α).map (algebraMap K Ω)).Monic :=
+  have hmonic  :=
     (minpoly.monic hα).map (algebraMap K Ω)
-  have hsplit : ((minpoly K α).map (algebraMap K Ω)).Splits :=
+  have hsplit  :=
     (IsAlgClosure.isAlgClosed K).splits ((minpoly K α).map (algebraMap K Ω))
   have hαroot : α ∈ ((minpoly K α).map (algebraMap K Ω)).roots := by
     apply (Polynomial.mem_roots hmonic.ne_zero).2
@@ -70,13 +76,10 @@ private theorem minpoly_coeff_mem_of_mem_extension
   exact hbound
 
 private theorem isIntegral_of_mem_extension
-    {K Ω : Type*} [Field K] [Field Ω] [Algebra K Ω] [IsAlgClosure K Ω]
-    (V : ValuationSubring K) [HenselianRing V (IsLocalRing.maximalIdeal V)]
-    (B : ValuationSubring Ω) [V.valuation.HasExtension B.valuation]
-    (α : Ω) (hαB : α ∈ B) : IsIntegral V α := by
-  have hα : IsIntegral K α :=
+      : IsIntegral V α := by
+  have hα  :=
     (Algebra.IsAlgebraic.isAlgebraic (R := K) α).isIntegral
-  have hcoeff : ∀ i : ℕ, (minpoly K α).coeff i ∈ V :=
+  have hcoeff  :=
     minpoly_coeff_mem_of_mem_extension V B α hαB
   have hlifts : minpoly K α ∈ Polynomial.lifts (algebraMap V K) := by
     apply (Polynomial.lifts_iff_coeff_lifts (minpoly K α)).2
@@ -92,6 +95,8 @@ private theorem isIntegral_of_mem_extension
     rw [← Polynomial.aeval_map_algebraMap K α f, hf]
     exact minpoly.aeval K α
   exact ⟨f, hfmonic, hfroot⟩
+end
+
 
 /-- For every algebraic extension of a Henselian valued field, an element
 or its inverse lies in the actual integral closure of the valuation ring. -/

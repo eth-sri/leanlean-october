@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Fourier.SphericalFractionalIntegrals.Smoothness
 public import Mathlib.Data.Set.Finite.List
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.ComplexFractionalInverse.RotationCalculus
 open MeasureTheory Set
@@ -13,7 +16,7 @@ noncomputable def rawRotationVector (i : Fin 3) (x : Ambient) : Ambient :=
   WithLp.toLp 2 (fun j : Fin 3 =>
     if j = i + 1 then -x (i + 2) else if j = i + 2 then x (i + 1) else 0)
 
-noncomputable def rawRotationDeriv (i : Fin 3) (F : Sphere → ℂ) (x : Sphere) : ℂ :=
+noncomputable def rawRotationDeriv (i : Fin 3) (F : Sphere → ℂ) (x : Sphere)  :=
   fderiv ℝ (rawRadialExtension F) (x : Ambient) (rawRotationVector i x)
 
 private theorem rawSphere_norm (x : Sphere) : ‖(x : Ambient)‖ = 1 := by
@@ -70,15 +73,18 @@ theorem RawSphereSmooth.continuous {F : Sphere → ℂ} (hF : RawSphereSmooth F)
     hF.continuousOn.comp_continuous continuous_subtype_val (fun x => rawSphere_ne_zero x)
   simpa only [rawRadialExtension_sphere] using h
 
-noncomputable def rawSphereOrthogonal (e : Ambient ≃ₗᵢ[ℝ] Ambient) : Sphere ≃ₜ Sphere :=
+section
+variable (e : Ambient ≃ₗᵢ[ℝ] Ambient)
+include e
+noncomputable def rawSphereOrthogonal   : Sphere ≃ₜ Sphere :=
   e.toHomeomorph.subtype (fun x => by
     change ‖x - 0‖ = 1 ↔ ‖e x - 0‖ = 1
     simp only [sub_zero, e.norm_map])
 
-@[simp] theorem rawSphereOrthogonal_coe (e : Ambient ≃ₗᵢ[ℝ] Ambient) (x : Sphere) :
+@[simp] theorem rawSphereOrthogonal_coe   (x : Sphere) :
     (rawSphereOrthogonal e x : Ambient) = e x := rfl
 
-theorem rawSphereOrthogonal_measurePreserving (e : Ambient ≃ₗᵢ[ℝ] Ambient) :
+theorem rawSphereOrthogonal_measurePreserving   :
     MeasurePreserving (rawSphereOrthogonal e) sphereArea sphereArea := by
   have hraw : MeasurePreserving (rawSphereOrthogonal e) volume.toSphere volume.toSphere := by
     refine ⟨(rawSphereOrthogonal e).measurable, Measure.ext fun s hs => ?_⟩
@@ -100,6 +106,8 @@ theorem rawSphereOrthogonal_measurePreserving (e : Ambient ≃ₗᵢ[ℝ] Ambien
     rw [hset]
     exact e.measurePreserving.measure_preimage_emb e.toHomeomorph.measurableEmbedding _
   exact hraw.smul_measure _
+end
+
 
 theorem fractionalKernel_rawSphereOrthogonal (α : ℝ) (e : Ambient ≃ₗᵢ[ℝ] Ambient)
     (x y : Sphere) :
@@ -116,7 +124,10 @@ theorem fractionalIntegral_rawSphereOrthogonal (α : ℝ) (e : Ambient ≃ₗᵢ
     (rawSphereOrthogonal e).measurableEmbedding]
   simp only [fractionalKernel_rawSphereOrthogonal]
 
-noncomputable def rawRotationFlowMap (i : Fin 3) (t : ℝ) : Ambient →ₗ[ℝ] Ambient where
+section
+variable (i : Fin 3) (t : ℝ)
+include i t
+noncomputable def rawRotationFlowMap   : Ambient →ₗ[ℝ] Ambient where
   toFun x := WithLp.toLp 2 (fun j : Fin 3 =>
     if j = i then x i else if j = i + 1 then
       Real.cos t * x (i+1) - Real.sin t * x (i+2)
@@ -127,7 +138,7 @@ noncomputable def rawRotationFlowMap (i : Fin 3) (t : ℝ) : Ambient →ₗ[ℝ]
     ext j; simp only [PiLp.toLp_apply, PiLp.smul_apply, smul_eq_mul, RingHom.id_apply]
     split_ifs <;> ring
 
-theorem rawRotationFlowMap_inverse (i : Fin 3) (t : ℝ) (x : Ambient) :
+theorem rawRotationFlowMap_inverse   (x : Ambient) :
     rawRotationFlowMap i (-t) (rawRotationFlowMap i t x) = x := by
   have ht := Real.cos_sq_add_sin_sq t
   ext j
@@ -137,7 +148,7 @@ theorem rawRotationFlowMap_inverse (i : Fin 3) (t : ℝ) (x : Ambient) :
       congrArg (fun a : ℝ => a * x 1) ht,
       congrArg (fun a : ℝ => a * x 2) ht]
 
-theorem rawRotationFlowMap_norm (i : Fin 3) (t : ℝ) (x : Ambient) :
+theorem rawRotationFlowMap_norm   (x : Ambient) :
     ‖rawRotationFlowMap i t x‖ = ‖x‖ := by
   apply (sq_eq_sq₀ (norm_nonneg _) (norm_nonneg _)).mp
   rw [EuclideanSpace.norm_sq_eq, EuclideanSpace.norm_sq_eq]
@@ -146,7 +157,7 @@ theorem rawRotationFlowMap_norm (i : Fin 3) (t : ℝ) (x : Ambient) :
     AddHom.coe_mk, PiLp.toLp_apply, Fin.reduceAdd, Real.norm_eq_abs, sq_abs] <;>
     simp <;> nlinarith [sq_nonneg (x 0), sq_nonneg (x 1), sq_nonneg (x 2)]
 
-noncomputable def rawRotationFlow (i : Fin 3) (t : ℝ) : Ambient ≃ₗᵢ[ℝ] Ambient where
+noncomputable def rawRotationFlow   : Ambient ≃ₗᵢ[ℝ] Ambient where
   toLinearEquiv :=
     { rawRotationFlowMap i t with
       invFun := rawRotationFlowMap i (-t)
@@ -156,8 +167,10 @@ noncomputable def rawRotationFlow (i : Fin 3) (t : ℝ) : Ambient ≃ₗᵢ[ℝ]
         simpa only [neg_neg] using rawRotationFlowMap_inverse i (-t) x }
   norm_map' := rawRotationFlowMap_norm i t
 
-@[simp] theorem rawRotationFlow_apply (i : Fin 3) (t : ℝ) (x : Ambient) :
+@[simp] theorem rawRotationFlow_apply   (x : Ambient) :
     rawRotationFlow i t x = rawRotationFlowMap i t x := rfl
+end
+
 
 @[simp] theorem rawRotationFlow_zero (i : Fin 3) (x : Ambient) : rawRotationFlow i 0 x = x := by
   ext j
@@ -200,8 +213,8 @@ theorem fractionalIntegral_rawRotationFlow_hasDerivAt (α : ℝ) (hα : 0 < α) 
       (fractionalIntegral α (rawRotationDeriv i F)
         (rawSphereOrthogonal (rawRotationFlow i t) x)) t := by
   let K : Sphere → ℂ := fun y => fractionalKernel α x y
-  let P : ℝ → Sphere → ℂ := fun t y => K y * F (rawSphereOrthogonal (rawRotationFlow i t) y)
-  let P' : ℝ → Sphere → ℂ :=
+  let P  := fun t y => K y * F (rawSphereOrthogonal (rawRotationFlow i t) y)
+  let P'  :=
     fun t y => K y * rawRotationDeriv i F (rawSphereOrthogonal (rawRotationFlow i t) y)
   have hK := (fractionalKernel_mass α hα).2 x
   have hKi : Integrable K sphereArea := hK.1.ofReal
@@ -228,8 +241,7 @@ theorem fractionalIntegral_rawRotationFlow_hasDerivAt (α : ℝ) (hα : 0 < α) 
     apply hKi.mul_bdd
       (hF.continuous.comp (rawSphereOrthogonal (rawRotationFlow i t)).continuous).aestronglyMeasurable
     exact Filter.Eventually.of_forall (fun y => by
-      simpa only [Function.comp_apply] using
-        hC0 (rawSphereOrthogonal (rawRotationFlow i t) y))
+      apply hC0)
   have hb : ∀ y t, ‖P' t y‖ ≤ fractionalKernel α x y * C1 := by
     intro y t
     dsimp only [P', K]
@@ -259,7 +271,7 @@ theorem fractionalIntegral_raw_rotationDeriv (α : ℝ) (hα : 0 < α)
     rawRotationDeriv i (fractionalIntegral α F) =
       fractionalIntegral α (rawRotationDeriv i F) := by
   funext x
-  have hsm : RawSphereSmooth (fractionalIntegral α F) :=
+  have hsm  :=
     fractionalIntegral_raw_smooth α hα F hF
   have hdiff : DifferentiableAt ℝ (rawRadialExtension (fractionalIntegral α F)) (x : Ambient) :=
     ((hsm x (rawSphere_ne_zero x)).contDiffAt

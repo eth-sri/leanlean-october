@@ -95,8 +95,11 @@ private theorem update_left_mul
     (w : InfinitePlace F) (z : ℂˣ) : KPGlobalTorusFunctionData.TorusArch F :=
   Function.update (fun _ => 1) w z
 
+section
+variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+include F ζ hζ in
 private theorem diagonal_insertion
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+     
     (z : KPGlobalTorusFunctionData.TorusArch F) :
     (KPGlobalTorusFunctionData.torusArchChart F ζ hζ z).val =
       KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
@@ -118,14 +121,15 @@ private theorem diagonal_insertion
     intro i j
     fin_cases i <;> fin_cases j <;> simp [Matrix.GeneralLinearGroup.map]
 
- def singleAdele (F : Type) [Field F] [NumberField F]
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (w : InfinitePlace F) (u : ℂ) :
+ include F ζ hζ in
+def singleAdele   (w : InfinitePlace F) (u : ℂ) :
     KPGlobalTorusFunctionData.Adeles F :=
   (Pi.single w ((InfinitePlace.Completion.ringEquivComplexOfIsComplex
     (KPHilbert.infinite_isComplex F ζ hζ w)).symm u), 0)
 
+include F ζ hζ in
 private theorem unipotent_insertion
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+     
     (w : InfinitePlace F) (u : ℂ) :
     KPGlobalTorusFunctionData.N F ζ hζ (singleAdele F ζ hζ w u) =
       KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
@@ -184,8 +188,9 @@ private theorem upper_projective (a d : ℂˣ) (b : ℂ) :
       Matrix.mul_apply, Fin.sum_univ_two, div_eq_mul_inv]
   field_simp
 
+include F ζ hζ in
 private theorem slice_covariance
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+     
     (t : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ))
     (w : InfinitePlace F) (a₀ : KPSmoothActualFlowData.GInfinity F)
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ) :
@@ -397,8 +402,9 @@ private theorem product_covariance {ι : Type*} [Fintype ι] [DecidableEq ι]
   have hvw : v ≠ w := by simpa using (Finset.mem_sdiff.mp hv).2
   simp [Function.update_of_ne hvw]
 
+include F ζ hζ in
 private theorem compact_uniform_pure
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+     
     (t : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ)) :
     ∃ (n m : ℕ) (k : Fin m → KPContSectorArchSphericalFibers.KInfinity F)
       (A : Fin n → Fin m → ℂ)
@@ -441,6 +447,8 @@ private theorem compact_uniform_pure
       simp only [evalCoefficient, Finset.mul_sum, mul_assoc]
     rw [hc]
     ring
+end
+
 
 end UniformAssembly
 

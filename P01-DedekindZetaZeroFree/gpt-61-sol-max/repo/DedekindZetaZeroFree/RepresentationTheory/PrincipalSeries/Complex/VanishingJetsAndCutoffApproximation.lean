@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.ComplexChartsAndSphericalSections
 public import Mathlib.Analysis.Calculus.BumpFunction.InnerProduct
 public import Mathlib.Topology.ContinuousMap.CompactlySupported
 public import Mathlib.MeasureTheory.Integral.IntervalIntegral.DistLEIntegral
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.KPCplxClosedCellCutoffApproximation
 
@@ -32,7 +35,7 @@ theorem cutoff_section_exists (s : ℝ) (f : PrincipalSeries s) (χ : ℂ → �
     ∃ h : PrincipalSeries s,
       infinityCoordinate h = (fun u => χ u * infinityCoordinate f u) ∧
       (∀ x : ℂ, ‖x‖ < 2 → openCoordinate h x = 0) := by
-  let A : ℂ → ℂ := fun x => if x = 0 then 0 else χ x⁻¹ * openCoordinate f x
+  let A  := fun x => if x = 0 then 0 else χ x⁻¹ * openCoordinate f x
   have hA0 : ∀ x : ℂ, ‖x‖ < 2 → A x = 0 :=
     cutoff_open_zero χ hχ (openCoordinate f)
   have hAsmooth : ContDiff ℝ (⊤ : ℕ∞) A := by
@@ -81,27 +84,30 @@ theorem canonical_cutoff_approximant (s : ℝ) (f : PrincipalSeries s)
         (fun u => ((infinityCutoff r hr u : ℝ) : ℂ) * infinityCoordinate f u) ∧
       (∀ x : ℂ, ‖x‖ < 2 → openCoordinate (f - g) x = 0) := by
   let b := infinityCutoff r hr
-  let χ : ℂ → ℂ := fun u => (b u : ℂ)
+  let χ  := fun u => (b u : ℂ)
   have hc : ContDiff ℝ (⊤ : ℕ∞) χ :=
     Complex.ofRealCLM.contDiff.comp b.contDiff
   have hz : ∀ u : ℂ, (1/2 : ℝ) ≤ ‖u‖ → χ u = 0 := by
     intro u hu
-    have hb : b u = 0 := b.zero_of_le_dist (by simpa [b, infinityCutoff] using hrsmall.trans hu)
+    have hb  := b.zero_of_le_dist (by simpa [b, infinityCutoff] using hrsmall.trans hu)
     simp [χ, hb]
   obtain ⟨h, hinf, hop⟩ := cutoff_section_exists s f χ hc hz
   refine ⟨f - h, ?_, ?_, ?_⟩
   · intro u hu
     change infinityCoordinate f u - infinityCoordinate h u = 0
     rw [hinf]
-    have hb : b u = 1 := b.one_of_mem_closedBall (by
+    have hb  := b.one_of_mem_closedBall (by
       simpa [b, infinityCutoff] using hu.le)
     simp [χ, hb]
   · simpa using hinf
   · simpa using hop
 
-theorem openCoordinate_derivatives_zero (s : ℝ) (h : PrincipalSeries s)
+section
+variable (s : ℝ) (h : PrincipalSeries s)
     (hop : ∀ x : ℂ, ‖x‖ < 2 → openCoordinate h x = 0)
-    (n : ℕ) (x : ℂ) (hx : ‖x‖ ≤ 1) :
+    (n : ℕ)
+include s h hop n
+theorem openCoordinate_derivatives_zero   (x : ℂ) (hx : ‖x‖ ≤ 1) :
     iteratedFDeriv ℝ n (openCoordinate h) x = 0 := by
   have heq : openCoordinate h =ᶠ[𝓝 x] (fun _ => (0 : ℂ)) := by
     have hn : ∀ᶠ y in 𝓝 x, ‖y‖ < 2 :=
@@ -109,8 +115,7 @@ theorem openCoordinate_derivatives_zero (s : ℝ) (h : PrincipalSeries s)
     filter_upwards [hn] with y hy using hop y hy
   simpa using (heq.iteratedFDeriv ℝ n).eq_of_nhds
 
-theorem cutoff_chartSeminorm_eq (s : ℝ) (h : PrincipalSeries s)
-    (hop : ∀ x : ℂ, ‖x‖ < 2 → openCoordinate h x = 0) (n : ℕ) :
+theorem cutoff_chartSeminorm_eq   :
     chartSeminorm s n h =
       sSup ((fun u : ℂ => ‖iteratedFDeriv ℝ n (infinityCoordinate h) u‖) ''
         Metric.closedBall (0 : ℂ) 1) := by
@@ -132,6 +137,8 @@ theorem cutoff_chartSeminorm_eq (s : ℝ) (h : PrincipalSeries s)
       (norm_nonneg _)
   change max _ _ = _
   rw [hopen, csSup_singleton, max_eq_right hnn]
+end
+
 
 theorem jet_flat_bigO (H : ℂ → ℂ) (hH : ContDiff ℝ (⊤ : ℕ∞) H)
     (n : ℕ) (hflat : ∀ k ≤ n, iteratedFDeriv ℝ k H 0 = 0)
@@ -231,7 +238,7 @@ theorem canonical_cutoff_derivative_decay (H : ℂ → ℂ)
   classical
   obtain ⟨C, δ, hC, hδ, hjet⟩ := jet_flat_uniform_bound H hH j hflat
   choose D hD using infinityCutoff_derivative_bound
-  let A : ℝ := ∑ i ∈ Finset.range (j+1), (j.choose i : ℝ) * D i * C
+  let A  := ∑ i ∈ Finset.range (j+1), (j.choose i : ℝ) * D i * C
   have hA : 0 ≤ A := by
     apply Finset.sum_nonneg
     intro i hi
@@ -239,13 +246,12 @@ theorem canonical_cutoff_derivative_decay (H : ℂ → ℂ)
   refine ⟨A+1, δ, by linarith, hδ, ?_⟩
   intro r hr hrδ u
   let b := infinityCutoff r hr
-  let χ : ℂ → ℂ := fun v => (b v : ℂ)
+  let χ  := fun v => (b v : ℂ)
   have hχ : ContDiff ℝ (⊤ : ℕ∞) χ := Complex.ofRealCLM.contDiff.comp b.contDiff
   by_cases hu : ‖u‖ ≤ r
   · have hb : ∀ i : ℕ, ‖iteratedFDeriv ℝ i χ u‖ ≤ D i * r⁻¹^i := by
       intro i
-      have heq : ‖iteratedFDeriv ℝ i χ u‖ = ‖iteratedFDeriv ℝ i (b : ℂ → ℝ) u‖ := by
-        exact Complex.ofRealLI.norm_iteratedFDeriv_comp_left
+      have heq : ‖iteratedFDeriv ℝ i χ u‖ = ‖iteratedFDeriv ℝ i (b : ℂ → ℝ) u‖ := Complex.ofRealLI.norm_iteratedFDeriv_comp_left
           (b.contDiff (n := (i : ℕ∞))).contDiffAt le_rfl
       rw [heq]
       exact (hD i).2 r hr u
@@ -262,8 +268,7 @@ theorem canonical_cutoff_derivative_decay (H : ℂ → ℂ)
         have hp' : ‖iteratedFDeriv ℝ (j-i) H u‖ ≤ C * r^(i+1) :=
           hp.trans (mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (norm_nonneg u) hu _) hC.le)
         calc
-          _ ≤ (j.choose i : ℝ) * (D i * r⁻¹^i) * (C * r^(i+1)) := by
-            exact mul_le_mul
+          _ ≤ (j.choose i : ℝ) * (D i * r⁻¹^i) * (C * r^(i+1)) := mul_le_mul
               (mul_le_mul_of_nonneg_left (hb i) (Nat.cast_nonneg _))
               hp' (norm_nonneg _) (mul_nonneg (Nat.cast_nonneg _)
                 (mul_nonneg (hD i).1 (by positivity)))
@@ -279,7 +284,7 @@ theorem canonical_cutoff_derivative_decay (H : ℂ → ℂ)
       have hevent : ∀ᶠ v in 𝓝 u, r < ‖v‖ :=
         (isOpen_lt continuous_const continuous_norm).mem_nhds (lt_of_not_ge hu)
       filter_upwards [hevent] with v hv
-      have hb : b v = 0 := b.zero_of_le_dist (by simpa [b, infinityCutoff] using hv.le)
+      have hb  := b.zero_of_le_dist (by simpa [b, infinityCutoff] using hv.le)
       simp [χ, hb]
     have heq := (hz.iteratedFDeriv ℝ j).eq_of_nhds
     change ‖iteratedFDeriv ℝ j (fun v => χ v * H v) u‖ ≤ (A+1)*r
@@ -321,7 +326,7 @@ theorem finite_seminorm_cutoff_approximation (s : ℝ) (F : Finset ℕ) :
     nlinarith
   have hall := F.eventually_all.mpr hj
   obtain ⟨δ, hδ, hball⟩ := Metric.eventually_nhds_iff.mp hall
-  let r : ℝ := min (δ/2) (1/4)
+  let r  := min (δ/2) (1/4)
   have hr : 0 < r := by dsimp [r]; positivity
   have hrsmall : r ≤ 1/2 := (min_le_right _ _).trans (by norm_num)
   have hrδ : dist r 0 < δ := by
@@ -335,7 +340,7 @@ theorem finite_seminorm_cutoff_approximation (s : ℝ) (F : Finset ℕ) :
     intro u
     change ‖iteratedFDeriv ℝ j (infinityCoordinate ((f : KPCplxCharacterHaar.ComplexGL2 → ℂ) - g)) u‖ ≤ ε/2
     rw [hinf]
-    exact hball hrδ j hj hr u
+    apply hball <;> assumption
   have hsup : (F.sup (chartSeminorm s)) (f-g) ≤ ε/2 := by
     have hgen : ∀ I : Finset ℕ, (∀ j ∈ I, chartSeminorm s j (f-g) ≤ ε/2) →
         (I.sup (chartSeminorm s)) (f-g) ≤ ε/2 := by

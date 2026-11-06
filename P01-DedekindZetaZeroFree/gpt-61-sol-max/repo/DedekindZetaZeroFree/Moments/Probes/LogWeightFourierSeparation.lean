@@ -507,9 +507,9 @@ theorem continuous_ell_inv_exp (A : SArithmeticData F) :
   · exact continuous_pi (fun w => Units.continuous_coe_inv.comp ((continuous_apply w).comp (continuous_fst.comp hc)))
   · exact continuous_pi (fun v => Units.continuous_coe_inv.comp ((continuous_apply v).comp (continuous_snd.comp hc)))
 
-local instance instMeasurableSpaceLogWeightSLocalProduct (A : SArithmeticData F) : MeasurableSpace (SLocalProduct F A.Sf) := borel _
 
-local instance instBorelSpaceLogWeightSLocalProduct (A : SArithmeticData F) : BorelSpace (SLocalProduct F A.Sf) := ⟨rfl⟩
+
+
 
 theorem continuous_row_exp (A : SArithmeticData F) (W0 : SLocalProduct F A.Sf → ℂ)
     (W1 : ProbeRealAnnularWeight) (hW0 : Continuous W0) :

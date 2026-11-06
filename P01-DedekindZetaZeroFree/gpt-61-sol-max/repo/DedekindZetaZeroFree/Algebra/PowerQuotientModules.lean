@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Algebra.Module.Equiv.Defs
 public import Mathlib.Algebra.Module.ZMod
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 
@@ -15,7 +18,7 @@ theorem powerQuotient_pow_eq_one (G : Type*) [CommGroup G] (n : ℕ)
   induction q using QuotientGroup.induction_on with
   | H g =>
     rw [← QuotientGroup.mk_pow, QuotientGroup.eq_one_iff]
-    exact MonoidHom.mem_range.mpr ⟨g, powMonoidHom_apply n g⟩
+    apply MonoidHom.mem_range.mpr <;> aesop
 
 noncomputable instance instPowerQuotientModule (G : Type*) [CommGroup G] (n : ℕ) :
     Module (ZMod n) (Additive (PowerQuotient G n)) :=

@@ -152,12 +152,15 @@ theorem intrinsicBase_normalizedDegree_eq_ambientFixedField
     localResidueDegree_eq_normalizedDegree_abstractFixedFieldEquiv
       K H e τ.1
 
+section
+variable (K : Type) [Field K]
+    (H : FiniteAbstractField
+      Gal(SeparableClosure K / K))
+include K H
 /-- A separable-closure equivalence identifies the intrinsic base subgroup of a
 finite fixed field with its defining subgroup in the ambient Galois group. -/
 noncomputable def intrinsicBaseEquivAmbientFixedField
-    (K : Type) [Field K]
-    (H : FiniteAbstractField
-      Gal(SeparableClosure K / K)) :
+      :
     let F := abstractFixedField K (SeparableClosure K) H.field
     letI : Algebra F (SeparableClosure F) :=
       (separableClosure F (AlgebraicClosure F)).algebra
@@ -181,9 +184,7 @@ noncomputable def intrinsicBaseEquivAmbientFixedField
 equivalence is conjugation followed by the standard fixed-field subgroup equivalence. -/
 @[simp]
 theorem intrinsicBaseEquivAmbientFixedField_apply_val
-    (K : Type) [Field K]
-    (H : FiniteAbstractField
-      Gal(SeparableClosure K / K)) :
+      :
     let F := abstractFixedField K (SeparableClosure K) H.field
     letI : Algebra F (SeparableClosure F) :=
       (separableClosure F (AlgebraicClosure F)).algebra
@@ -196,6 +197,8 @@ theorem intrinsicBaseEquivAmbientFixedField_apply_val
   dsimp only
   rintro e τ
   rfl
+end
+
 
 /-- For an embedded finite separable extension, transport through a
 separable-closure equivalence identifies its intrinsic base subgroup with the

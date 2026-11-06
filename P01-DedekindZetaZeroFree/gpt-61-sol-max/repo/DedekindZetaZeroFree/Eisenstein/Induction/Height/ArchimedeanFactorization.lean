@@ -48,7 +48,10 @@ private theorem sectionTuple_insertion
   rw [map_list_prod, map_list_prod, List.map_map, List.map_map]
   exact (KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.2.2.2 r |>.symm
 
-private lemma gl_map_d {K L : Type*} [Field K] [Field L] (φ : K →+* L) (u v : Kˣ) :
+section
+variable {K L : Type*} [Field K] [Field L] (φ : K →+* L)
+include K L φ
+private lemma gl_map_d   (u v : Kˣ) :
     Matrix.GeneralLinearGroup.map φ (KubotaRankTwo.d K u v) =
       KubotaRankTwo.d L (Units.map φ u) (Units.map φ v) := by
   apply Units.ext
@@ -56,12 +59,14 @@ private lemma gl_map_d {K L : Type*} [Field K] [Field L] (φ : K →+* L) (u v :
   fin_cases i <;> fin_cases j <;>
     simp [KubotaRankTwo.d, Matrix.GeneralLinearGroup.map_apply, Units.coe_map]
 
-private lemma gl_map_n {K L : Type*} [Field K] [Field L] (φ : K →+* L) (t : K) :
+private lemma gl_map_n   (t : K) :
     Matrix.GeneralLinearGroup.map φ (KubotaRankTwo.n K t) = KubotaRankTwo.n L (φ t) := by
   apply Units.ext
   ext i j
   fin_cases i <;> fin_cases j <;>
     simp [KubotaRankTwo.n, Matrix.GeneralLinearGroup.map_apply]
+end
+
 
 private theorem archDiagonalLift_eq_insertion (u : InfinitePlace F → ℂˣ) :
     KPGlobalTorusFunctionData.archDiagonalLift F ζ hζ (fun w => (u w : ℂ)) =
@@ -112,9 +117,12 @@ private theorem N_eq_insertion (c : InfinitePlace F → ℂ) :
       simp
   rw [ht, sectionTuple_insertion]
 
- def archDen (A : Matrix (Fin 2) (Fin 2) ℂ) : ℝ := ‖A 1 0‖ ^ 2 + ‖A 1 1‖ ^ 2
- def archS (A : Matrix (Fin 2) (Fin 2) ℂ) : ℝ := Real.sqrt (archDen A)
- lemma archDen_pos (A : Matrix (Fin 2) (Fin 2) ℂ) (hA : A.det ≠ 0) : 0 < archDen A := by
+ section
+variable (A : Matrix (Fin 2) (Fin 2) ℂ)
+include A
+def archDen   : ℝ := ‖A 1 0‖ ^ 2 + ‖A 1 1‖ ^ 2
+ def archS   : ℝ := Real.sqrt (archDen A)
+ lemma archDen_pos   (hA : A.det ≠ 0) : 0 < archDen A := by
   unfold archDen
   have h : A 1 0 ≠ 0 ∨ A 1 1 ≠ 0 := by
     by_contra hc; push Not at hc
@@ -122,19 +130,24 @@ private theorem N_eq_insertion (c : InfinitePlace F → ℂ) :
   rcases h with h | h
   · nlinarith [norm_pos_iff.mpr h, sq_nonneg ‖A 1 1‖, sq_nonneg ‖A 1 0‖]
   · nlinarith [norm_pos_iff.mpr h, sq_nonneg ‖A 1 1‖, sq_nonneg ‖A 1 0‖]
-private lemma archS_sq (A : Matrix (Fin 2) (Fin 2) ℂ) : archS A ^ 2 = archDen A :=
+private lemma archS_sq   : archS A ^ 2 = archDen A :=
   Real.sq_sqrt (by unfold archDen; positivity)
-private lemma archS_pos (A : Matrix (Fin 2) (Fin 2) ℂ) (hA : A.det ≠ 0) : 0 < archS A :=
+private lemma archS_pos   (hA : A.det ≠ 0) : 0 < archS A :=
   Real.sqrt_pos.mpr (archDen_pos A hA)
- def archK (A : Matrix (Fin 2) (Fin 2) ℂ) : Matrix (Fin 2) (Fin 2) ℂ :=
+ def archK   : Matrix (Fin 2) (Fin 2) ℂ :=
   !![star (A 1 1) / ((archS A : ℝ) : ℂ), -star (A 1 0) / ((archS A : ℝ) : ℂ);
      A 1 0 / ((archS A : ℝ) : ℂ), A 1 1 / ((archS A : ℝ) : ℂ)]
- def archY (A : Matrix (Fin 2) (Fin 2) ℂ) (hA : A.det ≠ 0) : ℂˣ :=
+ def archY   (hA : A.det ≠ 0) : ℂˣ :=
   Units.mk0 (A.det / ((archDen A : ℝ) : ℂ))
     (div_ne_zero hA (by simp only [ne_eq, Complex.ofReal_eq_zero]; exact ne_of_gt (archDen_pos A hA)))
- def archX (A : Matrix (Fin 2) (Fin 2) ℂ) : ℂ :=
+ def archX   : ℂ :=
   (A 0 0 * star (A 1 0) + A 0 1 * star (A 1 1)) / A.det
-private lemma archK_mul_star (A : Matrix (Fin 2) (Fin 2) ℂ) (hA : A.det ≠ 0) :
+end
+
+section
+variable (A : Matrix (Fin 2) (Fin 2) ℂ) (hA : A.det ≠ 0)
+include A hA
+private lemma archK_mul_star   :
     archK A * star (archK A) = 1 := by
   have hspos : 0 < archS A := archS_pos A hA
   have hs : ((archS A : ℝ) : ℂ) ≠ 0 := by
@@ -149,7 +162,7 @@ private lemma archK_mul_star (A : Matrix (Fin 2) (Fin 2) ℂ) (hA : A.det ≠ 0)
   · ring
   · ring
   · rw [abs_of_pos hspos]; field_simp; rw [archS_sq]; unfold archDen; ring
-private lemma archK_det (A : Matrix (Fin 2) (Fin 2) ℂ) (hA : A.det ≠ 0) :
+private lemma archK_det   :
     (archK A).det = 1 := by
   have hspos : 0 < archS A := archS_pos A hA
   have hs : ((archS A : ℝ) : ℂ) ≠ 0 := by
@@ -163,14 +176,14 @@ private lemma archK_det (A : Matrix (Fin 2) (Fin 2) ℂ) (hA : A.det ≠ 0) :
   rw [sub_neg_eq_add, ← Complex.ofReal_add, Complex.ofReal_inj, archS_sq]
   unfold archDen
   ring
-private lemma archK_mem (A : Matrix (Fin 2) (Fin 2) ℂ) (hA : A.det ≠ 0) :
+private lemma archK_mem   :
     archK A ∈ Matrix.specialUnitaryGroup (Fin 2) ℂ := by
   rw [Matrix.mem_specialUnitaryGroup_iff]
   exact ⟨Matrix.mem_unitaryGroup_iff.mpr (archK_mul_star A hA), archK_det A hA⟩
-private lemma archY_norm (A : Matrix (Fin 2) (Fin 2) ℂ) (hA : A.det ≠ 0) :
+private lemma archY_norm   :
     ‖(archY A hA : ℂ)‖ = ‖A.det‖ / archDen A := by
   rw [archY, Units.val_mk0, norm_div, Complex.norm_of_nonneg (le_of_lt (archDen_pos A hA))]
-private lemma archY_archX_left (A : Matrix (Fin 2) (Fin 2) ℂ) (hA : A.det ≠ 0) :
+private lemma archY_archX_left   :
     (archY A hA : ℂ) * (star (A 1 1) + archX A * A 1 0) = A 0 0 := by
   have hden : ((archDen A : ℝ) : ℂ) ≠ 0 := by
     simp only [ne_eq, Complex.ofReal_eq_zero]; exact ne_of_gt (archDen_pos A hA)
@@ -181,7 +194,7 @@ private lemma archY_archX_left (A : Matrix (Fin 2) (Fin 2) ℂ) (hA : A.det ≠ 
   rw [mul_assoc, Complex.mul_conj', mul_assoc, Complex.mul_conj']
   rw [← mul_add, ← Complex.ofReal_pow, ← Complex.ofReal_pow, ← Complex.ofReal_add]
   rw [show ‖A 1 1‖ ^ 2 + ‖A 1 0‖ ^ 2 = archDen A by unfold archDen; ring]
-private lemma archY_archX_right (A : Matrix (Fin 2) (Fin 2) ℂ) (hA : A.det ≠ 0) :
+private lemma archY_archX_right   :
     (archY A hA : ℂ) * (-star (A 1 0) + archX A * A 1 1) = A 0 1 := by
   have hden : ((archDen A : ℝ) : ℂ) ≠ 0 := by
     simp only [ne_eq, Complex.ofReal_eq_zero]; exact ne_of_gt (archDen_pos A hA)
@@ -192,7 +205,7 @@ private lemma archY_archX_right (A : Matrix (Fin 2) (Fin 2) ℂ) (hA : A.det ≠
   rw [mul_comm (A 1 1) (A 0 1), mul_assoc, mul_assoc, Complex.mul_conj', Complex.mul_conj']
   rw [← mul_add, ← Complex.ofReal_pow, ← Complex.ofReal_pow, ← Complex.ofReal_add]
   rw [show ‖A 1 1‖ ^ 2 + ‖A 1 0‖ ^ 2 = archDen A by unfold archDen; ring]
-private lemma arch_matrix_identity (A : Matrix (Fin 2) (Fin 2) ℂ) (hA : A.det ≠ 0) :
+private lemma arch_matrix_identity   :
     (KubotaRankTwo.d ℂ (archY A hA) 1 : Matrix (Fin 2) (Fin 2) ℂ) *
       (KubotaRankTwo.n ℂ (archX A) : Matrix (Fin 2) (Fin 2) ℂ) * archK A =
       Matrix.scalar (Fin 2) (((archS A : ℝ) : ℂ)⁻¹) * A := by
@@ -208,6 +221,8 @@ private lemma arch_matrix_identity (A : Matrix (Fin 2) (Fin 2) ℂ) (hA : A.det 
   · rw [← archY_archX_right A hA]; field_simp; rw [Complex.star_def]
   · field_simp
   · field_simp
+end
+
 
 theorem archimedean_factorization (a : PGLComplex.AdelicSlicesRaw.ArchGroup F) :
     ∃ (y : InfinitePlace F → ℂˣ) (x : KPGlobalTorusFunctionData.Adeles F)

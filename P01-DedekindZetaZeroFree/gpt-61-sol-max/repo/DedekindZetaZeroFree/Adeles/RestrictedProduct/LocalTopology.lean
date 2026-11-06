@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.LocallyCompact
 
 @[expose] public section
+
 
 /-
 The separability and restricted-product countability recipes are adapted from
@@ -33,10 +36,10 @@ def integralAdeles : AddSubgroup (FiniteAdeles F) where
     intro a ha v
     exact (v.adicCompletionIntegers F).toSubring.neg_mem (ha v)
 
-@[simp]
-theorem integralAdeles_mem_iff (a : FiniteAdeles F) :
-    a ∈ integralAdeles F ↔
-      ∀ v : HeightOneSpectrum (RingOfIntegers F), a v ∈ v.adicCompletionIntegers F := Iff.rfl
+
+
+
+
 
 theorem completionIntegers_isCompact (v : HeightOneSpectrum (RingOfIntegers F)) :
     IsCompact (v.adicCompletionIntegers F : Set (v.adicCompletion F)) := by
@@ -45,8 +48,7 @@ theorem completionIntegers_isCompact (v : HeightOneSpectrum (RingOfIntegers F)) 
     (Valued.integer.properSpace_iff_compactSpace_integer.mp inferInstance)
 
 theorem completionIntegers_isOpen (v : HeightOneSpectrum (RingOfIntegers F)) :
-    IsOpen (v.adicCompletionIntegers F : Set (v.adicCompletion F)) := by
-  exact Valued.isOpen_valuationSubring _
+    IsOpen (v.adicCompletionIntegers F : Set (v.adicCompletion F)) := Valued.isOpen_valuationSubring _
 
 set_option backward.isDefEq.respectTransparency false in
 theorem integralAdeles_isCompact : IsCompact (integralAdeles F : Set (FiniteAdeles F)) := by
@@ -61,11 +63,9 @@ theorem integralAdeles_isCompact : IsCompact (integralAdeles F : Set (FiniteAdel
   rw [RestrictedProduct.range_structureMap] at h
   convert h using 1 <;> rfl
 
-theorem integralAdeles_isOpen : IsOpen (integralAdeles F : Set (FiniteAdeles F)) := by
-  exact RestrictedProduct.isOpen_forall_mem (completionIntegers_isOpen F)
+theorem integralAdeles_isOpen : IsOpen (integralAdeles F : Set (FiniteAdeles F)) := RestrictedProduct.isOpen_forall_mem (completionIntegers_isOpen F)
 
-instance finiteAdeles_t2Space : T2Space (FiniteAdeles F) := by
-  exact inferInstanceAs (T2Space (RestrictedProduct
+instance finiteAdeles_t2Space : T2Space (FiniteAdeles F) := inferInstanceAs (T2Space (RestrictedProduct
     (fun v : HeightOneSpectrum (RingOfIntegers F) => v.adicCompletion F)
     (fun v => (v.adicCompletionIntegers F : Set (v.adicCompletion F))) Filter.cofinite))
 
@@ -128,8 +128,7 @@ instance adeles_t2Space : T2Space (Adeles F) := by
     (T2Space ((v : InfinitePlace F) → v.Completion))
   exact inferInstanceAs (T2Space (InfiniteAdeleRing F × FiniteAdeles F))
 
-instance adeles_locallyCompactSpace : LocallyCompactSpace (Adeles F) := by
-  exact inferInstanceAs (LocallyCompactSpace (InfiniteAdeleRing F × FiniteAdeles F))
+instance adeles_locallyCompactSpace : LocallyCompactSpace (Adeles F) := inferInstanceAs (LocallyCompactSpace (InfiniteAdeleRing F × FiniteAdeles F))
 
 instance adeles_secondCountableTopology : SecondCountableTopology (Adeles F) := by
   letI : ∀ v : InfinitePlace F, SecondCountableTopology v.Completion := fun v => by

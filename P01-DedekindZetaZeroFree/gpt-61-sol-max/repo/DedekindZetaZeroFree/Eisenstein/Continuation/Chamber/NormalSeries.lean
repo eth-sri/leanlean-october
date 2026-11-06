@@ -21,13 +21,19 @@ variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimension
 variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
 variable (f : ℂ → S)
 
-def E (s : ℂ) (g : G F ζ hζ) : ℂ := ∑' q : Q F, term F ζ hζ U ι f q s g
+
+local notation:max "current_G" => G F ζ hζ
+
+
+local notation:max "current_term" => term F ζ hζ U
+
+def E (s : ℂ) (g : current_G) : ℂ := ∑' q : Q F, current_term ι f q s g
 
 set_option maxHeartbeats 1200000 in
 private theorem scalar_normal_majorant
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
     (K : Set ℂ) (hK : IsCompact K) (hKV : K ⊆ V)
-    (A : Set (G F ζ hζ)) (hA : IsCompact A) :
+    (A : Set (current_G)) (hA : IsCompact A) :
     ∃ b : Q F → ℝ≥0, Summable (fun q => (b q : ℝ)) ∧
       ∀ q s, s ∈ K → ∀ g ∈ A, ‖term F ζ hζ U ι f q s g‖ ≤ (b q : ℝ) := by
   let B := Module.finBasis ℂ S
@@ -76,7 +82,7 @@ private theorem scalar_normal_majorant
   · change Summable (fun q => ∑ i : Fin (Module.finrank ℂ S), C i * |b i q|)
     exact summable_sum (fun i _ => (hb i).abs.mul_left (C i))
   · intro q s hs g hg
-    have heq : term F ζ hζ U ι f q s g = ∑ i,
+    have heq : current_term ι f q s g = ∑ i,
         B.repr (f s) i * KPContActualSphericalFlatStage.L F ζ hζ U ι s (B i) (lift F ζ hζ q * g) := by
       unfold term
       conv_lhs => rw [← B.sum_repr (f s)]
@@ -91,14 +97,14 @@ private theorem scalar_normal_majorant
 
 private theorem term_holomorphic
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
-    (q : Q F) (g : G F ζ hζ) :
-    DifferentiableOn ℂ (fun s => term F ζ hζ U ι f q s g) KPContinuation.spectralDomain := by
+    (q : Q F) (g : current_G) :
+    DifferentiableOn ℂ (fun s => current_term ι f q s g) KPContinuation.spectralDomain := by
   let ev : S →ₗ[ℂ] ℂ :=
     (LinearMap.proj (lift F ζ hζ q * g)).comp
       (KPContActualSphericalFlatStage.L F ζ hζ U ι 0)
   have hev : DifferentiableOn ℂ (fun s => ev (f s)) KPContinuation.spectralDomain :=
     ((⟨ev, ev.continuous_of_finiteDimensional⟩ : S →L[ℂ] ℂ).differentiable.comp_differentiableOn hf)
-  have heq : (fun s => term F ζ hζ U ι f q s g) = fun s =>
+  have heq : (fun s => current_term ι f q s g) = fun s =>
       Complex.exp (s * (KPContFlatSourceRecipe.alpha F ζ hζ (lift F ζ hζ q * g) : ℂ)) *
         ev (f s) := by
     funext s
@@ -108,17 +114,20 @@ private theorem term_holomorphic
   exact (Differentiable.differentiableOn (by fun_prop)).mul hev
 
 private theorem term_continuous (q : Q F) (s : ℂ) :
-    Continuous (term F ζ hζ U ι f q s) := by
+    Continuous (current_term ι f q s) := by
   obtain ⟨φ, hφ⟩ := KPContinuation.ChamberFlatSource.actual_fixedVector_flat F ζ hζ U ι (f s)
-  have hc : Continuous (fun g : G F ζ hζ => φ.val s (lift F ζ hζ q * g)) :=
+  have hc : Continuous (fun g : current_G => φ.val s (lift F ζ hζ q * g)) :=
     ((φ.property.1 s).1.1).comp (continuous_const.mul continuous_id)
   simp only [hφ] at hc
   exact hc
 
+
+local notation:max "current_E" => E F ζ hζ U
+
 private theorem series_continuous
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain) (s : ℂ) (hs : s ∈ V) :
-    Continuous (E F ζ hζ U ι f s) := by
-  letI : LocallyCompactSpace (G F ζ hζ) :=
+    Continuous (current_E ι f s) := by
+  letI : LocallyCompactSpace (current_G) :=
     (ActualQuotient.actual_cover_lc_t2_group F ζ hζ).2.1
   apply continuous_iff_continuousAt.mpr
   intro g
@@ -133,10 +142,10 @@ set_option maxHeartbeats 1200000 in
 private theorem parameter_normal_majorant
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
     (k : ℕ) (K : Set ℂ) (hK : IsCompact K) (hKV : K ⊆ V)
-    (A : Set (G F ζ hζ)) (hA : IsCompact A) :
+    (A : Set (current_G)) (hA : IsCompact A) :
     ∃ b : Q F → ℝ≥0, Summable (fun q => (b q : ℝ)) ∧
       ∀ q s, s ∈ K → ∀ g ∈ A,
-        ‖mixedJet F ζ hζ (term F ζ hζ U ι f q) k [] s g‖ ≤ (b q : ℝ) := by
+        ‖mixedJet F ζ hζ (current_term ι f q) k [] s g‖ ≤ (b q : ℝ) := by
   obtain ⟨r, hr, hrV⟩ := hK.exists_cthickening_subset_open KPChamberL2Defect.chamber_isOpen hKV
   obtain ⟨b, hb, hbound⟩ := scalar_normal_majorant F ζ hζ U ι f hf
     (Metric.cthickening r K) hK.cthickening hrV A hA
@@ -153,13 +162,13 @@ private theorem parameter_normal_majorant
     ((term_holomorphic F ζ hζ U ι f hf q g).diffContOnCl_ball hball)
     (fun z hz => hbound q z (Metric.closedBall_subset_cthickening hs r
       (Metric.sphere_subset_closedBall hz)) g hg)
-  change ‖iteratedDerivWithin k (fun z => term F ζ hζ U ι f q z g) V s‖ ≤ _
+  change ‖iteratedDerivWithin k (fun z => current_term ι f q z g) V s‖ ≤ _
   rw [iteratedDerivWithin_of_isOpen KPChamberL2Defect.chamber_isOpen (hKV hs)]
-  change ‖iteratedDeriv k (fun z => term F ζ hζ U ι f q z g) s‖ ≤
+  change ‖iteratedDeriv k (fun z => current_term ι f q z g) s‖ ≤
     ((k.factorial : ℝ)/r^k) * (b q : ℝ)
   exact hc.trans_eq (by ring)
 
-private theorem word_left_translate (w : Word F) (u : G F ζ hζ → ℂ) (a g : G F ζ hζ) :
+private theorem word_left_translate (w : Word F) (u : current_G → ℂ) (a g : current_G) :
     rightWord F ζ hζ w (fun x => u (a*x)) g = rightWord F ζ hζ w u (a*g) := by
   induction w generalizing u g with
   | nil => rfl
@@ -174,9 +183,9 @@ set_option maxHeartbeats 1600000 in
 private theorem spatial_normal_majorant
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
     (w : Word F) (K : Set ℂ) (hK : IsCompact K) (hKV : K ⊆ V)
-    (A : Set (G F ζ hζ)) (hA : IsCompact A) :
+    (A : Set (current_G)) (hA : IsCompact A) :
     ∃ b : Q F → ℝ≥0, Summable (fun q => (b q : ℝ)) ∧
-      ∀ q s, s ∈ K → ∀ g ∈ A, ‖mixedJet F ζ hζ (term F ζ hζ U ι f q) 0 w s g‖ ≤ (b q : ℝ) := by
+      ∀ q s, s ∈ K → ∀ g ∈ A, ‖mixedJet F ζ hζ (current_term ι f q) 0 w s g‖ ≤ (b q : ℝ) := by
   let B := Module.finBasis ℂ S
   have hKΩ : K ⊆ KPContinuation.spectralDomain := by
     intro s hs; have hh := hKV hs; change (1 : ℝ)/3 < s.re at hh
@@ -281,9 +290,12 @@ private theorem spatial_normal_majorant
 
 set_option maxHeartbeats 1200000 in
 
-theorem normal_majorant (hι : Function.Injective ι)
+section
+variable (hι : Function.Injective ι)
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
-    (k : ℕ) (w : Word F) (K : Set ℂ) (hK : IsCompact K) (hKV : K ⊆ V)
+    (k : ℕ) (w : Word F)
+include hι hf k w
+theorem normal_majorant   (K : Set ℂ) (hK : IsCompact K) (hKV : K ⊆ V)
     (A : Set (G F ζ hζ)) (hA : IsCompact A) :
     ∃ b : Q F → ℝ≥0, Summable (fun q => (b q : ℝ)) ∧
       ∀ (q : Q F) (s : ℂ), s ∈ K → ∀ g ∈ A,
@@ -319,22 +331,25 @@ theorem normal_majorant (hι : Function.Injective ι)
         iteratedDerivWithin_of_isOpen KPChamberL2Defect.chamber_isOpen (hKV hs)]
       exact hc.trans_eq (by change _ = ((k.factorial : ℝ)/r^k) * (b q : ℝ); ring)
 
-theorem mixed_summable (hι : Function.Injective ι)
-    (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
-    (k : ℕ) (w : Word F) (s : ℂ) (hs : s ∈ V) (g : G F ζ hζ) :
+theorem mixed_summable   (s : ℂ) (hs : s ∈ V) (g : G F ζ hζ) :
     Summable (fun q : Q F => ‖mixedJet F ζ hζ (term F ζ hζ U ι f q) k w s g‖) := by
   obtain ⟨b, hb, hbound⟩ :=
     normal_majorant F ζ hζ U ι f hι hf k w {s} isCompact_singleton
       (by rintro x rfl; exact hs) {g} isCompact_singleton
   exact Summable.of_nonneg_of_le (fun q => norm_nonneg _)
     (fun q => hbound q s rfl g rfl) hb
+end
+
+
+
+local notation:max "current_mixedJet" => mixedJet F ζ hζ
 
 private theorem parameterJet_eq_tsum
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
-    (k : ℕ) (s : ℂ) (hs : s ∈ V) (g : G F ζ hζ) :
-    mixedJet F ζ hζ (E F ζ hζ U ι f) k [] s g =
-      ∑' q : Q F, mixedJet F ζ hζ (term F ζ hζ U ι f q) k [] s g := by
-  change iteratedDerivWithin k (fun z => ∑' q : Q F, term F ζ hζ U ι f q z g) V s = _
+    (k : ℕ) (s : ℂ) (hs : s ∈ V) (g : current_G) :
+    current_mixedJet (current_E ι f) k [] s g =
+      ∑' q : Q F, current_mixedJet (current_term ι f q) k [] s g := by
+  change iteratedDerivWithin k (fun z => ∑' q : Q F, current_term ι f q z g) V s = _
   apply iteratedDerivWithin_tsum k KPChamberL2Defect.chamber_isOpen hs
   · intro z hz
     obtain ⟨b, hb, hbound⟩ := scalar_normal_majorant F ζ hζ U ι f hf
@@ -357,10 +372,10 @@ private theorem parameterJet_eq_tsum
 private theorem term_flow_deriv
     (hι : Function.Injective ι) (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
     (q : Q F) (k : ℕ) (w : Word F) (s : ℂ) (hs : s ∈ V)
-    (b : KPSmoothActualFlowData.B F) (g : G F ζ hζ) (t : ℝ) :
-    HasDerivAt (fun r => mixedJet F ζ hζ (term F ζ hζ U ι f q) k w s
+    (b : KPSmoothActualFlowData.B F) (g : current_G) (t : ℝ) :
+    HasDerivAt (fun r => current_mixedJet (current_term ι f q) k w s
       (g * KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (KPSmoothActualFlowData.flow F b r)))
-      (mixedJet F ζ hζ (term F ζ hζ U ι f q) k (b :: w) s
+      (current_mixedJet (current_term ι f q) k (b :: w) s
         (g * KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (KPSmoothActualFlowData.flow F b t))) t := by
   let a := fun r => KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (KPSmoothActualFlowData.flow F b r)
   have hadd (x y : ℝ) : a (x+y) = a x*a y := by
@@ -368,15 +383,18 @@ private theorem term_flow_deriv
     rw [(KPSmoothActualFlowData.flow_properties F b).2.1,
       (KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.1]
   have hh := (KPContinuation.ChamberNormalTerm.actual_term_mixed_flow F ζ hζ U ι f hι hf q k w s hs).2 b (g*a t)
-  have hh' : HasDerivAt (fun r => mixedJet F ζ hζ (term F ζ hζ U ι f q) k w s ((g*a t)*a r))
-    (mixedJet F ζ hζ (term F ζ hζ U ι f q) k (b :: w) s (g*a t)) (t-t) := by
+  have hh' : HasDerivAt (fun r => current_mixedJet (current_term ι f q) k w s ((g*a t)*a r))
+    (current_mixedJet (current_term ι f q) k (b :: w) s (g*a t)) (t-t) := by
     simpa only [sub_self] using hh
   have hc := hh'.comp_sub_const t t
   simpa only [Function.comp_def, sub_self, mul_assoc, ← hadd, add_sub_cancel] using hc
 
-private theorem flow_tsum_hasDeriv
-    (hι : Function.Injective ι) (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
+section
+variable (hι : Function.Injective ι) (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
     (k : ℕ) (w : Word F) (s : ℂ) (hs : s ∈ V)
+include hι hf k w s hs
+private theorem flow_tsum_hasDeriv
+     
     (b : KPSmoothActualFlowData.B F) (g : G F ζ hζ) :
     HasDerivAt (fun t => ∑' q : Q F, mixedJet F ζ hζ (term F ζ hζ U ι f q) k w s
       (g * KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (KPSmoothActualFlowData.flow F b t)))
@@ -401,9 +419,7 @@ private theorem flow_tsum_hasDeriv
   simpa only [(KPSmoothActualFlowData.flow_properties F b).1,
     (KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).1, mul_one] using H
 
-theorem mixedJet_eq_tsum (hι : Function.Injective ι)
-    (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
-    (k : ℕ) (w : Word F) (s : ℂ) (hs : s ∈ V) (g : G F ζ hζ) :
+theorem mixedJet_eq_tsum   (g : G F ζ hζ) :
     mixedJet F ζ hζ (E F ζ hζ U ι f) k w s g =
       ∑' q : Q F, mixedJet F ζ hζ (term F ζ hζ U ι f q) k w s g := by
   induction w generalizing g with
@@ -415,8 +431,7 @@ theorem mixedJet_eq_tsum (hι : Function.Injective ι)
     exact (flow_tsum_hasDeriv F ζ hζ U ι f hι hf k w s hs b g).deriv
 
 private theorem parameter_tsum_hasDeriv
-    (hι : Function.Injective ι) (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
-    (k : ℕ) (w : Word F) (s : ℂ) (hs : s ∈ V) (g : G F ζ hζ) :
+      (g : G F ζ hζ) :
     HasDerivAt (fun z => ∑' q : Q F, mixedJet F ζ hζ (term F ζ hζ U ι f q) k w z g)
       (∑' q : Q F, mixedJet F ζ hζ (term F ζ hζ U ι f q) (k+1) w s g) s := by
   obtain ⟨r, hr, hrV⟩ := Metric.isOpen_iff.mp KPChamberL2Defect.chamber_isOpen s hs
@@ -433,8 +448,7 @@ private theorem parameter_tsum_hasDeriv
     (Metric.mem_ball_self (by linarith : (0 : ℝ) < r/2))
 
 private theorem mixedSeries_hasDeriv
-    (hι : Function.Injective ι) (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
-    (k : ℕ) (w : Word F) (s : ℂ) (hs : s ∈ V) (g : G F ζ hζ) :
+      (g : G F ζ hζ) :
     HasDerivAt (fun z => mixedJet F ζ hζ (E F ζ hζ U ι f) k w z g)
       (mixedJet F ζ hζ (E F ζ hζ U ι f) (k+1) w s g) s := by
   have hh := parameter_tsum_hasDeriv F ζ hζ U ι f hι hf k w s hs g
@@ -442,9 +456,7 @@ private theorem mixedSeries_hasDeriv
   exact hh.congr_of_eventuallyEq (Filter.Eventually.mono (KPChamberL2Defect.chamber_isOpen.mem_nhds hs)
     (fun z hz => mixedJet_eq_tsum F ζ hζ U ι f hι hf k w z hz g))
 
-theorem mixedJet_commute (hι : Function.Injective ι)
-    (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
-    (k : ℕ) (w : Word F) (s : ℂ) (hs : s ∈ V) (g : G F ζ hζ) :
+theorem mixedJet_commute   (g : G F ζ hζ) :
     iteratedDerivWithin k (fun z => rightWord F ζ hζ w (E F ζ hζ U ι f z) g) V s =
       mixedJet F ζ hζ (E F ζ hζ U ι f) k w s g := by
   induction k generalizing s with
@@ -453,9 +465,14 @@ theorem mixedJet_commute (hι : Function.Injective ι)
     rw [iteratedDerivWithin_succ, derivWithin_congr (fun z hz => ih z hz) (ih s hs)]
     exact (mixedSeries_hasDeriv F ζ hζ U ι f hι hf k w s hs g).hasDerivWithinAt.derivWithin
       (KPChamberL2Defect.chamber_isOpen.uniqueDiffWithinAt hs)
+end
 
-theorem mixed_uniform (hι : Function.Injective ι)
+
+section
+variable (hι : Function.Injective ι)
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
+include hι hf
+theorem mixed_uniform  
     (k : ℕ) (w : Word F) (K : Set ℂ) (hK : IsCompact K) (hKV : K ⊆ V)
     (A : Set (G F ζ hζ)) (hA : IsCompact A) :
     TendstoUniformlyOn
@@ -474,8 +491,7 @@ theorem mixed_uniform (hι : Function.Injective ι)
   intro p hp
   exact (mixedJet_eq_tsum F ζ hζ U ι f hι hf k w p.1 (hKV hp.1) p.2).symm
 
-theorem mixedJet_continuous (hι : Function.Injective ι)
-    (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
+theorem mixedJet_continuous  
     (k : ℕ) (w : Word F) (s : ℂ) (hs : s ∈ V) :
     Continuous (mixedJet F ζ hζ (E F ζ hζ U ι f) k w s) := by
   letI : LocallyCompactSpace (G F ζ hζ) := (ActualQuotient.actual_cover_lc_t2_group F ζ hζ).2.1
@@ -492,8 +508,7 @@ theorem mixedJet_continuous (hι : Function.Injective ι)
     (fun q => (KPContinuation.ChamberNormalTerm.actual_term_mixed_flow F ζ hζ U ι f hι hf q k w s hs).1.continuousOn)
     hb (fun q x hx => hbound q s rfl x hx)).continuousAt hAg
 
-theorem smooth (hι : Function.Injective ι)
-    (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain) (s : ℂ) (hs : s ∈ V) :
+theorem smooth   (s : ℂ) (hs : s ∈ V) :
     KPMsGreenFlux.Smooth F ζ hζ (E F ζ hζ U ι f s) := by
   refine ⟨series_continuous F ζ hζ U ι f hf s hs, ?_⟩
   intro g
@@ -548,8 +563,7 @@ theorem smooth (hι : Function.Injective ι)
     hD ▸ D.exponential_smooth
   exact (htop.comp he).contDiff
 
-def compactMixedJet (hι : Function.Injective ι)
-    (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
+def compactMixedJet  
     (k : ℕ) (w : Word F) (A : Set (G F ζ hζ)) (s : ℂ) : C(A, ℂ) :=
   if hs : s ∈ V then
     ⟨fun g => mixedJet F ζ hζ (E F ζ hζ U ι f) k w s g.val,
@@ -557,7 +571,7 @@ def compactMixedJet (hι : Function.Injective ι)
   else 0
 
 private theorem mixedSeries_bound
-    (hι : Function.Injective ι) (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
+     
     (k : ℕ) (w : Word F) (K : Set ℂ) (hK : IsCompact K) (hKV : K ⊆ V)
     (A : Set (G F ζ hζ)) (hA : IsCompact A) :
     ∃ B : ℝ, 0 ≤ B ∧ ∀ z ∈ K, ∀ g ∈ A,
@@ -569,6 +583,8 @@ private theorem mixedSeries_bound
   exact (norm_tsum_le_tsum_norm (mixed_summable F ζ hζ U ι f hι hf k w z (hKV hz) g)).trans
     (Summable.tsum_le_tsum (fun q => hbound q z hz g hg)
       (mixed_summable F ζ hζ U ι f hι hf k w z (hKV hz) g) hb)
+end
+
 
 private theorem complex_taylor_bound
     (H H₁ H₂ : ℂ → ℂ) (s : ℂ) (r : ℝ) (hr : 0 < r) (B : ℝ)
@@ -601,7 +617,7 @@ private theorem complex_taylor_bound
 
 theorem compactMixedJet_holomorphic (hι : Function.Injective ι)
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
-    (k : ℕ) (w : Word F) (A : Set (G F ζ hζ)) (hA : IsCompact A) :
+    (k : ℕ) (w : Word F) (A : Set (current_G)) (hA : IsCompact A) :
     letI : CompactSpace A := isCompact_iff_compactSpace.mp hA
     DifferentiableOn ℂ (compactMixedJet F ζ hζ U ι f hι hf k w A) V := by
   letI : CompactSpace A := isCompact_iff_compactSpace.mp hA
@@ -627,15 +643,15 @@ theorem compactMixedJet_holomorphic (hι : Function.Injective ι)
     intro g
     have he (j : ℕ) (z : ℂ) (hz : z ∈ V) :
         compactMixedJet F ζ hζ U ι f hι hf j w A z g =
-          mixedJet F ζ hζ (E F ζ hζ U ι f) j w z g.val := by
+          current_mixedJet (current_E ι f) j w z g.val := by
       simp only [compactMixedJet, dif_pos hz]
       rfl
     simp only [ContinuousMap.sub_apply, ContinuousMap.smul_apply, smul_eq_mul,
       he k t htV, he k s hs, he (k+1) s hs]
     have hh := complex_taylor_bound
-      (fun z => mixedJet F ζ hζ (E F ζ hζ U ι f) k w z g.val)
-      (fun z => mixedJet F ζ hζ (E F ζ hζ U ι f) (k+1) w z g.val)
-      (fun z => mixedJet F ζ hζ (E F ζ hζ U ι f) (k+1+1) w z g.val)
+      (fun z => current_mixedJet (current_E ι f) k w z g.val)
+      (fun z => current_mixedJet (current_E ι f) (k+1) w z g.val)
+      (fun z => current_mixedJet (current_E ι f) (k+1+1) w z g.val)
       s (r/2) (by linarith) B
       (fun z hz => mixedSeries_hasDeriv F ζ hζ U ι f hι hf k w z (hball hz) g.val)
       (fun z hz => mixedSeries_hasDeriv F ζ hζ U ι f hι hf (k+1) w z (hball hz) g.val)
@@ -656,9 +672,9 @@ theorem compactMixedJet_holomorphic (hι : Function.Injective ι)
       (b * γ) * (a * γ)⁻¹ ∈ KPChamberBruhatTwoCells.rationalBorel F
     simp only [mul_inv_rev, mul_assoc, mul_inv_cancel_left])
 
-private theorem term_coset (s : ℂ) (g : G F ζ hζ)
+private theorem term_coset (s : ℂ) (g : current_G)
     (γ : Matrix.ProjGenLinGroup (Fin 2) F) :
-    term F ζ hζ U ι f (KPChamberBruhatTwoCells.rationalCoset F γ) s g =
+    current_term ι f (KPChamberBruhatTwoCells.rationalCoset F γ) s g =
       KPContActualSphericalFlatStage.L F ζ hζ U ι s (f s)
         (KPContFlatRationalCosetCovariance.matrixRationalHom F ζ hζ γ * g) := by
   have h := KPContFlatRationalCosetCovariance.rationalTerm_transport_mk F ζ hζ s
@@ -668,17 +684,17 @@ private theorem term_coset (s : ℂ) (g : G F ζ hζ)
 
 theorem covariance (hι : Function.Injective ι)
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain) (s : ℂ) (hs : s ∈ V) :
-    (∀ (γ : Matrix.ProjGenLinGroup (Fin 2) F) (g : G F ζ hζ),
-      E F ζ hζ U ι f s (KPContFlatRationalCosetCovariance.matrixRationalHom F ζ hζ γ * g) =
-        E F ζ hζ U ι f s g) ∧
-    (∀ (ε : rootsOfUnity 3 F) (g : G F ζ hζ),
-      E F ζ hζ U ι f s (KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε * g) =
-        (KPContSectorCoveredQuotientVocabulary.chi F ζ hζ ε : ℂ) * E F ζ hζ U ι f s g) ∧
-    (∀ (g : G F ζ hζ) (u : KPGlobalTorusFunctionData.globalLevel F ζ hζ U),
-      E F ζ hζ U ι f s (g * u.val) = E F ζ hζ U ι f s g) ∧
-    (∀ (g : G F ζ hζ) (k : KPContSectorArchSphericalFibers.KInfinity F),
-      E F ζ hζ U ι f s (g * KPSmoothActualFlowData.archimedeanInsertion F ζ hζ k.val) =
-        E F ζ hζ U ι f s g) := by
+    (∀ (γ : Matrix.ProjGenLinGroup (Fin 2) F) (g : current_G),
+      current_E ι f s (KPContFlatRationalCosetCovariance.matrixRationalHom F ζ hζ γ * g) =
+        current_E ι f s g) ∧
+    (∀ (ε : rootsOfUnity 3 F) (g : current_G),
+      current_E ι f s (KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε * g) =
+        (KPContSectorCoveredQuotientVocabulary.chi F ζ hζ ε : ℂ) * current_E ι f s g) ∧
+    (∀ (g : current_G) (u : KPGlobalTorusFunctionData.globalLevel F ζ hζ U),
+      current_E ι f s (g * u.val) = current_E ι f s g) ∧
+    (∀ (g : current_G) (k : KPContSectorArchSphericalFibers.KInfinity F),
+      current_E ι f s (g * KPSmoothActualFlowData.archimedeanInsertion F ζ hζ k.val) =
+        current_E ι f s g) := by
   have hsΩ : s ∈ KPContinuation.spectralDomain := by
     change -(1 : ℝ) / 6 < s.re
     change (1 : ℝ) / 3 < s.re at hs
@@ -689,7 +705,7 @@ theorem covariance (hι : Function.Injective ι)
   · intro γ g
     let e := cosetRight F γ
     unfold E
-    rw [← e.tsum_eq (fun q => term F ζ hζ U ι f q s g)]
+    rw [← e.tsum_eq (fun q => current_term ι f q s g)]
     apply tsum_congr
     intro q
     have he : e q = KPChamberBruhatTwoCells.rationalCoset F (Quotient.out q * γ) := by
@@ -699,7 +715,7 @@ theorem covariance (hι : Function.Injective ι)
     rw [he, term_coset F ζ hζ U ι f, map_mul, mul_assoc]
     rfl
   · intro ε g
-    have hc : ∀ x : G F ζ hζ,
+    have hc : ∀ x : current_G,
         x * KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε =
           KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε * x := by
       intro x
@@ -730,18 +746,21 @@ abbrev atlasLevel :=
   let _ := C; let _ := R; let _ := P; let _ := H
   EisensteinSmoothGerms.ScalarSource.atlasLevel F ζ hζ U
 
+
+local notation:max "current_atlasLevel" => atlasLevel F ζ hζ C R P H U
+
 def coveredRepresentative
     (x : KPContSectorCoveredQuotientVocabulary.CoveredSpherical F ζ hζ
-      (atlasLevel F ζ hζ C R P H U)) : G F ζ hζ :=
+      (current_atlasLevel)) : current_G :=
   KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
     (KPContSectorArchSphericalFibers.iwasawaSection F ζ hζ (Quotient.out x).1) *
-      ((Quotient.out x).2 : G F ζ hζ)
+      ((Quotient.out x).2 : current_G)
 
 theorem coveredRepresentative_projection
     (x : KPContSectorCoveredQuotientVocabulary.CoveredSpherical F ζ hζ
-      (atlasLevel F ζ hζ C R P H U)) :
+      (current_atlasLevel)) :
     KPContSectorQuotientRelationsComparison.piTilde F ζ hζ
-      (atlasLevel F ζ hζ C R P H U)
+      (current_atlasLevel)
       (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ
         (coveredRepresentative F ζ hζ C R P H U x)) = x := by
   unfold coveredRepresentative
@@ -749,47 +768,47 @@ theorem coveredRepresentative_projection
   rw [KPContSectorArchSphericalFibers.archBasepoint_iwasawaSection]
   exact Quotient.out_eq x
 
-def componentRepresentative (i : Fin (H.atlas (atlasLevel F ζ hζ C R P H U)).componentCount)
-    (x : KPContSectorCoveredQuotientVocabulary.SymmetricSpace F) : G F ζ hζ :=
+def componentRepresentative (i : Fin (H.atlas (current_atlasLevel)).componentCount)
+    (x : KPContSectorCoveredQuotientVocabulary.SymmetricSpace F) : current_G :=
   KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
     (KPContSectorArchSphericalFibers.iwasawaSection F ζ hζ x) *
-      ((H.atlas (atlasLevel F ζ hζ C R P H U)).representative i : G F ζ hζ)
+      ((H.atlas (current_atlasLevel)).representative i : current_G)
 
 set_option maxHeartbeats 800000 in
 
 theorem descent_series (hι : Function.Injective ι)
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain) :
     ∃ e : ℂ → KPContSectorScalarLineAlgebra.GenuineCoveredScalars F ζ hζ
-        (atlasLevel F ζ hζ C R P H U),
-      (∀ (s : ℂ), s ∈ V → ∀ (g : G F ζ hζ),
+        (current_atlasLevel),
+      (∀ (s : ℂ), s ∈ V → ∀ (g : current_G),
         (e s).val (KPContSectorQuotientRelationsComparison.piTilde F ζ hζ
-          (atlasLevel F ζ hζ C R P H U)
-          (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g)) = E F ζ hζ U ι f s g) ∧
+          (current_atlasLevel)
+          (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g)) = current_E ι f s g) ∧
       (∀ (s : ℂ), s ∈ V → ∀ x,
         (e s).val x = KPChamberL2Defect.series (lift F ζ hζ)
           (coveredRepresentative F ζ hζ C R P H U)
           (KPContActualSphericalFlatStage.L F ζ hζ U ι) f s x) ∧
       (∀ (s : ℂ), s ∈ V → ∀ i x,
         (KPContSectorScalarLineAlgebra.S F ζ hζ
-          (atlasLevel F ζ hζ C R P H U) R P H (e s) i).val x =
+          (current_atlasLevel) R P H (e s) i).val x =
             KPChamberL2Defect.series (lift F ζ hζ)
               (componentRepresentative F ζ hζ C R P H U i)
               (KPContActualSphericalFlatStage.L F ζ hζ U ι) f s x) := by
-  let U₀ := atlasLevel F ζ hζ C R P H U
+  let U₀ := current_atlasLevel
   have hex : ∀ s ∈ V, ∃ e : KPContSectorScalarLineAlgebra.GenuineCoveredScalars F ζ hζ U₀,
       ∀ g, e.val (KPContSectorQuotientRelationsComparison.piTilde F ζ hζ U₀
-        (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g)) = E F ζ hζ U ι f s g := by
+        (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g)) = current_E ι f s g := by
     intro s hs
     obtain ⟨hr, hc, hu, hk⟩ := covariance F ζ hζ U ι f hι hf s hs
     have hΓ : ∀ a ∈ KPContSectorCoveredQuotientVocabulary.Gamma F ζ hζ, ∀ g,
-        E F ζ hζ U ι f s (a * g) = E F ζ hζ U ι f s g := by
+        current_E ι f s (a * g) = current_E ι f s g := by
       intro a ha g
       obtain ⟨γ, rfl⟩ := ha
       let γ₀ := (KPGlobalResidualKernel.RawStageL2.Outgoing.ChamberQuotient.rationalEquiv F).symm γ
       have hh := hr γ₀ g
       simpa [γ₀, KPContFlatRationalCosetCovariance.matrixRationalHom] using hh
     have hKU : ∀ a ∈ KPContSectorCoveredQuotientVocabulary.K_U F ζ hζ U₀, ∀ g,
-        E F ζ hζ U ι f s (g * a) = E F ζ hζ U ι f s g := by
+        current_E ι f s (g * a) = current_E ι f s g := by
       intro a ha
       induction ha using Subgroup.closure_induction with
       | mem x hx =>
@@ -797,7 +816,7 @@ theorem descent_series (hι : Function.Injective ι)
           · obtain ⟨k, hkmem, rfl⟩ := hx
             exact fun g => hk g ⟨k, hkmem⟩
           · obtain ⟨u, humem, rfl⟩ := hx
-            have huval : (u : G F ζ hζ) ∈ KPGlobalTorusFunctionData.globalLevel F ζ hζ U := by
+            have huval : (u : current_G) ∈ KPGlobalTorusFunctionData.globalLevel F ζ hζ U := by
               rw [EisensteinSmoothGerms.ScalarSource.level_matching F ζ hζ U]
               exact ⟨u, humem, rfl⟩
             exact fun g => hu g ⟨u, huval⟩
@@ -808,14 +827,14 @@ theorem descent_series (hι : Function.Injective ι)
           have hh := ih (g * x⁻¹)
           simpa only [inv_mul_cancel_right] using hh.symm
     let d : KPContSectorCoveredQuotientVocabulary.CoveredActual F ζ hζ U₀ → ℂ :=
-      Quotient.lift (E F ζ hζ U ι f s) (by
+      Quotient.lift (current_E ι f s) (by
         intro a b hab
         obtain ⟨x, hx, y, hy, rfl⟩ := DoubleCoset.rel_iff.mp hab
         rw [hKU y hy, hΓ x hx])
     let v : KPContSectorCoveredQuotientVocabulary.CoveredSpherical F ζ hζ U₀ → ℂ :=
       d ∘ (KPContSectorQuotientRelationsComparison.e F ζ hζ U₀).symm
     have hv : ∀ g, v (KPContSectorQuotientRelationsComparison.piTilde F ζ hζ U₀
-        (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g)) = E F ζ hζ U ι f s g := by
+        (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g)) = current_E ι f s g := by
       intro g
       dsimp [v, KPContSectorQuotientRelationsComparison.piTilde]
       rw [Homeomorph.symm_apply_apply]
@@ -842,7 +861,7 @@ theorem descent_series (hι : Function.Injective ι)
   let e := fun s => if hs : s ∈ V then (hex s hs).choose else 0
   have he : ∀ s ∈ V, ∀ g, (e s).val
       (KPContSectorQuotientRelationsComparison.piTilde F ζ hζ U₀
-        (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g)) = E F ζ hζ U ι f s g := by
+        (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g)) = current_E ι f s g := by
     intro s hs g
     dsimp [e]
     rw [dif_pos hs]
@@ -855,7 +874,7 @@ theorem descent_series (hι : Function.Injective ι)
             (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ
               (coveredRepresentative F ζ hζ C R P H U x))) :=
         congrArg (e s).val (coveredRepresentative_projection F ζ hζ C R P H U x).symm
-      _ = E F ζ hζ U ι f s (coveredRepresentative F ζ hζ C R P H U x) := he s hs _
+      _ = current_E ι f s (coveredRepresentative F ζ hζ C R P H U x) := he s hs _
       _ = _ := rfl
   · intro s hs i x
     rw [KPContSectorScalarLineAlgebra.S_apply]
@@ -873,56 +892,56 @@ theorem descent_series (hι : Function.Injective ι)
 structure ChamberConclusions (hι : Function.Injective ι)
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain) : Prop where
   majorant : ∀ (k : ℕ) (w : Word F) (K : Set ℂ), IsCompact K → K ⊆ V →
-    ∀ (A : Set (G F ζ hζ)), IsCompact A →
+    ∀ (A : Set (current_G)), IsCompact A →
     ∃ b : Q F → ℝ≥0, Summable (fun q => (b q : ℝ)) ∧
       ∀ (q : Q F) (s : ℂ), s ∈ K → ∀ g ∈ A,
-        ‖mixedJet F ζ hζ (term F ζ hζ U ι f q) k w s g‖ ≤ (b q : ℝ)
-  absolute : ∀ (k : ℕ) (w : Word F) (s : ℂ), s ∈ V → ∀ (g : G F ζ hζ),
-    Summable (fun q : Q F => ‖mixedJet F ζ hζ (term F ζ hζ U ι f q) k w s g‖)
-  termwise : ∀ (k : ℕ) (w : Word F) (s : ℂ), s ∈ V → ∀ (g : G F ζ hζ),
-    mixedJet F ζ hζ (E F ζ hζ U ι f) k w s g =
-      ∑' q : Q F, mixedJet F ζ hζ (term F ζ hζ U ι f q) k w s g
-  commute : ∀ (k : ℕ) (w : Word F) (s : ℂ), s ∈ V → ∀ (g : G F ζ hζ),
-    iteratedDerivWithin k (fun z => rightWord F ζ hζ w (E F ζ hζ U ι f z) g) V s =
-      mixedJet F ζ hζ (E F ζ hζ U ι f) k w s g
+        ‖mixedJet F ζ hζ (current_term ι f q) k w s g‖ ≤ (b q : ℝ)
+  absolute : ∀ (k : ℕ) (w : Word F) (s : ℂ), s ∈ V → ∀ (g : current_G),
+    Summable (fun q : Q F => ‖mixedJet F ζ hζ (current_term ι f q) k w s g‖)
+  termwise : ∀ (k : ℕ) (w : Word F) (s : ℂ), s ∈ V → ∀ (g : current_G),
+    current_mixedJet (current_E ι f) k w s g =
+      ∑' q : Q F, current_mixedJet (current_term ι f q) k w s g
+  commute : ∀ (k : ℕ) (w : Word F) (s : ℂ), s ∈ V → ∀ (g : current_G),
+    iteratedDerivWithin k (fun z => rightWord F ζ hζ w (current_E ι f z) g) V s =
+      current_mixedJet (current_E ι f) k w s g
   uniform : ∀ (k : ℕ) (w : Word F) (K : Set ℂ), IsCompact K → K ⊆ V →
-    ∀ (A : Set (G F ζ hζ)), IsCompact A →
+    ∀ (A : Set (current_G)), IsCompact A →
     TendstoUniformlyOn
-      (fun J : Finset (Q F) => fun p : ℂ × G F ζ hζ =>
-        ∑ q ∈ J, mixedJet F ζ hζ (term F ζ hζ U ι f q) k w p.1 p.2)
-      (fun p => mixedJet F ζ hζ (E F ζ hζ U ι f) k w p.1 p.2)
+      (fun J : Finset (Q F) => fun p : ℂ × current_G =>
+        ∑ q ∈ J, current_mixedJet (current_term ι f q) k w p.1 p.2)
+      (fun p => current_mixedJet (current_E ι f) k w p.1 p.2)
       Filter.atTop (K ×ˢ A)
-  smooth : ∀ (s : ℂ), s ∈ V → KPMsGreenFlux.Smooth F ζ hζ (E F ζ hζ U ι f s)
-  compact_holomorphic : ∀ (k : ℕ) (w : Word F) (A : Set (G F ζ hζ)) (hA : IsCompact A),
+  smooth : ∀ (s : ℂ), s ∈ V → KPMsGreenFlux.Smooth F ζ hζ (current_E ι f s)
+  compact_holomorphic : ∀ (k : ℕ) (w : Word F) (A : Set (current_G)) (hA : IsCompact A),
     letI : CompactSpace A := isCompact_iff_compactSpace.mp hA
     DifferentiableOn ℂ (compactMixedJet F ζ hζ U ι f hι hf k w A) V
   rational : ∀ (s : ℂ), s ∈ V →
-    ∀ (γ : Matrix.ProjGenLinGroup (Fin 2) F) (g : G F ζ hζ),
-    E F ζ hζ U ι f s (KPContFlatRationalCosetCovariance.matrixRationalHom F ζ hζ γ * g) =
-      E F ζ hζ U ι f s g
-  genuine : ∀ (s : ℂ), s ∈ V → ∀ (ε : rootsOfUnity 3 F) (g : G F ζ hζ),
-    E F ζ hζ U ι f s (KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε * g) =
-      (KPContSectorCoveredQuotientVocabulary.chi F ζ hζ ε : ℂ) * E F ζ hζ U ι f s g
+    ∀ (γ : Matrix.ProjGenLinGroup (Fin 2) F) (g : current_G),
+    current_E ι f s (KPContFlatRationalCosetCovariance.matrixRationalHom F ζ hζ γ * g) =
+      current_E ι f s g
+  genuine : ∀ (s : ℂ), s ∈ V → ∀ (ε : rootsOfUnity 3 F) (g : current_G),
+    current_E ι f s (KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε * g) =
+      (KPContSectorCoveredQuotientVocabulary.chi F ζ hζ ε : ℂ) * current_E ι f s g
   right_level : ∀ (s : ℂ), s ∈ V →
-    ∀ (g : G F ζ hζ) (u : KPGlobalTorusFunctionData.globalLevel F ζ hζ U),
-    E F ζ hζ U ι f s (g * u.val) = E F ζ hζ U ι f s g
+    ∀ (g : current_G) (u : KPGlobalTorusFunctionData.globalLevel F ζ hζ U),
+    current_E ι f s (g * u.val) = current_E ι f s g
   right_spherical : ∀ (s : ℂ), s ∈ V →
-    ∀ (g : G F ζ hζ) (k : KPContSectorArchSphericalFibers.KInfinity F),
-    E F ζ hζ U ι f s (g * KPSmoothActualFlowData.archimedeanInsertion F ζ hζ k.val) =
-      E F ζ hζ U ι f s g
+    ∀ (g : current_G) (k : KPContSectorArchSphericalFibers.KInfinity F),
+    current_E ι f s (g * KPSmoothActualFlowData.archimedeanInsertion F ζ hζ k.val) =
+      current_E ι f s g
   descent : ∃ e : ℂ → KPContSectorScalarLineAlgebra.GenuineCoveredScalars F ζ hζ
-        (atlasLevel F ζ hζ C R P H U),
-      (∀ (s : ℂ), s ∈ V → ∀ (g : G F ζ hζ),
+        (current_atlasLevel),
+      (∀ (s : ℂ), s ∈ V → ∀ (g : current_G),
         (e s).val (KPContSectorQuotientRelationsComparison.piTilde F ζ hζ
-          (atlasLevel F ζ hζ C R P H U)
-          (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g)) = E F ζ hζ U ι f s g) ∧
+          (current_atlasLevel)
+          (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g)) = current_E ι f s g) ∧
       (∀ (s : ℂ), s ∈ V → ∀ x,
         (e s).val x = KPChamberL2Defect.series (lift F ζ hζ)
           (coveredRepresentative F ζ hζ C R P H U)
           (KPContActualSphericalFlatStage.L F ζ hζ U ι) f s x) ∧
       (∀ (s : ℂ), s ∈ V → ∀ i x,
         (KPContSectorScalarLineAlgebra.S F ζ hζ
-          (atlasLevel F ζ hζ C R P H U) R P H (e s) i).val x =
+          (current_atlasLevel) R P H (e s) i).val x =
             KPChamberL2Defect.series (lift F ζ hζ)
               (componentRepresentative F ζ hζ C R P H U i)
               (KPContActualSphericalFlatStage.L F ζ hζ U ι) f s x)

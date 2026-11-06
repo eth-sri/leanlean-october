@@ -31,7 +31,7 @@ variable (F : Type) [Field F] [NumberField F]
 
  local instance independentReverseImagesPlusSectionAddCommGroup : AddCommGroup (sectionSpace S.borel P .plus 0) := inferInstance
 
-local instance independentReverseImagesMinusSectionAddCommGroup : AddCommGroup (sectionSpace S.borel P .minus 0) := inferInstance
+
 
 private theorem pair_of_arithmetic_inputs
     (htame : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)

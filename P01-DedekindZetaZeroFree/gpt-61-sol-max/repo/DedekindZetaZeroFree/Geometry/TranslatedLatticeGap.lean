@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.Normed.Module.FiniteDimension
 public import Mathlib.Topology.Algebra.OpenSubgroup
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 
@@ -11,7 +14,7 @@ theorem thetaTranslateGap
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     [FiniteDimensional ℝ E] (L : Submodule ℤ E) [DiscreteTopology L] (z : E) :
     ∃ η : ℝ, 0 < η ∧ ∀ ℓ : L, z + (ℓ : E) ≠ 0 → η ≤ ‖z + (ℓ : E)‖ := by
-  haveI : ProperSpace E := FiniteDimensional.proper ℝ E
+  haveI  := FiniteDimensional.proper ℝ E
   have hdisc : IsDiscrete ((L : Set E)) := DiscreteTopology.isDiscrete
   have hclosed : IsClosed ((L : Set E)) :=
     AddSubgroup.isClosed_of_discreteTopology (U := L.toAddSubgroup)

@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Valuation.Henselian.Factorization.Basic
 public import Mathlib.RingTheory.AdicCompletion.Basic
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -32,16 +35,19 @@ open scoped BigOperators
 namespace AlgebraicNumberTheory
 namespace Valuations
 
+section
+variable {R : Type*} [CommRing R] (I : Ideal R)
+include R I
 /-- the directed adic Cauchy estimate for a coefficient
 sequence: later differences from stage `M` lie in `I^(M+1)`. -/
 def henselFactorization_adicCoeffCauchy
-    {R : Type*} [CommRing R] (I : Ideal R) (x : ℕ → R) : Prop :=
+      (x : ℕ → R)  :=
   ∀ {M N : ℕ}, M ≤ N → x N - x M ∈ I ^ (M + 1)
 
 /-- A coefficientwise Cauchy estimate for a polynomial sequence gives an
 adic Cauchy estimate for each fixed coefficient. -/
 theorem henselFactorization_coeff_adicCoeffCauchy_of_sub_coeff_mem
-    {R : Type*} [CommRing R] (I : Ideal R) {Pseq : ℕ → R[X]}
+      {Pseq : ℕ → R[X]}
     (hsub :
       ∀ {M N : ℕ}, M ≤ N → ∀ i : ℕ,
         (Pseq N - Pseq M).coeff i ∈ I ^ (M + 1))
@@ -53,7 +59,7 @@ theorem henselFactorization_coeff_adicCoeffCauchy_of_sub_coeff_mem
 /-- the coefficientwise `I^(M+1)` estimate gives mathlib's
 `I`-adic Cauchy condition after weakening `I^(M+1) ≤ I^M`. -/
 theorem henselFactorization_adicCoeffCauchy_isAdicCauchy
-    {R : Type*} [CommRing R] (I : Ideal R) {x : ℕ → R}
+      {x : ℕ → R}
     (hx : henselFactorization_adicCoeffCauchy I x) :
     AdicCompletion.IsAdicCauchy I R x := by
   intro M N hMN
@@ -67,7 +73,7 @@ theorem henselFactorization_adicCoeffCauchy_isAdicCauchy
 /-- precompleteness supplies a coefficient limit for every
 coefficient sequence satisfying the directed estimate. -/
 theorem henselFactorization_exists_adicCoeffLimit
-    {R : Type*} [CommRing R] (I : Ideal R) [IsPrecomplete I R]
+      [IsPrecomplete I R]
     {x : ℕ → R}
     (hx : henselFactorization_adicCoeffCauchy I x) :
     ∃ L : R, ∀ n : ℕ, x n - L ∈ I ^ n := by
@@ -77,17 +83,22 @@ theorem henselFactorization_exists_adicCoeffLimit
   refine ⟨L, fun n => ?_⟩
   have hmem := SModEq.sub_mem.mp (hL n)
   simpa [smul_eq_mul, Ideal.mul_top] using hmem
+end
 
+
+section
+variable {R : Type*} [Semiring R]
+include R
 /-- assemble finitely many coefficient limits into the
 polynomial supported in degrees at most `N`. -/
 def henselFactorization_polyOfLimitCoeffs
-    {R : Type*} [Semiring R] (N : ℕ) (c : ℕ → R) : R[X] :=
+      (N : ℕ) (c : ℕ → R)  :=
   Finset.sum (Finset.range (N + 1)) fun i => Polynomial.monomial i (c i)
 
 /-- coefficients of the finite polynomial assembled from
 coefficient limits, inside the cutoff. -/
 theorem henselFactorization_polyOfLimitCoeffs_coeff_of_le
-    {R : Type*} [Semiring R] {N n : ℕ} (c : ℕ → R) (hn : n ≤ N) :
+      {N n : ℕ} (c : ℕ → R) (hn : n ≤ N) :
     (henselFactorization_polyOfLimitCoeffs N c).coeff n = c n := by
   classical
   unfold henselFactorization_polyOfLimitCoeffs
@@ -97,12 +108,12 @@ theorem henselFactorization_polyOfLimitCoeffs_coeff_of_le
   · intro b _hb hbn
     simp [Polynomial.coeff_monomial, hbn]
   · intro hnot
-    exact False.elim (hnot (Finset.mem_range.mpr (Nat.lt_succ_of_le hn)))
+    apply False.elim <;> aesop
 
 /-- coefficients of the finite polynomial assembled from
 coefficient limits vanish above the cutoff. -/
 theorem henselFactorization_polyOfLimitCoeffs_coeff_eq_zero_of_lt
-    {R : Type*} [Semiring R] {N n : ℕ} (c : ℕ → R) (hn : N < n) :
+      {N n : ℕ} (c : ℕ → R) (hn : N < n) :
     (henselFactorization_polyOfLimitCoeffs N c).coeff n = 0 := by
   classical
   unfold henselFactorization_polyOfLimitCoeffs
@@ -111,23 +122,28 @@ theorem henselFactorization_polyOfLimitCoeffs_coeff_eq_zero_of_lt
   intro b hb
   have hbn : b ≠ n := by
     intro hbn
-    have hn_le : n ≤ N := Nat.lt_succ_iff.mp (by simpa [hbn] using hb)
-    exact (Nat.not_lt_of_ge hn_le) hn
+    have hn_le  := Nat.lt_succ_iff.mp (by simpa [hbn] using hb)
+    apply Nat.not_lt_of_ge <;> assumption
   simp [Polynomial.coeff_monomial, hbn]
 
 /-- the polynomial assembled from finitely many coefficient
 limits has the stated degree bound. -/
 theorem henselFactorization_polyOfLimitCoeffs_natDegree_le
-    {R : Type*} [Semiring R] (N : ℕ) (c : ℕ → R) :
+      (N : ℕ) (c : ℕ → R) :
     (henselFactorization_polyOfLimitCoeffs N c).natDegree ≤ N := by
   rw [Polynomial.natDegree_le_iff_coeff_eq_zero]
   intro n hn
-  exact henselFactorization_polyOfLimitCoeffs_coeff_eq_zero_of_lt (c := c) hn
+  apply henselFactorization_polyOfLimitCoeffs_coeff_eq_zero_of_lt <;> assumption
+end
 
+
+section
+variable {R : Type*} [CommRing R] (I : Ideal R)
+include R I
 /-- bounded polynomial approximants with coefficientwise
 adic limits have a bounded polynomial limit. -/
 theorem henselFactorization_exists_limitPolynomial_of_bounded_coeffLimits
-    {R : Type*} [CommRing R] (I : Ideal R) [IsPrecomplete I R]
+      [IsPrecomplete I R]
     {N : ℕ} {Pseq : ℕ → R[X]}
     (hdeg : ∀ n : ℕ, (Pseq n).natDegree ≤ N)
     (hcauchy :
@@ -136,11 +152,11 @@ theorem henselFactorization_exists_limitPolynomial_of_bounded_coeffLimits
     ∃ P : R[X], P.natDegree ≤ N ∧
       ∀ n i : ℕ, (Pseq n - P).coeff i ∈ I ^ n := by
   classical
-  let L : ℕ → R :=
+  let L  :=
     fun i =>
       Classical.choose
         (henselFactorization_exists_adicCoeffLimit (I := I) (hcauchy i))
-  let P : R[X] := henselFactorization_polyOfLimitCoeffs N L
+  let P  := henselFactorization_polyOfLimitCoeffs N L
   refine ⟨P, henselFactorization_polyOfLimitCoeffs_natDegree_le N L, ?_⟩
   intro n i
   by_cases hi : i ≤ N
@@ -149,8 +165,8 @@ theorem henselFactorization_exists_limitPolynomial_of_bounded_coeffLimits
         (henselFactorization_exists_adicCoeffLimit (I := I) (hcauchy i)) n
     simpa [P, L, Polynomial.coeff_sub,
       henselFactorization_polyOfLimitCoeffs_coeff_of_le (c := L) hi] using hlim
-  · have hlt : N < i := Nat.lt_of_not_ge hi
-    have hseq : (Pseq n).coeff i = 0 :=
+  · have hlt  := Nat.lt_of_not_ge hi
+    have hseq  :=
       Polynomial.coeff_eq_zero_of_natDegree_lt
         (lt_of_le_of_lt (hdeg n) hlt)
     have hP : P.coeff i = 0 :=
@@ -161,7 +177,7 @@ theorem henselFactorization_exists_limitPolynomial_of_bounded_coeffLimits
 then all coefficients of its product with any polynomial lie in the same
 ideal. -/
 theorem henselFactorization_mul_left_coeff_mem_ideal
-    {R : Type*} [CommRing R] (I : Ideal R) {A B : R[X]}
+      {A B : R[X]}
     (hA : ∀ i : ℕ, A.coeff i ∈ I) :
     ∀ i : ℕ, (A * B).coeff i ∈ I := by
   intro i
@@ -172,7 +188,7 @@ theorem henselFactorization_mul_left_coeff_mem_ideal
 then all coefficients of its product with any polynomial lie in the same
 ideal. -/
 theorem henselFactorization_mul_right_coeff_mem_ideal
-    {R : Type*} [CommRing R] (I : Ideal R) {A B : R[X]}
+      {A B : R[X]}
     (hB : ∀ i : ℕ, B.coeff i ∈ I) :
     ∀ i : ℕ, (A * B).coeff i ∈ I := by
   intro i
@@ -182,7 +198,7 @@ theorem henselFactorization_mul_right_coeff_mem_ideal
 /-- coefficientwise convergence is preserved by multiplying
 two polynomial approximants. -/
 theorem henselFactorization_mul_sub_mul_coeff_mem_of_coeff_mem
-    {R : Type*} [CommRing R] (I : Ideal R) {A A' B B' : R[X]}
+      {A A' B B' : R[X]}
     (hA : ∀ i : ℕ, (A - A').coeff i ∈ I)
     (hB : ∀ i : ℕ, (B - B').coeff i ∈ I) :
     ∀ i : ℕ, (A * B - A' * B').coeff i ∈ I := by
@@ -197,7 +213,7 @@ theorem henselFactorization_mul_sub_mul_coeff_mem_of_coeff_mem
 /-- combine the product convergence with the residual error
 estimate at one adic level. -/
 theorem henselFactorization_limit_factor_coeff_mem_of_approximants
-    {R : Type*} [CommRing R] (I : Ideal R)
+     
     {f G H Gn Hn : R[X]}
     (herr : ∀ i : ℕ, (f - Gn * Hn).coeff i ∈ I)
     (hG : ∀ i : ℕ, (Gn - G).coeff i ∈ I)
@@ -214,7 +230,7 @@ theorem henselFactorization_limit_factor_coeff_mem_of_approximants
 /-- a polynomial whose coefficients lie in every adic power is
 zero in a Hausdorff coefficient ring. -/
 theorem henselFactorization_polynomial_eq_zero_of_coeff_mem_all_powers
-    {R : Type*} [CommRing R] (I : Ideal R) [IsHausdorff I R]
+      [IsHausdorff I R]
     {P : R[X]}
     (hP : ∀ n i : ℕ, P.coeff i ∈ I ^ n) :
     P = 0 := by
@@ -229,7 +245,7 @@ theorem henselFactorization_polynomial_eq_zero_of_coeff_mem_all_powers
 converge coefficientwise at every adic level, then the limiting polynomials
 factor `f`. -/
 theorem henselFactorization_limit_factor_eq_of_approximants
-    {R : Type*} [CommRing R] (I : Ideal R) [IsHausdorff I R]
+      [IsHausdorff I R]
     {f G H : R[X]} {Gseq Hseq : ℕ → R[X]}
     (herr : ∀ n i : ℕ, (f - Gseq n * Hseq n).coeff i ∈ I ^ n)
     (hG : ∀ n i : ℕ, (Gseq n - G).coeff i ∈ I ^ n)
@@ -245,7 +261,7 @@ theorem henselFactorization_limit_factor_eq_of_approximants
 /-- the limit of approximants preserving a fixed residual
 class preserves that residual class.  Only the first adic level is needed. -/
 theorem henselFactorization_limit_reduction_of_approx_reduction
-    {R : Type*} [CommRing R] (I : Ideal R)
+     
     {P P0 : R[X]} {Pseq : ℕ → R[X]}
     (hlim : ∀ n i : ℕ, (Pseq n - P).coeff i ∈ I ^ n)
     (hred : ∀ n i : ℕ, (Pseq n - P0).coeff i ∈ I) :
@@ -253,11 +269,13 @@ theorem henselFactorization_limit_reduction_of_approx_reduction
   intro i
   have hlim1 : (Pseq 1 - P).coeff i ∈ I := by
     simpa using hlim 1 i
-  have hred1 : (Pseq 1 - P0).coeff i ∈ I := hred 1 i
+  have hred1  := hred 1 i
   have hdecomp : P - P0 = -(Pseq 1 - P) + (Pseq 1 - P0) := by
     ring
   rw [hdecomp, Polynomial.coeff_add, Polynomial.coeff_neg]
   exact I.add_mem (I.neg_mem hlim1) hred1
+end
+
 
 /-- coefficientwise membership in a ring-hom kernel gives
 equality after mapping coefficients. -/
@@ -266,7 +284,7 @@ theorem henselFactorization_map_eq_of_sub_coeff_mem_ker
     {P Q : R[X]}
     (hcoeff : ∀ i : ℕ, (P - Q).coeff i ∈ RingHom.ker φ) :
     P.map φ = Q.map φ := by
-  have hzero : (P - Q).map φ = 0 :=
+  have hzero  :=
     (henselFactorization_map_eq_zero_iff_coeff_mem_ker φ (P - Q)).2 hcoeff
   rw [Polynomial.map_sub] at hzero
   exact sub_eq_zero.mp hzero

@@ -102,8 +102,8 @@ theorem kp_cusp_finite_adelic_arithmetic_stabilizers
 
 namespace KPFiniteComponentCover
 variable {C G R : Type*} [Group C] [Group G] [Group R]
-variable (π : C →* G) (s : R →* C) (d : R →* G) (hs : π.comp s = d)
-variable (U : Subgroup C)
+variable (π : C →* G) (s : R →* C) (d : R →* G) 
+
 
 end KPFiniteComponentCover
 

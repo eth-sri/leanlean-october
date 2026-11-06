@@ -79,11 +79,14 @@ theorem rootLevelSet_eq_congruence_ideal
           KubotaRankTwo.n]
     exact ⟨⟨_, hn⟩, rfl⟩
 
-theorem fullDiagonal_residual_ideal_image
-    (π : (LocalField F q)ˣ)
+section
+variable (π : (LocalField F q)ˣ)
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
       (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
-    (u : (KPTameCompact.O F q)ˣ) (I : Ideal (KPLocalCube.LocalIntegers F q)) :
+    (u : (KPTameCompact.O F q)ˣ)
+include π hπ u
+theorem fullDiagonal_residual_ideal_image
+      (I : Ideal (KPLocalCube.LocalIntegers F q)) :
     (fun t : LocalField F q =>
       (KPTameCompact.unitInclusion F q u : LocalField F q) * t /
         ((KPTameCompact.unitInclusion F q u : LocalField F q) + π * t)) ''
@@ -134,10 +137,7 @@ theorem fullDiagonal_residual_ideal_image
     field_simp
 
 theorem fullDiagonal_inverse_root_ideal_image
-    (π : (LocalField F q)ˣ)
-    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
-    (u : (KPTameCompact.O F q)ˣ) (i : Fin 3)
+      (i : Fin 3)
     (I : Ideal (KPLocalCube.LocalIntegers F q)) :
     (fun t : LocalField F q =>
       (π ^ ((i.val : ℤ) + 1) : (LocalField F q)ˣ) /
@@ -172,6 +172,8 @@ theorem fullDiagonal_inverse_root_ideal_image
   simp only [zpow_add, zpow_one, zpow_ofNat, Units.val_mul, Units.val_pow_eq_pow_val]
   field_simp
   <;> ring
+end
+
 
 theorem affine_dilation_haar_mass
     (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
@@ -215,14 +217,17 @@ theorem affine_dilation_haar_mass
     (ENNReal.ofReal_pos.mpr hpos).ne'
   rw [hh, ← mul_assoc, ENNReal.mul_inv_cancel hn ENNReal.ofReal_ne_top, one_mul]
 
-theorem fullDiagonal_inverse_root_haar_mass
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+section
+variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (S : CanonicalFiniteInducingData F ζ hζ q) (P : KPLocalStoneVonNeumann.Polarization S.heisenberg)
     (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
     (π : (LocalField F q)ˣ)
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
       (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
-    (u : (KPTameCompact.O F q)ˣ) (i : Fin 3) (m : ℕ) (hm : 0 < m) :
+    (u : (KPTameCompact.O F q)ˣ) (i : Fin 3) (m : ℕ) (hm : 0 < m)
+include ζ hζ S P μ π hπ u i m hm
+theorem fullDiagonal_inverse_root_haar_mass
+      :
     μ ((fun t : LocalField F q =>
       (π ^ ((i.val : ℤ) + 1) : (LocalField F q)ˣ) /
         ((KPTameCompact.unitInclusion F q u : LocalField F q) + π * t)) ''
@@ -245,13 +250,7 @@ theorem fullDiagonal_inverse_root_haar_mass
   simpa only [pow_two] using fullDiagonal_inner_increment_abs F q π hπ u u i
 
 theorem fullDiagonal_inverse_root_real_mass
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (S : CanonicalFiniteInducingData F ζ hζ q) (P : KPLocalStoneVonNeumann.Polarization S.heisenberg)
-    (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
-    (π : (LocalField F q)ˣ)
-    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
-    (u : (KPTameCompact.O F q)ˣ) (i : Fin 3) (m : ℕ) (hm : 0 < m) :
+      :
     (μ ((fun t : LocalField F q =>
       (π ^ ((i.val : ℤ) + 1) : (LocalField F q)ˣ) /
         ((KPTameCompact.unitInclusion F q u : LocalField F q) + π * t)) ''
@@ -262,6 +261,8 @@ theorem fullDiagonal_inverse_root_real_mass
     ENNReal.toReal_mul, ENNReal.toReal_ofReal]
   · rfl
   · exact le_of_lt (zpow_pos (by exact_mod_cast Nat.card_pos) _)
+end
+
 
 end DedekindZetaZeroFree.KPTameTransposeUnitNumeratorSteps
 

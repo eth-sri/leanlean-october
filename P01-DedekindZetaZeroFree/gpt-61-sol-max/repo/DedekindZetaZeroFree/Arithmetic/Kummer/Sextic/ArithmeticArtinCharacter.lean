@@ -11,19 +11,20 @@ noncomputable section
 namespace DedekindZetaZeroFree.PrimitiveRay
 variable {F : Type} [Field F] [NumberField F]
 
-def arithmeticSexticArtinCharacter (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (σ : F →+* ℂ) (u : Fˣ) : IdeleClassGroup F →ₜ* ℂˣ :=
+section
+variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (σ : F →+* ℂ) (u : Fˣ)
+include ζ hζ σ u
+def arithmeticSexticArtinCharacter   : IdeleClassGroup F →ₜ* ℂˣ :=
   (sexticArtinCharacter ζ hζ σ u)⁻¹
 
 @[simp] theorem arithmeticSexticArtinCharacter_apply
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (σ : F →+* ℂ)
-    (u : Fˣ) (c : IdeleClassGroup F) :
+      (c : IdeleClassGroup F) :
     arithmeticSexticArtinCharacter ζ hζ σ u c =
       (sexticArtinCharacter ζ hζ σ u c)⁻¹ := rfl
 
 theorem arithmeticSexticArtinCharacter_prime
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (σ : F →+* ℂ)
-    (u : Fˣ) (v : HeightOneSpectrum (𝓞 F))
+      (v : HeightOneSpectrum (𝓞 F))
     (hSix : (Ideal.absNorm v.asIdeal).Coprime 6)
     (hu : v.valuation F (u : F) = 1) :
     ∃ j : Fin 6,
@@ -37,15 +38,13 @@ theorem arithmeticSexticArtinCharacter_prime
   rw [arithmeticSexticArtinCharacter_apply, Units.val_inv_eq_inv_val, he, inv_inv]
 
 theorem arithmeticSexticArtinCharacter_pow_six
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (σ : F →+* ℂ)
-    (u : Fˣ) (c : IdeleClassGroup F) :
+      (c : IdeleClassGroup F) :
     arithmeticSexticArtinCharacter ζ hζ σ u c ^ 6 = 1 := by
   rw [arithmeticSexticArtinCharacter_apply, inv_pow,
     sexticArtinCharacter_pow_six, inv_one]
 
 theorem arithmeticSexticArtinCharacter_unramified
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (σ : F →+* ℂ)
-    (u : Fˣ) (v : HeightOneSpectrum (𝓞 F))
+      (v : HeightOneSpectrum (𝓞 F))
     (hSix : (Ideal.absNorm v.asIdeal).Coprime 6)
     (hu : v.valuation F (u : F) = 1)
     (t : (v.adicCompletion F)ˣ)
@@ -55,8 +54,7 @@ theorem arithmeticSexticArtinCharacter_unramified
     sexticArtinCharacter_unramified ζ hζ σ u v hSix hu t ht, inv_one]
 
 theorem arithmeticSextic_primitiveRay_support
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (σ : F →+* ℂ)
-    (u : Fˣ) (hc : NumberField.IsTotallyComplex F)
+      (hc : NumberField.IsTotallyComplex F)
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (χ : RayClassCharacter F m)
     (hprimitive : χ.IsPrimitive)
     (hχ : ∀ c : IdeleClassGroup F,
@@ -67,6 +65,8 @@ theorem arithmeticSextic_primitiveRay_support
     (hu : v.valuation F (u : F) = 1) : ¬ m ≤ v.asIdeal := by
   exact primitiveRay_support hc (arithmeticSexticArtinCharacter ζ hζ σ u) m hm χ
     hprimitive hχ v (arithmeticSexticArtinCharacter_unramified ζ hζ σ u v hSix hu)
+end
+
 
 end DedekindZetaZeroFree.PrimitiveRay
 

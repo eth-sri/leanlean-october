@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.Hecke
 
@@ -18,7 +21,7 @@ theorem stretchedExp_envelope_exponent_le (a p : ℝ) (ha : 0 < a) (hp : 0 < p) 
     simp only [hc_def]; linarith
   have hc_pos : 0 < c := lt_trans zero_lt_one hc1
   have hlog2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
-  have hlogc : 0 < Real.log c := Real.log_pos hc1
+  have hlogc  := Real.log_pos hc1
   have hB : 0 ≤ 1 + Real.log c / Real.log 2 := by
     have : 0 ≤ Real.log c / Real.log 2 := div_nonneg hlogc.le hlog2.le
     linarith
@@ -31,10 +34,7 @@ theorem stretchedExp_envelope_exponent_le (a p : ℝ) (ha : 0 < a) (hp : 0 < p) 
       linarith
 
     have hle : 2 + 2 * R / (a * p) ≤ c * (2 + R) := by
-      have h1 : 2 * R / (a * p) = (2 / (a * p)) * R := by ring
-      rw [hc_def, h1]
-      nlinarith [hR, h2ap, div_nonneg (by norm_num : (0 : ℝ) ≤ 4) hap.le,
-        div_nonneg (by norm_num : (0 : ℝ) ≤ 2) hap.le, mul_nonneg h2ap hR]
+      grind
 
     have hD : Real.log c ≤ (Real.log c / Real.log 2) * Real.log (2 + R) := by
       have h1 : Real.log 2 ≤ Real.log (2 + R) :=
@@ -45,7 +45,7 @@ theorem stretchedExp_envelope_exponent_le (a p : ℝ) (ha : 0 < a) (hp : 0 < p) 
       rwa [div_mul_cancel₀ (Real.log c) (ne_of_gt hlog2)] at h2
     have hmain : Real.log (2 + 2 * R / (a * p)) ≤
         (1 + Real.log c / Real.log 2) * Real.log (2 + R) := by
-      have hC : Real.log (2 + 2 * R / (a * p)) ≤ Real.log (c * (2 + R)) :=
+      have hC  :=
         Real.log_le_log hbase_pos hle
       rw [Real.log_mul (ne_of_gt hc_pos) (ne_of_gt hR2)] at hC
       nlinarith [hC, hD]

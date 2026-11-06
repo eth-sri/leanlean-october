@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.Definitions.FrobeniusAndHilbertClassFields.FinitePrimeFractionalIdeal
 public import ClassFieldTheory.Definitions.FrobeniusAndHilbertClassFields.NumberFieldFractionalIdealGroup
 public import Mathlib.Algebra.BigOperators.Finsupp.Basic
 public import Mathlib.RingTheory.DedekindDomain.Factorization
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -58,7 +61,7 @@ def factorization :
     (fun exps =>
       exps.toAdd.prod fun v n => primePowerHom v (Multiplicative.ofAdd n))
     (fun a b => by
-      exact Finsupp.prod_hom_add_index (fun v => primePowerHom v))
+      apply Finsupp.prod_hom_add_index)
 
 @[simp]
 theorem factorization_val
@@ -72,10 +75,7 @@ theorem factorization_val
 
 /-- Only finitely many finite primes occur with nonzero exponent in a
 nonzero fractional ideal. -/
-theorem finite_count_support (I : NumberFieldFractionalIdealGroup K) :
-    {v : HeightOneSpectrum (𝓞 K) |
-      FractionalIdeal.count K v
-        (I : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) ≠ 0}.Finite :=
+def finite_count_support (I : NumberFieldFractionalIdealGroup K)  :=
   Filter.eventually_cofinite.mp
     (FractionalIdeal.finite_factors
       (I : FractionalIdeal (nonZeroDivisors (𝓞 K)) K))
@@ -108,7 +108,7 @@ theorem count_factorization
         FractionalIdeal (nonZeroDivisors (𝓞 K)) K) =
       exps.toAdd v := by
   rw [factorization_val]
-  exact FractionalIdeal.count_finsuppProd K v exps.toAdd
+  apply FractionalIdeal.count_finsuppProd
 
 theorem ext_count {I J : NumberFieldFractionalIdealGroup K}
     (h : ∀ v : HeightOneSpectrum (𝓞 K),
@@ -122,9 +122,7 @@ theorem ext_count {I J : NumberFieldFractionalIdealGroup K}
       K (Units.ne_zero I),
     ← FractionalIdeal.finprod_heightOneSpectrum_factorization'
       K (Units.ne_zero J)]
-  exact finprod_congr fun v => congrArg
-    (fun n : ℤ =>
-      (v.asIdeal : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) ^ n) (h v)
+  apply finprod_congr <;> aesop
 
 theorem factorization_injective :
     Function.Injective (factorization (K := K)) := by
@@ -146,9 +144,7 @@ theorem factorization_surjective :
   exact countVector_apply I v
 
 /-- Multiplicative prime factorization of nonzero fractional ideals. -/
-def factorizationEquiv :
-    Multiplicative (HeightOneSpectrum (𝓞 K) →₀ ℤ) ≃*
-      NumberFieldFractionalIdealGroup K :=
+def factorizationEquiv  :=
   MulEquiv.ofBijective (factorization (K := K))
     ⟨factorization_injective, factorization_surjective⟩
 

@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Adeles.Characters.RationalPadicCharacter
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -105,7 +108,7 @@ private theorem rational_fractional_parts_difference_integral (q : ℚ) :
         apply Padic.norm_rat_le_one
         intro hd
         apply hp
-        exact Finset.mem_subtype.mpr (Nat.mem_primeFactors.mpr ⟨hl, hd, q.den_ne_zero⟩)
+        apply Finset.mem_subtype.mpr <;> aesop
       have hs : ((∑ a ∈ s, padicFractionalPart a (q : ℚ_[a]) : ℚ) : ℚ_[p]) ∈
           PadicInt.subring p := by
         push_cast
@@ -113,7 +116,7 @@ private theorem rational_fractional_parts_difference_integral (q : ℚ) :
         intro a ha
         apply rationalPInverted_integral_at_other a p
         · intro h
-          exact hp (h.symm ▸ ha)
+          apply hp <;> aesop
         · exact (padicFractionalPart_spec a _).1
       simpa only [Rat.cast_sub] using (PadicInt.subring p).sub_mem hq hs
   have hu := PadicInt.isUnit_den
@@ -132,7 +135,7 @@ theorem rational_diagonal_additive_product (q : ℚ) :
       (fun p : Nat.Primes => rationalPadicCharacter p (q : ℚ_[p])) = 1
   erw [rational_character_prod_exp q (q.den.primeFactors.subtype Nat.Prime)]
   rw [← Circle.exp_add]
-  let r : ℚ := q - (q.den.primeFactors.subtype Nat.Prime : Finset Nat.Primes).sum
+  let r  := q - (q.den.primeFactors.subtype Nat.Prime : Finset Nat.Primes).sum
     (fun p : Nat.Primes => padicFractionalPart p (q : ℚ_[p]))
   have hr : (r.num : ℚ) = r :=
     Rat.coe_int_num_of_den_eq_one (rational_fractional_parts_difference_integral q)

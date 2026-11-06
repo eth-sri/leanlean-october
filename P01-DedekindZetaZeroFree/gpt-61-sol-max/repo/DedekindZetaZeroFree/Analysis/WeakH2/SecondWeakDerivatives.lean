@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.WeakH2.CoerciveDifferenceTest
 public import DedekindZetaZeroFree.Analysis.Sobolev.Restriction.BallNormMonotonicity
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -52,31 +55,9 @@ open KPContLocalNorm
     TestFunction B.toOpens ℂ ⊤ →ₗ[ℂ] BallL2 B where
   toFun φ := (φ.continuous.memLp_of_hasCompactSupport (p := 2) φ.hasCompactSupport).toLp φ
   map_add' φ ψ := by
-    apply Lp.ext
-    filter_upwards [MemLp.coeFn_toLp
-        ((φ + ψ).continuous.memLp_of_hasCompactSupport (p := 2) (φ + ψ).hasCompactSupport),
-      Lp.coeFn_add
-        ((φ.continuous.memLp_of_hasCompactSupport (p := 2) φ.hasCompactSupport).toLp φ)
-        ((ψ.continuous.memLp_of_hasCompactSupport (p := 2) ψ.hasCompactSupport).toLp ψ),
-      MemLp.coeFn_toLp
-        (φ.continuous.memLp_of_hasCompactSupport (p := 2) φ.hasCompactSupport),
-      MemLp.coeFn_toLp
-        (ψ.continuous.memLp_of_hasCompactSupport (p := 2) ψ.hasCompactSupport)] with x h h' hφ hψ
-    rw [h, h']
-    change φ x + ψ x = _ + _
-    rw [hφ, hψ]
+    rfl
   map_smul' c φ := by
-    apply Lp.ext
-    filter_upwards [MemLp.coeFn_toLp
-        ((c • φ).continuous.memLp_of_hasCompactSupport (p := 2) (c • φ).hasCompactSupport),
-      Lp.coeFn_smul c
-        ((φ.continuous.memLp_of_hasCompactSupport (p := 2) φ.hasCompactSupport).toLp φ),
-      MemLp.coeFn_toLp
-        (φ.continuous.memLp_of_hasCompactSupport (p := 2) φ.hasCompactSupport)] with x h h' hφ
-    simp only [RingHom.id_apply]
-    rw [h, h']
-    change c • φ x = c • _
-    rw [hφ]
+    rfl
 
  theorem testL2_ae {n : ℕ} (B : LocalBall n) (φ : TestFunction B.toOpens ℂ ⊤) :
     testL2 B φ =ᵐ[volume.restrict B.carrier] φ :=
@@ -132,8 +113,8 @@ open KPContLocalNorm
     simp only [derivativeTest_eq, coordinateDerivative]
   obtain ⟨g, hg, hgnorm⟩ := bounded_range_extension (testL2 B) f hC
     (by intro φ; rw [hf]; exact hb φ)
-  let w : BallL2 B := (InnerProductSpace.toDual ℂ (BallL2 B)).symm g
-  let v : BallL2 B := ((-1 : ℂ) ^ α.degree) • star w
+  let w  := (InnerProductSpace.toDual ℂ (BallL2 B)).symm g
+  let v  := ((-1 : ℂ) ^ α.degree) • star w
   refine ⟨v, ?_, ?_⟩
   · intro φ
     rw [← hf φ, ← hg φ]
@@ -142,8 +123,8 @@ open KPContLocalNorm
       exact (InnerProductSpace.toDual_symm_apply).symm
     rw [hw]
     change _ = (-1 : ℂ) ^ α.degree *
-      (∫ x in B.carrier, (((-1 : ℂ) ^ α.degree) • star w : BallL2 B) x * φ x)
-    have heq : (∫ x in B.carrier, (((-1 : ℂ) ^ α.degree) • star w : BallL2 B) x * φ x) =
+      (∫ x in B.carrier, (((-1 : ℂ) ^ α.degree) • star w) x * φ x)
+    have heq : (∫ x in B.carrier, (((-1 : ℂ) ^ α.degree) • star w) x * φ x) =
         (-1 : ℂ) ^ α.degree * (∫ x in B.carrier, star w x * φ x) := by
       rw [← integral_const_mul]
       apply integral_congr_ae
@@ -195,8 +176,11 @@ private theorem zeroExtension_integrable {n : ℕ} {B : LocalBall n} (g : BallL2
   exact (integrable_indicator_iff Metric.isOpen_ball.measurableSet).mpr
     ((Lp.memLp g).integrable (by norm_num))
 
-private theorem integral_mul_test_bound {n : ℕ} (B : LocalBall n)
-    (f : Space n → ℂ) (hf : MemLp f 2 (volume.restrict B.carrier))
+section
+variable {n : ℕ} (B : LocalBall n)
+    (f : Space n → ℂ)
+include n B f
+private theorem integral_mul_test_bound   (hf : MemLp f 2 (volume.restrict B.carrier))
     (φ : TestFunction B.toOpens ℂ ⊤) :
     ‖∫ x in B.carrier, f x * φ x‖ ≤
       Real.sqrt (∫ x in B.carrier, ‖f x‖ ^ 2) *
@@ -232,8 +216,7 @@ private theorem integral_mul_test_bound {n : ℕ} (B : LocalBall n)
   have hv := hnorm v φ (MemLp.coeFn_toLp hφ)
   simpa only [hstar, hu, hv] using (norm_inner_le_norm (star u) v)
 
-private theorem translated_pairing_hasDeriv {n : ℕ} (B : LocalBall n)
-    (f : Space n → ℂ) (hf : Integrable f volume)
+private theorem translated_pairing_hasDeriv   (hf : Integrable f volume)
     (φ : TestFunction B.toOpens ℂ ⊤) (e : Space n) :
     HasDerivAt (fun t : ℝ => ∫ x, f x * φ (x - t • e))
       (∫ x, -(f x * fderiv ℝ (fun y => φ y) x e)) 0 := by
@@ -251,8 +234,7 @@ private theorem translated_pairing_hasDeriv {n : ℕ} (B : LocalBall n)
         (x - t • e) := (φ.contDiff.differentiable (by simp)).differentiableAt.hasFDerivAt
     convert (hφd.comp_hasDerivAt t hp).const_mul (f x) using 1 <;> simp
   have hmeas (t : ℝ) : AEStronglyMeasurable
-      (fun x => -(f x * fderiv ℝ (fun y => φ y) (x - t • e) e)) volume := by
-    exact (hf.aestronglyMeasurable.mul
+      (fun x => -(f x * fderiv ℝ (fun y => φ y) (x - t • e) e)) volume := (hf.aestronglyMeasurable.mul
       (((φ.contDiff.continuous_fderiv (by simp)).comp
         (continuous_id.sub continuous_const)).clm_apply continuous_const
         |>.aestronglyMeasurable)).neg
@@ -273,7 +255,7 @@ private theorem translated_pairing_hasDeriv {n : ℕ} (B : LocalBall n)
     (hf.norm.mul_const _) (Eventually.of_forall fun x t _ => hd x t)
   simpa using h.2
 
-private theorem global_mul_test {n : ℕ} (B : LocalBall n) (f : Space n → ℂ)
+private theorem global_mul_test  
     (φ : TestFunction B.toOpens ℂ ⊤) :
     (∫ x, f x * φ x) = ∫ x in B.carrier, f x * φ x := by
   rw [← integral_indicator (show MeasurableSet B.carrier from Metric.isOpen_ball.measurableSet)]
@@ -285,8 +267,7 @@ private theorem global_mul_test {n : ℕ} (B : LocalBall n) (f : Space n → ℂ
         (fun h => hx (φ.tsupport_subset h))
       simp [hx, hz]
 
-private theorem shifted_pairing_identity {n : ℕ} (B : LocalBall n)
-    (f : Space n → ℂ) (hf : Integrable f volume)
+private theorem shifted_pairing_identity   (hf : Integrable f volume)
     (φ : TestFunction B.toOpens ℂ ⊤) (k : Fin n) (t : ℝ) :
     (∫ x in B.carrier, differenceQuotient k t f x * φ x) =
       (t : ℂ)⁻¹ * ((∫ x, f x * φ (x - t • EuclideanSpace.single k 1)) -
@@ -316,6 +297,8 @@ private theorem shifted_pairing_identity {n : ℕ} (B : LocalBall n)
       apply integral_congr_ae
       exact Eventually.of_forall fun x => by simp [differenceQuotient]; ring
     _ = _ := by rw [integral_sub h2 h1, heq]
+end
+
 
 theorem difference_bound_to_test_pairing {n : ℕ} (inner outer : LocalBall n)
     (hcenter : inner.center = outer.center) (hgap : inner.radius < outer.radius)
@@ -341,11 +324,10 @@ theorem difference_bound_to_test_pairing {n : ℕ} (inner outer : LocalBall n)
       simp only [ψ, TestFunction.lineDerivCLM_eq_fderivCLM,
         TestFunction.fderivCLM_apply_of_le φ (show (⊤ : ℕ∞) + 1 ≤ ⊤ by simp)]
     rw [show (fun x => f x * fderiv ℝ (fun y => φ y) x e) =
-        (fun x => f x * ψ x) from funext fun x => by rw [hψ]]
+        (fun x => f x * ψ x) from funext fun x => rfl]
     rw [global_mul_test inner f ψ]
     apply integral_congr_ae
-    filter_upwards [ae_restrict_mem (show MeasurableSet inner.carrier from
-      Metric.isOpen_ball.measurableSet)] with x hx
+    filter_upwards [ae_restrict_mem (Metric.isOpen_ball.measurableSet)] with x hx
     simp [f, zeroExtension, hsub hx, hψ, coordinateDerivativeList, e]
   have hlim : Tendsto
       (fun t : ℝ => ∫ x in inner.carrier, differenceQuotient k t f x * φ x)
@@ -372,10 +354,7 @@ theorem difference_bound_to_test_pairing {n : ℕ} (inner outer : LocalBall n)
 
 open KPContLocalEnergy.SobolevEnergyEstimates
 
-private theorem dirs_length {n k : ℕ} (α : MultiIndex n k) :
-    α.directions.length = α.degree := by
-  simp [MultiIndex.directions, MultiIndex.degree, List.length_flatMap,
-    ← List.sum_toFinset _ (List.nodup_finRange n), List.toFinset_finRange]
+private alias dirs_length := _root_.DedekindZetaZeroFree.KPLocalCubeSobolevJets.multiIndex_directions_length
 
 private theorem dirs_count {n k : ℕ} (α : MultiIndex n k) (i : Fin n) :
     α.directions.count i = (α.val i).val := by
@@ -392,14 +371,17 @@ private theorem dirs_injective {n k : ℕ} :
   apply Fin.ext
   rw [← dirs_count, ← dirs_count, h]
 
- def low {n : ℕ} (α : MultiIndex n 2) (h : α.degree ≤ 1) : MultiIndex n 1 :=
+ section
+variable {n : ℕ}
+include n
+def low   (α : MultiIndex n 2) (h : α.degree ≤ 1) : MultiIndex n 1 :=
   ⟨fun i => ⟨(α.val i).val, by
       have hi := Finset.single_le_sum (fun j _ => Nat.zero_le (α.val j).val) (Finset.mem_univ i)
       change (α.val i).val < 2
       change (α.val i).val ≤ α.degree at hi
       omega⟩, h⟩
 
-private theorem low_inj {n : ℕ} : Function.Injective
+private theorem low_inj   : Function.Injective
     (fun α : {α : MultiIndex n 2 // α.degree ≤ 1} => low α.val α.property) := by
   intro α β h
   apply Subtype.ext
@@ -408,7 +390,7 @@ private theorem low_inj {n : ℕ} : Function.Injective
   apply Fin.ext
   exact congrArg (fun γ : MultiIndex n 1 => (γ.val i).val) h
 
- theorem pair_dirs {n : ℕ} (α : MultiIndex n 2) (h : ¬ α.degree ≤ 1) :
+ theorem pair_dirs   (α : MultiIndex n 2) (h : ¬ α.degree ≤ 1) :
     ∃ j k : Fin n, α.directions = [j,k] := by
   have hd := α.property
   have hl : α.directions.length = 2 := by rw [dirs_length]; change α.degree ≤ 2 at hd; omega
@@ -417,26 +399,26 @@ private theorem low_inj {n : ℕ} : Function.Injective
   obtain ⟨k, hk⟩ := List.length_eq_one_iff.mp hl'
   exact ⟨j, k, by rw [he, hk]⟩
 
- def pair {n : ℕ} (α : {α : MultiIndex n 2 // ¬ α.degree ≤ 1}) : Fin n × Fin n :=
+ def pair   (α : {α : MultiIndex n 2 // ¬ α.degree ≤ 1})  :=
   ((pair_dirs α.val α.property).choose,
     (pair_dirs α.val α.property).choose_spec.choose)
 
-private theorem pair_spec {n : ℕ} (α : {α : MultiIndex n 2 // ¬ α.degree ≤ 1}) :
+private theorem pair_spec   (α : {α : MultiIndex n 2 // ¬ α.degree ≤ 1}) :
     α.val.directions = [(pair α).1, (pair α).2] :=
   (pair_dirs α.val α.property).choose_spec.choose_spec
 
-private theorem pair_inj {n : ℕ} : Function.Injective (@pair n) := by
+private theorem pair_inj   : Function.Injective (@pair n) := by
   intro α β h
   apply Subtype.ext
   apply dirs_injective
   rw [pair_spec, pair_spec, h]
 
-private theorem high_card {n : ℕ} :
+private theorem high_card   :
     Fintype.card {α : MultiIndex n 2 // ¬ α.degree ≤ 1} ≤ n ^ 2 := by
   classical
   have h := Fintype.card_le_of_injective (@pair n) pair_inj
   simpa [pow_two] using h
-private theorem recover_high {n : ℕ} (B : LocalBall n) (u : IntegerSobolev B 1)
+private theorem recover_high   (B : LocalBall n) (u : IntegerSobolev B 1)
     {A : ℝ} (hA : 0 ≤ A)
     (hb : ∀ (j k : Fin n) (φ : TestFunction B.toOpens ℂ ⊤),
       ‖∫ x in B.carrier, gradient u j x * coordinateDerivativeList [k] (fun y => φ y) x‖ ≤
@@ -462,10 +444,15 @@ private theorem recover_high {n : ℕ} (B : LocalBall n) (u : IntegerSobolev B 1
       neg_one_mul, he, coordinateDerivativeList, KPContLocalEnergy.SobolevEnergyEstimates.Raw.value,
       KPContLocalEnergy.SobolevEnergyEstimates.Raw.gradient, zeroIndex] using hu
   rw [hl, norm_neg]
-  exact hb j k φ
+  apply hb
+end
 
-private theorem restrict_normSq {n : ℕ} (inner outer : LocalBall n)
-    (hsub : inner.carrier ⊆ outer.carrier) (u : IntegerSobolev outer 1) :
+
+section
+variable {n : ℕ} (inner outer : LocalBall n)
+    (hsub : inner.carrier ⊆ outer.carrier) (u : IntegerSobolev outer 1)
+include n inner outer hsub u
+private theorem restrict_normSq   :
     ∃ w : IntegerSobolev inner 1,
       (∀ α, w.derivatives α =ᵐ[volume.restrict inner.carrier] u.derivatives α) ∧
       w.normSq ≤ u.normSq := by
@@ -475,8 +462,7 @@ private theorem restrict_normSq {n : ℕ} (inner outer : LocalBall n)
   intro α _
   exact pow_le_pow_left₀ (norm_nonneg _) (KPContLocalEnergy.norm_restrictBallL2_le hsub _) 2
 
-theorem assemble_second_weak_derivatives {n : ℕ} (inner outer : LocalBall n)
-    (hsub : inner.carrier ⊆ outer.carrier) (u : IntegerSobolev outer 1)
+theorem assemble_second_weak_derivatives  
     (A : ℝ) (hA : 0 ≤ A)
     (hpair : ∀ (j k : Fin n) (φ : TestFunction inner.toOpens ℂ ⊤),
       ‖∫ x in inner.carrier,
@@ -498,9 +484,9 @@ theorem assemble_second_weak_derivatives {n : ℕ} (inner outer : LocalBall n)
       change w.derivatives (firstIndex j) x * _ = u.derivatives (firstIndex j) x * _
       rw [hx]
     rw [he]
-    exact hpair j k φ
+    apply hpair
   have hr := fun α ha => recover_high inner w hA hb α ha
-  let d : MultiIndex n 2 → BallL2 inner := fun α =>
+  let d  := fun α =>
     if h : α.degree ≤ 1 then w.derivatives (low α h) else (hr α h).choose
   have dz : d (zeroIndex n 2) = value w := by
     dsimp [d]
@@ -518,7 +504,7 @@ theorem assemble_second_weak_derivatives {n : ℕ} (inner outer : LocalBall n)
   refine ⟨v, ?_, ?_⟩
   · change d (zeroIndex n 2) =ᵐ[volume.restrict inner.carrier] value u
     rw [dz]
-    exact hw (zeroIndex n 1)
+    apply hw
   · have hl : (∑ α : {α : MultiIndex n 2 // α.degree ≤ 1}, ‖d α.val‖ ^ 2) ≤ w.normSq := by
       apply Finset.sum_le_sum_of_injOn (fun α => low α.val α.property)
       · exact low_inj.injOn
@@ -541,6 +527,8 @@ theorem assemble_second_weak_derivatives {n : ℕ} (inner outer : LocalBall n)
     change (∑ α, ‖d α‖ ^ 2) ≤ _
     rw [← Fintype.sum_subtype_add_sum_subtype (fun α : MultiIndex n 2 => α.degree ≤ 1)]
     exact add_le_add (hl.trans hwn) hh
+end
+
 
 end DedekindZetaZeroFree.WeakH2
 

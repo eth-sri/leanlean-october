@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.LubinTate.FiniteLevel.PrimitiveRoot
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -40,40 +43,41 @@ open LocalFieldTheory.DiscreteValuationField
 
 variable {K : Type u} [Field K]
 
+section
+variable (F : LocalField.{u, v} K) (π : F.valuationSubring)
+include F π
 /-- The `n`-fold standard iterate after extending coefficients from the
 valuation ring to the base field. -/
 noncomputable def standardLubinTatePolynomialIterateOverField
-    (F : LocalField.{u, v} K) (π : F.valuationSubring) (n : ℕ) :
-    Polynomial K :=
+      (n : ℕ)  :=
   (standardLubinTatePolynomialIterate F π n).map
     (algebraMap F.valuationSubring K)
 
 /-- The `n`-fold standard iterate after extending coefficients to the fixed
 separable closure of the base field. -/
 noncomputable def standardLubinTatePolynomialIterateOverSeparableClosure
-    (F : LocalField.{u, v} K) (π : F.valuationSubring) (n : ℕ) :
-    Polynomial (SeparableClosure K) :=
+      (n : ℕ)  :=
   (standardLubinTatePolynomialIterate F π n).map
     ((algebraMap K (SeparableClosure K)).comp
       (algebraMap F.valuationSubring K))
 
-/-- Evaluation of the field-valued iterate is evaluation over the valuation
-ring with the coefficient embedding. -/
-@[simp]
-theorem standardLubinTatePolynomialIterateOverField_eval
-    (F : LocalField.{u, v} K) (π : F.valuationSubring)
-    (n : ℕ) (x : K) :
-    (standardLubinTatePolynomialIterateOverField F π n).eval x =
-      Polynomial.eval₂ (algebraMap F.valuationSubring K) x
-        (standardLubinTatePolynomialIterate F π n) := by
-  rw [standardLubinTatePolynomialIterateOverField,
-    Polynomial.eval_map]
+
+
+
+
+
+
+
+
+
+
+
 
 /-- Evaluation of the separable-closure-valued iterate is evaluation over
 the valuation ring with the composite coefficient embedding. -/
 @[simp]
 theorem standardLubinTatePolynomialIterateOverSeparableClosure_eval
-    (F : LocalField.{u, v} K) (π : F.valuationSubring)
+     
     (n : ℕ) (x : SeparableClosure K) :
     (standardLubinTatePolynomialIterateOverSeparableClosure F π n).eval x =
       Polynomial.eval₂
@@ -86,7 +90,7 @@ theorem standardLubinTatePolynomialIterateOverSeparableClosure_eval
 /-- Evaluating a compositional iterate is the corresponding iterate of the
 evaluation function. -/
 theorem standardLubinTatePolynomialIterate_eval₂_eq_iterate
-    (F : LocalField.{u, v} K) (π : F.valuationSubring)
+     
     {A : Type*} [CommSemiring A]
     (φ : F.valuationSubring →+* A) (n : ℕ) (x : A) :
     Polynomial.eval₂ φ x
@@ -97,7 +101,7 @@ theorem standardLubinTatePolynomialIterate_eval₂_eq_iterate
 
 /-- Standard iterate indices add under evaluated composition. -/
 theorem standardLubinTatePolynomialIterate_eval₂_add
-    (F : LocalField.{u, v} K) (π : F.valuationSubring)
+     
     {A : Type*} [CommSemiring A]
     (φ : F.valuationSubring →+* A) (m n : ℕ) (x : A) :
     Polynomial.eval₂ φ x
@@ -106,15 +110,13 @@ theorem standardLubinTatePolynomialIterate_eval₂_add
         (Polynomial.eval₂ φ x
           (standardLubinTatePolynomialIterate F π n))
         (standardLubinTatePolynomialIterate F π m) := by
-  let g : A → A := fun y =>
+  let g  := fun y =>
     Polynomial.eval₂ φ y (standardLubinTatePolynomial F π)
   calc
     Polynomial.eval₂ φ x
         (standardLubinTatePolynomialIterate F π (m + n)) =
         g^[m + n] x := by
-      exact
-        standardLubinTatePolynomialIterate_eval₂_eq_iterate
-          F π φ (m + n) x
+      apply standardLubinTatePolynomialIterate_eval₂_eq_iterate
     _ = g^[m] (g^[n] x) := by
       rw [Function.iterate_add_apply]
     _ = Polynomial.eval₂ φ
@@ -127,7 +129,7 @@ theorem standardLubinTatePolynomialIterate_eval₂_add
 /-- In the fixed separable closure, evaluation of standard iterates is
 additive in the iterate index. -/
 theorem standardLubinTatePolynomialIterateOverSeparableClosure_eval_add
-    (F : LocalField.{u, v} K) (π : F.valuationSubring)
+     
     (m n : ℕ) (x : SeparableClosure K) :
     (standardLubinTatePolynomialIterateOverSeparableClosure
         F π (m + n)).eval x =
@@ -144,7 +146,7 @@ theorem standardLubinTatePolynomialIterateOverSeparableClosure_eval_add
 /-- Evaluation of the primitive polynomial after a further coefficient map
 is the primitive division equation for the mapped iterate. -/
 theorem standardLubinTatePrimitivePolynomialOverField_eval₂
-    (F : LocalField.{u, v} K) (π : F.valuationSubring)
+     
     {A : Type*} [CommRing A] (φ : K →+* A)
     (n : ℕ) (x : A) :
     Polynomial.eval₂ φ x
@@ -157,12 +159,17 @@ theorem standardLubinTatePrimitivePolynomialOverField_eval₂
   rw [standardLubinTatePrimitivePolynomialOverField_formula,
     Polynomial.eval₂_add, Polynomial.eval₂_pow,
     Polynomial.eval₂_map, Polynomial.eval₂_C]
+end
 
+
+section
+variable {F : LocalField.{u, v} K} {π : F.valuationSubring}
+    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
+include F π hπ
 /-- The chosen primitive root satisfies its primitive division equation in
 the fixed separable closure. -/
 theorem chosenStandardLubinTatePrimitiveRoot_equation
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+      (n : ℕ) :
     (standardLubinTatePolynomialIterateOverSeparableClosure F π n).eval
           (chosenStandardLubinTatePrimitiveRoot hπ n) ^
         (Nat.card F.residueField - 1) +
@@ -182,8 +189,7 @@ theorem chosenStandardLubinTatePrimitiveRoot_equation
 /-- The chosen primitive level-`n + 1` root is killed by the
 level-`n + 1` standard iterate. -/
 theorem chosenStandardLubinTatePrimitiveRoot_iterate_succ_eq_zero
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+      (n : ℕ) :
     (standardLubinTatePolynomialIterateOverSeparableClosure
         F π (n + 1)).eval
       (chosenStandardLubinTatePrimitiveRoot hπ n) = 0 := by
@@ -211,8 +217,7 @@ theorem chosenStandardLubinTatePrimitiveRoot_iterate_succ_eq_zero
 /-- The chosen primitive level-`n + 1` root is not already killed by the
 level-`n` standard iterate. -/
 theorem chosenStandardLubinTatePrimitiveRoot_iterate_ne_zero
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+      (n : ℕ) :
     (standardLubinTatePolynomialIterateOverSeparableClosure F π n).eval
         (chosenStandardLubinTatePrimitiveRoot hπ n) ≠ 0 := by
   intro hzero
@@ -227,8 +232,7 @@ theorem chosenStandardLubinTatePrimitiveRoot_iterate_ne_zero
 
 /-- In particular, the chosen primitive root is nonzero. -/
 theorem chosenStandardLubinTatePrimitiveRoot_ne_zero
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+      (n : ℕ) :
     chosenStandardLubinTatePrimitiveRoot hπ n ≠ 0 := by
   intro hzero
   apply chosenStandardLubinTatePrimitiveRoot_iterate_ne_zero hπ n
@@ -242,8 +246,7 @@ theorem chosenStandardLubinTatePrimitiveRoot_ne_zero
 level-`n + 1` point gives a root of the primitive level-`m + 1`
 polynomial. -/
 theorem chosenStandardLubinTatePrimitivePredecessor_isRoot
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
+     
     {m n : ℕ} (hmn : m ≤ n) :
     let y :=
       (standardLubinTatePolynomialIterateOverSeparableClosure
@@ -287,6 +290,8 @@ theorem chosenStandardLubinTatePrimitivePredecessor_isRoot
   simpa only [
     standardLubinTatePolynomialIterateOverSeparableClosure_eval] using
       hyEquation
+end
+
 
 end LubinTate
 

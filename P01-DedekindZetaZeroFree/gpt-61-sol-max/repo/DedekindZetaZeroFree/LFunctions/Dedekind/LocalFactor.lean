@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Imperial College London. All rights reserved.
@@ -22,10 +25,10 @@ open NumberField
 
 namespace DedekindZetaZeroFree.Odlyzko
 
-noncomputable def inverseNormPower (q : ℕ) (s : ℂ) : ℂ :=
+noncomputable def inverseNormPower (q : ℕ) (s : ℂ)  :=
   (q : ℂ) ^ (-s)
 
-noncomputable def localFactor (q : ℕ) (s : ℂ) : ℂ :=
+noncomputable def localFactor (q : ℕ) (s : ℂ)  :=
   (1 - inverseNormPower q s)⁻¹
 
 lemma norm_inverseNormPower (q : ℕ) (hq : 0 < q) (s : ℂ) :

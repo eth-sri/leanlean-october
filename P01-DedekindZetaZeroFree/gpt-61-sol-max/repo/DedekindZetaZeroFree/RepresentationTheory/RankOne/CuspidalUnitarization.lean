@@ -1,15 +1,18 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.RepresentationTheory.Smooth.RepresentationsAndFixedLevels
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.CuspidalFiniteCosetForm
 
 variable {G V : Type*} [Group G] [TopologicalSpace G]
     [AddCommGroup V] [Module ℂ V]
 
-def coefficient (ρ : Representation ℂ G V) (ℓ : Module.Dual ℂ V) (v : V) : G → ℂ :=
+def coefficient (ρ : Representation ℂ G V) (ℓ : Module.Dual ℂ V) (v : V)  :=
   fun g => ℓ (ρ g v)
 
 abbrev LeftCosets (U : CompactOpenLevel G) :=
@@ -19,7 +22,7 @@ def cosetMk (U : CompactOpenLevel G) (g : G) : LeftCosets U :=
   Quotient.mk _ g
 
 def FixesFunctional (ρ : Representation ℂ G V) (U : CompactOpenLevel G)
-    (ℓ : Module.Dual ℂ V) : Prop :=
+    (ℓ : Module.Dual ℂ V)  :=
   ∀ u ∈ U.toOpenSubgroup, ∀ v : V, ℓ (ρ u v) = ℓ v
 
 noncomputable def descendedCoefficient (ρ : Representation ℂ G V)
@@ -27,7 +30,7 @@ noncomputable def descendedCoefficient (ρ : Representation ℂ G V)
   fun q => coefficient ρ ℓ v q.out
 
 noncomputable def form (ρ : Representation ℂ G V) (ℓ : Module.Dual ℂ V)
-    (U : CompactOpenLevel G) (v w : V) : ℂ :=
+    (U : CompactOpenLevel G) (v w : V)  :=
   ∑ᶠ q : LeftCosets U,
     descendedCoefficient ρ ℓ U v q * star (descendedCoefficient ρ ℓ U w q)
 
@@ -53,11 +56,14 @@ theorem descendedCoefficient_eq (ρ : Representation ℂ G V)
   rcases Quotient.exact he with ⟨u, hu⟩
   change (u : G) * g = q.out at hu
   simp only [descendedCoefficient, coefficient, ← hu, map_mul, Module.End.mul_apply]
-  exact hU u u.property (ρ g v)
+  apply hU <;> aesop
 
-theorem descendedCoefficient_finite_support [IsTopologicalGroup G] [T2Space G]
+section
+variable [IsTopologicalGroup G] [T2Space G]
     (ρ : Representation ℂ G V) (ℓ : Module.Dual ℂ V)
     (U : CompactOpenLevel G) (hU : FixesFunctional ρ U ℓ)
+include ρ ℓ U hU
+theorem descendedCoefficient_finite_support  
     (v : V) (hc : HasCompactSupport (coefficient ρ ℓ v)) :
     (Function.support (descendedCoefficient ρ ℓ U v)).Finite := by
   have hlc : IsLocallyConstant (cosetMk U) := by
@@ -67,7 +73,7 @@ theorem descendedCoefficient_finite_support [IsTopologicalGroup G] [T2Space G]
       isOpenMap_mul_right g _ U.toOpenSubgroup.isOpen, ⟨1, U.toOpenSubgroup.one_mem, by simp⟩, ?_⟩
     rintro x ⟨u, hu, rfl⟩
     exact Quotient.sound ⟨⟨u, hu⟩, rfl⟩
-  letI : CompactSpace (tsupport (coefficient ρ ℓ v)) := isCompact_iff_compactSpace.mp hc.isCompact
+  letI  := isCompact_iff_compactSpace.mp hc.isCompact
   have hf := (hlc.comp_continuous
     (continuous_subtype_val : Continuous (fun x : tsupport (coefficient ρ ℓ v) => (x : G)))).range_finite
   apply hf.subset
@@ -76,9 +82,7 @@ theorem descendedCoefficient_finite_support [IsTopologicalGroup G] [T2Space G]
   apply subset_closure
   exact hq
 
-private theorem pair_finite [IsTopologicalGroup G] [T2Space G]
-    (ρ : Representation ℂ G V) (ℓ : Module.Dual ℂ V)
-    (U : CompactOpenLevel G) (hU : FixesFunctional ρ U ℓ)
+private theorem pair_finite  
     (hc : ∀ v : V, HasCompactSupport (coefficient ρ ℓ v)) (v w : V) :
     (Function.support (fun q => descendedCoefficient ρ ℓ U v q *
       star (descendedCoefficient ρ ℓ U w q))).Finite := by
@@ -86,24 +90,27 @@ private theorem pair_finite [IsTopologicalGroup G] [T2Space G]
   intro q hq
   exact fun hz => hq (by simp [hz])
 
-private theorem form_add_left [IsTopologicalGroup G] [T2Space G]
-    (ρ : Representation ℂ G V) (ℓ : Module.Dual ℂ V)
-    (U : CompactOpenLevel G) (hU : FixesFunctional ρ U ℓ)
+private theorem form_add_left  
     (hc : ∀ v : V, HasCompactSupport (coefficient ρ ℓ v)) (v₁ v₂ w : V) :
     form ρ ℓ U (v₁ + v₂) w = form ρ ℓ U v₁ w + form ρ ℓ U v₂ w := by
   unfold form
   simp only [descendedCoefficient, coefficient, map_add, add_mul]
   exact finsum_add_distrib (pair_finite ρ ℓ U hU hc v₁ w) (pair_finite ρ ℓ U hU hc v₂ w)
+end
 
-private theorem form_smul_left (ρ : Representation ℂ G V) (ℓ : Module.Dual ℂ V)
-    (U : CompactOpenLevel G) (a : ℂ) (v w : V) :
+
+section
+variable (ρ : Representation ℂ G V) (ℓ : Module.Dual ℂ V)
+    (U : CompactOpenLevel G)
+include ρ ℓ U in
+private theorem form_smul_left   (a : ℂ) (v w : V) :
     form ρ ℓ U (a • v) w = a * form ρ ℓ U v w := by
   unfold form
   simp only [descendedCoefficient, coefficient, map_smul, smul_eq_mul, mul_assoc]
   exact (mul_finsum _ _).symm
 
-private theorem form_hermitian (ρ : Representation ℂ G V) (ℓ : Module.Dual ℂ V)
-    (U : CompactOpenLevel G) (v w : V) :
+include ρ ℓ U in
+private theorem form_hermitian   (v w : V) :
     form ρ ℓ U v w = star (form ρ ℓ U w v) := by
   unfold form
   change _ = (starAddEquiv : ℂ ≃+ ℂ) _
@@ -128,8 +135,8 @@ def rightCosetEquiv (U : CompactOpenLevel G) (g : G) : LeftCosets U ≃ LeftCose
   left_inv q := by induction q using Quotient.inductionOn; simp [mul_assoc]
   right_inv q := by induction q using Quotient.inductionOn; simp [mul_assoc]
 
-private theorem form_invariant (ρ : Representation ℂ G V) (ℓ : Module.Dual ℂ V)
-    (U : CompactOpenLevel G) (hU : FixesFunctional ρ U ℓ) (g : G) (v w : V) :
+include ρ ℓ U in
+private theorem form_invariant   (hU : FixesFunctional ρ U ℓ) (g : G) (v w : V) :
     form ρ ℓ U (ρ g v) (ρ g w) = form ρ ℓ U v w := by
   have he (v : V) (q : LeftCosets U) : descendedCoefficient ρ ℓ U (ρ g v) q =
       descendedCoefficient ρ ℓ U v (rightCosetEquiv U g q) := by
@@ -140,6 +147,8 @@ private theorem form_invariant (ρ : Representation ℂ G V) (ℓ : Module.Dual 
   simp_rw [he]
   exact finsum_comp_equiv (rightCosetEquiv U g)
     (f := fun q => descendedCoefficient ρ ℓ U v q * star (descendedCoefficient ρ ℓ U w q))
+end
+
 
 private theorem coefficient_separates (ρ : Representation ℂ G V) [ρ.IsIrreducible]
     (ℓ : Module.Dual ℂ V) (hℓ : ℓ ≠ 0) (v : V) (hv : v ≠ 0) :

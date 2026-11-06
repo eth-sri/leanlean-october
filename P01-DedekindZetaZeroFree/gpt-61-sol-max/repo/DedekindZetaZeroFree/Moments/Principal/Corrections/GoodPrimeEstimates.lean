@@ -17,15 +17,18 @@ variable {F : Type} [Field F] [NumberField F]
 variable {A : SArithmeticData F} {σ : F →+* ℂ}
 variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
-private lemma correction_Q_gt_one (p : ExteriorPrime A) : 1 < Q p := by
+section
+variable (p : ExteriorPrime A)
+include p
+private lemma correction_Q_gt_one   : 1 < Q p := by
   change 1 < (Ideal.absNorm p.val.asIdeal : ℝ)
   exact_mod_cast NumberField.HeightOneSpectrum.one_lt_absNorm p.val
 
-private lemma correction_Q_ge_two (p : ExteriorPrime A) : 2 ≤ Q p := by
+private lemma correction_Q_ge_two   : 2 ≤ Q p := by
   change 2 ≤ (Ideal.absNorm p.val.asIdeal : ℝ)
   exact_mod_cast NumberField.HeightOneSpectrum.one_lt_absNorm p.val
 
-private lemma correction_chi_le (p : ExteriorPrime A) (u : A.R) :
+private lemma correction_chi_le   (u : A.R) :
     ‖chi (σ := σ) p (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) u)‖ ≤ 1 := by
   letI := A.exteriorResidue_finite (primeIdeal p)
   letI := Fintype.ofFinite (A.R ⧸ A.extendIdeal (primeIdeal p))ˣ
@@ -37,31 +40,33 @@ private lemma correction_chi_le (p : ExteriorPrime A) (u : A.R) :
     simpa only [MulChar.coe_equivToUnitHom] using h.le
   · simp [MulChar.map_nonunit _ hu]
 
-private lemma correction_eta_le (p : ExteriorPrime A) : ‖η p.val.asIdeal‖ ≤ 1 := by
+private lemma correction_eta_le   : ‖η p.val.asIdeal‖ ≤ 1 := by
   by_cases h : η p.val.asIdeal = 0
   · simp [h]
   · exact (RayClassBridge.rayClassCharacter_norm_of_ne_zero F
       (primitive12_totallyComplex F A.zeta12 A.primitive_zeta12)
       A.modulus A.modulus_ne_zero η p.val.asIdeal h).le
 
-private lemma correction_qPower_norm (p : ExteriorPrime A) (s : ℂ) :
+private lemma correction_qPower_norm   (s : ℂ) :
     ‖qPower p s‖ = Real.exp (s.re * Real.log (Q p)) := by
   simp [qPower, Complex.norm_exp]
 
-private lemma correction_norm_V (p : ExteriorPrime A) (z : ℂ) :
+private lemma correction_norm_V   (z : ℂ) :
     ‖V p z‖ = Real.exp ((-6 * z.re) * Real.log (Q p)) := by
   simp [V, correction_qPower_norm]
 
-private lemma correction_norm_W (p : ExteriorPrime A) (u : A.R) (w : ℂ) :
+private lemma correction_norm_W   (u : A.R) (w : ℂ) :
     ‖W (σ := σ) p u w‖ ≤ Real.exp (-w.re * Real.log (Q p)) := by
   simp only [W, norm_mul, correction_qPower_norm, Complex.neg_re]
   exact mul_le_of_le_one_left (Real.exp_pos _).le (correction_chi_le p u)
 
-private lemma correction_norm_D (p : ExteriorPrime A) (u : A.R) (ξ : ℂ) :
+private lemma correction_norm_D   (u : A.R) (ξ : ℂ) :
     ‖D (σ := σ) (η := η) p u ξ‖ ≤ Real.exp (-ξ.re * Real.log (Q p)) := by
   simp only [D, norm_mul, norm_star, correction_qPower_norm, Complex.neg_re]
   exact mul_le_of_le_one_left (Real.exp_pos _).le
     (mul_le_one₀ (correction_eta_le p) (norm_nonneg _) (correction_chi_le p u))
+end
+
 
 private lemma correction_norm_E (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (ξ z : ℂ) :
@@ -104,8 +109,11 @@ private lemma correction_decay_exponents (x : Coordinates) (hx : x ∈ Omega) :
   rcases hx with h | h <;> rcases h with ⟨hξ, hw, hz⟩ <;>
     refine ⟨by linarith, by linarith, by linarith, by linarith, by linarith⟩
 
-private lemma correction_monomial_bounds (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (u : A.R) (x : Coordinates) (hx : x ∈ Omega) :
+section
+variable (C : A.GeneralArithmeticContext σ η hS)
+    (p : ExteriorPrime A) (u : A.R) (x : Coordinates) (hx : x ∈ Omega)
+include C p u x hx
+private lemma correction_monomial_bounds   :
     let t := (Q p) ^ (-(1 + 1 / 4000 : ℝ))
     ‖V p x.2.2‖ * ‖W (σ := σ) p u x.2.1‖ ≤ t ∧
     ‖D (σ := σ) (η := η) p u x.1‖ * ‖V p x.2.2‖ ≤ t ∧
@@ -160,8 +168,7 @@ private lemma correction_monomial_bounds (C : A.GeneralArithmeticContext σ η h
       _ ≤ _ := hm _ hdwv
   · rw [correction_norm_E]; exact hm _ he
 
-private lemma correction_denominator_gap (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (u : A.R) (x : Coordinates) (hx : x ∈ Omega) :
+private lemma correction_denominator_gap   :
     let c := 1 - Real.exp (-(1 / 1000 : ℝ) * Real.log 2)
     c ≤ ‖1 - D (σ := σ) (η := η) p u x.1‖ ∧ c ≤ ‖1 - E C p x.1 x.2.2‖ := by
   obtain ⟨hz, hw, hξ, he⟩ := correction_region x hx
@@ -185,6 +192,8 @@ private lemma correction_denominator_gap (C : A.GeneralArithmeticContext σ η h
   constructor
   · linarith [hsub (D (σ := σ) (η := η) p u x.1)]
   · linarith [hsub (E C p x.1 x.2.2)]
+end
+
 
 private lemma correction_numerator_bound (q t : ℝ) (hq : 2 ≤ q) (ht : 0 ≤ t)
     (v w d e : ℂ) (hv : ‖v‖ ≤ 1) (hw : ‖w‖ ≤ 1) (hd : ‖d‖ ≤ 1)
@@ -255,9 +264,12 @@ theorem good_correction_denominators_ne_zero
 
 set_option maxHeartbeats 1500000 in
 
+section
+variable (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) (u : A.R)
+    (hu : IsUnit (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) u))
+include C p u hu
 theorem good_correction_holomorphic
-    (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) (u : A.R)
-    (hu : IsUnit (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) u)) :
+      :
     DifferentiableOn ℂ (fun x : Coordinates => goodFactor C p u x.1 x.2.1 x.2.2)
       Omega := by
   have hξ : Differentiable ℂ (fun x : Coordinates => x.1) := differentiable_fst
@@ -283,8 +295,7 @@ theorem good_correction_holomorphic
   fun_prop (disch := assumption)
 
 theorem good_correction_numerator
-    (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) (u : A.R)
-    (hu : IsUnit (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) u))
+     
     (x : Coordinates) (hx : x ∈ Omega) :
     let v := V p x.2.2
     let w := W (σ := σ) p u x.2.1
@@ -301,6 +312,8 @@ theorem good_correction_numerator
   dsimp only
   field_simp
   <;> ring
+end
+
 
 theorem good_correction_uniform_bound :
     ∃ M : ℝ, 0 < M ∧

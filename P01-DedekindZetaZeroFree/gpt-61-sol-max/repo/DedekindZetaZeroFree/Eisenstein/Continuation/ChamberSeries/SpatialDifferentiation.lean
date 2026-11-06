@@ -44,7 +44,7 @@ variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
       intro t
       exact Finset.single_le_sum (fun _ _ => norm_nonneg _) (Finset.mem_univ t)
 
-variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+variable (F : Type) [Field F] [NumberField F] (ζ : F) 
 
 open KPLiteralChamber
 section PartialJet
@@ -59,7 +59,7 @@ section LocalSeries
 open Filter Set
 variable {α E H : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
   [NormedAddCommGroup H] [NormedSpace ℝ H] [CompleteSpace H]
-  {f : α → E → H} {v : ℕ → α → ℝ} {U : Set E}
+    
 
 end LocalSeries
 

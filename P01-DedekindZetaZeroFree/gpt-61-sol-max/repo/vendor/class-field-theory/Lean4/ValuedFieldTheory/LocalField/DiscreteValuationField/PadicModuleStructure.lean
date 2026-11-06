@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import Mathlib.SetTheory.Cardinal.Finite
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.PadicLinearOfContinuous
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.FieldUnitFactors
@@ -7,6 +9,7 @@ public import Mathlib.Algebra.Module.PID
 public import Mathlib.NumberTheory.Padics.ProperSpace
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -60,7 +63,7 @@ noncomputable def chosenPadicModuleContinuousAddEquivZModProdFinPi
     (hfinrank : Module.finrank ℤ_[p]
       (M ⧸ Submodule.torsion ℤ_[p] M) = d) :
     (ZMod (p ^ a) × (Fin d → ℤ_[p])) ≃ₜ+ M := by
-  let T : Submodule ℤ_[p] M := Submodule.torsion ℤ_[p] M
+  let T  := Submodule.torsion ℤ_[p] M
   let Q := M ⧸ T
   letI : Module.Finite ℤ_[p] Q := Module.Finite.quotient ℤ_[p] T
   letI : Module.IsTorsionFree ℤ_[p] Q :=
@@ -68,12 +71,11 @@ noncomputable def chosenPadicModuleContinuousAddEquivZModProdFinPi
   letI : Module.Free ℤ_[p] Q :=
     Module.free_of_finite_type_torsion_free'
   let b : Module.Basis (Fin d) ℤ_[p] Q :=
-    Module.finBasisOfFinrankEq ℤ_[p] Q (by simpa [Q, T] using hfinrank)
+    Module.finBasisOfFinrankEq ℤ_[p] Q (hfinrank)
   let q : M →ₗ[ℤ_[p]] Q := T.mkQ
-  have hliftExists : ∃ lift : Q →ₗ[ℤ_[p]] M,
-      q.comp lift = LinearMap.id :=
+  have hliftExists  :=
     Module.projective_lifting_property q LinearMap.id T.mkQ_surjective
-  let lift : Q →ₗ[ℤ_[p]] M := Classical.choose hliftExists
+  let lift  := Classical.choose hliftExists
   have hlift : q.comp lift = LinearMap.id := Classical.choose_spec hliftExists
   have hexact : LinearMap.range T.subtype = LinearMap.ker q := by
     change LinearMap.range T.subtype = LinearMap.ker T.mkQ
@@ -83,21 +85,21 @@ noncomputable def chosenPadicModuleContinuousAddEquivZModProdFinPi
   let torsionEquiv : ZMod (p ^ a) ≃+ T := by
     rw [← hcard]
     exact zmodAddCyclicAddEquiv hcyclic
-  let freeEquiv : (Fin d → ℤ_[p]) ≃ₗ[ℤ_[p]] Q := b.equivFun.symm
+  let freeEquiv  := b.equivFun.symm
   let algebraic : (ZMod (p ^ a) × (Fin d → ℤ_[p])) ≃+ M :=
     (torsionEquiv.prodCongr freeEquiv.toAddEquiv).trans split.toAddEquiv
-  let freeToM : (Fin d → ℤ_[p]) →ₗ[ℤ_[p]] M :=
+  let freeToM  :=
     split.toLinearMap.comp
       ((LinearMap.inr ℤ_[p] T Q).comp freeEquiv.toLinearMap)
-  have hfree : Continuous freeToM :=
+  have hfree  :=
     continuous_padicInt_finPi_linearMap d freeToM
   have htorsion : Continuous (fun z : ZMod (p ^ a) =>
-      split (torsionEquiv z, (0 : Q))) :=
+      split (torsionEquiv z, (0))) :=
     continuous_of_discreteTopology
   have halgebraic : Continuous algebraic := by
     have hfun : (fun z : ZMod (p ^ a) × (Fin d → ℤ_[p]) => algebraic z) =
         fun z =>
-          split (torsionEquiv z.1, (0 : Q)) +
+          split (torsionEquiv z.1, (0)) +
             freeToM z.2 := by
       funext z
       change split (torsionEquiv z.1, freeEquiv z.2) =

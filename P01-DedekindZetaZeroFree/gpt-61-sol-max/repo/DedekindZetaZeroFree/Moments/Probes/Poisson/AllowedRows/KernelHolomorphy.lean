@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.GaussianWeightConvolution
 public import DedekindZetaZeroFree.ZeroDetection.Smoothing.Poisson.Height
 public import DedekindZetaZeroFree.LFunctions.Hecke.PoissonRows.AnalyticContinuation
@@ -7,6 +9,7 @@ public import DedekindZetaZeroFree.Analysis.Integration.HolomorphicDominatedInte
 public import DedekindZetaZeroFree.Moments.Principal.EulerProducts.Poisson.SubpowerBounds
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.Quantitative.RowKernelHolomorphy
 
@@ -88,17 +91,13 @@ private lemma pt_env (X X₀ a a₀ r' v s t1 t2 k : ℝ) (m w : ℂ) (hk : 0 �
       _ = _ := by rw [Real.exp_add]; ring
   have hPP : (2 + |t1| + |t2| + |a|) ^ k ≤ 2 ^ k * (2 + |t1| + |t2| + |a₀ + r'|) ^ k := by
     have hle : 2 + |t1| + |t2| + |a| ≤ 2 * (2 + |t1| + |t2| + |a₀ + r'|) := by
-      have : |a| ≤ |a₀ + r'| + 2 :=
-        abs_le.2 ⟨by linarith [neg_le_abs (a₀ + r')], by linarith [le_abs_self (a₀ + r')]⟩
-      linarith [abs_nonneg t1, abs_nonneg t2, abs_nonneg (a₀ + r')]
+      grind
     calc (2 + |t1| + |t2| + |a|) ^ k ≤ (2 * (2 + |t1| + |t2| + |a₀ + r'|)) ^ k :=
           Real.rpow_le_rpow (by positivity) hle hk
       _ = 2 ^ k * (2 + |t1| + |t2| + |a₀ + r'|) ^ k := Real.mul_rpow (by norm_num) (by positivity)
   have hPM : (2 + |t1| + |t2| + |a|) ^ k ≤ 2 ^ k * (2 + |t1| + |t2| + |a₀ - r'|) ^ k := by
     have hle : 2 + |t1| + |t2| + |a| ≤ 2 * (2 + |t1| + |t2| + |a₀ - r'|) := by
-      have : |a| ≤ |a₀ - r'| + 2 :=
-        abs_le.2 ⟨by linarith [neg_le_abs (a₀ - r')], by linarith [le_abs_self (a₀ - r')]⟩
-      linarith [abs_nonneg t1, abs_nonneg t2, abs_nonneg (a₀ - r')]
+      grind
     calc (2 + |t1| + |t2| + |a|) ^ k ≤ (2 * (2 + |t1| + |t2| + |a₀ - r'|)) ^ k :=
           Real.rpow_le_rpow (by positivity) hle hk
       _ = 2 ^ k * (2 + |t1| + |t2| + |a₀ - r'|) ^ k := Real.mul_rpow (by norm_num) (by positivity)
@@ -159,8 +158,7 @@ theorem differentiableOn_nested_integral (V : Set ℂ) (hV : IsOpen V) (G : ℂ 
       G ξ ((y : ℂ) + (p.2 : ℂ) * Complex.I) ((v : ℂ) + (p.1 : ℂ) * Complex.I) :=
     ⟨fun ξ p => G ξ ((y : ℂ) + (p.2 : ℂ) * Complex.I) ((v : ℂ) + (p.1 : ℂ) * Complex.I),
       fun _ _ => rfl⟩
-  have hHf : ∀ ξ, H ξ = fun p : ℝ × ℝ =>
-      G ξ ((y : ℂ) + (p.2 : ℂ) * Complex.I) ((v : ℂ) + (p.1 : ℂ) * Complex.I) :=
+  have hHf  :=
     fun ξ => funext (hH ξ)
   have hdom : ∀ ξ₀ ∈ V, ∃ r : ℝ, 0 < r ∧ Metric.ball ξ₀ r ⊆ V ∧
       ∃ g : ℝ × ℝ → ℝ, Integrable g ∧ ∀ ξ ∈ Metric.ball ξ₀ r, ∀ p, ‖H ξ p‖ ≤ g p := by
@@ -209,7 +207,7 @@ theorem differentiableOn_nested_integral (V : Set ℂ) (hV : IsOpen V) (G : ℂ 
           ring
       _ ≤ _ := key2
       _ = _ := by ring
-  have hmeas : ∀ ξ ∈ V, AEStronglyMeasurable (H ξ) (volume : Measure (ℝ × ℝ)) := by
+  have hmeas : ∀ ξ ∈ V, AEStronglyMeasurable (H ξ) volume := by
     intro ξ hξ
     rw [hHf ξ]
     exact (hcont ξ hξ).aestronglyMeasurable
@@ -254,8 +252,8 @@ private lemma K_norm_eq' (u : D.Row) (hq : 0 < D.q u) (ξ : ℂ) (v y : ℝ) (p 
         ‖rowFactor D u ξ ((y : ℂ) + (p.2 : ℂ) * Complex.I)
           ((v : ℂ) + (p.1 : ℂ) * Complex.I)‖ := by
   unfold K kernelWith
-  have hZc : (0 : ℝ) < Z := hZ
-  have hqc : (0 : ℝ) < D.q u := hq
+  have hZc  := hZ
+  have hqc  := hq
   have hre : ∀ A B C X E R : ℂ, A * B * C * X * E * R = A * E * (B * C * X) * R := by
     intro A B C X E R; ring
   have hkey : ∀ A E X R : ℂ, ‖A * E * X * R‖ = ‖A‖ * ‖E‖ * ‖X‖ * ‖R‖ := by
@@ -306,19 +304,19 @@ theorem K_local_majorant (A_F : ℝ) (hconv : ConvexityExponent D A_F) (u : D.Ro
     intro w hw
     obtain ⟨g, hg, hgeq⟩ := hent
     have hw0 : 0 < w.re := by rw [hw, hy]; norm_num
-    have e : D.Lpsi u w = g w :=
+    have e  :=
       (RowAnalyticContinuation.entire_eq_Lpsi D u hu1 hg hgeq w hw0).symm
-    have hwe : w = ((Scales.wLine : ℝ) : ℂ) + (w.im : ℂ) * Complex.I := by
+    have hwe : w = (Scales.wLine : ℂ) + (w.im : ℂ) * Complex.I := by
       apply Complex.ext <;> simp [hw]
     have key := h2 u hu1 (D.q u) hq2 le_rfl (by linarith) g hg hgeq w.im
-    calc ‖D.Lpsi u w‖ = ‖g (((Scales.wLine : ℝ) : ℂ) + (w.im : ℂ) * Complex.I)‖ := by
+    calc ‖D.Lpsi u w‖ = ‖g ((Scales.wLine : ℂ) + (w.im : ℂ) * Complex.I)‖ := by
           rw [e, ← hwe]
       _ ≤ C2 * D.q u ^ ((11 / 25 : ℝ) + 1) * (2 + |w.im|) ^ A_F := by
           rw [hy]; exact key
   set c0 : ℝ := Scales.xExponent / 2 - 1 + Scales.smoothingExponent * Scales.zLine + Scales.yExponent * (Scales.wLine - 1) with hc0
   set Zbd : ℝ := Real.exp (|Real.log Z| * (|c0| + |ξ₀.re| + 1)) with hZbd
   set Cinv : ℝ := (‖D.Llam u ξ₀‖ / 2)⁻¹ with hCinv
-  have hCinv0 : 0 < Cinv := inv_pos.2 (by linarith)
+  
   have hZbd0 : 0 < Zbd := Real.exp_pos _
   refine ⟨min (min r₁ 1) (ξ₀.re - (Scales.goodLine - EulerDomain.pad)), hr, ?_,
     Zbd * D.q u ^ (-Scales.zLine) * (C1 * (C2 * D.q u ^ ((11 / 25 : ℝ) + 1)) * Cinv *
@@ -352,17 +350,17 @@ theorem K_local_majorant (A_F : ℝ) (hconv : ConvexityExponent D A_F) (u : D.Ro
     have hLξ : ‖(D.Llam u ξ)⁻¹‖ ≤ Cinv := by
       rw [norm_inv]
       exact inv_anti₀ (by linarith) (hball₁ ξ h1').le
-    have hw : (((Scales.wLine : ℝ) : ℂ) + (p.2 : ℂ) * Complex.I).re = Scales.wLine := by simp
-    have hz : (((Scales.zLine : ℝ) : ℂ) + (p.1 : ℂ) * Complex.I).re = Scales.zLine := by simp
-    have him : (((Scales.wLine : ℝ) : ℂ) + (p.2 : ℂ) * Complex.I).im = p.2 := by simp
-    set w : ℂ := ((Scales.wLine : ℝ) : ℂ) + (p.2 : ℂ) * Complex.I with hwdef
-    set z : ℂ := ((Scales.zLine : ℝ) : ℂ) + (p.1 : ℂ) * Complex.I with hzdef
+    have hw : ((Scales.wLine : ℂ) + (p.2 : ℂ) * Complex.I).re = Scales.wLine := by simp
+    have hz : ((Scales.zLine : ℂ) + (p.1 : ℂ) * Complex.I).re = Scales.zLine := by simp
+    have him : ((Scales.wLine : ℂ) + (p.2 : ℂ) * Complex.I).im = p.2 := by simp
+    set w : ℂ := (Scales.wLine : ℂ) + (p.2 : ℂ) * Complex.I with hwdef
+    set z : ℂ := (Scales.zLine : ℂ) + (p.1 : ℂ) * Complex.I with hzdef
     have hz1 : ‖D.zetaSCont (6 * z)‖ ≤ C1 := by
       apply h1
       have h6 : (6 * z).re = 6 * z.re := by simp [Complex.mul_re]
       rw [h6, hz]
       norm_num [Scales.zLine]
-    have hmem : ((ξ, w, z) : EulerDomain.Coordinates) ∈ EulerDomain.paddedBoxes := by
+    have hmem : ((ξ, w, z)) ∈ EulerDomain.paddedBoxes := by
       refine Or.inl (Or.inl ?_)
       refine ⟨hxg, ?_, ?_⟩
       · show 3 / 25 - EulerDomain.pad ≤ w.re
@@ -376,7 +374,7 @@ theorem K_local_majorant (A_F : ℝ) (hconv : ConvexityExponent D A_F) (u : D.Ro
         ‖D.zetaSCont (6 * z)‖ * ‖D.Lpsi u w‖ * ‖(D.Llam u ξ)⁻¹‖ * ‖EulerDomain.Hu D u ξ w z‖ := by
       unfold rowFactor
       simp only [div_eq_mul_inv, norm_mul]
-    have hP : 0 ≤ (2 + |p.2|) ^ A_F := by positivity
+    
     have hRb : ‖rowFactor D u ξ w z‖ ≤
         C1 * (C2 * D.q u ^ ((11 / 25 : ℝ) + 1) * (2 + |p.2|) ^ A_F) * Cinv *
           (C3 * D.q u ^ (1 : ℝ)) := by
@@ -402,12 +400,10 @@ theorem K_local_majorant (A_F : ℝ) (hconv : ConvexityExponent D A_F) (u : D.Ro
       (Real.rpow_le_rpow_of_exponent_le (by linarith [abs_nonneg p.2]) (le_max_left _ _)).trans
         (Real.rpow_le_rpow (by positivity)
           (by linarith [abs_nonneg p.1, abs_nonneg ξ.im]) (le_max_right _ _))
-    have hZ0 : 0 ≤ Z ^ (Scales.xExponent / 2 + ξ.re - 1 + Scales.smoothingExponent * Scales.zLine +
-        Scales.yExponent * (Scales.wLine - 1)) := Real.rpow_nonneg hZ.le _
+    
     have hqz0 : 0 ≤ D.q u ^ (-Scales.zLine) := Real.rpow_nonneg hq0.le _
     have hR0 : 0 ≤ ‖rowFactor D u ξ w z‖ := norm_nonneg _
-    have hCf : 0 ≤ C1 * (C2 * D.q u ^ ((11 / 25 : ℝ) + 1)) * Cinv * (C3 * D.q u ^ (1 : ℝ)) := by
-      positivity
+    
     rw [hKn]
     calc Z ^ (Scales.xExponent / 2 + ξ.re - 1 + Scales.smoothingExponent * Scales.zLine + Scales.yExponent * (Scales.wLine - 1)) *
           D.q u ^ (-Scales.zLine) * WeightConvolution.weightModulus D ξ Scales.zLine Scales.wLine p *

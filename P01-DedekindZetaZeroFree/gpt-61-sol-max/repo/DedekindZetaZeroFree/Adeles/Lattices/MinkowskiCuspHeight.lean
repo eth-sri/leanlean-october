@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Adeles.Lattices.MinkowskiShortRowsAndIwasawaHeight
 public import DedekindZetaZeroFree.Adeles.Quotients.NormalizedCuspHeightsAndHoroballSeparation
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -34,8 +37,7 @@ def coordEquiv (hF : InfinitePlace.nrRealPlaces F = 0) :
 def rowBasis (hF : InfinitePlace.nrRealPlaces F = 0) :=
   (Pi.basis (fun _ : Fin 2 => mixedEmbedding.latticeBasis F)).map (coordEquiv F hF).symm
 
-def rowLattice (hF : InfinitePlace.nrRealPlaces F = 0) :
-    Submodule ℤ (CuspShortRows.Space (InfinitePlace.nrComplexPlaces F)) :=
+def rowLattice (hF : InfinitePlace.nrRealPlaces F = 0)  :=
   Submodule.span ℤ (Set.range (rowBasis F hF))
 
 instance instDiscreteTopologyCuspRowLattice (hF : InfinitePlace.nrRealPlaces F = 0) : DiscreteTopology (rowLattice F hF) := by
@@ -55,8 +57,11 @@ open NumberField
 namespace DedekindZetaZeroFree.CuspHeightProof
 variable (F : Type*) [Field F] [NumberField F]
 
-private theorem mem_coords (hF : InfinitePlace.nrRealPlaces F = 0)
+section
+variable (hF : InfinitePlace.nrRealPlaces F = 0)
     (r : CuspShortRows.Space (InfinitePlace.nrComplexPlaces F)) (hr : r ∈ rowLattice F hF)
+include hF r hr
+private theorem mem_coords  
     (j : Fin 2) : coordEquiv F hF r j ∈ mixedEmbedding.integerLattice F := by
   induction hr using Submodule.span_induction with
   | mem x hx =>
@@ -73,8 +78,7 @@ private theorem mem_coords (hF : InfinitePlace.nrRealPlaces F = 0)
   | add x y hx hy ihx ihy => simpa using add_mem ihx ihy
   | smul a x hx ih => simpa using Submodule.smul_mem (mixedEmbedding.integerLattice F) a ih
 
-private theorem exists_integral_coords (hF : InfinitePlace.nrRealPlaces F = 0)
-    (r : CuspShortRows.Space (InfinitePlace.nrComplexPlaces F)) (hr : r ∈ rowLattice F hF) :
+private theorem exists_integral_coords   :
     ∃ a b : 𝓞 F, ∀ i, r (i, 0) = (KPCusp.complexPlace F i).embedding (a : F) ∧
       r (i, 1) = (KPCusp.complexPlace F i).embedding (b : F) := by
   obtain ⟨a, ha⟩ := mem_coords F hF r hr 0
@@ -87,8 +91,7 @@ private theorem exists_integral_coords (hF : InfinitePlace.nrRealPlaces F = 0)
   exact ⟨by simpa [coordEquiv, KPCusp.complexPlace] using ha'.symm,
     by simpa [coordEquiv, KPCusp.complexPlace] using hb'.symm⟩
 
-private theorem nonzero_rows (hF : InfinitePlace.nrRealPlaces F = 0)
-    (r : CuspShortRows.Space (InfinitePlace.nrComplexPlaces F)) (hr : r ∈ rowLattice F hF)
+private theorem nonzero_rows  
     (hr0 : r ≠ 0) (i : Fin (InfinitePlace.nrComplexPlaces F)) :
     CuspShortRows.row _ r i ≠ 0 := by
   obtain ⟨a, b, hab⟩ := exists_integral_coords F hF r hr
@@ -102,13 +105,15 @@ private theorem nonzero_rows (hF : InfinitePlace.nrRealPlaces F = 0)
   apply hr0
   ext ⟨k, j⟩
   fin_cases j <;> simp [(hab k).1, (hab k).2, ha, hb]
+end
+
 
 private theorem iwasawa_norm (a b x : ℂ) (y : ℝ) (hy : 0 < y) :
     ‖WithLp.toLp 2 (Matrix.vecMul ![a,b] (CuspShortRows.iwasawaMatrix (x,y)))‖ ^ 2 =
       (‖a*x+b‖ ^ 2 + ‖a‖ ^ 2 * y^2) / y := by
-  have hs : 0 < Real.sqrt y := Real.sqrt_pos.mpr hy
+  have hs  := Real.sqrt_pos.mpr hy
   have hs2 := Real.sq_sqrt hy.le
-  have hsc : (Real.sqrt y : ℂ) ≠ 0 := by exact_mod_cast hs.ne'
+  
   have hv : Matrix.vecMul ![a,b] (CuspShortRows.iwasawaMatrix (x,y)) =
       ![a * (Real.sqrt y : ℂ), (a*x+b) / (Real.sqrt y : ℂ)] := by
     ext j
@@ -229,13 +234,7 @@ end DedekindZetaZeroFree.CuspHeightProof
 
 namespace DedekindZetaZeroFree
 
-theorem kp_cusp_minkowski_normalized_height (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) (hJ : J ≠ 0) :
-    ∃ c : ℝ, 0 < c ∧
-      ∀ z : KPArch.Space (NumberField.InfinitePlace.nrComplexPlaces F),
-        ∃ r : KPCusp.Row F, c ≤ KPCusp.normalizedHeight F J r z := by
-  exact CuspHeightProof.normalized_height_aux F hF J hJ
+alias kp_cusp_minkowski_normalized_height := _root_.DedekindZetaZeroFree.CuspHeightProof.normalized_height_aux
 
 end DedekindZetaZeroFree
 

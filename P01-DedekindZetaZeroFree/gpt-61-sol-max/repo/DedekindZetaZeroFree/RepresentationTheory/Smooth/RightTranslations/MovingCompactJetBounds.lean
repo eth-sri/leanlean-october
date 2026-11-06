@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Eisenstein.Continuation.MovingCharts.LocalExponentialInverse
 public import DedekindZetaZeroFree.Eisenstein.Continuation.MovingCharts.PhaseMatchedCoefficients
 
 @[expose] public section
+
 
 noncomputable section
 open scoped Classical NumberField Pointwise
@@ -21,17 +24,15 @@ variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
 variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 
 private theorem base_continuous (i : Fin (H.atlas U).componentCount) :
-    Continuous (KPContActualChartRestrictionDensity.basePoint F ζ hζ U R P H i) := by
-  exact (H.atlas U).components.continuous.comp
+    Continuous (KPContActualChartRestrictionDensity.basePoint F ζ hζ U R P H i) := (H.atlas U).components.continuous.comp
     (continuous_sigmaMk.comp (continuous_quot_mk.comp
       (KPContActualChartRestrictionDensity.coordinates F).continuous))
 
  def restrict_group_chart
     (Q : KPContActualSphericalRightFieldIdentification.GroupChart F ζ hζ U R P H)
     (T : LocalBall (KPContActualSphericalRightFieldIdentification.groupDimension F))
-    (hT0 : (0 : Space (KPContActualSphericalRightFieldIdentification.groupDimension F)) ∈ T.carrier)
-    (hTQ : T.carrier ⊆ Q.T.carrier) :
-    KPContActualSphericalRightFieldIdentification.GroupChart F ζ hζ U R P H :=
+    (hT0 : (0) ∈ T.carrier)
+    (hTQ : T.carrier ⊆ Q.T.carrier)  :=
   { Q with
     T := T
     zero_mem := hT0
@@ -41,7 +42,7 @@ private theorem base_continuous (i : Fin (H.atlas U).componentCount) :
 theorem group_chart_restrict_neighborhood
     (Q : KPContActualSphericalRightFieldIdentification.GroupChart F ζ hζ U R P H)
     (V : Set (Space (KPContActualSphericalRightFieldIdentification.groupDimension F)))
-    (hV : IsOpen V) (h0 : (0 : Space (KPContActualSphericalRightFieldIdentification.groupDimension F)) ∈ V)
+    (hV : IsOpen V) (h0 : (0) ∈ V)
     (hVQ : V ⊆ Q.T.carrier) :
     ∃ Q' : KPContActualSphericalRightFieldIdentification.GroupChart F ζ hζ U R P H,
       Q'.T.carrier ⊆ V ∧ Q'.groupLift = Q.groupLift ∧ Q'.fields = Q.fields ∧
@@ -68,7 +69,7 @@ theorem section_lift_finite_level
     (KPContSectorQuotientRelationsComparison.e F ζ hζ U z))
   symm
   apply DoubleCoset.eq.mpr
-  refine ⟨1, Subgroup.one_mem _, ((v : KPFiniteCuspAtlas.FiniteCover F ζ hζ) : G F ζ hζ), ?_, ?_⟩
+  refine ⟨1, Subgroup.one_mem _, ((v : KPFiniteCuspAtlas.FiniteCover F ζ hζ)), ?_, ?_⟩
   · apply Subgroup.subset_closure
     exact Or.inr ⟨v, v.property, rfl⟩
   · simp
@@ -92,7 +93,7 @@ theorem right_word_finite_level
     have hc := KPMsResidualTailRestoration.SharpConstantTerm.FiberStability.insertion_commutes_cover
       F ζ hζ (KPSmoothLocalQuotientCharts.matrixExp F
         (t • Pi.single (KPContActualSphericalRightFieldIdentification.lieEnumeration F b) 1))
-      (v : KPFiniteCuspAtlas.FiniteCover F ζ hζ)
+      v
     rw [mul_assoc, ← hc.eq, ← mul_assoc, ih]
 
 private theorem word_congr_open {d b : ℕ} (V : Set (Space d)) (hV : IsOpen V)
@@ -146,8 +147,7 @@ theorem local_moving_word_normal_form (g : G F ζ hζ) (x : ArchCoordinates F)
     exact hτc.isOpen_inter_preimage hWo Metric.isOpen_ball
   have hρ' := hρsm.mono hQ'V
   have hρ'A : Set.MapsTo ρ Q'.T.carrier A.ball.carrier := fun y hy => hρA (hQ'V hy)
-  have htj : ∀ n, ContinuousOn (fun p : G F ζ hζ × ArchCoordinates F =>
-        iteratedFDeriv ℝ n (fun y => τ (p.1,y)) p.2) W' := fun n => (hτj n).mono hW'W
+  have htj  := fun n => (hτj n).mono hW'W
   refine ⟨Q',W',hW'o,hpW',hW'W.trans hWd,A,ρ,τ,hρ',hρ'A,hτc.mono hW'W,hW'Q,
     (fun a => (hτsm a).mono (fun y hy => hW'W hy)),htj,?_,?_⟩
   · intro p hp
@@ -162,7 +162,7 @@ theorem local_moving_word_normal_form (g : G F ζ hζ) (x : ArchCoordinates F)
         (KPContSectorQuotientRelationsComparison.e F ζ hζ U z))
       symm
       apply DoubleCoset.eq.mpr
-      refine ⟨1,Subgroup.one_mem _,((v : KPFiniteCuspAtlas.FiniteCover F ζ hζ) : G F ζ hζ),?_,?_⟩
+      refine ⟨1,Subgroup.one_mem _,((v : KPFiniteCuspAtlas.FiniteCover F ζ hζ)),?_,?_⟩
       · exact Subgroup.subset_closure (Or.inr ⟨v,v.property,rfl⟩)
       · simp
     rw [hv,hlevel]
@@ -173,8 +173,7 @@ theorem local_moving_word_normal_form (g : G F ζ hζ) (x : ArchCoordinates F)
       intro y hy
       rw [hQL]
       exact hlift u y (hQ'V hy)
-    have hsm : ContDiffOn ℝ (⊤ : ℕ∞)
-        (fun y => KPContActualCommonDiskRightHolomorphy.lift F ζ hζ U R P H u (Q'.groupLift y)) Q'.T.carrier :=
+    have hsm  :=
       (hu.comp hρ' hρ'A).congr hscalar
     obtain ⟨v,hv⟩ := hprod p (hW'W hp)
     rw [hv,right_word_finite_level F ζ hζ U
@@ -249,8 +248,8 @@ theorem smooth_word_coefficient_expansion {n m b : ℕ} {U : Set (Space m)} {V :
       obtain ⟨hsm, hsl⟩ := hts s hs
       simp only [expand, List.mem_cons, List.mem_map] at ht
       rcases ht with rfl | ⟨j, hj, rfl⟩
-      · exact ⟨(hsm.fderiv_of_isOpen hU (by simp)).clm_apply (hfields i), by simpa using hsl.trans (Nat.le_succ _)⟩
-      · refine ⟨hsm.mul ?_, by simpa using Nat.succ_le_succ hsl⟩
+      · exact ⟨(hsm.fderiv_of_isOpen hU (by simp)).clm_apply (hfields i), hsl.trans (Nat.le_succ _)⟩
+      · refine ⟨hsm.mul ?_, Nat.succ_le_succ hsl⟩
         have hdπ : ContDiffOn ℝ (⊤ : ℕ∞) (fderiv ℝ π) U := hπ.fderiv_of_isOpen hU (by simp)
         exact Complex.ofRealCLM.contDiff.comp_contDiffOn
           (((EuclideanSpace.proj (𝕜 := ℝ) j).contDiff.comp_contDiffOn (hdπ.clm_apply (hfields i))))
@@ -320,7 +319,7 @@ theorem euclidean_multilinear_coordinate_expansion {d n : ℕ} (L : Space d [×n
   simp only [smul_eq_mul, mul_one]
   change L v = ∑ a : Fin n → Fin d, (∏ i, v i (a i)) • L (fun i => EuclideanSpace.single (a i) 1)
   conv_lhs => arg 2; rw [show v = fun i => ∑ j : Fin d, v i j • EuclideanSpace.single j 1 by
-    funext i; exact vector_decomp' (v i)]
+    funext i; apply vector_decomp']
   rw [L.map_sum]
   apply Finset.sum_congr rfl
   intro a _
@@ -369,7 +368,7 @@ private lemma coord_perm' {d : ℕ} {U : Set (Space d)} (hU : IsOpen U)
     have hf := coord_smooth' hU u hu l
     have hfd : ContDiffOn ℝ (⊤ : ℕ∞) (fderiv ℝ f) U := hf.fderiv_of_isOpen hU (by simp)
     have hd := hfd.differentiableOn (by simp)
-    have hfx := (hf.differentiableOn (by simp)).differentiableAt (hU.mem_nhds hx)
+    
     have hdx := hd.differentiableAt (hU.mem_nhds hx)
     have hsym := second_derivative_symmetric_of_eventually_of_real
       (Filter.Eventually.mono (hU.mem_nhds hx) fun y hy =>
@@ -389,9 +388,9 @@ private lemma list_index' {d k : ℕ} (l : List (Fin d)) (hl : l.length ≤ k) :
     | nil => simp
     | cons i l ih =>
       simp only [List.count_cons, beq_iff_eq]
-      simp [Finset.sum_add_distrib, ih (by simpa using Nat.le_of_succ_le hl)]
+      simp [Finset.sum_add_distrib, ih (Nat.le_of_succ_le hl)]
   let α : MultiIndex d k := ⟨fun i => ⟨l.count i, Nat.lt_succ_of_le (List.count_le_length.trans hl)⟩,
-    by simpa using hsum.trans_le hl⟩
+    hsum.trans_le hl⟩
   refine ⟨α, List.perm_iff_count.mpr ?_⟩
   intro i
   simp only [MultiIndex.directions, List.count_flatMap, Function.comp_def, List.count_replicate]
@@ -405,20 +404,21 @@ private lemma coord_append {d : ℕ} (l r : List (Fin d)) (u : Space d → ℂ) 
   | nil => rfl
   | cons i l ih => simp only [List.cons_append, coordinateDerivativeList, ih]
 
-theorem coordinate_list_controlled {d m : ℕ} (B : LocalBall d) (K : Set (Space d))
+section
+variable {d m : ℕ} (B : LocalBall d) (K : Set (Space d))
     (hK : IsCompact K) (hKB : K ⊆ B.carrier) (u : Space d → ℂ)
-    (hu : ContDiffOn ℝ (⊤ : ℕ∞) u B.carrier) (l : List (Fin d)) (hl : l.length ≤ m)
+    (hu : ContDiffOn ℝ (⊤ : ℕ∞) u B.carrier) (l : List (Fin d))
+include d m B K hK hKB u hu l
+theorem coordinate_list_controlled   (hl : l.length ≤ m)
     (x : Space d) (hx : x ∈ K) :
     ‖coordinateDerivativeList l u x‖ ≤ compactJetSeminorm m B K hK hKB u hu := by
   obtain ⟨α,hα⟩ := list_index' l hl
   rw [← coord_perm' Metric.isOpen_ball u hu hα (hKB hx)]
-  letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
+  letI  := isCompact_iff_compactSpace.mp hK
   exact (ContinuousMap.norm_coe_le_norm (compactJet B K hKB u hu α) ⟨x,hx⟩).trans
     (norm_le_pi_norm (compactJet (m := m) B K hKB u hu) α)
 
-theorem iterated_coordinate_controlled {d m : ℕ} (B : LocalBall d) (K : Set (Space d))
-    (hK : IsCompact K) (hKB : K ⊆ B.carrier) (u : Space d → ℂ)
-    (hu : ContDiffOn ℝ (⊤ : ℕ∞) u B.carrier) (l : List (Fin d))
+theorem iterated_coordinate_controlled  
     (n : ℕ) (hn : n + l.length ≤ m) (x : Space d) (hx : x ∈ K) :
     ‖iteratedFDeriv ℝ n (coordinateDerivativeList l u) x‖ ≤
       (∑ a : Fin n → Fin d,
@@ -434,6 +434,8 @@ theorem iterated_coordinate_controlled {d m : ℕ} (B : LocalBall d) (K : Set (S
     coord_append]
   exact mul_le_mul_of_nonneg_left (coordinate_list_controlled B K hK hKB u hu _
     (by simpa only [List.length_append,List.length_ofFn] using hn) x hx) (norm_nonneg _)
+end
+
 
 end WordExpansion
 
@@ -443,7 +445,10 @@ open scoped Topology ContDiff BigOperators
 variable {E F V : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
   [NormedAddCommGroup F] [NormedSpace ℝ F] [NormedAddCommGroup V] [NormedSpace ℝ V]
 
-theorem spatial_jet_comp_formula {A : Type*} [TopologicalSpace A]
+section
+variable {A : Type*} [TopologicalSpace A]
+include A
+theorem spatial_jet_comp_formula  
     (W : Set (A × E)) (hW : IsOpen W) (U : Set F) (hU : IsOpen U)
     (τ : A × E → F) (hτ : Set.MapsTo τ W U)
     (hsm : ∀ a, ContDiffOn ℝ (⊤ : ℕ∞) (fun y => τ (a,y)) {y | (a,y) ∈ W})
@@ -452,7 +457,7 @@ theorem spatial_jet_comp_formula {A : Type*} [TopologicalSpace A]
     iteratedFDeriv ℝ n (fun y => f (τ (p.1,y))) p.2 =
       FormalMultilinearSeries.taylorComp (fun k => iteratedFDeriv ℝ k f (τ p))
         (fun k => iteratedFDeriv ℝ k (fun y => τ (p.1,y)) p.2) n := by
-  let S : Set E := {y | (p.1,y) ∈ W}
+  let S  := {y | (p.1,y) ∈ W}
   have hS : IsOpen S := hW.preimage (continuous_const.prodMk continuous_id)
   have ht : Set.MapsTo (fun y => τ (p.1,y)) S U := fun y hy => hτ hy
   have hh := (hf.ftaylorSeriesWithin hU.uniqueDiffOn).comp
@@ -465,9 +470,9 @@ theorem spatial_jet_comp_formula {A : Type*} [TopologicalSpace A]
   · funext k
     exact iteratedFDerivWithin_of_isOpen k hU (hτ hp)
   · funext k
-    exact iteratedFDerivWithin_of_isOpen k hS hp
+    apply iteratedFDerivWithin_of_isOpen <;> assumption
 
-theorem continuousOn_taylorComp {A : Type*} [TopologicalSpace A]
+theorem continuousOn_taylorComp  
     (W : Set A) (q : A → FormalMultilinearSeries ℝ F V)
     (p : A → FormalMultilinearSeries ℝ E F)
     (hq : ∀ n, ContinuousOn (fun a => q a n) W)
@@ -483,7 +488,7 @@ theorem continuousOn_taylorComp {A : Type*} [TopologicalSpace A]
     continuousOn_pi.mpr fun i => hp _
   exact continuous_eval.comp_continuousOn (hL.prodMk hP)
 
-theorem joint_spatial_jets_comp {A : Type*} [TopologicalSpace A]
+theorem joint_spatial_jets_comp  
     (W : Set (A × E)) (hW : IsOpen W) (U : Set F) (hU : IsOpen U)
     (τ : A × E → F) (hτ : Set.MapsTo τ W U) (hτc : ContinuousOn τ W)
     (hsm : ∀ a, ContDiffOn ℝ (⊤ : ℕ∞) (fun y => τ (a,y)) {y | (a,y) ∈ W})
@@ -500,7 +505,9 @@ theorem joint_spatial_jets_comp {A : Type*} [TopologicalSpace A]
     (fun p k => iteratedFDeriv ℝ k (fun y => τ (p.1,y)) p.2) hfc hj n
   apply hc.congr
   intro p hp
-  exact spatial_jet_comp_formula W hW U hU τ hτ hsm f hf n p hp
+  apply spatial_jet_comp_formula <;> assumption
+end
+
 
 end JetComposition
 
@@ -520,7 +527,7 @@ private lemma semi_nonneg {d m : ℕ} (B : LocalBall d) (K : Set (Space d))
     (hK : IsCompact K) (hKB : K ⊆ B.carrier) (u : Space d → ℂ)
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) u B.carrier) :
     0 ≤ compactJetSeminorm m B K hK hKB u hu := by
-  letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
+  letI  := isCompact_iff_compactSpace.mp hK
   exact norm_nonneg _
 
 set_option backward.isDefEq.respectTransparency false in
@@ -551,7 +558,7 @@ theorem compact_weighted_coordinate_jet_bound {d : ℕ}
         ‖iteratedFDeriv ℝ i (fun y => ψ (p.1,y)) p.2‖)) K :=
     continuousOn_finset_sum _ fun i _ => ((hcj i).mono hKW).norm.add (((hψj i).mono hKW).norm)
   obtain ⟨b,hb⟩ := hK.exists_bound_of_continuousOn hjc
-  let D : ℝ := max 0 b + 1
+  let D  := max 0 b + 1
   have hD : 1 ≤ D := by dsimp [D]; exact le_add_of_nonneg_left (le_max_left _ _)
   have hDj (p : A × E) (hp : p ∈ K) (i : ℕ) (hi : i ≤ n) :
       ‖iteratedFDeriv ℝ i (fun y => c (p.1,y)) p.2‖ ≤ D ∧
@@ -573,7 +580,7 @@ theorem compact_weighted_coordinate_jet_bound {d : ℕ}
     (hK.image_of_continuousOn (hψ.mono hKW)) (fun z hz => by
       obtain ⟨p,hp,rfl⟩ := hz; exact hψB (hKW hp)) u hu
   have hJ : 0 ≤ J := semi_nonneg _ _ _ _ _ _
-  let S : Set E := {y | (p.1,y) ∈ W}
+  let S  := {y | (p.1,y) ∈ W}
   have hS : IsOpen S := hW.preimage (continuous_const.prodMk continuous_id)
   have hpS : p.2 ∈ S := hKW hp
   have hmaps : Set.MapsTo (fun y => ψ (p.1,y)) S B.carrier := fun y hy => hψB hy
@@ -593,7 +600,7 @@ theorem compact_weighted_coordinate_jet_bound {d : ℕ}
         ‖iteratedFDerivWithin ℝ i (fun y => ψ (p.1,y)) S p.2‖ ≤ D^i := by
       rw [iteratedFDerivWithin_of_isOpen i hS hpS]
       exact (hDj p hp i (hiq.trans hq)).2.trans (le_self_pow₀ hD (by omega))
-    have hh := norm_iteratedFDerivWithin_comp_le hsu hsψ (by simp : (q : ℕ∞ω) ≤ (⊤ : ℕ∞))
+    have hh := norm_iteratedFDerivWithin_comp_le hsu hsψ (by simp)
       (show IsOpen B.carrier from Metric.isOpen_ball).uniqueDiffOn hS.uniqueDiffOn hmaps hpS hout hin
     rw [iteratedFDerivWithin_of_isOpen q hS hpS] at hh
     exact hh
@@ -603,10 +610,7 @@ theorem compact_weighted_coordinate_jet_bound {d : ℕ}
   have hrewrite (i : ℕ) :
       iteratedFDerivWithin ℝ i (fun y => c (p.1,y)) S p.2 = iteratedFDeriv ℝ i (fun y => c (p.1,y)) p.2 :=
     iteratedFDerivWithin_of_isOpen i hS hpS
-  have hrewrite' (i : ℕ) :
-      iteratedFDerivWithin ℝ i (fun y => coordinateDerivativeList l u (ψ (p.1,y))) S p.2 =
-      iteratedFDeriv ℝ i (fun y => coordinateDerivativeList l u (ψ (p.1,y))) p.2 :=
-    iteratedFDerivWithin_of_isOpen i hS hpS
+  
   have hmul' : ‖iteratedFDeriv ℝ n
       (fun y => c (p.1,y) * coordinateDerivativeList l u (ψ (p.1,y))) p.2‖ ≤
       ∑ i ∈ Finset.range (n+1), (n.choose i : ℝ) *
@@ -679,7 +683,7 @@ theorem compact_list_coordinate_jet_bound {d : ℕ}
     have hJ : 0 ≤ compactJetSeminorm m B (ψ '' K)
         (hK.image_of_continuousOn (hψ.mono hKW)) (fun z hz => by
           obtain ⟨p,hp,rfl⟩ := hz; exact hψB (hKW hp)) u hu := by
-      letI : CompactSpace (ψ '' K) := isCompact_iff_compactSpace.mp (hK.image_of_continuousOn (hψ.mono hKW))
+      letI  := isCompact_iff_compactSpace.mp (hK.image_of_continuousOn (hψ.mono hKW))
       exact norm_nonneg _
     simpa using hJ
   | cons t ts ih =>
@@ -735,7 +739,7 @@ private theorem combo_expansion {d m b : ℕ} {U : Set (Space m)} {V : Set (Spac
       · exact ⟨(hrs s hs).1, (hrs s hs).2.trans (by simp [combinationOrder])⟩
     · intro u hu x hx
       have hw := heq u hu x hx
-      have hsl : scalarLift π (fun _ => (1 : ℂ)) u = (fun y => u (π y)) := by
+      have hsl : scalarLift π (fun _ => (1)) u = (fun y => u (π y)) := by
         funext y; exact one_mul _
       rw [hsl] at hw
       change t.1 * rightWord fields t.2 (fun y => u (π y)) x +
@@ -776,11 +780,11 @@ private theorem local_compact_bound
               (p.1 * archChart F ζ hζ y)) p.2‖ ≤
             M * compactJetSeminorm (n + combinationOrder D) A.ball (ψ '' K)
               (hK.image_of_continuousOn (hψ.mono hKW))
-              (by rintro _ ⟨p,hp,rfl⟩; exact hψA (hKW hp))
+              (by rintro _ ⟨p,hp,rfl⟩; apply hψA <;> aesop)
               (KPContActualSmoothLineGluing.coefficient F ζ hζ U R P H u A) hu := by
   obtain ⟨Q,W,hWo,hgx,hWd,A,ρ,τ,hρ,hρA,hτ,hτQ,hτsm,hτj,hbase,hwords⟩ :=
     local_moving_word_normal_form F ζ hζ U R P H g x hx
-  let ψ : G F ζ hζ × ArchCoordinates F → Space (KPCuspLogShape.dimension F * 3) := ρ ∘ τ
+  let ψ  := ρ ∘ τ
   have hψ : ContinuousOn ψ W := hρ.continuousOn.comp hτ hτQ
   have hψA : Set.MapsTo ψ W A.ball.carrier := hρA.comp hτQ
   have hψsm (a : G F ζ hζ) : ContDiffOn ℝ (⊤ : ℕ∞) (fun y => ψ (a,y)) {y | (a,y) ∈ W} :=
@@ -790,7 +794,7 @@ private theorem local_compact_bound
     joint_spatial_jets_comp W hWo Q.T.carrier Metric.isOpen_ball τ hτQ hτ hτsm hτj ρ hρ i
   obtain ⟨ts,hts,heq⟩ := combo_expansion Metric.isOpen_ball Metric.isOpen_ball ρ Q.fields
     hρ Q.identification.fields_smooth hρA D
-  let ss : List (((G F ζ hζ × ArchCoordinates F) → ℂ) × List (Fin (KPCuspLogShape.dimension F * 3))) :=
+  let ss  :=
     ts.map (fun t => (t.1 ∘ τ,t.2))
   have hss : ∀ s ∈ ss,
       (∀ a, ContDiffOn ℝ (⊤ : ℕ∞) (fun y => s.1 (a,y)) {y | (a,y) ∈ W}) ∧
@@ -871,7 +875,7 @@ theorem actual_moving_compact_joint_jet_bound
               (hu j) := by
   letI : IsTopologicalGroup (G F ζ hζ) :=
     (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.1
-  let S : Set (G F ζ hζ × ArchCoordinates F) := C ×ˢ X
+  let S  := C ×ˢ X
   have hS : IsCompact S := hC.prod hX
   choose W hWo hpW A ψ hψ hψA hbase hbound using
     (fun p : S => local_compact_bound F ζ hζ U R P H D n p.val.1 p.val.2 (hXd p.property.2))
@@ -880,9 +884,9 @@ theorem actual_moving_compact_joint_jet_bound
     exact Set.mem_iUnion.mpr ⟨⟨p,hp⟩,hpW ⟨p,hp⟩⟩
   obtain ⟨t,ht⟩ := hS.elim_finite_subcover W hWo hcover
   obtain ⟨K,hK,hKW,hSK⟩ := hS.finite_compact_cover t W (fun p _ => hWo p) ht
-  let e : Fin t.card ≃ t := t.equivFin.symm
-  let charts : Fin t.card → KPContActualSmoothLineGluing.ChartBall F ζ hζ U R P H := fun j => A (e j).val
-  let compacts : Fin t.card → Set (KPContLocalNorm.Space (KPCuspLogShape.dimension F * 3)) :=
+  let e  := t.equivFin.symm
+  let charts  := fun j => A (e j).val
+  let compacts  :=
     fun j => ψ (e j).val '' K (e j).val
   have hcp (j : Fin t.card) : IsCompact (compacts j) :=
     (hK _).image_of_continuousOn ((hψ _).mono (hKW _))
@@ -917,11 +921,11 @@ theorem actual_moving_compact_joint_jet_bound
     exact add_pos_of_nonneg_of_pos (Finset.sum_nonneg (fun i _ => (hb i).le)) zero_lt_one,?_⟩
   intro u hu g hg x hx
   obtain ⟨j,hj⟩ := hpcover (g,x) ⟨hg,hx⟩
-  let Q : Fin t.card → ℝ := fun i => KPContLocalNorm.compactJetSeminorm
+  let Q  := fun i => KPContLocalNorm.compactJetSeminorm
     (n+KPContRightJets.combinationOrder D) (charts i).ball (compacts i) (hcp i) (hcb i)
     (KPContActualSmoothLineGluing.coefficient F ζ hζ U R P H u (charts i)) (hu i)
   have hQ (i : Fin t.card) : 0 ≤ Q i := by
-    letI : CompactSpace (compacts i) := isCompact_iff_compactSpace.mp (hcp i)
+    letI  := isCompact_iff_compactSpace.mp (hcp i)
     exact norm_nonneg _
   have hQj : Q j ≤ ∑ i, Q i := Finset.single_le_sum (fun i _ => hQ i) (Finset.mem_univ j)
   have hbj : b j ≤ M := (Finset.single_le_sum (fun i _ => (hb i).le) (Finset.mem_univ j)).trans

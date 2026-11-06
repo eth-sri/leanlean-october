@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Characters.CharacterUniqueness
 public import DedekindZetaZeroFree.LFunctions.Hecke.QuadraticFamilies.CharacterValues
 public import DedekindZetaZeroFree.HarmonicAnalysis.Schwartz.SmoothAnnularWeight
@@ -7,6 +9,7 @@ public import DedekindZetaZeroFree.LargeSieve.Bilinear.QuadraticFormsAndSieveExp
 public import DedekindZetaZeroFree.Arithmetic.Ideals.LinearCountingBound
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve
 
@@ -37,7 +40,7 @@ theorem annular_diagonal_restricted_bound (F : Type) [Field F] [NumberField F]
   obtain ⟨x₀, -, hx₀max⟩ := isCompact_Icc.exists_isMaxOn
     (Set.nonempty_Icc.mpr (by norm_num : (1 / 2 : ℝ) ≤ 5 / 2)) hWcont.continuousOn
   set B : ℝ := W x₀ with hBdef
-  have hB0 : 0 ≤ B := hBdef ▸ hWnonneg x₀
+  have hB0  := hBdef ▸ hWnonneg x₀
   have hBW : ∀ t : ℝ, W t ≤ B := by
     intro t
     by_cases ht : t ∈ Set.Icc (1 / 2 : ℝ) (5 / 2)
@@ -56,7 +59,7 @@ theorem annular_diagonal_restricted_bound (F : Type) [Field F] [NumberField F]
     intro a
     by_cases h : a ≠ ⊥ ∧ a ⊔ c = ⊤ ∧ P a
     · rw [if_pos h]
-      have hχ : ‖(Q.χ d) a‖ ≤ 1 := quadraticFamily_norm_le_one Q hdsq hdc a
+      have hχ  := quadraticFamily_norm_le_one Q hdsq hdc a
       have hz : ‖z * (Q.χ d) a‖ ^ 2 ≤ ‖z‖ ^ 2 := by
         have h1 : ‖z * (Q.χ d) a‖ ≤ ‖z‖ := by
           rw [norm_mul]
@@ -104,7 +107,7 @@ theorem annular_diagonal_restricted_bound (F : Type) [Field F] [NumberField F]
 noncomputable def diagonalContribution
     {c : Ideal (𝓞 F)} (Q : QuadraticHeckeFamily F c)
     (W : ℝ → ℝ) (M N : ℝ) (d : Ideal (𝓞 F)) (g : Q.G)
-    (lam : Ideal (𝓞 F) → ℂ) (P : Ideal (𝓞 F) → Prop) : ℝ :=
+    (lam : Ideal (𝓞 F) → ℂ) (P : Ideal (𝓞 F) → Prop)  :=
   if d ∈ Sieve.paperShell F c N ∧ Q.cls d = g then
     ∑ᶠ a : Ideal (𝓞 F), if a ≠ ⊥ ∧ a ⊔ c = ⊤ ∧ P a then
       W ((Ideal.absNorm a : ℝ) / M) * ‖lam d * (Q.χ d) a‖ ^ 2
@@ -160,7 +163,7 @@ theorem diagonalContribution_bound (F : Type) [Field F] [NumberField F]
 noncomputable def offDiagonalT3
     {c : Ideal (𝓞 F)} (Q : QuadraticHeckeFamily F c)
     (W : ℝ → ℝ) (M N K : ℝ) (d : Ideal (𝓞 F)) (g : Q.G)
-    (lam : Ideal (𝓞 F) → ℂ) : ℂ :=
+    (lam : Ideal (𝓞 F) → ℂ)  :=
   ∑ b1 ∈ Sieve.paperShell F c N, ∑ b2 ∈ Sieve.paperShell F c N,
     if b1 ≠ b2 ∧ b1 ⊔ b2 = d ∧ Q.cls b1 = g ∧ Q.cls b2 = g then
       lam b1 * (starRingEnd ℂ) (lam b2) *
@@ -169,9 +172,12 @@ noncomputable def offDiagonalT3
             (Q.χ b1) a * (starRingEnd ℂ) ((Q.χ b2) a))
     else 0
 
-noncomputable def t3Term {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-    (Q : QuadraticHeckeFamily F c) (W : ℝ → ℝ) (M K : ℝ) (d : Ideal (𝓞 F)) (g : Q.G)
-    (lam : Ideal (𝓞 F) → ℂ) (b1 b2 : Ideal (𝓞 F)) : ℂ :=
+section
+variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
+    (Q : QuadraticHeckeFamily F c) (W : ℝ → ℝ) (M K : ℝ)
+include F c Q W M K
+noncomputable def t3Term   (d : Ideal (𝓞 F)) (g : Q.G)
+    (lam : Ideal (𝓞 F) → ℂ) (b1 b2 : Ideal (𝓞 F))  :=
   if b1 ⊔ b2 = d ∧ Q.cls b1 = g ∧ Q.cls b2 = g then
     lam b1 * (starRingEnd ℂ) (lam b2) *
       (∑ a ∈ Sieve.kernelRows F c M K,
@@ -179,13 +185,14 @@ noncomputable def t3Term {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F
           (Q.χ b1) a * (starRingEnd ℂ) ((Q.χ b2) a))
   else 0
 
-noncomputable def t3Diag {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-    (Q : QuadraticHeckeFamily F c) (W : ℝ → ℝ) (M K : ℝ)
-    (lam : Ideal (𝓞 F) → ℂ) (b : Ideal (𝓞 F)) : ℂ :=
+noncomputable def t3Diag  
+    (lam : Ideal (𝓞 F) → ℂ) (b : Ideal (𝓞 F))  :=
   lam b * (starRingEnd ℂ) (lam b) *
     (∑ a ∈ Sieve.kernelRows F c M K,
       (W ((Ideal.absNorm a : ℝ) / M) : ℂ) *
         (Q.χ b) a * (starRingEnd ℂ) ((Q.χ b) a))
+end
+
 
 private theorem sum_diagonal_split {α : Type*} [DecidableEq α] (s : Finset α)
     (f : α → α → ℂ) :

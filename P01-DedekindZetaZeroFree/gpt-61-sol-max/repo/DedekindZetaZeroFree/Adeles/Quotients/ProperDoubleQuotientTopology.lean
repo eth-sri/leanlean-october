@@ -2,7 +2,10 @@ module
 
 public import Mathlib
 
+public import Mathlib
+
 @[expose] public section
+
 
 noncomputable section
 
@@ -33,7 +36,7 @@ open scoped Pointwise
 
 variable {G : Type*} [Group G] [TopologicalSpace G]
 
-abbrev rawQuotientMap (Γ K : Subgroup G) : G → RawDoubleQuotient Γ K :=
+abbrev rawQuotientMap (Γ K : Subgroup G)  :=
   DoubleCoset.mk Γ K
 
 abbrev rawActionCorrespondence (Γ K : Subgroup G) : (Γ × K) × G → G × G :=
@@ -65,18 +68,18 @@ theorem proper_rawActionCorrespondence [IsTopologicalGroup G] [T2Space G]
 theorem locallyCompact_secondCountable_polish (Y : Type*)
     [TopologicalSpace Y] [T2Space Y] [LocallyCompactSpace Y]
     [SecondCountableTopology Y] : PolishSpace Y := by
-  letI : MetricSpace Y := TopologicalSpace.metrizableSpaceMetric Y
+  letI  := TopologicalSpace.metrizableSpaceMetric Y
   let e : Y → UniformSpace.Completion Y := fun x => x
   have he : IsDenseEmbedding e := UniformSpace.Completion.isDenseEmbedding_coe
   have ho : IsOpen (Set.range e) := by
     rw [isOpen_iff_mem_nhds]
     rintro _ ⟨x, rfl⟩
     obtain ⟨C, hC, hx⟩ := exists_compact_mem_nhds x
-    have hc : IsClosed (e '' C) := (hC.image he.continuous).isClosed
+    have hc  := (hC.image he.continuous).isClosed
     have hn := he.isDenseInducing.closure_image_mem_nhds hx
     rw [hc.closure_eq] at hn
     exact Filter.mem_of_superset hn (Set.image_subset_range e C)
-  letI : PolishSpace (Set.range e) := ho.polishSpace
+  letI  := ho.polishSpace
   exact he.isEmbedding.toHomeomorph.isClosedEmbedding.polishSpace
 
 theorem proper_rawDoubleQuotient_topology [IsTopologicalGroup G] [T2Space G]
@@ -119,7 +122,7 @@ theorem proper_rawDoubleQuotient_topology [IsTopologicalGroup G] [T2Space G]
       exact ⟨((⟨γ, hγ⟩, ⟨k⁻¹, K.inv_mem hk⟩), p.2), by
         simp only [rawActionCorrespondence, Subgroup.coe_mk, inv_inv]
         exact Prod.ext he.symm rfl⟩
-  have ht : T2Space (RawDoubleQuotient Γ K) :=
+  have ht  :=
     (t2Space_iff_of_isOpenQuotientMap h).mpr (hr ▸ hp.isClosed_range)
   exact ⟨h.locallyCompactSpace, ht, h.secondCountableTopology,
     h.continuous, ho, hq⟩

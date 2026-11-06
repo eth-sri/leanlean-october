@@ -37,9 +37,9 @@ abbrev target (R : ActualRecipe S η) : RayClassCharacter F R.A.modulus :=
 def L (R : ActualRecipe S η) : ℂ → ℂ :=
   comparisonPrincipalIncompleteL F R.A R.target R.probe.principal R.continuation
 
-def I (R : ActualRecipe S η) (Z : ℝ) : ℂ :=
-  NormalizedProbe.probe R.A R.probe.coefficients R.probe.domain R.probe.W0 R.probe.W1
-    (Z ^ (9 / 10 : ℝ)) (Z ^ (133 / 1000 : ℝ)) Z
+
+
+
 
 def W (R : ActualRecipe S η) : ComparisonMellinWeights :=
   NormalizedProbe.principalMellinWeights R.A R.σ R.target R.traceBad R.probe

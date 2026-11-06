@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import GaloisCohomology.Cyclic.Herbrand.Permutation.Lattice
 public import GaloisCohomology.Cyclic.Herbrand.Permutation.Module
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -93,8 +96,7 @@ theorem basisEquivFun_symm_intCoordinatePermutation
     intro i
     simp only [LinearMap.comp_apply, Pi.basisFun_apply]
     have hsingle (j : ι) :
-        b.equivFun.symm (Pi.single j 1) = b j := by
-      exact _root_.Basis.equivFun_symm_single b j
+        b.equivFun.symm (Pi.single j 1) = b j := _root_.Basis.equivFun_symm_single b j
     calc
       b.equivFun.symm
           (intCoordinatePermutation (ρ g)
@@ -124,14 +126,17 @@ section StableSublattice
 
 variable [Fintype G] [Group G] [Fintype ι] [DecidableEq ι]
 
-/-- The canonical permutation sublattice is stable under the
-permutation representation. -/
-theorem permutationSublattice_stable
-    (ρ : G →* Equiv.Perm ι)
+section
+variable (ρ : G →* Equiv.Perm ι)
     (L : Submodule ℤ (ι → ℝ)) [DiscreteTopology L]
     [IsZLattice ℝ L]
     (hL : ∀ (g : G) (x : ι → ℝ), x ∈ L →
-      permutationRepresentation ρ g x ∈ L) :
+      permutationRepresentation ρ g x ∈ L)
+include ρ L hL
+/-- The canonical permutation sublattice is stable under the
+permutation representation. -/
+theorem permutationSublattice_stable
+      :
     ∀ (g : G) (x : ι → ℝ),
       x ∈ permutationSublattice ρ L hL →
         permutationRepresentation ρ g x ∈
@@ -151,9 +156,9 @@ theorem permutationSublattice_stable
         congrArg (fun q : L => (q : ι → ℝ))
           (averagedLatticeVector_equivariant
             ρ L hL (permutationLatticeScale L) g i)
-      simpa only [coe_permutationLatticeEquiv] using h
+      exact h
     rw [heq]
-    exact Submodule.subset_span ⟨ρ g i, rfl⟩
+    apply Submodule.subset_span <;> aesop
   · rw [map_zero]
     exact Submodule.zero_mem _
   · intro y z _ _ hy hz
@@ -166,11 +171,7 @@ theorem permutationSublattice_stable
 /-- The additive action on the canonical permutation sublattice. -/
 @[reducible]
 def permutationSublatticeDistribMulAction
-    (ρ : G →* Equiv.Perm ι)
-    (L : Submodule ℤ (ι → ℝ)) [DiscreteTopology L]
-    [IsZLattice ℝ L]
-    (hL : ∀ (g : G) (x : ι → ℝ), x ∈ L →
-      permutationRepresentation ρ g x ∈ L) :
+      :
     DistribMulAction G (permutationSublattice ρ L hL) where
   smul g x :=
     ⟨permutationRepresentation ρ g x.1,
@@ -193,7 +194,9 @@ def permutationSublatticeDistribMulAction
     exact map_zero (permutationRepresentation ρ g)
   smul_add g x y := by
     apply Subtype.ext
-    exact map_add (permutationRepresentation ρ g) x.1 y.1
+    apply map_add
+end
+
 
 /-- An additive action, written multiplicatively. -/
 @[reducible]
@@ -212,20 +215,21 @@ def multiplicativeDistribMulAction
     (DistribMulAction.smul_add g
       (Multiplicative.toAdd x) (Multiplicative.toAdd y))
 
+section
+variable {M : Type*} [AddCommGroup M] [Module ℤ M]
+    (N : Submodule ℤ M)
+include M N
 /-- A submodule, written as a subgroup of the multiplicative copy of
 its ambient additive group. -/
 @[reducible]
 def multiplicativeSubmoduleSubgroup
-    {M : Type*} [AddCommGroup M] [Module ℤ M]
-    (N : Submodule ℤ M) :
-    Subgroup (Multiplicative M) :=
+       :=
   N.toAddSubgroup.toSubgroup
 
 /-- The multiplicative copy of a submodule is canonically equivalent
 to the corresponding subgroup of the multiplicative ambient group. -/
 def multiplicativeSubmoduleMulEquiv
-    {M : Type*} [AddCommGroup M] [Module ℤ M]
-    (N : Submodule ℤ M) :
+      :
     Multiplicative N ≃*
       multiplicativeSubmoduleSubgroup N where
   toFun x :=
@@ -242,43 +246,14 @@ def multiplicativeSubmoduleMulEquiv
 /-- Finiteness of an additive submodule quotient is unchanged after
 passing to multiplicative notation. -/
 theorem multiplicativeSubmoduleQuotientFinite
-    {M : Type*} [AddCommGroup M] [Module ℤ M]
-    (N : Submodule ℤ M)
+     
     [Finite (M ⧸ N)] :
     Finite
       (Multiplicative M ⧸
         multiplicativeSubmoduleSubgroup N) := by
-  let f :
-      Multiplicative M →*
-        Multiplicative (M ⧸ N) :=
-    (QuotientAddGroup.mk'
-      N.toAddSubgroup).toMultiplicative
-  have hf : Function.Surjective f := by
-    intro y
-    obtain ⟨x, hx⟩ :=
-      QuotientAddGroup.mk'_surjective
-        N.toAddSubgroup
-        (Multiplicative.toAdd y)
-    exact
-      ⟨Multiplicative.ofAdd x,
-        congrArg Multiplicative.ofAdd hx⟩
-  have hker :
-      f.ker =
-        multiplicativeSubmoduleSubgroup N := by
-    change
-      (QuotientAddGroup.mk'
-          N.toAddSubgroup).ker.toSubgroup =
-        N.toAddSubgroup.toSubgroup
-    rw [QuotientAddGroup.ker_mk']
-  let e :
-      Multiplicative M ⧸
-          multiplicativeSubmoduleSubgroup N ≃*
-        Multiplicative (M ⧸ N) :=
-    (QuotientGroup.quotientMulEquivOfEq hker).symm.trans
-      (QuotientGroup.quotientKerEquivOfSurjective f hf)
-  exact
-    Finite.of_equiv
-      (Multiplicative (M ⧸ N)) e.symm.toEquiv
+  assumption
+end
+
 
 /-- The action on any complete stable lattice induced by its
 permutation representation. -/
@@ -311,7 +286,7 @@ def completePermutationLatticeDistribMulAction
     exact map_zero (permutationRepresentation ρ g)
   smul_add g x y := by
     apply Subtype.ext
-    exact map_add (permutationRepresentation ρ g) x.1 y.1
+    apply map_add
 
 /-- The canonical complete permutation sublattice, viewed as a
 subgroup of the multiplicative copy of the ambient lattice. -/
@@ -349,14 +324,8 @@ theorem
         g • x ∈
           permutationSublatticeMultiplicativeSubgroup
             ρ L hL := by
-  let ambientAction :
-      DistribMulAction G L :=
-    completePermutationLatticeDistribMulAction
-      ρ L hL
-  let multiplicativeAction :
-      MulDistribMulAction G
-        (Multiplicative L) :=
-    multiplicativeDistribMulAction
+  
+  
   intro g x hx
   change
     permutationRepresentation ρ g
@@ -455,23 +424,9 @@ theorem
         g •
           permutationSublatticeSubgroupMulEquiv
             ρ L hL x := by
-  let ambientAction :
-      DistribMulAction G L :=
-    completePermutationLatticeDistribMulAction
-      ρ L hL
-  let ambientMultiplicativeAction :
-      MulDistribMulAction G
-        (Multiplicative L) :=
-    multiplicativeDistribMulAction
-  let subgroupAction :
-      MulDistribMulAction G
-        (permutationSublatticeMultiplicativeSubgroup
-          ρ L hL) :=
-    stableSubgroupMulDistribMulAction
-      (permutationSublatticeMultiplicativeSubgroup
-        ρ L hL)
-      (permutationSublatticeMultiplicativeSubgroup_stable
-        ρ L hL)
+  
+  
+  
   let sublatticeAction :
       DistribMulAction G
         (permutationSublattice ρ L hL) :=
@@ -525,8 +480,7 @@ theorem permutationSublatticeModuleAut_basis
         (permutationSublatticeBasis ρ L hL i) =
       permutationSublatticeBasis ρ L hL (ρ g i) := by
   apply Subtype.ext
-  exact permutationSublatticeBasis_permuted
-    ρ L hL g i
+  apply permutationSublatticeBasis_permuted
 
 /-- The distinguished basis coordinates identify the canonical
 permutation sublattice equivariantly with integer-valued functions. -/
@@ -558,21 +512,12 @@ theorem permutationSublatticeBasisMulEquivFunctions_equivariant
           ρ L hL (g • x) =
         g • permutationSublatticeBasisMulEquivFunctions
           ρ L hL x := by
-  let indexAction : MulAction G ι :=
+  let indexAction  :=
     permutationMulAction ρ
-  let sublatticeAction :
-      DistribMulAction G
-        (permutationSublattice ρ L hL) :=
+  let sublatticeAction  :=
     permutationSublatticeDistribMulAction ρ L hL
-  let multiplicativeAction :
-      MulDistribMulAction G
-        (Multiplicative
-          (permutationSublattice ρ L hL)) :=
-    multiplicativeDistribMulAction
-  let functionAction :
-      MulDistribMulAction G
-        (ι → Multiplicative ℤ) :=
-    permutationFunctionMulDistribMulAction
+  
+  
   intro g x
   let b :=
     permutationSublatticeBasis ρ L hL
@@ -594,15 +539,15 @@ theorem permutationSublatticeBasisMulEquivFunctions_equivariant
       α g y = g • y :=
     rfl
   have hinv :
-      ((ρ g)⁻¹ : Equiv.Perm ι) = (ρ g).symm :=
+      ((ρ g)⁻¹) = (ρ g).symm :=
     rfl
   rw [map_inv, hinv]
   have hcoord' :
       (intCoordinatePermutation (ρ g)
         (b.equivFun (Multiplicative.toAdd x))) i =
         b.equivFun (g • Multiplicative.toAdd x) i := by
-    simpa only [LinearEquiv.apply_symm_apply,
-      LinearEquiv.symm_apply_apply, hα] using hcoord
+    simp only [LinearEquiv.apply_symm_apply, LinearEquiv.symm_apply_apply] at hcoord
+    exact hcoord
   change
     b.equivFun (Multiplicative.toAdd x) ((ρ g).symm i) =
       b.equivFun (g • Multiplicative.toAdd x) i at hcoord'
@@ -634,11 +579,9 @@ theorem permutationSublatticeHerbrandH0Finite
       (HerbrandH0 G
         (Multiplicative
           (permutationSublattice ρ L hL))) := by
-  let indexAction : MulAction G ι :=
+  let indexAction  :=
     permutationMulAction ρ
-  let sublatticeAction :
-      DistribMulAction G
-        (permutationSublattice ρ L hL) :=
+  let sublatticeAction  :=
     permutationSublatticeDistribMulAction ρ L hL
   let multiplicativeAction :
       MulDistribMulAction G
@@ -690,11 +633,9 @@ theorem permutationSublatticeHerbrandHMinusOneFinite
       (HerbrandHMinusOne G
         (Multiplicative
           (permutationSublattice ρ L hL)) σ) := by
-  let indexAction : MulAction G ι :=
+  let indexAction  :=
     permutationMulAction ρ
-  let sublatticeAction :
-      DistribMulAction G
-        (permutationSublattice ρ L hL) :=
+  let sublatticeAction  :=
     permutationSublatticeDistribMulAction ρ L hL
   let multiplicativeAction :
       MulDistribMulAction G
@@ -772,11 +713,9 @@ theorem
       ∏ ω : MulAction.orbitRel.Quotient G ι,
         (Fintype.card
           (permutationOrbitStabilizer ω) : ℚ) := by
-  let indexAction : MulAction G ι :=
+  let indexAction  :=
     permutationMulAction ρ
-  let sublatticeAction :
-      DistribMulAction G
-        (permutationSublattice ρ L hL) :=
+  let sublatticeAction  :=
     permutationSublatticeDistribMulAction ρ L hL
   let multiplicativeAction :
       MulDistribMulAction G
@@ -831,9 +770,7 @@ theorem
           (permutationSublattice ρ L hL)) σ =
         herbrandQuotient
           (G := G) (A := ι → Multiplicative ℤ) σ := by
-      simpa only [e, he] using
-        (herbrandQuotient_eq_of_equivariantMulEquiv
-          e he σ)
+      apply herbrandQuotient_eq_of_equivariantMulEquiv <;> assumption
     _ = ∏ ω : MulAction.orbitRel.Quotient G ι,
           (Fintype.card
             (permutationOrbitStabilizer ω) : ℚ) :=
@@ -882,10 +819,9 @@ theorem
         ∏ ω : MulAction.orbitRel.Quotient G ι,
           (Fintype.card
             (permutationOrbitStabilizer ω) : ℚ) := by
-  let indexAction : MulAction G ι :=
+  let indexAction  :=
     permutationMulAction ρ
-  let ambientAction :
-      DistribMulAction G L :=
+  let ambientAction  :=
     completePermutationLatticeDistribMulAction
       ρ L hL
   let ambientMultiplicativeAction :
@@ -905,26 +841,16 @@ theorem
   have hstable :
       ∀ (g : G) (x : Multiplicative L),
         x ∈ B → g • x ∈ B := by
-    simpa only [B] using
-      (permutationSublatticeMultiplicativeSubgroup_stable
-        ρ L hL)
+    apply permutationSublatticeMultiplicativeSubgroup_stable
   let subgroupAction :
       MulDistribMulAction G B :=
     stableSubgroupMulDistribMulAction
       B hstable
-  let quotientAction :
-      MulDistribMulAction G
-        (Multiplicative L ⧸ B) :=
-    stableQuotientMulDistribMulAction
-      B hstable
+  
   let quotientFinite :
       Finite (Multiplicative L ⧸ B) := by
-    simpa only [B] using
-      (permutationSublatticeMultiplicativeSubgroup_finite_quotient
-        ρ L hL)
-  let sublatticeAction :
-      DistribMulAction G
-        (permutationSublattice ρ L hL) :=
+    apply permutationSublatticeMultiplicativeSubgroup_finite_quotient
+  let sublatticeAction  :=
     permutationSublatticeDistribMulAction ρ L hL
   let sublatticeMultiplicativeAction :
       MulDistribMulAction G
@@ -975,16 +901,8 @@ theorem
     finiteIndexStableSubgroup_ambientHerbrandQuotientDefined
       B hstable σ hgen hB
   refine ⟨hA, ?_⟩
-  let ambientH0Finite :
-      Finite
-        (HerbrandH0 G
-          (Multiplicative L)) :=
-    hA.1
-  let ambientHMinusOneFinite :
-      Finite
-        (HerbrandHMinusOne G
-          (Multiplicative L) σ) :=
-    hA.2
+  
+  
   calc
     @herbrandQuotient
           G (Multiplicative L) _ _ _ _
@@ -992,17 +910,13 @@ theorem
         @herbrandQuotient
           G B _ _ _ _
           σ hB.1 hB.2 := by
-      simpa only [hA] using
-        (herbrandQuotient_eq_of_finiteIndex_stableSubgroup
-          B hstable σ hgen hB)
+      apply herbrandQuotient_eq_of_finiteIndex_stableSubgroup <;> assumption
     _ =
         herbrandQuotient
           (G := G)
           (A := Multiplicative
             (permutationSublattice ρ L hL)) σ := by
-      simpa only [e, he] using
-        (herbrandQuotient_eq_of_equivariantMulEquiv
-          e he σ)
+      apply herbrandQuotient_eq_of_equivariantMulEquiv <;> assumption
     _ = ∏ ω : MulAction.orbitRel.Quotient G ι,
           (Fintype.card
             (permutationOrbitStabilizer ω) : ℚ) :=

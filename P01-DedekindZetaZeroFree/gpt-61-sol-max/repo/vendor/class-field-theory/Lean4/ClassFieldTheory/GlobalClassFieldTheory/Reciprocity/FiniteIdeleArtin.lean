@@ -102,50 +102,53 @@ theorem finprod_fibers_eq_sigma
     _ = ∏ᶠ x : α, f x :=
       (finprod_eq_prod f hf).symm
 
-/-- A local norm of an integral unit at a finite place is again an
-integral unit at the place below. -/
-theorem normUnits_mem_finitePlaceIntegerUnits
-    {M : Type}
-    [Field M] [NumberField M] [Algebra K M]
-    (v : HeightOneSpectrum (𝓞 K))
-    (w : AbsoluteValueExtension
-      (HeightOneSpectrum.adicAbv K v) M)
-    (x :
-      ((finitePlaceExtensionCentre
-        (K := K) (L := M) v w).adicCompletion M)ˣ)
-    (hx :
-      x ∈
-        ((finitePlaceExtensionCentre
-          (K := K) (L := M) v w).adicCompletionIntegers M).units) :
-    letI : Algebra (v.adicCompletion K)
-        ((finitePlaceExtensionCentre
-          (K := K) (L := M) v w).adicCompletion M) :=
-      (finitePlaceAdicCompletionMap K M v
-        ⟨finitePlaceExtensionCentre (K := K) (L := M) v w,
-          finitePlaceBelow_finitePlaceExtensionCentre
-            (K := K) (L := M) v w⟩).toAlgebra
-    LocalFieldTheory.normUnits
-        (v.adicCompletion K)
-        ((finitePlaceExtensionCentre
-          (K := K) (L := M) v w).adicCompletion M) x ∈
-      (v.adicCompletionIntegers K).units := by
-  let W : {W : HeightOneSpectrum (𝓞 M) //
-      _root_.finitePlaceBelow (K := K) W = v} :=
-    ⟨finitePlaceExtensionCentre (K := K) (L := M) v w,
-      finitePlaceBelow_finitePlaceExtensionCentre
-        (K := K) (L := M) v w⟩
-  let : Algebra (v.adicCompletion K)
-      ((finitePlaceExtensionCentre
-        (K := K) (L := M) v w).adicCompletion M) :=
-    (finitePlaceAdicCompletionMap K M v W).toAlgebra
-  let z : (W.1.adicCompletionIntegers M).units := ⟨x, hx⟩
-  simpa only [W, z, Subgroup.coe_subtype] using
-    IdeleGroup.finitePlace_normUnits_mem_integerUnits
-      (K := K) (L := M) v W z
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The finite local Artin factors of an idele have finite multiplicative
 support.  This is the support input for applying homomorphisms to the
 finite-place global Artin product. -/
+
+local notation:max "current_chosenFinitePlaceLocalNormSubgroup" => chosenFinitePlaceLocalNormSubgroup (K := K) (L := L)
+
 theorem finitePlaceArtinFactors_hasFiniteMulSupport
     (a : IdeleGroup K) :
     HasFiniteMulSupport
@@ -177,8 +180,7 @@ theorem finitePlaceArtinFactors_hasFiniteMulSupport
     exact hv (Set.mem_union_right S hvT)
   have hNorm :
       IdeleGroup.finiteComponent v a ∈
-        chosenFinitePlaceLocalNormSubgroup
-          (K := K) (L := L) v := by
+        current_chosenFinitePlaceLocalNormSubgroup v := by
     apply
       adicCompletionIntegerUnits_le_chosenFinitePlaceLocalNormSubgroup
         (K := K) (L := L) v
@@ -226,8 +228,7 @@ theorem chosenFinitePlaceArtinMonoidHom_eq_one_of_integral_of_unramifiedAt
         (IdeleGroup.finiteComponent v a) = 1 := by
   have hNorm :
       IdeleGroup.finiteComponent v a ∈
-        chosenFinitePlaceLocalNormSubgroup
-          (K := K) (L := L) v := by
+        current_chosenFinitePlaceLocalNormSubgroup v := by
     apply
       adicCompletionIntegerUnits_le_chosenFinitePlaceLocalNormSubgroup
         (K := K) (L := L) v
@@ -241,8 +242,7 @@ theorem chosenFinitePlaceArtinMonoidHom_eq_one_of_integral_of_unramifiedAt
 private theorem chosenFinitePlaceArtinMonoidHom_eq_one_of_mem_localNorm
     (v : HeightOneSpectrum (𝓞 K))
     (x : (v.adicCompletion K)ˣ)
-    (hx : x ∈ chosenFinitePlaceLocalNormSubgroup
-      (K := K) (L := L) v) :
+    (hx : x ∈ current_chosenFinitePlaceLocalNormSubgroup v) :
     chosenFinitePlaceArtinMonoidHom (K := K) (L := L) v x = 1 := by
   rw [← chosenFinitePlaceArtinMonoidHom_ker
     (K := K) (L := L) v] at hx
@@ -274,10 +274,12 @@ noncomputable def finitePlaceGlobalArtinMonoidHom :
 /-- The finite-place global Artin homomorphism is continuous for the
 restricted-product topology on ideles and the finite Krull topology on
 the Galois group. -/
+
+local notation:max "current_finitePlaceGlobalArtinMonoidHom" => finitePlaceGlobalArtinMonoidHom (K := K) (L := L)
+
 theorem finitePlaceGlobalArtinMonoidHom_continuous :
     Continuous
-      (finitePlaceGlobalArtinMonoidHom
-        (K := K) (L := L)) := by
+      (current_finitePlaceGlobalArtinMonoidHom) := by
   classical
   let T : Set (HeightOneSpectrum (𝓞 K)) :=
     {v | ∃ W : HeightOneSpectrum (𝓞 L),
@@ -292,23 +294,19 @@ theorem finitePlaceGlobalArtinMonoidHom_continuous :
     (IdeleGroup.supportedAt (K := K) (S : Set _) : Set _) ∩
       {a | ∀ v ∈ S,
         IdeleGroup.finiteComponent v a ∈
-          chosenFinitePlaceLocalNormSubgroup
-            (K := K) (L := L) v}
+          current_chosenFinitePlaceLocalNormSubgroup v}
   have hUopen : IsOpen U := by
     have hLocalOpen : IsOpen
         {a : IdeleGroup K | ∀ v ∈ S,
           IdeleGroup.finiteComponent v a ∈
-            chosenFinitePlaceLocalNormSubgroup
-              (K := K) (L := L) v} := by
+            current_chosenFinitePlaceLocalNormSubgroup v} := by
       rw [show
         {a : IdeleGroup K | ∀ v ∈ S,
           IdeleGroup.finiteComponent v a ∈
-            chosenFinitePlaceLocalNormSubgroup
-              (K := K) (L := L) v} =
+            current_chosenFinitePlaceLocalNormSubgroup v} =
           ⋂ v ∈ S,
             (IdeleGroup.finiteComponent v) ⁻¹'
-              (chosenFinitePlaceLocalNormSubgroup
-                (K := K) (L := L) v : Set _) by
+              (current_chosenFinitePlaceLocalNormSubgroup v : Set _) by
         ext a
         simp]
       exact isOpen_biInter_finset fun v _ =>
@@ -323,15 +321,12 @@ theorem finitePlaceGlobalArtinMonoidHom_continuous :
     · intro v _
       rw [map_one]
       exact
-        (chosenFinitePlaceLocalNormSubgroup
-          (K := K) (L := L) v).one_mem
+        (current_chosenFinitePlaceLocalNormSubgroup v).one_mem
   have hUker :
       U ⊆
-        (finitePlaceGlobalArtinMonoidHom
-          (K := K) (L := L)) ⁻¹' {1} := by
+        (current_finitePlaceGlobalArtinMonoidHom) ⁻¹' {1} := by
     intro a ha
-    change finitePlaceGlobalArtinMonoidHom
-        (K := K) (L := L) a = 1
+    change current_finitePlaceGlobalArtinMonoidHom a = 1
     apply finprod_eq_one_of_forall_eq_one
     intro v
     by_cases hv : v ∈ S
@@ -368,20 +363,21 @@ theorem finitePlaceGlobalArtinMonoidHom_continuous :
   intro V hV
   apply Filter.mem_of_superset (hUopen.mem_nhds hUone)
   intro a ha
-  have hmap : finitePlaceGlobalArtinMonoidHom
-      (K := K) (L := L) a = 1 :=
+  have hmap : current_finitePlaceGlobalArtinMonoidHom a = 1 :=
     Set.mem_preimage.mp (hUker ha)
-  change finitePlaceGlobalArtinMonoidHom
-      (K := K) (L := L) a ∈ V
+  change current_finitePlaceGlobalArtinMonoidHom a ∈ V
   simpa only [hmap] using mem_of_mem_nhds hV
 
+section
+variable {M : Type}
+    [Field M] [NumberField M] [Algebra K M]
+    (a : IdeleGroup M)
+include M a
 /-- The finite Artin product after an idele norm is the `finprod`, over
 base finite places, of the products of the corresponding local norm
 factors at all finite places upstairs. -/
 theorem finitePlaceGlobalArtinMonoidHom_norm_eq_finprod_fibers
-    {M : Type}
-    [Field M] [NumberField M] [Algebra K M]
-    (a : IdeleGroup M) :
+      :
     letI : ∀ v : HeightOneSpectrum (𝓞 K),
         Fintype {W : HeightOneSpectrum (𝓞 M) //
           finitePlaceBelow (K := K) W = v} :=
@@ -446,9 +442,7 @@ theorem finitePlaceGlobalArtinMonoidHom_norm_eq_finprod_fibers
   rw [map_prod]
 
 private theorem finitePlaceNormArtinFactor_eq_one_of_component_unit_of_unramified
-    {M : Type}
-    [Field M] [NumberField M] [Algebra K M]
-    (a : IdeleGroup M)
+     
     (W : HeightOneSpectrum (𝓞 M))
     (hComponentUnit :
       IdeleGroup.finiteComponent W a ∈
@@ -493,9 +487,7 @@ private theorem finitePlaceNormArtinFactor_eq_one_of_component_unit_of_unramifie
 /-- The local Artin factors obtained after an idele norm have finite
 multiplicative support. -/
 theorem finitePlaceNormArtinFactors_hasFiniteMulSupport
-    {M : Type}
-    [Field M] [NumberField M] [Algebra K M]
-    (a : IdeleGroup M) :
+      :
     HasFiniteMulSupport
       (fun W : HeightOneSpectrum (𝓞 M) =>
         let v :=
@@ -569,9 +561,7 @@ theorem finitePlaceNormArtinFactors_hasFiniteMulSupport
 the actual finite places upstairs.  This is the flattened finite-place
 form of the local norm--restriction identity used in the global square. -/
 theorem finitePlaceGlobalArtinMonoidHom_norm_eq_finprod
-    {M : Type}
-    [Field M] [NumberField M] [Algebra K M]
-    (a : IdeleGroup M) :
+      :
     letI : ∀ W : HeightOneSpectrum (𝓞 M),
         Algebra
           ((finitePlaceBelow
@@ -686,6 +676,8 @@ theorem finitePlaceGlobalArtinMonoidHom_norm_eq_finprod
       apply finprod_congr
       intro W
       simp only [f, g]
+end
+
 
 /-- The finite part of the Artin norm--restriction field diamond.
 Restriction of the upper finite Artin product is the lower finite Artin product
@@ -702,8 +694,7 @@ theorem finitePlaceGlobalArtinMonoidHom_norm_restriction
         (AlgEquiv.restrictScalarsHom K)).comp
         (finitePlaceGlobalArtinMonoidHom
           (K := K') (L := L')) =
-      (finitePlaceGlobalArtinMonoidHom
-        (K := K) (L := L)).comp
+      (current_finitePlaceGlobalArtinMonoidHom).comp
         (IdeleGroup.norm K K') := by
   apply MonoidHom.ext
   intro a
@@ -724,8 +715,7 @@ theorem finitePlaceGlobalArtinMonoidHom_norm_restriction
           chosenFinitePlaceArtinMonoidHom
             (K := K') (L := L') W
             (IdeleGroup.finiteComponent W a)) =
-      finitePlaceGlobalArtinMonoidHom
-        (K := K) (L := L)
+      current_finitePlaceGlobalArtinMonoidHom
         (IdeleGroup.norm K K' a)
   rw [finitePlaceGlobalArtinMonoidHom_norm_eq_finprod]
   rw [MonoidHom.map_finprod
@@ -747,8 +737,7 @@ is exactly that local Artin factor. -/
 theorem finitePlaceGlobalArtinMonoidHom_finitePlaceIdele
     (v : HeightOneSpectrum (𝓞 K))
     (x : (v.adicCompletion K)ˣ) :
-    finitePlaceGlobalArtinMonoidHom
-        (K := K) (L := L)
+    current_finitePlaceGlobalArtinMonoidHom
         (finitePlaceIdele v x) =
       chosenFinitePlaceArtinMonoidHom
         (K := K) (L := L) v x := by

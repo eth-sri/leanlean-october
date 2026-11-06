@@ -138,9 +138,9 @@ variable {X B G : Type*} [TopologicalSpace X] [CompactSpace X]
   [MeasurableSpace X] [BorelSpace X] [PolishSpace X]
   [TopologicalSpace B] [T2Space B] [MeasurableSpace B] [BorelSpace B]
   [SecondCountableTopology B] [Group G] [Fintype G] [MulAction G X]
-variable (Q : X → B) (hQ : Continuous Q) (hsurj : Function.Surjective Q)
+variable (Q : X → B)  
   (horbit : ∀ x y, Q x = Q y ↔ ∃ g : G, g • x = y)
-  (hact : ∀ g : G, Continuous (fun x : X => g • x))
+  
 
 variable (μ : Measure B) [IsFiniteMeasure μ]
 
@@ -158,7 +158,10 @@ variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
-theorem compact_root_scalar_formula (a : ActualChart (U := U) (H := H))
+
+local notation:max "current_ActualChart" => ActualChart (U := U) (H := H)
+
+theorem compact_root_scalar_formula (a : current_ActualChart)
     (v : Sections F ζ hζ U R P H) (ε : rootsOfUnity 3 F) (x : M F) :
     (scalarRepresentative F ζ hζ U R P H v).val
       (Quotient.mk (coveredRelation F ζ hζ U)
@@ -183,7 +186,7 @@ local instance : DiscreteTopology (rootsOfUnity 3 F) := ⟨rfl⟩
 local instance : MeasurableSpace (rootsOfUnity 3 F) := ⊤
 local instance : BorelSpace (rootsOfUnity 3 F) := ⟨(borel_eq_top_of_discrete).symm⟩
 
-@[instance_reducible]  def rootAction (a : ActualChart (U := U) (H := H))
+@[instance_reducible]  def rootAction (a : current_ActualChart)
     (C : Set (M F)) (hI : ∀ g : Gamma a, (isotropyArrow a g).psi '' C = C) :
     MulAction (Gamma a) (rootsOfUnity 3 F × C) where
   smul g p := (p.1 * g.val.2⁻¹, ⟨(isotropyArrow a g).psi p.2.val, by
@@ -202,7 +205,7 @@ local instance : BorelSpace (rootsOfUnity 3 F) := ⟨(borel_eq_top_of_discrete).
     · apply Subtype.ext
       exact (gammaMulAction a).mul_smul g h p.2.val
 
-private lemma psi_cont (a : ActualChart (U := U) (H := H)) (g : Gamma a) :
+private lemma psi_cont (a : current_ActualChart) (g : Gamma a) :
     Continuous (isotropyArrow a g).psi := by
   have hA : Continuous (labeledA (placeEquiv F ζ hζ)) := by
     apply continuous_pi
@@ -215,20 +218,20 @@ private lemma psi_cont (a : ActualChart (U := U) (H := H)) (g : Gamma a) :
     ((1⁻¹ * g.val.1.val.val * 1) • labeledA (placeEquiv F ζ hζ) x))
   exact hAi.comp ((KPCuspSiegel.continuous_action F _).comp hA)
 
-private lemma rootAction_cont (a : ActualChart (U := U) (H := H))
+private lemma rootAction_cont (a : current_ActualChart)
     (C : Set (M F)) (hI : ∀ g : Gamma a, (isotropyArrow a g).psi '' C = C) (g : Gamma a) :
     Continuous ((rootAction a C hI).smul g) := by
   apply Continuous.prodMk
   · exact continuous_fst.mul continuous_const
   · exact ((psi_cont a g).comp (continuous_subtype_val.comp continuous_snd)).subtype_mk _
 
- def rawRootMap (a : ActualChart (U := U) (H := H)) (C : Set (M F)) :
+ def rawRootMap (a : current_ActualChart) (C : Set (M F)) :
     rootsOfUnity 3 F × C → CoveredSpherical F ζ hζ U := fun p =>
   Quotient.mk (coveredRelation F ζ hζ U)
     (labeledA (placeEquiv F ζ hζ) p.2.val,
      KPCuspGenuineMonodromy.central F ζ hζ p.1 * (H.atlas U).representative a.component)
 
-private lemma rawRootMap_cont (a : ActualChart (U := U) (H := H)) (C : Set (M F)) :
+private lemma rawRootMap_cont (a : current_ActualChart) (C : Set (M F)) :
     Continuous (rawRootMap a C) := by
   apply continuous_quotient_mk'.comp
   apply Continuous.prodMk
@@ -240,7 +243,7 @@ private lemma rawRootMap_cont (a : ActualChart (U := U) (H := H)) (C : Set (M F)
   · apply Continuous.mul _ continuous_const
     exact (continuous_of_discreteTopology).comp continuous_fst
 
- def rootCoefficient (a : ActualChart (U := U) (H := H))
+ def rootCoefficient (a : current_ActualChart)
     (C : Set (M F)) (f : ContinuousMap C ℂ) : ContinuousMap (rootsOfUnity 3 F × C) ℂ where
   toFun p := (KPCuspGenuineMonodromy.chi F ζ hζ p.1 : ℂ) * f p.2
   continuous_toFun := by
@@ -248,7 +251,7 @@ private lemma rawRootMap_cont (a : ActualChart (U := U) (H := H)) (C : Set (M F)
     exact (continuous_of_discreteTopology : Continuous (fun e : rootsOfUnity 3 F =>
       (KPCuspGenuineMonodromy.chi F ζ hζ e : ℂ))).comp continuous_fst
 
-theorem one_chart_compact_coefficient_averaging_source (a : ActualChart (U := U) (H := H))
+theorem one_chart_compact_coefficient_averaging_source (a : current_ActualChart)
     (C : Set (M F)) (hC : IsCompact C) (hD : C ⊆ omega a)
     (hI : ∀ g : Gamma a, (isotropyArrow a g).psi '' C = C) :
     letI : CompactSpace C := isCompact_iff_compactSpace.mp hC

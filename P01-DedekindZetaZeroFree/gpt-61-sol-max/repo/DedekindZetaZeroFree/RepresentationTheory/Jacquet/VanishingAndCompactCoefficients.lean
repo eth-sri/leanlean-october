@@ -171,9 +171,12 @@ private theorem single_tail
     change ℓ (ρ (KPRankOneCartanGeometry.diagonalLift F ζ hζ w π n) (c • x)) = 0
     change ℓ (ρ (KPRankOneCartanGeometry.diagonalLift F ζ hζ w π n) x) = 0 at hn
     rw [map_smul, map_smul, hn, smul_zero]
-private theorem orbit_lc {G X : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
+section
+variable {G X : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
     [AddCommGroup X] [Module ℂ X] (σ : Representation ℂ G X) (x : X)
-    (hx : SmoothVector σ x) : IsLocallyConstant (fun g => σ g x) := by
+    (hx : SmoothVector σ x)
+include G X σ x hx
+private theorem orbit_lc   : IsLocallyConstant (fun g => σ g x) := by
   obtain ⟨J, hJ⟩ := hx
   rw [IsLocallyConstant.iff_exists_open]
   intro g
@@ -183,9 +186,7 @@ private theorem orbit_lc {G X : Type*} [Group G] [TopologicalSpace G] [IsTopolog
   · intro y hy
     have heq : y = g * (g⁻¹ * y) := by simp
     rw [heq, map_mul, Module.End.mul_apply, hJ _ hy]
-private theorem smooth_translate {G X : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
-    [AddCommGroup X] [Module ℂ X] (σ : Representation ℂ G X) (x : X)
-    (hx : SmoothVector σ x) (g : G) : SmoothVector σ (σ g x) := by
+private theorem smooth_translate   (g : G) : SmoothVector σ (σ g x) := by
   obtain ⟨J, hJ⟩ := hx
   refine ⟨J.comap (MulAut.conj g⁻¹).toMonoidHom ?_, ?_⟩
   · exact (continuous_const.mul continuous_id).mul continuous_const
@@ -194,11 +195,16 @@ private theorem smooth_translate {G X : Type*} [Group G] [TopologicalSpace G] [I
     rw [← Module.End.mul_apply, ← map_mul, heq, map_mul, Module.End.mul_apply]
     have hj' : g⁻¹ * j * g ∈ J := by simpa [MulAut.conj_apply] using hj
     exact congrArg (σ g) (hJ _ hj')
+end
 
-theorem coefficient_covered_cartan_tail_zero
-    (hm : KPLocalChartTopology.MatrixChartDepth F w m)
+
+section
+variable (hm : KPLocalChartTopology.MatrixChartDepth F w m)
     (π : (w.adicCompletion F)ˣ)
     (hπ : Valued.v (π : w.adicCompletion F) = WithZero.exp (-1 : ℤ))
+include hm π hπ
+theorem coefficient_covered_cartan_tail_zero
+     
     (hρ : letI := KPPGLLocalCover.finiteTopology F ζ hζ w m;
       SmoothRepresentation ρ)
     (hJ : Subsingleton (UpperJacquet F ζ hζ w ρ))
@@ -233,9 +239,7 @@ theorem coefficient_covered_cartan_tail_zero
     map_mul, Module.End.mul_apply] using h
 
 theorem coefficient_support_in_cartan_truncation
-    (hm : KPLocalChartTopology.MatrixChartDepth F w m)
-    (π : (w.adicCompletion F)ˣ)
-    (hπ : Valued.v (π : w.adicCompletion F) = WithZero.exp (-1 : ℤ))
+     
     (hρ : letI := KPPGLLocalCover.finiteTopology F ζ hζ w m;
       SmoothRepresentation ρ)
     (hJ : Subsingleton (UpperJacquet F ζ hζ w ρ))
@@ -251,6 +255,8 @@ theorem coefficient_support_in_cartan_truncation
     by_contra hn
     exact hg (hM n (by omega) k₁ k₂)
   exact Set.mem_iUnion.mpr ⟨n, Set.mem_iUnion.mpr ⟨hn, ⟨k₁, k₂, rfl⟩⟩⟩
+end
+
 
 theorem coefficient_compact_support
     (hm : KPLocalChartTopology.MatrixChartDepth F w m)

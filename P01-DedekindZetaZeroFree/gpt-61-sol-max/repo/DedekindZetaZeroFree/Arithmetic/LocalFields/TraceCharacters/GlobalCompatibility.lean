@@ -20,16 +20,18 @@ private theorem cast_character_mk {R : Type} [CommRing R]
   cases h
   rfl
 
-private theorem power_generates (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n : ℕ) :
+section
+variable (C : A.GeneralArithmeticContext σ η hS)
+    (p : ExteriorPrime A) (n : ℕ)
+include C p n
+private theorem power_generates   :
     A.Generates (powerIdeal p n) (generator C p ^ n) := by
   refine ⟨pow_ne_zero _ (generator_generates C p).1, ?_⟩
   rw [← Ideal.span_singleton_pow, (generator_generates C p).2]
   exact (Ideal.map_pow _ _ _).symm
 
 theorem fieldTrace_eq_negative_localTrace
-    (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
-    (n : ℕ) (x : A.R) :
+      (x : A.R) :
     A.fieldTraceCharacter ((x : F) / (generator C p : F) ^ n) =
       negativeTrace p (algebraMap F (LocalField p) (x : F) / uniformizer C p ^ n) := by
   have hv : p.val ∉ A.Sf := by
@@ -94,8 +96,7 @@ theorem fieldTrace_eq_negative_localTrace
   apply (eq_inv_iff_mul_eq_one).2
   convert hglobal using 1 <;> ac_rfl
 
-theorem quotientTrace_mk (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n : ℕ) (x : A.R) :
+theorem quotientTrace_mk   (x : A.R) :
     quotientTrace C p n (residueMap C p n x) =
       negativeTrace p (algebraMap F (LocalField p) (x : F) / uniformizer C p ^ n) := by
   rw [← fieldTrace_eq_negative_localTrace C p n x]
@@ -110,8 +111,7 @@ theorem quotientTrace_mk (C : A.GeneralArithmeticContext σ η hS)
     rfl
   · exact (power_generates C p n).2.symm
 
-theorem quotientTrace_primitive (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n : ℕ) (x : Residue C p n) (hx : x ≠ 0) :
+theorem quotientTrace_primitive   (x : Residue C p n) (hx : x ≠ 0) :
     ∃ y : Residue C p n, quotientTrace C p n (x * y) ≠ 1 := by
   obtain ⟨x, rfl⟩ := Ideal.Quotient.mk_surjective x
   have hxI : x ∉ A.extendIdeal (powerIdeal p n) := by
@@ -127,6 +127,8 @@ theorem quotientTrace_primitive (C : A.GeneralArithmeticContext σ η hS)
   change quotientTrace C p n (residueMap C p n x * residueMap C p n y) ≠ 1
   rw [← map_mul, quotientTrace_mk, ← fieldTrace_eq_negative_localTrace]
   exact hy
+end
+
 
 end DedekindZetaZeroFree.LocalFiniteSumCompatibility
 

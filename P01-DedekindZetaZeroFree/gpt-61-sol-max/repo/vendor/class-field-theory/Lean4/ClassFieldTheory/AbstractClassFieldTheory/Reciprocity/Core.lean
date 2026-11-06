@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.ClassFieldAxiom
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.FieldRepresentation
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction.MainTransfer
@@ -7,6 +9,7 @@ public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.CyclicNormQu
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.FiniteGaloisSubextension
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -61,14 +64,17 @@ private theorem valueModulo_nsmul
       ((QuotientAddGroup.mk' (nsmulWithin v.valueGroup n)) (n • z)) = 0
   rw [hq, map_zero]
 
-private theorem classFieldAxiom_unramifiedUnits_hMinusOne
-    (v : ValuationData D A) (hcf : SatisfiesClassFieldAxiom A)
+section
+variable (v : ValuationData D A) (hcf : SatisfiesClassFieldAxiom A)
     (E : FiniteAbstractFieldExtension G)
     (hnormal : (extensionSubgroup E.base.field E.field.field E.below).Normal)
     (hUnramified : E.IsUnramified D)
     (g : E.base.field.toSubgroup ⧸
       extensionSubgroup E.base.field E.field.field E.below)
-    (hg : ∀ x, x ∈ Subgroup.zpowers g) :
+    (hg : ∀ x, x ∈ Subgroup.zpowers g)
+include v hcf E hnormal hUnramified g hg
+private theorem classFieldAxiom_unramifiedUnits_hMinusOne
+      :
     letI := Fintype.ofFinite
       (E.base.field.toSubgroup ⧸
         extensionSubgroup E.base.field E.field.field E.below)
@@ -87,7 +93,7 @@ private theorem classFieldAxiom_unramifiedUnits_hMinusOne
   let U := v.unitRepresentation E hnormal
   let M := extensionFixedRepresentation A K L hLK hnormal
   let S := Rep.FiniteCyclicGroup.subCompNormHom U g
-  let Kcf : FiniteAbstractField G := E.base
+  let Kcf  := E.base
   let Ecf : FiniteCyclicSubextension Kcf :=
     { field := L
       below := hLK
@@ -96,15 +102,11 @@ private theorem classFieldAxiom_unramifiedUnits_hMinusOne
       generator := g
       generates := hg }
   have hMzero : Limits.IsZero (tateCohomology M (-1)) :=
-    by
-      simpa [Kcf, Ecf,
-        FiniteCyclicSubextension.fixedRepresentation] using
-          hcf.tateHMinusOne_isZero Kcf Ecf
+    hcf.tateHMinusOne_isZero Kcf Ecf
   have hExact : S.Exact := by
     rw [S.moduleCat_exact_iff]
     intro u hu
-    have huNorm : U.norm.hom u = 0 := by
-      simpa [S] using hu
+    have huNorm : U.norm.hom u = 0 := hu
     let uM : M.V :=
       (extensionFixedRepresentationEquiv A K L hLK hnormal).symm u.1
     have huMNorm : M.norm.hom uM = 0 := by
@@ -112,25 +114,22 @@ private theorem classFieldAxiom_unramifiedUnits_hMinusOne
       calc
         (M.norm.hom uM).1 =
             ((relativeNorm A K L hLK
-              (extensionFixedRepresentationEquiv A K L hLK hnormal uM) :
-                ambientFixedAddSubgroup A K) : A.V) :=
+              (extensionFixedRepresentationEquiv A K L hLK hnormal uM)) : A.V) :=
           extensionFixedRepresentation_norm_coe A K L hLK hnormal uM
-        _ = ((relativeNorm A K L hLK u.1 :
-                ambientFixedAddSubgroup A K) : A.V) := by
-          rfl
-        _ = ((((U.norm.hom u).1 : ambientFixedAddSubgroup A L)) : A.V) :=
+        _ = ((relativeNorm A K L hLK u.1) : A.V) := rfl
+        _ = ((((U.norm.hom u).1)) : A.V) :=
           (v.unitRepresentation_norm_coe E hnormal u).symm
         _ = 0 := by rw [huNorm]; rfl
     obtain ⟨a, ha⟩ :=
       CyclicCohomology.normKernel_le_sigmaMinusOneRange_of_tateHMinusOne_isZero
         M g hg hMzero uM huMNorm
-    let aL : ambientFixedAddSubgroup A L :=
+    let aL  :=
       extensionFixedRepresentationEquiv A K L hLK hnormal a
     obtain ⟨b, hb⟩ :=
       v.normalizedValuation_surjective E.base (v.valuationAt E.field aL)
-    let bL : ambientFixedAddSubgroup A L :=
+    let bL  :=
       fixedFieldInclusion A K L hLK b
-    let eL : ambientFixedAddSubgroup A L := aL - bL
+    let eL  := aL - bL
     have heL : v.valuationAt E.field eL = 0 := by
       change v.valuationAt E.field (aL - bL) = 0
       rw [map_sub,
@@ -146,7 +145,7 @@ private theorem classFieldAxiom_unramifiedUnits_hMinusOne
       intro k
       rw [relativeCosetAction_mk, relativeCosetAction_mk,
         relativeCosetAction_mk]
-      exact map_sub (A.ρ k.1) aL.1 bL.1
+      apply map_sub
     have hactionB :
         relativeCosetAction A K L hLK bL g = bL.1 := by
       refine Quotient.inductionOn' g ?_
@@ -154,21 +153,19 @@ private theorem classFieldAxiom_unramifiedUnits_hMinusOne
       rw [relativeCosetAction_mk]
       exact b.2 k
     have hUaction :
-        (((U.ρ g e).1 : ambientFixedAddSubgroup A L) : A.V) =
+        (((U.ρ g e).1) : A.V) =
           relativeCosetAction A K L hLK eL g := by
-      simpa [U] using
-        v.unitRepresentation_action_coe E hnormal g e
+      apply v.unitRepresentation_action_coe
     have hMaction :
         (M.ρ g a).1 = relativeCosetAction A K L hLK aL g := by
-      simpa [M, aL] using
-        extensionFixedRepresentation_action_coe A K L hLK hnormal g a
+      apply extensionFixedRepresentation_action_coe
     apply Subtype.ext
     apply Subtype.ext
     calc
-      ((((U.ρ g e - e).1 : ambientFixedAddSubgroup A L)) : A.V) =
+      ((((U.ρ g e - e).1)) : A.V) =
           relativeCosetAction A K L hLK eL g - eL.1 := by
-        change (((U.ρ g e).1 : ambientFixedAddSubgroup A L) : A.V) -
-            ((e.1 : ambientFixedAddSubgroup A L) : A.V) = _
+        change (((U.ρ g e).1) : A.V) -
+            ((e.1) : A.V) = _
         rw [hUaction]
       _ = relativeCosetAction A K L hLK aL g - aL.1 := by
         rw [hactionSub, hactionB]
@@ -180,19 +177,13 @@ private theorem classFieldAxiom_unramifiedUnits_hMinusOne
         rfl
       _ = uM.1 := congrArg Subtype.val ha
       _ = u.1.1 := rfl
-  have hzeroS : Limits.IsZero S.homology :=
+  have hzeroS  :=
     (S.exact_iff_isZero_homology).1 hExact
   exact Limits.IsZero.of_iso hzeroS
     (TateCohomology.isoFiniteCyclicNegOne U g hg)
 
 private theorem classFieldAxiom_unramifiedUnits_hZero
-    (v : ValuationData D A) (hcf : SatisfiesClassFieldAxiom A)
-    (E : FiniteAbstractFieldExtension G)
-    (hnormal : (extensionSubgroup E.base.field E.field.field E.below).Normal)
-    (hUnramified : E.IsUnramified D)
-    (g : E.base.field.toSubgroup ⧸
-      extensionSubgroup E.base.field E.field.field E.below)
-    (hg : ∀ x, x ∈ Subgroup.zpowers g) :
+      :
     letI := Fintype.ofFinite
       (E.base.field.toSubgroup ⧸
         extensionSubgroup E.base.field E.field.field E.below)
@@ -211,7 +202,7 @@ private theorem classFieldAxiom_unramifiedUnits_hZero
   let n := (E.degree : ℕ)
   have hn : 0 < n := E.degree.property
   let M := extensionFixedRepresentation A K L hLK hnormal
-  let instM : Module ℤ M.V := M.hV2
+  let instM  := M.hV2
   let T := Rep.FiniteCyclicGroup.normHomCompSub M g
   let instTCycles : Module ℤ (LinearMap.ker T.g.hom) :=
     (LinearMap.ker T.g.hom).module
@@ -232,21 +223,20 @@ private theorem classFieldAxiom_unramifiedUnits_hZero
   have hcycleValNorm :
       LinearMap.range T.moduleCatToCycles ≤ LinearMap.ker cycleVal := by
     rintro x ⟨y, rfl⟩
-    let yL : ambientFixedAddSubgroup A L :=
+    let yL  :=
       extensionFixedRepresentationEquiv A K L hLK hnormal y
-    let normK : ambientFixedAddSubgroup A K :=
+    let normK  :=
       relativeNorm A K L hLK yL
     have hnormM :
         extensionFixedRepresentationEquiv A K L hLK hnormal (M.norm.hom y) =
           fixedFieldInclusion A K L hLK normK := by
       apply Subtype.ext
-      exact extensionFixedRepresentation_norm_coe A K L hLK hnormal y
+      apply extensionFixedRepresentation_norm_coe
     have htower := v.normalizedValuation_tower E yL
     change (E.residueDegree D : ℕ) •
-        ((v.valuationAt E.field yL : v.valueGroup) : ZHat) =
+        ((v.valuationAt E.field yL) : ZHat) =
       ((v.valuationAt E.base
-        (relativeNorm A E.base.field E.field.field E.below yL) :
-          v.valueGroup) : ZHat) at htower
+        (relativeNorm A E.base.field E.field.field E.below yL)) : ZHat) at htower
     rw [E.residueDegree_eq_degree_of_isUnramified D hUnramified] at htower
     have hvalNorm :
         v.valuationAt E.field
@@ -262,7 +252,7 @@ private theorem classFieldAxiom_unramifiedUnits_hZero
           (extensionFixedRepresentationEquiv A K L hLK hnormal
             (M.norm.hom y))) = 0
     rw [hvalNorm]
-    exact v.valueModulo_nsmul n hn (v.valuationAt E.field yL)
+    apply v.valueModulo_nsmul
   let H := T.moduleCatLeftHomologyData.H
   let fieldVal : H →ₗ[ℤ] ZMod n :=
     (LinearMap.range T.moduleCatToCycles).liftQ cycleVal hcycleValNorm
@@ -270,7 +260,7 @@ private theorem classFieldAxiom_unramifiedUnits_hZero
     intro z
     obtain ⟨c, hc⟩ := v.valueModulo_surjective n hn z
     obtain ⟨aK, haK⟩ := v.normalizedValuation_surjective E.base c
-    let aL : ambientFixedAddSubgroup A L :=
+    let aL  :=
       fixedFieldInclusion A K L hLK aK
     let aM : M.V :=
       (extensionFixedRepresentationEquiv A K L hLK hnormal).symm aL
@@ -297,7 +287,7 @@ private theorem classFieldAxiom_unramifiedUnits_hZero
   let eHTate : H ≃ tateCohomology M 0 :=
     homologyEquiv.trans
       (TateCohomology.isoFiniteCyclicZero M g hg).symm.toLinearEquiv.toEquiv
-  let Kcf : FiniteAbstractField G := E.base
+  let Kcf  := E.base
   let Ecf : FiniteCyclicSubextension Kcf :=
     { field := E.field.field
       below := E.below
@@ -308,10 +298,8 @@ private theorem classFieldAxiom_unramifiedUnits_hZero
   let hEcfTateFinite :
       Finite (tateCohomology (Ecf.fixedRepresentation A) 0) :=
     (hcf Kcf Ecf).finiteTateHZero
-  let hMTateFinite : Finite (tateCohomology M 0) := by
-    simpa [M, K, L, hLK, Kcf, Ecf,
-      FiniteCyclicSubextension.fixedRepresentation] using hEcfTateFinite
-  let hHFinite : Finite H :=
+  let hMTateFinite : Finite (tateCohomology M 0) := hEcfTateFinite
+  let hHFinite  :=
     Finite.of_equiv (tateCohomology M 0) eHTate.symm
   have hcardT : Nat.card H = n := by
     calc
@@ -324,7 +312,7 @@ private theorem classFieldAxiom_unramifiedUnits_hZero
             FiniteCyclicSubextension.toFiniteAbstractExtension,
             FiniteAbstractFieldExtension.degree,
             FiniteAbstractFieldExtension.toFiniteAbstractExtension]
-  have hfieldValInjective : Function.Injective fieldVal :=
+  have hfieldValInjective  :=
     ((Nat.bijective_iff_surjective_and_card fieldVal).2
       ⟨hfieldValSurjective, hcardT.trans (Nat.card_zmod n).symm⟩).1
   let U := v.unitRepresentation E hnormal
@@ -334,23 +322,21 @@ private theorem classFieldAxiom_unramifiedUnits_hZero
     intro u hu
     have huFixed : U.ρ g u = u := by
       apply sub_eq_zero.mp
-      simpa [S, Rep.sub_hom, Rep.applyAsHom_apply] using hu
+      exact hu
     let uM : M.V :=
       (extensionFixedRepresentationEquiv A K L hLK hnormal).symm u.1
     have huMFixed : M.ρ g uM = uM := by
       have hUaction :
-          (((U.ρ g u).1 : ambientFixedAddSubgroup A L) : A.V) =
+          (((U.ρ g u).1) : A.V) =
             relativeCosetAction A K L hLK u.1 g := by
-        simpa [U] using
-          v.unitRepresentation_action_coe E hnormal g u
+        apply v.unitRepresentation_action_coe
       have hMaction :
           (M.ρ g uM).1 = relativeCosetAction A K L hLK u.1 g := by
-        simpa [M, uM] using
-          extensionFixedRepresentation_action_coe A K L hLK hnormal g uM
+        apply extensionFixedRepresentation_action_coe
       apply Subtype.ext
       calc
         (M.ρ g uM).1 = relativeCosetAction A K L hLK u.1 g := hMaction
-        _ = (((U.ρ g u).1 : ambientFixedAddSubgroup A L) : A.V) :=
+        _ = (((U.ρ g u).1) : A.V) :=
           hUaction.symm
         _ = u.1.1 := by rw [huFixed]
         _ = uM.1 := rfl
@@ -367,14 +353,12 @@ private theorem classFieldAxiom_unramifiedUnits_hZero
       apply hfieldValInjective
       exact huClassVal.trans (map_zero fieldVal).symm
     have huCycleRange :
-        uCycle ∈ LinearMap.range T.moduleCatToCycles := by
-      exact (Submodule.Quotient.mk_eq_zero _).1 huClass
+        uCycle ∈ LinearMap.range T.moduleCatToCycles := (Submodule.Quotient.mk_eq_zero _).1 huClass
     obtain ⟨y, hy⟩ := huCycleRange
-    have hyNorm : M.norm.hom y = uM := by
-      exact congrArg Subtype.val hy
-    let yL : ambientFixedAddSubgroup A L :=
+    have hyNorm : M.norm.hom y = uM := congrArg Subtype.val hy
+    let yL  :=
       extensionFixedRepresentationEquiv A K L hLK hnormal y
-    let normK : ambientFixedAddSubgroup A K :=
+    let normK  :=
       relativeNorm A K L hLK yL
     have hnormInclusion :
         fixedFieldInclusion A K L hLK normK = u.1 := by
@@ -384,25 +368,24 @@ private theorem classFieldAxiom_unramifiedUnits_hZero
           (extensionFixedRepresentation_norm_coe A K L hLK hnormal y).symm
         _ = uM.1 := congrArg Subtype.val hyNorm
         _ = u.1.1 := rfl
-    have huVal : v.valuationAt E.field u.1 = 0 :=
+    have huVal  :=
       (v.mem_unitAddSubgroup_iff E.field u.1).1 u.2
     have htower := v.normalizedValuation_tower E yL
     change (E.residueDegree D : ℕ) •
-        ((v.valuationAt E.field yL : v.valueGroup) : ZHat) =
+        ((v.valuationAt E.field yL) : ZHat) =
       ((v.valuationAt E.base
-        (relativeNorm A E.base.field E.field.field E.below yL) :
-          v.valueGroup) : ZHat) at htower
+        (relativeNorm A E.base.field E.field.field E.below yL)) : ZHat) at htower
     rw [E.residueDegree_eq_degree_of_isUnramified D hUnramified] at htower
     have hyVal : v.valuationAt E.field yL = 0 := by
       apply Subtype.ext
       apply zHatMulNat_injective hn
       calc
-        n • ((v.valuationAt E.field yL : v.valueGroup) : ZHat) =
-            ((v.valuationAt E.base normK : v.valueGroup) : ZHat) := htower
+        n • ((v.valuationAt E.field yL) : ZHat) =
+            ((v.valuationAt E.base normK) : ZHat) := htower
         _ = ((v.valuationAt E.field
-              (fixedFieldInclusion A K L hLK normK) : v.valueGroup) : ZHat) := by
+              (fixedFieldInclusion A K L hLK normK)) : ZHat) := by
           rw [v.valuationAt_fixedFieldInclusion_of_unramified E hUnramified normK]
-        _ = ((v.valuationAt E.field u.1 : v.valueGroup) : ZHat) := by
+        _ = ((v.valuationAt E.field u.1) : ZHat) := by
           rw [hnormInclusion]
         _ = 0 := congrArg Subtype.val huVal
         _ = n • (0 : ZHat) := (nsmul_zero n).symm
@@ -412,16 +395,18 @@ private theorem classFieldAxiom_unramifiedUnits_hZero
     apply Subtype.ext
     apply Subtype.ext
     calc
-      ((((U.norm.hom yU).1 : ambientFixedAddSubgroup A L)) : A.V) =
+      ((((U.norm.hom yU).1)) : A.V) =
           normK.1 := v.unitRepresentation_norm_coe E hnormal yU
       _ = (M.norm.hom y).1 :=
         (extensionFixedRepresentation_norm_coe A K L hLK hnormal y).symm
       _ = uM.1 := congrArg Subtype.val hyNorm
       _ = u.1.1 := rfl
-  have hzeroS : Limits.IsZero S.homology :=
+  have hzeroS  :=
     (S.exact_iff_isZero_homology).1 hExact
   exact Limits.IsZero.of_iso hzeroS
     (TateCohomology.isoFiniteCyclicZero U g hg)
+end
+
 
 /-- **the unramified cohomology consequence.**  The class field axiom implies the unit-cohomology axiom: for every
 finite unramified Galois extension `L / K`, both
@@ -431,12 +416,10 @@ theorem classFieldAxiom_implies_unramifiedUnitCohomology
     SatisfiesUnramifiedUnitCohomology D v := by
   intro K E
   constructor
-  · simpa [FiniteUnramifiedCyclicExtension.unitRepresentation] using
-      v.classFieldAxiom_unramifiedUnits_hZero hcf
+  · exact v.classFieldAxiom_unramifiedUnits_hZero hcf
         E.toFiniteAbstractFieldExtension E.normal
         E.toFiniteAbstractFieldExtension_isUnramified E.generator E.generates
-  · simpa [FiniteUnramifiedCyclicExtension.unitRepresentation] using
-      v.classFieldAxiom_unramifiedUnits_hMinusOne hcf
+  · exact v.classFieldAxiom_unramifiedUnits_hMinusOne hcf
         E.toFiniteAbstractFieldExtension E.normal
         E.toFiniteAbstractFieldExtension_isUnramified E.generator E.generates
 
@@ -536,7 +519,7 @@ theorem finiteReciprocityNaturalityRestriction_sameBase_eq_restriction
 
 /-- Finiteness of `L | K` implies finiteness of the quotient `G(M/K)`.
 This is derived from the actual surjective restriction map. -/
-theorem abstractReciprocity_intermediateQuotient_finite
+def abstractReciprocity_intermediateQuotient_finite
     {G : Type*} [Group G] [TopologicalSpace G]
     (K M L : ClosedSubgroup G)
     (hLM : L.toSubgroup ≤ M.toSubgroup)
@@ -545,8 +528,7 @@ theorem abstractReciprocity_intermediateQuotient_finite
       (extensionSubgroup K L (hLM.trans hMK)).Normal]
     [hMnormal : (extensionSubgroup K M hMK).Normal]
     [hLfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L (hLM.trans hMK))] :
-    Finite (K.toSubgroup ⧸ extensionSubgroup K M hMK) :=
+      (K.toSubgroup ⧸ extensionSubgroup K L (hLM.trans hMK))]  :=
   Finite.of_surjective (abstractReciprocityRestriction K M L hLM hMK)
     (abstractReciprocityRestriction_surjective K M L hLM hMK)
 
@@ -567,26 +549,26 @@ def abstractReciprocityInclusion
     transferNormNaturality_intermediateExtension_normal K M L hLM hMK
   exact transferNormNaturalityIntermediateInclusion K M L hLM hMK
 
-/--
-On quotient representatives, the abstract reciprocity inclusion is induced by inclusion of the
-intermediate subgroup.
--/
-@[simp]
-theorem abstractReciprocityInclusion_mk
-    {G : Type*} [Group G] [TopologicalSpace G]
-    (K M L : ClosedSubgroup G)
-    (hLM : L.toSubgroup ≤ M.toSubgroup)
-    (hMK : M.toSubgroup ≤ K.toSubgroup)
-    [hLnormal :
-      (extensionSubgroup K L (hLM.trans hMK)).Normal]
-    (m : M.toSubgroup) :
-    letI : (extensionSubgroup M L hLM).Normal :=
-      transferNormNaturality_intermediateExtension_normal K M L hLM hMK
-    abstractReciprocityInclusion K M L hLM hMK (QuotientGroup.mk m) =
-      QuotientGroup.mk (Subgroup.inclusion hMK m) := by
-  let : (extensionSubgroup M L hLM).Normal :=
-    transferNormNaturality_intermediateExtension_normal K M L hLM hMK
-  rfl
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The upper row is exact at `G(L/K)`: the image of `G(L/M)` is exactly
 the kernel of restriction to `G(M/K)`. -/
@@ -602,7 +584,7 @@ theorem abstractReciprocity_galois_exact
       transferNormNaturality_intermediateExtension_normal K M L hLM hMK
     (abstractReciprocityRestriction K M L hLM hMK).ker =
       (abstractReciprocityInclusion K M L hLM hMK).range := by
-  let : (extensionSubgroup M L hLM).Normal :=
+  let  :=
     transferNormNaturality_intermediateExtension_normal K M L hLM hMK
   ext q
   refine QuotientGroup.induction_on q ?_
@@ -611,7 +593,7 @@ theorem abstractReciprocity_galois_exact
   · intro hk
     change abstractReciprocityRestriction K M L hLM hMK
       (QuotientGroup.mk k) = 1 at hk
-    have hkM : k ∈ extensionSubgroup K M hMK :=
+    have hkM  :=
       (QuotientGroup.eq_one_iff k).1 hk
     let m : M.toSubgroup := ⟨k.1, hkM⟩
     refine ⟨QuotientGroup.mk m, ?_⟩
@@ -644,7 +626,7 @@ theorem abstractReciprocity_lowerExtension_finite
       intro x y hxy
       rw [QuotientGroup.leftRel_apply] at hxy ⊢
       apply (mem_extensionSubgroup_iff K L (hLM.trans hMK) _).2
-      simpa using (mem_extensionSubgroup_iff M L hLM _).1 hxy)
+      exact (mem_extensionSubgroup_iff M L hLM _).1 hxy)
   apply Finite.of_injective inclusion
   intro x y
   refine QuotientGroup.induction_on x ?_
@@ -656,12 +638,11 @@ theorem abstractReciprocity_lowerExtension_finite
   have h' :
       (QuotientGroup.mk (Subgroup.inclusion hMK m) :
           K.toSubgroup ⧸ extensionSubgroup K L (hLM.trans hMK)) =
-        QuotientGroup.mk (Subgroup.inclusion hMK n) := by
-    simpa [inclusion] using h
+        QuotientGroup.mk (Subgroup.inclusion hMK n) := h
   have hmem := QuotientGroup.eq.mp h'
   have hG := (mem_extensionSubgroup_iff K L (hLM.trans hMK)
     ((Subgroup.inclusion hMK m)⁻¹ * Subgroup.inclusion hMK n)).1 hmem
-  simpa using hG
+  exact hG
 
 /-- Norm transitivity identifies the norm image from `L` with a subgroup
 of the norm image from `M`. -/
@@ -705,9 +686,9 @@ def abstractReciprocityNormMap
       abstractReciprocity_intermediateQuotient_finite K M L hLM hMK
     FiniteNormQuotient A M L hLM →+
       FiniteNormQuotient A K L (hLM.trans hMK) := by
-  letI : Finite (M.toSubgroup ⧸ extensionSubgroup M L hLM) :=
+  letI  :=
     abstractReciprocity_lowerExtension_finite K M L hLM hMK
-  letI : Finite (K.toSubgroup ⧸ extensionSubgroup K M hMK) :=
+  letI  :=
     abstractReciprocity_intermediateQuotient_finite K M L hLM hMK
   exact finiteReciprocityNaturalityNormMap A K M L L (hLM.trans hMK) hLM hMK le_rfl
 
@@ -734,12 +715,7 @@ theorem abstractReciprocityNormMap_finiteNormClass
         (finiteNormClass A M L hLM a) =
       finiteNormClass A K L (hLM.trans hMK)
         (relativeNorm A K M hMK a) := by
-  let : Finite (M.toSubgroup ⧸ extensionSubgroup M L hLM) :=
-    abstractReciprocity_lowerExtension_finite K M L hLM hMK
-  let : Finite (K.toSubgroup ⧸ extensionSubgroup K M hMK) :=
-    abstractReciprocity_intermediateQuotient_finite K M L hLM hMK
-  exact finiteReciprocityNaturalityNormMap_finiteNormClass A K M L L
-    (hLM.trans hMK) hLM hMK le_rfl a
+  rfl
 
 /-- The quotient projection
 `A_K/N_{L/K}A_L → A_K/N_{M/K}A_M` in the lower row. -/
@@ -758,9 +734,9 @@ def abstractReciprocityNormProjection
       abstractReciprocity_intermediateQuotient_finite K M L hLM hMK
     FiniteNormQuotient A K L (hLM.trans hMK) →+
       FiniteNormQuotient A K M hMK := by
-  letI : Finite (M.toSubgroup ⧸ extensionSubgroup M L hLM) :=
+  letI  :=
     abstractReciprocity_lowerExtension_finite K M L hLM hMK
-  letI : Finite (K.toSubgroup ⧸ extensionSubgroup K M hMK) :=
+  letI  :=
     abstractReciprocity_intermediateQuotient_finite K M L hLM hMK
   apply finiteNormQuotientLift A K L (hLM.trans hMK)
     (finiteNormClassHom A K M hMK)
@@ -790,11 +766,6 @@ theorem abstractReciprocityNormProjection_finiteNormClass
     abstractReciprocityNormProjection A K M L hLM hMK
         (finiteNormClass A K L (hLM.trans hMK) a) =
       finiteNormClass A K M hMK a := by
-  let : Finite (M.toSubgroup ⧸ extensionSubgroup M L hLM) :=
-    abstractReciprocity_lowerExtension_finite K M L hLM hMK
-  let : Finite (K.toSubgroup ⧸ extensionSubgroup K M hMK) :=
-    abstractReciprocity_intermediateQuotient_finite K M L hLM hMK
-  simp [abstractReciprocityNormProjection]
   rfl
 
 /-- When the two base fields in norm--conjugation naturality coincide, its norm map is
@@ -816,9 +787,9 @@ theorem finiteReciprocityNaturalityNormMap_sameBase_eq_normProjection
       (FiniteGaloisSubextension.refl K).finite
     finiteReciprocityNaturalityNormMap A K K M L hMK (hLM.trans hMK) le_rfl hLM =
       abstractReciprocityNormProjection A K M L hLM hMK := by
-  let : Finite (M.toSubgroup ⧸ extensionSubgroup M L hLM) :=
+  let  :=
     abstractReciprocity_lowerExtension_finite K M L hLM hMK
-  let : Finite (K.toSubgroup ⧸ extensionSubgroup K M hMK) :=
+  let  :=
     abstractReciprocity_intermediateQuotient_finite K M L hLM hMK
   let : Finite (K.toSubgroup ⧸ extensionSubgroup K K le_rfl) :=
     (FiniteGaloisSubextension.refl K).finite
@@ -829,8 +800,7 @@ theorem finiteReciprocityNaturalityNormMap_sameBase_eq_normProjection
   have hmap := finiteReciprocityNaturalityNormMap_finiteNormClass
     A K K M L hMK (hLM.trans hMK) le_rfl hLM a
   have hnorm := congrArg (finiteNormClass A K M hMK) (relativeNorm_self A K a)
-  exact hmap.trans (hnorm.trans
-    (abstractReciprocityNormProjection_finiteNormClass A K M L hLM hMK a).symm)
+  apply hmap.trans <;> assumption
 
 /-- The quotient projection in the lower row is surjective. -/
 theorem abstractReciprocityNormProjection_surjective
@@ -847,15 +817,14 @@ theorem abstractReciprocityNormProjection_surjective
     letI : Finite (K.toSubgroup ⧸ extensionSubgroup K M hMK) :=
       abstractReciprocity_intermediateQuotient_finite K M L hLM hMK
     Function.Surjective (abstractReciprocityNormProjection A K M L hLM hMK) := by
-  let : Finite (M.toSubgroup ⧸ extensionSubgroup M L hLM) :=
+  let  :=
     abstractReciprocity_lowerExtension_finite K M L hLM hMK
-  let : Finite (K.toSubgroup ⧸ extensionSubgroup K M hMK) :=
+  let  :=
     abstractReciprocity_intermediateQuotient_finite K M L hLM hMK
   intro q
   refine FiniteNormQuotient.induction_on A K M hMK q ?_
   intro a
-  exact ⟨finiteNormClass A K L (hLM.trans hMK) a, by
-    rw [abstractReciprocityNormProjection_finiteNormClass]⟩
+  exact ⟨finiteNormClass A K L (hLM.trans hMK) a, rfl⟩
 
 /-- The lower row is exact at `A_K/N_{L/K}A_L`. -/
 theorem abstractReciprocity_normQuotient_exact
@@ -873,9 +842,9 @@ theorem abstractReciprocity_normQuotient_exact
       abstractReciprocity_intermediateQuotient_finite K M L hLM hMK
     Function.Exact (abstractReciprocityNormMap A K M L hLM hMK)
       (abstractReciprocityNormProjection A K M L hLM hMK) := by
-  let : Finite (M.toSubgroup ⧸ extensionSubgroup M L hLM) :=
+  let  :=
     abstractReciprocity_lowerExtension_finite K M L hLM hMK
-  let : Finite (K.toSubgroup ⧸ extensionSubgroup K M hMK) :=
+  let  :=
     abstractReciprocity_intermediateQuotient_finite K M L hLM hMK
   rw [AddMonoidHom.exact_iff]
   ext q
@@ -886,11 +855,10 @@ theorem abstractReciprocity_normQuotient_exact
     change abstractReciprocityNormProjection A K M L hLM hMK
         (finiteNormClass A K L (hLM.trans hMK) a) = 0 at ha
     rw [abstractReciprocityNormProjection_finiteNormClass] at ha
-    have haM : a ∈ finiteNormSubgroup A K M hMK :=
+    have haM  :=
       (finiteNormClass_eq_zero_iff A K M hMK a).1 ha
     obtain ⟨b, rfl⟩ := haM
-    exact ⟨finiteNormClass A M L hLM b, by
-      rw [abstractReciprocityNormMap_finiteNormClass]⟩
+    exact ⟨finiteNormClass A M L hLM b, rfl⟩
   · rintro ⟨q, hq⟩
     rw [← hq]
     refine FiniteNormQuotient.induction_on A M L hLM q ?_
@@ -902,129 +870,129 @@ theorem abstractReciprocity_normQuotient_exact
       abstractReciprocityNormProjection_finiteNormClass]
     exact (finiteNormClass_eq_zero_iff A K M hMK _).2 ⟨b, rfl⟩
 
-/-- An additive homomorphism from a (possibly noncommutative) Galois group
-to an additive commutative group factors canonically through its
-abelianization.  This is the factor map used in the first reduction once the finite reciprocity equivalence supplies the reciprocity homomorphism. -/
-def abstractReciprocityAbelianizationFactor
-    {Q : Type*} {B : Type*} [Group Q] [AddCommGroup B]
-    (f : Additive Q →+ B) : Additive (Abelianization Q) →+ B := by
-  let fMul : Q →* Multiplicative B :=
-    { toFun := fun q => Multiplicative.ofAdd (f (Additive.ofMul q))
-      map_one' := f.map_zero
-      map_mul' := f.map_add }
-  let fAb : Abelianization Q →* Multiplicative B :=
-    Abelianization.lift fMul
-  exact
-    { toFun := fun q => Multiplicative.toAdd (fAb q.toMul)
-      map_zero' := fAb.map_one
-      map_add' := fAb.map_mul }
 
-/--
-Establishes the identity `abstractReciprocityAbelianizationFactor f (Additive.ofMul
-(Abelianization.of q)) = f (Additive.ofMul q)`.
--/
-@[simp]
-theorem abstractReciprocityAbelianizationFactor_of
-    {Q : Type*} {B : Type*} [Group Q] [AddCommGroup B]
-    (f : Additive Q →+ B) (q : Q) :
-    abstractReciprocityAbelianizationFactor f
-        (Additive.ofMul (Abelianization.of q)) =
-      f (Additive.ofMul q) := by
-  exact Abelianization.lift_apply_of
-    ({ toFun := fun q => Multiplicative.ofAdd (f (Additive.ofMul q))
-       map_one' := f.map_zero
-       map_mul' := f.map_add } : Q →* Multiplicative B) q
 
-/-- Restriction also induces the canonical map on abelianizations. -/
-def abstractReciprocityAbelianizedRestriction
-    {G : Type*} [Group G] [TopologicalSpace G]
-    (K M L : ClosedSubgroup G)
-    (hLM : L.toSubgroup ≤ M.toSubgroup)
-    (hMK : M.toSubgroup ≤ K.toSubgroup)
-    [hLnormal :
-      (extensionSubgroup K L (hLM.trans hMK)).Normal]
-    [hMnormal : (extensionSubgroup K M hMK).Normal] :
-    Abelianization
-        (K.toSubgroup ⧸ extensionSubgroup K L (hLM.trans hMK)) →*
-      Abelianization (K.toSubgroup ⧸ extensionSubgroup K M hMK) :=
-  Abelianization.map (abstractReciprocityRestriction K M L hLM hMK)
 
-/-- The identity `N_{M/K} ∘ i = [M:K]` used in the Sylow argument of the
-first reduction.  Here `i` is the actual inclusion of finite norm
-quotients constructed in transfer--norm naturality. -/
-theorem abstractReciprocity_normMap_comp_normQuotientInclusion
-    (A : Rep ℤ G) (K M L : ClosedSubgroup G)
-    (hLM : L.toSubgroup ≤ M.toSubgroup)
-    (hMK : M.toSubgroup ≤ K.toSubgroup)
-    [hLnormal :
-      (extensionSubgroup K L (hLM.trans hMK)).Normal]
-    [hMnormal : (extensionSubgroup K M hMK).Normal]
-    [hKLfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L (hLM.trans hMK))]
-    (q : FiniteNormQuotient A K L (hLM.trans hMK)) :
-    letI : (extensionSubgroup M L hLM).Normal :=
-      transferNormNaturality_intermediateExtension_normal K M L hLM hMK
-    letI : Finite (M.toSubgroup ⧸ extensionSubgroup M L hLM) :=
-      abstractReciprocity_lowerExtension_finite K M L hLM hMK
-    letI : Finite (K.toSubgroup ⧸ extensionSubgroup K M hMK) :=
-      abstractReciprocity_intermediateQuotient_finite K M L hLM hMK
-    abstractReciprocityNormMap A K M L hLM hMK
-        (transferNormNaturalityNormQuotientInclusion A K M L hLM hMK q) =
-      ((DegreeData.FiniteAbstractExtension.ofInclusion M K hMK).degree : ℕ) • q := by
-  let : (extensionSubgroup M L hLM).Normal :=
-    transferNormNaturality_intermediateExtension_normal K M L hLM hMK
-  let : Finite (M.toSubgroup ⧸ extensionSubgroup M L hLM) :=
-    abstractReciprocity_lowerExtension_finite K M L hLM hMK
-  let : Finite (K.toSubgroup ⧸ extensionSubgroup K M hMK) :=
-    abstractReciprocity_intermediateQuotient_finite K M L hLM hMK
-  refine FiniteNormQuotient.induction_on A K L (hLM.trans hMK) q ?_
-  intro a
-  rw [transferNormNaturality_normQuotientInclusion_finiteNormClass,
-    abstractReciprocityNormMap_finiteNormClass]
-  have hnorm :
-      relativeNorm A K M hMK
-          (fixedFieldInclusion A K M hMK a) =
-          ((DegreeData.FiniteAbstractExtension.ofInclusion M K hMK).degree :
-            ℕ) • a := by
-    let E := DegreeData.FiniteAbstractExtension.ofInclusion M K hMK
-    change relativeNorm A E.base E.field E.below
-        (fixedFieldInclusion A E.base E.field E.below a) =
-      (E.degree : ℕ) • a
-    exact relativeNorm_fixedFieldInclusion A E a
-  rw [hnorm, finiteNormClass_nsmul]
 
-/-- In the cyclic case, the class-field axiom upgrades surjectivity of the actual
-reciprocity-shaped homomorphism to bijectivity.  The converse is formal;
-the forward implication uses the equality of the two actual finite orders,
-not an assumed cardinality certificate. -/
-theorem abstractReciprocity_cyclic_surjective_iff_bijective
-    (A : Rep ℤ G) (hcf : SatisfiesClassFieldAxiom A)
-    (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [hKabsolute : Finite ((baseField G).toSubgroup ⧸
-      extensionSubgroup (baseField G) K (le_baseField K))]
-    [hnormal : (extensionSubgroup K L hLK).Normal]
-    [hfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
-    (g : K.toSubgroup ⧸ extensionSubgroup K L hLK)
-    (hg : ∀ q, q ∈ Subgroup.zpowers g)
-    (r : Additive (K.toSubgroup ⧸ extensionSubgroup K L hLK) →+
-      FiniteNormQuotient A K L hLK) :
-    Function.Surjective r ↔ Function.Bijective r := by
-  let E : DegreeData.FiniteAbstractExtension G :=
-    DegreeData.FiniteAbstractExtension.ofInclusion L K hLK
-  let hEbaseAbsolute : Finite ((baseField G).toSubgroup ⧸
-      extensionSubgroup (baseField G) E.base (le_baseField E.base)) := by
-    simpa [E, DegreeData.FiniteAbstractExtension.ofInclusion] using hKabsolute
-  let : Finite (FiniteNormQuotient A K L hLK) :=
-    finiteNormQuotient_finite_of_classFieldAxiom
-      A hcf E hnormal g hg
-  constructor
-  · intro hr
-    apply (Nat.bijective_iff_surjective_and_card r).2
-    exact ⟨hr, cyclicReciprocity_card_equality
-      A hcf E hnormal g hg⟩
-  · exact fun hr => hr.2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- In a cyclic tower, the first norm map in the lower exact row is
 injective.  This is the order calculation in the third reduction:
@@ -1060,32 +1028,27 @@ theorem abstractReciprocity_cyclicTower_normMap_injective
     letI : Finite (K.toSubgroup ⧸ extensionSubgroup K M hMK) :=
       abstractReciprocity_intermediateQuotient_finite K M L hLM hMK
     Function.Injective (abstractReciprocityNormMap A K M L hLM hMK) := by
-  let hMLnormal : (extensionSubgroup M L hLM).Normal :=
+  let hMLnormal  :=
     transferNormNaturality_intermediateExtension_normal K M L hLM hMK
-  let hMLfinite : Finite
-      (M.toSubgroup ⧸ extensionSubgroup M L hLM) :=
+  let hMLfinite  :=
     abstractReciprocity_lowerExtension_finite K M L hLM hMK
-  let hKMfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K M hMK) :=
+  let hKMfinite  :=
     abstractReciprocity_intermediateQuotient_finite K M L hLM hMK
   let hMabsolute : Finite ((baseField G).toSubgroup ⧸
       extensionSubgroup (baseField G) M (le_baseField M)) :=
     relativeTowerQuotientFinite (baseField G) K M hMK (le_baseField K)
-  let ELM : DegreeData.FiniteAbstractExtension G :=
+  let ELM  :=
     DegreeData.FiniteAbstractExtension.ofInclusion L M hLM
-  let EMK : DegreeData.FiniteAbstractExtension G :=
+  let EMK  :=
     DegreeData.FiniteAbstractExtension.ofInclusion M K hMK
-  let ELK : DegreeData.FiniteAbstractExtension G :=
+  let ELK  :=
     DegreeData.FiniteAbstractExtension.ofInclusion L K (hLM.trans hMK)
   let hELMbaseAbsolute : Finite ((baseField G).toSubgroup ⧸
-      extensionSubgroup (baseField G) ELM.base (le_baseField ELM.base)) := by
-    simpa [ELM, DegreeData.FiniteAbstractExtension.ofInclusion] using hMabsolute
+      extensionSubgroup (baseField G) ELM.base (le_baseField ELM.base)) := hMabsolute
   let hEMKbaseAbsolute : Finite ((baseField G).toSubgroup ⧸
-      extensionSubgroup (baseField G) EMK.base (le_baseField EMK.base)) := by
-    simpa [EMK, DegreeData.FiniteAbstractExtension.ofInclusion] using hKabsolute
+      extensionSubgroup (baseField G) EMK.base (le_baseField EMK.base)) := hKabsolute
   let hELKbaseAbsolute : Finite ((baseField G).toSubgroup ⧸
-      extensionSubgroup (baseField G) ELK.base (le_baseField ELK.base)) := by
-    simpa [ELK, DegreeData.FiniteAbstractExtension.ofInclusion] using hKabsolute
+      extensionSubgroup (baseField G) ELK.base (le_baseField ELK.base)) := hKabsolute
   let f := abstractReciprocityNormMap A K M L hLM hMK
   let p := abstractReciprocityNormProjection A K M L hLM hMK
   let : Finite (FiniteNormQuotient A M L hLM) :=
@@ -1114,7 +1077,7 @@ theorem abstractReciprocity_cyclicTower_normMap_injective
         rw [AddSubgroup.index_ker, hexact]
       _ = Nat.card f.range *
           Nat.card (FiniteNormQuotient A K M hMK) := by
-        have hpRange : p.range = ⊤ :=
+        have hpRange  :=
           (AddMonoidHom.range_eq_top).2 hpsurjective
         rw [hpRange]
         simp
@@ -1122,26 +1085,19 @@ theorem abstractReciprocity_cyclicTower_normMap_injective
       (ELM.degree : ℕ) * (EMK.degree : ℕ) = (ELK.degree : ℕ) := by
     rw [← ELM.relIndex_eq_degree, ← EMK.relIndex_eq_degree,
       ← ELK.relIndex_eq_degree]
-    exact Subgroup.relIndex_mul_relIndex L.toSubgroup M.toSubgroup
-      K.toSubgroup hLM hMK
+    apply Subgroup.relIndex_mul_relIndex <;> assumption
   have hKMpositive : 0 < (EMK.degree : ℕ) := EMK.degree.property
   have hcardML :
       Nat.card (FiniteNormQuotient A M L hLM) =
-        (ELM.degree : ℕ) := by
-    simpa [ELM, DegreeData.FiniteAbstractExtension.ofInclusion] using
-      finiteNormQuotient_card_of_classFieldAxiom
+        (ELM.degree : ℕ) := finiteNormQuotient_card_of_classFieldAxiom
         A hcf ELM hMLnormal gML hgML
   have hcardKL :
       Nat.card (FiniteNormQuotient A K L (hLM.trans hMK)) =
-        (ELK.degree : ℕ) := by
-    simpa [ELK, DegreeData.FiniteAbstractExtension.ofInclusion] using
-      finiteNormQuotient_card_of_classFieldAxiom
+        (ELK.degree : ℕ) := finiteNormQuotient_card_of_classFieldAxiom
         A hcf ELK hLnormal gKL hgKL
   have hcardKM :
       Nat.card (FiniteNormQuotient A K M hMK) =
-        (EMK.degree : ℕ) := by
-    simpa [EMK, DegreeData.FiniteAbstractExtension.ofInclusion] using
-      finiteNormQuotient_card_of_classFieldAxiom
+        (EMK.degree : ℕ) := finiteNormQuotient_card_of_classFieldAxiom
         A hcf EMK hMnormal gKM hgKM
   have hcardRange :
       Nat.card (FiniteNormQuotient A M L hLM) =
@@ -1159,7 +1115,7 @@ theorem abstractReciprocity_cyclicTower_normMap_injective
           Nat.card (FiniteNormQuotient A K M hMK) := hmiddle
       _ = Nat.card f.range * (EMK.degree : ℕ) := by
         rw [hcardKM]
-  have hRangeBijective : Function.Bijective f.rangeRestrict :=
+  have hRangeBijective  :=
     (Nat.bijective_iff_surjective_and_card f.rangeRestrict).2
       ⟨AddMonoidHom.rangeRestrict_surjective f, hcardRange⟩
   intro x y hxy
@@ -1171,14 +1127,14 @@ if `n z = k` in `ℤ̂`, with `0 ≤ k < n`, then `k = 0`. -/
 theorem abstractReciprocity_zHat_nsmul_eq_natCast_forces_zero
     (n k : ℕ) (hn : 0 < n) (hk : k < n) (z : ZHat)
     (h : n • z =
-      Int.castRingHom ZHat (k : ℤ)) :
+      Int.castRingHom ZHat k) :
     k = 0 := by
   have hkmod : (k : ZMod n) = 0 := by
     have hkmodInt : ((k : ℤ) : ZMod n) = 0 := by
       calc
         ((k : ℤ) : ZMod n) = zHatReduction n hn
-          (Int.castRingHom ZHat (k : ℤ)) :=
-              (zHatReduction_int n hn (k : ℤ)).symm
+          (Int.castRingHom ZHat k) :=
+              (zHatReduction_int n hn k).symm
         _ =
           zHatReduction n hn (n • z) := congrArg (zHatReduction n hn) h.symm
         _ = n • zHatReduction n hn z := map_nsmul (zHatReduction n hn) n z
@@ -1212,23 +1168,19 @@ theorem abstractReciprocity_valuationAt_fixedFieldInclusion_of_totallyRamified
     EF.residueDegree_eq_one_of_isTotallyRamified D hTot
   change (E.residueDegree D : ℕ) •
       ((v.valuationAt E.field
-        (fixedFieldInclusion A E.base.field E.field.field E.below x) :
-          v.valueGroup) : ZHat) =
+        (fixedFieldInclusion A E.base.field E.field.field E.below x)) : ZHat) =
     ((v.valuationAt E.base
       (relativeNorm A E.base.field E.field.field E.below
-        (fixedFieldInclusion A E.base.field E.field.field E.below x)) :
-          v.valueGroup) : ZHat) at htower
+        (fixedFieldInclusion A E.base.field E.field.field E.below x))) : ZHat) at htower
   rw [hresidue, one_nsmul] at htower
   have hbelow : E.below = EF.below := Subsingleton.elim _ _
   rw [hbelow] at htower
   change
     ((v.valuationAt E.field
-      (fixedFieldInclusion A EF.base EF.field EF.below x) :
-        v.valueGroup) : ZHat) =
+      (fixedFieldInclusion A EF.base EF.field EF.below x)) : ZHat) =
       ((v.valuationAt E.base
         (relativeNorm A EF.base EF.field EF.below
-          (fixedFieldInclusion A EF.base EF.field EF.below x)) :
-            v.valueGroup) : ZHat) at htower
+          (fixedFieldInclusion A EF.base EF.field EF.below x))) : ZHat) at htower
   rw [relativeNorm_fixedFieldInclusion A EF x] at htower
   have hfixedFieldInclusion :
       fixedFieldInclusion A EF.base EF.field EF.below x =
@@ -1238,21 +1190,16 @@ theorem abstractReciprocity_valuationAt_fixedFieldInclusion_of_totallyRamified
   rw [hfixedFieldInclusion] at htower
   have htower' :
       ((v.valuationAt E.field
-        (fixedFieldInclusion A E.base.field E.field.field E.below x) :
-          v.valueGroup) : ZHat) =
-        ((v.valuationAt E.base ((E.degree : ℕ) • x) :
-          v.valueGroup) : ZHat) := by
-    simpa [EF, FiniteAbstractFieldExtension.degree] using htower
+        (fixedFieldInclusion A E.base.field E.field.field E.below x)) : ZHat) =
+        ((v.valuationAt E.base ((E.degree : ℕ) • x)) : ZHat) := htower
   calc
     ((v.valuationAt E.field
-      (fixedFieldInclusion A E.base.field E.field.field E.below x) :
-        v.valueGroup) : ZHat) =
-        ((v.valuationAt E.base ((E.degree : ℕ) • x) :
-          v.valueGroup) : ZHat) := htower'
+      (fixedFieldInclusion A E.base.field E.field.field E.below x)) : ZHat) =
+        ((v.valuationAt E.base ((E.degree : ℕ) • x)) : ZHat) := htower'
     _ = (E.degree : ℕ) •
-        ((v.valuationAt E.base x : v.valueGroup) : ZHat) :=
+        ((v.valuationAt E.base x) : ZHat) :=
       congrArg Subtype.val
-        (map_nsmul (v.valuationAt E.base) (E.degree : ℕ) x)
+        (map_nsmul (v.valuationAt E.base) E.degree x)
 
 /-- The exact `k = 0` valuation endpoint of the totally ramified argument.  Here `K = M⁰`, `L = M`, and `x` is the element constructed in
 the fixed subgroup. -/
@@ -1266,12 +1213,12 @@ theorem abstractReciprocity_totallyRamified_valuation_forces_exponent_zero
       ((v.valuationAt E.field
         (fixedFieldInclusion A E.base.field E.field.field E.below x) :
         v.valueGroup) : ZHat) =
-        Int.castRingHom ZHat (k : ℤ)) :
+        Int.castRingHom ZHat k) :
     k = 0 := by
   have hn : 0 < (E.degree : ℕ) := E.degree.property
   apply abstractReciprocity_zHat_nsmul_eq_natCast_forces_zero
-    (E.degree : ℕ) k hn hk
-    (((v.valuationAt E.base x : v.valueGroup) : ZHat))
+    E.degree k hn hk
+    (((v.valuationAt E.base x) : ZHat))
   rw [← abstractReciprocity_valuationAt_fixedFieldInclusion_of_totallyRamified
     v E hTot]
   exact hx

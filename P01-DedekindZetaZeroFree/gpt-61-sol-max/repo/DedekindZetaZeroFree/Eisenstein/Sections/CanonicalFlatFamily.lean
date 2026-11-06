@@ -44,25 +44,25 @@ theorem sourcePolarization_zero :
       ((P₀ F ζ hζ).character h : ℂ)
   simp [KPGlobalTorusBorelTwistCompatibility.normPower]
 
-private theorem scalarCastValue
-    (Q Q' : KPGlobalTorusFunctionData.Polarization F ζ hζ) (h : Q = Q')
-    (f : KPGlobalTorusFunctionData.BorelFunctions F ζ hζ Q)
-    (g : KPGlobalTorusFunctionData.G F ζ hζ) :
-    (((congrArg (fun T => ↥(KPGlobalTorusFunctionData.BorelFunctions F ζ hζ T))
-      h).mp f).val g) = f.val g := by
-  cases h
-  rfl
 
-def baseSection (f : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (D F ζ hζ)) :
-    KPGlobalTorusFunctionData.BorelFunctions F ζ hζ (P₀ F ζ hζ) :=
-  (congrArg (fun Q => ↥(KPGlobalTorusFunctionData.BorelFunctions F ζ hζ Q))
-    (sourcePolarization_zero F ζ hζ)).mp f.val
 
-@[simp] theorem baseSection_formula
-    (f : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (D F ζ hζ))
-    (g : KPGlobalTorusFunctionData.G F ζ hζ) :
-    (baseSection F ζ hζ f).val g = f.val.val g := by
-  exact scalarCastValue F ζ hζ _ _ (sourcePolarization_zero F ζ hζ) f.val g
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 def flatR (s : ℂ) :
     KPMsRationalCompactCrossPairing.Vplus F ζ hζ (D F ζ hζ) →ₗ[ℂ]
@@ -126,10 +126,10 @@ theorem flatR_zero
   funext g
   simp [flatR_formula]
 
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+
 variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
 variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+
 
 end DedekindZetaZeroFree.KPContFlatSourceRecipe
 

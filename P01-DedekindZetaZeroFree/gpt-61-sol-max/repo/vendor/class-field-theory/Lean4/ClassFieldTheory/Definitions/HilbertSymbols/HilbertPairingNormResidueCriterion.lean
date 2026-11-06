@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.Definitions.HilbertSymbols.HilbertPairingSymbol
 public import ClassFieldTheory.Definitions.HilbertSymbols.IsKummerNorm
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -28,7 +31,7 @@ universe u
 Kummer algebra of `a`. -/
 def SatisfiesNormResidueCriterion
     {K : Type u} [Field K] {n : ℕ+}
-    (B : HilbertPairing K n) : Prop :=
+    (B : HilbertPairing K n)  :=
   ∀ a b : Kˣ, B.symbol a b = 1 ↔ IsKummerNorm K n a b
 
 end ClassFieldTheory.HilbertPairing

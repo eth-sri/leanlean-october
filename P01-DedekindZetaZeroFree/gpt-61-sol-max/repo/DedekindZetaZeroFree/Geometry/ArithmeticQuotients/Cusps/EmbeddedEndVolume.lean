@@ -10,9 +10,12 @@ open MeasureTheory
 
 namespace DedekindZetaZeroFree.KPFiniteAdelicCuspEnds
 
-theorem fd_ae_unique {G X : Type*} [Group G] [Countable G]
+section
+variable {G X : Type*} [Group G] [Countable G]
     [MeasurableSpace X] [MulAction G X] [MeasurableConstSMul G X]
     (μ : Measure X) [SMulInvariantMeasure G X μ]
+include G X μ
+theorem fd_ae_unique  
     (s : Set X) (hs : IsFundamentalDomain G s μ) :
     ∀ᵐ x ∂μ, ∃! g : G, g • x ∈ s := by
   have hd : ∀ᵐ x ∂μ, ∀ a b : G, a ≠ b → ¬ (a • x ∈ s ∧ b • x ∈ s) := by
@@ -37,9 +40,7 @@ theorem fd_ae_unique {G X : Type*} [Group G] [Countable G]
   by_contra hba
   exact hd b a hba ⟨hb, ha⟩
 
-theorem fd_ae_free {G X : Type*} [Group G] [Countable G]
-    [MeasurableSpace X] [MulAction G X] [MeasurableConstSMul G X]
-    (μ : Measure X) [SMulInvariantMeasure G X μ]
+theorem fd_ae_free  
     (s : Set X) (hs : IsFundamentalDomain G s μ) :
     ∀ᵐ x ∂μ, ∀ g : G, g • x = x → g = 1 := by
   filter_upwards [fd_ae_unique μ s hs] with x hx
@@ -48,9 +49,7 @@ theorem fd_ae_free {G X : Type*} [Group G] [Countable G]
   have h := hu (a * g) (by simpa only [mul_smul, hg] using ha)
   exact mul_left_cancel (h.trans (mul_one a).symm)
 
-theorem glue_partial_fd {G X : Type*} [Group G] [Countable G]
-    [MeasurableSpace X] [MulAction G X] [MeasurableConstSMul G X]
-    (μ : Measure X) [SMulInvariantMeasure G X μ]
+theorem glue_partial_fd  
     (A B E : Set X) (hA : MeasurableSet A) (hB : MeasurableSet B)
     (hE : MeasurableSet E) (hBE : B ⊆ E)
     (hinv : ∀ g : G, (fun x => g • x) ⁻¹' E = E)
@@ -92,9 +91,7 @@ theorem glue_partial_fd {G X : Type*} [Group G] [Countable G]
     · exact False.elim (hy.2 ((hmem g y).mp (hBE hx)))
     · exact Or.inr ⟨Set.smul_mem_smul_set hy.1, hx.1⟩
 
-theorem partial_fd_quotient_measure {G X : Type*} [Group G] [Countable G]
-    [MeasurableSpace X] [MulAction G X] [MeasurableConstSMul G X]
-    (μ : Measure X) [SMulInvariantMeasure G X μ]
+theorem partial_fd_quotient_measure  
     (A B E : Set X) (hA : MeasurableSet A) (hB : MeasurableSet B)
     (hE : MeasurableSet E) (hBE : B ⊆ E)
     (hinv : ∀ g : G, (fun x => g • x) ⁻¹' E = E)
@@ -137,9 +134,7 @@ theorem partial_fd_quotient_measure {G X : Type*} [Group G] [Countable G]
     · exact ⟨hx, hb⟩
     · exact False.elim (ha.2 he)
 
-theorem partial_fd_of_local_unique {G X : Type*} [Group G] [Countable G]
-    [MeasurableSpace X] [MulAction G X] [MeasurableConstSMul G X]
-    (μ : Measure X) [SMulInvariantMeasure G X μ]
+theorem partial_fd_of_local_unique  
     (B U : Set X) (hB : MeasurableSet B) (hU : MeasurableSet U)
     (hunique : ∀ᵐ x ∂μ.restrict U, ∃! g : G, g • x ∈ B) :
     IsFundamentalDomain G B (μ.restrict (⋃ g : G, g • U)) := by
@@ -190,6 +185,8 @@ theorem partial_fd_of_local_unique {G X : Type*} [Group G] [Countable G]
     have hg' := hu g⁻¹ hxg
     exact hg (by simpa only [inv_eq_one] using hg'.trans h1.symm)
   simpa using ae_iff.mp hz
+end
+
 
 theorem chart_actual_cross_action
     (F : Type) [Field F] [NumberField F]
@@ -218,8 +215,8 @@ theorem arch_smul_measurePreserving
   rw [he]
   exact KPArch.hyperbolicVolume_invariant _ _
 
-theorem cusp_end_coordinate_volume
-    (F : Type) [Field F] [NumberField F]
+section
+variable (F : Type) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (Γ S : Subgroup (KPCuspArithmetic.PGL2 F))
     (σ : KPCuspArithmetic.PGL2 F) (T : ℝ)
@@ -228,7 +225,10 @@ theorem cusp_end_coordinate_volume
     (f : KPCuspCharts.HighQuotient F S T → KPCuspSiegel.OrbitQuotient F Γ)
     (hf : ∀ (p : {p : KPCuspCharts.Coordinates F // T < p.2}),
       f (Quotient.mk _ p) =
-        KPCuspSiegel.projection F Γ (σ • KPCuspCharts.toArch F p.val)) :
+        KPCuspSiegel.projection F Γ (σ • KPCuspCharts.toArch F p.val))
+include F hF Γ S σ T D G f hf
+theorem cusp_end_coordinate_volume
+      :
     Measure.map f
       (Measure.map (G.highPresentation T)
         (G.sectionMeasure.prod
@@ -262,16 +262,7 @@ theorem cusp_end_coordinate_volume
     (measurableSet_lt measurable_const measurable_snd) _
 
 theorem cusp_end_arch_volume
-    (F : Type) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (Γ S : Subgroup (KPCuspArithmetic.PGL2 F))
-    (σ : KPCuspArithmetic.PGL2 F) (T : ℝ)
-    (D : KPCuspCharts.ParabolicData F S)
-    (G : KPCuspCharts.ChartOutput F hF S D)
-    (f : KPCuspCharts.HighQuotient F S T → KPCuspSiegel.OrbitQuotient F Γ)
-    (hf : ∀ (p : {p : KPCuspCharts.Coordinates F // T < p.2}),
-      f (Quotient.mk _ p) =
-        KPCuspSiegel.projection F Γ (σ • KPCuspCharts.toArch F p.val)) :
+      :
     Measure.map f
       (Measure.map (G.highPresentation T)
         (G.sectionMeasure.prod
@@ -316,6 +307,8 @@ theorem cusp_end_arch_volume
     simp only [Set.mem_inter_iff, Set.mem_setOf_eq, and_comm]
   rw [hi, ← he, e.measurableEmbedding.restrict_map,
     Set.preimage_image_eq _ e.injective]
+end
+
 
 section PartialDomain
 open scoped Pointwise

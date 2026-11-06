@@ -22,7 +22,7 @@ local notation "A" => H.atlas V
 local notation "D" => H.disintegration V
 local notation "CS" => KPMsFixedHaarDisintegration.CrossSection A
 local notation "X" => Covered F ζ hζ C R P H U
-local instance exactDisintegrationRoots : Fintype (rootsOfUnity 3 F) := Fintype.ofFinite _
+
 
  theorem source_pairing_cusp_disintegration_exact
     {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]

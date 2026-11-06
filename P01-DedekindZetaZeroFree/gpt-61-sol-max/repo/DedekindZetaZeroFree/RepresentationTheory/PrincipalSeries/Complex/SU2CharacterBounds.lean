@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.Complex.SU2HaarCharacterAverages
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.KPCplxHarmonicExtraction.ChartDerivativeBounds
 
@@ -35,7 +38,7 @@ theorem su2_character_continuous_norm_bound (ℓ : ℕ) :
     funext fun k => su2HarmonicCharacter_eq_symPower_character ℓ k
   refine ⟨?_, ?_⟩
   · rw [hfun]
-    exact TauCeti.SU2.continuous_character_symPower (2 * ℓ)
+    apply TauCeti.SU2.continuous_character_symPower
   · intro k
     rw [su2HarmonicCharacter_eq_symPower_character ℓ k]
 

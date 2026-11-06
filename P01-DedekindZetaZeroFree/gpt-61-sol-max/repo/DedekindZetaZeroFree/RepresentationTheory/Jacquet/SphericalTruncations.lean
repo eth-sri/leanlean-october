@@ -17,7 +17,7 @@ noncomputable section
 set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+variable (ζ : F) 
 variable (v : HeightOneSpectrum (𝓞 F))
 
 def uniformizerUnit (π : (valuation (LocalField F v)).integer) (hπ : Irreducible π) :

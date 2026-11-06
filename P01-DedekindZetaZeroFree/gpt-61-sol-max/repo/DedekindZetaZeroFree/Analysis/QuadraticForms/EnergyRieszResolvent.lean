@@ -1,22 +1,26 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.InnerProductSpace.Positive
 
 @[expose] public section
 
+
 noncomputable section
 namespace DedekindZetaZeroFree
 
-def energyRieszResolvent
-    {W H : Type*} [NormedAddCommGroup W] [InnerProductSpace ℂ W] [CompleteSpace W]
+section
+variable {W H : Type*} [NormedAddCommGroup W] [InnerProductSpace ℂ W] [CompleteSpace W]
     [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (j : W →L[ℂ] H) : H →L[ℂ] H :=
+    (j : W →L[ℂ] H)
+include W H j
+def energyRieszResolvent
+      : H →L[ℂ] H :=
   j.comp j.adjoint
 
 theorem energyRieszResolvent_properties
-    {W H : Type*} [NormedAddCommGroup W] [InnerProductSpace ℂ W] [CompleteSpace W]
-    [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (j : W →L[ℂ] H) (hinj : Function.Injective j) (hdense : DenseRange j)
+      (hinj : Function.Injective j) (hdense : DenseRange j)
     (hcontract : ‖j‖ ≤ 1) :
     IsSelfAdjoint (energyRieszResolvent j) ∧
       (energyRieszResolvent j).IsPositive ∧
@@ -27,14 +31,13 @@ theorem energyRieszResolvent_properties
     rw [ContinuousLinearMap.isSelfAdjoint_iff']
     simp [energyRieszResolvent]
 
-  have hBpos : (energyRieszResolvent j).IsPositive := by
-    simpa [energyRieszResolvent] using ContinuousLinearMap.isPositive_self_comp_adjoint j
+  have hBpos : (energyRieszResolvent j).IsPositive := ContinuousLinearMap.isPositive_self_comp_adjoint j
 
   have hker_adj : j.adjoint.ker = ⊥ := by
     have hd : Dense (j.range : Set H) := hdense
-    have hcl : j.range.topologicalClosure = ⊤ :=
+    have hcl  :=
       Submodule.dense_iff_topologicalClosure_eq_top.mp hd
-    have horth : j.rangeᗮ = ⊥ := Submodule.topologicalClosure_eq_top_iff.mp hcl
+    have horth  := Submodule.topologicalClosure_eq_top_iff.mp hcl
     rw [← ContinuousLinearMap.orthogonal_range j]
     exact horth
   have hBker : (energyRieszResolvent j).ker = ⊥ := by
@@ -48,7 +51,7 @@ theorem energyRieszResolvent_properties
       exact hBker
     have hcl : (energyRieszResolvent j).range.topologicalClosure = ⊤ :=
       Submodule.topologicalClosure_eq_top_iff.mpr horth
-    have hd : Dense (((energyRieszResolvent j).range : Submodule ℂ H) : Set H) :=
+    have hd  :=
       Submodule.dense_iff_topologicalClosure_eq_top.mpr hcl
     exact hd
 
@@ -60,9 +63,7 @@ theorem energyRieszResolvent_properties
   exact ⟨hBsa, hBpos, hBinj, hBdense, hnorm⟩
 
 theorem energyRieszResolvent_variational
-    {W H : Type*} [NormedAddCommGroup W] [InnerProductSpace ℂ W] [CompleteSpace W]
-    [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (j : W →L[ℂ] H) (f : H) :
+      (f : H) :
     (∀ z : W, inner ℂ (j.adjoint f) z = inner ℂ f (j z)) ∧
       (∀ w : W, (∀ z : W, inner ℂ w z = inner ℂ f (j z)) → w = j.adjoint f) ∧
       energyRieszResolvent j f = j (j.adjoint f) := by
@@ -72,9 +73,7 @@ theorem energyRieszResolvent_variational
   rw [hw z, ← j.adjoint_inner_left z f]
 
 theorem energyRieszResolvent_estimates
-    {W H : Type*} [NormedAddCommGroup W] [InnerProductSpace ℂ W] [CompleteSpace W]
-    [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (j : W →L[ℂ] H) (hcontract : ‖j‖ ≤ 1) (f : H) :
+      (hcontract : ‖j‖ ≤ 1) (f : H) :
     ‖energyRieszResolvent j f‖ ^ 2 ≤ (inner ℂ f (energyRieszResolvent j f)).re ∧
       (inner ℂ f (energyRieszResolvent j f)).re = ‖j.adjoint f‖ ^ 2 ∧
       ‖j.adjoint f‖ ^ 2 ≤ ‖f‖ ^ 2 := by
@@ -95,6 +94,8 @@ theorem energyRieszResolvent_estimates
       _ = ‖f‖ := one_mul _
   exact ⟨by rw [h1]; exact pow_le_pow_left₀ (norm_nonneg _) h2 2, h1,
     pow_le_pow_left₀ (norm_nonneg _) h3 2⟩
+end
+
 
 end DedekindZetaZeroFree
 

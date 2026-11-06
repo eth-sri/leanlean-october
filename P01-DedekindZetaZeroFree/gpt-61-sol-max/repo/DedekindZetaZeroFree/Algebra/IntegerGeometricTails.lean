@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.SpecificLimits.Normed
 public import Mathlib.Analysis.Complex.Basic
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.KPRankOneMellinShellReassembly
 
@@ -17,14 +20,12 @@ theorem finite_geometric_tail (c : ℤ → ℂ) (C r : ℂ)
     HasSum (fun k : ℕ => c (nmin + (k : ℤ)) * r ^ (nmin + (k : ℤ)))
       ((∑ j ∈ Finset.Ico nmin n₀, c j * r ^ j) +
         C * r ^ n₀ / (1 - r)) := by
-  let d : ℕ := (n₀ - nmin).toNat
+  let d  := (n₀ - nmin).toNat
   have hd : nmin + (d : ℤ) = n₀ := by
     dsimp [d]
     omega
   have hgeom : HasSum (fun k : ℕ => C * r ^ n₀ * r ^ k)
-      (C * r ^ n₀ / (1 - r)) := by
-    simpa only [div_eq_mul_inv] using
-      (hasSum_geometric_of_norm_lt_one hrnorm).mul_left (C * r ^ n₀)
+      (C * r ^ n₀ / (1 - r)) := (hasSum_geometric_of_norm_lt_one hrnorm).mul_left (C * r ^ n₀)
   have hshift : HasSum
       (fun k : ℕ => c (nmin + ((k + d : ℕ) : ℤ)) *
         r ^ (nmin + ((k + d : ℕ) : ℤ)))

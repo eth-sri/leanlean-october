@@ -32,10 +32,8 @@ open LocalFieldTheory RamificationTheory CyclicCohomology KummerTheory
 open ClassFormation
 open scoped ValuativeRel
 
-/-- The ambient fixed-field norm-residue value of the chosen prime
-witness, transported to the original embedded Galois group. -/
-noncomputable def ambientEmbeddedPrimeTransportValue
-    (K F E : Type)
+section
+variable (K F E : Type)
     [Field K] [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K]
     [Field F] [ValuativeRel F] [TopologicalSpace F]
@@ -48,7 +46,12 @@ noncomputable def ambientEmbeddedPrimeTransportValue
     [FiniteDimensional F E] [IsAbelianGalois F E]
     (j : E →ₐ[K] SeparableClosure K)
     (e : ambientEmbeddedSeparableClosureEquiv K F E j)
-    (z : Abelianization Gal(E / F)) :
+    (z : Abelianization Gal(E / F))
+include K F E j e z
+/-- The ambient fixed-field norm-residue value of the chosen prime
+witness, transported to the original embedded Galois group. -/
+noncomputable def ambientEmbeddedPrimeTransportValue
+      :
     Abelianization Gal(E / F) := by
   let i :=
     j.comp (IsScalarTower.toAlgHom K F E)
@@ -113,20 +116,7 @@ noncomputable def ambientEmbeddedPrimeTransportValue
 /-- The fixed-field norm-residue symbol of the chosen prime witness is
 the abelianized restriction of its ambient Frobenius lift. -/
 noncomputable def ambientEmbeddedPrimeSymbolProperty
-    (K F E : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field F] [ValuativeRel F] [TopologicalSpace F]
-    [IsNonarchimedeanLocalField F]
-    [Field E] [Algebra K F] [Algebra F E] [Algebra K E]
-    [IsScalarTower K F E]
-    [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [Valuation.HasExtension
-      (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
-    [FiniteDimensional F E] [IsAbelianGalois F E]
-    (j : E →ₐ[K] SeparableClosure K)
-    (e : ambientEmbeddedSeparableClosureEquiv K F E j)
-    (z : Abelianization Gal(E / F)) : Prop := by
+      : Prop := by
   let i :=
     j.comp (IsScalarTower.toAlgHom K F E)
   letI : Algebra F (SeparableClosure K) :=
@@ -236,20 +226,7 @@ noncomputable def ambientEmbeddedPrimeSymbolProperty
 prime value with its ambient Frobenius target. -/
 theorem
     ambientEmbeddedPrimeTransportValue_eq_target_of_symbol
-    (K F E : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field F] [ValuativeRel F] [TopologicalSpace F]
-    [IsNonarchimedeanLocalField F]
-    [Field E] [Algebra K F] [Algebra F E] [Algebra K E]
-    [IsScalarTower K F E]
-    [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [Valuation.HasExtension
-      (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
-    [FiniteDimensional F E] [IsAbelianGalois F E]
-    (j : E →ₐ[K] SeparableClosure K)
-    (e : ambientEmbeddedSeparableClosureEquiv K F E j)
-    (z : Abelianization Gal(E / F)) :
+      :
     let i :=
       j.comp (IsScalarTower.toAlgHom K F E)
     letI : Algebra F (SeparableClosure F) :=
@@ -386,6 +363,8 @@ theorem
   exact
     abelianizationCongr_symm_eq_primeTarget
       _ _ _ _ hsymbol
+end
+
 
 end LocalClassFieldTheory
 

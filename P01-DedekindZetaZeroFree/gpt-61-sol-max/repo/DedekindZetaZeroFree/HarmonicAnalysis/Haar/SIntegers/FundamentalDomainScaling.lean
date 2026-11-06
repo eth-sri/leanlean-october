@@ -36,8 +36,11 @@ theorem fieldModule_eq (a : F) :
 
 end DilationArch
 
-def fieldDilation (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (a : Fˣ) :
+section
+variable (F : Type) [Field F] [NumberField F]
+    (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (a : Fˣ)
+include F S a
+def fieldDilation   :
     Space F S ≃ₜ+ Space F S where
   toFun x := (PoissonArch.fieldMul F (a : F) x.1,
     fun v => FinitePlace.embedding v.val (a : F) * x.2 v)
@@ -79,13 +82,14 @@ def fieldDilation (F : Type) [Field F] [NumberField F]
       intro v
       exact continuous_const.mul ((continuous_apply v).comp continuous_snd)
 
-theorem fieldDilation_diagonal (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (a : Fˣ) (x : F) :
+theorem fieldDilation_diagonal   (x : F) :
     fieldDilation F S a (diagonalHom F S x) = diagonalHom F S ((a : F) * x) := by
   apply Prod.ext
   · simp [fieldDilation, diagonalHom, PoissonArch.fieldMul]
   · funext v
     simp [fieldDilation, diagonalHom, PoissonFinite.diagonal]
+end
+
 
 end DedekindZetaZeroFree.PoissonS.Covolume
 
@@ -142,10 +146,13 @@ local instance completionMeasurable (v : HeightOneSpectrum (RingOfIntegers F)) :
 local instance completionBorel (v : HeightOneSpectrum (RingOfIntegers F)) :
     BorelSpace (v.adicCompletion F) := ⟨rfl⟩
 
-abbrev Space (S : Finset (HeightOneSpectrum (RingOfIntegers F))) :=
+section
+variable (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
+include S
+abbrev Space   :=
   PoissonArch.Space F × PoissonFinite.Space F S
 
-def diagonalHom (S : Finset (HeightOneSpectrum (RingOfIntegers F))) : F →+ Space F S where
+def diagonalHom   : F →+ Space F S where
   toFun m := ((NumberField.mixedEmbedding.euclidean.toMixed F).symm
     (NumberField.mixedEmbedding F m), PoissonFinite.diagonal F S m)
   map_zero' := by
@@ -158,13 +165,15 @@ def diagonalHom (S : Finset (HeightOneSpectrum (RingOfIntegers F))) : F →+ Spa
     · simp
     · simp [PoissonFinite.diagonal]
 
-def lattice (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (a : F) :
+def lattice   (a : F) :
     AddSubgroup (Space F S) :=
   AddSubgroup.map ((diagonalHom F S).comp
     { toFun := fun m : F => a * m
       map_zero' := mul_zero a
       map_add' := fun m n => mul_add a m n })
     ((S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F).toSubring.toAddSubgroup
+end
+
 
 def differentExponent (v : HeightOneSpectrum (RingOfIntegers F)) : ℤ :=
   FractionalIdeal.count F v (FractionalIdeal.coeIdeal (differentIdeal ℤ (RingOfIntegers F)))
@@ -178,17 +187,18 @@ def ContainsDifferent (S : Finset (HeightOneSpectrum (RingOfIntegers F))) : Prop
 def productModule (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (a : F) : ℝ :=
   (∏ v : InfinitePlace F, v a ^ v.mult) * ∏ v ∈ S, FinitePlace.mk v a
 
-def productMeasure (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
-    (μ : (v : S) → Measure (v.val.adicCompletion F)) : Measure (Space F S) :=
+section
+variable (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
+    (μ : (v : S) → Measure (v.val.adicCompletion F))
+include S μ
+def productMeasure   : Measure (Space F S) :=
   (PoissonArch.traceMeasure F).prod (Measure.pi μ)
 
-def LocalNormalization (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
-    (μ : (v : S) → Measure (v.val.adicCompletion F)) : Prop :=
+def LocalNormalization   : Prop :=
   ∀ v, μ v {x | ‖x‖ ≤ 1} = ENNReal.ofReal (integerVolume F v.val)
 
 theorem localMeasure_sigmaFinite
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
-    (μ : (v : S) → Measure (v.val.adicCompletion F))
+     
     [hμ : ∀ v, (μ v).IsAddHaarMeasure] (hnorm : LocalNormalization F S μ)
     (v : S) : SigmaFinite (μ v) := by
   letI : Countable F := Finsupp.Countable.of_moduleFinite (R := ℚ)
@@ -209,9 +219,14 @@ theorem localMeasure_sigmaFinite
     apply Set.mem_sUnion.mpr
     refine ⟨t a, Set.mem_range_self a, ?_⟩
     simpa only [t, Set.mem_setOf_eq, dist_eq_norm, norm_sub_rev] using ha.le
+end
 
-def fourierIntegral (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
+
+section
+variable (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
+include S e
+def fourierIntegral  
     (μ : (v : S) → Measure (v.val.adicCompletion F))
     (f : Space F S → ℂ) (y : Space F S) : ℂ :=
   ∫ x, f x *
@@ -219,8 +234,7 @@ def fourierIntegral (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     ∏ v : S, (e v (-x.2 v * y.2 v) : ℂ) ∂productMeasure F S μ
 
 theorem fourierIntegral_tensor_factorization
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
-    (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
+     
     (μ : (v : S) → Measure (v.val.adicCompletion F))
     [hμ : ∀ v, (μ v).IsAddHaarMeasure] (hnorm : LocalNormalization F S μ)
     (fArch : PoissonArch.Space F → ℂ)
@@ -253,10 +267,11 @@ theorem fourierIntegral_tensor_factorization
     (fun (v : S) z => φ v z * (e v (-z * y.2 v) : ℂ))
   exact hi.trans (congrArg (fun c => PoissonArch.traceFourier F fArch y.1 * c) hj)
 
-def TraceConductor (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
-    (e : (v : S) → AddChar (v.val.adicCompletion F) Circle) : Prop :=
+def TraceConductor   : Prop :=
   ∀ v y, (∀ x : v.val.adicCompletion F, ‖x‖ ≤ 1 → e v (x * y) = 1) ↔
     ‖y‖ ≤ (v.val.asIdeal.absNorm : ℝ) ^ differentExponent F v.val
+end
+
 
 end PoissonS
 end DedekindZetaZeroFree

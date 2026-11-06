@@ -187,14 +187,14 @@ theorem globalNormResidueAbelianizationContinuousMonoidHom_apply
       globalNormResidueAbelianizationMonoidHom K L c := by
   rfl
 
-/-- The actual finite-Galois norm-residue symbol is continuous. -/
-theorem globalNormResidueAbelianizationMonoidHom_continuous :
-    Continuous
-      (globalNormResidueAbelianizationMonoidHom K L) :=
-  (globalNormResidueAbelianizationContinuousMonoidHom K L).continuous.congr
-    (fun c =>
-      globalNormResidueAbelianizationContinuousMonoidHom_apply
-        K L c)
+
+
+
+
+
+
+
+
 
 end Reciprocity
 end GlobalClassFieldTheory

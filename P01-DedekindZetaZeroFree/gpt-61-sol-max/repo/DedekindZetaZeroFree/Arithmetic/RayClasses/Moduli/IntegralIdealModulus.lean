@@ -12,8 +12,11 @@ open IsDedekindDomain
 
 namespace DedekindZetaZeroFree.RayClassBridge
 
- theorem modulus_support_finite
-    (F : Type) [Field F] [NumberField F] (𝔪 : Ideal (𝓞 F)) :
+ section
+variable (F : Type) [Field F] [NumberField F]
+include F
+theorem modulus_support_finite
+      (𝔪 : Ideal (𝓞 F)) :
     (Function.support (fun v : HeightOneSpectrum (𝓞 F) =>
       Int.toNat (FractionalIdeal.count F v
         (𝔪 : FractionalIdeal (nonZeroDivisors (𝓞 F)) F)))).Finite := by
@@ -23,7 +26,7 @@ namespace DedekindZetaZeroFree.RayClassBridge
   exact hf.subset (by intro v hv hz; exact hv (by simp [hz]))
 
 private theorem toNat_count_coe_ne_zero_iff
-    (F : Type) [Field F] [NumberField F]
+     
     (J : Ideal (𝓞 F)) (hJ : J ≠ ⊥) (v : HeightOneSpectrum (𝓞 F)) :
     Int.toNat (FractionalIdeal.count F v
       (J : FractionalIdeal (nonZeroDivisors (𝓞 F)) F)) ≠ 0 ↔ J ≤ v.asIdeal := by
@@ -32,7 +35,7 @@ private theorem toNat_count_coe_ne_zero_iff
     Nat.pos_iff_ne_zero, Associates.count_ne_zero_iff_dvd hJ v.irreducible, Ideal.dvd_iff_le]
 
 def narrowIdealModulus
-    (F : Type) [Field F] [NumberField F]
+     
     (𝔪 : Ideal (𝓞 F)) (_h𝔪 : 𝔪 ≠ ⊥) : ClassFieldTheory.RayClassModulus F where
   finitePart := Finsupp.ofSupportFinite
     (fun v => Int.toNat (FractionalIdeal.count F v
@@ -41,31 +44,34 @@ def narrowIdealModulus
   infinitePart := Finset.univ
 
 def integralUnit
-    (F : Type) [Field F] [NumberField F]
+     
     (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) : ClassFieldTheory.NumberFieldFractionalIdealGroup F :=
   Units.mk0 (I : FractionalIdeal (nonZeroDivisors (𝓞 F)) F)
     (FractionalIdeal.coeIdeal_ne_zero.mpr hI)
 
 @[simp] theorem integralUnit_val
-    (F : Type) [Field F] [NumberField F]
+     
     (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) :
     (integralUnit F I hI : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) = I := rfl
+end
 
+
+section
+variable (F : Type) [Field F] [NumberField F]
+    (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥)
+include F 𝔪 h𝔪
 @[simp] theorem narrowIdealModulus_finitePart
-    (F : Type) [Field F] [NumberField F]
-    (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥) (v : HeightOneSpectrum (𝓞 F)) :
+      (v : HeightOneSpectrum (𝓞 F)) :
     (narrowIdealModulus F 𝔪 h𝔪).finitePart v =
       Int.toNat (FractionalIdeal.count F v
         (𝔪 : FractionalIdeal (nonZeroDivisors (𝓞 F)) F)) := rfl
 
 @[simp] theorem narrowIdealModulus_infinitePart
-    (F : Type) [Field F] [NumberField F]
-    (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥) :
+      :
     (narrowIdealModulus F 𝔪 h𝔪).infinitePart = Finset.univ := rfl
 
 theorem narrowIdealModulus_support
-    (F : Type) [Field F] [NumberField F]
-    (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥) :
+      :
     (↑(narrowIdealModulus F 𝔪 h𝔪).finitePart.support : Set (HeightOneSpectrum (𝓞 F))) =
       {v | 𝔪 ≤ v.asIdeal} := by
   ext v
@@ -74,21 +80,19 @@ theorem narrowIdealModulus_support
   exact toNat_count_coe_ne_zero_iff F 𝔪 h𝔪 v
 
 private theorem mem_finitePart_support_iff
-    (F : Type) [Field F] [NumberField F]
-    (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥) (v : HeightOneSpectrum (𝓞 F)) :
+      (v : HeightOneSpectrum (𝓞 F)) :
     v ∈ (narrowIdealModulus F 𝔪 h𝔪).finitePart.support ↔ 𝔪 ≤ v.asIdeal := by
   rw [← Finset.mem_coe, narrowIdealModulus_support, Set.mem_setOf_eq]
 
-@[simp] theorem narrowIdealModulus_top_finitePart
-    (F : Type) [Field F] [NumberField F] (h : (⊤ : Ideal (𝓞 F)) ≠ ⊥) :
-    (narrowIdealModulus F ⊤ h).finitePart = 0 := by
-  ext v
-  rw [narrowIdealModulus_finitePart, FractionalIdeal.coeIdeal_top, FractionalIdeal.count_one]
-  rfl
+
+
+
+
+
+
 
 theorem integralUnit_mem_primeTo_iff
-    (F : Type) [Field F] [NumberField F]
-    (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥)
+     
     (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) :
     integralUnit F I hI ∈ ClassFieldTheory.rayClassPrimeToIdeals
       (narrowIdealModulus F 𝔪 h𝔪) ↔ I ⊔ 𝔪 = ⊤ := by
@@ -120,18 +124,18 @@ theorem integralUnit_mem_primeTo_iff
     exact Ideal.IsMaximal.ne_top inferInstance (top_le_iff.mp (hcop ▸ sup_le hdvd hv'))
 
 def integralPrimeTo
-    (F : Type) [Field F] [NumberField F]
-    (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥)
+     
     (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hcop : I ⊔ 𝔪 = ⊤) :
     ClassFieldTheory.rayClassPrimeToIdeals (narrowIdealModulus F 𝔪 h𝔪) :=
   ⟨integralUnit F I hI, (integralUnit_mem_primeTo_iff F 𝔪 h𝔪 I hI).mpr hcop⟩
 
 def integralRayClass
-    (F : Type) [Field F] [NumberField F]
-    (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥)
+     
     (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hcop : I ⊔ 𝔪 = ⊤) :
     ClassFieldTheory.RayClassGroup (narrowIdealModulus F 𝔪 h𝔪) :=
   QuotientGroup.mk (integralPrimeTo F 𝔪 h𝔪 I hI hcop)
+end
+
 
 @[simp] theorem integralUnit_top
     (F : Type) [Field F] [NumberField F] (h : (⊤ : Ideal (𝓞 F)) ≠ ⊥) :
@@ -146,20 +150,20 @@ theorem integralUnit_mul
   ext
   simp [integralUnit, FractionalIdeal.coeIdeal_mul]
 
-@[simp] theorem integralPrimeTo_top
-    (F : Type) [Field F] [NumberField F]
-    (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥)
-    (h : (⊤ : Ideal (𝓞 F)) ≠ ⊥) (hcop : ⊤ ⊔ 𝔪 = ⊤) :
-    integralPrimeTo F 𝔪 h𝔪 ⊤ h hcop = 1 := by
-  ext
-  simp [integralPrimeTo, integralUnit_top]
 
-@[simp] theorem integralRayClass_top
-    (F : Type) [Field F] [NumberField F]
-    (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥)
-    (h : (⊤ : Ideal (𝓞 F)) ≠ ⊥) (hcop : ⊤ ⊔ 𝔪 = ⊤) :
-    integralRayClass F 𝔪 h𝔪 ⊤ h hcop = 1 := by
-  simp [integralRayClass, integralPrimeTo_top]
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end DedekindZetaZeroFree.RayClassBridge
 

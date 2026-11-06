@@ -74,19 +74,19 @@ def evaluatedTensor (raw : RestrictedCover F ζ hζ) : Core F ζ hζ P C :=
     (PiTensorProduct.tprod ℂ (fun q => (LocalSeed.finite F ζ hζ P C q.val).val
       (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q.val) (raw (Sum.inr q.val)))))
 
-theorem evaluatedTensor_one :
-    realization F ζ hζ P C (evaluatedTensor F ζ hζ P C 1) =
-      TorusReference.finiteReference F ζ hζ P C C.exceptional le_rfl := by
-  rw [evaluatedTensor, realization_stage]
-  change finiteTensorRealization F ζ hζ P C _ _
-    (PiTensorProduct.tprod ℂ (fun q => (LocalSeed.finite F ζ hζ P C q.val).val
-      (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q.val) 1))) = _
-  simp only [map_one, LocalSeed.finite_one]
-  have hi := LinearMap.congr_fun (tensor_insertion_compatible F ζ hζ P C C.exceptional
-    (evaluatedStage F ζ hζ P C 1).val le_rfl (evaluatedStage F ζ hζ P C 1).property)
-    (PiTensorProduct.tprod ℂ (fun q : C.exceptional => localReference F ζ hζ P C q.val))
-  simp only [LinearMap.comp_apply, RestrictedTensorSimple.insert_pure, dite_eq_ite, ite_self] at hi
-  exact hi
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 theorem evaluatedStage_tail (raw : RestrictedCover F ζ hζ)
     (q : HeightOneSpectrum (𝓞 F)) (hq : q ∉ (evaluatedStage F ζ hζ P C raw).val) :
@@ -166,13 +166,13 @@ theorem evaluatedTensor_congr (g h : RestrictedCover F ζ hζ)
   funext q
   exact he q.val
 
-theorem evaluatedTensor_upper (raw : RestrictedCover F ζ hζ)
-    (y : KPAdelicCoverRestrictedProduct.Adeles F) :
-    evaluatedTensor F ζ hζ P C (KPGlobalTorusFunctionData.rootTuple F ζ hζ y * raw) =
-      evaluatedTensor F ζ hζ P C raw := by
-  apply evaluatedTensor_congr
-  intro q
-  exact LocalCovariance.finite_upper F ζ hζ P C q _ _
+
+
+
+
+
+
+
 
 theorem evaluatedTensor_scalar (raw : RestrictedCover F ζ hζ)
     (z : KPAdelicCoverRestrictedProduct.Ideles F) :
@@ -182,16 +182,16 @@ theorem evaluatedTensor_scalar (raw : RestrictedCover F ζ hζ)
   intro q
   exact LocalCovariance.finite_scalar F ζ hζ P C q _ _
 
-theorem evaluatedTensor_right_level (raw u : RestrictedCover F ζ hζ)
-    (hu : u ∈ ActualFiniteFactor.productTuples F ζ hζ
-      (FiniteLevels.productLevel F ζ hζ P C)) :
-    evaluatedTensor F ζ hζ P C (raw * u) = evaluatedTensor F ζ hζ P C raw := by
-  apply evaluatedTensor_congr
-  intro q
-  change (LocalSeed.finite F ζ hζ P C q).val
-    (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (raw (Sum.inr q) * u (Sum.inr q))) = _
-  rw [map_mul]
-  exact FiniteLevels.raw_local_fixed F ζ hζ P C u hu q _
+
+
+
+
+
+
+
+
+
+
 
 end DedekindZetaZeroFree.EisensteinReferenceSections.SourceTensor
 

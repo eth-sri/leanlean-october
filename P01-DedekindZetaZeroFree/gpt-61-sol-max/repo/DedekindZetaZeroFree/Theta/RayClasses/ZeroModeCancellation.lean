@@ -68,25 +68,26 @@ private theorem sum_conj_coeff (χ : RayCharacterData F m hm η)
   classical
   rw [← map_sum, sum_coeff χ hη, map_zero]
 
+section
+variable (D : RayThetaRepresentatives F m hm) (χ : RayCharacterData F m hm η)
+    (hη : ¬ η.IsPrincipal)
+include D χ hη
 theorem sum_rayTheta_f0_eq_zero
-    (D : RayThetaRepresentatives F m hm) (χ : RayCharacterData F m hm η)
-    (hη : ¬ η.IsPrincipal) :
+      :
     ∑ c : RayIdealClass F m hm, χ.ψ c * RayTheta.f0δ (D.coset c) ∅ = 0 := by
   classical
   simp_rw [primal_common D]
   rw [← Finset.sum_mul, sum_coeff χ hη, zero_mul]
 
 theorem sum_rayTheta_g0_eq_zero
-    (D : RayThetaRepresentatives F m hm) (χ : RayCharacterData F m hm η)
-    (hη : ¬ η.IsPrincipal) :
+      :
     ∑ c : RayIdealClass F m hm, χ.ψ c * RayTheta.g0δ (D.coset c) ∅ = 0 := by
   classical
   simp_rw [dual_common D]
   rw [← Finset.sum_mul, sum_coeff χ hη, zero_mul]
 
 theorem sum_conjugate_rayTheta_f0_eq_zero
-    (D : RayThetaRepresentatives F m hm) (χ : RayCharacterData F m hm η)
-    (hη : ¬ η.IsPrincipal) :
+      :
     ∑ c : RayIdealClass F m hm,
       (starRingEnd ℂ) (χ.ψ c) * RayTheta.f0δ (D.coset c) ∅ = 0 := by
   classical
@@ -94,8 +95,7 @@ theorem sum_conjugate_rayTheta_f0_eq_zero
   rw [← Finset.sum_mul, sum_conj_coeff χ hη, zero_mul]
 
 theorem normalizedRayTheta_eq_sub_zero_modes
-    (D : RayThetaRepresentatives F m hm) (χ : RayCharacterData F m hm η)
-    (hη : ¬ η.IsPrincipal) (t : ℝ) (ht : 0 < t) :
+      (t : ℝ) (ht : 0 < t) :
     normalizedRayTheta D χ.ψ t =
       (4 : ℂ) ^ NumberField.InfinitePlace.nrComplexPlaces F *
         ∑ c : RayIdealClass F m hm, χ.ψ c *
@@ -106,8 +106,7 @@ theorem normalizedRayTheta_eq_sub_zero_modes
     sum_rayTheta_f0_eq_zero D χ hη, sub_zero]
 
 theorem normalizedRayDualTheta_eq_sub_zero_modes
-    (D : RayThetaRepresentatives F m hm) (χ : RayCharacterData F m hm η)
-    (hη : ¬ η.IsPrincipal) (t : ℝ) (ht : 0 < t) :
+      (t : ℝ) (ht : 0 < t) :
     normalizedRayDualTheta D χ.ψ t =
       (4 : ℂ) ^ NumberField.InfinitePlace.nrComplexPlaces F *
         (conductorScale F m : ℂ) *
@@ -119,8 +118,7 @@ theorem normalizedRayDualTheta_eq_sub_zero_modes
     sum_rayTheta_g0_eq_zero D χ hη, sub_zero]
 
 theorem normalizedRayConjugateTheta_eq_sub_zero_modes
-    (D : RayThetaRepresentatives F m hm) (χ : RayCharacterData F m hm η)
-    (hη : ¬ η.IsPrincipal) (t : ℝ) (ht : 0 < t) :
+      (t : ℝ) (ht : 0 < t) :
     normalizedRayConjugateTheta D χ.ψ t =
       (4 : ℂ) ^ NumberField.InfinitePlace.nrComplexPlaces F *
         ∑ c : RayIdealClass F m hm, (starRingEnd ℂ) (χ.ψ c) *
@@ -129,6 +127,8 @@ theorem normalizedRayConjugateTheta_eq_sub_zero_modes
   classical
   simp only [normalizedRayConjugateTheta, mul_sub, Finset.sum_sub_distrib,
     sum_conjugate_rayTheta_f0_eq_zero D χ hη, sub_zero]
+end
+
 
 end DedekindZetaZeroFree.Hecke.Theta
 

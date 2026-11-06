@@ -121,48 +121,48 @@ omit [FiniteDimensional K L] [IsGalois K L] in
   let := numberFieldTowerAbstractTopFiniteDimensional K L
   exact NumberField.of_module_finite ℚ _
 
-private theorem numberFieldTowerRestrictedTopFiniteDimensional :
-    FiniteDimensional ℚ
-      ((abstractRelativeFixedField ℚ (SeparableClosure ℚ)
-        (numberFieldTowerTopSubgroup_le_baseSubgroup K L)).restrictScalars ℚ) := by
-  let := numberFieldTowerAbstractTopFiniteDimensional K L
-  change FiniteDimensional ℚ
-    (abstractFixedField ℚ (SeparableClosure ℚ)
-      (numberFieldTowerTopSubgroup L))
-  change FiniteDimensional ℚ
-    (abstractRelativeFixedField ℚ (SeparableClosure ℚ)
-      (numberFieldTowerTopSubgroup_le_baseSubgroup K L))
-  exact numberFieldTowerAbstractTopFiniteDimensional K L
 
-private theorem numberFieldTowerRestrictedTopNumberField :
-    NumberField
-      ((abstractRelativeFixedField ℚ (SeparableClosure ℚ)
-        (numberFieldTowerTopSubgroup_le_baseSubgroup K L)).restrictScalars ℚ) := by
-  let := numberFieldTowerRestrictedTopFiniteDimensional K L
-  exact NumberField.of_module_finite ℚ _
 
-@[reducible]  noncomputable def numberFieldTowerRestrictedTopAlgebra :
-    Algebra
-      (abstractFixedField ℚ (SeparableClosure ℚ)
-        (numberFieldTowerBaseSubgroup K L))
-      ((abstractRelativeFixedField ℚ (SeparableClosure ℚ)
-        (numberFieldTowerTopSubgroup_le_baseSubgroup K L)).restrictScalars ℚ) :=
-  (IntermediateField.inclusion
-    (abstractFixedField_le ℚ (SeparableClosure ℚ)
-      (numberFieldTowerTopSubgroup_le_baseSubgroup K L))).toRingHom.toAlgebra
 
-private theorem numberFieldTowerAbstractRelativeIsGalois :
-    IsGalois
-      (abstractFixedField ℚ (SeparableClosure ℚ)
-        (numberFieldTowerBaseSubgroup K L))
-      (abstractRelativeFixedField ℚ (SeparableClosure ℚ)
-        (numberFieldTowerTopSubgroup_le_baseSubgroup K L)) :=
-  abstractRelativeFixedField_isGalois
-    ℚ (SeparableClosure ℚ)
-    (numberFieldTowerBaseSubgroup K L)
-    (numberFieldTowerTopSubgroup L)
-    (numberFieldTowerTopSubgroup_le_baseSubgroup K L)
-    (numberFieldTowerExtensionSubgroupNormal K L)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 private theorem ordinaryIdeleClassNormQuotientCongrOfAlgEquiv_symm_mk
     {K₀ L₀ K₁ L₁ : Type}
@@ -188,10 +188,13 @@ private theorem ordinaryIdeleClassNormQuotientCongrOfAlgEquiv_symm_mk
     ordinaryIdeleClassNormQuotientCongrOfAlgEquiv_mk,
     MulEquiv.apply_symm_apply]
 
- noncomputable def numberFieldTowerFiniteNormClassPublicValue
-    (a : KummerTheory.ambientFixedAddSubgroup
+ section
+variable (a : KummerTheory.ambientFixedAddSubgroup
       rationalIdeleClassRepresentation
-      (numberFieldTowerBaseSubgroup K L)) :
+      (numberFieldTowerBaseSubgroup K L))
+include a
+noncomputable def numberFieldTowerFiniteNormClassPublicValue
+      :
     Additive
       (IdeleClassGroup K ⧸
         (_root_.ideleClassNorm K L).range) :=
@@ -202,9 +205,7 @@ private theorem ordinaryIdeleClassNormQuotientCongrOfAlgEquiv_symm_mk
       (numberFieldTowerTopSubgroup_le_baseSubgroup K L) a)
 
  noncomputable def numberFieldTowerFiniteNormClassExpectedValue
-    (a : KummerTheory.ambientFixedAddSubgroup
-      rationalIdeleClassRepresentation
-      (numberFieldTowerBaseSubgroup K L)) :
+      :
     Additive
       (IdeleClassGroup K ⧸
         (_root_.ideleClassNorm K L).range) :=
@@ -215,9 +216,7 @@ private theorem ordinaryIdeleClassNormQuotientCongrOfAlgEquiv_symm_mk
         ((numberFieldTowerIdeleClassEquivAmbientFixed K L).symm a)))
 
  noncomputable def numberFieldTowerFiniteNormClassDirectComparisonValue
-    (a : KummerTheory.ambientFixedAddSubgroup
-      rationalIdeleClassRepresentation
-      (numberFieldTowerBaseSubgroup K L)) :
+      :
     Additive
       (IdeleClassGroup K ⧸
         (_root_.ideleClassNorm K L).range) := by
@@ -250,9 +249,7 @@ private theorem ordinaryIdeleClassNormQuotientCongrOfAlgEquiv_symm_mk
         (finiteNormClass rationalIdeleClassRepresentation H J hJH a))
 
 private theorem numberFieldTowerFiniteNormClassPublicValue_eq_directComparison
-    (a : KummerTheory.ambientFixedAddSubgroup
-      rationalIdeleClassRepresentation
-      (numberFieldTowerBaseSubgroup K L)) :
+      :
     numberFieldTowerFiniteNormClassPublicValue K L a =
       numberFieldTowerFiniteNormClassDirectComparisonValue K L a := by
   unfold numberFieldTowerFiniteNormClassPublicValue
@@ -261,9 +258,7 @@ private theorem numberFieldTowerFiniteNormClassPublicValue_eq_directComparison
   rfl
 
  noncomputable def numberFieldTowerActualNormClassRepresentativeValue
-    (a : KummerTheory.ambientFixedAddSubgroup
-      rationalIdeleClassRepresentation
-      (numberFieldTowerBaseSubgroup K L)) :
+      :
     Additive
       (IdeleClassGroup K ⧸
         (_root_.ideleClassNorm K L).range) := by
@@ -294,9 +289,7 @@ private theorem numberFieldTowerFiniteNormClassPublicValue_eq_directComparison
               ((rationalAbstractFixedFieldIdeleClassEquivFixed H).symm a))))
 
 private theorem numberFieldTowerFiniteNormClassDirectComparison_eq_actualValue
-    (a : KummerTheory.ambientFixedAddSubgroup
-      rationalIdeleClassRepresentation
-      (numberFieldTowerBaseSubgroup K L)) :
+      :
     numberFieldTowerFiniteNormClassDirectComparisonValue K L a =
       numberFieldTowerActualNormClassRepresentativeValue K L a := by
   let H := numberFieldTowerBaseSubgroup K L
@@ -344,9 +337,7 @@ private theorem numberFieldTowerFiniteNormClassDirectComparison_eq_actualValue
       (MulEquiv.toAdditive actualFieldEquiv.symm) x) hfixed
 
 private theorem numberFieldTowerActualNormClassRepresentativeValue_eq_expected
-    (a : KummerTheory.ambientFixedAddSubgroup
-      rationalIdeleClassRepresentation
-      (numberFieldTowerBaseSubgroup K L)) :
+      :
     numberFieldTowerActualNormClassRepresentativeValue K L a =
       numberFieldTowerFiniteNormClassExpectedValue K L a := by
   let H := numberFieldTowerBaseSubgroup K L
@@ -391,9 +382,7 @@ transporting the fixed-field idele class back to `K`. -/
 @[simp]
 theorem
     numberFieldTowerFiniteNormQuotientEquivIdeleClassNormQuotient_finiteNormClass
-    (a : KummerTheory.ambientFixedAddSubgroup
-      rationalIdeleClassRepresentation
-      (numberFieldTowerBaseSubgroup K L)) :
+      :
     numberFieldTowerFiniteNormQuotientEquivIdeleClassNormQuotient K L
         (finiteNormClass rationalIdeleClassRepresentation
           (numberFieldTowerBaseSubgroup K L)
@@ -414,6 +403,8 @@ theorem
         K L a).trans
         (numberFieldTowerActualNormClassRepresentativeValue_eq_expected
           K L a))
+end
+
 
 /-- On an idele class of the original base field, the fixed-part
 realization followed by the abstract finite norm-class map is exactly

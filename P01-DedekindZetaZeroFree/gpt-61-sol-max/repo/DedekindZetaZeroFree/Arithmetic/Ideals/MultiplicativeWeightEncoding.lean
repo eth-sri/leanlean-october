@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LFunctions.Dedekind.PrimeIdealEulerProduct
 
 @[expose] public section
+
 
 /-
 Adapts the encoding argument of LeanPool/lean-pool
@@ -29,7 +32,7 @@ theorem multiplicativeIdealEncoding
       (∀ p : Nat.Primes, f p =
         (Odlyzko.primeIdealAtCode K (p : ℕ)).elim 0 (fun P => g P.asIdeal)) := by
   classical
-  let a : ℕ → ℂ := fun n =>
+  let a  := fun n =>
     (Odlyzko.primeIdealAtCode K n).elim 0 (fun P => g P.asIdeal)
   have ha_code : ∀ P : HeightOneSpectrum (𝓞 K),
       a (Odlyzko.primeIdealCode K P) = g P.asIdeal := by
@@ -37,7 +40,7 @@ theorem multiplicativeIdealEncoding
     simp [a, Odlyzko.primeIdealAtCode_primeIdealCode]
   have ha_ne : ∀ p, a p ≠ 0 → Odlyzko.primeIdealAtCode K p ≠ none := by
     intro p hp h
-    exact hp (by simp [a, h])
+    apply hp <;> aesop
 
   have h_exists_code : ∀ {b : ℕ → ℂ},
       (∀ p, b p ≠ 0 → Odlyzko.primeIdealAtCode K p ≠ none) →
@@ -45,7 +48,7 @@ theorem multiplicativeIdealEncoding
       ∃ I : Odlyzko.NonzeroIdeal K, Odlyzko.idealPrimeCode K I = n := by
     intro b hb n hn
     have hn0 : n ≠ 0 := by
-      intro h; exact hn (by rw [h, map_zero])
+      intro h; apply hn <;> aesop
     refine Odlyzko.exists_idealPrimeCode_eq_of_primeFactors K hn0 ?_
     intro p hp
     have hpsupp : p ∈ n.factorization.support := by

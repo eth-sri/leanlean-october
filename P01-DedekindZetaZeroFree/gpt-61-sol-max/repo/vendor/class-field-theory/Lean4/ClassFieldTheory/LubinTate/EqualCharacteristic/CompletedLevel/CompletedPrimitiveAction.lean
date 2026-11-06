@@ -51,9 +51,12 @@ noncomputable local instance equalCharacteristicCompletedPrimitiveActionBaseAlge
       (equalCharacteristicCompletedUnramifiedField F.residueField) :=
   laurentSeriesCoefficientAlgebra
 
+section
+variable (F : LocalField.{u, v} K) (n : ℕ)
+include F n
 /-- The coefficientwise Laurent base map into the completed level field. -/
 noncomputable def equalCharacteristicCompletedLevelBaseHom
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      :
     F.residueField⸨X⸩ →+*
       equalCharacteristicCompletedLevelField F n :=
   (algebraMap
@@ -64,7 +67,7 @@ noncomputable def equalCharacteristicCompletedLevelBaseHom
 
 /-- The residue-field coefficient map into the completed level. -/
 noncomputable def equalCharacteristicCompletedLevelResidueHom
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      :
     F.residueField →+* equalCharacteristicCompletedLevelField F n :=
   (equalCharacteristicCompletedLevelBaseHom F n).comp
     (algebraMap F.residueField F.residueField⸨X⸩)
@@ -72,19 +75,24 @@ noncomputable def equalCharacteristicCompletedLevelResidueHom
 /-- States the theorem `equalCharacteristicCompletedLevelBaseHom_uniformizer`. -/
 @[simp]
 theorem equalCharacteristicCompletedLevelBaseHom_uniformizer
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      :
     equalCharacteristicCompletedLevelBaseHom F n
         (equalCharacteristicLaurentUniformizer F) =
       equalCharacteristicCompletedLevelUniformizer F n := by
   rw [equalCharacteristicCompletedLevelBaseHom, RingHom.comp_apply,
     equalCharacteristicCompletedBase_algebraMap_uniformizer]
   rfl
+end
 
+
+section
+variable (F : LocalField.{u, v} K)
+    [CharP K F.residueCharacteristic]
+include F
 /-- The chosen root in the completed splitting field is killed at level
 `n + 1`. -/
 theorem equalCharacteristicCompletedPrimitiveRoot_torsion
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
+     
     (n : ℕ) :
     IsEqualCharacteristicLubinTateAmbientTorsion F
       (equalCharacteristicCompletedLevelUniformizer F n) (n + 1)
@@ -110,8 +118,7 @@ theorem equalCharacteristicCompletedPrimitiveRoot_torsion
 
 /-- The chosen completed root is not already killed at level `n`. -/
 theorem equalCharacteristicCompletedPrimitiveRoot_not_torsion_pred
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
+     
     (n : ℕ) :
     ¬ IsEqualCharacteristicLubinTateAmbientTorsion F
       (equalCharacteristicCompletedLevelUniformizer F n) n
@@ -129,24 +136,23 @@ theorem equalCharacteristicCompletedPrimitiveRoot_not_torsion_pred
   · exact Nat.sub_ne_zero_of_lt
       (Finite.one_lt_card : 1 < Nat.card F.residueField)
 
-/-- In particular, the chosen completed primitive point is nonzero. -/
-theorem equalCharacteristicCompletedPrimitiveRoot_ne_zero
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) :
-    equalCharacteristicCompletedPrimitiveRoot F n ≠ 0 := by
-  intro hzero
-  apply equalCharacteristicCompletedPrimitiveRoot_not_torsion_pred F n
-  change equalCharacteristicLubinTateAmbientPiIterate F
-      (equalCharacteristicCompletedLevelUniformizer F n) n
-      (equalCharacteristicCompletedPrimitiveRoot F n) = 0
-  rw [hzero, map_zero]
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The bracket image of the completed primitive point attached to a
 power-series unit. -/
 noncomputable def equalCharacteristicCompletedUnitRoot
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
+     
     (n : ℕ) (a : F.residueField⟦X⟧ˣ) :
     equalCharacteristicCompletedLevelField F n :=
   equalCharacteristicLubinTateAmbientBracket F
@@ -158,8 +164,7 @@ noncomputable def equalCharacteristicCompletedUnitRoot
 /-- Every unit bracket of the chosen completed point is again a root of the
 completed primitive polynomial. -/
 theorem equalCharacteristicCompletedUnitRoot_isRoot
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
+     
     (n : ℕ) (a : F.residueField⟦X⟧ˣ) :
     ((equalCharacteristicCompletedPrimitivePolynomial F n).map
       (algebraMap (equalCharacteristicCompletedUnramifiedField F.residueField)
@@ -214,8 +219,7 @@ theorem equalCharacteristicCompletedUnitRoot_isRoot
 /-- A truncated bracket is a polynomial expression in its input over the
 completed-unramified base. -/
 theorem equalCharacteristicCompletedAmbientBracket_mem_adjoin
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
+     
     (n m : ℕ) (a : F.residueField⟦X⟧)
     (z : equalCharacteristicCompletedLevelField F n) :
     equalCharacteristicLubinTateAmbientBracket F
@@ -254,8 +258,7 @@ theorem equalCharacteristicCompletedAmbientBracket_mem_adjoin
 /-- The image of the completed primitive point attached to a visible unit
 parameter. -/
 noncomputable def equalCharacteristicCompletedUnitParameterRoot
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
+     
     (n : ℕ) (a : equalCharacteristicLubinTateUnitParameter F n) :
     equalCharacteristicCompletedLevelField F n :=
   equalCharacteristicCompletedUnitRoot F n
@@ -264,8 +267,7 @@ noncomputable def equalCharacteristicCompletedUnitParameterRoot
 /-- Distinct visible unit parameters give distinct completed primitive
 points. -/
 theorem equalCharacteristicCompletedUnitParameterRoot_injective
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
+     
     (n : ℕ) :
     Function.Injective (equalCharacteristicCompletedUnitParameterRoot F n) := by
   intro a b hab
@@ -282,8 +284,7 @@ theorem equalCharacteristicCompletedUnitParameterRoot_injective
 /-- Every visible unit bracket of the chosen completed point is again a
 root of the completed primitive polynomial. -/
 theorem equalCharacteristicCompletedUnitParameterRoot_isRoot
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
+     
     (n : ℕ) (a : equalCharacteristicLubinTateUnitParameter F n) :
     ((equalCharacteristicCompletedPrimitivePolynomial F n).map
       (algebraMap (equalCharacteristicCompletedUnramifiedField F.residueField)
@@ -292,11 +293,16 @@ theorem equalCharacteristicCompletedUnitParameterRoot_isRoot
   simpa [equalCharacteristicCompletedUnitParameterRoot] using
     equalCharacteristicCompletedUnitRoot_isRoot F n
       (equalCharacteristicLubinTateUnitParameterUnit F n a)
+end
 
+
+section
+variable (F : LocalField.{u, v} K)
+include F
 /-- Base change to the completed maximal-unramified field preserves
 separability of the primitive polynomial. -/
 theorem equalCharacteristicCompletedPrimitivePolynomial_separable
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      (n : ℕ) :
     (equalCharacteristicCompletedPrimitivePolynomial F n).Separable := by
   unfold equalCharacteristicCompletedPrimitivePolynomial
   exact (equalCharacteristicLubinTatePrimitivePolynomial_separable F n).map
@@ -304,7 +310,7 @@ theorem equalCharacteristicCompletedPrimitivePolynomial_separable
 /-- A visible unit parameter, regarded as an element of the full root set
 in the completed splitting field. -/
 noncomputable def equalCharacteristicCompletedUnitParameterRootSet
-    (F : LocalField.{u, v} K)
+     
     [CharP K F.residueCharacteristic]
     (n : ℕ) (a : equalCharacteristicLubinTateUnitParameter F n) :
     (equalCharacteristicCompletedPrimitivePolynomial F n).rootSet
@@ -318,7 +324,7 @@ noncomputable def equalCharacteristicCompletedUnitParameterRootSet
 
 /-- States the theorem `equalCharacteristicCompletedUnitParameterRootSet_injective`. -/
 theorem equalCharacteristicCompletedUnitParameterRootSet_injective
-    (F : LocalField.{u, v} K)
+     
     [CharP K F.residueCharacteristic]
     (n : ℕ) :
     Function.Injective (equalCharacteristicCompletedUnitParameterRootSet F n) := by
@@ -329,7 +335,7 @@ theorem equalCharacteristicCompletedUnitParameterRootSet_injective
 /-- The completed primitive polynomial has precisely the expected number
 of roots in its splitting field. -/
 theorem equalCharacteristicCompletedPrimitiveRootSet_natCard
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      (n : ℕ) :
     Nat.card
         ((equalCharacteristicCompletedPrimitivePolynomial F n).rootSet
           (equalCharacteristicCompletedLevelField F n)) =
@@ -339,13 +345,18 @@ theorem equalCharacteristicCompletedPrimitiveRootSet_natCard
       (equalCharacteristicCompletedPrimitivePolynomial_separable F n)
       (equalCharacteristicCompletedPrimitivePolynomial_splits F n),
     equalCharacteristicCompletedPrimitivePolynomial_natDegree]
+end
 
+
+section
+variable (F : LocalField.{u, v} K)
+    [CharP K F.residueCharacteristic]
+    (n : ℕ)
+include F n
 /-- Visible unit parameters enumerate every root after passage to the
 completed maximal-unramified base. -/
 theorem equalCharacteristicCompletedUnitParameterRootSet_bijective
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) :
+      :
     Function.Bijective
       (equalCharacteristicCompletedUnitParameterRootSet F n) := by
   apply (Nat.bijective_iff_injective_and_card
@@ -357,9 +368,7 @@ theorem equalCharacteristicCompletedUnitParameterRootSet_bijective
 /-- Every parameter root is a polynomial expression in the chosen completed
 primitive point, with coefficients in the completed-unramified base. -/
 theorem equalCharacteristicCompletedUnitParameterRoot_mem_adjoin
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) (a : equalCharacteristicLubinTateUnitParameter F n) :
+      (a : equalCharacteristicLubinTateUnitParameter F n) :
     equalCharacteristicCompletedUnitParameterRoot F n a ∈
       Algebra.adjoin
         (equalCharacteristicCompletedUnramifiedField F.residueField)
@@ -400,9 +409,7 @@ theorem equalCharacteristicCompletedUnitParameterRoot_mem_adjoin
 /-- All roots of the completed primitive polynomial lie in the field
 generated by the chosen primitive point. -/
 theorem equalCharacteristicCompletedPrimitiveRootSet_subset_adjoin
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) :
+      :
     ((equalCharacteristicCompletedPrimitivePolynomial F n).rootSet
         (equalCharacteristicCompletedLevelField F n) :
       Set (equalCharacteristicCompletedLevelField F n)) ⊆
@@ -425,9 +432,7 @@ theorem equalCharacteristicCompletedPrimitiveRootSet_subset_adjoin
 /-- The chosen completed primitive point generates the completed splitting
 field. -/
 theorem equalCharacteristicCompletedPrimitiveRoot_adjoin_eq_top
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) :
+      :
     Algebra.adjoin
         (equalCharacteristicCompletedUnramifiedField F.residueField)
         ({equalCharacteristicCompletedPrimitiveRoot F n} :
@@ -450,9 +455,7 @@ theorem equalCharacteristicCompletedPrimitiveRoot_adjoin_eq_top
 /-- Every unit bracket of a primitive point is again a primitive generator
 of the completed level field. -/
 theorem equalCharacteristicCompletedUnitRoot_adjoin_eq_top
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) (a : F.residueField⟦X⟧ˣ) :
+      (a : F.residueField⟦X⟧ˣ) :
     Algebra.adjoin
         (equalCharacteristicCompletedUnramifiedField F.residueField)
         ({equalCharacteristicCompletedUnitRoot F n a} :
@@ -510,11 +513,16 @@ theorem equalCharacteristicCompletedUnitRoot_adjoin_eq_top
         simpa [x] using equalCharacteristicCompletedPrimitiveRoot_adjoin_eq_top F n]
       at hle
   exact top_unique hle
+end
 
+
+section
+variable (F : LocalField.{u, v} K)
+include F
 /-- The chosen completed primitive point is integral over the completed
 unramified base. -/
 theorem equalCharacteristicCompletedPrimitiveRoot_isIntegral
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      (n : ℕ) :
     IsIntegral
       (equalCharacteristicCompletedUnramifiedField F.residueField)
       (equalCharacteristicCompletedPrimitiveRoot F n) := by
@@ -526,7 +534,7 @@ theorem equalCharacteristicCompletedPrimitiveRoot_isIntegral
 /-- The completed primitive polynomial is the minimal polynomial of the
 chosen primitive point. -/
 theorem equalCharacteristicCompletedPrimitiveRoot_minpoly
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      (n : ℕ) :
     minpoly (equalCharacteristicCompletedUnramifiedField F.residueField)
         (equalCharacteristicCompletedPrimitiveRoot F n) =
       equalCharacteristicCompletedPrimitivePolynomial F n := by
@@ -543,7 +551,7 @@ theorem equalCharacteristicCompletedPrimitiveRoot_minpoly
 
 /-- The power basis generated by the completed primitive division point. -/
 noncomputable def equalCharacteristicCompletedPrimitivePowerBasis
-    (F : LocalField.{u, v} K)
+     
     [CharP K F.residueCharacteristic]
     (n : ℕ) :
     PowerBasis
@@ -556,12 +564,14 @@ noncomputable def equalCharacteristicCompletedPrimitivePowerBasis
 /-- States the theorem `equalCharacteristicCompletedPrimitivePowerBasis_gen`. -/
 @[simp]
 theorem equalCharacteristicCompletedPrimitivePowerBasis_gen
-    (F : LocalField.{u, v} K)
+     
     [CharP K F.residueCharacteristic]
     (n : ℕ) :
     (equalCharacteristicCompletedPrimitivePowerBasis F n).gen =
       equalCharacteristicCompletedPrimitiveRoot F n :=
   PowerBasis.ofAdjoinEqTop_gen _ _
+end
+
 
 end EqualCharacteristic
 end LubinTate

@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.RepresentationTheory.Continuous.MatrixCoefficients
 public import DedekindZetaZeroFree.RepresentationTheory.Irreducible.SubrepresentationsAndEigenvectors
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 The Tau Ceti contributors. All rights reserved.
@@ -53,7 +56,7 @@ theorem coe_congr (e : V ≃L[𝕜] W) (π : ContRepresentation 𝕜 G V) :
   funext g
   apply ContinuousLinearMap.ext
   intro x
-  exact congr_apply e π g x
+  apply congr_apply
 
 theorem continuous_congr (e : V ≃L[𝕜] W) {π : ContRepresentation 𝕜 G V} (hπ : Continuous π) :
     Continuous (congr e π) :=
@@ -71,7 +74,7 @@ omit [TopologicalSpace G] in
 @[simp]
 theorem congr_refl (π : ContRepresentation 𝕜 G V) :
     congr (ContinuousLinearEquiv.refl 𝕜 V) π = π :=
-  DFunLike.ext _ _ fun _ ↦ ContinuousLinearMap.ext fun _ ↦ by simp
+  DFunLike.ext _ _ fun _ ↦ ContinuousLinearMap.ext fun _ ↦ rfl
 
 omit [TopologicalSpace G] in
 
@@ -79,7 +82,7 @@ omit [TopologicalSpace G] in
 theorem congr_congr {X : Type*} [NormedAddCommGroup X] [NormedSpace 𝕜 X] (e : V ≃L[𝕜] W)
     (f : W ≃L[𝕜] X) (π : ContRepresentation 𝕜 G V) :
     congr f (congr e π) = congr (e.trans f) π :=
-  DFunLike.ext _ _ fun _ ↦ ContinuousLinearMap.ext fun _ ↦ by simp
+  DFunLike.ext _ _ fun _ ↦ ContinuousLinearMap.ext fun _ ↦ rfl
 
 end Congr
 

@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AbstractClassFieldTheory.Degree.FrobeniusLift
 public import GaloisCohomology.ProfiniteIntegers.TopologicalGeneration
 public import GaloisCohomology.Topology.TotallyDisconnectedQuotients
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -35,9 +38,12 @@ noncomputable section
 universe u
 
 variable {G : Type u} [Group G] [TopologicalSpace G]
+section
+variable {A : Type*}
+include A
 /-- The quotient projection with its quotient topology, used locally below. -/
  def continuousQuotientMk
-    {A : Type*} [Group A] [TopologicalSpace A]
+      [Group A] [TopologicalSpace A]
     (N : Subgroup A) [N.Normal] : A →ₜ* A ⧸ N where
   toMonoidHom := QuotientGroup.mk' N
   continuous_toFun := continuous_quotient_mk'
@@ -45,13 +51,12 @@ variable {G : Type u} [Group G] [TopologicalSpace G]
 /-- The continuous lift of a homomorphism through a quotient, used locally
 below. -/
  def continuousQuotientLift
-    {A : Type*} {B : Type*} [Group A] [TopologicalSpace A]
+      {B : Type*} [Group A] [TopologicalSpace A]
     [Group B] [TopologicalSpace B]
     (N : Subgroup A) [N.Normal] (f : A →ₜ* B)
     (hN : N ≤ f.toMonoidHom.ker) : A ⧸ N →ₜ* B := by
-  let φ : A ⧸ N →* B := QuotientGroup.lift N f.toMonoidHom hN
-  have hcomp : Continuous (fun x : A => φ (QuotientGroup.mk' N x)) := by
-    simpa [φ, QuotientGroup.lift_mk'] using f.continuous_toFun
+  let φ  := QuotientGroup.lift N f.toMonoidHom hN
+  have hcomp : Continuous (fun x : A => φ (QuotientGroup.mk' N x)) := f.continuous_toFun
   exact
     { toMonoidHom := φ
       continuous_toFun :=
@@ -59,7 +64,7 @@ below. -/
 
 /-- Inclusion of a subgroup with its subtype topology, used locally below. -/
  def continuousSubgroupSubtype
-    {A : Type*} [Group A] [TopologicalSpace A]
+      [Group A] [TopologicalSpace A]
     (H : Subgroup A) : H →ₜ* A where
   toMonoidHom := H.subtype
   continuous_toFun := continuous_subtype_val
@@ -67,64 +72,68 @@ below. -/
 /-- A bijective continuous homomorphism from a compact group to a Hausdorff
 group is a continuous multiplicative equivalence. -/
  noncomputable def continuousMulEquivOfBijectiveCompactToT2
-    {A : Type*} {B : Type*} [Group A] [TopologicalSpace A]
+      {B : Type*} [Group A] [TopologicalSpace A]
     [Group B] [TopologicalSpace B] [CompactSpace A] [T2Space B]
     (φ : A →* B) (hφcont : Continuous φ) (hφ : Function.Bijective φ) :
     A ≃ₜ* B := by
-  let e : A ≃ B := Equiv.ofBijective φ hφ
-  let eh : A ≃ₜ B :=
+  let e  := Equiv.ofBijective φ hφ
+  let eh  :=
     e.toHomeomorphOfContinuousClosed hφcont (Continuous.isClosedMap hφcont)
   exact ContinuousMulEquiv.mk' eh φ.map_mul
 
 /-- A nonidentity element of a profinite group is omitted by some open normal
 subgroup. -/
 private theorem exists_openNormalSubgroup_not_mem
-    {A : Type*} [Group A] [TopologicalSpace A] [IsTopologicalGroup A]
+      [Group A] [TopologicalSpace A] [IsTopologicalGroup A]
     [CompactSpace A] [T2Space A] [TotallyDisconnectedSpace A]
     {x : A} (hx : x ≠ 1) :
     ∃ U : OpenNormalSubgroup A, x ∉ (U : Subgroup A) := by
-  let W : Set A := ({x} : Set A)ᶜ
+  let W  := ({x} : Set A)ᶜ
   have hWopen : IsOpen W := isClosed_singleton.isOpen_compl
-  have hWone : (1 : A) ∈ W := by
-    simpa [W] using hx.symm
+  have hWone : (1 : A) ∈ W := hx.symm
   obtain ⟨U, hUW⟩ :=
     ProfiniteGrp.exist_openNormalSubgroup_sub_open_nhds_of_one
       (G := A) hWopen hWone
   refine ⟨U, ?_⟩
   intro hxU
-  have hxW : x ∈ W := hUW hxU
+  have hxW  := hUW hxU
   change x ∉ ({x} : Set A) at hxW
-  exact hxW (by simp)
+  apply hxW <;> aesop
+end
 
 
+
+section
+variable (n : ℕ)
+include n
 /-- Multiplication by `n` on `ℤ̂`, in the multiplicative presentation. -/
-def zHatPowNat (n : ℕ) : ZHatMul →ₜ* ZHatMul where
+def zHatPowNat   : ZHatMul →ₜ* ZHatMul where
   toFun z := Multiplicative.ofAdd (zHatMulNat n z.toAdd)
   map_one' := by
     apply Multiplicative.ext
     simp [zHatMulNat]
   map_mul' x y := by
     apply Multiplicative.ext
-    exact nsmul_add x.toAdd y.toAdd n
+    apply nsmul_add
   continuous_toFun := map_continuous (zHatMulNat n)
 
 /-- The additive coordinate of a natural profinite power is multiplication by that natural. -/
 @[simp]
-theorem zHatPowNat_apply_toAdd (n : ℕ) (z : ZHatMul) :
+theorem zHatPowNat_apply_toAdd   (z : ZHatMul) :
     (zHatPowNat n z).toAdd = n • z.toAdd :=
   rfl
 
-/-- The natural profinite power map sends one to the multiplicative generator. -/
-@[simp]
-theorem zHatPowNat_one (n : ℕ) :
-    zHatPowNat n
-        (Multiplicative.ofAdd (1 : ZHat)) =
-      (Multiplicative.ofAdd (1 : ZHat)) ^ n := by
-  apply Multiplicative.ext
-  rfl
+
+
+
+
+
+
+
+
 
 /-- Reduction modulo `n`, in the multiplicative presentation. -/
-def zHatReductionMul (n : ℕ) (hn : 0 < n) :
+def zHatReductionMul   (hn : 0 < n) :
     ZHatMul →ₜ* Multiplicative (ZMod n) where
   toFun z := Multiplicative.ofAdd (zHatReduction n hn z.toAdd)
   map_one' := by
@@ -137,10 +146,12 @@ def zHatReductionMul (n : ℕ) (hn : 0 < n) :
 
 /-- Reduction followed by multiplication has the expected additive-coordinate formula. -/
 @[simp]
-theorem zHatReductionMul_apply_toAdd (n : ℕ) (hn : 0 < n)
+theorem zHatReductionMul_apply_toAdd   (hn : 0 < n)
     (z : ZHatMul) :
     (zHatReductionMul n hn z).toAdd = zHatReduction n hn z.toAdd :=
   rfl
+end
+
 
 /-- The cardinal comparison used in the classical proof of the Frobenius fixed-field theorem:
 a continuous map from a profinite procyclic group to `ℤ̂` which sends a
@@ -162,27 +173,23 @@ private theorem injective_of_topologicallyGenerates_zHat_one
     rw [map_mul, map_inv, hab, inv_mul_cancel]
   by_contra hy
   obtain ⟨U, hyU⟩ := exists_openNormalSubgroup_not_mem hy
-  let : Finite (A ⧸ (U : Subgroup A)) :=
+  let  :=
     Subgroup.quotient_finite_of_isOpen (U : Subgroup A)
       U.toOpenSubgroup.isOpen'
-  let : DiscreteTopology (A ⧸ (U : Subgroup A)) :=
+  let  :=
     QuotientGroup.discreteTopology U.toOpenSubgroup.isOpen'
   let m := Nat.card (A ⧸ (U : Subgroup A))
   have hm : 0 < m := by
     dsimp [m]
     exact Nat.card_pos
   let : NeZero m := ⟨hm.ne'⟩
-  let q : A →ₜ* (A ⧸ (U : Subgroup A)) :=
+  let q  :=
     continuousQuotientMk (U : Subgroup A)
   have hqx :
       q x = QuotientGroup.mk' (U : Subgroup A) x := rfl
-  have hqgen : TopologicallyGenerates ({q x} : Set
-      (A ⧸ (U : Subgroup A))) := by
-    have h := topologicallyGenerates_quotient_image (U : Subgroup A) hxgen
-    simpa only [Set.image_singleton, hqx] using h
-  have hqpow : (q x) ^ m = 1 := by
-    exact pow_card_eq_one'
-  let H : ClosedSubgroup A :=
+  
+  have hqpow : (q x) ^ m = 1 := pow_card_eq_one'
+  let H  :=
     closedSubgroupGenerated ({x ^ m} : Set A)
   have hHU : H.toSubgroup ≤ (U : Subgroup A) := by
     apply Subgroup.topologicalClosure_minimal
@@ -193,7 +200,7 @@ private theorem injective_of_topologicallyGenerates_zHat_one
       apply (QuotientGroup.eq_one_iff (x ^ m)).mp
       change q (x ^ m) = 1
       rw [map_pow]
-      simpa only [hqx] using hqpow
+      exact hqpow
     · exact Subgroup.isClosed_of_isOpen (U : Subgroup A) U.isOpen'
   let : IsClosed (H.toSubgroup : Set A) := H.isClosed'
   let B := A ⧸ H.toSubgroup
@@ -210,14 +217,13 @@ private theorem injective_of_topologicallyGenerates_zHat_one
     change x ^ m ∈
       (closedSubgroupGenerated ({x ^ m} : Set A) : Subgroup A)
     exact Subgroup.le_topologicalClosure _
-      (Subgroup.subset_closure (by simp))
+      (Subgroup.subset_closure (rfl))
   have hqHfiniteOrder : IsOfFinOrder (qH x) := by
     rw [← orderOf_pos_iff]
-    have hdvd : orderOf (qH x) ∣ m :=
+    have hdvd  :=
       orderOf_dvd_of_pow_eq_one hqHpow
     exact Nat.pos_of_dvd_of_pos hdvd hm
-  have hzpowersClosed :
-      IsClosed ((Subgroup.zpowers (qH x) : Subgroup B) : Set B) :=
+  have hzpowersClosed  :=
     (Set.finite_coe_iff.mp (finite_zpowers.mpr hqHfiniteOrder)).isClosed
   have hzpowersTopologicalClosure :
       (Subgroup.zpowers (qH x)).topologicalClosure =
@@ -229,21 +235,21 @@ private theorem injective_of_topologicallyGenerates_zHat_one
     rw [TopologicallyGenerates, ← Subgroup.zpowers_eq_closure,
       hzpowersTopologicalClosure] at hqHgen
     exact hqHgen
-  let : Finite (Subgroup.zpowers (qH x)) :=
+  let  :=
     finite_zpowers.mpr hqHfiniteOrder
-  let : Finite B :=
+  let  :=
     Finite.of_injective
       (fun b : B =>
         (⟨b, by rw [hzpowersTop]; trivial⟩ : Subgroup.zpowers (qH x)))
       (by
         intro a b hab
         exact congrArg Subtype.val hab)
-  have hcardB : Nat.card B = orderOf (qH x) :=
+  have hcardB  :=
     (orderOf_eq_card_of_zpowers_eq_top hzpowersTop).symm
   have hcardBle : Nat.card B ≤ m := by
     rw [hcardB]
     exact orderOf_le_of_pow_eq_one hm hqHpow
-  let r : A →ₜ* Multiplicative (ZMod m) :=
+  let r  :=
     (zHatReductionMul m hm).comp f
   have hrx : r x = Multiplicative.ofAdd (1 : ZMod m) := by
     apply Multiplicative.ext
@@ -276,12 +282,7 @@ private theorem injective_of_topologicallyGenerates_zHat_one
     change ((r x) ^ k).toAdd = z.toAdd
     rw [hrx]
     simpa using hk
-  have hcodCard : Nat.card (Multiplicative (ZMod m)) = m := by
-    calc
-      Nat.card (Multiplicative (ZMod m)) =
-          Nat.card (ZMod m) :=
-        Nat.card_congr Multiplicative.toAdd
-      _ = m := Nat.card_zmod m
+  have hcodCard : Nat.card (Multiplicative (ZMod m)) = m := (Trans.trans (Nat.card_congr Multiplicative.toAdd) (Nat.card_zmod m))
   have hcardLower : m ≤ Nat.card B := by
     rw [← hcodCard]
     exact Nat.card_le_card_of_surjective rbar hrbarSurj
@@ -289,7 +290,7 @@ private theorem injective_of_topologicallyGenerates_zHat_one
       Nat.card (Multiplicative (ZMod m)) := by
     rw [hcodCard]
     exact le_antisymm hcardBle hcardLower
-  have hrbarInj : Function.Injective rbar :=
+  have hrbarInj  :=
     (Nat.bijective_iff_surjective_and_card rbar).mpr
       ⟨hrbarSurj, hcardEq⟩ |>.1
   have hry : r y = 1 := by
@@ -300,58 +301,53 @@ private theorem injective_of_topologicallyGenerates_zHat_one
     change r y = r 1
     rw [hry, map_one]
   change (QuotientGroup.mk' H.toSubgroup) y = 1 at hqy
-  have hyH : y ∈ H.toSubgroup :=
+  have hyH  :=
     (QuotientGroup.eq_one_iff (N := H.toSubgroup) y).mp hqy
   exact hyU (hHU hyH)
 
 namespace DegreeData
 
-/-- The positive integer `d_K(σ)` attached to a Frobenius lift. -/
-def frobeniusExponent (D : DegreeData G) (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
+section
+variable (D : DegreeData G) (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
     (hLK : L.toSubgroup ≤ K.field.toSubgroup)
     [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK) : ℕ :=
+include D K L hLK hLnormal
+/-- The positive integer `d_K(σ)` attached to a Frobenius lift. -/
+def frobeniusExponent  
+    (σ : D.FrobeniusElements K L hLK)  :=
   Exists.choose σ.2
 
 /-- The Frobenius exponent attached to a finite extension is strictly positive. -/
-theorem frobeniusExponent_pos (D : DegreeData G) (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
+theorem frobeniusExponent_pos  
     (σ : D.FrobeniusElements K L hLK) :
     0 < D.frobeniusExponent K L hLK σ :=
   (Exists.choose_spec σ.2).1
 
 /-- The normalized degree of Frobenius is the corresponding natural profinite power. -/
-theorem extensionNormalizedDegree_frobenius_eq_pow (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
+theorem extensionNormalizedDegree_frobenius_eq_pow  
     (σ : D.FrobeniusElements K L hLK) :
     D.extensionNormalizedDegree K L hLK σ.1 =
       (Multiplicative.ofAdd (1 : ZHat)) ^
           D.frobeniusExponent K L hLK σ :=
   (Exists.choose_spec σ.2).2
 
-/-- The normalized-degree equation uniquely determines the natural Frobenius
-exponent. -/
-theorem frobeniusExponent_unique (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK) (n : ℕ)
-    (hn :
-      D.extensionNormalizedDegree K L hLK σ.1 =
-        (Multiplicative.ofAdd (1 : ZHat)) ^ n) :
-    n = D.frobeniusExponent K L hLK σ := by
-  apply proCIntegerOne_pow_nat_injective
-  exact hn.symm.trans
-    (D.extensionNormalizedDegree_frobenius_eq_pow K L hLK σ)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The factorized normalized degree as a continuous homomorphism. -/
-def extensionNormalizedDegreeContinuous (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal] :
+def extensionNormalizedDegreeContinuous   :
     (K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK) →ₜ* ZHatMul :=
   { toMonoidHom := D.extensionNormalizedDegree K L hLK
     continuous_toFun :=
@@ -364,10 +360,7 @@ def extensionNormalizedDegreeContinuous (D : DegreeData G)
 
 /-- The continuous normalized-degree map evaluates as the algebraic normalized-degree map. -/
 @[simp]
-theorem extensionNormalizedDegreeContinuous_apply (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
+theorem extensionNormalizedDegreeContinuous_apply  
     (x : K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK) :
     D.extensionNormalizedDegreeContinuous K L hLK x =
       D.extensionNormalizedDegree K L hLK x :=
@@ -375,46 +368,32 @@ theorem extensionNormalizedDegreeContinuous_apply (D : DegreeData G)
 
 /-- Forgetting continuity recovers the underlying normalized-degree monoid homomorphism. -/
 @[simp]
-theorem extensionNormalizedDegreeContinuous_toMonoidHom (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal] :
+theorem extensionNormalizedDegreeContinuous_toMonoidHom   :
     (D.extensionNormalizedDegreeContinuous K L hLK).toMonoidHom =
       D.extensionNormalizedDegree K L hLK :=
   rfl
 
 /-- The continuous normalized-degree map of the extension is surjective. -/
-theorem extensionNormalizedDegreeContinuous_surjective (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal] :
+theorem extensionNormalizedDegreeContinuous_surjective   :
     Function.Surjective
       (D.extensionNormalizedDegreeContinuous K L hLK) := by
   intro z
   obtain ⟨k, hk⟩ := D.normalizedDegree_surjective K z
   refine ⟨QuotientGroup.mk k, ?_⟩
-  simpa using hk
+  exact hk
 
 /-- Restriction embeds the kernel of `d_K` on `G(\widetilde L|K)` into
 the finite group `G(L|K)`. -/
-def extensionDegreeKernelRestriction (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal] :
-    (D.extensionNormalizedDegreeContinuous K L hLK).toMonoidHom.ker →*
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK) :=
+def extensionDegreeKernelRestriction    :=
   (D.extensionRestriction K.field L hLK).comp
     (D.extensionNormalizedDegreeContinuous K L hLK).toMonoidHom.ker.subtype
 
 /-- Restriction to the degree kernel is injective on the extension subgroup. -/
-theorem extensionDegreeKernelRestriction_injective (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal] :
+theorem extensionDegreeKernelRestriction_injective   :
     Function.Injective
       (D.extensionDegreeKernelRestriction K L hLK) := by
   intro a b hab
-  let c := (a.1 : K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK)⁻¹ * b.1
+  let c := (a.1)⁻¹ * b.1
   have hcRestriction : D.extensionRestriction K.field L hLK c = 1 := by
     dsimp [c]
     rw [map_mul, map_inv]
@@ -435,12 +414,12 @@ theorem extensionDegreeKernelRestriction_injective (D : DegreeData G)
   have hkE : k ∈ extensionSubgroup K.field L hLK := by
     apply (QuotientGroup.eq_one_iff k).mp
     rw [← hk] at hcRestriction
-    simpa using hcRestriction
+    exact hcRestriction
   have hkI : k ∈ D.fieldInertiaWithin K.field := by
     rw [← D.normalizedDegree_ker K]
     change D.normalizedDegree K k = 1
     rw [← hk] at hcDegree
-    simpa using hcDegree
+    exact hcDegree
   have hkc : k ∈ D.extensionInertiaWithin K.field L hLK :=
     ⟨hkE, hkI⟩
   have hcOne : c = 1 := by
@@ -448,12 +427,17 @@ theorem extensionDegreeKernelRestriction_injective (D : DegreeData G)
     exact (QuotientGroup.eq_one_iff k).mpr hkc
   apply Subtype.ext
   exact inv_mul_eq_one.mp hcOne
+end
 
-/-- The extension's inertia subgroup is closed inside its base subgroup. -/
-theorem extensionInertiaWithin_isClosed (D : DegreeData G)
+
+section
+variable (D : DegreeData G)
     [IsTopologicalGroup G]
     (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup) :
+    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
+include D K L hLK
+/-- The extension's inertia subgroup is closed inside its base subgroup. -/
+theorem extensionInertiaWithin_isClosed   :
     IsClosed (D.extensionInertiaWithin K.field L hLK : Set K.field.toSubgroup) := by
   have hE : IsClosed (extensionSubgroup K.field L hLK : Set K.field.toSubgroup) := by
     change IsClosed ((fun x : K.field.toSubgroup => (x : G)) ⁻¹' (L : Set G))
@@ -471,24 +455,20 @@ theorem extensionInertiaWithin_isClosed (D : DegreeData G)
 
 /-- The closed cyclic subgroup `Γ = closure ⟨σ⟩` fixing the field `Σ`
 of the Frobenius fixed-field theorem. -/
-def frobeniusClosure (D : DegreeData G) [IsTopologicalGroup G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
+def frobeniusClosure  
     [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK) :
-    ClosedSubgroup
-      (K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK) :=
+    (σ : D.FrobeniusElements K L hLK)  :=
   closedSubgroupGenerated
     (Set.range (fun _ : Unit => σ.1))
 
 /-- The chosen Frobenius lift, regarded as an element of `Γ`. -/
-def frobeniusInClosure (D : DegreeData G) [IsTopologicalGroup G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
+def frobeniusInClosure  
     [hLnormal : (extensionSubgroup K.field L hLK).Normal]
     (σ : D.FrobeniusElements K L hLK) :
     D.frobeniusClosure K L hLK σ :=
   closedSubgroupGeneratedMap (fun _ : Unit => σ.1) ()
+end
+
 
 /-- The closure of the Frobenius-generated subgroup inherits a topological group structure. -/
 instance frobeniusClosure_isTopologicalGroup
@@ -510,8 +490,7 @@ instance frobeniusClosure_isTopologicalGroup
     [hLnormal : (extensionSubgroup K.field L hLK).Normal]
     (σ : D.FrobeniusElements K L hLK) :
     CommGroup (D.frobeniusClosure K L hLK σ) := by
-  letI : IsClosed
-      (D.extensionInertiaWithin K.field L hLK : Set K.field.toSubgroup) :=
+  letI  :=
     D.extensionInertiaWithin_isClosed K L hLK
   let Q := K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK
   let s : Subgroup Q :=
@@ -537,13 +516,16 @@ instance frobeniusClosure_isTopologicalGroup
     isMulCommutative_iff.mpr c.mul_comm
   exact open scoped IsMulCommutative in inferInstance
 
-/-- By construction, `σ` topologically generates `Γ`. -/
-theorem frobeniusInClosure_topologicallyGenerates
-    (D : DegreeData G) [IsTopologicalGroup G]
+section
+variable (D : DegreeData G) [IsTopologicalGroup G]
     (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
     (hLK : L.toSubgroup ≤ K.field.toSubgroup)
     [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK) :
+    (σ : D.FrobeniusElements K L hLK)
+include D K L hLK hLnormal σ
+/-- By construction, `σ` topologically generates `Γ`. -/
+theorem frobeniusInClosure_topologicallyGenerates
+      :
     TopologicallyGenerates
       ({D.frobeniusInClosure K L hLK σ} : Set
         (D.frobeniusClosure K L hLK σ)) := by
@@ -554,14 +536,7 @@ theorem frobeniusInClosure_topologicallyGenerates
   have hrange : Set.range (closedSubgroupGeneratedMap φ) =
       ({closedSubgroupGeneratedMap φ ()} : Set
         (closedSubgroupGenerated (Set.range φ))) := by
-    ext x
-    simp only [Set.mem_range, Set.mem_singleton_iff]
-    constructor
-    · rintro ⟨u, rfl⟩
-      cases u
-      rfl
-    · intro hx
-      exact ⟨(), hx.symm⟩
+    simp_all
   rw [hrange] at hgen
   change TopologicallyGenerates
     ({closedSubgroupGeneratedMap φ ()} : Set
@@ -569,11 +544,7 @@ theorem frobeniusInClosure_topologicallyGenerates
   exact hgen
 
 /-- The normalized degree restricted to `Γ`. -/
-def frobeniusClosureDegree (D : DegreeData G) [IsTopologicalGroup G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK) :
+def frobeniusClosureDegree   :
     D.frobeniusClosure K L hLK σ →ₜ* ZHatMul :=
   (D.extensionNormalizedDegreeContinuous K L hLK).comp
     (continuousSubgroupSubtype
@@ -581,12 +552,7 @@ def frobeniusClosureDegree (D : DegreeData G) [IsTopologicalGroup G]
 
 /-- The degree map sends the canonical Frobenius-closure generator to its expected value. -/
 @[simp]
-theorem frobeniusClosureDegree_generator (D : DegreeData G)
-    [IsTopologicalGroup G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK) :
+theorem frobeniusClosureDegree_generator   :
     D.frobeniusClosureDegree K L hLK σ
         (D.frobeniusInClosure K L hLK σ) =
       (Multiplicative.ofAdd (1 : ZHat)) ^
@@ -598,17 +564,22 @@ theorem frobeniusClosureDegree_generator (D : DegreeData G)
   have hval :
       (D.frobeniusInClosure K L hLK σ).1 = σ.1 := rfl
   rw [hval]
-  exact D.extensionNormalizedDegree_frobenius_eq_pow K L hLK σ
+  apply D.extensionNormalizedDegree_frobenius_eq_pow
+end
 
-/-- The image of `d_K` on `Γ` is precisely `n ℤ̂`, where
-`n = d_K(σ)`.  This is the group-dual residue-degree calculation in
-the Frobenius fixed-field residue-degree formula. -/
-theorem frobeniusClosureDegree_range (D : DegreeData G)
+
+section
+variable (D : DegreeData G)
     [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
     (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
     (hLK : L.toSubgroup ≤ K.field.toSubgroup)
     [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK) :
+    (σ : D.FrobeniusElements K L hLK)
+include D K L hLK hLnormal σ
+/-- The image of `d_K` on `Γ` is precisely `n ℤ̂`, where
+`n = d_K(σ)`.  This is the group-dual residue-degree calculation in
+the Frobenius fixed-field residue-degree formula. -/
+theorem frobeniusClosureDegree_range   :
     (D.frobeniusClosureDegree K L hLK σ).toMonoidHom.range =
       AddSubgroup.toSubgroup
         ((zHatMulNat (D.frobeniusExponent K L hLK σ)).toAddMonoidHom.range) := by
@@ -622,19 +593,13 @@ theorem frobeniusClosureDegree_range (D : DegreeData G)
   let n := D.frobeniusExponent K L hLK σ
   let R : Subgroup ZHatMul :=
     AddSubgroup.toSubgroup ((zHatMulNat n).toAddMonoidHom.range)
-  have hn : 0 < n := D.frobeniusExponent_pos K L hLK σ
+  
   have hxgen : TopologicallyGenerates ({x} : Set Γ) := by
-    simpa [Γ, x] using
-      D.frobeniusInClosure_topologicallyGenerates K L hLK σ
+    apply D.frobeniusInClosure_topologicallyGenerates
   have hfx : f x =
       (Multiplicative.ofAdd (1 : ZHat)) ^ n := by
-    change D.frobeniusClosureDegree K L hLK σ
-        (D.frobeniusInClosure K L hLK σ) =
-      (Multiplicative.ofAdd (1 : ZHat)) ^
-          D.frobeniusExponent K L hLK σ
-    exact D.frobeniusClosureDegree_generator K L hLK σ
-  have hRclosed : IsClosed (R : Set ZHatMul) := by
-    exact isClosed_zHatMulNat_range n
+    aesop
+  have hRclosed : IsClosed (R : Set ZHatMul) := isClosed_zHatMulNat_range n
   have hclosed_le_R :
       (closedSubgroupGenerated ({f x} : Set ZHatMul) : Subgroup ZHatMul) ≤ R := by
     apply Subgroup.topologicalClosure_minimal
@@ -693,34 +658,29 @@ theorem frobeniusClosureDegree_range (D : DegreeData G)
         exact (hrange ▸ hcompact).isClosed
     have hzmap : zHatPowNat n z ∈ f.toMonoidHom.range := by
       apply hclosed_le_range
-      simpa using hmap
+      exact hmap
     have hzy : zHatPowNat n z = y := by
       apply Multiplicative.ext
       exact hz
     exact hzy ▸ hzmap
 
-/-- The Frobenius fixed-field residue-degree formula, stated as the index of the normalized degree image:
-the relative residue degree of the fixed field `Σ` over `K` is `d_K(σ)`. -/
-theorem frobeniusClosureDegree_range_index (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK) :
-    (Subgroup.toAddSubgroup'
-      (D.frobeniusClosureDegree K L hLK σ).toMonoidHom.range).index =
-      D.frobeniusExponent K L hLK σ := by
-  rw [D.frobeniusClosureDegree_range K L hLK σ]
-  exact zHatMulNat_range_index _
-    (D.frobeniusExponent_pos K L hLK σ)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The value of `d_K` on `Γ`, regarded in the subgroup `n ℤ̂`. -/
-def frobeniusClosureDegreeInMulNatRange (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK)
+def frobeniusClosureDegreeInMulNatRange  
     (a : D.frobeniusClosure K L hLK σ) :
     (zHatMulNat (D.frobeniusExponent K L hLK σ)).toAddMonoidHom.range := by
   refine ⟨(D.frobeniusClosureDegree K L hLK σ a).toAdd, ?_⟩
@@ -732,24 +692,14 @@ def frobeniusClosureDegreeInMulNatRange (D : DegreeData G)
 
 /-- The restricted Frobenius-closure degree has the stated underlying profinite value. -/
 @[simp]
-theorem frobeniusClosureDegreeInMulNatRange_coe (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK)
+theorem frobeniusClosureDegreeInMulNatRange_coe  
     (a : D.frobeniusClosure K L hLK σ) :
     (D.frobeniusClosureDegreeInMulNatRange K L hLK σ a).1 =
       (D.frobeniusClosureDegree K L hLK σ a).toAdd :=
   rfl
 
 /-- The normalized degree `d_Σ = (1/n)d_K` on `Γ`. -/
-def fixedFieldNormalizedDegree (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK) :
+def fixedFieldNormalizedDegree   :
     D.frobeniusClosure K L hLK σ →ₜ* ZHatMul where
   toFun a := Multiplicative.ofAdd
     (zHatDivide (D.frobeniusExponent K L hLK σ)
@@ -786,29 +736,18 @@ def fixedFieldNormalizedDegree (D : DegreeData G)
 
 /-- The defining identity `n d_Σ = d_K` on `Γ`. -/
 theorem frobeniusExponent_nsmul_fixedFieldNormalizedDegree
-    (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK)
+     
     (a : D.frobeniusClosure K L hLK σ) :
     D.frobeniusExponent K L hLK σ •
         (D.fixedFieldNormalizedDegree K L hLK σ a).toAdd =
-      (D.frobeniusClosureDegree K L hLK σ a).toAdd := by
-  exact zHatMulNat_zHatDivide
+      (D.frobeniusClosureDegree K L hLK σ a).toAdd := zHatMulNat_zHatDivide
     (D.frobeniusExponent K L hLK σ)
     (D.frobeniusExponent_pos K L hLK σ)
     (D.frobeniusClosureDegreeInMulNatRange K L hLK σ a)
 
 /-- The chosen lift has normalized degree `1` over its fixed field. -/
 @[simp]
-theorem fixedFieldNormalizedDegree_generator (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK) :
+theorem fixedFieldNormalizedDegree_generator   :
     D.fixedFieldNormalizedDegree K L hLK σ
         (D.frobeniusInClosure K L hLK σ) =
       Multiplicative.ofAdd (1 : ZHat) := by
@@ -828,12 +767,7 @@ theorem fixedFieldNormalizedDegree_generator (D : DegreeData G)
   rfl
 
 /-- The normalized degree on `Γ` is onto. -/
-theorem fixedFieldNormalizedDegree_surjective (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK) :
+theorem fixedFieldNormalizedDegree_surjective   :
     Function.Surjective
       (D.fixedFieldNormalizedDegree K L hLK σ) := by
   intro z
@@ -852,6 +786,8 @@ theorem fixedFieldNormalizedDegree_surjective (D : DegreeData G)
     D.frobeniusExponent K L hLK σ • z.toAdd
   rw [D.frobeniusExponent_nsmul_fixedFieldNormalizedDegree]
   exact congrArg Multiplicative.toAdd ha
+end
+
 
 /-- The closed cyclic group `Γ` is totally disconnected. -/
 theorem frobeniusClosure_totallyDisconnectedSpace (D : DegreeData G)
@@ -916,13 +852,13 @@ theorem frobeniusFixedField_finiteIndex (D : DegreeData G)
   let : Finite dQ.toMonoidHom.ker :=
     Finite.of_injective j
       (D.extensionDegreeKernelRestriction_injective K L hLK)
-  let T : Subgroup Q := (⊤ : Subgroup Q) ⊓ dQ.toMonoidHom.ker
+  let T  := (⊤ : Subgroup Q) ⊓ dQ.toMonoidHom.ker
   let toKer : T → dQ.toMonoidHom.ker :=
     fun t => ⟨t.1, t.2.2⟩
-  let : Finite T := Finite.of_injective toKer (by
+  let  := Finite.of_injective toKer (by
     intro a b hab
     apply Subtype.ext
-    exact congrArg (fun x : dQ.toMonoidHom.ker => x.1) hab)
+    apply congrArg <;> aesop)
   have hkernel : (Γ ⊓ dQ.toMonoidHom.ker).relIndex
       ((⊤ : Subgroup Q) ⊓ dQ.toMonoidHom.ker) ≠ 0 := by
     rw [Subgroup.relIndex]
@@ -935,24 +871,26 @@ theorem frobeniusFixedField_finiteIndex (D : DegreeData G)
   apply (Subgroup.index_ne_zero_iff_finite).mp
   simpa [Γ, Q, Subgroup.relIndex_top_right] using hrel
 
-/-- The procyclic degree isomorphism, kernel form: `d_Σ` has trivial kernel.  The
-proof is the comparison of the finite quotients `Γ/Γ^m` with
-`ℤ̂/mℤ̂`. -/
-theorem frobeniusFixedField_normalizedDegree_injective (D : DegreeData G)
+section
+variable (D : DegreeData G)
     [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
     [TotallyDisconnectedSpace G]
     (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
     (hLK : L.toSubgroup ≤ K.field.toSubgroup)
     [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK) :
+    (σ : D.FrobeniusElements K L hLK)
+include D K L hLK hLnormal σ
+/-- The procyclic degree isomorphism, kernel form: `d_Σ` has trivial kernel.  The
+proof is the comparison of the finite quotients `Γ/Γ^m` with
+`ℤ̂/mℤ̂`. -/
+theorem frobeniusFixedField_normalizedDegree_injective   :
     Function.Injective
       (D.fixedFieldNormalizedDegree K L hLK σ) := by
   let Γ := D.frobeniusClosure K L hLK σ
   let : CompactSpace K.field.toSubgroup := by
     change CompactSpace K.field
     infer_instance
-  let : IsClosed
-      (D.extensionInertiaWithin K.field L hLK : Set K.field.toSubgroup) :=
+  let  :=
     D.extensionInertiaWithin_isClosed K L hLK
   let : TotallyDisconnectedSpace Γ :=
     D.frobeniusClosure_totallyDisconnectedSpace K L hLK σ
@@ -961,120 +899,113 @@ theorem frobeniusFixedField_normalizedDegree_injective (D : DegreeData G)
   apply injective_of_topologicallyGenerates_zHat_one
     (D.fixedFieldNormalizedDegree K L hLK σ)
     (D.frobeniusInClosure K L hLK σ)
-  · exact D.frobeniusInClosure_topologicallyGenerates K L hLK σ
-  · exact D.fixedFieldNormalizedDegree_generator K L hLK σ
+  · apply D.frobeniusInClosure_topologicallyGenerates
+  · apply D.fixedFieldNormalizedDegree_generator
 
-/-- The index estimate in the proof of finiteness of the Frobenius fixed field.  When the chosen
-Frobenius lift has degree one, the degree of its fixed field is at most the
-degree of the finite Galois extension from which the lift was chosen. -/
-theorem frobeniusClosure_index_le_extensionIndex_of_exponent_eq_one
-    (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    [hLfinite : Finite (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
-    (σ : D.FrobeniusElements K L hLK)
-    (hσ : D.frobeniusExponent K L hLK σ = 1) :
-    (D.frobeniusClosure K L hLK σ).toSubgroup.index ≤
-      (extensionSubgroup K.field L hLK).index := by
-  let Q := K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK
-  let dQ : Q →ₜ* ZHatMul :=
-    D.extensionNormalizedDegreeContinuous K L hLK
-  let H : Subgroup Q := dQ.toMonoidHom.ker
-  let Γ : Subgroup Q :=
-    (D.frobeniusClosure K L hLK σ).toSubgroup
-  let j := D.extensionDegreeKernelRestriction K L hLK
-  let : Finite H :=
-    Finite.of_injective j
-      (D.extensionDegreeKernelRestriction_injective K L hLK)
-  have hΓmap : Γ.map dQ.toMonoidHom =
-      (D.frobeniusClosureDegree K L hLK σ).toMonoidHom.range := by
-    ext z
-    constructor
-    · rintro ⟨q, hq, rfl⟩
-      exact ⟨⟨q, hq⟩, rfl⟩
-    · rintro ⟨q, rfl⟩
-      exact ⟨q.1, q.2, rfl⟩
-  have htopmap : (⊤ : Subgroup Q).map dQ.toMonoidHom = ⊤ := by
-    apply top_unique
-    intro z _
-    obtain ⟨q, hq⟩ :=
-      D.extensionNormalizedDegreeContinuous_surjective K L hLK z
-    exact ⟨q, trivial, hq⟩
-  have himage : (Γ.map dQ.toMonoidHom).relIndex
-      ((⊤ : Subgroup Q).map dQ.toMonoidHom) = 1 := by
-    rw [hΓmap, htopmap, Subgroup.relIndex_top_right,
-      D.frobeniusClosureDegree_range K L hLK σ,
-      AddSubgroup.index_toSubgroup,
-      zHatMulNat_range_index _
-        (D.frobeniusExponent_pos K L hLK σ), hσ]
-  have hΓker : Γ ⊓ dQ.toMonoidHom.ker = ⊥ := by
-    apply le_antisymm
-    · intro q hq
-      let γ : D.frobeniusClosure K L hLK σ := ⟨q, hq.1⟩
-      have hγDegreeOne :
-          D.frobeniusClosureDegree K L hLK σ γ = 1 := by
-        change dQ q = 1
-        exact hq.2
-      have hγNormalizedOne :
-          D.fixedFieldNormalizedDegree K L hLK σ γ = 1 := by
-        apply Multiplicative.ext
-        have hrel :=
-          D.frobeniusExponent_nsmul_fixedFieldNormalizedDegree
-            K L hLK σ γ
-        rw [hσ, one_nsmul, hγDegreeOne] at hrel
-        simpa using hrel
-      have hγone : γ = 1 :=
-        D.frobeniusFixedField_normalizedDegree_injective K L hLK σ (by
-          rw [map_one]
-          exact hγNormalizedOne)
-      change q = 1
-      exact congrArg Subtype.val hγone
-    · exact bot_le
-  have hkernel : (Γ ⊓ dQ.toMonoidHom.ker).relIndex
-      ((⊤ : Subgroup Q) ⊓ dQ.toMonoidHom.ker) =
-      Nat.card H := by
-    rw [hΓker]
-    have htopker : (⊤ : Subgroup Q) ⊓ dQ.toMonoidHom.ker =
-        dQ.toMonoidHom.ker := inf_eq_right.mpr le_top
-    rw [htopker]
-    change (⊥ : Subgroup Q).relIndex H = Nat.card H
-    rw [Subgroup.relIndex_bot_left]
-  have hindex : Γ.index = Nat.card H := by
-    rw [← Subgroup.relIndex_top_right]
-    rw [relIndex_eq_map_relIndex_mul_inf_ker_relIndex dQ.toMonoidHom le_top,
-      himage, hkernel, one_mul]
-  have hcard_le : Nat.card H ≤
-      Nat.card
-        (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK) :=
-    Nat.card_le_card_of_injective j
-      (D.extensionDegreeKernelRestriction_injective K L hLK)
-  calc
-    (D.frobeniusClosure K L hLK σ).toSubgroup.index =
-        Nat.card H := hindex
-    _ ≤ Nat.card
-        (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK) := hcard_le
-    _ = (extensionSubgroup K.field L hLK).index :=
-      (Subgroup.index_eq_card (extensionSubgroup K.field L hLK)).symm
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The procyclic degree isomorphism: `d_Σ` identifies `Γ` continuously with `ℤ̂`.
 On the field side its trivial kernel says exactly
 `\widetilde Σ = \widetilde L`. -/
-def frobeniusFixedField_normalizedDegreeEquiv (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK) :
+def frobeniusFixedField_normalizedDegreeEquiv   :
     D.frobeniusClosure K L hLK σ ≃ₜ* ZHatMul := by
   letI : CompactSpace K.field.toSubgroup := by
     change CompactSpace K.field
     infer_instance
-  letI : IsClosed
-      (D.extensionInertiaWithin K.field L hLK : Set K.field.toSubgroup) :=
+  letI  :=
     D.extensionInertiaWithin_isClosed K L hLK
   letI : T2Space ZHatMul := by
     change T2Space ZHat
@@ -1087,58 +1018,54 @@ def frobeniusFixedField_normalizedDegreeEquiv (D : DegreeData G)
 
 /-- The normalized-degree equivalence on the Frobenius fixed field evaluates by restriction. -/
 @[simp]
-theorem frobeniusFixedField_normalizedDegreeEquiv_apply (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK)
+theorem frobeniusFixedField_normalizedDegreeEquiv_apply  
     (a : D.frobeniusClosure K L hLK σ) :
     D.frobeniusFixedField_normalizedDegreeEquiv K L hLK σ a =
       D.fixedFieldNormalizedDegree K L hLK σ a :=
   rfl
+end
 
-/-- The explicit kernel-triviality form of the procyclic degree isomorphism. -/
-theorem frobeniusFixedField_kernel (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK) :
-    (D.fixedFieldNormalizedDegree K L hLK σ).toMonoidHom.ker = ⊥ := by
-  exact (D.fixedFieldNormalizedDegree K L hLK σ).toMonoidHom.ker_eq_bot_iff.mpr
-    (D.frobeniusFixedField_normalizedDegree_injective K L hLK σ)
 
-/-- The Frobenius over the fixed field `Σ`, defined by `d_Σ(φ_Σ)=1`. -/
-def fixedFieldFrobenius (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK) :
-    D.frobeniusClosure K L hLK σ :=
-  (D.frobeniusFixedField_normalizedDegreeEquiv K L hLK σ).symm
-    (Multiplicative.ofAdd (1 : ZHat))
 
-/-- The Frobenius characterization of the chosen lift: the original lift `σ` is the Frobenius of its
-fixed field `Σ`. -/
-theorem frobeniusFixedField_frobenius (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK) :
-    D.frobeniusInClosure K L hLK σ =
-      D.fixedFieldFrobenius K L hLK σ := by
-  apply (D.frobeniusFixedField_normalizedDegreeEquiv K L hLK σ).injective
-  rw [D.frobeniusFixedField_normalizedDegreeEquiv_apply]
-  rw [D.fixedFieldNormalizedDegree_generator]
-  exact
-    ((D.frobeniusFixedField_normalizedDegreeEquiv K L hLK σ).apply_symm_apply _).symm
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end DegreeData
 

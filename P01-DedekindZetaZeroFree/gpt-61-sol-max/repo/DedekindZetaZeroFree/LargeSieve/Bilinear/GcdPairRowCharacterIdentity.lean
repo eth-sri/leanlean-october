@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LFunctions.Hecke.QuadraticFamilies.UniformConductorControl
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve.Bilinear
 
@@ -11,8 +14,8 @@ open DedekindZetaZeroFree
 
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem sup_mul_eq_top {I X Y : Ideal (𝓞 F)}
-    (hX : I ⊔ X = ⊤) (hY : I ⊔ Y = ⊤) : I ⊔ X * Y = ⊤ :=
+private def sup_mul_eq_top {I X Y : Ideal (𝓞 F)}
+    (hX : I ⊔ X = ⊤) (hY : I ⊔ Y = ⊤)  :=
   ((Ideal.isCoprime_iff_sup_eq.mpr hX).mul_right
     (Ideal.isCoprime_iff_sup_eq.mpr hY)).sup_eq
 
@@ -55,7 +58,7 @@ theorem pairRowTransport
     calc ⊤ = d * v ⊔ c := hdvc.symm
       _ ≤ v ⊔ c := sup_le_sup_right Ideal.mul_le_right c
 
-  have hclsu : Q.cls u = Q.cls v :=
+  have hclsu  :=
     (ClassTwists.cls_mul_eq_iff Q d u v hdc huc hvc hduc hdvc).mp hclass
   obtain ⟨ψ, hψprim, hψagr⟩ := Q.product_primitive u v hu huc hv hvc huv hclsu
 
@@ -92,8 +95,8 @@ theorem pairRowTransport
         rw [eq_top_iff]
         calc ⊤ = I ⊔ (u * v) := hIuv.symm
           _ ≤ I ⊔ v := sup_le_sup_left Ideal.mul_le_right I
-      have hIdu : I ⊔ (d * u) = ⊤ := sup_mul_eq_top hId hIu
-      have hIdv : I ⊔ (d * v) = ⊤ := sup_mul_eq_top hId hIv
+      have hIdu  := sup_mul_eq_top hId hIu
+      have hIdv  := sup_mul_eq_top hId hIv
       have hIconddu : I ⊔ Q.cond (d * u) = ⊤ := by
         rw [eq_top_iff]
         calc ⊤ = I ⊔ ((d * u) * q) := (sup_mul_eq_top hIdu hIq).symm
@@ -114,21 +117,20 @@ theorem pairRowTransport
         calc ⊤ = I ⊔ (v * q) := (sup_mul_eq_top hIv hIq).symm
           _ ≤ I ⊔ Q.cond v :=
               sup_le_sup_left (le_of_dvd_ideal (hcontrol v hv hvc).1) I
-      have hIR : I ⊔ (c * (d * u) * (d * v) * Q.cond (d * u) * Q.cond (d * v) *
-          Q.cond u * Q.cond v) = ⊤ :=
+      have hIR  :=
         sup_mul_eq_top
           (sup_mul_eq_top
             (sup_mul_eq_top
               (sup_mul_eq_top
                 (sup_mul_eq_top
                   (sup_mul_eq_top hIc hIdu) hIdv) hIconddu) hIconddv) hIcondu) hIcondv
-      have hval : (Q.χ (d * u)) I * (Q.χ (d * v)) I = (Q.χ u) I * (Q.χ v) I :=
+      have hval  :=
         hagree I hIbot hIR
-      have hcjv : (starRingEnd ℂ) ((Q.χ (d * v)) I) = (Q.χ (d * v)) I :=
+      have hcjv  :=
         quadraticFamily_conj Q hdv hdvc I
-      have hcjv' : (starRingEnd ℂ) ((Q.χ v) I) = (Q.χ v) I :=
+      have hcjv'  :=
         quadraticFamily_conj Q hv hvc I
-      have hpsi : ψ I = (Q.χ u) I * starRingEnd ℂ ((Q.χ v) I) :=
+      have hpsi  :=
         hψagr I (sup_mul_eq_top hIcondu hIcondv)
       exact ⟨by rw [hcjv, hval, ← hcjv', hpsi], by rw [hpsi]⟩
     ·
@@ -136,7 +138,7 @@ theorem pairRowTransport
         by_contra h
         push Not at h
         exact hIuv (sup_mul_eq_top h.1 h.2)
-      have hzpsi : ψ I = 0 := (ψ.eq_zero_iff' I).mpr (Or.inr hIuv)
+      have hzpsi  := (ψ.eq_zero_iff' I).mpr (Or.inr hIuv)
       rcases hor with hune | hvne
       · have hcu : I ⊔ Q.cond u ≠ ⊤ := by
           intro hc
@@ -152,8 +154,8 @@ theorem pairRowTransport
             _ ≤ I ⊔ (d * u) :=
                 sup_le_sup_left (le_of_dvd_ideal (hcontrol (d * u) hdu hduc).2) I
             _ ≤ I ⊔ u := sup_le_sup_left Ideal.mul_le_right I
-        have hzu : (Q.χ u) I = 0 := ((Q.χ u).eq_zero_iff' I).mpr (Or.inr hcu)
-        have hzdu : (Q.χ (d * u)) I = 0 := ((Q.χ (d * u)).eq_zero_iff' I).mpr (Or.inr hcdu)
+        have hzu  := ((Q.χ u).eq_zero_iff' I).mpr (Or.inr hcu)
+        have hzdu  := ((Q.χ (d * u)).eq_zero_iff' I).mpr (Or.inr hcdu)
         exact ⟨by simp [hzdu, hzpsi], by simp [hzpsi, hzu]⟩
       · have hcv : I ⊔ Q.cond v ≠ ⊤ := by
           intro hc
@@ -169,8 +171,8 @@ theorem pairRowTransport
             _ ≤ I ⊔ (d * v) :=
                 sup_le_sup_left (le_of_dvd_ideal (hcontrol (d * v) hdv hdvc).2) I
             _ ≤ I ⊔ v := sup_le_sup_left Ideal.mul_le_right I
-        have hzv : (Q.χ v) I = 0 := ((Q.χ v).eq_zero_iff' I).mpr (Or.inr hcv)
-        have hzdv : (Q.χ (d * v)) I = 0 := ((Q.χ (d * v)).eq_zero_iff' I).mpr (Or.inr hcdv)
+        have hzv  := ((Q.χ v).eq_zero_iff' I).mpr (Or.inr hcv)
+        have hzdv  := ((Q.χ (d * v)).eq_zero_iff' I).mpr (Or.inr hcdv)
         exact ⟨by simp [hzdv, hzpsi], by simp [hzpsi, hzv]⟩
 
 end DedekindZetaZeroFree.LargeSieve.Bilinear

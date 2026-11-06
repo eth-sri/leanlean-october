@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Topology.Algebra.Group.Units
 public import Mathlib.Topology.Algebra.RestrictedProduct.TopologicalSpace
 public import Mathlib.Topology.Algebra.RestrictedProduct.Units
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -93,8 +96,7 @@ open embedding of their unit groups when the distinguished submonoids are open. 
     (hBopen : ∀ i, IsOpen (B i : Set (R i)))
     {T : Set ι} (hT : cofinite ≤ 𝓟 T) :
     Topology.IsOpenEmbedding (Units.map (inclusionMonoidHom (B := B) hT)) := by
-  have hRing : Topology.IsOpenEmbedding
-      (inclusion R (fun i => (B i : Set (R i))) hT) :=
+  have hRing  :=
     isOpenEmbedding_inclusion_principal hBopen hT
   exact Topology.IsOpenEmbedding.of_continuous_injective_isOpenMap
     (hRing.continuous.units_map _)
@@ -111,11 +113,11 @@ noncomputable def unitsContinuousMulEquiv
   refine { toMulEquiv := e, continuous_toFun := ?_, continuous_invFun := ?_ }
   · rw [continuous_iff_continuousAt]
     intro x
-    let T : Set ι := {i | e x i ∈ (Submonoid.ofClass (B i)).units}
+    let T  := {i | e x i ∈ (Submonoid.ofClass (B i)).units}
     have hT : cofinite ≤ 𝓟 T := le_principal_iff.mpr (e x).2
     let y : Πʳ i, [(R i)ˣ, (Submonoid.ofClass (B i)).units]_[𝓟 T] :=
       ⟨(e x).1, fun i hi => hi⟩
-    let x' : (Πʳ i, [R i, B i]_[𝓟 T])ˣ :=
+    let x'  :=
       (unitsEquivPrincipal (B := B) T).symm y
     have hx : Units.map (inclusionMonoidHom (B := B) hT) x' = x := by
       apply Units.ext

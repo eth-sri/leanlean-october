@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Ramification.HilbertRamification.ValuationSubring
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -41,13 +44,11 @@ theorem decompositionGroup_mapEquiv_mem_principalUnitGroup
     {u : Lˣ} (hu : u ∈ A.principalUnitGroup) :
     Units.mapEquiv ((τ : L ≃ₐ[K] L).toMulEquiv) u ∈ A.principalUnitGroup := by
   let uA : A.unitGroup := ⟨u, A.principal_units_le_units hu⟩
-  let eA : A ≃+* A := MulSemiringAction.toRingEquiv (decompositionGroup K A) A τ
-  let uA' : A.unitGroup :=
+  let eA  := MulSemiringAction.toRingEquiv (decompositionGroup K A) A τ
+  let uA'  :=
     A.unitGroupMulEquiv.symm
       (Units.mapEquiv eA.toMulEquiv (A.unitGroupMulEquiv uA))
-  have huKer :
-      A.unitGroupMulEquiv uA ∈
-        (Units.map (IsLocalRing.residue A).toMonoidHom).ker :=
+  have huKer  :=
     (A.coe_mem_principalUnitGroup_iff (x := uA)).mp hu
   have huRes :
       IsLocalRing.residue A (A.unitGroupMulEquiv uA : A) = 1 := by
@@ -117,30 +118,28 @@ instance ramificationGroup_normal (A : _root_.ValuationSubring L) :
 /-- The inertia group is canonically equivalent to its image in the ambient
 `K`-automorphism group. -/
 def inertiaGroupEquivInAut
-    (A : _root_.ValuationSubring L) :
-    inertiaGroup K A ≃* inertiaGroupInAut K A :=
+    (A : _root_.ValuationSubring L)  :=
   (inertiaGroup K A).equivMapOfInjective
     (decompositionGroup K A).subtype
     Subtype.coe_injective
 
 /-- The ramification subgroup, viewed as a subgroup of ambient inertia. -/
 abbrev ramificationGroupInInertiaAut
-    (A : _root_.ValuationSubring L) :
-    Subgroup (inertiaGroupInAut K A) :=
+    (A : _root_.ValuationSubring L)  :=
   Subgroup.map (inertiaGroupEquivInAut (K := K) A).toMonoidHom
     (ramificationGroup K A)
 
-/-- States the theorem `mem_ramificationGroupInInertiaAut_iff`. -/
-@[simp] theorem mem_ramificationGroupInInertiaAut_iff
-    (A : _root_.ValuationSubring L) (σ : inertiaGroupInAut K A) :
-    σ ∈ ramificationGroupInInertiaAut K A ↔
-      ∃ τ : ramificationGroup K A,
-        inertiaGroupEquivInAut (K := K) A τ = σ := by
-  constructor
-  · rintro ⟨τ, hτ, rfl⟩
-    exact ⟨⟨τ, hτ⟩, rfl⟩
-  · rintro ⟨τ, rfl⟩
-    exact ⟨(τ : inertiaGroup K A), τ.property, rfl⟩
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The ambient copy of `R_w` is normal inside the ambient copy of `I_w`. -/
 instance ramificationGroupInInertiaAut_normal
@@ -155,9 +154,7 @@ instance ramificationGroupInInertiaAut_normal
 transport the quotient `I_w/R_w` to the corresponding quotient of the ambient
 automorphism subgroups. -/
 def inertiaGroupQuotientRamificationEquivInertiaAutQuotient
-    (A : _root_.ValuationSubring L) :
-    inertiaGroup K A ⧸ ramificationGroup K A ≃*
-      inertiaGroupInAut K A ⧸ ramificationGroupInInertiaAut K A :=
+    (A : _root_.ValuationSubring L)  :=
   QuotientGroup.congr
     (ramificationGroup K A)
     (ramificationGroupInInertiaAut K A)

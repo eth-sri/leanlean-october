@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.Complex.PhragmenLindelof
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 
@@ -18,12 +21,12 @@ theorem quadratic_exp_growth_isBigO_double_exp (a b : ℝ) (hab : a < b)
         Filter.principal {s : ℂ | a < s.re ∧ s.re < b}]
         (fun s : ℂ => Real.exp (D * Real.exp (c * |s.im|))) := by
   obtain ⟨M, B, hM, hB, hg⟩ := hgrowth
-  let c : ℝ := (Real.pi / (b - a)) / 2
+  let c  := (Real.pi / (b - a)) / 2
   have hc : 0 < c := by dsimp [c]; positivity
   have hclt : c < Real.pi / (b - a) := by
     dsimp [c]
     linarith [div_pos Real.pi_pos (sub_pos.mpr hab)]
-  let D : ℝ := (2 * B / c ^ 2) * Real.exp c
+  let D  := (2 * B / c ^ 2) * Real.exp c
   have hpoly (t : ℝ) (ht : 0 ≤ t) :
       B * (1 + t) ^ 2 ≤ D * Real.exp (c * t) := by
     have hct : 0 ≤ c * (1 + t) := mul_nonneg hc.le (by linarith)

@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.LubinTate.FiniteLevel.FiniteParameters
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -34,18 +37,20 @@ open LocalFieldTheory.DiscreteValuationField.CompleteDVF
 
 variable {K : Type u} [Field K]
 
+section
+variable (F : LocalField.{u, v} K)
+include F
 /-- The image of the `k`-th higher principal-unit group in the finite
 parameter quotient at primitive level `n + 1`. -/
 def standardLubinTateUnitParameterSubgroup
-    (F : LocalField.{u, v} K) (n k : ℕ) :
-    Subgroup (standardLubinTateUnitParameter F n) :=
+      (n k : ℕ) : Subgroup (standardLubinTateUnitParameter F n) :=
   (higherPrincipalUnitGroup.toPrincipalUnitFiltration F.toCompleteDVF).principalUnitSubgroupClassInQuotient
     k (n + 1)
 
 /-- A represented finite parameter belongs to the `k`-th parameter subgroup
 exactly when its representative lies in `U_F^k`. -/
 theorem standardLubinTateUnitParameterClass_mem_subgroup_iff
-    (F : LocalField.{u, v} K) (n k : ℕ) (hk : k ≤ n + 1)
+      (n k : ℕ) (hk : k ≤ n + 1)
     (u : F.valuationSubringˣ) :
     standardLubinTateUnitParameterClass F n u ∈
         standardLubinTateUnitParameterSubgroup F n k ↔
@@ -56,15 +61,12 @@ theorem standardLubinTateUnitParameterClass_mem_subgroup_iff
       (higherPrincipalUnitGroup.toPrincipalUnitFiltration F.toCompleteDVF).principalUnitSubgroupClassInQuotient
         k (n + 1) ↔
       u ∈ higherPrincipalUnitGroup F.toCompleteDVF k
-  exact
-    AntitoneSubgroupFiltration.quotient_principalUnitSubgroup_mk_mem_classInQuotient_iff
-      (higherPrincipalUnitGroup.toPrincipalUnitFiltration F.toCompleteDVF)
-      hk u
+  apply AntitoneSubgroupFiltration.quotient_principalUnitSubgroup_mk_mem_classInQuotient_iff <;> assumption
 
 /-- The `k`-th finite parameter subgroup has cardinality
 `q ^ (n + 1 - k)` throughout the principal-unit range. -/
 theorem standardLubinTateUnitParameterSubgroup_natCard
-    (F : LocalField.{u, v} K) {π : F.valuationSubring}
+      {π : F.valuationSubring}
     (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
     (n k : ℕ) (hk : 1 ≤ k) (hkn : k ≤ n + 1) :
     Nat.card (standardLubinTateUnitParameterSubgroup F n k) =
@@ -77,13 +79,11 @@ theorem standardLubinTateUnitParameterSubgroup_natCard
     intro i
     change (higherPrincipalUnitGroup D i).Normal
     infer_instance
-  have hend : k + (n + 1 - k) = n + 1 :=
+  have hend  :=
     Nat.add_sub_of_le hkn
   calc
     Nat.card (standardLubinTateUnitParameterSubgroup F n k) =
-        Nat.card (U.principalUnitSubquotient k (n + 1)) := by
-      exact
-        (Nat.card_congr
+        Nat.card (U.principalUnitSubquotient k (n + 1)) := (Nat.card_congr
           (U.principalUnitSubquotientEquivClassInQuotientOfLe hkn).toEquiv).symm
     _ = Nat.card
           (U.principalUnitSubquotient k (k + (n + 1 - k))) := by
@@ -112,6 +112,8 @@ theorem standardLubinTateUnitParameterSubgroup_natCard
             D hπ (k + i) hki
     _ = Nat.card F.residueField ^ (n + 1 - k) := by
       simp
+end
+
 
 end LubinTate
 

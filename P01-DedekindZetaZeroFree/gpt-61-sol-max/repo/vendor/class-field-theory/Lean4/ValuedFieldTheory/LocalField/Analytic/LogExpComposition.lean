@@ -69,7 +69,7 @@ theorem hasSum_powerSeries_pow_coeff_mul_pow
       have hprod := ih.mul_of_nonarchimedean hgy
       have hsigma :
           HasSum
-            (fun nd : Sigma fun d : ℕ => ↑(Finset.antidiagonal d) =>
+            (fun nd : Sigma fun d : ℕ => ↑(Finset.HasAntidiagonal.antidiagonal d) =>
               (PowerSeries.coeff nd.2.1.1 (g ^ q) * x ^ nd.2.1.1) *
                 (PowerSeries.coeff nd.2.1.2 g * x ^ nd.2.1.2))
             (y ^ q * y) := by
@@ -78,7 +78,7 @@ theorem hasSum_powerSeries_pow_coeff_mul_pow
       have hsumCauchy :
           HasSum
             (fun d : ℕ =>
-              ∑ ij : ↑(Finset.antidiagonal d),
+              ∑ ij : ↑(Finset.HasAntidiagonal.antidiagonal d),
                 (PowerSeries.coeff ij.1.1 (g ^ q) * x ^ ij.1.1) *
                   (PowerSeries.coeff ij.1.2 g * x ^ ij.1.2))
             (y ^ q * y) :=
@@ -92,7 +92,7 @@ theorem hasSum_powerSeries_pow_coeff_mul_pow
       apply Finset.sum_congr rfl
       intro ij _
       have hijsum : ij.1.1 + ij.1.2 = d :=
-        Finset.mem_antidiagonal.mp ij.2
+        Finset.HasAntidiagonal.mem_antidiagonal.mp ij.2
       have hpow : x ^ d = x ^ ij.1.1 * x ^ ij.1.2 := by
         calc
           x ^ d = x ^ (ij.1.1 + ij.1.2) :=
@@ -119,7 +119,7 @@ theorem valuation_powerSeries_pow_coeff_mul_pow_le
       rw [pow_succ, PowerSeries.coeff_mul, Finset.sum_mul]
       apply v.map_sum_le
       intro ij hij
-      have hijsum : ij.1 + ij.2 = d := Finset.mem_antidiagonal.mp hij
+      have hijsum : ij.1 + ij.2 = d := Finset.HasAntidiagonal.mem_antidiagonal.mp hij
       have heq :
           (PowerSeries.coeff ij.1 (g ^ q) * PowerSeries.coeff ij.2 g) * x ^ d =
             (PowerSeries.coeff ij.1 (g ^ q) * x ^ ij.1) *

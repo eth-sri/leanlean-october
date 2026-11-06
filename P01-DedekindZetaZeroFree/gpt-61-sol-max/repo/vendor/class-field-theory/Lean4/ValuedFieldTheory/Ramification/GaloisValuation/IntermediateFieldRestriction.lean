@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import Mathlib.FieldTheory.Galois.Basic
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -36,7 +39,7 @@ in one ambient extension. -/
 noncomputable def intermediateFieldRestrictNormalHom
     (E F : IntermediateField K Omega) (hEF : E ≤ F) [Normal K E] :
     (F ≃ₐ[K] F) →* (E ≃ₐ[K] E) := by
-  letI : Algebra E F :=
+  letI  :=
     RingHom.toAlgebra (IntermediateField.inclusion hEF).toRingHom
   letI : IsScalarTower K E F := IsScalarTower.of_algebraMap_eq' rfl
   exact AlgEquiv.restrictNormalHom E
@@ -48,7 +51,7 @@ theorem intermediateFieldRestrictNormalHom_apply_val
     (sigma : F ≃ₐ[K] F) (x : E) :
     E.val (intermediateFieldRestrictNormalHom E F hEF sigma x) =
       F.val (sigma (IntermediateField.inclusion hEF x)) := by
-  let : Algebra E F :=
+  let  :=
     RingHom.toAlgebra (IntermediateField.inclusion hEF).toRingHom
   let : IsScalarTower K E F := IsScalarTower.of_algebraMap_eq' rfl
   have h := AlgEquiv.restrictNormal_commutes sigma E x

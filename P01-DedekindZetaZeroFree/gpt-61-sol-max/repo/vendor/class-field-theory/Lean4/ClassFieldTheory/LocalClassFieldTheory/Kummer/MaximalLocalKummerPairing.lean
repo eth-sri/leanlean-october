@@ -42,11 +42,14 @@ abbrev maximalLocalKummerExtension (n : ℕ+) :=
     (K := K) (Omega := SeparableClosure K) n
       (maximalKummerSubgroup K n).1
 
+section
+variable (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
+    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
+include n hnK hmu
 /-- The local Artin homomorphism valued in the maximal exponent-`n` Kummer
 extension. -/
 noncomputable def maximalLocalKummerNormResidueAutomorphism
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
+      :
     Kˣ →* Gal((maximalLocalKummerExtension K n)/K) := by
   let Delta := maximalKummerSubgroup K n
   let E := maximalLocalKummerExtension K n
@@ -58,8 +61,7 @@ noncomputable def maximalLocalKummerNormResidueAutomorphism
   exact abelianLocalArtinMonoidHom K E
 
  noncomputable def maximalLocalKummerPairingSource
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (a : Kˣ) :
+      (a : Kˣ) :
     Kˣ →* nthRootsSubgroup (maximalLocalKummerExtension K n) (n : ℕ) := by
   let Delta := maximalKummerSubgroup K n
   let E := maximalLocalKummerExtension K n
@@ -83,8 +85,7 @@ noncomputable def maximalLocalKummerNormResidueAutomorphism
 /-- The maximal finite Kummer pairing, evaluated at the local Artin
 automorphism of `a`, is multiplicative in its radical variable. -/
 noncomputable def maximalLocalKummerPairingRightHom
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (a : Kˣ) :
+      (a : Kˣ) :
     Kˣ →* nthRootsSubgroup K (n : ℕ) :=
   (nthRootsSubgroupEquivOfPrimitiveRoots
       K (maximalLocalKummerExtension K n) n hmu).symm.toMonoidHom.comp
@@ -92,8 +93,7 @@ noncomputable def maximalLocalKummerPairingRightHom
 
 @[simp]
 theorem maximalLocalKummerPairingRightHom_apply
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (a b : Kˣ) :
+      (a b : Kˣ) :
     maximalLocalKummerPairingRightHom K n hnK hmu a b =
       (nthRootsSubgroupEquivOfPrimitiveRoots
         K (maximalLocalKummerExtension K n) n hmu).symm
@@ -103,8 +103,7 @@ theorem maximalLocalKummerPairingRightHom_apply
 /-- Mapping the maximal pairing into its defining extension identifies its
 value with the root quotient of any radical having the prescribed power. -/
 theorem maximalLocalKummerPairingRightHom_map_eq_rootQuotient_of_pow
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (a b : Kˣ)
+      (a b : Kˣ)
     (beta : (maximalLocalKummerExtension K n)ˣ)
     (hbeta : beta ^ (n : ℕ) =
       Units.map
@@ -154,12 +153,13 @@ theorem maximalLocalKummerPairingRightHom_map_eq_rootQuotient_of_pow
 
 @[simp]
 theorem maximalLocalKummerPairing_mul_right
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (a b c : Kˣ) :
+      (a b c : Kˣ) :
     maximalLocalKummerPairingRightHom K n hnK hmu a (b * c) =
       maximalLocalKummerPairingRightHom K n hnK hmu a b *
         maximalLocalKummerPairingRightHom K n hnK hmu a c :=
   map_mul (maximalLocalKummerPairingRightHom K n hnK hmu a) b c
+end
+
 
 end Kummer
 end LocalClassFieldTheory

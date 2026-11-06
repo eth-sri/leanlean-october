@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Mellin.OriginRegularization
 public import DedekindZetaZeroFree.HarmonicAnalysis.Schwartz.PositiveSideJetSeminorms
 
 @[expose] public section
+
 
 noncomputable section
 open scoped NumberField Classical ContDiff Topology
@@ -15,7 +18,7 @@ private lemma iteratedDeriv_eq_zero_of_lt_support (b : ℝ) (h : ℝ → ℂ)
     (hpos : PositiveSideSupport b h) (m : ℕ) :
     ∀ x : ℝ, b < x → iteratedDeriv m h x = 0 := by
   induction m with
-  | zero => intro x hx; simpa using hpos x hx
+  | zero => intro x hx; exact hpos x hx
   | succ m ih =>
     intro x hx
     rw [iteratedDeriv_succ]
@@ -23,7 +26,10 @@ private lemma iteratedDeriv_eq_zero_of_lt_support (b : ℝ) (h : ℝ → ℂ)
       Filter.eventually_of_mem (isOpen_Ioi.mem_nhds hx) (fun y hy => ih y hy)
     simpa using h1.deriv_eq
 
-private lemma norm_iteratedDeriv_le_S (b : ℝ) (hb : 0 < b) (m : ℕ) (h : ℝ → ℂ)
+section
+variable (b : ℝ) (hb : 0 < b)
+include b hb
+private lemma norm_iteratedDeriv_le_S   (m : ℕ) (h : ℝ → ℂ)
     (hh : ContDiff ℝ ∞ h) {x : ℝ} (hx : x ∈ Set.Icc 0 b) :
     ‖iteratedDeriv m h x‖ ≤ S b m h := by
   have hfin := S_finite b hb m h hh
@@ -41,15 +47,15 @@ private lemma norm_iteratedDeriv_le_S (b : ℝ) (hb : 0 < b) (m : ℕ) (h : ℝ 
     exact Finset.single_le_sum hnonneg (Finset.mem_range.mpr (Nat.lt_succ_self m))
   exact hterm.trans hsingle
 
-private lemma norm_mellin_le (b : ℝ) (hb : 0 < b) (m : ℕ) (h : ℝ → ℂ)
+private lemma norm_mellin_le   (m : ℕ) (h : ℝ → ℂ)
     (hh : ContDiff ℝ ∞ h) (hpos : PositiveSideSupport b h) (s : ℂ) (hs : 0 < s.re) :
     ‖mellin (iteratedDeriv m h) s‖ ≤ S b m h * b ^ s.re / s.re := by
   set g : ℝ → ℂ := iteratedDeriv m h with hg
   set σ : ℝ := s.re with hσ
   have hσpos : 0 < σ := by rw [hσ]; exact hs
-  have hSnn : 0 ≤ S b m h := S_nonneg b hb m h hh
+  
   have hgcont : Continuous g := by
-    rw [hg]; exact hh.continuous_iteratedDeriv m (by simp)
+    rw [hg]; apply hh.continuous_iteratedDeriv <;> aesop
   set F : ℝ → ℝ := Set.indicator (Set.Ioc (0 : ℝ) b) (fun t => S b m h * t ^ (σ - 1)) with hF
   have hFapply : ∀ t : ℝ, F t = if t ∈ Set.Ioc (0 : ℝ) b then S b m h * t ^ (σ - 1) else 0 := by
     intro t; rw [hF]; exact Set.indicator_apply ..
@@ -127,7 +133,7 @@ private lemma norm_mellin_le (b : ℝ) (hb : 0 < b) (m : ℕ) (h : ℝ → ℂ)
     _ ≤ ∫ t in Set.Ioi (0 : ℝ), F t := setIntegral_mono_ae_restrict hint hFintOn hle
     _ = S b m h * b ^ σ / σ := hFint_eq
 
-private theorem originMellinQ_bound_of_re_bounds (b : ℝ) (hb : 0 < b) (K : Set ℂ) (σlo σhi : ℝ)
+private theorem originMellinQ_bound_of_re_bounds   (K : Set ℂ) (σlo σhi : ℝ)
     (hK : IsCompact K)
     (hlo : ∀ s ∈ K, σlo ≤ s.re) (hhi : ∀ s ∈ K, s.re ≤ σhi) :
     ∃ N : ℕ, ∃ C : ℝ, 0 < C ∧
@@ -135,7 +141,7 @@ private theorem originMellinQ_bound_of_re_bounds (b : ℝ) (hb : 0 < b) (K : Set
         ∀ s : ℂ, s ∈ K → ‖originMellinQ h s‖ ≤ C * S b N h := by
   set m : ℕ := Nat.ceil (max 0 (-σlo)) + 1 with hm
   have hmσ : -(m : ℝ) < σlo := by
-    have h1 : (-σlo : ℝ) ≤ max 0 (-σlo) := le_max_right _ _
+    have h1 : (-σlo) ≤ max 0 (-σlo) := le_max_right _ _
     have h2 : max 0 (-σlo) ≤ (Nat.ceil (max 0 (-σlo)) : ℝ) := Nat.le_ceil _
     have h3 : (Nat.ceil (max 0 (-σlo)) : ℝ) + 1 ≤ (m : ℝ) := by
       rw [hm]; push_cast; linarith
@@ -153,17 +159,15 @@ private theorem originMellinQ_bound_of_re_bounds (b : ℝ) (hb : 0 < b) (K : Set
     · exact (continuous_const.rpow (continuous_id.add continuous_const)
         (fun x => Or.inl (ne_of_gt hb))).continuousOn
     · fun_prop
-    · intro x hx
-      have : (0 : ℝ) < x + (m : ℝ) := by linarith [hx.1, hmσ]
-      simpa using ne_of_gt this
+    · (intros; grind)
   refine ⟨m, max CΓ 1 * max CB 1, by positivity, ?_⟩
   intro h hh hc hpos s hs
-  have hslo : σlo ≤ s.re := hlo s hs
+  have hslo  := hlo s hs
   have hsm : -(m : ℝ) < s.re := lt_of_lt_of_le hmσ hslo
-  have hre : (s + (m : ℂ)).re = s.re + m := by simp
+  have hre : (s + (m : ℂ)).re = s.re + m := rfl
   have hrepos : 0 < (s + (m : ℂ)).re := by
     rw [hre]; push_cast; linarith
-  have hSnn : 0 ≤ S b m h := S_nonneg b hb m h hh
+  have hSnn  := S_nonneg b hb m h hh
   have h1 : ‖((-1 : ℂ) ^ m / (2 * (Real.pi : ℂ)) ^ m)‖ ≤ 1 := by
     rw [norm_div, norm_pow, norm_pow, norm_neg, norm_one, one_pow]
     have h2pi : (1 : ℝ) ≤ ‖(2 * (Real.pi : ℂ))‖ := by
@@ -171,8 +175,7 @@ private theorem originMellinQ_bound_of_re_bounds (b : ℝ) (hb : 0 < b) (K : Set
         simp [Complex.sq_norm, Complex.normSq_ofReal, Complex.ofReal_mul]
       nlinarith [norm_nonneg (2 * (Real.pi : ℂ)), Real.pi_gt_three]
     exact div_le_one_of_le₀ (one_le_pow₀ h2pi) (by positivity)
-  have h2 : ‖mellin (iteratedDeriv m h) (s + (m : ℂ))‖
-      ≤ S b m h * b ^ (s + (m : ℂ)).re / (s + (m : ℂ)).re :=
+  have h2  :=
     norm_mellin_le b hb m h hh hpos (s + (m : ℂ)) hrepos
   have h2' : ‖mellin (iteratedDeriv m h) (s + (m : ℂ))‖
       ≤ S b m h * (b ^ (s + (m : ℂ)).re / (s + (m : ℂ)).re) := by
@@ -210,7 +213,7 @@ private theorem originMellinQ_bound_of_re_bounds (b : ℝ) (hb : 0 < b) (K : Set
               exact mul_le_mul_of_nonneg_right hstep (by positivity)
           _ = (max CΓ 1 * max CB 1) * S b m h := by ring
 
-theorem originMellinQ_compact_source_bound (b : ℝ) (hb : 0 < b)
+theorem originMellinQ_compact_source_bound  
     (K : Set ℂ) (hK : IsCompact K) :
     ∃ N : ℕ, ∃ C : ℝ, 0 < C ∧
       ∀ h : ℝ → ℂ, ContDiff ℝ ∞ h → HasCompactSupport h →
@@ -221,11 +224,10 @@ theorem originMellinQ_compact_source_bound (b : ℝ) (hb : 0 < b)
       ContinuousOn (fun s : ℂ => s.re) K)
     obtain ⟨s1, _, hmax⟩ := hK.exists_isMaxOn hne (by fun_prop :
       ContinuousOn (fun s : ℂ => s.re) K)
-    exact originMellinQ_bound_of_re_bounds b hb K s0.re s1.re hK (fun s hs => hmin hs)
-      (fun s hs => hmax hs)
+    apply originMellinQ_bound_of_re_bounds <;> assumption
   · exact ⟨0, 1, one_pos, fun h hh hc hpos s hs => absurd ⟨s, hs⟩ hne⟩
 
-theorem originMellinQ_rectangle_source_bound (b : ℝ) (hb : 0 < b)
+theorem originMellinQ_rectangle_source_bound  
     (a a' : ℝ) :
     ∃ N : ℕ, ∃ C : ℝ, 0 < C ∧
       ∀ h : ℝ → ℂ, ContDiff ℝ ∞ h → HasCompactSupport h →
@@ -240,9 +242,7 @@ theorem originMellinQ_rectangle_source_bound (b : ℝ) (hb : 0 < b)
       constructor
       · intro hs
         refine ⟨(s.re, s.im), ⟨⟨hs.1, hs.2.1⟩, ?_⟩, ?_⟩
-        · have hs' : |s.im| ≤ 1 := hs.2.2
-          rw [abs_le] at hs'
-          exact ⟨hs'.1, hs'.2⟩
+        · simp_all [abs_le] <;> aesop
         · exact Complex.re_add_im s
       · rintro ⟨p, hp, rfl⟩
         simp only [Set.mem_prod, Set.mem_Icc] at hp
@@ -255,6 +255,8 @@ theorem originMellinQ_rectangle_source_bound (b : ℝ) (hb : 0 < b)
   obtain ⟨N, C, hC, h⟩ := originMellinQ_bound_of_re_bounds b hb _ a a' hK (fun s hs => hs.1)
     (fun s hs => hs.2.1)
   exact ⟨N, C, hC, fun h' hh hc hpos s hs1 hs2 hs3 => h h' hh hc hpos s ⟨hs1, hs2, hs3⟩⟩
+end
+
 
 end DedekindZetaZeroFree.LargeSieve.Vendor
 

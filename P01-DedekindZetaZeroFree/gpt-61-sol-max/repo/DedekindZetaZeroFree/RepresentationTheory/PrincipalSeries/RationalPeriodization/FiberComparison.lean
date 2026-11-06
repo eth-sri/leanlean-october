@@ -43,9 +43,9 @@ abbrev Fiber : KPHilbert.Place F → Type :=
   KPGlobalResidualConstruction.ScalarAbsorption.FullV
     (LocalFiber F R.A.zeta12 R.A.primitive_zeta12 P C)
 
-abbrev sourceFiber : KPHilbert.Place F → Type
-  | Sum.inl _ => ℂ
-  | Sum.inr q => KPLocalStoneVonNeumann.InducedModule (imageData R N P C q).inducing.polarization
+
+
+
 
 abbrev reference : ∀ p, Fiber R P C p :=
   KPGlobalResidualConstruction.ScalarAbsorption.fullReference

@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.CauchyCenterContinuity
 
 @[expose] public section
+
 
 noncomputable section
 open scoped Topology
@@ -11,16 +14,19 @@ namespace DedekindZetaZeroFree.ResidueContinuity.ScalarSourceJointContinuity
 open ComplexAnalysis.KernelTaylor.CauchyOperators
 variable {X : Type*} [TopologicalSpace X]
 
-theorem joint_on_ball_of_continuous_circle
-    (f : ℂ → X → ℂ) (c : ℂ) (R : ℝ) (hR : 0 < R)
+section
+variable (f : ℂ → X → ℂ) (c : ℂ) (R : ℝ) (hR : 0 < R)
     (hf : ∀ x, DifferentiableOn ℂ (fun z => f z x) (Metric.closedBall c R))
-    (hc : Continuous (fun p : Metric.sphere c R × X => f p.1 p.2)) :
+    (hc : Continuous (fun p : Metric.sphere c R × X => f p.1 p.2))
+include f c R hR hf hc
+theorem joint_on_ball_of_continuous_circle
+      :
     Continuous (fun p : Metric.ball c R × X => f p.1 p.2) := by
   let weighted : Metric.ball c R × X → C(Metric.sphere c R, ℂ) := fun p =>
     ⟨fun z => ((z : ℂ) - c) / ((z : ℂ) - p.1.val) * f z p.2, by
       have hn : ∀ z : Metric.sphere c R, (z : ℂ) - p.1.val ≠ 0 := by
         intro z hz
-        have he : (z : ℂ) = p.1.val := sub_eq_zero.mp hz
+        have he  := sub_eq_zero.mp hz
         have hs := z.property
         rw [he] at hs
         exact (ne_of_lt p.1.property) hs
@@ -32,7 +38,7 @@ theorem joint_on_ball_of_continuous_circle
     have hn : ∀ p : (Metric.ball c R × X) × Metric.sphere c R,
         (p.2 : ℂ) - p.1.1.val ≠ 0 := by
       intro p hz
-      have he : (p.2 : ℂ) = p.1.1.val := sub_eq_zero.mp hz
+      have he  := sub_eq_zero.mp hz
       have hs := p.2.property
       rw [he] at hs
       exact (ne_of_lt p.1.1.property) hs
@@ -42,7 +48,7 @@ theorem joint_on_ball_of_continuous_circle
       (hc.comp (continuous_snd.prodMk (continuous_snd.comp continuous_fst)))
   have heq (p : Metric.ball c R × X) :
       circleCoeffCLM c R hR 0 (weighted p) = f p.1 p.2 := by
-    have hi := (kernel_continuousOn c R hR (weighted p) 0).circleIntegrable hR.le
+    
     have hC := (hf p.2).circleIntegral_sub_inv_smul p.1.property
     change circleCoeff c R 0 (weighted p) = _
     unfold circleCoeff
@@ -56,7 +62,7 @@ theorem joint_on_ball_of_continuous_circle
         circleLift_eq c R (weighted p) ⟨z, hz⟩]
       have hzc : z - c ≠ 0 := by
         intro he
-        have hz' : z = c := sub_eq_zero.mp he
+        have hz'  := sub_eq_zero.mp he
         subst z
         exact hR.ne' (by simpa using hz.symm)
       simp only [weighted, pow_zero, one_mul, smul_eq_mul, ContinuousMap.coe_mk,
@@ -64,15 +70,12 @@ theorem joint_on_ball_of_continuous_circle
       rw [← mul_assoc, ← mul_assoc, inv_mul_cancel₀ hzc, one_mul]
     rw [he, hC]
     simp only [smul_eq_mul]
-    exact inv_mul_cancel_left₀ (by
-      exact mul_ne_zero (mul_ne_zero (by norm_num)
+    exact inv_mul_cancel_left₀ (mul_ne_zero (mul_ne_zero (by norm_num)
         (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero)) Complex.I_ne_zero) _
   exact ((circleCoeffCLM c R hR 0).continuous.comp hweighted).congr heq
 
 theorem joint_continuousOn_ball_of_continuous_circle
-    (f : ℂ → X → ℂ) (c : ℂ) (R : ℝ) (hR : 0 < R)
-    (hf : ∀ x, DifferentiableOn ℂ (fun z => f z x) (Metric.closedBall c R))
-    (hc : Continuous (fun p : Metric.sphere c R × X => f p.1 p.2)) :
+      :
     ContinuousOn (fun p : ℂ × X => f p.1 p.2) (Metric.ball c R ×ˢ Set.univ) := by
   have hj := joint_on_ball_of_continuous_circle f c R hR hf hc
   apply continuousOn_iff_continuous_restrict.mpr
@@ -82,6 +85,8 @@ theorem joint_continuousOn_ball_of_continuous_circle
     ((continuous_fst.comp continuous_subtype_val).subtype_mk (fun p => p.property.1)).prodMk
       (continuous_snd.comp continuous_subtype_val)
   exact hj.comp hk
+end
+
 
 end DedekindZetaZeroFree.ResidueContinuity.ScalarSourceJointContinuity
 

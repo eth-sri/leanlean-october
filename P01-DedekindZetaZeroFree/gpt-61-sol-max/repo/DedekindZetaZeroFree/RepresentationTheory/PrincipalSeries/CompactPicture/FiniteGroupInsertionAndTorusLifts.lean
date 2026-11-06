@@ -63,8 +63,8 @@ def insertionLevel (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
     OpenSubgroup (KPLocalExceptionalConstruction.ActualCover F ζ hζ q) :=
   J.toOpenSubgroup.comap (finiteInsertion F ζ hζ q) (finiteInsertion_continuous F ζ hζ q)
 
-variable (K : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-variable (C : KPGlobalTorusBorelTwistCompatibility.ModelData F ζ hζ) (f : Flat F ζ hζ K)
+variable (K : Subgroup (KPLiteralRaw.G F ζ hζ)) 
+
 
 section PolarizedTorusLift
 open KPGlobalProductPolarizationCharacter

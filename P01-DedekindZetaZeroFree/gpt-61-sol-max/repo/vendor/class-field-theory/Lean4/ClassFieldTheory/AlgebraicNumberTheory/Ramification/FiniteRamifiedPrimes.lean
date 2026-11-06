@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.RingTheory.DedekindDomain.Different
 public import Mathlib.RingTheory.DedekindDomain.Factorization
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -44,7 +47,7 @@ def heightOnePrimeBelow (w : IsDedekindDomain.HeightOneSpectrum B) :
   asIdeal := w.asIdeal.under A
   isPrime := inferInstance
   ne_bot := by
-    have : Algebra.IsIntegral A B := Algebra.IsIntegral.of_finite A B
+    have  := Algebra.IsIntegral.of_finite A B
     exact mt Ideal.eq_bot_of_under_eq_bot w.ne_bot
 
 variable (A B)
@@ -75,7 +78,7 @@ theorem finite_ramified_base_heightOne_primes :
   refine ⟨w, hram, ?_⟩
   apply IsDedekindDomain.HeightOneSpectrum.ext
   dsimp [f, heightOnePrimeBelow]
-  let : w.asIdeal.LiesOver v.asIdeal := hlie
+  let  := hlie
   exact (Ideal.over_def w.asIdeal v.asIdeal).symm
 
 end AlgebraicNumberTheory.Ramification

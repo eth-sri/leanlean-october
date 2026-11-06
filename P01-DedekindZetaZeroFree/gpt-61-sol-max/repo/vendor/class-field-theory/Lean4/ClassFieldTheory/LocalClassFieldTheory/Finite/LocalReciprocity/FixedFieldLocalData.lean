@@ -219,11 +219,8 @@ theorem localHenselianValuation_valuationAt_abstractFixedField
     (zHatDivide_zHatMulNat (H.residueDegree (localResidueDatum K) : ℕ)
       (H.residueDegree (localResidueDatum K)).pos z)
 
-/-- A separable-closure equivalence extending an embedding of a finite
-separable local extension identifies the two uniquely extended local
-valuation rings. -/
-theorem localSeparableValuationSubring_eq_comap_finiteExtensionEquiv
-    (K F : Type)
+section
+variable (K F : Type)
     [Field K] [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K]
     [Field F] [ValuativeRel F] [TopologicalSpace F]
@@ -231,7 +228,13 @@ theorem localSeparableValuationSubring_eq_comap_finiteExtensionEquiv
     [Algebra K F] [FiniteDimensional K F] [Algebra.IsSeparable K F]
     [Valuation.HasExtension
       (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
-    (i : F →ₐ[K] SeparableClosure K) :
+    (i : F →ₐ[K] SeparableClosure K)
+include K F i
+/-- A separable-closure equivalence extending an embedding of a finite
+separable local extension identifies the two uniquely extended local
+valuation rings. -/
+theorem localSeparableValuationSubring_eq_comap_finiteExtensionEquiv
+      :
     letI : Algebra F (SeparableClosure K) :=
       i.toRingHom.toAlgebra
     letI : Algebra.IsSeparable F (SeparableClosure K) :=
@@ -275,15 +278,7 @@ theorem localSeparableValuationSubring_eq_comap_finiteExtensionEquiv
 extension, the ambient selected valuation ring is stabilized by the whole
 absolute Galois group of the extension field. -/
 theorem localSeparableDecompositionGroup_eq_top_finiteExtensionEquiv
-    (K F : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field F] [ValuativeRel F] [TopologicalSpace F]
-    [IsNonarchimedeanLocalField F]
-    [Algebra K F] [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [Valuation.HasExtension
-      (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
-    (i : F →ₐ[K] SeparableClosure K) :
+      :
     letI : Algebra F (SeparableClosure K) :=
       i.toRingHom.toAlgebra
     letI : Algebra.IsSeparable F (SeparableClosure K) :=
@@ -341,15 +336,7 @@ theorem localSeparableDecompositionGroup_eq_top_finiteExtensionEquiv
 
 @[implicit_reducible]
  noncomputable def finiteExtensionDecompositionResidueFintype
-    (K F : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field F] [ValuativeRel F] [TopologicalSpace F]
-    [IsNonarchimedeanLocalField F]
-    [Algebra K F] [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [Valuation.HasExtension
-      (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
-    (i : F →ₐ[K] SeparableClosure K) :
+      :
     letI : Algebra F (SeparableClosure K) :=
       i.toRingHom.toAlgebra
     letI : Algebra.IsSeparable F (SeparableClosure K) :=
@@ -394,15 +381,7 @@ unchanged after moving its separable closure into the ambient separable
 closure of the base field. -/
 theorem
     localResidueDegree_eq_residueAbsoluteDegreeIn_finiteExtensionEquiv
-    (K F : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field F] [ValuativeRel F] [TopologicalSpace F]
-    [IsNonarchimedeanLocalField F]
-    [Algebra K F] [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [Valuation.HasExtension
-      (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
-    (i : F →ₐ[K] SeparableClosure K) :
+      :
     letI : Algebra F (SeparableClosure K) :=
       i.toRingHom.toAlgebra
     letI : Algebra.IsSeparable F (SeparableClosure K) :=
@@ -554,6 +533,8 @@ theorem
   exact
     (residueAbsoluteDegreeIn_semilinear_conjugation
       kAF OmegaF tau eResidue heResidue rhoF).symm
+end
+
 
 /-- Local residue degree is invariant under a semilinear equivalence of
 local fields and separable closures that carries the selected extension
@@ -732,13 +713,16 @@ theorem localResidueDegree_semilinear_conjugation
     residueAbsoluteDegreeIn_semilinear_conjugation
       kAK OmegaK tau eResidue heResidue rhoK
 
+section
+variable (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
+    [IsNonarchimedeanLocalField K]
+    (H : FiniteAbstractField (Gal(SeparableClosure K / K)))
+include K H
 /-- Every `F`-algebra equivalence from the standard separable closure of a
 finite fixed field `F` to the original ambient separable closure identifies
 the two uniquely extended local valuation rings. -/
 theorem localSeparableValuationSubring_eq_comap_abstractFixedFieldEquiv
-    (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    (H : FiniteAbstractField (Gal(SeparableClosure K / K)))
+     
     (e : SeparableClosure (finiteFixedField K H) ≃ₐ[
           finiteFixedField K H] SeparableClosure K) :
     letI : FiniteDimensional K
@@ -803,9 +787,7 @@ canonically equivalent to the residue intermediate field attached to the
 finite fixing subgroup, compatibly with their embeddings into the selected
 residue field. -/
 private theorem exists_abstractFixedFieldResidueEquiv
-    (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    (H : FiniteAbstractField (Gal(SeparableClosure K / K)))
+     
     [FiniteDimensional K (finiteFixedField K H)]
     [NontriviallyNormedField (finiteFixedField K H)]
     [ValuativeRel (finiteFixedField K H)]
@@ -933,12 +915,17 @@ private theorem exists_abstractFixedFieldResidueEquiv
     algebraMap R Omega (eTop (eA.symm x))
   rw [heTop]
   simp [bar]
+end
+
 
 set_option synthInstance.maxHeartbeats 200000 in
-private theorem residueAbsoluteDegreeIn_eq_normalizedDegree_abstractFixedFieldEquiv
-    (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
+section
+variable (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K]
     (H : FiniteAbstractField (Gal(SeparableClosure K / K)))
+include K H
+private theorem residueAbsoluteDegreeIn_eq_normalizedDegree_abstractFixedFieldEquiv
+     
     [FiniteDimensional K (finiteFixedField K H)]
     [NontriviallyNormedField (finiteFixedField K H)]
     [ValuativeRel (finiteFixedField K H)]
@@ -1046,9 +1033,7 @@ the original ambient separable closure identifies its intrinsic local
 residue degree with the normalized degree on the corresponding abstract
 field. -/
 theorem localResidueDegree_eq_normalizedDegree_abstractFixedFieldEquiv
-    (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    (H : FiniteAbstractField (Gal(SeparableClosure K / K)))
+     
     (e : SeparableClosure (finiteFixedField K H) ≃ₐ[
           finiteFixedField K H] SeparableClosure K)
     (sigma : Gal(SeparableClosure (finiteFixedField K H) /
@@ -1111,6 +1096,8 @@ theorem localResidueDegree_eq_normalizedDegree_abstractFixedFieldEquiv
   exact
     residueAbsoluteDegreeIn_eq_normalizedDegree_abstractFixedFieldEquiv
       K H e sigma htop tau hTau
+end
+
 
 /-- The intrinsic residue degree of an arbitrary finite separable local
 extension agrees with the normalized degree on the ambient fixing subgroup

@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Algebra.SymmetricPower.Coordinates
 public import DedekindZetaZeroFree.RepresentationTheory.Irreducible.SubrepresentationsAndEigenvectors
 public import DedekindZetaZeroFree.RepresentationTheory.RankOne.SU2.Weights
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 The Tau Ceti contributors. All rights reserved.
@@ -71,7 +74,7 @@ private theorem repr_symPower_mixElement_weightBasis_last_ne_zero (i : Fin (d + 
   rw [hf, weightBasis_eq_reindex, Basis.repr_reindex_apply, symFinTwoEquiv_symm_last,
     symPower_apply_tprod, coe_mixElement, SymmetricPower.repr_basis_symmetricPower_tprod_ofFn_const]
   exact Finset.prod_ne_zero_iff.2 fun j _ => by
-    rw [repr_mulVec_basisFun]; exact mixMatrix_apply_ne_zero 0 (f j)
+    rw [repr_mulVec_basisFun]; apply mixMatrix_apply_ne_zero
 
 private theorem repr_symPower_mixElement_weightBasis_last_ne_zero' (i : Fin (d + 1)) :
     (weightBasis d).repr (symPower d mixElement (weightBasis d (Fin.last d))) i ≠ 0 := by
@@ -99,7 +102,7 @@ theorem isIrreducible_symPower : Representation.IsIrreducible (symPower d) := by
     by_contra hcon
 
     have hempty : {v : Sym[ℂ]^d(Fin 2 → ℂ) | ∃ i, weightBasis d i = v ∧ v ∈ σ.toSubmodule} = ∅ :=
-      Set.eq_empty_iff_forall_notMem.2 (by rintro v ⟨i, rfl, hv⟩; exact hcon ⟨i, hv⟩)
+      Set.eq_empty_iff_forall_notMem.2 (by rintro v ⟨i, rfl, hv⟩; apply hcon <;> aesop)
     refine hσ (Subrepresentation.toSubmodule_injective ?_)
     rw [Subrepresentation.toSubmodule_bot, eq_span_weightBasis_mem hW, hempty,
       Submodule.span_empty]
@@ -114,14 +117,14 @@ theorem isIrreducible_symPower : Representation.IsIrreducible (symPower d) := by
   rw [eq_top_iff, ← (weightBasis d).span_eq]
   exact Submodule.span_le.2 (by rintro _ ⟨i, rfl⟩; exact hall i)
 
-@[simp]
-theorem nonempty_equiv_symPower_iff (e : ℕ) :
-    Nonempty ((symPower d).Equiv (symPower e)) ↔ d = e := by
-  refine ⟨fun ⟨f⟩ => ?_, fun h => h ▸ ⟨Representation.Equiv.refl _⟩⟩
-  have hrank : Module.finrank ℂ (Sym[ℂ]^d(Fin 2 → ℂ)) = Module.finrank ℂ (Sym[ℂ]^e(Fin 2 → ℂ)) :=
-    f.toLinearEquiv.finrank_eq
-  rw [finrank_symPower, finrank_symPower] at hrank
-  omega
+
+
+
+
+
+
+
+
 
 end SU2
 

@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Schwartz.PositiveSideJetSeminorms
 public import DedekindZetaZeroFree.HarmonicAnalysis.Mellin.RegularizedGammaProduct
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -27,16 +30,7 @@ private lemma iteratedDeriv_eq_zero_of_gt (b : ℝ) (h : ℝ → ℂ)
       rw [hev.deriv_eq]
       simp
 
-private lemma S_nonneg_aux (b : ℝ) (hb : 0 < b) (N : ℕ) (h : ℝ → ℂ)
-    (hh : ContDiff ℝ ∞ h) : 0 ≤ S b N h := by
-  unfold S
-  refine Finset.sum_nonneg (fun i _ => ?_)
-  have hbd : BddAbove ((fun y : ℝ => ‖iteratedDeriv i h y‖) '' Set.Icc 0 b) :=
-    (isCompact_Icc.image (contDiff_iteratedDeriv h hh i).continuous.norm).bddAbove
-  have hmem : ‖iteratedDeriv i h 0‖ ∈
-      ((fun y : ℝ => ‖iteratedDeriv i h y‖) '' Set.Icc 0 b) :=
-    ⟨0, ⟨le_rfl, le_of_lt hb⟩, rfl⟩
-  exact le_trans (norm_nonneg _) (le_csSup hbd hmem)
+private alias S_nonneg_aux := _root_.DedekindZetaZeroFree.LargeSieve.Vendor.S_nonneg
 
 private lemma jet_le_S (b : ℝ) (hb : 0 < b) (N : ℕ) (h : ℝ → ℂ)
     (hh : ContDiff ℝ ∞ h) (i : ℕ) (hi : i ≤ N) (x : ℝ) (hx : x ∈ Set.Icc 0 b) :
@@ -94,11 +88,7 @@ private lemma norm_mellin_le (f : ℝ → ℂ) (b a M : ℝ) (hb : 0 < b) (ha : 
           exact hxb hx
         rw [Set.indicator_of_mem hx, Set.indicator_of_notMem hxb,
           hf0 x hbx, smul_zero, norm_zero]
-    · rw [Set.indicator_of_notMem hx]
-      by_cases hxb : x ∈ Set.Ioc (0 : ℝ) b
-      · rw [Set.indicator_of_mem hxb, norm_zero]
-        exact mul_nonneg hM (Real.rpow_nonneg (le_of_lt hxb.1) _)
-      · rw [Set.indicator_of_notMem hxb]; simp
+    · grind [Set.indicator_of_notMem, Set.indicator_of_mem, norm_zero]
   have hmain := MeasureTheory.norm_integral_le_of_norm_le hGint
     (Filter.Eventually.of_forall hbound)
   have hmell : mellin f w =
@@ -149,7 +139,7 @@ theorem originMellin_source_vertical_bound
     rw [hsim]
     exact abs_pos.mp (lt_of_lt_of_le zero_lt_one ht)
   have hshift := Gammaℂ_mul_originMellinQ_eq_shift h hh hc m s hs_ne hsim_ne
-  have hS : 0 ≤ S b m h := S_nonneg_aux b hb m h hh
+  have hS  := S_nonneg_aux b hb m h hh
   have hnum : ‖mellin (iteratedDeriv m h) (s + (m : ℂ))‖ ≤ S b m h * C_D := by
     have hbase := norm_mellin_le (iteratedDeriv m h) b (σ + (m : ℝ)) (S b m h) hb
       (by linarith [hσ.1]) hS
@@ -159,10 +149,9 @@ theorem originMellin_source_vertical_bound
     refine le_trans hbase (mul_le_mul_of_nonneg_left ?_ hS)
     have hσm : σ + (m : ℝ) ∈ Set.Icc (u + (m : ℝ)) (v + (m : ℝ)) :=
       ⟨by linarith [hσ.1], by linarith [hσ.2]⟩
-    have h1 : b ^ (σ + (m : ℝ)) ≤ max (b ^ (u + (m : ℝ))) (b ^ (v + (m : ℝ))) :=
+    have h1  :=
       rpow_le_endpoints b hb hσm
-    have h2 : 1 / (σ + (m : ℝ)) ≤ 1 / (u + (m : ℝ)) :=
-      one_div_le_one_div_of_le (by linarith [hum]) (by linarith [hσ.1])
+    
     rw [hCDdef]
     calc b ^ (σ + (m : ℝ)) / (σ + (m : ℝ))
         ≤ max (b ^ (u + (m : ℝ))) (b ^ (v + (m : ℝ))) / (σ + (m : ℝ)) :=
@@ -178,7 +167,7 @@ theorem originMellin_source_vertical_bound
           refine Finset.prod_le_prod₀ (fun _ _ => abs_nonneg _) (fun j _ => ?_)
           have him : (s + (j : ℂ)).im = t := by simp [hsdef]
           calc |t| = |(s + (j : ℂ)).im| := by rw [him]
-            _ ≤ ‖s + (j : ℂ)‖ := by simpa using RCLike.abs_im_le_norm (s + (j : ℂ))
+            _ ≤ ‖s + (j : ℂ)‖ := RCLike.abs_im_le_norm (s + (j : ℂ))
   have hprod : ‖Complex.Gammaℂ s * originMellinQ h s‖ ≤ S b m h * C_D / |t| ^ m := by
     rw [hshift, norm_div, norm_mul]
     have hone : ‖(-1 : ℂ) ^ m‖ = 1 := by simp
@@ -187,7 +176,7 @@ theorem originMellin_source_vertical_bound
       rw [← hsim]; exact pow_pos (abs_pos.mpr hsim_ne) m
     exact le_trans (div_le_div_of_nonneg_right hnum (norm_nonneg _))
       (div_le_div_of_nonneg_left (mul_nonneg hS hCDpos.le) htposm hden)
-  have ht1 : 1 ≤ |t| := ht
+  have ht1  := ht
   have htpos : 0 < |t| ^ m := pow_pos (lt_of_lt_of_le zero_lt_one ht1) m
   have hratio : (1 + |t|) ^ k / |t| ^ m ≤ 2 ^ k := by
     rw [div_le_iff₀ htpos]

@@ -40,12 +40,12 @@ def refined : ActualFiniteFactor.ProductLevelData F ζ hζ where
       pglCompact F ζ hζ (Sum.inr q) = _
     rw [hq, inf_idem]
 
-theorem refined_le : ActualFiniteFactor.productSubgroup F ζ hζ (refined F ζ hζ P C) ≤
-    ActualFiniteFactor.productSubgroup F ζ hζ (FiniteLevels.productLevel F ζ hζ P C) := by
-  apply Subgroup.map_mono
-  intro x hx
-  refine ⟨hx.1, Subgroup.mem_iInf.mpr (fun q => ?_)⟩
-  exact ((Subgroup.mem_iInf.mp hx.2) q).1
+
+
+
+
+
+
 
 variable {F ζ hζ}
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
@@ -108,11 +108,11 @@ theorem globalLevel_eq : KPGlobalTorusFunctionData.globalLevel F ζ hζ (level F
   rw [Subgroup.range_subtype, ← finite_eq F ζ hζ]
   exact ActualFiniteFactor.productSubgroup_le_finite F ζ hζ _
 
-theorem scalar_fixed (g u : KPGlobalTorusFunctionData.G F ζ hζ)
-    (hu : u ∈ KPGlobalTorusFunctionData.globalLevel F ζ hζ (level F ζ hζ P C)) :
-    RawSource.scalarValue F ζ hζ P C (g * u) = RawSource.scalarValue F ζ hζ P C g := by
-  rw [globalLevel_eq] at hu
-  exact RawSource.scalarValue_right_product F ζ hζ P C g u (refined_le F ζ hζ P C hu)
+
+
+
+
+
 
 end DedekindZetaZeroFree.EisensteinReferenceSections.SourceLevels
 

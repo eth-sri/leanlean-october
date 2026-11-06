@@ -23,9 +23,12 @@ theorem finiteMeasure (G : KPCuspCharts.ChartOutput F hF S D) :
     Measure.map_apply measurable_quotient_mk'' MeasurableSet.univ] at h
   simpa using h
 
-theorem bounded (G : KPCuspCharts.ChartOutput F hF S D)
+section
+variable (G : KPCuspCharts.ChartOutput F hF S D)
     (f : KPCuspCharts.Cross F → ℝ) (hf : Continuous f)
-    (hinv : ∀ (s : S) (x : KPCuspCharts.Cross F), f (G.crossAction s x) = f x) :
+    (hinv : ∀ (s : S) (x : KPCuspCharts.Cross F), f (G.crossAction s x) = f x)
+include G f hf hinv
+theorem bounded   :
     ∃ C : ℝ, ∀ x, ‖f x‖ ≤ C := by
   have hrel : ∀ x y, KPCuspCharts.crossRelation F S x y → f x = f y := by
     intro x y hxy
@@ -48,13 +51,13 @@ theorem bounded (G : KPCuspCharts.ChartOutput F hF S D)
   obtain ⟨C, hC⟩ := isCompact_univ.exists_bound_of_continuousOn hq.continuousOn
   exact ⟨C, fun x => hC (Quotient.mk _ x) (Set.mem_univ _)⟩
 
-theorem integrable (G : KPCuspCharts.ChartOutput F hF S D)
-    (f : KPCuspCharts.Cross F → ℝ) (hf : Continuous f)
-    (hinv : ∀ (s : S) (x : KPCuspCharts.Cross F), f (G.crossAction s x) = f x)
+theorem integrable  
     (ν : Measure (KPCuspCharts.Cross F)) [IsFiniteMeasure ν] : Integrable f ν := by
   obtain ⟨C, hC⟩ := bounded G f hf hinv
   exact ⟨hf.aestronglyMeasurable,
     HasFiniteIntegral.of_bounded (Filter.Eventually.of_forall hC)⟩
+end
+
 
 end DedekindZetaZeroFree.KPMeanZeroWeightedEnergy.GapCoercivity.CrossSection.ActualDomain
 
@@ -170,8 +173,8 @@ open MeasureTheory
 open scoped Classical
 namespace DedekindZetaZeroFree.KPMeanZeroWeightedEnergy.GapCoercivity.CrossSection
 
-theorem full_torus_zero_mean_descent
-    {F : Type} [Field F] [NumberField F]
+section
+variable {F : Type} [Field F] [NumberField F]
     {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
     {S : Subgroup (KPCuspArithmetic.PGL2 F)}
     {D : KPCuspCharts.ParabolicData F S} {ρ : S →* rootsOfUnity 3 F}
@@ -184,7 +187,10 @@ theorem full_torus_zero_mean_descent
     (hinv : ∀ (s : S) (x : KPCuspCharts.Cross F),
       f (QuotientAddGroup.mk (G.crossAction s x).1) (G.crossAction s x).2 =
         f (QuotientAddGroup.mk x.1) x.2)
-    (hzero : ∀ b : KPCuspCharts.Shape F, (∫ z, f z b ∂μ) = 0) :
+    (hzero : ∀ b : KPCuspCharts.Shape F, (∫ z, f z b ∂μ) = 0)
+include F hF S D ρ G μ hμ hprob f hf hinv hzero
+theorem full_torus_zero_mean_descent
+      :
     ∃ ν : Measure (KPCuspCharts.Torus F D.L),
       ν.IsAddHaarMeasure ∧ IsProbabilityMeasure ν ∧
       ∃ g : KPCuspCharts.Torus F D.L → KPCuspCharts.Shape F → ℝ,
@@ -263,20 +269,7 @@ theorem full_torus_zero_mean_descent
     simpa only [hgq] using hzero b
 
 theorem horizontal_exact_domain_integral_zero
-    {F : Type} [Field F] [NumberField F]
-    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-    {S : Subgroup (KPCuspArithmetic.PGL2 F)}
-    {D : KPCuspCharts.ParabolicData F S} {ρ : S →* rootsOfUnity 3 F}
-    (G : KPCuspCharts.ChartOutput F hF S D)
-    (μ : Measure (KPCuspGenuineMonodromy.KernelTorus S D ρ))
-    (hμ : μ.IsAddHaarMeasure) (hprob : IsProbabilityMeasure μ)
-    (f : KPCuspGenuineMonodromy.KernelTorus S D ρ → KPCuspCharts.Shape F → ℝ)
-    (hf : Continuous (fun x : KPCuspCharts.Cross F =>
-      f (QuotientAddGroup.mk x.1) x.2))
-    (hinv : ∀ (s : S) (x : KPCuspCharts.Cross F),
-      f (QuotientAddGroup.mk (G.crossAction s x).1) (G.crossAction s x).2 =
-        f (QuotientAddGroup.mk x.1) x.2)
-    (hzero : ∀ b : KPCuspCharts.Shape F, (∫ z, f z b ∂μ) = 0)
+     
     {A : Set (KPCuspCharts.Horizontal F)} (hAm : MeasurableSet A)
     (hAb : Bornology.IsBounded A)
     (hA : ∀ y : KPCuspCharts.Horizontal F, ∃! l : D.L,
@@ -320,6 +313,8 @@ theorem horizontal_exact_domain_integral_zero
   have hz := HorizontalFD.integral_lift_eq_zero volume ν hfd hAfin (fun z => g z b)
     (hgm b) (hgzero b)
   simpa only [hgmk] using hz
+end
+
 
 end DedekindZetaZeroFree.KPMeanZeroWeightedEnergy.GapCoercivity.CrossSection
 
@@ -335,11 +330,14 @@ open scoped Classical ENNReal
 
 namespace DedekindZetaZeroFree.KPMeanZeroWeightedEnergy.GapCoercivity.CrossSection
 
-theorem crossAction_inclusion
-    {F : Type} [Field F] [NumberField F]
+section
+variable {F : Type} [Field F] [NumberField F]
     {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
     {S : Subgroup (KPCuspArithmetic.PGL2 F)}
     {D : KPCuspCharts.ParabolicData F S}
+include F hF S D
+theorem crossAction_inclusion
+     
     (G : KPCuspCharts.ChartOutput F hF S D)
     (l : D.L) (x : KPCuspCharts.Cross F) :
     G.crossAction (D.inclusion (Multiplicative.ofAdd l)) x =
@@ -353,10 +351,7 @@ theorem crossAction_inclusion
   exact (congrArg Prod.fst hp).symm
 
 theorem invariant_zero_mean_fiber_integral
-    {F : Type} [Field F] [NumberField F]
-    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-    {S : Subgroup (KPCuspArithmetic.PGL2 F)}
-    {D : KPCuspCharts.ParabolicData F S} {ρ : S →* rootsOfUnity 3 F}
+      {ρ : S →* rootsOfUnity 3 F}
     (G : KPCuspCharts.ChartOutput F hF S D)
     (μ : Measure (KPCuspGenuineMonodromy.KernelTorus S D ρ))
     (hμ : μ.IsAddHaarMeasure) (hprob : IsProbabilityMeasure μ)
@@ -393,6 +388,8 @@ theorem invariant_zero_mean_fiber_integral
   have hcard : (Nat.card (KPCuspCharts.kernelUnits F hF D.E D.integralUnits) : ℝ) ≠ 0 := by
     exact_mod_cast (Nat.card_pos.ne' : Nat.card (KPCuspCharts.kernelUnits F hF D.E D.integralUnits) ≠ 0)
   exact (mul_eq_zero.mp (heq.symm.trans hrect)).resolve_left hcard
+end
+
 
 end DedekindZetaZeroFree.KPMeanZeroWeightedEnergy.GapCoercivity.CrossSection
 

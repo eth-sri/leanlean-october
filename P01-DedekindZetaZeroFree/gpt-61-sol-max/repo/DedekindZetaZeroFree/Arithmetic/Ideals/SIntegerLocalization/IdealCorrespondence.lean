@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Ideals.SIntegerLocalization.LocalizationAway
 public import Mathlib.NumberTheory.NumberField.Ideal.Basic
 
 @[expose] public section
+
 
 open scoped NumberField Classical WithZero nonZeroDivisors
 open NumberField IsDedekindDomain
@@ -19,9 +22,7 @@ private theorem mem_of_mul_mem_of_sup_span_eq_top (I : Ideal (𝓞 F))
   obtain ⟨c, rfl⟩ := Ideal.mem_span_singleton.mp hb
   have hmem := I.add_mem (I.mul_mem_right x ha) (I.mul_mem_left c hx)
   have heq : a * x + c * (t * x) = x := by
-    calc
-      a * x + c * (t * x) = (a + t * c) * x := by ring
-      _ = x := by rw [hab, one_mul]
+    grind
   exact heq ▸ hmem
 
 theorem under_map_exterior (S : Finset (HeightOneSpectrum (𝓞 F)))
@@ -37,8 +38,11 @@ theorem under_map_exterior (S : Finset (HeightOneSpectrum (𝓞 F)))
   rw [← Ideal.span_singleton_pow, span_denominator, ← pow_mul]
   exact Ideal.sup_pow_eq_top hI
 
-theorem under_ne_zero (S : Finset (HeightOneSpectrum (𝓞 F)))
-    (J : Ideal ((S : Set (HeightOneSpectrum (𝓞 F))).integer F)) (hJ : J ≠ ⊥) :
+section
+variable (S : Finset (HeightOneSpectrum (𝓞 F)))
+    (J : Ideal ((S : Set (HeightOneSpectrum (𝓞 F))).integer F)) (hJ : J ≠ ⊥)
+include S J hJ
+theorem under_ne_zero   :
     J.under (𝓞 F) ≠ ⊥ := by
   letI := isLocalization_away S
   intro h
@@ -46,8 +50,7 @@ theorem under_ne_zero (S : Finset (HeightOneSpectrum (𝓞 F)))
   rw [h, Ideal.map_bot] at hh
   exact hJ hh.symm
 
-theorem under_exterior (S : Finset (HeightOneSpectrum (𝓞 F)))
-    (J : Ideal ((S : Set (HeightOneSpectrum (𝓞 F))).integer F)) (hJ : J ≠ ⊥) :
+theorem under_exterior   :
     J.under (𝓞 F) ⊔ (∏ v ∈ S, v.asIdeal) = ⊤ := by
   letI := isLocalization_away S
   let I := J.under (𝓞 F)
@@ -81,6 +84,8 @@ theorem under_exterior (S : Finset (HeightOneSpectrum (𝓞 F)))
   apply top_unique
   rw [← htop, span_denominator S]
   exact sup_le_sup_left (Ideal.pow_le_self (classNumber_pos F).ne') _
+end
+
 
 end
 end DedekindZetaZeroFree.SIntegerLocalization

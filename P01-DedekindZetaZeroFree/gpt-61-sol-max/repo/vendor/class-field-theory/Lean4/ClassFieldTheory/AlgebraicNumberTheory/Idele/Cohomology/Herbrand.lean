@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Extension.GaloisDescent
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Extension.GaloisNorm
 public import GaloisCohomology.Cyclic.Herbrand.Permutation.Module
 public import GaloisCohomology.Cyclic.Herbrand.HerbrandFiniteness
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -174,33 +177,33 @@ theorem ideleClass_smul_mk
         (σ • a) :=
   rfl
 
-omit [NumberField L] [FiniteDimensional K L] [IsGalois K L] in
-@[simp]
-theorem principalIdele_smul_coe
-    (σ : L ≃ₐ[K] L)
-    (a :
-      RelativeIdeleGroup.principalSubgroup K L) :
-    ((σ • a :
-        RelativeIdeleGroup.principalSubgroup K L) :
-      RelativeIdeleGroup K L) =
-        σ • (a : RelativeIdeleGroup K L) :=
-  stableSubgroup_smul_coe
-    (RelativeIdeleGroup.principalSubgroup K L)
-    (principalRelativeIdele_smul_mem K L) σ a
 
-omit [NumberField L] [FiniteDimensional K L] [IsGalois K L] in
-/-- Equivariance of the principal-idele inclusion. -/
-theorem principalIdeleSubtype_equivariant :
-    ∀ (σ : L ≃ₐ[K] L)
-      (a : RelativeIdeleGroup.principalSubgroup K L),
-      (RelativeIdeleGroup.principalSubgroup K L).subtype
-          (σ • a) =
-        σ •
-          (RelativeIdeleGroup.principalSubgroup K L).subtype
-            a :=
-  stableSubgroup_subtype_equivariant
-    (RelativeIdeleGroup.principalSubgroup K L)
-    (principalRelativeIdele_smul_mem K L)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 omit [NumberField L] [FiniteDimensional K L] [IsGalois K L] in
 /-- Equivariance of the actual quotient map `I_L → C_L`. -/
@@ -216,19 +219,19 @@ theorem ideleClassQuotientMap_equivariant :
     (RelativeIdeleGroup.principalSubgroup K L)
     (principalRelativeIdele_smul_mem K L)
 
-omit [NumberField L] in
-/-- On relative ideles the Tate norm is the inclusion of the determinant
-norm.  This is the Galois product formula, not a separate class-field
-hypothesis. -/
-theorem relativeIdele_tateNorm_eq_inclusion_norm
-    (a : RelativeIdeleGroup K L) :
-    tateNorm (L ≃ₐ[K] L)
-        (RelativeIdeleGroup K L) a =
-      RelativeIdeleGroup.inclusion K L
-        (RelativeIdeleGroup.norm K L a) := by
-  simpa only [tateNorm] using
-    (RelativeIdeleGroup.inclusion_norm_eq_prod_conjugates
-      (K := K) (L := L) a).symm
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 omit [NumberField L] in
 /-- The class norm agrees, after Galois descent, with the Tate norm on
@@ -283,17 +286,13 @@ def baseIdeleClassToFixed :
     (by
       intro c
       rw [ideleClass_fixedSubgroup_eq_galoisFixed K L]
-      exact
-        RelativeIdeleGroup.classInclusion_range_le_galoisFixed
-          K L ⟨c, rfl⟩)
+      apply RelativeIdeleGroup.classInclusion_range_le_galoisFixed <;> aesop)
 
 omit [NumberField L] [FiniteDimensional K L] [IsGalois K L] in
 @[simp]
 theorem baseIdeleClassToFixed_coe
     (c : IdeleClassGroup K) :
-    ((baseIdeleClassToFixed K L c :
-        fixedSubgroup (L ≃ₐ[K] L)
-          (RelativeIdeleGroup.ClassGroup K L)) :
+    ((baseIdeleClassToFixed K L c) :
       RelativeIdeleGroup.ClassGroup K L) =
         RelativeIdeleGroup.classInclusion K L c :=
   rfl
@@ -327,9 +326,7 @@ omit [NumberField L] in
 @[simp]
 theorem baseIdeleClassEquivFixed_coe
     (c : IdeleClassGroup K) :
-    ((baseIdeleClassEquivFixed K L c :
-        fixedSubgroup (L ≃ₐ[K] L)
-          (RelativeIdeleGroup.ClassGroup K L)) :
+    ((baseIdeleClassEquivFixed K L c) :
       RelativeIdeleGroup.ClassGroup K L) =
         RelativeIdeleGroup.classInclusion K L c :=
   rfl
@@ -369,43 +366,43 @@ theorem ideleClassNorm_range_map_equivFixed :
       (classInclusion_ideleClassNorm_eq_tateNorm
         K L d).trans hd
 
-omit [NumberField L] in
-/-- The Tate norm kernel on idele classes is the kernel of the descended
-idele-class norm.  Injectivity of `C_K → C_L` is the descent input. -/
-theorem ideleClass_normKernelSubgroup_eq_ker :
-    normKernelSubgroup (L ≃ₐ[K] L)
-        (RelativeIdeleGroup.ClassGroup K L) =
-      MonoidHom.ker (ideleClassNorm K L) := by
-  ext c
-  change
-    tateNorm (L ≃ₐ[K] L)
-          (RelativeIdeleGroup.ClassGroup K L) c = 1 ↔
-      ideleClassNorm K L c = 1
-  constructor
-  · intro hc
-    apply RelativeIdeleGroup.classInclusion_injective K L
-    rw [map_one,
-      classInclusion_ideleClassNorm_eq_tateNorm K L c,
-      hc]
-  · intro hc
-    rw [← classInclusion_ideleClassNorm_eq_tateNorm K L c,
-      hc, map_one]
 
-/-- The negative-first Tate group for the actual idele class module,
-displayed as norm-one classes modulo augmentation classes. -/
-noncomputable def ideleClassHerbrandHMinusOneEquiv
-    (σ : L ≃ₐ[K] L) :
-    HerbrandHMinusOne (L ≃ₐ[K] L)
-        (RelativeIdeleGroup.ClassGroup K L) σ ≃*
-      normKernelSubgroup (L ≃ₐ[K] L)
-          (RelativeIdeleGroup.ClassGroup K L) ⧸
-        (augmentationSubgroup (L ≃ₐ[K] L)
-          (RelativeIdeleGroup.ClassGroup K L) σ).subgroupOf
-            (normKernelSubgroup (L ≃ₐ[K] L)
-              (RelativeIdeleGroup.ClassGroup K L)) :=
-  HerbrandHMinusOne.equiv
-    (G := L ≃ₐ[K] L)
-    (A := RelativeIdeleGroup.ClassGroup K L) σ
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 section NormQuotientIdentification
 
@@ -448,203 +445,203 @@ theorem ideleClassNorm_index_eq_herbrandH0_card :
 
 end NormQuotientIdentification
 
-omit [NumberField L] [FiniteDimensional K L] [IsGalois K L] in
-/-- Exactness at `I_L` of `Lˣ → I_L → C_L`. -/
-theorem principalIdele_ideleClass_exact :
-    ∀ a : RelativeIdeleGroup K L,
-      QuotientGroup.mk'
-          (RelativeIdeleGroup.principalSubgroup K L) a = 1 ↔
-        ∃ p : RelativeIdeleGroup.principalSubgroup K L,
-          (RelativeIdeleGroup.principalSubgroup K L).subtype p =
-            a :=
-  stableSubgroup_quotientMap_exact
-    (RelativeIdeleGroup.principalSubgroup K L)
 
-omit [NumberField L] [FiniteDimensional K L] [IsGalois K L] in
-/-- The complete short-exactness data for the actual principal-idele
-inclusion and idele-class quotient. -/
-theorem principalIdele_ideleClass_shortExact :
-    (∀ (σ : L ≃ₐ[K] L)
-      (p : RelativeIdeleGroup.principalSubgroup K L),
-      (RelativeIdeleGroup.principalSubgroup K L).subtype
-          (σ • p) =
-        σ •
-          (RelativeIdeleGroup.principalSubgroup K L).subtype p) ∧
-    (∀ (σ : L ≃ₐ[K] L)
-      (a : RelativeIdeleGroup K L),
-      QuotientGroup.mk'
-          (RelativeIdeleGroup.principalSubgroup K L)
-          (σ • a) =
-        σ • QuotientGroup.mk'
-          (RelativeIdeleGroup.principalSubgroup K L) a) ∧
-    (∀ a : RelativeIdeleGroup K L,
-      QuotientGroup.mk'
-          (RelativeIdeleGroup.principalSubgroup K L) a = 1 ↔
-        ∃ p : RelativeIdeleGroup.principalSubgroup K L,
-          (RelativeIdeleGroup.principalSubgroup K L).subtype p =
-            a) ∧
-    Function.Injective
-      (RelativeIdeleGroup.principalSubgroup K L).subtype ∧
-    Function.Surjective
-      (QuotientGroup.mk'
-        (RelativeIdeleGroup.principalSubgroup K L)) := by
-  exact
-    ⟨principalIdeleSubtype_equivariant K L,
-      ideleClassQuotientMap_equivariant K L,
-      principalIdele_ideleClass_exact K L,
-      (RelativeIdeleGroup.principalSubgroup K L).subtype_injective,
-      QuotientGroup.mk'_surjective
-        (RelativeIdeleGroup.principalSubgroup K L)⟩
 
-omit [NumberField L] [IsGalois K L] in
-/-- Herbrand-quotient multiplicativity for the actual exact sequence
-`1 → Lˣ → I_L → C_L → 1`. -/
-theorem relativeIdele_herbrandQuotient_eq_principal_mul_class
-    (σ : L ≃ₐ[K] L)
-    (hgen : ∀ τ : L ≃ₐ[K] L,
-      τ ∈ Subgroup.zpowers σ)
-    [Finite
-      (HerbrandH0 (L ≃ₐ[K] L)
-        (RelativeIdeleGroup.principalSubgroup K L))]
-    [Finite
-      (HerbrandHMinusOne (L ≃ₐ[K] L)
-        (RelativeIdeleGroup.principalSubgroup K L) σ)]
-    [Finite
-      (HerbrandH0 (L ≃ₐ[K] L)
-        (RelativeIdeleGroup K L))]
-    [Finite
-      (HerbrandHMinusOne (L ≃ₐ[K] L)
-        (RelativeIdeleGroup K L) σ)]
-    [Finite
-      (HerbrandH0 (L ≃ₐ[K] L)
-        (RelativeIdeleGroup.ClassGroup K L))]
-    [Finite
-      (HerbrandHMinusOne (L ≃ₐ[K] L)
-        (RelativeIdeleGroup.ClassGroup K L) σ)] :
-    herbrandQuotient
-        (G := L ≃ₐ[K] L)
-        (A := RelativeIdeleGroup K L) σ =
-      herbrandQuotient
-          (G := L ≃ₐ[K] L)
-          (A :=
-            RelativeIdeleGroup.principalSubgroup K L) σ *
-        herbrandQuotient
-          (G := L ≃ₐ[K] L)
-          (A := RelativeIdeleGroup.ClassGroup K L) σ := by
-  let q :
-      RelativeIdeleGroup K L →*
-        RelativeIdeleGroup.ClassGroup K L :=
-    QuotientGroup.mk'
-      (RelativeIdeleGroup.principalSubgroup K L)
-  have hqEquivariant :
-      ∀ (τ : L ≃ₐ[K] L)
-        (a : RelativeIdeleGroup K L),
-        q (τ • a) = τ • q a := by
-    exact ideleClassQuotientMap_equivariant K L
-  have hqExact :
-      ∀ a : RelativeIdeleGroup K L,
-        q a = 1 ↔
-          ∃ p : RelativeIdeleGroup.principalSubgroup K L,
-            (RelativeIdeleGroup.principalSubgroup K L).subtype p =
-              a := by
-    exact principalIdele_ideleClass_exact K L
-  have hqSurjective : Function.Surjective q := by
-    exact QuotientGroup.mk'_surjective
-      (RelativeIdeleGroup.principalSubgroup K L)
-  exact
-    @herbrandQuotient_multiplicative_of_shortExact
-      (L ≃ₐ[K] L)
-      (RelativeIdeleGroup.principalSubgroup K L)
-      (RelativeIdeleGroup K L)
-      (RelativeIdeleGroup.ClassGroup K L)
-      inferInstance inferInstance inferInstance inferInstance
-      inferInstance inferInstance inferInstance inferInstance
-      (RelativeIdeleGroup.principalSubgroup K L).subtype
-      q
-      (principalIdeleSubtype_equivariant K L)
-      hqEquivariant
-      hqExact
-      (RelativeIdeleGroup.principalSubgroup K L).subtype_injective
-      hqSurjective
-      σ hgen
-      inferInstance inferInstance inferInstance
-      inferInstance inferInstance inferInstance
 
-omit [NumberField L] [IsGalois K L] in
-/-- Once the Herbrand quotients of principal ideles and relative ideles
-have been computed, the actual idele-class quotient is automatically
-defined and satisfies the multiplicativity identity.  This is the
-connection point for the unrestricted local-factor and `S`-unit calculations. -/
-theorem ideleClassHerbrandQuotientDefined_of_principal_relative
-    (σ : L ≃ₐ[K] L)
-    (hgen : ∀ τ : L ≃ₐ[K] L,
-      τ ∈ Subgroup.zpowers σ)
-    [Finite
-      (HerbrandH0 (L ≃ₐ[K] L)
-        (RelativeIdeleGroup.principalSubgroup K L))]
-    [Finite
-      (HerbrandHMinusOne (L ≃ₐ[K] L)
-        (RelativeIdeleGroup.principalSubgroup K L) σ)]
-    [Finite
-      (HerbrandH0 (L ≃ₐ[K] L)
-        (RelativeIdeleGroup K L))]
-    [Finite
-      (HerbrandHMinusOne (L ≃ₐ[K] L)
-        (RelativeIdeleGroup K L) σ)] :
-    ∃ hC :
-        HerbrandQuotientDefined
-          (L ≃ₐ[K] L)
-          (RelativeIdeleGroup.ClassGroup K L) σ,
-      herbrandQuotient
-          (G := L ≃ₐ[K] L)
-          (A := RelativeIdeleGroup K L) σ =
-        herbrandQuotient
-            (G := L ≃ₐ[K] L)
-            (A :=
-              RelativeIdeleGroup.principalSubgroup K L) σ *
-          @herbrandQuotient
-            (L ≃ₐ[K] L)
-            (RelativeIdeleGroup.ClassGroup K L)
-            inferInstance inferInstance inferInstance
-            (ideleClassMulDistribMulAction K L)
-            σ hC.1 hC.2 := by
-  let q :
-      RelativeIdeleGroup K L →*
-        RelativeIdeleGroup.ClassGroup K L :=
-    QuotientGroup.mk'
-      (RelativeIdeleGroup.principalSubgroup K L)
-  have hqEquivariant :
-      ∀ (τ : L ≃ₐ[K] L)
-        (a : RelativeIdeleGroup K L),
-        q (τ • a) = τ • q a :=
-    ideleClassQuotientMap_equivariant K L
-  have hqExact :
-      ∀ a : RelativeIdeleGroup K L,
-        q a = 1 ↔
-          ∃ p : RelativeIdeleGroup.principalSubgroup K L,
-            (RelativeIdeleGroup.principalSubgroup K L).subtype p =
-              a :=
-    principalIdele_ideleClass_exact K L
-  have hqSurjective : Function.Surjective q :=
-    QuotientGroup.mk'_surjective
-      (RelativeIdeleGroup.principalSubgroup K L)
-  exact
-    @herbrandQuotient_multiplicative_of_left_middle_defined
-      (L ≃ₐ[K] L)
-      (RelativeIdeleGroup.principalSubgroup K L)
-      (RelativeIdeleGroup K L)
-      (RelativeIdeleGroup.ClassGroup K L)
-      inferInstance inferInstance inferInstance inferInstance
-      inferInstance inferInstance inferInstance inferInstance
-      (RelativeIdeleGroup.principalSubgroup K L).subtype
-      q
-      (principalIdeleSubtype_equivariant K L)
-      hqEquivariant
-      hqExact
-      (RelativeIdeleGroup.principalSubgroup K L).subtype_injective
-      hqSurjective
-      σ hgen
-      inferInstance inferInstance inferInstance inferInstance
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end Actions
 

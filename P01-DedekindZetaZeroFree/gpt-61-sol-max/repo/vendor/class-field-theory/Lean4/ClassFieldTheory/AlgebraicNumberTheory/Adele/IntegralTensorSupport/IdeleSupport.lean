@@ -49,19 +49,19 @@ noncomputable def relativeIdeleLocalTensorDecompositionSupport
       integralTensorBadPlaces
         (K := K) (L := L)
 
-/-- The support is exposed through this membership characterization. -/
 
-@[simp]
-theorem mem_relativeIdeleLocalTensorDecompositionSupport_iff
-    (z : RelativeIdeleGroup K L)
-    (w : HeightOneSpectrum (𝓞 K)) :
-    w ∈ relativeIdeleLocalTensorDecompositionSupport
-        (K := K) (L := L) z ↔
-      w ∈ relativeIdeleCoefficientSupport
-          (K := K) (L := L) z ∨
-        w ∈ integralTensorBadPlaces
-          (K := K) (L := L) := by
-  simp [relativeIdeleLocalTensorDecompositionSupport]
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- Outside one explicit finite support, the actual finite component of
 a relative idele and its inverse are units in every valuation-ring

@@ -221,7 +221,7 @@ open scoped Classical NumberField
 open LocalFiniteSums
 variable {F : Type} [Field F] [NumberField F]
 variable {A : SArithmeticData F} {σ : F →+* ℂ}
-variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
+variable {η : RayClassCharacter F A.modulus} 
 
 end
 end DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuation.Corridor
@@ -253,9 +253,9 @@ variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 variable (R : PrincipalMellin.ActualRecipe S η)
-  (C : R.A.GeneralArithmeticContext R.σ R.target R.traceBad)
-  (U : Frequency R → AllRowEuler.InitialSeparation.RawFrequency R.A)
-  (plus minus : Frequency R → ℂ → ℂ)
+  
+  
+  
 
 end
 end DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuation

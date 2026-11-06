@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.CoprimeForms.WeightedEnergyAndPrimeSupportCost
 public import DedekindZetaZeroFree.Arithmetic.Ideals.DivisorEpsilonBounds
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -27,21 +30,21 @@ private lemma primeSupportCost_le_divisorCount {F : Type} [Field F] [NumberField
     intro s hs
     have hirr : ∀ p ∈ s.val, Irreducible p := by
       intro p hp
-      exact hprime p (hs (by simpa using hp))
+      exact hprime p (hs (hp))
     have h1 := UniqueFactorizationMonoid.normalizedFactors_prod_eq s.val hirr
     have hprod : (∏ p ∈ s, p) = s.val.prod := by
       rw [Finset.prod_eq_multiset_prod, Multiset.map_id']
     rw [hprod, h1]
-    rw [Multiset.map_congr rfl (fun p hp => hnorm p (hs (by simpa using hp))),
+    rw [Multiset.map_congr rfl (fun p hp => hnorm p (hs (hp))),
       Multiset.map_id']
   have hinj : Set.InjOn (fun s : Finset (Ideal (𝓞 F)) => ∏ p ∈ s, p)
       (↑S.powerset : Set (Finset (Ideal (𝓞 F)))) := by
     intro s hs t ht hst
-    have hssub : s ⊆ S := Finset.mem_powerset.mp hs
-    have htsub : t ⊆ S := Finset.mem_powerset.mp ht
-    have hsval : UniqueFactorizationMonoid.normalizedFactors (∏ p ∈ s, p) = s.val :=
+    have hssub  := Finset.mem_powerset.mp hs
+    have htsub  := Finset.mem_powerset.mp ht
+    have hsval  :=
       key s hssub
-    have htval : UniqueFactorizationMonoid.normalizedFactors (∏ p ∈ t, p) = t.val :=
+    have htval  :=
       key t htsub
     have hst' : (∏ p ∈ s, p) = (∏ p ∈ t, p) := hst
     rw [hst'] at hsval
@@ -52,21 +55,20 @@ private lemma primeSupportCost_le_divisorCount {F : Type} [Field F] [NumberField
     intro s hs
     change (∏ p ∈ s, p) ∈ DedekindZetaZeroFree.LargeSieve.idealDivisors u
     rw [DedekindZetaZeroFree.LargeSieve.mem_idealDivisors hu]
-    have hssub : s ⊆ S := Finset.mem_powerset.mp hs
+    have hssub  := Finset.mem_powerset.mp hs
     have hle : s.val ≤ m := by
       rw [Multiset.le_iff_subset s.nodup]
       intro p hp
-      exact (hmem p).mp (hssub (by simpa using hp))
+      exact (hmem p).mp (hssub (hp))
     have hprod : (∏ p ∈ s, p) = s.val.prod := by
       rw [Finset.prod_eq_multiset_prod, Multiset.map_id']
     rw [hprod, ← Ideal.prod_normalizedFactors_eq_self hu]
     exact Multiset.prod_dvd_prod_of_le hle
-  have hcard : S.powerset.card ≤ (DedekindZetaZeroFree.LargeSieve.idealDivisors u).card :=
+  have hcard  :=
     Finset.card_le_card_of_injOn _ hmaps hinj
-  have hcost : primeSupportCost u = (2 : ℝ) ^ S.card := by
-    rw [primeSupportCost, hS, ← hm]
+  have hcost : primeSupportCost u = (2 : ℝ) ^ S.card := rfl
   rw [hcost]
-  have hpc : ((S.powerset.card : ℕ) : ℝ) = (2 : ℝ) ^ S.card := by
+  have hpc : (S.powerset.card : ℝ) = (2 : ℝ) ^ S.card := by
     rw [Finset.card_powerset]
     push_cast
     ring
@@ -95,7 +97,7 @@ theorem support_cost_energy_bound
       have := hmem.1.ne_zero
       simpa [Ideal.zero_eq_bot] using this
     have hnormle : (Ideal.absNorm u : ℝ) ≤ 2 * N := by
-      have h2 : (Ideal.absNorm u : ℝ) ≤ 2 * X := hmem.2.2.2
+      
       nlinarith [hXN]
     have hrpow : (Ideal.absNorm u : ℝ) ^ ε ≤ (2 * N) ^ ε :=
       Real.rpow_le_rpow (Nat.cast_nonneg _) hnormle hε.le

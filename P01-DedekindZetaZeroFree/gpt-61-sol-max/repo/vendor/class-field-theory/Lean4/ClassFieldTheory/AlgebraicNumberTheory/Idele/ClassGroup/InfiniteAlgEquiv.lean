@@ -62,72 +62,72 @@ theorem infinitePlaceCompletionCongrHom_continuous
   change Continuous (NumberField.LiesOver.completionMap (v := w) (w := W))
   exact NumberField.LiesOver.continuous_completionMap w W
 
-/-- Transport along a field isomorphism is an equivalence of the
-corresponding infinite-place completions. -/
-noncomputable def infinitePlaceCompletionCongrEquiv
-    (e : K ≃ₐ[ℚ] M) (W : InfinitePlace M) :
-    ((ClassFieldTheory.infinitePlaceEquivOfRingEquiv e.toRingEquiv).symm W).Completion ≃+*
-      W.Completion := by
-  let : Algebra K M := e.toRingHom.toAlgebra
-  let : Algebra M K := e.symm.toRingHom.toAlgebra
-  let w := (ClassFieldTheory.infinitePlaceEquivOfRingEquiv e.toRingEquiv).symm W
-  have hKM : infinitePlaceBelow (K := K) W = w := by
-    change W.comap e.toRingHom = W.comap e.toRingHom
-    rfl
-  have hMK : infinitePlaceBelow (K := M) w = W := by
-    change (W.comap e.toRingHom).comap e.symm.toRingHom = W
-    exact (ClassFieldTheory.infinitePlaceEquivOfRingEquiv e.toRingEquiv).right_inv W
-  let : W.1.LiesOver w.1 :=
-    ⟨congrArg (fun v : InfinitePlace K => v.1) hKM⟩
-  let : w.1.LiesOver W.1 :=
-    ⟨congrArg (fun v : InfinitePlace M => v.1) hMK⟩
-  let f : w.Completion →+* W.Completion :=
-    NumberField.LiesOver.completionMap (v := w) (w := W)
-  let g : W.Completion →+* w.Completion :=
-    NumberField.LiesOver.completionMap (v := W) (w := w)
-  exact RingEquiv.ofRingHom f g
-    (by
-      apply RingHom.ext
-      intro x
-      change f (g x) = x
-      refine InfinitePlace.Completion.induction_on W x ?_ ?_
-      · exact isClosed_eq
-          ((NumberField.LiesOver.continuous_completionMap w W).comp
-            (NumberField.LiesOver.continuous_completionMap W w))
-          continuous_id
-      · intro y
-        dsimp only [f, g]
-        rw [NumberField.LiesOver.completionMap_coe
-            (v := W) (w := w) y,
-          NumberField.LiesOver.completionMap_coe
-            (v := w) (w := W)
-            (algebraMap (WithAbs W.1) (WithAbs w.1) y)]
-        apply congrArg (fun z : WithAbs W.1 => (z : W.Completion))
-        apply (WithAbs.equiv W.1).injective
-        change e (e.symm (WithAbs.equiv W.1 y)) =
-          WithAbs.equiv W.1 y
-        exact e.apply_symm_apply _)
-    (by
-      apply RingHom.ext
-      intro x
-      change g (f x) = x
-      refine InfinitePlace.Completion.induction_on w x ?_ ?_
-      · exact isClosed_eq
-          ((NumberField.LiesOver.continuous_completionMap W w).comp
-            (NumberField.LiesOver.continuous_completionMap w W))
-          continuous_id
-      · intro y
-        dsimp only [f, g]
-        rw [NumberField.LiesOver.completionMap_coe
-            (v := w) (w := W) y,
-          NumberField.LiesOver.completionMap_coe
-            (v := W) (w := w)
-            (algebraMap (WithAbs w.1) (WithAbs W.1) y)]
-        apply congrArg (fun z : WithAbs w.1 => (z : w.Completion))
-        apply (WithAbs.equiv w.1).injective
-        change e.symm (e (WithAbs.equiv w.1 y)) =
-          WithAbs.equiv w.1 y
-        exact e.symm_apply_apply _)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The completion map agrees with the number-field equivalence on
 elements of the number field. -/

@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 public import DedekindZetaZeroFree.LargeSieve.Exponents.ExponentAndRecursiveEnvelope
 
 @[expose] public section
+
 
 /-
 https://github.com/openai/math
@@ -31,17 +34,17 @@ theorem hasExponent_one_of_approximation (B : ℝ → ℝ → ℝ)
   have hp : 0 < (M * N) ^ (ε / 2) := Real.rpow_pos_of_pos hMNpos _
 
   have hNα : N ^ α ≤ N * (M * N) ^ (ε / 2) := by
-    have h1 : N ^ α ≤ N ^ (1 + ε / 2) := Real.rpow_le_rpow_of_exponent_le hN hα
+    have h1  := Real.rpow_le_rpow_of_exponent_le hN hα
     have h2 : N ^ (1 + ε / 2) = N * N ^ (ε / 2) := by
       rw [Real.rpow_add hNpos, Real.rpow_one]
     have hNM : N ≤ M * N := by nlinarith
-    have h3 : N ^ (ε / 2) ≤ (M * N) ^ (ε / 2) :=
+    have h3  :=
       Real.rpow_le_rpow (le_of_lt hNpos) hNM hhalf
     rw [h2] at h1
     exact le_trans h1 (mul_le_mul_of_nonneg_left h3 (le_of_lt hNpos))
 
   have hMle : M ≤ (M + N) * (M * N) ^ (ε / 2) := by
-    have h1 : 1 ≤ (M * N) ^ (ε / 2) := Real.one_le_rpow hMN1 hhalf
+    have h1  := Real.one_le_rpow hMN1 hhalf
     have h2 : 0 ≤ M + N := by linarith
     nlinarith [mul_le_mul_of_nonneg_left h1 h2]
   have hsum : M + N ^ α ≤ 2 * (M + N) * (M * N) ^ (ε / 2) := by

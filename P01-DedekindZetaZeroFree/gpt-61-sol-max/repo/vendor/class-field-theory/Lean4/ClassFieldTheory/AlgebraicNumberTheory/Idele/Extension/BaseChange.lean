@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Basic
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.PrincipalCore
 public import Mathlib.FieldTheory.Galois.NormalBasis
@@ -9,6 +11,7 @@ public import Mathlib.RingTheory.Norm.Basic
 public import Mathlib.RingTheory.TensorProduct.Maps
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -83,16 +86,16 @@ def inclusion :
   (Units.map (adeleInclusion K L)).comp
     (IdeleGroup.equivAdeleRingUnits (K := K)).toMonoidHom
 
-omit [NumberField L] in
-theorem inclusion_injective :
-    Function.Injective (inclusion K L) := by
-  exact
-    (Units.map_injective
-      (Algebra.TensorProduct.includeLeft_injective
-        (R := K) (S := K)
-        (A := NumberField.AdeleRing (𝓞 K) K) (B := L)
-        (FaithfulSMul.algebraMap_injective K L))).comp
-      (IdeleGroup.equivAdeleRingUnits (K := K)).injective
+
+
+
+
+
+
+
+
+
+
 
 /-- The diagonal copy of `Lˣ` inside the relative idele group. -/
 def principalIdele :
@@ -189,7 +192,7 @@ theorem norm_principalIdele (x : Lˣ) :
         (fieldInclusion K L (x : L)) =
       algebraMap K (NumberField.AdeleRing (𝓞 K) K)
         (Algebra.norm K (x : L))
-  exact norm_fieldInclusion K L (x : L)
+  apply norm_fieldInclusion
 
 /-- Galois conjugation on the scalar-extended adele algebra. -/
 def conjugation
@@ -205,14 +208,11 @@ theorem conjugation_tmul
     (σ : L ≃ₐ[K] L)
     (a : NumberField.AdeleRing (𝓞 K) K) (x : L) :
     conjugation K L σ (a ⊗ₜ[K] x) =
-      a ⊗ₜ[K] σ x := by
-  rfl
+      a ⊗ₜ[K] σ x := rfl
 
 /-- Galois conjugation on relative ideles. -/
 def conjugationIdele
-    (σ : L ≃ₐ[K] L) :
-    RelativeIdeleGroup K L ≃*
-      RelativeIdeleGroup K L :=
+    (σ : L ≃ₐ[K] L)  :=
   Units.mapEquiv (conjugation K L σ).toMulEquiv
 
 omit [NumberField L] [FiniteDimensional K L] in
@@ -272,7 +272,7 @@ instance relativeIdeleMulAction :
   smul σ a := conjugationIdele K L σ a
   one_smul a := by
     apply Units.ext
-    exact conjugation_one K L (a : RelativeAdeleRing K L)
+    apply conjugation_one
   mul_smul σ τ a := by
     apply Units.ext
     change conjugation K L (σ * τ)
@@ -324,18 +324,11 @@ theorem smul_principalIdele
     (σ : L ≃ₐ[K] L) (x : Lˣ) :
     σ • principalIdele K L x =
       principalIdele K L (Units.map σ.toRingEquiv.toMonoidHom x) := by
-  apply Units.ext
-  change conjugation K L σ
-      (Algebra.TensorProduct.includeRight (x : L)) =
-    Algebra.TensorProduct.includeRight (σ (x : L))
-  change conjugation K L σ (1 ⊗ₜ[K] (x : L)) =
-    1 ⊗ₜ[K] σ (x : L)
-  rw [conjugation_tmul]
+  rfl
 
 /-- Reynolds averaging for the finite Galois action. -/
 def galoisAverage
-    (z : RelativeAdeleRing K L) :
-    RelativeAdeleRing K L :=
+    (z : RelativeAdeleRing K L)  :=
   ((Fintype.card (L ≃ₐ[K] L) : K)⁻¹) •
     ∑ σ : L ≃ₐ[K] L, conjugation K L σ z
 
@@ -431,7 +424,7 @@ theorem inclusion_range_eq_galoisFixedSubgroup
   ext u
   constructor
   · rintro ⟨a, rfl⟩ σ
-    exact smul_inclusion K L σ a
+    apply smul_inclusion
   · intro hu
     have hfixed :
         ∀ σ : L ≃ₐ[K] L,
@@ -451,8 +444,7 @@ theorem inclusion_range_eq_galoisFixedSubgroup
             ((u⁻¹ : RelativeIdeleGroup K L) :
               RelativeAdeleRing K L) := by
       intro σ
-      have huσ : conjugationIdele K L σ u = u := by
-        simpa only [smul_def] using hu σ
+      have huσ : conjugationIdele K L σ u = u := hu σ
       exact congrArg Units.val (by
         change conjugationIdele K L σ u⁻¹ = u⁻¹
         rw [map_inv, huσ])

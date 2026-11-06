@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 The FLT Project. All rights reserved.
@@ -53,7 +56,7 @@ open scoped Classical in
 open scoped Classical in
 open scoped Classical in
 
-def unitFloor (x : realSpace K) : InfinitePlace K → ℤ :=
+def unitFloor (x : realSpace K)  :=
   fun w ↦ if w = w₀ then 0 else ⌊x w⌋
 
 open scoped Classical in
@@ -65,7 +68,7 @@ def unitCoordinateShift
 open scoped Classical in
 
 def fundamentalUnitForShift
-    (z : {w : InfinitePlace K // w ≠ w₀} → ℤ) : (𝓞 K)ˣ :=
+    (z : {w : InfinitePlace K // w ≠ w₀} → ℤ)  :=
   ∏ i, fundSystem K (equivFinRank.symm i) ^ z i
 
 theorem expMapBasis_add_unitCoordinateShift
@@ -105,7 +108,7 @@ open scoped Classical in
 open scoped Classical in
 
 def unitFundamentalTranslate
-    (z : {w : InfinitePlace K // w ≠ w₀} → ℤ) : Set (realSpace K) :=
+    (z : {w : InfinitePlace K // w ≠ w₀} → ℤ)  :=
   (fun x ↦ x - unitCoordinateShift z) ⁻¹' unitFundamentalParamSet K
 
 theorem measurableSet_unitFundamentalTranslate
@@ -126,8 +129,7 @@ theorem mem_unitFundamentalTranslate_iff
     have hi := hx i i.prop
     have hi' : x i - (z i : ℝ) ∈ Set.Ico 0 1 := by
       simpa [unitCoordinateShift, i.prop] using hi
-    have hfloor :
-        ⌊x i - (z i : ℝ)⌋ = 0 :=
+    have hfloor  :=
       Int.floor_eq_zero_iff.mpr hi'
     simp only [Int.floor_sub_intCast] at hfloor
     simpa [unitFloor, i.prop] using sub_eq_zero.mp hfloor
@@ -166,34 +168,29 @@ theorem unitFundamentalTranslate_eq_image
     (z : {w : InfinitePlace K // w ≠ w₀} → ℤ) :
     unitFundamentalTranslate z =
       (fun x ↦ x + unitCoordinateShift z) '' unitFundamentalParamSet K := by
-  ext x
-  constructor
-  · intro hx
-    refine ⟨x - unitCoordinateShift z, hx, ?_⟩
-    simp
-  · rintro ⟨y, hy, rfl⟩
-    simpa [unitFundamentalTranslate] using hy
+  simp_all [DedekindZetaZeroFree.Theta.unitFundamentalTranslate] <;> aesop
 
-theorem setIntegral_unitFundamentalTranslate
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+section
+variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     (f : realSpace K → E)
+include E f
+theorem setIntegral_unitFundamentalTranslate
+     
     (z : {w : InfinitePlace K // w ≠ w₀} → ℤ) :
     (∫ x in unitFundamentalTranslate z, f x) =
       ∫ x in unitFundamentalParamSet K,
         f (x + unitCoordinateShift z) := by
   rw [unitFundamentalTranslate_eq_image]
-  let e : realSpace K ≃ᵐ realSpace K :=
+  let e  :=
     MeasurableEquiv.addRight (unitCoordinateShift z)
   have he : MeasurePreserving e volume volume :=
     ⟨e.measurable, by
-      simpa [e] using
-        (map_add_right_eq_self volume (unitCoordinateShift z))⟩
+      apply map_add_right_eq_self⟩
   exact he.setIntegral_image_emb e.measurableEmbedding f
     (unitFundamentalParamSet K)
 
 theorem integral_eq_tsum_setIntegral_unitFundamentalTranslate
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    (f : realSpace K → E) (hf : Integrable f) :
+      (hf : Integrable f) :
     (∫ x, f x) =
       ∑' z : {w : InfinitePlace K // w ≠ w₀} → ℤ,
         ∫ x in unitFundamentalTranslate z, f x := by
@@ -208,8 +205,7 @@ theorem integral_eq_tsum_setIntegral_unitFundamentalTranslate
         simp_all)
 
 theorem integral_eq_tsum_setIntegral_add_unitCoordinateShift
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    (f : realSpace K → E) (hf : Integrable f) :
+      (hf : Integrable f) :
     (∫ x, f x) =
       ∑' z : {w : InfinitePlace K // w ≠ w₀} → ℤ,
         ∫ x in unitFundamentalParamSet K,
@@ -218,6 +214,8 @@ theorem integral_eq_tsum_setIntegral_add_unitCoordinateShift
   congr 1
   funext z
   exact setIntegral_unitFundamentalTranslate f z
+end
+
 
 open scoped Classical in
 theorem setIntegral_expMapBasis_image

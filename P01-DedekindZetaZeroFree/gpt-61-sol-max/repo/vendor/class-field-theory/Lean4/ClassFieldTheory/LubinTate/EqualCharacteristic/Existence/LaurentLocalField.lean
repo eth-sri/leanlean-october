@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.LubinTate.EqualCharacteristic.Existence.LaurentModel
 public import Mathlib.RingTheory.PowerSeries.PiTopology
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -72,7 +75,7 @@ private theorem isValuativeTopology_of_valued_ofValuation'
     exact
       (ValuativeRel.valuation_lt_symm_orderMonoidIso
         vL δ.1 z).1
-        (by simpa using hz)
+        (hz)
   · rintro ⟨γ, hγ⟩
     refine
       ⟨γ.mapEquiv
@@ -82,8 +85,7 @@ private theorem isValuativeTopology_of_valued_ofValuation'
     have hz' :
         vL.restrict z <
           (ValuativeRel.ValueGroupWithZero.orderMonoidIso vL)
-            (γ : ValuativeRel.ValueGroupWithZero L) := by
-      exact hz
+            (γ : ValuativeRel.ValueGroupWithZero L) := hz
     exact
       (ValuativeRel.restrict_lt_orderMonoidIso
         vL (γ : ValuativeRel.ValueGroupWithZero L) z).1 hz'
@@ -111,11 +113,10 @@ theorem continuous_laurentSeries_ofPowerSeries
     dsimp [U]
     rw [Finset.iInter_mem_sets]
     intro n hn
-    have hopen : IsOpen
-        ((PowerSeries.coeff n : k⟦X⟧ → k) ⁻¹' ({0} : Set k)) :=
+    have hopen  :=
       (isOpen_discrete ({0} : Set k)).preimage
         (PowerSeries.WithPiTopology.continuous_coeff k n)
-    exact hopen.mem_nhds (by simp)
+    exact hopen.mem_nhds (rfl)
   refine mem_of_superset hU ?_
   intro f hf
   have hcoeff : ∀ n : ℕ, n < N → PowerSeries.coeff n f = 0 := by
@@ -123,11 +124,11 @@ theorem continuous_laurentSeries_ofPowerSeries
     simp only [U, Set.mem_iInter, Set.mem_ofPred_eq] at hf
     exact hf n (Finset.mem_range.mpr hn)
   change (Valued.v : Valuation k⸨X⸩ ℤᵐ⁰).restrict
-    ((f : k⟦X⟧) : k⸨X⸩) < γ.1
+    (f : k⸨X⸩) < γ.1
   rw [Valuation.restrict_lt_iff_lt_embedding]
   exact lt_of_le_of_lt
     ((LaurentSeries.intValuation_le_iff_coeff_lt_eq_zero k f).2 hcoeff)
-    (by simpa [γ'] using hN)
+    (hN)
 
 /-- Power series as elements of the native Laurent valuation ring. -/
 noncomputable def powerSeriesToLaurentInteger (k : Type u) [Field k] :
@@ -163,8 +164,7 @@ noncomputable def powerSeriesEquivLaurentInteger
     exact (HahnSeries.ofPowerSeries_injective (Γ := ℤ) (R := k))
       (Classical.choose_spec
         ((LaurentSeries.val_le_one_iff_eq_coe k
-          ((powerSeriesToLaurentInteger k f :
-            Valued.integer k⸨X⸩) : k⸨X⸩)).1
+          ((powerSeriesToLaurentInteger k f) : k⸨X⸩)).1
             (powerSeriesToLaurentInteger k f).property))
   right_inv x := by
     apply Subtype.ext
@@ -175,21 +175,20 @@ noncomputable def powerSeriesEquivLaurentInteger
     exact map_add (HahnSeries.ofPowerSeries ℤ k) f g
   map_mul' f g := by
     apply Subtype.ext
-    exact map_mul (HahnSeries.ofPowerSeries ℤ k) f g
+    apply map_mul
 
 /-- The power-series equivalence preserves the underlying Laurent series. -/
 @[simp]
 theorem powerSeriesEquivLaurentInteger_coe
     (f : k⟦X⟧) :
-    ((powerSeriesEquivLaurentInteger k f :
-      Valued.integer k⸨X⸩) : k⸨X⸩) = (f : k⸨X⸩) :=
+    ((powerSeriesEquivLaurentInteger k f) : k⸨X⸩) = (f : k⸨X⸩) :=
   rfl
 
-/-- The image of `X` is irreducible in the Laurent valuation ring. -/
-theorem powerSeriesEquivLaurentInteger_X_irreducible :
-    Irreducible
-      (powerSeriesEquivLaurentInteger k (PowerSeries.X : k⟦X⟧)) :=
-  PowerSeries.X_irreducible.map (powerSeriesEquivLaurentInteger k)
+
+
+
+
+
 
 /-- The canonical integer ring attached to the valuative relation induced by
 the Laurent valuation is the native valued-field integer ring. -/
@@ -232,17 +231,17 @@ noncomputable def powerSeriesEquivLaurentValuativeInteger
   exact (powerSeriesEquivLaurentInteger k).trans
     (laurentValuativeIntegerEquiv k).symm
 
-/-- The image of `X` is irreducible in the valuative integer ring. -/
-theorem powerSeriesEquivLaurentValuativeInteger_X_irreducible :
-    letI : ValuativeRel k⸨X⸩ := ValuativeRel.ofValuation
-      (Valued.v : Valuation k⸨X⸩ ℤᵐ⁰)
-    Irreducible
-      (powerSeriesEquivLaurentValuativeInteger k
-        (PowerSeries.X : k⟦X⟧)) := by
-  let : ValuativeRel k⸨X⸩ := ValuativeRel.ofValuation
-    (Valued.v : Valuation k⸨X⸩ ℤᵐ⁰)
-  exact PowerSeries.X_irreducible.map
-    (powerSeriesEquivLaurentValuativeInteger k)
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The native valuation ring of a Laurent series field over a finite field
 is compact. -/
@@ -266,7 +265,7 @@ native valuation topology. -/
 theorem laurentSeriesLocallyCompactSpace
     (k : Type u) [Field k] [Finite k] :
     LocallyCompactSpace k⸨X⸩ := by
-  let : CompactSpace (Valued.integer k⸨X⸩) :=
+  let  :=
     laurentSeriesIntegerCompactSpace k
   have hcompact : IsCompact (X := k⸨X⸩) (Valued.integer k⸨X⸩) :=
     isCompact_iff_compactSpace.mpr inferInstance
@@ -297,7 +296,7 @@ theorem equalCharacteristicLaurentIsNonarchimedeanLocalField
   let : vL.Compatible := Valuation.Compatible.ofValuation vL
   let x : L :=
     ((PowerSeries.X : F.residueField⟦X⟧) : F.residueField⸨X⸩)
-  have hxv : vL x = WithZero.exp (-1 : ℤ) := by
+  have hxv : vL x = WithZero.exp (-1) := by
     change (Valued.v : Valuation F.residueField⸨X⸩ ℤᵐ⁰)
       (((PowerSeries.X : F.residueField⟦X⟧) :
         F.residueField⸨X⸩)) = _

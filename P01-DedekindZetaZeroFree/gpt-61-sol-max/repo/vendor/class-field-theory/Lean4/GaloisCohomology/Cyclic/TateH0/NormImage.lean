@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.LocalField.NonarchimedeanLocalField.NormQuotient
 public import Mathlib.FieldTheory.Galois.Basic
 public import Mathlib.RepresentationTheory.Homological.GroupCohomology.Hilbert90
@@ -7,6 +9,7 @@ public import GaloisCohomology.Cyclic.TateComparison
 public import GaloisCohomology.Cyclic.TateH0.Invariants
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -32,33 +35,32 @@ noncomputable section
 
 universe u
 
+section
+variable (K L : Type) [Field K] [Field L] [Algebra K L]
+    [Fintype Gal(L/K)]
+include K L
 /-- The group-cohomological norm endomorphism on the actual unit representation. -/
-def unitsNormLinearMap (K L : Type) [Field K] [Field L] [Algebra K L]
-    [Fintype Gal(L/K)] : Additive Lˣ →ₗ[ℤ] Additive Lˣ :=
+def unitsNormLinearMap   : Additive Lˣ →ₗ[ℤ] Additive Lˣ :=
   (Rep.ofAlgebraAutOnUnits K L).norm.hom.toLinearMap
 
 /-- The additive unit norm is fixed by the Galois action. -/
-lemma unitsNorm_mem_invariants (K L : Type) [Field K] [Field L] [Algebra K L]
-    [Fintype Gal(L/K)] (x : Additive Lˣ) :
+lemma unitsNorm_mem_invariants   (x : Additive Lˣ) :
     unitsNormLinearMap K L x ∈ unitsInvariantSubmodule K L := by
   intro σ
-  exact Representation.self_norm_apply (Rep.ofAlgebraAutOnUnits K L).ρ σ x
+  apply Representation.self_norm_apply
 
 /-- The norm map, codomain-restricted to invariant units. -/
-def unitsNormToInvariantsLinearMap (K L : Type) [Field K] [Field L] [Algebra K L]
-    [Fintype Gal(L/K)] : Additive Lˣ →ₗ[ℤ] unitsInvariantSubmodule K L :=
+def unitsNormToInvariantsLinearMap    :=
   (unitsNormLinearMap K L).codRestrict (unitsInvariantSubmodule K L)
     (unitsNorm_mem_invariants K L)
 
 /-- Norm image inside invariant units. -/
-def unitsTateH0NormSubmodule (K L : Type) [Field K] [Field L] [Algebra K L]
-    [Fintype Gal(L/K)] : Submodule ℤ (unitsInvariantSubmodule K L) :=
+def unitsTateH0NormSubmodule    :=
   LinearMap.range (unitsNormToInvariantsLinearMap K L)
 
 /-- The standard degree-zero Tate object, expressed as the arithmetic quotient
 of invariant units by the representation norm image. -/
-def tateUnitsH0IsoInvariantsQuotient (K L : Type)
-    [Field K] [Field L] [Algebra K L] [Fintype Gal(L/K)] :
+def tateUnitsH0IsoInvariantsQuotient   :
     tateCohomology (Rep.ofAlgebraAutOnUnits K L) 0 ≅
       ModuleCat.of ℤ
         (unitsInvariantSubmodule K L ⧸ unitsTateH0NormSubmodule K L) := by
@@ -67,8 +69,7 @@ def tateUnitsH0IsoInvariantsQuotient (K L : Type)
     .mk A.norm.toModuleCatHom (groupCohomology.d₀₁ A)
       (Rep.norm_comp_d_eq_zero A)
   have hker :
-      LinearMap.ker S.g.hom = unitsInvariantSubmodule K L := by
-    exact groupCohomology.d₀₁_ker_eq_invariants A
+      LinearMap.ker S.g.hom = unitsInvariantSubmodule K L := groupCohomology.d₀₁_ker_eq_invariants A
   let eK : LinearMap.ker S.g.hom ≃ₗ[ℤ] unitsInvariantSubmodule K L :=
     LinearEquiv.ofEq _ _ hker
   have hboundary :
@@ -91,6 +92,8 @@ def tateUnitsH0IsoInvariantsQuotient (K L : Type)
     (Submodule.Quotient.equiv _ _ eK hboundary).toModuleIso
   exact TateCohomology.isoZeroBoundary A ≪≫
     S.moduleCatHomologyIso ≪≫ eQ
+end
+
 
 /-- The value of the additive unit norm map is the field norm of the underlying unit. -/
 theorem unitsNormLinearMap_apply_val (K L : Type) [Field K] [Field L] [Algebra K L]
@@ -106,21 +109,15 @@ theorem unitsNormLinearMap_apply_val (K L : Type) [Field K] [Field L] [Algebra K
   rw [← groupCohomology.norm_ofAlgebraAutOnUnits_eq (K := K) (L := L) x]
   rfl
 
-/-- A finite sum of additive units corresponds to the product of their underlying units. -/
-@[simp]
-lemma additive_toMul_finset_sum_units {ι : Type*} (L : Type*) [Field L]
-    (s : Finset ι) (f : ι → Additive Lˣ) :
-    Additive.toMul (Finset.sum s f) =
-      Finset.prod s (fun i => Additive.toMul (f i)) := by
-  classical
-  refine Finset.induction_on s ?h0 ?hstep
-  · simp
-  · intro a s ha hs
-    simp [Finset.sum_insert, Finset.prod_insert, ha, hs]
+
+
+
+
+
+
 
 /-- The additive subgroup of `Additive Kˣ` attached to the multiplicative norm subgroup. -/
-def additiveNormSubgroup (K L : Type u) [Field K] [Field L] [Algebra K L] :
-    AddSubgroup (Additive Kˣ) :=
+def additiveNormSubgroup (K L : Type u) [Field K] [Field L] [Algebra K L]  :=
   (localNormSubgroup K L).toAddSubgroup
 
 /-- The additive norm subgroup is the kernel of the norm-quotient map. -/
@@ -141,9 +138,12 @@ lemma additiveNormSubgroup_eq_ker_quotient_map (K L : Type u)
       ((normClass_eq_one_iff K L (Additive.toMul x)).mp
         (Additive.ofMul.injective hx))
 
-/-- The invariant-unit equivalence sends the additive unit norm to the field norm. -/
-lemma invariantsUnitsAddEquivBaseUnits_unitsNorm_apply (K L : Type)
+section
+variable (K L : Type)
     [Field K] [Field L] [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
+include K L
+/-- The invariant-unit equivalence sends the additive unit norm to the field norm. -/
+lemma invariantsUnitsAddEquivBaseUnits_unitsNorm_apply  
     (x : Lˣ) :
     (letI := AlgEquiv.fintype K L
      invariantsUnitsAddEquivBaseUnits K L
@@ -154,11 +154,10 @@ lemma invariantsUnitsAddEquivBaseUnits_unitsNorm_apply (K L : Type)
   ext
   apply FaithfulSMul.algebraMap_injective K L
   rw [invariantsUnitsAddEquivBaseUnits_spec]
-  exact (unitsNormLinearMap_apply_val K L x).trans (by rfl)
+  exact (unitsNormLinearMap_apply_val K L x).trans (rfl)
 
 /-- The invariant-unit equivalence maps the Tate norm submodule onto the additive norm subgroup. -/
-lemma invariantsUnitsAddEquivBaseUnits_map_tateNormSubgroup (K L : Type)
-    [Field K] [Field L] [Algebra K L] [FiniteDimensional K L] [IsGalois K L] :
+lemma invariantsUnitsAddEquivBaseUnits_map_tateNormSubgroup   :
     (letI := AlgEquiv.fintype K L
      (unitsTateH0NormSubmodule K L).toAddSubgroup.map
         (invariantsUnitsAddEquivBaseUnits K L).toAddMonoidHom) =
@@ -171,7 +170,7 @@ lemma invariantsUnitsAddEquivBaseUnits_map_tateNormSubgroup (K L : Type)
     change Additive.toMul
         (invariantsUnitsAddEquivBaseUnits K L
           (unitsNormToInvariantsLinearMap K L z)) ∈ localNormSubgroup K L
-    let a : Lˣ := Additive.toMul z
+    let a  := Additive.toMul z
     rw [show z = Additive.ofMul a by cases z; rfl]
     have hmap :=
       congrArg Additive.toMul
@@ -194,8 +193,7 @@ lemma invariantsUnitsAddEquivBaseUnits_map_tateNormSubgroup (K L : Type)
       _ = y := by cases y; rfl
 
 /-- The multiplicative invariant-unit equivalence maps Tate norms onto field norms. -/
-lemma invariantsUnitsEquivBaseUnits_map_tateNormSubmodule (K L : Type)
-    [Field K] [Field L] [Algebra K L] [FiniteDimensional K L] [IsGalois K L] :
+lemma invariantsUnitsEquivBaseUnits_map_tateNormSubmodule   :
     (letI := AlgEquiv.fintype K L
      (unitsTateH0NormSubmodule K L).map
         (invariantsUnitsEquivBaseUnits K L : unitsInvariantSubmodule K L →ₗ[ℤ] Additive Kˣ)) =
@@ -204,6 +202,8 @@ lemma invariantsUnitsEquivBaseUnits_map_tateNormSubmodule (K L : Type)
   apply Submodule.toAddSubgroup_injective
   rw [Submodule.map_toAddSubgroup]
   exact invariantsUnitsAddEquivBaseUnits_map_tateNormSubgroup K L
+end
+
 
 end
 end CyclicCohomology

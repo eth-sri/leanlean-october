@@ -26,38 +26,41 @@ variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
-abbrev SequenceFields (cover : CountableCover F ζ hζ U R P H) :=
+section
+variable (cover : CountableCover F ζ hζ U R P H)
+include cover
+abbrev SequenceFields   :=
   ∀ n : ℕ, omega (cover.chart n) → E F
 
-def ambientSequence (cover : CountableCover F ζ hζ U R P H)
+def ambientSequence  
     (f : SequenceFields cover) (n : ℕ) (x : M F) : E F :=
   if hx : x ∈ omega (cover.chart n) then f n ⟨x, hx⟩ else 0
 
-def IsPieceSequence (cover : CountableCover F ζ hζ U R P H)
+def IsPieceSequence  
     (f : SequenceFields cover) : Prop :=
   (∀ n, Measurable (f n)) ∧
   (∀ n (y : omega (cover.chart n)),
     q (cover.chart n) y.val ∉ basePiece cover n → f n y = 0) ∧
   EquivariantSequence cover (ambientSequence cover f)
 
- lemma ambientSequence_zero (cover : CountableCover F ζ hζ U R P H) :
+ lemma ambientSequence_zero   :
     ambientSequence cover (0 : SequenceFields cover) = fun _ _ => (0 : E F) := by
   funext n x
   by_cases hx : x ∈ omega (cover.chart n) <;> simp [ambientSequence, hx]
 
- lemma ambientSequence_add (cover : CountableCover F ζ hζ U R P H)
+ lemma ambientSequence_add  
     (f g : SequenceFields cover) :
     ambientSequence cover (f + g) = ambientSequence cover f + ambientSequence cover g := by
   funext n x
   by_cases hx : x ∈ omega (cover.chart n) <;> simp [ambientSequence, hx]
 
- lemma ambientSequence_smul (cover : CountableCover F ζ hζ U R P H)
+ lemma ambientSequence_smul  
     (c : ℂ) (f : SequenceFields cover) :
     ambientSequence cover (c • f) = c • ambientSequence cover f := by
   funext n x
   by_cases hx : x ∈ omega (cover.chart n) <;> simp [ambientSequence, hx]
 
-def pieceSequenceSubmodule (cover : CountableCover F ζ hζ U R P H) :
+def pieceSequenceSubmodule   :
     Submodule ℂ (SequenceFields cover) where
   carrier := {f | IsPieceSequence cover f}
   zero_mem' := by
@@ -87,33 +90,40 @@ def pieceSequenceSubmodule (cover : CountableCover F ζ hζ U R P H) :
       simp only [Pi.smul_apply]
       rw [hf3 n γ y hy, map_smul]
 
-abbrev PieceSequence (cover : CountableCover F ζ hζ U R P H) :=
+abbrev PieceSequence   :=
   ↥(pieceSequenceSubmodule cover)
+end
 
-def enumeration (cover : CountableCover F ζ hζ U R P H)
-    (a : ShrunkChart F ζ hζ U R P H) (n : ℕ) :
+
+section
+variable (cover : CountableCover F ζ hζ U R P H)
+    (a : ShrunkChart F ζ hζ U R P H)
+include cover a
+def enumeration   (n : ℕ) :
     KPContCotangentCorrectedNullEquivalence.NonsingularEnumeration2 a (cover.chart n) :=
   Classical.choice ((kp_cont_actual_cotangent_borel_overlap_descent
     F ζ hζ R.adelicHaar R.adelic_isHaar U R rfl P H cover ℂ a).1 n)
 
-def cell (cover : CountableCover F ζ hζ U R P H)
-    (a : ShrunkChart F ζ hζ U R P H) (n k : ℕ) : Set (M F) :=
+def cell   (n k : ℕ) : Set (M F) :=
   q a ⁻¹' basePiece cover n ∩
     disjointed (fun j => ((enumeration cover a n).branch j).domain) k
 
-theorem cell_subset_domain (cover : CountableCover F ζ hζ U R P H)
-    (a : ShrunkChart F ζ hζ U R P H) (n k : ℕ) :
+theorem cell_subset_domain   (n k : ℕ) :
     cell cover a n k ⊆ ((enumeration cover a n).branch k).domain := by
   intro x hx
   exact disjointed_subset (fun j => ((enumeration cover a n).branch j).domain) k hx.2
 
-theorem cell_subset_omega (cover : CountableCover F ζ hζ U R P H)
-    (a : ShrunkChart F ζ hζ U R P H) (n k : ℕ) :
+theorem cell_subset_omega   (n k : ℕ) :
     cell cover a n k ⊆ omega a := by
   exact (cell_subset_domain cover a n k).trans
     ((enumeration cover a n).properties k).source_subset
+end
 
-structure PartitionProperties (cover : CountableCover F ζ hζ U R P H) : Prop where
+
+
+local notation:max "current_CountableCover" => CountableCover F ζ hζ U R P H
+
+structure PartitionProperties (cover : current_CountableCover) : Prop where
   measurable : ∀ a n k, MeasurableSet (cell cover a n k)
   disjoint : ∀ a, Pairwise (fun i j : ℕ × ℕ =>
     Disjoint (cell cover a i.1 i.2) (cell cover a j.1 j.2))
@@ -125,7 +135,10 @@ structure PartitionProperties (cover : CountableCover F ζ hζ U R P H) : Prop w
   intro k
   exact (continuous_apply _).comp (CotangentLogCoframe.A (d F)).continuous
 
-private lemma measurable_q (a : ShrunkChart F ζ hζ U R P H) : Measurable (q a) := by
+
+local notation:max "current_ShrunkChart" => ShrunkChart F ζ hζ U R P H
+
+private lemma measurable_q (a : current_ShrunkChart) : Measurable (q a) := by
   have hcm : Continuous (KPFiniteCuspAtlas.componentMap F ζ hζ U
       ((H.atlas U).representative a.component)) := by
     have he : KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative a.component) =
@@ -142,7 +155,7 @@ private lemma measurable_q (a : ShrunkChart F ζ hζ U R P H) : Measurable (q a)
   rw [hcomp]
   exact hcm.measurable.comp (hproj.comp continuous_labeledA_placeEquiv.measurable)
 
-theorem partition_properties (cover : CountableCover F ζ hζ U R P H) :
+theorem partition_properties (cover : current_CountableCover) :
     PartitionProperties cover := by
   classical
   have hbase := kp_cont_actual_cotangent_borel_refinement F ζ hζ U R P H cover
@@ -207,7 +220,10 @@ private lemma T_symm_coord {i : Fin (H.atlas U).componentCount}
         (T ψ x hx (EuclideanSpace.basisFun (Fin (d F) × Fin 3) ℂ k))]
   rw [inner_conj_symm, hb]
 
-private lemma measurable_ambientSequence (cover : CountableCover F ζ hζ U R P H)
+section
+variable (cover : CountableCover F ζ hζ U R P H)
+include cover
+private lemma measurable_ambientSequence  
     (f : SequenceFields cover) (hf : IsPieceSequence cover f) (n : ℕ) :
     Measurable (ambientSequence cover f n) := by
   have hω : MeasurableSet (omega (cover.chart n)) := by
@@ -216,7 +232,7 @@ private lemma measurable_ambientSequence (cover : CountableCover F ζ hζ U R P 
       (cover.chart n).domain_open).measurableSet
   exact Measurable.dite (hf.1 n) measurable_const hω
 
-def cellIndex (cover : CountableCover F ζ hζ U R P H)
+def cellIndex  
     (a : ShrunkChart F ζ hζ U R P H) (x : omega a) : ℕ × ℕ :=
   Classical.choose (show ∃ i : ℕ × ℕ, x.val ∈ cell cover a i.1 i.2 from by
     have hx : x.val ∈ ⋃ i : ℕ × ℕ, cell cover a i.1 i.2 := by
@@ -224,7 +240,7 @@ def cellIndex (cover : CountableCover F ζ hζ U R P H)
       exact x.property
     exact Set.mem_iUnion.mp hx)
 
-theorem cellIndex_mem (cover : CountableCover F ζ hζ U R P H)
+theorem cellIndex_mem  
     (a : ShrunkChart F ζ hζ U R P H) (x : omega a) :
     x.val ∈ cell cover a (cellIndex cover a x).1 (cellIndex cover a x).2 := by
   classical
@@ -235,14 +251,14 @@ theorem cellIndex_mem (cover : CountableCover F ζ hζ U R P H)
       exact x.property
     exact Set.mem_iUnion.mp hx)
 
-def rawG (cover : CountableCover F ζ hζ U R P H) (f : SequenceFields cover) :
+def rawG   (f : SequenceFields cover) :
     ChartFields F ζ hζ U R P H := fun a x =>
   let i := cellIndex cover a x
   inverseTransport ((enumeration cover a i.1).branch i.2)
     (ambientSequence cover f i.1) x.val
     (cell_subset_domain cover a i.1 i.2 (cellIndex_mem cover a x))
 
-private lemma rawG_cell (cover : CountableCover F ζ hζ U R P H)
+private lemma rawG_cell  
     (f : SequenceFields cover) (a : ShrunkChart F ζ hζ U R P H)
     (n k : ℕ) (x : omega a) (hx : x.val ∈ cell cover a n k) :
     rawG cover f a x = inverseTransport ((enumeration cover a n).branch k)
@@ -259,10 +275,15 @@ private lemma rawG_cell (cover : CountableCover F ζ hζ U R P H)
     rfl
   rw [hv, hi]
   exact (dif_pos hx)
+end
 
-private lemma measurable_inverseTransport (cover : CountableCover F ζ hζ U R P H)
+
+section
+variable (cover : CountableCover F ζ hζ U R P H)
     (f : SequenceFields cover) (hf : IsPieceSequence cover f)
-    (a : ShrunkChart F ζ hζ U R P H) (n k : ℕ) :
+    (a : ShrunkChart F ζ hζ U R P H)
+include cover f hf a
+private lemma measurable_inverseTransport   (n k : ℕ) :
     Measurable (fun x : ((enumeration cover a n).branch k).domain =>
       inverseTransport ((enumeration cover a n).branch k)
         (ambientSequence cover f n) x.val x.property) := by
@@ -299,9 +320,7 @@ private lemma measurable_inverseTransport (cover : CountableCover F ζ hζ U R P
     exact (ht.clm_apply continuous_const).measurable.inner
       ((measurable_ambientSequence cover f hf n).comp hψ.measurable)
 
-private lemma measurable_rawG (cover : CountableCover F ζ hζ U R P H)
-    (f : SequenceFields cover) (hf : IsPieceSequence cover f)
-    (a : ShrunkChart F ζ hζ U R P H) : Measurable (rawG cover f a) := by
+private lemma measurable_rawG   : Measurable (rawG cover f a) := by
   intro s hs
   have heq : (rawG cover f a) ⁻¹' s = ⋃ i : ℕ × ℕ,
       Subtype.val ⁻¹' cell cover a i.1 i.2 ∩ (rawG cover f a) ⁻¹' s := by
@@ -333,8 +352,10 @@ private lemma measurable_rawG (cover : CountableCover F ζ hζ U R P H)
     · rintro ⟨hx, hsx⟩
       exact ⟨⟨x, hx⟩, hsx, rfl⟩
   rwa [hset] at himg
+end
 
-private lemma q_actualBranch {a b : ShrunkChart F ζ hζ U R P H}
+
+private lemma q_actualBranch {a b : current_ShrunkChart}
     (e : ActualBranch a b) (x : M F) : q b (e.arrow.psi x) = q a x := by
   rcases a with ⟨i, ca, oa, da, dao, dac, das, dai⟩
   rcases b with ⟨j, cb, ob, db, dbo, dbc, dbs, dbi⟩
@@ -353,14 +374,17 @@ private lemma q_actualBranch {a b : ShrunkChart F ζ hζ U R P H}
   apply Quotient.sound
   exact ⟨e.gamma, rfl⟩
 
-private lemma cellIndex_fst (cover : CountableCover F ζ hζ U R P H)
+section
+variable (cover : CountableCover F ζ hζ U R P H)
+include cover
+private lemma cellIndex_fst  
     (a : ShrunkChart F ζ hζ U R P H) (x : omega a) (n : ℕ)
     (hx : q a x.val ∈ basePiece cover n) : (cellIndex cover a x).1 = n := by
   by_contra hne
   have hb := kp_cont_actual_cotangent_borel_refinement F ζ hζ U R P H cover
   exact Set.disjoint_left.mp (hb.pairwise_disjoint hne) (cellIndex_mem cover a x).1 hx
 
-private lemma rawG_at_branch (cover : CountableCover F ζ hζ U R P H)
+private lemma rawG_at_branch  
     (f : SequenceFields cover) (hf : IsPieceSequence cover f)
     (a : ShrunkChart F ζ hζ U R P H) (n : ℕ)
     (e : Branch a (cover.chart n)) (x : omega a) (hx : x.val ∈ e.domain)
@@ -374,7 +398,7 @@ private lemma rawG_at_branch (cover : CountableCover F ζ hζ U R P H)
     R.adelicHaar R.adelic_isHaar U R rfl P H cover _ hf.2.2).choice_independent
       a n _ e x.val _ hx
 
-private lemma rawG_overlap (cover : CountableCover F ζ hζ U R P H)
+private lemma rawG_overlap  
     (f : SequenceFields cover) (hf : IsPieceSequence cover f)
     (a b : ShrunkChart F ζ hζ U R P H) (e : ActualBranch a b)
     (x : M F) (hx : x ∈ e.arrow.domain) :
@@ -397,8 +421,10 @@ private lemma rawG_overlap (cover : CountableCover F ζ hζ U R P H)
     R.adelicHaar R.adelic_isHaar U R rfl P H cover _ hf.2.2).mixed_charts
       a b j.1 (some e) _ _ x hx (cell_subset_domain cover a _ _ hc)
         (cell_subset_domain cover b _ _ hj)
+end
 
- def isotropyBranch (a : ShrunkChart F ζ hζ U R P H) (γ : Gamma a) :
+
+ def isotropyBranch (a : current_ShrunkChart) (γ : Gamma a) :
     ActualBranch a a where
   component_eq := rfl
   arrow := { isotropyArrow a γ with
@@ -414,7 +440,7 @@ private lemma rawG_overlap (cover : CountableCover F ζ hζ U R P H)
     (KPContActualCotangentMeasurableFamilies.omega_subset_larger a hx)
 
 theorem rawG_isMeasurableCotangentFamily
-    (cover : CountableCover F ζ hζ U R P H) (f : SequenceFields cover)
+    (cover : current_CountableCover) (f : SequenceFields cover)
     (hf : IsPieceSequence cover f) : IsMeasurableCotangentFamily (rawG cover f) := by
   refine ⟨measurable_rawG cover f hf, ?_, rawG_overlap cover f hf⟩
   intro a γ x hx
@@ -426,11 +452,11 @@ theorem rawG_isMeasurableCotangentFamily
     intro v
     rfl
 
-def G (cover : CountableCover F ζ hζ U R P H) (f : PieceSequence cover) :
+def G (cover : current_CountableCover) (f : PieceSequence cover) :
     MeasurableCotangentFamily F ζ hζ U R P H :=
   ⟨rawG cover f.val, rawG_isMeasurableCotangentFamily cover f.val f.property⟩
 
- def identityBranch (a : ShrunkChart F ζ hζ U R P H) : ActualBranch a a where
+ def identityBranch (a : current_ShrunkChart) : ActualBranch a a where
   component_eq := rfl
   arrow := { KPContCotangentActualOverlap.identity (isotropyChart a) with
     domain := omega a
@@ -452,7 +478,7 @@ def G (cover : CountableCover F ζ hζ U R P H) (f : PieceSequence cover) :
     rw [KPContCotangentActualGroupoidIdentities.identity_psi]
     exact KPContActualCotangentMeasurableFamilies.omega_subset_larger a hx
 
-private lemma rawG_on_piece (cover : CountableCover F ζ hζ U R P H)
+private lemma rawG_on_piece (cover : current_CountableCover)
     (f : SequenceFields cover) (hf : IsPieceSequence cover f) (n : ℕ)
     (y : omega (cover.chart n)) (hy : q (cover.chart n) y.val ∈ basePiece cover n) :
     rawG cover f (cover.chart n) y = f n y := by
@@ -472,16 +498,16 @@ private lemma rawG_on_piece (cover : CountableCover F ζ hζ U R P H)
     ambientSequence, dif_pos y.property]
   rfl
 
-structure Properties (cover : CountableCover F ζ hζ U R P H) : Prop where
+structure Properties (cover : current_CountableCover) : Prop where
   partition : PartitionProperties cover
   cell_formula : ∀ (f : PieceSequence cover)
-    (a : ShrunkChart F ζ hζ U R P H) (n k : ℕ) (x : M F)
+    (a : current_ShrunkChart) (n k : ℕ) (x : M F)
     (hx : x ∈ cell cover a n k),
     coefficient (G cover f) a ⟨x, cell_subset_omega cover a n k hx⟩ =
       inverseTransport ((enumeration cover a n).branch k)
         (ambientSequence cover f.val n) x (cell_subset_domain cover a n k hx)
   every_arrow : ∀ (f : PieceSequence cover)
-    (a : ShrunkChart F ζ hζ U R P H) (n : ℕ)
+    (a : current_ShrunkChart) (n : ℕ)
     (ψ : ActualBranch a (cover.chart n)) (x : M F)
     (hx : x ∈ ψ.arrow.domain), q a x ∈ basePiece cover n →
     coefficient (G cover f) a ⟨x, ψ.source_shrinking hx⟩ =
@@ -489,7 +515,7 @@ structure Properties (cover : CountableCover F ζ hζ U R P H) : Prop where
   chart_measurable : ∀ (f : PieceSequence cover) a,
     Measurable (coefficient (G cover f) a)
   covariance : ∀ (f : PieceSequence cover)
-    (a : ShrunkChart F ζ hζ U R P H) (γ : Gamma a) (x : M F)
+    (a : current_ShrunkChart) (γ : Gamma a) (x : M F)
     (hx : x ∈ omega a),
     coefficient (G cover f) a
         ⟨(isotropyArrow a γ).psi x, isotropy_mem a γ x hx⟩ =
@@ -497,7 +523,7 @@ structure Properties (cover : CountableCover F ζ hζ U R P H) : Prop where
         (KPContActualCotangentMeasurableFamilies.omega_subset_larger a hx)
         (coefficient (G cover f) a ⟨x, hx⟩)
   overlap : ∀ (f : PieceSequence cover)
-    (a b : ShrunkChart F ζ hζ U R P H) (θ : ActualBranch a b) (x : M F)
+    (a b : current_ShrunkChart) (θ : ActualBranch a b) (x : M F)
     (hx : x ∈ θ.arrow.domain),
     coefficient (G cover f) b ⟨θ.arrow.psi x, θ.target_shrinking hx⟩ =
       T θ.arrow x hx (coefficient (G cover f) a ⟨x, θ.source_shrinking hx⟩)
@@ -511,7 +537,7 @@ structure Properties (cover : CountableCover F ζ hζ U R P H) : Prop where
   smul : ∀ (c : ℂ) (f : PieceSequence cover), G cover (c • f) = c • G cover f
   zero : G cover (0 : PieceSequence cover) = 0
 
-private theorem properties (cover : CountableCover F ζ hζ U R P H) : Properties cover := by
+private theorem properties (cover : current_CountableCover) : Properties cover := by
   refine ⟨partition_properties cover, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · intro f a n k x hx
     exact rawG_cell cover f.val a n k ⟨x, cell_subset_omega cover a n k hx⟩ hx

@@ -179,9 +179,12 @@ private lemma X_zero (g : K0 F v) (hc : c F v g = 0) (hd : d F v g ≠ 0) :
 
 include hv
 
-theorem kappa_mul_small_nonzero_of_product_entry_ne_zero
-    (g h : K0 F v) (hc : c F v g ≠ 0) (he : c F v h ≠ 0)
+section
+variable (g h : K0 F v) (hc : c F v g ≠ 0) (he : c F v h ≠ 0)
     (hcg : ‖c F v g‖ < 1) (hch : ‖c F v h‖ < 1)
+include g h hc he hcg hch
+theorem kappa_mul_small_nonzero_of_product_entry_ne_zero
+     
     (hz : c F v (g * h) ≠ 0) :
     kappa F v ζ hζ (g * h) =
       kappa F v ζ hζ g * kappa F v ζ hζ h *
@@ -234,8 +237,7 @@ theorem kappa_mul_small_nonzero_of_product_entry_ne_zero
   rw [factor_nonzero B hL hR hAlt C E Z A D H hAD hAH hDH, hsum, mul_one]
 
 theorem kappa_mul_small_nonzero_of_product_entry_zero
-    (g h : K0 F v) (hc : c F v g ≠ 0) (he : c F v h ≠ 0)
-    (hcg : ‖c F v g‖ < 1) (hch : ‖c F v h‖ < 1)
+     
     (hz : c F v (g * h) = 0) :
     kappa F v ζ hζ (g * h) =
       kappa F v ζ hζ g * kappa F v ζ hζ h *
@@ -307,8 +309,7 @@ theorem kappa_mul_small_nonzero_of_product_entry_zero
   rw [factor_zero B hL hR hAlt C E W A D H hAD hAH hDH hWA hWD hCW, hst]
 
 theorem kappa_mul_small_nonzero
-    (g h : K0 F v) (hc : c F v g ≠ 0) (he : c F v h ≠ 0)
-    (hcg : ‖c F v g‖ < 1) (hch : ‖c F v h‖ < 1) :
+      :
     kappa F v ζ hζ (g * h) =
       kappa F v ζ hζ g * kappa F v ζ hζ h *
         KPLocalCover.sigmaTwo F ζ hζ (Sum.inr v)
@@ -316,6 +317,8 @@ theorem kappa_mul_small_nonzero
   by_cases hz : c F v (g * h) = 0
   · exact kappa_mul_small_nonzero_of_product_entry_zero F v ζ hζ hv g h hc he hcg hch hz
   · exact kappa_mul_small_nonzero_of_product_entry_ne_zero F v ζ hζ hv g h hc he hcg hch hz
+end
+
 
 end
 end DedekindZetaZeroFree.KPTameCompact

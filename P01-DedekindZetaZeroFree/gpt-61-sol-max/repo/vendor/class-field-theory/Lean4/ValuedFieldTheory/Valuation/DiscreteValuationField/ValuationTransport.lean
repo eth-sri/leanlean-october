@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Valuation.DiscreteValuationField.Basic
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -56,14 +59,14 @@ theorem valueGroup_comap_ringEquiv
     rcases hval with ⟨hrange, hne⟩
     rcases hrange with ⟨x, hx⟩
     have hval' : (γ : Γ) ∈ Set.range v \ {0} := by
-      exact ⟨⟨e x, by simpa using hx⟩, hne⟩
+      exact ⟨⟨e x, hx⟩, hne⟩
     have himage :
         (γ : Γ) ∈
           Units.val '' MonoidWithZeroHom.valueGroup (.ofClass v) := by
       rw [MonoidWithZeroHom.valueGroup_eq_range]
       simpa only [MonoidWithZeroHom.coe_ofClass] using hval'
     rcases himage with ⟨δ, hδ, hδγ⟩
-    have hδ_eq : δ = γ := Units.ext hδγ
+    have hδ_eq  := Units.ext hδγ
     simpa [hδ_eq] using hδ
   · intro hγ
     have hval : (γ : Γ) ∈ Set.range v \ {0} := by
@@ -76,8 +79,7 @@ theorem valueGroup_comap_ringEquiv
     rcases hval with ⟨hrange, hne⟩
     rcases hrange with ⟨x, hx⟩
     have hval' :
-        (γ : Γ) ∈ Set.range (v.comap (e : L →+* K)) \ {0} := by
-      exact ⟨⟨e.symm x, by simpa using hx⟩, hne⟩
+        (γ : Γ) ∈ Set.range (v.comap (e : L →+* K)) \ {0} := ⟨⟨e.symm x, by simpa using hx⟩, hne⟩
     have himage :
         (γ : Γ) ∈
           Units.val '' MonoidWithZeroHom.valueGroup
@@ -85,7 +87,7 @@ theorem valueGroup_comap_ringEquiv
       rw [MonoidWithZeroHom.valueGroup_eq_range]
       simpa only [MonoidWithZeroHom.coe_ofClass] using hval'
     rcases himage with ⟨δ, hδ, hδγ⟩
-    have hδ_eq : δ = γ := Units.ext hδγ
+    have hδ_eq  := Units.ext hδγ
     simpa [hδ_eq] using hδ
 
 /-- Rank-one discreteness is preserved by pulling a valuation back along a
@@ -102,10 +104,13 @@ instance isRankOneDiscrete_comap_ringEquiv
     rw [valueGroup_comap_ringEquiv (v := v) e]
     exact hγ
 
+section
+variable (v : _root_.Valuation K Γ) (e : L ≃+* K)
+include v e
 /-- The valuation ring of a comapped valuation is the source valuation ring,
 transported through the field equivalence. -/
 noncomputable def valuationSubringRingEquivOfComap
-    (v : _root_.Valuation K Γ) (e : L ≃+* K) :
+      :
     (v.comap (e : L →+* K)).valuationSubring ≃+* v.valuationSubring where
   toFun x := ⟨e (x : L), x.2⟩
   invFun y := ⟨e.symm (y : K), by
@@ -127,7 +132,7 @@ noncomputable def valuationSubringRingEquivOfComap
 
 /-- The valuation-subring equivalence induced by a comap acts through the ambient ring map. -/
 @[simp] theorem valuationSubringRingEquivOfComap_apply
-    (v : _root_.Valuation K Γ) (e : L ≃+* K)
+     
     (x : (v.comap (e : L →+* K)).valuationSubring) :
     ((valuationSubringRingEquivOfComap v e x : v.valuationSubring) : K) =
       e (x : L) :=
@@ -136,7 +141,7 @@ noncomputable def valuationSubringRingEquivOfComap
 /-- The valuation-ring equivalence attached to a comap carries maximal-ideal
 membership exactly. -/
 theorem valuationSubringRingEquivOfComap_mem_maximalIdeal_iff
-    (v : _root_.Valuation K Γ) (e : L ≃+* K)
+     
     (x : (v.comap (e : L →+* K)).valuationSubring) :
     valuationSubringRingEquivOfComap v e x ∈
         IsLocalRing.maximalIdeal v.valuationSubring ↔
@@ -146,35 +151,35 @@ theorem valuationSubringRingEquivOfComap_mem_maximalIdeal_iff
     _root_.Valuation.mem_maximalIdeal_iff]
   rfl
 
-/-- Map form of maximal-ideal preservation for the valuation-ring equivalence
-attached to a comap. -/
-@[simp] theorem maximalIdeal_map_valuationSubringRingEquivOfComap
-    (v : _root_.Valuation K Γ) (e : L ≃+* K) :
-    (IsLocalRing.maximalIdeal
-        (v.comap (e : L →+* K)).valuationSubring).map
-        (valuationSubringRingEquivOfComap v e :
-          (v.comap (e : L →+* K)).valuationSubring →+*
-            v.valuationSubring) =
-      IsLocalRing.maximalIdeal v.valuationSubring := by
-  let r := valuationSubringRingEquivOfComap v e
-  ext y
-  rw [Ideal.mem_map_iff_of_surjective
-    (r : (v.comap (e : L →+* K)).valuationSubring →+*
-      v.valuationSubring) r.surjective]
-  constructor
-  · rintro ⟨x, hx, rfl⟩
-    exact
-      (valuationSubringRingEquivOfComap_mem_maximalIdeal_iff v e x).2 hx
-  · intro hy
-    refine ⟨r.symm y, ?_, by simp [r]⟩
-    exact
-      (valuationSubringRingEquivOfComap_mem_maximalIdeal_iff v e
-        (r.symm y)).1 (by simpa [r] using hy)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- Comap form of maximal-ideal preservation for the valuation-ring
 equivalence attached to a comap. -/
 @[simp] theorem maximalIdeal_comap_valuationSubringRingEquivOfComap
-    (v : _root_.Valuation K Γ) (e : L ≃+* K) :
+      :
     (IsLocalRing.maximalIdeal v.valuationSubring).comap
         (valuationSubringRingEquivOfComap v e :
           (v.comap (e : L →+* K)).valuationSubring →+*
@@ -182,7 +187,9 @@ equivalence attached to a comap. -/
       IsLocalRing.maximalIdeal
         (v.comap (e : L →+* K)).valuationSubring := by
   ext x
-  exact valuationSubringRingEquivOfComap_mem_maximalIdeal_iff v e x
+  apply valuationSubringRingEquivOfComap_mem_maximalIdeal_iff
+end
+
 
 end Valuation
 end DiscreteValuationField

@@ -11,9 +11,12 @@ open IsDedekindDomain
 
 namespace DedekindZetaZeroFree.LargeSieve
 
-private lemma invs {F : Type} [Field F] [NumberField F]
+section
+variable {F : Type} [Field F] [NumberField F]
     {f : Ideal (𝓞 F)} {η : DedekindZetaZeroFree.RayClassCharacter F f}
     (d : QuadraticRayExtensionData η) (p : HeightOneSpectrum (𝓞 F))
+include F f η d p in
+private lemma invs  
     (Q : HeightOneSpectrum (𝓞 d.extension)) (hQ : Q.asIdeal.LiesOver p.asIdeal) :
     (p.asIdeal.primesOver (𝓞 d.extension)).ncard *
       (Q.asIdeal.ramificationIdx (𝓞 F) * Q.asIdeal.inertiaDeg (𝓞 F)) = 2 := by
@@ -44,9 +47,8 @@ private lemma fiber_card {F E : Type} [Field F] [Field E]
   rw [Nat.card_congr (fiberEquiv p), Set.ncard_eq_toFinset_card']
   simp
 
-private lemma constant_local {F : Type} [Field F] [NumberField F]
-    {f : Ideal (𝓞 F)} {η : DedekindZetaZeroFree.RayClassCharacter F f}
-    (d : QuadraticRayExtensionData η) (p : HeightOneSpectrum (𝓞 F))
+include F f η d p in
+private lemma constant_local  
     (Q : HeightOneSpectrum (𝓞 d.extension)) (hQ : Q.asIdeal.LiesOver p.asIdeal)
     (s : ℂ) (n g : ℕ)
     (hn : Q.asIdeal.inertiaDeg (𝓞 F) = n)
@@ -74,9 +76,8 @@ private lemma constant_local {F : Type} [Field F] [NumberField F]
   letI := Fintype.ofFinite {Q : HeightOneSpectrum (𝓞 d.extension) // Q.asIdeal.LiesOver p.asIdeal}
   rw [tprod_fintype, Finset.prod_const, Finset.card_univ, ← Nat.card_eq_fintype_card,
     fiber_card, hg]
-private lemma unramified_cases {F : Type} [Field F] [NumberField F]
-    {f : Ideal (𝓞 F)} {η : DedekindZetaZeroFree.RayClassCharacter F f}
-    (d : QuadraticRayExtensionData η) (p : HeightOneSpectrum (𝓞 F))
+include F f η d p in
+private lemma unramified_cases  
     (hgood : p.asIdeal ⊔ f = ⊤)
     (Q : HeightOneSpectrum (𝓞 d.extension)) (hQ : Q.asIdeal.LiesOver p.asIdeal) :
     (η p.asIdeal = 1 ∧ Q.asIdeal.inertiaDeg (𝓞 F) = 1 ∧
@@ -122,9 +123,8 @@ private lemma unramified_cases {F : Type} [Field F] [NumberField F]
         norm_num at hh
     rw [hi] at hefg
     exact ⟨hm, hi, by omega⟩
-private lemma ramified_cases {F : Type} [Field F] [NumberField F]
-    {f : Ideal (𝓞 F)} {η : DedekindZetaZeroFree.RayClassCharacter F f}
-    (d : QuadraticRayExtensionData η) (p : HeightOneSpectrum (𝓞 F))
+include F f η d p in
+private lemma ramified_cases  
     (Q : HeightOneSpectrum (𝓞 d.extension)) (hQ : Q.asIdeal.LiesOver p.asIdeal)
     (hunr : ¬ Algebra.IsUnramifiedAt (𝓞 F) Q.asIdeal) :
     Q.asIdeal.inertiaDeg (𝓞 F) = 1 ∧
@@ -153,6 +153,8 @@ private lemma ramified_cases {F : Type} [Field F] [NumberField F]
   have hi : Q.asIdeal.inertiaDeg (𝓞 F) = 1 := by omega
   rw [hi, mul_one] at heupper
   exact ⟨hi, by omega⟩
+end
+
 
 theorem quadratic_local_euler_factors
     (F : Type) [Field F] [NumberField F]

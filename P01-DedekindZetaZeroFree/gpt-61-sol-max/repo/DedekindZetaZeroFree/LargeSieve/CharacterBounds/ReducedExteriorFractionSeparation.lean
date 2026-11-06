@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 public import DedekindZetaZeroFree.Arithmetic.Ideals.SIntegerPrincipalIdealIndex
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 noncomputable section
@@ -17,7 +20,7 @@ variable (F : Type) [Field F] [NumberField F]
 abbrev Integers (S : Finset (HeightOneSpectrum (𝓞 F))) :=
   (S : Set (HeightOneSpectrum (𝓞 F))).integer F
 
-def productNorm (S : Finset (HeightOneSpectrum (𝓞 F))) (x : F) : ℝ :=
+def productNorm (S : Finset (HeightOneSpectrum (𝓞 F))) (x : F)  :=
   (∏ v : NumberField.InfinitePlace F, v x ^ v.mult) *
     ∏ v ∈ S, NumberField.FinitePlace.mk v x
 
@@ -31,13 +34,17 @@ structure Presentation (S : Finset (HeightOneSpectrum (𝓞 F))) where
 abbrev ReducedPair (S : Finset (HeightOneSpectrum (𝓞 F))) :=
   (I : {I : Ideal (Integers F S) // I ≠ ⊥}) × ((Integers F S) ⧸ I.val)ˣ
 
-def value {S : Finset (HeightOneSpectrum (𝓞 F))}
-    (p : Presentation F S) (α : ReducedPair F S) : F :=
+section
+variable {S : Finset (HeightOneSpectrum (𝓞 F))}
+    (p : Presentation F S) (α : ReducedPair F S)
+include S p α
+def value    :=
   (p.lift α.1.val α.2 : F) / (p.generator α.1.val α.1.property : F)
 
-def fractionClass {S : Finset (HeightOneSpectrum (𝓞 F))}
-    (p : Presentation F S) (α : ReducedPair F S) : F ⧸ (Integers F S).toSubring.toAddSubgroup :=
+def fractionClass    :=
   QuotientAddGroup.mk' (Integers F S).toSubring.toAddSubgroup (value F p α)
+end
+
 
 def denominatorNorm {S : Finset (HeightOneSpectrum (𝓞 F))}
     (α : ReducedPair F S) : ℝ :=
@@ -78,8 +85,11 @@ private theorem probeDenominatorLe (F : Type) [Field F] [NumberField F]
 
 open ProbeSeparation in
 
-theorem probe_reduced_fraction_injective (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (p : ProbeSeparation.Presentation F S) :
+section
+variable (F : Type) [Field F] [NumberField F]
+    (S : Finset (HeightOneSpectrum (𝓞 F)))
+include F S
+theorem probe_reduced_fraction_injective   (p : ProbeSeparation.Presentation F S) :
     Function.Injective (ProbeSeparation.fractionClass F p) := by
   letI := Classical.decEq F
   intro a b hab
@@ -92,7 +102,7 @@ theorem probe_reduced_fraction_injective (F : Type) [Field F] [NumberField F]
     · apply probeDenominatorLe F p b a (-r')
       change value F p b + -(r' : F) = value F p a
       linear_combination -h'
-    · exact probeDenominatorLe F p a b r' h'
+    · apply probeDenominatorLe <;> assumption
   cases a with
   | mk I d =>
     cases b with
@@ -118,8 +128,7 @@ theorem probe_reduced_fraction_injective (F : Type) [Field F] [NumberField F]
         linear_combination h'
       exact SetLike.le_def.mp (le_of_eq (p.generator_span I.val I.property)) hmem
 
-theorem probe_sinteger_product_norm_lower_bound (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F)))
+theorem probe_sinteger_product_norm_lower_bound  
     (r : ProbeSeparation.Integers F S) (hr : r ≠ 0) :
     1 ≤ ProbeSeparation.productNorm F S (r : F) := by
   classical
@@ -132,7 +141,7 @@ theorem probe_sinteger_product_norm_lower_bound (F : Type) [Field F] [NumberFiel
     intro w hw
     simp only [Function.mem_mulSupport, f] at hw
     by_contra h
-    exact hw (if_neg h)
+    apply hw <;> aesop
   have hle : (∏ᶠ w : NumberField.FinitePlace F, w (r : F)) ≤ ∏ᶠ w, f w := by
     apply finprod_le_finprod₀ (NumberField.FinitePlace.hasFiniteMulSupport hrF)
       (fun w => apply_nonneg w _) hf
@@ -156,12 +165,14 @@ theorem probe_sinteger_product_norm_lower_bound (F : Type) [Field F] [NumberFiel
     · intro v hv
       simp only [Function.mem_mulSupport] at hv
       by_contra h
-      exact hv (if_neg h)
+      apply hv <;> aesop
   rw [heq] at hle
   have hnonneg : 0 ≤ ∏ w : NumberField.InfinitePlace F, w (r : F) ^ w.mult := by
     positivity
   rw [← NumberField.prod_abs_eq_one hrF]
   exact mul_le_mul_of_nonneg_left hle hnonneg
+end
+
 
 open ProbeSeparation in
 private theorem probeProductNormMul (F : Type) [Field F] [NumberField F]
@@ -183,7 +194,7 @@ theorem probe_reduced_fraction_separation (F : Type) [Field F] [NumberField F]
   let s := p.generator α.1.val α.1.property
   let t := p.generator β.1.val β.1.property
   let x := value F p α - value F p β + (r : F)
-  let n : Integers F S :=
+  let n  :=
     p.lift α.1.val α.2 * t - p.lift β.1.val β.2 * s + r * s * t
   have hs : s ≠ 0 := p.generator_nonzero _ _
   have ht : t ≠ 0 := p.generator_nonzero _ _
@@ -219,16 +230,13 @@ theorem probe_reduced_fraction_separation (F : Type) [Field F] [NumberField F]
     change productNorm F S (t : F) = _ at h
     simpa only [t, p.generator_span, denominatorNorm] using h
   rw [hnx, probeProductNormMul, probeProductNormMul, hsNorm, htNorm] at hnlow
-  have hapos : 0 ≤ denominatorNorm F α := Nat.cast_nonneg _
+  
   have hbpos : 0 ≤ denominatorNorm F β := Nat.cast_nonneg _
   have hxpos : 0 ≤ productNorm F S x := by dsimp [productNorm]; positivity
   have hprod : denominatorNorm F α * denominatorNorm F β ≤ V * V :=
     mul_le_mul (hP α hα) (hP β hβ) hbpos (by linarith)
   have hl : 1 ≤ productNorm F S x * (V*V) := by
-    calc
-      1 ≤ productNorm F S x * (denominatorNorm F α * denominatorNorm F β) := by
-        nlinarith [hnlow]
-      _ ≤ productNorm F S x * (V*V) := mul_le_mul_of_nonneg_left hprod hxpos
+    nlinarith
   have hVpos : 0 < V := by linarith
   rw [Real.rpow_neg (by linarith : 0 ≤ V), Real.rpow_two]
   apply (inv_le_iff_one_le_mul₀ (by positivity : 0 < V^2)).mpr

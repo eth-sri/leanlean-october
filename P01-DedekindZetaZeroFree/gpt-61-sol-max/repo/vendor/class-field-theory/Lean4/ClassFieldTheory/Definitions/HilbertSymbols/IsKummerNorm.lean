@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.Definitions.HilbertSymbols.KummerAlgebra
 public import Mathlib.RingTheory.Norm.Basic
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -27,7 +30,7 @@ universe u
 /-- A nonzero element `b` is a norm from the Kummer algebra
 `K[X] / (X^n - a)`. -/
 def IsKummerNorm
-    (K : Type u) [Field K] (n : ℕ+) (a b : Kˣ) : Prop :=
+    (K : Type u) [Field K] (n : ℕ+) (a b : Kˣ)  :=
   ∃ y : (KummerAlgebra K n a)ˣ,
     Algebra.norm K (y : KummerAlgebra K n a) = (b : K)
 

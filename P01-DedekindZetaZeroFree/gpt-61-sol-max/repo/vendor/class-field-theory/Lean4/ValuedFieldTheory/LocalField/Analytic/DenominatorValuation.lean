@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.Basic
 public import Mathlib.NumberTheory.Padics.PadicVal.Basic
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -70,7 +73,7 @@ characteristic `p`. -/
 def ramificationIndexOfWithZeroValuation
     (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
     [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
-    [Finite (IsLocalRing.ResidueField v.valuationSubring)] [CharZero K] : ℕ :=
+    [Finite (IsLocalRing.ResidueField v.valuationSubring)] [CharZero K]  :=
   Int.toNat
     (-WithZero.log
       (v ((ofWithZeroValuation v).residueCharacteristic : K)))
@@ -84,15 +87,14 @@ theorem ramificationIndexOfWithZeroValuation_intCast
     (ramificationIndexOfWithZeroValuation v : ℤ) =
       -WithZero.log
         (v ((ofWithZeroValuation v).residueCharacteristic : K)) := by
-  let F : LocalField.{u, 0} K := ofWithZeroValuation v
-  have hpK : (F.residueCharacteristic : K) ≠ 0 :=
+  let F  := ofWithZeroValuation v
+  have hpK  :=
     F.natCast_residueCharacteristic_ne_zero_of_charZero
   have hpv_ne : v (F.residueCharacteristic : K) ≠ 0 :=
     (_root_.Valuation.ne_zero_iff v).2 hpK
   have hpv_lt :
       v (F.residueCharacteristic : K) <
-        (1 : WithZero (Multiplicative ℤ)) := by
-    exact F.valuation_natCast_residueCharacteristic_lt_one
+        (1 : WithZero (Multiplicative ℤ)) := F.valuation_natCast_residueCharacteristic_lt_one
   have hlogneg :
       WithZero.log (v (F.residueCharacteristic : K)) < (0 : ℤ) := by
     have hloglt :
@@ -113,15 +115,14 @@ theorem ramificationIndexOfWithZeroValuation_pos
     [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
     [Finite (IsLocalRing.ResidueField v.valuationSubring)] [CharZero K] :
     0 < ramificationIndexOfWithZeroValuation v := by
-  let F : LocalField.{u, 0} K := ofWithZeroValuation v
-  have hpK : (F.residueCharacteristic : K) ≠ 0 :=
+  let F  := ofWithZeroValuation v
+  have hpK  :=
     F.natCast_residueCharacteristic_ne_zero_of_charZero
   have hpv_ne : v (F.residueCharacteristic : K) ≠ 0 :=
     (_root_.Valuation.ne_zero_iff v).2 hpK
   have hpv_lt :
       v (F.residueCharacteristic : K) <
-        (1 : WithZero (Multiplicative ℤ)) := by
-    exact F.valuation_natCast_residueCharacteristic_lt_one
+        (1 : WithZero (Multiplicative ℤ)) := F.valuation_natCast_residueCharacteristic_lt_one
   have hlogneg :
       WithZero.log (v (F.residueCharacteristic : K)) < (0 : ℤ) := by
     have hloglt :
@@ -144,14 +145,13 @@ theorem valuation_residueCharacteristic_eq_exp_neg_ramificationIndex
     [Finite (IsLocalRing.ResidueField v.valuationSubring)] [CharZero K] :
     v ((ofWithZeroValuation v).residueCharacteristic : K) =
       WithZero.exp (-(ramificationIndexOfWithZeroValuation v : ℤ)) := by
-  let F : LocalField.{u, 0} K := ofWithZeroValuation v
-  have hpK : (F.residueCharacteristic : K) ≠ 0 :=
+  let F  := ofWithZeroValuation v
+  have hpK  :=
     F.natCast_residueCharacteristic_ne_zero_of_charZero
   have hpv_ne : v (F.residueCharacteristic : K) ≠ 0 :=
     (_root_.Valuation.ne_zero_iff v).2 hpK
   have hpv_ne' :
-      v ((ofWithZeroValuation v).residueCharacteristic : K) ≠ 0 := by
-    simpa [F] using hpv_ne
+      v ((ofWithZeroValuation v).residueCharacteristic : K) ≠ 0 := hpv_ne
   calc
     v ((ofWithZeroValuation v).residueCharacteristic : K) =
         WithZero.exp
@@ -174,23 +174,20 @@ theorem valuation_natCast_eq_exp_neg_ramificationIndex_mul_padicValNat
       WithZero.exp
         (-((ramificationIndexOfWithZeroValuation v : ℤ) *
           (padicValNat (ofWithZeroValuation v).residueCharacteristic m : ℤ))) := by
-  let F : LocalField.{u, 0} K := ofWithZeroValuation v
-  let p : ℕ := F.residueCharacteristic
-  let e : ℕ := ramificationIndexOfWithZeroValuation v
-  let k : ℕ := padicValNat p m
-  let a : ℕ := m / p ^ k
+  let F  := ofWithZeroValuation v
+  let p  := F.residueCharacteristic
+  let e  := ramificationIndexOfWithZeroValuation v
+  let k  := padicValNat p m
+  let a  := m / p ^ k
   let : Fact p.Prime := by
     dsimp [p]
     infer_instance
-  have hpow : p ^ k ∣ m := by
-    exact pow_padicValNat_dvd
-  have hmfac : p ^ k * a = m := by
-    exact Nat.mul_div_cancel' hpow
+  have hpow : p ^ k ∣ m := pow_padicValNat_dvd
+  have hmfac : p ^ k * a = m := Nat.mul_div_cancel' hpow
   have ha : ¬ p ∣ a := by
     intro hpa
     have hnot : ¬ p ^ (k + 1) ∣ m := by
-      simpa [k] using
-        (pow_succ_padicValNat_not_dvd (p := p) hm)
+      apply pow_succ_padicValNat_not_dvd <;> assumption
     apply hnot
     rcases hpa with ⟨b, hb⟩
     refine ⟨b, ?_⟩
@@ -199,9 +196,7 @@ theorem valuation_natCast_eq_exp_neg_ramificationIndex_mul_padicValNat
       _ = p ^ k * (p * b) := by rw [hb]
       _ = p ^ (k + 1) * b := by rw [pow_succ]; ac_rfl
   have hpVal :
-      v (p : K) = WithZero.exp (-(e : ℤ)) := by
-    simpa [F, p, e] using
-      valuation_residueCharacteristic_eq_exp_neg_ramificationIndex v
+      v (p : K) = WithZero.exp (-(e : ℤ)) := valuation_residueCharacteristic_eq_exp_neg_ramificationIndex v
   have haVal : v (a : K) = 1 := by
     change F.toCompleteDVF.valuation (a : K) = 1
     exact F.valuation_natCast_eq_one_of_not_residueCharacteristic_dvd ha
@@ -211,43 +206,31 @@ theorem valuation_natCast_eq_exp_neg_ramificationIndex_mul_padicValNat
     v (m : K) = v ((p : K) ^ k * (a : K)) := by rw [hmK]
     _ = v (p : K) ^ k * v (a : K) := by rw [v.map_mul, v.map_pow]
     _ = WithZero.exp (-(e : ℤ)) ^ k := by rw [hpVal, haVal, mul_one]
-    _ = WithZero.exp (k • (-(e : ℤ))) := by
-      rw [WithZero.exp_nsmul]
+    _ = WithZero.exp (k • (-(e : ℤ))) := rfl
     _ = WithZero.exp (-((e : ℤ) * (k : ℤ))) := by
       congr 1
       simp [mul_comm]
     _ = WithZero.exp
         (-((ramificationIndexOfWithZeroValuation v : ℤ) *
-          (padicValNat (ofWithZeroValuation v).residueCharacteristic m : ℤ))) := by
-      rfl
+          (padicValNat (ofWithZeroValuation v).residueCharacteristic m : ℤ))) := rfl
 
 /-- Successor form of the natural-number valuation formula.  Unlike the main
 formula, this needs no explicit nonzero hypothesis. -/
-theorem valuation_natCast_succ_eq_exp_neg_ramificationIndex_mul_padicValNat
+def valuation_natCast_succ_eq_exp_neg_ramificationIndex_mul_padicValNat
     (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
     [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
     [Finite (IsLocalRing.ResidueField v.valuationSubring)] [CharZero K]
-    (m : ℕ) :
-    v ((m + 1 : ℕ) : K) =
-      WithZero.exp
-        (-((ramificationIndexOfWithZeroValuation v : ℤ) *
-          (padicValNat
-            (ofWithZeroValuation v).residueCharacteristic (m + 1) : ℤ))) :=
+    (m : ℕ)  :=
   valuation_natCast_eq_exp_neg_ramificationIndex_mul_padicValNat
     v (m + 1) (Nat.succ_ne_zero m)
 
 /-- Factorial form of the natural-number valuation formula, used by the
 exponential series in the deep exponential–logarithm equivalence. -/
-theorem valuation_natCast_factorial_eq_exp_neg_ramificationIndex_mul_padicValNat
+def valuation_natCast_factorial_eq_exp_neg_ramificationIndex_mul_padicValNat
     (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
     [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
     [Finite (IsLocalRing.ResidueField v.valuationSubring)] [CharZero K]
-    (m : ℕ) :
-    v ((m.factorial : ℕ) : K) =
-      WithZero.exp
-        (-((ramificationIndexOfWithZeroValuation v : ℤ) *
-          (padicValNat
-            (ofWithZeroValuation v).residueCharacteristic m.factorial : ℤ))) :=
+    (m : ℕ)  :=
   valuation_natCast_eq_exp_neg_ramificationIndex_mul_padicValNat
     v m.factorial (Nat.factorial_ne_zero m)
 

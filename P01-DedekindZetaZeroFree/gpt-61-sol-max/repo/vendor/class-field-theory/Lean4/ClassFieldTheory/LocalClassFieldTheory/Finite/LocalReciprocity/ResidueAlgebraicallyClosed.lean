@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.LocalClassFieldTheory.Finite.LocalReciprocity.ResidueAlgebraicClosureDegree
 public import Mathlib.FieldTheory.PurelyInseparable.Basic
 public import Mathlib.RingTheory.Valuation.Integral
 public import Mathlib.RingTheory.Valuation.ValuationSubring
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -67,7 +70,7 @@ theorem valuationSubring_residueField_isAlgClosed
     let hAIntegers : A.valuation.Integers A :=
       { hom_inj := A.subtype_injective
         map_le_one := fun a =>
-          (A.valuation_le_one_iff (a : Omega)).mpr a.property
+          (A.valuation_le_one_iff a).mpr a.property
         exists_of_le_one := fun {r} hr =>
           ⟨⟨r, (A.valuation_le_one_iff r).mp hr⟩, rfl⟩ }
     have hxValuation : A.valuation x ≤ 1 :=
@@ -80,7 +83,7 @@ theorem valuationSubring_residueField_isAlgClosed
   have hxrootA : q.eval xA = 0 := by
     apply A.subtype_injective
     rw [← Polynomial.eval₂_at_apply A.subtype xA]
-    simpa [xA] using hxrootEval₂
+    exact hxrootEval₂
   refine ⟨IsLocalRing.residue A xA, ?_⟩
   rw [← hqmap]
   simp [Polynomial.eval_map, hxrootA]
@@ -114,16 +117,16 @@ theorem valuationSubringComapMap_isLocalHom (A : ValuationSubring Omega) :
       simp [valuationSubringComapMap, hzero]
     exact Units.ne_zero u (hu.trans hmapZero)
   let xinv : A.comap (algebraMap F Omega) :=
-    ⟨(x : F)⁻¹, by
-      change algebraMap F Omega ((x : F)⁻¹) ∈ A
+    ⟨x⁻¹, by
+      change algebraMap F Omega (x⁻¹) ∈ A
       rw [map_inv₀]
-      have hu' : algebraMap F Omega (x : F) = ((u : A) : Omega) := by
+      have hu' : algebraMap F Omega x = (u : Omega) := by
         have h := congrArg Subtype.val hu
         exact h.symm
       rw [hu']
-      have hinv : (((u : A) : Omega))⁻¹ = (((u⁻¹ : Aˣ) : A) : Omega) := by
+      have hinv : ((u : Omega))⁻¹ = (((u⁻¹ : Aˣ)) : Omega) := by
         have hprod :
-            ((u : A) : Omega) * (((u⁻¹ : Aˣ) : A) : Omega) = 1 := by
+            (u : Omega) * (((u⁻¹ : Aˣ)) : Omega) = 1 := by
           have hprodA : (u : A) * ((u⁻¹ : Aˣ) : A) = 1 := u.val_inv
           exact congrArg A.subtype hprodA
         exact (eq_inv_of_mul_eq_one_right hprod).symm
@@ -141,7 +144,7 @@ noncomputable def valuationSubringComapResidueMap
     (A : ValuationSubring Omega) :
     IsLocalRing.ResidueField (A.comap (algebraMap F Omega)) →+*
       IsLocalRing.ResidueField A := by
-  letI : IsLocalHom (valuationSubringComapMap (F := F) A) :=
+  letI  :=
     valuationSubringComapMap_isLocalHom (F := F) A
   exact IsLocalRing.ResidueField.map (valuationSubringComapMap (F := F) A)
 
@@ -172,7 +175,7 @@ theorem valuationSubring_comap_residueField_isPurelyInseparable
   let : Algebra (IsLocalRing.ResidueField B)
       (IsLocalRing.ResidueField A) := barI.toAlgebra
   obtain ⟨q, hqF⟩ := ExpChar.exists F
-  let : ExpChar F q := hqF
+  let  := hqF
   cases hqF with
   | zero =>
       let : Algebra.IsSeparable F Omega := inferInstance
@@ -183,7 +186,7 @@ theorem valuationSubring_comap_residueField_isPurelyInseparable
       obtain ⟨a, rfl⟩ := IsLocalRing.residue_surjective y
       obtain ⟨z, hz⟩ :=
         IsPurelyInseparable.surjective_algebraMap_of_isSeparable F Omega
-          (a : Omega)
+          a
       let zB : B := ⟨z, by
         change algebraMap F Omega z ∈ A
         rw [hz]

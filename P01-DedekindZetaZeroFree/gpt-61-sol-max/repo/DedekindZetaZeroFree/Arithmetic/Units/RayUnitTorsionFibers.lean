@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Units.RayUnitLogLattice
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -13,15 +16,15 @@ namespace DedekindZetaZeroFree.AbelianQuotient.RayCoset
 
 variable (K : Type) [Field K] [NumberField K] (m : Ideal (𝓞 K))
 
-def rayUnitLogMap : U K m →* Multiplicative (rayUnitLogLattice K m) :=
+def rayUnitLogMap  :=
   AddMonoidHom.toMultiplicativeRight
     (rayUnitLogEmbedding K m).rangeRestrict.toAddMonoidHom
 
-@[simp] theorem rayUnitLogMap_coe (u : U K m) :
-    ((rayUnitLogMap K m u).toAdd : logHyperplane K) =
-      logAbs K (Additive.ofMul (u : (𝓞 K)ˣ)) := rfl
 
-def rayUnitTorsion : Subgroup (U K m) := (rayUnitLogMap K m).ker
+
+
+
+def rayUnitTorsion  := (rayUnitLogMap K m).ker
 
 theorem rayUnitTorsion_eq_comap :
     rayUnitTorsion K m =
@@ -31,8 +34,7 @@ theorem rayUnitTorsion_eq_comap :
   rw [NumberField.Units.mem_torsion]
   constructor
   · intro h v
-    have hz : logAbs K (Additive.ofMul (u : (𝓞 K)ˣ)) = 0 := by
-      simpa using congrArg (fun x : Multiplicative (rayUnitLogLattice K m) =>
+    have hz : logAbs K (Additive.ofMul (u : (𝓞 K)ˣ)) = 0 := congrArg (fun x : Multiplicative (rayUnitLogLattice K m) =>
         (x.toAdd : logHyperplane K)) h
     have hv : Real.log (v ((u : (𝓞 K)ˣ) : K)) = 0 :=
       congrFun (congrArg Subtype.val hz) v
@@ -48,8 +50,7 @@ theorem rayUnitTorsion_eq_comap :
 
 instance finite_rayUnitTorsion : Finite (rayUnitTorsion K m) := by
   let f : rayUnitTorsion K m → NumberField.Units.torsion K := fun u =>
-    ⟨(u.val : (𝓞 K)ˣ), by
-      exact show u.val ∈ (NumberField.Units.torsion K).comap (U K m).subtype from
+    ⟨(u.val : (𝓞 K)ˣ), show u.val ∈ (NumberField.Units.torsion K).comap (U K m).subtype from
         (rayUnitTorsion_eq_comap K m) ▸ u.property⟩
   apply Finite.of_injective f
   intro u v h
@@ -57,10 +58,9 @@ instance finite_rayUnitTorsion : Finite (rayUnitTorsion K m) := by
   apply Subtype.ext
   exact congrArg (fun x : NumberField.Units.torsion K => (x : (𝓞 K)ˣ)) h
 
-def rayUnitTorsionCard : ℕ := Nat.card (rayUnitTorsion K m)
+def rayUnitTorsionCard  := Nat.card (rayUnitTorsion K m)
 
-theorem rayUnitTorsionCard_pos : 0 < rayUnitTorsionCard K m := by
-  exact Nat.card_pos
+theorem rayUnitTorsionCard_pos : 0 < rayUnitTorsionCard K m := Nat.card_pos
 
 theorem nonempty_rayUnitLogFiberEquiv (γ : rayUnitLogLattice K m) :
     Nonempty ({u : U K m // (rayUnitLogMap K m u).toAdd = γ} ≃
@@ -75,21 +75,20 @@ theorem nonempty_rayUnitLogFiberEquiv (γ : rayUnitLogLattice K m) :
     rayUnitLogMap K m u = Multiplicative.ofAdd γ
   exact Multiplicative.toAdd.injective.eq_iff.symm
 
-def rayUnitLogFiberEquiv (γ : rayUnitLogLattice K m) :
-    {u : U K m // (rayUnitLogMap K m u).toAdd = γ} ≃ rayUnitTorsion K m :=
+def rayUnitLogFiberEquiv (γ : rayUnitLogLattice K m)  :=
   Classical.choice (nonempty_rayUnitLogFiberEquiv K m γ)
 
 theorem exists_rayUnitLogTorsionEquiv :
     ∃ e : U K m ≃ rayUnitLogLattice K m × rayUnitTorsion K m,
       ∀ u : U K m, (e u).1 = (rayUnitLogMap K m u).toAdd := by
-  let f : U K m → rayUnitLogLattice K m := fun u => (rayUnitLogMap K m u).toAdd
+  let f  := fun u => (rayUnitLogMap K m u).toAdd
   refine ⟨(Equiv.sigmaFiberEquiv f).symm.trans
     ((Equiv.sigmaCongrRight (rayUnitLogFiberEquiv K m)).trans
       (Equiv.sigmaEquivProd _ _)), ?_⟩
   intro u
   rfl
 
-def rayUnitLogTorsionEquiv : U K m ≃ rayUnitLogLattice K m × rayUnitTorsion K m :=
+def rayUnitLogTorsionEquiv  :=
   (exists_rayUnitLogTorsionEquiv K m).choose
 
 @[simp] theorem rayUnitLogTorsionEquiv_fst (u : U K m) :

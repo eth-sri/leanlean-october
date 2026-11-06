@@ -46,10 +46,13 @@ abbrev finitePlaceKummerPolynomial
     Polynomial.C
       (algebraMap K (finitePlaceKummerBaseCompletion K v) (b : K))
 
+section
+variable (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
+include n hnK in
 /-- The simple Kummer extension chosen intrinsically over the finite-place
 completion. -/
 noncomputable abbrev finitePlaceKummerLocalExtension
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
+     
     (v : HeightOneSpectrum (𝓞 K)) (b : Kˣ) :=
   chosenSimpleKummerExtension
     (finitePlaceKummerBaseCompletion K v) n
@@ -94,10 +97,11 @@ theorem finitePlaceLocalArtinInput_globalUnit
       rw [finitePlaceCompletionRingEquiv_eq_relative]
       exact (relativeFinitePlaceCompletionAlgEquiv v).commutes (a : K) |>.symm
 
+include n hnK in
 /-- The named finite-dimensional certificate for the Kummer extension
 chosen directly over the completion. -/
 theorem finitePlaceKummerLocalFiniteDimensional
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
+     
     (v : HeightOneSpectrum (𝓞 K)) (b : Kˣ) :
     FiniteDimensional (finitePlaceKummerBaseCompletion K v)
       (finitePlaceKummerLocalExtension K n hnK v b) :=
@@ -106,10 +110,11 @@ theorem finitePlaceKummerLocalFiniteDimensional
     (finitePlaceHilbert_natCast_ne_zero K n hnK v)
     (finitePlaceHilbert_completionUnit K v b)
 
+include n hnK in
 /-- The simple Kummer extension chosen directly over the completion is a
 splitting field of the finite-place Kummer polynomial. -/
 theorem finitePlaceKummerLocal_isSplittingField
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
+     
     (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
     (v : HeightOneSpectrum (𝓞 K)) (b : Kˣ) :
     Polynomial.IsSplittingField
@@ -133,12 +138,13 @@ theorem finitePlaceKummerLocal_isSplittingField
     exact chosenSimpleKummerRoot_pow C n hnC bC
   · exact chosenSimpleKummerExtension_adjoin_root_eq_top C n hnC bC
 
+include n hnK in
 /-- A canonical algebra equivalence between the intrinsically local Kummer
 extension and the localization of the chosen global Kummer extension.  It is
 constructed solely from the fact that both fields split the same polynomial;
 no compatibility between their chosen roots is assumed. -/
 noncomputable def finitePlaceKummerLocalGlobalAlgEquiv
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
+     
     (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
     (v : HeightOneSpectrum (𝓞 K)) (b : Kˣ)
     (w : AbsoluteValueExtension
@@ -167,6 +173,8 @@ noncomputable def finitePlaceKummerLocalGlobalAlgEquiv
   exact
     (Polynomial.IsSplittingField.algEquiv S f).trans
       (Polynomial.IsSplittingField.algEquiv E f).symm
+end
+
 
 end Reciprocity
 end GlobalClassFieldTheory

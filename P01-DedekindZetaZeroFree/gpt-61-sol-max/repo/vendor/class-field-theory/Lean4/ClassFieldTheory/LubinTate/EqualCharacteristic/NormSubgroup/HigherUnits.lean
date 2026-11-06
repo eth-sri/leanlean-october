@@ -166,98 +166,98 @@ theorem equalCharacteristicLubinTateHigherUnitSubgroup_map_eq_fieldPrincipalUnit
   rw [equalCharacteristicLubinTateHigherUnitSubgroup_map_eq_principalUnits]
   rfl
 
-private theorem equalCharacteristicLubinTateAmbientBracket_primitiveRoot_eq_iff_mem_higherUnitSubgroup
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) (u : F.residueField⟦X⟧ˣ) :
-    equalCharacteristicLubinTateAmbientBracket F
-        (equalCharacteristicSeparableCoefficientHom F)
-        (equalCharacteristicSeparableUniformizer F) (n + 1)
-        (u : F.residueField⟦X⟧)
-        (chosenEqualCharacteristicLubinTatePrimitiveRoot F n) =
-      chosenEqualCharacteristicLubinTatePrimitiveRoot F n ↔
-        u ∈ equalCharacteristicLubinTateHigherUnitSubgroup F n := by
-  let I : Ideal F.residueField⟦X⟧ :=
-    Ideal.span ({PowerSeries.X ^ (n + 1)} : Set F.residueField⟦X⟧)
-  constructor
-  · intro hfix
-    change equalCharacteristicLubinTateUnitReduction F n u = 1
-    apply Units.ext
-    change equalCharacteristicLubinTateTruncatedRingMk F n
-        (u : F.residueField⟦X⟧) =
-      equalCharacteristicLubinTateTruncatedRingMk F n 1
-    apply equalCharacteristicLubinTatePrimitiveEvaluation_injective F n
-    rw [equalCharacteristicLubinTatePrimitiveEvaluation_mk,
-      equalCharacteristicLubinTatePrimitiveEvaluation_mk]
-    apply Subtype.ext
-    change equalCharacteristicLubinTateAmbientBracket F
-        (equalCharacteristicSeparableCoefficientHom F)
-        (equalCharacteristicSeparableUniformizer F) (n + 1)
-        (u : F.residueField⟦X⟧)
-        (chosenEqualCharacteristicLubinTatePrimitiveRoot F n) =
-      equalCharacteristicLubinTateAmbientBracket F
-        (equalCharacteristicSeparableCoefficientHom F)
-        (equalCharacteristicSeparableUniformizer F) (n + 1) 1
-        (chosenEqualCharacteristicLubinTatePrimitiveRoot F n)
-    rw [equalCharacteristicLubinTateAmbientBracket_one_apply_of_torsion F
-      (equalCharacteristicSeparableCoefficientHom F)
-      (equalCharacteristicSeparableUniformizer F) (n + 1)
-      (chosenEqualCharacteristicLubinTatePrimitiveRoot F n)
-      (chosenEqualCharacteristicLubinTatePrimitiveRoot_torsion F n)]
-    exact hfix
-  · intro hu
-    change equalCharacteristicLubinTateUnitReduction F n u = 1 at hu
-    have hq := congrArg Units.val hu
-    change equalCharacteristicLubinTateTruncatedRingMk F n
-        (u : F.residueField⟦X⟧) =
-      equalCharacteristicLubinTateTruncatedRingMk F n 1 at hq
-    have heval := congrArg
-      (equalCharacteristicLubinTatePrimitiveEvaluation F n) hq
-    rw [equalCharacteristicLubinTatePrimitiveEvaluation_mk,
-      equalCharacteristicLubinTatePrimitiveEvaluation_mk] at heval
-    have hval := congrArg Subtype.val heval
-    change equalCharacteristicLubinTateAmbientBracket F
-        (equalCharacteristicSeparableCoefficientHom F)
-        (equalCharacteristicSeparableUniformizer F) (n + 1)
-        (u : F.residueField⟦X⟧)
-        (chosenEqualCharacteristicLubinTatePrimitiveRoot F n) =
-      equalCharacteristicLubinTateAmbientBracket F
-        (equalCharacteristicSeparableCoefficientHom F)
-        (equalCharacteristicSeparableUniformizer F) (n + 1) 1
-        (chosenEqualCharacteristicLubinTatePrimitiveRoot F n) at hval
-    exact hval.trans
-      (equalCharacteristicLubinTateAmbientBracket_one_apply_of_torsion F
-        (equalCharacteristicSeparableCoefficientHom F)
-        (equalCharacteristicSeparableUniformizer F) (n + 1)
-        (chosenEqualCharacteristicLubinTatePrimitiveRoot F n)
-        (chosenEqualCharacteristicLubinTatePrimitiveRoot_torsion F n))
 
-/-- The `[u⁻¹]` action occurring in the completed theta-intertwining theorem fixes the standard primitive
-division-level `n + 1` division point exactly when `u` is an `(n + 1)`-st higher
-unit.  This is the faithful-action kernel needed in the proof of the explicit norm-subgroup computation. -/
-theorem equalCharacteristicLubinTateAmbientBracket_inv_primitiveRoot_eq_iff_mem_higherUnitSubgroup
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) (u : F.residueField⟦X⟧ˣ) :
-    equalCharacteristicLubinTateAmbientBracket F
-        (equalCharacteristicSeparableCoefficientHom F)
-        (equalCharacteristicSeparableUniformizer F) (n + 1)
-        ((u⁻¹ : F.residueField⟦X⟧ˣ) : F.residueField⟦X⟧)
-        (chosenEqualCharacteristicLubinTatePrimitiveRoot F n) =
-      chosenEqualCharacteristicLubinTatePrimitiveRoot F n ↔
-        u ∈ equalCharacteristicLubinTateHigherUnitSubgroup F n := by
-  constructor
-  · intro hfix
-    have hinv :=
-      (equalCharacteristicLubinTateAmbientBracket_primitiveRoot_eq_iff_mem_higherUnitSubgroup
-        F n u⁻¹).1 hfix
-    have hu := (equalCharacteristicLubinTateHigherUnitSubgroup F n).inv_mem hinv
-    simpa using hu
-  · intro hu
-    apply
-      (equalCharacteristicLubinTateAmbientBracket_primitiveRoot_eq_iff_mem_higherUnitSubgroup
-        F n u⁻¹).2
-    exact (equalCharacteristicLubinTateHigherUnitSubgroup F n).inv_mem hu
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end EqualCharacteristic
 end LubinTate

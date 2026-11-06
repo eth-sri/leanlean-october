@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.Sobolev.Mollification.WeakDerivativeCommutation
 public import DedekindZetaZeroFree.Analysis.Sobolev.Mollification.L2Convergence
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -46,16 +49,10 @@ theorem exists_nonequivariant_h1_sequence {n r : ℕ}
   let φ : ℕ → ContDiffBump (0 : E n) := fun m =>
     KPContLocalEnergy.SobolevEnergyEstimates.CompactApproximation.shrinkingBump δ hδpos m
   have hφrOut : Tendsto (fun m => (φ m).rOut) atTop (𝓝 0) := by
-    simpa only [φ] using
-      KPContLocalEnergy.SobolevEnergyEstimates.CompactApproximation.shrinkingBump_rOut_tendsto
-        (n := n) δ hδpos
+    apply KPContLocalEnergy.SobolevEnergyEstimates.CompactApproximation.shrinkingBump_rOut_tendsto
   have hφle : ∀ m, (φ m).rOut ≤ δ := fun m => by
-    simpa only [φ] using
-      KPContLocalEnergy.SobolevEnergyEstimates.CompactApproximation.shrinkingBump_rOut_le
-        (n := n) δ hδpos m
-  have hweak : ∀ (j : Fin n) (ψ : E n → ℂ), ContDiff ℝ ∞ ψ → ∀ a : Fin r,
-      (∫ x, (compactZeroExtension K f x) a * coordinatePartial j ψ x ∂volume) =
-        -(∫ x, (compactZeroExtension K (g j) x) a * ψ x ∂volume) :=
+    apply KPContLocalEnergy.SobolevEnergyEstimates.CompactApproximation.shrinkingBump_rOut_le
+  have hweak  :=
     fun j ψ hψ a => (compactZeroExtension_weak_identity hK hKΩ hfg hf ψ hψ j a).2.2
   have hmoll : ∀ m, ContDiff ℝ ∞ (mollifyVector (φ m) (compactZeroExtension K f)) ∧
       HasCompactSupport (mollifyVector (φ m) (compactZeroExtension K f)) ∧
@@ -90,8 +87,7 @@ theorem exists_nonequivariant_h1_sequence {n r : ℕ}
       filter_upwards with x
       simp only [Pi.sub_apply]
       rw [(hmoll m).2.2.2 x j]
-    · simpa only [l2Norm, Pi.sub_apply] using
-        mollification_l2_tendsto hn hr K hK (compactZeroExtension K f) hF hFzero φ hφrOut
+    · apply mollification_l2_tendsto <;> assumption
     · intro j
       have hbase := mollification_l2_tendsto hn hr K hK
         (compactZeroExtension K (g j)) (hG j) (hGzero j) φ hφrOut

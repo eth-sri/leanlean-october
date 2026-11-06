@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import Mathlib.FieldTheory.Galois.Abelian
 public import Mathlib.NumberTheory.NumberField.Completion.FinitePlace
 public import Mathlib.NumberTheory.RamificationInertia.Galois
 public import Mathlib.RingTheory.Frobenius
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -40,7 +43,7 @@ def arithmeticFrobeniusAt
     [Field K] [NumberField K]
     [Field L] [NumberField L] [Algebra K L]
     [IsAbelianGalois K L]
-    (w : HeightOneSpectrum (𝓞 L)) : L ≃ₐ[K] L :=
+    (w : HeightOneSpectrum (𝓞 L))  :=
   arithFrobAt (𝓞 K) (L ≃ₐ[K] L) w.asIdeal
 
 end ClassFieldTheory

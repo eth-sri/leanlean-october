@@ -107,12 +107,15 @@ private theorem padicMultiplicativeScalarEndomorphism_mul
         (fun _ : Unit => a * b))
       hcomp' hIntertwines
 
+section
+variable (p : ℕ) [Fact p.Prime]
+    (u : (padicLocalField p).valuationSubringˣ)
+    (a : (padicLocalField p).valuationSubring)
+include p u a in
 /-- The standard scalar endomorphism for the changed uniformizer `u p`,
 after extending coefficients to the completed unramified Witt ring. -/
 noncomputable def padicCompletedChangedStandardScalarEndomorphism
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ)
-    (a : (padicLocalField p).valuationSubring) :
+      :
     PowerSeries (padicCompletedUnramifiedWittRing p) :=
   PowerSeries.map
     (padicValuationSubringToCompletedUnramifiedWittRing p)
@@ -203,11 +206,10 @@ theorem padicCompletedMultiplicativeScalarEndomorphism_coeff_one
       (padicMultiplicativeLubinTateSeries p)
       (fun _ : Unit => a)).coeff_single ()
 
+include p u a in
 theorem
     padicCompletedChangedStandardScalarEndomorphism_constantCoeff
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ)
-    (a : (padicLocalField p).valuationSubring) :
+      :
     PowerSeries.constantCoeff
         (padicCompletedChangedStandardScalarEndomorphism p u a) = 0 := by
   have hconstant :=
@@ -224,12 +226,11 @@ theorem
             a)) = 0
   rw [PowerSeries.constantCoeff_eq, hconstant, map_zero]
 
+include p u a in
 @[simp]
 theorem
     padicCompletedChangedStandardScalarEndomorphism_coeff_one
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ)
-    (a : (padicLocalField p).valuationSubring) :
+      :
     PowerSeries.coeff 1
         (padicCompletedChangedStandardScalarEndomorphism p u a) =
       padicValuationSubringToCompletedUnramifiedWittRing p a := by
@@ -280,10 +281,9 @@ private theorem padicMultiplicativeScalarEndomorphism_commutes
         PowerSeries.X_subst
           (padicMultiplicativeLubinTateSeries p).toPowerSeries
 
+include p u a in
 private theorem padicChangedStandardScalarEndomorphism_commutes
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ)
-    (a : (padicLocalField p).valuationSubring) :
+      :
     PowerSeries.subst
         (standardLubinTateEndomorphism
           (standardLubinTateChangedUniformizer_isUniformizer
@@ -360,12 +360,11 @@ theorem padicCompletedMultiplicativeScalarEndomorphism_commutes
   simpa only [padicCompletedMultiplicativeScalarEndomorphism,
     padicCompletedMultiplicativeSeries] using h
 
+include p u a in
 /-- A completed changed-standard scalar endomorphism commutes with the
 completed changed-standard series under substitution. -/
 theorem padicCompletedChangedStandardScalarEndomorphism_commutes
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ)
-    (a : (padicLocalField p).valuationSubring) :
+      :
     PowerSeries.subst
         (padicCompletedChangedStandardScalarEndomorphism p u a)
         (padicCompletedChangedStandardSeries p u) =
@@ -412,12 +411,11 @@ theorem padicCompletedMultiplicativeScalarEndomorphism_frobenius
     PowerSeries.coeff_map,
     padicValuationSubringToCompletedUnramifiedWittRing_frobenius]
 
+include p u a in
 /-- Completed changed-standard scalar endomorphisms are fixed by
 coefficientwise Witt-vector Frobenius. -/
 theorem padicCompletedChangedStandardScalarEndomorphism_frobenius
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ)
-    (a : (padicLocalField p).valuationSubring) :
+      :
     PowerSeries.map WittVector.frobenius
         (padicCompletedChangedStandardScalarEndomorphism p u a) =
       padicCompletedChangedStandardScalarEndomorphism p u a := by
@@ -426,6 +424,8 @@ theorem padicCompletedChangedStandardScalarEndomorphism_frobenius
   simp [padicCompletedChangedStandardScalarEndomorphism,
     PowerSeries.coeff_map,
     padicValuationSubringToCompletedUnramifiedWittRing_frobenius]
+end
+
 
 /-- The completed multiplicative series is fixed by coefficientwise
 Witt-vector Frobenius. -/
@@ -438,11 +438,14 @@ theorem padicCompletedMultiplicativeSeries_frobenius
   intro n
   simp [padicCompletedMultiplicativeSeries]
 
+section
+variable (p : ℕ) [Fact p.Prime]
+    (u : (padicLocalField p).valuationSubringˣ)
+include p u in
 /-- The completed changed-standard series is fixed by coefficientwise
 Witt-vector Frobenius. -/
 theorem padicCompletedChangedStandardSeries_frobenius
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) :
+      :
     PowerSeries.map WittVector.frobenius
         (padicCompletedChangedStandardSeries p u) =
       padicCompletedChangedStandardSeries p u := by
@@ -501,10 +504,10 @@ theorem padicCompletedMultiplicativeScalarEndomorphism_mul
       PowerSeries.subst (PowerSeries.map _ _) (PowerSeries.map _ _) at h
   simpa only [padicCompletedMultiplicativeScalarEndomorphism] using h
 
+include p u in
 theorem
     padicCompletedChangedStandardScalarEndomorphism_hasLinearTerm
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ)
+     
     (a : (padicLocalField p).valuationSubring) :
     HasLinearTerm
         (padicCompletedChangedStandardScalarEndomorphism p u a)
@@ -516,22 +519,22 @@ theorem
     (padicCompletedChangedStandardScalarEndomorphism_constantCoeff p u a)
     (padicCompletedChangedStandardScalarEndomorphism_coeff_one p u a)
 
+include p u in
 /-- Every completed changed-standard scalar endomorphism admits formal
 substitution. -/
 theorem padicCompletedChangedStandardScalarEndomorphism_hasSubst
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ)
+     
     (a : (padicLocalField p).valuationSubring) :
     PowerSeries.HasSubst
       (padicCompletedChangedStandardScalarEndomorphism p u a) :=
   (padicCompletedChangedStandardScalarEndomorphism_hasLinearTerm
     p u a).hasSubst
 
+include p u in
 /-- The changed uniformizer itself acts by the defining completed changed
 standard Lubin--Tate series. -/
 theorem padicCompletedChangedStandardScalarEndomorphism_uniformizer
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) :
+      :
     padicCompletedChangedStandardScalarEndomorphism p u
         (standardLubinTateChangedUniformizer
           (padicLocalField p)
@@ -541,11 +544,11 @@ theorem padicCompletedChangedStandardScalarEndomorphism_uniformizer
     padicCompletedChangedStandardSeries,
     SameUniformizer.standardLubinTateEndomorphism_uniformizer]
 
+include p u in
 /-- Multiplication of changed-standard scalars is composition after
 completed coefficient extension. -/
 theorem padicCompletedChangedStandardScalarEndomorphism_mul
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ)
+     
     (a b : (padicLocalField p).valuationSubring) :
     padicCompletedChangedStandardScalarEndomorphism p u (a * b) =
       PowerSeries.subst
@@ -567,15 +570,17 @@ theorem padicCompletedChangedStandardScalarEndomorphism_mul
       PowerSeries.subst (PowerSeries.map _ _) (PowerSeries.map _ _) at h
   simpa only [padicCompletedChangedStandardScalarEndomorphism] using h
 
+include p u in
 /-- The scalar `1` acts by the identity changed-standard series. -/
 @[simp]
 theorem padicCompletedChangedStandardScalarEndomorphism_one
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) :
+      :
     padicCompletedChangedStandardScalarEndomorphism p u 1 =
       PowerSeries.X := by
   rw [padicCompletedChangedStandardScalarEndomorphism,
     standardLubinTateEndomorphism_one, PowerSeries.map_X]
+end
+
 
 end LubinTate
 

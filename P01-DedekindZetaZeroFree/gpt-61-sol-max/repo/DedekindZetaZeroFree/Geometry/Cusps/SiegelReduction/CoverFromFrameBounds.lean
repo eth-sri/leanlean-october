@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Adeles.Lattices.MinkowskiCuspHeight
 public import DedekindZetaZeroFree.Geometry.Cusps.SiegelReduction.CrossSectionRepresentatives
 
 @[expose] public section
+
 
 section
 
@@ -18,13 +21,13 @@ theorem exists_openEmbedding_cuspQuotient
     (Γ : Subgroup (KPCuspArithmetic.PGL2 F)) (q : KPCuspArithmetic.Cusp F)
     (U : Set (KPArch.Space (KPCuspLogShape.dimension F))) (hU : IsOpen U)
     (hident : ∀ (γ : Γ) (z : KPArch.Space (KPCuspLogShape.dimension F)),
-      z ∈ U → action F (γ : KPCuspArithmetic.PGL2 F) z ∈ U →
+      z ∈ U → action F γ z ∈ U →
       (γ : KPCuspArithmetic.PGL2 F) ∈ parabolic F Γ q) :
     ∃ e : CuspQuotient F Γ q U → OrbitQuotient F Γ,
       Topology.IsOpenEmbedding e ∧
       (∀ z : U, e (Quotient.mk _ z) = projection F Γ z) := by
   have hrel (x y : U)
-      (h : (Setoid.comap (Subtype.val : U → KPArch.Space (KPCuspLogShape.dimension F))
+      (h : (Setoid.comap Subtype.val
         (MulAction.orbitRel (parabolic F Γ q) (KPArch.Space (KPCuspLogShape.dimension F)))) x y) :
       projection F Γ x = projection F Γ y := by
     obtain ⟨g, hg⟩ := MulAction.mem_orbit_iff.mp (MulAction.orbitRel_apply.mp h)
@@ -46,7 +49,7 @@ theorem exists_openEmbedding_cuspQuotient
         apply Quotient.sound
         apply MulAction.orbitRel_apply.mpr
         apply MulAction.mem_orbit_iff.mpr
-        have hm : (γ : KPCuspArithmetic.PGL2 F) ∈ parabolic F Γ q :=
+        have hm  :=
           hident γ y y.property (by simpa only [show action F (γ : KPCuspArithmetic.PGL2 F) y = x from hγ] using x.property)
         exact ⟨⟨γ, hm⟩, hγ⟩
   · intro V hV
@@ -67,7 +70,7 @@ theorem exists_embedding_highCusp
     (Γ : Subgroup (KPCuspArithmetic.PGL2 F)) (q : KPCuspArithmetic.Cusp F)
     (σ : KPCuspArithmetic.PGL2 F) (T : ℝ)
     (hident : ∀ (γ : Γ) (z : KPArch.Space (KPCuspLogShape.dimension F)),
-      z ∈ highCusp F σ T → action F (γ : KPCuspArithmetic.PGL2 F) z ∈ highCusp F σ T →
+      z ∈ highCusp F σ T → action F γ z ∈ highCusp F σ T →
       (γ : KPCuspArithmetic.PGL2 F) ∈ parabolic F Γ q) :
     ∃ e : CuspQuotient F Γ q (highCusp F σ T) → OrbitQuotient F Γ,
       Topology.IsEmbedding e ∧
@@ -91,8 +94,8 @@ namespace DedekindZetaZeroFree.KPCuspSiegel
 
 variable (F : Type*) [Field F] [NumberField F]
 
-theorem meanHeight_conjugated_parabolic
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
+section
+variable (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (M : Submodule (KPCuspArithmetic.Order F) (KPCuspArithmetic.Vec F))
     (hM : KPCuspArithmetic.IsRankTwoLattice F M)
     (Γ : Subgroup (KPCuspArithmetic.PGL2 F))
@@ -100,6 +103,9 @@ theorem meanHeight_conjugated_parabolic
     (hcomm : Γ.Commensurable (KPCuspArithmetic.projectiveAutomorphisms F M))
     (q : KPCuspArithmetic.Cusp F) (σ : KPCuspArithmetic.PGL2 F)
     (hσ : σ • KPCuspArithmetic.infinity F = q)
+include hF M hM Γ hΓ hcomm q σ hσ
+theorem meanHeight_conjugated_parabolic
+     
     (g : parabolic F Γ q) (z : KPArch.Space (KPCuspLogShape.dimension F)) :
     KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F)
       (action F (σ⁻¹ * (g : KPCuspArithmetic.PGL2 F) * σ) z) =
@@ -112,21 +118,14 @@ theorem meanHeight_conjugated_parabolic
     Subgroup.mem_map.mpr ⟨g, g.property, by simp [MulAut.conj_apply]⟩⟩
   obtain ⟨A, hA, hzero⟩ := hupper u u.property
   have hr := hratio u A hA hzero
-  change KPCuspLogShape.meanHeight _ (action F (u : KPCuspArithmetic.PGL2 F) z) = _
+  change KPCuspLogShape.meanHeight _ (action F u z) = _
   rw [← hA, action_mk]
   exact (KPCuspLogShape.actual_upper_height_shape F hF E hE (ρ u) A hzero hr z).1
 
 theorem parabolic_mapsTo_highCusp
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (M : Submodule (KPCuspArithmetic.Order F) (KPCuspArithmetic.Vec F))
-    (hM : KPCuspArithmetic.IsRankTwoLattice F M)
-    (Γ : Subgroup (KPCuspArithmetic.PGL2 F))
-    (hΓ : ∀ g ∈ Γ, KPCuspArithmetic.PreservesUpToHomothety F M g)
-    (hcomm : Γ.Commensurable (KPCuspArithmetic.projectiveAutomorphisms F M))
-    (q : KPCuspArithmetic.Cusp F) (σ : KPCuspArithmetic.PGL2 F)
-    (hσ : σ • KPCuspArithmetic.infinity F = q)
+     
     (T : ℝ) (g : parabolic F Γ q) :
-    Set.MapsTo (action F (g : KPCuspArithmetic.PGL2 F))
+    Set.MapsTo (action F g)
       (highCusp F σ T) (highCusp F σ T) := by
   rintro _ ⟨z, hz, rfl⟩
   refine ⟨action F (σ⁻¹ * (g : KPCuspArithmetic.PGL2 F) * σ) z, ?_, ?_⟩
@@ -136,6 +135,8 @@ theorem parabolic_mapsTo_highCusp
   · change σ • ((σ⁻¹ * (g : KPCuspArithmetic.PGL2 F) * σ) • z) =
       (g : KPCuspArithmetic.PGL2 F) • (σ • z)
     simp only [mul_smul, smul_inv_smul]
+end
+
 
 end DedekindZetaZeroFree.KPCuspSiegel
 
@@ -172,9 +173,12 @@ theorem prod_height_eq_exp_meanHeight
   · simp only [KPArch.height, ← Real.exp_sum, KPCuspLogShape.meanHeight]
     rw [mul_div_cancel₀ _ (Nat.cast_ne_zero.mpr hd)]
 
-theorem normalizedHeight_frame_lower_row
-    (J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)
+section
+variable (J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)
     (A : Matrix.GeneralLinearGroup (Fin 2) F)
+include J A
+theorem normalizedHeight_frame_lower_row
+     
     (z : KPArch.Space (KPCuspLogShape.dimension F)) :
     KPCusp.normalizedHeight F J (frameLowerRow F A) z =
       (FractionalIdeal.absNorm (KPCusp.content F J (frameLowerRow F A)) : ℝ) /
@@ -199,15 +203,19 @@ theorem normalizedHeight_frame_lower_row
   rfl
 
 def frameHeightConstant
-    (J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)
-    (A : Matrix.GeneralLinearGroup (Fin 2) F) : ℝ :=
+       :=
   (FractionalIdeal.absNorm (KPCusp.content F J (frameLowerRow F A)) : ℝ) /
     (∏ i, ‖(Matrix.GeneralLinearGroup.map (KPCusp.complexPlace F i).embedding A :
       Matrix (Fin 2) (Fin 2) ℂ).det‖)
+end
 
+
+section
+variable (J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) (hJ : J ≠ 0)
+    (A : Matrix.GeneralLinearGroup (Fin 2) F)
+include J hJ A
 theorem frameHeightConstant_pos
-    (J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) (hJ : J ≠ 0)
-    (A : Matrix.GeneralLinearGroup (Fin 2) F) : 0 < frameHeightConstant F J A := by
+      : 0 < frameHeightConstant F J A := by
   have h := KPCusp.normalizedHeight_pos F J hJ (frameLowerRow F A)
     (fun _ => (0, 0))
   rw [normalizedHeight_frame_lower_row F] at h
@@ -215,8 +223,7 @@ theorem frameHeightConstant_pos
   exact (mul_pos_iff_of_pos_right (Real.exp_pos _)).mp h
 
 theorem highCusp_eq_normalized_horoball
-    (J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) (hJ : J ≠ 0)
-    (A : Matrix.GeneralLinearGroup (Fin 2) F) (T : ℝ)
+      (T : ℝ)
     (hd : 0 < KPCuspLogShape.dimension F) :
     highCusp F (Matrix.ProjGenLinGroup.mk A⁻¹) T =
       KPCusp.horoball F J (frameLowerRow F A)
@@ -247,6 +254,8 @@ theorem highCusp_eq_normalized_horoball
     change Matrix.ProjGenLinGroup.mk A⁻¹ • (Matrix.ProjGenLinGroup.mk A • z) = z
     rw [map_inv]
     exact inv_smul_smul _ _
+end
+
 
 theorem normalized_horoballs_disjoint_of_threshold_product
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
@@ -281,10 +290,7 @@ variable (F : Type*) [Field F] [NumberField F]
 
 def rowCusp (r : KPCusp.Row F) : KPCuspArithmetic.Cusp F :=
   Projectivization.mk F ![-r.val.2, r.val.1] (by
-    intro h
-    have h0 : r.val.2 = 0 := by simpa using congrFun h 0
-    have h1 : r.val.1 = 0 := by simpa using congrFun h 1
-    exact r.property (Prod.ext h1 h0))
+    aesop)
 
 theorem rowCusp_eq_of_flag_eq (r s : KPCusp.Row F)
     (h : KPCusp.flag F r = KPCusp.flag F s) : rowCusp F r = rowCusp F s := by
@@ -374,7 +380,7 @@ theorem exists_height_cover_of_frame_upper_bound {n : ℕ}
     ∃ t₀ : ℝ, ∀ z : KPArch.Space (KPCuspLogShape.dimension F),
       ∃ (γ : Γ) (a : Fin n) (w : KPArch.Space (KPCuspLogShape.dimension F)),
         t₀ ≤ KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) w ∧
-        z = action F (γ : KPCuspArithmetic.PGL2 F)
+        z = action F γ
           (action F (Matrix.ProjGenLinGroup.mk (A a)⁻¹) w) := by
   obtain ⟨c, hc, hshort⟩ := kp_cusp_minkowski_normalized_height F hF 1 (by simp)
   have hd : (0 : ℝ) < KPCuspLogShape.dimension F := by
@@ -418,18 +424,18 @@ theorem box_cover_of_height_cover {n : ℕ}
     (hrep : ∀ (a : Fin n) (z : KPArch.Space (KPCuspLogShape.dimension F)),
       ∃ g : KPCuspArithmetic.conjugatedStabilizer F Γ (q a) (σ a),
         ∃ x ∈ P a, ∃ b ∈ B a,
-          action F (g : KPCuspArithmetic.PGL2 F) z =
+          action F g z =
             fun i => (x i, KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) z +
               (b : Fin (KPCuspLogShape.dimension F) → ℝ) i))
     (t₀ : ℝ)
     (hcover : ∀ z : KPArch.Space (KPCuspLogShape.dimension F),
       ∃ (γ : Γ) (a : Fin n) (w : KPArch.Space (KPCuspLogShape.dimension F)),
         t₀ ≤ KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) w ∧
-        z = action F (γ : KPCuspArithmetic.PGL2 F) (action F (σ a) w)) :
+        z = action F γ (action F (σ a) w)) :
     ∀ z : KPArch.Space (KPCuspLogShape.dimension F),
       ∃ (γ : Γ) (a : Fin n) (w : KPArch.Space (KPCuspLogShape.dimension F)),
         w ∈ box F (P a) (B a) (Set.Ici t₀) ∧
-        z = action F (γ : KPCuspArithmetic.PGL2 F) (action F (σ a) w) := by
+        z = action F γ (action F (σ a) w) := by
   intro z
   obtain ⟨γ, a, w, hw, hz⟩ := hcover z
   obtain ⟨g, x, hx, b, hb, he⟩ := hrep a w
@@ -437,8 +443,8 @@ theorem box_cover_of_height_cover {n : ℕ}
   have hg : (σ a)⁻¹ * k * σ a = (g : KPCuspArithmetic.PGL2 F) := by
     simpa only [MulEquiv.toMonoidHom_eq_coe, MonoidHom.coe_coe,
       MulAut.conj_apply, inv_inv] using hkg
-  let δ : Γ := γ * (⟨k, hk.1⟩ : Γ)⁻¹
-  refine ⟨δ, a, action F (g : KPCuspArithmetic.PGL2 F) w, ?_, ?_⟩
+  let δ  := γ * (⟨k, hk.1⟩)⁻¹
+  refine ⟨δ, a, action F g w, ?_, ?_⟩
   · exact ⟨x, hx, b, hb, KPCuspLogShape.meanHeight _ w, hw, he⟩
   · rw [hz]
     change (γ : KPCuspArithmetic.PGL2 F) • (σ a • w) =
@@ -481,18 +487,17 @@ theorem uniform_high_cusp_intersection_of_frame_bound {n : ℕ}
     ∃ T₁ : ℝ, t₀ < T₁ ∧ ∀ T : ℝ, T₁ ≤ T →
       ∀ (a b : Fin n) (γ : Γ) (z : KPArch.Space (KPCuspLogShape.dimension F)),
         z ∈ highCusp F (Matrix.ProjGenLinGroup.mk (A a)⁻¹) T →
-        action F (γ : KPCuspArithmetic.PGL2 F) z ∈
+        action F γ z ∈
           highCusp F (Matrix.ProjGenLinGroup.mk (A b)⁻¹) T →
         a = b ∧ (γ : KPCuspArithmetic.PGL2 F) ∈ parabolic F Γ (q a) := by
   have hd : (0 : ℝ) < KPCuspLogShape.dimension F := by
     exact_mod_cast KPCuspLogShape.dimension_pos F hF
-  let R : ℝ := Real.log (1 / c) / (KPCuspLogShape.dimension F : ℝ)
+  let R  := Real.log (1 / c) / (KPCuspLogShape.dimension F : ℝ)
   refine ⟨max (t₀ + 1) R, lt_of_lt_of_le (by linarith) (le_max_left _ _), ?_⟩
   intro T hT a b γ z hz hγz
   have hRT : R ≤ T := (le_max_right _ _).trans hT
   have hexp : 1 ≤ c * Real.exp ((KPCuspLogShape.dimension F : ℝ) * T) := by
-    have hl : Real.log (1 / c) ≤ (KPCuspLogShape.dimension F : ℝ) * T := by
-      exact (div_le_iff₀ hd).mp hRT |>.trans_eq (mul_comm _ _)
+    have hl : Real.log (1 / c) ≤ (KPCuspLogShape.dimension F : ℝ) * T := (div_le_iff₀ hd).mp hRT |>.trans_eq (mul_comm _ _)
     have he := Real.exp_le_exp.mpr hl
     rw [Real.exp_log (div_pos zero_lt_one hc)] at he
     calc
@@ -504,7 +509,7 @@ theorem uniform_high_cusp_intersection_of_frame_bound {n : ℕ}
   have hGb : c ≤ frameHeightConstant F 1 (A b) := by
     simpa using hbound b 1 (by simp)
   have hcusp : highCusp F (Matrix.ProjGenLinGroup.mk (A a * G⁻¹)⁻¹) T =
-      action F (γ : KPCuspArithmetic.PGL2 F) ''
+      action F γ ''
         highCusp F (Matrix.ProjGenLinGroup.mk (A a)⁻¹) T := by
     rw [action_image_highCusp]
     congr 1
@@ -526,7 +531,7 @@ theorem uniform_high_cusp_intersection_of_frame_bound {n : ℕ}
         (frameHeightConstant F 1 (A a * G⁻¹) * Real.exp ((KPCuspLogShape.dimension F : ℝ) * T)) *
         (frameHeightConstant F 1 (A b) * Real.exp ((KPCuspLogShape.dimension F : ℝ) * T)) := by
       simpa using mul_le_mul hU hV (by norm_num) (le_trans (by norm_num) hU)
-    have hz' : action F (γ : KPCuspArithmetic.PGL2 F) z ∈
+    have hz' : action F γ z ∈
         highCusp F (Matrix.ProjGenLinGroup.mk (A a * G⁻¹)⁻¹) T := by
       rw [hcusp]
       exact ⟨z, hz, rfl⟩
@@ -540,7 +545,7 @@ theorem uniform_high_cusp_intersection_of_frame_bound {n : ℕ}
     simpa only [mul_inv_rev, inv_inv, map_mul, mul_smul, hG, hA] using he
   have hab : a = b := by
     by_contra hn
-    exact hirr a b hn γ hq
+    apply hirr <;> assumption
   refine ⟨hab, γ.property, ?_⟩
   change (γ : KPCuspArithmetic.PGL2 F) • q a = q a
   change (γ : KPCuspArithmetic.PGL2 F) • q a = q b at hq
@@ -550,14 +555,14 @@ theorem pairwise_disjoint_projected_highCusps_of_intersection {n : ℕ}
     (Γ : Subgroup (KPCuspArithmetic.PGL2 F))
     (σ : Fin n → KPCuspArithmetic.PGL2 F) (T : ℝ)
     (hident : ∀ (a b : Fin n) (γ : Γ) (z : KPArch.Space (KPCuspLogShape.dimension F)),
-      z ∈ highCusp F (σ a) T → action F (γ : KPCuspArithmetic.PGL2 F) z ∈ highCusp F (σ b) T → a = b) :
+      z ∈ highCusp F (σ a) T → action F γ z ∈ highCusp F (σ b) T → a = b) :
     Pairwise fun a b : Fin n =>
       Disjoint (projection F Γ '' highCusp F (σ a) T)
         (projection F Γ '' highCusp F (σ b) T) := by
   intro a b hab
   apply Set.disjoint_left.mpr
   rintro p ⟨x, hx, hxp⟩ ⟨y, hy, hyp⟩
-  have he : projection F Γ y = projection F Γ x := hyp.trans hxp.symm
+  have he  := hyp.trans hxp.symm
   obtain ⟨γ, hγ⟩ := MulAction.mem_orbit_iff.mp
     (MulAction.orbitRel_apply.mp (Quotient.exact he))
   exact hab (hident a b γ x hx (by simpa only [show action F (γ : KPCuspArithmetic.PGL2 F) x = y from hγ] using hy))
@@ -600,7 +605,7 @@ theorem siegel_cover_of_uniform_frame_bounds {n : ℕ}
       (∀ z : KPArch.Space (KPCuspLogShape.dimension F),
         ∃ (γ : Γ) (a : Fin n) (w : KPArch.Space (KPCuspLogShape.dimension F)),
           w ∈ box F (P a) (B a) (Set.Ici t₀) ∧
-          z = action F (γ : KPCuspArithmetic.PGL2 F)
+          z = action F γ
             (action F (Matrix.ProjGenLinGroup.mk (A a)⁻¹) w)) ∧
       (∀ (a : Fin n) (T : ℝ),
         projection F Γ '' highCusp F (Matrix.ProjGenLinGroup.mk (A a)⁻¹) T =
@@ -610,7 +615,7 @@ theorem siegel_cover_of_uniform_frame_bounds {n : ℕ}
         IsCompact (projection F Γ '' (⋃ a : Fin n,
           action F (Matrix.ProjGenLinGroup.mk (A a)⁻¹) ''
             box F (P a) (B a) (Set.Icc t₀ T))) ∧
-        IsCompact ((Set.univ : Set (OrbitQuotient F Γ)) \
+        IsCompact (Set.univ \
           (⋃ a : Fin n, projection F Γ '' highCusp F (Matrix.ProjGenLinGroup.mk (A a)⁻¹) T))) ∧
       ∃ T₁ : ℝ, t₀ < T₁ ∧ ∀ T : ℝ, T₁ ≤ T →
         (Pairwise fun a b : Fin n =>
@@ -618,11 +623,11 @@ theorem siegel_cover_of_uniform_frame_bounds {n : ℕ}
             (projection F Γ '' highCusp F (Matrix.ProjGenLinGroup.mk (A b)⁻¹) T)) ∧
         (∀ (a b : Fin n) (γ : Γ) (z : KPArch.Space (KPCuspLogShape.dimension F)),
           z ∈ highCusp F (Matrix.ProjGenLinGroup.mk (A a)⁻¹) T →
-          action F (γ : KPCuspArithmetic.PGL2 F) z ∈
+          action F γ z ∈
             highCusp F (Matrix.ProjGenLinGroup.mk (A b)⁻¹) T →
           a = b ∧ (γ : KPCuspArithmetic.PGL2 F) ∈ parabolic F Γ (q a)) ∧
         (∀ (a : Fin n) (g : parabolic F Γ (q a)),
-          Set.MapsTo (action F (g : KPCuspArithmetic.PGL2 F))
+          Set.MapsTo (action F g)
             (highCusp F (Matrix.ProjGenLinGroup.mk (A a)⁻¹) T)
             (highCusp F (Matrix.ProjGenLinGroup.mk (A a)⁻¹) T)) ∧
         (∀ a : Fin n, ∃ e : CuspQuotient F Γ (q a)

@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import Mathlib.LinearAlgebra.UnitaryGroup
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 The Tau Ceti contributors. All rights reserved.
@@ -27,7 +30,7 @@ variable {n : Type*} [Fintype n] [DecidableEq n] {α : Type*} [CommRing α] [Sta
 theorem _root_.Matrix.specialUnitaryGroup.star_eq_adjugate (g : Matrix.specialUnitaryGroup n α) :
     star (g : Matrix n n α) = (g : Matrix n n α).adjugate := by
   have hmem := Matrix.mem_specialUnitaryGroup_iff.mp g.2
-  have hmul : (g : Matrix n n α) * star (g : Matrix n n α) = 1 :=
+  have hmul  :=
     Matrix.mem_unitaryGroup_iff.mp hmem.1
   calc star (g : Matrix n n α)
       = (g : Matrix n n α).adjugate * (g : Matrix n n α) * star (g : Matrix n n α) := by

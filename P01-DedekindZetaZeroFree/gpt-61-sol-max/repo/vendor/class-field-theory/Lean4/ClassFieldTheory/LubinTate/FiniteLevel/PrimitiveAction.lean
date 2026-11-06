@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.LubinTate.FiniteLevel.CompletedEvaluation
 public import ClassFieldTheory.LubinTate.FormalModule.StandardFormalGroup
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.PrincipalUnits.ResidueQuotient
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.PrincipalUnits.TeichmullerDecomposition
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -145,13 +148,15 @@ variable {F : LocalField.{u, v} K} {π : F.valuationSubring}
       (standardLubinTateLevelCompleteDVF hπ n).valuationSubring :=
   (standardLubinTateLevelCoefficientHom hπ n).toAlgebra
 
+section
+variable (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
+include hπ n
 /-- Analytic addition in the standard formal group on the integer ring of a
 finite level. -/
 noncomputable def standardLubinTateFormalAdd
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
+     
     (x y :
-      (standardLubinTateLevelCompleteDVF hπ n).valuationSubring) :
-    (standardLubinTateLevelCompleteDVF hπ n).valuationSubring :=
+      (standardLubinTateLevelCompleteDVF hπ n).valuationSubring)  :=
   MvPowerSeries.eval₂
     (standardLubinTateLevelCoefficientHom hπ n) ![x, y]
     (SameUniformizer.standardFormalGroupPowerSeries hπ)
@@ -159,7 +164,7 @@ noncomputable def standardLubinTateFormalAdd
 /-- Analytic evaluation of scalar addition is addition in the standard
 formal group. -/
 theorem standardLubinTateEndomorphismEvalAt_add
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
+     
     (x : (standardLubinTateLevelCompleteDVF hπ n).valuationSubring)
     (hx : PowerSeries.HasEval x) (a b : F.valuationSubring) :
     standardLubinTateEndomorphismEvalAt hπ n x hx (a + b) =
@@ -190,8 +195,7 @@ theorem standardLubinTateEndomorphismEvalAt_add
   have hcoeff :
       algebraMap F.valuationSubring
           (standardLubinTateLevelCompleteDVF hπ n).valuationSubring =
-        standardLubinTateLevelCoefficientHom hπ n := by
-    rfl
+        standardLubinTateLevelCoefficientHom hπ n := rfl
   have hsubst :=
     MvPowerSeries.eval₂_subst
       (R := F.valuationSubring) (S := F.valuationSubring)
@@ -225,7 +229,7 @@ theorem standardLubinTateEndomorphismEvalAt_add
 /-- At the primitive point, addition of scalars is analytic formal-group
 addition of their values. -/
 theorem standardLubinTateEndomorphismValue_add
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
+     
     (a b : F.valuationSubring) :
     standardLubinTateEndomorphismValue hπ n (a + b) =
       standardLubinTateFormalAdd hπ n
@@ -236,7 +240,7 @@ theorem standardLubinTateEndomorphismValue_add
     (standardLubinTatePrimitivePointInteger_hasEval hπ n) a b
 
 private theorem standardLubinTateEndomorphismEvalAt_eq_of_point_eq
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
+     
     (x y : (standardLubinTateLevelCompleteDVF hπ n).valuationSubring)
     (hx : PowerSeries.HasEval x) (hy : PowerSeries.HasEval y)
     (hxy : x = y) (a : F.valuationSubring) :
@@ -247,7 +251,7 @@ private theorem standardLubinTateEndomorphismEvalAt_eq_of_point_eq
 
 /-- Every standard scalar endomorphism fixes the zero point. -/
 theorem standardLubinTateEndomorphismEvalAt_zero_point
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
+     
     (a : F.valuationSubring) :
     standardLubinTateEndomorphismEvalAt hπ n 0
         PowerSeries.HasEval.zero a = 0 := by
@@ -259,7 +263,7 @@ theorem standardLubinTateEndomorphismEvalAt_zero_point
 /-- A unit scalar acts injectively on the topologically nilpotent elements
 of a finite-level integer ring. -/
 theorem standardLubinTateEndomorphismEvalAt_unit_injective
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
+     
     (u : F.valuationSubringˣ)
     {x y : (standardLubinTateLevelCompleteDVF hπ n).valuationSubring}
     (hx : PowerSeries.HasEval x) (hy : PowerSeries.HasEval y)
@@ -311,7 +315,7 @@ theorem standardLubinTateEndomorphismEvalAt_unit_injective
 /-- Evaluating `[π ^ r]` is the same as evaluating the `r`-fold standard
 division-polynomial iterate. -/
 theorem standardLubinTateEndomorphismEvalAt_uniformizer_pow
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
+     
     (x : (standardLubinTateLevelCompleteDVF hπ n).valuationSubring)
     (hx : PowerSeries.HasEval x) (r : ℕ) :
     standardLubinTateEndomorphismEvalAt hπ n x hx (π ^ r) =
@@ -334,16 +338,15 @@ theorem standardLubinTateEndomorphismEvalAt_uniformizer_pow
 /-- A valuation-ring unit acts on the chosen primitive point by analytic
 evaluation of its standard scalar endomorphism. -/
 noncomputable def standardLubinTatePrimitivePointIntegerAction
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
-    (u : F.valuationSubringˣ) :
-    (standardLubinTateLevelCompleteDVF hπ n).valuationSubring :=
+     
+    (u : F.valuationSubringˣ)  :=
   standardLubinTateEndomorphismValue hπ n
     (u : F.valuationSubring)
 
 /-- A unit translate of the primitive point is still topologically
 nilpotent. -/
 theorem standardLubinTatePrimitivePointIntegerAction_hasEval
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
+     
     (u : F.valuationSubringˣ) :
     PowerSeries.HasEval
       (standardLubinTatePrimitivePointIntegerAction hπ n u) :=
@@ -353,7 +356,7 @@ theorem standardLubinTatePrimitivePointIntegerAction_hasEval
 /-- The unit `1` fixes the chosen primitive point. -/
 @[simp]
 theorem standardLubinTatePrimitivePointIntegerAction_one
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+      :
     standardLubinTatePrimitivePointIntegerAction hπ n 1 =
       standardLubinTatePrimitivePointInteger hπ n := by
   simp [standardLubinTatePrimitivePointIntegerAction]
@@ -361,7 +364,7 @@ theorem standardLubinTatePrimitivePointIntegerAction_one
 /-- Multiplication of unit parameters is composition of their analytic
 actions. -/
 theorem standardLubinTatePrimitivePointIntegerAction_mul
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
+     
     (u w : F.valuationSubringˣ) :
     standardLubinTatePrimitivePointIntegerAction hπ n (u * w) =
       standardLubinTateEndomorphismEvalAt hπ n
@@ -375,7 +378,7 @@ theorem standardLubinTatePrimitivePointIntegerAction_mul
 /-- The primitive level-`n + 1` point has exact scalar annihilator
 `m^(n + 1)`. -/
 theorem standardLubinTateEndomorphismValue_eq_zero_iff_mem_maximalIdeal_pow
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
+     
     (a : F.valuationSubring) :
     standardLubinTateEndomorphismValue hπ n a = 0 ↔
       a ∈ F.toCompleteDVF.maximalIdeal ^ (n + 1) := by
@@ -404,9 +407,7 @@ theorem standardLubinTateEndomorphismValue_eq_zero_iff_mem_maximalIdeal_pow
         standardLubinTateEndomorphismEvalAt hπ n z hz
             (u : F.valuationSubring) =
             standardLubinTateEndomorphismValue hπ n
-              ((u : F.valuationSubring) * π ^ r) := by
-          exact
-            (standardLubinTateEndomorphismEvalAt_mul hπ n
+              ((u : F.valuationSubring) * π ^ r) := (standardLubinTateEndomorphismEvalAt_mul hπ n
               lambda hlambda (u : F.valuationSubring) (π ^ r)).symm
         _ = standardLubinTateEndomorphismValue hπ n a := by
           rw [hu]
@@ -434,7 +435,7 @@ theorem standardLubinTateEndomorphismValue_eq_zero_iff_mem_maximalIdeal_pow
               (π ^ r) :=
           (standardLubinTateEndomorphismEvalAt_uniformizer_pow
             hπ n lambda hlambda r).symm
-        _ = 0 := by simpa [z] using hzZero
+        _ = 0 := hzZero
     rw [F.toCompleteDVF.maximalIdeal_eq_span_uniformizer hπ,
       Ideal.span_singleton_pow, Ideal.mem_span_singleton]
     rw [hu]
@@ -453,8 +454,7 @@ theorem standardLubinTateEndomorphismValue_eq_zero_iff_mem_maximalIdeal_pow
           0 := by
       rw [standardLubinTateEndomorphismValue,
         standardLubinTateEndomorphismEvalAt_uniformizer_pow]
-      simpa [standardLubinTateLevelCoefficientHom] using
-        standardLubinTatePrimitivePointInteger_iterate_succ_eq_zero
+      exact standardLubinTatePrimitivePointInteger_iterate_succ_eq_zero
           hπ n
     calc
       standardLubinTateEndomorphismValue hπ n a =
@@ -482,7 +482,7 @@ theorem standardLubinTateEndomorphismValue_eq_zero_iff_mem_maximalIdeal_pow
 to `U^(n + 1)`. -/
 theorem
     standardLubinTatePrimitivePointIntegerAction_eq_self_iff_mem_higherPrincipalUnitGroup
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
+     
     (u : F.valuationSubringˣ) :
     standardLubinTatePrimitivePointIntegerAction hπ n u =
         standardLubinTatePrimitivePointInteger hπ n ↔
@@ -561,7 +561,7 @@ theorem
 their quotient lies in `U^(n + 1)`. -/
 theorem
     standardLubinTatePrimitivePointIntegerAction_eq_iff_div_mem_higherPrincipalUnitGroup
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
+     
     (u w : F.valuationSubringˣ) :
     standardLubinTatePrimitivePointIntegerAction hπ n u =
         standardLubinTatePrimitivePointIntegerAction hπ n w ↔
@@ -628,15 +628,14 @@ theorem
 
 /-- The analytic unit action, viewed in the finite-level field. -/
 noncomputable def standardLubinTatePrimitiveLevelAction
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
-    (u : F.valuationSubringˣ) :
-    standardLubinTateLevelField hπ n :=
+     
+    (u : F.valuationSubringˣ)  :=
   (standardLubinTatePrimitivePointIntegerAction hπ n u).val
 
 /-- The natural embedding of the finite-level integer ring into the fixed
 separable closure. -/
 noncomputable def standardLubinTateLevelIntegerToSeparableClosure
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+      :
     (standardLubinTateLevelCompleteDVF hπ n).valuationSubring →+*
       SeparableClosure K :=
   (standardLubinTateLevelField hπ n).val.toRingHom.comp
@@ -645,7 +644,7 @@ noncomputable def standardLubinTateLevelIntegerToSeparableClosure
 /-- The natural embedding of the finite-level integer ring into the fixed
 separable closure is injective. -/
 theorem standardLubinTateLevelIntegerToSeparableClosure_injective
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+      :
     Function.Injective
       (standardLubinTateLevelIntegerToSeparableClosure hπ n) := by
   intro x y hxy
@@ -660,30 +659,18 @@ theorem standardLubinTateLevelIntegerToSeparableClosure_injective
 /-- On base coefficients, the level-integer embedding is the fixed
 embedding of the base field into its separable closure. -/
 theorem standardLubinTateLevelIntegerToSeparableClosure_comp_coefficientHom
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+      :
     (standardLubinTateLevelIntegerToSeparableClosure hπ n).comp
         (standardLubinTateLevelCoefficientHom hπ n) =
       (algebraMap K (SeparableClosure K)).comp
         (algebraMap F.valuationSubring K) := by
-  apply RingHom.ext
-  intro a
-  simp only [RingHom.comp_apply]
-  change
-    ((standardLubinTateLevelField hπ n).val
-      ((standardLubinTateLevelCoefficientHom hπ n) a :
-          (standardLubinTateLevelCompleteDVF hπ n).valuationSubring).val) =
-      algebraMap K (SeparableClosure K)
-        (algebraMap F.valuationSubring K a)
-  rw [standardLubinTateLevelCoefficientHom_apply]
-  exact (standardLubinTateLevelField hπ n).val.commutes
-    (algebraMap F.valuationSubring K a)
+  rfl
 
 /-- The analytic unit action, transported from the level integer ring to
 the chosen finite-level field. -/
 noncomputable def standardLubinTatePrimitiveRootAction
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
-    (u : F.valuationSubringˣ) :
-    SeparableClosure K :=
+     
+    (u : F.valuationSubringˣ)  :=
   standardLubinTateLevelIntegerToSeparableClosure hπ n
     (standardLubinTatePrimitivePointIntegerAction hπ n u)
 
@@ -691,17 +678,16 @@ noncomputable def standardLubinTatePrimitiveRootAction
 the primitive-root action. -/
 @[simp]
 theorem standardLubinTatePrimitiveLevelAction_coe
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
+     
     (u : F.valuationSubringˣ) :
-    ((standardLubinTatePrimitiveLevelAction hπ n u :
-        standardLubinTateLevelField hπ n) : SeparableClosure K) =
+    ((standardLubinTatePrimitiveLevelAction hπ n u) : SeparableClosure K) =
       standardLubinTatePrimitiveRootAction hπ n u :=
   rfl
 
 /-- The identity unit fixes the chosen primitive root. -/
 @[simp]
 theorem standardLubinTatePrimitiveRootAction_one
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+      :
     standardLubinTatePrimitiveRootAction hπ n 1 =
       chosenStandardLubinTatePrimitiveRoot hπ n := by
   change
@@ -718,7 +704,7 @@ theorem standardLubinTatePrimitiveRootAction_one
 /-- Equality of primitive-root actions can be checked already in the
 finite-level integer ring. -/
 theorem standardLubinTatePrimitiveRootAction_eq_iff_integerAction_eq
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
+     
     (u w : F.valuationSubringˣ) :
     standardLubinTatePrimitiveRootAction hπ n u =
         standardLubinTatePrimitiveRootAction hπ n w ↔
@@ -733,15 +719,14 @@ theorem standardLubinTatePrimitiveRootAction_eq_iff_integerAction_eq
         standardLubinTatePrimitivePointIntegerAction hπ n w
   constructor
   · intro h
-    exact
-      (standardLubinTateLevelIntegerToSeparableClosure_injective hπ n) h
-  · exact congrArg (standardLubinTateLevelIntegerToSeparableClosure hπ n)
+    apply standardLubinTateLevelIntegerToSeparableClosure_injective <;> assumption
+  · apply congrArg
 
 /-- Two unit actions give the same primitive root exactly when their
 quotient lies in `U^(n + 1)`. -/
 theorem
     standardLubinTatePrimitiveRootAction_eq_iff_div_mem_higherPrincipalUnitGroup
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
+     
     (u w : F.valuationSubringˣ) :
     standardLubinTatePrimitiveRootAction hπ n u =
         standardLubinTatePrimitiveRootAction hπ n w ↔
@@ -752,22 +737,20 @@ theorem
 
 /-- Unit parameters in the same higher-principal-unit coset give the same
 primitive root. -/
-theorem
+def
     standardLubinTatePrimitiveRootAction_eq_of_div_mem_higherPrincipalUnitGroup
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
+     
     {u w : F.valuationSubringˣ}
     (huw :
       u / w ∈ CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF
-        (n + 1)) :
-    standardLubinTatePrimitiveRootAction hπ n u =
-      standardLubinTatePrimitiveRootAction hπ n w :=
+        (n + 1))  :=
   (standardLubinTatePrimitiveRootAction_eq_iff_div_mem_higherPrincipalUnitGroup
     hπ n u w).2 huw
 
 /-- A unit translate of the chosen primitive point is again a root of the
 level-`n + 1` primitive division polynomial. -/
 theorem standardLubinTatePrimitiveRootAction_isRoot
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
+     
     (u : F.valuationSubringˣ) :
     ((standardLubinTatePrimitivePolynomialOverField F π n).map
       (algebraMap K (SeparableClosure K))).IsRoot
@@ -782,8 +765,7 @@ theorem standardLubinTatePrimitiveRootAction_isRoot
       standardLubinTateEndomorphismValue hπ n (π ^ (n + 1)) = 0 := by
     rw [standardLubinTateEndomorphismValue,
       standardLubinTateEndomorphismEvalAt_uniformizer_pow]
-    simpa [standardLubinTateLevelCoefficientHom] using
-      standardLubinTatePrimitivePointInteger_iterate_succ_eq_zero hπ n
+    exact standardLubinTatePrimitivePointInteger_iterate_succ_eq_zero hπ n
   have hySucc :
       Polynomial.eval₂
           (standardLubinTateLevelCoefficientHom hπ n) y
@@ -794,9 +776,7 @@ theorem standardLubinTatePrimitiveRootAction_isRoot
       standardLubinTateEndomorphismEvalAt hπ n y hy
           (π ^ (n + 1)) =
           standardLubinTateEndomorphismValue hπ n
-            (π ^ (n + 1) * (u : F.valuationSubring)) := by
-        simpa [y, standardLubinTatePrimitivePointIntegerAction] using
-          (standardLubinTateEndomorphismValue_mul hπ n
+            (π ^ (n + 1) * (u : F.valuationSubring)) := (standardLubinTateEndomorphismValue_mul hπ n
             (π ^ (n + 1)) (u : F.valuationSubring)).symm
       _ =
           standardLubinTateEndomorphismValue hπ n
@@ -839,9 +819,7 @@ theorem standardLubinTatePrimitiveRootAction_isRoot
         standardLubinTateEndomorphismEvalAt hπ n z hz
             (u : F.valuationSubring) =
             standardLubinTateEndomorphismValue hπ n
-              ((u : F.valuationSubring) * π ^ n) := by
-          simpa [z] using
-            (standardLubinTateEndomorphismValue_mul hπ n
+              ((u : F.valuationSubring) * π ^ n) := (standardLubinTateEndomorphismValue_mul hπ n
               (u : F.valuationSubring) (π ^ n)).symm
         _ =
             standardLubinTateEndomorphismValue hπ n
@@ -849,9 +827,7 @@ theorem standardLubinTatePrimitiveRootAction_isRoot
           rw [mul_comm]
         _ =
             standardLubinTateEndomorphismEvalAt hπ n y hy (π ^ n) := by
-          simpa [y, standardLubinTatePrimitivePointIntegerAction] using
-            standardLubinTateEndomorphismValue_mul hπ n
-              (π ^ n) (u : F.valuationSubring)
+          apply standardLubinTateEndomorphismValue_mul
         _ = 0 := hyEvalZero
     have hzZero : z = 0 := by
       apply
@@ -861,7 +837,7 @@ theorem standardLubinTatePrimitiveRootAction_isRoot
         standardLubinTateEndomorphismEvalAt_zero_point]
     have hne :=
       standardLubinTatePrimitivePointInteger_iterate_ne_zero_of_le
-        hπ n (show n ≤ n from le_rfl)
+        hπ n (le_rfl)
     apply hne
     change
       Polynomial.eval₂
@@ -874,7 +850,7 @@ theorem standardLubinTatePrimitiveRootAction_isRoot
         (standardLubinTateEndomorphismEvalAt_uniformizer_pow
           hπ n lambda hlambda n).symm
       _ = standardLubinTateEndomorphismValue hπ n (π ^ n) := rfl
-      _ = 0 := by simpa [z] using hzZero
+      _ = 0 := hzZero
   have hfactor :=
     congrArg
       (Polynomial.eval₂
@@ -896,6 +872,8 @@ theorem standardLubinTatePrimitiveRootAction_isRoot
     standardLubinTatePrimitivePolynomialOverField,
     standardLubinTatePrimitiveRootAction,
     Polynomial.eval_map, Polynomial.eval₂_map, y] using hprimitiveMap
+end
+
 
 end AnalyticAction
 

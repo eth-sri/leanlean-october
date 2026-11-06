@@ -24,7 +24,7 @@ theorem nonprincipalRayHeckeData_exists
       (differentiableOn_inv_heckeCompletionFactor F 𝔪 hm)) ?_
     intro s hs
     simp only [Set.mem_setOf_eq] at hs
-    simp only [if_pos hs, div_eq_mul_inv, Pi.mul_apply]
+    simp only [if_pos hs, div_eq_mul_inv, Pi.mul_apply]; rfl
   ·
     intro s hs
     have hs0 : 0 < s.re := lt_trans zero_lt_one hs

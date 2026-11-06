@@ -42,13 +42,13 @@ variable (S : ∀ q : E, CanonicalFiniteInducingData F ζ hζ q.val)
 variable (P : ∀ q : E, Polarization (S q).heisenberg)
 variable (μ : ∀ q : E, Measure (LocalField F q.val))
 variable [hHaar : ∀ q : E, (μ q).IsAddHaarMeasure]
-variable (hμ : ∀ q : E, μ q ((valuation (LocalField F q.val)).integer : Set (LocalField F q.val)) = 1)
-variable (φ : ∀ q : E, compactPicture (S q).borel (P q) (S q).iwasawa .plus)
-variable (k : ∀ q : E, (S q).iwasawa.compact.toOpenSubgroup)
-variable (t : ∀ q : E, actualTorus F ζ hζ q.val)
-variable (β : NumberField.InfinitePlace F → ℂˣ)
-variable (ψ : NumberField.InfinitePlace F → KPComplexIntertwinerParameterMajorant.CompactPicture)
-variable (g : NumberField.InfinitePlace F → KPCplxCharacterHaar.ComplexGL2)
+
+
+
+
+
+
+
 
 end DedekindZetaZeroFree.KPGlobalResidualKernel.ActualLocalProduct
 

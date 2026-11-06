@@ -14,7 +14,7 @@ set_option maxHeartbeats 1600000
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.CanonicalInducingAdapter
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P)
+
 
  instance level_nonempty {J : Type*} (E : Finset J) :
     Nonempty (RestrictedTensorSimple.Level E) := ⟨⟨E, le_rfl⟩⟩

@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Basic.Complex.Basic
 public import Mathlib.LinearAlgebra.FiniteDimensional.Defs
 import Mathlib.LinearAlgebra.Dual.Lemmas
+
 
 public section
 
@@ -33,7 +36,7 @@ theorem exists_finite_evaluation_interpolation {X : Type*}
   obtain ⟨s, hs, he⟩ := (Submodule.fg_span_iff_fg_span_finset_subset _).mp hfg
   choose x hx using fun e : s => hs e.property
   let E := Fintype.equivFin s
-  let p : Fin (Fintype.card s) → X := fun i => x (E.symm i)
+  let p  := fun i => x (E.symm i)
   have hr : Set.range (fun i => pointEvaluation S (p i)) =
       (s : Set (Module.Dual ℂ S)) := by
     ext e

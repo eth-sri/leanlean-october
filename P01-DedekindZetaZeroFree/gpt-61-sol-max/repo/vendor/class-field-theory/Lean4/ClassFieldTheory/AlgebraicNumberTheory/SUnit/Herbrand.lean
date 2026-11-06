@@ -43,11 +43,14 @@ variable
 
 section LogarithmicQuotient
 
+section
+variable (S : Finset (HeightOneSpectrum (𝓞 L)))
+include S
 /-- The additive Galois action restricted to the actual full
 logarithmic lattice. -/
 @[reducible]
 noncomputable def fullLogLatticeDistribMulAction
-    (S : Finset (HeightOneSpectrum (𝓞 L)))
+     
     (hS : IsGaloisStableFinitePlaces K L S) :
     DistribMulAction (L ≃ₐ[K] L)
       (SUnitGroup.fullLogLattice (K := L) S) := by
@@ -86,7 +89,7 @@ noncomputable def fullLogLatticeDistribMulAction
 /-- The full logarithm as a surjective multiplicative homomorphism
 from `S`-units onto the multiplicative logarithmic lattice. -/
 noncomputable def sUnitFullLogMulHom
-    (S : Finset (HeightOneSpectrum (𝓞 L))) :
+      :
     SUnitGroup (K := L) S →*
       Multiplicative
         (SUnitGroup.fullLogLattice (K := L) S) where
@@ -110,7 +113,7 @@ noncomputable def sUnitFullLogMulHom
 
 /-- The multiplicative full logarithm is onto its defining lattice. -/
 theorem sUnitFullLogMulHom_surjective
-    (S : Finset (HeightOneSpectrum (𝓞 L))) :
+      :
     Function.Surjective
       (sUnitFullLogMulHom L S) := by
   intro z
@@ -136,7 +139,7 @@ theorem sUnitFullLogMulHom_surjective
 /-- The kernel of the multiplicative full logarithm is exactly the
 torsion subgroup of the `S`-unit group. -/
 theorem sUnitFullLogMulHom_ker
-    (S : Finset (HeightOneSpectrum (𝓞 L))) :
+      :
     (sUnitFullLogMulHom L S).ker =
       CommGroup.torsion
         (SUnitGroup (K := L) S) := by
@@ -172,6 +175,8 @@ theorem sUnitFullLogMulHom_ker
         (K := L) S (Additive.ofMul x)).mpr
     change IsOfFinAddOrder (Additive.ofMul x)
     exact isOfFinAddOrder_ofMul_iff.mpr hxt
+end
+
 
 omit [NumberField K] in
 /-- The multiplicative full logarithm is equivariant for the actual
@@ -294,10 +299,13 @@ end LogarithmicQuotient
 
 section DiagonalExtension
 
+section
+variable (S : Finset (HeightOneSpectrum (𝓞 L)))
+include S
 /-- Membership in the product lattice is exactly integrality in the
 logarithmic lattice and in the diagonal coordinate. -/
 theorem mem_fullLogHyperplaneDiagonalLattice_iff
-    (S : Finset (HeightOneSpectrum (𝓞 L)))
+     
     (z :
       SUnitGroup.LogHyperplane (K := L) S × ℝ) :
     z ∈ fullLogHyperplaneDiagonalLattice L S ↔
@@ -358,7 +366,7 @@ theorem mem_fullLogHyperplaneDiagonalLattice_iff
 one diagonal integer coordinate to the extended full logarithmic
 lattice. -/
 noncomputable def fullLogLatticeProdIntToExtended
-    (S : Finset (HeightOneSpectrum (𝓞 L))) :
+      :
     (SUnitGroup.fullLogLattice (K := L) S × ℤ) →ₗ[ℤ]
       extendedFullLogLattice L S := by
   let e :=
@@ -445,7 +453,7 @@ noncomputable def fullLogLatticeProdIntToExtended
 
 /-- The preceding map is bijective. -/
 theorem fullLogLatticeProdIntToExtended_bijective
-    (S : Finset (HeightOneSpectrum (𝓞 L))) :
+      :
     Function.Bijective
       (fullLogLatticeProdIntToExtended L S) := by
   let e :=
@@ -532,7 +540,7 @@ theorem fullLogLatticeProdIntToExtended_bijective
 /-- Integral-linear decomposition of the extended lattice into the
 logarithmic lattice and one integer diagonal direction. -/
 noncomputable def extendedFullLogLatticeEquivProdInt
-    (S : Finset (HeightOneSpectrum (𝓞 L))) :
+      :
     extendedFullLogLattice L S ≃ₗ[ℤ]
       (SUnitGroup.fullLogLattice (K := L) S × ℤ) :=
   (LinearEquiv.ofBijective
@@ -543,7 +551,7 @@ noncomputable def extendedFullLogLatticeEquivProdInt
 the invariant integer diagonal. -/
 @[reducible]
 noncomputable def fullLogLatticeProdIntDistribMulAction
-    (S : Finset (HeightOneSpectrum (𝓞 L)))
+     
     (hS : IsGaloisStableFinitePlaces K L S) :
     DistribMulAction (L ≃ₐ[K] L)
       (SUnitGroup.fullLogLattice (K := L) S × ℤ) := by
@@ -571,6 +579,8 @@ noncomputable def fullLogLatticeProdIntDistribMulAction
         apply Prod.ext
         · exact DistribMulAction.smul_add σ z.1 z'.1
         · rfl }
+end
+
 
 omit [NumberField K] in
 /-- The map from logarithmic-plus-diagonal coordinates into the
@@ -819,10 +829,13 @@ end DiagonalExtension
 
 section LogLatticeHerbrand
 
+section
+variable (S : Finset (HeightOneSpectrum (𝓞 L)))
+include S
 /-- Inclusion of the logarithmic lattice as the first factor of the
 logarithmic-plus-diagonal lattice, in multiplicative notation. -/
 def fullLogLatticeProdIntIncl
-    (S : Finset (HeightOneSpectrum (𝓞 L))) :
+      :
     Multiplicative
         (SUnitGroup.fullLogLattice (K := L) S) →*
       Multiplicative
@@ -836,7 +849,7 @@ def fullLogLatticeProdIntIncl
 /-- Projection from the logarithmic-plus-diagonal lattice to its
 integer diagonal coordinate, in multiplicative notation. -/
 def fullLogLatticeProdIntProj
-    (S : Finset (HeightOneSpectrum (𝓞 L))) :
+      :
     Multiplicative
         (SUnitGroup.fullLogLattice (K := L) S × ℤ) →*
       Multiplicative ℤ where
@@ -849,11 +862,13 @@ def fullLogLatticeProdIntProj
 /-- The multiplicative equivalence induced by the integral
 decomposition of the extended lattice. -/
 noncomputable def extendedFullLogLatticeMulEquivProdInt
-    (S : Finset (HeightOneSpectrum (𝓞 L))) :
+      :
     Multiplicative (extendedFullLogLattice L S) ≃*
       Multiplicative
         (SUnitGroup.fullLogLattice (K := L) S × ℤ) :=
   (extendedFullLogLatticeEquivProdInt L S).toAddEquiv.toMultiplicative
+end
+
 
 omit [NumberField K] in
 /-- The multiplicative form of the integral decomposition is
@@ -1044,10 +1059,13 @@ theorem fullLogLatticeProdIntProj_equivariant
   intro σ z
   rfl
 
+section
+variable (S : Finset (HeightOneSpectrum (𝓞 L)))
+include S
 /-- Exactness of the first-factor inclusion followed by the diagonal
 projection. -/
 theorem fullLogLatticeProdInt_exact
-    (S : Finset (HeightOneSpectrum (𝓞 L))) :
+      :
     ∀ z :
         Multiplicative
           (SUnitGroup.fullLogLattice (K := L) S × ℤ),
@@ -1071,7 +1089,7 @@ theorem fullLogLatticeProdInt_exact
 
 /-- The first-factor inclusion is injective. -/
 theorem fullLogLatticeProdIntIncl_injective
-    (S : Finset (HeightOneSpectrum (𝓞 L))) :
+      :
     Function.Injective
       (fullLogLatticeProdIntIncl L S) := by
   intro x y hxy
@@ -1085,13 +1103,15 @@ theorem fullLogLatticeProdIntIncl_injective
 
 /-- The diagonal projection is surjective. -/
 theorem fullLogLatticeProdIntProj_surjective
-    (S : Finset (HeightOneSpectrum (𝓞 L))) :
+      :
     Function.Surjective
       (fullLogLatticeProdIntProj L S) := by
   intro z
   exact
     ⟨Multiplicative.ofAdd
         (0, Multiplicative.toAdd z), rfl⟩
+end
+
 
 /-- For the genuine sum-zero logarithmic lattice, adjoining
 the invariant diagonal multiplies the Herbrand quotient by `|G|`. -/
@@ -1716,12 +1736,15 @@ noncomputable def logPlaceLocalDegree
   | Sum.inr v =>
       finiteLogPlaceLocalDegree K L v
 
+section
+variable [IsGalois K L]
+    {S : Finset (HeightOneSpectrum (𝓞 L))}
+    (hS : IsGaloisStableFinitePlaces K L S)
+include S hS
 /-- For every actual logarithmic place, the order of its Galois
 stabilizer is its local degree. -/
 theorem logPlace_stabilizer_card_eq_localDegree
-    [IsGalois K L]
-    {S : Finset (HeightOneSpectrum (𝓞 L))}
-    (hS : IsGaloisStableFinitePlaces K L S)
+     
     (q : SUnitGroup.LogPlace (K := L) S) :
     letI _logPlaceAction :=
       logPlaceMulAction K L S hS
@@ -1768,9 +1791,7 @@ theorem logPlace_stabilizer_card_eq_localDegree
 /-- The canonical representative of every logarithmic-place orbit has
 stabilizer order equal to its local degree. -/
 theorem permutationOrbitStabilizer_card_eq_logPlaceLocalDegree
-    [IsGalois K L]
-    {S : Finset (HeightOneSpectrum (𝓞 L))}
-    (hS : IsGaloisStableFinitePlaces K L S) :
+      :
     let ρ :=
       logPlacePermutationHom K L S hS
     letI _indexAction :
@@ -1788,6 +1809,8 @@ theorem permutationOrbitStabilizer_card_eq_logPlaceLocalDegree
   exact
     logPlace_stabilizer_card_eq_localDegree
       K L hS ω.out
+end
+
 
 /-- The Herbrand quotient in local-degree form:
 `h(G, L^S) = |G|⁻¹ ∏_{p ∈ S} [L_P : K_p]`, with the

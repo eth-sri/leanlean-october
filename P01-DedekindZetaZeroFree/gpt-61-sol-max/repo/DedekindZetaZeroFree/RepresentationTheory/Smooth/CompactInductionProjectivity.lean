@@ -172,16 +172,16 @@ theorem finiteSupportEquiv_apply (F : P U) (g : G) :
         sectionValue U F g := by
   exact sectionValue_out U F g
 
-noncomputable def finiteSupportRepresentation : Representation ℂ G (Cosets U →₀ ℂ) where
-  toFun h := (finiteSupportEquiv U).toLinearMap ∘ₗ representation U h ∘ₗ
-    (finiteSupportEquiv U).symm.toLinearMap
-  map_one' := by
-    ext f
-    simp
-  map_mul' := by
-    intro g h
-    ext f
-    simp [map_mul, Module.End.mul_apply]
+
+
+
+
+
+
+
+
+
+
 
 noncomputable def delta : P U :=
   (finiteSupportEquiv U).symm

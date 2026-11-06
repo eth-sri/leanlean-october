@@ -52,47 +52,47 @@ attribute [local instance]
   naturalityAbstractRelativeFixedFieldNumberField
   naturalityAbstractRelativeFixedFieldIsAbelianGalois
 
-@[reducible]
-noncomputable local instance
-    abstractFixedFieldFiniteIdeleGroupGroup
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)) :
-    Group
-      (FiniteIdeleGroup
-        (LocalClassFieldTheory.abstractFixedField
-          ℚ (SeparableClosure ℚ) H.field)) :=
-  RestrictedProduct.instGroupCoeOfSubgroupClass
-    (fun v : IsDedekindDomain.HeightOneSpectrum
-      (𝓞 (LocalClassFieldTheory.abstractFixedField
-        ℚ (SeparableClosure ℚ) H.field)) =>
-      (v.adicCompletion
-        (LocalClassFieldTheory.abstractFixedField
-          ℚ (SeparableClosure ℚ) H.field))ˣ)
 
-@[reducible]
-noncomputable local instance
-    abstractFixedFieldIdeleGroupGroup
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)) :
-    Group
-      (IdeleGroup
-        (LocalClassFieldTheory.abstractFixedField
-          ℚ (SeparableClosure ℚ) H.field)) :=
-  Prod.instGroup
 
-@[reducible]
-noncomputable local instance
-    abstractFixedFieldIdeleClassGroupGroup
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)) :
-    Group
-      (IdeleClassGroup
-        (LocalClassFieldTheory.abstractFixedField
-          ℚ (SeparableClosure ℚ) H.field)) :=
-  QuotientGroup.Quotient.group
-    (IdeleGroup.principalSubgroup
-      (LocalClassFieldTheory.abstractFixedField
-        ℚ (SeparableClosure ℚ) H.field))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 private theorem
     restrictNormalHom_comp_infiniteGlobalArtinMonoidHom_of_tower

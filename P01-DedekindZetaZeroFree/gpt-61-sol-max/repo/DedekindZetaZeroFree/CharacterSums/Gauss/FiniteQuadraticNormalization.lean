@@ -1,14 +1,17 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.Complex.Circle
 public import Mathlib.Analysis.SpecialFunctions.Sqrt
 
 @[expose] public section
 
+
 namespace DedekindZetaZeroFree
 
 noncomputable def finiteQuadraticPolarization {G : Type*} [AddCommGroup G] (Q : G → Circle)
-    (x y : G) : Circle :=
+    (x y : G)  :=
   Q (x + y) / (Q x * Q y)
 
 theorem weil_finite_quadratic_gauss_modulus

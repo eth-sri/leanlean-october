@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Mellin.RegularizedGammaProduct
 
 @[expose] public section
+
 
 noncomputable section
 open scoped NumberField Classical ContDiff
@@ -23,16 +26,14 @@ theorem Gammaℂ_mul_originMellinQ_rapid_decay (h : ℝ → ℂ)
   have hkn : k ≤ n := le_max_left k n₀
   have hn₀n : (n₀ : ℝ) ≤ (n : ℝ) := by
     rw [hn]; exact_mod_cast le_max_right k n₀
-  have hnu : -((n : ℝ)) < u := by
-    have : -u < (n : ℝ) := lt_of_lt_of_le hn₀ hn₀n
-    linarith
+  
 
   obtain ⟨C₀, hC₀pos, hC₀⟩ :=
     mellin_iteratedDeriv_positive_strip_bound hh hc n (u + (n : ℝ)) (v + (n : ℝ))
       (by linarith) (by linarith)
   refine ⟨2 ^ k * C₀ + 1, by positivity, ?_⟩
   intro σ t huσ hσv ht
-  have ht1 : (1 : ℝ) ≤ |t| := ht
+  have ht1  := ht
   have htpos : 0 < |t| := lt_of_lt_of_le zero_lt_one ht1
   have htne : t ≠ 0 := by
     intro h0; rw [h0, abs_zero] at ht1; linarith
@@ -49,11 +50,7 @@ theorem Gammaℂ_mul_originMellinQ_rapid_decay (h : ℝ → ℂ)
       rw [Complex.add_re, hre, Complex.natCast_re]
     exact hC₀ _ (by rw [hre2]; linarith) (by rw [hre2]; linarith)
 
-  have hden :
-      |t| ^ n ≤ ‖∏ j ∈ Finset.range n,
-        (((σ : ℂ) + (t : ℂ) * Complex.I) + (j : ℂ))‖ := by
-    simpa only [Complex.ofReal_re, Complex.ofReal_im] using
-      (rising_product_norm_lower_bound σ t n ht)
+  have hden  := (rising_product_norm_lower_bound σ t n ht)
 
   have hnorm :
       ‖Complex.Gammaℂ ((σ : ℂ) + (t : ℂ) * Complex.I) *

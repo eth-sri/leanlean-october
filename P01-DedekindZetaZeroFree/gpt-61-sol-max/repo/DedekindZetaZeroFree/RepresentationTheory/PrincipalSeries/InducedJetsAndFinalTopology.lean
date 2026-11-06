@@ -17,9 +17,9 @@ set_option synthInstance.maxHeartbeats 100000
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-local instance smoothTopology2 (P : Polarization F ζ hζ) :
-    TopologicalSpace (Smooth F ζ hζ P) :=
-  KPGlobalTorusFunctionData.torusSmoothTopology F ζ hζ P
+
+
+
 
 abbrev GroupArch := InfinitePlace F → Fin 3 → ℂ
 

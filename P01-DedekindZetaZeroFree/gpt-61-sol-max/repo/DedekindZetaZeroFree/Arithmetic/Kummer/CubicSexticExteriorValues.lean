@@ -12,28 +12,31 @@ namespace KummerExteriorValues
 
 variable {F : Type} [Field F] [NumberField F]
 
-def exteriorIndex (A : SArithmeticData F) (d : Ideal (𝓞 F))
-    (hd : d ≠ ⊥) (hcop : d ⊔ uniformSquareUnitModulus A.Sf = ⊤) : A.Exterior :=
+section
+variable (A : SArithmeticData F) (d : Ideal (𝓞 F))
+    (hd : d ≠ ⊥) (hcop : d ⊔ uniformSquareUnitModulus A.Sf = ⊤)
+include A d hd hcop
+def exteriorIndex   : A.Exterior :=
   ⟨d, hd, (KummerSquarefreeMembers.exterior_iff A d).mp hcop⟩
 
-@[simp] theorem exteriorIndex_val (A : SArithmeticData F) (d : Ideal (𝓞 F))
-    (hd : d ≠ ⊥) (hcop : d ⊔ uniformSquareUnitModulus A.Sf = ⊤) :
+@[simp] theorem exteriorIndex_val   :
     (exteriorIndex A d hd hcop).val = d := rfl
+end
 
-def sexticValue (A : SArithmeticData F) (σ : F →+* ℂ)
+
+section
+variable (A : SArithmeticData F) (σ : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (C : A.GeneralArithmeticContext σ η hS) (c d : A.Exterior) : ℂ :=
+    (C : A.GeneralArithmeticContext σ η hS)
+include A σ η hS C
+def sexticValue   (c d : A.Exterior) : ℂ :=
   σ (A.sexticResidue d
     (KummerSquarefreeMembers.chooseRepresentative A σ η hS C c).integral)
 
-def cubicSexticValue (A : SArithmeticData F) (σ : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (C : A.GeneralArithmeticContext σ η hS) (c d : A.Exterior) : ℂ :=
+def cubicSexticValue   (c d : A.Exterior) : ℂ :=
   sexticValue A σ η hS C c d ^ 3
 
-theorem cubicSexticValue_symmetry (A : SArithmeticData F) (σ : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (C : A.GeneralArithmeticContext σ η hS) (c d : A.Exterior)
+theorem cubicSexticValue_symmetry   (c d : A.Exterior)
     (hcop : c.val ⊔ d.val = ⊤) :
     cubicSexticValue A σ η hS C c d = cubicSexticValue A σ η hS C d c := by
   let a := KummerSquarefreeMembers.chooseRepresentative A σ η hS C c
@@ -42,9 +45,7 @@ theorem cubicSexticValue_symmetry (A : SArithmeticData F) (σ : F →+* ℂ)
     a.generates b.generates a.radical_eq b.radical_eq a.allowed b.allowed hcop
   exact congrArg (fun z : F => σ z ^ 3) h.symm
 
-theorem cubicSexticValue_shared_zero (A : SArithmeticData F) (σ : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (C : A.GeneralArithmeticContext σ η hS) (c d : A.Exterior)
+theorem cubicSexticValue_shared_zero   (c d : A.Exterior)
     (hshared : c.val ⊔ d.val ≠ ⊤) :
     cubicSexticValue A σ η hS C c d = 0 ∧
       cubicSexticValue A σ η hS C d c = 0 := by
@@ -58,9 +59,7 @@ theorem cubicSexticValue_shared_zero (A : SArithmeticData F) (σ : F →+* ℂ)
   · change σ (A.sexticResidue c b.integral) ^ 3 = 0
     rw [h.1, map_zero, zero_pow (by decide)]
 
-def ExteriorValuesSpec (A : SArithmeticData F) (σ : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (C : A.GeneralArithmeticContext σ η hS)
+def ExteriorValuesSpec  
     (Xi : Fˣ → Ideal (𝓞 F) → ℂ) : Prop :=
   (∀ (c : Ideal (𝓞 F)) (hc : Squarefree c)
       (hcopc : c ⊔ uniformSquareUnitModulus A.Sf = ⊤)
@@ -83,6 +82,8 @@ def ExteriorValuesSpec (A : SArithmeticData F) (σ : F →+* ℂ)
       (hcopd : d ⊔ uniformSquareUnitModulus A.Sf = ⊤), c ⊔ d = ⊤ →
     Xi (KummerSquarefreeMembers.generator A σ η hS C c hc hcopc) d =
       Xi (KummerSquarefreeMembers.generator A σ η hS C d hd hcopd) c)
+end
+
 
 end KummerExteriorValues
 end

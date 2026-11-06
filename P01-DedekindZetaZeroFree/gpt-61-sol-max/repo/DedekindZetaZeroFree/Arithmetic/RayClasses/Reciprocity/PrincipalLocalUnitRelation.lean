@@ -10,14 +10,17 @@ noncomputable section
 open scoped NumberField Classical
 open IsDedekindDomain
 
-def frozenPrincipalRayClass (F : Type) [Field F] [NumberField F]
+section
+variable (F : Type) [Field F] [NumberField F]
+include F
+def frozenPrincipalRayClass  
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     (α : 𝓞 F) (hα : α ≠ 0) (hcop : Ideal.span ({α} : Set (𝓞 F)) ⊔ m = ⊤) :
     ClassFieldTheory.RayClassGroup (M F m hm) :=
   frozenIntegralRayClass F m hm (Ideal.span {α})
     (by simpa only [ne_eq, Ideal.span_singleton_eq_bot] using hα) hcop
 
-def frozenFinitePlaceRayClass (F : Type) [Field F] [NumberField F]
+def frozenFinitePlaceRayClass  
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (v : HeightOneSpectrum (𝓞 F)) :
     (v.adicCompletion F)ˣ →* ClassFieldTheory.RayClassGroup (M F m hm) :=
   (ClassFieldTheory.GlobalClassFieldComparison.rayClassGroupEquivOriginalIdele
@@ -27,13 +30,13 @@ def frozenFinitePlaceRayClass (F : Type) [Field F] [NumberField F]
         F (M F m hm)).congruenceSubgroup).comp
       (IdeleGroup.finitePlaceIdeleClass v))
 
-def frozenPrincipalLocalUnit (F : Type) [Field F] [NumberField F]
+def frozenPrincipalLocalUnit  
     (α : 𝓞 F) (hα : α ≠ 0) (v : HeightOneSpectrum (𝓞 F)) :
     (v.adicCompletion F)ˣ :=
   Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom
     (Units.mk0 (α : F) (by exact_mod_cast hα))
 
-private theorem principalRay_count_idele (F : Type) [Field F] [NumberField F]
+private theorem principalRay_count_idele  
     (v : HeightOneSpectrum (𝓞 F)) (a : IdeleGroup F) :
     FractionalIdeal.count F v (IdeleGroup.fractionalIdeal a :
       FractionalIdeal (nonZeroDivisors (𝓞 F)) F) =
@@ -41,7 +44,7 @@ private theorem principalRay_count_idele (F : Type) [Field F] [NumberField F]
   exact (FractionalIdealGroup.count_factorization _ v).trans
     (FiniteIdeleGroup.valuationVector_apply _ _)
 
-private theorem principalRay_single_ideal (F : Type) [Field F] [NumberField F]
+private theorem principalRay_single_ideal  
     (v : HeightOneSpectrum (𝓞 F)) (x : (v.adicCompletion F)ˣ)
     (hx : (FiniteIdeleGroup.localOrder v x).toAdd = 0) :
     IdeleGroup.fractionalIdeal (IdeleGroup.finitePlaceIdele v x) = 1 := by
@@ -56,7 +59,7 @@ private theorem principalRay_single_ideal (F : Type) [Field F] [NumberField F]
   · rw [IdeleGroup.finitePlaceIdele_finiteComponent_of_ne v w x hw]
     simp
 
-private theorem principalRay_product_component (F : Type) [Field F] [NumberField F]
+private theorem principalRay_product_component  
     (s : Finset (HeightOneSpectrum (𝓞 F)))
     (f : ∀ v : HeightOneSpectrum (𝓞 F), (v.adicCompletion F)ˣ)
     (w : HeightOneSpectrum (𝓞 F)) :
@@ -76,7 +79,7 @@ private theorem principalRay_product_component (F : Type) [Field F] [NumberField
     exact IdeleGroup.finitePlaceIdele_finiteComponent_of_ne v w (f v)
       (fun h => hw (h.symm ▸ hv))
 
-theorem rm_kummer_ray_principal_relation (F : Type) [Field F] [NumberField F]
+theorem rm_kummer_ray_principal_relation  
     (htc : NumberField.IsTotallyComplex F)
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     (α : 𝓞 F) (hα : α ≠ 0) (hcop : Ideal.span ({α} : Set (𝓞 F)) ⊔ m = ⊤) :
@@ -181,6 +184,8 @@ theorem rm_kummer_ray_principal_relation (F : Type) [Field F] [NumberField F]
   change _ = E (E.symm (Q (IdeleGroup.finitePlaceIdele v
     (frozenPrincipalLocalUnit F α hα v))))
   exact (E.apply_symm_apply _).symm
+end
+
 
 end
 end DedekindZetaZeroFree

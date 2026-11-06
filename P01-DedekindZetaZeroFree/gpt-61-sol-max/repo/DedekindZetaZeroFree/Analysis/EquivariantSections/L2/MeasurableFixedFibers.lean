@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.GenuineSector.TestEnergy
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -37,7 +40,7 @@ structure Piece where
   measurableSet : MeasurableSet set
   invariant : ∀ γ x, D.action γ x ∈ set ↔ x ∈ set
 
-def SupportedCovariant (S : Piece D) (f : Lp E 2 D.measure) : Prop :=
+def SupportedCovariant (S : Piece D) (f : Lp E 2 D.measure)  :=
   (∀ γ : Γ, ∀ᵐ x ∂D.measure, f (D.action γ x) = D.tensor γ x (f x)) ∧
     (∀ᵐ x ∂D.measure, x ∉ S.set → f x = 0)
 
@@ -78,7 +81,7 @@ def Q (S : Piece D) : Submodule ℂ (Lp E 2 D.measure) where
 theorem Q_isClosed (S : Piece D) : IsClosed (Q D S : Set (Lp E 2 D.measure)) := by
   rw [← isSeqClosed_iff_isClosed]
   intro u f hu hlim
-  have hu' : ∀ n, SupportedCovariant D S (u n) := fun n => (mem_Q_iff D S (u n)).mp (hu n)
+  have hu'  := fun n => (mem_Q_iff D S (u n)).mp (hu n)
   refine (mem_Q_iff D S f).mpr ⟨?_, ?_⟩
   · intro γ
     obtain ⟨ns, -, hns⟩ := (tendstoInMeasure_of_tendsto_Lp hlim).exists_seq_tendsto_ae
@@ -110,38 +113,37 @@ instance Q_innerProductSpace (S : Piece D) : InnerProductSpace ℂ (Q D S) :=
   inferInstanceAs (InnerProductSpace ℂ ↥(Q D S))
 
 instance Q_completeSpace (S : Piece D) : CompleteSpace (Q D S) := by
-  letI : CompleteSpace E := FiniteDimensional.complete ℂ E
+  letI  := FiniteDimensional.complete ℂ E
   exact (Q_isClosed D S).completeSpace_coe
 
 theorem Q_inner_eq_integral (S : Piece D) (f g : Q D S) :
     inner ℂ f g = ∫ x, inner ℂ ((f : Lp E 2 D.measure) x)
-      ((g : Lp E 2 D.measure) x) ∂D.measure := by
-  rw [Submodule.coe_inner, L2.inner_def]
+      ((g : Lp E 2 D.measure) x) ∂D.measure := rfl
 
 theorem Q_integrable_inner (S : Piece D) (f g : Q D S) :
     Integrable (fun x => inner ℂ ((f : Lp E 2 D.measure) x)
       ((g : Lp E 2 D.measure) x)) D.measure :=
   L2.integrable_inner (f : Lp E 2 D.measure) (g : Lp E 2 D.measure)
 
-def fixedFiber (x : X) : Submodule ℂ E where
-  carrier := {v | ∀ γ : Γ, D.action γ x = x → D.tensor γ x v = v}
-  zero_mem' := by intro γ _; simp
-  add_mem' := by
-    intro a b ha hb γ hγ
-    rw [map_add, ha γ hγ, hb γ hγ]
-  smul_mem' := by
-    intro c a ha γ hγ
-    rw [map_smul, ha γ hγ]
 
-@[simp] theorem mem_fixedFiber_iff (x : X) (v : E) :
-    v ∈ fixedFiber D x ↔
-      ∀ γ : Γ, D.action γ x = x → D.tensor γ x v = v := Iff.rfl
 
-def supportedAverage (S : Piece D) (h : X → E) : X → E :=
+
+
+
+
+
+
+
+
+
+
+
+
+def supportedAverage (S : Piece D) (h : X → E)  :=
   S.set.indicator (fun x => (Fintype.card Γ : ℂ)⁻¹ •
     ∑ γ : Γ, (D.tensor γ x).symm (h (D.action γ x)))
 
- def avgField (h : X → E) : X → E :=
+ def avgField (h : X → E)  :=
   fun y => (Fintype.card Γ : ℂ)⁻¹ •
     ∑ γ : Γ, (D.tensor γ y).symm (h (D.action γ y))
 
@@ -180,7 +182,10 @@ private lemma symm_apply_eq_sum (T : E ≃ₗᵢ[ℂ] E) (w : E) :
   rw [← LinearIsometryEquiv.inner_map_map T ((stdOrthonormalBasis ℂ E) i) (T.symm w),
     LinearIsometryEquiv.apply_symm_apply]
 
-theorem supportedAverage_measurable (S : Piece D) (h : X → E)
+section
+variable (S : Piece D) (h : X → E)
+include S h
+theorem supportedAverage_measurable  
     (hh : Measurable h) : Measurable (supportedAverage D S h) := by
   haveI : SecondCountableTopology E := by
     let d := Module.finrank ℂ E
@@ -199,7 +204,7 @@ theorem supportedAverage_measurable (S : Piece D) (h : X → E)
         = fun x => ∑ i, inner ℂ (D.tensor δ x ((stdOrthonormalBasis ℂ E) i))
             (h (D.action δ x)) • (stdOrthonormalBasis ℂ E) i := by
       funext x
-      exact symm_apply_eq_sum (D.tensor δ x) (h (D.action δ x))
+      apply symm_apply_eq_sum
     rw [hfun]
     refine Finset.measurable_sum _ fun i _ => ?_
     refine ((continuous_id.smul continuous_const).measurable.comp ?_)
@@ -211,20 +216,22 @@ theorem supportedAverage_measurable (S : Piece D) (h : X → E)
     exact (continuous_inner (𝕜 := ℂ) (E := E)).measurable.comp hAB
   exact hsymm
 
-theorem supportedAverage_covariant (S : Piece D) (h : X → E) (γ : Γ) (x : X) :
+theorem supportedAverage_covariant   (γ : Γ) (x : X) :
     supportedAverage D S h (D.action γ x) =
       D.tensor γ x (supportedAverage D S h x) := by
   rw [supportedAverage_eq]
   by_cases hx : x ∈ S.set
-  · have hx' : D.action γ x ∈ S.set := (S.invariant γ x).mpr hx
+  · have hx'  := (S.invariant γ x).mpr hx
     rw [Set.indicator_of_mem hx' _, Set.indicator_of_mem hx _]
-    exact avgField_covariant D h γ x
+    apply avgField_covariant
   · have hx' : D.action γ x ∉ S.set := fun hc => hx ((S.invariant γ x).mp hc)
     rw [Set.indicator_of_notMem hx' _, Set.indicator_of_notMem hx _, map_zero]
 
-theorem supportedAverage_zero_off (S : Piece D) (h : X → E) (x : X)
+theorem supportedAverage_zero_off   (x : X)
     (hx : x ∉ S.set) : supportedAverage D S h x = 0 := by
   rw [supportedAverage_eq, Set.indicator_of_notMem hx _]
+end
+
 
 theorem supportedAverage_ae_eq (S : Piece D) (f : Q D S) (h : X → E)
     (hh : h =ᵐ[D.measure] (f : Lp E 2 D.measure)) :
@@ -249,10 +256,10 @@ theorem supportedAverage_ae_eq (S : Piece D) (f : Q D S) (h : X → E)
     rw [← mul_smul, inv_mul_cancel₀ hcard, one_smul]
   · rw [Set.indicator_of_notMem hx _, hsupx hx]
 
-def borelVersion (f : Lp E 2 D.measure) : X → E :=
+def borelVersion (f : Lp E 2 D.measure)  :=
   (Lp.aestronglyMeasurable f).mk f
 
-def representative (S : Piece D) (f : Q D S) : X → E :=
+def representative (S : Piece D) (f : Q D S)  :=
   supportedAverage D S (borelVersion D (f : Lp E 2 D.measure))
 
 theorem representative_spec (S : Piece D) (f : Q D S) :
@@ -271,8 +278,7 @@ theorem representative_spec (S : Piece D) (f : Q D S) :
   · intro γ x
     exact supportedAverage_covariant D S _ γ x
 
-theorem representative_memLp (S : Piece D) (f : Q D S) :
-    MemLp (representative D S f) 2 D.measure :=
+def representative_memLp (S : Piece D) (f : Q D S)  :=
   (Lp.memLp (f : Lp E 2 D.measure)).ae_eq (representative_spec D S f).2.1.symm
 
 end KPMeasurableLocalL2

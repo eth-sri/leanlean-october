@@ -15,6 +15,7 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 
 
 set_option autoImplicit false
+set_option maxHeartbeats 2000000
 
 /-!
 # Norm--restriction for finite-place Artin homomorphisms
@@ -414,49 +415,49 @@ local notation "Eₙ" =>
 local notation "Eₙ'" =>
   finitePlaceNormLocalizedCompletion K' L' W w'
 
-local instance finitePlaceNormLowerExtensionAlgebra :
-    Algebra K w.1.Completion :=
-  AbsoluteValue.extensionCompletionAlgebra
-    (K := K) w.1
 
-local instance finitePlaceNormLowerExtensionSMul :
-    SMul K w.1.Completion :=
-  (finitePlaceNormLowerExtensionAlgebra v w).toSMul
 
-local instance finitePlaceNormLowerCompletionAlgebra :
-    Algebra Cₙ w.1.Completion :=
-  AbsoluteValue.completionAlgebra vKₙ w.1 w.2
 
-local instance finitePlaceNormLowerGlobalAlgebra :
-    Algebra K Eₙ :=
-  LocalClassFieldTheory.localizedCompletionGlobalAlgebra vKₙ w
 
-local instance finitePlaceNormUpperExtensionAlgebra :
-    Algebra K' w'.1.Completion :=
-  AbsoluteValue.extensionCompletionAlgebra
-    (K := K') w'.1
 
-local instance finitePlaceNormUpperExtensionSMul :
-    SMul K' w'.1.Completion :=
-  (finitePlaceNormUpperExtensionAlgebra W w').toSMul
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 local instance finitePlaceNormUpperCompletionAlgebra :
     Algebra Dₙ w'.1.Completion :=
   AbsoluteValue.completionAlgebra vKₙ' w'.1 w'.2
 
-local instance finitePlaceNormUpperGlobalAlgebra :
-    Algebra K' Eₙ' :=
-  LocalClassFieldTheory.localizedCompletionGlobalAlgebra vKₙ' w'
 
-local instance finitePlaceNormLowerNontriviallyNormedField :
-    NontriviallyNormedField Cₙ :=
-  absoluteValueExtension_completionNontriviallyNormedField
-    vKₙ (RayClass.adicAbv_isNontrivial v)
 
-local instance finitePlaceNormLowerLocallyCompactSpace :
-    LocallyCompactSpace Cₙ :=
-  AbsoluteValue.Completion.locallyCompactSpace
-    (finitePlaceCompletionBaseMap_isometry v)
+
+
+
+
+
+
+
+
+
+
+
 
 local instance finitePlaceNormUpperNontriviallyNormedField :
     NontriviallyNormedField Dₙ :=
@@ -473,10 +474,10 @@ local instance finitePlaceNormLowerLocalizedFiniteDimensional :
   AlgebraicNumberTheory.Valuations.localizedCompletionModuleFinite
     vKₙ (RayClass.adicAbv_isNontrivial v) w
 
-local instance finitePlaceNormLowerLocalizedAbelianGalois :
-    IsAbelianGalois Cₙ Eₙ :=
-  LocalClassFieldTheory.localizedCompletion_isAbelianGalois
-    vKₙ (RayClass.adicAbv_isNontrivial v) w
+
+
+
+
 
 local instance finitePlaceNormUpperLocalizedFiniteDimensional :
     FiniteDimensional Dₙ Eₙ' :=
@@ -488,70 +489,70 @@ local instance finitePlaceNormUpperLocalizedAbelianGalois :
   LocalClassFieldTheory.localizedCompletion_isAbelianGalois
     vKₙ' (RayClass.adicAbv_isNontrivial W) w'
 
-local instance finitePlaceNormLowerUltrametric :
-    IsUltrametricDist Cₙ :=
-  finitePlaceArtinCompletionIsUltrametricDist vKₙ
-    (NumberField.HeightOneSpectrum.isNonarchimedean_adicAbv K v)
 
-local instance finitePlaceNormLowerValued :
-    Valued Cₙ ℝ≥0 :=
-  finitePlaceArtinCompletionValued vKₙ
-    (NumberField.HeightOneSpectrum.isNonarchimedean_adicAbv K v)
 
-local instance finitePlaceNormLowerValuationNontrivial :
-    (Valued.v : Valuation Cₙ ℝ≥0).IsNontrivial :=
-  (inferInstance :
-    (NormedField.valuation (K := Cₙ)).IsNontrivial)
 
-local instance finitePlaceNormLowerValuativeRel :
-    ValuativeRel Cₙ :=
-  finitePlaceArtinCompletionValuativeRel vKₙ
-    (NumberField.HeightOneSpectrum.isNonarchimedean_adicAbv K v)
 
-local instance finitePlaceNormLowerValuationCompatible :
-    (Valued.v : Valuation Cₙ ℝ≥0).Compatible :=
-  Valuation.Compatible.ofValuation
-    (Valued.v : Valuation Cₙ ℝ≥0)
 
-local instance finitePlaceNormLowerValuativeRelNontrivial :
-    ValuativeRel.IsNontrivial Cₙ :=
-  (ValuativeRel.isNontrivial_iff_isNontrivial
-    (Valued.v : Valuation Cₙ ℝ≥0)).2 inferInstance
 
-local instance finitePlaceNormLowerLocalField :
-    IsNonarchimedeanLocalField Cₙ :=
-  finitePlaceArtinCompletionIsNonarchimedeanLocalField vKₙ
-    (NumberField.HeightOneSpectrum.isNonarchimedean_adicAbv K v)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 local instance finitePlaceNormUpperUltrametric :
     IsUltrametricDist Dₙ :=
   finitePlaceArtinCompletionIsUltrametricDist vKₙ'
     (NumberField.HeightOneSpectrum.isNonarchimedean_adicAbv K' W)
 
-local instance finitePlaceNormUpperValued :
-    Valued Dₙ ℝ≥0 :=
-  finitePlaceArtinCompletionValued vKₙ'
-    (NumberField.HeightOneSpectrum.isNonarchimedean_adicAbv K' W)
 
-local instance finitePlaceNormUpperValuationNontrivial :
-    (Valued.v : Valuation Dₙ ℝ≥0).IsNontrivial :=
-  (inferInstance :
-    (NormedField.valuation (K := Dₙ)).IsNontrivial)
+
+
+
+
+
+
+
+
 
 local instance finitePlaceNormUpperValuativeRel :
     ValuativeRel Dₙ :=
   finitePlaceArtinCompletionValuativeRel vKₙ'
     (NumberField.HeightOneSpectrum.isNonarchimedean_adicAbv K' W)
 
-local instance finitePlaceNormUpperValuationCompatible :
-    (Valued.v : Valuation Dₙ ℝ≥0).Compatible :=
-  Valuation.Compatible.ofValuation
-    (Valued.v : Valuation Dₙ ℝ≥0)
 
-local instance finitePlaceNormUpperValuativeRelNontrivial :
-    ValuativeRel.IsNontrivial Dₙ :=
-  (ValuativeRel.isNontrivial_iff_isNontrivial
-    (Valued.v : Valuation Dₙ ℝ≥0)).2 inferInstance
+
+
+
+
+
+
+
+
 
 local instance finitePlaceNormUpperLocalField :
     IsNonarchimedeanLocalField Dₙ :=

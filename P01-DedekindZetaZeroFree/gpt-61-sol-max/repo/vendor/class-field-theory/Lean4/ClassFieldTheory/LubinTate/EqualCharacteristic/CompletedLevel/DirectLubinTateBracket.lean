@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.SetTheory.Cardinal.Finite
 public import ClassFieldTheory.LubinTate.EqualCharacteristic.Theta.ThetaFirstIdentity
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -59,7 +62,7 @@ theorem equalCharacteristicDirectBracketGamma_constantCoeff
 
 /-- Division of `a-a^q` by the standard prime `T`. -/
 noncomputable def equalCharacteristicDirectBracketBeta
-    (a : k⟦X⟧) : k⟦X⟧ :=
+    (a : k⟦X⟧)  :=
   equalCharacteristicPowerSeriesTail
     (equalCharacteristicSourceBracketNumerator a)
 
@@ -94,12 +97,7 @@ theorem equalCharacteristicDirectBracketCoefficient_succ_equation
   have hgamma := equalCharacteristicDirectBracketGamma_constantCoeff
     (k := k) (j + 1) (Nat.zero_lt_succ j)
   apply (sub_eq_iff_eq_add).2
-  simpa using
-    (contractingFrobeniusEquationSolution_spec (R := k)
-      (RingHom.id k)
-      (equalCharacteristicDirectBracketGamma (k := k) (j + 1))
-      (equalCharacteristicDirectBracketBeta
-        (equalCharacteristicDirectBracketCoefficient u j)) hgamma)
+  apply contractingFrobeniusEquationSolution_spec <;> assumption
 
 /-- Coefficient comparison equivalent to commutation of `[u]` with
 `e_T(Y)=Y^q+TY`. -/
@@ -143,71 +141,69 @@ theorem equalCharacteristicDirectBracketCoefficient_succ_comparison
     PowerSeries.X * equalCharacteristicDirectBracketBeta b at hrec
   rw [mul_sub, ← mul_assoc, hXGamma,
     equalCharacteristicDirectBracketBeta, htail] at hrec
-  simpa [a, b, qj, equalCharacteristicSourceBracketNumerator] using hrec
+  exact hrec
 
-/-- The standard Lubin--Tate endomorphism `[u]` over `k[[T]]`. -/
-noncomputable def equalCharacteristicDirectBracket
-    (u : k⟦X⟧) : (k⟦X⟧)⟦X⟧ :=
-  equalCharacteristicQAdditiveSeries k
-    (equalCharacteristicDirectBracketCoefficient u)
 
-/-- The direct bracket coefficient at `q ^ j` is its `j`th recursive coefficient. -/
-@[simp]
-theorem equalCharacteristicDirectBracket_coeff_pow
-    (u : k⟦X⟧) (j : ℕ) :
-    PowerSeries.coeff (Nat.card k ^ j)
-        (equalCharacteristicDirectBracket u) =
-      equalCharacteristicDirectBracketCoefficient u j := by
-  exact equalCharacteristicQAdditiveSeries_coeff_pow k _ j
 
-/-- The direct bracket has zero constant coefficient. -/
-@[simp]
-theorem equalCharacteristicDirectBracket_constantCoeff
-    (u : k⟦X⟧) :
-    PowerSeries.constantCoeff (equalCharacteristicDirectBracket u) = 0 := by
-  exact equalCharacteristicQAdditiveSeries_constantCoeff k _
 
-/-- The direct bracket is valid as a substitution series. -/
-theorem equalCharacteristicDirectBracket_hasSubst
-    (u : k⟦X⟧) :
-    PowerSeries.HasSubst (equalCharacteristicDirectBracket u) :=
-  PowerSeries.HasSubst.of_constantCoeff_zero'
-    (equalCharacteristicDirectBracket_constantCoeff u)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- Coefficients after extension to the completed maximal unramified integer
 ring. -/
 noncomputable def equalCharacteristicCompletedDirectBracketCoefficient
-    (u : k⟦X⟧) (j : ℕ) : (AlgebraicClosure k)⟦X⟧ :=
+    (u : k⟦X⟧) (j : ℕ)  :=
   PowerSeries.map (algebraMap k (AlgebraicClosure k))
     (equalCharacteristicDirectBracketCoefficient u j)
 
 /-- The standard bracket over the completed maximal unramified integer ring. -/
 noncomputable def equalCharacteristicCompletedDirectBracket
-    (u : k⟦X⟧) : ((AlgebraicClosure k)⟦X⟧)⟦X⟧ :=
+    (u : k⟦X⟧)  :=
   equalCharacteristicQAdditiveSeries k
     (equalCharacteristicCompletedDirectBracketCoefficient u)
 
-/-- The completed direct bracket records its `j`th coefficient at exponent `q ^ j`. -/
-@[simp]
-theorem equalCharacteristicCompletedDirectBracket_coeff_pow
-    (u : k⟦X⟧) (j : ℕ) :
-    PowerSeries.coeff (Nat.card k ^ j)
-        (equalCharacteristicCompletedDirectBracket u) =
-      equalCharacteristicCompletedDirectBracketCoefficient u j := by
-  exact equalCharacteristicQAdditiveSeries_coeff_pow k _ j
+
+
+
+
+
+
+
+
 
 /-- The completed direct bracket has zero constant coefficient. -/
 @[simp]
 theorem equalCharacteristicCompletedDirectBracket_constantCoeff
     (u : k⟦X⟧) :
     PowerSeries.constantCoeff
-        (equalCharacteristicCompletedDirectBracket u) = 0 := by
-  exact equalCharacteristicQAdditiveSeries_constantCoeff k _
+        (equalCharacteristicCompletedDirectBracket u) = 0 := equalCharacteristicQAdditiveSeries_constantCoeff k _
 
 /-- The completed direct bracket is valid as a substitution series. -/
-theorem equalCharacteristicCompletedDirectBracket_hasSubst
-    (u : k⟦X⟧) :
-    PowerSeries.HasSubst (equalCharacteristicCompletedDirectBracket u) :=
+def equalCharacteristicCompletedDirectBracket_hasSubst
+    (u : k⟦X⟧)  :=
   PowerSeries.HasSubst.of_constantCoeff_zero'
     (equalCharacteristicCompletedDirectBracket_constantCoeff u)
 
@@ -217,8 +213,7 @@ omit [Finite k] in
 theorem equalCharacteristicCompletedDirectBracketCoefficient_zero
     (u : k⟦X⟧) :
     equalCharacteristicCompletedDirectBracketCoefficient u 0 =
-      PowerSeries.map (algebraMap k (AlgebraicClosure k)) u := by
-  simp [equalCharacteristicCompletedDirectBracketCoefficient]
+      PowerSeries.map (algebraMap k (AlgebraicClosure k)) u := rfl
 
 /-- Every coefficient of the standard bracket is defined over `k[[T]]`, so
 coefficient Frobenius fixes the bracket. -/
@@ -231,8 +226,7 @@ theorem equalCharacteristicCompletedDirectBracket_frobenius
     equalCharacteristicQAdditiveSeries_map]
   congr 1
   funext j
-  exact equalCharacteristicPowerSeriesFrobenius_map_algebraMap
-    (equalCharacteristicDirectBracketCoefficient u j)
+  apply equalCharacteristicPowerSeriesFrobenius_map_algebraMap
 
 /-- The standard coefficient recurrence after extension to the completed
 maximal unramified integer ring. -/
@@ -255,10 +249,10 @@ theorem equalCharacteristicCompletedDirectBracket_commutes
     (u : k⟦X⟧) :
     PowerSeries.subst (equalCharacteristicCompletedDirectBracket u)
         (equalCharacteristicCompletedLubinTateSeries (k := k)
-          (PowerSeries.X : (AlgebraicClosure k)⟦X⟧)) =
+          PowerSeries.X) =
       PowerSeries.subst
         (equalCharacteristicCompletedLubinTateSeries (k := k)
-          (PowerSeries.X : (AlgebraicClosure k)⟦X⟧))
+          PowerSeries.X)
         (equalCharacteristicCompletedDirectBracket u) := by
   rw [equalCharacteristicCompletedDirectBracket,
     equalCharacteristicCompletedLubinTateSeries_subst_qAdditiveSeries,

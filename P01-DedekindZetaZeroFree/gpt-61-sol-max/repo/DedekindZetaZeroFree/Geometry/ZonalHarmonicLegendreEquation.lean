@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Sphere.LatitudeDisintegration
 public import DedekindZetaZeroFree.HarmonicAnalysis.Sphere.SmoothPolynomialDensity
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.ComplexFractionalInverse.FunkHecke.CircleAverage
 open MeasureTheory KPCplxIntertwinerEigenvalues MvPolynomial
@@ -11,11 +14,14 @@ open scoped BigOperators
 
 noncomputable def rot (i : Fin 3) (p : MvPolynomial (Fin 3) ℂ) :=
   X (i + 1) * pderiv (i + 2) p - X (i + 2) * pderiv (i + 1) p
-noncomputable def euler (p : MvPolynomial (Fin 3) ℂ) :=
+section
+variable (p : MvPolynomial (Fin 3) ℂ)
+include p
+noncomputable def euler   :=
   ∑ i : Fin 3, X i * pderiv i p
-noncomputable def casOp (p : MvPolynomial (Fin 3) ℂ) :=
+noncomputable def casOp   :=
   -(∑ i : Fin 3, rot i (rot i p))
-private theorem casimir (p : MvPolynomial (Fin 3) ℂ) :
+private theorem casimir   :
     casOp p = euler (euler p) + euler p -
       (∑ i : Fin 3, X i ^ 2) * polynomialLaplacian p := by
   simp only [casOp, rot, euler, polynomialLaplacian, Fin.sum_univ_three,
@@ -23,6 +29,8 @@ private theorem casimir (p : MvPolynomial (Fin 3) ℂ) :
     map_add, map_sub, pderiv_mul, Fin.reduceAdd, pderiv_X, Pi.single_apply]
   norm_num
   ring
+end
+
 private theorem casOp_eigen (ℓ : ℕ) (p : MvPolynomial (Fin 3) ℂ)
     (hp : p ∈ harmonicPolynomials ℓ) :
     casOp p = ((ℓ : ℂ) * ((ℓ : ℂ) + 1)) • p := by
@@ -62,7 +70,7 @@ private theorem rot_eval_flow (i : Fin 3) (p : MvPolynomial (Fin 3) ℂ)
       ((EuclideanSpace.proj (𝕜 := ℝ) j).hasFDerivAt.comp_hasDerivAt t
         (rotationFlow_hasDerivAt i x t))
     change HasDerivAt (fun t => ((rotationFlow i t x) j : ℂ))
-      ((rotationVector i (rotationFlow i t x)) j : ℂ) t at hj
+      ((rotationVector i (rotationFlow i t x)) j) t at hj
     have hd := hp.mul hj
     change HasDerivAt (fun t => eval _ p * ((rotationFlow i t x) j : ℂ)) _ t at hd
     convert hd using 1
@@ -74,13 +82,13 @@ private theorem rot_zero (i : Fin 3) (p : MvPolynomial (Fin 3) ℂ)
     (h : ∀ x : Sphere, polynomialSphere p x = 0) :
     ∀ x : Sphere, polynomialSphere (rot i p) x = 0 := by
   intro x
-  have hd := rot_eval_flow i p (x : Ambient) 0
-  have he : (fun t => eval (fun j => ((rotationFlow i t (x : Ambient)) j : ℂ)) p) =
+  have hd := rot_eval_flow i p x 0
+  have he : (fun t => eval (fun j => ((rotationFlow i t x) j : ℂ)) p) =
       (fun _ : ℝ => (0 : ℂ)) := by
     funext t
     exact h (sphereOrthogonal (rotationFlow i t) x)
   rw [he] at hd
-  simpa only [rotationFlow_zero, polynomialSphere] using hd.unique (hasDerivAt_const 0 (0 : ℂ))
+  simpa only [rotationFlow_zero, polynomialSphere] using hd.unique (hasDerivAt_const 0 (0))
 private theorem casOp_zero (p : MvPolynomial (Fin 3) ℂ)
     (h : ∀ x : Sphere, polynomialSphere p x = 0) :
     ∀ x : Sphere, polynomialSphere (casOp p) x = 0 := by
@@ -102,7 +110,7 @@ private theorem pderiv_heightLift (i : Fin 3) (Q : Polynomial ℂ) :
     simp only [heightLift, Polynomial.aeval_monomial, Polynomial.derivative_monomial,
       Polynomial.aeval_C, Polynomial.aeval_mul, map_pow, Polynomial.aeval_X, algebraMap_eq]
     rw [pderiv_C_mul, pderiv_pow]
-    have hx : pderiv i ((1 - X 0) * C (1 / 2 : ℂ)) = if i = 0 then C (-1 / 2 : ℂ) else 0 := by
+    have hx : pderiv i ((1 - X 0) * C (1 / 2 : ℂ)) = if i = 0 then C (-1 / 2) else 0 := by
       by_cases hi : i = 0
       · subst i; simp [div_eq_mul_inv]
       · simp [pderiv_mul, pderiv_X, Pi.single_apply, hi, Ne.symm hi]
@@ -115,10 +123,10 @@ private theorem casOp_heightLift (Q : Polynomial ℂ) :
   simp only [casOp, rot, Fin.sum_univ_three, Fin.reduceAdd, pderiv_heightLift,
     pderiv_mul, map_sub, pderiv_X, Pi.single_apply, pderiv_C]
   norm_num
-  have hc : C (1 / 2 : ℂ) ^ 2 = (C (1 / 4 : ℂ) : MvPolynomial (Fin 3) ℂ) := by
+  have hc : C (1 / 2) ^ 2 = (C (1 / 4) : MvPolynomial (Fin 3) ℂ) := by
     rw [← map_pow]; congr 1; norm_num
-  have ht : C (1 / 2 : ℂ) * 2 = (1 : MvPolynomial (Fin 3) ℂ) := by
-    rw [show (2 : MvPolynomial (Fin 3) ℂ) = C (2 : ℂ) by exact (map_ofNat C 2).symm, ← map_mul]; norm_num
+  have ht : C (1 / 2) * 2 = (1 : MvPolynomial (Fin 3) ℂ) := by
+    rw [show (2 : MvPolynomial (Fin 3) ℂ) = C (2) by exact (map_ofNat C 2).symm, ← map_mul]; norm_num
   linear_combination -(X 0 * heightLift Q.derivative) * ht -
     ((X 1 ^ 2 + X 2 ^ 2) * heightLift Q.derivative.derivative) * hc
 private theorem casOp_sub (p q : MvPolynomial (Fin 3) ℂ) :
@@ -166,7 +174,7 @@ theorem zonal_harmonic_legendre_ode (ℓ : ℕ) (p : MvPolynomial (Fin 3) ℂ)
     linear_combination hx - (Q.derivative.derivative.eval
       ((1 - ((x : Ambient) 0 : ℂ)) / 2) / 4) * hr
   apply Polynomial.eq_zero_of_infinite_isRoot
-  apply Set.Infinite.mono (s := Complex.ofReal '' Set.Icc (0 : ℝ) 1)
+  apply Set.Infinite.mono (s := Complex.ofReal '' Set.Icc (0) 1)
   · intro z hz
     obtain ⟨u, hu, rfl⟩ := hz
     have hh := he (latitudePoint (.refl ℝ Ambient) u 0)
@@ -176,14 +184,17 @@ theorem zonal_harmonic_legendre_ode (ℓ : ℕ) (p : MvPolynomial (Fin 3) ℂ)
     dsimp at hh
     rw [hc, show (1 - (1 - 2 * (u : ℂ))) / 2 = (u : ℂ) by ring] at hh
     simpa [Polynomial.IsRoot, Polynomial.eval_add, Polynomial.eval_mul] using hh
-  · exact (Set.Icc_infinite (by norm_num : (0 : ℝ) < 1)).image
+  · exact (Set.Icc_infinite (by norm_num)).image
       Complex.ofReal_injective.injOn
 
-noncomputable def spinSubst (A : Matrix (Fin 3) (Fin 3) ℂ) :
+section
+variable (A : Matrix (Fin 3) (Fin 3) ℂ)
+include A
+noncomputable def spinSubst   :
     MvPolynomial (Fin 3) ℂ →ₐ[ℂ] MvPolynomial (Fin 3) ℂ :=
   MvPolynomial.aeval (fun i => ∑ j, MvPolynomial.C (A i j) * MvPolynomial.X j)
 
-private theorem pderiv_spinSubst (A : Matrix (Fin 3) (Fin 3) ℂ)
+private theorem pderiv_spinSubst  
     (p : MvPolynomial (Fin 3) ℂ) (j : Fin 3) :
     MvPolynomial.pderiv j (spinSubst A p) =
       ∑ i, MvPolynomial.C (A i j) * spinSubst A (MvPolynomial.pderiv i p) := by
@@ -202,7 +213,7 @@ private theorem pderiv_spinSubst (A : Matrix (Fin 3) (Fin 3) ℂ)
       simp [Finset.sum_mul, Finset.mul_sum, Finset.sum_add_distrib,
         Pi.single_apply, mul_add, mul_ite, mul_assoc, mul_comm, mul_left_comm]
 
-private theorem polynomialLaplacian_spinSubst (A : Matrix (Fin 3) (Fin 3) ℂ)
+private theorem polynomialLaplacian_spinSubst  
     (hA : ∀ i k, ∑ j, A i j * A k j = if i = k then 1 else 0)
     (p : MvPolynomial (Fin 3) ℂ) :
     polynomialLaplacian (spinSubst A p) = spinSubst A (polynomialLaplacian p) := by
@@ -221,7 +232,7 @@ private theorem polynomialLaplacian_spinSubst (A : Matrix (Fin 3) (Fin 3) ℂ)
   simp_rw [hA]
   simp
 
-private theorem spinSubst_homogeneous (A : Matrix (Fin 3) (Fin 3) ℂ)
+private theorem spinSubst_homogeneous  
     (p : MvPolynomial (Fin 3) ℂ) (ℓ : ℕ) (hp : p.IsHomogeneous ℓ) :
     (spinSubst A p).IsHomogeneous ℓ := by
   unfold spinSubst
@@ -229,7 +240,7 @@ private theorem spinSubst_homogeneous (A : Matrix (Fin 3) (Fin 3) ℂ)
     (fun i => MvPolynomial.IsHomogeneous.sum _ _ 1 (fun j _ =>
       MvPolynomial.isHomogeneous_C_mul_X _ _))
 
-private theorem spinSubst_harmonic (A : Matrix (Fin 3) (Fin 3) ℂ)
+private theorem spinSubst_harmonic  
     (hA : ∀ i k, ∑ j, A i j * A k j = if i = k then 1 else 0)
     (ℓ : ℕ) (p : MvPolynomial (Fin 3) ℂ) (hp : p ∈ harmonicPolynomials ℓ) :
     spinSubst A p ∈ harmonicPolynomials ℓ := by
@@ -238,10 +249,12 @@ private theorem spinSubst_harmonic (A : Matrix (Fin 3) (Fin 3) ℂ)
   rw [polynomialLaplacian_spinSubst A hA]
   have hh : polynomialLaplacian p = 0 := hp.2
   rw [hh, map_zero]
+end
+
 
 noncomputable def spinMatrix (t : ℝ) : Matrix (Fin 3) (Fin 3) ℂ :=
-  ![![1,0,0], ![0,(Real.cos t : ℂ),-(Real.sin t : ℂ)],
-    ![0,(Real.sin t : ℂ),(Real.cos t : ℂ)]]
+  ![![1,0,0], ![0,(Real.cos t),-(Real.sin t : ℂ)],
+    ![0,(Real.sin t),(Real.cos t)]]
 private theorem spinMatrix_orthogonal (t : ℝ) (i k : Fin 3) :
     ∑ j, spinMatrix t i j * spinMatrix t k j = if i = k then 1 else 0 := by
   have h : (Real.cos t : ℂ)^2 + (Real.sin t : ℂ)^2 = 1 := by
@@ -266,21 +279,26 @@ noncomputable def polyCM : MvPolynomial (Fin 3) ℂ →ₗ[ℂ] C(Sphere, ℂ) w
   toFun p := ⟨polynomialSphere p, (MvPolynomial.continuous_eval p).comp (by fun_prop)⟩
   map_add' p q := by ext x; change polynomialSphere (p + q) x = polynomialSphere p x + polynomialSphere q x; simp [polynomialSphere]
   map_smul' c p := by ext x; change polynomialSphere (c • p) x = c • polynomialSphere p x; simp [polynomialSphere]
-noncomputable def spinCM (p : MvPolynomial (Fin 3) ℂ) (t : ℝ) : C(Sphere, ℂ) :=
+section
+variable (p : MvPolynomial (Fin 3) ℂ)
+include p
+noncomputable def spinCM   (t : ℝ) : C(Sphere, ℂ) :=
   ⟨fun x => polynomialSphere p (sphereOrthogonal (rotationFlow 0 t) x),
     (polyCM p).continuous.comp (sphereOrthogonal (rotationFlow 0 t)).continuous⟩
-private theorem spinCM_continuous (p : MvPolynomial (Fin 3) ℂ) : Continuous (spinCM p) := by
+private theorem spinCM_continuous   : Continuous (spinCM p) := by
   apply ContinuousMap.continuous_of_continuous_uncurry
   change Continuous (fun tx : ℝ × Sphere => eval
-    (fun j => ((rotationFlow 0 tx.1 (tx.2 : Ambient)) j : ℂ)) p)
+    (fun j => ((rotationFlow 0 tx.1 (tx.2)) j : ℂ)) p)
   apply (MvPolynomial.continuous_eval p).comp
   apply continuous_pi
   intro j
   fin_cases j <;> simp [rotationFlowMap] <;> fun_prop
-private theorem spinCM_integrable (p : MvPolynomial (Fin 3) ℂ) :
+private theorem spinCM_integrable   :
     Integrable (spinCM p) angleMeasure :=
   (spinCM_continuous p).integrableOn_Icc.smul_measure (by
     simp [ENNReal.inv_ne_top]; positivity)
+end
+
 private theorem average_harmonic (ℓ : ℕ) (p : MvPolynomial (Fin 3) ℂ)
     (hp : p ∈ harmonicPolynomials ℓ) :
     ∃ q ∈ harmonicPolynomials ℓ, ∀ x : Sphere,
@@ -291,14 +309,13 @@ private theorem average_harmonic (ℓ : ℕ) (p : MvPolynomial (Fin 3) ℂ)
   haveI : Module.Finite ℂ (MvPolynomial.homogeneousSubmodule (Fin 3) ℂ ℓ) :=
     Module.Finite.of_fg (MvPolynomial.homogeneousSubmodule_fg (Fin 3) ℂ ℓ)
   haveI : FiniteDimensional ℂ (harmonicPolynomials ℓ) :=
-    Submodule.finiteDimensional_of_le (show harmonicPolynomials ℓ ≤
-      MvPolynomial.homogeneousSubmodule (Fin 3) ℂ ℓ from inf_le_left)
+    Submodule.finiteDimensional_of_le (inf_le_left)
   haveI : FiniteDimensional ℂ H := inferInstance
   have hm (t : ℝ) : spinCM p t ∈ H := by
     refine ⟨spinSubst (spinMatrix t) p,
       spinSubst_harmonic _ (spinMatrix_orthogonal t) ℓ p hp, ?_⟩
     ext x
-    exact spinSubst_eval t p x
+    apply spinSubst_eval
   have hmass : angleMeasure Set.univ = 1 := by
     rw [angleMeasure, Measure.smul_apply, Measure.restrict_apply_univ, Real.volume_Icc]
     simp only [sub_zero, smul_eq_mul]
@@ -316,7 +333,7 @@ private lemma latitude_surjective_aux (y : Sphere) :
     ∃ θ : ℝ, latitudePoint (.refl ℝ Ambient)
       ((1 - (y : Ambient) 0) / 2) θ = y := by
   let u := (1 - (y : Ambient) 0) / 2
-  have hu : u ∈ Set.Icc (0 : ℝ) 1 := by
+  have hu : u ∈ Set.Icc (0) 1 := by
     obtain ⟨hlo, hhi⟩ := RawSphereProjection.coordinate_bound y 0
     constructor <;> dsimp [u] <;> linarith
   let z : ℂ := ⟨(y : Ambient) 1, (y : Ambient) 2⟩
@@ -358,7 +375,7 @@ private theorem latitude_flow (u θ t : ℝ) :
     sphereOrthogonal (rotationFlow 0 t) (latitudePoint (.refl ℝ Ambient) u θ) =
       latitudePoint (.refl ℝ Ambient) u (θ + t) := by
   apply Subtype.ext
-  by_cases hu : u ∈ Set.Icc (0 : ℝ) 1
+  by_cases hu : u ∈ Set.Icc (0) 1
   · simp only [sphereOrthogonal_coe, latitudePoint_val _ _ _ hu,
       latitudeAmbient, rotationFlow_apply, rotationFlowMap]
     ext i
@@ -370,14 +387,14 @@ private theorem latitude_periodic_aux (u : ℝ) :
     Function.Periodic (latitudePoint (.refl ℝ Ambient) u) (2 * Real.pi) := by
   intro θ
   apply Subtype.ext
-  by_cases hu : u ∈ Set.Icc (0 : ℝ) 1
+  by_cases hu : u ∈ Set.Icc (0) 1
   · simp [latitudePoint_val _ _ _ hu, latitudeAmbient, Real.cos_add_two_pi,
       Real.sin_add_two_pi]
   · simp [latitudePoint, hu]
 
 theorem latitude_average_legendre_ode (ℓ : ℕ) (p : MvPolynomial (Fin 3) ℂ)
     (hp : p ∈ harmonicPolynomials ℓ) (Q : Polynomial ℂ)
-    (hQ : ∀ (u : ℝ), u ∈ Set.Icc (0 : ℝ) 1 →
+    (hQ : ∀ (u : ℝ), u ∈ Set.Icc (0) 1 →
       (∫ θ : ℝ, polynomialSphere p
         (latitudePoint (.refl ℝ Ambient) u θ) ∂angleMeasure) = Q.eval (u : ℂ)) :
     Polynomial.X * (1 - Polynomial.X) * Q.derivative.derivative +
@@ -388,7 +405,7 @@ theorem latitude_average_legendre_ode (ℓ : ℕ) (p : MvPolynomial (Fin 3) ℂ)
   intro x
   obtain ⟨θ, hθ⟩ := latitude_surjective_aux x
   let u : ℝ := (1 - (x : Ambient) 0) / 2
-  have hu : u ∈ Set.Icc (0 : ℝ) 1 := by
+  have hu : u ∈ Set.Icc (0) 1 := by
     obtain ⟨hlo, hhi⟩ := RawSphereProjection.coordinate_bound x 0
     constructor <;> dsimp [u] <;> linarith
   rw [havg x]

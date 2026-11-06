@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import Mathlib.SetTheory.Cardinal.Finite
 public import Mathlib.Analysis.Normed.Unbundled.SpectralNorm
 public import Mathlib.Topology.Algebra.Module.FiniteDimension
@@ -8,6 +10,7 @@ public import ValuedFieldTheory.LocalField.NonarchimedeanLocalField.ValuedTopolo
 public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.Main
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -72,29 +75,28 @@ theorem finiteExtensionUnits_tate_card_of_generator
     (g : Gal(L / K))
     (hg : ∀ sigma : Gal(L / K), sigma ∈ Subgroup.zpowers g) :
     UnitsTateCardinalityData K L := by
-  let : UniformSpace K := IsTopologicalAddGroup.rightUniformSpace K
+  let  := IsTopologicalAddGroup.rightUniformSpace K
   let : IsUniformAddGroup K := isUniformAddGroup_of_addCommGroup
   let : (Valued.v : Valuation K (ValuativeRel.ValueGroupWithZero K)).RankOne :=
     { hom' := ValuativeRel.IsRankLeOne.nonempty.some.emb (R := K) |>.comp
         MonoidWithZeroHom.ValueGroup₀.embedding
       strictMono' := ValuativeRel.IsRankLeOne.nonempty.some.strictMono.comp
         MonoidWithZeroHom.ValueGroup₀.embedding_strictMono }
-  let : NontriviallyNormedField K :=
+  let  :=
     Valued.toNontriviallyNormedField
       (L := K) (Γ₀ := ValuativeRel.ValueGroupWithZero K)
 
-  let : NontriviallyNormedField L :=
+  let  :=
     spectralNorm.nontriviallyNormedField K L
   let : NormedSpace K L := spectralNorm.normedSpace K L
   let : CompleteSpace L := spectralNorm.completeSpace K L
-  let : LocallyCompactSpace L :=
+  let  :=
     LocallyCompactSpace.of_finiteDimensional_of_complete K L
   let : IsUltrametricDist L :=
     ⟨fun x y z => by
       change ‖x - z‖ ≤ max ‖x - y‖ ‖y - z‖
       rw [← sub_add_sub_cancel x y z]
-      exact isNonarchimedean_spectralNorm
-        (K := K) (L := L) (x - y) (y - z)⟩
+      apply isNonarchimedean_spectralNorm⟩
   let : Valued L ℝ≥0 := NormedField.toValued
   let vL : Valuation L ℝ≥0 := Valued.v
   let : vL.IsNontrivial :=
@@ -136,15 +138,14 @@ theorem finiteExtensionUnits_tate_card_of_generator
       apply ((ValuativeRel.valuation L).vle_one_iff).2
       exact y.property
     have hynorm : ‖(y : L)‖ ≤ 1 := by
-      have hynormNN : ‖(y : L)‖₊ ≤ 1 := by
-        simpa [vL, NormedField.valuation_apply] using hyv
+      have hynormNN : ‖(y : L)‖₊ ≤ 1 := hyv
       exact_mod_cast hynormNN
     change spectralNorm K L (y : L) ≤ 1 at hynorm
     have hcoeffNorm :
         ∀ n : ℕ, ‖(minpoly K (y : L)).coeff n‖ ≤ 1 :=
       (spectralValue_le_one_iff
         (minpoly.monic (Algebra.IsIntegral.isIntegral (y : L)))).1
-        (by simpa [spectralNorm] using hynorm)
+        (hynorm)
     have hcoeff :
         (↑(minpoly K (y : L)).coeffs : Set K) ⊆
           (ValuativeRel.valuation K).integer := by
@@ -166,11 +167,9 @@ theorem finiteExtensionUnits_tate_card_of_generator
         rw [show algebraMap 𝒪[K] K =
           (ValuativeRel.valuation K).integer.subtype from rfl,
           Polynomial.map_toSubring]
-        exact minpoly.aeval K (y : L)
+        apply minpoly.aeval
       rwa [Polynomial.aeval_map_algebraMap K (y : L) p] at hmaproot
-  let hIntegralClosure : IsIntegralClosure
-      (ValuativeRel.valuation L).valuationSubring
-      (ValuativeRel.valuation K).valuationSubring L :=
+  let hIntegralClosure  :=
     DiscreteValuationField.Valuation.valuationSubring_isIntegralClosure_of_isIntegral
       (ValuativeRel.valuation K) (ValuativeRel.valuation L)
   let : IsIntegralClosure 𝒪[L] 𝒪[K] L := by
@@ -178,10 +177,10 @@ theorem finiteExtensionUnits_tate_card_of_generator
       (ValuativeRel.valuation L).valuationSubring
       (ValuativeRel.valuation K).valuationSubring L
     exact hIntegralClosure
-  let : Module.Finite 𝒪[K] 𝒪[L] :=
+  let  :=
     integerRing_moduleFinite_of_isIntegralClosure K L
 
-  let : Finite (tateCohomology (Rep.ofAlgebraAutOnUnits K L) 0) :=
+  let  :=
     localFieldUnitsTateH0FiniteOfGenerator K L g hg
   have hcard := localFieldUnits_tate_card_of_generator K L g hg
   exact
@@ -200,29 +199,28 @@ theorem finiteTowerUnits_tate_card_of_generator
     (g : Gal(L / K))
     (hg : ∀ sigma : Gal(L / K), sigma ∈ Subgroup.zpowers g) :
     UnitsTateCardinalityData K L := by
-  let : UniformSpace k := IsTopologicalAddGroup.rightUniformSpace k
+  let  := IsTopologicalAddGroup.rightUniformSpace k
   let : IsUniformAddGroup k := isUniformAddGroup_of_addCommGroup
   let : (Valued.v : Valuation k (ValuativeRel.ValueGroupWithZero k)).RankOne :=
     { hom' := ValuativeRel.IsRankLeOne.nonempty.some.emb (R := k) |>.comp
         MonoidWithZeroHom.ValueGroup₀.embedding
       strictMono' := ValuativeRel.IsRankLeOne.nonempty.some.strictMono.comp
         MonoidWithZeroHom.ValueGroup₀.embedding_strictMono }
-  let : NontriviallyNormedField k :=
+  let  :=
     Valued.toNontriviallyNormedField
       (L := k) (Γ₀ := ValuativeRel.ValueGroupWithZero k)
 
-  let : NontriviallyNormedField K :=
+  let  :=
     spectralNorm.nontriviallyNormedField k K
   let : NormedSpace k K := spectralNorm.normedSpace k K
   let : CompleteSpace K := spectralNorm.completeSpace k K
-  let : LocallyCompactSpace K :=
+  let  :=
     LocallyCompactSpace.of_finiteDimensional_of_complete k K
   let : IsUltrametricDist K :=
     ⟨fun x y z => by
       change ‖x - z‖ ≤ max ‖x - y‖ ‖y - z‖
       rw [← sub_add_sub_cancel x y z]
-      exact isNonarchimedean_spectralNorm
-        (K := k) (L := K) (x - y) (y - z)⟩
+      apply isNonarchimedean_spectralNorm⟩
   let : Valued K ℝ≥0 := NormedField.toValued
   let vK : Valuation K ℝ≥0 := Valued.v
   let : vK.IsNontrivial :=
@@ -238,7 +236,7 @@ theorem finiteTowerUnits_tate_card_of_generator
       toLocallyCompactSpace := inferInstance
       toIsNontrivial := inferInstance }
 
-  exact finiteExtensionUnits_tate_card_of_generator K L g hg
+  apply finiteExtensionUnits_tate_card_of_generator <;> assumption
 
 end
 end LocalClassFieldTheory

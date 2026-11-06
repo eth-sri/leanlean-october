@@ -51,12 +51,12 @@ noncomputable local instance equalCharacteristicCompletedFrobeniusLevelAlgebra
       (algebraMap F.residueField⸨X⸩
         (equalCharacteristicCompletedUnramifiedField F.residueField)))
 
-local instance equalCharacteristicCompletedFrobeniusScalarTower
-    (F : LocalField.{u, v} K) (n : ℕ) :
-    IsScalarTower F.residueField⸨X⸩
-      (equalCharacteristicCompletedUnramifiedField F.residueField)
-      (equalCharacteristicCompletedLevelField F n) :=
-  IsScalarTower.of_algebraMap_eq' rfl
+
+
+
+
+
+
 
 /-- The completed theta-intertwining theorem completed lift fixes every element of the embedded Laurent
 base `k((T))`. -/

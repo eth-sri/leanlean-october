@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LargeSieve.CharacterBounds.AdmissibleIdealRanges
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve.Sieve
 
@@ -18,7 +21,7 @@ def dyadicScale : ℕ → ℝ
   | k + 1 => (2 : ℝ) ^ k
 
 noncomputable def clippedDyadicBlock (F : Type) [Field F] [NumberField F]
-    (c : Ideal (𝓞 F)) (X : ℝ) (j : ℕ) : Finset (Ideal (𝓞 F)) :=
+    (c : Ideal (𝓞 F)) (X : ℝ) (j : ℕ)  :=
   idealDyadicBlock F c j ∩ idealAdmissibleFinset F c X
 
 end DedekindZetaZeroFree.LargeSieve.Sieve

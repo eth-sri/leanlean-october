@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Schwartz.PositiveSideJetSeminorms
 
 @[expose] public section
+
 
 noncomputable section
 open MeasureTheory Filter
@@ -10,8 +13,8 @@ open scoped Classical ContDiff
 
 namespace DedekindZetaZeroFree.LargeSieve.Vendor.InverseSpectrumEuler
 
-def line (c t : ℝ) : ℂ := (c : ℂ) + (t : ℂ) * Complex.I
-def integrand (b : ℂ → ℂ) (j : ℕ) (c x t : ℝ) : ℂ :=
+def line (c t : ℝ)  := (c : ℂ) + (t : ℂ) * Complex.I
+def integrand (b : ℂ → ℂ) (j : ℕ) (c x t : ℝ)  :=
   (x : ℂ) ^ (-line c t) * (-line c t) ^ j * b (line c t)
 
 private lemma integrand_norm (b : ℂ → ℂ)
@@ -53,7 +56,7 @@ theorem hasDerivAt_weighted (c : ℝ) (b : ℂ → ℂ)
     HasDerivAt (mellinInv c (fun s => (-s) ^ j * b s))
       ((x : ℂ)⁻¹ * mellinInv c (fun s => (-s) ^ (j + 1) * b s) x) x := by
   have hweight := hb (j + 1)
-  let K : ℝ := max ((x / 2) ^ (-c - 1)) ((x + 1) ^ (-c - 1))
+  let K  := max ((x / 2) ^ (-c - 1)) ((x + 1) ^ (-c - 1))
   have hbound : Integrable (fun t => K *
       ‖(-line c t) ^ (j + 1) * b (line c t)‖) := hweight.norm.const_mul _
   have key := hasDerivAt_integral_of_dominated_loc_of_deriv_le
@@ -110,16 +113,16 @@ private lemma inverse_smooth (c : ℝ) (b : ℂ → ℂ)
     exact (hinv.mul (ih (j + 1))).congr fun x hx =>
       (hasDerivAt_weighted c b hb j x hx).deriv
 
-theorem contDiffOn_weighted (c : ℝ) (b : ℂ → ℂ)
+section
+variable (c : ℝ) (b : ℂ → ℂ)
     (hb : ∀ j : ℕ, Integrable (fun t : ℝ =>
       (-((c : ℂ) + (t : ℂ) * Complex.I)) ^ j * b ((c : ℂ) + (t : ℂ) * Complex.I)))
-    (j : ℕ) : ContDiffOn ℝ ∞ (mellinInv c (fun s => (-s) ^ j * b s)) (Set.Ioi 0) := by
+    (j : ℕ)
+include c b hb j
+theorem contDiffOn_weighted   : ContDiffOn ℝ ∞ (mellinInv c (fun s => (-s) ^ j * b s)) (Set.Ioi 0) := by
   exact contDiffOn_infty.mpr fun k => inverse_smooth c b hb k j
 
-theorem EulerIter_eq_mellinInv (c : ℝ) (b : ℂ → ℂ)
-    (hb : ∀ j : ℕ, Integrable (fun t : ℝ =>
-      (-((c : ℂ) + (t : ℂ) * Complex.I)) ^ j * b ((c : ℂ) + (t : ℂ) * Complex.I)))
-    (j : ℕ) (x : ℝ) (hx : 0 < x) :
+theorem EulerIter_eq_mellinInv   (x : ℝ) (hx : 0 < x) :
     DedekindZetaZeroFree.LargeSieve.Vendor.EulerIter j (mellinInv c b) x =
       mellinInv c (fun s => (-s) ^ j * b s) x := by
   induction j generalizing x with
@@ -131,6 +134,8 @@ theorem EulerIter_eq_mellinInv (c : ℝ) (b : ℂ → ℂ)
       eventually_of_mem (Ioi_mem_nhds hx) (fun y hy => ih y hy)
     rw [heq.deriv_eq, (hasDerivAt_weighted c b hb j x hx).deriv]
     rw [← mul_assoc, mul_inv_cancel₀ (Complex.ofReal_ne_zero.mpr hx.ne'), one_mul]
+end
+
 
 end DedekindZetaZeroFree.LargeSieve.Vendor.InverseSpectrumEuler
 

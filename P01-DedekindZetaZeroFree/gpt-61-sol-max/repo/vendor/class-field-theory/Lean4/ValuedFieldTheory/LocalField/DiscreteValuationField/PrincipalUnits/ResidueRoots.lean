@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.PrincipalUnits.Filtration
 public import ValuedFieldTheory.Valuation.HenselLemma
 public import Mathlib.SetTheory.Cardinal.Finite
@@ -7,6 +9,7 @@ public import Mathlib.FieldTheory.Finite.Basic
 public import Mathlib.RingTheory.RootsOfUnity.Basic
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -51,8 +54,7 @@ variable (F : ValuationTheory.DiscreteValuationField.CompleteDVF.{u, v} K)
 
 /-- The `(q - 1)`-st roots of unity in the valuation ring, where
 `q = #κ`. -/
-abbrev residueRootsOfUnityGroup [Finite F.residueField] :
-    Subgroup F.valuationSubringˣ :=
+abbrev residueRootsOfUnityGroup [Finite F.residueField]  :=
   rootsOfUnity (Nat.card F.residueField - 1) F.valuationSubring
 
 /-- Every nonzero residue class is a simple root of
@@ -75,10 +77,7 @@ theorem residueRootPolynomial_derivative_eval_ne_zero
   have hy :
       (y : F.residueField) ^ ((Nat.card F.residueField - 1) - 1) ≠ 0 :=
     pow_ne_zero _ y.ne_zero
-  have hmul :
-      ((Nat.card F.residueField - 1 : ℕ) : F.residueField) *
-          (y : F.residueField) ^
-            ((Nat.card F.residueField - 1) - 1) ≠ 0 :=
+  have hmul  :=
     mul_ne_zero hn hy
   simpa [Polynomial.derivative_sub, Polynomial.derivative_one,
     Polynomial.derivative_X_pow, Polynomial.eval_mul] using hmul
@@ -183,8 +182,7 @@ theorem residueRootPolynomial_isRoot_of_mem
     have hunit :=
       congrArg (fun z : F.valuationSubringˣ => (z : F.valuationSubring)) hu
     simpa using hunit
-  exact Polynomial.IsRoot.def.mpr (by
-    simp [Polynomial.eval_sub, hpow])
+  apply Polynomial.IsRoot.def.mpr <;> aesop
 
 /-- The derivative of `X^(q - 1) - 1` at a valuation-ring unit is a unit.
 This is the simple-root input for uniqueness of Teichmuller representatives. -/
@@ -200,15 +198,7 @@ theorem residueRootPolynomial_derivative_eval_isUnit
       F.residueMap (f.derivative.eval (u : F.valuationSubring)) =
         ((f.map F.residueMap).derivative).eval
           (F.residueMap (u : F.valuationSubring)) := by
-    calc
-      F.residueMap (f.derivative.eval (u : F.valuationSubring)) =
-          (f.derivative.map F.residueMap).eval
-            (F.residueMap (u : F.valuationSubring)) := by
-        exact (Polynomial.eval_map_apply (f := F.residueMap)
-          (p := f.derivative) (u : F.valuationSubring)).symm
-      _ = ((f.map F.residueMap).derivative).eval
-          (F.residueMap (u : F.valuationSubring)) := by
-        rw [Polynomial.derivative_map]
+    simp_all
   have hsimple :
       ((f.map F.residueMap).derivative).eval
           (F.residueMap (u : F.valuationSubring)) ≠ 0 := by
@@ -236,9 +226,7 @@ theorem residueRootsOfUnityResidueHom_injective
   have hxroot :
       f.IsRoot ((x : F.valuationSubringˣ) : F.valuationSubring) := by
     dsimp [f, n]
-    exact
-      higherPrincipalUnitGroup.residueRootPolynomial_isRoot_of_mem
-        (F := F) x.property
+    apply higherPrincipalUnitGroup.residueRootPolynomial_isRoot_of_mem <;> aesop
   have hyroot :
       f.IsRoot ((y : F.valuationSubringˣ) : F.valuationSubring) := by
     dsimp [f, n]
@@ -257,9 +245,7 @@ theorem residueRootsOfUnityResidueHom_injective
         (f.derivative.eval
           ((x : F.valuationSubringˣ) : F.valuationSubring)) := by
     dsimp [f, n]
-    exact
-      higherPrincipalUnitGroup.residueRootPolynomial_derivative_eval_isUnit
-        (F := F) (x : F.valuationSubringˣ)
+    apply higherPrincipalUnitGroup.residueRootPolynomial_derivative_eval_isUnit
   have hring :
       ((y : F.valuationSubringˣ) : F.valuationSubring) =
         ((x : F.valuationSubringˣ) : F.valuationSubring) :=

@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.ModifiedBesselKOneThird
 public import DedekindZetaZeroFree.Theta.Whittaker.NormalizedFiniteTensorProducts
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 
@@ -22,7 +25,7 @@ structure ContinuousAddChar (A : Type*) [AddMonoid A] [TopologicalSpace A]
 namespace KPReflectionSpec
 
 def NontrivialCharacter {A : Type*} [AddMonoid A] [TopologicalSpace A]
-    (ψ : ContinuousAddChar A) : Prop :=
+    (ψ : ContinuousAddChar A)  :=
   ∃ a, ψ.toAddChar a ≠ 1
 
 end KPReflectionSpec
@@ -36,7 +39,7 @@ namespace KPReflectionSpec
 
 def LocalWhittakerLine {N V : Type*} [Group N] [AddCommGroup V]
     [Module ℂ V] [TopologicalSpace V]
-    (ρ : Representation ℂ N V) (ψ : N →* ℂ) : Prop :=
+    (ρ : Representation ℂ N V) (ψ : N →* ℂ)  :=
   Module.finrank ℂ (localWhittakerSpace N V ρ ψ) = 1
 
 end KPReflectionSpec

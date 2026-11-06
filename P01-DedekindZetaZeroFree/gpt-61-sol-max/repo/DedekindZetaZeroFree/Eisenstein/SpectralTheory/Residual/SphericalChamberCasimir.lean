@@ -16,6 +16,12 @@ open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber 
 set_option maxHeartbeats 1600000
 set_option backward.isDefEq.respectTransparency false
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+
+section
+variable {F ζ hζ}
+private noncomputable abbrev context_rightDerivative := KPMsGreenFlux.rightDerivative F ζ hζ
+end
+
 theorem actual_spherical_chamber_casimir
     (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
     (v : KPContActualSphericalFlatStage.Stage F ζ hζ U)
@@ -33,38 +39,38 @@ theorem actual_spherical_chamber_casimir
   change KPMsGreenFlux.casimir F ζ hζ chamber g = _
   have hjet (w : NumberField.InfinitePlace F) (i j : Fin 6) :
       Summable (fun q : KPChamberBruhatTwoCells.RationalQuotient F =>
-        KPMsGreenFlux.rightDerivative F ζ hζ w i
-          (KPMsGreenFlux.rightDerivative F ζ hζ w j f) (a q*g)) ∧
-      KPMsGreenFlux.rightDerivative F ζ hζ w i
-        (KPMsGreenFlux.rightDerivative F ζ hζ w j chamber) g =
+        _root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w i
+          (_root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w j f) (a q*g)) ∧
+      _root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w i
+        (_root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w j chamber) g =
         ∑' q : KPChamberBruhatTwoCells.RationalQuotient F,
-          KPMsGreenFlux.rightDerivative F ζ hζ w i
-            (KPMsGreenFlux.rightDerivative F ζ hζ w j f) (a q*g) := by
+          _root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w i
+            (_root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w j f) (a q*g) := by
     have hh := spherical_word_chamber F ζ hζ U v
       [nativeIndex F (w,i),nativeIndex F (w,j)] s hs g
     simpa only [native_second_word] using hh
   have hw (w : NumberField.InfinitePlace F) :
       -((1 : ℂ)/4) *
-        (KPMsGreenFlux.rightDerivative F ζ hζ w 0
-          (KPMsGreenFlux.rightDerivative F ζ hζ w 0 (chamber)) g -
-         KPMsGreenFlux.rightDerivative F ζ hζ w 1
-          (KPMsGreenFlux.rightDerivative F ζ hζ w 1 (chamber)) g +
-         2 * (KPMsGreenFlux.rightDerivative F ζ hζ w 2
-          (KPMsGreenFlux.rightDerivative F ζ hζ w 4 (chamber)) g +
-          KPMsGreenFlux.rightDerivative F ζ hζ w 4
-          (KPMsGreenFlux.rightDerivative F ζ hζ w 2 (chamber)) g -
-          KPMsGreenFlux.rightDerivative F ζ hζ w 3
-          (KPMsGreenFlux.rightDerivative F ζ hζ w 5 (chamber)) g -
-          KPMsGreenFlux.rightDerivative F ζ hζ w 5
-          (KPMsGreenFlux.rightDerivative F ζ hζ w 3 (chamber)) g)) =
+        (_root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w 0
+          (_root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w 0 (chamber)) g -
+         _root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w 1
+          (_root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w 1 (chamber)) g +
+         2 * (_root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w 2
+          (_root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w 4 (chamber)) g +
+          _root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w 4
+          (_root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w 2 (chamber)) g -
+          _root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w 3
+          (_root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w 5 (chamber)) g -
+          _root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w 5
+          (_root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w 3 (chamber)) g)) =
       ∑' q : KPChamberBruhatTwoCells.RationalQuotient F,
         -((1 : ℂ)/4) *
-          (KPMsGreenFlux.rightDerivative F ζ hζ w 0 (KPMsGreenFlux.rightDerivative F ζ hζ w 0 f) (a q*g) -
-           KPMsGreenFlux.rightDerivative F ζ hζ w 1 (KPMsGreenFlux.rightDerivative F ζ hζ w 1 f) (a q*g) +
-           2 * (KPMsGreenFlux.rightDerivative F ζ hζ w 2 (KPMsGreenFlux.rightDerivative F ζ hζ w 4 f) (a q*g) +
-            KPMsGreenFlux.rightDerivative F ζ hζ w 4 (KPMsGreenFlux.rightDerivative F ζ hζ w 2 f) (a q*g) -
-            KPMsGreenFlux.rightDerivative F ζ hζ w 3 (KPMsGreenFlux.rightDerivative F ζ hζ w 5 f) (a q*g) -
-            KPMsGreenFlux.rightDerivative F ζ hζ w 5 (KPMsGreenFlux.rightDerivative F ζ hζ w 3 f) (a q*g))) := by
+          (_root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w 0 (_root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w 0 f) (a q*g) -
+           _root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w 1 (_root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w 1 f) (a q*g) +
+           2 * (_root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w 2 (_root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w 4 f) (a q*g) +
+            _root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w 4 (_root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w 2 f) (a q*g) -
+            _root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w 3 (_root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w 5 f) (a q*g) -
+            _root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w 5 (_root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w 3 f) (a q*g))) := by
     simp_rw [(hjet w _ _).2]
     rw [tsum_mul_left]
     rw [((hjet w 0 0).1.sub (hjet w 1 1).1).tsum_add
@@ -75,12 +81,12 @@ theorem actual_spherical_chamber_casimir
       (hjet w 2 4).1.tsum_add (hjet w 4 2).1]
   have hws (w : NumberField.InfinitePlace F) : Summable (fun q =>
       -((1 : ℂ)/4) *
-        (KPMsGreenFlux.rightDerivative F ζ hζ w 0 (KPMsGreenFlux.rightDerivative F ζ hζ w 0 f) (a q*g) -
-         KPMsGreenFlux.rightDerivative F ζ hζ w 1 (KPMsGreenFlux.rightDerivative F ζ hζ w 1 f) (a q*g) +
-         2 * (KPMsGreenFlux.rightDerivative F ζ hζ w 2 (KPMsGreenFlux.rightDerivative F ζ hζ w 4 f) (a q*g) +
-          KPMsGreenFlux.rightDerivative F ζ hζ w 4 (KPMsGreenFlux.rightDerivative F ζ hζ w 2 f) (a q*g) -
-          KPMsGreenFlux.rightDerivative F ζ hζ w 3 (KPMsGreenFlux.rightDerivative F ζ hζ w 5 f) (a q*g) -
-          KPMsGreenFlux.rightDerivative F ζ hζ w 5 (KPMsGreenFlux.rightDerivative F ζ hζ w 3 f) (a q*g)))) :=
+        (_root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w 0 (_root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w 0 f) (a q*g) -
+         _root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w 1 (_root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w 1 f) (a q*g) +
+         2 * (_root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w 2 (_root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w 4 f) (a q*g) +
+          _root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w 4 (_root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w 2 f) (a q*g) -
+          _root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w 3 (_root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w 5 f) (a q*g) -
+          _root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w 5 (_root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry.context_rightDerivative w 3 f) (a q*g)))) :=
     (((hjet w 0 0).1.sub (hjet w 1 1).1).add
       (((((hjet w 2 4).1.add (hjet w 4 2).1).sub (hjet w 3 5).1).sub (hjet w 5 3).1).mul_left 2)).mul_left _
   unfold KPMsGreenFlux.casimir

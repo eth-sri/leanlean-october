@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.ExceptionalMasks
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.MaskedCoreShellBounds
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.ExceptionalShellReindexing
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve.Sieve
 
@@ -13,7 +16,7 @@ open DedekindZetaZeroFree
 
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
 
-local instance exceptionalShellSharpBoundsClassGroup (Q : QuadraticHeckeFamily F c) : Group Q.G := Q.instGroup
+
 
 local instance exceptionalShellSharpBoundsClassFinite (Q : QuadraticHeckeFamily F c) : Finite Q.G := Q.instFinite
 noncomputable local instance exceptionalShellSharpBoundsClassFintype (Q : QuadraticHeckeFamily F c) : Fintype Q.G :=
@@ -35,14 +38,13 @@ private lemma norm_sum_sq_nested_le {ι κ : Type*} [DecidableEq ι] [DecidableE
         norm_sum_sq_le_card_mul_sum_norm_sq s (fun i => ∑ j ∈ t, z i j)
     _ ≤ (s.card : ℝ) * ∑ i ∈ s, ((t.card : ℝ) * ∑ j ∈ t, ‖z i j‖ ^ 2) := by
         refine mul_le_mul_of_nonneg_left (Finset.sum_le_sum fun i _ => ?_) (by positivity)
-        exact norm_sum_sq_le_card_mul_sum_norm_sq t (z i)
+        apply norm_sum_sq_le_card_mul_sum_norm_sq
     _ = (s.card : ℝ) * ((t.card : ℝ) * ∑ i ∈ s, ∑ j ∈ t, ‖z i j‖ ^ 2) := by
         congr 1
         exact (Finset.mul_sum s (fun i => ∑ j ∈ t, ‖z i j‖ ^ 2) (t.card : ℝ)).symm
     _ = (s.card : ℝ) * (t.card : ℝ) * ∑ i ∈ s, ∑ j ∈ t, ‖z i j‖ ^ 2 := by ring
 
-private lemma sum_const_mul {ι : Type*} [DecidableEq ι] (s : Finset ι) (c : ℝ) (f : ι → ℝ) :
-    (∑ i ∈ s, c * f i) = c * ∑ i ∈ s, f i :=
+private def sum_const_mul {ι : Type*} [DecidableEq ι] (s : Finset ι) (c : ℝ) (f : ι → ℝ)  :=
   (Finset.mul_sum s f c).symm
 
 private lemma sum_swap_three {ι κ ν : Type*} [DecidableEq ι] [DecidableEq κ] [DecidableEq ν]
@@ -52,16 +54,18 @@ private lemma sum_swap_three {ι κ ν : Type*} [DecidableEq ι] [DecidableEq κ
   refine Finset.sum_congr rfl fun j _ => ?_
   rw [Finset.sum_comm]
 
-noncomputable def exceptionalMaskedShellForm (Q : QuadraticHeckeFamily F c)
-    (q : Ideal (𝓞 F)) (M N : ℝ) (lam : Ideal (𝓞 F) → ℂ)
-    (r t : Ideal (𝓞 F)) (g : Q.G) : ℝ :=
+section
+variable (Q : QuadraticHeckeFamily F c)
+    (q : Ideal (𝓞 F))
+include Q q
+noncomputable def exceptionalMaskedShellForm   (M N : ℝ) (lam : Ideal (𝓞 F) → ℂ)
+    (r t : Ideal (𝓞 F)) (g : Q.G)  :=
   ∑ v ∈ paperShell F q (M / (Ideal.absNorm r : ℝ)),
     ‖exceptionalRowMask Q t g v *
       (∑ u ∈ paperShell F q (N / (Ideal.absNorm t : ℝ)),
         lam (t * u) * exceptionalColumnMask Q r t g u * (Q.χ u) v)‖ ^ 2
 
-theorem peeling_sharp_domination (Q : QuadraticHeckeFamily F c)
-    (q : Ideal (𝓞 F)) (hq : q ≠ ⊥) (hcq : c ∣ q)
+theorem peeling_sharp_domination   (hq : q ≠ ⊥) (hcq : c ∣ q)
     (H : ∀ b : Ideal (𝓞 F), Squarefree b → b ⊔ c = ⊤ →
       Q.cond b ∣ b * q ∧ b ∣ Q.cond b * q)
     (M N : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N) (lam : Ideal (𝓞 F) → ℂ) :
@@ -165,8 +169,7 @@ theorem peeling_sharp_domination (Q : QuadraticHeckeFamily F c)
       = _ := hreindex
     _ ≤ _ := hcs
 
-theorem peeling_sharp_domination_energy (Q : QuadraticHeckeFamily F c)
-    (q : Ideal (𝓞 F)) (hq : q ≠ ⊥) (hcq : c ∣ q)
+theorem peeling_sharp_domination_energy   (hq : q ≠ ⊥) (hcq : c ∣ q)
     (N : ℝ) (hN : 1 ≤ N) (lam : Ideal (𝓞 F) → ℂ)
     (r : Ideal (𝓞 F)) (hr : r ∈ exceptionalDivisors F c q) :
     (∑ t ∈ exceptionalDivisors F c q, ∑ g : Q.G,
@@ -208,18 +211,19 @@ theorem peeling_sharp_domination_energy (Q : QuadraticHeckeFamily F c)
           ‖lam (t * u) * exceptionalColumnMask Q r t g u‖ ^ 2)
       = ∑ t ∈ exceptionalDivisors F c q,
           ∑ u ∈ paperShell F q (N / (Ideal.absNorm t : ℝ)),
-            ∑ g : Q.G, ‖lam (t * u) * exceptionalColumnMask Q r t g u‖ ^ 2 := by
-        refine Finset.sum_congr rfl fun t ht => Finset.sum_comm
+            ∑ g : Q.G, ‖lam (t * u) * exceptionalColumnMask Q r t g u‖ ^ 2 := Finset.sum_congr rfl fun t ht => Finset.sum_comm
     _ ≤ ∑ t ∈ exceptionalDivisors F c q,
           ∑ u ∈ paperShell F q (N / (Ideal.absNorm t : ℝ)), ‖lam (t * u)‖ ^ 2 :=
         Finset.sum_le_sum fun t ht => Finset.sum_le_sum fun u hu => hstep t ht u hu
     _ = ∑ b ∈ paperShell F c N, ‖lam b‖ ^ 2 :=
         exceptional_shell_energy hq hcq N hN0 lam
+end
+
 
 noncomputable def peelingSharpConstant
     (F : Type) [Field F] [NumberField F]
     (c : Ideal (𝓞 F)) (Q : QuadraticHeckeFamily F c)
-    (q : Ideal (𝓞 F)) (C A : ℝ) : ℝ :=
+    (q : Ideal (𝓞 F)) (C A : ℝ)  :=
   ((exceptionalDivisors F c q).card : ℝ) ^ 2 * (Nat.card Q.G : ℝ) * (C + 2 * A + 1)
 
 theorem peelingSharpConstant_nonneg (Q : QuadraticHeckeFamily F c)
@@ -248,11 +252,7 @@ theorem peeling_sharp_domination_bound (Q : QuadraticHeckeFamily F c)
         ∑ b ∈ paperShell F c N, ‖lam b‖ ^ 2 := by
   classical
   have hdom := peeling_sharp_domination Q q hq hcq H M N hM hN lam
-  have henergy : ∀ r ∈ exceptionalDivisors F c q,
-      (∑ t ∈ exceptionalDivisors F c q, ∑ g : Q.G,
-        ∑ u ∈ paperShell F q (N / (Ideal.absNorm t : ℝ)),
-          ‖lam (t * u) * exceptionalColumnMask Q r t g u‖ ^ 2) ≤
-        ∑ b ∈ paperShell F c N, ‖lam b‖ ^ 2 :=
+  have henergy  :=
     fun r hr => peeling_sharp_domination_energy Q q hq hcq N hN lam r hr
 
   have hP : ∀ r ∈ exceptionalDivisors F c q, ∀ t ∈ exceptionalDivisors F c q, ∀ g : Q.G,
@@ -261,14 +261,14 @@ theorem peeling_sharp_domination_bound (Q : QuadraticHeckeFamily F c)
           ∑ u ∈ paperShell F q (N / (Ideal.absNorm t : ℝ)),
             ‖lam (t * u) * exceptionalColumnMask Q r t g u‖ ^ 2 := by
     intro r hr t ht g
-    have hr1 : 1 ≤ (Ideal.absNorm r : ℝ) := (exceptionalDivisors_properties hq hr).2.2.2.2
-    have ht1 : 1 ≤ (Ideal.absNorm t : ℝ) := (exceptionalDivisors_properties hq ht).2.2.2.2
+    have hr1  := (exceptionalDivisors_properties hq hr).2.2.2.2
+    have ht1  := (exceptionalDivisors_properties hq ht).2.2.2.2
     have hβ : ∀ v ∈ paperShell F q (M / (Ideal.absNorm r : ℝ)),
         ‖exceptionalRowMask Q t g v‖ ≤ 1 := by
       intro v hv
       obtain ⟨hv1, hv2, -, -⟩ :=
         (mem_paperShell F q (M / (Ideal.absNorm r : ℝ)) v).mp hv
-      exact norm_exceptionalRowMask_le_one Q q hq hcq t g v ht hv1 hv2
+      apply norm_exceptionalRowMask_le_one <;> assumption
     have h := peeling_masked_small_shells_rescaled F c Q q hq hcq ε C A hε hC hA count core
       M N (Ideal.absNorm r : ℝ) (Ideal.absNorm t : ℝ) hM hN hr1 ht1
       (fun u => lam (t * u) * exceptionalColumnMask Q r t g u) (fun _ => (1 : ℂ))
@@ -289,11 +289,7 @@ theorem peeling_sharp_domination_bound (Q : QuadraticHeckeFamily F c)
     refine h1.trans (le_of_eq ?_)
     rw [Finset.sum_const, nsmul_eq_mul]
   have hK : 0 ≤ (C + 2 * A + 1) * (M * N) ^ ε * (M + N) := by
-    have hMN : (0 : ℝ) < M * N := mul_pos (by linarith) (by linarith)
-    have h1 : 0 ≤ (M * N) ^ ε := Real.rpow_nonneg hMN.le _
-    have h2 : 0 ≤ C + 2 * A + 1 := by linarith
-    have h3 : 0 ≤ M + N := by linarith
-    exact mul_nonneg (mul_nonneg h2 h1) h3
+    positivity
   have hDk : 0 ≤ ((exceptionalDivisors F c q).card : ℝ) * (Nat.card Q.G : ℝ) :=
     mul_nonneg (Nat.cast_nonneg _) (Nat.cast_nonneg _)
   have hfactor : ((exceptionalDivisors F c q).card : ℝ) * (Nat.card Q.G : ℝ) *
@@ -319,11 +315,7 @@ theorem peeling_sharp_domination_bound (Q : QuadraticHeckeFamily F c)
         ((C + 2 * A + 1) * (M * N) ^ ε * (M + N))
         (fun t => ∑ g : Q.G, ∑ u ∈ paperShell F q (N / (Ideal.absNorm t : ℝ)),
           ‖lam (t * u) * exceptionalColumnMask Q r t g u‖ ^ 2)).trans ?_
-    exact sum_const_mul (exceptionalDivisors F c q)
-      ((C + 2 * A + 1) * (M * N) ^ ε * (M + N))
-      (fun r => ∑ t ∈ exceptionalDivisors F c q, ∑ g : Q.G,
-        ∑ u ∈ paperShell F q (N / (Ideal.absNorm t : ℝ)),
-          ‖lam (t * u) * exceptionalColumnMask Q r t g u‖ ^ 2)
+    apply sum_const_mul
   calc (∑ a ∈ paperShell F c M,
         ‖∑ b ∈ paperShell F c N, lam b * (Q.χ b) a‖ ^ 2)
       ≤ ((exceptionalDivisors F c q).card : ℝ) * (Nat.card Q.G : ℝ) *
@@ -348,8 +340,7 @@ theorem peeling_sharp_domination_bound (Q : QuadraticHeckeFamily F c)
     _ ≤ ((exceptionalDivisors F c q).card : ℝ) * (Nat.card Q.G : ℝ) *
           ((C + 2 * A + 1) * (M * N) ^ ε * (M + N) *
             (((exceptionalDivisors F c q).card : ℝ) *
-              ∑ b ∈ paperShell F c N, ‖lam b‖ ^ 2)) := by
-        refine mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left hsumE hK) hDk
+              ∑ b ∈ paperShell F c N, ‖lam b‖ ^ 2)) := mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left hsumE hK) hDk
     _ = peelingSharpConstant F c Q q C A * (M * N) ^ ε * (M + N) *
           ∑ b ∈ paperShell F c N, ‖lam b‖ ^ 2 := by
         unfold peelingSharpConstant

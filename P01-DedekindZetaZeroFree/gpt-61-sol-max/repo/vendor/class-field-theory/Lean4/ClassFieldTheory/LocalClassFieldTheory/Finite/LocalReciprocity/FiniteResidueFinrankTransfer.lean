@@ -42,15 +42,18 @@ open HilbertRamification.ValuationSubring
 
 universe u v
 
+section
+variable {F : Type u} {Omega : Type v} [Field F] [Field Omega] [Algebra F Omega]
+    [IsGalois F Omega]
+    (A : ValuationSubring Omega) (C : ValuationSubring F)
+    (hC : A.comap (algebraMap F Omega) = C)
+    (hA : decompositionGroup F A = ⊤)
+include F Omega A C hC hA
 /-- If the decomposition group of an ambient valuation ring is the whole
 Galois group, its decomposition-field valuation ring is canonically
 equivalent to the given valuation ring on the ground field. -/
 noncomputable def valuationSubringEquivDecompositionFieldOfEqTop
-    {F : Type u} {Omega : Type v} [Field F] [Field Omega] [Algebra F Omega]
-    [IsGalois F Omega]
-    (A : ValuationSubring Omega) (C : ValuationSubring F)
-    (hC : A.comap (algebraMap F Omega) = C)
-    (hA : decompositionGroup F A = ⊤) :
+      :
     C ≃+* decompositionFieldValuationSubring F A := by
   let Z := decompositionField F A
   have hZ : Z = ⊥ := by
@@ -101,11 +104,7 @@ noncomputable def valuationSubringEquivDecompositionFieldOfEqTop
 /-- The corresponding equivalence between literal and intrinsic residue
 fields. -/
 noncomputable def residueFieldEquivDecompositionResidueOfEqTop
-    {F : Type u} {Omega : Type v} [Field F] [Field Omega] [Algebra F Omega]
-    [IsGalois F Omega]
-    (A : ValuationSubring Omega) (C : ValuationSubring F)
-    (hC : A.comap (algebraMap F Omega) = C)
-    (hA : decompositionGroup F A = ⊤) :
+      :
     IsLocalRing.ResidueField C ≃+* decompositionResidueField F A :=
   (IsLocalRing.ResidueField.mapEquiv
       (valuationSubringEquivDecompositionFieldOfEqTop A C hC hA)).trans
@@ -114,11 +113,7 @@ noncomputable def residueFieldEquivDecompositionResidueOfEqTop
 /-- Naturality of the preceding residue equivalence with reduction into the
 selected residue field. -/
 theorem residueFieldEquivDecompositionResidueOfEqTop_algebraMap
-    {F : Type u} {Omega : Type v} [Field F] [Field Omega] [Algebra F Omega]
-    [IsGalois F Omega]
-    (A : ValuationSubring Omega) (C : ValuationSubring F)
-    (hC : A.comap (algebraMap F Omega) = C)
-    (hA : decompositionGroup F A = ⊤) (x : C) :
+      (x : C) :
     algebraMap (decompositionResidueField F A) (selectedResidueField A)
         (residueFieldEquivDecompositionResidueOfEqTop A C hC hA
           (IsLocalRing.residue C x)) =
@@ -129,6 +124,8 @@ theorem residueFieldEquivDecompositionResidueOfEqTop_algebraMap
             exact x.property
           exact hx⟩ : A) := by
   rfl
+end
+
 
 /-! ## The finite fixed-field comparison -/
 

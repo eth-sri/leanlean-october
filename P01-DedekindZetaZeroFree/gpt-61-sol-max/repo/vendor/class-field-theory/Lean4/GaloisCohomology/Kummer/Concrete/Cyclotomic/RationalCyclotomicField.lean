@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import Mathlib.NumberTheory.Cyclotomic.Basic
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -32,8 +35,7 @@ noncomputable section
 namespace KummerTheory
 
 /-- The actual field `ℚ(μ∞)` in a fixed separable closure of `ℚ`. -/
-def rationalCyclotomicField :
-    IntermediateField ℚ (SeparableClosure ℚ) :=
+def rationalCyclotomicField  :=
   IntermediateField.adjoin ℚ
     {ζ : SeparableClosure ℚ |
       ∃ n ∈ (Set.univ : Set ℕ), n ≠ 0 ∧ ζ ^ n = 1}
@@ -61,8 +63,7 @@ noncomputable instance rationalCyclotomicField_isAbelianGalois :
 /-- The `n`-th finite cyclotomic level inside `ℚ(μ∞)`.  Positive naturals
 are used so that the zero-order degeneracy cannot enter the directed
 system. -/
-def rationalCyclotomicLevel (n : ℕ+) :
-    IntermediateField ℚ rationalCyclotomicField :=
+def rationalCyclotomicLevel (n : ℕ+)  :=
   IntermediateField.adjoin ℚ
     {ζ : rationalCyclotomicField |
       ∃ m ∈ ({(n : ℕ)} : Set ℕ),
@@ -139,7 +140,7 @@ theorem iSup_rationalCyclotomicLevel :
             m ≠ 0 ∧ x ^ m = 1}
         (by
           refine
-            ⟨(npos : ℕ), by simp, npos.ne_zero, ?_⟩
+            ⟨(npos : ℕ), rfl, npos.ne_zero, ?_⟩
           change ζ ^ n = 1
           exact hpow))
 

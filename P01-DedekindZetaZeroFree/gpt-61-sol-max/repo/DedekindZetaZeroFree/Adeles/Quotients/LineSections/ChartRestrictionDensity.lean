@@ -57,32 +57,38 @@ theorem metric_volume : Measure.map (coordinates F)
       KPArch.hyperbolicVolume (KPCuspLogShape.dimension F) := by
   exact KPArchRealCoordinates.metric_volume (KPCuspLogShape.dimension F)
 
-def chartDomain (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
+section
+variable (i : Fin (H.atlas U).componentCount)
+include i
+def chartDomain   (x : SymmetricSpace F)
     (O : OrbifoldChart F ζ hζ U R P H i x) : Set (Space (KPCuspLogShape.dimension F * 3)) :=
   coordinates F ⁻¹' O.neighborhood
 
-def basePoint (i : Fin (H.atlas U).componentCount)
+def basePoint  
     (p : Space (KPCuspLogShape.dimension F * 3)) : KPFiniteCuspAtlas.rawXU F ζ hζ U :=
   (H.atlas U).components ⟨i, Quotient.mk _ (coordinates F p)⟩
 
-def isotropyOrder (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F) : ℕ :=
+def isotropyOrder   (x : SymmetricSpace F) : ℕ :=
   Nat.card (MulAction.stabilizer (Component F ζ hζ U R P H i) x)
+end
 
-def chartMeasure (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) : Measure (Space (KPCuspLogShape.dimension F * 3)) :=
+
+section
+variable (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
+    (O : OrbifoldChart F ζ hζ U R P H i x)
+include i x O
+def chartMeasure   : Measure (Space (KPCuspLogShape.dimension F * 3)) :=
   ((H.disintegration U).componentWeight i /
     (isotropyOrder F ζ hζ U R P H i x : ℝ≥0∞)) •
       ((volume.restrict (chartDomain F ζ hζ U R P H i x O)).withDensity
         (fun p => ENNReal.ofReal (density F p)))
 
-theorem isotropyOrder_pos (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) :
+theorem isotropyOrder_pos   :
     0 < isotropyOrder F ζ hζ U R P H i x := by
   letI := chart_stabilizer_finite F ζ hζ U R P H i x O
   exact Nat.card_pos
 
-theorem null_sets (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x)
+theorem null_sets  
     (A : LocalBall (KPCuspLogShape.dimension F * 3))
     (hA : KPContLocalCubeEmbedding.closedCarrier A ⊆ chartDomain F ζ hζ U R P H i x O) :
     (chartMeasure F ζ hζ U R P H i x O).restrict A.carrier ≪ volume.restrict A.carrier ∧
@@ -109,16 +115,20 @@ theorem null_sets (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
   rw [heq]
   exact ⟨Measure.smul_absolutelyContinuous.trans (withDensity_absolutelyContinuous _ _),
     (withDensity_absolutelyContinuous' hw hn).trans (Measure.absolutelyContinuous_smul hc)⟩
+end
 
-def frameCoefficient (f : GenuineCoveredScalars F ζ hζ U)
-    (i : Fin (H.atlas U).componentCount) (m : PhaseSheets F ζ hζ U)
+
+section
+variable (f : GenuineCoveredScalars F ζ hζ U)
+    (i : Fin (H.atlas U).componentCount)
+include f i
+def frameCoefficient   (m : PhaseSheets F ζ hζ U)
     (p : Space (KPCuspLogShape.dimension F * 3)) : ℂ :=
   (liftFrame F ζ hζ U (coordinates F p)
     (phaseCoefficient F ζ hζ U R P H (S F ζ hζ U R P H f) i m
       (coordinates F p)) : ℂ)
 
-theorem covered_coefficient (f : GenuineCoveredScalars F ζ hζ U)
-    (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
+theorem covered_coefficient   (x : SymmetricSpace F)
     (O : OrbifoldChart F ζ hζ U R P H i x) (m : PhaseSheets F ζ hζ U)
     (p : Space (KPCuspLogShape.dimension F * 3))
     (hp : p ∈ chartDomain F ζ hζ U R P H i x O) :
@@ -128,33 +138,46 @@ theorem covered_coefficient (f : GenuineCoveredScalars F ζ hζ U)
   exact (orbifold_restriction_commutes F ζ hζ U R P H f i x O m
       ⟨coordinates F p, hp⟩).symm
 
-theorem frameCoefficient_class (f : GenuineCoveredScalars F ζ hζ U)
-    (i : Fin (H.atlas U).componentCount) (ε : rootsOfUnity 3 F)
+theorem frameCoefficient_class   (ε : rootsOfUnity 3 F)
     (p : Space (KPCuspLogShape.dimension F * 3)) :
     frameCoefficient F ζ hζ U R P H f i (phaseClass F ζ hζ U ε) p =
       (chi F ζ hζ ε : ℂ) * (S F ζ hζ U R P H f i).val (coordinates F p) := by
   exact phaseCoefficient_class F ζ hζ U R P H (S F ζ hζ U R P H f) i ε (coordinates F p)
+end
 
-def overlapCoordinate (i : Fin (H.atlas U).componentCount)
+
+section
+variable (i : Fin (H.atlas U).componentCount)
     (γ : Component F ζ hζ U R P H i)
+include i γ
+def overlapCoordinate  
     (p : Space (KPCuspLogShape.dimension F * 3)) : Space (KPCuspLogShape.dimension F * 3) :=
   (coordinates F).symm ((γ : KPCuspArithmetic.PGL2 F) • coordinates F p)
 
-def overlapTransition (i : Fin (H.atlas U).componentCount)
-    (γ : Component F ζ hζ U R P H i) (ε : rootsOfUnity 3 F) : Circle :=
+def overlapTransition   (ε : rootsOfUnity 3 F) : Circle :=
   chi F ζ hζ ε * chi F ζ hζ (((H.atlas U).line i).rho γ)⁻¹
 
-theorem transition_unitary (i : Fin (H.atlas U).componentCount)
-    (γ : Component F ζ hζ U R P H i) (ε : rootsOfUnity 3 F) :
+theorem transition_unitary   (ε : rootsOfUnity 3 F) :
     ‖(overlapTransition F ζ hζ U R P H i γ ε : ℂ)‖ = 1 :=
   Circle.norm_coe _
+end
+
+
+
+local notation:max "current_PhaseSheets" => PhaseSheets F ζ hζ U
+
+
+local notation:max "current_frameCoefficient" => frameCoefficient F ζ hζ U R P H
+
+
+local notation:max "current_phaseClass" => phaseClass F ζ hζ U
 
 theorem frameCoefficient_overlap (f : GenuineCoveredScalars F ζ hζ U)
-    (i : Fin (H.atlas U).componentCount) (m m' : PhaseSheets F ζ hζ U)
+    (i : Fin (H.atlas U).componentCount) (m m' : current_PhaseSheets)
     (ε : rootsOfUnity 3 F) (γ : Component F ζ hζ U R P H i)
-    (hm : m = phaseClass F ζ hζ U ε * m')
+    (hm : m = current_phaseClass ε * m')
     (p : Space (KPCuspLogShape.dimension F * 3)) :
-    frameCoefficient F ζ hζ U R P H f i m p =
+    current_frameCoefficient f i m p =
       (overlapTransition F ζ hζ U R P H i γ ε : ℂ) *
         frameCoefficient F ζ hζ U R P H f i m'
           (overlapCoordinate F ζ hζ U R P H i γ p) := by
@@ -378,8 +401,11 @@ theorem basePoint_measurable (i : Fin (H.atlas U).componentCount) :
   exact (continuous_quotient_mk'.comp
     ((coordinates F).continuous.prodMk continuous_const)).measurable
 
-theorem frameCoefficient_measurable (f : BorelL2Scalars F ζ hζ U R)
-    (i : Fin (H.atlas U).componentCount) (m : PhaseSheets F ζ hζ U) :
+section
+variable (f : BorelL2Scalars F ζ hζ U R)
+    (i : Fin (H.atlas U).componentCount)
+include f i
+theorem frameCoefficient_measurable   (m : PhaseSheets F ζ hζ U) :
     Measurable (frameCoefficient F ζ hζ U R P H f.val i m) := by
   obtain ⟨ε, rfl⟩ := QuotientGroup.mk'_surjective (centralLevel F ζ hζ U) m
   change Measurable (frameCoefficient F ζ hζ U R P H f.val i (phaseClass F ζ hζ U ε))
@@ -393,8 +419,7 @@ theorem frameCoefficient_measurable (f : BorelL2Scalars F ζ hζ U R)
   exact (continuous_quotient_mk'.comp
     ((coordinates F).continuous.prodMk continuous_const)).measurable
 
-theorem frameCoefficient_norm_sq (f : BorelL2Scalars F ζ hζ U R)
-    (i : Fin (H.atlas U).componentCount) (m : PhaseSheets F ζ hζ U)
+theorem frameCoefficient_norm_sq   (m : PhaseSheets F ζ hζ U)
     (p : Space (KPCuspLogShape.dimension F * 3)) :
     ENNReal.ofReal (‖frameCoefficient F ζ hζ U R P H f.val i m p‖ ^ 2) =
       KPContSectorFixedLineNormIntegrals.lineNorm F ζ hζ U R P H f.val
@@ -404,8 +429,7 @@ theorem frameCoefficient_norm_sq (f : BorelL2Scalars F ζ hζ U R)
   rw [frameCoefficient_class, norm_mul, Circle.norm_coe, one_mul]
   exact (kp_cont_sector_fixed_line_norm_integrals F ζ hζ U R P H f.val f.property.1).component i _ |>.symm
 
-theorem frameCoefficient_weighted_memLp (f : BorelL2Scalars F ζ hζ U R)
-    (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
+theorem frameCoefficient_weighted_memLp   (x : SymmetricSpace F)
     (O : OrbifoldChart F ζ hζ U R P H i x) (m : PhaseSheets F ζ hζ U) :
     MemLp (frameCoefficient F ζ hζ U R P H f.val i m) 2 (chartMeasure F ζ hζ U R P H i x O) := by
   have hf := frameCoefficient_measurable F ζ hζ U R P H f i m
@@ -426,6 +450,8 @@ theorem frameCoefficient_weighted_memLp (f : BorelL2Scalars F ζ hζ U R)
     ∂KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U) < ⊤ at ht
   apply lt_of_le_of_lt _ ht
   exact MeasureTheory.lintegral_mono' Measure.restrict_le_self le_rfl
+end
+
 
 theorem ball_measure_domination (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
     (O : OrbifoldChart F ζ hζ U R P H i x)
@@ -465,22 +491,22 @@ theorem ball_measure_domination (i : Fin (H.atlas U).componentCount) (x : Symmet
 
 theorem frameCoefficient_memLp (f : BorelL2Scalars F ζ hζ U R)
     (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) (m : PhaseSheets F ζ hζ U)
+    (O : OrbifoldChart F ζ hζ U R P H i x) (m : current_PhaseSheets)
     (A : LocalBall (KPCuspLogShape.dimension F * 3))
     (hA : KPContLocalCubeEmbedding.closedCarrier A ⊆ chartDomain F ζ hζ U R P H i x O) :
-    MemLp (frameCoefficient F ζ hζ U R P H f.val i m) 2 (volume.restrict A.carrier) := by
+    MemLp (current_frameCoefficient f.val i m) 2 (volume.restrict A.carrier) := by
   obtain ⟨c,hc,hdom⟩ := ball_measure_domination F ζ hζ U R P H i x O A hA
   exact MemLp.of_measure_le_smul hc hdom
     ((frameCoefficient_weighted_memLp F ζ hζ U R P H f i x O m).restrict A.carrier)
 
 theorem frameCoefficient_ae_eq (f g : BorelL2Scalars F ζ hζ U R)
     (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) (m : PhaseSheets F ζ hζ U)
+    (O : OrbifoldChart F ζ hζ U R P H i x) (m : current_PhaseSheets)
     (A : LocalBall (KPCuspLogShape.dimension F * 3))
     (hA : KPContLocalCubeEmbedding.closedCarrier A ⊆ chartDomain F ζ hζ U R P H i x O)
     (hfg : scalarEmbedding F ζ hζ U R P H f = scalarEmbedding F ζ hζ U R P H g) :
-    frameCoefficient F ζ hζ U R P H f.val i m =ᵐ[volume.restrict A.carrier]
-      frameCoefficient F ζ hζ U R P H g.val i m := by
+    current_frameCoefficient f.val i m =ᵐ[volume.restrict A.carrier]
+      current_frameCoefficient g.val i m := by
   have hmk : mk F ζ hζ U R P H (borelS F ζ hζ U R P H f) =
       mk F ζ hζ U R P H (borelS F ζ hζ U R P H g) := by
     rw [← sectorLineIsometry_toSector, ← sectorLineIsometry_toSector]
@@ -504,13 +530,13 @@ theorem frameCoefficient_ae_eq (f g : BorelL2Scalars F ζ hζ U R)
       ENNReal.ofReal (‖frameCoefficient F ζ hζ U R P H (f-g).val i m p‖ ^ 2) := by
     intro p
     exact (frameCoefficient_norm_sq F ζ hζ U R P H (f-g) i m p).symm
-  have hlin : ∀ p, frameCoefficient F ζ hζ U R P H (f-g).val i m p =
-      frameCoefficient F ζ hζ U R P H f.val i m p - frameCoefficient F ζ hζ U R P H g.val i m p := by
+  have hlin : ∀ p, current_frameCoefficient (f-g).val i m p =
+      current_frameCoefficient f.val i m p - current_frameCoefficient g.val i m p := by
     obtain ⟨ε, rfl⟩ := QuotientGroup.mk'_surjective (centralLevel F ζ hζ U) m
     intro p
-    change frameCoefficient F ζ hζ U R P H (f-g).val i (phaseClass F ζ hζ U ε) p =
-      frameCoefficient F ζ hζ U R P H f.val i (phaseClass F ζ hζ U ε) p -
-      frameCoefficient F ζ hζ U R P H g.val i (phaseClass F ζ hζ U ε) p
+    change current_frameCoefficient (f-g).val i (current_phaseClass ε) p =
+      current_frameCoefficient f.val i (current_phaseClass ε) p -
+      current_frameCoefficient g.val i (current_phaseClass ε) p
     rw [frameCoefficient_class, frameCoefficient_class, frameCoefficient_class]
     change (chi F ζ hζ ε : ℂ) * (S F ζ hζ U R P H (f.val-g.val) i).val (coordinates F p) = _
     rw [map_sub]
@@ -520,14 +546,14 @@ theorem frameCoefficient_ae_eq (f g : BorelL2Scalars F ζ hζ U R)
   filter_upwards [hzvol] with p hp
   rw [he, hlin] at hp
   have hzero : ‖frameCoefficient F ζ hζ U R P H f.val i m p -
-      frameCoefficient F ζ hζ U R P H g.val i m p‖ ^ 2 = 0 :=
+      current_frameCoefficient g.val i m p‖ ^ 2 = 0 :=
     le_antisymm (ENNReal.ofReal_eq_zero.mp hp) (sq_nonneg _)
   exact sub_eq_zero.mp (norm_eq_zero.mp (sq_eq_zero_iff.mp hzero))
 
 theorem frameCoefficient_weighted_eLpNorm_le (f : BorelL2Scalars F ζ hζ U R)
     (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) (m : PhaseSheets F ζ hζ U) :
-    eLpNorm (frameCoefficient F ζ hζ U R P H f.val i m) 2
+    (O : OrbifoldChart F ζ hζ U R P H i x) (m : current_PhaseSheets) :
+    eLpNorm (current_frameCoefficient f.val i m) 2
       (chartMeasure F ζ hζ U R P H i x O) ≤
         ENNReal.ofReal ‖scalarEmbedding F ζ hζ U R P H f‖ := by
   rw [eLpNorm_eq_lintegral_rpow_enorm_toReal (by norm_num) (by norm_num)
@@ -563,23 +589,23 @@ theorem frameCoefficient_weighted_eLpNorm_le (f : BorelL2Scalars F ζ hζ U R)
   exact hr
 
 theorem frameCoefficient_norm_bound (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) (m : PhaseSheets F ζ hζ U)
+    (O : OrbifoldChart F ζ hζ U R P H i x) (m : current_PhaseSheets)
     (A : LocalBall (KPCuspLogShape.dimension F * 3))
     (hA : KPContLocalCubeEmbedding.closedCarrier A ⊆ chartDomain F ζ hζ U R P H i x O) :
     ∃ C : ℝ, 0 < C ∧ ∀ f : BorelL2Scalars F ζ hζ U R,
       ‖(frameCoefficient_memLp F ζ hζ U R P H f i x O m A hA).toLp
-        (frameCoefficient F ζ hζ U R P H f.val i m)‖ ≤
+        (current_frameCoefficient f.val i m)‖ ≤
           C * ‖scalarEmbedding F ζ hζ U R P H f‖ := by
   obtain ⟨c,hc,hdom⟩ := ball_measure_domination F ζ hζ U R P H i x O A hA
   let d : ℝ≥0∞ := c ^ (1 / (2 : ℝ≥0∞).toReal)
   have hd : d ≠ ⊤ := (ENNReal.rpow_lt_top_of_nonneg (by norm_num) hc).ne
   refine ⟨d.toReal + 1, by positivity, ?_⟩
   intro f
-  have hle := eLpNorm_le_of_measure_le_smul (f := frameCoefficient F ζ hζ U R P H f.val i m)
+  have hle := eLpNorm_le_of_measure_le_smul (f := current_frameCoefficient f.val i m)
     (p := (2 : ℝ≥0∞)) hdom
-  have hl : eLpNorm (frameCoefficient F ζ hζ U R P H f.val i m) 2
+  have hl : eLpNorm (current_frameCoefficient f.val i m) 2
       (volume.restrict A.carrier) ≤ d * ENNReal.ofReal ‖scalarEmbedding F ζ hζ U R P H f‖ := by
-    have hw := (eLpNorm_mono_measure (frameCoefficient F ζ hζ U R P H f.val i m)
+    have hw := (eLpNorm_mono_measure (current_frameCoefficient f.val i m)
       (Measure.restrict_le_self (s := A.carrier))).trans
         (frameCoefficient_weighted_eLpNorm_le F ζ hζ U R P H f i x O m)
     have hdEq : c ^ (1 / (2 : ℝ≥0∞)).toReal = d := by
@@ -609,27 +635,24 @@ theorem scalarEmbedding_surjective : Function.Surjective (scalarEmbedding F ζ h
     scalarEmbedding F ζ hζ U R P H (exactRepresentative F ζ hζ U R P H u) = u :=
   Classical.choose_spec (scalarEmbedding_surjective F ζ hζ U R P H u)
 
-def representativeL2 (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
+section
+variable (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
     (O : OrbifoldChart F ζ hζ U R P H i x) (m : PhaseSheets F ζ hζ U)
     (A : LocalBall (KPCuspLogShape.dimension F * 3))
     (hA : KPContLocalCubeEmbedding.closedCarrier A ⊆ chartDomain F ζ hζ U R P H i x O)
+include i x O m A hA
+def representativeL2  
     (f : BorelL2Scalars F ζ hζ U R) : BallL2 A :=
   (frameCoefficient_memLp F ζ hζ U R P H f i x O m A hA).toLp
     (frameCoefficient F ζ hζ U R P H f.val i m)
 
- theorem representativeL2_ae (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) (m : PhaseSheets F ζ hζ U)
-    (A : LocalBall (KPCuspLogShape.dimension F * 3))
-    (hA : KPContLocalCubeEmbedding.closedCarrier A ⊆ chartDomain F ζ hζ U R P H i x O)
+ theorem representativeL2_ae  
     (f : BorelL2Scalars F ζ hζ U R) :
     representativeL2 F ζ hζ U R P H i x O m A hA f =ᵐ[volume.restrict A.carrier]
       frameCoefficient F ζ hζ U R P H f.val i m :=
   MemLp.coeFn_toLp _
 
- theorem representativeL2_eq (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) (m : PhaseSheets F ζ hζ U)
-    (A : LocalBall (KPCuspLogShape.dimension F * 3))
-    (hA : KPContLocalCubeEmbedding.closedCarrier A ⊆ chartDomain F ζ hζ U R P H i x O)
+ theorem representativeL2_eq  
     (f g : BorelL2Scalars F ζ hζ U R)
     (hfg : scalarEmbedding F ζ hζ U R P H f = scalarEmbedding F ζ hζ U R P H g) :
     representativeL2 F ζ hζ U R P H i x O m A hA f =
@@ -638,93 +661,97 @@ def representativeL2 (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
   exact (representativeL2_ae F ζ hζ U R P H i x O m A hA f).trans
     ((frameCoefficient_ae_eq F ζ hζ U R P H f g i x O m A hA hfg).trans
       (representativeL2_ae F ζ hζ U R P H i x O m A hA g).symm)
+end
+
 
  theorem coefficient_add (f g : BorelL2Scalars F ζ hζ U R)
-    (i : Fin (H.atlas U).componentCount) (m : PhaseSheets F ζ hζ U)
+    (i : Fin (H.atlas U).componentCount) (m : current_PhaseSheets)
     (p : Space (KPCuspLogShape.dimension F * 3)) :
-    frameCoefficient F ζ hζ U R P H (f+g).val i m p =
-      frameCoefficient F ζ hζ U R P H f.val i m p + frameCoefficient F ζ hζ U R P H g.val i m p := by
+    current_frameCoefficient (f+g).val i m p =
+      current_frameCoefficient f.val i m p + current_frameCoefficient g.val i m p := by
   obtain ⟨ε, rfl⟩ := QuotientGroup.mk'_surjective (centralLevel F ζ hζ U) m
-  change frameCoefficient F ζ hζ U R P H (f+g).val i (phaseClass F ζ hζ U ε) p =
-    frameCoefficient F ζ hζ U R P H f.val i (phaseClass F ζ hζ U ε) p +
-    frameCoefficient F ζ hζ U R P H g.val i (phaseClass F ζ hζ U ε) p
+  change current_frameCoefficient (f+g).val i (current_phaseClass ε) p =
+    current_frameCoefficient f.val i (current_phaseClass ε) p +
+    current_frameCoefficient g.val i (current_phaseClass ε) p
   rw [frameCoefficient_class, frameCoefficient_class, frameCoefficient_class]
   change (chi F ζ hζ ε : ℂ) * (S F ζ hζ U R P H (f.val+g.val) i).val (coordinates F p) = _
   rw [map_add]
   exact mul_add _ _ _
 
  theorem coefficient_smul (a : ℂ) (f : BorelL2Scalars F ζ hζ U R)
-    (i : Fin (H.atlas U).componentCount) (m : PhaseSheets F ζ hζ U)
+    (i : Fin (H.atlas U).componentCount) (m : current_PhaseSheets)
     (p : Space (KPCuspLogShape.dimension F * 3)) :
-    frameCoefficient F ζ hζ U R P H (a • f).val i m p =
-      a * frameCoefficient F ζ hζ U R P H f.val i m p := by
+    current_frameCoefficient (a • f).val i m p =
+      a * current_frameCoefficient f.val i m p := by
   obtain ⟨ε, rfl⟩ := QuotientGroup.mk'_surjective (centralLevel F ζ hζ U) m
-  change frameCoefficient F ζ hζ U R P H (a • f).val i (phaseClass F ζ hζ U ε) p =
-    a * frameCoefficient F ζ hζ U R P H f.val i (phaseClass F ζ hζ U ε) p
+  change current_frameCoefficient (a • f).val i (current_phaseClass ε) p =
+    a * current_frameCoefficient f.val i (current_phaseClass ε) p
   rw [frameCoefficient_class, frameCoefficient_class]
   change (chi F ζ hζ ε : ℂ) * (S F ζ hζ U R P H (a • f.val) i).val (coordinates F p) = _
   rw [map_smul]
   change (chi F ζ hζ ε : ℂ) * (a * (S F ζ hζ U R P H f.val i).val (coordinates F p)) = _
   ring
 
- def restrictionLinear (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
+ section
+variable (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
     (O : OrbifoldChart F ζ hζ U R P H i x) (m : PhaseSheets F ζ hζ U)
     (A : LocalBall (KPCuspLogShape.dimension F * 3))
-    (hA : KPContLocalCubeEmbedding.closedCarrier A ⊆ chartDomain F ζ hζ U R P H i x O) :
+    (hA : KPContLocalCubeEmbedding.closedCarrier A ⊆ chartDomain F ζ hζ U R P H i x O)
+include i x O m A hA
+
+local notation:max "current_exactRepresentative" => exactRepresentative F ζ hζ U R P H
+
+def restrictionLinear   :
     KPContSectorClosedLpSubspace.H F ζ hζ R U →ₗ[ℂ] BallL2 A where
-  toFun u := representativeL2 F ζ hζ U R P H i x O m A hA (exactRepresentative F ζ hζ U R P H u)
+  toFun u := representativeL2 F ζ hζ U R P H i x O m A hA (current_exactRepresentative u)
   map_add' u v := by
     rw [representativeL2_eq F ζ hζ U R P H i x O m A hA
-      (exactRepresentative F ζ hζ U R P H (u+v))
-      (exactRepresentative F ζ hζ U R P H u + exactRepresentative F ζ hζ U R P H v)
+      (current_exactRepresentative (u+v))
+      (current_exactRepresentative u + current_exactRepresentative v)
       (by rw [map_add, exactRepresentative_spec, exactRepresentative_spec, exactRepresentative_spec])]
     apply Lp.ext
     filter_upwards [representativeL2_ae F ζ hζ U R P H i x O m A hA
-      (exactRepresentative F ζ hζ U R P H u + exactRepresentative F ζ hζ U R P H v),
-      Lp.coeFn_add (representativeL2 F ζ hζ U R P H i x O m A hA (exactRepresentative F ζ hζ U R P H u))
-        (representativeL2 F ζ hζ U R P H i x O m A hA (exactRepresentative F ζ hζ U R P H v)),
-      representativeL2_ae F ζ hζ U R P H i x O m A hA (exactRepresentative F ζ hζ U R P H u),
-      representativeL2_ae F ζ hζ U R P H i x O m A hA (exactRepresentative F ζ hζ U R P H v)] with p hp hsum hu hv
+      (current_exactRepresentative u + current_exactRepresentative v),
+      Lp.coeFn_add (representativeL2 F ζ hζ U R P H i x O m A hA (current_exactRepresentative u))
+        (representativeL2 F ζ hζ U R P H i x O m A hA (current_exactRepresentative v)),
+      representativeL2_ae F ζ hζ U R P H i x O m A hA (current_exactRepresentative u),
+      representativeL2_ae F ζ hζ U R P H i x O m A hA (current_exactRepresentative v)] with p hp hsum hu hv
     rw [hp, hsum]
     simp only [Pi.add_apply, hu, hv, coefficient_add]
   map_smul' a u := by
     rw [representativeL2_eq F ζ hζ U R P H i x O m A hA
-      (exactRepresentative F ζ hζ U R P H (a • u)) (a • exactRepresentative F ζ hζ U R P H u)
+      (current_exactRepresentative (a • u)) (a • current_exactRepresentative u)
       (by rw [map_smul, exactRepresentative_spec, exactRepresentative_spec])]
     apply Lp.ext
     filter_upwards [representativeL2_ae F ζ hζ U R P H i x O m A hA
-      (a • exactRepresentative F ζ hζ U R P H u),
-      Lp.coeFn_smul a (representativeL2 F ζ hζ U R P H i x O m A hA (exactRepresentative F ζ hζ U R P H u)),
-      representativeL2_ae F ζ hζ U R P H i x O m A hA (exactRepresentative F ζ hζ U R P H u)] with p hp hs hu
+      (a • current_exactRepresentative u),
+      Lp.coeFn_smul a (representativeL2 F ζ hζ U R P H i x O m A hA (current_exactRepresentative u)),
+      representativeL2_ae F ζ hζ U R P H i x O m A hA (current_exactRepresentative u)] with p hp hs hu
     simp only [RingHom.id_apply]
     rw [hp, hs]
     simp only [Pi.smul_apply, smul_eq_mul, hu, coefficient_smul]
 
-def restriction (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) (m : PhaseSheets F ζ hζ U)
-    (A : LocalBall (KPCuspLogShape.dimension F * 3))
-    (hA : KPContLocalCubeEmbedding.closedCarrier A ⊆ chartDomain F ζ hζ U R P H i x O) :
+def restriction   :
     KPContSectorClosedLpSubspace.H F ζ hζ R U →L[ℂ] BallL2 A :=
   (restrictionLinear F ζ hζ U R P H i x O m A hA).mkContinuousOfExistsBound (by
     obtain ⟨C,hC,hbound⟩ := frameCoefficient_norm_bound F ζ hζ U R P H i x O m A hA
     exact ⟨C, fun u => by simpa only [restrictionLinear, LinearMap.coe_mk, AddHom.coe_mk,
-      representativeL2, exactRepresentative_spec] using hbound (exactRepresentative F ζ hζ U R P H u)⟩)
+      representativeL2, exactRepresentative_spec] using hbound (current_exactRepresentative u)⟩)
 
-theorem restriction_representative (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) (m : PhaseSheets F ζ hζ U)
-    (A : LocalBall (KPCuspLogShape.dimension F * 3))
-    (hA : KPContLocalCubeEmbedding.closedCarrier A ⊆ chartDomain F ζ hζ U R P H i x O)
+theorem restriction_representative  
     (u : KPContSectorClosedLpSubspace.H F ζ hζ R U) (f : BorelL2Scalars F ζ hζ U R)
     (hf : scalarEmbedding F ζ hζ U R P H f = u) :
     restriction F ζ hζ U R P H i x O m A hA u =ᵐ[volume.restrict A.carrier]
       frameCoefficient F ζ hζ U R P H f.val i m := by
-  change representativeL2 F ζ hζ U R P H i x O m A hA (exactRepresentative F ζ hζ U R P H u) =ᵐ[_] _
+  change representativeL2 F ζ hζ U R P H i x O m A hA (current_exactRepresentative u) =ᵐ[_] _
   rw [representativeL2_eq F ζ hζ U R P H i x O m A hA _ f
     ((exactRepresentative_spec F ζ hζ U R P H u).trans hf.symm)]
   exact representativeL2_ae F ζ hζ U R P H i x O m A hA f
+end
+
 
 theorem restriction_smaller_ball (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) (m : PhaseSheets F ζ hζ U)
+    (O : OrbifoldChart F ζ hζ U R P H i x) (m : current_PhaseSheets)
     (A B : LocalBall (KPCuspLogShape.dimension F * 3))
     (hA : KPContLocalCubeEmbedding.closedCarrier A ⊆ chartDomain F ζ hζ U R P H i x O)
     (hB : KPContLocalCubeEmbedding.closedCarrier B ⊆ chartDomain F ζ hζ U R P H i x O)
@@ -742,11 +769,11 @@ theorem restriction_smaller_ball (i : Fin (H.atlas U).componentCount) (x : Symme
 
 theorem restriction_overlap (i : Fin (H.atlas U).componentCount) (x y : SymmetricSpace F)
     (O : OrbifoldChart F ζ hζ U R P H i x) (O' : OrbifoldChart F ζ hζ U R P H i y)
-    (m m' : PhaseSheets F ζ hζ U) (ε : rootsOfUnity 3 F)
+    (m m' : current_PhaseSheets) (ε : rootsOfUnity 3 F)
     (γ : Component F ζ hζ U R P H i) (A B : LocalBall (KPCuspLogShape.dimension F * 3))
     (hA : KPContLocalCubeEmbedding.closedCarrier A ⊆ chartDomain F ζ hζ U R P H i x O)
     (hB : KPContLocalCubeEmbedding.closedCarrier B ⊆ chartDomain F ζ hζ U R P H i y O')
-    (hm : m = phaseClass F ζ hζ U ε * m') (u : KPContSectorClosedLpSubspace.H F ζ hζ R U) :
+    (hm : m = current_phaseClass ε * m') (u : KPContSectorClosedLpSubspace.H F ζ hζ R U) :
     ∀ᵐ p ∂volume.restrict (A.carrier ∩ overlapCoordinate F ζ hζ U R P H i γ ⁻¹' B.carrier),
       restriction F ζ hζ U R P H i x O m A hA u p =
         (overlapTransition F ζ hζ U R P H i γ ε : ℂ) *
@@ -772,35 +799,35 @@ theorem restriction_overlap (i : Fin (H.atlas U).componentCount) (x y : Symmetri
 
 structure RestrictionFamily where
   restriction : ∀ (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) (m : PhaseSheets F ζ hζ U)
+    (O : OrbifoldChart F ζ hζ U R P H i x) (m : current_PhaseSheets)
     (A : LocalBall (KPCuspLogShape.dimension F * 3)),
     KPContLocalCubeEmbedding.closedCarrier A ⊆ chartDomain F ζ hζ U R P H i x O →
     KPContSectorClosedLpSubspace.H F ζ hζ R U →L[ℂ] BallL2 A
 
   representative : ∀ (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) (m : PhaseSheets F ζ hζ U)
+    (O : OrbifoldChart F ζ hζ U R P H i x) (m : current_PhaseSheets)
     (A : LocalBall (KPCuspLogShape.dimension F * 3))
     (hA : KPContLocalCubeEmbedding.closedCarrier A ⊆ chartDomain F ζ hζ U R P H i x O)
     (u : KPContSectorClosedLpSubspace.H F ζ hζ R U)
     (f : BorelL2Scalars F ζ hζ U R), scalarEmbedding F ζ hζ U R P H f = u →
-    MemLp (frameCoefficient F ζ hζ U R P H f.val i m) 2 (volume.restrict A.carrier) ∧
+    MemLp (current_frameCoefficient f.val i m) 2 (volume.restrict A.carrier) ∧
     ∀ᵐ p ∂volume.restrict A.carrier,
-      restriction i x O m A hA u p = frameCoefficient F ζ hζ U R P H f.val i m p
+      restriction i x O m A hA u p = current_frameCoefficient f.val i m p
 
   covered_coefficient : ∀ (f : GenuineCoveredScalars F ζ hζ U)
     (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) (m : PhaseSheets F ζ hζ U)
+    (O : OrbifoldChart F ζ hζ U R P H i x) (m : current_PhaseSheets)
     (p : Space (KPCuspLogShape.dimension F * 3)) (hp : p ∈ chartDomain F ζ hζ U R P H i x O),
-    frameCoefficient F ζ hζ U R P H f i m p =
+    current_frameCoefficient f i m p =
       f.val (coveredChart F ζ hζ U R P H i x O
         (Quotient.mk _ (m, (⟨coordinates F p, hp⟩ : O.neighborhood)))).val
   bound : ∀ (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) (m : PhaseSheets F ζ hζ U)
+    (O : OrbifoldChart F ζ hζ U R P H i x) (m : current_PhaseSheets)
     (A : LocalBall (KPCuspLogShape.dimension F * 3))
     (hA : KPContLocalCubeEmbedding.closedCarrier A ⊆ chartDomain F ζ hζ U R P H i x O),
     ∃ c : ℝ, 0 < c ∧ ∀ u, ‖restriction i x O m A hA u‖ ≤ c * ‖u‖
   smaller_ball : ∀ (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) (m : PhaseSheets F ζ hζ U)
+    (O : OrbifoldChart F ζ hζ U R P H i x) (m : current_PhaseSheets)
     (A B : LocalBall (KPCuspLogShape.dimension F * 3))
     (hA : KPContLocalCubeEmbedding.closedCarrier A ⊆ chartDomain F ζ hζ U R P H i x O)
     (hB : KPContLocalCubeEmbedding.closedCarrier B ⊆ chartDomain F ζ hζ U R P H i x O),
@@ -809,12 +836,12 @@ structure RestrictionFamily where
 
   overlap : ∀ (i : Fin (H.atlas U).componentCount) (x y : SymmetricSpace F)
     (O : OrbifoldChart F ζ hζ U R P H i x) (O' : OrbifoldChart F ζ hζ U R P H i y)
-    (m m' : PhaseSheets F ζ hζ U) (ε : rootsOfUnity 3 F)
+    (m m' : current_PhaseSheets) (ε : rootsOfUnity 3 F)
     (γ : Component F ζ hζ U R P H i)
     (A B : LocalBall (KPCuspLogShape.dimension F * 3))
     (hA : KPContLocalCubeEmbedding.closedCarrier A ⊆ chartDomain F ζ hζ U R P H i x O)
     (hB : KPContLocalCubeEmbedding.closedCarrier B ⊆ chartDomain F ζ hζ U R P H i y O'),
-    m = phaseClass F ζ hζ U ε * m' → ∀ u,
+    m = current_phaseClass ε * m' → ∀ u,
     ∀ᵐ p ∂volume.restrict (A.carrier ∩ overlapCoordinate F ζ hζ U R P H i γ ⁻¹' B.carrier),
       restriction i x O m A hA u p =
         (overlapTransition F ζ hζ U R P H i γ ε : ℂ) *

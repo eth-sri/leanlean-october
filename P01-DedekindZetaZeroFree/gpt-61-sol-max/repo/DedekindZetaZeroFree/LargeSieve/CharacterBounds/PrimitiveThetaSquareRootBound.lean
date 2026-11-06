@@ -84,7 +84,7 @@ theorem initial_primitive_sqrt_bound (F : Type) [Field F] [NumberField F]
     by_cases hI : I = ⊥
     · simp [hI]
     · simp only [hI, ↓reduceIte]
-      rw [harg I]
+      rw [harg I, Int.cast_abs]
   have hTsum_bound :
       ‖∑' I : Ideal (𝓞 F), (if I = ⊥ then 0
         else (starRingEnd ℂ) (η I) *

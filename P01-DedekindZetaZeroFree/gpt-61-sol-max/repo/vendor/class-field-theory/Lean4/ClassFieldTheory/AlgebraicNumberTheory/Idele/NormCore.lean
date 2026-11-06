@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.IdealMap
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Principal
 public import Mathlib.NumberTheory.NumberField.ProductFormula
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -35,13 +38,12 @@ noncomputable section
 variable {K : Type*} [Field K] [NumberField K]
 
 /-- The norm of a unit in a normed field, as a positive real unit. -/
-def nnnormUnitHom (F : Type*) [NormedField F] :
-    Fˣ →* ℝ≥0ˣ :=
+def nnnormUnitHom (F : Type*) [NormedField F]  :=
   Units.map (nnnormHom : F →*₀ ℝ≥0).toMonoidHom
 
 @[simp]
 theorem nnnormUnitHom_val (F : Type*) [NormedField F] (x : Fˣ) :
-    ((nnnormUnitHom F x : ℝ≥0ˣ) : ℝ≥0) = ‖(x : F)‖₊ :=
+    ((nnnormUnitHom F x) : ℝ≥0) = ‖(x : F)‖₊ :=
   rfl
 
 namespace InfiniteIdeleGroup
@@ -91,16 +93,14 @@ def divisorNorm :
       (fun v => primeNormPowerHom v)
 
 /-- The finite part of the absolute idele norm. -/
-def absoluteNorm :
-    FiniteIdeleGroup K →* ℝ≥0ˣ :=
+def absoluteNorm  :=
   (divisorNorm (K := K)).comp (valuationVector (K := K))
 
 @[simp]
 theorem absoluteNorm_apply (a : FiniteIdeleGroup K) :
     absoluteNorm a =
       (valuationVector a).toAdd.prod fun v n =>
-        primeNorm v ^ n := by
-  rfl
+        primeNorm v ^ n := rfl
 
 end FiniteIdeleGroup
 
@@ -124,7 +124,7 @@ theorem absoluteNorm_apply (a : IdeleGroup K) :
   rfl
 
 /-- The norm-one ideles. -/
-def normOneSubgroup : Subgroup (IdeleGroup K) :=
+def normOneSubgroup  :=
   (absoluteNorm (K := K)).ker
 
 end IdeleGroup

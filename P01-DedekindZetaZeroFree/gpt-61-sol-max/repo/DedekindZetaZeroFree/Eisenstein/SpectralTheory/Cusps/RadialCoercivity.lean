@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Geometry.HyperbolicActionMetricAndVolume
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.KPRadialCoercivity
 
@@ -11,24 +14,24 @@ open scoped ContDiff
 
 noncomputable section
 
-def density (d t : ℝ) : ℝ := Real.exp (-2 * d * t)
+def density (d t : ℝ)  := Real.exp (-2 * d * t)
 
-def weightedMass (d : ℝ) (v : ℝ → ℂ) : ℝ :=
+def weightedMass (d : ℝ) (v : ℝ → ℂ)  :=
   ∫ t : ℝ, density d t * ‖v t‖ ^ 2
 
-def mass (w : ℝ → ℂ) : ℝ := ∫ t : ℝ, ‖w t‖ ^ 2
+def mass (w : ℝ → ℂ)  := ∫ t : ℝ, ‖w t‖ ^ 2
 
-def conjugate (d : ℝ) (v : ℝ → ℂ) (t : ℝ) : ℂ :=
+def conjugate (d : ℝ) (v : ℝ → ℂ) (t : ℝ)  :=
   Real.exp (-d * t) • v t
 
-def undoConjugation (d : ℝ) (w : ℝ → ℂ) (t : ℝ) : ℂ :=
+def undoConjugation (d : ℝ) (w : ℝ → ℂ) (t : ℝ)  :=
   Real.exp (d * t) • w t
 
-def weightedEnergy (d : ℝ) (a e : ℝ → ℝ) (v : ℝ → ℂ) : ℝ :=
+def weightedEnergy (d : ℝ) (a e : ℝ → ℝ) (v : ℝ → ℂ)  :=
   ∫ t : ℝ, density d t *
     (d⁻¹ * ‖deriv v t‖ ^ 2 + (a t - e t) * ‖v t‖ ^ 2)
 
-def conjugatedEnergy (d : ℝ) (a e : ℝ → ℝ) (w : ℝ → ℂ) : ℝ :=
+def conjugatedEnergy (d : ℝ) (a e : ℝ → ℝ) (w : ℝ → ℂ)  :=
   ∫ t : ℝ, d⁻¹ * ‖deriv w t‖ ^ 2 + (d + a t - e t) * ‖w t‖ ^ 2
 
 private lemma density_mul_exp_sq (d t : ℝ) :
@@ -88,7 +91,7 @@ private lemma hasCompactSupport_mul_norm_sq (c : ℝ) (w : ℝ → ℂ)
     (hc : HasCompactSupport w) : HasCompactSupport (fun t => c * ‖w t‖ ^ 2) := by
   refine hc.mono' (fun x hx => ?_)
   rw [Function.mem_support] at hx
-  exact subset_tsupport w (Function.mem_support.mpr (fun hv0 => hx (by simp [hv0])))
+  apply subset_tsupport <;> aesop
 
 private lemma integral_inner_deriv_eq_zero (w : ℝ → ℂ) (hw : ContDiff ℝ ∞ w)
     (hc : HasCompactSupport w) :
@@ -103,7 +106,7 @@ private lemma integral_inner_deriv_eq_zero (w : ℝ → ℂ) (hw : ContDiff ℝ 
   have hc' : HasCompactSupport (fun t => 2 * inner ℝ (w t) (deriv w t)) := by
     refine hc.mono' (fun x hx => ?_)
     rw [Function.mem_support] at hx
-    exact subset_tsupport w (Function.mem_support.mpr (fun hv0 => hx (by simp [hv0])))
+    apply subset_tsupport <;> aesop
   have hcont_mass : Continuous (fun t => ‖w t‖ ^ 2) := hw.continuous.norm.pow 2
   have hc_mass : HasCompactSupport (fun t => ‖w t‖ ^ 2) := by
     simpa using hasCompactSupport_mul_norm_sq 1 w hc
@@ -132,7 +135,7 @@ private lemma integrable_inner_deriv (w : ℝ → ℂ) (hw : ContDiff ℝ ∞ w)
   refine hcont.integrable_of_hasCompactSupport ?_
   refine hc.mono' (fun x hx => ?_)
   rw [Function.mem_support] at hx
-  exact subset_tsupport w (Function.mem_support.mpr (fun hv0 => hx (by simp [hv0])))
+  apply subset_tsupport <;> aesop
 
 theorem scalar_conjugation_identity (d : ℝ) (hd : 0 < d)
     (a e : ℝ → ℝ) (ha : Continuous a) (he : Continuous e)
@@ -140,7 +143,7 @@ theorem scalar_conjugation_identity (d : ℝ) (hd : 0 < d)
     weightedMass d (undoConjugation d w) = mass w ∧
       weightedEnergy d a e (undoConjugation d w) =
         conjugatedEnergy d a e w := by
-  have hdne : d ≠ 0 := hd.ne'
+  have hdne  := hd.ne'
   refine ⟨?_, ?_⟩
   · rw [weightedMass, mass]
     refine integral_congr_ae (Eventually.of_forall fun t => ?_)
@@ -160,8 +163,11 @@ theorem scalar_conjugation_identity (d : ℝ) (hd : 0 < d)
     rw [integral_add (integrable_conj_integrand d a e ha he w hw hc)
       (integrable_inner_deriv w hw hc), integral_inner_deriv_eq_zero w hw hc, add_zero]
 
-private lemma conj_energy_lower_bound (d : ℝ) (hd : 0 < d) (a : ℝ → ℝ)
+section
+variable (d : ℝ) (hd : 0 < d) (a : ℝ → ℝ)
     (ha : Continuous a) (hapos : ∀ t : ℝ, 0 ≤ a t)
+include d hd a ha hapos
+private lemma conj_energy_lower_bound  
     (w : ℝ → ℂ) (hw : ContDiff ℝ ∞ w) (hc : HasCompactSupport w) :
     d * mass w ≤ conjugatedEnergy d a (fun _ => 0) w := by
   rw [conjugatedEnergy, mass, ← integral_const_mul]
@@ -173,8 +179,7 @@ private lemma conj_energy_lower_bound (d : ℝ) (hd : 0 < d) (a : ℝ → ℝ)
   simp only [Pi.zero_apply, sub_zero]
   nlinarith [hapos t, sq_nonneg (‖w t‖), norm_nonneg (deriv w t), inv_pos.mpr hd]
 
-theorem scalar_zero_mode_lower_bound (d : ℝ) (hd : 0 < d)
-    (a : ℝ → ℝ) (ha : Continuous a) (hapos : ∀ t : ℝ, 0 ≤ a t)
+theorem scalar_zero_mode_lower_bound  
     (v : ℝ → ℂ) (hv : ContDiff ℝ ∞ v) (hc : HasCompactSupport v) :
     d * weightedMass d v ≤ weightedEnergy d a (fun _ => 0) v := by
   have hfun : conjugate d v = fun t : ℝ => Real.exp (-d * t) • v t := rfl
@@ -185,7 +190,7 @@ theorem scalar_zero_mode_lower_bound (d : ℝ) (hd : 0 < d)
     rw [hfun]
     refine hc.mono' (fun x hx => ?_)
     rw [Function.mem_support] at hx
-    exact subset_tsupport v (Function.mem_support.mpr (fun hv0 => hx (by simp [hv0])))
+    apply subset_tsupport <;> aesop
   have hveq : ∀ t : ℝ, undoConjugation d (conjugate d v) t = v t := by
     intro t
     have hthis : undoConjugation d (conjugate d v) t =
@@ -194,22 +199,16 @@ theorem scalar_zero_mode_lower_bound (d : ℝ) (hd : 0 < d)
     rw [show d * t + -d * t = 0 by ring, Real.exp_zero, one_smul]
   obtain ⟨h1, h2⟩ := scalar_conjugation_identity d hd a (fun _ => 0) ha
     continuous_const (conjugate d v) hw_smooth hw_compact
-  have hveq_fun : undoConjugation d (conjugate d v) = v := funext hveq
+  have hveq_fun  := funext hveq
   have hmass : weightedMass d v = mass (conjugate d v) := by
-    rw [← h1]
-    refine integral_congr_ae (Eventually.of_forall fun t => ?_)
-    show density d t * ‖v t‖ ^ 2 = density d t * ‖undoConjugation d (conjugate d v) t‖ ^ 2
-    rw [hveq_fun]
+    simp_all
   have henergy : weightedEnergy d a (fun _ => 0) v =
       conjugatedEnergy d a (fun _ => 0) (conjugate d v) := by
-    rw [← h2]
-    refine integral_congr_ae (Eventually.of_forall fun t => ?_)
-    show density d t * (d⁻¹ * ‖deriv v t‖ ^ 2 + (a t - (fun _ => 0) t) * ‖v t‖ ^ 2) =
-      density d t * (d⁻¹ * ‖deriv (undoConjugation d (conjugate d v)) t‖ ^ 2 +
-        (a t - (fun _ => 0) t) * ‖undoConjugation d (conjugate d v) t‖ ^ 2)
-    rw [hveq_fun]
+    simp_all
   rw [hmass, henergy]
-  exact conj_energy_lower_bound d hd a ha hapos (conjugate d v) hw_smooth hw_compact
+  apply conj_energy_lower_bound <;> assumption
+end
+
 
 end
 end DedekindZetaZeroFree.KPRadialCoercivity

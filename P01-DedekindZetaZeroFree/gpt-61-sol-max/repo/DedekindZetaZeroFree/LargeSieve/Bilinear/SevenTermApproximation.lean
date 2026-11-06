@@ -45,39 +45,44 @@ def norm (a : Ideal (𝓞 F)) : ℝ := Ideal.absNorm a
 
 namespace Context
 
-def source (C : Context Q) (x : ℝ) : ℂ := C.W x
+section
+variable (C : Context Q)
+include C
+def source   (x : ℝ) : ℂ := C.W x
 
-def kappa (C : Context Q) : ℂ :=
+def kappa   : ℂ :=
   SquareSecondPass.kappa (principalHeckeData F C.hF)
 
-def mass (C : Context Q) : ℂ := ∫ t in Set.Ioi (0 : ℝ), C.source (t ^ 2)
+def mass   : ℂ := ∫ t in Set.Ioi (0 : ℝ), C.source (t ^ 2)
 
-def origin (C : Context Q) : ℂ :=
+def origin   : ℂ :=
   -(2 : ℂ) ^ (principalComplexPlaces F - 1) * C.kappa * mellin C.source 1
 
-def estimatePrefactor (C : Context Q) : ℝ := norm C.d * C.M / C.N
+def estimatePrefactor   : ℝ := norm C.d * C.M / C.N
 
-def Y1 (C : Context Q) (B : ℝ) (e : Ideal (𝓞 F)) : ℝ :=
+def Y1   (B : ℝ) (e : Ideal (𝓞 F)) : ℝ :=
   C.N * Real.sqrt (norm e) / (norm C.d * Real.sqrt (2 * B * C.M)) *
     Real.rpow (C.M * C.N) (-C.δ)
 
-def Z1 (C : Context Q) (B : ℝ) (e : Ideal (𝓞 F)) : ℝ :=
+def Z1   (B : ℝ) (e : Ideal (𝓞 F)) : ℝ :=
   C.N * Real.sqrt (norm e) / (norm C.d * Real.sqrt (B * C.M)) *
     Real.rpow (C.M * C.N) C.δ
 
-def Y2 (C : Context Q) (B : ℝ) : ℝ :=
+def Y2   (B : ℝ) : ℝ :=
   Real.sqrt (C.M / (2 * B)) * Real.rpow (C.M * C.N) (-C.δ)
 
-def Z2 (C : Context Q) (B : ℝ) : ℝ :=
+def Z2   (B : ℝ) : ℝ :=
   Real.sqrt (C.M / B) * Real.rpow (C.M * C.N) C.δ
 
-def L1 (C : Context Q) : ℝ := 8 * Real.rpow (C.M * C.N) (2 * C.δ)
+def L1   : ℝ := 8 * Real.rpow (C.M * C.N) (2 * C.δ)
 
-def L2 (C : Context Q) : ℝ := C.L1
+def L2   : ℝ := C.L1
 
-def columns (C : Context Q) : Finset (Ideal (𝓞 F)) :=
+def columns   : Finset (Ideal (𝓞 F)) :=
   (Sieve.idealAdmissibleFinset F c (2 * C.N / norm C.d)).filter
     (fun u => C.d * u ∈ Sieve.paperShell F c C.N ∧ Q.cls (C.d * u) = C.g)
+end
+
 
 structure ValidPair (C : Context Q) (p : Ideal (𝓞 F) × Ideal (𝓞 F)) : Prop where
   hu0 : p.1 ≠ ⊥
@@ -99,8 +104,11 @@ structure ValidPair (C : Context Q) (p : Ideal (𝓞 F) × Ideal (𝓞 F)) : Pro
 def pairs (C : Context Q) : Finset (Ideal (𝓞 F) × Ideal (𝓞 F)) :=
   (C.columns ×ˢ C.columns).filter (ValidPair C)
 
- theorem transport_exists (C : Context Q)
-    (p : Ideal (𝓞 F) × Ideal (𝓞 F)) (hp : ValidPair C p) :
+ section
+variable (C : Context Q)
+    (p : Ideal (𝓞 F) × Ideal (𝓞 F)) (hp : ValidPair C p)
+include C p hp
+theorem transport_exists   :
     ∃ ψ : DedekindZetaZeroFree.RayClassCharacter F (p.1 * p.2),
       ψ.IsPrimitive ∧
       (∀ I, I ⊔ (Q.cond p.1 * Q.cond p.2) = ⊤ →
@@ -115,12 +123,10 @@ def pairs (C : Context Q) : Finset (Ideal (𝓞 F) × Ideal (𝓞 F)) :=
   have h := And.intro (C.D.all_conductor_dvd b hb hbc) (C.D.all_index_dvd b hb hbc)
   simpa only [C.core] using h
 
-def primitive (C : Context Q) (p : Ideal (𝓞 F) × Ideal (𝓞 F))
-    (hp : ValidPair C p) : DedekindZetaZeroFree.RayClassCharacter F (p.1 * p.2) :=
+def primitive   : DedekindZetaZeroFree.RayClassCharacter F (p.1 * p.2) :=
   (transport_exists C p hp).choose
 
-theorem primitive_spec (C : Context Q) (p : Ideal (𝓞 F) × Ideal (𝓞 F))
-    (hp : ValidPair C p) :
+theorem primitive_spec   :
     (C.primitive p hp).IsPrimitive ∧
       (∀ I, I ⊔ (Q.cond p.1 * Q.cond p.2) = ⊤ →
         C.primitive p hp I = (Q.χ p.1) I * starRingEnd ℂ ((Q.χ p.2) I)) ∧
@@ -130,11 +136,12 @@ theorem primitive_spec (C : Context Q) (p : Ideal (𝓞 F) × Ideal (𝓞 F))
           C.primitive p hp I = (Q.χ p.1) I * starRingEnd ℂ ((Q.χ p.2) I)) :=
   (transport_exists C p hp).choose_spec
 
-theorem primitive_quadratic (C : Context Q) (p : Ideal (𝓞 F) × Ideal (𝓞 F))
-    (hp : ValidPair C p) (I : Ideal (𝓞 F)) :
+theorem primitive_quadratic   (I : Ideal (𝓞 F)) :
     (C.primitive p hp I) ^ 3 = C.primitive p hp I :=
   ((primitiveProductQuadratic Q hp.hu0 hp.hv0 hp.hu hp.hv hp.huc hp.hvc hp.huv
     hp.hquotientClass (C.primitive p hp) (C.primitive_spec p hp).2.1).1 I).2.2.1
+end
+
 
 def pairSum (C : Context Q)
     (f : (p : Ideal (𝓞 F) × Ideal (𝓞 F)) → ValidPair C p → ℂ) : ℂ :=
@@ -146,13 +153,17 @@ def coefficient (C : Context Q) (p : Ideal (𝓞 F) × Ideal (𝓞 F)) : ℂ :=
 def mobiusDivisors (C : Context Q) : Finset (Ideal (𝓞 F)) :=
   idealDivisors (c * C.d).radical
 
-def dualScale (C : Context Q) (e : Ideal (𝓞 F))
-    (p : Ideal (𝓞 F) × Ideal (𝓞 F)) : ℝ := norm e * norm (p.1 * p.2) / C.M
+section
+variable (C : Context Q) (e : Ideal (𝓞 F))
+    (p : Ideal (𝓞 F) × Ideal (𝓞 F))
+include C e p
+def dualScale   : ℝ := norm e * norm (p.1 * p.2) / C.M
 
-def prefactor (C : Context Q) (e : Ideal (𝓞 F))
-    (p : Ideal (𝓞 F) × Ideal (𝓞 F)) (hp : ValidPair C p) : ℂ :=
+def prefactor   (hp : ValidPair C p) : ℂ :=
   (UniqueFactorizationMonoid.moebius e : ℂ) * C.primitive p hp e *
     ((C.M : ℂ) / ((norm e : ℂ) * (Real.sqrt (norm (p.1 * p.2)) : ℂ)))
+end
+
 
 def largeDensity (j : Ideal (𝓞 F)) (Z : ℝ) : ℂ :=
   ∑ f ∈ (idealDivisors j).filter (fun f => Z < norm f),
@@ -168,41 +179,49 @@ def middle (k : ℝ → ℂ) (j : Ideal (𝓞 F)) (T Y Z L : ℝ) : ℂ :=
       ∑ b ∈ (boundedNormIdeals F L).filter (fun b => b ≠ ⊥),
         k (norm b * T / norm f)
 
-def originalKernel (C : Context Q) : ℝ → ℂ :=
+section
+variable (C : Context Q)
+include C
+def originalKernel   : ℝ → ℂ :=
   fieldTransform (principalDiscriminant F) (principalComplexPlaces F)
     (fun x => C.source (x ^ 2))
 
-def reflectedKernel (C : Context Q) : ℝ → ℂ :=
+def reflectedKernel   : ℝ → ℂ :=
   SquareSecondPass.reflectedTransform (principalDiscriminant F)
     (principalComplexPlaces F) C.source
 
-def originalRows (C : Context Q) (B : ℝ) (unit : Bool := false) : Finset (Ideal (𝓞 F)) :=
+def originalRows   (B : ℝ) (unit : Bool := false) : Finset (Ideal (𝓞 F)) :=
   if unit then ReflectedSigma4.unitRows c (c * C.d) C.K
   else sigma4DyadicRows F (c * C.d) C.K B
 
-def reflectedCoreRows (C : Context Q) (B : ℝ) (unit : Bool := false) :
+def reflectedCoreRows   (B : ℝ) (unit : Bool := false) :
     Finset (Ideal (𝓞 F)) :=
   if unit then ReflectedSigma4.unitRows c c C.K
   else sigma4DyadicRows F c C.K B
 
-def reflectedRowIndices (C : Context Q) (B : ℝ) (unit : Bool := false) :
+def reflectedRowIndices   (B : ℝ) (unit : Bool := false) :
     Finset (Ideal (𝓞 F) × Ideal (𝓞 F)) :=
   ((squarefreeBadPool c) ×ˢ C.reflectedCoreRows B unit).filter
     (fun tr => tr.1 ⊔ tr.2 = ⊤ ∧ Squarefree (tr.1 * tr.2) ∧ tr.1 * tr.2 ≠ ⊥)
 
-def reflectedRows (C : Context Q) (B : ℝ) (unit : Bool := false) :
+def reflectedRows   (B : ℝ) (unit : Bool := false) :
     Finset (Ideal (𝓞 F)) :=
   (C.reflectedRowIndices B unit).image (fun tr => tr.1 * tr.2)
 
-def reflectedTopRows (C : Context Q) : Finset (Ideal (𝓞 F)) :=
+def reflectedTopRows   : Finset (Ideal (𝓞 F)) :=
   (C.reflectedRows 1 true).filter (fun a => a = ⊤)
 
-def reflectedSupportedUnitRows (C : Context Q) : Finset (Ideal (𝓞 F)) :=
+def reflectedSupportedUnitRows   : Finset (Ideal (𝓞 F)) :=
   (C.reflectedRows 1 true).filter (fun a => a ≠ ⊤)
+end
+
 
 end Context
 
-def T (C : Context Q) (B : ℝ) (unit : Bool := false) : ℂ :=
+section
+variable (C : Context Q) (B : ℝ)
+include C B
+def T   (unit : Bool := false) : ℂ :=
   C.pairSum fun p hp => C.coefficient p *
     ∑ e ∈ C.mobiusDivisors, C.prefactor e p hp *
       ∑ a ∈ C.reflectedRows B unit,
@@ -210,13 +229,13 @@ def T (C : Context Q) (B : ℝ) (unit : Bool := false) : ℂ :=
           (Real.sqrt (C.dualScale e p / norm a) : ℂ) * C.mass *
           (sigma4Rho (p.1 * p.2) : ℂ)
 
-def Tprime (C : Context Q) (B : ℝ) (unit : Bool := false) : ℂ :=
+def Tprime   (unit : Bool := false) : ℂ :=
   C.pairSum fun p hp => C.coefficient p *
     ∑ a ∈ C.originalRows B unit,
       C.primitive p hp a * C.kappa * (Real.sqrt (C.M / norm a) : ℂ) * C.mass *
         (sigma4Rho ((c * C.d) * (p.1 * p.2)) : ℂ)
 
-def E1 (C : Context Q) (B : ℝ) (unit : Bool := false) : ℂ :=
+def E1   (unit : Bool := false) : ℂ :=
   C.pairSum fun p hp => C.coefficient p *
     ∑ e ∈ C.mobiusDivisors, C.prefactor e p hp *
       ∑ a ∈ C.reflectedRows B unit,
@@ -224,49 +243,54 @@ def E1 (C : Context Q) (B : ℝ) (unit : Bool := false) : ℂ :=
           (Real.sqrt (C.dualScale e p / norm a) : ℂ) * C.mass *
           Context.largeDensity (p.1 * p.2) (C.Z1 B e)
 
-def E2 (C : Context Q) (B : ℝ) (unit : Bool := false) : ℂ :=
+def E2   (unit : Bool := false) : ℂ :=
   -C.pairSum fun p hp => C.coefficient p *
     ∑ e ∈ C.mobiusDivisors, C.prefactor e p hp *
       ∑ a ∈ C.reflectedRows B unit,
         C.primitive p hp a * C.origin * Context.originDivisors (p.1 * p.2) (C.Z1 B e)
 
-def E3 (C : Context Q) (B : ℝ) (unit : Bool := false) : ℂ :=
+def E3   (unit : Bool := false) : ℂ :=
   C.pairSum fun p hp => C.coefficient p *
     ∑ e ∈ C.mobiusDivisors, C.prefactor e p hp *
       ∑ a ∈ C.reflectedRows B unit,
         C.primitive p hp a * Context.middle C.reflectedKernel (p.1 * p.2)
           (Real.sqrt (C.dualScale e p / norm a)) (C.Y1 B e) (C.Z1 B e) C.L1
 
-def E4 (C : Context Q) (B : ℝ) (unit : Bool := false) : ℂ :=
+def E4   (unit : Bool := false) : ℂ :=
   C.pairSum fun p hp => C.coefficient p *
     ∑ a ∈ C.originalRows B unit,
       C.primitive p hp a * C.kappa * (Real.sqrt (C.M / norm a) : ℂ) * C.mass *
         Context.largeDensity ((c * C.d) * (p.1 * p.2)) (C.Z2 B)
 
-def E5 (C : Context Q) (B : ℝ) (unit : Bool := false) : ℂ :=
+def E5   (unit : Bool := false) : ℂ :=
   C.pairSum fun p hp => C.coefficient p *
     ∑ a ∈ C.originalRows B unit,
       C.primitive p hp a * Context.middle C.originalKernel ((c * C.d) * (p.1 * p.2))
         (Real.sqrt (C.M / norm a)) (C.Y2 B) (C.Z2 B) C.L2
+end
+
 
 namespace Context
 
-theorem source_smooth (C : Context Q) : ContDiff ℝ ∞ C.source :=
+section
+variable (C : Context Q)
+include C
+theorem source_smooth   : ContDiff ℝ ∞ C.source :=
   Complex.ofRealCLM.contDiff.comp C.hW.smooth
 
-theorem source_support (C : Context Q) :
+theorem source_support   :
     Function.support C.source ⊆ Set.Icc (1 / 2 : ℝ) (5 / 2) := by
   intro x hx
   by_contra h
   exact hx (by simp [source, C.hW.zero_outside x h])
 
-theorem source_compact (C : Context Q) : HasCompactSupport C.source :=
+theorem source_compact   : HasCompactSupport C.source :=
   HasCompactSupport.of_support_subset_isCompact isCompact_Icc C.source_support
 
-theorem source_zero (C : Context Q) : C.source 0 = 0 := by
+theorem source_zero   : C.source 0 = 0 := by
   simp [source, C.hW.zero_outside 0 (by norm_num)]
 
-def originalRemainder (C : Context Q) (j : Ideal (𝓞 F)) (T Y Z L : ℝ) : ℂ :=
+def originalRemainder   (j : Ideal (𝓞 F)) (T Y Z L : ℝ) : ℂ :=
   ReflectedTails.primalTail F (fun x => C.source (x ^ 2)) T
     ((idealDivisors j).filter (fun f => Z < norm f))
     (fun f => (UniqueFactorizationMonoid.moebius f : ℂ)) +
@@ -277,12 +301,17 @@ def originalRemainder (C : Context Q) (j : Ideal (𝓞 F)) (T Y Z L : ℝ) : ℂ
     ((idealDivisors j).filter (fun f => Y < norm f ∧ norm f ≤ Z))
     (fun f => (UniqueFactorizationMonoid.moebius f : ℂ))
 
-def reflectedRemainder (C : Context Q) (j : Ideal (𝓞 F)) (T Y Z L : ℝ) : ℂ :=
+def reflectedRemainder   (j : Ideal (𝓞 F)) (T Y Z L : ℝ) : ℂ :=
   ReflectedCoprimeTruncation.remainder F C.source j T Y Z L
+end
+
 
 end Context
 
-def R (C : Context Q) (B : ℝ) (unit : Bool := false) : ℂ :=
+section
+variable (C : Context Q)
+include C
+def R   (B : ℝ) (unit : Bool := false) : ℂ :=
   (C.pairSum fun p hp => C.coefficient p *
     ∑ e ∈ C.mobiusDivisors, C.prefactor e p hp *
       ∑ a ∈ C.reflectedRows B unit,
@@ -293,24 +322,26 @@ def R (C : Context Q) (B : ℝ) (unit : Bool := false) : ℂ :=
       C.primitive p hp a * C.originalRemainder ((c * C.d) * (p.1 * p.2))
         (Real.sqrt (C.M / norm a)) (C.Y2 B) (C.Z2 B) C.L2)
 
-def sevenTermBlock (C : Context Q) (B : ℝ) (unit : Bool := false) : ℂ :=
+def sevenTermBlock   (B : ℝ) (unit : Bool := false) : ℂ :=
   T C B unit - Tprime C B unit - E1 C B unit - E2 C B unit +
     E3 C B unit + E4 C B unit - E5 C B unit
 
-def dyadicScales (C : Context Q) : Finset ℝ :=
+def dyadicScales   : Finset ℝ :=
   (Finset.range (Vendor.dyadicLength C.K)).image (fun i => (2 : ℝ) ^ i)
 
-def unitBlock (C : Context Q) : ℂ := sevenTermBlock C 1 true
+def unitBlock   : ℂ := sevenTermBlock C 1 true
 
-def cutoffRemainder (C : Context Q) : ℂ :=
+def cutoffRemainder   : ℂ :=
   C.pairSum fun p hp => C.coefficient p *
     primitiveMobiusTransformTail c C.d C.W C.M C.K p.1 p.2 (C.primitive p hp)
 
-def totalRemainder (C : Context Q) : ℂ :=
+def totalRemainder   : ℂ :=
   cutoffRemainder C + R C 1 true + ∑ B ∈ dyadicScales C, R C B
 
-def sevenTermSum (C : Context Q) : ℂ :=
+def sevenTermSum   : ℂ :=
   unitBlock C + ∑ B ∈ dyadicScales C, sevenTermBlock C B
+end
+
 
 end DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms
 

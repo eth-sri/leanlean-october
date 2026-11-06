@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.SetTheory.Cardinal.Finite
 public import ClassFieldTheory.LubinTate.EqualCharacteristic.CompletedLevel.DirectLubinTateBracket
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -51,16 +54,16 @@ noncomputable def equalCharacteristicDirectBracketScalarCoefficient
 
 /-- Coefficients of `[tail(a)] ∘ e_T`. -/
 noncomputable def equalCharacteristicDirectBracketTailCompositionCoefficient
-    (a : k⟦X⟧) : ℕ → (AlgebraicClosure k)⟦X⟧ :=
+    (a : k⟦X⟧)  :=
   equalCharacteristicLubinTateSubstitutionCoefficient
-    (PowerSeries.X : (AlgebraicClosure k)⟦X⟧)
+    PowerSeries.X
     (equalCharacteristicCompletedDirectBracketCoefficient
       (equalCharacteristicPowerSeriesTail a))
 
 /-- Coefficients of the recursive candidate
 `a₀Y + [tail(a)] ∘ e_T`. -/
 noncomputable def equalCharacteristicDirectBracketRecursiveCoefficient
-    (a : k⟦X⟧) : ℕ → (AlgebraicClosure k)⟦X⟧ :=
+    (a : k⟦X⟧)  :=
   fun j ↦ equalCharacteristicDirectBracketScalarCoefficient a j +
     equalCharacteristicDirectBracketTailCompositionCoefficient a j
 
@@ -91,7 +94,7 @@ private theorem equalCharacteristicDirectBracketScalarSeries_eq
   · have hne : n ≠ 1 := by
       intro h
       subst n
-      exact hn ⟨0, by simp⟩
+      exact hn ⟨0, rfl⟩
     rw [equalCharacteristicQAdditiveSeries_coeff_eq_zero k _ n hn,
       PowerSeries.coeff_C_mul]
     rw [PowerSeries.coeff_X, ite_eq_right hne]
@@ -127,10 +130,10 @@ theorem equalCharacteristicDirectQAdditiveEndomorphism_succ_comparison
     (hcommutes :
       PowerSeries.subst (equalCharacteristicQAdditiveSeries k c)
           (equalCharacteristicCompletedLubinTateSeries (k := k)
-            (PowerSeries.X : (AlgebraicClosure k)⟦X⟧)) =
+            PowerSeries.X) =
         PowerSeries.subst
           (equalCharacteristicCompletedLubinTateSeries (k := k)
-            (PowerSeries.X : (AlgebraicClosure k)⟦X⟧))
+            PowerSeries.X)
           (equalCharacteristicQAdditiveSeries k c))
     (j : ℕ) :
     PowerSeries.X * c (j + 1) -
@@ -155,7 +158,7 @@ private theorem equalCharacteristicDirectBracketScalarCoefficient_succ_compariso
           equalCharacteristicDirectBracketScalarCoefficient a (j + 1) =
       equalCharacteristicDirectBracketScalarCoefficient a j -
         equalCharacteristicDirectBracketScalarCoefficient a j ^ Nat.card k := by
-  let : Fintype k := Fintype.ofFinite k
+  let  := Fintype.ofFinite k
   cases j with
   | zero =>
       simp [equalCharacteristicDirectBracketScalarCoefficient,
@@ -168,19 +171,19 @@ private theorem equalCharacteristicDirectBracketTailCompositionSeries_commutes
         (equalCharacteristicQAdditiveSeries k
           (equalCharacteristicDirectBracketTailCompositionCoefficient a))
         (equalCharacteristicCompletedLubinTateSeries (k := k)
-          (PowerSeries.X : (AlgebraicClosure k)⟦X⟧)) =
+          PowerSeries.X) =
       PowerSeries.subst
         (equalCharacteristicCompletedLubinTateSeries (k := k)
-          (PowerSeries.X : (AlgebraicClosure k)⟦X⟧))
+          PowerSeries.X)
         (equalCharacteristicQAdditiveSeries k
           (equalCharacteristicDirectBracketTailCompositionCoefficient a)) := by
   let E := equalCharacteristicCompletedLubinTateSeries (k := k)
-    (PowerSeries.X : (AlgebraicClosure k)⟦X⟧)
+    PowerSeries.X
   let H := equalCharacteristicCompletedDirectBracket
     (equalCharacteristicPowerSeriesTail a)
   have hE : PowerSeries.HasSubst E :=
     equalCharacteristicCompletedLubinTateSeries_hasSubst
-      (PowerSeries.X : (AlgebraicClosure k)⟦X⟧)
+      PowerSeries.X
   have hH : PowerSeries.HasSubst H :=
     equalCharacteristicCompletedDirectBracket_hasSubst
       (equalCharacteristicPowerSeriesTail a)
@@ -191,7 +194,7 @@ private theorem equalCharacteristicDirectBracketTailCompositionSeries_commutes
     unfold equalCharacteristicDirectBracketTailCompositionCoefficient
     change equalCharacteristicQAdditiveSeries k
         (equalCharacteristicLubinTateSubstitutionCoefficient
-          (PowerSeries.X : (AlgebraicClosure k)⟦X⟧)
+          PowerSeries.X
           (equalCharacteristicCompletedDirectBracketCoefficient
             (equalCharacteristicPowerSeriesTail a))) =
       PowerSeries.subst E
@@ -199,13 +202,11 @@ private theorem equalCharacteristicDirectBracketTailCompositionSeries_commutes
           (equalCharacteristicCompletedDirectBracketCoefficient
             (equalCharacteristicPowerSeriesTail a)))
     exact (equalCharacteristicQAdditiveSeries_subst_completedLubinTateSeries
-      (k := k) (PowerSeries.X : (AlgebraicClosure k)⟦X⟧)
+      (k := k) PowerSeries.X
       (equalCharacteristicCompletedDirectBracketCoefficient
         (equalCharacteristicPowerSeriesTail a))).symm
   have hcomm : PowerSeries.subst H E = PowerSeries.subst E H := by
-    simpa only [H, E] using
-      equalCharacteristicCompletedDirectBracket_commutes
-        (equalCharacteristicPowerSeriesTail a)
+    apply equalCharacteristicCompletedDirectBracket_commutes
   rw [hcomp]
   calc
     PowerSeries.subst (PowerSeries.subst E H) E =
@@ -213,16 +214,9 @@ private theorem equalCharacteristicDirectBracketTailCompositionSeries_commutes
       (PowerSeries.subst_comp_subst_apply hH hE E).symm
     _ = PowerSeries.subst E (PowerSeries.subst E H) := by rw [hcomm]
 
-private theorem
+private def
     equalCharacteristicDirectBracketTailCompositionCoefficient_succ_comparison
-    (a : k⟦X⟧) (j : ℕ) :
-    PowerSeries.X *
-          equalCharacteristicDirectBracketTailCompositionCoefficient a (j + 1) -
-        PowerSeries.X ^ (Nat.card k ^ (j + 1)) *
-          equalCharacteristicDirectBracketTailCompositionCoefficient a (j + 1) =
-      equalCharacteristicDirectBracketTailCompositionCoefficient a j -
-        equalCharacteristicDirectBracketTailCompositionCoefficient a j ^
-          Nat.card k :=
+    (a : k⟦X⟧) (j : ℕ)  :=
   equalCharacteristicDirectQAdditiveEndomorphism_succ_comparison
     (equalCharacteristicDirectBracketTailCompositionCoefficient a)
     (equalCharacteristicDirectBracketTailCompositionSeries_commutes a) j
@@ -332,8 +326,8 @@ theorem equalCharacteristicCompletedDirectEndomorphismCoefficient_unique
         simp [gamma, hpow.ne]
       have hunique := existsUnique_contractingFrobeniusEquation
         (RingHom.id (AlgebraicClosure k)) gamma 0 hgamma
-      have hdelta : delta = 0 := hunique.unique (by simpa using hhom) (by simp)
-      exact sub_eq_zero.mp (by simpa only [delta] using hdelta)
+      have hdelta : delta = 0 := hunique.unique (hhom) (by simp)
+      apply sub_eq_zero.mp <;> assumption
 
 /-- Formal recursive identity for the standard bracket. -/
 theorem equalCharacteristicCompletedDirectBracket_recursion
@@ -347,9 +341,7 @@ theorem equalCharacteristicCompletedDirectBracket_recursion
             (PowerSeries.X : (AlgebraicClosure k)⟦X⟧))
           (equalCharacteristicCompletedDirectBracket
             (equalCharacteristicPowerSeriesTail a)) := by
-  have hcoeff :
-      equalCharacteristicCompletedDirectBracketCoefficient a =
-        equalCharacteristicDirectBracketRecursiveCoefficient a :=
+  have hcoeff  :=
     equalCharacteristicCompletedDirectEndomorphismCoefficient_unique
       (equalCharacteristicCompletedDirectBracketCoefficient a)
       (equalCharacteristicDirectBracketRecursiveCoefficient a)
@@ -358,7 +350,7 @@ theorem equalCharacteristicCompletedDirectBracket_recursion
       (equalCharacteristicDirectBracketRecursiveCoefficient_succ_comparison a)
   rw [equalCharacteristicCompletedDirectBracket,
     ← equalCharacteristicDirectBracketRecursiveSeries_eq]
-  exact congrArg (equalCharacteristicQAdditiveSeries k) hcoeff
+  apply congrArg <;> assumption
 
 end EqualCharacteristic
 end LubinTate

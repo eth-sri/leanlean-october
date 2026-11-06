@@ -1,4 +1,6 @@
 module
+
+public import Mathlib
 public import Mathlib.Analysis.SpecialFunctions.Pow.Deriv
 
 public import Mathlib.RingTheory.Polynomial.ShiftedLegendre
@@ -7,6 +9,7 @@ public import Mathlib.Analysis.Calculus.Deriv.Polynomial
 public import Mathlib.Tactic
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.ComplexFractionalInverse.HarmonicIdentity
 open MeasureTheory Polynomial
@@ -52,7 +55,7 @@ private lemma poly_relation (n : ℕ) :
     simpa [coeff_derivative, coeff_shiftedLegendre, Nat.cast_add, Nat.cast_one,
       add_mul, mul_add, mul_comm, mul_left_comm, mul_assoc] using coeff_relation n (k+1)
 
-noncomputable def leg (n : ℕ) : ℝ[X] := (shiftedLegendre n).map (Int.castRingHom ℝ)
+noncomputable def leg (n : ℕ)  := (shiftedLegendre n).map (Int.castRingHom ℝ)
 
 private lemma leg_one (n : ℕ) : (leg n).eval 1 = (-1 : ℝ)^n := by
   have h := shiftedLegendre_eval_symm n (0 : ℝ)
@@ -70,23 +73,24 @@ private lemma leg_relation (n : ℕ) (u : ℝ) :
   have h := congrArg (fun p : ℝ[X] => p.eval u) (poly_relation n)
   simpa [leg, derivative_add] using h
 
-private lemma weight_leg_integrable (n : ℕ) (α : ℝ) (hα : 0 < α) :
-    IntervalIntegrable (fun u : ℝ => α * u^(α-1) * (leg n).eval u) volume 0 1 := by
-  exact ((intervalIntegral.intervalIntegrable_rpow' (by linarith)).const_mul α).mul_continuousOn
+section
+variable (n : ℕ) (α : ℝ) (hα : 0 < α)
+include n α hα
+private lemma weight_leg_integrable   :
+    IntervalIntegrable (fun u : ℝ => α * u^(α-1) * (leg n).eval u) volume 0 1 := ((intervalIntegral.intervalIntegrable_rpow' (by linarith)).const_mul α).mul_continuousOn
     (leg n).continuous.continuousOn
 
-private lemma recurrence (n : ℕ) (α : ℝ) (hα : 0 < α) :
+private lemma recurrence   :
     (α + (n+1)) * (∫ u : ℝ in 0..1, α * u^(α-1) * (leg (n+1)).eval u) =
       ((n+1)-α) * (∫ u : ℝ in 0..1, α * u^(α-1) * (leg n).eval u) := by
-  let F : ℝ → ℝ := fun u => α * u^α * ((leg (n+1)).eval u + (leg n).eval u)
-  let f : ℝ → ℝ := fun u =>
+  let F  := fun u => α * u^α * ((leg (n+1)).eval u + (leg n).eval u)
+  let f  := fun u =>
     (α+(n+1)) * (α * u^(α-1) * (leg (n+1)).eval u) -
     ((n+1)-α) * (α * u^(α-1) * (leg n).eval u)
   have hf : IntervalIntegrable f volume 0 1 :=
     ((weight_leg_integrable (n+1) α hα).const_mul _).sub
       ((weight_leg_integrable n α hα).const_mul _)
-  have hc : ContinuousOn F (Set.Icc 0 1) := by
-    exact ((continuous_const.mul (Real.continuous_rpow_const hα.le)).mul
+  have hc : ContinuousOn F (Set.Icc 0 1) := ((continuous_const.mul (Real.continuous_rpow_const hα.le)).mul
       ((leg (n+1)).continuous.add (leg n).continuous)).continuousOn
   have hd : ∀ u ∈ Set.Ioo (0 : ℝ) 1, HasDerivAt F (f u) u := by
     intro u hu
@@ -113,7 +117,7 @@ private lemma recurrence (n : ℕ) (α : ℝ) (hα : 0 < α) :
     intervalIntegral.integral_const_mul, intervalIntegral.integral_const_mul] at hi
   linarith
 
-private lemma integral_formula (n : ℕ) (α : ℝ) (hα : 0 < α) :
+private lemma integral_formula   :
     (∫ u : ℝ in 0..1, α * u^(α-1) * (leg n).eval u) =
       ∏ j ∈ Finset.Icc 1 n, (((j : ℝ)-α)/((j : ℝ)+α)) := by
   induction n with
@@ -131,6 +135,8 @@ private lemma integral_formula (n : ℕ) (α : ℝ) (hα : 0 < α) :
     push_cast
     field_simp
     <;> ring
+end
+
 
 theorem shiftedLegendre_beta (ℓ : ℕ) (α : ℝ) (hα : 0 < α) (hα1 : α < 1) :
     (∫ u : ℝ in Set.Icc 0 1,

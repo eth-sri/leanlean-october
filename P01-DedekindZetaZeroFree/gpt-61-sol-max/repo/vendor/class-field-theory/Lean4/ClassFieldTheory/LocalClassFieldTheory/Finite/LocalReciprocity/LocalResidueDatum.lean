@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.LocalClassFieldTheory.Finite.LocalReciprocity.ResidueActionIndex
 public import ValuedFieldTheory.Valuation.DiscreteValuationField.FiniteIntegralClosure
 public import ValuedFieldTheory.Ramification.GaloisValuation.AbsoluteGalois.FiniteExtensionCorrespondence
 public import ValuedFieldTheory.LocalField.NonarchimedeanLocalField.FiniteExtensionCompleteDVF
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -66,8 +69,7 @@ local instance localSeparableClosureScalarTower :
 
 /-- A Chevalley extension of the local valuation to the chosen algebraic
 closure.  This is the valuation choice `w | v` made in the finite local reciprocity construction. -/
- noncomputable def localAbsoluteValuationSubring :
-    ValuationSubring (AlgebraicClosure K) :=
+ noncomputable def localAbsoluteValuationSubring  :=
   Classical.choose
     (ValuationTheory.DiscreteValuationField.Valuation.exists_extension_valuationSubring
       (L := AlgebraicClosure K) (localCompleteDVF K).valuation)
@@ -84,18 +86,17 @@ ring of `K`. -/
     ⟨_hmap, _hlocal, hpullback⟩
   exact hpullback x
 
- noncomputable instance localAbsoluteValuationHasExtension :
-    (localCompleteDVF K).valuation.HasExtension
-      (localAbsoluteValuationSubring K).valuation :=
-  ValuationTheory.DiscreteValuationField.Valuation.hasExtension_valuation_of_valuationSubring_pullback
-    (localCompleteDVF K).valuation (localAbsoluteValuationSubring K)
-      (localAbsoluteValuationSubring_pullback K)
+
+
+
+
+
+
 
 /-- The valuation ring on the separable closure used in finite local reciprocity.
 We choose it
 as the pullback of the auxiliary valuation ring on the algebraic closure. -/
-noncomputable def localSeparableValuationSubring :
-    ValuationSubring (SeparableClosure K) :=
+noncomputable def localSeparableValuationSubring  :=
   (localAbsoluteValuationSubring K).comap
     (algebraMap (SeparableClosure K) (AlgebraicClosure K))
 
@@ -127,7 +128,7 @@ theorem localSeparableValuationSubring_eq_of_hasExtension
     [(localCompleteDVF K).valuation.HasExtension B.valuation] :
     localSeparableValuationSubring K = B := by
   ext z
-  let E : IntermediateField K (SeparableClosure K) :=
+  let E  :=
     IntermediateField.adjoin K ({z} : Set (SeparableClosure K))
   let : FiniteDimensional K E :=
     IntermediateField.adjoin.finiteDimensional
@@ -149,16 +150,16 @@ theorem localSeparableValuationSubring_eq_of_hasExtension
   let : (localCompleteDVF K).valuation.HasExtension Bres.valuation :=
     RamificationTheory.ValuationSubring.restrictIntermediateField_hasExtension
       (localCompleteDVF K).valuation B E
-  have hA : target.valuation.valuationSubring = Ares :=
+  have hA  :=
     ValuationTheory.DiscreteValuationField.ValuedExtension.target_valuationSubring_eq_of_finite_separable
       (localCompleteDVF K) target Ares
-  have hB : target.valuation.valuationSubring = Bres :=
+  have hB  :=
     ValuationTheory.DiscreteValuationField.ValuedExtension.target_valuationSubring_eq_of_finite_separable
       (localCompleteDVF K) target Bres
-  have hAB : Ares = Bres := hA.symm.trans hB
+  have hAB  := hA.symm.trans hB
   let zE : E :=
     ⟨z, IntermediateField.subset_adjoin (F := K)
-      (S := ({z} : Set (SeparableClosure K))) (by simp)⟩
+      (S := ({z} : Set (SeparableClosure K))) (rfl)⟩
   change zE ∈ Ares ↔ zE ∈ Bres
   rw [hAB]
 
@@ -200,16 +201,14 @@ decomposition field is the original local valuation ring. -/
       eKZ (x : K) ∈ decompositionFieldValuationSubring K A := by
     change ((eKZ x : Z) : SeparableClosure K) ∈ A
     have he : ((eKZ x : Z) : SeparableClosure K) =
-        algebraMap K (SeparableClosure K) (x : K) := by
-      rfl
+        algebraMap K (SeparableClosure K) (x : K) := rfl
     rw [he]
     exact (localSeparableValuationSubring_pullback K (x : K)).2 x.property
   have hinv (z : decompositionFieldValuationSubring K A) :
       eKZ.symm (z : Z) ∈ (localCompleteDVF K).valuation.valuationSubring := by
     apply (localSeparableValuationSubring_pullback K (eKZ.symm (z : Z))).1
     have he : algebraMap K (SeparableClosure K) (eKZ.symm (z : Z)) =
-        ((z : Z) : SeparableClosure K) := by
-      exact congrArg Subtype.val (eKZ.apply_symm_apply (z : Z))
+        ((z : Z) : SeparableClosure K) := congrArg Subtype.val (eKZ.apply_symm_apply (z : Z))
     rw [he]
     exact z.property
   exact
@@ -252,8 +251,7 @@ theorem localBaseResidueEquivDecompositionResidue_algebraMap
       IsLocalRing.residue (localSeparableValuationSubring K)
         (⟨algebraMap K (SeparableClosure K) (x : K),
           (localSeparableValuationSubring_pullback K (x : K)).2
-            x.property⟩ : localSeparableValuationSubring K) := by
-  rfl
+            x.property⟩ : localSeparableValuationSubring K) := rfl
 
 /-- The residue field attached to the local decomposition datum is finite. -/
 noncomputable instance localDecompositionResidueFinite :
@@ -291,7 +289,7 @@ instance localSelectedResidueIsAlgClosed :
   let : Algebra.IsAlgebraic (decompositionResidueField K B)
       (selectedResidueField B) :=
     (decompositionResidueExtension_normal (K := K) B).toIsAlgebraic
-  let : PerfectField (selectedResidueField B) :=
+  let  :=
     Algebra.IsAlgebraic.perfectField
       (K := decompositionResidueField K B)
       (L := selectedResidueField B)
@@ -311,8 +309,7 @@ instance localSelectedResidueIsAlgClosed :
 
 /-- A fixed representative in the chosen valuation ring of a residue class. -/
  noncomputable def localSelectedResidueLift
-    (x : selectedResidueField (localSeparableValuationSubring K)) :
-    localSeparableValuationSubring K :=
+    (x : selectedResidueField (localSeparableValuationSubring K))  :=
   Classical.choose (IsLocalRing.residue_surjective x)
 
 @[simp]
@@ -333,8 +330,8 @@ finitely many elements. -/
         (localSeparableDecompositionGroup_eq_top K)) := by
   classical
   let A := localSeparableValuationSubring K
-  let k : Type := decompositionResidueField K A
-  let Omega : Type := selectedResidueField A
+  let k  := decompositionResidueField K A
+  let Omega  := selectedResidueField A
   let hA := localSeparableDecompositionGroup_eq_top K
   let rho := residueAlgActionOfEqTop K A hA
   refine continuous_of_continuousAt_one rho ?_
@@ -347,11 +344,11 @@ finitely many elements. -/
   let : FiniteDimensional k E := hE
   let : Finite E := Module.finite_of_finite
     (decompositionResidueField K (localSeparableValuationSubring K))
-  let : Fintype E := Fintype.ofFinite E
-  let lifts : Finset (SeparableClosure K) :=
+  let  := Fintype.ofFinite E
+  let lifts  :=
     Finset.univ.image (fun x : E =>
       ((localSelectedResidueLift K (x : Omega) : A) : SeparableClosure K))
-  let F : IntermediateField K (SeparableClosure K) :=
+  let F  :=
     IntermediateField.adjoin K (lifts : Set (SeparableClosure K))
   let : FiniteDimensional K F :=
     IntermediateField.finiteDimensional_adjoin (fun x _hx =>
@@ -372,7 +369,7 @@ finitely many elements. -/
   have haF : (a : SeparableClosure K) ∈ F :=
     IntermediateField.subset_adjoin (F := K)
       (S := (lifts : Set (SeparableClosure K))) ha_lifts
-  have hfix : sigma (a : SeparableClosure K) = (a : SeparableClosure K) :=
+  have hfix  :=
     (IntermediateField.mem_fixingSubgroup_iff F sigma).mp hsigma
       (a : SeparableClosure K) haF
   change rho sigma (y : Omega) = (y : Omega)

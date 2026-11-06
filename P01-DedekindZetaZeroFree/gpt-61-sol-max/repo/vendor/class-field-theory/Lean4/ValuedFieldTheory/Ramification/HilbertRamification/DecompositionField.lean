@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Ramification.HilbertRamification.DecompositionGroup
 public import Mathlib.FieldTheory.Galois.Infinite
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -35,8 +38,7 @@ variable (K : Type u) {L : Type v} [Field K] [Field L] [Algebra K L]
 
 /-- The decomposition-field definition: the decomposition field `Z_w` of a
 absolute value `w` over `K`. -/
-abbrev absoluteValueDecompositionField (w : AbsoluteValue L ℝ) :
-    IntermediateField K L :=
+abbrev absoluteValueDecompositionField (w : AbsoluteValue L ℝ)  :=
   IntermediateField.fixedField (absoluteValueDecompositionGroup K w)
 
 @[simp] theorem mem_absoluteValueDecompositionField_iff
@@ -55,7 +57,7 @@ theorem absoluteValueDecompositionGroup_isClosed
     rw [Set.mem_compl_iff, SetLike.mem_coe,
       mem_absoluteValueDecompositionGroup_iff] at hσ
     rcases Classical.not_forall.mp hσ with ⟨x, hx⟩
-    let E : IntermediateField K L := IntermediateField.adjoin K {x}
+    let E  := IntermediateField.adjoin K {x}
     let : FiniteDimensional K E :=
       IntermediateField.adjoin.finiteDimensional
         (Algebra.IsIntegral.isIntegral x)
@@ -67,22 +69,22 @@ theorem absoluteValueDecompositionGroup_isClosed
         mem_absoluteValueDecompositionGroup_iff]
       intro hmem
       apply hx
-      have hgx : g x = x :=
+      have hgx  :=
         (IntermediateField.mem_fixingSubgroup_iff E g).mp hg x
-          (IntermediateField.subset_adjoin (F := K) (S := {x}) (by simp))
+          (IntermediateField.subset_adjoin (F := K) (S := {x}) (rfl))
       simpa [AlgEquiv.mul_apply, hgx] using hmem x
     · exact E.fixingSubgroup_isOpen.smul σ
-    · exact ⟨1, E.fixingSubgroup.one_mem, by simp⟩
+    · exact ⟨1, E.fixingSubgroup.one_mem, rfl⟩
 
-/-- For a finite or infinite Galois extension, the decomposition group is the
-subgroup fixing its decomposition field. -/
-theorem absoluteValueDecompositionField_fixingSubgroup_eq
-    [IsGalois K L] (w : AbsoluteValue L ℝ) :
-    (absoluteValueDecompositionField K w).fixingSubgroup =
-      absoluteValueDecompositionGroup K w := by
-  let H : ClosedSubgroup (L ≃ₐ[K] L) :=
-    ⟨absoluteValueDecompositionGroup K w, absoluteValueDecompositionGroup_isClosed K w⟩
-  exact InfiniteGalois.fixingSubgroup_fixedField H
+
+
+
+
+
+
+
+
+
 
 end HilbertRamification
 

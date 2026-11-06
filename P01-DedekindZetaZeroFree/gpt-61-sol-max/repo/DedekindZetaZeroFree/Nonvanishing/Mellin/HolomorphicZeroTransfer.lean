@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 public import DedekindZetaZeroFree.Nonvanishing.Mellin.PuncturedHalfPlane
 
 @[expose] public section
+
 
 open Filter
 open scoped Topology
@@ -31,7 +34,7 @@ theorem mellin_holomorphic_zero_transfer
     rintro z ⟨t, -, rfl⟩
     exact haxis t
 
-  have heq : Set.EqOn (fun z => L z * T z) N {s : ℂ | σ < s.re ∧ s ≠ 1} :=
+  have heq  :=
     hprod.eqOn_of_preconnected_of_frequently_eq hN
       (mellin_punctured_halfplane_isPreconnected σ hσ)
       (mellin_punctured_halfplane_two_mem σ hσ) hfreq

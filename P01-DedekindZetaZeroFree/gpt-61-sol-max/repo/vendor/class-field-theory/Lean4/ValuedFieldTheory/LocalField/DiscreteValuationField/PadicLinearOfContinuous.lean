@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import Mathlib.NumberTheory.Padics.RingHoms
 public import Mathlib.Topology.Algebra.Module.Basic
 public import Mathlib.LinearAlgebra.Pi
@@ -7,6 +9,7 @@ public import Mathlib.LinearAlgebra.Isomorphisms
 public import Mathlib.RingTheory.Finiteness.Finsupp
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -35,11 +38,14 @@ noncomputable section
 
 namespace LocalFieldTheory.DiscreteValuationField
 
+section
+variable {C G : Type*} [AddZeroClass C] [MulOneClass G]
+    [TopologicalSpace C] [TopologicalSpace G]
+include C G
 /-- Turn a topological group equivalence whose source is an additive group
 written multiplicatively into the inverse topological additive equivalence. -/
 noncomputable def continuousAddEquivOfMultiplicativeSource
-    {C G : Type*} [AddZeroClass C] [MulOneClass G]
-    [TopologicalSpace C] [TopologicalSpace G]
+     
     (e : Multiplicative C ≃ₜ* G) : Additive G ≃ₜ+ C :=
   { (MulEquiv.toAdditiveRight e.toMulEquiv).symm with
     continuous_toFun := e.continuous_invFun
@@ -49,12 +55,13 @@ noncomputable def continuousAddEquivOfMultiplicativeSource
 topological multiplicative equivalence after tagging the source
 multiplicatively. -/
 noncomputable def continuousMulEquivOfAdditiveTarget
-    {C G : Type*} [AddZeroClass C] [MulOneClass G]
-    [TopologicalSpace C] [TopologicalSpace G]
+     
     (e : C ≃ₜ+ Additive G) : Multiplicative C ≃ₜ* G :=
   { e.toAddEquiv.toMultiplicativeLeft with
     continuous_toFun := e.continuous_toFun
     continuous_invFun := e.continuous_invFun }
+end
+
 
 variable {p : ℕ} [Fact p.Prime]
 variable {A B : Type*}
@@ -74,7 +81,7 @@ theorem map_padicInt_smul_of_continuous
     hf.comp (continuous_id.smul continuous_const)
   have hright : Continuous (fun z : ℤ_[p] => z • f x) :=
     continuous_id.smul continuous_const
-  have hclosed : IsClosed {z : ℤ_[p] | f (z • x) = z • f x} :=
+  have hclosed  :=
     isClosed_eq hleft hright
   refine PadicInt.denseRange_natCast.induction_on a hclosed ?_
   intro n
@@ -115,20 +122,20 @@ theorem continuous_padicInt_finPi_linearMap
   rw [hfun]
   fun_prop
 
-/-- Finite generation across a short exact sequence, phrased for a
-surjective linear map.  This avoids unfolding a large ambient module when a
-finite kernel and finite quotient are already available. -/
-theorem moduleFinite_of_surjective_of_ker
-    {R M N : Type*} [Ring R]
-    [AddCommGroup M] [AddCommGroup N] [Module R M] [Module R N]
-    (f : M →ₗ[R] N) (hf : Function.Surjective f)
-    [Module.Finite R N] [Module.Finite R (LinearMap.ker f)] :
-    Module.Finite R M := by
-  let e : (M ⧸ LinearMap.ker f) ≃ₗ[R] N :=
-    f.quotKerEquivOfSurjective hf
-  let : Module.Finite R (M ⧸ LinearMap.ker f) :=
-    Module.Finite.equiv e.symm
-  exact Module.Finite.of_submodule_quotient (LinearMap.ker f)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end LocalFieldTheory.DiscreteValuationField
 

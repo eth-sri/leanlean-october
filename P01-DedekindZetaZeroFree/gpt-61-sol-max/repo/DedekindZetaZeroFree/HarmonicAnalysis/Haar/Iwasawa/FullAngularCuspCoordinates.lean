@@ -122,7 +122,7 @@ local instance (d : ℕ) : CompactSpace (Fin d → KPCplxPrincipalSeriesCharts.c
 
 section NumberField
 open scoped NumberField
-variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
+variable {F : Type} [Field F] [NumberField F] {ζ : F} 
 
 local instance : BorelSpace (KPSmoothActualFlowData.GInfinity F) := ⟨rfl⟩
 local instance : BorelSpace (KPMsGreenFlux.K F) := ⟨rfl⟩

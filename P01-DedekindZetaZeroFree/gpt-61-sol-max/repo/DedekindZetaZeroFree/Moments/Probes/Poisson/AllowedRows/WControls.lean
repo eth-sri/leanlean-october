@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Moments.Probes.Poisson.AllowedRows.LowKernel
 public import DedekindZetaZeroFree.Analysis.ContourIntegration.SimplePoleShift
 public import DedekindZetaZeroFree.LFunctions.Hecke.PoissonRows.StripBounds
@@ -7,6 +9,7 @@ public import DedekindZetaZeroFree.Moments.Probes.Poisson.AllowedRows.KernelGrow
 public import DedekindZetaZeroFree.Moments.Probes.Poisson.InitialIntegralIdentity
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.Quantitative.LowRowWControls
 
@@ -67,14 +70,14 @@ theorem WL_bound (u : D.Row) (hu : u.u ≠ 1) (B : ℝ) :
     apply Real.rpow_le_rpow_of_exponent_le (by linarith [abs_nonneg t]); linarith
   have hsplit : (1 + |t|) ^ A * ((1 + |t|) ^ (-(k : ℝ))) = (1 + |t|) ^ (A - k) := by
     rw [← Real.rpow_add hpos]; ring_nf
-  have hkk : ((1 + |t|) ^ k : ℝ) = (1 + |t|) ^ (k : ℝ) := (Real.rpow_natCast _ _).symm
-  have ha0 : 0 ≤ ‖D.W1Hat ((y : ℂ) + (t : ℂ) * I)‖ := norm_nonneg _
+  have hkk : ((1 + |t|) ^ k) = (1 + |t|) ^ (k : ℝ) := (Real.rpow_natCast _ _).symm
+  
   have ha : ‖D.W1Hat ((y : ℂ) + (t : ℂ) * I)‖ ≤ |CW| * (1 + |t|) ^ (-(k : ℝ)) := by
     rw [Real.rpow_neg hpos.le, ← hkk, ← div_eq_mul_inv, le_div_iff₀ (pow_pos hpos k)]
     nlinarith [le_abs_self CW]
   have hLn : ‖D.Lpsi u ((y : ℂ) + (t : ℂ) * I)‖ ≤ CL * (2 ^ A * (1 + |t|) ^ A) :=
     hL'.trans (mul_le_mul_of_nonneg_left h2t hCL.le)
-  have hp1 : 0 ≤ (1 + |t|) ^ A := Real.rpow_nonneg hpos.le _
+  
   calc ‖D.W1Hat ((y : ℂ) + (t : ℂ) * I)‖ * ‖D.Lpsi u ((y : ℂ) + (t : ℂ) * I)‖
       ≤ (|CW| * (1 + |t|) ^ (-(k : ℝ))) * (CL * (2 ^ A * (1 + |t|) ^ A)) :=
         mul_le_mul ha hLn (norm_nonneg _) (by positivity)
@@ -83,13 +86,16 @@ theorem WL_bound (u : D.Row) (hu : u.u ≠ 1) (B : ℝ) :
     _ ≤ (CL * 2 ^ A * |CW|) * (1 + |t|) ^ (-B) :=
         mul_le_mul_of_nonneg_left hexp (by positivity)
 
-theorem K_bound (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) (hξ : ξ.re = 4)
+section
+variable (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) (hξ : ξ.re = 4)
+include u hu Z hZ ξ hξ in
+theorem K_bound  
     (B : ℝ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ y s t : ℝ, Scales.wLine - EulerDomain.pad / 2 ≤ y →
       y ≤ 4 + EulerDomain.pad / 2 →
       ‖PoissonKernel.K D u ξ ((y : ℂ) + (t : ℂ) * I) ((Scales.zLine : ℂ) + (s : ℂ) * I) Z‖ ≤
         C * (1 + |s|) ^ (-(2 : ℝ)) * (1 + |t|) ^ (-B) := by
-  have hq : 0 < D.q u := PoissonInitialBridge.q_pos D u
+  have hq  := PoissonInitialBridge.q_pos D u
   have hp : (0 : ℝ) < EulerDomain.pad := by unfold EulerDomain.pad; norm_num
   obtain ⟨CWL, hCWL0, hWL⟩ := WL_bound D u hu B
   obtain ⟨C1, hC1, hz⟩ := RowKernelGrowth.zetaSCont_line_bound D
@@ -146,8 +152,7 @@ theorem K_bound (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) (
     rw [Real.rpow_neg hpos.le, Real.rpow_two, ← div_eq_mul_inv, le_div_iff₀ (pow_pos hpos 2),
       mul_comm]
     exact h'
-  have hmem : ((ξ, ((y : ℂ) + (t : ℂ) * I), ((Scales.zLine : ℂ) + (s : ℂ) * I)) :
-      EulerDomain.Coordinates) ∈ EulerDomain.paddedBoxes := by
+  have hmem : ((ξ, ((y : ℂ) + (t : ℂ) * I), ((Scales.zLine : ℂ) + (s : ℂ) * I))) ∈ EulerDomain.paddedBoxes := by
     have h1 : Scales.goodLine - EulerDomain.pad ≤ ξ.re := by
       rw [hξ]; unfold Scales.goodLine; linarith
     have h2 : (3 / 25 : ℝ) - EulerDomain.pad ≤ ((y : ℂ) + (t : ℂ) * I).re := by
@@ -157,7 +162,7 @@ theorem K_bound (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) (
     exact Or.inl (Or.inl ⟨h1, h2, h3⟩)
   have hHb : ‖EulerDomain.Hu D u ξ ((y : ℂ) + (t : ℂ) * I) ((Scales.zLine : ℂ) + (s : ℂ) * I)‖ ≤
       CH * D.q u ^ (1 : ℝ) := (hHu u _ hmem).2
-  have hzb : ‖D.zetaSCont (6 * ((Scales.zLine : ℂ) + (s : ℂ) * I))‖ ≤ C1 :=
+  have hzb  :=
     hz _ hzre
   have hWL' := hWL y t h1y h2y
   have hq1 : 0 ≤ D.q u ^ (-Scales.zLine) := Real.rpow_nonneg hq.le _
@@ -171,7 +176,7 @@ theorem K_bound (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) (
   calc _ ≤ _ := hfin
     _ = _ := by ring
 
-def DecayOn (f : ℂ → ℂ) (a b : ℝ) : Prop :=
+def DecayOn (f : ℂ → ℂ) (a b : ℝ)  :=
   ∀ B : ℝ, 0 < B → ∃ C T0 : ℝ, ∀ x ∈ Icc a b, ∀ y : ℝ, T0 ≤ |y| →
     ‖f ((x : ℂ) + (y : ℂ) * I)‖ ≤ C * (1 + |y|) ^ (-B)
 
@@ -186,30 +191,31 @@ theorem verticalIntegral_eq_of_decayOn {a b : ℝ} {f : ℂ → ℂ} (hab : a < 
     apply Filter.mem_of_superset
       (((isOpen_lt continuous_const Complex.continuous_re).inter
         (isOpen_lt Complex.continuous_re continuous_const)).mem_nhds
-        (show a < (m : ℂ).re ∧ (m : ℂ).re < b from ⟨ham, hmb⟩))
+        ((⟨ham, hmb⟩)))
     intro z hz
     exact ⟨hz.1.le, hz.2.le⟩
-  have hcont : ContinuousAt f (m : ℂ) := (hf.differentiableAt hnb).continuousAt
-  have hres : Tendsto (fun z : ℂ => (z - (m : ℂ)) * f z) (𝓝[≠] (m : ℂ)) (𝓝 0) := by
-    have h : Tendsto (fun z : ℂ => (z - (m : ℂ)) * f z) (𝓝 (m : ℂ)) (𝓝 ((m - m : ℂ) * f m)) :=
+  have hcont  := (hf.differentiableAt hnb).continuousAt
+  have hres : Tendsto (fun z : ℂ => (z - (m : ℂ)) * f z) (𝓝[≠] m) (𝓝 0) := by
+    have h : Tendsto (fun z : ℂ => (z - (m : ℂ)) * f z) (𝓝 m) (𝓝 ((m - m : ℂ) * f m)) :=
       ((continuous_id.sub continuous_const).continuousAt.mul hcont).tendsto
     simpa using h.mono_left nhdsWithin_le_nhds
   have := SimplePoleVerticalShift.verticalIntegral_sub_eq_residue_of_decay ham hmb
     (hf.mono diff_subset) hres C T0
-    (fun x hx y hy => by simpa [Real.rpow_neg_natCast] using hbound x hx y hy)
+    (fun x hx y hy => by apply hbound <;> assumption)
   linear_combination this
 
-theorem K_diffAt (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) (hξ : ξ.re = 4)
+include u hu Z hZ ξ hξ in
+theorem K_diffAt  
     (w z : ℂ) (hw : Scales.wLine - EulerDomain.pad / 2 ≤ w.re) (hz : z.re = Scales.zLine) :
     DifferentiableAt ℂ (fun w' : ℂ => PoissonKernel.K D u ξ w' z Z) w ∧
       DifferentiableAt ℂ (fun z' : ℂ => PoissonKernel.K D u ξ w z' Z) z := by
-  have hq : 0 < D.q u := PoissonInitialBridge.q_pos D u
-  have hZc : (Z : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hZ.ne'
-  have hqc : (D.q u : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hq.ne'
+  have hq  := PoissonInitialBridge.q_pos D u
+  have hZc  := Complex.ofReal_ne_zero.mpr hZ.ne'
+  have hqc  := Complex.ofReal_ne_zero.mpr hq.ne'
   have hw' : (1 / 10 : ℝ) ≤ w.re := by
     unfold Scales.wLine EulerDomain.pad at hw; linarith
   have hz' : z.re = 2 / 5 := by unfold Scales.zLine at hz; exact hz
-  have hmem : ((ξ, w, z) : EulerDomain.Coordinates) ∈ EulerDomain.OmegaStar := by
+  have hmem : ((ξ, w, z)) ∈ EulerDomain.OmegaStar := by
     show 0 < ξ.re ∧ 0 < w.re ∧ 0 < z.re ∧ 1 < 6 * z.re + w.re ∧ 1 < ξ.re + 6 * z.re ∧
       1 < ξ.re + w.re ∧ 2 < ξ.re + w.re + 6 * z.re ∧ 5 < 6 * ξ.re + 6 * z.re ∧ 1 / 2 < ξ.re ∧
       2 < 3 * ξ.re ∧ 5 / 2 < 3 * ξ.re + w.re
@@ -219,24 +225,24 @@ theorem K_diffAt (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) 
     have := congrArg Complex.re h
     simp [Complex.mul_re] at this
     linarith
-  have hLlam : D.Llam u ξ ≠ 0 :=
+  have hLlam  :=
     RightHeckeBounds.Llam_ne_zero_of_one_lt D u ξ (by rw [hξ]; norm_num)
   have hRF := RowAnalyticContinuation.rowFactor_differentiableAt D u hu ξ w z hmem hz6 hLlam
   have hRFw : DifferentiableAt ℂ (fun w' : ℂ => PoissonKernel.rowFactor D u ξ w' z) w := by
-    have h2 : DifferentiableAt ℂ (fun w' : ℂ => ((ξ, w', z) : ℂ × ℂ × ℂ)) w :=
+    have h2 : DifferentiableAt ℂ (fun w' : ℂ => ((ξ, w', z))) w :=
       (differentiableAt_const _).prodMk (differentiableAt_id.prodMk (differentiableAt_const _))
     have h3 : DifferentiableAt ℂ ((fun p : ℂ × ℂ × ℂ => PoissonKernel.rowFactor D u p.1 p.2.1 p.2.2) ∘
-        (fun w' : ℂ => ((ξ, w', z) : ℂ × ℂ × ℂ))) w := DifferentiableAt.comp w hRF h2
+        (fun w' : ℂ => ((ξ, w', z)))) w := DifferentiableAt.comp w hRF h2
     exact h3
   have hRFz : DifferentiableAt ℂ (fun z' : ℂ => PoissonKernel.rowFactor D u ξ w z') z := by
-    have h2 : DifferentiableAt ℂ (fun z' : ℂ => ((ξ, w, z') : ℂ × ℂ × ℂ)) z :=
+    have h2 : DifferentiableAt ℂ (fun z' : ℂ => ((ξ, w, z'))) z :=
       (differentiableAt_const _).prodMk ((differentiableAt_const _).prodMk differentiableAt_id)
     have h3 : DifferentiableAt ℂ ((fun p : ℂ × ℂ × ℂ => PoissonKernel.rowFactor D u p.1 p.2.1 p.2.2) ∘
-        (fun z' : ℂ => ((ξ, w, z') : ℂ × ℂ × ℂ))) z := DifferentiableAt.comp z hRF h2
+        (fun z' : ℂ => ((ξ, w, z')))) z := DifferentiableAt.comp z hRF h2
     exact h3
-  have hW : Differentiable ℂ D.W1Hat := RowAnalyticContinuation.W1Hat_differentiable D
+  have hW  := RowAnalyticContinuation.W1Hat_differentiable D
   have hMopen : IsOpen {z : ℂ | 0 < z.re} := isOpen_lt continuous_const Complex.continuous_re
-  have hM : DifferentiableAt ℂ D.M z :=
+  have hM  :=
     D.M_differentiableOn.differentiableAt (hMopen.mem_nhds (by show 0 < z.re; linarith))
   constructor
   · have hpow : DifferentiableAt ℂ (fun w' : ℂ => (Z : ℂ) ^ ((Scales.xExponent / 2 : ℝ) + ξ - 1 +
@@ -255,7 +261,8 @@ theorem K_diffAt (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) 
     unfold PoissonKernel.K PoissonKernel.kernelWith
     exact ((((hpow.mul hexp).mul hM).mul (differentiableAt_const _)).mul hqp).mul hRFz
 
-theorem Iz_w_holo (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) (hξ : ξ.re = 4) :
+include u hu Z hZ ξ hξ in
+theorem Iz_w_holo   :
     DifferentiableOn ℂ (fun w => Iz D u ξ w Scales.zLine Z)
       (comparisonClosedStrip Scales.wLine 4) := by
   have hp : (0 : ℝ) < EulerDomain.pad := by unfold EulerDomain.pad; norm_num
@@ -270,8 +277,7 @@ theorem Iz_w_holo (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ)
       PoissonKernel.K D u ξ w ((Scales.zLine : ℂ) + (s : ℂ) * I) Z := ⟨_, fun _ _ => rfl⟩
   have hcont : ∀ w ∈ U, Continuous (G w) := by
     intro w hw
-    have hfun : G w = fun s : ℝ => (2 * (Real.pi : ℂ))⁻¹ *
-        PoissonKernel.K D u ξ w ((Scales.zLine : ℂ) + (s : ℂ) * I) Z := funext (hG w)
+    have hfun  := funext (hG w)
     rw [hfun]
     refine continuous_const.mul ?_
     refine continuous_iff_continuousAt.mpr (fun s => ?_)
@@ -285,8 +291,7 @@ theorem Iz_w_holo (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ)
     fun w hw => (hcont w hw).aestronglyMeasurable
   have hdiff : ∀ s : ℝ, DifferentiableOn ℂ (fun w => G w s) U := by
     intro s w hw
-    have hfun : (fun w => G w s) = fun w : ℂ => (2 * (Real.pi : ℂ))⁻¹ *
-        PoissonKernel.K D u ξ w ((Scales.zLine : ℂ) + (s : ℂ) * I) Z := funext fun w => hG w s
+    have hfun  := funext fun w => hG w s
     rw [hfun]
     exact (((K_diffAt D u hu Z hZ ξ hξ w ((Scales.zLine : ℂ) + (s : ℂ) * I)
       (hwU w hw).1.le (by simp)).1).const_mul _).differentiableWithinAt
@@ -338,7 +343,8 @@ theorem Iz_w_holo (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ)
   · rw [hlo]; linarith
   · rw [hhi]; linarith
 
-theorem Iz_w_decay (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) (hξ : ξ.re = 4) :
+include u hu Z hZ ξ hξ in
+theorem Iz_w_decay   :
     DecayOn (fun w => Iz D u ξ w Scales.zLine Z) Scales.wLine 4 := by
   intro B hB
   have hp : (0 : ℝ) < EulerDomain.pad := by unfold EulerDomain.pad; norm_num
@@ -368,11 +374,14 @@ theorem Iz_w_decay (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ
     _ = ‖(2 * (Real.pi : ℂ))⁻¹‖ * (C * ∫ s : ℝ, (1 + |s|) ^ (-(2 : ℝ))) * (1 + |y|) ^ (-B) := by
         ring
 
-theorem Iwz_shift (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) (hξ : ξ.re = 4) :
+include u hu Z hZ ξ hξ in
+theorem Iwz_shift   :
     Iwz D u ξ 4 Scales.zLine Z = Iwz D u ξ Scales.wLine Scales.zLine Z := by
   unfold Iwz
   exact verticalIntegral_eq_of_decayOn (by norm_num [Scales.wLine])
     (Iz_w_holo D u hu Z hZ ξ hξ) (Iz_w_decay D u hu Z hZ ξ hξ)
+end
+
 
 end
 

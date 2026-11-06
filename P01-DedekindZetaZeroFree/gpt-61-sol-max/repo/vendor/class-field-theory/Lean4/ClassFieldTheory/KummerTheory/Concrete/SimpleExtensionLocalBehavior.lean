@@ -336,16 +336,19 @@ theorem
     isUnramifiedValuedExtension_of_unit_kummer_generator
       n bC betaF hbCVal hnCVal hbetaFVal hbetaFpow hgenF
 
+section
+variable (n : ℕ+)
+    (hnK : ((n : ℕ) : K) ≠ 0)
+    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
+    (b : Kˣ)
+    (v : HeightOneSpectrum (𝓞 K))
+include n hnK hmu b v
 /-- A chosen simple Kummer extension is unramified at a finite place where its
 radicand and exponent are units.  This is the direct specialization of
 the generated-extension derivative criterion above. -/
 theorem
     chosenSimpleKummerExtension_chosenFinitePlaceIsUnramified_of_valuation_eq_one
-    (n : ℕ+)
-    (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (b : Kˣ)
-    (v : HeightOneSpectrum (𝓞 K))
+     
     (hb : v.valuation K (b : K) = 1)
     (hn : v.valuation K ((n : ℕ) : K) = 1) :
     let L := chosenSimpleKummerExtension K n hnK b
@@ -381,11 +384,7 @@ are units, the chosen simple Kummer extension is globally unramified in the
 ideal-theoretic sense. -/
 theorem
     chosenSimpleKummerExtension_isUnramifiedAt_at_all_finitePlacesAbove_of_valuation_eq_one
-    (n : ℕ+)
-    (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (b : Kˣ)
-    (v : HeightOneSpectrum (𝓞 K))
+     
     (hb : v.valuation K (b : K) = 1)
     (hn : v.valuation K ((n : ℕ) : K) = 1) :
     let L := chosenSimpleKummerExtension K n hnK b
@@ -425,11 +424,7 @@ the radicand is already an `n`-th power in the completion.  This is the
 finite-place splitting source used in the local splitting analysis of simple radical extensions. -/
 theorem
     chosenSimpleKummerExtension_finitePlaceSplitsCompletely_of_mem_nthPowerSubgroup
-    (n : ℕ+)
-    (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (b : Kˣ)
-    (v : HeightOneSpectrum (𝓞 K))
+     
     (hb :
       Units.map
             (algebraMap K (v.adicCompletion K)).toMonoidHom b ∈
@@ -485,6 +480,8 @@ theorem
   change D = ⊥
   rw [← IntermediateField.fixingSubgroup_fixedField D,
     htop, IntermediateField.fixingSubgroup_top]
+end
+
 
 set_option maxHeartbeats 400000 in
 omit [NumberField K] in

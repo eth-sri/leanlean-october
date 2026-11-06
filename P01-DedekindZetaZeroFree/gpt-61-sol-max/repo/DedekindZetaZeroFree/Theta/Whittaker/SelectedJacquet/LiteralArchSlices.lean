@@ -29,15 +29,17 @@ set_option maxHeartbeats 1600000
 set_option backward.isDefEq.respectTransparency false
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-def literalArchSlice (K : Subgroup (G F ζ hζ)) (f : Flat F ζ hζ K)
-    (w : InfinitePlace F) (a : KPSmoothActualFlowData.GInfinity F)
+section
+variable (K : Subgroup (G F ζ hζ)) (f : Flat F ζ hζ K)
+    (w : InfinitePlace F)
+include K f w
+def literalArchSlice   (a : KPSmoothActualFlowData.GInfinity F)
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ) (g : ComplexGL2) : ℂ :=
   f.val 0 (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
     (Function.update a w (Matrix.ProjGenLinGroup.mk g)) * c.val)
 
 theorem literalArchSlice_lower_smooth
-    (K : Subgroup (G F ζ hζ)) (f : Flat F ζ hζ K)
-    (w : InfinitePlace F) (a : KPSmoothActualFlowData.GInfinity F)
+      (a : KPSmoothActualFlowData.GInfinity F)
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ) (g : ComplexGL2) :
     ContDiff ℝ (⊤ : ℕ∞) (fun u : ℂ => literalArchSlice F ζ hζ K f w a c
       (lowerUnipotent u * g)) := by
@@ -56,8 +58,7 @@ theorem literalArchSlice_lower_smooth
     update_left_mul, map_mul]
 
 theorem literalArchSlice_charts_smooth
-    (K : Subgroup (G F ζ hζ)) (f : Flat F ζ hζ K)
-    (w : InfinitePlace F) (a : KPSmoothActualFlowData.GInfinity F)
+      (a : KPSmoothActualFlowData.GInfinity F)
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ) :
     ContDiff ℝ (⊤ : ℕ∞) (openCoordinate (literalArchSlice F ζ hζ K f w a c)) ∧
       ContDiff ℝ (⊤ : ℕ∞) (infinityCoordinate (literalArchSlice F ζ hζ K f w a c)) := by
@@ -70,8 +71,7 @@ theorem literalArchSlice_charts_smooth
       literalArchSlice_lower_smooth F ζ hζ K f w a c 1
 
 theorem literalArchSlice_covariance
-    (K : Subgroup (G F ζ hζ)) (f : Flat F ζ hζ K)
-    (w : InfinitePlace F) (a₀ : KPSmoothActualFlowData.GInfinity F)
+      (a₀ : KPSmoothActualFlowData.GInfinity F)
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ) :
     HasCovariance positiveParameter (literalArchSlice F ζ hζ K f w a₀ c) := by
   intro a d b g
@@ -140,15 +140,19 @@ theorem literalArchSlice_covariance
   ring
 
 def literalArchPrincipalSeries
-    (K : Subgroup (G F ζ hζ)) (f : Flat F ζ hζ K)
-    (w : InfinitePlace F) (a : KPSmoothActualFlowData.GInfinity F)
+      (a : KPSmoothActualFlowData.GInfinity F)
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ) : PrincipalSeries positiveParameter :=
   ⟨literalArchSlice F ζ hζ K f w a c, literalArchSlice_covariance F ζ hζ K f w a c,
     literalArchSlice_charts_smooth F ζ hζ K f w a c⟩
+end
 
+
+section
+variable (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
+    (f : Flat F ζ hζ K)
+include K hK f
 theorem literalArchPrincipalSeries_kfinite
-    (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (f : Flat F ζ hζ K) (w : InfinitePlace F)
+      (w : InfinitePlace F)
     (a : KPSmoothActualFlowData.GInfinity F)
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ) :
     KPContHolomorphicKGeneration.IsKFinite positiveParameter
@@ -203,8 +207,7 @@ theorem literalArchPrincipalSeries_kfinite
   exact FiniteDimensional.of_injective T.rangeRestrict hi
 
 theorem literalArchPrincipalSeries_uniform_band
-    (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (f : Flat F ζ hζ K) :
+      :
     ∃ B : ℕ, ∀ (w : InfinitePlace F)
       (a : KPSmoothActualFlowData.GInfinity F)
       (c : KPGlobalTorusFunctionData.finitePart F ζ hζ),
@@ -268,6 +271,8 @@ theorem literalArchPrincipalSeries_uniform_band
   apply Finset.sup_le
   intro i hi
   exact Finset.le_sup ((Finset.range_mono (Nat.add_le_add_right hrank 1)) hi)
+end
+
 
 end DedekindZetaZeroFree.SheetRescaling
 

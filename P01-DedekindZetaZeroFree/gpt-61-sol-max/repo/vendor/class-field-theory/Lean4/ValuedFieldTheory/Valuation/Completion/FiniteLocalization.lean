@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicLocalization
 public import ValuedFieldTheory.Valuation.Completion.AbsoluteValueExtensions
 public import Mathlib.Analysis.Normed.Module.FiniteDimension
@@ -7,6 +9,7 @@ public import Mathlib.RingTheory.TensorProduct.Finite
 public import Mathlib.RingTheory.TensorProduct.Maps
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -51,11 +54,14 @@ nontrivially normed field structure on `K_v`. -/
       ⟨x, hx0, hx1⟩
     exact ⟨x, hx0, hx1⟩)
 
+section
+variable {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
+    (vK : AbsoluteValue K ℝ) (w : AbsoluteValueExtension vK L)
+include K L vK w
 /-- The completion `L_w` is a normed algebra over `K_v`: its scalar map is
 the isometric completion map supplied by the valuation-extension theorem. -/
 @[reducible] noncomputable def absoluteValueExtension_completionNormedAlgebra
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    (vK : AbsoluteValue K ℝ) (w : AbsoluteValueExtension vK L) :
+      :
     letI := AbsoluteValue.completionAlgebra vK w.1 w.2
     NormedAlgebra vK.Completion w.1.Completion := by
   letI := AbsoluteValue.completionAlgebra vK w.1 w.2
@@ -69,12 +75,11 @@ the isometric completion map supplied by the valuation-extension theorem. -/
 
 /-- Multiplication gives the canonical map `K_v ⊗_K L → L_w`. -/
 noncomputable def absoluteValueExtension_localizationTensorHom
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    (vK : AbsoluteValue K ℝ) (w : AbsoluteValueExtension vK L) :
+      :
     letI := AbsoluteValue.completionAlgebra vK w.1 w.2
     vK.Completion ⊗[K] L →ₐ[vK.Completion] w.1.Completion := by
   letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
-  letI : SMul K w.1.Completion := hK.toSMul
+  letI  := hK.toSMul
   letI := AbsoluteValue.completionAlgebra vK w.1 w.2
   letI : IsScalarTower K vK.Completion w.1.Completion :=
     AbsoluteValue.completion_isScalarTower vK w.1 w.2
@@ -85,8 +90,7 @@ noncomputable def absoluteValueExtension_localizationTensorHom
 
 @[simp]
 theorem absoluteValueExtension_localizationTensorHom_tmul
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    (vK : AbsoluteValue K ℝ) (w : AbsoluteValueExtension vK L)
+     
     (b : vK.Completion) (a : L) :
     letI := AbsoluteValue.completionAlgebra vK w.1 w.2
     absoluteValueExtension_localizationTensorHom vK w (b ⊗ₜ[K] a) =
@@ -94,22 +98,27 @@ theorem absoluteValueExtension_localizationTensorHom_tmul
         AbsoluteValue.toCompletionAlgHom (K := K) w.1 a := by
   let := AbsoluteValue.completionAlgebra vK w.1 w.2
   rfl
+end
 
+
+section
+variable {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
+    [FiniteDimensional K L]
+    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
+    (w : AbsoluteValueExtension vK L)
+include K L vK hvK w
 /-- For a finite extension, the canonical map `K_v ⊗_K L → L_w` is
 surjective. -/
 theorem absoluteValueExtension_localizationTensorHom_surjective
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    (w : AbsoluteValueExtension vK L) :
+      :
     letI := AbsoluteValue.completionAlgebra vK w.1 w.2
     Function.Surjective (absoluteValueExtension_localizationTensorHom vK w) := by
   let hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
   let : SMul K w.1.Completion := hK.toSMul
   let := AbsoluteValue.completionAlgebra vK w.1 w.2
-  let : NontriviallyNormedField vK.Completion :=
+  let  :=
     absoluteValueExtension_completionNontriviallyNormedField vK hvK
-  let : NormedAlgebra vK.Completion w.1.Completion :=
+  let  :=
     absoluteValueExtension_completionNormedAlgebra vK w
   let : Module.Finite vK.Completion (vK.Completion ⊗[K] L) :=
     inferInstance
@@ -119,8 +128,7 @@ theorem absoluteValueExtension_localizationTensorHom_surjective
   have hrangeClosed : IsClosed (f.toLinearMap.range : Set w.1.Completion) :=
     Submodule.closed_of_finiteDimensional
       (𝕜 := vK.Completion) f.toLinearMap.range
-  have hdense : DenseRange
-      (AbsoluteValue.toCompletion w.1) :=
+  have hdense  :=
     AbsoluteValue.denseRange_toCompletion w.1
   have hrange : Set.range
       (AbsoluteValue.toCompletion w.1) ⊆
@@ -138,15 +146,12 @@ theorem absoluteValueExtension_localizationTensorHom_surjective
       (Set.range (AbsoluteValue.toCompletion w.1)) := by
     rw [hdense.closure_range]
     trivial
-  exact closure_minimal hrange hrangeClosed hx
+  apply closure_minimal <;> assumption
 
 /-- For a finite extension, the localization `L K_v` inside the
 metric completion is the whole completion `L_w`. -/
 theorem absoluteValueExtension_finiteLocalization_eq_top
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    (w : AbsoluteValueExtension vK L) :
+      :
     letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
     letI : SMul K w.1.Completion := hK.toSMul
     letI := AbsoluteValue.completionAlgebra vK w.1 w.2
@@ -166,6 +171,8 @@ theorem absoluteValueExtension_finiteLocalization_eq_top
         (AbsoluteValue.toAlgebraicLocalization vK w.1 w.2 x).property
   | add x y hx hy =>
       simpa only [map_add] using E.add_mem (hx trivial) (hy trivial)
+end
+
 
 end Valuations
 end AlgebraicNumberTheory
@@ -189,11 +196,14 @@ abbrev LocalizedCompletion
 variable {K : Type u} {L : Type v}
     [Field K] [Field L] [Algebra K L] [FiniteDimensional K L]
 
+section
+variable (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
+    (w : AbsoluteValueExtension vK L)
+include vK hvK w
 /-- The algebraic localization of a finite extension is finite-dimensional
 over the completed base field. -/
 theorem localizedCompletionModuleFinite
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    (w : AbsoluteValueExtension vK L) :
+      :
     letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
     letI : SMul K w.1.Completion := hK.toSMul
     letI : Algebra vK.Completion w.1.Completion :=
@@ -204,7 +214,7 @@ theorem localizedCompletionModuleFinite
     AbsoluteValue.extensionCompletionAlgebra
       (K := K) w.1
   let : SMul K w.1.Completion := hK.toSMul
-  let : Algebra vK.Completion w.1.Completion :=
+  let  :=
     AbsoluteValue.completionAlgebra vK w.1 w.2
   let : Module.Finite vK.Completion
       (vK.Completion ⊗[K] L) :=
@@ -223,15 +233,14 @@ theorem localizedCompletionModuleFinite
 /-- In finite degree the algebraic localization is canonically the whole
 metric completion. -/
 noncomputable def localizedCompletionEquivCompletion
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    (w : AbsoluteValueExtension vK L) :
+      :
     letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
     letI : SMul K w.1.Completion := hK.toSMul
     letI := AbsoluteValue.completionAlgebra vK w.1 w.2
     AbsoluteValue.algebraicLocalization vK w.1 w.2 ≃ₐ[vK.Completion]
       w.1.Completion := by
   letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
-  letI : SMul K w.1.Completion := hK.toSMul
+  letI  := hK.toSMul
   letI := AbsoluteValue.completionAlgebra vK w.1 w.2
   exact
     (IntermediateField.equivOfEq
@@ -240,8 +249,7 @@ noncomputable def localizedCompletionEquivCompletion
 
 @[simp]
 theorem localizedCompletionEquivCompletion_coe
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    (w : AbsoluteValueExtension vK L)
+     
     (x : AbsoluteValue.algebraicLocalization vK w.1 w.2) :
     letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
     letI : SMul K w.1.Completion := hK.toSMul
@@ -249,6 +257,8 @@ theorem localizedCompletionEquivCompletion_coe
     localizedCompletionEquivCompletion vK hvK w x =
       (x : w.1.Completion) :=
   rfl
+end
+
 
 end Valuations
 end AlgebraicNumberTheory

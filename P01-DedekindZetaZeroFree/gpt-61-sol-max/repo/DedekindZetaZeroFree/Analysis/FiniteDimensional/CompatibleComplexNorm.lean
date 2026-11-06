@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.Normed.Module.FiniteDimension
 public import Mathlib.Analysis.Complex.Basic
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.CompatibleFiniteNorm
 
@@ -11,7 +14,7 @@ noncomputable section
 
 variable {𝕜 V : Type*} [NormedField 𝕜] [AddCommGroup V] [Module 𝕜 V]
 
-abbrev normedAddCommGroup (N : AddGroupNorm V) : NormedAddCommGroup V :=
+abbrev normedAddCommGroup (N : AddGroupNorm V)  :=
   N.toNormedAddCommGroup
 
 abbrev normedSpace (N : AddGroupNorm V)
@@ -21,7 +24,7 @@ abbrev normedSpace (N : AddGroupNorm V)
   exact { toModule := (inferInstance : Module 𝕜 V)
           norm_smul_le := fun c v => (hN c v).le }
 
-abbrev topology (N : AddGroupNorm V) : TopologicalSpace V :=
+abbrev topology (N : AddGroupNorm V)  :=
   (normedAddCommGroup N).toMetricSpace.toPseudoMetricSpace.toUniformSpace.toTopologicalSpace
 
 theorem exists_compatible (V : Type*) [AddCommGroup V] [Module ℂ V] [Module.Finite ℂ V] :

@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Adeles.Characters.ArchimedeanAdditiveCharacters
 public import DedekindZetaZeroFree.Adeles.Lattices.ArchimedeanIdealCovolume
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.TateSLocalMeasurability
 noncomputable section
@@ -128,7 +131,7 @@ theorem archimedean_map_mul (g : (InfiniteAdeleRing F)ˣ) :
     (continuous_const.mul continuous_id).measurable
   have hes : Measurable (e.symm : PoissonArch.Space F → InfiniteAdeleRing F) :=
     e.symm.continuous.measurable
-  have hAmeas : Measurable (A : PoissonArch.Space F → PoissonArch.Space F) :=
+  have hAmeas  :=
     A.continuous.measurable
   have hA : (fun x : InfiniteAdeleRing F => g.val * x) ∘
         (e.symm : PoissonArch.Space F → InfiniteAdeleRing F) =

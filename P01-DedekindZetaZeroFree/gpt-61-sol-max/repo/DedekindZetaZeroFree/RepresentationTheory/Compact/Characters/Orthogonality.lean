@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.RepresentationTheory.Compact.SchurOrthogonality
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 The Tau Ceti contributors. All rights reserved.
@@ -33,8 +36,7 @@ variable {𝕜 G V : Type*} [RCLike 𝕜] [Group G] [TopologicalSpace G] [IsTopo
   [CompactSpace G] [MeasurableSpace G] [BorelSpace G]
   [NormedAddCommGroup V] [NormedSpace 𝕜 V] [FiniteDimensional 𝕜 V]
 
-noncomputable def characterLp (π : ContRepresentation 𝕜 G V) (hπ : Continuous π) :
-    Lp 𝕜 2 (haarProb G) :=
+noncomputable def characterLp (π : ContRepresentation 𝕜 G V) (hπ : Continuous π)  :=
   ContinuousMap.toLp 2 (haarProb G) 𝕜 (character π hπ)
 
 variable (π : ContRepresentation 𝕜 G V) (hπ : Continuous π)
@@ -92,8 +94,8 @@ theorem character_orthonormal_self [IsAlgClosed 𝕜] (hunitary : IsUnitary π)
     (hirr : Representation.IsIrreducible π.toRepresentation) :
     ⟪characterLp π hπ, characterLp π hπ⟫_𝕜 = 1 := by
   classical
-  let : Representation.IsIrreducible π.toRepresentation := hirr
-  have hd : (Module.finrank 𝕜 V : 𝕜) ≠ 0 :=
+  let  := hirr
+  have hd  :=
     Representation.IsIrreducible.natCast_finrank_ne_zero hirr
   set e := stdOrthonormalBasis 𝕜 V
 

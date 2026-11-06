@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.Complex.HarmonicKTypes
 public import DedekindZetaZeroFree.MeasureTheory.StereographicProjection.MeasureTransport
 public import DedekindZetaZeroFree.MeasureTheory.Sphere.HeightDistribution
 public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.SphereProjectionRotationInvariance
 
 @[expose] public section
+
 
 section
 
@@ -16,11 +19,11 @@ open ComplexLocal.StereographicTransport
 open scoped RealInnerProductSpace
 
 noncomputable def rawPolynomialSphere (p : MvPolynomial (Fin 3) ℂ)
-    (y : rawSphere) : ℂ :=
+    (y : rawSphere)  :=
   MvPolynomial.eval (fun i => ((y : rawAmbient) i : ℂ)) p
 
 noncomputable def rawLatitudeKernel (w : ℝ → ℝ) (x : rawSphere)
-    (p : MvPolynomial (Fin 3) ℂ) (y : rawSphere) : ℂ :=
+    (p : MvPolynomial (Fin 3) ℂ) (y : rawSphere)  :=
   (w ((1 - inner ℝ (x : rawAmbient) (y : rawAmbient)) / 2) : ℂ) *
     rawPolynomialSphere p y
 
@@ -42,19 +45,22 @@ private theorem coords_norm (k : ComplexSU2) :
 
 namespace TransportGeometry
 
-noncomputable def radius (z : ℂ) : ℝ := Real.sqrt (denominator z)
+section
+variable (z : ℂ)
+include z
+noncomputable def radius    := Real.sqrt (denominator z)
 
-theorem radius_pos (z : ℂ) : 0 < radius z := by
+theorem radius_pos   : 0 < radius z := by
   apply Real.sqrt_pos.mpr
   unfold denominator
   positivity
 
-theorem radius_sq (z : ℂ) : radius z ^ 2 = denominator z := by
+theorem radius_sq   : radius z ^ 2 = denominator z := by
   apply Real.sq_sqrt
   unfold denominator
   positivity
 
-noncomputable def kappa (z : ℂ) : ComplexSU2 :=
+noncomputable def kappa   : ComplexSU2 :=
   ⟨!![star z / (radius z : ℂ), -1 / (radius z : ℂ);
       1 / (radius z : ℂ), z / (radius z : ℂ)], by
     have hn : ‖(1 : ℂ) / (radius z : ℂ)‖ ^ 2 +
@@ -82,19 +88,18 @@ noncomputable def kappa (z : ℂ) : ComplexSU2 :=
     · simp [Matrix.det_fin_two, Complex.star_def, Complex.mul_conj',
         mul_comm, ← Complex.ofReal_pow, ← Complex.ofReal_add, hn, hn']⟩
 
-noncomputable def unsignedUpper (z : ℂ) : ComplexGL2 :=
-  upperTriangular (Units.mk0 (-1 / (radius z : ℂ)) (by
-    exact div_ne_zero (by simp) (Complex.ofReal_ne_zero.mpr (radius_pos z).ne')))
+noncomputable def unsignedUpper   : ComplexGL2 :=
+  upperTriangular (Units.mk0 (-1 / (radius z : ℂ)) (div_ne_zero (by simp) (Complex.ofReal_ne_zero.mpr (radius_pos z).ne')))
     (Units.mk0 (radius z : ℂ) (Complex.ofReal_ne_zero.mpr (radius_pos z).ne'))
     (star z / (radius z : ℂ))
 
-private theorem normalized_bruhat_factorization (z : ℂ) :
+private theorem normalized_bruhat_factorization   :
     weyl * upperUnipotent z = unsignedUpper z * complexSU2Embedding (kappa z) ∧
       (∀ (f : PrincipalSeries positiveParameter) (k : ComplexSU2),
         f (weyl * upperUnipotent z * complexSU2Embedding k) =
           ((denominator z ^ (-(4 / 3) : ℝ) : ℝ) : ℂ) *
             compactRestriction positiveParameter f (kappa z * k)) := by
-  have hr : (radius z : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (radius_pos z).ne'
+  have hr  := Complex.ofReal_ne_zero.mpr (radius_pos z).ne'
   have hs : (radius z : ℂ)^2 = 1 + z * star z := by
     rw [← Complex.ofReal_pow, radius_sq, denominator, Complex.star_def,
       Complex.mul_conj', ← Complex.ofReal_pow]
@@ -134,8 +139,10 @@ private theorem normalized_bruhat_factorization (z : ℂ) :
   rw [hn, ← Real.rpow_mul (by unfold denominator; positivity)]
   congr 1
   norm_num [positiveParameter]
+end
 
-def HasRawHopfCoordinates (H : ComplexSU2 → rawSphere) : Prop :=
+
+def HasRawHopfCoordinates (H : ComplexSU2 → rawSphere)  :=
   ∀ k, (H k : rawAmbient) =
     WithLp.toLp 2 (fun i => (compactSphereCoordinate k i).re)
 
@@ -194,8 +201,11 @@ private theorem hopfLinear_norm (a b : ℂ)
       _ = _ := by rw [h]; ring
   nlinarith [norm_nonneg x, norm_nonneg (hopfLinear a b x)]
 
-private theorem hopfLinear_action (H : ComplexSU2 → rawSphere)
-    (hH : HasRawHopfCoordinates H) (l k : ComplexSU2) :
+section
+variable (H : ComplexSU2 → rawSphere)
+    (hH : HasRawHopfCoordinates H)
+include H hH
+private theorem hopfLinear_action   (l k : ComplexSU2) :
     (H (l * k) : rawAmbient) = hopfLinear
       ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 0)
       ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 1) (H l) := by
@@ -207,11 +217,10 @@ private theorem hopfLinear_action (H : ComplexSU2 → rawSphere)
       h0, h1, Complex.mul_re, Complex.mul_im, Complex.star_def,
       ← Complex.normSq_eq_norm_sq, Complex.normSq_apply] <;> ring
 
-private theorem hopf_kappa (H : ComplexSU2 → rawSphere)
-    (hH : HasRawHopfCoordinates H) (z : ℂ) : H (kappa z) = sigma z := by
+private theorem hopf_kappa   (z : ℂ) : H (kappa z) = sigma z := by
   apply Subtype.ext
   rw [hH]
-  have hr : radius z ≠ 0 := (radius_pos z).ne'
+  have hr  := (radius_pos z).ne'
   ext i
   fin_cases i <;>
     simp [compactSphereCoordinate, kappa, sigma, sigmaVector, Complex.star_def,
@@ -230,8 +239,7 @@ private theorem hopf_kappa (H : ComplexSU2 → rawSphere)
     field_simp
     ring
 
-private theorem hopf_rotation_geometry (H : ComplexSU2 → rawSphere)
-    (hH : HasRawHopfCoordinates H) :
+private theorem hopf_rotation_geometry   :
     (∀ z : ℂ, H (kappa z) = sigma z) ∧
       (∀ k : ComplexSU2, ∃ R : rawAmbient ≃ₗᵢ[ℝ] rawAmbient,
         (∀ l : ComplexSU2, H (l * k) = rotation R (H l)) ∧
@@ -246,7 +254,7 @@ private theorem hopf_rotation_geometry (H : ComplexSU2 → rawSphere)
   let R : rawAmbient ≃ₗᵢ[ℝ] rawAmbient := J.toLinearIsometryEquiv rfl
   have ha (l : ComplexSU2) : H (l * k) = rotation R (H l) := by
     apply Subtype.ext
-    exact hopfLinear_action H hH l k
+    apply hopfLinear_action <;> assumption
   refine ⟨R, ha, ?_⟩
   intro z
   have h1 : (H (1 : ComplexSU2) : rawAmbient) = WithLp.toLp 2 ![0, 0, -1] := by
@@ -263,8 +271,7 @@ private theorem hopf_rotation_geometry (H : ComplexSU2 → rawSphere)
   field_simp
   ring
 
-private theorem positive_section_stereographic (H : ComplexSU2 → rawSphere)
-    (hH : HasRawHopfCoordinates H) (f : PrincipalSeries positiveParameter)
+private theorem positive_section_stereographic   (f : PrincipalSeries positiveParameter)
     (F : rawSphere → ℂ)
     (hf : ∀ k, compactRestriction positiveParameter f k = F (H k))
     (k : ComplexSU2) :
@@ -305,6 +312,8 @@ private theorem positive_section_stereographic (H : ComplexSU2 → rawSphere)
         (↑((1 / 3 : ℝ) * (1 / denominator z) ^ (1 / 3 - 1 : ℝ)) : ℂ) =
         ↑(denominator z ^ (-(4 / 3) : ℝ)) by
       exact_mod_cast hs.symm]
+end
+
 
 end TransportGeometry
 open TransportGeometry
@@ -337,7 +346,7 @@ theorem compact_section_spherical_transport (k : ComplexSU2) :
       change f (complexSU2Embedding h) = _
       rw [hf]
       unfold rawPolynomialSphere
-      rw [show (fun i => ((H h : rawAmbient) i : ℂ)) = compactSphereCoordinate h from funext (hc h)]
+      rw [(funext (hc h))]
     intro z
     simpa only [rawLatitudeKernel, mul_assoc] using
       (positive_section_stereographic H hH f (rawPolynomialSphere p) hp k).2 z

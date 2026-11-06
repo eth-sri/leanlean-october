@@ -73,8 +73,9 @@ theorem comparison_stage (s : RestrictedTensorSimple.Level (bad A P C))
         (KPGlobalResidualConstruction.ScalarAbsorption.rightLevel C.exceptional s)
         (KPGlobalResidualConstruction.ScalarAbsorption.stageEquiv
           (LocalFiber F A.zeta12 A.primitive_zeta12 P C) s.val x))) := by
-  simp only [comparison, LinearMap.comp_apply,
-    KPGlobalResidualConstruction.ScalarAbsorption.absorb_stage]
+  exact congrArg (fun y => productUnitaryToRational F A.zeta12 A.primitive_zeta12 P
+    (finiteTensorMap A P C y))
+    (KPGlobalResidualConstruction.ScalarAbsorption.absorb_stage _ _ C.exceptional s x)
 
 def complexMatrix (w : InfinitePlace F)
     (g : KPLocalCover.CubicGL2Raw F A.zeta12 A.primitive_zeta12 (Sum.inl w)) :
@@ -104,19 +105,22 @@ def rationalEvaluation :
 
 abbrev Raw := KPAdelicCoverRestrictedProduct.RestrictedCover F A.zeta12 A.primitive_zeta12
 
-def rawStageValue (s : RestrictedTensorSimple.Level (bad A P C)) (g : Raw A) :
+section
+variable (s : RestrictedTensorSimple.Level (bad A P C))
+include s
+def rawStageValue   (g : Raw A) :
     PiTensorProduct ℂ (fun j : s.val => Plus A P C j.val) →ₗ[ℂ] ℂ :=
   ((rationalEvaluation A).comp ((comparison A P C).comp
     (RestrictedTensorSimple.stageInclusion (Fiber A P C) (reference A P C) (bad A P C) s))).comp
       (PiTensorProduct.map (fun j => localValueMap A P C j.val (g j.val)))
 
-def rawStageInsertion (s : RestrictedTensorSimple.Level (bad A P C)) :
+def rawStageInsertion   :
     PiTensorProduct ℂ (fun j : s.val => Plus A P C j.val) →ₗ[ℂ] (Raw A → ℂ) where
   toFun x g := rawStageValue A P C s g x
   map_add' := by intro x y; funext g; exact map_add _ x y
   map_smul' := by intro c x; funext g; exact map_smul _ c x
 
-theorem rawStageInsertion_pure (s : RestrictedTensorSimple.Level (bad A P C))
+theorem rawStageInsertion_pure  
     (x : ∀ j : s.val, Plus A P C j.val) (g : Raw A) :
     rawStageInsertion A P C s (PiTensorProduct.tprod ℂ x) g =
       (comparison A P C (RestrictedTensorSimple.stageInclusion
@@ -124,23 +128,28 @@ theorem rawStageInsertion_pure (s : RestrictedTensorSimple.Level (bad A P C))
         (PiTensorProduct.tprod ℂ (fun j => localValue A P C j.val (g j.val) (x j))))).val.val 1 := by
   simp [rawStageInsertion, rawStageValue, localValueMap, rationalEvaluation,
     PiTensorProduct.map_tprod]
+end
 
-def archScalar (v : KPHilbert.Place F)
-    (g : KPLocalCover.CubicGL2Raw F A.zeta12 A.primitive_zeta12 v) (f : Plus A P C v) : ℂ :=
+
+section
+variable (v : KPHilbert.Place F)
+    (g : KPLocalCover.CubicGL2Raw F A.zeta12 A.primitive_zeta12 v) (f : Plus A P C v)
+include v g f
+def archScalar   : ℂ :=
   match v with
   | Sum.inl w => localValue A P C (Sum.inl w) g f
   | Sum.inr _ => 1
 
-def finiteValue (v : KPHilbert.Place F)
-    (g : KPLocalCover.CubicGL2Raw F A.zeta12 A.primitive_zeta12 v) (f : Plus A P C v) : Fiber A P C v :=
+def finiteValue   : Fiber A P C v :=
   match v with
   | Sum.inl _ => 1
   | Sum.inr q => localValue A P C (Sum.inr q) g f
 
-theorem localValue_factor (v : KPHilbert.Place F)
-    (g : KPLocalCover.CubicGL2Raw F A.zeta12 A.primitive_zeta12 v) (f : Plus A P C v) :
+theorem localValue_factor   :
     localValue A P C v g f = archScalar A P C v g f • finiteValue A P C v g f := by
   cases v <;> simp [archScalar, finiteValue]
+end
+
 
 theorem rawStageInsertion_arch_factorization (s : RestrictedTensorSimple.Level (bad A P C))
     (x : ∀ j : s.val, Plus A P C j.val) (g : Raw A) :
@@ -154,7 +163,7 @@ theorem rawStageInsertion_arch_factorization (s : RestrictedTensorSimple.Level (
   rw [(PiTensorProduct.tprod ℂ).map_smul_univ]
   simp only [map_smul, Submodule.coe_smul_of_tower, Pi.smul_apply, smul_eq_mul]
 
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+variable {S : SArithmeticData F} 
 
 end DedekindZetaZeroFree.FourierContinuation.LiteralSource
 

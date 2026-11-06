@@ -44,8 +44,11 @@ theorem box_integer (Q : Finset (KPFinitePlace F))
     Valuation.Compatible.ofValuation _
   exact (ValuativeRel.isEquiv (ValuativeRel.valuation (LocalField F q)) Valued.v).le_one_iff_le_one.mpr hi
 
-theorem chamber_raw_tail (Q : Finset (KPFinitePlace F)) (hQ : C.exceptional ⊆ Q)
-    (x : KPGlobalTorusFunctionData.Adeles F) (hx : x ∈ TraceBox.adelicBox F Q) :
+section
+variable (Q : Finset (KPFinitePlace F)) (hQ : C.exceptional ⊆ Q)
+    (x : KPGlobalTorusFunctionData.Adeles F) (hx : x ∈ TraceBox.adelicBox F Q)
+include Q hQ x hx
+theorem chamber_raw_tail   :
     ∀ j, j ∉ (cofactorSourceLevel R P C Q hQ).val →
       localValue R.A P C j (chamberRaw F ζ hζ x j) (plusReference R.A P C j) =
         reference R.A P C j := by
@@ -61,8 +64,7 @@ theorem chamber_raw_tail (Q : Finset (KPFinitePlace F)) (hQ : C.exceptional ⊆ 
       RestrictedProduct.mk_apply, KPAdelicCoverRestrictedProduct.adeleEval] at *
     exact hh
 
-theorem chamber_log_tail (Q : Finset (KPFinitePlace F)) (hQ : C.exceptional ⊆ Q)
-    (x : KPGlobalTorusFunctionData.Adeles F) (hx : x ∈ TraceBox.adelicBox F Q) :
+theorem chamber_log_tail   :
     ∀ j, j ∉ (cofactorSourceLevel R P C Q hQ).val →
       FaithfulSource.RepairedInducing.localLog R P C (chamberRaw F ζ hζ x) j = 0 := by
   intro j hj
@@ -90,14 +92,15 @@ theorem chamber_log_tail (Q : Finset (KPFinitePlace F)) (hQ : C.exceptional ⊆ 
       RestrictedProduct.mk_apply, KPAdelicCoverRestrictedProduct.adeleEval]
     exact (congrArg Real.log hn).trans Real.log_one
 
-theorem chamber_height_stage (Q : Finset (KPFinitePlace F)) (hQ : C.exceptional ⊆ Q)
-    (x : KPGlobalTorusFunctionData.Adeles F) (hx : x ∈ TraceBox.adelicBox F Q) :
+theorem chamber_height_stage   :
     ThetaExpansion.iwasawaLogHeight R
       (KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
         (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ (chamberRaw F ζ hζ x))) =
       ∑ j : (cofactorSourceLevel R P C Q hQ).val,
         FaithfulSource.RepairedInducing.localLog R P C (chamberRaw F ζ hζ x) j :=
   current_height_stage R P C _ _ (chamber_log_tail R P C Q hQ x hx)
+end
+
 
 end DedekindZetaZeroFree.FourierContinuation.LiteralSource.CofactorChamber
 

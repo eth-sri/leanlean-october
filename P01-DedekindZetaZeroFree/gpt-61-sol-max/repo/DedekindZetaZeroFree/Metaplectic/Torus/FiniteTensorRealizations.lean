@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Metaplectic.Torus.RestrictedTensorIdentification
 public import DedekindZetaZeroFree.Metaplectic.Torus.RationalCompactOpenAnnihilator
 
 @[expose] public section
+
 
 open scoped NumberField Classical ComplexOrder
 open NumberField IsDedekindDomain
@@ -16,25 +19,22 @@ variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 abbrev D := KPGlobalCubicIdelePairing.D F
-abbrev E := KPGlobalTorusFunctionData.E F ζ hζ
+abbrev E := @_root_.DedekindZetaZeroFree.KPGlobalTorusFunctionData.E
 abbrev A := KPGlobalPrincipalCubicLagrangian.A F
-abbrev R := KPGlobalCenterRationalCharacter.R F ζ hζ
-abbrev M (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ) :=
-  KPGlobalProductPolarizationCharacter.M F ζ hζ P
-abbrev B (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ) :=
-  KPGlobalProductPolarizationCharacter.B F ζ hζ P
-abbrev pD := KPGlobalProductPolarizationCharacter.pD F ζ hζ
-abbrev J (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ) :=
-  KPGlobalProductPolarizationCharacter.J F ζ hζ P
+abbrev R := @_root_.DedekindZetaZeroFree.KPGlobalCenterRationalCharacter.R
+abbrev M := @_root_.DedekindZetaZeroFree.KPGlobalProductPolarizationCharacter.M
+abbrev B := @_root_.DedekindZetaZeroFree.KPGlobalProductPolarizationCharacter.B
+abbrev pD := @_root_.DedekindZetaZeroFree.KPGlobalProductPolarizationCharacter.pD
+abbrev J := @_root_.DedekindZetaZeroFree.KPGlobalProductPolarizationCharacter.J
 
-def rationalUnitValue (r : R F ζ hζ) : ℂˣ :=
+def rationalUnitValue (r : R F ζ hζ)  :=
   KPGlobalCenterRationalCharacter.lambdaR F ζ hζ r /
     KPGlobalCenterRationalCharacter.positiveComplex
       (KPGlobalCenterRationalCharacter.nu F ζ hζ r.val)
 
 def productUnitValue (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
     (T : KPGlobalProductPolarizationCharacter.FiniteAdjustment F ζ hζ P)
-    (b : B F ζ hζ P) : ℂˣ :=
+    (b : B F ζ hζ P)  :=
   KPGlobalProductPolarizationCharacter.lambdaB F ζ hζ P T b /
     KPGlobalCenterRationalCharacter.positiveComplex
       (KPGlobalCenterRationalCharacter.nu F ζ hζ b.val)
@@ -61,14 +61,17 @@ def productUnitCharacter (P : KPGlobalProductPolarizationCharacter.CompatibleLoc
     exact (Units.continuous_map (Complex.continuous_ofReal.comp NNReal.continuous_coe)).comp
       ((KPGlobalCenterRationalCharacter.nu_continuous F ζ hζ).comp continuous_subtype_val)
 
+
+local notation:max "current_beta3" => KPGlobalCubicIdelePairing.beta3 F ζ hζ
+
 def annihilator (H : Subgroup (D F)) : Subgroup (D F) where
-  carrier := {x | ∀ y ∈ H, KPGlobalCubicIdelePairing.beta3 F ζ hζ x y = 1}
+  carrier := {x | ∀ y ∈ H, current_beta3 x y = 1}
   one_mem' := by
     intro y hy
     have h := (KPGlobalCubicIdelePairing.beta3_bilinear F ζ hζ).1 1 1 y
-    simpa using (mul_left_cancel (show
-      KPGlobalCubicIdelePairing.beta3 F ζ hζ 1 y * KPGlobalCubicIdelePairing.beta3 F ζ hζ 1 y =
-      KPGlobalCubicIdelePairing.beta3 F ζ hζ 1 y * 1 by simpa using h.symm))
+    exact (mul_left_cancel (show
+      current_beta3 1 y * current_beta3 1 y =
+      current_beta3 1 y * 1 by simpa using h.symm))
   mul_mem' := by
     intro x z hx hz y hy
     rw [(KPGlobalCubicIdelePairing.beta3_bilinear F ζ hζ).1, hx y hy, hz y hy, one_mul]
@@ -76,10 +79,9 @@ def annihilator (H : Subgroup (D F)) : Subgroup (D F) where
     intro x hx y hy
     have h := (KPGlobalCubicIdelePairing.beta3_bilinear F ζ hζ).1 x x⁻¹ y
     have h1 := (KPGlobalCubicIdelePairing.beta3_bilinear F ζ hζ).1 1 1 y
-    have he : KPGlobalCubicIdelePairing.beta3 F ζ hζ 1 y = 1 := by
-      exact mul_left_cancel (show KPGlobalCubicIdelePairing.beta3 F ζ hζ 1 y *
-        KPGlobalCubicIdelePairing.beta3 F ζ hζ 1 y =
-        KPGlobalCubicIdelePairing.beta3 F ζ hζ 1 y * 1 by simpa using h1.symm)
+    have he  := mul_left_cancel (show current_beta3 1 y *
+        current_beta3 1 y =
+        current_beta3 1 y * 1 by simpa using h1.symm)
     simpa [hx y hy, he] using h.symm
 
 structure Level (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ) where
@@ -93,17 +95,13 @@ instance (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
     LE (Level F ζ hζ P) := ⟨fun L L' => L'.K ≤ L.K⟩
 
  def pairingKernel (y : D F) : Subgroup (D F) where
-  carrier := {x | KPGlobalCubicIdelePairing.beta3 F ζ hζ x y = 1}
+  carrier := {x | current_beta3 x y = 1}
   one_mem' := (annihilator F ζ hζ ⊤).one_mem y (by trivial)
   mul_mem' := by
-    intro x z hx hz
-    change KPGlobalCubicIdelePairing.beta3 F ζ hζ (x * z) y = 1
-    change KPGlobalCubicIdelePairing.beta3 F ζ hζ x y = 1 at hx
-    change KPGlobalCubicIdelePairing.beta3 F ζ hζ z y = 1 at hz
-    rw [(KPGlobalCubicIdelePairing.beta3_bilinear F ζ hζ).1, hx, hz, one_mul]
+    (intros; simp_all [DedekindZetaZeroFree.KPGlobalCubicIdelePairing.beta3_bilinear, one_mul] <;> aesop)
   inv_mem' := by
     intro x hx
-    change KPGlobalCubicIdelePairing.beta3 F ζ hζ x y = 1 at hx
+    change current_beta3 x y = 1 at hx
     have h := (KPGlobalCubicIdelePairing.beta3_bilinear F ζ hζ).1 x x⁻¹ y
     have h1 := (annihilator F ζ hζ ⊤).one_mem y (by trivial)
     simpa [hx, h1] using h.symm
@@ -112,12 +110,15 @@ private theorem pairingKernel_open (y : D F) :
     IsOpen (pairingKernel F ζ hζ y : Set (D F)) := by
   letI : TopologicalSpace (rootsOfUnity 3 F) := ⊥
   letI : DiscreteTopology (rootsOfUnity 3 F) := ⟨rfl⟩
-  exact (isOpen_discrete ({1} : Set (rootsOfUnity 3 F))).preimage
+  exact (isOpen_discrete ({1})).preimage
     ((KPGlobalCubicIdelePairing.beta3_continuous F ζ hζ).comp
       (continuous_id.prodMk continuous_const))
 
+section
+variable (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
+include P
 private theorem small_level_exists
-    (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
+     
     (U : Subgroup (D F)) (hU : U ≤ M F ζ hζ P)
     (hOpen : IsOpen (U : Set (D F))) :
     ∃ L : Level F ζ hζ P, L.K ≤ U := by
@@ -133,7 +134,7 @@ private theorem small_level_exists
       obtain ⟨y, hy⟩ := not_forall.mp hn
       exact ⟨y, fun _ => hy⟩
   choose y hy using hsep
-  let K : Subgroup (D F) := U ⊓ ⨅ j : J F ζ hζ P, pairingKernel F ζ hζ (y j)
+  let K  := U ⊓ ⨅ j : J F ζ hζ P, pairingKernel F ζ hζ (y j)
   have hKO : IsOpen (K : Set (D F)) := by
     change IsOpen ((U : Set (D F)) ∩ ↑(⨅ j : J F ζ hζ P, pairingKernel F ζ hζ (y j)))
     rw [Subgroup.coe_iInf]
@@ -152,13 +153,13 @@ private theorem small_level_exists
       by_contra hn
       exact hy j hn he
 
-theorem levels_nonempty (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ) :
+theorem levels_nonempty   :
     Nonempty (Level F ζ hζ P) := by
   obtain ⟨L, _⟩ := small_level_exists F ζ hζ P (M F ζ hζ P) le_rfl
     (KPGlobalProductPolarizationCharacter.M_compact_open F ζ hζ P).2
   exact ⟨L⟩
 
-theorem levels_directed (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
+theorem levels_directed  
     (L L' : Level F ζ hζ P) :
     ∃ L'' : Level F ζ hζ P, L ≤ L'' ∧ L' ≤ L'' := by
   refine ⟨⟨L.K ⊓ L'.K, inf_le_left.trans L.inside, ?_,
@@ -167,20 +168,22 @@ theorem levels_directed (P : KPGlobalProductPolarizationCharacter.CompatibleLoca
   · exact L.compact.inter_right (L'.K.isClosed_of_isOpen L'.open')
   · exact le_antisymm ((inf_le_inf_right (A F) inf_le_left).trans L.transverse.le) bot_le
 
-theorem level_isotropic (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
+theorem level_isotropic  
     (L : Level F ζ hζ P) : L.K ≤ annihilator F ζ hζ L.K := by
   intro x hx y hy
   exact (KPGlobalProductPolarizationCharacter.M_maximal_isotropic F ζ hζ P).1
     x (L.inside hx) y (L.inside hy)
+end
+
 
  def betaLeft (y : D F) : D F →* rootsOfUnity 3 F where
-  toFun x := KPGlobalCubicIdelePairing.beta3 F ζ hζ x y
+  toFun x := current_beta3 x y
   map_one' := (annihilator F ζ hζ ⊤).one_mem y (by trivial)
   map_mul' x z := (KPGlobalCubicIdelePairing.beta3_bilinear F ζ hζ).1 x z y
 
  theorem beta_symmetric_one (x y : D F)
-    (h : KPGlobalCubicIdelePairing.beta3 F ζ hζ x y = 1) :
-    KPGlobalCubicIdelePairing.beta3 F ζ hζ y x = 1 := by
+    (h : current_beta3 x y = 1) :
+    current_beta3 y x = 1 := by
   have hb := KPGlobalCubicIdelePairing.beta3_bilinear F ζ hζ
   have hh := hb.2.2 (x * y)
   rw [hb.1, hb.2.1, hb.2.1, hb.2.2, hb.2.2, h] at hh
@@ -188,40 +191,40 @@ theorem level_isotropic (P : KPGlobalProductPolarizationCharacter.CompatibleLoca
 
 private theorem product_orthogonal_iff
     (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ) (x : D F) :
-    (∀ y ∈ M F ζ hζ P, KPGlobalCubicIdelePairing.beta3 F ζ hζ x y = 1) ↔ x ∈ M F ζ hζ P := by
+    (∀ y ∈ M F ζ hζ P, current_beta3 x y = 1) ↔ x ∈ M F ζ hζ P := by
   constructor
   · intro hx
     have hb := KPGlobalCubicIdelePairing.beta3_bilinear F ζ hζ
     have hm := KPGlobalProductPolarizationCharacter.M_maximal_isotropic F ζ hζ P
     have hi : ∀ a ∈ M F ζ hζ P ⊔ Subgroup.zpowers x,
         ∀ b ∈ M F ζ hζ P ⊔ Subgroup.zpowers x,
-          KPGlobalCubicIdelePairing.beta3 F ζ hζ a b = 1 := by
+          current_beta3 a b = 1 := by
       intro a ha b hb'
       obtain ⟨m, hm', z, hz, rfl⟩ := Subgroup.mem_sup.mp ha
       obtain ⟨n, hn, w, hw, rfl⟩ := Subgroup.mem_sup.mp hb'
       obtain ⟨i, rfl⟩ := Subgroup.mem_zpowers_iff.mp hz
       obtain ⟨j, rfl⟩ := Subgroup.mem_zpowers_iff.mp hw
-      have hxn : KPGlobalCubicIdelePairing.beta3 F ζ hζ (x ^ i) n = 1 := by
+      have hxn : current_beta3 (x ^ i) n = 1 := by
         change betaLeft F ζ hζ n (x ^ i) = 1
         rw [map_zpow]
-        change KPGlobalCubicIdelePairing.beta3 F ζ hζ x n ^ i = 1
+        change current_beta3 x n ^ i = 1
         rw [hx n hn, one_zpow]
-      have hxm : KPGlobalCubicIdelePairing.beta3 F ζ hζ m (x ^ j) = 1 := by
+      have hxm : current_beta3 m (x ^ j) = 1 := by
         apply beta_symmetric_one F ζ hζ
         change betaLeft F ζ hζ m (x ^ j) = 1
         rw [map_zpow]
-        change KPGlobalCubicIdelePairing.beta3 F ζ hζ x m ^ j = 1
+        change current_beta3 x m ^ j = 1
         rw [hx m hm', one_zpow]
-      have hxx : KPGlobalCubicIdelePairing.beta3 F ζ hζ (x ^ i) (x ^ j) = 1 := by
-        have hxxj : KPGlobalCubicIdelePairing.beta3 F ζ hζ x (x ^ j) = 1 := by
+      have hxx : current_beta3 (x ^ i) (x ^ j) = 1 := by
+        have hxxj : current_beta3 x (x ^ j) = 1 := by
           apply beta_symmetric_one F ζ hζ
           change betaLeft F ζ hζ x (x ^ j) = 1
           rw [map_zpow]
-          change KPGlobalCubicIdelePairing.beta3 F ζ hζ x x ^ j = 1
+          change current_beta3 x x ^ j = 1
           rw [hb.2.2, one_zpow]
         change betaLeft F ζ hζ (x ^ j) (x ^ i) = 1
         rw [map_zpow]
-        change KPGlobalCubicIdelePairing.beta3 F ζ hζ x (x ^ j) ^ i = 1
+        change current_beta3 x (x ^ j) ^ i = 1
         rw [hxxj, one_zpow]
       rw [hb.1, hb.2.1, hb.2.1, hm.1 m hm' n hn, hxn, hxm, hxx]
       simp
@@ -234,21 +237,23 @@ private theorem product_orthogonal_iff
     exact (KPGlobalProductPolarizationCharacter.M_maximal_isotropic F ζ hζ P).1 x hx y hy
 
  def betaRight (x : D F) : D F →* rootsOfUnity 3 F where
-  toFun y := KPGlobalCubicIdelePairing.beta3 F ζ hζ x y
+  toFun y := current_beta3 x y
   map_one' := by
     have h := beta_symmetric_one F ζ hζ 1 x ((betaLeft F ζ hζ x).map_one)
     exact h
   map_mul' y z := (KPGlobalCubicIdelePairing.beta3_bilinear F ζ hζ).2.1 x y z
 
+section
+variable (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
+    (L : Level F ζ hζ P)
+include P L
 private theorem product_in_annihilator
-    (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
-    (L : Level F ζ hζ P) : M F ζ hζ P ≤ annihilator F ζ hζ L.K := by
+      : M F ζ hζ P ≤ annihilator F ζ hζ L.K := by
   intro x hx y hy
   exact (KPGlobalProductPolarizationCharacter.M_maximal_isotropic F ζ hζ P).1 x hx y (L.inside hy)
 
 private theorem annihilator_quotient_product_finite
-    (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
-    (L : Level F ζ hζ P) :
+      :
     Finite ((annihilator F ζ hζ L.K) ⧸ ((M F ζ hζ P).comap (annihilator F ζ hζ L.K).subtype)) := by
   let N := annihilator F ζ hζ L.K
   let H := (M F ζ hζ P).comap N.subtype
@@ -289,8 +294,7 @@ private theorem annihilator_quotient_product_finite
     exact congrFun hx (QuotientGroup.mk' KM ⟨m, hm⟩)
 
 theorem annihilator_compact_open
-    (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
-    (L : Level F ζ hζ P) :
+      :
     IsCompact (annihilator F ζ hζ L.K : Set (D F)) ∧
       IsOpen (annihilator F ζ hζ L.K : Set (D F)) := by
   have hMN := product_in_annihilator F ζ hζ P L
@@ -303,7 +307,7 @@ theorem annihilator_compact_open
   have hs : ∀ z : N ⧸ H, ∃ x : N, QuotientGroup.mk' H x = z := QuotientGroup.mk'_surjective H
   choose reps hreps using hs
   have he : (N : Set (D F)) = ⋃ z : N ⧸ H,
-      (fun m : D F => (reps z).val * m) '' (M F ζ hζ P : Set (D F)) := by
+      (fun m : D F => (reps z).val * m) '' (M F ζ hζ P) := by
     ext x
     constructor
     · intro hx
@@ -320,28 +324,26 @@ theorem annihilator_compact_open
   exact isCompact_iUnion (fun z => (KPGlobalProductPolarizationCharacter.M_compact_open F ζ hζ P).1.image
     (continuous_const.mul continuous_id))
 
-abbrev symplecticQuotient (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
-    (L : Level F ζ hζ P) :=
+abbrev symplecticQuotient   :=
   (annihilator F ζ hζ L.K) ⧸ (L.K.comap (annihilator F ζ hζ L.K).subtype)
 
-def quotientClass (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
-    (L : Level F ζ hζ P) (x : annihilator F ζ hζ L.K) :
+def quotientClass   (x : annihilator F ζ hζ L.K) :
     symplecticQuotient F ζ hζ P L :=
   QuotientGroup.mk' _ x
 
-theorem quotient_finite (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
-    (L : Level F ζ hζ P) : Finite (symplecticQuotient F ζ hζ P L) := by
+theorem quotient_finite   : Finite (symplecticQuotient F ζ hζ P L) := by
   letI : CompactSpace (annihilator F ζ hζ L.K) :=
     isCompact_iff_compactSpace.mp (annihilator_compact_open F ζ hζ P L).1
   exact Subgroup.quotient_finite_of_isOpen _
     (L.open'.preimage continuous_subtype_val)
 
 theorem product_inside_annihilator
-    (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
-    (L : Level F ζ hζ P) : M F ζ hζ P ≤ annihilator F ζ hζ L.K := by
+      : M F ζ hζ P ≤ annihilator F ζ hζ L.K := by
   intro x hx y hy
   exact (KPGlobalProductPolarizationCharacter.M_maximal_isotropic F ζ hζ P).1
     x hx y (L.inside hy)
+end
+
 
 structure CompatibleModelData where
   localData : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ
@@ -362,8 +364,7 @@ def rationalModel : KPGlobalTorusFunctionData.Polarization F ζ hζ where
     intro h k
     apply Subtype.ext
     exact (KPGlobalCenterRationalCharacter.R_maximal_abelian F ζ hζ).1 h.val h.property k.val k.property
-  contains_center := by
-    exact le_sup_right
+  contains_center := le_sup_right
   character := rationalUnitCharacter F ζ hζ
 
 def productModel
@@ -378,41 +379,44 @@ def productModel
   contains_center := KPGlobalProductPolarizationCharacter.center_le_B F ζ hζ P
   character := productUnitCharacter F ζ hζ P (compatibleAdjustment F ζ hζ P)
 
+section
+variable (P : CompatibleModelData F ζ hζ)
+    (L : Level F ζ hζ P)
+include P L
 def stageDomain
-    (P : CompatibleModelData F ζ hζ)
-    (L : Level F ζ hζ P) : Subgroup (E F ζ hζ) :=
+      : Subgroup (E F ζ hζ) :=
   (annihilator F ζ hζ L.K).comap (pD F ζ hζ)
 
 def phaseGroup
-    (P : CompatibleModelData F ζ hζ)
-    (L : Level F ζ hζ P) : Subgroup (E F ζ hζ) := L.K.comap (pD F ζ hζ)
+      : Subgroup (E F ζ hζ) := L.K.comap (pD F ζ hζ)
 
 theorem phase_inside_product
-    (P : CompatibleModelData F ζ hζ)
-    (L : Level F ζ hζ P) : phaseGroup F ζ hζ P L ≤ B F ζ hζ P := by
+      : phaseGroup F ζ hζ P L ≤ B F ζ hζ P := by
   intro g hg
   exact L.inside hg
 
 theorem phase_inside_domain
-    (P : CompatibleModelData F ζ hζ)
-    (L : Level F ζ hζ P) : phaseGroup F ζ hζ P L ≤ stageDomain F ζ hζ P L := by
+      : phaseGroup F ζ hζ P L ≤ stageDomain F ζ hζ P L := by
   intro g hg
   exact level_isotropic F ζ hζ P L hg
 
 def phaseCharacter
-    (P : CompatibleModelData F ζ hζ)
-    (L : Level F ζ hζ P) : phaseGroup F ζ hζ P L →* ℂˣ :=
+      : phaseGroup F ζ hζ P L →* ℂˣ :=
   (productUnitCharacter F ζ hζ P (compatibleAdjustment F ζ hζ P)).toMonoidHom.comp
     (Subgroup.inclusion (phase_inside_product F ζ hζ P L))
 
 def phaseElement
-    (P : CompatibleModelData F ζ hζ)
-    (L : Level F ζ hζ P) (k : phaseGroup F ζ hζ P L) : stageDomain F ζ hζ P L :=
+      (k : phaseGroup F ζ hζ P L) : stageDomain F ζ hζ P L :=
   ⟨k.val, phase_inside_domain F ζ hζ P L k.property⟩
+end
 
+
+section
+variable (P : CompatibleModelData F ζ hζ)
+    (L : Level F ζ hζ P) (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
+include P L Q
 def RestrictedSections
-    (P : CompatibleModelData F ζ hζ)
-    (L : Level F ζ hζ P) (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ) :
+      :
     Submodule ℂ (stageDomain F ζ hζ P L → ℂ) where
   carrier := {f |
     (∀ (h : Q.H.comap (stageDomain F ζ hζ P L).subtype)
@@ -434,14 +438,12 @@ def RestrictedSections
     · intro k x; simp only [Pi.smul_apply, smul_eq_mul, hf.2 k x]; ring
 
 def saturatedDomain
-    (P : CompatibleModelData F ζ hζ)
-    (L : Level F ζ hζ P) (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ) :
+      :
     Set (E F ζ hζ) :=
   {g | ∃ (h : Q.H) (x : stageDomain F ζ hζ P L), g = h.val * x.val}
 
 def Stage
-    (P : CompatibleModelData F ζ hζ)
-    (L : Level F ζ hζ P) (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ) :
+      :
     Submodule ℂ (KPGlobalTorusFunctionData.TorusFunctions F ζ hζ Q) where
   carrier := {f |
     (∀ g, g ∉ saturatedDomain F ζ hζ P L Q → f.val g = 0) ∧
@@ -461,8 +463,7 @@ def Stage
         hf.2 k x]; ring
 
 def restriction
-    (P : CompatibleModelData F ζ hζ)
-    (L : Level F ζ hζ P) (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ) :
+      :
     Stage F ζ hζ P L Q →ₗ[ℂ] RestrictedSections F ζ hζ P L Q where
   toFun f := ⟨fun x => f.val.val x.val, by
     constructor
@@ -472,18 +473,23 @@ def restriction
       exact f.property.2 k x⟩
   map_add' := by intros; rfl
   map_smul' := by intros; rfl
+end
+
 
  def covarianceExtension {G : Type*} [Group G] (H S : Subgroup G)
-    (χ : H →* ℂˣ) (f : S → ℂ) (g : G) : ℂ :=
+    (χ : H →* ℂˣ) (f : S → ℂ) (g : G)  :=
   if hg : ∃ (h : H) (x : S), g = h.val * x.val then
     (χ (Classical.choose hg) : ℂ) * f (Classical.choose (Classical.choose_spec hg))
   else 0
 
-private theorem covarianceExtension_formula {G : Type*} [Group G] (H S : Subgroup G)
+section
+variable {G : Type*} [Group G] (H S : Subgroup G)
     (χ : H →* ℂˣ) (f : S → ℂ)
     (hf : ∀ (h : H.comap S.subtype) (x : S),
       f (h.val * x) = (χ ⟨h.val.val, h.property⟩ : ℂ) * f x)
-    (h : H) (x : S) : covarianceExtension H S χ f (h.val * x.val) = (χ h : ℂ) * f x := by
+    (h : H)
+include G H S χ f hf h
+private theorem covarianceExtension_formula   (x : S) : covarianceExtension H S χ f (h.val * x.val) = (χ h : ℂ) * f x := by
   have hg : ∃ (a : H) (y : S), h.val * x.val = a.val * y.val := ⟨h, x, rfl⟩
   rw [covarianceExtension, dif_pos hg]
   let a := Classical.choose hg
@@ -506,11 +512,7 @@ private theorem covarianceExtension_formula {G : Type*} [Group G] (H S : Subgrou
   have hne : (χ a : ℂ) ≠ 0 := Units.ne_zero (χ a)
   field_simp
 
-private theorem covarianceExtension_covariance {G : Type*} [Group G] (H S : Subgroup G)
-    (χ : H →* ℂˣ) (f : S → ℂ)
-    (hf : ∀ (h : H.comap S.subtype) (x : S),
-      f (h.val * x) = (χ ⟨h.val.val, h.property⟩ : ℂ) * f x)
-    (h : H) (g : G) : covarianceExtension H S χ f (h.val * g) =
+private theorem covarianceExtension_covariance   (g : G) : covarianceExtension H S χ f (h.val * g) =
       (χ h : ℂ) * covarianceExtension H S χ f g := by
   by_cases hg : ∃ (a : H) (x : S), g = a.val * x.val
   · obtain ⟨a, x, rfl⟩ := hg
@@ -525,6 +527,8 @@ private theorem covarianceExtension_covariance {G : Type*} [Group G] (H S : Subg
       have hh := congrArg (fun z => h.val⁻¹ * z) he
       simpa only [mul_assoc, inv_mul_cancel_left, Subgroup.coe_mul, Subgroup.coe_inv] using hh
     simp only [covarianceExtension, dif_neg hg, dif_neg hh, mul_zero]
+end
+
 
 theorem restriction_bijective
     (P : CompatibleModelData F ζ hζ)
@@ -568,8 +572,11 @@ theorem restriction_bijective
     simpa only [Subgroup.coe_one, one_mul, map_one, Units.val_one] using hx
 
 set_option maxHeartbeats 1000000 in
+section
+variable (P : CompatibleModelData F ζ hζ)
+include P
 theorem stage_module_finite
-    (P : CompatibleModelData F ζ hζ)
+     
     (L : Level F ζ hζ P) (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
     (hQ : Q = rationalModel F ζ hζ ∨ Q = productModel F ζ hζ P) :
     Module.Finite ℂ (Stage F ζ hζ P L Q) := by
@@ -609,7 +616,7 @@ theorem stage_module_finite
     (phaseCharacter F ζ hζ P L k : ℂ) * t (c x)) he
 
 theorem stages_monotone
-    (P : CompatibleModelData F ζ hζ)
+     
     (L L' : Level F ζ hζ P) (h : L ≤ L')
     (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
     (hQ : Q = rationalModel F ζ hζ ∨ Q = productModel F ζ hζ P) :
@@ -645,7 +652,7 @@ theorem stages_monotone
         simpa [mul_assoc] using hh
       rw [hf.1 _ hxk, hf.1 _ hx, mul_zero]
 
- def rawPhaseStage (P : CompatibleModelData F ζ hζ)
+ def rawPhaseStage  
     (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ) (K : Subgroup (D F)) :
     Submodule ℂ (KPGlobalTorusFunctionData.TorusFunctions F ζ hζ Q) where
   carrier := {f | (∀ g, (¬ ∃ (h : Q.H) (x : KPGlobalTorusFunctionData.E F ζ hζ),
@@ -675,7 +682,7 @@ theorem stages_monotone
       simp only [Submodule.coe_smul, Pi.smul_apply, smul_eq_mul, hf.2 k hk x hx]
       ring
 
-private theorem rawPhaseStage_eq (P : CompatibleModelData F ζ hζ)
+private theorem rawPhaseStage_eq  
     (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ) (L : Level F ζ hζ P) :
     rawPhaseStage F ζ hζ P Q L.K = Stage F ζ hζ P L Q := by
   ext f
@@ -700,7 +707,7 @@ private theorem rawPhaseStage_eq (P : CompatibleModelData F ζ hζ)
     · intro k hk x hx
       exact hf.2 ⟨k.val, hk⟩ ⟨x, hx⟩
 
-private theorem raw_model_formula (P : CompatibleModelData F ζ hζ)
+private theorem raw_model_formula  
     (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
     (hQ : Q = rationalModel F ζ hζ ∨ Q = productModel F ζ hζ P) :
     (Q.H = R F ζ hζ ∧ ∀ (r : Q.H) (s : R F ζ hζ), r.val = s.val →
@@ -711,7 +718,7 @@ private theorem raw_model_formula (P : CompatibleModelData F ζ hζ)
   rcases hQ with rfl | rfl
   · left; refine ⟨rfl, ?_⟩
     intro r s h
-    have he : r = s := Subtype.ext h
+    have he  := Subtype.ext h
     subst s; rfl
   · right; refine ⟨rfl, ?_⟩
     intro r s h
@@ -719,7 +726,7 @@ private theorem raw_model_formula (P : CompatibleModelData F ζ hζ)
     subst s; rfl
 
 theorem stage_in_smooth_level
-    (P : CompatibleModelData F ζ hζ)
+     
     (L : Level F ζ hζ P) (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
     (hQ : Q = rationalModel F ζ hζ ∨ Q = productModel F ζ hζ P) :
     ∃ U : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ,
@@ -731,7 +738,7 @@ theorem stage_in_smooth_level
   exact ⟨U, (rawPhaseStage_eq F ζ hζ P Q L) ▸ hU⟩
 
 theorem smooth_level_in_stage
-    (P : CompatibleModelData F ζ hζ)
+     
     (U : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
     (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
     (hQ : Q = rationalModel F ζ hζ ∨ Q = productModel F ζ hζ P) :
@@ -742,11 +749,16 @@ theorem smooth_level_in_stage
     (rawPhaseStage F ζ hζ P Q) (by intros; rfl)).2 U
   let L : Level F ζ hζ P := ⟨K, hK, hc, ho, ht⟩
   exact ⟨L, (rawPhaseStage_eq F ζ hζ P Q L) ▸ hU⟩
+end
 
-theorem stages_exhaust
-    (P : CompatibleModelData F ζ hζ)
+
+section
+variable (P : CompatibleModelData F ζ hζ)
     (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
-    (hQ : Q = rationalModel F ζ hζ ∨ Q = productModel F ζ hζ P) :
+    (hQ : Q = rationalModel F ζ hζ ∨ Q = productModel F ζ hζ P)
+include P Q hQ
+theorem stages_exhaust
+      :
     (⨆ L : Level F ζ hζ P, Stage F ζ hζ P L Q) =
       KPGlobalTorusFunctionData.TorusSmoothUnion F ζ hζ Q := by
   apply le_antisymm
@@ -760,9 +772,7 @@ theorem stages_exhaust
     exact hL.trans (le_iSup (fun L => Stage F ζ hζ P L Q) L)
 
 theorem smooth_vector_in_stage
-    (P : CompatibleModelData F ζ hζ)
-    (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
-    (hQ : Q = rationalModel F ζ hζ ∨ Q = productModel F ζ hζ P)
+     
     (f : KPGlobalTorusFunctionData.TorusSmoothUnion F ζ hζ Q) :
     ∃ L : Level F ζ hζ P, f.val ∈ Stage F ζ hζ P L Q := by
   letI : Nonempty (Level F ζ hζ P) := levels_nonempty F ζ hζ P
@@ -774,6 +784,8 @@ theorem smooth_vector_in_stage
   apply (Submodule.mem_iSup_of_directed _ hd).mp
   rw [stages_exhaust F ζ hζ P Q hQ]
   exact f.property
+end
+
 
 def stageTopology
     (P : CompatibleModelData F ζ hζ)
@@ -966,17 +978,18 @@ structure LocalFiberData (P : CompatibleModelData F ζ hζ) where
         Subgroup (KPLocalExceptionalConstruction.ActualCover F ζ hζ q)) =
       (KPLocalExceptionalConstruction.actualGoodCompactSplit F ζ hζ q ht).range
 
-abbrev LocalFiber (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
-    (q : HeightOneSpectrum (𝓞 F)) :=
+section
+variable (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
+    (q : HeightOneSpectrum (𝓞 F))
+include P C q
+abbrev LocalFiber   :=
   ↥(KPLocalStoneVonNeumann.InducedModule (C.polarization q))
 
-abbrev localTau (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
-    (q : HeightOneSpectrum (𝓞 F)) := KPLocalStoneVonNeumann.tau (C.polarization q)
+abbrev localTau   := KPLocalStoneVonNeumann.tau (C.polarization q)
 
-def localReference (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
-    (q : HeightOneSpectrum (𝓞 F)) : LocalFiber F ζ hζ P C q :=
+def localReference   : LocalFiber F ζ hζ P C q :=
   ⟨fun t => if h : (C.canonical q).heisenberg.π t ∈ (C.polarization q).L then
-    ((C.polarization q).ωL ⟨t, h⟩ : ℂ) else 0, by
+    ((C.polarization q).ωL ⟨t, h⟩) else 0, by
     intro a x
     by_cases hx : (C.canonical q).heisenberg.π x ∈ (C.polarization q).L
     · have hax : (C.canonical q).heisenberg.π (a.val * x) ∈ (C.polarization q).L := by
@@ -989,8 +1002,7 @@ def localReference (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ h
         exact hx
       simp only [dif_neg hx, dif_neg hax, mul_zero]⟩
 
-theorem referenceGoodSpherical (P : CompatibleModelData F ζ hζ)
-    (C : LocalFiberData F ζ hζ P) (q : HeightOneSpectrum (𝓞 F))
+theorem referenceGoodSpherical  
     (hq : q ∉ C.exceptional) :
     localReference F ζ hζ P C q ∈ fixedSubmodule (localTau F ζ hζ P C q)
       (KPLocalGoodSphericalImage.compactTorus (C.canonical q).borel (C.canonical q).iwasawa) ∧
@@ -1024,7 +1036,7 @@ theorem referenceGoodSpherical (P : CompatibleModelData F ζ hζ)
   have hone : (localReference F ζ hζ P C q).val 1 = 1 := by
     simp only [localReference, map_one]
     simp only [Subgroup.one_mem, dite_true]
-    change (((C.polarization q).ωL 1 : ℂˣ) : ℂ) = 1
+    change (((C.polarization q).ωL 1) : ℂ) = 1
     rw [map_one, Units.val_one]
   refine ⟨hfixed, hone, ?_⟩
   obtain ⟨w, hw, huniq⟩ := KPLocalGoodSphericalImage.normalized_inducing_vector
@@ -1032,13 +1044,14 @@ theorem referenceGoodSpherical (P : CompatibleModelData F ζ hζ)
   intro v hv hn
   exact (huniq v ⟨hv, hn⟩).trans (huniq (localReference F ζ hζ P C q) ⟨hfixed, hone⟩).symm
 
-def localUntwistedEvaluation (P : CompatibleModelData F ζ hζ)
-    (C : LocalFiberData F ζ hζ P) (q : HeightOneSpectrum (𝓞 F))
+def localUntwistedEvaluation  
     (f : LocalFiber F ζ hζ P C q)
-    (t : KPLocalExceptionalConstruction.actualTorus F ζ hζ q) : ℂ :=
+    (t : KPLocalExceptionalConstruction.actualTorus F ζ hζ q)  :=
   f.val t / (Real.rpow
     (KPGlobalCenterRationalCharacter.localAbs F (Sum.inr q)
-      ((C.canonical q).borel.coordinate t)) (1 / 6 : ℝ) : ℂ)
+      ((C.canonical q).borel.coordinate t)) (1 / 6) : ℂ)
+end
+
 
  def rawLocalScalarData (P : CompatibleModelData F ζ hζ)
     (C : LocalFiberData F ζ hζ P) :
@@ -1060,30 +1073,27 @@ private theorem product_model_raw (P : CompatibleModelData F ζ hζ) :
       P.localData P.adjustment (productModel F ζ hζ P) := by
   refine ⟨rfl, ?_⟩
   intro r s h
-  have he : r = s := Subtype.ext h
+  have he  := Subtype.ext h
   subst s
   rfl
 
-theorem local_evaluation_finiteSupport (P : CompatibleModelData F ζ hζ)
+section
+variable (P : CompatibleModelData F ζ hζ)
     (C : LocalFiberData F ζ hζ P)
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (hS : C.exceptional ⊆ S)
+    (S : Finset (HeightOneSpectrum (𝓞 F)))
+include P C S
+def local_evaluation_finiteSupport   (hS : C.exceptional ⊆ S)
     (f : ∀ q : S, LocalFiber F ζ hζ P C q)
     (raw : KPAdelicCoverRestrictedProduct.RestrictedCover F ζ hζ)
     (t : ∀ q, KPLocalExceptionalConstruction.actualTorus F ζ hζ q)
     (ht : ∀ q, (t q).val =
-      KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (raw (Sum.inr q))) :
-    Function.HasFiniteMulSupport (fun q => localUntwistedEvaluation F ζ hζ P C q
-      (if h : q ∈ S then f ⟨q, h⟩ else localReference F ζ hζ P C q) (t q)) := by
-  exact KPGlobalTorusTensorFibers.restricted_local_evaluations_finite_support
+      KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (raw (Sum.inr q)))  := KPGlobalTorusTensorFibers.restricted_local_evaluations_finite_support
     F ζ hζ P.localData P.adjustment (rawLocalScalarData F ζ hζ P C) S hS f raw t ht
 
-abbrev TensorStage (P : CompatibleModelData F ζ hζ)
-    (C : LocalFiberData F ζ hζ P) (S : Finset (HeightOneSpectrum (𝓞 F))) :=
+abbrev TensorStage   :=
   RestrictedTensorSimple.Stage (LocalFiber F ζ hζ P C) S
 
-theorem finite_tensor_realization_exists (P : CompatibleModelData F ζ hζ)
-    (C : LocalFiberData F ζ hζ P)
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (hS : C.exceptional ⊆ S) :
+theorem finite_tensor_realization_exists   (hS : C.exceptional ⊆ S) :
     ∃ T : TensorStage F ζ hζ P C S →ₗ[ℂ]
         KPGlobalTorusFunctionData.TorusSmoothUnion F ζ hζ (productModel F ζ hζ P),
       ∀ (f : ∀ q : S, LocalFiber F ζ hζ P C q)
@@ -1101,14 +1111,10 @@ theorem finite_tensor_realization_exists (P : CompatibleModelData F ζ hζ)
     F ζ hζ P.localData P.adjustment (rawLocalScalarData F ζ hζ P C)
     (productModel F ζ hζ P) (product_model_raw F ζ hζ P) S hS
 
-def finiteTensorRealization (P : CompatibleModelData F ζ hζ)
-    (C : LocalFiberData F ζ hζ P)
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (hS : C.exceptional ⊆ S) :=
+def finiteTensorRealization   (hS : C.exceptional ⊆ S) :=
   Classical.choose (finite_tensor_realization_exists F ζ hζ P C S hS)
 
-theorem finiteTensorRealization_formula (P : CompatibleModelData F ζ hζ)
-    (C : LocalFiberData F ζ hζ P)
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (hS : C.exceptional ⊆ S) :
+theorem finiteTensorRealization_formula   (hS : C.exceptional ⊆ S) :
     ∀ (f : ∀ q : S, LocalFiber F ζ hζ P C q)
         (raw : KPAdelicCoverRestrictedProduct.RestrictedCover F ζ hζ)
         (t : ∀ q, KPLocalExceptionalConstruction.actualTorus F ζ hζ q)
@@ -1121,6 +1127,8 @@ theorem finiteTensorRealization_formula (P : CompatibleModelData F ζ hζ)
           ∏ᶠ q, localUntwistedEvaluation F ζ hζ P C q
             (if h : q ∈ S then f ⟨q, h⟩ else localReference F ζ hζ P C q) (t q) :=
   Classical.choose_spec (finite_tensor_realization_exists F ζ hζ P C S hS)
+end
+
 
 theorem tensor_insertion_compatible (P : CompatibleModelData F ζ hζ)
     (C : LocalFiberData F ζ hζ P)
@@ -1169,9 +1177,12 @@ private theorem beta_swap (x y : D F) :
   rw [hb.1, hb.2.1, hb.2.1, hb.2.2, hb.2.2] at hh
   simpa using hh
 
+section
+variable (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
+    (L : Level F ζ hζ P)
+include P L
 private theorem beta_quotient_congr
-    (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
-    (L : Level F ζ hζ P) (x y x' y' : annihilator F ζ hζ L.K)
+      (x y x' y' : annihilator F ζ hζ L.K)
     (hx : quotientClass F ζ hζ P L x = quotientClass F ζ hζ P L x')
     (hy : quotientClass F ζ hζ P L y = quotientClass F ζ hζ P L y') :
     KPGlobalCubicIdelePairing.beta3 F ζ hζ x.val y.val =
@@ -1191,8 +1202,7 @@ private theorem beta_quotient_congr
   simp
 
 theorem exists_stage_pairing
-    (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
-    (L : Level F ζ hζ P) :
+      :
     ∃ β : symplecticQuotient F ζ hζ P L →
         symplecticQuotient F ζ hζ P L → rootsOfUnity 3 F,
       ∀ x y : annihilator F ζ hζ L.K,
@@ -1207,16 +1217,16 @@ theorem exists_stage_pairing
   · intro x y
     rfl
 
-def stagePairing (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
-    (L : Level F ζ hζ P) : symplecticQuotient F ζ hζ P L →
+def stagePairing   : symplecticQuotient F ζ hζ P L →
         symplecticQuotient F ζ hζ P L → rootsOfUnity 3 F :=
   Classical.choose (exists_stage_pairing F ζ hζ P L)
 
-theorem stagePairing_formula (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
-    (L : Level F ζ hζ P) (x y : annihilator F ζ hζ L.K) :
+theorem stagePairing_formula   (x y : annihilator F ζ hζ L.K) :
     stagePairing F ζ hζ P L (quotientClass F ζ hζ P L x)
       (quotientClass F ζ hζ P L y) = KPGlobalCubicIdelePairing.beta3 F ζ hζ x.val y.val :=
   (Classical.choose_spec (exists_stage_pairing F ζ hζ P L)) x y
+end
+
 
 private theorem class_cube (x : D F) : x ^ 3 = 1 := by
   induction x using QuotientGroup.induction_on with
@@ -1261,10 +1271,10 @@ private theorem compact_double_annihilator (K : Subgroup (D F))
     intro y
     apply Subtype.ext
     exact class_cube F y.val
-  letI : Finite Y := CommGroup.finite_of_fg_isMulTorsion Y
+  letI  := CommGroup.finite_of_fg_isMulTorsion Y
     (fun y => isOfFinOrder_iff_pow_eq_one.mpr ⟨3, by norm_num, hpow y⟩)
   letI : HasEnoughRootsOfUnity F 3 :=
-    { prim := ⟨ζ ^ 4, hζ.pow (by norm_num : 0 < 12) (by norm_num : 12 = 4 * 3)⟩
+    { prim := ⟨ζ ^ 4, hζ.pow (by norm_num) (by norm_num)⟩
       cyc := inferInstance }
   letI : HasEnoughRootsOfUnity F (Monoid.exponent Y) :=
     HasEnoughRootsOfUnity.of_dvd F (Monoid.exponent_dvd_of_forall_pow_eq_one hpow)
@@ -1311,14 +1321,23 @@ private theorem compact_double_annihilator (K : Subgroup (D F))
   apply hky
   exact Subtype.ext hval
 
-theorem finite_symplectic (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
-    (L : Level F ζ hζ P) :
-    (∀ x y z, stagePairing F ζ hζ P L (x * y) z =
-        stagePairing F ζ hζ P L x z * stagePairing F ζ hζ P L y z) ∧
-    (∀ x y z, stagePairing F ζ hζ P L x (y * z) =
-        stagePairing F ζ hζ P L x y * stagePairing F ζ hζ P L x z) ∧
-    (∀ x, stagePairing F ζ hζ P L x x = 1) ∧
-    (∀ x, (∀ y, stagePairing F ζ hζ P L x y = 1) → x = 1) := by
+section
+variable (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
+    (L : Level F ζ hζ P)
+include P L
+
+local notation:max "current_quotientClassLocal" => quotientClass F ζ hζ
+
+
+local notation:max "current_stagePairing" => stagePairing F ζ hζ
+
+theorem finite_symplectic   :
+    (∀ x y z, current_stagePairing P L (x * y) z =
+        current_stagePairing P L x z * current_stagePairing P L y z) ∧
+    (∀ x y z, current_stagePairing P L x (y * z) =
+        current_stagePairing P L x y * current_stagePairing P L x z) ∧
+    (∀ x, current_stagePairing P L x x = 1) ∧
+    (∀ x, (∀ y, current_stagePairing P L x y = 1) → x = 1) := by
   refine ⟨?_, ?_, ?_, ?_⟩
   · intro x y z
     induction x using QuotientGroup.induction_on with
@@ -1327,10 +1346,10 @@ theorem finite_symplectic (P : KPGlobalProductPolarizationCharacter.CompatibleLo
       | H y =>
         induction z using QuotientGroup.induction_on with
         | H z =>
-          change stagePairing F ζ hζ P L (quotientClass F ζ hζ P L (x * y))
-            (quotientClass F ζ hζ P L z) =
-              stagePairing F ζ hζ P L (quotientClass F ζ hζ P L x) (quotientClass F ζ hζ P L z) *
-              stagePairing F ζ hζ P L (quotientClass F ζ hζ P L y) (quotientClass F ζ hζ P L z)
+          change current_stagePairing P L (current_quotientClassLocal P L (x * y))
+            (current_quotientClassLocal P L z) =
+              current_stagePairing P L (current_quotientClassLocal P L x) (current_quotientClassLocal P L z) *
+              current_stagePairing P L (current_quotientClassLocal P L y) (current_quotientClassLocal P L z)
           simp only [stagePairing_formula]
           exact (KPGlobalCubicIdelePairing.beta3_bilinear F ζ hζ).1 x.val y.val z.val
   · intro x y z
@@ -1340,17 +1359,17 @@ theorem finite_symplectic (P : KPGlobalProductPolarizationCharacter.CompatibleLo
       | H y =>
         induction z using QuotientGroup.induction_on with
         | H z =>
-          change stagePairing F ζ hζ P L (quotientClass F ζ hζ P L x)
-            (quotientClass F ζ hζ P L (y * z)) =
-              stagePairing F ζ hζ P L (quotientClass F ζ hζ P L x) (quotientClass F ζ hζ P L y) *
-              stagePairing F ζ hζ P L (quotientClass F ζ hζ P L x) (quotientClass F ζ hζ P L z)
+          change current_stagePairing P L (current_quotientClassLocal P L x)
+            (current_quotientClassLocal P L (y * z)) =
+              current_stagePairing P L (current_quotientClassLocal P L x) (current_quotientClassLocal P L y) *
+              current_stagePairing P L (current_quotientClassLocal P L x) (current_quotientClassLocal P L z)
           simp only [stagePairing_formula]
           exact (KPGlobalCubicIdelePairing.beta3_bilinear F ζ hζ).2.1 x.val y.val z.val
   · intro x
     induction x using QuotientGroup.induction_on with
     | H x =>
-      change stagePairing F ζ hζ P L (quotientClass F ζ hζ P L x)
-        (quotientClass F ζ hζ P L x) = 1
+      change current_stagePairing P L (current_quotientClassLocal P L x)
+        (current_quotientClassLocal P L x) = 1
       rw [stagePairing_formula]
       exact (KPGlobalCubicIdelePairing.beta3_bilinear F ζ hζ).2.2 x.val
   · intro x
@@ -1360,32 +1379,29 @@ theorem finite_symplectic (P : KPGlobalProductPolarizationCharacter.CompatibleLo
       apply (QuotientGroup.eq_one_iff x).mpr
       apply compact_double_annihilator F ζ hζ L.K L.compact x.val
       intro y hy
-      have he := hx (quotientClass F ζ hζ P L ⟨y, hy⟩)
-      change stagePairing F ζ hζ P L (quotientClass F ζ hζ P L x)
-        (quotientClass F ζ hζ P L ⟨y, hy⟩) = 1 at he
+      have he := hx (current_quotientClassLocal P L ⟨y, hy⟩)
+      change current_stagePairing P L (current_quotientClassLocal P L x)
+        (current_quotientClassLocal P L ⟨y, hy⟩) = 1 at he
       rw [stagePairing_formula] at he
       exact he
 
-def rationalPolarization (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
-    (L : Level F ζ hζ P) : Subgroup (symplecticQuotient F ζ hζ P L) :=
+def rationalPolarization   : Subgroup (symplecticQuotient F ζ hζ P L) :=
   ((A F ⊓ annihilator F ζ hζ L.K).comap
     (annihilator F ζ hζ L.K).subtype).map (QuotientGroup.mk' _)
 
-def productPolarization (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
-    (L : Level F ζ hζ P) : Subgroup (symplecticQuotient F ζ hζ P L) :=
+def productPolarization   : Subgroup (symplecticQuotient F ζ hζ P L) :=
   ((M F ζ hζ P).comap (annihilator F ζ hζ L.K).subtype).map (QuotientGroup.mk' _)
 
 theorem rational_maximal_isotropic
-    (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
-    (L : Level F ζ hζ P) :
+      :
     KPGlobalProductPolarizationCharacter.IsMaximalIsotropic F
-      (stagePairing F ζ hζ P L) (rationalPolarization F ζ hζ P L) := by
+      (current_stagePairing P L) (rationalPolarization F ζ hζ P L) := by
   constructor
   · intro x hx y hy
     obtain ⟨a, ha, rfl⟩ := Subgroup.mem_map.mp hx
     obtain ⟨b, hb, rfl⟩ := Subgroup.mem_map.mp hy
-    change stagePairing F ζ hζ P L (quotientClass F ζ hζ P L a)
-      (quotientClass F ζ hζ P L b) = 1
+    change current_stagePairing P L (current_quotientClassLocal P L a)
+      (current_quotientClassLocal P L b) = 1
     rw [stagePairing_formula]
     have hself := KPGlobalPrincipalCubicLagrangian.principal_self_annihilating F ζ hζ
     have horth : a.val ∈ KPGlobalPrincipalCubicLagrangian.annihilator F ζ hζ (A F) := by
@@ -1403,8 +1419,8 @@ theorem rational_maximal_isotropic
           (fun x hx y hy => level_isotropic F ζ hζ P L hx y hy)) x.val x.property (by
             intro a ha hak
             let aa : annihilator F ζ hζ L.K := ⟨a, hak⟩
-            have hh := hi (quotientClass F ζ hζ P L x) hx
-              (quotientClass F ζ hζ P L aa)
+            have hh := hi (current_quotientClassLocal P L x) hx
+              (current_quotientClassLocal P L aa)
               (hN (Subgroup.mem_map.mpr ⟨aa, ⟨ha, hak⟩, rfl⟩))
             exact (stagePairing_formula F ζ hζ P L x aa).symm.trans hh)
       apply Subgroup.mem_map.mpr
@@ -1415,18 +1431,17 @@ theorem rational_maximal_isotropic
       exact hk
 
 theorem product_maximal_isotropic
-    (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
-    (L : Level F ζ hζ P) :
+      :
     KPGlobalProductPolarizationCharacter.IsMaximalIsotropic F
-      (stagePairing F ζ hζ P L) (productPolarization F ζ hζ P L) := by
-  let β := stagePairing F ζ hζ P L
+      (current_stagePairing P L) (productPolarization F ζ hζ P L) := by
+  let β := current_stagePairing P L
   let π := QuotientGroup.mk' (L.K.comap (annihilator F ζ hζ L.K).subtype)
   constructor
   · intro x hx y hy
     obtain ⟨a, ha, rfl⟩ := Subgroup.mem_map.mp hx
     obtain ⟨b, hb, rfl⟩ := Subgroup.mem_map.mp hy
-    change stagePairing F ζ hζ P L (quotientClass F ζ hζ P L a)
-      (quotientClass F ζ hζ P L b) = 1
+    change current_stagePairing P L (current_quotientClassLocal P L a)
+      (current_quotientClassLocal P L b) = 1
     rw [stagePairing_formula]
     exact (KPGlobalProductPolarizationCharacter.M_maximal_isotropic F ζ hζ P).1
       a.val ha b.val hb
@@ -1442,7 +1457,7 @@ theorem product_maximal_isotropic
       obtain ⟨b, hb, rfl⟩ := Subgroup.mem_map.mp hy
       change KPGlobalCubicIdelePairing.beta3 F ζ hζ a.val b.val = 1
       rw [← stagePairing_formula F ζ hζ P L a b]
-      exact hi (π a) ha (π b) hb
+      apply hi <;> assumption
     have hH : H = M F ζ hζ P :=
       (KPGlobalProductPolarizationCharacter.M_maximal_isotropic F ζ hζ P).2 H hMH hHI
     apply le_antisymm _ hN
@@ -1451,6 +1466,8 @@ theorem product_maximal_isotropic
     have ha : a.val ∈ H := Subgroup.mem_map.mpr ⟨a, hz, rfl⟩
     rw [hH] at ha
     exact Subgroup.mem_map.mpr ⟨a, ha, rfl⟩
+end
+
 
 theorem compatibleModelData_exists
     (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ) :
@@ -1458,75 +1475,13 @@ theorem compatibleModelData_exists
   obtain ⟨T, hT⟩ := KPGlobalProductPolarizationCharacter.exists_finite_compatible_adjustment F ζ hζ P
   exact ⟨⟨P, T, hT⟩, rfl⟩
 
-theorem compatibleAdjustment_agrees
+def compatibleAdjustment_agrees
     (P : CompatibleModelData F ζ hζ)
-    (b : B F ζ hζ P) (r : R F ζ hζ) (h : b.val = r.val) :
-    productUnitCharacter F ζ hζ P (compatibleAdjustment F ζ hζ P) b =
-      rationalUnitCharacter F ζ hζ r := by
-  exact (characters_agree F ζ hζ P P.adjustment P.agrees r b h.symm).symm
+    (b : B F ζ hζ P) (r : R F ζ hζ) (h : b.val = r.val)  := (characters_agree F ζ hζ P P.adjustment P.agrees r b h.symm).symm
 
-private theorem ordinaryPGLMap_injective (q : HeightOneSpectrum (𝓞 F)) :
-    Function.Injective (KPLocalSmoothRepresentation.ordinaryPGLMap F q) := by
-  letI : (KPPGLLocalCover.scalarSubgroup F (Sum.inr q)).Normal :=
-    KPPGLLocalCover.scalarSubgroup_normal F (Sum.inr q)
-  apply (injective_iff_map_eq_one _).mpr
-  intro g
-  induction g using QuotientGroup.induction_on with
-  | H A =>
-    intro h
-    have hA : A ∈ Subgroup.center (KPRankOneInduction.GL2 F q) :=
-      (QuotientGroup.eq_one_iff A).mp h
-    rw [Matrix.GeneralLinearGroup.center_eq_range_scalar] at hA
-    obtain ⟨u, hu⟩ := hA
-    apply (QuotientGroup.eq_one_iff A).mpr
-    exact ⟨u, hu⟩
 
-private theorem diagonal_matrix_normalize (q : HeightOneSpectrum (𝓞 F))
-    (A : KPRankOneInduction.GL2 F q) (h10 : A 1 0 = 0) (h01 : A 0 1 = 0) :
-    ∃ y : (q.adicCompletion F)ˣ, Matrix.ProjGenLinGroup.mk A =
-      Matrix.ProjGenLinGroup.mk (KPGlobalProductPolarizationCharacter.diagonalHom F (Sum.inr q) y) := by
-  have hprod : A 0 0 * A 1 1 ≠ 0 := by
-    simpa [Matrix.det_fin_two, h10, h01] using Matrix.GeneralLinearGroup.det_ne_zero A
-  have h00 := (mul_ne_zero_iff.mp hprod).1
-  have h11 := (mul_ne_zero_iff.mp hprod).2
-  let a : (q.adicCompletion F)ˣ := Units.mk0 (A 0 0) h00
-  let d : (q.adicCompletion F)ˣ := Units.mk0 (A 1 1) h11
-  refine ⟨a / d, ?_⟩
-  have he : A = KPGlobalProductPolarizationCharacter.diagonalHom F (Sum.inr q) (a / d) *
-      Matrix.GeneralLinearGroup.scalar (Fin 2) d := by
-    apply Matrix.GeneralLinearGroup.ext
-    intro i j
-    fin_cases i <;> fin_cases j <;>
-      simp [KPGlobalProductPolarizationCharacter.diagonalHom, KubotaRankTwo.d,
-        Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two,
-        Matrix.GeneralLinearGroup.coe_scalar, Matrix.scalar_apply, Matrix.diagonal_apply,
-        a, d, h10, h01, h11]
-  rw [he, map_mul]
-  have hs : Matrix.ProjGenLinGroup.mk (Matrix.GeneralLinearGroup.scalar (Fin 2) d) = 1 := by
-    apply (QuotientGroup.eq_one_iff _).mpr
-    rw [Matrix.GeneralLinearGroup.center_eq_range_scalar]
-    exact ⟨d, rfl⟩
-  rw [hs, mul_one]
 
-theorem actual_local_torus_eq (q : HeightOneSpectrum (𝓞 F)) :
-    KPLocalExceptionalConstruction.actualTorus F ζ hζ q =
-      KPGlobalProductPolarizationCharacter.localTorus F ζ hζ (Sum.inr q) := by
-  ext t
-  change KPLocalSmoothRepresentation.ordinaryPGLMap F q
-      (KPPGLLocalCover.projection F ζ hζ (Sum.inr q) t) ∈ KPRankOneInduction.diagonalTorus F q ↔
-    KPPGLLocalCover.projection F ζ hζ (Sum.inr q) t ∈
-      KPGlobalProductPolarizationCharacter.localOrdinaryTorus F (Sum.inr q)
-  constructor
-  · rintro ⟨A, hA, h10, h01⟩
-    obtain ⟨y, hy⟩ := diagonal_matrix_normalize F q A h10 h01
-    refine ⟨y, ?_⟩
-    apply ordinaryPGLMap_injective F q
-    exact hy.symm.trans hA
-  · rintro ⟨y, hy⟩
-    refine ⟨KPGlobalProductPolarizationCharacter.diagonalHom F (Sum.inr q) y, ?_, ?_, ?_⟩
-    · exact congrArg (KPLocalSmoothRepresentation.ordinaryPGLMap F q) hy
-    · simp [KPGlobalProductPolarizationCharacter.diagonalHom, KubotaRankTwo.d]
-    · simp [KPGlobalProductPolarizationCharacter.diagonalHom, KubotaRankTwo.d]
+alias actual_local_torus_eq := _root_.DedekindZetaZeroFree.KPGlobalTorusFiniteStagesLocalSteps.actual_eq
 
 theorem finiteTensorRealization_injective (P : CompatibleModelData F ζ hζ)
     (C : LocalFiberData F ζ hζ P)

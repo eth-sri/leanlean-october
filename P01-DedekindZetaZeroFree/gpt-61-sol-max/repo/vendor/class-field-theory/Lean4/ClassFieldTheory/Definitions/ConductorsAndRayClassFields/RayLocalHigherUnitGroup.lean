@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.NumberTheory.NumberField.Completion.FinitePlace
 public import Mathlib.RingTheory.Ideal.Quotient.Operations
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -29,11 +32,14 @@ namespace ClassFieldTheory
 
 universe u
 
+section
+variable {K : Type u} [Field K] [NumberField K]
+    (v : HeightOneSpectrum (𝓞 K)) (n : ℕ)
+include K v n
 /-- Reduction of a local integral unit modulo the `n`-th power of the maximal
 ideal. -/
 def rayLocalHigherUnitMap
-    {K : Type u} [Field K] [NumberField K]
-    (v : HeightOneSpectrum (𝓞 K)) (n : ℕ) :
+      :
     (v.adicCompletionIntegers K).units →*
       ((v.adicCompletionIntegers K) ⧸
         (IsLocalRing.maximalIdeal (v.adicCompletionIntegers K)) ^ n)ˣ :=
@@ -45,12 +51,12 @@ def rayLocalHigherUnitMap
 
 /-- The `n`-th higher-unit subgroup at a finite place. -/
 def rayLocalHigherUnitGroup
-    {K : Type u} [Field K] [NumberField K]
-    (v : HeightOneSpectrum (𝓞 K)) (n : ℕ) :
-    Subgroup (v.adicCompletion K)ˣ :=
+       :=
   Subgroup.map
     (v.adicCompletionIntegers K).units.subtype
     (rayLocalHigherUnitMap v n).ker
+end
+
 
 end ClassFieldTheory
 

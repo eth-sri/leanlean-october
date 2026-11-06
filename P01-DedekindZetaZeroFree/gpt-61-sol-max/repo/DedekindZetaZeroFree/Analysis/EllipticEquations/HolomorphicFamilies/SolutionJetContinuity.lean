@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.HolomorphicFunctions.SmoothFamilies.ScalarMultiplication
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -48,11 +51,11 @@ theorem smooth_holomorphic_jet_continuous {n : ℕ} (B : LocalBall n)
   have hr : 0 < r := by dsimp [r]; positivity
   have hrρ : r < ρ := by dsimp [r]; linarith
   obtain ⟨N, hN⟩ := hc.2.2 K hK hKB m r hr.le hrρ (ε / 3) (by positivity)
-  letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
+  letI  := isCompact_iff_compactSpace.mp hK
   let j : ℕ → CompactJets K m := fun q =>
     KPLocalCubeSobolevJets.finiteCompactJet B K hKB (coeff q)
       ((hc.1 q).of_le (by simp))
-  let J : ℂ → CompactJets K m := fun z =>
+  let J  := fun z =>
     ∑ q ∈ Finset.range N, (z - z₀) ^ q • j q
   have hJ : Continuous J := by
     dsimp [J]
@@ -61,9 +64,8 @@ theorem smooth_holomorphic_jet_continuous {n : ℕ} (B : LocalBall n)
     (ε / 3) (by positivity)
   refine ⟨min δ r, lt_min hδ hr, ?_⟩
   intro z hz hdist α x
-  have hzr : z ∈ Metric.closedBall z₀ r := by
-    exact (Metric.mem_closedBall).mpr ((hdist.trans_le (min_le_right _ _)).le)
-  have hzρ : z ∈ Metric.ball z₀ ρ :=
+  have hzr  := (Metric.mem_closedBall).mpr ((hdist.trans_le (min_le_right _ _)).le)
+  have hzρ  :=
     Metric.closedBall_subset_ball hrρ hzr
   have hz₀r : z₀ ∈ Metric.closedBall z₀ r := Metric.mem_closedBall_self hr.le
   have hz₀ρ : z₀ ∈ Metric.ball z₀ ρ := Metric.mem_ball_self hρ
@@ -131,14 +133,17 @@ private theorem lp_mul_test_integrable {n : ℕ} {B : LocalBall n}
   (Lp.memLp u).integrable_mul
     (φ.continuous.memLp_of_hasCompactSupport (p := 2) φ.hasCompactSupport)
 
-private theorem lp_mul_derivative_test_integrable {n k : ℕ} {B : LocalBall n}
+section
+variable {n k : ℕ}
+include n k
+private theorem lp_mul_derivative_test_integrable   {B : LocalBall n}
     (u : BallL2 B) (α : MultiIndex n k) (φ : TestFunction B.toOpens ℂ ⊤) :
     Integrable (fun x => u x * coordinateDerivative α (fun x => φ x) x)
       (volume.restrict B.carrier) := by
   simpa only [iteratedDerivativeTest_apply, coordinateDerivative] using
     lp_mul_test_integrable u (iteratedDerivativeTest α.directions φ)
 
-theorem weak_derivative_sub {n k : ℕ} (B : LocalBall n) (α : MultiIndex n k)
+theorem weak_derivative_sub   (B : LocalBall n) (α : MultiIndex n k)
     (u₁ u₂ d₁ d₂ : BallL2 B)
     (h₁ : IsWeakDerivative B α u₁ d₁) (h₂ : IsWeakDerivative B α u₂ d₂) :
     IsWeakDerivative B α (u₁ - u₂) (d₁ - d₂) := by
@@ -161,13 +166,13 @@ theorem weak_derivative_sub {n k : ℕ} (B : LocalBall n) (α : MultiIndex n k)
   change _ = (-1 : ℂ) ^ α.degree * _
   rw [hleft, hright, h₁ φ, h₂ φ, mul_sub]
 
-def subtractSobolev {n k : ℕ} {B : LocalBall n}
+def subtractSobolev   {B : LocalBall n}
     (u v : IntegerSobolev B k) : IntegerSobolev B k where
   derivatives α := u.derivatives α - v.derivatives α
   weak_derivatives α := weak_derivative_sub B α _ _ _ _
     (u.weak_derivatives α) (v.weak_derivatives α)
 
-theorem weak_derivative_smul {n k : ℕ} (B : LocalBall n) (α : MultiIndex n k)
+theorem weak_derivative_smul   (B : LocalBall n) (α : MultiIndex n k)
     (c : ℂ) (u d : BallL2 B) (h : IsWeakDerivative B α u d) :
     IsWeakDerivative B α (c • u) (c • d) := by
   intro φ
@@ -188,19 +193,24 @@ theorem weak_derivative_smul {n k : ℕ} (B : LocalBall n) (α : MultiIndex n k)
   rw [hleft, hright, h φ]
   ring
 
-def scaleSobolev {n k : ℕ} {B : LocalBall n}
+def scaleSobolev   {B : LocalBall n}
     (c : ℂ) (u : IntegerSobolev B k) : IntegerSobolev B k where
   derivatives α := c • u.derivatives α
   weak_derivatives α := weak_derivative_smul B α c _ _ (u.weak_derivatives α)
+end
 
-theorem scaleSobolev_norm {n k : ℕ} {B : LocalBall n}
+
+section
+variable {n k : ℕ} {B : LocalBall n}
+include n k B
+theorem scaleSobolev_norm  
     (c : ℂ) (u : IntegerSobolev B k) :
     (scaleSobolev c u).sobolevNorm = ‖c‖ * u.sobolevNorm := by
   unfold IntegerSobolev.sobolevNorm IntegerSobolev.normSq
   simp only [scaleSobolev, norm_smul, mul_pow, ← Finset.mul_sum]
   rw [Real.sqrt_mul (sq_nonneg _), Real.sqrt_sq_eq_abs, abs_norm]
 
-theorem subtractSobolev_norm_le {n k : ℕ} {B : LocalBall n}
+theorem subtractSobolev_norm_le  
     (u v : IntegerSobolev B k) :
     (subtractSobolev u v).sobolevNorm ≤ 2 * (u.sobolevNorm + v.sobolevNorm) := by
   have hu : 0 ≤ u.sobolevNorm := Real.sqrt_nonneg _
@@ -223,7 +233,7 @@ theorem subtractSobolev_norm_le {n k : ℕ} {B : LocalBall n}
   have hnn : 0 ≤ (subtractSobolev u v).sobolevNorm := Real.sqrt_nonneg _
   nlinarith [mul_nonneg hu hv]
 
-theorem subtractSobolev_represents {n k : ℕ} {B : LocalBall n}
+theorem subtractSobolev_represents
     (u v : IntegerSobolev B k) (f g : Space n → ℂ)
     (hu : (fun x => u.derivatives (⟨fun _ => 0, by simp⟩ : MultiIndex n k) x)
       =ᵐ[volume.restrict B.carrier] f)
@@ -238,7 +248,7 @@ theorem subtractSobolev_represents {n k : ℕ} {B : LocalBall n}
   change (u.derivatives _ - v.derivatives _) x = _
   simpa only [Pi.sub_apply, hx, hy] using hsub
 
-theorem scaleSobolev_represents {n k : ℕ} {B : LocalBall n}
+theorem scaleSobolev_represents  
     (c : ℂ) (u : IntegerSobolev B k) (f : Space n → ℂ)
     (hu : (fun x => u.derivatives (⟨fun _ => 0, by simp⟩ : MultiIndex n k) x)
       =ᵐ[volume.restrict B.carrier] f) :
@@ -250,17 +260,17 @@ theorem scaleSobolev_represents {n k : ℕ} {B : LocalBall n}
   change (c • u.derivatives _) x = _
   simpa only [Pi.smul_apply, smul_eq_mul, hx] using hsmul
 
-def addSobolev {n k : ℕ} {B : LocalBall n}
-    (u v : IntegerSobolev B k) : IntegerSobolev B k :=
+def addSobolev  
+    (u v : IntegerSobolev B k)  :=
   subtractSobolev u (scaleSobolev (-1) v)
 
-theorem addSobolev_norm_le {n k : ℕ} {B : LocalBall n}
+theorem addSobolev_norm_le  
     (u v : IntegerSobolev B k) :
     (addSobolev u v).sobolevNorm ≤ 2 * (u.sobolevNorm + v.sobolevNorm) := by
   simpa only [addSobolev, scaleSobolev_norm, norm_neg, norm_one, one_mul] using
     subtractSobolev_norm_le u (scaleSobolev (-1) v)
 
-theorem addSobolev_represents {n k : ℕ} {B : LocalBall n}
+theorem addSobolev_represents
     (u v : IntegerSobolev B k) (f g : Space n → ℂ)
     (hu : (fun x => u.derivatives (⟨fun _ => 0, by simp⟩ : MultiIndex n k) x)
       =ᵐ[volume.restrict B.carrier] f)
@@ -275,6 +285,8 @@ theorem addSobolev_represents {n k : ℕ} {B : LocalBall n}
   simpa only [neg_one_mul, sub_neg_eq_add] using
     subtractSobolev_represents u (scaleSobolev (-1) v) f (fun x => (-1 : ℂ) * g x)
       hu (scaleSobolev_represents (-1) v g hv)
+end
+
 
 end DedekindZetaZeroFree.KPContLocalHolomorphyUpgrade.CauchyAssembly
 

@@ -19,16 +19,21 @@ variable (a : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
   KPFiniteCuspAtlas.componentMap F ζ hζ U (a.representative i) (KPCuspSiegel.projection F _ x)
  def L (c : I a) (z : KPCuspCharts.Coordinates F) :=
   Q a c.1 (((a.cuspAtlas c.1).representative c.2) • KPCuspCharts.toArch F z)
- def E (τ : ℝ) (c : I a) :=
+ section
+variable (τ : ℝ) (c : I a)
+include τ c
+def E   :=
   KPFiniteCuspAtlas.componentMap F ζ hζ U (a.representative c.1) ''
     KPFiniteCuspAtlas.endSet F
       (KPCuspGenuineMonodromy.Component F ζ hζ U (a.representative c.1))
       ((a.cuspAtlas c.1).representative c.2) τ
- def t (τ : ℝ) (c : I a) (x : KPFiniteCuspAtlas.rawXU F ζ hζ U) : ℝ :=
+ def t   (x : KPFiniteCuspAtlas.rawXU F ζ hζ U) : ℝ :=
   if h : ∃ z : KPCuspCharts.Coordinates F, τ < z.2 ∧ L a c z = x
   then (Classical.choose h).2 else 0
- def zeroExtension (τ : ℝ) (c : I a) (φ : ℝ → ℝ) :=
+ def zeroExtension   (φ : ℝ → ℝ) :=
   (E a τ c).indicator (fun x => φ (t a τ c x))
+end
+
 private theorem Q_cont (i : Fin a.componentCount) : Continuous (Q a i) :=
   continuous_quotient_mk'.comp (continuous_id.prodMk continuous_const)
 private theorem Q_invariant (i : Fin a.componentCount)
@@ -78,13 +83,15 @@ private theorem end_open (τ : ℝ) (c : I a) : IsOpen (E a τ c) := by
     have he := a.components.isOpenMap.comp (isOpenMap_sigmaMk (i := c.1))
     simpa only [Function.comp_def, a.components_formula] using he
   exact hc _ (KPFiniteAdelicCuspEnds.component_open_end F _ _ τ)
-private theorem lift_range (τ : ℝ) (hτ : a.threshold ≤ τ) (c : I a) :
+section
+variable (τ : ℝ) (hτ : a.threshold ≤ τ) (c : I a)
+include τ hτ c
+private theorem lift_range   :
     L a c '' {z : KPCuspCharts.Coordinates F | τ < z.2} = E a τ c := by
   exact (KPActualCollarBuffer.actual_height_descent F ζ hζ hF U a τ hτ).1 c
-private theorem height_coordinates (τ : ℝ) (hτ : a.threshold ≤ τ)
-    (c : I a) (z : KPCuspCharts.Coordinates F) (hz : τ < z.2) : t a τ c (L a c z) = z.2 := by
+private theorem height_coordinates   (z : KPCuspCharts.Coordinates F) (hz : τ < z.2) : t a τ c (L a c z) = z.2 := by
   exact (KPActualCollarBuffer.actual_height_descent F ζ hζ hF U a τ hτ).2.1 c z hz
-private theorem interior_height (τ : ℝ) (hτ : a.threshold ≤ τ) (c : I a)
+private theorem interior_height  
     (x : S (F := F)) (hx : Q a c.1 x ∈ E a τ c) :
     ∃ γ : KPCuspArithmetic.PGL2 F, τ < localHeight γ x ∧
       (fun y => t a τ c (Q a c.1 y)) =ᶠ[𝓝 x] localHeight γ := by
@@ -115,8 +122,13 @@ private theorem interior_height (τ : ℝ) (hτ : a.threshold ≤ τ) (c : I a)
     rw [mul_smul]
     exact local_lift a c hd g y
   rw [← hl, height_coordinates a τ hτ c w (hw ▸ hy), hw]
-private theorem zero_germ (τ T : ℝ) (hτ : a.threshold ≤ τ) (hT : τ < T)
-    (c : I a) (φ : ℝ → ℝ) (hzero : ∀ u, u ≤ T → φ u = 0)
+end
+
+section
+variable (τ T : ℝ) (hτ : a.threshold ≤ τ) (hT : τ < T)
+    (c : I a) (φ : ℝ → ℝ)
+include τ T hτ hT c φ
+private theorem zero_germ   (hzero : ∀ u, u ≤ T → φ u = 0)
     (p : KPFiniteCuspAtlas.rawXU F ζ hζ U) (hp : p ∉ E a τ c) :
     zeroExtension a τ c φ =ᶠ[𝓝 p] 0 := by
   by_cases hc : p ∈ closure (E a τ c)
@@ -133,8 +145,7 @@ private theorem zero_germ (τ T : ℝ) (hτ : a.threshold ≤ τ) (hT : τ < T)
   · filter_upwards [isClosed_closure.isOpen_compl.mem_nhds hc] with y hy
     have he : y ∉ E a τ c := fun he => hy (subset_closure he)
     simp [zeroExtension, he]
-private theorem zeroExtension_smooth (τ T : ℝ) (hτ : a.threshold ≤ τ) (hT : τ < T)
-    (c : I a) (φ : ℝ → ℝ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
+private theorem zeroExtension_smooth   (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
     (hzero : ∀ u, u ≤ T → φ u = 0) (i : Fin a.componentCount) :
     ContDiff ℝ (⊤ : ℕ∞) (fun x : S (F := F) => zeroExtension a τ c φ (Q a i x)) := by
   rw [contDiff_iff_contDiffAt]
@@ -156,8 +167,7 @@ private theorem zeroExtension_smooth (τ T : ℝ) (hτ : a.threshold ≤ τ) (hT
   · have he := (zero_germ a τ T hτ hT c φ hzero (Q a i x) hx).comp_tendsto
       (Q_cont a i).continuousAt
     exact (contDiffAt_const (c := (0 : ℝ))).congr_of_eventuallyEq he
-private theorem zeroExtension_continuous (τ T : ℝ) (hτ : a.threshold ≤ τ) (hT : τ < T)
-    (c : I a) (φ : ℝ → ℝ) (hφ : Continuous φ) (hzero : ∀ u, u ≤ T → φ u = 0) :
+private theorem zeroExtension_continuous   (hφ : Continuous φ) (hzero : ∀ u, u ≤ T → φ u = 0) :
     Continuous (zeroExtension a τ c φ) := by
   rw [continuous_iff_continuousAt]
   intro x
@@ -170,11 +180,16 @@ private theorem zeroExtension_continuous (τ T : ℝ) (hτ : a.threshold ≤ τ)
       hφ.continuousAt.comp ((ht x hx).continuousAt ((end_open a τ c).mem_nhds hx))
     exact hf.congr he.symm
   · exact continuousAt_const.congr (zero_germ a τ T hτ hT c φ hzero x hx).symm
+end
 
-theorem scalar_zeroExtension_smooth_continuous
-    (τ T : ℝ) (hτ : a.threshold ≤ τ) (hT : τ < T)
+
+section
+variable (τ T : ℝ) (hτ : a.threshold ≤ τ) (hT : τ < T)
     (c : Σ i : Fin a.componentCount, Fin (a.cuspAtlas i).cuspCount)
-    (φ : ℝ → ℝ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
+    (φ : ℝ → ℝ)
+include τ T hτ hT c φ
+theorem scalar_zeroExtension_smooth_continuous
+      (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
     (hzero : ∀ u, u ≤ T → φ u = 0) :
     let lift := fun z : KPCuspCharts.Coordinates F =>
       Quotient.mk (KPFiniteCuspAtlas.sphericalRelation F ζ hζ U)
@@ -196,9 +211,7 @@ theorem scalar_zeroExtension_smooth_continuous
     zeroExtension_continuous a τ T hτ hT c φ hφ.continuous hzero⟩
 
 theorem scalar_zeroExtension_local_model
-    (τ T : ℝ) (hτ : a.threshold ≤ τ) (hT : τ < T)
-    (c : Σ i : Fin a.componentCount, Fin (a.cuspAtlas i).cuspCount)
-    (φ : ℝ → ℝ) (hzero : ∀ u, u ≤ T → φ u = 0) :
+      (hzero : ∀ u, u ≤ T → φ u = 0) :
     let lift := fun z : KPCuspCharts.Coordinates F =>
       Quotient.mk (KPFiniteCuspAtlas.sphericalRelation F ζ hζ U)
         (((a.cuspAtlas c.1).representative c.2 • KPCuspCharts.toArch F z),
@@ -237,6 +250,8 @@ theorem scalar_zeroExtension_local_model
     simp only [zeroExtension, Set.indicator_of_mem hmem, hy]
   · exact Or.inl ((zero_germ a τ T hτ hT c φ hzero (Q a i x) hx).comp_tendsto
       (Q_cont a i).continuousAt)
+end
+
 
  abbrev stabilizer (c : I a) := KPCuspArithmetic.conjugatedStabilizer F
   (KPCuspGenuineMonodromy.Component F ζ hζ U (a.representative c.1))

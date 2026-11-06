@@ -174,22 +174,22 @@ theorem exists_uniformizerPrincipalSubgroup_le_normSubgroup
       ((localNormSubgroup K L).pow_index_mem ϖ)
   · exact hUn
 
-/-- If the prescribed prime element is itself a norm, the norm subgroup
-contains a standard subgroup with uniformizer exponent one. -/
-theorem exists_uniformizerPrincipalSubgroup_one_le_normSubgroup
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsAbelianGalois K L]
-    [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    (ϖ : Kˣ) (hϖ : ϖ ∈ localNormSubgroup K L) :
-    ∃ n : ℕ, 1 ≤ n ∧
-      LocalFieldTheory.uniformizerPrincipalSubgroup K ϖ 1 n ≤
-        localNormSubgroup K L := by
-  obtain ⟨n, hn, hUn⟩ :=
-    LocalFieldTheory.exists_fieldPrincipalUnits_le_of_isOpen K (localNormSubgroup K L)
-      (localNormSubgroup_isOpen K L)
-  refine ⟨n, hn, sup_le ?_ hUn⟩
-  simpa using (Subgroup.zpowers_le).2 hϖ
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end LocalClassFieldTheory
 

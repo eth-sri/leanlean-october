@@ -38,14 +38,17 @@ theorem right_automorphic (f : Functions F ζ hζ) (hf : Automorphic F ζ hζ f)
   · intro ε g
     simpa only [mul_assoc] using hf.2.2 ε (g*a)
 
-theorem flat_root_approximation
-    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+section
+variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
     (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
     (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
     (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
     (A : TensorActionSource.LiteralResidueFamily hK)
     (f : Flat F ζ hζ K) (hf : Automorphic F ζ hζ (A.cleared f 0))
+include C R P H K hK A f hf
+theorem flat_root_approximation
+     
     (a : G F ζ hζ) (ε : ℝ) (hε : 0 < ε) :
     ∃ b : Flat F ζ hζ K, Automorphic F ζ hζ (A.cleared b 0) ∧
       ∀ x : KPAdditiveQuotient F,
@@ -79,13 +82,7 @@ theorem flat_root_approximation
   exact happrox y hy
 
 theorem exists_flat_period_ne_zero
-    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-    (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (A : TensorActionSource.LiteralResidueFamily hK)
-    (f : Flat F ζ hζ K) (hf : Automorphic F ζ hζ (A.cleared f 0))
+     
     (ψ : ContinuousAddChar (KPAdditiveQuotient F))
     (hψ : KPReflectionSpec.NontrivialCharacter ψ)
     (μ : Measure (KPAdditiveQuotient F)) (hμ : μ.IsAddHaarMeasure)
@@ -115,6 +112,8 @@ theorem exists_flat_period_ne_zero
     (fun x => star (ψ.toAddChar x))
     (fun x => by rw [norm_star]; exact ψ.unitary x) (hint a) ha v hv happrox
   exact ⟨b.val,b.property,hb⟩
+end
+
 
 end DedekindZetaZeroFree.FourierContinuation.ResidualOwnedDensity
 

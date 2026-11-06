@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Adeles.Lattices.TraceIdealDuality
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 The FLT Project. All rights reserved.
@@ -41,14 +44,12 @@ theorem traceIdealLattice_eq_comap_euclideanIdealLattice
     (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) :
     traceIdealLattice K I =
       ZLattice.comap ℝ (euclideanIdealLattice K I)
-        (traceToEuclidean K).toLinearMap := by
-  rfl
+        (traceToEuclidean K).toLinearMap := rfl
 
 open Classical in
 private theorem divideBySqrtTwo_toLinearMap :
     (divideBySqrtTwo : ℂ ≃L[ℝ] ℂ).toLinearMap =
-      (Real.sqrt 2)⁻¹ • LinearMap.id := by
-  rfl
+      (Real.sqrt 2)⁻¹ • LinearMap.id := rfl
 
 open Classical in
 private theorem det_divideBySqrtTwo :
@@ -87,16 +88,14 @@ private theorem det_traceToEuclidean :
       (traceToEuclidean K).toLinearMap =
         (mixedEmbedding.euclidean.toMixed K).symm.toLinearMap.comp
           (u.toLinearMap.comp
-            (mixedEmbedding.euclidean.toMixed K).toLinearMap) := by
-    rfl
+            (mixedEmbedding.euclidean.toMixed K).toLinearMap) := rfl
   rw [hmap]
   rw [show LinearMap.det
       ((mixedEmbedding.euclidean.toMixed K).symm.toLinearMap.comp
         (u.toLinearMap.comp
           (mixedEmbedding.euclidean.toMixed K).toLinearMap)) =
       LinearMap.det u.toLinearMap by
-        exact LinearMap.det_conj u.toLinearMap
-          (mixedEmbedding.euclidean.toMixed K).symm.toLinearEquiv]
+        apply LinearMap.det_conj]
   change LinearMap.det
       (LinearMap.prodMap
         (LinearMap.id (R := ℝ)
@@ -131,8 +130,7 @@ theorem covolume_comap_continuousLinearEquiv
   have hmeasure :
       μ (e ⁻¹' ZSpan.fundamentalDomain (b.ofZLatticeBasis ℝ L)) =
         ENNReal.ofReal |(LinearMap.det e.toLinearMap)⁻¹| *
-          μ (ZSpan.fundamentalDomain (b.ofZLatticeBasis ℝ L)) := by
-    exact MeasureTheory.Measure.addHaar_preimage_linearMap
+          μ (ZSpan.fundamentalDomain (b.ofZLatticeBasis ℝ L)) := MeasureTheory.Measure.addHaar_preimage_linearMap
       μ (LinearEquiv.isUnit_det' e.toLinearEquiv).ne_zero _
   rw [ZLattice.covolume_eq_measure_fundamentalDomain _
       μ
@@ -274,30 +272,7 @@ theorem traceRadialScale_symm_apply
     (traceRadialScale K q hq).symm v =
       traceRadialScale K (fun w ↦ (q w)⁻¹)
         (fun w ↦ inv_ne_zero (hq w)) v := by
-  apply (traceToMixed K).injective
-  rw [traceToMixed_traceRadialScale]
-  have h := traceToMixed_traceRadialScale K q hq
-    ((traceRadialScale K q hq).symm v)
-  rw [ContinuousLinearEquiv.apply_symm_apply] at h
-  rw [mixedSpaceOfRealSpace_apply]
-  apply Prod.ext
-  · funext w
-    have hw := congrFun (congrArg Prod.fst h) w
-    change (traceToMixed K ((traceRadialScale K q hq).symm v)).1 w =
-      (q w.1)⁻¹ * (traceToMixed K v).1 w
-    change (traceToMixed K v).1 w =
-      q w.1 * (traceToMixed K ((traceRadialScale K q hq).symm v)).1 w at hw
-    rw [hw]
-    simp_all
-  · funext w
-    have hw := congrFun (congrArg Prod.snd h) w
-    change (traceToMixed K ((traceRadialScale K q hq).symm v)).2 w =
-      ((↑((q w.1)⁻¹) : ℂ) * (traceToMixed K v).2 w)
-    change (traceToMixed K v).2 w =
-      (q w.1 : ℂ) *
-        (traceToMixed K ((traceRadialScale K q hq).symm v)).2 w at hw
-    rw [hw]
-    simp_all
+  rfl
 
 open Classical in
 theorem traceConjugation_traceRadialScale
@@ -470,10 +445,7 @@ theorem dualLatticeTheta_shapeIdealLattice
           (fun w ↦ (q w)⁻¹) (fun w ↦ inv_ne_zero (hq w))) Real.pi := by
   rw [dualLatticeTheta, dualLattice_shapeIdealLattice,
     conjugateShapeIdealLattice]
-  exact latticeTheta_map_linearIsometryEquiv
-    (shapeIdealLattice K (traceDualIdealUnit K I)
-      (fun w ↦ (q w)⁻¹) (fun w ↦ inv_ne_zero (hq w)))
-    (traceConjugation K) Real.pi
+  apply latticeTheta_map_linearIsometryEquiv
 
 end DedekindZetaZeroFree.AbelianQuotient.Theta
 
@@ -533,9 +505,9 @@ theorem det_traceRadialScale
   have hdet :
       LinearMap.det (traceRadialScale K q hq).toLinearMap =
         LinearMap.det r := by
-    exact LinearMap.det_conj r (traceToMixed K).symm.toLinearEquiv
+    apply LinearMap.det_conj
   rw [hdet]
-  exact det_radialMixedSpaceUnit K q hq
+  apply det_radialMixedSpaceUnit
 
 open Classical in
 theorem covolume_shapeIdealLattice
@@ -590,8 +562,7 @@ theorem fractionalIdealElementShapeMap_bijective
     Function.Bijective (fractionalIdealElementShapeMap K I q hq) := by
   constructor
   · intro x y hxy
-    have htrace :
-        traceEmbedding K (x : K) = traceEmbedding K (y : K) :=
+    have htrace  :=
       (traceRadialScale K q hq).injective (congrArg Subtype.val hxy)
     apply Subtype.ext
     apply mixedEmbedding_injective K
@@ -612,9 +583,7 @@ open Classical in
 
 noncomputable def fractionalIdealElementShapeEquiv
     (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ)
-    (q : InfinitePlace K → ℝ) (hq : ∀ w, q w ≠ 0) :
-    ↥((I : FractionalIdeal (𝓞 K)⁰ K) :
-      Submodule (𝓞 K) K) ≃ shapeIdealLattice K I q hq :=
+    (q : InfinitePlace K → ℝ) (hq : ∀ w, q w ≠ 0)  :=
   Equiv.ofBijective (fractionalIdealElementShapeMap K I q hq)
     (fractionalIdealElementShapeMap_bijective K I q hq)
 
@@ -635,7 +604,7 @@ open Classical in
 
 noncomputable def fractionalShapeIdealTheta
     (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ)
-    (q : InfinitePlace K → ℝ) (hq : ∀ w, q w ≠ 0) : ℂ :=
+    (q : InfinitePlace K → ℝ) (hq : ∀ w, q w ≠ 0)  :=
   latticeTheta (shapeIdealLattice K I q hq) Real.pi
 
 open Classical in

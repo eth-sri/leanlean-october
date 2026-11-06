@@ -36,10 +36,13 @@ open ValuationTheory.DiscreteValuationField
 open ValuationTheory.DiscreteValuationField.ResidueField
 open ValuationTheory.DiscreteValuationField.ValuedExtension
 
+section
+variable (p : ℕ) [Fact p.Prime] (n : ℕ)
+include p n
 /-- The completed multiplicative level has residue degree one over the
 completed-unramified coefficient field. -/
 theorem padicCompletedLevel_residueDegree_eq_one
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+      :
     residueDegree
         (padicCompletedUnramifiedCompleteDVF p).toDVF
         (padicCompletedLevelCompleteDVF p n).toDVF = 1 := by
@@ -59,7 +62,7 @@ theorem padicCompletedLevel_residueDegree_eq_one
 /-- The target residue field has linear rank one over the
 completed-unramified residue field. -/
 theorem padicCompletedLevel_residueField_finrank_eq_one
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+      :
     Module.finrank
         (padicCompletedUnramifiedCompleteDVF p).residueField
         (padicCompletedLevelCompleteDVF p n).residueField = 1 := by
@@ -88,7 +91,7 @@ theorem padicCompletedLevel_residueField_finrank_eq_one
 /-- The canonical residue map from the completed-unramified coefficient
 field onto the completed level is surjective. -/
 theorem padicCompletedLevel_residueMap_surjective
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+      :
     Function.Surjective
       (residueMap
         (padicCompletedUnramifiedCompleteDVF p).toDVF
@@ -107,7 +110,7 @@ theorem padicCompletedLevel_residueMap_surjective
 /-- The canonical residue-field equivalence from the completed-unramified
 coefficient field to a completed multiplicative level. -/
 noncomputable def padicCompletedLevelResidueFieldEquiv
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+      :
     (padicCompletedUnramifiedCompleteDVF p).residueField ≃+*
       (padicCompletedLevelCompleteDVF p n).residueField :=
   residueFieldEquivOfSurjective
@@ -119,31 +122,33 @@ noncomputable def padicCompletedLevelResidueFieldEquiv
 residue map. -/
 @[simp]
 theorem padicCompletedLevelResidueFieldEquiv_apply
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
+     
     (x : (padicCompletedUnramifiedCompleteDVF p).residueField) :
     padicCompletedLevelResidueFieldEquiv p n x =
       residueMap
         (padicCompletedUnramifiedCompleteDVF p).toDVF
         (padicCompletedLevelCompleteDVF p n).toDVF x :=
   rfl
+end
 
-/-- On integral representatives, the completed-level residue equivalence is
-the residue of the canonical valuation-ring inclusion. -/
-@[simp]
-theorem padicCompletedLevelResidueFieldEquiv_apply_residue
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (a : (padicCompletedUnramifiedCompleteDVF p).valuationSubring) :
-    padicCompletedLevelResidueFieldEquiv p n
-        ((padicCompletedUnramifiedCompleteDVF p).residueMap a) =
-      (padicCompletedLevelCompleteDVF p n).residueMap
-        (integerMap
-          (padicCompletedUnramifiedCompleteDVF p).toDVF
-          (padicCompletedLevelCompleteDVF p n).toDVF a) := by
-  exact
-    residueFieldEquivOfSurjective_apply_residue
-      (padicCompletedUnramifiedCompleteDVF p).toDVF
-      (padicCompletedLevelCompleteDVF p n).toDVF
-      (padicCompletedLevel_residueMap_surjective p n) a
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 private theorem
     padicCompletedUnramifiedWitt_residue_frobenius_eq_pow

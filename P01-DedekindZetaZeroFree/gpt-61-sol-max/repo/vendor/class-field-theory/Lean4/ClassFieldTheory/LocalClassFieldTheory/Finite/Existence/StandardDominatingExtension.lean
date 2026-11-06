@@ -76,22 +76,22 @@ theorem exists_finiteAbelianDominatingStandardLubinTateCompositum
   apply nonempty_algHom_of_normSubgroup_le K L E
   simpa [E, P, finiteAbelianNormSubgroup] using hP
 
-/-- Every finite abelian local extension embeds in a represented finite
-abelian fixed field obtained from the standard unramified/Lubin--Tate
-construction. -/
-theorem exists_finiteAbelianDominatingStandardFixedField
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [FiniteDimensional K L] [IsAbelianGalois K L] :
-    ∃ P : FiniteAbelianSubextension (intrinsicAbstractBase K),
-      Nonempty
-        (L →ₐ[K]
-          abstractFixedField K (SeparableClosure K) P.field) := by
-  obtain ⟨d, n, hd, _hn, hEmbed⟩ :=
-    exists_finiteAbelianDominatingStandardLubinTateCompositum K L
-  exact
-    ⟨standardLubinTateFiniteAbelianCompositum K d n hd, hEmbed⟩
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end LocalClassFieldTheory
 

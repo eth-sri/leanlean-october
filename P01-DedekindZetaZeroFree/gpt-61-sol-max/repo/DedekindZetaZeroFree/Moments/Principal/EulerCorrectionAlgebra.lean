@@ -2,16 +2,19 @@ module
 
 public import Mathlib
 
+public import Mathlib
+
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.Audit.Euler
 
 noncomputable section
 
-def principalFactor (r D E : ℂ) : ℂ :=
+def principalFactor (r D E : ℂ)  :=
   (1 + r) / (1 - r) + (1 + r) * (E - D) / (1 - E)
 
-def principalCorrection (r D E : ℂ) : ℂ :=
+def principalCorrection (r D E : ℂ)  :=
   (1 - r ^ 2) * (1 - (1 - r) * D - r * E) / ((1 - E) * (1 - D))
 
 theorem principalCorrection_identity (r D E : ℂ) (hr : 1 - r ≠ 0)
@@ -50,11 +53,11 @@ theorem principalCorrection_ne_zero (r : ℝ) (D E : ℂ)
     exact (lt_irrefl 1) hweight
   have hDne : 1 - D ≠ 0 := by
     intro hz
-    have : D = 1 := (sub_eq_zero.mp hz).symm
+    have  := (sub_eq_zero.mp hz).symm
     simp [this] at hD
   have hEne : 1 - E ≠ 0 := by
     intro hz
-    have : E = 1 := (sub_eq_zero.mp hz).symm
+    have  := (sub_eq_zero.mp hz).symm
     simp [this] at hE
   have hn : 1 - r ^ 2 ≠ 0 := by nlinarith [sq_nonneg r]
   unfold principalCorrection

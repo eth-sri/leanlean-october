@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import Mathlib.RingTheory.DiscreteValuationRing.Basic
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -47,7 +50,7 @@ additive valuation. -/
     simp
   obtain ⟨ϖ, hϖ⟩ := exists_irreducible R
   obtain ⟨n, u, ha_decomp⟩ := eq_unit_mul_pow_irreducible ha hϖ
-  have hmapϖ : Irreducible (e ϖ) := hϖ.map e
+  have hmapϖ  := hϖ.map e
   have hmap_decomp :
       e a = (Units.map e.toMonoidHom u : R) * (e ϖ) ^ n := by
     rw [ha_decomp, map_mul, map_pow]

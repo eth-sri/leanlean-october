@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.LubinTate.FormalModule.StandardFormalGroup
 public import ClassFieldTheory.LubinTate.Padic.MultiplicativeSeries
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -37,10 +40,13 @@ open LocalFieldTheory.DiscreteValuationField
 open LocalFieldTheory.DiscreteValuationField.Examples.Qp
 open SameUniformizer
 
+section
+variable (p : ℕ) [Fact p.Prime]
+include p
 /-- The canonical linear-term-one intertwiner carrying standard Lubin--Tate
 division points over `ℚ_p` to multiplicative division points. -/
 noncomputable def padicStandardToMultiplicativeIntertwiner
-    (p : ℕ) [Fact p.Prime] :
+      :
     PowerSeries (padicLocalField p).valuationSubring :=
   recursiveIntertwiner
     (padicMultiplicativeLubinTateSeries_isUniformizer p)
@@ -52,7 +58,7 @@ noncomputable def padicStandardToMultiplicativeIntertwiner
 /-- The standard-to-multiplicative intertwiner has linear coefficient `1`
 and no constant term. -/
 theorem padicStandardToMultiplicativeIntertwiner_hasLinearTerm
-    (p : ℕ) [Fact p.Prime] :
+      :
     HasLinearTerm (padicStandardToMultiplicativeIntertwiner p)
       (fun _ : Unit =>
         (1 : (padicLocalField p).valuationSubring)) :=
@@ -66,7 +72,7 @@ theorem padicStandardToMultiplicativeIntertwiner_hasLinearTerm
 /-- The canonical series satisfies the literal same-uniformizer equation
 from the multiplicative series to the standard series. -/
 theorem padicStandardToMultiplicativeIntertwiner_intertwines
-    (p : ℕ) [Fact p.Prime] :
+      :
     Intertwines
       (padicMultiplicativeLubinTateSeries p)
       (standardLubinTateSeries
@@ -82,7 +88,7 @@ theorem padicStandardToMultiplicativeIntertwiner_intertwines
 /-- One-variable form of the intertwining equation:
 the multiplicative series after `H` equals `H` after the standard series. -/
 theorem padicStandardToMultiplicativeIntertwiner_functionalEquation
-    (p : ℕ) [Fact p.Prime] :
+      :
     PowerSeries.subst
         (padicStandardToMultiplicativeIntertwiner p)
         (padicMultiplicativeLubinTateSeries p).toPowerSeries =
@@ -112,23 +118,18 @@ theorem padicStandardToMultiplicativeIntertwiner_functionalEquation
       congr 1
       funext i
       cases i
-      exact
-        PowerSeries.X_subst
-          (standardLubinTateSeries
-            (padicMultiplicativeLubinTateSeries_isUniformizer p)).toPowerSeries
+      apply PowerSeries.X_subst
 
 /-- The intertwiner has zero constant coefficient, hence admits formal
 substitution. -/
-theorem padicStandardToMultiplicativeIntertwiner_hasSubst
-    (p : ℕ) [Fact p.Prime] :
-    PowerSeries.HasSubst
-      (padicStandardToMultiplicativeIntertwiner p) :=
+def padicStandardToMultiplicativeIntertwiner_hasSubst
+       :=
   (padicStandardToMultiplicativeIntertwiner_hasLinearTerm p).hasSubst
 
 /-- The coefficient of `X` in the canonical intertwiner is `1`. -/
 @[simp]
 theorem padicStandardToMultiplicativeIntertwiner_coeff_one
-    (p : ℕ) [Fact p.Prime] :
+      :
     PowerSeries.coeff 1
         (padicStandardToMultiplicativeIntertwiner p) =
       1 :=
@@ -138,7 +139,7 @@ theorem padicStandardToMultiplicativeIntertwiner_coeff_one
 comparison gives the unique multiplicative-series endomorphism with the
 same scalar linear coefficient. -/
 theorem padicStandardToMultiplicativeIntertwiner_endomorphism
-    (p : ℕ) [Fact p.Prime]
+     
     (a : (padicLocalField p).valuationSubring) :
     PowerSeries.subst
         (standardLubinTateEndomorphism
@@ -161,7 +162,7 @@ theorem padicStandardToMultiplicativeIntertwiner_endomorphism
   have hH :
       HasLinearTerm H
         (fun _ : Unit =>
-          (1 : (padicLocalField p).valuationSubring)) :=
+          (1)) :=
     padicStandardToMultiplicativeIntertwiner_hasLinearTerm p
   have hS :
       HasLinearTerm S (fun _ : Unit => a) :=
@@ -182,7 +183,7 @@ theorem padicStandardToMultiplicativeIntertwiner_endomorphism
     hM.subst
       (G := fun _ : Unit => H)
       (M := fun _ : Unit => fun _ : Unit =>
-        (1 : (padicLocalField p).valuationSubring))
+        (1))
       (fun _ => hH)
   have hrightLinear :
       HasLinearTerm (PowerSeries.subst H M)
@@ -197,12 +198,10 @@ theorem padicStandardToMultiplicativeIntertwiner_endomorphism
   have hMIntertwines :
       Intertwines E E M :=
     recursiveIntertwiner_intertwines hπ E E (fun _ : Unit => a)
-  have hleftIntertwines :
-      Intertwines E Ebar (PowerSeries.subst S H) :=
+  have hleftIntertwines  :=
     hHIntertwines.powerSeries_subst hH.hasSubst
       hSIntertwines hS.hasSubst
-  have hrightIntertwines :
-      Intertwines E Ebar (PowerSeries.subst H M) :=
+  have hrightIntertwines  :=
     hMIntertwines.powerSeries_subst hM.hasSubst
       hHIntertwines hH.hasSubst
   exact
@@ -214,7 +213,7 @@ theorem padicStandardToMultiplicativeIntertwiner_endomorphism
 /-- The canonical inverse-direction intertwiner carrying multiplicative
 division points to standard Lubin--Tate division points. -/
 noncomputable def padicMultiplicativeToStandardIntertwiner
-    (p : ℕ) [Fact p.Prime] :
+      :
     PowerSeries (padicLocalField p).valuationSubring :=
   recursiveIntertwiner
     (padicMultiplicativeLubinTateSeries_isUniformizer p)
@@ -226,7 +225,7 @@ noncomputable def padicMultiplicativeToStandardIntertwiner
 /-- The multiplicative-to-standard intertwiner also has linear coefficient
 `1` and no constant term. -/
 theorem padicMultiplicativeToStandardIntertwiner_hasLinearTerm
-    (p : ℕ) [Fact p.Prime] :
+      :
     HasLinearTerm (padicMultiplicativeToStandardIntertwiner p)
       (fun _ : Unit =>
         (1 : (padicLocalField p).valuationSubring)) :=
@@ -240,7 +239,7 @@ theorem padicMultiplicativeToStandardIntertwiner_hasLinearTerm
 /-- The inverse-direction canonical series satisfies its literal
 same-uniformizer equation. -/
 theorem padicMultiplicativeToStandardIntertwiner_intertwines
-    (p : ℕ) [Fact p.Prime] :
+      :
     Intertwines
       (standardLubinTateSeries
         (padicMultiplicativeLubinTateSeries_isUniformizer p))
@@ -253,97 +252,95 @@ theorem padicMultiplicativeToStandardIntertwiner_intertwines
     (padicMultiplicativeLubinTateSeries p)
     (fun _ : Unit => 1)
 
-/-- One-variable form of the inverse-direction intertwining equation. -/
-theorem padicMultiplicativeToStandardIntertwiner_functionalEquation
-    (p : ℕ) [Fact p.Prime] :
-    PowerSeries.subst
-        (padicMultiplicativeToStandardIntertwiner p)
-        (standardLubinTateSeries
-          (padicMultiplicativeLubinTateSeries_isUniformizer p)).toPowerSeries =
-      PowerSeries.subst
-        (padicMultiplicativeLubinTateSeries p).toPowerSeries
-        (padicMultiplicativeToStandardIntertwiner p) := by
-  have h :=
-    padicMultiplicativeToStandardIntertwiner_intertwines p
-  calc
-    PowerSeries.subst
-        (padicMultiplicativeToStandardIntertwiner p)
-        (standardLubinTateSeries
-          (padicMultiplicativeLubinTateSeries_isUniformizer p)).toPowerSeries =
-        MvPowerSeries.subst
-          (fun i : Unit =>
-            inVariable (padicMultiplicativeLubinTateSeries p) i)
-          (padicMultiplicativeToStandardIntertwiner p) :=
-      h
-    _ =
-        PowerSeries.subst
-          (padicMultiplicativeLubinTateSeries p).toPowerSeries
-          (padicMultiplicativeToStandardIntertwiner p) := by
-      rw [PowerSeries.subst_def]
-      congr 1
-      funext i
-      cases i
-      exact
-        PowerSeries.X_subst
-          (padicMultiplicativeLubinTateSeries p).toPowerSeries
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The inverse-direction intertwiner admits formal substitution. -/
-theorem padicMultiplicativeToStandardIntertwiner_hasSubst
-    (p : ℕ) [Fact p.Prime] :
-    PowerSeries.HasSubst
-      (padicMultiplicativeToStandardIntertwiner p) :=
+def padicMultiplicativeToStandardIntertwiner_hasSubst
+       :=
   (padicMultiplicativeToStandardIntertwiner_hasLinearTerm p).hasSubst
 
-/-- Composing the standard-to-multiplicative comparison after its reverse
-is the identity on the multiplicative coordinate. -/
-theorem padicStandardToMultiplicativeIntertwiner_subst_reverse
-    (p : ℕ) [Fact p.Prime] :
-    PowerSeries.subst
-        (padicMultiplicativeToStandardIntertwiner p)
-        (padicStandardToMultiplicativeIntertwiner p) =
-      PowerSeries.X := by
-  have hcomp :=
-    (padicStandardToMultiplicativeIntertwiner_hasLinearTerm p).subst
-      (G := fun _ : Unit =>
-        padicMultiplicativeToStandardIntertwiner p)
-      (M := fun _ : Unit => fun _ : Unit =>
-        (1 : (padicLocalField p).valuationSubring))
-      (fun _ =>
-        padicMultiplicativeToStandardIntertwiner_hasLinearTerm p)
-  have hcomp' :
-      HasLinearTerm
-        (PowerSeries.subst
-          (padicMultiplicativeToStandardIntertwiner p)
-          (padicStandardToMultiplicativeIntertwiner p))
-        (fun _ : Unit =>
-          (1 : (padicLocalField p).valuationSubring)) := by
-    simpa [PowerSeries.subst_def] using hcomp
-  have hIcomp :=
-    (padicStandardToMultiplicativeIntertwiner_intertwines p).powerSeries_subst
-      (padicStandardToMultiplicativeIntertwiner_hasSubst p)
-      (padicMultiplicativeToStandardIntertwiner_intertwines p)
-      (padicMultiplicativeToStandardIntertwiner_hasSubst p)
-  have hX :
-      HasLinearTerm
-        (PowerSeries.X :
-          PowerSeries (padicLocalField p).valuationSubring)
-        (fun _ : Unit => 1) := by
-    simpa [PowerSeries.X] using
-      (hasLinearTerm_X
-        (R := (padicLocalField p).valuationSubring) ())
-  exact
-    eq_of_hasLinearTerm_of_intertwines
-      (padicMultiplicativeLubinTateSeries_isUniformizer p)
-      (padicMultiplicativeLubinTateSeries p)
-      (padicMultiplicativeLubinTateSeries p)
-      (fun _ : Unit => 1)
-      hcomp' hIcomp hX
-      (intertwines_X (padicMultiplicativeLubinTateSeries p) ())
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- Composing the reverse comparison after the standard-to-multiplicative
 series is the identity on the standard coordinate. -/
 theorem padicMultiplicativeToStandardIntertwiner_subst_reverse
-    (p : ℕ) [Fact p.Prime] :
+      :
     PowerSeries.subst
         (padicStandardToMultiplicativeIntertwiner p)
         (padicMultiplicativeToStandardIntertwiner p) =
@@ -353,7 +350,7 @@ theorem padicMultiplicativeToStandardIntertwiner_subst_reverse
       (G := fun _ : Unit =>
         padicStandardToMultiplicativeIntertwiner p)
       (M := fun _ : Unit => fun _ : Unit =>
-        (1 : (padicLocalField p).valuationSubring))
+        (1))
       (fun _ =>
         padicStandardToMultiplicativeIntertwiner_hasLinearTerm p)
   have hcomp' :
@@ -389,6 +386,8 @@ theorem padicMultiplicativeToStandardIntertwiner_subst_reverse
       (intertwines_X
         (standardLubinTateSeries
           (padicMultiplicativeLubinTateSeries_isUniformizer p)) ())
+end
+
 
 end LubinTate
 

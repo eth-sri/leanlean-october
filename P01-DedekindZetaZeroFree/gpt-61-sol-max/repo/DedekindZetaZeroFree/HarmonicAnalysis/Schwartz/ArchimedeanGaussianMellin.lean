@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 
 @[expose] public section
+
 
 /-
 The two generic square-Gaussian computations below are adapted from LeanPool's
@@ -15,8 +18,11 @@ namespace DedekindZetaZeroFree.AbelianQuotient
 
 open MeasureTheory
 
-private theorem integrable_square_gaussian {s : ℂ} (hs : 0 < s.re)
-    {r : ℝ} (hr : 0 < r) :
+section
+variable {s : ℂ} (hs : 0 < s.re)
+    {r : ℝ} (hr : 0 < r)
+include s hs r hr
+private theorem integrable_square_gaussian   :
     IntegrableOn (fun x : ℝ =>
       (x : ℂ) ^ (2 * s - 1) * Complex.exp (-((r * x ^ 2 : ℝ) : ℂ)))
       (Set.Ioi 0) := by
@@ -25,10 +31,7 @@ private theorem integrable_square_gaussian {s : ℂ} (hs : 0 < s.re)
     convert Complex.GammaIntegral_convergent hs using 1
     ext t
     simp [mul_comm]
-  have hscaled : MellinConvergent
-      (fun t : ℝ => Complex.exp (-((r * t : ℝ) : ℂ))) s := by
-    simpa only [Complex.ofReal_mul] using
-      (MellinConvergent.comp_mul_left (f :=
+  have hscaled  := (MellinConvergent.comp_mul_left (f :=
         fun t : ℝ => Complex.exp (-(t : ℂ))) (s := s) hr).2 hbase
   have hsquare : MellinConvergent
       (fun t : ℝ => Complex.exp (-((r * t ^ 2 : ℝ) : ℂ))) (2 * s) := by
@@ -38,8 +41,7 @@ private theorem integrable_square_gaussian {s : ℂ} (hs : 0 < s.re)
     simp_all
   simpa only [MellinConvergent, smul_eq_mul] using hsquare
 
-private theorem integral_square_gaussian {s : ℂ} (hs : 0 < s.re)
-    {r : ℝ} (hr : 0 < r) :
+private theorem integral_square_gaussian   :
     (∫ x : ℝ in Set.Ioi 0,
       (x : ℂ) ^ (2 * s - 1) * Complex.exp (-((r * x ^ 2 : ℝ) : ℂ))) =
       (2 : ℂ)⁻¹ * (1 / r : ℂ) ^ s * Complex.Gamma s := by
@@ -54,6 +56,8 @@ private theorem integral_square_gaussian {s : ℂ} (hs : 0 < s.re)
   have htwo : |(2 : ℝ)| = 2 := abs_of_pos (by norm_num)
   simpa only [htwo, Complex.ofReal_inv, Complex.ofReal_ofNat,
     Complex.ofReal_pow, Complex.ofReal_mul, one_div, Real.rpow_two, mul_assoc] using hsq
+end
+
 
 private theorem inverse_cpow {r : ℝ} (hr : 0 < r) (s : ℂ) :
     (1 / r : ℂ) ^ s = (r : ℂ) ^ (-s) := by
@@ -61,8 +65,11 @@ private theorem inverse_cpow {r : ℝ} (hr : 0 < r) (s : ℂ) :
     rw [Complex.arg_ofReal_of_nonneg hr.le]
     exact Real.pi_ne_zero.symm), Complex.cpow_neg]
 
-theorem integrableOn_gaussian_real_place_mellin (s : ℂ) (a : ℝ)
-    (hs : 0 < s.re) (ha : 0 < a) :
+section
+variable (s : ℂ) (a : ℝ)
+    (hs : 0 < s.re) (ha : 0 < a)
+include s a hs ha
+theorem integrableOn_gaussian_real_place_mellin   :
     IntegrableOn (fun q : ℝ =>
       (q : ℂ) ^ (s - 1) * Complex.exp (-((Real.pi * a * q ^ 2 : ℝ) : ℂ)))
       (Set.Ioi 0) := by
@@ -70,8 +77,7 @@ theorem integrableOn_gaussian_real_place_mellin (s : ℂ) (a : ℝ)
   have htwo : (2 : ℂ) * (s / 2) = s := by ring
   simpa only [htwo] using integrable_square_gaussian hs' (mul_pos Real.pi_pos ha)
 
-theorem gaussian_real_place_mellin (s : ℂ) (a : ℝ)
-    (hs : 0 < s.re) (ha : 0 < a) :
+theorem gaussian_real_place_mellin   :
     (∫ q : ℝ in Set.Ioi 0,
       (q : ℂ) ^ (s - 1) * Complex.exp (-((Real.pi * a * q ^ 2 : ℝ) : ℂ))) =
       (2 : ℂ)⁻¹ * (a : ℂ) ^ (-s / 2) * Complex.Gammaℝ s := by
@@ -83,15 +89,12 @@ theorem gaussian_real_place_mellin (s : ℂ) (a : ℝ)
   rw [neg_div]
   ring
 
-theorem integrableOn_gaussian_complex_place_mellin (s : ℂ) (a : ℝ)
-    (hs : 0 < s.re) (ha : 0 < a) :
+theorem integrableOn_gaussian_complex_place_mellin   :
     IntegrableOn (fun q : ℝ =>
       (q : ℂ) ^ (2 * s - 1) * Complex.exp (-((2 * Real.pi * a * q ^ 2 : ℝ) : ℂ)))
-      (Set.Ioi 0) := by
-  exact integrable_square_gaussian hs (mul_pos (mul_pos (by norm_num) Real.pi_pos) ha)
+      (Set.Ioi 0) := integrable_square_gaussian hs (mul_pos (mul_pos (by norm_num) Real.pi_pos) ha)
 
-theorem gaussian_complex_place_mellin (s : ℂ) (a : ℝ)
-    (hs : 0 < s.re) (ha : 0 < a) :
+theorem gaussian_complex_place_mellin   :
     (∫ q : ℝ in Set.Ioi 0,
       (q : ℂ) ^ (2 * s - 1) * Complex.exp (-((2 * Real.pi * a * q ^ 2 : ℝ) : ℂ))) =
       (4 : ℂ)⁻¹ * (a : ℂ) ^ (-s) * Complex.Gammaℂ s := by
@@ -101,5 +104,7 @@ theorem gaussian_complex_place_mellin (s : ℂ) (a : ℝ)
     Complex.mul_cpow_ofReal_nonneg (mul_nonneg (by norm_num) Real.pi_pos.le) ha.le,
     Complex.Gammaℂ, Complex.ofReal_mul, Complex.ofReal_ofNat]
   ring
+end
+
 
 end DedekindZetaZeroFree.AbelianQuotient

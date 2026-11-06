@@ -30,15 +30,18 @@ open KummerTheory
 
 variable (K : Type) [Field K] [NumberField K]
 
-/-- In the quadratic real case with both arguments negative, the actual
-infinite-place Kummer root character is `-1`. -/
-theorem infinitePlaceKummerRootCharacter_eq_neg_one_of_real_of_neg_neg
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
+section
+variable (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
     (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
     (v : InfinitePlace K) (a b : Kˣ)
     (hn : (n : ℕ) = 2) (hv : v.IsReal)
     (ha : InfinitePlace.embedding_of_isReal hv (a : K) < 0)
-    (hb : InfinitePlace.embedding_of_isReal hv (b : K) < 0) :
+    (hb : InfinitePlace.embedding_of_isReal hv (b : K) < 0)
+include n hnK hmu v a b hn hv ha hb
+/-- In the quadratic real case with both arguments negative, the actual
+infinite-place Kummer root character is `-1`. -/
+theorem infinitePlaceKummerRootCharacter_eq_neg_one_of_real_of_neg_neg
+      :
     let negOne : nthRootsSubgroup K (n : ℕ) :=
       ⟨(-1 : Kˣ), by simp [hn]⟩
     infinitePlaceKummerRootCharacter K n hnK hmu v a b = negOne := by
@@ -102,12 +105,7 @@ theorem infinitePlaceKummerRootCharacter_eq_neg_one_of_real_of_neg_neg
 /-- The explicit Hilbert factor and the Kummer root character agree in the
 negative-negative quadratic real branch. -/
 theorem infinitePlaceKummerRootCharacter_localGlobal_of_real_of_neg_neg
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (v : InfinitePlace K) (a b : Kˣ)
-    (hn : (n : ℕ) = 2) (hv : v.IsReal)
-    (ha : InfinitePlace.embedding_of_isReal hv (a : K) < 0)
-    (hb : InfinitePlace.embedding_of_isReal hv (b : K) < 0) :
+      :
     infinitePlaceKummerRootCharacter K n hnK hmu v a b =
       infinitePlaceHilbertSymbol K n v a b := by
   let negOne : nthRootsSubgroup K (n : ℕ) :=
@@ -119,6 +117,8 @@ theorem infinitePlaceKummerRootCharacter_localGlobal_of_real_of_neg_neg
     _ = infinitePlaceHilbertSymbol K n v a b := by
       apply Subtype.ext
       simp [negOne, infinitePlaceHilbertSymbol, hn, hv, ha, hb]
+end
+
 
 end Reciprocity
 end GlobalClassFieldTheory

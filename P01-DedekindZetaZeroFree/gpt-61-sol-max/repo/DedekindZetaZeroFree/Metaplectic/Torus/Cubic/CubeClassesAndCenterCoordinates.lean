@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.RepresentationTheory.Smooth.LocalPGLCoverModules
 public import DedekindZetaZeroFree.Metaplectic.Kubota.AdelicCover.AdelicRestrictedProductTopology
 
 @[expose] public section
+
 
 open scoped NumberField Valued commutatorElement
 open NumberField IsDedekindDomain
@@ -36,7 +39,7 @@ abbrev H := KPLocalSmoothRepresentation.Torus F ζ hζ q
 
 abbrev D := KPLocalTorus.CubeClasses (K F q)ˣ
 
-def ordinaryIota : rootsOfUnity 3 F →* ℂˣ :=
+def ordinaryIota  :=
   (KPLocalCover.coefficientEmbedding F ζ hζ).comp (KPLocalCover.threeToSix F)
 
 def ordinaryMu3 : rootsOfUnity 3 F →* rootsOfUnity 3 ℂ :=
@@ -57,36 +60,30 @@ def normalWord (e : rootsOfUnity 3 F) (y : (K F q)ˣ) : Cover F ζ hζ q :=
   KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q) e *
     KPPGLLocalCover.A F ζ hζ (Sum.inr q) y
 
-def sheet (h : H F ζ hζ q) : rootsOfUnity 3 F :=
+def sheet (h : H F ζ hζ q)  :=
   @dite _ (∃ e, (h : Cover F ζ hζ q) = normalWord F ζ hζ q e (coordinate F ζ hζ q h))
     (Classical.propDecidable _) (fun he => Classical.choose he) (fun _ => 1)
 
 local instance : (KPPGLLocalCover.scalarSubgroup F (Sum.inr q)).Normal :=
   KPPGLLocalCover.scalarSubgroup_normal F (Sum.inr q)
-private lemma normalWord_projection (e : rootsOfUnity 3 F) (y : (K F q)ˣ) :
+section
+variable (e : rootsOfUnity 3 F) (y : (K F q)ˣ)
+include e y
+private lemma normalWord_projection   :
   KPLocalSmoothRepresentation.projection F ζ hζ q (normalWord F ζ hζ q e y) =
     Matrix.ProjGenLinGroup.mk (KubotaRankTwo.d (K F q) y 1) := by
   rw [normalWord, map_mul]
   have hz : KPLocalSmoothRepresentation.projection F ζ hζ q
       (KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q) e) = 1 := by
-    change KPLocalSmoothRepresentation.ordinaryPGLMap F q
-      (KPPGLLocalCover.projection F ζ hζ (Sum.inr q)
-      (KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q) e)) = 1
-    have hk := KPPGLLocalCover.range_centralInjection_eq_ker_projection F ζ hζ (Sum.inr q)
-    have hh : KPPGLLocalCover.projection F ζ hζ (Sum.inr q)
-      (KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q) e) = 1 := by
-      have hh : KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q) e ∈
-        (KPPGLLocalCover.projection F ζ hζ (Sum.inr q)).ker := by rw [← hk]; exact ⟨e, rfl⟩
-      exact hh
-    rw [hh, map_one]
+    rfl
   rw [hz, one_mul]
   rfl
-private lemma normalWord_mem (e : rootsOfUnity 3 F) (y : (K F q)ˣ) :
+private lemma normalWord_mem   :
   normalWord F ζ hζ q e y ∈ H F ζ hζ q := by
   change KPLocalSmoothRepresentation.projection F ζ hζ q _ ∈ KPRankOneInduction.diagonalTorus F q
   refine ⟨KubotaRankTwo.d (K F q) y 1, (normalWord_projection F ζ hζ q e y).symm, ?_, ?_⟩ <;>
     simp [KubotaRankTwo.d]
-private lemma normalWord_coordinate (e : rootsOfUnity 3 F) (y : (K F q)ˣ) (h : H F ζ hζ q)
+private lemma normalWord_coordinate   (h : H F ζ hζ q)
   (hh : (h : Cover F ζ hζ q) = normalWord F ζ hζ q e y) : coordinate F ζ hζ q h = y := by
   apply Units.ext
   change (KPRankOneInduction.borelRatio F q _ : K F q) = (y : K F q)
@@ -95,6 +92,8 @@ private lemma normalWord_coordinate (e : rootsOfUnity 3 F) (y : (K F q)ˣ) (h : 
   · change Matrix.ProjGenLinGroup.mk _ = KPLocalSmoothRepresentation.projection F ζ hζ q h
     rw [hh, normalWord_projection]
   · simp [KubotaRankTwo.d]
+end
+
 private lemma ordinaryPGLMap_injective : Function.Injective (KPLocalSmoothRepresentation.ordinaryPGLMap F q) := by
   apply (injective_iff_map_eq_one _).mpr
   intro x hx
@@ -112,8 +111,7 @@ private lemma normalWord_exists (h : H F ζ hζ q) :
     rw [Matrix.det_fin_two] at hd
     simp only [h10, mul_zero, sub_zero] at hd
     exact (mul_ne_zero_iff.mp hd).2
-  have hy : (coordinate F ζ hζ q h : K F q) = A 0 0 / A 1 1 := by
-    apply KPRankOneInduction.borelRatio_eq F q _ A hA h10
+  have hy : (coordinate F ζ hζ q h : K F q) = A 0 0 / A 1 1 := KPRankOneInduction.borelRatio_eq F q _ A hA h10
   have hmat : KubotaRankTwo.d (K F q) (coordinate F ζ hζ q h) 1 *
       Matrix.GeneralLinearGroup.scalar (Fin 2) (Units.mk0 (A 1 1) h11) = A := by
     apply Units.ext
@@ -141,7 +139,7 @@ private lemma normalWord_exists (h : H F ζ hζ q) :
   simp
 private lemma borelRatio_continuous : Continuous (KPRankOneInduction.borelRatio F q) := by
   let f := (KPRankOneInduction.upperBorel F q : Set (KPRankOneInduction.PGL2 F q)).restrictPreimage
-    (Matrix.ProjGenLinGroup.mk : KPRankOneInduction.GL2 F q → KPRankOneInduction.PGL2 F q)
+    Matrix.ProjGenLinGroup.mk
   have hq : Topology.IsQuotientMap f :=
     (QuotientGroup.isOpenQuotientMap_mk.restrictPreimage _).isQuotientMap
   apply hq.continuous_iff.mpr
@@ -284,7 +282,7 @@ private lemma A_commutator (x y : (K F q)ˣ) :
   have hh : b * (b⁻¹)^2 = b^2 := by
     have hh' : b^2 = b⁻¹ := (eq_inv_iff_mul_eq_one.mpr (by simpa [pow_succ] using hb))
     calc
-      b * (b⁻¹)^2 = b * (b^2)⁻¹ := by rw [inv_pow]
+      b * (b⁻¹)^2 = b * (b^2)⁻¹ := rfl
       _ = b * b := by rw [hh', inv_inv]
       _ = b^2 := (pow_two b).symm
   have hab : KPPGLLocalCover.A F ζ hζ (Sum.inr q) x * KPPGLLocalCover.A F ζ hζ (Sum.inr q) y =
@@ -301,10 +299,10 @@ private lemma word_commutator (e f : rootsOfUnity 3 F) (x y : (K F q)ˣ) :
   let b := KPPGLLocalCover.A F ζ hζ (Sum.inr q) y
   let z := KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q) e
   let w := KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q) f
-  have hza : Commute z a := z_comm F ζ hζ q e a
+  
   have hzb : Commute z b := z_comm F ζ hζ q e b
   have hwa : Commute w a := z_comm F ζ hζ q f a
-  have hwz : Commute w z := z_comm F ζ hζ q f z
+  
   change ⁅z * a, w * b⁆ = _
   rw [commutatorElement_mul_left_eq_conj_mul, ((z_comm F ζ hζ q e w).mul_right hzb).commutator_eq]
   rw [commutatorElement_mul_right_eq_mul_conj, hwa.symm.commutator_eq, one_mul,
@@ -326,7 +324,7 @@ private lemma ordinary_bij : Function.Bijective (ordinaryMu3 F ζ hζ) := by
   apply (Nat.bijective_iff_injective_and_card _).2
   refine ⟨ordinary_inj F ζ hζ, ?_⟩
   obtain ⟨z, hz⟩ := KPHilbert.rootsThree F ζ hζ
-  have hf : IsPrimitiveRoot z 3 := (mem_primitiveRoots (by decide)).mp hz
+  have hf  := (mem_primitiveRoots (by decide)).mp hz
   rw [hf.card_rootsOfUnity]
   symm
   exact (Complex.isPrimitiveRoot_exp 3 (by decide)).card_rootsOfUnity
@@ -430,7 +428,7 @@ theorem actual_cube_quotient_pairing :
     rw [hp]
     exact ⟨fun h => h ▸ map_one _, fun h => (ordinary_inj F ζ hζ) (h.trans (map_one _).symm)⟩
 
-def finiteCubeClasses : Finite (D F q) :=
+def finiteCubeClasses  :=
   (actual_cube_quotient_pairing F ζ hζ q).1
 
 abbrev C := Subgroup.center (H F ζ hζ q)
@@ -483,27 +481,27 @@ theorem actual_center_cube_normal_form :
   refine ⟨hker, ?_, hcen, hcube, ?_, ?_, ?_⟩
   · obtain ⟨E, hE⟩ := LocalClassFieldTheory.exists_finiteGalois_normSubgroup_le_powMonoidHom_range
         (K F q) 3 (by norm_num)
-    letI : FiniteDimensional (K F q) (E : IntermediateField (K F q) (SeparableClosure (K F q))) := E.finiteDimensional
-    letI : IsGalois (K F q) (E : IntermediateField (K F q) (SeparableClosure (K F q))) := E.isGalois
+    letI : FiniteDimensional (K F q) E := E.finiteDimensional
+    letI : IsGalois (K F q) E := E.isGalois
     have hopen : IsOpen (CubicCharacters.cubes (K F q)ˣ : Set (K F q)ˣ) :=
       Subgroup.isOpen_mono hE (LocalClassFieldTheory.localNormSubgroup_isOpen (K F q)
-        (E : IntermediateField (K F q) (SeparableClosure (K F q))))
+        E)
     rw [← hker]
     have heq : ((π F ζ hζ q).ker : Set (H F ζ hζ q)) =
-        coordinate F ζ hζ q ⁻¹' (CubicCharacters.cubes (K F q)ˣ : Set (K F q)ˣ) := by
+        coordinate F ζ hζ q ⁻¹' (CubicCharacters.cubes (K F q)ˣ) := by
       ext x
-      exact QuotientGroup.eq_one_iff (coordinate F ζ hζ q x)
+      apply QuotientGroup.eq_one_iff
     rw [heq]
     exact hopen.preimage hn.2.2.2.1
   · intro c
-    let y := coordinate F ζ hζ q (c : H F ζ hζ q)
+    let y := coordinate F ζ hζ q c
     have hy : y ∈ CubicCharacters.cubes (K F q)ˣ := by
       have hk : (c : H F ζ hζ q) ∈ (π F ζ hζ q).ker := by rw [hker]; exact c.property
       exact (QuotientGroup.eq_one_iff y).mp hk
-    let e := sheet F ζ hζ q (c : H F ζ hζ q)
+    let e := sheet F ζ hζ q c
     have hword : (c : H F ζ hζ q) = central F ζ hζ q e * torusLift F ζ hζ q y := by
       apply Subtype.ext
-      simpa [central, torusLift, normalWord, e, y] using hn.2.2.1 (c : H F ζ hζ q)
+      simpa [central, torusLift, normalWord, e, y] using hn.2.2.1 c
     refine ⟨(e, ⟨y, hy⟩), hword, ?_⟩
     intro p hp
     have hpy : (p.2 : (K F q)ˣ) = y := by
@@ -511,7 +509,7 @@ theorem actual_center_cube_normal_form :
       rw [hcoord] at hh
       exact hh.symm
     apply Prod.ext
-    · have hn1 := (hn.2.2.2.2.2.2 p.1 p.2 (c : H F ζ hζ q) ?_).2
+    · have hn1 := (hn.2.2.2.2.2.2 p.1 p.2 c ?_).2
       · exact hn1.symm
       · simpa [central, torusLift, normalWord] using congrArg Subtype.val hp
     · exact Subtype.ext hpy

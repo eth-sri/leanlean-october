@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Imperial College London. All rights reserved.
@@ -26,7 +29,7 @@ namespace DedekindZetaZeroFree.Odlyzko
 
 variable (K : Type*) [Field K] [NumberField K]
 
-noncomputable def idealNormCount (n : ℕ) : ℕ :=
+noncomputable def idealNormCount (n : ℕ)  :=
   Nat.card {I : Ideal (𝓞 K) // absNorm I = n}
 
 lemma dedekindZeta_eq_LSeries_idealNormCount (s : ℂ) :

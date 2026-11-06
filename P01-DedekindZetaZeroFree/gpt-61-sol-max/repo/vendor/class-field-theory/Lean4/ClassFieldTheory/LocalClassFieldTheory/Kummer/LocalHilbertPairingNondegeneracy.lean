@@ -36,9 +36,12 @@ variable (K : Type) [Field K]
 variable [ValuativeRel K] [TopologicalSpace K]
   [IsNonarchimedeanLocalField K]
 
+section
+variable (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
+    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
+include n hnK hmu
 private theorem maximalLocalKummerPairing_eq_transpose
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (a b : Kˣ) :
+      (a b : Kˣ) :
     let Delta := maximalKummerSubgroup K n
     let E := maximalLocalKummerExtension K n
     letI : FiniteDimensional K E :=
@@ -62,8 +65,7 @@ private theorem maximalLocalKummerPairing_eq_transpose
 /-- An element in the left kernel of every local Hilbert-symbol character
 is exactly an `n`-th power. -/
 theorem localHilbertSymbol_left_kernel
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (a : Kˣ) :
+      (a : Kˣ) :
     (∀ b : Kˣ, localHilbertSymbol K n hnK hmu a b = 1) ↔
       a ∈ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range := by
   let Delta := maximalKummerSubgroup K n
@@ -133,8 +135,7 @@ theorem localHilbertSymbol_left_kernel
 /-- An element in the right kernel of every local Hilbert-symbol character
 is exactly an `n`-th power. -/
 theorem localHilbertSymbol_right_kernel
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (b : Kˣ) :
+      (b : Kˣ) :
     (∀ a : Kˣ, localHilbertSymbol K n hnK hmu a b = 1) ↔
       b ∈ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range := by
   rw [← localHilbertSymbol_left_kernel K n hnK hmu b]
@@ -145,8 +146,7 @@ theorem localHilbertSymbol_right_kernel
     rw [localHilbertSymbol_skew K n hnK hmu a b, h a, inv_one]
 
  noncomputable def localHilbertRightPowerClassHom
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (a : Kˣ) :
+      (a : Kˣ) :
     (Kˣ ⧸ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range) →*
       nthRootsSubgroup K (n : ℕ) :=
   QuotientGroup.lift
@@ -165,8 +165,7 @@ theorem localHilbertSymbol_right_kernel
 
 @[simp]
 private theorem localHilbertRightPowerClassHom_mk
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (a b : Kˣ) :
+      (a b : Kˣ) :
     localHilbertRightPowerClassHom K n hnK hmu a
         (QuotientGroup.mk'
           (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range b) =
@@ -174,8 +173,7 @@ private theorem localHilbertRightPowerClassHom_mk
   rfl
 
  noncomputable def localHilbertPowerClassLeftHom
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
+      :
     Kˣ →*
       ((Kˣ ⧸ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range) →*
         nthRootsSubgroup K (n : ℕ)) where
@@ -204,8 +202,7 @@ private theorem localHilbertRightPowerClassHom_mk
     exact map_mul (localHilbertSymbolHom K n hnK hmu b) a c
 
  theorem powMonoidHom_range_le_localHilbertPowerClassLeftHom_ker
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
+      :
     (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range ≤
       MonoidHom.ker (localHilbertPowerClassLeftHom K n hnK hmu) := by
   intro a ha
@@ -228,8 +225,7 @@ private theorem localHilbertRightPowerClassHom_mk
 /-- The local Hilbert symbol descended in both variables to the local
 power-class group. -/
 noncomputable def localHilbertPairing
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
+      :
     (Kˣ ⧸ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range) →*
       ((Kˣ ⧸ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range) →*
         nthRootsSubgroup K (n : ℕ)) :=
@@ -243,8 +239,7 @@ noncomputable def localHilbertPairing
 Hilbert symbol on representatives. -/
 @[simp]
 theorem localHilbertPairing_apply
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (a b : Kˣ) :
+      (a b : Kˣ) :
     localHilbertPairing K n hnK hmu
         (QuotientGroup.mk'
           (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range a)
@@ -259,8 +254,7 @@ theorem localHilbertPairing_apply
 /-- The transposed descended pairing, viewed as a homomorphism into the
 character group. -/
 noncomputable def localHilbertPairingFlip
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
+      :
     (Kˣ ⧸ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range) →*
       ((Kˣ ⧸ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range) →*
         nthRootsSubgroup K (n : ℕ)) where
@@ -290,8 +284,7 @@ noncomputable def localHilbertPairingFlip
 /-- The descended local Hilbert pairing separates power classes in its
 left variable. -/
 theorem localHilbertPairing_injective_left
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
+      :
     Function.Injective (localHilbertPairing K n hnK hmu) := by
   intro q r hqr
   let P := (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range
@@ -330,8 +323,7 @@ theorem localHilbertPairing_injective_left
 /-- The descended local Hilbert pairing separates power classes in its
 right variable. -/
 theorem localHilbertPairing_injective_right
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
+      :
     Function.Injective (localHilbertPairingFlip K n hnK hmu) := by
   intro q r hqr
   let P := (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range
@@ -368,8 +360,7 @@ theorem localHilbertPairing_injective_right
 /-- The local Hilbert pairing on power classes is nondegenerate in both
 variables. -/
 theorem localHilbertPairing_nondegenerate
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
+      :
     (∀ a,
       (∀ b, localHilbertPairing K n hnK hmu a b = 1) → a = 1) ∧
     (∀ b,
@@ -388,6 +379,8 @@ theorem localHilbertPairing_nondegenerate
     change localHilbertPairing K n hnK hmu a b =
       localHilbertPairing K n hnK hmu a 1
     rw [hb a, map_one]
+end
+
 
 end Kummer
 end LocalClassFieldTheory

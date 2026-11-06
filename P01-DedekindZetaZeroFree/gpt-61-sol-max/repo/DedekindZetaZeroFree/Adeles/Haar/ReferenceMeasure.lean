@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Adeles.RestrictedProduct.LocalTopology
 public import DedekindZetaZeroFree.HarmonicAnalysis.Fourier.LocalCompactOpenAnnihilators
 public import DedekindZetaZeroFree.Adeles.Characters.ArchimedeanAdditiveCharacters
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -26,7 +29,7 @@ private theorem halfDifferentFactor_eq_one_of_not_mem
     localHalfDifferentFactor F v = 1 := by
   simp [localHalfDifferentFactor, localDifferentExponent_eq_zero_of_not_mem F S hS v hv]
 
-def referenceMass : ℝ :=
+def referenceMass  :=
   ∏ᶠ v : HeightOneSpectrum (𝓞 F), localHalfDifferentFactor F v
 
 theorem referenceMass_eq_prod
@@ -53,7 +56,7 @@ def integralPositiveCompacts : PositiveCompacts (KPAdelicTopology.FiniteAdeles F
     (integralPositiveCompacts F : Set (KPAdelicTopology.FiniteAdeles F)) =
       (KPAdelicTopology.integralAdeles F : Set (KPAdelicTopology.FiniteAdeles F)) := rfl
 
-def finiteMeasure : Measure (KPAdelicTopology.FiniteAdeles F) :=
+def finiteMeasure  :=
   ENNReal.ofReal (referenceMass F) • Measure.addHaarMeasure (integralPositiveCompacts F)
 
 instance finiteMeasure_isAddHaarMeasure : (finiteMeasure F).IsAddHaarMeasure := by
@@ -62,67 +65,67 @@ instance finiteMeasure_isAddHaarMeasure : (finiteMeasure F).IsAddHaarMeasure := 
   · exact ENNReal.ofReal_ne_zero_iff.mpr (referenceMass_pos F)
   · exact ENNReal.ofReal_ne_top
 
-instance finiteMeasure_regular : (finiteMeasure F).Regular := by
-  unfold finiteMeasure
-  exact Measure.Regular.smul ENNReal.ofReal_ne_top
 
-instance finiteMeasure_isFiniteMeasureOnCompacts :
-    IsFiniteMeasureOnCompacts (finiteMeasure F) := by
-  unfold finiteMeasure
-  exact IsFiniteMeasureOnCompacts.smul _ ENNReal.ofReal_ne_top
 
-instance finiteMeasure_sigmaFinite : SigmaFinite (finiteMeasure F) := by
-  infer_instance
 
-def infiniteMeasure : Measure (InfiniteAdeleRing F) :=
-  Measure.map (PoissonArch.infiniteAdeleToSpace F).symm (PoissonArch.traceMeasure F)
 
-instance infiniteMeasure_isAddHaarMeasure : (infiniteMeasure F).IsAddHaarMeasure := by
-  haveI : (PoissonArch.traceMeasure F).IsAddHaarMeasure := by
-    unfold PoissonArch.traceMeasure
-    exact Measure.IsAddHaarMeasure.smul _
-      (ENNReal.ofReal_ne_zero_iff.mpr (PoissonArch.haarScalar_pos F)) ENNReal.ofReal_ne_top
-  exact (PoissonArch.infiniteAdeleToSpace F).symm.isAddHaarMeasure_map _
 
-instance infiniteMeasure_regular : (infiniteMeasure F).Regular := by
-  haveI : (PoissonArch.traceMeasure F).Regular := by
-    unfold PoissonArch.traceMeasure
-    exact Measure.Regular.smul ENNReal.ofReal_ne_top
-  exact Measure.Regular.map (PoissonArch.infiniteAdeleToSpace F).symm.toHomeomorph
 
-instance infiniteMeasure_isFiniteMeasureOnCompacts :
-    IsFiniteMeasureOnCompacts (infiniteMeasure F) := by
-  infer_instance
 
-instance infiniteMeasure_sigmaFinite : SigmaFinite (infiniteMeasure F) := by
-  haveI : SecondCountableTopology (InfiniteAdeleRing F) :=
-    (PoissonArch.infiniteAdeleToSpace F).toHomeomorph.isEmbedding.secondCountableTopology
-  infer_instance
 
-def adelicMeasure : Measure (KPAdelicTopology.Adeles F) :=
-  Measure.map
-    (fun x : InfiniteAdeleRing F × KPAdelicTopology.FiniteAdeles F =>
-      (x : KPAdelicTopology.Adeles F))
-    ((infiniteMeasure F).prod (finiteMeasure F))
 
-set_option backward.isDefEq.respectTransparency false in
-instance adelicMeasure_isAddHaarMeasure : (adelicMeasure F).IsAddHaarMeasure := by
-  haveI : SecondCountableTopology (InfiniteAdeleRing F) :=
-    (PoissonArch.infiniteAdeleToSpace F).toHomeomorph.isEmbedding.secondCountableTopology
-  let e : (InfiniteAdeleRing F × KPAdelicTopology.FiniteAdeles F) ≃+
-      KPAdelicTopology.Adeles F := AddEquiv.refl _
-  change (Measure.map e ((infiniteMeasure F).prod (finiteMeasure F))).IsAddHaarMeasure
-  exact e.isAddHaarMeasure_map _ continuous_id continuous_id
 
-instance adelicMeasure_regular : (adelicMeasure F).Regular := by
-  infer_instance
 
-instance adelicMeasure_isFiniteMeasureOnCompacts :
-    IsFiniteMeasureOnCompacts (adelicMeasure F) := by
-  infer_instance
 
-instance adelicMeasure_sigmaFinite : SigmaFinite (adelicMeasure F) := by
-  infer_instance
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end DedekindZetaZeroFree.KPAdelicHaarReference
 

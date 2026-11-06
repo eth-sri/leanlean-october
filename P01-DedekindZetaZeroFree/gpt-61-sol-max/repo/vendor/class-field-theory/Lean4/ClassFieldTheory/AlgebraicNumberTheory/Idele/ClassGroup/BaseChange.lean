@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.ClassGroup.Tower
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Extension.LocalComponent
 public import Mathlib.RingTheory.IsTensorProduct
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -58,10 +61,7 @@ variable
 
 -- These canonical commutativity proofs are local to the imported tower
 -- module; retain them here for the quotient-group instances.
-local instance (A B C : Type u) [Field A] [NumberField A]
-    [Field B] [Field C] [Algebra A B] [Algebra B C] :
-    IsMulCommutative (TowerRelativeIdeleGroup A B C) :=
-  ⟨⟨fun a b => mul_comm a b⟩⟩
+
 
 local instance (A B : Type u) [Field A] [NumberField A]
     [Field B] [Algebra A B] :
@@ -94,7 +94,7 @@ def pushoutTowerAdeleEquiv :
     Algebra.TensorProduct.rightAlgebra
   letI : Algebra L (BaseChangedRelativeAdeleRing K M L) :=
     Algebra.TensorProduct.rightAlgebra
-  letI : Algebra.IsPushout K L M N :=
+  letI  :=
     Algebra.IsPushout.symm
       (inferInstance : Algebra.IsPushout K M L N)
   let e₁ :=
@@ -115,9 +115,7 @@ def pushoutTowerAdeleEquiv :
 
 /-- Scalar extension of coefficients from the bottom adele ring to
 `𝔸_K ⊗[K] M`, while retaining the top field `L`. -/
-def baseChangedRelativeAdeleMap :
-    RelativeAdeleRing K L →ₐ[K]
-      BaseChangedRelativeAdeleRing K M L :=
+def baseChangedRelativeAdeleMap  :=
   Algebra.TensorProduct.map
     (Algebra.TensorProduct.includeLeft
       (R := K) (S := K)
@@ -147,7 +145,7 @@ theorem pushoutTowerAdeleInclusion_tmul
     Algebra.TensorProduct.rightAlgebra
   let : Algebra L (RelativeAdeleRing K M ⊗[K] L) :=
     Algebra.TensorProduct.rightAlgebra
-  have : Algebra.IsPushout K L M N :=
+  have  :=
     Algebra.IsPushout.symm
       (inferInstance : Algebra.IsPushout K M L N)
   change

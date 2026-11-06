@@ -96,7 +96,10 @@ theorem rotated_jacquet_integral (β κ : ℂˣ) (f : PrincipalSeries positivePa
   simp only [mul_assoc, Complex.ofReal_div, Complex.ofReal_mul, Complex.ofReal_ofNat]
   ring
 
-private lemma sliceEnvelopeReal_integrable (h : ℕ) (ρ : ℝ) (hρ : 0 < ρ) :
+section
+variable (h : ℕ)
+include h
+private lemma sliceEnvelopeReal_integrable   (ρ : ℝ) (hρ : 0 < ρ) :
     Integrable (fun t : ℝ => ρ ^ (4 / 3 : ℝ) *
       (ρ ^ 2 + t ^ 2) ^ (-(4 / 3 : ℝ) - (h : ℝ) / 2)) := by
   have hr : (Module.finrank ℝ ℝ : ℝ) < (8 / 3 : ℝ) + (h : ℝ) := by
@@ -118,7 +121,7 @@ private lemma sliceEnvelopeReal_integrable (h : ℕ) (ρ : ℝ) (hρ : 0 < ρ) :
   congr 1
   ring
 
-private lemma sliceEnvelope_integrable (h : ℕ) (ρ : ℝ) (hρ : 0 < ρ) (b : ℝ) :
+private lemma sliceEnvelope_integrable   (ρ : ℝ) (hρ : 0 < ρ) (b : ℝ) :
     Integrable (fun t : ℝ => rationalEnvelope h ρ ⟨t, b⟩) := by
   have hi := sliceEnvelopeReal_integrable h ρ hρ
   have hm : Continuous (fun t : ℝ => rationalEnvelope h ρ ⟨t, b⟩) := by
@@ -142,7 +145,7 @@ private lemma sliceEnvelope_integrable (h : ℕ) (ρ : ℝ) (hρ : 0 < ρ) (b : 
   rw [Real.norm_eq_abs, abs_of_nonneg (by positivity)]
   exact mul_le_mul_of_nonneg_left hp (Real.rpow_nonneg hρ.le _)
 
-private lemma sliceEnvelope_tendsto_atTop (h : ℕ) (ρ b : ℝ) :
+private lemma sliceEnvelope_tendsto_atTop   (ρ b : ℝ) :
     Tendsto (fun t : ℝ => rationalEnvelope h ρ ⟨t, b⟩) atTop (𝓝 0) := by
   have ht : Tendsto (fun t : ℝ => ρ ^ 2 + ‖(⟨t, b⟩ : ℂ)‖ ^ 2) atTop atTop := by
     simp only [Complex.sq_norm, Complex.normSq_mk]
@@ -155,7 +158,7 @@ private lemma sliceEnvelope_tendsto_atTop (h : ℕ) (ρ b : ℝ) :
     linarith)).comp ht
   convert hp.const_mul (ρ ^ (4 / 3 : ℝ)) using 1 <;> simp [rationalEnvelope, neg_add_rev, sub_eq_add_neg, add_comm]
 
-private lemma sliceEnvelope_tendsto_atBot (h : ℕ) (ρ b : ℝ) :
+private lemma sliceEnvelope_tendsto_atBot   (ρ b : ℝ) :
     Tendsto (fun t : ℝ => rationalEnvelope h ρ ⟨t, b⟩) atBot (𝓝 0) := by
   have hh := (sliceEnvelope_tendsto_atTop h ρ b).comp tendsto_neg_atBot_atTop
   convert hh using 1
@@ -163,7 +166,7 @@ private lemma sliceEnvelope_tendsto_atBot (h : ℕ) (ρ b : ℝ) :
   unfold rationalEnvelope
   simp only [Function.comp_apply, Complex.sq_norm, Complex.normSq_mk, neg_mul_neg]
 
-lemma regularity_of_bound (h : ℕ) (ρ C : ℝ) (hρ : 0 < ρ)
+lemma regularity_of_bound   (ρ C : ℝ) (hρ : 0 < ρ)
     (F : ℂ → ℂ) (hm : AEStronglyMeasurable F KPCplxCharacterHaar.euclideanArea)
     (hs : ∀ b : ℝ, AEStronglyMeasurable (fun t : ℝ => F ⟨t, b⟩) volume)
     (hb : ∀ x : ℂ, ‖F x‖ ≤ C * rationalEnvelope h ρ x) :
@@ -182,6 +185,8 @@ lemma regularity_of_bound (h : ℕ) (ρ C : ℝ) (hρ : 0 < ρ)
   · rw [tendsto_zero_iff_norm_tendsto_zero]
     exact squeeze_zero (fun _ => norm_nonneg _) (fun t => hb ⟨t, b⟩)
       (by simpa using (sliceEnvelope_tendsto_atBot h ρ b).const_mul C)
+end
+
 
 private lemma matrixFunction_coe (f : ComplexGL2 → ℂ) (g : ComplexGL2) :
     matrixFunction f (g : Matrix (Fin 2) (Fin 2) ℂ) = f g := by
@@ -193,7 +198,10 @@ private lemma matrixFunction_coe (f : ComplexGL2 → ℂ) (g : ComplexGL2) :
   intro i j
   rfl
 
-private lemma smoothEval {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+section
+variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+include E
+private lemma smoothEval  
     (s : ℝ) (f : PrincipalSeries s) (q : E → ComplexGL2) (p : E)
     (hq : ContDiffAt ℝ (⊤ : ℕ∞) (fun x => (q x : Matrix (Fin 2) (Fin 2) ℂ)) p) :
     ContDiffAt ℝ (⊤ : ℕ∞) (fun x => f (q x)) p := by
@@ -206,7 +214,7 @@ private lemma smoothEval {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
   have hs := hf.contDiffAt (ho.mem_nhds (Matrix.GeneralLinearGroup.det (q p)).ne_zero)
   simpa only [Function.comp_def, matrixFunction_coe] using hs.comp p hq
 
-private lemma smoothMul {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+private lemma smoothMul  
     (q r : E → ComplexGL2) (p : E)
     (hq : ContDiffAt ℝ (⊤ : ℕ∞) (fun x => (q x : Matrix (Fin 2) (Fin 2) ℂ)) p)
     (hr : ContDiffAt ℝ (⊤ : ℕ∞) (fun x => (r x : Matrix (Fin 2) (Fin 2) ℂ)) p) :
@@ -223,7 +231,7 @@ private lemma smoothMul {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
   exact (contDiffAt_pi.mp (contDiffAt_pi.mp hq i) l).mul
     (contDiffAt_pi.mp (contDiffAt_pi.mp hr l) j)
 
-private lemma smoothUnip {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+private lemma smoothUnip  
     (z : E → ℂ) (p : E) (hz : ContDiffAt ℝ (⊤ : ℕ∞) z p) :
     ContDiffAt ℝ (⊤ : ℕ∞) (fun x => (upperUnipotent (z x) : Matrix (Fin 2) (Fin 2) ℂ)) p := by
   change ContDiffAt ℝ (⊤ : ℕ∞) (fun x => !![1, z x; 0, 1]) p
@@ -232,6 +240,8 @@ private lemma smoothUnip {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
   apply contDiffAt_pi.mpr
   intro j
   fin_cases i <;> fin_cases j <;> simp <;> first | exact contDiffAt_const | exact hz
+end
+
 
 private lemma smoothRadialDiag (u : ℂˣ) (p : ℝ × ℂ) (hp : 0 < p.1) :
     ContDiffAt ℝ (⊤ : ℕ∞) (fun z : ℝ × ℂ =>
@@ -250,8 +260,11 @@ private lemma smoothRadialDiag (u : ℂˣ) (p : ℝ × ℂ) (hp : 0 < p.1) :
   change !![(radialUnit z.1 u : ℂ), 0; 0, 1] = _
   simp only [radialUnit, dif_pos hz, Units.val_mk0]
 
-private lemma smoothRadial (F : ℝ → ℂ → ℂ)
-    (hf : ∀ p : ℝ × ℂ, 0 < p.1 → ContDiffAt ℝ (⊤ : ℕ∞) F.uncurry p) :
+section
+variable (F : ℝ → ℂ → ℂ)
+    (hf : ∀ p : ℝ × ℂ, 0 < p.1 → ContDiffAt ℝ (⊤ : ℕ∞) F.uncurry p)
+include F hf
+private lemma smoothRadial   :
     ∀ p : ℝ × ℂ, 0 < p.1 → ContDiffAt ℝ (⊤ : ℕ∞) (radiusLogDerivative F).uncurry p := by
   intro p hp
   have hs : ContDiffAt ℝ (⊤ : ℕ∞) (fun z : (ℝ × ℂ) × ℝ => F z.2 z.1.2) (p, p.1) := by
@@ -264,8 +277,7 @@ private lemma smoothRadial (F : ℝ → ℂ → ℂ)
   exact ((Complex.ofRealCLM.contDiff.contDiffAt.comp p
     contDiffAt_fst).mul hd)
 
-private lemma smoothHorizontal (F : ℝ → ℂ → ℂ)
-    (hf : ∀ p : ℝ × ℂ, 0 < p.1 → ContDiffAt ℝ (⊤ : ℕ∞) F.uncurry p) :
+private lemma smoothHorizontal   :
     ∀ p : ℝ × ℂ, 0 < p.1 → ContDiffAt ℝ (⊤ : ℕ∞) (horizontalRealDerivative F).uncurry p := by
   intro p hp
   have hmk : ContDiff ℝ (⊤ : ℕ∞) (fun z : (ℝ × ℂ) × ℝ => (z.1.1, (⟨z.2, z.1.2.im⟩ : ℂ))) := by
@@ -283,9 +295,14 @@ private lemma smoothHorizontal (F : ℝ → ℂ → ℂ)
     ((ContDiffAt.fderiv (f := fun z : ℝ × ℂ => fun t : ℝ => F z.1 ⟨t, z.2.im⟩)
       (g := fun z => z.2.re) (m := (⊤ : ℕ∞)) hs hg.contDiffAt (by simp)).clm_apply
       (contDiffAt_const (c := (1 : ℝ))))
+end
 
-lemma rotatedAmplitude_contDiffAt (β κ : ℂˣ)
-    (f : PrincipalSeries positiveParameter) (u : ℂˣ)
+
+section
+variable (β κ : ℂˣ)
+    (f : PrincipalSeries positiveParameter)
+include β κ f
+lemma rotatedAmplitude_contDiffAt   (u : ℂˣ)
     (p : ℝ × ℂ) (hp : 0 < p.1) :
     ContDiffAt ℝ (⊤ : ℕ∞)
       (fun z : ℝ × ℂ => rotatedAmplitude β κ f u z.1 z.2) p := by
@@ -307,8 +324,7 @@ lemma rotatedAmplitude_contDiffAt (β κ : ℂˣ)
     · exact contDiffAt_const
   exact contDiffAt_const.mul (smoothEval positiveParameter f _ p hq)
 
-lemma amplitudeDerivative_contDiffAt (β κ : ℂˣ)
-    (f : PrincipalSeries positiveParameter) (u : ℂˣ)
+lemma amplitudeDerivative_contDiffAt   (u : ℂˣ)
     (j h : ℕ) (p : ℝ × ℂ) (hp : 0 < p.1) :
     ContDiffAt ℝ (⊤ : ℕ∞)
       (fun z : ℝ × ℂ => amplitudeDerivative β κ f u j h z.1 z.2) p := by
@@ -330,8 +346,7 @@ lemma amplitudeDerivative_contDiffAt (β κ : ℂˣ)
       simpa only [Function.iterate_succ_apply'] using smoothHorizontal _ hh
   exact hh h p hp
 
-lemma amplitudeDerivative_continuous (β κ : ℂˣ)
-    (f : PrincipalSeries positiveParameter) (u : ℂˣ)
+lemma amplitudeDerivative_continuous   (u : ℂˣ)
     (j h : ℕ) (ρ : ℝ) (hρ : 0 < ρ) :
     Continuous (amplitudeDerivative β κ f u j h ρ) := by
   apply continuous_iff_continuousAt.mpr
@@ -340,7 +355,7 @@ lemma amplitudeDerivative_continuous (β κ : ℂˣ)
     (continuous_const.prodMk continuous_id).continuousAt
 
 lemma hasInducedAmplitudeEstimates_of_bounds
-    (β κ : ℂˣ) (f : PrincipalSeries positiveParameter)
+     
     (hSmooth : ∀ u : ℂˣ, ‖(u : ℂ)‖ = 1 →
       ContDiffOn ℝ (⊤ : ℕ∞) (fun p : ℝ × ℂ => rotatedAmplitude β κ f u p.1 p.2)
         {p | 0 < p.1})
@@ -364,7 +379,7 @@ lemma hasInducedAmplitudeEstimates_of_bounds
   simpa only [rationalEnvelope, mul_assoc, Real.rpow_eq_pow] using hC u ρ x hu hρ
 
 lemma hasInducedAmplitudeEstimates_of_pointwise_bounds
-    (β κ : ℂˣ) (f : PrincipalSeries positiveParameter)
+     
     (hBound : ∀ (j h : ℕ), j ≤ 2 → ∃ C : ℝ, 0 < C ∧
       ∀ (u : ℂˣ) (ρ : ℝ) (x : ℂ), ‖(u : ℂ)‖ = 1 → 0 < ρ →
         ‖amplitudeDerivative β κ f u j h ρ x‖ ≤
@@ -384,6 +399,8 @@ lemma hasInducedAmplitudeEstimates_of_pointwise_bounds
       funext t
       apply Complex.ext <;> simp
     exact (hc.comp hslice).aestronglyMeasurable
+end
+
 
 end DedekindZetaZeroFree.ThetaArchInducedMajorant
 

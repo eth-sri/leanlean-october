@@ -11,10 +11,13 @@ set_option maxHeartbeats 1600000
 
 namespace DedekindZetaZeroFree.KPContinuation.ChamberModerateGrowth
 
-private theorem norm_flat_between
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+section
+variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (K₀ : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK₀ : KPLiteralRaw.IwasawaCompact F ζ hζ K₀)
-    (φ : KPLiteralRaw.Flat F ζ hζ K₀) (s s₀ s₁ : ℂ)
+    (φ : KPLiteralRaw.Flat F ζ hζ K₀)
+include F ζ hζ K₀ hK₀ φ
+private theorem norm_flat_between
+      (s s₀ s₁ : ℂ)
     (hlo : s₀.re ≤ s.re) (hhi : s.re ≤ s₁.re) (g : KPLiteralRaw.G F ζ hζ) :
     ‖φ.val s g‖ ≤ ‖φ.val s₀ g‖ + ‖φ.val s₁ g‖ := by
   obtain ⟨t, x, k, rfl⟩ := hK₀.2.1 g
@@ -33,9 +36,7 @@ private theorem norm_flat_between
       (le_add_of_nonneg_right (mul_nonneg (Real.rpow_nonneg hδ.le _) hp))
 
 private theorem fixed_parameter_majorant
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (K₀ : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK₀ : KPLiteralRaw.IwasawaCompact F ζ hζ K₀)
-    (φ : KPLiteralRaw.Flat F ζ hζ K₀) (z : ℂ) (hz : (1 : ℝ)/3 < z.re)
+      (z : ℂ) (hz : (1 : ℝ)/3 < z.re)
     (B : Set (KPCuspCharts.Cross F)) (hB : IsCompact B)
     (D : Set (KPContSectorCoveredQuotientVocabulary.FiniteCover F ζ hζ)) (hD : IsCompact D) :
     ∃ b : KPChamberBruhatTwoCells.RationalQuotient F → ℝ,
@@ -76,9 +77,7 @@ private theorem fixed_parameter_majorant
     ring
 
 private theorem compact_parameter_majorant
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (K₀ : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK₀ : KPLiteralRaw.IwasawaCompact F ζ hζ K₀)
-    (φ : KPLiteralRaw.Flat F ζ hζ K₀)
+     
     (K : Set ℂ) (hK : IsCompact K) (hKV : K ⊆ KPContActualChamberNormalSeries.V)
     (B : Set (KPCuspCharts.Cross F)) (hB : IsCompact B)
     (D : Set (KPContSectorCoveredQuotientVocabulary.FiniteCover F ζ hζ)) (hD : IsCompact D) :
@@ -116,6 +115,8 @@ private theorem compact_parameter_majorant
   · refine ⟨0, 0, le_rfl, summable_zero, fun _ => le_rfl, ?_⟩
     intro s hs
     exact (hne ⟨s, hs⟩).elim
+end
+
 
 theorem actualSeries_exponential_bound
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)

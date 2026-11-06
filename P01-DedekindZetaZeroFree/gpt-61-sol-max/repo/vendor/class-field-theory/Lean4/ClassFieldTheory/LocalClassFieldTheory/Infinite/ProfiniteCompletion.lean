@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.Definitions.LocalClassFieldTheory.TopologicalProfiniteCompletion
 public import Mathlib.Topology.Algebra.Category.ProfiniteGrp.Limits
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -45,7 +48,7 @@ variable (G : Type u) [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
 /-- The canonical map has dense image in the open-quotient completion. -/
 theorem topologicalProfiniteCompletionMap_denseRange :
     DenseRange (topologicalProfiniteCompletionMap G) := by
-  let S : Subgroup (openFiniteQuotientProduct G) :=
+  let S  :=
     MonoidHom.range (openFiniteQuotientProductMapMonoidHom G)
   let incl : S → S.topologicalClosure :=
     Set.inclusion (Subgroup.le_topologicalClosure S)
@@ -89,55 +92,55 @@ theorem topologicalProfiniteCompletionProjection_map
       QuotientGroup.mk g :=
   rfl
 
-/-- Every defining finite quotient is reached by the canonical projection
-from the topological profinite completion. -/
-theorem topologicalProfiniteCompletionProjection_surjective
-    (H : OpenFiniteIndexNormalSubgroup G) :
-    Function.Surjective (topologicalProfiniteCompletionProjection G H) := by
-  intro x
-  obtain ⟨g, rfl⟩ := QuotientGroup.mk_surjective x
-  exact ⟨topologicalProfiniteCompletionMap G g,
-    topologicalProfiniteCompletionProjection_map G H g⟩
 
-/-- The kernel of the canonical completion map is the intersection of all
-open finite-index normal subgroups. -/
-theorem topologicalProfiniteCompletionMap_ker :
-    (topologicalProfiniteCompletionMap G).ker =
-      ⨅ H : OpenFiniteIndexNormalSubgroup G,
-        H.toOpenNormalSubgroup.toSubgroup := by
-  ext g
-  rw [Subgroup.mem_iInf]
-  constructor
-  · intro hg H
-    have hval :
-        openFiniteQuotientProductMapMonoidHom G g =
-          (1 : openFiniteQuotientProduct G) :=
-      congrArg Subtype.val hg
-    have hcoord := congrFun hval H
-    exact (QuotientGroup.eq_one_iff g).mp hcoord
-  · intro hg
-    change topologicalProfiniteCompletionMap G g = 1
-    apply Subtype.ext
-    funext H
-    exact (QuotientGroup.eq_one_iff g).mpr (hg H)
 
-/-- The canonical completion map is injective exactly when the intersection
-of all open finite-index normal subgroups is trivial. -/
-theorem topologicalProfiniteCompletionMap_injective_iff :
-    Function.Injective (topologicalProfiniteCompletionMap G) ↔
-      (⨅ H : OpenFiniteIndexNormalSubgroup G,
-        H.toOpenNormalSubgroup.toSubgroup) = ⊥ := by
-  change Function.Injective (topologicalProfiniteCompletionMap G).toMonoidHom ↔ _
-  rw [← MonoidHom.ker_eq_bot_iff, topologicalProfiniteCompletionMap_ker]
 
-/-- A separated open finite-quotient topology gives an injective canonical
-completion map. -/
-theorem topologicalProfiniteCompletionMap_injective_of_iInf_eq_bot
-    (h :
-      (⨅ H : OpenFiniteIndexNormalSubgroup G,
-        H.toOpenNormalSubgroup.toSubgroup) = ⊥) :
-    Function.Injective (topologicalProfiniteCompletionMap G) :=
-  (topologicalProfiniteCompletionMap_injective_iff G).2 h
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The finite quotient projections commute with every transition map in the
 open finite-quotient diagram. -/
@@ -151,14 +154,14 @@ theorem topologicalProfiniteCompletionProjection_transition
     fun y =>
       (openFiniteQuotientDiagram G).map f
         (topologicalProfiniteCompletionProjection G H y)
-  let rhs : TopologicalProfiniteCompletion G → openFiniteQuotient G K :=
+  let rhs  :=
     fun y => topologicalProfiniteCompletionProjection G K y
   have hlhs : Continuous lhs :=
     ((openFiniteQuotientDiagram G).map f).hom.continuous_toFun.comp
       (topologicalProfiniteCompletionProjection G H).continuous_toFun
   have hrhs : Continuous rhs :=
     (topologicalProfiniteCompletionProjection G K).continuous_toFun
-  have heq : lhs = rhs :=
+  have heq  :=
     (topologicalProfiniteCompletionMap_denseRange G).equalizer hlhs hrhs <| by
       funext g
       rfl
@@ -170,10 +173,13 @@ end Completion
 
 variable {G : Type u} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
 
+section
+variable (P : ProfiniteGrp.{v}) (f : G →ₜ* P) (N : OpenNormalSubgroup P)
+include P f N
 /-- The open finite-index normal subgroup obtained by pulling an open normal
 subgroup of a profinite target back along a continuous homomorphism. -/
 def topologicalProfiniteCompletionPreimageIndex
-    (P : ProfiniteGrp.{v}) (f : G →ₜ* P) (N : OpenNormalSubgroup P) :
+      :
     OpenFiniteIndexNormalSubgroup G :=
   ⟨
     { toOpenSubgroup := N.toOpenSubgroup.comap f.toMonoidHom f.continuous_toFun
@@ -181,9 +187,9 @@ def topologicalProfiniteCompletionPreimageIndex
         change ((N : Subgroup P).comap f.toMonoidHom).Normal
         infer_instance },
     by
-    let q : G →* P ⧸ (N : Subgroup P) :=
+    let q  :=
       (QuotientGroup.mk' (N : Subgroup P)).comp f.toMonoidHom
-    let : q.ker.FiniteIndex := Subgroup.finiteIndex_ker q
+    let  := Subgroup.finiteIndex_ker q
     apply Subgroup.finiteIndex_of_le (H := q.ker)
     intro g hg
     change f g ∈ N
@@ -192,7 +198,7 @@ def topologicalProfiniteCompletionPreimageIndex
 /-- The finite-stage map induced by a continuous homomorphism to a profinite
 group, after quotienting by the pulled-back open normal subgroup. -/
 def topologicalProfiniteCompletionFiniteQuotientMap
-    (P : ProfiniteGrp.{v}) (f : G →ₜ* P) (N : OpenNormalSubgroup P) :
+      :
     G ⧸ (topologicalProfiniteCompletionPreimageIndex P f N).toOpenNormalSubgroup.toSubgroup →*
       P ⧸ (N : Subgroup P) :=
   QuotientGroup.lift _
@@ -208,7 +214,7 @@ This is deliberately a `ContinuousMonoidHom`, rather than a categorical
 universe even though the universal property has no such mathematical
 restriction. -/
 def topologicalProfiniteCompletionFiniteQuotientMorphism
-    (P : ProfiniteGrp.{v}) (f : G →ₜ* P) (N : OpenNormalSubgroup P) :
+      :
     openFiniteQuotient G (topologicalProfiniteCompletionPreimageIndex P f N) →ₜ*
       (P.toFiniteQuotientFunctor ⋙ forget₂ FiniteGrp ProfiniteGrp).obj N where
   toMonoidHom := topologicalProfiniteCompletionFiniteQuotientMap P f N
@@ -222,9 +228,7 @@ def topologicalProfiniteCompletionFiniteQuotientMorphism
 /-- The continuous projection from the open-quotient completion to an open
 finite quotient of a profinite target. -/
 def topologicalProfiniteCompletionFiniteProjection
-    (P : ProfiniteGrp.{v}) (f : G →ₜ* P) (N : OpenNormalSubgroup P) :
-    TopologicalProfiniteCompletion G →ₜ*
-      (P.toFiniteQuotientFunctor ⋙ forget₂ FiniteGrp ProfiniteGrp).obj N :=
+       :=
   (topologicalProfiniteCompletionFiniteQuotientMorphism P f N).comp
     (topologicalProfiniteCompletionProjection G
       (topologicalProfiniteCompletionPreimageIndex P f N))
@@ -232,16 +236,21 @@ def topologicalProfiniteCompletionFiniteProjection
 /-- The induced finite projection sends the completion image of `g` to the class of `f g`. -/
 @[simp]
 theorem topologicalProfiniteCompletionFiniteProjection_map
-    (P : ProfiniteGrp.{v}) (f : G →ₜ* P) (N : OpenNormalSubgroup P) (g : G) :
+      (g : G) :
     topologicalProfiniteCompletionFiniteProjection P f N
         (topologicalProfiniteCompletionMap G g) =
       QuotientGroup.mk' (N : Subgroup P) (f g) :=
   rfl
+end
 
+
+section
+variable (P : ProfiniteGrp.{v}) (f : G →ₜ* P)
+include P f
 /-- The finite projections induced by a map to a profinite group commute with
 the transition maps between the target's open finite quotients. -/
 theorem topologicalProfiniteCompletionFiniteProjection_transition
-    (P : ProfiniteGrp.{v}) (f : G →ₜ* P)
+     
     {N M : OpenNormalSubgroup P} (i : N ⟶ M)
     (x : TopologicalProfiniteCompletion G) :
     (P.toFiniteQuotientFunctor ⋙ forget₂ FiniteGrp ProfiniteGrp).map i
@@ -258,7 +267,7 @@ theorem topologicalProfiniteCompletionFiniteProjection_transition
       (topologicalProfiniteCompletionFiniteProjection P f N).continuous_toFun
   have hrhs : Continuous rhs :=
     (topologicalProfiniteCompletionFiniteProjection P f M).continuous_toFun
-  have heq : lhs = rhs :=
+  have heq  :=
     (topologicalProfiniteCompletionMap_denseRange G).equalizer hlhs hrhs <| by
       funext g
       rfl
@@ -267,14 +276,14 @@ theorem topologicalProfiniteCompletionFiniteProjection_transition
 /-- The map from the open-quotient completion to the inverse limit of all
 finite quotients of a profinite target. -/
 noncomputable def topologicalProfiniteCompletionToFiniteQuotientLimit
-    (P : ProfiniteGrp.{v}) (f : G →ₜ* P) :
+      :
     TopologicalProfiniteCompletion G →ₜ*
       ProfiniteGrp.limit (ProfiniteGrp.diagram P) where
   toFun x :=
     ⟨fun N => topologicalProfiniteCompletionFiniteProjection P f N x,
       by
         intro N M i
-        exact topologicalProfiniteCompletionFiniteProjection_transition P f i x⟩
+        apply topologicalProfiniteCompletionFiniteProjection_transition⟩
   map_one' := by
     apply Subtype.ext
     funext N
@@ -292,7 +301,7 @@ noncomputable def topologicalProfiniteCompletionToFiniteQuotientLimit
 /-- A continuous homomorphism from `G` to a profinite group extends canonically
 to the completion of `G` by its open finite quotients. -/
 noncomputable def topologicalProfiniteCompletionLift
-    (P : ProfiniteGrp.{v}) (f : G →ₜ* P) :
+      :
     TopologicalProfiniteCompletion G →ₜ* P :=
   (ContinuousMonoidHom.toContinuousMonoidHom
     (ProfiniteGrp.continuousMulEquivLimittoFiniteQuotientFunctor P).symm).comp
@@ -301,7 +310,7 @@ noncomputable def topologicalProfiniteCompletionLift
 /-- The canonical lift agrees with the original homomorphism on the dense image of `G`. -/
 @[simp]
 theorem topologicalProfiniteCompletionLift_map
-    (P : ProfiniteGrp.{v}) (f : G →ₜ* P) (g : G) :
+      (g : G) :
     topologicalProfiniteCompletionLift P f
         (topologicalProfiniteCompletionMap G g) =
       f g := by
@@ -314,25 +323,25 @@ theorem topologicalProfiniteCompletionLift_map
   funext N
   rfl
 
-/-- The canonical lift composed with the completion map is the original
-continuous homomorphism. -/
-@[simp]
-theorem topologicalProfiniteCompletionLift_comp_map
-    (P : ProfiniteGrp.{v}) (f : G →ₜ* P) :
-    (topologicalProfiniteCompletionLift P f).comp
-        (topologicalProfiniteCompletionMap G) = f := by
-  ext g
-  exact topologicalProfiniteCompletionLift_map P f g
+
+
+
+
+
+
+
+
+
 
 /-- The canonical lift is the unique continuous homomorphism extending the
 given map on the dense image of `G`. -/
 theorem topologicalProfiniteCompletionLift_unique
-    (P : ProfiniteGrp.{v}) (f : G →ₜ* P)
+     
     (h : TopologicalProfiniteCompletion G →ₜ* P)
     (hh : h.comp (topologicalProfiniteCompletionMap G) = f) :
     h = topologicalProfiniteCompletionLift P f := by
-  let lhs : TopologicalProfiniteCompletion G → P := fun x => h x
-  let rhs : TopologicalProfiniteCompletion G → P :=
+  let lhs  := fun x => h x
+  let rhs  :=
     fun x => topologicalProfiniteCompletionLift P f x
   have heq : lhs = rhs :=
     (topologicalProfiniteCompletionMap_denseRange G).equalizer
@@ -347,119 +356,121 @@ theorem topologicalProfiniteCompletionLift_unique
   apply ContinuousMonoidHom.ext
   intro x
   exact congrFun heq x
+end
+
 
 /-! ### Functorial action -/
 
 variable {H : Type v} [Group H] [TopologicalSpace H] [IsTopologicalGroup H]
 
-/-- A continuous homomorphism induces the canonical map between open-quotient
-completions. -/
-noncomputable def topologicalProfiniteCompletionMapHom (f : G →ₜ* H) :
-    TopologicalProfiniteCompletion G →ₜ* TopologicalProfiniteCompletion H :=
-  topologicalProfiniteCompletionLift (TopologicalProfiniteCompletion H)
-    ((topologicalProfiniteCompletionMap H).comp f)
 
-/-- The map induced on completions carries canonical images to canonical images. -/
-@[simp]
-theorem topologicalProfiniteCompletionMapHom_map
-    (f : G →ₜ* H) (g : G) :
-    topologicalProfiniteCompletionMapHom f
-        (topologicalProfiniteCompletionMap G g) =
-      topologicalProfiniteCompletionMap H (f g) :=
-  topologicalProfiniteCompletionLift_map
-    (TopologicalProfiniteCompletion H)
-    ((topologicalProfiniteCompletionMap H).comp f) g
 
-/-- The homomorphism induced by the identity is the identity on the completion. -/
-@[simp]
-theorem topologicalProfiniteCompletionMapHom_id :
-    topologicalProfiniteCompletionMapHom
-        (ContinuousMonoidHom.id G) =
-      ContinuousMonoidHom.id (TopologicalProfiniteCompletion G) := by
-  apply ContinuousMonoidHom.ext
-  intro x
-  let lhs : TopologicalProfiniteCompletion G →
-      TopologicalProfiniteCompletion G :=
-    fun y => topologicalProfiniteCompletionMapHom
-      (ContinuousMonoidHom.id G) y
-  let rhs : TopologicalProfiniteCompletion G →
-      TopologicalProfiniteCompletion G := fun y => y
-  have heq : lhs = rhs :=
-    (topologicalProfiniteCompletionMap_denseRange G).equalizer
-      (topologicalProfiniteCompletionMapHom
-        (ContinuousMonoidHom.id G)).continuous_toFun
-      continuous_id <| by
-        funext g
-        change topologicalProfiniteCompletionMapHom
-            (ContinuousMonoidHom.id G)
-              (topologicalProfiniteCompletionMap G g) =
-          topologicalProfiniteCompletionMap G g
-        rw [topologicalProfiniteCompletionMapHom_map]
-        rfl
-  exact congrFun heq x
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 variable {J : Type w} [Group J] [TopologicalSpace J] [IsTopologicalGroup J]
 
-/-- Passing to topological profinite completions preserves composition. -/
-@[simp]
-theorem topologicalProfiniteCompletionMapHom_comp
-    (f : G →ₜ* H) (g : H →ₜ* J) :
-    topologicalProfiniteCompletionMapHom (g.comp f) =
-      (topologicalProfiniteCompletionMapHom g).comp
-        (topologicalProfiniteCompletionMapHom f) := by
-  apply ContinuousMonoidHom.ext
-  intro x
-  let lhs : TopologicalProfiniteCompletion G →
-      TopologicalProfiniteCompletion J :=
-    fun y => topologicalProfiniteCompletionMapHom (g.comp f) y
-  let rhs : TopologicalProfiniteCompletion G →
-      TopologicalProfiniteCompletion J :=
-    fun y => topologicalProfiniteCompletionMapHom g
-      (topologicalProfiniteCompletionMapHom f y)
-  have heq : lhs = rhs :=
-    (topologicalProfiniteCompletionMap_denseRange G).equalizer
-      (topologicalProfiniteCompletionMapHom
-        (g.comp f)).continuous_toFun
-      ((topologicalProfiniteCompletionMapHom g).continuous_toFun.comp
-        (topologicalProfiniteCompletionMapHom f).continuous_toFun) <| by
-        funext x
-        change topologicalProfiniteCompletionMapHom (g.comp f)
-              (topologicalProfiniteCompletionMap G x) =
-          topologicalProfiniteCompletionMapHom g
-            (topologicalProfiniteCompletionMapHom f
-              (topologicalProfiniteCompletionMap G x))
-        rw [topologicalProfiniteCompletionMapHom_map,
-          topologicalProfiniteCompletionMapHom_map,
-          topologicalProfiniteCompletionMapHom_map]
-        rfl
-  exact congrFun heq x
 
-/-- Bundled universal-arrow formulation of completion by open finite
-quotients.  This is the adjunction data used by clients: maps from `G` to a
-profinite group correspond to a unique continuous homomorphism out of its
-completion.  The target universe is independent of the source universe. -/
-structure ProfiniteCompletionUniversalProperty
-    (G : Type u) [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
-    (C : ProfiniteGrp.{u}) (ι : G →ₜ* C) : Prop where
-  /-- The image of the canonical map `ι` is dense in the profinite completion candidate `C`. -/
-  denseRange : DenseRange ι
-  /-- Every continuous homomorphism from `G` to a profinite group factors uniquely through `ι`. -/
-  existsUniqueLift :
-    ∀ (P : ProfiniteGrp.{v}) (f : G →ₜ* P),
-      ∃! lift : C →ₜ* P, lift.comp ι = f
 
-/-- The constructed completion satisfies the bundled universal property. -/
-theorem topologicalProfiniteCompletion_universalProperty :
-    ProfiniteCompletionUniversalProperty G
-      (TopologicalProfiniteCompletion G)
-      (topologicalProfiniteCompletionMap G) where
-  denseRange := topologicalProfiniteCompletionMap_denseRange G
-  existsUniqueLift := by
-    intro P f
-    refine ⟨topologicalProfiniteCompletionLift P f,
-      topologicalProfiniteCompletionLift_comp_map P f, ?_⟩
-    intro lift hlift
-    exact topologicalProfiniteCompletionLift_unique P f lift hlift
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end LocalClassFieldTheory
 

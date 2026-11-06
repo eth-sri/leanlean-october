@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.RepresentationTheory.RankOne.CharacterCasimirEigenidentity
 public import DedekindZetaZeroFree.RepresentationTheory.RankOne.HaarDerivativeTransfer
 
 @[expose] public section
+
 
 section
 
@@ -22,7 +25,7 @@ noncomputable def symmetricPowerTrace (n : ℕ) (g : U2) : ℂ :=
   | n + 2 => Matrix.trace g.val * symmetricPowerTrace (n + 1) g -
       Matrix.det g.val * symmetricPowerTrace n g
 
-noncomputable def rankOneCharacter (ℓ : ℕ) (g : U2) : ℂ :=
+noncomputable def rankOneCharacter (ℓ : ℕ) (g : U2)  :=
   symmetricPowerTrace (2 * ℓ) g / Matrix.det g.val ^ ℓ
 
 private theorem compactU2 : CompactSpace U2 := by

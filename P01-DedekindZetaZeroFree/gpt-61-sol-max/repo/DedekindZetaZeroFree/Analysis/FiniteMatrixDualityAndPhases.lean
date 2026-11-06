@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 
 @[expose] public section
+
 
 /-
 https://github.com/openai/math
@@ -175,7 +178,7 @@ theorem separated_phase_norm_le [Fintype k]
   classical
   have h := Auxiliary.separated_decomposition_norm_le A A'.transpose (fun _ : k => 1)
     (fun a i => if κ i = a then 1 else 0) (fun a j => φ a (ν j))
-    (by intro a i; split_ifs <;> simp) (by intro a j; exact hφ a (ν j))
+    (by intro a i; split_ifs <;> simp) (by intro a j; apply hφ)
     (by
       intro i j
       simp only [one_mul, Matrix.transpose_apply]

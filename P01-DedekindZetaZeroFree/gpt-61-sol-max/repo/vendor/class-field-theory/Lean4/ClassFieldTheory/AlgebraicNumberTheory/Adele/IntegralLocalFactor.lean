@@ -99,18 +99,18 @@ theorem finitePlaceLocalTensorDecompositionComponentRingHom_apply
         (K := K) (L := L) w wL x :=
   rfl
 
-omit [NumberField L] in
-/-- Every relative-tensor component map sends zero to zero. -/
-@[simp]
-theorem finitePlaceLocalTensorDecompositionComponent_zero
-    (w : HeightOneSpectrum (𝓞 K))
-    (wL : AbsoluteValueExtension
-      (HeightOneSpectrum.adicAbv K w) L) :
-    finitePlaceLocalTensorDecompositionComponent
-        (K := K) (L := L) w wL 0 = 0 := by
-  simpa only [finitePlaceLocalTensorDecompositionComponentRingHom_apply] using
-    (finitePlaceLocalTensorDecompositionComponentRingHom
-      (K := K) (L := L) w wL).map_zero
+
+
+
+
+
+
+
+
+
+
+
+
 
 omit [NumberField L] in
 /-- Relative-tensor component maps preserve addition. -/

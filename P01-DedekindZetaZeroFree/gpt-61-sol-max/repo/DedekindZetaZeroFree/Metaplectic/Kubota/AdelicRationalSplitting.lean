@@ -500,14 +500,14 @@ theorem LowerN_local (v : KPHilbert.Place F) (x : KPHilbert.Completion F v) :
   · subst w; simp
   · simp [Pi.single_eq_of_ne h, Pi.mulSingle_eq_of_ne h]
 
-@[simp] theorem LowerN_zero : LowerN F ζ hζ 0 = 1 := by
-  change amalgamation F ζ hζ (LowerNTuple F ζ hζ 0) = 1
-  have h : LowerNTuple F ζ hζ 0 = 1 := by
-    apply RestrictedProduct.ext
-    intro v
-    change KPStandardLocalRootLifts.LowerN F ζ hζ v (adeleEval F v 0) = 1
-    simp
-  rw [h, map_one]
+
+
+
+
+
+
+
+
 
 def pglLowerN (x : Adeles F) : CubicPGL2Adelic F ζ hζ :=
   scalarQuotient F ζ hζ (LowerN F ζ hζ x)

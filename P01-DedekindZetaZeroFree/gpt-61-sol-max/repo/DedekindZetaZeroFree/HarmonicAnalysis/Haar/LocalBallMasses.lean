@@ -19,7 +19,10 @@ local instance ballMassCompletionMeasurable (v : HeightOneSpectrum (𝓞 F)) :
 local instance ballMassCompletionBorel (v : HeightOneSpectrum (𝓞 F)) :
     BorelSpace (v.adicCompletion F) := ⟨rfl⟩
 
-def localBallMass (v : HeightOneSpectrum (𝓞 F)) (n : ℤ) : ℝ :=
+section
+variable (v : HeightOneSpectrum (𝓞 F)) (n : ℤ)
+include v n in
+def localBallMass   : ℝ :=
   (Ideal.absNorm v.asIdeal : ℝ) ^
     (-(n : ℝ) - (localDifferentExponent F v : ℝ) / 2)
 
@@ -29,12 +32,14 @@ private lemma absNorm_cast_pos (v : HeightOneSpectrum (𝓞 F)) :
     Nat.zero_lt_one.trans (finiteCompletion_residueCard_gt_one F v)
   exact_mod_cast h1
 
-theorem localBallMass_pos (v : HeightOneSpectrum (𝓞 F)) (n : ℤ) :
+include v n in
+theorem localBallMass_pos   :
     0 < localBallMass F v n := by
   rw [localBallMass]
   exact Real.rpow_pos_of_pos (absNorm_cast_pos F v) _
 
-private lemma localBallMass_mul_absNorm (v : HeightOneSpectrum (𝓞 F)) (n : ℤ) :
+include v n in
+private lemma localBallMass_mul_absNorm   :
     localBallMass F v (n + 1) * (Ideal.absNorm v.asIdeal : ℝ) = localBallMass F v n := by
   have hQ := absNorm_cast_pos F v
   have key : (Ideal.absNorm v.asIdeal : ℝ) ^
@@ -48,7 +53,8 @@ private lemma localBallMass_mul_absNorm (v : HeightOneSpectrum (𝓞 F)) (n : �
   push_cast
   ring
 
-private lemma absNorm_mul_localBallMass_pred (v : HeightOneSpectrum (𝓞 F)) (n : ℤ) :
+include v n in
+private lemma absNorm_mul_localBallMass_pred   :
     (Ideal.absNorm v.asIdeal : ℝ) * localBallMass F v n = localBallMass F v (n - 1) := by
   have hQ := absNorm_cast_pos F v
   have key : (Ideal.absNorm v.asIdeal : ℝ) ^
@@ -62,8 +68,9 @@ private lemma absNorm_mul_localBallMass_pred (v : HeightOneSpectrum (𝓞 F)) (n
   push_cast
   ring
 
+include v n in
 private lemma localNormalizedHaar_finiteCompletionBall_succ
-    (v : HeightOneSpectrum (𝓞 F)) (n : ℤ) :
+      :
     localNormalizedHaar F v (finiteCompletionBall F v n : Set (v.adicCompletion F)) =
       ENNReal.ofReal (Ideal.absNorm v.asIdeal : ℝ) *
         localNormalizedHaar F v (finiteCompletionBall F v (n+1) : Set (v.adicCompletion F)) := by
@@ -108,8 +115,9 @@ private lemma localNormalizedHaar_finiteCompletionBall_zero
     ring
   rw [h0]
 
+include v n in
 theorem localNormalizedHaar_finiteCompletionBall
-    (v : HeightOneSpectrum (𝓞 F)) (n : ℤ) :
+      :
     localNormalizedHaar F v (finiteCompletionBall F v n : Set (v.adicCompletion F)) =
       ENNReal.ofReal (localBallMass F v n) := by
   have hQpos := absNorm_cast_pos F v
@@ -174,15 +182,17 @@ theorem localNormalizedHaar_finiteCompletionBall_coset
     rw [h]
   rw [hset, measure_preimage_add, localNormalizedHaar_finiteCompletionBall]
 
+include v n in
 theorem localNormalizedHaar_finiteCompletionBall_toReal
-    (v : HeightOneSpectrum (𝓞 F)) (n : ℤ) :
+      :
     (localNormalizedHaar F v
       (finiteCompletionBall F v n : Set (v.adicCompletion F))).toReal =
         localBallMass F v n := by
   rw [localNormalizedHaar_finiteCompletionBall,
     ENNReal.toReal_ofReal (le_of_lt (localBallMass_pos F v n))]
 
-theorem localBallMass_mul_dual (v : HeightOneSpectrum (𝓞 F)) (n : ℤ) :
+include v n in
+theorem localBallMass_mul_dual   :
     localBallMass F v n *
       localBallMass F v (-n - (localDifferentExponent F v : ℤ)) = 1 := by
   have hQ := absNorm_cast_pos F v
@@ -192,6 +202,8 @@ theorem localBallMass_mul_dual (v : HeightOneSpectrum (𝓞 F)) (n : ℤ) :
     push_cast
     ring
   rw [localBallMass, localBallMass, ← Real.rpow_add hQ, hsum, Real.rpow_zero]
+end
+
 
 end DedekindZetaZeroFree
 

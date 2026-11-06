@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Poisson.FieldTransform.EulerDerivativesAndDecay
 
 @[expose] public section
+
 
 noncomputable section
 open scoped NumberField Classical ContDiff
@@ -30,9 +33,7 @@ private lemma uniform_abs_rpow_neg_two_le (t : ℝ) :
   rw [div_le_div_iff₀ (by positivity) (by positivity)]
   nlinarith [abs_nonneg t, sq_abs t, sq_nonneg t]
 
-private lemma uniform_integrable_one_add_abs_rpow_neg_two :
-    Integrable (fun t : ℝ => (1 + |t|) ^ (-2 : ℝ)) := by
-  simpa using (integrable_one_add_norm (E := ℝ) (μ := volume) (r := 2) (by simp))
+private def uniform_integrable_one_add_abs_rpow_neg_two  := (integrable_one_add_norm (E := ℝ) (μ := volume) (r := 2) (by simp))
 
 private lemma uniform_integral_one_add_abs_rpow_neg_two_le :
     ∫ t : ℝ, (1 + |t|) ^ (-2 : ℝ) ≤ 2 * Real.pi := by
@@ -74,7 +75,7 @@ private lemma uniform_norm_mellinInv_le (c x A : ℝ) (g : ℂ → ℂ) (hx : 0 
     simp [Complex.neg_re, Complex.add_re, Complex.mul_re, Complex.I_re, Complex.ofReal_re]
   have hmaj_int : Integrable (fun t : ℝ => x ^ (-c) * A * (1 + |t|) ^ (-2 : ℝ)) := by
     have h := (uniform_integrable_one_add_abs_rpow_neg_two.const_mul (x ^ (-c) * A))
-    simpa [mul_assoc] using h
+    exact h
   have hle : ∫ t, ‖F t‖ ≤ ∫ t, x ^ (-c) * A * (1 + |t|) ^ (-2 : ℝ) := by
     apply integral_mono hint.norm hmaj_int
     intro t
@@ -94,8 +95,7 @@ private lemma uniform_norm_mellinInv_le (c x A : ℝ) (g : ℂ → ℂ) (hx : 0 
     congr 1
   rw [hInv, norm_smul, hscal]
   calc (1 / (2 * Real.pi)) * ‖∫ t, F t‖
-      ≤ (1 / (2 * Real.pi)) * ∫ t, ‖F t‖ := by
-        exact mul_le_mul_of_nonneg_left (norm_integral_le_integral_norm F) (by positivity)
+      ≤ (1 / (2 * Real.pi)) * ∫ t, ‖F t‖ := mul_le_mul_of_nonneg_left (norm_integral_le_integral_norm F) (by positivity)
     _ ≤ (1 / (2 * Real.pi)) * (x ^ (-c) * A * ∫ t, (1 + |t|) ^ (-2 : ℝ)) := by
         apply mul_le_mul_of_nonneg_left _ (by positivity)
         rw [← hIeq]; exact hle
@@ -127,7 +127,7 @@ theorem fieldTransform_uniform_euler_two_ended_bound
     B_uniform_rapid_bound D r b a v (j + 2) hD hr hb ha hav
   refine ⟨N, C0 * (v + 1) ^ j, by positivity, ?_⟩
   intro h hh hhc hsupp
-  have hS : 0 ≤ Vendor.S b N h := Vendor.S_nonneg b hb N h hh
+  have hS  := Vendor.S_nonneg b hb N h hh
   have hδmem : δ ∈ Set.Icc a v :=
     ⟨by rw [ha_def]; exact min_le_left _ _, by rw [hv_def]; exact le_max_left _ _⟩
   have hmem : ((n : ℝ) + 1) ∈ Set.Icc a v :=
@@ -147,7 +147,7 @@ theorem fieldTransform_uniform_euler_two_ended_bound
           ≤ (C0 * Vendor.S b N h * (v + 1) ^ j) * (1 + |t|) ^ (-2 : ℝ) := by
       intro t
       have hrp := hrap h hh hhc hsupp c hc t
-      have hs : ‖(c : ℂ) + (t : ℂ) * Complex.I‖ ≤ (v + 1) * (1 + |t|) :=
+      have hs  :=
         uniform_norm_add_mul_I_le c t v (le_of_lt hcpos) hcv hv0
       have hu : 0 < 1 + |t| := by positivity
       have hnorm :
@@ -171,8 +171,7 @@ theorem fieldTransform_uniform_euler_two_ended_bound
               mul_le_mul_of_nonneg_right hsp (norm_nonneg _)
           _ = (v + 1) ^ j
                 * ((1 + |t|) ^ j * ‖B D r h ((c : ℂ) + (t : ℂ) * Complex.I)‖) := by ring
-      have h2 : (1 + |t|) ^ j * ‖B D r h ((c : ℂ) + (t : ℂ) * Complex.I)‖
-          ≤ (C0 * Vendor.S b N h) * (1 + |t|) ^ (-2 : ℝ) :=
+      have h2  :=
         uniform_jet_mul_bound (1 + |t|) hu j (C0 * Vendor.S b N h)
           ‖B D r h ((c : ℂ) + (t : ℂ) * Complex.I)‖ hrp
       calc ‖(c : ℂ) + (t : ℂ) * Complex.I‖ ^ j
@@ -195,7 +194,7 @@ theorem fieldTransform_uniform_euler_two_ended_bound
       _ = C0 * (v + 1) ^ j * Vendor.S b N h * x ^ (-c) := by ring
   refine ⟨?_, ?_⟩
   · intro x hx0 hx1
-    simpa using step δ hδmem x hx0
+    apply step <;> assumption
   · intro x hx1
     have hlt : (0 : ℝ) < x := lt_of_lt_of_le zero_lt_one hx1
     calc ‖Vendor.EulerIter j (fieldTransform D r h) x‖

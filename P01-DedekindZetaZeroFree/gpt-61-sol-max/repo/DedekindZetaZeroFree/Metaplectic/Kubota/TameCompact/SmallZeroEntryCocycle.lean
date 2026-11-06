@@ -13,39 +13,43 @@ noncomputable section
 set_option autoImplicit false
 set_option maxHeartbeats 2000000
 
-private lemma entry_c (F : Type) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (𝓞 F)) (g h : K0 F v) :
+section
+variable (F : Type) [Field F] [NumberField F]
+    (v : HeightOneSpectrum (𝓞 F))
+include F v
+private lemma entry_c   (g h : K0 F v) :
     c F v (g * h) = c F v g * a F v h + d F v g * c F v h := by
   simp [c, a, d, Matrix.mul_apply, Fin.sum_univ_two]
 
-private lemma entry_a (F : Type) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (𝓞 F)) (g h : K0 F v) :
+private lemma entry_a   (g h : K0 F v) :
     a F v (g * h) = a F v g * a F v h + b F v g * c F v h := by
   simp [c, a, b, Matrix.mul_apply, Fin.sum_univ_two]
 
-private lemma entry_d (F : Type) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (𝓞 F)) (g h : K0 F v) :
+private lemma entry_d   (g h : K0 F v) :
     d F v (g * h) = c F v g * b F v h + d F v g * d F v h := by
   simp [c, b, d, Matrix.mul_apply, Fin.sum_univ_two]
 
-private lemma X_zero (F : Type) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (𝓞 F)) (g : K0 F v) (hc : c F v g = 0)
+private lemma X_zero   (g : K0 F v) (hc : c F v g = 0)
     (D : (K F v)ˣ) (hD : (D : K F v) = d F v g) :
     KubotaRankTwo.X (K F v) (inclusion F v g) = D := by
   apply Units.ext
   simpa [KubotaRankTwo.X, KubotaRankTwo.x, inclusion,
     KPLocalCube.integerInclusion, hc] using hD.symm
 
-private lemma X_nonzero (F : Type) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (𝓞 F)) (g : K0 F v) (hc : c F v g ≠ 0)
+private lemma X_nonzero   (g : K0 F v) (hc : c F v g ≠ 0)
     (C : (K F v)ˣ) (hC : (C : K F v) = c F v g) :
     KubotaRankTwo.X (K F v) (inclusion F v g) = C := by
   apply Units.ext
   simpa [KubotaRankTwo.X, KubotaRankTwo.x, inclusion,
     KPLocalCube.integerInclusion, hc] using hC.symm
+end
 
-private lemma kappa_raw (F : Type) [Field F] [NumberField F]
+
+section
+variable (F : Type) [Field F] [NumberField F]
     (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (v : HeightOneSpectrum (𝓞 F))
+include F ζ hζ v
+private lemma kappa_raw  
     (g : K0 F v) (hc : c F v g ≠ 0) (hn : ‖c F v g‖ < 1)
     (C D : (K F v)ˣ) (hC : (C : K F v) = c F v g)
     (hD : (D : K F v) = d F v g) :
@@ -58,9 +62,7 @@ private lemma kappa_raw (F : Type) [Field F] [NumberField F]
   · apply Units.ext; simp [hD]
 
 theorem kappa_mul_small_zero
-    (F : Type) [Field F] [NumberField F]
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (v : HeightOneSpectrum (𝓞 F))
+     
     (hv : ringChar (O F v ⧸ p F v) ≠ 3)
     (g h : K0 F v)
     (hc : ‖c F v g‖ < 1) (he : ‖c F v h‖ < 1)
@@ -203,6 +205,8 @@ theorem kappa_mul_small_zero
         simpa only [U, V, P, ← map_mul, ← map_div] using hUU ah (ah/(dh*pg))
       rw [eq1, eq2, eq3, hL, hR, hR, hR, uu1, uu2, uu3,
         one_mul, mul_one, mul_one, hSk U C, ← hInv C U]
+end
+
 
 end
 end DedekindZetaZeroFree.KPTameCompact

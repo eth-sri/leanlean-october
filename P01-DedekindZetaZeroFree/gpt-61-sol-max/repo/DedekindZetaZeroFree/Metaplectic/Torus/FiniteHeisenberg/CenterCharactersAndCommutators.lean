@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Metaplectic.Torus.FiniteHeisenberg.CubicCenterQuotient
 public import DedekindZetaZeroFree.Metaplectic.Torus.CubicPhaseCharacter
 
 @[expose] public section
+
 
 open scoped NumberField Classical
 
@@ -23,7 +26,7 @@ theorem centerCharacter_cube (z : center F ζ hζ C L) :
     centerCharacter F ζ hζ C L z ^ 3 = 1 := by
   obtain ⟨k, rfl⟩ := phaseToCenter_surjective F ζ hζ C L z
   rw [centerCharacter_phase]
-  exact phaseCharacter_cube F ζ hζ C L k
+  apply phaseCharacter_cube
 
 def ordinaryRoots : rootsOfUnity 3 F →* rootsOfUnity 3 ℂ where
   toFun ε := ⟨KPGlobalTorusFunctionData.iota F ζ hζ ε, by
@@ -44,7 +47,7 @@ theorem ordinaryRoots_injective : Function.Injective (ordinaryRoots F ζ hζ) :=
 theorem ordinaryRoots_surjective : Function.Surjective (ordinaryRoots F ζ hζ) := by
   letI : Fintype (rootsOfUnity 3 F) := Fintype.ofFinite _
   letI : Fintype (rootsOfUnity 3 ℂ) := Fintype.ofFinite _
-  have hF : Nat.card (rootsOfUnity 3 F) = 3 :=
+  have hF  :=
     (hζ.pow (by norm_num : 0 < 12) (by norm_num : 12 = 4 * 3)).card_rootsOfUnity
   have hcard : Fintype.card (rootsOfUnity 3 F) = Fintype.card (rootsOfUnity 3 ℂ) := by
     rw [← Nat.card_eq_fintype_card, ← Nat.card_eq_fintype_card, hF, Complex.card_rootsOfUnity]
@@ -64,22 +67,22 @@ theorem center_eq_cubicCenter : center F ζ hζ C L = cubicCenter F ζ hζ C L :
   have he := centerCharacter_faithful F ζ hζ C L hchar
   exact ⟨ε, congrArg (fun t : center F ζ hζ C L => (t : H F ζ hζ C L)) he⟩
 
-def centerEquiv : rootsOfUnity 3 F ≃* center F ζ hζ C L :=
+def centerEquiv  :=
   (cubicCenterEquiv F ζ hζ C L).trans
     (MulEquiv.subgroupCongr (center_eq_cubicCenter F ζ hζ C L).symm)
 
-instance center_finite : Finite (center F ζ hζ C L) :=
-  Finite.of_equiv (rootsOfUnity 3 F) (centerEquiv F ζ hζ C L).toEquiv
 
-instance H_finite : Finite (H F ζ hζ C L) := by
-  letI := quotient_finite F ζ hζ C L
-  letI : Finite (projection F ζ hζ C L).ker := by
-    rw [projection_kernel]
-    infer_instance
-  letI : Fintype (symplecticQuotient F ζ hζ C L) := Fintype.ofFinite _
-  letI : Fintype (projection F ζ hζ C L).ker := Fintype.ofFinite _
-  letI : Fintype (H F ζ hζ C L) := Group.fintypeOfKerOfCodom (projection F ζ hζ C L)
-  infer_instance
+
+
+
+
+
+
+
+
+
+
+
 
 end
 
@@ -106,21 +109,24 @@ theorem centerEquiv_character (ε : rootsOfUnity 3 F) :
       KPGlobalTorusFunctionData.iota F ζ hζ ε := by
   rw [centerEquiv_apply, centerCharacter_phase, rootPhase_character]
 
-theorem H_commutator_formula (x y : H F ζ hζ C L) :
+section
+variable (x y : H F ζ hζ C L)
+include x y
+theorem H_commutator_formula   :
     x * y * x⁻¹ * y⁻¹ =
       (centerEquiv F ζ hζ C L (stagePairing F ζ hζ C L
         (projection F ζ hζ C L x) (projection F ζ hζ C L y) ^ 4)).val := by
   obtain ⟨a, rfl⟩ := QuotientGroup.mk_surjective x
   obtain ⟨b, rfl⟩ := QuotientGroup.mk_surjective y
   rw [centerEquiv_apply]
-  exact commutator_formula F ζ hζ C L a b
+  apply commutator_formula
 
-theorem H_commutator_mem (x y : H F ζ hζ C L) :
+theorem H_commutator_mem   :
     x * y * x⁻¹ * y⁻¹ ∈ center F ζ hζ C L := by
   rw [H_commutator_formula]
   exact (centerEquiv F ζ hζ C L _).property
 
-theorem H_commutator_character (x y : H F ζ hζ C L) :
+theorem H_commutator_character   :
     centerCharacter F ζ hζ C L ⟨x * y * x⁻¹ * y⁻¹, H_commutator_mem F ζ hζ C L x y⟩ =
       KPGlobalTorusFunctionData.iota F ζ hζ (stagePairing F ζ hζ C L
         (projection F ζ hζ C L x) (projection F ζ hζ C L y) ^ 4) := by
@@ -129,6 +135,8 @@ theorem H_commutator_character (x y : H F ζ hζ C L) :
         (projection F ζ hζ C L x) (projection F ζ hζ C L y) ^ 4) :=
     Subtype.ext (H_commutator_formula F ζ hζ C L x y)
   rw [he, centerEquiv_character]
+end
+
 
 end
 end DedekindZetaZeroFree.TorusFiniteCenterQuotient

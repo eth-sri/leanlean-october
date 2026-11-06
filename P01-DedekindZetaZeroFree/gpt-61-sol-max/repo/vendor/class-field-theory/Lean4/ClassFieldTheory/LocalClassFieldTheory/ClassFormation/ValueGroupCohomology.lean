@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import Mathlib.SetTheory.Cardinal.Finite
 public import Mathlib.Data.ZMod.QuotientGroup
 public import GaloisCohomology.Cyclic.Herbrand.HerbrandLowDegree.Basic
 public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.Valuation
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -50,8 +53,7 @@ theorem galoisGroupValueGroup_tateNorm_toAdd (a : Multiplicative Int) :
       a ^ Fintype.card (Gal(L / K)) := by
     simp only [tateNorm, galoisGroupValueGroupMulDistribMulAction_smul,
       Finset.prod_const, Finset.card_univ]
-  simpa only [toAdd_pow, nsmul_eq_mul] using
-    congrArg Multiplicative.toAdd hnorm
+  exact congrArg Multiplicative.toAdd hnorm
 
 /-- Reduction modulo `|G|` on the fixed subgroup of the trivial value-group
 module. -/
@@ -98,8 +100,7 @@ theorem galoisGroupValueGroupFixedToZModHom_ker :
   · intro hx
     have hx0 :
         ((Multiplicative.toAdd (x : Multiplicative Int) : Int) :
-          ZMod (Fintype.card (Gal(L / K)))) = 0 := by
-      exact congrArg Multiplicative.toAdd hx
+          ZMod (Fintype.card (Gal(L / K)))) = 0 := congrArg Multiplicative.toAdd hx
     rcases (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).1 hx0 with ⟨z, hz⟩
     change (x : Multiplicative Int) ∈
       tateNormSubgroup (Gal(L / K)) (Multiplicative Int)
@@ -180,10 +181,10 @@ theorem galoisGroupValueGroup_normKernelSubgroup_eq_bot :
   · intro x hx
     rw [Subgroup.mem_bot]
     exact congrArg Multiplicative.ofAdd (by
-      change Multiplicative.toAdd (x : Multiplicative Int) = 0
+      change Multiplicative.toAdd x = 0
       have hnorm :
           (Fintype.card (Gal(L / K)) : Int) *
-              Multiplicative.toAdd (x : Multiplicative Int) = 0 := by
+              Multiplicative.toAdd x = 0 := by
         rw [← galoisGroupValueGroup_tateNorm_toAdd K L]
         exact congrArg Multiplicative.toAdd hx
       exact (mul_eq_zero.mp hnorm).resolve_left (by

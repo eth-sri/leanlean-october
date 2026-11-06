@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Valuation.AbsoluteValue.Completion
 public import ValuedFieldTheory.Valuation.Completion.ExtensionFactorClassification
 public import ValuedFieldTheory.Valuation.Completion.SeparablePolynomialFactors
@@ -9,6 +11,7 @@ public import ValuedFieldTheory.Valuation.Completion.CanonicalTensorMap
 public import Mathlib.Algebra.Group.Pi.Units
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -51,18 +54,21 @@ universe u v
 tensor-product decomposition. -/
 noncomputable def completionTensorDecomposition_powerBasis
     (K : Type u) (L : Type v) [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [Algebra.IsSeparable K L] : PowerBasis K L :=
+    [FiniteDimensional K L] [Algebra.IsSeparable K L]  :=
   Field.powerBasisOfFiniteOfSeparable K L
 
+section
+variable {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
+    [FiniteDimensional K L] [Algebra.IsSeparable K L]
+    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
+include K L vK hvK
 /-- the extension-factor correspondence makes the extensions `w | v` into a finite type. -/
 @[reducible]
 noncomputable def completionTensorDecomposition_extensionFintype
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [Algebra.IsSeparable K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial) :
+      :
     Fintype (AbsoluteValueExtension vK L) := by
   let pb := completionTensorDecomposition_powerBasis K L
-  let hf : Irreducible (minpoly K pb.gen) :=
+  let hf  :=
     minpoly.irreducible pb.isIntegral_gen
   let e := completionExtensionFactor_extensionEquivFactors vK hvK hf
     (minpoly.aeval K pb.gen) pb.adjoin_gen_eq_top
@@ -71,9 +77,7 @@ noncomputable def completionTensorDecomposition_extensionFintype
 /-- In the separable case the mapped minimal polynomial is the product of
 the factors indexed by all extensions `w | v`. -/
 theorem completionTensorDecomposition_mapped_minpoly_eq_prod_extensionFactors
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [Algebra.IsSeparable K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial) :
+      :
     letI := completionTensorDecomposition_extensionFintype (K := K) (L := L) vK hvK
     (minpoly K (completionTensorDecomposition_powerBasis K L).gen).map
         (algebraMap K vK.Completion) =
@@ -84,7 +88,7 @@ theorem completionTensorDecomposition_mapped_minpoly_eq_prod_extensionFactors
   let := completionTensorDecomposition_extensionFintype (K := K) (L := L) vK hvK
   let pb := completionTensorDecomposition_powerBasis K L
   let p := (minpoly K pb.gen).map (algebraMap K vK.Completion)
-  let hf : Irreducible (minpoly K pb.gen) :=
+  let hf  :=
     minpoly.irreducible pb.isIntegral_gen
   let e := completionExtensionFactor_extensionEquivFactors vK hvK hf
     (minpoly.aeval K pb.gen) pb.adjoin_gen_eq_top
@@ -92,10 +96,10 @@ theorem completionTensorDecomposition_mapped_minpoly_eq_prod_extensionFactors
     (minpoly.monic pb.isIntegral_gen).map (algebraMap K vK.Completion)
   have hpsep : p.Separable :=
     Polynomial.Separable.map
-      (Algebra.IsSeparable.isSeparable K (pb.gen : L))
+      (Algebra.IsSeparable.isSeparable K pb.gen)
   calc
     p = ∏ g : CompletionExtensionFactorCompletionFactors vK (minpoly K pb.gen),
-        (g.1 : vK.Completion[X]) :=
+        (g.1) :=
       separable_monic_eq_prod_distinctNormalizedFactors p hpmonic hpsep
     _ = ∏ w : AbsoluteValueExtension vK L,
         completionExtensionFactor_extensionFactor vK pb.gen w := by
@@ -104,9 +108,7 @@ theorem completionTensorDecomposition_mapped_minpoly_eq_prod_extensionFactors
 
 /-- The factors indexed by distinct extensions are pairwise coprime. -/
 theorem completionTensorDecomposition_extensionFactors_pairwise_coprime
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [Algebra.IsSeparable K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial) :
+      :
     letI := completionTensorDecomposition_extensionFintype (K := K) (L := L) vK hvK
     ∀ w w' : AbsoluteValueExtension vK L, w ≠ w' →
       IsCoprime
@@ -117,7 +119,7 @@ theorem completionTensorDecomposition_extensionFactors_pairwise_coprime
   classical
   let := completionTensorDecomposition_extensionFintype (K := K) (L := L) vK hvK
   let pb := completionTensorDecomposition_powerBasis K L
-  let hf : Irreducible (minpoly K pb.gen) :=
+  let hf  :=
     minpoly.irreducible pb.isIntegral_gen
   let e := completionExtensionFactor_extensionEquivFactors vK hvK hf
     (minpoly.aeval K pb.gen) pb.adjoin_gen_eq_top
@@ -130,9 +132,7 @@ theorem completionTensorDecomposition_extensionFactors_pairwise_coprime
 /-- The factorization/CRT equivalence in the left tensor order
 `K_v ⊗_K L`. -/
 noncomputable def completionTensorDecomposition_factorEquiv
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [Algebra.IsSeparable K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial) :
+      :
     letI : ∀ w : AbsoluteValueExtension vK L,
         Algebra vK.Completion w.1.Completion :=
       fun w ↦ AbsoluteValue.completionAlgebra vK w.1 w.2
@@ -146,7 +146,7 @@ noncomputable def completionTensorDecomposition_factorEquiv
   letI hK : ∀ w : AbsoluteValueExtension vK L,
       Algebra K w.1.Completion :=
     fun w ↦ AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
-  letI : ∀ w : AbsoluteValueExtension vK L, SMul K w.1.Completion :=
+  letI  :=
     fun w ↦ (hK w).toSMul
   letI : ∀ w : AbsoluteValueExtension vK L,
       Algebra vK.Completion w.1.Completion :=
@@ -169,9 +169,7 @@ noncomputable def completionTensorDecomposition_factorEquiv
 image in every completion. -/
 @[simp]
 theorem completionTensorDecomposition_factorEquiv_one_tmul_gen
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [Algebra.IsSeparable K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
+     
     (w : AbsoluteValueExtension vK L) :
     letI : ∀ w : AbsoluteValueExtension vK L,
         Algebra vK.Completion w.1.Completion :=
@@ -212,15 +210,12 @@ theorem completionTensorDecomposition_factorEquiv_one_tmul_gen
         (adjoinRootProdEquivPi factors hcop
           (AdjoinRoot.mk (∏ w, factors w) X) w) = _
   rw [adjoinRootProdEquivPi_mk]
-  exact completionExtensionFactor_adjoinRootEquivCompletion_root
-    vK hvK pb.gen pb.isIntegral_gen pb.adjoin_gen_eq_top w
+  apply completionExtensionFactor_adjoinRootEquivCompletion_root
 
 /-- The factorization equivalence is not merely an abstract isomorphism:
 its algebra homomorphism is the canonical product map. -/
 theorem completionTensorDecomposition_factorEquiv_toAlgHom
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [Algebra.IsSeparable K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial) :
+      :
     letI : ∀ w : AbsoluteValueExtension vK L,
         Algebra vK.Completion w.1.Completion :=
       fun w ↦ AbsoluteValue.completionAlgebra vK w.1 w.2
@@ -251,9 +246,7 @@ theorem completionTensorDecomposition_factorEquiv_toAlgHom
 
 /-- The canonical product map in the left tensor order is bijective. -/
 theorem completionTensorDecomposition_leftCanonicalHom_bijective
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [Algebra.IsSeparable K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial) :
+      :
     letI : ∀ w : AbsoluteValueExtension vK L,
         Algebra vK.Completion w.1.Completion :=
       fun w ↦ AbsoluteValue.completionAlgebra vK w.1 w.2
@@ -271,9 +264,7 @@ theorem completionTensorDecomposition_leftCanonicalHom_bijective
 /-- the completion tensor-product decomposition in the left tensor order, retained for the scalar
 extension calculations in the local degree, norm, and trace formulas.  Its underlying map is canonical. -/
 noncomputable def completionTensorDecomposition_left
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [Algebra.IsSeparable K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial) :
+      :
     letI : ∀ w : AbsoluteValueExtension vK L,
         Algebra vK.Completion w.1.Completion :=
       fun w ↦ AbsoluteValue.completionAlgebra vK w.1 w.2
@@ -289,9 +280,7 @@ noncomputable def completionTensorDecomposition_left
 
 @[simp]
 theorem completionTensorDecomposition_left_tmul_apply
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [Algebra.IsSeparable K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
+     
     (b : vK.Completion) (a : L)
     (w : AbsoluteValueExtension vK L) :
     letI : ∀ w : AbsoluteValueExtension vK L,
@@ -300,110 +289,103 @@ theorem completionTensorDecomposition_left_tmul_apply
     completionTensorDecomposition_left (K := K) (L := L) vK hvK (b ⊗ₜ[K] a) w =
       algebraMap vK.Completion w.1.Completion b *
         AbsoluteValue.toCompletionAlgHom (K := K) w.1 a := by
-  let : ∀ w : AbsoluteValueExtension vK L,
-      Algebra vK.Completion w.1.Completion :=
-    fun w ↦ AbsoluteValue.completionAlgebra vK w.1 w.2
-  change completionTensorMap_leftCanonicalHom (K := K) (L := L) vK
-    (b ⊗ₜ[K] a) w = _
-  exact completionTensorMap_leftCanonicalHom_tmul_apply vK b a w
-
-/-- The canonical map in the chosen tensor-factor order is bijective. -/
-theorem completionTensorDecomposition_canonicalHom_bijective
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [Algebra.IsSeparable K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial) :
-    letI := Algebra.TensorProduct.rightAlgebra
-      (R := K) (A := L) (B := vK.Completion)
-    letI : ∀ w : AbsoluteValueExtension vK L,
-        Algebra vK.Completion w.1.Completion :=
-      fun w ↦ AbsoluteValue.completionAlgebra vK w.1 w.2
-    Function.Bijective
-      (completionTensorMap_canonicalHom (K := K) (L := L) vK) := by
-  let := Algebra.TensorProduct.rightAlgebra
-    (R := K) (A := L) (B := vK.Completion)
-  let : ∀ w : AbsoluteValueExtension vK L,
-      Algebra vK.Completion w.1.Completion :=
-    fun w ↦ AbsoluteValue.completionAlgebra vK w.1 w.2
-  let c := Algebra.TensorProduct.comm K L vK.Completion
-  let h := completionTensorMap_leftCanonicalHom (K := K) (L := L) vK
-  change Function.Bijective (fun x ↦ h (c x))
-  exact (completionTensorDecomposition_leftCanonicalHom_bijective
-    (K := K) (L := L) vK hvK).comp c.bijective
-
-/-- **The completion tensor-product decomposition.**  The canonical map
-`L ⊗_K K_v → ∏_{w|v} L_w` is an isomorphism for a finite separable
-extension. -/
-noncomputable def completionTensorDecomposition
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [Algebra.IsSeparable K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial) :
-    letI := Algebra.TensorProduct.rightAlgebra
-      (R := K) (A := L) (B := vK.Completion)
-    letI : ∀ w : AbsoluteValueExtension vK L,
-        Algebra vK.Completion w.1.Completion :=
-      fun w ↦ AbsoluteValue.completionAlgebra vK w.1 w.2
-    L ⊗[K] vK.Completion ≃ₐ[vK.Completion]
-      ∀ w : AbsoluteValueExtension vK L, w.1.Completion := by
-  letI := Algebra.TensorProduct.rightAlgebra
-    (R := K) (A := L) (B := vK.Completion)
-  letI : ∀ w : AbsoluteValueExtension vK L,
-      Algebra vK.Completion w.1.Completion :=
-    fun w ↦ AbsoluteValue.completionAlgebra vK w.1 w.2
-  exact AlgEquiv.ofBijective
-    (completionTensorMap_canonicalHom (K := K) (L := L) vK)
-    (completionTensorDecomposition_canonicalHom_bijective
-      (K := K) (L := L) vK hvK)
-
-/-- The endpoint is exactly the canonical homomorphism, not merely an
-abstract algebra equivalence. -/
-theorem completionTensorDecomposition_toAlgHom
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [Algebra.IsSeparable K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial) :
-    letI := Algebra.TensorProduct.rightAlgebra
-      (R := K) (A := L) (B := vK.Completion)
-    letI : ∀ w : AbsoluteValueExtension vK L,
-        Algebra vK.Completion w.1.Completion :=
-      fun w ↦ AbsoluteValue.completionAlgebra vK w.1 w.2
-    (completionTensorDecomposition (K := K) (L := L) vK hvK).toAlgHom =
-      completionTensorMap_canonicalHom vK := by
-  let := Algebra.TensorProduct.rightAlgebra
-    (R := K) (A := L) (B := vK.Completion)
-  let : ∀ w : AbsoluteValueExtension vK L,
-      Algebra vK.Completion w.1.Completion :=
-    fun w ↦ AbsoluteValue.completionAlgebra vK w.1 w.2
   rfl
 
-@[simp]
-theorem completionTensorDecomposition_tmul_apply
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [Algebra.IsSeparable K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    (a : L) (b : vK.Completion)
-    (w : AbsoluteValueExtension vK L) :
-    letI := Algebra.TensorProduct.rightAlgebra
-      (R := K) (A := L) (B := vK.Completion)
-    letI : ∀ w : AbsoluteValueExtension vK L,
-        Algebra vK.Completion w.1.Completion :=
-      fun w ↦ AbsoluteValue.completionAlgebra vK w.1 w.2
-    completionTensorDecomposition (K := K) (L := L) vK hvK (a ⊗ₜ[K] b) w =
-      AbsoluteValue.toCompletionAlgHom (K := K) w.1 a *
-        algebraMap vK.Completion w.1.Completion b := by
-  let := Algebra.TensorProduct.rightAlgebra
-    (R := K) (A := L) (B := vK.Completion)
-  let : ∀ w : AbsoluteValueExtension vK L,
-      Algebra vK.Completion w.1.Completion :=
-    fun w ↦ AbsoluteValue.completionAlgebra vK w.1 w.2
-  change completionTensorMap_canonicalHom (K := K) (L := L) vK
-    (a ⊗ₜ[K] b) w = _
-  exact completionTensorMap_canonicalHom_tmul_apply vK a b w
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- the completion tensor-product decomposition on unit groups, in the tensor-factor order used by
 local scalar extension. -/
 noncomputable def localTensorUnitsEquivCompletionProduct
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [Algebra.IsSeparable K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial) :
+      :
     letI : ∀ w' : AbsoluteValueExtension vK L,
         Algebra vK.Completion w'.1.Completion :=
       fun w' ↦ AbsoluteValue.completionAlgebra vK w'.1 w'.2
@@ -423,9 +405,7 @@ noncomputable def localTensorUnitsEquivCompletionProduct
 underlying tensor-product decomposition. -/
 @[simp]
 theorem localTensorUnitsEquivCompletionProduct_apply_coe
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [Algebra.IsSeparable K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
+     
     (z : (vK.Completion ⊗[K] L)ˣ)
     (w' : AbsoluteValueExtension vK L) :
     letI : ∀ u : AbsoluteValueExtension vK L,
@@ -434,8 +414,10 @@ theorem localTensorUnitsEquivCompletionProduct_apply_coe
     (((localTensorUnitsEquivCompletionProduct vK hvK z) w' :
         w'.1.Completionˣ) : w'.1.Completion) =
       completionTensorDecomposition_left (K := K) (L := L) vK hvK
-        (z : vK.Completion ⊗[K] L) w' :=
+        z w' :=
   rfl
+end
+
 
 end Valuations
 end AlgebraicNumberTheory

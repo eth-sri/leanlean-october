@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.PadicField
 public import Mathlib.RingTheory.WittVector.Compare
 public import Mathlib.RingTheory.WittVector.Complete
@@ -7,6 +9,7 @@ public import Mathlib.RingTheory.WittVector.FrobeniusFractionField
 public import ValuedFieldTheory.Valuation.Topology.AdicContractingFixedPoint
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -47,15 +50,18 @@ namespace LubinTate
 open LocalFieldTheory.DiscreteValuationField
 open LocalFieldTheory.DiscreteValuationField.Examples.Qp
 
+section
+variable (p : ℕ) [Fact p.Prime]
+include p
 /-- The canonical Witt integer ring over an algebraic closure of the
 residue field.  This is the coefficient ring used for the mixed-characteristic
 completed-unramified descent. -/
-abbrev padicCompletedUnramifiedWittRing (p : ℕ) [Fact p.Prime] :=
+abbrev padicCompletedUnramifiedWittRing   :=
   WittVector p (AlgebraicClosure (ZMod p))
 
 /-- The canonical inclusion `ℤ_[p] → W(AlgebraicClosure (ZMod p))`. -/
 noncomputable def padicIntToCompletedUnramifiedWittRing
-    (p : ℕ) [Fact p.Prime] :
+      :
     ℤ_[p] →+* padicCompletedUnramifiedWittRing p :=
   (WittVector.map
       (algebraMap (ZMod p) (AlgebraicClosure (ZMod p)))).comp
@@ -63,7 +69,7 @@ noncomputable def padicIntToCompletedUnramifiedWittRing
 
 /-- Witt Frobenius fixes the canonical p-adic integer coefficients. -/
 theorem padicIntToCompletedUnramifiedWittRing_frobenius
-    (p : ℕ) [Fact p.Prime] (z : ℤ_[p]) :
+      (z : ℤ_[p]) :
     WittVector.frobenius
         (padicIntToCompletedUnramifiedWittRing p z) =
       padicIntToCompletedUnramifiedWittRing p z := by
@@ -77,7 +83,7 @@ theorem padicIntToCompletedUnramifiedWittRing_frobenius
 /-- The chosen valuation ring of `ℚ_[p]` maps canonically into the
 completed-unramified Witt ring. -/
 noncomputable def padicValuationSubringToCompletedUnramifiedWittRing
-    (p : ℕ) [Fact p.Prime] :
+      :
     (padicLocalField p).valuationSubring →+*
       padicCompletedUnramifiedWittRing p := by
   change (padicDVRValuation p).valuationSubring →+*
@@ -90,20 +96,20 @@ noncomputable def padicValuationSubringToCompletedUnramifiedWittRing
 uniformizer to the Witt-vector prime. -/
 @[simp]
 theorem padicValuationSubringToCompletedUnramifiedWittRing_uniformizer
-    (p : ℕ) [Fact p.Prime] :
+      :
     padicValuationSubringToCompletedUnramifiedWittRing p
-        (padicIntEquivValuationSubring p (p : ℤ_[p])) =
+        (padicIntEquivValuationSubring p p) =
       (p : padicCompletedUnramifiedWittRing p) := by
   change
     padicIntToCompletedUnramifiedWittRing p
         ((padicIntEquivValuationSubring p).symm
-          (padicIntEquivValuationSubring p (p : ℤ_[p]))) =
+          (padicIntEquivValuationSubring p p)) =
       (p : padicCompletedUnramifiedWittRing p)
   rw [RingEquiv.symm_apply_apply, map_natCast]
 
 /-- Witt Frobenius fixes the chosen p-adic valuation-ring coefficients. -/
 theorem padicValuationSubringToCompletedUnramifiedWittRing_frobenius
-    (p : ℕ) [Fact p.Prime]
+     
     (z : (padicLocalField p).valuationSubring) :
     WittVector.frobenius
         (padicValuationSubringToCompletedUnramifiedWittRing p z) =
@@ -114,20 +120,16 @@ theorem padicValuationSubringToCompletedUnramifiedWittRing_frobenius
           ((padicIntEquivValuationSubring p).symm z)) =
       padicIntToCompletedUnramifiedWittRing p
         ((padicIntEquivValuationSubring p).symm z)
-  exact
-    padicIntToCompletedUnramifiedWittRing_frobenius p
-      ((padicIntEquivValuationSubring p).symm z)
+  apply padicIntToCompletedUnramifiedWittRing_frobenius
 
 /-- The induced map on p-adic integer units. -/
 noncomputable def padicValuationUnitToCompletedUnramifiedWittUnit
-    (p : ℕ) [Fact p.Prime] :
-    (padicLocalField p).valuationSubringˣ →*
-      (padicCompletedUnramifiedWittRing p)ˣ :=
+       :=
   Units.map
     (padicValuationSubringToCompletedUnramifiedWittRing p).toMonoidHom
 
  theorem completedUnramifiedWittUnit_coeff_zero_ne_zero
-    (p : ℕ) [Fact p.Prime]
+     
     (u : (padicCompletedUnramifiedWittRing p)ˣ) :
     ((u : padicCompletedUnramifiedWittRing p).coeff 0) ≠ 0 := by
   have hu :
@@ -135,11 +137,16 @@ noncomputable def padicValuationUnitToCompletedUnramifiedWittUnit
         (WittVector.constantCoeff
           (u : padicCompletedUnramifiedWittRing p)) :=
     u.isUnit.map WittVector.constantCoeff
-  simpa only [WittVector.constantCoeff_apply] using hu.ne_zero
+  exact hu.ne_zero
+end
 
- theorem padicChangedUniformizerRotation_coeff_zero_ne_zero
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) :
+
+ section
+variable (p : ℕ) [Fact p.Prime]
+    (u : (padicLocalField p).valuationSubringˣ)
+include p u
+theorem padicChangedUniformizerRotation_coeff_zero_ne_zero
+      :
     (WittVector.frobeniusRotation p
       (show
         ((1 : padicCompletedUnramifiedWittRing p).coeff 0) ≠ 0 by
@@ -158,8 +165,7 @@ noncomputable def padicValuationUnitToCompletedUnramifiedWittUnit
 /-- The actual unit `ε` used as the linear coefficient of the p-adic
 changed-uniformizer intertwiner. -/
 noncomputable def padicChangedUniformizerLinearCoefficient
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) :
+      :
     (padicCompletedUnramifiedWittRing p)ˣ :=
   Classical.choose
     (WittVector.isUnit_of_coeff_zero_ne_zero
@@ -173,8 +179,7 @@ noncomputable def padicChangedUniformizerLinearCoefficient
 
 @[simp]
 private theorem padicChangedUniformizerLinearCoefficient_coe
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) :
+      :
     (padicChangedUniformizerLinearCoefficient p u :
         padicCompletedUnramifiedWittRing p) =
       WittVector.frobeniusRotation p
@@ -196,11 +201,9 @@ private theorem padicChangedUniformizerLinearCoefficient_coe
 /-- The linear coefficient satisfies the semilinear equation
 `φ(ε) = ε u`. -/
 theorem padicChangedUniformizerLinearCoefficient_frobenius
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) :
+      :
     WittVector.frobenius
-        (padicChangedUniformizerLinearCoefficient p u :
-          padicCompletedUnramifiedWittRing p) =
+        (padicChangedUniformizerLinearCoefficient p u) =
       (padicChangedUniformizerLinearCoefficient p u :
           padicCompletedUnramifiedWittRing p) *
         (padicValuationUnitToCompletedUnramifiedWittUnit p u :
@@ -215,8 +218,7 @@ theorem padicChangedUniformizerLinearCoefficient_frobenius
         (padicValuationUnitToCompletedUnramifiedWittUnit p u)))
 
  noncomputable def padicChangedUniformizerCoefficientOperator
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ)
+     
     (m : ℕ) :
     padicCompletedUnramifiedWittRing p →+
       padicCompletedUnramifiedWittRing p where
@@ -230,8 +232,7 @@ theorem padicChangedUniformizerLinearCoefficient_frobenius
     simp only [map_add, mul_add]
 
 private theorem padicChangedUniformizerCoefficientOperator_maps_pow_succ
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ)
+     
     (m : ℕ) (hm : 2 ≤ m) :
     let I : Ideal (padicCompletedUnramifiedWittRing p) :=
       Ideal.span ({(p : padicCompletedUnramifiedWittRing p)} : Set _)
@@ -279,8 +280,7 @@ private theorem padicChangedUniformizerCoefficientOperator_maps_pow_succ
 semilinear intertwiner has a unique solution in the completed-unramified
 Witt ring. -/
 theorem existsUnique_padicChangedUniformizerCoefficient
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ)
+     
     (m : ℕ) (hm : 2 ≤ m)
     (b : padicCompletedUnramifiedWittRing p) :
     ∃! a : padicCompletedUnramifiedWittRing p,
@@ -290,7 +290,7 @@ theorem existsUnique_padicChangedUniformizerCoefficient
               padicCompletedUnramifiedWittRing p) *
             (p : padicCompletedUnramifiedWittRing p) ^ (m - 1) *
             WittVector.frobenius a := by
-  let I : Ideal (padicCompletedUnramifiedWittRing p) :=
+  let I  :=
     Ideal.span
       ({(p : padicCompletedUnramifiedWittRing p)} : Set _)
   change
@@ -302,6 +302,8 @@ theorem existsUnique_padicChangedUniformizerCoefficient
       (padicChangedUniformizerCoefficientOperator_maps_pow_succ
         p u m hm)
       b
+end
+
 
 end LubinTate
 

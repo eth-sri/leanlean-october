@@ -117,45 +117,45 @@ private theorem apply_of_zpowers_generator_map
     P (e g) :=
   hP (e g) (zpowers_generator_map e g hg)
 
-private theorem herbrandH0_subsingleton_of_action_and_group_equiv
-    {G H A X : Type*}
-    [Group G] [Fintype G] [Group H] [Fintype H]
-    [CommGroup A] [MulDistribMulAction H A] [Mul X]
-    (eGroup : G ≃* H)
-    (eAction :
-      X ≃*
-        letI : MulDistribMulAction G A :=
-          MulDistribMulAction.compHom A eGroup.toMonoidHom
-        HerbrandH0 G A)
-    (hH : Subsingleton (HerbrandH0 H A)) :
-    Subsingleton X := by
-  let : MulDistribMulAction G A :=
-    MulDistribMulAction.compHom A eGroup.toMonoidHom
-  let eChange :=
-    herbrandH0CompMulEquiv (A := A) eGroup
-  exact subsingleton_of_equiv_of_equiv
-    eAction.toEquiv eChange.toEquiv hH
 
-private theorem herbrandHMinusOne_subsingleton_of_action_and_group_equiv
-    {G H A X : Type*}
-    [Group G] [Fintype G] [Group H] [Fintype H]
-    [CommGroup A] [MulDistribMulAction H A] [Mul X]
-    (eGroup : G ≃* H) (g : G)
-    (eAction :
-      X ≃*
-        letI : MulDistribMulAction G A :=
-          MulDistribMulAction.compHom A eGroup.toMonoidHom
-        HerbrandHMinusOne G A g)
-    (hH : Subsingleton
-      (HerbrandHMinusOne H A (eGroup g))) :
-    Subsingleton X := by
-  let : MulDistribMulAction G A :=
-    MulDistribMulAction.compHom A eGroup.toMonoidHom
-  let eChange :=
-    herbrandHMinusOneCompMulEquiv
-      (A := A) eGroup g
-  exact subsingleton_of_equiv_of_equiv
-    eAction.toEquiv eChange.toEquiv hH
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 omit [NumberField L] in
 private theorem

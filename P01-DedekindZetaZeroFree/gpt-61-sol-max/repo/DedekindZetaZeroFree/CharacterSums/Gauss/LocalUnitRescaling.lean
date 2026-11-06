@@ -17,7 +17,10 @@ variable {F : Type} [Field F] [NumberField F]
 variable {A : SArithmeticData F} {σ : F →+* ℂ}
 variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
-theorem localReduction_exists_unique (p : ExteriorPrime A) :
+section
+variable (p : ExteriorPrime A)
+include p
+theorem localReduction_exists_unique   :
     ∃! ρ : LocalIntegers p →+* (A.R ⧸ A.extendIdeal (primeIdeal p)),
       ∀ x : A.R,
         ρ ⟨algebraMap F (LocalField p) (x : F), sInteger_local_integral p x⟩ =
@@ -72,24 +75,24 @@ theorem localReduction_exists_unique (p : ExteriorPrime A) :
  change Ideal.Quotient.mk _ z = e.symm (res x)
  exact hz
 
-def localReduction (p : ExteriorPrime A) :
+def localReduction   :
     LocalIntegers p →+* (A.R ⧸ A.extendIdeal (primeIdeal p)) :=
   Classical.choose (localReduction_exists_unique p)
 
-theorem localReduction_sInteger (p : ExteriorPrime A) (x : A.R) :
+theorem localReduction_sInteger   (x : A.R) :
     localReduction p
       ⟨algebraMap F (LocalField p) (x : F), sInteger_local_integral p x⟩ =
         Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) x := by
   exact (Classical.choose_spec (localReduction_exists_unique p)).1 x
 
-def chiOnUnits (p : ExteriorPrime A) (u : (LocalIntegers p)ˣ) : ℂ :=
+def chiOnUnits   (u : (LocalIntegers p)ˣ) : ℂ :=
   chi (σ := σ) p (localReduction p u.val)
 
-theorem chiOnUnits_ne_zero (p : ExteriorPrime A) (u : (LocalIntegers p)ˣ) :
+theorem chiOnUnits_ne_zero   (u : (LocalIntegers p)ˣ) :
     chiOnUnits (σ := σ) p u ≠ 0 := by
   exact MulChar.apply_ne_zero_iff.mpr (u.isUnit.map (localReduction p))
 
-theorem chiOnUnits_pow_six (p : ExteriorPrime A) (u : (LocalIntegers p)ˣ) :
+theorem chiOnUnits_pow_six   (u : (LocalIntegers p)ˣ) :
     chiOnUnits (σ := σ) p u ^ (6 : ℕ) = 1 := by
   let v := Units.map (localReduction p).toMonoidHom u
   change (A.sexticResiduePowerChar σ (primeIdeal p) 1) (v : _) ^ 6 = 1
@@ -100,16 +103,21 @@ theorem chiOnUnits_pow_six (p : ExteriorPrime A) (u : (LocalIntegers p)ˣ) :
   have h := congrArg (fun x : Fˣ => (x : F))
     (A.sexticResidueFamily_normalized.1 (primeIdeal p) v)
   simpa using congrArg σ h
+end
 
- def quo (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) (n : ℕ) : LocalIntegers p →+* Residue C p n :=
+
+ section
+variable (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) (n : ℕ)
+include C p n
+def quo   : LocalIntegers p →+* Residue C p n :=
   (residueEquiv C p n).symm.toRingHom.comp (Ideal.Quotient.mk _)
-private lemma quo_integer (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) (n : ℕ) (x : A.R) :
+private lemma quo_integer   (x : A.R) :
  quo C p n (integerMap p x) = residueMap C p n x := by
   apply (residueEquiv C p n).injective
   change (residueEquiv C p n) ((residueEquiv C p n).symm (Ideal.Quotient.mk _ (integerMap p x))) = _
   rw [RingEquiv.apply_symm_apply]
   exact (residueEquiv_mk C p n x).symm
-private lemma quo_eq_iff (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) (n : ℕ) (x y : LocalIntegers p) :
+private lemma quo_eq_iff   (x y : LocalIntegers p) :
  quo C p n x = quo C p n y ↔ Congruent C p n (x : LocalField p) (y : LocalField p) := by
   change (residueEquiv C p n).symm (Ideal.Quotient.mk _ x) = (residueEquiv C p n).symm (Ideal.Quotient.mk _ y) ↔ _
   rw [(residueEquiv C p n).symm.injective.eq_iff, Ideal.Quotient.eq]
@@ -123,12 +131,11 @@ private lemma quo_eq_iff (C : A.GeneralArithmeticContext σ η hS) (p : Exterior
     refine ⟨r, ?_⟩
     apply Subtype.ext
     simpa [localUniformizer, integerMap, uniformizer, mul_comm] using hr.symm
- lemma quo_lift (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) (n : ℕ) (x : Residue C p n) :
+ lemma quo_lift   (x : Residue C p n) :
  quo C p n (integerMap p ((lifts C p n).val x)) = x := by
   rw [quo_integer]
   exact (lifts C p n).property x
-private lemma reduction_quo (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
- (n : ℕ) (hn : n ≠ 0) (x : LocalIntegers p) :
+private lemma reduction_quo   (hn : n ≠ 0) (x : LocalIntegers p) :
  reduction C p n hn (quo C p n x) = localReduction p x := by
  have hh : (reduction C p n hn).comp (quo C p n) = localReduction p := by
    apply (Classical.choose_spec (localReduction_exists_unique p)).2
@@ -137,13 +144,15 @@ private lemma reduction_quo (C : A.GeneralArithmeticContext σ η hS) (p : Exter
    simp only [RingHom.comp_apply, quo_integer]
    exact Ideal.Quotient.factor_mk _ z
  exact congrArg (fun f : LocalIntegers p →+* (A.R ⧸ A.extendIdeal (primeIdeal p)) => f x) hh
-lemma quo_congruent (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) (n : ℕ)
+lemma quo_congruent  
  (x : LocalIntegers p) (y : Residue C p n) :
  Congruent C p n (x : LocalField p) (canonicalLocalRepresentative C p n y) ↔ quo C p n x = y := by
  change Congruent C p n (x : LocalField p) ((integerMap p ((lifts C p n).val y) : LocalIntegers p) : LocalField p) ↔ _
  rw [← quo_eq_iff, quo_lift]
- def resUnit (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) (n : ℕ)
+ def resUnit  
  (u : (LocalIntegers p)ˣ) : (Residue C p n)ˣ := Units.map (quo C p n).toMonoidHom u
+end
+
 private lemma chi_power_nat (p : ExteriorPrime A) (n : ℕ) (u : (LocalIntegers p)ˣ) :
  A.sexticResiduePowerChar σ (primeIdeal p) (n : ℤ) (localReduction p u.val) = chiOnUnits (σ := σ) p u ^ n := by
  rw [sexticPower_eq_chi_pow]
@@ -154,8 +163,11 @@ private lemma chi_power_nat (p : ExteriorPrime A) (n : ℕ) (u : (LocalIntegers 
    simp [SArithmeticData.sexticExponent, Int.toNat_emod (Int.natCast_nonneg n) (by decide : (0 : ℤ) ≤ 6)]
  rw [h]
  exact pow_eq_pow_mod _ (chiOnUnits_pow_six p u) |>.symm
-private lemma mask_resUnit (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) (n : ℕ)
- (u : (LocalIntegers p)ˣ) (x : Residue C p n) :
+section
+variable (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) (n : ℕ)
+ (u : (LocalIntegers p)ˣ)
+include C p n u
+private lemma mask_resUnit   (x : Residue C p n) :
  maskedPower C p n n ((resUnit C p n u : Residue C p n) * x) =
  chiOnUnits (σ := σ) p u ^ n * maskedPower C p n n x := by
  by_cases hn : n = 0
@@ -169,10 +181,8 @@ private lemma mask_resUnit (C : A.GeneralArithmeticContext σ η hS) (p : Exteri
      have hh : reduction C p n hn (resUnit C p n u : Residue C p n) = localReduction p u.val := reduction_quo C p n hn u.val
      rw [hh, chi_power_nat]
    · simp [hx]
- def perm (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) (n : ℕ)
- (u : (LocalIntegers p)ˣ) : Equiv.Perm (Residue C p n) := (resUnit C p n u).mulLeft
- def scaledLifts (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) (n : ℕ)
- (u : (LocalIntegers p)ˣ) : LocalLifts C p n where
+ def perm   : Equiv.Perm (Residue C p n) := (resUnit C p n u).mulLeft
+ def scaledLifts   : LocalLifts C p n where
  val x := (u.val : LocalField p) * canonicalLocalRepresentative C p n ((perm C p n u).symm x)
  integral x := (LocalIntegers p).mul_mem _ _ u.val.property (sInteger_local_integral p _)
  congruent x := by
@@ -182,13 +192,11 @@ private lemma mask_resUnit (C : A.GeneralArithmeticContext σ η hS) (p : Exteri
    change quo C p n (u.val * _) = _
    rw [map_mul, quo_lift]
    exact (perm C p n u).apply_symm_apply x
-private lemma scaledLifts_apply (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) (n : ℕ)
- (u : (LocalIntegers p)ˣ) (x : Residue C p n) :
+private lemma scaledLifts_apply   (x : Residue C p n) :
  (scaledLifts C p n u).val (perm C p n u x) =
  (u.val : LocalField p) * canonicalLocalRepresentative C p n x := by
  simp [scaledLifts]
-private lemma congruent_mul_unit (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) (n : ℕ)
- (u : (LocalIntegers p)ˣ) (x y : LocalField p) :
+private lemma congruent_mul_unit   (x y : LocalField p) :
  Congruent C p n ((u.val : LocalField p) * x) ((u.val : LocalField p) * y) ↔ Congruent C p n x y := by
  constructor
  · rintro ⟨r, hr⟩
@@ -204,6 +212,8 @@ private lemma congruent_mul_unit (C : A.GeneralArithmeticContext σ η hS) (p : 
    calc
     (u.val : LocalField p) * x - (u.val : LocalField p) * y = (u.val : LocalField p) * (x-y) := (mul_sub _ _ _).symm
     _ = _ := by rw [hr]; simp [mul_assoc, mul_left_comm, mul_comm]
+end
+
 private lemma phase_substitute (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
  (t k J : ℕ) (s a h : (LocalIntegers p)ˣ) (d v : LocalField p) :
  rawPhase C p t k J s a h (((h / a).val : LocalField p) * d) (((s * a / h).val : LocalField p) * v) =

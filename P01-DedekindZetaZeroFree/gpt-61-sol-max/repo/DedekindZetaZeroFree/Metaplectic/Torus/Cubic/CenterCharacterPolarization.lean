@@ -28,22 +28,28 @@ def commutatorCenter (x y : H F ζ hζ q) : C F ζ hζ q :=
     rw [(actual_cube_quotient_pairing F ζ hζ q).2.2.2.2.2.1]
     exact (actual_center_cube_normal_form F ζ hζ q).2.2.1 _⟩
 
+
+local notation:max "current_cubeLift" => cubeLift F ζ hζ
+
 private theorem center_word (e : rootsOfUnity 3 F) (y : (K F q)ˣ) :
-    ((centerInjection F ζ hζ q e * cubeLift F ζ hζ q y : C F ζ hζ q) : Cover F ζ hζ q) =
+    ((centerInjection F ζ hζ q e * current_cubeLift q y : C F ζ hζ q) : Cover F ζ hζ q) =
       normalWord F ζ hζ q e (y ^ 3) := by
   simp [centerInjection, cubeLift, central, torusLift, normalWord]
 private theorem center_coords (e : rootsOfUnity 3 F) (y : (K F q)ˣ) :
-    coordinate F ζ hζ q (centerInjection F ζ hζ q e * cubeLift F ζ hζ q y) = y ^ 3 ∧
-    sheet F ζ hζ q (centerInjection F ζ hζ q e * cubeLift F ζ hζ q y) = e := by
+    coordinate F ζ hζ q (centerInjection F ζ hζ q e * current_cubeLift q y) = y ^ 3 ∧
+    sheet F ζ hζ q (centerInjection F ζ hζ q e * current_cubeLift q y) = e := by
   exact (actual_torus_normal_form F ζ hζ q).2.2.2.2.2.2 e (y ^ 3) _ (center_word F ζ hζ q e y)
+
+local notation:max "current_rawCenterValue" => rawCenterValue F ζ hζ
+
 private theorem value_word (e : rootsOfUnity 3 F) (y : (K F q)ˣ) :
-    rawCenterValue F ζ hζ q (centerInjection F ζ hζ q e * cubeLift F ζ hζ q y) =
+    current_rawCenterValue q (centerInjection F ζ hζ q e * current_cubeLift q y) =
       ordinaryIota F ζ hζ e * normUnit F q (y ^ 3) := by
   rcases center_coords F ζ hζ q e y with ⟨hc, hs⟩
   simp only [rawCenterValue, Subgroup.coe_mul, hc, hs]
 private theorem center_decomp (c : C F ζ hζ q) :
     ∃ (e : rootsOfUnity 3 F) (y : (K F q)ˣ),
-      c = centerInjection F ζ hζ q e * cubeLift F ζ hζ q y := by
+      c = centerInjection F ζ hζ q e * current_cubeLift q y := by
   obtain ⟨⟨e, v⟩, hv, _⟩ := (actual_center_cube_normal_form F ζ hζ q).2.2.2.2.1 c
   obtain ⟨y, hy⟩ := v.property
   refine ⟨e, y, ?_⟩
@@ -61,16 +67,16 @@ private theorem normUnit_mul (x y : (K F q)ˣ) :
   simp [normUnit, KPLocalPrincipalSeries.normPower, KPLocalPrincipalSeries.localAbs_mul,
     Real.log_mul (ne_of_gt (KPLocalPrincipalSeries.localAbs_pos (K F q) x))
       (ne_of_gt (KPLocalPrincipalSeries.localAbs_pos (K F q) y)), mul_add, Complex.exp_add]
-private theorem value_one : rawCenterValue F ζ hζ q 1 = 1 := by
+private theorem value_one : current_rawCenterValue q 1 = 1 := by
   have h := value_word F ζ hζ q 1 1
   simpa [normUnit_one] using h
 private theorem value_mul (c d : C F ζ hζ q) :
-    rawCenterValue F ζ hζ q (c * d) = rawCenterValue F ζ hζ q c * rawCenterValue F ζ hζ q d := by
+    current_rawCenterValue q (c * d) = current_rawCenterValue q c * current_rawCenterValue q d := by
   obtain ⟨e, x, rfl⟩ := center_decomp F ζ hζ q c
   obtain ⟨f, y, rfl⟩ := center_decomp F ζ hζ q d
-  rw [show (centerInjection F ζ hζ q e * cubeLift F ζ hζ q x) *
-      (centerInjection F ζ hζ q f * cubeLift F ζ hζ q y) =
-      centerInjection F ζ hζ q (e * f) * cubeLift F ζ hζ q (x * y) by
+  rw [show (centerInjection F ζ hζ q e * current_cubeLift q x) *
+      (centerInjection F ζ hζ q f * current_cubeLift q y) =
+      centerInjection F ζ hζ q (e * f) * current_cubeLift q (x * y) by
         simp only [map_mul]; ac_rfl]
   rw [value_word, value_word, value_word, map_mul, mul_pow, normUnit_mul]
   ac_rfl
@@ -129,16 +135,16 @@ private theorem normUnit_locallyConstant : IsLocallyConstant (normUnit F q) := b
   change ValuativeRel.valuation (K F q) (x : K F q) =
     ValuativeRel.valuation (K F q) (y : K F q) at hx
   simp only [normUnit, KPLocalPrincipalSeries.normPower, KPLocalPrincipalSeries.localAbs, hx]
-private theorem value_locallyConstant : IsLocallyConstant (rawCenterValue F ζ hζ q) := by
+private theorem value_locallyConstant : IsLocallyConstant (current_rawCenterValue q) := by
   exact ((sheet_locallyConstant F ζ hζ q).comp_continuous continuous_subtype_val).comp₂
     ((normUnit_locallyConstant F q).comp_continuous
       ((actual_torus_normal_form F ζ hζ q).2.2.2.1.comp continuous_subtype_val))
     (fun e n => ordinaryIota F ζ hζ e * n)
 private theorem value_cube (y : (K F q)ˣ) :
-    rawCenterValue F ζ hζ q (cubeLift F ζ hζ q y) = normUnit F q (y ^ 3) := by
+    current_rawCenterValue q (current_cubeLift q y) = normUnit F q (y ^ 3) := by
   simpa using value_word F ζ hζ q 1 y
 private theorem nonfaithful :
-    ∃ c : C F ζ hζ q, c ≠ 1 ∧ rawCenterValue F ζ hζ q c = 1 := by
+    ∃ c : C F ζ hζ q, c ≠ 1 ∧ current_rawCenterValue q c = 1 := by
   refine ⟨cubeLift F ζ hζ q (-1), ?_, ?_⟩
   · intro he
     have hc := (center_coords F ζ hζ q 1 (-1)).1
@@ -148,7 +154,7 @@ private theorem nonfaithful :
     apply Units.ext
     simp [normUnit, KPLocalPrincipalSeries.normPower, KPLocalPrincipalSeries.localAbs]
 private theorem exists_nonunitary_cube :
-    ∃ y : (K F q)ˣ, ‖(rawCenterValue F ζ hζ q (cubeLift F ζ hζ q y) : ℂ)‖ < 1 := by
+    ∃ y : (K F q)ˣ, ‖(current_rawCenterValue q (current_cubeLift q y) : ℂ)‖ < 1 := by
   let iso := IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (K F q)
   obtain ⟨π, hπ⟩ := ValuativeRel.valuation_surjective (iso.symm (WithZero.exp (-1 : ℤ)))
   have hn : π ≠ 0 := by
@@ -184,26 +190,26 @@ private theorem exists_nonunitary_cube :
   have hlog := Real.log_neg (KPLocalPrincipalSeries.localAbs_pos (K F q) (y ^ 3)) hp
   simpa using (mul_neg_of_pos_of_neg (by norm_num : (0 : ℝ) < 1 / 6) hlog)
 private theorem not_inversion_invariant :
-    ∃ y : (K F q)ˣ, rawCenterValue F ζ hζ q (cubeLift F ζ hζ q y) ≠
-      rawCenterValue F ζ hζ q (cubeLift F ζ hζ q y⁻¹) := by
+    ∃ y : (K F q)ˣ, current_rawCenterValue q (current_cubeLift q y) ≠
+      current_rawCenterValue q (current_cubeLift q y⁻¹) := by
   obtain ⟨y, hy⟩ := exists_nonunitary_cube F ζ hζ q
   refine ⟨y, ?_⟩
   intro he
-  have hm := value_mul F ζ hζ q (cubeLift F ζ hζ q y) (cubeLift F ζ hζ q y⁻¹)
+  have hm := value_mul F ζ hζ q (current_cubeLift q y) (current_cubeLift q y⁻¹)
   rw [← map_mul, mul_inv_cancel, map_one, value_one, ← he] at hm
   have hnorm := congrArg (fun z : ℂˣ => ‖(z : ℂ)‖) hm
   simp only [Units.val_one, norm_one, Units.val_mul, norm_mul] at hnorm
-  have hn := norm_nonneg (rawCenterValue F ζ hζ q (cubeLift F ζ hζ q y) : ℂ)
+  have hn := norm_nonneg (current_rawCenterValue q (current_cubeLift q y) : ℂ)
   nlinarith
 
 theorem prescribed_center_character :
-    rawCenterValue F ζ hζ q 1 = 1 ∧
-    (∀ c d : C F ζ hζ q, rawCenterValue F ζ hζ q (c * d) =
-      rawCenterValue F ζ hζ q c * rawCenterValue F ζ hζ q d) ∧
-    Continuous (rawCenterValue F ζ hζ q) ∧
-    IsOpen {c : C F ζ hζ q | rawCenterValue F ζ hζ q c = 1} ∧
+    current_rawCenterValue q 1 = 1 ∧
+    (∀ c d : C F ζ hζ q, current_rawCenterValue q (c * d) =
+      current_rawCenterValue q c * current_rawCenterValue q d) ∧
+    Continuous (current_rawCenterValue q) ∧
+    IsOpen {c : C F ζ hζ q | current_rawCenterValue q c = 1} ∧
     (∀ (e : rootsOfUnity 3 F) (y : (K F q)ˣ),
-      (rawCenterValue F ζ hζ q (centerInjection F ζ hζ q e * cubeLift F ζ hζ q y) : ℂ) =
+      (current_rawCenterValue q (centerInjection F ζ hζ q e * current_cubeLift q y) : ℂ) =
         (ordinaryIota F ζ hζ e : ℂ) *
           KPLocalPrincipalSeries.normPower (K F q) (y ^ 3) (1 / 6)) ∧
     (∃ c : C F ζ hζ q, ‖(rawCenterValue F ζ hζ q c : ℂ)‖ ≠ 1) ∧
@@ -220,7 +226,7 @@ theorem prescribed_center_character :
     exact ⟨cubeLift F ζ hζ q y, ne_of_lt hy⟩
 
 def prescribedCenterCharacter : C F ζ hζ q →ₜ* ℂˣ where
-  toFun := rawCenterValue F ζ hζ q
+  toFun := current_rawCenterValue q
   map_one' := (prescribed_center_character F ζ hζ q).1
   map_mul' := (prescribed_center_character F ζ hζ q).2.1
   continuous_toFun := (prescribed_center_character F ζ hζ q).2.2.1
@@ -250,7 +256,7 @@ def actualHeisenberg :
   have he : (commutatorCenter F ζ hζ q x y) = centerInjection F ζ hζ q e := by
     apply Subtype.ext
     exact (actual_cube_quotient_pairing F ζ hζ q).2.2.2.2.2.1 x y
-  change rawCenterValue F ζ hζ q (commutatorCenter F ζ hζ q x y) = _
+  change current_rawCenterValue q (commutatorCenter F ζ hζ q x y) = _
   rw [he]
   rw [(actual_cube_quotient_pairing F ζ hζ q).2.2.2.2.2.2.2 x y]
   apply Units.ext
@@ -264,7 +270,7 @@ theorem actual_heisenberg_and_polarization :
     (actualHeisenberg F ζ hζ q).ω = prescribedCenterCharacter F ζ hζ q ∧
     (∀ (e : rootsOfUnity 3 F) (y : (K F q)ˣ),
       ((actualHeisenberg F ζ hζ q).ω
-        (centerInjection F ζ hζ q e * cubeLift F ζ hζ q y) : ℂ) =
+        (centerInjection F ζ hζ q e * current_cubeLift q y) : ℂ) =
       (ordinaryIota F ζ hζ e : ℂ) *
         KPLocalPrincipalSeries.normPower (K F q) (y ^ 3) (1 / 6)) ∧
     Nonempty (KPLocalStoneVonNeumann.Polarization (actualHeisenberg F ζ hζ q)) := by

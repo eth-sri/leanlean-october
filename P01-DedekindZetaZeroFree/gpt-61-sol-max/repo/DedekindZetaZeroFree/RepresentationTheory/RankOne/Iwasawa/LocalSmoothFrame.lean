@@ -102,7 +102,8 @@ private theorem section_smooth (F : Type) [Field F] [NumberField F] (ζ : F) (h�
       filter_upwards [hh] with y hy
       simpa only [hM, PGLComplex.affineChart_target, Set.mem_preimage] using hy
     filter_upwards [hn'] with y hy
-    rw [← hM, PGLComplex.affineChart_symm_apply _ hy, PGLComplex.matrixRatios_mk, hme]
+    rw [← hM, PGLComplex.affineChart_symm_apply _ hy, PGLComplex.matrixRatios_mk]
+    exact congrArg PGLComplex.matrixRatios (hme y)
   have hfinal := (LocalQuotientCharts.ExponentialHaarFrame.coordinateReindex F).symm.contDiff.comp_contDiffAt x
     ((PGLComplex.productCoordinatesFlatten (NumberField.InfinitePlace F)).contDiff.comp_contDiffAt x hd)
   have hself {V : Type} [NormedAddCommGroup V] [NormedSpace ℝ V] :

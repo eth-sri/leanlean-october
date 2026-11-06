@@ -21,10 +21,13 @@ private theorem classGroup_rayIdealFractionalIdeal (a : Ideal (𝓞 F)) (ha : a 
   convert ClassGroup.mk_mk0 F ⟨a, mem_nonZeroDivisors_iff_ne_zero.mpr ha⟩ using 1
   congr 1
 
-theorem coprimeIdealResidueRayClass_exists_integral_lift
-    (hF : NumberField.IsTotallyComplex F)
+section
+variable (hF : NumberField.IsTotallyComplex F)
     (m a : Ideal (𝓞 F)) (hm : m ≠ ⊥) (ha : a ≠ ⊥)
     (hcop : a ⊔ m = ⊤) (hmt : m ≠ ⊤)
+include hF m a hm ha hcop hmt in
+theorem coprimeIdealResidueRayClass_exists_integral_lift
+     
     (c : RayIdealClass F m hm)
     (hc : rayToOrdinary F m hm c =
       (ClassGroup.mk F (rayIdealFractionalIdeal F a ha))⁻¹) :
@@ -56,8 +59,8 @@ theorem coprimeIdealResidueRayClass_exists_integral_lift
     rw [mul_right_comm, mul_inv_cancel₀ (FractionalIdeal.coeIdeal_ne_zero.mpr ha), one_mul]
   refine ⟨y, hy, ?_, ?_, ?_⟩
   · exact (map_ne_zero_iff (algebraMap (𝓞 F) F) (NumberField.RingOfIntegers.coe_injective)).mpr hx0
-  · simpa [hbcoeff] using hbcop
-  · simpa [hbcoeff] using hbcls
+  · exact hbcoeff ▸ hbcop
+  · exact hbcoeff ▸ hbcls
 
 private theorem integral_lift_isUnit_reduction
     (m a : Ideal (𝓞 F)) (hm : m ≠ ⊥) (ha : a ≠ ⊥)
@@ -97,10 +100,9 @@ private theorem integral_lift_isUnit_reduction
   rw [heq]
   exact m.neg_mem hj
 
+include hF m a hm ha hcop hmt in
 theorem coprimeIdealResidueRayClass_surjective
-    (hF : NumberField.IsTotallyComplex F)
-    (m a : Ideal (𝓞 F)) (hm : m ≠ ⊥) (ha : a ≠ ⊥)
-    (hcop : a ⊔ m = ⊤) (hmt : m ≠ ⊤) :
+      :
     Function.Surjective (coprimeIdealResidueRayClass hF m a hm ha hcop hmt) := by
   classical
   intro c
@@ -118,10 +120,9 @@ theorem coprimeIdealResidueRayClass_surjective
     η (chooseRayCharacterData η) q ⟨x, hx⟩ rfl
   exact Option.some.inj (hl.symm.trans hxcls)
 
+include hF m a hm ha hcop hmt in
 theorem coprimeIdealResidueRayClass_fiber_card_all
-    (hF : NumberField.IsTotallyComplex F)
-    (m a : Ideal (𝓞 F)) (hm : m ≠ ⊥) (ha : a ≠ ⊥)
-    (hcop : a ⊔ m = ⊤) (hmt : m ≠ ⊤)
+     
     (c : {c : RayIdealClass F m hm //
       rayToOrdinary F m hm c =
         (ClassGroup.mk F (rayIdealFractionalIdeal F a ha))⁻¹}) :
@@ -130,6 +131,8 @@ theorem coprimeIdealResidueRayClass_fiber_card_all
         residueUnitImageCard F m := by
   exact (coprimeIdealResidueRayClass_fiber_card hF m a hm ha hcop hmt c
     (coprimeIdealResidueRayClass_surjective hF m a hm ha hcop hmt c)).2
+end
+
 
 end DedekindZetaZeroFree.Hecke.Theta
 

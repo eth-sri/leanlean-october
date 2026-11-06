@@ -25,17 +25,18 @@ theorem pregroupingDomain_exists (A : SArithmeticData F) : Nonempty (Pregrouping
 def pregroupingDomain (A : SArithmeticData F) : PregroupingDomain A :=
   Classical.choice (pregroupingDomain_exists A)
 
-def pregroupingSheet (A : SArithmeticData F) (v₀ : InfinitePlace F)
-    (l : PositiveAxis) : Set (Sheet A l) :=
+section
+variable (A : SArithmeticData F) (v₀ : InfinitePlace F)
+    (l : PositiveAxis)
+include A v₀ l
+def pregroupingSheet   : Set (Sheet A l) :=
   sheetTranslation A v₀ l '' (pregroupingDomain A).carrier
 
-theorem pregroupingSheet_measurable (A : SArithmeticData F) (v₀ : InfinitePlace F)
-    (l : PositiveAxis) : MeasurableSet (pregroupingSheet A v₀ l) :=
+theorem pregroupingSheet_measurable   : MeasurableSet (pregroupingSheet A v₀ l) :=
   (sheetTranslation A v₀ l).measurableEmbedding.measurableSet_image.mpr
     (pregroupingDomain A).measurable
 
-theorem pregroupingSheet_tiling (A : SArithmeticData F) (v₀ : InfinitePlace F)
-    (l : PositiveAxis) : ∀ y : Sheet A l, ∃! γ : A.Gamma1,
+theorem pregroupingSheet_tiling   : ∀ y : Sheet A l, ∃! γ : A.Gamma1,
       γ • y ∈ pregroupingSheet A v₀ l := by
   let e := sheetTranslation A v₀ l
   have he (γ : A.Gamma1) (z : A.G1) : e (γ.val * z) = γ • e z := by
@@ -52,19 +53,22 @@ theorem pregroupingSheet_tiling (A : SArithmeticData F) (v₀ : InfinitePlace F)
       (e.injective.mem_set_image (s := (pregroupingDomain A).carrier)
         (a := δ.val * e.symm y))
   exact ⟨γ, (hm γ).mpr hγ, fun δ hδ => hu δ ((hm δ).mp hδ)⟩
+end
 
-theorem pregroupingSheet_fundamental (A : SArithmeticData F) (v₀ : InfinitePlace F)
-    (μG : Measure A.G) [μG.IsHaarMeasure] (l : PositiveAxis) :
+
+section
+variable (A : SArithmeticData F) (v₀ : InfinitePlace F)
+    (μG : Measure A.G) [μG.IsHaarMeasure] (l : PositiveAxis)
+include A v₀ μG l
+theorem pregroupingSheet_fundamental   :
     IsFundamentalDomain A.Gamma1 (pregroupingSheet A v₀ l) (sheetHaar A v₀ μG l) :=
   IsFundamentalDomain.mk' (pregroupingSheet_measurable A v₀ l).nullMeasurableSet
     (pregroupingSheet_tiling A v₀ l)
 
-def pregroupingSheetHaar (A : SArithmeticData F) (v₀ : InfinitePlace F)
-    (μG : Measure A.G) [μG.IsHaarMeasure] (l : PositiveAxis) : Measure (Sheet A l) :=
+def pregroupingSheetHaar   : Measure (Sheet A l) :=
   (sheetHaar A v₀ μG l).restrict (pregroupingSheet A v₀ l)
 
-theorem pregroupingSheetHaar_eq_map (A : SArithmeticData F) (v₀ : InfinitePlace F)
-    (μG : Measure A.G) [μG.IsHaarMeasure] (l : PositiveAxis) :
+theorem pregroupingSheetHaar_eq_map   :
     pregroupingSheetHaar A v₀ μG l =
       Measure.map (sheetTranslation A v₀ l)
         ((kernelHaar A v₀ μG).restrict (pregroupingDomain A).carrier) := by
@@ -72,14 +76,12 @@ theorem pregroupingSheetHaar_eq_map (A : SArithmeticData F) (v₀ : InfinitePlac
     (sheetTranslation A v₀ l).measurableEmbedding.restrict_map,
     (sheetTranslation A v₀ l).injective.preimage_image]
 
-theorem pregroupingSheet_projection (A : SArithmeticData F) (v₀ : InfinitePlace F)
-    (μG : Measure A.G) [μG.IsHaarMeasure] (l : PositiveAxis) :
+theorem pregroupingSheet_projection   :
     MeasurePreserving (sheetProjection A l) (pregroupingSheetHaar A v₀ μG l)
       (sheetQuotientHaar A v₀ μG l) :=
   sheetProjection_measurePreserving A v₀ μG l _ (pregroupingSheet_fundamental A v₀ μG l)
 
-theorem pregroupingSheet_integral (A : SArithmeticData F) (v₀ : InfinitePlace F)
-    (μG : Measure A.G) [μG.IsHaarMeasure] (l : PositiveAxis)
+theorem pregroupingSheet_integral  
     (f : SheetQuotient A l → ℂ) (hf : Integrable f (sheetQuotientHaar A v₀ μG l)) :
     (∫ z, f z ∂sheetQuotientHaar A v₀ μG l) =
       ∫ y, f (sheetProjection A l y) ∂pregroupingSheetHaar A v₀ μG l := by
@@ -89,6 +91,8 @@ theorem pregroupingSheet_integral (A : SArithmeticData F) (v₀ : InfinitePlace 
   change AEStronglyMeasurable f (Measure.map (sheetProjection A l) (pregroupingSheetHaar A v₀ μG l))
   rw [hm]
   exact hf.aestronglyMeasurable
+end
+
 
 end DedekindZetaZeroFree.MomentSources
 

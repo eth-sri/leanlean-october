@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import Mathlib.LinearAlgebra.Matrix.GeneralLinearGroup.Projective
 public import Mathlib.MeasureTheory.Group.Integral
 public import Mathlib.Analysis.InnerProductSpace.Calculus
@@ -7,6 +9,7 @@ public import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
 public import Mathlib.Analysis.SpecialFunctions.Log.Deriv
 
 @[expose] public section
+
 
 section
 open MeasureTheory
@@ -19,7 +22,7 @@ set_option autoImplicit false
 namespace DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport.IwasawaTransport.GramCoefficients
 abbrev LocalGL := Matrix.GeneralLinearGroup (Fin 2) ℂ
 
-def normalizedGram (B : LocalGL) (p q : Fin 2) : ℂ :=
+def normalizedGram (B : LocalGL) (p q : Fin 2)  :=
   (∑ j : Fin 2, B p j * conj (B q j)) / (‖((Matrix.GeneralLinearGroup.det B : ℂˣ) : ℂ)‖ : ℂ)
 
 lemma normalizedGram_scalar (c : ℂˣ) (B : LocalGL) (p q : Fin 2) :
@@ -32,8 +35,7 @@ lemma normalizedGram_scalar (c : ℂˣ) (B : LocalGL) (p q : Fin 2) :
         Matrix.mul_apply, Fin.sum_univ_two]
   have hdet : ((Matrix.GeneralLinearGroup.det
       (Matrix.GeneralLinearGroup.scalar (Fin 2) c) : ℂˣ) : ℂ) = (c : ℂ) ^ 2 := by
-    change (Matrix.GeneralLinearGroup.scalar (Fin 2) c : Matrix (Fin 2) (Fin 2) ℂ).det = _
-    simp [Matrix.GeneralLinearGroup.coe_scalar, Matrix.scalar]
+    simp_all
   unfold normalizedGram
   simp only [hentry, map_mul, Units.val_mul, hdet, norm_mul, norm_pow,
     Complex.ofReal_mul, Complex.ofReal_pow]
@@ -47,10 +49,13 @@ lemma normalizedGram_scalar (c : ℂˣ) (B : LocalGL) (p q : Fin 2) :
   rw [hsum]
   field_simp
 
-lemma gram_tensor_average_smooth {X ι : Type*} [TopologicalSpace X]
+section
+variable {X ι : Type*} [TopologicalSpace X]
     [CompactSpace X] [MeasurableSpace X] [OpensMeasurableSpace X] [Fintype ι]
     (μ : Measure X) [IsFiniteMeasure μ]
-    (Q : X → ι → Fin 2 → Fin 2 → ℂ) (h : X → ℂ)
+    (Q : X → ι → Fin 2 → Fin 2 → ℂ)
+include X ι μ Q
+lemma gram_tensor_average_smooth   (h : X → ℂ)
     (hQ : ∀ (w : ι) (p q : Fin 2), Continuous (fun x => Q x w p q))
     (hh : Continuous h) :
     ContDiff ℝ (⊤ : ℕ∞)
@@ -94,10 +99,7 @@ lemma gram_tensor_average_smooth {X ι : Type*} [TopologicalSpace X]
     (contDiff_apply ℝ ℂ (r w).2).comp (contDiff_apply ℝ (Fin 2 → ℂ) w)
   exact hp.mul (Complex.conjCLE.contDiff.comp hq)
 
-lemma gram_tensor_real_average_smooth {X ι : Type*} [TopologicalSpace X]
-    [CompactSpace X] [MeasurableSpace X] [OpensMeasurableSpace X] [Fintype ι]
-    (μ : Measure X) [IsFiniteMeasure μ]
-    (Q : X → ι → Fin 2 → Fin 2 → ℂ) (h : X → ℝ)
+lemma gram_tensor_real_average_smooth   (h : X → ℝ)
     (hQ : ∀ (w : ι) (p q : Fin 2), Continuous (fun x => Q x w p q))
     (hh : Continuous h) :
     ContDiff ℝ (⊤ : ℕ∞)
@@ -123,6 +125,8 @@ lemma gram_tensor_real_average_smooth {X ι : Type*} [TopologicalSpace X]
   simp_rw [he]
   exact Complex.reCLM.contDiff.comp (gram_tensor_average_smooth μ Q
     (fun x => (h x : ℂ)) hQ (Complex.continuous_ofReal.comp hh))
+end
+
 
 lemma normalized_average_log_smooth {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     (U : Set E) (q H : E → ℝ) (c : ℝ) (hc : 0 < c)
@@ -145,7 +149,7 @@ lemma normalized_average_log_smooth {E : Type*} [NormedAddCommGroup E] [NormedSp
     (ne_of_gt hc), Real.log_rpow (hq z hz)]
   ring
 
-lemma gram_divided_tensor_average_smooth
+def gram_divided_tensor_average_smooth
     {X ι E : Type*} [TopologicalSpace X] [CompactSpace X]
     [MeasurableSpace X] [OpensMeasurableSpace X] [Fintype ι]
     [NormedAddCommGroup E] [NormedSpace ℝ E]
@@ -154,16 +158,11 @@ lemma gram_divided_tensor_average_smooth
     (hQ : ∀ (w : ι) (p q : Fin 2), Continuous (fun x => Q x w p q))
     (hh : Continuous h) (U : Set E) (A : E → ι → Fin 2 → ℂ)
     (d : E → ℝ) (hA : ContDiffOn ℝ (⊤ : ℕ∞) A U)
-    (hd : ContDiffOn ℝ (⊤ : ℕ∞) d U) (hd0 : ∀ z ∈ U, d z ≠ 0) :
-    ContDiffOn ℝ (⊤ : ℕ∞)
-      (fun z => (∫ x, h x * (∏ w : ι, ∑ r : Fin 2 × Fin 2,
-        (A z w r.1 * conj (A z w r.2)) * Q x w r.1 r.2).re ∂μ) / d z) U := by
-  exact ((gram_tensor_real_average_smooth μ Q h hQ hh).comp_contDiffOn hA).div hd hd0
+    (hd : ContDiffOn ℝ (⊤ : ℕ∞) d U) (hd0 : ∀ z ∈ U, d z ≠ 0)  := ((gram_tensor_real_average_smooth μ Q h hQ hh).comp_contDiffOn hA).div hd hd0
 
 lemma normalizedGram_continuous (p q : Fin 2) :
     Continuous (fun B : LocalGL => normalizedGram B p q) := by
-  have hent (i j : Fin 2) : Continuous (fun B : LocalGL => B i j) := by
-    exact (continuous_apply j).comp ((continuous_apply i).comp
+  have hent (i j : Fin 2) : Continuous (fun B : LocalGL => B i j) := (continuous_apply j).comp ((continuous_apply i).comp
       (show Continuous (fun B : LocalGL => (B : Matrix (Fin 2) (Fin 2) ℂ)) from Units.continuous_val))
   have hd : Continuous (fun B : LocalGL =>
       (‖((Matrix.GeneralLinearGroup.det B : ℂˣ) : ℂ)‖ : ℂ)) := by
@@ -172,8 +171,7 @@ lemma normalizedGram_continuous (p q : Fin 2) :
     exact Complex.continuous_ofReal.comp
       ((((hent 0 0).mul (hent 1 1)).sub ((hent 0 1).mul (hent 1 0))).norm)
   exact (continuous_finsetSum _ (fun j _ => (hent p j).mul
-    (Complex.continuous_conj.comp (hent q j)))).div hd (fun B => by
-      exact Complex.ofReal_ne_zero.mpr (norm_ne_zero_iff.mpr (Matrix.GeneralLinearGroup.det_ne_zero B)))
+    (Complex.continuous_conj.comp (hent q j)))).div hd (fun B => Complex.ofReal_ne_zero.mpr (norm_ne_zero_iff.mpr (Matrix.GeneralLinearGroup.det_ne_zero B)))
 
 lemma normalizedGram_eq_of_pgl_eq (A B : LocalGL)
     (h : Matrix.ProjGenLinGroup.mk A = Matrix.ProjGenLinGroup.mk B) (p q : Fin 2) :
@@ -188,7 +186,7 @@ lemma normalizedGram_eq_of_pgl_eq (A B : LocalGL)
         Matrix.mul_apply, Fin.sum_univ_two, mul_comm]
   rw [hcomm, normalizedGram_scalar]
 
-noncomputable def projectiveGram (p q : Fin 2) (g : Matrix.ProjGenLinGroup (Fin 2) ℂ) : ℂ :=
+noncomputable def projectiveGram (p q : Fin 2) (g : Matrix.ProjGenLinGroup (Fin 2) ℂ)  :=
   normalizedGram (Classical.choose (Matrix.ProjGenLinGroup.mk_surjective g)) p q
 
 lemma projectiveGram_mk (p q : Fin 2) (B : LocalGL) :
@@ -235,7 +233,7 @@ lemma normalizedGram_mul (A B : LocalGL) (p q : Fin 2) :
   field_simp
   <;> ring
 
-def projectiveRowWeight (g : Matrix.ProjGenLinGroup (Fin 2) ℂ) : ℝ :=
+def projectiveRowWeight (g : Matrix.ProjGenLinGroup (Fin 2) ℂ)  :=
   (projectiveGram 1 1 g).re
 
 lemma projectiveRowWeight_mk (B : LocalGL) :
@@ -246,10 +244,10 @@ lemma projectiveRowWeight_mk (B : LocalGL) :
     Complex.mul_conj, Complex.normSq_eq_norm_sq, ← Complex.ofReal_pow,
     ← Complex.ofReal_add, ← Complex.ofReal_div, Complex.ofReal_re]
 
-@[simp] lemma projectiveRowWeight_one :
-    projectiveRowWeight (1 : Matrix.ProjGenLinGroup (Fin 2) ℂ) = 1 := by
-  rw [← map_one (Matrix.ProjGenLinGroup.mk : LocalGL →* _), projectiveRowWeight_mk]
-  norm_num
+
+
+
+
 
 lemma projectiveRowWeight_coe (g : Matrix.ProjGenLinGroup (Fin 2) ℂ) :
     (projectiveRowWeight g : ℂ) = projectiveGram 1 1 g := by

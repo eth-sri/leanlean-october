@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction.NormSubgroup
 public import GaloisCohomology.Cyclic.IntegralRepUniverse
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -39,10 +42,13 @@ section finiteNorms
 -- Mathlib's `Rep ℤ G` currently fixes the acting group to universe zero.
 variable {G : IntegralRepGroupType} [Group G] [TopologicalSpace G]
 
-/-- The finite norm subgroup `N_{L|K}A_L`. -/
-def finiteNormSubgroup (A : Rep ℤ G) (K L : ClosedSubgroup G)
+section
+variable (A : Rep ℤ G) (K L : ClosedSubgroup G)
     (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)] :
+    [Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
+include A K L hLK
+/-- The finite norm subgroup `N_{L|K}A_L`. -/
+def finiteNormSubgroup   :
     AddSubgroup (ambientFixedAddSubgroup A K) :=
   (relativeNorm A K L hLK).range
 
@@ -51,10 +57,10 @@ def finiteNormSubgroup (A : Rep ℤ G) (K L : ClosedSubgroup G)
 This is a stable public object rather than an `abbrev`: downstream APIs do
 not acquire a reducibility dependency on the concrete quotient
 representation. -/
-def FiniteNormQuotient (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)] :=
+def FiniteNormQuotient   :=
   ambientFixedAddSubgroup A K ⧸ finiteNormSubgroup A K L hLK
+end
+
 
 /-- The additive group structure of the finite norm quotient.  It is
 exported explicitly so typeclass search does not unfold the stable public
@@ -67,13 +73,16 @@ instance finiteNormQuotientAddCommGroup
   unfold FiniteNormQuotient
   infer_instance
 
+section
+variable (A : Rep ℤ G) (K L : ClosedSubgroup G)
+    (hLK : L.toSubgroup ≤ K.toSubgroup)
+    [Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
+include A K L hLK
 /-- The canonical equivalence with the concrete quotient implementation.
 Clients that genuinely need quotient-level operations can use this boundary
 without relying on reducible unfolding. -/
 def finiteNormQuotientConcreteEquiv
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)] :
+      :
     FiniteNormQuotient A K L hLK ≃+
       ambientFixedAddSubgroup A K ⧸ finiteNormSubgroup A K L hLK := by
   unfold FiniteNormQuotient
@@ -81,82 +90,69 @@ def finiteNormQuotientConcreteEquiv
 
 /-- The canonical class map into the finite norm quotient. -/
 def finiteNormClassHom
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)] :
+      :
     ambientFixedAddSubgroup A K →+ FiniteNormQuotient A K L hLK := by
   unfold FiniteNormQuotient
   exact QuotientAddGroup.mk' (finiteNormSubgroup A K L hLK)
 
 /-- The class of an element modulo the finite norm subgroup. -/
 def finiteNormClass
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
+     
     (a : ambientFixedAddSubgroup A K) :
     FiniteNormQuotient A K L hLK :=
   finiteNormClassHom A K L hLK a
 
-/-- The finite norm-class map sends zero to the trivial quotient class. -/
-@[simp]
-theorem finiteNormClass_zero
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)] :
-    finiteNormClass A K L hLK 0 = 0 := by
-  exact map_zero (finiteNormClassHom A K L hLK)
 
-/-- Finite norm classes preserve addition of representatives. -/
-@[simp]
-theorem finiteNormClass_add
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
-    (a b : ambientFixedAddSubgroup A K) :
-    finiteNormClass A K L hLK (a + b) =
-      finiteNormClass A K L hLK a + finiteNormClass A K L hLK b := by
-  exact map_add (finiteNormClassHom A K L hLK) a b
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- Finite norm classes preserve subtraction of representatives. -/
 @[simp]
 theorem finiteNormClass_sub
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
+     
     (a b : ambientFixedAddSubgroup A K) :
     finiteNormClass A K L hLK (a - b) =
       finiteNormClass A K L hLK a - finiteNormClass A K L hLK b := by
-  exact map_sub (finiteNormClassHom A K L hLK) a b
+  apply map_sub
 
 /-- Finite norm classes commute with natural scalar multiplication. -/
 @[simp]
 theorem finiteNormClass_nsmul
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
+     
     (n : ℕ) (a : ambientFixedAddSubgroup A K) :
     finiteNormClass A K L hLK (n • a) =
       n • finiteNormClass A K L hLK a := by
-  exact map_nsmul (finiteNormClassHom A K L hLK) n a
+  apply map_nsmul
 
 /-- The concrete quotient equivalence sends a finite norm class to its canonical coset. -/
 @[simp]
 theorem finiteNormQuotientConcreteEquiv_finiteNormClass
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
+     
     (a : ambientFixedAddSubgroup A K) :
     finiteNormQuotientConcreteEquiv A K L hLK
         (finiteNormClass A K L hLK a) =
-      QuotientAddGroup.mk' (finiteNormSubgroup A K L hLK) a := by
-  rfl
+      QuotientAddGroup.mk' (finiteNormSubgroup A K L hLK) a := rfl
 
 /-- A finite norm class vanishes exactly when its representative lies in the norm subgroup. -/
 @[simp]
 theorem finiteNormClass_eq_zero_iff
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
+     
     (a : ambientFixedAddSubgroup A K) :
     finiteNormClass A K L hLK a = 0 ↔
       a ∈ finiteNormSubgroup A K L hLK := by
@@ -165,9 +161,7 @@ theorem finiteNormClass_eq_zero_iff
 
 /-- Every finite norm-quotient class has an ambient representative. -/
 theorem finiteNormClass_surjective
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)] :
+      :
     Function.Surjective (finiteNormClass A K L hLK) := by
   intro q
   change ambientFixedAddSubgroup A K ⧸
@@ -175,6 +169,8 @@ theorem finiteNormClass_surjective
   obtain ⟨a, rfl⟩ := QuotientAddGroup.mk'_surjective
     (finiteNormSubgroup A K L hLK) q
   exact ⟨a, rfl⟩
+end
+
 
 /-- Eliminate a finite norm-quotient class through an ambient representative. -/
 @[elab_as_elim]
@@ -188,14 +184,17 @@ theorem FiniteNormQuotient.induction_on
   obtain ⟨a, rfl⟩ := finiteNormClass_surjective A K L hLK q
   exact h a
 
-/-- Descend an additive homomorphism that kills the finite norm subgroup. -/
-def finiteNormQuotientLift
-    {B : Type*} [AddCommGroup B]
+section
+variable {B : Type*} [AddCommGroup B]
     (A : Rep ℤ G) (K L : ClosedSubgroup G)
     (hLK : L.toSubgroup ≤ K.toSubgroup)
     [Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
     (f : ambientFixedAddSubgroup A K →+ B)
-    (hf : finiteNormSubgroup A K L hLK ≤ f.ker) :
+    (hf : finiteNormSubgroup A K L hLK ≤ f.ker)
+include B A K L hLK f hf
+/-- Descend an additive homomorphism that kills the finite norm subgroup. -/
+def finiteNormQuotientLift
+      :
     FiniteNormQuotient A K L hLK →+ B := by
   unfold FiniteNormQuotient
   exact QuotientAddGroup.lift (finiteNormSubgroup A K L hLK) f hf
@@ -203,16 +202,12 @@ def finiteNormQuotientLift
 /-- The quotient lift evaluates on a finite norm class by the chosen representative. -/
 @[simp]
 theorem finiteNormQuotientLift_finiteNormClass
-    {B : Type*} [AddCommGroup B]
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
-    (f : ambientFixedAddSubgroup A K →+ B)
-    (hf : finiteNormSubgroup A K L hLK ≤ f.ker)
+     
     (a : ambientFixedAddSubgroup A K) :
     finiteNormQuotientLift A K L hLK f hf
-        (finiteNormClass A K L hLK a) = f a := by
-  rfl
+        (finiteNormClass A K L hLK a) = f a := rfl
+end
+
 
 /-- Every class in the finite norm quotient is killed by `[L : K]`.
 This is the actual norm identity
@@ -227,7 +222,7 @@ theorem finiteNormQuotient_degree_nsmul_eq_zero
   rw [← map_nsmul]
   apply (finiteNormClass_eq_zero_iff A E.base E.field E.below _).2
   refine ⟨fixedFieldInclusion A E.base E.field E.below a, ?_⟩
-  exact relativeNorm_fixedFieldInclusion A E a
+  apply relativeNorm_fixedFieldInclusion
 
 end finiteNorms
 
@@ -258,12 +253,15 @@ variable {G : IntegralRepGroupType} [Group G] [TopologicalSpace G]
 
 namespace DegreeData
 
+section
+variable (D : DegreeData G) (A : Rep ℤ G)
+    (K L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.toSubgroup)
+    [hfinite : Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
+include D A K L hLK hfinite
 /-- The defining intersection for the infinite norm subgroup is contained
 in the norm image from the particular finite field `L`. -/
 theorem maximalUnramifiedNormSubgroup_le_finiteNormSubgroup
-    (D : DegreeData G) (A : Rep ℤ G)
-    (K L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [hfinite : Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)] :
+      :
     D.maximalUnramifiedNormSubgroup A K L ≤
       finiteNormSubgroup A K L hLK := by
   rw [D.maximalUnramifiedNormSubgroup_eq_infiniteNormSubgroup]
@@ -272,9 +270,7 @@ theorem maximalUnramifiedNormSubgroup_le_finiteNormSubgroup
   rfl
 
 theorem maximalUnramifiedNormSubgroup_le_finiteNormClassHom_ker
-    (D : DegreeData G) (A : Rep ℤ G)
-    (K L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [hfinite : Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)] :
+      :
     D.maximalUnramifiedNormSubgroup A K L ≤
       (finiteNormClassHom A K L hLK).ker := by
   intro a ha
@@ -284,9 +280,7 @@ theorem maximalUnramifiedNormSubgroup_le_finiteNormClassHom_ker
 /-- The canonical quotient map
 `A_K/N_{\widetilde L|K}A_{\widetilde L} → A_K/N_{L|K}A_L`. -/
 def maximalUnramifiedToFiniteNormQuotient
-    (D : DegreeData G) (A : Rep ℤ G)
-    (K L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [hfinite : Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)] :
+      :
     D.MaximalUnramifiedNormQuotient A K L →+
       FiniteNormQuotient A K L hLK :=
   D.maximalUnramifiedNormQuotientLift A K L
@@ -297,16 +291,14 @@ def maximalUnramifiedToFiniteNormQuotient
 class to its finite-level class. -/
 @[simp]
 theorem maximalUnramifiedToFiniteNormQuotient_maximalUnramifiedNormClass
-    (D : DegreeData G) (A : Rep ℤ G)
-    (K L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [hfinite : Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
+     
     (a : ambientFixedAddSubgroup A K) :
     D.maximalUnramifiedToFiniteNormQuotient A K L hLK
         (D.maximalUnramifiedNormClass A K L a) =
       finiteNormClass A K L hLK a := by
-  exact D.maximalUnramifiedNormQuotientLift_maximalUnramifiedNormClass
-    A K L (finiteNormClassHom A K L hLK)
-    (D.maximalUnramifiedNormSubgroup_le_finiteNormClassHom_ker A K L hLK) a
+  apply D.maximalUnramifiedNormQuotientLift_maximalUnramifiedNormClass
+end
+
 
 end DegreeData
 

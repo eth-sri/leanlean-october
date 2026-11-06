@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.Sobolev.WeightedCovariant.CoordinateData
 public import DedekindZetaZeroFree.Analysis.SmoothFunctions.CompactInteriorCutoffs
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -32,7 +35,7 @@ theorem weakFirst_zero_on_open {n r : ℕ} {Ω W : Opens (E n)}
         (hfg.derivative_locallyL2 j).2 k hkc hkΩ
       haveI : IsFiniteMeasure (volume.restrict k) :=
         isFiniteMeasure_restrict.2 hkc.measure_ne_top
-      have hint : Integrable (g j) (volume.restrict k) := hmlp.integrable (by norm_num)
+      have hint  := hmlp.integrable (by norm_num)
       have hproj := (EuclideanSpace.proj a : V r →L[ℂ] ℂ).integrable_comp hint
       show Integrable (fun x => (g j x) a)
         ((volume.restrict (Ω : Set (E n))).restrict k)
@@ -60,7 +63,7 @@ theorem weakFirst_zero_on_open {n r : ℕ} {Ω W : Opens (E n)}
         · have hxnot : x ∉ tsupport (fun y => (g0 y : ℂ)) :=
             fun hh => hxW (hg0s (hsupp ▸ hh))
           have hxnot' : x ∉ tsupport (fun y => ψ y) := hxnot
-          have hfd : fderiv ℝ (fun y => ψ y) x = 0 :=
+          have hfd  :=
             fderiv_of_notMem_tsupport (𝕜 := ℝ) hxnot'
           rw [coordinatePartial, hfd]
           simp
@@ -89,18 +92,19 @@ theorem weakFirst_zero_off_compact {n r : ℕ} {Ω : Opens (E n)}
   have hWΩ : (W : Set (E n)) ⊆ (Ω : Set (E n)) := fun _ hx => hx.1
   exact weakFirst_zero_on_open hfg hWΩ hf
 
-def compactZeroExtension {n r : ℕ} (K : Set (E n)) (f : E n → V r) :
-    E n → V r :=
+def compactZeroExtension {n r : ℕ} (K : Set (E n)) (f : E n → V r)  :=
   K.indicator f
 
-private theorem compactZeroExtension_memLp {n r : ℕ} {Ω : Opens (E n)}
-    {K : Set (E n)} {f : E n → V r} (hK : IsCompact K)
+section
+variable {n r : ℕ} {Ω : Opens (E n)}
+    {K : Set (E n)} {f : E n → V r}
+include n r Ω K f
+private theorem compactZeroExtension_memLp   (hK : IsCompact K)
     (hKΩ : K ⊆ (Ω : Set (E n))) (hf : LocallyL2 Ω f) :
     MemLp (compactZeroExtension K f) 2 volume :=
   (memLp_indicator_iff_restrict hK.measurableSet.nullMeasurableSet).2 (hf.2 K hK hKΩ)
 
-private theorem compactZeroExtension_ae_eq {n r : ℕ} {Ω : Opens (E n)}
-    {K : Set (E n)} {f : E n → V r}
+private theorem compactZeroExtension_ae_eq  
     (hf : ∀ᵐ x ∂volume.restrict (Ω : Set (E n)),
       x ∈ (Ω : Set (E n)) \ K → f x = 0) :
     compactZeroExtension K f =ᵐ[volume.restrict (Ω : Set (E n))] f := by
@@ -108,13 +112,18 @@ private theorem compactZeroExtension_ae_eq {n r : ℕ} {Ω : Opens (E n)}
   by_cases hxK : x ∈ K
   · simp [compactZeroExtension, hxK]
   · simp [compactZeroExtension, hxK, hx ⟨hxΩ, hxK⟩]
+end
 
-theorem compactZeroExtension_properties {n r : ℕ} {Ω : Opens (E n)}
+
+section
+variable {n r : ℕ} {Ω : Opens (E n)}
     {K : Set (E n)} {f : E n → V r} {g : Fin n → E n → V r}
     (hK : IsCompact K) (hKΩ : K ⊆ (Ω : Set (E n)))
     (hfg : WeakFirst Ω f g)
     (hf : ∀ᵐ x ∂volume.restrict (Ω : Set (E n)),
-      x ∈ (Ω : Set (E n)) \ K → f x = 0) :
+      x ∈ (Ω : Set (E n)) \ K → f x = 0)
+include n r Ω K f g hK hKΩ hfg hf
+theorem compactZeroExtension_properties   :
     let F := compactZeroExtension K f
     let G := fun j => compactZeroExtension K (g j)
     MemLp F 2 volume ∧
@@ -128,9 +137,9 @@ theorem compactZeroExtension_properties {n r : ℕ} {Ω : Opens (E n)}
     F =ᵐ[volume.restrict (Ω : Set (E n))] f ∧
     (∀ j, G j =ᵐ[volume.restrict (Ω : Set (E n))] g j) := by
   haveI : IsFiniteMeasure (volume.restrict K) := isFiniteMeasure_restrict.2 hK.measure_ne_top
-  have hFmem : MemLp (compactZeroExtension K f) 2 volume :=
+  have hFmem  :=
     compactZeroExtension_memLp hK hKΩ hfg.section_locallyL2
-  have hGmem : ∀ j, MemLp (compactZeroExtension K (g j)) 2 volume := fun j =>
+  have hGmem  := fun j =>
     compactZeroExtension_memLp hK hKΩ (hfg.derivative_locallyL2 j)
   have hFint : Integrable (compactZeroExtension K f) volume :=
     (integrableOn_iff_integrable_of_support_subset
@@ -148,25 +157,20 @@ theorem compactZeroExtension_properties {n r : ℕ} {Ω : Opens (E n)}
     closure_minimal Set.support_indicator_subset hK.isClosed
   have hGtsupp : ∀ j, tsupport (compactZeroExtension K (g j)) ⊆ K := fun j =>
     closure_minimal Set.support_indicator_subset hK.isClosed
-  have hFae : compactZeroExtension K f =ᵐ[volume.restrict (Ω : Set (E n))] f :=
+  have hFae  :=
     compactZeroExtension_ae_eq hf
-  have hGae : ∀ j, compactZeroExtension K (g j) =ᵐ[volume.restrict (Ω : Set (E n))] g j :=
+  have hGae  :=
     fun j => compactZeroExtension_ae_eq (weakFirst_zero_off_compact hK hKΩ hfg hf j)
   exact ⟨hFmem, hGmem, hFint, hGint, hFzero, hGzero, hFtsupp, hGtsupp, hFae, hGae⟩
 
-theorem compactZeroExtension_weak_identity {n r : ℕ} {Ω : Opens (E n)}
-    {K : Set (E n)} {f : E n → V r} {g : Fin n → E n → V r}
-    (hK : IsCompact K) (hKΩ : K ⊆ (Ω : Set (E n)))
-    (hfg : WeakFirst Ω f g)
-    (hf : ∀ᵐ x ∂volume.restrict (Ω : Set (E n)),
-      x ∈ (Ω : Set (E n)) \ K → f x = 0)
+theorem compactZeroExtension_weak_identity  
     (ψ : E n → ℂ) (hψ : ContDiff ℝ ∞ ψ) (j : Fin n) (a : Fin r) :
     Integrable (fun x => (compactZeroExtension K f x) a * coordinatePartial j ψ x)
       volume ∧
     Integrable (fun x => (compactZeroExtension K (g j) x) a * ψ x) volume ∧
     (∫ x, (compactZeroExtension K f x) a * coordinatePartial j ψ x) =
       -(∫ x, (compactZeroExtension K (g j) x) a * ψ x) := by
-  have hn : 0 < n := Nat.lt_of_le_of_lt (Nat.zero_le _) j.isLt
+  have hn  := Nat.lt_of_le_of_lt (Nat.zero_le _) j.isLt
   obtain ⟨η, N, hNopen, hKN, hNΩ, hηsm, hηc, hηts, _hη01, hηN, _hηder, _⟩ :=
     exists_smooth_cutoff hn (Ω : Set (E n)) K Ω.isOpen hK hKΩ
   let ηc : E n → ℂ := fun x => (η x : ℂ)
@@ -177,7 +181,7 @@ theorem compactZeroExtension_weak_identity {n r : ℕ} {Ω : Opens (E n)}
     ext x
     simp
   have hΨ_sm : ContDiff ℝ ∞ (fun x => ηc x * ψ x) := hηc_sm.mul hψ
-  have hηc_c : HasCompactSupport ηc := hηc.comp_left (g := Complex.ofRealCLM) (by simp)
+  have hηc_c : HasCompactSupport ηc := hηc.comp_left (g := Complex.ofRealCLM) (rfl)
   have hΨ_c : HasCompactSupport (fun x => ηc x * ψ x) :=
     hηc_c.of_isClosed_subset isClosed_closure (closure_mono fun x hx => by
       simp only [Function.mem_support] at hx ⊢
@@ -199,9 +203,9 @@ theorem compactZeroExtension_weak_identity {n r : ℕ} {Ω : Opens (E n)}
     exact h2
 
   haveI : IsFiniteMeasure (volume.restrict K) := isFiniteMeasure_restrict.2 hK.measure_ne_top
-  have hFmem : MemLp (compactZeroExtension K f) 2 volume :=
+  have hFmem  :=
     compactZeroExtension_memLp hK hKΩ hfg.section_locallyL2
-  have hGmem : MemLp (compactZeroExtension K (g j)) 2 volume :=
+  have hGmem  :=
     compactZeroExtension_memLp hK hKΩ (hfg.derivative_locallyL2 j)
   obtain ⟨C, hC⟩ := hK.exists_bound_of_continuousOn hcont.continuousOn
   have hbdd : ∀ᵐ x ∂(volume.restrict K), ‖coordinatePartial j ψ x‖ ≤ C := by
@@ -243,9 +247,9 @@ theorem compactZeroExtension_weak_identity {n r : ℕ} {Ω : Opens (E n)}
       ((hGmem.mono_measure Measure.restrict_le_self).integrable (by norm_num))).mul_bdd
         hψ.continuous.aestronglyMeasurable hbddψ)
 
-  have hFae : compactZeroExtension K f =ᵐ[volume.restrict (Ω : Set (E n))] f :=
+  have hFae  :=
     compactZeroExtension_ae_eq hf
-  have hGae : compactZeroExtension K (g j) =ᵐ[volume.restrict (Ω : Set (E n))] g j :=
+  have hGae  :=
     compactZeroExtension_ae_eq (weakFirst_zero_off_compact hK hKΩ hfg hf j)
   have hstep1 : (∫ x in (Ω : Set (E n)), (f x) a * coordinatePartial j (fun y => Ψ y) x)
       = ∫ x in (Ω : Set (E n)),
@@ -304,12 +308,7 @@ theorem compactZeroExtension_weak_identity {n r : ℕ} {Ω : Opens (E n)}
   rw [← hfinalF, ← hfinalG]
   exact hmain
 
-theorem compactZeroExtension_weakFirst {n r : ℕ} {Ω : Opens (E n)}
-    {K : Set (E n)} {f : E n → V r} {g : Fin n → E n → V r}
-    (hK : IsCompact K) (hKΩ : K ⊆ (Ω : Set (E n)))
-    (hfg : WeakFirst Ω f g)
-    (hf : ∀ᵐ x ∂volume.restrict (Ω : Set (E n)),
-      x ∈ (Ω : Set (E n)) \ K → f x = 0) :
+theorem compactZeroExtension_weakFirst   :
     WeakFirst (⊤ : Opens (E n)) (compactZeroExtension K f)
       (fun j => compactZeroExtension K (g j)) := by
   obtain ⟨hFmem, hGmem, -, -, -, -, -, -, -, -⟩ :=
@@ -323,6 +322,8 @@ theorem compactZeroExtension_weakFirst {n r : ℕ} {Ω : Opens (E n)}
   · intro j ψ a
     have h := compactZeroExtension_weak_identity hK hKΩ hfg hf (fun y => ψ y) ψ.contDiff' j a
     simpa using h.2.2
+end
+
 
 end DedekindZetaZeroFree.KPCompactInteriorH1
 

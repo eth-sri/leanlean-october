@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.GenuineSectors.CoordinateBallRestriction
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.GenuineSectors.BoundedCutoffMultiplication
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.GenuineSectors.CompactCutoffDifferentialBounds
@@ -7,6 +9,7 @@ public import DedekindZetaZeroFree.Analysis.EllipticEquations.DivergenceForm.Cla
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.Friedrichs.ClosedGradientCutoffProduct
 
 @[expose] public section
+
 
 noncomputable section
 open scoped Classical NumberField ContDiff
@@ -30,10 +33,13 @@ variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
-def coordinateDomain (a : ActualChart (U := U) (H := H)) : Set (Space (3 * d F)) :=
+
+local notation:max "current_ActualChart" => ActualChart (U := U) (H := H)
+
+def coordinateDomain (a : current_ActualChart)  :=
   (baseReindex (F := F)).symm ⁻¹' omega a
 
-def InteriorBall (a : ActualChart (U := U) (H := H)) (B : LocalBall (3 * d F)) : Prop :=
+def InteriorBall (a : current_ActualChart) (B : LocalBall (3 * d F))  :=
   IsCompact (closure B.carrier) ∧ closure B.carrier ⊆ coordinateDomain a
 
 private theorem base_direction (j : Fin (3*d F)) :
@@ -45,7 +51,7 @@ private theorem base_direction (j : Fin (3*d F)) :
     LinearIsometryEquiv.piLpCongrLeft_apply, Equiv.symm_symm, HyperbolicChart.coordinateVector,
     WithLp.ofLp_toLp]
   simp [EuclideanSpace.single_apply, Pi.single_apply, ← Equiv.apply_eq_iff_eq_symm_apply]
-private theorem decoder_differential (a : ActualChart (U:=U) (H:=H)) (f : omega a → ℂ)
+private theorem decoder_differential (a : current_ActualChart) (f : omega a → ℂ)
     (x : Space (3*d F)) (hx : x ∈ coordinateDomain a) (j : Fin (3*d F)) :
     (let p := (baseReindex (F:=F)).symm x
      let ik := (coefficientIndex (F:=F)).symm j
@@ -60,7 +66,7 @@ private theorem decoder_differential (a : ActualChart (U:=U) (H:=H)) (f : omega 
     HyperbolicChart.differential, ← mul_assoc, ← Complex.ofReal_mul, ← Real.exp_add,
     ← Complex.exp_add]
 
-private theorem flattened_differential (a : ActualChart (U := U) (H := H))
+private theorem flattened_differential (a : current_ActualChart)
     (f : omega a → ℂ) (x : Space (3 * d F)) (hx : x ∈ coordinateDomain a)
     (hf : DifferentiableAt ℝ (liftExtension a f) ((baseReindex (F := F)).symm x))
     (j : Fin (3 * d F)) :
@@ -78,14 +84,14 @@ private theorem flattened_differential (a : ActualChart (U := U) (H := H))
   rw [base_direction]
   rfl
 
-private theorem coordinateDomain_isOpen (a : ActualChart (U := U) (H := H)) :
+private theorem coordinateDomain_isOpen (a : current_ActualChart) :
     IsOpen (coordinateDomain a) := by
   change IsOpen ((toActual (F := F) (ζ := ζ) (hζ := hζ)) ⁻¹' a.domain)
   apply a.domain_open.preimage
   unfold toActual labeledA
   fun_prop
 
-private theorem smooth_liftExtension (a : ActualChart (U := U) (H := H))
+private theorem smooth_liftExtension (a : current_ActualChart)
     (f : omega a → ℂ) (hf : SmoothOnLift a f) :
     ContDiffOn ℝ (⊤ : ℕ∞) (liftExtension a f) (omega a) := by
   obtain ⟨g, hg, he⟩ := hf
@@ -93,14 +99,12 @@ private theorem smooth_liftExtension (a : ActualChart (U := U) (H := H))
   intro x hx
   simpa only [liftExtension, dif_pos hx] using (he ⟨x, hx⟩).symm
 
-private theorem smooth_flattened (a : ActualChart (U := U) (H := H))
-    (f : omega a → ℂ) (hf : SmoothOnLift a f) :
-    ContDiffOn ℝ (⊤ : ℕ∞) (fun x => liftExtension a f ((baseReindex (F := F)).symm x))
-      (coordinateDomain a) :=
+private def smooth_flattened (a : current_ActualChart)
+    (f : omega a → ℂ) (hf : SmoothOnLift a f)  :=
   (smooth_liftExtension a f hf).comp (baseReindex (F := F)).symm.contDiff.contDiffOn
     (fun _ hx => hx)
 
-private theorem smooth_coordinate_sobolev (a : ActualChart (U := U) (H := H))
+private theorem smooth_coordinate_sobolev (a : current_ActualChart)
     (B : LocalBall (3 * d F)) (hB : InteriorBall a B)
     (f : omega a → ℂ) (hf : SmoothOnLift a f) :
     ∃ h : IntegerSobolev B 1, ∀ α,
@@ -119,12 +123,15 @@ private theorem smooth_coordinate_sobolev (a : ActualChart (U := U) (H := H))
   exact ⟨h, fun α => (hh α).symm ▸ (hL2 α).coeFn_toLp⟩
 
 def scalarCoordinate (s : BorelL2Sections F ζ hζ U R P H)
-    (a : ActualChart (U := U) (H := H)) (x : Space (3 * d F)) : ℂ :=
+    (a : current_ActualChart) (x : Space (3 * d F))  :=
   liftExtension a (sectionFields s.val a) ((baseReindex (F := F)).symm x)
 
-def covariantCoordinate (W : Family (U := U) (H := H))
-    (a : ActualChart (U := U) (H := H)) (x : Space (3 * d F))
-    (j : Fin (3 * d F)) : ℂ :=
+
+local notation:max "current_Family" => Family (U := U) (H := H)
+
+def covariantCoordinate (W : current_Family)
+    (a : current_ActualChart) (x : Space (3 * d F))
+    (j : Fin (3 * d F))  :=
   let p := (baseReindex (F := F)).symm x
   let ik := (coefficientIndex (F := F)).symm j
   let v := liftExtension a (coefficient W a) p
@@ -134,8 +141,8 @@ def covariantCoordinate (W : Family (U := U) (H := H))
 def zeroIndex (n : ℕ) : MultiIndex n 1 := ⟨fun _ => 0, by simp⟩
 
 def WeakChartData (s : BorelL2Sections F ζ hζ U R P H)
-    (W : Family (U := U) (H := H)) : Prop :=
-  ∀ (a : ActualChart (U := U) (H := H)) (B : LocalBall (3 * d F)),
+    (W : current_Family)  :=
+  ∀ (a : current_ActualChart) (B : LocalBall (3 * d F)),
     InteriorBall a B → ∀ ε : rootsOfUnity 3 F,
     ∃ h : IntegerSobolev B 1,
       (fun x => h.derivatives (zeroIndex (3 * d F)) x) =ᵐ[volume.restrict B.carrier]
@@ -145,28 +152,42 @@ def WeakChartData (s : BorelL2Sections F ζ hζ U R P H)
           (fun x => (KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ) *
             covariantCoordinate W a x j)
 
-def ActualWeakH1Loc (u : KPContSectorClosedLpSubspace.H F ζ hζ R U) : Prop :=
-  ∃ (s : BorelL2Sections F ζ hζ U R P H) (W : Family (U := U) (H := H)),
-    sectorLineIsometry F ζ hζ U R P H u = mk F ζ hζ U R P H s ∧ WeakChartData s W
+
+local notation:max "current_sectorLineIsometry" => sectorLineIsometry F ζ hζ U R P H
+
+def ActualWeakH1Loc (u : KPContSectorClosedLpSubspace.H F ζ hζ R U)  :=
+  ∃ (s : BorelL2Sections F ζ hζ U R P H) (W : current_Family),
+    current_sectorLineIsometry u = mk F ζ hζ U R P H s ∧ WeakChartData s W
+
+
+local notation:max "current_SquareFiniteFamily" => SquareFiniteFamily (U := U) (H := H)
+
+
+local notation:max "current_ofFamily" => KPContActualSectorCotangentL2.ofFamily F ζ hζ U R P H
 
 def IsActualWeakGradient (u : KPContSectorClosedLpSubspace.H F ζ hζ R U)
-    (v : KPContActualSectorCotangentL2.V F ζ hζ U R P H) : Prop :=
-  ∃ (s : BorelL2Sections F ζ hζ U R P H) (r : SquareFiniteFamily (U := U) (H := H)),
-    sectorLineIsometry F ζ hζ U R P H u = mk F ζ hζ U R P H s ∧
-    KPContActualSectorCotangentL2.ofFamily F ζ hζ U R P H r = v ∧ WeakChartData s r.val
+    (v : KPContActualSectorCotangentL2.V F ζ hζ U R P H)  :=
+  ∃ (s : BorelL2Sections F ζ hζ U R P H) (r : current_SquareFiniteFamily),
+    current_sectorLineIsometry u = mk F ζ hζ U R P H s ∧
+    current_ofFamily r = v ∧ WeakChartData s r.val
 
- def firstIndex {n : ℕ} (j : Fin n) : MultiIndex n 1 :=
+ section
+variable {n : ℕ} (j : Fin n)
+include n j
+def firstIndex   : MultiIndex n 1 :=
   ⟨Pi.single j 1, by simp [Pi.single_apply, apply_ite Fin.val]⟩
 
-private theorem firstIndex_eq_raw {n : ℕ} (j : Fin n) :
+private theorem firstIndex_eq_raw   :
     firstIndex j = KPContLocalEnergy.SobolevEnergyEstimates.Raw.firstIndex j := by
   apply Subtype.ext
   funext k
   simp only [firstIndex, KPContLocalEnergy.SobolevEnergyEstimates.Raw.firstIndex, Pi.single_apply]
 
-private theorem firstIndex_directions {n : ℕ} (j : Fin n) : (firstIndex j).directions = [j] := by
+private theorem firstIndex_directions   : (firstIndex j).directions = [j] := by
   rw [firstIndex_eq_raw]
   exact KPContLocalEnergy.SobolevEnergyEstimates.firstIndex_directions j
+end
+
 
 private theorem index_one_eq_first {n : ℕ} (α : MultiIndex n 1) (j : Fin n)
     (hj : (α.val j).val = 1) : α = firstIndex j := by
@@ -182,8 +203,11 @@ private theorem index_one_eq_first {n : ℕ} (α : MultiIndex n 1) (j : Fin n)
       exact hkj (hs k j (Finset.mem_univ _) (Finset.mem_univ _) hk (by omega)).1
     simpa [firstIndex, Pi.single_apply, hkj] using hk
 
-private theorem test_smooth_local_data (f : S_U F ζ hζ U R P H)
-    (a : ActualChart (U := U) (H := H)) (B : LocalBall (3 * d F)) (hB : InteriorBall a B) :
+
+local notation:max "current_S_U" => S_U F ζ hζ U R P H
+
+private theorem test_smooth_local_data (f : current_S_U)
+    (a : current_ActualChart) (B : LocalBall (3 * d F)) (hB : InteriorBall a B) :
     ∃ h : IntegerSobolev B 1,
       (fun x => h.derivatives (zeroIndex (3 * d F)) x) =ᵐ[volume.restrict B.carrier]
         (fun x => liftExtension a (f.val a) ((baseReindex (F := F)).symm x)) ∧
@@ -200,7 +224,7 @@ private theorem test_smooth_local_data (f : S_U F ζ hζ U R P H)
     rw [heq]
     apply (hh (firstIndex j)).trans
     filter_upwards [ae_restrict_mem B.toOpens.isOpen.measurableSet] with x hx
-    have hx' : x ∈ coordinateDomain a := hB.2 (subset_closure hx)
+    have hx'  := hB.2 (subset_closure hx)
     have hp := (smooth_liftExtension a (f.val a) (f.property.1 a)).differentiableOn
       (by simp) ((baseReindex (F := F)).symm x) hx'
     have hopen : IsOpen (omega a) := by
@@ -219,19 +243,18 @@ private theorem test_smooth_local_data (f : S_U F ζ hζ U R P H)
     simp only [liftExtension, dif_pos hxomega]
     exact hdecoder.symm
 
-private theorem scalarBall_test (a : ActualChart (U := U) (H := H))
-    (B : LocalBall (3 * d F)) (hB : InteriorBall a B) (f : S_U F ζ hζ U R P H) :
+private theorem scalarBall_test (a : current_ActualChart)
+    (B : LocalBall (3 * d F)) (hB : InteriorBall a B) (f : current_S_U) :
     (fun x => KPContActualSectorBallRestriction.scalarBall a B hB
       (KPContActualSectorTestEmbeddings.iota f) x) =ᵐ[volume.restrict B.carrier]
         (fun x => liftExtension a (f.val a) ((baseReindex (F := F)).symm x)) := by
   have hspec := (Classical.choose_spec (scalar_gluing f)).1
-  have hcont : Continuous (scalarCovered f).val := by
-    exact (continuous_iff F ζ hζ U R P H (scalarSections f)).mp
+  have hcont : Continuous (scalarCovered f).val := (continuous_iff F ζ hζ U R P H (scalarSections f)).mp
       (fun i => (hspec.1 i).continuous)
   let b : BorelL2Scalars F ζ hζ U R := ⟨scalarCovered f, hcont.measurable,
     KPContActualSectorTestEmbeddings.scalar_memLp f⟩
   have hb := sectorLineIsometry_representative F ζ hζ U R P H
-    (KPContActualSectorTestEmbeddings.iota f) b (by rfl)
+    (KPContActualSectorTestEmbeddings.iota f) b (rfl)
   have hae := KPContActualSectorBallRestriction.scalarBall_ae a B hB _
     (borelS F ζ hζ U R P H b) hb
   have hval : (borelS F ζ hζ U R P H b).val = scalarSections f := by
@@ -266,7 +289,7 @@ private theorem first_injective {n : ℕ} : Function.Injective (firstIndex (n :=
   have he := congrArg (fun α : MultiIndex n 1 => (α.val i).val) hij
   simp [firstIndex, Pi.single_apply, h] at he
 
- def ballDerivative (a : ActualChart (U := U) (H := H)) (B : LocalBall (3 * d F))
+ def ballDerivative (a : current_ActualChart) (B : LocalBall (3 * d F))
     (hB : InteriorBall a B) (α : MultiIndex (3 * d F) 1) :
     (KPContSectorClosedLpSubspace.H F ζ hζ R U × KPContActualSectorCotangentL2.V F ζ hζ U R P H)
       →L[ℂ] BallL2 B :=
@@ -276,7 +299,7 @@ private theorem first_injective {n : ℕ} : Function.Injective (firstIndex (n :=
     (KPContActualSectorBallRestriction.scalarBall a B hB).comp
       (ContinuousLinearMap.fst ℂ _ _)
 
-private theorem ballDerivative_zero (a : ActualChart (U := U) (H := H)) (B : LocalBall (3 * d F))
+private theorem ballDerivative_zero (a : current_ActualChart) (B : LocalBall (3 * d F))
     (hB : InteriorBall a B) (u : KPContSectorClosedLpSubspace.H F ζ hζ R U)
     (v : KPContActualSectorCotangentL2.V F ζ hζ U R P H) :
     ballDerivative a B hB (zeroIndex (3 * d F)) (u,v) =
@@ -286,7 +309,7 @@ private theorem ballDerivative_zero (a : ActualChart (U := U) (H := H)) (B : Loc
     exact first_ne_zero j hj.symm
   simp [ballDerivative, hn]
 
-private theorem ballDerivative_first (a : ActualChart (U := U) (H := H)) (B : LocalBall (3 * d F))
+private theorem ballDerivative_first (a : current_ActualChart) (B : LocalBall (3 * d F))
     (hB : InteriorBall a B) (u : KPContSectorClosedLpSubspace.H F ζ hζ R U)
     (v : KPContActualSectorCotangentL2.V F ζ hζ U R P H) (j : Fin (3 * d F)) :
     ballDerivative a B hB (firstIndex j) (u,v) =
@@ -296,8 +319,8 @@ private theorem ballDerivative_first (a : ActualChart (U := U) (H := H)) (B : Lo
   rw [← first_injective he.choose_spec]
   rfl
 
- theorem ballDerivative_test_weak (a : ActualChart (U := U) (H := H))
-    (B : LocalBall (3 * d F)) (hB : InteriorBall a B) (f : S_U F ζ hζ U R P H)
+ theorem ballDerivative_test_weak (a : current_ActualChart)
+    (B : LocalBall (3 * d F)) (hB : InteriorBall a B) (f : current_S_U)
     (α : MultiIndex (3 * d F) 1) :
     IsWeakDerivative B α
       (ballDerivative a B hB (zeroIndex (3 * d F))
@@ -324,62 +347,48 @@ private theorem ballDerivative_first (a : ActualChart (U := U) (H := H)) (B : Lo
   change IsWeakDerivative B α (h.derivatives (zeroIndex (3 * d F))) (h.derivatives α) at hw
   rwa [h0, ha] at hw
 
-private theorem base_point (x : KPFiniteCuspAtlas.rawXU F ζ hζ U) :
-    ∃ (a : ActualChart (U := U) (H := H)) (y : omega a), q a y.val = x := by
-  let C := KPContActualSectorCotangentL2.chosenCover F ζ hζ U R P H
-  have hx : x ∈ ⋃ n, (C.chart n).baseDomain := by rw [C.covers]; trivial
-  obtain ⟨n, hn⟩ := Set.mem_iUnion.mp hx
-  obtain ⟨y, hy⟩ := hn
-  refine ⟨C.chart n, coordinates (C.chart n) y, ?_⟩
-  have hi : ∀ z : KPCuspGenuineMonodromy.SymmetricSpace F,
-      labeledA (placeEquiv F ζ hζ) (labeledAInv (placeEquiv F ζ hζ) z) = z := by
-    intro z; funext k; simp [labeledA, labeledAInv]
-  rw [← hy]
-  simp only [q, coordinates, ShrunkChart.toBase]
-  rw [hi]
+private alias base_point := _root_.DedekindZetaZeroFree.KPContActualSectorSmoothTestModules.exists_actual_lift
 
-private theorem masked_norm_sq (W W' : Family (U := U) (H := H)) (i : Fin (d F))
-    (hW : ∀ (a : ActualChart (U := U) (H := H)) (x : omega a) (j : Fin (d F)) (k : Fin 3),
+private theorem masked_norm_sq (W W' : current_Family) (i : Fin (d F))
+    (hW : ∀ (a : current_ActualChart) (x : omega a) (j : Fin (d F)) (k : Fin 3),
       coefficient W' a x (j,k) = if j=i then coefficient W a x (j,k) else 0)
-    (a : ActualChart (U := U) (H := H)) (x : omega a) :
+    (a : current_ActualChart) (x : omega a) :
     ‖coefficient W' a x‖ ^ 2 = ∑ k : Fin 3, ‖coefficient W a x (i,k)‖ ^ 2 := by
   rw [EuclideanSpace.norm_sq_eq, Fintype.sum_prod_type]
   simp_rw [hW, apply_ite norm, norm_zero, ite_pow, zero_pow (by decide : 2 ≠ 0), Finset.sum_ite_irrel]
   simp
 
-private theorem descent_of_projection (W W' : Family (U := U) (H := H)) (i : Fin (d F))
-    (hW : ∀ (a : ActualChart (U := U) (H := H)) (x : omega a) (j : Fin (d F)) (k : Fin 3),
+private theorem descent_of_projection (W W' : current_Family) (i : Fin (d F))
+    (hW : ∀ (a : current_ActualChart) (x : omega a) (j : Fin (d F)) (k : Fin 3),
       coefficient W' a x (j,k) = if j=i then coefficient W a x (j,k) else 0) :
     ∃! f : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ,
-      Measurable f ∧ ∀ (a : ActualChart (U := U) (H := H)) (x : omega a),
+      Measurable f ∧ ∀ (a : current_ActualChart) (x : omega a),
         f (q a x.val) = ∑ k : Fin 3, ‖coefficient W a x (i, k)‖ ^ 2 := by
-  refine ⟨fun x => (normSquare W' x : ℝ), ⟨(measurable_normSquare W').coe_nnreal_real, ?_⟩, ?_⟩
+  refine ⟨fun x => (normSquare W' x), ⟨(measurable_normSquare W').coe_nnreal_real, ?_⟩, ?_⟩
   · intro a x
     change (normSquare W' (q a x.val) : ℝ) = _
     rw [normSquare_chart]
-    exact masked_norm_sq W W' i hW a x
+    apply masked_norm_sq <;> assumption
   · intro f hf
     funext x
     obtain ⟨a, y, hy⟩ := base_point x
     rw [← hy, hf.2 a y, normSquare_chart]
     exact (masked_norm_sq W W' i hW a y).symm
 
-theorem placeSquare_descends (W : Family (U := U) (H := H)) (i : Fin (d F)) :
+theorem placeSquare_descends (W : current_Family) (i : Fin (d F)) :
     ∃! f : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ,
-      Measurable f ∧ ∀ (a : ActualChart (U := U) (H := H)) (x : omega a),
-        f (q a x.val) = ∑ k : Fin 3, ‖coefficient W a x (i, k)‖ ^ 2 := by
-  exact descent_of_projection W (KPContActualCotangentPlaceProjection.project i W) i
+      Measurable f ∧ ∀ (a : current_ActualChart) (x : omega a),
+        f (q a x.val) = ∑ k : Fin 3, ‖coefficient W a x (i, k)‖ ^ 2 := descent_of_projection W (KPContActualCotangentPlaceProjection.project i W) i
     (KPContActualCotangentPlaceProjection.coefficient_project i W)
 
-def placeSquare (W : Family (U := U) (H := H)) (i : Fin (d F)) :
-    KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ := Classical.choose (placeSquare_descends W i)
+def placeSquare (W : current_Family) (i : Fin (d F))  := Classical.choose (placeSquare_descends W i)
 
-private theorem place_square_nonneg (W : Family (U:=U) (H:=H)) (i : Fin (d F)) (x : KPFiniteCuspAtlas.rawXU F ζ hζ U) : 0 ≤ placeSquare W i x := by
+private theorem place_square_nonneg (W : current_Family) (i : Fin (d F)) (x : KPFiniteCuspAtlas.rawXU F ζ hζ U) : 0 ≤ placeSquare W i x := by
   obtain ⟨a,y,hy⟩ := base_point x
   rw [← hy, show placeSquare W i (q a y.val) = ∑ k : Fin 3, ‖coefficient W a y (i,k)‖ ^ 2 from
     (Classical.choose_spec (placeSquare_descends W i)).1.2 a y]
   positivity
-private theorem place_square_sum (W : Family (U:=U) (H:=H)) (x : KPFiniteCuspAtlas.rawXU F ζ hζ U) :
+private theorem place_square_sum (W : current_Family) (x : KPFiniteCuspAtlas.rawXU F ζ hζ U) :
     (∑ i, placeSquare W i x) = (normSquare W x : ℝ) := by
   obtain ⟨a,y,hy⟩ := base_point x
   rw [← hy, normSquare_chart]
@@ -388,7 +397,7 @@ private theorem place_square_sum (W : Family (U:=U) (H:=H)) (x : KPFiniteCuspAtl
   apply Finset.sum_congr rfl
   intro i hi
   exact (Classical.choose_spec (placeSquare_descends W i)).1.2 a y
-private theorem place_square_integrable (r : SquareFiniteFamily (U:=U) (H:=H)) (i : Fin (d F)) :
+private theorem place_square_integrable (r : current_SquareFiniteFamily) (i : Fin (d F)) :
     Integrable (placeSquare r.val i) (KPContActualSectorCotangentL2.muU F ζ hζ U R P) := by
   apply (KPContActualCotangentIntrinsicHilbertIntegral.integrable_normSquare r).mono_nonneg
     ((Classical.choose_spec (placeSquare_descends r.val i)).1.1.aestronglyMeasurable)
@@ -468,7 +477,10 @@ private theorem lp_mul_derivative_test_integrable {n k : ℕ} {B : LocalBall n}
   simpa only [iteratedDerivativeTest_apply, coordinateDerivative] using
     lp_mul_test_integrable u (iteratedDerivativeTest α.directions φ)
 
- theorem weak_derivative_sub {n k : ℕ} (B : LocalBall n) (α : MultiIndex n k)
+ section
+variable {n k : ℕ} (B : LocalBall n) (α : MultiIndex n k)
+include n k B α
+theorem weak_derivative_sub  
     (u₁ u₂ d₁ d₂ : BallL2 B)
     (h₁ : IsWeakDerivative B α u₁ d₁) (h₂ : IsWeakDerivative B α u₂ d₂) :
     IsWeakDerivative B α (u₁ - u₂) (d₁ - d₂) := by
@@ -491,7 +503,7 @@ private theorem lp_mul_derivative_test_integrable {n k : ℕ} {B : LocalBall n}
   change _ = (-1 : ℂ) ^ α.degree * _
   rw [hleft, hright, h₁ φ, h₂ φ, mul_sub]
 
- theorem weak_derivative_smul {n k : ℕ} (B : LocalBall n) (α : MultiIndex n k)
+ theorem weak_derivative_smul  
     (c : ℂ) (u d : BallL2 B) (h : IsWeakDerivative B α u d) :
     IsWeakDerivative B α (c • u) (c • d) := by
   intro φ
@@ -512,23 +524,28 @@ private theorem lp_mul_derivative_test_integrable {n k : ℕ} {B : LocalBall n}
   rw [hleft, hright, h φ]
   ring
 
- theorem weakDerivative_zero {n k : ℕ} (B : LocalBall n) (α : MultiIndex n k) :
-    IsWeakDerivative B α (0 : BallL2 B) (0 : BallL2 B) := by
+ theorem weakDerivative_zero   :
+    IsWeakDerivative B α (0) (0) := by
   intro φ
   have hL : (fun x => (0 : BallL2 B) x * coordinateDerivative α (fun y => φ y) x)
-      =ᵐ[volume.restrict B.carrier] (fun _ => (0 : ℂ)) := by
+      =ᵐ[volume.restrict B.carrier] (fun _ => (0)) := by
     filter_upwards [Lp.coeFn_zero (μ := volume.restrict B.carrier) (p := 2) (E := ℂ)]
       with x hx
     rw [hx]; simp
   have hR : (fun x => (0 : BallL2 B) x * φ x)
-      =ᵐ[volume.restrict B.carrier] (fun _ => (0 : ℂ)) := by
+      =ᵐ[volume.restrict B.carrier] (fun _ => (0)) := by
     filter_upwards [Lp.coeFn_zero (μ := volume.restrict B.carrier) (p := 2) (E := ℂ)]
       with x hx
     rw [hx]; simp
   rw [integral_congr_ae hL, integral_congr_ae hR]
   simp
+end
 
-def coordinateH1Submodule {n : ℕ} (B : LocalBall n) :
+
+section
+variable {n : ℕ} (B : LocalBall n)
+include n B
+def coordinateH1Submodule   :
     Submodule ℂ (PiLp 2 (fun _ : MultiIndex n 1 => BallL2 B)) where
   carrier := {h | ∀ α, IsWeakDerivative B α (h (zeroIndex n)) (h α)}
   zero_mem' := by
@@ -550,17 +567,17 @@ def coordinateH1Submodule {n : ℕ} (B : LocalBall n) :
     exact weak_derivative_smul
       B α c (h (zeroIndex n)) (h α) (hh α)
 
- def mulBall {n : ℕ} (B : LocalBall n) (b : Space n → ℂ)
+ def mulBall   (b : Space n → ℂ)
     (hb : MemLp b ⊤ (volume.restrict B.carrier)) : BallL2 B →L[ℂ] BallL2 B :=
   (ContinuousLinearMap.mul ℂ ℂ).holderL (volume.restrict B.carrier) ⊤ 2 2 (hb.toLp b)
-private theorem mulBall_ae {n : ℕ} (B : LocalBall n) (b : Space n → ℂ)
+private theorem mulBall_ae   (b : Space n → ℂ)
     (hb : MemLp b ⊤ (volume.restrict B.carrier)) (u : BallL2 B) :
     (fun x => mulBall B b hb u x) =ᵐ[volume.restrict B.carrier] (fun x => b x * u x) := by
   have he := (ContinuousLinearMap.mul ℂ ℂ).coeFn_holder (r := 2) (hb.toLp b) u
   filter_upwards [he, hb.coeFn_toLp] with x hx hxb
   simpa only [mulBall, ContinuousLinearMap.holderL_apply_apply,
     ContinuousLinearMap.mul_apply', hxb] using hx
-private theorem memLp_top_on_ball {n : ℕ} (B : LocalBall n) (Ω : Set (Space n))
+private theorem memLp_top_on_ball   (Ω : Set (Space n))
     (hΩ : IsOpen Ω) (hB : IsCompact (closure B.carrier) ∧ closure B.carrier ⊆ Ω)
     (b : Space n → ℂ) (hb : ContinuousOn b Ω) :
     MemLp b ⊤ (volume.restrict B.carrier) := by
@@ -568,19 +585,24 @@ private theorem memLp_top_on_ball {n : ℕ} (B : LocalBall n) (Ω : Set (Space n
   apply memLp_top_of_bound (hb.mono (subset_closure.trans hB.2) |>.aestronglyMeasurable B.toOpens.isOpen.measurableSet) C
   exact ae_restrict_of_forall_mem B.toOpens.isOpen.measurableSet (fun x hx => hC x (subset_closure hx))
 
-abbrev CoordinateH1 {n : ℕ} (B : LocalBall n) := ↥(coordinateH1Submodule B)
+abbrev CoordinateH1   := ↥(coordinateH1Submodule B)
+end
+
 
 abbrev CompactMultiplier :=
   {η : RealSmoothCutoff F ζ hζ U R P H // HasCompactSupport η.val}
 
-def multiplierCoordinate (η : CompactMultiplier (U := U) (H := H))
-    (a : ActualChart (U := U) (H := H)) (x : Space (3 * d F)) : ℂ :=
+
+local notation:max "current_CompactMultiplier" => CompactMultiplier (U := U) (H := H)
+
+def multiplierCoordinate (η : current_CompactMultiplier)
+    (a : current_ActualChart) (x : Space (3 * d F))  :=
   liftExtension a (cutoffLift η.val a) ((baseReindex (F := F)).symm x)
 
-def MultipliedData (η : CompactMultiplier (U := U) (H := H))
+def MultipliedData (η : current_CompactMultiplier)
     (s t : BorelL2Sections F ζ hζ U R P H)
-    (r z : SquareFiniteFamily (U := U) (H := H)) : Prop :=
-  ∀ a : ActualChart (U := U) (H := H),
+    (r z : current_SquareFiniteFamily)  :=
+  ∀ a : current_ActualChart,
     (fun y : a.domain => sectionFields t.val a (KPContActualCotangentPieceHilbertSum.coordinates a y)) =ᵐ[a.liftedMeasure]
       (fun y => cutoffLift η.val a (KPContActualCotangentPieceHilbertSum.coordinates a y) *
         sectionFields s.val a (KPContActualCotangentPieceHilbertSum.coordinates a y)) ∧
@@ -599,10 +621,10 @@ local notation "A" => KPContActualSectorFriedrichsSynthesis.A_U F ζ hζ U R P H
 local notation "Q" => KPContActualSectorFriedrichsSynthesis.formDomain F ζ hζ U R P H μG hμG hR realization
 
 private theorem closedGradient_weak_chart (u : Q)
-    (s : BorelL2Sections F ζ hζ U R P H) (r : SquareFiniteFamily (U := U) (H := H))
-    (hs : sectorLineIsometry F ζ hζ U R P H (u : KPContSectorClosedLpSubspace.H F ζ hζ R U) =
+    (s : BorelL2Sections F ζ hζ U R P H) (r : current_SquareFiniteFamily)
+    (hs : current_sectorLineIsometry u =
       mk F ζ hζ U R P H s)
-    (hr : KPContActualSectorCotangentL2.ofFamily F ζ hζ U R P H r = (A).closure u) :
+    (hr : current_ofFamily r = (A).closure u) :
     WeakChartData s r.val := by
   obtain ⟨fs, hfs, hgrad, -⟩ :=
     (kp_cont_actual_sector_friedrichs_synthesis F ζ hζ μG hμG U R hR P H realization).form_core u
@@ -656,14 +678,14 @@ private theorem closedGradient_weak_chart (u : Q)
   exact hv
 
 private theorem closedGradient_isActualWeak (u : Q) :
-    IsActualWeakGradient (u : KPContSectorClosedLpSubspace.H F ζ hζ R U) ((A).closure u) := by
+    IsActualWeakGradient u ((A).closure u) := by
   obtain ⟨s, hs⟩ := Quotient.exists_rep
-    (sectorLineIsometry F ζ hζ U R P H (u : KPContSectorClosedLpSubspace.H F ζ hζ R U))
+    (current_sectorLineIsometry u)
   change mk F ζ hζ U R P H s = _ at hs
   obtain ⟨r,hr⟩ := KPContActualSectorCotangentL2.ofFamily_surjective F ζ hζ U R P H ((A).closure u)
   exact ⟨s,r,hs.symm,hr,closedGradient_weak_chart F ζ hζ U R P H μG hμG hR realization u s r hs.symm hr⟩
 
- def coordinateGraphMap (a : ActualChart (U := U) (H := H))
+ def coordinateGraphMap (a : current_ActualChart)
     (B : LocalBall (3 * d F)) (hB : InteriorBall a B) :
     ClosedGradientSpace A →L[ℂ] CoordinateH1 B := by
   let L : ClosedGradientSpace A →L[ℂ] PiLp 2 (fun _ : MultiIndex (3 * d F) 1 => BallL2 B) :=
@@ -690,10 +712,12 @@ private theorem closedGradient_isActualWeak (u : Q) :
   · exact ((ballDerivative a B hB α).continuous.tendsto _).comp (hfs.prodMk_nhds hgrad)
   · exact fun m => ballDerivative_test_weak a B hB (fs m) α
 
+
+local notation:max "current_graphTestLift" => KPContActualFormCutoffClosedProduct.graphTestLift F ζ hζ U R P H
+
 private theorem graph_tests_tendsto (w : ClosedGradientSpace A) :
-    ∃ fs : ℕ → S_U F ζ hζ U R P H,
-      Filter.Tendsto (fun n => KPContActualFormCutoffClosedProduct.graphTestLift
-        F ζ hζ U R P H μG hμG hR realization (fs n)) Filter.atTop (𝓝 w) := by
+    ∃ fs : ℕ → current_S_U,
+      Filter.Tendsto (fun n => current_graphTestLift μG hμG hR realization (fs n)) Filter.atTop (𝓝 w) := by
   obtain ⟨fs,hfs,hgrad,-⟩ :=
     (kp_cont_actual_sector_friedrichs_synthesis F ζ hζ μG hμG U R hR P H realization).form_core
       (graphDomain F ζ hζ U R P H μG hμG hR realization w)
@@ -707,22 +731,25 @@ private theorem graph_tests_tendsto (w : ClosedGradientSpace A) :
   rw [hw]
   exact ((WithLp.prod_continuous_toLp 2 _ _).tendsto _).comp (hfs.prodMk_nhds hgrad)
 
-private theorem smooth_cutoff_flat (η : CompactMultiplier (U := U) (H := H))
-    (a : ActualChart (U := U) (H := H)) :
+private theorem smooth_cutoff_flat (η : current_CompactMultiplier)
+    (a : current_ActualChart) :
     ContDiffOn ℝ (⊤ : ℕ∞) (multiplierCoordinate η a) (coordinateDomain a) := by
   apply smooth_flattened
   obtain ⟨g,hg,he⟩ := η.val.smooth a
-  exact ⟨fun x => (g x : ℂ), Complex.ofRealCLM.contDiff.comp_contDiffOn hg,
+  exact ⟨fun x => (g x), Complex.ofRealCLM.contDiff.comp_contDiffOn hg,
     fun x => congrArg Complex.ofReal (he x)⟩
 
-private theorem scalarBall_product_test (η : CompactMultiplier (U := U) (H := H))
-    (a : ActualChart (U := U) (H := H)) (B : LocalBall (3 * d F)) (hB : InteriorBall a B)
-    (f : S_U F ζ hζ U R P H) :
+
+local notation:max "current_smooth_cutoff_flat" => smooth_cutoff_flat F ζ hζ U R P H
+
+private theorem scalarBall_product_test (η : current_CompactMultiplier)
+    (a : current_ActualChart) (B : LocalBall (3 * d F)) (hB : InteriorBall a B)
+    (f : current_S_U) :
     KPContActualSectorBallRestriction.scalarBall a B hB
         (KPContActualSectorTestEmbeddings.iota (scalarMultiply η.val f)) =
       mulBall B (multiplierCoordinate η a)
         (memLp_top_on_ball B _ (coordinateDomain_isOpen a) hB _
-          (smooth_cutoff_flat F ζ hζ U R P H η a).continuousOn)
+          (current_smooth_cutoff_flat η a).continuousOn)
         (KPContActualSectorBallRestriction.scalarBall a B hB
           (KPContActualSectorTestEmbeddings.iota f)) := by
   apply Lp.ext
@@ -736,23 +763,23 @@ private theorem scalarBall_product_test (η : CompactMultiplier (U := U) (H := H
   split_ifs <;> simp
 
 private theorem scalarBall_graph_product
-    (η : CompactMultiplier (U := U) (H := H))
+    (η : current_CompactMultiplier)
     (M : ClosedGradientSpace A →L[ℂ] ClosedGradientSpace A)
-    (hM : ∀ f : S_U F ζ hζ U R P H,
-      M (KPContActualFormCutoffClosedProduct.graphTestLift F ζ hζ U R P H μG hμG hR realization f) =
-        KPContActualFormCutoffClosedProduct.graphTestLift F ζ hζ U R P H μG hμG hR realization
+    (hM : ∀ f : current_S_U,
+      M (current_graphTestLift μG hμG hR realization f) =
+        current_graphTestLift μG hμG hR realization
           (scalarMultiply η.val f))
-    (a : ActualChart (U := U) (H := H)) (B : LocalBall (3 * d F)) (hB : InteriorBall a B)
+    (a : current_ActualChart) (B : LocalBall (3 * d F)) (hB : InteriorBall a B)
     (w : ClosedGradientSpace A) :
     KPContActualSectorBallRestriction.scalarBall a B hB (closedGradientEmbedding A (M w)) =
       mulBall B (multiplierCoordinate η a)
         (memLp_top_on_ball B _ (coordinateDomain_isOpen a) hB _
-          (smooth_cutoff_flat F ζ hζ U R P H η a).continuousOn)
+          (current_smooth_cutoff_flat η a).continuousOn)
         (KPContActualSectorBallRestriction.scalarBall a B hB (closedGradientEmbedding A w)) := by
   obtain ⟨fs,hfs⟩ := graph_tests_tendsto F ζ hζ U R P H μG hμG hR realization w
   let L := (KPContActualSectorBallRestriction.scalarBall a B hB).comp ((closedGradientEmbedding A).comp M)
   let N := (mulBall B (multiplierCoordinate η a)
-    (memLp_top_on_ball B _ (coordinateDomain_isOpen a) hB _ (smooth_cutoff_flat F ζ hζ U R P H η a).continuousOn)).comp
+    (memLp_top_on_ball B _ (coordinateDomain_isOpen a) hB _ (current_smooth_cutoff_flat η a).continuousOn)).comp
       ((KPContActualSectorBallRestriction.scalarBall a B hB).comp (closedGradientEmbedding A))
   apply tendsto_nhds_unique ((L.continuous.tendsto w).comp hfs)
     (((N.continuous.tendsto w).comp hfs).congr' ?_)
@@ -761,37 +788,44 @@ private theorem scalarBall_graph_product
   rw [hM]
   exact (scalarBall_product_test F ζ hζ U R P H η a B hB (fs n)).symm
 
- def decode (x : Space (3*d F)) (j : Fin (3*d F)) (v : KPContCotangentActualGenuineTwistIsotropy.E F) : ℂ :=
+ section
+variable (x : Space (3*d F)) (j : Fin (3*d F))
+include x j
+def decode   (v : KPContCotangentActualGenuineTwistIsotropy.E F)  :=
   let p := (baseReindex (F := F)).symm x
   let ik := (coefficientIndex (F := F)).symm j
   ![(Real.exp (-p (ik.1,2)) : ℂ) * v (ik.1,1),
     (Real.exp (-p (ik.1,2)) : ℂ) * v (ik.1,2), v (ik.1,0)] ik.2
 
-private theorem decode_add_smul (x : Space (3*d F)) (j : Fin (3*d F))
+private theorem decode_add_smul  
     (b c : ℂ) (v w : KPContCotangentActualGenuineTwistIsotropy.E F) :
     decode F x j (b • v + c • w) = b * decode F x j v + c * decode F x j w := by
   generalize hi : (coefficientIndex (F := F)).symm j = ik
   rcases ik with ⟨i,k⟩
   fin_cases k <;> simp [decode, hi, PiLp.add_apply, PiLp.smul_apply, smul_eq_mul] <;> ring
+end
 
- def cutoffPartial (η : CompactMultiplier (U := U) (H := H))
-    (a : ActualChart (U := U) (H := H)) (j : Fin (3*d F)) (x : Space (3*d F)) : ℂ :=
+
+ def cutoffPartial (η : current_CompactMultiplier)
+    (a : current_ActualChart) (j : Fin (3*d F)) (x : Space (3*d F))  :=
   fderiv ℝ (multiplierCoordinate η a) x (EuclideanSpace.single j 1)
 
-private theorem cutoffPartial_cont (η : CompactMultiplier (U := U) (H := H))
-    (a : ActualChart (U := U) (H := H)) (j : Fin (3*d F)) :
-    ContinuousOn (cutoffPartial F ζ hζ U R P H η a j) (coordinateDomain a) := by
-  exact (((smooth_cutoff_flat F ζ hζ U R P H η a).fderiv_of_isOpen
+
+local notation:max "current_cutoffPartial" => cutoffPartial F ζ hζ U R P H
+
+private theorem cutoffPartial_cont (η : current_CompactMultiplier)
+    (a : current_ActualChart) (j : Fin (3*d F)) :
+    ContinuousOn (current_cutoffPartial η a j) (coordinateDomain a) := (((current_smooth_cutoff_flat η a).fderiv_of_isOpen
     (coordinateDomain_isOpen a) (m := (⊤ : ℕ∞)) (by simp)).clm_apply contDiffOn_const).continuousOn
 
-private theorem cutoffPartial_decode (η : CompactMultiplier (U := U) (H := H))
-    (a : ActualChart (U := U) (H := H)) (j : Fin (3*d F))
+private theorem cutoffPartial_decode (η : current_CompactMultiplier)
+    (a : current_ActualChart) (j : Fin (3*d F))
     (x : Space (3*d F)) (hx : x ∈ coordinateDomain a) :
-    cutoffPartial F ζ hζ U R P H η a j x = decode F x j
+    current_cutoffPartial η a j x = decode F x j
       (cutoffDifferential η.val a ⟨(baseReindex (F := F)).symm x, hx⟩) := by
   have hp := (smooth_liftExtension a (cutoffLift η.val a) (by
     obtain ⟨g,hg,he⟩ := η.val.smooth a
-    exact ⟨fun x => (g x : ℂ), Complex.ofRealCLM.contDiff.comp_contDiffOn hg,
+    exact ⟨fun x => (g x), Complex.ofRealCLM.contDiff.comp_contDiffOn hg,
       fun x => congrArg Complex.ofReal (he x)⟩)).differentiableOn (by simp) _ hx
   have hpd := hp.differentiableAt ((show IsOpen (omega a) from a.domain_open.preimage (by
     unfold labeledA; fun_prop)).mem_nhds hx)
@@ -799,21 +833,21 @@ private theorem cutoffPartial_decode (η : CompactMultiplier (U := U) (H := H))
 
 include μG hμG hR realization in
 private theorem coordinateBall_product_test
-    (η : CompactMultiplier (U := U) (H := H))
-    (a : ActualChart (U := U) (H := H)) (B : LocalBall (3*d F)) (hB : InteriorBall a B)
-    (j : Fin (3*d F)) (f : S_U F ζ hζ U R P H) :
+    (η : current_CompactMultiplier)
+    (a : current_ActualChart) (B : LocalBall (3*d F)) (hB : InteriorBall a B)
+    (j : Fin (3*d F)) (f : current_S_U) :
     KPContActualSectorBallRestriction.coordinateBall a B hB j
       (KPContActualSectorTestEmbeddings.j (D_U (scalarMultiply η.val f))) =
       mulBall B (multiplierCoordinate η a)
         (memLp_top_on_ball B _ (coordinateDomain_isOpen a) hB _
-          (smooth_cutoff_flat F ζ hζ U R P H η a).continuousOn)
+          (current_smooth_cutoff_flat η a).continuousOn)
         (KPContActualSectorBallRestriction.coordinateBall a B hB j (KPContActualSectorTestEmbeddings.j (D_U f))) +
-      mulBall B (cutoffPartial F ζ hζ U R P H η a j)
+      mulBall B (current_cutoffPartial η a j)
         (memLp_top_on_ball B _ (coordinateDomain_isOpen a) hB _
           (cutoffPartial_cont F ζ hζ U R P H η a j))
         (KPContActualSectorBallRestriction.scalarBall a B hB (KPContActualSectorTestEmbeddings.iota f)) := by
   have hb := memLp_top_on_ball B _ (coordinateDomain_isOpen a) hB _
-    (smooth_cutoff_flat F ζ hζ U R P H η a).continuousOn
+    (current_smooth_cutoff_flat η a).continuousOn
   have hd := memLp_top_on_ball B _ (coordinateDomain_isOpen a) hB _
     (cutoffPartial_cont F ζ hζ U R P H η a j)
   apply Lp.ext
@@ -823,11 +857,11 @@ private theorem coordinateBall_product_test
       (KPContActualSectorTestEmbeddings.cotangentSquareFamily (D_U f)) rfl,
     scalarBall_test a B hB f, mulBall_ae B (multiplierCoordinate η a) hb
       (KPContActualSectorBallRestriction.coordinateBall a B hB j (KPContActualSectorTestEmbeddings.j (D_U f))),
-    mulBall_ae B (cutoffPartial F ζ hζ U R P H η a j) hd
+    mulBall_ae B (current_cutoffPartial η a j) hd
       (KPContActualSectorBallRestriction.scalarBall a B hB (KPContActualSectorTestEmbeddings.iota f)),
     Lp.coeFn_add (mulBall B (multiplierCoordinate η a) hb
       (KPContActualSectorBallRestriction.coordinateBall a B hB j (KPContActualSectorTestEmbeddings.j (D_U f))))
-      (mulBall B (cutoffPartial F ζ hζ U R P H η a j) hd
+      (mulBall B (current_cutoffPartial η a j) hd
         (KPContActualSectorBallRestriction.scalarBall a B hB (KPContActualSectorTestEmbeddings.iota f))),
     ae_restrict_mem B.toOpens.isOpen.measurableSet] with x h1 h2 h3 h4 h5 h6 hx
   change KPContActualSectorBallRestriction.coordinateBall a B hB j
@@ -857,29 +891,29 @@ private theorem coordinateBall_product_test
   ring
 
 private theorem coordinateBall_graph_product
-    (η : CompactMultiplier (U := U) (H := H))
+    (η : current_CompactMultiplier)
     (M : ClosedGradientSpace A →L[ℂ] ClosedGradientSpace A)
-    (hM : ∀ f : S_U F ζ hζ U R P H,
-      M (KPContActualFormCutoffClosedProduct.graphTestLift F ζ hζ U R P H μG hμG hR realization f) =
-        KPContActualFormCutoffClosedProduct.graphTestLift F ζ hζ U R P H μG hμG hR realization
+    (hM : ∀ f : current_S_U,
+      M (current_graphTestLift μG hμG hR realization f) =
+        current_graphTestLift μG hμG hR realization
           (scalarMultiply η.val f))
-    (a : ActualChart (U := U) (H := H)) (B : LocalBall (3*d F)) (hB : InteriorBall a B)
+    (a : current_ActualChart) (B : LocalBall (3*d F)) (hB : InteriorBall a B)
     (j : Fin (3*d F)) (w : ClosedGradientSpace A) :
     KPContActualSectorBallRestriction.coordinateBall a B hB j (closedGradientCoordinate A (M w)) =
       mulBall B (multiplierCoordinate η a)
         (memLp_top_on_ball B _ (coordinateDomain_isOpen a) hB _
-          (smooth_cutoff_flat F ζ hζ U R P H η a).continuousOn)
+          (current_smooth_cutoff_flat η a).continuousOn)
         (KPContActualSectorBallRestriction.coordinateBall a B hB j (closedGradientCoordinate A w)) +
-      mulBall B (cutoffPartial F ζ hζ U R P H η a j)
+      mulBall B (current_cutoffPartial η a j)
         (memLp_top_on_ball B _ (coordinateDomain_isOpen a) hB _
           (cutoffPartial_cont F ζ hζ U R P H η a j))
         (KPContActualSectorBallRestriction.scalarBall a B hB (closedGradientEmbedding A w)) := by
   obtain ⟨fs,hfs⟩ := graph_tests_tendsto F ζ hζ U R P H μG hμG hR realization w
   let L := (KPContActualSectorBallRestriction.coordinateBall a B hB j).comp ((closedGradientCoordinate A).comp M)
   let N := (mulBall B (multiplierCoordinate η a)
-    (memLp_top_on_ball B _ (coordinateDomain_isOpen a) hB _ (smooth_cutoff_flat F ζ hζ U R P H η a).continuousOn)).comp
+    (memLp_top_on_ball B _ (coordinateDomain_isOpen a) hB _ (current_smooth_cutoff_flat η a).continuousOn)).comp
       ((KPContActualSectorBallRestriction.coordinateBall a B hB j).comp (closedGradientCoordinate A)) +
-    (mulBall B (cutoffPartial F ζ hζ U R P H η a j)
+    (mulBall B (current_cutoffPartial η a j)
       (memLp_top_on_ball B _ (coordinateDomain_isOpen a) hB _
         (cutoffPartial_cont F ζ hζ U R P H η a j))).comp
         ((KPContActualSectorBallRestriction.scalarBall a B hB).comp (closedGradientEmbedding A))
@@ -891,26 +925,26 @@ private theorem coordinateBall_graph_product
   exact (coordinateBall_product_test F ζ hζ U R P H μG hμG hR realization η a B hB j (fs n)).symm
 
 private theorem ball_product_ae
-    (η : CompactMultiplier (U := U) (H := H))
+    (η : current_CompactMultiplier)
     (M : ClosedGradientSpace A →L[ℂ] ClosedGradientSpace A)
-    (hM : ∀ f : S_U F ζ hζ U R P H,
-      M (KPContActualFormCutoffClosedProduct.graphTestLift F ζ hζ U R P H μG hμG hR realization f) =
-        KPContActualFormCutoffClosedProduct.graphTestLift F ζ hζ U R P H μG hμG hR realization
+    (hM : ∀ f : current_S_U,
+      M (current_graphTestLift μG hμG hR realization f) =
+        current_graphTestLift μG hμG hR realization
           (scalarMultiply η.val f))
     (w : ClosedGradientSpace A)
-    (s t : BorelL2Sections F ζ hζ U R P H) (r z : SquareFiniteFamily (U := U) (H := H))
-    (hs : sectorLineIsometry F ζ hζ U R P H (closedGradientEmbedding A w) = mk F ζ hζ U R P H s)
-    (ht : sectorLineIsometry F ζ hζ U R P H (closedGradientEmbedding A (M w)) = mk F ζ hζ U R P H t)
-    (hr : KPContActualSectorCotangentL2.ofFamily F ζ hζ U R P H r = closedGradientCoordinate A w)
-    (hz : KPContActualSectorCotangentL2.ofFamily F ζ hζ U R P H z = closedGradientCoordinate A (M w))
-    (a : ActualChart (U := U) (H := H)) (B : LocalBall (3*d F)) (hB : InteriorBall a B) :
+    (s t : BorelL2Sections F ζ hζ U R P H) (r z : current_SquareFiniteFamily)
+    (hs : current_sectorLineIsometry (closedGradientEmbedding A w) = mk F ζ hζ U R P H s)
+    (ht : current_sectorLineIsometry (closedGradientEmbedding A (M w)) = mk F ζ hζ U R P H t)
+    (hr : current_ofFamily r = closedGradientCoordinate A w)
+    (hz : current_ofFamily z = closedGradientCoordinate A (M w))
+    (a : current_ActualChart) (B : LocalBall (3*d F)) (hB : InteriorBall a B) :
     ∀ᵐ x ∂volume.restrict B.carrier,
       scalarCoordinate t a x = multiplierCoordinate η a x * scalarCoordinate s a x ∧
       ∀ j, covariantCoordinate z.val a x j =
         multiplierCoordinate η a x * covariantCoordinate r.val a x j +
-        scalarCoordinate s a x * cutoffPartial F ζ hζ U R P H η a j x := by
+        scalarCoordinate s a x * current_cutoffPartial η a j x := by
   have hb := memLp_top_on_ball B _ (coordinateDomain_isOpen a) hB _
-    (smooth_cutoff_flat F ζ hζ U R P H η a).continuousOn
+    (current_smooth_cutoff_flat η a).continuousOn
   have hd := fun j => memLp_top_on_ball B _ (coordinateDomain_isOpen a) hB _
     (cutoffPartial_cont F ζ hζ U R P H η a j)
   have hscalar := mulBall_ae B (multiplierCoordinate η a) hb
@@ -918,18 +952,18 @@ private theorem ball_product_ae
   rw [← scalarBall_graph_product F ζ hζ U R P H μG hμG hR realization η M hM] at hscalar
   have hcoord : ∀ j, ∀ᵐ x ∂volume.restrict B.carrier,
       covariantCoordinate z.val a x j = multiplierCoordinate η a x * covariantCoordinate r.val a x j +
-        scalarCoordinate s a x * cutoffPartial F ζ hζ U R P H η a j x := by
+        scalarCoordinate s a x * current_cutoffPartial η a j x := by
     intro j
     have heq := coordinateBall_graph_product F ζ hζ U R P H μG hμG hR realization η M hM a B hB j w
     have hae := Lp.coeFn_add (mulBall B (multiplierCoordinate η a) hb
       (KPContActualSectorBallRestriction.coordinateBall a B hB j (closedGradientCoordinate A w)))
-      (mulBall B (cutoffPartial F ζ hζ U R P H η a j) (hd j)
+      (mulBall B (current_cutoffPartial η a j) (hd j)
         (KPContActualSectorBallRestriction.scalarBall a B hB (closedGradientEmbedding A w)))
     rw [← heq] at hae
     filter_upwards [hae,
       mulBall_ae B (multiplierCoordinate η a) hb
         (KPContActualSectorBallRestriction.coordinateBall a B hB j (closedGradientCoordinate A w)),
-      mulBall_ae B (cutoffPartial F ζ hζ U R P H η a j) (hd j)
+      mulBall_ae B (current_cutoffPartial η a j) (hd j)
         (KPContActualSectorBallRestriction.scalarBall a B hB (closedGradientEmbedding A w)),
       KPContActualSectorBallRestriction.coordinateBall_ae a B hB j _ z hz,
       KPContActualSectorBallRestriction.coordinateBall_ae a B hB j _ r hr,
@@ -948,7 +982,7 @@ private theorem ball_product_ae
   simpa only [h2,h3] using h1
 
 private theorem ae_of_interior_balls
-    (a : ActualChart (U := U) (H := H)) (p : Space (3*d F) → Prop)
+    (a : current_ActualChart) (p : Space (3*d F) → Prop)
     (hp : ∀ B : LocalBall (3*d F), InteriorBall a B → ∀ᵐ x ∂volume.restrict B.carrier, p x) :
     ∀ᵐ x ∂volume.restrict (coordinateDomain a), p x := by
   let I := {B : LocalBall (3*d F) // InteriorBall a B}
@@ -998,18 +1032,18 @@ private theorem decode_injective (x : Space (3*d F)) :
 
 set_option maxHeartbeats 1000000 in
 private theorem MultipliedData_of_lift
-    (η : CompactMultiplier (U := U) (H := H))
+    (η : current_CompactMultiplier)
     (M : ClosedGradientSpace A →L[ℂ] ClosedGradientSpace A)
-    (hM : ∀ f : S_U F ζ hζ U R P H,
-      M (KPContActualFormCutoffClosedProduct.graphTestLift F ζ hζ U R P H μG hμG hR realization f) =
-        KPContActualFormCutoffClosedProduct.graphTestLift F ζ hζ U R P H μG hμG hR realization
+    (hM : ∀ f : current_S_U,
+      M (current_graphTestLift μG hμG hR realization f) =
+        current_graphTestLift μG hμG hR realization
           (scalarMultiply η.val f))
     (w : ClosedGradientSpace A)
-    (s t : BorelL2Sections F ζ hζ U R P H) (r z : SquareFiniteFamily (U := U) (H := H))
-    (hs : sectorLineIsometry F ζ hζ U R P H (closedGradientEmbedding A w) = mk F ζ hζ U R P H s)
-    (ht : sectorLineIsometry F ζ hζ U R P H (closedGradientEmbedding A (M w)) = mk F ζ hζ U R P H t)
-    (hr : KPContActualSectorCotangentL2.ofFamily F ζ hζ U R P H r = closedGradientCoordinate A w)
-    (hz : KPContActualSectorCotangentL2.ofFamily F ζ hζ U R P H z = closedGradientCoordinate A (M w)) :
+    (s t : BorelL2Sections F ζ hζ U R P H) (r z : current_SquareFiniteFamily)
+    (hs : current_sectorLineIsometry (closedGradientEmbedding A w) = mk F ζ hζ U R P H s)
+    (ht : current_sectorLineIsometry (closedGradientEmbedding A (M w)) = mk F ζ hζ U R P H t)
+    (hr : current_ofFamily r = closedGradientCoordinate A w)
+    (hz : current_ofFamily z = closedGradientCoordinate A (M w)) :
     MultipliedData η s t r z := by
   intro a
   have hball := ae_of_interior_balls F ζ hζ U R P H a _
@@ -1018,7 +1052,7 @@ private theorem MultipliedData_of_lift
       scalarCoordinate t a x = multiplierCoordinate η a x * scalarCoordinate s a x ∧
       ∀ j, covariantCoordinate z.val a x j =
         multiplierCoordinate η a x * covariantCoordinate r.val a x j +
-        scalarCoordinate s a x * cutoffPartial F ζ hζ U R P H η a j x := by
+        scalarCoordinate s a x * current_cutoffPartial η a j x := by
     change ∀ᵐ x ∂(volume.restrict (coordinateDomain a)).withDensity
       (fun x => ENNReal.ofReal (weight a x)), _
     exact (show (volume.restrict (coordinateDomain a)).withDensity
@@ -1041,17 +1075,17 @@ private theorem MultipliedData_of_lift
         multiplierCoordinate η a (fromActual (ζ := ζ) (hζ := hζ) y.val) *
           covariantCoordinate r.val a (fromActual (ζ := ζ) (hζ := hζ) y.val) j +
         scalarCoordinate s a (fromActual (ζ := ζ) (hζ := hζ) y.val) *
-          cutoffPartial F ζ hζ U R P H η a j (fromActual (ζ := ζ) (hζ := hζ) y.val)) →
+          current_cutoffPartial η a j (fromActual (ζ := ζ) (hζ := hζ) y.val)) →
       sectionFields t.val a (coordinates a y) = cutoffLift η.val a (coordinates a y) * sectionFields s.val a (coordinates a y) ∧
       localCoefficient a z.val y = cutoffLift η.val a (coordinates a y) • localCoefficient a r.val y +
         sectionFields s.val a (coordinates a y) • cutoffDifferential η.val a (coordinates a y) := by
     intro y h
     have hcoord : (coordinates a y).val = (baseReindex (F := F)).symm
       (fromActual (ζ := ζ) (hζ := hζ) y.val) := by simp [coordinates, fromActual]
-    have hxomega : (baseReindex (F := F)).symm (fromActual (ζ := ζ) (hζ := hζ) y.val) ∈ omega a :=
+    have hxomega  :=
       hcoord ▸ (coordinates a y).property
     have hx : fromActual (ζ := ζ) (hζ := hζ) y.val ∈ coordinateDomain a := hxomega
-    have hc : (coordinates a y).val ∈ omega a := (coordinates a y).property
+    have hc  := (coordinates a y).property
     constructor
     · simpa only [scalarCoordinate, multiplierCoordinate, liftExtension, ← hcoord, dif_pos hc] using h.1
     · apply decode_injective F (fromActual (ζ := ζ) (hζ := hζ) y.val)
@@ -1071,17 +1105,17 @@ private theorem MultipliedData_of_lift
   exact ⟨hh.mono (fun _ h => h.1), hh.mono (fun _ h => h.2)⟩
 
 private theorem localized_coordinate_map_of_lift
-    (η : CompactMultiplier (U := U) (H := H))
+    (η : current_CompactMultiplier)
     (M : ClosedGradientSpace A →L[ℂ] ClosedGradientSpace A)
-    (hM : ∀ f : S_U F ζ hζ U R P H,
-      M (KPContActualFormCutoffClosedProduct.graphTestLift F ζ hζ U R P H μG hμG hR realization f) =
-        KPContActualFormCutoffClosedProduct.graphTestLift F ζ hζ U R P H μG hμG hR realization
+    (hM : ∀ f : current_S_U,
+      M (current_graphTestLift μG hμG hR realization f) =
+        current_graphTestLift μG hμG hR realization
           (scalarMultiply η.val f))
-    (a : ActualChart (U := U) (H := H)) (B : LocalBall (3 * d F)) (hB : InteriorBall a B) :
+    (a : current_ActualChart) (B : LocalBall (3 * d F)) (hB : InteriorBall a B) :
     ∃ (Lη : ClosedGradientSpace A →L[ℂ] CoordinateH1 B) (C : ℝ),
       0 < C ∧ (∀ w, ‖Lη w‖ ≤ C * ‖w‖) ∧ ∀ (w : ClosedGradientSpace A)
       (s : BorelL2Sections F ζ hζ U R P H),
-      sectorLineIsometry F ζ hζ U R P H (closedGradientEmbedding A w) = mk F ζ hζ U R P H s →
+      current_sectorLineIsometry (closedGradientEmbedding A w) = mk F ζ hζ U R P H s →
       (fun x => (Lη w).val (zeroIndex (3 * d F)) x) =ᵐ[volume.restrict B.carrier]
         (fun x => multiplierCoordinate η a x * scalarCoordinate s a x) := by
   letI : NormedAddCommGroup (CoordinateH1 B) := Submodule.normedAddCommGroup (coordinateH1Submodule B)
@@ -1089,10 +1123,9 @@ private theorem localized_coordinate_map_of_lift
   letI : NormedSpace ℂ (CoordinateH1 B) := Submodule.normedSpace (coordinateH1Submodule B)
   letI : NormedSpace ℂ (ClosedGradientSpace A) := Submodule.normedSpace (closedGradientGraph A)
   letI : IsBoundedSMul ℂ (CoordinateH1 B) := IsBoundedSMul.of_norm_smul_le
-    (fun c x => norm_smul_le c (x : PiLp 2 (fun _ : MultiIndex (3*d F) 1 => BallL2 B)))
+    (fun c x => norm_smul_le c x)
   letI : IsBoundedSMul ℂ (ClosedGradientSpace A) := IsBoundedSMul.of_norm_smul_le
-    (fun c x => norm_smul_le c (x : WithLp 2
-      (KPContSectorClosedLpSubspace.H F ζ hζ R U × KPContActualSectorCotangentL2.V F ζ hζ U R P H)))
+    (fun c x => norm_smul_le c x)
   let L := (coordinateGraphMap F ζ hζ U R P H μG hμG hR realization a B hB).comp M
   refine ⟨L, ‖L‖ + 1, by positivity, fun w => ?_, ?_⟩
   · exact (L.le_opNorm w).trans (by nlinarith [norm_nonneg w])
@@ -1110,36 +1143,36 @@ private theorem localized_coordinate_map_of_lift
 structure Properties : Prop where
   weak_local : ∀ u : Q, ActualWeakH1Loc (H := H) (u : KPContSectorClosedLpSubspace.H F ζ hζ R U)
   closed_gradient : ∀ u : Q,
-    IsActualWeakGradient (u : KPContSectorClosedLpSubspace.H F ζ hζ R U) ((A).closure u)
-  form_integral : ∀ (u v : Q) (r s : SquareFiniteFamily (U := U) (H := H)),
-    KPContActualSectorCotangentL2.ofFamily F ζ hζ U R P H r = (A).closure u →
-    KPContActualSectorCotangentL2.ofFamily F ζ hζ U R P H s = (A).closure v →
+    IsActualWeakGradient u ((A).closure u)
+  form_integral : ∀ (u v : Q) (r s : current_SquareFiniteFamily),
+    current_ofFamily r = (A).closure u →
+    current_ofFamily s = (A).closure v →
     Integrable (pair r.val s.val) (KPContActualSectorCotangentL2.muU F ζ hζ U R P) ∧
     closedGradientForm A u v = ∫ x, pair r.val s.val x
       ∂KPContActualSectorCotangentL2.muU F ζ hζ U R P
-  energy_integral : ∀ (u : Q) (r : SquareFiniteFamily (U := U) (H := H)),
-    KPContActualSectorCotangentL2.ofFamily F ζ hζ U R P H r = (A).closure u →
+  energy_integral : ∀ (u : Q) (r : current_SquareFiniteFamily),
+    current_ofFamily r = (A).closure u →
     (∀ i, Integrable (placeSquare r.val i) (KPContActualSectorCotangentL2.muU F ζ hζ U R P)) ∧
     closedGradientEnergy A u = ∑ i : Fin (d F), ∫ x, placeSquare r.val i x
       ∂KPContActualSectorCotangentL2.muU F ζ hζ U R P
 
-  multiplier : ∀ η : CompactMultiplier (U := U) (H := H),
+  multiplier : ∀ η : current_CompactMultiplier,
     ∃ (Mη : ClosedGradientSpace A →L[ℂ] ClosedGradientSpace A) (C : ℝ),
       0 < C ∧ (∀ w, ‖Mη w‖ ≤ C * ‖w‖) ∧ ∀ w : ClosedGradientSpace A,
       ∃ (s t : BorelL2Sections F ζ hζ U R P H)
-        (r z : SquareFiniteFamily (U := U) (H := H)),
-        sectorLineIsometry F ζ hζ U R P H (closedGradientEmbedding A w) = mk F ζ hζ U R P H s ∧
-        sectorLineIsometry F ζ hζ U R P H (closedGradientEmbedding A (Mη w)) = mk F ζ hζ U R P H t ∧
-        KPContActualSectorCotangentL2.ofFamily F ζ hζ U R P H r = closedGradientCoordinate A w ∧
-        KPContActualSectorCotangentL2.ofFamily F ζ hζ U R P H z = closedGradientCoordinate A (Mη w) ∧
+        (r z : current_SquareFiniteFamily),
+        current_sectorLineIsometry (closedGradientEmbedding A w) = mk F ζ hζ U R P H s ∧
+        current_sectorLineIsometry (closedGradientEmbedding A (Mη w)) = mk F ζ hζ U R P H t ∧
+        current_ofFamily r = closedGradientCoordinate A w ∧
+        current_ofFamily z = closedGradientCoordinate A (Mη w) ∧
         MultipliedData η s t r z
 
-  localized_coordinate_map : ∀ (η : CompactMultiplier (U := U) (H := H))
-      (a : ActualChart (U := U) (H := H)) (B : LocalBall (3 * d F)), InteriorBall a B →
+  localized_coordinate_map : ∀ (η : current_CompactMultiplier)
+      (a : current_ActualChart) (B : LocalBall (3 * d F)), InteriorBall a B →
     ∃ (Lη : ClosedGradientSpace A →L[ℂ] CoordinateH1 B) (C : ℝ),
       0 < C ∧ (∀ w, ‖Lη w‖ ≤ C * ‖w‖) ∧ ∀ (w : ClosedGradientSpace A)
       (s : BorelL2Sections F ζ hζ U R P H),
-      sectorLineIsometry F ζ hζ U R P H (closedGradientEmbedding A w) = mk F ζ hζ U R P H s →
+      current_sectorLineIsometry (closedGradientEmbedding A w) = mk F ζ hζ U R P H s →
       (fun x => (Lη w).val (zeroIndex (3 * d F)) x) =ᵐ[volume.restrict B.carrier]
         (fun x => multiplierCoordinate η a x * scalarCoordinate s a x)
 
@@ -1186,8 +1219,7 @@ theorem kp_cont_actual_sector_form_weak_localization
     letI : NormedAddCommGroup (ClosedGradientSpace A) := Submodule.normedAddCommGroup (closedGradientGraph A)
     letI : NormedSpace ℂ (ClosedGradientSpace A) := Submodule.normedSpace (closedGradientGraph A)
     letI : IsBoundedSMul ℂ (ClosedGradientSpace A) := IsBoundedSMul.of_norm_smul_le
-      (fun c x => norm_smul_le c (x : WithLp 2
-        (KPContSectorClosedLpSubspace.H F ζ hζ R U × KPContActualSectorCotangentL2.V F ζ hζ U R P H)))
+      (fun c x => norm_smul_le c x)
     refine ⟨L, ‖L‖ + 1, by positivity, fun w => (L.le_opNorm w).trans (by nlinarith [norm_nonneg w]), ?_⟩
     intro w
     obtain ⟨s,hs⟩ := Quotient.exists_rep (KPContSectorLineL2Isometry.sectorLineIsometry F ζ hζ U R P H
@@ -1204,7 +1236,7 @@ theorem kp_cont_actual_sector_form_weak_localization
     obtain ⟨M⟩ := KPContActualSectorMultiplier.boundedSectorMultiplier F ζ hζ U R P H η.val C hC hη
     obtain ⟨L,hL,hLt⟩ := KPContActualFormCutoffClosedProduct.exists_lift
       F ζ hζ U R P H μG hμG hR realization η.val M C D hC hD hη hdη
-    exact localized_coordinate_map_of_lift F ζ hζ U R P H μG hμG hR realization η L hLt a B hB
+    apply localized_coordinate_map_of_lift <;> assumption
 
 end DedekindZetaZeroFree
 

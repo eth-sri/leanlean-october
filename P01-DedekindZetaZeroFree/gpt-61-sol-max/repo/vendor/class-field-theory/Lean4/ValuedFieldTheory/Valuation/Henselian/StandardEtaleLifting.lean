@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.RingTheory.Henselian
 public import Mathlib.RingTheory.Etale.StandardEtale
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -48,10 +51,9 @@ theorem exists_standardEtale_lift
     rw [← Polynomial.aeval_algHom_apply, ha₀]
     exact StandardEtalePair.HasMap.isUnit_derivative_f P hσ
   obtain ⟨a, ha, hacongr⟩ := HenselianRing.is_henselian P.f P.monic_f a₀ hroot hsimple
-  have hqa : q a = σ P.X := by
-    exact (Ideal.Quotient.eq.mpr hacongr).trans ha₀
+  have hqa : q a = σ P.X := (Ideal.Quotient.eq.mpr hacongr).trans ha₀
   have hdenom : IsUnit (Polynomial.aeval a P.g) := by
-    let : IsLocalHom (Ideal.Quotient.mk I) :=
+    let  :=
       isLocalHom_of_le_jacobson_bot I HenselianRing.jac
     apply IsUnit.of_map (Ideal.Quotient.mk I)
     change IsUnit (q (Polynomial.aeval a P.g))
@@ -69,7 +71,7 @@ theorem exists_isStandardEtale_lift
     {S : Type*} [CommRing S] [Algebra R S] [Algebra.IsStandardEtale R S]
     (σ : S →ₐ[R] R ⧸ I) :
     ∃ τ : S →ₐ[R] R, (Ideal.Quotient.mkₐ R I).comp τ = σ := by
-  let P : StandardEtalePresentation R S :=
+  let P  :=
     Classical.choice (inferInstance : Nonempty (StandardEtalePresentation R S))
   obtain ⟨τ, hτ⟩ := exists_standardEtale_lift P.P
     (σ.comp P.equivRing.symm.toAlgHom)

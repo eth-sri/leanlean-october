@@ -18,8 +18,8 @@ open KPGlobalTorusBorelTwistCompatibility
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 open _root_.DedekindZetaZeroFree.KPLiteralChamber renaming complexSectionHom → complexSectionHom
 
-variable (K : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-variable (C : ModelData F ζ hζ) (f : Flat F ζ hζ K)
+variable (K : Subgroup (KPLiteralRaw.G F ζ hζ)) 
+variable (C : ModelData F ζ hζ) 
 
 open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingGeometry renaming arch_center → arch_center
 

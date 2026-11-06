@@ -81,7 +81,10 @@ theorem frequencyNorm_pos' (u : Frequency D.recipe) : 0 < frequencyNorm D.recipe
   rw [← RawFixed.FixedData.rawFrequency_norm D u]
   exact_mod_cast D.recipe.A.exteriorNorm_pos _
 
-theorem rawKernel_eq_tsum (u : Frequency D.recipe) (Z : ℝ) (hZ : 0 < Z) (ξ w z : ℂ)
+section
+variable (u : Frequency D.recipe) (Z : ℝ) (hZ : 0 < Z)
+include u Z hZ in
+theorem rawKernel_eq_tsum   (ξ w z : ℂ)
     (hξ : ξ.re = 4) (hw : w.re = 4) (hz : z.re = 2) :
     RawFixed.FixedData.rawKernel D u ξ w z Z =
       ∑' a : AIdx D, NormalizedProbe.tripleMellinWeight D.recipe.probe (Scales.xScale Z) (Scales.yScale Z)
@@ -98,7 +101,8 @@ theorem rawKernel_eq_tsum (u : Frequency D.recipe) (Z : ℝ) (hZ : 0 < Z) (ξ w 
     PoissonInitialBridge.cpow_eq_comparisonRealPower hq]
   ring
 
-theorem rawInitialIntegrand_eq_twisted (u : Frequency D.recipe) (Z : ℝ) (hZ : 0 < Z)
+include u Z hZ in
+theorem rawInitialIntegrand_eq_twisted  
     (t : ℝ × ℝ × ℝ) :
     rawInitialIntegrand D u Z t = TwistedProbeRowDefinitions.rawIntegrand D u Z t := by
   have h1 : (NormalizedProbe.initialMellinPoint t).1.re = 4 := by
@@ -109,14 +113,16 @@ theorem rawInitialIntegrand_eq_twisted (u : Frequency D.recipe) (Z : ℝ) (hZ : 
     simp [NormalizedProbe.initialMellinPoint]
   exact rawKernel_eq_tsum D u Z hZ _ _ _ h1 h2 h3
 
-private theorem rawInit_eq_tsum (u : Frequency D.recipe) (Z : ℝ) (hZ : 0 < Z)
+include u Z hZ in
+private theorem rawInit_eq_tsum  
     (t : ℝ × ℝ × ℝ) :
     rawInitialIntegrand D u Z t = ∑' a : AIdx D,
       NormalizedProbe.initialTripleMellinSummand D.recipe.probe
         (Scales.xScale Z) (Scales.yScale Z) Z (u, a) t :=
   rawInitialIntegrand_eq_twisted D u Z hZ t
 
-theorem rawInitialIntegrand_integrable (u : Frequency D.recipe) (Z : ℝ) (hZ : 0 < Z) :
+include u Z hZ in
+theorem rawInitialIntegrand_integrable   :
     Integrable (rawInitialIntegrand D u Z) := by
   obtain ⟨hmaj, hint, hsum⟩ := PoissonInitialBridge.initial_majorant D Z hZ
   letI := aIndex_countable' D
@@ -172,7 +178,8 @@ theorem rawInitialIntegrand_norm_summable (Z : ℝ) (hZ : 0 < Z) :
       (fun a => hint _) (hsum.prod_factor _)).2
   exact Summable.of_nonneg_of_le (fun u => integral_nonneg fun t => norm_nonneg _) hfib hsum.prod
 
-theorem initialRowIntegral_eq (u : Frequency D.recipe) (Z : ℝ) (hZ : 0 < Z) :
+include u Z hZ in
+theorem initialRowIntegral_eq   :
     RawFixed.FixedData.initialRowIntegral D u Z = rawinitialRowIntegral D u Z := by
   have hint := rawInitialIntegrand_integrable D u Z hZ
   unfold rawinitialRowIntegral
@@ -181,6 +188,8 @@ theorem initialRowIntegral_eq (u : Frequency D.recipe) (Z : ℝ) (hZ : 0 < Z) :
     RawFixed.FixedData.Iwz, RawFixed.FixedData.Iz, comparisonVerticalIntegral,
     rawInitialIntegrand, integral_const_mul, Complex.ofReal_ofNat]
   ring
+end
+
 
 theorem twisted_ne_principal (f : TwistedProbeRowDefinitions.TwistedRow D) :
     f.val ≠ principalFrequency D.recipe := by

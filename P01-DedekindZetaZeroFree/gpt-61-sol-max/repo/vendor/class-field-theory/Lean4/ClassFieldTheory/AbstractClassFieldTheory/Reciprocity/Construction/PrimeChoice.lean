@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AbstractClassFieldTheory.Degree.PrimeElements
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -50,10 +53,7 @@ theorem valuationAt_chosenPrimeElement (v : ValuationData D A)
   Classical.choose_spec (v.normalizedValuation_surjective K v.oneValue)
 
 /-- The chosen prime element has valuation equal to the distinguished degree-one value. -/
-theorem chosenPrimeElement_isPrime (v : ValuationData D A)
-    (K : FiniteAbstractField G) :
-    v.IsPrimeElement K (v.chosenPrimeElement K) :=
-  v.valuationAt_chosenPrimeElement K
+alias chosenPrimeElement_isPrime := _root_.ClassFormation.ValuationData.valuationAt_chosenPrimeElement
 
 /-- In additive notation, two prime elements differ by a unit. -/
 theorem sub_mem_unitAddSubgroup_of_prime

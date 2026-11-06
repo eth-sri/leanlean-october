@@ -68,8 +68,11 @@ theorem chamberCoset_compact_covered_height_lower_bound
   exact (mul_le_mul_of_nonneg_left (hcompare _).2.1 hm.le).trans
     (hb _ _ ⟨g, hg, rfl⟩).1
 
-private theorem norm_flat_between_parameters (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (f : Flat F ζ hζ K) (s s₀ s₁ : ℂ) (hlo : s₀.re ≤ s.re) (hhi : s.re ≤ s₁.re)
+section
+variable (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
+    (f : Flat F ζ hζ K)
+include K hK f
+private theorem norm_flat_between_parameters   (s s₀ s₁ : ℂ) (hlo : s₀.re ≤ s.re) (hhi : s.re ≤ s₁.re)
     (g : G F ζ hζ) :
     ‖f.val s g‖ ≤ ‖f.val s₀ g‖ + ‖f.val s₁ g‖ := by
   obtain ⟨t, x, k, rfl⟩ := hK.2.1 g
@@ -89,8 +92,7 @@ private theorem norm_flat_between_parameters (K : Subgroup (G F ζ hζ)) (hK : I
     exact (mul_le_mul_of_nonneg_right he hprofile).trans
       (le_add_of_nonneg_right (mul_nonneg (Real.rpow_nonneg hd.le _) hprofile))
 
-theorem chamber_scalar_compact_majorants (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (f : Flat F ζ hζ K) (P : Set ℂ) (hP : IsCompact P)
+theorem chamber_scalar_compact_majorants   (P : Set ℂ) (hP : IsCompact P)
     (hPc : P ⊆ {s : ℂ | (1 : ℝ) / 3 < s.re})
     (C : Set (G F ζ hζ)) (hC : IsCompact C) :
     ∃ b : KPChamberBruhatTwoCells.RationalQuotient F → ℝ,
@@ -134,6 +136,8 @@ theorem chamber_scalar_compact_majorants (K : Subgroup (G F ζ hζ)) (hK : Iwasa
   · refine ⟨0, summable_zero, ?_⟩
     intro c s hs g hg
     exact (hne ⟨s, hs⟩).elim
+end
+
 
 end DedekindZetaZeroFree.KPLiteralChamber
 
@@ -270,24 +274,30 @@ private theorem partial_smooth (H : P × E → ℂ) (U : Set P) (V : Set E)
     exact (he.mono (fun q hq => hq.symm)).filter_mono nhdsWithin_le_nhds
 open KPGlobalResidualConstruction KPLiteralRaw
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-private def jet (n : ℕ) (v : Fin n → ArchCoordinates F) (u : KPLiteralRaw.G F ζ hζ → ℂ) (g : KPLiteralRaw.G F ζ hζ) :=
-  iteratedFDeriv ℝ n (fun x => u (g * archChart F ζ hζ x)) (archBase F) v
+
+local notation:max "current_G" => KPLiteralRaw.G F ζ hζ
+
+
+local notation:max "current_archChart" => archChart F ζ hζ
+
+private def jet (n : ℕ) (v : Fin n → ArchCoordinates F) (u : current_G → ℂ) (g : current_G) :=
+  iteratedFDeriv ℝ n (fun x => u (g * current_archChart x)) (archBase F) v
 private def μ (p : ArchCoordinates F × ArchCoordinates F) : ArchCoordinates F := fun q =>
   ![p.1 q 0 + p.1 q 1 * p.2 q 0 / (1 + p.1 q 2 * p.2 q 0),
     p.1 q 1 * p.2 q 1 / (1 + p.1 q 2 * p.2 q 0)^2,
     p.2 q 2 + p.1 q 2 * p.2 q 1 / (1 + p.1 q 2 * p.2 q 0)]
 set_option maxHeartbeats 800000 in
 private theorem jet_continuous (n : ℕ) (v : Fin n → ArchCoordinates F)
-    (u : KPLiteralRaw.G F ζ hζ → ℂ) (hu : Smooth F ζ hζ u) : Continuous (jet F ζ hζ n v u) := by
+    (u : current_G → ℂ) (hu : Smooth F ζ hζ u) : Continuous (jet F ζ hζ n v u) := by
   obtain ⟨V,hVo,hb,hVD,hμ,hμD,hprod,hthick,hcomm⟩ :=
     KPLiteralChamber.JointProfile.ArchChartProduct.actual_archChart_product F ζ hζ
   change ContDiffOn ℝ (⊤ : ℕ∞) (μ F) (V ×ˢ V) at hμ
   change Set.MapsTo (μ F) (V ×ˢ V) (archDomain F) at hμD
-  change ∀ y ∈ V, ∀ x ∈ V, archChart F ζ hζ (μ F (y,x)) = archChart F ζ hζ y * archChart F ζ hζ x at hprod
+  change ∀ y ∈ V, ∀ x ∈ V, current_archChart (μ F (y,x)) = current_archChart y * current_archChart x at hprod
   obtain ⟨U,hU⟩ := hu.2.2
   apply continuous_iff_continuousAt.mpr
   intro g
-  let H := fun p : ArchCoordinates F × ArchCoordinates F => u (g * archChart F ζ hζ (μ F p))
+  let H := fun p : ArchCoordinates F × ArchCoordinates F => u (g * current_archChart (μ F p))
   have hH : ContDiffOn ℝ (⊤ : ℕ∞) H (V ×ˢ V) := (hu.2.1 g).comp hμ hμD
   have hj : ContDiffAt ℝ (⊤ : ℕ∞)
       (fun p => iteratedFDeriv ℝ n (fun x => H (p.1,x)) p.2 v) (archBase F,archBase F) :=
@@ -298,13 +308,13 @@ private theorem jet_continuous (n : ℕ) (v : Fin n → ArchCoordinates F)
     simpa only [Function.comp_def] using hc
   have heq (y : ArchCoordinates F) (hy : y ∈ V)
       (a : KPGlobalTorusFunctionData.globalLevel F ζ hζ U) :
-      jet F ζ hζ n v u (g * (archChart F ζ hζ y * a.val)) = J y := by
-    have he : (fun x => u ((g * (archChart F ζ hζ y * a.val)) * archChart F ζ hζ x)) =ᶠ[nhds (archBase F)]
+      jet F ζ hζ n v u (g * (current_archChart y * a.val)) = J y := by
+    have he : (fun x => u ((g * (current_archChart y * a.val)) * current_archChart x)) =ᶠ[nhds (archBase F)]
         (fun x => H (y,x)) := by
       filter_upwards [show ∀ᶠ x in nhds (archBase F), x ∈ V from hVo.mem_nhds hb] with x hx
       dsimp [H]
       rw [hprod y hy x hx]
-      rw [mul_assoc g, mul_assoc (archChart F ζ hζ y), (hcomm U a.val a.property x).eq.symm,
+      rw [mul_assoc g, mul_assoc (current_archChart y), (hcomm U a.val a.property x).eq.symm,
         ← mul_assoc, ← mul_assoc, hU _ a.val a.property, mul_assoc]
     exact congrArg (fun T => T v) ((he.iteratedFDeriv ℝ n).self_of_nhds)
   have hbase : J (archBase F) = jet F ζ hζ n v u g := by
@@ -316,44 +326,44 @@ private theorem jet_continuous (n : ℕ) (v : Fin n → ArchCoordinates F)
   obtain ⟨W,hW,hoW,hbW⟩ := mem_nhds_iff.mp (Filter.inter_mem hn (hVo.mem_nhds hb))
   have hWV : W ⊆ V := fun y hy => (hW hy).2
   have hT := hthick W hoW hbW hWV U
-  have hG : (fun k : KPLiteralRaw.G F ζ hζ => g⁻¹ * k) ⁻¹'
+  have hG : (fun k : current_G => g⁻¹ * k) ⁻¹'
       {k | ∃ y ∈ W, ∃ a ∈ KPGlobalTorusFunctionData.globalLevel F ζ hζ U,
-        k = archChart F ζ hζ y * a} ∈ nhds g := by
-    have hc : ContinuousAt (fun k : KPLiteralRaw.G F ζ hζ => g⁻¹ * k) g := continuousAt_const.mul continuousAt_id
+        k = current_archChart y * a} ∈ nhds g := by
+    have hc : ContinuousAt (fun k : current_G => g⁻¹ * k) g := continuousAt_const.mul continuousAt_id
     exact hc (by simpa using hT)
   apply Filter.mem_of_superset hG
   intro k hk
   obtain ⟨y,hy,a,ha,hk⟩ := hk
-  have hk' : k = g * (archChart F ζ hζ y * a) := by rw [← hk]; group
+  have hk' : k = g * (current_archChart y * a) := by rw [← hk]; group
   change jet F ζ hζ n v u k ∈ S
   rw [hk', heq y (hWV hy) ⟨a,ha⟩]
   exact (hW hy).1
-private def logM (K : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (g : KPLiteralRaw.G F ζ hζ) : ℝ := Real.log
+private def logM (K : Subgroup (current_G)) (hK : IwasawaCompact F ζ hζ K)
+    (g : current_G) : ℝ := Real.log
   (((KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ
     (KPLiteralChamber.literalIwasawa F ζ hζ K hK) g : NNReal) : ℝ))
 private theorem logM_chart_smooth
-    (K : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (f : Flat F ζ hζ K) (g : KPLiteralRaw.G F ζ hζ) (hg : f.val 0 g ≠ 0) :
-    ContDiffAt ℝ (⊤ : ℕ∞) (fun x => (logM F ζ hζ K hK (g * archChart F ζ hζ x) : ℂ)) (archBase F) := by
+    (K : Subgroup (current_G)) (hK : IwasawaCompact F ζ hζ K)
+    (f : Flat F ζ hζ K) (g : current_G) (hg : f.val 0 g ≠ 0) :
+    ContDiffAt ℝ (⊤ : ℕ∞) (fun x => (logM F ζ hζ K hK (g * current_archChart x) : ℂ)) (archBase F) := by
   have hD : IsOpen (archDomain F) := by
     change IsOpen {x : ArchCoordinates F | ∀ w, x w 1 ≠ 0}
     have he : {x : ArchCoordinates F | ∀ w, x w 1 ≠ 0} = ⋂ w, {x | x w 1 ≠ 0} := by ext; simp
     rw [he]; exact isOpen_iInter_of_finite (fun w => isOpen_ne_fun (by fun_prop) continuous_const)
   have hb : archBase F ∈ archDomain F := by intro w; simp [archBase]
-  have hh (s : ℂ) : ContDiffAt ℝ (⊤ : ℕ∞) (fun x => f.val s (g * archChart F ζ hζ x)) (archBase F) :=
+  have hh (s : ℂ) : ContDiffAt ℝ (⊤ : ℕ∞) (fun x => f.val s (g * current_archChart x)) (archBase F) :=
     ((f.property.1 s).1.2.1 g).contDiffAt (hD.mem_nhds hb)
-  have h0 : f.val 0 (g * archChart F ζ hζ (archBase F)) ≠ 0 := by
+  have h0 : f.val 0 (g * current_archChart (archBase F)) ≠ 0 := by
     simpa [KPInterface.ResidueConstruction.Raw.archChart_base] using hg
-  have h1 : f.val 1 (g * archChart F ζ hζ (archBase F)) ≠ 0 := by
+  have h1 : f.val 1 (g * current_archChart (archBase F)) ≠ 0 := by
     rw [KPLiteralChamber.JointProfile.literal_flat_multiplier_formula F ζ hζ K hK f]
     exact mul_ne_zero (Complex.exp_ne_zero _) h0
   have hs := (((hh 1).norm ℂ h1).log (norm_ne_zero_iff.mpr h1)).sub
     (((hh 0).norm ℂ h0).log (norm_ne_zero_iff.mpr h0))
   have hc := Complex.ofRealCLM.contDiff.contDiffAt.comp (archBase F) hs
-  have he : (fun x => (Real.log ‖f.val 1 (g * archChart F ζ hζ x)‖ -
-      Real.log ‖f.val 0 (g * archChart F ζ hζ x)‖ : ℂ)) =ᶠ[nhds (archBase F)]
-        (fun x => (logM F ζ hζ K hK (g * archChart F ζ hζ x) : ℂ)) := by
+  have he : (fun x => (Real.log ‖f.val 1 (g * current_archChart x)‖ -
+      Real.log ‖f.val 0 (g * current_archChart x)‖ : ℂ)) =ᶠ[nhds (archBase F)]
+        (fun x => (logM F ζ hζ K hK (g * current_archChart x) : ℂ)) := by
     filter_upwards [(hh 0).continuousAt.eventually_ne h0] with x hx
     rw [KPLiteralChamber.JointProfile.literal_flat_multiplier_formula F ζ hζ K hK f]
     simp only [one_mul, norm_mul, Complex.norm_exp, Complex.ofReal_re]
@@ -376,9 +386,9 @@ private theorem polynomial_nodes (n : ℕ) (P : Polynomial ℂ) (hP : P.natDegre
   nth_rw 1 [Lagrange.eq_interpolate hi.injOn hd]
   simp [Lagrange.interpolate_apply, basisEval, Polynomial.eval_finsetSum]
 private theorem jet_poly_at_nonzero
-    (K : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
+    (K : Subgroup (current_G)) (hK : IwasawaCompact F ζ hζ K)
     (f : Flat F ζ hζ K) (n : ℕ) (v : Fin n → ArchCoordinates F)
-    (g : KPLiteralRaw.G F ζ hζ) (hg : f.val 0 g ≠ 0) :
+    (g : current_G) (hg : f.val 0 g ≠ 0) :
     ∃ P : Polynomial ℂ, P.natDegree ≤ n ∧ ∀ s : ℂ,
       jet F ζ hζ n v (f.val s) g = Complex.exp (s * (logM F ζ hζ K hK g : ℂ)) * P.eval s := by
   have hD : IsOpen (archDomain F) := by
@@ -427,7 +437,7 @@ private theorem matrix_cont (w : NumberField.InfinitePlace F) (x : ArchCoordinat
   have hh := units_cont (fun y : ArchCoordinates F => KPLiteralChamber.rightMatrix (y w)) x hc
   simpa using! hh
 private theorem chart_cont (x : ArchCoordinates F) (hx : x ∈ archDomain F) :
-    ContinuousAt (archChart F ζ hζ) x := by
+    ContinuousAt (current_archChart) x := by
   have hmat : ContinuousAt (fun y : ArchCoordinates F => fun w =>
       Matrix.ProjGenLinGroup.mk (KPLiteralChamber.rightMatrix (y w))) x := by
     apply continuousAt_pi.mpr; intro w
@@ -439,23 +449,24 @@ private theorem chart_cont (x : ArchCoordinates F) (hx : x ∈ archDomain F) :
   apply hh.congr_of_eventuallyEq
   exact Filter.Eventually.of_forall (fun y => KPLiteralChamber.right_insertion F ζ hζ y)
 
-private def normalizedJet
-    (K : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
+section
+variable (K : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
     (f : Flat F ζ hζ K) (n : ℕ) (v : Fin n → ArchCoordinates F) (s : ℂ)
+include K hK f n v s
+private def normalizedJet
+     
     (g : KPLiteralRaw.G F ζ hζ) : ℂ :=
   Complex.exp (-s * (logM F ζ hζ K hK g : ℂ)) * jet F ζ hζ n v (f.val s) g
 
 private theorem normalizedJet_continuous
-    (K : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (f : Flat F ζ hζ K) (n : ℕ) (v : Fin n → ArchCoordinates F) (s : ℂ) :
+      :
     Continuous (normalizedJet F ζ hζ K hK f n v s) := by
   exact (continuous_const.mul (Complex.continuous_ofReal.comp
     (literal_log_modulus_continuous F ζ hζ K hK))).cexp.mul
       (jet_continuous F ζ hζ n v (f.val s) (f.property.1 s).1)
 
 private theorem jet_zero_on_interior
-    (K : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (f : Flat F ζ hζ K) (n : ℕ) (v : Fin n → ArchCoordinates F) (s : ℂ)
+     
     (g : KPLiteralRaw.G F ζ hζ) (hg : g ∈ interior {h | f.val 0 h = 0}) :
     jet F ζ hζ n v (f.val s) g = 0 := by
   have hb : archBase F ∈ archDomain F := by intro w; simp [archBase]
@@ -473,8 +484,7 @@ private theorem jet_zero_on_interior
   simp
 
 private theorem normalizedJet_interpolation
-    (K : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (f : Flat F ζ hζ K) (n : ℕ) (v : Fin n → ArchCoordinates F) (s : ℂ)
+     
     (g : KPLiteralRaw.G F ζ hζ) :
     normalizedJet F ζ hζ K hK f n v s g =
       ∑ i : Fin (n+1), normalizedJet F ζ hζ K hK f n v (node n i) g * basisEval n i s := by
@@ -508,11 +518,13 @@ private theorem normalizedJet_interpolation
     exact continuous_finsetSum _ (fun i _ =>
       (normalizedJet_continuous F ζ hζ K hK f n v (node n i)).mul_const _)
   exact he.closure (normalizedJet_continuous F ζ hζ K hK f n v s) hc (hd g)
+end
+
 
 theorem literal_multiplier_spatial_jet_continuous
-    (K : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
+    (K : Subgroup (current_G)) (hK : IwasawaCompact F ζ hζ K)
     (f : Flat F ζ hζ K) (j : KPGlobalResidualConstruction.Jet F) :
-    Continuous (fun p : ℂ × KPLiteralRaw.G F ζ hζ =>
+    Continuous (fun p : ℂ × current_G =>
       iteratedFDeriv ℝ j.1
         (fun x => Complex.exp (p.1 * (Real.log
           (((KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ
@@ -521,24 +533,24 @@ theorem literal_multiplier_spatial_jet_continuous
           f.val 0 (p.2 * KPGlobalResidualConstruction.archChart F ζ hζ x))
         (KPGlobalResidualConstruction.archBase F) j.2) := by
   rcases j with ⟨n,v⟩
-  have hfun : (fun p : ℂ × KPLiteralRaw.G F ζ hζ =>
+  have hfun : (fun p : ℂ × current_G =>
       iteratedFDeriv ℝ n
-        (fun x => Complex.exp (p.1 * (logM F ζ hζ K hK (p.2 * archChart F ζ hζ x) : ℂ)) *
-          f.val 0 (p.2 * archChart F ζ hζ x)) (archBase F) v) =
+        (fun x => Complex.exp (p.1 * (logM F ζ hζ K hK (p.2 * current_archChart x) : ℂ)) *
+          f.val 0 (p.2 * current_archChart x)) (archBase F) v) =
       (fun p => jet F ζ hζ n v (f.val p.1) p.2) := by
     funext p
-    have he : (fun x => Complex.exp (p.1 * (logM F ζ hζ K hK (p.2 * archChart F ζ hζ x) : ℂ)) *
-        f.val 0 (p.2 * archChart F ζ hζ x)) = (fun x => f.val p.1 (p.2 * archChart F ζ hζ x)) := by
+    have he : (fun x => Complex.exp (p.1 * (logM F ζ hζ K hK (p.2 * current_archChart x) : ℂ)) *
+        f.val 0 (p.2 * current_archChart x)) = (fun x => f.val p.1 (p.2 * current_archChart x)) := by
       funext x
       exact (literal_flat_multiplier_formula F ζ hζ K hK f p.1 _).symm
     rw [he]
     rfl
-  change Continuous (fun p : ℂ × KPLiteralRaw.G F ζ hζ =>
+  change Continuous (fun p : ℂ × current_G =>
     iteratedFDeriv ℝ n
-      (fun x => Complex.exp (p.1 * (logM F ζ hζ K hK (p.2 * archChart F ζ hζ x) : ℂ)) *
-        f.val 0 (p.2 * archChart F ζ hζ x)) (archBase F) v)
+      (fun x => Complex.exp (p.1 * (logM F ζ hζ K hK (p.2 * current_archChart x) : ℂ)) *
+        f.val 0 (p.2 * current_archChart x)) (archBase F) v)
   rw [hfun]
-  have hinterp : (fun p : ℂ × KPLiteralRaw.G F ζ hζ => jet F ζ hζ n v (f.val p.1) p.2) =
+  have hinterp : (fun p : ℂ × current_G => jet F ζ hζ n v (f.val p.1) p.2) =
       (fun p => Complex.exp (p.1 * (logM F ζ hζ K hK p.2 : ℂ)) *
         ∑ i : Fin (n+1), normalizedJet F ζ hζ K hK f n v (node n i) p.2 * basisEval n i p.1) := by
     funext p
@@ -547,7 +559,7 @@ theorem literal_multiplier_spatial_jet_continuous
     rw [← mul_assoc, ← Complex.exp_add]
     simp
   rw [hinterp]
-  have hc : Continuous (fun p : ℂ × KPLiteralRaw.G F ζ hζ =>
+  have hc : Continuous (fun p : ℂ × current_G =>
       Complex.exp (p.1 * (logM F ζ hζ K hK p.2 : ℂ))) :=
     (continuous_fst.mul (Complex.continuous_ofReal.comp
       ((literal_log_modulus_continuous F ζ hζ K hK).comp continuous_snd))).cexp
@@ -679,8 +691,11 @@ theorem rightJet_compactExtension_rational_eq
   unfold rightJet
   rw [he]
 
-theorem rightJet_induction_covariance (K : Subgroup (G F ζ hζ))
+section
+variable (K : Subgroup (G F ζ hζ))
     (f : Flat F ζ hζ K) (s : ℂ) (j : KPGlobalResidualConstruction.Jet F)
+include K f s j
+theorem rightJet_induction_covariance  
     (r : R F ζ hζ) (u : KPAdeles F) (g : G F ζ hζ) :
     rightJet F ζ hζ j (f.val s)
       ((r.val.val * KPGlobalTorusFunctionData.N F ζ hζ u) * g) =
@@ -701,8 +716,7 @@ theorem rightJet_induction_covariance (K : Subgroup (G F ζ hζ))
   rw [he, iteratedFDeriv_const_smul_apply' (jet_chart_smooth F ζ hζ K f s g j.1)]
   rfl
 
-theorem norm_rightJet_induction_covariance (K : Subgroup (G F ζ hζ))
-    (f : Flat F ζ hζ K) (s : ℂ) (j : KPGlobalResidualConstruction.Jet F)
+theorem norm_rightJet_induction_covariance  
     (r : R F ζ hζ) (u : KPAdeles F) (g : G F ζ hζ) :
     ‖rightJet F ζ hζ j (f.val s)
       ((r.val.val * KPGlobalTorusFunctionData.N F ζ hζ u) * g)‖ =
@@ -719,8 +733,7 @@ theorem norm_rightJet_induction_covariance (K : Subgroup (G F ζ hζ))
   norm_num
   ring
 
-theorem rightJet_N_invariant (K : Subgroup (G F ζ hζ))
-    (f : Flat F ζ hζ K) (s : ℂ) (j : KPGlobalResidualConstruction.Jet F)
+theorem rightJet_N_invariant  
     (x : KPAdeles F) (g : G F ζ hζ) :
     rightJet F ζ hζ j (f.val s) (KPGlobalTorusFunctionData.N F ζ hζ x * g) =
       rightJet F ζ hζ j (f.val s) g := by
@@ -728,16 +741,14 @@ theorem rightJet_N_invariant (K : Subgroup (G F ζ hζ))
     (1 : R F ζ hζ) x g
   simpa [KPGlobalExceptionalParameter.realLogPower] using h
 
-theorem rightJet_torus_root (K : Subgroup (G F ζ hζ))
-    (f : Flat F ζ hζ K) (s : ℂ) (j : KPGlobalResidualConstruction.Jet F)
+theorem rightJet_torus_root  
     (t : KPGlobalTorusFunctionData.E F ζ hζ) (x : KPAdeles F) (g : G F ζ hζ) :
     rightJet F ζ hζ j (f.val s) ((t.val * KPGlobalTorusFunctionData.N F ζ hζ x) * g) =
       rightJet F ζ hζ j (f.val s) (t.val * g) := by
   rw [coveredTorus_normalizes_upperRoot F ζ hζ t x, mul_assoc,
     rightJet_N_invariant]
 
-theorem normalized_rightJet_R_invariant (K : Subgroup (G F ζ hζ))
-    (f : Flat F ζ hζ K) (s : ℂ) (j : KPGlobalResidualConstruction.Jet F)
+theorem normalized_rightJet_R_invariant  
     (r : R F ζ hζ) (t : KPGlobalTorusFunctionData.E F ζ hζ) (g : G F ζ hζ) :
     ‖rightJet F ζ hζ j (f.val s) ((r.val * t).val * g)‖ /
         (((KPGlobalTorusFunctionData.delta F ζ hζ (r.val * t) : NNReal) : ℝ)) ^
@@ -756,6 +767,8 @@ theorem normalized_rightJet_R_invariant (K : Subgroup (G F ζ hζ))
   rw [Subgroup.coe_mul, mul_assoc, h, map_mul, Units.val_mul, NNReal.coe_mul,
     Real.mul_rpow (hd r.val).le (hd t).le]
   exact mul_div_mul_left _ _ (ne_of_gt (Real.rpow_pos_of_pos (hd r.val) _))
+end
+
 
 theorem rightJet_zero (v : Functions F ζ hζ) (g : G F ζ hζ)
     (m : Fin 0 → KPGlobalResidualConstruction.ArchCoordinates F) :

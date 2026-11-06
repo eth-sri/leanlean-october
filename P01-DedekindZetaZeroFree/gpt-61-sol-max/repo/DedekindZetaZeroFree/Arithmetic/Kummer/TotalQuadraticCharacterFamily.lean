@@ -26,24 +26,24 @@ def trivialTop : RayClassCharacter F ⊤ where
 
 @[simp] theorem trivialTop_bottom : (trivialTop (F := F)) ⊥ = 0 := by simp
 
-@[simp] theorem trivialTop_nonzero (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) :
-    (trivialTop (F := F)) I = 1 := by simp [hI]
+
+
 
 def Constrained (A : SArithmeticData F) (c : Ideal (𝓞 F)) : Prop :=
   Squarefree c ∧ c ⊔ uniformSquareUnitModulus A.Sf = ⊤
 
-def totalConductor (A : SArithmeticData F) (σ : F →+* ℂ)
+section
+variable (A : SArithmeticData F) (σ : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
     (C : A.GeneralArithmeticContext σ η hS)
-    (m : Fˣ → Ideal (𝓞 F)) (c : Ideal (𝓞 F)) : Ideal (𝓞 F) :=
+    (m : Fˣ → Ideal (𝓞 F))
+include A σ η hS C m
+def totalConductor   (c : Ideal (𝓞 F)) : Ideal (𝓞 F) :=
   if h : Constrained A c then
     m (KummerSquarefreeMembers.generator A σ η hS C c h.1 h.2)
   else ⊤
 
-def totalCharacter (A : SArithmeticData F) (σ : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (C : A.GeneralArithmeticContext σ η hS)
-    (m : Fˣ → Ideal (𝓞 F)) (Xi : (x : Fˣ) → RayClassCharacter F (m x))
+def totalCharacter   (Xi : (x : Fˣ) → RayClassCharacter F (m x))
     (c : Ideal (𝓞 F)) : RayClassCharacter F (totalConductor A σ η hS C m c) :=
   if h : Constrained A c then
     KummerProductPrimitive.transport (by simp [totalConductor, h])
@@ -51,39 +51,29 @@ def totalCharacter (A : SArithmeticData F) (σ : F →+* ℂ)
   else
     KummerProductPrimitive.transport (by simp [totalConductor, h]) (trivialTop (F := F))
 
-@[simp] theorem totalConductor_constrained (A : SArithmeticData F) (σ : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (C : A.GeneralArithmeticContext σ η hS)
-    (m : Fˣ → Ideal (𝓞 F)) (c : Ideal (𝓞 F)) (h : Constrained A c) :
+@[simp] theorem totalConductor_constrained   (c : Ideal (𝓞 F)) (h : Constrained A c) :
     totalConductor A σ η hS C m c =
       m (KummerSquarefreeMembers.generator A σ η hS C c h.1 h.2) := by
   simp [totalConductor, h]
 
-@[simp] theorem totalConductor_unconstrained (A : SArithmeticData F) (σ : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (C : A.GeneralArithmeticContext σ η hS)
-    (m : Fˣ → Ideal (𝓞 F)) (c : Ideal (𝓞 F)) (h : ¬ Constrained A c) :
+@[simp] theorem totalConductor_unconstrained   (c : Ideal (𝓞 F)) (h : ¬ Constrained A c) :
     totalConductor A σ η hS C m c = ⊤ := by
   simp [totalConductor, h]
 
 @[simp] theorem totalCharacter_constrained_apply
-    (A : SArithmeticData F) (σ : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (C : A.GeneralArithmeticContext σ η hS)
-    (m : Fˣ → Ideal (𝓞 F)) (Xi : (x : Fˣ) → RayClassCharacter F (m x))
+      (Xi : (x : Fˣ) → RayClassCharacter F (m x))
     (c : Ideal (𝓞 F)) (h : Constrained A c) (I : Ideal (𝓞 F)) :
     totalCharacter A σ η hS C m Xi c I =
       Xi (KummerSquarefreeMembers.generator A σ η hS C c h.1 h.2) I := by
   simp [totalCharacter, h]
 
 @[simp] theorem totalCharacter_unconstrained_apply
-    (A : SArithmeticData F) (σ : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (C : A.GeneralArithmeticContext σ η hS)
-    (m : Fˣ → Ideal (𝓞 F)) (Xi : (x : Fˣ) → RayClassCharacter F (m x))
+      (Xi : (x : Fˣ) → RayClassCharacter F (m x))
     (c : Ideal (𝓞 F)) (h : ¬ Constrained A c) (I : Ideal (𝓞 F)) :
     totalCharacter A σ η hS C m Xi c I = if I = ⊥ then 0 else 1 := by
   simp [totalCharacter, h]
+end
+
 
 end KummerFamilyAssembly
 end

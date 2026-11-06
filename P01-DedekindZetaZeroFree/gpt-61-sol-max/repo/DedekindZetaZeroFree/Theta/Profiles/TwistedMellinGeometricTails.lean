@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.LocalMellin.TestFunctionPole
 public import DedekindZetaZeroFree.Metaplectic.Intertwining.RankOne.CubicBetaAndMellinEvaluation
 
 @[expose] public section
+
 
 noncomputable section
 namespace DedekindZetaZeroFree
@@ -26,8 +29,7 @@ private lemma exponent_nonneg_iff (K : Type*) [Field K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K] (y : Kˣ) :
     0 ≤ KPCubicExpansion.valuationExponent K y ↔ (y : K) ∈ (valuation K).integer := by
   let iso := IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
-  have hne : iso (valuation K (y : K)) ≠ 0 := by
-    exact (map_ne_zero_iff iso iso.injective).mpr ((Valuation.ne_zero_iff _).mpr y.ne_zero)
+  have hne : iso (valuation K y) ≠ 0 := (map_ne_zero_iff iso iso.injective).mpr ((Valuation.ne_zero_iff _).mpr y.ne_zero)
   rw [Valuation.mem_integer_iff]
   rw [← map_le_map_iff iso, map_one]
   rw [← WithZero.exp_log hne, ← WithZero.exp_zero, WithZero.exp_le_exp]
@@ -39,7 +41,7 @@ private lemma shell_measure (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K]
     [MeasurableSpace K] [BorelSpace K]
     (dx : Measure K) [dx.IsAddHaarMeasure]
-    (m : ℝ) (hm : 0 < m) (hvol : dx ((valuation K).integer : Set K) = ENNReal.ofReal m) (j : ℤ) :
+    (m : ℝ) (hm : 0 < m) (hvol : dx ((valuation K).integer) = ENNReal.ofReal m) (j : ℤ) :
     MeasurableSet {y : Kˣ | KPCubicExpansion.valuationExponent K y = j} ∧
     KPCubicHaar.multiplicativeHaar K dx {y : Kˣ |
       KPCubicExpansion.valuationExponent K y = j} =
@@ -50,13 +52,12 @@ private lemma shell_measure (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
     simp [h] at hp
     exact uniformizer_ne_zero hp.symm
   let π : Kˣ := Units.mk0 p hpne
-  have hπ : valuation K (π : K) = uniformizer K := hp
+  have hπ : valuation K π = uniformizer K := hp
   let ν := KPCubicHaar.multiplicativeHaar K dx
   have hhaar := kp_rankone_cubic_haar_power_measure K dx m hm hvol
   letI : ν.IsHaarMeasure := hhaar.1
   let U : Set Kˣ := {y | (y : K) ∈ (valuation K).integer ∧ ((y⁻¹ : Kˣ) : K) ∈ (valuation K).integer}
-  have hU : MeasurableSet U := by
-    exact ((valuation K).isOpen_integer.preimage Units.continuous_val).measurableSet.inter
+  have hU : MeasurableSet U := ((valuation K).isOpen_integer.preimage Units.continuous_val).measurableSet.inter
       ((valuation K).isOpen_integer.preimage (Units.continuous_val.comp continuous_inv)).measurableSet
   have hUeq (y : Kˣ) : y ∈ U ↔ KPCubicExpansion.valuationExponent K y = 0 := by
     change ((y : K) ∈ (valuation K).integer ∧ ((y⁻¹ : Kˣ) : K) ∈ (valuation K).integer) ↔ _
@@ -84,17 +85,20 @@ private lemma shell_measure (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
 
 private lemma cubic_norm (χ : Kˣ →ₜ* ℂˣ) (hχ : ∀ x, χ x ^ 3 = 1) (x : Kˣ) :
     ‖(χ x : ℂ)‖ = 1 := by
-  have hp : ‖(χ x : ℂ)‖ ^ (3 : ℕ) = 1 := by
+  have hp : ‖(χ x : ℂ)‖ ^ (3) = 1 := by
     rw [← norm_pow]
     have he := congrArg (fun z : ℂˣ => (z : ℂ)) (hχ x)
     rw [Units.val_pow_eq_pow_val, Units.val_one] at he
     rw [he, norm_one]
-  exact (pow_eq_one_iff_of_nonneg (norm_nonneg _) (by decide : (3 : ℕ) ≠ 0)).mp hp
+  exact (pow_eq_one_iff_of_nonneg (norm_nonneg _) (by decide : (3) ≠ 0)).mp hp
 
+section
+variable (dx : Measure K) [dx.IsAddHaarMeasure]
+    (m : ℝ) (hm : 0 < m) (hvol : dx ((valuation K).integer) = ENNReal.ofReal m)
+include dx m hm hvol
 private lemma shell_character_integral
-    (dx : Measure K) [dx.IsAddHaarMeasure]
-    (m : ℝ) (hm : 0 < m) (hvol : dx ((valuation K).integer : Set K) = ENNReal.ofReal m)
-    (π : Kˣ) (hπ : valuation K (π : K) = uniformizer K)
+     
+    (π : Kˣ) (hπ : valuation K π = uniformizer K)
     (χ : Kˣ →ₜ* ℂˣ) (j : ℤ) :
     (∫ y : Kˣ in {y | KPCubicExpansion.valuationExponent K y = j}, (χ y : ℂ)
       ∂KPCubicHaar.multiplicativeHaar K dx) =
@@ -103,7 +107,7 @@ private lemma shell_character_integral
         ((m * (1 - (KPCubicUnitIndices.residueCard K : ℝ)⁻¹) : ℝ) : ℂ) * (χ π : ℂ)^j
       else 0 := by
   let μ := KPCubicHaar.multiplicativeHaar K dx
-  let S : Set Kˣ := {y | KPCubicExpansion.valuationExponent K y = j}
+  let S  := {y | KPCubicExpansion.valuationExponent K y = j}
   have hS := (shell_measure K dx m hm hvol j).1
   letI : μ.IsHaarMeasure := (kp_rankone_cubic_haar_power_measure K dx m hm hvol).1
   by_cases hu : ∀ u : ((valuation K).integer)ˣ,
@@ -137,7 +141,7 @@ private lemma shell_character_integral
     let z := KPRankOneCubicProjection.unitInclusion K u
     have hz : KPCubicExpansion.valuationExponent K z = 0 :=
       KPCubicExpansion.valuationExponent_unit u
-    let f : Kˣ → ℂ := S.indicator (fun y => (χ y : ℂ))
+    let f : Kˣ → ℂ := S.indicator (fun y => (χ y))
     have hmem (y : Kˣ) : z*y ∈ S ↔ y ∈ S := by
       simp only [S, Set.mem_ofPred_eq, KPCubicExpansion.valuationExponent_mul, hz, zero_add]
     have he (y : Kˣ) : f (z*y) = (χ z : ℂ) * f y := by
@@ -155,26 +159,25 @@ private lemma shell_character_integral
     exact hf
 
 private lemma twisted_shell_bounds
-    (dx : Measure K) [dx.IsAddHaarMeasure]
-    (m : ℝ) (hm : 0 < m) (hvol : dx ((valuation K).integer : Set K) = ENNReal.ofReal m)
+     
     (φ : K → ℂ) (hφlc : IsLocallyConstant φ) (hφcs : HasCompactSupport φ)
     (χ : Kˣ →ₜ* ℂˣ) (hχ : ∀ x, χ x ^ 3 = 1)
     (r : ℂ) (hrne : r ≠ 0) (hrnorm : ‖r‖ < 1) (nmin : ℤ) :
-    let f := fun y : Kˣ => φ (y : K) * (χ y : ℂ) * r ^ KPCubicExpansion.valuationExponent K y
+    let f := fun y : Kˣ => φ y * (χ y : ℂ) * r ^ KPCubicExpansion.valuationExponent K y
     let ν := KPCubicHaar.multiplicativeHaar K dx
     (∀ k : ℕ, MeasurableSet {y : Kˣ | KPCubicExpansion.valuationExponent K y = nmin + (k : ℤ)}) ∧
     (∀ k : ℕ, IntegrableOn f {y : Kˣ | KPCubicExpansion.valuationExponent K y = nmin + (k : ℤ)} ν) ∧
     Summable (fun k : ℕ => ∫ y : Kˣ in {y | KPCubicExpansion.valuationExponent K y = nmin + (k : ℤ)}, ‖f y‖ ∂ν) := by
   classical
   let ν := KPCubicHaar.multiplicativeHaar K dx
-  let f := fun y : Kˣ => φ (y : K) * (χ y : ℂ) * r ^ KPCubicExpansion.valuationExponent K y
+  let f := fun y : Kˣ => φ y * (χ y : ℂ) * r ^ KPCubicExpansion.valuationExponent K y
   let S := fun j : ℤ => {y : Kˣ | KPCubicExpansion.valuationExponent K y = j}
   have hS (j : ℤ) : MeasurableSet (S j) := (shell_measure K dx m hm hvol j).1
   have hmass (j : ℤ) : ν (S j) =
       ENNReal.ofReal (m * (1 - (KPCubicUnitIndices.residueCard K : ℝ)⁻¹)) :=
     (shell_measure K dx m hm hvol j).2
   have hfinite (j : ℤ) : ν (S j) ≠ ⊤ := by rw [hmass]; exact ENNReal.ofReal_ne_top
-  have hcont : Continuous (fun y : Kˣ => φ (y : K) * (χ y : ℂ)) :=
+  have hcont : Continuous (fun y : Kˣ => φ y * (χ y : ℂ)) :=
     (hφlc.continuous.comp Units.continuous_val).mul (Units.continuous_val.comp χ.continuous)
   obtain ⟨C, hC⟩ := hφcs.exists_bound_of_continuous hφlc.continuous
   have hbound (j : ℤ) : ∀ y ∈ S j, ‖f y‖ ≤ C * ‖r ^ j‖ := by
@@ -218,9 +221,8 @@ private lemma twisted_shell_bounds
     (fun k => hibound _) hs
 
 private lemma twisted_series
-    (dx : Measure K) [dx.IsAddHaarMeasure]
-    (m : ℝ) (hm : 0 < m) (hvol : dx ((valuation K).integer : Set K) = ENNReal.ofReal m)
-    (π : Kˣ) (hπ : valuation K (π : K) = uniformizer K)
+     
+    (π : Kˣ) (hπ : valuation K π = uniformizer K)
     (φ : K → ℂ) (hφlc : IsLocallyConstant φ) (hφcs : HasCompactSupport φ)
     (χ : Kˣ →ₜ* ℂˣ) (hχ : ∀ x, χ x ^ 3 = 1)
     (nmin n₀ : ℤ) (hle : nmin ≤ n₀)
@@ -228,33 +230,33 @@ private lemma twisted_series
     (htail : KPRankOneTestFunctionMellinPole.IsTailCutoff K φ n₀)
     (r : ℂ) (hr : r ≠ 0) (hrnorm : ‖r‖ < 1) :
     let c := fun j : ℤ => ∫ y : Kˣ in {y | KPCubicExpansion.valuationExponent K y = j},
-      φ (y : K) * (χ y : ℂ) ∂KPCubicHaar.multiplicativeHaar K dx
+      φ y * (χ y : ℂ) ∂KPCubicHaar.multiplicativeHaar K dx
     let D := ((m * (1 - (KPCubicUnitIndices.residueCard K : ℝ)⁻¹) : ℝ) : ℂ) * φ 0
     let unram := ∀ u : ((valuation K).integer)ˣ, χ (KPRankOneCubicProjection.unitInclusion K u) = 1
-    Integrable (fun y : Kˣ => φ (y : K) * (χ y : ℂ) * r ^ KPCubicExpansion.valuationExponent K y)
+    Integrable (fun y : Kˣ => φ y * (χ y : ℂ) * r ^ KPCubicExpansion.valuationExponent K y)
       (KPCubicHaar.multiplicativeHaar K dx) ∧
-    (∫ y : Kˣ, φ (y : K) * (χ y : ℂ) * r ^ KPCubicExpansion.valuationExponent K y
+    (∫ y : Kˣ, φ y * (χ y : ℂ) * r ^ KPCubicExpansion.valuationExponent K y
       ∂KPCubicHaar.multiplicativeHaar K dx) =
       (∑ j ∈ Finset.Ico nmin n₀, c j * r^j) +
       if unram then D * ((χ π : ℂ)*r)^n₀ / (1-(χ π : ℂ)*r) else 0 := by
   dsimp only
   let μ := KPCubicHaar.multiplicativeHaar K dx
   let c := fun j : ℤ => ∫ y : Kˣ in {y | KPCubicExpansion.valuationExponent K y = j},
-    φ (y : K) * (χ y : ℂ) ∂μ
+    φ y * (χ y : ℂ) ∂μ
   let D := ((m * (1 - (KPCubicUnitIndices.residueCard K : ℝ)⁻¹) : ℝ) : ℂ) * φ 0
   let unram := ∀ u : ((valuation K).integer)ˣ, χ (KPRankOneCubicProjection.unitInclusion K u) = 1
   let b : ℂ := χ π
   have hb : b ≠ 0 := (χ π).ne_zero
   obtain ⟨hS, hint, hsum⟩ := twisted_shell_bounds K dx m hm hvol φ hφlc hφcs χ hχ r hr hrnorm nmin
   have hre := KPRankOneMellinShellReassembly.shell_reassembly μ
-    (KPCubicExpansion.valuationExponent K) (fun y => φ (y : K)*(χ y : ℂ)) r nmin
+    (KPCubicExpansion.valuationExponent K) (fun y => φ y*(χ y : ℂ)) r nmin
     (fun y hy => by rw [hlower y hy, zero_mul]) hS hint hsum
   refine ⟨hre.1, ?_⟩
   have htailc (j : ℤ) (hj : n₀ ≤ j) : c j = (if unram then D else 0) * b^j := by
-    have he : Set.EqOn (fun y : Kˣ => φ (y : K) * (χ y : ℂ))
+    have he : Set.EqOn (fun y : Kˣ => φ y * (χ y : ℂ))
         (fun y => φ 0 * (χ y : ℂ)) {y | KPCubicExpansion.valuationExponent K y = j} := by
       intro y hy
-      change φ (y : K) * (χ y : ℂ) = φ 0 * (χ y : ℂ)
+      change φ y * (χ y : ℂ) = φ 0 * (χ y : ℂ)
       rw [htail y (by change KPCubicExpansion.valuationExponent K y = j at hy; omega)]
     dsimp only [c]
     rw [setIntegral_congr_fun (shell_measure K dx m hm hvol j).1 he, integral_const_mul,
@@ -278,21 +280,26 @@ private lemma twisted_series
   by_cases hu : unram
   · simpa [hu] using heq
   · simpa [hu] using heq
+end
 
- def Regular {F : Type*} [Field F] (u : F) (r : RatFunc F) : Prop :=
+
+ section
+variable {F : Type*} [Field F]
+include F
+def Regular   (u : F) (r : RatFunc F)  :=
   r.denom.eval u ≠ 0
 
-private lemma regular_C {F : Type*} [Field F] (u c : F) : Regular u (RatFunc.C c) := by
+private lemma regular_C   (u c : F) : Regular u (RatFunc.C c) := by
   simp [Regular]
-private lemma regular_X {F : Type*} [Field F] (u : F) : Regular u (RatFunc.X : RatFunc F) := by
+private lemma regular_X   (u : F) : Regular u RatFunc.X := by
   simp [Regular]
-private lemma regular_add {F : Type*} [Field F] {u : F} {r s : RatFunc F}
-    (hr : Regular u r) (hs : Regular u s) : Regular u (r+s) := by
-  exact fun h => (mul_ne_zero hr hs) (by
+end
+
+private def regular_add {F : Type*} [Field F] {u : F} {r s : RatFunc F}
+    (hr : Regular u r) (hs : Regular u s)  := fun h => (mul_ne_zero hr hs) (by
     simpa using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_add_dvd r s) h)
 private lemma regular_mul {F : Type*} [Field F] {u : F} {r s : RatFunc F}
-    (hr : Regular u r) (hs : Regular u s) : Regular u (r*s) := by
-  exact fun h => (mul_ne_zero hr hs) (by
+    (hr : Regular u r) (hs : Regular u s) : Regular u (r*s) := fun h => (mul_ne_zero hr hs) (by
     simpa using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_mul_dvd r s) h)
 private lemma regular_inv {F : Type*} [Field F] {u : F} {r : RatFunc F}
     (hr : Regular u r) (hv : RatFunc.eval (RingHom.id F) u r ≠ 0) : Regular u r⁻¹ := by
@@ -309,7 +316,7 @@ private lemma eval_inv {F : Type*} [Field F] {u : F} {r : RatFunc F}
   rw [mul_inv_cancel₀ hr0, RatFunc.eval_one] at hm
   exact eq_inv_of_mul_eq_one_right hm.symm
 
- def Evaluates {F : Type*} [Field F] (u : F) (r : RatFunc F) (v : F) : Prop :=
+ def Evaluates {F : Type*} [Field F] (u : F) (r : RatFunc F) (v : F)  :=
   Regular u r ∧ RatFunc.eval (RingHom.id F) u r = v
 private lemma Evaluates.const {F : Type*} [Field F] (u v : F) : Evaluates u (RatFunc.C v) v :=
   ⟨regular_C u v, by simp⟩
@@ -331,7 +338,7 @@ private lemma Evaluates.sub {F : Type*} [Field F] {u a b : F} {r s : RatFunc F}
   simpa only [sub_eq_add_neg] using hr.add hs.neg
 private lemma Evaluates.inv {F : Type*} [Field F] {u a : F} {r : RatFunc F}
     (hr : Evaluates u r a) (ha : a ≠ 0) : Evaluates u r⁻¹ a⁻¹ := by
-  have hv : RatFunc.eval (RingHom.id F) u r ≠ 0 := hr.2 ▸ ha
+  have hv  := hr.2 ▸ ha
   exact ⟨regular_inv hr.1 hv, by rw [eval_inv hr.1 hv, hr.2]⟩
 private lemma Evaluates.div {F : Type*} [Field F] {u a b : F} {r s : RatFunc F}
     (hr : Evaluates u r a) (hs : Evaluates u s b) (hb : b ≠ 0) : Evaluates u (r/s) (a/b) := by
@@ -357,8 +364,8 @@ private lemma Evaluates.sum {F I : Type*} [Field F] {u : F} (s : Finset I)
     exact (h i (Finset.mem_insert_self i s)).add (ih (fun j hj => h j (Finset.mem_insert_of_mem hj)))
 
 private lemma exp_weight (ρ : ℂ) (y : Kˣ) :
-    Complex.exp (ρ * (Real.log (KPCubicHaar.abs K (y : K)) : ℂ)) =
-      Complex.exp (-ρ * (Real.log (KPCubicUnitIndices.residueCard K : ℝ) : ℂ)) ^
+    Complex.exp (ρ * (Real.log (KPCubicHaar.abs K y) : ℂ)) =
+      Complex.exp (-ρ * (Real.log (KPCubicUnitIndices.residueCard K) : ℂ)) ^
         KPCubicExpansion.valuationExponent K y := by
   rw [KPRankOneUnramifiedBetaShells.abs_eq_q_neg_valuation K y, Real.log_zpow,
     Complex.ofReal_mul, Complex.ofReal_intCast, Int.cast_neg, ← Complex.exp_int_mul]
@@ -366,15 +373,15 @@ private lemma exp_weight (ρ : ℂ) (y : Kˣ) :
   ring
 
 private lemma exp_ratio_norm (ρ : ℂ) (hρ : 0 < ρ.re) :
-    ‖Complex.exp (-ρ * (Real.log (KPCubicUnitIndices.residueCard K : ℝ) : ℂ))‖ < 1 := by
+    ‖Complex.exp (-ρ * (Real.log (KPCubicUnitIndices.residueCard K) : ℂ))‖ < 1 := by
   rw [Complex.norm_exp, Real.exp_lt_one_iff]
   have hq : (1 : ℝ) < KPCubicUnitIndices.residueCard K := by
-    exact_mod_cast (lt_of_lt_of_le (by decide : 1 < 2) (KPCubicUnitIndices.two_le_residueCard K))
+    exact_mod_cast (lt_of_lt_of_le (by decide) (KPCubicUnitIndices.two_le_residueCard K))
   simp only [Complex.mul_re, Complex.neg_re, Complex.neg_im, Complex.ofReal_re,
     Complex.ofReal_im, mul_zero, sub_zero]
   exact mul_neg_of_neg_of_pos (neg_neg_of_pos hρ) (Real.log_pos hq)
 
-private lemma character_eq_one (π : Kˣ) (hπ : valuation K (π : K) = uniformizer K)
+private lemma character_eq_one (π : Kˣ) (hπ : valuation K π = uniformizer K)
     (χ : Kˣ →ₜ* ℂˣ)
     (hu : ∀ u : ((valuation K).integer)ˣ, χ (KPRankOneCubicProjection.unitInclusion K u) = 1)
     (hb : (χ π : ℂ) = 1) : χ = 1 := by
@@ -385,9 +392,7 @@ private lemma character_eq_one (π : Kˣ) (hπ : valuation K (π : K) = uniformi
   change (↑(χ π ^ j * χ (KPRankOneCubicProjection.unitInclusion K u)) : ℂ) = _
   simp [hb', hu u]
 
-private lemma laurent_eval (a : ℤ →₀ ℂ) (Q : ℂ) (hQ : Q ≠ 0) :
-    Evaluates Q (∑ n ∈ a.support, RatFunc.C (a n) * (RatFunc.X : RatFunc ℂ)^n)
-      (∑ n ∈ a.support, a n * Q^n) :=
+private def laurent_eval (a : ℤ →₀ ℂ) (Q : ℂ) (hQ : Q ≠ 0)  :=
   Evaluates.sum a.support (fun n _ => (Evaluates.const Q (a n)).mul ((Evaluates.var Q).zpow hQ n))
 
 private lemma rational_eval (a : ℤ →₀ ℂ) (D b Q : ℂ) (n₀ : ℤ) (unram : Prop)
@@ -418,7 +423,7 @@ private lemma rational_residue_trivial (a : ℤ →₀ ℂ) (D : ℂ) (n₀ : �
       (1-RatFunc.X)*(∑ n ∈ a.support, RatFunc.C (a n) * (RatFunc.X : RatFunc ℂ)^n) +
       RatFunc.C D * RatFunc.X^n₀ := by field_simp
   rw [he]
-  have h := (((Evaluates.const (1:ℂ) 1).sub (Evaluates.var 1)).mul
+  have h := (((Evaluates.const (1) 1).sub (Evaluates.var 1)).mul
     (laurent_eval a 1 one_ne_zero)).add
     ((Evaluates.const 1 D).mul ((Evaluates.var 1).zpow one_ne_zero n₀))
   simpa using h
@@ -437,49 +442,49 @@ local instance twistedMellinBorelSpace : BorelSpace (q.adicCompletion F) := ⟨r
 theorem actual_twisted_profile_geometric_tail
     (dx : Measure (q.adicCompletion F)) [dx.IsAddHaarMeasure]
     (π : (q.adicCompletion F)ˣ)
-    (hπ : valuation (q.adicCompletion F) (π : q.adicCompletion F) = uniformizer (q.adicCompletion F))
+    (hπ : valuation (q.adicCompletion F) π = uniformizer (q.adicCompletion F))
     (χ : (q.adicCompletion F)ˣ →ₜ* ℂˣ) (hχ : ∀ x, χ x ^ 3 = 1)
     (φ : q.adicCompletion F → ℂ) (hφ : IsLocallyConstant φ) (hcφ : HasCompactSupport φ) :
     let K := q.adicCompletion F
-    let A : ℂ := (CubicUnitCharacters.residueCard K : ℂ)⁻¹
-    let m : ℂ := (KPRankOneRamifiedBeta.m K dx : ℂ)
+    let A : ℂ := (CubicUnitCharacters.residueCard K)⁻¹
+    let m : ℂ := (KPRankOneRamifiedBeta.m K dx)
     let unram : Prop := ∀ u : (𝒪[K])ˣ, χ (KPRankOneCubicProjection.unitInclusion K u) = 1
     ∃ (n₀ : ℤ) (a : ℤ →₀ ℂ),
       let M : RatFunc ℂ := (∑ n ∈ a.support, RatFunc.C (a n) * (RatFunc.X : RatFunc ℂ)^n) +
         if unram then RatFunc.C (m*(1-A)*φ 0) * (RatFunc.C (χ π : ℂ)*RatFunc.X)^n₀ /
           (1-RatFunc.C (χ π : ℂ)*RatFunc.X) else 0
       (∀ (ρ : ℂ), 0 < ρ.re →
-        let Q := Complex.exp (-ρ * (Real.log (CubicUnitCharacters.residueCard K : ℝ) : ℂ))
-        Integrable (fun x : Kˣ => φ (x : K) * (χ x : ℂ) *
-          Complex.exp (ρ * (Real.log (KPCubicHaar.abs K (x : K)) : ℂ)))
+        let Q := Complex.exp (-ρ * (Real.log (CubicUnitCharacters.residueCard K) : ℂ))
+        Integrable (fun x : Kˣ => φ x * (χ x : ℂ) *
+          Complex.exp (ρ * (Real.log (KPCubicHaar.abs K x) : ℂ)))
           (KPCubicHaar.multiplicativeHaar K dx) ∧
-        (∫ x : Kˣ, φ (x : K) * (χ x : ℂ) *
-          Complex.exp (ρ * (Real.log (KPCubicHaar.abs K (x : K)) : ℂ))
+        (∫ x : Kˣ, φ x * (χ x : ℂ) *
+          Complex.exp (ρ * (Real.log (KPCubicHaar.abs K x) : ℂ))
           ∂KPCubicHaar.multiplicativeHaar K dx) =
           (∑ n ∈ a.support, a n * Q^n) +
             if unram then m*(1-A)*φ 0 * ((χ π : ℂ)*Q)^n₀ / (1-(χ π : ℂ)*Q) else 0) ∧
       (∀ (ρ : ℂ), 0 < ρ.re →
-        let Q := Complex.exp (-ρ * (Real.log (CubicUnitCharacters.residueCard K : ℝ) : ℂ))
+        let Q := Complex.exp (-ρ * (Real.log (CubicUnitCharacters.residueCard K) : ℂ))
         M.denom.eval Q ≠ 0 ∧
-        (∫ x : Kˣ, φ (x : K) * (χ x : ℂ) *
-          Complex.exp (ρ * (Real.log (KPCubicHaar.abs K (x : K)) : ℂ))
+        (∫ x : Kˣ, φ x * (χ x : ℂ) *
+          Complex.exp (ρ * (Real.log (KPCubicHaar.abs K x) : ℂ))
           ∂KPCubicHaar.multiplicativeHaar K dx) = RatFunc.eval (RingHom.id ℂ) Q M) ∧
-      (((1-RatFunc.X)*M).denom.eval (1 : ℂ) ≠ 0) ∧
+      (((1-RatFunc.X)*M).denom.eval (1) ≠ 0) ∧
       (RatFunc.eval (RingHom.id ℂ) 1 ((1-RatFunc.X)*M) =
         if χ = 1 then m*(1-A)*φ 0 else 0) ∧
-      (χ ≠ 1 → M.denom.eval (1 : ℂ) ≠ 0) := by
+      (χ ≠ 1 → M.denom.eval (1) ≠ 0) := by
   let K := q.adicCompletion F
   let μ := KPCubicHaar.multiplicativeHaar K dx
   let mR := KPRankOneRamifiedBeta.m K dx
   have hcpt : IsCompact ((valuation K).integer : Set K) :=
     IsNonarchimedeanLocalField.isCompact_closedBall K 1
-  have hop : IsOpen ((valuation K).integer : Set K) := (valuation K).isOpen_integer
-  have hpos : 0 < dx ((valuation K).integer : Set K) := hop.measure_pos (μ := dx) ⟨0, by simp⟩
+  have hop  := (valuation K).isOpen_integer
+  have hpos  := hop.measure_pos (μ := dx) ⟨0, by simp⟩
   have hm : 0 < mR := ENNReal.toReal_pos hpos.ne' hcpt.measure_lt_top.ne
-  have hvol : dx ((valuation K).integer : Set K) = ENNReal.ofReal mR :=
+  have hvol : dx ((valuation K).integer) = ENNReal.ofReal mR :=
     (ENNReal.ofReal_toReal hcpt.measure_lt_top.ne).symm
-  let A : ℂ := (CubicUnitCharacters.residueCard K : ℂ)⁻¹
-  let D : ℂ := (mR : ℂ)*(1-A)*φ 0
+  let A : ℂ := (CubicUnitCharacters.residueCard K)⁻¹
+  let D  := (mR : ℂ)*(1-A)*φ 0
   let b : ℂ := χ π
   let unram := ∀ u : ((valuation K).integer)ˣ, χ (KPRankOneCubicProjection.unitInclusion K u) = 1
   have hb : b ≠ 0 := (χ π).ne_zero
@@ -489,11 +494,11 @@ theorem actual_twisted_profile_geometric_tail
   obtain ⟨nmin,n₀,hle,hlower,htail,_⟩ :=
     KPRankOneTestFunctionMellinPole.exists_cutoffs K φ hφ hcφ π hπ
   let c := fun j : ℤ => ∫ y : Kˣ in {y | KPCubicExpansion.valuationExponent K y = j},
-    φ (y : K)*(χ y : ℂ) ∂μ
+    φ y*(χ y : ℂ) ∂μ
   let I := Finset.Ico nmin n₀
-  let a : ℤ →₀ ℂ := Finsupp.onFinset I (fun j => if j ∈ I then c j else 0)
+  let a  := Finsupp.onFinset I (fun j => if j ∈ I then c j else 0)
     (fun j hj => by by_contra h; simp [h] at hj)
-  have ha (j : ℤ) (hj : j ∈ I) : a j = c j := by simp [a, hj]
+  
   have hasum (Q : ℂ) : (∑ n ∈ a.support, a n * Q^n) = ∑ n ∈ I, c n*Q^n := by
     change a.sum (fun n v => v*Q^n) = _
     rw [Finsupp.sum_onFinset]
@@ -502,7 +507,7 @@ theorem actual_twisted_profile_geometric_tail
       simp [hn]
     · intro n hn; simp
   refine ⟨n₀,a,?_⟩
-  let L : RatFunc ℂ := ∑ n ∈ a.support, RatFunc.C (a n) * (RatFunc.X : RatFunc ℂ)^n
+  let L  := ∑ n ∈ a.support, RatFunc.C (a n) * (RatFunc.X : RatFunc ℂ)^n
   let M : RatFunc ℂ := L + if unram then
     RatFunc.C D * (RatFunc.C b*RatFunc.X)^n₀/(1-RatFunc.C b*RatFunc.X) else 0
   change (∀ ρ : ℂ, 0 < ρ.re → _) ∧ (∀ ρ : ℂ, 0 < ρ.re → _) ∧
@@ -510,14 +515,14 @@ theorem actual_twisted_profile_geometric_tail
     RatFunc.eval (RingHom.id ℂ) 1 ((1-RatFunc.X)*M) = (if χ=1 then D else 0) ∧
     (χ≠1 → M.denom.eval 1 ≠ 0)
   have initial (ρ : ℂ) (hρ : 0 < ρ.re) :
-      let Q := Complex.exp (-ρ*(Real.log (CubicUnitCharacters.residueCard K : ℝ) : ℂ))
-      Integrable (fun x : Kˣ => φ (x : K)*(χ x : ℂ)*
-        Complex.exp (ρ*(Real.log (KPCubicHaar.abs K (x : K)) : ℂ))) μ ∧
-      (∫ x : Kˣ, φ (x : K)*(χ x : ℂ)*
-        Complex.exp (ρ*(Real.log (KPCubicHaar.abs K (x : K)) : ℂ)) ∂μ) =
+      let Q := Complex.exp (-ρ*(Real.log (CubicUnitCharacters.residueCard K) : ℂ))
+      Integrable (fun x : Kˣ => φ x*(χ x : ℂ)*
+        Complex.exp (ρ*(Real.log (KPCubicHaar.abs K x) : ℂ))) μ ∧
+      (∫ x : Kˣ, φ x*(χ x : ℂ)*
+        Complex.exp (ρ*(Real.log (KPCubicHaar.abs K x) : ℂ)) ∂μ) =
       (∑ n ∈ a.support, a n*Q^n) + if unram then D*(b*Q)^n₀/(1-b*Q) else 0 := by
     dsimp only
-    let Q := Complex.exp (-ρ*(Real.log (CubicUnitCharacters.residueCard K : ℝ) : ℂ))
+    let Q := Complex.exp (-ρ*(Real.log (CubicUnitCharacters.residueCard K) : ℂ))
     have hi := TwistedMellinProof.twisted_series K dx mR hm hvol π hπ φ hφ hcφ χ hχ
       nmin n₀ hle hlower htail Q (Complex.exp_ne_zero _) (TwistedMellinProof.exp_ratio_norm K ρ hρ)
     simp only [hD] at hi
@@ -525,16 +530,16 @@ theorem actual_twisted_profile_geometric_tail
     rw [hasum Q]
     exact hi
   have eval_initial (ρ : ℂ) (hρ : 0 < ρ.re) :
-      let Q := Complex.exp (-ρ*(Real.log (CubicUnitCharacters.residueCard K : ℝ) : ℂ))
+      let Q := Complex.exp (-ρ*(Real.log (CubicUnitCharacters.residueCard K) : ℂ))
       M.denom.eval Q ≠ 0 ∧
-      (∫ x : Kˣ, φ (x : K)*(χ x : ℂ)*
-        Complex.exp (ρ*(Real.log (KPCubicHaar.abs K (x : K)) : ℂ)) ∂μ) =
+      (∫ x : Kˣ, φ x*(χ x : ℂ)*
+        Complex.exp (ρ*(Real.log (KPCubicHaar.abs K x) : ℂ)) ∂μ) =
         RatFunc.eval (RingHom.id ℂ) Q M := by
     dsimp only
-    let Q := Complex.exp (-ρ*(Real.log (CubicUnitCharacters.residueCard K : ℝ) : ℂ))
+    let Q := Complex.exp (-ρ*(Real.log (CubicUnitCharacters.residueCard K) : ℂ))
     have hn : ‖b*Q‖ < 1 := by
       rw [norm_mul, TwistedMellinProof.cubic_norm K χ hχ π, one_mul]
-      exact TwistedMellinProof.exp_ratio_norm K ρ hρ
+      apply TwistedMellinProof.exp_ratio_norm <;> assumption
     have hd : 1-b*Q ≠ 0 := sub_ne_zero.mpr (fun he => by rw [← he, norm_one] at hn; exact lt_irrefl _ hn)
     have he := TwistedMellinProof.rational_eval a D b Q n₀ unram hb (Complex.exp_ne_zero _) hd
     exact ⟨he.1,(initial ρ hρ).2.trans he.2.symm⟩
@@ -554,7 +559,7 @@ theorem actual_twisted_profile_geometric_tail
         simpa only [mul_one] using TwistedMellinProof.rational_eval a D b 1 n₀ unram hb one_ne_zero
           (by simpa only [mul_one] using sub_ne_zero.mpr (Ne.symm hb1))
       · simpa [M,hu] using TwistedMellinProof.laurent_eval a 1 one_ne_zero
-    have hp := ((TwistedMellinProof.Evaluates.const (1:ℂ) 1).sub
+    have hp := ((TwistedMellinProof.Evaluates.const (1) 1).sub
       (TwistedMellinProof.Evaluates.var 1)).mul he
     exact ⟨by simpa only [map_one, TwistedMellinProof.Regular] using hp.1,
       by simpa [map_one,hχ1] using hp.2,fun _ => he.1⟩

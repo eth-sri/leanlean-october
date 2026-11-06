@@ -15,7 +15,10 @@ open Filter
 
 namespace DedekindZetaZeroFree.LargeSieve
 
- lemma top_ne_bot_ringOfIntegers (F : Type) [Field F] [NumberField F] :
+ section
+variable (F : Type) [Field F] [NumberField F]
+include F
+lemma top_ne_bot_ringOfIntegers   :
     (⊤ : Ideal (𝓞 F)) ≠ ⊥ := by
   intro h
   have h1 : (1 : 𝓞 F) = 0 := by
@@ -24,7 +27,7 @@ namespace DedekindZetaZeroFree.LargeSieve
     simpa using hm
   exact one_ne_zero h1
 
-def principalCharacter (F : Type) [Field F] [NumberField F] :
+def principalCharacter   :
     DedekindZetaZeroFree.RayClassCharacter F ⊤ where
   toFun I := if I = ⊥ then 0 else 1
   map_mul' := by
@@ -52,38 +55,40 @@ def principalCharacter (F : Type) [Field F] [NumberField F] :
       exact hα (by simpa using hmem)
     simp [h]
 
-@[simp] theorem principalCharacter_apply (F : Type) [Field F] [NumberField F]
+@[simp] theorem principalCharacter_apply  
     (I : Ideal (𝓞 F)) :
     principalCharacter F I = if I = ⊥ then 0 else 1 := rfl
 
-theorem principalCharacter_primitive (F : Type) [Field F] [NumberField F] :
+theorem principalCharacter_primitive   :
     (principalCharacter F).IsPrimitive := by
   intro 𝔣 h𝔣
   exact (not_lt_of_ge le_top h𝔣).elim
 
-theorem principalCharacter_principal (F : Type) [Field F] [NumberField F] :
+theorem principalCharacter_principal   :
     (principalCharacter F).IsPrincipal := by
   intro I hI _
   simp [principalCharacter, hI]
 
-def principalDiscriminant (F : Type) [Field F] [NumberField F] : ℝ :=
+def principalDiscriminant   : ℝ :=
   ((|NumberField.discr F| : ℤ) : ℝ)
 
-def principalComplexPlaces (F : Type) [Field F] [NumberField F] : ℕ :=
+def principalComplexPlaces   : ℕ :=
   NumberField.InfinitePlace.nrComplexPlaces F
 
-theorem principalDiscriminant_pos (F : Type) [Field F] [NumberField F] :
+theorem principalDiscriminant_pos   :
     0 < principalDiscriminant F := by
   rw [principalDiscriminant, Int.cast_pos]
   exact abs_pos.mpr (NumberField.discr_ne_zero F)
 
-theorem principalComplexPlaces_pos (F : Type) [Field F] [NumberField F]
+theorem principalComplexPlaces_pos  
     (hF : NumberField.IsTotallyComplex F) :
     1 ≤ principalComplexPlaces F := by
   have hfin := NumberField.IsTotallyComplex.finrank (K := F)
   have hpos : 0 < Module.finrank ℚ F := Module.finrank_pos
   rw [principalComplexPlaces]
   omega
+end
+
 
 structure PrincipalHeckeData (F : Type) [Field F] [NumberField F] where
   Lambda : ℂ → ℂ
@@ -112,8 +117,11 @@ theorem PrincipalHeckeData.E_zero_eq_one {F : Type} [Field F] [NumberField F]
     (data : PrincipalHeckeData F) : data.E 0 = data.E 1 := by
   simpa using data.E_functional_equation 0
 
+section
+variable (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
+include F hF
 theorem exists_principalHeckeData
-    (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F) :
+      :
     Nonempty (PrincipalHeckeData F) := by
   have htop : (⊤ : Ideal (𝓞 F)) ≠ ⊥ := top_ne_bot_ringOfIntegers F
   obtain ⟨Λ, E, hΛ_holo, hE_entire, hseries, hFE, hE_eq, hgrowth⟩ :=
@@ -221,13 +229,15 @@ theorem exists_principalHeckeData
       residue_zero := hres0, Lambda_dirichlet := hdir })⟩
 
 def principalHeckeData
-    (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F) :
+      :
     PrincipalHeckeData F :=
   Classical.choice (exists_principalHeckeData F hF)
 
 def principalPoleCoefficient
-    (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F) : ℂ :=
+      : ℂ :=
   (principalHeckeData F hF).E 1
+end
+
 
 end DedekindZetaZeroFree.LargeSieve
 

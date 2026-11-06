@@ -452,6 +452,11 @@ private theorem sectionFields_apply (s : Sections F ζ hζ U R P H)
   rw [sectionFields, hcoe]
   simp [KPContCotangentActualGenuineTwistIsotropy.isotropyChart, ChartKind.representative]
 
+
+section
+private noncomputable abbrev context_phaseClass := phaseClass F ζ hζ
+end
+
 theorem reynolds_phase_test
     (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ))
     (hμG : μG.IsHaarMeasure) (hR : R.adelicHaar = μG)
@@ -484,7 +489,7 @@ theorem reynolds_phase_test
     rw [he] at hrep htval
     simpa only [Homeomorph.symm_apply_apply] using hrep.trans htval
   change frameCoefficient F ζ hζ U R P H (scalarCovered t') a.component
-    (phaseClass F ζ hζ U ε) p = _
+    (_root_.DedekindZetaZeroFree.KPContFriedrichsChartProjectedPairings.context_phaseClass U ε) p = _
   rw [frameCoefficient_class, hP.covered_realization]
   have hsmul : (scalarSections t' a.component).val (coordinates F p) =
       (chi F ζ hζ ε : ℂ)⁻¹ * (scalarSections t a.component).val (coordinates F p) := by
@@ -620,7 +625,7 @@ private theorem test_coefficient_zero_off_base
   rw [basePoint, sectionNorm_component, norm_eq_zero] at hn
   obtain ⟨ε, rfl⟩ := QuotientGroup.mk'_surjective (centralLevel F ζ hζ U) m
   change frameCoefficient F ζ hζ U R P H (scalarCovered t) a.component
-    (phaseClass F ζ hζ U ε) p = _
+    (_root_.DedekindZetaZeroFree.KPContFriedrichsChartProjectedPairings.context_phaseClass U ε) p = _
   rw [frameCoefficient_class, hP.covered_realization, hn, mul_zero]
 
 open KPContActualSectorTestEmbeddings
@@ -772,8 +777,8 @@ private theorem scalarPairing_scalarPair_coordinates (f g : S_U F ζ hζ U R P H
       inner ℂ (frameCoefficient F ζ hζ U R P H (scalarCovered f) i m p)
         (frameCoefficient F ζ hζ U R P H (scalarCovered g) i m p) := by
   obtain ⟨ε, rfl⟩ := QuotientGroup.mk'_surjective (centralLevel F ζ hζ U) m
-  change _ = inner ℂ (frameCoefficient F ζ hζ U R P H (scalarCovered f) i (phaseClass F ζ hζ U ε) p)
-    (frameCoefficient F ζ hζ U R P H (scalarCovered g) i (phaseClass F ζ hζ U ε) p)
+  change _ = inner ℂ (frameCoefficient F ζ hζ U R P H (scalarCovered f) i (_root_.DedekindZetaZeroFree.KPContFriedrichsChartProjectedPairings.context_phaseClass U ε) p)
+    (frameCoefficient F ζ hζ U R P H (scalarCovered g) i (_root_.DedekindZetaZeroFree.KPContFriedrichsChartProjectedPairings.context_phaseClass U ε) p)
   rw [frameCoefficient_class, frameCoefficient_class, S_scalarCovered, S_scalarCovered,
     scalarPairing_inner_mul_mul_of_norm_one _ _ _ (Circle.norm_coe _), scalarPairing_scalarPair_eq_sections]
   exact scalarPairing_scalarPairSections_components _ _ i _
@@ -837,7 +842,7 @@ private theorem smooth_frameCoefficient (f : S_U F ζ hζ U R P H)
       ((QuotientGroup.mk' (centralLevel F ζ hζ U)) ε) =
       fun p => (chi F ζ hζ ε : ℂ) * (scalarSections f i).val (coordinates F p) := by
     funext p
-    change frameCoefficient F ζ hζ U R P H (scalarCovered f) i (phaseClass F ζ hζ U ε) p = _
+    change frameCoefficient F ζ hζ U R P H (scalarCovered f) i (_root_.DedekindZetaZeroFree.KPContFriedrichsChartProjectedPairings.context_phaseClass U ε) p = _
     rw [frameCoefficient_class, S_scalarCovered]
   rw [he]
   apply ContDiff.mul contDiff_const
@@ -873,8 +878,8 @@ theorem projected_scalar_pairing_on_tests
         (chi F ζ hζ (((H.atlas U).line i).rho σ.val) : ℂ) * w p := by
     intro σ p
     obtain ⟨ε, rfl⟩ := QuotientGroup.mk'_surjective (centralLevel F ζ hζ U) m
-    change frameCoefficient F ζ hζ U R P H (scalarCovered f) i (phaseClass F ζ hζ U ε) _ =
-      _ * frameCoefficient F ζ hζ U R P H (scalarCovered f) i (phaseClass F ζ hζ U ε) _
+    change frameCoefficient F ζ hζ U R P H (scalarCovered f) i (_root_.DedekindZetaZeroFree.KPContFriedrichsChartProjectedPairings.context_phaseClass U ε) _ =
+      _ * frameCoefficient F ζ hζ U R P H (scalarCovered f) i (_root_.DedekindZetaZeroFree.KPContFriedrichsChartProjectedPairings.context_phaseClass U ε) _
     rw [frameCoefficient_class, frameCoefficient_class]
     simp only [overlapCoordinate, Homeomorph.apply_symm_apply]
     rw [(S F ζ hζ U R P H (scalarCovered f) i).property.2]
@@ -1352,7 +1357,7 @@ private theorem phased_differential (a : ShrunkChart F ζ hζ U R P H)
       (liftExtension a (coefficient (D_U f).val a) (labeledAInv (placeEquiv F ζ hζ) (coordinates F p))) j =
       coordinateDerivativeList [j] (frameCoefficient F ζ hζ U R P H (scalarCovered f) a.component (phaseClass F ζ hζ U ε)) p := by
   rw [decode_differential a f p hp j]
-  have hf : frameCoefficient F ζ hζ U R P H (scalarCovered f) a.component (phaseClass F ζ hζ U ε) =
+  have hf : frameCoefficient F ζ hζ U R P H (scalarCovered f) a.component (_root_.DedekindZetaZeroFree.KPContFriedrichsChartProjectedPairings.context_phaseClass U ε) =
       (chi F ζ hζ ε : ℂ) • (fun p => (scalarSections f a.component).val (coordinates F p)) := by
     funext p
     rw [frameCoefficient_class, S_scalarCovered]
@@ -1423,7 +1428,7 @@ private theorem tensor_test_pairing
     apply Finset.sum_congr rfl
     intro j _
     congr 1
-    have hne : frameCoefficient F ζ hζ U R P H (scalarCovered f) a.component (phaseClass F ζ hζ U ε) =ᶠ[𝓝 p]
+    have hne : frameCoefficient F ζ hζ U R P H (scalarCovered f) a.component (_root_.DedekindZetaZeroFree.KPContFriedrichsChartProjectedPairings.context_phaseClass U ε) =ᶠ[𝓝 p]
         reynolds a.component a.center φ :=
       Filter.eventuallyEq_of_mem ((a.domain_open.preimage (coordinates F).continuous).mem_nhds hp) hfc
     change star (_ * _) = star (fderiv ℝ (reynolds a.component a.center φ) p (EuclideanSpace.single j 1))
@@ -1528,7 +1533,7 @@ theorem projected_test_pairings (μG : Measure (KPMsFixedHaarDisintegration.Cove
           (fun p => (KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ) * (s.val a.component).val (coordinates F p)) := by
         rw [← hε]
         funext p
-        change frameCoefficient F ζ hζ U R P H b.val i (phaseClass F ζ hζ U ε) p = _
+        change frameCoefficient F ζ hζ U R P H b.val i (_root_.DedekindZetaZeroFree.KPContFriedrichsChartProjectedPairings.context_phaseClass U ε) p = _
         rw [frameCoefficient_class]
         have hbS : (KPContSectorScalarLineAlgebra.S F ζ hζ U R P H) b.val = s.val := by
           exact congrArg Subtype.val ((borelS F ζ hζ U R P H).apply_symm_apply s)
@@ -1544,14 +1549,14 @@ theorem projected_test_pairings (μG : Measure (KPMsFixedHaarDisintegration.Cove
     letI : Finite a.Isotropy := chart_stabilizer_finite F ζ hζ U R P H a.component a.center a.larger
     letI : Fintype a.Isotropy := Fintype.ofFinite a.Isotropy
     have hft : ∀ p, coordinates F p ∈ a.domain →
-        frameCoefficient F ζ hζ U R P H (scalarCovered f) a.component (phaseClass F ζ hζ U ε) p =
+        frameCoefficient F ζ hζ U R P H (scalarCovered f) a.component (_root_.DedekindZetaZeroFree.KPContFriedrichsChartProjectedPairings.context_phaseClass U ε) p =
           reynolds a.component a.center φ p := by
       intro p hp
       have hh := hfc p (haO hp)
       subst i
       subst x
       rw [← hε] at hh
-      change frameCoefficient F ζ hζ U R P H (scalarCovered f) a.component (phaseClass F ζ hζ U ε) p = _ at hh
+      change frameCoefficient F ζ hζ U R P H (scalarCovered f) a.component (_root_.DedekindZetaZeroFree.KPContFriedrichsChartProjectedPairings.context_phaseClass U ε) p = _ at hh
       convert hh using 1
     have hp := tensor_test_pairing μG hμG hR realization a A haA ε W φ f hft hfs
     rw [hform]

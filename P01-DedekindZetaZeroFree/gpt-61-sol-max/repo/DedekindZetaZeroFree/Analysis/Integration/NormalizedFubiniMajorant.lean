@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Algebra.Order.Floor.Extended
 public import Mathlib.Algebra.Order.Floor.Semifield
 public import Mathlib.Algebra.Order.Interval.Basic
@@ -40,36 +42,36 @@ public import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
+
 open MeasureTheory
 
 namespace DedekindZetaZeroFree.Quantitative
 namespace NormalizedFubiniMajorant
 
-noncomputable def c : ℂ := (2 * (Real.pi : ℂ))⁻¹
+noncomputable def c  := (2 * (Real.pi : ℂ))⁻¹
 
 lemma norm_c : ‖c‖ = (2 * Real.pi)⁻¹ := by
   simp [c, Real.pi_pos.le, abs_of_pos Real.pi_pos]
 
-theorem integrable_of_majorant2 (Fn : ℝ × ℝ → ℂ) (hF : AEStronglyMeasurable Fn volume)
+def integrable_of_majorant2 (Fn : ℝ × ℝ → ℂ) (hF : AEStronglyMeasurable Fn volume)
     (g : ℝ × ℝ → ℝ) (hg : Integrable g volume) (A : ℝ)
-    (hb : ∀ᵐ p ∂(volume : Measure (ℝ × ℝ)), ‖Fn p‖ ≤ A * g p) :
-    Integrable Fn volume :=
+    (hb : ∀ᵐ p ∂(volume : Measure (ℝ × ℝ)), ‖Fn p‖ ≤ A * g p)  :=
   Integrable.mono' (hg.const_mul A) hF hb
 
-theorem integrable_of_majorant2_continuous (Fn : ℝ × ℝ → ℂ) (hF : Continuous Fn)
+def integrable_of_majorant2_continuous (Fn : ℝ × ℝ → ℂ) (hF : Continuous Fn)
     (g : ℝ × ℝ → ℝ) (hg : Integrable g volume) (A : ℝ)
-    (hb : ∀ p, ‖Fn p‖ ≤ A * g p) :
-    Integrable Fn volume :=
+    (hb : ∀ p, ‖Fn p‖ ≤ A * g p)  :=
   integrable_of_majorant2 Fn hF.aestronglyMeasurable g hg A (Filter.Eventually.of_forall hb)
 
-theorem outer_integrable2 (Fn : ℝ × ℝ → ℂ) (hF : AEStronglyMeasurable Fn volume)
+section
+variable (Fn : ℝ × ℝ → ℂ) (hF : AEStronglyMeasurable Fn volume)
     (g : ℝ × ℝ → ℝ) (hg : Integrable g volume) (A : ℝ)
-    (hb : ∀ᵐ p ∂(volume : Measure (ℝ × ℝ)), ‖Fn p‖ ≤ A * g p) :
-    Integrable (fun t : ℝ => c * ∫ s : ℝ, Fn (t, s)) volume :=
+include Fn hF g hg A
+def outer_integrable2  
+    (hb : ∀ᵐ p ∂(volume : Measure (ℝ × ℝ)), ‖Fn p‖ ≤ A * g p)  :=
   (integrable_of_majorant2 Fn hF g hg A hb).integral_prod_left.const_mul c
 
-theorem norm_double_le (Fn : ℝ × ℝ → ℂ) (hF : AEStronglyMeasurable Fn volume)
-    (g : ℝ × ℝ → ℝ) (hg : Integrable g volume) (A : ℝ) (hA : 0 ≤ A)
+theorem norm_double_le   (hA : 0 ≤ A)
     (hb : ∀ᵐ p ∂(volume : Measure (ℝ × ℝ)), ‖Fn p‖ ≤ A * g p) :
     ‖c * ∫ t : ℝ, c * ∫ s : ℝ, Fn (t, s)‖
       ≤ ((2 * Real.pi)⁻¹) ^ 2 * A * ∫ p : ℝ × ℝ, g p := by
@@ -87,6 +89,8 @@ theorem norm_double_le (Fn : ℝ × ℝ → ℂ) (hF : AEStronglyMeasurable Fn v
       ≤ (2 * Real.pi)⁻¹ * (2 * Real.pi)⁻¹ * (A * ∫ p, g p) := by
         gcongr
     _ = _ := by ring
+end
+
 
 end NormalizedFubiniMajorant
 end DedekindZetaZeroFree.Quantitative

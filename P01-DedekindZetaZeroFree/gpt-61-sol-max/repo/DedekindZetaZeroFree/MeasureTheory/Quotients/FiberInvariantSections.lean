@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import Mathlib.MeasureTheory.Integral.IntegrableOn
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.KPMsResidualTailRestoration.OutgoingTailL2.CoordinateDescent
 
@@ -25,9 +28,7 @@ theorem continuousOn_section_of_fiber_invariance
   rw [continuousOn_iff_continuous_restrict]
   apply (hqro.isQuotientMap hqc hqrs).continuous_iff.mpr
   have he : ((q '' S).domRestrict (f ∘ s)) ∘ qr = S.domRestrict f := by
-    funext a
-    exact hfi _ (hs (q a) (mem_image_of_mem q a.property)).1 _ a.property
-      (hs (q a) (mem_image_of_mem q a.property)).2
+    grind
   rw [he]
   exact continuousOn_iff_continuous_restrict.mp hf
 

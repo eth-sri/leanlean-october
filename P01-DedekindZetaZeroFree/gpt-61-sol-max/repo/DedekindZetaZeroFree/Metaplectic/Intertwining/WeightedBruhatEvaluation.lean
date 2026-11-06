@@ -25,8 +25,8 @@ variable (F : Type) [Field F] [NumberField F]
 variable (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
   (hP : IsTamePolarization F ζ hζ q S P)
   (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
-  (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
-  (ξ : (valuation (LocalField F q)).integer) (hξ : IsPrimitiveRoot ξ 3)
+  
+  (ξ : (valuation (LocalField F q)).integer) 
 
 theorem eventual_deformed_minusTest_bruhat_values
     (htame : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)

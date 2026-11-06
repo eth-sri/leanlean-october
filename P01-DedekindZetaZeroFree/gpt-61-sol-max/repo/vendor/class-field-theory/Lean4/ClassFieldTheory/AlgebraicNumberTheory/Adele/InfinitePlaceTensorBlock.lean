@@ -235,22 +235,22 @@ variable
     (hw : w.1.IsNontrivial)
     (u : AbsoluteValueExtension w.1 L)
 
-local instance infinitePlaceExtensionCompletionAlgebra :
-    Algebra K u.1.Completion :=
-  AbsoluteValue.extensionCompletionAlgebra (K := K) u.1
 
-local instance infinitePlaceExtensionCompletionSMul :
-    SMul K u.1.Completion :=
-  infinitePlaceExtensionCompletionAlgebra w u |>.toSMul
 
-local instance infinitePlaceLocalizedCompletionAlgebra :
-    Algebra w.1.Completion u.1.Completion :=
-  AbsoluteValue.completionAlgebra w.1 u.1 u.2
 
-local instance infinitePlaceAllCompletionAlgebra
-    (u' : AbsoluteValueExtension w.1 L) :
-    Algebra w.1.Completion u'.1.Completion :=
-  AbsoluteValue.completionAlgebra w.1 u'.1 u'.2
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 local instance infinitePlaceScalarTensorUnitsAction :
     MulDistribMulAction (L ≃ₐ[K] L) (w.Completion ⊗[K] L)ˣ :=

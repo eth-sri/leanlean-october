@@ -28,8 +28,11 @@ lemma rationalLift_mk (m : Matrix.GeneralLinearGroup (Fin 2) F) :
   change φ n = φ m
   rw [← hz, map_mul, hs, mul_one]
 
-lemma theta_rational_root {Q : AdmissibleFlatSources R} (T : Realization R Q)
-    (v : R.A.UnitQuotient) (a : F) (g : Group R) :
+section
+variable {Q : AdmissibleFlatSources R} (T : Realization R Q)
+    (v : R.A.UnitQuotient)
+include Q T v
+lemma theta_rational_root   (a : F) (g : Group R) :
     T.theta v (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12
       (algebraMap F (KPAdeles F) a) * g) = T.theta v g := by
   have h := (T.automorphic v).2.1 (Matrix.ProjGenLinGroup.mk (KubotaRankTwo.n F a)) g
@@ -39,8 +42,7 @@ lemma theta_rational_root {Q : AdmissibleFlatSources R} (T : Realization R Q)
   rw [KPRationalAdelicSplitting.N_rational]
   exact h
 
-lemma theta_rational_diagonal {Q : AdmissibleFlatSources R} (T : Realization R Q)
-    (v : R.A.UnitQuotient) (a : Fˣ) (g : Group R) :
+lemma theta_rational_diagonal   (a : Fˣ) (g : Group R) :
     T.theta v (KPRationalAdelicSplitting.pglA F R.A.zeta12 R.A.primitive_zeta12
       (Units.map (algebraMap F (KPAdeles F)).toMonoidHom a) * g) = T.theta v g := by
   have h := (T.automorphic v).2.1 (Matrix.ProjGenLinGroup.mk (KubotaRankTwo.d F a 1)) g
@@ -49,8 +51,7 @@ lemma theta_rational_diagonal {Q : AdmissibleFlatSources R} (T : Realization R Q
   exact (congrArg (fun b => T.theta v
     (KPAdelicCoverRestrictedProduct.scalarQuotient F R.A.zeta12 R.A.primitive_zeta12 b * g)) he).trans h
 
-lemma theta_root_representative {Q : AdmissibleFlatSources R} (T : Realization R Q)
-    (v : R.A.UnitQuotient) (g : Group R) (x y : KPAdeles F)
+lemma theta_root_representative   (g : Group R) (x y : KPAdeles F)
     (hxy : (QuotientAddGroup.mk x : KPAdditiveQuotient F) = QuotientAddGroup.mk y) :
     T.theta v (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 x * g) =
       T.theta v (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 y * g) := by
@@ -62,8 +63,7 @@ lemma theta_root_representative {Q : AdmissibleFlatSources R} (T : Realization R
     linear_combination ha
   rw [hx, KPGlobalTorusFunctionData.N_add, mul_assoc, theta_rational_root]
 
-lemma fourier_integrand_mk {Q : AdmissibleFlatSources R} (T : Realization R Q)
-    (v : R.A.UnitQuotient) (g : Group R) (x : KPAdeles F) :
+lemma fourier_integrand_mk   (g : Group R) (x : KPAdeles F) :
     T.theta v (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12
       (Quotient.out (QuotientAddGroup.mk x : KPAdditiveQuotient F)) * g) *
         star (adelicTraceQuotientCharacter F (QuotientAddGroup.mk x) : ℂ) =
@@ -74,14 +74,18 @@ lemma fourier_integrand_mk {Q : AdmissibleFlatSources R} (T : Realization R Q)
     (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 x * g) * star (c : ℂ))
       (adelicTraceQuotientCharacter_mk F x)
 
-def rationalFrequencyValue {Q : AdmissibleFlatSources R} (T : Realization R Q)
-    (v : R.A.UnitQuotient) (a : Fˣ) (g : Group R) : ℂ :=
+def rationalFrequencyValue   (a : Fˣ) (g : Group R) : ℂ :=
   ∫ q : KPAdditiveQuotient F,
     T.theta v (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 (Quotient.out q) * g) *
       star (adelicTraceCharacter F (algebraMap F (KPAdeles F) (a : F) * Quotient.out q) : ℂ) ∂Q.dq
+end
 
-theorem rationalFrequencyValue_integrable_eq {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
-    (v : R.A.UnitQuotient) (a : Fˣ) (g : Group R) :
+
+section
+variable {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
+    (v : R.A.UnitQuotient)
+include N C v
+theorem rationalFrequencyValue_integrable_eq   (a : Fˣ) (g : Group R) :
     Integrable (fun q : KPAdditiveQuotient F => C.realization.theta v
       (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 (Quotient.out q) * g) *
         star (adelicTraceCharacter F (algebraMap F (KPAdeles F) (a : F) * Quotient.out q) : ℂ)) C.sources.dq ∧
@@ -138,21 +142,21 @@ theorem rationalFrequencyValue_integrable_eq {N : TraceHaarTransport R} (C : Joi
   change Integrable (fun q => f (D q)) C.sources.dq at hi
   simpa only [htransform] using hi
 
-theorem rationalFrequencyValue_eq {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
-    (v : R.A.UnitQuotient) (a : Fˣ) (g : Group R) :
+theorem rationalFrequencyValue_eq   (a : Fˣ) (g : Group R) :
     rationalFrequencyValue R C.realization v a g =
       fourier R C.sources.dq (C.realization.theta v)
         (KPRationalAdelicSplitting.pglA F R.A.zeta12 R.A.primitive_zeta12
           (Units.map (algebraMap F (KPAdeles F)).toMonoidHom a) * g) :=
   (rationalFrequencyValue_integrable_eq R C v a g).2
 
-lemma orbitFrequencyValue_eq_fourier {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
-    (v : R.A.UnitQuotient) (i : ThetaExpansion.SignedExpansion.OrbitIndex R) (g : Group R) :
+lemma orbitFrequencyValue_eq_fourier   (i : ThetaExpansion.SignedExpansion.OrbitIndex R) (g : Group R) :
     orbitFrequencyValue R C.sources C.realization v i g =
       fourier R C.sources.dq (C.realization.theta v)
         (KPRationalAdelicSplitting.pglA F R.A.zeta12 R.A.primitive_zeta12
           (Units.map (algebraMap F (KPAdeles F)).toMonoidHom ((Quotient.out i.1) * i.2.val)) * g) :=
   rationalFrequencyValue_eq R C v _ g
+end
+
 
 end DedekindZetaZeroFree.OrbitExpansion
 

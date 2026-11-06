@@ -77,13 +77,16 @@ theorem tensorFunction_integrable
 
 set_option backward.isDefEq.respectTransparency false in
 
-theorem fourierIntegral_tensorFunction
-    (F : Type) [Field F] [NumberField F]
+section
+variable (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
     (μ : (v : S) → Measure (v.val.adicCompletion F))
     [hμ : ∀ v, (μ v).IsAddHaarMeasure]
     (he : ∀ v, Continuous (e v))
+include F S e μ hμ he in
+theorem fourierIntegral_tensorFunction
+     
     (fArch : 𝓢(PoissonArch.Space F, ℂ))
     (φ : (v : S) → v.val.adicCompletion F → ℂ)
     (hlocal : ∀ v, IsLocallyConstant (φ v))
@@ -211,13 +214,9 @@ private theorem local_fourier (F : Type) [Field F] [NumberField F]
   at h
   exact h
 
+include F S e μ hμ he in
 theorem fourierIntegral_tensor_bruhatSchwartz
-    (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
-    (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
-    (μ : (v : S) → Measure (v.val.adicCompletion F))
-    [hμ : ∀ v, (μ v).IsAddHaarMeasure]
-    (he : ∀ v, Continuous (e v)) (hne : ∀ v, ∃ x, e v x ≠ 1)
+      (hne : ∀ v, ∃ x, e v x ≠ 1)
     (fArch : 𝓢(PoissonArch.Space F, ℂ))
     (φ : (v : S) → v.val.adicCompletion F → ℂ)
     (hlocal : ∀ v, IsLocallyConstant (φ v))
@@ -338,13 +337,9 @@ theorem summable_norm_tensorFunction_lattice
   have hs := (field_sum F S fArch φ hlocal hsupport a ha).comp_injective hinj
   simpa only [Function.comp_def, hi] using hs
 
+include F S e μ hμ he in
 theorem summable_norm_fourierIntegral_tensorFunction_lattice
-    (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
-    (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
-    (μ : (v : S) → Measure (v.val.adicCompletion F))
-    [hμ : ∀ v, (μ v).IsAddHaarMeasure]
-    (he : ∀ v, Continuous (e v)) (hne : ∀ v, ∃ x, e v x ≠ 1)
+      (hne : ∀ v, ∃ x, e v x ≠ 1)
     (fArch : 𝓢(PoissonArch.Space F, ℂ))
     (φ : (v : S) → v.val.adicCompletion F → ℂ)
     (hlocal : ∀ v, IsLocallyConstant (φ v))
@@ -356,6 +351,8 @@ theorem summable_norm_fourierIntegral_tensorFunction_lattice
   have hg := summable_norm_tensorFunction_lattice F S gArch ψ hψlocal hψsupport
     a⁻¹ (inv_ne_zero ha)
   simpa only [htransform] using hg
+end
+
 
 end DedekindZetaZeroFree.PoissonS
 

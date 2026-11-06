@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Ramification.HilbertRamification.UniformizerGradedHom
 public import ValuedFieldTheory.Ramification.HilbertRamification.CharacterMap
 public import ValuedFieldTheory.Ramification.HilbertRamification.CompleteDVF
 public import ValuedFieldTheory.Ramification.HilbertRamification.RamificationCharacterization
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -43,21 +46,22 @@ exactly when its image among field units is principal in Hilbert's sense. -/
 theorem mem_dvfHigherPrincipalUnitGroup_one_iff_principalUnitGroup
     (target : DVF.{u, v} L) (a : target.valuationSubringˣ) :
     a ∈ Higher.dvfHigherPrincipalUnitGroup target 1 ↔
-      ((target.valuation.valuationSubring.unitGroupMulEquiv.symm a :
-        target.valuation.valuationSubring.unitGroup) : Lˣ) ∈
+      ((target.valuation.valuationSubring.unitGroupMulEquiv.symm a) : Lˣ) ∈
           target.valuation.valuationSubring.principalUnitGroup := by
   rw [Higher.mem_dvfHigherPrincipalUnitGroup_iff, pow_one,
     target.mem_maximalIdeal_iff,
     target.valuation.valuationSubring.mem_principalUnitGroup_iff]
-  simpa using
-    (_root_.Valuation.isEquiv_valuation_valuationSubring
+  exact (_root_.Valuation.isEquiv_valuation_valuationSubring
       target.valuation).lt_one_iff_lt_one
         (x := (((a : target.valuationSubring) : L) - 1))
 
+section
+variable {K : Type w} [Field K] [Algebra K L]
+include K
 /-- The DVF unit `σ(π)/π` and Hilbert's field-unit quotient are the same
 after the canonical embedding of valuation-ring units into field units. -/
 theorem coe_dvfUniformizerQuotientUnit_eq_automorphismUnitQuotient
-    {K : Type w} [Field K] [Algebra K L]
+     
     {base : DVF.{w, x} K} {target : DVF.{u, v} L}
     [base.valuation.HasExtension target.valuation]
     (huniq :
@@ -70,8 +74,7 @@ theorem coe_dvfUniformizerQuotientUnit_eq_automorphismUnitQuotient
     ((target.valuation.valuationSubring.unitGroupMulEquiv.symm
         (Higher.dvfUniformizerQuotientUnit
           (base := base) (target := target) huniq pi hpi
-          (sigma : Gal(L/K))) :
-        target.valuation.valuationSubring.unitGroup) : Lˣ) =
+          (sigma : Gal(L/K)))) : Lˣ) =
       ValuationSubring.automorphismUnitQuotient K
         target.valuation.valuationSubring sigma
         (Units.mk0 (pi : L) hpi.ne_zero) := by
@@ -82,7 +85,7 @@ theorem coe_dvfUniformizerQuotientUnit_eq_automorphismUnitQuotient
     have h := Higher.dvfUniformizerQuotientUnit_mul_uniformizer
       (base := base) (target := target) huniq pi hpi (sigma : Gal(L/K))
     have h' := congrArg (fun z : target.valuationSubring => (z : L)) h
-    simpa [q] using h'
+    exact h'
   apply Units.ext
   rw [_root_.ValuationSubring.coe_unitGroupMulEquiv_symm_apply]
   simp only [ValuationSubring.automorphismUnitQuotient,
@@ -95,7 +98,7 @@ theorem coe_dvfUniformizerQuotientUnit_eq_automorphismUnitQuotient
 principal-unit condition on every field unit is determined by one
 uniformizer. -/
 theorem inertia_forall_automorphismUnitQuotient_mem_principal_iff_uniformizer
-    {K : Type w} [Field K] [Algebra K L]
+     
     (target : DVF.{u, v} L)
     (pi : target.valuationSubring)
     (hpi : target.valuation.IsUniformizer (pi : L))
@@ -122,7 +125,7 @@ theorem inertia_forall_automorphismUnitQuotient_mem_principal_iff_uniformizer
         (K := K) A (sigma : ValuationSubring.decompositionGroup K A)
       map_mul' := ValuationSubring.automorphismUnitQuotient_mul_arg
         (K := K) A (sigma : ValuationSubring.decompositionGroup K A) }
-  let S : Subgroup Lˣ := A.principalUnitGroup.comap qHom
+  let S  := A.principalUnitGroup.comap qHom
   constructor
   · intro h
     exact h piUnit
@@ -139,15 +142,15 @@ theorem inertia_forall_automorphismUnitQuotient_mem_principal_iff_uniformizer
         exact congrArg (fun a : A => (a : L)) hr0
       rcases _root_.Valuation.exists_pow_Uniformizer
           (v := target.valuation) hr ⟨pi, hpi⟩ with ⟨n, unit, hfactor⟩
-      let unitField : A.unitGroup := A.unitGroupMulEquiv.symm unit
+      let unitField  := A.unitGroupMulEquiv.symm unit
       have hzfactor : z = piUnit ^ n * (unitField : Lˣ) := by
         apply Units.ext
-        simpa [r, piUnit, unitField] using hfactor
+        exact hfactor
       rw [hzfactor]
       exact S.mul_mem (S.pow_mem hpiS n) (hunit unitField)
     rcases A.mem_or_inv_mem (y : L) with hy | hy
     · exact hintegral y hy
-    · have hyinv : y⁻¹ ∈ S := hintegral y⁻¹ (by simpa using hy)
+    · have hyinv  := hintegral y⁻¹ (by simpa using hy)
       have hyS : y ∈ S := by simpa only [inv_inv] using S.inv_mem hyinv
       exact hyS
 
@@ -155,7 +158,7 @@ theorem inertia_forall_automorphismUnitQuotient_mem_principal_iff_uniformizer
 extension of complete DVFs, under the canonical identification of the
 Galois and decomposition groups. -/
 theorem mem_lowerRamificationGroup_zero_iff_completeDVF_inertiaGroup
-    {K : Type w} [Field K] [Algebra K L]
+     
     (base : CompleteDVF.{w, x} K) (target : CompleteDVF.{u, v} L)
     [FiniteDimensional K L] [Algebra.IsSeparable K L]
     [base.valuation.HasExtension target.valuation]
@@ -193,7 +196,7 @@ theorem mem_lowerRamificationGroup_zero_iff_completeDVF_inertiaGroup
 /-- Under separable residue extension, the uniformizer quotient detects the
 first lower ramification subgroup inside the zeroth one. -/
 theorem mem_lowerRamificationGroup_one_of_uniformizerQuotient_mem
-    {K : Type w} [Field K] [Algebra K L]
+     
     {base : DVF.{w, x} K} {target : DVF.{u, v} L}
     [FiniteDimensional K L] [IsGalois K L]
     [base.valuation.HasExtension target.valuation]
@@ -244,7 +247,7 @@ theorem mem_lowerRamificationGroup_one_of_uniformizerQuotient_mem
 extension, the first lower ramification group is Hilbert's ramification
 group, transported from the decomposition group to the full Galois group. -/
 theorem lowerRamificationGroup_one_eq_hilbertRamificationGroup
-    {K : Type w} [Field K] [Algebra K L]
+     
     (base : CompleteDVF.{w, x} K) (target : CompleteDVF.{u, v} L)
     [FiniteDimensional K L] [IsGalois K L] [Algebra.IsSeparable K L]
     [base.valuation.HasExtension target.valuation]
@@ -271,8 +274,7 @@ theorem lowerRamificationGroup_one_eq_hilbertRamificationGroup
   rw [ValuationSubring.mem_ramificationGroupInDecomposition_iff]
   constructor
   · intro hOne
-    have hZero : sigma ∈ Higher.lowerRamificationGroup
-        (base := base.toDVF) (target := target.toDVF) huniq (0 : ℝ) :=
+    have hZero  :=
       (Higher.lowerRamificationGroup_antitone
         (base := base.toDVF) (target := target.toDVF) huniq
         (show (0 : ℝ) ≤ 1 by norm_num)) hOne
@@ -294,15 +296,14 @@ theorem lowerRamificationGroup_one_eq_hilbertRamificationGroup
       rw [← coe_dvfUniformizerQuotientUnit_eq_automorphismUnitQuotient
         (base := base.toDVF) (target := target.toDVF) huniq pi hpi dSigma]
       exact (mem_dvfHigherPrincipalUnitGroup_one_iff_principalUnitGroup
-        target.toDVF _).mp (by simpa [dSigma] using hUone)
+        target.toDVF _).mp (hUone)
     exact (inertia_forall_automorphismUnitQuotient_mem_principal_iff_uniformizer
       (K := K) target.toDVF pi hpi iSigma).mpr hPiPrincipal
   · intro hAll
-    have hInertia : dSigma ∈ ValuationSubring.inertiaGroup K A :=
+    have hInertia  :=
       ValuationSubring.ramificationCondition_mem_inertiaGroup
         (K := K) A dSigma hAll
-    have hZero : sigma ∈ Higher.lowerRamificationGroup
-        (base := base.toDVF) (target := target.toDVF) huniq (0 : ℝ) :=
+    have hZero  :=
       (mem_lowerRamificationGroup_zero_iff_completeDVF_inertiaGroup
         (base := base) (target := target) huniq sigma).mpr
         ((CompleteDVF.mem_inertiaGroup_iff
@@ -311,20 +312,20 @@ theorem lowerRamificationGroup_one_eq_hilbertRamificationGroup
         ((A.unitGroupMulEquiv.symm
           (Higher.dvfUniformizerQuotientUnit
             (base := base.toDVF) (target := target.toDVF)
-            huniq pi hpi (dSigma : Gal(L/K))) : A.unitGroup) : Lˣ) ∈
+            huniq pi hpi (dSigma : Gal(L/K)))) : Lˣ) ∈
           A.principalUnitGroup := by
       rw [coe_dvfUniformizerQuotientUnit_eq_automorphismUnitQuotient
         (base := base.toDVF) (target := target.toDVF) huniq pi hpi dSigma]
-      exact hAll (Units.mk0 (pi : L) hpi.ne_zero)
+      apply hAll
     have hUone : Higher.dvfUniformizerQuotientUnit
         (base := base.toDVF) (target := target.toDVF) huniq pi hpi sigma ∈
         Higher.dvfHigherPrincipalUnitGroup target.toDVF 1 := by
       have h := (mem_dvfHigherPrincipalUnitGroup_one_iff_principalUnitGroup
         target.toDVF _).mpr hPiPrincipal
-      simpa [dSigma] using h
-    exact mem_lowerRamificationGroup_one_of_uniformizerQuotient_mem
-      (base := base.toDVF) (target := target.toDVF)
-      huniq pi hpi sigma hZero hUone
+      exact h
+    apply mem_lowerRamificationGroup_one_of_uniformizerQuotient_mem <;> assumption
+end
+
 
 end RamificationTheory.HilbertRamification
 

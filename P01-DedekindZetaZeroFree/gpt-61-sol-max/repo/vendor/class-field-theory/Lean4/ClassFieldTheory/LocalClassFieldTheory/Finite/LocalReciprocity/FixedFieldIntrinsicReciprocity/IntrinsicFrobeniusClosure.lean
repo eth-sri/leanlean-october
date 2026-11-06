@@ -31,10 +31,8 @@ open LocalFieldTheory RamificationTheory CyclicCohomology KummerTheory
 open ClassFormation
 open scoped ValuativeRel
 
-/-- Membership in the intrinsic Frobenius closure, expressed either with the
-residue datum's carrier or with the canonical fixed-field quotient. -/
-theorem intrinsicFixedFieldFrobeniusClosure_mem_iff
-    (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
+section
+variable (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K]
     (H : FiniteAbstractField
       Gal(SeparableClosure K / K))
@@ -44,7 +42,12 @@ theorem intrinsicFixedFieldFrobeniusClosure_mem_iff
     [hJfinite : Finite
       (H.field.toSubgroup ⧸ extensionSubgroup H.field J hJH)]
     (e : intrinsicFixedFieldSeparableClosureEquiv K H)
-    (σ : intrinsicFixedFieldFrobeniusElements K H J hJH e) :
+    (σ : intrinsicFixedFieldFrobeniusElements K H J hJH e)
+include K H J hJH hJnormal hJfinite e σ in
+/-- Membership in the intrinsic Frobenius closure, expressed either with the
+residue datum's carrier or with the canonical fixed-field quotient. -/
+theorem intrinsicFixedFieldFrobeniusClosure_mem_iff
+      :
     let F := abstractFixedField K (SeparableClosure K) H.field
     letI : Algebra F (SeparableClosure F) :=
       (separableClosure F (AlgebraicClosure F)).algebra
@@ -131,20 +134,11 @@ theorem intrinsicFixedFieldFrobeniusClosure_mem_iff
         intrinsicFiniteAbstractBase,
         FiniteAbstractField.toFiniteResidueAbstractField]
 
+include K H J hJH hJnormal hJfinite e σ in
 /-- Membership in the ambient Frobenius closure, expressed either with the
 residue datum's carrier or with the canonical ambient quotient. -/
 theorem ambientFixedFieldFrobeniusClosure_mem_iff
-    (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    (H : FiniteAbstractField
-      Gal(SeparableClosure K / K))
-    (J : ClosedSubgroup Gal(SeparableClosure K / K))
-    (hJH : J.toSubgroup ≤ H.field.toSubgroup)
-    [hJnormal : (extensionSubgroup H.field J hJH).Normal]
-    [hJfinite : Finite
-      (H.field.toSubgroup ⧸ extensionSubgroup H.field J hJH)]
-    (e : intrinsicFixedFieldSeparableClosureEquiv K H)
-    (σ : intrinsicFixedFieldFrobeniusElements K H J hJH e) :
+      :
     let F := abstractFixedField K (SeparableClosure K) H.field
     letI : Algebra F (SeparableClosure F) :=
       (separableClosure F (AlgebraicClosure F)).algebra
@@ -227,20 +221,11 @@ theorem ambientFixedFieldFrobeniusClosure_mem_iff
       ambientFixedFieldFrobeniusQuotient,
       FiniteAbstractField.toFiniteResidueAbstractField] using h
 
+include K H J hJH hJnormal hJfinite e σ in
 /-- The canonical fixed-field quotient equivalence maps the intrinsic
 Frobenius closure into the ambient Frobenius closure. -/
 theorem intrinsicFixedFieldFrobeniusClosure_le_ambientFixedField
-    (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    (H : FiniteAbstractField
-      Gal(SeparableClosure K / K))
-    (J : ClosedSubgroup Gal(SeparableClosure K / K))
-    (hJH : J.toSubgroup ≤ H.field.toSubgroup)
-    [hJnormal : (extensionSubgroup H.field J hJH).Normal]
-    [hJfinite : Finite
-      (H.field.toSubgroup ⧸ extensionSubgroup H.field J hJH)]
-    (e : intrinsicFixedFieldSeparableClosureEquiv K H)
-    (σ : intrinsicFixedFieldFrobeniusElements K H J hJH e)
+     
     (q : intrinsicFixedFieldFrobeniusQuotient K H J hJH e)
     (hq : q ∈
       (closedSubgroupGenerated
@@ -302,20 +287,11 @@ theorem
         ({ξ.symm (ξ x)} : Set G₁) : Subgroup G₁) at hmap
   simpa only [ξ.symm_apply_apply] using hmap
 
+include K H J hJH hJnormal hJfinite e σ in
 /-- The canonical fixed-field quotient equivalence pulls the ambient
 Frobenius closure back into the intrinsic Frobenius closure. -/
 theorem ambientFixedFieldFrobeniusClosure_le_intrinsicFixedField
-    (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    (H : FiniteAbstractField
-      Gal(SeparableClosure K / K))
-    (J : ClosedSubgroup Gal(SeparableClosure K / K))
-    (hJH : J.toSubgroup ≤ H.field.toSubgroup)
-    [hJnormal : (extensionSubgroup H.field J hJH).Normal]
-    [hJfinite : Finite
-      (H.field.toSubgroup ⧸ extensionSubgroup H.field J hJH)]
-    (e : intrinsicFixedFieldSeparableClosureEquiv K H)
-    (σ : intrinsicFixedFieldFrobeniusElements K H J hJH e)
+     
     (q : intrinsicFixedFieldFrobeniusQuotient K H J hJH e)
     (hq :
       intrinsicFrobeniusQuotientContinuousEquivAmbientFixedField
@@ -341,39 +317,41 @@ theorem ambientFixedFieldFrobeniusClosure_le_intrinsicFixedField
   exact
     continuousMulEquiv_preimage_mem_closedSubgroupGenerated_singleton_of_eq
       ξ σ.1 q σH.1 (ξ q) hξσ hξq hq
+end
 
-/-- The canonical fixed-field quotient equivalence identifies the intrinsic
-and ambient Frobenius closures. -/
-theorem intrinsicFrobeniusClosure_iff_ambientFixedField
-    (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    (H : FiniteAbstractField
-      Gal(SeparableClosure K / K))
-    (J : ClosedSubgroup Gal(SeparableClosure K / K))
-    (hJH : J.toSubgroup ≤ H.field.toSubgroup)
-    [hJnormal : (extensionSubgroup H.field J hJH).Normal]
-    [hJfinite : Finite
-      (H.field.toSubgroup ⧸ extensionSubgroup H.field J hJH)]
-    (e : intrinsicFixedFieldSeparableClosureEquiv K H)
-    (σ : intrinsicFixedFieldFrobeniusElements K H J hJH e)
-    (q : intrinsicFixedFieldFrobeniusQuotient K H J hJH e) :
-    q ∈
-        (closedSubgroupGenerated
-          ({σ.1} : Set
-            (intrinsicFixedFieldFrobeniusQuotient
-              K H J hJH e)) : Subgroup _) ↔
-      intrinsicFrobeniusQuotientContinuousEquivAmbientFixedField
-          K H J hJH e q ∈
-        (closedSubgroupGenerated
-          ({(intrinsicFrobeniusElementToAmbientFixedField
-              K H J hJH e σ).1} : Set
-            (ambientFixedFieldFrobeniusQuotient
-              K H J hJH)) : Subgroup _) := by
-  exact
-    ⟨intrinsicFixedFieldFrobeniusClosure_le_ambientFixedField
-        K H J hJH e σ q,
-      ambientFixedFieldFrobeniusClosure_le_intrinsicFixedField
-        K H J hJH e σ q⟩
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end LocalClassFieldTheory
 

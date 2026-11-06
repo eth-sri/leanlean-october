@@ -32,10 +32,10 @@ def mixedJet (u : ℂ → G F ζ hζ → ℂ) (k : ℕ) (w : Word F)
     (s : ℂ) : G F ζ hζ → ℂ :=
   rightWord F ζ hζ w (fun g => iteratedDerivWithin k (fun z => u z g) V s)
 
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+
 variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
 variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+
 variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
 variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)

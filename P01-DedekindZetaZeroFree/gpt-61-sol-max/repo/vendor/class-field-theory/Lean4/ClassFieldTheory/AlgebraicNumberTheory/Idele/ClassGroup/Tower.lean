@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Extension.ClassGroup
 public import Mathlib.LinearAlgebra.TensorProduct.Basis
 public import Mathlib.RingTheory.TensorProduct.Maps
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -184,9 +187,7 @@ theorem towerRelativeAdeleFlatten_tmul
         Algebra.smul_def]
 
 /-- Embed the bottom adele algebra into the iterated tensor model. -/
-def bottomAdeleToTower :
-    NumberField.AdeleRing (𝓞 K) K →ₐ[K]
-      TowerRelativeAdeleRing K M L :=
+def bottomAdeleToTower  :=
   (Algebra.TensorProduct.includeLeft
       (R := M) (S := K)
       (A := RelativeAdeleRing K M) (B := L)).comp
@@ -211,27 +212,7 @@ def topFieldToTower :
       (R := M)
       (A := RelativeAdeleRing K M) (B := L)).toRingHom with
     commutes' := by
-      intro k
-      rw [IsScalarTower.algebraMap_apply K M L]
-      change
-        1 ⊗ₜ[M]
-            algebraMap M L (algebraMap K M k) =
-          algebraMap K
-            (TowerRelativeAdeleRing K M L) k
-      rw [← Algebra.TensorProduct.tmul_one_eq_one_tmul
-        (R := M)
-        (A := RelativeAdeleRing K M)
-        (B := L)]
-      change
-        ((1 : NumberField.AdeleRing (𝓞 K) K) ⊗ₜ[K]
-            algebraMap K M k) ⊗ₜ[M] (1 : L) =
-          ((algebraMap K
-              (NumberField.AdeleRing (𝓞 K) K) k) ⊗ₜ[K]
-                (1 : M)) ⊗ₜ[M] (1 : L)
-      rw [← Algebra.TensorProduct.tmul_one_eq_one_tmul
-        (R := K)
-        (A := NumberField.AdeleRing (𝓞 K) K)
-        (B := M)]
+      simp_all
       }
 
 omit [NumberField M] [NumberField L]
@@ -296,7 +277,7 @@ def towerRelativeIdeleEquiv :
     (towerRelativeAdeleRingEquiv K M L).toMulEquiv
 
 -- Fix the canonical commutativity proof for the tower's tensor-product units.
-local instance : IsMulCommutative (TowerRelativeIdeleGroup K M L) :=
+instance : IsMulCommutative (TowerRelativeIdeleGroup K M L) :=
   ⟨⟨fun a b => mul_comm a b⟩⟩
 
 local instance : IsMulCommutative (RelativeIdeleGroup.ClassGroup K L) :=
@@ -333,8 +314,7 @@ theorem towerRelativeIdeleEquiv_principalIdele
   simp [topFieldToOneStep_apply]
 
 /-- Principal ideles in the tower presentation. -/
-def principalSubgroup :
-    Subgroup (TowerRelativeIdeleGroup K M L) :=
+def principalSubgroup  :=
   (principalIdele K M L).range
 
 /-- The idele class group of `L` in the tower presentation. -/
@@ -355,8 +335,7 @@ theorem principalSubgroup_map_towerRelativeIdeleEquiv :
     MonoidHom.map_range]
   congr 1
   ext x
-  exact congrArg Units.val
-    (towerRelativeIdeleEquiv_principalIdele K M L x)
+  apply congrArg <;> aesop
 
 /-- Canonical equivalence between the tower and one-step presentations
 of the relative idele class group of `L`. -/
@@ -449,7 +428,7 @@ theorem norm_principalIdele
       RelativeIdeleGroup.principalIdele K M
         (Units.map (Algebra.norm M) x) := by
   apply Units.ext
-  exact norm_fieldInclusion K M L (x : L)
+  apply norm_fieldInclusion
 
 /-- The tower norm descended to actual idele class groups. -/
 def classNorm :
@@ -631,8 +610,7 @@ theorem intermediateToCompositeNormQuotient_range_eq_ker :
       QuotientGroup.mk'
           (RelativeIdeleGroup.classNorm K M).range c = 1
       at hc
-    have hcRange :
-        c ∈ (RelativeIdeleGroup.classNorm K M).range :=
+    have hcRange  :=
       (QuotientGroup.eq_one_iff c).1 hc
     obtain ⟨d, rfl⟩ := hcRange
     refine
@@ -675,22 +653,20 @@ theorem towerCompositeClassNormQuotient_card_le_mul
     intermediateToCompositeNormQuotient K M L
   let g : B →* C :=
     compositeToBaseNormQuotient K M L
-  let : Fintype A := Fintype.ofFinite A
-  let : Fintype C := Fintype.ofFinite C
-  let : Fintype B :=
+  let  := Fintype.ofFinite A
+  let  := Fintype.ofFinite C
+  let  :=
     Group.fintypeOfKerEqRange f g
       (intermediateToCompositeNormQuotient_range_eq_ker
         K M L).symm
   have hg :
       Function.Surjective g :=
     compositeToBaseNormQuotient_surjective K M L
-  have hquot :
-      Nat.card (B ⧸ g.ker) = Nat.card C :=
+  have hquot  :=
     Nat.card_congr
       (QuotientGroup.quotientKerEquivOfSurjective
         g hg).toEquiv
-  have hrange :
-      Nat.card f.range ≤ Nat.card A :=
+  have hrange  :=
     Nat.card_le_card_of_surjective
       f.rangeRestrict
       f.rangeRestrict_surjective

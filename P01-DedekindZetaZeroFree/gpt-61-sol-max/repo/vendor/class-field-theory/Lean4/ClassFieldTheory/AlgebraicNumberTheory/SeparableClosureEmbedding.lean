@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import Mathlib.FieldTheory.IsSepClosed
 public import Mathlib.FieldTheory.KrullTopology
 public import Mathlib.NumberTheory.NumberField.Basic
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -44,8 +47,8 @@ theorem continuous_algEquiv_autCongr
   intro s hs
   rw [map_one, krullTopology_mem_nhds_one_iff] at hs
   obtain ⟨M, hMfinite, hMs⟩ := hs
-  let : FiniteDimensional F M := hMfinite
-  let N : IntermediateField F E :=
+  let  := hMfinite
+  let N  :=
     M.map e.symm.toAlgHom
   let : FiniteDimensional F N :=
     (M.equivMap e.symm.toAlgHom).toLinearEquiv.finiteDimensional
@@ -83,8 +86,7 @@ noncomputable def numberFieldSeparableClosureEmbedding :
 
 /-- The actual copy of `K` cut out by the chosen embedding into
 `SeparableClosure ℚ`. -/
-def numberFieldInRationalSeparableClosure :
-    IntermediateField ℚ (SeparableClosure ℚ) :=
+def numberFieldInRationalSeparableClosure  :=
   (numberFieldSeparableClosureEmbedding K).fieldRange
 
 noncomputable instance
@@ -93,11 +95,11 @@ noncomputable instance
       (numberFieldInRationalSeparableClosure K) :=
   ((numberFieldSeparableClosureEmbedding K).equivFieldRange.toLinearEquiv).finiteDimensional
 
-noncomputable instance
-    numberFieldInRationalSeparableClosure_numberField :
-    NumberField (numberFieldInRationalSeparableClosure K) where
-  to_charZero := inferInstance
-  to_finiteDimensional := inferInstance
+
+
+
+
+
 
 end AlgebraicNumberTheory
 

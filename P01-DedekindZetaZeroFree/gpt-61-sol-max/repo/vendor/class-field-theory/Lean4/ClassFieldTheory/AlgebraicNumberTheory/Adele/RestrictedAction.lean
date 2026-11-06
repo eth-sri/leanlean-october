@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AlgebraicNumberTheory.Adele.RestrictedProduct
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -119,14 +122,10 @@ noncomputable def scalarTensorUnitsAction :
         (K := K) (L := L) (A := A) σ).toMulEquiv z
   one_smul z := by
     apply Units.ext
-    exact scalarTensorConjugation_one
-      (K := K) (L := L) (A := A)
-      (z : A ⊗[K] L)
+    apply scalarTensorConjugation_one
   mul_smul σ τ z := by
     apply Units.ext
-    exact scalarTensorConjugation_mul
-      (K := K) (L := L) (A := A)
-      σ τ (z : A ⊗[K] L)
+    apply scalarTensorConjugation_mul
   smul_one σ := by
     apply Units.ext
     exact
@@ -207,9 +206,7 @@ theorem RelativeIdeleGroup.infiniteComponent_smul
   let _ := scalarTensorUnitsAction
     (K := K) (L := L) (A := w.Completion)
   apply Units.ext
-  exact relativeAdeleInfiniteComponent_conjugation
-    (K := K) (L := L) w σ
-      (z : RelativeAdeleRing K L)
+  apply relativeAdeleInfiniteComponent_conjugation
 
 omit [NumberField L] [FiniteDimensional K L] in
 /-- The finite local unit component map is equivariant. -/
@@ -228,9 +225,7 @@ theorem RelativeIdeleGroup.finiteComponent_smul
     (K := K) (L := L)
     (A := w.adicCompletion K)
   apply Units.ext
-  exact relativeAdeleFiniteComponent_conjugation
-    (K := K) (L := L) w σ
-      (z : RelativeAdeleRing K L)
+  apply relativeAdeleFiniteComponent_conjugation
 
 /-- The Galois action on the restricted local product transported
 through the exact relative-idele equivalence. -/
@@ -240,8 +235,7 @@ noncomputable def relativeLocalIdeleDataMulDistribMulAction :
       (L ≃ₐ[K] L)
       (RelativeLocalIdeleData
         (K := K) (L := L)) := by
-  letI : MulDistribMulAction
-      (L ≃ₐ[K] L) (RelativeIdeleGroup K L) :=
+  letI  :=
     relativeIdeleRestrictedMulDistribMulAction
       (K := K) (L := L)
   let e :=
@@ -272,39 +266,39 @@ noncomputable def relativeLocalIdeleDataMulDistribMulAction :
         rw [e.symm.map_mul,
           MulDistribMulAction.smul_mul, e.map_mul] }
 
-omit [NumberField L] in
-/-- Equivariance of the exact restricted-product equivalence. -/
-theorem relativeIdeleMulEquivLocalData_smul
-    (σ : L ≃ₐ[K] L)
-    (z : RelativeIdeleGroup K L) :
-    letI :=
-      relativeIdeleRestrictedMulDistribMulAction
-        (K := K) (L := L)
-    letI :=
-      relativeLocalIdeleDataMulDistribMulAction
-        (K := K) (L := L)
-    relativeIdeleMulEquivLocalData
-        (K := K) (L := L) (σ • z) =
-      σ • relativeIdeleMulEquivLocalData
-        (K := K) (L := L) z := by
-  let _ :=
-    relativeIdeleRestrictedMulDistribMulAction
-      (K := K) (L := L)
-  let _ :=
-    relativeLocalIdeleDataMulDistribMulAction
-      (K := K) (L := L)
-  change
-    relativeIdeleMulEquivLocalData
-        (K := K) (L := L) (σ • z) =
-      relativeIdeleMulEquivLocalData
-        (K := K) (L := L)
-        (σ •
-          (relativeIdeleMulEquivLocalData
-            (K := K) (L := L)).symm
-            (relativeIdeleMulEquivLocalData
-              (K := K) (L := L) z))
-  rw [(relativeIdeleMulEquivLocalData
-    (K := K) (L := L)).symm_apply_apply]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 omit [NumberField L] in
 /-- The transported action is coordinatewise tensor conjugation at

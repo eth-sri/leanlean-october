@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve.Vendor
 
@@ -16,7 +19,7 @@ theorem finite_subrange_mask_sum_mul {α β : Type*} [DecidableEq β]
     intro b _ hb
     simp [hb]
   rw [← Finset.sum_subset hS hzero]
-  exact Finset.sum_congr rfl fun b hb => by simp [hb]
+  apply Finset.sum_congr <;> aesop
 
 theorem finite_subrange_mask_sum_norm_sq {β : Type*} [DecidableEq β]
     (S S' : Finset β) (hS : S' ⊆ S) (lam : β → ℂ) :
@@ -26,7 +29,7 @@ theorem finite_subrange_mask_sum_norm_sq {β : Type*} [DecidableEq β]
     intro b _ hb
     simp [hb]
   rw [← Finset.sum_subset hS hzero]
-  exact Finset.sum_congr rfl fun b hb => by simp [hb]
+  apply Finset.sum_congr <;> aesop
 
 theorem finite_subrange_bound {α β : Type*} [DecidableEq α] [DecidableEq β]
     (R R' : Finset α) (S S' : Finset β) (hR : R' ⊆ R) (hS : S' ⊆ S)
@@ -41,9 +44,9 @@ theorem finite_subrange_bound {α β : Type*} [DecidableEq α] [DecidableEq β]
   set lam' : β → ℂ := fun b => if b ∈ S' then lam b else 0 with hlam'
   have hmul : ∀ a : α, (∑ b ∈ S, lam' b * K b a) = ∑ b ∈ S', lam b * K b a := by
     intro a
-    simpa only [hlam'] using finite_subrange_mask_sum_mul S S' hS K lam a
+    apply finite_subrange_mask_sum_mul <;> assumption
   have hnorm : (∑ b ∈ S, ‖lam' b‖ ^ 2) = ∑ b ∈ S', ‖lam b‖ ^ 2 := by
-    simpa only [hlam'] using finite_subrange_mask_sum_norm_sq S S' hS lam
+    apply finite_subrange_mask_sum_norm_sq <;> assumption
   calc (∑ a ∈ R', ‖∑ b ∈ S', lam b * K b a‖ ^ 2)
       = ∑ a ∈ R', ‖∑ b ∈ S, lam' b * K b a‖ ^ 2 :=
         Finset.sum_congr rfl fun a _ => by rw [hmul a]

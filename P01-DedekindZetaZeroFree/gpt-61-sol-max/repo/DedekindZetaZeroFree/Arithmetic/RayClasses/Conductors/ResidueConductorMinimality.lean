@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Characters.SIntegerResidueCharacters
 public import DedekindZetaZeroFree.CharacterSums.Gauss.PrimitiveResidueCharacters
 public import DedekindZetaZeroFree.Arithmetic.Ideals.SIntegerPrincipalIdealIndex
 
 @[expose] public section
+
 
 open scoped NumberField Classical
 
@@ -19,17 +22,17 @@ def unitReduction (A : SArithmeticData F) (q q' : Ideal A.R)
   Units.map (Ideal.Quotient.factor hqq').toMonoidHom
 
 def FactorsThrough (A : SArithmeticData F) (q q' : Ideal A.R)
-    (hqq' : q ≤ q') (lam : ResidueCharacter A q) : Prop :=
+    (hqq' : q ≤ q') (lam : ResidueCharacter A q)  :=
   ∃ lam' : ResidueCharacter A q',
     ∀ u : (A.R ⧸ q)ˣ, lam u = lam' (unitReduction A q q' hqq' u)
 
 def IsConductorMinimal (A : SArithmeticData F) (q : Ideal A.R)
-    (lam : ResidueCharacter A q) : Prop :=
+    (lam : ResidueCharacter A q)  :=
   ∀ (q' : Ideal A.R) (hqq' : q < q'),
     ¬ FactorsThrough A q q' hqq'.le lam
 
 def SLocalConductorTrivial (A : SArithmeticData F)
-    (fS : Ideal (𝓞 F)) (sigma : FullLocalCharacters A) : Prop :=
+    (fS : Ideal (𝓞 F)) (sigma : FullLocalCharacters A)  :=
   ∀ (alpha : 𝓞 F) (n : NonzeroSInteger A),
     (n.val : F) = (alpha : F) → alpha - 1 ∈ fS →
       Ideal.span {alpha} ⊔ A.cS = ⊤ → localInverseProduct A sigma n = 1
@@ -74,18 +77,18 @@ theorem exterior_principal_value_one_of_factorization
     rw [hu]
     change Ideal.Quotient.mk q' n.val = Ideal.Quotient.mk q' 1
     apply Ideal.Quotient.eq.mpr
-    simpa [n] using haq'
+    exact haq'
   obtain ⟨lam', hlam'⟩ := hfactor
   have hlu : lam u = 1 := by rw [hlam', hr, map_one]
   change omega (Ideal.span {alpha}) = _ at hv
   rw [hl, one_mul, ← hu, residueZeroExtension_unit, hlu] at hv
-  exact hv.trans (by simp)
+  exact hv.trans (rfl)
 
 private theorem lift_divisor (A : SArithmeticData F) (qO : Ideal (𝓞 F))
     (hq0 : qO ≠ ⊥) (hq : qO ⊔ A.cS = ⊤) (q' : Ideal A.R)
     (hlt : residueModulus A qO < q') :
     ∃ Q : Ideal (𝓞 F), qO < Q ∧ residueModulus A Q = q' := by
-  let qo : A.Exterior := ⟨qO, hq0, hq⟩
+  
   have hq' : q' ≠ ⊥ := ne_bot_of_gt (lt_of_le_of_lt bot_le hlt)
   let Q := A.exteriorIdealEquiv.symm ⟨q', hq'⟩
   have heQ : A.extendIdeal Q = q' := by
@@ -102,7 +105,7 @@ private theorem lift_divisor (A : SArithmeticData F) (qO : Ideal (𝓞 F))
     rw [heQ, sup_eq_right.mpr hlt.le]
   have hBQ : B = Q := A.exteriorIdealEquiv.injective (Subtype.ext (by
     rw [A.exteriorIdealEquiv_apply, A.exteriorIdealEquiv_apply, heB, heQ]))
-  have hle : qO ≤ Q.val := (show qO ≤ B.val from le_sup_left).trans_eq
+  have hle  := (show qO ≤ B.val from le_sup_left).trans_eq
     (congrArg Subtype.val hBQ)
   refine ⟨Q.val, lt_of_le_of_ne hle ?_, heQ⟩
   intro he
@@ -116,22 +119,25 @@ private theorem coprime_of_sub_one_mem {R : Type*} [CommRing R]
   have hb : a - 1 ∈ Ideal.span {a} ⊔ m := Ideal.mem_sup_right h
   simpa using (Ideal.span {a} ⊔ m).sub_mem ha hb
 
-private theorem exterior_representative (A : SArithmeticData F)
+section
+variable (A : SArithmeticData F)
+include A
+private theorem exterior_representative  
     (f : Ideal (𝓞 F)) (hf : f ≠ ⊤) (a : 𝓞 F)
     (hc : Ideal.span {a} ⊔ f = ⊤) :
     ∃ b : 𝓞 F, b ≠ 0 ∧ b - a ∈ f ∧ Ideal.span {b} ⊔ A.cS = ⊤ := by
   let s := A.Sf.filter (fun v => ¬ f ≤ v.asIdeal)
-  let B : Ideal (𝓞 F) := ∏ v ∈ s, v.asIdeal
+  let B  := ∏ v ∈ s, v.asIdeal
   have hcop : f ⊔ B = ⊤ := by
     apply Ideal.sup_prod_eq_top
     intro v hv
-    have hn : ¬ f ≤ v.asIdeal := (Finset.mem_filter.mp hv).2
+    have hn  := (Finset.mem_filter.mp hv).2
     rw [sup_comm]
     exact (Ideal.isMaximal_def.mp v.isMaximal).2 _
       (lt_of_le_of_ne le_sup_left (fun he => hn (he ▸ le_sup_right)))
   obtain ⟨x, hx, y, hy, hxy⟩ := Submodule.mem_sup.mp
     (show (1 : 𝓞 F) ∈ f ⊔ B by rw [hcop]; trivial)
-  let b : 𝓞 F := a * y + x
+  let b  := a * y + x
   have hba : b - a ∈ f := by
     have he : b - a = (1 - a) * x := by dsimp [b]; linear_combination a * hxy
     rw [he]
@@ -167,7 +173,7 @@ private theorem exterior_representative (A : SArithmeticData F)
       exact Finset.inf_le (by simp [s, hfv, hv])
     exact hvB hb1
 
-private theorem no_real_embedding (A : SArithmeticData F) (phi : F →+* ℝ) : False := by
+private theorem no_real_embedding   (phi : F →+* ℝ) : False := by
   have hp : phi A.zeta12 ^ 6 = -1 := by simpa using congrArg phi A.zeta12_pow_six
   have hn := sq_nonneg (phi A.zeta12 ^ 3)
   rw [← pow_mul] at hn
@@ -175,7 +181,7 @@ private theorem no_real_embedding (A : SArithmeticData F) (phi : F →+* ℝ) : 
   linarith
 
  theorem principal_value_congr
-    (A : SArithmeticData F) (f : Ideal (𝓞 F)) (omega : RayClassCharacter F f)
+      (f : Ideal (𝓞 F)) (omega : RayClassCharacter F f)
     (alpha beta : 𝓞 F) (ha : alpha ≠ 0) (hb : beta ≠ 0)
     (hac : Ideal.span {alpha} ⊔ f = ⊤) (hc : alpha - beta ∈ f) :
     omega (Ideal.span {alpha}) = omega (Ideal.span {beta}) := by
@@ -190,26 +196,26 @@ private theorem no_real_embedding (A : SArithmeticData F) (phi : F →+* ℝ) : 
   have haeq : Ideal.Quotient.mk f (alpha * gamma) = 1 := by
     rw [map_mul, ← hu, hg]
     exact u.val_inv
-  have hag : alpha * gamma - 1 ∈ f := Ideal.Quotient.eq.mp (by simpa using haeq)
+  have hag : alpha * gamma - 1 ∈ f := Ideal.Quotient.eq.mp (haeq)
   have hg0 : gamma ≠ 0 := by
     intro h
     subst gamma
     have h1 : (1 : 𝓞 F) ∈ f := by simpa using f.neg_mem hag
     exact hft (Ideal.eq_top_of_isUnit_mem f h1 isUnit_one)
-  have hbeq : Ideal.Quotient.mk f beta = Ideal.Quotient.mk f alpha :=
+  have hbeq  :=
     (Ideal.Quotient.eq.mpr hc).symm
   have hbg : beta * gamma - 1 ∈ f := by
     apply Ideal.Quotient.eq.mp
     simpa only [map_mul, map_one, hbeq] using haeq
-  have hoa : omega (Ideal.span {alpha * gamma}) = 1 :=
+  have hoa  :=
     omega.map_span' _ (mul_ne_zero ha hg0) hag (hpos _)
-  have hob : omega (Ideal.span {beta * gamma}) = 1 :=
+  have hob  :=
     omega.map_span' _ (mul_ne_zero hb hg0) hbg (hpos _)
   rw [← Ideal.span_singleton_mul_span_singleton, omega.map_mul'] at hoa hob
   exact mul_right_cancel₀ (right_ne_zero_of_mul_eq_one hoa) (hoa.trans hob.symm)
 
 theorem hecke_conductor_implies_residue_minimality
-    (A : SArithmeticData F) (f fS qO : Ideal (𝓞 F))
+      (f fS qO : Ideal (𝓞 F))
     (omega : RayClassCharacter F f) (hprimitive : omega.IsPrimitive)
     (hsplit : ConductorSplit A f fS qO)
     (sigma : FullLocalCharacters A) (horder : HasFiniteOrder A sigma)
@@ -243,23 +249,22 @@ theorem hecke_conductor_implies_residue_minimality
     calc
       ⊤ = Ideal.span {b} ⊔ f := hbf.symm
       _ ≤ Ideal.span {b} ⊔ qO := sup_le_sup_left (by rw [hsplit]; exact Ideal.mul_le_right) _
-  have hone : omega (Ideal.span {b}) = 1 :=
+  have hone  :=
     exterior_principal_value_one_of_factorization A f fS qO omega sigma lam hdecomp hlocal
       q' hlt.le hfactor b hb hbS (Ideal.mul_le_left hbm) hbq (by
         rw [← heQ]
         exact Ideal.mem_map_of_mem (algebraMap (𝓞 F) A.R) (Ideal.mul_le_right hbm))
   exact hne ((principal_value_congr A f omega a b ha hb hc (by simpa using f.neg_mem hba)).trans hone)
 
-theorem nonunit_stabilizer_witness (A : SArithmeticData F) (q : Ideal A.R)
+theorem nonunit_stabilizer_witness   (q : Ideal A.R)
     [Finite (A.R ⧸ q)] (lam : ResidueCharacter A q)
     (hminimal : IsConductorMinimal A q lam)
     (x : A.R ⧸ q) (hx : ¬ IsUnit x) :
     ∃ u : (A.R ⧸ q)ˣ, (u : A.R ⧸ q) * x = x ∧ lam u ≠ 1 := by
   let J : Ideal (A.R ⧸ q) :=
     (Submodule.span (A.R ⧸ q) {x}).annihilator
-  have hJ (y : A.R ⧸ q) : y ∈ J ↔ y * x = 0 := by
-    exact Submodule.mem_annihilator_span_singleton x y
-  let q' : Ideal A.R := Ideal.comap (Ideal.Quotient.mk q) J
+  have hJ (y : A.R ⧸ q) : y ∈ J ↔ y * x = 0 := Submodule.mem_annihilator_span_singleton x y
+  let q'  := Ideal.comap (Ideal.Quotient.mk q) J
   have hle : q ≤ q' := by
     intro y hy
     change Ideal.Quotient.mk q y ∈ J
@@ -313,11 +318,11 @@ theorem nonunit_stabilizer_witness (A : SArithmeticData F) (q : Ideal A.R)
     rr.liftOfRightInverse_comp_apply _ _ _ _
   exact hlc.symm.trans he.symm
 
-private theorem finite_residueModulus (A : SArithmeticData F)
+private theorem finite_residueModulus  
     (qO : Ideal (NumberField.RingOfIntegers F)) (hqO : qO ≠ ⊥) :
     Finite (A.R ⧸ residueModulus A qO) := by
   obtain ⟨a, ha, ha0⟩ := Submodule.exists_mem_ne_zero_of_ne_bot hqO
-  let b : A.R := algebraMap (𝓞 F) A.R a
+  let b  := algebraMap (𝓞 F) A.R a
   have hb : b ≠ 0 := by
     intro h
     apply ha0
@@ -328,17 +333,22 @@ private theorem finite_residueModulus (A : SArithmeticData F)
     intro y hy
     rw [Set.mem_singleton_iff] at hy
     subst y
-    exact Ideal.mem_map_of_mem (algebraMap (𝓞 F) A.R) ha
+    apply Ideal.mem_map_of_mem <;> assumption
   exact Finite.of_surjective (Ideal.Quotient.factor hle) (Ideal.Quotient.factor_surjective hle)
+end
 
-theorem hecke_nonunit_stabilizer_witness
-    (A : SArithmeticData F) (f fS qO : Ideal (𝓞 F))
+
+section
+variable (A : SArithmeticData F) (f fS qO : Ideal (𝓞 F))
     (omega : RayClassCharacter F f) (hprimitive : omega.IsPrimitive)
     (hsplit : ConductorSplit A f fS qO)
     (sigma : FullLocalCharacters A) (horder : HasFiniteOrder A sigma)
     (lam : ResidueCharacter A (residueModulus A qO))
     (hdecomp : ExteriorDecomposition A f omega sigma (residueModulus A qO) lam)
     (hlocal : SLocalConductorTrivial A fS sigma)
+include A f fS qO omega hprimitive hsplit sigma horder lam hdecomp hlocal
+theorem hecke_nonunit_stabilizer_witness
+     
     (x : A.R ⧸ residueModulus A qO) (hx : ¬ IsUnit x) :
     ∃ u : (A.R ⧸ residueModulus A qO)ˣ,
       (u : A.R ⧸ residueModulus A qO) * x = x ∧ lam u ≠ 1 := by
@@ -348,13 +358,7 @@ theorem hecke_nonunit_stabilizer_witness
       hsplit sigma horder lam hdecomp hlocal) x hx
 
 theorem hecke_zeroExtension_isPrimitiveResidueCharacter
-    (A : SArithmeticData F) (f fS qO : Ideal (𝓞 F))
-    (omega : RayClassCharacter F f) (hprimitive : omega.IsPrimitive)
-    (hsplit : ConductorSplit A f fS qO)
-    (sigma : FullLocalCharacters A) (horder : HasFiniteOrder A sigma)
-    (lam : ResidueCharacter A (residueModulus A qO))
-    (hdecomp : ExteriorDecomposition A f omega sigma (residueModulus A qO) lam)
-    (hlocal : SLocalConductorTrivial A fS sigma) :
+      :
     IsPrimitiveResidueCharacter (residueZeroExtension A (residueModulus A qO) lam) := by
   intro x hx
   obtain ⟨u, hu, hlu⟩ := hecke_nonunit_stabilizer_witness
@@ -365,6 +369,8 @@ theorem hecke_zeroExtension_isPrimitiveResidueCharacter
     apply hlu
     exact Units.ext h
   · rw [mul_sub, mul_one, mul_comm x (u : A.R ⧸ residueModulus A qO), hu, sub_self]
+end
+
 
 end
 end DedekindZetaZeroFree.Detector.FixedSResidue

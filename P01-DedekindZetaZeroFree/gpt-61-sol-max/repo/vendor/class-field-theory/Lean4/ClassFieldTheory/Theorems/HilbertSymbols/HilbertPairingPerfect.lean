@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.Definitions.HilbertSymbols.IsLocalHilbertPairing
 public import Mathlib.GroupTheory.FiniteAbelian.Duality
 public import Mathlib.RingTheory.RootsOfUnity.EnoughRootsOfUnity
 public import Mathlib.SetTheory.Cardinal.Finite
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -74,11 +77,10 @@ theorem IsNondegenerate.bijective
         obtain ⟨ζ, hζ⟩ := hmu
         exact ⟨ζ, (mem_primitiveRoots n.pos).1 hζ⟩
       cyc := inferInstance }
-  have hExp : Monoid.exponent (PowerClassGroup K n) ∣ (n : ℕ) :=
+  have hExp  :=
     Monoid.exponent_dvd_of_forall_pow_eq_one
       (powerClass_pow_order K n)
-  let : HasEnoughRootsOfUnity K
-      (Monoid.exponent (PowerClassGroup K n)) :=
+  let  :=
     HasEnoughRootsOfUnity.of_dvd K hExp
   have hCard : Nat.card (PowerClassGroup K n) =
       Nat.card (PowerClassGroup K n →* rootsOfUnity (n : ℕ) K) := by
@@ -89,8 +91,7 @@ theorem IsNondegenerate.bijective
           (PowerClassGroup K n) K).symm
       _ = Nat.card (PowerClassGroup K n →* rootsOfUnity (n : ℕ) K) :=
         (Nat.card_congr (characterUnitsEquiv K n)).symm
-  have : Finite
-      (PowerClassGroup K n →* rootsOfUnity (n : ℕ) K) :=
+  have  :=
     Nat.finite_of_card_ne_zero (by
       rw [← hCard]
       exact (Nat.card_pos (α := PowerClassGroup K n)).ne')
@@ -98,7 +99,7 @@ theorem IsNondegenerate.bijective
     intro a b hab
     have hOne : B (a * b⁻¹) = 1 := by
       rw [map_mul, map_inv, hab, mul_inv_cancel]
-    have hEq : a * b⁻¹ = 1 := hB.1 _ (fun c => DFunLike.congr_fun hOne c)
+    have hEq  := hB.1 _ (fun c => DFunLike.congr_fun hOne c)
     exact (mul_inv_eq_one).mp hEq
   exact (Nat.bijective_iff_injective_and_card B).2 ⟨hinj, hCard⟩
 

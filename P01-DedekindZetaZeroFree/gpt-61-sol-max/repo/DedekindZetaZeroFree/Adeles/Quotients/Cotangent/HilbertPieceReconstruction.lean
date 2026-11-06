@@ -75,8 +75,11 @@ private theorem selectedFields_measurable (u : PieceHilbert cover) (n : ℕ) :
   ((KPMeasurableLocalL2.representative_spec (localData (cover.chart n))
     (supportedPiece cover n) (u n)).1).comp (continuous_originalPoint (cover.chart n)).measurable
 
-private theorem labeledA_psi (a : ShrunkChart F ζ hζ U R P H) (γ : Gamma a)
-    (y : M F) (hy : y ∈ omega a) :
+section
+variable (a : ShrunkChart F ζ hζ U R P H) (γ : Gamma a)
+    (y : M F) (hy : y ∈ omega a)
+include a γ y hy
+private theorem labeledA_psi   :
     labeledA (placeEquiv F ζ hζ) ((isotropyArrow a γ).psi y) =
       (actualActionEquiv a γ (originalPoint a ⟨y, hy⟩)).val := by
   have h3 : labeledAInv (placeEquiv F ζ hζ)
@@ -90,18 +93,22 @@ private theorem labeledA_psi (a : ShrunkChart F ζ hζ U R P H) (γ : Gamma a)
     _ = (actualActionEquiv a γ (originalPoint a ⟨y, hy⟩)).val := by
         funext k; simp [labeledA, labeledAInv]
 
-private theorem actualTensor_originalPoint (a : ShrunkChart F ζ hζ U R P H) (γ : Gamma a)
-    (y : M F) (hy : y ∈ omega a) :
+private theorem actualTensor_originalPoint   :
     actualTensor a γ (originalPoint a ⟨y, hy⟩) =
       T (isotropyArrow a γ) y
         (KPContActualCotangentMeasurableFamilies.omega_subset_larger a hy) := by
   simp only [actualTensor, coordinates_originalPoint a ⟨y, hy⟩]
+end
+
 
 private theorem ambientSequence_of_mem (f : SequenceFields cover) (n : ℕ)
     (x : M F) (hx : x ∈ omega (cover.chart n)) :
     ambientSequence cover f n x = f n ⟨x, hx⟩ := dif_pos hx
 
-private theorem selectedFields_equivariant (u : PieceHilbert cover) (n : ℕ)
+section
+variable (u : PieceHilbert cover)
+include u
+private theorem selectedFields_equivariant   (n : ℕ)
     (γ : Gamma (cover.chart n)) (y : M F) (hy : y ∈ omega (cover.chart n)) :
     ambientSequence cover (selectedFields cover u) n
         ((isotropyArrow (cover.chart n) γ).psi y) =
@@ -125,16 +132,16 @@ private theorem selectedFields_equivariant (u : PieceHilbert cover) (n : ℕ)
     (supportedPiece cover n) (u n) (originalPoint (cover.chart n) ⟨y, hy⟩)))
     (actualTensor_originalPoint (cover.chart n) γ y hy)
 
-theorem selectedFields_isPieceSequence (u : PieceHilbert cover) :
+theorem selectedFields_isPieceSequence   :
     IsPieceSequence cover (selectedFields cover u) := by
   refine ⟨selectedFields_measurable cover u, fun n y hy => selectedFields_zero_off cover u n y hy, ?_⟩
   intro n γ y hy
   exact selectedFields_equivariant cover u n γ y hy
 
-def selectedSequence (u : PieceHilbert cover) : PieceSequence cover :=
+def selectedSequence   : PieceSequence cover :=
   ⟨selectedFields cover u, selectedFields_isPieceSequence cover u⟩
 
-theorem selectedSequence_represents (u : PieceHilbert cover) :
+theorem selectedSequence_represents   :
     RepresentsComponents cover (selectedSequence cover u) u := by
   intro n
   filter_upwards [(KPMeasurableLocalL2.representative_spec (localData (cover.chart n))
@@ -143,22 +150,27 @@ theorem selectedSequence_represents (u : PieceHilbert cover) :
   rw [originalPoint_coordinates]
   exact hy
 
-def reconstructFamily (u : PieceHilbert cover) : Family (U := U) (H := H) :=
+def reconstructFamily   : Family (U := U) (H := H) :=
   G cover (selectedSequence cover u)
 
-theorem reconstructFamily_squareFinite (u : PieceHilbert cover) :
+theorem reconstructFamily_squareFinite   :
     squareFinite (reconstructFamily cover u) :=
   (kp_cont_actual_cotangent_glued_piece_integral F ζ hζ R.adelicHaar R.adelic_isHaar U R rfl P H
     cover).gluing_squareFinite (selectedSequence cover u) u (selectedSequence_represents cover u)
 
-def reconstruct (u : PieceHilbert cover) : SquareFiniteFamily (U := U) (H := H) :=
+def reconstruct   : SquareFiniteFamily (U := U) (H := H) :=
   ⟨reconstructFamily cover u, reconstructFamily_squareFinite cover u⟩
+end
 
-private theorem measurable_omega' (a : ShrunkChart F ζ hζ U R P H) :
+
+section
+variable (a : ShrunkChart F ζ hζ U R P H)
+include a
+private theorem measurable_omega'   :
     MeasurableSet (omega a) :=
   a.domain_open.measurableSet.preimage continuous_labeledA.measurable
 
- def coordinatesMeasurableEquiv (a : ShrunkChart F ζ hζ U R P H) :
+ def coordinatesMeasurableEquiv   :
     a.domain ≃ᵐ omega a where
   toFun := coordinates a
   invFun := originalPoint a
@@ -167,7 +179,7 @@ private theorem measurable_omega' (a : ShrunkChart F ζ hζ U R P H) :
   measurable_toFun := (coordinates_continuous a).measurable
   measurable_invFun := (continuous_originalPoint a).measurable
 
-private theorem chartMeasure_eq_map_coordinates (a : ShrunkChart F ζ hζ U R P H) :
+private theorem chartMeasure_eq_map_coordinates   :
     chartMeasure a = Measure.map (coordinates a) a.liftedMeasure := by
   have hω : MeasurableSet (omega a) := measurable_omega' a
   have hf : MeasurableEmbedding (Subtype.val : omega a → M F) :=
@@ -180,6 +192,8 @@ private theorem chartMeasure_eq_map_coordinates (a : ShrunkChart F ζ hζ U R P 
   rw [show (Subtype.val : omega a → M F) ⁻¹' omega a = Set.univ from
     Set.eq_univ_of_forall (fun x => x.property)]
   rw [Measure.restrict_univ, hf.comap_map]
+end
+
 
 private theorem q_coordinates' (C : ShrunkChart F ζ hζ U R P H) (y : C.domain) :
     q C (coordinates C y).val = C.toBase y := by

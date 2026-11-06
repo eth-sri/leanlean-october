@@ -21,7 +21,7 @@ variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 variable (μ : ∀ q : KPFinitePlace F, Measure (q.adicCompletion F))
 variable [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
 variable (hμ : ∀ q, μ q ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
-variable (N : MomentSources.TraceHaarTransport R)
+
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 local notation "W" => MomentSources.actualLocal R (actualImageData R P C μ hμ)

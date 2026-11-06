@@ -60,8 +60,11 @@ theorem mem_OmegaStar_strip (ξ w z : ℂ) (hξ : ξ.re = 4) (hw : w.re = 4)
   rw [hξ, hw]
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> linarith
 
-theorem kernel_z_holo (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) (ξ w : ℂ)
-    (hξ : ξ.re = 4) (hw : w.re = 4) :
+section
+variable (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) (ξ w : ℂ)
+    (hξ : ξ.re = 4) (hw : w.re = 4)
+include u hu Z hZ ξ w hξ hw in
+theorem kernel_z_holo   :
     DifferentiableOn ℂ (fun z => PoissonKernel.K D u ξ w z Z)
       (comparisonClosedStrip Scales.zLine 2) := by
   intro z hz
@@ -145,8 +148,8 @@ theorem kernel_z_norm_bound (u : D.Row) (Z : ℝ) (hZ : 0 < Z) (ξ w : ℂ)
         (Cz * ‖D.Lpsi u w‖ / ‖D.Llam u ξ‖ * Cq) := by gcongr
     _ = _ := by ring
 
-theorem kernel_z_decay (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) (ξ w : ℂ)
-    (hξ : ξ.re = 4) (hw : w.re = 4) :
+include u hu Z hZ ξ w hξ hw in
+theorem kernel_z_decay   :
     DecayOn (fun z => PoissonKernel.K D u ξ w z Z) Scales.zLine 2 := by
   intro B hB
   obtain ⟨C0, hC0, hK⟩ := kernel_z_norm_bound D u Z hZ ξ w hξ hw
@@ -181,12 +184,14 @@ theorem kernel_z_decay (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) (ξ w
     _ ≤ C0 * (|CM| * t ^ (-B)) := by gcongr
     _ = _ := by ring
 
-theorem Iz_shift (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) (ξ w : ℂ)
-    (hξ : ξ.re = 4) (hw : w.re = 4) :
+include u hu Z hZ ξ w hξ hw in
+theorem Iz_shift   :
     Iz D u ξ w 2 Z = Iz D u ξ w Scales.zLine Z := by
   unfold Iz
   exact verticalIntegral_eq_of_decayOn (by norm_num [Scales.zLine])
     (kernel_z_holo D u hu Z hZ ξ w hξ hw) (kernel_z_decay D u hu Z hZ ξ w hξ hw)
+end
+
 
 end
 

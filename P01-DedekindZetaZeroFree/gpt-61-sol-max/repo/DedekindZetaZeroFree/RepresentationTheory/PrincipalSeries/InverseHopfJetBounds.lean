@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.HopfMatrixCoordinates
 
 @[expose] public section
+
 
 section
 
@@ -11,11 +14,11 @@ open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts KPCplxIntertwinerEigenvalue
 
 def hemisphereSign (north : Bool) : ℝ := if north then 1 else -1
 
-noncomputable def inverseHopfCoordinate (north : Bool) (x : Ambient) : ℂ :=
+noncomputable def inverseHopfCoordinate (north : Bool) (x : Ambient)  :=
   ((x 0 : ℂ) - (hemisphereSign north : ℂ) * Complex.I * (x 1 : ℂ)) /
     ((‖x‖ : ℂ) + (hemisphereSign north : ℂ) * (x 2 : ℂ))
 
-noncomputable def inverseHopfWeight (s : ℝ) (north : Bool) (x : Ambient) : ℂ :=
+noncomputable def inverseHopfWeight (s : ℝ) (north : Bool) (x : Ambient)  :=
   (Real.rpow (2 * ‖x‖ / (‖x‖ + hemisphereSign north * x 2)) (1 + 2 * s) : ℂ)
 
 end DedekindZetaZeroFree.ComplexFractionalInverse.CompactCharts.RotationToChartsSteps
@@ -79,8 +82,7 @@ open scoped BigOperators
 def hopfDomain (north : Bool) : Set Ambient :=
   {x | x ≠ 0 ∧ 0 < ‖x‖ + hemisphereSign north * x 2}
 
-private lemma hopfDomain_open (north : Bool) : IsOpen (hopfDomain north) := by
-  exact isOpen_ne.inter (isOpen_lt continuous_const
+private lemma hopfDomain_open (north : Bool) : IsOpen (hopfDomain north) := isOpen_ne.inter (isOpen_lt continuous_const
     (show Continuous (fun x : Ambient => ‖x‖ + hemisphereSign north * x 2) by fun_prop))
 
 private lemma inverseHopf_smooth (north : Bool) :
@@ -88,10 +90,10 @@ private lemma inverseHopf_smooth (north : Bool) :
   intro x hx
   apply ContDiffAt.contDiffWithinAt
   unfold inverseHopfCoordinate
-  have hreal : ContDiff ℝ (⊤ : ℕ∞) (Complex.ofReal : ℝ → ℂ) := Complex.ofRealCLM.contDiff
+  have hreal : ContDiff ℝ (⊤ : ℕ∞) Complex.ofReal := Complex.ofRealCLM.contDiff
   simp only [div_eq_mul_inv]
   apply ContDiffAt.mul
-  · have hc : ContDiff ℝ (⊤ : ℕ∞) (Complex.ofReal : ℝ → ℂ) := Complex.ofRealCLM.contDiff
+  · have hc : ContDiff ℝ (⊤ : ℕ∞) Complex.ofReal := Complex.ofRealCLM.contDiff
     fun_prop
   · apply ContDiffAt.inv
     · have hn : ContDiffAt ℝ (⊤ : ℕ∞) (norm : Ambient → ℝ) x := contDiffAt_norm ℝ hx.1
@@ -182,7 +184,7 @@ theorem inverse_hopf_jet_bound (s : ℝ) (n : ℕ) :
     intro north
     obtain ⟨D, hD1, hD⟩ := hemisphere_jet_bounds north _ (inverseHopf_smooth north) n
     obtain ⟨W, hW1, hW⟩ := hemisphere_jet_bounds north _ (inverseHopfWeight_smooth s north) n
-    let C : ℕ → ℝ := fun j => ∑ i ∈ Finset.range (j + 1),
+    let C  := fun j => ∑ i ∈ Finset.range (j + 1),
       (j.choose i : ℝ) * W * ((j-i).factorial * D ^ (j-i))
     have hC : ∀ j, 0 ≤ C j := fun j => Finset.sum_nonneg (fun _ _ => by positivity)
     let A := ∑ j : Fin (n+1), C j.val
@@ -193,7 +195,7 @@ theorem inverse_hopf_jet_bound (s : ℝ) (n : ℕ) :
       (inverseHopf_smooth north).of_le (by simp)
     have hw : ContDiffOn ℝ (n : ℕ∞) (inverseHopfWeight s north) (hopfDomain north) :=
       (inverseHopfWeight_smooth s north).of_le (by simp)
-    have hgcomp : ContDiffOn ℝ (n : ℕ∞) (g ∘ inverseHopfCoordinate north) (hopfDomain north) :=
+    have hgcomp  :=
       hg.comp_contDiffOn hc
     have hm := hw.mul hgcomp
     have hcomp (k : ℕ) (hk : k ≤ n) :
@@ -260,8 +262,8 @@ theorem actual_chart_jet_le_range_sup (s : ℝ) (n j : ℕ) (hj : j ≤ n)
       ((Finset.range (n + 1)).sup (chartSeminorm s)) f ∧
     ‖iteratedFDeriv ℝ j (infinityCoordinate f) z‖ ≤
       ((Finset.range (n + 1)).sup (chartSeminorm s)) f := by
-  have hfo : ContDiff ℝ (⊤ : ℕ∞) (openCoordinate f) := f.property.2.1
-  have hfi : ContDiff ℝ (⊤ : ℕ∞) (infinityCoordinate f) := f.property.2.2
+  have hfo  := f.property.2.1
+  have hfi  := f.property.2.2
   have hbo : BddAbove ((fun z : ℂ => ‖iteratedFDeriv ℝ j (openCoordinate f) z‖) ''
       Metric.closedBall (0 : ℂ) 1) :=
     (isCompact_closedBall (0 : ℂ) 1).bddAbove_image
@@ -301,14 +303,13 @@ theorem rotation_le_charts_of_word_bounds (H : ComplexSU2 → Sphere)
       ∀ x : Sphere, ‖rotationWord w.val F x‖ ≤
         (C w • (Finset.range (n + 1)).sup (chartSeminorm s)) f :=
     fun w => Classical.choose_spec (hword w.val w.property)
-  let D : ℝ≥0 := 1 + Finset.univ.sup C
+  let D  := 1 + Finset.univ.sup C
   refine ⟨D, ?_, ?_⟩
-  · exact ne_of_gt (lt_of_lt_of_le zero_lt_one (show 1 ≤ D from le_add_of_nonneg_right (zero_le)))
+  · exact ne_of_gt (lt_of_lt_of_le zero_lt_one ((le_add_of_nonneg_right (zero_le))))
   · intro f F hF hf
     apply Real.sSup_le _ (apply_nonneg _ _)
     rintro r ⟨w, hw, x, rfl⟩
-    have hCD : C ⟨w, hw⟩ ≤ D := by
-      exact (Finset.le_sup (f := C) (Finset.mem_univ ⟨w, hw⟩)).trans
+    have hCD : C ⟨w, hw⟩ ≤ D := (Finset.le_sup (f := C) (Finset.mem_univ ⟨w, hw⟩)).trans
         (le_add_of_nonneg_left (zero_le : (0 : ℝ≥0) ≤ 1))
     exact (hC ⟨w, hw⟩ f F hF hf x).trans
       (by
@@ -317,10 +318,7 @@ theorem rotation_le_charts_of_word_bounds (H : ComplexSU2 → Sphere)
           (apply_nonneg _ _))
 
 private lemma rt_sphere_ne (p : Sphere) : (p : Ambient) ≠ 0 := by
-  have hn : ‖(p : Ambient)‖ = 1 := by
-    simpa only [Metric.mem_sphere, dist_zero_right] using p.property
-  intro hz
-  simp [hz] at hn
+  simp_all [Metric.mem_sphere, dist_zero_right] <;> aesop
 
 private lemma rt_radial_pos_smul (F : Sphere → ℂ) (t : ℝ) (ht : 0 < t) (x : Ambient) :
     radialExtension F (t • x) = radialExtension F x := by
@@ -341,7 +339,7 @@ private lemma rt_radial_rotation (F : Sphere → ℂ) (hF : IsSphereSmooth F)
   let t := ‖x‖⁻¹
   have ht : 0 < t := inv_pos.mpr hn
   have htx : t • x ≠ 0 := smul_ne_zero (ne_of_gt ht) hx
-  have he : (fun y : Ambient => radialExtension F (t • y)) = radialExtension F :=
+  have he  :=
     funext (rt_radial_pos_smul F t ht)
   have hd := ((hF.contDiffAt (isOpen_ne.mem_nhds htx)).differentiableAt
     (by simp)).hasFDerivAt.comp x ((hasFDerivAt_id x).const_smul t)

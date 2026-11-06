@@ -95,10 +95,13 @@ structure LocalBorelData (T : LocalHeisenbergData H D) where
 
 variable {T : LocalHeisenbergData H D}
 
-def deltaHalf (A : LocalBorelData (K := K) (G := G) T) (b : A.B) : ℂ :=
+
+local notation:max "current_LocalBorelData" => LocalBorelData (K := K) (G := G)
+
+def deltaHalf (A : current_LocalBorelData T) (b : A.B) : ℂ :=
   normPower K (A.coordinate (A.retract b)) (1 / 2)
 
-def inducingScalar (A : LocalBorelData (K := K) (G := G) T)
+def inducingScalar (A : current_LocalBorelData T)
     (s : ℂ) (b : A.B) : ℂ :=
   deltaHalf A b * normPower K (A.coordinate (A.retract b)) s
 
@@ -107,13 +110,13 @@ inductive Sign where
   | minus
   deriving DecidableEq
 
-def borelAction (A : LocalBorelData (K := K) (G := G) T)
+def borelAction (A : current_LocalBorelData T)
     (P : Polarization T) (ε : Sign) : Representation ℂ A.B (InducedModule P) :=
   match ε with
   | .plus => (tau P).comp A.retract
   | .minus => (weylConjugate P A.weyl).comp A.retract
 
-def inducingAction (A : LocalBorelData (K := K) (G := G) T)
+def inducingAction (A : current_LocalBorelData T)
     (P : Polarization T) (ε : Sign) (s : ℂ) :
     Representation ℂ A.B (InducedModule P) where
   toFun b := inducingScalar A s b • borelAction A P ε b
@@ -125,7 +128,7 @@ def inducingAction (A : LocalBorelData (K := K) (G := G) T)
     congr 1
     ring
 
-theorem upperRoot_trivial (A : LocalBorelData (K := K) (G := G) T)
+theorem upperRoot_trivial (A : current_LocalBorelData T)
     (P : Polarization T) (ε : Sign) (s : ℂ) (t : Multiplicative K)
     (v : InducedModule P) : inducingAction A P ε s (A.upperRoot t) v = v := by
   cases ε <;>
@@ -141,7 +144,7 @@ def vectorRightTranslation {V : Type*} [AddCommGroup V] [Module ℂ V] :
   map_one' := by ext f x; simp
   map_mul' g h := by ext f x; simp [mul_assoc]
 
-def sectionSpace (A : LocalBorelData (K := K) (G := G) T)
+def sectionSpace (A : current_LocalBorelData T)
     (P : Polarization T) (ε : Sign) (s : ℂ) :
     Submodule ℂ (G → InducedModule P) where
   carrier := {f | (∀ (b : A.B) (g : G),
@@ -164,7 +167,7 @@ def sectionSpace (A : LocalBorelData (K := K) (G := G) T)
     · exact (mem_smoothSubmodule _ _).mp ((smoothSubmodule _).smul_mem c
         ((mem_smoothSubmodule _ _).mpr hf.2))
 
-theorem sectionSpace_stable (A : LocalBorelData (K := K) (G := G) T)
+theorem sectionSpace_stable (A : current_LocalBorelData T)
     (P : Polarization T) (ε : Sign) (s : ℂ) (g : G) :
     sectionSpace A P ε s ≤ Submodule.comap (vectorRightTranslation g)
       (sectionSpace A P ε s) := by
@@ -176,26 +179,26 @@ theorem sectionSpace_stable (A : LocalBorelData (K := K) (G := G) T)
   · exact (mem_smoothSubmodule _ _).mp (smoothSubmodule_stable _ g
       ((mem_smoothSubmodule _ _).mpr hf.2))
 
-def principalSeries (A : LocalBorelData (K := K) (G := G) T)
+def principalSeries (A : current_LocalBorelData T)
     (P : Polarization T) (ε : Sign) (s : ℂ) :
     Representation ℂ G (sectionSpace A P ε s) :=
   vectorRightTranslation.subrepresentation (sectionSpace A P ε s)
     (sectionSpace_stable A P ε s)
 
-abbrev IPlus (A : LocalBorelData (K := K) (G := G) T) (P : Polarization T) :=
+abbrev IPlus (A : current_LocalBorelData T) (P : Polarization T) :=
   principalSeries A P .plus 0
 
-abbrev IMinus (A : LocalBorelData (K := K) (G := G) T) (P : Polarization T) :=
+abbrev IMinus (A : current_LocalBorelData T) (P : Polarization T) :=
   principalSeries A P .minus 0
 
-theorem principalSeries_smooth (A : LocalBorelData (K := K) (G := G) T)
+theorem principalSeries_smooth (A : current_LocalBorelData T)
     (P : Polarization T) (ε : Sign) (s : ℂ) :
     SmoothRepresentation (V := sectionSpace A P ε s) (principalSeries A P ε s) := by
   intro f
   obtain ⟨J, hJ⟩ := f.property.2
   exact ⟨J, fun j hj => Subtype.ext (hJ j hj)⟩
 
-theorem uniformizer_weights (A : LocalBorelData (K := K) (G := G) T)
+theorem uniformizer_weights (A : current_LocalBorelData T)
     (π : Kˣ)
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
       (valuation K (π : K)) = WithZero.exp (-1 : ℤ)) :
@@ -222,7 +225,7 @@ theorem uniformizer_weights (A : LocalBorelData (K := K) (G := G) T)
   · rw [A.weyl_cube, A.exceptional_cube]
     simpa [normPower, hpow, hinv, hp] using weights.2.2
 
-structure IwasawaData (A : LocalBorelData (K := K) (G := G) T) where
+structure IwasawaData (A : current_LocalBorelData T) where
   compact : CompactOpenLevel G
   borelPart : G → A.B
   compactPart : G → compact.toOpenSubgroup
@@ -233,7 +236,7 @@ structure IwasawaData (A : LocalBorelData (K := K) (G := G) T) where
     localAbs K (A.coordinate (A.retract b)) = 1
 
 omit [IsTopologicalGroup G] in
- theorem intersection_action (A : LocalBorelData (K := K) (G := G) T)
+ theorem intersection_action (A : current_LocalBorelData T)
     (P : Polarization T) (I : IwasawaData A) (ε : Sign) (s : ℂ)
     (b : A.B) (hb : (b : G) ∈ I.compact.toOpenSubgroup) :
     inducingAction A P ε s b = inducingAction A P ε 0 b := by
@@ -241,14 +244,14 @@ omit [IsTopologicalGroup G] in
   simp [inducingAction, inducingScalar, deltaHalf, normPower,
     I.intersection_norm b hb]
 
- def compactLaws (A : LocalBorelData (K := K) (G := G) T)
+ def compactLaws (A : current_LocalBorelData T)
     (P : Polarization T) (I : IwasawaData A) (ε : Sign) (s : ℂ) :=
   KPLocalPrincipalSeriesRaw.fixed_iwasawa_laws A.B I.compact.toOpenSubgroup
     (inducingAction A P ε 0) (inducingAction A P ε s) I.borelPart I.compactPart
     I.decomposition I.borelPart_compact I.compactPart_compact
     (intersection_action A P I ε s)
 
-def compactPicture (A : LocalBorelData (K := K) (G := G) T)
+def compactPicture (A : current_LocalBorelData T)
     (P : Polarization T) (I : IwasawaData A) (ε : Sign) :
     Submodule ℂ (I.compact.toOpenSubgroup → InducedModule P) where
   carrier := {φ | (∀ (b : A.B) (k k' : I.compact.toOpenSubgroup),
@@ -272,7 +275,7 @@ def compactPicture (A : LocalBorelData (K := K) (G := G) T)
     · exact (mem_smoothSubmodule _ _).mp ((smoothSubmodule _).smul_mem c
         ((mem_smoothSubmodule _ _).mpr hf.2))
 
-def extendCompact (A : LocalBorelData (K := K) (G := G) T)
+def extendCompact (A : current_LocalBorelData T)
     (P : Polarization T) (I : IwasawaData A) (ε : Sign) (s : ℂ) :
     compactPicture A P I ε →ₗ[ℂ] sectionSpace A P ε s where
   toFun φ := ⟨fun g => inducingAction A P ε s (I.borelPart g) (φ.val (I.compactPart g)),
@@ -280,7 +283,7 @@ def extendCompact (A : LocalBorelData (K := K) (G := G) T)
   map_add' := by intros; apply Subtype.ext; funext g; simp
   map_smul' := by intros; apply Subtype.ext; funext g; simp
 
-def restrictCompact (A : LocalBorelData (K := K) (G := G) T)
+def restrictCompact (A : current_LocalBorelData T)
     (P : Polarization T) (I : IwasawaData A) (ε : Sign) (s : ℂ) :
     sectionSpace A P ε s →ₗ[ℂ] compactPicture A P I ε where
   toFun f := ⟨fun k => f.val (k : G),
@@ -288,7 +291,7 @@ def restrictCompact (A : LocalBorelData (K := K) (G := G) T)
   map_add' := by intros; rfl
   map_smul' := by intros; rfl
 
-def compactTrivialization (A : LocalBorelData (K := K) (G := G) T)
+def compactTrivialization (A : current_LocalBorelData T)
     (P : Polarization T) (I : IwasawaData A) (ε : Sign) (s : ℂ) :
     compactPicture A P I ε ≃ₗ[ℂ] sectionSpace A P ε s where
   toLinearMap := extendCompact A P I ε s
@@ -302,7 +305,7 @@ def compactTrivialization (A : LocalBorelData (K := K) (G := G) T)
     apply Subtype.ext
     exact (compactLaws A P I ε s).2.2.2.2.2.2.1 f.val f.property
 
-def compactLevel (A : LocalBorelData (K := K) (G := G) T)
+def compactLevel (A : current_LocalBorelData T)
     (P : Polarization T) (I : IwasawaData A) (ε : Sign)
     (J : CompactOpenLevel G) : Submodule ℂ (compactPicture A P I ε) where
   carrier := {φ | ∀ (j : J.toOpenSubgroup) (k k' : I.compact.toOpenSubgroup),
@@ -315,7 +318,7 @@ def compactLevel (A : LocalBorelData (K := K) (G := G) T)
     intro c f hf j k k' h
     exact congrArg (c • ·) (hf j k k' h)
 
-theorem compact_level_identification (A : LocalBorelData (K := K) (G := G) T)
+theorem compact_level_identification (A : current_LocalBorelData T)
     (P : Polarization T) (I : IwasawaData A) (ε : Sign)
     (J : CompactOpenLevel G)
     (hJ : (J.toOpenSubgroup : Subgroup G) ≤ I.compact.toOpenSubgroup)
@@ -339,7 +342,7 @@ theorem compact_level_identification (A : LocalBorelData (K := K) (G := G) T)
   map_smul' := by intros; rfl
 
  theorem inducing_coordinate_entire
-    (A : LocalBorelData (K := K) (G := G) T) (P : Polarization T)
+    (A : current_LocalBorelData T) (P : Polarization T)
     (ε : Sign) (h : H) (b : A.B) (v : InducedModule P) :
     Differentiable ℂ (fun s => coordinateEvaluation P h (inducingAction A P ε s b v)) := by
   have hh := ((normPower_entire K (A.coordinate (A.retract b))).const_mul
@@ -349,7 +352,7 @@ theorem compact_level_identification (A : LocalBorelData (K := K) (G := G) T)
       (borelAction A P ε b v).val h)
   exact hh
 
- def compactFiniteLaws (A : LocalBorelData (K := K) (G := G) T)
+ def compactFiniteLaws (A : current_LocalBorelData T)
     (P : Polarization T) (I : IwasawaData A) (ε : Sign)
     (J : CompactOpenLevel G)
     (hJ : (J.toOpenSubgroup : Subgroup G) ≤ I.compact.toOpenSubgroup) (h : H) :=
@@ -359,7 +362,7 @@ theorem compact_level_identification (A : LocalBorelData (K := K) (G := G) T)
     I.compact.isCompact hJ (inducingAction A P ε) I.borelPart I.compactPart
     (coordinateEvaluation P h) (inducing_coordinate_entire A P ε h)
 
-theorem compact_level_finite (A : LocalBorelData (K := K) (G := G) T)
+theorem compact_level_finite (A : current_LocalBorelData T)
     (P : Polarization T) (I : IwasawaData A) (ε : Sign)
     (J : CompactOpenLevel G)
     (hJ : (J.toOpenSubgroup : Subgroup G) ≤ I.compact.toOpenSubgroup) :
@@ -381,7 +384,7 @@ theorem compact_level_finite (A : LocalBorelData (K := K) (G := G) T)
     exact Subtype.ext (Subtype.ext he)
   exact (compactFiniteLaws A P I ε J hJ 1).1 ev hev
 
-theorem compact_level_holomorphic (A : LocalBorelData (K := K) (G := G) T)
+theorem compact_level_holomorphic (A : current_LocalBorelData T)
     (P : Polarization T) (I : IwasawaData A) (ε : Sign)
     (J : CompactOpenLevel G)
     (hJ : (J.toOpenSubgroup : Subgroup G) ≤ I.compact.toOpenSubgroup)

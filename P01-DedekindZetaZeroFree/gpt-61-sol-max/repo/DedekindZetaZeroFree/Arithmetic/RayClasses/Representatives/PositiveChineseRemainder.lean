@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve.RayBridge
 
@@ -31,7 +34,7 @@ theorem exists_positive_mem_congruent_one
   set d : ℕ := (B * m).absNorm with hd
   have hd_ne : d ≠ 0 := by
     rw [hd, ne_eq, Ideal.absNorm_eq_zero_iff]; exact hBm_ne
-  have hd_pos : 0 < d := Nat.pos_iff_ne_zero.mpr hd_ne
+  have hd_pos  := Nat.pos_iff_ne_zero.mpr hd_ne
   have hdR : (0 : ℝ) < (d : ℝ) := by exact_mod_cast hd_pos
   have hd_ne_ring : (d : 𝓞 F) ≠ 0 := Nat.cast_ne_zero.mpr hd_ne
   have hd_mem_mul : (d : 𝓞 F) ∈ B * m := by
@@ -54,8 +57,7 @@ theorem exists_positive_mem_congruent_one
   set b1 : 𝓞 F := b0 + (N : 𝓞 F) * (d : 𝓞 F) with hb1
   have hb1val : ∀ φ : F →+* ℝ, φ (b1 : F) = φ (b0 : F) + (N : ℝ) * (d : ℝ) := by
     intro φ
-    have h1' : (b1 : F) = (b0 : F) + (N : F) * (d : F) := by
-      rw [hb1, hcoe_add, hcoe_mul, hcoe_nat, hcoe_nat]
+    have h1' : (b1 : F) = (b0 : F) + (N : F) * (d : F) := rfl
     rw [h1', map_add, map_mul, map_natCast, map_natCast]
   have hb1_pos : ∀ φ : F →+* ℝ, 0 < φ (b1 : F) := by
     intro φ
@@ -80,8 +82,7 @@ theorem exists_positive_mem_congruent_one
     · have h : b1 + (d : 𝓞 F) - 1 = (b1 - 1) + (d : 𝓞 F) := by ring
       rw [h]; exact m.add_mem hb1sub hd_mem_m
     · intro φ
-      have h2 : ((b1 + (d : 𝓞 F) : 𝓞 F) : F) = (b1 : F) + (d : F) := by
-        rw [hcoe_add, hcoe_nat]
+      have h2 : ((b1 + (d : 𝓞 F) : 𝓞 F) : F) = (b1 : F) + (d : F) := rfl
       have hz : φ (b1 : F) = 0 := by
         rw [hb1z, show ((0 : 𝓞 F) : F) = (0 : F) from map_zero (algebraMap (𝓞 F) F),
           map_zero]

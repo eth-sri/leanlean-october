@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Theta.Profiles.ReciprocalGammaStripBounds
 public import DedekindZetaZeroFree.Analysis.VerticalContourShift
 
 @[expose] public section
+
 
 /-
 Repository: openai/math.
@@ -19,29 +22,37 @@ attribute [-instance] instCommCStarAlgebraComplex
 attribute [local instance 2000] Complex.instNormedField Complex.instNormedAddCommGroup
 attribute [local instance 2100] NonUnitalSeminormedRing.toSeminormedAddCommGroup
 
+section
+variable (C₀ A₀ : ℝ) (r : ℕ)
+include C₀ A₀ r
 def thetaProfileGaussianContourIntegrand
-    (C₀ A₀ : ℝ) (r : ℕ) (σ T t : ℝ) : ℂ :=
+      (σ T t : ℝ)  :=
   let s : ℂ := (σ : ℂ) + (t : ℂ) * Complex.I
   Complex.exp (s ^ 2) * thetaProfileReciprocalMellinFactor C₀ A₀ r s *
     (T : ℂ) ^ s
 
 def thetaProfileGaussianContour
-    (C₀ A₀ : ℝ) (r : ℕ) (σ T : ℝ) : ℂ :=
+      (σ T : ℝ)  :=
   (1 / (2 * Real.pi) : ℝ) •
     ∫ t : ℝ, thetaProfileGaussianContourIntegrand C₀ A₀ r σ T t
 
-def thetaProfileGaussianKernel (C₀ A₀ : ℝ) (r : ℕ) (T : ℝ) : ℂ :=
+def thetaProfileGaussianKernel   (T : ℝ)  :=
   thetaProfileGaussianContour C₀ A₀ r 0 T
+end
 
+
+section
+variable (C₀ A₀ : ℝ) (r : ℕ) (hC₀ : 0 < C₀) (hA₀ : 0 < A₀) (hr : 1 ≤ r)
+include C₀ A₀ r hC₀ hA₀ hr
 private theorem gaussianContour_bound
-    (C₀ A₀ : ℝ) (r : ℕ) (hC₀ : 0 < C₀) (hA₀ : 0 < A₀) (hr : 1 ≤ r)
+     
     (σ : ℝ) :
     ∃ D : ℝ, 0 < D ∧ ∀ T : ℝ, 0 < T → ∀ t : ℝ,
       ‖thetaProfileGaussianContourIntegrand C₀ A₀ r σ T t‖ ≤
         (D * Real.rpow T σ) * Real.exp (-(1 / 2 : ℝ) * t ^ 2) := by
   obtain ⟨C, hC, hb⟩ := thetaProfileReciprocalMellinFactor_strip_exp_bound
     C₀ A₀ r hC₀ hA₀ hr σ σ le_rfl
-  let k : ℝ := 2 * Real.pi * (r : ℝ)
+  let k  := 2 * Real.pi * (r : ℝ)
   refine ⟨C * Real.exp (σ ^ 2 + k ^ 2 / 2), by positivity, ?_⟩
   intro T hT t
   have hs : (((σ : ℂ) + (t : ℂ) * Complex.I) ^ 2).re = σ ^ 2 - t ^ 2 := by
@@ -72,7 +83,7 @@ private theorem gaussianContour_bound
       ring
 
 private theorem gaussianContour_continuous_line
-    (C₀ A₀ : ℝ) (r : ℕ) (hC₀ : 0 < C₀) (hA₀ : 0 < A₀) (hr : 1 ≤ r)
+     
     (σ T : ℝ) (hT : 0 < T) :
     Continuous (thetaProfileGaussianContourIntegrand C₀ A₀ r σ T) := by
   have hs : Continuous (fun t : ℝ => (σ : ℂ) + (t : ℂ) * Complex.I) := by fun_prop
@@ -81,7 +92,7 @@ private theorem gaussianContour_continuous_line
     ((differentiable_id.const_cpow (Or.inl (Complex.ofReal_ne_zero.mpr hT.ne'))).continuous.comp hs)
 
 theorem thetaProfileGaussianContour_integrable
-    (C₀ A₀ : ℝ) (r : ℕ) (hC₀ : 0 < C₀) (hA₀ : 0 < A₀) (hr : 1 ≤ r)
+     
     (σ T : ℝ) (hT : 0 < T) :
     MeasureTheory.Integrable
       (thetaProfileGaussianContourIntegrand C₀ A₀ r σ T) := by
@@ -90,6 +101,8 @@ theorem thetaProfileGaussianContour_integrable
     (D * Real.rpow T σ)).mono'
     (gaussianContour_continuous_line C₀ A₀ r hC₀ hA₀ hr σ T hT).aestronglyMeasurable
     (Filter.Eventually.of_forall (hb T hT))
+end
+
 
 private theorem gaussian_polynomial_decay (t : ℝ) :
     Real.exp (-(1 / 2 : ℝ) * t ^ 2) ≤ 4 * (1 + |t|) ^ (-2 : ℝ) := by
@@ -103,17 +116,20 @@ private theorem gaussian_polynomial_decay (t : ℝ) :
     convert Real.exp_zero using 1 <;> ring
   nlinarith [mul_le_mul_of_nonneg_left hp (Real.exp_nonneg (-(1 / 2 : ℝ) * t ^ 2))]
 
+section
+variable (C₀ A₀ : ℝ) (r : ℕ) (hC₀ : 0 < C₀) (hA₀ : 0 < A₀) (hr : 1 ≤ r)
+include C₀ A₀ r hC₀ hA₀ hr
 private theorem gaussianContour_strip_decay
-    (C₀ A₀ : ℝ) (r : ℕ) (hC₀ : 0 < C₀) (hA₀ : 0 < A₀) (hr : 1 ≤ r)
+     
     (a b T : ℝ) (hab : a ≤ b) (hT : 0 < T) :
     ∃ D : ℝ, 0 ≤ D ∧ ∀ s ∈ comparisonClosedStrip a b,
       ‖Complex.exp (s ^ 2) * thetaProfileReciprocalMellinFactor C₀ A₀ r s *
         (T : ℂ) ^ s‖ ≤ D * (1 + |s.im|) ^ (-2 : ℝ) := by
   obtain ⟨C, hC, hb⟩ := thetaProfileReciprocalMellinFactor_strip_exp_bound
     C₀ A₀ r hC₀ hA₀ hr a b hab
-  let m : ℝ := |a| + |b|
-  let k : ℝ := 2 * Real.pi * (r : ℝ)
-  let D : ℝ := C * Real.exp (m ^ 2 + k ^ 2 / 2 + m * |Real.log T|)
+  let m  := |a| + |b|
+  let k  := 2 * Real.pi * (r : ℝ)
+  let D  := C * Real.exp (m ^ 2 + k ^ 2 / 2 + m * |Real.log T|)
   refine ⟨4 * D, by dsimp [D]; positivity, ?_⟩
   intro s hs
   have hm : |s.re| ≤ m := by
@@ -167,11 +183,11 @@ private theorem gaussianContour_strip_decay
     _ = _ := by ring
 
 theorem thetaProfileGaussianContour_eq_kernel
-    (C₀ A₀ : ℝ) (r : ℕ) (hC₀ : 0 < C₀) (hA₀ : 0 < A₀) (hr : 1 ≤ r)
+     
     (σ T : ℝ) (hT : 0 < T) :
     thetaProfileGaussianContour C₀ A₀ r σ T =
       thetaProfileGaussianKernel C₀ A₀ r T := by
-  let f : ℂ → ℂ := fun s => Complex.exp (s ^ 2) *
+  let f  := fun s => Complex.exp (s ^ 2) *
     thetaProfileReciprocalMellinFactor C₀ A₀ r s * (T : ℂ) ^ s
   have hf : Differentiable ℂ f :=
     ((Complex.differentiable_exp.comp (differentiable_id.pow 2)).mul
@@ -186,12 +202,12 @@ theorem thetaProfileGaussianContour_eq_kernel
   unfold thetaProfileGaussianKernel thetaProfileGaussianContour
   congr 1
   rcases lt_trichotomy σ 0 with hσ | hσ | hσ
-  · exact he σ 0 hσ
+  · apply he <;> assumption
   · rw [hσ]
   · exact (he 0 σ hσ).symm
 
 theorem thetaProfileGaussianKernel_continuousOn
-    (C₀ A₀ : ℝ) (r : ℕ) (hC₀ : 0 < C₀) (hA₀ : 0 < A₀) (hr : 1 ≤ r) :
+      :
     ContinuousOn (thetaProfileGaussianKernel C₀ A₀ r) (Set.Ioi (0 : ℝ)) := by
   obtain ⟨D, hD, hb⟩ := gaussianContour_bound C₀ A₀ r hC₀ hA₀ hr 0
   have hi : ContinuousOn
@@ -202,7 +218,7 @@ theorem thetaProfileGaussianKernel_continuousOn
     · intro T hT
       exact (gaussianContour_continuous_line C₀ A₀ r hC₀ hA₀ hr 0 T hT).aestronglyMeasurable
     · intro T hT
-      exact Filter.Eventually.of_forall (fun t => by simpa [Real.rpow_zero] using hb T hT t)
+      apply Filter.Eventually.of_forall <;> aesop
     · exact (integrable_exp_neg_mul_sq (by norm_num : (0 : ℝ) < 1 / 2)).const_mul D
     · apply Filter.Eventually.of_forall
       intro t
@@ -217,14 +233,14 @@ theorem thetaProfileGaussianKernel_continuousOn
     (Set.Ioi 0)).smul hi
 
 private theorem gaussianKernel_power_bound
-    (C₀ A₀ : ℝ) (r : ℕ) (hC₀ : 0 < C₀) (hA₀ : 0 < A₀) (hr : 1 ≤ r)
+     
     (a : ℝ) :
     ∃ C : ℝ, 0 < C ∧ ∀ T : ℝ, 0 < T →
       ‖thetaProfileGaussianKernel C₀ A₀ r T‖ ≤ C * Real.rpow T a := by
   obtain ⟨D, hD, hb⟩ := gaussianContour_bound C₀ A₀ r hC₀ hA₀ hr a
-  let J : ℝ := ∫ t : ℝ, Real.exp (-(1 / 2 : ℝ) * t ^ 2)
-  have hJ : 0 ≤ J := MeasureTheory.integral_nonneg (fun t => (Real.exp_pos _).le)
-  let B : ℝ := (1 / (2 * Real.pi)) * D * J
+  let J  := ∫ t : ℝ, Real.exp (-(1 / 2 : ℝ) * t ^ 2)
+  
+  let B  := (1 / (2 * Real.pi)) * D * J
   have hB : 0 ≤ B := by dsimp [B]; positivity
   refine ⟨B + 1, by linarith, ?_⟩
   intro T hT
@@ -243,6 +259,8 @@ private theorem gaussianKernel_power_bound
     _ = B * Real.rpow T a := by dsimp [B]; ring
     _ ≤ (B + 1) * Real.rpow T a :=
       mul_le_mul_of_nonneg_right (by linarith) (Real.rpow_nonneg hT.le _)
+end
+
 
 set_option maxHeartbeats 800000 in
 
@@ -254,9 +272,8 @@ theorem thetaProfileGaussianKernel_absolute_moment
       (Set.Ioi (0 : ℝ)) := by
   obtain ⟨C, hC, hb⟩ := gaussianKernel_power_bound C₀ A₀ r hC₀ hA₀ hr (1 - a)
   obtain ⟨D, hD, hd⟩ := gaussianKernel_power_bound C₀ A₀ r hC₀ hA₀ hr (-1 - a)
-  let f : ℝ → ℝ := fun T => ‖thetaProfileGaussianKernel C₀ A₀ r T‖ * Real.rpow T a / T
-  have hc : ContinuousOn f (Set.Ioi (0 : ℝ)) := by
-    apply ((thetaProfileGaussianKernel_continuousOn C₀ A₀ r hC₀ hA₀ hr).norm.mul
+  let f  := fun T => ‖thetaProfileGaussianKernel C₀ A₀ r T‖ * Real.rpow T a / T
+  have hc : ContinuousOn f (Set.Ioi (0 : ℝ)) := ((thetaProfileGaussianKernel_continuousOn C₀ A₀ r hC₀ hA₀ hr).norm.mul
       (continuousOn_id.rpow_const (fun T hT => Or.inl (ne_of_gt hT)))).div
       continuousOn_id (fun T hT => ne_of_gt hT)
   have hbound (p E T : ℝ) (hT : 0 < T)
@@ -292,12 +309,7 @@ theorem thetaProfileGaussianKernel_absolute_moment
   simpa only [Set.Ioc_union_Ioi (show (1 : ℝ) ≤ max 0 1 by norm_num),
     min_eq_left zero_le_one] using hu
 
-theorem thetaProfileGaussianKernel_rpow_bound
-    (C₀ A₀ : ℝ) (r : ℕ) (hC₀ : 0 < C₀) (hA₀ : 0 < A₀) (hr : 1 ≤ r)
-    (a : ℝ) :
-    ∃ C : ℝ, 0 < C ∧ ∀ T : ℝ, 0 < T →
-      ‖thetaProfileGaussianKernel C₀ A₀ r T‖ ≤ C * Real.rpow T a := by
-  exact gaussianKernel_power_bound C₀ A₀ r hC₀ hA₀ hr a
+alias thetaProfileGaussianKernel_rpow_bound := _root_.DedekindZetaZeroFree.gaussianKernel_power_bound
 
 end
 end DedekindZetaZeroFree

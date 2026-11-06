@@ -56,17 +56,20 @@ structure SemilinearBaseCompatible
     eL (algebraMap K L x) =
       algebraMap K' L' (eK x)
 
-/-- Conjugation of relative Galois groups by compatible equivalences of the
-base and extension fields.  Compatibility is semilinear: `eL` restricts to
-`eK` on the base field. -/
-noncomputable def semilinearGaloisGroupCongr
-    (K K' L L' : Type)
+section
+variable (K K' L L' : Type)
     [Field K] [Field K'] [Field L] [Field L']
     [Algebra K L] [Algebra K' L']
     (eK : K ≃+* K') (eL : L ≃+* L')
     (hcomm : ∀ x : K,
       eL (algebraMap K L x) =
-        algebraMap K' L' (eK x)) :
+        algebraMap K' L' (eK x))
+include K K' L L' eK eL hcomm
+/-- Conjugation of relative Galois groups by compatible equivalences of the
+base and extension fields.  Compatibility is semilinear: `eL` restricts to
+`eK` on the base field. -/
+noncomputable def semilinearGaloisGroupCongr
+      :
     Gal(L / K) ≃* Gal(L' / K') := by
   let conjugate (σ : Gal(L / K)) :
       Gal(L' / K') :=
@@ -115,18 +118,14 @@ noncomputable def semilinearGaloisGroupCongr
 field equivalence. -/
 @[simp]
 theorem semilinearGaloisGroupCongr_apply_equiv
-    (K K' L L' : Type)
-    [Field K] [Field K'] [Field L] [Field L']
-    [Algebra K L] [Algebra K' L']
-    (eK : K ≃+* K') (eL : L ≃+* L')
-    (hcomm : ∀ x : K,
-      eL (algebraMap K L x) =
-        algebraMap K' L' (eK x))
+     
     (σ : Gal(L / K)) (x : L) :
     semilinearGaloisGroupCongr K K' L L' eK eL hcomm σ (eL x) =
       eL (σ x) := by
   change eL (σ (eL.symm (eL x))) = eL (σ x)
   rw [eL.symm_apply_apply]
+end
+
 
 /-- Evaluate certified semilinear conjugation on an element of the extension
 field. -/
@@ -143,15 +142,8 @@ theorem SemilinearBaseCompatible.conjugation_apply
   semilinearGaloisGroupCongr_apply_equiv
     K K' L L' eK eL h.commutes sigma x
 
-/-- The actual finite abelian local Artin map commutes with simultaneous
-semilinear equivalences of the base local field and the target extension.
-
-The valuation-extension condition says that the local-field valuation on
-`K'`, pulled back through `eK`, is the valuation on `K`.  It is the genuine
-valued-field compatibility needed by norm--restriction, rather than an
-assumption of the desired Artin equality. -/
-theorem abelianLocalArtinMonoidHom_semilinear_conjugation
-    (K K' L L' : Type)
+section
+variable (K K' L L' : Type)
     [Field K] [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K]
     [Field K'] [ValuativeRel K'] [TopologicalSpace K']
@@ -164,7 +156,17 @@ theorem abelianLocalArtinMonoidHom_semilinear_conjugation
     (hcomm : ∀ x : K,
       eL (algebraMap K L x) =
         algebraMap K' L' (eK x))
-    (hExt : SemilinearValuationCompatible K K' eK) :
+    (hExt : SemilinearValuationCompatible K K' eK)
+include K K' L L' eK eL hcomm hExt
+/-- The actual finite abelian local Artin map commutes with simultaneous
+semilinear equivalences of the base local field and the target extension.
+
+The valuation-extension condition says that the local-field valuation on
+`K'`, pulled back through `eK`, is the valuation on `K`.  It is the genuine
+valued-field compatibility needed by norm--restriction, rather than an
+assumption of the desired Artin equality. -/
+theorem abelianLocalArtinMonoidHom_semilinear_conjugation
+      :
     (semilinearGaloisGroupCongr K K' L L' eK eL hcomm).toMonoidHom.comp
         (abelianLocalArtinMonoidHom K L) =
       (abelianLocalArtinMonoidHom K' L').comp
@@ -264,19 +266,7 @@ abelian local Artin map.  Concrete consumers should use this opaque generic
 boundary instead of specializing `DFunLike.congr_fun` to a large dependent
 local-field instance tower. -/
 theorem abelianLocalArtinMonoidHom_semilinear_conjugation_apply
-    (K K' L L' : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field K'] [ValuativeRel K'] [TopologicalSpace K']
-    [IsNonarchimedeanLocalField K']
-    [Field L] [Field L']
-    [Algebra K L] [Algebra K' L']
-    [FiniteDimensional K L] [IsAbelianGalois K L]
-    [FiniteDimensional K' L'] [IsAbelianGalois K' L']
-    (eK : K ≃+* K') (eL : L ≃+* L')
-    (hcomm : ∀ x : K,
-      eL (algebraMap K L x) = algebraMap K' L' (eK x))
-    (hExt : SemilinearValuationCompatible K K' eK)
+     
     (u : Kˣ) :
     semilinearGaloisGroupCongr K K' L L' eK eL hcomm
         (abelianLocalArtinMonoidHom K L u) =
@@ -290,19 +280,7 @@ theorem abelianLocalArtinMonoidHom_semilinear_conjugation_apply
 Artin data.  Keeping the injectivity calculation generic prevents concrete
 finite-place instance towers from entering consumer proof terms. -/
 theorem abelianLocalArtinMonoidHom_eq_one_of_semilinear
-    (K K' L L' : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field K'] [ValuativeRel K'] [TopologicalSpace K']
-    [IsNonarchimedeanLocalField K']
-    [Field L] [Field L']
-    [Algebra K L] [Algebra K' L']
-    [FiniteDimensional K L] [IsAbelianGalois K L]
-    [FiniteDimensional K' L'] [IsAbelianGalois K' L']
-    (eK : K ≃+* K') (eL : L ≃+* L')
-    (hcomm : ∀ x : K,
-      eL (algebraMap K L x) = algebraMap K' L' (eK x))
-    (hExt : SemilinearValuationCompatible K K' eK)
+     
     (u : Kˣ)
     (htrivial :
       abelianLocalArtinMonoidHom K' L'
@@ -327,20 +305,7 @@ instance tower behind an opaque generic boundary.  Concrete consumers can
 transport the action on one element without specializing and then reducing
 the full monoid-hom equality. -/
 theorem abelianLocalArtinMonoidHom_semilinear_action
-    (K K' L L' : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field K'] [ValuativeRel K'] [TopologicalSpace K']
-    [IsNonarchimedeanLocalField K']
-    [Field L] [Field L']
-    [Algebra K L] [Algebra K' L']
-    [FiniteDimensional K L] [IsAbelianGalois K L]
-    [FiniteDimensional K' L'] [IsAbelianGalois K' L']
-    (eK : K ≃+* K') (eL : L ≃+* L')
-    (hcomm : ∀ x : K,
-      eL (algebraMap K L x) =
-        algebraMap K' L' (eK x))
-    (hExt : SemilinearValuationCompatible K K' eK)
+     
     (u : Kˣ) (z : L) :
     eL (abelianLocalArtinMonoidHom K L u z) =
       abelianLocalArtinMonoidHom K' L'
@@ -360,6 +325,8 @@ theorem abelianLocalArtinMonoidHom_semilinear_action
     _ = abelianLocalArtinMonoidHom K' L'
           (Units.map eK.toMonoidHom u) (eL z) :=
       congrArg (fun sigma : Gal(L' / K') => sigma (eL z)) hArtin
+end
+
 
 end LocalClassFieldTheory
 

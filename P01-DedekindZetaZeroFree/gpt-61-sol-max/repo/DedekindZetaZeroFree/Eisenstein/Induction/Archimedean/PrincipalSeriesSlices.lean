@@ -18,9 +18,12 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 
 end InsertionCharts
 
-private theorem source_chart_smooth
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+section
+variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (t : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ))
+include F ζ hζ t
+private theorem source_chart_smooth
+     
     (g : KPGlobalTorusFunctionData.G F ζ hζ) :
     ContDiffOn ℝ (⊤ : ℕ∞) (fun z => t.val.val
       (KPGlobalTorusBorelTwistCompatibility.groupArchChart F ζ hζ z * g))
@@ -46,8 +49,7 @@ private theorem source_chart_smooth
   simpa only [← hv, KPGlobalTorusBorelTwistCompatibility.scalarSection_formula] using hd
 
 private theorem slice_lower_smooth
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (t : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ))
+     
     (w : InfinitePlace F) (a : KPSmoothActualFlowData.GInfinity F)
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ)
     (g : KPCplxCharacterHaar.ComplexGL2) :
@@ -68,8 +70,7 @@ private theorem slice_lower_smooth
     update_left_mul, map_mul]
 
 private theorem slice_charts_smooth
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (t : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ))
+     
     (w : InfinitePlace F) (a : KPSmoothActualFlowData.GInfinity F)
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ) :
     let f := fun g : KPCplxCharacterHaar.ComplexGL2 => t.val.val
@@ -86,8 +87,7 @@ private theorem slice_charts_smooth
       slice_lower_smooth F ζ hζ t w a c 1
 
 private theorem slice_covariance
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (t : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ))
+     
     (w : InfinitePlace F) (a₀ : KPSmoothActualFlowData.GInfinity F)
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ) :
     KPCplxPrincipalSeriesCharts.HasCovariance KPCplxPrincipalSeriesCharts.positiveParameter
@@ -148,6 +148,8 @@ private theorem slice_covariance
   convert hc using 2
   unfold KPCplxPrincipalSeriesCharts.inductionWeight KPCplxPrincipalSeriesCharts.complexAbs
   norm_num [KPCplxPrincipalSeriesCharts.positiveParameter]
+end
+
 
  def restrictionLinear
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -160,9 +162,12 @@ private theorem slice_covariance
   map_smul' _ _ := rfl
 
 set_option backward.isDefEq.respectTransparency false in
-private theorem slice_kfinite
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+section
+variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (t : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ))
+include F ζ hζ t
+private theorem slice_kfinite
+     
     (w : InfinitePlace F) (a : KPSmoothActualFlowData.GInfinity F)
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ)
     (f : KPCplxPrincipalSeriesCharts.PrincipalSeries KPCplxPrincipalSeriesCharts.positiveParameter)
@@ -217,8 +222,7 @@ private theorem slice_kfinite
   exact FiniteDimensional.of_injective L.rangeRestrict hi
 
 theorem actual_one_slot_source_principal_series
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (t : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ))
+     
     (w : NumberField.InfinitePlace F)
     (k : KPContSectorArchSphericalFibers.KInfinity F)
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ) :
@@ -230,6 +234,8 @@ theorem actual_one_slot_source_principal_series
   let f : KPCplxPrincipalSeriesCharts.PrincipalSeries KPCplxPrincipalSeriesCharts.positiveParameter :=
     ⟨_, slice_covariance F ζ hζ t w k.val c, slice_charts_smooth F ζ hζ t w k.val c⟩
   exact ⟨f, slice_kfinite F ζ hζ t w k.val c f (fun _ => rfl), fun _ => rfl⟩
+end
+
 
 end DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingLocal
 

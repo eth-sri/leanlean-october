@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Mellin.RegularizedVerticalDecay
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -47,8 +50,7 @@ theorem mellin_inversion_positive_line (h : ℝ → ℂ)
     calc ‖mellin h ((σ : ℂ) + (t : ℂ) * Complex.I)‖ ≤ d⁻¹ * C := h3
       _ = C * d⁻¹ := by ring
       _ ≤ C * (1 + t ^ 2)⁻¹ := mul_le_mul_of_nonneg_left hdt hCpos.le
-  have hgi : Integrable (fun t : ℝ => C * (1 + t ^ 2)⁻¹) volume := by
-    simpa [smul_eq_mul] using integrable_inv_one_add_sq.const_mul C
+  have hgi : Integrable (fun t : ℝ => C * (1 + t ^ 2)⁻¹) volume := integrable_inv_one_add_sq.const_mul C
 
   have hIic : IntegrableOn (fun t : ℝ => mellin h ((σ : ℂ) + (t : ℂ) * Complex.I))
       (Set.Iic (-1)) volume := by
@@ -83,7 +85,7 @@ theorem mellin_inversion_positive_line (h : ℝ → ℂ)
   refine ⟨hVI, fun x hx => ?_⟩
   have hconv : MellinConvergent h σ := by
     have hd := mellinConvergent_iteratedDeriv_of_pos (h := h) h_smooth h_compact 0
-      (s := (σ : ℂ)) (by simpa using hσ)
+      (s := (σ : ℂ)) (hσ)
     rwa [iteratedDeriv_zero] at hd
   exact mellinInv_mellin_eq σ h hx hconv hVI (h_smooth.continuous.continuousAt)
 

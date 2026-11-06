@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import Mathlib.LinearAlgebra.PiTensorProduct.Basic
 public import Mathlib.LinearAlgebra.FiniteDimensional.Basic
 public import Mathlib.Basic.Complex.Basic
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -46,11 +49,9 @@ theorem replace_eq_product_of_slot_comparison
   induction S using Finset.induction_on with
   | empty => simp
   | @insert j S hj ih =>
-    have hnormS : ∀ i ∈ S, ell i (x i) = 1 :=
+    have hnormS  :=
       fun i hi => hnorm i (Finset.mem_insert_of_mem hi)
-    have hslotS : ∀ i ∈ S, ∀ z : ∀ k, V k, ∀ u : V i,
-        L (Function.update z i u) =
-          L (Function.update z i (x i)) * ell i u :=
+    have hslotS  :=
       fun i hi => hslot i (Finset.mem_insert_of_mem hi)
     have hbase : Function.update (S.piecewise y x) j (x j) = S.piecewise y x := by
       apply Function.update_eq_self_iff.mpr

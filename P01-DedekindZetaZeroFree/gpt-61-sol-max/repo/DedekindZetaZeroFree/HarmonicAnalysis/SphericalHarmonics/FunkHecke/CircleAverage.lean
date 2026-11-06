@@ -1,60 +1,66 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Geometry.HarmonicPolynomialLatitudeAverage
 public import DedekindZetaZeroFree.Geometry.ZonalHarmonicLegendreEquation
 
 @[expose] public section
 
+
 namespace DedekindZetaZeroFree.ComplexFractionalInverse.FunkHecke
 open MeasureTheory KPCplxIntertwinerEigenvalues
 open scoped RealInnerProductSpace
 
-instance angleMeasure_isProbabilityMeasure : IsProbabilityMeasure angleMeasure := by
-  constructor
-  change angleMeasure Set.univ = 1
-  rw [angleMeasure, Measure.smul_apply, Measure.restrict_apply_univ, Real.volume_Icc]
-  simp only [sub_zero, smul_eq_mul]
-  exact ENNReal.inv_mul_cancel (ne_of_gt (ENNReal.ofReal_pos.mpr
-    (mul_pos (by norm_num) Real.pi_pos))) ENNReal.ofReal_ne_top
 
-@[simp] theorem shiftedLegendre_eval_zero (ℓ : ℕ) :
-    (Polynomial.shiftedLegendre ℓ).eval₂ (Int.castRingHom ℝ) 0 = 1 := by
-  simp [Polynomial.shiftedLegendre, Polynomial.eval₂_finset_sum, Finset.sum_range_succ']
 
-@[simp] theorem latitudePoint_zero_val (g : Ambient ≃ₗᵢ[ℝ] Ambient) (θ : ℝ) :
-    (latitudePoint g 0 θ : Ambient) = g north := by
-  rw [latitudePoint_val _ _ _ (by constructor <;> norm_num)]
-  apply congrArg g
-  rw [WithLp.ext_iff]
-  funext i
-  fin_cases i <;> simp [latitudeAmbient, north, PiLp.single_apply]
 
-@[simp] theorem latitudePoint_one_val (g : Ambient ≃ₗᵢ[ℝ] Ambient) (θ : ℝ) :
-    (latitudePoint g 1 θ : Ambient) = -g north := by
-  rw [latitudePoint_val _ _ _ (by constructor <;> norm_num), latitudeAmbient, ← map_neg]
-  apply congrArg g
-  rw [WithLp.ext_iff]
-  funext i
-  fin_cases i <;> norm_num [north, PiLp.single_apply]
 
-@[simp] theorem shiftedLegendre_eval_one (ℓ : ℕ) :
-    (Polynomial.shiftedLegendre ℓ).eval₂ (Int.castRingHom ℝ) 1 = (-1 : ℝ) ^ ℓ := by
-  have h := Polynomial.shiftedLegendre_eval_symm ℓ (1 : ℝ)
-  simpa [Polynomial.aeval_def, Polynomial.coeff_shiftedLegendre] using h
 
-theorem harmonic_latitude_average_north (ℓ : ℕ) (p : MvPolynomial (Fin 3) ℂ)
-    (g : Ambient ≃ₗᵢ[ℝ] Ambient) :
-    (∫ θ : ℝ, polynomialSphere p (latitudePoint g 0 θ) ∂angleMeasure) =
-      ((Polynomial.shiftedLegendre ℓ).eval₂ (Int.castRingHom ℝ) 0 : ℝ) *
-        polynomialSphere p ⟨g north,
-          mem_sphere_zero_iff_norm.mpr (by rw [g.norm_map, north_norm])⟩ := by
-  simp [polynomialSphere, integral_const, Polynomial.coeff_shiftedLegendre]
 
-noncomputable def linearSubstitution (A : Matrix (Fin 3) (Fin 3) ℂ) :
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+section
+variable (A : Matrix (Fin 3) (Fin 3) ℂ)
+include A
+noncomputable def linearSubstitution   :
     MvPolynomial (Fin 3) ℂ →ₐ[ℂ] MvPolynomial (Fin 3) ℂ :=
   MvPolynomial.aeval (fun i => ∑ j, MvPolynomial.C (A i j) * MvPolynomial.X j)
 
-theorem pderiv_linearSubstitution (A : Matrix (Fin 3) (Fin 3) ℂ)
+theorem pderiv_linearSubstitution  
     (p : MvPolynomial (Fin 3) ℂ) (j : Fin 3) :
     MvPolynomial.pderiv j (linearSubstitution A p) =
       ∑ i, MvPolynomial.C (A i j) * linearSubstitution A (MvPolynomial.pderiv i p) := by
@@ -73,7 +79,7 @@ theorem pderiv_linearSubstitution (A : Matrix (Fin 3) (Fin 3) ℂ)
       simp [Finset.sum_mul, Finset.mul_sum, Finset.sum_add_distrib,
         Pi.single_apply, mul_add, mul_ite, mul_assoc, mul_comm, mul_left_comm]
 
-theorem polynomialLaplacian_linearSubstitution (A : Matrix (Fin 3) (Fin 3) ℂ)
+theorem polynomialLaplacian_linearSubstitution  
     (hA : ∀ i k, ∑ j, A i j * A k j = if i = k then 1 else 0)
     (p : MvPolynomial (Fin 3) ℂ) :
     polynomialLaplacian (linearSubstitution A p) = linearSubstitution A (polynomialLaplacian p) := by
@@ -92,7 +98,7 @@ theorem polynomialLaplacian_linearSubstitution (A : Matrix (Fin 3) (Fin 3) ℂ)
   simp_rw [hA]
   simp
 
-theorem linearSubstitution_homogeneous (A : Matrix (Fin 3) (Fin 3) ℂ)
+theorem linearSubstitution_homogeneous  
     (p : MvPolynomial (Fin 3) ℂ) (ℓ : ℕ) (hp : p.IsHomogeneous ℓ) :
     (linearSubstitution A p).IsHomogeneous ℓ := by
   unfold linearSubstitution
@@ -100,7 +106,7 @@ theorem linearSubstitution_homogeneous (A : Matrix (Fin 3) (Fin 3) ℂ)
     (fun i => MvPolynomial.IsHomogeneous.sum _ _ 1 (fun j _ =>
       MvPolynomial.isHomogeneous_C_mul_X _ _))
 
-theorem linearSubstitution_harmonic (A : Matrix (Fin 3) (Fin 3) ℂ)
+theorem linearSubstitution_harmonic  
     (hA : ∀ i k, ∑ j, A i j * A k j = if i = k then 1 else 0)
     (ℓ : ℕ) (p : MvPolynomial (Fin 3) ℂ) (hp : p ∈ harmonicPolynomials ℓ) :
     linearSubstitution A p ∈ harmonicPolynomials ℓ := by
@@ -109,11 +115,16 @@ theorem linearSubstitution_harmonic (A : Matrix (Fin 3) (Fin 3) ℂ)
   rw [polynomialLaplacian_linearSubstitution A hA]
   have hh : polynomialLaplacian p = 0 := hp.2
   rw [hh, map_zero]
+end
 
-noncomputable def orthogonalSubstitutionMatrix (g : Ambient ≃ₗᵢ[ℝ] Ambient) :
+
+section
+variable (g : Ambient ≃ₗᵢ[ℝ] Ambient)
+include g
+noncomputable def orthogonalSubstitutionMatrix   :
     Matrix (Fin 3) (Fin 3) ℂ := fun i j => (g.symm (EuclideanSpace.single i 1)) j
 
-theorem orthogonalSubstitutionMatrix_orthogonal (g : Ambient ≃ₗᵢ[ℝ] Ambient) (i k : Fin 3) :
+theorem orthogonalSubstitutionMatrix_orthogonal   (i k : Fin 3) :
     ∑ j, orthogonalSubstitutionMatrix g i j * orthogonalSubstitutionMatrix g k j =
       if i = k then 1 else 0 := by
   simp only [orthogonalSubstitutionMatrix, ← Complex.ofReal_mul, ← Complex.ofReal_sum]
@@ -128,7 +139,7 @@ theorem orthogonalSubstitutionMatrix_orthogonal (g : Ambient ≃ₗᵢ[ℝ] Ambi
     simp [EuclideanSpace.inner_single_left, PiLp.single_apply]
   · simp [EuclideanSpace.inner_single_left, PiLp.single_apply, h, Ne.symm h]
 
-theorem orthogonalSubstitutionMatrix_eval (g : Ambient ≃ₗᵢ[ℝ] Ambient) (v : Ambient) (i : Fin 3) :
+theorem orthogonalSubstitutionMatrix_eval   (v : Ambient) (i : Fin 3) :
     ∑ j, orthogonalSubstitutionMatrix g i j * (v j : ℂ) = ((g v) i : ℂ) := by
   simp only [orthogonalSubstitutionMatrix, ← Complex.ofReal_mul, ← Complex.ofReal_sum]
   congr 1
@@ -138,7 +149,7 @@ theorem orthogonalSubstitutionMatrix_eval (g : Ambient ≃ₗᵢ[ℝ] Ambient) (
   simp only [RCLike.inner_apply, conj_trivial] at hh
   simpa [mul_comm] using hh
 
-theorem orthogonalSubstitution_eval (g : Ambient ≃ₗᵢ[ℝ] Ambient)
+theorem orthogonalSubstitution_eval  
     (p : MvPolynomial (Fin 3) ℂ) (v : Ambient) :
     MvPolynomial.eval (fun j => (v j : ℂ)) (linearSubstitution (orthogonalSubstitutionMatrix g) p) =
       MvPolynomial.eval (fun i => ((g v) i : ℂ)) p := by
@@ -150,9 +161,9 @@ theorem orthogonalSubstitution_eval (g : Ambient ≃ₗᵢ[ℝ] Ambient)
   congr 2
   funext i
   simp only [map_sum, map_mul, MvPolynomial.aeval_C, MvPolynomial.aeval_X, Algebra.algebraMap_self]
-  exact orthogonalSubstitutionMatrix_eval g v i
+  apply orthogonalSubstitutionMatrix_eval
 
-theorem orthogonalSubstitution_latitude (g : Ambient ≃ₗᵢ[ℝ] Ambient)
+theorem orthogonalSubstitution_latitude  
     (p : MvPolynomial (Fin 3) ℂ) (u θ : ℝ) :
     polynomialSphere (linearSubstitution (orthogonalSubstitutionMatrix g) p)
       (latitudePoint (.refl ℝ Ambient) u θ) = polynomialSphere p (latitudePoint g u θ) := by
@@ -161,6 +172,8 @@ theorem orthogonalSubstitution_latitude (g : Ambient ≃ₗᵢ[ℝ] Ambient)
   by_cases hu : u ∈ Set.Icc (0 : ℝ) 1
   · simp [latitudePoint_val _ _ _ hu, latitudeAmbient]
   · simp [latitudePoint, hu]
+end
+
 
 theorem harmonic_latitude_average_of_standardFrame (ℓ : ℕ)
     (hstandard : ∀ q : MvPolynomial (Fin 3) ℂ, q ∈ harmonicPolynomials ℓ →

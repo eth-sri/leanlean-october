@@ -24,10 +24,13 @@ theorem wordIntegrand_joint_continuous
     (IntrinsicAveraging.pullback (wordDerivative F ζ hζ word f)) ((hf word).1.comp continuous_quot_mk)
     (IntrinsicAveraging.pullback_rational _)
 
-theorem wordIntegrand_integrable
-    (dn : Measure (KPCompactFourier.AdditiveQuotient F)) [IsFiniteMeasure dn]
+section
+variable (dn : Measure (KPCompactFourier.AdditiveQuotient F)) [IsFiniteMeasure dn]
     (j : Cusps A) (f : KPSmoothActualFlowData.X F ζ hζ → ℂ) (hf : ∀ w, SmoothAutomorphic F ζ hζ (wordDerivative F ζ hζ w f))
-    (word : List (B F)) (g : Cover F ζ hζ) :
+    (word : List (B F))
+include dn j f hf word in
+theorem wordIntegrand_integrable
+      (g : Cover F ζ hζ) :
     Integrable (fun q => wordIntegrand A j f word q g) dn := by
   have hc := (wordIntegrand_joint_continuous A j f hf word).comp
     (continuous_id.prodMk (continuous_const (y := g)))
@@ -53,10 +56,9 @@ theorem flow_word_joint_continuous
         (p.2, g * archimedeanInsertion F ζ hζ (flow F b p.1))))
   exact Continuous.comp (wordIntegrand_joint_continuous A j f hf word) hmap
 
+include dn j f hf word in
 theorem mean_word_flow_hasDerivAt
-    (dn : Measure (KPCompactFourier.AdditiveQuotient F)) [IsFiniteMeasure dn]
-    (j : Cusps A) (f : KPSmoothActualFlowData.X F ζ hζ → ℂ) (hf : ∀ w, SmoothAutomorphic F ζ hζ (wordDerivative F ζ hζ w f))
-    (word : List (B F)) (b : B F) (g : Cover F ζ hζ) (t : ℝ) :
+      (b : B F) (g : Cover F ζ hζ) (t : ℝ) :
     HasDerivAt (fun s : ℝ => ∫ q, wordIntegrand A j f word q
       (g * archimedeanInsertion F ζ hζ (flow F b s)) ∂dn)
       (∫ q, wordIntegrand A j f (b :: word) q
@@ -100,10 +102,9 @@ theorem mean_word_flow_hasDerivAt
     (integrable_const C)
     (Eventually.of_forall fun q s _ => wordIntegrand_flow_hasDerivAt A j f (hf []) word b g q s)).2
 
+include dn j f hf word in
 theorem rightDerivative_constantTerm_word
-    (dn : Measure (KPCompactFourier.AdditiveQuotient F)) [IsFiniteMeasure dn]
-    (j : Cusps A) (f : KPSmoothActualFlowData.X F ζ hζ → ℂ) (hf : ∀ w, SmoothAutomorphic F ζ hζ (wordDerivative F ζ hζ w f))
-    (word : List (B F)) (w : NumberField.InfinitePlace F) (i : Fin 6) :
+      (w : NumberField.InfinitePlace F) (i : Fin 6) :
     rightDerivative F ζ hζ w i
       (constantTerm A dn j (IntrinsicAveraging.pullback (wordDerivative F ζ hζ word f))) =
     constantTerm A dn j
@@ -113,6 +114,8 @@ theorem rightDerivative_constantTerm_word
   simpa only [rightDerivative, constantTerm, wordIntegrand,
     (flow_properties F (w,i)).1, (archimedean_insertion_properties F ζ hζ).1,
     mul_one] using hd
+end
+
 
 end DedekindZetaZeroFree.FourierContinuation.ResidualIntrinsicJets
 

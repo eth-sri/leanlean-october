@@ -184,7 +184,10 @@ def scalarSpace : Submodule ℂ (G → ℂ) where
 
 open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.NativeStageJets renaming rightWord_hasDerivAt_of_chart_smooth → rightWord_hasDerivAt_of_chart_smooth
 
-def derivative (b : B F) : scalarSpace (F := F) (ζ := ζ) (hζ := hζ) →ₗ[ℂ] scalarSpace (F := F) (ζ := ζ) (hζ := hζ) where
+
+local notation:max "current_scalarSpace" => scalarSpace (F := F) (ζ := ζ) (hζ := hζ)
+
+def derivative (b : B F) : current_scalarSpace →ₗ[ℂ] current_scalarSpace where
   toFun f := ⟨KPMsGreenFlux.rightDerivative F ζ hζ b.1 b.2 f.val,
     sixWord_smooth f.val f.property [b]⟩
   map_add' f h := by
@@ -197,7 +200,7 @@ def derivative (b : B F) : scalarSpace (F := F) (ζ := ζ) (hζ := hζ) →ₗ[�
     funext g
     exact ((rightWord_hasDerivAt_of_chart_smooth F ζ hζ f.val f.property [] b g).const_smul c).deriv
 
-def translation (k : GInfinity F) : scalarSpace (F := F) (ζ := ζ) (hζ := hζ) →ₗ[ℂ] scalarSpace (F := F) (ζ := ζ) (hζ := hζ) where
+def translation (k : GInfinity F) : current_scalarSpace →ₗ[ℂ] current_scalarSpace where
   toFun f := ⟨translate k f.val, translate_smooth k f.val f.property⟩
   map_add' _ _ := rfl
   map_smul' _ _ := rfl
@@ -213,7 +216,7 @@ theorem jet_eq_sum (a : LieCoordinates F) (f : G → ℂ) (hf : NativeSmooth f) 
   rfl
 
 theorem translation_derivative (k : GInfinity F) (b : B F)
-    (f : scalarSpace (F := F) (ζ := ζ) (hζ := hζ)) :
+    (f : current_scalarSpace) :
     translation k (derivative b f) = ∑ a : B F,
       ((PGLComplex.productAdjointLinearEquiv (NumberField.InfinitePlace F) k (Pi.single b 1) a : ℝ) : ℂ) •
         derivative a (translation k f) := by
@@ -228,15 +231,15 @@ def words : ℕ → Finset (List (B F))
   | 0 => {[]}
   | n+1 => Finset.univ.biUnion (fun b : B F => (words n).image (List.cons b))
 
-def wordVector (w : List (B F)) (f : scalarSpace (F := F) (ζ := ζ) (hζ := hζ)) : scalarSpace (F := F) (ζ := ζ) (hζ := hζ) :=
+def wordVector (w : List (B F)) (f : current_scalarSpace) : current_scalarSpace :=
   w.foldr (fun b h => derivative b h) f
 
-def wordSpace (n : ℕ) (f : scalarSpace (F := F) (ζ := ζ) (hζ := hζ)) :
-    Submodule ℂ (scalarSpace (F := F) (ζ := ζ) (hζ := hζ)) :=
+def wordSpace (n : ℕ) (f : current_scalarSpace) :
+    Submodule ℂ (current_scalarSpace) :=
   Submodule.span ℂ ((fun w => wordVector w f) '' (words (F := F) n : Set (List (B F))))
 
-theorem derivative_mem_wordSpace (n : ℕ) (f : scalarSpace (F := F) (ζ := ζ) (hζ := hζ))
-    (b : B F) {v : scalarSpace (F := F) (ζ := ζ) (hζ := hζ)} (hv : v ∈ wordSpace n f) :
+theorem derivative_mem_wordSpace (n : ℕ) (f : current_scalarSpace)
+    (b : B F) {v : current_scalarSpace} (hv : v ∈ wordSpace n f) :
     derivative b v ∈ wordSpace (n+1) f := by
   unfold wordSpace at hv
   induction hv using Submodule.span_induction with
@@ -249,7 +252,7 @@ theorem derivative_mem_wordSpace (n : ℕ) (f : scalarSpace (F := F) (ζ := ζ) 
   | add x y hx hy ix iy => simpa using (wordSpace (n+1) f).add_mem ix iy
   | smul c x hx ix => simpa using (wordSpace (n+1) f).smul_mem c ix
 
-theorem translate_word_mem (f : scalarSpace (F := F) (ζ := ζ) (hζ := hζ))
+theorem translate_word_mem (f : current_scalarSpace)
     (k : GInfinity F) (hk : translation k f = f) (w : List (B F)) :
     translation k (wordVector w f) ∈ wordSpace w.length f := by
   induction w with
@@ -265,7 +268,7 @@ theorem translate_word_mem (f : scalarSpace (F := F) (ζ := ζ) (hζ := hζ))
     apply Submodule.smul_mem
     exact derivative_mem_wordSpace _ f a ih
 
-theorem wordVector_val (w : List (B F)) (f : scalarSpace (F := F) (ζ := ζ) (hζ := hζ)) :
+theorem wordVector_val (w : List (B F)) (f : current_scalarSpace) :
     (wordVector w f).val = sixWord w f.val := by
   induction w with
   | nil => rfl
@@ -278,9 +281,9 @@ theorem sixWord_kFinite (f : G → ℂ) (hf : NativeSmooth f)
     (hk : ∀ (k : KPMsGreenFlux.K F) g,
       f (g * KPMsGreenFlux.compactInsertion F ζ hζ k) = f g)
     (w : List (B F)) : KPMsGreenFlux.KFinite F ζ hζ (sixWord w f) := by
-  let v : scalarSpace (F := F) (ζ := ζ) (hζ := hζ) := ⟨f, hf⟩
+  let v : current_scalarSpace := ⟨f, hf⟩
   let W := wordSpace w.length v
-  let W' := W.map (scalarSpace (F := F) (ζ := ζ) (hζ := hζ)).subtype
+  let W' := W.map (current_scalarSpace).subtype
   have hfg : W.FG := Submodule.fg_span ((words (F := F) w.length).finite_toSet.image _)
   letI : Module.Finite ℂ W' := Module.Finite.of_fg (hfg.map _)
   let S := Submodule.span ℂ (Set.range (fun k : KPMsGreenFlux.K F =>

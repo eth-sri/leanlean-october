@@ -22,11 +22,14 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 
-theorem actualRight_smooth (b : Fin (groupDimension F)) (f : Functions F ζ hζ)
+section
+variable (b : Fin (groupDimension F))
+include b
+theorem actualRight_smooth   (f : Functions F ζ hζ)
     (hf : Smooth F ζ hζ f) : Smooth F ζ hζ (actualRight F ζ hζ b f) := by
   simpa only [actualRightWord] using actualRightWord_smooth f hf [b]
 
-theorem actualRight_induced (b : Fin (groupDimension F)) (s : ℂ)
+theorem actualRight_induced   (s : ℂ)
     (f : Functions F ζ hζ) (hf : Induced F ζ hζ s f) :
     Induced F ζ hζ s (actualRight F ζ hζ b f) := by
   refine ⟨actualRight_smooth F ζ hζ b f hf.1, ?_⟩
@@ -42,10 +45,10 @@ theorem actualRight_induced (b : Fin (groupDimension F)) (s : ℂ)
   rw [he]
   exact deriv_const_mul _ (nativeCurve_hasDeriv F ζ hζ b f hf.1 g).differentiableAt
 
-def nativeAlpha (b : Fin (groupDimension F)) (g : G F ζ hζ) : ℝ :=
+def nativeAlpha   (g : G F ζ hζ) : ℝ :=
   deriv (fun t => KPContFlatSourceRecipe.alpha F ζ hζ (g * nativeCurve F ζ hζ b t)) 0
 
-theorem nativeAlpha_hasDeriv (b : Fin (groupDimension F)) (g : G F ζ hζ) :
+theorem nativeAlpha_hasDeriv   (g : G F ζ hζ) :
     HasDerivAt (fun t => KPContFlatSourceRecipe.alpha F ζ hζ (g * nativeCurve F ζ hζ b t))
       (nativeAlpha F ζ hζ b g) 0 := by
   have hb : archBase F ∈ archDomain F := by intro w; simp [archBase]
@@ -63,7 +66,7 @@ theorem nativeAlpha_hasDeriv (b : Fin (groupDimension F)) (g : G F ζ hζ) :
   rw [h.deriv]
   exact h
 
-theorem actualRight_scalarWeight (b : Fin (groupDimension F)) (s : ℂ)
+theorem actualRight_scalarWeight   (s : ℂ)
     (f : Functions F ζ hζ) (hf : Smooth F ζ hζ f) (g : G F ζ hζ) :
     actualRight F ζ hζ b (scalarWeight F ζ hζ s f) g =
       Complex.exp (s * (KPContFlatSourceRecipe.alpha F ζ hζ g : ℂ)) *
@@ -80,11 +83,11 @@ theorem actualRight_scalarWeight (b : Fin (groupDimension F)) (s : ℂ)
   rw [nativeCurve_zero, mul_one]
   ring
 
-def nativeDisplacement (b : Fin (groupDimension F)) (f : Functions F ζ hζ) : Functions F ζ hζ :=
+def nativeDisplacement   (f : Functions F ζ hζ) : Functions F ζ hζ :=
   scalarWeight F ζ hζ (-1) (actualRight F ζ hζ b (scalarWeight F ζ hζ 1 f)) +
     (-1 : ℂ) • actualRight F ζ hζ b f
 
-theorem nativeDisplacement_value (b : Fin (groupDimension F))
+theorem nativeDisplacement_value  
     (f : Functions F ζ hζ) (hf : Smooth F ζ hζ f) (g : G F ζ hζ) :
     nativeDisplacement F ζ hζ b f g = (nativeAlpha F ζ hζ b g : ℂ) * f g := by
   simp only [nativeDisplacement, Pi.add_apply, Pi.smul_apply, smul_eq_mul, scalarWeight]
@@ -92,6 +95,8 @@ theorem nativeDisplacement_value (b : Fin (groupDimension F))
   simp only [one_mul, ← mul_assoc, ← Complex.exp_add, neg_one_mul, neg_add_cancel,
     Complex.exp_zero, one_mul]
   ring
+end
+
 
 open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.NativeStageJets renaming theta → theta
 open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.NativeStageJets renaming theta_zero → theta_zero

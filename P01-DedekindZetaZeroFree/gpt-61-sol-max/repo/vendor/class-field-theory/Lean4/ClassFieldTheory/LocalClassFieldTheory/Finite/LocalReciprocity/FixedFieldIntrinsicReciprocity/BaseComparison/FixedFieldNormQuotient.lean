@@ -34,10 +34,8 @@ open LocalFieldTheory RamificationTheory CyclicCohomology KummerTheory
 open ClassFormation
 open scoped ValuativeRel
 
-/-- The fixed-field units equivalence sends the cohomological finite norm
-subgroup to the additive form of the ordinary field-norm subgroup. -/
-theorem map_fixedFieldFiniteNormSubgroup_eq_additiveNormSubgroup
-    (k Ω : Type) [Field k] [Field Ω] [Algebra k Ω]
+section
+variable (k Ω : Type) [Field k] [Field Ω] [Algebra k Ω]
     [IsGalois k Ω] [IsSepClosed Ω]
     (K L : ClosedSubgroup Gal(Ω / k))
     (hLK : L.toSubgroup ≤ K.toSubgroup)
@@ -46,7 +44,12 @@ theorem map_fixedFieldFiniteNormSubgroup_eq_additiveNormSubgroup
     [hKabsolute : Finite
       ((baseField Gal(Ω / k)).toSubgroup ⧸
         extensionSubgroup (baseField Gal(Ω / k)) K
-          (le_baseField K))] :
+          (le_baseField K))]
+include k Ω K L hLK hfinite hKabsolute
+/-- The fixed-field units equivalence sends the cohomological finite norm
+subgroup to the additive form of the ordinary field-norm subgroup. -/
+theorem map_fixedFieldFiniteNormSubgroup_eq_additiveNormSubgroup
+      :
     (finiteNormSubgroup (galoisAmbientUnitsRep k Ω) K L hLK).map
         (abstractFixedFieldUnitsEquivGaloisFixed
           k Ω K).symm.toAddMonoidHom =
@@ -104,16 +107,7 @@ theorem map_fixedFieldFiniteNormSubgroup_eq_additiveNormSubgroup
 /-- The cohomological finite norm quotient for a pair of closed subgroups is
 additively equivalent to the ordinary norm quotient of their fixed fields. -/
 noncomputable def fixedFieldFiniteNormQuotientEquivNormQuotient
-    (k Ω : Type) [Field k] [Field Ω] [Algebra k Ω]
-    [IsGalois k Ω] [IsSepClosed Ω]
-    (K L : ClosedSubgroup Gal(Ω / k))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [hfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
-    [hKabsolute : Finite
-      ((baseField Gal(Ω / k)).toSubgroup ⧸
-        extensionSubgroup (baseField Gal(Ω / k)) K
-          (le_baseField K))] :
+      :
     FiniteNormQuotient (galoisAmbientUnitsRep k Ω) K L hLK ≃+
       Additive
         (NormQuotient
@@ -196,16 +190,7 @@ noncomputable def fixedFieldFiniteNormQuotientEquivNormQuotient
 /-- The fixed-field norm-quotient equivalence sends a cohomological finite norm
 class to the ordinary norm class of the corresponding fixed-field unit. -/
 theorem fixedFieldFiniteNormQuotientEquivNormQuotient_finiteNormClass
-    (k Ω : Type) [Field k] [Field Ω] [Algebra k Ω]
-    [IsGalois k Ω] [IsSepClosed Ω]
-    (K L : ClosedSubgroup Gal(Ω / k))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [hfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
-    [hKabsolute : Finite
-      ((baseField Gal(Ω / k)).toSubgroup ⧸
-        extensionSubgroup (baseField Gal(Ω / k)) K
-          (le_baseField K))]
+     
     (a : ambientFixedAddSubgroup (galoisAmbientUnitsRep k Ω) K) :
     fixedFieldFiniteNormQuotientEquivNormQuotient
         k Ω K L hLK
@@ -248,11 +233,11 @@ theorem fixedFieldFiniteNormQuotientEquivNormQuotient_finiteNormClass
     normAdd (e.symm a)
   rw [QuotientAddGroup.map_mk', QuotientAddGroup.kerLift_mk]
   rfl
+end
 
-/-- The abstract fixed-field norm-residue symbol of the relative norm of a
-prime element is the prescribed Frobenius quotient class. -/
-theorem abstractFixedFieldNormResidueSymbol_apply_primeNorm
-    (k Ω : Type) [Field k] [Field Ω] [Algebra k Ω]
+
+section
+variable (k Ω : Type) [Field k] [Field Ω] [Algebra k Ω]
     [IsGalois k Ω] [IsSepClosed Ω]
     (D : DegreeData Gal(Ω / k))
     (v : ValuationData D (galoisAmbientUnitsRep k Ω))
@@ -267,6 +252,11 @@ theorem abstractFixedFieldNormResidueSymbol_apply_primeNorm
       ((baseField Gal(Ω / k)).toSubgroup ⧸
         extensionSubgroup (baseField Gal(Ω / k)) K
           (le_baseField K))]
+include k Ω D v hcf K L hLK hnormal hfinite hKabsolute
+/-- The abstract fixed-field norm-residue symbol of the relative norm of a
+prime element is the prescribed Frobenius quotient class. -/
+theorem abstractFixedFieldNormResidueSymbol_apply_primeNorm
+     
     (q : K.toSubgroup ⧸ extensionSubgroup K L hLK)
     (σ : D.FrobeniusElements
       ((⟨K, hKabsolute⟩ : FiniteAbstractField
@@ -364,21 +354,7 @@ theorem abstractFixedFieldNormResidueSymbol_apply_primeNorm
 /-- The abstract fixed-field norm-residue symbol depends only on the norm
 class of the input unit. -/
 theorem abstractFixedFieldNormResidueSymbol_eq_of_normClass_eq
-    (k Ω : Type) [Field k] [Field Ω] [Algebra k Ω]
-    [IsGalois k Ω] [IsSepClosed Ω]
-    (D : DegreeData Gal(Ω / k))
-    (v : ValuationData D (galoisAmbientUnitsRep k Ω))
-    (hcf : SatisfiesClassFieldAxiom
-      (galoisAmbientUnitsRep k Ω))
-    (K L : ClosedSubgroup Gal(Ω / k))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [hnormal : (extensionSubgroup K L hLK).Normal]
-    [hfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
-    [hKabsolute : Finite
-      ((baseField Gal(Ω / k)).toSubgroup ⧸
-        extensionSubgroup (baseField Gal(Ω / k)) K
-          (le_baseField K))]
+     
     (x y : (abstractFixedField k Ω K)ˣ)
     (hxy :
       normClass (abstractFixedField k Ω K)
@@ -432,6 +408,8 @@ theorem abstractFixedFieldNormResidueSymbol_eq_of_normClass_eq
           (finiteNormClass (galoisAmbientUnitsRep k Ω)
             K L hLK (b (Additive.ofMul y))))
   rw [hfiniteClass]
+end
+
 
 /-- The ambient abstract quotient equivalence and the intrinsic finite-Galois
 quotient equivalence agree on classes transported through a separable-closure

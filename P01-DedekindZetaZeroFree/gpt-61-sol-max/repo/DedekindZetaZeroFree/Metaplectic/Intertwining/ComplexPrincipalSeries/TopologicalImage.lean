@@ -194,12 +194,12 @@ theorem standard_diagonal (y : (KPHilbert.Completion F (Sum.inl w))ˣ) :
 
 def compactLift : ComplexSU2 →* Group A w := (splitMatrix A w).comp complexSU2Embedding
 
-@[simp] theorem compact_scalar_one (k : ComplexSU2) :
-    centralCharacter A w (compactLift A w k) = 1 := centralCharacter_splitMatrix A w _
 
-@[simp] theorem compact_matrix (k : ComplexSU2) :
-    matrix A w (compactLift A w k) = Matrix.ProjGenLinGroup.mk (complexSU2Embedding k) :=
-  matrix_splitMatrix A w _
+
+
+
+
+
 
 end DedekindZetaZeroFree.KPReferenceChange.StandardComplexImage
 

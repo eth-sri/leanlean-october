@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Adeles.RestrictedProduct.LocalTopology
 public import DedekindZetaZeroFree.Adeles.Lattices.FractionalIdealTraceDual
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -17,7 +20,7 @@ variable (F : Type) [Field F] [NumberField F]
 abbrev principalSubgroup : AddSubgroup (Adeles F) :=
   AdeleRing.principalSubgroup (RingOfIntegers F) F
 
-def diagonalAddEquiv : F ≃+ principalSubgroup F :=
+def diagonalAddEquiv  :=
   AddMonoidHom.ofInjective
     (f := (algebraMap F (Adeles F)).toAddMonoidHom)
     (AdeleRing.algebraMap_injective (RingOfIntegers F) F)
@@ -64,8 +67,7 @@ theorem exists_open_diag_preimage_zero :
           IsDedekindDomain.HeightOneSpectrum.adicCompletion.valued_coe] using hv
       obtain ⟨r, hr⟩ :=
         IsDedekindDomain.HeightOneSpectrum.mem_integers_of_valuation_le_one F x hfinite
-      have hL : mixedEmbedding F x ∈ L := by
-        exact ⟨r, congrArg (mixedEmbedding F) hr⟩
+      have hL : mixedEmbedding F x ∈ L := ⟨r, congrArg (mixedEmbedding F) hr⟩
       have hsmall : mixedEmbedding F x ∈ W := by
         rw [InfiniteAdeleRing.mixedEmbedding_eq_algebraMap_comp]
         exact hx.1

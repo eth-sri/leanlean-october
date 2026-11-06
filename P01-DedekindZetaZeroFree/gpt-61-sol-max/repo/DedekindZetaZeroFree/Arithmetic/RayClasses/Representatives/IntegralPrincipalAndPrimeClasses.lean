@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Representatives.PrimeToIntegralIdealClasses
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Moduli.IntegralPrincipalCongruence
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.RayClassOfFinitePrime
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -42,25 +45,28 @@ theorem idealClass_integral_principal (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
   rw [QuotientGroup.mk'_apply, QuotientGroup.eq_one_iff]
   exact hmem
 
-theorem prime_not_mem_fullModulus_support (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
+section
+variable (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     (p : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
-    (hcop : p.asIdeal ⊔ m = ⊤) :
+    (hcop : p.asIdeal ⊔ m = ⊤)
+include m hm p hcop
+theorem prime_not_mem_fullModulus_support   :
     p ∉ (fullModulus m hm).finitePart.support := by
   intro hp
   rw [Finsupp.mem_support_iff, fullModulus_finitePart] at hp
   rw [Associates.count_ne_zero_iff_dvd hm p.irreducible] at hp
-  have hle : m ≤ p.asIdeal := Ideal.dvd_iff_le.mp hp
-  have hsup : p.asIdeal ⊔ m = p.asIdeal := sup_eq_left.mpr hle
-  exact p.isPrime.ne_top (hsup ▸ hcop)
+  have hle  := Ideal.dvd_iff_le.mp hp
+  have hsup  := sup_eq_left.mpr hle
+  apply p.isPrime.ne_top <;> aesop
 
-theorem idealClass_prime (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
-    (p : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
-    (hcop : p.asIdeal ⊔ m = ⊤) :
+theorem idealClass_prime   :
     idealClass m hm p.asIdeal p.ne_bot hcop =
       ClassFieldTheory.rayClassOfFinitePrime (fullModulus m hm) p
         (prime_not_mem_fullModulus_support m hm p hcop) := by
   unfold idealClass ClassFieldTheory.rayClassOfFinitePrime
   congr 1
+end
+
 
 end DedekindZetaZeroFree.LargeSieve.RayBridge
 

@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import Mathlib.NumberTheory.NumberField.Completion.InfinitePlace
 public import Mathlib.Analysis.Complex.Circle
 public import Mathlib.RingTheory.Complex
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -18,7 +21,7 @@ noncomputable def archCompletionAlgebra {F : Type*} [Field F] [NumberField F]
   classical
   by_cases hv : v.IsReal
   · exact (InfinitePlace.Completion.ringEquivRealOfIsReal hv).symm.toRingHom.toAlgebra
-  · have hw : v.IsComplex := InfinitePlace.not_isReal_iff_isComplex.mp hv
+  · have hw  := InfinitePlace.not_isReal_iff_isComplex.mp hv
     exact (((InfinitePlace.Completion.ringEquivComplexOfIsComplex hw).symm.toRingHom).comp
       Complex.ofRealHom).toAlgebra
 
@@ -27,7 +30,7 @@ noncomputable def archTrace {F : Type*} [Field F] [NumberField F]
     letI : Algebra ℝ v.Completion := archCompletionAlgebra v
     v.Completion →ₗ[ℝ] ℝ := by
   classical
-  letI : Algebra ℝ v.Completion := archCompletionAlgebra v
+  letI  := archCompletionAlgebra v
   refine {
     toFun := fun z => if hv : v.IsReal then
         InfinitePlace.Completion.ringEquivRealOfIsReal hv z
@@ -93,8 +96,7 @@ noncomputable def archTraceCharacter {F : Type*} [Field F] [NumberField F]
     rw [map_add, mul_add, Circle.exp_add]
 
 theorem continuous_archTraceCharacter {F : Type*} [Field F] [NumberField F]
-    (v : InfinitePlace F) : Continuous (archTraceCharacter v : v.Completion → Circle) := by
-  exact Circle.exp.continuous.comp (continuous_const.mul (continuous_archTrace v))
+    (v : InfinitePlace F) : Continuous (archTraceCharacter v : v.Completion → Circle) := Circle.exp.continuous.comp (continuous_const.mul (continuous_archTrace v))
 
 theorem archTrace_of_isReal {F : Type*} [Field F] [NumberField F]
     (v : InfinitePlace F) (hv : v.IsReal) (z : v.Completion) :

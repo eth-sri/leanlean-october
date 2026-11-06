@@ -324,22 +324,25 @@ private theorem prefixBlock_zero_card (q : Ideal (𝓞 F)) (X : ℝ)
     exact (Finset.mem_inter.mp (Finset.mem_inter.mp ha).2).1
   simpa using Finset.card_le_card h
 
-def blockMajorant (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (D : NormalizedFamilyData Q) (X N : ℝ) (R S : Finset (Ideal (𝓞 F)))
+section
+variable (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
+    (D : NormalizedFamilyData Q) (X N : ℝ)
+include Q D X N in
+def blockMajorant   (R S : Finset (Ideal (𝓞 F)))
     (i j : ℕ) : ℝ :=
   if i = 0 then ((prefixBlock D.bad (2 * N) S j).card : ℝ)
   else if j = 0 then ((prefixBlock D.bad X R i).card : ℝ)
   else (Nat.card Q.G : ℝ) ^ 2 * B1 F c Q ((2 : ℝ) ^ (j - 1)) ((2 : ℝ) ^ (i - 1))
 
-theorem blockMajorant_nonneg (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (D : NormalizedFamilyData Q) (X N : ℝ) (R S : Finset (Ideal (𝓞 F)))
+include Q D X N in
+theorem blockMajorant_nonneg   (R S : Finset (Ideal (𝓞 F)))
     (i j : ℕ) : 0 ≤ blockMajorant Q D X N R S i j := by
   unfold blockMajorant
   split_ifs <;> try positivity
   exact mul_nonneg (sq_nonneg _) (B1_nonneg Q _ _)
 
-theorem prefixBlock_bound (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (D : NormalizedFamilyData Q) (X N : ℝ) (R S : Finset (Ideal (𝓞 F)))
+include Q D X N in
+theorem prefixBlock_bound   (R S : Finset (Ideal (𝓞 F)))
     (hR : R ⊆ idealAdmissibleFinset F D.bad X)
     (hS : S ⊆ idealAdmissibleFinset F D.bad (2 * N)) (i j : ℕ)
     (z : Ideal (𝓞 F) → ℂ) :
@@ -391,8 +394,8 @@ theorem sum_prefixBlock_card (q : Ideal (𝓞 F)) (X : ℝ) (hX : 1 ≤ X)
   rw [← hp] at hc
   exact_mod_cast hc.symm
 
-theorem sum_blockMajorant (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (D : NormalizedFamilyData Q) (X N : ℝ) (hX : 1 ≤ X) (hN : 1 ≤ N)
+include Q D X N in
+theorem sum_blockMajorant   (hX : 1 ≤ X) (hN : 1 ≤ N)
     (R S : Finset (Ideal (𝓞 F)))
     (hR : R ⊆ idealAdmissibleFinset F D.bad X)
     (hS : S ⊆ idealAdmissibleFinset F D.bad (2 * N)) :
@@ -433,8 +436,8 @@ theorem sum_blockMajorant (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
     linarith
   linarith
 
-theorem assembled_prefix_bound (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (D : NormalizedFamilyData Q) (X N : ℝ) (hX : 1 ≤ X) (hN : 1 ≤ N)
+include Q D X N in
+theorem assembled_prefix_bound   (hX : 1 ≤ X) (hN : 1 ≤ N)
     (R S : Finset (Ideal (𝓞 F)))
     (hR : R ⊆ idealAdmissibleFinset F D.bad X)
     (hS : S ⊆ idealAdmissibleFinset F D.bad (2 * N))
@@ -462,6 +465,8 @@ theorem assembled_prefix_bound (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F 
   exact hpart.trans (mul_le_mul_of_nonneg_right
     (mul_le_mul_of_nonneg_left (sum_blockMajorant Q D X N hX hN R S hR hS)
       (by positivity)) (by positivity))
+end
+
 
 end DedekindZetaZeroFree.LargeSieve.Sieve.MainBoundaryPrefix
 

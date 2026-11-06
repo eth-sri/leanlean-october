@@ -94,8 +94,8 @@ private theorem eq_of_common_ofMul_image
       (RelativeIdeleGroup.Cohomology.ideleClassNorm F E
         (Additive.toMul c)))
 
- noncomputable def rationalFixedFieldInclusionComparison
-    (K L : ClosedSubgroup
+ section
+variable (K L : ClosedSubgroup
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (hLK : L.toSubgroup ≤ K.toSubgroup)
     (hnormal : (extensionSubgroup K L hLK).Normal)
@@ -108,6 +108,9 @@ private theorem eq_of_common_ofMul_image
           K (le_baseField K))]
     [hfinite : Finite
       (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
+include K L hLK hnormal hKfinite hfinite in
+noncomputable def rationalFixedFieldInclusionComparison
+     
     (c : RelativeIdeleGroup.ClassGroup ℚ
       (abstractFixedField ℚ (SeparableClosure ℚ) K)) :=
   let F := abstractFixedField ℚ (SeparableClosure ℚ) K
@@ -181,20 +184,9 @@ private theorem eq_of_common_ofMul_image
   (e (M.norm.hom x),
     includedRelativeIdeleClassNormAdditiveValue F E (e x))
 
- noncomputable def rationalRelativeNormComparison
-    (K L : ClosedSubgroup
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal)
-    [hKfinite : Finite
-      ((baseField
-        (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)).toSubgroup ⧸
-        extensionSubgroup
-          (baseField
-            (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-          K (le_baseField K))]
-    [hfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
+ include K L hLK hnormal hKfinite hfinite in
+noncomputable def rationalRelativeNormComparison
+     
     (a : KummerTheory.ambientFixedAddSubgroup
       rationalIdeleClassRepresentation L) :=
   let F := abstractFixedField ℚ (SeparableClosure ℚ) K
@@ -261,20 +253,9 @@ private theorem eq_of_common_ofMul_image
   letI : NumberField F := NumberField.of_module_finite ℚ F
   IdeleClassGroup F
 
- noncomputable def rationalRelativeNormSource
-    (K L : ClosedSubgroup
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal)
-    [hKfinite : Finite
-      ((baseField
-        (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)).toSubgroup ⧸
-        extensionSubgroup
-          (baseField
-            (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-          K (le_baseField K))]
-    [hfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
+ include K L hLK hnormal hKfinite hfinite in
+noncomputable def rationalRelativeNormSource
+     
     (a : KummerTheory.ambientFixedAddSubgroup
       rationalIdeleClassRepresentation L) :
     rationalFixedFieldIdeleClassAdditiveType
@@ -283,20 +264,9 @@ private theorem eq_of_common_ofMul_image
     (hKfinite := hKfinite) (hfinite := hfinite)
     K L hLK hnormal a).1
 
- noncomputable def rationalRelativeNormTarget
-    (K L : ClosedSubgroup
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal)
-    [hKfinite : Finite
-      ((baseField
-        (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)).toSubgroup ⧸
-        extensionSubgroup
-          (baseField
-            (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-          K (le_baseField K))]
-    [hfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
+ include K L hLK hnormal hKfinite hfinite in
+noncomputable def rationalRelativeNormTarget
+     
     (a : KummerTheory.ambientFixedAddSubgroup
       rationalIdeleClassRepresentation L) :
     rationalFixedFieldIdeleClassAdditiveType
@@ -305,20 +275,9 @@ private theorem eq_of_common_ofMul_image
     (hKfinite := hKfinite) (hfinite := hfinite)
     K L hLK hnormal a).2
 
- noncomputable def rationalRelativeNormClassNormSource
-    (K L : ClosedSubgroup
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal)
-    [hKfinite : Finite
-      ((baseField
-        (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)).toSubgroup ⧸
-        extensionSubgroup
-          (baseField
-            (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-          K (le_baseField K))]
-    [hfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
+ include K L hLK hnormal hKfinite hfinite in
+noncomputable def rationalRelativeNormClassNormSource
+     
     (a : KummerTheory.ambientFixedAddSubgroup
       rationalIdeleClassRepresentation L) :
     rationalFixedFieldIdeleClassType
@@ -328,20 +287,9 @@ private theorem eq_of_common_ofMul_image
       (hKfinite := hKfinite) (hfinite := hfinite)
       K L hLK hnormal a)
 
- noncomputable def rationalRelativeNormClassNormTarget
-    (K L : ClosedSubgroup
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal)
-    [hKfinite : Finite
-      ((baseField
-        (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)).toSubgroup ⧸
-        extensionSubgroup
-          (baseField
-            (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-          K (le_baseField K))]
-    [hfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
+ include K L hLK hnormal hKfinite hfinite in
+noncomputable def rationalRelativeNormClassNormTarget
+     
     (a : KummerTheory.ambientFixedAddSubgroup
       rationalIdeleClassRepresentation L) :
     rationalFixedFieldIdeleClassType
@@ -351,24 +299,13 @@ private theorem eq_of_common_ofMul_image
       (hKfinite := hKfinite) (hfinite := hfinite)
       K L hLK hnormal a)
 
+include K L hLK hnormal hKfinite hfinite in
 /-- The fixed-part inclusion from the lower abstract field to the upper
 one becomes the existing relative idele-class inclusion under the
 fixed-field realization. -/
 theorem
     rationalAbstractExtensionIdeleClassEquiv_fixedFieldInclusion
-    (K L : ClosedSubgroup
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal)
-    [hKfinite : Finite
-      ((baseField
-        (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)).toSubgroup ⧸
-        extensionSubgroup
-          (baseField
-            (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-          K (le_baseField K))]
-    [hfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
+     
     (c : RelativeIdeleGroup.ClassGroup ℚ
       (abstractFixedField ℚ (SeparableClosure ℚ) K)) :
     let comparison :=
@@ -648,20 +585,9 @@ private theorem rationalRelativeNorm_representation_norm
   rw [hxa] at hNormCoe
   exact hNormCoe
 
+include K L hLK hnormal hKfinite hfinite in
 private theorem rationalRelativeNormClassNorm_eq
-    (K L : ClosedSubgroup
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal)
-    [hKfinite : Finite
-      ((baseField
-        (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)).toSubgroup ⧸
-        extensionSubgroup
-          (baseField
-            (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-          K (le_baseField K))]
-    [hfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
+     
     (a : KummerTheory.ambientFixedAddSubgroup
       rationalIdeleClassRepresentation L) :
     rationalRelativeNormClassNormSource
@@ -783,24 +709,13 @@ private theorem rationalRelativeNormClassNorm_eq
   change q = Additive.toMul (eK.symm n)
   exact hq
 
+include K L hLK hnormal hKfinite hfinite in
 /-- The relative norm in the rational absolute idele-class
 representation is the existing relative idele-class norm on the two
 actual fixed fields. -/
 theorem
     rationalAbstractFixedFieldIdeleClassEquivFixed_relativeNorm
-    (K L : ClosedSubgroup
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal)
-    [hKfinite : Finite
-      ((baseField
-        (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)).toSubgroup ⧸
-        extensionSubgroup
-          (baseField
-            (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-          K (le_baseField K))]
-    [hfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
+     
     (a : KummerTheory.ambientFixedAddSubgroup
       rationalIdeleClassRepresentation L) :
     rationalRelativeNormSource
@@ -821,6 +736,8 @@ theorem
         (hKfinite := hKfinite) (hfinite := hfinite)
         K L hLK hnormal a at h
   exact h
+end
+
 
 end Reciprocity
 end GlobalClassFieldTheory

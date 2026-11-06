@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.HarmonicPolynomials.FiniteFischerDecomposition
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.ComplexFractionalInverse.FiniteFischerRaw
 open KPCplxIntertwinerEigenvalues
@@ -17,11 +20,11 @@ theorem unit_radius_spanning (p : MvPolynomial (Fin 3) ℂ) :
   classical
   have H (d : ℕ) := homogeneous_fischer (MvPolynomial.homogeneousComponent_mem d p)
   choose h hh he using H
-  let S : Finset (Σ _ : ℕ, ℕ) := (Finset.range (p.totalDegree + 1)).sigma
+  let S  := (Finset.range (p.totalDegree + 1)).sigma
     (fun d => Finset.range (d / 2 + 1))
   let degree : (Σ _ : ℕ, ℕ) → ℕ := fun a => a.1 - 2 * a.2
   let I := S.image degree
-  let q : ℕ → MvPolynomial (Fin 3) ℂ := fun ℓ =>
+  let q  := fun ℓ =>
     ∑ a ∈ S with degree a = ℓ, h a.1 a.2
   refine ⟨I, q, ?_, ?_⟩
   · intro ℓ hℓ
@@ -29,7 +32,7 @@ theorem unit_radius_spanning (p : MvPolynomial (Fin 3) ℂ) :
     intro a ha
     obtain ⟨ha, hdeg⟩ := Finset.mem_filter.mp ha
     obtain ⟨hd, hk⟩ := Finset.mem_sigma.mp ha
-    have hk' : a.2 ≤ a.1 / 2 := Nat.le_of_lt_succ (Finset.mem_range.mp hk)
+    have hk'  := Nat.le_of_lt_succ (Finset.mem_range.mp hk)
     have hh' := hh a.1 a.2 hk'
     simpa only [degree, hdeg] using hh'
   · intro x hx

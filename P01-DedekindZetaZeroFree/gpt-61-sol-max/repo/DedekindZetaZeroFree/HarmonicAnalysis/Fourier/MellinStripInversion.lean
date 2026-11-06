@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Fourier.MellinStripIntegrability
 public import DedekindZetaZeroFree.Analysis.ContourIntegration.ExponentialStripGrowth
 public import DedekindZetaZeroFree.Analysis.VerticalStripBounds
 
 @[expose] public section
+
 
 /-
 Repository: openai/math.
@@ -67,13 +70,10 @@ theorem strip_inverse_api (K : ℂ → ℂ) (a b : ℝ)
       exact mul_le_mul (hrpow σ hσ.1 hσ.2) (hbound σ t hσ) (norm_nonneg _)
         ((Real.rpow_nonneg hx.le _).trans (le_max_left _ _))
   constructor
-  · intro c d x hac hcb had hdb hx
-    rcases le_total c d with hcd | hdc
-    · exact hshift c d x hac hcd hdb hx
-    · exact (hshift d c x had hdc hcb hx).symm
+  · grind
   · intro c hac hcb
-    let P : ℝ := ‖(1 / (2 * Real.pi) : ℂ)‖
-    let L : ℝ := ∫ t : ℝ, ‖K ((c : ℂ) + (t : ℂ) * Complex.I)‖
+    let P  := ‖(1 / (2 * Real.pi) : ℂ)‖
+    let L  := ∫ t : ℝ, ‖K ((c : ℂ) + (t : ℂ) * Complex.I)‖
     have hP : 0 ≤ P := norm_nonneg _
     have hL : 0 ≤ L := MeasureTheory.integral_nonneg (fun _ => norm_nonneg _)
     refine ⟨P * L, mul_nonneg hP hL, ?_⟩

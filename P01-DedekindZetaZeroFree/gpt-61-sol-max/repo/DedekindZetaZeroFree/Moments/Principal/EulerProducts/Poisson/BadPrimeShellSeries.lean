@@ -30,25 +30,25 @@ private lemma norm_qPower (p : ExteriorPrime A) (s : ℂ) :
   simp only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero]
   ring
 
-private lemma norm_vartheta (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) : ‖vartheta C p‖ = 1 := by
+section
+variable (C : A.GeneralArithmeticContext σ η hS)
+    (p : ExteriorPrime A)
+include C p
+private lemma norm_vartheta   : ‖vartheta C p‖ = 1 := by
   rw [vartheta]
   exact Circle.norm_coe _
 
-private lemma norm_gammaTwo (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) : ‖gammaTwo C p‖ ≤ 1 := by
+private lemma norm_gammaTwo   : ‖gammaTwo C p‖ ≤ 1 := by
   rw [gammaTwo]
   exact NormalizedProbe.PrincipalData.norm_idealGauss_le_one A σ hS (primeIdeal p)
     (generator C p) (generator_generates C p) 2
 
-theorem seriesTerm_eq_zero_of_two_le (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (j : Fin 6) (θ : {θ : ℂ // ‖θ‖ = 1})
+theorem seriesTerm_eq_zero_of_two_le   (j : Fin 6) (θ : {θ : ℂ // ‖θ‖ = 1})
     (e : Fin 2) (l k m : ℕ) (ht : 0 < e.val + 3 * l) (hk : 2 ≤ k) (ξ w z : ℂ) :
     seriesTerm C p j θ e l k m ξ w z = 0 := by
   simp only [seriesTerm, Ctk_eq_zero_of_two_le C p _ _ _ ht hk, mul_zero, zero_mul]
 
-theorem norm_seriesTerm_le_Ctk (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (j : Fin 6) (θ : {θ : ℂ // ‖θ‖ = 1})
+theorem norm_seriesTerm_le_Ctk   (j : Fin 6) (θ : {θ : ℂ // ‖θ‖ = 1})
     (e : Fin 2) (l k m : ℕ) (x : Coordinates) :
     ‖seriesTerm C p j θ e l k m x.1 x.2.1 x.2.2‖ ≤
       ‖Ctk C p (e.val + 3 * l) k (j.val + 6 * m)‖ *
@@ -67,16 +67,14 @@ theorem norm_seriesTerm_le_Ctk (C : A.GeneralArithmeticContext σ η hS)
   exact mul_le_mul_of_nonneg_right
     (mul_le_of_le_one_left (norm_nonneg _) he) (Real.rpow_nonneg (Q_pos p).le _)
 
-theorem norm_Ctk_le_shell (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (t k J : ℕ) (ht : 0 < t) (hk : k ≤ 1) :
+theorem norm_Ctk_le_shell   (t k J : ℕ) (ht : 0 < t) (hk : k ≤ 1) :
     ‖Ctk C p t k J‖ ≤ (Q p) ^ ((t : ℝ) + (k : ℝ) / 2) := by
   interval_cases k
   · simpa only [Nat.cast_zero, zero_div, add_zero, Real.rpow_natCast] using
       norm_Ctk_zero_le C p t J ht
   · simpa using norm_Ctk_one_le C p t J ht
 
-theorem norm_seriesTerm_le_rpow_shellExponent (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (j : Fin 6) (θ : {θ : ℂ // ‖θ‖ = 1})
+theorem norm_seriesTerm_le_rpow_shellExponent   (j : Fin 6) (θ : {θ : ℂ // ‖θ‖ = 1})
     (e : Fin 2) (l k m : ℕ) (ht : 0 < e.val + 3 * l) (hk : k ≤ 1) (x : Coordinates) :
     ‖seriesTerm C p j θ e l k m x.1 x.2.1 x.2.2‖ ≤
       (Q p) ^ shellExponent x.1.re x.2.1.re x.2.2.re e.val k l m := by
@@ -98,8 +96,7 @@ theorem norm_seriesTerm_le_rpow_shellExponent (C : A.GeneralArithmeticContext σ
       push_cast
       ring
 
-theorem seriesTerm_leading (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (j : Fin 6) (hj : j.val ≠ 0)
+theorem seriesTerm_leading   (j : Fin 6) (hj : j.val ≠ 0)
     (θ : {θ : ℂ // ‖θ‖ = 1}) (k m : ℕ) (ξ w z : ℂ) :
     seriesTerm C p j θ 0 0 k m ξ w z = if k = 0 then V p z ^ m else 0 := by
   by_cases hk : k = 0
@@ -118,6 +115,8 @@ theorem seriesTerm_leading (C : A.GeneralArithmeticContext σ η hS)
     rw [show (0 : Fin 2).val + 3 * 0 = 0 by rfl,
       Ctk_zero_pos C p k _ (Nat.pos_of_ne_zero hk), if_neg hJ]
     simp only [mul_zero, zero_mul, if_neg hk]
+end
+
 
 def weight (ρ : ℝ) (i : Fin 2 × ℕ × ℕ × ℕ) : ℝ :=
   2 * ρ ^ i.2.1 * (1 / 2 : ℝ) ^ i.2.2.1 * ρ ^ i.2.2.2
@@ -227,10 +226,13 @@ theorem norm_seriesTerm_le_weight (C : A.GeneralArithmeticContext σ η hS)
       nlinarith [pow_nonneg hρ.le m]
     · simpa using hw
 
-def baseline (p : ExteriorPrime A) (z : ℂ) (i : Fin 2 × ℕ × ℕ × ℕ) : ℂ :=
+section
+variable (p : ExteriorPrime A) (z : ℂ)
+include p z
+def baseline   (i : Fin 2 × ℕ × ℕ × ℕ) : ℂ :=
   if i.1 = 0 ∧ i.2.1 = 0 ∧ i.2.2.1 = 0 then V p z ^ i.2.2.2 else 0
 
-theorem baseline_norm_le (p : ExteriorPrime A) (z : ℂ) (ρ : ℝ) (hρ : 0 ≤ ρ)
+theorem baseline_norm_le   (ρ : ℝ) (hρ : 0 ≤ ρ)
     (hV : ‖V p z‖ ≤ ρ) (i : Fin 2 × ℕ × ℕ × ℕ) : ‖baseline p z i‖ ≤ weight ρ i := by
   unfold baseline
   split_ifs with h
@@ -242,7 +244,7 @@ theorem baseline_norm_le (p : ExteriorPrime A) (z : ℂ) (ρ : ℝ) (hρ : 0 ≤
   · simp only [norm_zero]
     exact weight_nonneg hρ i
 
-theorem one_sub_V_mul_tsum_baseline (p : ExteriorPrime A) (z : ℂ) (hV : ‖V p z‖ < 1) :
+theorem one_sub_V_mul_tsum_baseline   (hV : ‖V p z‖ < 1) :
     (1 - V p z) * (∑' i, baseline p z i) = 1 := by
   have hs : Summable (baseline p z) := by
     refine Summable.of_norm_bounded (weight_summable (norm_nonneg _) hV) ?_
@@ -272,6 +274,8 @@ theorem one_sub_V_mul_tsum_baseline (p : ExteriorPrime A) (z : ℂ) (hV : ‖V p
       simp [hl]
   · intro e he
     simp [he]
+end
+
 
 theorem seriesTerm_majorant_margin (δ : ℝ) (hδ : 0 < δ) :
     ∃ (ρ δ₀ : ℝ), 0 < ρ ∧ ρ < 1 ∧ 0 < δ₀ ∧ Summable (weight ρ) ∧

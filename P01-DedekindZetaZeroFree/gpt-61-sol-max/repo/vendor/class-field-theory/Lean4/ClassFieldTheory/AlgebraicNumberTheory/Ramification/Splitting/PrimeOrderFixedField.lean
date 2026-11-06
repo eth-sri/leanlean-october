@@ -186,14 +186,14 @@ variable {K M : Type}
     [Field M] [NumberField M]
     [Algebra K M]
 
-/-- A finite place of `M` lies above a finite place of `K` when its
-normalized adic absolute value is an exact extension. -/
-def FinitePlaceLiesAbove
-    (v : HeightOneSpectrum (𝓞 K))
-    (v' : HeightOneSpectrum (𝓞 M)) : Prop :=
-  AbsoluteValue.Extends
-    (NumberField.HeightOneSpectrum.adicAbv K v)
-    (NumberField.HeightOneSpectrum.adicAbv M v')
+
+
+
+
+
+
+
+
 
 variable {L : Type}
     [Field L] [NumberField L]
@@ -202,51 +202,51 @@ variable {L : Type}
     [FiniteDimensional K L] [IsGalois K L]
     [IsGalois M L]
 
-omit [NumberField L] [FiniteDimensional K L] in
-/-- Complete splitting ascends from a base finite place to every
-finite place of an intermediate field lying above it.
 
-The proof uses the chosen extension above `v'`, regards it as an
-extension above `v`, changes from the standard chosen extension over
-`K` by valuation-extension counting, and finally restricts the trivial
-decomposition group from `K` to `M`. -/
-theorem finitePlaceSplitsCompletely_over_intermediate_of_liesAbove
-    (v : HeightOneSpectrum (𝓞 K))
-    (v' : HeightOneSpectrum (𝓞 M))
-    (hAbove : FinitePlaceLiesAbove (K := K) (M := M) v v')
-    (hsplit :
-      FinitePlaceSplitsCompletely
-        (K := K) (L := L) v) :
-    FinitePlaceSplitsCompletely
-      (K := M) (L := L) v' := by
-  let vK :=
-    NumberField.HeightOneSpectrum.adicAbv K v
-  let vM :=
-    NumberField.HeightOneSpectrum.adicAbv M v'
-  let hvK : vK.IsNontrivial :=
-    RayClass.adicAbv_isNontrivial v
-  let wM : AbsoluteValueExtension vM L :=
-    chosenFinitePlaceExtension (L := L) v'
-  let wK : AbsoluteValueExtension vK L :=
-    { val := wM.1
-      property := by
-        intro x
-        rw [IsScalarTower.algebraMap_apply K M L,
-          wM.2]
-        exact hAbove x }
-  have hKbot :
-      absoluteValueDecompositionGroup K wK.1 = ⊥ := by
-    exact
-      absoluteValueDecompositionGroup_eq_bot_independent_extension
-        vK hvK
-        (chosenFinitePlaceExtension (L := L) v)
-        wK hsplit
-  change
-    absoluteValueDecompositionGroup M wM.1 = ⊥
-  exact
-    absoluteValueDecompositionGroup_eq_bot_over_intermediate
-      (K := K) (M := M) (L := L)
-      wM.1 hKbot
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end FinitePlaceAscent
 
@@ -258,59 +258,59 @@ variable {K L : Type}
     [Algebra K L]
     [FiniteDimensional K L] [IsGalois K L]
 
-omit [NumberField K] [NumberField L] in
-/-- The chosen fixed field supplies all algebraic data needed to apply
-the cyclic prime-power case with exponent one. -/
-theorem primeOrderFixedField_threeSeven_data
-    (hdegree : 1 < Module.finrank K L) :
-    let K' :=
-      primeOrderFixedField
-        (K := K) (L := L) hdegree
-    let p :=
-      fixedFieldPrime
-        (K := K) (L := L) hdegree
-    p.Prime ∧
-      IsGalois K' L ∧
-      IsCyclic (L ≃ₐ[K'] L) ∧
-      Nat.card (L ≃ₐ[K'] L) = p := by
-  dsimp
-  exact
-    ⟨fixedFieldPrime_prime
-        (K := K) (L := L) hdegree,
-      inferInstance,
-      inferInstance,
-      primeOrderFixedField_card_aut
-        (K := K) (L := L) hdegree⟩
 
-/-- The finite-place ascent bridge specialized to the chosen
-prime-order fixed field `K'`. -/
-theorem finitePlaceSplitsCompletely_over_primeOrderFixedField_of_liesAbove
-    (hdegree : 1 < Module.finrank K L)
-    (v : HeightOneSpectrum (𝓞 K))
-    (v' :
-      HeightOneSpectrum
-        (𝓞 (primeOrderFixedField
-          (K := K) (L := L) hdegree)))
-    (hAbove :
-      FinitePlaceLiesAbove
-        (K := K)
-        (M := primeOrderFixedField
-          (K := K) (L := L) hdegree)
-        v v')
-    (hsplit :
-      FinitePlaceSplitsCompletely
-        (K := K) (L := L) v) :
-    FinitePlaceSplitsCompletely
-      (K := primeOrderFixedField
-        (K := K) (L := L) hdegree)
-      (L := L) v' := by
-  exact
-    finitePlaceSplitsCompletely_over_intermediate_of_liesAbove
-      (K := K)
-      (M := primeOrderFixedField
-        (K := K) (L := L) hdegree)
-      (L := L)
-      v v' hAbove hsplit
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end PrimeOrderFinitePlaces
 

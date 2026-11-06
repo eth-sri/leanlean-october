@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AbstractClassFieldTheory.Degree.ValuationLaws
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -126,7 +129,7 @@ theorem oneValue_coe (v : ValuationData D A) :
 
 /-- **the prime-element definition.** A prime element has normalized value `1`. -/
 def IsPrimeElement (v : ValuationData D A) (K : FiniteAbstractField G)
-    (π : ambientFixedAddSubgroup A K.field) : Prop :=
+    (π : ambientFixedAddSubgroup A K.field)  :=
   v.valuationAt K π = v.oneValue
 
 /-- **the prime-element definition.** The additive form of the unit group
@@ -154,35 +157,29 @@ theorem valuationAt_fixedFieldInclusion_of_unramified
         (fixedFieldInclusion A E.base.field E.field.field E.below a) =
       v.valuationAt E.base a := by
   let EF := E.toFiniteAbstractExtension
-  have hfeq : (E.residueDegree D : ℕ) = (E.degree : ℕ) :=
+  have hfeq  :=
     E.residueDegree_eq_degree_of_isUnramified D hUn
   apply Subtype.ext
   apply zHatMulNat_injective (E.residueDegree D).property
   calc
     (E.residueDegree D : ℕ) •
         ((v.valuationAt E.field
-          (fixedFieldInclusion A E.base.field E.field.field E.below a) :
-          v.valueGroup) : ZHat) =
+          (fixedFieldInclusion A E.base.field E.field.field E.below a)) : ZHat) =
       ((v.valuationAt E.base
         (relativeNorm A E.base.field E.field.field E.below
-          (fixedFieldInclusion A E.base.field E.field.field E.below a)) :
-          v.valueGroup) : ZHat) :=
+          (fixedFieldInclusion A E.base.field E.field.field E.below a))) : ZHat) :=
         v.normalizedValuation_tower E
           (fixedFieldInclusion A E.base.field E.field.field E.below a)
-    _ = ((v.valuationAt E.base ((E.degree : ℕ) • a) :
-          v.valueGroup) : ZHat) := by
+    _ = ((v.valuationAt E.base ((E.degree : ℕ) • a)) : ZHat) := by
         rw [show relativeNorm A E.base.field E.field.field E.below
             (fixedFieldInclusion A E.base.field E.field.field E.below a) =
               (E.degree : ℕ) • a by
-          simpa [EF, FiniteAbstractFieldExtension.toFiniteAbstractExtension,
-              FiniteAbstractFieldExtension.degree] using
-                relativeNorm_fixedFieldInclusion A EF a]
+          exact relativeNorm_fixedFieldInclusion A EF a]
     _ = (E.degree : ℕ) •
-        ((v.valuationAt E.base a : v.valueGroup) : ZHat) := by
-          exact congrArg Subtype.val
+        ((v.valuationAt E.base a) : ZHat) := congrArg Subtype.val
             (map_nsmul (v.valuationAt E.base) (E.degree : ℕ) a)
     _ = (E.residueDegree D : ℕ) •
-        ((v.valuationAt E.base a : v.valueGroup) : ZHat) := by
+        ((v.valuationAt E.base a) : ZHat) := by
           rw [hfeq]
 
 /-- A prime element remains prime in an unramified extension. -/
@@ -210,14 +207,13 @@ theorem norm_prime_of_totallyRamified (v : ValuationData D A)
   have hresidue : (E.residueDegree D : ℕ) = 1 :=
     E.toFiniteAbstractExtension.residueDegree_eq_one_of_isTotallyRamified D hTot
   change (E.residueDegree D : ℕ) •
-      ((v.valuationAt E.field π : v.valueGroup) : ZHat) =
+      ((v.valuationAt E.field π) : ZHat) =
     ((v.valuationAt E.base
-      (relativeNorm A E.base.field E.field.field E.below π) :
-        v.valueGroup) : ZHat) at htower
+      (relativeNorm A E.base.field E.field.field E.below π)) : ZHat) at htower
   rw [hresidue, one_nsmul] at htower
   rw [IsPrimeElement] at hπ ⊢
   apply Subtype.ext
-  exact htower.symm.trans (congrArg Subtype.val hπ)
+  apply htower.symm.trans <;> aesop
 
 end ValuationData
 

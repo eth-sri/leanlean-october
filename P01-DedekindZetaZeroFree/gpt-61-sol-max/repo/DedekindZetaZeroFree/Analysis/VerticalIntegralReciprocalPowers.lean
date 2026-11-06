@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.MellinVerticalIntegral
 
 @[expose] public section
+
 
 noncomputable section
 open MeasureTheory Filter
@@ -31,13 +34,15 @@ private lemma norm_lower (a : ℝ) (t : ℝ) :
     have h3 : (1 + |a|) * |a| ≤ (1 + |a|) * ‖(a : ℂ) + (t : ℂ) * Complex.I‖ :=
       mul_le_mul_of_nonneg_left ha (by linarith [abs_nonneg a])
     linarith
-  · have h2 : (1 + |t|) * |a| ≤ (1 + |a|) * |t| := by
-      nlinarith [abs_nonneg a, abs_nonneg t]
+  · 
     have h3 : (1 + |a|) * |t| ≤ (1 + |a|) * ‖(a : ℂ) + (t : ℂ) * Complex.I‖ :=
       mul_le_mul_of_nonneg_left ht (by linarith [abs_nonneg a])
     linarith
 
-private lemma norm_zpow_bound (a : ℝ) (ha : a ≠ 0) {m : ℕ} (hm : 2 ≤ m) (t : ℝ) :
+section
+variable (a : ℝ) (ha : a ≠ 0) {m : ℕ} (hm : 2 ≤ m)
+include a ha m hm
+private lemma norm_zpow_bound   (t : ℝ) :
     ‖((a : ℂ) + (t : ℂ) * Complex.I) ^ (-(m : ℤ))‖ ≤
       ((1 + |a|) / |a|) ^ m * (1 + t ^ 2)⁻¹ := by
   set r : ℝ := ‖(a : ℂ) + (t : ℂ) * Complex.I‖ with hr
@@ -76,7 +81,7 @@ private lemma norm_zpow_bound (a : ℝ) (ha : a ≠ 0) {m : ℕ} (hm : 2 ≤ m) 
     _ ≤ ((1 + |a|) / |a|) ^ m * (1 + t ^ 2)⁻¹ :=
         mul_le_mul_of_nonneg_left h3 (by positivity)
 
-private lemma integrable_shift_zpow (a : ℝ) (ha : a ≠ 0) {m : ℕ} (hm : 2 ≤ m) :
+private lemma integrable_shift_zpow   :
     Integrable (fun t : ℝ => ((a : ℂ) + (t : ℂ) * Complex.I) ^ (-(m : ℤ))) volume := by
   have hne : ∀ t : ℝ, (a : ℂ) + (t : ℂ) * Complex.I ≠ 0 := by
     intro t h
@@ -91,7 +96,7 @@ private lemma integrable_shift_zpow (a : ℝ) (ha : a ≠ 0) {m : ℕ} (hm : 2 �
     hcont.aestronglyMeasurable ?_
   exact Eventually.of_forall fun t => norm_zpow_bound a ha hm t
 
-private lemma hasDerivAt_prim (a : ℝ) (ha : a ≠ 0) {m : ℕ} (hm : 2 ≤ m) (t : ℝ) :
+private lemma hasDerivAt_prim   (t : ℝ) :
     HasDerivAt (fun t : ℝ =>
         ((a : ℂ) + (t : ℂ) * Complex.I) ^ (1 - (m : ℤ)) *
           (Complex.I * ((1 - (m : ℤ) : ℤ) : ℂ))⁻¹)
@@ -121,6 +126,8 @@ private lemma hasDerivAt_prim (a : ℝ) (ha : a ≠ 0) {m : ℕ} (hm : 2 ≤ m) 
     ring
   rw [h1, mul_inv_cancel₀ hIn, mul_one]
   rw [show (1 - (m : ℤ)) - 1 = -(m : ℤ) by omega]
+end
+
 
 private lemma tendsto_prim_of (a : ℝ) {m : ℕ} {l : Filter ℝ}
     (hR : Tendsto (fun t : ℝ => ‖(a : ℂ) + (t : ℂ) * Complex.I‖) l atTop)
@@ -136,7 +143,10 @@ private lemma tendsto_prim_of (a : ℝ) {m : ℕ} {l : Filter ℝ}
   filter_upwards with t
   rw [norm_mul, norm_zpow]
 
-private lemma tendsto_prim_atTop (a : ℝ) (ha : a ≠ 0) {m : ℕ} (hm : 2 ≤ m) :
+section
+variable (a : ℝ) (ha : a ≠ 0) {m : ℕ} (hm : 2 ≤ m)
+include a ha m hm
+private lemma tendsto_prim_atTop   :
     Tendsto (fun t : ℝ => ((a : ℂ) + (t : ℂ) * Complex.I) ^ (1 - (m : ℤ)) *
         (Complex.I * ((1 - (m : ℤ) : ℤ) : ℂ))⁻¹) atTop (𝓝 0) := by
   refine tendsto_prim_of a ?_ (by omega)
@@ -144,7 +154,7 @@ private lemma tendsto_prim_atTop (a : ℝ) (ha : a ≠ 0) {m : ℕ} (hm : 2 ≤ 
   have h := Complex.abs_im_le_norm ((a : ℂ) + (t : ℂ) * Complex.I)
   rwa [im_shift] at h
 
-private lemma tendsto_prim_atBot (a : ℝ) (ha : a ≠ 0) {m : ℕ} (hm : 2 ≤ m) :
+private lemma tendsto_prim_atBot   :
     Tendsto (fun t : ℝ => ((a : ℂ) + (t : ℂ) * Complex.I) ^ (1 - (m : ℤ)) *
         (Complex.I * ((1 - (m : ℤ) : ℤ) : ℂ))⁻¹) atBot (𝓝 0) := by
   refine tendsto_prim_of a ?_ (by omega)
@@ -152,11 +162,13 @@ private lemma tendsto_prim_atBot (a : ℝ) (ha : a ≠ 0) {m : ℕ} (hm : 2 ≤ 
   have h := Complex.abs_im_le_norm ((a : ℂ) + (t : ℂ) * Complex.I)
   rwa [im_shift] at h
 
-private lemma integral_shift_zpow_eq_zero (a : ℝ) (ha : a ≠ 0) {m : ℕ} (hm : 2 ≤ m) :
+private lemma integral_shift_zpow_eq_zero   :
     ∫ t : ℝ, ((a : ℂ) + (t : ℂ) * Complex.I) ^ (-(m : ℤ)) = 0 := by
   have h := integral_of_hasDerivAt_of_tendsto (hasDerivAt_prim a ha hm)
     (integrable_shift_zpow a ha hm) (tendsto_prim_atBot a ha hm) (tendsto_prim_atTop a ha hm)
   simpa using h
+end
+
 
 private lemma shift_sub_eq (c p t : ℝ) :
     (c : ℂ) + (t : ℂ) * Complex.I - (p : ℂ) = ((c - p : ℝ) : ℂ) + (t : ℂ) * Complex.I := by
@@ -167,12 +179,12 @@ private lemma one_div_pow_eq_zpow (z : ℂ) (m : ℕ) : 1 / z ^ m = z ^ (-(m : �
   rw [one_div, zpow_neg, zpow_natCast]
 
 private lemma integral_one_div_shift_eq_zero (a : ℝ) (ha : a ≠ 0) {m : ℕ} (hm : 2 ≤ m) :
-    ∫ t : ℝ, 1 / (((a : ℝ) : ℂ) + (t : ℂ) * Complex.I) ^ m = 0 := by
-  rw [show (fun t : ℝ => 1 / (((a : ℝ) : ℂ) + (t : ℂ) * Complex.I) ^ m) =
-      (fun t : ℝ => (((a : ℝ) : ℂ) + (t : ℂ) * Complex.I) ^ (-(m : ℤ))) from by
+    ∫ t : ℝ, 1 / ((a : ℂ) + (t : ℂ) * Complex.I) ^ m = 0 := by
+  rw [show (fun t : ℝ => 1 / ((a : ℂ) + (t : ℂ) * Complex.I) ^ m) =
+      (fun t : ℝ => ((a : ℂ) + (t : ℂ) * Complex.I) ^ (-(m : ℤ))) from by
     funext t
     exact one_div_pow_eq_zpow _ m]
-  exact integral_shift_zpow_eq_zero a ha hm
+  apply integral_shift_zpow_eq_zero <;> assumption
 
 theorem verticalIntegrable_one_div_pow {c p : ℝ} (hcp : c ≠ p)
     {m : ℕ} (hm : 2 ≤ m) :
@@ -184,14 +196,16 @@ theorem verticalIntegrable_one_div_pow {c p : ℝ} (hcp : c ≠ p)
   filter_upwards with t
   rw [one_div_pow_eq_zpow, shift_sub_eq]
 
-theorem verticalIntegrable_const_mul_one_div_pow (z : ℂ)
-    {c p : ℝ} (hcp : c ≠ p) {m : ℕ} (hm : 2 ≤ m) :
+section
+variable (z : ℂ)
+    {c p : ℝ} (hcp : c ≠ p) {m : ℕ} (hm : 2 ≤ m)
+include z c p hcp m hm
+theorem verticalIntegrable_const_mul_one_div_pow   :
     Complex.VerticalIntegrable
       (fun s : ℂ => z * (1 / (s - (p : ℂ)) ^ m)) c volume :=
   (verticalIntegrable_one_div_pow hcp hm).const_mul z
 
-theorem verticalIntegral_const_mul_one_div_pow_eq_zero (z : ℂ)
-    {c p : ℝ} (hcp : c ≠ p) {m : ℕ} (hm : 2 ≤ m) :
+theorem verticalIntegral_const_mul_one_div_pow_eq_zero   :
     verticalIntegral c (fun s : ℂ => z * (1 / (s - (p : ℂ)) ^ m)) = 0 := by
   have ha : c - p ≠ 0 := sub_ne_zero.mpr hcp
   have h0 := integral_one_div_shift_eq_zero (c - p) ha hm
@@ -202,6 +216,8 @@ theorem verticalIntegral_const_mul_one_div_pow_eq_zero (z : ℂ)
     filter_upwards with t
     rw [shift_sub_eq]
   rw [integral_congr_ae hcongr, h0, mul_zero, mul_zero]
+end
+
 
 end DedekindZetaZeroFree.LargeSieve.Vendor
 

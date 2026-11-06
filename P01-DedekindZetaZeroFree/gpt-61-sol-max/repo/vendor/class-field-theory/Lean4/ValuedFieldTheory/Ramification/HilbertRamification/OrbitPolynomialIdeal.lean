@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import Mathlib.SetTheory.Cardinal.Finite
 public import ValuedFieldTheory.Ramification.HilbertRamification.FixedFieldRamification
 public import ValuedFieldTheory.Ramification.HilbertRamification.UniformizerGradedHom
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -50,7 +53,7 @@ theorem prod_X_sub_C_dvd_of_eval_eq_zero_dvf
       rcases Polynomial.dvd_iff_isRoot.mpr hroot with ⟨q, hq⟩
       have hqzero : ∀ z ∈ s, q.eval z = 0 := by
         intro z hz
-        have hzroot : p.eval z = 0 := hp z (Finset.mem_insert_of_mem hz)
+        have hzroot  := hp z (Finset.mem_insert_of_mem hz)
         have hmul : (z - a) * q.eval z = 0 := by
           rw [hq, Polynomial.eval_mul] at hzroot
           simpa using hzroot
@@ -130,7 +133,7 @@ theorem valuationSubringAutOfUniqueExtension_generator_injective
     exact ha
   apply AlgEquiv.ext
   intro a
-  let : IsFractionRing target.valuationSubring L :=
+  let  :=
     target.valuationSubring_isFractionRing
   obtain ⟨b, c, _hc, ha⟩ :=
     IsFractionRing.div_surjective (A := target.valuationSubring) a
@@ -144,7 +147,7 @@ def subgroupOrbitPolynomialDVF
     (H : Subgroup Gal(L/K)) (z : target.valuationSubring) :
     Polynomial target.valuationSubring := by
   classical
-  letI : Fintype H := Fintype.ofFinite H
+  letI  := Fintype.ofFinite H
   exact ∏ tau : H,
     (Polynomial.X - Polynomial.C
       (valuationSubringAutOfUniqueExtension
@@ -164,7 +167,7 @@ theorem subgroupOrbitPolynomialDVF_map_aut
       subgroupOrbitPolynomialDVF
         (base := base) (target := target) huniq H z := by
   classical
-  let : Fintype H := Fintype.ofFinite H
+  let  := Fintype.ofFinite H
   change
     (∏ tau : H, (Polynomial.X - Polynomial.C
       (valuationSubringAutOfUniqueExtension
@@ -185,7 +188,7 @@ theorem subgroupOrbitPolynomialDVF_map_aut
     (fun tau : H => Polynomial.X - Polynomial.C
       (valuationSubringAutOfUniqueExtension
         (base := base) (target := target) huniq tau z))
-    (fun _ => by congr 2)
+    (fun _ => rfl)
 
 /-- Every orbit-polynomial coefficient, packaged in the literal restricted
 valuation ring of the actual fixed field. -/
@@ -216,7 +219,7 @@ def cosetGeneratorDisplacementProductDVF
     (H : Subgroup Gal(L/K)) (sigma : Gal(L/K))
     (z : target.valuationSubring) : target.valuationSubring := by
   classical
-  letI : Fintype H := Fintype.ofFinite H
+  letI  := Fintype.ofFinite H
   exact ∏ tau : H,
     (valuationSubringAutOfUniqueExtension
       (base := base) (target := target) huniq (sigma * tau) z - z)
@@ -231,7 +234,7 @@ theorem subgroupOrbitPolynomialDVF_eval_self
     (subgroupOrbitPolynomialDVF
       (base := base) (target := target) huniq H z).eval z = 0 := by
   classical
-  let : Fintype H := Fintype.ofFinite H
+  let  := Fintype.ofFinite H
   simp only [subgroupOrbitPolynomialDVF, Polynomial.eval_prod,
     Polynomial.eval_sub, Polynomial.eval_X, Polynomial.eval_C]
   apply Finset.prod_eq_zero (Finset.mem_univ (⟨1, H.one_mem⟩ : H))
@@ -291,6 +294,9 @@ theorem subgroupOrbitPolynomialDVF_map_eval_eq_sign_mul_cosetProduct
             (base := base) (target := target) huniq (sigma * tau) z - z))
 
 /-- Inclusion into `O_L` intertwines the quotient automorphism with any chosen top lift. -/
+
+local notation:max "current_fixedFieldValuationSubringDVFToTarget" => fixedFieldValuationSubringDVFToTarget (K := K) (target := target)
+
 theorem fixedFieldToTarget_quotientAut_apply_dvf
     (huniq :
       RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
@@ -298,18 +304,15 @@ theorem fixedFieldToTarget_quotientAut_apply_dvf
     (H : Subgroup Gal(L/K)) [H.Normal]
     (sigma : Gal(L/K))
     (a : fixedFieldValuationSubringDVF (K := K) (target := target) H) :
-    fixedFieldValuationSubringDVFToTarget
-        (K := K) (target := target) H
+    current_fixedFieldValuationSubringDVFToTarget H
         (fixedFieldValuationSubringAutDVF
           (base := base) (target := target) huniq H
           (IsGalois.normalAutEquivQuotient H sigma) a) =
       valuationSubringAutOfUniqueExtension
         (base := base) (target := target) huniq sigma
-        (fixedFieldValuationSubringDVFToTarget
-          (K := K) (target := target) H a) := by
+        (current_fixedFieldValuationSubringDVFToTarget H a) := by
   rw [fixedFieldValuationSubringAutDVF_normalAutEquivQuotient]
-  exact fixedFieldValuationSubringDVFToTarget_aut_apply
-    (base := base) (target := target) huniq H sigma a
+  apply fixedFieldValuationSubringDVFToTarget_aut_apply
 
 omit [IsGalois K L] in
 /-- The coset product divides every top displacement coming from the actual
@@ -327,20 +330,17 @@ theorem cosetGeneratorDisplacementProductDVF_dvd_fixed_displacement
         (base := base) (target := target) huniq H sigma z ∣
       valuationSubringAutOfUniqueExtension
           (base := base) (target := target) huniq sigma
-          (fixedFieldValuationSubringDVFToTarget
-            (K := K) (target := target) H a) -
-        fixedFieldValuationSubringDVFToTarget
-          (K := K) (target := target) H a := by
+          (current_fixedFieldValuationSubringDVFToTarget H a) -
+        current_fixedFieldValuationSubringDVFToTarget H a := by
   classical
   let : Fintype H := Fintype.ofFinite H
-  let aL := fixedFieldValuationSubringDVFToTarget
-    (K := K) (target := target) H a
+  let aL := current_fixedFieldValuationSubringDVFToTarget H a
   have ha_adjoin : aL ∈ Algebra.adjoin base.valuationSubring
       ({z} : Set target.valuationSubring) := by rw [hz]; simp
   rw [Algebra.adjoin_singleton_eq_range_aeval] at ha_adjoin
   rcases ha_adjoin with ⟨g, hg⟩
-  have hg' : Polynomial.aeval z g = aL := by simpa using hg
-  let p : Polynomial target.valuationSubring :=
+  have hg' : Polynomial.aeval z g = aL := hg
+  let p  :=
     g.map (algebraMap base.valuationSubring target.valuationSubring) -
       Polynomial.C aL
   let r : H → target.valuationSubring := fun tau =>
@@ -435,8 +435,7 @@ theorem cosetGeneratorDisplacementProductDVF_mem_map_fixedFieldDisplacementIdeal
     (sigma : Gal(L/K)) (z : target.valuationSubring) :
     cosetGeneratorDisplacementProductDVF
         (base := base) (target := target) huniq H sigma z ∈
-      Ideal.map (fixedFieldValuationSubringDVFToTarget
-        (K := K) (target := target) H)
+      Ideal.map (current_fixedFieldValuationSubringDVFToTarget H)
         (fixedFieldDisplacementIdealDVF
           (base := base) (target := target) huniq H
           (IsGalois.normalAutEquivQuotient H sigma)) := by
@@ -446,10 +445,9 @@ theorem cosetGeneratorDisplacementProductDVF_mem_map_fixedFieldDisplacementIdeal
     (base := base) (target := target) huniq H z
   let es := valuationSubringAutOfUniqueExtension
     (base := base) (target := target) huniq sigma
-  let q : Polynomial target.valuationSubring :=
+  let q  :=
     f.map es.toRingHom - f
-  let I := Ideal.map (fixedFieldValuationSubringDVFToTarget
-    (K := K) (target := target) H)
+  let I := Ideal.map (current_fixedFieldValuationSubringDVFToTarget H)
     (fixedFieldDisplacementIdealDVF
       (base := base) (target := target) huniq H
       (IsGalois.normalAutEquivQuotient H sigma))
@@ -466,23 +464,18 @@ theorem cosetGeneratorDisplacementProductDVF_mem_map_fixedFieldDisplacementIdeal
             (IsGalois.normalAutEquivQuotient H sigma) :=
       Ideal.subset_span ⟨c, rfl⟩
     have hmap := Ideal.mem_map_of_mem
-      (fixedFieldValuationSubringDVFToTarget
-        (K := K) (target := target) H) hgen
+      (current_fixedFieldValuationSubringDVFToTarget H) hgen
     have hc :
-        fixedFieldValuationSubringDVFToTarget
-            (K := K) (target := target) H c =
+        current_fixedFieldValuationSubringDVFToTarget H c =
           (subgroupOrbitPolynomialDVF
             (base := base) (target := target) huniq H z).coeff n :=
       rfl
     have hmap' :
         valuationSubringAutOfUniqueExtension
               (base := base) (target := target) huniq sigma
-              (fixedFieldValuationSubringDVFToTarget
-                (K := K) (target := target) H c) -
-            fixedFieldValuationSubringDVFToTarget
-              (K := K) (target := target) H c ∈
-          Ideal.map (fixedFieldValuationSubringDVFToTarget
-            (K := K) (target := target) H)
+              (current_fixedFieldValuationSubringDVFToTarget H c) -
+            current_fixedFieldValuationSubringDVFToTarget H c ∈
+          Ideal.map (current_fixedFieldValuationSubringDVFToTarget H)
             (fixedFieldDisplacementIdealDVF
               (base := base) (target := target) huniq H
               (IsGalois.normalAutEquivQuotient H sigma)) := by
@@ -519,10 +512,8 @@ theorem span_cosetGeneratorDisplacementProduct_eq_map_fixedFieldDisplacementIdea
     (hz : Algebra.adjoin base.valuationSubring
       ({z} : Set target.valuationSubring) = ⊤) :
     Ideal.span (Set.singleton (cosetGeneratorDisplacementProductDVF
-        (base := base) (target := target) huniq H sigma z) :
-      Set target.valuationSubring) =
-      Ideal.map (fixedFieldValuationSubringDVFToTarget
-        (K := K) (target := target) H)
+        (base := base) (target := target) huniq H sigma z)) =
+      Ideal.map (current_fixedFieldValuationSubringDVFToTarget H)
         (fixedFieldDisplacementIdealDVF
           (base := base) (target := target) huniq H
           (IsGalois.normalAutEquivQuotient H sigma)) := by
@@ -532,8 +523,7 @@ theorem span_cosetGeneratorDisplacementProduct_eq_map_fixedFieldDisplacementIdea
     change d = cosetGeneratorDisplacementProductDVF
       (base := base) (target := target) huniq H sigma z at hd
     subst d
-    exact cosetGeneratorDisplacementProductDVF_mem_map_fixedFieldDisplacementIdeal
-      (base := base) (target := target) huniq H sigma z
+    apply cosetGeneratorDisplacementProductDVF_mem_map_fixedFieldDisplacementIdeal
   · rw [Ideal.map_le_iff_le_comap]
     change Ideal.span
       {d | ∃ a : fixedFieldValuationSubringDVF
@@ -543,18 +533,15 @@ theorem span_cosetGeneratorDisplacementProduct_eq_map_fixedFieldDisplacementIdea
           (IsGalois.normalAutEquivQuotient H sigma) a - a} ≤ _
     rw [Ideal.span_le]
     rintro d ⟨a, rfl⟩
-    change fixedFieldValuationSubringDVFToTarget
-        (K := K) (target := target) H
+    change current_fixedFieldValuationSubringDVFToTarget H
         (fixedFieldValuationSubringAutDVF
           (base := base) (target := target) huniq H
           (IsGalois.normalAutEquivQuotient H sigma) a - a) ∈
       Ideal.span (Set.singleton (cosetGeneratorDisplacementProductDVF
-        (base := base) (target := target) huniq H sigma z) :
-          Set target.valuationSubring)
+        (base := base) (target := target) huniq H sigma z))
     rw [map_sub, fixedFieldToTarget_quotientAut_apply_dvf]
     apply Ideal.mem_span_singleton.mpr
-    exact cosetGeneratorDisplacementProductDVF_dvd_fixed_displacement
-      (base := base) (target := target) huniq H sigma hz a
+    apply cosetGeneratorDisplacementProductDVF_dvd_fixed_displacement <;> assumption
 
 end Higher
 end RamificationTheory.HilbertRamification

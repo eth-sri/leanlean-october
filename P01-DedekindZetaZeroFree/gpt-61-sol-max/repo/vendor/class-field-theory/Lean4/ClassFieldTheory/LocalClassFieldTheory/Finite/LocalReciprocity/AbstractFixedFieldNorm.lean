@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.LocalClassFieldTheory.Finite.LocalReciprocity.AbstractFixedFieldUnits
 public import ClassFieldTheory.LocalClassFieldTheory.Finite.LocalReciprocity.HenselianValuationBase
 public import ClassFieldTheory.LocalClassFieldTheory.Finite.LocalReciprocity.SeparableFixedFieldNorm
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -59,15 +62,7 @@ theorem relativeNorm_coe_eq_of_closedSubgroup_eq
     ((relativeNorm A B C hCB x : ambientFixedAddSubgroup A B) : A.V) =
       ((relativeNorm A B' C' hC'B' x' :
         ambientFixedAddSubgroup A B') : A.V) := by
-  subst B'
-  subst C'
-  have hle : hCB = hC'B' := Subsingleton.elim _ _
-  subst hC'B'
-  have hfin : hfinite = hfinite' := Subsingleton.elim _ _
-  subst hfinite'
-  have hxx' : x = x' := Subtype.ext hx
-  subst x'
-  rfl
+  aesop
 
 /-- For an arbitrary finite separable abstract field, the abstract class-formation norm on
 fixed coefficients has the same underlying field element as the ordinary
@@ -86,7 +81,7 @@ theorem normToBase_abstractFixedFieldUnit_val_of_isSeparable
       algebraMap K Ω (Algebra.norm K
         (x : abstractFixedField K Ω H)) := by
   let E := abstractFixedField K Ω H
-  let y : ambientFixedAddSubgroup (galoisAmbientUnitsRep K Ω) H :=
+  let y  :=
     abstractFixedFieldUnitsEquivGaloisFixed K Ω H (Additive.ofMul x)
   let yE := intermediateFieldUnitsEquivGaloisFixed K Ω E (Additive.ofMul x)
   have hy : yE.1 = y.1 := by
@@ -158,8 +153,7 @@ theorem localBaseValuation_normToBase_abstractFixedFieldUnit
         normToBase_abstractFixedFieldUnit_val_of_isSeparable
           K (SeparableClosure K) H x
       _ = algebraMap K (SeparableClosure K)
-          ((normUnits K E x : Kˣ) : K) := by
-        rw [LocalFieldTheory.normUnits_apply_coe]
+          ((normUnits K E x) : K) := rfl
       _ =
           ((Additive.toMul
             ((baseFieldUnitsEquiv K
@@ -236,8 +230,7 @@ theorem localBaseValuation_comp_normToBase_range_eq_residueFinrank
                 (Additive.toMul x))) =
           (f : Int) *
             LocalFieldTheory.IsNonarchimedeanLocalField.valuationMap
-              (abstractFixedField K (SeparableClosure K) H) x := by
-      exact hnorm
+              (abstractFixedField K (SeparableClosure K) H) x := hnorm
     rw [hnorm', mem_nsmulImage_iff]
     refine ⟨Int.castRingHom ZHat
         (LocalFieldTheory.IsNonarchimedeanLocalField.valuationMap
@@ -272,9 +265,8 @@ theorem localBaseValuation_comp_normToBase_range_eq_residueFinrank
                 (Additive.toMul x))) =
           (f : Int) *
             LocalFieldTheory.IsNonarchimedeanLocalField.valuationMap
-              (abstractFixedField K (SeparableClosure K) H) x := by
-      exact hnorm
-    rw [hnorm', hx]
+              (abstractFixedField K (SeparableClosure K) H) x := hnorm
+    rw [hnorm', LocalFieldTheory.IsNonarchimedeanLocalField.valuationMap_apply, hx]
     calc
       Int.castRingHom ZHat
           ((f : Int) * m) =

@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.LocalField.Analytic.DenominatorValuation
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.PrincipalUnitPadicAction.AdicPadicModule
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -44,19 +47,22 @@ variable {K : Type u} [Field K]
 
 open Internal
 
+section
+variable (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
+    [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
+    [Finite (IsLocalRing.ResidueField v.valuationSubring)]
+include v
 /-- Compare the type-level adic model with the principal-unit carrier under
 the canonical topology of a normalized complete discrete valuation. -/
 noncomputable def adicPrincipalUnitsContinuousAddEquivUnderlyingOfWithZeroValuation
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
-    [Finite (IsLocalRing.ResidueField v.valuationSubring)] :
+      :
     let F : LocalField.{u, 0} K := LocalField.ofWithZeroValuation v
     letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
     AdicPrincipalUnits F.toCompleteDVF ≃ₜ+
       Additive
         ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF) 1) := by
-  let F : LocalField.{u, 0} K := LocalField.ofWithZeroValuation v
-  letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
+  let F  := LocalField.ofWithZeroValuation v
+  letI  := Valued.mk' v
   letI : ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete
       (Valued.v : _root_.Valuation K
         (WithZero (Multiplicative ℤ))) := by
@@ -70,8 +76,7 @@ noncomputable def adicPrincipalUnitsContinuousAddEquivUnderlyingOfWithZeroValuat
         (LubinTate.Valuations.uniformizerPowerIdeal π 1).adicTopology := by
     have hmax :
         (inferInstance : TopologicalSpace F.toCompleteDVF.valuationSubring) =
-          F.toCompleteDVF.maximalIdeal.adicTopology := by
-      exact ValuationTheory.Valuations.rankOneDiscreteValuationSubring_isAdic
+          F.toCompleteDVF.maximalIdeal.adicTopology := ValuationTheory.Valuations.rankOneDiscreteValuationSubring_isAdic
         (K := K) (Gamma := WithZero (Multiplicative ℤ))
     have hideal : LubinTate.Valuations.uniformizerPowerIdeal π 1 =
         F.toCompleteDVF.maximalIdeal := by
@@ -118,8 +123,7 @@ noncomputable def adicPrincipalUnitsContinuousAddEquivUnderlyingOfWithZeroValuat
         (AdicPrincipalUnits.equiv F.toCompleteDVF).symm :=
     continuous_induced_rng.2 (continuous_id_of_le le_rfl)
   have hcontinuous : Continuous
-      (AdicPrincipalUnits.equiv F.toCompleteDVF) := by
-    exact Eq.mpr
+      (AdicPrincipalUnits.equiv F.toCompleteDVF) := Eq.mpr
       (congrArg
         (fun t : TopologicalSpace
             (Additive
@@ -135,8 +139,7 @@ noncomputable def adicPrincipalUnitsContinuousAddEquivUnderlyingOfWithZeroValuat
         hcarrier)
       hcontinuousAdic
   have hcontinuous_symm : Continuous
-      (AdicPrincipalUnits.equiv F.toCompleteDVF).symm := by
-    exact Eq.mpr
+      (AdicPrincipalUnits.equiv F.toCompleteDVF).symm := Eq.mpr
       (congrArg
         (fun t : TopologicalSpace
             (Additive
@@ -157,42 +160,40 @@ noncomputable def adicPrincipalUnitsContinuousAddEquivUnderlyingOfWithZeroValuat
       continuous_invFun := hcontinuous_symm }
     (fun _ _ => rfl)
 
-/--
-The continuous additive comparison from adic principal units to the underlying local-field model
-preserves `ℤ_p`-scalar multiplication.
--/
-@[simp] theorem adicPrincipalUnitsContinuousAddEquivUnderlyingOfWithZeroValuation_map_smul
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
-    [Finite (IsLocalRing.ResidueField v.valuationSubring)] :
-    let F : LocalField.{u, 0} K := LocalField.ofWithZeroValuation v
-    letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-    ∀ (a : ℤ_[F.residueCharacteristic])
-      (x : AdicPrincipalUnits F.toCompleteDVF),
-      adicPrincipalUnitsContinuousAddEquivUnderlyingOfWithZeroValuation v
-          (a • x) =
-        a • adicPrincipalUnitsContinuousAddEquivUnderlyingOfWithZeroValuation
-          v x := by
-  let F : LocalField.{u, 0} K := LocalField.ofWithZeroValuation v
-  let : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-  dsimp only
-  intro a x
-  exact (AdicPrincipalUnits.linearEquivUnderlying F).map_smul a x
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The same canonical action is jointly continuous for the topology carried
 directly by a standard `ℤᵐ⁰`-valued complete discrete valuation.  The bridge
 is the equality between the inherited valuation topology on the valuation
 ring and its maximal-ideal adic topology. -/
 theorem principalUnitPadicContinuousSMulOfWithZeroValuation
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
-    [Finite (IsLocalRing.ResidueField v.valuationSubring)] :
+      :
     let F : LocalField.{u, 0} K := LocalField.ofWithZeroValuation v
     letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
     ContinuousSMul ℤ_[F.residueCharacteristic]
       (Additive ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF) 1)) := by
-  let F : LocalField.{u, 0} K := LocalField.ofWithZeroValuation v
-  let : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
+  let F  := LocalField.ofWithZeroValuation v
+  let  := Valued.mk' v
   let e :=
     adicPrincipalUnitsContinuousAddEquivUnderlyingOfWithZeroValuation v
   refine ⟨?_⟩
@@ -207,15 +208,13 @@ theorem principalUnitPadicContinuousSMulOfWithZeroValuation
 /-- Continuous addition on `Additive U^1` for the direct normalized
 valuation topology. -/
 theorem principalUnitPadicContinuousAddOfWithZeroValuation
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
-    [Finite (IsLocalRing.ResidueField v.valuationSubring)] :
+      :
     let F : LocalField.{u, 0} K := LocalField.ofWithZeroValuation v
     letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
     ContinuousAdd (Additive
       ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF) 1)) := by
-  let F : LocalField.{u, 0} K := LocalField.ofWithZeroValuation v
-  let : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
+  let F  := LocalField.ofWithZeroValuation v
+  let  := Valued.mk' v
   let e :=
     adicPrincipalUnitsContinuousAddEquivUnderlyingOfWithZeroValuation v
   refine ⟨?_⟩
@@ -229,6 +228,8 @@ theorem principalUnitPadicContinuousAddOfWithZeroValuation
       (e.continuous_symm.comp continuous_snd)
   have htransport := e.continuous.comp (continuous_add.comp hpair)
   exact htransport
+end
+
 
 end higherPrincipalUnitGroup
 end CompleteDVF

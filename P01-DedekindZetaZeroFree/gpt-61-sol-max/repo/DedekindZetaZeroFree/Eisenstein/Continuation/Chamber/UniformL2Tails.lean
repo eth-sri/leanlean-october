@@ -992,23 +992,26 @@ abbrev level := KPContActualAllCuspSource.level F ζ hζ C R P H U
 abbrev Base := KPContActualAllCuspSource.Base F ζ hζ C R P H U
 abbrev Covered := KPContActualAllCuspSource.Covered F ζ hζ C R P H U
 abbrev Sector := KPContActualAllCuspSource.Sector F ζ hζ C R P H U
+
+local notation:max "current_level" => level F ζ hζ C R P H U
+
 abbrev Sections := KPContSectorSmoothFramesSupport.Sections F ζ hζ
-  (level F ζ hζ C R P H U) R P H
+  (current_level) R P H
 abbrev SmoothSections := KPContActualAllCuspSource.SmoothSections F ζ hζ C R P H U
 abbrev BorelL2Sections := KPContSectorLineL2Isometry.BorelL2Sections F ζ hζ
-  (level F ζ hζ C R P H U) R P H
+  (current_level) R P H
 abbrev measure := KPContActualAllCuspSource.measure F ζ hζ C R P H U
 abbrev baseMeasure := KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P
-  (level F ζ hζ C R P H U)
-abbrev Frame (i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount) :=
+  (current_level)
+abbrev Frame (i : Fin (H.atlas (current_level)).componentCount) :=
   KPContActualChamberCasimirJets.Frame F ζ hζ C R P H U i
 
 abbrev GradientFamily := KPContActualCotangentMeasurableFamilies.MeasurableCotangentFamily
-  F ζ hζ (level F ζ hζ C R P H U) R P H
+  F ζ hζ (current_level) R P H
 
 def tail (A : ℝ) : Set (Base F ζ hζ C R P H U) :=
-  KPCuspCutoffGraph.highEnds F ζ hζ H.totallyComplex (level F ζ hζ C R P H U)
-    (H.atlas (level F ζ hζ C R P H U)) A
+  KPCuspCutoffGraph.highEnds F ζ hζ H.totallyComplex (current_level)
+    (H.atlas (current_level)) A
 
 variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
 variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
@@ -1020,23 +1023,29 @@ variable (χ : KPContActualAllCuspSource.Cusps F ζ hζ C R P H U →
 variable (source : KPContActualAllCuspSource.Source F ζ hζ C R P H U ι buffer
   KPContinuation.spectralDomain f χ)
 
+
+local notation:max "current_scalar" => KPContActualCutoffSmoothDescent.scalar F ζ hζ C R P H U
+
 def g (k : ℕ) (s : ℂ) (x : Covered F ζ hζ C R P H U) : ℂ :=
   iteratedDerivWithin k (fun z =>
     KPContActualChamberNormalSeries.E F ζ hζ U ι f z
       (KPContActualChamberNormalSeries.coveredRepresentative F ζ hζ C R P H U x) -
-    KPContActualCutoffSmoothDescent.scalar F ζ hζ C R P H U (source.descent.cutoff z) x) V s
+    current_scalar (source.descent.cutoff z) x) V s
 
 def h (k : ℕ) (s : ℂ) (x : Covered F ζ hζ C R P H U) : ℂ :=
   iteratedDerivWithin k (fun z =>
-    KPContActualCutoffSmoothDescent.scalar F ζ hζ C R P H U
+    current_scalar
       (source.descent.commutator z) x) V s
+
+
+local notation:max "current_g" => g F ζ hζ C R P H U ι
 
 theorem genuine (hι : Function.Injective ι)
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain) (k : ℕ) (s : ℂ) (hs : s ∈ V) :
-    g F ζ hζ C R P H U ι f buffer χ source k s ∈
-      KPContSectorScalarLineAlgebra.GenuineCoveredScalars F ζ hζ (level F ζ hζ C R P H U) ∧
+    current_g f buffer χ source k s ∈
+      KPContSectorScalarLineAlgebra.GenuineCoveredScalars F ζ hζ (current_level) ∧
     h F ζ hζ C R P H U ι f buffer χ source k s ∈
-      KPContSectorScalarLineAlgebra.GenuineCoveredScalars F ζ hζ (level F ζ hζ C R P H U) := by
+      KPContSectorScalarLineAlgebra.GenuineCoveredScalars F ζ hζ (current_level) := by
   obtain ⟨eE, heE, -, -⟩ :=
     KPContActualChamberNormalSeries.descent_series F ζ hζ C R P H U ι f hι hf
   have hvalE : ∀ w ∈ V, ∀ x, (eE w).val x =
@@ -1046,26 +1055,26 @@ theorem genuine (hι : Function.Injective ι)
     rw [← heE w hw (KPContActualChamberNormalSeries.coveredRepresentative F ζ hζ C R P H U x),
       KPContActualChamberNormalSeries.coveredRepresentative_projection]
   let eC : ℂ → KPContSectorScalarLineAlgebra.GenuineCoveredScalars F ζ hζ
-      (level F ζ hζ C R P H U) := fun w =>
-    ((KPContSectorSmoothFramesSupport.smoothS F ζ hζ (level F ζ hζ C R P H U) R P H).symm
+      (current_level) := fun w =>
+    ((KPContSectorSmoothFramesSupport.smoothS F ζ hζ (current_level) R P H).symm
       (source.descent.cutoff w)).val
-  have hvalC : ∀ w x, (eC w).val x = KPContActualCutoffSmoothDescent.scalar F ζ hζ C R P H U
+  have hvalC : ∀ w x, (eC w).val x = current_scalar
       (source.descent.cutoff w) x := fun w x => rfl
   let eK : ℂ → KPContSectorScalarLineAlgebra.GenuineCoveredScalars F ζ hζ
-      (level F ζ hζ C R P H U) := fun w =>
-    ((KPContSectorSmoothFramesSupport.smoothS F ζ hζ (level F ζ hζ C R P H U) R P H).symm
+      (current_level) := fun w =>
+    ((KPContSectorSmoothFramesSupport.smoothS F ζ hζ (current_level) R P H).symm
       (source.descent.commutator w)).val
-  have hvalK : ∀ w x, (eK w).val x = KPContActualCutoffSmoothDescent.scalar F ζ hζ C R P H U
+  have hvalK : ∀ w x, (eK w).val x = current_scalar
       (source.descent.commutator w) x := fun w x => rfl
-  have hg : g F ζ hζ C R P H U ι f buffer χ source k s =
+  have hg : current_g f buffer χ source k s =
       fun v => iteratedDerivWithin k (fun z =>
         KPContActualChamberNormalSeries.E F ζ hζ U ι f z
           (KPContActualChamberNormalSeries.coveredRepresentative F ζ hζ C R P H U v) -
-        KPContActualCutoffSmoothDescent.scalar F ζ hζ C R P H U (source.descent.cutoff z) v) V s := by
+        current_scalar (source.descent.cutoff z) v) V s := by
     funext v; rfl
   have hh : h F ζ hζ C R P H U ι f buffer χ source k s =
       fun v => iteratedDerivWithin k (fun z =>
-        KPContActualCutoffSmoothDescent.scalar F ζ hζ C R P H U
+        current_scalar
           (source.descent.commutator z) v) V s := by
     funext v; rfl
   constructor
@@ -1075,20 +1084,20 @@ theorem genuine (hι : Function.Injective ι)
     have hsum : iteratedDerivWithin k (fun z =>
           KPContActualChamberNormalSeries.E F ζ hζ U ι f z
             (KPContActualChamberNormalSeries.coveredRepresentative F ζ hζ C R P H U
-              (KPContSectorCoveredQuotientVocabulary.z F ζ hζ (level F ζ hζ C R P H U) ε v)) -
-          KPContActualCutoffSmoothDescent.scalar F ζ hζ C R P H U (source.descent.cutoff z)
-            (KPContSectorCoveredQuotientVocabulary.z F ζ hζ (level F ζ hζ C R P H U) ε v)) V s =
+              (KPContSectorCoveredQuotientVocabulary.z F ζ hζ (current_level) ε v)) -
+          current_scalar (source.descent.cutoff z)
+            (KPContSectorCoveredQuotientVocabulary.z F ζ hζ (current_level) ε v)) V s =
         iteratedDerivWithin k (fun z =>
-          (eE z).val (KPContSectorCoveredQuotientVocabulary.z F ζ hζ (level F ζ hζ C R P H U) ε v) -
-          (eC z).val (KPContSectorCoveredQuotientVocabulary.z F ζ hζ (level F ζ hζ C R P H U) ε v)) V s :=
+          (eE z).val (KPContSectorCoveredQuotientVocabulary.z F ζ hζ (current_level) ε v) -
+          (eC z).val (KPContSectorCoveredQuotientVocabulary.z F ζ hζ (current_level) ε v)) V s :=
       iteratedDerivWithin_congr (fun z hz => by
         rw [← hvalE z hz (KPContSectorCoveredQuotientVocabulary.z F ζ hζ
-              (level F ζ hζ C R P H U) ε v),
+              (current_level) ε v),
           ← hvalC z (KPContSectorCoveredQuotientVocabulary.z F ζ hζ
-              (level F ζ hζ C R P H U) ε v)]) hs
+              (current_level) ε v)]) hs
     have hA : iteratedDerivWithin k (fun z =>
-          (eE z).val (KPContSectorCoveredQuotientVocabulary.z F ζ hζ (level F ζ hζ C R P H U) ε v) -
-          (eC z).val (KPContSectorCoveredQuotientVocabulary.z F ζ hζ (level F ζ hζ C R P H U) ε v)) V s =
+          (eE z).val (KPContSectorCoveredQuotientVocabulary.z F ζ hζ (current_level) ε v) -
+          (eC z).val (KPContSectorCoveredQuotientVocabulary.z F ζ hζ (current_level) ε v)) V s =
         iteratedDerivWithin k (fun z =>
           (KPContSectorCoveredQuotientVocabulary.chi F ζ hζ ε : ℂ) *
             ((eE z).val v - (eC z).val v)) V s :=
@@ -1104,23 +1113,23 @@ theorem genuine (hι : Function.Injective ι)
         iteratedDerivWithin k (fun z =>
           KPContActualChamberNormalSeries.E F ζ hζ U ι f z
             (KPContActualChamberNormalSeries.coveredRepresentative F ζ hζ C R P H U v) -
-          KPContActualCutoffSmoothDescent.scalar F ζ hζ C R P H U (source.descent.cutoff z) v) V s :=
+          current_scalar (source.descent.cutoff z) v) V s :=
       iteratedDerivWithin_congr (fun z hz => by rw [hvalE z hz v, hvalC z v]) hs
     rw [hsum, hA, hcm, hZ]
   · rw [hh]
     intro ε v
     simp only []
     have hsum : iteratedDerivWithin k (fun z =>
-          KPContActualCutoffSmoothDescent.scalar F ζ hζ C R P H U (source.descent.commutator z)
-            (KPContSectorCoveredQuotientVocabulary.z F ζ hζ (level F ζ hζ C R P H U) ε v)) V s =
+          current_scalar (source.descent.commutator z)
+            (KPContSectorCoveredQuotientVocabulary.z F ζ hζ (current_level) ε v)) V s =
         iteratedDerivWithin k (fun z =>
           (eK z).val (KPContSectorCoveredQuotientVocabulary.z F ζ hζ
-            (level F ζ hζ C R P H U) ε v)) V s :=
+            (current_level) ε v)) V s :=
       iteratedDerivWithin_congr (fun z _ => hvalK z
-        (KPContSectorCoveredQuotientVocabulary.z F ζ hζ (level F ζ hζ C R P H U) ε v)) hs
+        (KPContSectorCoveredQuotientVocabulary.z F ζ hζ (current_level) ε v)) hs
     have hA : iteratedDerivWithin k (fun z =>
           (eK z).val (KPContSectorCoveredQuotientVocabulary.z F ζ hζ
-            (level F ζ hζ C R P H U) ε v)) V s =
+            (current_level) ε v)) V s =
         iteratedDerivWithin k (fun z =>
           (KPContSectorCoveredQuotientVocabulary.chi F ζ hζ ε : ℂ) * (eK z).val v) V s :=
       iteratedDerivWithin_congr (fun z _ => (eK z).property ε v) hs
@@ -1131,7 +1140,7 @@ theorem genuine (hι : Function.Injective ι)
       iteratedDerivWithin_const_mul_field _ _
     have hZ : iteratedDerivWithin k (fun z => (eK z).val v) V s =
         iteratedDerivWithin k (fun z =>
-          KPContActualCutoffSmoothDescent.scalar F ζ hζ C R P H U
+          current_scalar
             (source.descent.commutator z) v) V s :=
       (iteratedDerivWithin_congr (fun z _ => hvalK z v) hs).symm
     rw [hsum, hA, hcm, hZ]
@@ -1140,19 +1149,22 @@ variable (hι : Function.Injective ι)
 variable (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
 
 def coveredG (k : ℕ) (s : ℂ) :
-    KPContSectorScalarLineAlgebra.GenuineCoveredScalars F ζ hζ (level F ζ hζ C R P H U) :=
+    KPContSectorScalarLineAlgebra.GenuineCoveredScalars F ζ hζ (current_level) :=
   if hs : s ∈ V then ⟨_, (genuine F ζ hζ C R P H U ι f buffer χ source hι hf k s hs).1⟩ else 0
 
 def coveredH (k : ℕ) (s : ℂ) :
-    KPContSectorScalarLineAlgebra.GenuineCoveredScalars F ζ hζ (level F ζ hζ C R P H U) :=
+    KPContSectorScalarLineAlgebra.GenuineCoveredScalars F ζ hζ (current_level) :=
   if hs : s ∈ V then ⟨_, (genuine F ζ hζ C R P H U ι f buffer χ source hι hf k s hs).2⟩ else 0
 
-def lineG (k : ℕ) (s : ℂ) : Sections F ζ hζ C R P H U :=
-  KPContSectorScalarLineAlgebra.S F ζ hζ (level F ζ hζ C R P H U) R P H
+
+local notation:max "current_Sections" => Sections F ζ hζ C R P H U
+
+def lineG (k : ℕ) (s : ℂ) : current_Sections :=
+  KPContSectorScalarLineAlgebra.S F ζ hζ (current_level) R P H
     (coveredG F ζ hζ C R P H U ι f buffer χ source hι hf k s)
 
-def lineH (k : ℕ) (s : ℂ) : Sections F ζ hζ C R P H U :=
-  KPContSectorScalarLineAlgebra.S F ζ hζ (level F ζ hζ C R P H U) R P H
+def lineH (k : ℕ) (s : ℂ) : current_Sections :=
+  KPContSectorScalarLineAlgebra.S F ζ hζ (current_level) R P H
     (coveredH F ζ hζ C R P H U ι f buffer χ source hι hf k s)
 
 open KPContLocalNorm
@@ -1200,20 +1212,20 @@ private theorem E_holo (hι : Function.Injective ι)
     KPContActualChamberNormalSeries.mixedJet, KPContActualChamberNormalSeries.rightWord]
 
 private theorem source_chart_neighborhood (b : Bool)
-    (i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount)
+    (i : Fin (H.atlas (current_level)).componentCount)
     (y : KPFiniteCuspAtlas.SymmetricSpace F) :
     ∃ B : LocalBall (KPCuspLogShape.dimension F * 3),
       (KPContActualChartRestrictionDensity.coordinates F).symm y ∈ B.carrier ∧
       KPCutoffSource.ChartSmoothHolomorphicOn B
         (fun s => KPContActualAllCuspSource.chartCoefficient F ζ hζ C R P H U
           (if b then source.descent.commutator s else source.descent.cutoff s) i
-          (KPContSectorPhaseComponentCharts.phaseClass F ζ hζ (level F ζ hζ C R P H U) 1))
+          (KPContSectorPhaseComponentCharts.phaseClass F ζ hζ (current_level) 1))
         KPContinuation.spectralDomain := by
   let O := (KPContSectorPhaseComponentCharts.orbifoldChart_exists F ζ hζ
-    (level F ζ hζ C R P H U) R P H i y).some
+    (current_level) R P H i y).some
   let x := (KPContActualChartRestrictionDensity.coordinates F).symm y
   have hx : x ∈ KPContActualChartRestrictionDensity.chartDomain F ζ hζ
-      (level F ζ hζ C R P H U) R P H i y O := by
+      (current_level) R P H i y O := by
     change KPContActualChartRestrictionDensity.coordinates F x ∈ O.neighborhood
     rw [Homeomorph.apply_symm_apply]
     exact O.center_mem
@@ -1227,39 +1239,39 @@ private theorem source_chart_neighborhood (b : Bool)
   let B : LocalBall (KPCuspLogShape.dimension F * 3) := ⟨hn, x, r/2, by positivity⟩
   have hBD : KPContLocalCubeEmbedding.closedCarrier B ⊆
       KPContActualChartRestrictionDensity.chartDomain F ζ hζ
-        (level F ζ hζ C R P H U) R P H i y O :=
+        (current_level) R P H i y O :=
     (Metric.closedBall_subset_ball (by change r/2 < r; linarith)).trans hrD
   refine ⟨B, Metric.mem_ball_self B.radius_pos, ?_⟩
   have hh := source.local_holomorphy i y O
-    (KPContSectorPhaseComponentCharts.phaseClass F ζ hζ (level F ζ hζ C R P H U) 1) B hBD
+    (KPContSectorPhaseComponentCharts.phaseClass F ζ hζ (current_level) 1) B hBD
   cases b
   · exact hh.1
   · exact hh.2.1
 
 private theorem source_coefficient_formula (b : Bool) (s : ℂ)
-    (i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount)
+    (i : Fin (H.atlas (current_level)).componentCount)
     (x : Space (KPCuspLogShape.dimension F * 3)) :
     KPContActualAllCuspSource.chartCoefficient F ζ hζ C R P H U
       (if b then source.descent.commutator s else source.descent.cutoff s) i
-      (KPContSectorPhaseComponentCharts.phaseClass F ζ hζ (level F ζ hζ C R P H U) 1) x =
-    KPContActualCutoffSmoothDescent.scalar F ζ hζ C R P H U
+      (KPContSectorPhaseComponentCharts.phaseClass F ζ hζ (current_level) 1) x =
+    current_scalar
       (if b then source.descent.commutator s else source.descent.cutoff s)
       (Quotient.mk (KPContSectorCoveredQuotientVocabulary.coveredRelation F ζ hζ
-        (level F ζ hζ C R P H U))
+        (current_level))
         (KPContActualChartRestrictionDensity.coordinates F x,
-          (H.atlas (level F ζ hζ C R P H U)).representative i)) := by
+          (H.atlas (current_level)).representative i)) := by
   unfold KPContActualAllCuspSource.chartCoefficient
   rw [KPContActualChartRestrictionDensity.frameCoefficient_class,
     KPContSectorScalarLineAlgebra.S_apply]
   simp [KPContActualCutoffSmoothDescent.scalar]
 
 private theorem source_component_holo (b : Bool)
-    (i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount)
+    (i : Fin (H.atlas (current_level)).componentCount)
     (y : KPFiniteCuspAtlas.SymmetricSpace F) :
-    DifferentiableOn ℂ (fun s => KPContActualCutoffSmoothDescent.scalar F ζ hζ C R P H U
+    DifferentiableOn ℂ (fun s => current_scalar
       (if b then source.descent.commutator s else source.descent.cutoff s)
       (Quotient.mk (KPContSectorCoveredQuotientVocabulary.coveredRelation F ζ hζ
-        (level F ζ hζ C R P H U)) (y, (H.atlas (level F ζ hζ C R P H U)).representative i)))
+        (current_level)) (y, (H.atlas (current_level)).representative i)))
       KPContinuation.spectralDomain := by
   obtain ⟨B, hx, hh⟩ := source_chart_neighborhood F ζ hζ C R P H U ι f buffer χ source b i y
   apply (point_holomorphic B _ _ hh _ hx).congr
@@ -1267,14 +1279,13 @@ private theorem source_component_holo (b : Bool)
   rw [source_coefficient_formula, Homeomorph.apply_symm_apply]
 
 private theorem source_component_jet_joint (b : Bool) (k : ℕ)
-    (i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount) :
+    (i : Fin (H.atlas (current_level)).componentCount) :
     ContinuousOn (fun p : ℂ × KPFiniteCuspAtlas.SymmetricSpace F =>
-      iteratedDerivWithin k (fun z => KPContActualCutoffSmoothDescent.scalar
-        F ζ hζ C R P H U
+      iteratedDerivWithin k (fun z => current_scalar
         (if b then source.descent.commutator z else source.descent.cutoff z)
         (Quotient.mk (KPContSectorCoveredQuotientVocabulary.coveredRelation F ζ hζ
-          (level F ζ hζ C R P H U))
-          (p.2, (H.atlas (level F ζ hζ C R P H U)).representative i))) V p.1)
+          (current_level))
+          (p.2, (H.atlas (current_level)).representative i))) V p.1)
       (V ×ˢ Set.univ) := by
   apply (KPChamberL2Defect.chamber_isOpen.prod isOpen_univ).continuousOn_iff.mpr
   intro p hp
@@ -1319,12 +1330,12 @@ private theorem source_component_jet_joint (b : Bool) (k : ℕ)
   rw [source_coefficient_formula, Homeomorph.apply_symm_apply]
 
 private theorem source_component_jet_smooth (b : Bool) (k : ℕ) (s : ℂ)
-    (hs : s ∈ V) (i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount) :
+    (hs : s ∈ V) (i : Fin (H.atlas (current_level)).componentCount) :
     ContDiff ℝ (⊤ : ℕ∞) (fun y => iteratedDerivWithin k
-      (fun z => KPContActualCutoffSmoothDescent.scalar F ζ hζ C R P H U
+      (fun z => current_scalar
         (if b then source.descent.commutator z else source.descent.cutoff z)
         (Quotient.mk (KPContSectorCoveredQuotientVocabulary.coveredRelation F ζ hζ
-          (level F ζ hζ C R P H U)) (y, (H.atlas (level F ζ hζ C R P H U)).representative i))) V s) := by
+          (current_level)) (y, (H.atlas (current_level)).representative i))) V s) := by
   have hsΩ : s ∈ KPContinuation.spectralDomain := by
     change -(1 : ℝ)/6 < s.re
     change (1 : ℝ)/3 < s.re at hs
@@ -1346,23 +1357,29 @@ private theorem source_component_jet_smooth (b : Bool) (k : ℕ) (s : ℂ)
   funext w
   rw [source_coefficient_formula, Homeomorph.apply_symm_apply]
 
+
+local notation:max "current_lineG" => lineG F ζ hζ C R P H U ι
+
+
+local notation:max "current_lineH" => lineH F ζ hζ C R P H U ι
+
 theorem smooth (k : ℕ) (s : ℂ) :
-    KPContSectorSmoothFramesSupport.IsSmoothSections F ζ hζ (level F ζ hζ C R P H U) R P H
-      (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s) ∧
-    KPContSectorSmoothFramesSupport.IsSmoothSections F ζ hζ (level F ζ hζ C R P H U) R P H
-      (lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s) := by
+    KPContSectorSmoothFramesSupport.IsSmoothSections F ζ hζ (current_level) R P H
+      (current_lineG f buffer χ source hι hf k s) ∧
+    KPContSectorSmoothFramesSupport.IsSmoothSections F ζ hζ (current_level) R P H
+      (current_lineH f buffer χ source hι hf k s) := by
   by_cases hs : s ∈ V
   · have hE := KPContActualChamberCasimirJets.lineJet_smooth F ζ hζ C R P H U ι f hι hf k s hs
     have hC := source_component_jet_smooth F ζ hζ C R P H U ι f buffer χ source false k s hs
     have hK := source_component_jet_smooth F ζ hζ C R P H U ι f buffer χ source true k s hs
     constructor
     · intro i
-      have he : (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s i).val =
+      have he : (current_lineG f buffer χ source hι hf k s i).val =
           fun y => (KPContActualChamberCasimirJets.lineJet F ζ hζ C R P H U ι f hι hf k s i).val y -
-            iteratedDerivWithin k (fun z => KPContActualCutoffSmoothDescent.scalar F ζ hζ C R P H U
+            iteratedDerivWithin k (fun z => current_scalar
               (source.descent.cutoff z)
               (Quotient.mk (KPContSectorCoveredQuotientVocabulary.coveredRelation F ζ hζ
-                (level F ζ hζ C R P H U)) (y, (H.atlas (level F ζ hζ C R P H U)).representative i))) V s := by
+                (current_level)) (y, (H.atlas (current_level)).representative i))) V s := by
         funext y
         unfold lineG KPContActualChamberCasimirJets.lineJet
         rw [KPContSectorScalarLineAlgebra.S_apply, KPContSectorScalarLineAlgebra.S_apply]
@@ -1380,11 +1397,11 @@ theorem smooth (k : ℕ) (s : ℂ) :
       rw [he]
       exact (hE i).sub (hC i)
     · intro i
-      have he : (lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s i).val =
-          fun y => iteratedDerivWithin k (fun z => KPContActualCutoffSmoothDescent.scalar F ζ hζ C R P H U
+      have he : (current_lineH f buffer χ source hι hf k s i).val =
+          fun y => iteratedDerivWithin k (fun z => current_scalar
             (source.descent.commutator z)
             (Quotient.mk (KPContSectorCoveredQuotientVocabulary.coveredRelation F ζ hζ
-              (level F ζ hζ C R P H U)) (y, (H.atlas (level F ζ hζ C R P H U)).representative i))) V s := by
+              (current_level)) (y, (H.atlas (current_level)).representative i))) V s := by
         funext y
         unfold lineH
         rw [KPContSectorScalarLineAlgebra.S_apply]
@@ -1392,25 +1409,25 @@ theorem smooth (k : ℕ) (s : ℂ) :
       rw [he]
       exact hK i
   · simp only [lineG, lineH, coveredG, coveredH, dif_neg hs, map_zero]
-    exact ⟨(KPContSectorSmoothFramesSupport.smoothSections F ζ hζ (level F ζ hζ C R P H U) R P H).zero_mem,
-      (KPContSectorSmoothFramesSupport.smoothSections F ζ hζ (level F ζ hζ C R P H U) R P H).zero_mem⟩
+    exact ⟨(KPContSectorSmoothFramesSupport.smoothSections F ζ hζ (current_level) R P H).zero_mem,
+      (KPContSectorSmoothFramesSupport.smoothSections F ζ hζ (current_level) R P H).zero_mem⟩
 
 private theorem source_scalar_component (w : SmoothSections F ζ hζ C R P H U)
-    (i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount)
+    (i : Fin (H.atlas (current_level)).componentCount)
     (y : KPFiniteCuspAtlas.SymmetricSpace F) :
-    KPContActualCutoffSmoothDescent.scalar F ζ hζ C R P H U w
+    current_scalar w
       (Quotient.mk (KPContSectorCoveredQuotientVocabulary.coveredRelation F ζ hζ
-        (level F ζ hζ C R P H U)) (y, (H.atlas (level F ζ hζ C R P H U)).representative i)) =
+        (current_level)) (y, (H.atlas (current_level)).representative i)) =
       (w.val i).val y := by
   have he := congrArg (fun v => (v i).val y)
     (congrArg Subtype.val ((KPContSectorSmoothFramesSupport.smoothS F ζ hζ
-      (level F ζ hζ C R P H U) R P H).apply_symm_apply w))
+      (current_level) R P H).apply_symm_apply w))
   rw [KPContSectorSmoothFramesSupport.smoothS_apply,
     KPContSectorScalarLineAlgebra.S_apply] at he
   exact he
 
 theorem lineG_eq_series_sub_source (k : ℕ) (s : ℂ) (hs : s ∈ V) :
-    lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s =
+    current_lineG f buffer χ source hι hf k s =
       KPContActualChamberCasimirJets.lineJet F ζ hζ C R P H U ι f hι hf k s -
       KPContActualCompactSectionL2Jets.pointwiseJets
         (fun z => (source.descent.cutoff z).val) V k s := by
@@ -1435,7 +1452,7 @@ theorem lineG_eq_series_sub_source (k : ℕ) (s : ℂ) (hs : s ∈ V) :
     ((E_holo F ζ hζ U ι f hι hf
       (KPContActualChamberNormalSeries.coveredRepresentative F ζ hζ C R P H U
         (Quotient.mk (KPContSectorCoveredQuotientVocabulary.coveredRelation F ζ hζ
-          (level F ζ hζ C R P H U)) (y, (H.atlas (level F ζ hζ C R P H U)).representative i)))).contDiffOn
+          (current_level)) (y, (H.atlas (current_level)).representative i)))).contDiffOn
         KPChamberL2Defect.chamber_isOpen s hs) hC).trans ?_
   congr 1
   congr 1
@@ -1443,7 +1460,7 @@ theorem lineG_eq_series_sub_source (k : ℕ) (s : ℂ) (hs : s ∈ V) :
   exact source_scalar_component F ζ hζ C R P H U (source.descent.cutoff z) i y
 
 theorem lineH_eq_source_jet (k : ℕ) (s : ℂ) (hs : s ∈ V) :
-    lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s =
+    current_lineH f buffer χ source hι hf k s =
       KPContActualCompactSectionL2Jets.pointwiseJets
         (fun z => (source.descent.commutator z).val) V k s := by
   funext i
@@ -1456,12 +1473,15 @@ theorem lineH_eq_source_jet (k : ℕ) (s : ℂ) (hs : s ∈ V) :
   funext z
   exact source_scalar_component F ζ hζ C R P H U (source.descent.commutator z) i y
 
+
+local notation:max "current_smooth" => smooth F ζ hζ C R P H U ι
+
 def smoothG (k : ℕ) (s : ℂ) : SmoothSections F ζ hζ C R P H U :=
-  ⟨_, (smooth F ζ hζ C R P H U ι f buffer χ source hι hf k s).1⟩
+  ⟨_, (current_smooth f buffer χ source hι hf k s).1⟩
 
 private theorem actualE_component_jet_joint (hι : Function.Injective ι)
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain) (k : ℕ)
-    (i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount) :
+    (i : Fin (H.atlas (current_level)).componentCount) :
     ContinuousOn (fun p : ℂ × KPFiniteCuspAtlas.SymmetricSpace F =>
       KPContActualChamberNormalSeries.mixedJet F ζ hζ
         (KPContActualChamberNormalSeries.E F ζ hζ U ι f) k [] p.1
@@ -1497,11 +1517,11 @@ private theorem actualE_component_jet_joint (hι : Function.Injective ι)
     ⟨_,KPChamberL2Defect.chamber_isOpen.mem_nhds hp.1,_,hxK,Set.Subset.refl _⟩)
 
 private theorem lineGH_component_jet_joint (k : ℕ)
-    (i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount) :
+    (i : Fin (H.atlas (current_level)).componentCount) :
     ContinuousOn (fun p : ℂ × KPFiniteCuspAtlas.SymmetricSpace F =>
-      (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k p.1 i).val p.2) (V ×ˢ Set.univ) ∧
+      (current_lineG f buffer χ source hι hf k p.1 i).val p.2) (V ×ˢ Set.univ) ∧
     ContinuousOn (fun p : ℂ × KPFiniteCuspAtlas.SymmetricSpace F =>
-      (lineH F ζ hζ C R P H U ι f buffer χ source hι hf k p.1 i).val p.2) (V ×ˢ Set.univ) := by
+      (current_lineH f buffer χ source hι hf k p.1 i).val p.2) (V ×ˢ Set.univ) := by
   constructor
   · apply ((actualE_component_jet_joint F ζ hζ C R P H U ι f hι hf k i).sub
       (source_component_jet_joint F ζ hζ C R P H U ι f buffer χ source false k i)).congr
@@ -1527,7 +1547,7 @@ private theorem lineGH_component_jet_joint (k : ℕ)
       unfold KPContActualCutoffSmoothDescent.scalar
       rw [← KPContSectorScalarLineAlgebra.S_apply]
       have he := LinearEquiv.apply_symm_apply
-        (KPContSectorSmoothFramesSupport.smoothS F ζ hζ (level F ζ hζ C R P H U) R P H)
+        (KPContSectorSmoothFramesSupport.smoothS F ζ hζ (current_level) R P H)
         (source.descent.cutoff z)
       simpa only [Bool.false_eq_true, ite_false, KPContSectorSmoothFramesSupport.smoothS_apply] using
         (congrArg (fun v => (v.val i).val p.2) he).symm
@@ -1541,14 +1561,14 @@ private theorem lineGH_component_jet_joint (k : ℕ)
     unfold KPContActualCutoffSmoothDescent.scalar
     rw [← KPContSectorScalarLineAlgebra.S_apply]
     have he := LinearEquiv.apply_symm_apply
-      (KPContSectorSmoothFramesSupport.smoothS F ζ hζ (level F ζ hζ C R P H U) R P H)
+      (KPContSectorSmoothFramesSupport.smoothS F ζ hζ (current_level) R P H)
       (source.descent.commutator z)
     simpa only [ite_true, KPContSectorSmoothFramesSupport.smoothS_apply] using
       (congrArg (fun v => (v.val i).val p.2) he).symm
 
 private theorem incoming_cutoff_chart_holomorphic
     (a : KPContActualSectorSmoothTestModules.ActualChart
-      (U := level F ζ hζ C R P H U) (H := H)) :
+      (U := current_level) (H := H)) :
     KPContActualCompactSectionL2Jets.ChartHolomorphicOn a
       (fun t => (source.descent.cutoff t).val) V := by
   let ψ : KPContCotangentActualOverlap.M F → KPContLocalNorm.Space (KPCuspLogShape.dimension F * 3) :=
@@ -1580,7 +1600,7 @@ private theorem incoming_cutoff_chart_holomorphic
       rfl
   let g := fun t => KPContActualAllCuspSource.chartCoefficient F ζ hζ C R P H U
     (source.descent.cutoff t) a.component
-    (KPContSectorPhaseComponentCharts.phaseClass F ζ hζ (level F ζ hζ C R P H U) 1)
+    (KPContSectorPhaseComponentCharts.phaseClass F ζ hζ (current_level) 1)
   have hvalue : ∀ t x,
       g t (ψ x) = (KPContCotangentActualGenuineTwistIsotropy.isotropyChart a).coefficient
         (source.descent.cutoff t).val x := by
@@ -1588,11 +1608,11 @@ private theorem incoming_cutoff_chart_holomorphic
     unfold g KPContActualAllCuspSource.chartCoefficient
     rw [KPContActualChartRestrictionDensity.frameCoefficient_class]
     simp only [map_one, Circle.coe_one, one_mul]
-    rw [show KPContSectorScalarLineAlgebra.S F ζ hζ (level F ζ hζ C R P H U) R P H
-      (((KPContSectorSmoothFramesSupport.smoothS F ζ hζ (level F ζ hζ C R P H U) R P H).symm
+    rw [show KPContSectorScalarLineAlgebra.S F ζ hζ (current_level) R P H
+      (((KPContSectorSmoothFramesSupport.smoothS F ζ hζ (current_level) R P H).symm
         (source.descent.cutoff t)).val) = (source.descent.cutoff t).val from
         congrArg Subtype.val ((KPContSectorSmoothFramesSupport.smoothS F ζ hζ
-          (level F ζ hζ C R P H U) R P H).apply_symm_apply _)]
+          (current_level) R P H).apply_symm_apply _)]
     rw [hcoords]
     simp only [KPContCotangentActualGenuineTwistIsotropy.isotropyChart,
       KPContCotangentActualOverlap.LiftedChart.coefficient,
@@ -1606,10 +1626,10 @@ private theorem incoming_cutoff_chart_holomorphic
     ?_ K hK hKω
   intro x hx
   have hd : IsOpen (KPContActualChartRestrictionDensity.chartDomain F ζ hζ
-      (level F ζ hζ C R P H U) R P H a.component a.center a.larger) :=
+      (current_level) R P H a.component a.center a.larger) :=
     a.larger.isOpen.preimage (KPContActualChartRestrictionDensity.coordinates F).continuous
   have hxD : ψ x ∈ KPContActualChartRestrictionDensity.chartDomain F ζ hζ
-      (level F ζ hζ C R P H U) R P H a.component a.center a.larger := by
+      (current_level) R P H a.component a.center a.larger := by
     change KPContActualChartRestrictionDensity.coordinates F (ψ x) ∈ a.larger.neighborhood
     rw [hcoords]
     exact a.closure_subset (subset_closure hx)
@@ -1620,7 +1640,7 @@ private theorem incoming_cutoff_chart_holomorphic
       ψ x, r/2, by positivity⟩
   have hBD : KPContLocalCubeEmbedding.closedCarrier B ⊆
       KPContActualChartRestrictionDensity.chartDomain F ζ hζ
-      (level F ζ hζ C R P H U) R P H a.component a.center a.larger :=
+      (current_level) R P H a.component a.center a.larger :=
     (Metric.closedBall_subset_ball (by dsimp [B]; linarith)).trans hrD
   have hVs : V ⊆ KPContinuation.spectralDomain := by
     intro t ht
@@ -1629,7 +1649,7 @@ private theorem incoming_cutoff_chart_holomorphic
     linarith
   have hg : KPCutoffSource.ChartSmoothHolomorphicOn B g V := by
     have hh := (source.local_holomorphy a.component a.center a.larger
-      (KPContSectorPhaseComponentCharts.phaseClass F ζ hζ (level F ζ hζ C R P H U) 1) B hBD).1
+      (KPContSectorPhaseComponentCharts.phaseClass F ζ hζ (current_level) 1) B hBD).1
     exact ⟨fun t hz => hh.1 t (hVs hz),
       fun C hC hCB m => by
         obtain ⟨j,hj,hjval⟩ := hh.2 C hC hCB m
@@ -1662,10 +1682,10 @@ open _root_.DedekindZetaZeroFree.KPContActualChamberCasimirJets renaming jet_con
 
 private theorem chart_holomorphic_parameter_jets
     (a : KPContActualSectorSmoothTestModules.ActualChart
-      (U := level F ζ hζ C R P H U) (H := H))
-    (w : ℂ → Sections F ζ hζ C R P H U)
+      (U := current_level) (H := H))
+    (w : ℂ → current_Sections)
     (hw : ∀ s ∈ V, KPContSectorSmoothFramesSupport.IsSmoothSections F ζ hζ
-      (level F ζ hζ C R P H U) R P H (w s))
+      (current_level) R P H (w s))
     (hh : KPContActualCompactSectionL2Jets.ChartHolomorphicOn a w V) (k : ℕ) :
     KPContActualCompactSectionL2Jets.ChartHolomorphicOn a
       (KPContActualCompactSectionL2Jets.pointwiseJets w V k) V := by
@@ -1755,9 +1775,9 @@ private theorem chart_holomorphic_parameter_jets
 
 private theorem defect_chart_holomorphic (k : ℕ)
     (a : KPContActualSectorSmoothTestModules.ActualChart
-      (U := level F ζ hζ C R P H U) (H := H)) :
+      (U := current_level) (H := H)) :
     KPContActualCompactSectionL2Jets.ChartHolomorphicOn a
-      (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k) V := by
+      (current_lineG f buffer χ source hι hf k) V := by
   have hE := KPContActualChamberCasimirJets.actual_normal_series_chart_holomorphic
     F ζ hζ C R P H U ι f hι hf k a
   have hC := chart_holomorphic_parameter_jets F ζ hζ C R P H U a
@@ -1772,7 +1792,7 @@ private theorem defect_chart_holomorphic (k : ℕ)
   change j s x - q s x = _
   rw [he s hs x,hqv s hs x]
   rw [lineG_eq_series_sub_source F ζ hζ C R P H U ι f buffer χ source hι hf k s hs]
-  have hc : ∀ u w : Sections F ζ hζ C R P H U,
+  have hc : ∀ u w : current_Sections,
       (KPContCotangentActualGenuineTwistIsotropy.isotropyChart a).coefficient (u-w) =
       (KPContCotangentActualGenuineTwistIsotropy.isotropyChart a).coefficient u -
       (KPContCotangentActualGenuineTwistIsotropy.isotropyChart a).coefficient w := by
@@ -1786,13 +1806,13 @@ private theorem defect_chart_holomorphic (k : ℕ)
     obtain ⟨u,hu,heq⟩ := ht
     exact ((hu.congr (fun y hy => (heq ⟨y,hy⟩).symm)).contDiffWithinAt (hKD x.property)).of_le (by simp)
   · have ht : KPContSectorSmoothFramesSupport.IsSmoothSections F ζ hζ
-        (level F ζ hζ C R P H U) R P H
+        (current_level) R P H
         (KPContActualCompactSectionL2Jets.pointwiseJets (fun z => (source.descent.cutoff z).val) V k s) := by
       intro i
       have heq := congrArg (fun u => (u i).val)
         (lineG_eq_series_sub_source F ζ hζ C R P H U ι f buffer χ source hι hf k s hs)
       have hh := (KPContActualChamberCasimirJets.lineJet_smooth F ζ hζ C R P H U ι f hι hf k s hs i).sub
-        ((smooth F ζ hζ C R P H U ι f buffer χ source hι hf k s).1 i)
+        ((current_smooth f buffer χ source hι hf k s).1 i)
       convert hh using 1
       funext y
       have hh := congrFun heq y
@@ -1806,26 +1826,26 @@ private theorem defect_chart_holomorphic (k : ℕ)
 open _root_.DedekindZetaZeroFree.KPContActualCompactSectionL2Jets renaming finite_compact_lifts → KPContActualCompactSectionL2Jets.finite_compact_lifts
 
 private theorem component_compact_lifts (K : Set (Base F ζ hζ C R P H U)) (hK : IsCompact K) :
-    ∃ Z : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount →
+    ∃ Z : Fin (H.atlas (current_level)).componentCount →
       Set (KPFiniteCuspAtlas.SymmetricSpace F), (∀ i, IsCompact (Z i)) ∧
-      K ⊆ ⋃ i, (fun y => (H.atlas (level F ζ hζ C R P H U)).components ⟨i,Quotient.mk _ y⟩) '' Z i := by
-  suffices h : ∃ Z : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount →
+      K ⊆ ⋃ i, (fun y => (H.atlas (current_level)).components ⟨i,Quotient.mk _ y⟩) '' Z i := by
+  suffices h : ∃ Z : Fin (H.atlas (current_level)).componentCount →
       Set (KPFiniteCuspAtlas.SymmetricSpace F), (∀ i, IsCompact (Z i)) ∧
       (∀ i, Z i ⊆ Set.univ) ∧
-      K ⊆ ⋃ i, (fun y => (H.atlas (level F ζ hζ C R P H U)).components ⟨i,Quotient.mk _ y⟩) '' Z i by
+      K ⊆ ⋃ i, (fun y => (H.atlas (current_level)).components ⟨i,Quotient.mk _ y⟩) '' Z i by
     obtain ⟨Z,hZ,_,hcov⟩ := h
     exact ⟨Z,hZ,hcov⟩
   apply KPContActualCompactSectionL2Jets.finite_compact_lifts K hK _ (fun _ => Set.univ)
-    (fun i y => (H.atlas (level F ζ hζ C R P H U)).components ⟨i,Quotient.mk _ y⟩)
+    (fun i y => (H.atlas (current_level)).components ⟨i,Quotient.mk _ y⟩)
     (fun _ => isOpen_univ)
   · intro i
     letI : ContinuousConstSMul (KPContSectorPhaseComponentCharts.Component F ζ hζ
-        (level F ζ hζ C R P H U) R P H i) (KPFiniteCuspAtlas.SymmetricSpace F) :=
+        (current_level) R P H i) (KPFiniteCuspAtlas.SymmetricSpace F) :=
       ⟨fun γ => KPCuspSiegel.continuous_action F γ.val⟩
-    exact (H.atlas (level F ζ hζ C R P H U)).components.isOpenMap.comp
+    exact (H.atlas (current_level)).components.isOpenMap.comp
       (isOpenMap_sigmaMk.comp isOpenMap_quotient_mk'_mul)
   · intro x hx
-    obtain ⟨⟨i,y⟩,rfl⟩ := (H.atlas (level F ζ hζ C R P H U)).components.surjective x
+    obtain ⟨⟨i,y⟩,rfl⟩ := (H.atlas (current_level)).components.surjective x
     refine Quotient.inductionOn y ?_
     intro z
     exact Set.mem_iUnion.mpr ⟨i,z,Set.mem_univ _,rfl⟩
@@ -1834,15 +1854,15 @@ private theorem lineGH_compact_norm_bound (L : Set ℂ) (hL : IsCompact L) (hLV 
     (K : Set (Base F ζ hζ C R P H U)) (hK : IsCompact K) (k : ℕ) :
     ∃ B : ℝ, 0 ≤ B ∧ ∀ s ∈ L, ∀ x ∈ K,
       KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ
-        (level F ζ hζ C R P H U) R P H
-        (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s) x ≤ B ∧
+        (current_level) R P H
+        (current_lineG f buffer χ source hι hf k s) x ≤ B ∧
       KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ
-        (level F ζ hζ C R P H U) R P H
-        (lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s) x ≤ B := by
+        (current_level) R P H
+        (current_lineH f buffer χ source hι hf k s) x ≤ B := by
   obtain ⟨Z,hZ,hcov⟩ := component_compact_lifts F ζ hζ C R P H U K hK
   have hb : ∀ i, ∃ B : ℝ, 0 ≤ B ∧ ∀ s ∈ L, ∀ y ∈ Z i,
-      ‖(lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s i).val y‖ ≤ B ∧
-      ‖(lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s i).val y‖ ≤ B := by
+      ‖(current_lineG f buffer χ source hι hf k s i).val y‖ ≤ B ∧
+      ‖(current_lineH f buffer χ source hι hf k s i).val y‖ ≤ B := by
     intro i
     have hj := lineGH_component_jet_joint F ζ hζ C R P H U ι f buffer χ source hι hf k i
     obtain ⟨b,hb⟩ := (hL.prod (hZ i)).exists_bound_of_continuousOn
@@ -1865,26 +1885,26 @@ private theorem lineGH_compact_square_bound (L : Set ℂ) (hL : IsCompact L) (hL
     (K : Set (Base F ζ hζ C R P H U)) (hK : IsCompact K) (k : ℕ) :
     ∃ B : ℝ, 0 ≤ B ∧ ∀ s ∈ L,
       (∫⁻ x in K, KPContSectorLineL2Isometry.squaredNorm F ζ hζ
-        (level F ζ hζ C R P H U) R P H
-        (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s) x
+        (current_level) R P H
+        (current_lineG f buffer χ source hι hf k s) x
         ∂baseMeasure F ζ hζ C R P H U) ≤ ENNReal.ofReal B ∧
       (∫⁻ x in K, KPContSectorLineL2Isometry.squaredNorm F ζ hζ
-        (level F ζ hζ C R P H U) R P H
-        (lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s) x
+        (current_level) R P H
+        (current_lineH f buffer χ source hι hf k s) x
         ∂baseMeasure F ζ hζ C R P H U) ≤ ENNReal.ofReal B := by
   letI := KPContSectorFixedMeasureLocalFiniteness.sphericalMeasure_finiteOnCompacts
-    F ζ hζ R P (level F ζ hζ C R P H U)
+    F ζ hζ R P (current_level)
   obtain ⟨B,hB,hbound⟩ := lineGH_compact_norm_bound F ζ hζ C R P H U ι f buffer χ source hι hf L hL hLV K hK k
   let D := ENNReal.ofReal (B^2) * baseMeasure F ζ hζ C R P H U K
   have hD : D ≠ ⊤ := ENNReal.mul_ne_top ENNReal.ofReal_ne_top hK.measure_lt_top.ne
   refine ⟨D.toReal, ENNReal.toReal_nonneg, ?_⟩
   intro s hs
   rw [ENNReal.ofReal_toReal hD]
-  have hi : ∀ u : Sections F ζ hζ C R P H U,
+  have hi : ∀ u : current_Sections,
       (∀ x ∈ K, KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ
-        (level F ζ hζ C R P H U) R P H u x ≤ B) →
+        (current_level) R P H u x ≤ B) →
       (∫⁻ x in K, KPContSectorLineL2Isometry.squaredNorm F ζ hζ
-        (level F ζ hζ C R P H U) R P H u x ∂baseMeasure F ζ hζ C R P H U) ≤ D := by
+        (current_level) R P H u x ∂baseMeasure F ζ hζ C R P H U) ≤ D := by
     intro u hu
     calc
       _ ≤ ∫⁻ _x in K, ENNReal.ofReal (B^2) ∂baseMeasure F ζ hζ C R P H U := by
@@ -1892,7 +1912,7 @@ private theorem lineGH_compact_square_bound (L : Set ℂ) (hL : IsCompact L) (hL
         intro x hx
         apply ENNReal.ofReal_le_ofReal
         apply pow_le_pow_left₀ _ (hu x hx)
-        obtain ⟨⟨i,y⟩,rfl⟩ := (H.atlas (level F ζ hζ C R P H U)).components.surjective x
+        obtain ⟨⟨i,y⟩,rfl⟩ := (H.atlas (current_level)).components.surjective x
         refine Quotient.inductionOn y ?_
         intro y
         rw [KPContSectorSmoothFramesSupport.sectionNorm_component]
@@ -1901,9 +1921,9 @@ private theorem lineGH_compact_square_bound (L : Set ℂ) (hL : IsCompact L) (hL
   exact ⟨hi _ (fun x hx => (hbound s hs x hx).1), hi _ (fun x hx => (hbound s hs x hx).2)⟩
 
 private theorem smooth_coefficient_at
-    (w : Sections F ζ hζ C R P H U)
-    (hw : KPContSectorSmoothFramesSupport.IsSmoothSections F ζ hζ (level F ζ hζ C R P H U) R P H w)
-    {i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount}
+    (w : current_Sections)
+    (hw : KPContSectorSmoothFramesSupport.IsSmoothSections F ζ hζ (current_level) R P H w)
+    {i : Fin (H.atlas (current_level)).componentCount}
     (a : Frame F ζ hζ C R P H U i) (x : KPContActualChamberCasimirJets.M F) (hx : x ∈ a.omega) :
     ContDiffAt ℝ (⊤ : ℕ∞) (a.coefficient w) x := by
   let v : KPArch.Space (KPCuspLogShape.dimension F) → ℂ := fun y => (w i).val (a.kind.representative • y)
@@ -1954,32 +1974,32 @@ private theorem metric_laplacian_sub {n : ℕ} {u v : HyperbolicChart.Space n �
   ring
 
 theorem defect_frame_equation (k : ℕ) (s : ℂ) (hs : s ∈ V)
-    (i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount)
+    (i : Fin (H.atlas (current_level)).componentCount)
     (a : Frame F ζ hζ C R P H U i) (x : KPContActualChamberCasimirJets.M F) (hx : x ∈ a.omega) :
     HyperbolicChart.laplacian (KPContActualChamberCasimirJets.d F)
-      (a.coefficient (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s)) x =
+      (a.coefficient (current_lineG f buffer χ source hι hf k s)) x =
     KPContActualChamberCasimirJets.lambda F s *
-      a.coefficient (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s) x -
-      a.coefficient (lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s) x +
+      a.coefficient (current_lineG f buffer χ source hι hf k s) x -
+      a.coefficient (current_lineH f buffer χ source hι hf k s) x +
       ∑ j ∈ Finset.Icc 1 (min k 2), (Nat.choose k j : ℂ) *
         KPContActualChamberCasimirJets.lambdaJet F j s *
-        a.coefficient (lineG F ζ hζ C R P H U ι f buffer χ source hι hf (k-j) s) x := by
+        a.coefficient (current_lineG f buffer χ source hι hf (k-j) s) x := by
   let cjet := KPContActualCompactSectionL2Jets.pointwiseJets
     (fun z => (source.descent.cutoff z).val) V
   have hc : KPContSectorSmoothFramesSupport.IsSmoothSections F ζ hζ
-      (level F ζ hζ C R P H U) R P H (cjet k s) := by
+      (current_level) R P H (cjet k s) := by
     intro j
     have he := congrArg (fun v => (v j).val)
       (lineG_eq_series_sub_source F ζ hζ C R P H U ι f buffer χ source hι hf k s hs)
     have hcj := (KPContActualChamberCasimirJets.lineJet_smooth F ζ hζ C R P H U ι f hι hf k s hs j).sub
-      ((smooth F ζ hζ C R P H U ι f buffer χ source hι hf k s).1 j)
+      ((current_smooth f buffer χ source hι hf k s).1 j)
     convert hcj using 1
     funext y
     have hh := congrFun he y
     simp only [Pi.sub_apply, Submodule.coe_sub, Pi.sub_apply] at hh ⊢
     change (cjet k s j).val y =
       (KPContActualChamberCasimirJets.lineJet F ζ hζ C R P H U ι f hι hf k s j).val y -
-      (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s j).val y
+      (current_lineG f buffer χ source hι hf k s j).val y
     linear_combination hh
   have hVΩ : V ⊆ KPContinuation.spectralDomain := by
     intro z hz
@@ -1991,7 +2011,7 @@ theorem defect_frame_equation (k : ℕ) (s : ℂ) (hs : s ∈ V)
   have hE := KPContActualChamberCasimirJets.casimir_jets F ζ hζ C R P H U ι f hι hf k s hs a x hx
   simp only [lineG_eq_series_sub_source F ζ hζ C R P H U ι f buffer χ source hι hf _ s hs,
     lineH_eq_source_jet F ζ hζ C R P H U ι f buffer χ source hι hf _ s hs]
-  have hcoef : ∀ u v : Sections F ζ hζ C R P H U, a.coefficient (u - v) =
+  have hcoef : ∀ u v : current_Sections, a.coefficient (u - v) =
       a.coefficient u - a.coefficient v := by
     intro u v
     funext y
@@ -2014,9 +2034,9 @@ theorem defect_frame_equation (k : ℕ) (s : ℂ) (hs : s ∈ V)
   ring_nf
   rfl
 
-def lineDelta (k : ℕ) (s : ℂ) : Sections F ζ hζ C R P H U :=
+def lineDelta (k : ℕ) (s : ℂ) : current_Sections :=
   KPCuspCutoffGraph.localLaplacianSection F ζ hζ H.totallyComplex
-    (level F ζ hζ C R P H U) (H.atlas (level F ζ hζ C R P H U))
+    (current_level) (H.atlas (current_level))
     (smoothG F ζ hζ C R P H U ι f buffer χ source hι hf k s)
 
 private theorem threeL2_rational_laplacian (γ : KPCuspArithmetic.PGL2 F)
@@ -2037,14 +2057,17 @@ private theorem threeL2_rational_laplacian (γ : KPCuspArithmetic.PGL2 F)
       fun y => congrFun he y]
   exact KPContArchLaplacianNaturality.pullback _ _ _ hu z
 
+
+local notation:max "current_lineDelta" => lineDelta F ζ hζ C R P H U ι
+
 theorem lineDelta_frame (k : ℕ) (s : ℂ)
-    (i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount)
+    (i : Fin (H.atlas (current_level)).componentCount)
     (a : Frame F ζ hζ C R P H U i) (x : KPContActualChamberCasimirJets.M F) (hx : x ∈ a.omega) :
-    a.coefficient (lineDelta F ζ hζ C R P H U ι f buffer χ source hι hf k s) x =
+    a.coefficient (current_lineDelta f buffer χ source hι hf k s) x =
       HyperbolicChart.laplacian (KPContActualChamberCasimirJets.d F)
-        (a.coefficient (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s)) x := by
-  let w := lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s
-  have hw := (smooth F ζ hζ C R P H U ι f buffer χ source hι hf k s).1 i
+        (a.coefficient (current_lineG f buffer χ source hι hf k s)) x := by
+  let w := current_lineG f buffer χ source hι hf k s
+  have hw := (current_smooth f buffer χ source hι hf k s).1 i
   let v : KPArch.Space (KPCuspLogShape.dimension F) → ℂ := fun y => (w i).val (a.kind.representative • y)
   have hv : ContDiff ℝ (⊤ : ℕ∞) v := hw.comp
     (CoreChartLocalizers.CutoffConstruction.StabilizerLinearization.rational_action_contDiff F a.kind.representative)
@@ -2069,7 +2092,7 @@ theorem lineDelta_frame (k : ℕ) (s : ℂ)
   rw [← hb, KPContArchLaplacianNaturality.localLaplacian_const_mul _ _ hv,
     threeL2_rational_laplacian F a.kind.representative (w i).val hw]
   change c * KPCuspCutoffGraph.localLaplacianComplex F ζ hζ H.totallyComplex
-    (level F ζ hζ C R P H U) (H.atlas (level F ζ hζ C R P H U)) w i
+    (current_level) (H.atlas (current_level)) w i
     (a.kind.representative • KPContCotangentActualOverlap.labeledA a.places x) = _
   congr 1
   exact (KPContArchLaplacianCoordinateBridge.bridge F (w i).val hw
@@ -2077,32 +2100,32 @@ theorem lineDelta_frame (k : ℕ) (s : ℂ)
 
 def gradientFields (k : ℕ) (s : ℂ) :
     KPContActualCotangentMeasurableFamilies.ChartFields F ζ hζ
-      (level F ζ hζ C R P H U) R P H :=
+      (current_level) R P H :=
   fun a => KPContActualSectorTestDifferentialDescent.chartDifferential a
     (fun x => (KPContCotangentActualGenuineTwistIsotropy.isotropyChart a).coefficient
-      (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s) x.val)
+      (current_lineG f buffer χ source hι hf k s) x.val)
 
 theorem gradient_compatible (k : ℕ) (s : ℂ) :
     KPContActualCotangentMeasurableFamilies.IsMeasurableCotangentFamily
       (gradientFields F ζ hζ C R P H U ι f buffer χ source hι hf k s) := by
   exact KPContThreeL2CotangentHelpers.smooth_section_differential
-    (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s)
-    (smooth F ζ hζ C R P H U ι f buffer χ source hι hf k s).1
+    (current_lineG f buffer χ source hι hf k s)
+    (current_smooth f buffer χ source hι hf k s).1
 
 def gradient (k : ℕ) (s : ℂ) : GradientFamily F ζ hζ C R P H U :=
   ⟨_, gradient_compatible F ζ hζ C R P H U ι f buffer χ source hι hf k s⟩
 
 theorem lineH_support (k : ℕ) (s : ℂ) :
     tsupport (KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ
-      (level F ζ hζ C R P H U) R P H
-      (lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s)) ⊆
+      (current_level) R P H
+      (current_lineH f buffer χ source hι hf k s)) ⊆
     KPContActualAllCuspSource.K F ζ hζ C R P H U buffer := by
   by_cases hs : s ∈ V
   · have hsΩ : s ∈ KPContinuation.spectralDomain := by
       change -(1 : ℝ)/6 < s.re
       change (1 : ℝ)/3 < s.re at hs
       linarith
-    have he : lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s =
+    have he : current_lineH f buffer χ source hι hf k s =
         KPContActualCompactSectionL2Jets.pointwiseJets
           (fun z => (source.descent.commutator z).val) KPContinuation.spectralDomain k s := by
       funext i
@@ -2117,8 +2140,8 @@ theorem lineH_support (k : ℕ) (s : ℂ) :
       funext z
       unfold KPContActualCutoffSmoothDescent.scalar
       rw [← KPContSectorScalarLineAlgebra.S_apply]
-      have hS : KPContSectorScalarLineAlgebra.S F ζ hζ (level F ζ hζ C R P H U) R P H
-          ((KPContSectorSmoothFramesSupport.smoothS F ζ hζ (level F ζ hζ C R P H U) R P H).symm
+      have hS : KPContSectorScalarLineAlgebra.S F ζ hζ (current_level) R P H
+          ((KPContSectorSmoothFramesSupport.smoothS F ζ hζ (current_level) R P H).symm
             (source.descent.commutator z)).val = (source.descent.commutator z).val := by
         rw [← KPContSectorSmoothFramesSupport.smoothS_apply, LinearEquiv.apply_symm_apply]
       rw [hS]
@@ -2127,34 +2150,37 @@ theorem lineH_support (k : ℕ) (s : ℂ) :
       source.compact_collars.isClosed source.support k s hsΩ
   · simp only [lineH, coveredH, dif_neg hs, map_zero]
     have hz : KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ
-        (level F ζ hζ C R P H U) R P H (0 : Sections F ζ hζ C R P H U) = 0 := by
+        (current_level) R P H (0 : current_Sections) = 0 := by
       funext x
       obtain ⟨v, rfl⟩ := KPContSectorQuotientRelationsComparison.q_surjective F ζ hζ
-        (level F ζ hζ C R P H U) x
-      rw [← map_zero (KPContSectorScalarLineAlgebra.S F ζ hζ (level F ζ hζ C R P H U) R P H),
+        (current_level) x
+      rw [← map_zero (KPContSectorScalarLineAlgebra.S F ζ hζ (current_level) R P H),
         KPContSectorSmoothFramesSupport.sectionNorm_pullback]
       simp
     rw [hz]
     simp
 
+
+local notation:max "current_Cusps" => KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U
+
 private theorem source_collars_disjoint_high_end
     (A : ℝ) (hA : T + 1 < A)
-    (a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U) :
+    (a : current_Cusps) :
     Disjoint (KPContActualAllCuspSource.K F ζ hζ C R P H U buffer)
-      (KPContActualCollarBuffer.endSet F ζ hζ (level F ζ hζ C R P H U) R P H A a) := by
+      (KPContActualCollarBuffer.endSet F ζ hζ (current_level) R P H A a) := by
   apply Set.disjoint_left.mpr
   intro x hx hxA
   obtain ⟨b,hb⟩ := Set.mem_iUnion.mp hx
   have hbe : x ∈ KPContActualCollarBuffer.endSet F ζ hζ
-      (level F ζ hζ C R P H U) R P H buffer.τ b :=
+      (current_level) R P H buffer.τ b :=
     interior_subset (buffer.collar_in_chart_interior b hb)
   have hτA : buffer.τ < A := lt_trans buffer.below_cutoff (by linarith)
   rw [← KPContThreeL2EndHelpers.end_lift_range F ζ hζ
-    (level F ζ hζ C R P H U) R P H A a] at hxA
+    (current_level) R P H A a] at hxA
   obtain ⟨z,hz,rfl⟩ := hxA
   have hae : KPContActualCollarBuffer.chartLift F ζ hζ
-      (level F ζ hζ C R P H U) R P H a z ∈
-      KPContActualCollarBuffer.endSet F ζ hζ (level F ζ hζ C R P H U) R P H buffer.τ a := by
+      (current_level) R P H a z ∈
+      KPContActualCollarBuffer.endSet F ζ hζ (current_level) R P H buffer.τ a := by
     rw [← buffer.lift_range a]
     exact ⟨z, lt_trans hτA hz, rfl⟩
   have hab : a = b := by
@@ -2163,73 +2189,79 @@ private theorem source_collars_disjoint_high_end
   subst b
   have hc := (buffer.height_continuous a _ hae).mono
     (show {x | x ∈ KPContActualCollarBuffer.endSet F ζ hζ
-        (level F ζ hζ C R P H U) R P H buffer.τ a ∧
+        (current_level) R P H buffer.τ a ∧
         KPContActualCollarBuffer.height F ζ hζ
-          (level F ζ hζ C R P H U) R P H buffer.τ a x ∈ Set.Icc T (T+1)} ⊆
+          (current_level) R P H buffer.τ a x ∈ Set.Icc T (T+1)} ⊆
         KPContActualCollarBuffer.endSet F ζ hζ
-          (level F ζ hζ C R P H U) R P H buffer.τ a from fun _ h => h.1)
+          (current_level) R P H buffer.τ a from fun _ h => h.1)
   have hh := hc.mem_closure hb (show Set.MapsTo
     (KPContActualCollarBuffer.height F ζ hζ
-      (level F ζ hζ C R P H U) R P H buffer.τ a)
+      (current_level) R P H buffer.τ a)
     {x | x ∈ KPContActualCollarBuffer.endSet F ζ hζ
-      (level F ζ hζ C R P H U) R P H buffer.τ a ∧
+      (current_level) R P H buffer.τ a ∧
       KPContActualCollarBuffer.height F ζ hζ
-        (level F ζ hζ C R P H U) R P H buffer.τ a x ∈ Set.Icc T (T+1)}
+        (current_level) R P H buffer.τ a x ∈ Set.Icc T (T+1)}
     (Set.Icc T (T+1)) from fun _ h => h.2)
   rw [isClosed_Icc.closure_eq, buffer.height_coordinates a z (lt_trans hτA hz)] at hh
   exact (not_lt_of_ge hh.2) (lt_trans hA hz)
 
+
+local notation:max "current_tail" => tail F ζ hζ C R P H U
+
 private theorem source_high_tail_zero : ∃ A : ℝ,
-    (H.atlas (level F ζ hζ C R P H U)).threshold < A ∧
+    (H.atlas (current_level)).threshold < A ∧
     ∀ A' : ℝ, A ≤ A' → ∀ k s,
-    (∫⁻ x in tail F ζ hζ C R P H U A',
+    (∫⁻ x in current_tail A',
       KPContSectorLineL2Isometry.squaredNorm F ζ hζ
-        (level F ζ hζ C R P H U) R P H
-        (lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s) x
+        (current_level) R P H
+        (current_lineH f buffer χ source hι hf k s) x
       ∂baseMeasure F ζ hζ C R P H U) = 0 := by
-  let A := max ((H.atlas (level F ζ hζ C R P H U)).threshold + 1) (T + 2)
+  let A := max ((H.atlas (current_level)).threshold + 1) (T + 2)
   refine ⟨A, lt_of_lt_of_le (by linarith) (le_max_left _ _), ?_⟩
   intro A' hA' k s
   have hTA' : T + 1 < A' := lt_of_lt_of_le
     (lt_of_lt_of_le (by linarith) (le_max_right _ _)) hA'
-  have hz : ∀ x ∈ tail F ζ hζ C R P H U A',
+  have hz : ∀ x ∈ current_tail A',
       KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ
-        (level F ζ hζ C R P H U) R P H
-        (lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s) x = 0 := by
+        (current_level) R P H
+        (current_lineH f buffer χ source hι hf k s) x = 0 := by
     intro x hx
     obtain ⟨i,hi⟩ := Set.mem_iUnion.mp hx
     obtain ⟨c,hc⟩ := Set.mem_iUnion.mp hi
     have he : x ∈ KPContActualCollarBuffer.endSet F ζ hζ
-        (level F ζ hζ C R P H U) R P H A' ⟨i,c⟩ := hc
+        (current_level) R P H A' ⟨i,c⟩ := hc
     apply image_eq_zero_of_notMem_tsupport
     intro hs
     have hd := source_collars_disjoint_high_end F ζ hζ C R P H U buffer A' hTA' ⟨i,c⟩
     exact hd.notMem_of_mem_left
       (lineH_support F ζ hζ C R P H U ι f buffer χ source hι hf k s hs) he
   calc
-    _ = ∫⁻ _x in tail F ζ hζ C R P H U A', (0 : ℝ≥0∞)
+    _ = ∫⁻ _x in current_tail A', (0 : ℝ≥0∞)
         ∂baseMeasure F ζ hζ C R P H U := by
       apply setLIntegral_congr_fun
       · exact (isOpen_iUnion (fun i => isOpen_iUnion (fun c =>
           KPContThreeL2EndHelpers.all_ends_open F ζ hζ
-            (level F ζ hζ C R P H U) R P H A' ⟨i,c⟩))).measurableSet
+            (current_level) R P H A' ⟨i,c⟩))).measurableSet
       · intro x hx
         simp only [KPContSectorLineL2Isometry.squaredNorm, hz x hx, sq, mul_zero,
           ENNReal.ofReal_zero]
     _ = 0 := by simp
 
+
+local notation:max "current_gradient" => gradient F ζ hζ C R P H U ι
+
 private theorem gradient_chart_norm_joint (k : ℕ)
     (a : KPContActualSectorSmoothTestModules.ActualChart
-      (U := level F ζ hζ C R P H U) (H := H))
+      (U := current_level) (H := H))
     (K : Set (KPContCotangentActualOverlap.M F)) (hK : IsCompact K)
     (hKD : K ⊆ KPContCotangentOverlapRationalBranches.omega a) :
     ContinuousOn (fun p : ℂ × KPContCotangentActualOverlap.M F =>
       (KPContActualCotangentMeasurableFamilies.normSquare
-        (gradient F ζ hζ C R P H U ι f buffer χ source hι hf k p.1)
+        (current_gradient f buffer χ source hι hf k p.1)
         (KPContCotangentOverlapRationalBranches.q a p.2) : ℝ)) (V ×ˢ K) := by
   let d := KPContCotangentActualOverlap.d F
   let h := fun s => (KPContCotangentActualGenuineTwistIsotropy.isotropyChart a).coefficient
-    (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s)
+    (current_lineG f buffer χ source hι hf k s)
   have hc : ∀ i j, ContinuousOn (fun p : ℂ × KPContCotangentActualOverlap.M F =>
       HyperbolicChart.coordinateDerivative d i j (h p.1) p.2) (V ×ˢ K) := by
     intro i j
@@ -2278,47 +2310,53 @@ private theorem gradient_chart_norm_joint (k : ℕ)
   rw [CotangentLogCoframe.j_apply]
   fin_cases j <;> simp [HyperbolicChart.differential,HyperbolicChart.coordinateDerivative,hgerm.fderiv_eq]
 
+
+local notation:max "current_BorelL2Sections" => BorelL2Sections F ζ hζ C R P H U
+
 theorem lineH_borelL2 (k : ℕ) (s : ℂ) :
-    lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s ∈
-      BorelL2Sections F ζ hζ C R P H U := by
-  have hsm := (smooth F ζ hζ C R P H U ι f buffer χ source hι hf k s).2
+    current_lineH f buffer χ source hι hf k s ∈
+      current_BorelL2Sections := by
+  have hsm := (current_smooth f buffer χ source hι hf k s).2
   have hm : ∀ i, Measurable
-      (lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s i).val :=
+      (current_lineH f buffer χ source hι hf k s i).val :=
     fun i => (hsm i).continuous.measurable
   refine ⟨hm, ?_⟩
   apply (KPContSectorLineL2Isometry.finite_integral_iff F ζ hζ
-    (level F ζ hζ C R P H U) R P H _ hm).mpr
+    (current_level) R P H _ hm).mpr
   letI := KPContSectorFixedMeasureLocalFiniteness.coveredMeasure_finiteOnCompacts
-    F ζ hζ R (level F ζ hζ C R P H U)
+    F ζ hζ R (current_level)
   have hc := (KPContSectorLineL2Isometry.continuous_iff F ζ hζ
-    (level F ζ hζ C R P H U) R P H _).mp (fun i => (hsm i).continuous)
+    (current_level) R P H _).mp (fun i => (hsm i).continuous)
   apply hc.memLp_of_hasCompactSupport
   apply (KPContSectorSmoothFramesSupport.hasCompactSupport_iff F ζ hζ
-    (level F ζ hζ C R P H U) R P H _).mpr
-  rw [show KPContSectorScalarLineAlgebra.S F ζ hζ (level F ζ hζ C R P H U) R P H
-      (KPContSectorLineL2Isometry.scalarRepresentative F ζ hζ (level F ζ hζ C R P H U) R P H
-        (lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s)) =
-      lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s from
-    (KPContSectorScalarLineAlgebra.S F ζ hζ (level F ζ hζ C R P H U) R P H).apply_symm_apply _]
+    (current_level) R P H _).mpr
+  rw [show KPContSectorScalarLineAlgebra.S F ζ hζ (current_level) R P H
+      (KPContSectorLineL2Isometry.scalarRepresentative F ζ hζ (current_level) R P H
+        (current_lineH f buffer χ source hι hf k s)) =
+      current_lineH f buffer χ source hι hf k s from
+    (KPContSectorScalarLineAlgebra.S F ζ hζ (current_level) R P H).apply_symm_apply _]
   exact source.compact_collars.of_isClosed_subset isClosed_closure
     (lineH_support F ζ hζ C R P H U ι f buffer χ source hι hf k s)
 
+
+local notation:max "current_sigma" => KPContFlatCuspIncomingEvaluation.sigma F ζ hζ C R P H U
+
 private theorem scalar_cusp_frame_identity
-    (a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U)
-    (e : KPContSectorScalarLineAlgebra.GenuineCoveredScalars F ζ hζ (level F ζ hζ C R P H U))
+    (a : current_Cusps)
+    (e : KPContSectorScalarLineAlgebra.GenuineCoveredScalars F ζ hζ (current_level))
     (z : KPArch.Space (KPCuspLogShape.dimension F)) :
-    (KPContSectorScalarLineAlgebra.J F ζ hζ (level F ζ hζ C R P H U) e).val
+    (KPContSectorScalarLineAlgebra.J F ζ hζ (current_level) e).val
       (z, KPContFlatCuspIncomingEvaluation.finiteRepresentative F ζ hζ C R P H U a 1) =
-      (KPContSectorScalarLineAlgebra.S F ζ hζ (level F ζ hζ C R P H U) R P H e a.1).val
-        (KPContFlatCuspIncomingEvaluation.sigma F ζ hζ C R P H U a • z) := by
-  let j := KPContSectorScalarLineAlgebra.J F ζ hζ (level F ζ hζ C R P H U) e
+      (KPContSectorScalarLineAlgebra.S F ζ hζ (current_level) R P H e a.1).val
+        (current_sigma a • z) := by
+  let j := KPContSectorScalarLineAlgebra.J F ζ hζ (current_level) e
   have hr := j.property.1 z
     (KPContFlatCuspIncomingEvaluation.finiteRepresentative F ζ hζ C R P H U a 1)
-    (KPContFlatCuspIncomingEvaluation.sigma F ζ hζ C R P H U a)
+    (current_sigma a)
   have hc : KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ
-      (KPContFlatCuspIncomingEvaluation.sigma F ζ hζ C R P H U a) *
+      (current_sigma a) *
       KPContFlatCuspIncomingEvaluation.finiteRepresentative F ζ hζ C R P H U a 1 =
-      (H.atlas (level F ζ hζ C R P H U)).representative a.1 := by
+      (H.atlas (current_level)).representative a.1 := by
     simp [KPContFlatCuspIncomingEvaluation.finiteRepresentative,
       KPContFlatCuspIncomingEvaluation.atlas, map_inv]
   rw [hc] at hr
@@ -2327,7 +2365,7 @@ private theorem scalar_cusp_frame_identity
 
 include hι hf in
 private theorem E_cusp_scalar (s : ℂ) (hs : s ∈ V)
-    (a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U)
+    (a : current_Cusps)
     (p : KPCuspCharts.Coordinates F) :
     KPContActualChamberNormalSeries.E F ζ hζ U ι f s
       (KPContActualChamberNormalSeries.coveredRepresentative F ζ hζ C R P H U
@@ -2340,8 +2378,8 @@ private theorem E_cusp_scalar (s : ℂ) (hs : s ∈ V)
   rw [KPContActualChamberNormalSeries.coveredRepresentative_projection] at hleft
   rw [← hleft]
   have hv : (e s).val (KPContActualCutoffSmoothDescent.coveredPoint F ζ hζ C R P H U a 1 p) =
-      (KPContSectorScalarLineAlgebra.S F ζ hζ (level F ζ hζ C R P H U) R P H (e s) a.1).val
-        (KPContFlatCuspIncomingEvaluation.sigma F ζ hζ C R P H U a • KPCuspCharts.toArch F p) := by
+      (KPContSectorScalarLineAlgebra.S F ζ hζ (current_level) R P H (e s) a.1).val
+        (current_sigma a • KPCuspCharts.toArch F p) := by
     rw [KPContSectorScalarLineAlgebra.S_apply]
     simp [KPContActualCutoffSmoothDescent.coveredPoint, KPContSectorSmoothFramesSupport.cuspPoint,
       KPContFlatCuspIncomingEvaluation.sigma, KPContFlatCuspIncomingEvaluation.atlas]
@@ -2355,9 +2393,9 @@ private theorem E_cusp_scalar (s : ℂ) (hs : s ∈ V)
 include hι hf in
 
 theorem g_cusp_scalar (k : ℕ) (s : ℂ) (hs : s ∈ V)
-    (a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U)
+    (a : current_Cusps)
     (p : KPCuspCharts.Coordinates F) :
-    g F ζ hζ C R P H U ι f buffer χ source k s
+    current_g f buffer χ source k s
       (KPContActualCutoffSmoothDescent.coveredPoint F ζ hζ C R P H U a 1 p) =
     iteratedDerivWithin k (fun w => KPContActualChamberOutgoingAdapter.correctionSheet
       F ζ hζ C R P H U a ι buffer f χ source w p.2 p.1.1 p.1.2 1) V s := by
@@ -2365,11 +2403,11 @@ theorem g_cusp_scalar (k : ℕ) (s : ℂ) (hs : s ∈ V)
   exact iteratedDerivWithin_congr (fun w hw => by rw [E_cusp_scalar F ζ hζ C R P H U ι f hι hf w hw]) hs
 
 theorem sectionNorm_cusp_scalar (k : ℕ) (s : ℂ) (hs : s ∈ V)
-    (a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U)
+    (a : current_Cusps)
     (p : KPCuspCharts.Coordinates F) :
-    KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ (level F ζ hζ C R P H U) R P H
-      (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s)
-      (KPContActualCollarBuffer.chartLift F ζ hζ (level F ζ hζ C R P H U) R P H a p) =
+    KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ (current_level) R P H
+      (current_lineG f buffer χ source hι hf k s)
+      (KPContActualCollarBuffer.chartLift F ζ hζ (current_level) R P H a p) =
     ‖iteratedDerivWithin k (fun w => KPContActualChamberOutgoingAdapter.correctionSheet
       F ζ hζ C R P H U a ι buffer f χ source w p.2 p.1.1 p.1.2 1) V s‖ := by
   rw [← KPContActualCutoffSmoothDescent.coveredPoint_base F ζ hζ C R P H U a 1 p]
@@ -2380,7 +2418,7 @@ theorem sectionNorm_cusp_scalar (k : ℕ) (s : ℂ) (hs : s ∈ V)
 
 open KPContActualChamberMeanZeroAdapter in
 include hι hf in
-private theorem scalar_correction_complement_eq (a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U)
+private theorem scalar_correction_complement_eq (a : current_Cusps)
     (s : ℂ) (hs : s ∈ V) (t : ℝ)
     (x : KPCuspCharts.Horizontal F) (b : KPCuspCharts.Shape F) (ε : rootsOfUnity 3 F)
     (ht : buffer.τ < t) :
@@ -2393,7 +2431,7 @@ private theorem scalar_correction_complement_eq (a : KPContFlatCuspIncomingEvalu
   let W := ((χ a).toFun t : ℂ) •
     (KPContFlatCuspIncomingEvaluation.W F ζ hζ C R P H U a ι s (f s) t b)
   have hcut (y : KPCuspCharts.Horizontal F) (δ : rootsOfUnity 3 F) :
-      KPContActualCutoffSmoothDescent.scalar F ζ hζ C R P H U (source.descent.cutoff s)
+      current_scalar (source.descent.cutoff s)
         (KPContActualCutoffSmoothDescent.coveredPoint F ζ hζ C R P H U a δ ((y,b),t)) =
       (KPCuspGenuineMonodromy.chi F ζ hζ δ : ℂ) * W.val 0 := by
     rw [KPContActualCutoffSmoothDescent.scalar_coveredPoint,
@@ -2438,21 +2476,21 @@ private theorem scalar_correction_complement_eq (a : KPContFlatCuspIncomingEvalu
 
 include hι hf in
 private theorem scalar_correction_holomorphic
-    (a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U)
+    (a : current_Cusps)
     (p : KPCuspCharts.Coordinates F) :
     DifferentiableOn ℂ (fun w => KPContActualChamberOutgoingAdapter.correctionSheet
       F ζ hζ C R P H U a ι buffer f χ source w p.2 p.1.1 p.1.2 1) V := by
   apply (E_holo F ζ hζ U ι f hι hf
     (KPContFlatCuspIncomingEvaluation.cuspGroup F ζ hζ C R P H U a p.2 p.1.1 p.1.2 1)).sub
   have hh := (source_component_holo F ζ hζ C R P H U ι f buffer χ source false a.1
-    (KPContSectorSmoothFramesSupport.cuspPoint F ζ hζ (level F ζ hζ C R P H U) R P H
+    (KPContSectorSmoothFramesSupport.cuspPoint F ζ hζ (current_level) R P H
       a.1 a.2 p)).mono (show V ⊆ KPContinuation.spectralDomain from by
         intro s hs; change -(1 : ℝ)/6 < s.re; change (1 : ℝ)/3 < s.re at hs; linarith)
   simpa [KPContActualCutoffSmoothDescent.coveredPoint] using hh
 
 include hι hf in
 private theorem scalar_zero_holomorphic
-    (a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U)
+    (a : current_Cusps)
     (p : KPCuspCharts.Coordinates F) (ht : T + 1 ≤ p.2) (hb : buffer.τ < p.2) :
     DifferentiableOn ℂ (fun w => KPContActualChamberOutgoingAdapter.zeroScalar
       F ζ hζ C R P H U a ι buffer f χ source w p) V := by
@@ -2471,9 +2509,9 @@ private theorem scalar_zero_holomorphic
 include hι hf in
 
 theorem g_cusp_split (k : ℕ) (s : ℂ) (hs : s ∈ V)
-    (a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U)
+    (a : current_Cusps)
     (p : KPCuspCharts.Coordinates F) (ht : T + 1 ≤ p.2) (hb : buffer.τ < p.2) :
-    g F ζ hζ C R P H U ι f buffer χ source k s
+    current_g f buffer χ source k s
       (KPContActualCutoffSmoothDescent.coveredPoint F ζ hζ C R P H U a 1 p) =
     KPContActualChamberOutgoingAdapter.parameterScalar F ζ hζ C R P H U
       a ι buffer f χ source k s (KPCuspCharts.toArch F p) +
@@ -2512,13 +2550,16 @@ theorem g_cusp_split (k : ℕ) (s : ℂ) (hs : s ∈ V)
   rw [he', g_cusp_scalar F ζ hζ C R P H U ι f buffer χ source hι hf k s hs a p]
   ring
 
+
+local notation:max "current_jetNorm" => KPContActualChamberOutgoingAdapter.jetNorm F ζ hζ C R P H U
+
 theorem sectionNorm_cusp_split_sq (k : ℕ) (s : ℂ) (hs : s ∈ V)
-    (a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U)
+    (a : current_Cusps)
     (p : KPCuspCharts.Coordinates F) (ht : T + 1 ≤ p.2) (hb : buffer.τ < p.2) :
-    (KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ (level F ζ hζ C R P H U) R P H
-      (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s)
-      (KPContActualCollarBuffer.chartLift F ζ hζ (level F ζ hζ C R P H U) R P H a p)) ^ 2 ≤
-    2 * (KPContActualChamberOutgoingAdapter.jetNorm F ζ hζ C R P H U
+    (KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ (current_level) R P H
+      (current_lineG f buffer χ source hι hf k s)
+      (KPContActualCollarBuffer.chartLift F ζ hζ (current_level) R P H a p)) ^ 2 ≤
+    2 * (current_jetNorm
       a ι buffer f χ source k 0 s p) ^ 2 +
     2 * ‖KPContActualChamberMeanZeroAdapter.jetScalar F ζ hζ C R P H U a ι f k s p‖ ^ 2 := by
   rw [sectionNorm_cusp_scalar F ζ hζ C R P H U ι f buffer χ source hι hf k s hs a p,
@@ -2539,16 +2580,16 @@ theorem sectionNorm_cusp_split_sq (k : ℕ) (s : ℂ) (hs : s ∈ V)
 
 theorem lineG_norm_continuous (k : ℕ) (s : ℂ) :
     Continuous (KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ
-      (level F ζ hζ C R P H U) R P H
-      (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s)) := by
+      (current_level) R P H
+      (current_lineG f buffer χ source hι hf k s)) := by
   have hq := (KPContSectorQuotientRelationsComparison.q_isOpenMap F ζ hζ
-    (level F ζ hζ C R P H U)).isQuotientMap
-    (KPContSectorQuotientRelationsComparison.q_continuous F ζ hζ (level F ζ hζ C R P H U))
-    (KPContSectorQuotientRelationsComparison.q_surjective F ζ hζ (level F ζ hζ C R P H U))
+    (current_level)).isQuotientMap
+    (KPContSectorQuotientRelationsComparison.q_continuous F ζ hζ (current_level))
+    (KPContSectorQuotientRelationsComparison.q_surjective F ζ hζ (current_level))
   apply hq.continuous_iff.mpr
   have hc := (KPContSectorLineL2Isometry.continuous_iff F ζ hζ
-    (level F ζ hζ C R P H U) R P H _).mp
-    (fun i => ((smooth F ζ hζ C R P H U ι f buffer χ source hι hf k s).1 i).continuous)
+    (current_level) R P H _).mp
+    (fun i => ((current_smooth f buffer χ source hι hf k s).1 i).continuous)
   convert hc.norm using 1
   funext v
   rw [Function.comp_apply, KPContSectorLineL2Isometry.scalarRepresentative_eq_symm]
@@ -2558,22 +2599,22 @@ theorem lineG_norm_continuous (k : ℕ) (s : ℂ) :
 theorem lineG_compact_square_finite (k : ℕ) (s : ℂ)
     (K : Set (Base F ζ hζ C R P H U)) (hK : IsCompact K) :
     (∫⁻ x in K, KPContSectorLineL2Isometry.squaredNorm F ζ hζ
-      (level F ζ hζ C R P H U) R P H
-      (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s) x
+      (current_level) R P H
+      (current_lineG f buffer χ source hι hf k s) x
       ∂baseMeasure F ζ hζ C R P H U) < ⊤ := by
   letI := KPContSectorFixedMeasureLocalFiniteness.sphericalMeasure_finiteOnCompacts
-    F ζ hζ R P (level F ζ hζ C R P H U)
+    F ζ hζ R P (current_level)
   have hc := (lineG_norm_continuous F ζ hζ C R P H U ι f buffer χ source hι hf k s).pow 2
   have hi := hc.continuousOn.integrableOn_compact (μ := baseMeasure F ζ hζ C R P H U) hK
   exact (hasFiniteIntegral_iff_ofReal
     (Filter.Eventually.of_forall (fun x => sq_nonneg _))).mp hi.hasFiniteIntegral
 
 theorem lineG_end_square_transport (k : ℕ) (s : ℂ) (hs : s ∈ V)
-    (a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U)
-    (A : ℝ) (hA : (H.atlas (level F ζ hζ C R P H U)).threshold < A) :
-    (∫⁻ x in KPContActualCollarBuffer.endSet F ζ hζ (level F ζ hζ C R P H U) R P H A a,
-      KPContSectorLineL2Isometry.squaredNorm F ζ hζ (level F ζ hζ C R P H U) R P H
-        (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s) x
+    (a : current_Cusps)
+    (A : ℝ) (hA : (H.atlas (current_level)).threshold < A) :
+    (∫⁻ x in KPContActualCollarBuffer.endSet F ζ hζ (current_level) R P H A a,
+      KPContSectorLineL2Isometry.squaredNorm F ζ hζ (current_level) R P H
+        (current_lineG f buffer χ source hι hf k s) x
       ∂baseMeasure F ζ hζ C R P H U) =
     ∫⁻ p in {p : KPCuspCharts.Coordinates F | A < p.2}, ENNReal.ofReal
       (‖iteratedDerivWithin k (fun w => KPContActualChamberOutgoingAdapter.correctionSheet
@@ -2582,14 +2623,14 @@ theorem lineG_end_square_transport (k : ℕ) (s : ℂ) (hs : s ∈ V)
   rw [← KPContActualEndHaarTransport.actual_end_coordinates_pushforward
     F ζ hζ C R P H U a A hA]
   rw [lintegral_map (KPContSectorLineL2Isometry.squaredNorm_measurable
-    F ζ hζ (level F ζ hζ C R P H U) R P H _
-      (fun i => ((smooth F ζ hζ C R P H U ι f buffer χ source hι hf k s).1 i).continuous.measurable))
+    F ζ hζ (current_level) R P H _
+      (fun i => ((current_smooth f buffer χ source hι hf k s).1 i).continuous.measurable))
     (show Measurable (KPContActualCollarBuffer.chartLift F ζ hζ
-      (level F ζ hζ C R P H U) R P H a) from by
+      (current_level) R P H a) from by
         unfold KPContActualCollarBuffer.chartLift
         exact (continuous_quotient_mk'.comp
           (((KPCuspCharts.projectiveHomeomorph F
-            (((H.atlas (level F ζ hζ C R P H U)).cuspAtlas a.1).representative a.2)).continuous.comp
+            (((H.atlas (current_level)).cuspAtlas a.1).representative a.2)).continuous.comp
             (KPCuspCharts.toArch_contDiff F).continuous).prodMk continuous_const)).measurable)]
   apply lintegral_congr
   intro p
@@ -2597,26 +2638,26 @@ theorem lineG_end_square_transport (k : ℕ) (s : ℂ) (hs : s ∈ V)
   rw [sectionNorm_cusp_scalar F ζ hζ C R P H U ι f buffer χ source hι hf k s hs a p]
 
 theorem gradient_norm_cusp (k : ℕ) (s : ℂ)
-    (a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U)
+    (a : current_Cusps)
     (p : KPCuspCharts.Coordinates F) :
     (KPContActualCotangentMeasurableFamilies.normSquare
-      (gradient F ζ hζ C R P H U ι f buffer χ source hι hf k s)
-      (KPContActualCollarBuffer.chartLift F ζ hζ (level F ζ hζ C R P H U) R P H a p) : ℝ) =
+      (current_gradient f buffer χ source hι hf k s)
+      (KPContActualCollarBuffer.chartLift F ζ hζ (current_level) R P H a p) : ℝ) =
     KPContActualChamberOutgoingAdapter.covariantNorm (KPCuspLogShape.dimension F) 1
-      (fun z => (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s a.1).val
-        (KPContFlatCuspIncomingEvaluation.sigma F ζ hζ C R P H U a • z))
+      (fun z => (current_lineG f buffer χ source hι hf k s a.1).val
+        (current_sigma a • z))
       (KPCuspCharts.toArch F p) ^ 2 := by
-  let w := lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s
-  have hw := (smooth F ζ hζ C R P H U ι f buffer χ source hι hf k s).1
+  let w := current_lineG f buffer χ source hι hf k s
+  have hw := (current_smooth f buffer χ source hι hf k s).1
   have hc := KPContThreeL2CotangentHelpers.smoothGradient_cusp_coframe w hw a p.1 p.2
-  have hq : KPContActualCollarBuffer.chartLift F ζ hζ (level F ζ hζ C R P H U) R P H a p =
-      (H.atlas (level F ζ hζ C R P H U)).components ⟨a.1, Quotient.mk _
-        (KPContSectorSmoothFramesSupport.cuspPoint F ζ hζ (level F ζ hζ C R P H U) R P H a.1 a.2 p)⟩ := by
+  have hq : KPContActualCollarBuffer.chartLift F ζ hζ (current_level) R P H a p =
+      (H.atlas (current_level)).components ⟨a.1, Quotient.mk _
+        (KPContSectorSmoothFramesSupport.cuspPoint F ζ hζ (current_level) R P H a.1 a.2 p)⟩ := by
     rw [(H.atlas _).components_formula]
     rfl
   rw [hq]
   change (∑ i, ∑ j, ‖HyperbolicChart.differential (KPContCotangentActualOverlap.d F)
-      (fun x => (w a.1).val (KPContFlatCuspIncomingEvaluation.sigma F ζ hζ C R P H U a •
+      (fun x => (w a.1).val (current_sigma a •
         KPContCotangentActualOverlap.labeledA (KPContCotangentActualOverlap.placeEquiv F ζ hζ) x))
       (KPContCotangentActualOverlap.labeledAInv (KPContCotangentActualOverlap.placeEquiv F ζ hζ)
         (KPCuspCharts.toArch F p)) i j‖ ^ 2) = _ at hc
@@ -2626,21 +2667,21 @@ theorem gradient_norm_cusp (k : ℕ) (s : ℂ)
   have hr := KPContThreeL2CotangentHelpers.coframe_reindex
     (KPContCotangentActualOverlap.d F) (KPCuspLogShape.dimension F)
     (KPArch.complex_places_of_primitive_twelfth_root F ζ hζ).2.1.symm
-    (fun z => (w a.1).val (KPContFlatCuspIncomingEvaluation.sigma F ζ hζ C R P H U a • z))
+    (fun z => (w a.1).val (current_sigma a • z))
     (KPCuspCharts.toArch F p)
   have hg : ContDiff ℝ (⊤ : ℕ∞) (fun z => (w a.1).val
-      (KPContFlatCuspIncomingEvaluation.sigma F ζ hζ C R P H U a • z)) :=
+      (current_sigma a • z)) :=
     (hw a.1).comp (CoreChartLocalizers.CutoffConstruction.StabilizerLinearization.rational_action_contDiff F
-      (KPContFlatCuspIncomingEvaluation.sigma F ζ hζ C R P H U a))
+      (current_sigma a))
   exact hr.trans (KPContThreeL2CotangentHelpers.arch_coframe_norm _ _ hg _)
 
 include hι hf in
 
 theorem lineG_cusp_split_germ (k : ℕ) (s : ℂ) (hs : s ∈ V)
-    (a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U)
+    (a : current_Cusps)
     (p : KPCuspCharts.Coordinates F) (ht : T + 1 < p.2) (hb : buffer.τ < p.2) :
-    (fun z => (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s a.1).val
-      (KPContFlatCuspIncomingEvaluation.sigma F ζ hζ C R P H U a • z)) =ᶠ[𝓝 (KPCuspCharts.toArch F p)]
+    (fun z => (current_lineG f buffer χ source hι hf k s a.1).val
+      (current_sigma a • z)) =ᶠ[𝓝 (KPCuspCharts.toArch F p)]
     (KPContActualChamberOutgoingAdapter.parameterScalar F ζ hζ C R P H U a ι buffer f χ source k s +
       KPContActualChamberMeanZeroAdapter.parameterScalar F ζ hζ C R P H U a ι f k s) := by
   let n := KPCuspLogShape.dimension F
@@ -2662,14 +2703,14 @@ theorem lineG_cusp_split_germ (k : ℕ) (s : ℂ) (hs : s ∈ V)
   have hq : KPCuspCharts.toArch F q = z := e.apply_symm_apply z
   have hqt : q.2 = KPCuspLogShape.meanHeight n z := by
     rw [← hq, KPCuspCharts.toArch_meanHeight F (KPContActualChamberOutgoingAdapter.geometry F ζ hζ C R P H U a).positive_dimension]
-  have hv : (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s a.1).val
-      (KPContFlatCuspIncomingEvaluation.sigma F ζ hζ C R P H U a • KPCuspCharts.toArch F q) =
-      g F ζ hζ C R P H U ι f buffer χ source k s
+  have hv : (current_lineG f buffer χ source hι hf k s a.1).val
+      (current_sigma a • KPCuspCharts.toArch F q) =
+      current_g f buffer χ source k s
         (KPContActualCutoffSmoothDescent.coveredPoint F ζ hζ C R P H U a 1 q) := by
     have hv' : (coveredG F ζ hζ C R P H U ι f buffer χ source hι hf k s).val
         (KPContActualCutoffSmoothDescent.coveredPoint F ζ hζ C R P H U a 1 q) =
-        (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s a.1).val
-          (KPContFlatCuspIncomingEvaluation.sigma F ζ hζ C R P H U a • KPCuspCharts.toArch F q) := by
+        (current_lineG f buffer χ source hι hf k s a.1).val
+          (current_sigma a • KPCuspCharts.toArch F q) := by
       unfold lineG
       rw [KPContSectorScalarLineAlgebra.S_apply]
       simp [KPContActualCutoffSmoothDescent.coveredPoint, KPContSectorSmoothFramesSupport.cuspPoint,
@@ -2706,12 +2747,12 @@ private theorem covariant_gradient_sum_le (n : ℕ) (g f h : KPArch.Space n → 
     (norm_add_le _ _) |>.trans (add_sq_le)
 
 theorem gradient_cusp_split_sq (k : ℕ) (s : ℂ) (hs : s ∈ V)
-    (a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U)
+    (a : current_Cusps)
     (p : KPCuspCharts.Coordinates F) (ht : T + 1 < p.2) (hb : buffer.τ < p.2) :
     (KPContActualCotangentMeasurableFamilies.normSquare
-      (gradient F ζ hζ C R P H U ι f buffer χ source hι hf k s)
-      (KPContActualCollarBuffer.chartLift F ζ hζ (level F ζ hζ C R P H U) R P H a p) : ℝ) ≤
-      2 * (KPContActualChamberOutgoingAdapter.jetNorm F ζ hζ C R P H U a ι buffer f χ source k 1 s p ^ 2 +
+      (current_gradient f buffer χ source hι hf k s)
+      (KPContActualCollarBuffer.chartLift F ζ hζ (current_level) R P H a p) : ℝ) ≤
+      2 * (current_jetNorm a ι buffer f χ source k 1 s p ^ 2 +
         KPContActualChamberMeanZeroAdapter.gradientSq F ζ hζ C R P H U a ι f k s p) := by
   let z := KPCuspCharts.toArch F p
   let n := KPCuspLogShape.dimension F
@@ -2747,88 +2788,88 @@ theorem gradient_cusp_split_sq (k : ℕ) (s : ℂ) (hs : s ∈ V)
   exact hg
 
 theorem gradient_end_square_transport (k : ℕ) (s : ℂ) (hs : s ∈ V)
-    (a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U)
-    (A : ℝ) (hA : (H.atlas (level F ζ hζ C R P H U)).threshold < A) :
-    (∫⁻ x in KPContActualCollarBuffer.endSet F ζ hζ (level F ζ hζ C R P H U) R P H A a,
+    (a : current_Cusps)
+    (A : ℝ) (hA : (H.atlas (current_level)).threshold < A) :
+    (∫⁻ x in KPContActualCollarBuffer.endSet F ζ hζ (current_level) R P H A a,
       (KPContActualCotangentMeasurableFamilies.normSquare
-        (gradient F ζ hζ C R P H U ι f buffer χ source hι hf k s) x : ℝ≥0∞)
+        (current_gradient f buffer χ source hι hf k s) x : ℝ≥0∞)
       ∂baseMeasure F ζ hζ C R P H U) =
     ∫⁻ p in {p : KPCuspCharts.Coordinates F | A < p.2}, ENNReal.ofReal
       (KPContActualChamberOutgoingAdapter.covariantNorm (KPCuspLogShape.dimension F) 1
-        (fun z => (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s a.1).val
-          (KPContFlatCuspIncomingEvaluation.sigma F ζ hζ C R P H U a • z))
+        (fun z => (current_lineG f buffer χ source hι hf k s a.1).val
+          (current_sigma a • z))
         (KPCuspCharts.toArch F p) ^ 2)
       ∂KPContActualChamberOutgoingAdapter.endMeasure F ζ hζ C R P H U a := by
   rw [← KPContActualEndHaarTransport.actual_end_coordinates_pushforward
     F ζ hζ C R P H U a A hA]
   rw [lintegral_map ((KPContActualCotangentMeasurableFamilies.measurable_normSquare _).coe_nnreal_ennreal)
     (show Measurable (KPContActualCollarBuffer.chartLift F ζ hζ
-      (level F ζ hζ C R P H U) R P H a) from by
+      (current_level) R P H a) from by
         unfold KPContActualCollarBuffer.chartLift
         exact (continuous_quotient_mk'.comp
           (((KPCuspCharts.projectiveHomeomorph F
-            (((H.atlas (level F ζ hζ C R P H U)).cuspAtlas a.1).representative a.2)).continuous.comp
+            (((H.atlas (current_level)).cuspAtlas a.1).representative a.2)).continuous.comp
             (KPCuspCharts.toArch_contDiff F).continuous).prodMk continuous_const)).measurable)]
   apply lintegral_congr
   intro p
   have hh := gradient_norm_cusp F ζ hζ C R P H U ι f buffer χ source hι hf k s a p
   have hp : (KPContActualCotangentMeasurableFamilies.normSquare
-      (gradient F ζ hζ C R P H U ι f buffer χ source hι hf k s)
-      (KPContActualCollarBuffer.chartLift F ζ hζ (level F ζ hζ C R P H U) R P H a p) : ℝ≥0∞) =
+      (current_gradient f buffer χ source hι hf k s)
+      (KPContActualCollarBuffer.chartLift F ζ hζ (current_level) R P H a p) : ℝ≥0∞) =
       ENNReal.ofReal (KPContActualChamberOutgoingAdapter.covariantNorm (KPCuspLogShape.dimension F) 1
-        (fun z => (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s a.1).val
-          (KPContFlatCuspIncomingEvaluation.sigma F ζ hζ C R P H U a • z))
+        (fun z => (current_lineG f buffer χ source hι hf k s a.1).val
+          (current_sigma a • z))
         (KPCuspCharts.toArch F p) ^ 2) := by
     rw [← hh, ENNReal.ofReal_coe_nnreal]
   exact hp
 
+
+local notation:max "current_energyDensity" => KPContActualChamberMeanZeroAdapter.energyDensity F ζ hζ C R P H U
+
 theorem gradient_end_square_le (k : ℕ) (s : ℂ) (hs : s ∈ V)
-    (a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U)
-    (A : ℝ) (hA : (H.atlas (level F ζ hζ C R P H U)).threshold < A)
+    (a : current_Cusps)
+    (A : ℝ) (hA : (H.atlas (current_level)).threshold < A)
     (hT : T + 1 ≤ A) (hb : buffer.τ < A)
     (hout : AEMeasurable (fun p => ENNReal.ofReal
-      ((KPContActualChamberOutgoingAdapter.jetNorm F ζ hζ C R P H U a ι buffer f χ source k 1 s p) ^ 2))
+      ((current_jetNorm a ι buffer f χ source k 1 s p) ^ 2))
       ((KPContActualChamberOutgoingAdapter.endMeasure F ζ hζ C R P H U a).restrict {p | A < p.2})) :
-    (∫⁻ x in KPContActualCollarBuffer.endSet F ζ hζ (level F ζ hζ C R P H U) R P H A a,
+    (∫⁻ x in KPContActualCollarBuffer.endSet F ζ hζ (current_level) R P H A a,
       (KPContActualCotangentMeasurableFamilies.normSquare
-        (gradient F ζ hζ C R P H U ι f buffer χ source hι hf k s) x : ℝ≥0∞)
+        (current_gradient f buffer χ source hι hf k s) x : ℝ≥0∞)
       ∂baseMeasure F ζ hζ C R P H U) ≤
     (2 : ℝ≥0∞) * KPContActualChamberOutgoingAdapter.squareTail F ζ hζ C R P H U a ι buffer f χ source k 1 s A +
     (2 : ℝ≥0∞) * KPContActualChamberMeanZeroAdapter.energy F ζ hζ C R P H U a ι f k s 0 A := by
   rw [gradient_end_square_transport F ζ hζ C R P H U ι f buffer χ source hι hf k s hs a A hA]
   have hsplit : ∀ p : KPCuspCharts.Coordinates F, A < p.2 →
       ENNReal.ofReal (KPContActualChamberOutgoingAdapter.covariantNorm (KPCuspLogShape.dimension F) 1
-        (fun z => (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s a.1).val
-          (KPContFlatCuspIncomingEvaluation.sigma F ζ hζ C R P H U a • z))
+        (fun z => (current_lineG f buffer χ source hι hf k s a.1).val
+          (current_sigma a • z))
         (KPCuspCharts.toArch F p) ^ 2) ≤
-      (2 : ℝ≥0∞) * ENNReal.ofReal ((KPContActualChamberOutgoingAdapter.jetNorm
-        F ζ hζ C R P H U a ι buffer f χ source k 1 s p) ^ 2) +
+      (2 : ℝ≥0∞) * ENNReal.ofReal ((current_jetNorm a ι buffer f χ source k 1 s p) ^ 2) +
       (2 : ℝ≥0∞) * ENNReal.ofReal
-        (KPContActualChamberMeanZeroAdapter.energyDensity F ζ hζ C R P H U a ι f k s 0 p) := by
+        (current_energyDensity a ι f k s 0 p) := by
     intro p hp
     have hh := gradient_cusp_split_sq F ζ hζ C R P H U ι f buffer χ source hι hf
       k s hs a p (hT.trans_lt hp) (hb.trans hp)
     rw [gradient_norm_cusp F ζ hζ C R P H U ι f buffer χ source hι hf k s a p] at hh
     have he : KPContActualChamberMeanZeroAdapter.gradientSq F ζ hζ C R P H U a ι f k s p ≤
-        KPContActualChamberMeanZeroAdapter.energyDensity F ζ hζ C R P H U a ι f k s 0 p := by
+        current_energyDensity a ι f k s 0 p := by
       unfold KPContActualChamberMeanZeroAdapter.energyDensity KPContActualChamberMeanZeroAdapter.gradientSq
       simp only [mul_zero, zero_mul, Real.exp_zero, one_mul]
       exact le_add_of_nonneg_left (sq_nonneg _)
-    have henergy : 0 ≤ KPContActualChamberMeanZeroAdapter.energyDensity F ζ hζ C R P H U a ι f k s 0 p :=
+    have henergy : 0 ≤ current_energyDensity a ι f k s 0 p :=
       (Finset.sum_nonneg fun i hi => Finset.sum_nonneg fun j hj => sq_nonneg _).trans he
     calc
-      _ ≤ ENNReal.ofReal (2 * (KPContActualChamberOutgoingAdapter.jetNorm
-          F ζ hζ C R P H U a ι buffer f χ source k 1 s p) ^ 2 +
-          2 * KPContActualChamberMeanZeroAdapter.energyDensity F ζ hζ C R P H U a ι f k s 0 p) :=
+      _ ≤ ENNReal.ofReal (2 * (current_jetNorm a ι buffer f χ source k 1 s p) ^ 2 +
+          2 * current_energyDensity a ι f k s 0 p) :=
         ENNReal.ofReal_le_ofReal (hh.trans (by linarith))
       _ = _ := by rw [ENNReal.ofReal_add (by positivity) (by positivity),
           ENNReal.ofReal_mul (by norm_num), ENNReal.ofReal_mul (by norm_num)]; norm_num
   calc
     _ ≤ ∫⁻ p in {p : KPCuspCharts.Coordinates F | A < p.2},
-        (2 : ℝ≥0∞) * ENNReal.ofReal ((KPContActualChamberOutgoingAdapter.jetNorm
-          F ζ hζ C R P H U a ι buffer f χ source k 1 s p) ^ 2) +
+        (2 : ℝ≥0∞) * ENNReal.ofReal ((current_jetNorm a ι buffer f χ source k 1 s p) ^ 2) +
         (2 : ℝ≥0∞) * ENNReal.ofReal
-          (KPContActualChamberMeanZeroAdapter.energyDensity F ζ hζ C R P H U a ι f k s 0 p)
+          (current_energyDensity a ι f k s 0 p)
         ∂KPContActualChamberOutgoingAdapter.endMeasure F ζ hζ C R P H U a :=
       setLIntegral_mono' (measurableSet_lt measurable_const (by fun_prop)) (by intro p hp; exact hsplit p hp)
     _ ≤ (2 : ℝ≥0∞) * KPContActualChamberOutgoingAdapter.squareTail F ζ hζ C R P H U
@@ -2841,22 +2882,22 @@ theorem gradient_end_square_le (k : ℕ) (s : ℂ) (hs : s ∈ V)
 
 theorem gradient_high_end_square_bound (L : Set ℂ) (hL : IsCompact L) (hLV : L ⊆ V)
     (k : ℕ) : ∃ A B : ℝ,
-    (H.atlas (level F ζ hζ C R P H U)).threshold < A ∧ 0 ≤ B ∧
-    ∀ a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U, ∀ s ∈ L,
-    (∫⁻ x in KPContActualCollarBuffer.endSet F ζ hζ (level F ζ hζ C R P H U) R P H A a,
+    (H.atlas (current_level)).threshold < A ∧ 0 ≤ B ∧
+    ∀ a : current_Cusps, ∀ s ∈ L,
+    (∫⁻ x in KPContActualCollarBuffer.endSet F ζ hζ (current_level) R P H A a,
       (KPContActualCotangentMeasurableFamilies.normSquare
-        (gradient F ζ hζ C R P H U ι f buffer χ source hι hf k s) x : ℝ≥0∞)
+        (current_gradient f buffer χ source hι hf k s) x : ℝ≥0∞)
       ∂baseMeasure F ζ hζ C R P H U) ≤ ENNReal.ofReal B := by
   obtain ⟨t₀,c,h0,hT,hb,hc,hbound⟩ := KPContActualChamberOutgoingAdapter.jets_memLp_square_bound
     F ζ hζ C R P H U ι buffer f χ source hι hf L hL hLV k 1
   have hm := DedekindZetaZeroFree.kp_cont_actual_chamber_mean_zero_adapter F ζ hζ C R P H U
     (DedekindZetaZeroFree.actual_levelRealization_of_recipe
-      F ζ hζ (level F ζ hζ C R P H U) R P H) ι hι f hf buffer χ source
+      F ζ hζ (current_level) R P H) ι hι f hf buffer χ source
   obtain ⟨t₁,b,h10,h1atlas,h1b,h1T,hb0,hmbound,hmtail⟩ := hm.weighted_tails L hL hLV k 0 le_rfl
   let A := max t₀ t₁
   have h0A : t₀ ≤ A := le_max_left _ _
   have h1A : t₁ ≤ A := le_max_right _ _
-  have hA : (H.atlas (level F ζ hζ C R P H U)).threshold < A := h1atlas.trans_le h1A
+  have hA : (H.atlas (current_level)).threshold < A := h1atlas.trans_le h1A
   refine ⟨A,2*c+2*b,hA,by positivity,?_⟩
   intro a s hs
   have hout : KPContActualChamberOutgoingAdapter.squareTail F ζ hζ C R P H U
@@ -2880,15 +2921,15 @@ theorem gradient_high_end_square_bound (L : Set ℂ) (hL : IsCompact L) (hLV : L
       norm_num
 
 theorem lineG_end_square_le (k : ℕ) (s : ℂ) (hs : s ∈ V)
-    (a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U)
-    (A : ℝ) (hA : (H.atlas (level F ζ hζ C R P H U)).threshold < A)
+    (a : current_Cusps)
+    (A : ℝ) (hA : (H.atlas (current_level)).threshold < A)
     (hT : T + 1 ≤ A) (hb : buffer.τ < A)
     (hout : AEMeasurable (fun p => ENNReal.ofReal
-      ((KPContActualChamberOutgoingAdapter.jetNorm F ζ hζ C R P H U a ι buffer f χ source k 0 s p) ^ 2))
+      ((current_jetNorm a ι buffer f χ source k 0 s p) ^ 2))
       ((KPContActualChamberOutgoingAdapter.endMeasure F ζ hζ C R P H U a).restrict {p | A < p.2})) :
-    (∫⁻ x in KPContActualCollarBuffer.endSet F ζ hζ (level F ζ hζ C R P H U) R P H A a,
-      KPContSectorLineL2Isometry.squaredNorm F ζ hζ (level F ζ hζ C R P H U) R P H
-        (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s) x
+    (∫⁻ x in KPContActualCollarBuffer.endSet F ζ hζ (current_level) R P H A a,
+      KPContSectorLineL2Isometry.squaredNorm F ζ hζ (current_level) R P H
+        (current_lineG f buffer χ source hι hf k s) x
       ∂baseMeasure F ζ hζ C R P H U) ≤
     (2 : ℝ≥0∞) * KPContActualChamberOutgoingAdapter.squareTail F ζ hζ C R P H U a ι buffer f χ source k 0 s A +
     (2 : ℝ≥0∞) * KPContActualChamberMeanZeroAdapter.energy F ζ hζ C R P H U a ι f k s 0 A := by
@@ -2897,34 +2938,31 @@ theorem lineG_end_square_le (k : ℕ) (s : ℂ) (hs : s ∈ V)
       ENNReal.ofReal (‖iteratedDerivWithin k
         (fun w => KPContActualChamberOutgoingAdapter.correctionSheet
           F ζ hζ C R P H U a ι buffer f χ source w p.2 p.1.1 p.1.2 1) V s‖ ^ 2) ≤
-      (2 : ℝ≥0∞) * ENNReal.ofReal ((KPContActualChamberOutgoingAdapter.jetNorm
-        F ζ hζ C R P H U a ι buffer f χ source k 0 s p) ^ 2) +
+      (2 : ℝ≥0∞) * ENNReal.ofReal ((current_jetNorm a ι buffer f χ source k 0 s p) ^ 2) +
       (2 : ℝ≥0∞) * ENNReal.ofReal
-        (KPContActualChamberMeanZeroAdapter.energyDensity F ζ hζ C R P H U a ι f k s 0 p) := by
+        (current_energyDensity a ι f k s 0 p) := by
     intro p hp
     have hh := sectionNorm_cusp_split_sq F ζ hζ C R P H U ι f buffer χ source hι hf
       k s hs a p (hT.trans hp.le) (hb.trans hp)
     rw [sectionNorm_cusp_scalar F ζ hζ C R P H U ι f buffer χ source hι hf k s hs a p] at hh
     have he : ‖KPContActualChamberMeanZeroAdapter.jetScalar F ζ hζ C R P H U a ι f k s p‖ ^ 2 ≤
-        KPContActualChamberMeanZeroAdapter.energyDensity F ζ hζ C R P H U a ι f k s 0 p := by
+        current_energyDensity a ι f k s 0 p := by
       unfold KPContActualChamberMeanZeroAdapter.energyDensity KPContActualChamberMeanZeroAdapter.gradientSq
       simp only [mul_zero, zero_mul, Real.exp_zero, one_mul]
       exact le_add_of_nonneg_right (Finset.sum_nonneg fun i hi => Finset.sum_nonneg fun j hj => sq_nonneg _)
-    have henergy : 0 ≤ KPContActualChamberMeanZeroAdapter.energyDensity F ζ hζ C R P H U a ι f k s 0 p :=
+    have henergy : 0 ≤ current_energyDensity a ι f k s 0 p :=
       (sq_nonneg _).trans he
     calc
-      _ ≤ ENNReal.ofReal (2 * (KPContActualChamberOutgoingAdapter.jetNorm
-          F ζ hζ C R P H U a ι buffer f χ source k 0 s p) ^ 2 +
-          2 * KPContActualChamberMeanZeroAdapter.energyDensity F ζ hζ C R P H U a ι f k s 0 p) :=
+      _ ≤ ENNReal.ofReal (2 * (current_jetNorm a ι buffer f χ source k 0 s p) ^ 2 +
+          2 * current_energyDensity a ι f k s 0 p) :=
         ENNReal.ofReal_le_ofReal (hh.trans (by linarith))
       _ = _ := by rw [ENNReal.ofReal_add (by positivity) (by positivity),
           ENNReal.ofReal_mul (by norm_num), ENNReal.ofReal_mul (by norm_num)]; norm_num
   calc
     _ ≤ ∫⁻ p in {p : KPCuspCharts.Coordinates F | A < p.2},
-        (2 : ℝ≥0∞) * ENNReal.ofReal ((KPContActualChamberOutgoingAdapter.jetNorm
-          F ζ hζ C R P H U a ι buffer f χ source k 0 s p) ^ 2) +
+        (2 : ℝ≥0∞) * ENNReal.ofReal ((current_jetNorm a ι buffer f χ source k 0 s p) ^ 2) +
         (2 : ℝ≥0∞) * ENNReal.ofReal
-          (KPContActualChamberMeanZeroAdapter.energyDensity F ζ hζ C R P H U a ι f k s 0 p)
+          (current_energyDensity a ι f k s 0 p)
         ∂KPContActualChamberOutgoingAdapter.endMeasure F ζ hζ C R P H U a :=
       setLIntegral_mono' (measurableSet_lt measurable_const (by fun_prop)) (by intro p hp; exact hsplit p hp)
     _ ≤ (2 : ℝ≥0∞) * KPContActualChamberOutgoingAdapter.squareTail F ζ hζ C R P H U
@@ -2937,22 +2975,22 @@ theorem lineG_end_square_le (k : ℕ) (s : ℂ) (hs : s ∈ V)
 
 theorem lineG_high_end_square_bound (L : Set ℂ) (hL : IsCompact L) (hLV : L ⊆ V)
     (k : ℕ) : ∃ A B : ℝ,
-    (H.atlas (level F ζ hζ C R P H U)).threshold < A ∧ 0 ≤ B ∧
-    ∀ a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U, ∀ s ∈ L,
-    (∫⁻ x in KPContActualCollarBuffer.endSet F ζ hζ (level F ζ hζ C R P H U) R P H A a,
-      KPContSectorLineL2Isometry.squaredNorm F ζ hζ (level F ζ hζ C R P H U) R P H
-        (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s) x
+    (H.atlas (current_level)).threshold < A ∧ 0 ≤ B ∧
+    ∀ a : current_Cusps, ∀ s ∈ L,
+    (∫⁻ x in KPContActualCollarBuffer.endSet F ζ hζ (current_level) R P H A a,
+      KPContSectorLineL2Isometry.squaredNorm F ζ hζ (current_level) R P H
+        (current_lineG f buffer χ source hι hf k s) x
       ∂baseMeasure F ζ hζ C R P H U) ≤ ENNReal.ofReal B := by
   obtain ⟨t₀,c,h0,hT,hb,hc,hbound⟩ := KPContActualChamberOutgoingAdapter.jets_memLp_square_bound
     F ζ hζ C R P H U ι buffer f χ source hι hf L hL hLV k 0
   have hm := DedekindZetaZeroFree.kp_cont_actual_chamber_mean_zero_adapter F ζ hζ C R P H U
     (DedekindZetaZeroFree.actual_levelRealization_of_recipe
-      F ζ hζ (level F ζ hζ C R P H U) R P H) ι hι f hf buffer χ source
+      F ζ hζ (current_level) R P H) ι hι f hf buffer χ source
   obtain ⟨t₁,b,h10,h1atlas,h1b,h1T,hb0,hmbound,hmtail⟩ := hm.weighted_tails L hL hLV k 0 le_rfl
   let A := max t₀ t₁
   have h0A : t₀ ≤ A := le_max_left _ _
   have h1A : t₁ ≤ A := le_max_right _ _
-  have hA : (H.atlas (level F ζ hζ C R P H U)).threshold < A := h1atlas.trans_le h1A
+  have hA : (H.atlas (current_level)).threshold < A := h1atlas.trans_le h1A
   refine ⟨A,2*c+2*b,hA,by positivity,?_⟩
   intro a s hs
   rw [lineG_end_square_transport F ζ hζ C R P H U ι f buffer χ source hι hf k s (hLV hs) a A hA]
@@ -2967,41 +3005,38 @@ theorem lineG_high_end_square_bound (L : Set ℂ) (hL : IsCompact L) (hLV : L �
       ENNReal.ofReal (‖iteratedDerivWithin k
         (fun w => KPContActualChamberOutgoingAdapter.correctionSheet
           F ζ hζ C R P H U a ι buffer f χ source w p.2 p.1.1 p.1.2 1) V s‖ ^ 2) ≤
-      (2 : ℝ≥0∞) * ENNReal.ofReal ((KPContActualChamberOutgoingAdapter.jetNorm
-        F ζ hζ C R P H U a ι buffer f χ source k 0 s p) ^ 2) +
+      (2 : ℝ≥0∞) * ENNReal.ofReal ((current_jetNorm a ι buffer f χ source k 0 s p) ^ 2) +
       (2 : ℝ≥0∞) * ENNReal.ofReal
-        (KPContActualChamberMeanZeroAdapter.energyDensity F ζ hζ C R P H U a ι f k s 0 p) := by
+        (current_energyDensity a ι f k s 0 p) := by
     intro p hp
     have hh := sectionNorm_cusp_split_sq F ζ hζ C R P H U ι f buffer χ source hι hf
       k s (hLV hs) a p (hT.le.trans (h0A.trans hp.le)) (hb.trans_le h0A |>.trans hp)
     rw [sectionNorm_cusp_scalar F ζ hζ C R P H U ι f buffer χ source hι hf k s (hLV hs) a p] at hh
     have he : ‖KPContActualChamberMeanZeroAdapter.jetScalar F ζ hζ C R P H U a ι f k s p‖ ^ 2 ≤
-        KPContActualChamberMeanZeroAdapter.energyDensity F ζ hζ C R P H U a ι f k s 0 p := by
+        current_energyDensity a ι f k s 0 p := by
       unfold KPContActualChamberMeanZeroAdapter.energyDensity KPContActualChamberMeanZeroAdapter.gradientSq
       simp only [mul_zero, zero_mul, Real.exp_zero, one_mul]
       exact le_add_of_nonneg_right (Finset.sum_nonneg fun i hi => Finset.sum_nonneg fun j hj => sq_nonneg _)
-    have henergy : 0 ≤ KPContActualChamberMeanZeroAdapter.energyDensity F ζ hζ C R P H U a ι f k s 0 p :=
+    have henergy : 0 ≤ current_energyDensity a ι f k s 0 p :=
       (sq_nonneg _).trans he
     calc
-      _ ≤ ENNReal.ofReal (2 * (KPContActualChamberOutgoingAdapter.jetNorm
-          F ζ hζ C R P H U a ι buffer f χ source k 0 s p) ^ 2 +
-          2 * KPContActualChamberMeanZeroAdapter.energyDensity F ζ hζ C R P H U a ι f k s 0 p) :=
+      _ ≤ ENNReal.ofReal (2 * (current_jetNorm a ι buffer f χ source k 0 s p) ^ 2 +
+          2 * current_energyDensity a ι f k s 0 p) :=
         ENNReal.ofReal_le_ofReal (hh.trans (by linarith))
       _ = _ := by rw [ENNReal.ofReal_add (by positivity) (by positivity),
           ENNReal.ofReal_mul (by norm_num), ENNReal.ofReal_mul (by norm_num)]; norm_num
   calc
     _ ≤ ∫⁻ p in {p : KPCuspCharts.Coordinates F | A < p.2},
-        (2 : ℝ≥0∞) * ENNReal.ofReal ((KPContActualChamberOutgoingAdapter.jetNorm
-          F ζ hζ C R P H U a ι buffer f χ source k 0 s p) ^ 2) +
+        (2 : ℝ≥0∞) * ENNReal.ofReal ((current_jetNorm a ι buffer f χ source k 0 s p) ^ 2) +
         (2 : ℝ≥0∞) * ENNReal.ofReal
-          (KPContActualChamberMeanZeroAdapter.energyDensity F ζ hζ C R P H U a ι f k s 0 p)
+          (current_energyDensity a ι f k s 0 p)
         ∂KPContActualChamberOutgoingAdapter.endMeasure F ζ hζ C R P H U a :=
       setLIntegral_mono' (measurableSet_lt measurable_const (by fun_prop)) (by intro p hp; exact hsplit p hp)
     _ ≤ (2 : ℝ≥0∞) * KPContActualChamberOutgoingAdapter.squareTail F ζ hζ C R P H U
         a ι buffer f χ source k 0 s A +
         (2 : ℝ≥0∞) * KPContActualChamberMeanZeroAdapter.energy F ζ hζ C R P H U a ι f k s 0 A := by
       have hmnorm : AEMeasurable (fun p => ENNReal.ofReal
-          ((KPContActualChamberOutgoingAdapter.jetNorm F ζ hζ C R P H U a ι buffer f χ source k 0 s p) ^ 2))
+          ((current_jetNorm a ι buffer f χ source k 0 s p) ^ 2))
           ((KPContActualChamberOutgoingAdapter.endMeasure F ζ hζ C R P H U a).restrict {p | A < p.2}) := by
         have hh := ((hbound a s hs).1.aestronglyMeasurable.mono_measure
           (Measure.restrict_mono (fun p hp => lt_of_le_of_lt h0A hp) le_rfl)).aemeasurable
@@ -3017,37 +3052,37 @@ theorem lineG_high_end_square_bound (L : Set ℂ) (hL : IsCompact L) (hLV : L �
 private theorem lineG_global_square_bound (L : Set ℂ) (hL : IsCompact L) (hLV : L ⊆ V) (k : ℕ) :
     ∃ B : ℝ, 0 ≤ B ∧ ∀ s ∈ L,
     (∫⁻ x, KPContSectorLineL2Isometry.squaredNorm F ζ hζ
-      (level F ζ hζ C R P H U) R P H
-      (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s) x
+      (current_level) R P H
+      (current_lineG f buffer χ source hι hf k s) x
       ∂baseMeasure F ζ hζ C R P H U) ≤ ENNReal.ofReal B := by
   obtain ⟨A,E,hA,hE,hend⟩ := lineG_high_end_square_bound F ζ hζ C R P H U ι f buffer χ source hι hf L hL hLV k
-  let K := (tail F ζ hζ C R P H U A)ᶜ
+  let K := (current_tail A)ᶜ
   have hK : IsCompact K := by
     convert KPContThreeL2EndHelpers.compact_truncated_core F ζ hζ
-      (level F ζ hζ C R P H U) R P H A using 1
+      (current_level) R P H A using 1
     ext x
     simp only [K,tail,KPCuspCutoffGraph.highEnds,KPContActualCollarBuffer.endSet,
       Set.mem_compl_iff,Set.mem_iUnion]
     exact not_congr ⟨fun ⟨i,c,h⟩ => ⟨⟨i,c⟩,h⟩,fun ⟨⟨i,c⟩,h⟩ => ⟨i,c,h⟩⟩
   obtain ⟨B,hB,hcore⟩ := lineGH_compact_square_bound F ζ hζ C R P H U ι f buffer χ source hι hf L hL hLV K hK k
-  let N := Fintype.card (KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U)
+  let N := Fintype.card (current_Cusps)
   refine ⟨B + N*E, by positivity, ?_⟩
   intro s hs
-  have ht : tail F ζ hζ C R P H U A =
-      ⋃ a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U,
-        KPContActualCollarBuffer.endSet F ζ hζ (level F ζ hζ C R P H U) R P H A a := by
+  have ht : current_tail A =
+      ⋃ a : current_Cusps,
+        KPContActualCollarBuffer.endSet F ζ hζ (current_level) R P H A a := by
     ext x
     simp only [tail,KPCuspCutoffGraph.highEnds,KPContActualCollarBuffer.endSet,Set.mem_iUnion]
     exact ⟨fun ⟨i,c,h⟩ => ⟨⟨i,c⟩,h⟩,fun ⟨⟨i,c⟩,h⟩ => ⟨i,c,h⟩⟩
-  have htail : (∫⁻ x in tail F ζ hζ C R P H U A,
-      KPContSectorLineL2Isometry.squaredNorm F ζ hζ (level F ζ hζ C R P H U) R P H
-        (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s) x
+  have htail : (∫⁻ x in current_tail A,
+      KPContSectorLineL2Isometry.squaredNorm F ζ hζ (current_level) R P H
+        (current_lineG f buffer χ source hι hf k s) x
       ∂baseMeasure F ζ hζ C R P H U) ≤ ENNReal.ofReal (N*E) := by
     rw [ht]
     apply (lintegral_iUnion_le _ _).trans
     rw [tsum_fintype]
     calc
-      _ ≤ ∑ _a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U, ENNReal.ofReal E :=
+      _ ≤ ∑ _a : current_Cusps, ENNReal.ofReal E :=
         Finset.sum_le_sum (fun a _ => hend a s hs)
       _ = ENNReal.ofReal (N*E) := by
         rw [Finset.sum_const,Finset.card_univ,nsmul_eq_mul]
@@ -3055,12 +3090,12 @@ private theorem lineG_global_square_bound (L : Set ℂ) (hL : IsCompact L) (hLV 
         rw [ENNReal.ofReal_natCast]
   calc
     _ = (∫⁻ x in K, KPContSectorLineL2Isometry.squaredNorm F ζ hζ
-        (level F ζ hζ C R P H U) R P H
-        (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s) x
+        (current_level) R P H
+        (current_lineG f buffer χ source hι hf k s) x
         ∂baseMeasure F ζ hζ C R P H U) +
-        (∫⁻ x in tail F ζ hζ C R P H U A, KPContSectorLineL2Isometry.squaredNorm F ζ hζ
-        (level F ζ hζ C R P H U) R P H
-        (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s) x
+        (∫⁻ x in current_tail A, KPContSectorLineL2Isometry.squaredNorm F ζ hζ
+        (current_level) R P H
+        (current_lineG f buffer χ source hι hf k s) x
         ∂baseMeasure F ζ hζ C R P H U) := by
       simpa [K] using (lintegral_add_compl _ hK.measurableSet).symm
     _ ≤ ENNReal.ofReal B + ENNReal.ofReal (N*E) := add_le_add (hcore s hs).1 htail
@@ -3069,8 +3104,8 @@ private theorem lineG_global_square_bound (L : Set ℂ) (hL : IsCompact L) (hLV 
 private theorem lineH_global_square_bound (L : Set ℂ) (hL : IsCompact L) (hLV : L ⊆ V) (k : ℕ) :
     ∃ B : ℝ, 0 ≤ B ∧ ∀ s ∈ L,
     (∫⁻ x, KPContSectorLineL2Isometry.squaredNorm F ζ hζ
-      (level F ζ hζ C R P H U) R P H
-      (lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s) x
+      (current_level) R P H
+      (current_lineH f buffer χ source hι hf k s) x
       ∂baseMeasure F ζ hζ C R P H U) ≤ ENNReal.ofReal B := by
   let K := KPContActualAllCuspSource.K F ζ hζ C R P H U buffer
   obtain ⟨B,hB,hbound⟩ := lineGH_compact_square_bound F ζ hζ C R P H U ι f buffer χ source hι hf
@@ -3078,17 +3113,17 @@ private theorem lineH_global_square_bound (L : Set ℂ) (hL : IsCompact L) (hLV 
   refine ⟨B,hB,?_⟩
   intro s hs
   have hz : ∀ x ∈ Kᶜ, KPContSectorLineL2Isometry.squaredNorm F ζ hζ
-      (level F ζ hζ C R P H U) R P H
-      (lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s) x = 0 := by
+      (current_level) R P H
+      (current_lineH f buffer χ source hι hf k s) x = 0 := by
     intro x hx
     have hn : x ∉ tsupport (KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ
-        (level F ζ hζ C R P H U) R P H
-        (lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s)) :=
+        (current_level) R P H
+        (current_lineH f buffer χ source hι hf k s)) :=
       fun h => hx (lineH_support F ζ hζ C R P H U ι f buffer χ source hι hf k s h)
     simp [KPContSectorLineL2Isometry.squaredNorm,image_eq_zero_of_notMem_tsupport hn]
   have hi : (∫⁻ x in Kᶜ, KPContSectorLineL2Isometry.squaredNorm F ζ hζ
-      (level F ζ hζ C R P H U) R P H
-      (lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s) x
+      (current_level) R P H
+      (current_lineH f buffer χ source hι hf k s) x
       ∂baseMeasure F ζ hζ C R P H U) = 0 := by
     rw [← lintegral_zero (μ := (baseMeasure F ζ hζ C R P H U).restrict Kᶜ)]
     exact setLIntegral_congr_fun source.compact_collars.measurableSet.compl hz
@@ -3096,19 +3131,19 @@ private theorem lineH_global_square_bound (L : Set ℂ) (hL : IsCompact L) (hLV 
   exact (hbound s hs).2
 
 theorem lineG_borelL2 (k : ℕ) (s : ℂ) :
-    lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s ∈
-      BorelL2Sections F ζ hζ C R P H U := by
+    current_lineG f buffer χ source hι hf k s ∈
+      current_BorelL2Sections := by
   by_cases hs : s ∈ V
   · obtain ⟨A,B,hA,hB,hbound⟩ := lineG_high_end_square_bound
       F ζ hζ C R P H U ι f buffer χ source hι hf {s} isCompact_singleton
       (Set.singleton_subset_iff.mpr hs) k
-    let E : Set (Base F ζ hζ C R P H U) := ⋃ a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U,
-      KPContActualCollarBuffer.endSet F ζ hζ (level F ζ hζ C R P H U) R P H A a
+    let E : Set (Base F ζ hζ C R P H U) := ⋃ a : current_Cusps,
+      KPContActualCollarBuffer.endSet F ζ hζ (current_level) R P H A a
     have hE : MeasurableSet E := (isOpen_iUnion (fun a => KPContThreeL2EndHelpers.all_ends_open
-      F ζ hζ (level F ζ hζ C R P H U) R P H A a)).measurableSet
+      F ζ hζ (current_level) R P H A a)).measurableSet
     have hEc : IsCompact Eᶜ := KPContThreeL2EndHelpers.compact_truncated_core
-      F ζ hζ (level F ζ hζ C R P H U) R P H A
-    refine ⟨fun i => ((smooth F ζ hζ C R P H U ι f buffer χ source hι hf k s).1 i).continuous.measurable, ?_⟩
+      F ζ hζ (current_level) R P H A
+    refine ⟨fun i => ((current_smooth f buffer χ source hι hf k s).1 i).continuous.measurable, ?_⟩
     unfold KPContSectorLineL2Isometry.normIntegral
     rw [← lintegral_add_compl _ hE]
     apply ENNReal.add_lt_top.mpr
@@ -3118,34 +3153,34 @@ theorem lineG_borelL2 (k : ℕ) (s : ℂ) :
     apply ENNReal.sum_lt_top.mpr
     intro a ha
     exact (hbound a s (Set.mem_singleton s)).trans_lt ENNReal.ofReal_lt_top
-  · have he : lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s = 0 := by
+  · have he : current_lineG f buffer χ source hι hf k s = 0 := by
       simp [lineG, coveredG, hs]
     rw [he]
-    exact (BorelL2Sections F ζ hζ C R P H U).zero_mem
+    exact (current_BorelL2Sections).zero_mem
 
 include hι hf in
 
 theorem g_memLp (k : ℕ) (s : ℂ) (hs : s ∈ V) :
-    MemLp (g F ζ hζ C R P H U ι f buffer χ source k s) 2 (measure F ζ hζ C R P H U) := by
+    MemLp (current_g f buffer χ source k s) 2 (measure F ζ hζ C R P H U) := by
   have hm := lineG_borelL2 F ζ hζ C R P H U ι f buffer χ source hι hf k s
-  have he : (KPContSectorLineL2Isometry.scalarRepresentative F ζ hζ (level F ζ hζ C R P H U)
-      R P H (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s)).val =
-      g F ζ hζ C R P H U ι f buffer χ source k s := by
+  have he : (KPContSectorLineL2Isometry.scalarRepresentative F ζ hζ (current_level)
+      R P H (current_lineG f buffer χ source hι hf k s)).val =
+      current_g f buffer χ source k s := by
     rw [KPContSectorLineL2Isometry.scalarRepresentative_eq_symm]
     unfold lineG
     rw [LinearEquiv.symm_apply_apply]
     simp [coveredG, hs]
   rw [← he]
   exact (KPContSectorLineL2Isometry.finite_integral_iff F ζ hζ
-    (level F ζ hζ C R P H U) R P H _ hm.1).mp hm.2
+    (current_level) R P H _ hm.1).mp hm.2
 
 include hι hf in
 
 theorem h_memLp (k : ℕ) (s : ℂ) (hs : s ∈ V) :
     MemLp (h F ζ hζ C R P H U ι f buffer χ source k s) 2 (measure F ζ hζ C R P H U) := by
   have hm := lineH_borelL2 F ζ hζ C R P H U ι f buffer χ source hι hf k s
-  have he : (KPContSectorLineL2Isometry.scalarRepresentative F ζ hζ (level F ζ hζ C R P H U)
-      R P H (lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s)).val =
+  have he : (KPContSectorLineL2Isometry.scalarRepresentative F ζ hζ (current_level)
+      R P H (current_lineH f buffer χ source hι hf k s)).val =
       h F ζ hζ C R P H U ι f buffer χ source k s := by
     rw [KPContSectorLineL2Isometry.scalarRepresentative_eq_symm]
     unfold lineH
@@ -3153,20 +3188,20 @@ theorem h_memLp (k : ℕ) (s : ℂ) (hs : s ∈ V) :
     simp [coveredH, hs]
   rw [← he]
   exact (KPContSectorLineL2Isometry.finite_integral_iff F ζ hζ
-    (level F ζ hζ C R P H U) R P H _ hm.1).mp hm.2
+    (current_level) R P H _ hm.1).mp hm.2
 
 theorem lineG_end_uniform_tails (L : Set ℂ) (hL : IsCompact L) (hLV : L ⊆ V)
     (k : ℕ) (ε : ℝ) (hε : 0 < ε) : ∃ A : ℝ,
-    (H.atlas (level F ζ hζ C R P H U)).threshold < A ∧
+    (H.atlas (current_level)).threshold < A ∧
     ∀ A' : ℝ, A ≤ A' →
-    ∀ a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U, ∀ s ∈ L,
-    (∫⁻ x in KPContActualCollarBuffer.endSet F ζ hζ (level F ζ hζ C R P H U) R P H A' a,
-      KPContSectorLineL2Isometry.squaredNorm F ζ hζ (level F ζ hζ C R P H U) R P H
-        (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s) x
+    ∀ a : current_Cusps, ∀ s ∈ L,
+    (∫⁻ x in KPContActualCollarBuffer.endSet F ζ hζ (current_level) R P H A' a,
+      KPContSectorLineL2Isometry.squaredNorm F ζ hζ (current_level) R P H
+        (current_lineG f buffer χ source hι hf k s) x
       ∂baseMeasure F ζ hζ C R P H U) ≤ ENNReal.ofReal ε := by
   have hm := DedekindZetaZeroFree.kp_cont_actual_chamber_mean_zero_adapter F ζ hζ C R P H U
     (DedekindZetaZeroFree.actual_levelRealization_of_recipe
-      F ζ hζ (level F ζ hζ C R P H U) R P H) ι hι f hf buffer χ source
+      F ζ hζ (current_level) R P H) ι hι f hf buffer χ source
   obtain ⟨t₁,b,h10,h1atlas,h1b,h1T,hb0,hmbound,hmtail⟩ := hm.weighted_tails L hL hLV k 1 (by norm_num)
   have hlim : Filter.Tendsto (fun t : ℝ => b * Real.exp (-2*t)) Filter.atTop (𝓝 0) := by
     have hh := Real.tendsto_exp_neg_atTop_nhds_zero.comp
@@ -3202,16 +3237,16 @@ theorem lineG_end_uniform_tails (L : Set ℂ) (hL : IsCompact L) (hLV : L ⊆ V)
 
 theorem gradient_end_uniform_tails (L : Set ℂ) (hL : IsCompact L) (hLV : L ⊆ V)
     (k : ℕ) (ε : ℝ) (hε : 0 < ε) : ∃ A : ℝ,
-    (H.atlas (level F ζ hζ C R P H U)).threshold < A ∧
+    (H.atlas (current_level)).threshold < A ∧
     ∀ A' : ℝ, A ≤ A' →
-    ∀ a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U, ∀ s ∈ L,
-    (∫⁻ x in KPContActualCollarBuffer.endSet F ζ hζ (level F ζ hζ C R P H U) R P H A' a,
+    ∀ a : current_Cusps, ∀ s ∈ L,
+    (∫⁻ x in KPContActualCollarBuffer.endSet F ζ hζ (current_level) R P H A' a,
       (KPContActualCotangentMeasurableFamilies.normSquare
-        (gradient F ζ hζ C R P H U ι f buffer χ source hι hf k s) x : ℝ≥0∞)
+        (current_gradient f buffer χ source hι hf k s) x : ℝ≥0∞)
       ∂baseMeasure F ζ hζ C R P H U) ≤ ENNReal.ofReal ε := by
   have hm := DedekindZetaZeroFree.kp_cont_actual_chamber_mean_zero_adapter F ζ hζ C R P H U
     (DedekindZetaZeroFree.actual_levelRealization_of_recipe
-      F ζ hζ (level F ζ hζ C R P H U) R P H) ι hι f hf buffer χ source
+      F ζ hζ (current_level) R P H) ι hι f hf buffer χ source
   obtain ⟨t₁,b,h10,h1atlas,h1b,h1T,hb0,hmbound,hmtail⟩ := hm.weighted_tails L hL hLV k 1 (by norm_num)
   have hlim : Filter.Tendsto (fun t : ℝ => b * Real.exp (-2*t)) Filter.atTop (𝓝 0) := by
     have hh := Real.tendsto_exp_neg_atTop_nhds_zero.comp
@@ -3247,18 +3282,18 @@ theorem gradient_end_uniform_tails (L : Set ℂ) (hL : IsCompact L) (hLV : L ⊆
 
 theorem gradient_norm_continuous (k : ℕ) (s : ℂ) :
     Continuous (fun x => (KPContActualCotangentMeasurableFamilies.normSquare
-      (gradient F ζ hζ C R P H U ι f buffer χ source hι hf k s) x : ℝ)) := by
+      (current_gradient f buffer χ source hι hf k s) x : ℝ)) := by
   exact KPContThreeL2CotangentHelpers.smoothGradient_norm_continuous
-    (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s)
-    (smooth F ζ hζ C R P H U ι f buffer χ source hι hf k s).1
+    (current_lineG f buffer χ source hι hf k s)
+    (current_smooth f buffer χ source hι hf k s).1
 
 theorem gradient_compact_square_finite (k : ℕ) (s : ℂ)
     (K : Set (Base F ζ hζ C R P H U)) (hK : IsCompact K) :
     (∫⁻ x in K, (KPContActualCotangentMeasurableFamilies.normSquare
-      (gradient F ζ hζ C R P H U ι f buffer χ source hι hf k s) x : ℝ≥0∞)
+      (current_gradient f buffer χ source hι hf k s) x : ℝ≥0∞)
       ∂baseMeasure F ζ hζ C R P H U) < ⊤ := by
   letI := KPContSectorFixedMeasureLocalFiniteness.sphericalMeasure_finiteOnCompacts
-    F ζ hζ R P (level F ζ hζ C R P H U)
+    F ζ hζ R P (current_level)
   have hi := (gradient_norm_continuous F ζ hζ C R P H U ι f buffer χ source hι hf k s).continuousOn.integrableOn_compact
     (μ := baseMeasure F ζ hζ C R P H U) hK
   simpa only [ENNReal.ofReal_coe_nnreal] using
@@ -3267,43 +3302,43 @@ theorem gradient_compact_square_finite (k : ℕ) (s : ℂ)
 
 theorem gradient_norm_zero (k : ℕ) (s : ℂ) (hs : s ∉ V) :
     KPContActualCotangentMeasurableFamilies.normSquare
-      (gradient F ζ hζ C R P H U ι f buffer χ source hι hf k s) = 0 := by
+      (current_gradient f buffer χ source hι hf k s) = 0 := by
   funext x
-  obtain ⟨⟨i,y⟩,rfl⟩ := (H.atlas (level F ζ hζ C R P H U)).components.surjective x
+  obtain ⟨⟨i,y⟩,rfl⟩ := (H.atlas (current_level)).components.surjective x
   induction y using Quotient.inductionOn with | h y =>
-    have he : lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s = 0 := by
+    have he : current_lineG f buffer χ source hι hf k s = 0 := by
       simp [lineG, coveredG, hs]
     have hh := KPContThreeL2CotangentHelpers.smoothGradient_at_arch
-      (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s)
-      (smooth F ζ hζ C R P H U ι f buffer χ source hι hf k s).1 i y
+      (current_lineG f buffer χ source hι hf k s)
+      (current_smooth f buffer χ source hι hf k s).1 i y
     change KPContActualCotangentMeasurableFamilies.normSquare
-      (gradient F ζ hζ C R P H U ι f buffer χ source hι hf k s)
-      ((H.atlas (level F ζ hζ C R P H U)).components ⟨i, Quotient.mk _ y⟩) = 0
+      (current_gradient f buffer χ source hι hf k s)
+      ((H.atlas (current_level)).components ⟨i, Quotient.mk _ y⟩) = 0
     apply NNReal.coe_injective
     change (_ : ℝ) = 0
     change (KPContActualCotangentMeasurableFamilies.normSquare
-      (gradient F ζ hζ C R P H U ι f buffer χ source hι hf k s)
-      ((H.atlas (level F ζ hζ C R P H U)).components ⟨i, Quotient.mk _ y⟩) : ℝ) = _ at hh
+      (current_gradient f buffer χ source hι hf k s)
+      ((H.atlas (current_level)).components ⟨i, Quotient.mk _ y⟩) : ℝ) = _ at hh
     rw [hh, he]
     simp [HyperbolicChart.differential, HyperbolicChart.coordinateDerivative, Fin.sum_univ_succ]
 
 theorem gradient_squareFinite (k : ℕ) (s : ℂ) :
     KPContActualCotangentMeasurableFamilies.squareFinite (R := R) (P := P)
-      (gradient F ζ hζ C R P H U ι f buffer χ source hι hf k s) := by
+      (current_gradient f buffer χ source hι hf k s) := by
   by_cases hs : s ∈ V
   · obtain ⟨A,B,hA,hB,hbound⟩ := gradient_high_end_square_bound
       F ζ hζ C R P H U ι f buffer χ source hι hf {s} isCompact_singleton
       (Set.singleton_subset_iff.mpr hs) k
-    let E : Set (Base F ζ hζ C R P H U) := ⋃ a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U,
-      KPContActualCollarBuffer.endSet F ζ hζ (level F ζ hζ C R P H U) R P H A a
+    let E : Set (Base F ζ hζ C R P H U) := ⋃ a : current_Cusps,
+      KPContActualCollarBuffer.endSet F ζ hζ (current_level) R P H A a
     have hE : MeasurableSet E := (isOpen_iUnion (fun a => KPContThreeL2EndHelpers.all_ends_open
-      F ζ hζ (level F ζ hζ C R P H U) R P H A a)).measurableSet
+      F ζ hζ (current_level) R P H A a)).measurableSet
     have hEc : IsCompact Eᶜ := KPContThreeL2EndHelpers.compact_truncated_core
-      F ζ hζ (level F ζ hζ C R P H U) R P H A
+      F ζ hζ (current_level) R P H A
     unfold KPContActualCotangentMeasurableFamilies.squareFinite
     simp only [ENNReal.ofReal_coe_nnreal]
     change (∫⁻ x, (KPContActualCotangentMeasurableFamilies.normSquare
-      (gradient F ζ hζ C R P H U ι f buffer χ source hι hf k s) x : ℝ≥0∞)
+      (current_gradient f buffer χ source hι hf k s) x : ℝ≥0∞)
       ∂baseMeasure F ζ hζ C R P H U) < ⊤
     rw [← lintegral_add_compl _ hE]
     apply ENNReal.add_lt_top.mpr
@@ -3318,14 +3353,14 @@ theorem gradient_squareFinite (k : ℕ) (s : ℂ) :
     simp
 
 theorem lineDelta_zero (k : ℕ) (s : ℂ) (hs : s ∉ V) :
-    lineDelta F ζ hζ C R P H U ι f buffer χ source hι hf k s = 0 := by
-  have he : lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s = 0 := by
+    current_lineDelta f buffer χ source hι hf k s = 0 := by
+  have he : current_lineG f buffer χ source hι hf k s = 0 := by
     simp [lineG, coveredG, hs]
   funext i
   apply Subtype.ext
   funext y
   change HyperbolicChart.laplacian (KPCuspLogShape.dimension F)
-    ((lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s i).val ∘
+    ((current_lineG f buffer χ source hι hf k s i).val ∘
       KPCuspCutoffGraph.toArch F) (KPCuspCutoffGraph.fromArch F y) = 0
   rw [he]
   have hd : ∀ j l, HyperbolicChart.coordinateDerivative
@@ -3337,23 +3372,23 @@ theorem lineDelta_zero (k : ℕ) (s : ℂ) (hs : s ∉ V) :
     HyperbolicChart.coordinateDerivative]
 
 theorem lineDelta_borelL2_outside (k : ℕ) (s : ℂ) (hs : s ∉ V) :
-    lineDelta F ζ hζ C R P H U ι f buffer χ source hι hf k s ∈
-      BorelL2Sections F ζ hζ C R P H U := by
+    current_lineDelta f buffer χ source hι hf k s ∈
+      current_BorelL2Sections := by
   rw [lineDelta_zero F ζ hζ C R P H U ι f buffer χ source hι hf k s hs]
-  exact (BorelL2Sections F ζ hζ C R P H U).zero_mem
+  exact (current_BorelL2Sections).zero_mem
 
 theorem lineDelta_eq_rhs (k : ℕ) (s : ℂ) (hs : s ∈ V) :
-    lineDelta F ζ hζ C R P H U ι f buffer χ source hι hf k s =
-      KPContActualChamberCasimirJets.lambda F s • lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s -
-      lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s +
+    current_lineDelta f buffer χ source hι hf k s =
+      KPContActualChamberCasimirJets.lambda F s • current_lineG f buffer χ source hι hf k s -
+      current_lineH f buffer χ source hι hf k s +
       ∑ j ∈ Finset.Icc 1 (min k 2),
         ((Nat.choose k j : ℂ) * KPContActualChamberCasimirJets.lambdaJet F j s) •
-          lineG F ζ hζ C R P H U ι f buffer χ source hι hf (k-j) s := by
+          current_lineG f buffer χ source hι hf (k-j) s := by
   funext i
   apply Subtype.ext
   funext y
   let O := (KPContSectorPhaseComponentCharts.orbifoldChart_exists F ζ hζ
-    (level F ζ hζ C R P H U) R P H i y).some
+    (current_level) R P H i y).some
   let a : Frame F ζ hζ C R P H U i := {
     kind := .orbifold y O
     places := KPContCotangentActualOverlap.placeEquiv F ζ hζ
@@ -3368,7 +3403,7 @@ theorem lineDelta_eq_rhs (k : ℕ) (s : ℂ) (hs : s ∈ V) :
     change KPContCotangentActualOverlap.labeledA a.places x ∈ O.neighborhood
     rw [hxy]
     exact O.center_mem
-  have hc (w : Sections F ζ hζ C R P H U) : a.coefficient w x = (w i).val y := by
+  have hc (w : current_Sections) : a.coefficient w x = (w i).val y := by
     simp [KPContCotangentActualOverlap.LiftedChart.coefficient, a,
       KPContCotangentActualOverlap.ChartKind.representative, hxy]
   have he := defect_frame_equation F ζ hζ C R P H U ι f buffer χ source hι hf k s hs i a x hx
@@ -3379,13 +3414,13 @@ theorem lineDelta_eq_rhs (k : ℕ) (s : ℂ) (hs : s ∈ V) :
     Finset.sum_apply, Pi.smul_apply, smul_eq_mul, mul_assoc] using he
 
 private theorem laplacian_l2_from_rhs (k : ℕ) (s : ℂ)
-    (he : lineDelta F ζ hζ C R P H U ι f buffer χ source hι hf k s =
-      KPContActualChamberCasimirJets.lambda F s • lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s -
-      lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s +
+    (he : current_lineDelta f buffer χ source hι hf k s =
+      KPContActualChamberCasimirJets.lambda F s • current_lineG f buffer χ source hι hf k s -
+      current_lineH f buffer χ source hι hf k s +
       ∑ j ∈ Finset.Icc 1 (min k 2),
         ((Nat.choose k j : ℂ) * KPContActualChamberCasimirJets.lambdaJet F j s) •
-          lineG F ζ hζ C R P H U ι f buffer χ source hι hf (k-j) s) :
-    lineDelta F ζ hζ C R P H U ι f buffer χ source hι hf k s ∈ BorelL2Sections F ζ hζ C R P H U := by
+          current_lineG f buffer χ source hι hf (k-j) s) :
+    current_lineDelta f buffer χ source hι hf k s ∈ current_BorelL2Sections := by
   rw [he]
   apply Submodule.add_mem
   · exact Submodule.sub_mem _ (Submodule.smul_mem _ _
@@ -3395,11 +3430,11 @@ private theorem laplacian_l2_from_rhs (k : ℕ) (s : ℂ)
       (lineG_borelL2 F ζ hζ C R P H U ι f buffer χ source hι hf (k-j) s))
 
 theorem integrability (k : ℕ) (s : ℂ) :
-    lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s ∈ BorelL2Sections F ζ hζ C R P H U ∧
-    lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s ∈ BorelL2Sections F ζ hζ C R P H U ∧
-    lineDelta F ζ hζ C R P H U ι f buffer χ source hι hf k s ∈ BorelL2Sections F ζ hζ C R P H U ∧
+    current_lineG f buffer χ source hι hf k s ∈ current_BorelL2Sections ∧
+    current_lineH f buffer χ source hι hf k s ∈ current_BorelL2Sections ∧
+    current_lineDelta f buffer χ source hι hf k s ∈ current_BorelL2Sections ∧
     KPContActualCotangentMeasurableFamilies.squareFinite (R := R) (P := P)
-      (gradient F ζ hζ C R P H U ι f buffer χ source hι hf k s) := by
+      (current_gradient f buffer χ source hι hf k s) := by
   refine ⟨lineG_borelL2 F ζ hζ C R P H U ι f buffer χ source hι hf k s,
     lineH_borelL2 F ζ hζ C R P H U ι f buffer χ source hι hf k s, ?_,
     gradient_squareFinite F ζ hζ C R P H U ι f buffer χ source hι hf k s⟩
@@ -3408,34 +3443,34 @@ theorem integrability (k : ℕ) (s : ℂ) :
       (lineDelta_eq_rhs F ζ hζ C R P H U ι f buffer χ source hι hf k s hs)
   · exact lineDelta_borelL2_outside F ζ hζ C R P H U ι f buffer χ source hι hf k s hs
 
-def borelG (k : ℕ) (s : ℂ) : BorelL2Sections F ζ hζ C R P H U :=
+def borelG (k : ℕ) (s : ℂ) : current_BorelL2Sections :=
   ⟨_, (integrability F ζ hζ C R P H U ι f buffer χ source hι hf k s).1⟩
 
-def borelH (k : ℕ) (s : ℂ) : BorelL2Sections F ζ hζ C R P H U :=
+def borelH (k : ℕ) (s : ℂ) : current_BorelL2Sections :=
   ⟨_, (integrability F ζ hζ C R P H U ι f buffer χ source hι hf k s).2.1⟩
 
-def borelDelta (k : ℕ) (s : ℂ) : BorelL2Sections F ζ hζ C R P H U :=
+def borelDelta (k : ℕ) (s : ℂ) : current_BorelL2Sections :=
   ⟨_, (integrability F ζ hζ C R P H U ι f buffer χ source hι hf k s).2.2.1⟩
 
 def UJet (k : ℕ) (s : ℂ) : Sector F ζ hζ C R P H U :=
-  KPContSectorLineL2Isometry.toSector F ζ hζ (level F ζ hζ C R P H U) R P H
+  KPContSectorLineL2Isometry.toSector F ζ hζ (current_level) R P H
     (borelG F ζ hζ C R P H U ι f buffer χ source hι hf k s)
 
 def HJet (k : ℕ) (s : ℂ) : Sector F ζ hζ C R P H U :=
-  KPContSectorLineL2Isometry.toSector F ζ hζ (level F ζ hζ C R P H U) R P H
+  KPContSectorLineL2Isometry.toSector F ζ hζ (current_level) R P H
     (borelH F ζ hζ C R P H U ι f buffer χ source hι hf k s)
 
 def DeltaJet (k : ℕ) (s : ℂ) : Sector F ζ hζ C R P H U :=
-  KPContSectorLineL2Isometry.toSector F ζ hζ (level F ζ hζ C R P H U) R P H
+  KPContSectorLineL2Isometry.toSector F ζ hζ (current_level) R P H
     (borelDelta F ζ hζ C R P H U ι f buffer χ source hι hf k s)
 
 private theorem differential_class_from_rhs (k : ℕ) (s : ℂ)
-    (he : lineDelta F ζ hζ C R P H U ι f buffer χ source hι hf k s =
-      KPContActualChamberCasimirJets.lambda F s • lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s -
-      lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s +
+    (he : current_lineDelta f buffer χ source hι hf k s =
+      KPContActualChamberCasimirJets.lambda F s • current_lineG f buffer χ source hι hf k s -
+      current_lineH f buffer χ source hι hf k s +
       ∑ j ∈ Finset.Icc 1 (min k 2),
         ((Nat.choose k j : ℂ) * KPContActualChamberCasimirJets.lambdaJet F j s) •
-          lineG F ζ hζ C R P H U ι f buffer χ source hι hf (k-j) s) :
+          current_lineG f buffer χ source hι hf (k-j) s) :
     DeltaJet F ζ hζ C R P H U ι f buffer χ source hι hf k s =
       KPContActualChamberCasimirJets.lambda F s • UJet F ζ hζ C R P H U ι f buffer χ source hι hf k s -
       HJet F ζ hζ C R P H U ι f buffer χ source hι hf k s +
@@ -3450,32 +3485,32 @@ private theorem differential_class_from_rhs (k : ℕ) (s : ℂ)
   simpa only [borelDelta, borelG, borelH, Submodule.coe_add, Submodule.coe_sub,
     Submodule.coe_smul, Submodule.coe_sum] using he
 
-theorem differential_rhs_class (k : ℕ) (s : ℂ) (hs : s ∈ V) :
-    DeltaJet F ζ hζ C R P H U ι f buffer χ source hι hf k s =
-      KPContActualChamberCasimirJets.lambda F s • UJet F ζ hζ C R P H U ι f buffer χ source hι hf k s -
-      HJet F ζ hζ C R P H U ι f buffer χ source hι hf k s +
-      ∑ j ∈ Finset.Icc 1 (min k 2),
-        ((Nat.choose k j : ℂ) * KPContActualChamberCasimirJets.lambdaJet F j s) •
-          UJet F ζ hζ C R P H U ι f buffer χ source hι hf (k-j) s := by
-  exact differential_class_from_rhs F ζ hζ C R P H U ι f buffer χ source hι hf k s
-    (lineDelta_eq_rhs F ζ hζ C R P H U ι f buffer χ source hι hf k s hs)
+
+
+
+
+
+
+
+
+
 
 theorem jets_actual_ae (k : ℕ) (s : ℂ) (hs : s ∈ V) :
     ((UJet F ζ hζ C R P H U ι f buffer χ source hι hf k s).val : Covered F ζ hζ C R P H U → ℂ)
-      =ᵐ[measure F ζ hζ C R P H U] g F ζ hζ C R P H U ι f buffer χ source k s ∧
+      =ᵐ[measure F ζ hζ C R P H U] current_g f buffer χ source k s ∧
     ((HJet F ζ hζ C R P H U ι f buffer χ source hι hf k s).val : Covered F ζ hζ C R P H U → ℂ)
       =ᵐ[measure F ζ hζ C R P H U] h F ζ hζ C R P H U ι f buffer χ source k s ∧
     ((DeltaJet F ζ hζ C R P H U ι f buffer χ source hι hf k s).val : Covered F ζ hζ C R P H U → ℂ)
       =ᵐ[measure F ζ hζ C R P H U]
         (KPContSectorLineL2Isometry.scalarRepresentative F ζ hζ
-          (level F ζ hζ C R P H U) R P H
-          (lineDelta F ζ hζ C R P H U ι f buffer χ source hι hf k s)).val := by
+          (current_level) R P H
+          (current_lineDelta f buffer χ source hι hf k s)).val := by
   have hg := MemLp.coeFn_toLp (KPContSectorLineL2Isometry.representative_memLp F ζ hζ
-    (level F ζ hζ C R P H U) R P H (borelG F ζ hζ C R P H U ι f buffer χ source hι hf k s))
+    (current_level) R P H (borelG F ζ hζ C R P H U ι f buffer χ source hι hf k s))
   have hh := MemLp.coeFn_toLp (KPContSectorLineL2Isometry.representative_memLp F ζ hζ
-    (level F ζ hζ C R P H U) R P H (borelH F ζ hζ C R P H U ι f buffer χ source hι hf k s))
+    (current_level) R P H (borelH F ζ hζ C R P H U ι f buffer χ source hι hf k s))
   have hd := MemLp.coeFn_toLp (KPContSectorLineL2Isometry.representative_memLp F ζ hζ
-    (level F ζ hζ C R P H U) R P H (borelDelta F ζ hζ C R P H U ι f buffer χ source hι hf k s))
+    (current_level) R P H (borelDelta F ζ hζ C R P H U ι f buffer χ source hι hf k s))
   refine ⟨?_,?_,hd⟩
   · exact hg.trans (Filter.Eventually.of_forall (fun x => by
       simp [borelG, lineG, coveredG, hs,
@@ -3486,35 +3521,35 @@ theorem jets_actual_ae (k : ℕ) (s : ℂ) (hs : s ∈ V) :
 
 def squaredDensity (j : Fin 3) (k : ℕ) (s : ℂ) : Base F ζ hζ C R P H U → ℝ≥0∞ :=
   if j = 0 then KPContSectorLineL2Isometry.squaredNorm F ζ hζ
-    (level F ζ hζ C R P H U) R P H (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s)
+    (current_level) R P H (current_lineG f buffer χ source hι hf k s)
   else if j = 1 then fun x => (KPContActualCotangentMeasurableFamilies.normSquare
-    (gradient F ζ hζ C R P H U ι f buffer χ source hι hf k s) x : ℝ≥0∞)
+    (current_gradient f buffer χ source hι hf k s) x : ℝ≥0∞)
   else KPContSectorLineL2Isometry.squaredNorm F ζ hζ
-    (level F ζ hζ C R P H U) R P H (lineDelta F ζ hζ C R P H U ι f buffer χ source hι hf k s)
+    (current_level) R P H (current_lineDelta f buffer χ source hι hf k s)
 
 def squareIntegral (j : Fin 3) (k : ℕ) (s : ℂ) : ℝ≥0∞ :=
   ∫⁻ x, squaredDensity F ζ hζ C R P H U ι f buffer χ source hι hf j k s x
     ∂baseMeasure F ζ hζ C R P H U
 
 def squareTail (j : Fin 3) (k : ℕ) (s : ℂ) (A : ℝ) : ℝ≥0∞ :=
-  ∫⁻ x in tail F ζ hζ C R P H U A,
+  ∫⁻ x in current_tail A,
     squaredDensity F ζ hζ C R P H U ι f buffer χ source hι hf j k s x
     ∂baseMeasure F ζ hζ C R P H U
 
 theorem value_uniform_tails (L : Set ℂ) (hL : IsCompact L) (hLV : L ⊆ V) (k : ℕ)
     (ε : ℝ) (hε : 0 < ε) : ∃ A : ℝ,
-    (H.atlas (level F ζ hζ C R P H U)).threshold < A ∧
+    (H.atlas (current_level)).threshold < A ∧
     ∀ A' : ℝ, A ≤ A' → ∀ s ∈ L,
     squareTail F ζ hζ C R P H U ι f buffer χ source hι hf 0 k s A' ≤ ENNReal.ofReal ε := by
-  let N : ℕ := Fintype.card (KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U)
+  let N : ℕ := Fintype.card (current_Cusps)
   have hN : (0 : ℝ) < (N : ℝ)+1 := by positivity
   obtain ⟨A,hA,hbound⟩ := lineG_end_uniform_tails F ζ hζ C R P H U ι f buffer χ source hι hf
     L hL hLV k (ε/((N:ℝ)+1)) (div_pos hε hN)
   refine ⟨A,hA,?_⟩
   intro A' hA' s hs
-  have htail : tail F ζ hζ C R P H U A' =
-      ⋃ a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U,
-        KPContActualCollarBuffer.endSet F ζ hζ (level F ζ hζ C R P H U) R P H A' a := by
+  have htail : current_tail A' =
+      ⋃ a : current_Cusps,
+        KPContActualCollarBuffer.endSet F ζ hζ (current_level) R P H A' a := by
     ext x
     simp only [tail, KPCuspCutoffGraph.highEnds, KPContActualCollarBuffer.endSet, Set.mem_iUnion]
     exact ⟨fun ⟨i,c,h⟩ => ⟨⟨i,c⟩,h⟩, fun ⟨⟨i,c⟩,h⟩ => ⟨i,c,h⟩⟩
@@ -3524,7 +3559,7 @@ theorem value_uniform_tails (L : Set ℂ) (hL : IsCompact L) (hLV : L ⊆ V) (k 
   apply (lintegral_iUnion_le _ _).trans
   rw [tsum_fintype]
   calc
-    _ ≤ ∑ _a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U,
+    _ ≤ ∑ _a : current_Cusps,
         ENNReal.ofReal (ε/((N:ℝ)+1)) := Finset.sum_le_sum (fun a ha => hbound A' hA' a s hs)
     _ = ENNReal.ofReal ((N:ℝ) * (ε/((N:ℝ)+1))) := by
       rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
@@ -3537,18 +3572,18 @@ theorem value_uniform_tails (L : Set ℂ) (hL : IsCompact L) (hLV : L ⊆ V) (k 
 
 theorem gradient_uniform_tails (L : Set ℂ) (hL : IsCompact L) (hLV : L ⊆ V) (k : ℕ)
     (ε : ℝ) (hε : 0 < ε) : ∃ A : ℝ,
-    (H.atlas (level F ζ hζ C R P H U)).threshold < A ∧
+    (H.atlas (current_level)).threshold < A ∧
     ∀ A' : ℝ, A ≤ A' → ∀ s ∈ L,
     squareTail F ζ hζ C R P H U ι f buffer χ source hι hf 1 k s A' ≤ ENNReal.ofReal ε := by
-  let N : ℕ := Fintype.card (KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U)
+  let N : ℕ := Fintype.card (current_Cusps)
   have hN : (0 : ℝ) < (N : ℝ)+1 := by positivity
   obtain ⟨A,hA,hbound⟩ := gradient_end_uniform_tails F ζ hζ C R P H U ι f buffer χ source hι hf
     L hL hLV k (ε/((N:ℝ)+1)) (div_pos hε hN)
   refine ⟨A,hA,?_⟩
   intro A' hA' s hs
-  have htail : tail F ζ hζ C R P H U A' =
-      ⋃ a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U,
-        KPContActualCollarBuffer.endSet F ζ hζ (level F ζ hζ C R P H U) R P H A' a := by
+  have htail : current_tail A' =
+      ⋃ a : current_Cusps,
+        KPContActualCollarBuffer.endSet F ζ hζ (current_level) R P H A' a := by
     ext x
     simp only [tail, KPCuspCutoffGraph.highEnds, KPContActualCollarBuffer.endSet, Set.mem_iUnion]
     exact ⟨fun ⟨i,c,h⟩ => ⟨⟨i,c⟩,h⟩, fun ⟨⟨i,c⟩,h⟩ => ⟨i,c,h⟩⟩
@@ -3558,7 +3593,7 @@ theorem gradient_uniform_tails (L : Set ℂ) (hL : IsCompact L) (hLV : L ⊆ V) 
   apply (lintegral_iUnion_le _ _).trans
   rw [tsum_fintype]
   calc
-    _ ≤ ∑ _a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U,
+    _ ≤ ∑ _a : current_Cusps,
         ENNReal.ofReal (ε/((N:ℝ)+1)) := Finset.sum_le_sum (fun a ha => hbound A' hA' a s hs)
     _ = ENNReal.ofReal ((N:ℝ) * (ε/((N:ℝ)+1))) := by
       rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
@@ -3569,61 +3604,46 @@ theorem gradient_uniform_tails (L : Set ℂ) (hL : IsCompact L) (hLV : L ⊆ V) 
       have hh' := mul_le_mul_of_nonneg_right hh hε.le
       convert hh' using 1 <;> ring)
 
-private theorem tailworker_squared_add (u v : Sections F ζ hζ C R P H U)
+private theorem tailworker_squared_add (u v : current_Sections)
     (x : Base F ζ hζ C R P H U) :
-    KPContSectorLineL2Isometry.squaredNorm F ζ hζ (level F ζ hζ C R P H U) R P H (u+v) x ≤
-      2 * KPContSectorLineL2Isometry.squaredNorm F ζ hζ (level F ζ hζ C R P H U) R P H u x +
-      2 * KPContSectorLineL2Isometry.squaredNorm F ζ hζ (level F ζ hζ C R P H U) R P H v x := by
-  obtain ⟨⟨i,y⟩,rfl⟩ := (H.atlas (level F ζ hζ C R P H U)).components.surjective x
-  refine Quotient.inductionOn y ?_
-  intro y
-  simp only [KPContSectorLineL2Isometry.squaredNorm,
-    KPContSectorSmoothFramesSupport.sectionNorm_component, Submodule.coe_add, Pi.add_apply]
-  calc
-    ENNReal.ofReal (‖(u i).val y + (v i).val y‖ ^ 2) ≤
-      ENNReal.ofReal (2 * ‖(u i).val y‖ ^ 2 + 2 * ‖(v i).val y‖ ^ 2) := by
-        apply ENNReal.ofReal_le_ofReal
-        exact (pow_le_pow_left₀ (norm_nonneg _) (norm_add_le _ _) 2).trans (by nlinarith [sq_nonneg (‖(u i).val y‖ - ‖(v i).val y‖)])
-    _ = _ := by
-      rw [ENNReal.ofReal_add (by positivity) (by positivity),
-        ENNReal.ofReal_mul (by norm_num : (0:ℝ) ≤ 2), ENNReal.ofReal_mul (by norm_num : (0:ℝ) ≤ 2)]
-      norm_num
+    KPContSectorLineL2Isometry.squaredNorm F ζ hζ (current_level) R P H (u+v) x ≤
+      2 * KPContSectorLineL2Isometry.squaredNorm F ζ hζ (current_level) R P H u x +
+      2 * KPContSectorLineL2Isometry.squaredNorm F ζ hζ (current_level) R P H v x :=
+  KPContSectorLineL2Isometry.squaredNorm_add_le F ζ hζ (current_level) R P H u v x
 
-private theorem tailworker_squared_smul (c : ℂ) (u : Sections F ζ hζ C R P H U)
+private theorem tailworker_squared_smul (c : ℂ) (u : current_Sections)
     (x : Base F ζ hζ C R P H U) :
-    KPContSectorLineL2Isometry.squaredNorm F ζ hζ (level F ζ hζ C R P H U) R P H (c • u) x =
-      ENNReal.ofReal (‖c‖^2) * KPContSectorLineL2Isometry.squaredNorm F ζ hζ (level F ζ hζ C R P H U) R P H u x := by
-  obtain ⟨⟨i,y⟩,rfl⟩ := (H.atlas (level F ζ hζ C R P H U)).components.surjective x
-  refine Quotient.inductionOn y ?_
-  intro y
-  simp only [KPContSectorLineL2Isometry.squaredNorm,
-    KPContSectorSmoothFramesSupport.sectionNorm_component, Submodule.coe_smul, Pi.smul_apply,
-    smul_eq_mul, norm_mul, mul_pow, ENNReal.ofReal_mul (sq_nonneg _)]
+    KPContSectorLineL2Isometry.squaredNorm F ζ hζ (current_level) R P H (c • u) x =
+      ENNReal.ofReal (‖c‖^2) * KPContSectorLineL2Isometry.squaredNorm F ζ hζ (current_level) R P H u x :=
+  KPContSectorLineL2Isometry.squaredNorm_smul F ζ hζ (current_level) R P H c u x
 
- def tailworker_energy (u : Sections F ζ hζ C R P H U) (A : ℝ) : ℝ≥0∞ :=
-  ∫⁻ x in tail F ζ hζ C R P H U A,
-    KPContSectorLineL2Isometry.squaredNorm F ζ hζ (level F ζ hζ C R P H U) R P H u x
+ def tailworker_energy (u : current_Sections) (A : ℝ) : ℝ≥0∞ :=
+  ∫⁻ x in current_tail A,
+    KPContSectorLineL2Isometry.squaredNorm F ζ hζ (current_level) R P H u x
     ∂baseMeasure F ζ hζ C R P H U
 
- def tailworker_decay (L : Set ℂ) (u : ℂ → Sections F ζ hζ C R P H U) : Prop :=
-  ∀ ε : ℝ, 0 < ε → ∃ A : ℝ, (H.atlas (level F ζ hζ C R P H U)).threshold < A ∧
+ def tailworker_decay (L : Set ℂ) (u : ℂ → current_Sections) : Prop :=
+  ∀ ε : ℝ, 0 < ε → ∃ A : ℝ, (H.atlas (current_level)).threshold < A ∧
     ∀ A', A ≤ A' → ∀ s ∈ L, tailworker_energy F ζ hζ C R P H U (u s) A' ≤ ENNReal.ofReal ε
 
-private theorem tailworker_energy_add (u v : Sections F ζ hζ C R P H U)
+private theorem tailworker_energy_add (u v : current_Sections)
     (hu : ∀ i, Measurable (u i).val) (A : ℝ) :
     tailworker_energy F ζ hζ C R P H U (u+v) A ≤
       2 * tailworker_energy F ζ hζ C R P H U u A + 2 * tailworker_energy F ζ hζ C R P H U v A := by
   unfold tailworker_energy
   apply (lintegral_mono (tailworker_squared_add F ζ hζ C R P H U u v)).trans
   rw [lintegral_add_left ((KPContSectorLineL2Isometry.squaredNorm_measurable F ζ hζ
-      (level F ζ hζ C R P H U) R P H u hu).const_mul 2),
+      (current_level) R P H u hu).const_mul 2),
     lintegral_const_mul' _ _ (by norm_num), lintegral_const_mul' _ _ (by norm_num)]
 
-private theorem tailworker_decay_add (L : Set ℂ) (u v : ℂ → Sections F ζ hζ C R P H U)
+
+local notation:max "current_tailworker_decay" => tailworker_decay F ζ hζ C R P H U
+
+private theorem tailworker_decay_add (L : Set ℂ) (u v : ℂ → current_Sections)
     (hu : ∀ s ∈ L, ∀ i, Measurable (u s i).val)
-    (hdu : tailworker_decay F ζ hζ C R P H U L u)
-    (hdv : tailworker_decay F ζ hζ C R P H U L v) :
-    tailworker_decay F ζ hζ C R P H U L (fun s => u s + v s) := by
+    (hdu : current_tailworker_decay L u)
+    (hdv : current_tailworker_decay L v) :
+    current_tailworker_decay L (fun s => u s + v s) := by
   intro ε hε
   obtain ⟨A,hA,hbound⟩ := hdu (ε/4) (by positivity)
   obtain ⟨B,hB,hbound'⟩ := hdv (ε/4) (by positivity)
@@ -3641,10 +3661,10 @@ private theorem tailworker_decay_add (L : Set ℂ) (u v : ℂ → Sections F ζ 
       congr 1
       ring
 
-private theorem tailworker_decay_smul (L : Set ℂ) (u : ℂ → Sections F ζ hζ C R P H U)
+private theorem tailworker_decay_smul (L : Set ℂ) (u : ℂ → current_Sections)
     (c : ℂ → ℂ) (B : ℝ) (hB : 0 ≤ B) (hc : ∀ s ∈ L, ‖c s‖ ≤ B)
-    (hdu : tailworker_decay F ζ hζ C R P H U L u) :
-    tailworker_decay F ζ hζ C R P H U L (fun s => c s • u s) := by
+    (hdu : current_tailworker_decay L u) :
+    current_tailworker_decay L (fun s => c s • u s) := by
   intro ε hε
   obtain ⟨A,hA,hbound⟩ := hdu (ε/(B^2+1)) (by positivity)
   refine ⟨A,hA,?_⟩
@@ -3664,15 +3684,15 @@ private theorem tailworker_decay_smul (L : Set ℂ) (u : ℂ → Sections F ζ h
       convert this using 1 <;> ring
 
 private theorem tailworker_decay_zero (L : Set ℂ) :
-    tailworker_decay F ζ hζ C R P H U L (fun _ => 0) := by
+    current_tailworker_decay L (fun _ => 0) := by
   intro ε hε
-  refine ⟨(H.atlas (level F ζ hζ C R P H U)).threshold+1, by linarith, ?_⟩
+  refine ⟨(H.atlas (current_level)).threshold+1, by linarith, ?_⟩
   intro A' hA' s hs
   unfold tailworker_energy
-  have hz : KPContSectorLineL2Isometry.squaredNorm F ζ hζ (level F ζ hζ C R P H U) R P H
-      (0 : Sections F ζ hζ C R P H U) = 0 := by
+  have hz : KPContSectorLineL2Isometry.squaredNorm F ζ hζ (current_level) R P H
+      (0 : current_Sections) = 0 := by
     funext x
-    obtain ⟨⟨i,y⟩,rfl⟩ := (H.atlas (level F ζ hζ C R P H U)).components.surjective x
+    obtain ⟨⟨i,y⟩,rfl⟩ := (H.atlas (current_level)).components.surjective x
     refine Quotient.inductionOn y ?_
     intro y
     simp [KPContSectorLineL2Isometry.squaredNorm, KPContSectorSmoothFramesSupport.sectionNorm_component]
@@ -3680,10 +3700,10 @@ private theorem tailworker_decay_zero (L : Set ℂ) :
   simp
 
 private theorem tailworker_decay_sum {ι' : Type*} (t : Finset ι')
-    (L : Set ℂ) (u : ι' → ℂ → Sections F ζ hζ C R P H U)
+    (L : Set ℂ) (u : ι' → ℂ → current_Sections)
     (hu : ∀ i ∈ t, ∀ s ∈ L, ∀ a, Measurable (u i s a).val)
-    (hd : ∀ i ∈ t, tailworker_decay F ζ hζ C R P H U L (u i)) :
-    tailworker_decay F ζ hζ C R P H U L (fun s => ∑ i ∈ t, u i s) := by
+    (hd : ∀ i ∈ t, current_tailworker_decay L (u i)) :
+    current_tailworker_decay L (fun s => ∑ i ∈ t, u i s) := by
   induction t using Finset.induction_on with
   | empty => simpa using tailworker_decay_zero F ζ hζ C R P H U L
   | @insert i t hit ih =>
@@ -3710,21 +3730,21 @@ private theorem tailworker_spectral_bound (L : Set ℂ) (hL : IsCompact L)
 private theorem tailworker_laplacian_decay (L : Set ℂ) (hL : IsCompact L) (hLV : L ⊆ V)
     (k : ℕ)
     (he : ∀ s ∈ L,
-      lineDelta F ζ hζ C R P H U ι f buffer χ source hι hf k s =
-        KPContActualChamberCasimirJets.lambda F s • lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s -
-        lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s +
+      current_lineDelta f buffer χ source hι hf k s =
+        KPContActualChamberCasimirJets.lambda F s • current_lineG f buffer χ source hι hf k s -
+        current_lineH f buffer χ source hι hf k s +
         ∑ j ∈ Finset.Icc 1 (min k 2),
           ((Nat.choose k j : ℂ) * KPContActualChamberCasimirJets.lambdaJet F j s) •
-          lineG F ζ hζ C R P H U ι f buffer χ source hι hf (k-j) s)
-    (hsource : tailworker_decay F ζ hζ C R P H U L
-      (fun s => lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s)) :
-    tailworker_decay F ζ hζ C R P H U L
-      (fun s => lineDelta F ζ hζ C R P H U ι f buffer χ source hι hf k s) := by
-  let u := fun n s => lineG F ζ hζ C R P H U ι f buffer χ source hι hf n s
+          current_lineG f buffer χ source hι hf (k-j) s)
+    (hsource : current_tailworker_decay L
+      (fun s => current_lineH f buffer χ source hι hf k s)) :
+    current_tailworker_decay L
+      (fun s => current_lineDelta f buffer χ source hι hf k s) := by
+  let u := fun n s => current_lineG f buffer χ source hι hf n s
   have hu : ∀ n s, ∀ a, Measurable (u n s a).val := by
     intro n s a
-    exact ((smooth F ζ hζ C R P H U ι f buffer χ source hι hf n s).1 a).continuous.measurable
-  have hdu : ∀ n, tailworker_decay F ζ hζ C R P H U L (u n) := by
+    exact ((current_smooth f buffer χ source hι hf n s).1 a).continuous.measurable
+  have hdu : ∀ n, current_tailworker_decay L (u n) := by
     intro n ε hε
     simpa only [squareTail, squaredDensity, ite_true, tailworker_energy, u] using
       value_uniform_tails F ζ hζ C R P H U ι f buffer χ source hι hf L hL hLV n ε hε
@@ -3734,11 +3754,11 @@ private theorem tailworker_laplacian_decay (L : Set ℂ) (hL : IsCompact L) (hLV
   have hfirst := tailworker_decay_smul F ζ hζ C R P H U L (u k)
     (KPContActualChamberCasimirJets.lambda F) B hB hbound' (hdu k)
   have hneg := tailworker_decay_smul F ζ hζ C R P H U L
-    (fun s => lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s)
+    (fun s => current_lineH f buffer χ source hι hf k s)
     (fun _ => (-1 : ℂ)) 1 (by norm_num) (by intro s hs; simp) hsource
   have hsub := tailworker_decay_add F ζ hζ C R P H U L
     (fun s => KPContActualChamberCasimirJets.lambda F s • u k s)
-    (fun s => (-1 : ℂ) • lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s)
+    (fun s => (-1 : ℂ) • current_lineH f buffer χ source hι hf k s)
     (by
       intro s hs a
       change Measurable (fun y => KPContActualChamberCasimirJets.lambda F s * (u k s a).val y)
@@ -3748,7 +3768,7 @@ private theorem tailworker_laplacian_decay (L : Set ℂ) (hL : IsCompact L) (hLV
     intro j s a
     change Measurable (fun y => ((Nat.choose k j : ℂ) * KPContActualChamberCasimirJets.lambdaJet F j s) * (u (k-j) s a).val y)
     exact (hu (k-j) s a).const_mul _
-  have hdv : ∀ j, tailworker_decay F ζ hζ C R P H U L (v j) := by
+  have hdv : ∀ j, current_tailworker_decay L (v j) := by
     intro j
     obtain ⟨B,hB,hbound⟩ := tailworker_spectral_bound F L hL hLV j
     apply tailworker_decay_smul F ζ hζ C R P H U L (u (k-j))
@@ -3761,14 +3781,14 @@ private theorem tailworker_laplacian_decay (L : Set ℂ) (hL : IsCompact L) (hLV
     (fun j hj s hs => hv j s) (fun j hj => hdv j)
   have hall := tailworker_decay_add F ζ hζ C R P H U L
     (fun s => KPContActualChamberCasimirJets.lambda F s • u k s +
-      (-1 : ℂ) • lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s)
+      (-1 : ℂ) • current_lineH f buffer χ source hι hf k s)
     (fun s => ∑ j ∈ Finset.Icc 1 (min k 2), v j s)
     (by
       intro s hs a
       change Measurable (fun y => KPContActualChamberCasimirJets.lambda F s * (u k s a).val y +
-        (-1 : ℂ) * (lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s a).val y)
+        (-1 : ℂ) * (current_lineH f buffer χ source hι hf k s a).val y)
       exact ((hu k s a).const_mul _).add
-        (((smooth F ζ hζ C R P H U ι f buffer χ source hι hf k s).2 a).continuous.measurable.const_mul _))
+        (((current_smooth f buffer χ source hι hf k s).2 a).continuous.measurable.const_mul _))
     hsub hsum
   intro ε hε
   obtain ⟨A,hA,hbound⟩ := hall ε hε
@@ -3776,34 +3796,34 @@ private theorem tailworker_laplacian_decay (L : Set ℂ) (hL : IsCompact L) (hLV
   intro A' hA' s hs
   dsimp only
   rw [he s hs]
-  have hn : (-1 : ℂ) • lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s =
-      -lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s := by
-    exact _root_.neg_one_smul (R := ℂ) (lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s)
+  have hn : (-1 : ℂ) • current_lineH f buffer χ source hι hf k s =
+      -current_lineH f buffer χ source hι hf k s := by
+    exact _root_.neg_one_smul (R := ℂ) (current_lineH f buffer χ source hι hf k s)
   simpa only [v, u, hn, sub_eq_add_neg] using hbound A' hA' s hs
 
 private theorem laplacian_uniform_tails_from_rhs (L : Set ℂ) (hL : IsCompact L) (hLV : L ⊆ V)
     (k : ℕ)
     (he : ∀ s ∈ L,
-      lineDelta F ζ hζ C R P H U ι f buffer χ source hι hf k s =
-        KPContActualChamberCasimirJets.lambda F s • lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s -
-        lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s +
+      current_lineDelta f buffer χ source hι hf k s =
+        KPContActualChamberCasimirJets.lambda F s • current_lineG f buffer χ source hι hf k s -
+        current_lineH f buffer χ source hι hf k s +
         ∑ j ∈ Finset.Icc 1 (min k 2),
           ((Nat.choose k j : ℂ) * KPContActualChamberCasimirJets.lambdaJet F j s) •
-          lineG F ζ hζ C R P H U ι f buffer χ source hι hf (k-j) s)
+          current_lineG f buffer χ source hι hf (k-j) s)
     (hsource : ∃ A : ℝ, ∀ A', A ≤ A' → ∀ s ∈ L,
-      (∫⁻ x in tail F ζ hζ C R P H U A',
-        KPContSectorLineL2Isometry.squaredNorm F ζ hζ (level F ζ hζ C R P H U) R P H
-          (lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s) x
+      (∫⁻ x in current_tail A',
+        KPContSectorLineL2Isometry.squaredNorm F ζ hζ (current_level) R P H
+          (current_lineH f buffer χ source hι hf k s) x
           ∂baseMeasure F ζ hζ C R P H U) = 0) :
     ∀ ε : ℝ, 0 < ε → ∃ A : ℝ,
-      (H.atlas (level F ζ hζ C R P H U)).threshold < A ∧
+      (H.atlas (current_level)).threshold < A ∧
       ∀ A' : ℝ, A ≤ A' → ∀ s ∈ L,
         squareTail F ζ hζ C R P H U ι f buffer χ source hι hf 2 k s A' ≤ ENNReal.ofReal ε := by
-  have hdsource : tailworker_decay F ζ hζ C R P H U L
-      (fun s => lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s) := by
+  have hdsource : current_tailworker_decay L
+      (fun s => current_lineH f buffer χ source hι hf k s) := by
     obtain ⟨A,hA⟩ := hsource
     intro ε hε
-    refine ⟨max A ((H.atlas (level F ζ hζ C R P H U)).threshold+1),
+    refine ⟨max A ((H.atlas (current_level)).threshold+1),
       lt_of_lt_of_le (by linarith) (le_max_right _ _), ?_⟩
     intro A' hA' s hs
     unfold tailworker_energy
@@ -3816,11 +3836,11 @@ private theorem laplacian_uniform_tails_from_rhs (L : Set ℂ) (hL : IsCompact L
 private theorem three_uniform_tails_from_laplacian (L : Set ℂ) (hL : IsCompact L)
     (hLV : L ⊆ V) (k : ℕ)
     (hdelta : ∀ ε : ℝ, 0 < ε → ∃ A : ℝ,
-      (H.atlas (level F ζ hζ C R P H U)).threshold < A ∧
+      (H.atlas (current_level)).threshold < A ∧
       ∀ A', A ≤ A' → ∀ s ∈ L,
         squareTail F ζ hζ C R P H U ι f buffer χ source hι hf 2 k s A' ≤ ENNReal.ofReal ε) :
     ∀ ε : ℝ, 0 < ε → ∃ A : ℝ,
-      (H.atlas (level F ζ hζ C R P H U)).threshold < A ∧
+      (H.atlas (current_level)).threshold < A ∧
       ∀ A', A ≤ A' → ∀ j : Fin 3, ∀ s ∈ L,
         squareTail F ζ hζ C R P H U ι f buffer χ source hι hf j k s A' ≤ ENNReal.ofReal ε := by
   intro ε hε
@@ -3834,14 +3854,14 @@ private theorem three_uniform_tails_from_laplacian (L : Set ℂ) (hL : IsCompact
   · exact hbound' A' ((le_max_left _ _).trans ((le_max_right _ _).trans hA')) s hs
   · exact hbound'' A' ((le_max_right _ _).trans ((le_max_right _ _).trans hA')) s hs
 
- def tailworker_total (u : Sections F ζ hζ C R P H U) : ℝ≥0∞ :=
-  ∫⁻ x, KPContSectorLineL2Isometry.squaredNorm F ζ hζ (level F ζ hζ C R P H U) R P H u x
+ def tailworker_total (u : current_Sections) : ℝ≥0∞ :=
+  ∫⁻ x, KPContSectorLineL2Isometry.squaredNorm F ζ hζ (current_level) R P H u x
     ∂baseMeasure F ζ hζ C R P H U
 
- def tailworker_bounded (L : Set ℂ) (u : ℂ → Sections F ζ hζ C R P H U) : Prop :=
+ def tailworker_bounded (L : Set ℂ) (u : ℂ → current_Sections) : Prop :=
   ∃ B : ℝ, 0 ≤ B ∧ ∀ s ∈ L, tailworker_total F ζ hζ C R P H U (u s) ≤ ENNReal.ofReal B
 
-private theorem tailworker_bounded_add (L : Set ℂ) (u v : ℂ → Sections F ζ hζ C R P H U)
+private theorem tailworker_bounded_add (L : Set ℂ) (u v : ℂ → current_Sections)
     (hu : ∀ s ∈ L, ∀ i, Measurable (u s i).val)
     (hdu : tailworker_bounded F ζ hζ C R P H U L u)
     (hdv : tailworker_bounded F ζ hζ C R P H U L v) :
@@ -3855,7 +3875,7 @@ private theorem tailworker_bounded_add (L : Set ℂ) (u v : ℂ → Sections F �
     unfold tailworker_total
     apply (lintegral_mono (tailworker_squared_add F ζ hζ C R P H U _ _)).trans
     rw [lintegral_add_left ((KPContSectorLineL2Isometry.squaredNorm_measurable F ζ hζ
-      (level F ζ hζ C R P H U) R P H _ (hu s hs)).const_mul 2),
+      (current_level) R P H _ (hu s hs)).const_mul 2),
       lintegral_const_mul' _ _ (by norm_num), lintegral_const_mul' _ _ (by norm_num)]
   apply hsum.trans
   calc
@@ -3866,7 +3886,7 @@ private theorem tailworker_bounded_add (L : Set ℂ) (u v : ℂ → Sections F �
         ENNReal.ofReal_mul (by norm_num : (0:ℝ) ≤ 2), ENNReal.ofReal_mul (by norm_num : (0:ℝ) ≤ 2)]
       norm_num
 
-private theorem tailworker_bounded_smul (L : Set ℂ) (u : ℂ → Sections F ζ hζ C R P H U)
+private theorem tailworker_bounded_smul (L : Set ℂ) (u : ℂ → current_Sections)
     (c : ℂ → ℂ) (B : ℝ) (hB : 0 ≤ B) (hc : ∀ s ∈ L, ‖c s‖ ≤ B)
     (hdu : tailworker_bounded F ζ hζ C R P H U L u) :
     tailworker_bounded F ζ hζ C R P H U L (fun s => c s • u s) := by
@@ -3883,7 +3903,7 @@ private theorem tailworker_bounded_smul (L : Set ℂ) (u : ℂ → Sections F ζ
     _ = ENNReal.ofReal (B^2*A) := (ENNReal.ofReal_mul (sq_nonneg _)).symm
 
 private theorem tailworker_bounded_sum {ι' : Type*} (t : Finset ι')
-    (L : Set ℂ) (u : ι' → ℂ → Sections F ζ hζ C R P H U)
+    (L : Set ℂ) (u : ι' → ℂ → current_Sections)
     (hu : ∀ i ∈ t, ∀ s ∈ L, ∀ a, Measurable (u i s a).val)
     (hd : ∀ i ∈ t, tailworker_bounded F ζ hζ C R P H U L (u i)) :
     tailworker_bounded F ζ hζ C R P H U L (fun s => ∑ i ∈ t, u i s) := by
@@ -3892,10 +3912,10 @@ private theorem tailworker_bounded_sum {ι' : Type*} (t : Finset ι')
     refine ⟨0, le_rfl, ?_⟩
     intro s hs
     simp only [Finset.sum_empty, tailworker_total, KPContSectorLineL2Isometry.squaredNorm]
-    have hz : KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ (level F ζ hζ C R P H U) R P H
-        (0 : Sections F ζ hζ C R P H U) = 0 := by
+    have hz : KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ (current_level) R P H
+        (0 : current_Sections) = 0 := by
       funext x
-      obtain ⟨⟨i,y⟩,rfl⟩ := (H.atlas (level F ζ hζ C R P H U)).components.surjective x
+      obtain ⟨⟨i,y⟩,rfl⟩ := (H.atlas (current_level)).components.surjective x
       refine Quotient.inductionOn y ?_
       intro y
       simp [KPContSectorSmoothFramesSupport.sectionNorm_component]
@@ -3910,22 +3930,22 @@ private theorem tailworker_bounded_sum {ι' : Type*} (t : Finset ι')
 private theorem tailworker_laplacian_bounded (L : Set ℂ) (hL : IsCompact L) (hLV : L ⊆ V)
     (k : ℕ)
     (he : ∀ s ∈ L,
-      lineDelta F ζ hζ C R P H U ι f buffer χ source hι hf k s =
-        KPContActualChamberCasimirJets.lambda F s • lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s -
-        lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s +
+      current_lineDelta f buffer χ source hι hf k s =
+        KPContActualChamberCasimirJets.lambda F s • current_lineG f buffer χ source hι hf k s -
+        current_lineH f buffer χ source hι hf k s +
         ∑ j ∈ Finset.Icc 1 (min k 2),
           ((Nat.choose k j : ℂ) * KPContActualChamberCasimirJets.lambdaJet F j s) •
-          lineG F ζ hζ C R P H U ι f buffer χ source hι hf (k-j) s)
+          current_lineG f buffer χ source hι hf (k-j) s)
     (hvalues : ∀ n, tailworker_bounded F ζ hζ C R P H U L
-      (fun s => lineG F ζ hζ C R P H U ι f buffer χ source hι hf n s))
+      (fun s => current_lineG f buffer χ source hι hf n s))
     (hsource : tailworker_bounded F ζ hζ C R P H U L
-      (fun s => lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s)) :
+      (fun s => current_lineH f buffer χ source hι hf k s)) :
     tailworker_bounded F ζ hζ C R P H U L
-      (fun s => lineDelta F ζ hζ C R P H U ι f buffer χ source hι hf k s) := by
-  let u := fun n s => lineG F ζ hζ C R P H U ι f buffer χ source hι hf n s
+      (fun s => current_lineDelta f buffer χ source hι hf k s) := by
+  let u := fun n s => current_lineG f buffer χ source hι hf n s
   have hu : ∀ n s, ∀ a, Measurable (u n s a).val := by
     intro n s a
-    exact ((smooth F ζ hζ C R P H U ι f buffer χ source hι hf n s).1 a).continuous.measurable
+    exact ((current_smooth f buffer χ source hι hf n s).1 a).continuous.measurable
   have hdu : ∀ n, tailworker_bounded F ζ hζ C R P H U L (u n) := hvalues
   obtain ⟨B,hB,hbound⟩ := tailworker_spectral_bound F L hL hLV 0
   have hbound' : ∀ s ∈ L, ‖KPContActualChamberCasimirJets.lambda F s‖ ≤ B := by
@@ -3933,11 +3953,11 @@ private theorem tailworker_laplacian_bounded (L : Set ℂ) (hL : IsCompact L) (h
   have hfirst := tailworker_bounded_smul F ζ hζ C R P H U L (u k)
     (KPContActualChamberCasimirJets.lambda F) B hB hbound' (hdu k)
   have hneg := tailworker_bounded_smul F ζ hζ C R P H U L
-    (fun s => lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s)
+    (fun s => current_lineH f buffer χ source hι hf k s)
     (fun _ => (-1 : ℂ)) 1 (by norm_num) (by intro s hs; simp) hsource
   have hsub := tailworker_bounded_add F ζ hζ C R P H U L
     (fun s => KPContActualChamberCasimirJets.lambda F s • u k s)
-    (fun s => (-1 : ℂ) • lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s)
+    (fun s => (-1 : ℂ) • current_lineH f buffer χ source hι hf k s)
     (by
       intro s hs a
       change Measurable (fun y => KPContActualChamberCasimirJets.lambda F s * (u k s a).val y)
@@ -3960,30 +3980,30 @@ private theorem tailworker_laplacian_bounded (L : Set ℂ) (hL : IsCompact L) (h
     (fun j hj s hs => hv j s) (fun j hj => hdv j)
   have hall := tailworker_bounded_add F ζ hζ C R P H U L
     (fun s => KPContActualChamberCasimirJets.lambda F s • u k s +
-      (-1 : ℂ) • lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s)
+      (-1 : ℂ) • current_lineH f buffer χ source hι hf k s)
     (fun s => ∑ j ∈ Finset.Icc 1 (min k 2), v j s)
     (by
       intro s hs a
       change Measurable (fun y => KPContActualChamberCasimirJets.lambda F s * (u k s a).val y +
-        (-1 : ℂ) * (lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s a).val y)
+        (-1 : ℂ) * (current_lineH f buffer χ source hι hf k s a).val y)
       exact ((hu k s a).const_mul _).add
-        (((smooth F ζ hζ C R P H U ι f buffer χ source hι hf k s).2 a).continuous.measurable.const_mul _))
+        (((current_smooth f buffer χ source hι hf k s).2 a).continuous.measurable.const_mul _))
     hsub hsum
   obtain ⟨B,hB,hbound⟩ := hall
   refine ⟨B,hB,?_⟩
   intro s hs
   dsimp only
   rw [he s hs]
-  have hn : (-1 : ℂ) • lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s =
-      -lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s := by
-    exact _root_.neg_one_smul (R := ℂ) (lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s)
+  have hn : (-1 : ℂ) • current_lineH f buffer χ source hι hf k s =
+      -current_lineH f buffer χ source hι hf k s := by
+    exact _root_.neg_one_smul (R := ℂ) (current_lineH f buffer χ source hι hf k s)
   simpa only [v, u, hn, sub_eq_add_neg] using hbound s hs
 
 private theorem lineDelta_global_square_bound (L : Set ℂ) (hL : IsCompact L) (hLV : L ⊆ V) (k : ℕ) :
     ∃ B : ℝ, 0 ≤ B ∧ ∀ s ∈ L,
     (∫⁻ x, KPContSectorLineL2Isometry.squaredNorm F ζ hζ
-      (level F ζ hζ C R P H U) R P H
-      (lineDelta F ζ hζ C R P H U ι f buffer χ source hι hf k s) x
+      (current_level) R P H
+      (current_lineDelta f buffer χ source hι hf k s) x
       ∂baseMeasure F ζ hζ C R P H U) ≤ ENNReal.ofReal B := by
   apply tailworker_laplacian_bounded F ζ hζ C R P H U ι f buffer χ source hι hf L hL hLV k
   · intro s hs
@@ -3996,10 +4016,10 @@ private theorem gradient_compact_square_bound (L : Set ℂ) (hL : IsCompact L) (
     (K : Set (Base F ζ hζ C R P H U)) (hK : IsCompact K) (k : ℕ) :
     ∃ B : ℝ, 0 ≤ B ∧ ∀ s ∈ L,
       (∫⁻ x in K, (KPContActualCotangentMeasurableFamilies.normSquare
-        (gradient F ζ hζ C R P H U ι f buffer χ source hι hf k s) x : ℝ≥0∞)
+        (current_gradient f buffer χ source hι hf k s) x : ℝ≥0∞)
         ∂baseMeasure F ζ hζ C R P H U) ≤ ENNReal.ofReal B := by
   let cover := (kp_cont_actual_cotangent_countable_shrinking F ζ hζ
-    (level F ζ hζ C R P H U) R P H).2.some
+    (current_level) R P H).2.some
   obtain ⟨t, ht⟩ := hK.elim_finite_subcover (fun n => (cover.chart n).baseDomain)
     (fun n => (cover.properties n).base_open) (by
       intro x hx
@@ -4016,7 +4036,7 @@ private theorem gradient_compact_square_bound (L : Set ℂ) (hL : IsCompact L) (
     K hK (Fintype.card t) charts hcover
   have hb : ∀ i, ∃ B : ℝ, 0 ≤ B ∧ ∀ s ∈ L, ∀ y ∈ Z i,
       (KPContActualCotangentMeasurableFamilies.normSquare
-        (gradient F ζ hζ C R P H U ι f buffer χ source hι hf k s)
+        (current_gradient f buffer χ source hι hf k s)
         (KPContCotangentOverlapRationalBranches.q (charts i) y) : ℝ) ≤ B := by
     intro i
     have hj := gradient_chart_norm_joint F ζ hζ C R P H U ι f buffer χ source hι hf
@@ -4033,13 +4053,13 @@ private theorem gradient_compact_square_bound (L : Set ℂ) (hL : IsCompact L) (
   have hB : 0 ≤ B := Finset.sum_nonneg (fun i _ => hb i)
   have hpoint : ∀ s ∈ L, ∀ x ∈ K,
       (KPContActualCotangentMeasurableFamilies.normSquare
-        (gradient F ζ hζ C R P H U ι f buffer χ source hι hf k s) x : ℝ) ≤ B := by
+        (current_gradient f buffer χ source hι hf k s) x : ℝ) ≤ B := by
     intro s hs x hx
     obtain ⟨i, y, hy, rfl⟩ := Set.mem_iUnion.mp (hcov hx)
     exact (hbound i s hs y hy).trans
       (Finset.single_le_sum (fun j _ => hb j) (Finset.mem_univ i))
   letI := KPContSectorFixedMeasureLocalFiniteness.sphericalMeasure_finiteOnCompacts
-    F ζ hζ R P (level F ζ hζ C R P H U)
+    F ζ hζ R P (current_level)
   let D := ENNReal.ofReal B * baseMeasure F ζ hζ C R P H U K
   have hD : D ≠ ⊤ := ENNReal.mul_ne_top ENNReal.ofReal_ne_top hK.measure_lt_top.ne
   refine ⟨D.toReal, ENNReal.toReal_nonneg, ?_⟩
@@ -4056,48 +4076,48 @@ private theorem gradient_compact_square_bound (L : Set ℂ) (hL : IsCompact L) (
 private theorem gradient_global_square_bound (L : Set ℂ) (hL : IsCompact L) (hLV : L ⊆ V)
     (k : ℕ) : ∃ B : ℝ, 0 ≤ B ∧ ∀ s ∈ L,
       (∫⁻ x, (KPContActualCotangentMeasurableFamilies.normSquare
-        (gradient F ζ hζ C R P H U ι f buffer χ source hι hf k s) x : ℝ≥0∞)
+        (current_gradient f buffer χ source hι hf k s) x : ℝ≥0∞)
         ∂baseMeasure F ζ hζ C R P H U) ≤ ENNReal.ofReal B := by
   obtain ⟨A, E, hA, hE, hend⟩ := gradient_high_end_square_bound
     F ζ hζ C R P H U ι f buffer χ source hι hf L hL hLV k
-  let K := (tail F ζ hζ C R P H U A)ᶜ
+  let K := (current_tail A)ᶜ
   have hK : IsCompact K := by
     convert KPContThreeL2EndHelpers.compact_truncated_core F ζ hζ
-      (level F ζ hζ C R P H U) R P H A using 1
+      (current_level) R P H A using 1
     ext x
     simp only [K,tail,KPCuspCutoffGraph.highEnds,KPContActualCollarBuffer.endSet,
       Set.mem_compl_iff,Set.mem_iUnion]
     exact not_congr ⟨fun ⟨i,c,h⟩ => ⟨⟨i,c⟩,h⟩,fun ⟨⟨i,c⟩,h⟩ => ⟨i,c,h⟩⟩
   obtain ⟨B, hB, hcore⟩ := gradient_compact_square_bound
     F ζ hζ C R P H U ι f buffer χ source hι hf L hL hLV K hK k
-  let N := Fintype.card (KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U)
+  let N := Fintype.card (current_Cusps)
   refine ⟨B + N * E, by positivity, ?_⟩
   intro s hs
-  have ht : tail F ζ hζ C R P H U A =
-      ⋃ a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U,
-        KPContActualCollarBuffer.endSet F ζ hζ (level F ζ hζ C R P H U) R P H A a := by
+  have ht : current_tail A =
+      ⋃ a : current_Cusps,
+        KPContActualCollarBuffer.endSet F ζ hζ (current_level) R P H A a := by
     ext x
     simp only [tail,KPCuspCutoffGraph.highEnds,KPContActualCollarBuffer.endSet,Set.mem_iUnion]
     exact ⟨fun ⟨i,c,h⟩ => ⟨⟨i,c⟩,h⟩,fun ⟨⟨i,c⟩,h⟩ => ⟨i,c,h⟩⟩
-  have htail : (∫⁻ x in tail F ζ hζ C R P H U A,
+  have htail : (∫⁻ x in current_tail A,
       (KPContActualCotangentMeasurableFamilies.normSquare
-        (gradient F ζ hζ C R P H U ι f buffer χ source hι hf k s) x : ℝ≥0∞)
+        (current_gradient f buffer χ source hι hf k s) x : ℝ≥0∞)
       ∂baseMeasure F ζ hζ C R P H U) ≤ ENNReal.ofReal (N * E) := by
     rw [ht]
     apply (lintegral_iUnion_le _ _).trans
     rw [tsum_fintype]
     calc
-      _ ≤ ∑ _a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U, ENNReal.ofReal E :=
+      _ ≤ ∑ _a : current_Cusps, ENNReal.ofReal E :=
         Finset.sum_le_sum (fun a _ => hend a s hs)
       _ = ENNReal.ofReal (N * E) := by
         rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
         rw [ENNReal.ofReal_mul (by positivity), ENNReal.ofReal_natCast]
   calc
     _ = (∫⁻ x in K, (KPContActualCotangentMeasurableFamilies.normSquare
-        (gradient F ζ hζ C R P H U ι f buffer χ source hι hf k s) x : ℝ≥0∞)
+        (current_gradient f buffer χ source hι hf k s) x : ℝ≥0∞)
         ∂baseMeasure F ζ hζ C R P H U) +
-        (∫⁻ x in tail F ζ hζ C R P H U A, (KPContActualCotangentMeasurableFamilies.normSquare
-        (gradient F ζ hζ C R P H U ι f buffer χ source hι hf k s) x : ℝ≥0∞)
+        (∫⁻ x in current_tail A, (KPContActualCotangentMeasurableFamilies.normSquare
+        (current_gradient f buffer χ source hι hf k s) x : ℝ≥0∞)
         ∂baseMeasure F ζ hζ C R P H U) := by
       simpa [K] using (lintegral_add_compl _ hK.measurableSet).symm
     _ ≤ ENNReal.ofReal B + ENNReal.ofReal (N * E) := add_le_add (hcore s hs) htail
@@ -4124,38 +4144,38 @@ private theorem three_uniform_bounds_from_components (L : Set ℂ) (k : ℕ)
 
 structure Properties : Prop where
   smooth_jets : ∀ k s, s ∈ V →
-    KPContSectorSmoothFramesSupport.IsSmoothSections F ζ hζ (level F ζ hζ C R P H U) R P H
-      (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s) ∧
-    KPContSectorSmoothFramesSupport.IsSmoothSections F ζ hζ (level F ζ hζ C R P H U) R P H
-      (lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s)
+    KPContSectorSmoothFramesSupport.IsSmoothSections F ζ hζ (current_level) R P H
+      (current_lineG f buffer χ source hι hf k s) ∧
+    KPContSectorSmoothFramesSupport.IsSmoothSections F ζ hζ (current_level) R P H
+      (current_lineH f buffer χ source hι hf k s)
   three_l2 : ∀ k s, s ∈ V →
-    lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s ∈ BorelL2Sections F ζ hζ C R P H U ∧
-    lineDelta F ζ hζ C R P H U ι f buffer χ source hι hf k s ∈ BorelL2Sections F ζ hζ C R P H U ∧
+    current_lineG f buffer χ source hι hf k s ∈ current_BorelL2Sections ∧
+    current_lineDelta f buffer χ source hι hf k s ∈ current_BorelL2Sections ∧
     KPContActualCotangentMeasurableFamilies.squareFinite (R := R) (P := P)
-      (gradient F ζ hζ C R P H U ι f buffer χ source hι hf k s)
+      (current_gradient f buffer χ source hι hf k s)
   covered_values : ∀ k s, s ∈ V →
     (coveredG F ζ hζ C R P H U ι f buffer χ source hι hf k s).val =
-      g F ζ hζ C R P H U ι f buffer χ source k s ∧
+      current_g f buffer χ source k s ∧
     (coveredH F ζ hζ C R P H U ι f buffer χ source hι hf k s).val =
       h F ζ hζ C R P H U ι f buffer χ source k s
 
   frame_equation : ∀ k s, s ∈ V →
-    ∀ (i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount)
+    ∀ (i : Fin (H.atlas (current_level)).componentCount)
       (a : Frame F ζ hζ C R P H U i) (x : KPContActualChamberCasimirJets.M F), x ∈ a.omega →
     HyperbolicChart.laplacian (KPContActualChamberCasimirJets.d F)
-      (a.coefficient (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s)) x =
+      (a.coefficient (current_lineG f buffer χ source hι hf k s)) x =
     KPContActualChamberCasimirJets.lambda F s *
-      a.coefficient (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s) x -
-      a.coefficient (lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s) x +
+      a.coefficient (current_lineG f buffer χ source hι hf k s) x -
+      a.coefficient (current_lineH f buffer χ source hι hf k s) x +
       ∑ j ∈ Finset.Icc 1 (min k 2), (Nat.choose k j : ℂ) *
         KPContActualChamberCasimirJets.lambdaJet F j s *
-        a.coefficient (lineG F ζ hζ C R P H U ι f buffer χ source hι hf (k-j) s) x
+        a.coefficient (current_lineG f buffer χ source hι hf (k-j) s) x
   laplacian_frames : ∀ k s, s ∈ V → ∀ i (a : Frame F ζ hζ C R P H U i) x, x ∈ a.omega →
-    a.coefficient (lineDelta F ζ hζ C R P H U ι f buffer χ source hι hf k s) x =
+    a.coefficient (current_lineDelta f buffer χ source hι hf k s) x =
       HyperbolicChart.laplacian (KPContActualChamberCasimirJets.d F)
-        (a.coefficient (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s)) x
+        (a.coefficient (current_lineG f buffer χ source hι hf k s)) x
   covered_memLp : ∀ k s, s ∈ V →
-    MemLp (g F ζ hζ C R P H U ι f buffer χ source k s) 2 (measure F ζ hζ C R P H U) ∧
+    MemLp (current_g f buffer χ source k s) 2 (measure F ζ hζ C R P H U) ∧
     MemLp (h F ζ hζ C R P H U ι f buffer χ source k s) 2 (measure F ζ hζ C R P H U)
 
   uniform_bounds : ∀ L : Set ℂ, IsCompact L → L ⊆ V → ∀ k,
@@ -4164,24 +4184,24 @@ structure Properties : Prop where
 
   uniform_tails : ∀ L : Set ℂ, IsCompact L → L ⊆ V → ∀ k,
     ∀ ε : ℝ, 0 < ε → ∃ A : ℝ,
-      (H.atlas (level F ζ hζ C R P H U)).threshold < A ∧
+      (H.atlas (current_level)).threshold < A ∧
       ∀ A' : ℝ, A ≤ A' → ∀ j : Fin 3, ∀ s ∈ L,
         squareTail F ζ hζ C R P H U ι f buffer χ source hι hf j k s A' ≤ ENNReal.ofReal ε
 
   source_support : ∀ k s, s ∈ V → tsupport
-    (KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ (level F ζ hζ C R P H U) R P H
-      (lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s)) ⊆
+    (KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ (current_level) R P H
+      (current_lineH f buffer χ source hι hf k s)) ⊆
       KPContActualAllCuspSource.K F ζ hζ C R P H U buffer
   actual_ae : ∀ k s, s ∈ V →
     ((UJet F ζ hζ C R P H U ι f buffer χ source hι hf k s).val : Covered F ζ hζ C R P H U → ℂ)
-      =ᵐ[measure F ζ hζ C R P H U] g F ζ hζ C R P H U ι f buffer χ source k s ∧
+      =ᵐ[measure F ζ hζ C R P H U] current_g f buffer χ source k s ∧
     ((HJet F ζ hζ C R P H U ι f buffer χ source hι hf k s).val : Covered F ζ hζ C R P H U → ℂ)
       =ᵐ[measure F ζ hζ C R P H U] h F ζ hζ C R P H U ι f buffer χ source k s ∧
     ((DeltaJet F ζ hζ C R P H U ι f buffer χ source hι hf k s).val : Covered F ζ hζ C R P H U → ℂ)
       =ᵐ[measure F ζ hζ C R P H U]
         (KPContSectorLineL2Isometry.scalarRepresentative F ζ hζ
-          (level F ζ hζ C R P H U) R P H
-          (lineDelta F ζ hζ C R P H U ι f buffer χ source hι hf k s)).val
+          (current_level) R P H
+          (current_lineDelta f buffer χ source hι hf k s)).val
 
   differential_rhs_class : ∀ k s, s ∈ V →
     DeltaJet F ζ hζ C R P H U ι f buffer χ source hι hf k s =

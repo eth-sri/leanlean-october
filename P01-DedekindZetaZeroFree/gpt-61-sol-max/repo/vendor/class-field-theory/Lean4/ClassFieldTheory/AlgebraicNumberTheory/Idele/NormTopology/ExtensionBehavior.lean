@@ -345,28 +345,28 @@ theorem archimedeanNorm_extension
             nnnormUnitHom v₀.Completion
               (infiniteComponent v₀ a) ^ v₀.mult)
 
-/-- Scalar extension raises the absolute idele norm to the degree of the
-number-field extension. -/
-theorem absoluteNorm_extension
-    (a : IdeleGroup K) :
-    absoluteNorm (extension K L a) =
-      absoluteNorm a ^ Module.finrank K L := by
-  rw [absoluteNorm_apply, absoluteNorm_apply,
-    finiteAbsoluteNorm_extension,
-    archimedeanNorm_extension]
-  calc
-    FiniteIdeleGroup.absoluteNorm a.2 ^ Module.finrank K L *
-          (InfiniteIdeleGroup.archimedeanNorm a.1 ^
-            Module.finrank K L)⁻¹ =
-        FiniteIdeleGroup.absoluteNorm a.2 ^ Module.finrank K L *
-          (InfiniteIdeleGroup.archimedeanNorm a.1)⁻¹ ^
-            Module.finrank K L := by
-      rw [inv_pow]
-    _ =
-        (FiniteIdeleGroup.absoluteNorm a.2 *
-          (InfiniteIdeleGroup.archimedeanNorm a.1)⁻¹) ^
-            Module.finrank K L := by
-      rw [mul_pow]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- If the finite part of a rational idele is trivial, then its scalar
 extension has absolute norm equal to the extension degree power of the

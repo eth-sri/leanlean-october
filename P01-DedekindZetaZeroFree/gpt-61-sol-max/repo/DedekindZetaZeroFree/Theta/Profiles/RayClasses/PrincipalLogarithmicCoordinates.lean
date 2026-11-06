@@ -44,12 +44,15 @@ def principalNormalizedLogShift (hF : NumberField.IsTotallyComplex F) (γ : Fˣ)
     RayCoset.logHyperplane F :=
   ⟨principalNormalizedLogVector γ, principalNormalizedLogVector_mem hF γ⟩
 
-theorem affineResidueScale_principal_mul
-    (hF : NumberField.IsTotallyComplex F)
+section
+variable (hF : NumberField.IsTotallyComplex F)
     (I J : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (γ : Fˣ)
     (hJ : (J : FractionalIdeal (𝓞 F)⁰ F) =
       FractionalIdeal.spanSingleton (𝓞 F)⁰ (γ : F) *
-        (I : FractionalIdeal (𝓞 F)⁰ F)) (v : InfinitePlace F) :
+        (I : FractionalIdeal (𝓞 F)⁰ F))
+include hF I J γ hJ in
+theorem affineResidueScale_principal_mul
+      (v : InfinitePlace F) :
     affineResidueScale J * v (γ : F) =
       affineResidueScale I * Real.exp ((principalNormalizedLogShift hF γ : InfinitePlace F → ℝ) v) := by
   have hi : 0 < (FractionalIdeal.absNorm (I : FractionalIdeal (𝓞 F)⁰ F) : ℝ) := by
@@ -108,12 +111,9 @@ private theorem empty_kernel_congr
   simp only [RayParity.gδ, Finset.prod_empty, one_mul, Theta.latticeGaussian,
     ← Complex.ofReal_pow, hab]
 
+include hF I J γ hJ in
 theorem affineResidueKernel_principal_mul
-    (hF : NumberField.IsTotallyComplex F)
-    (I J : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (γ : Fˣ)
-    (hJ : (J : FractionalIdeal (𝓞 F)⁰ F) =
-      FractionalIdeal.spanSingleton (𝓞 F)⁰ (γ : F) *
-        (I : FractionalIdeal (𝓞 F)⁰ F))
+     
     (u : ℝ) (hu : 0 < u) (h : RayCoset.logHyperplane F) (x : F) :
     RayParity.gδ F ∅ (RayParity.Q F (RayTheta.q F u h)
       (affineResidueScale J • Theta.traceEmbedding F ((γ : F) * x))) =
@@ -135,12 +135,9 @@ theorem affineResidueKernel_principal_mul
           (affineResidueScale J * v (γ : F)) * v x := by ring
     _ = _ := by rw [hs]; ring
 
+include hF I J γ hJ in
 theorem affineResidueDualKernel_principal_mul
-    (hF : NumberField.IsTotallyComplex F)
-    (I J : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (γ : Fˣ)
-    (hJ : (J : FractionalIdeal (𝓞 F)⁰ F) =
-      FractionalIdeal.spanSingleton (𝓞 F)⁰ (γ : F) *
-        (I : FractionalIdeal (𝓞 F)⁰ F))
+     
     (u : ℝ) (hu : 0 < u) (h : RayCoset.logHyperplane F) (β : F) :
     RayParity.gδ F ∅ (RayParity.Q F (RayTheta.q F u (-h))
       ((affineResidueScale J)⁻¹ • Theta.traceConjugation F
@@ -167,6 +164,8 @@ theorem affineResidueDualKernel_principal_mul
         u ^ (Module.finrank ℚ F : ℝ)⁻¹ * Real.exp (-h.val v) *
           ((v (γ : F))⁻¹ * (affineResidueScale J)⁻¹) * v β := by ring
     _ = _ := by rw [hs]; ring
+end
+
 
 end DedekindZetaZeroFree.Hecke.Theta
 

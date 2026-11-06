@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Geometry.ArithmeticQuotients.LineBundles.MeasurableOrthonormalFrames
 public import DedekindZetaZeroFree.Geometry.ArithmeticQuotients.LocalCharts.EllipticityAndCutoffs
 public import DedekindZetaZeroFree.Geometry.ArithmeticQuotients.LineBundles.UnitaryFrameComparison
 public import DedekindZetaZeroFree.Geometry.ArithmeticQuotients.SectionSpaces.PartitionReconstruction
 
 @[expose] public section
+
 
 noncomputable section
 open scoped Classical ENNReal
@@ -18,24 +21,26 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 variable (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
 variable (U : CompactOpenLevel (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
 
-abbrev X := KPFiniteCuspAtlas.rawXU F ζ hζ U
-abbrev V := KPCuspGenuineMonodromy.scalarFiber F ζ hζ U
+abbrev X := @_root_.DedekindZetaZeroFree.KPFiniteCuspAtlas.rawXU
+abbrev V := @_root_.DedekindZetaZeroFree.KPCuspGenuineMonodromy.scalarFiber
 
 instance : MeasurableSpace (X F ζ hζ U) := borel _
 
-def quotientMeasure (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) :
-    Measure (X F ζ hζ U) :=
+section
+variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+include A
+def quotientMeasure    :=
   ∑ i : Fin A.componentCount,
     Measure.map (KPFiniteCuspAtlas.componentMap F ζ hζ U (A.representative i))
       (KPFiniteCuspAtlas.quotientVolume F
         (KPCuspGenuineMonodromy.Component F ζ hζ U (A.representative i))
         (A.cuspAtlas i).fundamentalDomain)
 
-abbrev Line (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) :=
+abbrev Line   :=
   Σ i : Fin A.componentCount, KPCuspGenuineMonodromy.OrbifoldLine F ζ hζ U
     (A.representative i) (A.line i).rho
 
-def lineBase (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) :
+def lineBase   :
     Line F ζ hζ hF U A → X F ζ hζ U := fun p =>
   Quotient.lift (fun q => KPFiniteCuspAtlas.componentMap F ζ hζ U
     (A.representative p.1) (KPCuspSiegel.projection F _ q.1)) (by
@@ -48,6 +53,8 @@ def lineBase (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) :
       exact MulAction.mem_orbit_iff.mpr ⟨γ⁻¹, by
         change γ⁻¹ • (γ • q.1) = q.1
         simp⟩) p.2
+end
+
 
 structure Realization (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) where
   component : X F ζ hζ U → Fin A.componentCount
@@ -87,20 +94,21 @@ structure Realization (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) where
 abbrev H (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) :=
   Lp (V F ζ hζ U) 2 (quotientMeasure F ζ hζ hF U A)
 
-abbrev HK (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) (K : Set (X F ζ hζ U)) :=
+section
+variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) (K : Set (X F ζ hζ U))
+include A K
+abbrev HK   :=
   Lp (V F ζ hζ U) 2 ((quotientMeasure F ζ hζ hF U A).restrict K)
 
-def restriction (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (K : Set (X F ζ hζ U)) :
+def restriction   :
     H F ζ hζ hF U A →L[ℂ] HK F ζ hζ hF U A K :=
   LpToLpRestrictCLM (X F ζ hζ U) (V F ζ hζ U) ℂ
     (quotientMeasure F ζ hζ hF U A) 2 K
 
-theorem restriction_formula (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (K : Set (X F ζ hζ U)) (v : H F ζ hζ hF U A) :
-    restriction F ζ hζ hF U A K v
-      =ᵐ[(quotientMeasure F ζ hζ hF U A).restrict K] v :=
+def restriction_formula   (v : H F ζ hζ hF U A)  :=
   LpToLpRestrictCLM_coeFn ℂ K v
+end
+
 
 def core (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (M : Realization F ζ hζ hF U A) : Set (H F ζ hζ hF U A) :=
@@ -122,7 +130,7 @@ structure Chart (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) where
   positive_a : 0 < a
   radius : ℝ
   positive_radius : 0 < radius
-  closed_ball_in_cube : closure (Metric.ball (0 : E n) radius) ⊆ interior (cube n a)
+  closed_ball_in_cube : closure (Metric.ball (0) radius) ⊆ interior (cube n a)
   component : Fin A.componentCount
   center : KPFiniteCuspAtlas.SymmetricSpace F
   finite_stabilizer : Fintype (MulAction.stabilizer
@@ -132,7 +140,7 @@ structure Chart (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) where
       (E n ≃ₗᵢ[ℝ] E n)
   extendedDomain : Set (E n)
   open_extendedDomain : IsOpen extendedDomain
-  closed_ball_in_extension : closure (Metric.ball (0 : E n) radius) ⊆ extendedDomain
+  closed_ball_in_extension : closure (Metric.ball (0) radius) ⊆ extendedDomain
   invariant_extension : ∀ g, orthogonal g '' extendedDomain = extendedDomain
   coordinates : E n → KPFiniteCuspAtlas.SymmetricSpace F
   coordinates_center : coordinates 0 = center
@@ -157,14 +165,14 @@ structure Chart (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) where
   lower : ℝ
   upper : ℝ
   positive_lower : 0 < lower
-  finite_bounds : ∀ x ∈ closure (Metric.ball (0 : E n) radius),
+  finite_bounds : ∀ x ∈ closure (Metric.ball (0) radius),
     lower ≤ weight x ∧ weight x ≤ upper
 
   coordinate_volume : Measure.map coordinates
-    ((volume.restrict (Metric.ball (0 : E n) radius)).withDensity
+    ((volume.restrict (Metric.ball (0) radius)).withDensity
       (fun x => ENNReal.ofReal (weight x))) =
     (KPArch.hyperbolicVolume (KPCuspLogShape.dimension F)).restrict
-      (coordinates '' Metric.ball (0 : E n) radius)
+      (coordinates '' Metric.ball (0) radius)
 
 attribute [instance] Chart.finite_stabilizer
 
@@ -180,8 +188,7 @@ def Chart.rho {A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U}
 
 theorem Chart.rho_unitary {A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U}
     (C : Chart F ζ hζ hF U A) (g : C.G F ζ hζ hF U) :
-    ‖(C.rho F ζ hζ hF U g : ℂ)‖ = 1 := by
-  exact (A.line C.component).unitary _
+    ‖(C.rho F ζ hζ hF U g : ℂ)‖ = 1 := (A.line C.component).unitary _
 
 theorem Chart.section_equivariance {A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U}
     (C : Chart F ζ hζ hF U A)
@@ -211,7 +218,7 @@ def Chart.lineRelation {A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U}
   Setoid.ker (fun p => C.toLine F ζ hζ hF U p.1.val p.2)
 
 def Chart.O {A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U}
-    (C : Chart F ζ hζ hF U A) : Set (X F ζ hζ U) :=
+    (C : Chart F ζ hζ hF U A)  :=
   C.toBase F ζ hζ hF U '' Metric.ball 0 C.radius
 
 def Chart.relation {A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U}
@@ -219,10 +226,10 @@ def Chart.relation {A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U}
   Setoid.ker (fun x => C.toBase F ζ hζ hF U x.val)
 
 def Chart.average {A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U}
-    (C : Chart F ζ hζ hF U A) (f : E C.n → ℂ) : E C.n → ℂ :=
+    (C : Chart F ζ hζ hF U A) (f : E C.n → ℂ)  :=
   (Metric.ball 0 C.radius).indicator (fun x =>
     (Fintype.card (C.G F ζ hζ hF U) : ℂ)⁻¹ *
-      ∑ g : C.G F ζ hζ hF U, ((C.rho F ζ hζ hF U g)⁻¹ : ℂˣ) *
+      ∑ g : C.G F ζ hζ hF U, ((C.rho F ζ hζ hF U g)⁻¹) *
         f (C.orthogonal g x))
 
 def Chart.metricMatrix {A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U}
@@ -236,7 +243,7 @@ def Chart.metricMatrix {A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U}
       (fderiv ℝ C.coordinates x (EuclideanSpace.single k 1))) / 2
 
 def Chart.energyMatrix {A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U}
-    (C : Chart F ζ hζ hF U A) (x : E C.n) : Matrix (Fin C.n) (Fin C.n) ℝ :=
+    (C : Chart F ζ hζ hF U A) (x : E C.n)  :=
   (C.metricMatrix F ζ hζ hF U x)⁻¹
 
 section ChartFacts
@@ -258,8 +265,7 @@ theorem Chart.average_eq_self (f : E C.n → ℂ)
   rw [hs, ← mul_assoc, inv_mul_cancel₀ (Nat.cast_ne_zero.mpr Fintype.card_ne_zero), one_mul]
 theorem Chart.average_zero_outside (f : E C.n → ℂ)
     {x : E C.n} (hx : x ∉ Metric.ball 0 C.radius) :
-    C.average F ζ hζ hF U f x = 0 := by
-  exact Set.indicator_of_notMem hx _
+    C.average F ζ hζ hF U f x = 0 := Set.indicator_of_notMem hx _
 
 theorem Chart.average_equivariant (f : E C.n → ℂ)
     (h : C.G F ζ hζ hF U) (x : E C.n) :
@@ -314,12 +320,12 @@ theorem Chart.toBase_invariant (g : C.G F ζ hζ hF U) (x : E C.n)
   apply MulAction.orbitRel_apply.mpr
   exact MulAction.mem_orbit_iff.mpr ⟨g.val, rfl⟩
 
-theorem Chart.orbit_relation (x y : Metric.ball (0 : E C.n) C.radius) :
+theorem Chart.orbit_relation (x y : Metric.ball (0) C.radius) :
     (C.relation F ζ hζ hF U).r x y ↔
       ∃ g : C.G F ζ hζ hF U, C.orthogonal g x.val = y.val := by
   have hx : x.val ∈ C.extendedDomain :=
     C.closed_ball_in_extension (subset_closure x.property)
-  have hy : y.val ∈ C.extendedDomain :=
+  have hy  :=
     C.closed_ball_in_extension (subset_closure y.property)
   constructor
   · intro h
@@ -332,11 +338,10 @@ theorem Chart.orbit_relation (x y : Metric.ball (0 : E C.n) C.radius) :
           (C.coordinates y.val) := by
       have he := A.components.injective
         ((A.components_formula _ _).trans (h.trans (A.components_formula _ _).symm))
-      exact eq_of_heq (Sigma.mk.inj he).2
+      apply eq_of_heq <;> aesop
     have ho := MulAction.orbitRel_apply.mp (Quotient.exact hb)
     obtain ⟨γ, hγ⟩ := MulAction.mem_orbit_iff.mp ho
-    have hγ' : ((γ⁻¹ : KPCuspGenuineMonodromy.Component F ζ hζ U
-        (A.representative C.component)) : KPCuspArithmetic.PGL2 F) •
+    have hγ' : ((γ⁻¹) : KPCuspArithmetic.PGL2 F) •
         C.coordinates x.val = C.coordinates y.val := by
       change γ⁻¹ • C.coordinates x.val = C.coordinates y.val
       rw [← hγ]
@@ -369,7 +374,7 @@ theorem Chart.toLine_equivariant (g : C.G F ζ hζ hF U) (x : E C.n)
   apply Quotient.sound
   exact ⟨g.val, C.equivariance g x hx, hab⟩
 
-theorem Chart.line_orbit_relation (x y : Metric.ball (0 : E C.n) C.radius)
+theorem Chart.line_orbit_relation (x y : Metric.ball (0) C.radius)
     (a b : V F ζ hζ U) :
     (C.lineRelation F ζ hζ hF U).r (x,a) (y,b) ↔
       ∃ g : C.G F ζ hζ hF U,
@@ -377,7 +382,7 @@ theorem Chart.line_orbit_relation (x y : Metric.ball (0 : E C.n) C.radius)
         (b : ℂ) = (C.rho F ζ hζ hF U g : ℂ) * (a : ℂ) := by
   have hx : x.val ∈ C.extendedDomain :=
     C.closed_ball_in_extension (subset_closure x.property)
-  have hy : y.val ∈ C.extendedDomain :=
+  have hy  :=
     C.closed_ball_in_extension (subset_closure y.property)
   constructor
   · intro h
@@ -406,7 +411,7 @@ theorem Chart.line_orbit_relation (x y : Metric.ball (0 : E C.n) C.radius)
 
 theorem Chart.line_chart_surjective (l : Line F ζ hζ hF U A)
     (hl : lineBase F ζ hζ hF U A l ∈ C.O F ζ hζ hF U) :
-    ∃ (x : Metric.ball (0 : E C.n) C.radius) (a : V F ζ hζ U),
+    ∃ (x : Metric.ball (0) C.radius) (a : V F ζ hζ U),
       C.toLine F ζ hζ hF U x.val a = l := by
   obtain ⟨x, hx, hxl⟩ := hl
   obtain ⟨j, l⟩ := l
@@ -418,7 +423,7 @@ theorem Chart.line_chart_surjective (l : Line F ζ hζ hF U A)
         ⟨j, KPCuspSiegel.projection F _ p.1⟩ := by
       apply A.components.injective
       simpa only [A.components_formula, Chart.toBase, lineBase, Quotient.lift_mk] using hxl
-    have hj : C.component = j := (Sigma.mk.inj he).1
+    have hj  := (Sigma.mk.inj he).1
     subst j
     have hb := eq_of_heq (Sigma.mk.inj he).2
     obtain ⟨γ, hγ⟩ := MulAction.mem_orbit_iff.mp
@@ -441,14 +446,14 @@ theorem Chart.coordinates_open_embedding :
   · rintro ⟨x, rfl⟩; exact ⟨x.val, x.property, rfl⟩
   · rintro ⟨x, hx, rfl⟩; exact ⟨⟨x, hx⟩, rfl⟩
 theorem Chart.coordinates_ball_open_map :
-    IsOpenMap (Set.restrict (Metric.ball (0 : E C.n) C.radius) C.coordinates) := by
+    IsOpenMap (Set.restrict (Metric.ball (0) C.radius) C.coordinates) := by
   let inc : Metric.ball (0 : E C.n) C.radius → C.extendedDomain := fun x =>
     ⟨x.val, C.closed_ball_in_extension (subset_closure x.property)⟩
   have ho : IsOpenMap inc := by
     exact (Metric.isOpen_ball.isOpenMap_subtype_val).subtype_mk _
   exact (Chart.coordinates_open_embedding F ζ hζ hF U C).isOpenMap.comp ho
 theorem Chart.toBase_ball_open_map :
-    IsOpenMap (Set.restrict (Metric.ball (0 : E C.n) C.radius) (C.toBase F ζ hζ hF U)) := by
+    IsOpenMap (Set.restrict (Metric.ball (0) C.radius) (C.toBase F ζ hζ hF U)) := by
   let Γ := KPCuspGenuineMonodromy.Component F ζ hζ U (A.representative C.component)
   letI : ContinuousConstSMul Γ (KPFiniteCuspAtlas.SymmetricSpace F) :=
     ⟨fun g => KPCuspSiegel.continuous_action F g.val⟩
@@ -465,7 +470,7 @@ theorem Chart.open_image : IsOpen (C.O F ζ hζ hF U) := by
   · rintro ⟨x, hx, rfl⟩; exact ⟨⟨x, hx⟩, rfl⟩
   · rintro ⟨x, rfl⟩; exact ⟨x.val, x.property, rfl⟩
 theorem Chart.toBase_ball_continuous :
-    Continuous (Set.restrict (Metric.ball (0 : E C.n) C.radius) (C.toBase F ζ hζ hF U)) := by
+    Continuous (Set.restrict (Metric.ball (0) C.radius) (C.toBase F ζ hζ hF U)) := by
   let inc : Metric.ball (0 : E C.n) C.radius → C.extendedDomain := fun x =>
     ⟨x.val, C.closed_ball_in_extension (subset_closure x.property)⟩
   have hi : Continuous inc := continuous_subtype_val.subtype_mk _
@@ -487,22 +492,22 @@ def Chart.quotientChart : Quotient (C.relation F ζ hζ hF U) ≃ₜ C.O F ζ h�
     exact Subtype.ext_iff.symm
   exact (Homeomorph.Quotient.congrRight (fun x y => by rw [he])).trans
     (Topology.IsQuotientMap.homeomorph (f := ⟨f, hc⟩) (ho.isQuotientMap hc hs))
-theorem Chart.quotientChart_formula (x : Metric.ball (0 : E C.n) C.radius) :
+theorem Chart.quotientChart_formula (x : Metric.ball (0) C.radius) :
     (Chart.quotientChart F ζ hζ hF U C (Quotient.mk _ x)).val =
       C.toBase F ζ hζ hF U x.val := by
   rfl
 
 theorem Chart.measurePreserving_ball (g : C.G F ζ hζ hF U) :
     MeasurePreserving (C.orthogonal g)
-      (volume.restrict (Metric.ball (0 : E C.n) C.radius))
-      (volume.restrict (Metric.ball (0 : E C.n) C.radius)) := by
-  have he : (C.orthogonal g) ⁻¹' Metric.ball (0 : E C.n) C.radius =
-      Metric.ball (0 : E C.n) C.radius := by
+      (volume.restrict (Metric.ball (0) C.radius))
+      (volume.restrict (Metric.ball (0) C.radius)) := by
+  have he : (C.orthogonal g) ⁻¹' Metric.ball (0) C.radius =
+      Metric.ball (0) C.radius := by
     ext x
-    exact C.orthogonal_mem_ball F ζ hζ hF U g x
-  have hm : MeasurePreserving (C.orthogonal g) (volume : Measure (E C.n)) volume :=
+    apply C.orthogonal_mem_ball
+  have hm : MeasurePreserving (C.orthogonal g) volume volume :=
     LinearIsometryEquiv.measurePreserving (C.orthogonal g)
-  have hr := hm.restrict_preimage (s := Metric.ball (0 : E C.n) C.radius)
+  have hr := hm.restrict_preimage (s := Metric.ball (0) C.radius)
     Metric.isOpen_ball.measurableSet
   rw [he] at hr
   exact hr
@@ -545,11 +550,11 @@ theorem Chart.averageLp_formula
       C.average F ζ hζ hF U f := by
   let b : C.G F ζ hζ hF U → ℂ := fun g => (((C.rho F ζ hζ hF U g)⁻¹ : ℂˣ) : ℂ)
   let p := fun g : C.G F ζ hζ hF U => Chart.orthogonalPullback F ζ hζ hF U C g f
-  have hp : ∀ g, (p g : E C.n → ℂ) =ᵐ[volume.restrict (Metric.ball (0 : E C.n) C.radius)]
+  have hp : ∀ g, (p g : E C.n → ℂ) =ᵐ[volume.restrict (Metric.ball (0) C.radius)]
       fun x => f (C.orthogonal g x) := fun g =>
     Lp.coeFn_compMeasurePreserving f (Chart.measurePreserving_ball F ζ hζ hF U C g)
   have hb : ∀ g, ((b g • p g : Lp ℂ 2 (volume.restrict (Metric.ball (0 : E C.n) C.radius))) : E C.n → ℂ)
-      =ᵐ[volume.restrict (Metric.ball (0 : E C.n) C.radius)]
+      =ᵐ[volume.restrict (Metric.ball (0) C.radius)]
         fun x => b g * f (C.orthogonal g x) := by
     intro g
     exact (Lp.coeFn_smul (b g) (p g)).trans ((hp g).const_smul (b g))
@@ -562,15 +567,15 @@ theorem Chart.averageLp_formula
     LinearIsometry.coe_toContinuousLinearMap, Chart.average, Set.indicator_of_mem hball,
     b, p, Pi.smul_apply, smul_eq_mul, Finset.sum_apply] using hx
 theorem Chart.average_congr_ae {f k : E C.n → ℂ}
-    (hfk : f =ᵐ[volume.restrict (Metric.ball (0 : E C.n) C.radius)] k) :
-    C.average F ζ hζ hF U f =ᵐ[volume.restrict (Metric.ball (0 : E C.n) C.radius)]
+    (hfk : f =ᵐ[volume.restrict (Metric.ball (0) C.radius)] k) :
+    C.average F ζ hζ hF U f =ᵐ[volume.restrict (Metric.ball (0) C.radius)]
       C.average F ζ hζ hF U k := by
   have hg : ∀ g : C.G F ζ hζ hF U,
-      (fun x => f (C.orthogonal g x)) =ᵐ[volume.restrict (Metric.ball (0 : E C.n) C.radius)]
+      (fun x => f (C.orthogonal g x)) =ᵐ[volume.restrict (Metric.ball (0) C.radius)]
         fun x => k (C.orthogonal g x) := fun g =>
     (Chart.measurePreserving_ball F ζ hζ hF U C g).quasiMeasurePreserving.ae_eq_comp hfk
   filter_upwards [Filter.eventually_all.mpr hg] with x hx
-  by_cases hball : x ∈ Metric.ball (0 : E C.n) C.radius
+  by_cases hball : x ∈ Metric.ball (0) C.radius
   · simp only [Chart.average, Set.indicator_of_mem hball]
     congr 1
     apply Finset.sum_congr rfl
@@ -595,13 +600,13 @@ structure Localizers (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
   open_image : ∀ i, IsOpen ((chart i).O F ζ hζ hF U)
   quotient_chart : ∀ i, Quotient ((chart i).relation F ζ hζ hF U) ≃ₜ
     ((chart i).O F ζ hζ hF U)
-  quotient_chart_formula : ∀ i (x : Metric.ball (0 : E (chart i).n) (chart i).radius),
+  quotient_chart_formula : ∀ i (x : Metric.ball (0) (chart i).radius),
     (quotient_chart i (Quotient.mk _ x)).val = (chart i).toBase F ζ hζ hF U x.val
-  orbit_relation : ∀ i (x y : Metric.ball (0 : E (chart i).n) (chart i).radius),
+  orbit_relation : ∀ i (x y : Metric.ball (0) (chart i).radius),
     ((chart i).relation F ζ hζ hF U).r x y ↔
       ∃ g : (chart i).G F ζ hζ hF U, (chart i).orthogonal g x.val = y.val
 
-  line_orbit_relation : ∀ i (x y : Metric.ball (0 : E (chart i).n) (chart i).radius)
+  line_orbit_relation : ∀ i (x y : Metric.ball (0) (chart i).radius)
       (a b : V F ζ hζ U),
     ((chart i).lineRelation F ζ hζ hF U).r (x,a) (y,b) ↔
       ∃ g : (chart i).G F ζ hζ hF U,
@@ -609,7 +614,7 @@ structure Localizers (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
         (b : ℂ) = ((chart i).rho F ζ hζ hF U g : ℂ) * (a : ℂ)
   line_chart_surjective : ∀ i (l : Line F ζ hζ hF U A),
     lineBase F ζ hζ hF U A l ∈ (chart i).O F ζ hζ hF U →
-      ∃ (x : Metric.ball (0 : E (chart i).n) (chart i).radius) (a : V F ζ hζ U),
+      ∃ (x : Metric.ball (0) (chart i).radius) (a : V F ζ hζ U),
         (chart i).toLine F ζ hζ hF U x.val a = l
   invariant_ball : ∀ i (g : (chart i).G F ζ hζ hF U),
     (chart i).orthogonal g '' Metric.ball 0 (chart i).radius =
@@ -631,7 +636,7 @@ structure Localizers (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (quotientMeasure F ζ hζ hF U A).restrict ((chart i).O F ζ hζ hF U)
   ellipticity : Fin count → ℝ
   positive_ellipticity : ∀ i, 0 < ellipticity i
-  uniform_ellipticity : ∀ i x, x ∈ closure (Metric.ball (0 : E (chart i).n) (chart i).radius) →
+  uniform_ellipticity : ∀ i x, x ∈ closure (Metric.ball (0) (chart i).radius) →
     ∀ ξ : E (chart i).n,
       ellipticity i * ‖ξ‖ ^ 2 ≤
         ∑ j, ∑ k, (chart i).energyMatrix F ζ hζ hF U x j k * ξ j * ξ k
@@ -686,7 +691,7 @@ structure Localizers (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
       (chart i).toBase F ζ hζ hF U x ∈ K →
       R i f ((chart i).toBase F ζ hζ hF U x) =
         (V F ζ hζ U).orthogonalProjectionOnto
-          (((phase i x)⁻¹ : ℂˣ) * (chart i).average F ζ hζ hF U f x)
+          (((phase i x)⁻¹) * (chart i).average F ζ hζ hF U f x)
   R_zero_extension : ∀ i f,
     ∀ᵐ x ∂(quotientMeasure F ζ hζ hF U A).restrict K,
       x ∉ (chart i).O F ζ hζ hF U → R i f x = 0
@@ -697,7 +702,10 @@ structure Localizers (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
       tsupport f ⊆ interior (cube (chart i).n (chart i).a) ∧
       T i v =ᵐ[volume.restrict (cube (chart i).n (chart i).a)] f
 
- def ofRawRealization (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+ section
+variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+include A
+def ofRawRealization  
     (M : CoreChartLocalizers.Realization F ζ hζ hF U A) :
     Realization F ζ hζ hF U A :=
   { component := M.component
@@ -716,7 +724,7 @@ structure Localizers (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     frame_surjective_ae := M.frame_surjective_ae
     smooth_test_memLp := M.smooth_test_memLp }
 
- def ofRawChart (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+ def ofRawChart  
     (C : CoreChartLocalizers.Chart F ζ hζ hF U A) :
     Chart F ζ hζ hF U A :=
   { n := C.n
@@ -752,7 +760,7 @@ structure Localizers (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     finite_bounds := C.finite_bounds
     coordinate_volume := C.coordinate_volume }
 
- def ofRawLocalizers (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+ def ofRawLocalizers  
     (M : CoreChartLocalizers.Realization F ζ hζ hF U A)
     {K : Set (X F ζ hζ U)} (hK : MeasurableSet K)
     (C : CoreChartLocalizers.FiniteCutoffs F ζ hζ hF U A K)
@@ -811,7 +819,7 @@ structure Localizers (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     reconstruction := CoreChartLocalizers.local_reconstruction F ζ hζ hF U A M hK C P B }
 
 theorem actual_realization_and_localizers
-    (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) :
+      :
     ∃ M : Realization F ζ hζ hF U A,
       ∀ K : Set (X F ζ hζ U), IsCompact K →
         Nonempty (Localizers F ζ hζ hF U A M K) := by
@@ -826,6 +834,8 @@ theorem actual_realization_and_localizers
   obtain ⟨B⟩ := CoreChartLocalizers.bounded_local_operators F ζ hζ hF U A M
     hK.measurableSet C P
   exact ⟨ofRawLocalizers F ζ hζ hF U A M hK.measurableSet C P B⟩
+end
+
 
 end KPCoreChartLocalizers
 

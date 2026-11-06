@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import Mathlib.SetTheory.Cardinal.Finite
 public import ClassFieldTheory.LocalClassFieldTheory.Finite.LocalReciprocity.AbstractFixedFieldUnits
 public import ClassFieldTheory.LocalClassFieldTheory.Finite.LocalReciprocity.FiniteExtensionClassFieldAxiom
 public import GaloisCohomology.Cyclic.TateComparison
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -57,7 +60,7 @@ private theorem galoisAmbientUnits_satisfiesClassFieldAxiom
   let := hnormal
   let := hfinite
   let Q := K.toSubgroup ⧸ extensionSubgroup K L hLK
-  let : Fintype Q := Fintype.ofFinite Q
+  let  := Fintype.ofFinite Q
   let F := abstractFixedField k Ω K
   let E := abstractRelativeFixedField k Ω hLK
   let : FiniteDimensional k F :=
@@ -69,14 +72,14 @@ private theorem galoisAmbientUnits_satisfiesClassFieldAxiom
     abstractRelativeFixedField_isGalois k Ω K L hLK hnormal
   let eQ : Q ≃* Gal(E / F) :=
     abstractExtensionQuotientEquivGaloisGroup k Ω K L hLK hnormal
-  let g' : Gal(E / F) := eQ g
+  let g'  := eQ g
   have hg' : ∀ σ : Gal(E / F), σ ∈ Subgroup.zpowers g' :=
     map_cyclicGenerator eQ g hg
   have hUnitsTateCard := finiteTowerUnits_tate_card_of_generator k F E g' hg'
 
   let : IsCyclic Q := CyclicCohomology.isCyclic_of_generator g hg
   let : CommGroup Q := IsCyclic.commGroup
-  let : IsCyclic (Gal(E / F)) :=
+  let  :=
     CyclicCohomology.isCyclic_of_generator g' hg'
   let : CommGroup (Gal(E / F)) := IsCyclic.commGroup
   let M := extensionFixedRepresentation
@@ -112,9 +115,9 @@ private theorem galoisAmbientUnits_satisfiesClassFieldAxiom
   let : Subsingleton (tateCohomology U (-1)) :=
     ModuleCat.subsingleton_of_isZero hUTateMinusOneZero
   let : Finite (tateCohomology U (-1)) := by infer_instance
-  let : Finite (tateCohomology M 0) :=
+  let  :=
     Finite.of_equiv (tateCohomology U 0) eTateH0.symm.toLinearEquiv.toEquiv
-  let : Finite (tateCohomology M (-1)) :=
+  let  :=
     Finite.of_equiv (tateCohomology U (-1)) eTateHm1.symm.toLinearEquiv.toEquiv
   have hH0actual :
       Nat.card (tateCohomology U 0) =

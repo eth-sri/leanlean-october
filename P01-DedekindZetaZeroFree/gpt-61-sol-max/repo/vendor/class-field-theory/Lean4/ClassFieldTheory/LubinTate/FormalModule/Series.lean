@@ -63,17 +63,17 @@ attribute [simp] LubinTateSeries.constantCoeff_eq_zero
 
 namespace LubinTateSeries
 
-variable {F : LocalField.{u, v} K} {π : F.valuationSubring}
+variable {F : LocalField.{u, v} K} 
 
-/-- Two Lubin--Tate series are equal when their underlying power series
-are equal. -/
-@[ext]
-theorem ext {e e' : LubinTateSeries F π}
-    (h : e.toPowerSeries = e'.toPowerSeries) : e = e' := by
-  cases e
-  cases e'
-  cases h
-  rfl
+
+
+
+
+
+
+
+
+
 
 end LubinTateSeries
 

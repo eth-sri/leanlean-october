@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AlgebraicNumberTheory.RayClass.Ideal
 public import Mathlib.Data.Nat.Factorization.Basic
 public import Mathlib.Data.Nat.GCD.BigOperators
@@ -9,6 +11,7 @@ public import Mathlib.NumberTheory.Padics.HeightOneSpectrum
 public import Mathlib.NumberTheory.Padics.RingHoms
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -50,29 +53,27 @@ local instance rationalRingOfIntegersIsPrincipalIdealRing :
     Rat.ringOfIntegersEquiv.symm
     Rat.ringOfIntegersEquiv.symm.surjective
 
-local instance rationalNatGeneratorPrimeFact
-    (v : HeightOneSpectrum (𝓞 ℚ)) :
-    Fact (Nat.Prime (Rat.HeightOneSpectrum.natGenerator v)) :=
-  ⟨Rat.HeightOneSpectrum.prime_natGenerator v⟩
+
+
+
+
 
 local instance rationalPrimesEquivPrimeFact
     (v : HeightOneSpectrum (𝓞 ℚ)) :
     Fact
       (Nat.Prime
         ((Rat.HeightOneSpectrum.primesEquiv
-          (R := 𝓞 ℚ) v : Nat.Primes) : ℕ)) :=
+          (R := 𝓞 ℚ) v) : ℕ)) :=
   ⟨(Rat.HeightOneSpectrum.primesEquiv
     (R := 𝓞 ℚ) v).property⟩
 
 /-- The height-one prime of `𝓞 ℚ` associated with a natural prime. -/
-noncomputable abbrev rationalPrime (p : Nat.Primes) :
-    HeightOneSpectrum (𝓞 ℚ) :=
+noncomputable abbrev rationalPrime (p : Nat.Primes)  :=
   (Rat.HeightOneSpectrum.primesEquiv (R := 𝓞 ℚ)).symm p
 
 @[simp]
 theorem natGenerator_rationalPrime (p : Nat.Primes) :
-    Rat.HeightOneSpectrum.natGenerator (rationalPrime p) = p := by
-  exact congrArg Subtype.val
+    Rat.HeightOneSpectrum.natGenerator (rationalPrime p) = p := congrArg Subtype.val
     ((Rat.HeightOneSpectrum.primesEquiv (R := 𝓞 ℚ)).apply_symm_apply p)
 
 theorem rational_natGenerator_injective :
@@ -97,21 +98,18 @@ noncomputable def rationalFiniteModulus (m : ℕ) : FiniteModulus ℚ :=
 theorem rationalFiniteModulus_apply
     (m : ℕ) (v : HeightOneSpectrum (𝓞 ℚ)) :
     rationalFiniteModulus m v =
-      m.factorization (Rat.HeightOneSpectrum.natGenerator v) := by
-  rw [rationalFiniteModulus, Finsupp.comapDomain_apply]
+      m.factorization (Rat.HeightOneSpectrum.natGenerator v) := rfl
 
 /-- The full rational ray modulus has the finite part `(m)` and positivity
 at the unique real place. -/
-noncomputable def rationalModulus (m : ℕ) : Modulus ℚ :=
+noncomputable def rationalModulus (m : ℕ)  :=
   Modulus.narrowOfFinite (rationalFiniteModulus m)
 
 @[simp]
 theorem rationalModulus_finitePart_apply
     (m : ℕ) (v : HeightOneSpectrum (𝓞 ℚ)) :
     (rationalModulus m).finitePart v =
-      m.factorization (Rat.HeightOneSpectrum.natGenerator v) := by
-  rw [rationalModulus, Modulus.finitePart_narrowOfFinite,
-    rationalFiniteModulus_apply]
+      m.factorization (Rat.HeightOneSpectrum.natGenerator v) := rfl
 
 theorem mem_rationalFiniteModulus_support_iff
     {m : ℕ} (hm : m ≠ 0) (v : HeightOneSpectrum (𝓞 ℚ)) :
@@ -123,38 +121,39 @@ theorem mem_rationalFiniteModulus_support_iff
   · intro hdiv
     exact (Rat.HeightOneSpectrum.prime_natGenerator v).factorization_pos_of_dvd hm hdiv |>.ne'
 
+section
+variable (I : FractionalIdealGroup ℚ)
+include I
 /-- The fractional ideal underlying a rational fractional-ideal unit. -/
-abbrev rationalFractionalIdeal (I : FractionalIdealGroup ℚ) :
+abbrev rationalFractionalIdeal   :
     FractionalIdeal (nonZeroDivisors (𝓞 ℚ)) ℚ :=
   I
 
 /-- An arbitrary principal generator of a nonzero rational fractional
 ideal, before choosing its sign. -/
  noncomputable def rawRationalIdealGenerator
-    (I : FractionalIdealGroup ℚ) : ℚ :=
+       :=
   Submodule.IsPrincipal.generator
-    ((rationalFractionalIdeal I : FractionalIdeal
-      (nonZeroDivisors (𝓞 ℚ)) ℚ) : Submodule (𝓞 ℚ) ℚ)
+    ((rationalFractionalIdeal I) : Submodule (𝓞 ℚ) ℚ)
 
 private theorem rawRationalIdealGenerator_ne_zero
-    (I : FractionalIdealGroup ℚ) :
+      :
     rawRationalIdealGenerator I ≠ 0 := by
   apply mt
     (Submodule.IsPrincipal.eq_bot_iff_generator_eq_zero
-      ((rationalFractionalIdeal I : FractionalIdeal
-        (nonZeroDivisors (𝓞 ℚ)) ℚ) : Submodule (𝓞 ℚ) ℚ)).2
-  exact FractionalIdeal.coeToSubmodule_ne_bot.mpr (Units.ne_zero I)
+      ((rationalFractionalIdeal I) : Submodule (𝓞 ℚ) ℚ)).2
+  apply FractionalIdeal.coeToSubmodule_ne_bot.mpr <;> aesop
 
 /-- The unique positive generator of a nonzero rational fractional ideal. -/
 noncomputable def positiveRationalIdealGenerator
-    (I : FractionalIdealGroup ℚ) : ℚ :=
+       :=
   if 0 < rawRationalIdealGenerator I then
     rawRationalIdealGenerator I
   else
     -rawRationalIdealGenerator I
 
 theorem positiveRationalIdealGenerator_pos
-    (I : FractionalIdealGroup ℚ) :
+      :
     0 < positiveRationalIdealGenerator I := by
   rw [positiveRationalIdealGenerator]
   split_ifs with h
@@ -164,7 +163,7 @@ theorem positiveRationalIdealGenerator_pos
         (rawRationalIdealGenerator_ne_zero I))
 
 theorem rationalFractionalIdeal_eq_span_positiveGenerator
-    (I : FractionalIdealGroup ℚ) :
+      :
     rationalFractionalIdeal I =
       FractionalIdeal.spanSingleton (nonZeroDivisors (𝓞 ℚ))
         (positiveRationalIdealGenerator I) := by
@@ -183,6 +182,8 @@ theorem rationalFractionalIdeal_eq_span_positiveGenerator
             (S := nonZeroDivisors (𝓞 ℚ))).2
         refine ⟨-1, ?_⟩
         simp
+end
+
 
 /-- Positive rational generators of the same principal fractional ideal
 are equal. -/
@@ -230,12 +231,12 @@ noncomputable def positiveRationalIdealGeneratorUnit
   Units.mk0 (positiveRationalIdealGenerator I)
     (ne_of_gt (positiveRationalIdealGenerator_pos I))
 
-@[simp]
-theorem positiveRationalIdealGeneratorUnit_val
-    (I : FractionalIdealGroup ℚ) :
-    (positiveRationalIdealGeneratorUnit I : ℚ) =
-      positiveRationalIdealGenerator I :=
-  rfl
+
+
+
+
+
+
 
 theorem toPrincipalIdeal_positiveRationalIdealGeneratorUnit
     (I : FractionalIdealGroup ℚ) :
@@ -249,20 +250,20 @@ theorem toPrincipalIdeal_positiveRationalIdealGeneratorUnit
       rationalFractionalIdeal I
   exact (rationalFractionalIdeal_eq_span_positiveGenerator I).symm
 
-@[simp]
-theorem positiveRationalIdealGeneratorUnit_one :
-    positiveRationalIdealGeneratorUnit
-      (1 : FractionalIdealGroup ℚ) = 1 := by
-  apply Units.ext
-  exact positiveRationalIdealGenerator_one
 
-theorem positiveRationalIdealGeneratorUnit_mul
-    (I J : FractionalIdealGroup ℚ) :
-    positiveRationalIdealGeneratorUnit (I * J) =
-      positiveRationalIdealGeneratorUnit I *
-        positiveRationalIdealGeneratorUnit J := by
-  apply Units.ext
-  exact positiveRationalIdealGenerator_mul I J
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- An element of `WithZero (Multiplicative ℤ)` with logarithm zero is
 one. -/
@@ -276,14 +277,17 @@ theorem withZero_eq_one_of_log_eq_zero
     _ = WithZero.exp 0 := congrArg WithZero.exp hlog
     _ = 1 := rfl
 
-/-- Zero principal-ideal exponent at a rational finite place forces
-valuation one. -/
-theorem valuation_eq_one_of_principal_count_eq_zero
-    (x : ℚˣ) (v : HeightOneSpectrum (𝓞 ℚ))
+section
+variable (x : ℚˣ) (v : HeightOneSpectrum (𝓞 ℚ))
     (hcount :
       FractionalIdeal.count ℚ v
         (toPrincipalIdeal (𝓞 ℚ) ℚ x :
-          FractionalIdeal (nonZeroDivisors (𝓞 ℚ)) ℚ) = 0) :
+          FractionalIdeal (nonZeroDivisors (𝓞 ℚ)) ℚ) = 0)
+include x v hcount
+/-- Zero principal-ideal exponent at a rational finite place forces
+valuation one. -/
+theorem valuation_eq_one_of_principal_count_eq_zero
+      :
     v.valuation ℚ (x : ℚ) = 1 := by
   rw [IdeleGroup.count_toPrincipalIdeal] at hcount
   have hlog :
@@ -296,11 +300,7 @@ theorem valuation_eq_one_of_principal_count_eq_zero
 /-- A rational prime with zero principal-ideal exponent does not divide
 the denominator. -/
 theorem not_dvd_den_of_principal_count_eq_zero
-    (x : ℚˣ) (v : HeightOneSpectrum (𝓞 ℚ))
-    (hcount :
-      FractionalIdeal.count ℚ v
-        (toPrincipalIdeal (𝓞 ℚ) ℚ x :
-          FractionalIdeal (nonZeroDivisors (𝓞 ℚ)) ℚ) = 0) :
+      :
     ¬ Rat.HeightOneSpectrum.natGenerator v ∣ (x : ℚ).den := by
   let p := Rat.HeightOneSpectrum.natGenerator v
   let : Fact p.Prime :=
@@ -316,11 +316,7 @@ theorem not_dvd_den_of_principal_count_eq_zero
 /-- A rational prime with zero principal-ideal exponent does not divide
 the numerator. -/
 theorem not_dvd_num_of_principal_count_eq_zero
-    (x : ℚˣ) (v : HeightOneSpectrum (𝓞 ℚ))
-    (hcount :
-      FractionalIdeal.count ℚ v
-        (toPrincipalIdeal (𝓞 ℚ) ℚ x :
-          FractionalIdeal (nonZeroDivisors (𝓞 ℚ)) ℚ) = 0) :
+      :
     ¬ Rat.HeightOneSpectrum.natGenerator v ∣ (x : ℚ).num.natAbs := by
   let p := Rat.HeightOneSpectrum.natGenerator v
   let : Fact p.Prime :=
@@ -341,6 +337,8 @@ theorem not_dvd_num_of_principal_count_eq_zero
   exact fun hpdiv =>
     (Int.padicValuation_eq_one_iff.mp hpval)
       (Int.natCast_dvd.mpr hpdiv)
+end
+
 
 theorem positiveGenerator_den_coprime
     {m : ℕ} (hm : m ≠ 0)
@@ -399,16 +397,19 @@ theorem positiveGenerator_num_coprime
         rw [hvgen]
         exact hpnum)
 
+section
+variable (m : ℕ)
+include m
 /-- The numerator of a rational number as a residue-class unit. -/
 def rationalNumeratorResidueUnit
-    (m : ℕ) (q : ℚ) (hq : Nat.Coprime q.num.natAbs m) :
+      (q : ℚ) (hq : Nat.Coprime q.num.natAbs m) :
     (ZMod m)ˣ :=
   ZMod.unitOfIsCoprime q.num <| by
     simpa [Int.isCoprime_iff_nat_coprime] using hq
 
 /-- The denominator of a rational number as a residue-class unit. -/
 def rationalDenominatorResidueUnit
-    (m : ℕ) (q : ℚ) (hq : Nat.Coprime q.den m) :
+      (q : ℚ) (hq : Nat.Coprime q.den m) :
     (ZMod m)ˣ :=
   ZMod.unitOfIsCoprime (q.den : ℤ) <| by
     simpa [Int.isCoprime_iff_nat_coprime] using hq
@@ -416,16 +417,15 @@ def rationalDenominatorResidueUnit
 /-- Reduction of a rational number whose numerator and denominator are
 both prime to `m`. -/
 def rationalResidueUnit
-    (m : ℕ) (q : ℚ)
+      (q : ℚ)
     (hnum : Nat.Coprime q.num.natAbs m)
-    (hden : Nat.Coprime q.den m) :
-    (ZMod m)ˣ :=
+    (hden : Nat.Coprime q.den m)  :=
   rationalNumeratorResidueUnit m q hnum *
     (rationalDenominatorResidueUnit m q hden)⁻¹
 
 /-- Rational residue units are independent of the chosen equality proof. -/
 theorem rationalResidueUnit_congr
-    (m : ℕ) {q r : ℚ} (hqr : q = r)
+      {q r : ℚ} (hqr : q = r)
     (hqnum : Nat.Coprime q.num.natAbs m)
     (hqden : Nat.Coprime q.den m)
     (hrnum : Nat.Coprime r.num.natAbs m)
@@ -437,7 +437,7 @@ theorem rationalResidueUnit_congr
 
 /-- Reduction of rational numbers prime to a modulus is multiplicative. -/
 theorem rationalResidueUnit_mul
-    (m : ℕ) (q r : ℚ)
+      (q r : ℚ)
     (hqnum : Nat.Coprime q.num.natAbs m)
     (hqden : Nat.Coprime q.den m)
     (hrnum : Nat.Coprime r.num.natAbs m)
@@ -471,7 +471,7 @@ theorem rationalResidueUnit_mul
       simp [mul_comm, mul_left_comm, mul_assoc]
 
 /-- The rational residue unit of one is one. -/
-theorem rationalResidueUnit_one (m : ℕ) :
+theorem rationalResidueUnit_one   :
     rationalResidueUnit m 1 (by simp) (by simp) = 1 := by
   apply Units.ext
   simp [rationalResidueUnit, rationalNumeratorResidueUnit,
@@ -480,7 +480,7 @@ theorem rationalResidueUnit_one (m : ℕ) :
 /-- A rational residue unit is one exactly when its numerator and
 denominator are congruent modulo the modulus. -/
 theorem rationalResidueUnit_eq_one_iff_modEq
-    (m : ℕ) (q : ℚ)
+      (q : ℚ)
     (hnum : Nat.Coprime q.num.natAbs m)
     (hden : Nat.Coprime q.den m) :
     rationalResidueUnit m q hnum hden = 1 ↔
@@ -509,7 +509,7 @@ theorem rationalResidueUnit_eq_one_iff_modEq
 /-- Send an ideal prime to `(m)` to the residue class of its positive
 generator. -/
 noncomputable def primeToIdealResidueHom
-    (m : ℕ) (hm : m ≠ 0) :
+      (hm : m ≠ 0) :
     primeToModulusIdeals (rationalModulus m) →* (ZMod m)ˣ where
   toFun I :=
     rationalResidueUnit m
@@ -567,7 +567,7 @@ noncomputable def primeToIdealResidueHom
 
 @[simp]
 theorem primeToIdealResidueHom_apply
-    (m : ℕ) (hm : m ≠ 0)
+      (hm : m ≠ 0)
     (I : primeToModulusIdeals (rationalModulus m)) :
     primeToIdealResidueHom m hm I =
       rationalResidueUnit m
@@ -576,6 +576,8 @@ theorem primeToIdealResidueHom_apply
         (positiveGenerator_num_coprime hm I)
         (positiveGenerator_den_coprime hm I) :=
   rfl
+end
+
 
 /-- A positive integer prime to the modulus defines a principal ideal in
 the prime-to-modulus ideal group. -/
@@ -593,7 +595,7 @@ theorem principalNat_mem_primeToModulusIdeals
     (by
       rw [rationalModulus, Modulus.finitePart_narrowOfFinite] at hv
       exact (mem_rationalFiniteModulus_support_iff hm v).mp hv)
-  have hpa : ¬ p ∣ a :=
+  have hpa  :=
     hp.coprime_iff_not_dvd.mp
       (hcop.coprime_dvd_right hpm).symm
   let : Fact p.Prime := ⟨hp⟩
@@ -624,22 +626,14 @@ theorem positiveGenerator_toPrincipalIdeal_nat
     (positiveRationalIdealGenerator_pos _)
     (by exact_mod_cast ha)
   rw [← rationalFractionalIdeal_eq_span_positiveGenerator]
-  calc
-    rationalFractionalIdeal
-        (toPrincipalIdeal (𝓞 ℚ) ℚ x) =
-      FractionalIdeal.spanSingleton (nonZeroDivisors (𝓞 ℚ))
-        (x : ℚ) := by
-          simpa only [rationalFractionalIdeal] using
-            (coe_toPrincipalIdeal (R := 𝓞 ℚ) (K := ℚ) x)
-    _ = FractionalIdeal.spanSingleton
-        (nonZeroDivisors (𝓞 ℚ)) (a : ℚ) := rfl
+  simp_all
 
 /-- The numerator residue unit of a positive natural cast is its residue
 unit. -/
 theorem rationalNumeratorResidueUnit_natCast
     (m a : ℕ) (hcop : Nat.Coprime a m) :
     (rationalNumeratorResidueUnit m (a : ℚ)
-        (by simpa using hcop) : ZMod m) =
+        (hcop) : ZMod m) =
       (a : ZMod m) := by
   simp [rationalNumeratorResidueUnit]
 
@@ -655,10 +649,9 @@ residue reduction. -/
 theorem rationalResidueUnit_natCast
     (m a : ℕ) (hcop : Nat.Coprime a m) :
     (rationalResidueUnit m (a : ℚ)
-        (by simpa using hcop) (by simp) : ZMod m) =
+        (hcop) (by simp) : ZMod m) =
       (a : ZMod m) := by
-  have hden :
-      rationalDenominatorResidueUnit m (a : ℚ) (by simp) = 1 :=
+  have hden  :=
     rationalDenominatorResidueUnit_natCast m a (by simp)
   change
     (rationalNumeratorResidueUnit m (a : ℚ) _ *
@@ -672,7 +665,7 @@ theorem primeToIdealResidueHom_surjective
     (m : ℕ) (hm : m ≠ 0) :
     Function.Surjective (primeToIdealResidueHom m hm) := by
   intro u
-  let a : ℕ := (u : ZMod m).val + m
+  let a  := (u : ZMod m).val + m
   have ha : 0 < a :=
     Nat.add_pos_right _ (Nat.pos_of_ne_zero hm)
   have hcop : Nat.Coprime a m := by
@@ -687,11 +680,9 @@ theorem primeToIdealResidueHom_surjective
   refine ⟨I, ?_⟩
   have hgen :
       positiveRationalIdealGenerator
-          (I : FractionalIdealGroup ℚ) = (a : ℚ) := by
-    exact positiveGenerator_toPrincipalIdeal_nat ha
+          (I : FractionalIdealGroup ℚ) = (a : ℚ) := positiveGenerator_toPrincipalIdeal_nat ha
   have hanum :
-      Nat.Coprime ((a : ℚ).num.natAbs) m := by
-    simpa using hcop
+      Nat.Coprime ((a : ℚ).num.natAbs) m := hcop
   have haden : Nat.Coprime ((a : ℚ).den) m := by
     simp
   apply Units.ext
@@ -717,10 +708,13 @@ theorem primeToIdealResidueHom_surjective
 
 /-! ### The local congruence condition over `ℚ` -/
 
+section
+variable (v : HeightOneSpectrum (𝓞 ℚ))
+include v
 /-- The integral local unit attached to a rational principal idele
 component. -/
 def principalLocalIntegralUnit
-    (v : HeightOneSpectrum (𝓞 ℚ)) (x : ℚˣ)
+      (x : ℚˣ)
     (hx : v.valuation ℚ (x : ℚ) = 1) :
     (v.adicCompletionIntegers ℚ).units :=
   ⟨(IdeleGroup.principalIdele ℚ x).2 v, by
@@ -733,7 +727,7 @@ def principalLocalIntegralUnit
 
 /-- The integral value underlying a rational principal local unit. -/
 def rationalLocalIntegralValue
-    (v : HeightOneSpectrum (𝓞 ℚ))
+     
     (y : (v.adicCompletionIntegers ℚ).units) :
     v.adicCompletionIntegers ℚ :=
   ((v.adicCompletionIntegers ℚ).toSubmonoid.unitsEquivUnitsType y :
@@ -742,7 +736,7 @@ def rationalLocalIntegralValue
 /-- The residue criterion for a rational principal local unit to lie in a
 higher-unit group. -/
 theorem rationalLocalHigherUnitMap_eq_one_iff
-    (v : HeightOneSpectrum (𝓞 ℚ)) (n : ℕ)
+      (n : ℕ)
     (y : (v.adicCompletionIntegers ℚ).units) :
     localHigherUnitMap v n y = 1 ↔
       rationalLocalIntegralValue v y - 1 ∈
@@ -765,40 +759,33 @@ theorem rationalLocalHigherUnitMap_eq_one_iff
 /-- Coercing the integral local value recovers the principal finite
 component. -/
 theorem principalLocalIntegralValue_coe
-    (v : HeightOneSpectrum (𝓞 ℚ)) (x : ℚˣ)
+      (x : ℚˣ)
     (hx : v.valuation ℚ (x : ℚ) = 1) :
     (rationalLocalIntegralValue v
       (principalLocalIntegralUnit v x hx) :
         v.adicCompletion ℚ) =
       NumberField.FinitePlace.embedding v (x : ℚ) := by
-  change
-    ((((IdeleGroup.principalIdele ℚ x).2 v :
-      (v.adicCompletion ℚ)ˣ) : v.adicCompletion ℚ)) =
-      NumberField.FinitePlace.embedding v (x : ℚ)
-  have hcomp :=
-    IdeleGroup.finiteComponent_principalIdele x v
-  rw [IdeleGroup.finiteComponent_apply] at hcomp
-  exact hcomp
+  rfl
 
 /-- The rational adic-completion equivalence maps powers of maximal
 ideals to the corresponding powers in the padic integers. -/
 theorem map_maximalIdeal_pow_padicIntEquiv
-    (v : HeightOneSpectrum (𝓞 ℚ)) (n : ℕ) :
+      (n : ℕ) :
     ((IsLocalRing.maximalIdeal
         (v.adicCompletionIntegers ℚ)) ^ n).map
         (Rat.HeightOneSpectrum.adicCompletionIntegers.padicIntEquiv v).toRingEquiv =
       Ideal.span
         {(((Rat.HeightOneSpectrum.primesEquiv
-          (R := 𝓞 ℚ) v : Nat.Primes) : ℕ) :
+          (R := 𝓞 ℚ) v) : ℕ) :
           ℤ_[((Rat.HeightOneSpectrum.primesEquiv
-            (R := 𝓞 ℚ) v : Nat.Primes) : ℕ)]) ^ n} := by
+            (R := 𝓞 ℚ) v) : ℕ)]) ^ n} := by
   rw [Ideal.map_pow, IsLocalRing.map_ringEquiv_maximalIdeal,
     PadicInt.maximalIdeal_eq_span_p, Ideal.span_singleton_pow]
 
 /-- Membership of the local integral difference in a maximal-ideal power
 is equivalent to the corresponding padic divisibility condition. -/
 theorem rationalLocalIntegralValue_sub_mem_iff
-    (v : HeightOneSpectrum (𝓞 ℚ)) (n : ℕ)
+      (n : ℕ)
     (z : v.adicCompletionIntegers ℚ) :
     z - 1 ∈
         (IsLocalRing.maximalIdeal
@@ -826,8 +813,7 @@ theorem rationalLocalIntegralValue_sub_mem_iff
     have hzero :
         PadicInt.toZModPow n (e (z - 1)) = 0 := by
       simpa only [map_sub, map_one, sub_eq_zero] using hz
-    have hez :
-        e (z - 1) ∈ RingHom.ker (PadicInt.toZModPow n) :=
+    have hez  :=
       (RingHom.mem_ker).2 hzero
     rw [PadicInt.ker_toZModPow,
       ← map_maximalIdeal_pow_padicIntEquiv] at hez
@@ -839,16 +825,16 @@ theorem rationalLocalIntegralValue_sub_mem_iff
 the natural prime generator. -/
 @[simp]
 theorem primesEquiv_val_eq_natGenerator
-    (v : HeightOneSpectrum (𝓞 ℚ)) :
+      :
     ((Rat.HeightOneSpectrum.primesEquiv
-      (R := 𝓞 ℚ) v : Nat.Primes) : ℕ) =
+      (R := 𝓞 ℚ) v) : ℕ) =
       Rat.HeightOneSpectrum.natGenerator v :=
   rfl
 
 /-- A rational principal finite component lies in a higher-unit group
 exactly when its numerator and denominator satisfy the local congruence. -/
 theorem principalFiniteComponent_mem_localHigherUnitGroup_iff
-    (v : HeightOneSpectrum (𝓞 ℚ)) (n : ℕ) (x : ℚˣ)
+      (n : ℕ) (x : ℚˣ)
     (hx : v.valuation ℚ (x : ℚ) = 1) :
     (IdeleGroup.principalIdele ℚ x).2 v ∈
         localHigherUnitGroup v n ↔
@@ -864,19 +850,21 @@ theorem principalFiniteComponent_mem_localHigherUnitGroup_iff
     simpa only [hy'] using hymap
   · intro hmap
     exact ⟨principalLocalIntegralUnit v x hx, rfl, hmap⟩
+end
+
 
 /-- Multiplying a rational number by its denominator gives its numerator. -/
 theorem rational_den_mul_self_eq_num (q : ℚ) :
     (q.den : ℚ) * q = q.num := by
-  have hden : (q.den : ℚ) ≠ 0 := by
-    exact_mod_cast q.den_ne_zero
-  have h := (div_eq_iff hden).mp q.num_div_den
-  simpa only [mul_comm] using h.symm
+  simp_all
 
+section
+variable (v : HeightOneSpectrum (𝓞 ℚ))
+include v
 /-- Multiplying the principal local integral value by the denominator
 gives the numerator in the completion. -/
 theorem principalLocalIntegralValue_den_mul
-    (v : HeightOneSpectrum (𝓞 ℚ)) (x : ℚˣ)
+      (x : ℚˣ)
     (hx : v.valuation ℚ (x : ℚ) = 1) :
     algebraMap ℤ (v.adicCompletionIntegers ℚ) (x : ℚ).den *
         rationalLocalIntegralValue v
@@ -893,14 +881,14 @@ theorem principalLocalIntegralValue_den_mul
 
 /-- The positive rational prime attached to a finite place. -/
 abbrev rationalPadicPrime
-    (v : HeightOneSpectrum (𝓞 ℚ)) : ℕ :=
+       :=
   ((Rat.HeightOneSpectrum.primesEquiv
-    (R := 𝓞 ℚ) v : Nat.Primes) : ℕ)
+    (R := 𝓞 ℚ) v) : ℕ)
 
 /-- In the local residue ring, the denominator times the principal value
 equals the numerator. -/
 theorem principalLocalResidue_den_mul
-    (v : HeightOneSpectrum (𝓞 ℚ)) (n : ℕ) (x : ℚˣ)
+      (n : ℕ) (x : ℚˣ)
     (hx : v.valuation ℚ (x : ℚ) = 1) :
     ((x : ℚ).den : ZMod (rationalPadicPrime v ^ n)) *
         PadicInt.toZModPow n
@@ -921,16 +909,12 @@ theorem principalLocalResidue_den_mul
         (algebraMap ℤ (v.adicCompletionIntegers ℚ)
           ((x : ℚ).den : ℤ)) =
       algebraMap ℤ _ ((x : ℚ).den : ℤ)
-    exact e.commutes ((x : ℚ).den : ℤ)
+    apply e.commutes
   have hnum :
       e (algebraMap ℤ (v.adicCompletionIntegers ℚ)
           (x : ℚ).num) =
         algebraMap ℤ _ (x : ℚ).num := by
-    change e.toAlgEquiv
-        (algebraMap ℤ (v.adicCompletionIntegers ℚ)
-          (x : ℚ).num) =
-      algebraMap ℤ _ (x : ℚ).num
-    exact e.commutes (x : ℚ).num
+    norm_num
   have he' := he
   rw [map_mul, hden, hnum] at he'
   have hz :=
@@ -939,12 +923,7 @@ theorem principalLocalResidue_den_mul
       PadicInt.toZModPow n
           (algebraMap ℤ ℤ_[rationalPadicPrime v] (x : ℚ).num) =
         ((x : ℚ).num : ZMod (rationalPadicPrime v ^ n)) := by
-    have hcomp :
-        (PadicInt.toZModPow n).comp
-            (algebraMap ℤ ℤ_[rationalPadicPrime v]) =
-          algebraMap ℤ (ZMod (rationalPadicPrime v ^ n)) :=
-      RingHom.ext_int _ _
-    exact DFunLike.congr_fun hcomp (x : ℚ).num
+    norm_num
   rw [hnumZ] at hz
   dsimp only [e] at hz
   simpa only [algebraMap_int_eq, map_mul, map_natCast, map_intCast,
@@ -953,7 +932,7 @@ theorem principalLocalResidue_den_mul
 /-- Valuation one at a rational finite place implies that its prime does
 not divide the denominator. -/
 theorem not_dvd_den_of_valuation_eq_one
-    (v : HeightOneSpectrum (𝓞 ℚ)) (x : ℚˣ)
+      (x : ℚˣ)
     (hx : v.valuation ℚ (x : ℚ) = 1) :
     ¬ Rat.HeightOneSpectrum.natGenerator v ∣ (x : ℚ).den := by
   let p := Rat.HeightOneSpectrum.natGenerator v
@@ -966,7 +945,7 @@ theorem not_dvd_den_of_valuation_eq_one
 /-- Rational principal higher-unit membership is equivalent to a
 prime-power congruence of numerator and denominator. -/
 theorem principalLocalHigherUnit_iff_modEq
-    (v : HeightOneSpectrum (𝓞 ℚ)) (n : ℕ) (x : ℚˣ)
+      (n : ℕ) (x : ℚˣ)
     (hx : v.valuation ℚ (x : ℚ) = 1) :
     (IdeleGroup.principalIdele ℚ x).2 v ∈
         localHigherUnitGroup v n ↔
@@ -979,17 +958,12 @@ theorem principalLocalHigherUnit_iff_modEq
     (Rat.HeightOneSpectrum.primesEquiv
       (R := 𝓞 ℚ) v).property
   have hnot :
-      ¬ rationalPadicPrime v ∣ (x : ℚ).den := by
-    simpa only [primesEquiv_val_eq_natGenerator] using
-      not_dvd_den_of_valuation_eq_one v x hx
+      ¬ rationalPadicPrime v ∣ (x : ℚ).den := not_dvd_den_of_valuation_eq_one v x hx
   have hcop :
       Nat.Coprime (x : ℚ).den (rationalPadicPrime v ^ n) :=
     Nat.Coprime.pow_right n
       (hp.coprime_iff_not_dvd.mpr hnot).symm
-  have hunit :
-      IsUnit
-        ((x : ℚ).den :
-          ZMod (rationalPadicPrime v ^ n)) :=
+  have hunit  :=
     (ZMod.isUnit_iff_coprime _ _).mpr hcop
   have hrel :=
     principalLocalResidue_den_mul v n x hx
@@ -1010,6 +984,8 @@ theorem principalLocalHigherUnit_iff_modEq
     apply hunit.mul_left_cancel
     rw [hrel, mul_one]
     simpa only [Int.cast_natCast] using hnd
+end
+
 
 /-- Congruences modulo pairwise coprime moduli combine to a congruence
 modulo their finite product. -/
@@ -1024,7 +1000,7 @@ theorem intModEq_finset_prod_of_pairwise_coprime
     a ≡ b [ZMOD ∏ i ∈ s, f i] := by
   induction s using Finset.induction_on with
   | empty =>
-      exact Int.modEq_of_dvd (one_dvd (b - a))
+      apply Int.modEq_of_dvd <;> aesop
   | @insert i s hi ih =>
       have hcop :
           Nat.Coprime (f i) (∏ j ∈ s, f j) := by
@@ -1044,12 +1020,7 @@ theorem intModEq_finset_prod_of_pairwise_coprime
         (Int.modEq_and_modEq_iff_modEq_mul hcopInt).mp
       constructor
       · exact hmod i (Finset.mem_insert_self i s)
-      · apply ih
-        · intro j hj k hk hjk
-          exact hpair j (Finset.mem_insert_of_mem hj) k
-            (Finset.mem_insert_of_mem hk) hjk
-        · intro j hj
-          exact hmod j (Finset.mem_insert_of_mem hj)
+      · grind
 
 /-- Congruences modulo every prime-power factor of a natural number
 combine to a congruence modulo that number. -/
@@ -1079,9 +1050,8 @@ theorem intModEq_of_primePower_modEq
 
 /-- Every prime-power factor determined by a factorization divides the
 original natural number. -/
-theorem primePower_factorization_dvd
-    {m p : ℕ} (hm : m ≠ 0) (hp : p.Prime) :
-    p ^ m.factorization p ∣ m :=
+def primePower_factorization_dvd
+    {m p : ℕ} (hm : m ≠ 0) (hp : p.Prime)  :=
   (hp.pow_dvd_iff_le_factorization hm).2 le_rfl
 
 /-- The infinite component of a rational principal idele is positive
@@ -1106,8 +1076,7 @@ theorem principalIdele_infinite_mem_iff_pos
       0 <
         NumberField.InfinitePlace.Completion.extensionEmbeddingOfIsReal
           Rat.isReal_infinitePlace
-          ((WithAbs.toAbs Rat.infinitePlace.1 (x : ℚ) :
-            WithAbs Rat.infinitePlace.1) :
+          ((WithAbs.toAbs Rat.infinitePlace.1 (x : ℚ)) :
               Rat.infinitePlace.Completion) at hpos
     rw [NumberField.InfinitePlace.Completion.extensionEmbeddingOfIsReal_coe]
       at hpos
@@ -1122,7 +1091,7 @@ theorem principalIdele_infinite_mem_iff_pos
       0 <
         NumberField.InfinitePlace.Completion.extensionEmbeddingOfIsReal
           hv
-          ((WithAbs.toAbs v.1 (x : ℚ) : WithAbs v.1) :
+          ((WithAbs.toAbs v.1 (x : ℚ)) :
             v.Completion)
     rw [NumberField.InfinitePlace.Completion.extensionEmbeddingOfIsReal_coe]
     simpa only [WithAbs.equiv_apply, WithAbs.ofAbs_toAbs,
@@ -1151,7 +1120,7 @@ theorem principalIdele_positiveGenerator_mem_primeTo_iff_modEq
   · intro hx
     apply intModEq_of_primePower_modEq hm
     intro p
-    let v : HeightOneSpectrum (𝓞 ℚ) :=
+    let v  :=
       rationalPrime
         ⟨p, (Nat.mem_primeFactors.mp p.2).1⟩
     have hvgen : Rat.HeightOneSpectrum.natGenerator v = (p : ℕ) :=
@@ -1165,14 +1134,14 @@ theorem principalIdele_positiveGenerator_mem_primeTo_iff_modEq
     have hcount := I.property v hv
     rw [← toPrincipalIdeal_positiveRationalIdealGeneratorUnit
       (I : FractionalIdealGroup ℚ)] at hcount
-    have hxval : v.valuation ℚ (x : ℚ) = 1 :=
+    have hxval  :=
       valuation_eq_one_of_principal_count_eq_zero x v hcount
     have hlocal :=
       (principalLocalHigherUnit_iff_modEq v
         ((rationalModulus m).finitePart v) x hxval).1
         (hx.2 v hv)
     rw [rationalModulus_finitePart_apply, hvgen] at hlocal
-    simpa only [x, positiveRationalIdealGeneratorUnit_val] using hlocal
+    exact hlocal
   · intro hmod
     constructor
     · change
@@ -1188,22 +1157,16 @@ theorem principalIdele_positiveGenerator_mem_primeTo_iff_modEq
       have hcount := I.property v hv
       rw [← toPrincipalIdeal_positiveRationalIdealGeneratorUnit
         (I : FractionalIdealGroup ℚ)] at hcount
-      have hxval : v.valuation ℚ (x : ℚ) = 1 :=
+      have hxval  :=
         valuation_eq_one_of_principal_count_eq_zero x v hcount
       apply
         (principalLocalHigherUnit_iff_modEq v
           ((rationalModulus m).finitePart v) x hxval).2
       rw [rationalModulus_finitePart_apply]
-      have hpow :
-          Rat.HeightOneSpectrum.natGenerator v ^
-              m.factorization
-                (Rat.HeightOneSpectrum.natGenerator v) ∣
-            m :=
+      have hpow  :=
         primePower_factorization_dvd hm
           (Rat.HeightOneSpectrum.prime_natGenerator v)
-      simpa only [x, positiveRationalIdealGeneratorUnit_val,
-        Int.natCast_pow] using
-        hmod.of_dvd (Int.natCast_dvd_natCast.mpr hpow)
+      exact hmod.of_dvd (Int.natCast_dvd_natCast.mpr hpow)
 
 /-- Over `ℚ`, the ideal-theoretic ray subgroup consists precisely of the
 positive principal generators congruent to one modulo `m`. -/
@@ -1244,9 +1207,7 @@ theorem mem_principalRayIdealSubgroup_iff_modEq
         FractionalIdeal.spanSingleton
             (nonZeroDivisors (𝓞 ℚ)) (x : ℚ) =
           rationalFractionalIdeal
-            (toPrincipalIdeal (𝓞 ℚ) ℚ x) := by
-              exact
-                (coe_toPrincipalIdeal
+            (toPrincipalIdeal (𝓞 ℚ) ℚ x) := (coe_toPrincipalIdeal
                   (R := 𝓞 ℚ) (K := ℚ) x).symm
         _ = rationalFractionalIdeal
             (I : FractionalIdealGroup ℚ) :=
@@ -1278,27 +1239,25 @@ theorem mem_principalRayIdealSubgroup_iff_modEq
         toPrincipalIdeal_positiveRationalIdealGeneratorUnit
           (I : FractionalIdealGroup ℚ)⟩
 
+section
+variable (m : ℕ) (hm : m ≠ 0)
+include m hm
 /-- The residue map on ideals prime to `(m)` has exactly the ray-principal
 ideals as its kernel. -/
 theorem primeToIdealResidueHom_ker
-    (m : ℕ) (hm : m ≠ 0) :
+      :
     (primeToIdealResidueHom m hm).ker =
       principalRayIdealSubgroup (rationalModulus m) := by
   ext I
   rw [MonoidHom.mem_ker,
     mem_principalRayIdealSubgroup_iff_modEq hm I,
     primeToIdealResidueHom_apply]
-  exact
-    rationalResidueUnit_eq_one_iff_modEq m
-      (positiveRationalIdealGenerator
-        (I : FractionalIdealGroup ℚ))
-      (positiveGenerator_num_coprime hm I)
-      (positiveGenerator_den_coprime hm I)
+  apply rationalResidueUnit_eq_one_iff_modEq
 
 /-- In ideal-theoretic form,
 the ray ideal class group of `ℚ` modulo `(m)` is `(ℤ/mℤ)ˣ`. -/
 noncomputable def idealRayClassGroupEquivZModUnits
-    (m : ℕ) (hm : m ≠ 0) :
+      :
     IdealRayClassGroup (rationalModulus m) ≃*
       (ZMod m)ˣ := by
   exact
@@ -1311,12 +1270,12 @@ noncomputable def idealRayClassGroupEquivZModUnits
 /-- In idelic form,
 the idelic ray class group of `ℚ` modulo `(m)` is `(ℤ/mℤ)ˣ`. -/
 noncomputable def rationalRayClassGroupEquivZModUnits
-    (m : ℕ) (hm : m ≠ 0) :
-    RayClassGroup (rationalModulus m) ≃*
-      (ZMod m)ˣ :=
+       :=
   (rayClassGroupEquivIdealRayClassGroup
       (rationalModulus m)).trans
     (idealRayClassGroupEquivZModUnits m hm)
+end
+
 
 end RayClass
 

@@ -170,7 +170,7 @@ theorem higher_unit_one_add_four (v : HeightOneSpectrum (𝓞 F))
     exact ha
   obtain ⟨b, hb, hab⟩ := Ideal.mem_span_singleton_mul.mp ha'
   refine ⟨b, hb, ?_⟩
-  rw [htval, hab]
+  rw [htval, hab]; rfl
 
 theorem conductor_depth_of_higher_unit_squares
     (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ) (v : HeightOneSpectrum (𝓞 F))
@@ -413,8 +413,11 @@ private theorem quadratic_value_ext {K : Type*} [Field K] (a b : K)
     · exact (h.mpr hb).trans hb.symm
     · exact ha.trans hb.symm
 
-theorem lambda_diagonal_eq_actual_two (h12 : (primitiveRoots 12 F).Nonempty)
-    (A : SArithmeticData F) (σ : F →+* ℂ) (x a : Fˣ)
+section
+variable (h12 : (primitiveRoots 12 F).Nonempty)
+    (A : SArithmeticData F) (σ : F →+* ℂ)
+include h12 A σ
+theorem lambda_diagonal_eq_actual_two   (x a : Fˣ)
     (v : HeightOneSpectrum (𝓞 F)) :
     (RMKummerLocalNormCharacter.lambda F h12 x v
       (Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom a) : ℂ) =
@@ -457,8 +460,7 @@ theorem lambda_diagonal_eq_actual_two (h12 : (primitiveRoots 12 F).Nonempty)
         (localHilbertSymbol_eq_one_iff_isKummerNorm _ 2 _ _ au xu).symm
     exact hlambda.trans (hzH.symm.trans hσ.symm)
 
-theorem lambda_diagonal_eq_actual_six_cube (h12 : (primitiveRoots 12 F).Nonempty)
-    (A : SArithmeticData F) (σ : F →+* ℂ) (x a : Fˣ)
+theorem lambda_diagonal_eq_actual_six_cube   (x a : Fˣ)
     (v : HeightOneSpectrum (𝓞 F)) :
     (RMKummerLocalNormCharacter.lambda F h12 x v
       (Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom a) : ℂ) =
@@ -474,8 +476,7 @@ theorem lambda_diagonal_eq_actual_six_cube (h12 : (primitiveRoots 12 F).Nonempty
     (Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom x))
   simpa only [Units.val_pow_eq_pow_val, A.finiteRootsEquiv_apply, map_pow] using hh
 
-theorem lambda_uniformizer_eq_cubic_residue (h12 : (primitiveRoots 12 F).Nonempty)
-    (A : SArithmeticData F) (σ : F →+* ℂ)
+theorem lambda_uniformizer_eq_cubic_residue  
     (I : A.Exterior) (v : HeightOneSpectrum (𝓞 F)) (hI : I.val = v.asIdeal)
     (hc : (Ideal.absNorm v.asIdeal).Coprime 6)
     (hv : v ∉ GlobalClassFieldTheory.Reciprocity.powerResidueExponentFinitePlaces F 6)
@@ -493,6 +494,8 @@ theorem lambda_uniformizer_eq_cubic_residue (h12 : (primitiveRoots 12 F).Nonempt
     rfl
   rw [he, zpow_one] at ht
   rw [ht]
+end
+
 
 theorem Xi_prime_eq_lambda_global_uniformizer (h12 : (primitiveRoots 12 F).Nonempty)
     (x a : Fˣ) (v : HeightOneSpectrum (𝓞 F))
@@ -520,12 +523,15 @@ theorem Xi_prime_eq_lambda_global_uniformizer (h12 : (primitiveRoots 12 F).Nonem
   apply RMKummerPrincipalPrime.arithmeticFrobenius_eq_lambda_uniformizer F h12 x v hv w hPv
   exact (HeightOneSpectrum.adicCompletion.valued_coe F v (a : F)).trans ha
 
-theorem actual_cubic_sextic_prime_disjoint (h12 : (primitiveRoots 12 F).Nonempty)
+section
+variable (h12 : (primitiveRoots 12 F).Nonempty)
     (A : SArithmeticData F) (σ : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
     (C : A.GeneralArithmeticContext σ η hS)
     (c : Ideal (𝓞 F)) (hc : Squarefree c)
     (hcopc : c ⊔ uniformSquareUnitModulus A.Sf = ⊤)
+include h12 A σ η hS C c hc hcopc
+theorem actual_cubic_sextic_prime_disjoint  
     (I : A.Exterior) (v : HeightOneSpectrum (𝓞 F)) (hI : I.val = v.asIdeal)
     (hdisj : c ⊔ v.asIdeal = ⊤) :
     RMKummerConductor.Xi F h12
@@ -572,12 +578,7 @@ theorem actual_cubic_sextic_prime_disjoint (h12 : (primitiveRoots 12 F).Nonempty
   rw [he, Nat.cast_zero, neg_zero, WithZero.exp_zero] at hh
   exact rep.radical_eq ▸ hh
 
-theorem actual_cubic_sextic_prime (h12 : (primitiveRoots 12 F).Nonempty)
-    (A : SArithmeticData F) (σ : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (C : A.GeneralArithmeticContext σ η hS)
-    (c : Ideal (𝓞 F)) (hc : Squarefree c)
-    (hcopc : c ⊔ uniformSquareUnitModulus A.Sf = ⊤)
+theorem actual_cubic_sextic_prime  
     (I : A.Exterior) (v : HeightOneSpectrum (𝓞 F)) (hI : I.val = v.asIdeal) :
     RMKummerConductor.Xi F h12
       (KummerSquarefreeMembers.generator A σ η hS C c hc hcopc) v.asIdeal =
@@ -598,12 +599,7 @@ theorem actual_cubic_sextic_prime (h12 : (primitiveRoots 12 F).Nonempty)
     rw [← he]
     exact sup_le le_sup_right (Ideal.mul_le_left.trans le_sup_left)
 
-theorem actual_cubic_sextic_value (h12 : (primitiveRoots 12 F).Nonempty)
-    (A : SArithmeticData F) (σ : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (C : A.GeneralArithmeticContext σ η hS)
-    (c : Ideal (𝓞 F)) (hc : Squarefree c)
-    (hcopc : c ⊔ uniformSquareUnitModulus A.Sf = ⊤)
+theorem actual_cubic_sextic_value  
     (d : Ideal (𝓞 F)) (hd : d ≠ ⊥)
     (hcopd : d ⊔ uniformSquareUnitModulus A.Sf = ⊤) :
     RMKummerConductor.Xi F h12
@@ -647,6 +643,8 @@ theorem actual_cubic_sextic_value (h12 : (primitiveRoots 12 F).Nonempty)
       rw [(RMKummerConductor.Xi F h12 x).map_mul', ih Ie rfl, hprime,
         hmul, map_mul, mul_pow]
   exact hall d (KummerExteriorValues.exteriorIndex A d hd hcopd) rfl
+end
+
 
 end
 end DedekindZetaZeroFree.RMKummerConductorArithmetic
@@ -663,10 +661,13 @@ open IsDedekindDomain
 namespace RMKummerFamily
 variable {F : Type} [Field F] [NumberField F]
 
-def ExactOutput (h12 : (primitiveRoots 12 F).Nonempty)
+section
+variable (h12 : (primitiveRoots 12 F).Nonempty)
     (A : SArithmeticData F) (σ : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
     (C : A.GeneralArithmeticContext σ η hS)
+include h12 A σ η hS C
+def ExactOutput  
     (ℱ : QuadraticHeckeFamily F (uniformSquareUnitModulus A.Sf)) : Prop :=
   ℱ.cond = KummerFamilyAssembly.totalConductor A σ η hS C
       (RMKummerConductor.m F h12) ∧
@@ -701,10 +702,7 @@ def ExactOutput (h12 : (primitiveRoots 12 F).Nonempty)
     ℱ.cond c = ⊤ ∧
       ∀ n : Ideal (𝓞 F), ℱ.χ c n = KummerFamilyAssembly.trivialTop n)
 
-theorem totalConductor_top (h12 : (primitiveRoots 12 F).Nonempty)
-    (A : SArithmeticData F) (σ : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (C : A.GeneralArithmeticContext σ η hS) :
+theorem totalConductor_top   :
     KummerFamilyAssembly.totalConductor A σ η hS C (RMKummerConductor.m F h12) ⊤ = ⊤ := by
   have hc : KummerFamilyAssembly.Constrained A ⊤ := ⟨by simpa only [Ideal.one_eq_top] using (squarefree_one : Squarefree (1 : Ideal (𝓞 F))), top_sup_eq _⟩
   rw [KummerFamilyAssembly.totalConductor_constrained _ _ _ _ _ _ _ hc]
@@ -717,10 +715,7 @@ theorem totalConductor_top (h12 : (primitiveRoots 12 F).Nonempty)
   rw [hy, ← one_mul (y ^ 2), RMKummerSquareConductor.m_mul_sq,
     RMKummerSquareConductor.m_one]
 
-theorem totalCharacter_top_apply (h12 : (primitiveRoots 12 F).Nonempty)
-    (A : SArithmeticData F) (σ : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (C : A.GeneralArithmeticContext σ η hS) (n : Ideal (𝓞 F)) :
+theorem totalCharacter_top_apply   (n : Ideal (𝓞 F)) :
     KummerFamilyAssembly.totalCharacter A σ η hS C
       (RMKummerConductor.m F h12) (RMKummerConductor.Xi F h12) ⊤ n =
         KummerFamilyAssembly.trivialTop n := by
@@ -735,6 +730,8 @@ theorem totalCharacter_top_apply (h12 : (primitiveRoots 12 F).Nonempty)
   rw [hy, ← one_mul (y ^ 2), RMKummerSquareCharacter.Xi_mul_sq,
     RMKummerSquareCharacter.Xi_one]
   rfl
+end
+
 
 private theorem crtHigherUnits_iff (v : HeightOneSpectrum (𝓞 F)) (k : ℕ)
     (u : (v.adicCompletion F)ˣ) :
@@ -848,11 +845,14 @@ theorem quotient_values (h12 : (primitiveRoots 12 F).Nonempty) (x y : Fˣ) :
     change RMKummerConductor.Xi F h12 x p * (starRingEnd ℂ) (RMKummerConductor.Xi F h12 y p) * _ = _
     ring
 
-theorem exteriorValues_of_formula
-    (h12 : (primitiveRoots 12 F).Nonempty)
+section
+variable (h12 : (primitiveRoots 12 F).Nonempty)
     (A : SArithmeticData F) (σ : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
     (C : A.GeneralArithmeticContext σ η hS)
+include h12 A σ η hS C
+theorem exteriorValues_of_formula
+     
     (hformula : ∀ (c : Ideal (𝓞 F)) (hc : Squarefree c)
       (hcopc : c ⊔ uniformSquareUnitModulus A.Sf = ⊤)
       (d : Ideal (𝓞 F)) (hd : d ≠ ⊥)
@@ -878,10 +878,7 @@ theorem exteriorValues_of_formula
       (KummerSquarefreeMembers.exteriorIndex A d hd hcopd) hcd
 
 theorem productOutput_of_conductor
-    (h12 : (primitiveRoots 12 F).Nonempty)
-    (A : SArithmeticData F) (σ : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (C : A.GeneralArithmeticContext σ η hS)
+     
     (hcond : ∀ (a b : Ideal (𝓞 F)) (ha : Squarefree a)
       (hqa : a ⊔ uniformSquareUnitModulus A.Sf = ⊤)
       (hb : Squarefree b) (hqb : b ⊔ uniformSquareUnitModulus A.Sf = ⊤),
@@ -897,10 +894,7 @@ theorem productOutput_of_conductor
     rw [KummerProductPrimitive.transport_apply]
     exact quotient_values h12 _ _ n hn
 
-theorem exists_exactOutput_of_arithmetic_realizations (h12 : (primitiveRoots 12 F).Nonempty)
-    (A : SArithmeticData F) (σ : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (C : A.GeneralArithmeticContext σ η hS)
+theorem exists_exactOutput_of_arithmetic_realizations  
     (hprimitive : ∀ (c : Ideal (𝓞 F)) (hc : Squarefree c)
       (hcop : c ⊔ uniformSquareUnitModulus A.Sf = ⊤),
       (RMKummerConductor.Xi F h12
@@ -980,10 +974,7 @@ theorem exists_exactOutput_of_arithmetic_realizations (h12 : (primitiveRoots 12 
     exact ⟨KummerFamilyAssembly.totalConductor_unconstrained _ _ _ _ _ _ _ hc,
       fun n => KummerFamilyAssembly.totalCharacter_unconstrained_apply _ _ _ _ _ _ _ _ hc n⟩
 
-theorem exists_actualKummerFamily (h12 : (primitiveRoots 12 F).Nonempty)
-    (A : SArithmeticData F) (σ : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (C : A.GeneralArithmeticContext σ η hS) :
+theorem exists_actualKummerFamily   :
     uniformSquareUnitModulus A.Sf ≠ ⊥ ∧
     (∀ v : HeightOneSpectrum (𝓞 F),
       uniformSquareUnitModulus A.Sf ≤ v.asIdeal ↔ v ∈ A.Sf) ∧
@@ -999,6 +990,8 @@ theorem exists_actualKummerFamily (h12 : (primitiveRoots 12 F).Nonempty)
     exact RMKummerConductorArithmetic.actual_cubic_sextic_value h12 A σ η hS C
   · apply productOutput_of_conductor h12 A σ η hS C
     exact RMKummerConductorArithmetic.equal_class_quotient_conductor h12 A σ η hS C
+end
+
 
 end RMKummerFamily
 end

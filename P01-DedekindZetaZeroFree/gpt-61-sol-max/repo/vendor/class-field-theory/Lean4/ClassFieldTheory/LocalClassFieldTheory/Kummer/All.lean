@@ -12,33 +12,3 @@ public import ClassFieldTheory.LocalClassFieldTheory.Kummer.MathlibHilbertPairin
 public import ClassFieldTheory.LocalClassFieldTheory.Kummer.MaximalLocalKummerPairing
 public import ClassFieldTheory.LocalClassFieldTheory.Kummer.PowerResidueTameFormula
 public import ClassFieldTheory.LocalClassFieldTheory.Kummer.SmallHilbertPairingTransport
-
-@[expose] public section
-
-/-
-Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
--/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-set_option autoImplicit false
-
-/-!
-# Local Kummer reciprocity
-
-Aggregate for the local Hilbert symbol, its laws, and the maximal local Kummer
-pairing, including the tame power-residue formula.
--/

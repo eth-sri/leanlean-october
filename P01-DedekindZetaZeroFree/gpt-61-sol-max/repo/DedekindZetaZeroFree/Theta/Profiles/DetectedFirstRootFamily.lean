@@ -70,16 +70,16 @@ def FirstRootLift.toJointForwardIdentitySources {R : PrincipalMellin.ActualRecip
       rw [hd v y, J.radial v y]
       exact L.profile v y }
 
-theorem first_root_packet
-    (R : PrincipalMellin.ActualRecipe S η) (hR : RootAligned R) (N : TraceHaarTransport R)
-    (prior : Nonempty (JointExteriorCoefficientSources R N)) : Nonempty (JointForwardIdentitySources R N) := by
-  obtain ⟨A, hNative, ⟨D⟩⟩ := FourierContinuation.LiteralSource.current_native_transport_exists R hR N
-  obtain ⟨B⟩ := first_root_cutoffs_exist R
-  obtain ⟨Anew, hAnew⟩ := spherical_seed_exists_of_transport R N A D hNative
-  obtain ⟨J, hJ⟩ := RootDerivatives.finite_projector_native R hR N Anew B hAnew
-  obtain ⟨L⟩ := first_root_flat_lift_exists R hR N Anew B J hJ
-  obtain ⟨hi, hd⟩ := first_root_derivative_period R N Anew B J
-  exact ⟨L.toJointForwardIdentitySources hi hd⟩
+
+
+
+
+
+
+
+
+
+
 
 end DedekindZetaZeroFree.ThetaExpansion
 

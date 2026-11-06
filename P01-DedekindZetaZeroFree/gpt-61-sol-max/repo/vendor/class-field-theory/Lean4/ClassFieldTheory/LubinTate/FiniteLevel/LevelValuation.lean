@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.LubinTate.FiniteLevel.LevelAutomorphisms
 public import ValuedFieldTheory.Ramification.HilbertRamification.CompleteDVF
 public import ValuedFieldTheory.Ramification.HilbertRamification.RealLowerGroups
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -46,9 +49,9 @@ theorem standardLubinTateLevelCompleteDVF_hasUniqueValuationExtension
     ValuationTheory.DiscreteValuationField.ValuedExtension.HasUniqueValuationExtension.{u, v, u, 0, 0}
       (base := F.toCompleteDVF)
       (target := standardLubinTateLevelCompleteDVF hπ n) := by
-  let : FiniteDimensional K (standardLubinTateLevelField hπ n) :=
+  let  :=
     standardLubinTateLevelField_finiteDimensional hπ n
-  let : IsGalois K (standardLubinTateLevelField hπ n) :=
+  let  :=
     standardLubinTateLevelField_isGalois hπ n
   intro Gamma' _ v'
   exact

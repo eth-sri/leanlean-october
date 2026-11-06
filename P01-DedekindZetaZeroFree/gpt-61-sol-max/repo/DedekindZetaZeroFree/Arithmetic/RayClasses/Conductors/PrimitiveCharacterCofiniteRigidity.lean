@@ -134,10 +134,13 @@ private theorem principal_value_congr [NumberField.IsTotallyComplex F]
   rw [← Ideal.span_singleton_mul_span_singleton, χ.map_mul'] at hva hvb
   exact mul_right_cancel₀ (right_ne_zero_of_mul_eq_one hva) (hva.trans hvb.symm)
 
-private theorem conductor_le [NumberField.IsTotallyComplex F]
+section
+variable [NumberField.IsTotallyComplex F]
     (ν ψ : Detector.PrimitiveFrequencyCharacter F)
     (h : ∀ I : Ideal (𝓞 F), I ≠ ⊥ → I ⊔ ν.conductor = ⊤ →
-      I ⊔ ψ.conductor = ⊤ → ν.character I = ψ.character I) :
+      I ⊔ ψ.conductor = ⊤ → ν.character I = ψ.character I)
+include ν ψ h
+private theorem conductor_le   :
     ψ.conductor ≤ ν.conductor := by
   by_contra hn
   have hlt : ν.conductor < ν.conductor ⊔ ψ.conductor :=
@@ -172,18 +175,12 @@ private theorem conductor_le [NumberField.IsTotallyComplex F]
     _ = ψ.character (Ideal.span {b}) := h _ (by simpa using hb) hbc hbψ
     _ = 1 := ψ.character.map_span' b hb hb1 (totallyPositive _)
 
-theorem primitive_conductors_eq [NumberField.IsTotallyComplex F]
-    (ν ψ : Detector.PrimitiveFrequencyCharacter F)
-    (h : ∀ I : Ideal (𝓞 F), I ≠ ⊥ → I ⊔ ν.conductor = ⊤ →
-      I ⊔ ψ.conductor = ⊤ → ν.character I = ψ.character I) :
+theorem primitive_conductors_eq   :
     ν.conductor = ψ.conductor := by
   exact le_antisymm (conductor_le ψ ν (fun I hI hψ hν => (h I hI hν hψ).symm))
     (conductor_le ν ψ h)
 
-theorem primitive_eq_of_common_domain [NumberField.IsTotallyComplex F]
-    (ν ψ : Detector.PrimitiveFrequencyCharacter F)
-    (h : ∀ I : Ideal (𝓞 F), I ≠ ⊥ → I ⊔ ν.conductor = ⊤ →
-      I ⊔ ψ.conductor = ⊤ → ν.character I = ψ.character I) : ν = ψ := by
+theorem primitive_eq_of_common_domain   : ν = ψ := by
   have hc := primitive_conductors_eq ν ψ h
   have hv : ∀ I : Ideal (𝓞 F), ν.character I = ψ.character I := by
     intro I
@@ -205,6 +202,8 @@ theorem primitive_eq_of_common_domain [NumberField.IsTotallyComplex F]
         exact funext hv
       subst η
       rfl
+end
+
 end
 end DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuation.DetectorDyads.MinusArithmetic.CofinitePrimitiveRigidity
 

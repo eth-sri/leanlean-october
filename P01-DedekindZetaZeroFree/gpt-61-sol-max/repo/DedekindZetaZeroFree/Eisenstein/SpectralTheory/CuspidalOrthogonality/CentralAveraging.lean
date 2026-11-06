@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.CuspidalOrthogonality.CommutatorFibers
 
 @[expose] public section
+
 
 noncomputable section
 open scoped Classical NumberField BigOperators
@@ -14,9 +17,12 @@ variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
 variable (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
 local instance : Fintype (rootsOfUnity 3 F) := Fintype.ofFinite _
 
-theorem integral_central_average (g : CoveredSpherical F ζ hζ U → ℂ)
+section
+variable (g : CoveredSpherical F ζ hζ U → ℂ)
+include g
+theorem integral_central_average  
     (hg : Integrable g (coveredMeasure F ζ hζ R U)) :
-    (∫ v, (3 : ℂ)⁻¹ * ∑ ε : rootsOfUnity 3 F, g (z F ζ hζ U ε v)
+    (∫ v, (3)⁻¹ * ∑ ε : rootsOfUnity 3 F, g (z F ζ hζ U ε v)
       ∂coveredMeasure F ζ hζ R U) = ∫ v, g v ∂coveredMeasure F ζ hζ R U := by
   have hmp (ε : rootsOfUnity 3 F) :=
     KPContSectorCentralHaarInvariance.z_measurePreserving F ζ hζ R U ε
@@ -34,11 +40,10 @@ theorem integral_central_average (g : CoveredSpherical F ζ hζ U → ℂ)
   norm_num
   ring
 
-def centralComplexAverage (g : CoveredSpherical F ζ hζ U → ℂ) :
-    CoveredSpherical F ζ hζ U → ℂ :=
-  fun v => (3 : ℂ)⁻¹ * ∑ ε : rootsOfUnity 3 F, g (z F ζ hζ U ε v)
+def centralComplexAverage    :=
+  fun v => (3)⁻¹ * ∑ ε : rootsOfUnity 3 F, g (z F ζ hζ U ε v)
 
- theorem centralComplexAverage_invariant (g : CoveredSpherical F ζ hζ U → ℂ)
+ theorem centralComplexAverage_invariant  
     (ε : rootsOfUnity 3 F) (v : CoveredSpherical F ζ hζ U) :
     centralComplexAverage F ζ hζ U g (z F ζ hζ U ε v) =
       centralComplexAverage F ζ hζ U g v := by
@@ -52,20 +57,22 @@ def centralComplexAverage (g : CoveredSpherical F ζ hζ U → ℂ) :
       exact (mul_smul δ ε v).symm
     _ = _ := Equiv.sum_comp (Equiv.mulRight ε) (fun δ => g (z F ζ hζ U δ v))
 
- theorem centralComplexAverage_measurable (g : CoveredSpherical F ζ hζ U → ℂ)
+ theorem centralComplexAverage_measurable  
     (hg : Measurable g) : Measurable (centralComplexAverage F ζ hζ U g) := by
   apply Measurable.const_mul
   apply Finset.measurable_sum
   intro ε _
   exact hg.comp (z F ζ hζ U ε).continuous.measurable
 
- theorem centralComplexAverage_integrable (g : CoveredSpherical F ζ hζ U → ℂ)
+ theorem centralComplexAverage_integrable  
     (hg : Integrable g (coveredMeasure F ζ hζ R U)) :
     Integrable (centralComplexAverage F ζ hζ U g) (coveredMeasure F ζ hζ R U) := by
   apply Integrable.const_mul
   apply integrable_finset_sum
   intro ε _
   exact (KPContSectorCentralHaarInvariance.z_measurePreserving F ζ hζ R U ε).integrable_comp_of_integrable hg
+end
+
 
 private theorem complex_measurable_iff_comp_q
     (a : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℂ) :
@@ -101,12 +108,15 @@ private theorem complex_measurable_iff_comp_q
   · intro v
     exact hfiber _ _ (hb _)
 
- theorem integral_complex_borel_descent
-    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+ section
+variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
     (g : CoveredSpherical F ζ hζ U → ℂ)
     (hg : Integrable g (coveredMeasure F ζ hζ R U))
     (a : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℂ) (ha : Measurable a)
-    (he : ∀ v, a (q F ζ hζ U v) = centralComplexAverage F ζ hζ U g v) :
+    (he : ∀ v, a (q F ζ hζ U v) = centralComplexAverage F ζ hζ U g v)
+include P g hg a ha he
+theorem integral_complex_borel_descent
+      :
     (∫ v, g v ∂coveredMeasure F ζ hζ R U) =
       ∫ b, a b ∂KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U := by
   rw [← map_q_coveredMeasure F ζ hζ R P U,
@@ -115,17 +125,15 @@ private theorem complex_measurable_iff_comp_q
   exact (integral_central_average F ζ hζ R U g hg).symm
 
  theorem complex_borel_descent_integrable
-    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-    (g : CoveredSpherical F ζ hζ U → ℂ)
-    (hg : Integrable g (coveredMeasure F ζ hζ R U))
-    (a : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℂ) (ha : Measurable a)
-    (he : ∀ v, a (q F ζ hζ U v) = centralComplexAverage F ζ hζ U g v) :
+      :
     Integrable a (KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U) := by
   rw [← map_q_coveredMeasure F ζ hζ R P U]
   apply (integrable_map_measure ha.aestronglyMeasurable
     (KPContSectorQuotientRelationsComparison.q_continuous F ζ hζ U).measurable.aemeasurable).mpr
   simp_rw [Function.comp_def, he]
-  exact centralComplexAverage_integrable F ζ hζ R U g hg
+  apply centralComplexAverage_integrable <;> assumption
+end
+
 
  theorem complex_borel_descent_zero_off
     (g : CoveredSpherical F ζ hζ U → ℂ)
@@ -339,7 +347,7 @@ def horizontalTorusMap : KPCuspCharts.Torus F K →+ KPCuspCharts.Torus F L :=
     (ν : Measure (KPCuspCharts.Torus F L)) [ν.IsAddHaarMeasure] [IsProbabilityMeasure ν] :
     Measure.map (horizontalTorusMap F K L hKL) μ = ν := by
   have hc := horizontalTorusMap_continuous F K L hKL
-  letI : (Measure.map (horizontalTorusMap F K L hKL) μ).IsAddHaarMeasure :=
+  letI  :=
     Measure.isAddHaarMeasure_map_of_isFiniteMeasure μ _ hc
       (horizontalTorusMap_surjective F K L hKL)
   letI : IsProbabilityMeasure (Measure.map (horizontalTorusMap F K L hKL) μ) :=
@@ -370,15 +378,12 @@ local notation "CS" => KPMsFixedHaarDisintegration.CrossSection A
 local notation "X" => Covered F ζ hζ C R P H U
 local instance : Fintype (rootsOfUnity 3 F) := Fintype.ofFinite _
 
-theorem scalar_continuous (u : SmoothSections F ζ hζ C R P H U) :
-    Continuous (scalar F ζ hζ C R P H U u) := by
-  exact (KPContSectorLineL2Isometry.continuous_iff F ζ hζ V R P H u.val).mp
+def scalar_continuous (u : SmoothSections F ζ hζ C R P H U)  := (KPContSectorLineL2Isometry.continuous_iff F ζ hζ V R P H u.val).mp
     (fun i => (u.property i).continuous)
 
 theorem scalar_central (u : SmoothSections F ζ hζ C R P H U) (ε : rootsOfUnity 3 F) (v : X) :
     scalar F ζ hζ C R P H U u (z F ζ hζ V ε v) =
-      (chi F ζ hζ ε : ℂ) * scalar F ζ hζ C R P H U u v := by
-  exact ((KPContSectorSmoothFramesSupport.smoothS F ζ hζ V R P H).symm u).val.property ε v
+      (chi F ζ hζ ε : ℂ) * scalar F ζ hζ C R P H U u v := ((KPContSectorSmoothFramesSupport.smoothS F ζ hζ V R P H).symm u).val.property ε v
 
 theorem pairing_centralAverage (u h : SmoothSections F ζ hζ C R P H U) (v : X) :
     Transport.centralComplexAverage F ζ hζ V
@@ -387,7 +392,7 @@ theorem pairing_centralAverage (u h : SmoothSections F ζ hζ C R P H U) (v : X)
   unfold Transport.centralComplexAverage
   simp_rw [scalar_central]
   have hc (ε : rootsOfUnity 3 F) : star (chi F ζ hζ ε : ℂ) * (chi F ζ hζ ε : ℂ) = 1 := by
-    rw [show star (chi F ζ hζ ε : ℂ) = (starRingEnd ℂ) (chi F ζ hζ ε : ℂ) from rfl,
+    rw [show star (chi F ζ hζ ε : ℂ) = (starRingEnd ℂ) (chi F ζ hζ ε) from rfl,
       Complex.conj_mul', Circle.norm_coe]
     norm_num
   have he (ε : rootsOfUnity 3 F) :
@@ -536,13 +541,13 @@ theorem pairing_centralAverage (u h : SmoothSections F ζ hζ C R P H U) (v : X)
     (source : KPContActualAllCuspSource.Source F ζ hζ C R P H U ι B Ω f χ)
     (u : SmoothSections F ζ hζ C R P H U)
     (u_H : KPContActualAllCuspSource.Sector F ζ hζ C R P H U)
-    (hu_H : ((u_H.val : KPContSectorClosedLpSubspace.CoveredL2 F ζ hζ R V) : X → ℂ)
+    (hu_H : (u_H.val : X → ℂ)
       =ᵐ[KPContActualAllCuspSource.measure F ζ hζ C R P H U] scalar F ζ hζ C R P H U u)
     (hu : IncomingFiberOrthogonality.AllCuspMeanZero F ζ hζ C R P H U u)
     (s : ℂ) (hs : s ∈ Ω) : inner ℂ u_H (source.h s) = 0 := by
   let m := KPContActualAllCuspSource.measure F ζ hζ C R P H U
   let v := source.descent.commutator s
-  let g : X → ℂ := fun x => star (scalar F ζ hζ C R P H U u x) * scalar F ζ hζ C R P H U v x
+  let g  := fun x => star (scalar F ζ hζ C R P H U u x) * scalar F ζ hζ C R P H U v x
   have hint : Integrable g m := by
     apply (L2.integrable_inner u_H.val (source.h s).val).congr
     filter_upwards [hu_H, source.source_ae s hs] with x hx hy
@@ -559,8 +564,7 @@ theorem pairing_centralAverage (u h : SmoothSections F ζ hζ C R P H U) (v : X)
   have hgm : Measurable g := ((scalar_continuous F ζ hζ C R P H U u).star.measurable).mul
     (scalar_continuous F ζ hζ C R P H U v).measurable
   let Y := Real.exp (2 * (KPCuspLogShape.dimension F : ℝ) * B.τ)
-  have hd : 0 < KPCuspLogShape.dimension F := by
-    exact KPCuspCharts.positive_dimension F H.totallyComplex
+  have hd  := KPCuspCharts.positive_dimension F H.totallyComplex
   have hy : KPMsFixedHaarDisintegration.logHeight (F := F) Y = B.τ := logHeight_exp F B.τ hd
   have hY : KPMsFixedHaarDisintegration.AdmissibleCutoff A Y :=
     ⟨Real.exp_pos _, by rw [hy]; exact B.chart_threshold_le⟩
@@ -603,17 +607,7 @@ variable (Ω : Set ℂ) (f : ℂ → S)
 variable (χ : KPContActualAllCuspSource.Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
 variable (source : KPContActualAllCuspSource.Source F ζ hζ C R P H U ι B Ω f χ)
 
-theorem source_inner_eq_zero
-    (u : KPContActualAllCuspSource.SmoothSections F ζ hζ C R P H U)
-    (u_H : KPContActualAllCuspSource.Sector F ζ hζ C R P H U)
-    (hu_H : ((u_H.val : KPContSectorClosedLpSubspace.CoveredL2 F ζ hζ R
-        (KPContActualAllCuspSource.level F ζ hζ C R P H U)) :
-        KPContActualAllCuspSource.Covered F ζ hζ C R P H U → ℂ)
-      =ᵐ[KPContActualAllCuspSource.measure F ζ hζ C R P H U]
-        KPContActualCutoffSmoothDescent.scalar F ζ hζ C R P H U u)
-    (hu : IncomingFiberOrthogonality.AllCuspMeanZero F ζ hζ C R P H U u)
-    (s : ℂ) (hs : s ∈ Ω) : inner ℂ u_H (source.h s) = 0 := by
-  exact Bridge.source_proof F ζ hζ C R P H U ι B Ω f χ source u u_H hu_H hu s hs
+alias source_inner_eq_zero := _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.SourceCuspidalOrthogonality.Bridge.source_proof
 
 end DedekindZetaZeroFree.KPGlobalResidualConstruction.SourceCuspidalOrthogonality
 

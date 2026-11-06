@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.QuadraticFormRestriction
 
 @[expose] public section
+
 
 open scoped NumberField Classical
 
@@ -19,7 +22,7 @@ private lemma norm_add_sq_le_two (x y : ℂ) :
 private lemma sum_le_univ_of_injective {α β : Type*} [Fintype β] [DecidableEq β]
     (G : Finset α) (f : α → β) (hf : Function.Injective f) (φ : β → ℝ)
     (hφ : ∀ b, 0 ≤ φ b) : (∑ a ∈ G, φ (f a)) ≤ ∑ b : β, φ b := by
-  have himg : (∑ a ∈ G, φ (f a)) = ∑ b ∈ G.image f, φ b :=
+  have himg  :=
     (Finset.sum_image (s := G) (g := f) (f := φ) hf.injOn).symm
   rw [himg]
   exact Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _) fun b _ _ => hφ b
@@ -46,10 +49,10 @@ theorem exponent_finite_prime_transfer
       2 * Bs * (∑ b ∈ Finset.univ.filter badCol, ‖v b‖ ^ 2) := by
   classical
 
-  let good : Finset r := R₀.filter (fun a => ¬ badRow a)
+  let good  := R₀.filter (fun a => ¬ badRow a)
   let F : {a : r // a ∈ good} → t := fun a => f ⟨a.val, Finset.mem_filter.mp a.2⟩
-  let v' : s → ℂ := fun b => if badCol b then 0 else v b * u b
-  let vbad : s → ℂ := fun b => if badCol b then v b else 0
+  let v'  := fun b => if badCol b then 0 else v b * u b
+  let vbad  := fun b => if badCol b then v b else 0
 
   have hpoint : ∀ a : {a : r // a ∈ good},
       ‖∑ b : s, v b * A a.val b‖ ^ 2 ≤
@@ -86,12 +89,10 @@ theorem exponent_finite_prime_transfer
           congrArg (fun z : {a : r // a ∈ R₀ ∧ ¬badRow a} => z.val) h
         exact Subtype.ext hv
       have hinj : Function.Injective F := hf.comp ginj
-      have h1 : (∑ a ∈ good.attach, ‖∑ b : s, v' b * H (F a) b‖ ^ 2) ≤
-          ∑ x : t, ‖∑ b : s, v' b * H x b‖ ^ 2 :=
+      have h1  :=
         sum_le_univ_of_injective good.attach F hinj
           (fun x => ‖∑ b : s, v' b * H x b‖ ^ 2) (fun x => sq_nonneg _)
-      have h2 : (∑ x : t, ‖∑ b : s, v' b * H x b‖ ^ 2) ≤
-          Bl * ∑ b : s, ‖v' b‖ ^ 2 := hH v'
+      have h2  := hH v'
       have h3 : (∑ b : s, ‖v' b‖ ^ 2) ≤ ∑ b : s, ‖v b‖ ^ 2 := by
         refine Finset.sum_le_sum fun b _ => ?_
         by_cases hb : badCol b
@@ -107,8 +108,7 @@ theorem exponent_finite_prime_transfer
 
     have hApart : (∑ a ∈ good.attach, ‖∑ b : s, vbad b * A a b‖ ^ 2) ≤
         Bs * (∑ b ∈ Finset.univ.filter badCol, ‖v b‖ ^ 2) := by
-      have h1 : (∑ a ∈ good.attach, ‖∑ b : s, vbad b * A a b‖ ^ 2) =
-          ∑ a ∈ good, ‖∑ b : s, vbad b * A a b‖ ^ 2 :=
+      have h1  :=
         Finset.sum_attach good (fun a => ‖∑ b : s, vbad b * A a b‖ ^ 2)
       have hvbad : (∑ b : s, ‖vbad b‖ ^ 2) =
           ∑ b ∈ Finset.univ.filter badCol, ‖v b‖ ^ 2 := by

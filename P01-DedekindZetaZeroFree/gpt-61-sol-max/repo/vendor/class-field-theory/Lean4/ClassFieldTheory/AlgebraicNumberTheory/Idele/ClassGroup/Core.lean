@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.IdealMap
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Principal
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.ClassGroup.BaseChange
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -85,16 +88,14 @@ theorem fractionalIdeal_principalIdele (x : Kˣ) :
   change FractionalIdeal.count K v
       (((FractionalIdealGroup.factorization (K := K))
         (FiniteIdeleGroup.valuationVector
-          (principalIdele K x).2) : FractionalIdealGroup K) :
+          (principalIdele K x).2)) :
         FractionalIdeal (nonZeroDivisors (𝓞 K)) K) =
       -WithZero.log (v.valuation K (x : K))
   rw [FractionalIdealGroup.count_factorization]
   change -WithZero.log
-      (Valued.v (((principalIdele K x).2 v :
-        (v.adicCompletion K)ˣ) : v.adicCompletion K)) =
+      (Valued.v (((principalIdele K x).2 v) : v.adicCompletion K)) =
       -WithZero.log (v.valuation K (x : K))
-  rw [show ((((principalIdele K x).2 v :
-      (v.adicCompletion K)ˣ) : v.adicCompletion K)) = (x : K) from rfl,
+  rw [show ((((principalIdele K x).2 v) : v.adicCompletion K)) = (x : K) from rfl,
     HeightOneSpectrum.valuedAdicCompletion_eq_valuation']
 
 theorem classGroup_mk_eq_one_iff
@@ -119,7 +120,7 @@ theorem idealClass_principalIdele (x : Kˣ) :
   exact ⟨x, rfl⟩
 
 /-- The subgroup `I_K^{S∞} Kˣ` defining the ordinary ideal class quotient. -/
-def ordinaryIdealClassSubgroup : Subgroup (IdeleGroup K) :=
+def ordinaryIdealClassSubgroup  :=
   integralAtFinitePlaces (K := K) ⊔ principalSubgroup K
 
 /-- The kernel of the map from ideles to the ordinary ideal class group is
@@ -145,7 +146,7 @@ theorem ordinaryIdealClassSubgroup_eq_ker :
     change ClassGroup.mk K (fractionalIdeal a) = 1 at ha
     rw [classGroup_mk_eq_one_iff] at ha
     obtain ⟨x, hx⟩ := ha
-    let u : IdeleGroup K := a * (principalIdele K x)⁻¹
+    let u  := a * (principalIdele K x)⁻¹
     have hu : u ∈ integralAtFinitePlaces (K := K) := by
       rw [← fractionalIdeal_ker, MonoidHom.mem_ker]
       change fractionalIdeal

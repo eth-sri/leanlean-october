@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.MeasureTheory.Sphere.EuclideanAreaNormalization
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.ComplexFractionalInverse.RawSphereProjection
 open MeasureTheory Set Filter
@@ -16,11 +19,9 @@ theorem open_north_cap_of_closed
     μ {y : rawSphere | t < (y : rawAmbient) 0} = ENNReal.ofReal (2 * Real.pi * (1 - t)) := by
   let r : ℕ → ℝ := fun n => t + (1 - t) / ((n : ℝ) + 1)
   have hrpos (n : ℕ) : 0 < r n := by
-    have : 0 < (1 - t) / ((n : ℝ) + 1) := div_pos (by linarith) (by positivity)
-    dsimp [r]
-    linarith
+    positivity
   have hrle (n : ℕ) : r n ≤ 1 := by
-    have hn : (1 : ℝ) ≤ (n : ℝ) + 1 := by exact le_add_of_nonneg_left (Nat.cast_nonneg n)
+    
     have : (1 - t) / ((n : ℝ) + 1) ≤ 1 - t := by
       apply (div_le_iff₀ (by positivity : 0 < (n : ℝ) + 1)).mpr
       nlinarith
@@ -85,7 +86,7 @@ theorem raw_lower_caps_of_positive_north
           calc
             _ ≤ ‖(y : rawAmbient)‖ := PiLp.norm_apply_le _ _
             _ = 1 := mem_sphere_zero_iff_norm.mp y.property
-        exact (abs_le.mp (by simpa [Real.norm_eq_abs] using h)).2
+        exact (abs_le.mp (h)).2
       rw [hset, hmass]
       congr 1
       ring
@@ -184,9 +185,7 @@ theorem projection_of_raw_caps
       rw [ENNReal.ofReal_mul (by positivity : 0 ≤ 4 * Real.pi)]
       rw [← mul_assoc, ENNReal.inv_mul_cancel (by positivity) (by finiteness), one_mul]
 
-theorem normalized_coordinate_projection :
-    Measure.map (fun y : rawSphere => (1 - (y : rawAmbient) 0) / 2) rawSphereArea =
-      (volume : Measure ℝ).restrict (Icc (0 : ℝ) 1) :=
+def normalized_coordinate_projection  :=
   projection_of_raw_caps raw_mass raw_cap_distribution
 
 end DedekindZetaZeroFree.ComplexFractionalInverse.RawSphereProjection

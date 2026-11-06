@@ -21,8 +21,11 @@ def rectangleMass (C : Context Q) (B : ℝ) (unit : Bool) (P : ℝ × ℝ) : ℝ
       ‖C.pairSum (fun p hp => if f₁ ∣ p.1 ∧ f₂ ∣ p.2 then
         C.coefficient p * C.primitive p hp a else 0)‖
 
-lemma row_sqrt_le (C : Context Q) (B : ℝ) (unit : Bool)
+section
+variable (C : Context Q) (B : ℝ) (unit : Bool)
     (hunit : unit = true → B = 1) (hM : 1 ≤ C.M) (hB : 1 ≤ B)
+include C B unit hunit hM hB in
+lemma row_sqrt_le  
     {a : Ideal (𝓞 F)} (ha : a ∈ C.originalRows B unit) :
     Real.sqrt (C.M / norm a) ≤ Real.sqrt (C.M / B) := by
   apply Real.sqrt_le_sqrt
@@ -53,8 +56,8 @@ private lemma pairSum_sum {α : Type*} (C : Context Q) (s : Finset α)
   intro p hp
   split_ifs <;> simp
 
-theorem assembly (C : Context Q) (B : ℝ) (unit : Bool)
-    (hunit : unit = true → B = 1) (hM : 1 ≤ C.M) (hB : 1 ≤ B)
+include C B unit hunit hM hB in
+theorem assembly  
     (w : Ideal (𝓞 F) → Ideal (𝓞 F) → Ideal (𝓞 F) → ℂ)
     (hdensity : ∀ p ∈ C.pairs,
       Context.largeDensity ((c * C.d) * (p.1 * p.2)) (C.Z2 B) =
@@ -158,6 +161,8 @@ theorem assembly (C : Context Q) (B : ℝ) (unit : Bool)
       apply Finset.sum_congr rfl
       intro a ha
       ring
+end
+
 
 end DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.LargeDirectAssembly
 
@@ -292,9 +297,12 @@ def weight (Z : ℝ) (e a b : Ideal (𝓞 F)) : ℂ :=
       (UniqueFactorizationMonoid.moebius b : ℂ) /
         ((norm e : ℂ) * (norm a : ℂ) * (norm b : ℂ)) else 0
 
-private lemma density_bins (C : Context Q) (B : ℝ)
+section
+variable (C : Context Q) (B : ℝ)
     (hn : 1 ≤ norm C.d) (hnN : norm C.d ≤ 2*C.N)
     {p : Ideal (𝓞 F) × Ideal (𝓞 F)} (hp : p ∈ C.pairs)
+include C B hn hnN p hp in
+private lemma density_bins  
     {e : Ideal (𝓞 F)} (he : e ∈ C.mobiusDivisors) :
     (∑ a ∈ idealDivisors p.1, ∑ b ∈ idealDivisors p.2, weight (C.Z2 B) e a b) =
       ∑ P ∈ ErrorRectangles.directRectangles C B,
@@ -359,9 +367,8 @@ private lemma sum_bin (u : Ideal (𝓞 F)) (hu : u ≠ ⊥) (P : ℝ) (H : Ideal
   · rintro ⟨⟨_, hbin⟩, had⟩
     exact ⟨had, hbin⟩
 
-theorem density_expansion (C : Context Q) (B : ℝ)
-    (hn : 1 ≤ norm C.d) (hnN : norm C.d ≤ 2*C.N)
-    {p : Ideal (𝓞 F) × Ideal (𝓞 F)} (hp : p ∈ C.pairs) :
+include C B hn hnN p hp in
+theorem density_expansion   :
     Context.largeDensity ((c*C.d)*(p.1*p.2)) (C.Z2 B) =
       ∑ e ∈ C.mobiusDivisors, ∑ P ∈ ErrorRectangles.directRectangles C B,
         ∑ a ∈ LargeDirectAssembly.divisorBin (F := F) P.1,
@@ -390,6 +397,8 @@ theorem density_expansion (C : Context Q) (B : ℝ)
   apply Finset.sum_congr rfl
   intro b hb
   by_cases h1 : a ∣ p.1 <;> by_cases h2 : b ∣ p.2 <;> simp [h1, h2]
+end
+
 
 private lemma moebius_norm_le (a : Ideal (𝓞 F)) :
     ‖(UniqueFactorizationMonoid.moebius a : ℂ)‖ ≤ 1 := by

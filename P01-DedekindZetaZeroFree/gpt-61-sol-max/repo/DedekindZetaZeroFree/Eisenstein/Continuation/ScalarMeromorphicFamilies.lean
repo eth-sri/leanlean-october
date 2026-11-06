@@ -11,30 +11,27 @@ open scoped Topology
 variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
-def selectedContinuousBranch
-    {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R} {B : JointRootAlignedSources R N}
+section
+variable {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R} {B : JointRootAlignedSources R N}
     {v : R.A.UnitQuotient} (D : SelectedScalarBranch R B v) (P : SelectedPoleSet D)
     (hj : ContinuousOn (fun p : ℂ × Group R => D.E p.1 p.2)
       ((KPContinuation.spectralDomain \ P.poles) ×ˢ Set.univ))
+include R N B v D P hj
+def selectedContinuousBranch
+     
     (s : ℂ) : C(Group R, ℂ) := by
   classical
   exact if h : s ∈ KPContinuation.spectralDomain ∧ s ∉ P.poles then
     ⟨D.E s, selected_regular_continuous hj s h.1 h.2⟩ else 0
 
 theorem selectedContinuousBranch_regular
-    {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R} {B : JointRootAlignedSources R N}
-    {v : R.A.UnitQuotient} (D : SelectedScalarBranch R B v) (P : SelectedPoleSet D)
-    (hj : ContinuousOn (fun p : ℂ × Group R => D.E p.1 p.2)
-      ((KPContinuation.spectralDomain \ P.poles) ×ˢ Set.univ))
+     
     (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain) (hp : s ∉ P.poles) :
     (selectedContinuousBranch D P hj s : Functions R) = D.E s := by
   simp [selectedContinuousBranch, hs, hp]
 
 theorem selectedContinuousBranch_meromorphic
-    {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R} {B : JointRootAlignedSources R N}
-    {v : R.A.UnitQuotient} (D : SelectedScalarBranch R B v) (P : SelectedPoleSet D)
-    (hj : ContinuousOn (fun p : ℂ × Group R => D.E p.1 p.2)
-      ((KPContinuation.spectralDomain \ P.poles) ×ˢ Set.univ)) (g : Group R) :
+      (g : Group R) :
     MeromorphicOn (fun s => selectedContinuousBranch D P hj s g)
       KPContinuation.spectralDomain := by
   intro z hz
@@ -47,10 +44,7 @@ theorem selectedContinuousBranch_meromorphic
   exact (congrFun (selectedContinuousBranch_regular D P hj s (hb hs) hsp) g).symm
 
 def selectedContinuousNumerator
-    {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R} {B : JointRootAlignedSources R N}
-    {v : R.A.UnitQuotient} (D : SelectedScalarBranch R B v) (P : SelectedPoleSet D)
-    (hj : ContinuousOn (fun p : ℂ × Group R => D.E p.1 p.2)
-      ((KPContinuation.spectralDomain \ P.poles) ×ˢ Set.univ))
+     
     (r : ℝ) (hb : Metric.ball (0 : ℂ) r ⊆ KPContinuation.spectralDomain)
     (hp : ∀ s ∈ Metric.ball (0 : ℂ) r, s ∈ P.poles → s = 0)
     (hres : Continuous (selectedScalarNumerator D r 0))
@@ -68,10 +62,7 @@ def selectedContinuousNumerator
     exact continuous_const.smul (selected_regular_continuous hj s (hb hs) hn)
 
 theorem selectedContinuousNumerator_eq
-    {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R} {B : JointRootAlignedSources R N}
-    {v : R.A.UnitQuotient} (D : SelectedScalarBranch R B v) (P : SelectedPoleSet D)
-    (hj : ContinuousOn (fun p : ℂ × Group R => D.E p.1 p.2)
-      ((KPContinuation.spectralDomain \ P.poles) ×ˢ Set.univ))
+     
     (r : ℝ) (hb : Metric.ball (0 : ℂ) r ⊆ KPContinuation.spectralDomain)
     (hp : ∀ s ∈ Metric.ball (0 : ℂ) r, s ∈ P.poles → s = 0)
     (hres : Continuous (selectedScalarNumerator D r 0))
@@ -79,6 +70,8 @@ theorem selectedContinuousNumerator_eq
     (selectedContinuousNumerator D P hj r hb hp hres s : Functions R) =
       selectedScalarNumerator D r s := by
   simp [selectedContinuousNumerator, hs]
+end
+
 
 theorem selectedScalarSource_assemble
     (R : PrincipalMellin.ActualRecipe S η) {N : TraceHaarTransport R} (B : JointRootAlignedSources R N)

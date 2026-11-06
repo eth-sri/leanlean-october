@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Poisson.FieldTransform.SpectralMultiplier
 public import DedekindZetaZeroFree.Analysis.ContourIntegration.ExponentialStripGrowth
 
 @[expose] public section
+
 
 noncomputable section
 open MeasureTheory Filter
@@ -11,7 +14,7 @@ open scoped Classical ContDiff
 
 namespace DedekindZetaZeroFree.LargeSieve
 
-def fieldTransform (D : ℝ) (r : ℕ) (h : ℝ → ℂ) (x : ℝ) : ℂ :=
+def fieldTransform (D : ℝ) (r : ℕ) (h : ℝ → ℂ) (x : ℝ)  :=
   if 0 < x then mellinInv 2 (B D r h) x else 0
 
 private lemma rpow_neg_le_max (c x σ : ℝ) (hx : 0 < x)
@@ -25,9 +28,12 @@ private lemma rpow_neg_le_max (c x σ : ℝ) (hx : 0 < x)
     · exact (Real.rpow_le_rpow_of_exponent_ge hx hx1 (by linarith)).trans (le_max_right _ _)
     · exact (Real.rpow_le_rpow_of_exponent_ge hx hx1 (by linarith)).trans (le_max_left _ _)
 
-theorem B_inverse_integrable (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
+section
+variable (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
     (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
-    (hhc : HasCompactSupport h) (c x : ℝ) (hc : 0 < c) (hx : 0 < x) :
+    (hhc : HasCompactSupport h) (c x : ℝ) (hc : 0 < c) (hx : 0 < x)
+include D r h hD hr hh hhc c x hc hx
+theorem B_inverse_integrable   :
     MeasureTheory.Integrable (fun t : ℝ =>
       (x : ℂ) ^ (-((c : ℂ) + (t : ℂ) * Complex.I)) *
         B D r h ((c : ℂ) + (t : ℂ) * Complex.I)) MeasureTheory.volume := by
@@ -45,8 +51,7 @@ theorem B_inverse_integrable (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
     ?_ (hcpow.mul hcont).aestronglyMeasurable ?_
   · have h1 : Integrable (fun t : ℝ => (1 + ‖t‖) ^ (-2 : ℝ)) volume :=
       integrable_one_add_norm (E := ℝ) (r := 2) (by rw [Module.finrank_self]; norm_num)
-    have h2 : Integrable (fun t : ℝ => (1 + |t|) ^ (-2 : ℝ)) volume := by
-      simpa [Real.norm_eq_abs] using h1
+    have h2 : Integrable (fun t : ℝ => (1 + |t|) ^ (-2 : ℝ)) volume := h1
     exact h2.const_mul _
   · refine Eventually.of_forall fun t => ?_
     have h1 : ‖(x : ℂ) ^ (-((c : ℂ) + (t : ℂ) * Complex.I))‖ = x ^ (-c) := by
@@ -56,7 +61,7 @@ theorem B_inverse_integrable (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
     have h2 : ‖B D r h ((c : ℂ) + (t : ℂ) * Complex.I)‖ ≤ C / (1 + |t|) ^ 2 := by
       have hp : (0 : ℝ) < (1 + |t|) ^ 2 := by positivity
       rw [le_div_iff₀ hp, mul_comm]
-      exact hC c (by simp) t
+      apply hC <;> aesop
     calc ‖(x : ℂ) ^ (-((c : ℂ) + (t : ℂ) * Complex.I)) *
             B D r h ((c : ℂ) + (t : ℂ) * Complex.I)‖
         = ‖(x : ℂ) ^ (-((c : ℂ) + (t : ℂ) * Complex.I))‖ *
@@ -69,9 +74,7 @@ theorem B_inverse_integrable (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
             div_eq_mul_inv]
           ring
 
-theorem B_mellinInv_eq (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
-    (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
-    (hhc : HasCompactSupport h) (c x : ℝ) (hc : 0 < c) (hx : 0 < x) :
+theorem B_mellinInv_eq   :
     mellinInv c (B D r h) x = mellinInv 2 (B D r h) x := by
   rw [Vendor.mellinInv_eq_verticalIntegral c (B D r h) hx,
     Vendor.mellinInv_eq_verticalIntegral 2 (B D r h) hx]
@@ -87,7 +90,7 @@ theorem B_mellinInv_eq (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
       (fun s => (x : ℂ) ^ (-s) * B D r h s) ?_ ?_ ?_ ?_
     · intro s hs1 hs2
       exact (hcpowd.differentiableAt).mul (hBdiff s (lt_of_lt_of_le hc hs1))
-    · exact B_inverse_integrable D r h hD hr hh hhc c x hc hx
+    · apply B_inverse_integrable <;> assumption
     · exact B_inverse_integrable D r h hD hr hh hhc 2 x (by norm_num) hx
     · refine ⟨0, max (x ^ (-c)) (x ^ (-2 : ℝ)) * C, le_refl 0,
         mul_nonneg (le_trans (Real.rpow_nonneg hx.le _) (le_max_left _ _)) hCpos.le,
@@ -115,7 +118,7 @@ theorem B_mellinInv_eq (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
       exact (hcpowd.differentiableAt).mul
         (hBdiff s (lt_of_lt_of_le (by norm_num : (0 : ℝ) < 2) hs1))
     · exact B_inverse_integrable D r h hD hr hh hhc 2 x (by norm_num) hx
-    · exact B_inverse_integrable D r h hD hr hh hhc c x hc hx
+    · apply B_inverse_integrable <;> assumption
     · refine ⟨0, max (x ^ (-c)) (x ^ (-2 : ℝ)) * C, le_refl 0,
         mul_nonneg (le_trans (Real.rpow_nonneg hx.le _) (le_max_left _ _)) hCpos.le,
         fun σ hσ t => ?_⟩
@@ -135,6 +138,8 @@ theorem B_mellinInv_eq (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
             mul_le_mul (rpow_neg_le_max c x σ hx hσ') h2 (norm_nonneg _)
               (le_trans (Real.rpow_nonneg hx.le _) (le_max_left _ _))
         _ = max (x ^ (-c)) (x ^ (-2 : ℝ)) * C * Real.exp (0 * |t|) := by simp
+end
+
 
 end DedekindZetaZeroFree.LargeSieve
 

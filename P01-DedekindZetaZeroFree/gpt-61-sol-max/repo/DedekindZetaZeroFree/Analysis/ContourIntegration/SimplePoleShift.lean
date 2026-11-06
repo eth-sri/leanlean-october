@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.VerticalContourShift
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.Quantitative.SimplePoleVerticalShift
 
@@ -11,11 +14,14 @@ noncomputable section
 open DedekindZetaZeroFree MeasureTheory Set Filter Complex
 open scoped Topology
 
-theorem verticalIntegral_sub_eq_residue
-    {a b : ℝ} {p : ℂ} {f : ℂ → ℂ} {res : ℂ}
+section
+variable {a b : ℝ} {p : ℂ} {f : ℂ → ℂ} {res : ℂ}
     (hap : a < p.re) (hpb : p.re < b)
     (hf : DifferentiableOn ℂ f (comparisonClosedStrip a b \ {p}))
     (hres : Tendsto (fun z : ℂ => (z - p) * f z) (𝓝[≠] p) (𝓝 res))
+include a b p f res hap hpb hf hres in
+theorem verticalIntegral_sub_eq_residue
+     
     (ha : Integrable (fun t : ℝ => f ((a : ℂ) + (t : ℂ) * I)))
     (hb : Integrable (fun t : ℝ => f ((b : ℂ) + (t : ℂ) * I)))
     (hbot : Tendsto (fun T : ℝ => ∫ x : ℝ in a..b, f ((x : ℂ) + ((-T : ℝ) : ℂ) * I))
@@ -91,14 +97,10 @@ theorem verticalIntegral_sub_eq_residue
       refine this.congr ?_
       intro z hz
       simp only [hA]
-      rw [Function.update_of_ne (by simpa using hz.2)]
+      rw [Function.update_of_ne (hz.2)]
     · exact continuousAt_update_same.mpr hgres
   have hF : ∀ z : ℂ, a ≤ z.re → z.re ≤ b → z ≠ (q : ℂ) → g z = A z / (z - (q : ℂ)) := by
-    intro z _ _ hz
-    simp only [hA]
-    rw [Function.update_of_ne hz]
-    have : z - (q : ℂ) ≠ 0 := sub_ne_zero.mpr hz
-    field_simp
+    (intros; grind)
   have hbot' : Tendsto (fun T : ℝ => ∫ x : ℝ in a..b, g ((x : ℂ) + ((-T : ℝ) : ℂ) * I))
       atTop (𝓝 0) := by
     have h := hbot.comp (tendsto_atTop_add_const_right atTop (-c) tendsto_id)
@@ -130,9 +132,7 @@ theorem verticalIntegral_sub_eq_residue
 theorem integrable_of_decay (g : ℝ → ℂ) (C T : ℝ) (hT : 1 ≤ T) (hg : Continuous g)
     (hbound : ∀ t : ℝ, T ≤ |t| → ‖g t‖ ≤ C * (1 + |t|) ^ (-2 : ℝ)) :
     Integrable g := by
-  have hi : Integrable (fun t : ℝ => C * (1 + |t|) ^ (-2 : ℝ)) := by
-    simpa [Real.norm_eq_abs] using
-      (integrable_one_add_norm (E := ℝ) (r := 2) (μ := volume) (by simp)).const_mul C
+  have hi : Integrable (fun t : ℝ => C * (1 + |t|) ^ (-2 : ℝ)) := (integrable_one_add_norm (E := ℝ) (r := 2) (μ := volume) (by simp)).const_mul C
   have hc : IntegrableOn g (Icc (-T) T) := hg.integrableOn_Icc
   have ht : IntegrableOn g (Icc (-T) T)ᶜ := by
     apply hi.integrableOn.mono' hg.aestronglyMeasurable.restrict
@@ -170,19 +170,16 @@ theorem horizontal_tendsto_zero_of_decay (f : ℂ → ℂ) (a b C T0 ε : ℝ) (
   rw [he] at hh
   exact hh
 
-theorem integrable_vertical_of_decay (f : ℂ → ℂ) (σ C T0 : ℝ)
+def integrable_vertical_of_decay (f : ℂ → ℂ) (σ C T0 : ℝ)
     (hcont : Continuous fun t : ℝ => f ((σ : ℂ) + (t : ℂ) * I))
     (hbound : ∀ y : ℝ, T0 ≤ |y| →
-      ‖f ((σ : ℂ) + (y : ℂ) * I)‖ ≤ C * (1 + |y| : ℝ) ^ (-2 : ℝ)) :
-    Integrable (fun t : ℝ => f ((σ : ℂ) + (t : ℂ) * I)) :=
+      ‖f ((σ : ℂ) + (y : ℂ) * I)‖ ≤ C * (1 + |y| : ℝ) ^ (-2 : ℝ))  :=
   integrable_of_decay _ C (max T0 1) (le_max_right _ _) hcont
     (fun t ht => hbound t (le_trans (le_max_left _ _) ht))
 
+include a b p f res hap hpb hf hres in
 theorem verticalIntegral_sub_eq_residue_of_decay
-    {a b : ℝ} {p : ℂ} {f : ℂ → ℂ} {res : ℂ}
-    (hap : a < p.re) (hpb : p.re < b)
-    (hf : DifferentiableOn ℂ f (comparisonClosedStrip a b \ {p}))
-    (hres : Tendsto (fun z : ℂ => (z - p) * f z) (𝓝[≠] p) (𝓝 res))
+     
     (C T0 : ℝ)
     (hbound : ∀ x ∈ Icc a b, ∀ y : ℝ, T0 ≤ |y| →
       ‖f ((x : ℂ) + (y : ℂ) * I)‖ ≤ C * (1 + |y|) ^ (-2 : ℝ)) :
@@ -200,11 +197,13 @@ theorem verticalIntegral_sub_eq_residue_of_decay
       simp at this
       exact hne this
     · intro y hy
-      exact hbound σ hσ y hy
+      apply hbound <;> assumption
   refine verticalIntegral_sub_eq_residue hap hpb hf hres
     (hline a ⟨le_rfl, hab⟩ hap.ne) (hline b ⟨hab, le_rfl⟩ hpb.ne') ?_ ?_
   · simpa using horizontal_tendsto_zero_of_decay f a b C T0 (-1) hab (by norm_num) hbound
   · simpa using horizontal_tendsto_zero_of_decay f a b C T0 1 hab (by norm_num) hbound
+end
+
 
 end
 

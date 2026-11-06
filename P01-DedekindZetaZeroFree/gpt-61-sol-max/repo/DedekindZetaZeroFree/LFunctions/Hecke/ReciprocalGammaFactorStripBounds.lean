@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.SpecialFunctions.Gamma.Deligne
 public import Mathlib.Analysis.Real.Pi.Bounds
 public import DedekindZetaZeroFree.Analysis.Gamma.ElementaryNormBounds
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 
@@ -24,9 +27,7 @@ private lemma gamma_inv_reflection {s : ℂ} (hs : s.im ≠ 0) :
     exact mul_ne_zero hGam hGam1 h
   have h2 : Complex.Gamma (1 - s) =
       (Complex.Gamma s)⁻¹ * ((Real.pi : ℂ) / Complex.sin ((Real.pi : ℂ) * s)) := by
-    have := congrArg (fun x => (Complex.Gamma s)⁻¹ * x) h
-    rw [← mul_assoc, inv_mul_cancel₀ hGam, one_mul] at this
-    exact this
+    grind
   rw [h2]
   field_simp
 
@@ -57,7 +58,7 @@ theorem gamma_inverse_strip_exp_bound (a b : ℝ) (hab : a ≤ b) :
       have him1 : 1 ≤ |(1 - s).im| := by
         have : (1 - s).im = -s.im := by simp
         rw [this, abs_neg]; exact hbig
-      have hre : (1 - s + (n : ℂ)).re = 1 - s.re + (n : ℝ) := by simp
+      have hre : (1 - s + (n : ℂ)).re = 1 - s.re + (n : ℝ) := rfl
       have hpos : 0 < (1 - s + (n : ℂ)).re := by
         rw [hre]; linarith
       have hmem : (1 - s + (n : ℂ)).re ∈ Set.Icc (1 - b + n) (1 - a + n) := by
@@ -112,7 +113,7 @@ theorem gammaC_inverse_strip_exp_bound (a b : ℝ) (hab : a ≤ b) :
       field_simp
     have hle : (2 * Real.pi) ^ s.re ≤ (2 * Real.pi) ^ b :=
       Real.rpow_le_rpow_of_exponent_le (by linarith [Real.pi_gt_three]) hsb
-    have hGs : ‖(Complex.Gamma s)⁻¹‖ ≤ G * Real.exp (Real.pi * |s.im|) := hG s ⟨hsa, hsb⟩
+    have hGs  := hG s ⟨hsa, hsb⟩
     rw [Complex.Gammaℂ_def]
     have hnorm : ‖(2 * (2 * (Real.pi : ℂ)) ^ (-s) * Complex.Gamma s)⁻¹‖ =
         ‖(2 * (2 * (Real.pi : ℂ)) ^ (-s))⁻¹‖ * ‖(Complex.Gamma s)⁻¹‖ := by

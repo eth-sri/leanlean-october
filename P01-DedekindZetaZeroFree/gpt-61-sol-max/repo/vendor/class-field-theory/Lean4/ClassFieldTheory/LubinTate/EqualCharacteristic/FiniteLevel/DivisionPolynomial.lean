@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import Mathlib.SetTheory.Cardinal.Finite
 public import ClassFieldTheory.LubinTate.EqualCharacteristic.FiniteLevel.AmbientDivisionTorsion
 public import Mathlib.FieldTheory.IsSepClosed
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -62,16 +65,18 @@ variable {K : Type u} [Field K]
       (SeparableClosure F.residueField⸨X⸩)).injective
     F.residueCharacteristic
 
+section
+variable (F : LocalField.{u, v} K)
+include F
 /-- The base Lubin--Tate polynomial `Y^q + TY` over `κ((T))`. -/
 noncomputable def equalCharacteristicLubinTatePiPolynomial
-    (F : LocalField.{u, v} K) :
-    Polynomial F.residueField⸨X⸩ :=
+       :=
   Polynomial.X ^ Nat.card F.residueField +
     Polynomial.C (equalCharacteristicLaurentUniformizer F) * Polynomial.X
 
 /-- The Laurent-series parameter `T` is nonzero. -/
 theorem equalCharacteristicLaurentUniformizer_ne_zero
-    (F : LocalField.{u, v} K) :
+      :
     equalCharacteristicLaurentUniformizer F ≠ 0 := by
   rw [equalCharacteristicLaurentUniformizer]
   change HahnSeries.ofPowerSeries ℤ F.residueField PowerSeries.X ≠ 0
@@ -83,7 +88,7 @@ theorem equalCharacteristicLaurentUniformizer_ne_zero
 
 /-- The base Lubin--Tate polynomial has degree `q`. -/
 theorem equalCharacteristicLubinTatePiPolynomial_natDegree
-    (F : LocalField.{u, v} K) :
+      :
     (equalCharacteristicLubinTatePiPolynomial F).natDegree =
       Nat.card F.residueField := by
   rw [equalCharacteristicLubinTatePiPolynomial]
@@ -96,19 +101,18 @@ theorem equalCharacteristicLubinTatePiPolynomial_natDegree
         rw [Polynomial.natDegree_X_pow,
           Polynomial.natDegree_C_mul_X _
             (equalCharacteristicLaurentUniformizer_ne_zero F)]
-        exact (Finite.one_lt_card : 1 < Nat.card F.residueField))
+        exact Finite.one_lt_card)
     _ = Nat.card F.residueField := Polynomial.natDegree_X_pow _
 
 /-- The `n`-fold compositional iterate of the base Lubin--Tate polynomial,
 starting from `Y`. -/
 noncomputable def equalCharacteristicLubinTatePiPolynomialIterate
-    (F : LocalField.{u, v} K) (n : ℕ) :
-    Polynomial F.residueField⸨X⸩ :=
+      (n : ℕ)  :=
   (equalCharacteristicLubinTatePiPolynomial F).comp^[n] Polynomial.X
 
 /-- The `n`-fold iterate has degree `q^n`. -/
 theorem equalCharacteristicLubinTatePiPolynomialIterate_natDegree
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      (n : ℕ) :
     (equalCharacteristicLubinTatePiPolynomialIterate F n).natDegree =
       Nat.card F.residueField ^ n := by
   rw [equalCharacteristicLubinTatePiPolynomialIterate,
@@ -119,8 +123,7 @@ theorem equalCharacteristicLubinTatePiPolynomialIterate_natDegree
 /-- The polynomial whose roots are exactly the primitive level-`n+1`
 division points. -/
 noncomputable def equalCharacteristicLubinTatePrimitivePolynomial
-    (F : LocalField.{u, v} K) (n : ℕ) :
-    Polynomial F.residueField⸨X⸩ :=
+      (n : ℕ)  :=
   equalCharacteristicLubinTatePiPolynomialIterate F n ^
       (Nat.card F.residueField - 1) +
     Polynomial.C (equalCharacteristicLaurentUniformizer F)
@@ -128,7 +131,7 @@ noncomputable def equalCharacteristicLubinTatePrimitivePolynomial
 /-- The primitive level-`n+1` polynomial has the expected positive degree
 `(q-1)q^n`. -/
 theorem equalCharacteristicLubinTatePrimitivePolynomial_natDegree
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      (n : ℕ) :
     (equalCharacteristicLubinTatePrimitivePolynomial F n).natDegree =
       (Nat.card F.residueField - 1) *
         Nat.card F.residueField ^ n := by
@@ -137,7 +140,7 @@ theorem equalCharacteristicLubinTatePrimitivePolynomial_natDegree
       0 < (Nat.card F.residueField - 1) *
         Nat.card F.residueField ^ n :=
     Nat.mul_pos (Nat.sub_pos_of_lt
-      (Finite.one_lt_card : 1 < Nat.card F.residueField))
+      Finite.one_lt_card)
       (Nat.pow_pos Nat.card_pos)
   rw [Polynomial.natDegree_add_eq_left_of_natDegree_lt]
   · rw [Polynomial.natDegree_pow,
@@ -150,7 +153,7 @@ theorem equalCharacteristicLubinTatePrimitivePolynomial_natDegree
 /-- Evaluation of the base polynomial in any ambient field is the ambient
 distinguished endomorphism. -/
 theorem equalCharacteristicLubinTatePiPolynomial_eval₂
-    (F : LocalField.{u, v} K)
+     
     [CharP K F.residueCharacteristic]
     {A : Type*} [Field A] [CharP A F.residueCharacteristic]
     (φ : F.residueField⸨X⸩ →+* A) (x : A) :
@@ -163,21 +166,16 @@ theorem equalCharacteristicLubinTatePiPolynomial_eval₂
 /-- The additive-endomorphism iterate agrees with ordinary function
 iteration. -/
 theorem equalCharacteristicLubinTateAmbientPiIterate_eq_function_iterate
-    (F : LocalField.{u, v} K)
+     
     {A : Type*} [Field A] [CharP A F.residueCharacteristic]
     (t : A) (n : ℕ) (x : A) :
     equalCharacteristicLubinTateAmbientPiIterate F t n x =
-      (fun y : A ↦ equalCharacteristicLubinTateAmbientPiEnd F t y)^[n] x := by
-  induction n generalizing x with
-  | zero => simp [equalCharacteristicLubinTateAmbientPiIterate_zero]
-  | succ n ih =>
-      rw [equalCharacteristicLubinTateAmbientPiIterate_succ,
-        Function.iterate_succ_apply, ih]
+      (fun y : A ↦ equalCharacteristicLubinTateAmbientPiEnd F t y)^[n] x := rfl
 
 /-- Evaluation of the compositional division polynomial is the actual
 ambient iterate of `e`. -/
 theorem equalCharacteristicLubinTatePiPolynomialIterate_eval₂
-    (F : LocalField.{u, v} K)
+     
     [CharP K F.residueCharacteristic]
     {A : Type*} [Field A] [CharP A F.residueCharacteristic]
     (φ : F.residueField⸨X⸩ →+* A) (n : ℕ) (x : A) :
@@ -191,7 +189,7 @@ theorem equalCharacteristicLubinTatePiPolynomialIterate_eval₂
       (fun y : A ↦ equalCharacteristicLubinTateAmbientPiEnd F
         (φ (equalCharacteristicLaurentUniformizer F)) y) := by
     funext y
-    exact equalCharacteristicLubinTatePiPolynomial_eval₂ F φ y
+    apply equalCharacteristicLubinTatePiPolynomial_eval₂
   calc
     Polynomial.eval₂ φ x
         (equalCharacteristicLubinTatePiPolynomialIterate F n) =
@@ -201,8 +199,7 @@ theorem equalCharacteristicLubinTatePiPolynomialIterate_eval₂
         Polynomial.iterate_comp_eval₂, Polynomial.eval₂_X]
     _ =
         (fun y : A ↦ equalCharacteristicLubinTateAmbientPiEnd F
-          (φ (equalCharacteristicLaurentUniformizer F)) y)^[n] x := by
-      exact congrArg (fun f : A → A ↦ f^[n] x) hfun
+          (φ (equalCharacteristicLaurentUniformizer F)) y)^[n] x := congrArg (fun f : A → A ↦ f^[n] x) hfun
     _ = equalCharacteristicLubinTateAmbientPiIterate F
         (φ (equalCharacteristicLaurentUniformizer F)) n x :=
       (equalCharacteristicLubinTateAmbientPiIterate_eq_function_iterate
@@ -210,7 +207,7 @@ theorem equalCharacteristicLubinTatePiPolynomialIterate_eval₂
 
 /-- The residue-field cardinality is zero in the Laurent-series base field. -/
 theorem residueField_natCard_cast_eq_zero
-    (F : LocalField.{u, v} K) :
+      :
     (Nat.card F.residueField : F.residueField⸨X⸩) = 0 := by
   let := Fintype.ofFinite F.residueField
   rw [Nat.card_eq_fintype_card]
@@ -221,7 +218,7 @@ theorem residueField_natCard_cast_eq_zero
 
 /-- The derivative of `Y^q+TY` is the nonzero constant `T`. -/
 theorem equalCharacteristicLubinTatePiPolynomial_derivative
-    (F : LocalField.{u, v} K) :
+      :
     (equalCharacteristicLubinTatePiPolynomial F).derivative =
       Polynomial.C (equalCharacteristicLaurentUniformizer F) := by
   simp [equalCharacteristicLubinTatePiPolynomial,
@@ -229,7 +226,7 @@ theorem equalCharacteristicLubinTatePiPolynomial_derivative
 
 /-- Recursive description of the compositional iterates. -/
 theorem equalCharacteristicLubinTatePiPolynomialIterate_succ
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      (n : ℕ) :
     equalCharacteristicLubinTatePiPolynomialIterate F (n + 1) =
       (equalCharacteristicLubinTatePiPolynomial F).comp
         (equalCharacteristicLubinTatePiPolynomialIterate F n) := by
@@ -240,7 +237,7 @@ theorem equalCharacteristicLubinTatePiPolynomialIterate_succ
 /-- The derivative of the `n`-fold division polynomial is the nonzero
 constant `T^n`. -/
 theorem equalCharacteristicLubinTatePiPolynomialIterate_derivative
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      (n : ℕ) :
     (equalCharacteristicLubinTatePiPolynomialIterate F n).derivative =
       Polynomial.C (equalCharacteristicLaurentUniformizer F ^ n) := by
   induction n with
@@ -254,7 +251,7 @@ theorem equalCharacteristicLubinTatePiPolynomialIterate_derivative
 
 /-- Every iterated division polynomial is separable. -/
 theorem equalCharacteristicLubinTatePiPolynomialIterate_separable
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      (n : ℕ) :
     (equalCharacteristicLubinTatePiPolynomialIterate F n).Separable := by
   rw [Polynomial.separable_def']
   refine ⟨0,
@@ -268,11 +265,11 @@ theorem equalCharacteristicLubinTatePiPolynomialIterate_separable
 /-- The next division polynomial factors as the preceding one times the
 primitive factor. -/
 theorem equalCharacteristicLubinTatePiPolynomialIterate_succ_factor
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      (n : ℕ) :
     equalCharacteristicLubinTatePiPolynomialIterate F (n + 1) =
       equalCharacteristicLubinTatePiPolynomialIterate F n *
         equalCharacteristicLubinTatePrimitivePolynomial F n := by
-  have hq : Nat.card F.residueField ≠ 0 :=
+  have hq  :=
     ne_of_gt (Nat.zero_lt_one.trans
       (Finite.one_lt_card : 1 < Nat.card F.residueField))
   rw [equalCharacteristicLubinTatePiPolynomialIterate_succ,
@@ -286,7 +283,7 @@ theorem equalCharacteristicLubinTatePiPolynomialIterate_succ_factor
 /-- The primitive factor is separable because it divides the next separable
 division polynomial. -/
 theorem equalCharacteristicLubinTatePrimitivePolynomial_separable
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      (n : ℕ) :
     (equalCharacteristicLubinTatePrimitivePolynomial F n).Separable := by
   apply Polynomial.Separable.of_dvd
     (equalCharacteristicLubinTatePiPolynomialIterate_separable F (n + 1))
@@ -296,7 +293,7 @@ theorem equalCharacteristicLubinTatePrimitivePolynomial_separable
 
 /-- The canonical base embedding into the chosen separable closure. -/
 noncomputable def equalCharacteristicSeparableBaseHom
-    (F : LocalField.{u, v} K) :
+      :
     F.residueField⸨X⸩ →+* SeparableClosure F.residueField⸨X⸩ where
   toFun x :=
     ⟨algebraMap F.residueField⸨X⸩
@@ -323,15 +320,14 @@ noncomputable def equalCharacteristicSeparableBaseHom
 /-- The coefficient embedding of the residue field into the chosen
 separable closure of `κ((T))`. -/
 noncomputable def equalCharacteristicSeparableCoefficientHom
-    (F : LocalField.{u, v} K) :
+      :
     F.residueField →+* SeparableClosure F.residueField⸨X⸩ :=
   (equalCharacteristicSeparableBaseHom F).comp
     (algebraMap F.residueField F.residueField⸨X⸩)
 
 /-- The image of `T` in the chosen separable closure. -/
 noncomputable def equalCharacteristicSeparableUniformizer
-    (F : LocalField.{u, v} K) :
-    SeparableClosure F.residueField⸨X⸩ :=
+       :=
   equalCharacteristicSeparableBaseHom F
       (equalCharacteristicLaurentUniformizer F)
 
@@ -339,7 +335,7 @@ noncomputable def equalCharacteristicSeparableUniformizer
 closure.  Separability of this polynomial is established below before the
 root is used to define the level field. -/
 theorem exists_equalCharacteristicLubinTatePrimitivePolynomial_root
-    (F : LocalField.{u, v} K)
+     
     [CharP K F.residueCharacteristic]
     (n : ℕ) :
     ∃ x : SeparableClosure F.residueField⸨X⸩,
@@ -352,13 +348,14 @@ theorem exists_equalCharacteristicLubinTatePrimitivePolynomial_root
       equalCharacteristicLubinTatePrimitivePolynomial_natDegree]
     exact Nat.mul_pos
       (Nat.sub_pos_of_lt
-        (Finite.one_lt_card : 1 < Nat.card F.residueField))
+        Finite.one_lt_card)
       (Nat.pow_pos Nat.card_pos)
-  have hdeg : (Q.map φ).degree ≠ 0 := by
-    exact ne_of_gt (Polynomial.natDegree_pos_iff_degree_pos.mp hnat)
+  have hdeg  := ne_of_gt (Polynomial.natDegree_pos_iff_degree_pos.mp hnat)
   have hsep : (Q.map φ).Separable :=
     (equalCharacteristicLubinTatePrimitivePolynomial_separable F n).map
-  exact IsSepClosed.exists_root (Q.map φ) hdeg hsep
+  apply IsSepClosed.exists_root <;> assumption
+end
+
 
 end EqualCharacteristic
 end LubinTate

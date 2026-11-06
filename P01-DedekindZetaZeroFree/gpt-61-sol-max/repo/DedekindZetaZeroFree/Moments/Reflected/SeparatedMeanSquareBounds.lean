@@ -153,20 +153,20 @@ theorem cutoff_eq_threshold (Z P D θ : ℝ) :
   change 8 * Z ^ θ * D ^ 2 * P / Z = Z ^ θ * (8 * D ^ 2 * P / Z)
   ring
 
-theorem retained_eq (A : SArithmeticData F) (G : AllowedRecipe A)
+section
+variable (A : SArithmeticData F) (G : AllowedRecipe A)
     (U : ThetaBranch.UnitRepresentatives A) (σ : F →+* ℂ)
     (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (L : Fˣ →* ℂ) (H : A.V → ℝ → ℂ) (h d : A.Exterior) (Z P D θ : ℝ) :
+    (L : Fˣ →* ℂ) (H : A.V → ℝ → ℂ)
+include A G U σ ψ L H
+theorem retained_eq   (h d : A.Exterior) (Z P D θ : ℝ) :
     RMRetainedAggregation.retained A G U σ ψ L H h d Z
         (RMRetainedAggregation.cutoff Z P D θ) =
       RMTailCutoff.retained A G U σ ψ L H h d Z P D θ := by
   rw [RMRetainedAggregation.retained_eq_tsum, cutoff_eq_threshold]
   rfl
 
-theorem expansion_square_le (A : SArithmeticData F) (G : AllowedRecipe A)
-    (U : ThetaBranch.UnitRepresentatives A) (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (L : Fˣ →* ℂ) (H : A.V → ℝ → ℂ) (h d : A.Exterior) (Z P D θ : ℝ) :
+theorem expansion_square_le   (h d : A.Exterior) (Z P D θ : ℝ) :
     ‖RMSeparatedExpansion.expansion A G U σ ψ L H h d Z‖ ^ 2 ≤
       2 * ‖RMRetainedAggregation.retained A G U σ ψ L H h d Z
           (RMRetainedAggregation.cutoff Z P D θ)‖ ^ 2 +
@@ -204,10 +204,7 @@ theorem expansion_square_le (A : SArithmeticData F) (G : AllowedRecipe A)
       zero_pow (by decide : 2 ≠ 0)]
     positivity
 
-theorem separatedSquareMass_le (A : SArithmeticData F) (G : AllowedRecipe A)
-    (U : ThetaBranch.UnitRepresentatives A) (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (L : Fˣ →* ℂ) (H : A.V → ℝ → ℂ) (Z P D θ : ℝ) :
+theorem separatedSquareMass_le   (Z P D θ : ℝ) :
     separatedSquareMass A G U σ ψ L H Z P D ≤
       2 * RMRetainedAggregation.totalSquareMass A G U σ ψ L H Z P D
           (RMRetainedAggregation.cutoff Z P D θ) +
@@ -246,9 +243,11 @@ theorem separatedSquareMass_le (A : SArithmeticData F) (G : AllowedRecipe A)
       rw [Summable.tsum_add (Summable.of_finite) (Summable.of_finite),
         tsum_mul_left, tsum_mul_left]
       simp only [RMRetainedAggregation.totalSquareMass, finsum_eq_sum_of_fintype, tsum_fintype]
+end
 
-theorem compact_separated_square_bound
-    (A : SArithmeticData F) (G : AllowedRecipe A)
+
+section
+variable (A : SArithmeticData F) (G : AllowedRecipe A)
     (U : ThetaBranch.UnitRepresentatives A) (σ : F →+* ℂ)
     (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
     (hψ : ∀ p : ExteriorPrime A, (ψ p).IsPrimitive)
@@ -256,6 +255,9 @@ theorem compact_separated_square_bound
     (hL : ∀ (u : A.UnitQuotient) (x : Fˣ), ‖L u x‖ = 1)
     (H : A.UnitQuotient → A.V → ℝ → ℂ)
     (hH : RMSeparatedExpansion.FiniteProfileFamily A H)
+include A G U σ ψ hψ L hL H hH
+theorem compact_separated_square_bound
+     
     (M Cstar ε : ℝ) (hM : 1 < M) (hCstar : 0 < Cstar) (hε : 0 < ε) :
     ∃ K : ℝ, 0 < K ∧ ∀ (u : A.UnitQuotient) (Z P D : ℝ),
       1 ≤ Z → Z ≤ 2 → 1 ≤ P → 1 ≤ D → P * D ≤ Cstar * Z ^ M →
@@ -277,14 +279,7 @@ theorem compact_separated_square_bound
     _ ≤ _ := by gcongr
 
 theorem separated_mean_square_bound_of_tail
-    (A : SArithmeticData F) (G : AllowedRecipe A)
-    (U : ThetaBranch.UnitRepresentatives A) (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (hψ : ∀ p : ExteriorPrime A, (ψ p).IsPrimitive)
-    (L : A.UnitQuotient → Fˣ →* ℂ)
-    (hL : ∀ (u : A.UnitQuotient) (x : Fˣ), ‖L u x‖ = 1)
-    (H : A.UnitQuotient → A.V → ℝ → ℂ)
-    (hH : RMSeparatedExpansion.FiniteProfileFamily A H)
+     
     (𝓕 : QuadraticHeckeFamily F A.cS)
     (h𝓕 : RMRetainedAggregation.QuadraticFamilyCompatibility A G σ 𝓕)
     (htail : ∀ (B b : ℝ), 1 < B → 0 < b →
@@ -375,14 +370,7 @@ theorem separated_mean_square_bound_of_tail
       _ = _ := by ring
 
 theorem separated_mean_square_bound
-    (A : SArithmeticData F) (G : AllowedRecipe A)
-    (U : ThetaBranch.UnitRepresentatives A) (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (hψ : ∀ p : ExteriorPrime A, (ψ p).IsPrimitive)
-    (L : A.UnitQuotient → Fˣ →* ℂ)
-    (hL : ∀ (u : A.UnitQuotient) (x : Fˣ), ‖L u x‖ = 1)
-    (H : A.UnitQuotient → A.V → ℝ → ℂ)
-    (hH : RMSeparatedExpansion.FiniteProfileFamily A H)
+     
     (𝓕 : QuadraticHeckeFamily F A.cS)
     (h𝓕 : RMRetainedAggregation.QuadraticFamilyCompatibility A G σ 𝓕)
     (M Cstar ε : ℝ) (hM : 1 < M) (hCstar : 0 < Cstar) (hε : 0 < ε) :
@@ -424,6 +412,8 @@ theorem separated_mean_square_bound
         ← Real.rpow_mul hg.le (-(B - 1)) 2]
       rw [show -(B - 1) * (2 : ℝ) = -2 * (B - 1) by ring]
       ring
+end
+
 
 end
 end DedekindZetaZeroFree.ReflectedMoment

@@ -226,11 +226,11 @@ namespace DedekindZetaZeroFree.QuadraticRawProduct
 
 variable {F : Type} [Field F] [NumberField F]
 
-local instance thetaCompletionMeasurable (v : HeightOneSpectrum (𝓞 F)) :
-    MeasurableSpace (v.adicCompletion F) := borel _
 
-local instance thetaCompletionBorel (v : HeightOneSpectrum (𝓞 F)) :
-    BorelSpace (v.adicCompletion F) := ⟨rfl⟩
+
+
+
+
 
 private theorem fourier_add (T : Finset (HeightOneSpectrum (𝓞 F)))
     (f g : PoissonS.Space F T → ℂ)

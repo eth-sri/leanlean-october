@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.GlobalClassFieldTheory.Reciprocity.GlobalNormResidue
 public import ClassFieldTheory.GlobalClassFieldTheory.Reciprocity.FiniteIdeleArtin
 public import ClassFieldTheory.GlobalClassFieldTheory.Reciprocity.FinitePlaceCyclotomicFrobeniusLift
 public import ClassFieldTheory.AbstractClassFieldTheory.Degree.PadicCyclicClosure
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -58,9 +61,9 @@ theorem numberFieldTowerExtensionQuotientEquivGaloisGroup_mk_apply
           ((numberFieldTowerFiniteGaloisSubextension K L).extensionQuotientMk
             τ) x) =
       τ.1 (numberFieldSeparableClosureEmbedding L x) := by
-  let : Algebra K (SeparableClosure ℚ) :=
+  let  :=
     numberFieldTowerSeparableClosureBaseAlgebra K L
-  let : Algebra L (SeparableClosure ℚ) :=
+  let  :=
     numberFieldTowerSeparableClosureTopAlgebra L
   let : IsScalarTower K L (SeparableClosure ℚ) :=
     numberFieldTowerSeparableClosureScalarTower K L
@@ -82,10 +85,9 @@ Passing from `K` to this field is the genuine cyclic reduction used in
 the proof of finite-place local--global compatibility: over this field
 the given automorphism generates the whole Galois group. -/
 noncomputable def automorphismCyclicFixedField
-    (σ : Gal(L / K)) :
-    IntermediateField K L :=
+    (σ : Gal(L / K))  :=
   IntermediateField.fixedField
-    (Subgroup.closure ({σ} : Set (Gal(L / K))))
+    (Subgroup.closure ({σ}))
 
 noncomputable local instance automorphismCyclicFixedFieldNumberField
     (σ : Gal(L / K)) :
@@ -103,9 +105,7 @@ noncomputable def automorphismOverCyclicFixedField
     ⟨σ, by
       rw [automorphismCyclicFixedField,
         IntermediateField.fixingSubgroup_fixedField]
-      exact
-        Subgroup.subset_closure
-          (Set.mem_singleton σ)⟩
+      apply Subgroup.subset_closure <;> aesop⟩
 
 omit [NumberField K] [NumberField L] [IsAbelianGalois K L] in
 /-- Restricting the automorphism over its cyclic fixed field back to the base
@@ -123,16 +123,12 @@ the entire relative Galois group. -/
 theorem automorphismOverCyclicFixedField_generates
     (σ : Gal(L / K)) :
     Subgroup.closure
-        ({automorphismOverCyclicFixedField σ} :
-          Set
-            (Gal(L / automorphismCyclicFixedField σ))) =
+        ({automorphismOverCyclicFixedField σ}) =
       ⊤ := by
   let M := automorphismCyclicFixedField σ
   let σM : Gal(L / M) :=
     automorphismOverCyclicFixedField σ
-  let e :
-      M.fixingSubgroup ≃*
-        Gal(L / M) :=
+  let e  :=
     IntermediateField.fixingSubgroupEquiv M
   have hσ :
       (⟨σ, by
@@ -141,9 +137,7 @@ theorem automorphismOverCyclicFixedField_generates
               (automorphismCyclicFixedField σ).fixingSubgroup
           rw [automorphismCyclicFixedField,
             IntermediateField.fixingSubgroup_fixedField]
-          exact
-            Subgroup.subset_closure
-              (Set.mem_singleton σ)⟩ :
+          apply Subgroup.subset_closure <;> aesop⟩ :
         M.fixingSubgroup) =
         e.symm.toMonoidHom σM := by
     apply Subtype.ext
@@ -152,7 +146,7 @@ theorem automorphismOverCyclicFixedField_generates
     (f := e.symm.toMonoidHom) e.symm.injective
   change
     Subgroup.map e.symm.toMonoidHom
-        (Subgroup.closure ({σM} : Set (Gal(L / M)))) =
+        (Subgroup.closure ({σM})) =
       Subgroup.map e.symm.toMonoidHom ⊤
   rw [MonoidHom.map_closure, Set.image_singleton,
     ← hσ, Subgroup.map_top_of_surjective
@@ -163,7 +157,7 @@ theorem automorphismOverCyclicFixedField_generates
   rw [MonoidHom.map_closure, Set.image_singleton,
     ← MonoidHom.range_eq_map, M.fixingSubgroup.range_subtype]
   change
-    Subgroup.closure ({σ} : Set (Gal(L / K))) =
+    Subgroup.closure ({σ}) =
       (automorphismCyclicFixedField σ).fixingSubgroup
   rw [automorphismCyclicFixedField,
     IntermediateField.fixingSubgroup_fixedField]
@@ -195,12 +189,7 @@ theorem finitePlaceBelow_automorphismCyclicFixedPlace
         (automorphismCyclicFixedPlace v σ) =
       v := by
   let M := automorphismCyclicFixedField σ
-  exact
-    finitePlaceBelow_finitePlaceExtensionCentre
-      (K := K) (L := M) v
-      (restrictFinitePlaceExtension
-        (K := K) (L := L) (E := M) v
-        (chosenFinitePlaceExtension (L := L) v))
+  apply finitePlaceBelow_finitePlaceExtensionCentre
 
 /-- The centre in `L` of the originally chosen extension of `v` lies
 above the cyclic-reduction place.  This identifies the exact upper
@@ -292,11 +281,7 @@ theorem automorphismCyclicFixedTopExtension_centre
     congrArg Subtype.val
       ((finitePlaceExtensionEquivAbove
         (K := M) (L := L) W).apply_symm_apply V)
-  simpa only [
-    finitePlaceExtensionEquivAbove_coe,
-    V, W, id_eq,
-    automorphismCyclicFixedTopExtension
-  ] using h
+  exact h
 
 /-- A decomposition automorphism remains in the decomposition group at the
 chosen place after the cyclic fixed-field reduction.  This is the lightweight
@@ -335,7 +320,7 @@ theorem automorphismOverCyclicFixedField_mem_chosenFinitePlaceDecompositionGroup
     apply
       (decompositionGroupRestriction_mem_absoluteValueDecompositionGroup_restrictScalars_iff
         (K := K) (M := M) wK.1 σM).mp
-    simpa only [hrestrict] using σ.2
+    exact σ.2
   have hequiv :
       wK.1.IsEquiv wM.1 := by
     apply
@@ -367,27 +352,27 @@ theorem automorphismOverCyclicFixedField_mem_chosenFinitePlaceDecompositionGroup
     exact hσM_wM
   exact hσM_chosen
 
-/-- A decomposition automorphism remains a decomposition
-automorphism after the cyclic fixed-field reduction, for the actual
-chosen local Artin factor over the reduced base. -/
-theorem automorphismOverCyclicFixedField_mem_chosenFinitePlaceArtin_range
-    (v : HeightOneSpectrum (𝓞 K))
-    (σ :
-      absoluteValueDecompositionGroup K
-        (chosenFinitePlaceExtension (L := L) v).1) :
-    let M := automorphismCyclicFixedField σ.1
-    automorphismOverCyclicFixedField σ.1 ∈
-      (chosenFinitePlaceArtinMonoidHom
-        (K := M) (L := L)
-        (automorphismCyclicFixedPlace v σ.1)).range := by
-  dsimp only
-  rw [
-    chosenFinitePlaceArtinMonoidHom_range
-      (K := automorphismCyclicFixedField σ.1) (L := L)
-      (automorphismCyclicFixedPlace v σ.1)]
-  exact
-    automorphismOverCyclicFixedField_mem_chosenFinitePlaceDecompositionGroup
-      (K := K) (L := L) v σ
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- Restriction from the decomposition group in the common compatible
 rational separable closure to the decomposition group at the chosen
@@ -410,9 +395,9 @@ noncomputable def finitePlaceSeparableClosureDecompositionRestriction
         K L v wL
     absoluteValueDecompositionGroup K wΩ.1 →*
       absoluteValueDecompositionGroup K wL.1 := by
-  letI : Algebra K (SeparableClosure ℚ) :=
+  letI  :=
     numberFieldTowerSeparableClosureBaseAlgebra K L
-  letI : Algebra L (SeparableClosure ℚ) :=
+  letI  :=
     numberFieldTowerSeparableClosureTopAlgebra L
   letI : IsScalarTower K L (SeparableClosure ℚ) :=
     numberFieldTowerSeparableClosureScalarTower K L
@@ -443,7 +428,7 @@ noncomputable def finitePlaceSeparableClosureDecompositionRestriction
                 algebraMap L (SeparableClosure ℚ)
                     ((AlgEquiv.restrictNormalHom L τ.1) x) =
                   τ.1 (algebraMap L (SeparableClosure ℚ) x) := by
-              exact AlgEquiv.restrictNormal_commutes τ.1 L x
+              apply AlgEquiv.restrictNormal_commutes
             rw [hcomm]
             exact τ.2 (algebraMap L (SeparableClosure ℚ) x)⟩
       map_one' := by
@@ -455,11 +440,7 @@ noncomputable def finitePlaceSeparableClosureDecompositionRestriction
       map_mul' := by
         intro τ η
         apply Subtype.ext
-        exact
-          map_mul
-            (AlgEquiv.restrictNormalHom
-              (F := K) (K₁ := SeparableClosure ℚ) L)
-            τ.1 η.1 }
+        apply map_mul }
 
 omit [FiniteDimensional K L] in
 /-- On underlying automorphisms, the compatible finite-place
@@ -482,7 +463,7 @@ theorem finitePlaceSeparableClosureDecompositionRestriction_coe
         (K := K) (L := L) v) τ :
       Gal(L / K)) =
       AlgEquiv.restrictNormalHom L τ.1 := by
-  let : Algebra K (SeparableClosure ℚ) :=
+  let  :=
     numberFieldTowerSeparableClosureBaseAlgebra K L
   let : Algebra L (SeparableClosure ℚ) :=
     numberFieldTowerSeparableClosureTopAlgebra L
@@ -505,9 +486,9 @@ theorem finitePlaceSeparableClosureDecompositionRestriction_surjective
     Function.Surjective
       (finitePlaceSeparableClosureDecompositionRestriction
         (K := K) (L := L) v) := by
-  let : Algebra K (SeparableClosure ℚ) :=
+  let  :=
     numberFieldTowerSeparableClosureBaseAlgebra K L
-  let : Algebra L (SeparableClosure ℚ) :=
+  let  :=
     numberFieldTowerSeparableClosureTopAlgebra L
   let : IsScalarTower K L (SeparableClosure ℚ) :=
     numberFieldTowerSeparableClosureScalarTower K L
@@ -573,9 +554,9 @@ noncomputable def
         K L v (chosenFinitePlaceExtension (L := L) v)
     absoluteValueDecompositionGroup L wΩ.1 →*
       absoluteValueDecompositionGroup K wΩ.1 := by
-  letI : Algebra K (SeparableClosure ℚ) :=
+  letI  :=
     numberFieldTowerSeparableClosureBaseAlgebra K L
-  letI : Algebra L (SeparableClosure ℚ) :=
+  letI  :=
     numberFieldTowerSeparableClosureTopAlgebra L
   letI : IsScalarTower K L (SeparableClosure ℚ) :=
     numberFieldTowerSeparableClosureScalarTower K L
@@ -614,9 +595,9 @@ theorem
         (K := K) (L := L) v).range =
       (finitePlaceSeparableClosureDecompositionRestriction
         (K := K) (L := L) v).ker := by
-  let : Algebra K (SeparableClosure ℚ) :=
+  let  :=
     numberFieldTowerSeparableClosureBaseAlgebra K L
-  let : Algebra L (SeparableClosure ℚ) :=
+  let  :=
     numberFieldTowerSeparableClosureTopAlgebra L
   let : IsScalarTower K L (SeparableClosure ℚ) :=
     numberFieldTowerSeparableClosureScalarTower K L
@@ -658,10 +639,7 @@ theorem
       calc
         AlgEquiv.restrictNormalHom L τ.1 =
             ((1 : absoluteValueDecompositionGroup K wL.1).1 :
-              Gal(L / K)) := by
-          simpa only [
-            finitePlaceSeparableClosureDecompositionRestriction_coe] using
-              hτVal
+              Gal(L / K)) := hτVal
         _ = 1 := rfl
     let η : SeparableClosure ℚ ≃ₐ[L] SeparableClosure ℚ :=
       { τ.1.toRingEquiv with
@@ -702,9 +680,9 @@ noncomputable def finitePlaceSeparableClosureTopExtension
     let wL :=
       chosenFinitePlaceExtension (L := L) v
     AbsoluteValueExtension wL.1 (SeparableClosure ℚ) := by
-  letI : Algebra K (SeparableClosure ℚ) :=
+  letI  :=
     numberFieldTowerSeparableClosureBaseAlgebra K L
-  letI : Algebra L (SeparableClosure ℚ) :=
+  letI  :=
     numberFieldTowerSeparableClosureTopAlgebra L
   letI : IsScalarTower K L (SeparableClosure ℚ) :=
     numberFieldTowerSeparableClosureScalarTower K L
@@ -716,9 +694,7 @@ noncomputable def finitePlaceSeparableClosureTopExtension
       K L v wL
   refine ⟨wΩ.1, ?_⟩
   intro x
-  exact
-    numberFieldTowerFinitePlaceExtensionToSeparableClosure_algebraMap
-      K L v wL x
+  apply numberFieldTowerFinitePlaceExtensionToSeparableClosure_algebraMap
 
 /-- Restriction of the compatible separable-closure valuation to the
 actual cyclotomic `ZHat`-compositum over the top number field. -/
@@ -728,9 +704,9 @@ noncomputable def finitePlaceCyclotomicCompositumExtension
       chosenFinitePlaceExtension (L := L) v
     AbsoluteValueExtension wL.1
       (numberFieldCyclotomicZHatCompositum L) := by
-  letI : Algebra K (SeparableClosure ℚ) :=
+  letI  :=
     numberFieldTowerSeparableClosureBaseAlgebra K L
-  letI : Algebra L (SeparableClosure ℚ) :=
+  letI  :=
     numberFieldTowerSeparableClosureTopAlgebra L
   letI : IsScalarTower K L (SeparableClosure ℚ) :=
     numberFieldTowerSeparableClosureScalarTower K L
@@ -802,9 +778,7 @@ theorem finitePlaceCyclotomicCompositumExtension_base_isEquiv
         (finitePlaceExtensionCentre
           (K := K) (L := L) v wL))
   rw [hrestrict]
-  exact
-    finitePlaceExtension_isEquiv_adicAbv
-      (K := K) (L := L) v wL
+  apply finitePlaceExtension_isEquiv_adicAbv
 
 /-- Restriction from the top-field decomposition group in the
 compatible separable closure to the decomposition group in the actual
@@ -826,7 +800,7 @@ noncomputable def
         (K := K) (L := L) v
     absoluteValueDecompositionGroup L wΩL.1 →*
       absoluteValueDecompositionGroup L wC.1 := by
-  letI : Algebra L (SeparableClosure ℚ) :=
+  letI  :=
     numberFieldTowerSeparableClosureTopAlgebra L
   letI : IsScalarTower L
       (numberFieldCyclotomicZHatCompositum L)
@@ -853,8 +827,7 @@ noncomputable def
       wΩL.1
   exact
     { toFun := fun τ =>
-        ⟨(raw τ).1, by
-          simpa only [hwC] using (raw τ).2⟩
+        ⟨(raw τ).1, (raw τ).2⟩
       map_one' := by
         apply Subtype.ext
         exact congrArg Subtype.val (map_one raw)
@@ -879,7 +852,7 @@ theorem
     Function.Surjective
       (finitePlaceSeparableClosureTopCyclotomicRestriction
         (K := K) (L := L) v) := by
-  let : Algebra L (SeparableClosure ℚ) :=
+  let  :=
     numberFieldTowerSeparableClosureTopAlgebra L
   let : IsScalarTower L
       (numberFieldCyclotomicZHatCompositum L)
@@ -954,9 +927,9 @@ noncomputable def finitePlaceSeparableClosureCyclotomicRestriction
     absoluteValueDecompositionGroup K wΩ.1 →*
       Gal(rationalCyclotomicZHatField / ℚ) :=
   by
-    letI : Algebra K (SeparableClosure ℚ) :=
+    letI  :=
       numberFieldTowerSeparableClosureBaseAlgebra K L
-    letI : Algebra L (SeparableClosure ℚ) :=
+    letI  :=
       numberFieldTowerSeparableClosureTopAlgebra L
     letI : IsScalarTower K L (SeparableClosure ℚ) :=
       numberFieldTowerSeparableClosureScalarTower K L
@@ -992,9 +965,9 @@ noncomputable def finitePlaceSeparableClosurePadicCyclotomicDegree
     absoluteValueDecompositionGroup K wΩ.1 →*
       Multiplicative ℤ_[p.1] :=
   by
-    letI : Algebra K (SeparableClosure ℚ) :=
+    letI  :=
       numberFieldTowerSeparableClosureBaseAlgebra K L
-    letI : Algebra L (SeparableClosure ℚ) :=
+    letI  :=
       numberFieldTowerSeparableClosureTopAlgebra L
     letI : IsScalarTower K L (SeparableClosure ℚ) :=
       numberFieldTowerSeparableClosureScalarTower K L
@@ -1034,9 +1007,9 @@ theorem
           (K := K) (L := L) v).1 p).toMonoidHom.comp
         (finitePlaceSeparableClosureTopCyclotomicRestriction
           (K := K) (L := L) v) := by
-  let : Algebra K (SeparableClosure ℚ) :=
+  let  :=
     numberFieldTowerSeparableClosureBaseAlgebra K L
-  let : Algebra L (SeparableClosure ℚ) :=
+  let  :=
     numberFieldTowerSeparableClosureTopAlgebra L
   let : IsScalarTower K L (SeparableClosure ℚ) :=
     numberFieldTowerSeparableClosureScalarTower K L
@@ -1075,8 +1048,7 @@ theorem
       numberFieldCyclotomicZHatCompositumRestriction L τC x
   have hTC (z : T) :
       algebraMap C (SeparableClosure ℚ) (algebraMap T C z) =
-        algebraMap T (SeparableClosure ℚ) z := by
-    rfl
+        algebraMap T (SeparableClosure ℚ) z := rfl
   have hC :
       algebraMap T C
           (numberFieldCyclotomicZHatCompositumRestriction L τC x) =
@@ -1095,9 +1067,7 @@ theorem
         τ.1
           (algebraMap C (SeparableClosure ℚ)
             (algebraMap T C x)) := by
-    exact
-      AlgEquiv.restrictNormal_commutes τ.1 C
-        (algebraMap T C x)
+    apply AlgEquiv.restrictNormal_commutes
   apply (algebraMap T (SeparableClosure ℚ)).injective
   calc
     algebraMap T (SeparableClosure ℚ)
@@ -1146,9 +1116,9 @@ theorem
       (numberFieldCyclotomicPadicDecompositionCoordinate L
         (finitePlaceCyclotomicCompositumExtension
           (K := K) (L := L) v).1 p).toMonoidHom.range := by
-  let : Algebra K (SeparableClosure ℚ) :=
+  let  :=
     numberFieldTowerSeparableClosureBaseAlgebra K L
-  let : Algebra L (SeparableClosure ℚ) :=
+  let  :=
     numberFieldTowerSeparableClosureTopAlgebra L
   let : IsScalarTower K L (SeparableClosure ℚ) :=
     numberFieldTowerSeparableClosureScalarTower K L
@@ -1209,9 +1179,9 @@ theorem
         (K := K) (L := L) v p
     (restriction.ker.map degree).toAddSubgroup' =
       (degree.comp inclusion).range.toAddSubgroup' := by
-  let : Algebra K (SeparableClosure ℚ) :=
+  let  :=
     numberFieldTowerSeparableClosureBaseAlgebra K L
-  let : Algebra L (SeparableClosure ℚ) :=
+  let  :=
     numberFieldTowerSeparableClosureTopAlgebra L
   let : IsScalarTower K L (SeparableClosure ℚ) :=
     numberFieldTowerSeparableClosureScalarTower K L
@@ -1222,15 +1192,9 @@ theorem
       (SeparableClosure ℚ) :=
     numberFieldCyclotomicZHatCompositumSeparableClosureScalarTower L
   dsimp only
-  let restriction :=
-    finitePlaceSeparableClosureDecompositionRestriction
-      (K := K) (L := L) v
-  let inclusion :=
-    finitePlaceSeparableClosureTopDecompositionInclusion
-      (K := K) (L := L) v
-  let degree :=
-    finitePlaceSeparableClosurePadicCyclotomicDegree
-      (K := K) (L := L) v p
+  
+  
+  
   rw [
     ←
       finitePlaceSeparableClosureTopDecompositionInclusion_range
@@ -1264,12 +1228,11 @@ theorem
       finitePlaceSeparableClosurePadicCyclotomicDegree
         (K := K) (L := L) v p
     IsClosed
-      ((((restriction.ker.map degree).toAddSubgroup' :
-          AddSubgroup ℤ_[p.1]) :
+      ((((restriction.ker.map degree).toAddSubgroup') :
         Set ℤ_[p.1])) := by
-  let : Algebra K (SeparableClosure ℚ) :=
+  let  :=
     numberFieldTowerSeparableClosureBaseAlgebra K L
-  let : Algebra L (SeparableClosure ℚ) :=
+  let  :=
     numberFieldTowerSeparableClosureTopAlgebra L
   let : IsScalarTower K L (SeparableClosure ℚ) :=
     numberFieldTowerSeparableClosureScalarTower K L
@@ -1290,8 +1253,7 @@ theorem
       ((fun z : ℤ_[p.1] => Multiplicative.ofAdd z) ⁻¹'
         ((numberFieldCyclotomicPadicDecompositionCoordinate L
           (finitePlaceCyclotomicCompositumExtension
-            (K := K) (L := L) v).1 p).range :
-          Set (Multiplicative ℤ_[p.1])))
+            (K := K) (L := L) v).1 p).range))
   exact
     (numberFieldCyclotomicPadicDecompositionCoordinate_range_isClosed
       L
@@ -1330,12 +1292,11 @@ theorem
       finitePlaceSeparableClosurePadicCyclotomicDegree
         (K := K) (L := L) v p
     IsOpen
-      ((((restriction.ker.map degree).toAddSubgroup' :
-          AddSubgroup ℤ_[p.1]) :
+      ((((restriction.ker.map degree).toAddSubgroup') :
         Set ℤ_[p.1])) := by
-  let : Algebra K (SeparableClosure ℚ) :=
+  let  :=
     numberFieldTowerSeparableClosureBaseAlgebra K L
-  let : Algebra L (SeparableClosure ℚ) :=
+  let  :=
     numberFieldTowerSeparableClosureTopAlgebra L
   let : IsScalarTower K L (SeparableClosure ℚ) :=
     numberFieldTowerSeparableClosureScalarTower K L
@@ -1360,9 +1321,7 @@ theorem
       (finitePlaceCyclotomicCompositumExtension
         (K := K) (L := L) v).1 p).range.toAddSubgroup'
   change IsClosed (H : Set ℤ_[p.1]) at hclosed
-  have hindex : H.index ≠ 0 := by
-    exact
-      numberFieldCyclotomicPadicDecompositionCoordinate_range_index_ne_zero_of_base_isEquiv
+  have hindex : H.index ≠ 0 := numberFieldCyclotomicPadicDecompositionCoordinate_range_index_ne_zero_of_base_isEquiv
         L
         (finitePlaceExtensionCentre
           (K := K) (L := L) v
@@ -1390,20 +1349,18 @@ theorem exists_positivePadicDegree_lift_of_surjective
     (degree : D →* Multiplicative ℤ_[p])
     (hdegree :
       IsOpen
-        ((((restriction.ker.map degree).toAddSubgroup' :
-            AddSubgroup ℤ_[p]) :
+        ((((restriction.ker.map degree).toAddSubgroup') :
           Set ℤ_[p])))
     (σ : A) :
     ∃ τ : D,
       restriction τ = σ ∧
         ∃ n : ℕ, 0 < n ∧
           degree τ =
-            (Multiplicative.ofAdd (1 : ℤ_[p])) ^ n := by
+            (Multiplicative.ofAdd (1)) ^ n := by
   obtain ⟨s, hs⟩ := hrestriction σ
-  let H : AddSubgroup ℤ_[p] :=
+  let H  :=
     (restriction.ker.map degree).toAddSubgroup'
-  have hHopen : IsOpen (H : Set ℤ_[p]) := by
-    simpa only [H] using hdegree
+  have hHopen : IsOpen (H : Set ℤ_[p]) := hdegree
   obtain ⟨n, hn, hmem⟩ :=
     PadicInt.exists_positive_natCast_sub_mem_of_isOpen_addSubgroup
       p H hHopen (Multiplicative.toAdd (degree s))
@@ -1472,10 +1429,10 @@ theorem
       ∃ n : ℕ, 0 < n ∧
         finitePlaceSeparableClosurePadicCyclotomicDegree
             (K := K) (L := L) v p τ =
-          (Multiplicative.ofAdd (1 : ℤ_[p.1])) ^ n := by
-  let : Algebra K (SeparableClosure ℚ) :=
+          (Multiplicative.ofAdd (1)) ^ n := by
+  let  :=
     numberFieldTowerSeparableClosureBaseAlgebra K L
-  let : Algebra L (SeparableClosure ℚ) :=
+  let  :=
     numberFieldTowerSeparableClosureTopAlgebra L
   let : IsScalarTower K L (SeparableClosure ℚ) :=
     numberFieldTowerSeparableClosureScalarTower K L

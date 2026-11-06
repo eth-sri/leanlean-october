@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.CoprimeForms.WeightedEnergyAndPrimeSupportCost
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.FiniteDisjointSupportInequality
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -24,15 +27,7 @@ private lemma disjoint_indicator_expansion {P : Type*} [DecidableEq P]
     (∑ D ∈ ambient.powerset, (-1 : ℂ) ^ D.card *
         (if D ⊆ S ∧ D ⊆ T then 1 else 0)) = if Disjoint S T then 1 else 0 := by
   have hfilter : ambient.powerset.filter (fun D => D ⊆ S ∧ D ⊆ T) = (S ∩ T).powerset := by
-    ext D
-    simp only [Finset.mem_filter, Finset.mem_powerset]
-    constructor
-    · rintro ⟨_, hDS, hDT⟩ x hx
-      exact Finset.mem_inter.mpr ⟨hDS hx, hDT hx⟩
-    · intro hD
-      exact ⟨fun x hx => hS (Finset.mem_inter.mp (hD hx)).1,
-        fun x hx => (Finset.mem_inter.mp (hD hx)).1,
-        fun x hx => (Finset.mem_inter.mp (hD hx)).2⟩
+    grind
   have hsum : (∑ D ∈ ambient.powerset, (-1 : ℂ) ^ D.card *
         (if D ⊆ S ∧ D ⊆ T then 1 else 0))
       = ∑ D ∈ ambient.powerset.filter (fun D => D ⊆ S ∧ D ⊆ T), (-1 : ℂ) ^ D.card := by
@@ -92,7 +87,7 @@ private lemma disjoint_expansion_finset {P ι κ : Type*} [DecidableEq P]
     intro i hi
     apply Finset.sum_congr rfl
     intro j hj
-    exact hp i hi j hj
+    apply hp <;> assumption
   rw [hcongr, sum_comm_three]
   apply Finset.sum_congr rfl
   intro D _
@@ -124,8 +119,7 @@ private lemma sup_eq_top_iff_disjoint_normalizedFactors
     rw [Finset.disjoint_left]
     intro x hxu hxv
     rw [Multiset.mem_toFinset] at hxu hxv
-    have hxmem : x ∈ UniqueFactorizationMonoid.normalizedFactors u ∩
-        UniqueFactorizationMonoid.normalizedFactors v := Multiset.mem_inter.mpr ⟨hxu, hxv⟩
+    have hxmem  := Multiset.mem_inter.mpr ⟨hxu, hxv⟩
     have hdvd : x ∣ (UniqueFactorizationMonoid.normalizedFactors u ∩
         UniqueFactorizationMonoid.normalizedFactors v).prod := Multiset.dvd_prod hxmem
     rw [hprod] at hdvd
@@ -277,8 +271,7 @@ theorem coprime_form_bound
     _ ≤ ∑ D ∈ ambient.powerset, U * ∑ u ∈ cols,
           ‖(if D ⊆ s u then alpha u else 0)‖ ^ 2 := hC
     _ = U * ∑ u ∈ cols, (2 : ℝ) ^ (s u).card * ‖alpha u‖ ^ 2 := hD
-    _ = U * ∑ u ∈ cols, primeSupportCost u * ‖alpha u‖ ^ 2 := by
-        simp only [primeSupportCost, hs]
+    _ = U * ∑ u ∈ cols, primeSupportCost u * ‖alpha u‖ ^ 2 := rfl
 
 end DedekindZetaZeroFree.LargeSieve.Sieve.GcdTail
 

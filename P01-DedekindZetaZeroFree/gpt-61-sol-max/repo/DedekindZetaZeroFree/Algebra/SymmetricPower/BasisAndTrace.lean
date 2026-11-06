@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Data.Sym.Card
 public import Mathlib.LinearAlgebra.PiTensorProduct.Basis
 public import Mathlib.LinearAlgebra.Trace
@@ -7,6 +9,7 @@ public import DedekindZetaZeroFree.Algebra.SymmetricTuples.Enumeration
 public import DedekindZetaZeroFree.Algebra.SymmetricPower.UniversalProperty
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 The Tau Ceti contributors. All rights reserved.
@@ -33,7 +36,7 @@ variable {R : Type} {M : Type v} {κ : Type w} {n : ℕ}
 
 namespace SymmetricPower
 
-noncomputable def orderOfSym (s : Sym κ n) : Fin n → κ :=
+noncomputable def orderOfSym (s : Sym κ n)  :=
   Function.surjInv DedekindZetaZeroFree.TauCeti.Sym.ofFn_surjective s
 
 theorem ofFn_orderOfSym (s : Sym κ n) : DedekindZetaZeroFree.TauCeti.Sym.ofFn (orderOfSym s) = s :=
@@ -45,7 +48,7 @@ variable [CommSemiring R] [AddCommMonoid M] [Module R M]
 
 variable (R) in
 
-noncomputable def tprodOfSym (v : κ → M) (s : Sym κ n) : Sym[R]^n M :=
+noncomputable def tprodOfSym (v : κ → M) (s : Sym κ n)  :=
   ⨂ₛ[R] i, v (orderOfSym s i)
 
 @[simp]
@@ -108,8 +111,7 @@ noncomputable def linearEquivFinsupp : Sym[R]^n M ≃ₗ[R] (Sym κ n →₀ R) 
       apply (LinearMap.cancel_right (LinearMap.range_eq_top.1 (range_mk R (Fin n) M))).1
       refine (Basis.piTensorProduct fun _ : Fin n => b).ext fun f => ?_
 
-      have hmk : mk R (Fin n) M (⨂ₜ[R] i, b (f i)) = ⨂ₛ[R] i, b (f i) := by
-        rw [tprod, LinearMap.compMultilinearMap_apply]
+      have hmk : mk R (Fin n) M (⨂ₜ[R] i, b (f i)) = ⨂ₛ[R] i, b (f i) := rfl
       simp [hmk, toFinsupp_tprod_basis, tprodOfSym_ofFn])
 
 private theorem linearEquivFinsupp_symm_single (s : Sym κ n) :
@@ -119,7 +121,7 @@ private theorem linearEquivFinsupp_symm_single (s : Sym κ n) :
 
 variable (n) in
 
-noncomputable def _root_.Module.Basis.symmetricPower : Basis (Sym κ n) R (Sym[R]^n M) :=
+noncomputable def _root_.Module.Basis.symmetricPower  :=
   Basis.ofRepr (linearEquivFinsupp n b)
 
 @[simp]
@@ -134,8 +136,8 @@ theorem _root_.Module.Basis.map_symmetricPower_of_apply (f : M →ₗ[R] M) (a :
   obtain ⟨p, rfl⟩ := DedekindZetaZeroFree.TauCeti.Sym.ofFn_surjective s
   simp [hf, (tprod R).map_smul_univ, List.prod_ofFn]
 
-instance free [Module.Free R M] : Module.Free R (Sym[R]^n M) :=
-  Module.Free.of_basis ((Module.Free.chooseBasis R M).symmetricPower n)
+
+
 
 theorem finrank_eq [StrongRankCondition R] [Module.Free R M] [Module.Finite R M] :
     Module.finrank R (Sym[R]^n M) = Nat.multichoose (Module.finrank R M) n := by

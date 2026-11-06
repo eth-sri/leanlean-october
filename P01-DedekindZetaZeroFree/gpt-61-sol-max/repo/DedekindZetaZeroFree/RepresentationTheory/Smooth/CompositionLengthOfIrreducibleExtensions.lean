@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.RepresentationTheory.Irreducible
 public import Mathlib.RingTheory.Length
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.KPExceptionalRaw.FiniteSource.ImagesIrreducibilitySteps.PlusLengthSteps
 
@@ -20,9 +23,9 @@ theorem length_two_of_short_exact
   haveI : IsSimpleModule (MonoidAlgebra k G) σ.asModule := inferInstance
   haveI : IsSimpleModule (MonoidAlgebra k G) τ.asModule := inferInstance
 
-  let i' : σ.asModule →ₗ[MonoidAlgebra k G] ρ.asModule :=
+  let i'  :=
     Representation.IntertwiningMap.equivLinearMapAsModule σ ρ i
-  let p' : ρ.asModule →ₗ[MonoidAlgebra k G] τ.asModule :=
+  let p'  :=
     Representation.IntertwiningMap.equivLinearMapAsModule ρ τ p
   have hi' : Function.Injective i' := hi
   have hp' : Function.Surjective p' := hp

@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Valuation.AbsoluteValue.Extension
 public import ValuedFieldTheory.Valuation.AbsoluteValue.Ostrowski
 public import ValuedFieldTheory.Valuation.AbsoluteValue.SpectralExtension
@@ -7,6 +9,7 @@ public import Mathlib.RingTheory.Complex
 public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.NormFormulaExtension
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -42,12 +45,15 @@ namespace AbsoluteValue
  abbrev algebraicExtension_standardComplexAbsoluteValue : AbsoluteValue ℂ ℝ :=
   NormedField.toAbsoluteValue ℂ
 
+section
+variable {F : Type*} [Field F] (v : AbsoluteValue F ℝ)
+    (s : ℝ) (hs0 : 0 < s) (hs1 : s ≤ 1)
+include F v s hs0 hs1
 /-- If `0 < s ≤ 1`, the `s`-power of a real-valued absolute value is again a
 real-valued absolute value.  This is the exponent transport needed for the
 archimedean branch after Ostrowski's theorem. -/
 noncomputable def rpow
-    {F : Type*} [Field F] (v : AbsoluteValue F ℝ)
-    (s : ℝ) (hs0 : 0 < s) (hs1 : s ≤ 1) : AbsoluteValue F ℝ where
+      : AbsoluteValue F ℝ where
   toFun x := v x ^ s
   map_mul' x y := by
     rw [v.map_mul, Real.mul_rpow (v.nonneg x) (v.nonneg y)]
@@ -65,11 +71,17 @@ noncomputable def rpow
 /-- Raising an absolute value to a real power evaluates by real exponentiation. -/
 @[simp]
 theorem rpow_apply
-    {F : Type*} [Field F] (v : AbsoluteValue F ℝ)
-    (s : ℝ) (hs0 : 0 < s) (hs1 : s ≤ 1) (x : F) :
+      (x : F) :
     rpow v s hs0 hs1 x = v x ^ s :=
   rfl
+end
 
+
+section
+variable {F : Type*} [Field F] (v : AbsoluteValue F ℝ)
+    (hv : IsNonarchimedean (v : F → ℝ))
+    (s : ℝ) (hs : 0 < s)
+include F v hv s hs
 /-- A positive real power of a nonarchimedean absolute value is again an
 absolute value.
 
@@ -78,9 +90,7 @@ the ultrametric inequality is preserved by every strictly increasing positive
 power.  This is the normalization operation for a nonarchimedean valuation
 class. -/
 noncomputable def nonarchimedeanRpow
-    {F : Type*} [Field F] (v : AbsoluteValue F ℝ)
-    (hv : IsNonarchimedean (v : F → ℝ))
-    (s : ℝ) (hs : 0 < s) : AbsoluteValue F ℝ where
+      : AbsoluteValue F ℝ where
   toFun x := v x ^ s
   map_mul' x y := by
     rw [v.map_mul, Real.mul_rpow (v.nonneg x) (v.nonneg y)]
@@ -107,21 +117,19 @@ noncomputable def nonarchimedeanRpow
 
 @[simp]
 theorem nonarchimedeanRpow_apply
-    {F : Type*} [Field F] (v : AbsoluteValue F ℝ)
-    (hv : IsNonarchimedean (v : F → ℝ))
-    (s : ℝ) (hs : 0 < s) (x : F) :
+      (x : F) :
     nonarchimedeanRpow v hv s hs x = v x ^ s :=
   rfl
 
 /-- Positive-power normalization does not change the underlying
 nonarchimedean valuation class. -/
 theorem isEquiv_nonarchimedeanRpow
-    {F : Type*} [Field F] (v : AbsoluteValue F ℝ)
-    (hv : IsNonarchimedean (v : F → ℝ))
-    (s : ℝ) (hs : 0 < s) :
+      :
     v.IsEquiv (nonarchimedeanRpow v hv s hs) := by
   rw [AbsoluteValue.isEquiv_iff_exists_rpow_eq]
   exact ⟨s, hs, rfl⟩
+end
+
 
 /-- The usual complex absolute value restricts to the usual real absolute value. -/
  theorem algebraicExtension_standardComplexAbsoluteValue_extends_standardReal
@@ -131,70 +139,74 @@ theorem isEquiv_nonarchimedeanRpow
   change ‖(algebraMap ℝ ℂ x)‖ = ‖x‖
   simp
 
+section
+variable {K L E : Type*} [Field K] [Field L] [Field E]
+    [Algebra K L] [Algebra K E] (e : L ≃ₐ[K] E)
+    (w : AbsoluteValue E ℝ)
+include K L E e w
 /-- Pull back an absolute value along a `K`-algebra equivalence.  This is the
 transport step used after the archimedean classification identifies a complete
 archimedean field with `ℝ` or `ℂ`. -/
 noncomputable def compAlgEquiv
-    {K L E : Type*} [Field K] [Field L] [Field E]
-    [Algebra K L] [Algebra K E] (e : L ≃ₐ[K] E)
-    (w : AbsoluteValue E ℝ) : AbsoluteValue L ℝ :=
+       :=
   w.comp (f := e.toRingHom) e.injective
 
 /-- Composition with an algebra equivalence evaluates the absolute value after transport. -/
 @[simp]
 theorem compAlgEquiv_apply
-    {K L E : Type*} [Field K] [Field L] [Field E]
-    [Algebra K L] [Algebra K E] (e : L ≃ₐ[K] E)
-    (w : AbsoluteValue E ℝ) (x : L) :
+      (x : L) :
     compAlgEquiv e w x = w (e x) :=
   rfl
 
 /-- Transporting an extending absolute value along an algebra equivalence preserves extension. -/
 @[simp]
 theorem compAlgEquiv_extends_apply
-    {K L E : Type*} [Field K] [Field L] [Field E]
-    [Algebra K L] [Algebra K E] (e : L ≃ₐ[K] E)
-    (w : AbsoluteValue E ℝ) (v : AbsoluteValue K ℝ)
+      (v : AbsoluteValue K ℝ)
     (hw : ∀ x : K, w (algebraMap K E x) = v x)
     (x : K) :
     compAlgEquiv e w (algebraMap K L x) =
       v x := by
   change w (e (algebraMap K L x)) = v x
   rw [AlgEquiv.commutes, hw]
+end
 
-/-- Pullback along an algebra equivalence preserves exact extension of the base value. -/
-theorem compAlgEquiv_extends
-    {K L E : Type*} [Field K] [Field L] [Field E]
-    [Algebra K L] [Algebra K E] (e : L ≃ₐ[K] E)
-    (w : AbsoluteValue E ℝ) (v : AbsoluteValue K ℝ)
-    (hw : Extends v w) :
-    Extends v (compAlgEquiv e w) :=
-  compAlgEquiv_extends_apply e w v hw
 
-/-- Completeness is preserved when an absolute value is pulled back along an
-algebra equivalence. -/
-theorem compAlgEquiv_complete
-    {K L E : Type*} [Field K] [Field L] [Field E]
-    [Algebra K L] [Algebra K E] (e : L ≃ₐ[K] E)
-    (w : AbsoluteValue E ℝ)
-    (hwcomplete : CompleteSpace (WithAbs w)) :
-    CompleteSpace (WithAbs (compAlgEquiv e w)) := by
-  let e' : WithAbs (compAlgEquiv e w) ≃ WithAbs w :=
-    (WithAbs.congr (compAlgEquiv e w) w e.toRingEquiv).toEquiv
-  have he' : Isometry e' := by
-    apply Isometry.of_dist_eq
-    intro x y
-    rw [dist_eq_norm, dist_eq_norm]
-    rw [WithAbs.norm_eq_apply_ofAbs, WithAbs.norm_eq_apply_ofAbs]
-    dsimp only [e']
-    rw [WithAbs.ofAbs_sub, WithAbs.ofAbs_sub]
-    change w (e x.ofAbs - e y.ofAbs) =
-      w (e (x.ofAbs - y.ofAbs))
-    exact congrArg w (map_sub e x.ofAbs y.ofAbs).symm
-  exact (completeSpace_congr he'.isUniformEmbedding).2 hwcomplete
 
- theorem algebraicExtension_real_algEquiv_real_unique_rpow_extension
-    {L : Type*} [Field L] [Algebra ℝ L] (e : L ≃ₐ[ℝ] ℝ)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ section
+variable {L : Type*} [Field L]
+include L
+theorem algebraicExtension_real_algEquiv_real_unique_rpow_extension
+      [Algebra ℝ L] (e : L ≃ₐ[ℝ] ℝ)
     (s : ℝ) (hs0 : 0 < s) (hs1 : s ≤ 1)
     (w : AbsoluteValue L ℝ)
     (hw : ∀ x : ℝ, w (algebraMap ℝ L x) =
@@ -208,7 +220,7 @@ theorem compAlgEquiv_complete
     calc
       x = e.symm (e x) := by simp
       _ = algebraMap ℝ L (e x) := by
-        simpa using (AlgEquiv.commutes e.symm (e x))
+        apply AlgEquiv.commutes
   rw [hx, hw]
   exact congrArg (fun t : ℝ => t ^ s)
     (compAlgEquiv_extends_apply e
@@ -219,7 +231,7 @@ theorem compAlgEquiv_complete
 value is the unique extension of the `s`-power of the usual real absolute
 value. -/
  theorem algebraicExtension_real_algEquiv_complex_unique_rpow_extension
-    {L : Type*} [Field L] [Algebra ℝ L] (e : L ≃ₐ[ℝ] ℂ)
+      [Algebra ℝ L] (e : L ≃ₐ[ℝ] ℂ)
     (s : ℝ) (hs0 : 0 < s) (hs1 : s ≤ 1)
     (w : AbsoluteValue L ℝ)
     (hw : ∀ x : ℝ, w (algebraMap ℝ L x) =
@@ -228,7 +240,7 @@ value. -/
       (compAlgEquiv
         e algebraicExtension_standardComplexAbsoluteValue)
       s hs0 hs1 := by
-  let e' : WithAbs w ≃ₐ[ℝ] ℂ :=
+  let e'  :=
     (WithAbs.algEquiv ℝ w).trans e
   have hnorm :
       ∀ r : ℝ, ‖algebraMap ℝ (WithAbs w) r‖ = ‖r‖ ^ s := by
@@ -238,21 +250,20 @@ value. -/
       algebraicExtension_standardRealAbsoluteValue r ^ s
     exact hw r
   ext x
-  let y : WithAbs w := WithAbs.toAbs w x
+  let y  := WithAbs.toAbs w x
   change w x = ‖e x‖ ^ s
   calc
-    w x = ‖y‖ := by
-      simp [y, WithAbs.norm_eq_apply_ofAbs]
+    w x = ‖y‖ := rfl
     _ = ‖e'.symm (e' y)‖ := by simp
     _ = ‖e' y‖ ^ s :=
       AlgEquiv.norm_symm_apply_eq_norm_rpow
         (F := WithAbs w) (s := s) hs0 hnorm e' (e' y)
-    _ = ‖e x‖ ^ s := by simp [y, e']
+    _ = ‖e x‖ ^ s := rfl
 
 /-- Over `ℂ`, an absolute value extending the `s`-power of the usual complex
 absolute value is the transported `s`-power. -/
  theorem algebraicExtension_complex_algEquiv_complex_unique_rpow_extension
-    {L : Type*} [Field L] [Algebra ℂ L] (e : L ≃ₐ[ℂ] ℂ)
+      [Algebra ℂ L] (e : L ≃ₐ[ℂ] ℂ)
     (s : ℝ) (hs0 : 0 < s) (hs1 : s ≤ 1)
     (w : AbsoluteValue L ℝ)
     (hw : ∀ z : ℂ, w (algebraMap ℂ L z) =
@@ -266,12 +277,14 @@ absolute value is the transported `s`-power. -/
     calc
       x = e.symm (e x) := by simp
       _ = algebraMap ℂ L (e x) := by
-        simpa using (AlgEquiv.commutes e.symm (e x))
+        apply AlgEquiv.commutes
   rw [hx, hw]
   exact congrArg (fun t : ℝ => t ^ s)
     (compAlgEquiv_extends_apply e
       algebraicExtension_standardComplexAbsoluteValue algebraicExtension_standardComplexAbsoluteValue
       (fun z => rfl) (e x)).symm
+end
+
 
 /-- A chosen absolute-value extension together with its uniqueness property. -/
 structure UniqueExtension
@@ -341,7 +354,7 @@ extension of `ℂ` has a unique absolute value extending `|z|^s`, for
   let e0 : ℂ ≃ₐ[ℂ] L :=
     AlgEquiv.ofBijective (Algebra.ofId ℂ L)
       (IsAlgClosed.algebraMap_bijective_of_isIntegral (k := ℂ) (K := L))
-  let e : L ≃ₐ[ℂ] ℂ := e0.symm
+  let e  := e0.symm
   exact
     { extension :=
         rpow
@@ -358,31 +371,33 @@ extension of `ℂ` has a unique absolute value extending `|z|^s`, for
         algebraicExtension_complex_algEquiv_complex_unique_rpow_extension
           e s hs0 hs1 }
 
+section
+variable {K E L : Type*} [Field K] [Field E] [Field L] [Algebra K L]
+include K E L
 /-- Algebraicity is preserved under transport of the base field by a ring equivalence. -/
  theorem algebraicExtension_isAlgebraic_of_base_ringEquiv
-    {K E L : Type*} [Field K] [Field E] [Field L] [Algebra K L]
+     
     [Algebra.IsAlgebraic K L] (σ : K ≃+* E) :
     letI : Algebra E K := RingHom.toAlgebra σ.symm.toRingHom
     letI : Algebra E L :=
       RingHom.toAlgebra ((algebraMap K L).comp σ.symm.toRingHom)
     Algebra.IsAlgebraic E L := by
-  let : Algebra E K := RingHom.toAlgebra σ.symm.toRingHom
-  let : Algebra E L :=
+  let  := RingHom.toAlgebra σ.symm.toRingHom
+  let  :=
     RingHom.toAlgebra ((algebraMap K L).comp σ.symm.toRingHom)
   have : IsScalarTower E K L :=
-    IsScalarTower.of_algebraMap_eq (fun r => by
-      simp [RingHom.algebraMap_toAlgebra])
+    IsScalarTower.of_algebraMap_eq (fun r => rfl)
   let e : K ≃ₐ[E] E := AlgEquiv.ofRingEquiv (f := σ) (by
     intro r
     simp [RingHom.algebraMap_toAlgebra])
-  have : Algebra.IsAlgebraic E K := e.symm.isAlgebraic
+  have  := e.symm.isAlgebraic
   exact Algebra.IsAlgebraic.trans E K L
 
 /-- Transport a unique algebraic absolute-value extension after replacing the
 base field by a ring-equivalent field; the top algebra structure is
 transported along the same equivalence. -/
  noncomputable def algebraicExtension_baseRingEquiv
-    {K E L : Type*} [Field K] [Field E] [Field L] [Algebra K L]
+     
     (σ : K ≃+* E) (vK : AbsoluteValue K ℝ) (vE : AbsoluteValue E ℝ)
     (hvσ : ∀ x : K, vE (σ x) = vK x)
     (R :
@@ -390,7 +405,7 @@ transported along the same equivalence. -/
         RingHom.toAlgebra ((algebraMap K L).comp σ.symm.toRingHom)
       UniqueExtension (K := E) (L := L) vE) :
     UniqueExtension (K := K) (L := L) vK := by
-  letI : Algebra E L :=
+  letI  :=
     RingHom.toAlgebra ((algebraMap K L).comp σ.symm.toRingHom)
   exact
     { extension := R.extension
@@ -410,32 +425,36 @@ transported along the same equivalence. -/
         apply R.unique w
         intro z
         have hmap :
-            algebraMap E L z = algebraMap K L (σ.symm z) := by
-          simp [RingHom.algebraMap_toAlgebra]
+            algebraMap E L z = algebraMap K L (σ.symm z) := rfl
         calc
           w (algebraMap E L z)
-              = w (algebraMap K L (σ.symm z)) := by rw [hmap]
+              = w (algebraMap K L (σ.symm z)) := rfl
           _ = vK (σ.symm z) := hw (σ.symm z)
           _ = vE z := by
             simpa using (hvσ (σ.symm z)).symm }
+end
 
-/-- The archimedean branch of the unique algebraic-extension construction. -/
- noncomputable def algebraicExtension_archimedean
-    {K L : Type*} [Field K] [Field L] [Algebra K L]
+
+section
+variable {K L : Type*} [Field K] [Field L] [Algebra K L]
     [Algebra.IsAlgebraic K L]
     (v : AbsoluteValue K ℝ)
     (hcomplete : CompleteSpace (WithAbs v))
+include K L v hcomplete
+/-- The archimedean branch of the unique algebraic-extension construction. -/
+ noncomputable def algebraicExtension_archimedean
+     
     (harch : ¬ IsNonarchimedean (v : K → ℝ)) :
     UniqueExtension (K := K) (L := L) v :=
   Classical.choice <| by
   classical
-  let : CharZero K := AbsoluteValue.charZero_of_not_isNonarchimedean v harch
+  let  := AbsoluteValue.charZero_of_not_isNonarchimedean v harch
   rcases AbsoluteValue.ostrowski_of_complete v hcomplete harch with
     ⟨s, hs0, hs1, hbranch⟩
   rcases hbranch with hreal | hcomplex
   · rcases hreal with ⟨σ, hσ⟩
-    let : Algebra ℝ K := RingHom.toAlgebra σ.symm.toRingHom
-    let : Algebra ℝ L :=
+    let  := RingHom.toAlgebra σ.symm.toRingHom
+    let  :=
       RingHom.toAlgebra ((algebraMap K L).comp σ.symm.toRingHom)
     have : Algebra.IsAlgebraic ℝ L :=
       algebraicExtension_isAlgebraic_of_base_ringEquiv (K := K) (E := ℝ)
@@ -450,8 +469,8 @@ transported along the same equivalence. -/
           algebraicExtension_standardRealAbsoluteValue s hs0 hs1)
         (fun x => (hσ x).symm) R⟩
   · rcases hcomplex with ⟨σ, hσ⟩
-    let : Algebra ℂ K := RingHom.toAlgebra σ.symm.toRingHom
-    let : Algebra ℂ L :=
+    let  := RingHom.toAlgebra σ.symm.toRingHom
+    let  :=
       RingHom.toAlgebra ((algebraMap K L).comp σ.symm.toRingHom)
     have : Algebra.IsAlgebraic ℂ L :=
       algebraicExtension_isAlgebraic_of_base_ringEquiv (K := K) (E := ℂ)
@@ -469,10 +488,7 @@ transported along the same equivalence. -/
 /-- nonarchimedean algebraic-extension theorem:
 existence and uniqueness of the extension over any algebraic extension. -/
  noncomputable def algebraicExtension_nonarchimedean
-    {K L : Type*} [Field K] [Field L] [Algebra K L]
-    [Algebra.IsAlgebraic K L]
-    (v : AbsoluteValue K ℝ)
-    (hcomplete : CompleteSpace (WithAbs v))
+     
     (hnonarch : IsNonarchimedean (v : K → ℝ))
     (hv : v.IsNontrivial) :
     UniqueExtension (K := K) (L := L) v where
@@ -491,10 +507,7 @@ valuations: a complete valued field has a unique absolute-value extension to
 every algebraic extension.  The proof splits into the archimedean branch above
 and the nonarchimedean spectral branch. -/
 noncomputable def uniqueAlgebraicExtension
-    {K L : Type*} [Field K] [Field L] [Algebra K L]
-    [Algebra.IsAlgebraic K L]
-    (v : AbsoluteValue K ℝ)
-    (hcomplete : CompleteSpace (WithAbs v))
+     
     (hv : v.IsNontrivial) :
     UniqueExtension (K := K) (L := L) v := by
   by_cases hnonarch : IsNonarchimedean (v : K → ℝ)
@@ -502,18 +515,20 @@ noncomputable def uniqueAlgebraicExtension
       v hcomplete hnonarch hv
   · exact algebraicExtension_archimedean
       v hcomplete hnonarch
+end
 
 
-/-- Existence and uniqueness as a unique-existence statement. -/
-theorem existsUnique_extends_of_isAlgebraic
-    {K L : Type*} [Field K] [Field L] [Algebra K L]
-    [Algebra.IsAlgebraic K L]
-    (v : AbsoluteValue K ℝ)
-    (hcomplete : CompleteSpace (WithAbs v))
-    (hv : v.IsNontrivial) :
-    ∃! w : AbsoluteValue L ℝ, Extends v w := by
-  let R := uniqueAlgebraicExtension (K := K) (L := L) v hcomplete hv
-  exact ⟨R.extension, R.isExtension, fun w hw => R.unique w hw⟩
+
+
+
+
+
+
+
+
+
+
+
 
 end AbsoluteValue
 

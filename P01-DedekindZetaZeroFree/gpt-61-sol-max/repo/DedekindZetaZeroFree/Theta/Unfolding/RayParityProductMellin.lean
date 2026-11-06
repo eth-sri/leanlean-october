@@ -235,8 +235,11 @@ def «N∞» (x : euclidean.mixedSpace K) : ℝ :=
     cpow_prod_nonneg _ _ (fun _ _ ↦ abs_nonneg _),
     cpow_prod_nonneg _ _ (fun _ _ ↦ sq_nonneg _)]
 
-theorem collect_place_mellin_factors (δ : Finset (RayCoset.RealPlaces K))
-    (x : euclidean.mixedSpace K) (s : ℂ) :
+section
+variable (δ : Finset (RayCoset.RealPlaces K))
+    (x : euclidean.mixedSpace K)
+include δ x in
+theorem collect_place_mellin_factors   (s : ℂ) :
     (∏ v : RayCoset.RealPlaces K,
       (2 : ℂ)⁻¹ * Complex.Gammaℝ (s + if v ∈ δ then 1 else 0) *
         (if v ∈ δ then (Real.sign ((Theta.traceToMixed K x).1 v) : ℂ) else 1) *
@@ -259,8 +262,8 @@ theorem collect_place_mellin_factors (δ : Finset (RayCoset.RealPlaces K))
           ((‖(Theta.traceToMixed K x).2 v‖ ^ 2 : ℝ) : ℂ) ^ (-s)) = _
   ring
 
-def localKernel (δ : Finset (RayCoset.RealPlaces K))
-    (x : euclidean.mixedSpace K) (s : ℂ) (v : InfinitePlace K) (q : ℝ) : ℂ :=
+include δ x in
+def localKernel   (s : ℂ) (v : InfinitePlace K) (q : ℝ) : ℂ :=
   if h : IsReal v then
     ((if (⟨v,h⟩ : RayCoset.RealPlaces K) ∈ δ then
         ((q * (Theta.traceToMixed K x).1 ⟨v,h⟩ : ℝ) : ℂ) else 1) *
@@ -273,8 +276,8 @@ def localKernel (δ : Finset (RayCoset.RealPlaces K))
   rw [← Fintype.prod_subtype_mul_prod_subtype (p := fun v : InfinitePlace K ↦ IsReal v)]
   congr 1
   exact (Equiv.prod_comp (Equiv.subtypeEquivRight (fun _ ↦ not_isReal_iff_isComplex)).symm _).symm
- theorem kernel_eq_local_prod (δ : Finset (RayCoset.RealPlaces K))
-    (x : euclidean.mixedSpace K) (s : ℂ) (q : InfinitePlace K → ℝ)
+ include δ x in
+theorem kernel_eq_local_prod   (s : ℂ) (q : InfinitePlace K → ℝ)
     (hq : ∀ v, 0 < q v) :
     gδ K δ (Q K q x) * (J K q : ℂ) ^ s = ∏ v, localKernel K δ x s v (q v) := by
   rw [gδ_Q_eq_prod, J_cpow_eq_prod K q hq, prod_places_split, prod_places_split]
@@ -282,8 +285,8 @@ def localKernel (δ : Finset (RayCoset.RealPlaces K))
     dif_neg (not_isReal_iff_isComplex.mpr (Subtype.prop _)), mult_isComplex, Nat.cast_ofNat,
     Finset.prod_mul_distrib]
   ring
- theorem integrable_localKernel (δ : Finset (RayCoset.RealPlaces K))
-    (x : euclidean.mixedSpace K)
+ include δ x in
+theorem integrable_localKernel  
     (hr : ∀ v : RayCoset.RealPlaces K, (Theta.traceToMixed K x).1 v ≠ 0)
     (hc : ∀ v : {w : InfinitePlace K // IsComplex w}, (Theta.traceToMixed K x).2 v ≠ 0)
     (s : ℂ) (hs : 0 < s.re) (v : InfinitePlace K) :
@@ -298,8 +301,8 @@ def localKernel (δ : Finset (RayCoset.RealPlaces K))
         (‖(Theta.traceToMixed K x).2 ⟨v,not_isReal_iff_isComplex.mp hv⟩‖ ^ 2)
         (sq_pos_of_pos (norm_pos_iff.mpr (hc _)))
 
-theorem integrable_gδ_mellin (δ : Finset (RayCoset.RealPlaces K))
-    (x : euclidean.mixedSpace K)
+include δ x in
+theorem integrable_gδ_mellin  
     (hxReal : ∀ v : RayCoset.RealPlaces K, (Theta.traceToMixed K x).1 v ≠ 0)
     (hxComplex : ∀ v : {w : InfinitePlace K // IsComplex w},
       (Theta.traceToMixed K x).2 v ≠ 0)
@@ -309,8 +312,8 @@ theorem integrable_gδ_mellin (δ : Finset (RayCoset.RealPlaces K))
   filter_upwards [ae_positiveShape K] with q hq
   exact (kernel_eq_local_prod K δ x s q hq).symm
 
-theorem integral_gδ_mellin (δ : Finset (RayCoset.RealPlaces K))
-    (x : euclidean.mixedSpace K)
+include δ x in
+theorem integral_gδ_mellin  
     (hxReal : ∀ v : RayCoset.RealPlaces K, (Theta.traceToMixed K x).1 v ≠ 0)
     (hxComplex : ∀ v : {w : InfinitePlace K // IsComplex w},
       (Theta.traceToMixed K x).2 v ≠ 0)
@@ -341,6 +344,8 @@ theorem integral_gδ_mellin (δ : Finset (RayCoset.RealPlaces K))
           integral_complex_multiplicative_mellin s hs
             (‖(Theta.traceToMixed K x).2 v‖ ^ 2)
             (sq_pos_of_pos (norm_pos_iff.mpr (hxComplex v)))
+end
+
 
 end DedekindZetaZeroFree.AbelianQuotient.RayParity
 

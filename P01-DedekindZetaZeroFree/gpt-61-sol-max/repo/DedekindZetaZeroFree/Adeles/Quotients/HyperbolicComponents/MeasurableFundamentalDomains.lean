@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Geometry.ArithmeticQuotients.Cusps.SiegelCoverAndTruncation
 public import DedekindZetaZeroFree.Metaplectic.Kubota.GenuineCuspLinesAndUnitaryMonodromy
 
 @[expose] public section
+
 
 section
 
@@ -13,14 +16,16 @@ open MeasureTheory
 
 namespace DedekindZetaZeroFree.KPFiniteAdelicCuspEnds.FundamentalDomainGeometry
 
-private lemma fixed_height_eq (g : GL (Fin 2) ℂ) (z : KPArch.H3)
+section
+variable (g : GL (Fin 2) ℂ)
+include g
+private lemma fixed_height_eq   (z : KPArch.H3)
     (h : KPArch.action g z = z) :
     KPArch.actionDenominator g z = ‖(g : Matrix (Fin 2) (Fin 2) ℂ).det‖ := by
   have h2 := KPArch.action_height g z
   rw [h] at h2
   have h2' : KPArch.height z =
-      ‖(g : Matrix (Fin 2) (Fin 2) ℂ).det‖ * KPArch.height z / KPArch.actionDenominator g z := by
-    simpa [KPArch.actionDenominator] using h2
+      ‖(g : Matrix (Fin 2) (Fin 2) ℂ).det‖ * KPArch.height z / KPArch.actionDenominator g z := h2
   have hy : KPArch.height z ≠ 0 := ne_of_gt (Real.exp_pos _)
   have hD := KPArch.actionDenominator_pos g z
   have h3 : KPArch.actionDenominator g z * KPArch.height z =
@@ -30,7 +35,7 @@ private lemma fixed_height_eq (g : GL (Fin 2) ℂ) (z : KPArch.H3)
     exact div_mul_cancel₀ _ hD.ne'
   exact mul_right_cancel₀ hy h3
 
-private lemma mem_center_of_eq (g : GL (Fin 2) ℂ) (h10 : g 1 0 = 0) (h01 : g 0 1 = 0)
+private lemma mem_center_of_eq   (h10 : g 1 0 = 0) (h01 : g 0 1 = 0)
     (h11 : g 0 0 = g 1 1) : g ∈ Subgroup.center (GL (Fin 2) ℂ) := by
   rw [Matrix.GeneralLinearGroup.mem_center_iff_val_mem_range_scalar]
   refine ⟨g 0 0, ?_⟩
@@ -38,10 +43,10 @@ private lemma mem_center_of_eq (g : GL (Fin 2) ℂ) (h10 : g 1 0 = 0) (h01 : g 0
   fin_cases i <;> fin_cases j <;>
     simp [Matrix.scalar_apply, Matrix.diagonal_apply, h10, h01, h11]
 
-private lemma fixed_first_coordinate (g : GL (Fin 2) ℂ) (hc : g 1 0 = 0) (z : KPArch.H3)
+private lemma fixed_first_coordinate   (hc : g 1 0 = 0) (z : KPArch.H3)
     (h : KPArch.action g z = z) :
     (g 0 0 - g 1 1) * z.1 = -g 0 1 := by
-  have h1 : (KPArch.action g z).1 = z.1 := congrArg Prod.fst h
+  have h1  := congrArg Prod.fst h
   have hd : (↑(‖g 1 1‖ ^ 2) : ℂ) = g 1 1 * star (g 1 1) := by
     rw [Complex.sq_norm, Complex.normSq_eq_conj_mul_self, Complex.star_def, mul_comm]
   have hden : KPArch.actionDenominator g z = ‖g 1 1‖ ^ 2 := by
@@ -52,7 +57,7 @@ private lemma fixed_first_coordinate (g : GL (Fin 2) ℂ) (hc : g 1 0 = 0) (z : 
     rw [Matrix.det_fin_two, hc, hh] at hdet
     simp at hdet
   have hsd : star (g 1 1) ≠ 0 := by
-    intro hs; exact h11ne (star_eq_zero.mp hs)
+    intro hs; apply h11ne <;> aesop
   have hdne : (↑(‖g 1 1‖ ^ 2) : ℂ) ≠ 0 := by
     rw [hd]; exact mul_ne_zero h11ne hsd
   have h1' : ((g 0 0 * z.1 + g 0 1) * star (g 1 0 * z.1 + g 1 1)
@@ -68,7 +73,7 @@ private lemma fixed_first_coordinate (g : GL (Fin 2) ℂ) (hc : g 1 0 = 0) (z : 
     rw [hmul, mul_assoc]
   linear_combination h2
 
-private lemma volume_fixed_action_H3 (g : GL (Fin 2) ℂ)
+private lemma volume_fixed_action_H3  
     (hg : g ∉ Subgroup.center (GL (Fin 2) ℂ)) :
     (volume : Measure KPArch.H3) {z | KPArch.action g z = z} = 0 := by
   by_cases hc : g 1 0 = 0
@@ -125,7 +130,7 @@ private lemma volume_fixed_action_H3 (g : GL (Fin 2) ℂ)
       have hden' : ‖g 1 0 * z.1 + g 1 1‖ ^ 2 + ‖g 1 0‖ ^ 2 * (KPArch.height z) ^ 2 = D := by
         rw [hD, ← hden]; rfl
       have hcpos : (0:ℝ) < ‖g 1 0‖ := norm_pos_iff.mpr hc
-      have hc2 : (‖g 1 0‖ ^ 2 : ℝ) ≠ 0 := pow_ne_zero 2 (ne_of_gt hcpos)
+      have hc2 : (‖g 1 0‖ ^ 2) ≠ 0 := pow_ne_zero 2 (ne_of_gt hcpos)
       have hw : (KPArch.height z) ^ 2 = (D - ‖g 1 0 * z.1 + g 1 1‖ ^ 2) / ‖g 1 0‖ ^ 2 := by
         rw [eq_div_iff hc2]
         nlinarith [hden']
@@ -137,19 +142,21 @@ private lemma volume_fixed_action_H3 (g : GL (Fin 2) ℂ)
       simp only
       linarith [hlog]
     have hfiber : (fun x : ℂ => (volume : Measure ℝ) (Prod.mk x ⁻¹' {z : KPArch.H3 | z.2 = ψ z.1}))
-        =ᵐ[(volume : Measure ℂ)] 0 := by
+        =ᵐ[volume] 0 := by
       apply Filter.Eventually.of_forall
       intro x
       have hset : Prod.mk x ⁻¹' {z : KPArch.H3 | z.2 = ψ z.1} = {ψ x} := by
         ext u; simp
       change (volume : Measure ℝ) (Prod.mk x ⁻¹' {z : KPArch.H3 | z.2 = ψ z.1}) = 0
       rw [hset, measure_singleton]
-    have hprod : ((volume : Measure ℂ).prod (volume : Measure ℝ))
+    have hprod : ((volume : Measure ℂ).prod volume)
         {z : KPArch.H3 | z.2 = ψ z.1} = 0 :=
       Measure.measure_prod_null_of_ae_null hgraph hfiber
     have hvol : (volume : Measure KPArch.H3) {z : KPArch.H3 | z.2 = ψ z.1} = 0 := by
       rw [Measure.volume_eq_prod ℂ ℝ]; exact hprod
     exact measure_mono_null hsub hvol
+end
+
 
 private lemma map_not_mem_center {F : Type} [Field F] (e : F →+* ℂ) (he : Function.Injective e)
     (A : GL (Fin 2) F) (hA : A ∉ Subgroup.center (GL (Fin 2) F)) :
@@ -164,11 +171,11 @@ private lemma map_not_mem_center {F : Type} [Field F] (e : F →+* ℂ) (he : Fu
   have h01 : A 0 1 = 0 := by
     have h := hentry 0 1
     simp [Matrix.scalar_apply, Matrix.diagonal_apply] at h
-    exact he (by simpa using h)
+    apply he <;> aesop
   have h10 : A 1 0 = 0 := by
     have h := hentry 1 0
     simp [Matrix.scalar_apply, Matrix.diagonal_apply] at h
-    exact he (by simpa using h)
+    apply he <;> aesop
   have hdiag : A 0 0 = A 1 1 := by
     have h1 := hentry 0 0
     have h2 := hentry 1 1
@@ -188,14 +195,11 @@ theorem rationalProjective_fixed_locus_volume_zero
   obtain ⟨A, hA⟩ := Matrix.ProjGenLinGroup.mk_surjective γ
   have hAne : A ∉ Subgroup.center (GL (Fin 2) F) := by
     intro hc
-    exact hγ (by rw [← hA, Matrix.ProjGenLinGroup.mk_eq_one.mpr hc])
+    apply hγ <;> aesop
   let i0 : Fin (KPCuspLogShape.dimension F) := ⟨0, hd⟩
   have he : Function.Injective (KPCusp.complexPlace F i0).embedding := RingHom.injective _
-  have hge : Matrix.GeneralLinearGroup.map (KPCusp.complexPlace F i0).embedding A ∉
-      Subgroup.center (GL (Fin 2) ℂ) := map_not_mem_center _ he A hAne
-  have hS : (volume : Measure KPArch.H3)
-      {z | KPArch.action (Matrix.GeneralLinearGroup.map (KPCusp.complexPlace F i0).embedding A) z = z}
-      = 0 :=
+  have hge  := map_not_mem_center _ he A hAne
+  have hS  :=
     volume_fixed_action_H3 _ hge
   have hsub : {x : KPArch.Space (KPCuspLogShape.dimension F) | γ • x = x} ⊆
       Function.eval i0 ⁻¹' {z : KPArch.H3 |
@@ -205,14 +209,14 @@ theorem rationalProjective_fixed_locus_volume_zero
     have hx' : KPCuspSiegel.action F γ x = x := hx
     rw [← hA, KPCuspSiegel.action_mk] at hx'
     have h2 := congrFun hx' i0
-    simpa [KPCuspSiegel.glAction, KPArch.productAction, Function.eval] using h2
+    exact h2
   have hpi : (volume : Measure (KPArch.Space (KPCuspLogShape.dimension F)))
       (Function.eval i0 ⁻¹' {z : KPArch.H3 |
         KPArch.action (Matrix.GeneralLinearGroup.map (KPCusp.complexPlace F i0).embedding A) z
           = z}) = 0 := by
     rw [MeasureTheory.volume_pi]
     exact Measure.pi_eval_preimage_null
-      (fun _ : Fin (KPCuspLogShape.dimension F) => (volume : Measure KPArch.H3)) hS
+      (fun _ : Fin (KPCuspLogShape.dimension F) => volume) hS
   exact measure_mono_null hsub hpi
 
 end DedekindZetaZeroFree.KPFiniteAdelicCuspEnds.FundamentalDomainGeometry
@@ -228,12 +232,15 @@ open scoped Classical NumberField Matrix Pointwise
 
 namespace DedekindZetaZeroFree.KPFiniteAdelicCuspEnds.FundamentalDomainGeometry
 
-theorem arithmeticStabilizer_finiteRelativeIndex_of_compact_open
-    (F : Type) [Field F] [NumberField F]
+section
+variable (F : Type) [Field F] [NumberField F]
     (U V : Subgroup (KPFiniteComponents.FinitePGL2 F))
     (hUc : IsCompact (U : Set (KPFiniteComponents.FinitePGL2 F)))
     (hVo : IsOpen (V : Set (KPFiniteComponents.FinitePGL2 F)))
-    (g : KPFiniteComponents.FinitePGL2 F) :
+    (g : KPFiniteComponents.FinitePGL2 F)
+include F U V hUc hVo g
+theorem arithmeticStabilizer_finiteRelativeIndex_of_compact_open
+      :
     (KPFiniteComponents.arithmeticStabilizer F V g).IsFiniteRelIndex
       (KPFiniteComponents.arithmeticStabilizer F U g) := by
   letI : IsTopologicalGroup (KPFiniteComponents.FinitePGL2 F) :=
@@ -242,11 +249,7 @@ theorem arithmeticStabilizer_finiteRelativeIndex_of_compact_open
   exact (h.map (MulAut.conj g).toMonoidHom).comap (KPFiniteComponents.diagonal F)
 
 theorem arithmeticStabilizer_properlyDiscontinuous_of_compact_open_comparison
-    (F : Type) [Field F] [NumberField F]
-    (U V : Subgroup (KPFiniteComponents.FinitePGL2 F))
-    (hUc : IsCompact (U : Set (KPFiniteComponents.FinitePGL2 F)))
-    (hVo : IsOpen (V : Set (KPFiniteComponents.FinitePGL2 F)))
-    (g : KPFiniteComponents.FinitePGL2 F)
+     
     (hV : ProperlyDiscontinuousSMul (KPFiniteComponents.arithmeticStabilizer F V g)
       (KPArch.Space (KPCuspLogShape.dimension F))) :
     ProperlyDiscontinuousSMul (KPFiniteComponents.arithmeticStabilizer F U g)
@@ -259,6 +262,8 @@ theorem arithmeticStabilizer_properlyDiscontinuous_of_compact_open_comparison
   exact ProperlyDiscontinuousSMul.ofFiniteRelIndex
     (KPFiniteComponents.arithmeticStabilizer F U g)
     (KPFiniteComponents.arithmeticStabilizer F V g)
+end
+
 
 theorem arithmeticStabilizer_properlyDiscontinuous_of_integral_lattice
     (F : Type) [Field F] [NumberField F]
@@ -301,7 +306,7 @@ lemma matrixCoefficients_eq_of_mk_eq (A B : GL (Fin 2) F)
     Matrix.GeneralLinearGroup.coe_scalar]
   simp [Matrix.mul_apply, Matrix.scalar, Matrix.diagonal, mul_assoc]
 
-def projectiveCoefficients (q : KPCuspArithmetic.PGL2 F) : Fin 2 → Fin 2 → Fin 2 → Fin 2 → F :=
+def projectiveCoefficients (q : KPCuspArithmetic.PGL2 F)  :=
   matrixCoefficients (Classical.choose (Matrix.ProjGenLinGroup.mk_surjective q))
 lemma projectiveCoefficients_mk (A : GL (Fin 2) F) :
     projectiveCoefficients (Matrix.ProjGenLinGroup.mk A) = matrixCoefficients A :=
@@ -323,7 +328,7 @@ lemma projectiveCoefficients_injective : Function.Injective (projectiveCoefficie
     have hzA : A.val = 0 := by
       ext i j
       exact (mul_eq_zero.mp (by simpa [hz] using hAB i j k l)).resolve_right hkl
-    exact A.det_ne_zero (by rw [hzA]; simp)
+    apply A.det_ne_zero <;> aesop
   let u : Fˣ := Units.mk0 (A⁻¹.val k l / B⁻¹.val k l) (div_ne_zero hkl hnB)
   apply Matrix.ProjGenLinGroup.mk_eq_mk_iff.mpr
   refine ⟨u, ?_⟩
@@ -331,11 +336,11 @@ lemma projectiveCoefficients_injective : Function.Injective (projectiveCoefficie
   ext i j
   change (A.val * (Matrix.GeneralLinearGroup.scalar (Fin 2) u).val) i j = B.val i j
   simp only [Matrix.GeneralLinearGroup.coe_scalar]
-  change ((A.val * Matrix.diagonal (fun _ : Fin 2 => (u : F))) : Matrix (Fin 2) (Fin 2) F) i j = B.val i j
+  change ((A.val * Matrix.diagonal (fun _ : Fin 2 => (u : F)))) i j = B.val i j
   rw [Matrix.mul_diagonal]
   change A.val i j * (A⁻¹.val k l / B⁻¹.val k l) = B.val i j
   rw [← mul_div_assoc, div_eq_iff hnB]
-  exact hAB i j k l
+  apply hAB
 lemma projectiveCoefficients_integral (q : KPFiniteComponents.projectiveIdealAut F 1)
     (i j k l : Fin 2) : IsIntegral ℤ (projectiveCoefficients q.val i j k l) := by
   obtain ⟨A, hA, hq⟩ := Subgroup.mem_map.mp q.property
@@ -351,13 +356,12 @@ lemma projectiveCoefficients_integral (q : KPFiniteComponents.projectiveIdealAut
 lemma finite_projectiveCoefficients_bounded (B : ℝ) :
     {q : KPFiniteComponents.projectiveIdealAut F 1 |
       ∀ (φ : F →+* ℂ) i j k l, ‖φ (projectiveCoefficients q.val i j k l)‖ ≤ B}.Finite := by
-  let S : Set F := {a | IsIntegral ℤ a ∧ ∀ φ : F →+* ℂ, ‖φ a‖ ≤ B}
+  let S  := {a | IsIntegral ℤ a ∧ ∀ φ : F →+* ℂ, ‖φ a‖ ≤ B}
   have hS : S.Finite := NumberField.Embeddings.finite_of_norm_le F ℂ B
   have hfun : {f : Fin 2 → Fin 2 → Fin 2 → Fin 2 → F |
       ∀ i j k l, f i j k l ∈ S}.Finite := by
-    convert (show _ from
-      (Set.Finite.pi fun _ : Fin 2 => Set.Finite.pi fun _ : Fin 2 =>
-        Set.Finite.pi fun _ : Fin 2 => Set.Finite.pi fun _ : Fin 2 => hS)) using 1
+    convert (((Set.Finite.pi fun _ : Fin 2 => Set.Finite.pi fun _ : Fin 2 =>
+        Set.Finite.pi fun _ : Fin 2 => Set.Finite.pi fun _ : Fin 2 => hS))) using 1
     ext f
     simp [Set.mem_pi]
   apply Set.Finite.of_finite_image (f := fun q => projectiveCoefficients q.val)
@@ -373,7 +377,7 @@ lemma embeddings_bound_of_complexPlaces (hF : NumberField.InfinitePlace.nrRealPl
   let w := NumberField.InfinitePlace.mk φ
   haveI : IsEmpty {v : NumberField.InfinitePlace F // v.IsReal} :=
     Fintype.card_eq_zero_iff.mp hF
-  have hw : w.IsComplex := NumberField.InfinitePlace.not_isReal_iff_isComplex.mp
+  have hw  := NumberField.InfinitePlace.not_isReal_iff_isComplex.mp
     (fun h => isEmptyElim (⟨w, h⟩ : {v : NumberField.InfinitePlace F // v.IsReal}))
   let i := Fintype.equivFin {v : NumberField.InfinitePlace F // v.IsComplex} ⟨w, hw⟩
   have hi : KPCusp.complexPlace F i = w :=
@@ -424,7 +428,7 @@ lemma bottom_right_entry_sq_bound (g : GL (Fin 2) ℂ) (z : KPArch.H3) :
     ‖g.val 1 1‖ ^ 2 ≤
       (2 * KPArch.height z / KPArch.height (KPArch.action g z) +
         2 * ‖z.1‖ ^ 2 / (KPArch.height z * KPArch.height (KPArch.action g z))) * ‖g.val.det‖ := by
-  have hz : 0 < KPArch.height z := Real.exp_pos _
+  
   have hw : 0 < KPArch.height (KPArch.action g z) := Real.exp_pos _
   have hc := bottom_left_entry_sq_bound g z
   have hD := KPArch.actionDenominator_pos g z
@@ -462,14 +466,14 @@ lemma rowSwap_det_norm (g : GL (Fin 2) ℂ) :
   rw [Units.val_mul, Matrix.det_mul, norm_mul]
   simp [rowSwap, Matrix.det_fin_two]
 
-def matrixEntryBound (z w : KPArch.H3) : ℝ :=
+def matrixEntryBound (z w : KPArch.H3)  :=
   let w' := KPArch.action rowSwap w
   max (1 / (KPArch.height z * KPArch.height w))
     (max (2 * KPArch.height z / KPArch.height w + 2 * ‖z.1‖ ^ 2 / (KPArch.height z * KPArch.height w))
     (max (1 / (KPArch.height z * KPArch.height w'))
     (2 * KPArch.height z / KPArch.height w' + 2 * ‖z.1‖ ^ 2 / (KPArch.height z * KPArch.height w'))))
 lemma matrixEntryBound_nonneg (z w : KPArch.H3) : 0 ≤ matrixEntryBound z w := by
-  exact le_trans (one_div_nonneg.mpr (mul_nonneg (le_of_lt (Real.exp_pos _)) (le_of_lt (Real.exp_pos _))) : 0 ≤ 1 / (KPArch.height z * KPArch.height w)) (le_max_left _ _)
+  exact le_trans (one_div_nonneg.mpr (mul_nonneg (le_of_lt (Real.exp_pos _)) (le_of_lt (Real.exp_pos _)))) (le_max_left _ _)
 lemma matrix_entry_sq_bound (g : GL (Fin 2) ℂ) (z : KPArch.H3) (i j : Fin 2) :
     ‖g.val i j‖ ^ 2 ≤ matrixEntryBound z (KPArch.action g z) * ‖g.val.det‖ := by
     let w := KPArch.action g z
@@ -527,10 +531,8 @@ lemma matrixCoefficients_complex_bound (g : GL (Fin 2) ℂ) (z : KPArch.H3) (i j
   have hs : ‖g.val i j * g⁻¹.val k l‖ ^ 2 ≤ matrixEntryBound z w * matrixEntryBound w z := by
     calc
       _ = ‖g.val i j‖ ^ 2 * ‖g⁻¹.val k l‖ ^ 2 := by rw [norm_mul, mul_pow]
-      _ ≤ _ := hmul.trans_eq (by calc
-        _ = (matrixEntryBound z w * matrixEntryBound w z) * (‖g.val.det‖ * ‖g⁻¹.val.det‖) := by ring
-        _ = _ := by rw [hd, mul_one])
-  have hC : 0 ≤ matrixEntryBound z w * matrixEntryBound w z := mul_nonneg (matrixEntryBound_nonneg _ _) (matrixEntryBound_nonneg _ _)
+      _ ≤ _ := hmul.trans_eq (by grind [mul_one])
+  
   nlinarith [sq_nonneg (‖g.val i j * g⁻¹.val k l‖ - 1)]
 lemma projectiveIdealAut_properlyDiscontinuous (F : Type) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0) :
@@ -566,21 +568,18 @@ lemma projectiveIdealAut_properlyDiscontinuous (F : Type) [Field F] [NumberField
   calc
     _ ≤ matrixEntryBound (z v) ((q • z) v) * matrixEntryBound ((q • z) v) (z v) + 1 := by
       rw [hact]
-      exact matrixCoefficients_complex_bound Av (z v) i j k l
+      apply matrixCoefficients_complex_bound
     _ ≤ f (z, q • z) := by
       apply Finset.single_le_sum (fun v hv => ?_) (Finset.mem_univ v)
       exact add_nonneg (mul_nonneg (matrixEntryBound_nonneg _ _) (matrixEntryBound_nonneg _ _)) zero_le_one
     _ ≤ B := hB ⟨(z, q • z), ⟨hz, hw⟩, rfl⟩
 
-theorem arithmeticStabilizer_properlyDiscontinuous_of_compact
+def arithmeticStabilizer_properlyDiscontinuous_of_compact
     (F : Type) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (U : Subgroup (KPFiniteComponents.FinitePGL2 F))
     (hUc : IsCompact (U : Set (KPFiniteComponents.FinitePGL2 F)))
-    (g : KPFiniteComponents.FinitePGL2 F) :
-    ProperlyDiscontinuousSMul (KPFiniteComponents.arithmeticStabilizer F U g)
-      (KPArch.Space (KPCuspLogShape.dimension F)) := by
-  exact arithmeticStabilizer_properlyDiscontinuous_of_integral_lattice F U hUc g
+    (g : KPFiniteComponents.FinitePGL2 F)  := arithmeticStabilizer_properlyDiscontinuous_of_integral_lattice F U hUc g
     (projectiveIdealAut_properlyDiscontinuous F hF)
 
 end DedekindZetaZeroFree.KPFiniteAdelicCuspEnds.FundamentalDomainGeometry
@@ -597,11 +596,14 @@ open MeasureTheory
 
 namespace DedekindZetaZeroFree.KPFiniteAdelicCuspEnds
 
+section
+variable (F : Type) [Field F] [NumberField F]
+include F
 theorem arithmeticStabilizer_countable
-    (F : Type) [Field F] [NumberField F]
+     
     (U : Subgroup (KPFiniteComponents.FinitePGL2 F)) (g : KPFiniteComponents.FinitePGL2 F) :
     Countable (KPFiniteComponents.arithmeticStabilizer F U g) := by
-  letI : Countable F := Finsupp.Countable.of_moduleFinite (R := ℚ) (M := F)
+  letI  := Finsupp.Countable.of_moduleFinite (R := ℚ) (M := F)
   letI : Countable (Matrix (Fin 2) (Fin 2) F) := by
     change Countable (Fin 2 → Fin 2 → F); infer_instance
   letI : Countable (Matrix.GeneralLinearGroup (Fin 2) F) :=
@@ -610,7 +612,7 @@ theorem arithmeticStabilizer_countable
     Function.Surjective.countable Matrix.ProjGenLinGroup.mk_surjective
   infer_instance
 
-theorem canonicalAction_continuousConstSMul (F : Type) [Field F] [NumberField F] :
+theorem canonicalAction_continuousConstSMul   :
     ContinuousConstSMul (KPCuspArithmetic.PGL2 F)
       (KPArch.Space (KPCuspLogShape.dimension F)) :=
   ⟨fun g => by
@@ -628,7 +630,7 @@ theorem canonicalAction_continuousConstSMul (F : Type) [Field F] [NumberField F]
       (fun i => Matrix.GeneralLinearGroup.map (KPCusp.complexPlace F i).embedding A)).continuous⟩
 
 theorem arithmeticStabilizer_continuousConstSMul
-    (F : Type) [Field F] [NumberField F]
+     
     (U : Subgroup (KPFiniteComponents.FinitePGL2 F)) (g : KPFiniteComponents.FinitePGL2 F) :
     ContinuousConstSMul (KPFiniteComponents.arithmeticStabilizer F U g)
       (KPArch.Space (KPCuspLogShape.dimension F)) := by
@@ -636,7 +638,7 @@ theorem arithmeticStabilizer_continuousConstSMul
   exact ⟨fun γ => continuous_const_smul (Γ := KPCuspArithmetic.PGL2 F) γ.val⟩
 
 theorem arithmeticStabilizer_ae_free_of_null_fixed_loci
-    (F : Type) [Field F] [NumberField F]
+     
     (U : Subgroup (KPFiniteComponents.FinitePGL2 F)) (g : KPFiniteComponents.FinitePGL2 F)
     (hfixed : ∀ γ : KPFiniteComponents.arithmeticStabilizer F U g, γ ≠ 1 →
       (volume : Measure (KPArch.Space (KPCuspLogShape.dimension F)))
@@ -656,7 +658,7 @@ theorem arithmeticStabilizer_ae_free_of_null_fixed_loci
     exact fun heq => (hx heq).elim
 
 theorem finite_adelic_component_fundamental_domain_of_properlyDiscontinuous_ae_free
-    (F : Type) [Field F] [NumberField F]
+     
     (U : Subgroup (KPFiniteComponents.FinitePGL2 F)) (g : KPFiniteComponents.FinitePGL2 F)
     (hproper : ProperlyDiscontinuousSMul (KPFiniteComponents.arithmeticStabilizer F U g)
       (KPArch.Space (KPCuspLogShape.dimension F)))
@@ -675,7 +677,7 @@ theorem finite_adelic_component_fundamental_domain_of_properlyDiscontinuous_ae_f
     _ hfree
 
 theorem finite_adelic_component_fundamental_domain
-    (F : Type) [Field F] [NumberField F]
+     
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (U : Subgroup (KPFiniteComponents.FinitePGL2 F))
     (hUc : IsCompact (U : Set (KPFiniteComponents.FinitePGL2 F)))
@@ -686,8 +688,7 @@ theorem finite_adelic_component_fundamental_domain
       IsFundamentalDomain (KPFiniteComponents.arithmeticStabilizer F U g) A
         (KPArch.hyperbolicVolume (KPCuspLogShape.dimension F)) := by
   apply finite_adelic_component_fundamental_domain_of_properlyDiscontinuous_ae_free F U g
-  · exact FundamentalDomainGeometry.arithmeticStabilizer_properlyDiscontinuous_of_compact
-      F hF U hUc g
+  · apply FundamentalDomainGeometry.arithmeticStabilizer_properlyDiscontinuous_of_compact <;> assumption
   · apply arithmeticStabilizer_ae_free_of_null_fixed_loci F U g
     intro γ hγ
     have hγval : (γ : KPCuspArithmetic.PGL2 F) ≠ 1 := by
@@ -696,6 +697,8 @@ theorem finite_adelic_component_fundamental_domain
       exact Subtype.ext heq
     exact FundamentalDomainGeometry.rationalProjective_fixed_locus_volume_zero
       F (KPCuspLogShape.dimension_pos F hF) γ.val hγval
+end
+
 
 end DedekindZetaZeroFree.KPFiniteAdelicCuspEnds
 

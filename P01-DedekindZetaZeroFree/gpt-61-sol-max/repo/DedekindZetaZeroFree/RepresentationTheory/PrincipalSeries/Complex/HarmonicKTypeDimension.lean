@@ -70,13 +70,17 @@ private theorem laplacian_radius_pow {q : MvPolynomial (Fin 3) ℂ} {degree : �
       simp only [Nat.add_sub_cancel, Nat.cast_add, Nat.cast_one, pow_succ]
       ring
 
-private lemma lap_hom {p : MvPolynomial (Fin 3) ℂ} {n : ℕ}
+section
+variable {p : MvPolynomial (Fin 3) ℂ}
+include p in
+private lemma lap_hom   {n : ℕ}
     (hp : p.IsHomogeneous n) : (polynomialLaplacian p).IsHomogeneous (n - 2) := by
   change (∑ i : Fin 3, pderiv i (pderiv i p)).IsHomogeneous _
   apply IsHomogeneous.sum
   intro i hi
   simpa only [Nat.sub_sub] using hp.pderiv.pderiv (i := i)
-private lemma lap_low {p : MvPolynomial (Fin 3) ℂ} {n : ℕ}
+include p in
+private lemma lap_low   {n : ℕ}
     (hp : p.IsHomogeneous n) (hn : n ≤ 1) : polynomialLaplacian p = 0 := by
   have hzero {q : MvPolynomial (Fin 3) ℂ} (hq : q.IsHomogeneous 0) (i : Fin 3) :
       pderiv i q = 0 := by
@@ -87,10 +91,12 @@ private lemma lap_low {p : MvPolynomial (Fin 3) ℂ} {n : ℕ}
   intro i hi
   apply hzero
   simpa only [Nat.sub_eq_zero_of_le hn] using hp.pderiv (i := i)
-private lemma harmonic_smul {p : MvPolynomial (Fin 3) ℂ} {n : ℕ}
+include p in
+private lemma harmonic_smul   {n : ℕ}
     (hp : p ∈ harmonicPolynomials n) (c : ℂ) : c • p ∈ harmonicPolynomials n :=
   (harmonicPolynomials n).smul_mem c hp
-private lemma radial_inverse {p : MvPolynomial (Fin 3) ℂ} {n : ℕ}
+include p in
+private lemma radial_inverse   {n : ℕ}
     (hp : p ∈ harmonicPolynomials n) (k : ℕ) :
     polynomialLaplacian (radiusQuadratic ^ (k + 1) *
       ((2 * ((k + 1 : ℕ) : ℂ) * (2 * (n : ℂ) + 2 * ((k + 1 : ℕ) : ℂ) + 1))⁻¹ • p)) =
@@ -108,7 +114,8 @@ private lemma radial_inverse {p : MvPolynomial (Fin 3) ℂ} {n : ℕ}
   simp only [mul_zero, zero_add, Nat.add_sub_cancel, mul_smul_comm,
     smul_smul, mul_inv_cancel₀ hc, one_smul]
 
-private theorem homogeneous_fischer {p : MvPolynomial (Fin 3) ℂ} {degree : ℕ}
+include p in
+private theorem homogeneous_fischer   {degree : ℕ}
     (hp : p.IsHomogeneous degree) :
     ∃ h : ℕ → MvPolynomial (Fin 3) ℂ,
       (∀ k ≤ degree / 2, h k ∈ harmonicPolynomials (degree - 2 * k)) ∧
@@ -186,7 +193,8 @@ private theorem homogeneousSphere_finrank (ℓ : ℕ) :
   rw [Fintype.card_congr he, Fintype.card_coe, Finset.card_finsuppAntidiag_nat_eq_multichoose]
   simp
 
-theorem polynomialLaplacian_homogeneous {p : MvPolynomial (Fin 3) ℂ} {ℓ : ℕ}
+include p in
+theorem polynomialLaplacian_homogeneous   {ℓ : ℕ}
     (hp : p.IsHomogeneous ℓ) : (polynomialLaplacian p).IsHomogeneous (ℓ - 2) := by
   change (∑ i : Fin 3, MvPolynomial.pderiv i (MvPolynomial.pderiv i p)).IsHomogeneous _
   apply MvPolynomial.IsHomogeneous.sum
@@ -220,18 +228,22 @@ private theorem harmonic_finrank_of_laplacian_surjective (ℓ : ℕ)
     homogeneousSphere_finrank, ← (harmonicLaplacianKerEquiv ℓ).finrank_eq] at hh
   simpa [homogeneousSphere_finrank, Nat.add_comm] using hh
 
-private theorem homogeneous_zero_pderiv {p : MvPolynomial (Fin 3) ℂ}
+include p in
+private theorem homogeneous_zero_pderiv  
     (hp : p.IsHomogeneous 0) (i : Fin 3) : MvPolynomial.pderiv i p = 0 := by
   have htd : p.totalDegree = 0 := (MvPolynomial.totalDegree_zero_iff_isHomogeneous (σ := Fin 3)).mpr hp
   rw [MvPolynomial.totalDegree_eq_zero_iff_eq_C.mp htd]
   exact MvPolynomial.pderiv_C
-private theorem polynomialLaplacian_low_degree {p : MvPolynomial (Fin 3) ℂ} {ℓ : ℕ}
+include p in
+private theorem polynomialLaplacian_low_degree   {ℓ : ℕ}
     (hp : p.IsHomogeneous ℓ) (hℓ : ℓ ≤ 1) : polynomialLaplacian p = 0 := by
   change (∑ i : Fin 3, MvPolynomial.pderiv i (MvPolynomial.pderiv i p)) = 0
   apply Finset.sum_eq_zero
   intro i hi
   apply homogeneous_zero_pderiv
   simpa only [Nat.sub_eq_zero_of_le hℓ] using hp.pderiv (i := i)
+end
+
 private theorem harmonicPolynomials_low_degree {ℓ : ℕ} (hℓ : ℓ ≤ 1) :
     harmonicPolynomials ℓ = MvPolynomial.homogeneousSubmodule (Fin 3) ℂ ℓ := by
   apply le_antisymm inf_le_left

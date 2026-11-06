@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.RepresentationTheory.Continuous.Characters
 public import DedekindZetaZeroFree.RepresentationTheory.Continuous.ConjugateRepresentations
 public import Mathlib.Analysis.InnerProductSpace.TensorProduct
 public import DedekindZetaZeroFree.RepresentationTheory.Continuous.TransportOfStructure
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 The Tau Ceti contributors. All rights reserved.
@@ -46,7 +49,7 @@ theorem isRepresentative_iff {f : C(G, 𝕜)} :
 
 variable (𝕜 G) in
 
-def representativeSubmodule : Submodule 𝕜 C(G, 𝕜) :=
+def representativeSubmodule  :=
   Submodule.span 𝕜 {f : C(G, 𝕜) | IsRepresentative f}
 
 variable (𝕜 G) in

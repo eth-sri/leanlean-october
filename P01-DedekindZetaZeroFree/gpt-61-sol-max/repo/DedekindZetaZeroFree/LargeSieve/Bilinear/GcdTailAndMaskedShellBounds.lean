@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Ideals.SquarefreeGcdDecomposition
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.OperatorNormBounds
 public import DedekindZetaZeroFree.LargeSieve.CharacterBounds.AdmissibleRangeBoundaryCases
@@ -7,6 +9,7 @@ public import DedekindZetaZeroFree.LargeSieve.Bilinear.CoprimeForms.WeightedGram
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.CoprimeForms.PrimeSupportEpsilonEnergyBound
 
 @[expose] public section
+
 
 section
 
@@ -32,8 +35,11 @@ private theorem quotient_mem {F : Type} [Field F] [NumberField F]
   · rw [← mul_div_assoc]
     exact (le_div_iff₀ hpos).mpr (by rw [mul_comm]; exact hnorm ▸ hr)
 
-private theorem divisor_sum {F : Type} [Field F] [NumberField F]
+section
+variable {F : Type} [Field F] [NumberField F]
     {Z : Type*} [AddCommMonoid Z] (c d : Ideal (𝓞 F)) (N : ℝ) (hd : d ≠ ⊥)
+include F Z c d N hd
+private theorem divisor_sum  
     (f : Ideal (𝓞 F) → Z) :
     (∑ b ∈ paperShell F c N, if d ∣ b then f b else 0) =
       ∑ u ∈ paperShell F c (N / (Ideal.absNorm d : ℝ)),
@@ -42,7 +48,7 @@ private theorem divisor_sum {F : Type} [Field F] [NumberField F]
   apply (Finset.sum_bij (i := fun u _ => d * u) ?_ ?_ ?_ ?_).symm
   · intro u hu
     obtain ⟨hu, hp⟩ := Finset.mem_filter.mp hu
-    exact Finset.mem_filter.mpr ⟨hp, dvd_mul_right d u⟩
+    apply Finset.mem_filter.mpr <;> aesop
   · intro u hu v hv he
     exact mul_left_cancel₀ hd he
   · intro b hb
@@ -50,8 +56,7 @@ private theorem divisor_sum {F : Type} [Field F] [NumberField F]
     exact ⟨u, Finset.mem_filter.mpr ⟨quotient_mem hd hb, hb⟩, rfl⟩
   · intros; rfl
 
-private theorem divisor_sum_of_support {F : Type} [Field F] [NumberField F]
-    {Z : Type*} [AddCommMonoid Z] (c d : Ideal (𝓞 F)) (N : ℝ) (hd : d ≠ ⊥)
+private theorem divisor_sum_of_support  
     (f : Ideal (𝓞 F) → Z) (hf : ∀ b, ¬ d ∣ b → f b = 0) :
     (∑ b ∈ paperShell F c N, f b) =
       ∑ u ∈ paperShell F c (N / (Ideal.absNorm d : ℝ)),
@@ -63,8 +68,7 @@ private theorem divisor_sum_of_support {F : Type} [Field F] [NumberField F]
   · simp [h]
   · simp [h, hf b h]
 
-private theorem divisor_pair_sum {F : Type} [Field F] [NumberField F]
-    {Z : Type*} [AddCommMonoid Z] (c d : Ideal (𝓞 F)) (N : ℝ) (hd : d ≠ ⊥)
+private theorem divisor_pair_sum  
     (f : Ideal (𝓞 F) → Ideal (𝓞 F) → Z)
     (hf : ∀ b1 b2, ¬ d ∣ b1 ∨ ¬ d ∣ b2 → f b1 b2 = 0) :
     (∑ b1 ∈ paperShell F c N, ∑ b2 ∈ paperShell F c N, f b1 b2) =
@@ -82,6 +86,8 @@ private theorem divisor_pair_sum {F : Type} [Field F] [NumberField F]
   by_cases h : d * u ∈ paperShell F c N
   · simp only [h, ite_true, true_and]
   · simp [h]
+end
+
 
 private theorem gcd_mul_iff {F : Type} [Field F] [NumberField F]
     {d u v : Ideal (𝓞 F)} (hd : d ≠ ⊥) :
@@ -129,7 +135,7 @@ theorem quotient_reindex
           (maskedRowWeight W q d M rowMask) (fun a u => (Q.χ u) a) alpha := by
   classical
   let S := paperShell F c N
-  let U := paperShell F c (N / (Ideal.absNorm d : ℝ))
+  
   let good := fun u : Ideal (𝓞 F) => d * u ∈ S ∧ Q.cls (d * u) = g
   let alpha := fun u : Ideal (𝓞 F) =>
     if good u then columnMask (d * u) * lam (d * u) else 0
@@ -140,8 +146,7 @@ theorem quotient_reindex
     change ‖alpha u‖ ^ 2 ≤ if d * u ∈ S then ‖lam (d * u)‖ ^ 2 else 0
     by_cases h : good u
     · simp only [alpha, if_pos h, if_pos h.1, norm_mul]
-      have hn : ‖columnMask (d * u)‖ * ‖lam (d * u)‖ ≤ ‖lam (d * u)‖ := by
-        exact mul_le_of_le_one_left (norm_nonneg _) (hcol _)
+      have hn : ‖columnMask (d * u)‖ * ‖lam (d * u)‖ ≤ ‖lam (d * u)‖ := mul_le_of_le_one_left (norm_nonneg _) (hcol _)
       exact pow_le_pow_left₀ (mul_nonneg (norm_nonneg _) (norm_nonneg _)) hn 2
     · simp only [alpha, if_neg h, norm_zero, zero_pow (by decide : 2 ≠ 0)]
       split_ifs <;> positivity
@@ -192,7 +197,7 @@ theorem quotient_reindex
             rw [hpair.1] at hs
             have hduv : d ⊔ (u * v) = ⊤ := by
               rw [Ideal.sup_mul_eq_of_coprime_left hs.2.2.2.2.1, hs.2.2.2.2.2]
-            have hane : a ≠ ⊥ := (Finset.mem_filter.mp ha).2.1
+            have hane  := (Finset.mem_filter.mp ha).2.1
             have htr := htransport d u v hd
               (SquarefreeGcd.ne_bot_of_squarefree hs.2.1)
               (SquarefreeGcd.ne_bot_of_squarefree hs.2.2.1)
@@ -217,8 +222,7 @@ theorem quotient_reindex
             fun h => huv ((gcd_mul_iff hd).mp h.1)
           simp [hgu.1, hgv.1, f, hp, huv]
       · have halpha : alpha v = 0 := by simp [alpha, hgv]
-        have hp : ¬ (d * u ∈ S ∧ d * v ∈ S ∧ Q.cls (d * v) = g) :=
-          fun h => hgv ⟨h.2.1, h.2.2⟩
+        
         by_cases hvS : d * v ∈ S
         · have hvc : Q.cls (d * v) ≠ g := fun h => hgv ⟨hvS, h⟩
           simp [hgu.1, hvS, f, hvc, halpha]
@@ -256,23 +260,26 @@ private lemma exists_sieveWeight_bound (W : ℝ → ℝ) (hW : SieveWeight W) :
   · rw [hW.zero_outside t ht]
     exact hW.nonneg x
 
-private lemma maskedRowWeight_nonneg (W : ℝ → ℝ) (hW : SieveWeight W)
+section
+variable (W : ℝ → ℝ) (hW : SieveWeight W)
     (q d : Ideal (𝓞 F)) (M : ℝ) (rowMask : Ideal (𝓞 F) → ℝ)
-    (hrow : ∀ a : Ideal (𝓞 F), 0 ≤ rowMask a ∧ rowMask a ≤ 1) (a : Ideal (𝓞 F)) :
+    (hrow : ∀ a : Ideal (𝓞 F), 0 ≤ rowMask a ∧ rowMask a ≤ 1) (a : Ideal (𝓞 F))
+include W hW q d M rowMask hrow a
+private lemma maskedRowWeight_nonneg   :
     0 ≤ maskedRowWeight W q d M rowMask a := by
   rw [maskedRowWeight]
   split
   · exact mul_nonneg (hW.nonneg _) (hrow a).1
   · exact le_refl 0
 
-private lemma maskedRowWeight_le (W : ℝ → ℝ) (hW : SieveWeight W)
-    (q d : Ideal (𝓞 F)) (M : ℝ) (rowMask : Ideal (𝓞 F) → ℝ)
-    (hrow : ∀ a : Ideal (𝓞 F), 0 ≤ rowMask a ∧ rowMask a ≤ 1) (a : Ideal (𝓞 F)) :
+private lemma maskedRowWeight_le   :
     maskedRowWeight W q d M rowMask a ≤ W ((Ideal.absNorm a : ℝ) / M) := by
   rw [maskedRowWeight]
   split
   · exact mul_le_of_le_one_right (hW.nonneg _) (hrow a).2
   · exact hW.nonneg _
+end
+
 
 private lemma rowSum_sq_le {c : Ideal (𝓞 F)}
     (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c) (T : ℝ)
@@ -285,7 +292,7 @@ private lemma rowSum_sq_le {c : Ideal (𝓞 F)}
       ∑ b ∈ paperShell F c T, ‖lam b‖ ^ 2 := by
     refine Finset.sum_le_sum fun b hb => ?_
     have hb' := (mem_paperShell F c T b).mp hb
-    have hchi : ‖(Q.χ b) a‖ ≤ 1 := quadraticFamily_norm_le_one Q hb'.1 hb'.2.1 a
+    have hchi  := quadraticFamily_norm_le_one Q hb'.1 hb'.2.1 a
     have hchi2 : ‖(Q.χ b) a‖ ^ 2 ≤ 1 := by nlinarith [norm_nonneg ((Q.χ b) a), hchi]
     rw [norm_mul, mul_pow]
     exact mul_le_of_le_one_right (sq_nonneg _) hchi2
@@ -299,7 +306,7 @@ private lemma rowSum_sq_le {c : Ideal (𝓞 F)}
         h1.trans h2
     _ ≤ ((paperShell F c T).card : ℝ) * ∑ b ∈ paperShell F c T, ‖lam b‖ ^ 2 :=
         mul_le_mul_of_nonneg_left h3 (Nat.cast_nonneg _)
-    _ = ((paperShell F c T).card : ℝ) * energy F c T lam := by rw [h4]
+    _ = ((paperShell F c T).card : ℝ) * energy F c T lam := rfl
 
 private lemma paperShell_eq_empty_or_singleton_of_lt_one {c : Ideal (𝓞 F)} {X : ℝ}
     (hX : X < 1) : paperShell F c X = ∅ ∨ paperShell F c X = {⊤} := by
@@ -307,12 +314,7 @@ private lemma paperShell_eq_empty_or_singleton_of_lt_one {c : Ideal (𝓞 F)} {X
   · left
     rw [paperShell, idealAdmissibleFinset_eq_empty_of_lt_one F c (2 * X) h]
     simp
-  · right
-    rw [paperShell,
-      idealAdmissibleFinset_eq_singleton_of_one_le_of_lt_two F c (2 * X) h (by linarith),
-      Finset.filter_singleton, if_pos]
-    rw [Ideal.absNorm_top, Nat.cast_one]
-    exact hX
+  · simp_all [DedekindZetaZeroFree.LargeSieve.Sieve.paperShell, DedekindZetaZeroFree.LargeSieve.Sieve.idealAdmissibleFinset_eq_singleton_of_one_le_of_lt_two, Finset.filter_singleton, if_pos, Ideal.absNorm_top, Nat.cast_one] <;> aesop
 
 theorem masked_shell_operator_bound
     (F : Type) [Field F] [NumberField F]
@@ -428,12 +430,7 @@ theorem masked_shell_operator_bound
     intro x hx
     rw [hSdef] at hx
     rcases hx with hx | hx
-    · rcases hx with hx | hx
-      · rw [Set.mem_singleton_iff] at hx
-        rw [hx]
-        exact hCb0
-      · obtain ⟨T, _hT1, hTX, rfl⟩ := hx
-        exact hB2le T hTX
+    · grind
     · obtain ⟨_hX1, _h2X, rfl⟩ := hx
       exact hunit
   refine ⟨?_, ?_, ?_⟩
@@ -441,7 +438,7 @@ theorem masked_shell_operator_bound
     refine le_csSup hBdd ?_
     exact Or.inl (Or.inl (Set.mem_singleton_iff.mpr rfl))
   · intro a _ha
-    exact maskedRowWeight_nonneg W hW q d M rowMask hrow a
+    apply maskedRowWeight_nonneg <;> assumption
   · intro alpha
     by_cases hX1 : 1 ≤ X
     · have hmem : B2 F c Q W M X K ∈ S := by
@@ -455,14 +452,13 @@ theorem masked_shell_operator_bound
           Q2 F c Q W M X K alpha := by
         simp only [weightedEnergy, Q2, rowSum]
         refine Finset.sum_le_sum fun a _ha => ?_
-        have hle : maskedRowWeight W q d M rowMask a ≤
-            W ((Ideal.absNorm a : ℝ) / M) := maskedRowWeight_le W hW q d M rowMask hrow a
+        have hle  := maskedRowWeight_le W hW q d M rowMask hrow a
         have hinner : (∑ u ∈ paperShell F c X, (Q.χ u) a * alpha u) =
             (∑ u ∈ paperShell F c X, alpha u * (Q.χ u) a) :=
           Finset.sum_congr rfl fun u _hu => mul_comm _ _
         rw [hinner]
         exact mul_le_mul_of_nonneg_right hle (sq_nonneg _)
-      have hQ2 : Q2 F c Q W M X K alpha ≤ B2 F c Q W M X K * energy F c X alpha :=
+      have hQ2  :=
         Q2_le_B2_mul_energy Q W M X K alpha
       have henergy_nn : 0 ≤ energy F c X alpha := by
         simp only [energy]
@@ -531,7 +527,7 @@ variable {F : Type} [Field F] [NumberField F]
 variable {c : Ideal (𝓞 F)}
 
 def GcdPairTransport (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (q : Ideal (𝓞 F)) : Prop :=
+    (q : Ideal (𝓞 F))  :=
   ∀ d u v : Ideal (𝓞 F),
     d ≠ ⊥ → u ≠ ⊥ → v ≠ ⊥ →
     Squarefree d → Squarefree u → Squarefree v →
@@ -543,29 +539,29 @@ def GcdPairTransport (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
       (Q.χ (d * u)) a * (starRingEnd ℂ) ((Q.χ (d * v)) a) =
         (Q.χ u) a * (starRingEnd ℂ) ((Q.χ v) a)
 
-def B2unitColumn (F : Type) [Field F] [NumberField F]
-    (c : Ideal (𝓞 F)) (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (W : ℝ → ℝ) (M K : ℝ) : ℝ :=
+section
+variable (F : Type) [Field F] [NumberField F]
+    (c : Ideal (𝓞 F))
+include F c
+def B2unitColumn   (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
+    (W : ℝ → ℝ) (M K : ℝ)  :=
   ∑ a ∈ kernelRows F c M K,
     W ((Ideal.absNorm a : ℝ) / M) * ‖(Q.χ ⊤) a‖ ^ 2
 
-def B2env (F : Type) [Field F] [NumberField F]
-    (c : Ideal (𝓞 F)) (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (W : ℝ → ℝ) (M X K : ℝ) : ℝ :=
+def B2env   (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
+    (W : ℝ → ℝ) (M X K : ℝ)  :=
   sSup ({0} ∪
     {x : ℝ | ∃ T : ℝ, 1 ≤ T ∧ T ≤ X ∧ x = B2 F c Q W M T K} ∪
     {x : ℝ | X < 1 ∧ 1 ≤ 2 * X ∧ x = B2unitColumn F c Q W M K})
 
-def gcdTailEnergy (F : Type) [Field F] [NumberField F]
-    (c : Ideal (𝓞 F)) (N : ℝ) (d : Ideal (𝓞 F))
-    (lam : Ideal (𝓞 F) → ℂ) : ℝ :=
+def gcdTailEnergy   (N : ℝ) (d : Ideal (𝓞 F))
+    (lam : Ideal (𝓞 F) → ℂ)  :=
   ∑ b ∈ paperShell F c N, if d ∣ b then ‖lam b‖ ^ 2 else 0
 
-def maskedGcdBlock (F : Type) [Field F] [NumberField F]
-    (c : Ideal (𝓞 F)) (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
+def maskedGcdBlock   (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
     (W : ℝ → ℝ) (q : Ideal (𝓞 F)) (M N K : ℝ)
     (d : Ideal (𝓞 F)) (g : Q.G) (lam : Ideal (𝓞 F) → ℂ)
-    (rowMask : Ideal (𝓞 F) → ℝ) (columnMask : Ideal (𝓞 F) → ℂ) : ℂ :=
+    (rowMask : Ideal (𝓞 F) → ℝ) (columnMask : Ideal (𝓞 F) → ℂ)  :=
   ∑ b1 ∈ paperShell F c N, ∑ b2 ∈ paperShell F c N,
     if b1 ⊔ b2 = d ∧ Q.cls b1 = g ∧ Q.cls b2 = g then
       (columnMask b1 * lam b1) * (starRingEnd ℂ) (columnMask b2 * lam b2) *
@@ -575,6 +571,8 @@ def maskedGcdBlock (F : Type) [Field F] [NumberField F]
               (Q.χ b1) a * (starRingEnd ℂ) ((Q.χ b2) a)
           else 0)
     else 0
+end
+
 
 end DedekindZetaZeroFree.LargeSieve.Sieve
 
@@ -610,7 +608,7 @@ theorem bilinear_gcd_tail
     Nat.pos_of_ne_zero (fun h => hd (Ideal.absNorm_eq_zero_iff.mp h))
   have hdreal : 0 < (Ideal.absNorm d : ℝ) := by exact_mod_cast hdpos
   have hdge : 1 ≤ (Ideal.absNorm d : ℝ) := by exact_mod_cast hdpos
-  let X : ℝ := N / (Ideal.absNorm d : ℝ)
+  let X  := N / (Ideal.absNorm d : ℝ)
   have hX : 0 < X := div_pos hNpos hdreal
   have hXN : X ≤ N := (div_le_iff₀ hdreal).2 (by nlinarith)
   obtain ⟨alpha, halpha, hreindex⟩ := Sieve.GcdTail.quotient_reindex

@@ -94,8 +94,11 @@ private theorem finiteKernel_compact_support_periods {G : Type*} [AddCommGroup G
     · exact hVW (show (u, x) ∈ V ×ˢ W from ⟨hu.1, hKW (subset_closure hx)⟩)
   exact ⟨U, U.isOpen_of_mem_nhds (Filter.mem_of_superset hN hNU), fun _ hu => hu⟩
 
-theorem finiteTraceFourier_bruhat (A : SArithmeticData F)
-    (v : HeightOneSpectrum (𝓞 F)) (f : v.adicCompletion F → ℂ)
+section
+variable (A : SArithmeticData F)
+    (v : HeightOneSpectrum (𝓞 F))
+include A v in
+theorem finiteTraceFourier_bruhat   (f : v.adicCompletion F → ℂ)
     (hf : IsLocallyConstant f ∧ HasCompactSupport f) :
     IsLocallyConstant (A.finiteTraceFourier v f) ∧
       HasCompactSupport (A.finiteTraceFourier v f) := by
@@ -173,7 +176,8 @@ theorem finiteTraceFourier_bruhat (A : SArithmeticData F)
       A.finiteTraceFourier v f y = A.finiteTraceFourier v f y at hi
     exact hne ((mul_eq_right₀ hy).mp hi)
 
-private lemma finiteKernel_traceHaar (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F)) :
+include A v in
+private lemma finiteKernel_traceHaar   :
     (A.finiteTraceHaar v).IsAddHaarMeasure := by
   let K := v.adicCompletion F
   let μ : Measure K := Measure.addHaar
@@ -223,7 +227,8 @@ private lemma finiteKernel_translate_ball {K : Type*} [NormedField K] [IsUltrame
   simp_rw [he] at hi
   simpa only [integral_indicator measurableSet_closedBall] using hi
 
-theorem finiteQuadraticCutoff_linear_eventually (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
+include A v in
+theorem finiteQuadraticCutoff_linear_eventually  
     (a : (v.adicCompletion F)ˣ) (K : Set (v.adicCompletion F)) (hK : IsCompact K) :
     ∀ᶠ n : ℕ in atTop, ∀ b ∈ K,
       (∫ x in exteriorQuadraticCutoff v n,
@@ -256,7 +261,8 @@ theorem finiteQuadraticCutoff_linear_eventually (A : SArithmeticData F) (v : Hei
   rw [hbball] at hv
   rw [hv]
 
-private lemma finiteKernel_compact_fubini (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
+include A v in
+private lemma finiteKernel_compact_fubini  
     (a : (v.adicCompletion F)ˣ) (f : v.adicCompletion F → ℂ)
     (hf : IsLocallyConstant f ∧ HasCompactSupport f) (y : v.adicCompletion F) :
     A.finiteTraceFourier v (A.finiteQuadraticMultiplier v (a : v.adicCompletion F)
@@ -331,8 +337,8 @@ private lemma finiteKernel_compact_fubini (A : SArithmeticData F) (v : HeightOne
   simp_rw [mul_left_comm (f _) (A.finiteOscillatoryValue v a)]
   rw [integral_const_mul]
 
-theorem finiteTraceFourier_quadratic_kernel (A : SArithmeticData F)
-    (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ)
+include A v in
+theorem finiteTraceFourier_quadratic_kernel   (a : (v.adicCompletion F)ˣ)
     (f : v.adicCompletion F → ℂ)
     (hf : IsLocallyConstant f ∧ HasCompactSupport f)
     (y : v.adicCompletion F) :
@@ -372,8 +378,8 @@ theorem finiteTraceFourier_quadratic_kernel (A : SArithmeticData F)
   simp only [finiteOscillatoryValue, div_eq_mul_inv, Complex.ofReal_inv]
   ring
 
-theorem finiteTraceFourier_quadratic_operator (A : SArithmeticData F)
-    (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ)
+include A v in
+theorem finiteTraceFourier_quadratic_operator   (a : (v.adicCompletion F)ˣ)
     (f : v.adicCompletion F → ℂ)
     (hf : IsLocallyConstant f ∧ HasCompactSupport f) :
     A.finiteTraceFourier v
@@ -391,5 +397,7 @@ theorem finiteTraceFourier_quadratic_operator (A : SArithmeticData F)
   simpa only [finiteQuadraticMultiplier, finiteDilation, div_eq_mul_inv,
     neg_mul, mul_neg, one_mul, mul_comm, mul_left_comm, mul_assoc] using
     A.finiteTraceFourier_quadratic_kernel v a f hf y
+end
+
 
 end DedekindZetaZeroFree.SArithmeticData

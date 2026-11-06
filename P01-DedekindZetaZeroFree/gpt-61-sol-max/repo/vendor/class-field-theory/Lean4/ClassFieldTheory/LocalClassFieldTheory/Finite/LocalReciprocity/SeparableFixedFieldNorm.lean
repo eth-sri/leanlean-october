@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import Mathlib.FieldTheory.PrimitiveElement
 public import ClassFieldTheory.LocalClassFieldTheory.Finite.LocalReciprocity.SeparableNormProduct
 public import ClassFieldTheory.LocalClassFieldTheory.Finite.LocalReciprocity.SeparableUnitsNorm
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -75,7 +78,7 @@ def baseFixingCosetToAlgHom :
       intro x
       have hηfix :=
         (IntermediateField.mem_fixingSubgroup_iff E η.1).mp η.2
-      have hηx : η.1 (x : Ω) = (x : Ω) := hηfix x x.2
+      have hηx  := hηfix x x.2
       have hτ' := congrArg Subtype.val hτ
       change τ.1 = σ.1 * η.1 at hτ'
       change σ.1 (x : Ω) = τ.1 (x : Ω)
@@ -99,12 +102,12 @@ theorem baseFixingCosetToAlgHom_mk
     [FiniteDimensional K E] [Algebra.IsSeparable K E] :
     Function.Surjective (baseFixingCosetToAlgHom K Ω E) := by
   intro f
-  let : Algebra.IsSeparable E Ω :=
+  let  :=
     Algebra.isSeparable_tower_top_of_isSeparable K E Ω
   obtain ⟨φ, hφ⟩ :=
     (IsSepClosed.surjective_domRestrict_of_isSeparable
       (K := K) (L := E) (M := Ω) (E := Ω)) f
-  let σ : Ω ≃ₐ[K] Ω :=
+  let σ  :=
     AlgEquiv.ofBijective φ
       (Normal.toIsAlgebraic.algHom_bijective₂
         φ (AlgHom.id K Ω)).1
@@ -282,7 +285,7 @@ theorem relativeNorm_intermediateFieldUnit_of_isSeparable (x : Eˣ) :
   apply Subtype.ext
   apply Additive.ext
   apply Units.ext
-  exact relativeNorm_intermediateFieldUnit_val_of_isSeparable K Ω E x
+  apply relativeNorm_intermediateFieldUnit_val_of_isSeparable
 
 end NormAsProduct
 

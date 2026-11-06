@@ -144,10 +144,13 @@ theorem affineResidueDualTheta_integrableOn :
   exact ((affineResidueDualTheta_continuous m hm I x u hu).continuousOn.integrableOn_compact
     (RayCoset.isCompact_closure_rayUnitHalfOpenDomain F m hm)).mono_set subset_closure
 
-theorem affineResidueTheta_congr
-    (y : {y : F // y ∈ (I : FractionalIdeal (𝓞 F)⁰ F)})
+section
+variable (y : {y : F // y ∈ (I : FractionalIdeal (𝓞 F)⁰ F)})
     (hxy : x.val - y.val ∈
       ((I * rayIdealFractionalIdeal F m hm) : FractionalIdeal (𝓞 F)⁰ F))
+include y hxy
+theorem affineResidueTheta_congr
+     
     (h : RayCoset.logHyperplane F) :
     affineResidueTheta m hm I x u h = affineResidueTheta m hm I y u h := by
   let J := ((I * rayIdealFractionalIdeal F m hm) : FractionalIdeal (𝓞 F)⁰ F)
@@ -165,9 +168,7 @@ theorem affineResidueTheta_congr
   ring
 
 theorem affineResidueDualTheta_congr
-    (y : {y : F // y ∈ (I : FractionalIdeal (𝓞 F)⁰ F)})
-    (hxy : x.val - y.val ∈
-      ((I * rayIdealFractionalIdeal F m hm) : FractionalIdeal (𝓞 F)⁰ F))
+     
     (h : RayCoset.logHyperplane F) :
     affineResidueDualTheta m hm I x u h = affineResidueDualTheta m hm I y u h := by
   unfold affineResidueDualTheta
@@ -186,22 +187,20 @@ theorem affineResidueDualTheta_congr
   rw [ht, AddChar.map_add_eq_mul, hp, one_mul]
 
 theorem affineResidueAverage_congr
-    (y : {y : F // y ∈ (I : FractionalIdeal (𝓞 F)⁰ F)})
-    (hxy : x.val - y.val ∈
-      ((I * rayIdealFractionalIdeal F m hm) : FractionalIdeal (𝓞 F)⁰ F)) :
+      :
     affineResidueAverage m hm I x u = affineResidueAverage m hm I y u := by
   unfold affineResidueAverage
   exact setIntegral_congr_fun (RayCoset.measurableSet_rayUnitHalfOpenDomain F m hm)
     (fun h _ => affineResidueTheta_congr m hm I x u hu y hxy h)
 
 theorem affineResidueDualAverage_congr
-    (y : {y : F // y ∈ (I : FractionalIdeal (𝓞 F)⁰ F)})
-    (hxy : x.val - y.val ∈
-      ((I * rayIdealFractionalIdeal F m hm) : FractionalIdeal (𝓞 F)⁰ F)) :
+      :
     affineResidueDualAverage m hm I x u = affineResidueDualAverage m hm I y u := by
   unfold affineResidueDualAverage
   exact setIntegral_congr_fun (RayCoset.measurableSet_rayUnitHalfOpenDomain F m hm)
     (fun h _ => affineResidueDualTheta_congr m hm I x u hu y hxy h)
+end
+
 end Affine
 
 section Weighted

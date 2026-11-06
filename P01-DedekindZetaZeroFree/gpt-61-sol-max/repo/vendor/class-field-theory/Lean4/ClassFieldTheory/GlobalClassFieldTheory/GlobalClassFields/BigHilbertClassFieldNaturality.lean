@@ -41,20 +41,23 @@ variable
     [Field K] [NumberField K]
     [Field M] [NumberField M]
 
-private theorem bigHilbertClassFieldQuotientEquivNarrowClassGroup_mk
-    (a : IdeleGroup K) :
-    bigHilbertClassFieldQuotientEquivNarrowClassGroup
-        (K := K)
-        (QuotientGroup.mk'
-          (bigHilbertClassFieldNormSubgroup (K := K))
-          (QuotientGroup.mk'
-            (IdeleGroup.principalSubgroup K) a)) =
-      QuotientGroup.mk'
-        (RayClass.narrowDenominator (K := K)) a :=
-  rfl
 
- noncomputable def infinitePlaceCompletionCongrHom
-    (e : K ≃ₐ[ℚ] M)
+
+
+
+
+
+
+
+
+
+
+
+ section
+variable (e : K ≃ₐ[ℚ] M)
+include e
+noncomputable def infinitePlaceCompletionCongrHom
+     
     (W : InfinitePlace M) :
     (W.comap e.toRingHom).Completion →+*
       W.Completion := by
@@ -69,7 +72,7 @@ private theorem bigHilbertClassFieldQuotientEquivNarrowClassGroup_mk
       (v := v) (w := W)
 
 private theorem infinitePlaceCompletionCongrHom_algebraMap
-    (e : K ≃ₐ[ℚ] M)
+     
     (W : InfinitePlace M)
     (x : K) :
     infinitePlaceCompletionCongrHom e W
@@ -105,7 +108,7 @@ private theorem infinitePlaceCompletionCongrHom_algebraMap
 
 private theorem
     relativeAdeleBaseChangeRingEquiv_relativeAdeleCongr_infiniteComponent_tmul
-    (e : K ≃ₐ[ℚ] M)
+     
     (b : NumberField.AdeleRing (𝓞 ℚ) ℚ)
     (x : K)
     (W : InfinitePlace M) :
@@ -184,7 +187,7 @@ private theorem
   exact hcomponent qv hq
 
 private theorem adeleCongr_infiniteComponent
-    (e : K ≃ₐ[ℚ] M)
+     
     (a : NumberField.AdeleRing (𝓞 K) K)
     (W : InfinitePlace M) :
     (adeleCongr e a).1 W =
@@ -229,7 +232,7 @@ private theorem adeleCongr_infiniteComponent
           e b x W
 
 private theorem ideleCongr_infiniteComponent
-    (e : K ≃ₐ[ℚ] M)
+     
     (a : IdeleGroup K)
     (W : InfinitePlace M) :
     IdeleGroup.infiniteComponent W (ideleCongr e a) =
@@ -247,7 +250,7 @@ private theorem ideleCongr_infiniteComponent
 
 private theorem
     infinitePlaceCompletionCongrHom_extensionEmbeddingOfIsReal
-    (e : K ≃ₐ[ℚ] M)
+     
     (W : InfinitePlace M)
     (hW : W.IsReal)
     (x : (W.comap e.toRingHom).Completion) :
@@ -282,7 +285,7 @@ private theorem
 
 private theorem
     infinitePlaceCompletionCongrHom_mem_infinitePositiveSubgroup_iff
-    (e : K ≃ₐ[ℚ] M)
+     
     (W : InfinitePlace M)
     (x : (W.comap e.toRingHom).Completionˣ) :
     Units.map
@@ -327,7 +330,7 @@ private theorem
     simpa only using hpos
 
 private theorem ideleCongr_mem_infiniteCongruenceSubgroup_iff
-    (e : K ≃ₐ[ℚ] M)
+     
     (a : IdeleGroup K) :
     (ideleCongr e a).1 ∈
         RayClass.narrowInfiniteCongruenceSubgroup (K := M) ↔
@@ -375,7 +378,7 @@ private theorem ideleCongr_mem_infiniteCongruenceSubgroup_iff
     simpa only [IdeleGroup.infiniteComponent_apply] using hW
 
 private theorem ideleCongr_mem_ideleCongruenceSubgroup_zero_iff
-    (e : K ≃ₐ[ℚ] M)
+     
     (a : IdeleGroup K) :
     ideleCongr e a ∈
         (RayClass.Modulus.narrowOfFinite
@@ -407,7 +410,7 @@ private theorem ideleCongr_mem_ideleCongruenceSubgroup_zero_iff
       hfiniteZero
 
 private theorem ideleCongruenceSubgroup_zero_map_ideleCongr
-    (e : K ≃ₐ[ℚ] M) :
+      :
     ((RayClass.Modulus.narrowOfFinite
         (0 : RayClass.FiniteModulus K)).ideleCongruenceSubgroup).map
           (ideleCongr e).toMonoidHom =
@@ -431,7 +434,7 @@ private theorem ideleCongruenceSubgroup_zero_map_ideleCongr
         (ideleCongr e).apply_symm_apply b
 
 private theorem narrowDenominator_map_ideleCongr
-    (e : K ≃ₐ[ℚ] M) :
+      :
     (RayClass.narrowDenominator (K := K)).map
         (ideleCongr e).toMonoidHom =
       RayClass.narrowDenominator (K := M) := by
@@ -453,7 +456,7 @@ private theorem narrowDenominator_map_ideleCongr
 carries the big-Hilbert norm subgroup exactly onto the big-Hilbert norm
 subgroup of the target field. -/
 theorem bigHilbertClassFieldNormSubgroup_map_ideleClassCongr
-    (e : K ≃ₐ[ℚ] M) :
+      :
     (bigHilbertClassFieldNormSubgroup (K := K)).map
         (ideleClassCongr e).toMonoidHom =
       bigHilbertClassFieldNormSubgroup (K := M) := by
@@ -486,7 +489,7 @@ theorem bigHilbertClassFieldNormSubgroup_map_ideleClassCongr
 /-- The canonical equivalence of big-Hilbert reciprocity quotients
 induced by an equivalence of number fields. -/
 noncomputable def bigHilbertClassFieldQuotientCongr
-    (e : K ≃ₐ[ℚ] M) :
+      :
     (IdeleClassGroup K ⧸
         bigHilbertClassFieldNormSubgroup (K := K)) ≃*
       (IdeleClassGroup M ⧸
@@ -501,7 +504,7 @@ noncomputable def bigHilbertClassFieldQuotientCongr
 by the actual transport of idele classes. -/
 @[simp]
 theorem bigHilbertClassFieldQuotientCongr_mk
-    (e : K ≃ₐ[ℚ] M)
+     
     (c : IdeleClassGroup K) :
     bigHilbertClassFieldQuotientCongr e
         (QuotientGroup.mk'
@@ -510,107 +513,109 @@ theorem bigHilbertClassFieldQuotientCongr_mk
         (bigHilbertClassFieldNormSubgroup (K := M))
         (ideleClassCongr e c) :=
   rfl
+end
 
-/-- Canonical transport of narrow ideal classes determined by the
-big-Hilbert reciprocity quotient. -/
-noncomputable def bigHilbertNarrowClassGroupCongr
-    (e : K ≃ₐ[ℚ] M) :
-    RayClass.NarrowClassGroup K ≃*
-      RayClass.NarrowClassGroup M :=
-  (bigHilbertClassFieldQuotientEquivNarrowClassGroup
-      (K := K)).symm |>.trans
-    ((bigHilbertClassFieldQuotientCongr e).trans
-      (bigHilbertClassFieldQuotientEquivNarrowClassGroup
-        (K := M)))
 
-/-- Naturality of the canonical identification of the big-Hilbert
-reciprocity quotient with the narrow class group. -/
-@[simp]
-theorem bigHilbertClassFieldQuotientEquivNarrowClassGroup_naturality
-    (e : K ≃ₐ[ℚ] M)
-    (q : IdeleClassGroup K ⧸
-      bigHilbertClassFieldNormSubgroup (K := K)) :
-    bigHilbertClassFieldQuotientEquivNarrowClassGroup
-        (K := M)
-        (bigHilbertClassFieldQuotientCongr e q) =
-      bigHilbertNarrowClassGroupCongr e
-        (bigHilbertClassFieldQuotientEquivNarrowClassGroup
-          (K := K) q) := by
-  simp only [bigHilbertNarrowClassGroupCongr,
-    MulEquiv.trans_apply, MulEquiv.symm_apply_apply]
 
-/-- Homomorphism form of naturality for the big-Hilbert
-quotient--narrow-class-group identification. -/
-theorem
-    bigHilbertClassFieldQuotientEquivNarrowClassGroup_naturality_hom
-    (e : K ≃ₐ[ℚ] M) :
-    (bigHilbertClassFieldQuotientEquivNarrowClassGroup
-        (K := M)).toMonoidHom.comp
-        (bigHilbertClassFieldQuotientCongr
-          (K := K) (M := M) e).toMonoidHom =
-      (bigHilbertNarrowClassGroupCongr
-        (K := K) (M := M) e).toMonoidHom.comp
-        (bigHilbertClassFieldQuotientEquivNarrowClassGroup
-          (K := K)).toMonoidHom := by
-  ext q
-  exact
-    bigHilbertClassFieldQuotientEquivNarrowClassGroup_naturality
-      (K := K) (M := M) e q
 
-/-- On an idele representative, canonical transport of narrow ideal
-classes is represented by the transported idele itself. -/
-@[simp]
-theorem bigHilbertNarrowClassGroupCongr_mk
-    (e : K ≃ₐ[ℚ] M)
-    (a : IdeleGroup K) :
-    bigHilbertNarrowClassGroupCongr e
-        (QuotientGroup.mk'
-          (RayClass.narrowDenominator (K := K)) a) =
-      QuotientGroup.mk'
-        (RayClass.narrowDenominator (K := M))
-        (ideleCongr e a) := by
-  let q :
-      IdeleClassGroup K ⧸
-        bigHilbertClassFieldNormSubgroup (K := K) :=
-    QuotientGroup.mk'
-      (bigHilbertClassFieldNormSubgroup (K := K))
-      (QuotientGroup.mk'
-        (IdeleGroup.principalSubgroup K) a)
-  calc
-    bigHilbertNarrowClassGroupCongr e
-          (QuotientGroup.mk'
-            (RayClass.narrowDenominator (K := K)) a) =
-        bigHilbertNarrowClassGroupCongr e
-          (bigHilbertClassFieldQuotientEquivNarrowClassGroup
-            (K := K) q) := by
-              simp only [q,
-                bigHilbertClassFieldQuotientEquivNarrowClassGroup_mk]
-    _ =
-        bigHilbertClassFieldQuotientEquivNarrowClassGroup
-          (K := M)
-          (bigHilbertClassFieldQuotientCongr e q) :=
-      (bigHilbertClassFieldQuotientEquivNarrowClassGroup_naturality
-        e q).symm
-    _ =
-        QuotientGroup.mk'
-          (RayClass.narrowDenominator (K := M))
-          (ideleCongr e a) := by
-      simp only [q, bigHilbertClassFieldQuotientCongr_mk,
-        ideleClassCongr_mk,
-        bigHilbertClassFieldQuotientEquivNarrowClassGroup_mk]
 
-/-- Homomorphism form of naturality for narrow ideal classes under the
-big-Hilbert narrow-class-group transport. -/
-theorem bigHilbertNarrowClassGroupCongr_naturality
-    (e : K ≃ₐ[ℚ] M) :
-    (bigHilbertNarrowClassGroupCongr e).toMonoidHom.comp
-        (QuotientGroup.mk'
-          (RayClass.narrowDenominator (K := K))) =
-      (QuotientGroup.mk'
-        (RayClass.narrowDenominator (K := M))).comp
-          (ideleCongr e).toMonoidHom := by
-  ext a
-  exact bigHilbertNarrowClassGroupCongr_mk e a
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end GlobalClassFields
 end GlobalClassFieldTheory

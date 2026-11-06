@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Topology.Algebra.Module.FiniteDimension
 public import Mathlib.Analysis.Complex.Basic
 
 @[expose] public section
+
 
 noncomputable section
 set_option linter.style.haveILetI false
@@ -17,7 +20,7 @@ theorem finite_stage_intersection_closed
     IsClosed ((A ⊓ S : Submodule ℂ V) : Set V) := by
   haveI : FiniteDimensional ℂ (A ⊓ S : Submodule ℂ V) :=
     Submodule.finiteDimensional_of_le (le_trans inf_le_left hAT)
-  exact Submodule.closed_of_finiteDimensional (A ⊓ S)
+  apply Submodule.closed_of_finiteDimensional
 
 end DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration
 

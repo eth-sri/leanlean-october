@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.RingTheory.PowerSeries.Basic
 public import Mathlib.Algebra.BigOperators.NatAntidiagonal
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -43,10 +46,13 @@ namespace EqualCharacteristic
 
 variable {R : Type*} [CommRing R]
 
+section
+variable (φ : R →+* R) (γ β : R⟦X⟧)
+include φ γ β
 /-- The recursively determined coefficients of the solution of
 `α = β + γ * φ(α)` when `γ(0)=0`. -/
 noncomputable def contractingFrobeniusEquationCoeff
-    (φ : R →+* R) (γ β : R⟦X⟧) : ℕ → R :=
+      : ℕ → R :=
   Nat.strongRec fun n previous ↦
     PowerSeries.coeff n β +
       ∑ k : Fin n,
@@ -55,7 +61,7 @@ noncomputable def contractingFrobeniusEquationCoeff
 
 /-- States the theorem `contractingFrobeniusEquationCoeff_eq`. -/
 theorem contractingFrobeniusEquationCoeff_eq
-    (φ : R →+* R) (γ β : R⟦X⟧) (n : ℕ) :
+      (n : ℕ) :
     contractingFrobeniusEquationCoeff φ γ β n =
       PowerSeries.coeff n β +
         ∑ k : Fin n,
@@ -66,20 +72,25 @@ theorem contractingFrobeniusEquationCoeff_eq
 
 /-- The power series obtained from the contracting coefficient recursion. -/
 noncomputable def contractingFrobeniusEquationSolution
-    (φ : R →+* R) (γ β : R⟦X⟧) : R⟦X⟧ :=
+       :=
   PowerSeries.mk (contractingFrobeniusEquationCoeff φ γ β)
 
 /-- States the theorem `contractingFrobeniusEquationSolution_coeff`. -/
 @[simp]
 theorem contractingFrobeniusEquationSolution_coeff
-    (φ : R →+* R) (γ β : R⟦X⟧) (n : ℕ) :
+      (n : ℕ) :
     PowerSeries.coeff n
         (contractingFrobeniusEquationSolution φ γ β) =
       contractingFrobeniusEquationCoeff φ γ β n := by
   simp [contractingFrobeniusEquationSolution]
+end
 
+
+section
+variable (φ : R →+* R)
+include φ
 private theorem sum_range_succ_convolution_of_constantCoeff_eq_zero
-    (φ : R →+* R) (γ α : R⟦X⟧)
+      (γ α : R⟦X⟧)
     (hγ : PowerSeries.coeff 0 γ = 0) (n : ℕ) :
     ∑ k ∈ Finset.range (n + 1),
         PowerSeries.coeff k γ * φ (PowerSeries.coeff (n - k) α) =
@@ -96,7 +107,7 @@ private theorem sum_range_succ_convolution_of_constantCoeff_eq_zero
 /-- The recursively constructed series solves the contracting Frobenius
 equation from the contracting Frobenius equation. -/
 theorem contractingFrobeniusEquationSolution_spec
-    (φ : R →+* R) (γ β : R⟦X⟧)
+      (γ β : R⟦X⟧)
     (hγ : PowerSeries.coeff 0 γ = 0) :
     contractingFrobeniusEquationSolution φ γ β =
       β + γ * PowerSeries.map φ
@@ -115,7 +126,7 @@ theorem contractingFrobeniusEquationSolution_spec
 /-- Uniqueness of the contracting Frobenius equation.  This is the
 coefficientwise replacement for a global valuation argument. -/
 theorem contractingFrobeniusEquationSolution_unique
-    (φ : R →+* R) (γ β α : R⟦X⟧)
+      (γ β α : R⟦X⟧)
     (hγ : PowerSeries.coeff 0 γ = 0)
     (hα : α = β + γ * PowerSeries.map φ α) :
     α = contractingFrobeniusEquationSolution φ γ β := by
@@ -141,16 +152,18 @@ theorem contractingFrobeniusEquationSolution_unique
 
 /-- traditional notation form: the unique solution of `α - γ φ(α) = β`. -/
 theorem existsUnique_contractingFrobeniusEquation
-    (φ : R →+* R) (γ β : R⟦X⟧)
+      (γ β : R⟦X⟧)
     (hγ : PowerSeries.coeff 0 γ = 0) :
     ∃! α : R⟦X⟧, α - γ * PowerSeries.map φ α = β := by
   refine ⟨contractingFrobeniusEquationSolution φ γ β, ?_, ?_⟩
   · apply (sub_eq_iff_eq_add).2
-    exact contractingFrobeniusEquationSolution_spec φ γ β hγ
+    apply contractingFrobeniusEquationSolution_spec <;> assumption
   · intro α hα
     apply contractingFrobeniusEquationSolution_unique φ γ β α hγ
     rw [sub_eq_iff_eq_add] at hα
     exact hα
+end
+
 
 end EqualCharacteristic
 end LubinTate

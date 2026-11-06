@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.SpecialFunctions.Complex.CircleAddChar
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.Hecke
 
@@ -12,10 +15,10 @@ open scoped BigOperators Classical
 
 variable {R : Type*} [CommRing R] [Fintype R] [hR : Nontrivial R]
 
-def IsPrimitiveRingAddChar (e : AddChar R ℂ) : Prop :=
+def IsPrimitiveRingAddChar (e : AddChar R ℂ)  :=
   ∀ J : Ideal R, (∀ x ∈ J, e x = 1) → J = ⊥
 
-def finiteRingFourier (e : AddChar R ℂ) (f : R → ℂ) (k : R) : ℂ :=
+def finiteRingFourier (e : AddChar R ℂ) (f : R → ℂ) (k : R)  :=
   ∑ x : R, f x * e (k * x)
 
 include hR in

@@ -46,28 +46,31 @@ open LocalFieldTheory.DiscreteValuationField
 
 variable {K : Type u} [Field K]
 
+section
+variable (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ)
+include F a
 /-- The changed integral uniformizer `uT`, for `u ∈ κ[[T]]ˣ`. -/
 noncomputable def equalCharacteristicChangedIntegralUniformizer
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) :
+      :
     F.residueField⟦X⟧ :=
   (a : F.residueField⟦X⟧) * PowerSeries.X
 
 /-- The changed uniformizer `uT` in `κ((T))`. -/
 noncomputable def equalCharacteristicChangedLaurentUniformizer
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) :
+      :
     F.residueField⸨X⸩ :=
   algebraMap F.residueField⟦X⟧ F.residueField⸨X⸩
     (equalCharacteristicChangedIntegralUniformizer F a)
 
 /-- The Laurent-series unit corresponding to the integral unit `a`. -/
 noncomputable def equalCharacteristicChangedLaurentUnit
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) :
+      :
     F.residueField⸨X⸩ˣ :=
   Units.map (algebraMap F.residueField⟦X⟧ F.residueField⸨X⸩) a
 
 /-- The changed parameter really is the changed parameter `uT`. -/
 theorem equalCharacteristicChangedLaurentUniformizer_eq_unit_mul
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) :
+      :
     equalCharacteristicChangedLaurentUniformizer F a =
       (equalCharacteristicChangedLaurentUnit F a : F.residueField⸨X⸩) *
         equalCharacteristicLaurentUniformizer F := by
@@ -76,24 +79,24 @@ theorem equalCharacteristicChangedLaurentUniformizer_eq_unit_mul
     equalCharacteristicChangedLaurentUnit,
     equalCharacteristicLaurentUniformizer]
 
-/-- Changing the Laurent uniformizer by the unit one leaves it unchanged. -/
-@[simp]
-theorem equalCharacteristicChangedLaurentUniformizer_one
-    (F : LocalField.{u, v} K) :
-    equalCharacteristicChangedLaurentUniformizer F 1 =
-      equalCharacteristicLaurentUniformizer F := by
-  simp [equalCharacteristicChangedLaurentUniformizer_eq_unit_mul,
-    equalCharacteristicChangedLaurentUnit]
+
+
+
+
+
+
+
+
 
 /-- A unit multiple of the integral uniformizer is nonzero. -/
 theorem equalCharacteristicChangedIntegralUniformizer_ne_zero
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) :
+      :
     equalCharacteristicChangedIntegralUniformizer F a ≠ 0 := by
   exact mul_ne_zero a.ne_zero PowerSeries.X_ne_zero
 
 /-- The changed Laurent uniformizer is nonzero. -/
 theorem equalCharacteristicChangedLaurentUniformizer_ne_zero
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) :
+      :
     equalCharacteristicChangedLaurentUniformizer F a ≠ 0 := by
   rw [equalCharacteristicChangedLaurentUniformizer]
   intro h
@@ -106,7 +109,7 @@ theorem equalCharacteristicChangedLaurentUniformizer_ne_zero
 
 /-- The integral Lubin--Tate polynomial attached to `uT`. -/
 noncomputable def equalCharacteristicChangedIntegralPiPolynomial
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) :
+      :
     Polynomial F.residueField⟦X⟧ :=
   Polynomial.X ^ Nat.card F.residueField +
     Polynomial.C (equalCharacteristicChangedIntegralUniformizer F a) *
@@ -114,7 +117,7 @@ noncomputable def equalCharacteristicChangedIntegralPiPolynomial
 
 /-- The changed integral `π`-polynomial is monic. -/
 theorem equalCharacteristicChangedIntegralPiPolynomial_monic
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) :
+      :
     (equalCharacteristicChangedIntegralPiPolynomial F a).Monic := by
   rw [equalCharacteristicChangedIntegralPiPolynomial]
   refine (Polynomial.monic_X_pow _).add_of_left ?_
@@ -125,7 +128,7 @@ theorem equalCharacteristicChangedIntegralPiPolynomial_monic
 
 /-- The changed integral `π`-polynomial has degree equal to the residue-field cardinality. -/
 theorem equalCharacteristicChangedIntegralPiPolynomial_natDegree
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) :
+      :
     (equalCharacteristicChangedIntegralPiPolynomial F a).natDegree =
       Nat.card F.residueField := by
   rw [equalCharacteristicChangedIntegralPiPolynomial,
@@ -138,13 +141,13 @@ theorem equalCharacteristicChangedIntegralPiPolynomial_natDegree
 
 /-- The compositional iterate of `P_{uT}` over `κ[[T]]`. -/
 noncomputable def equalCharacteristicChangedIntegralPiPolynomialIterate
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      (n : ℕ) :
     Polynomial F.residueField⟦X⟧ :=
   (equalCharacteristicChangedIntegralPiPolynomial F a).comp^[n] Polynomial.X
 
 /-- The `n`-fold changed integral `π`-polynomial has degree `q ^ n`. -/
 theorem equalCharacteristicChangedIntegralPiPolynomialIterate_natDegree
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      (n : ℕ) :
     (equalCharacteristicChangedIntegralPiPolynomialIterate F a n).natDegree =
       Nat.card F.residueField ^ n := by
   rw [equalCharacteristicChangedIntegralPiPolynomialIterate,
@@ -154,7 +157,7 @@ theorem equalCharacteristicChangedIntegralPiPolynomialIterate_natDegree
 
 /-- The successor iterate is obtained by one more composition with the changed `π`-polynomial. -/
 theorem equalCharacteristicChangedIntegralPiPolynomialIterate_succ
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      (n : ℕ) :
     equalCharacteristicChangedIntegralPiPolynomialIterate F a (n + 1) =
       (equalCharacteristicChangedIntegralPiPolynomial F a).comp
         (equalCharacteristicChangedIntegralPiPolynomialIterate F a n) := by
@@ -164,7 +167,7 @@ theorem equalCharacteristicChangedIntegralPiPolynomialIterate_succ
 
 /-- Every iterate of the changed integral `π`-polynomial is monic. -/
 theorem equalCharacteristicChangedIntegralPiPolynomialIterate_monic
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      (n : ℕ) :
     (equalCharacteristicChangedIntegralPiPolynomialIterate F a n).Monic := by
   induction n with
   | zero => simp [equalCharacteristicChangedIntegralPiPolynomialIterate]
@@ -179,7 +182,7 @@ theorem equalCharacteristicChangedIntegralPiPolynomialIterate_monic
 
 /-- Reducing coefficients sends the changed integral `π`-polynomial to `X ^ q`. -/
 theorem equalCharacteristicChangedIntegralPiPolynomial_map_constantCoeff
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) :
+      :
     (equalCharacteristicChangedIntegralPiPolynomial F a).map
         (PowerSeries.constantCoeff (R := F.residueField)) =
       Polynomial.X ^ Nat.card F.residueField := by
@@ -188,7 +191,7 @@ theorem equalCharacteristicChangedIntegralPiPolynomial_map_constantCoeff
 
 /-- Reducing coefficients sends the `n`-fold changed `π`-iterate to `X ^ (q ^ n)`. -/
 theorem equalCharacteristicChangedIntegralPiPolynomialIterate_map_constantCoeff
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      (n : ℕ) :
     (equalCharacteristicChangedIntegralPiPolynomialIterate F a n).map
         (PowerSeries.constantCoeff (R := F.residueField)) =
       Polynomial.X ^ (Nat.card F.residueField ^ n) := by
@@ -204,7 +207,7 @@ theorem equalCharacteristicChangedIntegralPiPolynomialIterate_map_constantCoeff
 
 /-- Every changed integral `π`-iterate vanishes at zero. -/
 theorem equalCharacteristicChangedIntegralPiPolynomialIterate_eval_zero
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      (n : ℕ) :
     (equalCharacteristicChangedIntegralPiPolynomialIterate F a n).eval 0 = 0 := by
   induction n with
   | zero =>
@@ -218,7 +221,7 @@ theorem equalCharacteristicChangedIntegralPiPolynomialIterate_eval_zero
 
 /-- The integral primitive level-`n+1` polynomial for `uT`. -/
 noncomputable def equalCharacteristicChangedIntegralPrimitivePolynomial
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      (n : ℕ) :
     Polynomial F.residueField⟦X⟧ :=
   equalCharacteristicChangedIntegralPiPolynomialIterate F a n ^
       (Nat.card F.residueField - 1) +
@@ -226,7 +229,7 @@ noncomputable def equalCharacteristicChangedIntegralPrimitivePolynomial
 
 /-- The changed integral primitive polynomial has degree `(q - 1) * q ^ n`. -/
 theorem equalCharacteristicChangedIntegralPrimitivePolynomial_natDegree
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      (n : ℕ) :
     (equalCharacteristicChangedIntegralPrimitivePolynomial F a n).natDegree =
       (Nat.card F.residueField - 1) * Nat.card F.residueField ^ n := by
   rw [equalCharacteristicChangedIntegralPrimitivePolynomial]
@@ -246,7 +249,7 @@ theorem equalCharacteristicChangedIntegralPrimitivePolynomial_natDegree
 
 /-- The changed integral primitive polynomial is monic. -/
 theorem equalCharacteristicChangedIntegralPrimitivePolynomial_monic
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      (n : ℕ) :
     (equalCharacteristicChangedIntegralPrimitivePolynomial F a n).Monic := by
   rw [equalCharacteristicChangedIntegralPrimitivePolynomial]
   let A := equalCharacteristicChangedIntegralPiPolynomialIterate F a n
@@ -266,7 +269,7 @@ theorem equalCharacteristicChangedIntegralPrimitivePolynomial_monic
 
 /-- Reducing the changed integral primitive polynomial yields the expected monomial. -/
 theorem equalCharacteristicChangedIntegralPrimitivePolynomial_map_constantCoeff
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      (n : ℕ) :
     (equalCharacteristicChangedIntegralPrimitivePolynomial F a n).map
         (PowerSeries.constantCoeff (R := F.residueField)) =
       Polynomial.X ^
@@ -277,7 +280,7 @@ theorem equalCharacteristicChangedIntegralPrimitivePolynomial_map_constantCoeff
 
 /-- The constant coefficient of the changed integral primitive polynomial is the changed uniformizer. -/
 theorem equalCharacteristicChangedIntegralPrimitivePolynomial_coeff_zero
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      (n : ℕ) :
     (equalCharacteristicChangedIntegralPrimitivePolynomial F a n).coeff 0 =
       equalCharacteristicChangedIntegralUniformizer F a := by
   rw [Polynomial.coeff_zero_eq_eval_zero]
@@ -288,7 +291,7 @@ theorem equalCharacteristicChangedIntegralPrimitivePolynomial_coeff_zero
 
 /-- The changed integral uniformizer does not lie in the square of the `X`-adic ideal. -/
 theorem equalCharacteristicChangedIntegralUniformizer_notMem_span_X_sq
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) :
+      :
     equalCharacteristicChangedIntegralUniformizer F a ∉
       (Ideal.span ({PowerSeries.X} : Set F.residueField⟦X⟧)) ^ 2 := by
   intro h
@@ -300,7 +303,7 @@ theorem equalCharacteristicChangedIntegralUniformizer_notMem_span_X_sq
 
 /-- The changed primitive polynomial is Eisenstein at `(T)`. -/
 theorem equalCharacteristicChangedIntegralPrimitivePolynomial_isEisensteinAt
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      (n : ℕ) :
     (equalCharacteristicChangedIntegralPrimitivePolynomial F a n).IsEisensteinAt
       (Ideal.span ({PowerSeries.X} : Set F.residueField⟦X⟧)) := by
   let Q := equalCharacteristicChangedIntegralPrimitivePolynomial F a n
@@ -328,7 +331,7 @@ theorem equalCharacteristicChangedIntegralPrimitivePolynomial_isEisensteinAt
 
 /-- The changed integral primitive polynomial is irreducible by Eisenstein's criterion. -/
 theorem equalCharacteristicChangedIntegralPrimitivePolynomial_irreducible
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      (n : ℕ) :
     Irreducible (equalCharacteristicChangedIntegralPrimitivePolynomial F a n) := by
   apply (equalCharacteristicChangedIntegralPrimitivePolynomial_isEisensteinAt
     F a n).irreducible
@@ -342,14 +345,14 @@ theorem equalCharacteristicChangedIntegralPrimitivePolynomial_irreducible
 
 /-- The Laurent-series Lubin--Tate polynomial for the changed uniformizer. -/
 noncomputable def equalCharacteristicChangedPiPolynomial
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) :
+      :
     Polynomial F.residueField⸨X⸩ :=
   (equalCharacteristicChangedIntegralPiPolynomial F a).map
     (algebraMap F.residueField⟦X⟧ F.residueField⸨X⸩)
 
 /-- Expands the changed Laurent `π`-polynomial as `X ^ q + π * X`. -/
 theorem equalCharacteristicChangedPiPolynomial_eq
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) :
+      :
     equalCharacteristicChangedPiPolynomial F a =
       Polynomial.X ^ Nat.card F.residueField +
         Polynomial.C (equalCharacteristicChangedLaurentUniformizer F a) *
@@ -358,34 +361,34 @@ theorem equalCharacteristicChangedPiPolynomial_eq
     equalCharacteristicChangedIntegralPiPolynomial,
     equalCharacteristicChangedLaurentUniformizer]
 
-/-- The changed Laurent `π`-polynomial has degree equal to the residue-field cardinality. -/
-theorem equalCharacteristicChangedPiPolynomial_natDegree
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) :
-    (equalCharacteristicChangedPiPolynomial F a).natDegree =
-      Nat.card F.residueField := by
-  rw [equalCharacteristicChangedPiPolynomial,
-    (equalCharacteristicChangedIntegralPiPolynomial_monic F a).natDegree_map,
-    equalCharacteristicChangedIntegralPiPolynomial_natDegree]
+
+
+
+
+
+
+
+
 
 /-- The compositional iterate of `P_{uT}` over `κ((T))`. -/
 noncomputable def equalCharacteristicChangedPiPolynomialIterate
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      (n : ℕ) :
     Polynomial F.residueField⸨X⸩ :=
   (equalCharacteristicChangedPiPolynomial F a).comp^[n] Polynomial.X
 
-/-- The `n`-fold changed Laurent `π`-iterate has degree `q ^ n`. -/
-theorem equalCharacteristicChangedPiPolynomialIterate_natDegree
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
-    (equalCharacteristicChangedPiPolynomialIterate F a n).natDegree =
-      Nat.card F.residueField ^ n := by
-  rw [equalCharacteristicChangedPiPolynomialIterate,
-    Polynomial.natDegree_iterate_comp,
-    equalCharacteristicChangedPiPolynomial_natDegree,
-      Polynomial.natDegree_X, mul_one]
+
+
+
+
+
+
+
+
+
 
 /-- A successor Laurent `π`-iterate is one further composition. -/
 theorem equalCharacteristicChangedPiPolynomialIterate_succ
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      (n : ℕ) :
     equalCharacteristicChangedPiPolynomialIterate F a (n + 1) =
       (equalCharacteristicChangedPiPolynomial F a).comp
         (equalCharacteristicChangedPiPolynomialIterate F a n) := by
@@ -395,7 +398,7 @@ theorem equalCharacteristicChangedPiPolynomialIterate_succ
 
 /-- Base change carries the integral `π`-iterate to the Laurent `π`-iterate. -/
 theorem equalCharacteristicChangedIntegralPiPolynomialIterate_map
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      (n : ℕ) :
     (equalCharacteristicChangedIntegralPiPolynomialIterate F a n).map
         (algebraMap F.residueField⟦X⟧ F.residueField⸨X⸩) =
       equalCharacteristicChangedPiPolynomialIterate F a n := by
@@ -410,14 +413,14 @@ theorem equalCharacteristicChangedIntegralPiPolynomialIterate_map
 
 /-- The Laurent-series primitive polynomial for the changed uniformizer. -/
 noncomputable def equalCharacteristicChangedPrimitivePolynomial
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      (n : ℕ) :
     Polynomial F.residueField⸨X⸩ :=
   (equalCharacteristicChangedIntegralPrimitivePolynomial F a n).map
     (algebraMap F.residueField⟦X⟧ F.residueField⸨X⸩)
 
 /-- Expands the changed primitive polynomial using the changed `π`-iterate. -/
 theorem equalCharacteristicChangedPrimitivePolynomial_eq
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      (n : ℕ) :
     equalCharacteristicChangedPrimitivePolynomial F a n =
       equalCharacteristicChangedPiPolynomialIterate F a n ^
           (Nat.card F.residueField - 1) +
@@ -429,7 +432,7 @@ theorem equalCharacteristicChangedPrimitivePolynomial_eq
 
 /-- The changed primitive polynomial has degree `(q - 1) * q ^ n`. -/
 theorem equalCharacteristicChangedPrimitivePolynomial_natDegree
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      (n : ℕ) :
     (equalCharacteristicChangedPrimitivePolynomial F a n).natDegree =
       (Nat.card F.residueField - 1) * Nat.card F.residueField ^ n := by
   rw [equalCharacteristicChangedPrimitivePolynomial,
@@ -438,13 +441,13 @@ theorem equalCharacteristicChangedPrimitivePolynomial_natDegree
 
 /-- The changed primitive polynomial over the Laurent field is monic. -/
 theorem equalCharacteristicChangedPrimitivePolynomial_monic
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      (n : ℕ) :
     (equalCharacteristicChangedPrimitivePolynomial F a n).Monic := by
   exact (equalCharacteristicChangedIntegralPrimitivePolynomial_monic F a n).map _
 
 /-- The changed primitive polynomial over the Laurent field is irreducible. -/
 theorem equalCharacteristicChangedPrimitivePolynomial_irreducible
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      (n : ℕ) :
     Irreducible (equalCharacteristicChangedPrimitivePolynomial F a n) := by
   exact
     (equalCharacteristicChangedIntegralPrimitivePolynomial_monic F a n).irreducible_iff_irreducible_map_fraction_map.mp
@@ -452,7 +455,7 @@ theorem equalCharacteristicChangedPrimitivePolynomial_irreducible
 
 /-- The changed Laurent uniformizer is the primitive polynomial's constant coefficient. -/
 theorem equalCharacteristicChangedPrimitivePolynomial_coeff_zero
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      (n : ℕ) :
     (equalCharacteristicChangedPrimitivePolynomial F a n).coeff 0 =
       equalCharacteristicChangedLaurentUniformizer F a := by
   rw [equalCharacteristicChangedPrimitivePolynomial, Polynomial.coeff_map,
@@ -461,7 +464,7 @@ theorem equalCharacteristicChangedPrimitivePolynomial_coeff_zero
 
 /-- The derivative of the changed `π`-polynomial is the constant changed uniformizer. -/
 theorem equalCharacteristicChangedPiPolynomial_derivative
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) :
+      :
     (equalCharacteristicChangedPiPolynomial F a).derivative =
       Polynomial.C (equalCharacteristicChangedLaurentUniformizer F a) := by
   simp [equalCharacteristicChangedPiPolynomial_eq,
@@ -469,7 +472,7 @@ theorem equalCharacteristicChangedPiPolynomial_derivative
 
 /-- The derivative of the `n`-fold changed `π`-iterate is the `n`th uniformizer power. -/
 theorem equalCharacteristicChangedPiPolynomialIterate_derivative
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      (n : ℕ) :
     (equalCharacteristicChangedPiPolynomialIterate F a n).derivative =
       Polynomial.C (equalCharacteristicChangedLaurentUniformizer F a ^ n) := by
   induction n with
@@ -482,7 +485,7 @@ theorem equalCharacteristicChangedPiPolynomialIterate_derivative
 
 /-- Every iterate of the changed Laurent `π`-polynomial is separable. -/
 theorem equalCharacteristicChangedPiPolynomialIterate_separable
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      (n : ℕ) :
     (equalCharacteristicChangedPiPolynomialIterate F a n).Separable := by
   rw [Polynomial.separable_def']
   refine ⟨0,
@@ -495,7 +498,7 @@ theorem equalCharacteristicChangedPiPolynomialIterate_separable
 
 /-- The successor `π`-iterate factors through the current iterate and primitive factor. -/
 theorem equalCharacteristicChangedPiPolynomialIterate_succ_factor
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      (n : ℕ) :
     equalCharacteristicChangedPiPolynomialIterate F a (n + 1) =
       equalCharacteristicChangedPiPolynomialIterate F a n *
         equalCharacteristicChangedPrimitivePolynomial F a n := by
@@ -512,18 +515,23 @@ theorem equalCharacteristicChangedPiPolynomialIterate_succ_factor
 
 /-- The changed primitive polynomial is separable. -/
 theorem equalCharacteristicChangedPrimitivePolynomial_separable
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      (n : ℕ) :
     (equalCharacteristicChangedPrimitivePolynomial F a n).Separable := by
   apply Polynomial.Separable.of_dvd
     (equalCharacteristicChangedPiPolynomialIterate_separable F a (n + 1))
   exact ⟨equalCharacteristicChangedPiPolynomialIterate F a n,
     by simpa [mul_comm] using
       (equalCharacteristicChangedPiPolynomialIterate_succ_factor F a n)⟩
+end
 
+
+section
+variable (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ)
+    [CharP K F.residueCharacteristic] (n : ℕ)
+include F a n
 /-- The changed primitive polynomial has a root in the separable closure. -/
 theorem exists_equalCharacteristicChangedPrimitivePolynomial_root
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ)
-    [CharP K F.residueCharacteristic] (n : ℕ) :
+      :
     ∃ x : SeparableClosure F.residueField⸨X⸩,
       ((equalCharacteristicChangedPrimitivePolynomial F a n).map
         (equalCharacteristicSeparableBaseHom F)).IsRoot x := by
@@ -544,15 +552,13 @@ theorem exists_equalCharacteristicChangedPrimitivePolynomial_root
 
 /-- A chosen changed-uniformizer primitive level root. -/
 noncomputable def chosenEqualCharacteristicChangedPrimitiveRoot
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ)
-    [CharP K F.residueCharacteristic] (n : ℕ) :
+      :
     SeparableClosure F.residueField⸨X⸩ :=
   Classical.choose (exists_equalCharacteristicChangedPrimitivePolynomial_root F a n)
 
 /-- The chosen changed primitive element is a root of the base-changed polynomial. -/
 theorem chosenEqualCharacteristicChangedPrimitiveRoot_isRoot
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ)
-    [CharP K F.residueCharacteristic] (n : ℕ) :
+      :
     ((equalCharacteristicChangedPrimitivePolynomial F a n).map
       (equalCharacteristicSeparableBaseHom F)).IsRoot
         (chosenEqualCharacteristicChangedPrimitiveRoot F a n) :=
@@ -561,8 +567,7 @@ theorem chosenEqualCharacteristicChangedPrimitiveRoot_isRoot
 
 /-- The chosen changed primitive root is integral over the Laurent base field. -/
 theorem chosenEqualCharacteristicChangedPrimitiveRoot_isIntegral
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ)
-    [CharP K F.residueCharacteristic] (n : ℕ) :
+      :
     IsIntegral F.residueField⸨X⸩
       (chosenEqualCharacteristicChangedPrimitiveRoot F a n) := by
   refine ⟨equalCharacteristicChangedPrimitivePolynomial F a n,
@@ -573,8 +578,7 @@ theorem chosenEqualCharacteristicChangedPrimitiveRoot_isIntegral
 
 /-- The changed primitive polynomial is the minimal polynomial of the chosen root. -/
 theorem equalCharacteristicChangedPrimitivePolynomial_eq_minpoly
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ)
-    [CharP K F.residueCharacteristic] (n : ℕ) :
+      :
     equalCharacteristicChangedPrimitivePolynomial F a n =
       minpoly F.residueField⸨X⸩
         (chosenEqualCharacteristicChangedPrimitiveRoot F a n) := by
@@ -588,8 +592,7 @@ theorem equalCharacteristicChangedPrimitivePolynomial_eq_minpoly
 /-- The simple level field for the changed uniformizer. -/
 @[reducible]
 noncomputable def equalCharacteristicChangedLevelField
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ)
-    [CharP K F.residueCharacteristic] (n : ℕ) :
+      :
     IntermediateField F.residueField⸨X⸩
       (SeparableClosure F.residueField⸨X⸩) :=
   IntermediateField.adjoin F.residueField⸨X⸩
@@ -597,8 +600,7 @@ noncomputable def equalCharacteristicChangedLevelField
 
 /-- The changed Lubin–Tate level field is finite-dimensional over the Laurent field. -/
 theorem equalCharacteristicChangedLevelField_finiteDimensional
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ)
-    [CharP K F.residueCharacteristic] (n : ℕ) :
+      :
     FiniteDimensional F.residueField⸨X⸩
       (equalCharacteristicChangedLevelField F a n) :=
   IntermediateField.adjoin.finiteDimensional
@@ -606,8 +608,7 @@ theorem equalCharacteristicChangedLevelField_finiteDimensional
 
 /-- The changed level field has degree `(q - 1) * q ^ n`. -/
 theorem equalCharacteristicChangedLevelField_finrank
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ)
-    [CharP K F.residueCharacteristic] (n : ℕ) :
+      :
     Module.finrank F.residueField⸨X⸩
       (equalCharacteristicChangedLevelField F a n) =
       (Nat.card F.residueField - 1) * Nat.card F.residueField ^ n := by
@@ -626,16 +627,14 @@ theorem equalCharacteristicChangedLevelField_finrank
 
 /-- The chosen root as a generator of its changed-uniformizer level field. -/
 noncomputable def equalCharacteristicChangedLevelGenerator
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ)
-    [CharP K F.residueCharacteristic] (n : ℕ) :
+      :
     equalCharacteristicChangedLevelField F a n :=
   IntermediateField.AdjoinSimple.gen F.residueField⸨X⸩
     (chosenEqualCharacteristicChangedPrimitiveRoot F a n)
 
 /-- The chosen changed level generator agrees with the generator of its power basis. -/
 theorem equalCharacteristicChangedLevelGenerator_eq_powerBasis_gen
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ)
-    [CharP K F.residueCharacteristic] (n : ℕ) :
+      :
     equalCharacteristicChangedLevelGenerator F a n =
       (IntermediateField.adjoin.powerBasis
         (chosenEqualCharacteristicChangedPrimitiveRoot_isIntegral F a n)).gen := by
@@ -643,6 +642,8 @@ theorem equalCharacteristicChangedLevelGenerator_eq_powerBasis_gen
   simp [equalCharacteristicChangedLevelGenerator,
     equalCharacteristicChangedLevelField,
     IntermediateField.adjoin.powerBasis_gen]
+end
+
 
 /-- The norm of a negative element, separated from the changed level field's
 large concrete type. -/

@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.NumberTheory.Padics.RingHoms
 public import Mathlib.Topology.Algebra.OpenSubgroup
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -53,12 +56,7 @@ theorem addSubgroup_isOpen_of_isClosed_of_ne_bot
     exact hmul a
   have hspan_ne :
       (Ideal.span ({x} : Set ℤ_[p]) : Ideal ℤ_[p]) ≠ ⊥ := by
-    intro hzero
-    have hxmem :
-        x ∈ (Ideal.span ({x} : Set ℤ_[p]) : Ideal ℤ_[p]) :=
-      Ideal.subset_span (by simp)
-    rw [hzero] at hxmem
-    exact hx0 (by simpa using hxmem)
+    simp_all
   obtain ⟨n, hn⟩ := PadicInt.ideal_eq_span_pow_p hspan_ne
   have hpow_open :
       IsOpen
@@ -106,14 +104,11 @@ theorem exists_positive_natCast_sub_mem_of_isOpen_addSubgroup
     intro y
     exact ⟨y - 1, sub_add_cancel y 1⟩
   have hdense :
-      DenseRange (fun n : ℕ ↦ (n : ℤ_[p]) + 1) := by
-    exact
-      htranslate.denseRange.comp
+      DenseRange (fun n : ℕ ↦ (n : ℤ_[p]) + 1) := htranslate.denseRange.comp
         PadicInt.denseRange_natCast
         (continuous_id.add continuous_const)
-  let U : Set ℤ_[p] := {y | z - y ∈ H}
-  have hUopen : IsOpen U := by
-    exact hopen.preimage (continuous_const.sub continuous_id)
+  let U  := {y | z - y ∈ H}
+  have hUopen : IsOpen U := hopen.preimage (continuous_const.sub continuous_id)
   have hUne : U.Nonempty := by
     refine ⟨z, ?_⟩
     change z - z ∈ H
@@ -128,13 +123,6 @@ theorem multiplicative_positiveNatDegree_ne_one
     (p : ℕ) [Fact p.Prime]
     (n : ℕ) (hn : 0 < n) :
     (Multiplicative.ofAdd (1 : ℤ_[p])) ^ n ≠ 1 := by
-  intro h
-  have h' := congrArg Multiplicative.toAdd h
-  change n • (1 : ℤ_[p]) = 0 at h'
-  have hn0 : (n : ℤ_[p]) = 0 := by
-    simpa only [nsmul_one] using h'
-  have : n = 0 := by
-    exact_mod_cast hn0
-  exact (Nat.ne_of_gt hn) this
+  simp_all [nsmul_one] <;> aesop
 
 end PadicInt

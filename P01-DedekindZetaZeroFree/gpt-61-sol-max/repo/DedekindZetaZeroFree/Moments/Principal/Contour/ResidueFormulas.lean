@@ -240,7 +240,10 @@ private theorem exterior_coprime (I : D.recipe.A.Exterior) :
   rw [ht] at this
   exact hp.ne_top (top_unique this)
 
-private theorem LpsiRaw_principal (u : D.Row) (hu : u.u = 1) (s : ℂ) :
+section
+variable (u : D.Row) (hu : u.u = 1)
+include u hu in
+private theorem LpsiRaw_principal   (s : ℂ) :
     D.LpsiRaw u s = InitialSeparatedEuler.zetaS D.recipe.A s := by
   unfold FixedData.LpsiRaw MaskedHeckeMeromorphic.incompleteL
   have hu' : u.toFrequency.u = 1 := hu
@@ -260,7 +263,8 @@ private theorem LpsiRaw_principal (u : D.Row) (hu : u.u = 1) (s : ℂ) :
   simp [MaskedHeckeMeromorphic.coefficient, FrequencyCharacterMasks.plusCoefficient,
     I.property.1, I.property.2, FrequencyCharacterMasks.plusExteriorCoefficient, hu']
 
-private theorem LlamRaw_principal (u : D.Row) (hu : u.u = 1) (s : ℂ) :
+include u hu in
+private theorem LlamRaw_principal   (s : ℂ) :
     D.LlamRaw u s = InitialSeparatedEuler.zetaS D.recipe.A s := by
   unfold FixedData.LlamRaw MaskedHeckeMeromorphic.incompleteL
   have hu' : u.toFrequency.u = 1 := hu
@@ -283,10 +287,12 @@ private theorem LlamRaw_principal (u : D.Row) (hu : u.u = 1) (s : ℂ) :
     FrequencyCharacterMasks.plusCoefficient, I.property.1, I.property.2,
     FrequencyCharacterMasks.plusExteriorCoefficient, hu', hη]
 
-theorem q_principal (u : D.Row) (hu : u.u = 1) : D.q u = 1 := by
+include u hu in
+theorem q_principal   : D.q u = 1 := by
   rw [ActualRowCount.eq_principalRow D hu]; exact ActualRowCount.q_principalRow D
 
-theorem Lpsi_principal_eq (u : D.Row) (hu : u.u = 1) (s : ℂ) (hs : 0 < s.re) (hs1 : s ≠ 1) :
+include u hu in
+theorem Lpsi_principal_eq   (s : ℂ) (hs : 0 < s.re) (hs1 : s ≠ 1) :
     D.Lpsi u s = D.zetaSCont s := by
   have h1 : ∀ s : ℂ, 1 < s.re → D.Lpsi u s = D.zetaSCont s := by
     intro s hs
@@ -295,7 +301,8 @@ theorem Lpsi_principal_eq (u : D.Row) (hu : u.u = 1) (s : ℂ) (hs : 0 < s.re) (
   exact eqOn_punctured (D.Lpsi_analyticOnNhd u) (zetaSCont_analytic D)
     h1 s hs hs1
 
-theorem Llam_principal_eq (u : D.Row) (hu : u.u = 1) (s : ℂ) (hs : 0 < s.re) (hs1 : s ≠ 1) :
+include u hu in
+theorem Llam_principal_eq   (s : ℂ) (hs : 0 < s.re) (hs1 : s ≠ 1) :
     D.Llam u s = D.zetaSCont s := by
   have h1 : ∀ s : ℂ, 1 < s.re → D.Llam u s = D.zetaSCont s := by
     intro s hs
@@ -304,7 +311,8 @@ theorem Llam_principal_eq (u : D.Row) (hu : u.u = 1) (s : ℂ) (hs : 0 < s.re) (
   exact eqOn_punctured (D.Llam_analyticOnNhd u) (zetaSCont_analytic D)
     h1 s hs hs1
 
-theorem Hu_slice_eq_H (u : D.Row) (hu : u.u = 1) (ξ : ℂ) (hξ : 1 < ξ.re) :
+include u hu in
+theorem Hu_slice_eq_H   (ξ : ℂ) (hξ : 1 < ξ.re) :
     EulerDomain.Hu D u ξ 1 (1 / 6) = Spectral.H D ξ := by
   have h1 : EulerDomain.Hu D u ξ 1 (1 / 6) =
       PrincipalMellinComparison.principalContourCorrection D.recipe ξ 1 (1 / 6) := by
@@ -319,7 +327,8 @@ def remainingKernel (u : D.Row) (ξ z : ℂ) (Z : ℝ) : ℂ :=
     Complex.exp ((ξ + z - 1) ^ 2) * D.M z * (D.q u : ℂ) ^ (-z) *
       (D.zetaSCont (6 * z) * EulerDomain.Hu D u ξ 1 z / D.Llam u ξ)
 
-theorem wResidue_eq (u : D.Row) (hu : u.u = 1) (ξ z : ℂ) (Z : ℝ) (hZ : 0 < Z)
+include u hu in
+theorem wResidue_eq   (ξ z : ℂ) (Z : ℝ) (hZ : 0 < Z)
     (hξ : 1 < ξ.re)
     (hz : 1 / 20 - EulerDomain.pad ≤ z.re) (hz6 : 6 * z ≠ 1) :
     wResidueLocal D u ξ z Z = Spectral.RS D * D.W1Hat 1 * remainingKernel D u ξ z Z := by
@@ -369,7 +378,8 @@ theorem wResidue_eq (u : D.Row) (hu : u.u = 1) (ξ z : ℂ) (Z : ℝ) (hZ : 0 < 
     | (beta_reduce; ring_nf)
     | (simp; ring)
 
-theorem remainingKernel_principal (u : D.Row) (hu : u.u = 1) (ξ z : ℂ) (Z : ℝ) :
+include u hu in
+theorem remainingKernel_principal   (ξ z : ℂ) (Z : ℝ) :
     remainingKernel D u ξ z Z =
       (Z : ℂ) ^ ((Scales.xExponent / 2 : ℝ) + ξ - 1 + (Scales.smoothingExponent : ℂ) * z) *
         Complex.exp ((ξ + z - 1) ^ 2) * D.M z *
@@ -377,6 +387,8 @@ theorem remainingKernel_principal (u : D.Row) (hu : u.u = 1) (ξ z : ℂ) (Z : �
   unfold remainingKernel
   rw [q_principal D u hu]
   simp
+end
+
 
 theorem zetaSCont_six_residue :
     Filter.Tendsto (fun z : ℂ => (z - 1 / 6) * D.zetaSCont (6 * z))

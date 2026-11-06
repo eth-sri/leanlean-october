@@ -109,9 +109,12 @@ noncomputable section
 open scoped Classical NumberField
 open NumberField IsDedekindDomain MeasureTheory
 
+section
+variable {F : Type} [Field F] [NumberField F]
+    (S : Finset (HeightOneSpectrum (𝓞 F)))
+include F S
 private theorem probeModulus_pos
-    {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (y : (SLocalProduct F S)ˣ) :
+      (y : (SLocalProduct F S)ˣ) :
     0 < ProbeWeight.modulus F S y := by
   obtain ⟨ha, hb⟩ := Prod.isUnit_iff.mp y.isUnit
   unfold ProbeWeight.modulus
@@ -124,8 +127,7 @@ private theorem probeModulus_pos
     exact norm_pos_iff.mpr (isUnit_iff_ne_zero.mp (Pi.isUnit_iff.mp hb v))
 
 private theorem modulus_cpow_split
-    {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (y : (SLocalProduct F S)ˣ)
+      (y : (SLocalProduct F S)ˣ)
     (σ τ : ℝ) :
     (ProbeWeight.modulus F S y : ℂ) ^ ((σ : ℂ) + (τ : ℂ) * Complex.I) =
       (ProbeWeight.modulus F S y : ℂ) ^ (σ : ℂ) *
@@ -141,8 +143,7 @@ private theorem modulus_cpow_split
   rw [Complex.cpow_add (σ : ℂ) ((τ : ℂ) * Complex.I) hne, hτ]
 
 theorem log_disintegration_fourier_identity
-    {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F)))
+     
     (ν : @Measure (SLocalProduct F S)ˣ
       (@Units.instMeasurableSpace (SLocalProduct F S) _ (borel _)))
     (h : SLocalProduct F S → ℂ) (a b : ℝ)
@@ -167,6 +168,8 @@ theorem log_disintegration_fourier_identity
   filter_upwards with y
   rw [modulus_cpow_split S y σ τ]
   ring
+end
+
 
 end
 end DedekindZetaZeroFree.ProbeSheetLogDensity
@@ -339,11 +342,14 @@ private lemma weight_shift (r σ τ : ℝ) (hr : 0 < r) :
   push_cast
   ring
 
-theorem logMellinDensity_parameter_shift
-    {F : Type} [Field F] [NumberField F]
+section
+variable {F : Type} [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (𝓞 F)))
     (ν : @Measure (SLocalProduct F S)ˣ
       (@Units.instMeasurableSpace (SLocalProduct F S) _ (borel _)))
+include F S ν
+theorem logMellinDensity_parameter_shift
+     
     (h : SLocalProduct F S → ℂ) (a b : ℝ)
     (p : ℝ → ℝ → ℂ) (hp : IsLogMellinDensity S ν h a b p)
     (σ τ : ℝ) (hσ : σ ∈ Set.Icc a b) (hτ : τ ∈ Set.Icc a b) :
@@ -381,10 +387,7 @@ theorem logMellinDensity_parameter_shift
   simpa only [Complex.real_smul, Pi.mul_apply, mul_comm, mul_left_comm, mul_assoc] using he
 
 theorem schwartzTensor_log_density_derivative_envelopes
-    {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F)))
-    (ν : @Measure (SLocalProduct F S)ˣ
-      (@Units.instMeasurableSpace (SLocalProduct F S) _ (borel _)))
+     
     (hν : @Measure.IsHaarMeasure (SLocalProduct F S)ˣ _ _
       (@Units.instMeasurableSpace (SLocalProduct F S) _ (borel _)) ν)
     (h : SLocalProduct F S → ℂ)
@@ -404,6 +407,8 @@ theorem schwartzTensor_log_density_derivative_envelopes
   · intro k _
     exact schwartzTensor_log_density_iteratedDeriv_integrable S ν hν h hh
       a b p hp b ⟨hab, le_rfl⟩ (lt_of_lt_of_le ha hab) k
+end
+
 
 end
 end DedekindZetaZeroFree.ProbeSheetLogDensity

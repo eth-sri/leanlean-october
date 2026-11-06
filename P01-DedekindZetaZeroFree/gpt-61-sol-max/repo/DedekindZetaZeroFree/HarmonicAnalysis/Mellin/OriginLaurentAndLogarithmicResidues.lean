@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Schwartz.PositiveSideJetSeminorms
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -10,15 +13,18 @@ open scoped Topology
 
 namespace DedekindZetaZeroFree.LargeSieve.Vendor
 
-def originLaurentCoeff (A : ℂ → ℂ) (r m : ℕ) : ℂ :=
+section
+variable (A : ℂ → ℂ)
+include A
+def originLaurentCoeff   (r m : ℕ)  :=
   iteratedDeriv (r - m) A 0 / ((r - m).factorial : ℂ)
 
-def originLogResiduePolynomial (A : ℂ → ℂ) (r : ℕ) : Polynomial ℂ :=
+def originLogResiduePolynomial   (r : ℕ)  :=
   ∑ n ∈ Finset.range r,
     Polynomial.C (((-1 : ℂ) ^ n * originLaurentCoeff A r (n + 1)) /
       (n.factorial : ℂ)) * Polynomial.X ^ n
 
-private lemma originLogResiduePolynomial_coeff_eq (A : ℂ → ℂ) (r n : ℕ) (hn : n < r) :
+private lemma originLogResiduePolynomial_coeff_eq   (r n : ℕ) (hn : n < r) :
     (originLogResiduePolynomial A r).coeff n =
       (-1 : ℂ) ^ n * originLaurentCoeff A r (n + 1) / (n.factorial : ℂ) := by
   rw [originLogResiduePolynomial, Polynomial.finsetSum_coeff]
@@ -29,7 +35,7 @@ private lemma originLogResiduePolynomial_coeff_eq (A : ℂ → ℂ) (r n : ℕ) 
   · intro h
     exact absurd (Finset.mem_range.mpr hn) h
 
-theorem originLogResiduePolynomial_natDegree_le (A : ℂ → ℂ) (r : ℕ)
+theorem originLogResiduePolynomial_natDegree_le   (r : ℕ)
     (hr : 1 ≤ r) : (originLogResiduePolynomial A r).natDegree ≤ r - 1 := by
   rw [originLogResiduePolynomial]
   refine Polynomial.natDegree_sum_le_of_forall_le (Finset.range r)
@@ -38,6 +44,8 @@ theorem originLogResiduePolynomial_natDegree_le (A : ℂ → ℂ) (r : ℕ)
   have hn' : n ≤ r - 1 := by
     have := Finset.mem_range.mp hn; omega
   exact (Polynomial.natDegree_C_mul_X_pow_le _ _).trans hn'
+end
+
 
 theorem origin_exists_analytic_laurent (U : Set ℂ) (hU : IsOpen U) (h0 : (0 : ℂ) ∈ U)
     (A : ℂ → ℂ) (hA : AnalyticOnNhd ℂ A U) (r : ℕ) (hr : 1 ≤ r) :
@@ -84,7 +92,7 @@ theorem origin_exists_analytic_laurent (U : Set ℂ) (hU : IsOpen U) (h0 : (0 : 
       rw [hPfun, Finset.sum_div]
       refine Finset.sum_bij (fun i _ => r - i) ?_ ?_ ?_ ?_
       · intro i hi
-        have hi' : i < r := Finset.mem_range.mp hi
+        have hi'  := Finset.mem_range.mp hi
         exact Finset.mem_Icc.mpr ⟨by omega, by omega⟩
       · intro i₁ h₁ i₂ h₂ h
         have h₁' := Finset.mem_range.mp h₁
@@ -94,7 +102,7 @@ theorem origin_exists_analytic_laurent (U : Set ℂ) (hU : IsOpen U) (h0 : (0 : 
         obtain ⟨hm1, hm2⟩ := Finset.mem_Icc.mp hm
         exact ⟨r - m, Finset.mem_range.mpr (by omega), by omega⟩
       · intro i hi
-        have hi' : i < r := Finset.mem_range.mp hi
+        have hi'  := Finset.mem_range.mp hi
         simp only [originLaurentCoeff, show r - (r - i) = i by omega]
         rw [show r = i + (r - i) by omega, pow_add]
         field_simp
@@ -107,12 +115,7 @@ private lemma pow_mul_zero (n j : ℕ) (f : ℂ → ℂ) (hf : AnalyticAt ℂ f 
   rw [iteratedDeriv_fun_mul (by fun_prop) hf.contDiffAt]
   simp_rw [iteratedDeriv_fun_pow_zero]
   by_cases h : j ≤ n
-  · rw [if_pos h, Finset.sum_eq_single j]
-    · simp
-    · intro b hb hbj
-      simp [hbj]
-    · intro hj
-      exact (hj (Finset.mem_range.mpr (by omega))).elim
+  · simp_all
   · rw [if_neg h]
     apply Finset.sum_eq_zero
     intro b hb
@@ -134,8 +137,7 @@ private lemma twist_coeff (n j : ℕ) (c : ℂ) (A : ℂ → ℂ) (hA : Analytic
     if j ≤ n then (-1:ℂ)^j *
       ∑ i ∈ Finset.range (n-j+1), c^i * iteratedDeriv (n-j-i) A 0 /
         ((i.factorial : ℂ) * ((n-j-i).factorial : ℂ)) else 0 := by
-  have he : AnalyticAt ℂ (fun s => Complex.exp (c*s) * A s) 0 := by
-    exact (by fun_prop : AnalyticAt ℂ (fun s => Complex.exp (c*s)) 0).fun_mul hA
+  have he : AnalyticAt ℂ (fun s => Complex.exp (c*s) * A s) 0 := (by fun_prop : AnalyticAt ℂ (fun s => Complex.exp (c*s)) 0).fun_mul hA
   have hfun : (fun s : ℂ => (-s)^j * Complex.exp (c*s) * A s) =
       fun s => (-1:ℂ)^j * (s^j * (Complex.exp (c*s) * A s)) := by
     ext s; rw [neg_eq_neg_one_mul, mul_pow]; ring
@@ -218,7 +220,7 @@ private lemma coeff_identity (A : ℂ → ℂ) (hA : AnalyticAt ℂ A 0)
     rw [if_pos (by omega : j ≤ j+i)]
     simp only [Nat.add_sub_cancel_left]
     rw [originLaurentCoeff]
-    have hi' : i < r-j := Finset.mem_range.mp hi
+    
     rw [show r - (j+i+1) = r-1-j-i by omega]
     rw [neg_eq_neg_one_mul, mul_pow, pow_add]
     ring
@@ -237,7 +239,7 @@ theorem origin_exists_analytic_twisted_laurent (U : Set ℂ) (hU : IsOpen U)
           G s + ∑ m ∈ Finset.Icc 1 r, c m / s ^ m) ∧
       c 1 = Polynomial.eval (L : ℂ)
         ((Polynomial.derivative^[j]) (originLogResiduePolynomial A r)) := by
-  let B : ℂ → ℂ := fun s => (-s)^j * Complex.exp (-s*(L:ℂ)) * A s
+  let B  := fun s => (-s)^j * Complex.exp (-s*(L:ℂ)) * A s
   have hB : AnalyticOnNhd ℂ B U := by
     intro s hs
     exact (by fun_prop : AnalyticAt ℂ (fun s : ℂ => (-s)^j *
@@ -279,7 +281,7 @@ theorem EulerIter_eval_log_polynomial (P : Polynomial ℂ) (j : ℕ)
     | succ j ih =>
       intro y hy
       rw [EulerIter_succ_of_pos j _ y hy]
-      have hyn : y ≠ 0 := ne_of_gt hy
+      have hyn  := ne_of_gt hy
       have hev : EulerIter j (fun y : ℝ => Polynomial.eval (Real.log y : ℂ) P)
           =ᶠ[𝓝 y]
           (fun z : ℝ => Polynomial.eval (Real.log z : ℂ) ((Polynomial.derivative^[j]) P)) := by
@@ -287,12 +289,15 @@ theorem EulerIter_eval_log_polynomial (P : Polynomial ℂ) (j : ℕ)
         exact ih hz
       rw [hev.deriv_eq, (hasDerivAt_poly_log ((Polynomial.derivative^[j]) P) hyn).deriv]
       rw [Function.iterate_succ_apply']
-      have hyc : (y : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hyn
+      have hyc  := Complex.ofReal_ne_zero.mpr hyn
       field_simp
   exact key j hx
 
-theorem originLaurentCoeff_norm_le (U : Set ℂ) (hU : IsOpen U)
+section
+variable (U : Set ℂ) (hU : IsOpen U)
     (h0 : (0 : ℂ) ∈ U) (A : ℂ → ℂ) (hA : AnalyticOnNhd ℂ A U)
+include U hU h0 A hA
+theorem originLaurentCoeff_norm_le  
     (r m : ℕ) (hr : 1 ≤ r) (hm : 1 ≤ m) (hmr : m ≤ r)
     (M : ℝ) (hM : 0 ≤ M)
     (hdisk : Metric.closedBall (0 : ℂ) (1 / 2 : ℝ) ⊆ U)
@@ -304,7 +309,7 @@ theorem originLaurentCoeff_norm_le (U : Set ℂ) (hU : IsOpen U)
     Metric.closure_ball_subset_closedBall.trans hdisk
   have hf : DiffContOnCl ℂ A (Metric.ball (0 : ℂ) (1 / 2 : ℝ)) :=
     ⟨(hA.mono hball).differentiableOn, (hA.mono hcl).continuousOn⟩
-  have hC : ∀ z ∈ Metric.sphere (0 : ℂ) (1 / 2 : ℝ), ‖A z‖ ≤ M := fun z hz =>
+  have hC  := fun z hz =>
     hbound z (Metric.sphere_subset_closedBall hz)
   have hCauchy := Complex.norm_iteratedDeriv_le_of_forall_mem_sphere_norm_le
     (c := (0 : ℂ)) (R := (1 / 2 : ℝ)) (C := M) (r - m) (by norm_num) hf hC
@@ -319,8 +324,7 @@ theorem originLaurentCoeff_norm_le (U : Set ℂ) (hU : IsOpen U)
         rw [div_eq_mul_inv, one_div, inv_pow]
         field_simp
 
-theorem originLogResiduePolynomial_coeff_norm_le (U : Set ℂ) (hU : IsOpen U)
-    (h0 : (0 : ℂ) ∈ U) (A : ℂ → ℂ) (hA : AnalyticOnNhd ℂ A U)
+theorem originLogResiduePolynomial_coeff_norm_le  
     (r n : ℕ) (hr : 1 ≤ r) (hn : n < r) (M : ℝ) (hM : 0 ≤ M)
     (hdisk : Metric.closedBall (0 : ℂ) (1 / 2 : ℝ) ⊆ U)
     (hbound : ∀ s ∈ Metric.closedBall (0 : ℂ) (1 / 2 : ℝ), ‖A s‖ ≤ M) :
@@ -331,9 +335,11 @@ theorem originLogResiduePolynomial_coeff_norm_le (U : Set ℂ) (hU : IsOpen U)
   rw [hneg, one_mul, Complex.norm_natCast]
   have ha := originLaurentCoeff_norm_le U hU h0 A hA r (n + 1) hr (by omega) (by omega)
     M hM hdisk hbound
-  have hk : r - (n + 1) = r - n - 1 := by omega
+  have hk : r - (n + 1) = r - n - 1 := rfl
   rw [hk] at ha
   exact div_le_div_of_nonneg_right ha (by positivity)
+end
+
 
 theorem originLaurentCoeff_top (A : ℂ → ℂ) (r : ℕ) :
     originLaurentCoeff A r r = A 0 := by

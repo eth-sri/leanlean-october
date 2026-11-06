@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Metaplectic.Cubic.GenuineSector.SmoothScalarAndCotangentTests
 
 @[expose] public section
+
 
 noncomputable section
 open scoped Classical NumberField ENNReal
@@ -27,7 +30,10 @@ variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
-private theorem scalarCovered_continuous (f : S_U F ζ hζ U R P H) :
+section
+variable (f : S_U F ζ hζ U R P H)
+include f
+private theorem scalarCovered_continuous   :
     Continuous (scalarCovered f).val := by
   have hspec := Classical.choose_spec
     (scalar_gluing (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) f)
@@ -38,7 +44,7 @@ private theorem scalarCovered_continuous (f : S_U F ζ hζ U R P H) :
   exact (KPContSectorLineL2Isometry.continuous_iff F ζ hζ U R P H (scalarSections f)).mp
     (fun i => (hsmooth i).continuous)
 
-private theorem scalarCovered_hasCompactSupport (f : S_U F ζ hζ U R P H) :
+private theorem scalarCovered_hasCompactSupport   :
     HasCompactSupport (scalarCovered f).val := by
   have hspec := Classical.choose_spec
     (scalar_gluing (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) f)
@@ -51,23 +57,24 @@ private theorem scalarCovered_hasCompactSupport (f : S_U F ζ hζ U R P H) :
   rw [hasCompactSupport_iff F ζ hζ U R P H (scalarCovered f), hS]
   exact hcomp0
 
-theorem scalar_memLp (f : S_U F ζ hζ U R P H) :
+theorem scalar_memLp   :
     MemLp (scalarCovered f).val 2 (coveredMeasure F ζ hζ R U) :=
   KPContSectorFixedMeasureLocalFiniteness.compactSupport_memLp
     F ζ hζ R U (scalarCovered f).val (scalarCovered_continuous f)
     (scalarCovered_hasCompactSupport f)
 
-theorem scalar_class_mem_sector (f : S_U F ζ hζ U R P H) :
+theorem scalar_class_mem_sector   :
     (scalar_memLp f).toLp (scalarCovered f).val ∈
       KPContSectorClosedLpSubspace.H F ζ hζ R U := by
-  have hmeas : Measurable (scalarCovered f).val := (scalarCovered_continuous f).measurable
+  have hmeas  := (scalarCovered_continuous f).measurable
   let fB : KPContSectorLineL2Isometry.BorelL2Scalars F ζ hζ U R :=
     ⟨scalarCovered f, hmeas, scalar_memLp f⟩
-  have hmem : (KPContSectorLineL2Isometry.scalarEmbedding F ζ hζ U R P H fB).val ∈
-      KPContSectorClosedLpSubspace.H F ζ hζ R U :=
+  have hmem  :=
     (KPContSectorLineL2Isometry.scalarEmbedding F ζ hζ U R P H fB).property
   rw [KPContSectorLineL2Isometry.scalarEmbedding_coe F ζ hζ U R P H fB] at hmem
   exact hmem
+end
+
 
 def iota : S_U F ζ hζ U R P H →ₗ[ℂ] KPContSectorClosedLpSubspace.H F ζ hζ R U where
   toFun f := ⟨(scalar_memLp f).toLp (scalarCovered f).val, scalar_class_mem_sector f⟩
@@ -148,13 +155,13 @@ private theorem continuous_normSquare_of_smooth (v : Family (U := U) (H := H))
       show normSquare v (a.toBase y) = ‖localCoefficient a v y‖₊ ^ 2
       rw [← q_coordinates a y, normSquare_chart]
       rfl
-    have hF' : Continuous (fun z : a.baseDomain => normSquare v z.val) :=
+    have hF'  :=
       (continuous_iff_isQuotientMap hP.quotient _).mpr (hquot ▸ hloc)
     rw [continuousOn_iff_continuous_domRestrict]
     exact hF'
 
 theorem cotangent_squareFinite (W : T_U F ζ hζ U R P H) : squareFinite W.val := by
-  have hcont : Continuous (normSquare W.val) :=
+  have hcont  :=
     continuous_normSquare_of_smooth W.val W.property.1
   have hcs : HasCompactSupport (normSquare W.val) := W.property.2
   have hcontR : Continuous (fun x => (normSquare W.val x : ℝ)) :=
@@ -167,11 +174,11 @@ theorem cotangent_squareFinite (W : T_U F ζ hζ U R P H) : squareFinite W.val :
     simpa only [Real.norm_of_nonneg (normSquare W.val x).coe_nonneg] using hC x hx
   rw [squareFinite]
   have hK : MeasurableSet (tsupport (normSquare W.val)) := (isClosed_tsupport _).measurableSet
-  have key : (∫⁻ x, ENNReal.ofReal ((normSquare W.val x : ℝ))
+  have key : (∫⁻ x, ENNReal.ofReal ((normSquare W.val x))
         ∂KPContActualSectorCotangentL2.muU F ζ hζ U R P) ≤
       ENNReal.ofReal C * (KPContActualSectorCotangentL2.muU F ζ hζ U R P)
         (tsupport (normSquare W.val)) := by
-    calc ∫⁻ x, ENNReal.ofReal ((normSquare W.val x : ℝ))
+    calc ∫⁻ x, ENNReal.ofReal ((normSquare W.val x))
           ∂KPContActualSectorCotangentL2.muU F ζ hζ U R P
         ≤ ∫⁻ x, (tsupport (normSquare W.val)).indicator
             (fun _ => ENNReal.ofReal C) x
@@ -182,7 +189,7 @@ theorem cotangent_squareFinite (W : T_U F ζ hζ U R P H) : squareFinite W.val :
           · rw [Set.indicator_of_mem hx]
             exact ENNReal.ofReal_le_ofReal (hC' x hx)
           · rw [Set.indicator_of_notMem hx]
-            have hz : normSquare W.val x = 0 := image_eq_zero_of_notMem_tsupport hx
+            have hz  := image_eq_zero_of_notMem_tsupport hx
             simp [hz]
       _ = ENNReal.ofReal C * (KPContActualSectorCotangentL2.muU F ζ hζ U R P)
             (tsupport (normSquare W.val)) := lintegral_indicator_const hK _
@@ -200,11 +207,10 @@ def cotangentSquareFamily : T_U F ζ hζ U R P H →ₗ[ℂ]
     apply Subtype.ext
     simp only [Submodule.coe_smul, RingHom.id_apply]
 
-def j : T_U F ζ hζ U R P H →ₗ[ℂ] KPContActualSectorCotangentL2.V F ζ hζ U R P H :=
+def j  :=
   (KPContActualSectorCotangentL2.ofFamily F ζ hζ U R P H).comp cotangentSquareFamily
 
-private theorem chi_unit (i : Fin (H.atlas U).componentCount) (ε : rootsOfUnity 3 F) :
-    ‖(KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ)‖ = 1 :=
+private def chi_unit (i : Fin (H.atlas U).componentCount) (ε : rootsOfUnity 3 F)  :=
   ((H.atlas U).line i).unitary ε
 
 private theorem chi_unit' (i : Fin (H.atlas U).componentCount) (ε : rootsOfUnity 3 F) :
@@ -236,7 +242,7 @@ private theorem scalarPair_covariant (s t : Sections F ζ hζ U R P H)
     inner ℂ ((s i).val x) ((t i).val x) = inner ℂ ((s i).val y) ((t i).val y) := by
   obtain ⟨γ, hγ⟩ := MulAction.mem_orbit_iff.mp (MulAction.orbitRel_apply.mp hxy)
   rw [← hγ]
-  exact scalarPair_covariant s t i γ y
+  apply scalarPair_covariant
 
  def pairOnSigma (s t : Sections F ζ hζ U R P H) :
     (Σ i : Fin (H.atlas U).componentCount,
@@ -245,8 +251,7 @@ private theorem scalarPair_covariant (s t : Sections F ζ hζ U R P H)
   fun p => Quotient.lift (fun x => inner ℂ ((s p.1).val x) ((t p.1).val x))
     (scalarPair_invariant s t p.1) p.2
 
- def scalarPairSections (s t : Sections F ζ hζ U R P H) :
-    KPFiniteCuspAtlas.rawXU F ζ hζ U → ℂ :=
+ def scalarPairSections (s t : Sections F ζ hζ U R P H)  :=
   fun b => pairOnSigma s t ((H.atlas U).components.symm b)
 
 private theorem scalarPairSections_components (s t : Sections F ζ hζ U R P H)
@@ -257,13 +262,7 @@ private theorem scalarPairSections_components (s t : Sections F ζ hζ U R P H)
       ((H.atlas U).components.symm ((H.atlas U).components ⟨i, Quotient.mk _ z⟩)) =
       pairOnSigma s t ⟨i, Quotient.mk _ z⟩ :=
     congrArg (pairOnSigma s t) (Homeomorph.symm_apply_apply _ _)
-  refine h1.trans ?_
-  exact Quotient.lift_mk
-    (s := MulAction.orbitRel
-      (KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative i))
-      (SymmetricSpace F))
-    (f := fun x => inner ℂ ((s i).val x) ((t i).val x))
-    (h := scalarPair_invariant s t i) z
+  assumption
 
 private theorem sectionFields_apply (s : Sections F ζ hζ U R P H)
     (a : ActualChart (U := U) (H := H)) (x : omega a) :
@@ -348,11 +347,11 @@ theorem scalarPair_descends (f g : S_U F ζ hζ U R P H) :
       scalarPairSections_chart (scalarSections f) (scalarSections g) a (coordinates a y),
       hfval, hgval]
 
-def scalarPair (f g : S_U F ζ hζ U R P H) : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℂ :=
+def scalarPair (f g : S_U F ζ hζ U R P H)  :=
   Classical.choose (scalarPair_descends f g)
 
 def localScalarCoefficient (a : ActualChart (U := U) (H := H))
-    (f : S_U F ζ hζ U R P H) (y : a.domain) : ℂ :=
+    (f : S_U F ζ hζ U R P H) (y : a.domain)  :=
   f.val a (KPContActualCotangentPieceHilbertSum.coordinates a y)
 
 structure Properties : Prop where
@@ -360,7 +359,7 @@ structure Properties : Prop where
     MemLp (sectionNorm F ζ hζ U R P H (scalarSections f)) 2
       (KPContActualSectorCotangentL2.muU F ζ hζ U R P)
   cotangent_base_memLp : ∀ W : T_U F ζ hζ U R P H,
-    MemLp (fun x => Real.sqrt (normSquare W.val x : ℝ)) 2
+    MemLp (fun x => Real.sqrt (normSquare W.val x)) 2
       (KPContActualSectorCotangentL2.muU F ζ hζ U R P)
   scalar_local_memLp : ∀ (a : ActualChart (U := U) (H := H)) (f : S_U F ζ hζ U R P H),
     MemLp (localScalarCoefficient a f) 2 a.liftedMeasure
@@ -408,15 +407,14 @@ structure Properties : Prop where
     (∫ x in a.baseDomain, pair W.val Z.val x ∂KPContActualSectorCotangentL2.muU F ζ hζ U R P) =
       ∫ y, inner ℂ (localCoefficient a W.val y) (localCoefficient a Z.val y) ∂a.liftedMeasure
 
-theorem cotangent_local_memLp (a : ActualChart (U := U) (H := H)) (W : T_U F ζ hζ U R P H) :
-    MemLp (localCoefficient a W.val) 2 a.liftedMeasure :=
+def cotangent_local_memLp (a : ActualChart (U := U) (H := H)) (W : T_U F ζ hζ U R P H)  :=
   localCoefficient_memLp (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H) a
     ⟨W.val, cotangent_squareFinite W⟩
 
 theorem cotangent_base_memLp (W : T_U F ζ hζ U R P H) :
-    MemLp (fun x => Real.sqrt (normSquare W.val x : ℝ)) 2
+    MemLp (fun x => Real.sqrt (normSquare W.val x)) 2
       (KPContActualSectorCotangentL2.muU F ζ hζ U R P) := by
-  have hm : Measurable (fun b => Real.sqrt (normSquare W.val b : ℝ)) :=
+  have hm  :=
     (measurable_normSquare W.val).coe_nnreal_real.sqrt
   have hsq : (fun b => ‖Real.sqrt (normSquare W.val b : ℝ)‖ ^ 2) =
       (fun b => (normSquare W.val b : ℝ)) := by
@@ -443,7 +441,7 @@ theorem cotangent_inner
       (cotangentSquareFamily Z) rfl rfl
   have hcoe : ∀ Y : T_U F ζ hζ U R P H, (cotangentSquareFamily Y).val = Y.val :=
     fun _ => rfl
-  simpa only [hcoe] using h
+  exact h
 
 theorem scalar_pair_chart (f g : S_U F ζ hζ U R P H)
     (a : ActualChart (U := U) (H := H)) (x : omega a) :
@@ -479,20 +477,20 @@ theorem cotangent_continuous (W : T_U F ζ hζ U R P H) (a : ActualChart (U := U
 
 theorem iota_injective :
     Function.Injective (iota (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H)) := by
-  letI : (coveredMeasure F ζ hζ R U).IsOpenPosMeasure :=
+  letI  :=
     (levelSupport F ζ hζ R P
       (KPSmoothLocalQuotientCharts.quotient_full_support F ζ hζ R).1 U).covered_open_positive
   intro f g hfg
-  have h1 : (scalarCovered f).val =ᵐ[coveredMeasure F ζ hζ R U] (scalarCovered g).val :=
+  have h1  :=
     (MemLp.toLp_eq_toLp_iff (scalar_memLp f) (scalar_memLp g)).mp (congrArg Subtype.val hfg)
-  have h2 : scalarCovered f = scalarCovered g :=
+  have h2  :=
     Subtype.ext (Measure.eq_of_ae_eq h1 (scalarCovered_continuous f) (scalarCovered_continuous g))
   have h5 : groupIdentification (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P)
       (H := H) f = groupIdentification (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R)
       (P := P) (H := H) g := by
     apply Subtype.ext
     have h6 := congrArg (fun w : GenuineCoveredScalars F ζ hζ U => J F ζ hζ U w) h2
-    simpa only [scalarCovered, LinearEquiv.apply_symm_apply] using h6
+    exact h6
   exact (groupIdentification (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P)
     (H := H)).injective h5
 
@@ -500,7 +498,7 @@ theorem scalar_unique_continuous (f : S_U F ζ hζ U R P H) :
     ∃! g : GenuineCoveredScalars F ζ hζ U,
       Continuous g.val ∧ g.val =ᵐ[coveredMeasure F ζ hζ R U]
         (iota f : KPContSectorClosedLpSubspace.CoveredL2 F ζ hζ R U) := by
-  letI : (coveredMeasure F ζ hζ R U).IsOpenPosMeasure :=
+  letI  :=
     (levelSupport F ζ hζ R P
       (KPSmoothLocalQuotientCharts.quotient_full_support F ζ hζ R).1 U).covered_open_positive
   have hae : (scalarCovered f).val =ᵐ[coveredMeasure F ζ hζ R U]
@@ -520,7 +518,7 @@ theorem scalar_chart_integral (a : ActualChart (U := U) (H := H)) (f g : S_U F �
   apply integral_congr_ae
   filter_upwards with y
   rw [localScalarCoefficient, localScalarCoefficient, ← q_coordinates a y]
-  exact scalar_pair_chart f g a (coordinates a y)
+  apply scalar_pair_chart
 
 private theorem exists_chart_point (b : KPFiniteCuspAtlas.rawXU F ζ hζ U) :
     ∃ (a : ActualChart (U := U) (H := H)) (x : omega a),
@@ -538,7 +536,7 @@ theorem tsupport_scalarPair_subset (f g : S_U F ζ hζ U R P H) :
   have hpx : scalarPair f g (q a y.val) ≠ 0 := by rw [hy]; exact hx
   rw [scalar_pair_chart f g a y] at hpx
   intro hw
-  exact hpx (by rw [hw, inner_zero_right])
+  apply hpx <;> aesop
 
 theorem scalar_pair_integrable (f g : S_U F ζ hζ U R P H) :
     Integrable (scalarPair f g) (KPContActualSectorCotangentL2.muU F ζ hζ U R P) := by
@@ -556,9 +554,9 @@ theorem cotangent_chart_integral (a : ActualChart (U := U) (H := H))
   have hP := every_shrunkChart_properties F ζ hζ U R P H a
   let r : SquareFiniteFamily (U := U) (H := H) := ⟨W.val, cotangent_squareFinite W⟩
   let s : SquareFiniteFamily (U := U) (H := H) := ⟨Z.val, cotangent_squareFinite Z⟩
-  have hrm : MemLp (localCoefficient a r.val) 2 a.liftedMeasure :=
+  have hrm  :=
     localCoefficient_memLp (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H) a r
-  have hsm : MemLp (localCoefficient a s.val) 2 a.liftedMeasure :=
+  have hsm  :=
     localCoefficient_memLp (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H) a s
   have h1 : inner ℂ (familyQ a r) (familyQ a s) =
       ∫ y, inner ℂ
@@ -597,7 +595,7 @@ theorem cotangent_chart_integral (a : ActualChart (U := U) (H := H))
     rw [hy1, hy2]
   have hrv : r.val = W.val := rfl
   have hsv : s.val = Z.val := rfl
-  simpa only [hrv, hsv] using h2.symm.trans h3
+  exact h2.symm.trans h3
 
 theorem scalar_base_memLp (f : S_U F ζ hζ U R P H) :
     MemLp (sectionNorm F ζ hζ U R P H (scalarSections f)) 2
@@ -609,7 +607,7 @@ theorem scalar_base_memLp (f : S_U F ζ hζ U R P H) :
       scalarCovered f := by
     rw [KPContSectorLineL2Isometry.scalarRepresentative_eq_symm, ← S_scalarCovered f]
     exact (S F ζ hζ U R P H).symm_apply_apply (scalarCovered f)
-  have hfin : KPContSectorLineL2Isometry.normIntegral F ζ hζ U R P H (scalarSections f) < ⊤ :=
+  have hfin  :=
     (KPContSectorLineL2Isometry.finite_integral_iff F ζ hζ U R P H (scalarSections f) hmeas).mpr
       (by rw [hrep]; exact scalar_memLp f)
   let s : KPContSectorLineL2Isometry.BorelL2Sections F ζ hζ U R P H :=
@@ -634,11 +632,7 @@ theorem scalar_base_memLp (f : S_U F ζ hζ U R P H) :
         rw [sectionNorm_component]; exact norm_nonneg _)).symm
     rw [hh]
     exact hnorm.ennreal_toReal.sqrt
-  have hn : ∀ b, 0 ≤ sectionNorm F ζ hζ U R P H s.val b := by
-    intro b
-    obtain ⟨⟨i,q⟩,rfl⟩ := (H.atlas U).components.surjective b
-    obtain ⟨x,rfl⟩ := Quotient.exists_rep q
-    rw [sectionNorm_component]; exact norm_nonneg _
+  
   rw [memLp_two_iff_integrable_sq_norm hme.aestronglyMeasurable]
   refine ⟨hme.norm.pow_const 2 |>.aestronglyMeasurable, ?_⟩
   rw [hasFiniteIntegral_iff_enorm]
@@ -653,7 +647,7 @@ private theorem scalar_chart_norm_aux (a : ActualChart (U := U) (H := H))
     (KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative a.component)
       (Quotient.mk _ y.val)) = ‖(s a.component).val y.val‖
   rw [← (H.atlas U).components_formula]
-  exact sectionNorm_component F ζ hζ U R P H s a.component y.val
+  apply sectionNorm_component
 
 private theorem scalarCoefficient_memLp (a : ActualChart (U := U) (H := H))
     (s : KPContSectorLineL2Isometry.BorelL2Sections F ζ hζ U R P H) :
@@ -704,7 +698,7 @@ theorem scalar_local_memLp (a : ActualChart (U := U) (H := H)) (f : S_U F ζ hζ
       scalarCovered f := by
     rw [KPContSectorLineL2Isometry.scalarRepresentative_eq_symm, ← S_scalarCovered f]
     exact (S F ζ hζ U R P H).symm_apply_apply (scalarCovered f)
-  have hfin : KPContSectorLineL2Isometry.normIntegral F ζ hζ U R P H (scalarSections f) < ⊤ :=
+  have hfin  :=
     (KPContSectorLineL2Isometry.finite_integral_iff F ζ hζ U R P H (scalarSections f) hmeas).mpr
       (by rw [hrep]; exact scalar_memLp f)
   let s : KPContSectorLineL2Isometry.BorelL2Sections F ζ hζ U R P H :=
@@ -737,7 +731,7 @@ private theorem continuous_normSquare_of_continuous (v : Family (U := U) (H := H
       show normSquare v (a.toBase y) = ‖localCoefficient a v y‖₊ ^ 2
       rw [← q_coordinates a y, normSquare_chart]
       rfl
-    have hF' : Continuous (fun z : a.baseDomain => normSquare v z.val) :=
+    have hF'  :=
       (continuous_iff_isQuotientMap hP.quotient _).mpr (hquot ▸ hloc)
     rw [continuousOn_iff_continuous_domRestrict]
     exact hF'
@@ -745,7 +739,7 @@ private theorem continuous_normSquare_of_continuous (v : Family (U := U) (H := H
 private theorem normSquare_self_sub (v : Family (U := U) (H := H)) :
     normSquare (v - v) = 0 := by
   refine ((Classical.choose_spec (normSquare_descends (v - v))).2
-    (fun _ => (0 : NNReal))
+    (fun _ => (0))
     ⟨measurable_const, fun a x => ?_⟩).symm
   have h0 : coefficient (v - v) a x = 0 := by simp [coefficient]
   rw [h0]; simp
@@ -769,7 +763,7 @@ theorem j_injective :
     obtain ⟨gZ, hgZ, hgZv⟩ := Z.property.1 a
     exact ⟨gW - gZ, hgW.sub hgZ, fun x => by
       simp only [Pi.sub_apply, hgWv x, hgZv x]⟩
-  have hcont : Continuous (normSquare (W.val - Z.val)) :=
+  have hcont  :=
     continuous_normSquare_of_smooth (W.val - Z.val) hsm
   have hzero : normSquare (W.val - Z.val) = 0 :=
     Measure.eq_of_ae_eq hae hcont continuous_const
@@ -779,7 +773,7 @@ theorem j_injective :
   rw [KPContActualCotangentMeasurableFamilies.normSquare_chart (W.val - Z.val) a x,
     hcoe a] at h
   have h1 : ‖coefficient W.val a x - coefficient Z.val a x‖₊ = 0 :=
-    (pow_eq_zero_iff (by norm_num : (2 : ℕ) ≠ 0)).mp h
+    (pow_eq_zero_iff (by norm_num)).mp h
   exact sub_eq_zero.mp (nnnorm_eq_zero.mp h1)
 
 theorem cotangent_unique_continuous (W : T_U F ζ hζ U R P H) :
@@ -798,7 +792,7 @@ theorem cotangent_unique_continuous (W : T_U F ζ hζ U R P H) :
     have hcoe : ∀ a, coefficient (v - W.val) a = coefficient v a - coefficient W.val a := by
       intro a; funext x
       simp only [coefficient, Submodule.coe_sub, Pi.sub_apply]
-    have hcont : Continuous (normSquare (v - W.val)) :=
+    have hcont  :=
       continuous_normSquare_of_continuous (v - W.val) (fun a => by
         rw [hcoe a]
         exact (hv.1 a).sub (cotangent_continuous W a))
@@ -810,7 +804,7 @@ theorem cotangent_unique_continuous (W : T_U F ζ hζ U R P H) :
     rw [KPContActualCotangentMeasurableFamilies.normSquare_chart (v - W.val) a x,
       hcoe a] at h
     have h1 : ‖coefficient v a x - coefficient W.val a x‖₊ = 0 :=
-      (pow_eq_zero_iff (by norm_num : (2 : ℕ) ≠ 0)).mp h
+      (pow_eq_zero_iff (by norm_num)).mp h
     exact sub_eq_zero.mp (nnnorm_eq_zero.mp h1)
 
 private theorem scalarPair_eq_sections (f g : S_U F ζ hζ U R P H) :
@@ -867,8 +861,8 @@ private theorem scalarCovered_inner_eq (f g : S_U F ζ hζ U R P H) :
         inner ℂ ((scalarCovered f).val v) ((scalarCovered g).val v)) =
       fun v => scalarPair f g (q F ζ hζ U v) := by
   have hSf : S F ζ hζ U R P H (scalarCovered f) = scalarSections f := S_scalarCovered f
-  have hSg : S F ζ hζ U R P H (scalarCovered g) = scalarSections g := S_scalarCovered g
-  have hpair : scalarPair f g = scalarPairSections (scalarSections f) (scalarSections g) :=
+  have hSg  := S_scalarCovered g
+  have hpair  :=
     scalarPair_eq_sections f g
   funext v
   obtain ⟨p, hp⟩ :=
@@ -907,10 +901,8 @@ theorem scalar_inner
         ((iota g : KPContSectorClosedLpSubspace.CoveredL2 F ζ hζ R U)) := rfl
   rw [hsub, scalar_represented f, scalar_represented g, L2.inner_def]
   have hpt : (fun v => inner ℂ
-        (((scalar_memLp f).toLp (scalarCovered f).val :
-          Lp ℂ 2 (coveredMeasure F ζ hζ R U)) v)
-        (((scalar_memLp g).toLp (scalarCovered g).val :
-          Lp ℂ 2 (coveredMeasure F ζ hζ R U)) v)) =ᵐ[coveredMeasure F ζ hζ R U]
+        (((scalar_memLp f).toLp (scalarCovered f).val) v)
+        (((scalar_memLp g).toLp (scalarCovered g).val) v)) =ᵐ[coveredMeasure F ζ hζ R U]
       (fun v => inner ℂ ((scalarCovered f).val v) ((scalarCovered g).val v)) := by
     filter_upwards [MemLp.coeFn_toLp (scalar_memLp f), MemLp.coeFn_toLp (scalar_memLp g)]
       with v hv hw

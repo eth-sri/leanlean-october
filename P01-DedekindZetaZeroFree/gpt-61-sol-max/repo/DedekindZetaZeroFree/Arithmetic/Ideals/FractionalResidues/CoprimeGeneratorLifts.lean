@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Ideals.FractionalResidues.QuotientModule
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.Hecke
 
@@ -13,15 +16,17 @@ open scoped nonZeroDivisors
 variable {R K : Type*} [CommRing R] [IsDedekindDomain R]
   [Field K] [Algebra R K] [IsFractionRing R K]
 
-def fractionalResidueLiftIdeal (I : FractionalIdeal R⁰ K) (β : K) :
-    FractionalIdeal R⁰ K :=
+def fractionalResidueLiftIdeal (I : FractionalIdeal R⁰ K) (β : K)  :=
   FractionalIdeal.spanSingleton R⁰ β * I⁻¹
 
-theorem fractionalResidueGenerator_lift_properties (m : Ideal R)
+section
+variable (m : Ideal R)
     (I : FractionalIdeal R⁰ K) (hm : m ≠ ⊥) (hm1 : m ≠ ⊤) (hI : I ≠ 0)
     (z : fractionalResidueModule m I)
     (hz : Function.Surjective (fun k : R ⧸ m => k • z))
     (β : K) (hβ : β ∈ I)
+include m I hm hm1 hI z hz β hβ
+theorem fractionalResidueGenerator_lift_properties  
     (hlift : Submodule.Quotient.mk (p := fractionalResidueDenominator m I)
       ⟨β, hβ⟩ = z) :
     β ≠ 0 ∧
@@ -29,7 +34,7 @@ theorem fractionalResidueGenerator_lift_properties (m : Ideal R)
       fractionalResidueLiftIdeal I β ≠ 0 ∧
       fractionalResidueLiftIdeal I β ≤ 1 ∧
       (m : FractionalIdeal R⁰ K) + fractionalResidueLiftIdeal I β = 1 := by
-  have hspan : FractionalIdeal.spanSingleton R⁰ β ≤ I :=
+  have hspan  :=
     FractionalIdeal.spanSingleton_le_iff_mem.mpr hβ
   have heq : (m : FractionalIdeal R⁰ K) * I +
       FractionalIdeal.spanSingleton R⁰ β = I := by
@@ -63,11 +68,7 @@ theorem fractionalResidueGenerator_lift_properties (m : Ideal R)
       FractionalIdeal.spanSingleton R⁰ β * I⁻¹ ≤ I * I⁻¹ := mul_le_mul_of_nonneg_right hspan (FractionalIdeal.zero_le _)
       _ = 1 := mul_inv_cancel₀ hI
 
-theorem fractionalResidueGenerator_lift_coprime_ideal (m : Ideal R)
-    (I : FractionalIdeal R⁰ K) (hm : m ≠ ⊥) (hm1 : m ≠ ⊤) (hI : I ≠ 0)
-    (z : fractionalResidueModule m I)
-    (hz : Function.Surjective (fun k : R ⧸ m => k • z))
-    (β : K) (hβ : β ∈ I)
+theorem fractionalResidueGenerator_lift_coprime_ideal  
     (hlift : Submodule.Quotient.mk (p := fractionalResidueDenominator m I)
       ⟨β, hβ⟩ = z) :
     ∃ b : Ideal R,
@@ -84,6 +85,8 @@ theorem fractionalResidueGenerator_lift_coprime_ideal (m : Ideal R)
   · apply FractionalIdeal.coeIdeal_injective (K := K)
     simpa only [FractionalIdeal.coeIdeal_sup, FractionalIdeal.coeIdeal_top, hb] using hsum
   · rw [hb, fractionalResidueLiftIdeal, mul_assoc, inv_mul_cancel₀ hI, mul_one]
+end
+
 
 end
 

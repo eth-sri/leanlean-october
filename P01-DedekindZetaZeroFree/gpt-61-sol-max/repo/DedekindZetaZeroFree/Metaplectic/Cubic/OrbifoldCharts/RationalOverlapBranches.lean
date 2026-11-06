@@ -135,9 +135,12 @@ local notation "cmap" => coord (ζ:=ζ) (hζ:=hζ)
     apply continuous_pi
     intro k
     exact (continuous_apply _).comp (CotangentLogCoframe.A (d F)).continuous))
- theorem chart_coord (a b : ShrunkChart F ζ hζ U R P H)
+ section
+variable (a b : ShrunkChart F ζ hζ U R P H)
     (h : a.component = b.component)
-    (g : KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative a.component)) :
+    (g : KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative a.component))
+include a b h g in
+theorem chart_coord   :
     coordinateMap (isotropyChart a) (targetChart a b h) g = cmap g.val := by
   rcases a with ⟨i,ca,oa,da,dao,dac,das,dai⟩
   rcases b with ⟨j,cb,ob,db,dbo,dbc,dbs,dbi⟩
@@ -162,8 +165,8 @@ local notation "cmap" => coord (ζ:=ζ) (hζ:=hζ)
     omega a ⊆ (isotropyChart a).omega := by
   intro x hx
   exact a.closure_subset (subset_closure hx)
- def make (a b : ShrunkChart F ζ hζ U R P H) (h : a.component = b.component)
-    (g : KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative a.component)) :
+ include a b h g in
+def make   :
     ActualBranch a b := by
   let he := KPCuspGenuineMonodromy.finiteComparison_exists F ζ hζ U _ g
   let r := he.choose
@@ -215,9 +218,8 @@ private theorem coord_smooth (g : KPCuspArithmetic.PGL2 F) :
   right_inv := by intro x; rw [← coord_mul, mul_inv_cancel, coord_one]
   continuous_toFun := coord_continuous g
   continuous_invFun := coord_continuous g⁻¹
-private theorem q_coord (a b : ShrunkChart F ζ hζ U R P H)
-    (h : a.component = b.component)
-    (g : KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative a.component))
+include a b h g in
+private theorem q_coord  
     (x : M F) : q b (cmap g.val x) = q a x := by
   rcases a with ⟨i,ca,oa,da,dao,dac,das,dai⟩
   rcases b with ⟨j,cb,ob,db,dbo,dbc,dbs,dbi⟩
@@ -227,13 +229,11 @@ private theorem q_coord (a b : ShrunkChart F ζ hζ U R P H)
   simp only [coord, la]
   apply Quotient.sound
   exact ⟨g, rfl⟩
-private theorem make_psi (a b : ShrunkChart F ζ hζ U R P H)
-    (h : a.component = b.component)
-    (g : KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative a.component)) :
+include a b h g in
+private theorem make_psi   :
     (make a b h g).arrow.psi = cmap g.val := chart_coord a b h g
-private theorem make_inverse (a b : ShrunkChart F ζ hζ U R P H)
-    (h : a.component = b.component)
-    (g : KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative a.component)) :
+include a b h g in
+private theorem make_inverse   :
     Branch.inverse (some (make a b h g)) = cmap g.val⁻¹ := by
   rcases a with ⟨i,ca,oa,da,dao,dac,das,dai⟩
   rcases b with ⟨j,cb,ob,db,dbo,dbc,dbs,dbi⟩
@@ -241,9 +241,8 @@ private theorem make_inverse (a b : ShrunkChart F ζ hζ U R P H)
   subst j
   funext x
   simp [Branch.inverse, coordinateMap, isotropyChart, targetChart, ChartKind.representative, coord, make]
-private theorem make_properties (a b : ShrunkChart F ζ hζ U R P H)
-    (h : a.component = b.component)
-    (g : KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative a.component)) :
+include a b h g in
+private theorem make_properties   :
     Branch.Properties (some (make a b h g)) := by
   have hp : Branch.psi (some (make a b h g)) = cmap g.val := make_psi a b h g
   have hd : Branch.domain (some (make a b h g)) = omega a ∩ cmap g.val ⁻¹' omega b := rfl
@@ -263,7 +262,12 @@ private theorem make_properties (a b : ShrunkChart F ζ hζ U R P H)
   · rw [hp]; exact (coord_smooth g.val).contDiffOn
   · rw [hi]; exact (coord_smooth g.val⁻¹).contDiffOn
   · rw [hp]; exact fun x _ => q_coord a b h g x
-private theorem overlap_component (a b : ShrunkChart F ζ hζ U R P H)
+end
+
+section
+variable (a b : ShrunkChart F ζ hζ U R P H)
+include a b in
+private theorem overlap_component  
     (x : M F) (hx : q a x ∈ b.baseDomain) : a.component = b.component := by
   obtain ⟨y, hy⟩ := hx
   have hh : (H.atlas U).components
@@ -275,7 +279,8 @@ private theorem overlap_component (a b : ShrunkChart F ζ hζ U R P H)
           (labeledA (placeEquiv F ζ hζ) x)⟩ := by
     simpa only [(H.atlas U).components_formula, ShrunkChart.toBase, q] using hy
   exact (congrArg Sigma.fst ((H.atlas U).components.injective hh)).symm
-private theorem overlap_iff (a b : ShrunkChart F ζ hζ U R P H)
+include a b in
+private theorem overlap_iff  
     (h : a.component = b.component) (x : M F) :
     (x ∈ omega a ∧ q a x ∈ b.baseDomain) ↔
       ∃ g : KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative a.component),
@@ -303,7 +308,8 @@ private theorem overlap_iff (a b : ShrunkChart F ζ hζ U R P H)
   · rintro ⟨g,hx,hg⟩
     refine ⟨hx, ⟨⟨labeledA (placeEquiv F ζ hζ) (cmap g.val x), hg⟩, ?_⟩⟩
     exact q_coord _ _ rfl g x
-private theorem none_properties (a b : ShrunkChart F ζ hζ U R P H) :
+include a b in
+private theorem none_properties   :
     Branch.Properties (none : Branch a b) := by
   refine ⟨isOpen_empty, ?_, Set.empty_subset _, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   all_goals simp [Branch.targetDomain, Branch.psi, Branch.inverse, Branch.domain, Set.MapsTo,
@@ -367,7 +373,8 @@ private theorem T_labels {i : Fin (H.atlas U).componentCount}
   intro v
   change twistedOperator k x v = twistedOperator l x v
   simp only [twistedOperator, Q, Arrow.phase, Arrow.psi, hg, hr]
-private theorem make_comparison (a b : ShrunkChart F ζ hζ U R P H)
+include a b in
+private theorem make_comparison  
     (h : a.component = b.component)
     (g f : KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative a.component))
     (x : M F) (hx : x ∈ (make a b h g).arrow.domain ∩ (make a b h f).arrow.domain) :
@@ -414,7 +421,8 @@ private theorem make_comparison (a b : ShrunkChart F ζ hζ U R P H)
       group
     · change l.root = (l.root * k.root⁻¹) * k.root
       group
-private theorem build (a b : ShrunkChart F ζ hζ U R P H) : Nonempty (Enumeration a b) := by
+include a b in
+private theorem build   : Nonempty (Enumeration a b) := by
   by_cases h : a.component = b.component
   · let G := KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative a.component)
     letI : Countable G := component_countable a.component
@@ -448,9 +456,12 @@ private theorem build (a b : ShrunkChart F ζ hζ U R P H) : Nonempty (Enumerati
     · intro k l x hx
       exact False.elim hx.1
 
-theorem enumeration_exists (a b : ShrunkChart F ζ hζ U R P H) :
+include a b in
+theorem enumeration_exists   :
     Nonempty (Enumeration a b) :=
   build a b
+end
+
 
 end DedekindZetaZeroFree.KPContCotangentOverlapRationalBranches
 

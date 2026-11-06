@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import Mathlib.SetTheory.Cardinal.Finite
 public import ClassFieldTheory.LubinTate.EqualCharacteristic.Frobenius.LaurentSeriesFrobenius
 public import ClassFieldTheory.LubinTate.EqualCharacteristic.Frobenius.ContractingEquation
@@ -9,6 +11,7 @@ public import Mathlib.FieldTheory.IsAlgClosed.Basic
 public import Mathlib.RingTheory.PowerSeries.Basic
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -60,11 +63,10 @@ variable (k : Type u) [Field k] [Finite k]
     ∃ x : AlgebraicClosure k,
       x ^ Nat.card k = a * x + c := by
   let q := Nat.card k
-  let P : Polynomial (AlgebraicClosure k) :=
+  let P  :=
     Polynomial.X ^ q - Polynomial.C a * Polynomial.X - Polynomial.C c
   have hq : 1 < q := Finite.one_lt_card
-  have hmain : (Polynomial.X ^ q : Polynomial (AlgebraicClosure k)).Monic :=
-    Polynomial.monic_X_pow q
+  
   have hlowerDegree :
       (Polynomial.C a * Polynomial.X + Polynomial.C c :
         Polynomial (AlgebraicClosure k)).degree <
@@ -104,8 +106,7 @@ variable {k}
 /-- The constant coefficient chosen for a solution of
 `phi(epsilon)=u*epsilon`. -/
 noncomputable def chosenEqualCharacteristicSemilinearLeadingCoefficient
-    (u : k⟦X⟧) :
-    AlgebraicClosure k :=
+    (u : k⟦X⟧)  :=
   Classical.choose
     (IsAlgClosed.exists_pow_nat_eq
       (algebraMap k (AlgebraicClosure k) (PowerSeries.coeff 0 u))
@@ -133,7 +134,7 @@ theorem chosenEqualCharacteristicSemilinearLeadingCoefficient_ne_zero
     apply (algebraMap k (AlgebraicClosure k)).injective
     simpa using hpow.symm
   · exact Nat.sub_ne_zero_of_lt
-      (Finite.one_lt_card : 1 < Nat.card k)
+      Finite.one_lt_card
 
 /-- Coefficients of the exact semilinear solution.  At stage `n+1`, the
 new coefficient is chosen as a root of the separable additive polynomial
@@ -184,8 +185,7 @@ theorem chosenEqualCharacteristicSemilinearCoefficient_succ
 /-- The exact power-series solution of the semilinear Hilbert--90 equation
 in the completed maximal unramified coefficient ring. -/
 noncomputable def equalCharacteristicSemilinearUnit
-    (u : k⟦X⟧) (hu : PowerSeries.coeff 0 u ≠ 0) :
-    (AlgebraicClosure k)⟦X⟧ :=
+    (u : k⟦X⟧) (hu : PowerSeries.coeff 0 u ≠ 0)  :=
   PowerSeries.mk (chosenEqualCharacteristicSemilinearCoefficient u hu)
 
 /-- The semilinear unit records the recursively chosen coefficients. -/
@@ -248,68 +248,66 @@ section ThetaRecursion
 
 variable (u : k⟦X⟧ˣ)
 
-/-- The image in the completed maximal-unramified coefficient ring of the
-unit relating the two prime elements. -/
-noncomputable def equalCharacteristicCompletedUnit :
-    (AlgebraicClosure k)⟦X⟧ :=
-  PowerSeries.map (algebraMap k (AlgebraicClosure k)) (u : k⟦X⟧)
 
-/-- We normalize the target prime to `T`; the source prime is therefore
-`bar_pi = u^{-1} T`. -/
-noncomputable def equalCharacteristicCompletedSourceUniformizer :
-    (AlgebraicClosure k)⟦X⟧ :=
-  PowerSeries.map (algebraMap k (AlgebraicClosure k)) ((u⁻¹ : k⟦X⟧ˣ) : k⟦X⟧) *
-    PowerSeries.X
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The contracting coefficient
 `gamma_j = bar_pi^(q^j) / T` in the `j`-th theta recursion. -/
-noncomputable def equalCharacteristicThetaGamma (j : ℕ) :
-    (AlgebraicClosure k)⟦X⟧ :=
-  PowerSeries.map (algebraMap k (AlgebraicClosure k)) ((u⁻¹ : k⟦X⟧ˣ) : k⟦X⟧) ^
+noncomputable def equalCharacteristicThetaGamma (j : ℕ)  :=
+  PowerSeries.map (algebraMap k (AlgebraicClosure k)) ((u⁻¹ : k⟦X⟧ˣ)) ^
       (Nat.card k ^ j) *
     PowerSeries.X ^ (Nat.card k ^ j - 1)
 
-/-- Positive-index theta gamma terms have zero constant coefficient. -/
-theorem equalCharacteristicThetaGamma_constantCoeff
-    (j : ℕ) (hj : 0 < j) :
-    PowerSeries.coeff 0 (equalCharacteristicThetaGamma u j) = 0 := by
-  have hq : 1 < Nat.card k := Finite.one_lt_card
-  have hpow : 0 < Nat.card k ^ j - 1 :=
-    Nat.sub_pos_of_lt (Nat.one_lt_pow hj.ne' hq)
-  simp [equalCharacteristicThetaGamma, hpow.ne']
 
-/-- Multiplying theta gamma by `X` gives the corresponding source-uniformizer power. -/
-theorem equalCharacteristicThetaGamma_mul_X
-    (j : ℕ) (hj : 0 < j) :
-    PowerSeries.X * equalCharacteristicThetaGamma u j =
-      equalCharacteristicCompletedSourceUniformizer u ^ (Nat.card k ^ j) := by
-  have hq : 1 < Nat.card k := Finite.one_lt_card
-  have hpow : 1 ≤ Nat.card k ^ j :=
-    (Nat.one_lt_pow hj.ne' hq).le
-  rw [equalCharacteristicThetaGamma,
-    equalCharacteristicCompletedSourceUniformizer, mul_pow]
-  calc
-    PowerSeries.X *
-          (PowerSeries.map (algebraMap k (AlgebraicClosure k))
-              (((u⁻¹ : k⟦X⟧ˣ) : k⟦X⟧)) ^ (Nat.card k ^ j) *
-            PowerSeries.X ^ (Nat.card k ^ j - 1)) =
-        PowerSeries.map (algebraMap k (AlgebraicClosure k))
-              (((u⁻¹ : k⟦X⟧ˣ) : k⟦X⟧)) ^ (Nat.card k ^ j) *
-            (PowerSeries.X ^ (Nat.card k ^ j - 1) * PowerSeries.X) := by
-      ac_rfl
-    _ = PowerSeries.map (algebraMap k (AlgebraicClosure k))
-              (((u⁻¹ : k⟦X⟧ˣ) : k⟦X⟧)) ^ (Nat.card k ^ j) *
-            PowerSeries.X ^ ((Nat.card k ^ j - 1) + 1) := by
-      rw [pow_succ]
-    _ = PowerSeries.map (algebraMap k (AlgebraicClosure k))
-              (((u⁻¹ : k⟦X⟧ˣ) : k⟦X⟧)) ^ (Nat.card k ^ j) *
-            PowerSeries.X ^ (Nat.card k ^ j) := by
-      rw [Nat.sub_add_cancel hpow]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The numerator occurring on the right of the `j`-th theta recursion. -/
 noncomputable def equalCharacteristicThetaBetaNumerator
-    (b : (AlgebraicClosure k)⟦X⟧) :
-    (AlgebraicClosure k)⟦X⟧ :=
+    (b : (AlgebraicClosure k)⟦X⟧)  :=
   equalCharacteristicPowerSeriesFrobenius k b - b ^ Nat.card k
 
 /-- The theta beta numerator has zero constant coefficient. -/
@@ -323,8 +321,7 @@ theorem equalCharacteristicThetaBetaNumerator_constantCoeff
 /-- The quotient
 `beta(b) = (phi(b) - b^q) / T`. -/
 noncomputable def equalCharacteristicThetaBeta
-    (b : (AlgebraicClosure k)⟦X⟧) :
-    (AlgebraicClosure k)⟦X⟧ :=
+    (b : (AlgebraicClosure k)⟦X⟧)  :=
   equalCharacteristicPowerSeriesTail
     (equalCharacteristicThetaBetaNumerator b)
 
@@ -370,50 +367,50 @@ theorem equalCharacteristicThetaCoefficient_zero :
           simpa [PowerSeries.coeff_zero_eq_constantCoeff_apply] using hzero) :=
   rfl
 
-/-- The canonical contracting recursion for the non-leading theta
-coefficients. -/
-theorem equalCharacteristicThetaCoefficient_succ_equation (j : ℕ) :
-    equalCharacteristicThetaCoefficient u (j + 1) -
-        equalCharacteristicThetaGamma u (j + 1) *
-          equalCharacteristicPowerSeriesFrobenius k
-            (equalCharacteristicThetaCoefficient u (j + 1)) =
-      equalCharacteristicThetaBeta
-        (equalCharacteristicThetaCoefficient u j) := by
-  rw [equalCharacteristicThetaCoefficient]
-  have hgamma := equalCharacteristicThetaGamma_constantCoeff u
-    (j + 1) (Nat.zero_lt_succ j)
-  apply (sub_eq_iff_eq_add).2
-  simpa [equalCharacteristicPowerSeriesFrobenius] using
-    (contractingFrobeniusEquationSolution_spec
-      (equalCharacteristicCoefficientFrobenius k).toRingHom
-      (equalCharacteristicThetaGamma u (j + 1))
-      (equalCharacteristicThetaBeta
-        (equalCharacteristicThetaCoefficient u j)) hgamma)
 
-/-- Clearing the factor `T` gives the coefficient comparison in
-`theta^phi o e_bar = e_T o theta`. -/
-theorem equalCharacteristicThetaCoefficient_succ_comparison (j : ℕ) :
-    PowerSeries.X * equalCharacteristicThetaCoefficient u (j + 1) -
-        equalCharacteristicCompletedSourceUniformizer u ^
-            (Nat.card k ^ (j + 1)) *
-          equalCharacteristicPowerSeriesFrobenius k
-            (equalCharacteristicThetaCoefficient u (j + 1)) =
-      equalCharacteristicThetaBetaNumerator
-        (equalCharacteristicThetaCoefficient u j) := by
-  have hrec := congrArg (fun z : (AlgebraicClosure k)⟦X⟧ ↦
-      PowerSeries.X * z)
-    (equalCharacteristicThetaCoefficient_succ_equation u j)
-  change PowerSeries.X *
-      (equalCharacteristicThetaCoefficient u (j + 1) -
-        equalCharacteristicThetaGamma u (j + 1) *
-          equalCharacteristicPowerSeriesFrobenius k
-            (equalCharacteristicThetaCoefficient u (j + 1))) =
-      PowerSeries.X * equalCharacteristicThetaBeta
-        (equalCharacteristicThetaCoefficient u j) at hrec
-  rw [mul_sub, ← mul_assoc,
-    equalCharacteristicThetaGamma_mul_X u (j + 1) (Nat.zero_lt_succ j),
-    equalCharacteristicThetaBeta_mul_X] at hrec
-  exact hrec
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end ThetaRecursion
 

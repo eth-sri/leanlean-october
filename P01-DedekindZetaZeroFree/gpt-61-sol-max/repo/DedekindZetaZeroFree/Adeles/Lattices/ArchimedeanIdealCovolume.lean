@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Adeles.Lattices.FractionalIdealTraceDual
 
 @[expose] public section
+
 
 noncomputable section
 open scoped Classical nonZeroDivisors
@@ -22,7 +25,7 @@ instance traceMeasure_isAddHaarMeasure : (traceMeasure F).IsAddHaarMeasure := by
     positivity
   · exact ENNReal.ofReal_ne_top
 
-def covolume (I : NonzeroFractionalIdeal F) : ℝ :=
+def covolume (I : NonzeroFractionalIdeal F)  :=
   ZLattice.covolume (idealLattice F I) (traceMeasure F)
 
 theorem traceMeasure_map_toMixed :

@@ -13,6 +13,8 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 
 
 set_option autoImplicit false
+set_option synthInstance.maxHeartbeats 100000
+set_option maxHeartbeats 2000000
 
 /-!
 # Restriction kernels of S-unit Kummer extensions

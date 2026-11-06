@@ -1,4 +1,6 @@
 module
+
+public import Mathlib
 public import Mathlib.NumberTheory.MulChar.Lemmas
 
 public import Mathlib.NumberTheory.JacobiSum.Basic
@@ -7,20 +9,24 @@ public import Mathlib.NumberTheory.LegendreSymbol.QuadraticChar.Basic
 
 @[expose] public section
 
+
 namespace DedekindZetaZeroFree.FiniteGauss
 
 variable {k : Type*} [Field k] [Fintype k]
 
-noncomputable def gaussPower (χ : MulChar k ℂ) (ψ : AddChar k ℂ) (j : ℕ) : ℂ :=
+noncomputable def gaussPower (χ : MulChar k ℂ) (ψ : AddChar k ℂ) (j : ℕ)  :=
   gaussSum (χ ^ j) ψ
 
 noncomputable def normalizedGaussPower
-    (χ : MulChar k ℂ) (ψ : AddChar k ℂ) (j : ℕ) : ℂ :=
+    (χ : MulChar k ℂ) (ψ : AddChar k ℂ) (j : ℕ)  :=
   gaussPower χ ψ j / (Real.sqrt (Fintype.card k) : ℂ)
 
+section
+variable (χ : MulChar k ℂ) (ψ : AddChar k ℂ)
+    (hQ : Fintype.card k % 12 = 1) (hχ : orderOf χ = 6) (hψ : ψ ≠ 1)
+include χ ψ hQ hχ hψ
 theorem gaussPower_two_mul_four
-    (χ : MulChar k ℂ) (ψ : AddChar k ℂ)
-    (hQ : Fintype.card k % 12 = 1) (hχ : orderOf χ = 6) (hψ : ψ ≠ 1) :
+      :
     gaussPower χ ψ 2 * gaussPower χ ψ 4 = (Fintype.card k : ℂ) := by
   have ho : orderOf (χ ^ 2) = 3 := by
     rw [orderOf_pow' _ (by norm_num : (2 : ℕ) ≠ 0), hχ]
@@ -37,19 +43,17 @@ theorem gaussPower_two_mul_four
   simpa [gaussPower, ho, ← pow_mul, hv] using H
 
 theorem gaussPower_two_sq
-    (χ : MulChar k ℂ) (ψ : AddChar k ℂ)
-    (hQ : Fintype.card k % 12 = 1) (hχ : orderOf χ = 6) (hψ : ψ ≠ 1) :
+      :
     gaussPower χ ψ 2 ^ 2 = jacobiSum (χ ^ 2) (χ ^ 2) * gaussPower χ ψ 4 := by
   have hn : χ ^ 2 * χ ^ 2 ≠ 1 := by
     rw [← pow_add]
-    exact pow_ne_one_of_lt_orderOf (by norm_num) (by omega)
+    apply pow_ne_one_of_lt_orderOf <;> aesop
   have H := (jacobiSum_mul_nontrivial hn ψ).symm
   rw [← pow_add] at H
   simpa only [gaussPower, pow_two, mul_comm] using H
 
 theorem normalizedGaussPower_two_cube
-    (χ : MulChar k ℂ) (ψ : AddChar k ℂ)
-    (hQ : Fintype.card k % 12 = 1) (hχ : orderOf χ = 6) (hψ : ψ ≠ 1) :
+      :
     normalizedGaussPower χ ψ 2 ^ 3 =
       jacobiSum (χ ^ 2) (χ ^ 2) / (Real.sqrt (Fintype.card k) : ℂ) := by
   have hpos : (0 : ℝ) < Fintype.card k := by
@@ -63,9 +67,7 @@ theorem normalizedGaussPower_two_cube
   have h2 := gaussPower_two_sq χ ψ hQ hχ hψ
   have hg : gaussPower χ ψ 2 ^ 3 =
       jacobiSum (χ ^ 2) (χ ^ 2) * Fintype.card k := by
-    calc
-      _ = gaussPower χ ψ 2 ^ 2 * gaussPower χ ψ 2 := by ring
-      _ = _ := by rw [h2, mul_assoc, mul_comm (gaussPower χ ψ 4), h1]
+    grind
   unfold normalizedGaussPower
   rw [div_pow]
   apply (div_eq_div_iff (pow_ne_zero _ hs) hs).2
@@ -74,6 +76,8 @@ theorem normalizedGaussPower_two_cube
     (Fintype.card k : ℂ) * (Real.sqrt (Fintype.card k) : ℂ) by
       rw [pow_succ, hs2]]
   ring
+end
+
 
 private lemma quad_unique (η θ : MulChar k ℂ) (hη : η ^ 2 = 1) (hθ : θ ^ 2 = 1)
     (hnη : η ≠ 1) (hnθ : θ ≠ 1) : η = θ := by
@@ -90,7 +94,10 @@ private lemma char_ne_two (hQ : Fintype.card k % 12 = 1) : ringChar k ≠ 2 := b
  intro h
  have H := FiniteField.even_card_of_char_two h
  omega
-private lemma count (χ : MulChar k ℂ) (hQ : Fintype.card k % 12 = 1) (hχ : orderOf χ = 6) (t : k) [DecidableEq k] :
+section
+variable (χ : MulChar k ℂ) (hQ : Fintype.card k % 12 = 1) (hχ : orderOf χ = 6)
+include χ hQ hχ
+private lemma count   (t : k) [DecidableEq k] :
  ((Finset.univ.filter fun x : k => x ^ 2 = t).card : ℂ) = (χ ^ 3) t + 1 := by
  classical
  have hs : (χ ^ 3) ^ 2 = 1 := by rw [← pow_mul]; norm_num; exact hχ ▸ pow_orderOf_eq_one χ
@@ -105,7 +112,7 @@ private lemma count (χ : MulChar k ℂ) (hQ : Fintype.card k % 12 = 1) (hχ : o
  have H' := congrArg (fun z : ℤ => (z : ℂ)) H
  simpa [θ, MulChar.ringHomComp_apply] using H'
 
-private lemma jac_dup (χ : MulChar k ℂ) (hQ : Fintype.card k % 12 = 1) (hχ : orderOf χ = 6) :
+private lemma jac_dup   :
  jacobiSum χ χ = star (χ (4 : k)) * jacobiSum (χ ^ 3) χ := by
  classical
  have h2 : (2 : k) ≠ 0 := by
@@ -137,7 +144,7 @@ private lemma jac_dup (χ : MulChar k ℂ) (hQ : Fintype.card k % 12 = 1) (hχ :
  have ha : jacobiSum χ χ = star (χ (4 : k)) * ∑ y : k, χ (1 - y ^ 2) := by
   rw [jacobiSum, Finset.mul_sum]
   have he : ∑ x : k, χ x * χ (1 - x) = ∑ y : k, χ ((1 - y) / 2) * χ (1 - (1 - y) / 2) := by
-   let e : k ≃ k := (Equiv.subLeft 1).trans (Equiv.mulRight₀ (2 : k)⁻¹ (inv_ne_zero h2))
+   let e  := (Equiv.subLeft 1).trans (Equiv.mulRight₀ (2 : k)⁻¹ (inv_ne_zero h2))
    simpa [e, div_eq_mul_inv] using (e.sum_comp (fun x : k => χ x * χ (1 - x))).symm
   rw [he]
   apply Finset.sum_congr rfl
@@ -149,17 +156,22 @@ private lemma jac_dup (χ : MulChar k ℂ) (hQ : Fintype.card k % 12 = 1) (hχ :
   rw [hr, div_eq_mul_inv, map_mul, MulChar.star_apply', MulChar.inv_apply']
   ring
  rw [ha, hs]
-private lemma gauss_dup (χ : MulChar k ℂ) (ψ : AddChar k ℂ)
- (hQ : Fintype.card k % 12 = 1) (hχ : orderOf χ = 6) (hψ : ψ ≠ 1) :
+end
+
+section
+variable (χ : MulChar k ℂ) (ψ : AddChar k ℂ)
+ (hQ : Fintype.card k % 12 = 1) (hχ : orderOf χ = 6) (hψ : ψ ≠ 1)
+include χ ψ hQ hχ hψ
+private lemma gauss_dup   :
  gaussPower χ ψ 1 * gaussPower χ ψ 4 = star (χ (4 : k)) * gaussPower χ ψ 2 * gaussPower χ ψ 3 := by
  have hn : χ ≠ 1 := by
   intro h; simp [h] at hχ
  have hn2 : χ * χ ≠ 1 := by
   rw [← pow_two]
-  exact pow_ne_one_of_lt_orderOf (by norm_num) (by omega)
+  apply pow_ne_one_of_lt_orderOf <;> aesop
  have hn4 : χ ^ 3 * χ ≠ 1 := by
   rw [← pow_succ]
-  exact pow_ne_one_of_lt_orderOf (by norm_num) (by omega)
+  apply pow_ne_one_of_lt_orderOf <;> aesop
  have H1 := jacobiSum_mul_nontrivial hn2 ψ
  have H2 := jacobiSum_mul_nontrivial hn4 ψ
  rw [← pow_two, jac_dup χ hQ hχ] at H1
@@ -177,8 +189,7 @@ private lemma gauss_dup (χ : MulChar k ℂ) (ψ : AddChar k ℂ)
   _ = _ := by rw [H2]; ring
 
 theorem normalizedGaussPower_sextic_duplication
-    (χ : MulChar k ℂ) (ψ : AddChar k ℂ)
-    (hQ : Fintype.card k % 12 = 1) (hχ : orderOf χ = 6) (hψ : ψ ≠ 1) :
+      :
     normalizedGaussPower χ ψ 1 * normalizedGaussPower χ ψ 2 =
       star (χ (4 : k)) * normalizedGaussPower χ ψ 3 *
         normalizedGaussPower χ ψ 2 ^ 3 := by
@@ -197,5 +208,7 @@ theorem normalizedGaussPower_sextic_duplication
  field_simp
  rw [hs2]
  linear_combination H
+end
+
 
 end DedekindZetaZeroFree.FiniteGauss

@@ -57,10 +57,13 @@ private theorem support_factor_aux (I : A.Exterior) (P : Finset (ExteriorPrime A
       apply Subtype.ext
       exact HeightOneSpectrum.asIdeal_injective hab)
 
- theorem principal_span_factorization (C : A.GeneralArithmeticContext σ η hS)
+ section
+variable (C : A.GeneralArithmeticContext σ η hS)
     (I : A.Exterior) (x : A.R) (hx : A.Generates I x)
     (P : Finset (ExteriorPrime A))
-    (hP : ∀ p : ExteriorPrime A, exponent p I ≠ 0 → p ∈ P) :
+    (hP : ∀ p : ExteriorPrime A, exponent p I ≠ 0 → p ∈ P)
+include C I x hx P hP in
+theorem principal_span_factorization   :
     Ideal.span ({x} : Set A.R) =
       ∏ p ∈ P, Ideal.span ({generator C p ^ exponent p I} : Set A.R) := by
   rw [hx.2]
@@ -89,10 +92,8 @@ private theorem support_factor_aux (I : A.Exterior) (P : Finset (ExteriorPrime A
   change Ideal.map (algebraMap (𝓞 F) A.R) (p.val.asIdeal ⊔ q.val.asIdeal) = ⊤
   rw [(HeightOneSpectrum.isCoprime_of_ne _ _ hne).sup_eq, Ideal.map_top]
 
- def quotientPiEquiv (C : A.GeneralArithmeticContext σ η hS)
-    (I : A.Exterior) (x : A.R) (hx : A.Generates I x)
-    (P : Finset (ExteriorPrime A))
-    (hP : ∀ p : ExteriorPrime A, exponent p I ≠ 0 → p ∈ P) :
+ include C I x hx P hP in
+def quotientPiEquiv   :
     FiniteTransform.Residue A.R.toSubring x ≃+*
       ((p : P) → Residue C p.val (exponent p.val I)) := by
   let f : P → Ideal A.R := fun p => Ideal.span {generator C p.val ^ exponent p.val I}
@@ -105,16 +106,16 @@ private theorem support_factor_aux (I : A.Exterior) (P : Finset (ExteriorPrime A
       (Ideal.prod_eq_iInf_of_pairwise_isCoprime (hc.set_pairwise (↑(Finset.univ : Finset P))))
   exact (Ideal.quotEquivOfEq he).trans (Ideal.quotientInfRingEquivPiQuotient f hc)
 
-private theorem quotientPiEquiv_mk (C : A.GeneralArithmeticContext σ η hS)
-    (I : A.Exterior) (x : A.R) (hx : A.Generates I x)
-    (P : Finset (ExteriorPrime A))
-    (hP : ∀ p : ExteriorPrime A, exponent p I ≠ 0 → p ∈ P) (y : A.R) :
+include C I x hx P hP in
+private theorem quotientPiEquiv_mk   (y : A.R) :
     quotientPiEquiv C I x hx P hP (FiniteTransform.residueMap A.R.toSubring x y) =
       fun p : P => Ideal.Quotient.mk
         (Ideal.span ({generator C p.val ^ exponent p.val I} : Set A.R)) y := by
   ext p
   change Ideal.Quotient.mk _ y = Ideal.Quotient.mk _ y
   rfl
+end
+
 
 theorem quotient_crt (C : A.GeneralArithmeticContext σ η hS)
     (I : A.Exterior) (s : A.R) (hs : A.Generates I s)

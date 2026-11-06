@@ -67,24 +67,24 @@ variable {K : Type u} [Field K]
       (equalCharacteristicCompletedLevelField F n)).injective
     F.residueCharacteristic
 
-noncomputable local instance
-    equalCharacteristicDirectThetaBaseValuationIsNontrivial
-    (F : LocalField.{u, v} K) :
-    (Valued.v : Valuation
-      (equalCharacteristicCompletedUnramifiedField F.residueField) ℤᵐ⁰).IsNontrivial :=
-  equalCharacteristicCompletedBaseValuationIsNontrivial F.residueField
 
-noncomputable local instance equalCharacteristicDirectThetaBaseValuationRankOne
-    (F : LocalField.{u, v} K) :
-    (Valued.v : Valuation
-      (equalCharacteristicCompletedUnramifiedField F.residueField) ℤᵐ⁰).RankOne :=
-  equalCharacteristicCompletedBaseValuationRankOne F.residueField
 
-noncomputable local instance equalCharacteristicDirectThetaBaseNormedField
-    (F : LocalField.{u, v} K) :
-    NontriviallyNormedField
-      (equalCharacteristicCompletedUnramifiedField F.residueField) :=
-  equalCharacteristicCompletedBaseNormedField F.residueField
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 noncomputable local instance equalCharacteristicDirectThetaLevelNormedField
     (F : LocalField.{u, v} K) (n : ℕ) :
@@ -161,17 +161,20 @@ theorem equalCharacteristicDirectThetaSourceUniformizerInteger_coe
       (equalCharacteristicCompletedLevelField F n))
     (PowerSeries.coe_X (R := AlgebraicClosure F.residueField))
 
+section
+variable (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ) (n : ℕ)
+include F u n
 /-- The direct target parameter `uT` in the standard completed-level
 valuation ring. -/
 noncomputable def equalCharacteristicDirectThetaTargetUniformizerInteger
-    (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      :
     Valued.integer (equalCharacteristicCompletedLevelField F n) :=
   equalCharacteristicCompletedLevelCoefficientHom F n
     (equalCharacteristicDirectCompletedTargetUniformizer u)
 
 /-- The same genuine target parameter in the ambient completed level field. -/
 noncomputable def equalCharacteristicDirectThetaTargetUniformizer
-    (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      :
     equalCharacteristicCompletedLevelField F n :=
   (equalCharacteristicDirectThetaTargetUniformizerInteger F u n :
     equalCharacteristicCompletedLevelField F n)
@@ -179,25 +182,29 @@ noncomputable def equalCharacteristicDirectThetaTargetUniformizer
 /-- Coercing the integral theta target uniformizer returns its field value. -/
 @[simp]
 theorem equalCharacteristicDirectThetaTargetUniformizerInteger_coe
-    (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      :
     ((equalCharacteristicDirectThetaTargetUniformizerInteger F u n :
       Valued.integer (equalCharacteristicCompletedLevelField F n)) :
         equalCharacteristicCompletedLevelField F n) =
       equalCharacteristicDirectThetaTargetUniformizer F u n :=
   rfl
+end
 
+
+section
+variable (F : LocalField.{u, v} K)
+    [CharP K F.residueCharacteristic] (n i : ℕ)
+include F n i
 /-- The standard source orbit of the chosen primitive point. -/
 noncomputable def equalCharacteristicDirectThetaSourceIterate
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic] (n i : ℕ) :
+      :
     equalCharacteristicCompletedLevelField F n :=
   equalCharacteristicLubinTateAmbientPiIterate F
     (equalCharacteristicCompletedLevelUniformizer F n) i
     (equalCharacteristicCompletedPrimitiveRoot F n)
 
 private theorem equalCharacteristicDirectTheta_sourceIterate_norm_lt_one_aux
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic] (n i : ℕ)
+     
     (x : equalCharacteristicCompletedLevelField F n) (hx : ‖x‖ < 1) :
     ‖equalCharacteristicLubinTateAmbientPiIterate F
         (equalCharacteristicCompletedLevelUniformizer F n) i x‖ < 1 := by
@@ -219,8 +226,7 @@ private theorem equalCharacteristicDirectTheta_sourceIterate_norm_lt_one_aux
 
 /-- Every direct theta source iterate has norm strictly below one. -/
 theorem equalCharacteristicDirectThetaSourceIterate_norm_lt_one
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic] (n i : ℕ) :
+      :
     ‖equalCharacteristicDirectThetaSourceIterate F n i‖ < 1 :=
   equalCharacteristicDirectTheta_sourceIterate_norm_lt_one_aux F n i
     (equalCharacteristicCompletedPrimitiveRoot F n)
@@ -228,8 +234,7 @@ theorem equalCharacteristicDirectThetaSourceIterate_norm_lt_one
 
 /-- Each source iterate as a point of the spectral valuation ring. -/
 noncomputable def equalCharacteristicDirectThetaSourceIterateInteger
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic] (n i : ℕ) :
+      :
     Valued.integer (equalCharacteristicCompletedLevelField F n) :=
   ⟨equalCharacteristicDirectThetaSourceIterate F n i, by
     change ‖equalCharacteristicDirectThetaSourceIterate F n i‖₊ ≤ 1
@@ -239,8 +244,7 @@ noncomputable def equalCharacteristicDirectThetaSourceIterateInteger
 /-- Coercing an integral source iterate returns the underlying field element. -/
 @[simp]
 theorem equalCharacteristicDirectThetaSourceIterateInteger_coe
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic] (n i : ℕ) :
+      :
     ((equalCharacteristicDirectThetaSourceIterateInteger F n i :
       Valued.integer (equalCharacteristicCompletedLevelField F n)) :
         equalCharacteristicCompletedLevelField F n) =
@@ -249,16 +253,14 @@ theorem equalCharacteristicDirectThetaSourceIterateInteger_coe
 
 /-- Each integral source iterate has norm strictly below one. -/
 theorem equalCharacteristicDirectThetaSourceIterateInteger_norm_lt_one
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic] (n i : ℕ) :
+      :
     ‖equalCharacteristicDirectThetaSourceIterateInteger F n i‖ < 1 := by
   change ‖equalCharacteristicDirectThetaSourceIterate F n i‖ < 1
   exact equalCharacteristicDirectThetaSourceIterate_norm_lt_one F n i
 
 /-- Power series can be evaluated at every integral direct source iterate. -/
 theorem equalCharacteristicDirectThetaSourceIterateInteger_hasEval
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic] (n i : ℕ) :
+      :
     PowerSeries.HasEval
       (equalCharacteristicDirectThetaSourceIterateInteger F n i) := by
   change Tendsto
@@ -269,8 +271,7 @@ theorem equalCharacteristicDirectThetaSourceIterateInteger_hasEval
 
 /-- Evaluating `e_T` moves one step along the actual source orbit. -/
 theorem equalCharacteristicDirectTheta_sourceLubinTate_evaluation
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic] (n i : ℕ) :
+      :
     equalCharacteristicCompletedLevelEvaluation F n
         (equalCharacteristicDirectThetaSourceIterateInteger F n i)
         (equalCharacteristicDirectThetaSourceIterateInteger_hasEval F n i)
@@ -304,11 +305,16 @@ theorem equalCharacteristicDirectTheta_sourceLubinTate_evaluation
     equalCharacteristicLubinTateAmbientPiEnd_iterate,
     ← equalCharacteristicLubinTateAmbientPiIterate_succ]
   rfl
+end
 
-private theorem equalCharacteristicDirectThetaEvaluation_hasEval_of_hasSubst
-    (F : LocalField.{u, v} K) (n : ℕ)
+
+section
+variable (F : LocalField.{u, v} K) (n : ℕ)
     (x : Valued.integer (equalCharacteristicCompletedLevelField F n))
     (hx : PowerSeries.HasEval x)
+include F n x hx
+private theorem equalCharacteristicDirectThetaEvaluation_hasEval_of_hasSubst
+     
     (a : ((AlgebraicClosure F.residueField)⟦X⟧)⟦X⟧)
     (ha : PowerSeries.HasSubst a) :
     PowerSeries.HasEval
@@ -322,9 +328,7 @@ private theorem equalCharacteristicDirectThetaEvaluation_hasEval_of_hasSubst
         (equalCharacteristicDirectThetaCoefficientHom_continuous F n) hx)
 
 private theorem equalCharacteristicDirectThetaEvaluation_subst
-    (F : LocalField.{u, v} K) (n : ℕ)
-    (x : Valued.integer (equalCharacteristicCompletedLevelField F n))
-    (hx : PowerSeries.HasEval x)
+     
     (a f : ((AlgebraicClosure F.residueField)⟦X⟧)⟦X⟧)
     (ha : PowerSeries.HasSubst a)
     (haEval : PowerSeries.HasEval
@@ -346,14 +350,19 @@ private theorem equalCharacteristicDirectThetaEvaluation_subst
         (R := R) (S := R) (T := S)
         (a := fun _ : Unit ↦ a) ha.const
         (PowerSeries.hasEval hx) f)
+end
 
+
+section
+variable (F : LocalField.{u, v} K)
+    [CharP K F.residueCharacteristic]
+    (u : F.residueField⟦X⟧ˣ) (n i : ℕ)
+include F u n i
 /-- The analytic value of the `i`-th direct Frobenius twist at the `i`-th
 standard source iterate. -/
 noncomputable def
     equalCharacteristicDirectThetaFrobeniusIterateAtSourceIterate
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n i : ℕ) :
+      :
     Valued.integer (equalCharacteristicCompletedLevelField F n) :=
   equalCharacteristicCompletedLevelEvaluation F n
     (equalCharacteristicDirectThetaSourceIterateInteger F n i)
@@ -363,9 +372,7 @@ noncomputable def
 /-- The evaluated Frobenius theta iterate is summable at the matching source iterate. -/
 theorem
     equalCharacteristicDirectThetaFrobeniusIterateAtSourceIterate_hasSum
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n i : ℕ) :
+      :
     HasSum
       (fun m : ℕ ↦
         equalCharacteristicCompletedLevelCoefficientHom F n
@@ -380,22 +387,24 @@ theorem
     (equalCharacteristicDirectThetaCoefficientHom_continuous F n)
     (equalCharacteristicDirectThetaSourceIterateInteger_hasEval F n i)
     (equalCharacteristicDirectThetaSeriesFrobeniusIterate u i)
+end
 
-/-- The Frobenius theta iterate admits evaluation at the matching source iterate. -/
-theorem
-    equalCharacteristicDirectThetaFrobeniusIterateAtSourceIterate_hasEval
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n i : ℕ) :
-    PowerSeries.HasEval
-      (equalCharacteristicDirectThetaFrobeniusIterateAtSourceIterate
-        F u n i) := by
-  rw [equalCharacteristicDirectThetaFrobeniusIterateAtSourceIterate]
-  exact equalCharacteristicDirectThetaEvaluation_hasEval_of_hasSubst
-    F n (equalCharacteristicDirectThetaSourceIterateInteger F n i)
-    (equalCharacteristicDirectThetaSourceIterateInteger_hasEval F n i)
-    (equalCharacteristicDirectThetaSeriesFrobeniusIterate u i)
-    (equalCharacteristicDirectThetaSeriesFrobeniusIterate_hasSubst u i)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 private theorem
     equalCharacteristicDirectThetaSeriesFrobeniusIterate_coeff_one_isUnit
@@ -422,10 +431,13 @@ private theorem
         PowerSeries.coeff_map]
       exact IsUnit.map (equalCharacteristicPowerSeriesFrobenius k) ih
 
+section
+variable (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ)
+    (n i : ℕ)
+include F u n i
 private theorem
     equalCharacteristicDirectThetaFrobeniusIterateCoefficientOne_isUnit
-    (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ)
-    (n i : ℕ) :
+      :
     IsUnit
       (equalCharacteristicCompletedLevelCoefficientHom F n
         (PowerSeries.coeff 1
@@ -435,8 +447,7 @@ private theorem
 
 private theorem
     equalCharacteristicDirectThetaFrobeniusIterateAtZero_hasSum
-    (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ)
-    (n i : ℕ) :
+      :
     HasSum
       (fun m : ℕ ↦
         equalCharacteristicCompletedLevelCoefficientHom F n
@@ -461,12 +472,17 @@ private theorem
     | succ m => simp
   rw [hterms]
   exact hasSum_zero
+end
 
+
+section
+variable (F : LocalField.{u, v} K)
+    [CharP K F.residueCharacteristic]
+    (u : F.residueField⟦X⟧ˣ)
+include F u
 private theorem
     equalCharacteristicDirectThetaFrobeniusIterateAtSourceIterate_norm
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n i : ℕ) :
+      (n i : ℕ) :
     ‖equalCharacteristicDirectThetaFrobeniusIterateAtSourceIterate F u n i‖ =
       ‖equalCharacteristicDirectThetaSourceIterateInteger F n i‖ := by
   have h := integralPowerSeriesEvaluation_norm_sub
@@ -487,9 +503,7 @@ private theorem
 
 /-- Analytic form of the `i`-th direct second identity. -/
 theorem equalCharacteristicDirectThetaFrobeniusIterateAtSourceIterate_succ
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n i : ℕ) :
+      (n i : ℕ) :
     equalCharacteristicDirectThetaFrobeniusIterateAtSourceIterate
         F u n (i + 1) =
       equalCharacteristicDirectThetaFrobeniusIterateAtSourceIterate F u n i ^
@@ -555,38 +569,34 @@ theorem equalCharacteristicDirectThetaFrobeniusIterateAtSourceIterate_succ
 /-- Genuine analytic evaluation of the direct theta series at the standard
 completed primitive root `lambda`. -/
 noncomputable def equalCharacteristicDirectThetaAtCompletedPrimitiveRoot
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      (n : ℕ) :
     Valued.integer (equalCharacteristicCompletedLevelField F n) :=
   equalCharacteristicCompletedLevelEvaluation F n
     (equalCharacteristicCompletedPrimitiveRootInteger F n)
     (equalCharacteristicCompletedPrimitiveRootInteger_hasEval F n)
     (equalCharacteristicDirectThetaSeries u)
 
-/-- The coefficient expansion defining the direct theta value converges. -/
-theorem equalCharacteristicDirectThetaAtCompletedPrimitiveRoot_hasSum
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
-    HasSum
-      (fun m : ℕ ↦
-        equalCharacteristicCompletedLevelCoefficientHom F n
-            (PowerSeries.coeff m (equalCharacteristicDirectThetaSeries u)) *
-          equalCharacteristicCompletedPrimitiveRootInteger F n ^ m)
-      (equalCharacteristicDirectThetaAtCompletedPrimitiveRoot F u n) := by
-  rw [equalCharacteristicDirectThetaAtCompletedPrimitiveRoot,
-    equalCharacteristicCompletedLevelEvaluation, PowerSeries.coe_eval₂Hom]
-  exact PowerSeries.hasSum_eval₂
-    (equalCharacteristicDirectThetaCoefficientHom_continuous F n)
-    (equalCharacteristicCompletedPrimitiveRootInteger_hasEval F n)
-    (equalCharacteristicDirectThetaSeries u)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 private theorem
     equalCharacteristicDirectThetaFrobeniusIterateAtSourceIterate_zero
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      (n : ℕ) :
     equalCharacteristicDirectThetaFrobeniusIterateAtSourceIterate F u n 0 =
       equalCharacteristicDirectThetaAtCompletedPrimitiveRoot F u n := by
   have hpoint :
@@ -605,12 +615,17 @@ private theorem
   simp only [equalCharacteristicCompletedLevelEvaluation,
     PowerSeries.coe_eval₂Hom]
   rw [hpoint]
+end
 
+
+section
+variable (F : LocalField.{u, v} K)
+    [CharP K F.residueCharacteristic] (n : ℕ)
+include F n
 /-- The standard primitive root is killed by the source parameter `T` at
 division level `n + 1`. -/
 private theorem equalCharacteristicDirectThetaSourceRoot_torsion
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic] (n : ℕ) :
+      :
     IsEqualCharacteristicLubinTateAmbientTorsion F
       (equalCharacteristicCompletedLevelUniformizer F n) (n + 1)
       (equalCharacteristicCompletedPrimitiveRoot F n) := by
@@ -632,8 +647,7 @@ private theorem equalCharacteristicDirectThetaSourceRoot_torsion
 
 /-- The standard primitive root is not killed at source division level `n`. -/
 private theorem equalCharacteristicDirectThetaSourceRoot_not_torsion_pred
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic] (n : ℕ) :
+      :
     ¬ IsEqualCharacteristicLubinTateAmbientTorsion F
       (equalCharacteristicCompletedLevelUniformizer F n) n
       (equalCharacteristicCompletedPrimitiveRoot F n) := by
@@ -652,13 +666,18 @@ private theorem equalCharacteristicDirectThetaSourceRoot_not_torsion_pred
     exact ht heq
   · exact Nat.sub_ne_zero_of_lt
       (Finite.one_lt_card : 1 < Nat.card F.residueField)
+end
 
+
+section
+variable (F : LocalField.{u, v} K)
+    [CharP K F.residueCharacteristic]
+    (u : F.residueField⟦X⟧ˣ)
+include F u
 /-- Iterating the evaluated second identity identifies the target `uT`
 orbit of `theta(lambda)` with the successive twisted source evaluations. -/
 theorem equalCharacteristicDirectThetaAtCompletedPrimitiveRoot_targetIterate
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n i : ℕ) :
+      (n i : ℕ) :
     equalCharacteristicLubinTateAmbientPiIterate F
         (equalCharacteristicDirectThetaTargetUniformizer F u n) i
         (equalCharacteristicDirectThetaAtCompletedPrimitiveRoot F u n :
@@ -700,9 +719,7 @@ theorem equalCharacteristicDirectThetaAtCompletedPrimitiveRoot_targetIterate
 /-- The direct theta value is killed by target `uT` at division level
 `n + 1`. -/
 theorem equalCharacteristicDirectThetaAtCompletedPrimitiveRoot_torsion
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      (n : ℕ) :
     IsEqualCharacteristicLubinTateAmbientTorsion F
       (equalCharacteristicDirectThetaTargetUniformizer F u n) (n + 1)
       (equalCharacteristicDirectThetaAtCompletedPrimitiveRoot F u n :
@@ -724,9 +741,7 @@ theorem equalCharacteristicDirectThetaAtCompletedPrimitiveRoot_torsion
 
 /-- The target value is not killed at division level `n`. -/
 theorem equalCharacteristicDirectThetaAtCompletedPrimitiveRoot_not_torsion_pred
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      (n : ℕ) :
     ¬ IsEqualCharacteristicLubinTateAmbientTorsion F
       (equalCharacteristicDirectThetaTargetUniformizer F u n) n
       (equalCharacteristicDirectThetaAtCompletedPrimitiveRoot F u n :
@@ -751,24 +766,26 @@ theorem equalCharacteristicDirectThetaAtCompletedPrimitiveRoot_not_torsion_pred
   change ‖equalCharacteristicDirectThetaSourceIterateInteger F n n‖ = 0
   rw [← equalCharacteristicDirectThetaFrobeniusIterateAtSourceIterate_norm,
     hvalue, norm_zero]
+end
 
-/-- Hence `theta(lambda)` is a primitive target `uT`-division point at
-division level `n + 1`. -/
-theorem equalCharacteristicDirectThetaAtCompletedPrimitiveRoot_isPrimitive
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
-    IsEqualCharacteristicLubinTateAmbientTorsion F
-        (equalCharacteristicDirectThetaTargetUniformizer F u n) (n + 1)
-        (equalCharacteristicDirectThetaAtCompletedPrimitiveRoot F u n :
-          equalCharacteristicCompletedLevelField F n) ∧
-      ¬ IsEqualCharacteristicLubinTateAmbientTorsion F
-        (equalCharacteristicDirectThetaTargetUniformizer F u n) n
-        (equalCharacteristicDirectThetaAtCompletedPrimitiveRoot F u n :
-          equalCharacteristicCompletedLevelField F n) :=
-  ⟨equalCharacteristicDirectThetaAtCompletedPrimitiveRoot_torsion F u n,
-    equalCharacteristicDirectThetaAtCompletedPrimitiveRoot_not_torsion_pred
-      F u n⟩
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end EqualCharacteristic
 end LubinTate

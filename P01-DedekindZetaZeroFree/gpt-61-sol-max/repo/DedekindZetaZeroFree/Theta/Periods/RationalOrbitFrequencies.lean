@@ -32,24 +32,24 @@ theorem rationalCharacter_continuous (a : Fˣ) : Continuous (rationalCharacter R
   rw [he]
   exact KPAdelicQuotient.continuous_rationalTraceQuotientCharacter F (a : F)
 
-def rationalIntegrand {Q : AdmissibleFlatSources R} (T : Realization R Q)
-    (v : R.A.UnitQuotient) (a : Fˣ) (g : Group R) (q : KPAdditiveQuotient F) : ℂ :=
+section
+variable {Q : AdmissibleFlatSources R} (T : Realization R Q)
+    (v : R.A.UnitQuotient)
+include Q T v
+def rationalIntegrand   (a : Fˣ) (g : Group R) (q : KPAdditiveQuotient F) : ℂ :=
   T.theta v (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12
     (Quotient.out q) * g) * star (rationalCharacter R a q : ℂ)
 
-def rationalValue {Q : AdmissibleFlatSources R} (T : Realization R Q)
-    (v : R.A.UnitQuotient) (a : Fˣ) (g : Group R) : ℂ :=
+def rationalValue   (a : Fˣ) (g : Group R) : ℂ :=
   ∫ q, rationalIntegrand R T v a g q ∂Q.dq
 
-theorem rationalIntegrand_joint_continuous {Q : AdmissibleFlatSources R}
-    (T : Realization R Q) (v : R.A.UnitQuotient) (a : Fˣ) :
+theorem rationalIntegrand_joint_continuous   (a : Fˣ) :
     Continuous (fun p : KPAdditiveQuotient F × Group R =>
       rationalIntegrand R T v a p.2 p.1) := by
   exact (SheetRescaling.theta_quotient_joint_continuous T v).mul
     (((continuous_subtype_val.comp (rationalCharacter_continuous R a)).star).comp continuous_fst)
 
-theorem rationalIntegrand_integrable {Q : AdmissibleFlatSources R}
-    (T : Realization R Q) (v : R.A.UnitQuotient) (a : Fˣ) (g : Group R) :
+theorem rationalIntegrand_integrable   (a : Fˣ) (g : Group R) :
     Integrable (rationalIntegrand R T v a g) Q.dq := by
   letI : IsProbabilityMeasure Q.dq := ⟨Q.probability⟩
   have hc := (rationalIntegrand_joint_continuous R T v a).comp
@@ -57,8 +57,7 @@ theorem rationalIntegrand_integrable {Q : AdmissibleFlatSources R}
   simpa [Function.comp_def] using
     hc.continuousOn.integrableOn_compact' (μ := Q.dq) isCompact_univ MeasurableSet.univ
 
-theorem rationalValue_continuous {Q : AdmissibleFlatSources R}
-    (T : Realization R Q) (v : R.A.UnitQuotient) (a : Fˣ) :
+theorem rationalValue_continuous   (a : Fˣ) :
     Continuous (rationalValue R T v a) := by
   letI : IsProbabilityMeasure Q.dq := ⟨Q.probability⟩
   apply continuousOn_univ.mp
@@ -67,29 +66,27 @@ theorem rationalValue_continuous {Q : AdmissibleFlatSources R}
   · intro p x hp hx
     exact False.elim (hx (Set.mem_univ x))
 
-theorem frequencyIntegrand_integrable {Q : AdmissibleFlatSources R}
-    (T : Realization R Q) (v : R.A.UnitQuotient)
+theorem frequencyIntegrand_integrable  
     (ξ : ThetaReflectionData.Frequency R.A) (g : Group R) :
     Integrable (frequencyIntegrand R Q T v ξ g) Q.dq :=
   rationalIntegrand_integrable R T v (Quotient.out ξ) g
 
-theorem orbitFrequencyIntegrand_integrable {Q : AdmissibleFlatSources R}
-    (T : Realization R Q) (v : R.A.UnitQuotient)
+theorem orbitFrequencyIntegrand_integrable  
     (i : ThetaReflectionData.Frequency R.A × ThetaReflectionData.rationalGamma R.A)
     (g : Group R) : Integrable (orbitFrequencyIntegrand R Q T v i g) Q.dq :=
   rationalIntegrand_integrable R T v ((Quotient.out i.1) * i.2.val) g
 
-theorem frequencyValue_continuous {Q : AdmissibleFlatSources R}
-    (T : Realization R Q) (v : R.A.UnitQuotient)
+theorem frequencyValue_continuous  
     (ξ : ThetaReflectionData.Frequency R.A) :
     Continuous (frequencyValue R Q T v ξ) :=
   rationalValue_continuous R T v (Quotient.out ξ)
 
-theorem orbitFrequencyValue_continuous {Q : AdmissibleFlatSources R}
-    (T : Realization R Q) (v : R.A.UnitQuotient)
+theorem orbitFrequencyValue_continuous  
     (i : ThetaReflectionData.Frequency R.A × ThetaReflectionData.rationalGamma R.A) :
     Continuous (orbitFrequencyValue R Q T v i) :=
   rationalValue_continuous R T v ((Quotient.out i.1) * i.2.val)
+end
+
 
 end DedekindZetaZeroFree.OrbitFrequencies
 

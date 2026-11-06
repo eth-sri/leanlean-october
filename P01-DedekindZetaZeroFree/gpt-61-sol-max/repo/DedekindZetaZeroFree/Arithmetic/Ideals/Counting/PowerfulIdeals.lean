@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Ideals.Counting.NormSeries
 public import DedekindZetaZeroFree.Arithmetic.Ideals.PowerfulSquarefreeFactorization
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 
@@ -20,8 +23,7 @@ def exteriorPowerfulDyad (cS : Ideal (𝓞 F)) (P : ℝ) : Set (ExteriorIdeal cS
   { h | Powerful h.val ∧ P ≤ idealNorm h.val ∧ idealNorm h.val < 2 * P }
 
 theorem normPowerfulIdeals_finite (F : Type) [Field F] [NumberField F] (X : ℝ) :
-    (normPowerfulIdeals F X).Finite := by
-  exact (normBoundedIdeals_finite F X).subset (fun _ h => h.2.le)
+    (normPowerfulIdeals F X).Finite := (normBoundedIdeals_finite F X).subset (fun _ h => h.2.le)
 
 theorem exteriorPowerfulDyad_finite (cS : Ideal (𝓞 F)) (P : ℝ) :
     (exteriorPowerfulDyad cS P).Finite := by
@@ -31,7 +33,7 @@ theorem exteriorPowerfulDyad_finite (cS : Ideal (𝓞 F)) (P : ℝ) :
     exact ⟨hh.1, hh.2.2⟩
   · intro a _ b _ hab
     exact Subtype.ext (congrArg (fun h : NonzeroIdeal F => h.val) hab)
-  · exact normPowerfulIdeals_finite F (2 * P)
+  · apply normPowerfulIdeals_finite
 
 private theorem powerful_norm_factor (r s : NonzeroIdeal F) :
     idealNorm (r.val ^ 2 * s.val ^ 3) = idealNorm r.val ^ 2 * idealNorm s.val ^ 3 := by

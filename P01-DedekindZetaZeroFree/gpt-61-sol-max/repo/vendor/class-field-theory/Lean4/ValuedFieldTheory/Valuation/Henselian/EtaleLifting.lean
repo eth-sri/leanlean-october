@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Valuation.Henselian.StandardEtaleLifting
 public import Mathlib.RingTheory.Unramified.LocalStructure
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -33,11 +36,11 @@ variable {R S : Type*} [CommRing R] [CommRing S] [Algebra R S]
 to an actual point over the base ring. -/
 theorem exists_etale_lift (σ : S →ₐ[R] R ⧸ I) :
     ∃ τ : S →ₐ[R] R, (Ideal.Quotient.mkₐ R I).comp τ = σ := by
-  let : Field (R ⧸ I) := Ideal.Quotient.field I
-  let Q : Ideal S := RingHom.ker σ.toRingHom
+  let  := Ideal.Quotient.field I
+  let Q  := RingHom.ker σ.toRingHom
   have : Q.IsPrime := RingHom.ker_isPrime σ.toRingHom
   obtain ⟨s, hs, hstandard⟩ := Algebra.IsEtaleAt.exists_isStandardEtale (R := R) Q
-  have : Algebra.IsStandardEtale R (Localization.Away s) := hstandard
+  have  := hstandard
   have hsunit : IsUnit (σ s) := isUnit_iff_ne_zero.mpr (show σ s ≠ 0 from hs)
   let σloc : Localization.Away s →ₐ[R] R ⧸ I :=
     IsLocalization.Away.liftAlgHom (f := σ) s hsunit

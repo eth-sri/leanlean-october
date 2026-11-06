@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Poisson.FieldTransform.EulerDerivativesAndDecay
 
 @[expose] public section
+
 
 open MeasureTheory Set Filter Asymptotics
 
@@ -11,10 +14,13 @@ open scoped Classical ContDiff
 
 namespace DedekindZetaZeroFree.LargeSieve
 
-theorem fieldTransform_mellinConvergent
-    (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
+section
+variable (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
     (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
-    (hhc : HasCompactSupport h) (s : ℂ) (hs : 0 < s.re) :
+    (hhc : HasCompactSupport h) (s : ℂ) (hs : 0 < s.re)
+include D r h hD hr hh hhc s hs
+theorem fieldTransform_mellinConvergent
+      :
     MellinConvergent (fieldTransform D r h) s := by
   have hf_loc : LocallyIntegrableOn (fieldTransform D r h) (Set.Ioi 0) :=
     (fieldTransform_contDiffOn D r h hD hr hh hhc).continuousOn.locallyIntegrableOn
@@ -32,7 +38,7 @@ theorem fieldTransform_mellinConvergent
     simpa using htop x hx1
   · have h1 := Nat.le_ceil s.re
     have h2 : s.re < (Nat.ceil s.re : ℝ) + 1 := by linarith
-    simpa using h2
+    exact h2
   · refine IsBigO.of_bound C ?_
     filter_upwards [self_mem_nhdsWithin,
       (eventually_lt_nhds (show (0:ℝ) < 1 by norm_num)).filter_mono nhdsWithin_le_nhds]
@@ -42,12 +48,10 @@ theorem fieldTransform_mellinConvergent
   · linarith
 
 theorem mellin_fieldTransform_eq_B
-    (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
-    (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
-    (hhc : HasCompactSupport h) (s : ℂ) (hs : 0 < s.re) :
+      :
     mellin (fieldTransform D r h) s = B D r h s := by
   let f : ℝ → ℂ := fun y => B D r h ((s.re : ℂ) + 2 * Real.pi * y * Complex.I)
-  let g : ℝ → ℂ := fun u => Real.exp (-s.re * u) •
+  let g  := fun u => Real.exp (-s.re * u) •
     fieldTransform D r h (Real.exp (-u))
   have hf : Integrable f := by
     have hb := B_inverse_integrable D r h hD hr hh hhc s.re 1 hs (by norm_num)
@@ -103,6 +107,8 @@ theorem mellin_fieldTransform_eq_B
     ← Complex.ofReal_mul,
     mul_div_cancel₀ _ (show 2 * Real.pi ≠ 0 by positivity)]
   exact Complex.re_add_im s
+end
+
 
 end DedekindZetaZeroFree.LargeSieve
 

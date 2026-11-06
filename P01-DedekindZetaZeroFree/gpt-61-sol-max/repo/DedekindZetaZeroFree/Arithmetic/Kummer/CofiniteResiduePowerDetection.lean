@@ -77,9 +77,12 @@ open LocalFieldTheory.IsNonarchimedeanLocalField
 variable (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
   [IsNonarchimedeanLocalField K]
 
-theorem local_power_of_tame_symbol_one (n : ℕ+)
+section
+variable (n : ℕ+)
     (hn : ValuativeRel.valuation K ((n : ℕ) : K) = 1)
     (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (u : 𝒪[K]ˣ)
+include n hn hmu u
+theorem local_power_of_tame_symbol_one  
     (hu : localTamePowerResidueSymbol K n hn hmu u = 1) :
     integerUnitsToFieldUnits K u ∈ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range := by
   apply (localHilbertSymbol_left_kernel K n
@@ -87,9 +90,7 @@ theorem local_power_of_tame_symbol_one (n : ℕ+)
   intro b
   rw [localHilbertSymbol_tame_formula K n hn hmu, hu, one_zpow]
 
-theorem local_power_of_residue_symbol_one (n : ℕ+)
-    (hn : ValuativeRel.valuation K ((n : ℕ) : K) = 1)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (u : 𝒪[K]ˣ)
+theorem local_power_of_residue_symbol_one  
     (hu : letI : Fintype 𝓀[K] := Fintype.ofFinite _
       AlgebraicNumberTheory.PowerResidueSymbols.finiteFieldPowerResidueSymbol
         𝓀[K] n
@@ -102,9 +103,7 @@ theorem local_power_of_residue_symbol_one (n : ℕ+)
   rw [map_one, localNthRootsReductionEquiv_localTamePowerResidueSymbol]
   exact hu
 
-theorem local_power_of_residue_power_one (n : ℕ+)
-    (hn : ValuativeRel.valuation K ((n : ℕ) : K) = 1)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (u : 𝒪[K]ˣ)
+theorem local_power_of_residue_power_one  
     (hu : (integerUnitsToResidueUnits K u) ^
       ((Nat.card 𝓀[K] - 1) / (n : ℕ)) = 1) :
     integerUnitsToFieldUnits K u ∈ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range := by
@@ -114,6 +113,8 @@ theorem local_power_of_residue_power_one (n : ℕ+)
   change (integerUnitsToResidueUnits K u) ^
     ((Fintype.card 𝓀[K] - 1) / (n : ℕ)) = 1
   simpa only [Nat.card_eq_fintype_card] using hu
+end
+
 
 end DedekindZetaZeroFree.Detector.FrequencyTamePower
 

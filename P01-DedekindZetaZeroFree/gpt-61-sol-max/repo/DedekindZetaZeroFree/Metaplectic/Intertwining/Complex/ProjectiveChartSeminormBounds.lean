@@ -1,17 +1,23 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Metaplectic.Intertwining.Complex.ParameterMajorantData
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.RepresentationTheory.KPComplexIntertwinerParameterMajorant
 
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts Set
 open scoped ContDiff Matrix.Norms.Elementwise
 
-lemma seminorm_bddAbove (j : ℕ) (φ : ComplexProjectiveLine → ℂ)
+section
+variable (j : ℕ) (φ : ComplexProjectiveLine → ℂ)
     (hop : ContDiff ℝ (⊤ : ℕ∞) (φ ∘ projectiveOpen))
-    (hinf : ContDiff ℝ (⊤ : ℕ∞) (φ ∘ projectiveInfinity)) :
+    (hinf : ContDiff ℝ (⊤ : ℕ∞) (φ ∘ projectiveInfinity))
+include j φ hop hinf
+lemma seminorm_bddAbove   :
     BddAbove ({0} ∪ {r : ℝ | ∃ q : ℕ, q ≤ j ∧ ∃ z : ℂ,
       z ∈ Metric.closedBall (0 : ℂ) 1 ∧
         (r = ‖iteratedFDeriv ℝ q (φ ∘ projectiveOpen) z‖ ∨
@@ -27,8 +33,7 @@ lemma seminorm_bddAbove (j : ℕ) (φ : ComplexProjectiveLine → ℂ)
         (hinf.continuous_iteratedFDeriv (by simp)).norm.continuousOn
   have hfin : BddAbove (⋃ q ∈ Finset.range (j + 1),
       ((fun z : ℂ => ‖iteratedFDeriv ℝ q (φ ∘ projectiveOpen) z‖) '' Metric.closedBall 0 1 ∪
-       (fun z : ℂ => ‖iteratedFDeriv ℝ q (φ ∘ projectiveInfinity) z‖) '' Metric.closedBall 0 1)) := by
-    exact (Finset.finite_toSet _).bddAbove_biUnion.mpr (fun q _ => hb q)
+       (fun z : ℂ => ‖iteratedFDeriv ℝ q (φ ∘ projectiveInfinity) z‖) '' Metric.closedBall 0 1)) := (Finset.finite_toSet _).bddAbove_biUnion.mpr (fun q _ => hb q)
   apply BddAbove.union bddAbove_singleton
   apply hfin.mono
   rintro r ⟨q, hq, z, hz, hr⟩
@@ -38,12 +43,12 @@ lemma seminorm_bddAbove (j : ℕ) (φ : ComplexProjectiveLine → ℂ)
   · exact Or.inl ⟨z, hz, rfl⟩
   · exact Or.inr ⟨z, hz, rfl⟩
 
-lemma seminorm_nonneg (j : ℕ) (φ : ComplexProjectiveLine → ℂ)
-    (hop : ContDiff ℝ (⊤ : ℕ∞) (φ ∘ projectiveOpen))
-    (hinf : ContDiff ℝ (⊤ : ℕ∞) (φ ∘ projectiveInfinity)) :
+lemma seminorm_nonneg   :
     0 ≤ seminorm j φ := by
   unfold seminorm
   exact le_csSup (seminorm_bddAbove j φ hop hinf) (Or.inl (mem_singleton 0))
+end
+
 
 lemma norm_iteratedFDeriv_chart_le_seminorm (j q : ℕ) (hq : q ≤ j)
     (φ : ComplexProjectiveLine → ℂ)
@@ -113,7 +118,7 @@ lemma norm_local_chart_composition_le {n : ℕ} (j q : ℕ) (hq : q ≤ j)
       q.factorial * seminorm j φ * D ^ q ∧
     ‖iteratedFDeriv ℝ q ((φ ∘ projectiveInfinity) ∘ z) u‖ ≤
       q.factorial * seminorm j φ * D ^ q := by
-  have hzat : ContDiffAt ℝ (⊤ : ℕ∞) z u := hz.contDiffAt (hV.mem_nhds hu)
+  have hzat  := hz.contDiffAt (hV.mem_nhds hu)
   have hwithin : ∀ i : ℕ, iteratedFDerivWithin ℝ i z V u = iteratedFDeriv ℝ i z u := by
     intro i
     exact iteratedFDerivWithin_eq_iteratedFDeriv hV.uniqueDiffOn
@@ -130,7 +135,7 @@ lemma norm_local_chart_composition_le {n : ℕ} (j q : ℕ) (hq : q ≤ j)
     · simpa only [iteratedFDerivWithin_univ] using hgi
     · intro i hi hiq
       rw [hwithin]
-      exact hD i hi hiq
+      apply hD <;> assumption
   constructor
   · apply hbound _ hop
     intro i hi

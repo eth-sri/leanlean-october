@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Theta.Profiles.MixedGaussian
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -13,13 +16,13 @@ namespace DedekindZetaZeroFree.AbelianQuotient.Theta
 
 variable (K : Type*) [Field K] [NumberField K]
 
-def mixedMellinGaussian (x : K) (s : ℂ) (q : InfinitePlace K → ℝ) : ℂ :=
+def mixedMellinGaussian (x : K) (s : ℂ) (q : InfinitePlace K → ℝ)  :=
   ∏ v : InfinitePlace K,
     (q v : ℂ) ^ ((v.mult : ℂ) * s - 1) *
       Complex.exp (-(Real.pi : ℂ) * (v.mult : ℂ) *
         (q v : ℂ) ^ 2 * (v x : ℂ) ^ 2)
 
-def mixedRadialJacobian (y : realSpace K) : ℝ :=
+def mixedRadialJacobian (y : realSpace K)  :=
   Real.exp ((Module.finrank ℚ K : ℝ) * y Units.dirichletUnitTheorem.w₀) *
     (∏ v : {v : InfinitePlace K // IsComplex v}, expMapBasis y v.1)⁻¹ *
       (2 : ℝ)⁻¹ ^ nrComplexPlaces K * (Module.finrank ℚ K : ℝ) * regulator K
@@ -67,7 +70,7 @@ theorem mixedRadialJacobian_mul_mixedMellinGaussian
         (expMapBasis y v : ℂ) * (expMapBasis y v : ℂ) ^ ((v.mult : ℂ) * s - 1) =
         Complex.exp (((v.mult : ℂ) * (Real.log (expMapBasis y v) : ℂ)) * s) := by
       intro v
-      have hn : (expMapBasis y v : ℂ) ≠ 0 :=
+      have hn  :=
         Complex.ofReal_ne_zero.mpr (expMapBasis_pos y v).ne'
       rw [Complex.cpow_sub _ _ hn, Complex.cpow_one, mul_div_cancel₀ _ hn,
         Complex.cpow_def_of_ne_zero hn, ← Complex.ofReal_log (expMapBasis_pos y v).le]

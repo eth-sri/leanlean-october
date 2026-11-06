@@ -157,19 +157,24 @@ theorem chart_normalization_pos (i : Fin (H.atlas U).componentCount)
 
 open KPContLocalEnergy
 
- def reindexedBall {n m : ℕ} (e : Fin n ≃ Fin m) (A : LocalBall n) : LocalBall m where
+ section
+variable {n m : ℕ} (e : Fin n ≃ Fin m)
+include n m e in
+def reindexedBall   (A : LocalBall n) : LocalBall m where
   dimension_pos := by
     have hnm : n = m := by simpa using Fintype.card_congr e
     exact hnm ▸ A.dimension_pos
   center := LinearIsometryEquiv.piLpCongrLeft 2 ℝ ℝ e A.center
   radius := A.radius
   radius_pos := A.radius_pos
- def reindexedIndex {n m : ℕ} (e : Fin n ≃ Fin m) (α : MultiIndex n 1) : MultiIndex m 1 :=
+ include n m e in
+def reindexedIndex   (α : MultiIndex n 1) : MultiIndex m 1 :=
   ⟨fun j => α.val (e.symm j), by
     change (∑ j, (α.val (e.symm j)).val) ≤ 1
     rw [e.symm.sum_comp (fun i => (α.val i).val)]
     exact α.property⟩
- theorem reindexedBall_preimage {n m : ℕ} (e : Fin n ≃ Fin m) (A : LocalBall n) :
+ include n m e in
+theorem reindexedBall_preimage   (A : LocalBall n) :
     (LinearIsometryEquiv.piLpCongrLeft 2 ℝ ℝ e) ⁻¹' (reindexedBall e A).carrier = A.carrier := by
   ext p
   simp only [LocalBall.carrier, reindexedBall, Set.mem_preimage, Metric.mem_ball]
@@ -198,20 +203,24 @@ private theorem index_cases {n : ℕ} (α : MultiIndex n 1) :
         simp [Finset.sum_pair (Ne.symm hji), hone] at hsum
         omega
       simpa [firstIndex, hji] using hj
- theorem reindexed_zero {n m : ℕ} (e : Fin n ≃ Fin m) :
+ include n m e in
+theorem reindexed_zero   :
     reindexedIndex e (zeroIndex n 1) = zeroIndex m 1 := by rfl
-private theorem reindexed_first {n m : ℕ} (e : Fin n ≃ Fin m) (j : Fin n) :
+include n m e in
+private theorem reindexed_first   (j : Fin n) :
     reindexedIndex e (firstIndex j) = firstIndex (e j) := by
   apply Subtype.ext
   funext k
   simp [reindexedIndex, firstIndex, e.symm_apply_eq]
-private theorem reindex_direction {n m : ℕ} (e : Fin n ≃ Fin m) (j : Fin n) :
+include n m e in
+private theorem reindex_direction   (j : Fin n) :
     LinearIsometryEquiv.piLpCongrLeft 2 ℝ ℝ e (EuclideanSpace.single j 1) =
       EuclideanSpace.single (e j) 1 := by
   ext k
   simp [LinearIsometryEquiv.piLpCongrLeft_apply, EuclideanSpace.single_apply,
     e.symm_apply_eq, Pi.single_apply]
- def pullbackTest {n m : ℕ} (e : Fin n ≃ Fin m) (A : LocalBall n)
+ include n m e in
+def pullbackTest   (A : LocalBall n)
     (φ : TestFunction A.toOpens ℂ ⊤) : TestFunction (reindexedBall e A).toOpens ℂ ⊤ where
   toFun := fun p => φ ((LinearIsometryEquiv.piLpCongrLeft 2 ℝ ℝ e).symm p)
   contDiff' := φ.contDiff.comp (LinearIsometryEquiv.piLpCongrLeft 2 ℝ ℝ e).symm.contDiff
@@ -234,7 +243,8 @@ private theorem reindex_direction {n m : ℕ} (e : Fin n ≃ Fin m) (j : Fin n) 
     change p ∈ (reindexedBall e A).carrier
     simpa only [he, LinearIsometryEquiv.coe_toHomeomorph,
       LinearIsometryEquiv.apply_symm_apply] using hx
- theorem reindex_test_derivative {n m : ℕ} (e : Fin n ≃ Fin m) (A : LocalBall n)
+ include n m e in
+theorem reindex_test_derivative   (A : LocalBall n)
     (φ : TestFunction A.toOpens ℂ ⊤) (α : MultiIndex n 1) (p : Space n) :
     coordinateDerivative α (fun q => φ q) p =
       coordinateDerivative (reindexedIndex e α)
@@ -268,12 +278,14 @@ private theorem reindex_direction {n m : ℕ} (e : Fin n ≃ Fin m) (j : Fin n) 
     rw [← reindex_direction e j]
     simp only [E, LinearIsometryEquiv.symm_apply_apply]
 
- theorem reindexed_degree {n m : ℕ} (e : Fin n ≃ Fin m) (α : MultiIndex n 1) :
+ include n m e in
+theorem reindexed_degree   (α : MultiIndex n 1) :
     (reindexedIndex e α).degree = α.degree := by
   unfold MultiIndex.degree
   change (∑ j, (α.val (e.symm j)).val) = _
   exact e.symm.sum_comp (fun i => (α.val i).val)
- def sobolevPullback {n m : ℕ} (e : Fin n ≃ Fin m) (A : LocalBall n)
+ include n m e in
+def sobolevPullback   (A : LocalBall n)
     (h : IntegerSobolev (reindexedBall e A) 1) : IntegerSobolev A 1 where
   derivatives α := Lp.compMeasurePreserving (LinearIsometryEquiv.piLpCongrLeft 2 ℝ ℝ e)
     (by
@@ -334,6 +346,8 @@ private theorem reindex_direction {n m : ℕ} (e : Fin n ≃ Fin m) (j : Fin n) 
         (h.derivatives (reindexedIndex e α))) x * φ x)
     rw [hl, hr]
     exact he
+end
+
 
  def canonicalIndex : Fin (KPCuspLogShape.dimension F * 3) ≃
     Fin (3 * KPContCotangentActualOverlap.d F) :=
@@ -387,13 +401,16 @@ private theorem canonical_ball_inside (i : Fin (H.atlas U).componentCount)
     rw [he]
     exact ha ⟨_,hp',rfl⟩
 
-private theorem exists_sobolev_value (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ))
+section
+variable (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ))
     (hμG : μG.IsHaarMeasure) (hR : R.adelicHaar = μG)
     (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H)
     (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
     (O : OrbifoldChart F ζ hζ U R P H i x) (m : PhaseSheets F ζ hζ U)
     (A : LocalBall (KPCuspLogShape.dimension F * 3))
     (hA : KPContLocalCubeEmbedding.closedCarrier A ⊆ chartDomain F ζ hζ U R P H i x O)
+include μG hμG hR realization i x O m A hA in
+private theorem exists_sobolev_value  
     (v : (KPContActualSectorFriedrichsSynthesis.A_U F ζ hζ U R P H μG hμG hR realization).closure.domain) :
     ∃ ξ : IntegerSobolev A 1, value ξ = restriction F ζ hζ U R P H i x O m A hA v.val := by
   obtain ⟨a, hai, hac, ha⟩ := closed_ball_shrinking F ζ hζ U R P H i x O A hA
@@ -489,13 +506,8 @@ private theorem weakEquation_zero_of_diagonal_pairing {n : ℕ} {A : LocalBall n
   rw [hdiag]
   exact he φ
 
-theorem exists_xi (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ))
-    (hμG : μG.IsHaarMeasure) (hR : R.adelicHaar = μG)
-    (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H)
-    (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) (m : PhaseSheets F ζ hζ U)
-    (A : LocalBall (KPCuspLogShape.dimension F * 3))
-    (hA : KPContLocalCubeEmbedding.closedCarrier A ⊆ chartDomain F ζ hζ U R P H i x O)
+include μG hμG hR realization i x O m A hA in
+theorem exists_xi  
     {cρ Cρ κ Λ : ℝ} (D : KPContLocalEnergy.Coefficients A cρ Cρ κ Λ)
     (hρ : D.density = density F)
     (hg : D.matrix = fun p => Matrix.diagonal (fun j =>
@@ -539,6 +551,8 @@ theorem exists_xi (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ))
   have ht := weakEquation_shift D ξ _ hzero z
   rw [hξ] at ht
   simpa only [map_sub, map_smul] using ht
+end
+
 
 end DedekindZetaZeroFree.KPContFriedrichsChartVariational
 

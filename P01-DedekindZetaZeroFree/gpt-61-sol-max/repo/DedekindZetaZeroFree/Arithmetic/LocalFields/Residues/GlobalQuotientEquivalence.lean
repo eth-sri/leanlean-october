@@ -38,12 +38,15 @@ def integerMap (p : ExteriorPrime A) : A.R →+* LocalIntegers p where
 def localUniformizer (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) : LocalIntegers p := integerMap p (generator C p)
 
-abbrev LocalResidue (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n : ℕ) :=
+section
+variable (C : A.GeneralArithmeticContext σ η hS)
+    (p : ExteriorPrime A) (n : ℕ)
+include C p n in
+abbrev LocalResidue   :=
   FiniteTransform.Residue (p.val.adicCompletionIntegers F).toSubring (localUniformizer C p ^ n)
 
-theorem denominator_le_comap (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n : ℕ) :
+include C p n in
+theorem denominator_le_comap   :
     Ideal.span {generator C p ^ n} ≤
       (Ideal.span {localUniformizer C p ^ n}).comap (integerMap p) := by
   apply Ideal.span_le.mpr
@@ -52,8 +55,8 @@ theorem denominator_le_comap (C : A.GeneralArithmeticContext σ η hS)
   rw [map_pow]
   exact Ideal.subset_span (Set.mem_singleton _)
 
-def quotientMap (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n : ℕ) : Residue C p n →+* LocalResidue C p n :=
+include C p n in
+def quotientMap   : Residue C p n →+* LocalResidue C p n :=
   Ideal.quotientMap (Ideal.span {localUniformizer C p ^ n}) (integerMap p)
     (denominator_le_comap C p n)
 
@@ -76,8 +79,8 @@ theorem uniformizer_valuation (C : A.GeneralArithmeticContext σ η hS)
     simpa using p.val.irreducible.normalizedFactors_pow 1
   simpa [idealPrimeExponent, primeIdeal, hf] using h
 
-theorem quotientMap_bijective (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n : ℕ) : Function.Bijective (quotientMap C p n) := by
+include C p n in
+theorem quotientMap_bijective   : Function.Bijective (quotientMap C p n) := by
   have hval : Valued.v ((localUniformizer C p ^ n : LocalIntegers p) : LocalField p) =
       WithZero.exp (-(n : ℤ)) := by
     change Valued.v (uniformizer C p ^ n) = _
@@ -114,18 +117,20 @@ theorem quotientMap_bijective (C : A.GeneralArithmeticContext σ η hS)
     apply (local_mem _).mpr
     exact ha
 
-def residueEquiv (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n : ℕ) : Residue C p n ≃+* LocalResidue C p n :=
+include C p n in
+def residueEquiv   : Residue C p n ≃+* LocalResidue C p n :=
   RingEquiv.ofBijective (quotientMap C p n) (quotientMap_bijective C p n)
 
-theorem residueEquiv_mk (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n : ℕ) (x : A.R) :
+include C p n in
+theorem residueEquiv_mk   (x : A.R) :
     residueEquiv C p n (residueMap C p n x) =
       FiniteTransform.residueMap (p.val.adicCompletionIntegers F).toSubring
         (localUniformizer C p ^ n) (integerMap p x) := by
   change quotientMap C p n (Ideal.Quotient.mk _ x) = Ideal.Quotient.mk _ (integerMap p x)
   simp only [quotientMap, Ideal.quotientMap_mk]
   rfl
+end
+
 
 end DedekindZetaZeroFree.LocalFiniteSumCompatibility
 

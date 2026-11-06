@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.GroupTheory.DoubleCoset
 public import Mathlib.GroupTheory.Sylow
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -58,9 +61,9 @@ theorem exists_index_prime_supergroup_of_card_prime_power
     (hD : D ≠ ⊤) :
     ∃ P : Subgroup G, D ≤ P ∧ P.index = p := by
   let : Fact p.Prime := ⟨hp⟩
-  have hGp : IsPGroup p G :=
+  have hGp  :=
     IsPGroup.of_card hGcard
-  have hDp : IsPGroup p D :=
+  have hDp  :=
     hGp.to_subgroup D
   obtain ⟨m, hDcard⟩ :=
     IsPGroup.exists_card_eq hDp
@@ -77,7 +80,7 @@ theorem exists_index_prime_supergroup_of_card_prime_power
         (Subgroup.card_eq_iff_eq_top D).mp
       rw [hDcard, hmv, hGcard]
     exact lt_of_le_of_ne hmle hmne
-  have hmPred : m ≤ v - 1 :=
+  have hmPred  :=
     Nat.le_sub_one_of_lt hmv
   have hpowDvd :
       p ^ (v - 1) ∣ Nat.card G := by
@@ -136,13 +139,13 @@ theorem subgroup_le_index_prime_subgroup_of_ne_top_cyclic_prime_power
     (hD : D ≠ ⊤) :
     D ≤ P := by
   obtain ⟨g, hg⟩ := IsCyclic.exists_generator (α := G)
-  have hgtop : Subgroup.zpowers g = ⊤ :=
+  have hgtop  :=
     (Subgroup.eq_top_iff' (Subgroup.zpowers g)).2 hg
   obtain ⟨n, hn⟩ :=
     (Subgroup.le_zpowers_iff g D).1 (by
       rw [hgtop]
       exact le_top)
-  have hgorder : orderOf g = p ^ exponent :=
+  have hgorder  :=
     (orderOf_eq_card_of_forall_mem_zpowers hg).trans hcard
   have hngcd : n.gcd (orderOf g) ≠ 1 := by
     intro hngcd
@@ -190,16 +193,16 @@ theorem exists_element_of_prime_order :
       (G := G) p hpDvd
   exact ⟨p, g, hp, hg⟩
 
-/-- Every nontrivial finite group contains an actual cyclic subgroup
-of prime cardinality. -/
-theorem exists_cyclic_subgroup_of_prime_card :
-    ∃ (p : ℕ) (P : Subgroup G),
-      p.Prime ∧ Nat.card P = p ∧ IsCyclic P := by
-  obtain ⟨p, g, hp, hg⟩ :=
-    exists_element_of_prime_order G
-  refine
-    ⟨p, Subgroup.zpowers g, hp, ?_, inferInstance⟩
-  rw [Nat.card_zpowers, hg]
+
+
+
+
+
+
+
+
+
+
 
 end PrimeOrder
 
@@ -207,25 +210,28 @@ section DoubleCosets
 
 variable {G : Type uG} [Group G]
 
+section
+variable (H D : Subgroup G)
+include H D
 /-- The canonical projection
 `H \ G = H \ G / 1 → H \ G / D`. -/
 def doubleCosetRightProjection
-    (H D : Subgroup G) :
+      :
     DoubleCoset.Quotient
         (H : Set G) (⊥ : Subgroup G) →
       DoubleCoset.Quotient (H : Set G) D :=
   Quotient.map' id fun a b hab ↦ by
     rw [DoubleCoset.rel_iff] at hab ⊢
     obtain ⟨h, hh, k, hk, hab⟩ := hab
-    have hkOne : k = 1 :=
+    have hkOne  :=
       Subgroup.mem_bot.mp hk
     subst k
     exact
-      ⟨h, hh, 1, D.one_mem, by simpa using hab⟩
+      ⟨h, hh, 1, D.one_mem, hab⟩
 
 @[simp]
 theorem doubleCosetRightProjection_mk
-    (H D : Subgroup G)
+     
     (g : G) :
     doubleCosetRightProjection H D
         (DoubleCoset.mk H (⊥ : Subgroup G) g) =
@@ -234,7 +240,7 @@ theorem doubleCosetRightProjection_mk
 
 /-- The projection from left cosets to double cosets is onto. -/
 theorem doubleCosetRightProjection_surjective
-    (H D : Subgroup G) :
+      :
     Function.Surjective
       (doubleCosetRightProjection H D) := by
   intro q
@@ -246,7 +252,7 @@ theorem doubleCosetRightProjection_surjective
 /-- If the left-coset to double-coset projection is injective, then
 the right subgroup lies in the normal core of the left subgroup. -/
 theorem rightSubgroup_le_normalCore_of_doubleCoset_projection_injective
-    (H D : Subgroup G)
+     
     (hinj : Function.Injective
       (doubleCosetRightProjection H D)) :
     D ≤ H.normalCore := by
@@ -267,19 +273,16 @@ theorem rightSubgroup_le_normalCore_of_doubleCoset_projection_injective
       using hdouble
   rw [DoubleCoset.eq] at hleft
   obtain ⟨h, hh, k, hk, heq⟩ := hleft
-  have hkOne : k = 1 :=
+  have hkOne  :=
     Subgroup.mem_bot.mp hk
   subst k
   simp only [mul_one] at heq
   have hconj : g * d * g⁻¹ = h := by
-    calc
-      g * d * g⁻¹ =
-          (g * d) * g⁻¹ := rfl
-      _ = (h * g) * g⁻¹ := by
-        rw [heq]
-      _ = h := by simp
+    simp_all
   rw [hconj]
   exact hh
+end
+
 
 /-- Equality between the number of left cosets and the number of
 double cosets forces the right subgroup into the normal core. -/
@@ -293,10 +296,7 @@ theorem rightSubgroup_le_normalCore_of_doubleCoset_card_eq
           (DoubleCoset.Quotient (H : Set G)
             (⊥ : Subgroup G))) :
     D ≤ H.normalCore := by
-  let :
-      Finite
-        (DoubleCoset.Quotient (H : Set G)
-          (⊥ : Subgroup G)) :=
+  let  :=
     Finite.of_surjective
       (DoubleCoset.mk H (⊥ : Subgroup G))
       (by
@@ -304,9 +304,7 @@ theorem rightSubgroup_le_normalCore_of_doubleCoset_card_eq
         exact
           ⟨q.out,
             DoubleCoset.out_eq' q⟩)
-  have hbij :
-      Function.Bijective
-        (doubleCosetRightProjection H D) :=
+  have hbij  :=
     Function.Surjective.bijective_of_nat_card_le
       (doubleCosetRightProjection_surjective H D)
       hcard.symm.le

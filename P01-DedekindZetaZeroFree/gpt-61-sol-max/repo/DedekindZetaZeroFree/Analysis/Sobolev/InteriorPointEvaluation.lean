@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.Sobolev.LocalEmbeddingAndSmoothRepresentatives
 
 @[expose] public section
+
 
 noncomputable section
 open MeasureTheory
@@ -33,23 +36,23 @@ theorem exists_outer_ball_sobolev_point_bound {n : ℕ} (A T : LocalBall n)
   let embeddingAt (k : ℕ) : Prop :=
     ∃ C : ℝ, 0 < C ∧ ∀ u : IntegerSobolev B k,
       ∃ (f : Space n → ℂ) (j : CompactJets (closedCarrier A) 0),
-        ContDiffOn ℝ (0 : ℕ) f B.carrier ∧
+        ContDiffOn ℝ (0) f B.carrier ∧
         (f =ᵐ[volume.restrict B.carrier]
           (fun x => u.derivatives (⟨fun _ => 0, by simp⟩ : MultiIndex n k) x)) ∧
         (∀ α : MultiIndex n 0, ∀ x : closedCarrier A,
           j α x = coordinateDerivative α f x) ∧
         jetMaxNorm (isCompact_closedBall A.center A.radius) j ≤ C * u.sobolevNorm ∧
-        (∀ g : Space n → ℂ, ContDiffOn ℝ (0 : ℕ) g B.carrier →
+        (∀ g : Space n → ℂ, ContDiffOn ℝ (0) g B.carrier →
           (g =ᵐ[volume.restrict B.carrier]
             (fun x => u.derivatives (⟨fun _ => 0, by simp⟩ : MultiIndex n k) x)) →
           Set.EqOn g f B.carrier)
   have hembedding : embeddingAt (0 + n) := ball_sobolev_embedding A B hAB 0
-  have hembedding' : embeddingAt n := (Nat.zero_add n) ▸ hembedding
+  have hembedding'  := (Nat.zero_add n) ▸ hembedding
   obtain ⟨C, hC, hbound⟩ := hembedding'
   refine ⟨B, hBT, C, hC, ?_⟩
   intro f hf u hfu x hx
   obtain ⟨g, j, hg, hgu, hj, hjbound, _⟩ := hbound u
-  have hfg : Set.EqOn f g B.carrier :=
+  have hfg  :=
     Measure.eqOn_open_of_ae_eq (hfu.trans hgu.symm) Metric.isOpen_ball hf hg.continuousOn
   let : CompactSpace (closedCarrier A) :=
     isCompact_iff_compactSpace.mp (isCompact_closedBall A.center A.radius)

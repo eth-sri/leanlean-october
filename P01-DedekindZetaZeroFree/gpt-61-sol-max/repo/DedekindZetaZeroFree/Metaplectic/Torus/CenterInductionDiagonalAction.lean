@@ -18,20 +18,25 @@ variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
 variable [ValuativeRel (LocalField F q)] [IsNonarchimedeanLocalField (LocalField F q)]
 
-private lemma winv (K : Type*) [Field K] : (KubotaRankTwo.w K)⁻¹ = KubotaRankTwo.d K (-1) (-1) * KubotaRankTwo.w K := by
+section
+variable (K : Type*) [Field K]
+include K
+private lemma winv   : (KubotaRankTwo.w K)⁻¹ = KubotaRankTwo.d K (-1) (-1) * KubotaRankTwo.w K := by
   apply inv_eq_of_mul_eq_one_right
   apply Units.ext
   ext i j
   fin_cases i <;> fin_cases j <;> simp [Matrix.mul_apply]
-private lemma Xwinv (K : Type*) [Field K] : KubotaRankTwo.X K (KubotaRankTwo.w K)⁻¹ = -1 := by
+private lemma Xwinv   : KubotaRankTwo.X K (KubotaRankTwo.w K)⁻¹ = -1 := by
   rw [winv]
   apply Units.ext
   simp [KubotaRankTwo.X, KubotaRankTwo.x, Matrix.mul_apply]
-private lemma Xwnw (K : Type*) [Field K] (v : Kˣ) :
+private lemma Xwnw   (v : Kˣ) :
     KubotaRankTwo.X K ((KubotaRankTwo.w K)⁻¹ * KubotaRankTwo.n K (-((v⁻¹ : Kˣ) : K)) * (KubotaRankTwo.w K)⁻¹) = -v⁻¹ := by
   rw [winv]
   apply Units.ext
   simp [KubotaRankTwo.X, KubotaRankTwo.x, Matrix.mul_apply, Units.ne_zero]
+end
+
 
 private lemma BoneL (a : (LocalField F q)ˣ) : KPHilbert.B3 F ζ hζ (Sum.inr q) 1 a = 1 :=
   KubotaDefectSymbolAlgebra.one_left _ _ _ (KPHilbert.B3_laws F ζ hζ (Sum.inr q)).1 a
@@ -327,7 +332,10 @@ private lemma BcubeL (x y : (LocalField F q)ˣ) : KPHilbert.B3 F ζ hζ (Sum.inr
 private lemma Bself (x : (LocalField F q)ˣ) : KPHilbert.B3 F ζ hζ (Sum.inr q) x⁻¹ x = 1 := by
   rw [KubotaDefectSymbolAlgebra.inv_left _ _ _ (KPHilbert.B3_laws F ζ hζ (Sum.inr q)).1]
   rw [(KPHilbert.B3_laws F ζ hζ (Sum.inr q)).2.2.2.2.2 x |>.1, inv_one]
-private lemma Bdiag (a u v : (LocalField F q)ˣ) :
+section
+variable (a u v : (LocalField F q)ˣ)
+include a u v
+private lemma Bdiag   :
     KPHilbert.B3 F ζ hζ (Sum.inr q) (((-a) * v ^ 3)⁻¹ ^ 2) ((a * u ^ 3) ^ 2) = 1 := by
   have hn : ((-a) * v ^ 3)⁻¹ ^ 2 = a⁻¹ ^ 2 * (v⁻¹ ^ 2) ^ 3 := by
     simp only [mul_inv_rev, mul_pow, inv_pow, Even.neg_pow (show Even 2 from by decide)]
@@ -339,7 +347,7 @@ private lemma Bdiag (a u v : (LocalField F q)ˣ) :
   have hR : KPHilbert.B3 F ζ hζ (Sum.inr q) (a⁻¹ ^ 2) ((u ^ 2) ^ 3) = 1 := by
     rw [(KPHilbert.B3_laws F ζ hζ (Sum.inr q)).2.2.1, BcubeL, inv_one]
   rw [hR, mul_one, inv_pow, Bself]
-private lemma diagonal_word (a u v : (LocalField F q)ˣ) :
+private lemma diagonal_word   :
     A.weyl (B.rootTorus ((-a) * v ^ 3)) * B.rootTorus (a * u ^ 3) =
       (A.cubeLift ((u / v) ^ 2) : H) := by
   apply torus_inj F ζ hζ q T A
@@ -351,7 +359,7 @@ private lemma diagonal_word (a u v : (LocalField F q)ˣ) :
   simp only [← pow_mul]
   group
   ac_rfl
-private lemma center_diagonal (a u v : (LocalField F q)ˣ) (V : CenterModule T) (h : H) :
+private lemma center_diagonal   (V : CenterModule T) (h : H) :
     ((centerTorus F ζ hζ q T A .minus (B.rootTorus ((-a) * v ^ 3)))
       ((centerTorus F ζ hζ q T A .plus (B.rootTorus (a * u ^ 3))) V)).val h =
       normPower (LocalField F q) (((u / v) ^ 2) ^ 3) (1 / 6) * V.val h := by
@@ -361,6 +369,8 @@ private lemma center_diagonal (a u v : (LocalField F q)ˣ) (V : CenterModule T) 
   rw [hc, V.property]
   change (T.ω (A.cubeLift _) : ℂ) * _ = _
   rw [A.exceptional_cube]
+end
+
 
 private lemma norm_mul (x y : (LocalField F q)ˣ) (z : ℂ) :
     normPower (LocalField F q) (x * y) z =
@@ -368,10 +378,13 @@ private lemma norm_mul (x y : (LocalField F q)ˣ) (z : ℂ) :
   rw [normPower, localAbs_mul, Real.log_mul (ne_of_gt (localAbs_pos _ x))
     (ne_of_gt (localAbs_pos _ y)), Complex.ofReal_add, mul_add, Complex.exp_add]
   rfl
-private lemma norm_neg (x : (LocalField F q)ˣ) (z : ℂ) :
+section
+variable (x : (LocalField F q)ˣ)
+include x
+private lemma norm_neg   (z : ℂ) :
     normPower (LocalField F q) (-x) z = normPower (LocalField F q) x z := by
   simp [normPower, localAbs, Valuation.map_neg]
-private lemma norm_pow (x : (LocalField F q)ˣ) (n : ℕ) (z : ℂ) :
+private lemma norm_pow   (n : ℕ) (z : ℂ) :
     normPower (LocalField F q) (x ^ n) z = normPower (LocalField F q) x (n * z) := by
   have ha : localAbs (LocalField F q) (x ^ n) = localAbs (LocalField F q) x ^ n := by
     induction n with
@@ -380,15 +393,17 @@ private lemma norm_pow (x : (LocalField F q)ˣ) (n : ℕ) (z : ℂ) :
   simp only [normPower, ha, Real.log_pow, Complex.ofReal_mul, Complex.ofReal_natCast]
   congr 1
   ring
-private lemma norm_inv (x : (LocalField F q)ˣ) (z : ℂ) :
+private lemma norm_inv   (z : ℂ) :
     normPower (LocalField F q) x⁻¹ z = (normPower (LocalField F q) x z)⁻¹ := by
   have ha : localAbs (LocalField F q) x⁻¹ = (localAbs (LocalField F q) x)⁻¹ := by
     apply eq_inv_of_mul_eq_one_left
     rw [← localAbs_mul, inv_mul_cancel, localAbs_one]
   simp [normPower, ha, Real.log_inv, Complex.exp_neg, mul_neg]
-private lemma norm_add (x : (LocalField F q)ˣ) (z w : ℂ) :
+private lemma norm_add   (z w : ℂ) :
     normPower (LocalField F q) x (z + w) = normPower (LocalField F q) x z * normPower (LocalField F q) x w := by
   simp [normPower, add_mul, Complex.exp_add]
+end
+
 private lemma norm_unram (r t₀ : ℂˣ)
     (ht₀ : (t₀ : ℂ) = KPRankOneReverseRegulatorShells.t F q (r : ℂ)) (x : (LocalField F q)ˣ) :
     normPower (LocalField F q) x (1 + 6 * KPRankOneReverseRegulatorShells.additiveParameter F q r) =

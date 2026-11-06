@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.SectorGcdEnergyDecomposition
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.OperatorNormBounds
 
 @[expose] public section
+
 
 noncomputable section
 namespace DedekindZetaZeroFree.LargeSieve.Sieve.CoreCoefficient
@@ -20,8 +23,8 @@ theorem sector_gcd_bound
     letI : Fintype Q.G := Fintype.ofFinite Q.G
     Q2 F c Q W M N K lam ≤ (Fintype.card Q.G : ℝ) *
       ∑ g, ∑ d ∈ pool, ‖T3 F c Q W M N K d g lam‖ := by
-  letI : Finite Q.G := Q.instFinite
-  letI : Fintype Q.G := Fintype.ofFinite Q.G
+  letI  := Q.instFinite
+  letI  := Fintype.ofFinite Q.G
   let R := ↥(kernelRows F c M K)
   let L := ↥(paperShell F c N)
   let w : R → NNReal := fun a => NNReal.mk (W ((Ideal.absNorm (a : Ideal (𝓞 F)) : ℝ) / M)) (hW.nonneg _)

@@ -15,7 +15,7 @@ open DedekindZetaZeroFree.KPCplxIntertwinerEigenvalues
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+variable (ζ : F) 
 
 theorem pi_zero (s : ℝ) (g : KPCplxCharacterHaar.ComplexPGL2) :
     KPCplxPrincipalSeriesCharts.pi s g

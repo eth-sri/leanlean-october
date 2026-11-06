@@ -1,13 +1,19 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Units.EisensteinUnitsModuloThree
 
 @[expose] public section
 
+
 namespace DedekindZetaZeroFree.Eisenstein
 
-theorem existsUnique_primaryGenerator (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (A : I3 E) :
+section
+variable (E : Type) [Field E] [NumberField E]
+    [IsCyclotomicExtension {3} ℚ E]
+include E
+theorem existsUnique_primaryGenerator   (A : I3 E) :
     ∃! x : R E, Ideal.span {x} = (A : Ideal (R E)) ∧ red3 E x = 1 := by
   haveI : IsPrincipalIdealRing (R E) := IsCyclotomicExtension.Rat.three_pid E
   classical
@@ -15,11 +21,7 @@ theorem existsUnique_primaryGenerator (E : Type) [Field E] [NumberField E]
   set g : R E := Submodule.IsPrincipal.generator (A : Ideal (R E)) with hg
   have hspan : Ideal.span {g} = (A : Ideal (R E)) :=
     Submodule.IsPrincipal.span_singleton_generator (A : Ideal (R E))
-  have hg_ne : g ≠ 0 := by
-    intro h0
-    refine hA_ne ?_
-    rw [← hspan, h0]
-    simp
+  
   have hunit : IsUnit (red3 E g) := by
     rw [isUnit_red3_iff_span_sup_m3_eq_top, hspan, hA3]
   obtain ⟨u, hu, huniq⟩ := existsUnique_unit_mul_red3_eq_one E g hunit
@@ -31,15 +33,13 @@ theorem existsUnique_primaryGenerator (E : Type) [Field E] [NumberField E]
     obtain ⟨u', hu'⟩ := hassoc
     have hu'_red : red3 E ((u' : R E) * g) = 1 := by
       rw [mul_comm, hu', hy_red]
-    have : u' = u := huniq u' hu'_red
+    have  := huniq u' hu'_red
     rw [← hu', this, mul_comm]
 
-noncomputable def primaryGenerator (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (A : I3 E) : R E :=
+noncomputable def primaryGenerator   (A : I3 E)  :=
   Classical.choose (existsUnique_primaryGenerator E A)
 
-theorem primaryGenerator_ne_zero (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (A : I3 E) :
+theorem primaryGenerator_ne_zero   (A : I3 E) :
     primaryGenerator E A ≠ 0 := by
   intro h0
   obtain ⟨hspan, -⟩ := (Classical.choose_spec (existsUnique_primaryGenerator E A)).1
@@ -48,24 +48,20 @@ theorem primaryGenerator_ne_zero (E : Type) [Field E] [NumberField E]
   rw [← hspan, Ideal.span_singleton_eq_bot]
   exact h0
 
-@[simp] theorem span_primaryGenerator (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (A : I3 E) :
+@[simp] theorem span_primaryGenerator   (A : I3 E) :
     Ideal.span {primaryGenerator E A} = (A : Ideal (R E)) :=
   (Classical.choose_spec (existsUnique_primaryGenerator E A)).1.1
 
-@[simp] theorem red3_primaryGenerator (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (A : I3 E) :
+@[simp] theorem red3_primaryGenerator   (A : I3 E) :
     red3 E (primaryGenerator E A) = 1 :=
   (Classical.choose_spec (existsUnique_primaryGenerator E A)).1.2
 
-@[simp] theorem primaryGenerator_one (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] :
+@[simp] theorem primaryGenerator_one   :
     primaryGenerator E 1 = 1 := by
   refine ((Classical.choose_spec (existsUnique_primaryGenerator E 1)).2 1 ?_).symm
-  exact ⟨by simp, by simp⟩
+  exact ⟨by simp, rfl⟩
 
-@[simp] theorem primaryGenerator_mul (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (A B : I3 E) :
+@[simp] theorem primaryGenerator_mul   (A B : I3 E) :
     primaryGenerator E (A * B) = primaryGenerator E A * primaryGenerator E B := by
   refine ((Classical.choose_spec (existsUnique_primaryGenerator E (A * B))).2 _ ?_).symm
   refine ⟨?_, ?_⟩
@@ -73,32 +69,28 @@ theorem primaryGenerator_ne_zero (E : Type) [Field E] [NumberField E]
     rfl
   · rw [map_mul, red3_primaryGenerator, red3_primaryGenerator, one_mul]
 
-theorem span_mem_I3_of_red3_eq_one (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (x : R E)
+theorem span_mem_I3_of_red3_eq_one   (x : R E)
     (hx : x ≠ 0) (hx3 : red3 E x = 1) :
     Ideal.span {x} ∈ I3 E := by
   rw [mem_I3]
   refine ⟨?_, ?_⟩
   · intro h
-    exact hx (Ideal.span_singleton_eq_bot.mp h)
+    apply hx <;> aesop
   · rw [← isUnit_red3_iff_span_sup_m3_eq_top, hx3]
     exact isUnit_one
 
-def primaryPrincipalIdeal (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (x : R E)
+def primaryPrincipalIdeal   (x : R E)
     (hx : x ≠ 0) (hx3 : red3 E x = 1) : I3 E :=
   ⟨Ideal.span {x}, span_mem_I3_of_red3_eq_one E x hx hx3⟩
 
-@[simp] theorem primaryGenerator_primaryPrincipalIdeal (E : Type)
-    [Field E] [NumberField E] [IsCyclotomicExtension {3} ℚ E]
+@[simp] theorem primaryGenerator_primaryPrincipalIdeal  
     (x : R E) (hx : x ≠ 0) (hx3 : red3 E x = 1) :
     primaryGenerator E (primaryPrincipalIdeal E x hx hx3) = x := by
   refine ((Classical.choose_spec
     (existsUnique_primaryGenerator E (primaryPrincipalIdeal E x hx hx3))).2 x ?_).symm
   exact ⟨rfl, hx3⟩
 
-theorem eq_of_span_eq_of_red3_eq (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (x y : R E)
+theorem eq_of_span_eq_of_red3_eq   (x y : R E)
     (hxy : Ideal.span {x} = Ideal.span {y})
     (hx : Ideal.span {x} ≠ ⊥) (hx3 : IsUnit (red3 E x))
     (hxy3 : red3 E x = red3 E y) :
@@ -110,7 +102,9 @@ theorem eq_of_span_eq_of_red3_eq (E : Type) [Field E] [NumberField E]
     have h : red3 E y * red3 E (u : R E) = red3 E y * 1 := by
       rw [mul_one, ← map_mul, hu, hxy3]
     exact (hx3y.mul_right_inj).mp h
-  have hu_one : u = 1 := unit_eq_one_of_red3_eq_one E u hu_red
+  have hu_one  := unit_eq_one_of_red3_eq_one E u hu_red
   rw [← hu, hu_one, Units.val_one, mul_one]
+end
+
 
 end DedekindZetaZeroFree.Eisenstein

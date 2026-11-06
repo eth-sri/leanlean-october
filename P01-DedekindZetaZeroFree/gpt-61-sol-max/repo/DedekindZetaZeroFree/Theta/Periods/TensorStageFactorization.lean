@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Theta.Periods.RestrictedTensorProductFunctional
 
 @[expose] public section
+
 
 noncomputable section
 open scoped Classical TensorProduct
@@ -36,7 +39,7 @@ theorem multilinear_factorization_of_normalized
     induction s using Finset.induction_on with
     | empty =>
       intro x hx
-      have he : x = x₀ := funext (fun j => by
+      have he  := funext (fun j => by
         by_contra hn
         exact Finset.notMem_empty j (hx j hn))
       simp [he]
@@ -61,7 +64,7 @@ theorem multilinear_factorization_of_normalized
   intro x
   exact finite_product Finset.univ x (fun j _ => Finset.mem_univ j)
 
-variable {i : J}
+
 
 end DedekindZetaZeroFree.FourierContinuation
 

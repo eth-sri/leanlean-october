@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Topology.Algebra.RestrictedProduct.TopologicalSpace
 
 @[expose] public section
+
 
 open Set Filter
 
@@ -13,8 +16,7 @@ namespace DedekindZetaZeroFree.RestrictedProductDensity
 variable {ι : Type*} [DecidableEq ι] {R : ι → Type*} [∀ i, Group (R i)]
   [∀ i, TopologicalSpace (R i)]
 
-def singleSet (A S : ∀ i, Subgroup (R i)) :
-    Set (RestrictedProduct R (fun i => (A i : Set (R i))) Filter.cofinite) :=
+def singleSet (A S : ∀ i, Subgroup (R i))  :=
   {x | ∃ i, ∃ h : R i, h ∈ S i ∧ RestrictedProduct.mulSingle A i h = x}
 
 theorem closure_closure_singleSet_eq_forall_mem (A S : ∀ i, Subgroup (R i))
@@ -45,7 +47,7 @@ theorem closure_closure_singleSet_eq_forall_mem (A S : ∀ i, Subgroup (R i))
     · rw [RestrictedProduct.coe_mulSingle_apply, Pi.mulSingle_eq_of_ne hj]
       exact (S j).one_mem
   have hclosure_le : closure (Subgroup.closure (singleSet A S)) ⊆ (hPsub : Set (RestrictedProduct R (fun i => (A i : Set (R i))) Filter.cofinite)) := by
-    have h2 : Subgroup.closure (singleSet A S) ≤ hPsub :=
+    have h2  :=
       (Subgroup.closure_le hPsub).mpr hTsub
     exact closure_minimal h2 hPclosed
   apply Set.Subset.antisymm hclosure_le
@@ -56,7 +58,7 @@ theorem closure_closure_singleSet_eq_forall_mem (A S : ∀ i, Subgroup (R i))
   have hsfin : ({i | x i ∉ A i} : Set ι).Finite := by
     have h : ({i | x i ∈ A i}ᶜ : Set ι).Finite := Filter.mem_cofinite.mp x.2
     simpa only [Set.compl_setOf] using h
-  let s : Finset ι := hsfin.toFinset
+  let s  := hsfin.toFinset
   have hsc : Filter.cofinite ≤ Filter.principal ((s : Set ι)ᶜ) := by
     rw [Filter.le_principal_iff]
     exact s.finite_toSet.compl_mem_cofinite
@@ -129,7 +131,7 @@ theorem closure_closure_singleSet_eq_forall_mem (A S : ∀ i, Subgroup (R i))
     intro i hi
     show (if i ∈ t then x i else 1) = 1
     exact if_neg hi
-  have hgH : G t ∈ Subgroup.closure (singleSet A S) := hGmem t
+  have hgH  := hGmem t
   have hgV : G t ∈ V := by
     let g' : RestrictedProduct R (fun i => (A i : Set (R i)))
         (Filter.principal ((s : Set ι)ᶜ)) :=

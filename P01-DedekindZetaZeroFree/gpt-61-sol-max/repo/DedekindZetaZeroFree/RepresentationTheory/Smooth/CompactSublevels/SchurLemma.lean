@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Algebra.TensorProduct.RestrictedTensorSimplicity
 public import DedekindZetaZeroFree.RepresentationTheory.Smooth.RepresentationsAndFixedLevels
 
 @[expose] public section
+
 
 section
 
@@ -14,7 +17,7 @@ namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeRepresentation
 
 variable {G V : Type*} [Group G] [AddCommGroup V] [Module ℂ V]
 
-def algebra (ρ : Representation ℂ G V) : Subalgebra ℂ (Module.End ℂ V) :=
+def algebra (ρ : Representation ℂ G V)  :=
   Algebra.adjoin ℂ (Set.range ρ)
 
 instance (ρ : Representation ℂ G V) : Module (algebra ρ) V :=
@@ -61,7 +64,7 @@ theorem scalar_commutant (ρ : Representation ℂ G V) [ρ.IsIrreducible]
     (hne : fixedSubmodule ρ U ≠ ⊥) :
     ∀ T : Module.End (algebra ρ) V, ∃ c : ℂ, ∀ v, T v = c • v := by
   letI := simple ρ
-  letI : IsSimpleModule (algebra ρ) V := (isSimpleModule_iff (algebra ρ) V).mpr inferInstance
+  letI  := (isSimpleModule_iff (algebra ρ) V).mpr inferInstance
   apply RestrictedTensorSimple.scalarCommutant_of_finiteLevel
     (algebra ρ) V (fixedSubmodule ρ U) hne
   intro T v hv

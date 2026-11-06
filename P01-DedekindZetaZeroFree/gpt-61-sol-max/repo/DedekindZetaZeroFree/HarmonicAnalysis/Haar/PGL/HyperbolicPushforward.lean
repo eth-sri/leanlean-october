@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.PGL.CompactStabilizerLift
 public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.PGL.HyperbolicVolume
 public import DedekindZetaZeroFree.Geometry.PGL.IwasawaTrivialization
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.KPCompactStabilizerHaarSources
 
@@ -19,7 +22,7 @@ theorem arch_haar_pushforward_hyperbolic (d : ℕ) (μ : Measure (G d))
         (c : ℝ≥0∞) • KPArch.hyperbolicVolume d := by
   obtain ⟨e, heOrbit, heFiber⟩ := product_iwasawa_homeomorph d
   obtain ⟨hfinite, hpositive, hinvariant⟩ := hyperbolic_volume_properties d
-  let ν : Measure (G d) :=
+  let ν  :=
     Measure.map e.symm ((KPArch.hyperbolicVolume d).prod (stabilizerHaar d))
   have : ν.IsHaarMeasure := compact_fiber_lift_isHaar d e heFiber
     (KPArch.hyperbolicVolume d) hfinite hpositive hinvariant
@@ -34,7 +37,7 @@ theorem arch_haar_pushforward_hyperbolic (d : ℕ) (μ : Measure (G d))
       rw [← heOrbit (e.symm p), e.apply_symm_apply]
     change Measure.map (fun g : G d => g • o d)
       (Measure.map e.symm ((KPArch.hyperbolicVolume d).prod (stabilizerHaar d))) = _
-    have hm : Measurable (fun g : G d => g • o d) :=
+    have hm  :=
       (show Continuous (fun g : G d => g • o d) from
         continuous_id.smul continuous_const).measurable
     rw [Measure.map_map hm e.symm.measurable]

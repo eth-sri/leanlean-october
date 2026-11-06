@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LFunctions.Dedekind.ReciprocalGammaFactor
 public import DedekindZetaZeroFree.Analysis.EntireDivisionAtZero
 public import DedekindZetaZeroFree.LFunctions.Dedekind.MixedThetaMellinModel
 public import DedekindZetaZeroFree.Nonvanishing.Mellin.WeakFunctionalEquationUncompletion
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.AbelianQuotient
 
@@ -17,7 +20,7 @@ theorem zetaContinuation (K : Type) [Field K] [NumberField K] :
 
   obtain ⟨u, hu, hqu⟩ := entire_division_at_zero (zetaGammaReciprocal K)
     (zetaGammaReciprocal_differentiable K) (zetaGammaReciprocal_zero K)
-  have hq : Differentiable ℂ (zetaGammaReciprocal K) := zetaGammaReciprocal_differentiable K
+  have hq  := zetaGammaReciprocal_differentiable K
 
   refine ⟨fun s => zetaGammaReciprocal K s * P.Λ₀ s - u s * P.f₀
       - zetaGammaReciprocal K s * (P.ε / (1 - s)) * P.g₀, ?_, ?_⟩

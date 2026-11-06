@@ -43,11 +43,14 @@ attribute [local instance]
   padicCompletedMultiplicativeTargetCompleteSpace
   padicCompletedMultiplicativeTargetT2Space
 
+section
+variable (p : ℕ) [Fact p.Prime] (n : ℕ)
+include p n
 /-- The completed multiplicative division point obtained by evaluating the
 coefficient-extended comparison at the chosen completed standard primitive
 point. -/
 noncomputable def padicCompletedMultiplicativePrimitivePoint
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+      :
     (padicCompletedLevelCompleteDVF p n).valuationSubring :=
   padicCompletedLevelPowerSeriesEval p n
     (padicCompletedPrimitiveRootInteger p n)
@@ -57,7 +60,7 @@ noncomputable def padicCompletedMultiplicativePrimitivePoint
 /-- The completed multiplicative primitive point is topologically
 nilpotent, so it is itself a valid power-series evaluation point. -/
 theorem padicCompletedMultiplicativePrimitivePoint_hasEval
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+      :
     PowerSeries.HasEval
       (padicCompletedMultiplicativePrimitivePoint p n) := by
   exact
@@ -71,7 +74,7 @@ theorem padicCompletedMultiplicativePrimitivePoint_hasEval
 scalar endomorphism for `π ^ (n + 1)`. -/
 theorem
     padicCompletedMultiplicativePrimitivePoint_uniformizer_pow_succ_eq_zero
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+      :
     padicCompletedMultiplicativeScalarEndomorphismValue p n
         (padicCompletedMultiplicativePrimitivePoint p n)
         (padicCompletedMultiplicativePrimitivePoint_hasEval p n)
@@ -147,7 +150,7 @@ theorem
 the scalar endomorphism for `π ^ n`. -/
 theorem
     padicCompletedMultiplicativePrimitivePoint_uniformizer_pow_ne_zero
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+      :
     padicCompletedMultiplicativeScalarEndomorphismValue p n
         (padicCompletedMultiplicativePrimitivePoint p n)
         (padicCompletedMultiplicativePrimitivePoint_hasEval p n)
@@ -190,13 +193,18 @@ theorem
     padicCompletedStandardScalarEndomorphismValue_uniformizer_pow
       p n lambda hlambda n]
   exact hlambdaNZero
+end
 
+
+section
+variable (p : ℕ) [Fact p.Prime]
+    (u : (padicLocalField p).valuationSubringˣ)
+include p u
 /-- The completed multiplicative primitive point is killed by the
 `n + 1`-st power of the scalar `u p` defining the changed uniformizer. -/
 theorem
     padicCompletedMultiplicativePrimitivePoint_changedUniformizer_pow_succ_eq_zero
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+      (n : ℕ) :
     padicCompletedMultiplicativeScalarEndomorphismValue p n
         (padicCompletedMultiplicativePrimitivePoint p n)
         (padicCompletedMultiplicativePrimitivePoint_hasEval p n)
@@ -258,8 +266,7 @@ theorem
 early by the scalar `u p`. -/
 theorem
     padicCompletedMultiplicativePrimitivePoint_changedUniformizer_pow_ne_zero
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+      (n : ℕ) :
     padicCompletedMultiplicativeScalarEndomorphismValue p n
         (padicCompletedMultiplicativePrimitivePoint p n)
         (padicCompletedMultiplicativePrimitivePoint_hasEval p n)
@@ -327,8 +334,7 @@ theorem
 /-- The multiplicative scalar endomorphism attached to a `p`-adic unit,
 with coefficients extended to the completed unramified Witt ring. -/
 noncomputable def padicCompletedMultiplicativeUnitEndomorphism
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) :
+      :
     PowerSeries (padicCompletedUnramifiedWittRing p) :=
   padicCompletedMultiplicativeScalarEndomorphism p
     (u : (padicLocalField p).valuationSubring)
@@ -336,8 +342,7 @@ noncomputable def padicCompletedMultiplicativeUnitEndomorphism
 /-- The completed multiplicative unit endomorphism admits formal
 substitution. -/
 theorem padicCompletedMultiplicativeUnitEndomorphism_hasSubst
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) :
+      :
     PowerSeries.HasSubst
       (padicCompletedMultiplicativeUnitEndomorphism p u) :=
   by
@@ -348,8 +353,7 @@ theorem padicCompletedMultiplicativeUnitEndomorphism_hasSubst
 /-- The action of a completed multiplicative unit endomorphism on the
 completed multiplicative primitive point. -/
 noncomputable def padicCompletedMultiplicativePrimitivePointUnitAction
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+      (n : ℕ) :
     (padicCompletedLevelCompleteDVF p n).valuationSubring :=
   padicCompletedLevelPowerSeriesEval p n
     (padicCompletedMultiplicativePrimitivePoint p n)
@@ -359,8 +363,7 @@ noncomputable def padicCompletedMultiplicativePrimitivePointUnitAction
 /-- The unit translate of the completed multiplicative primitive point is
 again a convergent evaluation point. -/
 theorem padicCompletedMultiplicativePrimitivePointUnitAction_hasEval
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+      (n : ℕ) :
     PowerSeries.HasEval
       (padicCompletedMultiplicativePrimitivePointUnitAction p u n) := by
   exact
@@ -369,6 +372,8 @@ theorem padicCompletedMultiplicativePrimitivePointUnitAction_hasEval
       (padicCompletedMultiplicativePrimitivePoint_hasEval p n)
       (padicCompletedMultiplicativeUnitEndomorphism p u)
       (padicCompletedMultiplicativeUnitEndomorphism_hasSubst p u)
+end
+
 
 end LubinTate
 

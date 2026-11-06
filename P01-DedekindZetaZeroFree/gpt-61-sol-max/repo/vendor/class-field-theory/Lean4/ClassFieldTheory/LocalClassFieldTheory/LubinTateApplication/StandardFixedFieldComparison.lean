@@ -17,6 +17,8 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 
 
 set_option autoImplicit false
+set_option maxHeartbeats 2000000
+set_option synthInstance.maxHeartbeats 100000
 
 /-!
 # Filtered reciprocity on the named standard Lubin--Tate fixed field

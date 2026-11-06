@@ -70,6 +70,9 @@ noncomputable def piCongrLeftMulEquiv
 /-- At one finite place of `K`, the canonical local tensor decomposition followed by completion
 comparison identifies the tensor-unit group with the product of the concrete
 adic unit groups at all finite places of `L` above it. -/
+
+local notation:max "current_finitePlaceExtensionEquivAbove" => finitePlaceExtensionEquivAbove (K := K) (L := L)
+
 noncomputable def finitePlaceTensorUnitsEquivAboveAdic
     (w : HeightOneSpectrum (𝓞 K)) :
     (w.adicCompletion K ⊗[K] L)ˣ ≃*
@@ -88,8 +91,7 @@ noncomputable def finitePlaceTensorUnitsEquivAboveAdic
         (fun W : {W : HeightOneSpectrum (𝓞 L) //
             finitePlaceBelow (K := K) W = w} =>
           (W.1.adicCompletion L)ˣ)
-        (finitePlaceExtensionEquivAbove
-          (K := K) (L := L) w)))
+        (current_finitePlaceExtensionEquivAbove w)))
 
 /-- Evaluation of the finite-place tensor units equivalence at an
 extension of the given adic absolute value. -/
@@ -101,8 +103,7 @@ theorem finitePlaceTensorUnitsEquivAboveAdic_apply_extension
       (HeightOneSpectrum.adicAbv K w) L) :
     finitePlaceTensorUnitsEquivAboveAdic
         (K := K) (L := L) w x
-        (finitePlaceExtensionEquivAbove
-          (K := K) (L := L) w u) =
+        (current_finitePlaceExtensionEquivAbove w u) =
       Units.mapEquiv
           (finitePlaceExtensionAdicCompletionRingEquiv
             (K := K) (L := L) w u).toMulEquiv
@@ -112,7 +113,7 @@ theorem finitePlaceTensorUnitsEquivAboveAdic_apply_extension
     fun W : {W : HeightOneSpectrum (𝓞 L) //
         finitePlaceBelow (K := K) W = w} =>
       (W.1.adicCompletion L)ˣ
-  let e := finitePlaceExtensionEquivAbove (K := K) (L := L) w
+  let e := current_finitePlaceExtensionEquivAbove w
   let f : ∀ a, P (e a) := fun a =>
     Units.mapEquiv
         (finitePlaceExtensionAdicCompletionRingEquiv
@@ -143,8 +144,7 @@ theorem finitePlaceTensorUnitsEquivAboveAdic_localFieldIdeleInclusion
         (FinitePlace.embedding (K := L) W.1)
         x := by
   obtain ⟨a, rfl⟩ :=
-    (finitePlaceExtensionEquivAbove
-      (K := K) (L := L) w).surjective W
+    (current_finitePlaceExtensionEquivAbove w).surjective W
   rw [finitePlaceTensorUnitsEquivAboveAdic_apply_extension]
   apply Units.ext
   simp only [Units.coe_map]
@@ -267,13 +267,10 @@ theorem relativeLocalTensorDecompositionIntegralUnitAt_iff_aboveAdic
   constructor
   · intro hx W
     let u :=
-      (finitePlaceExtensionEquivAbove
-        (K := K) (L := L) w).symm W
+      (current_finitePlaceExtensionEquivAbove w).symm W
     have hW :
-        finitePlaceExtensionEquivAbove
-            (K := K) (L := L) w u = W :=
-      (finitePlaceExtensionEquivAbove
-        (K := K) (L := L) w).apply_symm_apply W
+        current_finitePlaceExtensionEquivAbove w u = W :=
+      (current_finitePlaceExtensionEquivAbove w).apply_symm_apply W
     rw [← hW]
     rw [finitePlaceTensorUnitsEquivAboveAdic_apply_extension]
     exact
@@ -292,8 +289,7 @@ theorem relativeLocalTensorDecompositionIntegralUnitAt_iff_aboveAdic
           (K := K) (L := L) w u x)).2 (hx u)
   · intro hx u
     have h :=
-      hx (finitePlaceExtensionEquivAbove
-        (K := K) (L := L) w u)
+      hx (current_finitePlaceExtensionEquivAbove w u)
     rw [finitePlaceTensorUnitsEquivAboveAdic_apply_extension] at h
     exact
       (unitsMapEquiv_mem_units_iff
@@ -351,8 +347,7 @@ theorem eventually_finitePlace_iff_eventually_all_above
         Finite.of_equiv
           (AbsoluteValueExtension
             (HeightOneSpectrum.adicAbv K w) L)
-          (finitePlaceExtensionEquivAbove
-            (K := K) (L := L) w)
+          (current_finitePlaceExtensionEquivAbove w)
     have htendsto :
         Filter.Tendsto
           (finitePlaceBelow (K := K))

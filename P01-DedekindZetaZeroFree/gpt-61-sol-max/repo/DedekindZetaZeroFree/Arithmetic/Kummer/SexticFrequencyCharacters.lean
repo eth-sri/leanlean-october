@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Moments.Principal.Corrections.Definitions
 public import DedekindZetaZeroFree.LFunctions.Hecke.FiniteEulerDeletion
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Characters.PrincipalSexticCharacter
 
 @[expose] public section
+
 
 section
 
@@ -15,61 +18,64 @@ noncomputable section
 namespace DedekindZetaZeroFree.FrequencyCharacterMasks.KummerConductors
 set_option autoImplicit false
 
-theorem kummer_norm_conductor_prime_absent {F : Type} [Field F] [NumberField F]
-    (n : ℕ+) (hn : (n : F) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) F).Nonempty) (u : Fˣ)
-    (v : HeightOneSpectrum (𝓞 F))
-    (hu : v.valuation F (u : F) = 1) (hv : v.valuation F (n : F) = 1) :
-    let E := KummerTheory.chosenSimpleKummerExtension F n hn u
-    letI := KummerTheory.chosenSimpleKummerExtension_finiteDimensional F n hn u
-    letI := KummerTheory.chosenSimpleKummerExtension_isAbelianGalois F n hn hmu u
-    letI := NumberField.of_module_finite F E
-    v ∉ (ClassFieldTheory.GlobalClassFieldComparison.normConductorRayClassModulus F E).finitePart.support := by
-  let E := KummerTheory.chosenSimpleKummerExtension F n hn u
-  letI := KummerTheory.chosenSimpleKummerExtension_finiteDimensional F n hn u
-  letI := KummerTheory.chosenSimpleKummerExtension_isAbelianGalois F n hn hmu u
-  letI := NumberField.of_module_finite F E
-  dsimp only
-  intro h
-  exact GlobalClassFieldTheory.GlobalClassFields.mem_ideleClassNorm_narrowFiniteConductor_support_imp_chosenFinitePlace_ramified v h
-    (KummerTheory.chosenSimpleKummerExtension_chosenFinitePlaceIsUnramified_of_valuation_eq_one n hn hmu u v hu hv)
 
-theorem sextic_norm_conductor_support {F : Type} [Field F] [NumberField F]
-    (A : SArithmeticData F) (I : A.Exterior) (u : A.R) (hu : A.Generates I u) :
-    let hn : (6 : F) ≠ 0 := by norm_num
-    let a := Units.mk0 (u : F) (by exact_mod_cast hu.1)
-    let E := KummerTheory.chosenSimpleKummerExtension F (6 : ℕ+) hn a
-    letI := KummerTheory.chosenSimpleKummerExtension_finiteDimensional F (6 : ℕ+) hn a
-    letI := KummerTheory.chosenSimpleKummerExtension_isAbelianGalois F (6 : ℕ+) hn
-      A.primitive_sixth_root a
-    letI := NumberField.of_module_finite F E
-    ↑(ClassFieldTheory.GlobalClassFieldComparison.normConductorRayClassModulus F E).finitePart.support ⊆
-      ((A.Sf : Set (HeightOneSpectrum (𝓞 F))) ∪ {v | I.val ≤ v.asIdeal}) := by
-  let hn : (6 : F) ≠ 0 := by norm_num
-  let a := Units.mk0 (u : F) (by exact_mod_cast hu.1)
-  let E := KummerTheory.chosenSimpleKummerExtension F (6 : ℕ+) hn a
-  letI := KummerTheory.chosenSimpleKummerExtension_finiteDimensional F (6 : ℕ+) hn a
-  letI := KummerTheory.chosenSimpleKummerExtension_isAbelianGalois F (6 : ℕ+) hn A.primitive_sixth_root a
-  letI := NumberField.of_module_finite F E
-  dsimp only
-  intro v hv
-  by_cases hvS : v ∈ A.Sf
-  · exact Or.inl hvS
-  · right
-    by_contra hI
-    have hval := ArithmeticContext.actual_generator_valuation_unit A I u a hu rfl v hvS hI
-    have hsix : v.valuation F (6 : F) = 1 := by
-      convert (v.valuation_eq_one_iff_notMem (K := F) (r := (6 : 𝓞 F))).2
-        (fun h => hvS (A.above_six v h)) using 1 <;> norm_cast
-    exact kummer_norm_conductor_prime_absent (6 : ℕ+) hn A.primitive_sixth_root a v hval hsix hv
 
-private theorem kummer_conductor_support {F : Type} [Field F] [NumberField F]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+section
+variable {F : Type} [Field F] [NumberField F]
     (A : SArithmeticData F) (σ : F →+* ℂ) (I : A.Exterior)
     (u : A.R) (hu : A.Generates I u)
+include F A σ I u hu
+private theorem kummer_conductor_support  
     (χ : Detector.PrimitiveFrequencyCharacter F)
     (hχ : Detector.IsKummerFrequencyCharacter F A.zeta12 σ
-      (A.Sf : Set (HeightOneSpectrum (𝓞 F)))
-      (Units.mk0 (u : F) (by exact_mod_cast hu.1)) χ) :
+      A.Sf
+      (Units.mk0 u (by exact_mod_cast hu.1)) χ) :
     Detector.conductorSupportedOn F
       ((A.Sf : Set (HeightOneSpectrum (𝓞 F))) ∪ {v | I.val ≤ v.asIdeal}) χ := by
   intro v hv
@@ -78,26 +84,24 @@ private theorem kummer_conductor_support {F : Type} [Field F] [NumberField F]
   · right
     by_contra hnot
     have hvu := ArithmeticContext.actual_generator_valuation_unit A I u
-      (Units.mk0 (u : F) (by exact_mod_cast hu.1)) hu rfl v hvS hnot
+      (Units.mk0 u (by exact_mod_cast hu.1)) hu rfl v hvS hnot
     have hcop := (hχ v hvS hvu).1
     have : v.asIdeal = ⊤ := by simpa [sup_eq_left.mpr hv] using hcop
     exact v.isPrime.ne_top this
 
-theorem kummer_inducer_exists {F : Type} [Field F] [NumberField F]
-    (A : SArithmeticData F) (σ : F →+* ℂ) (I : A.Exterior)
-    (u : A.R) (hu : A.Generates I u) :
+theorem kummer_inducer_exists   :
     ∃ χ : Detector.PrimitiveFrequencyCharacter F,
       Detector.IsKummerFrequencyCharacter F A.zeta12 σ
-        (A.Sf : Set (HeightOneSpectrum (𝓞 F)))
-        (Units.mk0 (u : F) (by exact_mod_cast hu.1)) χ ∧
+        A.Sf
+        (Units.mk0 u (by exact_mod_cast hu.1)) χ ∧
       Detector.conductorSupportedOn F
         ((A.Sf : Set (HeightOneSpectrum (𝓞 F))) ∪ {v | I.val ≤ v.asIdeal}) χ ∧
       (∀ J : Ideal (𝓞 F), J ≠ ⊥ → J ⊔ χ.conductor = ⊤ →
-        χ.character J ^ (6 : ℕ) = 1) := by
+        χ.character J ^ (6) = 1) := by
   obtain ⟨χ, hχ⟩ : ∃ χ : Detector.PrimitiveFrequencyCharacter F,
       Detector.IsKummerFrequencyCharacter F A.zeta12 σ
-        (A.Sf : Set (HeightOneSpectrum (𝓞 F)))
-        (Units.mk0 (u : F) (by exact_mod_cast hu.1)) χ := by
+        A.Sf
+        (Units.mk0 u (by exact_mod_cast hu.1)) χ := by
     let a := Units.mk0 (u : F) (by exact_mod_cast hu.1)
     let hc := primitive12_totallyComplex F A.zeta12 A.primitive_zeta12
     obtain ⟨m, hm, ρ, χ, hp, _, _, hχ, _⟩ := PrimitiveRay.primitiveRay_exists hc
@@ -111,8 +115,7 @@ theorem kummer_inducer_exists {F : Type} [Field F] [NumberField F]
       rw [Nat.coprime_iff_gcd_eq_one, Nat.gcd_comm, Nat.gcd_rec, hmod6]
       norm_num
     have hn := PrimitiveRay.arithmeticSextic_primitiveRay_support A.zeta12 A.primitive_zeta12 σ a hc m hm χ hp hχ v hSix hu
-    have hcop : v.asIdeal ⊔ m = ⊤ := by
-      exact v.isMaximal.out.2 _
+    have hcop : v.asIdeal ⊔ m = ⊤ := v.isMaximal.out.2 _
         (lt_of_le_of_ne le_sup_left (fun h => hn (h ▸ le_sup_right)))
     refine ⟨hcop, ?_⟩
     obtain ⟨j, hj, heq⟩ := PrimitiveRay.arithmeticSexticArtinCharacter_prime A.zeta12 A.primitive_zeta12 σ a v hSix hu
@@ -123,8 +126,10 @@ theorem kummer_inducer_exists {F : Type} [Field F] [NumberField F]
     exact heq
   exact ⟨χ, hχ, kummer_conductor_support A σ I u hu χ hχ,
     Detector.Conductor.global_kummer_sixth_power F A.zeta12
-      A.primitive_zeta12 σ (A.Sf : Set _) A.Sf.finite_toSet
-      (Units.mk0 (u : F) (by exact_mod_cast hu.1)) χ hχ⟩
+      A.primitive_zeta12 σ A.Sf A.Sf.finite_toSet
+      (Units.mk0 u (by exact_mod_cast hu.1)) χ hχ⟩
+end
+
 
 end DedekindZetaZeroFree.FrequencyCharacterMasks.KummerConductors
 
@@ -141,11 +146,14 @@ noncomputable section
 namespace DedekindZetaZeroFree.FrequencyCharacterMasks.KummerConductors
 set_option autoImplicit false
 
-theorem finite_order_ray {F : Type} [Field F] [NumberField F]
+section
+variable {F : Type} [Field F] [NumberField F]
+include F
+theorem finite_order_ray  
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (η : RayClassCharacter F m) :
     ∃ e : ℕ, 0 < e ∧ ∀ J : Ideal (𝓞 F), J ≠ ⊥ → J ⊔ m = ⊤ → η J ^ e = 1 := by
   let M := RayClassBridge.narrowIdealModulus F m hm
-  letI : Finite (ClassFieldTheory.RayClassGroup M) :=
+  letI  :=
     ClassFieldTheory.rayClassGroup_finite F M
   refine ⟨Nat.card (ClassFieldTheory.RayClassGroup M), Nat.card_pos, ?_⟩
   intro J hJ hcJ
@@ -157,9 +165,9 @@ theorem finite_order_ray {F : Type} [Field F] [NumberField F]
     | zero => simp [η.map_top']
     | succ k ih => rw [pow_succ, η.map_mul', ih, pow_succ]
   rw [← hp, hspan]
-  exact η.map_span' a ha ham hpos
+  apply η.map_span' <;> assumption
 
- def rawTwist {F : Type} [Field F] [NumberField F]
+ def rawTwist  
     (m f : Ideal (𝓞 F)) (η : RayClassCharacter F m) (χ : RayClassCharacter F f) :
     RayClassCharacter F (m * f) where
   toFun J := η J * star (χ J)
@@ -176,19 +184,19 @@ theorem finite_order_ray {F : Type} [Field F] [NumberField F]
     rw [η.map_span' a ha (Ideal.mul_le_left hm) hpos,
       χ.map_span' a ha (Ideal.mul_le_right hm) hpos, star_one, mul_one]
 
-private theorem product_support {F : Type} [Field F] [NumberField F]
+private theorem product_support  
     (A : SArithmeticData F) (D : Set (HeightOneSpectrum (𝓞 F)))
     (hD : (A.Sf : Set _) ⊆ D) (χ : Detector.PrimitiveFrequencyCharacter F)
     (hχD : Detector.conductorSupportedOn F D χ)
     (f : Ideal (𝓞 F)) (hf : A.modulus * χ.conductor ≤ f) :
     ∀ v : HeightOneSpectrum (𝓞 F), f ≤ v.asIdeal → v ∈ D := by
   intro v hv
-  have hp : A.modulus * χ.conductor ≤ v.asIdeal := hf.trans hv
+  have hp  := hf.trans hv
   rcases v.isPrime.mul_le.mp hp with h | h
   · exact hD (A.modulus_support v h)
   · exact hχD v h
 
-theorem finite_order_twist_inducer_exists {F : Type} [Field F] [NumberField F]
+theorem finite_order_twist_inducer_exists  
     (A : SArithmeticData F) (η : RayClassCharacter F A.modulus)
     (D : Set (HeightOneSpectrum (𝓞 F))) (hD : (A.Sf : Set _) ⊆ D)
     (χ : Detector.PrimitiveFrequencyCharacter F)
@@ -221,9 +229,9 @@ theorem finite_order_twist_inducer_exists {F : Type} [Field F] [NumberField F]
   refine ⟨ψ, ?_, ?_, finite_order_ray f hf ω⟩
   · intro J hJ hcJ
     have hcm : J ⊔ m = ⊤ :=
-      top_unique (hcJ ▸ sup_le_sup_left (Ideal.mul_le_left : m * f ≤ m) J)
+      top_unique (hcJ ▸ sup_le_sup_left Ideal.mul_le_left J)
     have hcf : J ⊔ f = ⊤ :=
-      top_unique (hcJ ▸ sup_le_sup_left (Ideal.mul_le_right : m * f ≤ f) J)
+      top_unique (hcJ ▸ sup_le_sup_left Ideal.mul_le_right J)
     have hid := congrArg (fun z : ℂˣ => (z : ℂ))
       (hωΦ (QuotientGroup.mk' (IdeleGroup.principalSubgroup F)
         (RayClassBridge.idealIdele F J hJ)))
@@ -244,6 +252,8 @@ theorem finite_order_twist_inducer_exists {F : Type} [Field F] [NumberField F]
     exact PrimitiveRay.primitiveRay_support hc Φ f hf ω hω hωΦ v
       (fun t ht => RayClassBridge.ideleClassCharacter_finitePlaceIdeleClass_unit_of_not_dvd
         F hc m hm τ v hnot t ht) hv
+end
+
 
 end DedekindZetaZeroFree.FrequencyCharacterMasks.KummerConductors
 
@@ -268,8 +278,8 @@ theorem exterior_prime_identification {F : Type} [Field F] [NumberField F]
     {C : A.GeneralArithmeticContext σ η hS}
     (U : Frequency C) (χ ψ : Detector.PrimitiveFrequencyCharacter F)
     (hχ : Detector.IsKummerFrequencyCharacter F A.zeta12 σ
-      (A.Sf : Set (HeightOneSpectrum (𝓞 F)))
-      (Units.mk0 (U.u : F) (by exact_mod_cast U.generates.1)) χ)
+      A.Sf
+      (Units.mk0 U.u (by exact_mod_cast U.generates.1)) χ)
     (hψ : Detector.conductorSupportedOn F
       ((A.Sf : Set (HeightOneSpectrum (𝓞 F))) ∪ {v | U.ideal.val ≤ v.asIdeal}) ψ)
     (htwist : ∀ J : Ideal (𝓞 F), J ≠ ⊥ →
@@ -284,7 +294,7 @@ theorem exterior_prime_identification {F : Type} [Field F] [NumberField F]
         ψ.character p.val.asIdeal) := by
   classical
   intro p hj
-  have hv : p.val ∉ A.Sf :=
+  have hv  :=
     ArithmeticContext.actual_exterior_prime_outside A (primeIdeal p) p.val rfl
   have he : idealPrimeExponent p.val.asIdeal U.ideal.val = 0 := hj
   have hnot : ¬ U.ideal.val ≤ p.val.asIdeal := by
@@ -292,9 +302,9 @@ theorem exterior_prime_identification {F : Type} [Field F] [NumberField F]
     have hm := (UniqueFactorizationMonoid.mem_normalizedFactors_iff U.ideal.property.1).mpr
       ⟨p.val.prime, Ideal.dvd_iff_le.mpr hle⟩
     exact (Multiset.count_eq_zero.mp he) hm
-  have huval : p.val.valuation F (U.u : F) = 1 := by
+  have huval : p.val.valuation F U.u = 1 := by
     exact ArithmeticContext.actual_generator_valuation_unit A U.ideal U.u
-      (Units.mk0 (U.u : F) (by exact_mod_cast U.generates.1)) U.generates rfl p.val hv hnot
+      (Units.mk0 U.u (by exact_mod_cast U.generates.1)) U.generates rfl p.val hv hnot
   obtain ⟨hpc, j, hjval, hjchar⟩ := hχ p.val hv huval
   have hpp : p.val.asIdeal ⊔ ψ.conductor = ⊤ := by
     apply (codisjoint_iff.mp ((Ideal.isMaximal_def.mp p.val.isMaximal).not_le_iff_codisjoint.mp ?_))
@@ -315,11 +325,11 @@ theorem exterior_prime_identification {F : Type} [Field F] [NumberField F]
     rw [hs.1]
     exact hs.2
   let q := Ideal.Quotient.mk (A.extendIdeal (primeIdeal p))
-  let z : A.R := algebraMap (𝓞 F) A.R A.primitive_zeta12.toInteger
+  let z  := algebraMap (𝓞 F) A.R A.primitive_zeta12.toInteger
   have hz : (z : F) = A.zeta12 := A.primitive_zeta12.coe_toInteger
   have hred : q (z ^ (2 * j.val)) = q U.u ^ ((Ideal.absNorm p.val.asIdeal - 1) / 6) := by
     have hlt : p.val.valuation F
-        ((U.u ^ ((Ideal.absNorm p.val.asIdeal - 1) / 6) - z ^ (2 * j.val) : A.R) : F) < 1 := by
+        ((U.u ^ ((Ideal.absNorm p.val.asIdeal - 1) / 6) - z ^ (2 * j.val)) : F) < 1 := by
       simpa only [Units.val_mk0, Subalgebra.coe_sub, Subalgebra.coe_pow, hz, pow_mul] using hjval
     have hzero : q (U.u ^ ((Ideal.absNorm p.val.asIdeal - 1) / 6) - z ^ (2 * j.val)) = 0 := by
       apply (A.exteriorLocalResidueEquiv (primeIdeal p) p.val rfl).injective
@@ -330,8 +340,7 @@ theorem exterior_prime_identification {F : Type} [Field F] [NumberField F]
       apply (IsLocalRing.residue_eq_zero_iff _).mpr
       apply (Valuation.mem_maximalIdeal_iff (p.val.adicCompletion F) Valued.v).mpr
       change Valued.v ((WithVal.toVal (p.val.valuation F)
-        ((U.u ^ ((Ideal.absNorm p.val.asIdeal - 1) / 6) - z ^ (2 * j.val) : A.R) : F) :
-        WithVal (p.val.valuation F)) : p.val.adicCompletion F) < 1
+        ((U.u ^ ((Ideal.absNorm p.val.asIdeal - 1) / 6) - z ^ (2 * j.val) : A.R) : F)) : p.val.adicCompletion F) < 1
       rwa [HeightOneSpectrum.valuedAdicCompletion_eq_valuation']
     rw [map_sub, map_pow] at hzero
     exact (sub_eq_zero.mp hzero).symm
@@ -339,7 +348,7 @@ theorem exterior_prime_identification {F : Type} [Field F] [NumberField F]
   obtain ⟨k, hk, hkchar, hkred⟩ :=
     A.sexticResidueFamily_normalized.2.1 (primeIdeal p) p.val rfl u
   rw [A.exteriorResidue_card, hu] at hkred
-  have hkj : k = j.val :=
+  have hkj  :=
     (A.exterior_sextic_primitive (primeIdeal p) p.val.isPrime.ne_top).pow_inj hk j.isLt (by
       have hh := hkred.trans hred.symm
       simpa only [z, ← map_pow, pow_mul] using hh)
@@ -379,16 +388,16 @@ theorem multiplicative_mask_identification {F : Type} [Field F] [NumberField F]
     (hprime : ∀ p : ExteriorPrime A,
       f p.val.asIdeal = if (U.j p).val = 0 then χ.character p.val.asIdeal else 0) :
     ∀ I : Ideal (𝓞 F), f I = Detector.deletedPrimitiveIdealCoefficient F χ
-      ((A.Sf : Set (HeightOneSpectrum (𝓞 F))) ∪ {v | U.ideal.val ≤ v.asIdeal}) I := by
+      (A.Sf ∪ {v | U.ideal.val ≤ v.asIdeal}) I := by
   classical
-  let D : Set (HeightOneSpectrum (𝓞 F)) :=
+  let D  :=
     (A.Sf : Set (HeightOneSpectrum (𝓞 F))) ∪ {v | U.ideal.val ≤ v.asIdeal}
-  let g : Ideal (𝓞 F) → ℂ := Detector.deletedPrimitiveIdealCoefficient F χ D
+  let g  := Detector.deletedPrimitiveIdealCoefficient F χ D
   have hdelete (v : HeightOneSpectrum (𝓞 F)) :
       (∃ w ∈ D, v.asIdeal ≤ w.asIdeal) ↔ v ∈ D := by
     constructor
     · rintro ⟨w, hw, hvw⟩
-      have he : v = w := HeightOneSpectrum.ext
+      have he  := HeightOneSpectrum.ext
         (v.isMaximal.eq_of_le w.isPrime.ne_top hvw)
       simpa [he] using hw
     · intro hv
@@ -405,7 +414,7 @@ theorem multiplicative_mask_identification {F : Type} [Field F] [NumberField F]
       exact v.isPrime.ne_top (top_le_iff.mp (h ▸ sup_le le_rfl hc))
     · intro hv
       by_contra hn
-      have he : v.asIdeal = v.asIdeal ⊔ A.cS :=
+      have he  :=
         v.isMaximal.eq_of_le hn le_sup_left
       have hc : A.cS ≤ v.asIdeal := le_sup_right.trans_eq he.symm
       obtain ⟨w, hw, hwv⟩ := v.isPrime.prod_le.mp hc
@@ -440,13 +449,13 @@ theorem multiplicative_mask_identification {F : Type} [Field F] [NumberField F]
   intro I
   change f I = g I
   refine WfDvdMonoid.induction_on_irreducible (motive := fun I => f I = g I) I ?_ ?_ ?_
-  · have hf0 : f ⊥ = 0 := houtside ⊥ (by simp)
+  · have hf0  := houtside ⊥ (by simp)
     change f ⊥ = g ⊥
     rw [hf0]
     simp [g, Detector.deletedPrimitiveIdealCoefficient,
       (χ.character.eq_zero_iff' ⊥).mpr (Or.inl rfl)]
   · intro I hI
-    have he : I = ⊤ := Ideal.isUnit_iff.mp hI
+    have he  := Ideal.isUnit_iff.mp hI
     subst I
     rw [hone]
     have hd : ¬ ∃ v ∈ D, (⊤ : Ideal (𝓞 F)) ≤ v.asIdeal := by
@@ -484,25 +493,30 @@ variable {A : SArithmeticData F} {σ : F →+* ℂ}
 variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 variable {C : A.GeneralArithmeticContext σ η hS}
 
-def plusExteriorCoefficient (U : Frequency C) (I : A.Exterior) : ℂ :=
+section
+variable (U : Frequency C)
+include U
+def plusExteriorCoefficient   (I : A.Exterior)  :=
   A.sexticResiduePowerChar σ I 1 (Ideal.Quotient.mk (A.extendIdeal I) U.u)
 
-def minusExteriorCoefficient (U : Frequency C) (I : A.Exterior) : ℂ :=
+def minusExteriorCoefficient   (I : A.Exterior)  :=
   η I.val * star (plusExteriorCoefficient U I)
 
-def plusCoefficient (U : Frequency C) (I : Ideal (𝓞 F)) : ℂ :=
+def plusCoefficient   (I : Ideal (𝓞 F))  :=
   if hI : I ≠ ⊥ ∧ I ⊔ A.cS = ⊤ then
     plusExteriorCoefficient U ⟨I, hI⟩ else 0
 
-def minusCoefficient (U : Frequency C) (I : Ideal (𝓞 F)) : ℂ :=
+def minusCoefficient   (I : Ideal (𝓞 F))  :=
   η I * star (plusCoefficient U I)
 
-def frequencyMask (U : Frequency C) : Set (HeightOneSpectrum (𝓞 F)) :=
+def frequencyMask    :=
   (A.Sf : Set (HeightOneSpectrum (𝓞 F))) ∪ {v | U.ideal.val ≤ v.asIdeal}
+end
+
 
  def valuationIdeal (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
     (hv : v ∉ A.Sf) : Ideal A.R where
-  carrier := {r | v.valuation F (r : F) < 1}
+  carrier := {r | v.valuation F r < 1}
   zero_mem' := by simp
   add_mem' := by
     intro x y hx hy
@@ -513,8 +527,11 @@ def frequencyMask (U : Frequency C) : Set (HeightOneSpectrum (𝓞 F)) :=
     change v.valuation F ((x : F) * (y : F)) < 1
     rw [map_mul]
     exact (mul_le_mul_of_nonneg_right (x.property v hv) zero_le).trans_lt (by simpa using hy)
-private lemma support_iff (U : Frequency C) (v : HeightOneSpectrum (𝓞 F))
-    (hv : v ∉ A.Sf) : U.ideal.val ≤ v.asIdeal ↔ v.valuation F (U.u : F) < 1 := by
+section
+variable (U : Frequency C)
+include U
+private lemma support_iff   (v : HeightOneSpectrum (𝓞 F))
+    (hv : v ∉ A.Sf) : U.ideal.val ≤ v.asIdeal ↔ v.valuation F U.u < 1 := by
   constructor
   · intro h
     have hm : A.extendIdeal U.ideal ≤ valuationIdeal A v hv := by
@@ -526,18 +543,18 @@ private lemma support_iff (U : Frequency C) (v : HeightOneSpectrum (𝓞 F))
     rw [← U.generates.2]
     exact Ideal.mem_span_singleton_self _
   · intro h a ha
-    have ham : algebraMap (𝓞 F) A.R a ∈ Ideal.span ({U.u} : Set A.R) := by
+    have ham : algebraMap (𝓞 F) A.R a ∈ Ideal.span ({U.u}) := by
       rw [U.generates.2]
       exact Ideal.mem_map_of_mem _ ha
     obtain ⟨y, hy⟩ := Ideal.mem_span_singleton.mp ham
     apply (v.valuation_lt_one_iff_mem (K := F) a).mp
     have he := congrArg (fun r : A.R => (r : F)) hy
     change (a : F) = (U.u : F) * (y : F) at he
-    change v.valuation F (a : F) < 1
+    change v.valuation F a < 1
     rw [he, map_mul]
     exact (mul_le_mul_of_nonneg_left (y.property v hv) zero_le).trans_lt (by simpa using h)
 
-theorem frequencyMask_eq_principal_support (U : Frequency C) :
+theorem frequencyMask_eq_principal_support   :
     frequencyMask U = (A.Sf : Set (HeightOneSpectrum (𝓞 F))) ∪
       Detector.exteriorFrequencyPrimeSupport F
         (A.Sf : Set (HeightOneSpectrum (𝓞 F))) U.u := by
@@ -548,7 +565,7 @@ theorem frequencyMask_eq_principal_support (U : Frequency C) :
   · simp [hv]
   · simp [hv, support_iff U v hv]
 
-private lemma plus_base (U : Frequency C) (I : A.Exterior) :
+private lemma plus_base   (I : A.Exterior) :
     plusExteriorCoefficient U I = σ (A.sexticResidue I U.u) := by
   simp only [plusExteriorCoefficient, SArithmeticData.sexticResiduePowerChar,
     SArithmeticData.sexticExponent, show (1 : ℤ) % 6 = 1 from rfl,
@@ -560,33 +577,33 @@ private lemma plus_base (U : Frequency C) (I : A.Exterior) :
   · rw [MulChar.map_nonunit _ hx]
     change 0 = σ (MulChar.ofUnitHom (A.sexticResidueFamily I) _)
     rw [MulChar.map_nonunit _ hx, map_zero]
-private lemma plus_ext_mul (U : Frequency C) (I J : A.Exterior) :
+private lemma plus_ext_mul   (I J : A.Exterior) :
     plusExteriorCoefficient U (ExteriorIdealEuler.mul I J) =
       plusExteriorCoefficient U I * plusExteriorCoefficient U J := by
   simp only [plus_base]
   rw [show A.sexticResidue (ExteriorIdealEuler.mul I J) U.u =
     A.sexticResidue I U.u * A.sexticResidue J U.u from
       A.sexticResidueFamily_normalized.2.2 I J _ rfl U.u, map_mul]
-private lemma plus_ext_one (U : Frequency C) :
+private lemma plus_ext_one   :
     plusExteriorCoefficient U (ExteriorIdealEuler.one A.cS) = 1 := by
   rw [plus_base]
   rw [show A.sexticResidue (ExteriorIdealEuler.one A.cS) U.u = 1 from
     A.residueValue_top _ _ rfl _, map_one]
-private lemma plus_ext_norm (U : Frequency C) (I : A.Exterior) :
+private lemma plus_ext_norm   (I : A.Exterior) :
     ‖plusExteriorCoefficient U I‖ ≤ 1 := by
   rw [plus_base]
   by_cases hx : IsUnit (Ideal.Quotient.mk (A.extendIdeal I) U.u)
   · change ‖σ (MulChar.ofUnitHom (A.sexticResidueFamily I) _)‖ ≤ 1
     rw [← hx.unit_spec, MulChar.ofUnitHom_coe]
     have hp := A.sexticResidueFamily_normalized.1 I hx.unit
-    have hp' : σ ((A.sexticResidueFamily I hx.unit : Fˣ) : F) ^ 6 = 1 := by
+    have hp' : σ ((A.sexticResidueFamily I hx.unit) : F) ^ 6 = 1 := by
       rw [← map_pow]
-      simpa using congrArg (fun u : Fˣ => σ (u : F)) hp
+      simpa using congrArg (fun u : Fˣ => σ u) hp
     exact (Complex.norm_eq_one_of_pow_eq_one hp' (by decide)).le
   · change ‖σ (MulChar.ofUnitHom (A.sexticResidueFamily I) _)‖ ≤ 1
     rw [MulChar.map_nonunit _ hx, map_zero, norm_zero]
     exact zero_le_one
-private lemma plus_ext_pow (U : Frequency C) (I : A.Exterior) (k : ℕ) :
+private lemma plus_ext_pow   (I : A.Exterior) (k : ℕ) :
     plusExteriorCoefficient U (ExteriorIdealEuler.pow I k) =
       plusExteriorCoefficient U I ^ k := by
   induction k with
@@ -596,7 +613,7 @@ private lemma plus_ext_pow (U : Frequency C) (I : A.Exterior) (k : ℕ) :
         ExteriorIdealEuler.mul (ExteriorIdealEuler.pow I k) I := by
       apply Subtype.ext; simp [ExteriorIdealEuler.pow, ExteriorIdealEuler.mul, pow_succ]
     rw [he, plus_ext_mul, ih, pow_succ]
-private lemma plus_mul (U : Frequency C) (I J : Ideal (𝓞 F)) :
+private lemma plus_mul   (I J : Ideal (𝓞 F)) :
     plusCoefficient U (I * J) = plusCoefficient U I * plusCoefficient U J := by
   have he : (I * J ≠ ⊥ ∧ I * J ⊔ A.cS = ⊤) ↔
       (I ≠ ⊥ ∧ I ⊔ A.cS = ⊤) ∧ (J ≠ ⊥ ∧ J ⊔ A.cS = ⊤) := by
@@ -618,12 +635,12 @@ private lemma plus_mul (U : Frequency C) (I J : Ideal (𝓞 F)) :
       exact plus_ext_mul U ⟨I,hI⟩ ⟨J,hJ⟩
     · rw [dif_neg (fun h => hJ (he.mp h).2), dif_pos hI, dif_neg hJ, mul_zero]
   · rw [dif_neg (fun h => hI (he.mp h).1), dif_neg hI, zero_mul]
-private lemma minus_mul (U : Frequency C) (I J : Ideal (𝓞 F)) :
+private lemma minus_mul   (I J : Ideal (𝓞 F)) :
     minusCoefficient U (I * J) = minusCoefficient U I * minusCoefficient U J := by
   simp only [minusCoefficient, RayClassCharacter.map_mul', plus_mul, star_mul]
   ring
 
-theorem actual_coefficients_multiplicative (U : Frequency C) :
+theorem actual_coefficients_multiplicative   :
     ExteriorIdealEuler.IsCoefficient (plusExteriorCoefficient U) ∧
       ExteriorIdealEuler.IsCoefficient (minusExteriorCoefficient U) ∧
       (∀ I J : Ideal (𝓞 F),
@@ -654,7 +671,7 @@ theorem actual_coefficients_multiplicative (U : Frequency C) :
       star_pow, mul_pow]
 
 theorem actual_coefficients_zero_at_frequency_primes
-    (U : Frequency C) (p : ExteriorPrime A) (hp : (U.j p).val ≠ 0) :
+      (p : ExteriorPrime A) (hp : (U.j p).val ≠ 0) :
     chi (σ := σ) p (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) U.u) = 0 ∧
       η p.val.asIdeal *
         star (chi (σ := σ) p
@@ -682,20 +699,22 @@ theorem actual_coefficients_zero_at_frequency_primes
     exact hchi
   refine ⟨hchi, htwist, hplus, ?_⟩
   simp [minusCoefficient, hplus]
+end
+
 
 structure PrimitiveInducers (U : Frequency C) where
   plus : Detector.PrimitiveFrequencyCharacter F
   minus : Detector.PrimitiveFrequencyCharacter F
   kummer : Detector.IsKummerFrequencyCharacter F A.zeta12 σ
-    (A.Sf : Set (HeightOneSpectrum (𝓞 F)))
-    (Units.mk0 (U.u : F) (by exact_mod_cast U.generates.1)) plus
+    A.Sf
+    (Units.mk0 U.u (by exact_mod_cast U.generates.1)) plus
   twist : ∀ I : Ideal (𝓞 F), I ≠ ⊥ →
     I ⊔ (A.modulus * plus.conductor * minus.conductor) = ⊤ →
       minus.character I = η I * star (plus.character I)
   plus_support : Detector.conductorSupportedOn F (frequencyMask U) plus
   minus_support : Detector.conductorSupportedOn F (frequencyMask U) minus
   plus_order : ∀ I : Ideal (𝓞 F), I ≠ ⊥ → I ⊔ plus.conductor = ⊤ →
-    plus.character I ^ (6 : ℕ) = 1
+    plus.character I ^ (6) = 1
   minus_order : ∃ e : ℕ, 0 < e ∧
     ∀ I : Ideal (𝓞 F), I ≠ ⊥ → I ⊔ minus.conductor = ⊤ →
       minus.character I ^ e = 1
@@ -775,7 +794,7 @@ def principalCoefficient (A : SArithmeticData F) (I : Ideal (𝓞 F)) : ℂ :=
   if I ≠ ⊥ ∧ I ⊔ A.cS = ⊤ then 1 else 0
 
 private lemma not_div_iff (A : SArithmeticData F) (I : Ideal (𝓞 F)) :
-    (¬ ∃ v ∈ (A.Sf : Set (HeightOneSpectrum (𝓞 F))), I ≤ v.asIdeal) ↔ I ⊔ A.cS = ⊤ := by
+    (¬ ∃ v ∈ A.Sf, I ≤ v.asIdeal) ↔ I ⊔ A.cS = ⊤ := by
   constructor
   · intro h
     apply Ideal.sup_prod_eq_top
@@ -788,14 +807,14 @@ private lemma not_div_iff (A : SArithmeticData F) (I : Ideal (𝓞 F)) :
     have hc : A.cS ≤ v.asIdeal :=
       (Ideal.prod_le_inf : A.cS ≤ A.Sf.inf (fun w => w.asIdeal)).trans (Finset.inf_le hv)
     have ht : (⊤ : Ideal (𝓞 F)) ≤ v.asIdeal := by rw [← h]; exact sup_le hh hc
-    exact v.isPrime.ne_top (top_unique ht)
+    apply v.isPrime.ne_top <;> aesop
 
 theorem principal_mask_exactly_S (A : SArithmeticData F) :
     (Detector.FrequencyPrincipal.principalPrimitive (F := F)).conductor = ⊤ ∧
       (∀ I : Ideal (𝓞 F), principalCoefficient A I =
         Detector.deletedPrimitiveIdealCoefficient F
           (Detector.FrequencyPrincipal.principalPrimitive (F := F))
-          (A.Sf : Set (HeightOneSpectrum (𝓞 F))) I) ∧
+          A.Sf I) ∧
       (∀ I : A.Exterior, principalCoefficient A I.val = 1) := by
   refine ⟨rfl, ?_, ?_⟩
   · intro I

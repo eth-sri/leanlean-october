@@ -395,10 +395,8 @@ theorem AmbientEmbeddedFixedFieldPresentation.fixedFieldNormResidueTransport
     aUpper, aLower, symbolUpper, symbolLower] using
     hrawActual
 
-/-- Canonical ambient fixed-field norm-residue values commute with restriction
-and norm in an arbitrary finite square of nonarchimedean local fields. -/
-theorem ambientEmbeddedNormResidueElement_norm_restriction
-    (K K' L L' : Type)
+section
+variable (K K' L L' : Type)
     [Field K] [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K]
     [Field K'] [ValuativeRel K'] [TopologicalSpace K']
@@ -412,6 +410,11 @@ theorem ambientEmbeddedNormResidueElement_norm_restriction
       (ValuativeRel.valuation K) (ValuativeRel.valuation K')]
     [FiniteDimensional K L] [IsAbelianGalois K L]
     [FiniteDimensional K' L'] [IsAbelianGalois K' L']
+include K K' L L'
+/-- Canonical ambient fixed-field norm-residue values commute with restriction
+and norm in an arbitrary finite square of nonarchimedean local fields. -/
+theorem ambientEmbeddedNormResidueElement_norm_restriction
+     
     (j : L' →ₐ[K] SeparableClosure K)
     (eLower :
       @AlgEquiv K (SeparableClosure K) (SeparableClosure K)
@@ -691,20 +694,7 @@ theorem ambientEmbeddedNormResidueElement_norm_restriction
 /-- The actual finite abelian local Artin maps satisfy norm--restriction
 naturality in an arbitrary finite square of nonarchimedean local fields. -/
 theorem abelianLocalArtinMonoidHom_norm_restriction
-    (K K' L L' : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field K'] [ValuativeRel K'] [TopologicalSpace K']
-    [IsNonarchimedeanLocalField K']
-    [Field L] [Field L']
-    [Algebra K K'] [Algebra K L] [Algebra K L']
-    [Algebra K' L'] [Algebra L L']
-    [IsScalarTower K K' L'] [IsScalarTower K L L']
-    [FiniteDimensional K K'] [Algebra.IsSeparable K K']
-    [Valuation.HasExtension
-      (ValuativeRel.valuation K) (ValuativeRel.valuation K')]
-    [FiniteDimensional K L] [IsAbelianGalois K L]
-    [FiniteDimensional K' L'] [IsAbelianGalois K' L'] :
+      :
     ((AlgEquiv.restrictNormalHom L).comp
         (AlgEquiv.restrictScalarsHom K)).comp
         (abelianLocalArtinMonoidHom K' L') =
@@ -784,6 +774,8 @@ theorem abelianLocalArtinMonoidHom_norm_restriction
       exact congrArg restrictActual hUpper
     _ = ambientLower := htransport
     _ = abelianLocalArtinMonoidHom K L aNorm := hLower.symm
+end
+
 
 end LocalClassFieldTheory
 

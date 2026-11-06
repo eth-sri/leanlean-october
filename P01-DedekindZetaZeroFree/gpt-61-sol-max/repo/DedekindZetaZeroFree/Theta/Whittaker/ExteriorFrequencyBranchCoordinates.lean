@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Theta.Profiles.ReflectionGaussianAndSixthUnitInvariance
 public import DedekindZetaZeroFree.CharacterSums.DavenportHasse.PrimaryAngularNormPhases
 public import DedekindZetaZeroFree.Arithmetic.Ideals.ExteriorEulerProducts.PrimeExponentCoordinates
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.ThetaBranch
 noncomputable section
@@ -13,10 +16,10 @@ open IsDedekindDomain
 
 variable {F : Type} [Field F] [NumberField F]
 
-def order (p : HeightOneSpectrum (𝓞 F)) (x : Fˣ) : ℤ :=
+def order (p : HeightOneSpectrum (𝓞 F)) (x : Fˣ)  :=
   -WithZero.log (p.valuation F (x : F))
 
-def support (I : Ideal (𝓞 F)) : Finset (HeightOneSpectrum (𝓞 F)) :=
+def support (I : Ideal (𝓞 F))  :=
   (idealPrimeSupport I).preimage HeightOneSpectrum.asIdeal
     HeightOneSpectrum.asIdeal_injective.injOn
 
@@ -46,13 +49,16 @@ structure UnitRepresentatives (A : SArithmeticData F) where
   represents : ∀ ε : A.UnitQuotient,
     QuotientGroup.mk (representative ε) = ε
 
-def IsUnitResidue (p : HeightOneSpectrum (𝓞 F)) (x : Fˣ)
-    (t : DHCubic.Residue F p) : Prop :=
+section
+variable (p : HeightOneSpectrum (𝓞 F)) (x : Fˣ)
+include p x
+def IsUnitResidue  
+    (t : DHCubic.Residue F p)  :=
   ∃ a b : 𝓞 F, a ∉ p.asIdeal ∧ b ∉ p.asIdeal ∧
-    (x : F) = (a : F) / ((b : 𝓞 F) : F) ∧
+    (x : F) = (a : F) / (b : F) ∧
     t = Ideal.Quotient.mk p.asIdeal a / Ideal.Quotient.mk p.asIdeal b
 
-theorem existsUnique_unitResidue (p : HeightOneSpectrum (𝓞 F)) (x : Fˣ)
+theorem existsUnique_unitResidue  
     (hx : order p x = 0) : ∃! t, IsUnitResidue p x t := by
   have hval : p.valuation F (x : F) = 1 := by
     have hlog : WithZero.log (p.valuation F (x : F)) = 0 := by
@@ -82,10 +88,10 @@ theorem existsUnique_unitResidue (p : HeightOneSpectrum (𝓞 F)) (x : Fˣ)
     (fun h => hb (Ideal.Quotient.eq_zero_iff_mem.mp h))).mpr
   simpa only [map_mul] using congrArg (Ideal.Quotient.mk p.asIdeal) hac.symm
 
-def unitResidue (p : HeightOneSpectrum (𝓞 F)) (x : Fˣ) : DHCubic.Residue F p :=
+def unitResidue    :=
   if hx : order p x = 0 then (existsUnique_unitResidue p x hx).exists.choose else 0
 
-theorem unitResidue_ne_zero (p : HeightOneSpectrum (𝓞 F)) (x : Fˣ)
+theorem unitResidue_ne_zero  
     (hx : order p x = 0) : unitResidue p x ≠ 0 := by
   have ht : IsUnitResidue p x (unitResidue p x) := by
     simpa only [unitResidue, dif_pos hx] using (existsUnique_unitResidue p x hx).exists.choose_spec
@@ -94,6 +100,8 @@ theorem unitResidue_ne_zero (p : HeightOneSpectrum (𝓞 F)) (x : Fˣ)
   apply div_ne_zero
   · exact fun h => ha ((Ideal.Quotient.eq_zero_iff_mem).mp h)
   · exact fun h => hb ((Ideal.Quotient.eq_zero_iff_mem).mp h)
+end
+
 
 def residueCharacter (A : SArithmeticData F) (σ : F →+* ℂ)
     (p : ExteriorPrime A) : MulChar (DHCubic.Residue F p.val) ℂ :=
@@ -101,7 +109,7 @@ def residueCharacter (A : SArithmeticData F) (σ : F →+* ℂ)
     (σ.comp (algebraMap (𝓞 F) F))
 
 def symbol (A : SArithmeticData F) (σ : F →+* ℂ)
-    (p : ExteriorPrime A) (x : Fˣ) : ℂ :=
+    (p : ExteriorPrime A) (x : Fˣ)  :=
   residueCharacter A σ p (unitResidue p.val x)
 
 structure RowFactorization (A : SArithmeticData F) (G : AllowedRecipe A)
@@ -142,22 +150,24 @@ structure Coordinates (A : SArithmeticData F) (G : AllowedRecipe A)
   c_squarefree : Squarefree c.val
   coprime : (c.val * n.val) ⊔ (D.d.val * b.f.val) = ⊤
 
-def coordinateRepresentative (A : SArithmeticData F) (G : AllowedRecipe A)
+section
+variable (A : SArithmeticData F) (G : AllowedRecipe A)
     (U : UnitRepresentatives A) (m : ThetaReflectionData.Row A)
     (D : RowFactorization A G m) (b : Branch A G m D)
-    (v : Coordinates A G m D b) : Fˣ :=
+    (v : Coordinates A G m D b)
+include A G U m D b v
+def coordinateRepresentative    :=
   (U.representative v.epsilon).val * G.generator v.a * G.generator v.c *
     G.generator v.n ^ 3 / (G.generator D.d * G.generator b.f) ^ 2
 
-def coordinateFrequency (A : SArithmeticData F) (G : AllowedRecipe A)
-    (U : UnitRepresentatives A) (m : ThetaReflectionData.Row A)
-    (D : RowFactorization A G m) (b : Branch A G m D)
-    (v : Coordinates A G m D b) : ThetaReflectionData.Frequency A :=
+def coordinateFrequency   : ThetaReflectionData.Frequency A :=
   QuotientGroup.mk (coordinateRepresentative A G U m D b v)
+end
+
 
 def Supported (A : SArithmeticData F) (G : AllowedRecipe A)
     (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
-    (b : Branch A G m D) (ν : ThetaReflectionData.Frequency A) : Prop :=
+    (b : Branch A G m D) (ν : ThetaReflectionData.Frequency A)  :=
   ∃ x : Fˣ, QuotientGroup.mk x = ν ∧
     (∀ p ∈ support D.d.val, order p x = -2) ∧
     (∀ p ∈ support b.f.val, 0 ≤ order p x + 2 ∧
@@ -169,14 +179,13 @@ theorem support_outside (A : SArithmeticData F) (I : A.Exterior)
     (p : HeightOneSpectrum (𝓞 F)) (hp : p ∈ support I.val) : p ∉ A.Sf := by
   have hfac : p.asIdeal ∈ UniqueFactorizationMonoid.normalizedFactors I.val := by
     simpa only [support, Finset.mem_preimage, idealPrimeSupport, Multiset.mem_toFinset] using hp
-  have hIp : I.val ≤ p.asIdeal := (Ideal.mem_normalizedFactors_iff I.property.1).mp hfac |>.2
+  have hIp  := (Ideal.mem_normalizedFactors_iff I.property.1).mp hfac |>.2
   intro hSf
-  have hcS : A.cS ≤ p.asIdeal := by
-    exact Ideal.IsPrime.prod_le p.isPrime |>.mpr ⟨p, hSf, le_rfl⟩
+  have hcS : A.cS ≤ p.asIdeal := Ideal.IsPrime.prod_le p.isPrime |>.mpr ⟨p, hSf, le_rfl⟩
   have htop : (⊤ : Ideal (𝓞 F)) ≤ p.asIdeal := by
     rw [← I.property.2]
     exact sup_le hIp hcS
-  exact p.isPrime.ne_top (top_le_iff.mp htop)
+  apply p.isPrime.ne_top <;> aesop
 
 private theorem order_mul (p : HeightOneSpectrum (𝓞 F)) (x y : Fˣ) :
     order p (x * y) = order p x + order p y := by
@@ -190,13 +199,15 @@ private theorem order_zpow (p : HeightOneSpectrum (𝓞 F)) (x : Fˣ) (n : ℤ) 
     smul_eq_mul]
   ring
 
-private theorem order_unit (A : SArithmeticData F) (p : ExteriorPrime A) (u : A.U) :
+section
+variable (A : SArithmeticData F)
+include A
+private theorem order_unit   (p : ExteriorPrime A) (u : A.U) :
     order p.val u.val = 0 := by
-  have hv : p.val.valuation F (u.val : F) = 1 := by
-    exact u.property p.val p.property
+  have hv : p.val.valuation F (u.val : F) = 1 := u.property p.val p.property
   simp [order, hv]
 
- def boundIdeal (A : SArithmeticData F)
+ def boundIdeal  
     (p : ExteriorPrime A) (n : ℕ) : Ideal A.R where
   carrier := {a | p.val.valuation F (a : F) ≤ WithZero.exp (-(n : ℤ))}
   zero_mem' := by simp
@@ -210,7 +221,7 @@ private theorem order_unit (A : SArithmeticData F) (p : ExteriorPrime A) (u : A.
     rw [map_mul]
     exact (mul_le_mul_of_nonneg_right (a.property p.val p.property) zero_le).trans (by simpa using hb)
 
-theorem generator_order (A : SArithmeticData F) (G : AllowedRecipe A)
+theorem generator_order   (G : AllowedRecipe A)
     (I : A.Exterior) (p : ExteriorPrime A) :
     order p.val (G.generator I) = idealPrimeExponent p.val.asIdeal I.val := by
   classical
@@ -219,7 +230,7 @@ theorem generator_order (A : SArithmeticData F) (G : AllowedRecipe A)
     rw [pow_dvd_iff_le_emultiplicity,
       UniqueFactorizationMonoid.emultiplicity_eq_count_normalizedFactors p.val.irreducible I.property.1]
     simp [n, idealPrimeExponent]
-  have hIn : I.val ≤ p.val.asIdeal ^ n := Ideal.dvd_iff_le.mp ((hdvd n).mpr le_rfl)
+  have hIn  := Ideal.dvd_iff_le.mp ((hdvd n).mpr le_rfl)
   have hnot : ¬ I.val ≤ p.val.asIdeal ^ (n + 1) := by
     rw [← Ideal.dvd_iff_le, hdvd]; omega
   obtain ⟨r, hr, he⟩ := G.generates I
@@ -258,15 +269,15 @@ theorem generator_order (A : SArithmeticData F) (G : AllowedRecipe A)
   push_cast at hrv'
   omega
 
-def supportPrime (A : SArithmeticData F) (I : A.Exterior)
+def supportPrime   (I : A.Exterior)
     (p : {p // p ∈ support I.val}) : ExteriorPrime A :=
   ⟨p.val, support_outside A I p.val p.property⟩
 
-def localUnit (A : SArithmeticData F) (G : AllowedRecipe A)
-    (p : ExteriorPrime A) (x : Fˣ) : Fˣ :=
+def localUnit   (G : AllowedRecipe A)
+    (p : ExteriorPrime A) (x : Fˣ)  :=
   x / G.generator (primeIdeal A p) ^ order p.val x
 
-theorem localUnit_order (A : SArithmeticData F) (G : AllowedRecipe A)
+theorem localUnit_order   (G : AllowedRecipe A)
     (p : ExteriorPrime A) (x : Fˣ) : order p.val (localUnit A G p x) = 0 := by
   have hg : order p.val (G.generator (primeIdeal A p)) = 1 := by
     rw [generator_order]
@@ -275,51 +286,55 @@ theorem localUnit_order (A : SArithmeticData F) (G : AllowedRecipe A)
   rw [localUnit, div_eq_mul_inv, order_mul]
   rw [← zpow_neg_one, order_zpow, order_zpow, hg]
   ring
+end
 
-def gaussTwo (A : SArithmeticData F) (σ : F →+* ℂ)
+
+section
+variable (A : SArithmeticData F) (σ : F →+* ℂ)
     (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (p : ExteriorPrime A) : ℂ :=
+    (p : ExteriorPrime A)
+include A σ ψ p
+def gaussTwo    :=
   (Real.sqrt (Fintype.card (DHCubic.Residue F p.val) : ℝ) : ℂ)⁻¹ *
     gaussSum (residueCharacter A σ p ^ 2) (ψ p)
 
-def scalar (A : SArithmeticData F) (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (p : ExteriorPrime A) (j : Fin 6) (e : ℕ) : ℂ :=
+def scalar   (j : Fin 6) (e : ℕ)  :=
   sexticReflectedNonzeroDigits (residueCharacter A σ p) (ψ p) j (e : ℤ) 1
+end
 
-def phaseExponent (j : Fin 6) (e : ℕ) : ℕ :=
+
+def phaseExponent (j : Fin 6) (e : ℕ)  :=
   (if e = 0 then 8 - j.val else 4 + 2 * e) % 6
 
 def omegaScalar (A : SArithmeticData F) (σ : F →+* ℂ)
     (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (p : ExteriorPrime A) : ℂ := scalar A σ ψ p 1 0
+    (p : ExteriorPrime A)  := scalar A σ ψ p 1 0
 
-def dArgument (A : SArithmeticData F) (G : AllowedRecipe A)
+section
+variable (A : SArithmeticData F) (G : AllowedRecipe A)
     (U : UnitRepresentatives A) (m : ThetaReflectionData.Row A)
     (D : RowFactorization A G m) (b : Branch A G m D)
-    (v : Coordinates A G m D b) (p : ExteriorPrime A) : Fˣ :=
+    (v : Coordinates A G m D b) (p : ExteriorPrime A)
+include A G U m D b v p
+def dArgument    :=
   (U.representative v.epsilon).val * G.generator v.a * G.generator v.c *
     G.generator v.n ^ 3 *
     (G.generator D.d / G.generator (primeIdeal A p)) ^ (-2 : ℤ) *
     G.generator b.f ^ (-2 : ℤ)
 
-def fArgument (A : SArithmeticData F) (G : AllowedRecipe A)
-    (U : UnitRepresentatives A) (m : ThetaReflectionData.Row A)
-    (D : RowFactorization A G m) (b : Branch A G m D)
-    (v : Coordinates A G m D b) (p : ExteriorPrime A) : Fˣ :=
+def fArgument    :=
   (U.representative v.epsilon).val *
     (G.generator v.a / G.generator (primeIdeal A p) ^
       idealPrimeExponent p.val.asIdeal v.a.val) *
     G.generator v.c * G.generator v.n ^ 3 * G.generator D.d ^ (-2 : ℤ) *
     (G.generator b.f / G.generator (primeIdeal A p)) ^ (-2 : ℤ)
 
-def cArgument (A : SArithmeticData F) (G : AllowedRecipe A)
-    (U : UnitRepresentatives A) (m : ThetaReflectionData.Row A)
-    (D : RowFactorization A G m) (b : Branch A G m D)
-    (v : Coordinates A G m D b) (p : ExteriorPrime A) : Fˣ :=
+def cArgument    :=
   (U.representative v.epsilon).val * G.generator v.a *
     (G.generator v.c / G.generator (primeIdeal A p)) *
     (G.generator D.d * G.generator b.f) ^ (-2 : ℤ)
+end
+
 
 private lemma mem_support_iff (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
     (p : HeightOneSpectrum (𝓞 F)) : p ∈ support I ↔ I ≤ p.asIdeal := by
@@ -338,7 +353,7 @@ private lemma support_divides (I J : Ideal (𝓞 F)) (hJ : J ≠ ⊥) (h : I ∣
   have hI : I ≠ ⊥ := by
     intro hi
     obtain ⟨K, hK⟩ := h
-    exact hJ (by simpa [hi] using hK)
+    apply hJ <;> aesop
   exact (mem_support_iff J hJ p).mpr ((Ideal.dvd_iff_le.mp h).trans ((mem_support_iff I hI p).mp hp))
 private lemma support_radical (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
     (p : HeightOneSpectrum (𝓞 F)) : p ∈ support (idealRadical I) ↔ p ∈ support I := by
@@ -362,10 +377,13 @@ private lemma disjoint_support (I J : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hJ : J �
   have ht : (⊤ : Ideal (𝓞 F)) ≤ p.asIdeal := by
     rw [← hcop]
     exact sup_le ((mem_support_iff I hI p).mp hp) ((mem_support_iff J hJ p).mp hq)
-  exact p.isPrime.ne_top (top_le_iff.mp ht)
-private lemma coprime_parts (A : SArithmeticData F) (G : AllowedRecipe A)
+  apply p.isPrime.ne_top <;> aesop
+section
+variable (A : SArithmeticData F) (G : AllowedRecipe A)
     (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
-    (b : Branch A G m D) (v : Coordinates A G m D b) (p : HeightOneSpectrum (𝓞 F)) :
+    (b : Branch A G m D)
+include A G m D b
+private lemma coprime_parts   (v : Coordinates A G m D b) (p : HeightOneSpectrum (𝓞 F)) :
     (p ∈ support D.d.val ∨ p ∈ support b.f.val) →
       p ∉ support v.c.val ∧ p ∉ support v.n.val := by
   intro hp
@@ -373,7 +391,7 @@ private lemma coprime_parts (A : SArithmeticData F) (G : AllowedRecipe A)
     rcases hp with hp | hp
     · exact Ideal.mul_le_left.trans ((mem_support_iff _ D.d.property.1 p).mp hp)
     · exact Ideal.mul_le_right.trans ((mem_support_iff _ b.f.property.1 p).mp hp)
-  have hcn : v.c.val * v.n.val ⊔ D.d.val * b.f.val = ⊤ := v.coprime
+  have hcn  := v.coprime
   constructor <;> intro h
   · have ht : (⊤ : Ideal (𝓞 F)) ≤ p.asIdeal := by
       rw [← hcn]; exact sup_le (Ideal.mul_le_left.trans ((mem_support_iff _ v.c.property.1 p).mp h)) hd
@@ -381,21 +399,18 @@ private lemma coprime_parts (A : SArithmeticData F) (G : AllowedRecipe A)
   · have ht : (⊤ : Ideal (𝓞 F)) ≤ p.asIdeal := by
       rw [← hcn]; exact sup_le (Ideal.mul_le_right.trans ((mem_support_iff _ v.n.property.1 p).mp h)) hd
     exact p.isPrime.ne_top (top_le_iff.mp ht)
-private lemma supported_a (A : SArithmeticData F) (G : AllowedRecipe A)
-    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
-    (b : Branch A G m D) (v : Coordinates A G m D b)
+private lemma supported_a   (v : Coordinates A G m D b)
     (p : HeightOneSpectrum (𝓞 F)) (hp : p ∉ support b.f.val) : p ∉ support v.a.val := by
   intro ha
   apply hp
   simpa only [support, Finset.mem_preimage] using v.a_supported
     (show p.asIdeal ∈ idealPrimeSupport v.a.val by
       simpa only [support, Finset.mem_preimage] using ha)
-private lemma f_in_h (A : SArithmeticData F) (G : AllowedRecipe A)
-    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
-    (b : Branch A G m D) (p : HeightOneSpectrum (𝓞 F))
-    (hp : p ∈ support b.f.val) : p ∈ support D.h.val := by
-  exact (support_radical _ D.h.property.1 p).mp
+private def f_in_h   (p : HeightOneSpectrum (𝓞 F))
+    (hp : p ∈ support b.f.val)  := (support_radical _ D.h.property.1 p).mp
     (support_divides _ _ (idealRadical_squarefree_nonzero _ D.h.property.1).2 b.divides_radical p hp)
+end
+
 private lemma mul_order (p : HeightOneSpectrum (𝓞 F)) (x y : Fˣ) :
     order p (x * y) = order p x + order p y := by
   simp only [order, Units.val_mul, map_mul]
@@ -468,7 +483,7 @@ def exactCoefficient (A : SArithmeticData F) (G : AllowedRecipe A)
     (U : UnitRepresentatives A) (σ : F →+* ℂ)
     (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
     (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
-    (b : Branch A G m D) (v : Coordinates A G m D b) : ℂ :=
+    (b : Branch A G m D) (v : Coordinates A G m D b)  :=
   ((∏ p ∈ support D.h.val \ support b.f.val,
       (1 - (idealNorm p.asIdeal : ℂ)⁻¹)) /
     ((Real.sqrt (A.exteriorNorm v.c) : ℂ) * (A.exteriorNorm v.n : ℂ))) *
@@ -487,18 +502,19 @@ def exactCoefficient (A : SArithmeticData F) (G : AllowedRecipe A)
       symbol A σ (supportPrime A v.c p)
         (cArgument A G U m D b v (supportPrime A v.c p)) ^ 2)
 
-def sphericalFactor (A : SArithmeticData F) (G : AllowedRecipe A)
+section
+variable (A : SArithmeticData F) (G : AllowedRecipe A)
     (σ : F →+* ℂ)
     (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (p : ExteriorPrime A) (x : Fˣ) : ℂ :=
+include A G σ ψ
+def sphericalFactor  
+    (p : ExteriorPrime A) (x : Fˣ)  :=
   sexticSphericalCoefficient (residueCharacter A σ p) (ψ p) (order p.val x) *
     symbol A σ p (localUnit A G p x) ^ (2 * order p.val x)
 
-def branchLocalFactor (A : SArithmeticData F) (G : AllowedRecipe A)
-    (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
+def branchLocalFactor  
     (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
-    (b : Branch A G m D) (p : ExteriorPrime A) (x : Fˣ) : ℂ :=
+    (b : Branch A G m D) (p : ExteriorPrime A) (x : Fˣ)  :=
   if p.val ∈ support D.d.val ∪ support b.f.val then
     sexticReflectedNonzeroDigits (residueCharacter A σ p) (ψ p)
       (rowIndex A m p.val) (order p.val x + 2)
@@ -507,34 +523,39 @@ def branchLocalFactor (A : SArithmeticData F) (G : AllowedRecipe A)
     (1 - (idealNorm p.val.asIdeal : ℂ)⁻¹) * sphericalFactor A G σ ψ p x
   else sphericalFactor A G σ ψ p x
 
-def branchCoefficient (A : SArithmeticData F) (G : AllowedRecipe A)
-    (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
+def branchCoefficient  
     (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
-    (b : Branch A G m D) (x : Fˣ) : ℂ :=
+    (b : Branch A G m D) (x : Fˣ)  :=
   ∏ᶠ p : ExteriorPrime A, branchLocalFactor A G σ ψ m D b p x
+end
+
 
 namespace CanonicalCoefficientProof
 
-private lemma ord_mul (p : HeightOneSpectrum (𝓞 F)) (x y : Fˣ) :
+section
+variable (p : HeightOneSpectrum (𝓞 F))
+include p
+private lemma ord_mul   (x y : Fˣ) :
     order p (x * y) = order p x + order p y := by
   simp only [order, Units.val_mul, map_mul]
   rw [WithZero.log_mul ((Valuation.ne_zero_iff _).mpr x.ne_zero)
     ((Valuation.ne_zero_iff _).mpr y.ne_zero), neg_add]
 
-private lemma ord_zpow (p : HeightOneSpectrum (𝓞 F)) (x : Fˣ) (n : ℤ) :
+private lemma ord_zpow   (x : Fˣ) (n : ℤ) :
     order p (x ^ n) = n * order p x := by
   simp only [order, Units.val_zpow_eq_zpow_val, map_zpow₀, WithZero.log_zpow,
     smul_eq_mul]
   ring
 
-private lemma ord_div (p : HeightOneSpectrum (𝓞 F)) (x y : Fˣ) :
+private lemma ord_div   (x y : Fˣ) :
     order p (x / y) = order p x - order p y := by
   rw [div_eq_mul_inv, ord_mul, ← zpow_neg_one, ord_zpow]; ring
 
-private lemma ord_pow (p : HeightOneSpectrum (𝓞 F)) (x : Fˣ) (n : ℕ) :
+private lemma ord_pow   (x : Fˣ) (n : ℕ) :
     order p (x ^ n) = (n : ℤ) * order p x := by
   rw [← zpow_natCast, ord_zpow]
+end
+
 
 private lemma exponent_zero_aux (I : Ideal (𝓞 F)) (p : HeightOneSpectrum (𝓞 F))
     (hp : p ∉ support I) : idealPrimeExponent p.asIdeal I = 0 := by
@@ -557,7 +578,7 @@ private lemma support_divides_aux (I J : Ideal (𝓞 F)) (hJ : J ≠ ⊥) (h : I
   have hI : I ≠ ⊥ := by
     intro hi
     obtain ⟨K, hK⟩ := h
-    exact hJ (by simpa [hi] using hK)
+    apply hJ <;> aesop
   exact (mem_support_iff_aux J hJ p).mpr
     ((Ideal.dvd_iff_le.mp h).trans ((mem_support_iff_aux I hI p).mp hp))
 
@@ -586,23 +607,24 @@ private lemma disjoint_support_aux (I J : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hJ :
   have ht : (⊤ : Ideal (𝓞 F)) ≤ p.asIdeal := by
     rw [← hcop]
     exact sup_le ((mem_support_iff_aux I hI p).mp hp) ((mem_support_iff_aux J hJ p).mp hq)
-  exact p.isPrime.ne_top (top_le_iff.mp ht)
+  apply p.isPrime.ne_top <;> aesop
 
 private lemma unit_ord_aux (A : SArithmeticData F) (p : ExteriorPrime A) (u : A.U) :
     order p.val u.val = 0 := by
   simp [order, u.property p.val p.property]
 
-private lemma f_in_h_aux (A : SArithmeticData F) (G : AllowedRecipe A)
+section
+variable (A : SArithmeticData F) (G : AllowedRecipe A)
     (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
-    (b : Branch A G m D) (p : HeightOneSpectrum (𝓞 F))
-    (hp : p ∈ support b.f.val) : p ∈ support D.h.val :=
+    (b : Branch A G m D)
+include A G m D b
+private def f_in_h_aux   (p : HeightOneSpectrum (𝓞 F))
+    (hp : p ∈ support b.f.val)  :=
   (support_radical_aux _ D.h.property.1 p).mp
     (support_divides_aux _ _ (idealRadical_squarefree_nonzero _ D.h.property.1).2
       b.divides_radical p hp)
 
-private lemma supported_a_aux (A : SArithmeticData F) (G : AllowedRecipe A)
-    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
-    (b : Branch A G m D) (v : Coordinates A G m D b)
+private lemma supported_a_aux   (v : Coordinates A G m D b)
     (p : HeightOneSpectrum (𝓞 F)) (hp : p ∉ support b.f.val) : p ∉ support v.a.val := by
   intro ha
   exact hp (by
@@ -610,9 +632,7 @@ private lemma supported_a_aux (A : SArithmeticData F) (G : AllowedRecipe A)
       v.a_supported (show p.asIdeal ∈ idealPrimeSupport v.a.val by
         simpa only [support, Finset.mem_preimage] using ha))
 
-private lemma coprime_parts_aux (A : SArithmeticData F) (G : AllowedRecipe A)
-    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
-    (b : Branch A G m D) (v : Coordinates A G m D b) (p : HeightOneSpectrum (𝓞 F)) :
+private lemma coprime_parts_aux   (v : Coordinates A G m D b) (p : HeightOneSpectrum (𝓞 F)) :
     (p ∈ support D.d.val ∨ p ∈ support b.f.val) →
       p ∉ support v.c.val ∧ p ∉ support v.n.val := by
   intro hp
@@ -620,7 +640,7 @@ private lemma coprime_parts_aux (A : SArithmeticData F) (G : AllowedRecipe A)
     rcases hp with hp | hp
     · exact Ideal.mul_le_left.trans ((mem_support_iff_aux _ D.d.property.1 p).mp hp)
     · exact Ideal.mul_le_right.trans ((mem_support_iff_aux _ b.f.property.1 p).mp hp)
-  have hcn : v.c.val * v.n.val ⊔ D.d.val * b.f.val = ⊤ := v.coprime
+  have hcn  := v.coprime
   constructor <;> intro h
   · have ht : (⊤ : Ideal (𝓞 F)) ≤ p.asIdeal := by
       rw [← hcn]
@@ -633,30 +653,31 @@ private lemma coprime_parts_aux (A : SArithmeticData F) (G : AllowedRecipe A)
         ((mem_support_iff_aux _ v.n.property.1 p).mp h)) hd
     exact p.isPrime.ne_top (top_le_iff.mp ht)
 
-private lemma not_mem_d_of_mem_f (A : SArithmeticData F) (G : AllowedRecipe A)
-    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
-    (b : Branch A G m D) (p : HeightOneSpectrum (𝓞 F))
-    (hp : p ∈ support b.f.val) : p ∉ support D.d.val :=
+private def not_mem_d_of_mem_f   (p : HeightOneSpectrum (𝓞 F))
+    (hp : p ∈ support b.f.val)  :=
   disjoint_support_aux _ _ D.h.property.1 D.d.property.1 D.coprime
     p (f_in_h_aux A G m D b p hp)
 
-private lemma not_mem_f_of_mem_d (A : SArithmeticData F) (G : AllowedRecipe A)
-    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
-    (b : Branch A G m D) (p : HeightOneSpectrum (𝓞 F))
-    (hp : p ∈ support D.d.val) : p ∉ support b.f.val := fun hf =>
+private def not_mem_f_of_mem_d   (p : HeightOneSpectrum (𝓞 F))
+    (hp : p ∈ support D.d.val)  := fun hf =>
   disjoint_support_aux _ _ D.h.property.1 D.d.property.1 D.coprime p
     (f_in_h_aux A G m D b p hf) hp
+end
 
-private theorem order_coordinateRepresentative_of_mem_d (A : SArithmeticData F)
+
+section
+variable (A : SArithmeticData F)
     (G : AllowedRecipe A) (U : UnitRepresentatives A) (m : ThetaReflectionData.Row A)
     (D : RowFactorization A G m) (b : Branch A G m D) (v : Coordinates A G m D b)
-    (p : ExteriorPrime A) (hp : p.val ∈ support D.d.val) :
+    (p : ExteriorPrime A)
+include A G U m D b v p
+private theorem order_coordinateRepresentative_of_mem_d   (hp : p.val ∈ support D.d.val) :
     order p.val (coordinateRepresentative A G U m D b v) = -2 := by
-  have hf : p.val ∉ support b.f.val := not_mem_f_of_mem_d A G m D b p.val hp
-  have ha : p.val ∉ support v.a.val := supported_a_aux A G m D b v p.val hf
-  have hc : p.val ∉ support v.c.val :=
+  have hf  := not_mem_f_of_mem_d A G m D b p.val hp
+  have ha  := supported_a_aux A G m D b v p.val hf
+  have hc  :=
     (coprime_parts_aux A G m D b v p.val (Or.inl hp)).1
-  have hn : p.val ∉ support v.n.val :=
+  have hn  :=
     (coprime_parts_aux A G m D b v p.val (Or.inl hp)).2
   simp only [coordinateRepresentative, ord_div, ord_mul, ord_zpow, ord_pow,
     unit_ord_aux, generator_order, exponent_zero_aux _ _ ha, exponent_zero_aux _ _ hc,
@@ -664,39 +685,30 @@ private theorem order_coordinateRepresentative_of_mem_d (A : SArithmeticData F)
     exponent_zero_aux _ _ hf]
   ring
 
-private theorem order_coordinateRepresentative_of_mem_f (A : SArithmeticData F)
-    (G : AllowedRecipe A) (U : UnitRepresentatives A) (m : ThetaReflectionData.Row A)
-    (D : RowFactorization A G m) (b : Branch A G m D) (v : Coordinates A G m D b)
-    (p : ExteriorPrime A) (hp : p.val ∈ support b.f.val) :
+private theorem order_coordinateRepresentative_of_mem_f   (hp : p.val ∈ support b.f.val) :
     order p.val (coordinateRepresentative A G U m D b v) + 2 =
       idealPrimeExponent p.val.asIdeal v.a.val := by
-  have hd : p.val ∉ support D.d.val := not_mem_d_of_mem_f A G m D b p.val hp
-  have hc : p.val ∉ support v.c.val :=
+  have hd  := not_mem_d_of_mem_f A G m D b p.val hp
+  have hc  :=
     (coprime_parts_aux A G m D b v p.val (Or.inr hp)).1
-  have hn : p.val ∉ support v.n.val :=
+  have hn  :=
     (coprime_parts_aux A G m D b v p.val (Or.inr hp)).2
   simp only [coordinateRepresentative, ord_div, ord_mul, ord_zpow, ord_pow,
     unit_ord_aux, generator_order, exponent_zero_aux _ _ hd, exponent_zero_aux _ _ hc,
     exponent_zero_aux _ _ hn, exponent_one_aux _ b.f.property.1 b.squarefree p.val hp]
   ring
 
-private theorem order_coordinateRepresentative_of_not_mem (A : SArithmeticData F)
-    (G : AllowedRecipe A) (U : UnitRepresentatives A) (m : ThetaReflectionData.Row A)
-    (D : RowFactorization A G m) (b : Branch A G m D) (v : Coordinates A G m D b)
-    (p : ExteriorPrime A) (hd : p.val ∉ support D.d.val) (hf : p.val ∉ support b.f.val) :
+private theorem order_coordinateRepresentative_of_not_mem   (hd : p.val ∉ support D.d.val) (hf : p.val ∉ support b.f.val) :
     order p.val (coordinateRepresentative A G U m D b v) =
       idealPrimeExponent p.val.asIdeal v.c.val +
         3 * idealPrimeExponent p.val.asIdeal v.n.val := by
-  have ha : p.val ∉ support v.a.val := supported_a_aux A G m D b v p.val hf
+  have ha  := supported_a_aux A G m D b v p.val hf
   simp only [coordinateRepresentative, ord_div, ord_mul, ord_zpow, ord_pow,
     unit_ord_aux, generator_order, exponent_zero_aux _ _ ha, exponent_zero_aux _ _ hd,
     exponent_zero_aux _ _ hf]
   ring
 
-private theorem localUnit_coordinateRepresentative_of_mem_d (A : SArithmeticData F)
-    (G : AllowedRecipe A) (U : UnitRepresentatives A) (m : ThetaReflectionData.Row A)
-    (D : RowFactorization A G m) (b : Branch A G m D) (v : Coordinates A G m D b)
-    (p : ExteriorPrime A) (hp : p.val ∈ support D.d.val) :
+private theorem localUnit_coordinateRepresentative_of_mem_d   (hp : p.val ∈ support D.d.val) :
     localUnit A G p (coordinateRepresentative A G U m D b v) =
       dArgument A G U m D b v p := by
   rw [localUnit, order_coordinateRepresentative_of_mem_d A G U m D b v p hp]
@@ -709,10 +721,7 @@ private theorem localUnit_coordinateRepresentative_of_mem_d (A : SArithmeticData
   field_simp
   <;> ring
 
-private theorem localUnit_coordinateRepresentative_of_mem_f (A : SArithmeticData F)
-    (G : AllowedRecipe A) (U : UnitRepresentatives A) (m : ThetaReflectionData.Row A)
-    (D : RowFactorization A G m) (b : Branch A G m D) (v : Coordinates A G m D b)
-    (p : ExteriorPrime A) (hp : p.val ∈ support b.f.val) :
+private theorem localUnit_coordinateRepresentative_of_mem_f   (hp : p.val ∈ support b.f.val) :
     localUnit A G p (coordinateRepresentative A G U m D b v) =
       fArgument A G U m D b v p := by
   have ho := order_coordinateRepresentative_of_mem_f A G U m D b v p hp
@@ -728,10 +737,7 @@ private theorem localUnit_coordinateRepresentative_of_mem_f (A : SArithmeticData
   field_simp
   <;> ring
 
-private theorem localUnit_coordinateRepresentative_of_mem_c (A : SArithmeticData F)
-    (G : AllowedRecipe A) (U : UnitRepresentatives A) (m : ThetaReflectionData.Row A)
-    (D : RowFactorization A G m) (b : Branch A G m D) (v : Coordinates A G m D b)
-    (p : ExteriorPrime A) (hp : p.val ∈ support v.c.val) :
+private theorem localUnit_coordinateRepresentative_of_mem_c   (hp : p.val ∈ support v.c.val) :
     localUnit A G p (coordinateRepresentative A G U m D b v) =
       cArgument A G U m D b v p * localUnit A G p (G.generator v.n) ^ 3 := by
   have hd : p.val ∉ support D.d.val := fun h =>
@@ -753,6 +759,8 @@ private theorem localUnit_coordinateRepresentative_of_mem_c (A : SArithmeticData
   have he : (idealPrimeExponent p.val.asIdeal v.n.val : ℤ) * 3 =
       ((idealPrimeExponent p.val.asIdeal v.n.val * 3 : ℕ) : ℤ) := by push_cast; rfl
   rw [he, zpow_natCast]
+end
+
 
 private lemma residue_character_order (A : SArithmeticData F) (σ : F →+* ℂ)
     (p : ExteriorPrime A) : orderOf (residueCharacter A σ p) = 6 := by
@@ -765,11 +773,14 @@ private lemma character_six {k : Type*} [Field k] (χ : MulChar k ℂ)
   simpa [hχ, MulChar.pow_apply' χ (by norm_num : (6 : ℕ) ≠ 0),
     MulChar.one_apply (isUnit_iff_ne_zero.mpr hu)] using h
 
-private lemma reduction_spec_aux (p : HeightOneSpectrum (𝓞 F)) (x : Fˣ)
+section
+variable (p : HeightOneSpectrum (𝓞 F))
+include p
+private lemma reduction_spec_aux   (x : Fˣ)
     (hx : order p x = 0) : IsUnitResidue p x (unitResidue p x) := by
   simpa only [unitResidue, dif_pos hx] using (existsUnique_unitResidue p x hx).exists.choose_spec
 
-private lemma reduction_mul_aux (p : HeightOneSpectrum (𝓞 F)) (x y : Fˣ)
+private lemma reduction_mul_aux   (x y : Fˣ)
     (hx : order p x = 0) (hy : order p y = 0) :
     unitResidue p (x * y) = unitResidue p x * unitResidue p y := by
   have hxy : order p (x * y) = 0 := by rw [ord_mul, hx, hy, add_zero]
@@ -782,20 +793,25 @@ private lemma reduction_mul_aux (p : HeightOneSpectrum (𝓞 F)) (x y : Fˣ)
   · simp only [Units.val_mul, hx', hy', map_mul, mul_div_mul_comm]
   · rw [hrx, hry, map_mul, map_mul, mul_div_mul_comm]
 
-private lemma reduction_one_aux (p : HeightOneSpectrum (𝓞 F)) :
+private lemma reduction_one_aux   :
     unitResidue p (1 : Fˣ) = 1 := by
   have h1 : order p (1 : Fˣ) = 0 := by simp [order]
   apply (existsUnique_unitResidue p 1 h1).unique (reduction_spec_aux p 1 h1)
   refine ⟨1, 1, p.isPrime.one_notMem, p.isPrime.one_notMem, ?_, ?_⟩ <;> simp
 
-private lemma reduction_pow_aux (p : HeightOneSpectrum (𝓞 F)) (x : Fˣ)
+private lemma reduction_pow_aux   (x : Fˣ)
     (hx : order p x = 0) (n : ℕ) : unitResidue p (x ^ n) = unitResidue p x ^ n := by
   have hp (n : ℕ) : order p (x ^ n) = 0 := by rw [ord_pow, hx, mul_zero]
   induction n with
   | zero => simp [reduction_one_aux]
   | succ n ih => rw [pow_succ, reduction_mul_aux p _ _ (hp n) hx, ih, pow_succ]
+end
 
-private theorem symbol_mul_cube_sq (A : SArithmeticData F) (σ : F →+* ℂ)
+
+section
+variable (A : SArithmeticData F)
+include A
+private theorem symbol_mul_cube_sq   (σ : F →+* ℂ)
     (p : ExteriorPrime A) (x y : Fˣ) (hx : order p.val x = 0)
     (hy : order p.val y = 0) :
     symbol A σ p (x * y ^ 3) ^ 2 = symbol A σ p x ^ 2 := by
@@ -805,7 +821,7 @@ private theorem symbol_mul_cube_sq (A : SArithmeticData F) (σ : F →+* ℂ)
   rw [show 3 * 2 = 6 by norm_num,
     character_six _ (residue_character_order A σ p) _ (unitResidue_ne_zero _ _ hy), mul_one]
 
-private theorem symbol_localUnit_coordinateRepresentative_of_mem_c (A : SArithmeticData F)
+private theorem symbol_localUnit_coordinateRepresentative_of_mem_c  
     (G : AllowedRecipe A) (U : UnitRepresentatives A) (σ : F →+* ℂ)
     (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
     (b : Branch A G m D) (v : Coordinates A G m D b)
@@ -816,7 +832,7 @@ private theorem symbol_localUnit_coordinateRepresentative_of_mem_c (A : SArithme
   exact symbol_mul_cube_sq A σ p _ _
     ((coefficient_arguments_units A G U m D b v).2.2 p hp) (localUnit_order A G p _)
 
-private lemma residue_card_coprime (A : SArithmeticData F) (p : ExteriorPrime A) :
+private lemma residue_card_coprime   (p : ExteriorPrime A) :
     Nat.Coprime (Fintype.card (DHCubic.Residue F p.val)) 6 := by
   have hm := A.exterior_norm_mod_twelve p.val p.property
   have hc : Fintype.card (DHCubic.Residue F p.val) = Ideal.absNorm p.val.asIdeal := by
@@ -826,7 +842,7 @@ private lemma residue_card_coprime (A : SArithmeticData F) (p : ExteriorPrime A)
   rw [← ZMod.coprime_mod_iff_coprime, hm6]
   exact Nat.coprime_one_left 6
 
-private theorem nonzeroDigits_eq_scalar_phase (A : SArithmeticData F) (σ : F →+* ℂ)
+private theorem nonzeroDigits_eq_scalar_phase   (σ : F →+* ℂ)
     (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
     (p : ExteriorPrime A) (hψ : (ψ p).IsPrimitive) (j : Fin 6) (e : ℕ)
     (t : DHCubic.Residue F p.val) (ht : t ≠ 0) :
@@ -867,12 +883,11 @@ private theorem nonzeroDigits_eq_scalar_phase (A : SArithmeticData F) (σ : F �
     · have hj' : j.val ≠ 4 := by intro h; apply hj; exact Fin.ext h
       rw [sexticReflectedNonzeroDigits_eq_zero _ _ hχ hψ hQ j _ t ht
         (Or.inr (Or.inr ⟨hepos, hj'⟩))]
-      have hs : scalar A σ ψ p j e = 0 := by
-        exact sexticReflectedNonzeroDigits_eq_zero _ _ hχ hψ hQ j _ 1 one_ne_zero
+      have hs : scalar A σ ψ p j e = 0 := sexticReflectedNonzeroDigits_eq_zero _ _ hχ hψ hQ j _ 1 one_ne_zero
           (Or.inr (Or.inr ⟨hepos, hj'⟩))
       rw [hs, zero_mul]
 
-private theorem branchLocalFactor_coordinateRepresentative_of_mem_f (A : SArithmeticData F)
+private theorem branchLocalFactor_coordinateRepresentative_of_mem_f  
     (G : AllowedRecipe A) (U : UnitRepresentatives A) (σ : F →+* ℂ)
     (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
     (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
@@ -887,8 +902,13 @@ private theorem branchLocalFactor_coordinateRepresentative_of_mem_f (A : SArithm
     localUnit_coordinateRepresentative_of_mem_f A G U m D b v p hp]
   exact nonzeroDigits_eq_scalar_phase A σ ψ p hψ _ _ _
     (unitResidue_ne_zero _ _ ((coefficient_arguments_units A G U m D b v).2.1 p hp))
+end
 
-private lemma rowIndex_d_aux (A : SArithmeticData F) (G : AllowedRecipe A)
+
+section
+variable (A : SArithmeticData F) (G : AllowedRecipe A)
+include A G
+private lemma rowIndex_d_aux  
     (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
     (p : ExteriorPrime A) (hp : p.val ∈ support D.d.val) : rowIndex A m p.val = 1 := by
   have hh := exponent_zero_aux _ _ (disjoint_support_aux _ _ D.d.property.1 D.h.property.1
@@ -903,8 +923,7 @@ private lemma rowIndex_d_aux (A : SArithmeticData F) (G : AllowedRecipe A)
   apply Fin.ext
   simp [rowIndex, hr]
 
-private theorem branchLocalFactor_coordinateRepresentative_of_mem_d (A : SArithmeticData F)
-    (G : AllowedRecipe A) (U : UnitRepresentatives A) (σ : F →+* ℂ)
+private theorem branchLocalFactor_coordinateRepresentative_of_mem_d   (U : UnitRepresentatives A) (σ : F →+* ℂ)
     (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
     (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
     (b : Branch A G m D) (v : Coordinates A G m D b)
@@ -920,7 +939,7 @@ private theorem branchLocalFactor_coordinateRepresentative_of_mem_d (A : SArithm
     (unitResidue_ne_zero _ _ ((coefficient_arguments_units A G U m D b v).1 p hp))
   simpa [omegaScalar, phaseExponent, symbol] using he
 
-private theorem symbol_localUnit_pow_three (A : SArithmeticData F) (G : AllowedRecipe A)
+private theorem symbol_localUnit_pow_three  
     (σ : F →+* ℂ) (p : ExteriorPrime A) (x : Fˣ) (k : ℕ) :
     symbol A σ p (localUnit A G p x) ^ (2 * (3 * (k : ℤ))) = 1 := by
   have h6 := character_six _ (residue_character_order A σ p) _
@@ -928,8 +947,7 @@ private theorem symbol_localUnit_pow_three (A : SArithmeticData F) (G : AllowedR
   have he : 2 * (3 * (k : ℤ)) = ((6 * k : ℕ) : ℤ) := by push_cast; ring
   rw [he, zpow_natCast, pow_mul, symbol, h6, one_pow]
 
-private theorem sphericalFactor_coordinateRepresentative_of_not_mem_c (A : SArithmeticData F)
-    (G : AllowedRecipe A) (U : UnitRepresentatives A) (σ : F →+* ℂ)
+private theorem sphericalFactor_coordinateRepresentative_of_not_mem_c   (U : UnitRepresentatives A) (σ : F →+* ℂ)
     (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
     (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
     (b : Branch A G m D) (v : Coordinates A G m D b)
@@ -951,7 +969,7 @@ private theorem sphericalFactor_coordinateRepresentative_of_not_mem_c (A : SArit
   congr 1
   rw [Int.mul_ediv_cancel_left _ (by norm_num : (3 : ℤ) ≠ 0)]
 
-private theorem coordinateFrequency_supported (A : SArithmeticData F) (G : AllowedRecipe A)
+private theorem coordinateFrequency_supported  
     (U : UnitRepresentatives A) (m : ThetaReflectionData.Row A)
     (D : RowFactorization A G m) (b : Branch A G m D) (v : Coordinates A G m D b) :
     Supported A G m D b (coordinateFrequency A G U m D b v) := by
@@ -978,7 +996,7 @@ private theorem coordinateFrequency_supported (A : SArithmeticData F) (G : Allow
     · positivity
     · rcases hc with hc | hc <;> rw [hc] <;> omega
 
-private theorem symbol_localUnit_pow_three_add_one (A : SArithmeticData F) (G : AllowedRecipe A)
+private theorem symbol_localUnit_pow_three_add_one  
     (σ : F →+* ℂ) (p : ExteriorPrime A) (x : Fˣ) (k : ℕ) :
     symbol A σ p (localUnit A G p x) ^ (2 * (1 + 3 * (k : ℤ))) =
       symbol A σ p (localUnit A G p x) ^ 2 := by
@@ -986,12 +1004,17 @@ private theorem symbol_localUnit_pow_three_add_one (A : SArithmeticData F) (G : 
     (unitResidue_ne_zero _ _ (localUnit_order A G p x))
   have he : 2 * (1 + 3 * (k : ℤ)) = ((2 + 6 * k : ℕ) : ℤ) := by push_cast; ring
   rw [he, zpow_natCast, pow_add, pow_mul, symbol, h6, one_pow, mul_one]
+end
 
-private theorem sphericalFactor_coordinateRepresentative_of_mem_c (A : SArithmeticData F)
+
+section
+variable (A : SArithmeticData F)
     (G : AllowedRecipe A) (U : UnitRepresentatives A) (σ : F →+* ℂ)
     (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
     (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
     (b : Branch A G m D) (v : Coordinates A G m D b)
+include A G U σ ψ m D b v
+private theorem sphericalFactor_coordinateRepresentative_of_mem_c  
     (p : ExteriorPrime A) (hp : p.val ∈ support v.c.val) :
     sphericalFactor A G σ ψ p (coordinateRepresentative A G U m D b v) =
       (idealNorm p.val.asIdeal : ℂ) ^ (-(idealPrimeExponent p.val.asIdeal v.n.val : ℤ)) *
@@ -1018,11 +1041,7 @@ private theorem sphericalFactor_coordinateRepresentative_of_mem_c (A : SArithmet
       (idealNorm p.val.asIdeal : ℂ) := by exact_mod_cast hcard
   rw [hcard, hcardC]
 
-private theorem branchLocalFactor_coordinateRepresentative_of_not_mem (A : SArithmeticData F)
-    (G : AllowedRecipe A) (U : UnitRepresentatives A) (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
-    (b : Branch A G m D) (v : Coordinates A G m D b)
+private theorem branchLocalFactor_coordinateRepresentative_of_not_mem  
     (p : ExteriorPrime A) (hd : p.val ∉ support D.d.val) (hf : p.val ∉ support b.f.val) :
     branchLocalFactor A G σ ψ m D b p (coordinateRepresentative A G U m D b v) =
       (if p.val ∈ support D.h.val then (1 - (idealNorm p.val.asIdeal : ℂ)⁻¹) else 1) *
@@ -1030,11 +1049,7 @@ private theorem branchLocalFactor_coordinateRepresentative_of_not_mem (A : SArit
   simp only [branchLocalFactor, Finset.mem_union, hd, hf, or_self, if_false]
   split_ifs <;> simp
 
-private theorem branchLocalFactor_coordinateRepresentative_exact (A : SArithmeticData F)
-    (G : AllowedRecipe A) (U : UnitRepresentatives A) (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
-    (b : Branch A G m D) (v : Coordinates A G m D b)
+private theorem branchLocalFactor_coordinateRepresentative_exact  
     (p : ExteriorPrime A) (hψ : (ψ p).IsPrimitive) :
     branchLocalFactor A G σ ψ m D b p (coordinateRepresentative A G U m D b v) =
       if p.val ∈ support D.d.val then
@@ -1051,11 +1066,11 @@ private theorem branchLocalFactor_coordinateRepresentative_exact (A : SArithmeti
                 symbol A σ p (cArgument A G U m D b v p) ^ 2 else 1) := by
   by_cases hd : p.val ∈ support D.d.val
   · rw [if_pos hd]
-    exact branchLocalFactor_coordinateRepresentative_of_mem_d A G U σ ψ m D b v p hd hψ
+    apply branchLocalFactor_coordinateRepresentative_of_mem_d <;> assumption
   · rw [if_neg hd]
     by_cases hf : p.val ∈ support b.f.val
     · rw [if_pos hf]
-      exact branchLocalFactor_coordinateRepresentative_of_mem_f A G U σ ψ m D b v p hf hψ
+      apply branchLocalFactor_coordinateRepresentative_of_mem_f <;> assumption
     · rw [if_neg hf, branchLocalFactor_coordinateRepresentative_of_not_mem A G U σ ψ m D b v p hd hf]
       by_cases hc : p.val ∈ support v.c.val
       · rw [if_pos hc, sphericalFactor_coordinateRepresentative_of_mem_c A G U σ ψ m D b v p hc]
@@ -1063,11 +1078,7 @@ private theorem branchLocalFactor_coordinateRepresentative_exact (A : SArithmeti
       · rw [if_neg hc, sphericalFactor_coordinateRepresentative_of_not_mem_c A G U σ ψ m D b v p hd hf hc,
           mul_one]
 
-private theorem branchCoefficient_coordinateRepresentative_eq_prod (A : SArithmeticData F)
-    (G : AllowedRecipe A) (U : UnitRepresentatives A) (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
-    (b : Branch A G m D) (v : Coordinates A G m D b) (s : Finset (ExteriorPrime A))
+private theorem branchCoefficient_coordinateRepresentative_eq_prod   (s : Finset (ExteriorPrime A))
     (hs : ∀ p : ExteriorPrime A,
       p.val ∈ support D.d.val ∪ support b.f.val ∪ support D.h.val ∪
         support v.c.val ∪ support v.n.val → p ∈ s) :
@@ -1086,14 +1097,19 @@ private theorem branchCoefficient_coordinateRepresentative_eq_prod (A : SArithme
   change branchLocalFactor A G σ ψ m D b p (coordinateRepresentative A G U m D b v) = 1
   rw [branchLocalFactor_coordinateRepresentative_of_not_mem A G U σ ψ m D b v p h.1.1.1.1 h.1.1.1.2,
     if_neg h.1.1.2, hsph, mul_one]
+end
 
-lemma ideal_factorization (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) :
+
+section
+variable (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
+include I hI
+lemma ideal_factorization   :
     I = ∏ p ∈ idealPrimeSupport I, p ^ idealPrimeExponent p I := by
   unfold idealPrimeSupport idealPrimeExponent
   rw [← Finset.prod_multiset_count]
   exact associated_iff_eq.mp (UniqueFactorizationMonoid.prod_normalizedFactors hI).symm
 
-lemma support_prod (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
+lemma support_prod  
     {M : Type*} [CommMonoid M] (f : Ideal (𝓞 F) → M) :
     (∏ p ∈ support I, f p.asIdeal) = ∏ p ∈ idealPrimeSupport I, f p := by
   apply Finset.prod_bij (fun p _ => p.asIdeal)
@@ -1106,14 +1122,14 @@ lemma support_prod (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
     simpa only [support, Finset.mem_preimage] using hp
   · intro p hp; rfl
 
-private lemma norm_prod (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) :
+private lemma norm_prod   :
     (idealNorm I : ℂ) = ∏ p ∈ support I, (idealNorm p.asIdeal : ℂ) ^ idealPrimeExponent p.asIdeal I := by
   rw [support_prod I hI (fun p => (idealNorm p : ℂ) ^ idealPrimeExponent p I)]
   conv_lhs => rw [ideal_factorization I hI]
   simp only [idealNorm, map_prod, map_pow, Nat.cast_prod, Nat.cast_pow, Complex.ofReal_prod,
     Complex.ofReal_pow, Complex.ofReal_natCast]
 
-private lemma sqrt_norm_prod (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hs : Squarefree I) :
+private lemma sqrt_norm_prod   (hs : Squarefree I) :
     (Real.sqrt (idealNorm I) : ℂ) = ∏ p ∈ support I, (Real.sqrt (idealNorm p.asIdeal) : ℂ) := by
   have hn : idealNorm I = ∏ p ∈ support I, idealNorm p.asIdeal := by
     apply Complex.ofReal_injective
@@ -1127,44 +1143,54 @@ private lemma sqrt_norm_prod (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hs : Squaref
     simp [he]
   rw [hn, Real.sqrt_prod (support I) (fun p hp => (idealNorm_ge_one p.asIdeal p.ne_bot).trans' (by norm_num)),
     Complex.ofReal_prod]
+end
 
-def extSupport (A : SArithmeticData F) (I : A.Exterior) : Finset (ExteriorPrime A) :=
+
+section
+variable (A : SArithmeticData F) (I : A.Exterior)
+include A I
+def extSupport   : Finset (ExteriorPrime A) :=
   (support I.val).attach.map ⟨supportPrime A I, by
     intro p q h; exact Subtype.ext (congrArg (fun z : ExteriorPrime A => z.val) h)⟩
 
-lemma mem_extSupport (A : SArithmeticData F) (I : A.Exterior) (p : ExteriorPrime A) :
+lemma mem_extSupport   (p : ExteriorPrime A) :
     p ∈ extSupport A I ↔ p.val ∈ support I.val := by
   simp only [extSupport, Finset.mem_map, Finset.mem_attach, true_and]
   constructor
   · rintro ⟨q, rfl⟩; exact q.property
   · intro h; exact ⟨⟨p.val, h⟩, Subtype.ext rfl⟩
 
-private lemma ext_prod (A : SArithmeticData F) (I : A.Exterior)
+private lemma ext_prod  
     {M : Type*} [CommMonoid M] (f : ExteriorPrime A → M) :
     (∏ p ∈ extSupport A I, f p) = ∏ p : {p // p ∈ support I.val}, f (supportPrime A I p) := by
   simp only [extSupport, Finset.prod_map, ← Finset.prod_attach (support I.val)]
   rfl
 
-lemma ext_prod_val (A : SArithmeticData F) (I : A.Exterior)
+lemma ext_prod_val  
     {M : Type*} [CommMonoid M] (f : HeightOneSpectrum (𝓞 F) → M) :
     (∏ p ∈ extSupport A I, f p.val) = ∏ p ∈ support I.val, f p := by
   rw [ext_prod]
   exact (Finset.prod_attach _ _)
+end
+
 
 private lemma extend_prod {α M : Type*} [DecidableEq α] [CommMonoid M]
     (s t : Finset α) (h : t ⊆ s) (f : α → M) :
     (∏ p ∈ s, if p ∈ t then f p else 1) = ∏ p ∈ t, f p := by
   rw [← Finset.prod_filter]
   congr 1
-  exact Finset.filter_mem_eq_inter.trans (Finset.inter_eq_right.mpr h)
+  apply Finset.filter_mem_eq_inter.trans <;> aesop
 
 private lemma mem_support_le (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
     (p : HeightOneSpectrum (𝓞 F)) : p ∈ support I ↔ I ≤ p.asIdeal := by
   simp only [support, Finset.mem_preimage, idealPrimeSupport, Multiset.mem_toFinset]
   exact Ideal.mem_normalizedFactors_iff hI |>.trans (and_iff_right p.isPrime)
 
-private lemma df_disjoint (A : SArithmeticData F) (G : AllowedRecipe A)
+section
+variable (A : SArithmeticData F) (G : AllowedRecipe A)
     (m : ThetaReflectionData.Row A) (D : RowFactorization A G m) (b : Branch A G m D)
+include A G m D b
+private lemma df_disjoint  
     (p : ExteriorPrime A) (hd : p.val ∈ support D.d.val) :
     p.val ∉ support D.h.val ∧ p.val ∉ support b.f.val := by
   have hh : p.val ∉ support D.h.val := by
@@ -1176,7 +1202,7 @@ private lemma df_disjoint (A : SArithmeticData F) (G : AllowedRecipe A)
       ((mem_support_le _ D.d.property.1 _).mp hd)
   refine ⟨hh, ?_⟩
   intro hf
-  have hrad : idealRadical D.h.val ≤ p.val.asIdeal :=
+  have hrad  :=
     (Ideal.dvd_iff_le.mp b.divides_radical).trans
       ((mem_support_le _ b.f.property.1 _).mp hf)
   apply hh
@@ -1188,8 +1214,7 @@ private lemma df_disjoint (A : SArithmeticData F) (G : AllowedRecipe A)
     simpa only [idealRadical, idealPrimeSupport, id_eq] using hd
   exact (Ideal.dvd_iff_le.mp hdvd).trans hrad
 
-private lemma cn_disjoint (A : SArithmeticData F) (G : AllowedRecipe A)
-    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m) (b : Branch A G m D)
+private lemma cn_disjoint  
     (v : Coordinates A G m D b) (p : ExteriorPrime A)
     (hdf : p.val ∈ support D.d.val ∨ p.val ∈ support b.f.val) :
     p.val ∉ support v.c.val ∧ p.val ∉ support v.n.val := by
@@ -1206,6 +1231,8 @@ private lemma cn_disjoint (A : SArithmeticData F) (G : AllowedRecipe A)
     apply top_le_iff.mp
     rw [← v.coprime]
     exact sup_le (Ideal.mul_le_right.trans ((mem_support_le _ v.n.property.1 _).mp hp)) hdfle
+end
+
 
 lemma exp_zero (I : Ideal (𝓞 F)) (p : HeightOneSpectrum (𝓞 F))
     (hp : p ∉ support I) : idealPrimeExponent p.asIdeal I = 0 := by
@@ -1319,22 +1346,24 @@ theorem branches_finite (A : SArithmeticData F) (G : AllowedRecipe A)
   cases hf
   rfl
 
-def exteriorLocalFactor (A : SArithmeticData F) (G : AllowedRecipe A)
+section
+variable (A : SArithmeticData F) (G : AllowedRecipe A)
     (σ : F →+* ℂ)
     (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
     (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
-    (p : ExteriorPrime A) (x : Fˣ) : ℂ :=
+include A G σ ψ m D
+def exteriorLocalFactor  
+    (p : ExteriorPrime A) (x : Fˣ)  :=
   if p.val ∈ support D.rowIdeal.val then
     sexticReflectedDigitModel (residueCharacter A σ p) (ψ p)
       (rowIndex A m p.val) (order p.val x + 2)
       (unitResidue p.val (localUnit A G p x))
   else sphericalFactor A G σ ψ p x
 
-def exteriorCoefficient (A : SArithmeticData F) (G : AllowedRecipe A)
-    (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m) (x : Fˣ) : ℂ :=
+def exteriorCoefficient   (x : Fˣ)  :=
   ∏ᶠ p : ExteriorPrime A, exteriorLocalFactor A G σ ψ m D p x
+end
+
 
 theorem order_finite_support (x : Fˣ) :
     {p : HeightOneSpectrum (𝓞 F) | order p x ≠ 0}.Finite := by
@@ -1404,27 +1433,30 @@ private lemma digits_sixth {k : Type*} [Field k] [Fintype k]
     · simpa [Finset.mem_erase, hu6] using hw
     · exact mul_div_cancel₀ _ hu6
   · intro v hv
-    have hv0 : v ≠ 0 := (Finset.mem_erase.mp hv).1
+    have hv0  := (Finset.mem_erase.mp hv).1
     simp only [hm, map_mul, hc, one_mul]
     congr 1
     split_ifs
     · congr 1
       field_simp
     · rfl
-lemma ord_mul (p : HeightOneSpectrum (𝓞 F)) (x y : Fˣ) :
+section
+variable (p : HeightOneSpectrum (𝓞 F))
+include p
+lemma ord_mul   (x y : Fˣ) :
     order p (x * y) = order p x + order p y := by
   simp only [order, Units.val_mul, map_mul]
   rw [WithZero.log_mul ((Valuation.ne_zero_iff _).mpr x.ne_zero)
     ((Valuation.ne_zero_iff _).mpr y.ne_zero), neg_add]
-lemma ord_zpow (p : HeightOneSpectrum (𝓞 F)) (x : Fˣ) (n : ℤ) :
+lemma ord_zpow   (x : Fˣ) (n : ℤ) :
     order p (x ^ n) = n * order p x := by
   simp only [order, Units.val_zpow_eq_zpow_val, map_zpow₀, WithZero.log_zpow,
     smul_eq_mul]
   ring
-lemma reduction_spec (p : HeightOneSpectrum (𝓞 F)) (x : Fˣ)
+lemma reduction_spec   (x : Fˣ)
     (hx : order p x = 0) : IsUnitResidue p x (unitResidue p x) := by
   simpa only [unitResidue, dif_pos hx] using (existsUnique_unitResidue p x hx).exists.choose_spec
-lemma reduction_mul (p : HeightOneSpectrum (𝓞 F)) (x y : Fˣ)
+lemma reduction_mul   (x y : Fˣ)
     (hx : order p x = 0) (hy : order p y = 0) :
     unitResidue p (x * y) = unitResidue p x * unitResidue p y := by
   have hxy : order p (x * y) = 0 := by rw [ord_mul, hx, hy, add_zero]
@@ -1436,23 +1468,25 @@ lemma reduction_mul (p : HeightOneSpectrum (𝓞 F)) (x y : Fˣ)
   · exact fun h => (p.isPrime.mem_or_mem h).elim hb hd
   · simp only [Units.val_mul, hx', hy', map_mul, mul_div_mul_comm]
   · rw [hrx, hry, map_mul, map_mul, mul_div_mul_comm]
-private lemma reduction_mul_unit (p : HeightOneSpectrum (𝓞 F)) (x y : Fˣ)
+private lemma reduction_mul_unit   (x y : Fˣ)
     (hx : order p x = 0) : unitResidue p (x * y) = unitResidue p x * unitResidue p y := by
   by_cases hy : order p y = 0
-  · exact reduction_mul p x y hx hy
+  · apply reduction_mul <;> assumption
   · have hxy : order p (x * y) ≠ 0 := by simpa only [ord_mul, hx, zero_add] using hy
     simp only [unitResidue, dif_neg hxy, dif_neg hy, mul_zero]
-lemma reduction_one (p : HeightOneSpectrum (𝓞 F)) : unitResidue p (1 : Fˣ) = 1 := by
+lemma reduction_one   : unitResidue p (1 : Fˣ) = 1 := by
   have h1 : order p (1 : Fˣ) = 0 := by simp [order]
   apply (existsUnique_unitResidue p 1 h1).unique (reduction_spec p 1 h1)
   refine ⟨1, 1, p.isPrime.one_notMem, p.isPrime.one_notMem, ?_, ?_⟩ <;> simp
-lemma reduction_pow (p : HeightOneSpectrum (𝓞 F)) (x : Fˣ)
+lemma reduction_pow   (x : Fˣ)
     (hx : order p x = 0) (n : ℕ) : unitResidue p (x ^ n) = unitResidue p x ^ n := by
   have hp (n : ℕ) : order p (x ^ n) = 0 := by
     rw [← zpow_natCast, ord_zpow, hx, mul_zero]
   induction n with
   | zero => simp [reduction_one]
   | succ n ih => rw [pow_succ, reduction_mul p _ _ (hp n) hx, ih, pow_succ]
+end
+
 lemma char_order (A : SArithmeticData F) (σ : F →+* ℂ) (p : ExteriorPrime A) :
     orderOf (residueCharacter A σ p) = 6 := by
   apply DHCubic.orderOf_normalizedSextic_complex F A p.val p.property σ
@@ -1461,9 +1495,12 @@ lemma unit_ord (A : SArithmeticData F) (p : ExteriorPrime A) (u : A.U) :
     order p.val u.val = 0 := by
   have hv : p.val.valuation F (u.val : F) = 1 := u.property p.val p.property
   simp [order, hv]
-private lemma local_factor_sixth (A : SArithmeticData F) (G : AllowedRecipe A)
+section
+variable (A : SArithmeticData F) (G : AllowedRecipe A)
     (σ : F →+* ℂ) (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
     (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
+include A G σ ψ m D
+private lemma local_factor_sixth  
     (b : Branch A G m D) (p : ExteriorPrime A) (x : Fˣ) (u : A.U) :
     branchLocalFactor A G σ ψ m D b p (x * u.val ^ 6) =
       branchLocalFactor A G σ ψ m D b p x := by
@@ -1487,9 +1524,7 @@ private lemma local_factor_sixth (A : SArithmeticData F) (G : AllowedRecipe A)
   · simp only [sphericalFactor, ho, hc]
   · simp only [sphericalFactor, ho, hc]
 
-private lemma exterior_local_factor_sixth (A : SArithmeticData F) (G : AllowedRecipe A)
-    (σ : F →+* ℂ) (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
+private lemma exterior_local_factor_sixth  
     (p : ExteriorPrime A) (x : Fˣ) (u : A.U) :
     exteriorLocalFactor A G σ ψ m D p (x * u.val ^ 6) =
       exteriorLocalFactor A G σ ψ m D p x := by
@@ -1516,10 +1551,7 @@ private lemma exterior_local_factor_sixth (A : SArithmeticData F) (G : AllowedRe
       (unitResidue_ne_zero _ _ (unit_ord A p u)), one_mul]
   · simp only [sphericalFactor, ho, hc]
 
-theorem branchCoefficient_eq_of_rel (A : SArithmeticData F) (G : AllowedRecipe A)
-    (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
+theorem branchCoefficient_eq_of_rel  
     (b : Branch A G m D) (x y : Fˣ)
     (h : QuotientGroup.leftRel (ThetaReflectionData.rationalGamma A) x y) :
     branchCoefficient A G σ ψ m D b x = branchCoefficient A G σ ψ m D b y := by
@@ -1535,18 +1567,12 @@ theorem branchCoefficient_eq_of_rel (A : SArithmeticData F) (G : AllowedRecipe A
   intro p
   exact (local_factor_sixth A G σ ψ m D b p x ⟨u, hu⟩).symm
 
-def branchFrequencyCoefficient (A : SArithmeticData F) (G : AllowedRecipe A)
-    (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
-    (b : Branch A G m D) : ThetaReflectionData.Frequency A → ℂ :=
+def branchFrequencyCoefficient  
+    (b : Branch A G m D)  :=
   Quotient.lift (branchCoefficient A G σ ψ m D b)
     (branchCoefficient_eq_of_rel A G σ ψ m D b)
 
-theorem exteriorCoefficient_eq_of_rel (A : SArithmeticData F) (G : AllowedRecipe A)
-    (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m) (x y : Fˣ)
+theorem exteriorCoefficient_eq_of_rel   (x y : Fˣ)
     (h : QuotientGroup.leftRel (ThetaReflectionData.rationalGamma A) x y) :
     exteriorCoefficient A G σ ψ m D x = exteriorCoefficient A G σ ψ m D y := by
   have hh : x⁻¹ * y ∈ A.U.map (powMonoidHom 6) := by
@@ -1561,15 +1587,16 @@ theorem exteriorCoefficient_eq_of_rel (A : SArithmeticData F) (G : AllowedRecipe
   intro p
   exact (exterior_local_factor_sixth A G σ ψ m D p x ⟨u, hu⟩).symm
 
-def exteriorFrequencyCoefficient (A : SArithmeticData F) (G : AllowedRecipe A)
-    (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m) :
-    ThetaReflectionData.Frequency A → ℂ :=
+def exteriorFrequencyCoefficient    :=
   Quotient.lift (exteriorCoefficient A G σ ψ m D)
     (exteriorCoefficient_eq_of_rel A G σ ψ m D)
+end
 
-private lemma rowIndex_d (A : SArithmeticData F) (G : AllowedRecipe A)
+
+section
+variable (A : SArithmeticData F)
+include A
+private lemma rowIndex_d   (G : AllowedRecipe A)
     (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
     (p : ExteriorPrime A) (hp : p.val ∈ support D.d.val) : rowIndex A m p.val = 1 := by
   have hh := exponent_zero _ _ (disjoint_support _ _ D.d.property.1 D.h.property.1
@@ -1584,14 +1611,14 @@ private lemma rowIndex_d (A : SArithmeticData F) (G : AllowedRecipe A)
   apply Fin.ext
   simp [rowIndex, hr]
 
- def exteriorSupport (A : SArithmeticData F) (I : A.Exterior) :
+ def exteriorSupport   (I : A.Exterior) :
     Finset (ExteriorPrime A) :=
   (support I.val).attach.map ⟨supportPrime A I, by
     intro p q h
     apply Subtype.ext
     exact congrArg (fun z : ExteriorPrime A => z.val) h⟩
 
- lemma mem_exteriorSupport (A : SArithmeticData F) (I : A.Exterior)
+ lemma mem_exteriorSupport   (I : A.Exterior)
     (p : ExteriorPrime A) : p ∈ exteriorSupport A I ↔ p.val ∈ support I.val := by
   simp only [exteriorSupport, Finset.mem_map, Finset.mem_attach, true_and]
   constructor
@@ -1599,7 +1626,7 @@ private lemma rowIndex_d (A : SArithmeticData F) (G : AllowedRecipe A)
   · intro h
     exact ⟨⟨p.val,h⟩, Subtype.ext rfl⟩
 
- def primeProduct (A : SArithmeticData F) (s : Finset (ExteriorPrime A)) :
+ def primeProduct   (s : Finset (ExteriorPrime A)) :
     A.Exterior := ⟨∏ p ∈ s, p.val.asIdeal, by
   constructor
   · exact Finset.prod_ne_zero_iff.mpr (fun p _ => p.val.ne_bot)
@@ -1608,7 +1635,7 @@ private lemma rowIndex_d (A : SArithmeticData F) (G : AllowedRecipe A)
     intro p hp
     exact Ideal.isCoprime_iff_sup_eq.mpr (primeIdeal A p).property.2⟩
 
-private lemma primeProduct_factors (A : SArithmeticData F) (s : Finset (ExteriorPrime A)) :
+private lemma primeProduct_factors   (s : Finset (ExteriorPrime A)) :
     UniqueFactorizationMonoid.normalizedFactors (primeProduct A s).val =
       s.val.map (fun p => p.val.asIdeal) := by
   apply UniqueFactorizationMonoid.normalizedFactors_prod_of_prime
@@ -1616,7 +1643,7 @@ private lemma primeProduct_factors (A : SArithmeticData F) (s : Finset (Exterior
   obtain ⟨q, hq, rfl⟩ := Multiset.mem_map.mp hp
   exact q.val.prime
 
- lemma primeProduct_support (A : SArithmeticData F) (s : Finset (ExteriorPrime A)) :
+ lemma primeProduct_support   (s : Finset (ExteriorPrime A)) :
     exteriorSupport A (primeProduct A s) = s := by
   ext p
   rw [mem_exteriorSupport]
@@ -1628,7 +1655,7 @@ private lemma primeProduct_factors (A : SArithmeticData F) (s : Finset (Exterior
     simpa [h] using hq
   · intro hp; exact ⟨p,hp,rfl⟩
 
-private lemma exteriorSupport_injective (A : SArithmeticData F) (I J : A.Exterior)
+private lemma exteriorSupport_injective   (I J : A.Exterior)
     (hI : Squarefree I.val) (hJ : Squarefree J.val)
     (h : exteriorSupport A I = exteriorSupport A J) : I = J := by
   have hs : support I.val = support J.val := by
@@ -1659,16 +1686,16 @@ private lemma exteriorSupport_injective (A : SArithmeticData F) (I J : A.Exterio
   exact associated_iff_eq.mp ((UniqueFactorizationMonoid.prod_normalizedFactors I.property.1).symm.trans
     (hfac ▸ UniqueFactorizationMonoid.prod_normalizedFactors J.property.1))
 
- lemma primeProduct_squarefree (A : SArithmeticData F) (s : Finset (ExteriorPrime A)) :
+ lemma primeProduct_squarefree   (s : Finset (ExteriorPrime A)) :
     Squarefree (primeProduct A s).val := by
   apply (UniqueFactorizationMonoid.squarefree_iff_nodup_normalizedFactors
     (primeProduct A s).property.1).mpr
   rw [primeProduct_factors]
   exact s.nodup.map (by
     intro p q h
-    exact Subtype.ext (HeightOneSpectrum.asIdeal_injective h))
+    apply Subtype.ext <;> aesop)
 
-private lemma radical_product_eq (A : SArithmeticData F) (I : A.Exterior) :
+private lemma radical_product_eq   (I : A.Exterior) :
     (primeProduct A (exteriorSupport A I)).val = idealRadical I.val := by
   change (∏ p ∈ exteriorSupport A I, p.val.asIdeal) = ∏ p ∈ idealPrimeSupport I.val, p
   unfold exteriorSupport
@@ -1687,52 +1714,49 @@ private lemma radical_product_eq (A : SArithmeticData F) (I : A.Exterior) :
     simpa only [support, Finset.mem_preimage] using hp
   · intro p hp; rfl
 
- lemma primeProduct_dvd_radical (A : SArithmeticData F) (I : A.Exterior)
+ lemma primeProduct_dvd_radical   (I : A.Exterior)
     (s : Finset (ExteriorPrime A)) (hs : s ⊆ exteriorSupport A I) :
     (primeProduct A s).val ∣ idealRadical I.val := by
   rw [← radical_product_eq A I]
   exact Finset.prod_dvd_prod_of_subset _ _ _ hs
 
-private lemma support_row (A : SArithmeticData F) (G : AllowedRecipe A)
+private lemma support_row   (G : AllowedRecipe A)
     (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
     (p : ExteriorPrime A) :
     p.val ∈ support D.rowIdeal.val ↔ p.val ∈ support D.h.val ∨ p.val ∈ support D.d.val := by
   simp only [support, Finset.mem_preimage, idealPrimeSupport, Multiset.mem_toFinset,
     D.factorization, UniqueFactorizationMonoid.normalizedFactors_mul
       D.h.property.1 D.d.property.1, Multiset.mem_add]
+end
 
- def nonzeroFactor (A : SArithmeticData F) (G : AllowedRecipe A)
+
+ section
+variable (A : SArithmeticData F) (G : AllowedRecipe A)
     (σ : F →+* ℂ) (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (m : ThetaReflectionData.Row A) (p : ExteriorPrime A) (x : Fˣ) : ℂ :=
+    (m : ThetaReflectionData.Row A)
+include A G σ ψ m
+def nonzeroFactor   (p : ExteriorPrime A) (x : Fˣ)  :=
   sexticReflectedNonzeroDigits (residueCharacter A σ p) (ψ p)
     (rowIndex A m p.val) (order p.val x + 2) (unitResidue p.val (localUnit A G p x))
 
- def zeroFactor (A : SArithmeticData F) (G : AllowedRecipe A)
-    (σ : F →+* ℂ) (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (m : ThetaReflectionData.Row A) (p : ExteriorPrime A) (x : Fˣ) : ℂ :=
+ def zeroFactor   (p : ExteriorPrime A) (x : Fˣ)  :=
   sexticFourierMask (residueCharacter A σ p) (ψ p) (rowIndex A m p.val) 0 *
     sphericalFactor A G σ ψ p x
 
-private lemma zeroFactor_zero (A : SArithmeticData F) (G : AllowedRecipe A)
-    (σ : F →+* ℂ) (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (m : ThetaReflectionData.Row A) (p : ExteriorPrime A) (x : Fˣ)
+private lemma zeroFactor_zero   (p : ExteriorPrime A) (x : Fˣ)
     (h : rowIndex A m p.val ≠ 0) : zeroFactor A G σ ψ m p x = 0 := by
   have hj : (rowIndex A m p.val).val ≠ 0 := by
-    intro hh; exact h (Fin.ext hh)
+    intro hh; apply h <;> aesop
   simp [zeroFactor, sexticFourierMask, hj]
 
-private lemma local_expansion (A : SArithmeticData F) (G : AllowedRecipe A)
-    (σ : F →+* ℂ) (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
+private lemma local_expansion   (D : RowFactorization A G m)
     (p : ExteriorPrime A) (x : Fˣ) (hp : p.val ∈ support D.rowIdeal.val) :
     exteriorLocalFactor A G σ ψ m D p x =
       nonzeroFactor A G σ ψ m p x + zeroFactor A G σ ψ m p x := by
   simp [exteriorLocalFactor, hp, nonzeroFactor, zeroFactor, sexticReflectedDigitModel,
     sphericalFactor, symbol]
 
-private lemma branchLocalFactor_cases (A : SArithmeticData F) (G : AllowedRecipe A)
-    (σ : F →+* ℂ) (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
+private lemma branchLocalFactor_cases   (D : RowFactorization A G m)
     (b : Branch A G m D) (p : ExteriorPrime A) (x : Fˣ) :
     branchLocalFactor A G σ ψ m D b p x =
       if p ∈ exteriorSupport A D.h then
@@ -1759,6 +1783,8 @@ private lemma branchLocalFactor_cases (A : SArithmeticData F) (G : AllowedRecipe
     · have hr : p.val ∉ support D.rowIdeal.val := by
         simpa [support_row, hh, hd]
       simp [branchLocalFactor, mem_exteriorSupport, hh, hf, hd, exteriorLocalFactor, hr]
+end
+
 
 lemma finite_split {P : Type*} [DecidableEq P] (s : Finset P) (f : P → ℂ)
     (hf : Function.HasFiniteMulSupport f) :
@@ -1768,12 +1794,12 @@ lemma finite_split {P : Type*} [DecidableEq P] (s : Finset P) (f : P → ℂ)
   have hg : Function.mulSupport g ⊆ s := by
     intro p hp
     by_contra hn
-    exact hp (by simp [g, show p ∉ s from hn])
+    apply hp <;> aesop
   have hh : Function.HasFiniteMulSupport h := by
     apply hf.subset
     intro p hp
     by_contra hn
-    exact hp (by simp only [Function.mem_mulSupport, not_not] at hn; simp [h, hn])
+    apply hp <;> aesop
   have he : f = fun p => g p * h p := by
     funext p; simp [g, h]; split_ifs <;> simp
   calc
@@ -1784,9 +1810,12 @@ lemma finite_split {P : Type*} [DecidableEq P] (s : Finset P) (f : P → ℂ)
       congr 1
       exact Finset.prod_congr rfl (fun p hp => by simp [g, hp])
 
-lemma exteriorLocalFactor_finite (A : SArithmeticData F) (G : AllowedRecipe A)
+section
+variable (A : SArithmeticData F) (G : AllowedRecipe A)
     (σ : F →+* ℂ) (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m) (x : Fˣ) :
+    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
+include A G σ ψ m D
+lemma exteriorLocalFactor_finite   (x : Fˣ) :
     Function.HasFiniteMulSupport (fun p => exteriorLocalFactor A G σ ψ m D p x) := by
   have hs := ((support D.rowIdeal.val).finite_toSet.union (order_finite_support x)).preimage
     (f := fun p : ExteriorPrime A => p.val) Subtype.val_injective.injOn
@@ -1798,9 +1827,7 @@ lemma exteriorLocalFactor_finite (A : SArithmeticData F) (G : AllowedRecipe A)
       not_or, not_not] using hn
   exact hp (by simp [exteriorLocalFactor, hh.1, sphericalFactor, hh.2, sexticSphericalCoefficient])
 
-private lemma branchProduct_eq (A : SArithmeticData F) (G : AllowedRecipe A)
-    (σ : F →+* ℂ) (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
+private lemma branchProduct_eq  
     (b : Branch A G m D) (x : Fˣ) :
     branchCoefficient A G σ ψ m D b x =
       (∏ p ∈ exteriorSupport A D.h,
@@ -1819,9 +1846,14 @@ private lemma branchProduct_eq (A : SArithmeticData F) (G : AllowedRecipe A)
     by_cases hp : p ∈ exteriorSupport A D.h
     · simp [hp]
     · simp [hp, branchLocalFactor_cases]
+end
 
- def subsetBranch (A : SArithmeticData F) (G : AllowedRecipe A)
+
+ section
+variable (A : SArithmeticData F) (G : AllowedRecipe A)
     (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
+include A G m D
+def subsetBranch  
     (s : Finset (ExteriorPrime A)) (hs : s ⊆ exteriorSupport A D.h)
     (hm : ∀ p ∈ exteriorSupport A D.h, rowIndex A m p.val ≠ 0 → p ∈ s) :
     Branch A G m D where
@@ -1834,22 +1866,25 @@ private lemma branchProduct_eq (A : SArithmeticData F) (G : AllowedRecipe A)
     have hq := hm q ((mem_exteriorSupport A D.h q).mpr hp) hj
     exact (mem_exteriorSupport A (primeProduct A s) q).mp (by rw [primeProduct_support]; exact hq)
 
-private lemma branchSupport_sub (A : SArithmeticData F) (G : AllowedRecipe A)
-    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
+private lemma branchSupport_sub  
     (b : Branch A G m D) : exteriorSupport A b.f ⊆ exteriorSupport A D.h := by
   intro p hp
   exact (mem_exteriorSupport A D.h p).mpr (f_in_h A G m D b p.val
     ((mem_exteriorSupport A b.f p).mp hp))
 
-private lemma branchSupport_injective (A : SArithmeticData F) (G : AllowedRecipe A)
-    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
+private lemma branchSupport_injective  
     (b c : Branch A G m D) (h : exteriorSupport A b.f = exteriorSupport A c.f) : b = c := by
   have hf := exteriorSupport_injective A b.f c.f b.squarefree c.squarefree h
   cases b; cases c; cases hf; rfl
+end
 
-private lemma branchChoice_sum (A : SArithmeticData F) (G : AllowedRecipe A)
+
+section
+variable (A : SArithmeticData F) (G : AllowedRecipe A)
     (σ : F →+* ℂ) (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m) (x : Fˣ) :
+    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m) (x : Fˣ)
+include A G σ ψ m D x
+private lemma branchChoice_sum   :
     letI := branches_finite A G m D
     letI : Fintype (Branch A G m D) := Fintype.ofFinite _
     (∑ b : Branch A G m D, ∏ p ∈ exteriorSupport A D.h,
@@ -1897,10 +1932,7 @@ private lemma branchChoice_sum (A : SArithmeticData F) (G : AllowedRecipe A)
     simp only [subsetBranch, primeProduct_support]
     rfl
 
-theorem sum_branches (A : SArithmeticData F) (G : AllowedRecipe A)
-    (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m) (x : Fˣ) :
+theorem sum_branches   :
     letI := branches_finite A G m D
     letI : Fintype (Branch A G m D) := Fintype.ofFinite _
     (∑ b : Branch A G m D, branchCoefficient A G σ ψ m D b x) =
@@ -1916,6 +1948,8 @@ theorem sum_branches (A : SArithmeticData F) (G : AllowedRecipe A)
   apply (local_expansion A G σ ψ m D p x _).symm
   exact (support_row A G m D p).mpr
     (Or.inl ((mem_exteriorSupport A D.h p).mp hp))
+end
+
 
 private lemma residue_coprime_branch (A : SArithmeticData F) (σ : F →+* ℂ)
     (p : ExteriorPrime A) : Nat.Coprime (Fintype.card (DHCubic.Residue F p.val)) 6 := by
@@ -1937,8 +1971,11 @@ private lemma spherical_nonzero_support {k : Type*} [Field k] [Fintype k]
   · exact he (by simp [sexticSphericalCoefficient, hb])
   · exact he (by simp [sexticSphericalCoefficient, hb, hc])
 
-theorem branchCoefficient_zero_outside (A : SArithmeticData F)
-    (G : AllowedRecipe A) (σ : F →+* ℂ)
+section
+variable (A : SArithmeticData F)
+    (G : AllowedRecipe A)
+include A G
+theorem branchCoefficient_zero_outside   (σ : F →+* ℂ)
     (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
     (hψ : ∀ p : ExteriorPrime A, (ψ p).IsPrimitive)
     (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
@@ -1998,8 +2035,7 @@ theorem branchCoefficient_zero_outside (A : SArithmeticData F)
       apply hs
       simp only [sphericalFactor, hz, zero_mul]
 
-theorem branch_frequency_coefficient_exact (A : SArithmeticData F)
-    (G : AllowedRecipe A) (U : UnitRepresentatives A) (σ : F →+* ℂ)
+theorem branch_frequency_coefficient_exact   (U : UnitRepresentatives A) (σ : F →+* ℂ)
     (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
     (hψ : ∀ p : ExteriorPrime A, (ψ p).IsPrimitive)
     (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
@@ -2008,7 +2044,7 @@ theorem branch_frequency_coefficient_exact (A : SArithmeticData F)
       exactCoefficient A G U σ ψ m D b v := by
   exact branch_coefficient_exact A G U σ ψ hψ m D b v
 
-theorem sum_branches_frequency (A : SArithmeticData F) (G : AllowedRecipe A)
+theorem sum_branches_frequency  
     (σ : F →+* ℂ)
     (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
     (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
@@ -2018,7 +2054,9 @@ theorem sum_branches_frequency (A : SArithmeticData F) (G : AllowedRecipe A)
     (∑ b : Branch A G m D, branchFrequencyCoefficient A G σ ψ m D b ν) =
       exteriorFrequencyCoefficient A G σ ψ m D ν := by
   induction ν using Quotient.inductionOn with
-  | h x => exact sum_branches A G σ ψ m D x
+  | h x => apply sum_branches
+end
+
 
 namespace CanonicalCoordinateProof
 private lemma ord_mul (p : HeightOneSpectrum (𝓞 F)) (x y : Fˣ) :
@@ -2035,10 +2073,13 @@ private lemma ord_div (p : HeightOneSpectrum (𝓞 F)) (x y : Fˣ) :
   rw [div_eq_mul_inv, ord_mul]
   simp only [order, Units.val_inv_eq_inv_val, map_inv₀, WithZero.log_inv]
   ring
-private lemma ord_unit (A : SArithmeticData F) (p : ExteriorPrime A) (u : A.U) :
+section
+variable (A : SArithmeticData F)
+include A
+private lemma ord_unit   (p : ExteriorPrime A) (u : A.U) :
     order p.val u.val = 0 := by simp [order, u.property p.val p.property]
 
- def primeEquiv (A : SArithmeticData F) :
+ def primeEquiv   :
     ExteriorPrime A ≃ ExteriorEulerPrimeIndex.exteriorPrimeRawIndex A.cS where
   toFun p := ⟨primeIdeal A p, p.val.prime⟩
   invFun p := ⟨⟨p.val.val, Ideal.isPrime_of_prime p.property, p.property.ne_zero⟩, by
@@ -2049,11 +2090,11 @@ private lemma ord_unit (A : SArithmeticData F) (p : ExteriorPrime A) (u : A.U) :
       (top_le_iff.mp (p.val.property.2.symm.le.trans (sup_le le_rfl hc)))⟩
   left_inv p := rfl
   right_inv p := rfl
-def idealEquiv (A : SArithmeticData F) : A.Exterior ≃ (ExteriorPrime A →₀ ℕ) :=
+def idealEquiv    :=
   (ExteriorEulerPrimeIndex.exponentEquiv A.cS).trans
     (Finsupp.domCongr (primeEquiv A).symm).toEquiv
 
-private theorem finite_order_support (A : SArithmeticData F) (x : Fˣ) :
+private theorem finite_order_support   (x : Fˣ) :
     {p : ExteriorPrime A | order p.val x ≠ 0}.Finite := by
   have h := (HeightOneSpectrum.Support.finite (𝓞 F) (x : F)).union
     (HeightOneSpectrum.Support.finite (𝓞 F) ((x⁻¹ : Fˣ) : F))
@@ -2071,7 +2112,7 @@ private theorem finite_order_support (A : SArithmeticData F) (x : Fˣ) :
     exact (inv_le_one₀ (pos_iff_ne_zero.mpr ((Valuation.ne_zero_iff _).mpr x.ne_zero))).mp hinv
   exact hp (by simp [order, hv])
 
-theorem order_eq_of_frequency_eq (A : SArithmeticData F) (x y : Fˣ)
+theorem order_eq_of_frequency_eq   (x y : Fˣ)
     (h : (QuotientGroup.mk x : ThetaReflectionData.Frequency A) = QuotientGroup.mk y)
     (p : ExteriorPrime A) : order p.val x = order p.val y := by
   have hr := Quotient.exact h
@@ -2084,13 +2125,14 @@ theorem order_eq_of_frequency_eq (A : SArithmeticData F) (x y : Fˣ)
     simp only [order, Units.val_inv_eq_inv_val, map_inv₀, WithZero.log_inv]
   rw [powMonoidHom_apply, ord_pow, ord_unit A p ⟨u, hu⟩, mul_zero, hi] at ho
   omega
+end
+
 private lemma exp_zero (I : Ideal (𝓞 F)) (p : HeightOneSpectrum (𝓞 F))
     (hp : p ∉ support I) : idealPrimeExponent p.asIdeal I = 0 := by
   apply Multiset.count_eq_zero.mpr
   simpa only [support, Finset.mem_preimage, idealPrimeSupport, Multiset.mem_toFinset] using hp
 private lemma exp_le_one {A : SArithmeticData F} (I : A.Exterior) (hs : Squarefree I.val)
-    (p : HeightOneSpectrum (𝓞 F)) : idealPrimeExponent p.asIdeal I.val ≤ 1 := by
-  exact Multiset.nodup_iff_count_le_one.mp
+    (p : HeightOneSpectrum (𝓞 F)) : idealPrimeExponent p.asIdeal I.val ≤ 1 := Multiset.nodup_iff_count_le_one.mp
     (UniqueFactorizationMonoid.squarefree_iff_nodup_normalizedFactors I.property.1 |>.mp hs) _
 private lemma supported_a (A : SArithmeticData F) (G : AllowedRecipe A)
     (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
@@ -2125,9 +2167,12 @@ private lemma ideal_ext (A : SArithmeticData F) (I J : A.Exterior)
   ext p
   exact h p
 
-private theorem coordinate_ideals_eq (A : SArithmeticData F) (G : AllowedRecipe A)
+section
+variable (A : SArithmeticData F) (G : AllowedRecipe A)
     (U : UnitRepresentatives A) (m : ThetaReflectionData.Row A)
     (D : RowFactorization A G m) (b : Branch A G m D)
+include A G U m D b
+private theorem coordinate_ideals_eq  
     (v w : Coordinates A G m D b)
     (h : ∀ p : ExteriorPrime A,
       order p.val (coordinateRepresentative A G U m D b v) =
@@ -2160,9 +2205,7 @@ private theorem coordinate_ideals_eq (A : SArithmeticData F) (G : AllowedRecipe 
   exact ⟨ha, ideal_ext A _ _ (fun p => (hcn p).1),
     ideal_ext A _ _ (fun p => (hcn p).2)⟩
 
-private theorem coordinateFrequency_injective (A : SArithmeticData F) (G : AllowedRecipe A)
-    (U : UnitRepresentatives A) (m : ThetaReflectionData.Row A)
-    (D : RowFactorization A G m) (b : Branch A G m D) :
+private theorem coordinateFrequency_injective   :
     Function.Injective (coordinateFrequency A G U m D b) := by
   intro v w h
   have hi := coordinate_ideals_eq A G U m D b v w
@@ -2201,8 +2244,13 @@ private theorem coordinateFrequency_injective (A : SArithmeticData F) (G : Allow
   cases hc
   cases hn
   rfl
+end
 
-theorem exterior_ideal_of_exponents (A : SArithmeticData F) (f : ExteriorPrime A → ℕ)
+
+section
+variable (A : SArithmeticData F)
+include A
+theorem exterior_ideal_of_exponents   (f : ExteriorPrime A → ℕ)
     (hf : {p | f p ≠ 0}.Finite) :
     ∃ I : A.Exterior, ∀ p : ExteriorPrime A, idealPrimeExponent p.val.asIdeal I.val = f p := by
   let e := Finsupp.ofSupportFinite f hf
@@ -2210,7 +2258,7 @@ theorem exterior_ideal_of_exponents (A : SArithmeticData F) (f : ExteriorPrime A
   intro p
   exact congrArg (fun g : ExteriorPrime A →₀ ℕ => g p) ((idealEquiv A).apply_symm_apply e)
 
-theorem squarefree_of_exponents_le_one (A : SArithmeticData F) (I : A.Exterior)
+theorem squarefree_of_exponents_le_one   (I : A.Exterior)
     (h : ∀ p : ExteriorPrime A, idealPrimeExponent p.val.asIdeal I.val ≤ 1) : Squarefree I.val := by
   rw [UniqueFactorizationMonoid.squarefree_iff_nodup_normalizedFactors I.property.1,
     Multiset.nodup_iff_count_le_one]
@@ -2222,7 +2270,7 @@ theorem squarefree_of_exponents_le_one (A : SArithmeticData F) (I : A.Exterior)
       simpa only [support, Finset.mem_preimage, idealPrimeSupport, Multiset.mem_toFinset] using hq)⟩
   · simp [Multiset.count_eq_zero_of_notMem hq]
 
-private theorem supportedOn_of_exponents (A : SArithmeticData F) (I J : A.Exterior)
+private theorem supportedOn_of_exponents   (I J : A.Exterior)
     (h : ∀ p : ExteriorPrime A, p.val ∉ support J.val → idealPrimeExponent p.val.asIdeal I.val = 0) :
     IdealSupportedOn I.val J.val := by
   intro q hq
@@ -2236,7 +2284,7 @@ private theorem supportedOn_of_exponents (A : SArithmeticData F) (I J : A.Exteri
     omega
   simpa only [support, Finset.mem_preimage] using hpm'
 
-private theorem coprime_of_exponents (A : SArithmeticData F) (I J : A.Exterior)
+private theorem coprime_of_exponents   (I J : A.Exterior)
     (h : ∀ p : ExteriorPrime A, p.val ∈ support J.val → idealPrimeExponent p.val.asIdeal I.val = 0) :
     I.val ⊔ J.val = ⊤ := by
   by_contra hn
@@ -2245,15 +2293,15 @@ private theorem coprime_of_exponents (A : SArithmeticData F) (I J : A.Exterior)
     intro hh
     exact I.property.1 (bot_unique ((le_sup_left.trans hle).trans hh.le))
   let p : HeightOneSpectrum (𝓞 F) := ⟨M, hM.isPrime, hMn⟩
-  have hi : p ∈ support I.val := (mem_support_iff _ I.property.1 p).mpr (le_sup_left.trans hle)
-  have hj : p ∈ support J.val := (mem_support_iff _ J.property.1 p).mpr (le_sup_right.trans hle)
+  have hi  := (mem_support_iff _ I.property.1 p).mpr (le_sup_left.trans hle)
+  have hj  := (mem_support_iff _ J.property.1 p).mpr (le_sup_right.trans hle)
   have hz : idealPrimeExponent p.asIdeal I.val = 0 := h ⟨p, support_outside A I p hi⟩ hj
   have he : 0 < idealPrimeExponent p.asIdeal I.val := by
     apply Multiset.count_pos.mpr
     simpa only [support, Finset.mem_preimage, idealPrimeSupport, Multiset.mem_toFinset] using hi
   omega
 
-theorem ratio_mem_sunit (A : SArithmeticData F) (x y : Fˣ)
+theorem ratio_mem_sunit   (x y : Fˣ)
     (h : ∀ p : ExteriorPrime A, order p.val x = order p.val y) : x / y ∈ A.U := by
   intro p hp
   have ho : order p (x / y) = 0 := by rw [ord_div, h ⟨p, hp⟩, sub_self]
@@ -2262,10 +2310,15 @@ theorem ratio_mem_sunit (A : SArithmeticData F) (x y : Fˣ)
   have hl : WithZero.log (p.valuation F ((x / y : Fˣ) : F)) = 0 := by
     simpa only [order, neg_eq_zero] using ho
   rw [← WithZero.exp_log hv, hl, WithZero.exp_zero]
+end
 
-private theorem exists_coordinate_of_matching_orders (A : SArithmeticData F) (G : AllowedRecipe A)
+
+section
+variable (A : SArithmeticData F) (G : AllowedRecipe A)
     (U : UnitRepresentatives A) (m : ThetaReflectionData.Row A)
     (D : RowFactorization A G m) (b : Branch A G m D)
+include A G U m D b
+private theorem exists_coordinate_of_matching_orders  
     (x : Fˣ) (v : Coordinates A G m D b)
     (h : ∀ p : ExteriorPrime A, order p.val x =
       order p.val (coordinateRepresentative A G U m D b v)) :
@@ -2273,7 +2326,7 @@ private theorem exists_coordinate_of_matching_orders (A : SArithmeticData F) (G 
   let y := coordinateRepresentative A G U m D b v
   let u : A.U := ⟨x / y, ratio_mem_sunit A x y h⟩
   let e : A.UnitQuotient := QuotientGroup.mk (u * U.representative v.epsilon)
-  let w : Coordinates A G m D b := {v with epsilon := e}
+  let w  := {v with epsilon := e}
   refine ⟨w, ?_⟩
   have he : (QuotientGroup.mk (U.representative e) : A.UnitQuotient) =
       QuotientGroup.mk (u * U.representative v.epsilon) := U.represents e
@@ -2295,9 +2348,7 @@ private theorem exists_coordinate_of_matching_orders (A : SArithmeticData F) (G 
   dsimp [w, y]
   simp [coordinateRepresentative, div_eq_mul_inv, mul_inv_rev, mul_comm, mul_left_comm, mul_assoc]
 
-private theorem exists_coordinate_of_supported (A : SArithmeticData F) (G : AllowedRecipe A)
-    (U : UnitRepresentatives A) (m : ThetaReflectionData.Row A)
-    (D : RowFactorization A G m) (b : Branch A G m D)
+private theorem exists_coordinate_of_supported  
     (ν : ThetaReflectionData.Frequency A) (hν : Supported A G m D b ν) :
     ∃ v : Coordinates A G m D b, coordinateFrequency A G U m D b v = ν := by
   obtain ⟨x, hx, hd, hf, ho⟩ := hν
@@ -2394,9 +2445,7 @@ private theorem exists_coordinate_of_supported (A : SArithmeticData F) (G : Allo
   obtain ⟨w, hw⟩ := exists_coordinate_of_matching_orders A G U m D b x v hm
   exact ⟨w, hw.trans hx⟩
 
-private theorem supported_iff_existsUnique_of_exists (A : SArithmeticData F) (G : AllowedRecipe A)
-    (U : UnitRepresentatives A) (m : ThetaReflectionData.Row A)
-    (D : RowFactorization A G m) (b : Branch A G m D)
+private theorem supported_iff_existsUnique_of_exists  
     (hex : ∀ ν, Supported A G m D b ν →
       ∃ v : Coordinates A G m D b, coordinateFrequency A G U m D b v = ν)
     (ν : ThetaReflectionData.Frequency A) :
@@ -2408,7 +2457,9 @@ private theorem supported_iff_existsUnique_of_exists (A : SArithmeticData F) (G 
     exact ⟨v, hv, fun w hw => coordinateFrequency_injective A G U m D b (hw.trans hv.symm)⟩
   · rintro ⟨v, hv, _⟩
     rw [← hv]
-    exact CanonicalCoefficientProof.coordinateFrequency_supported A G U m D b v
+    apply CanonicalCoefficientProof.coordinateFrequency_supported
+end
+
 
 end CanonicalCoordinateProof
 

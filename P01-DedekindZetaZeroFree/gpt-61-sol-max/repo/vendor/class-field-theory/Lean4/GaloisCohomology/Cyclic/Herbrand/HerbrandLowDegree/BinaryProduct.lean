@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import GaloisCohomology.Cyclic.Herbrand.HerbrandLowDegree.Product
 public import GaloisCohomology.Cyclic.Herbrand.HerbrandLowDegree.EquivariantEquiv
 public import Mathlib.Algebra.GroupWithZero.Action.Prod
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -132,8 +135,7 @@ noncomputable def herbrandH0ProdEquiv :
   letI familyAction : ∀ i, MulDistribMulAction G
       (BinaryCoefficientFamily A B i) :=
     binaryCoefficientFamilyAction A B
-  letI piAction : MulDistribMulAction G
-      (∀ i, BinaryCoefficientFamily A B i) :=
+  letI piAction  :=
     piMulDistribMulAction G
       (BinaryCoefficientFamily A B)
   exact
@@ -153,8 +155,7 @@ noncomputable def herbrandHMinusOneProdEquiv
   letI familyAction : ∀ i, MulDistribMulAction G
       (BinaryCoefficientFamily A B i) :=
     binaryCoefficientFamilyAction A B
-  letI piAction : MulDistribMulAction G
-      (∀ i, BinaryCoefficientFamily A B i) :=
+  letI piAction  :=
     piMulDistribMulAction G
       (BinaryCoefficientFamily A B)
   exact
@@ -166,20 +167,18 @@ noncomputable def herbrandHMinusOneProdEquiv
         (piHerbrandHMinusOneEquivProd A B σ))
 
 /-- Finiteness of degree zero is preserved by a binary product. -/
-theorem herbrandH0ProdFinite
+def herbrandH0ProdFinite
     [Finite (HerbrandH0 G A)]
-    [Finite (HerbrandH0 G B)] :
-    Finite (HerbrandH0 G (A × B)) :=
+    [Finite (HerbrandH0 G B)]  :=
   Finite.of_equiv
     (HerbrandH0 G A × HerbrandH0 G B)
     (herbrandH0ProdEquiv A B).symm.toEquiv
 
 /-- Finiteness of degree minus one is preserved by a binary product. -/
-theorem herbrandHMinusOneProdFinite
+def herbrandHMinusOneProdFinite
     (σ : G)
     [Finite (HerbrandHMinusOne G A σ)]
-    [Finite (HerbrandHMinusOne G B σ)] :
-    Finite (HerbrandHMinusOne G (A × B) σ) :=
+    [Finite (HerbrandHMinusOne G B σ)]  :=
   Finite.of_equiv
     (HerbrandHMinusOne G A σ ×
       HerbrandHMinusOne G B σ)
@@ -229,7 +228,7 @@ theorem herbrandQuotient_prod
         herbrandQuotient (G := G) (A := B) σ := by
   let : Finite (HerbrandH0 G (A × B)) :=
     herbrandH0ProdFinite A B
-  let : Finite (HerbrandHMinusOne G (A × B) σ) :=
+  let  :=
     herbrandHMinusOneProdFinite A B σ
   rw [herbrandQuotient_eq_card_ratio,
     herbrandQuotient_eq_card_ratio,

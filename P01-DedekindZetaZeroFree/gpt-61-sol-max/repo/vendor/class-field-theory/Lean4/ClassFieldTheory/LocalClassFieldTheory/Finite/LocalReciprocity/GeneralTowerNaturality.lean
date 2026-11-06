@@ -72,11 +72,14 @@ open scoped IsMulCommutative
     (baseUnitsEquivGaloisAmbientFixed K (SeparableClosure K)
       (Additive.ofMul a))
 
-private theorem towerEmbeddedFieldRange_le
-    (K E L : Type)
+section
+variable (K E L : Type)
     [Field K] [Field E] [Field L]
     [Algebra K E] [Algebra E L] [Algebra K L]
     [IsScalarTower K E L]
+include K E L
+private theorem towerEmbeddedFieldRange_le
+     
     (iL : L →ₐ[K] SeparableClosure K) :
     AlgHom.fieldRange (towerLowerEmbedding K E L iL) ≤
       AlgHom.fieldRange iL := by
@@ -85,10 +88,7 @@ private theorem towerEmbeddedFieldRange_le
   exact ⟨algebraMap E L y, rfl⟩
 
 private theorem towerEmbeddedAbstractExtension_field_le
-    (K E L : Type)
-    [Field K] [Field E] [Field L]
-    [Algebra K E] [Algebra E L] [Algebra K L]
-    [IsScalarTower K E L]
+     
     [FiniteDimensional K E] [FiniteDimensional K L]
     [IsGalois K E] [IsGalois K L]
     (iL : L →ₐ[K] SeparableClosure K) :
@@ -108,10 +108,7 @@ private theorem towerEmbeddedAbstractExtension_field_le
       (towerEmbeddedFieldRange_le K E L iL)
 
 private theorem towerRestrict_abstractQuotient_mk
-    (K E L : Type)
-    [Field K] [Field E] [Field L]
-    [Algebra K E] [Algebra E L] [Algebra K L]
-    [IsScalarTower K E L]
+     
     [FiniteDimensional K E] [FiniteDimensional K L]
     [IsGalois K E] [IsGalois K L]
     (iL : L →ₐ[K] SeparableClosure K)
@@ -157,10 +154,7 @@ private theorem towerRestrict_abstractQuotient_mk
           K E iE (Subgroup.inclusion le_rfl sigma) x).symm
 
 private theorem towerRestrict_abstractAbelianization
-    (K E L : Type)
-    [Field K] [Field E] [Field L]
-    [Algebra K E] [Algebra E L] [Algebra K L]
-    [IsScalarTower K E L]
+     
     [FiniteDimensional K E] [FiniteDimensional K L]
     [IsAbelianGalois K E] [IsAbelianGalois K L]
     (iL : L →ₐ[K] SeparableClosure K)
@@ -236,10 +230,7 @@ private theorem towerRestrict_abstractAbelianization
 embeddings of an arbitrary finite abelian tower identify abstract
 norm--residue restriction with the actual Galois restriction map. -/
 theorem concreteNormResidueAutomorphism_restrict_tower
-    (K E L : Type)
-    [Field K] [Field E] [Field L]
-    [Algebra K E] [Algebra E L] [Algebra K L]
-    [IsScalarTower K E L]
+     
     [FiniteDimensional K E] [FiniteDimensional K L]
     [IsAbelianGalois K E] [IsAbelianGalois K L]
     (iL : L →ₐ[K] SeparableClosure K)
@@ -365,10 +356,7 @@ theorem concreteNormResidueAutomorphism_restrict_tower
 /-- Pointwise restriction naturality for the canonical local Artin
 automorphism in an arbitrary finite abelian tower. -/
 theorem localArtinAutomorphism_restrict_tower
-    (K E L : Type)
-    [Field K] [Field E] [Field L]
-    [Algebra K E] [Algebra E L] [Algebra K L]
-    [IsScalarTower K E L]
+     
     [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K]
     [FiniteDimensional K E] [FiniteDimensional K L]
@@ -393,10 +381,7 @@ theorem localArtinAutomorphism_restrict_tower
 /-- The actual finite abelian local Artin maps commute with the genuine
 restriction homomorphism in every finite abelian tower `K ⊂ E ⊂ L`. -/
 theorem abelianLocalArtinMonoidHom_restrict_tower
-    (K E L : Type)
-    [Field K] [Field E] [Field L]
-    [Algebra K E] [Algebra E L] [Algebra K L]
-    [IsScalarTower K E L]
+     
     [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K]
     [FiniteDimensional K E] [FiniteDimensional K L]
@@ -407,14 +392,19 @@ theorem abelianLocalArtinMonoidHom_restrict_tower
   apply MonoidHom.ext
   intro a
   exact localArtinAutomorphism_restrict_tower K E L a
+end
 
+
+section
+variable (K L M : Type)
+    [Field K] [Field L] [Field M]
+    [Algebra K L] [Algebra K M]
+include K L M
 /-- When `L` is regarded as an `M`-algebra through the inverse of a
 `K`-algebra equivalence, restriction from `L` to `M` is conjugation by that
 equivalence. -/
 theorem restrictNormalHom_eq_autCongr
-    (K L M : Type)
-    [Field K] [Field L] [Field M]
-    [Algebra K L] [Algebra K M]
+     
     [Normal K M]
     (e : L ≃ₐ[K] M) :
     letI : Algebra M L := e.symm.toRingHom.toAlgebra
@@ -448,9 +438,7 @@ theorem restrictNormalHom_eq_autCongr
 finite abelian extensions.  The Galois groups are identified by conjugating
 automorphisms with that equivalence. -/
 theorem abelianLocalArtinMonoidHom_autCongr
-    (K L M : Type)
-    [Field K] [Field L] [Field M]
-    [Algebra K L] [Algebra K M]
+     
     [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K]
     [FiniteDimensional K L] [FiniteDimensional K M]
@@ -467,28 +455,30 @@ theorem abelianLocalArtinMonoidHom_autCongr
       exact (e.symm.commutes x).symm)
   rw [← restrictNormalHom_eq_autCongr K L M e]
   exact abelianLocalArtinMonoidHom_restrict_tower K M L
+end
+
 
 end LocalClassFieldTheory
 
 namespace ClassFieldTheory
 
-/-- Restriction of the canonical Artin map at the upper level is exactly the
-canonical Artin map at the lower level of a finite abelian tower. -/
-theorem finiteAbelianLocalArtinMap_restrict_tower
-    (K E L : Type)
-    [Field K] [Field E] [Field L]
-    [Algebra K E] [Algebra E L] [Algebra K L]
-    [IsScalarTower K E L]
-    [FiniteDimensional K E] [FiniteDimensional K L]
-    [IsAbelianGalois K E] [IsAbelianGalois K L]
-    [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] :
-    (AlgEquiv.restrictNormalHom E).comp
-        (LocalClassFieldTheory.abelianLocalArtinMap K L).toMonoidHom =
-      (LocalClassFieldTheory.abelianLocalArtinMap K E).toMonoidHom := by
-  rw [LocalClassFieldTheory.abelianLocalArtinMap_toMonoidHom K L,
-    LocalClassFieldTheory.abelianLocalArtinMap_toMonoidHom K E]
-  exact LocalClassFieldTheory.abelianLocalArtinMonoidHom_restrict_tower K E L
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end ClassFieldTheory
 

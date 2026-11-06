@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve.Sieve
 
@@ -62,7 +65,7 @@ private lemma envelope (A b P₁ P₂ U₁ U₂ L : ℝ)
     have heq : (2*A/P₁+b)*(2*A/P₂+b) = (2*A+b*P₁)*(2*A+b*P₂)/(P₁*P₂) := by
       field_simp <;> ring
     rw [heq, Real.sqrt_div (by positivity : (0:ℝ) ≤ (2*A+b*P₁)*(2*A+b*P₂)) (P₁*P₂)]
-  have hkey : Real.sqrt ((2*A+b*P₁)*(2*A+b*P₂)) ≤ 2*A + b*(P₁*P₂) :=
+  have hkey  :=
     key_sqrt_le A b P₁ P₂ hA.le hb hP₁ hP₂
   have hfin : Real.sqrt ((2*A/P₁+b)*(2*A/P₂+b)) ≤ (2*A + b*(P₁*P₂))/Real.sqrt (P₁*P₂) := by
     rw [hsplit]
@@ -80,7 +83,7 @@ private lemma sqrt_div_mul_sqrt (M B : ℝ) (hM : 0 < M) (hB : 0 < B) :
 
 private lemma rpow_mul_sqrt_div (M B α : ℝ) (hM : 0 < M) (hB : 0 < B) :
     B^α * Real.sqrt (M/B) = Real.sqrt M * B^(α - 1/2) := by
-  have h1 : Real.sqrt (M/B) = Real.sqrt M / Real.sqrt B := Real.sqrt_div hM.le B
+  have h1  := Real.sqrt_div hM.le B
   rw [h1]
   simp only [Real.sqrt_eq_rpow]
   rw [Real.rpow_sub hB, mul_div_assoc', mul_div_assoc']
@@ -138,16 +141,16 @@ theorem bilinear_rectangle_three_thresholds
   have hPpos : 0 < P₁*P₂ := mul_pos hP₁pos hP₂pos
   have hb : 0 ≤ Real.rpow B α := Real.rpow_nonneg hBpos.le α
   have hA : 0 < N/n := div_pos hNpos hnpos
-  have henv : Real.sqrt (U₁*U₂) ≤ L*(2*(N/n) + Real.rpow B α*(P₁*P₂))/Real.sqrt (P₁*P₂) :=
+  have henv  :=
     envelope (N/n) (Real.rpow B α) P₁ P₂ U₁ U₂ L hA hb hP₁1 hP₂1 hP₁le hP₂le hU₁ hU₂ hL hbound₁ hbound₂
-  have hst : Real.sqrt (M/B)*Real.sqrt (B*M) = M := sqrt_div_mul_sqrt M B hMpos hBpos
+  have hst  := sqrt_div_mul_sqrt M B hMpos hBpos
   have hbs : Real.rpow B α * Real.sqrt (M/B) = Real.sqrt M * Real.rpow B (α - 1/2) :=
     rpow_mul_sqrt_div M B α hMpos hBpos
   have hbP : M * Real.rpow B α / Real.sqrt (B*M) = Real.sqrt M * Real.rpow B (α - 1/2) :=
     mul_rpow_div_sqrt M B α hMpos hBpos
   have hsplit : Real.sqrt (U₁*U₂/(P₁*P₂)) = Real.sqrt (U₁*U₂)/Real.sqrt (P₁*P₂) :=
     Real.sqrt_div (mul_nonneg hU₁ hU₂) (P₁*P₂)
-  have hsqrtPpos : 0 < Real.sqrt (P₁*P₂) := Real.sqrt_pos.mpr hPpos
+  have hsqrtPpos  := Real.sqrt_pos.mpr hPpos
   have hboundU : Real.sqrt (U₁*U₂)/Real.sqrt (P₁*P₂)
       ≤ L*(2*(N/n)+Real.rpow B α*(P₁*P₂))/(P₁*P₂) := by
     have h := div_le_div_of_nonneg_right henv (Real.sqrt_nonneg (P₁*P₂))
@@ -209,8 +212,7 @@ theorem bilinear_rectangle_three_thresholds
     have hterm1 : Real.sqrt (M/B)*(2*(N/n)/(P₁*P₂)) ≤ 2*M/c := by
       refine le_trans (mul_le_mul_of_nonneg_left hstep (Real.sqrt_nonneg _)) ?_
       have heq : Real.sqrt (M/B)*(2*Real.sqrt (B*M)/c) = 2*M/c := by
-        rw [show Real.sqrt (M/B)*(2*Real.sqrt (B*M)/c)
-            = 2*(Real.sqrt (M/B)*Real.sqrt (B*M))/c by ring, hst]
+        grind
       rw [heq]
     have hfin : Real.sqrt (M/B)*(2*(N/n)/(P₁*P₂) + Real.rpow B α)
         ≤ 2*M/c + Real.sqrt M*Real.rpow B (α - 1/2) := by

@@ -46,8 +46,11 @@ private lemma exterior_coprime (A : SArithmeticData F) (I : A.Exterior) :
   rw [hi] at this
   exact hp.ne_top (top_unique this)
 
-private lemma representative_fractional (A : SArithmeticData F) (I : A.Exterior)
-    (x : NumberField.IdeleGroup (𝓞 F) F) (hx : A.RepresentsExteriorIdeal I x) :
+section
+variable (A : SArithmeticData F) (I : A.Exterior)
+    (x : NumberField.IdeleGroup (𝓞 F) F) (hx : A.RepresentsExteriorIdeal I x)
+include A I x hx
+private lemma representative_fractional   :
     _root_.IdeleGroup.fractionalIdeal ((_root_.IdeleGroup.equivAdeleRingUnits).symm x) =
       RayClassBridge.integralUnit F I.val I.property.1 := by
   apply _root_.FractionalIdealGroup.ext_count
@@ -78,8 +81,7 @@ private lemma representative_fractional (A : SArithmeticData F) (I : A.Exterior)
     change -WithZero.log (WithZero.exp (-(idealPrimeExponent v.asIdeal I.val : ℤ))) = _
     rw [WithZero.log_exp, neg_neg]
 
-private lemma representative_primeTo (A : SArithmeticData F) (I : A.Exterior)
-    (x : NumberField.IdeleGroup (𝓞 F) F) (hx : A.RepresentsExteriorIdeal I x) :
+private lemma representative_primeTo   :
     (_root_.IdeleGroup.equivAdeleRingUnits).symm x ∈ RayClass.idelePrimeToModulusSubgroup
       (ClassFieldTheory.GlobalClassFieldComparison.rayClassModulusToOriginal F
         (RayClassBridge.narrowIdealModulus F A.modulus A.modulus_ne_zero)) := by
@@ -100,6 +102,8 @@ private lemma representative_primeTo (A : SArithmeticData F) (I : A.Exterior)
       exact hx.2.1 v hv'
     rw [h1]
     exact one_mem _
+end
+
 
 private lemma representative_evaluation (A : SArithmeticData F) (η : RayClassCharacter F A.modulus)
     (x : NumberField.IdeleGroup (𝓞 F) F) (I : A.Exterior)
@@ -430,15 +434,17 @@ theorem GaussCorrectionOutput.prime_theta
 
 namespace CorrectionAssembly
 
-theorem correctionTheta_continuous (A : SArithmeticData F)
+section
+variable (A : SArithmeticData F)
     (Λ G η_id : A.ArithmeticIdeleClasses →* Circle)
+include A Λ G η_id
+theorem correctionTheta_continuous  
     (hΛ : Continuous Λ) (hG : Continuous G) (hη : Continuous η_id) :
     Continuous (A.correctionTheta Λ G η_id) := by
   change Continuous (Λ⁻¹ * G⁻¹ * η_id)
   fun_prop
 
-theorem correctionTheta_unramified (A : SArithmeticData F)
-    (Λ G η_id : A.ArithmeticIdeleClasses →* Circle)
+theorem correctionTheta_unramified  
     (hΛ : A.IdeleCharacterUnramifiedOutside Λ)
     (hG : A.IdeleCharacterUnramifiedOutside G)
     (hη : A.IdeleCharacterUnramifiedOutside η_id) :
@@ -450,8 +456,7 @@ theorem correctionTheta_unramified (A : SArithmeticData F)
   rw [hΛ v hv x hx, hG v hv x hx, hη v hv x hx]
   simp
 
-theorem correctionTheta_infinity (A : SArithmeticData F)
-    (Λ G η_id : A.ArithmeticIdeleClasses →* Circle)
+theorem correctionTheta_infinity  
     (hG : ∀ (w : InfinitePlace F) (z : w.Completionˣ),
       A.ideleInfiniteComponent G w z = 1)
     (hη : ∀ (w : InfinitePlace F) (z : w.Completionˣ),
@@ -464,8 +469,11 @@ theorem correctionTheta_infinity (A : SArithmeticData F)
     (A.ideleInfiniteComponent η_id w z) = _
   rw [hG, hη]
   simp
+end
 
-theorem correctionTheta_infinity_angular (A : SArithmeticData F)
+
+section
+variable (A : SArithmeticData F)
     (σ : F →+* ℂ) (Λ G η_id : A.ArithmeticIdeleClasses →* Circle)
     (hΛ : ∀ (w : InfinitePlace F) (z : w.Completionˣ),
       (A.ideleInfiniteComponent Λ w z : ℂ) =
@@ -476,7 +484,9 @@ theorem correctionTheta_infinity_angular (A : SArithmeticData F)
       A.ideleInfiniteComponent G w z = 1)
     (hη : ∀ (w : InfinitePlace F) (z : w.Completionˣ),
       A.ideleInfiniteComponent η_id w z = 1)
-    (w : InfinitePlace F) :
+    (w : InfinitePlace F)
+include A σ Λ G η_id hΛ hG hη w
+theorem correctionTheta_infinity_angular   :
     ∃ n : ℤ, (n = 1 ∨ n = -1) ∧ ∀ z : w.Completionˣ,
       (((A.ideleInfiniteComponent (A.correctionTheta Λ G η_id) w z)⁻¹ : Circle) : ℂ) =
         DHCubic.angular (InfinitePlace.Completion.extensionEmbedding w (z : w.Completion)) ^ n ∧
@@ -494,18 +504,7 @@ theorem correctionTheta_infinity_angular (A : SArithmeticData F)
     rw [hΛ, hang _ hz, zpow_neg, neg_neg]
     simp
 
-theorem correctionTheta_infinity_no_radial (A : SArithmeticData F)
-    (σ : F →+* ℂ) (Λ G η_id : A.ArithmeticIdeleClasses →* Circle)
-    (hΛ : ∀ (w : InfinitePlace F) (z : w.Completionˣ),
-      (A.ideleInfiniteComponent Λ w z : ℂ) =
-        (DHCubic.infinityComponent (DHCubic.E0 F A) F
-          (σ.comp (algebraMap (DHCubic.E0 F A) F)) w
-          (InfinitePlace.Completion.extensionEmbedding w (z : w.Completion)))⁻¹)
-    (hG : ∀ (w : InfinitePlace F) (z : w.Completionˣ),
-      A.ideleInfiniteComponent G w z = 1)
-    (hη : ∀ (w : InfinitePlace F) (z : w.Completionˣ),
-      A.ideleInfiniteComponent η_id w z = 1)
-    (w : InfinitePlace F) (z u : w.Completionˣ) (r : ℝ) (hr : 0 < r)
+theorem correctionTheta_infinity_no_radial   (z u : w.Completionˣ) (r : ℝ) (hr : 0 < r)
     (hu : InfinitePlace.Completion.extensionEmbedding w (u : w.Completion) = (r : ℂ)) :
     A.ideleInfiniteComponent (A.correctionTheta Λ G η_id) w (z * u) =
       A.ideleInfiniteComponent (A.correctionTheta Λ G η_id) w z := by
@@ -518,6 +517,8 @@ theorem correctionTheta_infinity_no_radial (A : SArithmeticData F)
   rw [hΛ, hΛ]
   simp only [Units.val_mul, map_mul, hu]
   rw [mul_comm, DHCubic.infinity_no_radial _ _ _ _ _ r hr]
+end
+
 
 end CorrectionAssembly
 

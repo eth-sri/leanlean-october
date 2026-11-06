@@ -19,8 +19,11 @@ theorem one_add_abs_rpow_integrable (B : ℝ) (hB : 1 < B) :
   have := integrable_one_add_norm (μ := volume) (E := ℝ) (r := B) (by norm_num; linarith)
   simpa [Real.norm_eq_abs] using this
 
-theorem joint_integral_bound (a₁ b₁ a₂ b₂ x₀ x₁ : ℝ) (ha₁ : 0 < a₁) (hab₁ : a₁ ≤ b₁)
-    (hab₂ : a₂ ≤ b₂) (hx : x₀ ≤ x₁) (B k : ℝ) (hB : 0 < B) (hk : 0 ≤ k) :
+section
+variable (a₁ b₁ a₂ b₂ x₀ x₁ : ℝ) (ha₁ : 0 < a₁) (hab₁ : a₁ ≤ b₁)
+    (hab₂ : a₂ ≤ b₂) (hx : x₀ ≤ x₁)
+include a₁ b₁ a₂ b₂ x₀ x₁ ha₁ hab₁ hab₂ hx
+theorem joint_integral_bound   (B k : ℝ) (hB : 0 < B) (hk : 0 ≤ k) :
     ∃ Cw : ℝ, 0 ≤ Cw ∧ ∀ ξ : ℂ, x₀ ≤ ξ.re → ξ.re ≤ x₁ →
       ∀ v y : ℝ, a₁ ≤ v → v ≤ b₁ → a₂ ≤ y → y ≤ b₂ →
       ∀ (C : ℝ), 0 ≤ C → ∀ Fn : ℝ × ℝ → ℂ, AEStronglyMeasurable Fn volume →
@@ -43,8 +46,7 @@ theorem joint_integral_bound (a₁ b₁ a₂ b₂ x₀ x₁ : ℝ) (ha₁ : 0 < 
     _ ≤ Cc * (C * (1 + |ξ.im|) ^ (-B)) := mul_le_mul_of_nonneg_left hle hCc
     _ = Cc * C * (1 + |ξ.im|) ^ (-B) := by ring
 
-theorem nested_integral_bound (a₁ b₁ a₂ b₂ x₀ x₁ : ℝ) (ha₁ : 0 < a₁) (hab₁ : a₁ ≤ b₁)
-    (hab₂ : a₂ ≤ b₂) (hx : x₀ ≤ x₁) (B k : ℝ) (hB : 0 < B) (hk : 0 ≤ k) :
+theorem nested_integral_bound   (B k : ℝ) (hB : 0 < B) (hk : 0 ≤ k) :
     ∃ Cw : ℝ, 0 ≤ Cw ∧ ∀ ξ : ℂ, x₀ ≤ ξ.re → ξ.re ≤ x₁ →
       ∀ v y : ℝ, a₁ ≤ v → v ≤ b₁ → a₂ ≤ y → y ≤ b₂ →
       ∀ (C : ℝ), 0 ≤ C → ∀ G : ℂ → ℂ → ℂ,
@@ -91,8 +93,7 @@ theorem nested_integral_bound (a₁ b₁ a₂ b₂ x₀ x₁ : ℝ) (ha₁ : 0 <
           exact mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left hle' hpi) hpi
       _ = ((2 * Real.pi)⁻¹) ^ 2 * (C * Cw * (1 + |ξ.im|) ^ (-B)) := by ring
 
-theorem section_integrable (a₁ b₁ a₂ b₂ x₀ x₁ : ℝ) (ha₁ : 0 < a₁) (hab₁ : a₁ ≤ b₁)
-    (hab₂ : a₂ ≤ b₂) (hx : x₀ ≤ x₁) (k : ℝ) (hk : 0 ≤ k) :
+theorem section_integrable   (k : ℝ) (hk : 0 ≤ k) :
     ∀ ξ : ℂ, x₀ ≤ ξ.re → ξ.re ≤ x₁ →
       ∀ v y : ℝ, a₁ ≤ v → v ≤ b₁ → a₂ ≤ y → y ≤ b₂ →
       ∀ (C : ℝ), ∀ Fn : ℝ × ℝ → ℂ, Continuous Fn →
@@ -176,6 +177,8 @@ theorem section_integrable (a₁ b₁ a₂ b₂ x₀ x₁ : ℝ) (ha₁ : 0 < a�
   exact Integrable.mono' hI
     ((hFc.comp (by fun_prop : Continuous fun s : ℝ => (s, t))).aestronglyMeasurable)
     (Filter.Eventually.of_forall key)
+end
+
 
 end
 

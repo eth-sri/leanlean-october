@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LFunctions.Dedekind.IdealClassThetaMellin
 public import DedekindZetaZeroFree.Theta.Profiles.MixedThetaFunctionalEquationPair
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -35,7 +38,7 @@ private lemma hasMellin_finset_sum {s : ℂ} {ι : Type*} (t : Finset ι)
       · simp [mellin]
   | insert a t ha ih =>
       have hfa := h a (Finset.mem_insert_self a t)
-      have hft : ∀ i ∈ t, HasMellin (f i) s (m i) := fun i hi => h i (Finset.mem_insert_of_mem hi)
+      have hft  := fun i hi => h i (Finset.mem_insert_of_mem hi)
       have ih' := ih hft
       have hadd := hasMellin_add hfa.1 ih'.1
       rw [hfa.2, ih'.2] at hadd

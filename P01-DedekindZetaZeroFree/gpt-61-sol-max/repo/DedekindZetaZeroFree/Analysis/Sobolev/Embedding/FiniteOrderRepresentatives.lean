@@ -117,9 +117,12 @@ theorem mollifiedValue_smooth {n k : ℕ} (g : Interior.GlobalWeakSobolev n k) (
   exact ContDiffBump.hasCompactSupport_normed _ |>.contDiff_convolution_left _
     (ContDiffBump.contDiff_normed _) ((Lp.memLp _).locallyIntegrable (by norm_num))
 
-theorem mollifiedValue_support {n k : ℕ} (g : Interior.GlobalWeakSobolev n k)
+section
+variable {n k : ℕ} (g : Interior.GlobalWeakSobolev n k)
     {K : Set (Space n)} (hK : IsCompact K)
-    (hg : ∀ α : MultiIndex n k, ∀ᵐ x ∂volume, x ∉ K → g.derivatives α x = 0) (t : ℕ) :
+    (hg : ∀ α : MultiIndex n k, ∀ᵐ x ∂volume, x ∉ K → g.derivatives α x = 0)
+include n k g K hK hg in
+theorem mollifiedValue_support   (t : ℕ) :
     tsupport (mollifiedValue g t) ⊆ Metric.cthickening 1 K := by
   let a := Interior.radiusBump n (1 / (t + 1 : ℕ)) (by positivity)
   let f := g.derivatives (⟨fun _ => 0, by simp⟩ : MultiIndex n k)
@@ -135,9 +138,8 @@ theorem mollifiedValue_support {n k : ℕ} (g : Interior.GlobalWeakSobolev n k)
     (closure_minimal Set.support_indicator_subset hK.isClosed) le_rfl).trans
       (Metric.cthickening_mono (by dsimp [a, Interior.radiusBump]; exact div_le_self (by norm_num) (by norm_cast; omega)) K)
 
-theorem mollifiedValue_jet_difference {n k : ℕ} (g : Interior.GlobalWeakSobolev n k)
-    {K : Set (Space n)} (hK : IsCompact K)
-    (hg : ∀ α : MultiIndex n k, ∀ᵐ x ∂volume, x ∉ K → g.derivatives α x = 0)
+include n k g K hK hg in
+theorem mollifiedValue_jet_difference  
     (α : MultiIndex n k) (t s : ℕ) :
     (∫ x, ‖coordinateDerivative α (mollifiedValue g t - mollifiedValue g s) x‖ ^ 2) =
       ‖regularizedJet g α t - regularizedJet g α s‖ ^ 2 := by
@@ -233,9 +235,8 @@ theorem mollifiedValue_jets_uniformLimit {n : ℕ} (m : ℕ)
   refine ⟨hu, hu.continuous ?_⟩
   exact (Filter.Eventually.of_forall fun t => (smooth_list α.directions (mollifiedValue_smooth g t)).continuous).frequently
 
-theorem mollifiedValue_uniformLimit_ae {n k : ℕ} (g : Interior.GlobalWeakSobolev n k)
-    {K : Set (Space n)} (hK : IsCompact K)
-    (hg : ∀ α : MultiIndex n k, ∀ᵐ x ∂volume, x ∉ K → g.derivatives α x = 0)
+include n k g K hK hg in
+theorem mollifiedValue_uniformLimit_ae  
     (α : MultiIndex n k) (J : Space n → ℂ)
     (hJ : TendstoUniformly (fun t => coordinateDerivative α (mollifiedValue g t)) J atTop) :
     J =ᵐ[volume] (fun x => g.derivatives α x) := by
@@ -248,6 +249,8 @@ theorem mollifiedValue_uniformLimit_ae {n k : ℕ} (g : Interior.GlobalWeakSobol
   have hj := (hJ.tendsto_at x).comp hns.tendsto_atTop
   apply tendsto_nhds_unique hj
   exact hx.congr (fun t => he (ns t))
+end
+
 
 open MeasureTheory KPContLocalNorm Filter Topology
 
@@ -277,10 +280,14 @@ theorem global_weak_sobolev_continuous_representative {n : ℕ} (m : ℕ)
 
 open KPContLocalNorm MeasureTheory Filter Topology
 
- def assemble {n : ℕ} (v : Fin n → ℂ) : Space n →L[ℝ] ℂ :=
+ section
+variable {n : ℕ}
+include n in
+def assemble   (v : Fin n → ℂ) : Space n →L[ℝ] ℂ :=
   ∑ i, (EuclideanSpace.proj i).smulRight (v i)
 
-private theorem fderiv_assemble {n : ℕ} {f : Space n → ℂ} (hf : Differentiable ℝ f) (x : Space n) :
+include n in
+private theorem fderiv_assemble   {f : Space n → ℂ} (hf : Differentiable ℝ f) (x : Space n) :
     fderiv ℝ f x = assemble (fun i => coordinateDerivativeList [i] f x) := by
   apply ContinuousLinearMap.ext
   intro y
@@ -289,7 +296,8 @@ private theorem fderiv_assemble {n : ℕ} {f : Space n → ℂ} (hf : Differenti
   simp [assemble, coordinateDerivativeList, EuclideanSpace.basisFun_apply,
     EuclideanSpace.basisFun_repr, map_sum]
 
-private theorem uniform_sum {n : ℕ} {E : Type*} [NormedAddCommGroup E]
+include n in
+private theorem uniform_sum   {E : Type*} [NormedAddCommGroup E]
     (F : Fin n → ℕ → Space n → E) (G : Fin n → Space n → E)
     (h : ∀ i, TendstoUniformly (F i) (G i) atTop) :
     TendstoUniformly (fun t x => ∑ i, F i t x) (fun x => ∑ i, G i x) atTop := by
@@ -302,7 +310,8 @@ private theorem uniform_sum {n : ℕ} {E : Type*} [NormedAddCommGroup E]
       exact (h i).add ih
   exact hs Finset.univ
 
-private theorem assemble_uniform {n : ℕ} (F : Fin n → ℕ → Space n → ℂ)
+include n in
+private theorem assemble_uniform   (F : Fin n → ℕ → Space n → ℂ)
     (G : Fin n → Space n → ℂ) (h : ∀ i, TendstoUniformly (F i) (G i) atTop) :
     TendstoUniformly (fun t x => assemble (fun i => F i t x))
       (fun x => assemble (fun i => G i x)) atTop := by
@@ -310,19 +319,22 @@ private theorem assemble_uniform {n : ℕ} (F : Fin n → ℕ → Space n → �
   intro i
   exact ((ContinuousLinearMap.smulRightL ℝ (Space n) ℂ (EuclideanSpace.proj i)).uniformContinuous).comp_tendstoUniformly (h i)
 
-private theorem list_append {n : ℕ} (l l' : List (Fin n)) (f : Space n → ℂ) :
+include n in
+private theorem list_append   (l l' : List (Fin n)) (f : Space n → ℂ) :
     coordinateDerivativeList (l ++ l') f = coordinateDerivativeList l (coordinateDerivativeList l' f) := by
   induction l with
   | nil => rfl
   | cons i l ih => simp only [List.cons_append, coordinateDerivativeList, ih]
 
-private theorem list_smooth {n : ℕ} (l : List (Fin n)) {f : Space n → ℂ}
+include n in
+private theorem list_smooth   (l : List (Fin n)) {f : Space n → ℂ}
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) : ContDiff ℝ (⊤ : ℕ∞) (coordinateDerivativeList l f) := by
   induction l with
   | nil => exact hf
   | cons i l ih => exact (ih.fderiv_right (by simp)).clm_apply contDiff_const
 
-theorem contDiff_of_uniform_coordinate_jets {n : ℕ} (m : ℕ)
+include n in
+theorem contDiff_of_uniform_coordinate_jets   (m : ℕ)
     (F : ℕ → Space n → ℂ) (hF : ∀ t, ContDiff ℝ (⊤ : ℕ∞) (F t))
     (hjet : ∀ l : List (Fin n), l.length ≤ m →
       ∃ J : Space n → ℂ, Continuous J ∧ TendstoUniformly (fun t => coordinateDerivativeList l (F t)) J atTop)
@@ -355,7 +367,8 @@ theorem contDiff_of_uniform_coordinate_jets {n : ℕ} (m : ℕ)
       (fun t x _ => ((hF t).differentiable (by simp) x).hasFDerivAt)
       (fun x _ => hf.tendsto_at x) (Set.mem_univ x)
 
-private theorem list_perm {n : ℕ} {l k : List (Fin n)} (hp : l.Perm k)
+include n in
+private theorem list_perm   {l k : List (Fin n)} (hp : l.Perm k)
     {f : Space n → ℂ} (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
     coordinateDerivativeList l f = coordinateDerivativeList k f := by
   induction hp with
@@ -386,7 +399,8 @@ private theorem list_as_index {n m : ℕ} (l : List (Fin n)) (hl : l.length ≤ 
   rw [MultiIndex.directions, List.count_flatMap, ← List.sum_toFinset _ (List.nodup_finRange n)]
   simp [α, Function.comp_def, List.count_replicate]
 
-theorem global_weak_sobolev_finite_order_representative {n : ℕ} (m : ℕ)
+include n in
+theorem global_weak_sobolev_finite_order_representative   (m : ℕ)
     (g : Interior.GlobalWeakSobolev n (m + n)) (hn : 0 < n)
     {K : Set (Space n)} (hK : IsCompact K)
     (hg : ∀ α : MultiIndex n (m + n), ∀ᵐ x ∂volume, x ∉ K → g.derivatives α x = 0) :
@@ -403,7 +417,8 @@ theorem global_weak_sobolev_finite_order_representative {n : ℕ} (m : ℕ)
   simp_rw [he]
   exact (hJ α).1
 
-private theorem inner_representative {n : ℕ} (A B : LocalBall n)
+include n in
+private theorem inner_representative   (A B : LocalBall n)
     (hAB : Metric.closedBall A.center A.radius ⊆ B.carrier) (m : ℕ)
     (u : IntegerSobolev B (m + n)) :
     ∃ f : Space n → ℂ, ContDiff ℝ m f ∧
@@ -420,7 +435,8 @@ private theorem inner_representative {n : ℕ} (A B : LocalBall n)
   rw [hx, Set.indicator_of_mem (hAB (Metric.ball_subset_closedBall hAx)),
     (hχone x (Metric.ball_subset_closedBall hAx)).eq_of_nhds, one_smul]
 
- def innerBall {n : ℕ} (B : LocalBall n) (j : ℕ) : LocalBall n where
+ include n in
+def innerBall   (B : LocalBall n) (j : ℕ) : LocalBall n where
   dimension_pos := B.dimension_pos
   center := B.center
   radius := B.radius * (1 - 1 / (j + 2 : ℕ))
@@ -431,7 +447,8 @@ private theorem inner_representative {n : ℕ} (A B : LocalBall n)
       norm_cast; omega
     linarith
 
-private theorem innerBall_nested {n : ℕ} (B : LocalBall n) (j : ℕ) :
+include n in
+private theorem innerBall_nested   (B : LocalBall n) (j : ℕ) :
     Metric.closedBall (innerBall B j).center (innerBall B j).radius ⊆ B.carrier := by
   intro x hx
   change dist x B.center < B.radius
@@ -440,7 +457,8 @@ private theorem innerBall_nested {n : ℕ} (B : LocalBall n) (j : ℕ) :
   have h : (0 : ℝ) < 1 / (j + 2 : ℕ) := by positivity
   nlinarith [B.radius_pos]
 
-private theorem innerBall_cover {n : ℕ} (B : LocalBall n) :
+include n in
+private theorem innerBall_cover   (B : LocalBall n) :
     (⋃ j : ℕ, (innerBall B j).carrier) = B.carrier := by
   apply Set.Subset.antisymm
   · apply Set.iUnion_subset
@@ -458,7 +476,8 @@ private theorem innerBall_cover {n : ℕ} (B : LocalBall n) :
     obtain ⟨j, hj⟩ := (ht.eventually (eventually_gt_nhds hx)).exists
     exact Set.mem_iUnion.mpr ⟨j, hj⟩
 
-theorem local_weak_sobolev_finite_order_representative {n : ℕ}
+include n in
+theorem local_weak_sobolev_finite_order_representative  
     (B : LocalBall n) (m : ℕ) (u : IntegerSobolev B (m + n)) :
     ∃ f : Space n → ℂ, ContDiffOn ℝ m f B.carrier ∧
       f =ᵐ[volume.restrict B.carrier]
@@ -499,6 +518,8 @@ theorem local_weak_sobolev_finite_order_representative {n : ℕ}
       filter_upwards [ae_restrict_mem (hU j).measurableSet] with x hx
       exact heq j hx
     exact he.trans (hae j)
+end
+
 
 end Regularization
 

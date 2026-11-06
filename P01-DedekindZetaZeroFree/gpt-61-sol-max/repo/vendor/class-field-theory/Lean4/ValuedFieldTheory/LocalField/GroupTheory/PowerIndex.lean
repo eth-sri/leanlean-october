@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import Mathlib.SetTheory.Cardinal.Finite
 public import Mathlib.Algebra.Group.Subgroup.Ker
 public import Mathlib.Algebra.Group.Hom.Basic
@@ -8,6 +10,7 @@ public import ValuedFieldTheory.LocalField.GroupTheory.IntegerMultipleSubgroup
 public import Mathlib.RingTheory.RootsOfUnity.Basic
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -47,21 +50,21 @@ variable (G : Type uG) (H : Type uH) (U : Type uU)
 variable [CommGroup G] [CommGroup H] [CommGroup U]
 
 
-/-- The identity element is an `n`-th power and hence lies in the range of the power endomorphism.
-The identity element is an `n`-th power and hence lies in the range of the power endomorphism. -/
-@[simp]
-theorem powMonoidHom_range_one_mem (n : ℕ) :
-    (1 : G) ∈ (powMonoidHom n : G →* G).range := by
-  rw [MonoidHom.mem_range]
-  exact ⟨1, one_pow n⟩
 
-/-- A subgroup of a commutative group contains the powers indexed by its
-index. -/
-theorem powMonoidHom_range_index_le (H : Subgroup G) :
-    (powMonoidHom H.index : G →* G).range ≤ H := by
-  intro x hx
-  obtain ⟨y, rfl⟩ := (MonoidHom.mem_range (G := G)).1 hx
-  exact H.pow_index_mem y
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- In a finite commutative group, the `n`-th-power quotient has the same
 cardinality as the subgroup of `n`-torsion elements.  This is the finite
@@ -100,30 +103,28 @@ def nthPowerKernelEquivOfMulEquiv (n : ℕ) (e : G ≃* H) :
 
 /-- A multiplicative equivalence carries the range of the `n`-th power map onto the corresponding
 range. -/
-theorem powMonoidHom_range_map (n : ℕ) (e : G ≃* H) :
-    ((powMonoidHom n : G →* G).range).map e.toMonoidHom = (powMonoidHom n : H →* H).range := by
-  exact e.map_range_powMonoidHom n
+def powMonoidHom_range_map (n : ℕ) (e : G ≃* H)  := e.map_range_powMonoidHom n
 
-/-- A multiplicative equivalence transports `n`-torsion kernels. -/
-theorem powMonoidHom_ker_map (n : ℕ) (e : G ≃* H) :
-    ((powMonoidHom n : G →* G).ker).map e.toMonoidHom =
-      (powMonoidHom n : H →* H).ker := by
-  ext y
-  constructor
-  · rintro ⟨x, hx, rfl⟩
-    exact (MonoidHom.mem_ker (G := H)).2 (by
-      have hxpow : x ^ n = 1 :=
-        (MonoidHom.mem_ker (G := G)).1 hx
-      change (e.toMonoidHom x) ^ n = 1
-      simpa [map_pow] using congrArg e hxpow)
-  · intro hy
-    refine ⟨e.symm y, ?_, ?_⟩
-    · exact (MonoidHom.mem_ker (G := G)).2 (by
-      have hypow : y ^ n = 1 :=
-        (MonoidHom.mem_ker (G := H)).1 hy
-      change (e.symm y) ^ n = 1
-      simpa [map_pow] using congrArg e.symm hypow)
-    · simp
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- An injective multiplicative homomorphism transports finiteness of the
 ambient power kernel to the source power kernel. -/
@@ -134,13 +135,11 @@ theorem finite_nthPowerKernel_of_injective
   let mapKernel : (powMonoidHom n : G →* G).ker →
       (powMonoidHom n : H →* H).ker := fun x =>
     ⟨f x, (MonoidHom.mem_ker (G := H)).2 (by
-      have hx : (x : G) ^ n = 1 := by
-        simpa only [powMonoidHom_apply] using
-          (MonoidHom.mem_ker (G := G)).1 x.property
+      have hx : (x : G) ^ n = 1 := (MonoidHom.mem_ker (G := G)).1 x.property
       rw [powMonoidHom_apply, ← map_pow, hx, map_one])⟩
   exact Finite.of_injective mapKernel fun x y hxy => by
     apply Subtype.ext
-    exact hf (congrArg Subtype.val hxy)
+    apply hf <;> aesop
 
 /-- The power kernel in the unit group of a commutative ring is Mathlib's
 group of roots of unity. -/
@@ -158,16 +157,18 @@ noncomputable instance finite_powMonoidHom_ker_units
   rw [powMonoidHom_ker_units_eq_rootsOfUnity]
   infer_instance
 
+section
+variable (n : ℕ) (e : G ≃* H)
+include n e
 /-- A multiplicative equivalence transports quotients by `n`-th powers. -/
-def nthPowerQuotientEquivOfMulEquiv (n : ℕ) (e : G ≃* H) :
-    G ⧸ (powMonoidHom n : G →* G).range ≃* H ⧸ (powMonoidHom n : H →* H).range :=
+def nthPowerQuotientEquivOfMulEquiv    :=
   QuotientGroup.congr ((powMonoidHom n : G →* G).range) ((powMonoidHom n : H →* H).range) e
     (powMonoidHom_range_map G H n e)
 
 /-- The quotient equivalence induced by a multiplicative equivalence maps each power-class
 representative to its image. -/
 @[simp]
-theorem nthPowerQuotientEquivOfMulEquiv_mk (n : ℕ) (e : G ≃* H) (x : G) :
+theorem nthPowerQuotientEquivOfMulEquiv_mk   (x : G) :
     nthPowerQuotientEquivOfMulEquiv G H n e
         (QuotientGroup.mk' ((powMonoidHom n : G →* G).range) x) =
       QuotientGroup.mk' ((powMonoidHom n : H →* H).range) (e x) :=
@@ -175,13 +176,14 @@ theorem nthPowerQuotientEquivOfMulEquiv_mk (n : ℕ) (e : G ≃* H) (x : G) :
 
 /-- Finiteness of a power quotient transports backwards along a
 multiplicative equivalence. -/
-theorem finite_nthPowerQuotient_of_mulEquiv
-    (n : ℕ) (e : G ≃* H)
-    [Finite (H ⧸ (powMonoidHom n : H →* H).range)] :
-    Finite (G ⧸ (powMonoidHom n : G →* G).range) :=
+def finite_nthPowerQuotient_of_mulEquiv
+     
+    [Finite (H ⧸ (powMonoidHom n : H →* H).range)]  :=
   Finite.of_equiv
     (H ⧸ (powMonoidHom n : H →* H).range)
     (nthPowerQuotientEquivOfMulEquiv G H n e).symm.toEquiv
+end
+
 
 /-- The `n`-torsion kernel of a product is the product of the two
 `n`-torsion kernels. -/
@@ -195,10 +197,7 @@ def nthPowerKernelProductEquiv (n : ℕ) :
         have hfst := congrArg Prod.fst hx
         simpa using hfst⟩,
       ⟨(x : G × H).2, by
-        have hx : (x : G × H) ^ n = 1 :=
-          (MonoidHom.mem_ker (G := G × H)).1 x.property
-        have hsnd := congrArg Prod.snd hx
-        simpa using hsnd⟩)
+        aesop⟩)
   invFun x :=
     ⟨((x.1 : G), (x.2 : H)), by
       have hx₁ : (x.1 : G) ^ n = 1 :=
@@ -207,12 +206,9 @@ def nthPowerKernelProductEquiv (n : ℕ) :
         (MonoidHom.mem_ker (G := H)).1 x.2.property
       change (((x.1 : G), (x.2 : H)) : G × H) ^ n = 1
       ext <;> simp [hx₁, hx₂]⟩
-  left_inv x := by
-    ext <;> rfl
-  right_inv x := by
-    ext <;> rfl
-  map_mul' x y := by
-    ext <;> rfl
+  left_inv x := rfl
+  right_inv x := rfl
+  map_mul' x y := rfl
 
 /-- Finiteness of the two factor kernels transports across the canonical
 product-kernel equivalence. -/
@@ -224,16 +220,19 @@ noncomputable instance finite_powMonoidHom_ker_prod (n : ℕ)
     ((powMonoidHom n : G →* G).ker × (powMonoidHom n : H →* H).ker)
     (nthPowerKernelProductEquiv G H n).symm.toEquiv
 
-/-- General cardinal form of the product-kernel decomposition.  This is the
-source of truth before any finiteness specialization. -/
-theorem cardinal_mk_nthPowerKernelProduct (n : ℕ) :
-    Cardinal.mk ((powMonoidHom n : (G × H) →* (G × H)).ker) =
-      Cardinal.mk
-        ((powMonoidHom n : G →* G).ker × (powMonoidHom n : H →* H).ker) :=
-  Cardinal.mk_congr (nthPowerKernelProductEquiv G H n).toEquiv
 
+
+
+
+
+
+
+
+section
+variable (n : ℕ)
+include n
 /-- Cardinality form of `nthPowerKernelProductEquiv`. -/
-theorem card_nthPowerKernelProduct (n : ℕ)
+theorem card_nthPowerKernelProduct  
     [Finite ((powMonoidHom n : G →* G).ker)]
     [Finite ((powMonoidHom n : H →* H).ker)] :
     Nat.card ((powMonoidHom n : (G × H) →* (G × H)).ker) =
@@ -245,7 +244,7 @@ theorem card_nthPowerKernelProduct (n : ℕ)
 /-- A product decomposition of a commutative group splits the cardinality of
 the `n`-torsion kernel as the product of the two factor kernels. -/
 theorem card_nthPowerKernel_eq_mul_of_mulEquiv_prod
-    (n : ℕ) (e : G ≃* H × U)
+      (e : G ≃* H × U)
     [Finite ((powMonoidHom n : G →* G).ker)]
     [Finite ((powMonoidHom n : H →* H).ker)]
     [Finite ((powMonoidHom n : U →* U).ker)] :
@@ -262,21 +261,21 @@ theorem card_nthPowerKernel_eq_mul_of_mulEquiv_prod
           Nat.card ((powMonoidHom n : U →* U).ker) :=
       card_nthPowerKernelProduct H U n
 
-/-- General cardinal form of the kernel decomposition transported by a
-multiplicative product equivalence. -/
-theorem cardinal_mk_nthPowerKernel_eq_of_mulEquiv_prod
-    (n : ℕ) (e : G ≃* H × U) :
-    Cardinal.lift.{max uH uU, uG}
-        (Cardinal.mk ((powMonoidHom n : G →* G).ker)) =
-      Cardinal.lift.{uG, max uH uU} (Cardinal.mk
-        ((powMonoidHom n : H →* H).ker × (powMonoidHom n : U →* U).ker)) :=
-  Cardinal.mk_congr_lift
-    ((nthPowerKernelEquivOfMulEquiv G (H × U) n e).trans
-      (nthPowerKernelProductEquiv H U n)).toEquiv
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The product map from a product group to the product of its `n`-th-power
 quotients. -/
-def nthPowerProductQuotientHom (n : ℕ) :
+def nthPowerProductQuotientHom   :
     G × H →* (G ⧸ (powMonoidHom n : G →* G).range) × (H ⧸ (powMonoidHom n : H →* H).range) where
   toFun x :=
     (QuotientGroup.mk' ((powMonoidHom n : G →* G).range) x.1,
@@ -285,7 +284,7 @@ def nthPowerProductQuotientHom (n : ℕ) :
   map_mul' _ _ := rfl
 
 /-- Every pair of power classes is represented by a power class in the product group. -/
-theorem nthPowerProductQuotientHom_surjective (n : ℕ) :
+theorem nthPowerProductQuotientHom_surjective   :
     Function.Surjective (nthPowerProductQuotientHom G H n) := by
   intro q
   rcases q with ⟨qG, qH⟩
@@ -296,7 +295,7 @@ theorem nthPowerProductQuotientHom_surjective (n : ℕ) :
   exact ⟨(g, h), rfl⟩
 
 /-- The product power-class homomorphism has trivial kernel. -/
-theorem nthPowerProductQuotientHom_ker (n : ℕ) :
+theorem nthPowerProductQuotientHom_ker   :
     (nthPowerProductQuotientHom G H n).ker =
       (powMonoidHom n : (G × H) →* (G × H)).range := by
   ext x
@@ -312,9 +311,9 @@ theorem nthPowerProductQuotientHom_ker (n : ℕ) :
     have hxH :
         QuotientGroup.mk' ((powMonoidHom n : H →* H).range) x.2 = 1 :=
       congrArg Prod.snd hx
-    have hxGmem : x.1 ∈ (powMonoidHom n : G →* G).range :=
+    have hxGmem  :=
       (QuotientGroup.eq_one_iff x.1).1 hxG
-    have hxHmem : x.2 ∈ (powMonoidHom n : H →* H).range :=
+    have hxHmem  :=
       (QuotientGroup.eq_one_iff x.2).1 hxH
     rw [MonoidHom.mem_range] at hxGmem hxHmem ⊢
     rcases hxGmem with ⟨g, hg⟩
@@ -337,7 +336,7 @@ theorem nthPowerProductQuotientHom_ker (n : ℕ) :
 
 /-- Quotienting a product by `n`-th powers is the product of the two
 `n`-th-power quotients. -/
-def nthPowerProductQuotientEquiv (n : ℕ) :
+def nthPowerProductQuotientEquiv   :
     (G × H) ⧸ (powMonoidHom n : (G × H) →* (G × H)).range ≃*
       (G ⧸ (powMonoidHom n : G →* G).range) × (H ⧸ (powMonoidHom n : H →* H).range) :=
   (QuotientGroup.quotientMulEquivOfEq
@@ -345,6 +344,8 @@ def nthPowerProductQuotientEquiv (n : ℕ) :
     (QuotientGroup.quotientKerEquivOfSurjective
       (nthPowerProductQuotientHom G H n)
       (nthPowerProductQuotientHom_surjective G H n))
+end
+
 
 /-- Finiteness of the factor power quotients transports across the canonical
 product-quotient equivalence. -/
@@ -356,12 +357,12 @@ noncomputable instance finite_powMonoidHom_rangeQuotient_prod (n : ℕ)
     ((G ⧸ (powMonoidHom n : G →* G).range) × (H ⧸ (powMonoidHom n : H →* H).range))
     (nthPowerProductQuotientEquiv G H n).symm.toEquiv
 
-/-- General cardinal form of the product-quotient decomposition. -/
-theorem cardinal_mk_nthPowerProductQuotient (n : ℕ) :
-    Cardinal.mk ((G × H) ⧸ (powMonoidHom n : (G × H) →* (G × H)).range) =
-      Cardinal.mk
-        ((G ⧸ (powMonoidHom n : G →* G).range) × (H ⧸ (powMonoidHom n : H →* H).range)) :=
-  Cardinal.mk_congr (nthPowerProductQuotientEquiv G H n).toEquiv
+
+
+
+
+
+
 
 /-- The number of `n`-th power classes in a product is the product of the two factor class numbers.
 The number of `n`-th power classes in a product is the product of the two factor class numbers. -/
@@ -394,17 +395,17 @@ theorem card_nthPowerQuotient_eq_mul_of_mulEquiv_prod
           Nat.card (U ⧸ (powMonoidHom n : U →* U).range) :=
       card_nthPowerProductQuotient H U n
 
-/-- General cardinal form of the quotient decomposition transported by a
-multiplicative product equivalence. -/
-theorem cardinal_mk_nthPowerQuotient_eq_of_mulEquiv_prod
-    (n : ℕ) (e : G ≃* H × U) :
-    Cardinal.lift.{max uH uU, uG}
-        (Cardinal.mk (G ⧸ (powMonoidHom n : G →* G).range)) =
-      Cardinal.lift.{uG, max uH uU} (Cardinal.mk
-        ((H ⧸ (powMonoidHom n : H →* H).range) × (U ⧸ (powMonoidHom n : U →* U).range))) :=
-  Cardinal.mk_congr_lift
-    ((nthPowerQuotientEquivOfMulEquiv G (H × U) n e).trans
-      (nthPowerProductQuotientEquiv H U n)).toEquiv
+
+
+
+
+
+
+
+
+
+
+
 
 /-- For multiplicative integers, the range of the `n`-th power map is the subgroup of additive
 multiples of `n`. -/
@@ -414,11 +415,7 @@ theorem powMonoidHom_range_multiplicativeInt_eq_integerMultipleSubgroup
       integerMultipleSubgroup (n : ℤ) := by
   ext x
   constructor
-  · intro hx
-    rw [MonoidHom.mem_range] at hx
-    rcases hx with ⟨y, rfl⟩
-    rw [mem_integerMultipleSubgroup_iff, powMonoidHom_apply, Int.toAdd_pow]
-    exact ⟨y.toAdd, by ring⟩
+  · (intros; simp_all [MonoidHom.mem_range, LocalFieldTheory.DiscreteValuationField.mem_integerMultipleSubgroup_iff, powMonoidHom_apply, Int.toAdd_pow] <;> aesop)
   · intro hx
     rw [mem_integerMultipleSubgroup_iff] at hx
     rcases hx with ⟨k, hk⟩
@@ -433,7 +430,7 @@ theorem finite_multiplicativeInt_nthPowerQuotient
     {n : ℕ} (hn : n ≠ 0) :
     Finite (Multiplicative ℤ ⧸ (powMonoidHom n : (Multiplicative ℤ) →* (Multiplicative ℤ)).range) := by
   rw [powMonoidHom_range_multiplicativeInt_eq_integerMultipleSubgroup]
-  have hnabs : (n : ℤ).natAbs ≠ 0 := by simpa using hn
+  have hnabs : (n : ℤ).natAbs ≠ 0 := hn
   let : NeZero (n : ℤ).natAbs := ⟨hnabs⟩
   exact Finite.of_equiv
     (Multiplicative (ZMod (n : ℤ).natAbs))
@@ -447,28 +444,29 @@ theorem finite_nthPowerQuotient_of_mulEquiv_units_prod_int
     {n : ℕ} [NeZero n] (e : G ≃* U × Multiplicative ℤ)
     [Finite (U ⧸ (powMonoidHom n : U →* U).range)] :
     Finite (G ⧸ (powMonoidHom n : G →* G).range) := by
-  let : Finite
-      (Multiplicative ℤ ⧸
-        (powMonoidHom n : (Multiplicative ℤ) →* (Multiplicative ℤ)).range) :=
+  let  :=
     finite_multiplicativeInt_nthPowerQuotient (NeZero.ne n)
   exact finite_nthPowerQuotient_of_mulEquiv
     G (U × Multiplicative ℤ) n e
 
-/-- General cardinal identification of the integer-direction power quotient.
-For `n = 0` the right side is infinite; the natural-cardinality specialization
-below is therefore intentionally restricted to `n ≠ 0`. -/
-theorem cardinal_mk_multiplicativeInt_nthPowerQuotient (n : ℕ) :
-    Cardinal.mk
-        (Multiplicative ℤ ⧸ (powMonoidHom n : (Multiplicative ℤ) →* (Multiplicative ℤ)).range) =
-      Cardinal.mk (Multiplicative (ZMod (n : ℤ).natAbs)) :=
-  Cardinal.mk_congr
-    ((QuotientGroup.quotientMulEquivOfEq
-      (powMonoidHom_range_multiplicativeInt_eq_integerMultipleSubgroup n)).trans
-        (valueModIntegerMultipleSubgroupEquivZMod (n : ℤ))).toEquiv
 
+
+
+
+
+
+
+
+
+
+
+
+section
+variable {n : ℕ} (hn : n ≠ 0)
+include n hn
 /-- For nonzero `n`, the multiplicative-integer power quotient has cardinality `n`. -/
 theorem card_multiplicativeInt_nthPowerQuotient
-    {n : ℕ} (hn : n ≠ 0)
+     
     [Finite (Multiplicative ℤ ⧸ (powMonoidHom n : (Multiplicative ℤ) →* (Multiplicative ℤ)).range)] :
     Nat.card
         (Multiplicative ℤ ⧸ (powMonoidHom n : (Multiplicative ℤ) →* (Multiplicative ℤ)).range) = n := by
@@ -487,34 +485,20 @@ theorem card_multiplicativeInt_nthPowerQuotient
 
 /-- For nonzero `n`, the `n`-th power map on multiplicative integers has trivial kernel. -/
 theorem powMonoidHom_ker_multiplicativeInt_eq_bot
-    {n : ℕ} (hn : n ≠ 0) :
+      :
     (powMonoidHom n : (Multiplicative ℤ) →* (Multiplicative ℤ)).ker = ⊥ := by
-  ext x
-  constructor
-  · intro hx
-    rw [MonoidHom.mem_ker] at hx
-    rw [Subgroup.mem_bot]
-    apply Multiplicative.toAdd.injective
-    have hmul : (n : ℤ) * Multiplicative.toAdd x = 0 := by
-      have h := congrArg Multiplicative.toAdd hx
-      simpa [Int.toAdd_pow] using h
-    have hnZ : (n : ℤ) ≠ 0 := by
-      exact_mod_cast hn
-    exact (mul_eq_zero.mp hmul).resolve_left hnZ
-  · intro hx
-    rw [Subgroup.mem_bot] at hx
-    rw [MonoidHom.mem_ker, hx, powMonoidHom_apply, one_pow]
+  simp_all [MonoidHom.mem_ker, Subgroup.mem_bot, Int.toAdd_pow, powMonoidHom_apply, one_pow] <;> aesop
 
 /-- The kernel of a nonzero power map on multiplicative integers is finite. -/
 theorem finite_multiplicativeInt_nthPowerKernel
-    {n : ℕ} (hn : n ≠ 0) :
+      :
     Finite ((powMonoidHom n : (Multiplicative ℤ) →* (Multiplicative ℤ)).ker) := by
   rw [powMonoidHom_ker_multiplicativeInt_eq_bot (n := n) hn]
   infer_instance
 
 /-- The kernel of a nonzero power map on multiplicative integers has one element. -/
 theorem card_multiplicativeInt_nthPowerKernel
-    {n : ℕ} (hn : n ≠ 0)
+     
     [Finite ((powMonoidHom n : (Multiplicative ℤ) →* (Multiplicative ℤ)).ker)] :
     Nat.card ((powMonoidHom n : (Multiplicative ℤ) →* (Multiplicative ℤ)).ker) = 1 := by
   rw [powMonoidHom_ker_multiplicativeInt_eq_bot (n := n) hn]
@@ -523,7 +507,7 @@ theorem card_multiplicativeInt_nthPowerKernel
 /-- If a commutative group splits as `U × Multiplicative ℤ`, its `n`-th-power
 quotient index is `n` times the corresponding quotient index for `U`. -/
 theorem card_nthPowerQuotient_eq_mul_of_mulEquiv_units_prod_int
-    {n : ℕ} (hn : n ≠ 0) (e : G ≃* U × Multiplicative ℤ)
+      (e : G ≃* U × Multiplicative ℤ)
     [Finite (G ⧸ (powMonoidHom n : G →* G).range)]
     [Finite (U ⧸ (powMonoidHom n : U →* U).range)] :
     Nat.card (G ⧸ (powMonoidHom n : G →* G).range) =
@@ -545,22 +529,22 @@ theorem card_nthPowerQuotient_eq_mul_of_mulEquiv_units_prod_int
     _ = n * Nat.card (U ⧸ (powMonoidHom n : U →* U).range) := by
       rw [Nat.mul_comm]
 
-/-- General cardinal form of the `U × Multiplicative ℤ` quotient
-decomposition, valid without a nonzero or finiteness hypothesis. -/
-theorem cardinal_mk_nthPowerQuotient_eq_of_mulEquiv_units_prod_int
-    (n : ℕ) (e : G ≃* U × Multiplicative ℤ) :
-    Cardinal.lift.{uU, uG} (Cardinal.mk (G ⧸ (powMonoidHom n : G →* G).range)) =
-      Cardinal.lift.{uG, uU} (Cardinal.mk
-        ((U ⧸ (powMonoidHom n : U →* U).range) ×
-          (Multiplicative ℤ ⧸ (powMonoidHom n : (Multiplicative ℤ) →* (Multiplicative ℤ)).range))) :=
-  Cardinal.mk_congr_lift
-    ((nthPowerQuotientEquivOfMulEquiv G (U × Multiplicative ℤ) n e).trans
-      (nthPowerProductQuotientEquiv U (Multiplicative ℤ) n)).toEquiv
+
+
+
+
+
+
+
+
+
+
+
 
 /-- For nonzero `n`, a decomposition `G ≃ U × ℤ` identifies the `n`-torsion
 kernel of `G` with the `n`-torsion kernel of the unit factor. -/
 theorem card_nthPowerKernel_eq_of_mulEquiv_units_prod_int
-    {n : ℕ} (hn : n ≠ 0) (e : G ≃* U × Multiplicative ℤ)
+      (e : G ≃* U × Multiplicative ℤ)
     [Finite ((powMonoidHom n : G →* G).ker)]
     [Finite ((powMonoidHom n : U →* U).ker)] :
     Nat.card ((powMonoidHom n : G →* G).ker) =
@@ -569,18 +553,20 @@ theorem card_nthPowerKernel_eq_of_mulEquiv_units_prod_int
   rw [card_nthPowerKernel_eq_mul_of_mulEquiv_prod
     G U (Multiplicative ℤ) n e]
   rw [card_multiplicativeInt_nthPowerKernel hn, Nat.mul_one]
+end
 
-/-- General cardinal form of the `U × Multiplicative ℤ` kernel decomposition. -/
-theorem cardinal_mk_nthPowerKernel_eq_of_mulEquiv_units_prod_int
-    (n : ℕ) (e : G ≃* U × Multiplicative ℤ) :
-    Cardinal.lift.{uU, uG}
-        (Cardinal.mk ((powMonoidHom n : G →* G).ker)) =
-      Cardinal.lift.{uG, uU} (Cardinal.mk
-        ((powMonoidHom n : U →* U).ker ×
-          (powMonoidHom n : (Multiplicative ℤ) →* (Multiplicative ℤ)).ker)) :=
-  Cardinal.mk_congr_lift
-    ((nthPowerKernelEquivOfMulEquiv G (U × Multiplicative ℤ) n e).trans
-      (nthPowerKernelProductEquiv U (Multiplicative ℤ) n)).toEquiv
+
+
+
+
+
+
+
+
+
+
+
+
 
 end NthPowers
 
@@ -590,9 +576,9 @@ universe uA uB uG
 
 variable (A : Type uA) [AddCommGroup A]
 
-/-- The additive homomorphism `x ↦ n • x`. -/
-abbrev nsmulAddHom (n : ℕ) : A →+ A :=
-  nsmulAddMonoidHom n
+
+
+
 
 /-- The additive subgroup of `n`-fold multiples. -/
 abbrev nsmulAddSubgroup (n : ℕ) : AddSubgroup A :=
@@ -621,31 +607,17 @@ theorem powMonoidHom_range_multiplicative_eq_nsmulAddSubgroup_toSubgroup
     (n : ℕ) :
     (powMonoidHom n : (Multiplicative A) →* (Multiplicative A)).range =
       AddSubgroup.toSubgroup (nsmulAddSubgroup A n) := by
-  ext x
-  constructor
-  · intro hx
-    rw [MonoidHom.mem_range] at hx
-    rcases hx with ⟨y, rfl⟩
-    simp
-  · intro hx
-    rw [MonoidHom.mem_range]
-    have hxadd : Multiplicative.toAdd x ∈ nsmulAddSubgroup A n := by
-      simpa using hx
-    rw [mem_nsmulAddSubgroup_iff] at hxadd
-    rcases hxadd with ⟨y, hy⟩
-    refine ⟨Multiplicative.ofAdd y, ?_⟩
-    apply Multiplicative.toAdd.injective
-    simp [hy]
-
-/-- General cardinal form of the multiplicative/additive quotient
-translation. -/
-theorem cardinal_mk_multiplicative_nthPowerQuotient_eq_additive_nsmulQuotient
-    (n : ℕ) :
-    Cardinal.mk
-        (Multiplicative A ⧸ (powMonoidHom n : (Multiplicative A) →* (Multiplicative A)).range) =
-      Cardinal.mk (A ⧸ nsmulAddSubgroup A n) := by
-  rw [powMonoidHom_range_multiplicative_eq_nsmulAddSubgroup_toSubgroup]
   rfl
+
+
+
+
+
+
+
+
+
+
 
 /-- The underlying quotient types in multiplicative and additive notation
 are canonically equivalent. -/
@@ -664,28 +636,29 @@ noncomputable instance finite_multiplicative_nthPowerQuotient
   Finite.of_equiv (A ⧸ nsmulAddSubgroup A n)
     (multiplicativeNthPowerQuotientEquivAdditive A n).symm
 
+section
+variable (n : ℕ)
+    [Finite (Multiplicative A ⧸ (powMonoidHom n : (Multiplicative A) →* (Multiplicative A)).range)]
+include n
 /-- Cardinality/index form of
 `powMonoidHom_range_multiplicative_eq_nsmulAddSubgroup_toSubgroup`. -/
 theorem card_multiplicative_nthPowerQuotient_eq_nsmulAddSubgroup_index
-    (n : ℕ)
-    [Finite (Multiplicative A ⧸ (powMonoidHom n : (Multiplicative A) →* (Multiplicative A)).range)] :
+      :
     Nat.card (Multiplicative A ⧸ (powMonoidHom n : (Multiplicative A) →* (Multiplicative A)).range) =
       (nsmulAddSubgroup A n).index := by
-  rw [← Subgroup.index_eq_card
-    (H := (powMonoidHom n : (Multiplicative A) →* (Multiplicative A)).range)]
-  rw [powMonoidHom_range_multiplicative_eq_nsmulAddSubgroup_toSubgroup]
-  simp
+  rfl
 
 /-- Under logarithmic/additive notation, the `n`-th-power quotient is the
 additive quotient by `n`-fold multiples. -/
 theorem card_multiplicative_nthPowerQuotient_eq_additive_nsmulQuotient
-    (n : ℕ)
-    [Finite (Multiplicative A ⧸ (powMonoidHom n : (Multiplicative A) →* (Multiplicative A)).range)]
+     
     [Finite (A ⧸ nsmulAddSubgroup A n)] :
     Nat.card (Multiplicative A ⧸ (powMonoidHom n : (Multiplicative A) →* (Multiplicative A)).range) =
       Nat.card (A ⧸ nsmulAddSubgroup A n) := by
   rw [card_multiplicative_nthPowerQuotient_eq_nsmulAddSubgroup_index]
   rw [AddSubgroup.index_eq_card]
+end
+
 
 /-- Under the `Multiplicative` wrapper, `n`-torsion is exactly the additive
 kernel of `x ↦ n • x`. -/
@@ -693,30 +666,16 @@ theorem powMonoidHom_ker_multiplicative_eq_nsmulAddKernel_toSubgroup
     (n : ℕ) :
     (powMonoidHom n : (Multiplicative A) →* (Multiplicative A)).ker =
       AddSubgroup.toSubgroup (nsmulAddKernel A n) := by
-  ext x
-  constructor
-  · intro hx
-    rw [MonoidHom.mem_ker] at hx
-    change Multiplicative.toAdd x ∈ nsmulAddKernel A n
-    rw [mem_nsmulAddKernel_iff]
-    have h := congrArg Multiplicative.toAdd hx
-    simpa using h
-  · intro hx
-    have hxadd : Multiplicative.toAdd x ∈ nsmulAddKernel A n := by
-      simpa using hx
-    rw [mem_nsmulAddKernel_iff] at hxadd
-    rw [MonoidHom.mem_ker]
-    apply Multiplicative.toAdd.injective
-    simpa using hxadd
-
-/-- General cardinal form of the multiplicative/additive kernel
-translation. -/
-theorem cardinal_mk_multiplicative_nthPowerKernel_eq_nsmulAddKernel
-    (n : ℕ) :
-    Cardinal.mk ((powMonoidHom n : (Multiplicative A) →* (Multiplicative A)).ker) =
-      Cardinal.mk (nsmulAddKernel A n) := by
-  rw [powMonoidHom_ker_multiplicative_eq_nsmulAddKernel_toSubgroup]
   rfl
+
+
+
+
+
+
+
+
+
 
 /-- The multiplicative power kernel and additive scalar kernel have the same
 underlying type. -/
@@ -796,22 +755,22 @@ theorem card_additive_nsmulQuotient_eq_nsmulKernel
 
 variable (G : Type uG) [CommGroup G]
 
-/-- General cardinal form of a logarithmic quotient transport. -/
-theorem cardinal_mk_nthPowerQuotient_eq_additive_nsmulQuotient_of_mulEquiv
-    (n : ℕ) (e : G ≃* Multiplicative A) :
-    Cardinal.lift.{uA, uG} (Cardinal.mk (G ⧸ (powMonoidHom n : G →* G).range)) =
-      Cardinal.lift.{uG, uA} (Cardinal.mk (A ⧸ nsmulAddSubgroup A n)) := by
-  calc
-    Cardinal.lift.{uA, uG} (Cardinal.mk (G ⧸ (powMonoidHom n : G →* G).range)) =
-        Cardinal.lift.{uG, uA}
-          (Cardinal.mk (Multiplicative A ⧸
-            (powMonoidHom n : (Multiplicative A) →* (Multiplicative A)).range)) :=
-      Cardinal.mk_congr_lift
-        (nthPowerQuotientEquivOfMulEquiv G (Multiplicative A) n e).toEquiv
-    _ = Cardinal.lift.{uG, uA}
-        (Cardinal.mk (A ⧸ nsmulAddSubgroup A n)) :=
-      congrArg Cardinal.lift
-        (cardinal_mk_multiplicative_nthPowerQuotient_eq_additive_nsmulQuotient A n)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- A logarithmic multiplicative equivalence transports an `n`-th-power quotient
 to the additive quotient by `n`-fold multiples. -/
@@ -837,104 +796,104 @@ theorem card_nthPowerKernel_eq_additive_nsmulKernel_of_mulEquiv
     (nthPowerKernelEquivOfMulEquiv G (Multiplicative A) n e).toEquiv]
   exact card_multiplicative_nthPowerKernel_eq_nsmulAddKernel A n
 
-/-- General cardinal form of a logarithmic kernel transport. -/
-theorem cardinal_mk_nthPowerKernel_eq_additive_nsmulKernel_of_mulEquiv
-    (n : ℕ) (e : G ≃* Multiplicative A) :
-    Cardinal.lift.{uA, uG}
-        (Cardinal.mk ((powMonoidHom n : G →* G).ker)) =
-      Cardinal.lift.{uG, uA} (Cardinal.mk (nsmulAddKernel A n)) := by
-  calc
-    Cardinal.lift.{uA, uG}
-        (Cardinal.mk ((powMonoidHom n : G →* G).ker)) =
-      Cardinal.lift.{uG, uA}
-        (Cardinal.mk ((powMonoidHom n : (Multiplicative A) →* (Multiplicative A)).ker)) :=
-      Cardinal.mk_congr_lift
-        (nthPowerKernelEquivOfMulEquiv G (Multiplicative A) n e).toEquiv
-    _ = Cardinal.lift.{uG, uA} (Cardinal.mk (nsmulAddKernel A n)) :=
-      congrArg Cardinal.lift
-        (cardinal_mk_multiplicative_nthPowerKernel_eq_nsmulAddKernel A n)
 
-/-- Under a logarithmic multiplicative equivalence, the `n`-th-power subgroup
-is the inverse image of the additive `n`-fold-multiple subgroup. -/
-theorem powMonoidHom_range_eq_comap_nsmulAddSubgroup_toSubgroup_of_mulEquiv
-    (n : ℕ) (e : G ≃* Multiplicative A) :
-    (powMonoidHom n : G →* G).range =
-      (AddSubgroup.toSubgroup (nsmulAddSubgroup A n)).comap e.toMonoidHom := by
-  ext x
-  constructor
-  · intro hx
-    change e x ∈ AddSubgroup.toSubgroup (nsmulAddSubgroup A n)
-    have hxpow : e x ∈ (powMonoidHom n : (Multiplicative A) →* (Multiplicative A)).range := by
-      rw [MonoidHom.mem_range] at hx ⊢
-      rcases hx with ⟨y, hy⟩
-      refine ⟨e y, ?_⟩
-      rw [← hy]
-      simp only [powMonoidHom_apply, map_pow]
-    simpa [powMonoidHom_range_multiplicative_eq_nsmulAddSubgroup_toSubgroup
-      (A := A) n] using hxpow
-  · intro hx
-    change e x ∈ AddSubgroup.toSubgroup (nsmulAddSubgroup A n) at hx
-    have hxpow : e x ∈ (powMonoidHom n : (Multiplicative A) →* (Multiplicative A)).range := by
-      simpa [powMonoidHom_range_multiplicative_eq_nsmulAddSubgroup_toSubgroup
-        (A := A) n] using hx
-    rw [MonoidHom.mem_range] at hxpow
-    rcases hxpow with ⟨y, hy⟩
-    rw [MonoidHom.mem_range]
-    refine ⟨e.symm y, ?_⟩
-    apply e.injective
-    rw [powMonoidHom_apply] at hy
-    rw [powMonoidHom_apply, map_pow, MulEquiv.apply_symm_apply, hy]
 
-/-- Kernel version of
-`powMonoidHom_range_eq_comap_nsmulAddSubgroup_toSubgroup_of_mulEquiv`. -/
-theorem powMonoidHom_ker_eq_comap_nsmulAddKernel_toSubgroup_of_mulEquiv
-    (n : ℕ) (e : G ≃* Multiplicative A) :
-    (powMonoidHom n : G →* G).ker =
-      (AddSubgroup.toSubgroup (nsmulAddKernel A n)).comap e.toMonoidHom := by
-  ext x
-  constructor
-  · intro hx
-    change e x ∈ AddSubgroup.toSubgroup (nsmulAddKernel A n)
-    have hxker : e x ∈ (powMonoidHom n : (Multiplicative A) →* (Multiplicative A)).ker := by
-      exact (MonoidHom.mem_ker
-        (G := Multiplicative A)).2 (by
-        have hxpow : x ^ n = 1 :=
-          (MonoidHom.mem_ker (G := G)).1 hx
-        change (e x) ^ n = 1
-        simpa [map_pow] using congrArg e hxpow)
-    simpa [powMonoidHom_ker_multiplicative_eq_nsmulAddKernel_toSubgroup
-      (A := A) n] using hxker
-  · intro hx
-    change e x ∈ AddSubgroup.toSubgroup (nsmulAddKernel A n) at hx
-    have hxker : e x ∈ (powMonoidHom n : (Multiplicative A) →* (Multiplicative A)).ker := by
-      simpa [powMonoidHom_ker_multiplicative_eq_nsmulAddKernel_toSubgroup
-        (A := A) n] using hx
-    rw [MonoidHom.mem_ker] at hxker ⊢
-    apply e.injective
-    simpa [map_pow] using hxker
 
-/-- If the additive `n`-fold multiples have already been identified with a
-specific additive subgroup, a logarithmic equivalence transports that equality
-back to the original multiplicative group. -/
-theorem powMonoidHom_range_eq_comap_toSubgroup_of_nsmulAddSubgroup_eq
-    (n : ℕ) (e : G ≃* Multiplicative A) (B : AddSubgroup A)
-    (hB : nsmulAddSubgroup A n = B) :
-    (powMonoidHom n : G →* G).range =
-      (AddSubgroup.toSubgroup B).comap e.toMonoidHom := by
-  rw [← hB]
-  exact powMonoidHom_range_eq_comap_nsmulAddSubgroup_toSubgroup_of_mulEquiv
-    (A := A) (G := G) n e
 
-/-- Kernel analogue of
-`powMonoidHom_range_eq_comap_toSubgroup_of_nsmulAddSubgroup_eq`. -/
-theorem powMonoidHom_ker_eq_comap_toSubgroup_of_nsmulAddKernel_eq
-    (n : ℕ) (e : G ≃* Multiplicative A) (B : AddSubgroup A)
-    (hB : nsmulAddKernel A n = B) :
-    (powMonoidHom n : G →* G).ker =
-      (AddSubgroup.toSubgroup B).comap e.toMonoidHom := by
-  rw [← hB]
-  exact powMonoidHom_ker_eq_comap_nsmulAddKernel_toSubgroup_of_mulEquiv
-    (A := A) (G := G) n e
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end AdditivePowers
 

@@ -73,13 +73,16 @@ theorem wordTuple_outside (D : TensorActions R N) (W : Finset (KPFinitePlace F))
       exact hp ⟨a.tame, a.outside⟩
     simpa only [wordTuple, outsideTuple, Function.update_of_ne hn] using ih
 
-theorem word_period_kernel (D : TensorDetected R N) (W : Finset (KPFinitePlace F))
+section
+variable (D : TensorDetected R N) (W : Finset (KPFinitePlace F))
     (s : RestrictedTensorSimple.Level D.bad) (hW : places W ⊆ s.val)
     (x : ∀ p : s.val, actualLocal R D.finiteData p)
     (hx : coreStageMultilinear _ D.references D.bad (D.toTensorHC.literalPeriod 1) s x ≠ 0)
     (l : List (TameAction D.toTensorActions W s))
     (z : AmbientTensor F W (fiber D.toTensorActions W))
-    (hz : WildCurrentJointPeriod.period D.toTensorActions W s hW x z = 0) :
+    (hz : WildCurrentJointPeriod.period D.toTensorActions W s hW x z = 0)
+include D W s hW x hx l z hz
+theorem word_period_kernel   :
     WildCurrentJointPeriod.period D.toTensorActions W s hW
       (wordTuple D.toTensorActions W s x l) z = 0 := by
   let t : Finset s.val := Finset.univ.filter
@@ -97,18 +100,14 @@ theorem word_period_kernel (D : TensorDetected R N) (W : Finset (KPFinitePlace F
     (fun p hp ↦ (Finset.mem_filter.mp hp).2.1)
     (fun p hp ↦ (Finset.mem_filter.mp hp).2.2) _ z hz
 
-theorem finite_word_right_kernel (D : TensorDetected R N) (W : Finset (KPFinitePlace F))
-    (s : RestrictedTensorSimple.Level D.bad) (hW : places W ⊆ s.val)
-    (x : ∀ p : s.val, actualLocal R D.finiteData p)
-    (hx : coreStageMultilinear _ D.references D.bad (D.toTensorHC.literalPeriod 1) s x ≠ 0)
-    (l : List (TameAction D.toTensorActions W s))
-    (z : AmbientTensor F W (fiber D.toTensorActions W))
-    (hz : WildCurrentJointPeriod.period D.toTensorActions W s hW x z = 0) :
+theorem finite_word_right_kernel   :
     fourier R D.sources.dq (globalMap D.toTensorActions W s hW x z)
       (wordGroup D.toTensorActions W s l) = 0 := by
   have he := word_fourier D.toTensorActions W s hW x l z 1
   rw [one_mul] at he
   exact he.symm.trans (word_period_kernel D W s hW x hx l z hz)
+end
+
 end DedekindZetaZeroFree.FourierContinuation.WildFiniteExteriorAssembly
 
 end

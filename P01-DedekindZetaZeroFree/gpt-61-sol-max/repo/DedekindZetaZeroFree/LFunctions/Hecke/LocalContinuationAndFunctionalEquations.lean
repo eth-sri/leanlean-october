@@ -12,32 +12,32 @@ open Filter
 
 namespace DedekindZetaZeroFree.LargeSieve
 
-structure NonprincipalHeckeData (F : Type) [Field F] [NumberField F]
-    (m : Ideal (𝓞 F)) (η : DedekindZetaZeroFree.RayClassCharacter F m) where
-  Lambda : ℂ → ℂ
-  LambdaBar : ℂ → ℂ
-  W : ℂ
-  Lambda_entire : Differentiable ℂ Lambda
-  LambdaBar_entire : Differentiable ℂ LambdaBar
-  W_norm : ‖W‖ = 1
-  Lambda_hasSum : ∀ s : ℂ, 1 < s.re → HasSum (fun I : Ideal (𝓞 F) =>
-    (((|NumberField.discr F| : ℤ) : ℂ) * (Ideal.absNorm m : ℂ)) ^ (s / 2) *
-      Complex.Gammaℂ s ^ principalComplexPlaces F *
-      (η I * (Ideal.absNorm I : ℂ) ^ (-s))) (Lambda s)
-  LambdaBar_hasSum : ∀ s : ℂ, 1 < s.re → HasSum (fun I : Ideal (𝓞 F) =>
-    (((|NumberField.discr F| : ℤ) : ℂ) * (Ideal.absNorm m : ℂ)) ^ (s / 2) *
-      Complex.Gammaℂ s ^ principalComplexPlaces F *
-      ((starRingEnd ℂ) (η I) * (Ideal.absNorm I : ℂ) ^ (-s))) (LambdaBar s)
-  functional_equation : ∀ s : ℂ, Lambda s = W * LambdaBar (1 - s)
-  Lambda_growth : ∀ ε : ℝ, 0 < ε → ∃ C : ℝ, ∀ s : ℂ,
-    ‖Lambda s‖ ≤ C * Real.exp (‖s‖ ^ (1 + ε))
 
-def nonprincipalL {F : Type} [Field F] [NumberField F]
-    {m : Ideal (𝓞 F)} {η : DedekindZetaZeroFree.RayClassCharacter F m}
-    (data : NonprincipalHeckeData F m η) (s : ℂ) : ℂ :=
-  data.Lambda s *
-    ((principalDiscriminant F * (Ideal.absNorm m : ℝ) : ℂ) ^ (-(s / 2))) *
-      (Complex.Gammaℂ s)⁻¹ ^ principalComplexPlaces F
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 private lemma inverse_completion_entire (A : ℂ) (hA : A ≠ 0) :
     Differentiable ℂ (fun s : ℂ => A ^ (-(s / 2))) := by
@@ -83,15 +83,18 @@ private lemma principal_originFactor_analytic {F : Type} [Field F] [NumberField 
   exact (((hp.mul hg).mul data.E_differentiable).analyticAt s).div
     (analyticAt_id.sub analyticAt_const) (sub_ne_zero.mpr hs)
 
+section
+variable (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
+include F hF
 theorem principalZetaContinuation_analyticOnNhd
-    (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F) :
+      :
     AnalyticOnNhd ℂ (principalZetaContinuation F hF) ({1}ᶜ : Set ℂ) := by
   intro s hs
   exact (analyticAt_id.pow _).mul
     (principal_originFactor_analytic (principalHeckeData F hF) s hs)
 
 theorem principalZetaContinuation_eq
-    (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
+     
     (s : ℂ) (hs0 : s ≠ 0) (hs1 : s ≠ 1) :
     principalZetaContinuation F hF s =
       (principalHeckeData F hF).E s *
@@ -103,9 +106,11 @@ theorem principalZetaContinuation_eq
   ring
 
 theorem principalZetaZeroFactor_analyticAt
-    (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F) :
+      :
     AnalyticAt ℂ (principalHeckeData F hF).zetaOriginFactor 0 := by
   exact principal_originFactor_analytic (principalHeckeData F hF) 0 (by simp)
+end
+
 
  def principal_residueNumerator {F : Type} [Field F] [NumberField F]
     (data : PrincipalHeckeData F) (s : ℂ) : ℂ :=
@@ -124,15 +129,18 @@ private lemma principal_residueNumerator_entire {F : Type} [Field F] [NumberFiel
     ((Complex.differentiable_Gammaℂ_inv.comp (by fun_prop)).div_const _).pow _
   exact ((((differentiable_id.pow _).mul hp).mul hg).mul data.E_differentiable)
 
+section
+variable (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
+include F hF
 private lemma principal_continuation_residueNumerator
-    (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F) (s : ℂ) :
+      (s : ℂ) :
     principalZetaContinuation F hF s =
       principal_residueNumerator (principalHeckeData F hF) s / (s - 1) := by
   dsimp [principalZetaContinuation, PrincipalHeckeData.zetaOriginFactor, principal_residueNumerator]
   ring
 
 private lemma principal_residueNumerator_one
-    (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F) :
+      :
     principal_residueNumerator (principalHeckeData F hF) 1 =
       principalZetaResidueCoefficient F hF := by
   have hD := principalDiscriminant_pos F
@@ -152,7 +160,7 @@ private lemma principal_residueNumerator_one
   ring
 
 theorem principalZetaContinuation_local_pole
-    (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F) :
+      :
     ∃ R : ℂ → ℂ, AnalyticAt ℂ R 1 ∧
       (fun s => principalZetaContinuation F hF s -
         principalZetaResidueCoefficient F hF / (s - 1)) =ᶠ[𝓝[≠] (1 : ℂ)] R := by
@@ -171,7 +179,7 @@ theorem principalZetaContinuation_local_pole
     principal_residueNumerator_one F hF, sub_div]
 
 theorem principalZetaContinuation_functional_equation
-    (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
+     
     (s : ℂ) (hs : s.re < 0) :
     principalZetaContinuation F hF s =
       (principalDiscriminant F : ℂ) ^ (1 / 2 - s) *
@@ -198,6 +206,8 @@ theorem principalZetaContinuation_functional_equation
         (principalDiscriminant F : ℂ) ^ (-s / 2) *
         (Complex.Gammaℂ s)⁻¹ ^ principalComplexPlaces F := by ring
     _ = _ := by rw [← h]; ring
+end
+
 
 end DedekindZetaZeroFree.LargeSieve
 

@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LFunctions.Hecke.QuadraticFamilies.CharacterValues
 public import DedekindZetaZeroFree.Arithmetic.Ideals.LinearCountingBound
 public import DedekindZetaZeroFree.Arithmetic.Ideals.SquarefreeKernelNorm
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -19,8 +22,11 @@ private lemma row_bound {ι : Type*} (L : Finset ι) (A x : ι → ℂ) :
       pow_le_pow_left₀ (norm_nonneg _) (norm_sum_le _ _) _
     _ = (∑ i ∈ L, ‖x i‖ * ‖A i‖) ^ 2 := by simp only [norm_mul]
     _ ≤ _ := Finset.sum_mul_sq_le_sq_mul_sq L _ _
-private lemma weighted_bound {ι ρ : Type*} (L : Finset ι) (R : Finset ρ)
-    (w : ρ → ℝ) (A : ρ → ι → ℂ) (x : ι → ℂ) :
+section
+variable {ι ρ : Type*} (L : Finset ι) (R : Finset ρ)
+    (w : ρ → ℝ) (A : ρ → ι → ℂ) (x : ι → ℂ)
+include ι ρ L R w A x
+private lemma weighted_bound   :
     (∑ r ∈ R, w r * ‖∑ i ∈ L, x i * A r i‖ ^ 2) ≤
       (∑ r ∈ R, |w r| * ∑ i ∈ L, ‖A r i‖ ^ 2) * (∑ i ∈ L, ‖x i‖ ^ 2) := by
   rw [Finset.sum_mul]
@@ -32,8 +38,7 @@ private lemma weighted_bound {ι ρ : Type*} (L : Finset ι) (R : Finset ρ)
     _ ≤ |w r| * ((∑ i ∈ L, ‖x i‖ ^ 2) * ∑ i ∈ L, ‖A r i‖ ^ 2) :=
       mul_le_mul_of_nonneg_left (row_bound L _ _) (abs_nonneg _)
     _ = _ := by ring
-private lemma weighted_scale {ι ρ : Type*} (L : Finset ι) (R : Finset ρ)
-    (w : ρ → ℝ) (A : ρ → ι → ℂ) (x : ι → ℂ) (t : ℝ) :
+private lemma weighted_scale   (t : ℝ) :
     (∑ r ∈ R, w r * ‖∑ i ∈ L, ((t : ℂ) * x i) * A r i‖ ^ 2) =
       t ^ 2 * (∑ r ∈ R, w r * ‖∑ i ∈ L, x i * A r i‖ ^ 2) := by
   simp only [mul_assoc, ← Finset.mul_sum, norm_mul, Complex.norm_real, Real.norm_eq_abs,
@@ -42,13 +47,15 @@ private lemma weighted_scale {ι ρ : Type*} (L : Finset ι) (R : Finset ρ)
   apply Finset.sum_congr rfl
   intros
   ring
+end
+
 private lemma homogeneous_domination {ι : Type*} (E H : (ι → ℂ) → ℝ)
     (hE : ∀ x, 0 ≤ E x)
     (hEs : ∀ x (t : ℝ), E (fun i => (t : ℂ) * x i) = t ^ 2 * E x)
     (hHs : ∀ x (t : ℝ), H (fun i => (t : ℂ) * x i) = t ^ 2 * H x)
     (C : ℝ) (hC : 0 ≤ C) (hbound : ∀ x, H x ≤ C * E x) (x : ι → ℂ) :
     H x ≤ sSup ({0} ∪ {y : ℝ | ∃ z, E z ≤ 1 ∧ y = H z}) * E x := by
-  let S : Set ℝ := {0} ∪ {y : ℝ | ∃ z, E z ≤ 1 ∧ y = H z}
+  let S  := {0} ∪ {y : ℝ | ∃ z, E z ≤ 1 ∧ y = H z}
   have hS : BddAbove S := by
     refine ⟨C, ?_⟩
     rintro y (hy | ⟨z, hz, rfl⟩)
@@ -58,8 +65,8 @@ private lemma homogeneous_domination {ι : Type*} (E H : (ι → ℂ) → ℝ)
     · exact (hbound z).trans (mul_le_of_le_one_right hC hz)
   by_cases he : E x = 0
   · simpa [he] using hbound x
-  have hepos : 0 < E x := lt_of_le_of_ne (hE x) (Ne.symm he)
-  let t : ℝ := (Real.sqrt (E x))⁻¹
+  
+  let t  := (Real.sqrt (E x))⁻¹
   have ht : t ^ 2 * E x = 1 := by
     dsimp [t]
     rw [inv_pow, Real.sq_sqrt (hE x), inv_mul_cancel₀ he]
@@ -82,18 +89,21 @@ private lemma weighted_domination {ι ρ : Type*} (L : Finset ι) (R : Finset ρ
   · intro z t
     simp only [norm_mul, Complex.norm_real, Real.norm_eq_abs, mul_pow, sq_abs,
       Finset.mul_sum]
-  · exact weighted_scale L R w A
+  · apply weighted_scale
   · positivity
-  · exact weighted_bound L R w A
+  · apply weighted_bound
 
 private lemma pair_bound {ι : Type*} (L : Finset ι) (x : ι → ℂ) {i j : ι}
     (hi : i ∈ L) (hj : j ∈ L) : ‖x i‖ * ‖x j‖ ≤ ∑ k ∈ L, ‖x k‖ ^ 2 := by
-  have hE : 0 ≤ ∑ k ∈ L, ‖x k‖ ^ 2 := by positivity
+  
   have hi' := Finset.single_le_sum (fun k _ => sq_nonneg ‖x k‖) hi
   have hj' := Finset.single_le_sum (fun k _ => sq_nonneg ‖x k‖) hj
   nlinarith [sq_nonneg (‖x i‖ - ‖x j‖)]
-private lemma bilinear_bound {ι : Type*} (L : Finset ι) (P : ι → ι → Prop)
-    [DecidableRel P] (A : ι → ι → ℂ) (x : ι → ℂ) :
+section
+variable {ι : Type*} (L : Finset ι) (P : ι → ι → Prop)
+    [DecidableRel P] (A : ι → ι → ℂ) (x : ι → ℂ)
+include ι L P A x
+private lemma bilinear_bound   :
     ‖∑ i ∈ L, ∑ j ∈ L, if P i j then x i * (starRingEnd ℂ) (x j) * A i j else 0‖ ≤
       (∑ i ∈ L, ∑ j ∈ L, ‖A i j‖) * (∑ k ∈ L, ‖x k‖ ^ 2) := by
   apply (norm_sum_le _ _).trans
@@ -112,13 +122,11 @@ private lemma bilinear_bound {ι : Type*} (L : Finset ι) (P : ι → ι → Pro
       _ = _ := mul_comm _ _
   · simp only [norm_zero]
     positivity
-private lemma bilinear_scale {ι : Type*} (L : Finset ι) (P : ι → ι → Prop)
-    [DecidableRel P] (A : ι → ι → ℂ) (x : ι → ℂ) (t : ℝ) :
+private lemma bilinear_scale   (t : ℝ) :
     ‖∑ i ∈ L, ∑ j ∈ L, if P i j then ((t : ℂ) * x i) *
       (starRingEnd ℂ) ((t : ℂ) * x j) * A i j else 0‖ =
     t ^ 2 * ‖∑ i ∈ L, ∑ j ∈ L, if P i j then x i * (starRingEnd ℂ) (x j) * A i j else 0‖ := by
-  have ht : (starRingEnd ℂ) (t : ℂ) = (t : ℂ) := by
-    exact Complex.conj_ofReal t
+  have ht  := Complex.conj_ofReal t
   have hh : (∑ i ∈ L, ∑ j ∈ L, if P i j then ((t : ℂ) * x i) *
       (starRingEnd ℂ) ((t : ℂ) * x j) * A i j else 0) =
       (t : ℂ) ^ 2 * (∑ i ∈ L, ∑ j ∈ L, if P i j then x i * (starRingEnd ℂ) (x j) * A i j else 0) := by
@@ -129,6 +137,8 @@ private lemma bilinear_scale {ι : Type*} (L : Finset ι) (P : ι → ι → Pro
     intro j hj
     split_ifs <;> ring
   rw [hh, norm_mul, norm_pow, Complex.norm_real, Real.norm_eq_abs, sq_abs]
+end
+
 
 private lemma indexed_domination {ι γ : Type*} (E : (ι → ℂ) → ℝ) (H : γ → (ι → ℂ) → ℝ)
     (hE : ∀ x, 0 ≤ E x)
@@ -136,7 +146,7 @@ private lemma indexed_domination {ι γ : Type*} (E : (ι → ℂ) → ℝ) (H :
     (hHs : ∀ g x (t : ℝ), H g (fun i => (t : ℂ) * x i) = t ^ 2 * H g x)
     (C : ℝ) (hC : 0 ≤ C) (hbound : ∀ g x, H g x ≤ C * E x) (g : γ) (x : ι → ℂ) :
     H g x ≤ sSup ({0} ∪ {y : ℝ | ∃ (g : γ) (z : ι → ℂ), E z ≤ 1 ∧ y = H g z}) * E x := by
-  let S : Set ℝ := {0} ∪ {y : ℝ | ∃ (g : γ) (z : ι → ℂ), E z ≤ 1 ∧ y = H g z}
+  let S  := {0} ∪ {y : ℝ | ∃ (g : γ) (z : ι → ℂ), E z ≤ 1 ∧ y = H g z}
   have hS : BddAbove S := by
     refine ⟨C, ?_⟩
     rintro y (hy | ⟨j, z, hz, rfl⟩)
@@ -146,8 +156,8 @@ private lemma indexed_domination {ι γ : Type*} (E : (ι → ℂ) → ℝ) (H :
     · exact (hbound j z).trans (mul_le_of_le_one_right hC hz)
   by_cases he : E x = 0
   · simpa [he] using hbound g x
-  have hepos : 0 < E x := lt_of_le_of_ne (hE x) (Ne.symm he)
-  let t : ℝ := (Real.sqrt (E x))⁻¹
+  
+  let t  := (Real.sqrt (E x))⁻¹
   have ht : t ^ 2 * E x = 1 := by
     dsimp [t]
     rw [inv_pow, Real.sq_sqrt (hE x), inv_mul_cancel₀ he]
@@ -163,15 +173,14 @@ variable (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
 
 theorem B1_nonneg (M N : ℝ) :
     0 ≤ B1 F c Q M N := by
-  exact Real.sSup_nonneg' ⟨0, Or.inl rfl, le_rfl⟩
+  apply Real.sSup_nonneg' <;> aesop
 
 theorem B2_nonneg (W : ℝ → ℝ) (M N K : ℝ) :
     0 ≤ B2 F c Q W M N K := by
-  exact Real.sSup_nonneg' ⟨0, Or.inl rfl, le_rfl⟩
+  apply Real.sSup_nonneg' <;> aesop
 
 theorem B3_nonneg (W : ℝ → ℝ) (M N K : ℝ) (d : Ideal (𝓞 F)) :
-    0 ≤ B3 F c Q W M N K d := by
-  exact Real.sSup_nonneg' ⟨0, Or.inl rfl, le_rfl⟩
+    0 ≤ B3 F c Q W M N K d := Real.sSup_nonneg' ⟨0, Or.inl rfl, le_rfl⟩
 
 theorem Q1_le_B1_mul_energy (M N : ℝ) (lam : Ideal (𝓞 F) → ℂ) :
     Q1 F c Q M N lam ≤ B1 F c Q M N * energy F c N lam := by
@@ -182,8 +191,7 @@ theorem Q1_le_B1_mul_energy (M N : ℝ) (lam : Ideal (𝓞 F) → ℂ) :
 theorem Q2_le_B2_mul_energy (W : ℝ → ℝ) (M N K : ℝ)
     (lam : Ideal (𝓞 F) → ℂ) :
     Q2 F c Q W M N K lam ≤ B2 F c Q W M N K * energy F c N lam := by
-  exact weighted_domination (paperShell F c N) (kernelRows F c M K)
-    (fun a => W ((Ideal.absNorm a : ℝ) / M)) (fun a b => (Q.χ b) a) lam
+  apply weighted_domination
 
 theorem norm_T3_le_B3_mul_energy (W : ℝ → ℝ) (M N K : ℝ)
     (d : Ideal (𝓞 F)) (g : Q.G) (lam : Ideal (𝓞 F) → ℂ) :
@@ -199,12 +207,10 @@ theorem norm_T3_le_B3_mul_energy (W : ℝ → ℝ) (M N K : ℝ)
     simp only [energy, norm_mul, Complex.norm_real, Real.norm_eq_abs, mul_pow, sq_abs,
       Finset.mul_sum]
   · intro j x t
-    exact bilinear_scale (paperShell F c N)
-      (fun b1 b2 => b1 ⊔ b2 = d ∧ Q.cls b1 = j ∧ Q.cls b2 = j) A x t
+    apply bilinear_scale
   · positivity
   · intro j x
-    exact bilinear_bound (paperShell F c N)
-      (fun b1 b2 => b1 ⊔ b2 = d ∧ Q.cls b1 = j ∧ Q.cls b2 = j) A x
+    apply bilinear_bound
 
 theorem B1_le_B2 (W : ℝ → ℝ) (hW : SieveWeight W)
     (M N K : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N) (hK : 0 < K) (hKM : K < M) :
@@ -240,7 +246,7 @@ theorem B1_le_B2 (W : ℝ → ℝ) (hW : SieveWeight W)
   · rintro z (hz | ⟨x, hx, rfl⟩)
     · have : z = 0 := hz
       subst z
-      exact B2_nonneg Q W M N K
+      apply B2_nonneg
     · exact (hform x).trans ((Q2_le_B2_mul_energy Q W M N K x).trans
         (mul_le_of_le_one_right (B2_nonneg Q W M N K) hx))
 
@@ -288,7 +294,7 @@ theorem B2_trivial_bound (F : Type) [Field F] [NumberField F]
   have hform : ∀ x, energy F c N x ≤ 1 → Q2 F c Q W M N K x ≤
       U * (kernelRows F c M K).card * (paperShell F c N).card := by
     intro x hx
-    have hE : 0 ≤ energy F c N x := by unfold energy; positivity
+    
     calc
       _ ≤ ∑ a ∈ kernelRows F c M K,
           U * ((paperShell F c N).card * energy F c N x) := by

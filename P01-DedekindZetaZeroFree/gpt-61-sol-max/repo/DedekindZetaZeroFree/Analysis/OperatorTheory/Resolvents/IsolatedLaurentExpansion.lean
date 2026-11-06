@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.IsolatedSpectralProjections
 public import DedekindZetaZeroFree.Analysis.OperatorTheory.Resolvents.ShiftedPencilHolomorphy
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.KPIsolatedLaurent
 
@@ -11,27 +14,27 @@ noncomputable section
 
 open Filter Topology
 
-def poleLocation (β : ℝ) : ℝ := β⁻¹ - 1
+def poleLocation (β : ℝ)  := β⁻¹ - 1
 
+section
+variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+    (B : H →L[ℂ] H)
+include H B
 def complementProjection
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (B : H →L[ℂ] H) (β : ℝ) : H →L[ℂ] H :=
+      (β : ℝ)  :=
   1 - KPIsolatedProjection.projection B β
 
 def correctedPencil
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (B : H →L[ℂ] H) (β : ℝ) (z : ℂ) : H →L[ℂ] H :=
+      (β : ℝ) (z : ℂ)  :=
   KPResolventPencil.shiftedPencil B z + KPIsolatedProjection.projection B β
 
 def holomorphicComplement
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (B : H →L[ℂ] H) (β : ℝ) (z : ℂ) : H →L[ℂ] H :=
+      (β : ℝ) (z : ℂ)  :=
   B * complementProjection B β * Ring.inverse (correctedPencil B β z) *
     complementProjection B β
 
 private lemma pencil_decomposition
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (B : H →L[ℂ] H) (β : ℝ) (hβ : β ≠ 0) (z : ℂ)
+      (β : ℝ) (hβ : β ≠ 0) (z : ℂ)
     (hz : z ≠ (poleLocation β : ℂ))
     (hPP : KPIsolatedProjection.projection B β * KPIsolatedProjection.projection B β =
       KPIsolatedProjection.projection B β)
@@ -49,7 +52,7 @@ private lemma pencil_decomposition
   let A := KPResolventPencil.shiftedPencil B z
   let T := correctedPencil B β z
   let V := Ring.inverse T
-  let a : ℂ := 1 - (z + 1) * (β : ℂ)
+  let a  := 1 - (z + 1) * (β : ℂ)
   have hβc : (β : ℂ) ≠ 0 := by exact_mod_cast hβ
   have haform : a = (β : ℂ) * ((poleLocation β : ℂ) - z) := by
     dsimp [a, poleLocation]
@@ -83,24 +86,19 @@ private lemma pencil_decomposition
     dsimp [Q, complementProjection]
     change T * (1 - P) = (1 - P) * T
     rw [mul_sub, sub_mul, mul_one, one_mul, hT, add_mul, mul_add, hAP, hPA]
-  have hQV : Q * V = V * Q := by
-    calc
-      Q * V = (V * T) * Q * V := by rw [hVT, one_mul]
-      _ = V * (T * Q) * V := by simp only [mul_assoc]
-      _ = V * (Q * T) * V := by rw [hTQ]
-      _ = V * Q := by rw [mul_assoc, mul_assoc, hTV, mul_one]
+  
   have hAQ : A * Q = T * Q := by rw [hT, add_mul, hPQ, add_zero]
   have hQA : Q * A = Q * T := by rw [hT, mul_add, hQP, add_zero]
   have hAC : A * (Q * V * Q) = Q := by
     calc
-      A * (Q * V * Q) = (A * Q) * V * Q := by simp only [mul_assoc]
+      A * (Q * V * Q) = (A * Q) * V * Q := rfl
       _ = (T * Q) * V * Q := by rw [hAQ]
       _ = (Q * T) * V * Q := by rw [hTQ]
       _ = Q * Q := by rw [mul_assoc Q T V, hTV, mul_one]
       _ = Q := hQQ
   have hCA : (Q * V * Q) * A = Q := by
     calc
-      (Q * V * Q) * A = Q * V * (Q * A) := by simp only [mul_assoc]
+      (Q * V * Q) * A = Q * V * (Q * A) := rfl
       _ = Q * V * (Q * T) := by rw [hQA]
       _ = Q * V * (T * Q) := by rw [hTQ]
       _ = Q * Q := by rw [mul_assoc Q V (T * Q), ← mul_assoc V T Q, hVT, one_mul]
@@ -116,7 +114,7 @@ private lemma pencil_decomposition
     rw [add_mul, smul_mul_assoc, hPA, smul_smul, inv_mul_cancel₀ ha, one_smul, hCA]
     dsimp [P, Q, complementProjection]
     abel
-  have hu : IsUnit A := isUnit_iff_exists.mpr ⟨C, hAC', hCA'⟩
+  have hu  := isUnit_iff_exists.mpr ⟨C, hAC', hCA'⟩
   have hi : Ring.inverse A = C := by
     calc
       Ring.inverse A = Ring.inverse A * (A * C) := by rw [hAC', mul_one]
@@ -131,8 +129,7 @@ private lemma pencil_decomposition
   rfl
 
 theorem exists_laurent_disk
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (B : H →L[ℂ] H) (hB : IsSelfAdjoint B) (β : ℝ) (hβ : β ≠ 0)
+      (hB : IsSelfAdjoint B) (β : ℝ) (hβ : β ≠ 0)
     (hiso : KPIsolatedProjection.IsIsolatedSpectralPoint B β) :
     ∃ r : ℝ, 0 < r ∧
       (∀ z : ℂ, ‖z - (poleLocation β : ℂ)‖ < r →
@@ -169,8 +166,7 @@ theorem exists_laurent_disk
       (hball (by simpa [Metric.mem_ball, dist_eq_norm] using hzr))
 
 theorem simplePole
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (B : H →L[ℂ] H) (hB : IsSelfAdjoint B) (β : ℝ) (hβ : β ≠ 0)
+      (hB : IsSelfAdjoint B) (β : ℝ) (hβ : β ≠ 0)
     (hiso : KPIsolatedProjection.IsIsolatedSpectralPoint B β) :
     KPIsolatedProjection.projection B β ≠ 0 ∧
       MeromorphicAt (KPResolventPencil.shiftedResolvent B) (poleLocation β : ℂ) ∧
@@ -185,14 +181,14 @@ theorem simplePole
         G =ᶠ[𝓝[≠] (poleLocation β : ℂ)] KPResolventPencil.shiftedResolvent B) ∧
       (FiniteDimensional ℂ (KPIsolatedProjection.eigenspace B β) →
         FiniteDimensional ℂ (KPIsolatedProjection.projection B β).range) := by
-  let μ : ℂ := (poleLocation β : ℂ)
+  let μ  := (poleLocation β : ℂ)
   let P := KPIsolatedProjection.projection B β
   let F := holomorphicComplement B β
   let R := KPResolventPencil.shiftedResolvent B
   obtain ⟨hP, _, _, _, _, _⟩ := KPIsolatedProjection.projection_spec B hB β hβ hiso
   obtain ⟨r, hr, _, hF, hR⟩ := exists_laurent_disk B hB β hβ hiso
   have hFan : AnalyticAt ℂ F μ := hF μ (Metric.mem_ball_self hr)
-  let g : ℂ → (H →L[ℂ] H) := fun z => -P + (z - μ) • F z
+  let g  := fun z => -P + (z - μ) • F z
   have hgan : AnalyticAt ℂ g μ :=
     analyticAt_const.add ((analyticAt_id.sub analyticAt_const).smul hFan)
   have hg0 : g μ = -P := by simp [g]
@@ -202,7 +198,7 @@ theorem simplePole
     have hb : ∀ᶠ z in 𝓝[≠] μ, z ∈ Metric.ball μ r :=
       nhdsWithin_le_nhds (Metric.ball_mem_nhds μ hr)
     filter_upwards [hb, self_mem_nhdsWithin] with z hz hzne
-    have hz0 : z - μ ≠ 0 := sub_ne_zero.mpr (by simpa using hzne)
+    have hz0 : z - μ ≠ 0 := sub_ne_zero.mpr (hzne)
     have he := (hR z (norm_pos_iff.mpr hz0)
       (by simpa [Metric.mem_ball, dist_eq_norm] using hz)).2
     change R z = (μ - z)⁻¹ • P + F z at he
@@ -211,13 +207,13 @@ theorem simplePole
     rw [zpow_neg_one, smul_add, smul_neg, smul_smul, inv_mul_cancel₀ hz0, one_smul]
     congr 1
     rw [← neg_smul, ← inv_neg, neg_sub]
-  have hm : MeromorphicAt R μ :=
+  have hm  :=
     MeromorphicAt.iff_eventuallyEq_zpow_smul_analyticAt.mpr ⟨-1, g, hgan, hev⟩
-  have ho : meromorphicOrderAt R μ = ((-1 : ℤ) : WithTop ℤ) :=
+  have ho  :=
     (meromorphicOrderAt_eq_int_iff hm).mpr ⟨g, hgan, hgneq, hev⟩
   have hscale : (fun z => (z - μ) • R z) =ᶠ[𝓝[≠] μ] g := by
     filter_upwards [hev, self_mem_nhdsWithin] with z hz hzne
-    have hz0 : z - μ ≠ 0 := sub_ne_zero.mpr (by simpa using hzne)
+    have hz0 : z - μ ≠ 0 := sub_ne_zero.mpr (hzne)
     rw [hz, zpow_neg_one, smul_smul, mul_inv_cancel₀ hz0, one_smul]
   have ht : Tendsto (fun z => (z - μ) • R z) (𝓝[≠] μ) (𝓝 (-P)) := by
     rw [← hg0]
@@ -234,6 +230,8 @@ theorem simplePole
   · intro hfin
     letI := hfin
     exact KPIsolatedProjection.projection_finiteRank B β
+end
+
 
 end
 end DedekindZetaZeroFree.KPIsolatedLaurent

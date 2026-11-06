@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.RayLocalHigherUnitGroup
 public import ClassFieldTheory.AlgebraicNumberTheory.RayClass.Basic
 public import Mathlib.RingTheory.Ideal.Quotient.Defs
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -56,8 +59,7 @@ theorem mem_rayLocalHigherUnitGroup_iff
       (v.adicCompletionIntegers K).toSubmonoid.unitsEquivUnitsType y
     refine ⟨z, ?_, ?_⟩
     · have hback :
-          (v.adicCompletionIntegers K).toSubmonoid.unitsEquivUnitsType.symm z = y := by
-        exact Equiv.symm_apply_apply _ _
+          (v.adicCompletionIntegers K).toSubmonoid.unitsEquivUnitsType.symm z = y := Equiv.symm_apply_apply _ _
       rw [hback]
       exact hxy
     · have hq : Ideal.Quotient.mk
@@ -72,7 +74,7 @@ theorem mem_rayLocalHigherUnitGroup_iff
         (I := (IsLocalRing.maximalIdeal (v.adicCompletionIntegers K)) ^ n)
         (z : v.adicCompletionIntegers K)).mp hq
   · rintro ⟨z, hz, hcong⟩
-    let y : (v.adicCompletionIntegers K).units :=
+    let y  :=
       (v.adicCompletionIntegers K).toSubmonoid.unitsEquivUnitsType.symm z
     refine ⟨y, hz, ?_⟩
     apply Units.ext

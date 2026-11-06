@@ -35,11 +35,11 @@ def FrozenTensor.placeEquiv {v : R.A.UnitQuotient} (X : FrozenTensor R C v) :
   left_inv p := by cases p <;> rfl
   right_inv p := by rcases p with ⟨p,hp⟩; cases p <;> rfl
 
-def restrictedEval (p : KPHilbert.Place F) : RestrictedCover F R.A.zeta12 R.A.primitive_zeta12 →*
-    KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 p where
-  toFun u := u p
-  map_one' := rfl
-  map_mul' _ _ := rfl
+
+
+
+
+
 
 theorem restricted_list_single_eval {I : Type*}
     (e : I → KPHilbert.Place F)
@@ -54,21 +54,22 @@ theorem restricted_list_single_eval {I : Type*}
     rw [ih]
     rfl
 
+section
+variable (a : ∀ q : KPFinitePlace F,
+      KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q))
+include a
 def finiteTuple
-    (a : ∀ q : KPFinitePlace F,
-      KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q)) :
+      :
     RestrictedCover F R.A.zeta12 R.A.primitive_zeta12 :=
   (Finset.univ.toList.map (fun q : R.A.Sf =>
     localToRestricted F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q.val) (a q.val))).prod
 
 def finiteBase
-    (a : ∀ q : KPFinitePlace F,
-      KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q)) :
+      :
     KPGlobalTorusFunctionData.finitePart F R.A.zeta12 R.A.primitive_zeta12 :=
   openCellFiniteFactor F R.A.zeta12 R.A.primitive_zeta12 (finiteTuple (R := R) a)
 
-theorem finiteTuple_at (a : ∀ q : KPFinitePlace F,
-      KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q))
+theorem finiteTuple_at  
     (q : R.A.Sf) : finiteTuple (R := R) a (Sum.inr q.val) = a q.val := by
   have h := list_single_product (G := fun p => KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 p)
     (fun q : R.A.Sf => Sum.inr q.val) (fun x y h => Subtype.ext (Sum.inr.inj h))
@@ -78,8 +79,7 @@ theorem finiteTuple_at (a : ∀ q : KPFinitePlace F,
   rw [restricted_list_single_eval]
   exact h
 
-theorem finiteTuple_off (a : ∀ q : KPFinitePlace F,
-      KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q))
+theorem finiteTuple_off  
     (p : KPHilbert.Place F) (hp : ∀ q : R.A.Sf, p ≠ Sum.inr q.val) :
     finiteTuple (R := R) a p = 1 := by
   have h := list_single_product_off (G := fun p => KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 p)
@@ -88,8 +88,7 @@ theorem finiteTuple_off (a : ∀ q : KPFinitePlace F,
   rw [restricted_list_single_eval]
   exact h
 
-theorem finiteBase_val (a : ∀ q : KPFinitePlace F,
-      KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q)) :
+theorem finiteBase_val   :
     (finiteBase (R := R) a).val = scalarQuotient F R.A.zeta12 R.A.primitive_zeta12
       (amalgamation F R.A.zeta12 R.A.primitive_zeta12 (finiteTuple (R := R) a)) := by
   change scalarQuotient F R.A.zeta12 R.A.primitive_zeta12
@@ -101,6 +100,8 @@ theorem finiteBase_val (a : ∀ q : KPFinitePlace F,
   cases p with
   | inr q => rfl
   | inl w => exact (finiteTuple_off a (Sum.inl w) (fun _ => Sum.inl_ne_inr)).symm
+end
+
 
 theorem FrozenTensor.mixed_word_geometry {v : R.A.UnitQuotient} (X : FrozenTensor R C v)
     (k : InfinitePlace F → KPCplxCharacterHaar.ComplexSU2)

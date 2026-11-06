@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.SpectralTheory.ResolventPencils.FiniteWindowIsolation
 public import Mathlib.Analysis.InnerProductSpace.LinearPMap
 public import Mathlib.Analysis.InnerProductSpace.StarOrder
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 
@@ -23,18 +26,22 @@ noncomputable def spectralSubspace (B : H →L[ℂ] H) (J : Set ℝ) : Submodule
     (_ : ∀ μ ∈ J, f (1 / (1 + μ)) = 0),
     (cfc f B).toLinearMap.ker
 
-def IsIsolatedFiniteEigenvalue (Δ : H →ₗ.[ℂ] H) (B : H →L[ℂ] H)
-    (μ : ℝ) : Prop :=
+section
+variable (Δ : H →ₗ.[ℂ] H) (B : H →L[ℂ] H)
+include Δ B
+def IsIsolatedFiniteEigenvalue  
+    (μ : ℝ)  :=
   eigenspace Δ μ ≠ ⊥ ∧ Module.Finite ℂ (eigenspace Δ μ) ∧
     ∃ η : ℝ, 0 < η ∧ ∀ ν ∈ realSpectrum B, |ν - μ| < η → ν = μ
 
-def essentialSpectrum (Δ : H →ₗ.[ℂ] H) (B : H →L[ℂ] H) : Set ℝ :=
+def essentialSpectrum    :=
   {μ | μ ∈ realSpectrum B ∧ ¬ IsIsolatedFiniteEigenvalue Δ B μ}
+end
 
-lemma sub_apply_eq {Δ : H →ₗ.[ℂ] H} {B : H →L[ℂ] H}
+
+def sub_apply_eq {Δ : H →ₗ.[ℂ] H} {B : H →L[ℂ] H}
     (hBdom : ∀ u : H, B u ∈ Δ.domain)
-    (hleft : ∀ u : H, Δ ⟨B u, hBdom u⟩ + B u = u) (u : H) :
-    u - B u = (Δ ⟨B u, hBdom u⟩ : H) :=
+    (hleft : ∀ u : H, Δ ⟨B u, hBdom u⟩ + B u = u) (u : H)  :=
   sub_eq_iff_eq_add.mpr (hleft u).symm
 
 lemma re_inner_apply_eq {Δ : H →ₗ.[ℂ] H} {B : H →L[ℂ] H}
@@ -51,40 +58,37 @@ lemma re_inner_apply_eq {Δ : H →ₗ.[ℂ] H} {B : H →L[ℂ] H}
     rw [inner_self_eq_norm_sq]]
   ring
 
-lemma form_nonneg {Δ : H →ₗ.[ℂ] H} {B : H →L[ℂ] H}
+section
+variable {Δ : H →ₗ.[ℂ] H} {B : H →L[ℂ] H}
     (hpos : ∀ v : Δ.domain, 0 ≤ (inner ℂ (v : H) (Δ v)).re)
     (hBdom : ∀ u : H, B u ∈ Δ.domain)
-    (hleft : ∀ u : H, Δ ⟨B u, hBdom u⟩ + B u = u) (u : H) :
+    (hleft : ∀ u : H, Δ ⟨B u, hBdom u⟩ + B u = u)
+include Δ B hpos hBdom hleft
+lemma form_nonneg   (u : H) :
     0 ≤ (inner ℂ (B u) u).re := by
   have h := re_inner_apply_eq hBdom hleft u
   have hq := hpos ⟨B u, hBdom u⟩
   nlinarith [h, hq, sq_nonneg ‖B u‖]
 
-lemma norm_apply_le {Δ : H →ₗ.[ℂ] H} {B : H →L[ℂ] H}
-    (hpos : ∀ v : Δ.domain, 0 ≤ (inner ℂ (v : H) (Δ v)).re)
-    (hBdom : ∀ u : H, B u ∈ Δ.domain)
-    (hleft : ∀ u : H, Δ ⟨B u, hBdom u⟩ + B u = u) (u : H) :
+lemma norm_apply_le   (u : H) :
     ‖B u‖ ≤ ‖u‖ := by
   have h := re_inner_apply_eq hBdom hleft u
   have hq := hpos ⟨B u, hBdom u⟩
-  have hlow : ‖B u‖ ^ 2 ≤ (inner ℂ (B u) u).re := by nlinarith [h, hq]
+  
   have hup : (inner ℂ (B u) u).re ≤ ‖B u‖ * ‖u‖ :=
     le_trans (Complex.re_le_norm _) (norm_inner_le_norm _ _)
   rcases eq_or_lt_of_le (norm_nonneg (B u)) with h0 | h0
   · rw [← h0]; exact norm_nonneg u
   · have hmul : ‖B u‖ * ‖B u‖ ≤ ‖B u‖ * ‖u‖ := by
-      calc ‖B u‖ * ‖B u‖ = ‖B u‖ ^ 2 := (sq ‖B u‖).symm
-        _ ≤ (inner ℂ (B u) u).re := hlow
-        _ ≤ ‖B u‖ * ‖u‖ := hup
+      linarith
     exact le_of_mul_le_mul_left hmul h0
 
-lemma norm_le_one {Δ : H →ₗ.[ℂ] H} {B : H →L[ℂ] H}
-    (hpos : ∀ v : Δ.domain, 0 ≤ (inner ℂ (v : H) (Δ v)).re)
-    (hBdom : ∀ u : H, B u ∈ Δ.domain)
-    (hleft : ∀ u : H, Δ ⟨B u, hBdom u⟩ + B u = u) :
+lemma norm_le_one   :
     ‖B‖ ≤ 1 :=
   ContinuousLinearMap.opNorm_le_bound _ zero_le_one (fun u => by
     simpa using norm_apply_le hpos hBdom hleft u)
+end
+
 
 lemma coercive_bound {Δ : H →ₗ.[ℂ] H} {B : H →L[ℂ] H} (d : ℝ)
     (hBdom : ∀ u : H, B u ∈ Δ.domain)
@@ -109,11 +113,14 @@ lemma coercive_bound {Δ : H →ₗ.[ℂ] H} {B : H →L[ℂ] H} (d : ℝ)
     _ = (inner ℂ (B u) u).re + ‖K u‖ ^ 2 := by rw [hsplit]; ring
     _ ≤ ‖B u‖ * ‖u‖ + ‖K u‖ ^ 2 := by linarith [hup]
 
-lemma finite_of_compact_lower_bound
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
+section
+variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
     {F : Type*} [NormedAddCommGroup F] [NormedSpace ℂ F]
     (K : E →L[ℂ] F) (hK : IsCompactOperator K)
-    (c : ℝ) (hc : 0 < c) (hlow : ∀ v, c * ‖v‖ ≤ ‖K v‖) :
+    (c : ℝ) (hc : 0 < c)
+include E F K hK c hc
+lemma finite_of_compact_lower_bound
+      (hlow : ∀ v, c * ‖v‖ ≤ ‖K v‖) :
     Module.Finite ℂ E := by
   have ha : AntilipschitzWith ⟨c⁻¹, inv_nonneg.mpr hc.le⟩ K := by
     apply AntilipschitzWith.of_le_mul_dist
@@ -128,10 +135,7 @@ lemma finite_of_compact_lower_bound
   exact FiniteDimensional.of_totallyBounded_nhds_zero ℂ (Metric.closedBall_mem_nhds 0 zero_lt_one) ht
 
 lemma finite_of_compact_sq_lower_bound
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
-    {F : Type*} [NormedAddCommGroup F] [NormedSpace ℂ F]
-    (K : E →L[ℂ] F) (hK : IsCompactOperator K)
-    (c : ℝ) (hc : 0 < c) (hlow : ∀ v, c * ‖v‖ ^ 2 ≤ ‖K v‖ ^ 2) :
+      (hlow : ∀ v, c * ‖v‖ ^ 2 ≤ ‖K v‖ ^ 2) :
     Module.Finite ℂ E := by
   apply finite_of_compact_lower_bound K hK (Real.sqrt c) (Real.sqrt_pos.mpr hc)
   intro v
@@ -139,6 +143,8 @@ lemma finite_of_compact_sq_lower_bound
   have hs := Real.sq_sqrt hc.le
   have hsn := Real.sqrt_nonneg c
   nlinarith [norm_nonneg v, norm_nonneg (K v)]
+end
+
 
 lemma mem_eigenspace_iff (Δ : H →ₗ.[ℂ] H) (μ : ℝ) (v : H) :
     v ∈ eigenspace Δ μ ↔ ∃ hv : v ∈ Δ.domain,
@@ -168,7 +174,7 @@ lemma finite_eigenspace_below_threshold
   let ε := (d - μ) / 2
   have hε : 0 < ε := by dsimp [ε]; linarith
   obtain ⟨K, hK, hest⟩ := hcoercivity ε hε
-  let T : eigenspace Δ μ →L[ℂ] H :=
+  let T  :=
     ((μ + 1 : ℝ) • (eigenspace Δ μ).subtypeL)
   apply finite_of_compact_sq_lower_bound (K.comp T) (hK.comp_clm T) ε hε
   intro v
@@ -176,7 +182,7 @@ lemma finite_eigenspace_below_threshold
   have hTv : T v = Δ ⟨(v : H), hv⟩ + (v : H) := by
     simp only [T, ContinuousLinearMap.smul_apply, Submodule.subtypeL_apply, he]
     rw [add_smul, one_smul, ← Complex.coe_smul]
-  have hBT : B (T v) = (v : H) := by rw [hTv]; exact hright ⟨v, hv⟩
+  have hBT : B (T v) = (v : H) := by rw [hTv]; apply hright
   have hinner : (inner ℂ (v : H) (T v - (v : H))).re = μ * ‖(v : H)‖ ^ 2 := by
     rw [hTv, add_sub_cancel_right, he, inner_smul_right, Complex.mul_re]
     simp [inner_self_eq_norm_sq, ← Complex.ofReal_pow]
@@ -195,28 +201,28 @@ lemma essential_empty_of_isolated_below (Δ : H →ₗ.[ℂ] H) (B : H →L[ℂ]
     essentialSpectrum Δ B ∩ Set.Iio d = ∅ := by
   apply Set.eq_empty_iff_forall_notMem.mpr
   rintro μ ⟨⟨hs, hn⟩, hμ⟩
-  exact hn (hiso μ hs hμ)
+  apply hn <;> aesop
 
 lemma no_accPt_of_isolated_below (Δ : H →ₗ.[ℂ] H) (B : H →L[ℂ] H) (d : ℝ)
     (hiso : ∀ μ ∈ realSpectrum B, μ < d → IsIsolatedFiniteEigenvalue Δ B μ)
     (a : ℝ) (ha : a < d) :
     ¬ AccPt a (Filter.principal (realSpectrum B ∩ Set.Iio d)) := by
   intro hacc
-  have hacc' : AccPt a (Filter.principal (realSpectrum B)) :=
+  have hacc'  :=
     hacc.mono (Filter.principal_mono.mpr Set.inter_subset_left)
-  have has : a ∈ realSpectrum B := (isClosed_iff_accPt.mp (isClosed_realSpectrum B)) a hacc'
+  have has  := (isClosed_iff_accPt.mp (isClosed_realSpectrum B)) a hacc'
   obtain ⟨_, _, η, hη, hloc⟩ := hiso a has ha
   obtain ⟨ν, ⟨hνball, hνspec⟩, hνne⟩ := (accPt_iff_nhds.mp hacc')
     (Metric.ball a η) (Metric.ball_mem_nhds a hη)
-  exact hνne (hloc ν hνspec (by simpa [Real.dist_eq] using hνball))
+  exact hνne (hloc ν hνspec (hνball))
 
 lemma window_norm_bound (B : H →L[ℂ] H) (hB : IsSelfAdjoint B) (hBp : 0 ≤ B)
     (hinj : Function.Injective B) (J : Set ℝ) (m : ℝ) (hm : 0 ≤ m)
     (hJ : ∀ μ ∈ J, μ ≤ m) (v : spectralSubspace B J) :
     ‖(v : H)‖ ≤ (1 + m) * ‖B v‖ := by
-  let a : ℝ := 1 / (1 + m)
+  let a  := 1 / (1 + m)
   have ha : 0 < a := by dsimp [a]; positivity
-  let f : ℝ → ℝ := fun x => max 0 x * max 0 (a - x)
+  let f  := fun x => max 0 x * max 0 (a - x)
   have hf : Continuous f := by dsimp [f]; fun_prop
   have hfJ : ∀ μ ∈ J, f (1 / (1 + μ)) = 0 := by
     intro μ hμ
@@ -231,7 +237,7 @@ lemma window_norm_bound (B : H →L[ℂ] H) (hB : IsSelfAdjoint B) (hBp : 0 ≤ 
     change (v : H) ∈ ⨅ (f : ℝ → ℝ) (_ : Continuous f)
       (_ : ∀ μ ∈ J, f (1 / (1 + μ)) = 0), (cfc f B).toLinearMap.ker at hv
     exact (Submodule.mem_iInf _).mp ((Submodule.mem_iInf _).mp ((Submodule.mem_iInf _).mp hv f) hf) hfJ
-  let g : ℝ → ℝ := fun x => max 0 (a - x)
+  let g  := fun x => max 0 (a - x)
   have hg : Continuous g := by dsimp [g]; fun_prop
   have hfg : cfc f B = B * cfc g B := by
     have hh := cfc_mul (fun x : ℝ => x) g B continuousOn_id hg.continuousOn
@@ -243,7 +249,7 @@ lemma window_norm_bound (B : H →L[ℂ] H) (hB : IsSelfAdjoint B) (hBp : 0 ≤ 
   have hgv : cfc g B (v : H) = 0 := by
     apply hinj
     simpa only [map_zero, ← ContinuousLinearMap.mul_apply, ← hfg] using hvf
-  let k : ℝ → ℝ := fun x => max a x
+  let k  := fun x => max a x
   have hk : Continuous k := by dsimp [k]; fun_prop
   have hkB : cfc k B = B + cfc g B := by
     have hh := cfc_add B (fun x : ℝ => x) g continuousOn_id hg.continuousOn
@@ -256,9 +262,9 @@ lemma window_norm_bound (B : H →L[ℂ] H) (hB : IsSelfAdjoint B) (hBp : 0 ≤ 
     · rw [max_eq_right h, max_eq_left (sub_nonpos.mpr h)]; ring
     · rw [max_eq_left h, max_eq_right (sub_nonneg.mpr h)]; ring
   have hkval : cfc k B (v : H) = B v := by rw [hkB, ContinuousLinearMap.add_apply, hgv, add_zero]
-  let r : ℝ → ℝ := fun x => 1 / k x
+  let r  := fun x => 1 / k x
   have hkr : ∀ x, 0 < k x := fun x => ha.trans_le (le_max_left _ _)
-  have hr : Continuous r := by exact continuous_const.div hk (fun x => ne_of_gt (hkr x))
+  have hr : Continuous r := continuous_const.div hk (fun x => ne_of_gt (hkr x))
   have hinv : cfc r B * cfc k B = 1 := by
     rw [← cfc_mul r k B hr.continuousOn hk.continuousOn, ← cfc_const_one ℝ B hB]
     apply cfc_congr
@@ -277,8 +283,11 @@ lemma window_norm_bound (B : H →L[ℂ] H) (hB : IsSelfAdjoint B) (hBp : 0 ≤ 
     _ ≤ ‖cfc r B‖ * ‖B v‖ := ContinuousLinearMap.le_opNorm _ _
     _ ≤ (1 + m) * ‖B v‖ := mul_le_mul_of_nonneg_right hnorm (norm_nonneg _)
 
+section
+variable (Δ : H →ₗ.[ℂ] H) (B : H →L[ℂ] H)
+include Δ B
 lemma finite_spectralSubspace_below_threshold
-    (Δ : H →ₗ.[ℂ] H) (B : H →L[ℂ] H) (d : ℝ) (hd : 0 < d)
+      (d : ℝ) (hd : 0 < d)
     (hB : IsSelfAdjoint B)
     (hpos : ∀ v : Δ.domain, 0 ≤ (inner ℂ (v : H) (Δ v)).re)
     (hBdom : ∀ u : H, B u ∈ Δ.domain)
@@ -312,8 +321,8 @@ lemma finite_spectralSubspace_below_threshold
   let ε := (d - m) / 2
   have hε : 0 < ε := by dsimp [ε]; linarith
   obtain ⟨K, hK, hest⟩ := coercive_bound d hBdom hleft hcoercivity ε hε
-  let a : ℝ := 1 / (1 + m)
-  have ha : 0 < a := by dsimp [a]; positivity
+  let a  := 1 / (1 + m)
+  
   apply finite_of_compact_sq_lower_bound (K.comp (spectralSubspace B J).subtypeL)
     (hK.comp_clm _) (ε * a ^ 2) (by positivity)
   intro v
@@ -333,7 +342,7 @@ lemma finite_spectralSubspace_below_threshold
   nlinarith [mul_le_mul_of_nonneg_left hsq hε.le]
 
 lemma eigenspace_ne_bot_of_pencil_eigenvector
-    (Δ : H →ₗ.[ℂ] H) (B : H →L[ℂ] H)
+     
     (hBdom : ∀ u : H, B u ∈ Δ.domain)
     (hleft : ∀ u : H, Δ ⟨B u, hBdom u⟩ + B u = u)
     (μ : ℝ) (u : H) (hu : u ≠ 0) (he : u = (μ + 1) • B u) :
@@ -349,7 +358,7 @@ lemma eigenspace_ne_bot_of_pencil_eigenvector
     rw [he, hzero, smul_zero]
 
 lemma isolated_below_of_finite_windows
-    (Δ : H →ₗ.[ℂ] H) (B : H →L[ℂ] H) (d : ℝ)
+      (d : ℝ)
     (hB : IsSelfAdjoint B)
     (hBdom : ∀ u : H, B u ∈ Δ.domain)
     (hleft : ∀ u : H, Δ ⟨B u, hBdom u⟩ + B u = u)
@@ -362,7 +371,7 @@ lemma isolated_below_of_finite_windows
       Module.Finite ℂ (spectralSubspace B J)) :
     ∀ μ ∈ realSpectrum B, μ < d → IsIsolatedFiniteEigenvalue Δ B μ := by
   intro μ hμ hμd
-  let J : Set ℝ := Set.Icc (μ - 1) ((μ + d) / 2)
+  let J  := Set.Icc (μ - 1) ((μ + d) / 2)
   have hJd : J ⊆ Set.Iio d := by
     intro ν hν
     have hν' : ν ≤ (μ + d) / 2 := hν.2
@@ -376,7 +385,9 @@ lemma isolated_below_of_finite_windows
     B hB μ hμ J hμJ hfin
   refine ⟨eigenspace_ne_bot_of_pencil_eigenvector Δ B hBdom hleft μ u hu he,
     finite_eigenspace_below_threshold Δ B d hBdom hleft hright hcoercivity μ hμd, ?_⟩
-  exact KPFiniteWindowPencil.pencil_isolated_of_finite_window B hB μ hμ J hμJ hfin
+  apply KPFiniteWindowPencil.pencil_isolated_of_finite_window <;> assumption
+end
+
 
 end KPBelowThreshold
 
@@ -400,10 +411,9 @@ theorem kp_cont_below_threshold_discreteness
     (∀ μ ∈ realSpectrum B, μ < d → IsIsolatedFiniteEigenvalue Δ B μ) ∧
     (∀ a : ℝ, a < d →
       ¬ AccPt a (Filter.principal (realSpectrum B ∩ Set.Iio d))) := by
-  have hfinite : ∀ J : Set ℝ, IsCompact J → J ⊆ Set.Iio d →
-      Module.Finite ℂ (spectralSubspace B J) :=
+  have hfinite  :=
     finite_spectralSubspace_below_threshold Δ B d hd hB hpos hBdom hleft hcoercivity
-  have hiso : ∀ μ ∈ realSpectrum B, μ < d → IsIsolatedFiniteEigenvalue Δ B μ :=
+  have hiso  :=
     isolated_below_of_finite_windows Δ B d hB hBdom hleft hright hcoercivity hfinite
   exact ⟨essential_empty_of_isolated_below Δ B d hiso, hfinite, hiso,
     no_accPt_of_isolated_below Δ B d hiso⟩

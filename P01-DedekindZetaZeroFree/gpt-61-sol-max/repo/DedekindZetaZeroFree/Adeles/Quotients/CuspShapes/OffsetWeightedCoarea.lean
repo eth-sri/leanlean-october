@@ -34,7 +34,10 @@ open _root_.DedekindZetaZeroFree.KPMsFixedHaarDisintegration renaming toRawTrans
 open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.CoordinateProof renaming actualFrame_spec → actualFrame_spec
 open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.CoordinateProof renaming nativeFullDomain → nativeFullDomain
 
- def offsetTranslation (S : NativeRecipe F ζ hζ R P) (V : Level F ζ hζ) :
+ section
+variable (S : NativeRecipe F ζ hζ R P) (V : Level F ζ hζ)
+include S V
+def offsetTranslation   :
     KPMsFixedHaarDisintegration.Omega (nativeAtlas F ζ hζ R P S V) →
       KPMsFixedHaarDisintegration.Omega (nativeAtlas F ζ hζ R P S V) :=
   fun ω => ⟨ω.1, ω.2 - QuotientAddGroup.mk
@@ -42,8 +45,7 @@ open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.CoordinateProof renaming n
       (nativeDisintegration F ζ hζ R P S V).radial.slot
       (cuspOffset F ζ hζ R P S V ω.1))⟩
 
-private theorem offsetTranslation_measurable (S : NativeRecipe F ζ hζ R P)
-    (V : Level F ζ hζ) : Measurable (offsetTranslation F ζ hζ R P S V) := by
+private theorem offsetTranslation_measurable   : Measurable (offsetTranslation F ζ hζ R P S V) := by
   apply Continuous.measurable
   apply continuous_sigma
   intro j
@@ -54,8 +56,7 @@ private theorem offsetTranslation_measurable (S : NativeRecipe F ζ hζ R P)
   apply continuous_sigmaMk.comp
   exact continuous_id.sub (continuous_const (y := QuotientAddGroup.mk _))
 
-private theorem offsetTranslation_section (S : NativeRecipe F ζ hζ R P)
-    (V : Level F ζ hζ) (j : NativeCusp F ζ hζ R P S V)
+private theorem offsetTranslation_section   (j : NativeCusp F ζ hζ R P S V)
     (φ : KPMsFixedHaarDisintegration.Omega (nativeAtlas F ζ hζ R P S V) → ℝ≥0∞)
     (hφ : Measurable φ) :
     (∫⁻ p, φ (offsetTranslation F ζ hζ R P S V
@@ -81,7 +82,7 @@ private theorem offsetTranslation_section (S : NativeRecipe F ζ hζ R P)
     (KPMsFixedHaarDisintegration.Geometry A j).atlas.projection_formula,
     QuotientAddGroup.mk_sub, QuotientAddGroup.mk_add, QuotientAddGroup.mk_neg, sub_eq_add_neg, b] using ht
 
-private theorem spherical_cusp_test (S : NativeRecipe F ζ hζ R P) (V : Level F ζ hζ)
+private theorem spherical_cusp_test  
     (j : NativeCusp F ζ hζ R P S V) (Y : ℝ)
     (hY : OffsetAdmissible F ζ hζ R P S V Y)
     (s : KPMsFixedHaarDisintegration.Spherical F ζ hζ
@@ -173,6 +174,8 @@ private theorem spherical_cusp_test (S : NativeRecipe F ζ hζ R P) (V : Level F
   change ENNReal.ofReal (2 * Y) * ((_ / _) * (_ * _)) = (_ * _) * _
   dsimp only [D, A, U, nativeDisintegration, nativeFamily, KPMsActualNativeHaarFamily.family, fromRawDisintegration]
   ring
+end
+
 
 end
 

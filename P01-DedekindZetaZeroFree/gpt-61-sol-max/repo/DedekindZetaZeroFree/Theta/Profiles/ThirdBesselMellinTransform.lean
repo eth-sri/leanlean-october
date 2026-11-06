@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.ModifiedBesselKOneThird
 
 @[expose] public section
+
 
 /-
 Repository: openai/math.
@@ -17,21 +20,24 @@ open MeasureTheory
 
 noncomputable section
 
-def thirdBesselRadialProfile (c t : ℝ) : ℝ :=
+def thirdBesselRadialProfile (c t : ℝ)  :=
   t * KThird (c * Real.sqrt t)
 
 open Filter
 open scoped Topology
 
-def thirdSchlafliIntegral (x : ℝ) : ℂ :=
+def thirdSchlafliIntegral (x : ℝ)  :=
   ∫ t : ℝ in Set.Ioi 0, (t : ℂ)^((1/3:ℂ)-1) *
     Complex.exp (-(t:ℂ)-(x:ℂ)^2/(4*t))
 
-def thirdSchlafliBesselK (x : ℝ) : ℂ :=
+def thirdSchlafliBesselK (x : ℝ)  :=
   (1/2:ℂ) * (x/2:ℂ)^(-(1/3:ℂ)) * thirdSchlafliIntegral x
 
-private lemma complex_gaussian_power_integrable (s : ℂ) (r : ℝ)
-    (hs : 0<s.re) (hr : 0<r) :
+section
+variable (s : ℂ) (r : ℝ)
+    (hs : 0<s.re) (hr : 0<r)
+include s r hs hr
+private lemma complex_gaussian_power_integrable   :
     IntegrableOn (fun x : ℝ => (x:ℂ)^(s-1)*Complex.exp (-(r:ℂ)*(x:ℂ)^2))
       (Set.Ioi 0) volume := by
   have hs2 : 0<(s/(2:ℂ)).re := by simpa using half_pos hs
@@ -46,8 +52,7 @@ private lemma complex_gaussian_power_integrable (s : ℂ) (r : ℝ)
   simpa only [MellinConvergent,smul_eq_mul,Real.rpow_two,
     Complex.ofReal_mul,Complex.ofReal_pow,neg_mul] using hgaussian
 
-private lemma complex_gaussian_power_integral (s : ℂ) (r : ℝ)
-    (hs : 0<s.re) (hr : 0<r) :
+private lemma complex_gaussian_power_integral   :
     (∫x : ℝ in Set.Ioi 0,(x:ℂ)^(s-1)*Complex.exp (-(r:ℂ)*(x:ℂ)^2)) =
       (1/2:ℂ)*((1/(r:ℂ))^(s/2)*Complex.Gamma (s/2)) := by
   have hs2 : 0<(s/(2:ℂ)).re := by simpa using half_pos hs
@@ -57,22 +62,26 @@ private lemma complex_gaussian_power_integral (s : ℂ) (r : ℝ)
   norm_num only [Complex.ofReal_ofNat] at he
   rw [Complex.integral_cpow_mul_exp_neg_mul_Ioi hs2 hr] at he
   simpa [neg_mul] using he
+end
+
 
 open Filter MeasureTheory
 open scoped BigOperators Classical Topology
 
-def cubicMellinMixture (s : ℂ) (t x : ℝ) : ℂ :=
+def cubicMellinMixture (s : ℂ) (t x : ℝ)  :=
   (t:ℂ)^(-(2:ℂ)/3)*Complex.exp (-(t:ℂ))*
     ((x:ℂ)^((s-1/3)-1)*Complex.exp (-((1/(4*t):ℝ):ℂ)*(x:ℂ)^2))
 
-private lemma cubicMellinMixture_slice_integrable (s : ℂ) (hs : 1/3<s.re)
-    (t : ℝ) (ht : 0<t) :
+section
+variable (s : ℂ) (hs : 1/3<s.re)
+    (t : ℝ) (ht : 0<t)
+include s hs t ht
+private lemma cubicMellinMixture_slice_integrable   :
     IntegrableOn (cubicMellinMixture s t) (Set.Ioi 0) volume := by
   apply (complex_gaussian_power_integrable (s-1/3) (1/(4*t))
     (by norm_num; linarith) (by positivity)).const_mul
 
-private lemma cubicMellinMixture_integral_x (s : ℂ) (hs : 1/3<s.re)
-    (t : ℝ) (ht : 0<t) :
+private lemma cubicMellinMixture_integral_x   :
     (∫x : ℝ in Set.Ioi 0,cubicMellinMixture s t x) =
       ((1/2:ℂ)*(4:ℂ)^((s-1/3)/2)*Complex.Gamma ((s-1/3)/2))*
         ((t:ℂ)^((s+1/3)/2-1)*Complex.exp (-(t:ℂ))) := by
@@ -83,9 +92,7 @@ private lemma cubicMellinMixture_integral_x (s : ℂ) (hs : 1/3<s.re)
     push_cast
     field_simp
   have hm : ((4:ℂ)*(t:ℂ))^((s-1/3)/2)=
-      (4:ℂ)^((s-1/3)/2)*(t:ℂ)^((s-1/3)/2) := by
-    simpa only [Complex.ofReal_ofNat] using
-      Complex.mul_cpow_ofReal_nonneg (by norm_num : 0≤(4:ℝ)) ht.le ((s-1/3)/2)
+      (4:ℂ)^((s-1/3)/2)*(t:ℂ)^((s-1/3)/2) := Complex.mul_cpow_ofReal_nonneg (by norm_num : 0≤(4:ℝ)) ht.le ((s-1/3)/2)
   rw [hb,hm]
   have hp : (t:ℂ)^(-(2:ℂ)/3)*(t:ℂ)^((s-1/3)/2)=
       (t:ℂ)^((s+1/3)/2-1) := by
@@ -96,6 +103,8 @@ private lemma cubicMellinMixture_integral_x (s : ℂ) (hs : 1/3<s.re)
     _ = ((1/2:ℂ)*(4:ℂ)^((s-1/3)/2)*Complex.Gamma ((s-1/3)/2))*
         (((t:ℂ)^(-(2:ℂ)/3)*(t:ℂ)^((s-1/3)/2))*Complex.exp (-(t:ℂ))) := by ring
     _ = _ := by rw [hp]
+end
+
 
 private lemma cubicMellinMixture_norm (s : ℂ) (t x : ℝ) (ht : 0<t) (hx : 0<x) :
     ‖cubicMellinMixture s t x‖ =
@@ -126,7 +135,7 @@ private lemma cubicMellinMixture_integral_norm (s : ℂ) (hs : 1/3<s.re)
         (x^((s.re-1/3)-1)*Real.exp (-(1/(4*t))*x^2)) := by
       apply setIntegral_congr_fun measurableSet_Ioi
       intro x hx
-      exact cubicMellinMixture_norm s t x ht hx
+      apply cubicMellinMixture_norm <;> assumption
     _ = _ := by
       rw [integral_const_mul,real_gaussian_power_integral (s.re-1/3) (1/(4*t))
         (by linarith) (by positivity)]
@@ -154,7 +163,7 @@ private lemma cubicMellinMixture_integrable (s : ℂ) (hs : 1/3<s.re) :
   apply (integrable_prod_iff hm).mpr
   constructor
   · filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
-    exact cubicMellinMixture_slice_integrable s hs t ht
+    apply cubicMellinMixture_slice_integrable <;> assumption
   · have hg := (Real.GammaIntegral_convergent
         (show 0<(s.re+1/3)/2 by linarith)).const_mul
         ((1/2:ℝ)*(4:ℝ)^((s.re-1/3)/2)*Real.Gamma ((s.re-1/3)/2))
@@ -170,7 +179,7 @@ private lemma cubicMellinMixture_integral_t (s : ℂ) (x : ℝ) :
   apply setIntegral_congr_fun measurableSet_Ioi
   intro t ht
   dsimp only
-  have ht0 : (t:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (ne_of_gt ht)
+  have ht0  := Complex.ofReal_ne_zero.mpr (ne_of_gt ht)
   have he : Complex.exp (-(t:ℂ))*Complex.exp (-((1/(4*t):ℝ):ℂ)*(x:ℂ)^2)=
       Complex.exp (-(t:ℂ)-(x:ℂ)^2/(4*t)) := by
     rw [←Complex.exp_add]
@@ -189,9 +198,7 @@ private lemma schlafliBesselK_cubic_mellin_mixture (s : ℂ) (x : ℝ) (hx : 0<x
     (x:ℂ)^(s-1)*thirdSchlafliBesselK x =
       ((1/2:ℂ)*(2:ℂ)^(1/3:ℂ))*(∫t : ℝ in Set.Ioi 0,cubicMellinMixture s t x) := by
   rw [thirdSchlafliBesselK,cubicMellinMixture_integral_t]
-  have hdiv : (x/2:ℂ)^(-(1/3:ℂ))=(x:ℂ)^(-(1/3:ℂ))/(2:ℂ)^(-(1/3:ℂ)) := by
-    simpa only [Complex.ofReal_ofNat] using
-      Complex.div_cpow_ofReal_nonneg hx.le (by norm_num : 0≤(2:ℝ)) (-(1/3:ℂ))
+  have hdiv : (x/2:ℂ)^(-(1/3:ℂ))=(x:ℂ)^(-(1/3:ℂ))/(2:ℂ)^(-(1/3:ℂ)) := Complex.div_cpow_ofReal_nonneg hx.le (by norm_num : 0≤(2:ℝ)) (-(1/3:ℂ))
   rw [hdiv,Complex.cpow_neg (2:ℂ) (1/3),div_inv_eq_mul]
   have hp : (x:ℂ)^(s-1)*(x:ℂ)^(-(1/3:ℂ))=(x:ℂ)^((s-1/3)-1) := by
     rw [←Complex.cpow_add _ _ (Complex.ofReal_ne_zero.mpr hx.ne')]
@@ -199,7 +206,10 @@ private lemma schlafliBesselK_cubic_mellin_mixture (s : ℂ) (x : ℝ) (hx : 0<x
     ring
   linear_combination (1/2:ℂ)*(2:ℂ)^(1/3:ℂ)*thirdSchlafliIntegral x*hp
 
-private lemma schlafliBesselK_cubic_mellin_integrable (s : ℂ) (hs : 1/3<s.re) :
+section
+variable (s : ℂ) (hs : 1/3<s.re)
+include s hs
+private lemma schlafliBesselK_cubic_mellin_integrable   :
     IntegrableOn (fun x : ℝ => (x:ℂ)^(s-1)*thirdSchlafliBesselK x)
       (Set.Ioi 0) volume := by
   apply ((cubicMellinMixture_integrable s hs).integral_prod_right.const_mul
@@ -207,7 +217,7 @@ private lemma schlafliBesselK_cubic_mellin_integrable (s : ℂ) (hs : 1/3<s.re) 
   filter_upwards [ae_restrict_mem measurableSet_Ioi] with x hx
   exact (schlafliBesselK_cubic_mellin_mixture s x hx).symm
 
-private lemma cubicMellinMixture_double_integral (s : ℂ) (hs : 1/3<s.re) :
+private lemma cubicMellinMixture_double_integral   :
     (∫t : ℝ in Set.Ioi 0,∫x : ℝ in Set.Ioi 0,cubicMellinMixture s t x) =
       ((1/2:ℂ)*(4:ℂ)^((s-1/3)/2)*Complex.Gamma ((s-1/3)/2))*
         Complex.Gamma ((s+1/3)/2) := by
@@ -218,14 +228,14 @@ private lemma cubicMellinMixture_double_integral (s : ℂ) (hs : 1/3<s.re) :
           ((t:ℂ)^((s+1/3)/2-1)*Complex.exp (-(t:ℂ))) := by
       apply setIntegral_congr_fun measurableSet_Ioi
       intro t ht
-      exact cubicMellinMixture_integral_x s hs t ht
+      apply cubicMellinMixture_integral_x <;> assumption
     _ = _ := by
       rw [integral_const_mul]
       congr 1
       simpa only [Complex.GammaIntegral,Complex.ofReal_exp,Complex.ofReal_neg,mul_comm] using
         (Complex.Gamma_eq_integral hB).symm
 
-private theorem schlafliBesselK_cubic_mellin (s : ℂ) (hs : 1/3<s.re) :
+private theorem schlafliBesselK_cubic_mellin   :
     (∫x : ℝ in Set.Ioi 0,(x:ℂ)^(s-1)*thirdSchlafliBesselK x) =
       (2:ℂ)^(s-2)*Complex.Gamma ((s-1/3)/2)*Complex.Gamma ((s+1/3)/2) := by
   have hmix : Integrable (Function.uncurry (cubicMellinMixture s))
@@ -253,7 +263,7 @@ private theorem schlafliBesselK_cubic_mellin (s : ℂ) (hs : 1/3<s.re) :
       rw [←integral_const_mul]
       apply setIntegral_congr_fun measurableSet_Ioi
       intro x hx
-      exact schlafliBesselK_cubic_mellin_mixture s x hx
+      apply schlafliBesselK_cubic_mellin_mixture <;> assumption
     _ = ((1/2:ℂ)*(2:ℂ)^(1/3:ℂ))*
         (((1/2:ℂ)*(4:ℂ)^((s-1/3)/2)*Complex.Gamma ((s-1/3)/2))*
           Complex.Gamma ((s+1/3)/2)) := by
@@ -261,6 +271,8 @@ private theorem schlafliBesselK_cubic_mellin (s : ℂ) (hs : 1/3<s.re) :
     _ = ((1/4:ℂ)*((2:ℂ)^(1/3:ℂ)*(4:ℂ)^((s-1/3)/2)))*
         Complex.Gamma ((s-1/3)/2)*Complex.Gamma ((s+1/3)/2) := by ring
     _ = _ := by rw [hprod,hscale]
+end
+
 
 private lemma thirdSchlafliBesselK_eq_KThird (x : ℝ) (hx : 0 < x) :
     thirdSchlafliBesselK x = (KThird x : ℂ) := by
@@ -290,21 +302,25 @@ private lemma thirdSchlafliBesselK_eq_KThird (x : ℝ) (hx : 0 < x) :
           rw [← hp2]
     _ = _ := integral_ofReal
 
-private lemma scaled_mellin_convergent (q : ℂ) (c : ℝ)
-    (hq : 1/3 < q.re) (hc : 0 < c) :
+section
+variable (q : ℂ) (c : ℝ)
+    (hq : 1/3 < q.re) (hc : 0 < c)
+include q c hq hc
+private lemma scaled_mellin_convergent   :
     MellinConvergent (fun x => thirdSchlafliBesselK (c*x)) q := by
   apply (MellinConvergent.comp_mul_left hc).mpr
   simpa only [MellinConvergent, smul_eq_mul] using
     schlafliBesselK_cubic_mellin_integrable q hq
 
-private lemma scaled_mellin (q : ℂ) (c : ℝ)
-    (hq : 1/3 < q.re) (hc : 0 < c) :
+private lemma scaled_mellin   :
     mellin (fun x => thirdSchlafliBesselK (c*x)) q =
       (c:ℂ)^(-q) * ((2:ℂ)^(q-2)*Complex.Gamma ((q-1/3)/2)*
         Complex.Gamma ((q+1/3)/2)) := by
   rw [mellin_comp_mul_left _ _ hc]
   congr 1
   exact schlafliBesselK_cubic_mellin q hq
+end
+
 
 private lemma radial_integrand_eq (c t : ℝ) (s : ℂ) (hc : 0 < c) (ht : 0 < t) :
     (thirdBesselRadialProfile c t : ℂ) * (t : ℂ)^s / (t : ℂ) =
@@ -315,8 +331,11 @@ private lemma radial_integrand_eq (c t : ℝ) (s : ℂ) (hc : 0 < c) (ht : 0 < t
   push_cast
   field_simp [Complex.ofReal_ne_zero.mpr ht.ne']
 
-private lemma radial_convergent (c : ℝ) (hc : 0 < c) (s : ℂ)
-    (hs : -(5/6:ℝ) < s.re) :
+section
+variable (c : ℝ) (hc : 0 < c) (s : ℂ)
+    (hs : -(5/6:ℝ) < s.re)
+include c hc s hs
+private lemma radial_convergent   :
     MellinConvergent (fun t => thirdSchlafliBesselK (c * t^(1/2:ℝ))) (s+1) := by
   apply (MellinConvergent.comp_rpow (f := fun x => thirdSchlafliBesselK (c*x))
     (s := s+1) (by norm_num : (1/2:ℝ) ≠ 0)).mpr
@@ -325,8 +344,7 @@ private lemma radial_convergent (c : ℝ) (hc : 0 < c) (s : ℂ)
   push_cast
   ring
 
-lemma radial_integrable (c : ℝ) (hc : 0 < c) (s : ℂ)
-    (hs : -(5/6:ℝ) < s.re) :
+lemma radial_integrable   :
     IntegrableOn (fun t : ℝ =>
       (thirdBesselRadialProfile c t : ℂ) * (t:ℂ)^s / (t:ℂ)) (Set.Ioi 0) := by
   have h := radial_convergent c hc s hs
@@ -336,7 +354,7 @@ lemma radial_integrable (c : ℝ) (hc : 0 < c) (s : ℂ)
   exact (radial_integrand_eq c t s hc ht).symm
 
 theorem thirdBesselRadialProfile_mellin
-    (c : ℝ) (hc : 0 < c) (s : ℂ) (hs : -(5 / 6 : ℝ) < s.re) :
+      :
     (∫ t : ℝ in Set.Ioi (0 : ℝ),
       (thirdBesselRadialProfile c t : ℂ) * (t : ℂ) ^ s / (t : ℂ)) =
         (↑(2 / c ^ 2 : ℝ) : ℂ) * (↑(4 / c ^ 2 : ℝ) : ℂ) ^ s *
@@ -356,11 +374,11 @@ theorem thirdBesselRadialProfile_mellin
     simp only [mellin, smul_eq_mul, add_sub_cancel_right]
     apply setIntegral_congr_fun measurableSet_Ioi
     intro t ht
-    exact radial_integrand_eq c t s hc ht
+    apply radial_integrand_eq <;> assumption
   rw [hI, hM]
   have hscale : (2:ℂ) * (c:ℂ)^(-(2*s+2)) * (2:ℂ)^(2*s) =
       (↑(2/c^2:ℝ):ℂ) * (↑(4/c^2:ℝ):ℂ)^s := by
-    have hc0 : (c:ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hc.ne'
+    have hc0  := Complex.ofReal_ne_zero.mpr hc.ne'
     have hp : ((c:ℂ)^2)^s = (c:ℂ)^(2*s) := by
       simpa only [Real.rpow_two, Complex.ofReal_pow, Complex.ofReal_ofNat] using
         (Complex.cpow_mul_ofReal_nonneg hc.le 2 s).symm
@@ -376,6 +394,8 @@ theorem thirdBesselRadialProfile_mellin
       Complex.cpow_sub _ _ hc0, Complex.cpow_neg, Complex.cpow_ofNat]
     ring
   linear_combination hscale * Complex.Gamma (s+5/6) * Complex.Gamma (s+7/6)
+end
+
 
 end
 

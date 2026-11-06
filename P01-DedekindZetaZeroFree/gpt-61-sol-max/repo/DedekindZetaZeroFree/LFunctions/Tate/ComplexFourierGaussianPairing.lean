@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LFunctions.Tate.ComplexTraceFourierMellinNormalization
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 
@@ -23,9 +26,7 @@ private theorem kernelInt (f : ℂ → ℂ) (hf : IsComplexAnnular f) (t : ℝ) 
   have hfc : Continuous f := hf.1.continuous
   have hfi : Integrable f volume := hfc.integrable_of_hasCompactSupport hf.2.1
   apply (hfi.norm.mul_prod (gaussInt t ht).norm).mono
-  · exact (by fun_prop : Continuous (fun p : ℂ × ℂ => f p.1 *
-      Complex.exp (((-4 * Real.pi * (p.1 * p.2).re : ℝ) : ℂ) * Complex.I) *
-      (Real.exp (-2 * Real.pi * t * ‖p.2‖ ^ 2) : ℂ))).aestronglyMeasurable
+  · measurability
   · filter_upwards with p
     simp only [norm_mul, Complex.norm_exp_ofReal_mul_I, mul_one, norm_norm]
     exact le_rfl
@@ -64,14 +65,8 @@ private theorem kernelEval (t : ℝ) (ht : 0 < t) (x : ℂ) :
   simp only [Complex.finrank_real_complex]
   norm_num
   congr 1
-  · have hp : (Real.pi : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
-    have ht' : (t : ℂ) ≠ 0 := by exact_mod_cast ht.ne'
-    field_simp
-  · congr 1
-    push_cast
-    have hp : (Real.pi : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
-    have ht' : (t : ℂ) ≠ 0 := by exact_mod_cast ht.ne'
-    field_simp
+  · field_simp <;> ring
+  · grind
 
 theorem complexTraceFourier_gaussian_pairing (f : ℂ → ℂ) (hf : IsComplexAnnular f)
     (t : ℝ) (ht : 0 < t) :

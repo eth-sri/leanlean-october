@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Data.ZMod.QuotientGroup
 public import Mathlib.GroupTheory.Archimedean
 public import Mathlib.GroupTheory.FiniteIndexNormalSubgroup
@@ -8,6 +10,7 @@ public import Mathlib.Topology.Algebra.Category.ProfiniteGrp.Completion
 public import GaloisCohomology.ProfiniteIntegers.ProfiniteIntegerCore
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -39,12 +42,15 @@ and Mathlib's `ZMod.lift`.
 
 noncomputable section
 
+section
+variable (H : FiniteIndexNormalAddSubgroup ℤ)
+include H
 private theorem finiteIndexNormalAddSubgroup_eq_zmultiples_index
-    (H : FiniteIndexNormalAddSubgroup ℤ) :
+      :
     H.toAddSubgroup =
       AddSubgroup.zmultiples (H.toAddSubgroup.index : ℤ) := by
   obtain ⟨d, hd⟩ := Int.subgroup_cyclic H.toAddSubgroup
-  have hH : H.toAddSubgroup = AddSubgroup.zmultiples d :=
+  have hH  :=
     hd.trans (AddSubgroup.zmultiples_eq_closure d).symm
   have hindex : H.toAddSubgroup.index = d.natAbs := by
     rw [hH, Int.index_zmultiples]
@@ -55,22 +61,20 @@ private theorem finiteIndexNormalAddSubgroup_eq_zmultiples_index
     _ = AddSubgroup.zmultiples (H.toAddSubgroup.index : ℤ) := by
       rw [hindex]
 
- theorem finiteIndexNormalAddSubgroup_index_pos
-    (H : FiniteIndexNormalAddSubgroup ℤ) :
-    0 < H.toAddSubgroup.index :=
+ def finiteIndexNormalAddSubgroup_index_pos
+       :=
   Nat.pos_of_ne_zero H.isFiniteIndex'.index_ne_zero
 
  theorem finiteIndexNormalAddSubgroup_index_mem
-    (H : FiniteIndexNormalAddSubgroup ℤ) :
+      :
     (H.toAddSubgroup.index : ℤ) ∈ H.toAddSubgroup := by
   let n := H.toAddSubgroup.index
   change (n : ℤ) ∈ H.toAddSubgroup
-  have hH : H.toAddSubgroup = AddSubgroup.zmultiples (n : ℤ) := by
-    simpa only [n] using finiteIndexNormalAddSubgroup_eq_zmultiples_index H
+  have hH : H.toAddSubgroup = AddSubgroup.zmultiples (n : ℤ) := finiteIndexNormalAddSubgroup_eq_zmultiples_index H
   rw [hH, Int.mem_zmultiples_iff]
 
  noncomputable def zHatFiniteIndexQuotientReduction
-    (H : FiniteIndexNormalAddSubgroup ℤ) :
+      :
     ZMod H.toAddSubgroup.index →+ ℤ ⧸ H.toAddSubgroup :=
   ZMod.lift H.toAddSubgroup.index
     ⟨QuotientAddGroup.mk' H.toAddSubgroup, by
@@ -80,7 +84,7 @@ private theorem finiteIndexNormalAddSubgroup_eq_zmultiples_index
 
 /-- The canonical reduction of `ZHat` to the finite quotient of `ℤ` by `H`. -/
 noncomputable def zHatReductionToFiniteIndexQuotient
-    (H : FiniteIndexNormalAddSubgroup ℤ) :
+      :
     ZHat →ₜ+ ℤ ⧸ H.toAddSubgroup := by
   let quotientReduction :
       ZMod H.toAddSubgroup.index →ₜ+ ℤ ⧸ H.toAddSubgroup :=
@@ -93,7 +97,7 @@ noncomputable def zHatReductionToFiniteIndexQuotient
 /-- The finite quotient reduction extends the ordinary quotient map on integers. -/
 @[simp]
 theorem zHatReductionToFiniteIndexQuotient_intCast
-    (H : FiniteIndexNormalAddSubgroup ℤ) (a : ℤ) :
+      (a : ℤ) :
     zHatReductionToFiniteIndexQuotient H (a : ZHat) =
       QuotientAddGroup.mk' H.toAddSubgroup a := by
   change zHatFiniteIndexQuotientReduction H
@@ -107,7 +111,7 @@ theorem zHatReductionToFiniteIndexQuotient_intCast
 /-- The reduction to a finite-index quotient, regarded as a leg of the
 finite-quotient diagram defining Mathlib's profinite completion of `ℤ`. -/
 noncomputable def zHatFiniteIndexQuotientDiagramLeg
-    (H : FiniteIndexNormalAddSubgroup ℤ) :
+      :
     zHatProfiniteAddGrp ⟶
       (ProfiniteAddGrp.ProfiniteCompletion.diagram (AddGrpCat.of ℤ)).obj H := by
   change zHatProfiniteAddGrp ⟶
@@ -119,7 +123,7 @@ noncomputable def zHatFiniteIndexQuotientDiagramLeg
   let quotientReduction : ZMod H.toAddSubgroup.index →ₜ+ Q :=
     { toAddMonoidHom := zHatFiniteIndexQuotientReduction H
       continuous_toFun := continuous_of_discreteTopology }
-  let reduction : ZHat →ₜ+ Q :=
+  let reduction  :=
     quotientReduction.comp
       (zHatReduction H.toAddSubgroup.index
         (finiteIndexNormalAddSubgroup_index_pos H))
@@ -129,12 +133,14 @@ noncomputable def zHatFiniteIndexQuotientDiagramLeg
 the integers in `ZHat`. -/
 @[simp]
 theorem zHatFiniteIndexQuotientDiagramLeg_intCast
-    (H : FiniteIndexNormalAddSubgroup ℤ) (a : ℤ) :
+      (a : ℤ) :
     (zHatFiniteIndexQuotientDiagramLeg H).hom (a : ZHat) =
       QuotientAddGroup.mk' H.toAddSubgroup a := by
   change zHatReductionToFiniteIndexQuotient H (a : ZHat) =
     QuotientAddGroup.mk' H.toAddSubgroup a
   exact zHatReductionToFiniteIndexQuotient_intCast H a
+end
+
 
 /-- The finite-quotient reductions form a cone over the diagram of finite
 index quotients of `ℤ`. -/
@@ -184,21 +190,14 @@ noncomputable def zHatFiniteIndexQuotientCone :
 
 /-- The continuous additive map from `ZHat` to Mathlib's profinite completion
 of the additive group of integers, induced by its finite quotient reductions. -/
-noncomputable def zHatToIntegerProfiniteCompletion :
-    zHatProfiniteAddGrp ⟶
-      ProfiniteAddGrp.ProfiniteCompletion.completion (AddGrpCat.of ℤ) :=
+noncomputable def zHatToIntegerProfiniteCompletion  :=
   (ProfiniteAddGrp.limitConeIsLimit
     (ProfiniteAddGrp.ProfiniteCompletion.diagram (AddGrpCat.of ℤ))).lift
       zHatFiniteIndexQuotientCone
 
 /-- Projecting the induced map to a finite quotient recovers its reduction map. -/
-theorem zHatToIntegerProfiniteCompletion_fac
-    (H : FiniteIndexNormalAddSubgroup ℤ) :
-    zHatToIntegerProfiniteCompletion ≫
-        (ProfiniteAddGrp.limitCone
-          (ProfiniteAddGrp.ProfiniteCompletion.diagram (AddGrpCat.of ℤ))).π.app H =
-      zHatFiniteIndexQuotientDiagramLeg H := by
-  exact (ProfiniteAddGrp.limitConeIsLimit
+def zHatToIntegerProfiniteCompletion_fac
+    (H : FiniteIndexNormalAddSubgroup ℤ)  := (ProfiniteAddGrp.limitConeIsLimit
     (ProfiniteAddGrp.ProfiniteCompletion.diagram (AddGrpCat.of ℤ))).fac
       zHatFiniteIndexQuotientCone H
 
@@ -241,8 +240,7 @@ private theorem zHatFiniteIndexQuotientReduction_injective
   intro x y hxy
   apply ZHat.ext
   intro n hn
-  have hnatAbs : (n : ℤ).natAbs = n := by
-    cases n <;> rfl
+  have hnatAbs : (n : ℤ).natAbs = n := rfl
   let H : FiniteIndexNormalAddSubgroup ℤ :=
     { toAddSubgroup := AddSubgroup.zmultiples (n : ℤ)
       isFiniteIndex' :=
@@ -260,21 +258,7 @@ private theorem zHatFiniteIndexQuotientReduction_injective
   have hleg :
       (zHatFiniteIndexQuotientDiagramLeg H).hom x =
         (zHatFiniteIndexQuotientDiagramLeg H).hom y := by
-    calc
-      (zHatFiniteIndexQuotientDiagramLeg H).hom x =
-          ((ProfiniteAddGrp.limitCone
-            (ProfiniteAddGrp.ProfiniteCompletion.diagram
-              (AddGrpCat.of ℤ))).π.app H).hom
-            (zHatToIntegerProfiniteCompletion x) :=
-        (ConcreteCategory.congr_hom
-          (zHatToIntegerProfiniteCompletion_fac H) x).symm
-      _ = ((ProfiniteAddGrp.limitCone
-            (ProfiniteAddGrp.ProfiniteCompletion.diagram
-              (AddGrpCat.of ℤ))).π.app H).hom
-            (zHatToIntegerProfiniteCompletion y) := hprojection
-      _ = (zHatFiniteIndexQuotientDiagramLeg H).hom y :=
-        ConcreteCategory.congr_hom
-          (zHatToIntegerProfiniteCompletion_fac H) y
+    assumption
   have hreduction :
       zHatReduction H.toAddSubgroup.index
           (finiteIndexNormalAddSubgroup_index_pos H) x =
@@ -290,9 +274,7 @@ private theorem zHatFiniteIndexQuotientReduction_injective
           zHatReduction H.toAddSubgroup.index hm y := by
     intro hm
     exact hreduction
-  have hreductionAtN :
-      ∀ hm : 0 < n,
-        zHatReduction n hm x = zHatReduction n hm y :=
+  have hreductionAtN  :=
     hindex ▸ hreductionAll
   exact hreductionAtN hn
 
@@ -322,8 +304,7 @@ noncomputable def zHatContinuousAddEquivIntegerProfiniteCompletion :
     ZHat ≃ₜ+
       ProfiniteAddGrp.ProfiniteCompletion.completion (AddGrpCat.of ℤ) := by
   have hcontinuous :
-      Continuous (fun z : ZHat => zHatToIntegerProfiniteCompletion z) := by
-    exact zHatToIntegerProfiniteCompletion.hom.continuous_toFun
+      Continuous (fun z : ZHat => zHatToIntegerProfiniteCompletion z) := zHatToIntegerProfiniteCompletion.hom.continuous_toFun
   exact
     { (Continuous.homeoOfEquivCompactToT2
       (f := Equiv.ofBijective
@@ -343,27 +324,25 @@ theorem zHatContinuousAddEquivIntegerProfiniteCompletion_apply (z : ZHat) :
 
 /-- The canonical continuous additive map from the profinite completion of
 the integers back to `ZHat`. -/
-noncomputable def integerProfiniteCompletionToZHat :
-    ProfiniteAddGrp.ProfiniteCompletion.completion (AddGrpCat.of ℤ) ⟶
-      zHatProfiniteAddGrp :=
+noncomputable def integerProfiniteCompletionToZHat  :=
   ProfiniteAddGrp.ofHom
     (zHatContinuousAddEquivIntegerProfiniteCompletion.symm :
       ProfiniteAddGrp.ProfiniteCompletion.completion (AddGrpCat.of ℤ) →ₜ+ ZHat)
 
-/-- The map from the profinite completion to `ZHat` extends the ordinary
-integer embedding. -/
-@[simp]
-theorem integerProfiniteCompletionToZHat_etaFn (a : ℤ) :
-    integerProfiniteCompletionToZHat
-        (ProfiniteAddGrp.ProfiniteCompletion.etaFn (AddGrpCat.of ℤ) a) =
-      (a : ZHat) := by
-  change zHatContinuousAddEquivIntegerProfiniteCompletion.symm
-      (ProfiniteAddGrp.ProfiniteCompletion.etaFn (AddGrpCat.of ℤ) a) =
-    (a : ZHat)
-  apply zHatContinuousAddEquivIntegerProfiniteCompletion.injective
-  rw [zHatContinuousAddEquivIntegerProfiniteCompletion.apply_symm_apply]
-  simpa only [zHatContinuousAddEquivIntegerProfiniteCompletion_apply] using
-    (zHatToIntegerProfiniteCompletion_intCast a).symm
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The inverse map of the completion equivalence is the canonical comparison
 map back to `ZHat`. -/

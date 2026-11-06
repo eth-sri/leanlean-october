@@ -35,16 +35,19 @@ lemma sphericalFactor_order_zero (p : ThetaBranch.ExteriorPrime R.A) (a : Fˣ)
     ThetaBranch.sphericalFactor R.A R.probe.allowed R.σ (Characters.psi R) p a = 1 := by
   simp [ThetaBranch.sphericalFactor, ha, sexticSphericalCoefficient]
 
-lemma exteriorValue_unit {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
+section
+variable {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
+include N C
+lemma exteriorValue_unit  
     (p : ThetaBranch.ExteriorPrime R.A) (a : Fˣ) (ha : p.val.valuation F (a : F) = 1) :
     C.factorization.exteriorValue R p a = 1 := by
   rw [C.exterior.rational_exact]
   exact sphericalFactor_order_zero R p a ((order_eq_zero_iff p.val a).mpr ha)
 
-def forwardExterior {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N) (a : Fˣ) : ℂ :=
+def forwardExterior   (a : Fˣ) : ℂ :=
   ∏ᶠ p : ThetaBranch.ExteriorPrime R.A, C.factorization.exteriorValue R p a
 
-lemma forwardExterior_finite {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N) (a : Fˣ) :
+lemma forwardExterior_finite   (a : Fˣ) :
     Function.HasFiniteMulSupport (fun p => C.factorization.exteriorValue R p a) := by
   apply (exterior_order_support_finite R a).subset
   intro p hp
@@ -52,7 +55,7 @@ lemma forwardExterior_finite {N : TraceHaarTransport R} (C : JointUpperVanishing
   simp only [Set.mem_setOf_eq, not_not] at hn
   exact hp (exteriorValue_unit R C p a ((order_eq_zero_iff p.val a).mp hn))
 
-lemma forwardExterior_eq_prod {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
+lemma forwardExterior_eq_prod  
     (a : Fˣ) (P : Finset (ThetaBranch.ExteriorPrime R.A))
     (hP : ∀ p ∉ P, p.val.valuation F (a : F) = 1) :
     forwardExterior R C a = ∏ p ∈ P, C.factorization.exteriorValue R p a := by
@@ -61,7 +64,7 @@ lemma forwardExterior_eq_prod {N : TraceHaarTransport R} (C : JointUpperVanishin
   by_contra hn
   exact hp (exteriorValue_unit R C p a (hP p hn))
 
-lemma fourier_rational_finprod {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
+lemma fourier_rational_finprod  
     (v : R.A.UnitQuotient) (a : Fˣ) (y : R.A.G) :
     OrbitFrequencies.rationalValue R C.realization v a (diagonal R y) =
       forwardExterior R C a * (R.σ ((R.A.H_S (R.A.diagonal a) y : Fˣ) : F) ^ 2)⁻¹ *
@@ -77,6 +80,8 @@ lemma fourier_rational_finprod {N : TraceHaarTransport R} (C : JointUpperVanishi
   rw [forwardExterior_eq_prod R C a P hp]
   congr 2
   exact Finset.prod_map_toList _ _
+end
+
 
 lemma order_negative_of_valuation_gt_one (p : KPFinitePlace F) (a : Fˣ)
     (ha : 1 < p.valuation F (a : F)) : ThetaBranch.order p a < 0 := by
@@ -86,7 +91,10 @@ lemma order_negative_of_valuation_gt_one (p : KPFinitePlace F) (a : Fˣ)
   have hl : 0 < WithZero.log (p.valuation F (a : F)) := WithZero.exp_lt_exp.mp he
   exact neg_neg_of_pos hl
 
-lemma forwardExterior_nonintegral {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
+section
+variable {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
+include N C
+lemma forwardExterior_nonintegral  
     (a : Fˣ) (p : ThetaBranch.ExteriorPrime R.A) (ha : 1 < p.val.valuation F (a : F)) :
     forwardExterior R C a = 0 := by
   unfold forwardExterior
@@ -95,7 +103,7 @@ lemma forwardExterior_nonintegral {N : TraceHaarTransport R} (C : JointUpperVani
   simp only [ThetaBranch.sphericalFactor, sexticSphericalCoefficient,
     if_pos (order_negative_of_valuation_gt_one p.val a ha), zero_mul]
 
-lemma rationalValue_nonintegral {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
+lemma rationalValue_nonintegral  
     (v : R.A.UnitQuotient) (a : Fˣ) (y : R.A.G)
     (ha : (a : F) ∉ R.A.R) :
     OrbitFrequencies.rationalValue R C.realization v a (diagonal R y) = 0 := by
@@ -107,7 +115,7 @@ lemma rationalValue_nonintegral {N : TraceHaarTransport R} (C : JointUpperVanish
   obtain ⟨p, hp⟩ := hn
   rw [fourier_rational_finprod, forwardExterior_nonintegral R C a p hp, zero_mul, zero_mul]
 
-lemma forward_digits_nonintegral {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
+lemma forward_digits_nonintegral  
     (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A)
     (i : ThetaExpansion.SignedExpansion.OrbitIndex R) (y : R.A.G)
     (ha : (orbitFrequency R i : F) ∉ R.A.R) :
@@ -118,6 +126,8 @@ lemma forward_digits_nonintegral {N : TraceHaarTransport R} (C : JointUpperVanis
   have hv : orbitFrequencyValue R C.sources C.realization v i (diagonal R y) = 0 :=
     rationalValue_nonintegral R C v (orbitFrequency R i) y ha
   rw [hv, mul_zero]
+end
+
 
 end DedekindZetaZeroFree.OrbitExpansion
 

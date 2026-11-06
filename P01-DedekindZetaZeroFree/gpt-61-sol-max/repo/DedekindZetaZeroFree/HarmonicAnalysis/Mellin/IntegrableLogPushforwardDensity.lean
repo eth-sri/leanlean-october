@@ -111,8 +111,11 @@ private lemma realInto_continuous {F : Type} [Field F] [NumberField F] (v : Infi
   · exact (InfinitePlace.Completion.isometryEquivRealOfIsReal hv).symm.continuous
   · exact (InfinitePlace.Completion.isometryEquivComplexOfIsComplex
       (v.not_isReal_iff_isComplex.mp hv)).symm.continuous.comp Complex.continuous_ofReal
- def radial {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (s : ℝ) : (SLocalProduct F S)ˣ where
+ section
+variable {F : Type} [Field F] [NumberField F]
+    (S : Finset (HeightOneSpectrum (𝓞 F)))
+include F S in
+def radial   (s : ℝ) : (SLocalProduct F S)ˣ where
   val := ((fun v => realInto F v (Real.exp (s / (2 * Fintype.card (InfinitePlace F))))), 1)
   inv := ((fun v => realInto F v (Real.exp (-s / (2 * Fintype.card (InfinitePlace F))))), 1)
   val_inv := by
@@ -129,8 +132,8 @@ private lemma realInto_continuous {F : Type} [Field F] [NumberField F] (v : Infi
       rw [← map_mul, ← Real.exp_add]
       rw [show _ + _ = (0 : ℝ) by ring, Real.exp_zero, map_one]
     · simp
-private lemma radial_continuous {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) : Continuous (radial S) := by
+include F S in
+private lemma radial_continuous   : Continuous (radial S) := by
   apply Units.continuous_iff.mpr
   constructor
   · apply Continuous.prodMk _ continuous_const
@@ -141,8 +144,8 @@ private lemma radial_continuous {F : Type} [Field F] [NumberField F]
     apply continuous_pi
     intro v
     exact (realInto_continuous v).comp (by fun_prop)
-private lemma modulus_pos {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (y : (SLocalProduct F S)ˣ) :
+include F S in
+private lemma modulus_pos   (y : (SLocalProduct F S)ˣ) :
     0 < ProbeWeight.modulus F S y := by
   apply mul_pos
   · apply Finset.prod_pos
@@ -160,9 +163,9 @@ private lemma modulus_pos {F : Type} [Field F] [NumberField F]
       exact zero_ne_one he
     exact norm_pos_iff.mpr hz
 
+include F S in
 theorem modulus_mul
-    {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (y z : (SLocalProduct F S)ˣ) :
+      (y z : (SLocalProduct F S)ˣ) :
     ProbeWeight.modulus F S (y * z) =
       ProbeWeight.modulus F S y * ProbeWeight.modulus F S z := by
   have h1 : (∏ v : InfinitePlace F, ‖((y * z).val).1 v‖ ^ 2) =
@@ -184,8 +187,8 @@ theorem modulus_mul
   rw [ProbeWeight.modulus, ProbeWeight.modulus, ProbeWeight.modulus, h1, h2]
   ring
 
-private lemma radial_modulus {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (s : ℝ) :
+include F S in
+private lemma radial_modulus   (s : ℝ) :
     ProbeWeight.modulus F S (radial S s) = Real.exp s := by
   have hn : (Fintype.card (InfinitePlace F) : ℝ) ≠ 0 := by
     exact_mod_cast Fintype.card_ne_zero
@@ -206,8 +209,8 @@ private lemma radial_modulus {F : Type} [Field F] [NumberField F]
   __ := e.toMulEquiv.prodCongr f.toMulEquiv
   continuous_toFun := e.continuous.prodMap f.continuous
   continuous_invFun := e.symm.continuous.prodMap f.symm.continuous
-private lemma units_embedding {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) :
+include F S in
+private lemma units_embedding   :
     Topology.IsEmbedding (Units.val : (SLocalProduct F S)ˣ → SLocalProduct F S) := by
   let e0 := (prodUnitsD (InfiniteAdeleRing F) ((v : S) → v.val.adicCompletion F)).trans
     (prodCongrD ContinuousMulEquiv.piUnits ContinuousMulEquiv.piUnits)
@@ -217,9 +220,9 @@ private lemma units_embedding {F : Type} [Field F] [NumberField F]
       (Units.isEmbedding_val₀ (G₀ := v.val.adicCompletion F)))))
   exact hi.comp e0.toHomeomorph.isEmbedding
 
+include F S in
 theorem schwartzTensor_integrable_log_pushforward_density
-    {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F)))
+     
     (ν : @Measure (SLocalProduct F S)ˣ
       (@Units.instMeasurableSpace (SLocalProduct F S) _ (borel _)))
     (hν : @Measure.IsHaarMeasure (SLocalProduct F S)ˣ _ _
@@ -281,6 +284,8 @@ theorem schwartzTensor_integrable_log_pushforward_density
         (gFinite v) (hFinite v).1 (hFinite v).2 νv (σ : ℂ) hσ
   exact integrable_log_density_of_radial_section ν (fun y => Real.log (ProbeWeight.modulus F S y))
     (Real.measurable_log.comp hm) (radial S) hrad hshift _ hw
+end
+
 
 end
 end DedekindZetaZeroFree.ProbeSheetLogDensity

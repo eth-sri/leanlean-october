@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.LpClassFunctions
 public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.CompactProbabilityMeasure
 public import DedekindZetaZeroFree.RepresentationTheory.Continuous.MatrixCoefficients
 public import Mathlib.MeasureTheory.Function.L2Space
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 The Tau Ceti contributors. All rights reserved.
@@ -38,7 +41,7 @@ variable {𝕜 G V W : Type*} [RCLike 𝕜] [Group G] [TopologicalSpace G] [IsTo
   [NormedAddCommGroup W] [InnerProductSpace 𝕜 W]
 
 noncomputable def matrixCoeffLp (π : ContRepresentation 𝕜 G V) (hπ : Continuous π)
-    (v w : V) : Lp 𝕜 2 (haarProb G) :=
+    (v w : V)  :=
   ContinuousMap.toLp 2 (haarProb G) 𝕜 (matrixCoeff π hπ v w)
 
 variable (π : ContRepresentation 𝕜 G V) (hπ : Continuous π)
@@ -47,33 +50,33 @@ theorem matrixCoeffLp_def (v w : V) :
     matrixCoeffLp π hπ v w = ContinuousMap.toLp 2 (haarProb G) 𝕜 (matrixCoeff π hπ v w) :=
   (rfl)
 
-@[simp]
-theorem matrixCoeffLp_zero_left (w : V) : matrixCoeffLp π hπ 0 w = 0 := by
-  simp [matrixCoeffLp_def]
 
-@[simp]
-theorem matrixCoeffLp_zero_right (v : V) : matrixCoeffLp π hπ v 0 = 0 := by
-  simp [matrixCoeffLp_def]
 
-@[simp]
-theorem matrixCoeffLp_add_left (v₁ v₂ w : V) :
-    matrixCoeffLp π hπ (v₁ + v₂) w = matrixCoeffLp π hπ v₁ w + matrixCoeffLp π hπ v₂ w := by
-  simp [matrixCoeffLp_def]
 
-@[simp]
-theorem matrixCoeffLp_add_right (v w₁ w₂ : V) :
-    matrixCoeffLp π hπ v (w₁ + w₂) = matrixCoeffLp π hπ v w₁ + matrixCoeffLp π hπ v w₂ := by
-  simp [matrixCoeffLp_def]
 
-@[simp]
-theorem matrixCoeffLp_smul_left (c : 𝕜) (v w : V) :
-    matrixCoeffLp π hπ (c • v) w = (starRingEnd 𝕜) c • matrixCoeffLp π hπ v w := by
-  simp [matrixCoeffLp_def]
 
-@[simp]
-theorem matrixCoeffLp_smul_right (v : V) (c : 𝕜) (w : V) :
-    matrixCoeffLp π hπ v (c • w) = c • matrixCoeffLp π hπ v w := by
-  simp [matrixCoeffLp_def]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 theorem inner_matrixCoeffLp (ρ : ContRepresentation 𝕜 G W) (hρ : Continuous ρ) (v w : V)
     (v' w' : W) :

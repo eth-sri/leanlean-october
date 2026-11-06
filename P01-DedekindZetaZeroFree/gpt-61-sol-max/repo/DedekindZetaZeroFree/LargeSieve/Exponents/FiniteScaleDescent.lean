@@ -2,7 +2,10 @@ module
 
 public import Mathlib
 
+public import Mathlib
+
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve.Vendor
 
@@ -17,8 +20,8 @@ theorem finiteDescent (b : ℝ → ℝ) (N : ℝ) (r : ℕ) (L A R C0 : ℝ)
         b n ≤ L * b n' + L * A * Real.rpow (Real.rpow N (1 / (r : ℝ))) 5 * R) :
     b N ≤ L ^ r * (C0 + (r : ℝ) * A) *
       Real.rpow (Real.rpow N (1 / (r : ℝ))) 5 * R := by
-  let H : ℝ := Real.rpow N (1 / (r : ℝ))
-  let D : ℝ := Real.rpow H 5 * R
+  let H  := Real.rpow N (1 / (r : ℝ))
+  let D  := Real.rpow H 5 * R
   have hN0 : 0 ≤ N := le_trans (by norm_num) hN
   have hr0 : r ≠ 0 := by omega
   have hH : 1 ≤ H := Real.one_le_rpow hN (by positivity)
@@ -46,7 +49,7 @@ theorem finiteDescent (b : ℝ → ℝ) (N : ℝ) (r : ℕ) (L A R C0 : ℝ)
     induction k with
     | zero =>
         intro n hn hnN hnk
-        simpa using hbase n hn (le_trans (by simpa using hnk) hH)
+        simpa using hbase n hn (le_trans (hnk) hH)
     | succ k ih =>
         intro n hn hnN hnk
         have hcoef : 0 ≤ C0 + (k : ℝ) * A := by positivity

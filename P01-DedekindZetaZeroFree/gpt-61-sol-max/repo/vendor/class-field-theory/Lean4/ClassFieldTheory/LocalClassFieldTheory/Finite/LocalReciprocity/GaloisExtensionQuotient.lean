@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.LocalClassFieldTheory.Finite.LocalReciprocity.AbsoluteUnitsFixedField
 public import ClassFieldTheory.AbstractClassFieldTheory.Degree.Valuation
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -61,8 +64,7 @@ theorem extensionSubgroup_base_eq_subgroupOf
         (closedFixingSubgroup K Ω (⊥ : IntermediateField K Ω))
         (closedFixingSubgroup K Ω E) (fixingSubgroupLeBase K Ω E) =
       (closedFixingSubgroup K Ω E).toSubgroup.subgroupOf
-        (closedFixingSubgroup K Ω (⊥ : IntermediateField K Ω)).toSubgroup := by
-  rfl
+        (closedFixingSubgroup K Ω (⊥ : IntermediateField K Ω)).toSubgroup := rfl
 
 /-- The fixing subgroup of a Galois intermediate extension is normal in the
 ambient Galois group. -/
@@ -81,19 +83,20 @@ instance extensionSubgroupBase_normal
   rw [extensionSubgroup_base_eq_subgroupOf]
   infer_instance
 
+section
+variable (E : IntermediateField K Ω) [IsGalois K E]
+include E
 /-- The quotient map from the abstract class-formation base fixing group to the ordinary
 ambient quotient by `Gal(Ω/E)`. -/
 def baseFixingToAmbientQuotient
-    (E : IntermediateField K Ω) [IsGalois K E] :
-    (closedFixingSubgroup K Ω (⊥ : IntermediateField K Ω)).toSubgroup →*
-      Gal(Ω / K) ⧸ (closedFixingSubgroup K Ω E).toSubgroup :=
+       :=
   (QuotientGroup.mk' (closedFixingSubgroup K Ω E).toSubgroup).comp
     (closedFixingSubgroup K Ω (⊥ : IntermediateField K Ω)).toSubgroup.subtype
 
 /-- The kernel of the preceding map is the exact `extensionSubgroup` used in
 the abstract theory. -/
 theorem baseFixingToAmbientQuotient_ker
-    (E : IntermediateField K Ω) [IsGalois K E] :
+      :
     (baseFixingToAmbientQuotient K Ω E).ker =
       extensionSubgroup
         (closedFixingSubgroup K Ω (⊥ : IntermediateField K Ω))
@@ -103,12 +106,12 @@ theorem baseFixingToAmbientQuotient_ker
   change
     (QuotientGroup.mk' (closedFixingSubgroup K Ω E).toSubgroup x.1 = 1) ↔
       x.1 ∈ (closedFixingSubgroup K Ω E).toSubgroup
-  exact QuotientGroup.eq_one_iff x.1
+  apply QuotientGroup.eq_one_iff
 
 /-- The base fixing group is the whole ambient Galois group, hence its map to
 the ambient quotient is onto. -/
 theorem baseFixingToAmbientQuotient_surjective
-    (E : IntermediateField K Ω) [IsGalois K E] :
+      :
     Function.Surjective (baseFixingToAmbientQuotient K Ω E) := by
   intro q
   refine Quotient.inductionOn' q ?_
@@ -124,12 +127,7 @@ theorem baseFixingToAmbientQuotient_surjective
 /-- The abstract class-formation quotient for `E/K` is the ordinary quotient of the
 ambient Galois group by the subgroup fixing `E`. -/
 def baseFixingExtensionQuotientEquivAmbient
-    (E : IntermediateField K Ω) [IsGalois K E] :
-    ((closedFixingSubgroup K Ω (⊥ : IntermediateField K Ω)).toSubgroup ⧸
-      extensionSubgroup
-        (closedFixingSubgroup K Ω (⊥ : IntermediateField K Ω))
-        (closedFixingSubgroup K Ω E) (fixingSubgroupLeBase K Ω E)) ≃*
-      Gal(Ω / K) ⧸ (closedFixingSubgroup K Ω E).toSubgroup :=
+       :=
   (QuotientGroup.quotientMulEquivOfEq
       (baseFixingToAmbientQuotient_ker K Ω E).symm).trans
     (QuotientGroup.quotientKerEquivOfSurjective
@@ -139,7 +137,7 @@ def baseFixingExtensionQuotientEquivAmbient
 /-- States the theorem `baseFixingExtensionQuotientEquivAmbient_mk`. -/
 @[simp]
 theorem baseFixingExtensionQuotientEquivAmbient_mk
-    (E : IntermediateField K Ω) [IsGalois K E]
+     
     (σ : (closedFixingSubgroup K Ω
       (⊥ : IntermediateField K Ω)).toSubgroup) :
     baseFixingExtensionQuotientEquivAmbient K Ω E (QuotientGroup.mk σ) =
@@ -149,19 +147,21 @@ theorem baseFixingExtensionQuotientEquivAmbient_mk
 /-- The exact quotient group appearing in the abstract class-formation framework for the normal
 intermediate extension `E/K` is canonically the actual `Gal(E/K)`. -/
 def baseFixingExtensionQuotientEquivGaloisGroup
-    (E : IntermediateField K Ω) [IsGalois K E] :
+      :
     ((closedFixingSubgroup K Ω (⊥ : IntermediateField K Ω)).toSubgroup ⧸
       extensionSubgroup
         (closedFixingSubgroup K Ω (⊥ : IntermediateField K Ω))
         (closedFixingSubgroup K Ω E) (fixingSubgroupLeBase K Ω E)) ≃*
       Gal(E / K) := by
-  let H : ClosedSubgroup (Gal(Ω / K)) := closedFixingSubgroup K Ω E
+  let H  := closedFixingSubgroup K Ω E
   letI : H.toSubgroup.Normal := closedFixingSubgroup_normal K Ω E
   exact (baseFixingExtensionQuotientEquivAmbient K Ω E).trans
     ((InfiniteGalois.normalAutEquivQuotient H).trans
       (AlgEquiv.autCongr
         (IntermediateField.equivOfEq
           (InfiniteGalois.fixedField_fixingSubgroup E))))
+end
+
 
 end
 end LocalClassFieldTheory

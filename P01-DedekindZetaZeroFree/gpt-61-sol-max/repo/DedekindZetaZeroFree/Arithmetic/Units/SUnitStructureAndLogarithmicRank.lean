@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Units.SArithmeticData
 public import DedekindZetaZeroFree.Arithmetic.Kummer.TwelfthRootsTotallyComplex
 
 @[expose] public section
+
 
 section
 
@@ -47,11 +50,11 @@ noncomputable section
 
 variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
 
-def sunitRank : ℕ := InfinitePlace.nrComplexPlaces F + A.Sf.card - 1
+def sunitRank  := InfinitePlace.nrComplexPlaces F + A.Sf.card - 1
 
 theorem infinitePlace_card (A : SArithmeticData F) : Fintype.card (InfinitePlace F) =
     InfinitePlace.nrComplexPlaces F := by
-  letI : IsTotallyComplex F :=
+  letI  :=
     primitive12_totallyComplex F A.zeta12 A.primitive_zeta12
   rw [InfinitePlace.card_eq_nrRealPlaces_add_nrComplexPlaces,
     IsTotallyComplex.nrRealPlaces_eq_zero, zero_add]
@@ -70,7 +73,7 @@ theorem sunitRank_add_one (A : SArithmeticData F) : A.sunitRank + 1 =
 
 def unitStructure : A.Rˣ ≃*
     NumberField.Units.torsion F × Multiplicative (Fin A.sunitRank → ℤ) := by
-  letI : IsTotallyComplex F :=
+  letI  :=
     primitive12_totallyComplex F A.zeta12 A.primitive_zeta12
   have hrank : SUnitGroup.logRank A.Sf = A.sunitRank :=
     SUnitStructureAdapter.logRank_totallyComplex A.Sf

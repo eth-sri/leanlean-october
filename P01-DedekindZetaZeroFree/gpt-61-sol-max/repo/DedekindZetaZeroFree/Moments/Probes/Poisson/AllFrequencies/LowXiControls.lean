@@ -85,8 +85,11 @@ private theorem rawKernel_norm_eq (u : Frequency D.recipe) (hq : 0 < frequencyNo
   rw [rawKernel_norm_eq_gen D u hq ξ _ _ Z hZ, hwre, hzre]
   first | done | rfl
 
-theorem rawKernel_weight_bound (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
-    (Z : ℝ) (hZ : 0 < Z) :
+section
+variable (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
+    (Z : ℝ) (hZ : 0 < Z)
+include u hu Z hZ
+theorem rawKernel_weight_bound   :
     ∃ (C k : ℝ), 0 ≤ C ∧ 0 ≤ k ∧ ∀ ξ : ℂ, 1 + Scales.contourOffset / 2 ≤ ξ.re → ξ.re ≤ 5 →
       ∀ s t : ℝ,
         ‖rawKernel D u ξ ((Scales.wLine : ℂ) + (t : ℂ) * I) ((Scales.zLine : ℂ) + (s : ℂ) * I) Z‖ ≤
@@ -189,8 +192,7 @@ theorem rawKernel_weight_bound (u : Frequency D.recipe) (hu : u ≠ principalFre
       _ = _ := by rw [hCc]; ring
   exact ⟨Cc, max A 0, hCc0, le_max_right _ _, fun ξ h1 h5 s t => hbd ξ h1 h5 (s, t)⟩
 
-private theorem rawKernel_diffAt_xi (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
-    (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) (hξ : 1 + Scales.contourOffset / 2 ≤ ξ.re) (w z : ℂ)
+private theorem rawKernel_diffAt_xi   (ξ : ℂ) (hξ : 1 + Scales.contourOffset / 2 ≤ ξ.re) (w z : ℂ)
     (hw : w.re = Scales.wLine) (hz : z.re = Scales.zLine) :
     DifferentiableAt ℂ (fun x : ℂ => rawKernel D u x w z Z) ξ := by
   have h := RawKernelRegularity31.rawKernel_differentiableAt D u hu Z hZ (ξ, w, z)
@@ -202,8 +204,7 @@ private theorem rawKernel_diffAt_xi (u : Frequency D.recipe) (hu : u ≠ princip
   have hc : DifferentiableAt ℂ (fun x : ℂ => ((x, w, z) : ℂ × ℂ × ℂ)) ξ := by fun_prop
   exact h.comp ξ hc
 
-private theorem rawKernel_continuous_heights (u : Frequency D.recipe)
-    (hu : u ≠ principalFrequency D.recipe) (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ)
+private theorem rawKernel_continuous_heights   (ξ : ℂ)
     (hξ : 1 + Scales.contourOffset / 2 ≤ ξ.re) :
     Continuous (fun p : ℝ × ℝ => rawKernel D u ξ ((Scales.wLine : ℂ) + (p.2 : ℂ) * Complex.I)
       ((Scales.zLine : ℂ) + (p.1 : ℂ) * Complex.I) Z) := by
@@ -226,6 +227,8 @@ private theorem rawKernel_continuous_heights (u : Frequency D.recipe)
     (f := fun q : ℝ × ℝ => ((ξ, (Scales.wLine : ℂ) + (q.2 : ℂ) * Complex.I,
       (Scales.zLine : ℂ) + (q.1 : ℂ) * Complex.I) : ℂ × ℂ × ℂ)) (x := q)
     (hdiff q.2 q.1).continuousAt hcont.continuousAt
+end
+
 
 private def stripV : Set ℂ := {ξ : ℂ | 1 + Scales.contourOffset / 2 < ξ.re ∧ ξ.re < 5}
 
@@ -236,8 +239,11 @@ private theorem stripV_open : IsOpen stripV := by
   exact IsOpen.and (isOpen_lt continuous_const Complex.continuous_re)
     (isOpen_lt Complex.continuous_re continuous_const)
 
-theorem Iwz_differentiableOn_xi (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
-    (Z : ℝ) (hZ : 0 < Z) :
+section
+variable (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
+    (Z : ℝ) (hZ : 0 < Z)
+include u hu Z hZ
+theorem Iwz_differentiableOn_xi   :
     DifferentiableOn ℂ (fun ξ : ℂ => Iwz D u ξ Scales.wLine Scales.zLine Z)
       (comparisonClosedStrip Scales.rightLine 4) := by
   have hdiff : ∀ ξ ∈ stripV, ∀ s t : ℝ, DifferentiableAt ℂ
@@ -290,8 +296,7 @@ theorem Iwz_differentiableOn_xi (u : Frequency D.recipe) (hu : u ≠ principalFr
     exact mem_stripV.2 ⟨by linarith, by linarith⟩
   exact hI.mono hsub
 
-theorem Iwz_decayOn_xi (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
-    (Z : ℝ) (hZ : 0 < Z) :
+theorem Iwz_decayOn_xi   :
     LowRowXiControls.DecayOn (fun ξ : ℂ => Iwz D u ξ Scales.wLine Scales.zLine Z) Scales.rightLine 4 := by
   obtain ⟨Cc, k, hCc0, hk, hbd⟩ := rawKernel_weight_bound D u hu Z hZ
   intro B hB
@@ -322,12 +327,13 @@ theorem Iwz_decayOn_xi (u : Frequency D.recipe) (hu : u ≠ principalFrequency D
   refine h.trans (le_of_eq ?_)
   ring
 
-theorem triple_xi_shift (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
-    (Z : ℝ) (hZ : 0 < Z) :
+theorem triple_xi_shift   :
     triple D u 4 Scales.wLine Scales.zLine Z = triple D u Scales.rightLine Scales.wLine Scales.zLine Z := by
   unfold triple
   exact LowRowXiControls.verticalIntegral_eq_of_decayOn (by norm_num [Scales.rightLine, Scales.contourOffset])
     (Iwz_differentiableOn_xi D u hu Z hZ) (Iwz_decayOn_xi D u hu Z hZ)
+end
+
 
 end
 

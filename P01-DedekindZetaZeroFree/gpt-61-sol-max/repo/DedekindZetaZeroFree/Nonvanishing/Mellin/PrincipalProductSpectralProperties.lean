@@ -56,12 +56,14 @@ namespace DedekindZetaZeroFree.PrincipalMellin
 open scoped NumberField
 open IsDedekindDomain
 variable {F : Type} [Field F] [NumberField F]
- def primePlace {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-    (R : ActualRecipe S η) (p : ExteriorIdealEuler.PrimeIndex R.A.cS) :
+ section
+variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : ActualRecipe S η)
+include S η R
+def primePlace   (p : ExteriorIdealEuler.PrimeIndex R.A.cS) :
     HeightOneSpectrum (𝓞 F) :=
   ⟨p.val.val, Ideal.isPrime_of_prime p.property, p.val.property.1⟩
- def primeOutside {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-    (R : ActualRecipe S η) (p : ExteriorIdealEuler.PrimeIndex R.A.cS) :
+ def primeOutside   (p : ExteriorIdealEuler.PrimeIndex R.A.cS) :
     {v : HeightOneSpectrum (𝓞 F) // v ∉ R.A.Sf} := by
   refine ⟨primePlace R p, ?_⟩
   intro hp
@@ -69,14 +71,12 @@ variable {F : Type} [Field F] [NumberField F]
     (primePlace R p) hp
   simp [primePlace] at h
   exact p.property.not_unit (by simpa [h] using (isUnit_one : IsUnit (1 : Ideal (𝓞 F))))
-private theorem primeOutside_injective {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-    (R : ActualRecipe S η) : Function.Injective (primeOutside R) := by
+private theorem primeOutside_injective   : Function.Injective (primeOutside R) := by
   intro p q h
   apply Subtype.ext
   apply Subtype.ext
   exact congrArg (fun v => v.val.asIdeal) h
-private theorem exterior_modulus {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-    (R : ActualRecipe S η) (I : R.A.Exterior) : I.val ⊔ R.A.modulus = ⊤ := by
+private theorem exterior_modulus   (I : R.A.Exterior) : I.val ⊔ R.A.modulus = ⊤ := by
   by_contra h
   obtain ⟨p, hp, hle⟩ := Ideal.exists_le_maximal (I.val ⊔ R.A.modulus) h
   have hmod : R.A.modulus ≤ p := le_sup_right.trans hle
@@ -87,8 +87,7 @@ private theorem exterior_modulus {S : SArithmeticData F} {η : RayClassCharacter
   have : (⊤ : Ideal (𝓞 F)) ≤ p := by
     rw [← hIv]; exact sup_le (le_sup_left.trans hle) le_rfl
   exact hp.ne_top (top_unique this)
-private theorem local_phases {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-    (R : ActualRecipe S η) (p : ExteriorIdealEuler.PrimeIndex R.A.cS) :
+private theorem local_phases   (p : ExteriorIdealEuler.PrimeIndex R.A.cS) :
     ‖R.target p.val.val‖ = 1 ∧
       ‖R.probe.coefficients.theta (R.probe.coefficients.generator p.val) ^ 6‖ = 1 := by
   constructor
@@ -97,8 +96,7 @@ private theorem local_phases {S : SArithmeticData F} {η : RayClassCharacter F S
   · rw [norm_pow, NormalizedProbe.principal_theta_norm R.probe
       ⟨R.probe.coefficients.generator p.val, (R.probe.coefficients.generates p.val).1⟩]
     simp
-private theorem local_ne_zero {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-    (R : ActualRecipe S η) (p : ExteriorIdealEuler.PrimeIndex R.A.cS)
+private theorem local_ne_zero   (p : ExteriorIdealEuler.PrimeIndex R.A.cS)
     (s : ℂ) (hs : (2 / 3 : ℝ) < s.re) : R.localCorrection p s ≠ 0 := by
   have hq : 1 < idealNorm p.val.val := by
     change 1 < (Ideal.absNorm p.val.val : ℝ)
@@ -118,8 +116,7 @@ private theorem local_ne_zero {S : SArithmeticData F} {η : RayClassCharacter F 
     norm_num [Complex.sub_re, Complex.mul_re]
     linarith
 
-private theorem local_majorized {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-    (R : ActualRecipe S η) (a : ℝ) (ha : (2 / 3 : ℝ) < a) :
+private theorem local_majorized   (a : ℝ) (ha : (2 / 3 : ℝ) < a) :
     ∃ u : ExteriorIdealEuler.PrimeIndex R.A.cS → ℝ,
       Summable u ∧ (∀ p, 0 ≤ u p) ∧
       ∀ p s, a ≤ s.re → ‖R.localCorrection p s - 1‖ ≤ u p := by
@@ -140,8 +137,7 @@ private theorem local_majorized {S : SArithmeticData F} {η : RayClassCharacter 
       have h := NumberField.RingOfIntegers.HeightOneSpectrum.one_lt_absNorm (primePlace R p)
       exact_mod_cast h
     exact (hb _ hq _ _ (local_phases R p).1 (local_phases R p).2 s hs).1
-private theorem local_diff {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-    (R : ActualRecipe S η) (p : ExteriorIdealEuler.PrimeIndex R.A.cS) :
+private theorem local_diff   (p : ExteriorIdealEuler.PrimeIndex R.A.cS) :
     DifferentiableOn ℂ (R.localCorrection p) {s : ℂ | (2 / 3 : ℝ) < s.re} := by
   intro s hs
   change (2 / 3 : ℝ) < s.re at hs
@@ -174,8 +170,7 @@ private theorem local_diff {S : SArithmeticData F} {η : RayClassCharacter F S.m
   · fun_prop
   · fun_prop
   · exact mul_ne_zero hE hD
-theorem actual_principal_H_differentiable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-    (R : ActualRecipe S η) :
+theorem actual_principal_H_differentiable   :
     DifferentiableOn ℂ R.H {s : ℂ | (2 / 3 : ℝ) < s.re} := by
   intro s hs
   change (2 / 3 : ℝ) < s.re at hs
@@ -190,8 +185,7 @@ theorem actual_principal_H_differentiable {S : SArithmeticData F} {η : RayClass
     (fun p z hz => hb p z hz.le)
   exact (hd.differentiableAt (hU.mem_nhds has)).differentiableWithinAt
 
-theorem actual_principal_H_ne_zero {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-    (R : ActualRecipe S η) (s : ℂ) (hs : (2 / 3 : ℝ) < s.re) : R.H s ≠ 0 := by
+theorem actual_principal_H_ne_zero   (s : ℂ) (hs : (2 / 3 : ℝ) < s.re) : R.H s ≠ 0 := by
   obtain ⟨u, hu, hu0, hb⟩ := local_majorized R s.re hs
   have hsum : Summable (fun p => ‖R.localCorrection p s - 1‖) :=
     hu.of_nonneg_of_le (fun _ => norm_nonneg _) (fun p => hb p s le_rfl)
@@ -199,14 +193,15 @@ theorem actual_principal_H_ne_zero {S : SArithmeticData F} {η : RayClassCharact
     (f := fun p => R.localCorrection p s - 1)
     (fun p => by simpa using local_ne_zero R p s hs) hsum
   simpa [ActualRecipe.H] using h
-theorem actual_principal_H_bound {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-    (R : ActualRecipe S η) (a : ℝ) (ha : (2 / 3 : ℝ) < a) :
+theorem actual_principal_H_bound   (a : ℝ) (ha : (2 / 3 : ℝ) < a) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ s : ℂ, a ≤ s.re → ‖R.H s‖ ≤ C := by
   obtain ⟨u, hu, hu0, hb⟩ := local_majorized R a ha
   refine ⟨∑' T : Finset (ExteriorIdealEuler.PrimeIndex R.A.cS), ∏ p ∈ T, u p, ?_, ?_⟩
   · exact tsum_nonneg (fun T => Finset.prod_nonneg (fun p _ => hu0 p))
   · intro s hs
     exact product_bound (fun p => R.localCorrection p s) u hu hu0 (fun p => hb p s hs)
+end
+
 
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 

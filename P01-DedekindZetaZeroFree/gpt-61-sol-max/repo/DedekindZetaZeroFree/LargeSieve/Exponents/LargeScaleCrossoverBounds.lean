@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 public import DedekindZetaZeroFree.LargeSieve.Exponents.ExponentAndRecursiveEnvelope
 
 @[expose] public section
+
 
 open scoped NumberField Classical
 
@@ -25,7 +28,7 @@ theorem crossover_large_scale_bound (α M N : ℝ) (hα : 1 ≤ α) (hα₂ : α
   refine ⟨⟨hβ1, hβ2⟩, Real.one_le_rpow hN hβ0, ?_, ?_⟩
   · calc N = N ^ (1 : ℝ) := (Real.rpow_one N).symm
       _ ≤ N ^ (2 - 1 / α) := Real.rpow_le_rpow_of_exponent_le hN hβ1
-  · have h3 : N ^ (2 - 1 / α) ≤ N ^ (2 : ℝ) :=
+  · have h3  :=
       Real.rpow_le_rpow_of_exponent_le hN hβ2
     have h4 : N ^ (2 - 1 / α) * N ≤ N ^ (2 : ℝ) * N :=
       mul_le_mul_of_nonneg_right h3 hN0

@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Algebra.SymmetricPower.BasisAndTrace
 public import DedekindZetaZeroFree.RepresentationTheory.ClassicalGroups.StandardDiagonalAction
 public import DedekindZetaZeroFree.RepresentationTheory.SymmetricPowers.Functoriality
 public import DedekindZetaZeroFree.Algebra.SymmetricPolynomials.CompleteHomogeneous
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 The Tau Ceti contributors. All rights reserved.
@@ -34,8 +37,7 @@ section CommRing
 
 variable [CommRing k]
 
-noncomputable abbrev symPowerRep :
-    Representation k (GL (Fin n) k) (Sym[k]^d (Fin n → k)) :=
+noncomputable abbrev symPowerRep  :=
   (stdRep k n).symmetricPower d
 
 end CommRing

@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.LocalFields.FrobeniusOrderModuloInertia
 public import DedekindZetaZeroFree.LFunctions.Hecke.InertiaCharacterEulerPolynomial
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.AbelianQuotient
 
@@ -24,14 +27,14 @@ theorem localEulerPolynomial
       (1 - x ^ Q.inertiaDeg (𝓞 K))) =
       ∏ ρ : ComplexDual (L ≃ₐ[K] L), (1 - primeArtinValue ρ W * x) := by
   classical
-  letI : W.asIdeal.LiesOver p.asIdeal := hw
+  letI  := hw
   have hf := frobeniusQuotientOrder K L p W hw
   have hdet := inertiaCharacterDeterminant
     (Ideal.inertia (L ≃ₐ[K] L) W.asIdeal)
     (ClassFieldTheory.arithmeticFrobeniusAt (K := K) W) x
   dsimp only at hdet
   rw [hf.1, hf.2] at hdet
-  have hpos : 0 < W.asIdeal.inertiaDeg (𝓞 K) :=
+  have hpos  :=
     Ideal.inertiaDeg_pos W.asIdeal (𝓞 K)
   rw [Nat.mul_div_cancel _ hpos] at hdet
   rw [show (∏ ρ : ComplexDual (L ≃ₐ[K] L), (1 - primeArtinValue ρ W * x)) =
@@ -43,8 +46,8 @@ theorem localEulerPolynomial
       apply Finset.prod_congr rfl
       intro Q hQ
       have hQ' := (IsDedekindDomain.mem_primesOverFinset_iff p.ne_bot (𝓞 L)).mp hQ
-      letI : Q.IsPrime := hQ'.1
-      letI : Q.LiesOver p.asIdeal := hQ'.2
+      letI  := hQ'.1
+      letI  := hQ'.2
       rw [Ideal.inertiaDeg_eq_of_isGaloisGroup p.asIdeal Q W.asIdeal (L ≃ₐ[K] L)]
     _ = _ := by rw [Finset.prod_const]
 

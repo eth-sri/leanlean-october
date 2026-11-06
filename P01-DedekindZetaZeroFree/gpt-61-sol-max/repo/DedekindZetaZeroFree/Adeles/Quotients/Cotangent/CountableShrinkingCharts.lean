@@ -133,7 +133,10 @@ private theorem projection_open (i : Fin (H.atlas U).componentCount) :
     ⟨fun g => KPCuspSiegel.continuous_action F g.val⟩
   exact isOpenMap_quotient_mk'_mul
 
- theorem base_open (C : ShrunkChart F ζ hζ U R P H) : IsOpen C.baseDomain := by
+ section
+variable (C : ShrunkChart F ζ hζ U R P H)
+include C in
+theorem base_open   : IsOpen C.baseDomain := by
   have he : C.baseDomain =
       KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative C.component) ''
         (KPCuspSiegel.projection F (Component F ζ hζ U R P H C.component) '' C.domain) := by
@@ -141,17 +144,20 @@ private theorem projection_open (i : Fin (H.atlas U).componentCount) :
   rw [he]
   exact (component_open C.component).isOpenMap _ ((projection_open C.component) _ C.domain_open)
 
-private theorem base_continuous (C : ShrunkChart F ζ hζ U R P H) : Continuous C.toBase :=
+include C in
+private theorem base_continuous   : Continuous C.toBase :=
   (component_open C.component).continuous.comp (continuous_quotient_mk'.comp continuous_subtype_val)
 
-private theorem base_quotient (C : ShrunkChart F ζ hζ U R P H) : IsQuotientMap C.quotientMap := by
+include C in
+private theorem base_quotient   : IsQuotientMap C.quotientMap := by
   have hopen : IsOpenMap C.toBase :=
     ((component_open C.component).isOpenMap.comp (projection_open C.component)).domRestrict C.domain_open
   exact (hopen.codRestrict (fun x => Set.mem_range_self x)).isQuotientMap
     ((base_continuous C).subtype_mk (fun x => Set.mem_range_self x))
     (fun ⟨x, y, hy⟩ => ⟨y, Subtype.ext hy⟩)
 
-private theorem separated (C : ShrunkChart F ζ hζ U R P H)
+include C in
+private theorem separated  
     (g : Component F ζ hζ U R P H C.component) (x : SymmetricSpace F)
     (hx : x ∈ C.domain) (hg : g • x ∈ C.domain) : g ∈ C.Isotropy := by
   let g' : ArchComponent F ζ hζ U R P H C.component :=
@@ -165,7 +171,8 @@ private theorem separated (C : ShrunkChart F ζ hζ U R P H)
   change complexProjectiveEmbedding F g.val • C.center = C.center at ht
   rwa [complexProjectiveEmbedding_smul] at ht
 
-private theorem base_fibers (C : ShrunkChart F ζ hζ U R P H) (y z : C.domain) :
+include C in
+private theorem base_fibers   (y z : C.domain) :
     C.toBase y = C.toBase z ↔ ∃ σ : C.Isotropy, C.action σ y = z := by
   constructor
   · intro he
@@ -216,7 +223,8 @@ private theorem shrink_exists (i : Fin (H.atlas U).componentCount) (p : Symmetri
     simpa only [Set.mem_preimage, Subgroup.coe_mul, Subgroup.coe_inv, ← mul_smul]
       using Set.mem_iInter.mp hx (h*g⁻¹)
 
-private theorem exact_measure (C : ShrunkChart F ζ hζ U R P H) :
+include C in
+private theorem exact_measure   :
     Measure.map C.toBase C.liftedMeasure =
       (KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U).restrict C.baseDomain := by
   let Γ := Component F ζ hζ U R P H C.component
@@ -278,7 +286,8 @@ private theorem exact_measure (C : ShrunkChart F ζ hζ U R P H) :
   rw [Measure.restrict_restrict_of_subset hsub] at hm
   exact hm.symm
 
-private theorem all_properties (C : ShrunkChart F ζ hζ U R P H) : C.Properties := by
+include C in
+private theorem all_properties   : C.Properties := by
   refine ⟨chart_stabilizer_finite F ζ hζ U R P H C.component C.center C.larger,
     base_open C, (base_open C).measurableSet, inferInstance, inferInstance,
     base_continuous C, (base_continuous C).measurable, base_quotient C, base_fibers C, ?_,
@@ -295,6 +304,8 @@ private theorem all_properties (C : ShrunkChart F ζ hζ U R P H) : C.Properties
     exact (liftCoefficient_transition F ζ hζ U R P H s C.component σ.val y.val).1
   · intro f y
     exact congrFun (lift_restriction_commutes F ζ hζ U R P H f C.component C.domain) y
+end
+
 
 private theorem regularity : QuotientRegularity F ζ hζ U := by
   exact ⟨inferInstance,inferInstance,inferInstance,inferInstance⟩

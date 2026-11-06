@@ -162,10 +162,13 @@ theorem integral_mixedConeRadialKernel_eq_tsum_unitSlab
   exact mixedConeRadialKernel_add_unitCoordinateShift K x s y z
 
 open Classical in
-noncomputable def coneIdealElementShapeMap
-    (J : (Ideal (𝓞 K))⁰)
+section
+variable (J : (Ideal (𝓞 K))⁰)
     (q : InfinitePlace K → ℝ) (hq : ∀ w, q w ≠ 0)
-    (x : ↥(J : Ideal (𝓞 K))) :
+    (x : ↥(J : Ideal (𝓞 K)))
+include J q hq x in
+noncomputable def coneIdealElementShapeMap
+      :
     shapeIdealLattice K (FractionalIdeal.mk0 K J) q hq :=
   ⟨traceRadialScale K q hq
       (traceEmbedding K (((x : 𝓞 K) : K))),
@@ -210,17 +213,18 @@ noncomputable def coneIdealElementShapeEquiv
   Equiv.ofBijective (coneIdealElementShapeMap K J q hq)
     (coneIdealElementShapeMap_bijective K J q hq)
 
+include J q hq x in
 @[simp]
 theorem coneIdealElementShapeEquiv_coe
-    (J : (Ideal (𝓞 K))⁰)
-    (q : InfinitePlace K → ℝ) (hq : ∀ w, q w ≠ 0)
-    (x : ↥(J : Ideal (𝓞 K))) :
+      :
     ((coneIdealElementShapeEquiv K J q hq x :
         shapeIdealLattice K (FractionalIdeal.mk0 K J) q hq) :
       mixedEmbedding.euclidean.mixedSpace K) =
       traceRadialScale K q hq
         (traceEmbedding K (((x : 𝓞 K) : K))) :=
   by rfl
+end
+
 
 open Classical in
 def coneNonzeroEquivSingletonCompl
@@ -291,8 +295,11 @@ private theorem cone_tsum_radialKernel
   intro x
   exact mixedRadialJacobian_mul_mixedMellinGaussian K y (((x : 𝓞 K) : K)) s
 
+section
+variable (J : (Ideal (𝓞 K))⁰) {s : ℂ} (hs : 1 < s.re)
+include J s hs in
 private theorem cone_summable_integral_norm
-    (J : (Ideal (𝓞 K))⁰) {s : ℂ} (hs : 1 < s.re) :
+      :
     Summable (fun x : nonzeroIdealElement K J ↦ ∫ y in unitFundamentalParamSet K,
       ‖mixedConeRadialKernel K (((x : 𝓞 K) : K)) s y‖) := by
   rw [← (idealElementMulDecompositionEquiv K J).summable_iff]
@@ -321,8 +328,9 @@ private theorem cone_integrable_tsum {α ι : Type*} [MeasurableSpace α]
     exact hsum.trans (tsum_congr fun i ↦ hterm i)
   exact (L1.integrable_coeFn (∑' i, G i)).congr hcoe
 
+include J s hs in
 theorem integrableOn_fractionalShapeIdealTheta_logMellin
-    (J : (Ideal (𝓞 K))⁰) {s : ℂ} (hs : 1 < s.re) :
+      :
     IntegrableOn
       (fun y : realSpace K ↦
         Complex.exp ((Module.finrank ℚ K : ℂ) * s *
@@ -345,8 +353,9 @@ theorem integrableOn_fractionalShapeIdealTheta_logMellin
   dsimp only
   rw [cone_tsum_radialKernel, ← mul_assoc, inv_mul_cancel₀ (coneRadialConstant_ne_zero K), one_mul]
 
+include J s hs in
 private theorem cone_integral_tsum_radialKernel
-    (J : (Ideal (𝓞 K))⁰) {s : ℂ} (hs : 1 < s.re) :
+      :
     (∫ y in unitFundamentalParamSet K,
       ∑' x : nonzeroIdealElement K J, mixedConeRadialKernel K (((x : 𝓞 K) : K)) s y) =
       ((1 / 2 : ℂ) ^ nrRealPlaces K * (1 / 4 : ℂ) ^ nrComplexPlaces K *
@@ -395,6 +404,8 @@ private theorem cone_integral_tsum_radialKernel
       integral_mixedConeRadialKernel]
   rw [hin]
   exact (hasSum_integral_mixedMellinGaussian_idealSet K J hs).tsum_eq
+end
+
 
 private theorem cone_normalizingCoefficient :
     ((((2 : ℝ)⁻¹ ^ nrComplexPlaces K * (Module.finrank ℚ K : ℝ) *

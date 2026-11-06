@@ -486,10 +486,13 @@ def ConductorZero (ψ : AddChar K ℂ) (π : 𝒪[K]) : Prop :=
   (∀ u : 𝒪[K], ψ (u : K) = 1) ∧
     ∃ u : 𝒪[K], ψ ((π : K)⁻¹ * (u : K)) ≠ 1
 
-theorem residuePhase_lift_independent
-    (π : 𝒪[K]) (hπ : Irreducible π)
+section
+variable (π : 𝒪[K]) (hπ : Irreducible π)
     (ψ : AddChar K ℂ) (hψcont : Continuous ψ)
     (hψunitary : ∀ x : K, ‖ψ x‖ = 1) (hcond : ConductorZero ψ π)
+include π hπ ψ hψcont hψunitary hcond
+theorem residuePhase_lift_independent
+     
     (u v : 𝒪[K])
     (huv : IsLocalRing.residue 𝒪[K] u = IsLocalRing.residue 𝒪[K] v) :
     ψ ((π : K)⁻¹ * (u : K)) = ψ ((π : K)⁻¹ * (v : K)) := by
@@ -499,9 +502,7 @@ theorem residuePhase_lift_independent
     ((congrArg ψbar huv).trans (hbar.2 v))
 
 theorem exists_unique_residue_addChar
-    (π : 𝒪[K]) (hπ : Irreducible π)
-    (ψ : AddChar K ℂ) (hψcont : Continuous ψ)
-    (hψunitary : ∀ x : K, ‖ψ x‖ = 1) (hcond : ConductorZero ψ π) :
+      :
     ∃! ψbar : AddChar 𝓀[K] ℂ,
       ψbar ≠ 1 ∧ ψbar.IsPrimitive ∧
         ∀ u : 𝒪[K], ψbar (IsLocalRing.residue 𝒪[K] u) =
@@ -513,16 +514,21 @@ theorem exists_unique_residue_addChar
   · intro ψbar' hbar'
     apply huniq ψbar'
     exact ⟨hbar'.1, by simpa [div_eq_mul_inv, mul_comm] using hbar'.2.2⟩
+end
+
 
 variable [Fintype 𝓀[K]]
 
 def qPower (r : ℝ) : ℂ :=
   (Real.rpow (Fintype.card 𝓀[K] : ℝ) r : ℂ)
 
-def g (χκ : MulChar 𝓀[K] ℂ) (ψbar : AddChar 𝓀[K] ℂ) (j : ℤ) : ℂ :=
+section
+variable (χκ : MulChar 𝓀[K] ℂ)
+include χκ
+def g   (ψbar : AddChar 𝓀[K] ℂ) (j : ℤ) : ℂ :=
   qPower (K := K) (-(1 / 2 : ℝ)) * gaussSum (χκ ^ j) ψbar
 
-theorem g_eq_normalizedGaussPower (χκ : MulChar 𝓀[K] ℂ)
+theorem g_eq_normalizedGaussPower  
     (ψbar : AddChar 𝓀[K] ℂ) (j : ℕ) :
     g χκ ψbar (j : ℤ) = FiniteGauss.normalizedGaussPower χκ ψbar j := by
   have hQ : (0 : ℝ) ≤ Fintype.card 𝓀[K] := by positivity
@@ -530,7 +536,7 @@ theorem g_eq_normalizedGaussPower (χκ : MulChar 𝓀[K] ℂ)
   rw [Real.rpow_eq_pow, Real.rpow_neg hQ, ← Real.sqrt_eq_rpow]
   simp only [zpow_natCast, Complex.ofReal_inv, div_eq_mul_inv, mul_comm]
 
-theorem g_periodic (χκ : MulChar 𝓀[K] ℂ) (hχκ : orderOf χκ = 6)
+theorem g_periodic   (hχκ : orderOf χκ = 6)
     (ψbar : AddChar 𝓀[K] ℂ) (j : ℤ) :
     g χκ ψbar (j + 6) = g χκ ψbar j := by
   have h6 : χκ ^ (6 : ℤ) = 1 := by
@@ -539,7 +545,7 @@ theorem g_periodic (χκ : MulChar 𝓀[K] ℂ) (hχκ : orderOf χκ = 6)
     exact_mod_cast H
   simp only [g, zpow_add, h6, mul_one]
 
-theorem g_two_mul_four (χκ : MulChar 𝓀[K] ℂ) (hχκ : orderOf χκ = 6)
+theorem g_two_mul_four   (hχκ : orderOf χκ = 6)
     (ψbar : AddChar 𝓀[K] ℂ) (hψbar : ψbar ≠ 1) :
     g χκ ψbar 2 * g χκ ψbar 4 = 1 := by
   have ho : orderOf (χκ ^ 2) = 3 := by
@@ -567,16 +573,18 @@ theorem g_two_mul_four (χκ : MulChar 𝓀[K] ℂ) (hχκ : orderOf χκ = 6)
     div_mul_div_comm, hprod, ← pow_two, hs2]
   exact div_self (by exact_mod_cast Fintype.card_pos.ne')
 
-def unitCharacter (χκ : MulChar 𝓀[K] ℂ) (u : 𝒪[K]ˣ) : ℂ :=
+def unitCharacter   (u : 𝒪[K]ˣ) : ℂ :=
   χκ (IsLocalRing.residue 𝒪[K] (u : 𝒪[K]))
 
-def shellIntegrand (χκ : MulChar 𝓀[K] ℂ) (ψ : AddChar K ℂ)
+def shellIntegrand   (ψ : AddChar K ℂ)
     (π : 𝒪[K]) (e : ℕ) (l : ℤ) (x : K) : ℂ := by
   classical
   exact if hx : x ∈ (𝒪[K] : Set K) then
     χκ (IsLocalRing.residue 𝒪[K] ⟨x, hx⟩) ^ (-2 * l) *
       star (ψ ((π : K) ^ ((e : ℤ) - l) * x))
   else 0
+end
+
 
 def A [MeasurableSpace K] (μ : Measure K) (χκ : MulChar 𝓀[K] ℂ)
     (ψ : AddChar K ℂ) (π : 𝒪[K]) (e : ℕ) (l : ℤ) : ℂ :=

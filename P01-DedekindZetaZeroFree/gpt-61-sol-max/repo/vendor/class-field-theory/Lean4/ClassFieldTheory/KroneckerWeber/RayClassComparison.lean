@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AlgebraicNumberTheory.RayClass.Topology
 public import ClassFieldTheory.AlgebraicNumberTheory.RayClass.Rational
 public import Mathlib.NumberTheory.Cyclotomic.Gal
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -56,13 +59,7 @@ noncomputable def rationalRayClassGroupEquivCyclotomicAut
 
 /-- The quotient by the rational ray-class norm subgroup is the Galois
 group of the corresponding cyclotomic field. -/
-noncomputable def rationalRayClassFieldQuotientEquivCyclotomicAut
-    (m : ℕ) (hm : m ≠ 0) :
-    IdeleClassGroup ℚ ⧸
-        RayClass.Modulus.congruenceSubgroup
-          (RayClass.rationalModulus m) ≃*
-      (CyclotomicField m ℚ ≃ₐ[ℚ] CyclotomicField m ℚ) :=
-  rationalRayClassGroupEquivCyclotomicAut m hm
+noncomputable alias rationalRayClassFieldQuotientEquivCyclotomicAut := _root_.KroneckerWeber.rationalRayClassGroupEquivCyclotomicAut
 
 /-- The index of the rational ray congruence subgroup equals the degree
 of the `m`-th cyclotomic field. -/
@@ -78,7 +75,7 @@ theorem rationalRayClassFieldQuotient_card_eq_cyclotomicDegree
   let : IsCyclotomicExtension {m} ℚ
       (CyclotomicField m ℚ) :=
     CyclotomicField.isCyclotomicExtension m ℚ
-  let : IsGalois ℚ (CyclotomicField m ℚ) :=
+  let  :=
     IsCyclotomicExtension.isGalois {m} ℚ
       (CyclotomicField m ℚ)
   calc

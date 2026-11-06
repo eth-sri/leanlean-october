@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.Definitions.FrobeniusAndHilbertClassFields.ArithmeticFrobeniusAt
 public import Mathlib.FieldTheory.Finite.Basic
 public import Mathlib.NumberTheory.RamificationInertia.Unramified
 public import Mathlib.RingTheory.Frobenius
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -53,14 +56,14 @@ theorem orderOf_arithmeticFrobeniusAt_eq_inertiaDegree
     orderOf (arithmeticFrobeniusAt (K := K) w) =
       w.asIdeal.inertiaDeg (𝓞 K) := by
   classical
-  let P : Ideal (𝓞 K) := v.asIdeal
-  let Q : Ideal (𝓞 L) := w.asIdeal
+  let P  := v.asIdeal
+  let Q  := w.asIdeal
   let G := L ≃ₐ[K] L
   let g : G := arithmeticFrobeniusAt (K := K) w
   let : Q.LiesOver P := hw
   let : Algebra.IsUnramifiedAt (𝓞 K) Q := hunram
-  let : Field ((𝓞 K) ⧸ P) := Ideal.Quotient.field P
-  let : Field ((𝓞 L) ⧸ Q) := Ideal.Quotient.field Q
+  let  := Ideal.Quotient.field P
+  let  := Ideal.Quotient.field Q
   let : Finite ((𝓞 K) ⧸ P) :=
     Ring.HasFiniteQuotients.finiteQuotient v.ne_bot
   let : Finite ((𝓞 L) ⧸ Q) :=
@@ -68,7 +71,7 @@ theorem orderOf_arithmeticFrobeniusAt_eq_inertiaDegree
   let : Fintype ((𝓞 K) ⧸ P) := Fintype.ofFinite _
   have hF : IsArithFrobAt (𝓞 K) g Q := by
     change IsArithFrobAt (𝓞 K) (arithFrobAt (𝓞 K) G Q) Q
-    exact IsArithFrobAt.arithFrobAt (𝓞 K) G Q
+    apply IsArithFrobAt.arithFrobAt
   let gs : MulAction.stabilizer G Q := ⟨g, hF.mem_stabilizer⟩
   have hImage :
       Ideal.Quotient.stabilizerHom Q P G gs =
@@ -99,7 +102,7 @@ theorem orderOf_arithmeticFrobeniusAt_eq_inertiaDegree
     exact orderOf_dvd_natCard gs
   have hLower : Q.inertiaDeg (𝓞 K) ∣ orderOf gs := by
     rw [← hImageOrder]
-    exact orderOf_map_dvd (Ideal.Quotient.stabilizerHom Q P G) gs
+    apply orderOf_map_dvd
   change orderOf g = Q.inertiaDeg (𝓞 K)
   exact (Subgroup.orderOf_coe gs).trans
     (Nat.dvd_antisymm hUpper hLower)

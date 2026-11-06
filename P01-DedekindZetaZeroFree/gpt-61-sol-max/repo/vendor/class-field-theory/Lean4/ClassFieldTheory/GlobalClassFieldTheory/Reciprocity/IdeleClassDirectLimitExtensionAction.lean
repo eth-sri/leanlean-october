@@ -30,39 +30,39 @@ open ClassFormation
 open LocalClassFieldTheory
 open CyclicCohomology
 
-/-- The fixed-part comparison intertwines an automorphism of a finite
-rational intermediate field with any lift to the rational absolute
-Galois group. -/
-theorem rationalIdeleClassEquivFixed_action_coe
-    (E : IntermediateField ℚ (SeparableClosure ℚ))
-    [FiniteDimensional ℚ E]
-    (σ : SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)
-    (τ : E ≃ₐ[ℚ] E)
-    (hστ : ∀ x : E,
-      ((τ x : E) : SeparableClosure ℚ) =
-        σ (x : SeparableClosure ℚ))
-    (c : RelativeIdeleGroup.ClassGroup ℚ E) :
-    rationalIdeleClassRepresentation.ρ σ
-        (rationalIdeleClassEquivFixed E
-          (Additive.ofMul
-            (_root_.relativeIdeleClassBaseChangeMulEquiv
-              (K := ℚ) (L := E) c))).1 =
-      (rationalIdeleClassEquivFixed E
-        (Additive.ofMul
-          (_root_.relativeIdeleClassBaseChangeMulEquiv
-            (K := ℚ) (L := E) (τ • c)))).1 := by
-  change
-    Additive.ofMul
-        (σ • rationalIntermediateIdeleClassToDirectLimit E
-          (_root_.relativeIdeleClassBaseChangeMulEquiv
-            (K := ℚ) (L := E) c)) =
-      Additive.ofMul
-        (rationalIntermediateIdeleClassToDirectLimit E
-          (_root_.relativeIdeleClassBaseChangeMulEquiv
-            (K := ℚ) (L := E) (τ • c)))
-  exact congrArg Additive.ofMul
-    (rationalIntermediateIdeleClassToDirectLimit_conjugation
-      E σ τ hστ c)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The fixed-part idèle-class realization is natural under an
 equivalence between two finite rational intermediate fields induced by
@@ -102,11 +102,8 @@ private theorem relativeIdeleClassBaseChangeAddEquiv_apply
           (K := ℚ) (L := E) (Additive.toMul c)) := by
   rfl
 
-/-- The relative fixed-field comparison has the same underlying direct-limit
-class as the intermediate-field comparison from which it is transported. -/
-private theorem
-    rationalAbstractRelativeFixedFieldIdeleClassEquivFixed_coe
-    (K L : ClosedSubgroup
+section
+variable (K L : ClosedSubgroup
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (hLK : L.toSubgroup ≤ K.toSubgroup)
     [FiniteDimensional ℚ
@@ -116,6 +113,12 @@ private theorem
         ℚ (SeparableClosure ℚ) hLK).restrictScalars ℚ)]
     [NumberField
       (abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK)]
+include K L hLK
+/-- The relative fixed-field comparison has the same underlying direct-limit
+class as the intermediate-field comparison from which it is transported. -/
+private theorem
+    rationalAbstractRelativeFixedFieldIdeleClassEquivFixed_coe
+     
     (c : Additive
       (IdeleClassGroup
         (abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK))) :
@@ -128,16 +131,7 @@ private theorem
 
 private theorem
     rationalAbstractRelativeFixedFieldIdeleClassEquivFixed_baseChange_coe
-    (K L : ClosedSubgroup
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [FiniteDimensional ℚ
-      (abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK)]
-    [FiniteDimensional ℚ
-      ((abstractRelativeFixedField
-        ℚ (SeparableClosure ℚ) hLK).restrictScalars ℚ)]
-    [NumberField
-      (abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK)]
+     
     (c : Additive
       (RelativeIdeleGroup.ClassGroup ℚ
         (abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK))) :
@@ -184,16 +178,7 @@ private theorem
 
 private theorem
     rationalAbstractRelativeFixedFieldIdeleClassEquivFixed_action_baseChange_coe
-    (K L : ClosedSubgroup
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [FiniteDimensional ℚ
-      (abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK)]
-    [FiniteDimensional ℚ
-      ((abstractRelativeFixedField
-        ℚ (SeparableClosure ℚ) hLK).restrictScalars ℚ)]
-    [NumberField
-      (abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK)]
+     
     (σ : SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)
     (τ₀ :
       abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK ≃ₐ[ℚ]
@@ -310,6 +295,8 @@ private theorem
             (ideleClassCongr τQ cQ))).1 :=
       hAction
     _ = _ := hRight
+end
+
 
 private theorem
     rationalAbstractExtensionIdeleClassEquiv_action_fixed_mk
@@ -526,8 +513,8 @@ private theorem addEquiv_trans_symm_trans_symm_trans_apply_eq
   rw [h, eB.symm_apply_apply, eA.symm_apply_apply]
   exact ht
 
-private theorem rationalAbstractExtensionIdeleClassEquiv_action_mk
-    (K L : ClosedSubgroup
+section
+variable (K L : ClosedSubgroup
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (hLK : L.toSubgroup ≤ K.toSubgroup)
     (hnormal : (extensionSubgroup K L hLK).Normal)
@@ -540,6 +527,9 @@ private theorem rationalAbstractExtensionIdeleClassEquiv_action_mk
           K (le_baseField K))]
     [hfinite : Finite
       (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
+include K L hLK hnormal hKfinite hfinite
+private theorem rationalAbstractExtensionIdeleClassEquiv_action_mk
+     
     (σ : K.toSubgroup)
     (x : (extensionFixedRepresentation rationalIdeleClassRepresentation
       K L hLK hnormal).V) :
@@ -661,19 +651,7 @@ private theorem rationalAbstractExtensionIdeleClassEquiv_action_mk
 representation becomes the ordinary Galois action on the relative idele
 class group of the two concrete fixed fields. -/
 theorem rationalAbstractExtensionIdeleClassEquiv_action
-    (K L : ClosedSubgroup
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal)
-    [hKfinite : Finite
-      ((baseField
-        (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)).toSubgroup ⧸
-        extensionSubgroup
-          (baseField
-            (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-          K (le_baseField K))]
-    [hfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
+     
     (q : K.toSubgroup ⧸ extensionSubgroup K L hLK)
     (x : (extensionFixedRepresentation rationalIdeleClassRepresentation
       K L hLK hnormal).V) :
@@ -738,6 +716,8 @@ theorem rationalAbstractExtensionIdeleClassEquiv_action
   exact
     rationalAbstractExtensionIdeleClassEquiv_action_mk
       K L hLK hnormal σ x
+end
+
 
 end Reciprocity
 end GlobalClassFieldTheory

@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.RootIntegrals.QuotientKernelDetection
 public import DedekindZetaZeroFree.Theta.Periods.FiniteHaarTransport
 
 @[expose] public section
+
 
 noncomputable section
 open scoped Classical NumberField TensorProduct NNReal
@@ -24,7 +27,7 @@ theorem traceHaar_eq_characterOne :
   simp only [Units.val_one, norm_one, smul_smul]
   congr 1
   rw [← ENNReal.ofReal_mul (by positivity)]
-  have hpi : Real.pi ≠ 0 := Real.pi_pos.ne'
+  have hpi  := Real.pi_pos.ne'
   have h : 4 * Real.pi * (1 / (2 * Real.pi)) = (2 : ℝ) := by field_simp; ring
   rw [h]
   norm_num
@@ -48,21 +51,21 @@ theorem arithmeticRootMeasure_eq (p : KPHilbert.Place F) :
       ENNReal.ofReal (arithmeticRootScale R p) • rootMeasure R M p := by
   cases p with
   | inl w => exact traceHaar_eq_characterOne
-  | inr q => exact FourierContinuation.finiteHaar_transport N q (M q)
+  | inr q => apply FourierContinuation.finiteHaar_transport
 
-omit M in
-instance arithmeticRootMeasureSigmaFinite (p : KPHilbert.Place F) :
-    SigmaFinite (arithmeticRootMeasure R N p) := by
-  cases p with
-  | inl w =>
-    change SigmaFinite ArchSelfDual.complexMeasure
-    change SigmaFinite ((2 : ℝ≥0) • (volume : Measure ℂ))
-    infer_instance
-  | inr q =>
-    letI := N.finiteHaar_add q
-    exact inferInstanceAs (SigmaFinite (N.finiteHaar q))
 
-def arithmeticStageScale (s : Finset (KPHilbert.Place F)) : ℝ :=
+
+
+
+
+
+
+
+
+
+
+
+def arithmeticStageScale (s : Finset (KPHilbert.Place F))  :=
   ∏ p : s, arithmeticRootScale R p
 
 end DedekindZetaZeroFree.FourierContinuation.FaithfulSource

@@ -181,167 +181,167 @@ theorem integralPowerSeriesEvaluation_norm_sub
     _ = ‖x - y‖ := by
       rw [hlinear, max_eq_left hremainder_lt.le]
 
-/-- Consequently, any analytic evaluation with integral coefficients and
-unit linear coefficient is injective on the open unit ball. -/
-theorem integralPowerSeriesEvaluation_injectiveOn
-    {L : Type*} [NontriviallyNormedField L] [IsUltrametricDist L]
-    (c : ℕ → Valued.integer L) (hc₁ : IsUnit (c 1))
-    (eval : Valued.integer L → Valued.integer L)
-    (hsum : ∀ x : Valued.integer L, ‖x‖ < 1 →
-      HasSum (fun m : ℕ ↦ c m * x ^ m) (eval x)) :
-    Set.InjOn eval {x | ‖x‖ < 1} := by
-  intro x hx y hy hxy
-  have hnorm := integralPowerSeriesEvaluation_norm_sub c hc₁ x y
-    (eval x) (eval y) hx hy (hsum x hx) (hsum y hy)
-  rw [hxy, sub_self, norm_zero] at hnorm
-  exact sub_eq_zero.mp (norm_eq_zero.mp hnorm.symm)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 open LocalFieldTheory.DiscreteValuationField
 
 variable {K : Type u} [Field K]
 
-noncomputable local instance equalCharacteristicThetaInverseLevelNormedField
-    (F : LocalField.{u, v} K) (n : ℕ) :
-    NontriviallyNormedField (equalCharacteristicCompletedLevelField F n) :=
-  equalCharacteristicCompletedLevelNormedField F n
 
-noncomputable local instance equalCharacteristicThetaInverseLevelIsUltrametric
-    (F : LocalField.{u, v} K) (n : ℕ) :
-    IsUltrametricDist (equalCharacteristicCompletedLevelField F n) :=
-  equalCharacteristicCompletedLevelIsUltrametric F n
 
-noncomputable local instance equalCharacteristicThetaInverseLevelCompleteSpace
-    (F : LocalField.{u, v} K) (n : ℕ) :
-    CompleteSpace (equalCharacteristicCompletedLevelField F n) :=
-  equalCharacteristicCompletedLevelCompleteSpace F n
 
-noncomputable local instance equalCharacteristicThetaInverseLevelValued
-    (F : LocalField.{u, v} K) (n : ℕ) :
-    Valued (equalCharacteristicCompletedLevelField F n) ℝ≥0 :=
-  equalCharacteristicCompletedLevelValued F n
 
-noncomputable local instance equalCharacteristicThetaInverseIntegerLinearTopology
-    (F : LocalField.{u, v} K) (n : ℕ) :
-    IsLinearTopology
-      (Valued.integer (equalCharacteristicCompletedLevelField F n))
-      (Valued.integer (equalCharacteristicCompletedLevelField F n)) :=
-  valuedIntegerLinearTopology
 
-noncomputable local instance equalCharacteristicThetaInverseIntegerCompleteSpace
-    (F : LocalField.{u, v} K) (n : ℕ) :
-    CompleteSpace
-      (Valued.integer (equalCharacteristicCompletedLevelField F n)) :=
-  valuedIntegerCompleteSpace
 
-noncomputable local instance equalCharacteristicThetaInverseIntegerUniformAddGroup
-    (F : LocalField.{u, v} K) (n : ℕ) :
-    IsUniformAddGroup
-      (Valued.integer (equalCharacteristicCompletedLevelField F n)) :=
-  valuedIntegerIsUniformAddGroup
 
- noncomputable local instance equalCharacteristicThetaInverseCoefficientUniformSpace
-    (F : LocalField.{u, v} K) :
-    UniformSpace ((AlgebraicClosure F.residueField)⟦X⟧) := ⊥
 
-private theorem equalCharacteristicThetaInverseCoefficientHom_continuous
-    (F : LocalField.{u, v} K) (n : ℕ) :
-    Continuous (equalCharacteristicCompletedLevelCoefficientHom F n) :=
-  continuous_of_discreteTopology
 
-/-- Norm `< 1` supplies the analytic evaluation hypothesis for a point in
-the completed-level valuation ring. -/
-theorem equalCharacteristicCompletedLevel_hasEval_of_norm_lt_one
-    (F : LocalField.{u, v} K) (n : ℕ)
-    (x : Valued.integer (equalCharacteristicCompletedLevelField F n))
-    (hx : ‖x‖ < 1) :
-    PowerSeries.HasEval x := by
-  change Tendsto (fun m : ℕ ↦ x ^ m) atTop (nhds 0)
-  exact tendsto_pow_atTop_nhds_zero_of_norm_lt_one hx
 
-/-- The linear coefficient of theta stays a unit after inclusion into any
-completed level valuation ring. -/
-theorem equalCharacteristicThetaCompletedCoefficientOne_isUnit
-    (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
-    IsUnit
-      (equalCharacteristicCompletedLevelCoefficientHom F n
-        (PowerSeries.coeff 1 (equalCharacteristicThetaSeries u))) := by
-  apply IsUnit.map (equalCharacteristicCompletedLevelCoefficientHom F n)
-  rw [equalCharacteristicThetaSeries_coeff_one,
-    PowerSeries.isUnit_iff_constantCoeff]
-  apply isUnit_iff_ne_zero.mpr
-  simpa [PowerSeries.coeff_zero_eq_constantCoeff_apply] using
-    (equalCharacteristicSemilinearUnit_constantCoeff_ne_zero
-      (u : F.residueField⟦X⟧)
-      (by
-        intro hzero
-        have hunit := PowerSeries.isUnit_constantCoeff
-          (u : F.residueField⟦X⟧) u.isUnit
-        apply hunit.ne_zero
-        simpa [PowerSeries.coeff_zero_eq_constantCoeff_apply] using hzero))
 
-/-- Theta evaluated at an arbitrary point of the completed-level maximal
-ideal. -/
-noncomputable def equalCharacteristicThetaOnCompletedLevelMaximalIdeal
-    (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ) (n : ℕ)
-    (x : {x : Valued.integer (equalCharacteristicCompletedLevelField F n) //
-      ‖x‖ < 1}) :
-    Valued.integer (equalCharacteristicCompletedLevelField F n) :=
-  equalCharacteristicCompletedLevelEvaluation F n x
-    (equalCharacteristicCompletedLevel_hasEval_of_norm_lt_one F n x x.property)
-    (equalCharacteristicThetaSeries u)
 
-/-- States the theorem `equalCharacteristicThetaOnCompletedLevelMaximalIdeal_hasSum`. -/
-theorem equalCharacteristicThetaOnCompletedLevelMaximalIdeal_hasSum
-    (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ) (n : ℕ)
-    (x : {x : Valued.integer (equalCharacteristicCompletedLevelField F n) //
-      ‖x‖ < 1}) :
-    HasSum
-      (fun m : ℕ ↦
-        equalCharacteristicCompletedLevelCoefficientHom F n
-            (PowerSeries.coeff m (equalCharacteristicThetaSeries u)) *
-          (x : Valued.integer
-            (equalCharacteristicCompletedLevelField F n)) ^ m)
-      (equalCharacteristicThetaOnCompletedLevelMaximalIdeal F u n x) := by
-  rw [equalCharacteristicThetaOnCompletedLevelMaximalIdeal,
-    equalCharacteristicCompletedLevelEvaluation,
-    PowerSeries.coe_eval₂Hom]
-  exact PowerSeries.hasSum_eval₂
-    (equalCharacteristicThetaInverseCoefficientHom_continuous F n)
-    (equalCharacteristicCompletedLevel_hasEval_of_norm_lt_one F n x x.property)
-    (equalCharacteristicThetaSeries u)
 
-/-- The faithful analytic conclusion used in the completed theta-intertwining theorem: theta is a
-local isometry, hence injective, on the completed-level maximal ideal. -/
-theorem equalCharacteristicThetaOnCompletedLevelMaximalIdeal_norm_sub
-    (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ) (n : ℕ)
-    (x y : {x : Valued.integer (equalCharacteristicCompletedLevelField F n) //
-      ‖x‖ < 1}) :
-    ‖equalCharacteristicThetaOnCompletedLevelMaximalIdeal F u n x -
-        equalCharacteristicThetaOnCompletedLevelMaximalIdeal F u n y‖ =
-      ‖(x : Valued.integer (equalCharacteristicCompletedLevelField F n)) - y‖ := by
-  exact integralPowerSeriesEvaluation_norm_sub
-    (fun m : ℕ ↦
-      equalCharacteristicCompletedLevelCoefficientHom F n
-        (PowerSeries.coeff m (equalCharacteristicThetaSeries u)))
-    (equalCharacteristicThetaCompletedCoefficientOne_isUnit F u n)
-    x y
-    (equalCharacteristicThetaOnCompletedLevelMaximalIdeal F u n x)
-    (equalCharacteristicThetaOnCompletedLevelMaximalIdeal F u n y)
-    x.property y.property
-    (equalCharacteristicThetaOnCompletedLevelMaximalIdeal_hasSum F u n x)
-    (equalCharacteristicThetaOnCompletedLevelMaximalIdeal_hasSum F u n y)
 
-/-- States the theorem `equalCharacteristicThetaOnCompletedLevelMaximalIdeal_injective`. -/
-theorem equalCharacteristicThetaOnCompletedLevelMaximalIdeal_injective
-    (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
-    Function.Injective
-      (equalCharacteristicThetaOnCompletedLevelMaximalIdeal F u n) := by
-  intro x y hxy
-  apply Subtype.ext
-  have hnorm :=
-    equalCharacteristicThetaOnCompletedLevelMaximalIdeal_norm_sub F u n x y
-  rw [hxy, sub_self, norm_zero] at hnorm
-  exact sub_eq_zero.mp (norm_eq_zero.mp hnorm.symm)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end EqualCharacteristic
 end LubinTate

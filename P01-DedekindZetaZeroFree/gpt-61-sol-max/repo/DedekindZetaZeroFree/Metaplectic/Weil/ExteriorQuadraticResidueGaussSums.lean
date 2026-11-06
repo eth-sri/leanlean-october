@@ -203,9 +203,12 @@ variable {F : Type} [Field F] [NumberField F]
 abbrev exteriorLocalResidue (v : HeightOneSpectrum (𝓞 F)) :=
   IsLocalRing.ResidueField (v.adicCompletionIntegers F)
 
-theorem exterior_sInteger_integral (A : SArithmeticData F)
+section
+variable (A : SArithmeticData F)
     (I : A.Exterior) (v : HeightOneSpectrum (𝓞 F))
-    (hIv : I.val = v.asIdeal) (x : A.R) :
+    (hIv : I.val = v.asIdeal)
+include A I v hIv
+theorem exterior_sInteger_integral   (x : A.R) :
     algebraMap F (v.adicCompletion F) (x : F) ∈ v.adicCompletionIntegers F := by
   have hv : v ∉ A.Sf := by
     intro hv
@@ -223,23 +226,26 @@ theorem exterior_sInteger_integral (A : SArithmeticData F)
   exact Set.integer_valuation_le_one (A.Sf : Set (HeightOneSpectrum (𝓞 F))) F x
     (by simpa only [Finset.mem_coe] using hv)
 
-def exteriorIntegerMap (A : SArithmeticData F)
-    (I : A.Exterior) (v : HeightOneSpectrum (𝓞 F))
-    (hIv : I.val = v.asIdeal) : A.R →+* v.adicCompletionIntegers F where
+def exteriorIntegerMap   : A.R →+* v.adicCompletionIntegers F where
   toFun x := ⟨algebraMap F (v.adicCompletion F) (x : F),
     A.exterior_sInteger_integral I v hIv x⟩
   map_one' := by ext; simp
   map_mul' := by intros; ext; simp
   map_zero' := by ext; simp
   map_add' := by intros; ext; simp
+end
+
 
  def integralResidueEquiv (v : HeightOneSpectrum (𝓞 F)) :
     (𝓞 F ⧸ v.asIdeal) ≃+* exteriorLocalResidue v :=
   (finitePlaceIdealResidueEquivCompletion v).trans
     (IsLocalRing.ResidueField.mapEquiv (finitePlaceCompletionIntegerRingEquiv v))
 
-private theorem integralResidueEquiv_apply_mk (A : SArithmeticData F) (I : A.Exterior)
-    (v : HeightOneSpectrum (𝓞 F)) (hIv : I.val = v.asIdeal) (x : 𝓞 F) :
+section
+variable (A : SArithmeticData F) (I : A.Exterior)
+    (v : HeightOneSpectrum (𝓞 F)) (hIv : I.val = v.asIdeal)
+include A I v hIv
+private theorem integralResidueEquiv_apply_mk   (x : 𝓞 F) :
     integralResidueEquiv v (Ideal.Quotient.mk v.asIdeal x) =
     IsLocalRing.residue (v.adicCompletionIntegers F)
       (A.exteriorIntegerMap I v hIv (algebraMap (𝓞 F) A.R x)) := by
@@ -251,19 +257,16 @@ private theorem integralResidueEquiv_apply_mk (A : SArithmeticData F) (I : A.Ext
     algebraMap F _ ((algebraMap (𝓞 F) A.R x : A.R) : F)
   simp only [finitePlaceCompletionRingEquiv_toCompletion]
   rfl
- def f (A : SArithmeticData F) (I : A.Exterior)
-    (v : HeightOneSpectrum (𝓞 F)) (hIv : I.val = v.asIdeal) :=
+ def f   :=
   (IsLocalRing.residue (v.adicCompletionIntegers F)).comp (A.exteriorIntegerMap I v hIv)
 
-private theorem f_surj (A : SArithmeticData F) (I : A.Exterior)
-    (v : HeightOneSpectrum (𝓞 F)) (hIv : I.val = v.asIdeal) : Function.Surjective (f A I v hIv) := by
+private theorem f_surj   : Function.Surjective (f A I v hIv) := by
   intro z
   obtain ⟨z', rfl⟩ := (integralResidueEquiv v).surjective z
   obtain ⟨x, rfl⟩ := Ideal.Quotient.mk_surjective z'
   exact ⟨algebraMap (𝓞 F) A.R x, (integralResidueEquiv_apply_mk A I v hIv x).symm⟩
 
-private theorem f_ker (A : SArithmeticData F) (I : A.Exterior)
-    (v : HeightOneSpectrum (𝓞 F)) (hIv : I.val = v.asIdeal) :
+private theorem f_ker   :
     RingHom.ker (f A I v hIv) = A.extendIdeal I := by
   have hn (a : 𝓞 F) : f A I v hIv (algebraMap (𝓞 F) A.R a) = 0 ↔ a ∈ v.asIdeal := by
     rw [show f A I v hIv (algebraMap (𝓞 F) A.R a) = integralResidueEquiv v (Ideal.Quotient.mk v.asIdeal a)
@@ -304,8 +307,7 @@ private theorem f_ker (A : SArithmeticData F) (I : A.Exterior)
     intro a ha
     exact (hn a).mpr (hIv ▸ ha)
 
-theorem existsUnique_exteriorLocalResidueEquiv (A : SArithmeticData F)
-    (I : A.Exterior) (v : HeightOneSpectrum (𝓞 F)) (hIv : I.val = v.asIdeal) :
+theorem existsUnique_exteriorLocalResidueEquiv   :
     ∃! e : (A.R ⧸ A.extendIdeal I) ≃+* exteriorLocalResidue v,
       ∀ x : A.R, e (Ideal.Quotient.mk (A.extendIdeal I) x) =
         IsLocalRing.residue (v.adicCompletionIntegers F)
@@ -322,18 +324,18 @@ theorem existsUnique_exteriorLocalResidueEquiv (A : SArithmeticData F)
   obtain ⟨x, rfl⟩ := Ideal.Quotient.mk_surjective z
   exact (he'' x).trans (he' x).symm
 
-def exteriorLocalResidueEquiv (A : SArithmeticData F)
-    (I : A.Exterior) (v : HeightOneSpectrum (𝓞 F)) (hIv : I.val = v.asIdeal) :
+def exteriorLocalResidueEquiv   :
     (A.R ⧸ A.extendIdeal I) ≃+* exteriorLocalResidue v :=
   Classical.choose (A.existsUnique_exteriorLocalResidueEquiv I v hIv)
 
-theorem exteriorLocalResidueEquiv_apply (A : SArithmeticData F)
-    (I : A.Exterior) (v : HeightOneSpectrum (𝓞 F)) (hIv : I.val = v.asIdeal)
+theorem exteriorLocalResidueEquiv_apply  
     (x : A.R) :
     A.exteriorLocalResidueEquiv I v hIv (Ideal.Quotient.mk (A.extendIdeal I) x) =
       IsLocalRing.residue (v.adicCompletionIntegers F)
         (A.exteriorIntegerMap I v hIv x) :=
   (Classical.choose_spec (A.existsUnique_exteriorLocalResidueEquiv I v hIv)).1 x
+end
+
 
 theorem exteriorLocalResidue_finite (v : HeightOneSpectrum (𝓞 F)) :
     Finite (exteriorLocalResidue v) :=
@@ -344,19 +346,21 @@ theorem exteriorLocalResidue_card (v : HeightOneSpectrum (𝓞 F)) :
   rw [← Nat.card_congr (integralResidueEquiv v).toEquiv, Ideal.absNorm_apply]
   rfl
 
-def exteriorTheta (A : SArithmeticData F) (hS : A.ContainsTraceBadPlaces)
+section
+variable (A : SArithmeticData F) (hS : A.ContainsTraceBadPlaces)
     (I : A.Exterior) (v : HeightOneSpectrum (𝓞 F)) (hIv : I.val = v.asIdeal)
-    (p : A.R) (hp : A.Generates I p) : AddChar (exteriorLocalResidue v) Circle :=
+    (p : A.R) (hp : A.Generates I p)
+include A hS I v hIv p hp
+def exteriorTheta   : AddChar (exteriorLocalResidue v) Circle :=
   (A.residueTraceCharacter hS I p hp)⁻¹ |>.compAddMonoidHom
     (A.exteriorLocalResidueEquiv I v hIv).symm.toAddMonoidHom
 
-theorem exteriorTheta_global_inverse (A : SArithmeticData F)
-    (hS : A.ContainsTraceBadPlaces) (I : A.Exterior)
-    (v : HeightOneSpectrum (𝓞 F)) (hIv : I.val = v.asIdeal)
-    (p : A.R) (hp : A.Generates I p) (x : A.R ⧸ A.extendIdeal I) :
+theorem exteriorTheta_global_inverse   (x : A.R ⧸ A.extendIdeal I) :
     A.residueTraceCharacter hS I p hp x =
       (A.exteriorTheta hS I v hIv p hp (A.exteriorLocalResidueEquiv I v hIv x))⁻¹ := by
   simp [exteriorTheta, AddChar.compAddMonoidHom_apply, AddChar.map_neg_eq_inv]
+end
+
 
 private theorem local_div_integral (A : SArithmeticData F) (I : A.Exterior)
  (v : HeightOneSpectrum (𝓞 F)) (hIv : I.val = v.asIdeal)
@@ -392,11 +396,14 @@ private theorem local_div_integral (A : SArithmeticData F) (I : A.Exterior)
      exact hlt
    omega
 
-theorem exteriorTheta_local_apply (A : SArithmeticData F)
+section
+variable (A : SArithmeticData F)
     (hS : A.ContainsTraceBadPlaces) (B : Subgroup A.V)
     (I : A.Exterior) (v : HeightOneSpectrum (𝓞 F)) (hIv : I.val = v.asIdeal)
     (hzero : ResidueTrace.IsSelfDual v) (p : A.R) (hp : A.Generates I p)
     (a : Fˣ) (hap : (a : F) = (p : F)) (ha : A.IsAllowed B a)
+include A hS B I v hIv hzero p hp a hap ha
+theorem exteriorTheta_local_apply  
     (x : v.adicCompletionIntegers F) :
     A.exteriorTheta hS I v hIv p hp
         (IsLocalRing.residue (v.adicCompletionIntegers F) x) =
@@ -431,11 +438,7 @@ theorem exteriorTheta_local_apply (A : SArithmeticData F)
    map_neg, AddChar.map_neg_eq_inv] at h
  exact (inv_injective h).symm.trans hsame.symm
 
-theorem exteriorTheta_ne_one (A : SArithmeticData F)
-    (hS : A.ContainsTraceBadPlaces) (B : Subgroup A.V)
-    (I : A.Exterior) (v : HeightOneSpectrum (𝓞 F)) (hIv : I.val = v.asIdeal)
-    (hzero : ResidueTrace.IsSelfDual v) (p : A.R) (hp : A.Generates I p)
-    (a : Fˣ) (hap : (a : F) = (p : F)) (ha : A.IsAllowed B a) :
+theorem exteriorTheta_ne_one   :
     A.exteriorTheta hS I v hIv p hp ≠ 1 := by
   intro h
   apply A.residueTraceCharacter_prime_ne_one hS B I (hIv ▸ v.isPrime) p hp a hap ha
@@ -443,6 +446,8 @@ theorem exteriorTheta_ne_one (A : SArithmeticData F)
   intro x
   rw [A.exteriorTheta_global_inverse hS I v hIv p hp x, h]
   simp
+end
+
 
 def exteriorLocalSexticChar (A : SArithmeticData F) (σ : F →+* ℂ)
     (I : A.Exterior) (v : HeightOneSpectrum (𝓞 F)) (hIv : I.val = v.asIdeal) :
@@ -451,9 +456,12 @@ def exteriorLocalSexticChar (A : SArithmeticData F) (σ : F →+* ℂ)
     ((A.sexticResiduePowerChar σ I 1).toUnitHom).comp
       (Units.map (A.exteriorLocalResidueEquiv I v hIv).symm.toMonoidHom)
 
-def exteriorThetaComplex (A : SArithmeticData F) (hS : A.ContainsTraceBadPlaces)
+section
+variable (A : SArithmeticData F) (hS : A.ContainsTraceBadPlaces)
     (I : A.Exterior) (v : HeightOneSpectrum (𝓞 F)) (hIv : I.val = v.asIdeal)
-    (p : A.R) (hp : A.Generates I p) : AddChar (exteriorLocalResidue v) ℂ where
+    (p : A.R) (hp : A.Generates I p)
+include A hS I v hIv p hp
+def exteriorThetaComplex   : AddChar (exteriorLocalResidue v) ℂ where
   toFun x := (A.exteriorTheta hS I v hIv p hp x : ℂ)
   map_zero_eq_one' := by simp
   map_add_eq_mul' := by
@@ -462,13 +470,13 @@ def exteriorThetaComplex (A : SArithmeticData F) (hS : A.ContainsTraceBadPlaces)
     rw [AddChar.map_add_eq_mul]
     rfl
 
-def exteriorQuadraticGauss (A : SArithmeticData F) (hS : A.ContainsTraceBadPlaces)
-    (I : A.Exterior) (v : HeightOneSpectrum (𝓞 F)) (hIv : I.val = v.asIdeal)
-    (p : A.R) (hp : A.Generates I p) : ℂ :=
+def exteriorQuadraticGauss   : ℂ :=
   letI : Finite (exteriorLocalResidue v) := exteriorLocalResidue_finite v
   letI : Fintype (exteriorLocalResidue v) := Fintype.ofFinite _
   (Real.sqrt (A.exteriorNorm I) : ℂ)⁻¹ *
     ∑ x : exteriorLocalResidue v, A.exteriorThetaComplex hS I v hIv p hp (x ^ 2)
+end
+
 
 private theorem local_order (A : SArithmeticData F) (σ : F →+* ℂ) (I : A.Exterior)
  (v : HeightOneSpectrum (𝓞 F)) (hIv : I.val = v.asIdeal) :
@@ -584,7 +592,10 @@ private lemma square_count (χ : MulChar k ℂ) (hQ : Fintype.card k % 12 = 1) (
 
 end
 
-theorem exteriorQuadraticGauss_eq_gaussSum (A : SArithmeticData F) (σ : F →+* ℂ)
+section
+variable (A : SArithmeticData F) (σ : F →+* ℂ)
+include A σ
+theorem exteriorQuadraticGauss_eq_gaussSum  
     (hS : A.ContainsTraceBadPlaces) (B : Subgroup A.V)
     (I : A.Exterior) (v : HeightOneSpectrum (𝓞 F)) (hIv : I.val = v.asIdeal)
     (hgood : ¬ (ResidueTrace.rationalPrimeBelow v).val ∣ 6)
@@ -635,7 +646,7 @@ theorem exteriorQuadraticGauss_eq_gaussSum (A : SArithmeticData F) (σ : F →+*
  rw [← H]
  simp only [hf, add_mul, one_mul, Finset.sum_add_distrib, hsum, add_zero, gaussSum]
 
-private theorem exteriorLocalSexticChar_cube_neg_one (A : SArithmeticData F) (σ : F →+* ℂ) (I : A.Exterior)
+private theorem exteriorLocalSexticChar_cube_neg_one   (I : A.Exterior)
     (v : HeightOneSpectrum (𝓞 F)) (hIv : I.val = v.asIdeal) :
     (A.exteriorLocalSexticChar σ I v hIv ^ 3) (-1) = 1 := by
   rw [MulChar.pow_apply' _ (by decide : (3 : ℕ) ≠ 0)]
@@ -665,7 +676,7 @@ private theorem exteriorLocalSexticChar_cube_neg_one (A : SArithmeticData F) (σ
     exact hn
   rw [hc, one_pow]
 
-theorem exterior_gaussSum_theta_eq_inverse (A : SArithmeticData F) (σ : F →+* ℂ)
+theorem exterior_gaussSum_theta_eq_inverse  
     (hS : A.ContainsTraceBadPlaces) (I : A.Exterior)
     (v : HeightOneSpectrum (𝓞 F)) (hIv : I.val = v.asIdeal)
     (hgood : ¬ (ResidueTrace.rationalPrimeBelow v).val ∣ 6)
@@ -684,7 +695,7 @@ theorem exterior_gaussSum_theta_eq_inverse (A : SArithmeticData F) (σ : F →+*
   rw [exteriorLocalSexticChar_cube_neg_one A σ I v hIv, one_mul] at h
   exact h.symm
 
-private theorem transported_power (A : SArithmeticData F) (σ : F →+* ℂ)
+private theorem transported_power  
  (I : A.Exterior) (v : HeightOneSpectrum (𝓞 F)) (hIv : I.val = v.asIdeal)
  (x : A.R ⧸ A.extendIdeal I) :
  (A.exteriorLocalSexticChar σ I v hIv ^ 3) (A.exteriorLocalResidueEquiv I v hIv x) =
@@ -722,8 +733,7 @@ private theorem transported_power (A : SArithmeticData F) (σ : F →+* ℂ)
    rw [h1, h3, pow_one]
  rw [← hp, MulChar.pow_apply' _ (by decide : (3 : ℕ) ≠ 0)]
 
-theorem exteriorQuadraticGauss_eq_idealGauss_three (A : SArithmeticData F)
-    (σ : F →+* ℂ) (hS : A.ContainsTraceBadPlaces) (B : Subgroup A.V)
+theorem exteriorQuadraticGauss_eq_idealGauss_three   (hS : A.ContainsTraceBadPlaces) (B : Subgroup A.V)
     (I : A.Exterior) (v : HeightOneSpectrum (𝓞 F)) (hIv : I.val = v.asIdeal)
     (hgood : ¬ (ResidueTrace.rationalPrimeBelow v).val ∣ 6)
     (hzero : ResidueTrace.IsSelfDual v) (p : A.R) (hp : A.Generates I p)
@@ -748,6 +758,8 @@ theorem exteriorQuadraticGauss_eq_idealGauss_three (A : SArithmeticData F)
  change ((A.exteriorTheta hS I v hIv p hp
    (-(A.exteriorLocalResidueEquiv I v hIv x)) : Circle) : ℂ) = _
  rw [AddChar.map_neg_eq_inv, ← A.exteriorTheta_global_inverse]
+end
+
 
 def exteriorQuadraticCutoff (v : HeightOneSpectrum (𝓞 F)) (n : ℕ) :
     Set (v.adicCompletion F) :=
@@ -761,27 +773,23 @@ def exteriorRawQuadraticCutoff (v : HeightOneSpectrum (𝓞 F))
     ∫ x in exteriorQuadraticCutoff v n,
       (ResidueTrace.localTraceCharacter v ((a : v.adicCompletion F) * x ^ 2) : ℂ) ∂μ
 
-theorem exteriorRawQuadraticCutoff_unit_eventually (A : SArithmeticData F)
+section
+variable (A : SArithmeticData F)
     (I : A.Exterior) (v : HeightOneSpectrum (𝓞 F)) (hIv : I.val = v.asIdeal)
     (hgood : ¬ (ResidueTrace.rationalPrimeBelow v).val ∣ 6)
     (hzero : ResidueTrace.IsSelfDual v)
     [MeasurableSpace (v.adicCompletion F)] [BorelSpace (v.adicCompletion F)]
     (μ : MeasureTheory.Measure (v.adicCompletion F)) [μ.IsAddHaarMeasure]
     (hμ : μ (v.adicCompletionIntegers F : Set (v.adicCompletion F)) = 1)
-    (u : (v.adicCompletionIntegers F)ˣ) :
+    (u : (v.adicCompletionIntegers F)ˣ)
+include A I v hIv hgood hzero μ hμ u
+theorem exteriorRawQuadraticCutoff_unit_eventually   :
     ∀ᶠ n : ℕ in Filter.atTop,
       exteriorRawQuadraticCutoff v μ
         (Units.map (v.adicCompletionIntegers F).subtype.toMonoidHom u) n = 1 := by
   exact ExteriorGauss.unit_cutoff_eventually v hgood hzero μ hμ u
 
-theorem exterior_raw_quadratic_ratio_unit_eventually (A : SArithmeticData F)
-    (I : A.Exterior) (v : HeightOneSpectrum (𝓞 F)) (hIv : I.val = v.asIdeal)
-    (hgood : ¬ (ResidueTrace.rationalPrimeBelow v).val ∣ 6)
-    (hzero : ResidueTrace.IsSelfDual v)
-    [MeasurableSpace (v.adicCompletion F)] [BorelSpace (v.adicCompletion F)]
-    (μ : MeasureTheory.Measure (v.adicCompletion F)) [μ.IsAddHaarMeasure]
-    (hμ : μ (v.adicCompletionIntegers F : Set (v.adicCompletion F)) = 1)
-    (u : (v.adicCompletionIntegers F)ˣ) :
+theorem exterior_raw_quadratic_ratio_unit_eventually   :
     ∀ᶠ n : ℕ in Filter.atTop,
       exteriorRawQuadraticCutoff v μ
           (Units.map (v.adicCompletionIntegers F).subtype.toMonoidHom u) n /
@@ -794,6 +802,8 @@ theorem exterior_raw_quadratic_ratio_unit_eventually (A : SArithmeticData F)
     exteriorRawQuadraticCutoff v μ
       (Units.map (v.adicCompletionIntegers F).subtype.toMonoidHom 1) n = 1 by
         rw [hn, h1n, div_self one_ne_zero])
+end
+
 
 theorem exteriorRawQuadraticCutoff_inv_generator_eventually
     (A : SArithmeticData F) (hS : A.ContainsTraceBadPlaces) (B : Subgroup A.V)
@@ -841,8 +851,8 @@ theorem exteriorRawQuadraticCutoff_inv_generator_eventually
   simp only [exteriorQuadraticGauss, hnorm, exteriorThetaComplex]
   rfl
 
-theorem exterior_raw_quadratic_integral_eq_gamma_three
-    (A : SArithmeticData F) (σ : F →+* ℂ)
+section
+variable (A : SArithmeticData F) (σ : F →+* ℂ)
     (hS : A.ContainsTraceBadPlaces) (B : Subgroup A.V)
     (I : A.Exterior) (v : HeightOneSpectrum (𝓞 F)) (hIv : I.val = v.asIdeal)
     (hgood : ¬ (ResidueTrace.rationalPrimeBelow v).val ∣ 6)
@@ -850,7 +860,10 @@ theorem exterior_raw_quadratic_integral_eq_gamma_three
     (a : Fˣ) (hap : (a : F) = (p : F)) (ha : A.IsAllowed B a)
     [MeasurableSpace (v.adicCompletion F)] [BorelSpace (v.adicCompletion F)]
     (μ : MeasureTheory.Measure (v.adicCompletion F)) [μ.IsAddHaarMeasure]
-    (hμ : μ (v.adicCompletionIntegers F : Set (v.adicCompletion F)) = 1) :
+    (hμ : μ (v.adicCompletionIntegers F : Set (v.adicCompletion F)) = 1)
+include A σ hS B I v hIv hgood hzero p hp a hap ha μ hμ
+theorem exterior_raw_quadratic_integral_eq_gamma_three
+      :
     ∀ᶠ n : ℕ in Filter.atTop,
       exteriorRawQuadraticCutoff v μ
         ((Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom a)⁻¹) n =
@@ -861,15 +874,7 @@ theorem exterior_raw_quadratic_integral_eq_gamma_three
     σ hS B I v hIv hgood hzero p hp a hap ha)
 
 theorem exterior_raw_quadratic_ratio_eq_gamma_three
-    (A : SArithmeticData F) (σ : F →+* ℂ)
-    (hS : A.ContainsTraceBadPlaces) (B : Subgroup A.V)
-    (I : A.Exterior) (v : HeightOneSpectrum (𝓞 F)) (hIv : I.val = v.asIdeal)
-    (hgood : ¬ (ResidueTrace.rationalPrimeBelow v).val ∣ 6)
-    (hzero : ResidueTrace.IsSelfDual v) (p : A.R) (hp : A.Generates I p)
-    (a : Fˣ) (hap : (a : F) = (p : F)) (ha : A.IsAllowed B a)
-    [MeasurableSpace (v.adicCompletion F)] [BorelSpace (v.adicCompletion F)]
-    (μ : MeasureTheory.Measure (v.adicCompletion F)) [μ.IsAddHaarMeasure]
-    (hμ : μ (v.adicCompletionIntegers F : Set (v.adicCompletion F)) = 1) :
+      :
     ∀ᶠ n : ℕ in Filter.atTop,
       exteriorRawQuadraticCutoff v μ
           ((Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom a)⁻¹) n /
@@ -879,6 +884,8 @@ theorem exterior_raw_quadratic_ratio_eq_gamma_three
     σ hS B I v hIv hgood hzero p hp a hap ha μ hμ, h1] with n hn h1n
   simp only [map_one] at h1n
   rw [hn, h1n, div_one]
+end
+
 
 end
 end DedekindZetaZeroFree.SArithmeticData

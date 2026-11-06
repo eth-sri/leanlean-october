@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AbstractClassFieldTheory.Degree.Valuation
 public import ClassFieldTheory.AbstractClassFieldTheory.Degree.NormLaws
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -49,7 +52,7 @@ theorem DegreeData.fieldImage_conjugate
     refine ⟨k.1, k.2, ?_⟩
     simp [k, map_mul, mul_assoc]
   · rintro ⟨k, hk, rfl⟩
-    let x : G := σ⁻¹ * k * σ
+    let x  := σ⁻¹ * k * σ
     have hx : x ∈ conjugateClosedSubgroup K σ := by
       rw [conjugateClosedSubgroup_mem]
       change σ * x * σ⁻¹ ∈ K.toSubgroup
@@ -154,16 +157,11 @@ theorem normalizedValuation_conjugate [ContinuousMul G]
       apply Subtype.ext
       calc
         ((normToBase A (conjugateClosedSubgroup K.field σ)
-            (conjugateFixedElement A K.field σ a) :
-              ambientFixedAddSubgroup A (baseField G)) : A.V) =
+            (conjugateFixedElement A K.field σ a)) : A.V) =
           A.ρ σ⁻¹
-            ((normToBase A K.field a :
-              ambientFixedAddSubgroup A (baseField G)) : A.V) := by
-                simpa [normToBase] using
-                  (relativeNorm_absoluteConjugate_apply A K.field σ a)
-        _ = ((normToBase A K.field a :
-              ambientFixedAddSubgroup A (baseField G)) : A.V) := by
-                exact (normToBase A K.field a).2 ⟨σ⁻¹, trivial⟩
+            ((normToBase A K.field a) : A.V) := by
+                apply relativeNorm_absoluteConjugate_apply
+        _ = ((normToBase A K.field a) : A.V) := (normToBase A K.field a).2 ⟨σ⁻¹, trivial⟩
     _ = (K.residueDegree D : ℕ) • v.dividedAt K a :=
       (v.residueDegree_nsmul_dividedAt K a).symm
 
@@ -205,7 +203,7 @@ theorem normalizedValuation_tower (v : ValuationData D A)
     finiteTopQuotient := E.finiteQuotient
     finiteBaseQuotient := E.base.finite }
   exact congrArg v.toAddMonoidHom
-    (by simpa [T, normToBase] using (T.norm_trans_apply A a).symm)
+    ((T.norm_trans_apply A a).symm)
 
 end ValuationData
 

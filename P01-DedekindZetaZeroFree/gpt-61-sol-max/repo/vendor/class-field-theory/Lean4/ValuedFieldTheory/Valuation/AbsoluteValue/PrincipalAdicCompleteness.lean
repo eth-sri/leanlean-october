@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Valuation.AbsoluteValue.ValuationSubring
 public import ValuedFieldTheory.Valuation.AbsoluteValue.Completeness
 public import Mathlib.RingTheory.AdicCompletion.Basic
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -32,30 +35,33 @@ noncomputable section
 namespace AlgebraicNumberTheory
 namespace Valuations
 
+section
+variable {K : Type*} [Field K]
+    (v : AbsoluteValue K ℝ) (hnonarch : LubinTate.Valuations.NonarchimedeanAbsoluteValue v)
+include K v hnonarch
 /-- Membership in the `π`-adic principal power is exactly the corresponding
 absolute-value bound on the closed unit ball of a nonarchimedean valued field. -/
 theorem principal_pow_mem_iff_abs_le
-    {K : Type*} [Field K]
-    (v : AbsoluteValue K ℝ) (hnonarch : LubinTate.Valuations.NonarchimedeanAbsoluteValue v)
+     
     {π x : absoluteValueValuationSubring v hnonarch}
     (hπne : π ≠ 0) (n : ℕ) :
     x ∈ (Ideal.span ({π} : Set
         (absoluteValueValuationSubring v hnonarch))) ^ n ↔
-      v (x : K) ≤ v ((π : absoluteValueValuationSubring v hnonarch) : K) ^ n := by
+      v (x : K) ≤ v (π : K) ^ n := by
   let V := absoluteValueValuationSubring v hnonarch
   have hπK_ne : ((π : V) : K) ≠ 0 := by
     intro hzero
-    exact hπne (Subtype.ext hzero)
+    apply hπne <;> aesop
   constructor
   · intro hx
     rw [Ideal.span_singleton_pow, Ideal.mem_span_singleton] at hx
     rcases hx with ⟨c, hc⟩
-    have hc_abs : v ((c : V) : K) ≤ 1 :=
+    have hc_abs  :=
       (mem_absoluteValueValuationSubring_iff
         v hnonarch ((c : V) : K)).1 c.property
     calc
       v (x : K) = v ((((π : V) : K) ^ n) * ((c : V) : K)) := by
-        exact congrArg (fun y : V => v ((y : V) : K)) hc
+        apply congrArg <;> aesop
       _ = v (((π : V) : K) ^ n) * v ((c : V) : K) := by rw [v.map_mul]
       _ = v ((π : V) : K) ^ n * v ((c : V) : K) := by rw [map_pow]
       _ ≤ v ((π : V) : K) ^ n * 1 :=
@@ -63,9 +69,9 @@ theorem principal_pow_mem_iff_abs_le
       _ = v ((π : V) : K) ^ n := by rw [mul_one]
   · intro hx
     rw [Ideal.span_singleton_pow, Ideal.mem_span_singleton]
-    let cK : K := (x : K) / (((π : V) : K) ^ n)
+    let cK  := (x : K) / (((π : V) : K) ^ n)
     have hπpow_pos : 0 < v (((π : V) : K) ^ n) := by
-      exact v.pos (pow_ne_zero n hπK_ne)
+      apply v.pos <;> aesop
     have hcK_mem : cK ∈ V := by
       rw [mem_absoluteValueValuationSubring_iff]
       have hdiv :
@@ -86,8 +92,7 @@ theorem principal_pow_mem_iff_abs_le
 /-- Principal congruence modulo `(π)^n` is exactly an absolute-value bound for
 the difference. -/
 theorem principal_smodEq_iff_abs_sub_le
-    {K : Type*} [Field K]
-    (v : AbsoluteValue K ℝ) (hnonarch : LubinTate.Valuations.NonarchimedeanAbsoluteValue v)
+     
     {π x y : absoluteValueValuationSubring v hnonarch}
     (hπne : π ≠ 0) {n : ℕ} :
     x ≡ y [SMOD
@@ -97,7 +102,7 @@ theorem principal_smodEq_iff_abs_sub_le
             (absoluteValueValuationSubring v hnonarch)
             (absoluteValueValuationSubring v hnonarch))] ↔
     v ((x : K) - (y : K)) ≤
-      v ((π : absoluteValueValuationSubring v hnonarch) : K) ^ n := by
+      v (π : K) ^ n := by
   let V := absoluteValueValuationSubring v hnonarch
   constructor
   · intro hxy
@@ -118,8 +123,7 @@ theorem principal_smodEq_iff_abs_sub_le
 /-- Forward direction of
 `principal_smodEq_iff_abs_sub_le`. -/
 theorem abs_sub_le_of_principal_smodEq
-    {K : Type*} [Field K]
-    (v : AbsoluteValue K ℝ) (hnonarch : LubinTate.Valuations.NonarchimedeanAbsoluteValue v)
+     
     {π x y : absoluteValueValuationSubring v hnonarch}
     (hπne : π ≠ 0) {n : ℕ}
     (hxy : x ≡ y [SMOD
@@ -129,15 +133,14 @@ theorem abs_sub_le_of_principal_smodEq
             (absoluteValueValuationSubring v hnonarch)
             (absoluteValueValuationSubring v hnonarch))]) :
     v ((x : K) - (y : K)) ≤
-      v ((π : absoluteValueValuationSubring v hnonarch) : K) ^ n :=
+      v (π : K) ^ n :=
   (principal_smodEq_iff_abs_sub_le
     v hnonarch (π := π) (x := x) (y := y) hπne).1 hxy
 
 /-- Principal separatedness for the element `π` chosen in the proof, as
 soon as `π` is a nonzero element of the open unit ball. -/
 theorem principalHausdorff_of_nonzero_mem_maximalIdeal
-    {K : Type*} [Field K]
-    (v : AbsoluteValue K ℝ) (hnonarch : LubinTate.Valuations.NonarchimedeanAbsoluteValue v)
+     
     {π : absoluteValueValuationSubring v hnonarch}
     (hπne : π ≠ 0)
     (hπmem : π ∈ IsLocalRing.maximalIdeal
@@ -148,16 +151,14 @@ theorem principalHausdorff_of_nonzero_mem_maximalIdeal
   let V := absoluteValueValuationSubring v hnonarch
   refine ⟨?_⟩
   intro x hx
-  have hπ_abs_lt : v ((π : V) : K) < 1 :=
+  have hπ_abs_lt  :=
     (absoluteValueValuationSubring_mem_maximalIdeal_iff_abs_lt_one
       v hnonarch π).1 hπmem
-  have hπK_ne : ((π : V) : K) ≠ 0 := by
-    intro hzero
-    exact hπne (Subtype.ext hzero)
+  
   by_contra hxne
   have hxK_ne : (x : K) ≠ 0 := by
     intro hxzero
-    exact hxne (Subtype.ext hxzero)
+    apply hxne <;> aesop
   have hx_abs_pos : 0 < v (x : K) := v.pos hxK_ne
   rcases exists_pow_lt_of_lt_one hx_abs_pos hπ_abs_lt with ⟨n, hn⟩
   have hxmem : x ∈ (Ideal.span ({π} : Set V)) ^ n := by
@@ -167,6 +168,8 @@ theorem principalHausdorff_of_nonzero_mem_maximalIdeal
     (principal_pow_mem_iff_abs_le
       v hnonarch (π := π) (x := x) hπne n).1 hxmem
   exact not_lt_of_ge hx_abs_le hn
+end
+
 
 /-- Principal precompleteness for the element `π` chosen in the proof,
 deduced from completeness of the valued field. -/
@@ -183,17 +186,17 @@ theorem principalPrecomplete_of_complete
       (absoluteValueValuationSubring v hnonarch)))
       (absoluteValueValuationSubring v hnonarch) := by
   let V := absoluteValueValuationSubring v hnonarch
-  let I : Ideal V := Ideal.span ({π} : Set V)
-  have hπ_abs_lt : v ((π : V) : K) < 1 :=
+  
+  have hπ_abs_lt  :=
     (absoluteValueValuationSubring_mem_maximalIdeal_iff_abs_lt_one
       v hnonarch π).1 hπmem
   have hπK_ne : ((π : V) : K) ≠ 0 := by
     intro hzero
-    exact hπne (Subtype.ext hzero)
+    apply hπne <;> aesop
   have hπ_abs_pos : 0 < v ((π : V) : K) := v.pos hπK_ne
   refine ⟨?_⟩
   intro f hf
-  let u : ℕ → WithAbs v := fun n => (WithAbs.equiv v).symm ((f n : V) : K)
+  let u  := fun n => (WithAbs.equiv v).symm ((f n : V) : K)
   have hu : CauchySeq u := by
     rw [Metric.cauchySeq_iff]
     intro ε hε
@@ -203,9 +206,7 @@ theorem principalPrecomplete_of_complete
     wlog hmn : m ≤ n generalizing m n with H
     · have hnm : n ≤ m := le_of_not_ge hmn
       simpa [dist_comm] using H n hn m hm hnm
-    have hsub_le :
-        v (((f m : V) : K) - ((f n : V) : K)) ≤
-          v ((π : V) : K) ^ m :=
+    have hsub_le  :=
       abs_sub_le_of_principal_smodEq
         v hnonarch (π := π) hπne (hf hmn)
     have hpow_le : v ((π : V) : K) ^ m ≤ v ((π : V) : K) ^ N :=
@@ -222,7 +223,7 @@ theorem principalPrecomplete_of_complete
   rcases (absoluteValueCompleteness_complete_iff_cauchySeq_converges v).1
       hcomplete u hu with
     ⟨a, ha⟩
-  let aK : K := WithAbs.equiv v a
+  let aK  := WithAbs.equiv v a
   have ha_dist_lt_one : ∃ N : ℕ, dist (u N) a < 1 := by
     rcases Filter.eventually_atTop.1
         ((Metric.tendsto_nhds.mp ha) 1 zero_lt_one) with
@@ -240,7 +241,7 @@ theorem principalPrecomplete_of_complete
     simpa using hfa
   have ha_mem : aK ∈ V := by
     rw [mem_absoluteValueValuationSubring_iff]
-    have hfN_mem : v (((f N₁ : V) : K)) ≤ 1 :=
+    have hfN_mem  :=
       (mem_absoluteValueValuationSubring_iff
         v hnonarch (((f N₁ : V) : K))).1 (f N₁).property
     calc
@@ -258,12 +259,10 @@ theorem principalPrecomplete_of_complete
   rcases Filter.eventually_atTop.1
       ((Metric.tendsto_nhds.mp ha) (v ((π : V) : K) ^ n) hπpow_pos) with
     ⟨N₀, hN₀⟩
-  let N : ℕ := max n N₀
+  let N  := max n N₀
   have hnN : n ≤ N := le_max_left n N₀
   have hN₀N : N₀ ≤ N := le_max_right n N₀
-  have hsub_le :
-      v (((f n : V) : K) - ((f N : V) : K)) ≤
-        v ((π : V) : K) ^ n :=
+  have hsub_le  :=
     abs_sub_le_of_principal_smodEq
       v hnonarch (π := π) hπne (hf hnN)
   have hN_lim :
@@ -289,7 +288,7 @@ theorem principalPrecomplete_of_complete
   exact
     (principal_smodEq_iff_abs_sub_le
       v hnonarch (π := π) (x := f n) (y := L) hπne).2
-      (by simpa [L] using hdiff_le)
+      (hdiff_le)
 
 end Valuations
 end AlgebraicNumberTheory

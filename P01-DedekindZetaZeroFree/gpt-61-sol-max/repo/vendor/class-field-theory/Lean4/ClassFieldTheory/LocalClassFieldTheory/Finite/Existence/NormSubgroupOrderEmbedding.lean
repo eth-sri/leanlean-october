@@ -39,10 +39,13 @@ open ClassFormation
 
 variable (K : Type) [Field K]
 
+section
+variable (L : FiniteAbelianSubextension (intrinsicAbstractBase K))
+include L
 /-- Finiteness over the concrete ground-field fixing group implies
 finiteness over the abstract class-formation `baseField`. -/
 theorem finiteAbelianSubextension_finite_over_absoluteBase
-    (L : FiniteAbelianSubextension (intrinsicAbstractBase K)) :
+      :
     Finite ((baseField (intrinsicAbsoluteGalois K)).toSubgroup ⧸
       extensionSubgroup (baseField (intrinsicAbsoluteGalois K)) L.field
         (le_baseField L.field)) := by
@@ -56,7 +59,7 @@ theorem finiteAbelianSubextension_finite_over_absoluteBase
 /-- Normality over the concrete ground-field fixing group is normality over
 the abstract class-formation `baseField`. -/
 theorem finiteAbelianSubextension_normal_over_absoluteBase
-    (L : FiniteAbelianSubextension (intrinsicAbstractBase K)) :
+      :
     (extensionSubgroup (baseField (intrinsicAbsoluteGalois K)) L.field
       (le_baseField L.field)).Normal := by
   refine { conj_mem := fun h hh g ↦ ?_ }
@@ -85,7 +88,7 @@ theorem finiteAbelianSubextension_normal_over_absoluteBase
 /-- The actual norm subgroup of the fixed field represented by an abstract
 finite abelian extension. -/
 def finiteAbelianNormSubgroup
-    (L : FiniteAbelianSubextension (intrinsicAbstractBase K)) : Subgroup Kˣ :=
+      : Subgroup Kˣ :=
   localNormSubgroup K (abstractFixedField K (SeparableClosure K) L.field)
 
 /-- The fixed field represented by an abstract finite abelian extension is
@@ -93,7 +96,7 @@ an actual finite abelian extension of `K`.  The commutativity assertion is
 transported across the concrete quotient--Galois-group equivalence, rather
 than being inferred merely from the name of the abstract package. -/
 theorem finiteAbelianSubextension_fixedField_isAbelianGalois
-    (L : FiniteAbelianSubextension (intrinsicAbstractBase K)) :
+      :
     IsAbelianGalois K
       (abstractFixedField K (SeparableClosure K) L.field) := by
   let E := abstractFixedField K (SeparableClosure K) L.field
@@ -130,6 +133,8 @@ theorem finiteAbelianSubextension_fixedField_isAbelianGalois
   exact e.symm.injective (by
     simpa only [map_mul] using
       mul_comm (e.symm σ) (e.symm τ))
+end
+
 
 /-- The concrete fixed field of an abstract compositum is the compositum of
 the two concrete fixed fields inside the chosen separable closure. -/
@@ -151,18 +156,21 @@ theorem finiteAbelianSubextension_compositum_fixedField
     show ET.fixingSubgroup = T.field.toSubgroup by
       exact InfiniteGalois.fixingSubgroup_fixedField T.field]
 
-/-- The relative class-formation norm of a unit in an arbitrary abstract fixed
-field is the ordinary field norm, before identifying the base fixed units
-with `Kˣ`. -/
-theorem relativeNorm_abstractFixedFieldUnit_val_of_isGalois
-    (H : ClosedSubgroup (intrinsicAbsoluteGalois K))
+section
+variable (H : ClosedSubgroup (intrinsicAbsoluteGalois K))
     (hH : H.toSubgroup ≤ (intrinsicAbstractBase K).toSubgroup)
     [Finite ((intrinsicAbstractBase K).toSubgroup ⧸
       extensionSubgroup (intrinsicAbstractBase K) H hH)]
     [FiniteDimensional K
       (abstractFixedField K (SeparableClosure K) H)]
     [IsGalois K (abstractFixedField K (SeparableClosure K) H)]
-    (x : (abstractFixedField K (SeparableClosure K) H)ˣ) :
+    (x : (abstractFixedField K (SeparableClosure K) H)ˣ)
+include H hH x
+/-- The relative class-formation norm of a unit in an arbitrary abstract fixed
+field is the ordinary field norm, before identifying the base fixed units
+with `Kˣ`. -/
+theorem relativeNorm_abstractFixedFieldUnit_val_of_isGalois
+      :
     ((Additive.toMul
       ((relativeNorm (intrinsicAbsoluteUnits K) (intrinsicAbstractBase K)
         H hH (abstractFixedFieldUnitsEquivGaloisFixed
@@ -207,14 +215,7 @@ theorem relativeNorm_abstractFixedFieldUnit_val_of_isGalois
 /-- The preceding norm identity after identifying the base fixed units with
 `Additive Kˣ`. -/
 theorem baseUnitsEquivGaloisAmbientFixed_symm_relativeNorm_abstractFixedFieldUnit_eq_normUnits
-    (H : ClosedSubgroup (intrinsicAbsoluteGalois K))
-    (hH : H.toSubgroup ≤ (intrinsicAbstractBase K).toSubgroup)
-    [Finite ((intrinsicAbstractBase K).toSubgroup ⧸
-      extensionSubgroup (intrinsicAbstractBase K) H hH)]
-    [FiniteDimensional K
-      (abstractFixedField K (SeparableClosure K) H)]
-    [IsGalois K (abstractFixedField K (SeparableClosure K) H)]
-    (x : (abstractFixedField K (SeparableClosure K) H)ˣ) :
+      :
     (baseUnitsEquivGaloisAmbientFixed K (SeparableClosure K)).symm
       (relativeNorm (intrinsicAbsoluteUnits K) (intrinsicAbstractBase K)
         H hH (abstractFixedFieldUnitsEquivGaloisFixed
@@ -238,6 +239,8 @@ theorem baseUnitsEquivGaloisAmbientFixed_symm_relativeNorm_abstractFixedFieldUni
     _ = _ :=
       (baseUnitsEquivGaloisAmbientFixed_val K (SeparableClosure K)
         (normUnits K (abstractFixedField K (SeparableClosure K) H) x)).symm
+end
+
 
 /-- Transporting the abstract finite norm subgroup back to `Kˣ` gives
 literally the ordinary norm subgroup of the represented fixed field. -/
@@ -438,18 +441,18 @@ theorem finiteAbelianSubextension_le_iff_normSubgroup_le
     map_finiteAbelianNormSubgroup_eq_additiveNormSubgroup]
   rfl
 
-/-- The ordinary norm-subgroup assignment is an order embedding into the
-opposite poset of native open finite-index subgroups. -/
-noncomputable def finiteAbelianNormSubgroupOrderEmbedding :
-    FiniteAbelianSubextension (intrinsicAbstractBase K) ↪o
-      (OpenFiniteIndexSubgroup K)ᵒᵈ where
-  toFun := finiteAbelianNormSubgroupMap K
-  inj' := finiteAbelianNormSubgroupMap_injective K
-  map_rel_iff' := by
-    intro L₁ L₂
-    change finiteAbelianNormSubgroup K L₂ ≤
-        finiteAbelianNormSubgroup K L₁ ↔ L₁ ≤ L₂
-    exact (finiteAbelianSubextension_le_iff_normSubgroup_le K L₁ L₂).symm
+
+
+
+
+
+
+
+
+
+
+
+
 
 end LocalField
 

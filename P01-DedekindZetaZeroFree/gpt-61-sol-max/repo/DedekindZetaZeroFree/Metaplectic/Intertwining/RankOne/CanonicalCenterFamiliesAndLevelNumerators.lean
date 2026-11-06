@@ -64,11 +64,14 @@ open KPRankOneShellRepair KPRankOneCenterInducedDiagonalComparison
 set_option maxHeartbeats 1500000 in
 set_option backward.isDefEq.respectTransparency false in
 
-theorem actual_exists_tauStandardFamily_normalized
-    (F : Type) [Field F] [NumberField F]
+section
+variable (F : Type) [Field F] [NumberField F]
     (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
     (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
     (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
+include F ζ hζ q S P μ
+theorem actual_exists_tauStandardFamily_normalized
+     
     (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1) :
     Nonempty (TauStandardFamily F ζ hζ q S.heisenberg S.borel P S.iwasawa μ) := by
   classical
@@ -110,10 +113,7 @@ theorem actual_exists_tauStandardFamily_normalized
       J' J μ ε p' p hp' hp ψ φ rfl z
 
 theorem actual_exists_tauStandardFamily
-    (F : Type) [Field F] [NumberField F]
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
-    (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
-    (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure] :
+      :
     Nonempty (TauStandardFamily F ζ hζ q S.heisenberg S.borel P S.iwasawa μ) := by
   classical
   let c := μ ((valuation (LocalField F q)).integer : Set (LocalField F q))
@@ -137,6 +137,8 @@ theorem actual_exists_tauStandardFamily
     rw [smul_smul,ENNReal.mul_inv_cancel hc0 hctop,one_smul]
   rw [← hm]
   exact ⟨tauStandardFamily_smul_measure F ζ hζ q S.heisenberg S.borel P S.iwasawa ν Jν c hctop⟩
+end
+
 
 end DedekindZetaZeroFree.KPRankOneShellContinuation
 

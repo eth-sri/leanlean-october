@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.PrincipalTopology
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.NormOneCompact
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.PositiveArchimedeanSection
 public import GaloisCohomology.Topology.TotallyDisconnectedQuotients
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -34,38 +37,36 @@ noncomputable section
 variable (K : Type*) [Field K] [NumberField K]
 
 /-- The connected component of the identity in the idele class group. -/
-def ideleClassIdentityComponent : Subgroup (IdeleClassGroup K) :=
+def ideleClassIdentityComponent  :=
   Subgroup.connectedComponentOfOne (IdeleClassGroup K)
 
-@[simp]
-theorem coe_ideleClassIdentityComponent :
-    (ideleClassIdentityComponent K : Set (IdeleClassGroup K)) =
-      connectedComponent (1 : IdeleClassGroup K) :=
-  rfl
 
-/-- The identity component of the idele class group is closed. -/
-theorem ideleClassIdentityComponent_isClosed :
-    IsClosed (ideleClassIdentityComponent K : Set (IdeleClassGroup K)) := by
-  rw [coe_ideleClassIdentityComponent]
-  exact isClosed_connectedComponent
+
+
+
+
+
+
+
+
+
+
 
 instance ideleClassIdentityComponent_normal :
     (ideleClassIdentityComponent K).Normal := by
   change (Subgroup.connectedComponentOfOne (IdeleClassGroup K)).Normal
-  exact
-    QuotientGroup.Subgroup.Normal.connectedComponentOfOne
-      (IdeleClassGroup K)
+  apply QuotientGroup.Subgroup.Normal.connectedComponentOfOne
 
 /-- The idele class group modulo its identity component. -/
 abbrev ideleClassComponentQuotient :=
   IdeleClassGroup K ⧸ ideleClassIdentityComponent K
 
-noncomputable instance ideleClassComponentQuotientT2Space :
-    T2Space (ideleClassComponentQuotient K) := by
-  let : IsClosed
-      (ideleClassIdentityComponent K : Set (IdeleClassGroup K)) :=
-    ideleClassIdentityComponent_isClosed K
-  infer_instance
+
+
+
+
+
+
 
 noncomputable instance ideleClassComponentQuotientTotallyDisconnectedSpace :
     TotallyDisconnectedSpace (ideleClassComponentQuotient K) :=
@@ -141,7 +142,7 @@ theorem ideleClassPositiveArchimedeanSection_mem_identityComponent
   change
     ideleClassPositiveArchimedeanSection K r ∈
       connectedComponent (1 : IdeleClassGroup K)
-  let : ConnectedSpace ℝ≥0ˣ :=
+  let  :=
     nnrealUnits_connectedSpace
   have hr : r ∈ connectedComponent (1 : ℝ≥0ˣ) := by
     rw [PreconnectedSpace.connectedComponent_eq_univ]
@@ -218,7 +219,7 @@ theorem ideleClassNormOneToComponentQuotient_surjective :
     QuotientGroup.mk'_surjective (ideleClassIdentityComponent K) z
   obtain ⟨a, rfl⟩ :=
     QuotientGroup.mk'_surjective (IdeleGroup.principalSubgroup K) c
-  let n : IdeleClassGroup.normOneSubgroup (K := K) :=
+  let n  :=
     ideleClassNormOneCorrection K a
   refine ⟨n, ?_⟩
   have hsection :

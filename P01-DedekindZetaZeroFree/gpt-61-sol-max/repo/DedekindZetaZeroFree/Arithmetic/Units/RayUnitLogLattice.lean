@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Units.RayUnitFiniteIndex
 public import DedekindZetaZeroFree.Theta.Unfolding.UnitSlabRadialAngularIntegration
 public import DedekindZetaZeroFree.Arithmetic.Ideals.IdealElementDecomposition
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -18,7 +21,7 @@ variable (K : Type) [Field K] [NumberField K]
 def weightedLogSum : (InfinitePlace K → ℝ) →ₗ[ℝ] ℝ :=
   ∑ v : InfinitePlace K, (InfinitePlace.mult v : ℝ) • LinearMap.proj v
 
-def logHyperplane : Submodule ℝ (InfinitePlace K → ℝ) :=
+def logHyperplane  :=
   LinearMap.ker (weightedLogSum K)
 
 def logAbs : Additive ((𝓞 K)ˣ) →ₗ[ℤ] logHyperplane K :=
@@ -38,14 +41,13 @@ def logAbs : Additive ((𝓞 K)ˣ) →ₗ[ℤ] logHyperplane K :=
 @[simp] theorem logAbs_apply (u : Additive ((𝓞 K)ˣ)) (v : InfinitePlace K) :
     (logAbs K u).val v = Real.log (v (u.toMul : K)) := rfl
 
-def fullUnitLogLattice : Submodule ℤ (logHyperplane K) :=
+def fullUnitLogLattice  :=
   LinearMap.range (logAbs K)
 
-def rayUnitLogEmbedding (m : Ideal (𝓞 K)) :
-    Additive (U K m) →ₗ[ℤ] logHyperplane K :=
+def rayUnitLogEmbedding (m : Ideal (𝓞 K))  :=
   (logAbs K).comp ((positiveRayUnits K m).subtype.toAdditive.toIntLinearMap)
 
-def rayUnitLogLattice (m : Ideal (𝓞 K)) : Submodule ℤ (logHyperplane K) :=
+def rayUnitLogLattice (m : Ideal (𝓞 K))  :=
   LinearMap.range (rayUnitLogEmbedding K m)
 
 open NumberField.Units.dirichletUnitTheorem NumberField.Units
@@ -79,7 +81,7 @@ private theorem sum_h (h : logHyperplane K) :
     exact mul_left_cancel₀ InfinitePlace.mult_coe_ne_zero hh
  theorem coords_surjective : Function.Surjective (coords K) := by
   intro x
-  let h : InfinitePlace K → ℝ := fun v =>
+  let h  := fun v =>
     if hv : v = w₀ then -(∑ w, x w) / (InfinitePlace.mult v : ℝ)
     else x ⟨v, hv⟩ / (InfinitePlace.mult v : ℝ)
   have hh : h ∈ logHyperplane K := by
@@ -100,7 +102,7 @@ private theorem sum_h (h : logHyperplane K) :
   refine ⟨⟨h, hh⟩, ?_⟩
   ext v
   simp [coords, h, v.property, InfinitePlace.mult_coe_ne_zero, mul_div_cancel₀]
- def coordEquiv : logHyperplane K ≃ₗ[ℝ] logSpace K :=
+ def coordEquiv  :=
   LinearEquiv.ofBijective (coords K) ⟨coords_injective K, coords_surjective K⟩
  theorem full_eq_comap : fullUnitLogLattice K =
     ZLattice.comap ℝ (unitLattice K) (coordEquiv K).toLinearMap := by
@@ -113,8 +115,7 @@ private theorem sum_h (h : logHyperplane K) :
     exact hu
 
 theorem rayUnitLogLattice_le_full (m : Ideal (𝓞 K)) :
-    rayUnitLogLattice K m ≤ fullUnitLogLattice K := by
-  exact LinearMap.range_comp_le_range _ _
+    rayUnitLogLattice K m ≤ fullUnitLogLattice K := LinearMap.range_comp_le_range _ _
 
 instance discreteTopology_fullUnitLogLattice :
     DiscreteTopology (fullUnitLogLattice K) := by

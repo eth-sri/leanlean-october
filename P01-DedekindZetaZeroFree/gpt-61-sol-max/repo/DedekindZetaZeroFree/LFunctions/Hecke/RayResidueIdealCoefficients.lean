@@ -16,13 +16,15 @@ variable {F : Type} [Field F] [NumberField F]
 
 namespace ResidueCoefficientAux
 
-theorem integral_lift (a : Ideal (𝓞 F)) (ha : a ≠ ⊥)
-    (x : {x : F // x ∈ (rayIdealFractionalIdeal F a ha : FractionalIdeal (𝓞 F)⁰ F)}) :
+section
+variable (a : Ideal (𝓞 F)) (ha : a ≠ ⊥)
+    (x : {x : F // x ∈ (rayIdealFractionalIdeal F a ha : FractionalIdeal (𝓞 F)⁰ F)})
+include a ha x
+theorem integral_lift   :
     ∃ α : 𝓞 F, α ∈ a ∧ (algebraMap (𝓞 F) F) α = x.val := by
   exact (FractionalIdeal.mem_coeIdeal (𝓞 F)⁰).mp x.property
 
-theorem coefficient_mul (a : Ideal (𝓞 F)) (ha : a ≠ ⊥)
-    (x : {x : F // x ∈ (rayIdealFractionalIdeal F a ha : FractionalIdeal (𝓞 F)⁰ F)})
+theorem coefficient_mul  
     (α : 𝓞 F) (hαx : (algebraMap (𝓞 F) F) α = x.val) :
     integralElementIdeal (rayIdealFractionalIdeal F a ha) x * a = Ideal.span {α} := by
   apply FractionalIdeal.coeIdeal_injective (K := F)
@@ -35,6 +37,8 @@ theorem coefficient_mul (a : Ideal (𝓞 F)) (ha : a ≠ ⊥)
       rayIdealFractionalIdeal F a ha = _
   rw [mul_assoc, ← Units.val_inv_eq_inv_val, ← Units.val_mul, inv_mul_cancel,
     Units.val_one, mul_one]
+end
+
 
 theorem quotient_unit_iff (m : Ideal (𝓞 F)) (α : 𝓞 F) :
     IsUnit (Ideal.Quotient.mk m α) ↔ Ideal.span {α} ⊔ m = ⊤ := by

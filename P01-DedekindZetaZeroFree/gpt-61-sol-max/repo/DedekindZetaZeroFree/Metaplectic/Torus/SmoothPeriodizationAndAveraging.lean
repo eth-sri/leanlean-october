@@ -20,21 +20,27 @@ abbrev E := KPGlobalTorusFiniteStages.E F ζ hζ
 abbrev A := KPGlobalTorusFiniteStages.A F
 abbrev R := KPGlobalTorusFiniteStages.R F ζ hζ
 abbrev ModelData := KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ
-abbrev M (C : ModelData F ζ hζ) := KPGlobalTorusFiniteStages.M F ζ hζ C
-abbrev B (C : ModelData F ζ hζ) := KPGlobalTorusFiniteStages.B F ζ hζ C
-abbrev J (C : ModelData F ζ hζ) := KPGlobalTorusFiniteStages.J F ζ hζ C
+
+local notation:max "current_ModelData" => ModelData F ζ hζ
+
+abbrev M (C : current_ModelData) := KPGlobalTorusFiniteStages.M F ζ hζ C
+abbrev B (C : current_ModelData) := KPGlobalTorusFiniteStages.B F ζ hζ C
+abbrev J (C : current_ModelData) := KPGlobalTorusFiniteStages.J F ζ hζ C
 abbrev pD := KPGlobalTorusFiniteStages.pD F ζ hζ
 
-abbrev PeriodizationIndex (C : ModelData F ζ hζ) :=
+abbrev PeriodizationIndex (C : current_ModelData) :=
   A F ⧸ (J F ζ hζ C).comap (A F).subtype
 
-abbrev CompactIndex (C : ModelData F ζ hζ) :=
+abbrev CompactIndex (C : current_ModelData) :=
   M F ζ hζ C ⧸ (J F ζ hζ C).comap (M F ζ hζ C).subtype
 
-def intersectionInB (C : ModelData F ζ hζ) : Subgroup (B F ζ hζ C) :=
-  (R F ζ hζ).comap (B F ζ hζ C).subtype
 
-instance intersectionInB_normal (C : ModelData F ζ hζ) :
+local notation:max "current_R" => R F ζ hζ
+
+def intersectionInB (C : current_ModelData) : Subgroup (B F ζ hζ C) :=
+  (current_R).comap (B F ζ hζ C).subtype
+
+instance intersectionInB_normal (C : current_ModelData) :
     (intersectionInB F ζ hζ C).Normal := by
   constructor
   intro n hn g
@@ -46,7 +52,7 @@ instance intersectionInB_normal (C : ModelData F ζ hζ) :
     rw [hc.eq, mul_assoc, mul_inv_cancel, mul_one]
   rwa [he]
 
-def averagingClass (C : ModelData F ζ hζ) (b : B F ζ hζ C) :
+def averagingClass (C : current_ModelData) (b : B F ζ hζ C) :
     CompactIndex F ζ hζ C :=
   QuotientGroup.mk (⟨pD F ζ hζ b.val, b.property⟩ : M F ζ hζ C)
 
@@ -139,13 +145,13 @@ private lemma pD_continuous :
   exact ((KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.2.continuous.comp
     continuous_subtype_val).subtype_mk (fun t => t.property)
 
-instance compactIndex_compact (C : ModelData F ζ hζ) :
+instance compactIndex_compact (C : current_ModelData) :
     CompactSpace (CompactIndex F ζ hζ C) := by
   letI : CompactSpace (M F ζ hζ C) := isCompact_iff_compactSpace.mp
     (KPGlobalProductPolarizationCharacter.M_compact_open F ζ hζ C).1
   infer_instance
 
-instance compactIndex_t2 (C : ModelData F ζ hζ) :
+instance compactIndex_t2 (C : current_ModelData) :
     T2Space (CompactIndex F ζ hζ C) := by
   letI := KPGlobalCubicIdelePairing.hausdorff F
   letI := KPGlobalProductPolarizationCharacter.J_finite F ζ hζ C
@@ -155,34 +161,34 @@ instance compactIndex_t2 (C : ModelData F ζ hζ) :
     hj.isClosed.preimage continuous_subtype_val
   infer_instance
 
-instance compactIndex_topologicalGroup (C : ModelData F ζ hζ) :
+instance compactIndex_topologicalGroup (C : current_ModelData) :
     IsTopologicalGroup (CompactIndex F ζ hζ C) := by
   infer_instance
 
-instance compactIndex_measurable (C : ModelData F ζ hζ) :
+instance compactIndex_measurable (C : current_ModelData) :
     MeasurableSpace (CompactIndex F ζ hζ C) := borel _
 
-instance compactIndex_borel (C : ModelData F ζ hζ) :
+instance compactIndex_borel (C : current_ModelData) :
     BorelSpace (CompactIndex F ζ hζ C) := ⟨rfl⟩
 
-def probabilityHaar (C : ModelData F ζ hζ) : Measure (CompactIndex F ζ hζ C) :=
+def probabilityHaar (C : current_ModelData) : Measure (CompactIndex F ζ hζ C) :=
   Measure.haarMeasure ⟨⟨Set.univ, isCompact_univ⟩, by simp⟩
 
-theorem probabilityHaar_mass (C : ModelData F ζ hζ) :
+theorem probabilityHaar_mass (C : current_ModelData) :
     probabilityHaar F ζ hζ C Set.univ = 1 := by
   exact Measure.haarMeasure_self
 
-instance probabilityHaar_isHaar (C : ModelData F ζ hζ) :
+instance probabilityHaar_isHaar (C : current_ModelData) :
     (probabilityHaar F ζ hζ C).IsHaarMeasure := by
   unfold probabilityHaar
   infer_instance
 
-instance probabilityHaar_isProbability (C : ModelData F ζ hζ) :
+instance probabilityHaar_isProbability (C : current_ModelData) :
     IsProbabilityMeasure (probabilityHaar F ζ hζ C) := by
   exact ⟨probabilityHaar_mass F ζ hζ C⟩
 
 def rationalModel : KPGlobalTorusFunctionData.Polarization F ζ hζ where
-  H := R F ζ hζ
+  H := current_R
   closed := KPGlobalCenterRationalCharacter.R_closed F ζ hζ
   abelian := by
     intro x y
@@ -192,7 +198,7 @@ def rationalModel : KPGlobalTorusFunctionData.Polarization F ζ hζ where
   contains_center := le_sup_right
   character := KPGlobalCenterRationalCharacter.lambdaR F ζ hζ
 
-def productModel (C : ModelData F ζ hζ) : KPGlobalTorusFunctionData.Polarization F ζ hζ where
+def productModel (C : current_ModelData) : KPGlobalTorusFunctionData.Polarization F ζ hζ where
   H := B F ζ hζ C
   closed := KPGlobalProductPolarizationCharacter.B_closed F ζ hζ C
   abelian := by
@@ -204,35 +210,41 @@ def productModel (C : ModelData F ζ hζ) : KPGlobalTorusFunctionData.Polarizati
   character := KPGlobalProductPolarizationCharacter.lambdaB F ζ hζ C C.adjustment
 
 abbrev RationalSmooth := KPGlobalTorusFunctionData.TorusSmoothUnion F ζ hζ (rationalModel F ζ hζ)
-abbrev ProductSmooth (C : ModelData F ζ hζ) :=
+abbrev ProductSmooth (C : current_ModelData) :=
   KPGlobalTorusFunctionData.TorusSmoothUnion F ζ hζ (productModel F ζ hζ C)
 abbrev RationalUnitary := KPGlobalTorusFunctionData.TorusSmoothUnion F ζ hζ
   (KPGlobalTorusFiniteStages.rationalModel F ζ hζ)
-abbrev ProductUnitary (C : ModelData F ζ hζ) :=
-  KPGlobalTorusFunctionData.TorusSmoothUnion F ζ hζ (KPGlobalTorusFiniteStages.productModel F ζ hζ C)
+
+local notation:max "current_productModel" => KPGlobalTorusFiniteStages.productModel F ζ hζ
+
+abbrev ProductUnitary (C : current_ModelData) :=
+  KPGlobalTorusFunctionData.TorusSmoothUnion F ζ hζ (current_productModel C)
 
 local instance modelTopology (P : KPGlobalTorusFunctionData.Polarization F ζ hζ) :
     TopologicalSpace (KPGlobalTorusFunctionData.TorusSmoothUnion F ζ hζ P) :=
   KPGlobalTorusFunctionData.torusSmoothTopology F ζ hζ P
 
-def rationalClass (r : R F ζ hζ) : A F :=
+def rationalClass (r : current_R) : A F :=
   ⟨pD F ζ hζ r.val, by
     have hr : r.val ∈ KPGlobalCenterRationalCharacter.R F ζ hζ := r.property
     rw [KPGlobalCenterRationalCharacter.R_eq_principal_preimage F ζ hζ] at hr
     exact hr⟩
 
-def periodizationClass (C : ModelData F ζ hζ) (r : R F ζ hζ) :
+def periodizationClass (C : current_ModelData) (r : current_R) :
     PeriodizationIndex F ζ hζ C := QuotientGroup.mk (rationalClass F ζ hζ r)
 
-structure PeriodizationRepresentatives (C : ModelData F ζ hζ) where
-  lift : PeriodizationIndex F ζ hζ C → R F ζ hζ
-  projects : ∀ a, periodizationClass F ζ hζ C (lift a) = a
+
+local notation:max "current_periodizationClass" => periodizationClass F ζ hζ
+
+structure PeriodizationRepresentatives (C : current_ModelData) where
+  lift : PeriodizationIndex F ζ hζ C → current_R
+  projects : ∀ a, current_periodizationClass C (lift a) = a
 
  theorem rationalLift_mem (y : Fˣ) :
-    KPGlobalTorusFunctionData.s F ζ hζ y ∈ R F ζ hζ := by
+    KPGlobalTorusFunctionData.s F ζ hζ y ∈ current_R := by
   exact Subgroup.mem_sup_left ⟨y, rfl⟩
 
-def rationalLift (y : Fˣ) : R F ζ hζ :=
+def rationalLift (y : Fˣ) : current_R :=
   ⟨KPGlobalTorusFunctionData.s F ζ hζ y, rationalLift_mem F ζ hζ y⟩
 
 private theorem rationalLift_projection (y : Fˣ) : KPGlobalTorusFunctionData.p F ζ hζ (rationalLift F ζ hζ y).val = IdeleGroup.unitEmbedding (𝓞 F) F y := by
@@ -255,18 +267,24 @@ private theorem rationalLift_projection (y : Fˣ) : KPGlobalTorusFunctionData.p 
   rw [KPGlobalTorusFunctionData.ratio_formula F t a ha h10 h01, h11, inv_one, Units.val_one, mul_one, IsUnit.unit_spec]
   rfl
 
- theorem rational_representatives_exist (C : ModelData F ζ hζ) :
-    ∃ s : PeriodizationRepresentatives F ζ hζ C,
+
+local notation:max "current_PeriodizationRepresentatives" => PeriodizationRepresentatives F ζ hζ
+
+
+local notation:max "current_pD" => pD F ζ hζ
+
+ theorem rational_representatives_exist (C : current_ModelData) :
+    ∃ s : current_PeriodizationRepresentatives C,
       ∀ a, ∃ y : Fˣ, s.lift a = rationalLift F ζ hζ y := by
   have hs : ∀ a : PeriodizationIndex F ζ hζ C, ∃ y : Fˣ,
-      periodizationClass F ζ hζ C (rationalLift F ζ hζ y) = a := by
+      current_periodizationClass C (rationalLift F ζ hζ y) = a := by
     intro a
     obtain ⟨x, rfl⟩ := QuotientGroup.mk_surjective a
     obtain ⟨y, hy⟩ := x.property
     refine ⟨y, ?_⟩
     apply congrArg QuotientGroup.mk
     apply Subtype.ext
-    change pD F ζ hζ (rationalLift F ζ hζ y).val = x.val
+    change current_pD (rationalLift F ζ hζ y).val = x.val
     change QuotientGroup.mk' _ (KPGlobalTorusFunctionData.p F ζ hζ _) = _
     rw [rationalLift_projection]
     exact hy
@@ -275,8 +293,11 @@ private theorem rationalLift_projection (y : Fˣ) : KPGlobalTorusFunctionData.p 
   intro a
   exact ⟨Classical.choose (hs a), rfl⟩
 
+
+local notation:max "current_nu" => KPGlobalCenterRationalCharacter.nu F ζ hζ
+
  theorem rational_representative_norm (y : Fˣ) :
-      KPGlobalCenterRationalCharacter.nu F ζ hζ (rationalLift F ζ hζ y).val = 1 := by
+      current_nu (rationalLift F ζ hζ y).val = 1 := by
   have hc := KPGlobalCenterRationalCharacter.lambdaR_rational F ζ hζ y
     (rationalLift F ζ hζ y) rfl
   have hn := KPGlobalCenterRationalCharacter.lambdaR_norm F ζ hζ (rationalLift F ζ hζ y)
@@ -292,23 +313,29 @@ private theorem rationalLift_projection (y : Fˣ) : KPGlobalTorusFunctionData.p 
   change KPGlobalTorusFiniteStages.rationalUnitValue F ζ hζ (rationalLift F ζ hζ y) = 1
   simp [KPGlobalTorusFiniteStages.rationalUnitValue, hc, rational_representative_norm]
 
-def periodizationTerm (C : ModelData F ζ hζ)
-    (s : PeriodizationRepresentatives F ζ hζ C) (f : ProductSmooth F ζ hζ C)
-    (g : E F ζ hζ) (a : PeriodizationIndex F ζ hζ C) : ℂ :=
+
+local notation:max "current_E" => E F ζ hζ
+
+def periodizationTerm (C : current_ModelData)
+    (s : current_PeriodizationRepresentatives C) (f : ProductSmooth F ζ hζ C)
+    (g : current_E) (a : PeriodizationIndex F ζ hζ C) : ℂ :=
   ((KPGlobalCenterRationalCharacter.lambdaR F ζ hζ (s.lift a))⁻¹ : ℂˣ) *
     f.val.val ((s.lift a).val * g)
 
- theorem periodizationTerm_independent (C : ModelData F ζ hζ)
-    (s t : PeriodizationRepresentatives F ζ hζ C) (f : ProductSmooth F ζ hζ C)
-    (g : E F ζ hζ) (a : PeriodizationIndex F ζ hζ C) :
-    periodizationTerm F ζ hζ C s f g a = periodizationTerm F ζ hζ C t f g a := by
+
+local notation:max "current_periodizationTerm" => periodizationTerm F ζ hζ
+
+ theorem periodizationTerm_independent (C : current_ModelData)
+    (s t : current_PeriodizationRepresentatives C) (f : ProductSmooth F ζ hζ C)
+    (g : current_E) (a : PeriodizationIndex F ζ hζ C) :
+    current_periodizationTerm C s f g a = current_periodizationTerm C t f g a := by
   let u := s.lift a
   let v := t.lift a
-  have he : periodizationClass F ζ hζ C u = periodizationClass F ζ hζ C v :=
+  have he : current_periodizationClass C u = current_periodizationClass C v :=
     (s.projects a).trans (t.projects a).symm
-  have hdj : pD F ζ hζ (u / v).val ∈ J F ζ hζ C := by
+  have hdj : current_pD (u / v).val ∈ J F ζ hζ C := by
     have hx := QuotientGroup.eq_iff_div_mem.mp he
-    change pD F ζ hζ u.val / pD F ζ hζ v.val ∈ J F ζ hζ C at hx
+    change current_pD u.val / current_pD v.val ∈ J F ζ hζ C at hx
     simpa only [Subgroup.coe_div, map_div] using hx
   let b : B F ζ hζ C := ⟨(u / v).val, hdj.2⟩
   have hu : u = (u / v) * v := by simp
@@ -332,7 +359,7 @@ def periodizationTerm (C : ModelData F ζ hζ)
     (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ x))
   exact (QuotientGroup.mk'_surjective _).comp (QuotientGroup.mk'_surjective _)
 
- noncomputable def finiteConj (a : E F ζ hζ) :
+ noncomputable def finiteConj (a : current_E) :
     KPGlobalTorusFunctionData.finitePart F ζ hζ ≃ₜ KPGlobalTorusFunctionData.finitePart F ζ hζ := by
   letI := finitePart_normal F ζ hζ
   letI := (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.1
@@ -349,7 +376,7 @@ def periodizationTerm (C : ModelData F ζ hζ)
     simp only [MulAut.conjNormal_apply, inv_inv]
     exact (continuous_const.mul continuous_subtype_val).mul continuous_const
 
- noncomputable def conjLevel (a : E F ζ hζ) (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ) :
+ noncomputable def conjLevel (a : current_E) (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ) :
     KPGlobalTorusFunctionData.FiniteLevel F ζ hζ := by
   letI := finitePart_normal F ζ hζ
   exact ⟨J.toOpenSubgroup.comap (MulAut.conjNormal a.val⁻¹).toMonoidHom (by
@@ -358,7 +385,7 @@ def periodizationTerm (C : ModelData F ζ hζ)
     (finiteConj F ζ hζ a⁻¹).isCompact_preimage.mpr J.isCompact⟩
 
 private theorem translate_level (P : KPGlobalTorusFunctionData.Polarization F ζ hζ)
-    (a : E F ζ hζ) (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
+    (a : current_E) (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
     (f : KPGlobalTorusFunctionData.TorusFunctions F ζ hζ P)
     (hf : f ∈ KPGlobalTorusFunctionData.TorusSmoothLevel F ζ hζ P J) :
     KPGlobalTorusFunctionData.rightTranslation P.H P.character.toMonoidHom a f ∈
@@ -379,7 +406,7 @@ private theorem translate_level (P : KPGlobalTorusFunctionData.Polarization F ζ
       change k.val = j.val.val at he
       rw [← he]
       exact hk'
-    let t : E F ζ hζ := a⁻¹ * j.val * a
+    let t : current_E := a⁻¹ * j.val * a
     have ht : t ∈ (KPGlobalTorusFunctionData.globalLevel F ζ hζ J).comap
         (KPGlobalTorusFunctionData.torus F ζ hζ).subtype := hj
     have hh := congrArg (fun z : KPGlobalTorusFunctionData.TorusFunctions F ζ hζ P => z.val (g * a))
@@ -389,7 +416,7 @@ private theorem translate_level (P : KPGlobalTorusFunctionData.Polarization F ζ
     have he : (g * a) * t = (g * j.val) * a := by dsimp [t]; group
     rwa [he] at hh
 
- theorem translate_union (P : KPGlobalTorusFunctionData.Polarization F ζ hζ) (a : E F ζ hζ)
+ theorem translate_union (P : KPGlobalTorusFunctionData.Polarization F ζ hζ) (a : current_E)
     (f : KPGlobalTorusFunctionData.TorusFunctions F ζ hζ P)
     (hf : f ∈ KPGlobalTorusFunctionData.TorusSmoothUnion F ζ hζ P) :
     KPGlobalTorusFunctionData.rightTranslation P.H P.character.toMonoidHom a f ∈
@@ -403,7 +430,7 @@ private theorem translate_level (P : KPGlobalTorusFunctionData.Polarization F ζ
   exact hle hf
 
 def rightAction (P : KPGlobalTorusFunctionData.Polarization F ζ hζ) :
-    Representation ℂ (E F ζ hζ) (KPGlobalTorusFunctionData.TorusSmoothUnion F ζ hζ P) where
+    Representation ℂ (current_E) (KPGlobalTorusFunctionData.TorusSmoothUnion F ζ hζ P) where
   toFun a := (KPGlobalTorusFunctionData.rightTranslation P.H P.character.toMonoidHom a).restrict
     (translate_union F ζ hζ P a)
   map_one' := by
@@ -416,7 +443,7 @@ def rightAction (P : KPGlobalTorusFunctionData.Polarization F ζ hζ) :
     rw [mul_assoc]
 
  theorem rightAction_formula (P : KPGlobalTorusFunctionData.Polarization F ζ hζ)
-    (a g : E F ζ hζ) (f : KPGlobalTorusFunctionData.TorusSmoothUnion F ζ hζ P) :
+    (a g : current_E) (f : KPGlobalTorusFunctionData.TorusSmoothUnion F ζ hζ P) :
     (rightAction F ζ hζ P a f).val.val g = f.val.val (g * a) := by rfl
 
 namespace ScalarUntwistHelpers
@@ -444,46 +471,46 @@ variable (hψ : ∀ h : H, ψ h = χ h * η h.val)
     simp [ηi, Units.val_inv_eq_inv_val, Units.ne_zero]
 end ScalarUntwistHelpers
 
- def normInverse : E F ζ hζ →* ℂˣ :=
+ def normInverse : current_E →* ℂˣ :=
   (invMonoidHom : ℂˣ →* ℂˣ).comp
     ((KPGlobalCenterRationalCharacter.positiveComplex).comp
-      (KPGlobalCenterRationalCharacter.nu F ζ hζ))
+      (current_nu))
 
 def scalarUntwistRational :
     KPGlobalTorusFunctionData.TorusFunctions F ζ hζ (rationalModel F ζ hζ) ≃ₗ[ℂ]
       KPGlobalTorusFunctionData.TorusFunctions F ζ hζ (KPGlobalTorusFiniteStages.rationalModel F ζ hζ) :=
-  ScalarUntwistHelpers.scalarEquiv (R F ζ hζ) (rationalModel F ζ hζ).character.toMonoidHom
+  ScalarUntwistHelpers.scalarEquiv (current_R) (rationalModel F ζ hζ).character.toMonoidHom
     (KPGlobalTorusFiniteStages.rationalModel F ζ hζ).character.toMonoidHom
     (normInverse F ζ hζ) (by intro h; rfl)
 
-def scalarUntwistProduct (C : ModelData F ζ hζ) :
+def scalarUntwistProduct (C : current_ModelData) :
     KPGlobalTorusFunctionData.TorusFunctions F ζ hζ (productModel F ζ hζ C) ≃ₗ[ℂ]
-      KPGlobalTorusFunctionData.TorusFunctions F ζ hζ (KPGlobalTorusFiniteStages.productModel F ζ hζ C) :=
+      KPGlobalTorusFunctionData.TorusFunctions F ζ hζ (current_productModel C) :=
   ScalarUntwistHelpers.scalarEquiv (B F ζ hζ C) (productModel F ζ hζ C).character.toMonoidHom
-    (KPGlobalTorusFiniteStages.productModel F ζ hζ C).character.toMonoidHom
+    (current_productModel C).character.toMonoidHom
     (normInverse F ζ hζ) (by intro h; rfl)
  theorem scalarUntwistRational_formula
-    (f : KPGlobalTorusFunctionData.TorusFunctions F ζ hζ (rationalModel F ζ hζ)) (g : E F ζ hζ) :
+    (f : KPGlobalTorusFunctionData.TorusFunctions F ζ hζ (rationalModel F ζ hζ)) (g : current_E) :
     (scalarUntwistRational F ζ hζ f).val g =
-      ((KPGlobalCenterRationalCharacter.nu F ζ hζ g : ℝ≥0) : ℂ)⁻¹ * f.val g := by
+      ((current_nu g : ℝ≥0) : ℂ)⁻¹ * f.val g := by
   change ((normInverse F ζ hζ g : ℂˣ) : ℂ) * f.val g = _
   simp [normInverse, KPGlobalCenterRationalCharacter.positiveComplex]
- theorem scalarUntwistProduct_formula (C : ModelData F ζ hζ)
-    (f : KPGlobalTorusFunctionData.TorusFunctions F ζ hζ (productModel F ζ hζ C)) (g : E F ζ hζ) :
+ theorem scalarUntwistProduct_formula (C : current_ModelData)
+    (f : KPGlobalTorusFunctionData.TorusFunctions F ζ hζ (productModel F ζ hζ C)) (g : current_E) :
     (scalarUntwistProduct F ζ hζ C f).val g =
-      ((KPGlobalCenterRationalCharacter.nu F ζ hζ g : ℝ≥0) : ℂ)⁻¹ * f.val g := by
+      ((current_nu g : ℝ≥0) : ℂ)⁻¹ * f.val g := by
   change ((normInverse F ζ hζ g : ℂˣ) : ℂ) * f.val g = _
   simp [normInverse, KPGlobalCenterRationalCharacter.positiveComplex]
-private theorem nu_compact_subgroup (H : Subgroup (E F ζ hζ))
-    (hc : IsCompact (H : Set (E F ζ hζ))) (t : H) :
-    KPGlobalCenterRationalCharacter.nu F ζ hζ t.val = 1 := by
-  let f (a : E F ζ hζ) : ℝ :=
-    (((KPGlobalCenterRationalCharacter.nu F ζ hζ a : ℝ≥0) : ℝ))
-  have hp (a : E F ζ hζ) : 0 < f a := KPGlobalCenterRationalCharacter.nu_positive F ζ hζ a
+private theorem nu_compact_subgroup (H : Subgroup (current_E))
+    (hc : IsCompact (H : Set (current_E))) (t : H) :
+    current_nu t.val = 1 := by
+  let f (a : current_E) : ℝ :=
+    (((current_nu a : ℝ≥0) : ℝ))
+  have hp (a : current_E) : 0 < f a := KPGlobalCenterRationalCharacter.nu_positive F ζ hζ a
   have hf : Continuous f := NNReal.continuous_coe.comp
     (Units.continuous_val.comp (KPGlobalCenterRationalCharacter.nu_continuous F ζ hζ))
   obtain ⟨k, hk, hmax⟩ := hc.exists_isMaxOn ⟨1, H.one_mem⟩ hf.continuousOn
-  have hmul (a b : E F ζ hζ) : f (a * b) = f a * f b := by
+  have hmul (a b : current_E) : f (a * b) = f a * f b := by
     simp [f, map_mul, Units.val_mul, NNReal.coe_mul]
   have ht : f t.val ≤ 1 := by
     have h : f (k * t.val) ≤ f k := hmax (H.mul_mem hk t.property)
@@ -526,12 +553,12 @@ theorem torus_closed : IsClosed ((KPGlobalTorusFunctionData.torus F ζ hζ) :
   exact ho.preimage (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.2.continuous
 
 theorem nu_level_trivial (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
-    (j : E F ζ hζ) (hj : j ∈ ((KPGlobalTorusFunctionData.globalLevel F ζ hζ J).comap
+    (j : current_E) (hj : j ∈ ((KPGlobalTorusFunctionData.globalLevel F ζ hζ J).comap
       (KPGlobalTorusFunctionData.torus F ζ hζ).subtype)) :
-    KPGlobalCenterRationalCharacter.nu F ζ hζ j = 1 := by
+    current_nu j = 1 := by
   let H := (KPGlobalTorusFunctionData.globalLevel F ζ hζ J).comap
     (KPGlobalTorusFunctionData.torus F ζ hζ).subtype
-  have hc : IsCompact (H : Set (E F ζ hζ)) :=
+  have hc : IsCompact (H : Set (current_E)) :=
     (torus_closed F ζ hζ).isClosedEmbedding_subtypeVal.isCompact_preimage
       (J.isCompact.image continuous_subtype_val)
   exact nu_compact_subgroup F ζ hζ H hc ⟨j, hj⟩
@@ -643,9 +670,9 @@ end
 end UntwistSmoothHelpers
 
 open KPGlobalTorusFunctionData
- theorem norm_smooth (g : E F ζ hζ) :
+ theorem norm_smooth (g : current_E) :
     ContDiffOn ℝ (⊤ : ℕ∞) (fun z =>
-      ((KPGlobalCenterRationalCharacter.nu F ζ hζ (torusArchChart F ζ hζ z * g) : ℝ≥0) : ℂ))
+      ((current_nu (torusArchChart F ζ hζ z * g) : ℝ≥0) : ℂ))
       (torusArchDomain F) := by
   have hd : ContDiffOn ℝ (⊤ : ℕ∞) (fun z =>
       ((delta F ζ hζ (torusArchChart F ζ hζ z) : ℝ≥0) : ℝ)) (torusArchDomain F) := by
@@ -667,10 +694,10 @@ open KPGlobalTorusFunctionData
   funext z
   congr 1
 
- def normEquiv (H : Subgroup (E F ζ hζ)) (χ ψ : H →* ℂˣ)
+ def normEquiv (H : Subgroup (current_E)) (χ ψ : H →* ℂˣ)
     (e : ScalarFunctions H χ ≃ₗ[ℂ] ScalarFunctions H ψ)
     (he : ∀ f t, (e f).val t =
-      ((KPGlobalCenterRationalCharacter.nu F ζ hζ t : ℝ≥0) : ℂ)⁻¹ * f.val t) :
+      ((current_nu t : ℝ≥0) : ℂ)⁻¹ * f.val t) :
     let levels := fun J : FiniteLevel F ζ hζ =>
       (globalLevel F ζ hζ J).comap (torus F ζ hζ).subtype
     letI := finalLocallyConvexTopology H χ (torusArchChart F ζ hζ)
@@ -679,11 +706,11 @@ open KPGlobalTorusFunctionData
       (torusArchDomain F) (torusArchDomain_open F) levels
     SmoothUnion H χ (torusArchChart F ζ hζ) (torusArchDomain F) levels ≃L[ℂ]
       SmoothUnion H ψ (torusArchChart F ζ hζ) (torusArchDomain F) levels := by
-  let b (t : E F ζ hζ) := ((KPGlobalCenterRationalCharacter.nu F ζ hζ t : ℝ≥0) : ℂ)
-  have hn (t : E F ζ hζ) : b t ≠ 0 := by
+  let b (t : current_E) := ((current_nu t : ℝ≥0) : ℂ)
+  have hn (t : current_E) : b t ≠ 0 := by
     dsimp [b]
-    exact_mod_cast Units.ne_zero (KPGlobalCenterRationalCharacter.nu F ζ hζ t)
-  have hm (t u : E F ζ hζ) : b (t * u) = b t * b u := by
+    exact_mod_cast Units.ne_zero (current_nu t)
+  have hm (t u : current_E) : b (t * u) = b t * b u := by
     simp only [b, map_mul, Units.val_mul, NNReal.coe_mul, Complex.ofReal_mul]
   apply UntwistSmoothHelpers.smoothEquiv H χ ψ
     (torusArchChart F ζ hζ) (torusArchDomain F) (torusArchDomain_open F)
@@ -710,58 +737,61 @@ open KPGlobalTorusFunctionData
   · exact hm
 
 def untwistRational : RationalSmooth F ζ hζ ≃L[ℂ] RationalUnitary F ζ hζ :=
-  normEquiv F ζ hζ (R F ζ hζ) (rationalModel F ζ hζ).character.toMonoidHom
+  normEquiv F ζ hζ (current_R) (rationalModel F ζ hζ).character.toMonoidHom
     (KPGlobalTorusFiniteStages.rationalModel F ζ hζ).character.toMonoidHom
     (scalarUntwistRational F ζ hζ) (scalarUntwistRational_formula F ζ hζ)
 
-def untwistProduct (C : ModelData F ζ hζ) :
+def untwistProduct (C : current_ModelData) :
     ProductSmooth F ζ hζ C ≃L[ℂ] ProductUnitary F ζ hζ C :=
   normEquiv F ζ hζ (B F ζ hζ C) (productModel F ζ hζ C).character.toMonoidHom
-    (KPGlobalTorusFiniteStages.productModel F ζ hζ C).character.toMonoidHom
+    (current_productModel C).character.toMonoidHom
     (scalarUntwistProduct F ζ hζ C) (scalarUntwistProduct_formula F ζ hζ C)
 
- theorem untwistRational_formula (h : RationalSmooth F ζ hζ) (g : E F ζ hζ) :
+ theorem untwistRational_formula (h : RationalSmooth F ζ hζ) (g : current_E) :
     (untwistRational F ζ hζ h).val.val g =
-      ((KPGlobalCenterRationalCharacter.nu F ζ hζ g : ℝ≥0) : ℂ)⁻¹ * h.val.val g := by
+      ((current_nu g : ℝ≥0) : ℂ)⁻¹ * h.val.val g := by
   exact scalarUntwistRational_formula F ζ hζ h.val g
 
- theorem untwistProduct_formula (C : ModelData F ζ hζ)
-    (f : ProductSmooth F ζ hζ C) (g : E F ζ hζ) :
-    (untwistProduct F ζ hζ C f).val.val g =
-      ((KPGlobalCenterRationalCharacter.nu F ζ hζ g : ℝ≥0) : ℂ)⁻¹ * f.val.val g := by
+
+local notation:max "current_untwistProduct" => untwistProduct F ζ hζ
+
+ theorem untwistProduct_formula (C : current_ModelData)
+    (f : ProductSmooth F ζ hζ C) (g : current_E) :
+    (current_untwistProduct C f).val.val g =
+      ((current_nu g : ℝ≥0) : ℂ)⁻¹ * f.val.val g := by
   exact scalarUntwistProduct_formula F ζ hζ C f.val g
 
- theorem retwistRational_formula (h : RationalUnitary F ζ hζ) (g : E F ζ hζ) :
+ theorem retwistRational_formula (h : RationalUnitary F ζ hζ) (g : current_E) :
     ((untwistRational F ζ hζ).symm h).val.val g =
-      ((KPGlobalCenterRationalCharacter.nu F ζ hζ g : ℝ≥0) : ℂ) * h.val.val g := by
+      ((current_nu g : ℝ≥0) : ℂ) * h.val.val g := by
   have ht := untwistRational_formula F ζ hζ ((untwistRational F ζ hζ).symm h) g
   rw [ContinuousLinearEquiv.apply_symm_apply] at ht
-  have hn : ((KPGlobalCenterRationalCharacter.nu F ζ hζ g : ℝ≥0) : ℂ) ≠ 0 := by
-    exact_mod_cast Units.ne_zero (KPGlobalCenterRationalCharacter.nu F ζ hζ g)
+  have hn : ((current_nu g : ℝ≥0) : ℂ) ≠ 0 := by
+    exact_mod_cast Units.ne_zero (current_nu g)
   rw [ht]
   field_simp
 
- theorem retwistProduct_formula (C : ModelData F ζ hζ)
-    (f : ProductUnitary F ζ hζ C) (g : E F ζ hζ) :
-    ((untwistProduct F ζ hζ C).symm f).val.val g =
-      ((KPGlobalCenterRationalCharacter.nu F ζ hζ g : ℝ≥0) : ℂ) * f.val.val g := by
-  have ht := untwistProduct_formula F ζ hζ C ((untwistProduct F ζ hζ C).symm f) g
+ theorem retwistProduct_formula (C : current_ModelData)
+    (f : ProductUnitary F ζ hζ C) (g : current_E) :
+    ((current_untwistProduct C).symm f).val.val g =
+      ((current_nu g : ℝ≥0) : ℂ) * f.val.val g := by
+  have ht := untwistProduct_formula F ζ hζ C ((current_untwistProduct C).symm f) g
   rw [ContinuousLinearEquiv.apply_symm_apply] at ht
-  have hn : ((KPGlobalCenterRationalCharacter.nu F ζ hζ g : ℝ≥0) : ℂ) ≠ 0 := by
-    exact_mod_cast Units.ne_zero (KPGlobalCenterRationalCharacter.nu F ζ hζ g)
+  have hn : ((current_nu g : ℝ≥0) : ℂ) ≠ 0 := by
+    exact_mod_cast Units.ne_zero (current_nu g)
   rw [ht]
   field_simp
 
-theorem nu_complex_mul (a b : E F ζ hζ) :
-    ((KPGlobalCenterRationalCharacter.nu F ζ hζ (a * b) : ℝ≥0) : ℂ) =
-      ((KPGlobalCenterRationalCharacter.nu F ζ hζ a : ℝ≥0) : ℂ) *
-        ((KPGlobalCenterRationalCharacter.nu F ζ hζ b : ℝ≥0) : ℂ) := by
+theorem nu_complex_mul (a b : current_E) :
+    ((current_nu (a * b) : ℝ≥0) : ℂ) =
+      ((current_nu a : ℝ≥0) : ℂ) *
+        ((current_nu b : ℝ≥0) : ℂ) := by
   simp [map_mul, Units.val_mul, NNReal.coe_mul]
 
-theorem rational_unit_inverse (r : R F ζ hζ) :
+theorem rational_unit_inverse (r : current_R) :
     (((KPGlobalTorusFiniteStages.rationalUnitCharacter F ζ hζ r)⁻¹ : ℂˣ) : ℂ) =
       (((KPGlobalCenterRationalCharacter.lambdaR F ζ hζ r)⁻¹ : ℂˣ) : ℂ) *
-        ((KPGlobalCenterRationalCharacter.nu F ζ hζ r.val : ℝ≥0) : ℂ) := by
+        ((current_nu r.val : ℝ≥0) : ℂ) := by
   change (((KPGlobalTorusFiniteStages.rationalUnitValue F ζ hζ r)⁻¹ : ℂˣ) : ℂ) = _
   simp [KPGlobalTorusFiniteStages.rationalUnitValue,
     KPGlobalCenterRationalCharacter.positiveComplex, div_eq_mul_inv]
@@ -776,54 +806,54 @@ private theorem mul_div_div_cancel {G : Type*} [CommGroup G] (a b c : G) :
 
 set_option maxHeartbeats 800000 in
 
- theorem periodization_stage_locally_finite (C : ModelData F ζ hζ)
+ theorem periodization_stage_locally_finite (C : current_ModelData)
     (L : KPGlobalTorusFiniteStages.Level F ζ hζ C)
-    (s : PeriodizationRepresentatives F ζ hζ C) (g : E F ζ hζ) :
-    ∃ U : Set (E F ζ hζ), U ∈ nhds g ∧
+    (s : current_PeriodizationRepresentatives C) (g : current_E) :
+    ∃ U : Set (current_E), U ∈ nhds g ∧
       ∃ S : Finset (PeriodizationIndex F ζ hζ C),
         ∀ (f : ProductSmooth F ζ hζ C),
-          (untwistProduct F ζ hζ C f).val ∈
-            KPGlobalTorusFiniteStages.Stage F ζ hζ C L (KPGlobalTorusFiniteStages.productModel F ζ hζ C) →
-          ∀ g' ∈ U, ∀ a ∉ S, periodizationTerm F ζ hζ C s f g' a = 0 := by
+          (current_untwistProduct C f).val ∈
+            KPGlobalTorusFiniteStages.Stage F ζ hζ C L (current_productModel C) →
+          ∀ g' ∈ U, ∀ a ∉ S, current_periodizationTerm C s f g' a = 0 := by
   letI := KPGlobalCubicIdelePairing.hausdorff F
   letI := KPGlobalPrincipalCubicLagrangian.principal_discrete F ζ hζ
   let H := KPGlobalTorusFiniteStages.annihilator F ζ hζ L.K
   have hH := KPGlobalTorusFiniteStages.annihilator_compact_open F ζ hζ C L
-  let T : Set (A F) := {a | a.val * pD F ζ hζ g ∈ H}
+  let T : Set (A F) := {a | a.val * current_pD g ∈ H}
   have ht : IsCompact T := by
-    have hc : IsCompact {d : KPGlobalCubicIdelePairing.D F | d * pD F ζ hζ g ∈ H} := by
-      have he : {d : KPGlobalCubicIdelePairing.D F | d * pD F ζ hζ g ∈ H} =
-          (fun d => d * (pD F ζ hζ g)⁻¹) '' (H : Set (KPGlobalCubicIdelePairing.D F)) := by
+    have hc : IsCompact {d : KPGlobalCubicIdelePairing.D F | d * current_pD g ∈ H} := by
+      have he : {d : KPGlobalCubicIdelePairing.D F | d * current_pD g ∈ H} =
+          (fun d => d * (current_pD g)⁻¹) '' (H : Set (KPGlobalCubicIdelePairing.D F)) := by
         ext d
         constructor
-        · intro hd; exact ⟨d * pD F ζ hζ g, hd, by simp⟩
+        · intro hd; exact ⟨d * current_pD g, hd, by simp⟩
         · rintro ⟨d', hd', rfl⟩; simpa using hd'
       rw [he]
       exact hH.1.image (continuous_id.mul continuous_const)
     exact (Subgroup.isClosed_of_discrete (U := A F)).isClosedEmbedding_subtypeVal.isCompact_preimage hc
   let S : Finset (PeriodizationIndex F ζ hζ C) :=
     ht.finite_of_discrete.toFinset.image QuotientGroup.mk
-  let U : Set (E F ζ hζ) := {g' | pD F ζ hζ g' / pD F ζ hζ g ∈ H}
+  let U : Set (current_E) := {g' | current_pD g' / current_pD g ∈ H}
   have hU : U ∈ nhds g := by
     have ho : IsOpen U := by
-      change IsOpen ((fun g' => pD F ζ hζ g' * (pD F ζ hζ g)⁻¹) ⁻¹' (H : Set _))
+      change IsOpen ((fun g' => current_pD g' * (current_pD g)⁻¹) ⁻¹' (H : Set _))
       exact hH.2.preimage ((pD_continuous F ζ hζ).mul continuous_const)
     apply ho.mem_nhds
-    change pD F ζ hζ g / pD F ζ hζ g ∈ H
+    change current_pD g / current_pD g ∈ H
     simp
   refine ⟨U, hU, S, ?_⟩
   intro f hf g' hg' a ha
   have hn : (s.lift a).val * g' ∉
       KPGlobalTorusFiniteStages.saturatedDomain F ζ hζ C L
-        (KPGlobalTorusFiniteStages.productModel F ζ hζ C) := by
+        (current_productModel C) := by
     rintro ⟨b, x, hx⟩
-    have hbg : pD F ζ hζ ((s.lift a).val * g') ∈ H := by
+    have hbg : current_pD ((s.lift a).val * g') ∈ H := by
       rw [hx, map_mul]
       exact H.mul_mem (KPGlobalTorusFiniteStages.product_inside_annihilator F ζ hζ C L b.property) x.property
-    have hproj : pD F ζ hζ (s.lift a).val * pD F ζ hζ g ∈ H := by
+    have hproj : current_pD (s.lift a).val * current_pD g ∈ H := by
       have hh := H.div_mem hbg hg'
-      have he : pD F ζ hζ ((s.lift a).val * g') / (pD F ζ hζ g' / pD F ζ hζ g) =
-          pD F ζ hζ (s.lift a).val * pD F ζ hζ g := by
+      have he : current_pD ((s.lift a).val * g') / (current_pD g' / current_pD g) =
+          current_pD (s.lift a).val * current_pD g := by
         rw [map_mul]
         exact mul_div_div_cancel _ _ _
       rwa [he] at hh
@@ -833,26 +863,26 @@ set_option maxHeartbeats 800000 in
       exact ht.finite_of_discrete.mem_toFinset.mpr hproj
     exact ha hmem
   have hz := hf.1 ((s.lift a).val * g') hn
-  have hr := retwistProduct_formula F ζ hζ C (untwistProduct F ζ hζ C f)
+  have hr := retwistProduct_formula F ζ hζ C (current_untwistProduct C f)
     ((s.lift a).val * g')
   rw [ContinuousLinearEquiv.symm_apply_apply, hz, mul_zero] at hr
   simp only [periodizationTerm, hr, mul_zero]
 
- theorem periodization_locally_finite (C : ModelData F ζ hζ)
-    (s : PeriodizationRepresentatives F ζ hζ C) (f : ProductSmooth F ζ hζ C)
-    (g : E F ζ hζ) :
-    ∃ U : Set (E F ζ hζ), U ∈ nhds g ∧
+ theorem periodization_locally_finite (C : current_ModelData)
+    (s : current_PeriodizationRepresentatives C) (f : ProductSmooth F ζ hζ C)
+    (g : current_E) :
+    ∃ U : Set (current_E), U ∈ nhds g ∧
       ∃ S : Finset (PeriodizationIndex F ζ hζ C),
-        ∀ g' ∈ U, ∀ a ∉ S, periodizationTerm F ζ hζ C s f g' a = 0 := by
+        ∀ g' ∈ U, ∀ a ∉ S, current_periodizationTerm C s f g' a = 0 := by
   obtain ⟨L, hL⟩ := KPGlobalTorusFiniteStages.smooth_vector_in_stage F ζ hζ C
-    (KPGlobalTorusFiniteStages.productModel F ζ hζ C) (Or.inr rfl)
-    (untwistProduct F ζ hζ C f)
+    (current_productModel C) (Or.inr rfl)
+    (current_untwistProduct C f)
   obtain ⟨U, hU, S, hS⟩ := periodization_stage_locally_finite F ζ hζ C L s g
   exact ⟨U, hU, S, hS f hL⟩
 
- theorem rawPeriodization_summable (C : ModelData F ζ hζ)
-    (s : PeriodizationRepresentatives F ζ hζ C) (f : ProductSmooth F ζ hζ C)
-    (g : E F ζ hζ) : Summable (periodizationTerm F ζ hζ C s f g) := by
+ theorem rawPeriodization_summable (C : current_ModelData)
+    (s : current_PeriodizationRepresentatives C) (f : ProductSmooth F ζ hζ C)
+    (g : current_E) : Summable (current_periodizationTerm C s f g) := by
   obtain ⟨U, hU, S, hS⟩ := periodization_locally_finite F ζ hζ C s f g
   apply summable_of_hasFiniteSupport
   apply S.finite_toSet.subset
@@ -860,21 +890,21 @@ set_option maxHeartbeats 800000 in
   by_contra hn
   exact ha (hS g (mem_of_mem_nhds hU) a hn)
 
-private theorem rawPeriodization_class_mul (C : ModelData F ζ hζ)
-    (r r' : R F ζ hζ) :
-    periodizationClass F ζ hζ C (r * r') =
-      periodizationClass F ζ hζ C r * periodizationClass F ζ hζ C r' := by
+private theorem rawPeriodization_class_mul (C : current_ModelData)
+    (r r' : current_R) :
+    current_periodizationClass C (r * r') =
+      current_periodizationClass C r * current_periodizationClass C r' := by
   simp only [periodizationClass, rationalClass, Subgroup.coe_mul, map_mul]
   rfl
 
-private theorem rawPeriodization_weight_descends (C : ModelData F ζ hζ)
-    (f : ProductSmooth F ζ hζ C) (g : E F ζ hζ) (u v : R F ζ hζ)
-    (he : periodizationClass F ζ hζ C u = periodizationClass F ζ hζ C v) :
+private theorem rawPeriodization_weight_descends (C : current_ModelData)
+    (f : ProductSmooth F ζ hζ C) (g : current_E) (u v : current_R)
+    (he : current_periodizationClass C u = current_periodizationClass C v) :
     (((KPGlobalCenterRationalCharacter.lambdaR F ζ hζ u)⁻¹ : ℂˣ) : ℂ) * f.val.val (u.val * g) =
       (((KPGlobalCenterRationalCharacter.lambdaR F ζ hζ v)⁻¹ : ℂˣ) : ℂ) * f.val.val (v.val * g) := by
-  have hdj : pD F ζ hζ (u / v).val ∈ J F ζ hζ C := by
+  have hdj : current_pD (u / v).val ∈ J F ζ hζ C := by
     have hx := QuotientGroup.eq_iff_div_mem.mp he
-    change pD F ζ hζ u.val / pD F ζ hζ v.val ∈ J F ζ hζ C at hx
+    change current_pD u.val / current_pD v.val ∈ J F ζ hζ C at hx
     simpa only [Subgroup.coe_div, map_div] using hx
   let b : B F ζ hζ C := ⟨(u / v).val, hdj.2⟩
   have hu : u = (u / v) * v := by simp
@@ -889,17 +919,17 @@ private theorem rawPeriodization_weight_descends (C : ModelData F ζ hζ)
   have hn : (KPGlobalCenterRationalCharacter.lambdaR F ζ hζ (u / v) : ℂ) ≠ 0 := Units.ne_zero _
   field_simp
 
-private theorem rawPeriodization_translate_term (C : ModelData F ζ hζ)
-    (s : PeriodizationRepresentatives F ζ hζ C) (f : ProductSmooth F ζ hζ C)
-    (r : R F ζ hζ) (g : E F ζ hζ) (x : PeriodizationIndex F ζ hζ C) :
-    periodizationTerm F ζ hζ C s f (r.val * g) x =
+private theorem rawPeriodization_translate_term (C : current_ModelData)
+    (s : current_PeriodizationRepresentatives C) (f : ProductSmooth F ζ hζ C)
+    (r : current_R) (g : current_E) (x : PeriodizationIndex F ζ hζ C) :
+    current_periodizationTerm C s f (r.val * g) x =
       (KPGlobalCenterRationalCharacter.lambdaR F ζ hζ r : ℂ) *
-        periodizationTerm F ζ hζ C s f g (periodizationClass F ζ hζ C r * x) := by
-  have he : periodizationClass F ζ hζ C (r * s.lift x) =
-      periodizationClass F ζ hζ C (s.lift (periodizationClass F ζ hζ C r * x)) := by
+        current_periodizationTerm C s f g (current_periodizationClass C r * x) := by
+  have he : current_periodizationClass C (r * s.lift x) =
+      current_periodizationClass C (s.lift (current_periodizationClass C r * x)) := by
     rw [rawPeriodization_class_mul, s.projects, s.projects]
   have hd := rawPeriodization_weight_descends F ζ hζ C f g
-    (r * s.lift x) (s.lift (periodizationClass F ζ hζ C r * x)) he
+    (r * s.lift x) (s.lift (current_periodizationClass C r * x)) he
   unfold periodizationTerm
   rw [← hd]
   have hc : (s.lift x).val * r.val = r.val * (s.lift x).val :=
@@ -910,30 +940,30 @@ private theorem rawPeriodization_translate_term (C : ModelData F ζ hζ)
   have hn : (KPGlobalCenterRationalCharacter.lambdaR F ζ hζ r : ℂ) ≠ 0 := Units.ne_zero _
   field_simp
 
- theorem rawPeriodization_left_covariant (C : ModelData F ζ hζ)
-    (s : PeriodizationRepresentatives F ζ hζ C) (f : ProductSmooth F ζ hζ C)
-    (r : R F ζ hζ) (g : E F ζ hζ) :
-    (∑' x, periodizationTerm F ζ hζ C s f (r.val * g) x) =
+ theorem rawPeriodization_left_covariant (C : current_ModelData)
+    (s : current_PeriodizationRepresentatives C) (f : ProductSmooth F ζ hζ C)
+    (r : current_R) (g : current_E) :
+    (∑' x, current_periodizationTerm C s f (r.val * g) x) =
       (KPGlobalCenterRationalCharacter.lambdaR F ζ hζ r : ℂ) *
-        ∑' x, periodizationTerm F ζ hζ C s f g x := by
+        ∑' x, current_periodizationTerm C s f g x := by
   simp_rw [rawPeriodization_translate_term F ζ hζ C s f r g]
   rw [tsum_mul_left]
   exact congrArg (fun z : ℂ => (KPGlobalCenterRationalCharacter.lambdaR F ζ hζ r : ℂ) * z)
-    ((Equiv.mulLeft (periodizationClass F ζ hζ C r)).tsum_eq
-      (periodizationTerm F ζ hζ C s f g))
+    ((Equiv.mulLeft (current_periodizationClass C r)).tsum_eq
+      (current_periodizationTerm C s f g))
 
- def rawPeriodization (C : ModelData F ζ hζ)
-    (s : PeriodizationRepresentatives F ζ hζ C) :
+ def rawPeriodization (C : current_ModelData)
+    (s : current_PeriodizationRepresentatives C) :
     ProductSmooth F ζ hζ C →ₗ[ℂ]
       KPGlobalTorusFunctionData.TorusFunctions F ζ hζ (rationalModel F ζ hζ) where
-  toFun f := ⟨fun g => ∑' x, periodizationTerm F ζ hζ C s f g x,
+  toFun f := ⟨fun g => ∑' x, current_periodizationTerm C s f g x,
     rawPeriodization_left_covariant F ζ hζ C s f⟩
   map_add' f k := by
     apply Subtype.ext
     funext g
-    change (∑' x, periodizationTerm F ζ hζ C s (f + k) g x) = _
-    have he : periodizationTerm F ζ hζ C s (f + k) g =
-        fun x => periodizationTerm F ζ hζ C s f g x + periodizationTerm F ζ hζ C s k g x := by
+    change (∑' x, current_periodizationTerm C s (f + k) g x) = _
+    have he : current_periodizationTerm C s (f + k) g =
+        fun x => current_periodizationTerm C s f g x + current_periodizationTerm C s k g x := by
       funext x
       simp only [periodizationTerm, Submodule.coe_add, Pi.add_apply, mul_add]
     rw [he, (rawPeriodization_summable F ζ hζ C s f g).tsum_add
@@ -942,46 +972,46 @@ private theorem rawPeriodization_translate_term (C : ModelData F ζ hζ)
   map_smul' c f := by
     apply Subtype.ext
     funext g
-    change (∑' x, periodizationTerm F ζ hζ C s (c • f) g x) = _
-    have he : periodizationTerm F ζ hζ C s (c • f) g =
-        fun x => c * periodizationTerm F ζ hζ C s f g x := by
+    change (∑' x, current_periodizationTerm C s (c • f) g x) = _
+    have he : current_periodizationTerm C s (c • f) g =
+        fun x => c * current_periodizationTerm C s f g x := by
       funext x
       simp only [periodizationTerm, Submodule.coe_smul, Pi.smul_apply, smul_eq_mul]
       ring
     rw [he, tsum_mul_left]
     rfl
 
- def rawUnitaryPeriodization (C : ModelData F ζ hζ)
-    (s : PeriodizationRepresentatives F ζ hζ C) :
+ def rawUnitaryPeriodization (C : current_ModelData)
+    (s : current_PeriodizationRepresentatives C) :
     ProductUnitary F ζ hζ C →ₗ[ℂ]
       KPGlobalTorusFunctionData.TorusFunctions F ζ hζ (KPGlobalTorusFiniteStages.rationalModel F ζ hζ) :=
   (scalarUntwistRational F ζ hζ).toLinearMap.comp
-    ((rawPeriodization F ζ hζ C s).comp (untwistProduct F ζ hζ C).symm.toLinearMap)
+    ((rawPeriodization F ζ hζ C s).comp (current_untwistProduct C).symm.toLinearMap)
 
-private theorem rawUnitaryPeriodization_formula (C : ModelData F ζ hζ)
-    (s : PeriodizationRepresentatives F ζ hζ C)
-    (f : ProductUnitary F ζ hζ C) (g : E F ζ hζ) :
+private theorem rawUnitaryPeriodization_formula (C : current_ModelData)
+    (s : current_PeriodizationRepresentatives C)
+    (f : ProductUnitary F ζ hζ C) (g : current_E) :
     (rawUnitaryPeriodization F ζ hζ C s f).val g =
       ∑' a, (((KPGlobalTorusFiniteStages.rationalUnitCharacter F ζ hζ (s.lift a))⁻¹ : ℂˣ) : ℂ) *
         f.val.val ((s.lift a).val * g) := by
   change (scalarUntwistRational F ζ hζ
-    (rawPeriodization F ζ hζ C s ((untwistProduct F ζ hζ C).symm f))).val g = _
+    (rawPeriodization F ζ hζ C s ((current_untwistProduct C).symm f))).val g = _
   rw [scalarUntwistRational_formula]
-  change _ * (∑' a, periodizationTerm F ζ hζ C s ((untwistProduct F ζ hζ C).symm f) g a) = _
+  change _ * (∑' a, current_periodizationTerm C s ((current_untwistProduct C).symm f) g a) = _
   rw [← tsum_mul_left]
   apply tsum_congr
   intro a
   rw [periodizationTerm, retwistProduct_formula, rational_unit_inverse, nu_complex_mul]
-  have hn : ((KPGlobalCenterRationalCharacter.nu F ζ hζ g : ℝ≥0) : ℂ) ≠ 0 := by
-    exact_mod_cast Units.ne_zero (KPGlobalCenterRationalCharacter.nu F ζ hζ g)
+  have hn : ((current_nu g : ℝ≥0) : ℂ) ≠ 0 := by
+    exact_mod_cast Units.ne_zero (current_nu g)
   field_simp
   <;> ring
 
-private theorem rawUnitaryPeriodization_stage (C : ModelData F ζ hζ)
+private theorem rawUnitaryPeriodization_stage (C : current_ModelData)
     (L : KPGlobalTorusFiniteStages.Level F ζ hζ C)
-    (s : PeriodizationRepresentatives F ζ hζ C) (f : ProductUnitary F ζ hζ C)
+    (s : current_PeriodizationRepresentatives C) (f : ProductUnitary F ζ hζ C)
     (hf : f.val ∈ KPGlobalTorusFiniteStages.Stage F ζ hζ C L
-      (KPGlobalTorusFiniteStages.productModel F ζ hζ C)) :
+      (current_productModel C)) :
     rawUnitaryPeriodization F ζ hζ C s f ∈ KPGlobalTorusFiniteStages.Stage F ζ hζ C L
       (KPGlobalTorusFiniteStages.rationalModel F ζ hζ) := by
   constructor
@@ -991,14 +1021,14 @@ private theorem rawUnitaryPeriodization_stage (C : ModelData F ζ hζ)
         f.val.val ((s.lift a).val * g) = 0 by simp only [hh, tsum_zero]
     intro a
     have hn : (s.lift a).val * g ∉ KPGlobalTorusFiniteStages.saturatedDomain F ζ hζ C L
-        (KPGlobalTorusFiniteStages.productModel F ζ hζ C) := by
+        (current_productModel C) := by
       rintro ⟨b, x, he⟩
       have hb : b.val ∈ KPGlobalTorusFiniteStages.stageDomain F ζ hζ C L :=
         KPGlobalTorusFiniteStages.product_inside_annihilator F ζ hζ C L b.property
       apply hg
       refine ⟨(s.lift a)⁻¹, ⟨b.val * x.val,
         (KPGlobalTorusFiniteStages.stageDomain F ζ hζ C L).mul_mem hb x.property⟩, ?_⟩
-      have hh := congrArg (fun t : E F ζ hζ => (s.lift a).val⁻¹ * t) he
+      have hh := congrArg (fun t : current_E => (s.lift a).val⁻¹ * t) he
       change g = (s.lift a).val⁻¹ * (b.val * x.val)
       simpa only [inv_mul_cancel_left] using hh
     rw [hf.1 _ hn, mul_zero]
@@ -1007,53 +1037,53 @@ private theorem rawUnitaryPeriodization_stage (C : ModelData F ζ hζ)
     apply tsum_congr
     intro a
     have hall := KPGlobalTorusTensorFibers.scalar_phase_global_covariance
-      (KPGlobalTorusFiniteStages.productModel F ζ hζ C).H
+      (current_productModel C).H
       (KPGlobalTorusFiniteStages.stageDomain F ζ hζ C L)
-      (KPGlobalTorusFiniteStages.productModel F ζ hζ C).character.toMonoidHom
+      (current_productModel C).character.toMonoidHom
       f.val hf.1 k.val (KPGlobalTorusFiniteStages.phase_inside_domain F ζ hζ C L k.property)
       (KPGlobalTorusFiniteStages.phaseCharacter F ζ hζ C L k : ℂ)
       (fun y => hf.2 k y) ((s.lift a).val * x.val)
     rw [← mul_assoc, hall]
     ring
 
- theorem rawUnitaryPeriodization_smooth (C : ModelData F ζ hζ)
-    (s : PeriodizationRepresentatives F ζ hζ C) (f : ProductUnitary F ζ hζ C) :
+ theorem rawUnitaryPeriodization_smooth (C : current_ModelData)
+    (s : current_PeriodizationRepresentatives C) (f : ProductUnitary F ζ hζ C) :
     rawUnitaryPeriodization F ζ hζ C s f ∈ RationalUnitary F ζ hζ := by
   obtain ⟨L, hL⟩ := KPGlobalTorusFiniteStages.smooth_vector_in_stage F ζ hζ C
-    (KPGlobalTorusFiniteStages.productModel F ζ hζ C) (Or.inr rfl) f
+    (current_productModel C) (Or.inr rfl) f
   obtain ⟨U, hU⟩ := KPGlobalTorusFiniteStages.stage_in_smooth_level F ζ hζ C L
     (KPGlobalTorusFiniteStages.rationalModel F ζ hζ) (Or.inl rfl)
   exact Submodule.mem_iSup_of_mem U (hU (rawUnitaryPeriodization_stage F ζ hζ C L s f hL))
 
- def smoothUnitaryPeriodization (C : ModelData F ζ hζ)
-    (s : PeriodizationRepresentatives F ζ hζ C) :
+ def smoothUnitaryPeriodization (C : current_ModelData)
+    (s : current_PeriodizationRepresentatives C) :
     ProductUnitary F ζ hζ C →ₗ[ℂ] RationalUnitary F ζ hζ :=
   (rawUnitaryPeriodization F ζ hζ C s).codRestrict _ (rawUnitaryPeriodization_smooth F ζ hζ C s)
 
-def smoothPeriodization (C : ModelData F ζ hζ)
-    (s : PeriodizationRepresentatives F ζ hζ C) :
+def smoothPeriodization (C : current_ModelData)
+    (s : current_PeriodizationRepresentatives C) :
     ProductSmooth F ζ hζ C →ₗ[ℂ] RationalSmooth F ζ hζ :=
   (untwistRational F ζ hζ).symm.toLinearMap.comp
-    ((smoothUnitaryPeriodization F ζ hζ C s).comp (untwistProduct F ζ hζ C).toLinearMap)
+    ((smoothUnitaryPeriodization F ζ hζ C s).comp (current_untwistProduct C).toLinearMap)
 
-theorem smoothPeriodization_formula (C : ModelData F ζ hζ)
-    (s : PeriodizationRepresentatives F ζ hζ C) (f : ProductSmooth F ζ hζ C) (g : E F ζ hζ) :
-    (smoothPeriodization F ζ hζ C s f).val.val g = ∑' a, periodizationTerm F ζ hζ C s f g a := by
+theorem smoothPeriodization_formula (C : current_ModelData)
+    (s : current_PeriodizationRepresentatives C) (f : ProductSmooth F ζ hζ C) (g : current_E) :
+    (smoothPeriodization F ζ hζ C s f).val.val g = ∑' a, current_periodizationTerm C s f g a := by
   change ((untwistRational F ζ hζ).symm
-    (smoothUnitaryPeriodization F ζ hζ C s (untwistProduct F ζ hζ C f))).val.val g = _
+    (smoothUnitaryPeriodization F ζ hζ C s (current_untwistProduct C f))).val.val g = _
   rw [retwistRational_formula]
-  change _ * (rawUnitaryPeriodization F ζ hζ C s (untwistProduct F ζ hζ C f)).val g = _
+  change _ * (rawUnitaryPeriodization F ζ hζ C s (current_untwistProduct C f)).val g = _
   change _ * (scalarUntwistRational F ζ hζ
-    (rawPeriodization F ζ hζ C s ((untwistProduct F ζ hζ C).symm (untwistProduct F ζ hζ C f)))).val g = _
+    (rawPeriodization F ζ hζ C s ((current_untwistProduct C).symm (current_untwistProduct C f)))).val g = _
   rw [ContinuousLinearEquiv.symm_apply_apply, scalarUntwistRational_formula]
-  change _ * (_ * (∑' a, periodizationTerm F ζ hζ C s f g a)) = _
-  have hn : ((KPGlobalCenterRationalCharacter.nu F ζ hζ g : ℝ≥0) : ℂ) ≠ 0 := by
-    exact_mod_cast Units.ne_zero (KPGlobalCenterRationalCharacter.nu F ζ hζ g)
+  change _ * (_ * (∑' a, current_periodizationTerm C s f g a)) = _
+  have hn : ((current_nu g : ℝ≥0) : ℂ) ≠ 0 := by
+    exact_mod_cast Units.ne_zero (current_nu g)
   rw [← mul_assoc, mul_inv_cancel₀ hn, one_mul]
 
  abbrev periodizationLevelJets (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
     (U : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ) :=
-  fun i : E F ζ hζ × ℕ × KPGlobalTorusFunctionData.JetCompact (KPGlobalTorusFunctionData.torusArchDomain F) =>
+  fun i : current_E × ℕ × KPGlobalTorusFunctionData.JetCompact (KPGlobalTorusFunctionData.torusArchDomain F) =>
     KPGlobalTorusFunctionData.jetSeminorm Q.H Q.character.toMonoidHom
       (KPGlobalTorusFunctionData.torusArchChart F ζ hζ)
       (KPGlobalTorusFunctionData.torusArchDomain F)
@@ -1065,7 +1095,7 @@ private theorem periodization_level_separating (Q : KPGlobalTorusFunctionData.Po
     (U : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
     (f : KPGlobalTorusFunctionData.TorusSmoothLevel F ζ hζ Q U) (hf : f ≠ 0) :
     ∃ i, periodizationLevelJets F ζ hζ Q U i f ≠ 0 := by
-  have hn : ∃ g : E F ζ hζ, f.val.val g ≠ 0 := by
+  have hn : ∃ g : current_E, f.val.val g ≠ 0 := by
     by_contra hh
     push Not at hh
     apply hf
@@ -1091,7 +1121,7 @@ private theorem periodization_level_separating (Q : KPGlobalTorusFunctionData.Po
     norm_iteratedFDerivWithin_zero, mul_inv_cancel_left, norm_ne_zero_iff] using hg
 
 set_option maxHeartbeats 1000000 in
-private theorem periodization_stage_t2 (C : ModelData F ζ hζ)
+private theorem periodization_stage_t2 (C : current_ModelData)
     (L : KPGlobalTorusFiniteStages.Level F ζ hζ C)
     (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
     (U : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
@@ -1114,7 +1144,7 @@ private theorem periodization_stage_t2 (C : ModelData F ζ hζ)
   exact T2Space.of_injective_continuous (Submodule.inclusion_injective hU) continuous_induced_dom
 
 set_option maxHeartbeats 1000000 in
-private theorem periodization_stage_polynorms (C : ModelData F ζ hζ)
+private theorem periodization_stage_polynorms (C : current_ModelData)
     (L : KPGlobalTorusFiniteStages.Level F ζ hζ C)
     (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
     (U : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
@@ -1142,8 +1172,8 @@ private theorem periodization_stage_polynorms (C : ModelData F ζ hζ)
       (KPGlobalTorusFunctionData.globalLevel F ζ hζ U).comap (KPGlobalTorusFunctionData.torus F ζ hζ).subtype)
 
 set_option maxHeartbeats 1000000 in
-private theorem smoothUnitaryPeriodization_continuous (C : ModelData F ζ hζ)
-    (s : PeriodizationRepresentatives F ζ hζ C) :
+private theorem smoothUnitaryPeriodization_continuous (C : current_ModelData)
+    (s : current_PeriodizationRepresentatives C) :
     Continuous (smoothUnitaryPeriodization F ζ hζ C s) := by
   let Q := KPGlobalTorusFiniteStages.rationalModel F ζ hζ
   have hq : WithSeminorms (fun q : periodizationUnionJets F ζ hζ Q => q.val) := ⟨rfl⟩
@@ -1163,32 +1193,32 @@ private theorem smoothUnitaryPeriodization_continuous (C : ModelData F ζ hζ)
       (fun U : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ =>
         (KPGlobalTorusFunctionData.globalLevel F ζ hζ U).comap (KPGlobalTorusFunctionData.torus F ζ hζ).subtype)
   refine (KPGlobalTorusFiniteStages.levelwise_final_topology F ζ hζ C
-    (KPGlobalTorusFiniteStages.productModel F ζ hζ C) (Or.inr rfl)
+    (current_productModel C) (Or.inr rfl)
     (V := RationalUnitary F ζ hζ) (T := smoothUnitaryPeriodization F ζ hζ C s)).mpr ?_
   intro L U hU
   letI := KPGlobalTorusFiniteStages.stageTopology F ζ hζ C L
-    (KPGlobalTorusFiniteStages.productModel F ζ hζ C) U hU
+    (current_productModel C) U hU
   have hp := periodization_stage_polynorms F ζ hζ C L
-    (KPGlobalTorusFiniteStages.productModel F ζ hζ C) U hU
+    (current_productModel C) U hU
   letI : IsTopologicalAddGroup (KPGlobalTorusFiniteStages.Stage F ζ hζ C L
-    (KPGlobalTorusFiniteStages.productModel F ζ hζ C)) := hp.isTopologicalAddGroup
+    (current_productModel C)) := hp.isTopologicalAddGroup
   letI : ContinuousSMul ℂ (KPGlobalTorusFiniteStages.Stage F ζ hζ C L
-    (KPGlobalTorusFiniteStages.productModel F ζ hζ C)) := hp.continuousSMul
-  letI := periodization_stage_t2 F ζ hζ C L (KPGlobalTorusFiniteStages.productModel F ζ hζ C) U hU
+    (current_productModel C)) := hp.continuousSMul
+  letI := periodization_stage_t2 F ζ hζ C L (current_productModel C) U hU
   letI := KPGlobalTorusFiniteStages.stage_module_finite F ζ hζ C L
-    (KPGlobalTorusFiniteStages.productModel F ζ hζ C) (Or.inr rfl)
+    (current_productModel C) (Or.inr rfl)
   exact LinearMap.continuous_of_finiteDimensional (𝕜 := ℂ)
-    (E := KPGlobalTorusFiniteStages.Stage F ζ hζ C L (KPGlobalTorusFiniteStages.productModel F ζ hζ C))
+    (E := KPGlobalTorusFiniteStages.Stage F ζ hζ C L (current_productModel C))
     (F' := RationalUnitary F ζ hζ)
     ((smoothUnitaryPeriodization F ζ hζ C s).comp (Submodule.inclusion
       (hU.trans (le_iSup (fun W : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ =>
         KPGlobalTorusFunctionData.TorusSmoothLevel F ζ hζ
-          (KPGlobalTorusFiniteStages.productModel F ζ hζ C) W) U))))
+          (current_productModel C) W) U))))
 
-theorem smoothPeriodization_continuous (C : ModelData F ζ hζ)
-    (s : PeriodizationRepresentatives F ζ hζ C) : Continuous (smoothPeriodization F ζ hζ C s) :=
+theorem smoothPeriodization_continuous (C : current_ModelData)
+    (s : current_PeriodizationRepresentatives C) : Continuous (smoothPeriodization F ζ hζ C s) :=
   (untwistRational F ζ hζ).symm.continuous.comp
-    ((smoothUnitaryPeriodization_continuous F ζ hζ C s).comp (untwistProduct F ζ hζ C).continuous)
+    ((smoothUnitaryPeriodization_continuous F ζ hζ C s).comp (current_untwistProduct C).continuous)
 
 end
 end DedekindZetaZeroFree.KPGlobalTorusPeriodizationInverse
@@ -1206,14 +1236,23 @@ attribute [local instance] modelTopology
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-abbrev AveragingQuotient (C : ModelData F ζ hζ) :=
-  B F ζ hζ C ⧸ intersectionInB F ζ hζ C
 
- theorem compact_quotient_identification (C : ModelData F ζ hζ) :
+local notation:max "current_BLocal" => B F ζ hζ
+
+
+local notation:max "current_ModelDataLocal" => ModelData F ζ hζ
+
+abbrev AveragingQuotient (C : current_ModelDataLocal) :=
+  current_BLocal C ⧸ intersectionInB F ζ hζ C
+
+
+local notation:max "current_averagingClass" => averagingClass F ζ hζ
+
+ theorem compact_quotient_identification (C : current_ModelDataLocal) :
     ∃ e : AveragingQuotient F ζ hζ C ≃ₜ CompactIndex F ζ hζ C,
-      (∀ b, e (QuotientGroup.mk b) = averagingClass F ζ hζ C b) ∧
+      (∀ b, e (QuotientGroup.mk b) = current_averagingClass C b) ∧
       (∀ x y, e (x * y) = e x * e y) := by
-  let f : B F ζ hζ C →* CompactIndex F ζ hζ C :=
+  let f : current_BLocal C →* CompactIndex F ζ hζ C :=
     (QuotientGroup.mk' _).comp
       ((pD F ζ hζ).restrict (fun _ hb => hb))
   have hk : intersectionInB F ζ hζ C = f.ker := by
@@ -1224,7 +1263,7 @@ abbrev AveragingQuotient (C : ModelData F ζ hζ) :=
     rw [QuotientGroup.eq_one_iff]
     change b.val ∈ R F ζ hζ ↔ pD F ζ hζ b.val ∈ J F ζ hζ C
     have hi := KPGlobalProductPolarizationCharacter.rational_intersection_preimage F ζ hζ C
-    have he : b.val ∈ R F ζ hζ ⊓ B F ζ hζ C ↔ b.val ∈ R F ζ hζ := by
+    have he : b.val ∈ R F ζ hζ ⊓ current_BLocal C ↔ b.val ∈ R F ζ hζ := by
       simp only [Subgroup.mem_inf, b.property, and_true]
     rw [← he, hi]
     rfl
@@ -1236,7 +1275,7 @@ abbrev AveragingQuotient (C : ModelData F ζ hζ) :=
   let r : X → M F ζ hζ C := (M F ζ hζ C : Set (KPGlobalCubicIdelePairing.D F)).restrictPreimage π
   have hr : IsOpenQuotientMap r :=
     (show IsOpenQuotientMap π from ⟨hπs, hπc, hπo⟩).restrictPreimage _
-  let b : X → B F ζ hζ C := fun x => ⟨x.val.val, x.property⟩
+  let b : X → current_BLocal C := fun x => ⟨x.val.val, x.property⟩
   have hbc : Continuous b := (continuous_subtype_val.comp continuous_subtype_val).subtype_mk _
   let q : X → CompactIndex F ζ hζ C := fun x => QuotientGroup.mk (r x)
   have hq : IsOpenQuotientMap q := QuotientGroup.isOpenQuotientMap_mk.comp hr
@@ -1247,7 +1286,7 @@ abbrev AveragingQuotient (C : ModelData F ζ hζ) :=
     exact ⟨b x, (hfb x).trans hx⟩
   let e := (QuotientGroup.quotientMulEquivOfEq hk).trans
     (QuotientGroup.quotientKerEquivOfSurjective f hf)
-  have he (b : B F ζ hζ C) : e (QuotientGroup.mk b) = f b := rfl
+  have he (b : current_BLocal C) : e (QuotientGroup.mk b) = f b := rfl
   have hfc : Continuous f := QuotientGroup.continuous_mk.comp
     (((pD_continuous F ζ hζ).comp continuous_subtype_val).subtype_mk _)
   have hc : Continuous e := (QuotientGroup.isQuotientMap_mk _).continuous_iff.mpr hfc
@@ -1259,9 +1298,9 @@ abbrev AveragingQuotient (C : ModelData F ζ hζ) :=
     exact QuotientGroup.continuous_mk.comp hbc)
   exact ⟨⟨e.toEquiv, hc, hi⟩, he, e.map_mul⟩
 
-structure AveragingRepresentatives (C : ModelData F ζ hζ) where
-  lift : CompactIndex F ζ hζ C → B F ζ hζ C
-  projects : ∀ x, averagingClass F ζ hζ C (lift x) = x
+structure AveragingRepresentatives (C : current_ModelDataLocal) where
+  lift : CompactIndex F ζ hζ C → current_BLocal C
+  projects : ∀ x, current_averagingClass C (lift x) = x
 
 private theorem torusProjection_surjective : Function.Surjective (KPGlobalTorusFunctionData.p F ζ hζ) := by
   intro y
@@ -1295,11 +1334,14 @@ private theorem torusProjection_surjective : Function.Surjective (KPGlobalTorusF
   rw [KPGlobalTorusFunctionData.ratio_formula F t a ha h10 h01, h11, inv_one, Units.val_one, mul_one, IsUnit.unit_spec]
   simp [a, Matrix.diagonal_apply]
 
- theorem averaging_representatives_exist (C : ModelData F ζ hζ) :
-    Nonempty (AveragingRepresentatives F ζ hζ C) := by
+
+local notation:max "current_AveragingRepresentatives" => AveragingRepresentatives F ζ hζ
+
+ theorem averaging_representatives_exist (C : current_ModelDataLocal) :
+    Nonempty (current_AveragingRepresentatives C) := by
   have hp : Function.Surjective (pD F ζ hζ) :=
     (QuotientGroup.mk'_surjective _).comp (torusProjection_surjective F ζ hζ)
-  have hs : Function.Surjective (averagingClass F ζ hζ C) := by
+  have hs : Function.Surjective (current_averagingClass C) := by
     intro x
     obtain ⟨m, rfl⟩ := QuotientGroup.mk_surjective x
     obtain ⟨b, hb⟩ := hp m.val
@@ -1312,25 +1354,25 @@ private theorem torusProjection_surjective : Function.Surjective (KPGlobalTorusF
       exact Subtype.ext hb
   exact ⟨⟨fun x => Classical.choose (hs x), fun x => Classical.choose_spec (hs x)⟩⟩
 
-def averagingIntegrand (C : ModelData F ζ hζ)
-    (s : AveragingRepresentatives F ζ hζ C) (h : RationalSmooth F ζ hζ)
+def averagingIntegrand (C : current_ModelDataLocal)
+    (s : current_AveragingRepresentatives C) (h : RationalSmooth F ζ hζ)
     (g : E F ζ hζ) (x : CompactIndex F ζ hζ C) : ℂ :=
   ((KPGlobalProductPolarizationCharacter.lambdaB F ζ hζ C C.adjustment (s.lift x))⁻¹ : ℂˣ) *
     h.val.val ((s.lift x).val * g)
 
- theorem weighted_integrand_descends (C : ModelData F ζ hζ)
-    (h : RationalSmooth F ζ hζ) (g : E F ζ hζ) (b b' : B F ζ hζ C)
-    (heq : averagingClass F ζ hζ C b = averagingClass F ζ hζ C b') :
+ theorem weighted_integrand_descends (C : current_ModelDataLocal)
+    (h : RationalSmooth F ζ hζ) (g : E F ζ hζ) (b b' : current_BLocal C)
+    (heq : current_averagingClass C b = current_averagingClass C b') :
     (((KPGlobalProductPolarizationCharacter.lambdaB F ζ hζ C C.adjustment b)⁻¹ : ℂˣ) : ℂ) *
         h.val.val (b.val * g) =
       (((KPGlobalProductPolarizationCharacter.lambdaB F ζ hζ C C.adjustment b')⁻¹ : ℂˣ) : ℂ) *
         h.val.val (b'.val * g)  := by
-  let d : B F ζ hζ C := b / b'
+  let d : current_BLocal C := b / b'
   have hdj : pD F ζ hζ d.val ∈ J F ζ hζ C := by
     have hx := QuotientGroup.eq_iff_div_mem.mp heq
     change pD F ζ hζ b.val / pD F ζ hζ b'.val ∈ J F ζ hζ C at hx
     simpa only [d, Subgroup.coe_div, map_div] using hx
-  have hdi : d.val ∈ R F ζ hζ ⊓ B F ζ hζ C := by
+  have hdi : d.val ∈ R F ζ hζ ⊓ current_BLocal C := by
     rw [KPGlobalProductPolarizationCharacter.rational_intersection_preimage F ζ hζ C]
     exact hdj
   let r : R F ζ hζ := ⟨d.val, hdi.1⟩
@@ -1347,16 +1389,19 @@ def averagingIntegrand (C : ModelData F ζ hζ)
     Units.ne_zero _
   field_simp
 
- theorem averagingIntegrand_independent (C : ModelData F ζ hζ)
-    (s t : AveragingRepresentatives F ζ hζ C) (h : RationalSmooth F ζ hζ)
+
+local notation:max "current_averagingIntegrand" => averagingIntegrand F ζ hζ
+
+ theorem averagingIntegrand_independent (C : current_ModelDataLocal)
+    (s t : current_AveragingRepresentatives C) (h : RationalSmooth F ζ hζ)
     (g : E F ζ hζ) (x : CompactIndex F ζ hζ C) :
-    averagingIntegrand F ζ hζ C s h g x = averagingIntegrand F ζ hζ C t h g x := by
+    current_averagingIntegrand C s h g x = current_averagingIntegrand C t h g x := by
   exact weighted_integrand_descends F ζ hζ C h g (s.lift x) (t.lift x)
     ((s.projects x).trans (t.projects x).symm)
 
 namespace ScalarUntwistHelpers
 variable {T : Type*} [Group T] (H : Subgroup T) (χ ψ : H →* ℂˣ) (η : T →* ℂˣ)
-variable (hψ : ∀ h : H, ψ h = χ h * η h.val)
+
 
 end ScalarUntwistHelpers
 
@@ -1381,7 +1426,7 @@ end UntwistSmoothHelpers
 
 open KPGlobalTorusFunctionData
 
-theorem product_unit_inverse (C : ModelData F ζ hζ) (b : B F ζ hζ C) :
+theorem product_unit_inverse (C : current_ModelDataLocal) (b : current_BLocal C) :
     (((KPGlobalTorusFiniteStages.productUnitCharacter F ζ hζ C C.adjustment b)⁻¹ : ℂˣ) : ℂ) =
       (((KPGlobalProductPolarizationCharacter.lambdaB F ζ hζ C C.adjustment b)⁻¹ : ℂˣ) : ℂ) *
         ((KPGlobalCenterRationalCharacter.nu F ζ hζ b.val : ℝ≥0) : ℂ) := by
@@ -1390,16 +1435,19 @@ theorem product_unit_inverse (C : ModelData F ζ hζ) (b : B F ζ hζ C) :
     KPGlobalCenterRationalCharacter.positiveComplex, div_eq_mul_inv]
   <;> ring
 
-private theorem stage_weight_locally_constant (C : ModelData F ζ hζ)
+
+local notation:max "current_rationalModelLocal" => KPGlobalTorusFiniteStages.rationalModel F ζ hζ
+
+private theorem stage_weight_locally_constant (C : current_ModelDataLocal)
     (L : KPGlobalTorusFiniteStages.Level F ζ hζ C)
     (f : RationalUnitary F ζ hζ)
     (hf : f.val ∈ KPGlobalTorusFiniteStages.Stage F ζ hζ C L
-      (KPGlobalTorusFiniteStages.rationalModel F ζ hζ)) :
-    IsLocallyConstant (fun b : B F ζ hζ C =>
+      (current_rationalModelLocal)) :
+    IsLocallyConstant (fun b : current_BLocal C =>
       (((KPGlobalTorusFiniteStages.productUnitCharacter F ζ hζ C C.adjustment b)⁻¹ : ℂˣ) : ℂ) * f.val.val b.val) := by
   apply (IsLocallyConstant.iff_exists_open _).mpr
   intro b
-  let U : Set (B F ζ hζ C) := {b' | pD F ζ hζ (b⁻¹ * b').val ∈ L.K}
+  let U : Set (current_BLocal C) := {b' | pD F ζ hζ (b⁻¹ * b').val ∈ L.K}
   have ho : IsOpen U := L.open'.preimage
     ((pD_continuous F ζ hζ).comp (continuous_const.mul continuous_subtype_val))
   refine ⟨U, ho, ?_, ?_⟩
@@ -1412,9 +1460,9 @@ private theorem stage_weight_locally_constant (C : ModelData F ζ hζ)
           (KPGlobalTorusFiniteStages.phaseCharacter F ζ hζ C L k : ℂ) * f.val.val x.val :=
       fun x => hf.2 k x
     have hall := KPGlobalTorusTensorFibers.scalar_phase_global_covariance
-      (KPGlobalTorusFiniteStages.rationalModel F ζ hζ).H
+      (current_rationalModelLocal).H
       (KPGlobalTorusFiniteStages.stageDomain F ζ hζ C L)
-      (KPGlobalTorusFiniteStages.rationalModel F ζ hζ).character.toMonoidHom
+      (current_rationalModelLocal).character.toMonoidHom
       f.val hf.1 k.val (KPGlobalTorusFiniteStages.phase_inside_domain F ζ hζ C L k.property)
       (KPGlobalTorusFiniteStages.phaseCharacter F ζ hζ C L k : ℂ) hphase b.val
     have hb : b'.val = b.val * k.val := by dsimp [k]; simp
@@ -1427,28 +1475,28 @@ private theorem stage_weight_locally_constant (C : ModelData F ζ hζ)
     field_simp
     simp only [inv_mul_cancel_left]
 
- theorem averagingIntegrand_continuous (C : ModelData F ζ hζ)
-    (s : AveragingRepresentatives F ζ hζ C) (h : RationalSmooth F ζ hζ) (g : E F ζ hζ) :
-    Continuous (averagingIntegrand F ζ hζ C s h g) := by
-  let v := rightAction F ζ hζ (KPGlobalTorusFiniteStages.rationalModel F ζ hζ) g
+ theorem averagingIntegrand_continuous (C : current_ModelDataLocal)
+    (s : current_AveragingRepresentatives C) (h : RationalSmooth F ζ hζ) (g : E F ζ hζ) :
+    Continuous (current_averagingIntegrand C s h g) := by
+  let v := rightAction F ζ hζ (current_rationalModelLocal) g
     (untwistRational F ζ hζ h)
   obtain ⟨L, hL⟩ := KPGlobalTorusFiniteStages.smooth_vector_in_stage F ζ hζ C
-    (KPGlobalTorusFiniteStages.rationalModel F ζ hζ) (Or.inl rfl) v
+    (current_rationalModelLocal) (Or.inl rfl) v
   obtain ⟨e, he, _⟩ := compact_quotient_identification F ζ hζ C
-  have hq : Topology.IsQuotientMap (averagingClass F ζ hζ C) := by
-    have hh : e ∘ QuotientGroup.mk = averagingClass F ζ hζ C := funext he
+  have hq : Topology.IsQuotientMap (current_averagingClass C) := by
+    have hh : e ∘ QuotientGroup.mk = current_averagingClass C := funext he
     rw [← hh]
     exact e.isQuotientMap.comp (QuotientGroup.isQuotientMap_mk _)
   apply hq.continuous_iff.mpr
-  have hh : averagingIntegrand F ζ hζ C s h g ∘ averagingClass F ζ hζ C =
-      fun b : B F ζ hζ C =>
+  have hh : current_averagingIntegrand C s h g ∘ current_averagingClass C =
+      fun b : current_BLocal C =>
         ((KPGlobalCenterRationalCharacter.nu F ζ hζ g : ℝ≥0) : ℂ) *
         ((((KPGlobalTorusFiniteStages.productUnitCharacter F ζ hζ C C.adjustment b)⁻¹ : ℂˣ) : ℂ) * v.val.val b.val) := by
     funext b
-    change averagingIntegrand F ζ hζ C s h g (averagingClass F ζ hζ C b) = _
+    change current_averagingIntegrand C s h g (current_averagingClass C b) = _
     have hd := weighted_integrand_descends F ζ hζ C h g
-      (s.lift (averagingClass F ζ hζ C b)) b (s.projects _)
-    change averagingIntegrand F ζ hζ C s h g (averagingClass F ζ hζ C b) =
+      (s.lift (current_averagingClass C b)) b (s.projects _)
+    change current_averagingIntegrand C s h g (current_averagingClass C b) =
       (((KPGlobalProductPolarizationCharacter.lambdaB F ζ hζ C C.adjustment b)⁻¹ : ℂˣ) : ℂ) * h.val.val (b.val * g) at hd
     rw [hd, product_unit_inverse]
     change _ = _ * (_ * (untwistRational F ζ hζ h).val.val (b.val * g))
@@ -1461,34 +1509,34 @@ private theorem stage_weight_locally_constant (C : ModelData F ζ hζ)
   rw [hh]
   exact continuous_const.mul (stage_weight_locally_constant F ζ hζ C L v hL).continuous
 
- theorem averagingIntegrand_integrable (C : ModelData F ζ hζ)
-    (s : AveragingRepresentatives F ζ hζ C) (h : RationalSmooth F ζ hζ)
+ theorem averagingIntegrand_integrable (C : current_ModelDataLocal)
+    (s : current_AveragingRepresentatives C) (h : RationalSmooth F ζ hζ)
     (g : E F ζ hζ) :
-    Integrable (averagingIntegrand F ζ hζ C s h g) (probabilityHaar F ζ hζ C) := by
+    Integrable (current_averagingIntegrand C s h g) (probabilityHaar F ζ hζ C) := by
   simpa only [IntegrableOn, Measure.restrict_univ] using
     (averagingIntegrand_continuous F ζ hζ C s h g).continuousOn.integrableOn_compact
       (μ := probabilityHaar F ζ hζ C) isCompact_univ
 
-private theorem rawAveraging_class_mul (C : ModelData F ζ hζ)
-    (b b' : B F ζ hζ C) :
-    averagingClass F ζ hζ C (b * b') =
-      averagingClass F ζ hζ C b * averagingClass F ζ hζ C b' := by
+private theorem rawAveraging_class_mul (C : current_ModelDataLocal)
+    (b b' : current_BLocal C) :
+    current_averagingClass C (b * b') =
+      current_averagingClass C b * current_averagingClass C b' := by
   simp only [averagingClass, Subgroup.coe_mul, map_mul]
   rfl
 
-private theorem rawAveraging_translate_integrand (C : ModelData F ζ hζ)
-    (s : AveragingRepresentatives F ζ hζ C) (h : RationalSmooth F ζ hζ)
-    (b : B F ζ hζ C) (g : E F ζ hζ) (x : CompactIndex F ζ hζ C) :
-    averagingIntegrand F ζ hζ C s h (b.val * g) x =
+private theorem rawAveraging_translate_integrand (C : current_ModelDataLocal)
+    (s : current_AveragingRepresentatives C) (h : RationalSmooth F ζ hζ)
+    (b : current_BLocal C) (g : E F ζ hζ) (x : CompactIndex F ζ hζ C) :
+    current_averagingIntegrand C s h (b.val * g) x =
       (KPGlobalProductPolarizationCharacter.lambdaB F ζ hζ C C.adjustment b : ℂ) *
-        averagingIntegrand F ζ hζ C s h g (averagingClass F ζ hζ C b * x) := by
-  have he : averagingClass F ζ hζ C (b * s.lift x) =
-      averagingClass F ζ hζ C (s.lift (averagingClass F ζ hζ C b * x)) := by
+        current_averagingIntegrand C s h g (current_averagingClass C b * x) := by
+  have he : current_averagingClass C (b * s.lift x) =
+      current_averagingClass C (s.lift (current_averagingClass C b * x)) := by
     rw [rawAveraging_class_mul, s.projects, s.projects]
   have hd := weighted_integrand_descends F ζ hζ C h g
-    (b * s.lift x) (s.lift (averagingClass F ζ hζ C b * x)) he
+    (b * s.lift x) (s.lift (current_averagingClass C b * x)) he
   change _ = (KPGlobalProductPolarizationCharacter.lambdaB F ζ hζ C C.adjustment b : ℂ) *
-    (averagingIntegrand F ζ hζ C s h g (averagingClass F ζ hζ C b * x))
+    (current_averagingIntegrand C s h g (current_averagingClass C b * x))
   unfold averagingIntegrand
   rw [← hd]
   have hc : (s.lift x).val * b.val = b.val * (s.lift x).val :=
@@ -1500,27 +1548,27 @@ private theorem rawAveraging_translate_integrand (C : ModelData F ζ hζ)
   have hn : (KPGlobalProductPolarizationCharacter.lambdaB F ζ hζ C C.adjustment b : ℂ) ≠ 0 := Units.ne_zero _
   field_simp
 
-theorem rawAveraging_left_covariant (C : ModelData F ζ hζ)
-    (s : AveragingRepresentatives F ζ hζ C) (h : RationalSmooth F ζ hζ)
-    (b : B F ζ hζ C) (g : E F ζ hζ) :
-    (∫ x, averagingIntegrand F ζ hζ C s h (b.val * g) x ∂probabilityHaar F ζ hζ C) =
+theorem rawAveraging_left_covariant (C : current_ModelDataLocal)
+    (s : current_AveragingRepresentatives C) (h : RationalSmooth F ζ hζ)
+    (b : current_BLocal C) (g : E F ζ hζ) :
+    (∫ x, current_averagingIntegrand C s h (b.val * g) x ∂probabilityHaar F ζ hζ C) =
       (KPGlobalProductPolarizationCharacter.lambdaB F ζ hζ C C.adjustment b : ℂ) *
-        ∫ x, averagingIntegrand F ζ hζ C s h g x ∂probabilityHaar F ζ hζ C := by
+        ∫ x, current_averagingIntegrand C s h g x ∂probabilityHaar F ζ hζ C := by
   simp_rw [rawAveraging_translate_integrand F ζ hζ C s h b g]
   rw [integral_const_mul, integral_mul_left_eq_self]
 
-def rawAveraging (C : ModelData F ζ hζ)
-    (s : AveragingRepresentatives F ζ hζ C) :
+def rawAveraging (C : current_ModelDataLocal)
+    (s : current_AveragingRepresentatives C) :
     RationalSmooth F ζ hζ →ₗ[ℂ]
       KPGlobalTorusFunctionData.TorusFunctions F ζ hζ (productModel F ζ hζ C) where
-  toFun h := ⟨fun g => ∫ x, averagingIntegrand F ζ hζ C s h g x ∂probabilityHaar F ζ hζ C,
+  toFun h := ⟨fun g => ∫ x, current_averagingIntegrand C s h g x ∂probabilityHaar F ζ hζ C,
     rawAveraging_left_covariant F ζ hζ C s h⟩
   map_add' h k := by
     apply Subtype.ext
     funext g
-    change (∫ x, averagingIntegrand F ζ hζ C s (h + k) g x ∂probabilityHaar F ζ hζ C) = _
-    have he : averagingIntegrand F ζ hζ C s (h + k) g =
-        fun x => averagingIntegrand F ζ hζ C s h g x + averagingIntegrand F ζ hζ C s k g x := by
+    change (∫ x, current_averagingIntegrand C s (h + k) g x ∂probabilityHaar F ζ hζ C) = _
+    have he : current_averagingIntegrand C s (h + k) g =
+        fun x => current_averagingIntegrand C s h g x + current_averagingIntegrand C s k g x := by
       funext x
       simp only [averagingIntegrand, Submodule.coe_add, Pi.add_apply, mul_add]
     rw [he, integral_add (averagingIntegrand_integrable F ζ hζ C s h g)
@@ -1529,31 +1577,31 @@ def rawAveraging (C : ModelData F ζ hζ)
   map_smul' c h := by
     apply Subtype.ext
     funext g
-    change (∫ x, averagingIntegrand F ζ hζ C s (c • h) g x ∂probabilityHaar F ζ hζ C) = _
-    have he : averagingIntegrand F ζ hζ C s (c • h) g =
-        fun x => c * averagingIntegrand F ζ hζ C s h g x := by
+    change (∫ x, current_averagingIntegrand C s (c • h) g x ∂probabilityHaar F ζ hζ C) = _
+    have he : current_averagingIntegrand C s (c • h) g =
+        fun x => c * current_averagingIntegrand C s h g x := by
       funext x
       simp only [averagingIntegrand, Submodule.coe_smul, Pi.smul_apply, smul_eq_mul]
       ring
     rw [he, integral_const_mul]
     rfl
 
-def rawUnitaryAveraging (C : ModelData F ζ hζ)
-    (s : AveragingRepresentatives F ζ hζ C) :
+def rawUnitaryAveraging (C : current_ModelDataLocal)
+    (s : current_AveragingRepresentatives C) :
     RationalUnitary F ζ hζ →ₗ[ℂ]
       KPGlobalTorusFunctionData.TorusFunctions F ζ hζ (KPGlobalTorusFiniteStages.productModel F ζ hζ C) :=
   (scalarUntwistProduct F ζ hζ C).toLinearMap.comp
     ((rawAveraging F ζ hζ C s).comp (untwistRational F ζ hζ).symm.toLinearMap)
 
-private theorem rawUnitaryAveraging_formula (C : ModelData F ζ hζ)
-    (s : AveragingRepresentatives F ζ hζ C) (h : RationalUnitary F ζ hζ) (g : E F ζ hζ) :
+private theorem rawUnitaryAveraging_formula (C : current_ModelDataLocal)
+    (s : current_AveragingRepresentatives C) (h : RationalUnitary F ζ hζ) (g : E F ζ hζ) :
     (rawUnitaryAveraging F ζ hζ C s h).val g =
       ∫ x, (((KPGlobalTorusFiniteStages.productUnitCharacter F ζ hζ C C.adjustment (s.lift x))⁻¹ : ℂˣ) : ℂ) *
         h.val.val ((s.lift x).val * g) ∂probabilityHaar F ζ hζ C := by
   change (scalarUntwistProduct F ζ hζ C
     (rawAveraging F ζ hζ C s ((untwistRational F ζ hζ).symm h))).val g = _
   rw [scalarUntwistProduct_formula]
-  change _ * (∫ x, averagingIntegrand F ζ hζ C s ((untwistRational F ζ hζ).symm h) g x
+  change _ * (∫ x, current_averagingIntegrand C s ((untwistRational F ζ hζ).symm h) g x
     ∂probabilityHaar F ζ hζ C) = _
   rw [← integral_const_mul]
   apply integral_congr_ae
@@ -1563,11 +1611,11 @@ private theorem rawUnitaryAveraging_formula (C : ModelData F ζ hζ)
     exact_mod_cast Units.ne_zero (KPGlobalCenterRationalCharacter.nu F ζ hζ g)
   field_simp
 
-private theorem rawUnitaryAveraging_right_level (C : ModelData F ζ hζ)
-    (s : AveragingRepresentatives F ζ hζ C) (h : RationalUnitary F ζ hζ)
+private theorem rawUnitaryAveraging_right_level (C : current_ModelDataLocal)
+    (s : current_AveragingRepresentatives C) (h : RationalUnitary F ζ hζ)
     (U : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
     (hh : h.val ∈ KPGlobalTorusFunctionData.TorusSmoothLevel F ζ hζ
-      (KPGlobalTorusFiniteStages.rationalModel F ζ hζ) U) :
+      (current_rationalModelLocal) U) :
     rawUnitaryAveraging F ζ hζ C s h ∈ KPGlobalTorusFunctionData.RightLevel
       (KPGlobalTorusFiniteStages.productModel F ζ hζ C).H
       (KPGlobalTorusFiniteStages.productModel F ζ hζ C).character.toMonoidHom
@@ -1583,13 +1631,13 @@ private theorem rawUnitaryAveraging_right_level (C : ModelData F ζ hζ)
     ((s.lift x).val * g) j.val j.property
   rw [← mul_assoc, he]
 
-theorem rawUnitaryAveraging_smooth (C : ModelData F ζ hζ)
-    (s : AveragingRepresentatives F ζ hζ C) (h : RationalUnitary F ζ hζ) :
+theorem rawUnitaryAveraging_smooth (C : current_ModelDataLocal)
+    (s : current_AveragingRepresentatives C) (h : RationalUnitary F ζ hζ) :
     rawUnitaryAveraging F ζ hζ C s h ∈ ProductUnitary F ζ hζ C := by
   obtain ⟨L, hL⟩ := KPGlobalTorusFiniteStages.smooth_vector_in_stage F ζ hζ C
-    (KPGlobalTorusFiniteStages.rationalModel F ζ hζ) (Or.inl rfl) h
+    (current_rationalModelLocal) (Or.inl rfl) h
   obtain ⟨U, hU⟩ := KPGlobalTorusFiniteStages.stage_in_smooth_level F ζ hζ C L
-    (KPGlobalTorusFiniteStages.rationalModel F ζ hζ) (Or.inl rfl)
+    (current_rationalModelLocal) (Or.inl rfl)
   apply Submodule.mem_iSup_of_mem U
   refine ⟨?_, rawUnitaryAveraging_right_level F ζ hζ C s h U (hU hL)⟩
   apply KPGlobalTorusTensorFibers.archSmooth_of_chart_character_one F ζ hζ
@@ -1601,21 +1649,21 @@ theorem rawUnitaryAveraging_smooth (C : ModelData F ζ hζ)
   subst t
   rfl
 
-def smoothUnitaryAveraging (C : ModelData F ζ hζ)
-    (s : AveragingRepresentatives F ζ hζ C) :
+def smoothUnitaryAveraging (C : current_ModelDataLocal)
+    (s : current_AveragingRepresentatives C) :
     RationalUnitary F ζ hζ →ₗ[ℂ] ProductUnitary F ζ hζ C :=
   (rawUnitaryAveraging F ζ hζ C s).codRestrict _ (rawUnitaryAveraging_smooth F ζ hζ C s)
 
-def smoothAveraging (C : ModelData F ζ hζ)
-    (s : AveragingRepresentatives F ζ hζ C) :
+def smoothAveraging (C : current_ModelDataLocal)
+    (s : current_AveragingRepresentatives C) :
     RationalSmooth F ζ hζ →ₗ[ℂ] ProductSmooth F ζ hζ C :=
   (untwistProduct F ζ hζ C).symm.toLinearMap.comp
     ((smoothUnitaryAveraging F ζ hζ C s).comp (untwistRational F ζ hζ).toLinearMap)
 
-theorem smoothAveraging_formula (C : ModelData F ζ hζ)
-    (s : AveragingRepresentatives F ζ hζ C) (h : RationalSmooth F ζ hζ) (g : E F ζ hζ) :
+theorem smoothAveraging_formula (C : current_ModelDataLocal)
+    (s : current_AveragingRepresentatives C) (h : RationalSmooth F ζ hζ) (g : E F ζ hζ) :
     (smoothAveraging F ζ hζ C s h).val.val g =
-      ∫ x, averagingIntegrand F ζ hζ C s h g x ∂probabilityHaar F ζ hζ C := by
+      ∫ x, current_averagingIntegrand C s h g x ∂probabilityHaar F ζ hζ C := by
   unfold smoothAveraging
   change ((untwistProduct F ζ hζ C).symm
     (smoothUnitaryAveraging F ζ hζ C s (untwistRational F ζ hζ h))).val.val g = _
@@ -1623,14 +1671,14 @@ theorem smoothAveraging_formula (C : ModelData F ζ hζ)
   change _ * (scalarUntwistProduct F ζ hζ C
     (rawAveraging F ζ hζ C s ((untwistRational F ζ hζ).symm (untwistRational F ζ hζ h)))).val g = _
   rw [ContinuousLinearEquiv.symm_apply_apply, scalarUntwistProduct_formula]
-  change _ * (_ * (∫ x, averagingIntegrand F ζ hζ C s h g x ∂probabilityHaar F ζ hζ C)) = _
+  change _ * (_ * (∫ x, current_averagingIntegrand C s h g x ∂probabilityHaar F ζ hζ C)) = _
   have hn : ((KPGlobalCenterRationalCharacter.nu F ζ hζ g : ℝ≥0) : ℂ) ≠ 0 := by
     exact_mod_cast Units.ne_zero (KPGlobalCenterRationalCharacter.nu F ζ hζ g)
   rw [← mul_assoc, mul_inv_cancel₀ hn, one_mul]
 
 set_option maxHeartbeats 1000000 in
-private theorem smoothUnitaryAveraging_continuous (C : ModelData F ζ hζ)
-    (s : AveragingRepresentatives F ζ hζ C) :
+private theorem smoothUnitaryAveraging_continuous (C : current_ModelDataLocal)
+    (s : current_AveragingRepresentatives C) :
     Continuous (smoothUnitaryAveraging F ζ hζ C s) := by
   let Q := KPGlobalTorusFiniteStages.productModel F ζ hζ C
   have hq : WithSeminorms (fun q : periodizationUnionJets F ζ hζ Q => q.val) := ⟨rfl⟩
@@ -1650,30 +1698,30 @@ private theorem smoothUnitaryAveraging_continuous (C : ModelData F ζ hζ)
       (fun U : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ =>
         (KPGlobalTorusFunctionData.globalLevel F ζ hζ U).comap (KPGlobalTorusFunctionData.torus F ζ hζ).subtype)
   refine (KPGlobalTorusFiniteStages.levelwise_final_topology F ζ hζ C
-    (KPGlobalTorusFiniteStages.rationalModel F ζ hζ) (Or.inl rfl)
+    (current_rationalModelLocal) (Or.inl rfl)
     (V := ProductUnitary F ζ hζ C) (T := smoothUnitaryAveraging F ζ hζ C s)).mpr ?_
   intro L U hU
   letI := KPGlobalTorusFiniteStages.stageTopology F ζ hζ C L
-    (KPGlobalTorusFiniteStages.rationalModel F ζ hζ) U hU
+    (current_rationalModelLocal) U hU
   have hp := periodization_stage_polynorms F ζ hζ C L
-    (KPGlobalTorusFiniteStages.rationalModel F ζ hζ) U hU
+    (current_rationalModelLocal) U hU
   letI : IsTopologicalAddGroup (KPGlobalTorusFiniteStages.Stage F ζ hζ C L
-    (KPGlobalTorusFiniteStages.rationalModel F ζ hζ)) := hp.isTopologicalAddGroup
+    (current_rationalModelLocal)) := hp.isTopologicalAddGroup
   letI : ContinuousSMul ℂ (KPGlobalTorusFiniteStages.Stage F ζ hζ C L
-    (KPGlobalTorusFiniteStages.rationalModel F ζ hζ)) := hp.continuousSMul
-  letI := periodization_stage_t2 F ζ hζ C L (KPGlobalTorusFiniteStages.rationalModel F ζ hζ) U hU
+    (current_rationalModelLocal)) := hp.continuousSMul
+  letI := periodization_stage_t2 F ζ hζ C L (current_rationalModelLocal) U hU
   letI := KPGlobalTorusFiniteStages.stage_module_finite F ζ hζ C L
-    (KPGlobalTorusFiniteStages.rationalModel F ζ hζ) (Or.inl rfl)
+    (current_rationalModelLocal) (Or.inl rfl)
   exact LinearMap.continuous_of_finiteDimensional (𝕜 := ℂ)
-    (E := KPGlobalTorusFiniteStages.Stage F ζ hζ C L (KPGlobalTorusFiniteStages.rationalModel F ζ hζ))
+    (E := KPGlobalTorusFiniteStages.Stage F ζ hζ C L (current_rationalModelLocal))
     (F' := ProductUnitary F ζ hζ C)
     ((smoothUnitaryAveraging F ζ hζ C s).comp (Submodule.inclusion
       (hU.trans (le_iSup (fun W : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ =>
         KPGlobalTorusFunctionData.TorusSmoothLevel F ζ hζ
-          (KPGlobalTorusFiniteStages.rationalModel F ζ hζ) W) U))))
+          (current_rationalModelLocal) W) U))))
 
-theorem smoothAveraging_continuous (C : ModelData F ζ hζ)
-    (s : AveragingRepresentatives F ζ hζ C) : Continuous (smoothAveraging F ζ hζ C s) := by
+theorem smoothAveraging_continuous (C : current_ModelDataLocal)
+    (s : current_AveragingRepresentatives C) : Continuous (smoothAveraging F ζ hζ C s) := by
   unfold smoothAveraging
   exact (untwistProduct F ζ hζ C).symm.continuous.comp
     ((smoothUnitaryAveraging_continuous F ζ hζ C s).comp (untwistRational F ζ hζ).continuous)

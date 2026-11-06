@@ -187,12 +187,15 @@ private theorem torusPullbackBridge_surjective :
     simp [A, KPGlobalCubicIdelePairing.diagonalHom, KPGlobalCubicIdelePairing.diagonalMatrix]
   simp [he1, he2]
 
+
+local notation:max "current_s" => KPGlobalTorusFunctionData.s F ζ hζ
+
 private theorem p_rational (a : Fˣ) :
-    KPGlobalTorusFunctionData.p F ζ hζ (KPGlobalTorusFunctionData.s F ζ hζ a) =
+    KPGlobalTorusFunctionData.p F ζ hζ (current_s a) =
       IdeleGroup.unitEmbedding (𝓞 F) F a := by
   let A := KPAdelicCoverRestrictedProduct.rationalBase F (KubotaRankTwo.d F a 1)
   have hp : KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ
-      (KPGlobalTorusFunctionData.s F ζ hζ a).val =
+      (current_s a).val =
       QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) A := by
     change QuotientGroup.mk' _ (KPAdelicCoverRestrictedProduct.projection F ζ hζ
       (KPAdelicCoverRestrictedProduct.rationalSection F ζ hζ _)) = _
@@ -201,11 +204,11 @@ private theorem p_rational (a : Fˣ) :
   have h10 : A 1 0 = 0 := by simp [A, KPAdelicCoverRestrictedProduct.rationalBase]
   have h01 : A 0 1 = 0 := by simp [A, KPAdelicCoverRestrictedProduct.rationalBase]
   have h := KPGlobalTorusFunctionData.ratio_formula F
-    ⟨_, (KPGlobalTorusFunctionData.s F ζ hζ a).property⟩ A hp.symm h10 h01
+    ⟨_, (current_s a).property⟩ A hp.symm h10 h01
   apply Units.ext
   change (KPGlobalTorusFunctionData.torusRatio F
-    ⟨KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ (KPGlobalTorusFunctionData.s F ζ hζ a).val,
-      (KPGlobalTorusFunctionData.s F ζ hζ a).property⟩ : KPGlobalTorusFunctionData.Adeles F) = _
+    ⟨KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ (current_s a).val,
+      (current_s a).property⟩ : KPGlobalTorusFunctionData.Adeles F) = _
   rw [h]
   have he1 : (KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).1.unit =
       IdeleGroup.unitEmbedding (𝓞 F) F a := by
@@ -232,10 +235,13 @@ private theorem rhoPrime_ker :
     (KPGlobalCubicIdelePairing.torusProjection F ζ hζ)).ker = _
   rw [← MonoidHom.comap_ker, QuotientGroup.ker_mk']
 
-private theorem center_eq_ker_pD : Z F ζ hζ = (ordinaryTorusCoverRatioModuloCubes F ζ hζ).ker := by
+
+local notation:max "current_Z" => Z F ζ hζ
+
+private theorem center_eq_ker_pD : current_Z = (ordinaryTorusCoverRatioModuloCubes F ζ hζ).ker := by
   have hbij : Function.Bijective (ordinaryTorusCoverToCubicPullback F ζ hζ) :=
     ⟨torusPullbackBridge_injective F ζ hζ, torusPullbackBridge_surjective F ζ hζ⟩
-  have hcenter : (Z F ζ hζ : Subgroup (E F ζ hζ)) =
+  have hcenter : (current_Z : Subgroup (E F ζ hζ)) =
       (KPGlobalCubicIdelePairing.Z F ζ hζ).comap (ordinaryTorusCoverToCubicPullback F ζ hζ) := by
     apply le_antisymm
     · intro z hz
@@ -259,30 +265,30 @@ private theorem center_eq_ker_pD : Z F ζ hζ = (ordinaryTorusCoverRatioModuloCu
 
 private theorem pD_mem_A (g : E F ζ hζ) (hg : g ∈ rationalCenterSubgroup F ζ hζ) :
     ordinaryTorusCoverRatioModuloCubes F ζ hζ g ∈ KPGlobalPrincipalCubicLagrangian.A F := by
-  have hg' : g ∈ (KPGlobalTorusFunctionData.s F ζ hζ).range ⊔ Z F ζ hζ := hg
+  have hg' : g ∈ (current_s).range ⊔ current_Z := hg
   obtain ⟨x, hx, y, hy, hxy⟩ := Subgroup.mem_sup_of_normal_right.mp hg'
   obtain ⟨a, rfl⟩ := hx
   have hy1 : ordinaryTorusCoverRatioModuloCubes F ζ hζ y = 1 := by
     have hmem : y ∈ (ordinaryTorusCoverRatioModuloCubes F ζ hζ).ker := by
       rw [← center_eq_ker_pD F ζ hζ]; exact hy
     exact MonoidHom.mem_ker.mp hmem
-  have hsa : ordinaryTorusCoverRatioModuloCubes F ζ hζ (KPGlobalTorusFunctionData.s F ζ hζ a) =
+  have hsa : ordinaryTorusCoverRatioModuloCubes F ζ hζ (current_s a) =
       KPGlobalPrincipalCubicLagrangian.principalClass F a := by
     rw [ordinaryTorusCoverRatioModuloCubes, MonoidHom.comp_apply, p_rational]
     rfl
   rw [← hxy, map_mul, hsa, hy1, mul_one]
   exact ⟨a, rfl⟩
 
-theorem rational_extension_continuous (χ : Z F ζ hζ →ₜ* ℂˣ)
+theorem rational_extension_continuous (χ : current_Z →ₜ* ℂˣ)
     (f : rationalCenterSubgroup F ζ hζ → ℂˣ)
-    (hf : ∀ (g : rationalCenterSubgroup F ζ hζ) (a : Fˣ) (z : Z F ζ hζ),
-      KPGlobalTorusFunctionData.s F ζ hζ a * z.val = g.val → f g = χ z) :
+    (hf : ∀ (g : rationalCenterSubgroup F ζ hζ) (a : Fˣ) (z : current_Z),
+      current_s a * z.val = g.val → f g = χ z) :
     Continuous f := by
   classical
-  have decomp : ∀ g : rationalCenterSubgroup F ζ hζ, ∃ a : Fˣ, ∃ z : Z F ζ hζ,
-      KPGlobalTorusFunctionData.s F ζ hζ a * z.val = g.val := by
+  have decomp : ∀ g : rationalCenterSubgroup F ζ hζ, ∃ a : Fˣ, ∃ z : current_Z,
+      current_s a * z.val = g.val := by
     intro g
-    have hg : g.val ∈ (KPGlobalTorusFunctionData.s F ζ hζ).range ⊔ Z F ζ hζ := g.property
+    have hg : g.val ∈ (current_s).range ⊔ current_Z := g.property
     obtain ⟨x, hx, y, hy, hxy⟩ := Subgroup.mem_sup_of_normal_right.mp hg
     obtain ⟨a, rfl⟩ := hx
     exact ⟨a, ⟨y, hy⟩, hxy⟩
@@ -293,21 +299,21 @@ theorem rational_extension_continuous (χ : Z F ζ hζ →ₜ* ℂˣ)
     intro g h
     obtain ⟨a₁, z₁, hz₁⟩ := decomp g
     obtain ⟨a₂, z₂, hz₂⟩ := decomp h
-    have hc : Commute (KPGlobalTorusFunctionData.s F ζ hζ a₂) z₁.val :=
+    have hc : Commute (current_s a₂) z₁.val :=
       Subgroup.mem_center_iff.mp z₁.property _
-    have hgh : KPGlobalTorusFunctionData.s F ζ hζ (a₁ * a₂) * (z₁ * z₂).val = (g * h).val := by
+    have hgh : current_s (a₁ * a₂) * (z₁ * z₂).val = (g * h).val := by
       rw [map_mul, Subgroup.coe_mul, Subgroup.coe_mul]
-      calc (KPGlobalTorusFunctionData.s F ζ hζ a₁ * KPGlobalTorusFunctionData.s F ζ hζ a₂) *
+      calc (current_s a₁ * current_s a₂) *
             (z₁.val * z₂.val)
-          = (KPGlobalTorusFunctionData.s F ζ hζ a₁ * z₁.val) *
-              (KPGlobalTorusFunctionData.s F ζ hζ a₂ * z₂.val) :=
+          = (current_s a₁ * z₁.val) *
+              (current_s a₂ * z₂.val) :=
             hc.mul_mul_mul_comm _ _
         _ = g.val * h.val := by rw [hz₁, hz₂]
     have h1 := hf (g * h) (a₁ * a₂) (z₁ * z₂) hgh
     rw [h1, map_mul, hf g a₁ z₁ hz₁, hf h a₂ z₂ hz₂]
   let fM : rationalCenterSubgroup F ζ hζ →* ℂˣ :=
     { toFun := f, map_one' := hf1, map_mul' := hfmul }
-  have hZR : Z F ζ hζ ≤ rationalCenterSubgroup F ζ hζ :=
+  have hZR : current_Z ≤ rationalCenterSubgroup F ζ hζ :=
     fun z hz => Subgroup.mem_sup_right hz
 
   haveI : IsTopologicalGroup (KPAdelicCoverRestrictedProduct.CubicPGL2Adelic F ζ hζ) :=
@@ -322,8 +328,8 @@ theorem rational_extension_continuous (χ : Z F ζ hζ →ₜ* ℂˣ)
   have honeU : (1 : KPGlobalCubicIdelePairing.D F) ∈ U := by
     have h := (Set.ext_iff.mp hUeq (1 : KPGlobalPrincipalCubicLagrangian.A F))
     simpa using h.mpr rfl
-  have hZopen : IsOpen {g : rationalCenterSubgroup F ζ hζ | g.val ∈ Z F ζ hζ} := by
-    have hZeq : {g : rationalCenterSubgroup F ζ hζ | g.val ∈ Z F ζ hζ} =
+  have hZopen : IsOpen {g : rationalCenterSubgroup F ζ hζ | g.val ∈ current_Z} := by
+    have hZeq : {g : rationalCenterSubgroup F ζ hζ | g.val ∈ current_Z} =
         {g : rationalCenterSubgroup F ζ hζ | ordinaryTorusCoverRatioModuloCubes F ζ hζ g.val ∈ U} := by
       ext g
       constructor
@@ -333,7 +339,7 @@ theorem rational_extension_continuous (χ : Z F ζ hζ →ₜ* ℂˣ)
           rw [← center_eq_ker_pD F ζ hζ]; exact hg
         rw [MonoidHom.mem_ker.mp hmem]; exact honeU
       · intro hg
-        show g.val ∈ Z F ζ hζ
+        show g.val ∈ current_Z
         have hA : ordinaryTorusCoverRatioModuloCubes F ζ hζ g.val ∈ KPGlobalPrincipalCubicLagrangian.A F :=
           pD_mem_A F ζ hζ g.val g.property
         have haux : (⟨ordinaryTorusCoverRatioModuloCubes F ζ hζ g.val, hA⟩ : KPGlobalPrincipalCubicLagrangian.A F) = 1 :=
@@ -344,7 +350,7 @@ theorem rational_extension_continuous (χ : Z F ζ hζ →ₜ* ℂˣ)
     rw [hZeq]
     exact (hpDcont.comp continuous_subtype_val).isOpen_preimage U hUopen
 
-  have hfOnZ : (fM ∘ Subgroup.inclusion hZR) = fun z : Z F ζ hζ => χ z := by
+  have hfOnZ : (fM ∘ Subgroup.inclusion hZR) = fun z : current_Z => χ z := by
     funext z
     change f ⟨(z : E F ζ hζ), hZR z.property⟩ = χ z
     exact hf _ 1 z (by simp)
@@ -352,7 +358,7 @@ theorem rational_extension_continuous (χ : Z F ζ hζ →ₜ* ℂˣ)
     have hiind : Topology.IsInducing (Subgroup.inclusion hZR) :=
       (Topology.IsEmbedding.inclusion hZR).isInducing
     have hrange : Set.range (Subgroup.inclusion hZR) =
-        {g : rationalCenterSubgroup F ζ hζ | g.val ∈ Z F ζ hζ} := by
+        {g : rationalCenterSubgroup F ζ hζ | g.val ∈ current_Z} := by
       ext g; constructor
       · rintro ⟨z, rfl⟩; exact z.property
       · intro hg; exact ⟨⟨g.val, hg⟩, Subtype.ext rfl⟩
@@ -361,7 +367,7 @@ theorem rational_extension_continuous (χ : Z F ζ hζ →ₜ* ℂˣ)
       exact hZopen.mem_nhds (by simp)
     have hc : Continuous (fM ∘ Subgroup.inclusion hZR) := by
       rw [hfOnZ]; exact χ.continuous
-    have hcat := (hiind.continuousAt_iff' hmem).mp (hc.continuousAt (x := (1 : Z F ζ hζ)))
+    have hcat := (hiind.continuousAt_iff' hmem).mp (hc.continuousAt (x := (1 : current_Z)))
     simpa only [map_one] using hcat
   exact continuous_of_continuousAt_one fM hcont1
 

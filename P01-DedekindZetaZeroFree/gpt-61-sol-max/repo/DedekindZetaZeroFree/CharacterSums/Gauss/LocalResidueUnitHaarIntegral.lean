@@ -12,7 +12,7 @@ open KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPLocalPrincipalSerie
 open KPRankOneRootParameter KPTameJacquetTestDuality
 open KPTameTransposeKernelUnfolding KPTameValuationCoordinates
 variable (F : Type) [Field F] [NumberField F]
-  (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
+  (ζ : F)  (q : HeightOneSpectrum (𝓞 F))
   (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
   (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
 variable [Fintype (RawResidue F q)]

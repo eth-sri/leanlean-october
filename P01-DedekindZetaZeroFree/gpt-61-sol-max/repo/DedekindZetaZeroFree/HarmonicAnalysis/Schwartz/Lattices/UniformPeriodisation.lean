@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Schwartz.Lattices.TranslateSummability
 
 @[expose] public section
+
 
 noncomputable section
 open scoped SchwartzMap
@@ -11,14 +14,17 @@ namespace DedekindZetaZeroFree.PoissonArch
 
 def periodisation
     {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
-    (L : Submodule ℤ V) (f : 𝓢(V, ℂ)) (x : V) : ℂ :=
+    (L : Submodule ℤ V) (f : 𝓢(V, ℂ)) (x : V)  :=
   ∑' v : L, f (x + (v : V))
 
-theorem summable_norm_schwartz_translate_restrict
-    {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
+section
+variable {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
     [FiniteDimensional ℝ V]
     (L : Submodule ℤ V) [DiscreteTopology L] [IsZLattice ℝ L]
-    (f : 𝓢(V, ℂ)) (K : TopologicalSpace.Compacts V) :
+    (f : 𝓢(V, ℂ))
+include V L f
+theorem summable_norm_schwartz_translate_restrict
+      (K : TopologicalSpace.Compacts V) :
     Summable (fun v : L =>
       ‖(f.toContinuousMap.comp (ContinuousMap.addRight (v : V))).restrict K‖) := by
   classical
@@ -35,9 +41,7 @@ theorem summable_norm_schwartz_translate_restrict
   have htail : ∀ᶠ v : L in Filter.cofinite, max (2 * R) 1 ≤ ‖(v : V)‖ :=
     (tendsto_norm_cocompact_atTop.comp hincl).eventually
       (Filter.eventually_ge_atTop _)
-  have hg : Summable (fun v : L => (C * 2 ^ n) * ‖(v : V)‖⁻¹ ^ n) := by
-    simpa only [Submodule.norm_coe] using
-      (ZLattice.summable_norm_pow_inv L n (by dsimp [n]; omega)).mul_left (C * 2 ^ n)
+  have hg : Summable (fun v : L => (C * 2 ^ n) * ‖(v : V)‖⁻¹ ^ n) := (ZLattice.summable_norm_pow_inv L n (by dsimp [n]; omega)).mul_left (C * 2 ^ n)
   refine Summable.of_norm_bounded_eventually hg ?_
   filter_upwards [htail] with v hv
   rw [Real.norm_of_nonneg (norm_nonneg _)]
@@ -66,10 +70,7 @@ theorem summable_norm_schwartz_translate_restrict
   simpa only [div_eq_mul_inv, inv_pow] using hh
 
 theorem continuous_periodisation
-    {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
-    [FiniteDimensional ℝ V]
-    (L : Submodule ℤ V) [DiscreteTopology L] [IsZLattice ℝ L]
-    (f : 𝓢(V, ℂ)) : Continuous (periodisation L f) := by
+      : Continuous (periodisation L f) := by
   let F : L → C(V, ℂ) := fun v => f.toContinuousMap.comp (ContinuousMap.addRight (v : V))
   have hF : Summable F := ContinuousMap.summable_of_locally_summable_norm
     (summable_norm_schwartz_translate_restrict L f)
@@ -81,14 +82,13 @@ theorem continuous_periodisation
   exact (∑' v, F v).continuous
 
 theorem periodisation_add_lattice
-    {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
-    [FiniteDimensional ℝ V]
-    (L : Submodule ℤ V) [DiscreteTopology L] [IsZLattice ℝ L]
-    (f : 𝓢(V, ℂ)) (x : V) (v : L) :
+      (x : V) (v : L) :
     periodisation L f (x + (v : V)) = periodisation L f x := by
   unfold periodisation
   have he := (Equiv.addLeft v).tsum_eq (fun w : L => f (x + (w : V)))
   simpa only [Equiv.coe_addLeft, Submodule.coe_add, add_assoc] using he
+end
+
 
 end DedekindZetaZeroFree.PoissonArch
 

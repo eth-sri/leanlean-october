@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Algebra.Module.ZLattice.Basic
 public import Mathlib.MeasureTheory.Measure.Haar.Unique
 
 @[expose] public section
+
 
 /-
 The translation change-of-variables and fundamental-domain comparison pattern is adapted
@@ -16,10 +19,13 @@ open MeasureTheory
 
 namespace DedekindZetaZeroFree.Hecke
 
-theorem periodicCubeIntegral_translation {ι : Type*} [Fintype ι]
+section
+variable {ι : Type*} [Fintype ι]
     (f : (ι → ℝ) → ℂ) (hf : Continuous f)
     (hperiodic : ∀ (z : ι → ℤ) (u : ι → ℝ),
-      f (u + fun i => (z i : ℝ)) = f u) :
+      f (u + fun i => (z i : ℝ)) = f u)
+include ι f hf hperiodic
+theorem periodicCubeIntegral_translation   :
     ∀ d : ι → ℝ,
       (∫ u in Set.univ.pi (fun _ : ι => Set.Ico (0 : ℝ) 1), f (u + d)) =
         ∫ u in Set.univ.pi (fun _ : ι => Set.Ico (0 : ℝ) 1), f u := by
@@ -42,9 +48,9 @@ theorem periodicCubeIntegral_translation {ι : Type*} [Fintype ι]
     change f ((g : ι → ℝ) + u) = f u
     rw [heq, add_comm]
     exact hperiodic z u
-  let e : (ι → ℝ) ≃ᵐ (ι → ℝ) := MeasurableEquiv.addRight d
+  let e  := MeasurableEquiv.addRight d
   have he : MeasurePreserving e volume volume :=
-    ⟨e.measurable, by simpa [e] using map_add_right_eq_self volume d⟩
+    ⟨e.measurable, map_add_right_eq_self volume d⟩
   have hT : IsAddFundamentalDomain L (e '' Q) volume := by
     apply hQ.image_of_equiv e.toEquiv ?_ (Equiv.refl L) ?_
     · exact (measurePreserving_add_right volume (-d)).quasiMeasurePreserving
@@ -55,10 +61,7 @@ theorem periodicCubeIntegral_translation {ι : Type*} [Fintype ι]
     _ = ∫ u in e '' Q, f u := (he.setIntegral_image_emb e.measurableEmbedding f Q).symm
     _ = ∫ u in Q, f u := hT.setIntegral_eq hQ hf
 
-theorem periodicCubeIntegral_negation {ι : Type*} [Fintype ι]
-    (f : (ι → ℝ) → ℂ) (hf : Continuous f)
-    (hperiodic : ∀ (z : ι → ℤ) (u : ι → ℝ),
-      f (u + fun i => (z i : ℝ)) = f u) :
+theorem periodicCubeIntegral_negation   :
     (∫ u in Set.univ.pi (fun _ : ι => Set.Ico (0 : ℝ) 1), f (-u)) =
       ∫ u in Set.univ.pi (fun _ : ι => Set.Ico (0 : ℝ) 1), f u := by
   classical
@@ -79,7 +82,7 @@ theorem periodicCubeIntegral_negation {ι : Type*} [Fintype ι]
     change f ((g : ι → ℝ) + u) = f u
     rw [heq, add_comm]
     exact hperiodic z u
-  let e : (ι → ℝ) ≃ᵐ (ι → ℝ) := MeasurableEquiv.neg (ι → ℝ)
+  let e  := MeasurableEquiv.neg (ι → ℝ)
   have he : MeasurePreserving e volume volume := Measure.measurePreserving_neg volume
   have hT : IsAddFundamentalDomain L (e '' Q) volume := by
     apply hQ.image_of_equiv e.toEquiv ?_ (Equiv.neg L) ?_
@@ -90,5 +93,7 @@ theorem periodicCubeIntegral_negation {ι : Type*} [Fintype ι]
   calc
     _ = ∫ u in e '' Q, f u := (he.setIntegral_image_emb e.measurableEmbedding f Q).symm
     _ = ∫ u in Q, f u := hT.setIntegral_eq hQ hf
+end
+
 
 end DedekindZetaZeroFree.Hecke

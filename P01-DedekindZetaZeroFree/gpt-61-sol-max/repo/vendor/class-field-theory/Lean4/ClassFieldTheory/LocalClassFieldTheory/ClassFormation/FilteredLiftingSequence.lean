@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.NormalBasisInfiniteProduct
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -85,12 +88,15 @@ noncomputable def chosenFilteredLiftStateSequence
       (Classical.choice
         (step i (chosenFilteredLiftStateSequence A P R F n initial step i))).next
 
-/-- The recursively chosen correction at depth `n + i`. -/
-noncomputable def chosenFilteredLiftCorrectionSequence
-    (A : Type u) [CommGroup A] (P : Nat → A → Prop) (R : A → Prop)
+section
+variable (A : Type u) [CommGroup A] (P : Nat → A → Prop) (R : A → Prop)
     (F : A →* A) (n : Nat) (initial : FilteredLiftState A P R n 0)
     (step : ∀ i (s : FilteredLiftState A P R n i),
-      Nonempty (FilteredLiftStep A P R F n i s)) (i : Nat) : A :=
+      Nonempty (FilteredLiftStep A P R F n i s)) (i : Nat)
+include A P R F n initial step i in
+/-- The recursively chosen correction at depth `n + i`. -/
+noncomputable def chosenFilteredLiftCorrectionSequence
+       :=
   (Classical.choice
     (step i (chosenFilteredLiftStateSequence A P R F n initial step i))).correction
 
@@ -104,40 +110,33 @@ theorem chosenFilteredLiftStateSequence_zero
     chosenFilteredLiftStateSequence A P R F n initial step 0 = initial :=
   rfl
 
+include A P R F n initial step i in
 /-- Each successor state is the next state of the chosen lifting step. -/
 @[simp]
 theorem chosenFilteredLiftStateSequence_succ
-    (A : Type u) [CommGroup A] (P : Nat → A → Prop) (R : A → Prop)
-    (F : A →* A) (n : Nat) (initial : FilteredLiftState A P R n 0)
-    (step : ∀ i (s : FilteredLiftState A P R n i),
-      Nonempty (FilteredLiftStep A P R F n i s)) (i : Nat) :
+      :
     chosenFilteredLiftStateSequence A P R F n initial step (i + 1) =
       (Classical.choice
         (step i (chosenFilteredLiftStateSequence A P R F n initial step i))).next :=
   rfl
 
+include A P R F n initial step i in
 /-- Every chosen correction lies at the advertised filtration level. -/
-theorem chosenFilteredLiftCorrectionSequence_mem
-    (A : Type u) [CommGroup A] (P : Nat → A → Prop) (R : A → Prop)
-    (F : A →* A) (n : Nat) (initial : FilteredLiftState A P R n 0)
-    (step : ∀ i (s : FilteredLiftState A P R n i),
-      Nonempty (FilteredLiftStep A P R F n i s)) (i : Nat) :
-    P (n + i)
-      (chosenFilteredLiftCorrectionSequence A P R F n initial step i) :=
+def chosenFilteredLiftCorrectionSequence_mem
+       :=
   (Classical.choice
     (step i (chosenFilteredLiftStateSequence A P R F n initial step i))).correction_mem
 
+include A P R F n initial step i in
 /-- The defining one-step recurrence for the chosen sequences. -/
 theorem chosenFilteredLiftStateSequence_equation
-    (A : Type u) [CommGroup A] (P : Nat → A → Prop) (R : A → Prop)
-    (F : A →* A) (n : Nat) (initial : FilteredLiftState A P R n 0)
-    (step : ∀ i (s : FilteredLiftState A P R n i),
-      Nonempty (FilteredLiftStep A P R F n i s)) (i : Nat) :
+      :
     (chosenFilteredLiftStateSequence A P R F n initial step i).value =
       F (chosenFilteredLiftCorrectionSequence A P R F n initial step i) *
-        (chosenFilteredLiftStateSequence A P R F n initial step (i + 1)).value := by
-  exact (Classical.choice
+        (chosenFilteredLiftStateSequence A P R F n initial step (i + 1)).value := (Classical.choice
     (step i (chosenFilteredLiftStateSequence A P R F n initial step i))).equation
+end
+
 
 /-- The initial remainder equals the image under `F` of the first `d`
 corrections, times the depth-`d` remainder. -/

@@ -1,16 +1,22 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.LocalFields.CubicUnitCharacterConductors
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.KPRamifiedBetaConductorSeries
 
 open scoped Classical ValuativeRel Topology
 open ValuativeRel WithZero
 
-noncomputable def valuationExponent (K : Type*) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] : Kˣ →* Multiplicative ℤ where
+section
+variable (K : Type*) [Field K] [ValuativeRel K]
+    [TopologicalSpace K] [IsNonarchimedeanLocalField K]
+include K
+noncomputable def valuationExponent   : Kˣ →* Multiplicative ℤ where
   toFun x := Multiplicative.ofAdd
     (-log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K (valuation K x)))
   map_one' := by simp
@@ -22,16 +28,14 @@ noncomputable def valuationExponent (K : Type*) [Field K] [ValuativeRel K]
       (valuation K (y : K)) ≠ 0 by simp)]
     simp [add_comm]
 
-private lemma valuationExponent_units (K : Type*) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] (u : (𝒪[K])ˣ) :
+private lemma valuationExponent_units   (u : (𝒪[K])ˣ) :
     valuationExponent K (Units.map (𝒪[K]).subtype.toMonoidHom u) = 1 := by
   have hv : valuation K (u : K) = 1 :=
     (Valuation.Integers.isUnit_iff_valuation_eq_one
       (Valuation.integer.integers (valuation K))).mp u.isUnit
   simp [valuationExponent, hv]
 
-private lemma valuationExponent_uniformizer (K : Type*) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] (π : Kˣ)
+private lemma valuationExponent_uniformizer   (π : Kˣ)
     (hπ : valuation K (π : K) = uniformizer K) :
     valuationExponent K π = Multiplicative.ofAdd 1 := by
   let e := IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
@@ -40,7 +44,7 @@ private lemma valuationExponent_uniformizer (K : Type*) [Field K] [ValuativeRel 
     · have hlt : e (uniformizer K) < 1 := by
         simpa using e.strictMono (uniformizer_lt_one (R := K))
       have hlog : log (e (uniformizer K)) < (0 : ℤ) :=
-        (WithZero.log_lt_iff_lt_exp (by simp [e, uniformizer_ne_zero])).mpr (by simpa using hlt)
+        (WithZero.log_lt_iff_lt_exp (by simp [e, uniformizer_ne_zero])).mpr (hlt)
       apply WithZero.le_exp_of_log_le
       omega
     · have hsmall : exp (-1 : ℤ) < (1 : ℤᵐ⁰) := by
@@ -55,15 +59,14 @@ private lemma valuationExponent_uniformizer (K : Type*) [Field K] [ValuativeRel 
   rfl
 
 theorem exists_character_extension
-    (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
+     
     (π : Kˣ) (hπ : ValuativeRel.valuation K (π : K) = ValuativeRel.uniformizer K)
     (ξ : CubicUnitCharacters.Character K) (b : ℂˣ) :
     ∃ χ : Kˣ →ₜ* ℂˣ,
       (∀ u : (𝒪[K])ˣ, χ (Units.map (𝒪[K]).subtype.toMonoidHom u) = (ξ u : ℂˣ)) ∧
       χ π = b := by
   classical
-  let i : (𝒪[K])ˣ →* Kˣ := Units.map (𝒪[K]).subtype.toMonoidHom
+  let i  := Units.map (𝒪[K]).subtype.toMonoidHom
   have hiind : Topology.IsInducing i :=
     (Topology.IsEmbedding.subtypeVal.units_map).isInducing
   have hi : Function.Injective i :=
@@ -82,7 +85,7 @@ theorem exists_character_extension
     rw [hirange]
     apply IsOpen.mem_nhds
     · apply Submonoid.isOpen_units
-      exact Valuation.isOpen_integer (v := ValuativeRel.valuation K)
+      apply Valuation.isOpen_integer
     · exact ⟨(𝒪[K]).one_mem, (𝒪[K]).one_mem⟩
   letI : DivisibleBy (Additive ℂˣ) ℕ := divisibleByOfSMulRightSurj _ _ (by
     intro n hn a
@@ -107,7 +110,7 @@ theorem exists_character_extension
   have hext : ∀ u, fM (i u) = (ξ u : ℂˣ) := by
     intro u
     exact congrArg Additive.toMul (DFunLike.congr_fun hf (Additive.ofMul u))
-  let a : ℂˣ := b / fM π
+  let a  := b / fM π
   let h : Kˣ →* ℂˣ :=
     { toFun := fun x => a ^ (valuationExponent K x).toAdd
       map_one' := by simp
@@ -120,7 +123,7 @@ theorem exists_character_extension
     change a ^ (valuationExponent K (Units.map (𝒪[K]).subtype.toMonoidHom u)).toAdd = 1
     rw [valuationExponent_units]
     exact zpow_zero a
-  let g : Kˣ →* ℂˣ := fM * h
+  let g  := fM * h
   have hgext : ∀ u, g (i u) = (ξ u : ℂˣ) := by
     intro u
     simp [g, hext, hu]
@@ -139,5 +142,7 @@ theorem exists_character_extension
   change fM π * a ^ (1 : ℤ) = b
   rw [zpow_one]
   simp [a]
+end
+
 
 end DedekindZetaZeroFree.KPRamifiedBetaConductorSeries

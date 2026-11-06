@@ -14,7 +14,10 @@ open MeasureTheory
 
  def oneKernel (g : SchwartzMap ℝ ℂ) (σ t : ℝ) : ℂ :=
   g (Real.exp (t / 2)) * (Real.exp (σ * t) : ℂ)
-private theorem oneKernel_integrable (g : SchwartzMap ℝ ℂ) (σ : ℝ) (hσ : 0 < σ) :
+section
+variable (g : SchwartzMap ℝ ℂ) (σ : ℝ) (hσ : 0 < σ)
+include g σ hσ in
+private theorem oneKernel_integrable   :
     Integrable (oneKernel g σ) := by
   obtain ⟨k, hk⟩ := exists_nat_ge (2 * (σ + 1))
   let C₀ := SchwartzMap.seminorm ℝ 0 0 g
@@ -110,7 +113,8 @@ private theorem log_values (σ t : ℝ) :
  def reflected (g : SchwartzMap ℝ ℂ) : SchwartzMap ℝ ℂ :=
   SchwartzMap.compCLMOfContinuousLinearEquiv ℂ (ContinuousLinearEquiv.neg ℝ) g
 
-private theorem positive_test (g : SchwartzMap ℝ ℂ) (σ : ℝ) (hσ : 0 < σ)
+include g σ hσ in
+private theorem positive_test  
     (φ : ℝ → ℂ) (hφ : Continuous φ) (hb : ∃ C : ℝ, ∀ t, ‖φ t‖ ≤ C) :
     IntegrableOn (fun x : ℝ => (g x * ((x ^ 2 : ℝ) : ℂ) ^ (σ : ℂ) / (x : ℂ)) *
       φ (Real.log (x ^ 2))) (Set.Ioi 0) ∧
@@ -134,8 +138,9 @@ private theorem positive_test (g : SchwartzMap ℝ ℂ) (σ : ℝ) (hσ : 0 < σ
   rw [heq] at hs
   exact ⟨hs.1.mpr hi, hs.2⟩
 
+include g σ hσ in
 theorem real_multiplicative_haar_log_test
-    (g : SchwartzMap ℝ ℂ) (σ : ℝ) (hσ : 0 < σ) :
+      :
     Integrable (rawRealSignedLogKernel g σ) ∧
       ∀ φ : ℝ → ℂ, Continuous φ → (∃ C : ℝ, ∀ t, ‖φ t‖ ≤ C) →
         (∫ x : ℝ,
@@ -191,6 +196,8 @@ theorem real_multiplicative_haar_log_test
     (1 / 2 : ℂ) * (g (Real.exp (t / 2)) * _) * φ t = _
   simp only [rawRealSignedLogKernel]
   ring
+end
+
 
 end
 end DedekindZetaZeroFree.ProbeSheetLogDensityRegularity.RadialIsolation
@@ -235,8 +242,11 @@ private lemma pol_bound (g : SchwartzMap ℂ ℂ) (σ : ℝ) (φ : ℝ → ℂ)
     _ ≤ (SchwartzMap.seminorm ℝ m 0 g / p.1 ^ m) * p.1 ^ (2 * σ - 1) * C :=
       mul_le_mul (mul_le_mul_of_nonneg_right hg (Real.rpow_nonneg hp.le _)) (hC _) (norm_nonneg _) (by positivity)
     _ = _ := by rw [Real.rpow_sub hp (2 * σ - 1) (m : ℝ), Real.rpow_natCast]; ring
-private lemma pol_int (g : SchwartzMap ℂ ℂ) (σ : ℝ) (hσ : 0 < σ)
-    (φ : ℝ → ℂ) (hφ : Continuous φ) (C : ℝ) (hC : ∀ t, ‖φ t‖ ≤ C) :
+section
+variable (g : SchwartzMap ℂ ℂ) (σ : ℝ) (hσ : 0 < σ)
+    (φ : ℝ → ℂ) (hφ : Continuous φ) (C : ℝ) (hC : ∀ t, ‖φ t‖ ≤ C)
+include g σ hσ φ hφ C hC in
+private lemma pol_int   :
     IntegrableOn (pol g σ φ) (Ioi 0 ×ˢ Ioo (-Real.pi) Real.pi) := by
   obtain ⟨m, hm⟩ := exists_nat_gt (2 * σ)
   have hsmall : IntegrableOn (fun r : ℝ => r ^ (2 * σ - 1)) (Ioc 0 1) :=
@@ -308,8 +318,8 @@ private lemma polar_algebra (g : ℂ → ℂ) (σ : ℝ) (φ : ℝ → ℂ) (p :
   push_cast
   field_simp
   <;> ring
-private lemma polar_test (g : SchwartzMap ℂ ℂ) (σ : ℝ) (hσ : 0 < σ)
-    (φ : ℝ → ℂ) (hφ : Continuous φ) (C : ℝ) (hC : ∀ t, ‖φ t‖ ≤ C) :
+include g σ hσ φ hφ C hC in
+private lemma polar_test   :
     (∫ z : ℂ, (g z * ((‖z‖ ^ 2 : ℝ) : ℂ) ^ (σ : ℂ) /
       ((‖z‖ ^ 2 : ℝ) : ℂ)) * φ (Real.log (‖z‖ ^ 2))) =
     ∫ r : ℝ in Ioi 0, (∫ θ : ℝ in Icc 0 (2 * Real.pi),
@@ -335,6 +345,8 @@ private lemma polar_test (g : SchwartzMap ℂ ℂ) (σ : ℝ) (hσ : 0 < σ)
       rw [he, Real.rpow_sub hr, Real.rpow_one]
       push_cast
       ring
+end
+
 
 private theorem radialLogIdentity
     (g : ℂ → ℂ) (σ : ℝ) (φ : ℝ → ℂ) :
@@ -470,10 +482,13 @@ theorem finite_positive_weights_pushforward
   intro i _
   simp only [mul_assoc, integral_const_mul, hlocal i]
 
-theorem integrable_weight_pushforward_finite
-    {X : Type*} [MeasurableSpace X]
+section
+variable {X : Type*} [MeasurableSpace X]
     (ν : Measure X) (L : X → ℝ) (hL : Measurable L)
-    (a : X → ℂ) (ha : Integrable a ν) :
+    (a : X → ℂ) (ha : Integrable a ν)
+include X ν L hL a ha in
+theorem integrable_weight_pushforward_finite
+      :
     ∃ (μ : Measure ℝ) (_ : IsFiniteMeasure μ) (w : ℝ → ℂ),
       Integrable w μ ∧ ∀ φ : ℝ → ℂ, Continuous φ →
       (∃ C : ℝ, ∀ t, ‖φ t‖ ≤ C) →
@@ -583,10 +598,9 @@ theorem radial_kernel_test_continuous_bounded
         integral_mono_ae (hki s).norm (hk.norm.mul_const C) (hbound s)
       _ = _ := integral_mul_const _ _
 
+include X ν L hL a ha in
 theorem radial_factorization_of_residual_integral
-    {X : Type*} [MeasurableSpace X]
-    (ν : Measure X) (L : X → ℝ) (hL : Measurable L)
-    (a : X → ℂ) (ha : Integrable a ν)
+     
     (k : ℝ → ℂ) (hk : Integrable k) :
     ∃ (μ : Measure ℝ) (_ : IsFiniteMeasure μ) (w : ℝ → ℂ),
       Integrable w μ ∧ ∀ φ : ℝ → ℂ, Continuous φ →
@@ -601,6 +615,8 @@ theorem radial_factorization_of_residual_integral
   calc
     _ = ∫ s : ℝ, w s * (∫ r : ℝ, k r * φ (r + s)) ∂μ := he _ hJ hJb
     _ = _ := (radial_mixture_test_identity μ w k hw hk φ hφ hb).symm
+end
+
 
 theorem schwartzTensor_log_pushforward_radial_factorization
     {F : Type} [Field F] [NumberField F]

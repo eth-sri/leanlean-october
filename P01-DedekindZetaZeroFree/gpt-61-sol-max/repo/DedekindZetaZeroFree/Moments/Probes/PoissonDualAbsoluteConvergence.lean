@@ -14,8 +14,8 @@ variable {F : Type} [Field F] [NumberField F]
 local instance dualAbsoluteLocalMeasurable (A : SArithmeticData F) :
     MeasurableSpace (SLocalProduct F A.Sf) := borel _
 
-local instance dualAbsoluteLocalBorel (A : SArithmeticData F) :
-    BorelSpace (SLocalProduct F A.Sf) := ⟨rfl⟩
+
+
 
 local instance dualAbsoluteG1Measurable (A : SArithmeticData F) :
     MeasurableSpace A.G1 := borel _

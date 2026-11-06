@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.PGLHyperbolic.CompactStabilizer
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.KPCompactStabilizerHaarSources
 
@@ -17,7 +20,7 @@ theorem product_iwasawa_homeomorph (d : ℕ) :
   let t : G d → K d := fun g => ⟨(s (g • o d))⁻¹ * g, by
     change ((s (g • o d))⁻¹ * g) • o d = o d
     rw [mul_smul]
-    exact inv_smul_eq_iff.mpr (hso (g • o d)).symm⟩
+    apply inv_smul_eq_iff.mpr <;> aesop⟩
   have ht : Continuous t := by
     apply Continuous.subtype_mk
     exact (hs.comp (continuous_id.smul continuous_const)).inv.mul continuous_id
@@ -35,11 +38,7 @@ theorem product_iwasawa_homeomorph (d : ℕ) :
           rw [mul_smul, hk, hso]
         apply Prod.ext
         · exact hx
-        · apply Subtype.ext
-          change (s ((s x * (k : G d)) • o d))⁻¹ *
-            (s x * (k : G d)) = (k : G d)
-          rw [hx]
-          simp
+        · aesop
       continuous_toFun := (continuous_id.smul continuous_const).prodMk ht
       continuous_invFun := (hs.comp continuous_fst).mul
         (continuous_subtype_val.comp continuous_snd) }

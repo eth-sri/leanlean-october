@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Units.SArithmeticData
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 
@@ -59,7 +62,7 @@ theorem exists_lagrangian_complement
       (∀ x ∈ B, ∀ y ∈ B, H x y = 0) ∧
       (∀ v : M, ∃! p : E × B, (p.1 : M) + (p.2 : M) = v) := by
   classical
-  let S : Set (Submodule K M) := {B | Disjoint E B ∧ B ≤ H.orthogonal B}
+  let S  := {B | Disjoint E B ∧ B ≤ H.orthogonal B}
   have hS : S.Nonempty := ⟨⊥, disjoint_bot_right, bot_le⟩
   obtain ⟨B, ⟨hEB, hB⟩, hmax⟩ :=
     (set_has_maximal_iff_noetherian.mpr (inferInstance : IsNoetherian K M)) S hS
@@ -103,24 +106,28 @@ theorem exists_lagrangian_complement
     omega
   refine ⟨B, hc, heq, ?_, fun v => Submodule.existsUnique_add_of_isCompl_prod hc v⟩
   intro x hx y hy
-  exact hB hy x hx
+  apply hB <;> assumption
 
 namespace SArithmeticData
 
 variable {F : Type} [Field F] [NumberField F]
 
-def IsSelfOrthogonal (A : SArithmeticData F) (H : A.V → A.V → Fˣ)
+section
+variable (A : SArithmeticData F) (H : A.V → A.V → Fˣ)
+include A H
+def IsSelfOrthogonal  
     (L : Subgroup A.V) : Prop :=
   ∀ x : A.V, x ∈ L ↔ ∀ y : A.V, y ∈ L → H y x = 1
 
-def IsIsotropic (A : SArithmeticData F) (H : A.V → A.V → Fˣ)
+def IsIsotropic  
     (L : Subgroup A.V) : Prop :=
   ∀ x : A.V, x ∈ L → ∀ y : A.V, y ∈ L → H x y = 1
 
-def IsSUnitIsotropicComplement (A : SArithmeticData F)
-    (H : A.V → A.V → Fˣ) (B : Subgroup A.V) : Prop :=
+def IsSUnitIsotropicComplement   (B : Subgroup A.V) : Prop :=
   IsCompl A.E B ∧ A.IsIsotropic H B ∧
     (∀ v : A.V, ∃! p : A.E × B, (p.1 : A.V) * (p.2 : A.V) = v)
+end
+
 
 noncomputable section
 

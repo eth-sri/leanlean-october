@@ -1,24 +1,29 @@
 module
+
+public import Mathlib
 public import Mathlib.Algebra.BigOperators.Ring.Nat
 
 public import Mathlib.NumberTheory.NumberField.DedekindZeta
 
 @[expose] public section
 
+
 namespace DedekindZetaZeroFree
 
 noncomputable section
 open scoped NumberField Classical
 
-def idealAbsoluteWeight (F : Type) [Field F] [NumberField F] (σ : ℝ)
-    (I : Ideal (𝓞 F)) : ℝ :=
+section
+variable (F : Type) [Field F] [NumberField F] (σ : ℝ)
+include F σ
+def idealAbsoluteWeight  
+    (I : Ideal (𝓞 F))  :=
   if I = ⊥ then 0 else (Ideal.absNorm I : ℝ) ^ (-σ)
 
-def idealAbsoluteSum (F : Type) [Field F] [NumberField F] (σ : ℝ) : ℝ :=
+def idealAbsoluteSum    :=
   ∑' I : Ideal (𝓞 F), idealAbsoluteWeight F σ I
 
-theorem idealAbsoluteSum_converges (F : Type) [Field F] [NumberField F]
-    (σ : ℝ) (hσ : 1 < σ) :
+theorem idealAbsoluteSum_converges   (hσ : 1 < σ) :
     Summable (idealAbsoluteWeight F σ) ∧
       (∀ I : Ideal (𝓞 F), 0 ≤ idealAbsoluteWeight F σ I) ∧
       0 < idealAbsoluteSum F σ ∧
@@ -92,6 +97,8 @@ theorem idealAbsoluteSum_converges (F : Type) [Field F] [NumberField F]
   have hle := hs.le_tsum (⊤ : Ideal (𝓞 F)) (fun I _ => hnonneg I)
   rw [htop] at hle
   exact lt_of_lt_of_le zero_lt_one hle
+end
+
 
 end
 

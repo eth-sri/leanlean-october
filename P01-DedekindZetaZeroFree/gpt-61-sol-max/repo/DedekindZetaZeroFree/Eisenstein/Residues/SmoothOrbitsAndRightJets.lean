@@ -90,20 +90,25 @@ open Filter
 variable {E V K : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
   [NormedAddCommGroup V] [NormedSpace ℝ V] [TopologicalSpace K] [CompactSpace K]
 
- def compactDerivativeLinear (q : C(K, E →L[ℝ] V)) : E →ₗ[ℝ] C(K,V) where
+ section
+variable (q : C(K, E →L[ℝ] V))
+include q
+def compactDerivativeLinear   : E →ₗ[ℝ] C(K,V) where
   toFun v := ⟨fun k => q k v, q.continuous.clm_apply continuous_const⟩
   map_add' v w := by ext k; exact (q k).map_add v w
   map_smul' c v := by ext k; exact (q k).map_smul c v
 
- def compactDerivative (q : C(K, E →L[ℝ] V)) : E →L[ℝ] C(K,V) :=
+ def compactDerivative   : E →L[ℝ] C(K,V) :=
   (compactDerivativeLinear q).mkContinuous ‖q‖ (by
     intro v
     apply (ContinuousMap.norm_le _ (mul_nonneg (norm_nonneg q) (norm_nonneg v))).2
     intro k
     exact (q k).le_opNorm v |>.trans (mul_le_mul_of_nonneg_right (q.norm_coe_le_norm k) (norm_nonneg _)))
 
- lemma compactDerivative_apply (q : C(K, E →L[ℝ] V)) (v : E) (k : K) :
+ lemma compactDerivative_apply   (v : E) (k : K) :
     compactDerivative q v k = q k v := rfl
+end
+
 
  def compactDerivativeMap : C(K,E →L[ℝ] V) →L[ℝ] E →L[ℝ] C(K,V) := by
   let A : C(K,E →L[ℝ] V) →ₗ[ℝ] E →L[ℝ] C(K,V) :=
@@ -172,9 +177,12 @@ theorem compact_family_continuousOn (f : E → C(K,V)) (U : Set E)
     simpa [Function.comp_def, continuousOn_univ] using h
   exact hh
 
-theorem compact_family_contDiffOn
-    (f : E → C(K,V)) (U : Set E) (hU : IsOpen U)
+section
+variable (f : E → C(K,V)) (U : Set E) (hU : IsOpen U)
     (hf : ∀ k, ContDiffOn ℝ (⊤ : ℕ∞) (fun x => f x k) U)
+include f U hU hf
+theorem compact_family_contDiffOn
+     
     (J : ∀ m : ℕ, E → C(K,ContinuousMultilinearMap ℝ (fun _ : Fin m => E) V))
     (hJ : ∀ m, ContinuousOn (J m) U)
     (hbind : ∀ m x, x ∈ U → ∀ k, J m x k = iteratedFDeriv ℝ m (fun y => f y k) x) :
@@ -222,8 +230,7 @@ theorem compact_family_contDiffOn
   simp [Z]
 
 theorem compact_family_contDiffOn_of_joint_jets
-    (f : E → C(K,V)) (U : Set E) (hU : IsOpen U)
-    (hf : ∀ k, ContDiffOn ℝ (⊤ : ℕ∞) (fun x => f x k) U)
+     
     (hjets : ∀ m : ℕ, ContinuousOn
       (fun p : E × K => iteratedFDeriv ℝ m (fun y => f y p.2) p.1)
       (U ×ˢ Set.univ)) : ContDiffOn ℝ (⊤ : ℕ∞) f U := by
@@ -246,6 +253,8 @@ theorem compact_family_contDiffOn_of_joint_jets
     intro p hp
     exact hb m p.1 hp.1 p.2
   · exact hb
+end
+
 
 end DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualNativeActionGeometry
 
@@ -265,7 +274,7 @@ open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualDifferentialData
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+variable (ζ : F) 
 
 theorem archBase_mem_domain : archBase F ∈ archDomain F := by
   intro w; simp [archBase]

@@ -47,38 +47,35 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
     Module.Free ℂ (stage F ζ hζ K hK f C) :=
   Module.Free.of_divisionRing ℂ (stage F ζ hζ K hK f C)
 
- abbrev Coordinates (K : Subgroup (G F ζ hζ))
-    (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K) (C : Finset ℝ) :=
+ section
+variable (K : Subgroup (G F ζ hζ))
+    (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K) (C : Finset ℝ)
+include K hK f C
+abbrev Coordinates   :=
   Fin (Module.finrank ℂ (stage F ζ hζ K hK f C)) → ℂ
 
- def coordinates (K : Subgroup (G F ζ hζ))
-    (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K) (C : Finset ℝ) :
+ def coordinates   :
     stage F ζ hζ K hK f C ≃ₗ[ℂ] Coordinates F ζ hζ K hK f C :=
   (Module.finBasis ℂ (stage F ζ hζ K hK f C)).equivFun
 
- def inclusion (K : Subgroup (G F ζ hζ))
-    (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K) (C : Finset ℝ) :
+ def inclusion   :
     Coordinates F ζ hζ K hK f C →ₗ[ℂ] Core F ζ hζ :=
   (stage F ζ hζ K hK f C).subtype.comp (coordinates F ζ hζ K hK f C).symm.toLinearMap
 
-private theorem inclusion_injective (K : Subgroup (G F ζ hζ))
-    (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K) (C : Finset ℝ) :
+private theorem inclusion_injective   :
     Function.Injective (inclusion F ζ hζ K hK f C) :=
   (stage F ζ hζ K hK f C).subtype_injective.comp (coordinates F ζ hζ K hK f C).symm.injective
 
- def coefficient (K : Subgroup (G F ζ hζ))
-    (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K) (C : Finset ℝ) (a : C) :
+ def coefficient   (a : C) :
     stage F ζ hζ K hK f C :=
   ⟨canonicalCutCore F ζ hζ K hK a.val f, Submodule.subset_span ⟨a, rfl⟩⟩
 
- def family (K : Subgroup (G F ζ hζ))
-    (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K) (C : Finset ℝ)
+ def family  
     (s : ℂ) : Coordinates F ζ hζ K hK f C :=
   ∑ a : C, Complex.exp (s * (a.val : ℂ)) •
     coordinates F ζ hζ K hK f C (coefficient F ζ hζ K hK f C a)
 
-private theorem family_entire (K : Subgroup (G F ζ hζ))
-    (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K) (C : Finset ℝ) :
+private theorem family_entire   :
     Differentiable ℂ (family F ζ hζ K hK f C) := by
   classical
   have hd := Differentiable.sum (u := (Finset.univ : Finset C))
@@ -92,14 +89,18 @@ private theorem family_entire (K : Subgroup (G F ζ hζ))
     coordinates F ζ hζ K hK f C (coefficient F ζ hζ K hK f C a)) = _
   simp only [Finset.sum_apply]
 
-private theorem inclusion_family_formula (K : Subgroup (G F ζ hζ))
-    (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K) (C : Finset ℝ) (s : ℂ) :
+private theorem inclusion_family_formula   (s : ℂ) :
     inclusion F ζ hζ K hK f C (family F ζ hζ K hK f C s) =
       ∑ a : C, Complex.exp (s * (a.val : ℂ)) • canonicalCutCore F ζ hζ K hK a.val f := by
   simp [family, inclusion, coefficient]
+end
 
-private theorem literal_parameter_stage (K : Subgroup (G F ζ hζ))
-    (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K) :
+
+section
+variable (K : Subgroup (G F ζ hζ))
+    (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K)
+include K hK f
+private theorem literal_parameter_stage   :
     ∃ C : Finset ℝ, ∀ (s : ℂ) (g : G F ζ hζ),
       KPContFlatStageJetHolomorphy.parameterSection F ζ hζ
         (inclusion F ζ hζ K hK f C) 0 s (family F ζ hζ K hK f C s) g = f.val s g := by
@@ -119,8 +120,7 @@ private theorem literal_parameter_stage (K : Subgroup (G F ζ hζ))
   rw [← mul_assoc, ← Complex.exp_add]
   simp
 
-private theorem inclusion_smooth (K : Subgroup (G F ζ hζ))
-    (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K) (C : Finset ℝ)
+private theorem inclusion_smooth   (C : Finset ℝ)
     (v : Coordinates F ζ hζ K hK f C) :
     (inclusion F ζ hζ K hK f C v).val ∈
       KPMsRationalCompactCrossPairing.scalarSmooth F ζ hζ
@@ -134,8 +134,7 @@ private theorem inclusion_smooth (K : Subgroup (G F ζ hζ))
   unfold KPGlobalEisensteinData.hcHeckeCore
   exact iSup_le fun _ => iSup_le fun _ => inf_le_left.trans inf_le_left
 
- theorem literal_entire_coordinate_stage (K : Subgroup (G F ζ hζ))
-    (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K) :
+ theorem literal_entire_coordinate_stage   :
     ∃ (n : ℕ) (ι : (Fin n → ℂ) →ₗ[ℂ] Core F ζ hζ) (p : ℂ → (Fin n → ℂ)),
       Function.Injective ι ∧ Differentiable ℂ p ∧
       (∀ v, (ι v).val ∈ KPMsRationalCompactCrossPairing.scalarSmooth F ζ hζ
@@ -146,6 +145,8 @@ private theorem inclusion_smooth (K : Subgroup (G F ζ hζ))
   exact ⟨Module.finrank ℂ (stage F ζ hζ K hK f C), inclusion F ζ hζ K hK f C,
     family F ζ hζ K hK f C, inclusion_injective F ζ hζ K hK f C,
     family_entire F ζ hζ K hK f C, inclusion_smooth F ζ hζ K hK f C, hC⟩
+end
+
 
 end DedekindZetaZeroFree.KPLiteralExceptionalResidue.CanonicalParameterStage
 

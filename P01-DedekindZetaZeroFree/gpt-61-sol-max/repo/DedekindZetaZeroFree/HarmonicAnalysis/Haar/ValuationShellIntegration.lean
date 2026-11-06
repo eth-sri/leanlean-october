@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import Mathlib.MeasureTheory.Integral.Bochner.Set
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.KPRankOneMellinShellReassembly
 
@@ -34,8 +37,8 @@ theorem shell_reassembly {X : Type*} [MeasurableSpace X]
 
   have hIntOn : IntegrableOn (fun y => g y * r ^ e y) (⋃ k, s k) ν :=
     integrableOn_iUnion_of_summable_integral_norm (s := s) (fun k => hint k)
-      (by simpa only [hs] using hsum)
-  have hU : MeasurableSet (⋃ k, s k) := MeasurableSet.iUnion hmeas'
+      (hsum)
+  have hU  := MeasurableSet.iUnion hmeas'
 
   have hzero : ∀ x, x ∉ ⋃ k, s k → g x * r ^ e x = 0 := by
     intro x hx

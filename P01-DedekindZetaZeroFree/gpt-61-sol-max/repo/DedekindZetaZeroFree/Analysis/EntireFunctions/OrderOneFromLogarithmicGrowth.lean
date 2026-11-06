@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Tactic
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.Hecke
 
@@ -31,7 +34,7 @@ theorem rlogr_le_rpow_add_const (K : ℝ) (hK : 0 ≤ K) (ε : ℝ) (hε : 0 < �
     have hRpos : 0 < R := by linarith
     have hbound := hN R (le_trans (le_max_right _ _) hMR)
     have hlogR : 0 ≤ Real.log R := Real.log_nonneg (by linarith)
-    have hpow : 0 ≤ R ^ ε := Real.rpow_nonneg hR ε
+    have hpow  := Real.rpow_nonneg hR ε
     have hbound' : Real.log R ≤ (1 / (4 * (K + 1))) * R ^ ε := by
       simpa only [Real.norm_eq_abs, abs_of_nonneg hlogR, abs_of_nonneg hpow] using hbound
     have hlog : Real.log (2 + R) ≤ 2 * Real.log R := by

@@ -39,18 +39,18 @@ open LocalFieldTheory.DiscreteValuationField
 
 variable {K : Type u} [Field K]
 
-noncomputable local instance equalCharacteristicFrobeniusContinuityBaseAlgebra
-    (F : LocalField.{u, v} K) :
-    Algebra F.residueField⸨X⸩
-      (equalCharacteristicCompletedUnramifiedField F.residueField) :=
-  laurentSeriesCoefficientAlgebra
 
-noncomputable local instance
-    equalCharacteristicFrobeniusContinuityBaseValuationIsNontrivial
-    (k : Type v) [Field k] :
-    (Valued.v : Valuation
-      (equalCharacteristicCompletedUnramifiedField k) ℤᵐ⁰).IsNontrivial :=
-  equalCharacteristicCompletedBaseValuationIsNontrivial k
+
+
+
+
+
+
+
+
+
+
+
 
 noncomputable local instance
     equalCharacteristicFrobeniusContinuityBaseValuationRankOne
@@ -176,14 +176,14 @@ theorem equalCharacteristicCompletedFrobeniusLiftEquiv_isometry
     (equalCharacteristicCompletedFrobeniusLiftEquiv F n a)
     (equalCharacteristicCompletedFrobeniusLiftEquiv_norm F n a)
 
-/-- Every prescribed-bracket standard completed Frobenius lift is
-continuous for the spectral-norm topology. -/
-theorem equalCharacteristicCompletedFrobeniusLiftEquiv_continuous
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) (a : F.residueField⟦X⟧ˣ) :
-    Continuous (equalCharacteristicCompletedFrobeniusLiftEquiv F n a) :=
-  (equalCharacteristicCompletedFrobeniusLiftEquiv_isometry F n a).continuous
+
+
+
+
+
+
+
+
 
 /-- The completed theta-intertwining theorem specialization preserves the spectral norm. -/
 theorem equalCharacteristicCompletedFrobeniusLift_norm

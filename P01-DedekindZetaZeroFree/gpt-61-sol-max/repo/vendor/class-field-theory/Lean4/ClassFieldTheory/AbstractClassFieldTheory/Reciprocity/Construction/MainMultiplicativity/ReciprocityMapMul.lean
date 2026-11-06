@@ -120,18 +120,12 @@ theorem reciprocityMap_mul
   let Sigma1 : FiniteAbstractField G := ⟨S1, hS1absolute⟩
   let Sigma2 : FiniteAbstractField G := ⟨S2, hS2absolute⟩
   let Sigma3 : FiniteAbstractField G := ⟨S3, hS3absolute⟩
-  let pi1 : ambientFixedAddSubgroup A S1 := by
-    simpa [Sigma1] using v.chosenPrimeElement Sigma1
-  let pi2 : ambientFixedAddSubgroup A S2 := by
-    simpa [Sigma2] using v.chosenPrimeElement Sigma2
-  let pi3 : ambientFixedAddSubgroup A S3 := by
-    simpa [Sigma3] using v.chosenPrimeElement Sigma3
-  have hpi1 : v.IsPrimeElement Sigma1 pi1 := by
-    simpa [Sigma1, pi1] using v.chosenPrimeElement_isPrime Sigma1
-  have hpi2 : v.IsPrimeElement Sigma2 pi2 := by
-    simpa [Sigma2, pi2] using v.chosenPrimeElement_isPrime Sigma2
-  have hpi3 : v.IsPrimeElement Sigma3 pi3 := by
-    simpa [Sigma3, pi3] using v.chosenPrimeElement_isPrime Sigma3
+  let pi1 : ambientFixedAddSubgroup A S1 := v.chosenPrimeElement Sigma1
+  let pi2 : ambientFixedAddSubgroup A S2 := v.chosenPrimeElement Sigma2
+  let pi3 : ambientFixedAddSubgroup A S3 := v.chosenPrimeElement Sigma3
+  have hpi1 : v.IsPrimeElement Sigma1 pi1 := v.chosenPrimeElement_isPrime Sigma1
+  have hpi2 : v.IsPrimeElement Sigma2 pi2 := v.chosenPrimeElement_isPrime Sigma2
+  have hpi3 : v.IsPrimeElement Sigma3 pi3 := v.chosenPrimeElement_isPrime Sigma3
   obtain ⟨pi4, hpi4, hnorm42⟩ :=
     D.exists_primeElement_frobeniusActionConjugate_norm_eq A v K L hLK
       phi sigma2 m pi2 hpi2

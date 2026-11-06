@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Characters.SIntegerResidueCharacters
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Conductors.PrimitiveCharactersByCRT
 
 @[expose] public section
+
 
 open scoped NumberField Classical
 open NumberField IsDedekindDomain UniqueFactorizationMonoid
@@ -16,13 +19,13 @@ open FixedSResidue
 
 variable {F : Type} [Field F] [NumberField F]
 
-def ExteriorPrincipalization (A : SArithmeticData F) : Prop :=
+def ExteriorPrincipalization (A : SArithmeticData F)  :=
   ∀ a : A.Exterior, ∃ n : NonzeroSInteger A,
     Ideal.span {n.val} = A.extendIdeal a
 
 def SPrimeCompatibility (A : SArithmeticData F)
     (f : Ideal (𝓞 F)) (omega : RayClassCharacter F f)
-    (sigma : FullLocalCharacters A) : Prop :=
+    (sigma : FullLocalCharacters A)  :=
   ∀ v : {v // v ∈ A.Sf},
     (∀ x : (v.val.adicCompletion F)ˣ,
       CRTLocalHigherUnits F v.val (idealPrimeExponent v.val.asIdeal f) x →
@@ -43,13 +46,12 @@ private theorem exponent_zero_iff (v : HeightOneSpectrum (𝓞 F))
   simp only [v.prime, true_and, Ideal.dvd_iff_le]
   constructor
   · intro h
-    exact (Ideal.isMaximal_def.mp v.isMaximal).2 _ (show v.asIdeal < v.asIdeal ⊔ f from
-      lt_of_le_of_ne le_sup_left (by
+    exact (Ideal.isMaximal_def.mp v.isMaximal).2 _ ((lt_of_le_of_ne le_sup_left (by
         intro he
-        exact h (he ▸ le_sup_right)))
+        exact h (he ▸ le_sup_right))))
   · intro h hle
-    have : v.asIdeal ⊔ f = v.asIdeal := sup_eq_left.mpr hle
-    exact v.isPrime.ne_top (this.symm.trans h)
+    have  := sup_eq_left.mpr hle
+    apply v.isPrime.ne_top <;> aesop
 
 private theorem exponent_eq (A : SArithmeticData F) (sigma : FixedSResidue.FullLocalCharacters A)
     (f₁ f₂ : Ideal (𝓞 F)) (o₁ : RayClassCharacter F f₁) (o₂ : RayClassCharacter F f₂)

@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Extension.NormProperties
 public import Mathlib.Algebra.Module.LinearMap.Polynomial
 public import Mathlib.Algebra.MvPolynomial.Funext
@@ -7,6 +9,7 @@ public import Mathlib.LinearAlgebra.Charpoly.BaseChange
 public import Mathlib.RingTheory.TensorProduct.MvPolynomial
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -69,8 +72,7 @@ theorem eval_normPolynomial
 `σ`-conjugate of `x`. -/
 def conjugatePolynomial
     {ι : Type w} [Fintype ι] [DecidableEq ι]
-    (b : Module.Basis ι K L) (σ : L ≃ₐ[K] L) :
-    MvPolynomial ι L :=
+    (b : Module.Basis ι K L) (σ : L ≃ₐ[K] L)  :=
   ∑ i, MvPolynomial.X i * MvPolynomial.C (σ (b i))
 
 omit [FiniteDimensional K L] in
@@ -98,8 +100,7 @@ theorem eval_conjugatePolynomial
 the splitting field. -/
 def galoisProductPolynomial
     {ι : Type w} [Fintype ι] [DecidableEq ι]
-    (b : Module.Basis ι K L) :
-    MvPolynomial ι L :=
+    (b : Module.Basis ι K L)  :=
   ∏ σ : L ≃ₐ[K] L, conjugatePolynomial b σ
 
 @[simp]
@@ -127,7 +128,7 @@ theorem map_normPolynomial_eq_galoisProductPolynomial
       (algebraMap K L).injective
   · intro c hc
     choose d hd using fun i ↦ hc i (Set.mem_univ i)
-    let x : L :=
+    let x  :=
       b.repr.symm (Finsupp.equivFunOnFinite.symm d)
     have hcoords :
         c = fun i ↦ algebraMap K L (b.repr x i) := by
@@ -271,7 +272,7 @@ theorem includeLeft_norm_eq_prod_scalarConjugations
         scalarConjugation (K := K) (L := L) A σ z := by
   classical
   let b := Module.Free.chooseBasis K L
-  let c : Module.Free.ChooseBasisIndex K L → A :=
+  let c  :=
     fun i ↦ (Algebra.TensorProduct.basis A b).repr z i
   let iL : A →+* A ⊗[K] L :=
     (Algebra.TensorProduct.includeLeft
@@ -302,23 +303,22 @@ theorem includeLeft_norm_eq_prod_scalarConjugations
       MvPolynomial.eval₂_prod]
     apply Finset.prod_congr rfl
     intro σ hσ
-    exact eval₂_conjugatePolynomial_baseChange
-      (K := K) (L := L) A b σ z
+    apply eval₂_conjugatePolynomial_baseChange
   change iL (Algebra.norm A z) =
     ∏ σ : L ≃ₐ[K] L,
       scalarConjugation (K := K) (L := L) A σ z
   rw [← hright, ← hleft,
     map_normPolynomial_eq_galoisProductPolynomial b]
 
-omit [FiniteDimensional K L] in
-@[simp]
-theorem scalarConjugation_baseAdele_apply
-    [NumberField K]
-    (σ : L ≃ₐ[K] L) (z : RelativeAdeleRing K L) :
-    scalarConjugation
-        (NumberField.AdeleRing (𝓞 K) K) σ z =
-      conjugation K L σ z :=
-  rfl
+
+
+
+
+
+
+
+
+
 
 /-- In full adèle form, the base extension of the
 determinant norm of an arbitrary relative adèle is the product of all of
@@ -337,10 +337,7 @@ theorem adeleInclusion_norm_eq_prod_conjugates
         (Algebra.norm
           (NumberField.AdeleRing (𝓞 K) K) z) =
       _
-  simpa only [scalarConjugation_baseAdele_apply] using
-    (includeLeft_norm_eq_prod_scalarConjugations
-      (K := K) (L := L)
-      (NumberField.AdeleRing (𝓞 K) K) z)
+  apply includeLeft_norm_eq_prod_scalarConjugations
 
 /-- In full idèle form,
 `i_{L/K}(N_{L/K}(a)) = ∏_{σ ∈ Gal(L/K)} σ(a)` for every relative
@@ -354,8 +351,7 @@ theorem inclusion_norm_eq_prod_conjugates
   simp only [inclusion, norm, MonoidHom.comp_apply,
     Units.coe_map, Units.coe_prod,
     smul_def, conjugationIdele_coe]
-  exact adeleInclusion_norm_eq_prod_conjugates
-    (K := K) (L := L) (a : RelativeAdeleRing K L)
+  apply adeleInclusion_norm_eq_prod_conjugates
 
 end RelativeIdeleGroup
 

@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Ramification.HilbertRamification.RamificationNumber
 public import ValuedFieldTheory.Ramification.HilbertRamification.UniformizerGradedHom
 public import ValuedFieldTheory.Ramification.Herbrand.Average
 public import ValuedFieldTheory.Valuation.DiscreteValuationField.AddVal
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -37,99 +40,80 @@ variable {base : ValuationTheory.DiscreteValuationField.DVF.{u, v} K}
 variable {target : ValuationTheory.DiscreteValuationField.DVF.{w, x} L}
 variable [base.valuation.HasExtension target.valuation]
 
-/-- The additive valuation of the target DVR is invariant under the
-valuation-ring action supplied by unique extension. -/
-theorem addVal_valuationSubringAutOfUniqueExtension
-    (huniq :
+section
+variable (huniq :
       RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
         base target)
+include huniq
+/-- The additive valuation of the target DVR is invariant under the
+valuation-ring action supplied by unique extension. -/
+
+local notation:max "current_valuationSubringAutOfUniqueExtension" => valuationSubringAutOfUniqueExtension (base := base) (target := target)
+
+theorem addVal_valuationSubringAutOfUniqueExtension
+     
     (sigma : Gal(L/K)) (a : target.valuationSubring) :
     IsDiscreteValuationRing.addVal target.valuationSubring
-        (valuationSubringAutOfUniqueExtension
-          (base := base) (target := target) huniq sigma a) =
+        (current_valuationSubringAutOfUniqueExtension huniq sigma a) =
       IsDiscreteValuationRing.addVal target.valuationSubring a :=
   IsDiscreteValuationRing.addVal_ringEquiv
-    (valuationSubringAutOfUniqueExtension
-      (base := base) (target := target) huniq sigma) a
+    (current_valuationSubringAutOfUniqueExtension huniq sigma) a
 
 /-- Product displacement identity for the unique-extension action. -/
 theorem valuationSubringAutOfUniqueExtension_mul_sub_eq
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
+     
     (a : target.valuationSubring) (sigma tau : Gal(L/K)) :
-    valuationSubringAutOfUniqueExtension
-          (base := base) (target := target) huniq (sigma * tau) a - a =
-      valuationSubringAutOfUniqueExtension
-          (base := base) (target := target) huniq sigma
-          (valuationSubringAutOfUniqueExtension
-            (base := base) (target := target) huniq tau a - a) +
-        (valuationSubringAutOfUniqueExtension
-          (base := base) (target := target) huniq sigma a - a) := by
+    current_valuationSubringAutOfUniqueExtension huniq (sigma * tau) a - a =
+      current_valuationSubringAutOfUniqueExtension huniq sigma
+          (current_valuationSubringAutOfUniqueExtension huniq tau a - a) +
+        (current_valuationSubringAutOfUniqueExtension huniq sigma a - a) := by
   rw [valuationSubringAutOfUniqueExtension_mul_apply, map_sub]
   ring
 
 /-- States the theorem `ramificationNumberOfUniqueExtension_mul_ge_min`. -/
+
+local notation:max "current_ramificationNumberOfUniqueExtension" => ramificationNumberOfUniqueExtension (base := base) (target := target)
+
 theorem ramificationNumberOfUniqueExtension_mul_ge_min
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
+     
     (a : target.valuationSubring) (sigma tau : Gal(L/K)) :
     min
-        (ramificationNumberOfUniqueExtension
-          (base := base) (target := target) huniq a sigma)
-        (ramificationNumberOfUniqueExtension
-          (base := base) (target := target) huniq a tau) ≤
-      ramificationNumberOfUniqueExtension
-        (base := base) (target := target) huniq a (sigma * tau) := by
+        (current_ramificationNumberOfUniqueExtension huniq a sigma)
+        (current_ramificationNumberOfUniqueExtension huniq a tau) ≤
+      current_ramificationNumberOfUniqueExtension huniq a (sigma * tau) := by
   simp only [ramificationNumberOfUniqueExtension]
   rw [valuationSubringAutOfUniqueExtension_mul_sub_eq
     (base := base) (target := target) huniq]
   rw [← addVal_valuationSubringAutOfUniqueExtension
     (base := base) (target := target) huniq sigma
-    (valuationSubringAutOfUniqueExtension
-      (base := base) (target := target) huniq tau a - a)]
+    (current_valuationSubringAutOfUniqueExtension huniq tau a - a)]
   simpa [min_comm] using
     (IsDiscreteValuationRing.addVal_add
       (R := target.valuationSubring)
-      (a := valuationSubringAutOfUniqueExtension
-        (base := base) (target := target) huniq sigma
-          (valuationSubringAutOfUniqueExtension
-            (base := base) (target := target) huniq tau a - a))
-      (b := valuationSubringAutOfUniqueExtension
-        (base := base) (target := target) huniq sigma a - a))
+      (a := current_valuationSubringAutOfUniqueExtension huniq sigma
+          (current_valuationSubringAutOfUniqueExtension huniq tau a - a))
+      (b := current_valuationSubringAutOfUniqueExtension huniq sigma a - a))
 
 /-- States the theorem `ramificationNumberOfUniqueExtension_mul_eq_min_of_ne`. -/
 theorem ramificationNumberOfUniqueExtension_mul_eq_min_of_ne
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
+     
     (a : target.valuationSubring) {sigma tau : Gal(L/K)}
-    (hne : ramificationNumberOfUniqueExtension
-          (base := base) (target := target) huniq a sigma ≠
-        ramificationNumberOfUniqueExtension
-          (base := base) (target := target) huniq a tau) :
-    ramificationNumberOfUniqueExtension
-        (base := base) (target := target) huniq a (sigma * tau) =
+    (hne : current_ramificationNumberOfUniqueExtension huniq a sigma ≠
+        current_ramificationNumberOfUniqueExtension huniq a tau) :
+    current_ramificationNumberOfUniqueExtension huniq a (sigma * tau) =
       min
-        (ramificationNumberOfUniqueExtension
-          (base := base) (target := target) huniq a sigma)
-        (ramificationNumberOfUniqueExtension
-          (base := base) (target := target) huniq a tau) := by
+        (current_ramificationNumberOfUniqueExtension huniq a sigma)
+        (current_ramificationNumberOfUniqueExtension huniq a tau) := by
   change IsDiscreteValuationRing.addVal target.valuationSubring
-      (valuationSubringAutOfUniqueExtension
-        (base := base) (target := target) huniq (sigma * tau) a - a) = _
+      (current_valuationSubringAutOfUniqueExtension huniq (sigma * tau) a - a) = _
   rw [valuationSubringAutOfUniqueExtension_mul_sub_eq
     (base := base) (target := target) huniq]
   have hdistinct :
       IsDiscreteValuationRing.addVal target.valuationSubring
-          (valuationSubringAutOfUniqueExtension
-            (base := base) (target := target) huniq sigma
-              (valuationSubringAutOfUniqueExtension
-                (base := base) (target := target) huniq tau a - a)) ≠
+          (current_valuationSubringAutOfUniqueExtension huniq sigma
+              (current_valuationSubringAutOfUniqueExtension huniq tau a - a)) ≠
         IsDiscreteValuationRing.addVal target.valuationSubring
-          (valuationSubringAutOfUniqueExtension
-            (base := base) (target := target) huniq sigma a - a) := by
+          (current_valuationSubringAutOfUniqueExtension huniq sigma a - a) := by
     rw [addVal_valuationSubringAutOfUniqueExtension
       (base := base) (target := target) huniq]
     exact fun h => hne h.symm
@@ -141,38 +125,32 @@ theorem ramificationNumberOfUniqueExtension_mul_eq_min_of_ne
 
 /-- States the theorem `ramificationNumberOfUniqueExtension_eq_top_iff`. -/
 theorem ramificationNumberOfUniqueExtension_eq_top_iff
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
+     
     {a : target.valuationSubring}
     (ha : Algebra.adjoin base.valuationSubring
       ({a} : Set target.valuationSubring) = ⊤)
     (sigma : Gal(L/K)) :
-    ramificationNumberOfUniqueExtension
-        (base := base) (target := target) huniq a sigma = ⊤ ↔ sigma = 1 := by
+    current_ramificationNumberOfUniqueExtension huniq a sigma = ⊤ ↔ sigma = 1 := by
   constructor
   · intro htop
-    have hafix : valuationSubringAutOfUniqueExtension
-        (base := base) (target := target) huniq sigma a = a := by
-      have hzero : valuationSubringAutOfUniqueExtension
-          (base := base) (target := target) huniq sigma a - a = 0 :=
+    have hafix : current_valuationSubringAutOfUniqueExtension huniq sigma a = a := by
+      have hzero : current_valuationSubringAutOfUniqueExtension huniq sigma a - a = 0 :=
         (IsDiscreteValuationRing.addVal_eq_top_iff).1 htop
       exact sub_eq_zero.mp hzero
     have hfix : ∀ b : target.valuationSubring,
-        valuationSubringAutOfUniqueExtension
-          (base := base) (target := target) huniq sigma b = b := by
+        current_valuationSubringAutOfUniqueExtension huniq sigma b = b := by
       have heq :
           (valuationSubringAlgEquivOfUniqueExtension
             (base := base) (target := target) huniq sigma).toAlgHom =
             AlgHom.id base.valuationSubring target.valuationSubring := by
         apply AlgHom.ext_of_adjoin_eq_top ha
         intro b hb
-        simpa only [Set.mem_singleton_iff] using hb ▸ hafix
+        exact hb ▸ hafix
       intro b
       exact DFunLike.congr_fun heq b
     apply AlgEquiv.ext
     intro y
-    let : IsFractionRing target.valuationSubring L :=
+    let  :=
       target.valuationSubring_isFractionRing
     obtain ⟨b, c, _hc, hy⟩ :=
       IsFractionRing.div_surjective (A := target.valuationSubring) y
@@ -184,24 +162,18 @@ theorem ramificationNumberOfUniqueExtension_eq_top_iff
     change sigma ((b : L) / (c : L)) = (b : L) / (c : L)
     rw [map_div₀, hsigmab, hsigmac]
   · rintro rfl
-    exact ramificationNumberOfUniqueExtension_one
-      (base := base) (target := target) huniq a
+    apply ramificationNumberOfUniqueExtension_one
 
 /-- States the theorem `ramificationNumberOfUniqueExtension_conj`. -/
 theorem ramificationNumberOfUniqueExtension_conj
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
+     
     {a : target.valuationSubring}
     (ha : Algebra.adjoin base.valuationSubring
       ({a} : Set target.valuationSubring) = ⊤)
     (sigma tau : Gal(L/K)) :
-    ramificationNumberOfUniqueExtension
-        (base := base) (target := target) huniq a (tau * sigma * tau⁻¹) =
-      ramificationNumberOfUniqueExtension
-        (base := base) (target := target) huniq a sigma := by
-  let b := valuationSubringAutOfUniqueExtension
-    (base := base) (target := target) huniq tau⁻¹ a
+    current_ramificationNumberOfUniqueExtension huniq a (tau * sigma * tau⁻¹) =
+      current_ramificationNumberOfUniqueExtension huniq a sigma := by
+  let b := current_valuationSubringAutOfUniqueExtension huniq tau⁻¹ a
   have hb : Algebra.adjoin base.valuationSubring
       ({b} : Set target.valuationSubring) = ⊤ := by
     let e := (valuationSubringAlgEquivOfUniqueExtension
@@ -218,23 +190,20 @@ theorem ramificationNumberOfUniqueExtension_conj
     exact (valuationSubringAlgEquivOfUniqueExtension
       (base := base) (target := target) huniq tau⁻¹).surjective
   calc
-    ramificationNumberOfUniqueExtension
-        (base := base) (target := target) huniq a (tau * sigma * tau⁻¹) =
+    current_ramificationNumberOfUniqueExtension huniq a (tau * sigma * tau⁻¹) =
         IsDiscreteValuationRing.addVal target.valuationSubring
-          (valuationSubringAutOfUniqueExtension
-            (base := base) (target := target) huniq tau
-              (valuationSubringAutOfUniqueExtension
-                (base := base) (target := target) huniq sigma b - b)) := by
+          (current_valuationSubringAutOfUniqueExtension huniq tau
+              (current_valuationSubringAutOfUniqueExtension huniq sigma b - b)) := by
           simp [ramificationNumberOfUniqueExtension, b,
             valuationSubringAutOfUniqueExtension_mul_apply, map_sub]
-    _ = ramificationNumberOfUniqueExtension
-        (base := base) (target := target) huniq b sigma := by
+    _ = current_ramificationNumberOfUniqueExtension huniq b sigma := by
       rw [addVal_valuationSubringAutOfUniqueExtension]
       rfl
-    _ = ramificationNumberOfUniqueExtension
-        (base := base) (target := target) huniq a sigma :=
+    _ = current_ramificationNumberOfUniqueExtension huniq a sigma :=
       ramificationNumberOfUniqueExtension_eq_of_adjoin_eq_top
         (base := base) (target := target) huniq hb ha sigma
+end
+
 
 variable [FiniteDimensional K L] [IsGalois K L]
 variable [Algebra.IsSeparable base.residueField target.residueField]

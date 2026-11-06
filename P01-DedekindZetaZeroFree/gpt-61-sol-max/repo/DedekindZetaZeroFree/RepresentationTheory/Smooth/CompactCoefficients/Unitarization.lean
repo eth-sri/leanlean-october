@@ -1,17 +1,23 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.RepresentationTheory.RankOne.CuspidalUnitarization
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.CuspidalFiniteCosetForm
 
 variable {G V : Type*} [Group G] [TopologicalSpace G]
     [AddCommGroup V] [Module ℂ V]
 
-theorem finite_support_descended_noT2 [IsTopologicalGroup G]
+section
+variable [IsTopologicalGroup G]
     (ρ : Representation ℂ G V) (ℓ : Module.Dual ℂ V)
     (U : CompactOpenLevel G) (hU : FixesFunctional ρ U ℓ)
+include ρ ℓ U hU
+theorem finite_support_descended_noT2  
     (v : V) (hc : HasCompactSupport (coefficient ρ ℓ v)) :
     (Function.support (descendedCoefficient ρ ℓ U v)).Finite := by
   have hlc : IsLocallyConstant (cosetMk U) := by
@@ -21,7 +27,7 @@ theorem finite_support_descended_noT2 [IsTopologicalGroup G]
       isOpenMap_mul_right g _ U.toOpenSubgroup.isOpen, ⟨1, U.toOpenSubgroup.one_mem, by simp⟩, ?_⟩
     rintro x ⟨u, hu, rfl⟩
     exact Quotient.sound ⟨⟨u, hu⟩, rfl⟩
-  letI : CompactSpace (tsupport (coefficient ρ ℓ v)) := isCompact_iff_compactSpace.mp hc.isCompact
+  letI  := isCompact_iff_compactSpace.mp hc.isCompact
   have hf := (hlc.comp_continuous
     (continuous_subtype_val : Continuous (fun x : tsupport (coefficient ρ ℓ v) => (x : G)))).range_finite
   apply hf.subset
@@ -30,9 +36,7 @@ theorem finite_support_descended_noT2 [IsTopologicalGroup G]
   apply subset_closure
   exact hq
 
-private theorem pair_finite_noT2 [IsTopologicalGroup G]
-    (ρ : Representation ℂ G V) (ℓ : Module.Dual ℂ V)
-    (U : CompactOpenLevel G) (hU : FixesFunctional ρ U ℓ)
+private theorem pair_finite_noT2  
     (hc : ∀ v : V, HasCompactSupport (coefficient ρ ℓ v)) (v w : V) :
     (Function.support (fun q => descendedCoefficient ρ ℓ U v q *
       star (descendedCoefficient ρ ℓ U w q))).Finite := by
@@ -40,14 +44,14 @@ private theorem pair_finite_noT2 [IsTopologicalGroup G]
   intro q hq
   exact fun hz => hq (by simp [hz])
 
-private theorem form_add_left_noT2 [IsTopologicalGroup G]
-    (ρ : Representation ℂ G V) (ℓ : Module.Dual ℂ V)
-    (U : CompactOpenLevel G) (hU : FixesFunctional ρ U ℓ)
+private theorem form_add_left_noT2  
     (hc : ∀ v : V, HasCompactSupport (coefficient ρ ℓ v)) (v₁ v₂ w : V) :
     form ρ ℓ U (v₁ + v₂) w = form ρ ℓ U v₁ w + form ρ ℓ U v₂ w := by
   unfold form
   simp only [descendedCoefficient, coefficient, map_add, add_mul]
   exact finsum_add_distrib (pair_finite_noT2 ρ ℓ U hU hc v₁ w) (pair_finite_noT2 ρ ℓ U hU hc v₂ w)
+end
+
 
 private theorem form_smul_left_noT2 (ρ : Representation ℂ G V) (ℓ : Module.Dual ℂ V)
     (U : CompactOpenLevel G) (a : ℂ) (v w : V) :

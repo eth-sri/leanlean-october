@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.Meromorphic.Order
 public import Mathlib.Analysis.Calculus.Deriv.Pow
 public import Mathlib.Analysis.Complex.Basic
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.KPContinuation
 
@@ -12,12 +15,11 @@ noncomputable section
 
 def spectralDomain : Set ℂ := {s | -(1 : ℝ) / 6 < s.re}
 
-theorem spectralDomain_isOpen : IsOpen spectralDomain := by
-  exact isOpen_lt continuous_const Complex.continuous_re
+theorem spectralDomain_isOpen : IsOpen spectralDomain := isOpen_lt continuous_const Complex.continuous_re
 
 theorem spectralDomain_isConnected : IsConnected spectralDomain := by
   apply (convex_halfSpace_gt (f := Complex.re)
-    ⟨fun x y => by simp, fun a x => by simp⟩ (-(1 : ℝ) / 6)).isConnected
+    ⟨fun x y => rfl, fun a x => by simp⟩ (-(1 : ℝ) / 6)).isConnected
   exact ⟨0, by norm_num [spectralDomain]⟩
 
 theorem convergenceHalfPlane_subset_spectralDomain :
@@ -44,16 +46,19 @@ namespace DedekindZetaZeroFree.KPContinuation
 
 noncomputable section
 
-def spectralCoordinate (d : ℤ) (s : ℂ) : ℂ :=
+section
+variable (d : ℤ)
+include d
+def spectralCoordinate   (s : ℂ)  :=
   (d : ℂ) * (1 - ((1 : ℂ) / 3 + 2 * s) ^ 2)
 
-def thresholdRay (d : ℤ) : Set ℂ := {μ | μ.im = 0 ∧ (d : ℝ) ≤ μ.re}
+def thresholdRay   : Set ℂ := {μ | μ.im = 0 ∧ (d : ℝ) ≤ μ.re}
 
-theorem spectralCoordinate_avoids_thresholdRay (d : ℤ) (hd : 0 < d) :
+theorem spectralCoordinate_avoids_thresholdRay   (hd : 0 < d) :
     spectralCoordinate d '' spectralDomain ⊆ (thresholdRay d)ᶜ := by
   rintro _ ⟨s, hs, rfl⟩ hμ
   have hdR : (0 : ℝ) < d := by exact_mod_cast hd
-  let u : ℂ := (1 : ℂ) / 3 + 2 * s
+  let u  := (1 : ℂ) / 3 + 2 * s
   have hu : 0 < u.re := by
     dsimp [u]
     norm_num
@@ -72,18 +77,15 @@ theorem spectralCoordinate_avoids_thresholdRay (d : ℤ) (hd : 0 < d) :
     have hz' : u.re * u.im = 0 := by linarith
     exact (mul_eq_zero.mp hz').resolve_left (ne_of_gt hu)
   have hr : (d : ℝ) ≤ (d : ℝ) * (1 - u.re ^ 2) := by
-    have h := hμ.2
-    simpa only [pow_two, Complex.mul_re, Complex.mul_im, Complex.sub_re,
-      Complex.one_re, Complex.intCast_re, Complex.intCast_im, hui,
-      zero_mul, mul_zero, sub_zero] using h
+    simp_all [pow_two, Complex.mul_re, Complex.mul_im, Complex.sub_re, Complex.one_re, Complex.intCast_re, Complex.intCast_im, MulZeroClass.zero_mul, MulZeroClass.mul_zero, sub_zero] <;> aesop
   nlinarith [mul_pos hdR (sq_pos_of_pos hu)]
 
-theorem spectralCoordinate_zero (d : ℤ) :
+theorem spectralCoordinate_zero   :
     spectralCoordinate d 0 = 8 * (d : ℂ) / 9 := by
   unfold spectralCoordinate
   ring
 
-theorem spectralCoordinate_hasDerivAt (d : ℤ) (s : ℂ) :
+theorem spectralCoordinate_hasDerivAt   (s : ℂ) :
     HasDerivAt (spectralCoordinate d) (-4 * (d : ℂ) * ((1 : ℂ) / 3 + 2 * s)) s := by
   unfold spectralCoordinate
   have h := ((hasDerivAt_id s).const_mul (2 : ℂ)).const_add ((1 : ℂ) / 3)
@@ -93,7 +95,7 @@ theorem spectralCoordinate_hasDerivAt (d : ℤ) (s : ℂ) :
   · simp only [id_eq, Nat.cast_ofNat, pow_one, mul_one]
     ring
 
-theorem spectralCoordinate_deriv_zero (d : ℤ) (hd : 0 < d) :
+theorem spectralCoordinate_deriv_zero   (hd : 0 < d) :
     deriv (spectralCoordinate d) 0 = -4 * (d : ℂ) / 3 ∧
       deriv (spectralCoordinate d) 0 ≠ 0 := by
   have he : deriv (spectralCoordinate d) 0 = -4 * (d : ℂ) / 3 := by
@@ -101,9 +103,9 @@ theorem spectralCoordinate_deriv_zero (d : ℤ) (hd : 0 < d) :
     ring
   refine ⟨he, ?_⟩
   rw [he]
-  exact div_ne_zero (mul_ne_zero (by norm_num) (by exact_mod_cast ne_of_gt hd)) (by norm_num)
+  apply div_ne_zero <;> aesop
 
-theorem spectralCoordinate_deriv_ne_zero (d : ℤ) (hd : 0 < d)
+theorem spectralCoordinate_deriv_ne_zero   (hd : 0 < d)
     (s : ℂ) (hs : s ∈ spectralDomain) :
     deriv (spectralCoordinate d) s ≠ 0 := by
   rw [(spectralCoordinate_hasDerivAt d s).deriv]
@@ -113,6 +115,8 @@ theorem spectralCoordinate_deriv_ne_zero (d : ℤ) (hd : 0 < d)
   norm_num at hr
   have hs' : -(1 : ℝ) / 6 < s.re := hs
   linarith
+end
+
 
 end
 end DedekindZetaZeroFree.KPContinuation

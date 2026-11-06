@@ -23,22 +23,22 @@ def value (g : RestrictedCover F ζ hζ) :
   archProduct F ζ hζ g • SourceTensor.realization F ζ hζ P C
     (SourceTensor.evaluatedTensor F ζ hζ P C g)
 
-@[simp] theorem archProduct_one : archProduct F ζ hζ 1 = 1 := by
-  unfold archProduct
-  simp only [RestrictedProduct.one_apply, LocalCovariance.arch_one, Finset.prod_const_one]
 
-@[simp] theorem value_one : value F ζ hζ P C 1 =
-    TorusReference.finiteReference F ζ hζ P C C.exceptional le_rfl := by
-  rw [value, archProduct_one, one_smul, SourceTensor.evaluatedTensor_one]
 
-theorem value_upper (g : RestrictedCover F ζ hζ) (y : Adeles F) :
-    value F ζ hζ P C (KPGlobalTorusFunctionData.rootTuple F ζ hζ y * g) =
-      value F ζ hζ P C g := by
-  rw [value, value, SourceTensor.evaluatedTensor_upper]
-  congr 1
-  apply Finset.prod_congr rfl
-  intro w _
-  exact LocalCovariance.arch_upper F ζ hζ w _ _
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 theorem value_scalar (g : RestrictedCover F ζ hζ) (z : Ideles F) :
     value F ζ hζ P C (scalarTuple F ζ hζ z * g) = value F ζ hζ P C g := by
@@ -48,22 +48,22 @@ theorem value_scalar (g : RestrictedCover F ζ hζ) (z : Ideles F) :
   intro w _
   exact LocalCovariance.arch_scalar F ζ hζ w _ _
 
-theorem periodized_value_one :
-    (KPGlobalTorusPeriodizationInverse.unitaryPeriodization F ζ hζ P
-      (value F ζ hζ P C 1)).val.val 1 = 1 := by
-  rw [value_one]
-  exact ReferencePeriodization.reference_periodization_one F ζ hζ P C _ _
 
-theorem value_right_level (g u : RestrictedCover F ζ hζ)
-    (hu : u ∈ ActualFiniteFactor.productTuples F ζ hζ
-      (FiniteLevels.productLevel F ζ hζ P C)) :
-    value F ζ hζ P C (g * u) = value F ζ hζ P C g := by
-  rw [value, value, SourceTensor.evaluatedTensor_right_level F ζ hζ P C g u hu]
-  congr 1
-  apply Finset.prod_congr rfl
-  intro w _
-  change LocalCovariance.arch F ζ hζ w (g (Sum.inl w) * u (Sum.inl w)) = _
-  rw [hu.1 w, mul_one]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 theorem evaluated_central (g : RestrictedCover F ζ hζ) (e : CentralTuples F) :
     SourceTensor.realization F ζ hζ P C
@@ -212,111 +212,111 @@ def quotientValue : KPGlobalTorusFunctionData.G F ζ hζ →
   Quotient.lift (amalgamatedValue F ζ hζ P C)
     (fun g h he => amalgamatedValue_quotient_eq F ζ hζ P C g h (Quotient.sound he))
 
-@[simp] theorem quotientValue_raw (g : RestrictedCover F ζ hζ) :
-    quotientValue F ζ hζ P C (scalarQuotient F ζ hζ (amalgamation F ζ hζ g)) =
-      value F ζ hζ P C g := rfl
 
-theorem quotientValue_one :
-    (KPGlobalTorusPeriodizationInverse.unitaryPeriodization F ζ hζ P
-      (quotientValue F ζ hζ P C 1)).val.val 1 = 1 := by
-  change (KPGlobalTorusPeriodizationInverse.unitaryPeriodization F ζ hζ P
-    (quotientValue F ζ hζ P C (scalarQuotient F ζ hζ (amalgamation F ζ hζ 1)))).val.val 1 = 1
-  rw [quotientValue_raw]
-  exact periodized_value_one F ζ hζ P C
 
-theorem value_right_spherical (q : HeightOneSpectrum (𝓞 F)) (hq : q ∉ C.exceptional)
-    (k : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q))
-    (hk : k ∈ compact F ζ hζ (Sum.inr q)) (hb : ¬ Bad F q)
-    (g : RestrictedCover F ζ hζ) :
-    value F ζ hζ P C (g * localToRestricted F ζ hζ (Sum.inr q) k) = value F ζ hζ P C g := by
-  apply value_right_level
-  constructor
-  · intro w
-    simp [localToRestricted]
-  · apply Subgroup.mem_iInf.mpr
-    intro r
-    change KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr r)
-      ((localToRestricted F ζ hζ (Sum.inr q) k) (Sum.inr r)) ∈
-        (FiniteLevels.localLevel F ζ hζ P C r).toOpenSubgroup
-    by_cases hr : r = q
-    · subst r
-      simp only [localToRestricted, RestrictedProduct.mulSingleMonoidHom_apply,
-        RestrictedProduct.coe_mulSingle_apply, Pi.mulSingle_eq_same]
-      rw [FiniteLevels.localLevel, dif_neg hq]
-      obtain ⟨ht, hc⟩ := C.actual_compact q hq
-      change _ ∈ (C.canonical q).iwasawa.compact.toOpenSubgroup.toSubgroup
-      rw [hc]
-      change k ∈ finiteCompact F ζ hζ q at hk
-      rw [finiteCompact, dif_neg hb] at hk
-      obtain ⟨a, ha⟩ := hk
-      exact ⟨a, by rw [← ha]; rfl⟩
-    · simp [localToRestricted, hr]
 
-theorem quotientValue_right_product (g : KPGlobalTorusFunctionData.G F ζ hζ)
-    (u : KPGlobalTorusFunctionData.G F ζ hζ)
-    (hu : u ∈ ActualFiniteFactor.productSubgroup F ζ hζ
-      (FiniteLevels.productLevel F ζ hζ P C)) :
-    quotientValue F ζ hζ P C (g * u) = quotientValue F ζ hζ P C g := by
-  obtain ⟨rawu, hrawu, rfl⟩ := hu
-  induction g using QuotientGroup.induction_on with
-  | H g =>
-    induction g using QuotientGroup.induction_on with
-    | H g =>
-      change quotientValue F ζ hζ P C
-        (scalarQuotient F ζ hζ (amalgamation F ζ hζ g) *
-          scalarQuotient F ζ hζ (amalgamation F ζ hζ rawu)) = _
-      rw [← map_mul, ← map_mul, quotientValue_raw]
-      exact value_right_level F ζ hζ P C g rawu hrawu
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 def scalarValue (g : KPGlobalTorusFunctionData.G F ζ hζ) : ℂ :=
   (KPGlobalTorusPeriodizationInverse.unitaryPeriodization F ζ hζ P
     (quotientValue F ζ hζ P C g)).val.val 1
 
-@[simp] theorem scalarValue_one : scalarValue F ζ hζ P C 1 = 1 :=
-  quotientValue_one F ζ hζ P C
 
-theorem scalarValue_right_product (g u : KPGlobalTorusFunctionData.G F ζ hζ)
-    (hu : u ∈ ActualFiniteFactor.productSubgroup F ζ hζ
-      (FiniteLevels.productLevel F ζ hζ P C)) :
-    scalarValue F ζ hζ P C (g * u) = scalarValue F ζ hζ P C g := by
-  rw [scalarValue, scalarValue, quotientValue_right_product F ζ hζ P C g u hu]
 
-theorem quotientValue_upper (y : Adeles F) (g : KPGlobalTorusFunctionData.G F ζ hζ) :
-    quotientValue F ζ hζ P C (KPGlobalTorusFunctionData.N F ζ hζ y * g) =
-      quotientValue F ζ hζ P C g := by
-  induction g using QuotientGroup.induction_on with
-  | H g =>
-    induction g using QuotientGroup.induction_on with
-    | H g =>
-      change quotientValue F ζ hζ P C
-        (scalarQuotient F ζ hζ (amalgamation F ζ hζ (KPGlobalTorusFunctionData.rootTuple F ζ hζ y)) *
-          scalarQuotient F ζ hζ (amalgamation F ζ hζ g)) = _
-      rw [← map_mul, ← map_mul, quotientValue_raw]
-      exact value_upper F ζ hζ P C g y
 
-theorem quotientValue_right_spherical (q : HeightOneSpectrum (𝓞 F)) (hq : q ∉ C.exceptional)
-    (k : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q))
-    (hk : k ∈ compact F ζ hζ (Sum.inr q)) (hb : ¬ Bad F q)
-    (g : KPGlobalTorusFunctionData.G F ζ hζ) :
-    quotientValue F ζ hζ P C (g * scalarQuotient F ζ hζ (localInjection F ζ hζ (Sum.inr q) k)) =
-      quotientValue F ζ hζ P C g := by
-  induction g using QuotientGroup.induction_on with
-  | H g =>
-    induction g using QuotientGroup.induction_on with
-    | H g =>
-      change quotientValue F ζ hζ P C
-        (scalarQuotient F ζ hζ (amalgamation F ζ hζ g) *
-          scalarQuotient F ζ hζ (amalgamation F ζ hζ (localToRestricted F ζ hζ (Sum.inr q) k))) = _
-      rw [← map_mul, ← map_mul, quotientValue_raw]
-      exact value_right_spherical F ζ hζ P C q hq k hk hb g
 
-theorem scalarValue_right_spherical (q : HeightOneSpectrum (𝓞 F)) (hq : q ∉ C.exceptional)
-    (k : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q))
-    (hk : k ∈ compact F ζ hζ (Sum.inr q)) (hb : ¬ Bad F q)
-    (g : KPGlobalTorusFunctionData.G F ζ hζ) :
-    scalarValue F ζ hζ P C (g * scalarQuotient F ζ hζ (localInjection F ζ hζ (Sum.inr q) k)) =
-      scalarValue F ζ hζ P C g := by
-  rw [scalarValue, scalarValue, quotientValue_right_spherical F ζ hζ P C q hq k hk hb g]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end DedekindZetaZeroFree.EisensteinReferenceSections.RawSource
 

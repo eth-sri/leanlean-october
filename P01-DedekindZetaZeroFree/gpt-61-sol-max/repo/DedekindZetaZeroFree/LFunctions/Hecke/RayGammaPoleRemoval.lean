@@ -1,15 +1,18 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.EntireDividedDifference
 public import DedekindZetaZeroFree.Theta.Profiles.RayParityFourierMellin
 
 @[expose] public section
 
+
 noncomputable section
 
 namespace DedekindZetaZeroFree.AbelianQuotient.RayGammaPoleRemoval
 
-def completedEntirePart (h E : ℂ → ℂ) (A B : ℂ) : ℂ → ℂ :=
+def completedEntirePart (h E : ℂ → ℂ) (A B : ℂ)  :=
   fun s ↦ h s * E s + A * entireDividedDifference h 1 s -
     B * entireDividedDifference h 0 s
 

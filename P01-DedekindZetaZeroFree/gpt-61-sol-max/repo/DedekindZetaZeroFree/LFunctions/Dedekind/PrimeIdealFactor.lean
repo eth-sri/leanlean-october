@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LFunctions.Dedekind.LocalFactor
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Imperial College London. All rights reserved.
@@ -26,7 +29,7 @@ namespace DedekindZetaZeroFree.Odlyzko
 
 variable (K : Type*) [Field K] [NumberField K]
 
-noncomputable def primeIdealNorm (P : HeightOneSpectrum (𝓞 K)) : ℕ :=
+noncomputable def primeIdealNorm (P : HeightOneSpectrum (𝓞 K))  :=
   absNorm P.asIdeal
 
 lemma one_lt_primeIdealNorm (P : HeightOneSpectrum (𝓞 K)) :
@@ -36,7 +39,7 @@ lemma one_lt_primeIdealNorm (P : HeightOneSpectrum (𝓞 K)) :
   · simpa [primeIdealNorm, Ideal.absNorm_eq_zero_iff] using P.ne_bot
   · simpa [primeIdealNorm, Ideal.absNorm_eq_one_iff] using P.isPrime.ne_top
 
-noncomputable def primeIdealFactor (P : HeightOneSpectrum (𝓞 K)) (s : ℂ) : ℂ :=
+noncomputable def primeIdealFactor (P : HeightOneSpectrum (𝓞 K)) (s : ℂ)  :=
   localFactor (primeIdealNorm K P) s
 
 end DedekindZetaZeroFree.Odlyzko

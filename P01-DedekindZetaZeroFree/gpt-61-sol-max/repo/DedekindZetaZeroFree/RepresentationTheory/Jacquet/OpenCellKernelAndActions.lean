@@ -509,8 +509,11 @@ def ext_w (hm : KPLocalChartTopology.MatrixChartDepth F w m)
     · exact map_smul _ _ _
     · simp
 
+
+local notation:max "current_ext_w" => ext_w F ζ hζ
+
 theorem ext_w_value (φ : TestFunctions F w (E := E)) (g : FiniteCover F ζ hζ w) :
-    (ext_w F ζ hζ w m hm τB hτB φ).val.val g =
+    (current_ext_w w m hm τB hτB φ).val.val g =
       extensionFunction F ζ hζ w τB φ g := by
   rfl
 
@@ -540,7 +543,7 @@ def restriction (hm : KPLocalChartTopology.MatrixChartDepth F w m)
   map_add' := by intros; rfl
   map_smul' := by intros; rfl
 
-theorem ext_w_injective : Function.Injective (ext_w F ζ hζ w m hm τB hτB) := by
+theorem ext_w_injective : Function.Injective (current_ext_w w m hm τB hτB) := by
   intro φ ψ h
   apply Subtype.ext
   apply LocallyConstant.ext
@@ -559,8 +562,8 @@ theorem ext_w_injective : Function.Injective (ext_w F ζ hζ w m hm τB hτB) :=
 
 omit [FiniteDimensional ℂ E] in
  theorem extension_mem_kernel (φ : TestFunctions F w (E := E)) :
-    ext_w F ζ hζ w m hm τB hτB φ ∈ LinearMap.ker (ev1 F ζ hζ w m τB) := by
-  change (ext_w F ζ hζ w m hm τB hτB φ).val.val 1 = 0
+    current_ext_w w m hm τB hτB φ ∈ LinearMap.ker (ev1 F ζ hζ w m τB) := by
+  change (current_ext_w w m hm τB hτB φ).val.val 1 = 0
   change extensionFunction F ζ hζ w τB φ 1 = 0
   exact extension_off F ζ hζ w τB φ 1
 
@@ -582,7 +585,7 @@ omit [FiniteDimensional ℂ E] in
 
 omit [FiniteDimensional ℂ E] in
  theorem extension_restrict (f : LinearMap.ker (ev1 F ζ hζ w m τB)) :
-    ext_w F ζ hζ w m hm τB hτB (restriction F ζ hζ w m hm τB f) = f.val := by
+    current_ext_w w m hm τB hτB (restriction F ζ hζ w m hm τB f) = f.val := by
   letI := finiteCoverTopology F ζ hζ w m
   letI := (KPPGLLocalCover.finite_topological_cover F ζ hζ w m hm).2.2.1
   apply Subtype.ext
@@ -614,7 +617,7 @@ omit [FiniteDimensional ℂ E] in
     have hzero : f.val.val.val 1 = 0 := f.property
     simpa only [mul_one, hzero, map_zero] using hf.symm
 
-theorem range_ext_w : LinearMap.range (ext_w F ζ hζ w m hm τB hτB) =
+theorem range_ext_w : LinearMap.range (current_ext_w w m hm τB hτB) =
     LinearMap.ker (ev1 F ζ hζ w m τB) := by
   apply le_antisymm
   · rintro f ⟨φ, rfl⟩
@@ -641,22 +644,22 @@ def openCellRepresentation : Representation ℂ (Borel F ζ hζ w)
   toFun b := {
     toFun φ := restriction F ζ hζ w m hm τB
       ⟨inducedRepresentation F ζ hζ w m hm τB b.val
-        (ext_w F ζ hζ w m hm τB hτB φ),
+        (current_ext_w w m hm τB hτB φ),
         borel_stable F ζ hζ w m hm τB b
           (extension_mem_kernel F ζ hζ w m hm τB hτB φ)⟩
     map_add' := by
       intro φ ψ
       have h : (⟨inducedRepresentation F ζ hζ w m hm τB b.val
-          (ext_w F ζ hζ w m hm τB hτB (φ + ψ)),
+          (current_ext_w w m hm τB hτB (φ + ψ)),
           borel_stable F ζ hζ w m hm τB b
             (extension_mem_kernel F ζ hζ w m hm τB hτB (φ + ψ))⟩ :
           LinearMap.ker (ev1 F ζ hζ w m τB)) =
           ⟨inducedRepresentation F ζ hζ w m hm τB b.val
-            (ext_w F ζ hζ w m hm τB hτB φ),
+            (current_ext_w w m hm τB hτB φ),
             borel_stable F ζ hζ w m hm τB b
               (extension_mem_kernel F ζ hζ w m hm τB hτB φ)⟩ +
           ⟨inducedRepresentation F ζ hζ w m hm τB b.val
-            (ext_w F ζ hζ w m hm τB hτB ψ),
+            (current_ext_w w m hm τB hτB ψ),
             borel_stable F ζ hζ w m hm τB b
               (extension_mem_kernel F ζ hζ w m hm τB hτB ψ)⟩ := by
         apply Subtype.ext
@@ -665,12 +668,12 @@ def openCellRepresentation : Representation ℂ (Borel F ζ hζ w)
     map_smul' := by
       intro c φ
       have h : (⟨inducedRepresentation F ζ hζ w m hm τB b.val
-          (ext_w F ζ hζ w m hm τB hτB (c • φ)),
+          (current_ext_w w m hm τB hτB (c • φ)),
           borel_stable F ζ hζ w m hm τB b
             (extension_mem_kernel F ζ hζ w m hm τB hτB (c • φ))⟩ :
           LinearMap.ker (ev1 F ζ hζ w m τB)) =
           c • ⟨inducedRepresentation F ζ hζ w m hm τB b.val
-            (ext_w F ζ hζ w m hm τB hτB φ),
+            (current_ext_w w m hm τB hτB φ),
             borel_stable F ζ hζ w m hm τB b
               (extension_mem_kernel F ζ hζ w m hm τB hτB φ)⟩ := by
         apply Subtype.ext
@@ -692,18 +695,18 @@ def openCellRepresentation : Representation ℂ (Borel F ζ hζ w)
     congr 1
     apply Subtype.ext
     change inducedRepresentation F ζ hζ w m hm τB (a * b).val
-      (ext_w F ζ hζ w m hm τB hτB φ) =
+      (current_ext_w w m hm τB hτB φ) =
       inducedRepresentation F ζ hζ w m hm τB a.val
-        (ext_w F ζ hζ w m hm τB hτB
+        (current_ext_w w m hm τB hτB
           (restriction F ζ hζ w m hm τB ⟨_, _⟩))
     rw [extension_restrict]
     simp only [Subgroup.coe_mul, map_mul, Module.End.mul_apply]
 
 theorem ext_w_borel (b : Borel F ζ hζ w) (φ : TestFunctions F w (E := E)) :
-    ext_w F ζ hζ w m hm τB hτB
+    current_ext_w w m hm τB hτB
       (openCellRepresentation F ζ hζ w m hm τB hτB b φ) =
       inducedRepresentation F ζ hζ w m hm τB b.val
-        (ext_w F ζ hζ w m hm τB hτB φ) := by
+        (current_ext_w w m hm τB hτB φ) := by
   exact extension_restrict F ζ hζ w m hm τB hτB _
 
 include hτB in
@@ -725,7 +728,7 @@ private theorem smooth_open_cell :
   letI := finiteCoverTopology F ζ hζ w m
   intro φ
   obtain ⟨J, hJ⟩ := smooth_borel_induced F ζ hζ w m hm τB hτB
-    (ext_w F ζ hζ w m hm τB hτB φ)
+    (current_ext_w w m hm τB hτB φ)
   refine ⟨J, ?_⟩
   intro b hb
   apply ext_w_injective F ζ hζ w m hm τB hτB
@@ -871,7 +874,7 @@ theorem upperRoot_action
     (ext_w_borel F ζ hζ w m hm τB hτB
       (rootInBorel F ζ hζ w (Multiplicative.ofAdd y)) φ)
   have heval (ψ : TestFunctions F w (E := E)) :
-      (ext_w F ζ hζ w m hm τB hτB ψ).val.val
+      (current_ext_w w m hm τB hτB ψ).val.val
         (KPPGLLocalCover.W F ζ hζ (Sum.inr w) *
           upperRoot F ζ hζ w (Multiplicative.ofAdd x)) = KPJacquetStepFunction.value ψ x := by
     rw [ext_w_value]
@@ -880,12 +883,12 @@ theorem upperRoot_action
       Module.End.one_apply] using extensionFunction_on F ζ hζ w τB ψ 1 x
   rw [heval] at h
   rw [h]
-  change (ext_w F ζ hζ w m hm τB hτB φ).val.val
+  change (current_ext_w w m hm τB hτB φ).val.val
     ((KPPGLLocalCover.W F ζ hζ (Sum.inr w) *
       upperRoot F ζ hζ w (Multiplicative.ofAdd x)) *
       upperRoot F ζ hζ w (Multiplicative.ofAdd y)) = _
   rw [mul_assoc, ← map_mul]
-  change (ext_w F ζ hζ w m hm τB hτB φ).val.val
+  change (current_ext_w w m hm τB hτB φ).val.val
     (KPPGLLocalCover.W F ζ hζ (Sum.inr w) *
       upperRoot F ζ hζ w (Multiplicative.ofAdd (x + y))) = _
   rw [ext_w_value]
@@ -925,7 +928,7 @@ theorem torus_action (h : Torus F ζ hζ w)
       upperRoot F ζ hζ w (Multiplicative.ofAdd x)))
     (ext_w_borel F ζ hζ w m hm τB hτB (torusInBorel F ζ hζ w m hm h) φ)
   have heval (ψ : TestFunctions F w (E := E)) :
-      (ext_w F ζ hζ w m hm τB hτB ψ).val.val
+      (current_ext_w w m hm τB hτB ψ).val.val
         (KPPGLLocalCover.W F ζ hζ (Sum.inr w) *
           upperRoot F ζ hζ w (Multiplicative.ofAdd x)) = KPJacquetStepFunction.value ψ x := by
     rw [ext_w_value]
@@ -934,7 +937,7 @@ theorem torus_action (h : Torus F ζ hζ w)
       Module.End.one_apply] using extensionFunction_on F ζ hζ w τB ψ 1 x
   rw [heval] at hh
   rw [hh]
-  change (ext_w F ζ hζ w m hm τB hτB φ).val.val
+  change (current_ext_w w m hm τB hτB φ).val.val
     ((KPPGLLocalCover.W F ζ hζ (Sum.inr w) *
       upperRoot F ζ hζ w (Multiplicative.ofAdd x)) * h.val) = _
   rw [mul_assoc, hn, ← mul_assoc, hw, ext_w_value]
@@ -956,15 +959,15 @@ theorem smooth_borel_short_exact :
       ((inducedRepresentation F ζ hζ w m hm τB).comp
         (Borel F ζ hζ w).subtype) ∧
     SmoothRepresentation (inducingRepresentation F ζ hζ w τB) ∧
-    (∀ b φ, ext_w F ζ hζ w m hm τB hτB
+    (∀ b φ, current_ext_w w m hm τB hτB
       (openCellRepresentation F ζ hζ w m hm τB hτB b φ) =
       inducedRepresentation F ζ hζ w m hm τB b.val
-        (ext_w F ζ hζ w m hm τB hτB φ)) ∧
+        (current_ext_w w m hm τB hτB φ)) ∧
     (∀ b f, ev1 F ζ hζ w m τB
       (inducedRepresentation F ζ hζ w m hm τB b.val f) =
       inducingRepresentation F ζ hζ w τB b (ev1 F ζ hζ w m τB f)) ∧
-    Function.Injective (ext_w F ζ hζ w m hm τB hτB) ∧
-    LinearMap.range (ext_w F ζ hζ w m hm τB hτB) =
+    Function.Injective (current_ext_w w m hm τB hτB) ∧
+    LinearMap.range (current_ext_w w m hm τB hτB) =
       LinearMap.ker (ev1 F ζ hζ w m τB) ∧
     Function.Surjective (ev1 F ζ hζ w m τB) := by
   letI := finiteCoverTopology F ζ hζ w m

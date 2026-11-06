@@ -13,7 +13,7 @@ section Algebra
 variable {k G V : Type*} [CommRing k] [Monoid G]
   [AddCommGroup V] [Module ℂ V]
 variable (ρ : Representation ℂ G V) (n : Multiplicative k →* G)
-  (a : kˣ → G) (e : AddChar k ℂ) (ell : V →ₗ[ℂ] ℂ)
+    
 
 def translateSum {I : Type*} (s : Finset I) (c : I → ℂ) (t : I → k) : V →ₗ[ℂ] V :=
   ∑ i ∈ s, c i • ρ (n (Multiplicative.ofAdd (t i)))

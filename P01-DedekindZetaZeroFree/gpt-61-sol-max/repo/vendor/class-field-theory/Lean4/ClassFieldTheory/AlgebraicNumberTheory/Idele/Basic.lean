@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import Mathlib.NumberTheory.NumberField.AdeleRing
 public import Mathlib.NumberTheory.NumberField.Completion.FinitePlace
 public import Mathlib.Topology.Algebra.Group.Units
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -111,9 +114,7 @@ variable {K}
 its finite adele ring. -/
 def finiteEquivFiniteAdeleUnitsOf
   (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (F : Type*) [Field F] [Algebra R F] [IsFractionRing R F] :
-    FiniteIdeleGroupOf R F ≃*
-    (IsDedekindDomain.FiniteAdeleRing R F)ˣ :=
+    (F : Type*) [Field F] [Algebra R F] [IsFractionRing R F]  :=
   (RestrictedProduct.unitsEquiv
     (ι := HeightOneSpectrum R)
     (S := fun v : HeightOneSpectrum R ↦ ValuationSubring (v.adicCompletion F))
@@ -145,9 +146,7 @@ theorem finiteComponent_apply (a : IdeleGroup K)
 /-- Algebraically, the finite ideles are the units of the finite adele ring.
 The topology on the left is the restricted-product topology and is not
 transported through this equivalence. -/
-def finiteEquivFiniteAdeleUnits :
-    FiniteIdeleGroup K ≃*
-      (IsDedekindDomain.FiniteAdeleRing (𝓞 K) K)ˣ :=
+def finiteEquivFiniteAdeleUnits  :=
   finiteEquivFiniteAdeleUnitsOf (𝓞 K) K
 
 /-- Algebraically, the idele group is the unit group of the adele ring.
@@ -163,14 +162,12 @@ def equivAdeleRingUnits :
 
 @[simp]
 theorem equivAdeleRingUnits_fst (a : IdeleGroup K) :
-    (MulEquiv.prodUnits (equivAdeleRingUnits a)).1 = a.1 := by
-  rfl
+    (MulEquiv.prodUnits (equivAdeleRingUnits a)).1 = a.1 := rfl
 
 @[simp]
 theorem equivAdeleRingUnits_snd (a : IdeleGroup K) :
     (MulEquiv.prodUnits (equivAdeleRingUnits a)).2 =
-      finiteEquivFiniteAdeleUnits (K := K) a.2 := by
-  rfl
+      finiteEquivFiniteAdeleUnits (K := K) a.2 := rfl
 
 end IdeleGroup
 

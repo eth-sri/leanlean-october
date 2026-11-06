@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LargeSieve.Exponents.LargeScaleCrossoverBounds
 public import DedekindZetaZeroFree.LargeSieve.Exponents.LogarithmicCrossoverBounds
 
 @[expose] public section
+
 
 open scoped BigOperators
 
@@ -20,11 +23,11 @@ theorem HasRecursiveEnvelope.improve_of_band {B : ℝ → ℝ → ℝ}
     (hEnvelope : HasRecursiveEnvelope B α) :
     HasExponent B (2 - 1 / α) := by
   intro ε hε
-  let δ : ℝ := min 1 (ε / 2)
+  let δ  := min 1 (ε / 2)
   have hδ : 0 < δ := lt_min (by norm_num) (by positivity)
   have hδ1 : δ ≤ 1 := min_le_left _ _
   have hδε : δ ≤ ε / 2 := min_le_right _ _
-  let η : ℝ := ε / (2 * (3 + δ))
+  let η  := ε / (2 * (3 + δ))
   have hη : 0 < η := by dsimp [η]; positivity
   have hloss : δ + (3 + δ) * η ≤ ε := by
     have he : (3 + δ) * η = ε / 2 := by
@@ -35,13 +38,13 @@ theorem HasRecursiveEnvelope.improve_of_band {B : ℝ → ℝ → ℝ}
     linarith
   obtain ⟨A, J, D, hA, hD, hband⟩ := hBand δ hδ hδ1
   obtain ⟨C, hC, henv⟩ := hEnvelope η hη
-  let K : ℝ := (2 : ℝ) ^ J * A * (2 : ℝ) ^ δ
+  let K  := (2 : ℝ) ^ J * A * (2 : ℝ) ^ δ
   have hK : 0 < K := by dsimp [K]; positivity
   refine ⟨D * (J + 1) * (3 * C * K ^ η * K), by positivity, ?_⟩
   intro M N hM hN
-  let β : ℝ := 2 - 1 / α
-  let T : ℝ := M * N
-  let V : ℝ := max M (N ^ β)
+  let β  := 2 - 1 / α
+  let T  := M * N
+  let V  := max M (N ^ β)
   have hM0 : 0 < M := by linarith
   have hN0 : 0 < N := by linarith
   have hT : 1 ≤ T := one_le_mul_of_one_le_of_one_le hM hN
@@ -65,19 +68,19 @@ theorem HasRecursiveEnvelope.improve_of_band {B : ℝ → ℝ → ℝ}
       B ((2 : ℝ) ^ j * A * V * (2 * M * N) ^ δ) N ≤
         (3 * C * K ^ η * K) * T ^ ε * (M + N ^ β) := by
     intro j hj
-    have hjJ : j ≤ J := Nat.le_of_lt_succ (Finset.mem_range.mp hj)
-    let R : ℝ := (2 : ℝ) ^ j * A * V * (2 * M * N) ^ δ
+    have hjJ  := Nat.le_of_lt_succ (Finset.mem_range.mp hj)
+    let R  := (2 : ℝ) ^ j * A * V * (2 * M * N) ^ δ
     have h2j : 1 ≤ (2 : ℝ) ^ j := one_le_pow₀ (by norm_num)
     have h2jJ : (2 : ℝ) ^ j ≤ (2 : ℝ) ^ J := pow_le_pow_right₀ (by norm_num) hjJ
     have h2T : 1 ≤ 2 * M * N := by nlinarith
-    have hpow : 1 ≤ (2 * M * N) ^ δ := Real.one_le_rpow h2T hδ.le
+    have hpow  := Real.one_le_rpow h2T hδ.le
     have hVR : V ≤ R := by
       dsimp [R]
       nlinarith [mul_le_mul h2j hA (by norm_num : (0 : ℝ) ≤ 1) (by positivity : 0 ≤ (2 : ℝ) ^ j),
         mul_pos hV0 (by positivity : 0 < (2 * M * N) ^ δ)]
     have hR1 : 1 ≤ R := hM.trans (hMV.trans hVR)
-    have hR0 : 0 < R := lt_of_lt_of_le zero_lt_one hR1
-    have hNR : N ≤ R := hNNb.trans (hNV.trans hVR)
+    
+    
     have hmixed : N ^ (2 * α - 1) * R ^ (1 - α) ≤ R := by
       calc
         N ^ (2 * α - 1) * R ^ (1 - α) ≤
@@ -105,8 +108,7 @@ theorem HasRecursiveEnvelope.improve_of_band {B : ℝ → ℝ → ℝ}
       calc
         (R * N) ^ η ≤ (K * T ^ (3 + δ)) ^ η := Real.rpow_le_rpow (by positivity) hRN hη.le
         _ = _ := by rw [Real.mul_rpow hK.le (Real.rpow_nonneg hT0.le _), ← Real.rpow_mul hT0.le]
-    have hRsum : R ≤ K * (M + N ^ β) * T ^ δ := by
-      exact hRup.trans (by gcongr)
+    have hRsum : R ≤ K * (M + N ^ β) * T ^ δ := hRup.trans (by gcongr)
     calc
       B R N ≤ C * (R * N) ^ η * (R + N + N ^ (2 * α - 1) * R ^ (1 - α)) := henv R N hR1 hN
       _ ≤ C * (K ^ η * T ^ ((3 + δ) * η)) * (3 * (K * (M + N ^ β) * T ^ δ)) := by

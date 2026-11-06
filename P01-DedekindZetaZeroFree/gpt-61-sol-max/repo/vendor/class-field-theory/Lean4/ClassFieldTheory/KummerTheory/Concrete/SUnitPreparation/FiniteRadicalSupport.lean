@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.KummerTheory.Concrete.SUnitPreparation.SUnitLocalPowerKernel
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -31,13 +34,15 @@ namespace KummerTheory
 variable {K : Type*} [Field K]
     [numberFieldK : NumberField K]
 
+section
+variable {L : Type*} [Field L] [Algebra K L]
+    (n : ℕ+)
+    (S : Finset (HeightOneSpectrum (𝓞 K)))
+include L n S
 /-- The finite Kummer radical `D ∩ Kˢ`, where
 `D = Lˣⁿ ∩ Kˣ`. -/
 def sUnitFiniteKummerRadical
-    {L : Type*} [Field L] [Algebra K L]
-    (n : ℕ+)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
-    Subgroup Kˣ :=
+       :=
   SUnitGroup (K := K) S ⊓
     KummerTheory.finiteKummerRadicalSubgroup
       (K := K) (L := L) n
@@ -46,9 +51,7 @@ def sUnitFiniteKummerRadical
 an `n`-th root in `L`. -/
 @[simp]
 theorem mem_sUnitFiniteKummerRadical_iff
-    {L : Type*} [Field L] [Algebra K L]
-    (n : ℕ+)
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
+     
     (x : Kˣ) :
     x ∈ sUnitFiniteKummerRadical (K := K) (L := L) n S ↔
       x ∈ SUnitGroup (K := K) S ∧
@@ -60,9 +63,7 @@ theorem mem_sUnitFiniteKummerRadical_iff
 /-- Adjoin the ambient `n`-th powers to `D ∩ Kˢ`, producing an admissible
 object on the subgroup side of Kummer theory. -/
 def sUnitKummerSubgroup
-    {L : Type*} [Field L] [Algebra K L]
-    (n : ℕ+)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+      :
     KummerTheory.KummerSubgroup K n :=
   ⟨sUnitFiniteKummerRadical (K := K) (L := L) n S ⊔
       KummerTheory.unitNthPowersSubgroup K n,
@@ -70,9 +71,7 @@ def sUnitKummerSubgroup
 
 /-- The `S`-unit Kummer subgroup lies in the actual radical of `L / K`. -/
 theorem sUnitKummerSubgroup_le_finiteKummerRadicalSubgroup
-    {L : Type*} [Field L] [Algebra K L]
-    (n : ℕ+)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+      :
     (sUnitKummerSubgroup (K := K) (L := L) n S).1 ≤
       KummerTheory.finiteKummerRadicalSubgroup
         (K := K) (L := L) n := by
@@ -84,6 +83,8 @@ theorem sUnitKummerSubgroup_le_finiteKummerRadicalSubgroup
     exact
       (KummerTheory.mem_finiteKummerRadicalSubgroup_iff n).mpr
         ⟨Units.map (algebraMap K L).toMonoidHom y, by simp⟩
+end
+
 
 /-- Enlarging the finite set of places enlarges the `S`-unit group. -/
 theorem sUnitGroup_mono
@@ -97,8 +98,7 @@ theorem sUnitGroup_mono
 
 /-- A chosen finite set of places outside which a given global unit is
 an integral unit. -/
-noncomputable def chosenUnitFiniteSupport (x : Kˣ) :
-    Finset (HeightOneSpectrum (𝓞 K)) :=
+noncomputable def chosenUnitFiniteSupport (x : Kˣ)  :=
   Classical.choose
     (IdeleGroup.exists_finset_supportedAt
       (IdeleGroup.principalIdele K x))
@@ -117,15 +117,14 @@ theorem mem_sUnitGroup_chosenUnitFiniteSupport (x : Kˣ) :
       (K := K)
       (chosenUnitFiniteSupport (K := K) x : Set _)
       (IdeleGroup.principalIdele K x)).mp hsupported v
-      (by simpa using hv)
+      (hv)
   rw [
     HeightOneSpectrum.adicCompletionIntegers.mem_units_iff_valued_eq_one]
       at hunit
   change
     Valued.v
         (((IdeleGroup.finiteComponent v
-          (IdeleGroup.principalIdele K x) :
-            (v.adicCompletion K)ˣ) :
+          (IdeleGroup.principalIdele K x)) :
           v.adicCompletion K)) = 1 at hunit
   rw [IdeleGroup.finiteComponent_principalIdele,
     HeightOneSpectrum.valuedAdicCompletion_eq_valuation'] at hunit
@@ -149,15 +148,13 @@ theorem finite_chosenFiniteKummerRadicalQuotient
       (K := K) (L := L) n
   let H :=
     Gal(L/K) →* KummerTheory.nthRootsSubgroup L (n : ℕ)
-  let : Finite H :=
+  let  :=
     Finite.of_injective
       (fun chi : H =>
         (chi : Gal(L/K) →
           KummerTheory.nthRootsSubgroup L (n : ℕ)))
       DFunLike.coe_injective
-  let hbase :
-      KummerTheory.NthRootsOfUnityInBase
-        (K := K) (L := L) n :=
+  let hbase  :=
     KummerTheory.nthRootsOfUnityInBase_of_primitiveRoots
       (K := K) (L := L) n hmu
   let e : D.RadicalQuotient ≃* H :=
@@ -171,9 +168,7 @@ noncomputable def chosenFiniteKummerRadicalRepresentative
     (n : ℕ+)
     (q :
       (KummerTheory.chosenFiniteKummerRadicalDatum
-        (K := K) (L := L) n).RadicalQuotient) :
-    (KummerTheory.chosenFiniteKummerRadicalDatum
-      (K := K) (L := L) n).carrier :=
+        (K := K) (L := L) n).RadicalQuotient)  :=
   Classical.choose
     ((KummerTheory.chosenFiniteKummerRadicalDatum
       (K := K) (L := L) n).radicalQuotientMk_surjective q)
@@ -209,7 +204,7 @@ noncomputable def finiteKummerRadicalSupport
   letI : Finite D.RadicalQuotient :=
     finite_chosenFiniteKummerRadicalQuotient
       (K := K) (L := L) n hmu
-  letI : Fintype D.RadicalQuotient :=
+  letI  :=
     Fintype.ofFinite D.RadicalQuotient
   exact
     Finset.univ.biUnion fun q =>
@@ -217,25 +212,23 @@ noncomputable def finiteKummerRadicalSupport
         (chosenFiniteKummerRadicalRepresentative
           (K := K) (L := L) n q).1
 
-/-- Enlarge any prescribed finite set by the finite supports needed to
-represent all actual Kummer radical classes by `S`-units. -/
-noncomputable def enlargeByFiniteKummerRadicalSupport
-    {L : Type*} [Field L] [Algebra K L]
+section
+variable {L : Type*} [Field L] [Algebra K L]
     [FiniteDimensional K L] [IsGalois K L]
     (n : ℕ+)
     (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
-    Finset (HeightOneSpectrum (𝓞 K)) :=
+    (S : Finset (HeightOneSpectrum (𝓞 K)))
+include L n hmu S
+/-- Enlarge any prescribed finite set by the finite supports needed to
+represent all actual Kummer radical classes by `S`-units. -/
+noncomputable def enlargeByFiniteKummerRadicalSupport
+       :=
   S ∪ finiteKummerRadicalSupport
     (K := K) (L := L) n hmu
 
 /-- The radical-support enlargement contains its starting set. -/
 theorem subset_enlargeByFiniteKummerRadicalSupport
-    {L : Type*} [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+      :
     S ⊆ enlargeByFiniteKummerRadicalSupport
       (K := K) (L := L) n hmu S :=
   Finset.subset_union_left
@@ -243,11 +236,7 @@ theorem subset_enlargeByFiniteKummerRadicalSupport
 /-- Each chosen radical representative is an `S`-unit after the chosen
 finite enlargement. -/
 theorem chosenFiniteKummerRadicalRepresentative_mem_enlargedSUnitGroup
-    {L : Type*} [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
+     
     (q :
       (KummerTheory.chosenFiniteKummerRadicalDatum
         (K := K) (L := L) n).RadicalQuotient) :
@@ -271,23 +260,15 @@ theorem chosenFiniteKummerRadicalRepresentative_mem_enlargedSUnitGroup
     let : Finite D.RadicalQuotient :=
       finite_chosenFiniteKummerRadicalQuotient
         (K := K) (L := L) n hmu
-    let : Fintype D.RadicalQuotient :=
+    let  :=
       Fintype.ofFinite D.RadicalQuotient
-    exact Finset.mem_biUnion.mpr
-      ⟨q, Finset.mem_univ q, hv⟩
-  · exact mem_sUnitGroup_chosenUnitFiniteSupport
-      (K := K)
-      (chosenFiniteKummerRadicalRepresentative
-        (K := K) (L := L) n q).1
+    apply Finset.mem_biUnion.mpr <;> aesop
+  · apply mem_sUnitGroup_chosenUnitFiniteSupport
 
 /-- After the chosen finite enlargement, the actual radical of `L/K`
 is generated by its `S`-unit part and the ambient `n`-th powers. -/
 theorem finiteKummerRadicalSubgroup_le_enlargedSUnitKummerSubgroup
-    {L : Type*} [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+      :
     KummerTheory.finiteKummerRadicalSubgroup
         (K := K) (L := L) n ≤
       (sUnitKummerSubgroup
@@ -299,16 +280,14 @@ theorem finiteKummerRadicalSubgroup_le_enlargedSUnitKummerSubgroup
     KummerTheory.chosenFiniteKummerRadicalDatum
       (K := K) (L := L) n
   let aD : D.carrier := ⟨a, ha⟩
-  let q : D.RadicalQuotient := D.radicalQuotientMk aD
+  let q  := D.radicalQuotientMk aD
   let bD : D.carrier :=
     chosenFiniteKummerRadicalRepresentative
       (K := K) (L := L) n q
   have hbclass : D.radicalQuotientMk bD =
       D.radicalQuotientMk aD := by
-    exact chosenFiniteKummerRadicalRepresentative_spec
-      (K := K) (L := L) n q
-  have habpower : aD / bD ∈ D.ambientNthPowersSubgroup := by
-    exact (D.radicalQuotientMk_eq_iff aD bD).1 hbclass.symm
+    apply chosenFiniteKummerRadicalRepresentative_spec
+  have habpower  := (D.radicalQuotientMk_eq_iff aD bD).1 hbclass.symm
   obtain ⟨z, hz⟩ :=
     (D.mem_ambientNthPowersSubgroup_iff).1 habpower
   apply Subgroup.mem_sup.mpr
@@ -327,18 +306,8 @@ theorem finiteKummerRadicalSubgroup_le_enlargedSUnitKummerSubgroup
   simp [div_eq_mul_inv, mul_comm, mul_left_comm]
 
 /-- Exact radical identification after the chosen finite enlargement. -/
-theorem enlargedSUnitKummerSubgroup_eq_finiteKummerRadicalSubgroup
-    {L : Type*} [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
-    (sUnitKummerSubgroup
-        (K := K) (L := L) n
-        (enlargeByFiniteKummerRadicalSupport
-          (K := K) (L := L) n hmu S)).1 =
-      KummerTheory.finiteKummerRadicalSubgroup
-        (K := K) (L := L) n :=
+def enlargedSUnitKummerSubgroup_eq_finiteKummerRadicalSubgroup
+       :=
   le_antisymm
     (sUnitKummerSubgroup_le_finiteKummerRadicalSubgroup
       (K := K) (L := L) n
@@ -346,6 +315,8 @@ theorem enlargedSUnitKummerSubgroup_eq_finiteKummerRadicalSubgroup
         (K := K) (L := L) n hmu S))
     (finiteKummerRadicalSubgroup_le_enlargedSUnitKummerSubgroup
       (K := K) (L := L) n hmu S)
+end
+
 
 /-- The `S`-unit radical subgroup belonging to an extension is contained
 in the full `S`-unit Kummer subgroup. -/
@@ -399,9 +370,7 @@ theorem kummerRadicalExtension_enlargedSUnitKummerSubgroup_eq
   rw [
     enlargedSUnitKummerSubgroup_eq_finiteKummerRadicalSubgroup
       (K := K) (L := E) n hmu S]
-  exact
-    KummerTheory.kummerRadicalExtension_finiteKummerRadicalSubgroup_eq
-      E n hmu hexponent
+  apply KummerTheory.kummerRadicalExtension_finiteKummerRadicalSubgroup_eq <;> assumption
 
 end KummerTheory
 

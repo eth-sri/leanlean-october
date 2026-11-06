@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LFunctions.Hecke.PrimeArtinValues
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.AbelianQuotient
 
@@ -18,9 +21,9 @@ theorem inertiaRestrictIntermediate
     (Ideal.inertia (L ≃ₐ[K] L) wL.asIdeal).map (AlgEquiv.restrictNormalHom ↥E) =
       Ideal.inertia (↥E ≃ₐ[K] ↥E) wE.asIdeal := by
   let H := fixingSubgroup (L ≃ₐ[K] L) (E : Set L)
-  letI : wL.asIdeal.LiesOver wE.asIdeal := hwL
+  letI  := hwL
   haveI : IsGaloisGroup H E L := by dsimp [H]; infer_instance
-  haveI : IsGaloisGroup H (𝓞 E) (𝓞 L) :=
+  haveI  :=
     IsGaloisGroup.of_isFractionRing H (𝓞 E) (𝓞 L) E L
   haveI : Algebra.IsInvariant (𝓞 E) (𝓞 L) H := inferInstance
   apply Ideal.map_inertia_of_surjective (AlgEquiv.restrictNormalHom ↥E) H
@@ -34,6 +37,6 @@ theorem inertiaRestrictIntermediate
     apply NumberField.RingOfIntegers.ext
     change algebraMap E L ((g.restrictNormal E) (x : E)) =
       g (algebraMap E L (x : E))
-    exact AlgEquiv.restrictNormal_commutes g E (x : E)
+    apply AlgEquiv.restrictNormal_commutes
 
 end DedekindZetaZeroFree.AbelianQuotient

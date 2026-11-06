@@ -19,16 +19,16 @@ def localLevel (q : HeightOneSpectrum (𝓞 F)) :
   if h : q ∈ C.exceptional then (LocalSeed.finite_has_level F ζ hζ P C q).choose
   else (C.canonical q).iwasawa.compact
 
-theorem local_fixed (q : HeightOneSpectrum (𝓞 F))
-    (k : (localLevel F ζ hζ P C q).toOpenSubgroup)
-    (g : KPLocalExceptionalConstruction.ActualCover F ζ hζ q) :
-    (LocalSeed.finite F ζ hζ P C q).val (g * k.val) =
-      (LocalSeed.finite F ζ hζ P C q).val g := by
-  by_cases h : q ∈ C.exceptional
-  · exact (LocalSeed.finite_has_level F ζ hζ P C q).choose_spec.2
-      ⟨k.val, by simpa only [localLevel, dif_pos h] using k.property⟩ g
-  · exact LocalSeed.finite_right_fixed F ζ hζ P C q h
-      ⟨k.val, by simpa only [localLevel, dif_neg h] using k.property⟩ g
+
+
+
+
+
+
+
+
+
+
 
 theorem localLevel_standard : ∀ᶠ q in Filter.cofinite,
     (localLevel F ζ hζ P C q).toOpenSubgroup.toSubgroup =
@@ -44,19 +44,19 @@ theorem localLevel_standard : ∀ᶠ q in Filter.cofinite,
   simp only [finiteCompact, dif_neg hb]
   rw [KPLocalExceptionalConstruction.actualGoodCompactSplit, MonoidHom.range_comp]
 
-def productLevel : ActualFiniteFactor.ProductLevelData F ζ hζ where
-  localLevel := localLevel F ζ hζ P C
-  cofinally_standard := localLevel_standard F ζ hζ P C
 
-theorem raw_local_fixed (u : RestrictedCover F ζ hζ)
-    (hu : u ∈ ActualFiniteFactor.productTuples F ζ hζ (productLevel F ζ hζ P C))
-    (q : HeightOneSpectrum (𝓞 F))
-    (g : KPLocalExceptionalConstruction.ActualCover F ζ hζ q) :
-    (LocalSeed.finite F ζ hζ P C q).val
-      (g * KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (u (Sum.inr q))) =
-        (LocalSeed.finite F ζ hζ P C q).val g := by
-  exact local_fixed F ζ hζ P C q
-    ⟨_, (Subgroup.mem_iInf.mp hu.2) q⟩ g
+
+
+
+
+
+
+
+
+
+
+
+
 
 end DedekindZetaZeroFree.EisensteinReferenceSections.FiniteLevels
 

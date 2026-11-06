@@ -20,9 +20,15 @@ private lemma B1 (y : Kˣ) : KPHilbert.B3 F ζ hζ v 1 y = 1 :=
     KubotaDefectSymbolAlgebra.one_left _ _ _ (KPHilbert.B3_laws F ζ hζ v).1 y
 private lemma B2 (y : Kˣ) : KPHilbert.B3 F ζ hζ v y 1 = 1 :=
     KubotaDefectSymbolAlgebra.one_right _ _ _ (KPHilbert.B3_laws F ζ hζ v).2.1 y
+
+local notation:max "current_A" => KPPGLLocalCover.A F ζ hζ
+
+
+local notation:max "current_N" => KPPGLLocalCover.N F ζ hζ
+
 private lemma A_N (y : Kˣ) (x : K) :
-    KPPGLLocalCover.A F ζ hζ v y * KPPGLLocalCover.N F ζ hζ v x =
-      KPPGLLocalCover.N F ζ hζ v ((y : K) * x) * KPPGLLocalCover.A F ζ hζ v y := by
+    current_A v y * current_N v x =
+      current_N v ((y : K) * x) * current_A v y := by
   have hm : KubotaRankTwo.d K y 1 * KubotaRankTwo.n K x =
       KubotaRankTwo.n K ((y : K) * x) * KubotaRankTwo.d K y 1 := by
     apply Units.ext
@@ -107,8 +113,8 @@ private lemma sigma_scalar_dw (y : Kˣ) :
     simp [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, X_dw,
       ← w_d F q y, X_wd, hx, hd, B1, B2, hb, hb', swap_det]
 private lemma W_A (y : Kˣ) :
-      KPPGLLocalCover.W F ζ hζ v * KPPGLLocalCover.A F ζ hζ v y =
-        KPPGLLocalCover.A F ζ hζ v y⁻¹ * KPPGLLocalCover.W F ζ hζ v := by
+      KPPGLLocalCover.W F ζ hζ v * current_A v y =
+        current_A v y⁻¹ * KPPGLLocalCover.W F ζ hζ v := by
     have hr : KPStandardLocalRootLifts.W F ζ hζ v * KPStandardLocalRootLifts.A F ζ hζ v y =
         KPScalarSplitCentral.scalarHom F ζ hζ v y *
           (KPStandardLocalRootLifts.A F ζ hζ v y⁻¹ * KPStandardLocalRootLifts.W F ζ hζ v) := by
@@ -124,42 +130,42 @@ private lemma W_A (y : Kˣ) :
       (QuotientGroup.eq_one_iff _).mpr ⟨y, rfl⟩
     simpa only [map_mul, hs, one_mul, KPPGLLocalCover.W, KPPGLLocalCover.A] using he
 private lemma cube_A_comm (c a : Kˣ) :
-    KPPGLLocalCover.A F ζ hζ v (c^3) * KPPGLLocalCover.A F ζ hζ v a =
-      KPPGLLocalCover.A F ζ hζ v a * KPPGLLocalCover.A F ζ hζ v (c^3) := by
+    current_A v (c^3) * current_A v a =
+      current_A v a * current_A v (c^3) := by
   rw [KPPGLLocalCover.A_mul, KPPGLLocalCover.A_mul,
     ((KPHilbert.B3_laws F ζ hζ v).2.2.2.2.1 c a).1,
     ((KPHilbert.B3_laws F ζ hζ v).2.2.2.2.1 a c).2]
   simp [mul_comm]
 private lemma cube_A_inv (S : CanonicalFiniteInducingData F ζ hζ q) (c : Kˣ) :
-    (KPPGLLocalCover.A F ζ hζ v (c^3))⁻¹ = KPPGLLocalCover.A F ζ hζ v (c⁻¹^3) := by
+    (current_A v (c^3))⁻¹ = current_A v (c⁻¹^3) := by
   rw [← S.cube_actual c, ← S.cube_actual c⁻¹, map_inv]
   rfl
 private lemma cube_A_kernelW (S : CanonicalFiniteInducingData F ζ hζ q) (c : Kˣ) :
-    KPPGLLocalCover.A F ζ hζ v (c^3) * kernelW K S.borel .minus =
-      kernelW K S.borel .minus * KPPGLLocalCover.A F ζ hζ v (c⁻¹^3) := by
+    current_A v (c^3) * kernelW K S.borel .minus =
+      kernelW K S.borel .minus * current_A v (c⁻¹^3) := by
   have he := congrArg (fun h : actualTorus F ζ hζ q => (S.borel.torus h : ActualCover F ζ hζ q))
     (congrArg (fun z : S.heisenberg.C => (z : actualTorus F ζ hζ q)) (S.borel.weyl_cube c))
   rw [S.borel.weylCenter_coe, S.borel.weyl_from_lift,
     S.torus_full, S.torus_full, S.cube_actual, S.cube_actual] at he
-  change KPPGLLocalCover.A F ζ hζ v (c^3) * S.borel.liftedW =
-    S.borel.liftedW * KPPGLLocalCover.A F ζ hζ v (c⁻¹^3)
+  change current_A v (c^3) * S.borel.liftedW =
+    S.borel.liftedW * current_A v (c⁻¹^3)
   rw [← he]
   group
 set_option maxHeartbeats 1200000 in
 private lemma word_identity (S : CanonicalFiniteInducingData F ζ hζ q)
     (a c : Kˣ) (u x : K) :
-    KPPGLLocalCover.A F ζ hζ v (c^3) *
-      (kernelW K S.borel .minus * KPPGLLocalCover.N F ζ hζ v u *
-        (KPPGLLocalCover.A F ζ hζ v a * KPPGLLocalCover.W F ζ hζ v *
-          KPPGLLocalCover.N F ζ hζ v x)) *
-      (KPPGLLocalCover.A F ζ hζ v (c^3))⁻¹ =
-    kernelW K S.borel .minus * KPPGLLocalCover.N F ζ hζ v ((c⁻¹^3 : Kˣ) * u) *
-      (KPPGLLocalCover.A F ζ hζ v a * KPPGLLocalCover.W F ζ hζ v *
-        KPPGLLocalCover.N F ζ hζ v ((c^3 : Kˣ) * x)) := by
-  let T := KPPGLLocalCover.A F ζ hζ v (c^3)
+    current_A v (c^3) *
+      (kernelW K S.borel .minus * current_N v u *
+        (current_A v a * KPPGLLocalCover.W F ζ hζ v *
+          current_N v x)) *
+      (current_A v (c^3))⁻¹ =
+    kernelW K S.borel .minus * current_N v ((c⁻¹^3 : Kˣ) * u) *
+      (current_A v a * KPPGLLocalCover.W F ζ hζ v *
+        current_N v ((c^3 : Kˣ) * x)) := by
+  let T := current_A v (c^3)
   let w := kernelW K S.borel .minus
-  let N := KPPGLLocalCover.N F ζ hζ v
-  let b := KPPGLLocalCover.A F ζ hζ v a
+  let N := current_N v
+  let b := current_A v a
   let W := KPPGLLocalCover.W F ζ hζ v
   have hkw : T * w = w * T⁻¹ := by
     dsimp only [T, w]
@@ -175,7 +181,7 @@ private lemma word_identity (S : CanonicalFiniteInducingData F ζ hζ q)
     exact cube_A_comm F ζ hζ q c⁻¹ a
   have hw : T⁻¹ * W = W * T := by
     have h := W_A F ζ hζ q (c^3)
-    change W * T = KPPGLLocalCover.A F ζ hζ v ((c^3)⁻¹) * W at h
+    change W * T = current_A v ((c^3)⁻¹) * W at h
     rw [← inv_pow, ← cube_A_inv F ζ hζ q S c] at h
     exact h.symm
   have hn' : T * N x = N ((c^3 : Kˣ) * x) * T := A_N F ζ hζ q (c^3) x
@@ -198,21 +204,21 @@ theorem reverse_integral_cubic_unit_change_variable
     (hc : localAbs (LocalField F q) c = 1)
     (φ : ActualCover F ζ hζ q → ℂ)
     (hφ : ∀ g : ActualCover F ζ hζ q,
-      φ (KPPGLLocalCover.A F ζ hζ (Sum.inr q) (c ^ 3) * g *
-        (KPPGLLocalCover.A F ζ hζ (Sum.inr q) (c ^ 3))⁻¹) = φ g)
+      φ (current_A (Sum.inr q) (c ^ 3) * g *
+        (current_A (Sum.inr q) (c ^ 3))⁻¹) = φ g)
     (x : LocalField F q) :
     (∫ u : LocalField F q,
       φ (kernelW (LocalField F q) S.borel .minus *
-        KPPGLLocalCover.N F ζ hζ (Sum.inr q) u *
-        (KPPGLLocalCover.A F ζ hζ (Sum.inr q) a *
+        current_N (Sum.inr q) u *
+        (current_A (Sum.inr q) a *
           KPPGLLocalCover.W F ζ hζ (Sum.inr q) *
-          KPPGLLocalCover.N F ζ hζ (Sum.inr q) ((c ^ 3 : (LocalField F q)ˣ) * x))) ∂μ) =
+          current_N (Sum.inr q) ((c ^ 3 : (LocalField F q)ˣ) * x))) ∂μ) =
     (∫ u : LocalField F q,
       φ (kernelW (LocalField F q) S.borel .minus *
-        KPPGLLocalCover.N F ζ hζ (Sum.inr q) u *
-        (KPPGLLocalCover.A F ζ hζ (Sum.inr q) a *
+        current_N (Sum.inr q) u *
+        (current_A (Sum.inr q) a *
           KPPGLLocalCover.W F ζ hζ (Sum.inr q) *
-          KPPGLLocalCover.N F ζ hζ (Sum.inr q) x)) ∂μ) := by
+          current_N (Sum.inr q) x)) ∂μ) := by
   let d : Kˣ := c⁻¹ ^ 3
   have hci : localAbs K c⁻¹ = 1 := by
     have h := localAbs_mul K c c⁻¹
@@ -238,17 +244,17 @@ theorem reverse_integral_cubic_unit_change_variable
     rw [NonarchimedeanHaarScaling.map_mul K μ (d : K) d.ne_zero, habs]
     simp
   let H : K → ℂ := fun u =>
-    φ (kernelW K S.borel .minus * KPPGLLocalCover.N F ζ hζ v u *
-      (KPPGLLocalCover.A F ζ hζ v a * KPPGLLocalCover.W F ζ hζ v *
-        KPPGLLocalCover.N F ζ hζ v ((c^3 : Kˣ) * x)))
+    φ (kernelW K S.borel .minus * current_N v u *
+      (current_A v a * KPPGLLocalCover.W F ζ hζ v *
+        current_N v ((c^3 : Kˣ) * x)))
   have hp (u : K) : H (e u) =
-    φ (kernelW K S.borel .minus * KPPGLLocalCover.N F ζ hζ v u *
-      (KPPGLLocalCover.A F ζ hζ v a * KPPGLLocalCover.W F ζ hζ v *
-        KPPGLLocalCover.N F ζ hζ v x)) := by
+    φ (kernelW K S.borel .minus * current_N v u *
+      (current_A v a * KPPGLLocalCover.W F ζ hζ v *
+        current_N v x)) := by
     dsimp only [H]
-    change φ (kernelW K S.borel .minus * KPPGLLocalCover.N F ζ hζ v ((c⁻¹^3 : Kˣ) * u) *
-      (KPPGLLocalCover.A F ζ hζ v a * KPPGLLocalCover.W F ζ hζ v *
-        KPPGLLocalCover.N F ζ hζ v ((c^3 : Kˣ) * x))) = _
+    change φ (kernelW K S.borel .minus * current_N v ((c⁻¹^3 : Kˣ) * u) *
+      (current_A v a * KPPGLLocalCover.W F ζ hζ v *
+        current_N v ((c^3 : Kˣ) * x))) = _
     rw [← word_identity F ζ hζ q S a c u x]
     exact hφ _
   change (∫ u : K, H u ∂μ) = _
@@ -425,8 +431,8 @@ variable (F : Type) [Field F] [NumberField F]
     sectionSpace S.borel P ε 0 ≃ₗ[ℂ] scalarSections F ζ hζ q S P hP ε)
   (hcoordinates : ∀ ε f g, (coordinates ε f).val g = (f.val g).val 1)
   (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
-  (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
-  (ξ : (valuation (LocalField F q)).integer) (hξ : IsPrimitiveRoot ξ 3)
+  
+  (ξ : (valuation (LocalField F q)).integer) 
 
 theorem deformedTest_vector_value
     (f : scalarSections F ζ hζ q S P hP .minus) (s : ℂ)

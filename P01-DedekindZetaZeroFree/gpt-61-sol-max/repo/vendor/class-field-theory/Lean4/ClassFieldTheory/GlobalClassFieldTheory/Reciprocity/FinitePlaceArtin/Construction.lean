@@ -62,11 +62,14 @@ variable {K L : Type}
     [Field L] [Algebra K L]
     [hKLfinite : FiniteDimensional K L] [IsAbelianGalois K L]
 
+section
+variable {F : Type} [Field F]
+    (vF : AbsoluteValue F ℝ)
+    (hvF : IsNonarchimedean (vF : F → ℝ))
+include F vF hvF
 /-- A completion attached to a nonarchimedean absolute value has an ultrametric distance. -/
 theorem finitePlaceArtinCompletionIsUltrametricDist
-    {F : Type} [Field F]
-    (vF : AbsoluteValue F ℝ)
-    (hvF : IsNonarchimedean (vF : F → ℝ)) :
+      :
     IsUltrametricDist vF.Completion :=
   IsUltrametricDist.isUltrametricDist_of_isNonarchimedean_norm
     (AbsoluteValue.completionAbsoluteValue_isNonarchimedean
@@ -75,9 +78,7 @@ theorem finitePlaceArtinCompletionIsUltrametricDist
 /-- The valued-field structure on a finite-place completion induced by its nonarchimedean norm. -/
 @[reducible]
 noncomputable def finitePlaceArtinCompletionValued
-    {F : Type} [Field F]
-    (vF : AbsoluteValue F ℝ)
-    (hvF : IsNonarchimedean (vF : F → ℝ)) :
+      :
     Valued vF.Completion ℝ≥0 :=
   letI : IsUltrametricDist vF.Completion :=
     finitePlaceArtinCompletionIsUltrametricDist vF hvF
@@ -86,9 +87,7 @@ noncomputable def finitePlaceArtinCompletionValued
 /-- The valuation relation on a finite-place completion induced by its canonical valuation. -/
 @[reducible]
 noncomputable def finitePlaceArtinCompletionValuativeRel
-    {F : Type} [Field F]
-    (vF : AbsoluteValue F ℝ)
-    (hvF : IsNonarchimedean (vF : F → ℝ)) :
+      :
     ValuativeRel vF.Completion := by
   letI : Valued vF.Completion ℝ≥0 :=
     finitePlaceArtinCompletionValued vF hvF
@@ -98,9 +97,7 @@ noncomputable def finitePlaceArtinCompletionValuativeRel
 /-- The canonical valued structure makes a locally compact finite-place completion a nonarchimedean local field. -/
 theorem
     finitePlaceArtinCompletionIsNonarchimedeanLocalField
-    {F : Type} [Field F]
-    (vF : AbsoluteValue F ℝ)
-    (hvF : IsNonarchimedean (vF : F → ℝ))
+     
     [IsUltrametricDist vF.Completion]
     [NontriviallyNormedField vF.Completion]
     [(NormedField.valuation
@@ -132,6 +129,8 @@ theorem
     { toIsValuativeTopology := inferInstance
       toLocallyCompactSpace := inferInstance
       toIsNontrivial := inferInstance }
+end
+
 
 /-- The concrete finite-completion ring equivalence agrees with the
 relative-completion algebra equivalence on underlying rings. -/
@@ -230,83 +229,83 @@ noncomputable def finitePlaceArtinMonoidHomOfExtension
         ((LocalClassFieldTheory.abelianLocalArtinMonoidHom
           vK.Completion E).comp eK.symm.toMonoidHom))
 
-/-- Pointwise formula for the finite-place Artin homomorphism attached
-to a specified extension of the base absolute value. -/
-theorem finitePlaceArtinMonoidHomOfExtension_apply
-    (v : HeightOneSpectrum (𝓞 K))
-    (w : AbsoluteValueExtension
-      (NumberField.HeightOneSpectrum.adicAbv K v) L)
-    (x : (v.adicCompletion K)ˣ) :
-    let vK :=
-      NumberField.HeightOneSpectrum.adicAbv K v
-    let hvK : vK.IsNontrivial :=
-      RayClass.adicAbv_isNontrivial v
-    letI hK :=
-      AbsoluteValue.extensionCompletionAlgebra
-        (K := K) w.1
-    letI : SMul K w.1.Completion := hK.toSMul
-    letI : Algebra vK.Completion w.1.Completion :=
-      AbsoluteValue.completionAlgebra vK w.1 w.2
-    letI :=
-      LocalClassFieldTheory.localizedCompletionGlobalAlgebra vK w
-    letI :=
-      LocalClassFieldTheory.localizedCompletionIsScalarTower vK w
-    let E :=
-      AlgebraicNumberTheory.Valuations.LocalizedCompletion vK w
-    letI : FiniteDimensional vK.Completion E :=
-      AlgebraicNumberTheory.Valuations.localizedCompletionModuleFinite vK hvK w
-    letI : IsAbelianGalois vK.Completion E :=
-      LocalClassFieldTheory.localizedCompletion_isAbelianGalois
-        vK hvK w
-    letI : NontriviallyNormedField vK.Completion :=
-      absoluteValueExtension_completionNontriviallyNormedField
-        vK hvK
-    letI : LocallyCompactSpace vK.Completion :=
-      AbsoluteValue.Completion.locallyCompactSpace
-        (finitePlaceCompletionBaseMap_isometry v)
-    letI : IsUltrametricDist vK.Completion :=
-      IsUltrametricDist.isUltrametricDist_of_isNonarchimedean_norm
-        (AbsoluteValue.completionAbsoluteValue_isNonarchimedean
-          vK
-          (NumberField.HeightOneSpectrum.isNonarchimedean_adicAbv
-            K v))
-    letI : Valued vK.Completion ℝ≥0 :=
-      NormedField.toValued
-    let vC : Valuation vK.Completion ℝ≥0 :=
-      Valued.v
-    letI : vC.IsNontrivial :=
-      (inferInstance :
-        (NormedField.valuation
-          (K := vK.Completion)).IsNontrivial)
-    letI : ValuativeRel vK.Completion :=
-      ValuativeRel.ofValuation vC
-    letI : vC.Compatible :=
-      Valuation.Compatible.ofValuation vC
-    letI : ValuativeRel.IsNontrivial vK.Completion :=
-      (ValuativeRel.isNontrivial_iff_isNontrivial vC).2
-        inferInstance
-    letI : IsValuativeTopology vK.Completion :=
-      isValuativeTopology_of_valued_ofValuation
-        vK.Completion ℝ≥0
-    letI : IsNonarchimedeanLocalField vK.Completion :=
-      { toIsValuativeTopology := inferInstance
-        toLocallyCompactSpace := inferInstance
-        toIsNontrivial := inferInstance }
-    let eD :
-        absoluteValueDecompositionGroup K w.1 ≃*
-          (E ≃ₐ[vK.Completion] E) :=
-      decompositionGroupEquivAlgebraicLocalizationAut
-        vK hvK w
-    let eK :
-        vK.Completionˣ ≃* (v.adicCompletion K)ˣ :=
-      finitePlaceCompletionUnitsContinuousMulEquiv v
-    finitePlaceArtinMonoidHomOfExtension
-        (K := K) (L := L) v w x =
-      (absoluteValueDecompositionGroup K w.1).subtype
-        (eD.symm
-          (LocalClassFieldTheory.abelianLocalArtinMonoidHom
-            vK.Completion E (eK.symm x))) := by
-  rfl
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The canonical completion input used by the finite-place local Artin map. -/
 noncomputable def finitePlaceLocalArtinInputMonoidHom

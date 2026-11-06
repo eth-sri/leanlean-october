@@ -67,15 +67,14 @@ variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 variable (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ
   (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H)
 variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U) (hι : Function.Injective ι)
-variable (f : ℂ → S) (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
+variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U) 
+variable (f : ℂ → S) 
 variable {T : ℝ} (buffer : KPContActualCollarBuffer.CollarBuffer F ζ hζ
   (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H T)
 variable (χ : KPContActualAllCuspSource.Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
 variable (source : KPContActualAllCuspSource.Source F ζ hζ C R P H U ι buffer KPContinuation.spectralDomain f χ)
 variable (V : ℂ → KPContActualAllCuspSource.SmoothSections F ζ hζ C R P H U)
-variable (hV : KPContActualCutoffPlusClearedGerm.Properties F ζ hζ C R P H U R.adelicHaar R.adelic_isHaar rfl
-  ι KPContinuation.spectralDomain f χ realization buffer source V)
+
 
 end ActualSourceChamberPin
 

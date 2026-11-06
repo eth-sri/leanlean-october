@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 public import DedekindZetaZeroFree.Analysis.DyadicLength
 
 @[expose] public section
+
 
 /-
 https://github.com/openai/math
@@ -42,27 +45,24 @@ theorem pow_lt_of_lt_dyadicLength {X : ℝ} (hX : 1 ≤ X) {k : ℕ}
 
 theorem dyadicLength_small_power_constant_pos {η : ℝ} (hη : 0 < η) :
     0 < 2 + 1 / (η * Real.log 2) := by
-  have hlog2 : 0 < Real.log 2 := Real.log_pos one_lt_two
-  have h : 0 < η * Real.log 2 := mul_pos hη hlog2
-  have := one_div_pos.2 h
-  linarith
+  positivity
 
 theorem dyadicLength_small_power {η X : ℝ} (hη : 0 < η) (hX : 1 ≤ X) :
     (dyadicLength X + 1 : ℝ) ≤ (2 + 1 / (η * Real.log 2)) * X ^ η := by
   have hlog2 : 0 < Real.log 2 := Real.log_pos one_lt_two
   have hX0 : 0 < X := lt_of_lt_of_le zero_lt_one hX
-  have hXη : 1 ≤ X ^ η := Real.one_le_rpow hX hη.le
+  have hXη  := Real.one_le_rpow hX hη.le
   have hq0 : 0 ≤ Real.log X / Real.log 2 :=
     div_nonneg (Real.log_nonneg hX) hlog2.le
   have hceil : (dyadicLength X : ℝ) < Real.log X / Real.log 2 + 1 := by
     rw [dyadicLength]; exact Nat.ceil_lt_add_one hq0
-  have hlog_le : Real.log X ≤ X ^ η / η := Real.log_le_rpow_div hX0.le hη
+  have hlog_le  := Real.log_le_rpow_div hX0.le hη
   have hdiv : Real.log X / Real.log 2 ≤ X ^ η / (η * Real.log 2) := by
     have := div_le_div_of_nonneg_right hlog_le hlog2.le
     rwa [div_div] at this
   have hfinal : X ^ η / (η * Real.log 2) + 2 * X ^ η
       = (2 + 1 / (η * Real.log 2)) * X ^ η := by
-    have hne : η * Real.log 2 ≠ 0 := ne_of_gt (mul_pos hη hlog2)
+    
     field_simp
     ring
   calc (dyadicLength X + 1 : ℝ) = (dyadicLength X : ℝ) + 1 := by push_cast; ring

@@ -135,8 +135,11 @@ private theorem piTilde_compact_preimage (U : KPMsFixedHaarDisintegration.Level 
   apply QuotientGroup.rightRel_apply.mpr
   simpa [hg, mul_assoc] using ha
 
+section
+variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+include R
 theorem coveredMeasure_finiteOnCompacts
-    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+     
     (U : KPMsFixedHaarDisintegration.Level F ζ hζ) :
     IsFiniteMeasureOnCompacts (coveredMeasure F ζ hζ R U) := by
   letI := quotientHaar_finiteOnCompacts F ζ hζ R
@@ -146,7 +149,7 @@ theorem coveredMeasure_finiteOnCompacts
   exact (piTilde_compact_preimage F ζ hζ U (K_U_compact F ζ hζ U) K hK).measure_lt_top
 
 theorem sphericalMeasure_finiteOnCompacts
-    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+     
     (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
     (U : KPMsFixedHaarDisintegration.Level F ζ hζ) :
     IsFiniteMeasureOnCompacts
@@ -160,7 +163,7 @@ theorem sphericalMeasure_finiteOnCompacts
   exact (KPContSectorSmoothFramesSupport.q_closed_and_proper F ζ hζ U).2 K hK |>.measure_lt_top
 
 theorem coveredMeasure_regular
-    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+     
     (U : KPMsFixedHaarDisintegration.Level F ζ hζ) :
     (coveredMeasure F ζ hζ R U).Regular := by
   letI := coveredMeasure_finiteOnCompacts F ζ hζ R U
@@ -169,7 +172,7 @@ theorem coveredMeasure_regular
   exact Measure.Regular.of_sigmaCompactSpace_of_isLocallyFiniteMeasure _
 
 theorem sphericalMeasure_regular
-    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+     
     (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
     (U : KPMsFixedHaarDisintegration.Level F ζ hζ) :
     (KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U).Regular := by
@@ -180,7 +183,7 @@ theorem sphericalMeasure_regular
   exact Measure.Regular.of_sigmaCompactSpace_of_isLocallyFiniteMeasure _
 
 theorem coveredMeasure_sigmaFinite
-    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+     
     (U : KPMsFixedHaarDisintegration.Level F ζ hζ) :
     SigmaFinite (coveredMeasure F ζ hζ R U) := by
   letI := coveredMeasure_finiteOnCompacts F ζ hζ R U
@@ -188,7 +191,7 @@ theorem coveredMeasure_sigmaFinite
   infer_instance
 
 theorem sphericalMeasure_sigmaFinite
-    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+     
     (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
     (U : KPMsFixedHaarDisintegration.Level F ζ hζ) :
     SigmaFinite (KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U) := by
@@ -197,20 +200,25 @@ theorem sphericalMeasure_sigmaFinite
   infer_instance
 
 theorem compactSupport_memLp
-    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+     
     (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
     (f : CoveredSpherical F ζ hζ U → ℂ)
     (hf : Continuous f) (hfc : HasCompactSupport f) :
     MemLp f 2 (coveredMeasure F ζ hζ R U) := by
   letI := coveredMeasure_finiteOnCompacts F ζ hζ R U
   exact hf.memLp_of_hasCompactSupport hfc
+end
 
-def sectionSquaredNormIntegral
-    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+
+section
+variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
     (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
     (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
     (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-    (f : CoveredSpherical F ζ hζ U → ℂ) : ℝ≥0∞ :=
+    (f : CoveredSpherical F ζ hζ U → ℂ)
+include R P H U f
+def sectionSquaredNormIntegral
+      : ℝ≥0∞ :=
   ∑ i : Fin (H.atlas U).componentCount,
     (H.disintegration U).componentWeight i *
       ∫⁻ x in ((H.atlas U).cuspAtlas i).fundamentalDomain,
@@ -219,11 +227,7 @@ def sectionSquaredNormIntegral
         ∂(KPArch.hyperbolicVolume (KPCuspLogShape.dimension F))
 
 theorem compactSupport_sectionSquaredNormIntegral_lt_top
-    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-    (f : CoveredSpherical F ζ hζ U → ℂ)
+     
     (hfg : ∀ (ε : rootsOfUnity 3 F) v,
       f (z F ζ hζ U ε v) = (chi F ζ hζ ε : ℂ) * f v)
     (hf : Continuous f) (hfc : HasCompactSupport f) :
@@ -260,6 +264,8 @@ theorem compactSupport_sectionSquaredNormIntegral_lt_top
   simp only [Set.preimage_univ, Measure.restrict_univ] at hp
   rw [← hp]
   exact hfinite
+end
+
 
 structure LevelLocalFiniteness
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)

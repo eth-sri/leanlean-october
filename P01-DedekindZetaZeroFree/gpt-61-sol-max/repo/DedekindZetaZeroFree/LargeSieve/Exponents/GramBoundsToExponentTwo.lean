@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LargeSieve.CharacterBounds.SectorGramEstimate
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve.Sieve
 
@@ -24,8 +27,8 @@ theorem initial_gram_to_exponent
   obtain ⟨D, hD, hDiag⟩ := hdiag
   obtain ⟨H, hH, hOff⟩ := hoffdiag ε hε
   obtain ⟨C₀, hC₀, hSect⟩ := initial_conditional_sector F ε D H hε hD hH
-  letI : Finite Q.G := Q.instFinite
-  letI : Fintype Q.G := Fintype.ofFinite Q.G
+  letI  := Q.instFinite
+  letI  := Fintype.ofFinite Q.G
   refine ⟨(Fintype.card Q.G : ℝ) * C₀, by positivity, ?_⟩
   intro M N hM hN
   have hcs : ∀ z : Q.G → ℂ, ‖∑ g, z g‖ ^ 2 ≤ (Fintype.card Q.G : ℝ) * ∑ g, ‖z g‖ ^ 2 := by
@@ -49,13 +52,8 @@ theorem initial_gram_to_exponent
     have hfib : ∑ g : Q.G, ∑ b ∈ (paperShell F c N).filter (fun b => Q.cls b = g), ‖lam b‖ ^ 2
         = energy F c N lam := by
       rw [energy]
-      exact Finset.sum_fiberwise (paperShell F c N) Q.cls (fun b => ‖lam b‖ ^ 2)
-    have hsec : ∀ g : Q.G,
-        ∑ a ∈ paperShell F c M,
-            ‖∑ b ∈ (paperShell F c N).filter (fun b => Q.cls b = g),
-              lam b * (Q.χ b) a‖ ^ 2 ≤
-          C₀ * (M + Real.rpow N (2 + ε)) *
-            ∑ b ∈ (paperShell F c N).filter (fun b => Q.cls b = g), ‖lam b‖ ^ 2 :=
+      apply Finset.sum_fiberwise
+    have hsec  :=
       fun g => hSect c Q hDiag hOff M N hM hN g lam
     have hfac : 0 ≤ C₀ * (M + Real.rpow N (2 + ε)) :=
       mul_nonneg hC₀ (add_nonneg (by linarith) (Real.rpow_nonneg (by linarith) _))

@@ -14,9 +14,12 @@ variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable (R : PrincipalMellin.ActualRecipe S η)
 
-def smoothingMajorant {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
+section
+variable {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
     (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A) (b : Bool)
-    (Z : ℝ) (hZ : 0 < Z) (i : OrbitIndex R) (t : PositiveAxis) : ℝ := by
+    (Z : ℝ) (hZ : 0 < Z)
+include N C v m b Z hZ
+def smoothingMajorant   (i : OrbitIndex R) (t : PositiveAxis) : ℝ := by
   letI := C.transport.groupHaar_isHaar
   exact ∑ d : ThetaDigitAverage.Dig (ThetaDigitAverage.rowPrimes R.A m.val m.property),
     ∫ z : Sheet R.A ⟨t.val / Z, div_pos t.property hZ⟩,
@@ -26,24 +29,18 @@ def smoothingMajorant {N : TraceHaarTransport R} (C : JointUpperVanishingSources
       ∂pregroupingSheetHaar R.A C.packet.v₀ C.transport.groupHaar
         ⟨t.val / Z, div_pos t.property hZ⟩
 
-theorem smoothingMajorant_nonneg {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
-    (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A) (b : Bool)
-    (Z : ℝ) (hZ : 0 < Z) (i : OrbitIndex R) (t : PositiveAxis) :
+theorem smoothingMajorant_nonneg   (i : OrbitIndex R) (t : PositiveAxis) :
     0 ≤ smoothingMajorant R C v m b Z hZ i t := by
   unfold smoothingMajorant
   exact Finset.sum_nonneg (fun _ _ => integral_nonneg (fun _ => norm_nonneg _))
 
-theorem smoothingMajorant_integrable {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
-    (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A) (b : Bool)
-    (Z : ℝ) (hZ : 0 < Z) (i : OrbitIndex R) :
+theorem smoothingMajorant_integrable   (i : OrbitIndex R) :
     Integrable (smoothingMajorant R C v m b Z hZ i) positiveHaar := by
   letI := C.transport.groupHaar_isHaar
   exact integrable_finset_sum Finset.univ
     (fun d _ => C.absolute.orbit_smoothing_integrable v m b Z hZ i d)
 
-theorem smoothingMajorant_integral_summable {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
-    (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A) (b : Bool)
-    (Z : ℝ) (hZ : 0 < Z) :
+theorem smoothingMajorant_integral_summable   :
     Summable (fun i : OrbitIndex R =>
       ∫ t, smoothingMajorant R C v m b Z hZ i t ∂positiveHaar) := by
   letI := C.transport.groupHaar_isHaar
@@ -62,9 +59,7 @@ theorem smoothingMajorant_integral_summable {N : TraceHaarTransport R} (C : Join
   simp_rw [he]
   exact C.absolute.orbit_pregrouping v m b Z hZ
 
-theorem mul_orbitSheet_integral_norm_le {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
-    (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A) (b : Bool)
-    (Z : ℝ) (hZ : 0 < Z) (i : OrbitIndex R) (t : PositiveAxis) :
+theorem mul_orbitSheet_integral_norm_le   (i : OrbitIndex R) (t : PositiveAxis) :
     letI := C.transport.groupHaar_isHaar;
     (∫ z, ‖C.packet.kernel t.val * orbitSheet R C v m b i
       ⟨t.val / Z, div_pos t.property hZ⟩ z‖
@@ -97,9 +92,7 @@ theorem mul_orbitSheet_integral_norm_le {N : TraceHaarTransport R} (C : JointUpp
       apply integral_congr_ae
       exact Filter.Eventually.of_forall (fun z => by simp only [k, norm_mul, mul_assoc])
 
-theorem smoothingIntegrand_norm_le {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
-    (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A) (b : Bool)
-    (Z : ℝ) (hZ : 0 < Z) (i : OrbitIndex R) (t : PositiveAxis) :
+theorem smoothingIntegrand_norm_le   (i : OrbitIndex R) (t : PositiveAxis) :
     ‖C.packet.kernel t.val * orbitIntegral R C v m b i
       ⟨t.val / Z, div_pos t.property hZ⟩‖ ≤
       smoothingMajorant R C v m b Z hZ i t := by
@@ -108,9 +101,7 @@ theorem smoothingIntegrand_norm_le {N : TraceHaarTransport R} (C : JointUpperVan
   exact (norm_integral_le_integral_norm _).trans
     (mul_orbitSheet_integral_norm_le R C v m b Z hZ i t)
 
-theorem orbitTerm_norm_summable {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
-    (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A) (b : Bool)
-    (Z : ℝ) (hZ : 0 < Z) :
+theorem orbitTerm_norm_summable   :
     Summable (fun i : OrbitIndex R => ‖orbitTerm R C v m b Z hZ i‖) := by
   apply (smoothingMajorant_integral_summable R C v m b Z hZ).of_nonneg_of_le
     (fun _ => norm_nonneg _)
@@ -119,9 +110,7 @@ theorem orbitTerm_norm_summable {N : TraceHaarTransport R} (C : JointUpperVanish
     (smoothingMajorant_integrable R C v m b Z hZ i)
     (Filter.Eventually.of_forall (smoothingIntegrand_norm_le R C v m b Z hZ i))
 
-theorem smoothingIntegrand_hasFiniteIntegral {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
-    (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A) (b : Bool)
-    (Z : ℝ) (hZ : 0 < Z) (i : OrbitIndex R) :
+theorem smoothingIntegrand_hasFiniteIntegral   (i : OrbitIndex R) :
     HasFiniteIntegral (fun t : PositiveAxis => C.packet.kernel t.val *
       orbitIntegral R C v m b i ⟨t.val / Z, div_pos t.property hZ⟩) positiveHaar := by
   exact (smoothingMajorant_integrable R C v m b Z hZ i).hasFiniteIntegral.mono
@@ -129,18 +118,14 @@ theorem smoothingIntegrand_hasFiniteIntegral {N : TraceHaarTransport R} (C : Joi
       (smoothingIntegrand_norm_le R C v m b Z hZ i t).trans (le_abs_self _)))
 
 theorem smoothingIntegrand_integrable_of_aestronglyMeasurable
-    {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
-    (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A) (b : Bool)
-    (Z : ℝ) (hZ : 0 < Z) (i : OrbitIndex R)
+      (i : OrbitIndex R)
     (hm : AEStronglyMeasurable (fun t : PositiveAxis => C.packet.kernel t.val *
       orbitIntegral R C v m b i ⟨t.val / Z, div_pos t.property hZ⟩) positiveHaar) :
     Integrable (fun t : PositiveAxis => C.packet.kernel t.val *
       orbitIntegral R C v m b i ⟨t.val / Z, div_pos t.property hZ⟩) positiveHaar :=
   ⟨hm, smoothingIntegrand_hasFiniteIntegral R C v m b Z hZ i⟩
 
-theorem smoothingMajorant_summable_ae {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
-    (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A) (b : Bool)
-    (Z : ℝ) (hZ : 0 < Z) :
+theorem smoothingMajorant_summable_ae   :
     ∀ᵐ t ∂positiveHaar, Summable (fun i : OrbitIndex R =>
       smoothingMajorant R C v m b Z hZ i t) := by
   letI : Countable F := Finsupp.Countable.of_moduleFinite (R := ℚ)
@@ -152,9 +137,7 @@ theorem smoothingMajorant_summable_ae {N : TraceHaarTransport R} (C : JointUpper
     (smoothingMajorant_integral_summable R C v m b Z hZ)
 
 theorem smoothingIntegrand_integral_norm_summable
-    {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
-    (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A) (b : Bool)
-    (Z : ℝ) (hZ : 0 < Z)
+     
     (hm : ∀ i, AEStronglyMeasurable (fun t : PositiveAxis => C.packet.kernel t.val *
       orbitIntegral R C v m b i ⟨t.val / Z, div_pos t.property hZ⟩) positiveHaar) :
     Summable (fun i : OrbitIndex R => ∫ t : PositiveAxis,
@@ -167,6 +150,8 @@ theorem smoothingIntegrand_integral_norm_summable
     (smoothingIntegrand_integrable_of_aestronglyMeasurable R C v m b Z hZ i (hm i)).norm
     (smoothingMajorant_integrable R C v m b Z hZ i)
     (smoothingIntegrand_norm_le R C v m b Z hZ i)
+end
+
 
 end DedekindZetaZeroFree.OrbitExpansion
 

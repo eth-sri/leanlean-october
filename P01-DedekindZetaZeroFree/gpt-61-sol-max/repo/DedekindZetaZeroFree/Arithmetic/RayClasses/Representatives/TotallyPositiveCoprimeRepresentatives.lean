@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Representatives.TotallyPositiveResidueRepresentatives
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve
 
@@ -15,16 +18,19 @@ private lemma mem_factors_toFinset_iff {F : Type} [Field F] [NumberField F]
     Ideal.mem_normalizedFactors_iff hI]
   exact ⟨fun h => h.2, fun h => ⟨Ideal.isPrime_of_prime hP, h⟩⟩
 
-private theorem exists_coprime_residue (F : Type) [Field F] [NumberField F]
+section
+variable (F : Type) [Field F] [NumberField F]
     (m q : Ideal (𝓞 F)) (hm : m ≠ ⊥) (hq : q ≠ ⊥) (a : 𝓞 F)
-    (ha : Ideal.span {a} ⊔ m = ⊤) :
+    (ha : Ideal.span {a} ⊔ m = ⊤)
+include F m q hm hq a ha
+private theorem exists_coprime_residue   :
     ∃ b0 : 𝓞 F, b0 - a ∈ m ∧ Ideal.span {b0} ⊔ (m * q) = ⊤ := by
   classical
   set fm : Multiset (Ideal (𝓞 F)) := UniqueFactorizationMonoid.factors m with hfm
   set fq : Multiset (Ideal (𝓞 F)) := UniqueFactorizationMonoid.factors q with hfq
   set s : Finset (Ideal (𝓞 F)) := fm.toFinset ∪ fq.toFinset with hs
-  let e : Ideal (𝓞 F) → ℕ := fun P => if P ∈ fm.toFinset then fm.count P else fq.count P
-  let x : Ideal (𝓞 F) → 𝓞 F := fun P => if P ∈ fm.toFinset then a else 1
+  let e  := fun P => if P ∈ fm.toFinset then fm.count P else fq.count P
+  let x  := fun P => if P ∈ fm.toFinset then a else 1
   have hprime : ∀ P ∈ s, Prime P := by
     intro P hP
     rw [hs] at hP
@@ -51,9 +57,9 @@ private theorem exists_coprime_residue (F : Type) [Field F] [NumberField F]
   have hpair : (↑fm.toFinset : Set (Ideal (𝓞 F))).Pairwise
       (Function.onFun IsCoprime fun P => P ^ fm.count P) := by
     intro P hP Q hQ hPQ
-    have hPP : Prime P := UniqueFactorizationMonoid.prime_of_factor P
+    have hPP  := UniqueFactorizationMonoid.prime_of_factor P
       (Multiset.mem_toFinset.mp (Finset.mem_coe.mp hP))
-    have hQQ : Prime Q := UniqueFactorizationMonoid.prime_of_factor Q
+    have hQQ  := UniqueFactorizationMonoid.prime_of_factor Q
       (Multiset.mem_toFinset.mp (Finset.mem_coe.mp hQ))
     have hsup : P ⊔ Q = ⊤ := Ideal.IsMaximal.coprime_of_ne
       (Ideal.IsPrime.isMaximal (Ideal.isPrime_of_prime hPP) hPP.ne_zero)
@@ -75,7 +81,7 @@ private theorem exists_coprime_residue (F : Type) [Field F] [NumberField F]
       have : a = b0 - (b0 - a) := by ring
       rw [this]
       exact Submodule.sub_mem_sup (Ideal.subset_span (Set.mem_singleton b0)) h1
-    have heq : Ideal.span {b0} ⊔ m = Ideal.span {a} ⊔ m :=
+    have heq  :=
       le_antisymm (sup_le hlt le_sup_right) (sup_le hgt le_sup_right)
     rw [heq, ha]
   refine ⟨b0, h1, ?_⟩
@@ -86,14 +92,14 @@ private theorem exists_coprime_residue (F : Type) [Field F] [NumberField F]
   have hMbot : M ≠ ⊥ := by
     intro h
     exact mul_ne_zero hm hq (le_bot_iff.mp (h ▸ hmqM))
-  have hMprime : Prime M := (Ideal.prime_iff_isPrime hMbot).mpr hMmax.isPrime
-  have hMdvd : M ∣ m * q := Ideal.dvd_iff_le.mpr hmqM
+  have hMprime  := (Ideal.prime_iff_isPrime hMbot).mpr hMmax.isPrime
+  have hMdvd  := Ideal.dvd_iff_le.mpr hmqM
   rcases (hMprime.dvd_mul).mp hMdvd with hMm | hMq
   · refine hMmax.ne_top (top_le_iff.mp ?_)
     rw [← hspan_m]
     exact sup_le ((Ideal.span_singleton_le_iff_mem M).mpr hb0M) (Ideal.dvd_iff_le.mp hMm)
   · by_cases hMem : M ∈ fm.toFinset
-    · have hMm' : m ≤ M := (mem_factors_toFinset_iff hm hMprime).mp hMem
+    · have hMm'  := (mem_factors_toFinset_iff hm hMprime).mp hMem
       exact hMmax.ne_top (top_le_iff.mp (by
         rw [← hspan_m]
         exact sup_le ((Ideal.span_singleton_le_iff_mem M).mpr hb0M) hMm'))
@@ -114,9 +120,7 @@ private theorem exists_coprime_residue (F : Type) [Field F] [NumberField F]
         simpa using this
       exact hMmax.ne_top (Ideal.eq_top_iff_one M |>.mpr h1M)
 
-theorem exists_totallyPositive_coprime_residue (F : Type) [Field F] [NumberField F]
-    (m q : Ideal (𝓞 F)) (hm : m ≠ ⊥) (hq : q ≠ ⊥) (a : 𝓞 F)
-    (ha : Ideal.span {a} ⊔ m = ⊤) :
+theorem exists_totallyPositive_coprime_residue   :
     ∃ b : 𝓞 F, b ≠ 0 ∧ b - a ∈ m ∧ Ideal.span {b} ⊔ (m * q) = ⊤ ∧
       (∀ φ : F →+* ℝ, 0 < φ (b : F)) := by
   classical
@@ -137,8 +141,10 @@ theorem exists_totallyPositive_coprime_residue (F : Type) [Field F] [NumberField
       have : b0 = b - (b - b0) := by ring
       rw [this]
       exact Submodule.sub_mem_sup (Ideal.subset_span (Set.mem_singleton b)) hbshift
-    have heq : Ideal.span {b} ⊔ (m * q) = Ideal.span {b0} ⊔ (m * q) :=
+    have heq  :=
       le_antisymm (sup_le hlt le_sup_right) (sup_le hgt le_sup_right)
     rw [heq, hb0cop]
+end
+
 
 end DedekindZetaZeroFree.LargeSieve

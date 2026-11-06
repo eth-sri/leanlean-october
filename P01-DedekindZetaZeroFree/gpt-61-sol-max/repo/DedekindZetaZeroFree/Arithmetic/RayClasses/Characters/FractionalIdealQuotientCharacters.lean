@@ -9,17 +9,21 @@ open scoped NumberField Classical
 
 namespace DedekindZetaZeroFree.RayClassBridge
 
+section
+variable (F : Type) [Field F] [NumberField F]
+    (𝔪 : Ideal (𝓞 F)) (η : RayClassCharacter F 𝔪)
+include F 𝔪 η
 @[simp] theorem rayClassCharacter_bot
-    (F : Type) [Field F] [NumberField F]
-    (𝔪 : Ideal (𝓞 F)) (η : RayClassCharacter F 𝔪) : η ⊥ = 0 := by
+      : η ⊥ = 0 := by
   exact (η.eq_zero_iff' ⊥).mpr (Or.inl rfl)
 
 theorem rayClassCharacter_ne_zero_iff
-    (F : Type) [Field F] [NumberField F]
-    (𝔪 : Ideal (𝓞 F)) (η : RayClassCharacter F 𝔪) (I : Ideal (𝓞 F)) :
+      (I : Ideal (𝓞 F)) :
     η I ≠ 0 ↔ I ≠ ⊥ ∧ I ⊔ 𝔪 = ⊤ := by
   rw [Ne, η.eq_zero_iff' I]
   simp only [not_or, not_not]
+end
+
 
 section Construction
 
@@ -27,10 +31,13 @@ variable (F : Type) [Field F] [NumberField F]
 variable (𝔪 : Ideal (𝓞 F))
 variable (η : RayClassCharacter F 𝔪)
 
- def primeVal (v : IsDedekindDomain.HeightOneSpectrum (𝓞 F)) : ℂ :=
+ section
+variable (v : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
+include v
+def primeVal   : ℂ :=
   if v.asIdeal ⊔ 𝔪 = ⊤ then η v.asIdeal else 1
 
- lemma primeVal_ne_zero (v : IsDedekindDomain.HeightOneSpectrum (𝓞 F)) :
+ lemma primeVal_ne_zero   :
     primeVal F 𝔪 η v ≠ 0 := by
   unfold primeVal
   split_ifs with h
@@ -39,16 +46,18 @@ variable (η : RayClassCharacter F 𝔪)
     exact ⟨v.ne_bot, h⟩
   · exact one_ne_zero
 
- def primeUnit (v : IsDedekindDomain.HeightOneSpectrum (𝓞 F)) : ℂˣ :=
+ def primeUnit   : ℂˣ :=
   Units.mk0 (primeVal F 𝔪 η v) (primeVal_ne_zero F 𝔪 η v)
 
-private lemma primeUnit_val (v : IsDedekindDomain.HeightOneSpectrum (𝓞 F)) :
+private lemma primeUnit_val   :
     (primeUnit F 𝔪 η v : ℂ) = primeVal F 𝔪 η v := Units.val_mk0 _
 
-private lemma primeVal_eq_eta (v : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
+private lemma primeVal_eq_eta  
     (h : v.asIdeal ⊔ 𝔪 = ⊤) : primeVal F 𝔪 η v = η v.asIdeal := by
   unfold primeVal
   rw [if_pos h]
+end
+
 
  def freeChar :
     Multiplicative (IsDedekindDomain.HeightOneSpectrum (𝓞 F) →₀ ℤ) →* ℂˣ :=
@@ -157,7 +166,10 @@ private lemma eta_map_finprod (f : IsDedekindDomain.HeightOneSpectrum (𝓞 F) �
     finprod_eq_prod_of_mulSupport_subset (fun v => η (f v)) (s := hfF.toFinset) hsub]
   exact eta_prod_finset F 𝔪 η hfF.toFinset f
 
-private lemma eta_eq_finprod_count (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) :
+section
+variable (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
+include I hI
+private lemma eta_eq_finprod_count   :
     η I = ∏ᶠ v, (η v.asIdeal : ℂ)
       ^ (FractionalIdeal.count F v (I : FractionalIdeal (nonZeroDivisors (𝓞 F)) F)) := by
   have hI0 : I ≠ 0 := by rw [Ideal.zero_eq_bot]; exact hI
@@ -170,7 +182,7 @@ private lemma eta_eq_finprod_count (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) :
       eta_pow F 𝔪 η v.asIdeal _]
   rw [← zpow_natCast, ← FractionalIdeal.count_coe F v hI0]
 
-private lemma coprime_of_count_ne_zero (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
+private lemma coprime_of_count_ne_zero  
     (hcop : I ⊔ 𝔪 = ⊤) (v : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
     (hv : FractionalIdeal.count F v (I : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) ≠ 0) :
     v.asIdeal ⊔ 𝔪 = ⊤ := by
@@ -191,7 +203,7 @@ private lemma coprime_of_count_ne_zero (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
     rw [← hcop]
     exact sup_le hle hmle))
 
-private lemma totalChar_integralUnit (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
+private lemma totalChar_integralUnit  
     (hcop : I ⊔ 𝔪 = ⊤) :
     (totalChar F 𝔪 η (integralUnit F I hI) : ℂ) = η I := by
   rw [totalChar_apply F 𝔪 η (integralUnit F I hI)]
@@ -216,12 +228,17 @@ private lemma totalChar_integralUnit (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
       rw [hz, zpow_zero, zpow_zero]
   rw [finprod_congr hpoint]
   exact (eta_eq_finprod_count F 𝔪 η I hI).symm
+end
+
 
 end Construction
 
+section
+variable (F : Type) [Field F] [NumberField F]
+    (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥) (η : RayClassCharacter F 𝔪)
+include F 𝔪 h𝔪 η
 theorem exists_fractionalCharacter
-    (F : Type) [Field F] [NumberField F]
-    (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥) (η : RayClassCharacter F 𝔪) :
+      :
     ∃ χ : ClassFieldTheory.rayClassPrimeToIdeals (narrowIdealModulus F 𝔪 h𝔪) →* ℂˣ,
       ∀ (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hcop : I ⊔ 𝔪 = ⊤),
         (χ (integralPrimeTo F 𝔪 h𝔪 I hI hcop) : ℂ) = η I := by
@@ -231,21 +248,18 @@ theorem exists_fractionalCharacter
   exact totalChar_integralUnit F 𝔪 η I hI hcop
 
 def fractionalCharacter
-    (F : Type) [Field F] [NumberField F]
-    (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥) (η : RayClassCharacter F 𝔪) :
+      :
     ClassFieldTheory.rayClassPrimeToIdeals (narrowIdealModulus F 𝔪 h𝔪) →* ℂˣ :=
   (exists_fractionalCharacter F 𝔪 h𝔪 η).choose
 
 @[simp] theorem fractionalCharacter_integral
-    (F : Type) [Field F] [NumberField F]
-    (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥) (η : RayClassCharacter F 𝔪)
+     
     (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hcop : I ⊔ 𝔪 = ⊤) :
     (fractionalCharacter F 𝔪 h𝔪 η (integralPrimeTo F 𝔪 h𝔪 I hI hcop) : ℂ) = η I :=
   (exists_fractionalCharacter F 𝔪 h𝔪 η).choose_spec I hI hcop
 
 theorem fractionalCharacter_unique
-    (F : Type) [Field F] [NumberField F]
-    (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥) (η : RayClassCharacter F 𝔪)
+     
     (χ : ClassFieldTheory.rayClassPrimeToIdeals (narrowIdealModulus F 𝔪 h𝔪) →* ℂˣ)
     (hχ : ∀ (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hcop : I ⊔ 𝔪 = ⊤),
       (χ (integralPrimeTo F 𝔪 h𝔪 I hI hcop) : ℂ) = η I) :
@@ -254,8 +268,7 @@ theorem fractionalCharacter_unique
     (fun I hI hcop => by rw [hχ I hI hcop, fractionalCharacter_integral F 𝔪 h𝔪 η I hI hcop])
 
 theorem fractionalCharacter_quotient
-    (F : Type) [Field F] [NumberField F]
-    (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥) (η : RayClassCharacter F 𝔪)
+     
     (A B : Ideal (𝓞 F)) (hA : A ≠ ⊥) (hB : B ≠ ⊥)
     (hcA : A ⊔ 𝔪 = ⊤) (hcB : B ⊔ 𝔪 = ⊤) :
     (fractionalCharacter F 𝔪 h𝔪 η
@@ -265,6 +278,8 @@ theorem fractionalCharacter_quotient
     fractionalCharacter_integral F 𝔪 h𝔪 η A hA hcA,
     fractionalCharacter_integral F 𝔪 h𝔪 η B hB hcB]
   rfl
+end
+
 
 end DedekindZetaZeroFree.RayClassBridge
 

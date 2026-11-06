@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.PadicField
 public import ClassFieldTheory.LubinTate.FormalModule.Series
 public import Mathlib.RingTheory.PowerSeries.Binomial
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -61,8 +64,7 @@ noncomputable def padicMultiplicativeLubinTateSeries
       simp
     exact hcoeff.trans (map_natCast (padicIntEquivValuationSubring p) p).symm
   map_residue_eq_frobenius := by
-    let eO : ℤ_[p] ≃+*
-        (padicDVRValuation p).valuationSubring :=
+    let eO  :=
       padicIntEquivValuationSubring p
     let eRes :
         (padicLocalField p).residueField ≃+* ZMod p := by
@@ -80,9 +82,7 @@ noncomputable def padicMultiplicativeLubinTateSeries
       CharP.of_ringHom_of_ne_zero
         PowerSeries.C p ((Fact.out : p.Prime).ne_zero)
     have hcard :
-        Nat.card (padicLocalField p).residueField = p := by
-      simpa [padicLocalField] using
-        padicCompleteDVF_residueField_card p
+        Nat.card (padicLocalField p).residueField = p := padicCompleteDVF_residueField_card p
     rw [hcard, PowerSeries.binomialSeries_nat (R := ℤ)]
     simp only [map_sub, map_pow, map_add, map_one, PowerSeries.map_X]
     rw [add_pow_char]
@@ -107,13 +107,13 @@ Lubin--Tate series is a uniformizer for the chosen valuation on `ℚ_p`. -/
 theorem padicMultiplicativeLubinTateSeries_isUniformizer
     (p : ℕ) [Fact p.Prime] :
     (padicLocalField p).toCompleteDVF.valuation.IsUniformizer
-      ((padicIntEquivValuationSubring p (p : ℤ_[p]) :
+      ((padicIntEquivValuationSubring p p :
           (padicLocalField p).valuationSubring) : ℚ_[p]) := by
   change
     (padicDVRValuation p).IsUniformizer
-      ((padicIntEquivValuationSubring p (p : ℤ_[p]) :
+      ((padicIntEquivValuationSubring p p :
           (padicDVRValuation p).valuationSubring) : ℚ_[p])
-  simpa using padicDVRValuation_isUniformizer_p p
+  exact padicDVRValuation_isUniformizer_p p
 
 end LubinTate
 

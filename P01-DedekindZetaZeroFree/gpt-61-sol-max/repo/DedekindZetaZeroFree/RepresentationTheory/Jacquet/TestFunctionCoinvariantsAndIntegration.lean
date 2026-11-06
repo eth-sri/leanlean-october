@@ -105,16 +105,19 @@ def characterIntegral (ψ : Multiplicative K →* ℂˣ) (hψ : Continuous ψ)
     characterIntegral ψ hψ μ φ =
       ∫ x, ((ψ (Multiplicative.ofAdd x) : ℂ)⁻¹) • value φ x ∂μ := rfl
 
-private theorem integral_bump (μ : Measure K) [μ.IsAddHaarMeasure]
+section
+variable (μ : Measure K) [μ.IsAddHaarMeasure]
     (H : AddSubgroup K) (ho : IsOpen (H : Set K)) (hc : IsCompact (H : Set K))
+include μ H ho hc in
+private theorem integral_bump  
     (e : V) : (∫ x, value (compactOpenBump H ho hc e) x ∂μ) =
       (μ.real (H : Set K) : ℂ) • e := by
   rw [show value (compactOpenBump H ho hc e) = (H : Set K).indicator (fun _ => e) from rfl,
     integral_indicator ho.measurableSet, setIntegral_const]
   exact RCLike.real_smul_eq_coe_smul (K := ℂ) _ _
 
-private theorem integral_coset (μ : Measure K) [μ.IsAddHaarMeasure]
-    (H : AddSubgroup K) (ho : IsOpen (H : Set K)) (hc : IsCompact (H : Set K))
+include μ H ho hc in
+private theorem integral_coset  
     (a : K) (e : V) :
     (∫ x, (additiveCoset H a).indicator (fun _ => e) x ∂μ) =
       (μ.real (H : Set K) : ℂ) • e := by
@@ -126,8 +129,8 @@ private theorem integral_coset (μ : Measure K) [μ.IsAddHaarMeasure]
     rw [sub_eq_add_neg]
   rw [he, integral_add_right_eq_self, integral_bump]
 
-private theorem integrable_coset (μ : Measure K) [μ.IsAddHaarMeasure]
-    (H : AddSubgroup K) (ho : IsOpen (H : Set K)) (hc : IsCompact (H : Set K))
+include μ H ho hc in
+private theorem integrable_coset  
     (a : K) (e : V) :
     Integrable ((additiveCoset H a).indicator (fun _ => e)) μ := by
   have he : (additiveCoset H a).indicator (fun _ => e) =
@@ -200,11 +203,13 @@ def normalizedBump (μ : Measure K) [μ.IsAddHaarMeasure]
       (μ.real (H : Set K) : ℂ)⁻¹ • (H : Set K).indicator (fun _ => e) x := by
   rfl
 
-private theorem volume_ne_zero (μ : Measure K) [μ.IsAddHaarMeasure]
-    (H : AddSubgroup K) (ho : IsOpen (H : Set K)) (hc : IsCompact (H : Set K)) :
+include μ H ho hc in
+private theorem volume_ne_zero   :
     (μ.real (H : Set K) : ℂ) ≠ 0 := by
   obtain ⟨hp, hf⟩ := compactOpen_volume_pos_lt_top μ H ho hc
   exact_mod_cast (ENNReal.toReal_pos hp.ne' hf.ne).ne'
+end
+
 
 private theorem default_level :
     ∃ U : AddSubgroup K, IsOpen (U : Set K) ∧ IsCompact (U : Set K) := by
@@ -213,8 +218,11 @@ private theorem default_level :
   change IsOpen {x | ValuativeRel.valuation K x ≤ 1}
   simpa only [Valuation.restrict_le_one_iff] using Valuation.isOpen_closedBall (v := ValuativeRel.valuation K) (r := 1) one_ne_zero
 
-theorem characterIntegral_normalizedBump (ψ : Multiplicative K →* ℂˣ)
+section
+variable (ψ : Multiplicative K →* ℂˣ)
     (hψ : Continuous ψ) (μ : Measure K) [μ.IsAddHaarMeasure]
+include ψ hψ μ in
+theorem characterIntegral_normalizedBump  
     (H : AddSubgroup K) (hHopen : IsOpen (H : Set K))
     (hHcompact : IsCompact (H : Set K))
     (hHψ : ∀ h ∈ H, ψ (Multiplicative.ofAdd h) = 1) (e : V) :
@@ -227,8 +235,8 @@ theorem characterIntegral_normalizedBump (ψ : Multiplicative K →* ℂˣ)
   rw [normalizedBump, map_smul, hb, smul_smul,
     inv_mul_cancel₀ (volume_ne_zero μ H hHopen hHcompact), one_smul]
 
-theorem characterIntegral_surjective (ψ : Multiplicative K →* ℂˣ)
-    (hψ : Continuous ψ) (μ : Measure K) [μ.IsAddHaarMeasure] :
+include ψ hψ μ in
+theorem characterIntegral_surjective   :
     Function.Surjective (characterIntegral (V := V) ψ hψ μ) := by
   obtain ⟨U, ho, hc⟩ := default_level (K := K)
   obtain ⟨H, _, hHo, hHc, hHψ, _⟩ :=
@@ -307,8 +315,8 @@ private theorem class_expansion (ψ : Multiplicative K →* ℂˣ)
   simp only [map_smul] at hm
   exact hm.symm
 
-theorem characterIntegral_ker (ψ : Multiplicative K →* ℂˣ)
-    (hψ : Continuous ψ) (μ : Measure K) [μ.IsAddHaarMeasure] :
+include ψ hψ μ in
+theorem characterIntegral_ker   :
     LinearMap.ker (characterIntegral (V := V) ψ hψ μ) =
       translationRelations (E := V) ψ := by
   apply le_antisymm
@@ -335,8 +343,8 @@ theorem characterIntegral_ker (ψ : Multiplicative K →* ℂˣ)
       (translation y φ - (ψ (Multiplicative.ofAdd y) : ℂ) • φ) = 0
     rw [map_sub, map_smul, characterIntegral_translation, sub_self]
 
-def coinvariantsIntegral (ψ : Multiplicative K →* ℂˣ) (hψ : Continuous ψ)
-    (μ : Measure K) [μ.IsAddHaarMeasure] :
+include ψ hψ μ in
+def coinvariantsIntegral   :
     TranslationCoinvariants (E := V) ψ →ₗ[ℂ] V :=
   rootCoinvariantsLift (translationRepresentation (K := K) (E := V))
     (MonoidHom.id (Multiplicative K)) ψ
@@ -344,12 +352,12 @@ def coinvariantsIntegral (ψ : Multiplicative K →* ℂˣ) (hψ : Continuous ψ
       intro t φ
       exact characterIntegral_translation ψ hψ μ (Multiplicative.toAdd t) φ⟩
 
-@[simp] theorem coinvariantsIntegral_mk (ψ : Multiplicative K →* ℂˣ)
-    (hψ : Continuous ψ) (μ : Measure K) [μ.IsAddHaarMeasure] (φ : CcLC K V) :
+include ψ hψ μ in
+@[simp] theorem coinvariantsIntegral_mk   (φ : CcLC K V) :
     coinvariantsIntegral ψ hψ μ (coinvariantsMk ψ φ) = characterIntegral ψ hψ μ φ := rfl
 
-theorem coinvariantsIntegral_bijective (ψ : Multiplicative K →* ℂˣ)
-    (hψ : Continuous ψ) (μ : Measure K) [μ.IsAddHaarMeasure] :
+include ψ hψ μ in
+theorem coinvariantsIntegral_bijective   :
     Function.Bijective (coinvariantsIntegral (V := V) ψ hψ μ) := by
   constructor
   · intro x y hxy
@@ -367,15 +375,17 @@ theorem coinvariantsIntegral_bijective (ψ : Multiplicative K →* ℂˣ)
     obtain ⟨φ, hφ⟩ := characterIntegral_surjective ψ hψ μ e
     exact ⟨coinvariantsMk ψ φ, hφ⟩
 
-def coinvariantsEquiv (ψ : Multiplicative K →* ℂˣ) (hψ : Continuous ψ)
-    (μ : Measure K) [μ.IsAddHaarMeasure] :
+include ψ hψ μ in
+def coinvariantsEquiv   :
     TranslationCoinvariants (E := V) ψ ≃ₗ[ℂ] V :=
   LinearEquiv.ofBijective (coinvariantsIntegral ψ hψ μ)
     (coinvariantsIntegral_bijective ψ hψ μ)
 
-@[simp] theorem coinvariantsEquiv_mk (ψ : Multiplicative K →* ℂˣ)
-    (hψ : Continuous ψ) (μ : Measure K) [μ.IsAddHaarMeasure] (φ : CcLC K V) :
+include ψ hψ μ in
+@[simp] theorem coinvariantsEquiv_mk   (φ : CcLC K V) :
     coinvariantsEquiv ψ hψ μ (coinvariantsMk ψ φ) = characterIntegral ψ hψ μ φ := rfl
+end
+
 
 def ordinaryIntegral (μ : Measure K) [μ.IsAddHaarMeasure] : CcLC K V →ₗ[ℂ] V :=
   characterIntegral 1 (by fun_prop) μ

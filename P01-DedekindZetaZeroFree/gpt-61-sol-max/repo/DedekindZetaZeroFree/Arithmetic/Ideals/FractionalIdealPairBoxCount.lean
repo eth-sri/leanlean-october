@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.NumberTheory.NumberField.CanonicalEmbedding.Basic
 public import Mathlib.Tactic
 
 @[expose] public section
+
 
 noncomputable section
 open scoped nonZeroDivisors
@@ -20,13 +23,13 @@ private theorem lattice_count {E : Type*} [NormedAddCommGroup E] [NormedSpace �
         s.Finite ∧ (s.ncard : ℝ) ≤ C * R ^ Fintype.card ι := by
   classical
   let L := b.equivFunL.toContinuousLinearMap
-  let A : ℝ := ‖L‖ + 1
+  let A  := ‖L‖ + 1
   have hA : 0 < A := by dsimp [A]; positivity
   refine ⟨(2 * A + 3) ^ Fintype.card ι, by positivity, ?_⟩
   intro R hR s hs
-  let N : ℤ := ⌈A * R⌉
+  let N  := ⌈A * R⌉
   let t := Fintype.piFinset (fun _ : ι => Finset.Icc (-N) N)
-  let f : E → ι → ℤ := fun x i => ⌊b.repr x i⌋
+  let f  := fun x i => ⌊b.repr x i⌋
   have hrepr (x : E) (hx : x ∈ s) (i : ι) : (f x i : ℝ) = b.repr x i := by
     obtain ⟨z, hz⟩ := (b.mem_span_iff_repr_mem ℤ x).mp (hs x hx).1 i
     simpa [f, ← hz] using (Int.floor_intCast (R := ℝ) z)
@@ -36,7 +39,7 @@ private theorem lattice_count {E : Type*} [NormedAddCommGroup E] [NormedSpace �
     intro i
     have hb : |b.repr x i| ≤ A * R := by
       calc
-        |b.repr x i| = ‖L x i‖ := by simp [L, Basis.equivFunL_apply, Real.norm_eq_abs]
+        |b.repr x i| = ‖L x i‖ := rfl
         _ ≤ ‖L x‖ := norm_le_pi_norm _ _
         _ ≤ ‖L‖ * ‖x‖ := L.le_opNorm x
         _ ≤ A * R := mul_le_mul (by dsimp [A]; linarith) (hs x hx).2
@@ -136,7 +139,7 @@ theorem kp_chamber_lattice_box_count (F : Type*) [Field F] [NumberField F]
   have hspan (x : F) (hx : x ∈ J) :
       mixedEmbedding F x ∈ Submodule.span ℤ (Set.range b) := by
     apply (mixedEmbedding.mem_span_fractionalIdealLatticeBasis F I).mpr
-    exact ⟨x, by simpa [hI] using hx, rfl⟩
+    exact ⟨x, hx, rfl⟩
   have him : ∀ x ∈ f '' s,
       x ∈ Submodule.span ℤ (Set.range B) ∧ ‖x‖ ≤ R := by
     rintro _ ⟨p, hp, rfl⟩
@@ -154,7 +157,7 @@ theorem kp_chamber_lattice_box_count (F : Type*) [Field F] [NumberField F]
       exact ⟨mixed_norm_bound F p.1 R (by linarith) (fun φ => (hp.2.2 φ).1),
         mixed_norm_bound F p.2 R (by linarith) (fun φ => (hp.2.2 φ).2)⟩
   obtain ⟨hfin, hc⟩ := hbound R hR (f '' s) him
-  have hsfin : s.Finite := Set.Finite.of_injOn (Set.mapsTo_image f s) hinj.injOn hfin
+  have hsfin  := Set.Finite.of_injOn (Set.mapsTo_image f s) hinj.injOn hfin
   refine ⟨hsfin, ?_⟩
   change (s.ncard : ℝ) ≤ _
   rw [Set.ncard_image_of_injective s hinj, hd] at hc

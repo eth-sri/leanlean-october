@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Units.RayUnitLogLattice
 public import DedekindZetaZeroFree.Theta.Unfolding.MixedRadialJacobian
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -45,7 +48,7 @@ theorem bijective_logHyperplaneCoordinateMap (v : InfinitePlace K) :
       linarith
     · exact congr_fun heq ⟨w, hw⟩
   · intro x
-    let y : InfinitePlace K → ℝ := fun w =>
+    let y  := fun w =>
       if hw : w = v then
         -(∑ z : {w : InfinitePlace K // w ≠ v}, (z.val.mult : ℝ) * x z) /
           (v.mult : ℝ)
@@ -63,12 +66,11 @@ theorem bijective_logHyperplaneCoordinateMap (v : InfinitePlace K) :
     · funext w
       simp [logHyperplaneCoordinateMap, y, w.property]
 
-def logHyperplaneCoordinateEquiv (v : InfinitePlace K) :
-    RayCoset.logHyperplane K ≃L[ℝ] ({w : InfinitePlace K // w ≠ v} → ℝ) :=
+def logHyperplaneCoordinateEquiv (v : InfinitePlace K)  :=
   (LinearEquiv.ofBijective (logHyperplaneCoordinateMap K v)
     (bijective_logHyperplaneCoordinateMap K v)).toContinuousLinearEquiv
 
-def normalizedLogHaar : Measure (RayCoset.logHyperplane K) :=
+def normalizedLogHaar  :=
   ENNReal.ofReal (1 / (Units.dirichletUnitTheorem.w₀ (K := K)).mult : ℝ) •
     Measure.map (logHyperplaneCoordinateEquiv K
       (Units.dirichletUnitTheorem.w₀ (K := K))).symm volume
@@ -81,8 +83,7 @@ instance isAddHaarMeasure_normalizedLogHaar :
       (by exact_mod_cast (Units.dirichletUnitTheorem.w₀ (K := K)).mult_pos))).ne'
   · exact ENNReal.ofReal_ne_top
 
-def radialAngularLogMap (sh : ℝ × RayCoset.logHyperplane K) :
-    InfinitePlace K → ℝ :=
+def radialAngularLogMap (sh : ℝ × RayCoset.logHyperplane K)  :=
   fun v => sh.1 / (Module.finrank ℚ K : ℝ) + sh.2.val v
 
 variable {ι : Type} [Fintype ι] [DecidableEq ι]
@@ -130,7 +131,7 @@ variable (K : Type) [Field K] [NumberField K]
   (LinearEquiv.ofIsUnitDet (v := Pi.basisFun ℝ (InfinitePlace K))
     (v' := Pi.basisFun ℝ (InfinitePlace K)) (f := rowMap K v)
     (by rw [LinearMap.det_toMatrix, rowMap_det];
-        exact isUnit_iff_ne_zero.mpr (by exact_mod_cast v.mult_ne_zero))).toContinuousLinearEquiv
+        apply isUnit_iff_ne_zero.mpr <;> aesop)).toContinuousLinearEquiv
 
 private theorem weightedLogSum_radialAngularLogMap (sh : ℝ × RayCoset.logHyperplane K) :
     RayCoset.weightedLogSum K (radialAngularLogMap K sh) = sh.1 := by
@@ -182,8 +183,7 @@ theorem map_volume_prod_normalizedLogHaar_radialAngularLogMap :
   let shear : ℝ × ({w : InfinitePlace K // w ≠ v} → ℝ) →
       ℝ × ({w : InfinitePlace K // w ≠ v} → ℝ) :=
     fun sx => (sx.1, fun w => sx.1 / (Module.finrank ℚ K : ℝ) + sx.2 w)
-  have hs : MeasurePreserving shear (volume.prod volume) (volume.prod volume) := by
-    exact (MeasurePreserving.id (volume : Measure ℝ)).skew_product
+  have hs : MeasurePreserving shear (volume.prod volume) (volume.prod volume) := (MeasurePreserving.id (volume : Measure ℝ)).skew_product
       (g := fun s (x : {w : InfinitePlace K // w ≠ v} → ℝ) =>
         fun w => s / (Module.finrank ℚ K : ℝ) + x w)
       (by
@@ -243,16 +243,10 @@ private theorem map_log_positiveRadialHaar :
   filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
   congr 1
   have hd : (ContinuousLinearMap.toSpanSingleton ℝ (t⁻¹)).det = t⁻¹ := by
-    have he : (ContinuousLinearMap.toSpanSingleton ℝ (t⁻¹)).toLinearMap =
-        t⁻¹ • (LinearMap.id : ℝ →ₗ[ℝ] ℝ) := by
-      ext x
-      simp [mul_comm]
-    rw [ContinuousLinearMap.det, he, LinearMap.det_smul]
-    simp
+    simp_all
   rw [hd, abs_of_pos (inv_pos.mpr ht)]
 
-def positiveRadialAngularLogMap (th : ℝ × RayCoset.logHyperplane K) :
-    InfinitePlace K → ℝ :=
+def positiveRadialAngularLogMap (th : ℝ × RayCoset.logHyperplane K)  :=
   radialAngularLogMap K (Real.log th.1, th.2)
 
 theorem map_positiveRadialHaar_prod_normalizedLogHaar :
@@ -287,16 +281,14 @@ def rayUnitRealLogBasis :
   letI := isZLattice_rayUnitLogLattice K m hm
   exact (rayUnitLogBasis K m hm).ofZLatticeBasis ℝ
 
-def rayUnitHalfOpenDomain : Set (logHyperplane K) :=
+def rayUnitHalfOpenDomain  :=
   ZSpan.fundamentalDomain (rayUnitRealLogBasis K m hm)
 
 theorem measurableSet_rayUnitHalfOpenDomain :
-    MeasurableSet (rayUnitHalfOpenDomain K m hm) := by
-  exact ZSpan.fundamentalDomain_measurableSet _
+    MeasurableSet (rayUnitHalfOpenDomain K m hm) := ZSpan.fundamentalDomain_measurableSet _
 
 theorem isCompact_closure_rayUnitHalfOpenDomain :
-    IsCompact (closure (rayUnitHalfOpenDomain K m hm)) := by
-  exact (ZSpan.fundamentalDomain_isBounded _).isCompact_closure
+    IsCompact (closure (rayUnitHalfOpenDomain K m hm)) := (ZSpan.fundamentalDomain_isBounded _).isCompact_closure
 
 theorem isAddFundamentalDomain_rayUnitHalfOpenDomain :
     IsAddFundamentalDomain (rayUnitLogLattice K m)
@@ -304,12 +296,11 @@ theorem isAddFundamentalDomain_rayUnitHalfOpenDomain :
   letI := isZLattice_rayUnitLogLattice K m hm
   exact ZLattice.isAddFundamentalDomain (rayUnitLogBasis K m hm) _
 
-def rayUnitDomainVolume : ℝ :=
+def rayUnitDomainVolume  :=
   (Theta.normalizedLogHaar K).real (rayUnitHalfOpenDomain K m hm)
 
 theorem measure_rayUnitHalfOpenDomain_lt_top :
-    Theta.normalizedLogHaar K (rayUnitHalfOpenDomain K m hm) < ⊤ := by
-  exact (ZSpan.fundamentalDomain_isBounded _).measure_lt_top
+    Theta.normalizedLogHaar K (rayUnitHalfOpenDomain K m hm) < ⊤ := (ZSpan.fundamentalDomain_isBounded _).measure_lt_top
 
 end DedekindZetaZeroFree.AbelianQuotient.RayCoset
 

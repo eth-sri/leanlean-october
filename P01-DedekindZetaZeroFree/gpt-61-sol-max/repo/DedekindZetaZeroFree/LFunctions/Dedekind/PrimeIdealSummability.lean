@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LFunctions.Dedekind.PrimeIdealFactor
 public import DedekindZetaZeroFree.LFunctions.Dedekind.DirichletSeriesConvergence
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 The FLT Project. All rights reserved.
@@ -41,7 +44,7 @@ theorem summable_ideal_absNorm_rpow {σ : ℝ} (hσ : 1 < σ) :
       (Ideal.finite_setOfPred_absNorm_eq n).fintype
     exact Summable.of_finite
   · have hseries :=
-      (lSeriesSummable_idealNormCount K (s := (σ : ℂ)) (by simpa using hσ)).norm
+      (lSeriesSummable_idealNormCount K (s := (σ : ℂ)) (hσ)).norm
     convert hseries using 1
     ext n
     simp only [e, Equiv.sigmaFiberEquiv_apply, LSeries.norm_term_eq]

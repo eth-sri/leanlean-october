@@ -42,17 +42,21 @@ variable
 
 /-- The base `K'` in the archimedean overextension: the fixed field
 of complex conjugation in `L(i)`. -/
+
+local notation:max "current_infinitePlaceComplexificationOverfield" => infinitePlaceComplexificationOverfield (K := K) (L := L)
+
+
+local notation:max "current_ramifiedInfinitePlaceOverfieldConjugation" => ramifiedInfinitePlaceOverfieldConjugation (K := K) (L := L)
+
 def ramifiedInfinitePlaceRealFixedField
     (v : InfinitePlace K)
     (hRamified :
       (chosenInfinitePlaceAbove (L := L) v).IsRamified K) :
     IntermediateField ℚ
-      (infinitePlaceComplexificationOverfield
-        (K := K) (L := L) v) :=
+      (current_infinitePlaceComplexificationOverfield v) :=
   IntermediateField.fixedField
     (Subgroup.zpowers
-      (ramifiedInfinitePlaceOverfieldConjugation
-        (K := K) (L := L) v hRamified))
+      (current_ramifiedInfinitePlaceOverfieldConjugation v hRamified))
 
 omit [FiniteDimensional K L] in
 /-- Ambient complex conjugation on the overfield fixes the embedded base
@@ -62,14 +66,11 @@ theorem ramifiedInfinitePlaceOverfieldConjugation_fixes_base
     (hRamified :
       (chosenInfinitePlaceAbove (L := L) v).IsRamified K)
     (x : K) :
-    ramifiedInfinitePlaceOverfieldConjugation
-        (K := K) (L := L) v hRamified
+    current_ramifiedInfinitePlaceOverfieldConjugation v hRamified
         (algebraMap K
-          (infinitePlaceComplexificationOverfield
-            (K := K) (L := L) v) x) =
+          (current_infinitePlaceComplexificationOverfield v) x) =
       algebraMap K
-        (infinitePlaceComplexificationOverfield
-          (K := K) (L := L) v) x := by
+        (current_infinitePlaceComplexificationOverfield v) x := by
   apply Subtype.ext
   let w := chosenInfinitePlaceAbove (L := L) v
   let σ :=
@@ -102,33 +103,29 @@ theorem ramifiedInfinitePlaceOverfieldConjugation_fixes_base
           (σ.commutes x)
 
 /-- The compatible embedding `K → K'` into the real fixed field. -/
+
+local notation:max "current_ramifiedInfinitePlaceRealFixedField" => ramifiedInfinitePlaceRealFixedField (K := K) (L := L)
+
 noncomputable def ramifiedInfinitePlaceRealFixedFieldEmbedding
     (v : InfinitePlace K)
     (hRamified :
       (chosenInfinitePlaceAbove (L := L) v).IsRamified K) :
     K →ₐ[ℚ]
-      ramifiedInfinitePlaceRealFixedField
-        (K := K) (L := L) v hRamified :=
+      current_ramifiedInfinitePlaceRealFixedField v hRamified :=
   (IsScalarTower.toAlgHom ℚ K
-      (infinitePlaceComplexificationOverfield
-        (K := K) (L := L) v)).codRestrict
-    (ramifiedInfinitePlaceRealFixedField
-      (K := K) (L := L) v hRamified).toSubalgebra
+      (current_infinitePlaceComplexificationOverfield v)).codRestrict
+    (current_ramifiedInfinitePlaceRealFixedField v hRamified).toSubalgebra
     (fun x => by
       apply
         (IntermediateField.mem_fixedField_iff _ _).2
       intro g hg
       have hc :
-          ramifiedInfinitePlaceOverfieldConjugation
-                (K := K) (L := L) v hRamified ∈
+          current_ramifiedInfinitePlaceOverfieldConjugation v hRamified ∈
             MulAction.stabilizer
-              ((infinitePlaceComplexificationOverfield
-                  (K := K) (L := L) v) ≃ₐ[ℚ]
-                infinitePlaceComplexificationOverfield
-                  (K := K) (L := L) v)
+              ((current_infinitePlaceComplexificationOverfield v) ≃ₐ[ℚ]
+                current_infinitePlaceComplexificationOverfield v)
               (algebraMap K
-                (infinitePlaceComplexificationOverfield
-                  (K := K) (L := L) v) x) := by
+                (current_infinitePlaceComplexificationOverfield v) x) := by
         exact
           MulAction.mem_stabilizer_iff.mpr
             (ramifiedInfinitePlaceOverfieldConjugation_fixes_base
@@ -148,36 +145,26 @@ theorem ramifiedInfinitePlaceRealFixedFieldEmbedding_coe
     (x : K) :
     ((ramifiedInfinitePlaceRealFixedFieldEmbedding
         (K := K) (L := L) v hRamified x :
-      ramifiedInfinitePlaceRealFixedField
-        (K := K) (L := L) v hRamified) :
-      infinitePlaceComplexificationOverfield
-        (K := K) (L := L) v) =
+      current_ramifiedInfinitePlaceRealFixedField v hRamified) :
+      current_infinitePlaceComplexificationOverfield v) =
       algebraMap K
-        (infinitePlaceComplexificationOverfield
-          (K := K) (L := L) v) x := by
+        (current_infinitePlaceComplexificationOverfield v) x := by
   calc
     ((ramifiedInfinitePlaceRealFixedFieldEmbedding
         (K := K) (L := L) v hRamified x :
-      ramifiedInfinitePlaceRealFixedField
-        (K := K) (L := L) v hRamified) :
-      infinitePlaceComplexificationOverfield
-        (K := K) (L := L) v) =
+      current_ramifiedInfinitePlaceRealFixedField v hRamified) :
+      current_infinitePlaceComplexificationOverfield v) =
         (IsScalarTower.toAlgHom ℚ K
-          (infinitePlaceComplexificationOverfield
-            (K := K) (L := L) v)) x := by
+          (current_infinitePlaceComplexificationOverfield v)) x := by
       exact
         AlgHom.coe_codRestrict
           (IsScalarTower.toAlgHom ℚ K
-            (infinitePlaceComplexificationOverfield
-              (K := K) (L := L) v))
-          (ramifiedInfinitePlaceRealFixedField
-            (K := K) (L := L) v hRamified).toSubalgebra _ x
+            (current_infinitePlaceComplexificationOverfield v))
+          (current_ramifiedInfinitePlaceRealFixedField v hRamified).toSubalgebra _ x
     _ = algebraMap K
-        (infinitePlaceComplexificationOverfield
-          (K := K) (L := L) v) x :=
+        (current_infinitePlaceComplexificationOverfield v) x :=
       IsScalarTower.toAlgHom_apply ℚ K
-        (infinitePlaceComplexificationOverfield
-          (K := K) (L := L) v) x
+        (current_infinitePlaceComplexificationOverfield v) x
 
 @[reducible]
 noncomputable instance
@@ -186,8 +173,7 @@ noncomputable instance
     (hRamified :
       (chosenInfinitePlaceAbove (L := L) v).IsRamified K) :
     Algebra K
-      (ramifiedInfinitePlaceRealFixedField
-        (K := K) (L := L) v hRamified) :=
+      (current_ramifiedInfinitePlaceRealFixedField v hRamified) :=
   (ramifiedInfinitePlaceRealFixedFieldEmbedding
     (K := K) (L := L) v hRamified).toRingHom.toAlgebra
 
@@ -196,8 +182,7 @@ instance ramifiedInfinitePlaceRealFixedField_ratScalarTower
     (hRamified :
       (chosenInfinitePlaceAbove (L := L) v).IsRamified K) :
     IsScalarTower ℚ K
-      (ramifiedInfinitePlaceRealFixedField
-        (K := K) (L := L) v hRamified) :=
+      (current_ramifiedInfinitePlaceRealFixedField v hRamified) :=
   IsScalarTower.of_algHom
     (ramifiedInfinitePlaceRealFixedFieldEmbedding
       (K := K) (L := L) v hRamified)
@@ -207,13 +192,10 @@ instance ramifiedInfinitePlaceRealFixedField_scalarTower
     (hRamified :
       (chosenInfinitePlaceAbove (L := L) v).IsRamified K) :
     IsScalarTower K
-      (ramifiedInfinitePlaceRealFixedField
-        (K := K) (L := L) v hRamified)
-      (infinitePlaceComplexificationOverfield
-        (K := K) (L := L) v) :=
+      (current_ramifiedInfinitePlaceRealFixedField v hRamified)
+      (current_infinitePlaceComplexificationOverfield v) :=
   IsScalarTower.of_algHom
-    { (ramifiedInfinitePlaceRealFixedField
-        (K := K) (L := L) v hRamified).val.toRingHom with
+    { (current_ramifiedInfinitePlaceRealFixedField v hRamified).val.toRingHom with
       commutes' := fun x =>
         ramifiedInfinitePlaceRealFixedFieldEmbedding_coe
           (K := K) (L := L) v hRamified x }
@@ -225,44 +207,38 @@ theorem
     (hRamified :
       (chosenInfinitePlaceAbove (L := L) v).IsRamified K) :
     FiniteDimensional ℚ
-      (ramifiedInfinitePlaceRealFixedField
-        (K := K) (L := L) v hRamified) :=
+      (current_ramifiedInfinitePlaceRealFixedField v hRamified) :=
   FiniteDimensional.left ℚ
-    (ramifiedInfinitePlaceRealFixedField
-      (K := K) (L := L) v hRamified)
-    (infinitePlaceComplexificationOverfield
-      (K := K) (L := L) v)
+    (current_ramifiedInfinitePlaceRealFixedField v hRamified)
+    (current_infinitePlaceComplexificationOverfield v)
 
 noncomputable instance ramifiedInfinitePlaceRealFixedField_numberField
     (v : InfinitePlace K)
     (hRamified :
       (chosenInfinitePlaceAbove (L := L) v).IsRamified K) :
     NumberField
-      (ramifiedInfinitePlaceRealFixedField
-        (K := K) (L := L) v hRamified) :=
+      (current_ramifiedInfinitePlaceRealFixedField v hRamified) :=
   by
     let : FiniteDimensional ℚ
-        (ramifiedInfinitePlaceRealFixedField
-          (K := K) (L := L) v hRamified) :=
+        (current_ramifiedInfinitePlaceRealFixedField v hRamified) :=
       ramifiedInfinitePlaceRealFixedField_finiteDimensional
         (K := K) (L := L) v hRamified
     exact
       NumberField.of_module_finite ℚ
-        (ramifiedInfinitePlaceRealFixedField
-          (K := K) (L := L) v hRamified)
+        (current_ramifiedInfinitePlaceRealFixedField v hRamified)
 
-omit [FiniteDimensional K L] in
-theorem
-    ramifiedInfinitePlaceRealFixedField_finiteDimensional_over_base
-    (v : InfinitePlace K)
-    (hRamified :
-      (chosenInfinitePlaceAbove (L := L) v).IsRamified K) :
-    FiniteDimensional K
-      (ramifiedInfinitePlaceRealFixedField
-        (K := K) (L := L) v hRamified) :=
-  FiniteDimensional.right ℚ K
-    (ramifiedInfinitePlaceRealFixedField
-      (K := K) (L := L) v hRamified)
+
+
+
+
+
+
+
+
+
+
+
+
 
 noncomputable instance
     ramifiedInfinitePlaceRealFixedField_isAbelianGalois_over_base
@@ -270,30 +246,27 @@ noncomputable instance
     (hRamified :
       (chosenInfinitePlaceAbove (L := L) v).IsRamified K) :
     IsAbelianGalois K
-      (ramifiedInfinitePlaceRealFixedField
-        (K := K) (L := L) v hRamified) :=
+      (current_ramifiedInfinitePlaceRealFixedField v hRamified) :=
   IsAbelianGalois.tower_bot K
-    (ramifiedInfinitePlaceRealFixedField
-      (K := K) (L := L) v hRamified)
-    (infinitePlaceComplexificationOverfield
-      (K := K) (L := L) v)
+    (current_ramifiedInfinitePlaceRealFixedField v hRamified)
+    (current_infinitePlaceComplexificationOverfield v)
 
-omit [NumberField K] [FiniteDimensional K L] in
-theorem
-    ramifiedInfinitePlaceOverfield_finiteDimensional_over_fixed
-    (v : InfinitePlace K)
-    (hRamified :
-      (chosenInfinitePlaceAbove (L := L) v).IsRamified K) :
-    FiniteDimensional
-      (ramifiedInfinitePlaceRealFixedField
-        (K := K) (L := L) v hRamified)
-      (infinitePlaceComplexificationOverfield
-        (K := K) (L := L) v) :=
-  FiniteDimensional.right ℚ
-    (ramifiedInfinitePlaceRealFixedField
-      (K := K) (L := L) v hRamified)
-    (infinitePlaceComplexificationOverfield
-      (K := K) (L := L) v)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 omit [NumberField K] [FiniteDimensional K L] in
 theorem ramifiedInfinitePlaceOverextension_isGalois
@@ -301,18 +274,14 @@ theorem ramifiedInfinitePlaceOverextension_isGalois
     (hRamified :
       (chosenInfinitePlaceAbove (L := L) v).IsRamified K) :
     IsGalois
-      (ramifiedInfinitePlaceRealFixedField
-        (K := K) (L := L) v hRamified)
-      (infinitePlaceComplexificationOverfield
-        (K := K) (L := L) v) := by
+      (current_ramifiedInfinitePlaceRealFixedField v hRamified)
+      (current_infinitePlaceComplexificationOverfield v) := by
   unfold ramifiedInfinitePlaceRealFixedField
   exact
     IsGalois.of_fixed_field
-      (infinitePlaceComplexificationOverfield
-        (K := K) (L := L) v)
+      (current_infinitePlaceComplexificationOverfield v)
       (Subgroup.zpowers
-        (ramifiedInfinitePlaceOverfieldConjugation
-          (K := K) (L := L) v hRamified))
+        (current_ramifiedInfinitePlaceOverfieldConjugation v hRamified))
 
 noncomputable instance
     ramifiedInfinitePlaceOverextension_isAbelianGalois
@@ -320,34 +289,26 @@ noncomputable instance
     (hRamified :
       (chosenInfinitePlaceAbove (L := L) v).IsRamified K) :
     IsAbelianGalois
-      (ramifiedInfinitePlaceRealFixedField
-        (K := K) (L := L) v hRamified)
-      (infinitePlaceComplexificationOverfield
-        (K := K) (L := L) v) := by
+      (current_ramifiedInfinitePlaceRealFixedField v hRamified)
+      (current_infinitePlaceComplexificationOverfield v) := by
   let : IsGalois
-      (ramifiedInfinitePlaceRealFixedField
-        (K := K) (L := L) v hRamified)
-      (infinitePlaceComplexificationOverfield
-        (K := K) (L := L) v) :=
+      (current_ramifiedInfinitePlaceRealFixedField v hRamified)
+      (current_infinitePlaceComplexificationOverfield v) :=
     ramifiedInfinitePlaceOverextension_isGalois
       (K := K) (L := L) v hRamified
   let H :=
     Subgroup.zpowers
-      (ramifiedInfinitePlaceOverfieldConjugation
-        (K := K) (L := L) v hRamified)
+      (current_ramifiedInfinitePlaceOverfieldConjugation v hRamified)
   let e :=
     IntermediateField.subgroupEquivAlgEquiv H
   let :
       IsCyclic
         Gal(
-          (infinitePlaceComplexificationOverfield
-            (K := K) (L := L) v) /
-          (ramifiedInfinitePlaceRealFixedField
-            (K := K) (L := L) v hRamified)) :=
+          (current_infinitePlaceComplexificationOverfield v) /
+          (current_ramifiedInfinitePlaceRealFixedField v hRamified)) :=
     e.isCyclic.mp
       (Subgroup.isCyclic_zpowers
-        (ramifiedInfinitePlaceOverfieldConjugation
-          (K := K) (L := L) v hRamified))
+        (current_ramifiedInfinitePlaceOverfieldConjugation v hRamified))
   exact IsAbelianGalois.of_isCyclic _ _
 
 /-- The distinguished nontrivial automorphism of the quadratic
@@ -357,19 +318,15 @@ noncomputable def ramifiedInfinitePlaceOverextensionConjugation
     (hRamified :
       (chosenInfinitePlaceAbove (L := L) v).IsRamified K) :
     Gal(
-      (infinitePlaceComplexificationOverfield
-        (K := K) (L := L) v) /
-      (ramifiedInfinitePlaceRealFixedField
-        (K := K) (L := L) v hRamified)) :=
+      (current_infinitePlaceComplexificationOverfield v) /
+      (current_ramifiedInfinitePlaceRealFixedField v hRamified)) :=
   IntermediateField.subgroupEquivAlgEquiv
     (Subgroup.zpowers
-      (ramifiedInfinitePlaceOverfieldConjugation
-        (K := K) (L := L) v hRamified))
+      (current_ramifiedInfinitePlaceOverfieldConjugation v hRamified))
     ⟨ramifiedInfinitePlaceOverfieldConjugation
         (K := K) (L := L) v hRamified,
       Subgroup.mem_zpowers
-        (ramifiedInfinitePlaceOverfieldConjugation
-          (K := K) (L := L) v hRamified)⟩
+        (current_ramifiedInfinitePlaceOverfieldConjugation v hRamified)⟩
 
 omit [NumberField K] [FiniteDimensional K L] in
 /-- The distinguished overextension automorphism is the restriction
@@ -380,12 +337,10 @@ theorem ramifiedInfinitePlaceOverextensionConjugation_apply
     (hRamified :
       (chosenInfinitePlaceAbove (L := L) v).IsRamified K)
     (z :
-      infinitePlaceComplexificationOverfield
-        (K := K) (L := L) v) :
+      current_infinitePlaceComplexificationOverfield v) :
     ramifiedInfinitePlaceOverextensionConjugation
         (K := K) (L := L) v hRamified z =
-      ramifiedInfinitePlaceOverfieldConjugation
-        (K := K) (L := L) v hRamified z := by
+      current_ramifiedInfinitePlaceOverfieldConjugation v hRamified z := by
   rfl
 
 omit [NumberField K] [FiniteDimensional K L] in
@@ -397,17 +352,14 @@ theorem ramifiedInfinitePlaceOverextension_eq_one_or_conjugation
       (chosenInfinitePlaceAbove (L := L) v).IsRamified K)
     (σ :
       Gal(
-        (infinitePlaceComplexificationOverfield
-          (K := K) (L := L) v) /
-        (ramifiedInfinitePlaceRealFixedField
-          (K := K) (L := L) v hRamified))) :
+        (current_infinitePlaceComplexificationOverfield v) /
+        (current_ramifiedInfinitePlaceRealFixedField v hRamified))) :
     σ = 1 ∨
       σ =
         ramifiedInfinitePlaceOverextensionConjugation
           (K := K) (L := L) v hRamified := by
   let c :=
-    ramifiedInfinitePlaceOverfieldConjugation
-      (K := K) (L := L) v hRamified
+    current_ramifiedInfinitePlaceOverfieldConjugation v hRamified
   let H := Subgroup.zpowers c
   let e :=
     IntermediateField.subgroupEquivAlgEquiv H
@@ -464,10 +416,8 @@ noncomputable def
     (hRamified :
       (chosenInfinitePlaceAbove (L := L) v).IsRamified K) :
     Gal(
-      (infinitePlaceComplexificationOverfield
-        (K := K) (L := L) v) /
-      (ramifiedInfinitePlaceRealFixedField
-        (K := K) (L := L) v hRamified)) →*
+      (current_infinitePlaceComplexificationOverfield v) /
+      (current_ramifiedInfinitePlaceRealFixedField v hRamified)) →*
       Gal(rationalComplexificationCyclotomicField / ℚ) :=
   (AlgEquiv.restrictNormalHom
     rationalComplexificationCyclotomicField).comp
@@ -480,27 +430,22 @@ theorem ramifiedInfinitePlaceOverfieldConjugation_map_zeta_ne
     (v : InfinitePlace K)
     (hRamified :
       (chosenInfinitePlaceAbove (L := L) v).IsRamified K) :
-    ramifiedInfinitePlaceOverfieldConjugation
-        (K := K) (L := L) v hRamified
+    current_ramifiedInfinitePlaceOverfieldConjugation v hRamified
         (algebraMap rationalComplexificationCyclotomicField
-          (infinitePlaceComplexificationOverfield
-            (K := K) (L := L) v)
+          (current_infinitePlaceComplexificationOverfield v)
           (IsCyclotomicExtension.zeta
             4 ℚ rationalComplexificationCyclotomicField)) ≠
       algebraMap rationalComplexificationCyclotomicField
-        (infinitePlaceComplexificationOverfield
-          (K := K) (L := L) v)
+        (current_infinitePlaceComplexificationOverfield v)
         (IsCyclotomicExtension.zeta
           4 ℚ rationalComplexificationCyclotomicField) := by
   let ζ :=
     IsCyclotomicExtension.zeta
       4 ℚ rationalComplexificationCyclotomicField
   let j :
-      infinitePlaceComplexificationOverfield
-        (K := K) (L := L) v :=
+      current_infinitePlaceComplexificationOverfield v :=
     algebraMap rationalComplexificationCyclotomicField
-      (infinitePlaceComplexificationOverfield
-        (K := K) (L := L) v) ζ
+      (current_infinitePlaceComplexificationOverfield v) ζ
   have hζ :
       IsPrimitiveRoot ζ 4 :=
     IsCyclotomicExtension.zeta_spec
@@ -509,8 +454,7 @@ theorem ramifiedInfinitePlaceOverfieldConjugation_map_zeta_ne
       IsPrimitiveRoot j 4 :=
     hζ.map_of_injective
       (algebraMap rationalComplexificationCyclotomicField
-        (infinitePlaceComplexificationOverfield
-          (K := K) (L := L) v)).injective
+        (current_infinitePlaceComplexificationOverfield v)).injective
   have hj2 : j ^ 2 = -1 :=
     (hj.pow (by norm_num : 0 < 4)
       (show 4 = 2 * 2 by norm_num)).eq_neg_one_of_two_right
@@ -562,13 +506,11 @@ theorem
   have hz' :=
     congrArg
       (algebraMap rationalComplexificationCyclotomicField
-        (infinitePlaceComplexificationOverfield
-          (K := K) (L := L) v))
+        (current_infinitePlaceComplexificationOverfield v))
       hz
   change
     (algebraMap rationalComplexificationCyclotomicField
-      (infinitePlaceComplexificationOverfield
-        (K := K) (L := L) v))
+      (current_infinitePlaceComplexificationOverfield v))
         (((AlgEquiv.restrictNormalHom
           rationalComplexificationCyclotomicField)
             ((ramifiedInfinitePlaceOverextensionConjugation
@@ -576,23 +518,19 @@ theorem
           (IsCyclotomicExtension.zeta
             4 ℚ rationalComplexificationCyclotomicField)) =
       (algebraMap rationalComplexificationCyclotomicField
-        (infinitePlaceComplexificationOverfield
-          (K := K) (L := L) v))
+        (current_infinitePlaceComplexificationOverfield v))
         (IsCyclotomicExtension.zeta
           4 ℚ rationalComplexificationCyclotomicField) at hz'
   calc
-    ramifiedInfinitePlaceOverfieldConjugation
-        (K := K) (L := L) v hRamified
+    current_ramifiedInfinitePlaceOverfieldConjugation v hRamified
         (algebraMap rationalComplexificationCyclotomicField
-          (infinitePlaceComplexificationOverfield
-            (K := K) (L := L) v)
+          (current_infinitePlaceComplexificationOverfield v)
           (IsCyclotomicExtension.zeta
             4 ℚ rationalComplexificationCyclotomicField)) =
       (ramifiedInfinitePlaceOverextensionConjugation
         (K := K) (L := L) v hRamified).restrictScalars ℚ
         (algebraMap rationalComplexificationCyclotomicField
-          (infinitePlaceComplexificationOverfield
-            (K := K) (L := L) v)
+          (current_infinitePlaceComplexificationOverfield v)
           (IsCyclotomicExtension.zeta
             4 ℚ rationalComplexificationCyclotomicField)) := by
       exact
@@ -600,8 +538,7 @@ theorem
           (K := K) (L := L) v hRamified _).symm
     _ =
         (algebraMap rationalComplexificationCyclotomicField
-          (infinitePlaceComplexificationOverfield
-            (K := K) (L := L) v))
+          (current_infinitePlaceComplexificationOverfield v))
           (((AlgEquiv.restrictNormalHom
             rationalComplexificationCyclotomicField)
               ((ramifiedInfinitePlaceOverextensionConjugation
@@ -617,8 +554,7 @@ theorem
             4 ℚ rationalComplexificationCyclotomicField)).symm
     _ =
         (algebraMap rationalComplexificationCyclotomicField
-          (infinitePlaceComplexificationOverfield
-            (K := K) (L := L) v))
+          (current_infinitePlaceComplexificationOverfield v))
           (IsCyclotomicExtension.zeta
             4 ℚ rationalComplexificationCyclotomicField) := hz'
 

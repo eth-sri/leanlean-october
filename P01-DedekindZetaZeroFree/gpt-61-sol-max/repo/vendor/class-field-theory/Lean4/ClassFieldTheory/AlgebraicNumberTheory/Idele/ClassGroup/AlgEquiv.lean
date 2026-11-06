@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.ClassGroup.NormComparison
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Extension.LocalComponent
 public import Mathlib.RingTheory.Norm.Basic
@@ -7,6 +9,7 @@ public import Mathlib.RingTheory.TensorProduct.Maps
 public import Mathlib.RingTheory.DedekindDomain.Ideal.Lemmas
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -78,9 +81,7 @@ theorem relativeAdeleCongr_tmul
 /-- The canonical transport of relative ideles along an isomorphic
 realization of the top field. -/
 noncomputable def relativeIdeleCongr
-    (e : L ≃ₐ[K] M) :
-    RelativeIdeleGroup K L ≃*
-      RelativeIdeleGroup K M :=
+    (e : L ≃ₐ[K] M)  :=
   Units.mapEquiv
     (relativeAdeleCongr (K := K) e).toMulEquiv
 
@@ -88,11 +89,10 @@ noncomputable def relativeIdeleCongr
 theorem relativeIdeleCongr_coe
     (e : L ≃ₐ[K] M)
     (a : RelativeIdeleGroup K L) :
-    ((relativeIdeleCongr (K := K) e a :
-        RelativeIdeleGroup K M) :
+    ((relativeIdeleCongr (K := K) e a) :
       RelativeAdeleRing K M) =
         relativeAdeleCongr (K := K) e
-          (a : RelativeAdeleRing K L) :=
+          a :=
   rfl
 
 /-- For an automorphism of the top field, canonical relative-idele
@@ -113,11 +113,6 @@ theorem relativeIdeleCongr_principalIdele
         (RelativeIdeleGroup.principalIdele K L x) =
       RelativeIdeleGroup.principalIdele K M
         (Units.mapEquiv e.toMulEquiv x) := by
-  apply Units.ext
-  change
-    relativeAdeleCongr (K := K) e
-        ((1 : NumberField.AdeleRing (𝓞 K) K) ⊗ₜ[K] (x : L)) =
-      (1 : NumberField.AdeleRing (𝓞 K) K) ⊗ₜ[K] e (x : L)
   rfl
 
 /-- The canonical transport identifies the two principal-relative-idele
@@ -203,10 +198,10 @@ theorem RelativeIdeleGroup.classEmbedding_relativeIdeleClassCongr
   change
     RelativeIdeleGroup.adeleEmbedding f
         (relativeAdeleCongr (K := K) e
-          (a : RelativeAdeleRing K L)) =
+          a) =
       RelativeIdeleGroup.adeleEmbedding
         (f.comp e.toAlgHom)
-        (a : RelativeAdeleRing K L)
+        a
   induction (a : RelativeAdeleRing K L) using
       TensorProduct.inductionOn with
   | tmul x y =>
@@ -242,20 +237,20 @@ theorem relativeIdeleCongr_norm
       Algebra.norm
         (NumberField.AdeleRing (𝓞 K) K)
         (a : RelativeAdeleRing K L)
-  exact
-    Algebra.norm_eq_of_algEquiv
-      (relativeAdeleCongr (K := K) e)
-      (a : RelativeAdeleRing K L)
+  apply Algebra.norm_eq_of_algEquiv
 
 section Norm
 
 variable [FiniteDimensional K L] [FiniteDimensional K M]
 
+section
+variable (e : L ≃ₐ[K] M)
+include e
 /-- The descended idele-class norm is invariant under the canonical
 transport of the relative idele class group. -/
 @[simp]
 theorem relativeIdeleClassCongr_ideleClassNorm
-    (e : L ≃ₐ[K] M)
+     
     (c : RelativeIdeleGroup.ClassGroup K L) :
     RelativeIdeleGroup.classNorm K M
         (relativeIdeleClassCongr (K := K) e c) =
@@ -275,7 +270,7 @@ theorem relativeIdeleClassCongr_ideleClassNorm
 /-- Isomorphic realizations of a finite extension have the same actual
 idele-class norm subgroup in the base idele class group. -/
 theorem ideleClassNorm_range_algEquiv
-    (e : L ≃ₐ[K] M) :
+      :
     (RelativeIdeleGroup.classNorm K M).range =
       (RelativeIdeleGroup.classNorm K L).range := by
   ext c
@@ -300,11 +295,13 @@ theorem ideleClassNorm_range_algEquiv
 /-- The idele-class norm index is invariant under an isomorphic realization
 of the top field. -/
 theorem ideleClassNorm_index_algEquiv
-    (e : L ≃ₐ[K] M) :
+      :
     (RelativeIdeleGroup.classNorm K M).range.index =
       (RelativeIdeleGroup.classNorm K L).range.index := by
   rw [ideleClassNorm_range_algEquiv
     (K := K) e]
+end
+
 
 end Norm
 
@@ -319,9 +316,7 @@ variable
 of number fields.  It is the existing relative-adele transport over `ℚ`,
 conjugated by the relative-to-ordinary scalar-extension equivalences. -/
 noncomputable def adeleCongr
-    (e : K ≃ₐ[ℚ] M) :
-    NumberField.AdeleRing (𝓞 K) K ≃+*
-      NumberField.AdeleRing (𝓞 M) M :=
+    (e : K ≃ₐ[ℚ] M)  :=
   (relativeAdeleBaseChangeRingEquiv
       (K := ℚ) (L := K)).symm |>.trans
     ((relativeAdeleCongr (K := ℚ) e).toRingEquiv.trans
@@ -368,7 +363,7 @@ theorem adeleCongr_algebraMap
           (K := ℚ) (L := K)).symm
           (algebraMap K
             (NumberField.AdeleRing (𝓞 K) K) x) =
-        (1 : NumberField.AdeleRing (𝓞 ℚ) ℚ) ⊗ₜ[ℚ] x := by
+        (1) ⊗ₜ[ℚ] x := by
     apply
       (relativeAdeleBaseChangeRingEquiv
         (K := ℚ) (L := K)).injective
@@ -390,9 +385,7 @@ theorem adeleCongr_algebraMap
 /-- The permutation of finite places induced by an equivalence of number
 fields. -/
 noncomputable def finitePlaceCongr
-    (e : K ≃ₐ[ℚ] M) :
-    HeightOneSpectrum (𝓞 K) ≃
-      HeightOneSpectrum (𝓞 M) :=
+    (e : K ≃ₐ[ℚ] M)  :=
   HeightOneSpectrum.equivOfRingEquiv
     (NumberField.RingOfIntegers.mapRingEquiv
       e.toRingEquiv)
@@ -425,7 +418,7 @@ noncomputable def finitePlaceAdicCompletionCongrHom
     (W : HeightOneSpectrum (𝓞 M)) :
     ((finitePlaceCongr e).symm W).adicCompletion K →+*
       W.adicCompletion M := by
-  letI : Algebra K M := e.toRingHom.toAlgebra
+  letI  := e.toRingHom.toAlgebra
   exact
     finitePlaceAdicCompletionMap K M
       ((finitePlaceCongr e).symm W)
@@ -440,7 +433,7 @@ theorem adeleCongr_finiteComponent
     (adeleCongr e a).2 W =
       finitePlaceAdicCompletionCongrHom e W
         (a.2 ((finitePlaceCongr e).symm W)) := by
-  let : Algebra K M := e.toRingHom.toAlgebra
+  let  := e.toRingHom.toAlgebra
   let : IsScalarTower ℚ K M :=
     IsScalarTower.of_algHom e.toAlgHom
   let componentK :=
@@ -461,15 +454,7 @@ theorem adeleCongr_finiteComponent
     (relativeAdeleBaseChangeRingEquiv
       (K := ℚ) (L := K)).apply_symm_apply a
   rw [← ha]
-  have htransport :
-      componentM
-        (relativeAdeleBaseChangeRingEquiv
-        (K := ℚ) (L := M)
-        (relativeAdeleCongr (K := ℚ) e z)) =
-        componentM
-          (adeleCongr e
-          (relativeAdeleBaseChangeRingEquiv
-            (K := ℚ) (L := K) z)) :=
+  have htransport  :=
     congrArg
       componentM
       (relativeAdeleBaseChangeRingEquiv_relativeAdeleCongr
@@ -479,11 +464,10 @@ theorem adeleCongr_finiteComponent
   | add x y hx hy =>
       simpa only [map_add] using congrArg₂ (· + ·) hx hy
   | tmul b x =>
-      let w : HeightOneSpectrum (𝓞 K) :=
+      let w  :=
         (finitePlaceCongr e).symm W
       have hW :
-          finitePlaceBelow (K := K) W = w := by
-        exact finitePlaceBelow_eq_finitePlaceCongr_symm e W
+          finitePlaceBelow (K := K) W = w := finitePlaceBelow_eq_finitePlaceCongr_symm e W
       have hq :
           finitePlaceBelow (K := ℚ) w =
             finitePlaceBelow (K := ℚ) W := by
@@ -509,11 +493,9 @@ theorem adeleCongr_finiteComponent
               algebraMap M (W.adicCompletion M) (e x) := by
           change
             finitePlaceAdicCompletionMap K M w ⟨W, hW⟩
-                (x : w.adicCompletion K) =
+                x =
               (e x : W.adicCompletion M)
-          exact
-            finitePlaceAdicCompletionMap_coe K M w
-              ⟨W, hW⟩ x
+          apply finitePlaceAdicCompletionMap_coe
         rw [map_mul,
           finitePlaceAdicCompletionMap_comp ℚ M (M := K)
             (finitePlaceBelow (K := ℚ) W) w W
@@ -541,15 +523,13 @@ theorem adeleCongr_finiteComponent
                   (finitePlaceBelow (K := ℚ) w) ⟨w, rfl⟩
                   (b.2 (finitePlaceBelow (K := ℚ) w)) *
               algebraMap K (w.adicCompletion K) x)
-      exact hcomponent
-        (finitePlaceBelow (K := ℚ) w) hq rfl
+      apply hcomponent <;> assumption
 
 /-- The canonical transport of ordinary ideles along an equivalence of
 number fields.  It is obtained from the existing relative-idele transport
 over `ℚ` and the canonical relative-to-ordinary base-change equivalences. -/
 noncomputable def ideleCongr
-    (e : K ≃ₐ[ℚ] M) :
-    IdeleGroup K ≃* IdeleGroup M :=
+    (e : K ≃ₐ[ℚ] M)  :=
   (IdeleGroup.equivAdeleRingUnits (K := K)).trans
     ((Units.mapEquiv (adeleCongr e).toMulEquiv).trans
       (IdeleGroup.equivAdeleRingUnits (K := M)).symm)
@@ -573,9 +553,7 @@ theorem relativeIdeleBaseChangeMulEquiv_relativeIdeleCongr
     MulEquiv.apply_symm_apply,
     relativeIdeleBaseChangeMulEquiv_eq_ringUnits]
   apply Units.ext
-  exact
-    relativeAdeleBaseChangeRingEquiv_relativeAdeleCongr
-      e (a : RelativeAdeleRing ℚ K)
+  apply relativeAdeleBaseChangeRingEquiv_relativeAdeleCongr
 
 /-- Under the actual Galois action on relative ideles, the
 relative-to-ordinary scalar-extension comparison is equivariant for the
@@ -607,13 +585,7 @@ theorem ideleCongr_finiteComponent
         (IdeleGroup.finiteComponent
           ((finitePlaceCongr e).symm W) a) := by
   apply Units.ext
-  exact
-    adeleCongr_finiteComponent e
-      (((IdeleGroup.equivAdeleRingUnits
-        (K := K) a :
-          (NumberField.AdeleRing (𝓞 K) K)ˣ) :
-        NumberField.AdeleRing (𝓞 K) K))
-      W
+  apply adeleCongr_finiteComponent
 
 omit [NumberField K] in
 private theorem finitePlaceCongr_ramificationIdx
@@ -622,8 +594,8 @@ private theorem finitePlaceCongr_ramificationIdx
     letI : Algebra K M := e.toRingHom.toAlgebra
     ((finitePlaceCongr e).symm W).asIdeal.ramificationIdx'
         W.asIdeal = 1 := by
-  let : Algebra K M := e.toRingHom.toAlgebra
-  let w : HeightOneSpectrum (𝓞 K) :=
+  let  := e.toRingHom.toAlgebra
+  let w  :=
     (finitePlaceCongr e).symm W
   have hmap :
       w.asIdeal.map (algebraMap (𝓞 K) (𝓞 M)) =
@@ -655,8 +627,8 @@ theorem ideleCongr_localOrder
         ((finitePlaceCongr e).symm W)
         (IdeleGroup.finiteComponent
           ((finitePlaceCongr e).symm W) a)).toAdd := by
-  let : Algebra K M := e.toRingHom.toAlgebra
-  let w : HeightOneSpectrum (𝓞 K) :=
+  let  := e.toRingHom.toAlgebra
+  let w  :=
     (finitePlaceCongr e).symm W
   have hW :
       finitePlaceBelow (K := K) W = w :=
@@ -694,7 +666,7 @@ theorem ideleCongr_mem_integralAtFinitePlaces_iff
           (w.adicCompletionIntegers K).units
   constructor
   · intro h w
-    let W : HeightOneSpectrum (𝓞 M) :=
+    let W  :=
       finitePlaceCongr e w
     apply
       (FiniteIdeleGroup.localOrder_eq_zero_iff w
@@ -734,7 +706,7 @@ theorem ideleIntegralAtFinitePlaces_map_congr
       (ideleCongr_mem_integralAtFinitePlaces_iff
         e a).2 ha
   · intro hb
-    let a : IdeleGroup K := (ideleCongr e).symm b
+    let a  := (ideleCongr e).symm b
     refine ⟨a, ?_, ?_⟩
     · exact
         (ideleCongr_mem_integralAtFinitePlaces_iff
@@ -754,7 +726,7 @@ theorem ideleCongr_principalIdele
     (IdeleGroup.equivAdeleRingUnits
       (K := M)).injective
   apply Units.ext
-  exact adeleCongr_algebraMap e (x : K)
+  apply adeleCongr_algebraMap
 
 /-- The ordinary principal-idele subgroups are identified by transport
 along a number-field equivalence. -/
@@ -926,7 +898,7 @@ private theorem
     relativeAdeleBaseChangeRingEquiv_self_tmul_one
     (a : NumberField.AdeleRing (𝓞 K) K) :
     relativeAdeleBaseChangeRingEquiv
-        (K := K) (L := K) (a ⊗ₜ[K] (1 : K)) =
+        (K := K) (L := K) (a ⊗ₜ[K] (1)) =
       a := by
   apply Prod.ext
   · funext W
@@ -941,9 +913,7 @@ private theorem
           (v := V) (w := W) (a.1 V) =
         a.1 W
     subst V
-    exact
-      infinitePlaceCompletionMap_self_apply
-        (K := K) W (a.1 W)
+    apply infinitePlaceCompletionMap_self_apply
   · apply DFunLike.coe_injective
     funext W
     rw [relativeAdeleBaseChangeRingEquiv_finiteComponent_tmul]
@@ -956,9 +926,7 @@ private theorem
           ⟨W, by rfl⟩ (a.2 v) =
         a.2 W
     subst v
-    exact
-      finitePlaceAdicCompletionMap_self_apply
-        K W (a.2 W)
+    apply finitePlaceAdicCompletionMap_self_apply
 
 omit [Algebra ℚ K] in
 private theorem
@@ -966,17 +934,20 @@ private theorem
     (a : NumberField.AdeleRing (𝓞 K) K) :
     (relativeAdeleBaseChangeRingEquiv
         (K := K) (L := K)).symm a =
-      a ⊗ₜ[K] (1 : K) := by
+      a ⊗ₜ[K] (1) := by
   apply
     (relativeAdeleBaseChangeRingEquiv
       (K := K) (L := K)).injective
   rw [RingEquiv.apply_symm_apply,
     relativeAdeleBaseChangeRingEquiv_self_tmul_one]
 
+section
+variable (e : ℚ ≃ₐ[ℚ] M)
+include e
 /-- Scalar extension from `ℚ` to a realization algebra-equivalent to
 `ℚ` is the canonical transport of ordinary adele rings. -/
 theorem rationalAdeleExtension_eq_adeleCongr
-    (e : ℚ ≃ₐ[ℚ] M)
+     
     (a : NumberField.AdeleRing (𝓞 ℚ) ℚ) :
     relativeAdeleBaseChangeRingEquiv
         (K := ℚ) (L := M)
@@ -985,7 +956,7 @@ theorem rationalAdeleExtension_eq_adeleCongr
   change
     relativeAdeleBaseChangeRingEquiv
         (K := ℚ) (L := M)
-        (a ⊗ₜ[ℚ] (1 : M)) =
+        (a ⊗ₜ[ℚ] (1)) =
       relativeAdeleBaseChangeRingEquiv
         (K := ℚ) (L := M)
         (relativeAdeleCongr (K := ℚ) e
@@ -997,7 +968,7 @@ theorem rationalAdeleExtension_eq_adeleCongr
 /-- Scalar extension from `ℚ` to a realization algebra-equivalent to
 `ℚ` is the canonical transport of ordinary ideles. -/
 theorem rationalIdeleExtension_eq_ideleCongr
-    (e : ℚ ≃ₐ[ℚ] M) :
+      :
     IdeleGroup.extension ℚ M =
       (ideleCongr e).toMonoidHom := by
   apply MonoidHom.ext
@@ -1012,17 +983,12 @@ theorem rationalIdeleExtension_eq_ideleCongr
       (K := M)).injective
   rw [relativeIdeleBaseChangeMulEquiv_eq_ringUnits]
   apply Units.ext
-  exact
-    rationalAdeleExtension_eq_adeleCongr e
-      ((IdeleGroup.equivAdeleRingUnits
-        (K := ℚ) a :
-          (NumberField.AdeleRing (𝓞 ℚ) ℚ)ˣ) :
-        NumberField.AdeleRing (𝓞 ℚ) ℚ)
+  apply rationalAdeleExtension_eq_adeleCongr
 
 /-- Scalar extension from `ℚ` to a realization algebra-equivalent to
 `ℚ` is the canonical transport of ordinary idele classes. -/
 theorem rationalIdeleClassExtension_eq_ideleClassCongr
-    (e : ℚ ≃ₐ[ℚ] M) :
+      :
     ideleClassExtension ℚ M =
       (ideleClassCongr e).toMonoidHom := by
   apply MonoidHom.ext
@@ -1040,6 +1006,8 @@ theorem rationalIdeleClassExtension_eq_ideleClassCongr
     (QuotientGroup.mk' (IdeleGroup.principalSubgroup M))
     (DFunLike.congr_fun
       (rationalIdeleExtension_eq_ideleCongr e) a)
+end
+
 
 section RelativeTowerCongr
 
@@ -1050,12 +1018,8 @@ variable
     [Field K'] [NumberField K']
     [Field L'] [NumberField L'] [Algebra K' L']
 
-/-- The tensor-product map induced by compatible equivalences of both
-fields in a finite extension.  The coefficient-ring equivalence is kept
-explicit so the inverse uses that exact equivalence rather than a second
-choice. -/
- noncomputable def relativeAdeleMapOfCompatibleEquiv
-    (eK : K ≃ₐ[ℚ] K')
+section
+variable (eK : K ≃ₐ[ℚ] K')
     (eA :
       NumberField.AdeleRing (𝓞 K) K ≃+*
         NumberField.AdeleRing (𝓞 K') K')
@@ -1068,7 +1032,14 @@ choice. -/
     (eL : L ≃ₐ[ℚ] L')
     (hL : ∀ x : K,
       eL (algebraMap K L x) =
-        algebraMap K' L' (eK x)) :
+        algebraMap K' L' (eK x))
+include eK eA hA eL hL
+/-- The tensor-product map induced by compatible equivalences of both
+fields in a finite extension.  The coefficient-ring equivalence is kept
+explicit so the inverse uses that exact equivalence rather than a second
+choice. -/
+ noncomputable def relativeAdeleMapOfCompatibleEquiv
+      :
     RelativeAdeleRing K L →+*
       RelativeAdeleRing K' L' := by
   letI : Algebra K (RelativeAdeleRing K' L') :=
@@ -1110,20 +1081,7 @@ choice. -/
 
 @[simp]
  theorem relativeAdeleMapOfCompatibleEquiv_tmul
-    (eK : K ≃ₐ[ℚ] K')
-    (eA :
-      NumberField.AdeleRing (𝓞 K) K ≃+*
-        NumberField.AdeleRing (𝓞 K') K')
-    (hA : ∀ x : K,
-      eA
-          (algebraMap K
-            (NumberField.AdeleRing (𝓞 K) K) x) =
-        algebraMap K'
-          (NumberField.AdeleRing (𝓞 K') K') (eK x))
-    (eL : L ≃ₐ[ℚ] L')
-    (hL : ∀ x : K,
-      eL (algebraMap K L x) =
-        algebraMap K' L' (eK x))
+     
     (a : NumberField.AdeleRing (𝓞 K) K)
     (x : L) :
     relativeAdeleMapOfCompatibleEquiv
@@ -1143,15 +1101,20 @@ choice. -/
     Algebra.TensorProduct.includeRight_apply,
     Algebra.TensorProduct.tmul_mul_tmul,
     mul_one, one_mul]
+end
 
-/-- Compatible equivalences of number-field extensions induce the
-canonical equivalence of their relative adele rings. -/
-noncomputable def relativeAdeleCongrOfAlgEquiv
-    (eK : K ≃ₐ[ℚ] K')
+
+section
+variable (eK : K ≃ₐ[ℚ] K')
     (eL : L ≃ₐ[ℚ] L')
     (h : ∀ x : K,
       eL (algebraMap K L x) =
-        algebraMap K' L' (eK x)) :
+        algebraMap K' L' (eK x))
+include eK eL h
+/-- Compatible equivalences of number-field extensions induce the
+canonical equivalence of their relative adele rings. -/
+noncomputable def relativeAdeleCongrOfAlgEquiv
+      :
     RelativeAdeleRing K L ≃+*
       RelativeAdeleRing K' L' := by
   let eA := adeleCongr eK
@@ -1225,17 +1188,7 @@ noncomputable def relativeAdeleCongrOfAlgEquiv
               _ = x + y :=
                 congrArg₂ (· + ·) hx hy
         | tmul a x =>
-            calc
-              g (f (a ⊗ₜ[K] x)) =
-                  g (eA a ⊗ₜ[K'] eL x) :=
-                congrArg g
-                  (relativeAdeleMapOfCompatibleEquiv_tmul
-                    eK eA hA eL h a x)
-              _ = eA.symm (eA a) ⊗ₜ[K] eL.symm (eL x) :=
-                relativeAdeleMapOfCompatibleEquiv_tmul
-                  eK.symm eA.symm hA' eL.symm h'
-                  (eA a) (eL x)
-              _ = a ⊗ₜ[K] x := by simp
+            aesop
       right_inv := by
         intro z
         induction z using TensorProduct.inductionOn with
@@ -1249,24 +1202,11 @@ noncomputable def relativeAdeleCongrOfAlgEquiv
               _ = x + y :=
                 congrArg₂ (· + ·) hx hy
         | tmul a x =>
-            calc
-              f (g (a ⊗ₜ[K'] x)) =
-                  f (eA.symm a ⊗ₜ[K] eL.symm x) :=
-                congrArg f
-                  (relativeAdeleMapOfCompatibleEquiv_tmul
-                    eK.symm eA.symm hA' eL.symm h' a x)
-              _ = eA (eA.symm a) ⊗ₜ[K'] eL (eL.symm x) :=
-                relativeAdeleMapOfCompatibleEquiv_tmul
-                  eK eA hA eL h (eA.symm a) (eL.symm x)
-              _ = a ⊗ₜ[K'] x := by simp }
+            aesop }
 
 @[simp]
 theorem relativeAdeleCongrOfAlgEquiv_tmul
-    (eK : K ≃ₐ[ℚ] K')
-    (eL : L ≃ₐ[ℚ] L')
-    (h : ∀ x : K,
-      eL (algebraMap K L x) =
-        algebraMap K' L' (eK x))
+     
     (a : NumberField.AdeleRing (𝓞 K) K)
     (x : L) :
     relativeAdeleCongrOfAlgEquiv eK eL h
@@ -1279,23 +1219,13 @@ theorem relativeAdeleCongrOfAlgEquiv_tmul
 /-- Compatible equivalences of number-field extensions induce the
 canonical equivalence of their relative idele groups. -/
 noncomputable def relativeIdeleCongrOfAlgEquiv
-    (eK : K ≃ₐ[ℚ] K')
-    (eL : L ≃ₐ[ℚ] L')
-    (h : ∀ x : K,
-      eL (algebraMap K L x) =
-        algebraMap K' L' (eK x)) :
-    RelativeIdeleGroup K L ≃*
-      RelativeIdeleGroup K' L' :=
+       :=
   Units.mapEquiv
     (relativeAdeleCongrOfAlgEquiv eK eL h).toMulEquiv
 
 @[simp]
 theorem relativeIdeleCongrOfAlgEquiv_principalIdele
-    (eK : K ≃ₐ[ℚ] K')
-    (eL : L ≃ₐ[ℚ] L')
-    (h : ∀ x : K,
-      eL (algebraMap K L x) =
-        algebraMap K' L' (eK x))
+     
     (x : Lˣ) :
     relativeIdeleCongrOfAlgEquiv eK eL h
         (RelativeIdeleGroup.principalIdele K L x) =
@@ -1304,19 +1234,15 @@ theorem relativeIdeleCongrOfAlgEquiv_principalIdele
   apply Units.ext
   change
     relativeAdeleCongrOfAlgEquiv eK eL h
-        ((1 : NumberField.AdeleRing (𝓞 K) K) ⊗ₜ[K] (x : L)) =
-      (1 : NumberField.AdeleRing (𝓞 K') K') ⊗ₜ[K'] eL (x : L)
+        ((1) ⊗ₜ[K] x) =
+      (1) ⊗ₜ[K'] eL x
   rw [relativeAdeleCongrOfAlgEquiv_tmul]
   simp
 
 /-- The semilinear relative-idele transport identifies the principal
 subgroups. -/
 theorem relativeIdelePrincipalSubgroup_map_congrOfAlgEquiv
-    (eK : K ≃ₐ[ℚ] K')
-    (eL : L ≃ₐ[ℚ] L')
-    (h : ∀ x : K,
-      eL (algebraMap K L x) =
-        algebraMap K' L' (eK x)) :
+      :
     (RelativeIdeleGroup.principalSubgroup K L).map
         (relativeIdeleCongrOfAlgEquiv eK eL h) =
       RelativeIdeleGroup.principalSubgroup K' L' := by
@@ -1340,11 +1266,7 @@ theorem relativeIdelePrincipalSubgroup_map_congrOfAlgEquiv
 /-- Compatible equivalences of number-field extensions induce the
 canonical equivalence of their existing relative idele class groups. -/
 noncomputable def relativeIdeleClassCongrOfAlgEquiv
-    (eK : K ≃ₐ[ℚ] K')
-    (eL : L ≃ₐ[ℚ] L')
-    (h : ∀ x : K,
-      eL (algebraMap K L x) =
-        algebraMap K' L' (eK x)) :
+      :
     RelativeIdeleGroup.ClassGroup K L ≃*
       RelativeIdeleGroup.ClassGroup K' L' :=
   QuotientGroup.congr
@@ -1356,11 +1278,7 @@ noncomputable def relativeIdeleClassCongrOfAlgEquiv
 
 @[simp]
 theorem relativeIdeleClassCongrOfAlgEquiv_mk
-    (eK : K ≃ₐ[ℚ] K')
-    (eL : L ≃ₐ[ℚ] L')
-    (h : ∀ x : K,
-      eL (algebraMap K L x) =
-        algebraMap K' L' (eK x))
+     
     (a : RelativeIdeleGroup K L) :
     relativeIdeleClassCongrOfAlgEquiv eK eL h
         (QuotientGroup.mk'
@@ -1369,6 +1287,8 @@ theorem relativeIdeleClassCongrOfAlgEquiv_mk
         (RelativeIdeleGroup.principalSubgroup K' L')
         (relativeIdeleCongrOfAlgEquiv eK eL h a) :=
   rfl
+end
+
 
 section Norm
 
@@ -1401,13 +1321,7 @@ theorem relativeAdeleCongrOfAlgEquiv_norm
           (algebraMap
             (NumberField.AdeleRing (𝓞 K) K)
             (RelativeAdeleRing K L)) := by
-    ext a
-    change
-      (adeleCongr eK a) ⊗ₜ[K'] (1 : L') =
-        relativeAdeleCongrOfAlgEquiv eK eL h
-          (a ⊗ₜ[K] (1 : L))
-    rw [relativeAdeleCongrOfAlgEquiv_tmul]
-    simp
+    ext <;> simp_all [relativeAdeleCongrOfAlgEquiv_tmul]
   have hnorm :=
     Algebra.norm_eq_of_equiv_equiv
       (adeleCongr eK)
@@ -1432,9 +1346,7 @@ theorem relativeIdeleCongrOfAlgEquiv_norm
     (IdeleGroup.equivAdeleRingUnits
       (K := K')).injective
   apply Units.ext
-  exact
-    relativeAdeleCongrOfAlgEquiv_norm
-      eK eL h (a : RelativeAdeleRing K L)
+  apply relativeAdeleCongrOfAlgEquiv_norm
 
 variable [IsGalois K L] [IsGalois K' L']
 
@@ -1511,9 +1423,7 @@ theorem ordinaryIdeleClassNorm_range_map_congrOfAlgEquiv
       (K := K) (L := L),
     ordinaryIdeleClassNorm_range_eq_relative
       (K := K') (L := L')]
-  exact
-    relativeIdeleClassNorm_range_map_congrOfAlgEquiv
-      eK eL h
+  apply relativeIdeleClassNorm_range_map_congrOfAlgEquiv <;> assumption
 
 -- Fix the canonical commutativity proof used by the norm-range quotients.
 local instance normIdeleClassGroup_isMulCommutative

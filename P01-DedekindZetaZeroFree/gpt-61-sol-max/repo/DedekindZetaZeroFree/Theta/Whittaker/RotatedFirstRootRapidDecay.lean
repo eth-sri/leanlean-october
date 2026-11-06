@@ -11,7 +11,7 @@ namespace DedekindZetaZeroFree.KPCplxRotatedJacquetIntegralBounds
 
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts KPCplxRotatedKernelEstimates MeasureTheory
 
-instance instIsAddHaarMeasureRotatedKernelEuclideanArea : euclideanArea.IsAddHaarMeasure := by unfold euclideanArea; infer_instance
+
 
 end DedekindZetaZeroFree.KPCplxRotatedJacquetIntegralBounds
 

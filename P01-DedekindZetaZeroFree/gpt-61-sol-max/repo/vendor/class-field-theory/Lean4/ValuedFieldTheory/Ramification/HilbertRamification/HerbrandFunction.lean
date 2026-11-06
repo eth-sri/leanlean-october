@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Ramification.Herbrand.Function
 public import ValuedFieldTheory.Ramification.HilbertRamification.RealLowerGroups
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -71,14 +74,14 @@ def lowerRamificationFiltrationOfUniqueExtension
 
 variable [FiniteDimensional K L]
 
-noncomputable local instance generalDVFGalFintype : Fintype Gal(L/K) :=
-  Fintype.ofFinite Gal(L/K)
+
+
 
 /-- The Herbrand-function sum formula, defined under the stated unique-extension and separable-residue assumptions:
 the Herbrand function attached to the actual lower groups. -/
 noncomputable def herbrandFunctionOfUniqueExtension
     (huniq : RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-      base target) (s : ℝ) : ℝ :=
+      base target) (s : ℝ)  :=
   RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.herbrandFunction
     (lowerRamificationFiltrationOfUniqueExtension
       (base := base) (target := target) huniq) s
@@ -86,7 +89,7 @@ noncomputable def herbrandFunctionOfUniqueExtension
 /-- The inverse Herbrand function in the general-DVF setting. -/
 noncomputable def inverseHerbrandFunctionOfUniqueExtension
     (huniq : RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-      base target) (t : ℝ) : ℝ :=
+      base target) (t : ℝ)  :=
   RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.inverseHerbrandFunction
     (lowerRamificationFiltrationOfUniqueExtension
       (base := base) (target := target) huniq) t
@@ -163,7 +166,7 @@ theorem inverseHerbrandFunctionOfUniqueExtension_strictMono
 under the noncomplete standing assumptions: `G^t = G_{psi(t)}`. -/
 def upperRamificationGroupOfUniqueExtension
     (huniq : RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-      base target) (t : ℝ) : Subgroup Gal(L/K) :=
+      base target) (t : ℝ)  :=
   lowerRamificationGroup
     (base := base) (target := target) huniq
     (inverseHerbrandFunctionOfUniqueExtension
@@ -178,21 +181,20 @@ def upperRamificationGroupOfUniqueExtension
         (herbrandFunctionOfUniqueExtension
           (base := base) (target := target) huniq s) =
       lowerRamificationGroup
-        (base := base) (target := target) huniq s := by
-  exact congrArg
+        (base := base) (target := target) huniq s := congrArg
     (lowerRamificationGroup (base := base) (target := target) huniq)
     (inverseHerbrandFunctionOfUniqueExtension_eta
       (base := base) (target := target) huniq s)
 
-/-- States the theorem `inverseHerbrandFunctionOfUniqueExtension_ge_neg_one_iff`. -/
-theorem inverseHerbrandFunctionOfUniqueExtension_ge_neg_one_iff
-    (huniq : RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-      base target) {t : ℝ} :
-    -1 ≤ inverseHerbrandFunctionOfUniqueExtension
-        (base := base) (target := target) huniq t ↔ -1 ≤ t :=
-  RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.inverseHerbrandFunction_mem_Ici_neg_one_iff
-    (lowerRamificationFiltrationOfUniqueExtension
-      (base := base) (target := target) huniq)
+
+
+
+
+
+
+
+
+
 
 end Higher
 end RamificationTheory.HilbertRamification

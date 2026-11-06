@@ -2,7 +2,10 @@ module
 
 public import Mathlib
 
+public import Mathlib
+
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 
@@ -22,12 +25,12 @@ instance (F : Type) [Field F] [NumberField F] (𝔪 : Ideal (𝓞 F)) :
   ⟨RayClassCharacter.toFun⟩
 
 def RayClassCharacter.IsPrimitive {F : Type} [Field F] [NumberField F] {𝔪 : Ideal (𝓞 F)}
-    (η : RayClassCharacter F 𝔪) : Prop :=
+    (η : RayClassCharacter F 𝔪)  :=
   ∀ 𝔣 : Ideal (𝓞 F), 𝔪 < 𝔣 → ∃ α : 𝓞 F, α ≠ 0 ∧ α - 1 ∈ 𝔣 ∧ (∀ φ : F →+* ℝ, 0 < φ (α : F)) ∧
     Ideal.span {α} ⊔ 𝔪 = ⊤ ∧ η (Ideal.span {α}) ≠ 1
 
 def RayClassCharacter.IsPrincipal {F : Type} [Field F] [NumberField F] {𝔪 : Ideal (𝓞 F)}
-    (η : RayClassCharacter F 𝔪) : Prop :=
+    (η : RayClassCharacter F 𝔪)  :=
   ∀ I : Ideal (𝓞 F), I ≠ ⊥ → I ⊔ 𝔪 = ⊤ → η I = 1
 
 structure QuadraticHeckeFamily (F : Type) [Field F] [NumberField F] (𝔠 : Ideal (𝓞 F)) where

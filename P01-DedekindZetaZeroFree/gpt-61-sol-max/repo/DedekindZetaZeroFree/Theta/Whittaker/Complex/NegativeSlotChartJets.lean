@@ -22,7 +22,7 @@ local notation "ζ" => A.zeta12
 local notation "hζ" => A.primitive_zeta12
 local notation "Raw" => KPAdelicCoverRestrictedProduct.RestrictedCover F ζ hζ
 variable (s : RestrictedTensorSimple.Level (bad A P C))
-variable (x : ∀ j : s.val, Plus A P C j.val) (g : Raw)
+
 
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
 

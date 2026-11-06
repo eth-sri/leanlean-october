@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import GaloisCohomology.ProfiniteIntegers.ProfiniteInteger
 public import Mathlib.Data.ZMod.QuotientRing
 public import Mathlib.NumberTheory.Padics.RingHoms
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -48,15 +51,14 @@ def zHatReductionRingHom (n : ℕ) (hn : 0 < n) :
   map_add' _ _ := rfl
   map_mul' _ _ := rfl
 
-@[simp]
-theorem zHatReductionRingHom_apply
-    (n : ℕ) (hn : 0 < n) (z : ZHat) :
-    zHatReductionRingHom n hn z = zHatReduction n hn z :=
-  rfl
+
+
+
+
+
 
 /-- The compatible `p`-power reductions of a profinite integer. -/
-def zHatPadicReduction (p : Nat.Primes) (n : ℕ) :
-    ZHat →+* ZMod (p.1 ^ n) :=
+def zHatPadicReduction (p : Nat.Primes) (n : ℕ)  :=
   zHatReductionRingHom (p.1 ^ n) (pow_pos p.2.pos n)
 
 theorem zHatPadicReduction_compatible
@@ -70,8 +72,7 @@ theorem zHatPadicReduction_compatible
     (pow_dvd_pow p.1 hmn) z
 
 /-- The `p`-adic coordinate of a profinite integer. -/
-def zHatToPadicInt (p : Nat.Primes) :
-    ZHat →+* ℤ_[p.1] :=
+def zHatToPadicInt (p : Nat.Primes)  :=
   PadicInt.lift (zHatPadicReduction_compatible p)
 
 @[simp]
@@ -86,12 +87,12 @@ def zHatToProfiniteIntegerPrimeProduct :
     ZHat →+* ProfiniteIntegerPrimeProduct :=
   RingHom.pi zHatToPadicInt
 
-@[simp]
-theorem zHatToProfiniteIntegerPrimeProduct_apply
-    (z : ZHat) (p : Nat.Primes) :
-    zHatToProfiniteIntegerPrimeProduct z p =
-      zHatToPadicInt p z :=
-  rfl
+
+
+
+
+
+
 
 /-- The prime-coordinate map separates profinite integers. -/
 theorem zHatToProfiniteIntegerPrimeProduct_injective :
@@ -102,7 +103,7 @@ theorem zHatToProfiniteIntegerPrimeProduct_injective :
   let e := ZMod.equivPi (n := n) hn.ne'
   apply e.injective
   funext p
-  have hpPrime : p.1.Prime :=
+  have hpPrime  :=
     Nat.prime_of_mem_primeFactors p.2
   let p' : Nat.Primes := ⟨p.1, hpPrime⟩
   have hpCoord :=
@@ -119,10 +120,8 @@ theorem zHatToProfiniteIntegerPrimeProduct_injective :
       zHatReduction (p.1 ^ n.factorization p.1)
           (pow_pos hpPrime.pos _) x =
         zHatReduction (p.1 ^ n.factorization p.1)
-          (pow_pos hpPrime.pos _) y := by
-    exact hpReduction
-  have hpowDvd :
-      p.1 ^ n.factorization p.1 ∣ n :=
+          (pow_pos hpPrime.pos _) y := hpReduction
+  have hpowDvd  :=
     (hpPrime.pow_dvd_iff_le_factorization hn.ne').2 le_rfl
   have hcast :
       ZMod.castHom hpowDvd
@@ -213,7 +212,7 @@ theorem denseRange_intCast_profiniteIntegerPrimeProduct :
     Metric.nhds_basis_closedBall.mem_iff.mp (hNhd p)
   choose k hk using fun p : ↥S =>
     PadicInt.exists_pow_neg_lt p.1.1 (hε p)
-  let modulus : ↥S → ℕ :=
+  let modulus  :=
     fun p => p.1.1 ^ k p
   have hcoprime :
       Pairwise (fun p q : ↥S =>
@@ -264,18 +263,12 @@ theorem denseRange_intCast_profiniteIntegerPrimeProduct :
             (Finset.dvd_prod_of_mem modulus (Finset.mem_univ pS))
             (ZMod (modulus pS))
             (a : ZMod (∏ q : ↥S, modulus q)) := by
-              exact
-                (map_intCast
-                  (ZMod.castHom
-                    (Finset.dvd_prod_of_mem modulus
-                      (Finset.mem_univ pS))
-                    (ZMod (modulus pS))) a).symm
+              norm_num
       _ = crt (a : ZMod (∏ q : ↥S, modulus q)) pS :=
             (heval (a : ZMod (∏ q : ↥S, modulus q))).symm
       _ = crt (crt.symm target) pS := by rw [ha]
       _ = target pS := congrFun (crt.apply_symm_apply target) pS
-      _ = PadicInt.toZModPow (k pS) (x p) := by
-            rfl
+      _ = PadicInt.toZModPow (k pS) (x p) := rfl
   have hmem :
       (a : ℤ_[p.1]) - x p ∈
         Ideal.span
@@ -313,11 +306,9 @@ theorem zHatToProfiniteIntegerPrimeProduct_surjective :
     exact
       ⟨(a : ZHat),
         zHatToProfiniteIntegerPrimeProduct_intCast a⟩
-  have hdense :
-      Dense (Set.range zHatToProfiniteIntegerPrimeProduct) :=
+  have hdense  :=
     denseRange_intCast_profiniteIntegerPrimeProduct.mono hsubset
-  have hclosed :
-      IsClosed (Set.range zHatToProfiniteIntegerPrimeProduct) :=
+  have hclosed  :=
     (isCompact_range
       continuous_zHatToProfiniteIntegerPrimeProduct).isClosed
   intro y
@@ -343,14 +334,14 @@ theorem zHatRingEquivProfiniteIntegerPrimeProduct_apply
       zHatToProfiniteIntegerPrimeProduct z :=
   rfl
 
-/-- The Chinese-remainder ring equivalence is a homeomorphism. -/
-theorem isHomeomorph_zHatRingEquivProfiniteIntegerPrimeProduct :
-    IsHomeomorph zHatRingEquivProfiniteIntegerPrimeProduct := by
-  rw [isHomeomorph_iff_continuous_bijective]
-  exact
-    ⟨continuous_zHatToProfiniteIntegerPrimeProduct,
-      (zHatRingEquivProfiniteIntegerPrimeProduct :
-        ZHat ≃ ProfiniteIntegerPrimeProduct).bijective⟩
+
+
+
+
+
+
+
+
 
 end ClassFormation
 

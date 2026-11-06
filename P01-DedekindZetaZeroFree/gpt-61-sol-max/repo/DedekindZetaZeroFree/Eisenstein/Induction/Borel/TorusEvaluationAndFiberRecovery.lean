@@ -70,8 +70,8 @@ theorem deltaHalf_eq_nu_cube
   rw [hd, ← Real.rpow_natCast, ← Real.rpow_mul (by positivity)]
   norm_num
 
-theorem normHalf_product
-    (u : Raw R)
+section
+variable (u : Raw R)
     (t : ∀ q, KPLocalExceptionalConstruction.actualTorus F R.A.zeta12 R.A.primitive_zeta12 q)
     (a d : InfinitePlace F → ℂˣ) (b : InfinitePlace F → ℂ)
     (e : KPGlobalTorusFunctionData.E F R.A.zeta12 R.A.primitive_zeta12)
@@ -81,6 +81,9 @@ theorem normHalf_product
       KPCplxPrincipalSeriesCharts.upperTriangular (a w) (d w) (b w))
     (he : KPAdelicCoverRestrictedProduct.scalarQuotient F R.A.zeta12 R.A.primitive_zeta12
       (KPAdelicCoverRestrictedProduct.amalgamation F R.A.zeta12 R.A.primitive_zeta12 u) = e.val)
+include u t a d b e ht hp he
+theorem normHalf_product
+     
     (U : Finset (KPHilbert.Place F)) (hU : ∀ p, p ∉ U → localNorm R P C t a d p = 1) :
     (∏ p : U, (Real.rpow (localNorm R P C t a d p) (1/2 : ℝ) : ℂ)) =
       KPGlobalTorusFunctionData.deltaHalf F R.A.zeta12 R.A.primitive_zeta12 e := by
@@ -107,16 +110,7 @@ theorem normHalf_product
   rw [hc, deltaHalf_eq_nu_cube R]
 
 theorem rawRationalEvaluator_torus
-    (u : Raw R)
-    (t : ∀ q, KPLocalExceptionalConstruction.actualTorus F R.A.zeta12 R.A.primitive_zeta12 q)
-    (a d : InfinitePlace F → ℂˣ) (b : InfinitePlace F → ℂ)
-    (e : KPGlobalTorusFunctionData.E F R.A.zeta12 R.A.primitive_zeta12)
-    (ht : ∀ q, (t q).val = KPPGLLocalCover.coverQuotient F R.A.zeta12
-      R.A.primitive_zeta12 (Sum.inr q) (u (Sum.inr q)))
-    (hp : ∀ w, complexMatrix R w (u (Sum.inl w)) =
-      KPCplxPrincipalSeriesCharts.upperTriangular (a w) (d w) (b w))
-    (he : KPAdelicCoverRestrictedProduct.scalarQuotient F R.A.zeta12 R.A.primitive_zeta12
-      (KPAdelicCoverRestrictedProduct.amalgamation F R.A.zeta12 R.A.primitive_zeta12 u) = e.val)
+     
     (g : Raw R) (x : PlusCore R N P C)
     (r : KPGlobalTorusFunctionData.E F R.A.zeta12 R.A.primitive_zeta12) :
     (comparisonSmooth R P C (rawCoreVector R N P C (u * g) x)).val.val r =
@@ -195,6 +189,8 @@ theorem rawRationalEvaluator_torus
     simp only [map_add]
     change (_ : ℂ) + _ = _ * (_ + _)
     rw [hx, hy, mul_add]
+end
+
 
 theorem quotientRationalEvaluator_torus (x : PlusCore R N P C)
     (e : KPGlobalTorusFunctionData.E F R.A.zeta12 R.A.primitive_zeta12)

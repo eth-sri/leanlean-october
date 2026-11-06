@@ -24,43 +24,49 @@ variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
+
+local notation:max "current_S_U" => S_U F ζ hζ U R P H
+
+
+local notation:max "current_T_U" => T_U F ζ hζ U R P H
+
 structure Properties : Prop where
-  cotangent_pair_integrable : ∀ (φ : S_U F ζ hζ U R P H) (W : T_U F ζ hζ U R P H),
+  cotangent_pair_integrable : ∀ (φ : current_S_U) (W : current_T_U),
     Integrable (pair (D_U φ).val W.val) (KPContActualSectorCotangentL2.muU F ζ hζ U R P)
-  scalar_pair_integrable : ∀ (φ : S_U F ζ hζ U R P H) (W : T_U F ζ hζ U R P H),
+  scalar_pair_integrable : ∀ (φ : current_S_U) (W : current_T_U),
     Integrable (scalarPair φ (δ_U W)) (KPContActualSectorCotangentL2.muU F ζ hζ U R P)
   local_cotangent_pair_integrable : ∀ (a : ActualChart (U := U) (H := H))
-      (φ : S_U F ζ hζ U R P H) (W : T_U F ζ hζ U R P H),
+      (φ : current_S_U) (W : current_T_U),
     Integrable (fun y => inner ℂ (localCoefficient a (D_U φ).val y)
       (localCoefficient a W.val y)) a.liftedMeasure
   local_scalar_pair_integrable : ∀ (a : ActualChart (U := U) (H := H))
-      (φ : S_U F ζ hζ U R P H) (W : T_U F ζ hζ U R P H),
+      (φ : current_S_U) (W : current_T_U),
     Integrable (fun y => inner ℂ (localScalarCoefficient a φ y)
       (localScalarCoefficient a (δ_U W) y)) a.liftedMeasure
-  green_integral : ∀ (φ : S_U F ζ hζ U R P H) (W : T_U F ζ hζ U R P H),
+  green_integral : ∀ (φ : current_S_U) (W : current_T_U),
     (∫ x, pair (D_U φ).val W.val x ∂KPContActualSectorCotangentL2.muU F ζ hζ U R P) =
       ∫ x, scalarPair φ (δ_U W) x ∂KPContActualSectorCotangentL2.muU F ζ hζ U R P
-  green : ∀ (φ : S_U F ζ hζ U R P H) (W : T_U F ζ hζ U R P H),
+  green : ∀ (φ : current_S_U) (W : current_T_U),
     inner ℂ (j (D_U φ)) (j W) = inner ℂ (iota φ) (iota (δ_U W))
   iota_injective : Function.Injective (iota (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H))
   j_injective : Function.Injective (j (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H))
-  formal_adjoint : (KPTestOperator.descend (S := S_U F ζ hζ U R P H) (T := T_U F ζ hζ U R P H)
+  formal_adjoint : (KPTestOperator.descend (S := current_S_U) (T := current_T_U)
       (iota (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H)) iota_injective
       (j (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H)) D_U).IsFormalAdjoint
-    (KPTestOperator.descend (S := T_U F ζ hζ U R P H) (T := S_U F ζ hζ U R P H)
+    (KPTestOperator.descend (S := current_T_U) (T := current_S_U)
       (j (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H)) j_injective
       (iota (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H))
       (δ_U (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H)))
-  laplacian_pairing : ∀ φ ψ : S_U F ζ hζ U R P H,
+  laplacian_pairing : ∀ φ ψ : current_S_U,
     inner ℂ (j (D_U φ)) (j (D_U ψ)) = inner ℂ (iota φ) (iota (δ_U (D_U ψ)))
   descended_laplacian_pairing : ∀ φ ψ : KPTestOperator.testDomain
       (iota (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H)),
-    inner ℂ (KPTestOperator.descend (S := S_U F ζ hζ U R P H) (T := T_U F ζ hζ U R P H)
+    inner ℂ (KPTestOperator.descend (S := current_S_U) (T := current_T_U)
         iota iota_injective j D_U φ)
-        (KPTestOperator.descend (S := S_U F ζ hζ U R P H) (T := T_U F ζ hζ U R P H)
+        (KPTestOperator.descend (S := current_S_U) (T := current_T_U)
           iota iota_injective j D_U ψ) =
       inner ℂ (φ : KPContSectorClosedLpSubspace.H F ζ hζ R U)
-        (KPTestOperator.laplacian (S := S_U F ζ hζ U R P H) (T := T_U F ζ hζ U R P H)
+        (KPTestOperator.laplacian (S := current_S_U) (T := current_T_U)
           iota iota_injective D_U δ_U ψ)
 
 end DedekindZetaZeroFree.KPContActualSectorGlobalGreen
@@ -204,14 +210,17 @@ open KPContActualCotangentMeasurableFamilies KPContActualCotangentChartRestricti
 
 set_option maxHeartbeats 1000000 in
 
-theorem kp_cont_actual_sector_global_green_equation
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+section
+variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ)) (hμG : μG.IsHaarMeasure)
     (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ) (hR : R.adelicHaar = μG)
     (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
     (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-    (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H) :
+    (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H)
+include F ζ hζ μG hμG U R hR P H realization
+theorem kp_cont_actual_sector_global_green_equation
+      :
     ∀ (φ : S_U F ζ hζ U R P H) (W : T_U F ζ hζ U R P H),
       (∫ x, pair (D_U φ).val W.val x ∂KPContActualSectorCotangentL2.muU F ζ hζ U R P) =
         ∫ x, scalarPair φ (δ_U W) x ∂KPContActualSectorCotangentL2.muU F ζ hζ U R P := by
@@ -272,13 +281,7 @@ theorem kp_cont_actual_sector_global_green_equation
   exact Finset.sum_congr rfl (fun i _ => hloc i)
 
 theorem kp_cont_actual_sector_global_green
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ)) (hμG : μG.IsHaarMeasure)
-    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ) (hR : R.adelicHaar = μG)
-    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-    (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H) :
+      :
     KPContActualSectorGlobalGreen.Properties (F := F) (ζ := ζ) (hζ := hζ)
       (U := U) (R := R) (P := P) (H := H) := by
   have emb := kp_cont_actual_sector_test_embeddings F ζ hζ μG hμG U R hR P H realization
@@ -311,6 +314,8 @@ theorem kp_cont_actual_sector_global_green
       descended_laplacian_pairing := fun φ ψ =>
         KPTestGreenTransfer.laplacian_pairing _ emb.iota_injective _ emb.j_injective
           _ _ hgreen φ ψ }
+end
+
 
 end DedekindZetaZeroFree
 

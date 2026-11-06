@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Basic.Complex.Basic
 public import Mathlib.RepresentationTheory.Intertwining
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.CovariantSampling
 
@@ -32,21 +35,27 @@ def V_J (C J : Subgroup G) (chi : C →* ℂ) : Submodule ℂ (G → ℂ) where
       change a * f (g * j.val) = a * f g
       rw [hf.2]
 
-@[simp] theorem mem_V_J (C J : Subgroup G) (chi : C →* ℂ) (f : G → ℂ) :
-    f ∈ V_J C J chi ↔
-      (∀ (c : C) (g : G), f (c.val * g) = chi c * f g) ∧
-      (∀ (j : J) (g : G), f (g * j.val) = f g) := Iff.rfl
 
-theorem covariance {C J : Subgroup G} {chi : C →* ℂ}
-    (f : V_J C J chi) (c : C) (g : G) :
+
+
+
+
+section
+variable {C J : Subgroup G} {chi : C →* ℂ}
+    (f : V_J C J chi)
+include C J chi f
+theorem covariance   (c : C) (g : G) :
     f.val (c.val * g) = chi c * f.val g := f.property.1 c g
 
-theorem right_fixed {C J : Subgroup G} {chi : C →* ℂ}
-    (f : V_J C J chi) (j : J) (g : G) :
-    f.val (g * j.val) = f.val g := f.property.2 j g
+def right_fixed   (j : J) (g : G)  := f.property.2 j g
+end
 
-def rightTranslate (C K J : Subgroup G) (chi : C →* ℂ)
+
+section
+variable (C K J : Subgroup G) (chi : C →* ℂ)
     (hnormalize : ∀ (k : K) (j : J), k.val⁻¹ * j.val * k.val ∈ J)
+include C K J chi hnormalize
+def rightTranslate  
     (k : K) : V_J C J chi →ₗ[ℂ] V_J C J chi where
   toFun f := ⟨fun g => f.val (g * k.val), by
     constructor
@@ -60,16 +69,14 @@ def rightTranslate (C K J : Subgroup G) (chi : C →* ℂ)
       change f.val ((g * j.val) * k.val) = f.val (g * k.val)
       rw [heq]
       exact f.property.2 j' (g * k.val)⟩
-  map_add' f h := by rfl
-  map_smul' a f := by rfl
+  map_add' f h := rfl
+  map_smul' a f := rfl
 
-@[simp] theorem rightTranslate_apply (C K J : Subgroup G) (chi : C →* ℂ)
-    (hnormalize : ∀ (k : K) (j : J), k.val⁻¹ * j.val * k.val ∈ J)
+@[simp] theorem rightTranslate_apply  
     (k : K) (f : V_J C J chi) (g : G) :
     (rightTranslate C K J chi hnormalize k f).val g = f.val (g * k.val) := rfl
 
-def rho_J (C K J : Subgroup G) (chi : C →* ℂ)
-    (hnormalize : ∀ (k : K) (j : J), k.val⁻¹ * j.val * k.val ∈ J) :
+def rho_J   :
     Representation ℂ K (V_J C J chi) where
   toFun := rightTranslate C K J chi hnormalize
   map_one' := by
@@ -79,13 +86,11 @@ def rho_J (C K J : Subgroup G) (chi : C →* ℂ)
     ext f g
     simp [rightTranslate, mul_assoc]
 
-@[simp] theorem rho_J_apply (C K J : Subgroup G) (chi : C →* ℂ)
-    (hnormalize : ∀ (k : K) (j : J), k.val⁻¹ * j.val * k.val ∈ J)
+@[simp] theorem rho_J_apply  
     (k : K) (f : V_J C J chi) (g : G) :
     (rho_J C K J chi hnormalize k f).val g = f.val (g * k.val) := rfl
 
-def sampleMap (C K J : Subgroup G) (chi : C →* ℂ)
-    (hnormalize : ∀ (k : K) (j : J), k.val⁻¹ * j.val * k.val ∈ J)
+def sampleMap  
     {W : Type*} [AddCommGroup W] [Module ℂ W]
     (tau : Representation ℂ K W) (n : ℕ) (r : Fin n → G) :
     tau.IntertwiningMap (rho_J C K J chi hnormalize) →ₗ[ℂ]
@@ -106,11 +111,12 @@ def sampleMap (C K J : Subgroup G) (chi : C →* ℂ)
     ext i w
     rfl
 
-@[simp] theorem sampleMap_apply (C K J : Subgroup G) (chi : C →* ℂ)
-    (hnormalize : ∀ (k : K) (j : J), k.val⁻¹ * j.val * k.val ∈ J)
+@[simp] theorem sampleMap_apply  
     {W : Type*} [AddCommGroup W] [Module ℂ W]
     (tau : Representation ℂ K W) (n : ℕ) (r : Fin n → G)
     (T : tau.IntertwiningMap (rho_J C K J chi hnormalize)) (i : Fin n) (w : W) :
     sampleMap C K J chi hnormalize tau n r T i w = (T w).val (r i) := rfl
+end
+
 
 end DedekindZetaZeroFree.CovariantSampling

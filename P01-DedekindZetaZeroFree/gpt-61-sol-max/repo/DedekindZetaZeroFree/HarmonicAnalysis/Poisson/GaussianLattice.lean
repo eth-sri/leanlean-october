@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 The FLT Project. All rights reserved.
@@ -63,11 +66,14 @@ theorem torusQuotientMap_add_intPi
   ext i
   simp [torusQuotientMap]
 
-noncomputable def intPeriodization (f : (ι → ℝ) → ℂ) (x : ι → ℝ) : ℂ :=
+section
+variable (f : (ι → ℝ) → ℂ)
+include f
+noncomputable def intPeriodization   (x : ι → ℝ)  :=
   ∑' n : ι → ℤ, f (x + fun i ↦ (n i : ℝ))
 
 theorem intPeriodization_add_intPi
-    (f : (ι → ℝ) → ℂ) (x : ι → ℝ) (k : ι → ℤ) :
+      (x : ι → ℝ) (k : ι → ℤ) :
     intPeriodization f (x + fun i ↦ (k i : ℝ)) =
       intPeriodization f x := by
   unfold intPeriodization
@@ -86,14 +92,15 @@ theorem intPeriodization_add_intPi
         (fun n : ι → ℤ ↦ f (x + fun i ↦ (n i : ℝ)))
 
 theorem intPeriodization_eq_of_torusQuotientMap_eq
-    (f : (ι → ℝ) → ℂ) {x y : ι → ℝ}
+      {x y : ι → ℝ}
     (h : torusQuotientMap x = torusQuotientMap y) :
     intPeriodization f x = intPeriodization f y := by
   obtain ⟨n, rfl⟩ := exists_intPi_add_of_torusQuotientMap_eq h
   exact (intPeriodization_add_intPi f x n).symm
+end
 
-noncomputable def torusLift {A : Type*} (f : (ι → ℝ) → A) :
-    UnitAddTorus ι → A :=
+
+noncomputable def torusLift {A : Type*} (f : (ι → ℝ) → A)  :=
   fun x ↦ f (Function.surjInv surjective_torusQuotientMap x)
 
 theorem torusLift_comp_torusQuotientMap {A : Type*}
@@ -102,34 +109,33 @@ theorem torusLift_comp_torusQuotientMap {A : Type*}
     torusLift f ∘ torusQuotientMap = f := by
   funext x
   apply hf
-  exact Function.rightInverse_surjInv
-    surjective_torusQuotientMap (torusQuotientMap x)
+  apply Function.rightInverse_surjInv
 
-theorem continuous_torusLift {A : Type*} [TopologicalSpace A]
+section
+variable {A : Type*} [TopologicalSpace A]
     (f : (ι → ℝ) → A) (hfc : Continuous f)
-    (hf : ∀ x y, torusQuotientMap x = torusQuotientMap y → f x = f y) :
+    (hf : ∀ x y, torusQuotientMap x = torusQuotientMap y → f x = f y)
+include A f hfc hf
+theorem continuous_torusLift   :
     Continuous (torusLift f) := by
   apply isOpenQuotientMap_torusQuotientMap.continuous_comp_iff.mp
   simpa [torusLift_comp_torusQuotientMap f hf] using hfc
 
-noncomputable def torusContinuousMap {A : Type*} [TopologicalSpace A]
-    (f : (ι → ℝ) → A) (hfc : Continuous f)
-    (hf : ∀ x y, torusQuotientMap x = torusQuotientMap y → f x = f y) :
+noncomputable def torusContinuousMap   :
     C(UnitAddTorus ι, A) :=
   ⟨torusLift f, continuous_torusLift f hfc hf⟩
 
 @[simp]
 theorem torusContinuousMap_comp_torusQuotientMap
-    {A : Type*} [TopologicalSpace A]
-    (f : (ι → ℝ) → A) (hfc : Continuous f)
-    (hf : ∀ x y, torusQuotientMap x = torusQuotientMap y → f x = f y)
+     
     (x : ι → ℝ) :
     torusContinuousMap f hfc hf (torusQuotientMap x) = f x :=
   congrFun (torusLift_comp_torusQuotientMap f hf) x
+end
+
 
 noncomputable def torusPeriodization
-    (f : (ι → ℝ) → ℂ) (hf : Continuous (intPeriodization f)) :
-    C(UnitAddTorus ι, ℂ) :=
+    (f : (ι → ℝ) → ℂ) (hf : Continuous (intPeriodization f))  :=
   torusContinuousMap (intPeriodization f) hf
     (fun _x _y h ↦ intPeriodization_eq_of_torusQuotientMap_eq f h)
 
@@ -147,8 +153,11 @@ namespace DedekindZetaZeroFree.AbelianQuotient.Theta
 
 variable {ι : Type*} [Fintype ι]
 
+section
+variable (n : ι → ℤ) (x : ι → ℝ)
+include n x
 theorem mFourier_torusQuotientMap
-    (n : ι → ℤ) (x : ι → ℝ) :
+      :
     UnitAddTorus.mFourier n (torusQuotientMap x) =
       Complex.exp (2 * Real.pi * Complex.I *
         ∑ i, (n i : ℂ) * (x i : ℂ)) := by
@@ -160,7 +169,7 @@ theorem mFourier_torusQuotientMap
   ring_nf
 
 theorem mFourier_neg_torusQuotientMap
-    (n : ι → ℤ) (x : ι → ℝ) :
+      :
     UnitAddTorus.mFourier (-n) (torusQuotientMap x) =
       Complex.exp (-2 * Real.pi * Complex.I *
         ∑ i, (n i : ℂ) * (x i : ℂ)) := by
@@ -169,7 +178,7 @@ theorem mFourier_neg_torusQuotientMap
 
 @[simp]
 theorem norm_mFourier_torusQuotientMap
-    (n : ι → ℤ) (x : ι → ℝ) :
+      :
     ‖UnitAddTorus.mFourier n (torusQuotientMap x)‖ = 1 := by
   simp only [UnitAddTorus.mFourier, torusQuotientMap,
     ContinuousMap.coe_mk, norm_prod, fourier_coe_apply]
@@ -177,6 +186,8 @@ theorem norm_mFourier_torusQuotientMap
   intro i _
   rw [Complex.norm_exp]
   simp
+end
+
 
 end DedekindZetaZeroFree.AbelianQuotient.Theta
 
@@ -197,22 +208,25 @@ theorem innerBilin_nondegenerate [InnerProductSpace ℝ E] :
   · intro x hx
     exact inner_self_eq_zero.mp (hx x)
 
-noncomputable def dualRealBasis [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
+section
+variable [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
     (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
-    {ι : Type*} [Finite ι] [DecidableEq ι] (b : Basis ι ℤ L) :
+    {ι : Type*} [Finite ι] [DecidableEq ι] (b : Basis ι ℤ L)
+include L ι b
+noncomputable def dualRealBasis   :
     Basis ι ℝ E :=
   LinearMap.BilinForm.dualBasis (innerₗ E) innerBilin_nondegenerate
     (b.ofZLatticeBasis ℝ L)
 
-theorem inner_dualRealBasis_apply [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
-    (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
-    {ι : Type*} [Finite ι] [DecidableEq ι] (b : Basis ι ℤ L)
+theorem inner_dualRealBasis_apply  
     (i : ι) (x : E) :
     inner ℝ (dualRealBasis L b i) x =
       (b.ofZLatticeBasis ℝ L).repr x i := by
   change (innerₗ E) (dualRealBasis L b i) x = _
   simp [dualRealBasis, LinearMap.BilinForm.dualBasis,
     Basis.coe_dualBasis]
+end
+
 
 noncomputable def dualLattice [InnerProductSpace ℝ E]
     (L : Submodule ℤ E) : Submodule ℤ E :=
@@ -251,22 +265,25 @@ instance dualLattice.instDiscreteTopology [InnerProductSpace ℝ E] [FiniteDimen
   rw [← span_range_dualRealBasis L (Free.chooseBasis ℤ L)]
   infer_instance
 
-noncomputable def dualLatticeBasis [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
+section
+variable [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
     (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
-    {ι : Type*} [Finite ι] [DecidableEq ι] (b : Basis ι ℤ L) :
+    {ι : Type*} [Finite ι] [DecidableEq ι] (b : Basis ι ℤ L)
+include L ι b
+noncomputable def dualLatticeBasis   :
     Basis ι ℤ (dualLattice L) :=
   ((dualRealBasis L b).restrictScalars ℤ).map
     (LinearEquiv.ofEq _ _ (span_range_dualRealBasis L b))
 
 @[simp]
-theorem dualLatticeBasis_apply_coe [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
-    (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
-    {ι : Type*} [Finite ι] [DecidableEq ι] (b : Basis ι ℤ L)
+theorem dualLatticeBasis_apply_coe  
     (i : ι) :
     ((dualLatticeBasis L b i : dualLattice L) : E) =
       dualRealBasis L b i := by
   rw [dualLatticeBasis, Basis.map_apply]
   simp
+end
+
 
 end DedekindZetaZeroFree.AbelianQuotient.Theta
 
@@ -281,7 +298,7 @@ namespace DedekindZetaZeroFree.AbelianQuotient.Theta
 
 variable {E : Type*} [NormedAddCommGroup E]
 
-noncomputable def latticeGaussian (a : ℝ) (x : E) : ℂ :=
+noncomputable def latticeGaussian (a : ℝ) (x : E)  :=
   Complex.exp (-(a : ℂ) * (‖x‖ : ℂ) ^ 2)
 
 theorem norm_latticeGaussian (a : ℝ) (x : E) :
@@ -369,13 +386,10 @@ theorem latticeTheta_map_linearIsometryEquiv [NormedSpace ℝ E]
   rw [show ((eL.toEquiv x : L.map eZ.toLinearMap) : E) = e x by rfl,
     e.norm_map]
 
-theorem summable_latticeTheta [NormedSpace ℝ E] [FiniteDimensional ℝ E]
-    (L : Submodule ℤ E) [DiscreteTopology L] {a : ℝ} (ha : 0 < a) :
-    Summable (fun x : L ↦ latticeGaussian a (x : E)) :=
-  summable_latticeGaussian L ha
+alias summable_latticeTheta := _root_.DedekindZetaZeroFree.AbelianQuotient.Theta.summable_latticeGaussian
 
 noncomputable def dualLatticeTheta [InnerProductSpace ℝ E]
-    (L : Submodule ℤ E) (a : ℝ) : ℂ :=
+    (L : Submodule ℤ E) (a : ℝ)  :=
   latticeTheta (dualLattice L) a
 
 end DedekindZetaZeroFree.AbelianQuotient.Theta
@@ -394,15 +408,16 @@ variable {E : Type*} [NormedAddCommGroup E] {ι : Type*} [Fintype ι]
 noncomputable def latticePoint (L : Submodule ℤ E) (b : Basis ι ℤ L) (n : ι → ℤ) : E :=
   (b.equivFun.symm n : L)
 
-noncomputable def dualLatticePoint [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
+section
+variable [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
     (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L] [DecidableEq ι]
-    (b : Basis ι ℤ L) (n : ι → ℤ) : E :=
+    (b : Basis ι ℤ L) (n : ι → ℤ)
+include L b n
+noncomputable def dualLatticePoint   : E :=
   ((dualLatticeBasis L b).equivFun.symm n : dualLattice L)
 
 theorem inner_dualLatticePoint_ofZLatticeBasis_equivFun_symm
-    [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
-    (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L] [DecidableEq ι]
-    (b : Basis ι ℤ L) (n : ι → ℤ) (x : ι → ℝ) :
+      (x : ι → ℝ) :
     inner ℝ (dualLatticePoint L b n)
         ((b.ofZLatticeBasis ℝ L).equivFun.symm x) =
       ∑ i, (n i : ℝ) * x i := by
@@ -433,6 +448,8 @@ theorem inner_dualLatticePoint_ofZLatticeBasis_equivFun_symm
     rw [LinearEquiv.apply_symm_apply]
   simp_rw [real_inner_smul_left,
     inner_dualRealBasis_apply, hrepr]
+end
+
 
 theorem latticeTheta_eq_tsum_coordinates
     (L : Submodule ℤ E) (b : Basis ι ℤ L) (a : ℝ) :
@@ -466,22 +483,21 @@ namespace DedekindZetaZeroFree.AbelianQuotient.Theta
 
 variable {E : Type*} [NormedAddCommGroup E] {ι : Type*} [Fintype ι]
 
-noncomputable def coordinateGaussian [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
+section
+variable [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
     (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
-    (b : Basis ι ℤ L) (a : ℝ) (x : ι → ℝ) : ℂ :=
+    (b : Basis ι ℤ L)
+include L b
+noncomputable def coordinateGaussian   (a : ℝ) (x : ι → ℝ)  :=
   latticeGaussian a ((b.ofZLatticeBasis ℝ L).equivFun.symm x)
 
-noncomputable def coordinateBasisMap [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
-    (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
-    (b : Basis ι ℤ L) :
+noncomputable def coordinateBasisMap   :
     C(ι → ℝ, E) :=
   let e := LinearEquiv.toContinuousLinearEquiv
     (b.ofZLatticeBasis ℝ L).equivFun.symm
   ⟨e, e.continuous⟩
 
-theorem continuous_coordinateGaussian [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
-    (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
-    (b : Basis ι ℤ L) (a : ℝ) :
+theorem continuous_coordinateGaussian   (a : ℝ) :
     Continuous (coordinateGaussian L b a) := by
   classical
   unfold coordinateGaussian latticeGaussian
@@ -492,9 +508,7 @@ theorem continuous_coordinateGaussian [InnerProductSpace ℝ E] [FiniteDimension
   fun_prop
 
 theorem ofZLatticeBasis_equivFun_symm_intCast
-    [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
-    (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
-    (b : Basis ι ℤ L) (n : ι → ℤ) :
+      (n : ι → ℤ) :
     (b.ofZLatticeBasis ℝ L).equivFun.symm (fun i ↦ (n i : ℝ)) =
       latticePoint L b n := by
   rw [Basis.equivFun_symm_apply, latticePoint,
@@ -506,17 +520,17 @@ theorem ofZLatticeBasis_equivFun_symm_intCast
   apply Finset.sum_congr rfl
   intro i _
   rw [Basis.ofZLatticeBasis_apply]
-  exact Int.cast_smul_eq_zsmul ℝ (n i) (b i : E)
+  apply Int.cast_smul_eq_zsmul
 
 noncomputable def coordinateGaussianTranslate
-    [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
-    (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
-    (b : Basis ι ℤ L) (a : ℝ) (n : ι → ℤ) :
+      (a : ℝ) (n : ι → ℤ) :
     C(ι → ℝ, ℂ) :=
   ⟨fun x ↦ coordinateGaussian L b a
       (x + fun i ↦ (n i : ℝ)),
     (continuous_coordinateGaussian L b a).comp
       (continuous_id.add (continuous_pi fun _ ↦ continuous_const))⟩
+end
+
 
 theorem summable_norm_latticeGaussian_latticePoint
     [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
@@ -529,10 +543,13 @@ theorem summable_norm_latticeGaussian_latticePoint
       (summable_latticeGaussian L ha).norm
   simpa [Function.comp_def, latticePoint] using hs
 
-theorem norm_coordinateGaussianTranslate_apply_le
-    [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
+section
+variable [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
     (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
     (b : Basis ι ℤ L) {a : ℝ} (ha : 0 < a)
+include L b a ha
+theorem norm_coordinateGaussianTranslate_apply_le
+     
     (x : ι → ℝ) (n : ι → ℤ) :
     ‖coordinateGaussianTranslate L b a n x‖ ≤
       Real.exp (a * ‖coordinateBasisMap L b x‖ ^ 2) *
@@ -550,9 +567,7 @@ theorem norm_coordinateGaussianTranslate_apply_le
   exact norm_latticeGaussian_add_le ha.le _ _
 
 theorem norm_restrict_coordinateGaussianTranslate_le
-    [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
-    (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
-    (b : Basis ι ℤ L) {a : ℝ} (ha : 0 < a)
+     
     (K : TopologicalSpace.Compacts (ι → ℝ)) (n : ι → ℤ) :
     ‖(coordinateGaussianTranslate L b a n).restrict K‖ ≤
       Real.exp (a * ‖(coordinateBasisMap L b).restrict K‖ ^ 2) *
@@ -574,9 +589,7 @@ theorem norm_restrict_coordinateGaussianTranslate_le
     norm_nonneg ((coordinateBasisMap L b).restrict K)]
 
 theorem summable_norm_restrict_coordinateGaussianTranslate
-    [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
-    (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
-    (b : Basis ι ℤ L) {a : ℝ} (ha : 0 < a)
+     
     (K : TopologicalSpace.Compacts (ι → ℝ)) :
     Summable (fun n : ι → ℤ ↦
       ‖(coordinateGaussianTranslate L b a n).restrict K‖) := by
@@ -588,22 +601,18 @@ theorem summable_norm_restrict_coordinateGaussianTranslate
   apply (hbase.mul_left C).of_norm_bounded
   intro n
   rw [Real.norm_of_nonneg (norm_nonneg _)]
-  exact norm_restrict_coordinateGaussianTranslate_le L b ha K n
+  apply norm_restrict_coordinateGaussianTranslate_le <;> assumption
 
 private theorem summable_coordinateGaussianTranslate
-    [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
-    (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
-    (b : Basis ι ℤ L) {a : ℝ} (ha : 0 < a) :
+      :
     Summable (coordinateGaussianTranslate L b a) := by
   classical
   apply ContinuousMap.summable_of_locally_summable_norm
   intro K
-  exact summable_norm_restrict_coordinateGaussianTranslate L b ha K
+  apply summable_norm_restrict_coordinateGaussianTranslate <;> assumption
 
 theorem continuous_intPeriodization_coordinateGaussian
-    [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
-    (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
-    (b : Basis ι ℤ L) {a : ℝ} (ha : 0 < a) :
+      :
     Continuous (intPeriodization (coordinateGaussian L b a)) := by
   classical
   let F := coordinateGaussianTranslate L b a
@@ -619,19 +628,21 @@ theorem continuous_intPeriodization_coordinateGaussian
         (ContinuousMap.tsum_apply hF x).symm
       _ = intPeriodization (coordinateGaussian L b a) x := rfl
   simp_all
+end
 
-noncomputable def gaussianTorusPeriodization
-    [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
+
+section
+variable [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
     (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
-    (b : Basis ι ℤ L) (a : ℝ) (ha : 0 < a) :
-    C(UnitAddTorus ι, ℂ) :=
+    (b : Basis ι ℤ L)
+include L b
+noncomputable def gaussianTorusPeriodization
+      (a : ℝ) (ha : 0 < a)  :=
   torusPeriodization (coordinateGaussian L b a)
     (continuous_intPeriodization_coordinateGaussian L b ha)
 
 theorem gaussianTorusPeriodization_zero
-    [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
-    (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
-    (b : Basis ι ℤ L) {a : ℝ} (ha : 0 < a) :
+      {a : ℝ} (ha : 0 < a) :
     gaussianTorusPeriodization L b a ha 0 = latticeTheta L a := by
   classical
   rw [show (0 : UnitAddTorus ι) =
@@ -642,6 +653,8 @@ theorem gaussianTorusPeriodization_zero
   simp_rw [zero_add,
     ofZLatticeBasis_equivFun_symm_intCast]
   exact (latticeTheta_eq_tsum_coordinates L b a).symm
+end
+
 
 end DedekindZetaZeroFree.AbelianQuotient.Theta
 
@@ -655,15 +668,14 @@ namespace DedekindZetaZeroFree.AbelianQuotient.Theta
 
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
-noncomputable def coordinateIntLattice : Submodule ℤ (ι → ℝ) :=
+noncomputable def coordinateIntLattice  :=
   span ℤ (Set.range (Pi.basisFun ℝ ι))
 
 noncomputable def coordinateIntBasis :
     Basis ι ℤ (coordinateIntLattice (ι := ι)) :=
   (Pi.basisFun ℝ ι).restrictScalars ℤ
 
-noncomputable def coordinateIntPoint (n : ι → ℤ) :
-    coordinateIntLattice (ι := ι) :=
+noncomputable def coordinateIntPoint (n : ι → ℤ)  :=
   (coordinateIntBasis (ι := ι)).equivFun.symm n
 
 omit [DecidableEq ι] in
@@ -734,12 +746,10 @@ theorem integral_eq_tsum_integral_pi_Ico
     ∫ x, f x =
         ∑' z : coordinateIntLattice (ι := ι),
           ∫ x in {x : ι → ℝ | ∀ i, x i ∈ Ico 0 1},
-            f ((z : ι → ℝ) + x) := by
-      simpa [coordinateIntLattice] using hfund
+            f ((z : ι → ℝ) + x) := hfund
     _ = ∑' n : ι → ℤ,
           ∫ x in {x : ι → ℝ | ∀ i, x i ∈ Ico 0 1},
-            f ((coordinateIntPoint n : ι → ℝ) + x) := by
-      exact (Equiv.tsum_eq
+            f ((coordinateIntPoint n : ι → ℝ) + x) := (Equiv.tsum_eq
         (coordinateIntBasis (ι := ι)).equivFun.toEquiv.symm _).symm
     _ = _ := by
       apply tsum_congr
@@ -777,7 +787,7 @@ namespace DedekindZetaZeroFree.AbelianQuotient.Theta
 variable {E : Type*} [NormedAddCommGroup E] {ι : Type*} [Fintype ι]
 
 noncomputable def coordinateFourierCharacter
-    (n : ι → ℤ) (x : ι → ℝ) : ℂ :=
+    (n : ι → ℤ) (x : ι → ℝ)  :=
   UnitAddTorus.mFourier (-n) (torusQuotientMap x)
 
 private theorem continuous_coordinateFourierCharacter (n : ι → ℤ) :
@@ -789,12 +799,7 @@ private theorem continuous_coordinateFourierCharacter (n : ι → ℤ) :
 
 theorem measurableSet_pi_Ioc {κ : Type*} [Finite κ] :
     MeasurableSet {x : κ → ℝ | ∀ i, x i ∈ Ioc 0 1} := by
-  let := Fintype.ofFinite κ
-  rw [ofPred_forall]
-  apply MeasurableSet.iInter
-  intro i
-  have hi : Measurable (fun x : κ → ℝ ↦ x i) := measurable_pi_apply i
-  exact measurableSet_Ioc.preimage hi
+  measurability
 
 @[simp]
 theorem norm_coordinateFourierCharacter
@@ -802,27 +807,28 @@ theorem norm_coordinateFourierCharacter
     ‖coordinateFourierCharacter n x‖ = 1 :=
   norm_mFourier_torusQuotientMap (-n) x
 
-noncomputable def coordinateFourierGaussian
-    [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
+section
+variable [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
     (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
-    (b : Basis ι ℤ L) (a : ℝ) (n : ι → ℤ) (x : ι → ℝ) : ℂ :=
+    (b : Basis ι ℤ L) (a : ℝ)
+include L b a
+noncomputable def coordinateFourierGaussian
+      (n : ι → ℤ) (x : ι → ℝ)  :=
   coordinateFourierCharacter n x * coordinateGaussian L b a x
 
 noncomputable def coordinateFourierGaussianTranslate
-    [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
-    (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
-    (b : Basis ι ℤ L) (a : ℝ) (n k : ι → ℤ)
-    (x : ι → ℝ) : ℂ :=
+      (n k : ι → ℤ)
+    (x : ι → ℝ)  :=
   coordinateFourierCharacter n x * coordinateGaussianTranslate L b a k x
 
 theorem continuous_coordinateFourierGaussianTranslate
-    [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
-    (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
-    (b : Basis ι ℤ L) (a : ℝ) (n k : ι → ℤ) :
+      (n k : ι → ℤ) :
     Continuous (coordinateFourierGaussianTranslate L b a n k) := by
   classical
   exact (continuous_coordinateFourierCharacter n).mul
     (coordinateGaussianTranslate L b a k).continuous
+end
+
 
 private theorem coordinateFourierCharacter_add_intPi
     (n k : ι → ℤ) (x : ι → ℝ) :
@@ -847,10 +853,13 @@ theorem coordinateFourierGaussian_add_intPi
   congr 1
   exact congrArg (coordinateGaussian L b a) (add_comm _ _)
 
-theorem summable_integral_norm_coordinateFourierGaussianTranslate
-    [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
+section
+variable [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
     (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
-    (b : Basis ι ℤ L) {a : ℝ} (ha : 0 < a) (n : ι → ℤ) :
+    (b : Basis ι ℤ L) {a : ℝ} (ha : 0 < a) (n : ι → ℤ)
+include L b a ha n
+theorem summable_integral_norm_coordinateFourierGaussianTranslate
+      :
     Summable (fun k : ι → ℤ ↦
       ∫ x in {x : ι → ℝ | ∀ i, x i ∈ Ioc 0 1},
         ‖coordinateFourierGaussianTranslate L b a n k x‖) := by
@@ -876,8 +885,7 @@ theorem summable_integral_norm_coordinateFourierGaussianTranslate
     have hInt :
         IntegrableOn
           (fun x ↦ ‖coordinateFourierGaussianTranslate L b a n k x‖)
-          S := by
-      exact ((continuous_coordinateFourierGaussianTranslate
+          S := ((continuous_coordinateFourierGaussianTranslate
         L b a n k).norm.integrableOn_Icc).mono_set hSK
     have hConst :
         IntegrableOn (fun _ : ι → ℝ ↦
@@ -898,12 +906,10 @@ theorem summable_integral_norm_coordinateFourierGaussianTranslate
           ‖(coordinateGaussianTranslate L b a k).restrict K‖ := by simp
   apply Summable.of_nonneg_of_le
       (fun _ ↦ integral_nonneg fun _ ↦ norm_nonneg _) hbound
-  exact hKsum.mul_left (volume.real S)
+  apply hKsum.mul_left
 
 theorem integral_tsum_coordinateFourierGaussianTranslate
-    [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
-    (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
-    (b : Basis ι ℤ L) {a : ℝ} (ha : 0 < a) (n : ι → ℤ) :
+      :
     ∫ x in {x : ι → ℝ | ∀ i, x i ∈ Ioc 0 1},
         ∑' k : ι → ℤ,
           coordinateFourierGaussianTranslate L b a n k x =
@@ -920,13 +926,10 @@ theorem integral_tsum_coordinateFourierGaussianTranslate
       ⟨fun i ↦ (hx i).1.le, fun i ↦ (hx i).2⟩
     exact ((continuous_coordinateFourierGaussianTranslate
       L b a n k).integrableOn_Icc).mono_set hSK
-  · exact summable_integral_norm_coordinateFourierGaussianTranslate
-      L b ha n
+  · apply summable_integral_norm_coordinateFourierGaussianTranslate <;> assumption
 
 theorem mFourierCoeff_gaussianTorusPeriodization
-    [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
-    (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
-    (b : Basis ι ℤ L) {a : ℝ} (ha : 0 < a) (n : ι → ℤ)
+     
     (hint : Integrable (coordinateFourierGaussian L b a n)) :
     UnitAddTorus.mFourierCoeff
         (gaussianTorusPeriodization L b a ha) n =
@@ -960,6 +963,8 @@ theorem mFourierCoeff_gaussianTorusPeriodization
   apply setIntegral_congr_fun measurableSet_pi_Ioc
   intro x hx
   exact (coordinateFourierGaussian_add_intPi L b a n k x).symm
+end
+
 
 end DedekindZetaZeroFree.AbelianQuotient.Theta
 
@@ -1044,9 +1049,7 @@ theorem addHaar_ofZLatticeBasis_eq_inv_covolume_smul_volume
     (↑((Real.toNNReal (ZLattice.covolume L))⁻¹) : ENNReal) *
         ENNReal.ofReal (ZLattice.covolume L) = 1
   rw [ENNReal.coe_inv hc, ENNReal.ofNNReal_toNNReal]
-  exact ENNReal.inv_mul_cancel
-    (ENNReal.ofReal_ne_zero_iff.mpr (ZLattice.covolume_pos L))
-    ENNReal.ofReal_ne_top
+  apply ENNReal.inv_mul_cancel <;> aesop
 
 omit [DecidableEq ι] in
 theorem integral_comp_ofZLatticeBasis_equivFun_symm
@@ -1056,7 +1059,7 @@ theorem integral_comp_ofZLatticeBasis_equivFun_symm
       (Real.toNNReal (ZLattice.covolume L))⁻¹ •
         ∫ y : E, f y := by
   classical
-  let e : (ι → ℝ) ≃ᵐ E :=
+  let e  :=
     (LinearEquiv.toContinuousLinearEquiv
       (b.ofZLatticeBasis ℝ L).equivFun.symm).toHomeomorph.toMeasurableEquiv
   change (∫ x : ι → ℝ, f (e x)) = _
@@ -1074,7 +1077,7 @@ theorem integrable_comp_ofZLatticeBasis_equivFun_symm
       (fun x : ι → ℝ ↦
         f ((b.ofZLatticeBasis ℝ L).equivFun.symm x)) := by
   classical
-  let e : (ι → ℝ) ≃ᵐ E :=
+  let e  :=
     (LinearEquiv.toContinuousLinearEquiv
       (b.ofZLatticeBasis ℝ L).equivFun.symm).toHomeomorph.toMeasurableEquiv
   change Integrable (f ∘ e)
@@ -1100,13 +1103,15 @@ namespace DedekindZetaZeroFree.AbelianQuotient.Theta
 variable {E : Type*} [NormedAddCommGroup E] {ι : Type*} [Fintype ι]
 
 noncomputable def ambientFourierGaussian [InnerProductSpace ℝ E]
-    (a : ℝ) (w y : E) : ℂ :=
+    (a : ℝ) (w y : E)  :=
   Complex.exp
     (-(a : ℂ) * (‖y‖ : ℂ) ^ 2 +
       (-2 * (Real.pi : ℂ) * Complex.I) * (inner ℝ w y : ℂ))
 
+section
+variable [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
 theorem integrable_ambientFourierGaussian
-    [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
+     
     [MeasurableSpace E] [BorelSpace E]
     {a : ℝ} (ha : 0 < a) (w : E) :
     Integrable (ambientFourierGaussian a w) := by
@@ -1118,7 +1123,7 @@ theorem integrable_ambientFourierGaussian
   simp
 
 theorem coordinateFourierGaussian_eq_ambient
-    [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
+     
     (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L] [DecidableEq ι]
     (b : Basis ι ℤ L) (a : ℝ) (n : ι → ℤ) (x : ι → ℝ) :
     coordinateFourierGaussian L b a n x =
@@ -1133,7 +1138,7 @@ theorem coordinateFourierGaussian_eq_ambient
   ring_nf
 
 theorem integrable_coordinateFourierGaussian
-    [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
+     
     [MeasurableSpace E] [BorelSpace E]
     (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
     (b : Basis ι ℤ L) {a : ℝ} (ha : 0 < a) (n : ι → ℤ) :
@@ -1147,7 +1152,7 @@ theorem integrable_coordinateFourierGaussian
   exact (coordinateFourierGaussian_eq_ambient L b a n x).symm
 
 theorem integral_ambientFourierGaussian
-    [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
+     
     [MeasurableSpace E] [BorelSpace E]
     {a : ℝ} (ha : 0 < a) (w : E) :
     (∫ y : E, ambientFourierGaussian a w y) =
@@ -1167,7 +1172,7 @@ theorem integral_ambientFourierGaussian
   ring_nf
 
 theorem mFourierCoeff_gaussianTorusPeriodization_eq
-    [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
+     
     [MeasurableSpace E] [BorelSpace E]
     (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L] [DecidableEq ι]
     (b : Basis ι ℤ L) {a : ℝ} (ha : 0 < a) (n : ι → ℤ) :
@@ -1184,6 +1189,8 @@ theorem mFourierCoeff_gaussianTorusPeriodization_eq
   simp_rw [coordinateFourierGaussian_eq_ambient L b a n]
   rw [integral_comp_ofZLatticeBasis_equivFun_symm L b,
     integral_ambientFourierGaussian ha]
+end
+
 
 end DedekindZetaZeroFree.AbelianQuotient.Theta
 
@@ -1206,10 +1213,13 @@ theorem exp_fourierGaussian_eq_latticeGaussian
   push_cast
   grind
 
-theorem summable_mFourierCoeff_gaussianTorusPeriodization
-    [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
+section
+variable [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
     [MeasurableSpace E] [BorelSpace E]
-    (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L] [Fintype ι]
+    (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
+include L
+theorem summable_mFourierCoeff_gaussianTorusPeriodization
+      [Fintype ι]
     (b : Basis ι ℤ L) {a : ℝ} (ha : 0 < a) :
     Summable
       (UnitAddTorus.mFourierCoeff
@@ -1224,7 +1234,7 @@ theorem summable_mFourierCoeff_gaussianTorusPeriodization
       (e := (dualLatticeBasis L b).equivFun.toEquiv.symm)).mpr
         (summable_latticeGaussian (dualLattice L) hp)
     simpa [Function.comp_def, dualLatticePoint] using hs
-  let C : ℂ :=
+  let C  :=
     (Real.toNNReal (ZLattice.covolume L))⁻¹ •
       (((Real.pi : ℂ) / a) ^
         (Module.finrank ℝ E / 2 : ℂ))
@@ -1240,9 +1250,7 @@ theorem summable_mFourierCoeff_gaussianTorusPeriodization
   simp
 
 theorem latticeGaussian_poissonSummation_of_basis
-    [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
-    [MeasurableSpace E] [BorelSpace E]
-    (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L] [Finite ι]
+      [Finite ι]
     (b : Basis ι ℤ L) {a : ℝ} (ha : 0 < a) :
     latticeTheta L a =
       (Real.toNNReal (ZLattice.covolume L))⁻¹ •
@@ -1282,7 +1290,7 @@ theorem latticeGaussian_poissonSummation_of_basis
   have hinner := hdual.mul_left
     (((Real.pi : ℂ) / a) ^
       (Module.finrank ℝ E / 2 : ℂ))
-  let c : NNReal :=
+  let c  :=
     (Real.toNNReal (ZLattice.covolume L volume))⁻¹
   change
     (∑' n : ι → ℤ,
@@ -1298,9 +1306,7 @@ theorem latticeGaussian_poissonSummation_of_basis
   rw [← dualLatticeTheta_eq_tsum_coordinates L b]
 
 theorem latticeGaussian_poissonSummation
-    [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
-    [MeasurableSpace E] [BorelSpace E]
-    (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
+     
     {a : ℝ} (ha : 0 < a) :
     latticeTheta L a =
       (Real.toNNReal (ZLattice.covolume L))⁻¹ •
@@ -1309,6 +1315,8 @@ theorem latticeGaussian_poissonSummation
           dualLatticeTheta L (Real.pi ^ 2 / a)) := by
   let b := Free.chooseBasis ℤ L
   exact latticeGaussian_poissonSummation_of_basis L b ha
+end
+
 
 end DedekindZetaZeroFree.AbelianQuotient.Theta
 

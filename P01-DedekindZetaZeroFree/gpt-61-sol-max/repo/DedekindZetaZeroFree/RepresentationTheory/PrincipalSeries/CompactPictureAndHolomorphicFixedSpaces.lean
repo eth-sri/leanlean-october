@@ -22,27 +22,35 @@ def Covariant (B : Subgroup G) (σ : Representation ℂ B V) (f : G → V) : Pro
   (∀ (b : B) (g : G), f ((b : G) * g) = σ b (f g)) ∧
   SmoothVector rightTranslation f
 
-def CompactCovariant (B : Subgroup G) (L : OpenSubgroup G)
-    (σ : Representation ℂ B V) (φ : L → V) : Prop :=
+section
+variable (B : Subgroup G) (L : OpenSubgroup G)
+    (σ : Representation ℂ B V)
+include B L σ in
+def CompactCovariant   (φ : L → V) : Prop :=
   (∀ (b : B) (k k' : L), (k' : G) = (b : G) * (k : G) → φ k' = σ b (φ k)) ∧
   SmoothVector rightTranslation φ
 
-def compactExtension (B : Subgroup G) (L : OpenSubgroup G)
-    (σ : Representation ℂ B V) (r : G → B) (k : G → L) (φ : L → V) : G → V :=
+include B L σ in
+def compactExtension   (r : G → B) (k : G → L) (φ : L → V) : G → V :=
   fun g => σ (r g) (φ (k g))
 
 def CompactFixed (L : OpenSubgroup G) (J : OpenSubgroup G) (φ : L → V) : Prop :=
   ∀ (j : J) (k k' : L), (k' : G) = (k : G) * (j : G) → φ k' = φ k
 
-private theorem extension_restrict (B : Subgroup G) (L : OpenSubgroup G)
-    (σ : Representation ℂ B V) (r : G → B) (k : G → L)
+include B L σ in
+private theorem extension_restrict   (r : G → B) (k : G → L)
     (hr : ∀ l : L, r (l : G) = 1) (hk : ∀ l : L, k (l : G) = l)
     (φ : L → V) (l : L) : compactExtension B L σ r k φ l = φ l := by
   simp [compactExtension, hr, hk]
+end
 
-private theorem extension_covariance (B : Subgroup G) (L : OpenSubgroup G)
+
+section
+variable (B : Subgroup G) (L : OpenSubgroup G)
     (σ₀ σ : Representation ℂ B V) (r : G → B) (k : G → L)
     (hdec : ∀ g : G, g = (r g : G) * (k g : G))
+include B L σ₀ σ r k hdec in
+private theorem extension_covariance  
     (hagree : ∀ b : B, (b : G) ∈ L → σ b = σ₀ b)
     (φ : L → V) (hφ : CompactCovariant B L σ₀ φ) :
     ∀ (b : B) (g : G), compactExtension B L σ r k φ ((b : G) * g) =
@@ -98,9 +106,8 @@ private theorem extension_fixed (B : Subgroup G) (L : OpenSubgroup G)
       extension_restrict B L σ r k hr hk φ l] at hh
     exact hh
 
-theorem fixed_iwasawa_laws (B : Subgroup G) (L : OpenSubgroup G)
-    (σ₀ σ : Representation ℂ B V) (r : G → B) (k : G → L)
-    (hdec : ∀ g : G, g = (r g : G) * (k g : G))
+include B L σ₀ σ r k hdec in
+theorem fixed_iwasawa_laws  
     (hr : ∀ l : L, r (l : G) = 1) (hk : ∀ l : L, k (l : G) = l)
     (hagree : ∀ b : B, (b : G) ∈ L → σ b = σ₀ b) :
     CompactCovariant B L σ₀ 0 ∧
@@ -186,6 +193,8 @@ theorem fixed_iwasawa_laws (B : Subgroup G) (L : OpenSubgroup G)
     rw [← hf.1, ← hdec g]
   · intro J hJ φ hφ
     exact extension_fixed B L σ r k hdec hr hk φ (hext φ hφ).1 J hJ
+end
+
 
 def compactFixedSpace (B : Subgroup G) (L J : OpenSubgroup G)
     (σ₀ : Representation ℂ B V) : Submodule ℂ (L → V) where

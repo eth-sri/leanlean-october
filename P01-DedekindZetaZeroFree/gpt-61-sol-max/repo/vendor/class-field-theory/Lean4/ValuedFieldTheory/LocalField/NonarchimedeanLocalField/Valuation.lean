@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.FieldNorm
 public import ValuedFieldTheory.LocalField.NonarchimedeanLocalField.Norm
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -39,31 +42,31 @@ theorem valuation_integer_membership
     x ∈ 𝒪[K] ↔ ValuativeRel.valuation K x ≤ 1 :=
   (Valuation.mem_integer_iff (ValuativeRel.valuation K) x).symm
 
+section
+variable (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
+    [IsNonarchimedeanLocalField K]
+include K
 /-- The normalized integer valuation, packaged as the
 `MultiplicativeIntegerValuation` used by the value-group layer. -/
 def multiplicativeIntegerValuation
-    (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] :
+      :
     MultiplicativeIntegerValuation Kˣ where
   val x := LocalFieldTheory.IsNonarchimedeanLocalField.v K (Additive.ofMul x)
-  map_one := by
-    exact LocalFieldTheory.IsNonarchimedeanLocalField.v_one K
+  map_one := LocalFieldTheory.IsNonarchimedeanLocalField.v_one K
   map_mul x y := by
-    exact LocalFieldTheory.IsNonarchimedeanLocalField.v_mul K x y
+    apply LocalFieldTheory.IsNonarchimedeanLocalField.v_mul
 
 /-- The multiplicative integer valuation records the additive integer exponent of the original
 valuation. -/
 @[simp] theorem multiplicativeIntegerValuation_val
-    (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] (x : Kˣ) :
+      (x : Kˣ) :
     (multiplicativeIntegerValuation K).val x =
       LocalFieldTheory.IsNonarchimedeanLocalField.v K (Additive.ofMul x) :=
   rfl
 
 /-- The normalized integer valuation is onto `ℤ`. -/
 theorem multiplicativeIntegerValuation_surjective
-    (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] :
+      :
     Function.Surjective (multiplicativeIntegerValuation K).val := by
   intro n
   rcases LocalFieldTheory.IsNonarchimedeanLocalField.v_surjective K n with ⟨x, hx⟩
@@ -72,12 +75,12 @@ theorem multiplicativeIntegerValuation_surjective
 
 /-- A nonarchimedean local field has a multiplicative element of normalized value one
 for the value-group API. -/
-theorem multiplicativeIntegerValuation_exists_uniformizer
-    (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] :
-    ∃ ϖ : Kˣ, (multiplicativeIntegerValuation K).IsUniformizer ϖ :=
+def multiplicativeIntegerValuation_exists_uniformizer
+       :=
   (multiplicativeIntegerValuation K).exists_uniformizer_of_surjective
     (multiplicativeIntegerValuation_surjective K)
+end
+
 
 end IsNonarchimedeanLocalField
 

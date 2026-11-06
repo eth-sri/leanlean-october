@@ -30,12 +30,15 @@ variable {i : Fin (H.atlas U).componentCount}
 variable {a b c : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
   (U := U) (R := R) (P := P) (H := H) i}
 
-def Q (ψ : Arrow a b) (x : M F) : V F →L[ℝ] V F :=
+section
+variable (ψ : Arrow a b) (x : M F)
+include ψ x
+def Q   : V F →L[ℝ] V F :=
   (CotangentLogCoframe.C (d F) (ψ.psi x)).toContinuousLinearMap.comp
     ((fderiv ℝ ψ.psi x).comp
       (CotangentLogCoframe.H (d F) x).toContinuousLinearMap)
 
-theorem Q_inner (ψ : Arrow a b) (x : M F) (hx : x ∈ ψ.domain) (v w : V F) :
+theorem Q_inner   (hx : x ∈ ψ.domain) (v w : V F) :
     inner ℝ (Q ψ x v) (Q ψ x w) = inner ℝ v w := by
   change inner ℝ
     (CotangentLogCoframe.C (d F) (ψ.psi x)
@@ -46,7 +49,7 @@ theorem Q_inner (ψ : Arrow a b) (x : M F) (hx : x ∈ ψ.domain) (v w : V F) :
   rw [← CotangentLogCoframe.inner_C]
   simp [CotangentLogCoframe.H]
 
-def q (ψ : Arrow a b) (x : M F) (hx : x ∈ ψ.domain) : V F ≃ₗᵢ[ℝ] V F :=
+def q   (hx : x ∈ ψ.domain) : V F ≃ₗᵢ[ℝ] V F :=
   LinearIsometryEquiv.ofSurjective
     { toLinearMap := (Q ψ x).toLinearMap
       norm_map' := (LinearMap.norm_map_iff_inner_map_map (Q ψ x)).2 (Q_inner ψ x hx) }
@@ -56,12 +59,12 @@ def q (ψ : Arrow a b) (x : M F) (hx : x ∈ ψ.domain) : V F ≃ₗᵢ[ℝ] V F
         { toLinearMap := (Q ψ x).toLinearMap
           norm_map' := (LinearMap.norm_map_iff_inner_map_map (Q ψ x)).2 (Q_inner ψ x hx) }).injective)
 
-theorem q_toContinuousLinearMap (ψ : Arrow a b) (x : M F) (hx : x ∈ ψ.domain) :
+theorem q_toContinuousLinearMap   (hx : x ∈ ψ.domain) :
     (q ψ x hx).toContinuousLinearEquiv.toContinuousLinearMap = Q ψ x := by
   ext v
   rfl
 
- theorem complexification_Q_apply (ψ : Arrow a b) (x : M F)
+ theorem complexification_Q_apply  
     (hx : x ∈ ψ.domain) (v : E F) :
     operatorComplexification (Fin (d F) × Fin 3) (Q ψ x) v =
       orthogonalComplexification (Fin (d F) × Fin 3) (q ψ x hx) v := by
@@ -69,10 +72,10 @@ theorem q_toContinuousLinearMap (ψ : Arrow a b) (x : M F) (hx : x ∈ ψ.domain
     ← orthogonalComplexification_toContinuousLinearMap]
   rfl
 
-def twistedOperator (ψ : Arrow a b) (x : M F) : E F →L[ℂ] E F :=
+def twistedOperator   : E F →L[ℂ] E F :=
   ψ.phase x • operatorComplexification (Fin (d F) × Fin 3) (Q ψ x)
 
-def T (ψ : Arrow a b) (x : M F) (hx : x ∈ ψ.domain) : E F ≃ₗᵢ[ℂ] E F :=
+def T   (hx : x ∈ ψ.domain) : E F ≃ₗᵢ[ℂ] E F :=
   LinearIsometryEquiv.ofSurjective
     { toLinearMap := (twistedOperator ψ x).toLinearMap
       norm_map' := by
@@ -93,17 +96,19 @@ def T (ψ : Arrow a b) (x : M F) (hx : x ∈ ψ.domain) : E F ≃ₗᵢ[ℂ] E F
         simp [hz] at hn
       exact (smul_right_injective _ hz) h)
 
-theorem T_apply (ψ : Arrow a b) (x : M F) (hx : x ∈ ψ.domain) (v : E F) :
+theorem T_apply   (hx : x ∈ ψ.domain) (v : E F) :
     T ψ x hx v = ψ.phase x •
       orthogonalComplexification (Fin (d F) × Fin 3) (q ψ x hx) v := by
   change twistedOperator ψ x v = _
   exact congrArg (ψ.phase x • ·) (complexification_Q_apply ψ x hx v)
 
-theorem T_toContinuousLinearMap (ψ : Arrow a b) (x : M F) (hx : x ∈ ψ.domain) :
+theorem T_toContinuousLinearMap   (hx : x ∈ ψ.domain) :
     (T ψ x hx).toContinuousLinearEquiv.toContinuousLinearMap =
       twistedOperator ψ x := by
   ext v
   rfl
+end
+
 
 theorem smooth_operators (ψ : Arrow a b) :
     ContDiffOn ℝ (⊤ : ℕ∞) (Q ψ) ψ.domain ∧
@@ -137,8 +142,11 @@ theorem T_identity (a : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
     orthogonalComplexification_refl] at h
   simpa using h
 
-theorem Q_comp (θ : Arrow b c) (ψ : Arrow a b) (x : M F)
-    (hx : x ∈ ψ.domain) (hθ : ψ.psi x ∈ θ.domain) :
+section
+variable (θ : Arrow b c) (ψ : Arrow a b) (x : M F)
+    (hx : x ∈ ψ.domain) (hθ : ψ.psi x ∈ θ.domain)
+include θ ψ x hx hθ
+theorem Q_comp   :
     Q (comp θ ψ) x = (Q θ (ψ.psi x)).comp (Q ψ x) := by
   have hψ : DifferentiableAt ℝ ψ.psi x :=
     ((smooth_metric ψ).1.differentiableOn (by simp) x hx).differentiableAt
@@ -151,8 +159,7 @@ theorem Q_comp (θ : Arrow b c) (ψ : Arrow a b) (x : M F)
   ext v k
   simp [Function.comp_apply, CotangentLogCoframe.H]
 
-theorem T_comp (θ : Arrow b c) (ψ : Arrow a b) (x : M F)
-    (hx : x ∈ ψ.domain) (hθ : ψ.psi x ∈ θ.domain) :
+theorem T_comp   :
     T (comp θ ψ) x ⟨hx, hθ⟩ = (T ψ x hx).trans (T θ (ψ.psi x) hθ) := by
   apply LinearIsometryEquiv.ext
   intro v
@@ -162,14 +169,16 @@ theorem T_comp (θ : Arrow b c) (ψ : Arrow a b) (x : M F)
     Q_comp θ ψ x hx hθ, operatorComplexification_comp, ContinuousLinearMap.comp_apply,
     ContinuousLinearMap.smul_apply, map_smul, smul_smul]
   rw [mul_comm (θ.phase (ψ.psi x)) (ψ.phase x)]
+end
+
 
 theorem T_inner (ψ : Arrow a b) (x : M F) (hx : x ∈ ψ.domain) (v w : E F) :
     inner ℂ (T ψ x hx v) (T ψ x hx w) = inner ℂ v w := by
   exact (T ψ x hx).inner_map_map v w
 
-def B (ψ : Arrow a b) (x : M F) :
-    Matrix (Fin (d F) × Fin 3) (Fin (d F) × Fin 3) ℝ :=
-  fun k l => Q ψ x (EuclideanSpace.basisFun (Fin (d F) × Fin 3) ℝ l) k
+
+
+
 
 open KPContActualCotangentCountableShrinking
 
@@ -315,7 +324,10 @@ instance gammaMulAction : MulAction (Gamma A) (M F) where
   change twistedOperator e x v = twistedOperator f x v
   simp only [twistedOperator, Arrow.phase, Arrow.psi, Q, hγ, hroot]
 
-def stabilizerRepresentation (x : M F) (hx : x ∈ (isotropyChart A).omega) :
+section
+variable (x : M F) (hx : x ∈ (isotropyChart A).omega)
+include x hx
+def stabilizerRepresentation   :
     MulAction.stabilizer (Gamma A) x →* (E F ≃ₗᵢ[ℂ] E F) where
   toFun γ := T (isotropyArrow A γ.val) x hx
   map_one' := by
@@ -336,12 +348,12 @@ def stabilizerRepresentation (x : M F) (hx : x ∈ (isotropyChart A).omega) :
       (comp (isotropyArrow A γ.val) (isotropyArrow A δ.val)) rfl rfl x hx ⟨hx, htarget⟩
     exact hs.trans (by simpa only [hδ] using hc)
 
-def Fixed (x : M F) (hx : x ∈ (isotropyChart A).omega) : Submodule ℂ (E F) :=
+def Fixed   : Submodule ℂ (E F) :=
   ⨅ γ : MulAction.stabilizer (Gamma A) x,
     LinearMap.ker ((T (isotropyArrow A γ.val) x hx).toLinearEquiv.toLinearMap -
       LinearMap.id)
 
-theorem mem_Fixed_iff (x : M F) (hx : x ∈ (isotropyChart A).omega) (v : E F) :
+theorem mem_Fixed_iff   (v : E F) :
     v ∈ Fixed A x hx ↔ ∀ γ : Gamma A, (gammaMulAction A).smul γ x = x →
       T (isotropyArrow A γ) x hx v = v := by
   simp only [Fixed, Submodule.mem_iInf, LinearMap.mem_ker,
@@ -351,6 +363,8 @@ theorem mem_Fixed_iff (x : M F) (hx : x ∈ (isotropyChart A).omega) (v : E F) :
     exact h ⟨γ, hγ⟩
   · intro h γ
     exact h γ.val γ.property
+end
+
 
 theorem Fixed_eq_bot_of_central_phase (ε : rootsOfUnity 3 F)
     (hε : KPCuspGenuineMonodromy.central F ζ hζ ε ∈ U.toOpenSubgroup)

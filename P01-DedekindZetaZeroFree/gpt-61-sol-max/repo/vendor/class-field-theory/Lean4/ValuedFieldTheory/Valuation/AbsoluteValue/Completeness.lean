@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.Normed.Field.WithAbs
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 public import Mathlib.RingTheory.Norm.Defs
 public import Mathlib.Topology.UniformSpace.AbsoluteValue
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -34,18 +37,21 @@ noncomputable section
 namespace AlgebraicNumberTheory
 namespace Valuations
 
+section
+variable {K : Type*} [Field K] (v : AbsoluteValue K ℝ)
+include K v
 /-- A valued field is complete if it is complete for the uniformity
 induced by its absolute value. -/
-def IsCompleteForAbsoluteValue {K : Type*} [Field K] (v : AbsoluteValue K ℝ) : Prop :=
+def IsCompleteForAbsoluteValue    :=
   @CompleteSpace K v.uniformSpace
 
 /-- The uniformity attached directly to an absolute value agrees with the
 uniformity coming from the normed-field structure induced by that absolute
 value. -/
 theorem absoluteValue_uniformSpace_eq_toNormedField
-    {K : Type*} [Field K] (v : AbsoluteValue K ℝ) :
+      :
     v.uniformSpace = (AbsoluteValue.toNormedField v).toUniformSpace := by
-  let : NormedField K := AbsoluteValue.toNormedField v
+  let  := AbsoluteValue.toNormedField v
   ext s
   rw [(AbsoluteValue.hasBasis_uniformity v).mem_iff,
     Metric.uniformity_basis_dist.mem_iff]
@@ -58,9 +64,9 @@ theorem absoluteValue_uniformSpace_eq_toNormedField
 /-- Completeness in the absolute-value uniformity is the same as
 completeness of the corresponding `WithAbs` normed field. -/
 theorem absoluteValueCompleteness_completeSpace_withAbs_iff_complete
-    {K : Type*} [Field K] (v : AbsoluteValue K ℝ) :
+      :
     CompleteSpace (WithAbs v) ↔ IsCompleteForAbsoluteValue v := by
-  let : NormedField K := AbsoluteValue.toNormedField v
+  let  := AbsoluteValue.toNormedField v
   let e : WithAbs v ≃ᵢ K :=
     { toEquiv := (WithAbs.equiv v).toEquiv
       isometry_toFun := by
@@ -76,56 +82,57 @@ theorem absoluteValueCompleteness_completeSpace_withAbs_iff_complete
 
 /-- A complete valued field is complete as the corresponding `WithAbs`
 normed field. -/
-theorem completeSpace_withAbs_of_isCompleteForAbsoluteValue
-    {K : Type*} [Field K] (v : AbsoluteValue K ℝ)
-    (hcomplete : IsCompleteForAbsoluteValue v) :
-    CompleteSpace (WithAbs v) :=
+def completeSpace_withAbs_of_isCompleteForAbsoluteValue
+     
+    (hcomplete : IsCompleteForAbsoluteValue v)  :=
   (absoluteValueCompleteness_completeSpace_withAbs_iff_complete v).2 hcomplete
 
 /-- Sequence form of the sequential completeness criterion: a complete valued field is exactly one
 where every Cauchy sequence in the absolute-value topology converges. -/
 theorem absoluteValueCompleteness_complete_iff_cauchySeq_converges
-    {K : Type*} [Field K] (v : AbsoluteValue K ℝ) :
+      :
     IsCompleteForAbsoluteValue v ↔
       ∀ u : ℕ → WithAbs v, CauchySeq u →
         ∃ a : WithAbs v, Filter.Tendsto u Filter.atTop (nhds a) := by
   constructor
   · intro hcomplete u hu
-    let : CompleteSpace (WithAbs v) :=
+    let  :=
       completeSpace_withAbs_of_isCompleteForAbsoluteValue v hcomplete
     exact cauchySeq_tendsto_of_complete hu
   · intro hseq
     exact (absoluteValueCompleteness_completeSpace_withAbs_iff_complete v).1
       (Metric.complete_of_cauchySeq_tendsto hseq)
+end
 
-/-- The nontrivial-valuation convention excludes the trivial valuation; this supplies the
-corresponding mathlib `NontriviallyNormedField` instance for `WithAbs v`. -/
-@[reducible]
-def withAbsNontriviallyNormedField
-    {K : Type*} [Field K] (v : AbsoluteValue K ℝ) (hv : v.IsNontrivial) :
-    NontriviallyNormedField (WithAbs v) :=
-  NontriviallyNormedField.ofNormNeOne
-    (by
-      rcases hv with ⟨x, hx0, hx1⟩
-      refine ⟨(WithAbs.equiv v).symm x, ?_, ?_⟩
-      · intro hx
-        apply hx0
-        simpa using congrArg (WithAbs.equiv v) hx
-      · simpa [WithAbs.norm_eq_apply_ofAbs] using hx1)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The finite-degree norm-formula candidate:
 `x ↦ |N_{L/K}(x)|^{1/[L:K]}`. -/
 def finiteExtensionNormFormulaValue
     {K L : Type*} [Field K] [Field L] [Algebra K L] [FiniteDimensional K L]
-    (v : AbsoluteValue K ℝ) (x : L) : ℝ :=
+    (v : AbsoluteValue K ℝ) (x : L)  :=
   Real.rpow (v (Algebra.norm K x)) (1 / (Module.finrank K L : ℝ))
 
-/-- The finite-degree norm formula candidate is nonnegative. -/
-theorem finiteExtensionNormFormulaValue_nonneg
-    {K L : Type*} [Field K] [Field L] [Algebra K L] [FiniteDimensional K L]
-    (v : AbsoluteValue K ℝ) (x : L) :
-    0 ≤ finiteExtensionNormFormulaValue v x :=
-  Real.rpow_nonneg (v.nonneg _) _
+
+
+
+
+
+
 
 end Valuations
 end AlgebraicNumberTheory

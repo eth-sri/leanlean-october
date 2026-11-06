@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import Mathlib.SetTheory.Cardinal.Finite
 public import ValuedFieldTheory.Ramification.HilbertRamification.FixedFieldValuationRing
 public import ValuedFieldTheory.Ramification.HilbertRamification.RamificationDepth
 public import Mathlib.NumberTheory.RamificationInertia.Galois
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -98,7 +101,7 @@ theorem map_fixedField_maximalIdeal_eq_pow_ramificationIndex
       (Ideal.pow_succ_lt_pow
         (IsDiscreteValuationRing.not_a_field target.valuationSubring) m)
   have hjalg : algebraMap B target.valuationSubring = j := rfl
-  have he : Ideal.ramificationIdx' p P = m :=
+  have he  :=
     Ideal.ramificationIdx'_spec
       (by rw [hjalg]; exact hmapPow.le)
       (by rw [hjalg]; exact hnot)
@@ -123,9 +126,7 @@ private theorem isUnit_fixedFieldValuationSubringDVFToTarget_iff
     have haTop :
         algebraMap M L (a : M) ≠ 0 ∧
           (algebraMap M L (a : M))⁻¹ ∈
-            target.valuation.valuationSubring := by
-      simpa [M, j] using
-        (Submonoid.isUnit_iff_and
+            target.valuation.valuationSubring := (Submonoid.isUnit_iff_and
           (S := target.valuation.valuationSubring) (a := j a)).mp ha
     rw [Submonoid.isUnit_iff_and (S := B) (a := a)]
     refine ⟨?_, ?_⟩
@@ -139,12 +140,15 @@ private theorem isUnit_fixedFieldValuationSubringDVFToTarget_iff
   · intro ha
     exact ha.map j
 
-/-- States the theorem `fixedFieldRamificationIndex_ne_zero`. -/
-theorem fixedFieldRamificationIndex_ne_zero
-    (huniq :
+section
+variable (huniq :
       RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
         base target)
-    (H : Subgroup Gal(L/K)) [H.Normal] :
+    (H : Subgroup Gal(L/K)) [H.Normal]
+include huniq H
+/-- States the theorem `fixedFieldRamificationIndex_ne_zero`. -/
+theorem fixedFieldRamificationIndex_ne_zero
+      :
     fixedFieldRamificationIndex
         (target := target) H ≠ 0 := by
   let B := fixedFieldValuationSubringDVF (K := K) (target := target) H
@@ -183,10 +187,7 @@ theorem fixedFieldRamificationIndex_ne_zero
 to the ramification index times the normalized additive valuation on the
 literal fixed-field valuation ring. -/
 theorem addVal_fixedFieldValuationSubringToTarget_eq_ramificationIndex_nsmul
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) [H.Normal]
+     
     (a : fixedFieldValuationSubringDVF (K := K) (target := target) H) :
     IsDiscreteValuationRing.addVal target.valuationSubring
         (fixedFieldValuationSubringDVFToTarget
@@ -250,20 +251,22 @@ theorem addVal_fixedFieldValuationSubringToTarget_eq_ramificationIndex_nsmul
     IsDiscreteValuationRing.addVal_pow, hmap_uniformizer,
     IsDiscreteValuationRing.addVal_def
       ((u : B) * pi ^ n) u hpi n rfl]
-  have hmap_unit :
-      IsDiscreteValuationRing.addVal target.valuationSubring
-          (j (u : B)) = 0 := by
-    exact IsDiscreteValuationRing.addVal_eq_zero_iff.mpr
+  have hmap_unit  := IsDiscreteValuationRing.addVal_eq_zero_iff.mpr
       ((u.isUnit : IsUnit (u : B)).map j)
   rw [hmap_unit, zero_add]
   simp [e, nsmul_eq_mul, mul_comm]
+end
+
 
 omit [FiniteDimensional K L] [IsGalois K L] in
- noncomputable def fixedFieldTopValuationSubringActionHomDVF
-    (huniq :
+ section
+variable (huniq :
       RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
         base target)
-    (H : Subgroup Gal(L/K)) :
+    (H : Subgroup Gal(L/K))
+include huniq H
+noncomputable def fixedFieldTopValuationSubringActionHomDVF
+      :
     H →* (target.valuationSubring ≃+* target.valuationSubring) where
   toFun tau := valuationSubringAutOfUniqueExtension
     (base := base) (target := target) huniq (tau : Gal(L/K))
@@ -275,15 +278,14 @@ omit [FiniteDimensional K L] [IsGalois K L] in
     simp
 
  noncomputable def fixedFieldInertiaSubgroupDVF
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) : Subgroup H := by
-  letI : MulSemiringAction H target.valuationSubring :=
+      : Subgroup H := by
+  letI  :=
     MulSemiringAction.compHom (R := target.valuationSubring)
       (fixedFieldTopValuationSubringActionHomDVF
         (base := base) (target := target) huniq H)
   exact target.maximalIdeal.toAddSubgroup.inertia H
+end
+
 
 variable [Algebra.IsSeparable base.residueField target.residueField]
 
@@ -298,7 +300,7 @@ private theorem depthLowerFiltration_zero_eq_fixedFieldInertiaSubgroupDVF
         (base := base) (target := target) huniq).depthLowerFiltration H).lower 0 =
       fixedFieldInertiaSubgroupDVF
         (base := base) (target := target) huniq H := by
-  let : MulSemiringAction H target.valuationSubring :=
+  let  :=
     MulSemiringAction.compHom (R := target.valuationSubring)
       (fixedFieldTopValuationSubringActionHomDVF
         (base := base) (target := target) huniq H)
@@ -322,11 +324,14 @@ private theorem depthLowerFiltration_zero_eq_fixedFieldInertiaSubgroupDVF
       (mem_lowerRamificationGroup_nat_iff
         (base := base) (target := target) huniq 0 (tau : Gal(L/K))))
 
+section
+variable {R S G : Type*} [CommRing R] [CommRing S] [Algebra R S]
+    [Group G] [Finite G] [MulSemiringAction G S] [IsGaloisGroup G R S]
+include R S G
 /-- Computes a decomposition-group stabilizer from inertia and residue degree
 when the induced residue extension is separable. -/
 private theorem card_stabilizer_eq_inertia_mul_inertiaDeg
-    {R S G : Type*} [CommRing R] [CommRing S] [Algebra R S]
-    [Group G] [Finite G] [MulSemiringAction G S] [IsGaloisGroup G R S]
+     
     (p : Ideal R) [p.IsPrime] [p.IsMaximal]
     (P : Ideal S) [P.LiesOver p] [P.IsPrime] [P.IsMaximal]
     [Algebra.IsSeparable (R ⧸ p) (S ⧸ P)] :
@@ -380,9 +385,7 @@ private theorem card_stabilizer_eq_inertia_mul_inertiaDeg
   calc
     Nat.card (MulAction.stabilizer G P) =
         Nat.card (Ideal.inertia (MulAction.stabilizer G P) P) *
-          Subgroup.index (Ideal.inertia (MulAction.stabilizer G P) P) := by
-      exact
-        (Ideal.inertia
+          Subgroup.index (Ideal.inertia (MulAction.stabilizer G P) P) := (Ideal.inertia
           (MulAction.stabilizer G P) P).card_mul_index.symm
     _ = Nat.card (Ideal.inertia G P) *
           Subgroup.index (Ideal.inertia (MulAction.stabilizer G P) P) := by
@@ -391,8 +394,7 @@ private theorem card_stabilizer_eq_inertia_mul_inertiaDeg
 /-- Identifies the finite inertia cardinality with the ramification index
 without assuming that the base residue field is perfect. -/
 private theorem card_inertia_eq_ramificationIdxIn
-    {R S G : Type*} [CommRing R] [CommRing S] [Algebra R S]
-    [Group G] [Finite G] [MulSemiringAction G S] [IsGaloisGroup G R S]
+     
     [IsDomain R] [IsDomain S] [Module.Finite R S] [Module.Flat R S]
     (p : Ideal R) (P : Ideal S) [P.LiesOver p]
     [p.IsPrime] [p.IsMaximal] [P.IsPrime] [P.IsMaximal]
@@ -412,12 +414,7 @@ private theorem card_inertia_eq_ramificationIdxIn
       Nat.card_coe_set_eq] using
       Nat.card_congr (MulAction.orbitProdStabilizerEquivGroup G P)
   rw [← Ideal.inertiaDegIn_eq_inertiaDeg p P G] at hinertia
-  have htotal :
-      (p.primesOver S).ncard *
-          (Ideal.ramificationIdxIn p S * Ideal.inertiaDegIn p S) =
-        Nat.card G := by
-    exact
-      Ideal.ncard_primesOver_mul_ramificationIdxIn_mul_inertiaDegIn p S G
+  have htotal  := Ideal.ncard_primesOver_mul_ramificationIdxIn_mul_inertiaDegIn p S G
   have hmul :
       (p.primesOver S).ncard *
           (Nat.card (Ideal.inertia G P) * Ideal.inertiaDegIn p S) =
@@ -433,6 +430,8 @@ private theorem card_inertia_eq_ramificationIdxIn
       (Nat.pos_of_ne_zero hprimeCount) hmul
   exact Nat.eq_of_mul_eq_mul_right
     (Nat.pos_of_ne_zero hinertiaDegree) hcancelPrime
+end
+
 
 /-- The literal ramification index of L/(L^H) is the cardinality of the
 zeroth subgroup induced on H by the canonical general-DVF depth. -/
@@ -524,7 +523,7 @@ theorem fixedFieldRamificationIndex_eq_card_depthLowerFiltration_zero
     apply Subtype.ext
     apply (algebraMap K M).injective
     exact congrArg Subtype.val hab
-  let : MulSemiringAction H O :=
+  let  :=
     MulSemiringAction.compHom (R := O)
       (fixedFieldTopValuationSubringActionHomDVF
         (base := base) (target := target) huniq H)

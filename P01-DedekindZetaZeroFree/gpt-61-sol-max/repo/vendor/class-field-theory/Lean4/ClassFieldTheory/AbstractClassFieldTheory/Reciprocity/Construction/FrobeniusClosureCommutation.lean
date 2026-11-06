@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction.CoreFrobeniusNorm
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -40,9 +43,8 @@ variable {G : Type u} [Group G] [TopologicalSpace G]
 
 namespace DegreeData
 
-/-- Commuting with the chosen generator means commuting with its closed
-procyclic closure. -/
-theorem frobeniusClosure_commutes_of_commutes_generator (D : DegreeData G)
+section
+variable (D : DegreeData G)
     [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
     [TotallyDisconnectedSpace G]
     (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
@@ -51,10 +53,13 @@ theorem frobeniusClosure_commutes_of_commutes_generator (D : DegreeData G)
     (σ : D.FrobeniusElements K L hLK)
     (q : K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK)
     (hq : q * σ.1 = σ.1 * q)
+include D K L hLK hLnormal σ q hq
+/-- Commuting with the chosen generator means commuting with its closed
+procyclic closure. -/
+theorem frobeniusClosure_commutes_of_commutes_generator  
     (c : D.frobeniusClosure K L hLK σ) :
     q * c.1 = c.1 * q := by
-  let : IsClosed
-      (D.extensionInertiaWithin K.field L hLK : Set K.field.toSubgroup) :=
+  let  :=
     D.extensionInertiaWithin_isClosed K L hLK
   let : T2Space
       (K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK) := by
@@ -66,8 +71,7 @@ theorem frobeniusClosure_commutes_of_commutes_generator (D : DegreeData G)
     rw [Subgroup.closure_le]
     rintro x ⟨i, rfl⟩
     exact Subgroup.mem_centralizer_singleton_iff.mpr hq.symm
-  have htop : (Subgroup.closure X).topologicalClosure ≤
-      Subgroup.centralizer ({q} : Set Q) :=
+  have htop  :=
     Subgroup.topologicalClosure_minimal _ hclosure
       (Set.isClosed_centralizer (M := Q) ({q} : Set Q))
   have hc : c.1 ∈ (Subgroup.closure X).topologicalClosure := c.2
@@ -75,21 +79,13 @@ theorem frobeniusClosure_commutes_of_commutes_generator (D : DegreeData G)
 
 /-- If a quotient element commutes with the Frobenius lift, its chosen
 representative stabilizes the corresponding fixed field. -/
-theorem conjugate_frobeniusFixedField_eq_of_commutes (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK)
-    (q : K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK)
-    (hq : q * σ.1 = σ.1 * q) :
+theorem conjugate_frobeniusFixedField_eq_of_commutes   :
     let k : K.field.toSubgroup := Quotient.out q
     conjugateClosedSubgroup (D.frobeniusFixedField K L hLK σ) k.1⁻¹ =
       D.frobeniusFixedField K L hLK σ := by
   dsimp only
   let T := D.frobeniusFixedField K L hLK σ
-  let k : K.field.toSubgroup := Quotient.out q
+  let k  := Quotient.out q
   have hkq :
       (QuotientGroup.mk k :
         K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK) = q :=
@@ -103,7 +99,7 @@ theorem conjugate_frobeniusFixedField_eq_of_commutes (D : DegreeData G)
   · intro hx
     obtain ⟨t, htClosure, htx⟩ := hx
     let xK : K.field.toSubgroup := ⟨x, by
-      have htK : t.1 ∈ K.field.toSubgroup := t.2
+      have htK  := t.2
       have htxval : t.1 = k.1⁻¹ * x * k.1 := by simpa using htx
       have : x = k.1 * t.1 * k.1⁻¹ := by
         calc
@@ -118,10 +114,7 @@ theorem conjugate_frobeniusFixedField_eq_of_commutes (D : DegreeData G)
     have hxClosure : QuotientGroup.mk xK ∈
         (D.frobeniusClosure K L hLK σ).toSubgroup := by
       have hqconj : q * QuotientGroup.mk t * q⁻¹ = QuotientGroup.mk t := by
-        calc
-          q * QuotientGroup.mk t * q⁻¹ =
-              (QuotientGroup.mk t * q) * q⁻¹ := by rw [hcomm']
-          _ = QuotientGroup.mk t := by simp
+        simp_all
       change QuotientGroup.mk xK ∈
         (D.frobeniusClosure K L hLK σ).toSubgroup
       have hxval : xK = k * t * k⁻¹ := by
@@ -142,7 +135,7 @@ theorem conjugate_frobeniusFixedField_eq_of_commutes (D : DegreeData G)
   · intro hx
     obtain ⟨t, htClosure, htx⟩ := hx
     let yK : K.field.toSubgroup := ⟨k.1⁻¹ * x * k.1, by
-      have htK : t.1 ∈ K.field.toSubgroup := t.2
+      have htK  := t.2
       rw [← htx]
       exact K.field.toSubgroup.mul_mem
         (K.field.toSubgroup.mul_mem (K.field.toSubgroup.inv_mem k.2) htK) k.2⟩
@@ -160,7 +153,7 @@ theorem conjugate_frobeniusFixedField_eq_of_commutes (D : DegreeData G)
       have hyval : yK = k⁻¹ * t * k := by
         apply Subtype.ext
         dsimp [yK]
-        have htxval : t.1 = x := by simpa using htx
+        have htxval : t.1 = x := htx
         rw [htxval]
       rw [hyval]
       change (QuotientGroup.mk k :
@@ -171,6 +164,8 @@ theorem conjugate_frobeniusFixedField_eq_of_commutes (D : DegreeData G)
       exact htClosure
     refine ⟨yK, hyClosure, ?_⟩
     simp [yK]
+end
+
 
 end DegreeData
 

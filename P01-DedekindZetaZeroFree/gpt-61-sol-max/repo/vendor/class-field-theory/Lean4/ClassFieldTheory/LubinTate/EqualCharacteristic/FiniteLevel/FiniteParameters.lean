@@ -48,10 +48,13 @@ structure equalCharacteristicLubinTateUnitParameter
   /-- The coefficients in degrees `1` through `n`, indexed with degree shifted down by one. -/
   higherCoeff : Fin n → F.residueField
 
+section
+variable (F : LocalField.{u, v} K) (n : ℕ)
+include F n
 /-- Unit parameters agree when their constant units and higher coefficients agree. -/
 @[ext]
 theorem equalCharacteristicLubinTateUnitParameter_ext
-    (F : LocalField.{u, v} K) (n : ℕ)
+     
     {a b : equalCharacteristicLubinTateUnitParameter F n}
     (hconstant : a.constantUnit = b.constantUnit)
     (hhigher : a.higherCoeff = b.higherCoeff) :
@@ -65,7 +68,7 @@ theorem equalCharacteristicLubinTateUnitParameter_ext
 /-- Constructor exposing the mathematical coefficient data without relying
 on the implementation of the finite parameter. -/
 def equalCharacteristicLubinTateUnitParameterOfCoefficients
-    (F : LocalField.{u, v} K) (n : ℕ)
+     
     (constantUnit : F.residueFieldˣ)
     (higherCoeff : Fin n → F.residueField) :
     equalCharacteristicLubinTateUnitParameter F n :=
@@ -73,7 +76,7 @@ def equalCharacteristicLubinTateUnitParameterOfCoefficients
 
 /-- Comparison with the elementary product of visible coefficients. -/
 def equalCharacteristicLubinTateUnitParameterEquiv
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      :
     equalCharacteristicLubinTateUnitParameter F n ≃
       F.residueFieldˣ × (Fin n → F.residueField) where
   toFun a := (a.constantUnit, a.higherCoeff)
@@ -81,6 +84,8 @@ def equalCharacteristicLubinTateUnitParameterEquiv
     F n a.1 a.2
   left_inv a := by cases a; rfl
   right_inv a := rfl
+end
+
 
 /-- The finite-level unit parameter space is finite. -/
 instance equalCharacteristicLubinTateUnitParameter_finite
@@ -89,11 +94,14 @@ instance equalCharacteristicLubinTateUnitParameter_finite
   Finite.of_equiv (F.residueFieldˣ × (Fin n → F.residueField))
     (equalCharacteristicLubinTateUnitParameterEquiv F n).symm
 
+section
+variable (F : LocalField.{u, v} K) (n : ℕ)
+    (a : equalCharacteristicLubinTateUnitParameter F n)
+include F n a
 /-- The finite polynomial power series represented by a visible unit
 parameter. -/
 noncomputable def equalCharacteristicLubinTateUnitParameterSeries
-    (F : LocalField.{u, v} K) (n : ℕ)
-    (a : equalCharacteristicLubinTateUnitParameter F n) :
+      :
     F.residueField⟦X⟧ :=
   PowerSeries.mk fun i =>
     if i = 0 then (a.constantUnit : F.residueField)
@@ -102,8 +110,7 @@ noncomputable def equalCharacteristicLubinTateUnitParameterSeries
 /-- The parameter series has the stored unit as its constant coefficient. -/
 @[simp]
 theorem equalCharacteristicLubinTateUnitParameterSeries_coeff_zero
-    (F : LocalField.{u, v} K) (n : ℕ)
-    (a : equalCharacteristicLubinTateUnitParameter F n) :
+      :
     PowerSeries.coeff 0
       (equalCharacteristicLubinTateUnitParameterSeries F n a) =
         a.constantUnit := by
@@ -112,8 +119,7 @@ theorem equalCharacteristicLubinTateUnitParameterSeries_coeff_zero
 /-- Positive coefficients of the parameter series recover the stored higher coefficients. -/
 @[simp]
 theorem equalCharacteristicLubinTateUnitParameterSeries_coeff_succ
-    (F : LocalField.{u, v} K) (n : ℕ)
-    (a : equalCharacteristicLubinTateUnitParameter F n) (i : Fin n) :
+      (i : Fin n) :
     PowerSeries.coeff (i + 1)
       (equalCharacteristicLubinTateUnitParameterSeries F n a) =
         a.higherCoeff i := by
@@ -122,8 +128,7 @@ theorem equalCharacteristicLubinTateUnitParameterSeries_coeff_succ
 /-- A represented series is a unit because its constant coefficient is the
 nonzero value of a residue-field unit. -/
 theorem equalCharacteristicLubinTateUnitParameterSeries_isUnit
-    (F : LocalField.{u, v} K) (n : ℕ)
-    (a : equalCharacteristicLubinTateUnitParameter F n) :
+      :
     IsUnit (equalCharacteristicLubinTateUnitParameterSeries F n a) := by
   rw [PowerSeries.isUnit_iff_constantCoeff,
     ← PowerSeries.coeff_zero_eq_constantCoeff_apply,
@@ -132,24 +137,27 @@ theorem equalCharacteristicLubinTateUnitParameterSeries_isUnit
 
 /-- The actual power-series unit attached to a finite parameter. -/
 noncomputable def equalCharacteristicLubinTateUnitParameterUnit
-    (F : LocalField.{u, v} K) (n : ℕ)
-    (a : equalCharacteristicLubinTateUnitParameter F n) :
+      :
     F.residueField⟦X⟧ˣ :=
   (equalCharacteristicLubinTateUnitParameterSeries_isUnit F n a).unit
 
 /-- The unit built from a parameter has the parameter series as its value. -/
 @[simp]
 theorem equalCharacteristicLubinTateUnitParameterUnit_val
-    (F : LocalField.{u, v} K) (n : ℕ)
-    (a : equalCharacteristicLubinTateUnitParameter F n) :
+      :
     (equalCharacteristicLubinTateUnitParameterUnit F n a :
       F.residueField⟦X⟧) =
       equalCharacteristicLubinTateUnitParameterSeries F n a :=
   (equalCharacteristicLubinTateUnitParameterSeries_isUnit F n a).unit_spec
+end
 
+
+section
+variable (F : LocalField.{u, v} K)
+include F
 /-- Visible coefficient equality determines the finite parameter. -/
 theorem equalCharacteristicLubinTateUnitParameter_eq_of_coeff_eq
-    (F : LocalField.{u, v} K) (n : ℕ)
+      (n : ℕ)
     (a b : equalCharacteristicLubinTateUnitParameter F n)
     (hcoeff : ∀ i ≤ n,
       PowerSeries.coeff i
@@ -165,7 +173,7 @@ theorem equalCharacteristicLubinTateUnitParameter_eq_of_coeff_eq
 
 /-- The primitive-root image attached to a finite unit parameter. -/
 noncomputable def equalCharacteristicLubinTateUnitParameterRoot
-    (F : LocalField.{u, v} K)
+     
     [CharP K F.residueCharacteristic]
     (n : ℕ) (a : equalCharacteristicLubinTateUnitParameter F n) :
     SeparableClosure F.residueField⸨X⸩ :=
@@ -177,7 +185,7 @@ noncomputable def equalCharacteristicLubinTateUnitParameterRoot
 
 /-- Distinct visible unit parameters give distinct primitive roots. -/
 theorem equalCharacteristicLubinTateUnitParameterRoot_injective
-    (F : LocalField.{u, v} K)
+     
     [CharP K F.residueCharacteristic]
     (n : ℕ) :
     Function.Injective
@@ -190,7 +198,7 @@ theorem equalCharacteristicLubinTateUnitParameterRoot_injective
 
 /-- Every parameter root is a root of the primitive polynomial. -/
 theorem equalCharacteristicLubinTateUnitParameterRoot_isRoot
-    (F : LocalField.{u, v} K)
+     
     [CharP K F.residueCharacteristic]
     (n : ℕ) (a : equalCharacteristicLubinTateUnitParameter F n) :
     ((equalCharacteristicLubinTatePrimitivePolynomial F n).map
@@ -203,13 +211,15 @@ theorem equalCharacteristicLubinTateUnitParameterRoot_isRoot
 
 /-- The finite parameter set has the expected cardinality. -/
 theorem equalCharacteristicLubinTateUnitParameter_natCard
-    (F : LocalField.{u, v} K) (n : ℕ) :
+      (n : ℕ) :
     Nat.card (equalCharacteristicLubinTateUnitParameter F n) =
       (Nat.card F.residueField - 1) *
         Nat.card F.residueField ^ n := by
   rw [Nat.card_congr
       (equalCharacteristicLubinTateUnitParameterEquiv F n),
     Nat.card_prod, Nat.card_units, Nat.card_fun, Nat.card_fin]
+end
+
 
 end EqualCharacteristic
 end LubinTate

@@ -25,9 +25,12 @@ structure ComparisonPoissonCoefficientData (F : Type) [Field F] [NumberField F]
   gammaTwo : ExteriorSquarefreeIdeal A.cS → ℂ
   theta : A.R → ℂ
 
-def comparisonPoissonFiniteCoefficient
-    (F : Type) [Field F] [NumberField F] (A : SArithmeticData F)
+section
+variable (F : Type) [Field F] [NumberField F] (A : SArithmeticData F)
     (D : ComparisonPoissonCoefficientData F A)
+include F A D
+def comparisonPoissonFiniteCoefficient
+     
     (c : ExteriorSquarefreeIdeal A.cS) (n s : A.Exterior) (h : A.R) : ℂ := by
   let a := D.generator c.val * D.generator n ^ 3
   have ha : a ≠ 0 := mul_ne_zero (D.generates c.val).1 (pow_ne_zero _ (D.generates n).1)
@@ -37,8 +40,7 @@ def comparisonPoissonFiniteCoefficient
     (D.character (D.generator s)) (D.character a) D.additiveCharacter
 
 def comparisonEulerPoissonSummand
-    (F : Type) [Field F] [NumberField F] (A : SArithmeticData F)
-    (D : ComparisonPoissonCoefficientData F A) (u : A.R)
+      (u : A.R)
     (ξ w z : ℂ) (c : ExteriorSquarefreeIdeal A.cS) (n s r : A.Exterior) : ℂ :=
   D.gammaTwo c * D.theta (D.generator c.val * D.generator n ^ 3) *
     comparisonPoissonFiniteCoefficient F A D c n s (u * D.generator r ^ 6) *
@@ -48,31 +50,35 @@ def comparisonEulerPoissonSummand
     comparisonRealPower (A.exteriorNorm r) (-6 * z)
 
 def comparisonEulerPoissonSeries
-    (F : Type) [Field F] [NumberField F] (A : SArithmeticData F)
-    (D : ComparisonPoissonCoefficientData F A) (u : A.R) (ξ w z : ℂ) : ℂ :=
+      (u : A.R) (ξ w z : ℂ) : ℂ :=
   ∑' i : ExteriorSquarefreeIdeal A.cS × A.Exterior × A.Exterior × A.Exterior,
     comparisonEulerPoissonSummand F A D u ξ w z i.1 i.2.1 i.2.2.1 i.2.2.2
+end
+
 
 structure ComparisonMellinWeights where
   M : ℂ → ℂ
   W1Hat : ℂ → ℂ
 
+section
+variable (F : Type) [Field F] [NumberField F] (A : SArithmeticData F)
+include F A
 def comparisonPrincipalIncompleteL
-    (F : Type) [Field F] [NumberField F] (A : SArithmeticData F)
+     
     (η : RayClassCharacter F A.modulus) (hη : η.IsPrincipal)
     (P : PrincipalRayHeckeData F A.modulus η) (s : ℂ) : ℂ :=
   P.L s * ∏ v ∈ A.Sf,
     (1 - η v.asIdeal * comparisonRealPower (idealNorm v.asIdeal) (-s))
 
 def comparisonPrincipalResidue
-    (F : Type) [Field F] [NumberField F] (A : SArithmeticData F)
+     
     (η : RayClassCharacter F A.modulus) (hη : η.IsPrincipal)
     (P : PrincipalRayHeckeData F A.modulus η) : ℂ :=
   P.R 1 * ∏ v ∈ A.Sf,
     (1 - η v.asIdeal * comparisonRealPower (idealNorm v.asIdeal) (-1))
 
 def comparisonMellinWeightsFromProbe
-    (F : Type) [Field F] [NumberField F] (A : SArithmeticData F)
+     
     (e : (v : ↥A.Sf) → AddChar (v.val.adicCompletion F) Circle)
     (μ : @Measure (SLocalProduct F A.Sf) (borel _))
     (ν : @Measure (SLocalProduct F A.Sf)ˣ
@@ -81,6 +87,8 @@ def comparisonMellinWeightsFromProbe
     ComparisonMellinWeights :=
   { M := @ProbeWeight.fourierMellin F _ _ A.Sf e μ ν W0
     W1Hat := probeRealWeightMellin W1 }
+end
+
 
 end
 end DedekindZetaZeroFree

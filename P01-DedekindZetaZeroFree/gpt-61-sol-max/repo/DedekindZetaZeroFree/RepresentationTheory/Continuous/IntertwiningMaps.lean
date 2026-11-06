@@ -26,7 +26,7 @@ variable {𝕜 : Type u} {G : Type v} [NontriviallyNormedField 𝕜] [CompleteSp
   [AddCommGroup U] [Module 𝕜 U] [TopologicalSpace U] [IsTopologicalAddGroup U]
   [ContinuousSMul 𝕜 U]
   {π : ContRepresentation 𝕜 G V} {ρ : ContRepresentation 𝕜 G W}
-  {τ : ContRepresentation 𝕜 G U}
+  
 
 omit [CompleteSpace 𝕜] [T2Space V] [FiniteDimensional 𝕜 V] [ContinuousSMul 𝕜 V]
   [ContinuousSMul 𝕜 W] in

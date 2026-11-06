@@ -61,12 +61,15 @@ def restrictFinitePlaceExtension
 
 omit [NumberField K] [FiniteDimensional K L]
     [IsAbelianGalois K L] in
+section
+variable {E : Type}
+    [Field E] [Algebra K E] [Algebra E L]
+    [IsScalarTower K E L]
+include E
 /-- Completion maps compose along a scalar tower when the three
 absolute values extend one another. -/
 theorem absoluteValueCompletionMap_comp_of_isScalarTower
-    {E : Type}
-    [Field E] [Algebra K E] [Algebra E L]
-    [IsScalarTower K E L]
+     
     (vK : AbsoluteValue K ℝ)
     (vE : AbsoluteValue E ℝ)
     (vL : AbsoluteValue L ℝ)
@@ -116,9 +119,7 @@ theorem absoluteValueCompletionMap_comp_of_isScalarTower
 /-- The completion map in a number-field tower restricts to the
 corresponding algebraic localizations. -/
 noncomputable def finitePlaceRestrictedLocalizedCompletionAlgHom
-    {E : Type}
-    [Field E] [Algebra K E] [Algebra E L]
-    [IsScalarTower K E L]
+     
     [FiniteDimensional K E] [IsGalois K E]
     (v : HeightOneSpectrum (𝓞 K))
     (wL : AbsoluteValueExtension
@@ -193,6 +194,8 @@ noncomputable def finitePlaceRestrictedLocalizedCompletionAlgHom
     eL.symm.toAlgHom.comp
       (completionAlgHom.comp eE.toAlgHom)
   exact localizationAlgHom
+end
+
 
 omit [IsAbelianGalois K L] in
 /-- The restricted-localization map agrees with the original
@@ -452,18 +455,23 @@ theorem decompositionGroupEquivAlgebraicLocalizationAut_restrict_of_commutes
           ((rhoE.1 : E ≃ₐ[K] E) z)) := by
             rw [hlocalization]
 
- noncomputable def finitePlaceLocalRestrictionMonoidHom
-    {E : Type}
+ section
+variable {E : Type}
     [Field E] [Algebra K E] [Algebra E L]
     [IsScalarTower K E L]
     [FiniteDimensional K E] [IsAbelianGalois K E]
     (v : HeightOneSpectrum (𝓞 K))
+include E v
+
+local notation:max "current_restrictFinitePlaceExtension" => restrictFinitePlaceExtension (K := K) (L := L) (E := E)
+
+noncomputable def finitePlaceLocalRestrictionMonoidHom
+     
     (wL : AbsoluteValueExtension
       (NumberField.HeightOneSpectrum.adicAbv K v) L) :
     let vK := NumberField.HeightOneSpectrum.adicAbv K v
     let wE :=
-      restrictFinitePlaceExtension
-        (K := K) (L := L) (E := E) v wL
+      current_restrictFinitePlaceExtension v wL
     let EL := AlgebraicNumberTheory.Valuations.LocalizedCompletion vK wE
     let LL := AlgebraicNumberTheory.Valuations.LocalizedCompletion vK wL
     letI : Algebra vK.Completion EL :=
@@ -474,8 +482,7 @@ theorem decompositionGroupEquivAlgebraicLocalizationAut_restrict_of_commutes
       (EL ≃ₐ[vK.Completion] EL) := by
   let vK := NumberField.HeightOneSpectrum.adicAbv K v
   let wE :=
-    restrictFinitePlaceExtension
-      (K := K) (L := L) (E := E) v wL
+    current_restrictFinitePlaceExtension v wL
   let EL := AlgebraicNumberTheory.Valuations.LocalizedCompletion vK wE
   let LL := AlgebraicNumberTheory.Valuations.LocalizedCompletion vK wL
   letI : Algebra vK.Completion EL :=
@@ -509,19 +516,14 @@ theorem decompositionGroupEquivAlgebraicLocalizationAut_restrict_of_commutes
 restriction of the corresponding automorphisms of algebraic
 localizations, pointwise on local automorphisms. -/
 theorem finitePlaceDecompositionTransport_restrict_tower_apply
-    {E : Type}
-    [Field E] [Algebra K E] [Algebra E L]
-    [IsScalarTower K E L]
-    [FiniteDimensional K E] [IsAbelianGalois K E]
-    (v : HeightOneSpectrum (𝓞 K))
+     
     (wL : AbsoluteValueExtension
       (NumberField.HeightOneSpectrum.adicAbv K v) L) :
     let vK := NumberField.HeightOneSpectrum.adicAbv K v
     let hvK : vK.IsNontrivial :=
       RayClass.adicAbv_isNontrivial v
     let wE :=
-      restrictFinitePlaceExtension
-        (K := K) (L := L) (E := E) v wL
+      current_restrictFinitePlaceExtension v wL
     let EL := AlgebraicNumberTheory.Valuations.LocalizedCompletion vK wE
     let LL := AlgebraicNumberTheory.Valuations.LocalizedCompletion vK wL
     letI : Algebra vK.Completion EL :=
@@ -564,8 +566,7 @@ theorem finitePlaceDecompositionTransport_restrict_tower_apply
       (K := K) (L := L) (E := E)
       (NumberField.HeightOneSpectrum.adicAbv K v)
       (RayClass.adicAbv_isNontrivial v)
-      (restrictFinitePlaceExtension
-        (K := K) (L := L) (E := E) v wL)
+      (current_restrictFinitePlaceExtension v wL)
       wL
       (finitePlaceRestrictedLocalizedCompletionAlgHom
         (K := K) (L := L) (E := E) v wL)
@@ -577,19 +578,14 @@ theorem finitePlaceDecompositionTransport_restrict_tower_apply
 restriction of the corresponding automorphisms of algebraic
 localizations. -/
 theorem finitePlaceDecompositionTransport_restrict_tower
-    {E : Type}
-    [Field E] [Algebra K E] [Algebra E L]
-    [IsScalarTower K E L]
-    [FiniteDimensional K E] [IsAbelianGalois K E]
-    (v : HeightOneSpectrum (𝓞 K))
+     
     (wL : AbsoluteValueExtension
       (NumberField.HeightOneSpectrum.adicAbv K v) L) :
     let vK := NumberField.HeightOneSpectrum.adicAbv K v
     let hvK : vK.IsNontrivial :=
       RayClass.adicAbv_isNontrivial v
     let wE :=
-      restrictFinitePlaceExtension
-        (K := K) (L := L) (E := E) v wL
+      current_restrictFinitePlaceExtension v wL
     let EL := AlgebraicNumberTheory.Valuations.LocalizedCompletion vK wE
     let LL := AlgebraicNumberTheory.Valuations.LocalizedCompletion vK wL
     letI : Algebra vK.Completion EL :=
@@ -637,11 +633,7 @@ theorem finitePlaceDecompositionTransport_restrict_tower
 /-- Local Artin maps on localized completions commute with restriction
 through an abelian intermediate field. -/
 theorem finitePlaceLocalArtinMonoidHom_restrict_tower
-    {E : Type}
-    [Field E] [Algebra K E] [Algebra E L]
-    [IsScalarTower K E L]
-    [FiniteDimensional K E] [IsAbelianGalois K E]
-    (v : HeightOneSpectrum (𝓞 K))
+     
     (wL : AbsoluteValueExtension
       (NumberField.HeightOneSpectrum.adicAbv K v) L) :
     (finitePlaceLocalRestrictionMonoidHom
@@ -650,12 +642,10 @@ theorem finitePlaceLocalArtinMonoidHom_restrict_tower
           (K := K) (L := L) v wL) =
       finitePlaceLocalArtinMonoidHom
         (K := K) (L := E) v
-        (restrictFinitePlaceExtension
-          (K := K) (L := L) (E := E) v wL) := by
+        (current_restrictFinitePlaceExtension v wL) := by
   let vK := NumberField.HeightOneSpectrum.adicAbv K v
   let wE :=
-    restrictFinitePlaceExtension
-      (K := K) (L := L) (E := E) v wL
+    current_restrictFinitePlaceExtension v wL
   let EL := AlgebraicNumberTheory.Valuations.LocalizedCompletion vK wE
   let LL := AlgebraicNumberTheory.Valuations.LocalizedCompletion vK wL
   let : Algebra vK.Completion EL :=
@@ -713,11 +703,7 @@ theorem finitePlaceLocalArtinMonoidHom_restrict_tower
 /-- Finite-place Artin homomorphisms attached to specified place
 extensions commute with restriction through an abelian tower. -/
 theorem finitePlaceArtinMonoidHomOfExtension_restrict_tower
-    {E : Type}
-    [Field E] [Algebra K E] [Algebra E L]
-    [IsScalarTower K E L]
-    [FiniteDimensional K E] [IsAbelianGalois K E]
-    (v : HeightOneSpectrum (𝓞 K))
+     
     (wL : AbsoluteValueExtension
       (NumberField.HeightOneSpectrum.adicAbv K v) L) :
     (AlgEquiv.restrictNormalHom E).comp
@@ -725,11 +711,9 @@ theorem finitePlaceArtinMonoidHomOfExtension_restrict_tower
           (K := K) (L := L) v wL) =
       finitePlaceArtinMonoidHomOfExtension
         (K := K) (L := E) v
-        (restrictFinitePlaceExtension
-          (K := K) (L := L) (E := E) v wL) := by
+        (current_restrictFinitePlaceExtension v wL) := by
   let wE :=
-    restrictFinitePlaceExtension
-      (K := K) (L := L) (E := E) v wL
+    current_restrictFinitePlaceExtension v wL
   calc
     (AlgEquiv.restrictNormalHom E).comp
         (finitePlaceArtinMonoidHomOfExtension
@@ -790,11 +774,7 @@ theorem finitePlaceArtinMonoidHomOfExtension_restrict_tower
 /-- Finite local factors commute with restriction in an abelian
 number-field tower. -/
 theorem chosenFinitePlaceArtinMonoidHom_restrict_tower
-    {E : Type}
-    [Field E] [Algebra K E] [Algebra E L]
-    [IsScalarTower K E L]
-    [FiniteDimensional K E] [IsAbelianGalois K E]
-    (v : HeightOneSpectrum (𝓞 K)) :
+      :
     (AlgEquiv.restrictNormalHom E).comp
         (chosenFinitePlaceArtinMonoidHom
           (K := K) (L := L) v) =
@@ -804,8 +784,7 @@ theorem chosenFinitePlaceArtinMonoidHom_restrict_tower
     chosenFinitePlaceExtension
       (L := L) v
   let wE :=
-    restrictFinitePlaceExtension
-      (K := K) (L := L) (E := E) v wL
+    current_restrictFinitePlaceExtension v wL
   calc
     (AlgEquiv.restrictNormalHom E).comp
         (chosenFinitePlaceArtinMonoidHom
@@ -820,6 +799,8 @@ theorem chosenFinitePlaceArtinMonoidHom_restrict_tower
         (K := K) (L := E) v wE
         (chosenFinitePlaceExtension
           (L := E) v)
+end
+
 
 end Reciprocity
 end GlobalClassFieldTheory

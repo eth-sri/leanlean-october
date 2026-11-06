@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LFunctions.Hecke.QuadraticFamilies.UniformNormalizationData
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.QuadraticFormsAndSieveExponents
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve.Sieve
 
@@ -12,7 +15,7 @@ open DedekindZetaZeroFree
 
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
 
-def CoreGood (Q : QuadraticHeckeFamily F c) : Prop :=
+def CoreGood (Q : QuadraticHeckeFamily F c)  :=
   ∀ a, Squarefree a → a ⊔ c = ⊤ → a ∣ Q.cond a ∧ Q.cond a ∣ a * c
 
 theorem coprime_original {q a : Ideal (𝓞 F)} (hcq : c ∣ q)
@@ -20,8 +23,11 @@ theorem coprime_original {q a : Ideal (𝓞 F)} (hcq : c ∣ q)
   rw [eq_top_iff, ← haq]
   exact sup_le_sup_left (Ideal.dvd_iff_le.mp hcq) a
 
-def restrictFamily (Q : QuadraticHeckeFamily F c) (q : Ideal (𝓞 F))
-    (hcq : c ∣ q) : QuadraticHeckeFamily F q where
+section
+variable (Q : QuadraticHeckeFamily F c) (q : Ideal (𝓞 F))
+    (hcq : c ∣ q)
+include Q q hcq
+def restrictFamily   : QuadraticHeckeFamily F q where
   cond := Q.cond
   χ := Q.χ
   primitive := fun a ha haq => Q.primitive a ha (coprime_original hcq haq)
@@ -41,33 +47,28 @@ def restrictFamily (Q : QuadraticHeckeFamily F c) (q : Ideal (𝓞 F))
     Q.product_primitive a b ha (coprime_original hcq haq) hb
       (coprime_original hcq hbq) hab hcls
 
-@[simp] theorem restrictFamily_cond (Q : QuadraticHeckeFamily F c)
-    (q : Ideal (𝓞 F)) (hcq : c ∣ q) (a : Ideal (𝓞 F)) :
+@[simp] theorem restrictFamily_cond   (a : Ideal (𝓞 F)) :
     (restrictFamily Q q hcq).cond a = Q.cond a := rfl
 
-@[simp] theorem restrictFamily_χ (Q : QuadraticHeckeFamily F c)
-    (q : Ideal (𝓞 F)) (hcq : c ∣ q) (a : Ideal (𝓞 F)) :
+@[simp] theorem restrictFamily_χ   (a : Ideal (𝓞 F)) :
     (restrictFamily Q q hcq).χ a = Q.χ a := rfl
 
-@[simp] theorem restrictFamily_G (Q : QuadraticHeckeFamily F c)
-    (q : Ideal (𝓞 F)) (hcq : c ∣ q) :
+@[simp] theorem restrictFamily_G   :
     (restrictFamily Q q hcq).G = Q.G := rfl
 
-@[simp] theorem restrictFamily_instGroup (Q : QuadraticHeckeFamily F c)
-    (q : Ideal (𝓞 F)) (hcq : c ∣ q) :
+@[simp] theorem restrictFamily_instGroup   :
     (restrictFamily Q q hcq).instGroup = Q.instGroup := rfl
 
-@[simp] theorem restrictFamily_instFinite (Q : QuadraticHeckeFamily F c)
-    (q : Ideal (𝓞 F)) (hcq : c ∣ q) :
+@[simp] theorem restrictFamily_instFinite   :
     (restrictFamily Q q hcq).instFinite = Q.instFinite := rfl
 
-@[simp] theorem restrictFamily_cls (Q : QuadraticHeckeFamily F c)
-    (q : Ideal (𝓞 F)) (hcq : c ∣ q) (a : Ideal (𝓞 F)) :
+@[simp] theorem restrictFamily_cls   (a : Ideal (𝓞 F)) :
     (restrictFamily Q q hcq).cls a = Q.cls a := rfl
 
-@[simp] theorem restrictFamily_C (Q : QuadraticHeckeFamily F c)
-    (q : Ideal (𝓞 F)) (hcq : c ∣ q) (g h : Q.G) :
+@[simp] theorem restrictFamily_C   (g h : Q.G) :
     (restrictFamily Q q hcq).C g h = Q.C g h := rfl
+end
+
 
 theorem exists_coreGood_restrictFamily (hc : c ≠ ⊥)
     (Q : QuadraticHeckeFamily F c) :

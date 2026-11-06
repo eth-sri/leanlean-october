@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.ValuationSubringUnits.RangeRestrictedTopology
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -34,18 +37,18 @@ namespace LocalField
 
 variable {K : Type u} [Field K]
 
-/-- A local-field package with its chosen valuation restricted to the actual
-multiplicative range. -/
-def mrangeRestrict (F : LocalField.{u, v} K) :
-    LocalField.{u, v} K := by
-  let G : CompleteDVF.{u, v} K :=
-    (LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrictCompleteDVF F.toCompleteDVF)
-  haveI : Finite G.residueField := by
-    simpa [G, CompleteDVF.mrangeRestrictCompleteDVF,
-      CompleteDVF.residueField, CompleteDVF.valuationSubring,
-      CompleteDVF.toDVF] using
-      (LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict_residueField_finite F.toCompleteDVF)
-  exact { toCompleteDVF := G }
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The range-restricted topology attached to a local-field package is proper. -/
 theorem mrangeRestrict_properSpace
@@ -57,8 +60,7 @@ theorem mrangeRestrict_properSpace
     letI : NontriviallyNormedField K :=
       (LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict_nontriviallyNormedField F.toCompleteDVF)
     ProperSpace K := by
-  exact
-    (LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict_properSpace_of_residueField_finite F.toCompleteDVF)
+  apply LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict_properSpace_of_residueField_finite
 
 /-- The range-restricted topology attached to a local-field package is complete. -/
 theorem mrangeRestrict_completeSpace
@@ -70,8 +72,7 @@ theorem mrangeRestrict_completeSpace
     letI : NontriviallyNormedField K :=
       (LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict_nontriviallyNormedField F.toCompleteDVF)
     CompleteSpace K := by
-  exact
-    (LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict_completeSpace_of_residueField_finite F.toCompleteDVF)
+  apply LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict_completeSpace_of_residueField_finite
 
 
 end LocalField

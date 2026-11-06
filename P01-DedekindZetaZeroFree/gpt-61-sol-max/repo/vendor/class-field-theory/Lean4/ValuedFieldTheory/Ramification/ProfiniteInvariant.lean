@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.FieldTheory.Galois.Profinite
 public import Mathlib.RingTheory.Invariant.Profinite
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -64,7 +67,7 @@ theorem normal_of_profinite
       (stabilizer_isOpen G x) (MulAction.mem_stabilizer_iff.mpr (one_smul G x))
   let B' := FixedPoints.subalgebra A B N.1.1
   let x' : B' := ⟨x, fun g ↦ hN g.2⟩
-  let j : B' →ₐ[A] B := B'.val
+  let j  := B'.val
   have hjx : j x' = x := rfl
   let : Algebra.IsInvariant A B' (G ⧸ N.1.1) := inferInstance
   cases nonempty_fintype (G ⧸ N.1.1)
@@ -73,7 +76,7 @@ theorem normal_of_profinite
       (Algebra.IsInvariant.charpoly_mem_lifts A B' (G ⧸ N.1.1) x')
       (MulSemiringAction.monic_charpoly (G ⧸ N.1.1) x')
   let qB : B →+* B ⧸ Q := Ideal.Quotient.mk Q
-  let qB' : B' →+* B ⧸ Q := qB.comp j.toRingHom
+  let qB'  := qB.comp j.toRingHom
   have hroot : Polynomial.aeval (Ideal.Quotient.mk Q x)
       (p.map (algebraMap A (A ⧸ P))) = 0 := by
     rw [Polynomial.aeval_def, ← Polynomial.eval_map]

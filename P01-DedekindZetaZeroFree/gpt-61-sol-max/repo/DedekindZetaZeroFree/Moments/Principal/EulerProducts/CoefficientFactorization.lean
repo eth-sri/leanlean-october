@@ -143,7 +143,8 @@ private theorem phase_eq (U : Frequency C) (p : ExteriorPrime A) :
   rw [← hx.unit_spec, MulChar.ofUnitHom_coe, MulChar.ofUnitHom_coe]
   rfl
 
-theorem finite_coefficient_factorization (U : Frequency C)
+section
+variable (U : Frequency C)
     (D : ComparisonPoissonCoefficientData F A)
     (hD : WeightedFiniteCoefficient.ArithmeticCompatibility A D σ η hS C.correction)
     (c : ExteriorSquarefreeIdeal A.cS) (n s r : A.Exterior)
@@ -153,7 +154,9 @@ theorem finite_coefficient_factorization (U : Frequency C)
       idealPrimeExponent p.val.asIdeal n.val = 0 ∧
       idealPrimeExponent p.val.asIdeal s.val = 0 ∧
       idealPrimeExponent p.val.asIdeal r.val = 0 ∧
-      idealPrimeExponent p.val.asIdeal U.ideal.val = 0) :
+      idealPrimeExponent p.val.asIdeal U.ideal.val = 0)
+include U D hD c n s r P hsupport in
+theorem finite_coefficient_factorization   :
     D.gammaTwo c * D.theta (D.generator c.val * D.generator n ^ 3) *
       comparisonPoissonFiniteCoefficient F A D c n s (U.u * D.generator r ^ 6) =
         ∏ p ∈ P, localCoefficient C U p
@@ -287,17 +290,8 @@ theorem norm_weights_factorization
   congr 1
   ring
 
-theorem weighted_summand_factorization (U : Frequency C)
-    (D : ComparisonPoissonCoefficientData F A)
-    (hD : WeightedFiniteCoefficient.ArithmeticCompatibility A D σ η hS C.correction)
-    (c : ExteriorSquarefreeIdeal A.cS) (n s r : A.Exterior)
-    (P : Finset (ExteriorPrime A))
-    (hsupport : ∀ p : ExteriorPrime A, p ∉ P →
-      idealPrimeExponent p.val.asIdeal c.val.val = 0 ∧
-      idealPrimeExponent p.val.asIdeal n.val = 0 ∧
-      idealPrimeExponent p.val.asIdeal s.val = 0 ∧
-      idealPrimeExponent p.val.asIdeal r.val = 0 ∧
-      idealPrimeExponent p.val.asIdeal U.ideal.val = 0)
+include U D hD c n s r P hsupport in
+theorem weighted_summand_factorization  
     (ξ w z : ℂ) :
     comparisonEulerPoissonSummand F A D U.u ξ w z c n s r =
       ∏ p ∈ P, localCoefficient C U p
@@ -321,6 +315,8 @@ theorem weighted_summand_factorization (U : Frequency C)
       (idealPrimeExponent p.val.asIdeal n.val)
       (idealPrimeExponent p.val.asIdeal s.val)
       (idealPrimeExponent p.val.asIdeal r.val)) * v) hnorm
+end
+
 
 theorem series_summable (U : Frequency C)
     (D : ComparisonPoissonCoefficientData F A)
@@ -414,10 +410,13 @@ theorem digit_zero (U : CorrectionFactors.Frequency C) (ξ w z : ℂ)
     (p : LocalFiniteSums.ExteriorPrime A) : digit U ξ w z p 0 = 1 := by
   simp [digit, localCoefficient, LocalFiniteSums.Ctk_zero_zero, LocalFiniteSums.qPower]
 
-theorem coefficient_index (U : CorrectionFactors.Frequency C)
+section
+variable (U : CorrectionFactors.Frequency C)
     (D : ComparisonPoissonCoefficientData F A)
     (hD : WeightedFiniteCoefficient.ArithmeticCompatibility A D σ η hS C.correction)
-    (ξ w z : ℂ) (i : CRTAbsoluteSeries.ExteriorIndex A) :
+    (ξ w z : ℂ)
+include U D hD ξ w z in
+theorem coefficient_index   (i : CRTAbsoluteSeries.ExteriorIndex A) :
     FinsuppEulerProduct.coefficient (digit U ξ w z) (indexEquiv A i).val =
       comparisonEulerPoissonSummand F A D U.u ξ w z i.1 i.2.1 i.2.2.1 i.2.2.2 := by
   let d := (indexEquiv A i).val
@@ -471,10 +470,8 @@ theorem coefficient_invalid (U : CorrectionFactors.Frequency C) (ξ w z : ℂ)
     simp [h] at hp
   exact Finset.prod_eq_zero hps (by simp [digit, not_le.mpr hp])
 
-theorem coefficient_summable (U : CorrectionFactors.Frequency C)
-    (D : ComparisonPoissonCoefficientData F A)
-    (hD : WeightedFiniteCoefficient.ArithmeticCompatibility A D σ η hS C.correction)
-    (ξ w z : ℂ) (hξ : 4 < ξ.re) (hw : 4 < w.re) (hz : 2 < z.re) :
+include U D hD ξ w z in
+theorem coefficient_summable   (hξ : 4 < ξ.re) (hw : 4 < w.re) (hz : 2 < z.re) :
     Summable (fun d : LocalFiniteSums.ExteriorPrime A →₀ FinsuppEulerProduct.Digit =>
       ‖FinsuppEulerProduct.coefficient (digit U ξ w z) d‖) := by
   have hsub : Summable (fun d : {d : LocalFiniteSums.ExteriorPrime A →₀ FinsuppEulerProduct.Digit //
@@ -488,10 +485,8 @@ theorem coefficient_summable (U : CorrectionFactors.Frequency C)
       exact hd ⟨⟨d, h⟩, rfl⟩
     rw [coefficient_invalid U ξ w z d hn, norm_zero])).mp hsub
 
-theorem coefficient_tsum (U : CorrectionFactors.Frequency C)
-    (D : ComparisonPoissonCoefficientData F A)
-    (hD : WeightedFiniteCoefficient.ArithmeticCompatibility A D σ η hS C.correction)
-    (ξ w z : ℂ) :
+include U D hD ξ w z in
+theorem coefficient_tsum   :
     (∑' d : LocalFiniteSums.ExteriorPrime A →₀ FinsuppEulerProduct.Digit,
       FinsuppEulerProduct.coefficient (digit U ξ w z) d) =
       NormalizedProbe.separatedMellinSeries A D U.u ξ w z := by
@@ -507,6 +502,8 @@ theorem coefficient_tsum (U : CorrectionFactors.Frequency C)
       ((indexEquiv A).tsum_eq (fun d => FinsuppEulerProduct.coefficient
         (digit U ξ w z) d.val)).symm
     _ = _ := tsum_congr (coefficient_index U D hD ξ w z)
+end
+
 
 def localIndexEquiv : (Fin 2 × ℕ × ℕ × ℕ) ≃
     {d : FinsuppEulerProduct.Digit // d.1 ≤ 1} where

@@ -36,7 +36,10 @@ instance groupMeasurableSpace (A : SArithmeticData F) : MeasurableSpace A.G :=
 
 instance groupBorelSpace (A : SArithmeticData F) : BorelSpace A.G := ⟨rfl⟩
 
-def sqrtUnit (A : SArithmeticData F) (v₀ : InfinitePlace F)
+section
+variable (A : SArithmeticData F) (v₀ : InfinitePlace F)
+include A v₀ in
+def sqrtUnit  
     (x : PositiveAxis) : v₀.Completionˣ :=
   Units.map
     (InfinitePlace.Completion.ringEquivComplexOfIsComplex
@@ -44,7 +47,8 @@ def sqrtUnit (A : SArithmeticData F) (v₀ : InfinitePlace F)
     (Units.mk0 (Real.sqrt (x : ℝ) : ℂ) (by
       exact Complex.ofReal_ne_zero.mpr (ne_of_gt (Real.sqrt_pos.2 x.property))))
 
-def normSection (A : SArithmeticData F) (v₀ : InfinitePlace F)
+include A v₀ in
+def normSection  
     (x : PositiveAxis) : A.G := by
   classical
   exact (Pi.mulSingle v₀ (sqrtUnit A v₀ x), 1)
@@ -54,18 +58,20 @@ theorem normSection_at_other_place (A : SArithmeticData F)
     (normSection A v₀ x).1 v = 1 := by
   exact NormSheetsCoordinates.section_at_other_place A v₀ v hv x
 
-theorem normSection_at_finite_place (A : SArithmeticData F)
-    (v₀ : InfinitePlace F) (x : PositiveAxis) (v : A.Sf) :
+include A v₀ in
+theorem normSection_at_finite_place   (x : PositiveAxis) (v : A.Sf) :
     (normSection A v₀ x).2 v = 1 := rfl
 
-theorem norm_normSection (A : SArithmeticData F) (v₀ : InfinitePlace F)
+include A v₀ in
+theorem norm_normSection  
     (x : PositiveAxis) : A.norm (normSection A v₀ x) = (x : ℝ) := by
   exact (NormSheetsCoordinates.section_laws A v₀).1 x
 
 theorem norm_positive (A : SArithmeticData F) (y : A.G) : 0 < A.norm y := by
   exact NormSheetsCoordinates.norm_positive A y
 
-def normSplit (A : SArithmeticData F) (v₀ : InfinitePlace F) :
+include A v₀ in
+def normSplit   :
     (PositiveAxis × A.G1) ≃ₜ* A.G where
   toFun p := normSection A v₀ p.1 * p.2.val
   invFun y :=
@@ -78,7 +84,8 @@ def normSplit (A : SArithmeticData F) (v₀ : InfinitePlace F) :
   continuous_toFun := (NormSheetsCoordinates.split A v₀).continuous_toFun
   continuous_invFun := (NormSheetsCoordinates.split A v₀).continuous_invFun
 
-theorem exists_unique_kernelHaar (A : SArithmeticData F) (v₀ : InfinitePlace F)
+include A v₀ in
+theorem exists_unique_kernelHaar  
     (μG : Measure A.G) [μG.IsHaarMeasure] :
     ∃! ν : Measure A.G1, ν.IsHaarMeasure ∧
       Measure.map (normSplit A v₀) (positiveHaar.prod ν) = μG := by
@@ -86,17 +93,23 @@ theorem exists_unique_kernelHaar (A : SArithmeticData F) (v₀ : InfinitePlace F
   letI : SecondCountableTopology A.G1 := (NormSheetsCoordinates.normOne_geometry A).2
   exact NormSheetsProductHaar.exists_unique_product_haar (normSplit A v₀) positiveHaar μG
 
-def kernelHaar (A : SArithmeticData F) (v₀ : InfinitePlace F)
+include A v₀ in
+def kernelHaar  
     (μG : Measure A.G) [μG.IsHaarMeasure] : Measure A.G1 :=
   Classical.choose (exists_unique_kernelHaar A v₀ μG)
+end
+
 
 instance kernelHaar_isHaarMeasure (A : SArithmeticData F) (v₀ : InfinitePlace F)
     (μG : Measure A.G) [μG.IsHaarMeasure] :
     (kernelHaar A v₀ μG).IsHaarMeasure := by
   exact (Classical.choose_spec (exists_unique_kernelHaar A v₀ μG)).1.1
 
-theorem map_product_kernelHaar (A : SArithmeticData F) (v₀ : InfinitePlace F)
-    (μG : Measure A.G) [μG.IsHaarMeasure] :
+section
+variable (A : SArithmeticData F) (v₀ : InfinitePlace F)
+    (μG : Measure A.G) [μG.IsHaarMeasure]
+include A v₀ μG in
+theorem map_product_kernelHaar   :
     Measure.map (normSplit A v₀) (positiveHaar.prod (kernelHaar A v₀ μG)) = μG := by
   exact (Classical.choose_spec (exists_unique_kernelHaar A v₀ μG)).1.2
 
@@ -116,12 +129,12 @@ def sheetTranslation (A : SArithmeticData F) (v₀ : InfinitePlace F)
   continuous_toFun := (NormSheetsCoordinates.translation A v₀ x).continuous_toFun
   continuous_invFun := (NormSheetsCoordinates.translation A v₀ x).continuous_invFun
 
-def sheetHaar (A : SArithmeticData F) (v₀ : InfinitePlace F)
-    (μG : Measure A.G) [μG.IsHaarMeasure] (x : PositiveAxis) : Measure (Sheet A x) :=
+include A v₀ μG in
+def sheetHaar   (x : PositiveAxis) : Measure (Sheet A x) :=
   Measure.map (sheetTranslation A v₀ x) (kernelHaar A v₀ μG)
 
-theorem integral_disintegration (A : SArithmeticData F) (v₀ : InfinitePlace F)
-    (μG : Measure A.G) [μG.IsHaarMeasure] (g : A.G → ℂ) (hg : Integrable g μG) :
+include A v₀ μG in
+theorem integral_disintegration   (g : A.G → ℂ) (hg : Integrable g μG) :
     (∀ᵐ x ∂positiveHaar, Integrable (fun y : Sheet A x => g y.val)
       (sheetHaar A v₀ μG x)) ∧
     Integrable (fun x : PositiveAxis =>
@@ -136,6 +149,8 @@ theorem integral_disintegration (A : SArithmeticData F) (v₀ : InfinitePlace F)
     (fun x => (sheetTranslation A v₀ x).toMeasurableEquiv)
     (fun _ y => y.val) (fun _ _ => rfl)
     positiveHaar (kernelHaar A v₀ μG) μG (map_product_kernelHaar A v₀ μG) g hg
+end
+
 
 end
 end ThetaProfileHaarSheets

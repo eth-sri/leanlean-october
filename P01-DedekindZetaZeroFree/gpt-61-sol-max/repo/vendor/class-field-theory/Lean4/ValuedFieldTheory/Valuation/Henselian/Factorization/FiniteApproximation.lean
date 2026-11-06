@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Valuation.Henselian.Factorization.Iteration
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -89,15 +92,9 @@ theorem henselFactorization_extend_finite_prefix_one_step_of_mem_span
                         (Function.update qCorr (n + 1) q) (n + 1) -
                       h0).coeff i ∈ IsLocalRing.maximalIdeal R) := by
   have hπpow : π ^ (n + 1) ≠ 0 := pow_ne_zero (n + 1) hπne
-  have hgSpan :
-      ∀ i : ℕ,
-        (henselFactorization_henselIterate π g0 pCorr n - g0).coeff i ∈
-          Ideal.span ({π} : Set R) :=
+  have hgSpan  :=
     henselFactorization_henselIterate_span_singleton (π := π) g0 pCorr n
-  have hhSpan :
-      ∀ i : ℕ,
-        (henselFactorization_henselIterate π h0 qCorr n - h0).coeff i ∈
-          Ideal.span ({π} : Set R) :=
+  have hhSpan  :=
     henselFactorization_henselIterate_span_singleton (π := π) h0 qCorr n
   rcases henselFactorization_exists_one_step_update_with_degree_bounds_of_mem_span
       (π := π) (n := n + 1) (Nat.succ_pos n) hπpow hπmem
@@ -115,8 +112,7 @@ theorem henselFactorization_extend_finite_prefix_one_step_of_mem_span
             Polynomial.C (π ^ (n + 1)) * p) *
           (henselFactorization_henselIterate π h0 qCorr n +
             Polynomial.C (π ^ (n + 1)) * q) =
-        Polynomial.C (π ^ (n + 2)) * fnNext := by
-    simpa [Nat.add_assoc] using hfactorNextRaw
+        Polynomial.C (π ^ (n + 2)) * fnNext := hfactorNextRaw
   refine ⟨p, q, fnNext, hpDeg, hqDeg, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · intro r hr
     rcases hprefix r hr with ⟨fr, hfr⟩
@@ -124,9 +120,7 @@ theorem henselFactorization_extend_finite_prefix_one_step_of_mem_span
       henselFactorization_henselIterate_update_preserves_factor_of_le
         (π := π) (pCorr := pCorr) (qCorr := qCorr)
         (n := n) (r := r) hr p q fr hfr⟩
-  · exact henselFactorization_henselIterate_update_next_factor
-      (π := π) (f := f) (g0 := g0) (h0 := h0)
-      pCorr qCorr n p q fnNext hfactorNext
+  · apply henselFactorization_henselIterate_update_next_factor <;> assumption
   · rw [henselFactorization_henselIterate_update_next
       (π := π) (F0 := g0) (corr := pCorr) (n := n) (c := p)]
     exact hgNextDeg

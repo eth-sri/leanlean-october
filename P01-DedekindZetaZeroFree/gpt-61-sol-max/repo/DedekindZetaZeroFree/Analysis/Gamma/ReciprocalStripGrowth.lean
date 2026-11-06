@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve.Vendor
 
@@ -18,7 +21,7 @@ private theorem norm_Gamma_le_Gamma_re (z : ℂ) (hz : 0 < z.re) :
     _ = ∫ x in Set.Ioi (0:ℝ), Real.exp (-x) * x ^ (z.re - 1) := by
         refine setIntegral_congr_fun measurableSet_Ioi fun x hx => ?_
         rw [norm_mul, Complex.norm_of_nonneg (Real.exp_pos _).le,
-          norm_cpow_eq_rpow_re_of_pos (by exact_mod_cast hx), sub_re, one_re]
+          norm_cpow_eq_rpow_re_of_pos (hx), sub_re, one_re]
 
 private theorem norm_sin_le_exp_im (z : ℂ) : ‖Complex.sin z‖ ≤ Real.exp |z.im| := by
   have h1 : ‖Complex.exp (-z * Complex.I)‖ = Real.exp z.im := by
@@ -40,7 +43,7 @@ private theorem sin_ne_zero_of_im_ne_zero (z : ℂ) (hz : z.im ≠ 0) : Complex.
     exact h
   have hsub : Complex.exp (-z * Complex.I) - Complex.exp (z * Complex.I) = 0 :=
     (mul_eq_zero.mp h2).resolve_right (by simp)
-  have h1 : Complex.exp (-z * Complex.I) = Complex.exp (z * Complex.I) := sub_eq_zero.mp hsub
+  have h1  := sub_eq_zero.mp hsub
   obtain ⟨n, hn⟩ := Complex.exp_eq_exp_iff_exists_int.mp h1
   have hre : (-z * Complex.I).re = (z * Complex.I + (n:ℂ) * (2 * (Real.pi:ℂ) * Complex.I)).re := by
     rw [hn]
@@ -52,8 +55,8 @@ private theorem Gamma_one_sub_add_nat (s : ℂ) (n : ℕ) (h : ∀ k < n, s ≠ 
   induction n with
   | zero => simp
   | succ n ih =>
-    have h' : ∀ k < n, s ≠ ((k:ℂ) + 1) := fun k hk => h k (Nat.lt_succ_of_lt hk)
-    have hn : s ≠ ((n:ℂ) + 1) := h n (Nat.lt_succ_self n)
+    have h'  := fun k hk => h k (Nat.lt_succ_of_lt hk)
+    have hn  := h n (Nat.lt_succ_self n)
     have hw : (1 - s + n) ≠ 0 := by
       intro hc
       exact hn (by linear_combination -hc)
@@ -76,7 +79,7 @@ private theorem continuousOn_RealGamma_Icc {l u : ℝ} (hl : 0 < l) :
     ContinuousOn Real.Gamma (Set.Icc l u) := by
   intro x hx
   have hx0 : 0 < x := lt_of_lt_of_le hl hx.1
-  have hc : ContinuousAt (fun y : ℝ => Complex.Gamma ((y:ℝ):ℂ)) x :=
+  have hc : ContinuousAt (fun y : ℝ => Complex.Gamma (y:ℂ)) x :=
     (Complex.continuousAt_Gamma (x:ℂ) (fun m hm => by
       have := congrArg Complex.re hm
       simp at this
@@ -86,14 +89,14 @@ private theorem continuousOn_RealGamma_Icc {l u : ℝ} (hl : 0 < l) :
 private theorem inverse_Gamma_strip_bound (a b : ℝ) :
     ∃ C A : ℝ, 0 ≤ C ∧ 0 ≤ A ∧ ∀ s : ℂ, s.re ∈ Set.Icc a b →
       ‖(Complex.Gamma s)⁻¹‖ ≤ C * Real.exp (A * |s.im|) := by
-  let n : ℕ := ⌈b⌉₊
+  let n  := ⌈b⌉₊
   have hbn : b ≤ (n:ℝ) := Nat.le_ceil b
   have hb1n : (0:ℝ) < 1 - b + (n:ℝ) := by linarith
   have hcont : ContinuousOn Real.Gamma (Set.Icc (1 - b + n) (1 - a + n)) :=
     continuousOn_RealGamma_Icc hb1n
   obtain ⟨D0, hD0⟩ := isCompact_Icc.exists_bound_of_continuousOn hcont
-  let D : ℝ := max D0 0 / Real.pi
-  have hDnonneg : 0 ≤ D := div_nonneg (le_max_right _ _) Real.pi_pos.le
+  let D  := max D0 0 / Real.pi
+  
   have hlarge : ∀ s : ℂ, s.re ∈ Set.Icc a b → 1 ≤ |s.im| →
       ‖(Complex.Gamma s)⁻¹‖ ≤ D * Real.exp (Real.pi * |s.im|) := by
     intro s hs ht
@@ -149,9 +152,9 @@ private theorem inverse_Gamma_strip_bound (a b : ℝ) :
       rwa [show ((Real.pi:ℂ) * s).im = Real.pi * s.im by
             simp [Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im],
           abs_mul, abs_of_pos Real.pi_pos] at this
-    have hpinorm : ‖(Real.pi:ℂ)‖ = Real.pi := Complex.norm_of_nonneg Real.pi_pos.le
+    have hpinorm  := Complex.norm_of_nonneg Real.pi_pos.le
     rw [hpinorm]
-    have hexp1 : (1:ℝ) ≤ Real.exp (Real.pi * |s.im|) := Real.one_le_exp (by positivity)
+    
     calc ‖Complex.Gamma (1 - s)‖ * ‖Complex.sin ((Real.pi:ℂ) * s)‖ / Real.pi
         ≤ (max D0 0) * Real.exp (Real.pi * |s.im|) / Real.pi := by
           apply div_le_div_of_nonneg_right _ Real.pi_pos.le
@@ -202,8 +205,7 @@ theorem inverse_Gammaℂ_strip_exp_bound (a b : ℝ) (r : ℕ) :
   have hnorm : ‖(Complex.Gammaℂ s)⁻¹‖ ≤ C * (2 * Real.pi) ^ (max a b) * Real.exp (A * |s.im|) := by
     rw [hkey, norm_mul, norm_mul]
     have hhalf : ‖(1/2 : ℂ)‖ = 1/2 := by
-      rw [show (1/2 : ℂ) = (((1/2 : ℝ)) : ℂ) by norm_num]
-      exact Complex.norm_of_nonneg (by norm_num)
+      norm_num
     have hcpow : ‖(2 * (Real.pi : ℂ)) ^ s‖ = (2 * Real.pi) ^ s.re := by
       rw [show (2 * (Real.pi:ℂ)) = ((2*Real.pi:ℝ):ℂ) by push_cast; ring]
       exact norm_cpow_eq_rpow_re_of_pos (by positivity) s

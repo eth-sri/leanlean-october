@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Mellin.LogarithmicWeights
 
 @[expose] public section
+
 
 /-
 Repository: openai/math.
@@ -15,10 +18,10 @@ open scoped Classical Topology
 
 namespace DedekindZetaZeroFree.LargeSieve.Vendor
 
-def HolomorphicNear (A : ℂ → ℂ) (p : ℂ) : Prop :=
+def HolomorphicNear (A : ℂ → ℂ) (p : ℂ)  :=
   ∀ᶠ s in 𝓝 p, DifferentiableAt ℂ A s
 
-def HasFinitePrincipalPart (M : ℂ → ℂ) (p : ℂ) (coeff : ℕ → ℂ) (N : ℕ) : Prop :=
+def HasFinitePrincipalPart (M : ℂ → ℂ) (p : ℂ) (coeff : ℕ → ℂ) (N : ℕ)  :=
   ∃ B : ℂ → ℂ, HolomorphicNear B p ∧
     ∀ᶠ s in nhdsWithin p ({p}ᶜ),
       M s = B s + ∑ j ∈ Finset.Icc 1 N, coeff j / (s - p) ^ j
@@ -50,8 +53,8 @@ private lemma HolomorphicNear.const_mul' {B : ℂ → ℂ} {p : ℂ} (c : ℂ)
   filter_upwards [hB] with s hs
   exact hs.const_mul c
 
-private lemma HolomorphicNear.congr' {A B : ℂ → ℂ} {p : ℂ} (hAB : A =ᶠ[𝓝 p] B)
-    (hA : HolomorphicNear A p) : HolomorphicNear B p :=
+private def HolomorphicNear.congr' {A B : ℂ → ℂ} {p : ℂ} (hAB : A =ᶠ[𝓝 p] B)
+    (hA : HolomorphicNear A p)  :=
   AnalyticAt.holomorphicNear' ((analyticAt_congr hAB).mp (hA.analyticAt'))
 
 private lemma HolomorphicNear.sub_const_comp {A : ℂ → ℂ} {p : ℂ}
@@ -68,10 +71,10 @@ private lemma HolomorphicNear.finset_sum {ι : Type*} (K : Finset ι) {B : ι �
     HolomorphicNear (fun s => ∑ k ∈ K, B k s) p := by
   classical
   induction K using Finset.induction_on with
-  | empty => simpa using HolomorphicNear.const' 0 p
+  | empty => exact HolomorphicNear.const' 0 p
   | insert a s ha ih =>
-    have h1 : HolomorphicNear (B a) p := hB a (Finset.mem_insert_self a s)
-    have h2 : HolomorphicNear (fun t => ∑ k ∈ s, B k t) p :=
+    have h1  := hB a (Finset.mem_insert_self a s)
+    have h2  :=
       ih (fun k hk => hB k (Finset.mem_insert_of_mem hk))
     simpa [Finset.sum_insert ha] using h1.add' h2
 
@@ -119,12 +122,12 @@ private lemma taylor_reindex (a : ℕ → ℂ) (z : ℂ) (N : ℕ) :
   rw [hset]
   rw [Finset.sum_image (by
     intro x hx y hy h
-    have hx' : x < N := Finset.mem_range.mp hx
-    have hy' : y < N := Finset.mem_range.mp hy
+    have hx'  := Finset.mem_range.mp hx
+    have hy'  := Finset.mem_range.mp hy
     have h' : N - x = N - y := h
     omega)]
   refine Finset.sum_congr rfl fun i hi => ?_
-  have hi' : i < N := Finset.mem_range.mp hi
+  have hi'  := Finset.mem_range.mp hi
   rw [show N - (N - i) = i by omega]
 
 private lemma div_pow_split {A : ℂ → ℂ} {p : ℂ} {N : ℕ} (hN : 1 ≤ N)
@@ -234,8 +237,7 @@ private lemma finset_sum {ι : Type*} (K : Finset ι) {M : ι → ℂ → ℂ}
     · exact ⟨0, HolomorphicNear.const' 0 p, fun hk' => absurd hk' hk⟩
   choose B hBhol hBeq using hB
   refine ⟨fun s => ∑ k ∈ K, B k s, HolomorphicNear.finset_sum K (fun k _ => hBhol k), ?_⟩
-  have hall : ∀ᶠ s in 𝓝[≠] p, ∀ k ∈ K,
-      M k s = B k s + ∑ j ∈ Finset.Icc 1 N, coeff k j / (s - p) ^ j :=
+  have hall  :=
     (Finset.eventually_all K).mpr (fun k hk => hBeq k hk)
   filter_upwards [hall] with s hs
   rw [Finset.sum_congr rfl hs, Finset.sum_add_distrib]
@@ -267,14 +269,13 @@ private lemma decomp (h : LogMellinAdmissible f δ P H) :
   obtain ⟨A, hAdiff, hAeq⟩ := h.holomorphic_remainder
   have hopen : {s : ℂ | -δ < s.re} ∈ 𝓝 (0 : ℂ) :=
     IsOpen.mem_nhds (isOpen_lt continuous_const Complex.continuous_re)
-      (by simpa using neg_lt_zero.mpr h.delta_pos)
+      (neg_lt_zero.mpr h.delta_pos)
   refine ⟨A, ?_, ?_⟩
   · filter_upwards [hopen] with s hs
     exact hAdiff s hs
-  · filter_upwards [(show ∀ᶠ s in 𝓝[≠] (0 : ℂ), -δ < s.re from
-      Filter.Eventually.filter_mono nhdsWithin_le_nhds (show ∀ᶠ s in 𝓝 (0:ℂ), -δ < s.re from hopen)),
+  · filter_upwards [((Filter.Eventually.filter_mono nhdsWithin_le_nhds (show ∀ᶠ s in 𝓝 (0:ℂ), -δ < s.re from hopen))),
       self_mem_nhdsWithin] with s hs hs0
-    exact hAeq s hs hs0
+    apply hAeq <;> assumption
 
 private lemma holomorphicNear (h : LogMellinAdmissible f δ P H) {p : ℂ}
     (hp : -δ < p.re) (hp0 : p ≠ 0) : HolomorphicNear H p := by
@@ -283,7 +284,7 @@ private lemma holomorphicNear (h : LogMellinAdmissible f δ P H) {p : ℂ}
     IsOpen.mem_nhds (isOpen_lt continuous_const Complex.continuous_re) hp
   have hAhol : HolomorphicNear A p :=
     (show ∀ᶠ s in 𝓝 p, -δ < s.re from hopen).mono fun s hs => hAdiff s hs
-  have hsum : HolomorphicNear (fun s => A s + logPrincipalPart P s) p :=
+  have hsum  :=
     hAhol.add' (logPrincipalPart_holomorphicNear P hp0)
   have heq : (fun s => A s + logPrincipalPart P s) =ᶠ[𝓝 p] H := by
     filter_upwards [hopen, isOpen_ne.mem_nhds hp0] with s hs hs0
@@ -302,20 +303,23 @@ theorem holomorphic_div_pow_principalPart (A : ℂ → ℂ) (p : ℂ)
   rw [hs]
   rw [taylor_reindex (fun i => iteratedDeriv i A p / (i.factorial : ℂ)) (s - p) N]
 
-def logMellinProduct (H L : ℂ → ℂ) (X : ℝ) (s : ℂ) : ℂ :=
+def logMellinProduct (H L : ℂ → ℂ) (X : ℝ) (s : ℂ)  :=
   H s * (X : ℂ) ^ s * L s
 
-def logProductPrincipalCoeff (P : Polynomial ℂ) (X : ℝ) (L : ℂ → ℂ) (j : ℕ) : ℂ :=
+section
+variable (P : Polynomial ℂ) (X : ℝ) (L : ℂ → ℂ)
+include P X L
+def logProductPrincipalCoeff   (j : ℕ)  :=
   ∑ k ∈ P.support.filter (fun k => j ≤ k + 1),
     ((-1 : ℂ) ^ k * (k.factorial : ℂ) * P.coeff k) *
       iteratedDeriv (k + 1 - j) (fun s : ℂ => (X : ℂ) ^ s * L s) 0 /
         ((k + 1 - j).factorial : ℂ)
 
-def logProductResidue0 (P : Polynomial ℂ) (X : ℝ) (L : ℂ → ℂ) : ℂ :=
+def logProductResidue0    :=
   ∑ k ∈ P.support, (-1 : ℂ) ^ k * P.coeff k *
     iteratedDeriv k (fun s : ℂ => (X : ℂ) ^ s * L s) 0
 
-theorem logProductPrincipalCoeff_one (P : Polynomial ℂ) (X : ℝ) (L : ℂ → ℂ) :
+theorem logProductPrincipalCoeff_one   :
     logProductPrincipalCoeff P X L 1 = logProductResidue0 P X L := by
   unfold logProductPrincipalCoeff logProductResidue0
   rw [Finset.filter_true_of_mem (fun k _ => by omega : ∀ k ∈ P.support, 1 ≤ k + 1)]
@@ -323,15 +327,20 @@ theorem logProductPrincipalCoeff_one (P : Polynomial ℂ) (X : ℝ) (L : ℂ →
   rw [show k + 1 - 1 = k by omega]
   have hfac : (k.factorial : ℂ) ≠ 0 := Nat.cast_ne_zero.mpr (Nat.factorial_ne_zero k)
   field_simp
+end
 
-theorem logMellinProduct_principalPart_zero {f : ℝ → ℂ} {δ : ℝ}
+
+section
+variable {f : ℝ → ℂ} {δ : ℝ}
     {P : Polynomial ℂ} {H : ℂ → ℂ} (h : LogMellinAdmissible f δ P H)
-    (X : ℝ) (hX : 0 < X) (L : ℂ → ℂ) (hL : HolomorphicNear L 0) :
+    (X : ℝ) (hX : 0 < X) (L : ℂ → ℂ)
+include f δ P H h X hX L
+theorem logMellinProduct_principalPart_zero   (hL : HolomorphicNear L 0) :
     HasFinitePrincipalPart (logMellinProduct H L X) 0
       (logProductPrincipalCoeff P X L) (P.natDegree + 1) := by
   obtain ⟨A, hA, hAeq⟩ := h.decomp
-  have hc : HolomorphicNear (fun s : ℂ => (X : ℂ) ^ s) 0 := cpow_const_holomorphicNear X hX 0
-  have hG : HolomorphicNear (fun s : ℂ => (X : ℂ) ^ s * L s) 0 := hc.mul' hL
+  have hc  := cpow_const_holomorphicNear X hX 0
+  have hG  := hc.mul' hL
   set c : ℕ → ℂ := fun k => (-1 : ℂ) ^ k * (k.factorial : ℂ) * P.coeff k with hcdef
   have hpart2 : HasFinitePrincipalPart (fun s => logPrincipalPart P s * ((X : ℂ) ^ s * L s)) 0
       (logProductPrincipalCoeff P X L) (P.natDegree + 1) := by
@@ -343,7 +352,7 @@ theorem logMellinProduct_principalPart_zero {f : ℝ → ℂ} {δ : ℝ}
               ((k + 1 - j).factorial : ℂ)) else 0)
         (P.natDegree + 1) := by
       refine HasFinitePrincipalPart.finset_sum P.support fun k hk => ?_
-      have hkN : k ≤ P.natDegree := Polynomial.le_natDegree_of_mem_supp k hk
+      have hkN  := Polynomial.le_natDegree_of_mem_supp k hk
       have hbase := (holomorphic_div_pow_principalPart
         (fun s : ℂ => (X : ℂ) ^ s * L s) 0 hG (k + 1) (by omega)).const_mul (c k)
       simpa using hbase.mono (show k + 1 ≤ P.natDegree + 1 by omega)
@@ -371,17 +380,15 @@ theorem logMellinProduct_principalPart_zero {f : ℝ → ℂ} {δ : ℝ}
   · intro j hj
     simp
 
-theorem logMellinProduct_principalPart_one {f : ℝ → ℂ} {δ : ℝ}
-    {P : Polynomial ℂ} {H : ℂ → ℂ} (h : LogMellinAdmissible f δ P H)
-    (X : ℝ) (hX : 0 < X) (L : ℂ → ℂ) (κ : ℂ)
+theorem logMellinProduct_principalPart_one   (κ : ℂ)
     (hL : HasFinitePrincipalPart L 1 (fun _ => κ) 1) :
     HasFinitePrincipalPart (logMellinProduct H L X) 1
       (fun _ => κ * (X : ℂ) * H 1) 1 := by
   obtain ⟨BL, hBL, hLeq⟩ := hL
-  have hH : HolomorphicNear H 1 :=
+  have hH  :=
     h.holomorphicNear (by simp only [Complex.one_re]; linarith [h.delta_pos]) one_ne_zero
-  have hc : HolomorphicNear (fun s : ℂ => (X : ℂ) ^ s) 1 := cpow_const_holomorphicNear X hX 1
-  have hG : HolomorphicNear (fun s : ℂ => H s * (X : ℂ) ^ s) 1 := hH.mul' hc
+  have hc  := cpow_const_holomorphicNear X hX 1
+  have hG  := hH.mul' hc
   obtain ⟨F, hF, hFtay⟩ := taylor_split hG 1
   refine ⟨fun s => (H s * (X : ℂ) ^ s) * BL s + κ * F s, ?_, ?_⟩
   · exact (hG.mul' hBL).add' (hF.const_mul' κ)
@@ -394,6 +401,8 @@ theorem logMellinProduct_principalPart_one {f : ℝ → ℂ} {δ : ℝ}
     simp only [Finset.Icc_self, Finset.sum_singleton, pow_one]
     field_simp
     ring
+end
+
 
 end DedekindZetaZeroFree.LargeSieve.Vendor
 

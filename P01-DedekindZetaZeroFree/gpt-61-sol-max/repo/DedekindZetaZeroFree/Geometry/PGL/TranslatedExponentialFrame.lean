@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.LieGroups.SmoothExponentialFrameCriterion
 public import DedekindZetaZeroFree.RepresentationTheory.Smooth.WordDerivativesAndSmoothOrbits
 
 import all Mathlib.Geometry.Manifold.LocalDiffeomorph
 
 @[expose] public section
+
 
 noncomputable section
 open MeasureTheory Topology
@@ -43,7 +46,7 @@ theorem translated_exponential_frame
     ext a
     simp [E, Φ, PartialDiffeomorph.trans, Diffeomorph.toPartialDiffeomorph]
   have he (a : V) : E a = g * D.exponentialChart a := rfl
-  have h0 : (0 : V) ∈ E.source := hs.symm ▸ D.zero_mem_source
+  have h0  := hs.symm ▸ D.zero_mem_source
   have hf : ContMDiffOn (𝓘(ℝ, V)) (𝓘(ℝ, V)) (⊤ : ℕ∞) E E.source :=
     Φ.contMDiffOn
   have hi : ContMDiffOn (𝓘(ℝ, V)) (𝓘(ℝ, V)) (⊤ : ℕ∞) E.symm E.target :=
@@ -79,7 +82,7 @@ theorem translated_exponential_frame
       rfl
     exact hd''.contDiffAt.contDiffWithinAt
   · intro a ha
-    let f : V → V := fun u => E.symm (E a * D.exponential u)
+    let f  := fun u => E.symm (E a * D.exponential u)
     have hd0 : IsLocalDiffeomorphAt (𝓘(ℝ, V)) (𝓘(ℝ, V)) (⊤ : ℕ∞)
         D.exponential 0 :=
       ⟨D.exponentialChart, D.zero_mem_source, fun u hu =>

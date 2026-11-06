@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.RepresentationTheory.RankOne.CompactCharacterRightDerivatives
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.RepresentationTheory.KPCompactHarmonicTruncation.Casimir
 
@@ -63,27 +66,30 @@ private theorem polySym_smooth (n : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (polySym 
     apply ContDiff.sub
     · exact trace_smooth.mul h'
     · exact det_smooth.mul h
-noncomputable def polyCharacter {d : ℕ} (ℓ : RawHarmonicType d) (g : Fin d → Matrix (Fin 2) (Fin 2) ℂ) : ℂ :=
+section
+variable {d : ℕ} (ℓ : RawHarmonicType d)
+include d ℓ
+noncomputable def polyCharacter   (g : Fin d → Matrix (Fin 2) (Fin 2) ℂ)  :=
   ∏ j, polySym (2 * ℓ j) (g j) * star (Matrix.det (g j)) ^ ℓ j
-private theorem polyCharacter_eq {d : ℕ} (ℓ : RawHarmonicType d) (g : Fin d → RawU2) :
+private theorem polyCharacter_eq   (g : Fin d → RawU2) :
     polyCharacter ℓ (fun j => (g j).val) = rawCharacter ℓ g := by
   apply Finset.prod_congr rfl
   intro j _
   rw [polySym_eq]
   change _ = _ / Matrix.det (g j).val ^ ℓ j
   have hd := Matrix.det_of_mem_unitary (g j).property
-  have hid : star (Matrix.det (g j).val) = (Matrix.det (g j).val)⁻¹ := by
-    exact eq_inv_of_mul_eq_one_left (Unitary.star_mul_self_of_mem hd)
+  have hid : star (Matrix.det (g j).val) = (Matrix.det (g j).val)⁻¹ := eq_inv_of_mul_eq_one_left (Unitary.star_mul_self_of_mem hd)
   rw [hid, inv_pow, div_eq_mul_inv]
-private theorem polyCharacter_smooth {d : ℕ} (ℓ : RawHarmonicType d) : ContDiff ℝ (⊤ : ℕ∞) (polyCharacter ℓ) := by
+private theorem polyCharacter_smooth   : ContDiff ℝ (⊤ : ℕ∞) (polyCharacter ℓ) := by
   apply contDiff_prod
   intro j _
   exact ((polySym_smooth _).comp (contDiff_apply ℝ _ j)).mul
     ((((Complex.conjCLE : ℂ ≃L[ℝ] ℂ).contDiff).comp
       (det_smooth.comp (contDiff_apply ℝ _ j))).pow _)
+end
+
 noncomputable def matrixLift {d : ℕ}
-    (B : Fin d → Fin 3 → Matrix (Fin 2) (Fin 2) ℂ) (b : Fin d × Fin 3) (t : ℝ) :
-    Fin d → Matrix (Fin 2) (Fin 2) ℂ :=
+    (B : Fin d → Fin 3 → Matrix (Fin 2) (Fin 2) ℂ) (b : Fin d × Fin 3) (t : ℝ)  :=
   fun j => if j = b.1 then NormedSpace.exp ((t : ℂ) • B b.1 b.2) else 1
 private theorem matrixLift_smooth {d : ℕ}
     (B : Fin d → Fin 3 → Matrix (Fin 2) (Fin 2) ℂ) (b : Fin d × Fin 3) :
@@ -106,7 +112,7 @@ private theorem matrixLift_eq {d : ℕ}
 noncomputable def jetFunction {d : ℕ}
     (B : Fin d → Fin 3 → Matrix (Fin 2) (Fin 2) ℂ)
     (ℓ : RawHarmonicType d) (b : Fin d × Fin 3)
-    (g : Fin d → Matrix (Fin 2) (Fin 2) ℂ) (t s : ℝ) : ℂ :=
+    (g : Fin d → Matrix (Fin 2) (Fin 2) ℂ) (t s : ℝ)  :=
   star (polyCharacter ℓ (g * matrixLift B b t * matrixLift B b s))
 private theorem jetFunction_smooth {d : ℕ}
     (B : Fin d → Fin 3 → Matrix (Fin 2) (Fin 2) ℂ)
@@ -121,18 +127,19 @@ private theorem jetFunction_smooth {d : ℕ}
     (((contDiff_apply ℝ _ j).comp (matrixLift_smooth B b)).comp (contDiff_snd.comp contDiff_fst))).mul
     (((contDiff_apply ℝ _ j).comp (matrixLift_smooth B b)).comp contDiff_snd)
 set_option maxHeartbeats 800000 in
-private theorem firstJet_smooth {d : ℕ}
+section
+variable {d : ℕ}
     (B : Fin d → Fin 3 → Matrix (Fin 2) (Fin 2) ℂ)
-    (ℓ : RawHarmonicType d) (b : Fin d × Fin 3) :
+    (ℓ : RawHarmonicType d) (b : Fin d × Fin 3)
+include d B ℓ b
+private theorem firstJet_smooth   :
     ContDiff ℝ (⊤ : ℕ∞) (fun p : (Fin d → Matrix (Fin 2) (Fin 2) ℂ) × ℝ =>
-      deriv (jetFunction B ℓ b p.1 p.2) 0) := by
-  exact ((jetFunction_smooth B ℓ b).fderiv contDiff_const (by simp)).clm_apply contDiff_const
-private theorem secondJet_smooth {d : ℕ}
-    (B : Fin d → Fin 3 → Matrix (Fin 2) (Fin 2) ℂ)
-    (ℓ : RawHarmonicType d) (b : Fin d × Fin 3) :
+      deriv (jetFunction B ℓ b p.1 p.2) 0) := ((jetFunction_smooth B ℓ b).fderiv contDiff_const (by simp)).clm_apply contDiff_const
+private theorem secondJet_smooth   :
     ContDiff ℝ (⊤ : ℕ∞) (fun g : Fin d → Matrix (Fin 2) (Fin 2) ℂ =>
-      deriv (fun t : ℝ => deriv (jetFunction B ℓ b g t) 0) 0) := by
-  exact ((firstJet_smooth B ℓ b).fderiv contDiff_const (by simp)).clm_apply contDiff_const
+      deriv (fun t : ℝ => deriv (jetFunction B ℓ b g t) 0) 0) := ((firstJet_smooth B ℓ b).fderiv contDiff_const (by simp)).clm_apply contDiff_const
+end
+
 set_option maxHeartbeats 800000 in
 
 theorem characterSecondDerivative_continuous {d : ℕ}

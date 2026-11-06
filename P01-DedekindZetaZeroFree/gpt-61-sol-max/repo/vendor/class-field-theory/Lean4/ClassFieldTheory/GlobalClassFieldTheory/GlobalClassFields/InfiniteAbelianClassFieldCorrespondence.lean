@@ -90,14 +90,14 @@ noncomputable def orderDualIsoMapContinuousMulEquiv
         OrderDual.ofDual T ≤ OrderDual.ofDual S
     exact (orderIsoMapContinuousMulEquiv e).le_iff_le
 
-@[simp]
-theorem coe_mapContinuousMulEquiv
-    (e : G ≃ₜ* H) (S : ClosedSubgroup G) :
-    (mapContinuousMulEquiv e S : Set H) = e '' (S : Set G) := by
-  change
-    (↑(Subgroup.map e.toMonoidHom S.toSubgroup) : Set H) =
-      e.toMonoidHom '' (S : Set G)
-  exact Subgroup.coe_map e.toMonoidHom S.toSubgroup
+
+
+
+
+
+
+
+
 
 end ClosedSubgroup
 
@@ -143,48 +143,48 @@ theorem infiniteAbelianClassFieldCorrespondence_symm_apply
             isClosed' := InfiniteGalois.fixingSubgroup_isClosed L }) :=
   rfl
 
-/-- The fixing subgroup of the field corresponding to `H` is exactly the
-transport of `H` by maximal abelian reciprocity. -/
-theorem infiniteAbelianClassFieldCorrespondence_fixingSubgroup
-    (H : ClosedSubgroup (ideleClassComponentQuotient K)) :
-    (infiniteAbelianClassFieldCorrespondence K
-        (OrderDual.toDual H)).fixingSubgroup =
-      (ClosedSubgroup.mapContinuousMulEquiv
-        (ideleClassComponentQuotientEquivMaximalAbelianGalois K) H).toSubgroup := by
-  rw [infiniteAbelianClassFieldCorrespondence_apply]
-  exact InfiniteGalois.fixingSubgroup_fixedField _
 
-/-- A field in the infinite abelian correspondence is finite over the base
-exactly when the corresponding closed idele-class subgroup is open. -/
-theorem infiniteAbelianClassFieldCorrespondence_finite_iff_open
-    (H : ClosedSubgroup (ideleClassComponentQuotient K)) :
-    FiniteDimensional K
-        (infiniteAbelianClassFieldCorrespondence K
-          (OrderDual.toDual H)) ↔
-      IsOpen (H : Set (ideleClassComponentQuotient K)) := by
-  let L :=
-    infiniteAbelianClassFieldCorrespondence K (OrderDual.toDual H)
-  let e := ideleClassComponentQuotientEquivMaximalAbelianGalois K
-  let T := ClosedSubgroup.mapContinuousMulEquiv e H
-  have hfix : L.fixingSubgroup = T.toSubgroup := by
-    simpa only [L, T, e] using
-      infiniteAbelianClassFieldCorrespondence_fixingSubgroup K H
-  calc
-    FiniteDimensional K L ↔
-        IsOpen (L.fixingSubgroup : Set
-          Gal(maximalAbelianExtension K / K)) :=
-      (InfiniteGalois.isOpen_iff_finite L).symm
-    _ ↔ IsOpen (T : Set Gal(maximalAbelianExtension K / K)) := by
-      rw [hfix]
-      change
-        IsOpen (T : Set Gal(maximalAbelianExtension K / K)) ↔
-          IsOpen (T : Set Gal(maximalAbelianExtension K / K))
-      exact Iff.rfl
-    _ ↔ IsOpen (H : Set (ideleClassComponentQuotient K)) := by
-      change
-        IsOpen (e '' (H : Set (ideleClassComponentQuotient K))) ↔
-          IsOpen (H : Set (ideleClassComponentQuotient K))
-      exact e.toHomeomorph.isOpen_image
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end GlobalClassFields
 end GlobalClassFieldTheory

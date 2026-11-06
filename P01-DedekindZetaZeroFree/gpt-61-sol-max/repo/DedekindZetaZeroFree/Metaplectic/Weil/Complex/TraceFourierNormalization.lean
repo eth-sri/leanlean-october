@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LFunctions.Tate.ComplexTraceFourierMellinNormalization
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.ComplexWeil
 
@@ -10,26 +13,26 @@ noncomputable section
 open MeasureTheory
 open scoped ENNReal RealInnerProductSpace InnerProductSpace
 
-def psi (β z : ℂ) : ℂ :=
+def psi (β z : ℂ)  :=
   Complex.exp (((2 * Real.pi * (β * z).re : ℝ) : ℂ) * Complex.I)
 
 def mu (β : ℂ) : Measure ℂ :=
   ENNReal.ofReal ‖β‖ • (volume : Measure ℂ)
 
-def F (β : ℂ) (g : ℂ → ℂ) (y : ℂ) : ℂ :=
+def F (β : ℂ) (g : ℂ → ℂ) (y : ℂ)  :=
   ∫ x : ℂ, g x * psi β (-x * y) ∂mu β
 
-def M (β a : ℂ) (g : ℂ → ℂ) (x : ℂ) : ℂ :=
+def M (β a : ℂ) (g : ℂ → ℂ) (x : ℂ)  :=
   psi β (a * x ^ 2) * g x
 
-def K (β : ℂ) (ε : ℝ) (a ξ : ℂ) : ℂ :=
+def K (β : ℂ) (ε : ℝ) (a ξ : ℂ)  :=
   ∫ x : ℂ, Complex.exp (((-ε * ‖x‖ ^ 2 : ℝ) : ℂ)) *
     psi β (a * x ^ 2 - x * ξ) ∂mu β
 
 theorem norm_psi (β z : ℂ) : ‖psi β z‖ = 1 := by
   rw [psi, Complex.norm_exp_ofReal_mul_I]
 
-def freqMap (β : ℂ) : ℂ →L[ℝ] ℂ :=
+def freqMap (β : ℂ)  :=
   (Complex.conjCLE : ℂ →L[ℝ] ℂ).comp (ContinuousLinearMap.mul ℝ ℂ β)
 
 private lemma freqMap_apply (β y : ℂ) : freqMap β y = (starRingEnd ℂ) (β * y) := rfl

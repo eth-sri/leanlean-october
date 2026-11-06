@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Sphere.FractionalIntegrals.NormalizedKernel
 
 @[expose] public section
+
 
 section
 
@@ -96,11 +99,9 @@ theorem open_north_cap_of_closed
     μ {y : Sphere | t < (y : Ambient) 0} = ENNReal.ofReal (2 * Real.pi * (1 - t)) := by
   let r : ℕ → ℝ := fun n => t + (1 - t) / ((n : ℝ) + 1)
   have hrpos (n : ℕ) : 0 < r n := by
-    have : 0 < (1 - t) / ((n : ℝ) + 1) := div_pos (by linarith) (by positivity)
-    dsimp [r]
-    linarith
+    positivity
   have hrle (n : ℕ) : r n ≤ 1 := by
-    have hn : (1 : ℝ) ≤ (n : ℝ) + 1 := by exact le_add_of_nonneg_left (Nat.cast_nonneg n)
+    
     have : (1 - t) / ((n : ℝ) + 1) ≤ 1 - t := by
       apply (div_le_iff₀ (by positivity : 0 < (n : ℝ) + 1)).mpr
       nlinarith
@@ -165,7 +166,7 @@ theorem raw_lower_caps_of_positive_north
           calc
             _ ≤ ‖(y : Ambient)‖ := PiLp.norm_apply_le _ _
             _ = 1 := mem_sphere_zero_iff_norm.mp y.property
-        exact (abs_le.mp (by simpa [Real.norm_eq_abs] using h)).2
+        exact (abs_le.mp (h)).2
       rw [hset, hmass]
       congr 1
       ring

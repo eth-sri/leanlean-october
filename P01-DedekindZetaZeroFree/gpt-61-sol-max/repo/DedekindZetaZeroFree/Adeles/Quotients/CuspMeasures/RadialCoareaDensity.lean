@@ -256,7 +256,7 @@ open _root_.DedekindZetaZeroFree.FullAngularHaar.Constructor.Step2Proof renaming
 
 open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming actual_finiteOrbit_positive_finite → actual_finiteOrbit_positive_finite
 
-variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+variable (F : Type) [Field F] [NumberField F] (ζ : F) 
 
 open KPCompactStabilizerHaarSources
 attribute [local instance] KPCompactStabilizerHaarSources.groupMeasurableSpace

@@ -31,6 +31,8 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 
 
 set_option autoImplicit false
+set_option maxHeartbeats 2000000
+set_option synthInstance.maxHeartbeats 100000
 
 /-!
 # Filtered reciprocity for arbitrary finite abelian local extensions
@@ -191,22 +193,22 @@ theorem finiteAbelian_localUpperRamificationGroup_one_eq_localLowerRamificationG
     _ = localUpperRamificationGroup K L s := (hStep s hs.1 hs.2).symm
     _ = localLowerRamificationGroup K L 1 := hAtS
 
-/-- The first upper group of a finite abelian local extension is Hilbert's
-ramification group for the chosen valuation ring, transported to `Gal(L/K)`. -/
-theorem finiteAbelian_localUpperRamificationGroup_one_eq_hilbertRamificationGroup
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [FiniteDimensional K L] [IsAbelianGalois K L] :
-    localUpperRamificationGroup K L 1 =
-      Subgroup.comap
-        (RamificationTheory.HilbertRamification.CompleteDVF.galEquivDecompositionGroup
-          (base := localCompleteDVF K)
-          (target := chosenLocalExtensionCompleteDVF K L)).toMonoidHom
-        (RamificationTheory.HilbertRamification.ValuationSubring.ramificationGroupInDecomposition K
-          (chosenLocalExtensionCompleteDVF K L).valuation.valuationSubring) :=
-  (finiteAbelian_localUpperRamificationGroup_one_eq_localLowerRamificationGroup_one K L).trans
-    (localLowerRamificationGroup_one_eq_hilbertRamificationGroup K L)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- For a finite abelian local extension, the conductor exponent is at most
 one exactly when its first upper ramification group is trivial.  This is the

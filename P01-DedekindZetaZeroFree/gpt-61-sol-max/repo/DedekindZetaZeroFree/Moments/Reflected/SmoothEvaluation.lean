@@ -89,7 +89,10 @@ theorem finiteValues_locallyConstant : IsLocallyConstant (finiteValues R N P C s
 theorem finiteScalar_continuous : Continuous (finiteScalar R N P C s x) :=
   ((finiteValues_locallyConstant R N P C s x).comp (observation R P C s)).continuous
 
-def coefficient (w : InfinitePlace F) (hw : Sum.inl w ∈ s.val) (a : Raw R) : ℂ :=
+section
+variable (w : InfinitePlace F) (hw : Sum.inl w ∈ s.val)
+include w hw in
+def coefficient   (a : Raw R) : ℂ :=
   (∏ j ∈ Finset.univ.erase ⟨Sum.inl w,hw⟩, archFactor R N P C s x a j) *
     finiteScalar R N P C s x a *
       (KPSourceConvention.ordinaryGenuineCharacter F ζ hζ (a (.inl w)).epsilon : ℂ)
@@ -106,20 +109,23 @@ theorem archFactor_continuous (j : s.val) : Continuous (fun a : Raw R => archFac
           ((ComplexLines.CanonicalStageSlot.matrix_continuous R.A w).comp
             (RestrictedProduct.continuous_eval _)))
 
-theorem coefficient_continuous (w : InfinitePlace F) (hw : Sum.inl w ∈ s.val) :
+include w hw in
+theorem coefficient_continuous   :
     Continuous (coefficient R N P C s x w hw) :=
   ((continuous_finsetProd _ (fun j _ => archFactor_continuous R N P C s x j)).mul
     (finiteScalar_continuous R N P C s x)).mul
       ((ComplexLines.CanonicalStageSlot.phase_continuous R.A w).comp
         (RestrictedProduct.continuous_eval _))
 
-def smoothSlot (w : InfinitePlace F) (hw : Sum.inl w ∈ s.val)
+include w hw in
+def smoothSlot  
     (a : Raw R) : PrincipalSeries negativeParameter →ₗ[ℂ] ℂ where
   toFun f := coefficient R N P C s x w hw a * f (complexMatrix R w (a (.inl w)))
   map_add' := by intros; simp [mul_add]
   map_smul' := by intros; simp [mul_left_comm]
 
-theorem smoothSlot_compact_bound (w : InfinitePlace F) (hw : Sum.inl w ∈ s.val)
+include w hw in
+theorem smoothSlot_compact_bound  
     (K : Set (Raw R)) (hK : IsCompact K) :
     ∃ orders : Finset ℕ, ∃ B : ℝ≥0, B ≠ 0 ∧
       ∀ (f : PrincipalSeries negativeParameter) (a : Raw R), a ∈ K →
@@ -156,7 +162,8 @@ theorem smoothSlot_compact_bound (w : InfinitePlace F) (hw : Sum.inl w ∈ s.val
     have hp := mul_nonneg B.coe_nonneg (apply_nonneg (orders.sup (chartSeminorm negativeParameter)) f)
     nlinarith only [hp])
 
-theorem finiteValues_update (w : InfinitePlace F) (hw : Sum.inl w ∈ s.val)
+include w hw in
+theorem finiteValues_update  
     (v : complexCore) (a : Raw R) :
     finiteValues R N P C s (Function.update x ⟨.inl w,hw⟩ v) a =
       finiteValues R N P C s x a := by
@@ -168,7 +175,8 @@ theorem finiteValues_update (w : InfinitePlace F) (hw : Sum.inl w ∈ s.val)
     simp only [finiteValues, Function.update_of_ne
       (show (⟨Sum.inr q,hj⟩ : s.val) ≠ ⟨Sum.inl w,hw⟩ from by intro h; cases congrArg Subtype.val h)]
 
-theorem reflected_update (w : InfinitePlace F) (hw : Sum.inl w ∈ s.val)
+include w hw in
+theorem reflected_update  
     (v : complexCore) (a : Raw R) :
     (reflectedStage R N P C s a
       (PiTensorProduct.tprod ℂ (Function.update x ⟨.inl w,hw⟩ v))).val.val 1 =
@@ -194,7 +202,8 @@ theorem reflected_update (w : InfinitePlace F) (hw : Sum.inl w ∈ s.val)
     coefficient]
   ring
 
-theorem reflected_update_compact_bound (w : InfinitePlace F) (hw : Sum.inl w ∈ s.val)
+include w hw in
+theorem reflected_update_compact_bound  
     (K : Set (Raw R)) (hK : IsCompact K) :
     ∃ orders : Finset ℕ, ∃ B : ℝ≥0, B ≠ 0 ∧
       ∀ (v : complexCore) (a : Raw R), a ∈ K →
@@ -203,6 +212,8 @@ theorem reflected_update_compact_bound (w : InfinitePlace F) (hw : Sum.inl w ∈
           B * (orders.sup (chartSeminorm negativeParameter)) v.val := by
   obtain ⟨orders,B,hB,hb⟩ := smoothSlot_compact_bound R N P C s x w hw K hK
   exact ⟨orders,B,hB,fun v a ha => by rw [reflected_update]; exact hb v.val a ha⟩
+end
+
 
 end DedekindZetaZeroFree.FourierContinuation.CurrentMinusSlot
 

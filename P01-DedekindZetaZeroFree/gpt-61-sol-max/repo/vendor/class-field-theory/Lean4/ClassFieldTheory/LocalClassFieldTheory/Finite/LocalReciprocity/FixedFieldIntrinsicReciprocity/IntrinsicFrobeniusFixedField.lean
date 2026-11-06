@@ -15,6 +15,7 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 
 
 set_option autoImplicit false
+set_option maxHeartbeats 2000000
 
 /-!
 # Intrinsic Frobenius fixed-field transport

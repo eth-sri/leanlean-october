@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Ideals.SIntegerLocalization.IdealCorrespondence
 public import DedekindZetaZeroFree.Arithmetic.Ideals.ExteriorIdeals.EulerWeights
 
 @[expose] public section
+
 
 open scoped NumberField Classical WithZero
 open NumberField IsDedekindDomain
@@ -27,10 +30,13 @@ variable {F : Type} [Field F] [NumberField F]
     rw [map_mul]
     exact (mul_le_mul_of_nonneg_right (a.property v hv) zero_le).trans (by simpa using hb)
 
-theorem generator_valuation (S : Finset (HeightOneSpectrum (𝓞 F)))
+section
+variable (S : Finset (HeightOneSpectrum (𝓞 F)))
     (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
     (r : (S : Set (HeightOneSpectrum (𝓞 F))).integer F) (hr : r ≠ 0)
     (hspan : Ideal.span {r} = Ideal.map (algebraMap (𝓞 F) _) I)
+include S I hI r hr hspan
+theorem generator_valuation  
     (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ S) :
     v.valuation F (r : F) = WithZero.exp (-(idealPrimeExponent v.asIdeal I : ℤ)) := by
   let n := idealPrimeExponent v.asIdeal I
@@ -38,7 +44,7 @@ theorem generator_valuation (S : Finset (HeightOneSpectrum (𝓞 F)))
     rw [pow_dvd_iff_le_emultiplicity,
       UniqueFactorizationMonoid.emultiplicity_eq_count_normalizedFactors v.irreducible hI]
     simp [n, idealPrimeExponent]
-  have hIn : I ≤ v.asIdeal ^ n := Ideal.dvd_iff_le.mp ((hdvd n).mpr le_rfl)
+  have hIn  := Ideal.dvd_iff_le.mp ((hdvd n).mpr le_rfl)
   have hnot : ¬ I ≤ v.asIdeal ^ (n + 1) := by
     rw [← Ideal.dvd_iff_le, hdvd]; omega
   have hmap : Ideal.map (algebraMap (𝓞 F) _) I ≤ boundIdeal S v hv n := by
@@ -50,7 +56,7 @@ theorem generator_valuation (S : Finset (HeightOneSpectrum (𝓞 F)))
   have hrv : v.valuation F (r : F) ≤ WithZero.exp (-(n : ℤ)) := by
     apply hmap
     rw [← hspan]
-    exact Ideal.subset_span (Set.mem_singleton r)
+    apply Ideal.subset_span <;> aesop
   obtain ⟨a, ha, han⟩ : ∃ a : 𝓞 F, a ∈ I ∧ a ∉ v.asIdeal ^ (n + 1) := by
     contrapose! hnot
     exact hnot
@@ -77,17 +83,16 @@ theorem generator_valuation (S : Finset (HeightOneSpectrum (𝓞 F)))
     omega
   rw [← WithZero.exp_log hnz, he]
 
-theorem generator_completion_valuation (S : Finset (HeightOneSpectrum (𝓞 F)))
-    (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
-    (r : (S : Set (HeightOneSpectrum (𝓞 F))).integer F) (hr : r ≠ 0)
-    (hspan : Ideal.span {r} = Ideal.map (algebraMap (𝓞 F) _) I)
+theorem generator_completion_valuation  
     (a : Fˣ) (ha : (a : F) = (r : F))
     (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ S) :
     Valued.v (algebraMap F (v.adicCompletion F) (a : F)) =
       WithZero.exp (-(idealPrimeExponent v.asIdeal I : ℤ)) := by
   change Valued.v ((a : F) : v.adicCompletion F) = _
   rw [HeightOneSpectrum.adicCompletion.valued_coe, ha]
-  exact generator_valuation S I hI r hr hspan v hv
+  apply generator_valuation <;> assumption
+end
+
 
 end
 end DedekindZetaZeroFree.SIntegerLocalization

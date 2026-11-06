@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Units.TorsionFreeDecomposition
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 The FLT Project. All rights reserved.
@@ -34,21 +37,24 @@ open mixedEmbedding mixedEmbedding.fundamentalCone
 
 variable (K : Type*) [Field K] [NumberField K]
 
-def idealSetIntNorm (J : (Ideal (𝓞 K))⁰) (a : idealSet K J) : ℕ :=
+section
+variable (J : (Ideal (𝓞 K))⁰) (a : idealSet K J)
+include J a
+def idealSetIntNorm    :=
   intNorm (idealSetEquiv K J a).val
 
 noncomputable def idealSetElement
-    (J : (Ideal (𝓞 K))⁰) (a : idealSet K J) : K :=
+      : K :=
   (preimageOfMemIntegerSet (idealSetEquiv K J a).val : 𝓞 K)
 
 theorem idealSetElement_ne_zero
-    (J : (Ideal (𝓞 K))⁰) (a : idealSet K J) :
+      :
     idealSetElement K J a ≠ 0 := by
   rw [idealSetElement]
   simp
 
 theorem absNorm_idealSetElement
-    (J : (Ideal (𝓞 K))⁰) (a : idealSet K J) :
+      :
     (((|Algebra.norm ℚ (idealSetElement K J a)| : ℚ) : ℝ)) =
       idealSetIntNorm K J a := by
   calc
@@ -59,6 +65,8 @@ theorem absNorm_idealSetElement
         idealSetEquiv_apply]
     _ = idealSetIntNorm K J a := by
       rw [idealSetIntNorm, intNorm_idealSetEquiv_apply]
+end
+
 
 theorem idealSetElement_injective (J : (Ideal (𝓞 K))⁰) :
     Function.Injective (idealSetElement K J) := by
@@ -82,7 +90,7 @@ abbrev unitShiftIndex :=
 open Classical in
 
 abbrev nonzeroIdealElement (J : (Ideal (𝓞 K))⁰) :=
-  {x : 𝓞 K // (x : 𝓞 K) ∈ (J : Ideal (𝓞 K)) ∧ x ≠ 0}
+  {x : 𝓞 K // x ∈ (J : Ideal (𝓞 K)) ∧ x ≠ 0}
 
 open Classical in
 
@@ -91,16 +99,12 @@ noncomputable def idealSetInteger
   preimageOfMemIntegerSet (idealSetEquiv K J a).val
 
 open Classical in
-theorem idealSetInteger_mem
-    (J : (Ideal (𝓞 K))⁰) (a : idealSet K J) :
-    idealSetInteger K J a ∈ (J : Ideal (𝓞 K)) := by
-  exact (idealSetEquiv K J a).prop
+def idealSetInteger_mem
+    (J : (Ideal (𝓞 K))⁰) (a : idealSet K J)  := (idealSetEquiv K J a).prop
 
 open Classical in
-theorem idealSetInteger_ne_zero
-    (J : (Ideal (𝓞 K))⁰) (a : idealSet K J) :
-    idealSetInteger K J a ≠ 0 := by
-  exact mem_nonZeroDivisors_iff_ne_zero.mp
+def idealSetInteger_ne_zero
+    (J : (Ideal (𝓞 K))⁰) (a : idealSet K J)  := mem_nonZeroDivisors_iff_ne_zero.mp
     (preimageOfMemIntegerSet (idealSetEquiv K J a).val).2
 
 open Classical in
@@ -143,7 +147,7 @@ theorem injective_idealElementDecompositionMap
         idealSetInteger K J a =
       ((fundamentalUnitForShift z')⁻¹ : (𝓞 K)ˣ) *
         idealSetInteger K J a' at hval
-  let v : (𝓞 K)ˣ :=
+  let v  :=
     fundamentalUnitForShift z' * (fundamentalUnitForShift z)⁻¹
   have haeq :
       (v : 𝓞 K) * idealSetInteger K J a =
@@ -174,7 +178,7 @@ theorem injective_idealElementDecompositionMap
   have hsmul : v • (a : mixedSpace K) = (a' : mixedSpace K) := by
     rw [unitSMul_smul]
     grind
-  have hv : v ∈ torsion K :=
+  have hv  :=
     (unit_smul_mem_iff_mem_torsion a.prop.1 v).mp
       (hsmul ▸ a'.prop.1)
   have hvshift :
@@ -199,8 +203,7 @@ theorem surjective_idealElementDecompositionMap
     Function.Surjective (idealElementDecompositionMap K J) := by
   intro x
   have hxemb :
-      mixedEmbedding K ((x : 𝓞 K) : K) ≠ 0 := by
-    exact (map_ne_zero_iff (mixedEmbedding K)
+      mixedEmbedding K ((x : 𝓞 K) : K) ≠ 0 := (map_ne_zero_iff (mixedEmbedding K)
       (mixedEmbedding_injective K)).mpr
         (RingOfIntegers.coe_ne_zero_iff.mpr x.prop.2)
   have hxnorm :
@@ -227,7 +230,7 @@ theorem surjective_idealElementDecompositionMap
       mixedEmbedding K (((u : 𝓞 K) * x : 𝓞 K) : K)
     simp
   let p := (unitDecompositionEquiv K).symm u
-  let ζ : torsion K := p.1
+  let ζ  := p.1
   let z : unitShiftIndex K := p.2
   have huDecomp :
       (ζ : (𝓞 K)ˣ) * fundamentalUnitForShift z = u := by
@@ -289,8 +292,7 @@ theorem surjective_idealElementDecompositionMap
 open Classical in
 
 noncomputable def idealElementDecompositionEquiv
-    (J : (Ideal (𝓞 K))⁰) :
-    idealSet K J × unitShiftIndex K ≃ nonzeroIdealElement K J :=
+    (J : (Ideal (𝓞 K))⁰)  :=
   Equiv.ofBijective (idealElementDecompositionMap K J)
     ⟨injective_idealElementDecompositionMap K J,
       surjective_idealElementDecompositionMap K J⟩
@@ -301,8 +303,7 @@ theorem idealElementDecompositionEquiv_apply
     (J : (Ideal (𝓞 K))⁰)
     (p : idealSet K J × unitShiftIndex K) :
     idealElementDecompositionEquiv K J p =
-      idealElementDecompositionMap K J p := by
-  rfl
+      idealElementDecompositionMap K J p := rfl
 
 open Classical in
 
@@ -315,15 +316,17 @@ def unitShiftNegEquiv : unitShiftIndex K ≃ unitShiftIndex K where
 open Classical in
 
 noncomputable def idealElementMulDecompositionEquiv
-    (J : (Ideal (𝓞 K))⁰) :
-    idealSet K J × unitShiftIndex K ≃ nonzeroIdealElement K J :=
+    (J : (Ideal (𝓞 K))⁰)  :=
   (Equiv.prodCongr (Equiv.refl _) (unitShiftNegEquiv K)).trans
     (idealElementDecompositionEquiv K J)
 
 open Classical in
+section
+variable (J : (Ideal (𝓞 K))⁰)
+include J
 @[simp]
 theorem idealElementMulDecompositionEquiv_coe
-    (J : (Ideal (𝓞 K))⁰)
+     
     (p : idealSet K J × unitShiftIndex K) :
     (((idealElementMulDecompositionEquiv K J p :
         nonzeroIdealElement K J) : 𝓞 K) : K) =
@@ -334,16 +337,18 @@ theorem idealElementMulDecompositionEquiv_coe
         nonzeroIdealElement K J) : 𝓞 K) : K) = _
   simp
 
-theorem countable_idealSet (J : (Ideal (𝓞 K))⁰) : Countable (idealSet K J) := by
+theorem countable_idealSet   : Countable (idealSet K J) := by
   haveI : Countable K := Finsupp.Countable.of_moduleFinite (R := ℚ)
   haveI : Countable (𝓞 K) := RingOfIntegers.coe_injective.countable
   exact (idealSetInteger_injective K J).countable
 
-theorem countable_nonzeroIdealElement (J : (Ideal (𝓞 K))⁰) :
+theorem countable_nonzeroIdealElement   :
     Countable (nonzeroIdealElement K J) := by
   haveI : Countable K := Finsupp.Countable.of_moduleFinite (R := ℚ)
   haveI : Countable (𝓞 K) := RingOfIntegers.coe_injective.countable
   infer_instance
+end
+
 
 end DedekindZetaZeroFree.Theta
 

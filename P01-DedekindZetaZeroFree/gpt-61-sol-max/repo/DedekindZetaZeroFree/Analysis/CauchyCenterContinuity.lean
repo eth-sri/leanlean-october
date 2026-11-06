@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.HolomorphicKernels.RectangularCauchyOperators
 
 @[expose] public section
+
 
 noncomputable section
 open scoped Topology
@@ -23,7 +26,7 @@ theorem continuous_center_of_continuous_circle
     apply ContinuousMap.continuous_of_continuous_uncurry
     exact hc.comp continuous_swap
   have heq (x : X) : circleCoeffCLM 0 t ht 0 (boundary x) = N 0 x := by
-    have hi := (kernel_continuousOn 0 t ht (boundary x) 0).circleIntegrable ht.le
+    
     have hd : DifferentiableOn ℂ (fun z => N z x) (Metric.closedBall 0 t) :=
       (hN x).differentiableOn.mono (Metric.closedBall_subset_ball htr)
     have hC := hd.circleIntegral_sub_inv_smul (Metric.mem_ball_self ht)
@@ -41,8 +44,7 @@ theorem continuous_center_of_continuous_circle
       rfl
     rw [he, hC]
     simp only [smul_eq_mul]
-    exact inv_mul_cancel_left₀ (by
-      exact mul_ne_zero (mul_ne_zero (by norm_num)
+    exact inv_mul_cancel_left₀ (mul_ne_zero (mul_ne_zero (by norm_num)
         (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero)) Complex.I_ne_zero) _
   exact ((circleCoeffCLM 0 t ht 0).continuous.comp hboundary).congr heq
 

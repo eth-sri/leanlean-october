@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.Hecke
 
@@ -12,9 +15,12 @@ open scoped NumberField Classical
 
 variable {F : Type} [Field F] [NumberField F] {m : Ideal (𝓞 F)}
 
+section
+variable (η : DedekindZetaZeroFree.RayClassCharacter F m)
+    (hprimitive : η.IsPrimitive) (hprincipal : η.IsPrincipal)
+include η hprimitive hprincipal
 theorem primitivePrincipal_modulus_eq_top
-    (η : DedekindZetaZeroFree.RayClassCharacter F m)
-    (hprimitive : η.IsPrimitive) (hprincipal : η.IsPrincipal) :
+      :
     m = ⊤ := by
   by_contra hm
   have hlt : m < ⊤ := lt_top_iff_ne_top.mpr hm
@@ -24,21 +30,21 @@ theorem primitivePrincipal_modulus_eq_top
   exact hne (hprincipal _ hspanne hspan)
 
 theorem primitivePrincipal_apply_nonzero
-    (η : DedekindZetaZeroFree.RayClassCharacter F m)
-    (hprimitive : η.IsPrimitive) (hprincipal : η.IsPrincipal)
+     
     (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) : η I = 1 := by
-  have hm : m = ⊤ := primitivePrincipal_modulus_eq_top η hprimitive hprincipal
-  exact hprincipal I hI (by rw [hm, sup_top_eq])
+  have hm  := primitivePrincipal_modulus_eq_top η hprimitive hprincipal
+  apply hprincipal <;> aesop
 
 theorem primitivePrincipal_apply_eq_ite
-    (η : DedekindZetaZeroFree.RayClassCharacter F m)
-    (hprimitive : η.IsPrimitive) (hprincipal : η.IsPrincipal)
+     
     (I : Ideal (𝓞 F)) : η I = if I = ⊥ then 0 else 1 := by
   by_cases hI : I = ⊥
   · rw [if_pos hI, hI]
     exact (η.eq_zero_iff' ⊥).mpr (Or.inl rfl)
   · rw [if_neg hI]
-    exact primitivePrincipal_apply_nonzero η hprimitive hprincipal I hI
+    apply primitivePrincipal_apply_nonzero <;> assumption
+end
+
 
 end
 

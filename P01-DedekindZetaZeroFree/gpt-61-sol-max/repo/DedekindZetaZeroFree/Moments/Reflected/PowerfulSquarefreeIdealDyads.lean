@@ -16,8 +16,11 @@ def dyadIndices (X : ℝ) : Finset (ℕ × ℕ) :=
   ((Finset.range (Nat.ceil X + 1)).product (Finset.range (Nat.ceil X + 1))).filter
     (fun t => (2 : ℝ) ^ t.1 * (2 : ℝ) ^ t.2 ≤ X)
 
-def rawDyadMass (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
-    (u : A.Rˣ) (Z : ℝ) (p q : ℕ) : ℝ :=
+section
+variable (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+    (u : A.Rˣ) (Z : ℝ) (p q : ℕ)
+include A D u Z p q in
+def rawDyadMass   : ℝ :=
   ∑' h : A.Exterior, ∑' d : A.Exterior,
     if Powerful h.val ∧ Squarefree d.val ∧ h.val ⊔ d.val = ⊤ ∧
         (2 : ℝ) ^ p ≤ A.exteriorNorm h ∧ A.exteriorNorm h < 2 * (2 : ℝ) ^ p ∧
@@ -36,8 +39,8 @@ private theorem bounded_finite (A : SArithmeticData F) (X : ℝ) :
   exact_mod_cast (show (Ideal.absNorm I.val : ℝ) ≤ (Nat.ceil X : ℝ) from
     hI.trans (Nat.le_ceil X))
 
- def rawPair (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
-    (u : A.Rˣ) (Z : ℝ) (p q : ℕ) (hd : A.Exterior × A.Exterior) : ℝ :=
+ include A D u Z p q in
+def rawPair   (hd : A.Exterior × A.Exterior) : ℝ :=
   if Powerful hd.1.val ∧ Squarefree hd.2.val ∧ hd.1.val ⊔ hd.2.val = ⊤ ∧
       (2 : ℝ) ^ p ≤ A.exteriorNorm hd.1 ∧ A.exteriorNorm hd.1 < 2 * (2 : ℝ) ^ p ∧
       (2 : ℝ) ^ q ≤ A.exteriorNorm hd.2 ∧ A.exteriorNorm hd.2 < 2 * (2 : ℝ) ^ q then
@@ -46,14 +49,13 @@ private theorem bounded_finite (A : SArithmeticData F) (X : ℝ) :
         mul_ne_zero (mul_ne_zero u.ne_zero (D.generates hd.1).1) (D.generates hd.2).1⟩ Z‖ ^ 2
   else 0
 
-private theorem rawPair_nonneg (A : SArithmeticData F)
-    (D : ComparisonPoissonCoefficientData F A) (u : A.Rˣ) (Z : ℝ)
-    (p q : ℕ) (hd : A.Exterior × A.Exterior) : 0 ≤ rawPair A D u Z p q hd := by
+include A D u Z p q in
+private theorem rawPair_nonneg   (hd : A.Exterior × A.Exterior) : 0 ≤ rawPair A D u Z p q hd := by
   unfold rawPair
   split_ifs <;> positivity
 
-private theorem rawPair_summable (A : SArithmeticData F)
-    (D : ComparisonPoissonCoefficientData F A) (u : A.Rˣ) (Z : ℝ) (p q : ℕ) :
+include A D u Z p q in
+private theorem rawPair_summable   :
     Summable (rawPair A D u Z p q) := by
   apply summable_of_hasFiniteSupport
   refine ((bounded_finite A (2 * (2 : ℝ) ^ p)).prod
@@ -64,14 +66,19 @@ private theorem rawPair_summable (A : SArithmeticData F)
   split_ifs at hh with h
   · exact ⟨h.2.2.2.2.1.le, h.2.2.2.2.2.2.le⟩
   · exact False.elim (hh rfl)
+end
 
-private theorem generator_product_B (A : SArithmeticData F)
+
+section
+variable (A : SArithmeticData F)
     (D : ComparisonPoissonCoefficientData F A)
     (hCl : Subsingleton (ClassGroup A.R)) (H : A.V → A.V → Fˣ)
     (L : Subgroup A.V) (hL : A.IsSUnitIsotropicComplement H L)
     (hgen : ∀ I, A.IsAllowed L (ThetaReflectionData.rowUnit A
       ⟨D.generator I, (D.generates I).1⟩))
     (hchar : ThetaReflectionData.SixthUnitCharacterCompatibility A D)
+include A D hCl H L hL hgen hchar in
+private theorem generator_product_B  
     (u : A.Rˣ) (Z : ℝ) (I h d : A.Exterior) (hI : I.val = h.val * d.val) :
     ThetaReflectionData.forwardB A D
       ⟨(u : A.R) * D.generator I, mul_ne_zero u.ne_zero (D.generates I).1⟩ Z =
@@ -162,13 +169,9 @@ private theorem dyad_mem (A : SArithmeticData F) (X : ℝ)
   exact (mul_le_mul hh.1 hd.1 (by positivity) (A.exteriorNorm_pos h).le).trans
     (hnorm ▸ hX)
 
+include A D hCl H L hL hgen hchar in
 theorem canonical_mass_le_sum_dyads
-    (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
-    (hCl : Subsingleton (ClassGroup A.R)) (H : A.V → A.V → Fˣ)
-    (L : Subgroup A.V) (hL : A.IsSUnitIsotropicComplement H L)
-    (hgen : ∀ I, A.IsAllowed L (ThetaReflectionData.rowUnit A
-      ⟨D.generator I, (D.generates I).1⟩))
-    (hchar : ThetaReflectionData.SixthUnitCharacterCompatibility A D)
+     
     (U : Finset A.Rˣ) (X Z : ℝ) (hX : 0 < X) :
     (∑ u ∈ U, ∑' I : A.Exterior,
       if A.exteriorNorm I ≤ X then
@@ -240,6 +243,8 @@ theorem canonical_mass_le_sum_dyads
   simp_rw [hraw]
   exact Finset.sum_coe_sort (dyadIndices X)
     (fun pq => rawDyadMass A D u Z pq.1 pq.2)
+end
+
 
 end
 end DedekindZetaZeroFree.RepresentationTheory.ActualRowTransfer

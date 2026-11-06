@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.QuadraticFormsAndSieveExponents
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -14,7 +17,7 @@ variable {F : Type} [Field F] [NumberField F] {a : Ideal (𝓞 F)}
 
 theorem squarefreeKernel_eq_self (ha : Squarefree a) : squarefreeKernel a = a := by
   have ha0 : a ≠ ⊥ := ha.ne_zero
-  have hnodup : (UniqueFactorizationMonoid.normalizedFactors a).Nodup :=
+  have hnodup  :=
     (UniqueFactorizationMonoid.squarefree_iff_nodup_normalizedFactors ha0).1 ha
   have hfilter :
       (UniqueFactorizationMonoid.normalizedFactors a).toFinset.filter
@@ -22,9 +25,9 @@ theorem squarefreeKernel_eq_self (ha : Squarefree a) : squarefreeKernel a = a :=
         = (UniqueFactorizationMonoid.normalizedFactors a).toFinset := by
     apply Finset.filter_true_of_mem
     intro p hp
-    have hp' : p ∈ UniqueFactorizationMonoid.normalizedFactors a :=
+    have hp'  :=
       Multiset.mem_toFinset.1 hp
-    have h1 : (UniqueFactorizationMonoid.normalizedFactors a).count p = 1 :=
+    have h1  :=
       Multiset.count_eq_one_of_mem hnodup hp'
     rw [h1]
   rw [squarefreeKernel, if_neg ha0, hfilter, Finset.prod_eq_multiset_prod]

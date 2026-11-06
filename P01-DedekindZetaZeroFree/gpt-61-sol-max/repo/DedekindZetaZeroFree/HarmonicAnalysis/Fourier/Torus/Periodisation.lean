@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Schwartz.Lattices.UniformPeriodisation
 
 @[expose] public section
+
 
 noncomputable section
 open scoped SchwartzMap
@@ -10,11 +13,14 @@ open Module
 
 namespace DedekindZetaZeroFree.PoissonArch
 
-def torusPeriodisation
-    {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
+section
+variable {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
     [FiniteDimensional ℝ V]
     {L : Submodule ℤ V} [DiscreteTopology L] [IsZLattice ℝ L]
-    {ι : Type*} [Fintype ι] (b : Basis ι ℤ L) (f : 𝓢(V, ℂ)) :
+    {ι : Type*} [Fintype ι] (b : Basis ι ℤ L) (f : 𝓢(V, ℂ))
+include V L ι b f
+def torusPeriodisation
+      :
     C(UnitAddTorus ι, ℂ) where
   toFun t := periodisation L f
     ((b.ofZLatticeBasis ℝ L).equivFun.symm
@@ -32,7 +38,7 @@ def torusPeriodisation
         periodisation L f (B.equivFun.symm
           (fun i => ((AddCircle.equivIco (1 : ℝ) (0 : ℝ)) (x i : UnitAddCircle) : ℝ))) =
         periodisation L f (B.equivFun.symm x) := by
-      let v : L := ∑ i, (-⌊x i⌋) • b i
+      let v  := ∑ i, (-⌊x i⌋) • b i
       have heq : B.equivFun.symm
           (fun i => ((AddCircle.equivIco (1 : ℝ) (0 : ℝ)) (x i : UnitAddCircle) : ℝ)) =
           B.equivFun.symm x + (v : V) := by
@@ -59,16 +65,13 @@ def torusPeriodisation
       B.equivFun.toContinuousLinearEquiv.symm.continuous
 
 theorem torusPeriodisation_coe
-    {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
-    [FiniteDimensional ℝ V]
-    {L : Submodule ℤ V} [DiscreteTopology L] [IsZLattice ℝ L]
-    {ι : Type*} [Fintype ι] (b : Basis ι ℤ L) (f : 𝓢(V, ℂ))
+     
     (x : ι → ℝ) :
     torusPeriodisation b f (fun i => (x i : UnitAddCircle)) =
       periodisation L f ((b.ofZLatticeBasis ℝ L).equivFun.symm x) := by
   classical
   let B := b.ofZLatticeBasis ℝ L
-  let v : L := ∑ i, (-⌊x i⌋) • b i
+  let v  := ∑ i, (-⌊x i⌋) • b i
   change periodisation L f (B.equivFun.symm
     (fun i => ((AddCircle.equivIco (1 : ℝ) (0 : ℝ)) (x i : UnitAddCircle) : ℝ))) = _
   have heq : B.equivFun.symm
@@ -85,6 +88,8 @@ theorem torusPeriodisation_coe
     intro i _
     simp [neg_smul, Int.cast_smul_eq_zsmul]
   rw [heq, periodisation_add_lattice]
+end
+
 
 end DedekindZetaZeroFree.PoissonArch
 

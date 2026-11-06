@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Representatives.CosetSignsAndNorms
 public import DedekindZetaZeroFree.Theta.Profiles.MixedGaussian
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -15,7 +18,7 @@ namespace DedekindZetaZeroFree.AbelianQuotient.RayParity
 variable (K : Type) [Field K] [NumberField K]
 
 def gδ (δ : Finset (RayCoset.RealPlaces K))
-    (x : euclidean.mixedSpace K) : ℂ :=
+    (x : euclidean.mixedSpace K)  :=
   (∏ v ∈ δ, (Theta.traceRealCoordinateCLM K v x : ℂ)) *
     Theta.latticeGaussian Real.pi x
 
@@ -29,10 +32,9 @@ theorem traceRealCoordinateCLM_eq_traceToMixed
       RayCoset.realEmbedding K v α := by
   change (Theta.traceToMixed K (Theta.traceEmbedding K α)).1 v = _
   simp only [Theta.traceEmbedding, ContinuousLinearEquiv.apply_symm_apply]
-  exact mixedEmbedding.mixedEmbedding_apply_isReal K α v
+  apply mixedEmbedding.mixedEmbedding_apply_isReal
 
-def Q (q : InfinitePlace K → ℝ) (x : euclidean.mixedSpace K) :
-    euclidean.mixedSpace K :=
+def Q (q : InfinitePlace K → ℝ) (x : euclidean.mixedSpace K)  :=
   (Theta.traceToMixed K).symm
     (mixedSpaceOfRealSpace q * Theta.traceToMixed K x)
 
@@ -43,16 +45,16 @@ theorem Q_eq_traceRadialScale (q : InfinitePlace K → ℝ)
   simp only [Q, ContinuousLinearEquiv.apply_symm_apply,
     Theta.traceToMixed_traceRadialScale]
 
-def εδ (δ : Finset (RayCoset.RealPlaces K)) : ℂ :=
+def εδ (δ : Finset (RayCoset.RealPlaces K))  :=
   (-Complex.I) ^ δ.card
 
-def κδ (δ : Finset (RayCoset.RealPlaces K)) (s : ℂ) : ℂ :=
+def κδ (δ : Finset (RayCoset.RealPlaces K)) (s : ℂ)  :=
   ((2 : ℂ) ^ nrRealPlaces K)⁻¹ * ((4 : ℂ) ^ nrComplexPlaces K)⁻¹ *
     (∏ v : RayCoset.RealPlaces K,
       Complex.Gammaℝ (s + if v ∈ δ then (1 : ℂ) else 0)) *
     (Complex.Gammaℂ s) ^ nrComplexPlaces K
 
-def hδ (δ : Finset (RayCoset.RealPlaces K)) (s : ℂ) : ℂ :=
+def hδ (δ : Finset (RayCoset.RealPlaces K)) (s : ℂ)  :=
   (2 : ℂ) ^ nrRealPlaces K * (4 : ℂ) ^ nrComplexPlaces K *
     (∏ v : RayCoset.RealPlaces K,
       (Complex.Gammaℝ (s + if v ∈ δ then (1 : ℂ) else 0))⁻¹) *

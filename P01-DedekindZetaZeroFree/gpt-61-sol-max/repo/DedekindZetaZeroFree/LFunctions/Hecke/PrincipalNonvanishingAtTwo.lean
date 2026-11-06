@@ -10,22 +10,25 @@ namespace DedekindZetaZeroFree.LargeSieve
 noncomputable section
 open scoped NumberField Classical
 
- def principalRealSeries (F : Type) [Field F] [NumberField F]
+ section
+variable (F : Type) [Field F] [NumberField F]
+include F
+def principalRealSeries  
     (I : Ideal (𝓞 F)) : ℝ :=
   if I = ⊥ then 0 else (Ideal.absNorm I : ℝ) ^ (-(2 : ℝ))
 
-private theorem summable_principalRealSeries (F : Type) [Field F] [NumberField F] :
+private theorem summable_principalRealSeries   :
     Summable (principalRealSeries F) :=
   summable_ideal_inverse_power F 2 (by norm_num)
 
-private theorem principalRealSeries_nonneg (F : Type) [Field F] [NumberField F]
+private theorem principalRealSeries_nonneg  
     (I : Ideal (𝓞 F)) : 0 ≤ principalRealSeries F I := by
   rw [principalRealSeries]
   split
   · norm_num
   · positivity
 
-private theorem tsum_principalRealSeries_ge_one (F : Type) [Field F] [NumberField F] :
+private theorem tsum_principalRealSeries_ge_one   :
     1 ≤ ∑' I : Ideal (𝓞 F), principalRealSeries F I := by
   have h := (summable_principalRealSeries F).sum_le_tsum ({⊤} : Finset (Ideal (𝓞 F)))
     (fun i _ => principalRealSeries_nonneg F i)
@@ -33,7 +36,7 @@ private theorem tsum_principalRealSeries_ge_one (F : Type) [Field F] [NumberFiel
     simp [principalRealSeries, Ideal.absNorm_top]
   linarith [h, h1]
 
-private theorem principalUnit_term_eq (F : Type) [Field F] [NumberField F]
+private theorem principalUnit_term_eq  
     (I : Ideal (𝓞 F)) :
     principalUnitRayCharacter F I * (Ideal.absNorm I : ℂ) ^ (-(2 : ℂ))
       = (principalRealSeries F I : ℂ) := by
@@ -47,7 +50,7 @@ private theorem principalUnit_term_eq (F : Type) [Field F] [NumberField F]
     rw [Complex.ofReal_cpow (Nat.cast_nonneg (Ideal.absNorm I))]
     norm_num
 
-private theorem idealHeckeL_principalUnit_two_eq (F : Type) [Field F] [NumberField F] :
+private theorem idealHeckeL_principalUnit_two_eq   :
     idealHeckeL (principalUnitRayCharacter F) (2 : ℂ)
       = ((∑' I : Ideal (𝓞 F), principalRealSeries F I : ℝ) : ℂ) := by
   unfold idealHeckeL
@@ -56,7 +59,7 @@ private theorem idealHeckeL_principalUnit_two_eq (F : Type) [Field F] [NumberFie
       = fun I => (principalRealSeries F I : ℂ) from funext (fun I => principalUnit_term_eq F I)]
   exact (Complex.ofReal_tsum (principalRealSeries F)).symm
 
-private theorem heckeCompletionFactor_top_two_ne_zero (F : Type) [Field F] [NumberField F] :
+private theorem heckeCompletionFactor_top_two_ne_zero   :
     heckeCompletionFactor F ⊤ (2 : ℂ) ≠ 0 := by
   rw [heckeCompletionFactor, Ideal.absNorm_top, Nat.cast_one, mul_one]
   refine mul_ne_zero ?_ (pow_ne_zero _ ?_)
@@ -74,7 +77,7 @@ private theorem heckeCompletionFactor_top_two_ne_zero (F : Type) [Field F] [Numb
       linarith
 
 theorem principalUnitRayCharacter_summable_two
-    (F : Type) [Field F] [NumberField F] :
+      :
     Summable (fun I : Ideal (𝓞 F) =>
       principalUnitRayCharacter F I * (Ideal.absNorm I : ℂ) ^ (-(2 : ℂ))) := by
   have h : Summable (fun I : Ideal (𝓞 F) => (principalRealSeries F I : ℂ)) :=
@@ -82,7 +85,7 @@ theorem principalUnitRayCharacter_summable_two
   exact h.congr (fun I => (principalUnit_term_eq F I).symm)
 
 theorem idealHeckeL_principalUnit_two_real_pos
-    (F : Type) [Field F] [NumberField F] :
+      :
     (idealHeckeL (principalUnitRayCharacter F) (2 : ℂ)).im = 0 ∧
       0 < (idealHeckeL (principalUnitRayCharacter F) (2 : ℂ)).re := by
   rw [idealHeckeL_principalUnit_two_eq F]
@@ -91,7 +94,7 @@ theorem idealHeckeL_principalUnit_two_real_pos
   exact lt_of_lt_of_le zero_lt_one (tsum_principalRealSeries_ge_one F)
 
 theorem principalUnitHeckeWitness_Lambda_two_ne_zero
-    (F : Type) [Field F] [NumberField F]
+     
     (p : PrincipalHeckeWitness (principalUnitRayCharacter F)) :
     p.Λ (2 : ℂ) ≠ 0 := by
   have hs : HasSum (fun I : Ideal (𝓞 F) =>
@@ -108,13 +111,15 @@ theorem principalUnitHeckeWitness_Lambda_two_ne_zero
   simp at this
 
 theorem principalUnitHeckeWitness_U_two_ne_zero
-    (F : Type) [Field F] [NumberField F]
+     
     (p : PrincipalHeckeWitness (principalUnitRayCharacter F)) :
     p.U (2 : ℂ) ≠ 0 := by
   have h := p.poleClearing (2 : ℂ) (by norm_num) (by norm_num)
   rw [h]
   refine mul_ne_zero (mul_ne_zero (by norm_num) (by norm_num)) ?_
   exact principalUnitHeckeWitness_Lambda_two_ne_zero F p
+end
+
 
 end
 

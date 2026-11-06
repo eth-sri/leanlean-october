@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import Mathlib.FieldTheory.LinearDisjoint
 public import Mathlib.LinearAlgebra.Dimension.Constructions
 public import Mathlib.LinearAlgebra.TensorProduct.Basis
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -89,14 +92,13 @@ def tensorBaseChangeAut
       intro m
       simp [Algebra.TensorProduct.algebraMap_apply] }
 
-omit hKM hKL hGalois in
-@[simp]
-theorem tensorBaseChangeAut_tmul
-    (σ : L ≃ₐ[K] L)
-    (m : M) (x : L) :
-    tensorBaseChangeAut K M L σ (m ⊗ₜ[K] x) =
-      m ⊗ₜ[K] σ x := by
-  simp [tensorBaseChangeAut]
+
+
+
+
+
+
+
 
 omit hKM hKL hGalois in
 /-- Distinct automorphisms remain distinct after tensor base change. -/
@@ -110,8 +112,7 @@ theorem tensorBaseChangeAut_injective :
       ((1 : M) ⊗ₜ[K] x)
   have htensor :
       (1 : M) ⊗ₜ[K] σ x =
-        (1 : M) ⊗ₜ[K] τ x := by
-    simpa using hx
+        (1 : M) ⊗ₜ[K] τ x := hx
   exact
     (Algebra.TensorProduct.includeRight
       (R := K) (A := M) (B := L)).injective
@@ -130,9 +131,8 @@ theorem tensorProduct_isGalois_of_finrank_coprime
   let : Field N :=
     (tensorProduct_isField_of_finrank_coprime
       K M L hcoprime).toField
-  have hfinite : FiniteDimensional M N := by
-    exact Module.Finite.of_restrictScalars_finite K M N
-  let : FiniteDimensional M N := hfinite
+  have hfinite : FiniteDimensional M N := Module.Finite.of_restrictScalars_finite K M N
+  let  := hfinite
   have hlow :
       Nat.card (L ≃ₐ[K] L) ≤
         Nat.card (N ≃ₐ[M] N) :=
@@ -140,8 +140,7 @@ theorem tensorProduct_isGalois_of_finrank_coprime
       (tensorBaseChangeAut K M L)
       (tensorBaseChangeAut_injective K M L)
   have hdim :
-      Module.finrank M N = Module.finrank K L := by
-    exact Module.finrank_baseChange
+      Module.finrank M N = Module.finrank K L := Module.finrank_baseChange
   have hlow' :
       Module.finrank M N ≤
         Nat.card (N ≃ₐ[M] N) := by

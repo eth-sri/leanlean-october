@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.FieldTheory.Galois.Basic
 public import ValuedFieldTheory.Ramification.GaloisValuation.IntermediateFieldRestriction
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -76,8 +79,8 @@ theorem intermediateFieldRestrictNormalHom_prod_injective_of_sup_eq
           (F ≃ₐ[K] F) →* (E₁ ≃ₐ[K] E₁)).prod
         (intermediateFieldRestrictNormalHom E₂ F hE₂ :
           (F ≃ₐ[K] F) →* (E₂ ≃ₐ[K] E₂))) := by
-  let E₁F : IntermediateField K F := IntermediateField.restrict hE₁
-  let E₂F : IntermediateField K F := IntermediateField.restrict hE₂
+  let E₁F  := IntermediateField.restrict hE₁
+  let E₂F  := IntermediateField.restrict hE₂
   let : Normal K E₁F :=
     Normal.of_algEquiv (IntermediateField.restrictAlgEquiv hE₁)
   let : Normal K E₂F :=
@@ -178,8 +181,8 @@ theorem subgroup_eq_of_prod_map_injective_of_left_maps_eq_bot
     have hy₁mem : f₁ y ∈ D.map f₁ := ⟨y, hy, rfl⟩
     rw [hC₁] at hx₁mem
     rw [hD₁] at hy₁mem
-    have hx₁ : f₁ x = 1 := Subgroup.mem_bot.mp hx₁mem
-    have hy₁ : f₁ y = 1 := Subgroup.mem_bot.mp hy₁mem
+    have hx₁  := Subgroup.mem_bot.mp hx₁mem
+    have hy₁  := Subgroup.mem_bot.mp hy₁mem
     have hxy : x = y := by
       apply hinjective
       apply Prod.ext

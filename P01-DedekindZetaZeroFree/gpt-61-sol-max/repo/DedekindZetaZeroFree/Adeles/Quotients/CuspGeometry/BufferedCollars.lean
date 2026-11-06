@@ -51,20 +51,29 @@ def endChart (τ : ℝ) (a : CuspIndex F ζ hζ U R P H) :
       (((H.atlas U).cuspAtlas a.1).cusp a.2)
       (((H.atlas U).cuspAtlas a.1).representative a.2) τ
 
+
+local notation:max "current_chartLift" => chartLift F ζ hζ U R P H
+
 def height (τ : ℝ) (a : CuspIndex F ζ hζ U R P H)
     (x : Base F ζ hζ U) : ℝ :=
   if h : ∃ z : KPCuspCharts.Coordinates F,
-      τ < z.2 ∧ chartLift F ζ hζ U R P H a z = x
+      τ < z.2 ∧ current_chartLift a z = x
   then (Classical.choose h).2 else 0
+
+
+local notation:max "current_endSet" => endSet F ζ hζ U R P H
+
+
+local notation:max "current_height" => height F ζ hζ U R P H
 
 def zeroExtension (τ : ℝ) (a : CuspIndex F ζ hζ U R P H)
     (f : ℝ → ℝ) : Base F ζ hζ U → ℝ :=
-  (endSet F ζ hζ U R P H τ a).indicator
-    (fun x => f (height F ζ hζ U R P H τ a x))
+  (current_endSet τ a).indicator
+    (fun x => f (current_height τ a x))
 
 def collars (τ T : ℝ) : Set (Base F ζ hζ U) :=
-  KPCutoffSource.closedCollars (endSet F ζ hζ U R P H τ)
-    (height F ζ hζ U R P H τ) T
+  KPCutoffSource.closedCollars (current_endSet τ)
+    (current_height τ) T
 
 def coveredCollars (τ T : ℝ) : Set (Covered F ζ hζ U) :=
   KPContSectorCoveredQuotientVocabulary.q F ζ hζ U ⁻¹' collars F ζ hζ U R P H τ T
@@ -75,29 +84,29 @@ structure CollarBuffer (T : ℝ) where
   below_cutoff : τ < T
   dimension_formula : KPCuspLogShape.dimension F = Module.finrank ℚ F / 2
   positive_dimension : 0 < KPCuspLogShape.dimension F
-  open_ends : ∀ a, IsOpen (endSet F ζ hζ U R P H τ a)
+  open_ends : ∀ a, IsOpen (current_endSet τ a)
   disjoint_ends : Pairwise (fun a b => Disjoint
-    (endSet F ζ hζ U R P H τ a) (endSet F ζ hζ U R P H τ b))
+    (current_endSet τ a) (current_endSet τ b))
   chart_embedding : ∀ a, Topology.IsEmbedding (endChart F ζ hζ U R P H τ a)
   chart_range : ∀ a, Set.range (endChart F ζ hζ U R P H τ a) =
-    endSet F ζ hζ U R P H τ a
-  lift_range : ∀ a, chartLift F ζ hζ U R P H a ''
-    {z : KPCuspCharts.Coordinates F | τ < z.2} = endSet F ζ hζ U R P H τ a
+    current_endSet τ a
+  lift_range : ∀ a, current_chartLift a ''
+    {z : KPCuspCharts.Coordinates F | τ < z.2} = current_endSet τ a
 
   height_coordinates : ∀ a (z : KPCuspCharts.Coordinates F), τ < z.2 →
-    height F ζ hζ U R P H τ a (chartLift F ζ hζ U R P H a z) = z.2
+    current_height τ a (current_chartLift a z) = z.2
   height_continuous : ∀ a,
-    ContinuousOn (height F ζ hζ U R P H τ a) (endSet F ζ hζ U R P H τ a)
+    ContinuousOn (current_height τ a) (current_endSet τ a)
   height_smooth : ∀ a, ContDiffOn ℝ (⊤ : ℕ∞)
     (fun z : KPCuspCharts.Coordinates F =>
-      height F ζ hζ U R P H τ a (chartLift F ζ hζ U R P H a z))
+      current_height τ a (current_chartLift a z))
     {z | τ < z.2}
 
   height_stabilizer : ∀ a (g : Stabilizer F ζ hζ U R P H a)
       (z : KPCuspCharts.Coordinates F), τ < z.2 →
-    height F ζ hζ U R P H τ a (chartLift F ζ hζ U R P H a
+    current_height τ a (current_chartLift a
       ((((H.atlas U).cuspAtlas a.1).geometry a.2).crossAction g z.1, z.2)) =
-      height F ζ hζ U R P H τ a (chartLift F ζ hζ U R P H a z)
+      current_height τ a (current_chartLift a z)
 
   height_transitions : ∀ a (g : Stabilizer F ζ hζ U R P H a)
       (A : Matrix.GeneralLinearGroup (Fin 2) F),
@@ -106,29 +115,29 @@ structure CollarBuffer (T : ℝ) where
       let D := ((H.atlas U).cuspAtlas a.1).parabolic a.2
       let z' := KPCuspCharts.affine F H.totallyComplex D.E D.integralUnits
         (D.ratio g) (A 0 1 / A 1 1) z
-      chartLift F ζ hζ U R P H a z' = chartLift F ζ hζ U R P H a z ∧
-      height F ζ hζ U R P H τ a (chartLift F ζ hζ U R P H a z') =
-        height F ζ hζ U R P H τ a (chartLift F ζ hζ U R P H a z)
+      current_chartLift a z' = current_chartLift a z ∧
+      current_height τ a (current_chartLift a z') =
+        current_height τ a (current_chartLift a z)
   compact_each_collar : ∀ a, IsCompact (closure
-    {x | x ∈ endSet F ζ hζ U R P H τ a ∧
-      height F ζ hζ U R P H τ a x ∈ Set.Icc T (T + 1)})
+    {x | x ∈ current_endSet τ a ∧
+      current_height τ a x ∈ Set.Icc T (T + 1)})
   collar_in_chart_interior : ∀ a, closure
-    {x | x ∈ endSet F ζ hζ U R P H τ a ∧
-      height F ζ hζ U R P H τ a x ∈ Set.Icc T (T + 1)} ⊆
-        interior (endSet F ζ hζ U R P H τ a)
+    {x | x ∈ current_endSet τ a ∧
+      current_height τ a x ∈ Set.Icc T (T + 1)} ⊆
+        interior (current_endSet τ a)
   compact_collars : IsCompact (collars F ζ hζ U R P H τ T)
   compact_covered_collars : IsCompact (coveredCollars F ζ hζ U R P H τ T)
   finite_covered_measure :
     KPContSectorFixedPushforwardSupport.coveredMeasure F ζ hζ R U
       (coveredCollars F ζ hζ U R P H τ T) < (⊤ : ℝ≥0∞)
 
-  boundary_height_buffer : ∀ a x, x ∈ frontier (endSet F ζ hζ U R P H τ a) →
+  boundary_height_buffer : ∀ a x, x ∈ frontier (current_endSet τ a) →
     ∃ V : Set (Base F ζ hζ U), IsOpen V ∧ x ∈ V ∧
-      ∀ y ∈ V, y ∈ endSet F ζ hζ U R P H τ a →
-        height F ζ hζ U R P H τ a y < T
+      ∀ y ∈ V, y ∈ current_endSet τ a →
+        current_height τ a y < T
 
   boundary_zero_extension : ∀ a x,
-    x ∈ frontier (endSet F ζ hζ U R P H τ a) →
+    x ∈ frontier (current_endSet τ a) →
     ∃ V : Set (Base F ζ hζ U), IsOpen V ∧ x ∈ V ∧
       ∀ (χ : KPCutoffSource.SmoothCuspCutoff T) y, y ∈ V →
         zeroExtension F ζ hζ U R P H τ a χ.toFun y = 0 ∧

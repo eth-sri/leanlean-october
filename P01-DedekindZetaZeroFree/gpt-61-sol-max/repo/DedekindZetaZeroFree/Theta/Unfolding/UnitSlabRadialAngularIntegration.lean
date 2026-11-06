@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Units.FundamentalDomainIntegration
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 The FLT Project. All rights reserved.
@@ -52,30 +55,30 @@ theorem unitCoordinateShiftHom_apply
     unitCoordinateShiftHom (K := K) z = unitCoordinateShift z :=
   rfl
 
-open Classical in
 
-noncomputable def unitCoordinateLattice :
-    AddSubgroup (mixedEmbedding.realSpace K) :=
-  (unitCoordinateShiftHom (K := K)).range
 
-open Classical in
-theorem unitCoordinateShift_mem_lattice
-    (z : {w : InfinitePlace K // w ≠ w₀} → ℤ) :
-    unitCoordinateShift z ∈ unitCoordinateLattice (K := K) :=
-  ⟨z, rfl⟩
 
-open Classical in
-noncomputable instance countable_unitCoordinateLattice :
-    Countable (unitCoordinateLattice (K := K)) :=
-  Function.Surjective.countable
-    (f := fun z : {w : InfinitePlace K // w ≠ w₀} → ℤ ↦
-      (⟨unitCoordinateShift z, unitCoordinateShift_mem_lattice z⟩ :
-        unitCoordinateLattice (K := K)))
-    (by
-      intro g
-      obtain ⟨z, hz⟩ := g.prop
-      refine ⟨z, Subtype.ext ?_⟩
-      simpa using hz)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 open Classical in
 
@@ -107,21 +110,11 @@ def unitRadialAngularEquiv :
   measurable_toFun :=
     (measurable_pi_apply w₀).prodMk (measurable_pi_lambda fun w ↦ measurable_pi_apply w.val)
   measurable_invFun := by
-    apply measurable_pi_lambda
-    intro w
-    change Measurable (fun p : ℝ × ({w : InfinitePlace K // w ≠ w₀} → ℝ) ↦
-      if hw : w = w₀ then p.1 else p.2 ⟨w, hw⟩)
-    by_cases hw : w = w₀
-    · simpa [hw] using
-        (measurable_fst : Measurable (fun p : ℝ × ({w : InfinitePlace K // w ≠ w₀} → ℝ) ↦ p.1))
-    · simpa only [dif_neg hw, Function.comp_def] using
-        ((measurable_pi_apply (⟨w, hw⟩ : {w : InfinitePlace K // w ≠ w₀})).comp
-          (measurable_snd : Measurable (fun p : ℝ × ({w : InfinitePlace K // w ≠ w₀} → ℝ) ↦ p.2)))
+    measurability
 
 open Classical in
 
-def unitSlabCoordinates (a : ℝ) (u : {w : InfinitePlace K // w ≠ w₀} → ℝ) :
-    mixedEmbedding.realSpace K :=
+def unitSlabCoordinates (a : ℝ) (u : {w : InfinitePlace K // w ≠ w₀} → ℝ)  :=
   (unitRadialAngularEquiv (K := K)).symm (a, u)
 
 open Classical in
@@ -154,7 +147,7 @@ theorem measurePreserving_unitRadialAngularEquiv :
       ((volume : Measure ({w : InfinitePlace K // w = w₀} → ℝ)).prod
         (volume : Measure ({w : InfinitePlace K // w ≠ w₀} → ℝ))) := by
     convert he using 1 <;> congr 4 <;> exact Subsingleton.elim _ _
-  have hdefault : (default : {w : InfinitePlace K // w = w₀}).val = w₀ :=
+  have hdefault  :=
     (default : {w : InfinitePlace K // w = w₀}).prop
   simpa [unitRadialAngularEquiv, e, Function.comp_def,
     MeasurableEquiv.piEquivPiSubtypeProd, MeasurableEquiv.funUnique,

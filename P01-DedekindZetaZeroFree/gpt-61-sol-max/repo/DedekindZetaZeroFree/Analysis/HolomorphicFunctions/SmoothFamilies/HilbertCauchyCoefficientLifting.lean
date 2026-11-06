@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.HolomorphicFunctions.SmoothFamilies.SpatialCauchyDifferentiation
 public import DedekindZetaZeroFree.Analysis.HolomorphicFunctions.SmoothFamilies.UniformJetCauchyConvergence
 
 @[expose] public section
+
 
 section
 
@@ -56,7 +59,7 @@ private theorem zero_derivative {n : ℕ} (u : Space n → ℂ) :
     intro l
     induction l with
     | nil => rfl
-    | cons i l ih => simpa using ih
+    | cons i l ih => exact ih
   simp [coordinateDerivative, MultiIndex.directions, coordinateDerivativeList, hn]
 
  def compactFamily {n : ℕ} (B : LocalBall n) (K : Set (Space n))
@@ -73,7 +76,7 @@ private theorem compactFamily_continuous {n : ℕ} (B : LocalBall n)
     (hj : Raw.JetContinuousOn B f O) :
     letI : CompactSpace K := isCompact_iff_compactSpace.mp hc
     ContinuousOn (compactFamily B K hK O f hf) O := by
-  letI : CompactSpace K := isCompact_iff_compactSpace.mp hc
+  letI  := isCompact_iff_compactSpace.mp hc
   apply continuousOn_iff_continuous_restrict.mpr
   apply Metric.continuous_iff.mpr
   intro z₀ ε hε
@@ -90,12 +93,15 @@ private theorem compactFamily_continuous {n : ℕ} (B : LocalBall n)
     hb z z.property hz (⟨fun _ => 0, by simp⟩ : MultiIndex n 0) x
 
 set_option maxHeartbeats 800000 in
-private theorem coefficient_on_compact {n : ℕ} (B : LocalBall n)
+section
+variable {n : ℕ} (B : LocalBall n)
     {H : Type*} [NormedAddCommGroup H] [NormedSpace ℂ H] [CompleteSpace H]
     (R : H →L[ℂ] BallL2 B) (O : Set ℂ) (v : ℂ → H)
     (hv : ContinuousOn v O) (f : ℂ → Space n → ℂ)
     (hf : ∀ z ∈ O, ContDiffOn ℝ (⊤ : ℕ∞) (f z) B.carrier ∧
       (f z =ᵐ[volume.restrict B.carrier] (fun x => R (v z) x)))
+include n B H R O v hv f hf
+private theorem coefficient_on_compact  
     (hj : Raw.JetContinuousOn B f O)
     (c : ℂ) (r : ℝ) (hr : 0 < r) (hs : Metric.closedBall c r ⊆ O)
     (j : ℕ) (K : Set (Space n)) (hc : IsCompact K) (hK : K ⊆ B.carrier) :
@@ -114,7 +120,7 @@ private theorem coefficient_on_compact {n : ℕ} (B : LocalBall n)
   have hF : CircleIntegrable F c r :=
     ((compactFamily_continuous B K hc hK O f (fun z hz => (hf z hz).1) hj).mono
       (Metric.sphere_subset_closedBall.trans hs)).circleIntegrable hr.le
-  have hv' : CircleIntegrable v c r :=
+  have hv'  :=
     (hv.mono (Metric.sphere_subset_closedBall.trans hs)).circleIntegrable hr.le
   let S := LpToLpRestrictCLM (Space n) ℂ ℂ (volume.restrict B.carrier) 2 K
   have hS (u : BallL2 B) : S u =ᵐ[(volume.restrict B.carrier).restrict K] u :=
@@ -132,8 +138,7 @@ private theorem coefficient_on_compact {n : ℕ} (B : LocalBall n)
     intro z hz
     have hzO := hs (Metric.sphere_subset_closedBall hz)
     apply Lp.ext
-    have hfe : (f z) =ᵐ[(volume.restrict B.carrier).restrict K] (fun x => R (v z) x) := by
-      exact ae_restrict_of_ae (s := K) (hf z hzO).2
+    have hfe : (f z) =ᵐ[(volume.restrict B.carrier).restrict K] (fun x => R (v z) x) := ae_restrict_of_ae (s := K) (hf z hzO).2
     refine (ContinuousMap.coeFn_toLp (𝕜 := ℂ) (p := 2) (μ := μK) (F z)).trans ?_
     refine Filter.EventuallyEq.trans ?_ (hT (R (v z))).symm
     have hh := mp.quasiMeasurePreserving.ae_eq hfe
@@ -161,12 +166,7 @@ private theorem coefficient_on_compact {n : ℕ} (B : LocalBall n)
     rfl
   exact hxcoeff.symm.trans hx
 
-theorem coefficient_ae_eq {n : ℕ} (B : LocalBall n)
-    {H : Type*} [NormedAddCommGroup H] [NormedSpace ℂ H] [CompleteSpace H]
-    (R : H →L[ℂ] BallL2 B) (O : Set ℂ) (v : ℂ → H)
-    (hv : ContinuousOn v O) (f : ℂ → Space n → ℂ)
-    (hf : ∀ z ∈ O, ContDiffOn ℝ (⊤ : ℕ∞) (f z) B.carrier ∧
-      (f z =ᵐ[volume.restrict B.carrier] (fun x => R (v z) x)))
+theorem coefficient_ae_eq  
     (hjets : Raw.JetContinuousOn B f O)
     (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (hclosed : Metric.closedBall c ρ ⊆ O)
     (j : ℕ) :
@@ -182,9 +182,9 @@ theorem coefficient_ae_eq {n : ℕ} (B : LocalBall n)
     intro i
     rw [← hKu]
     exact Set.subset_iUnion K i
-  let g : Space n → ℂ := fun x =>
+  let g  := fun x =>
     (cauchyPowerSeries (fun z => f z x) c ρ j) (fun _ => (1 : ℂ))
-  let h : Space n → ℂ := fun x =>
+  let h  := fun x =>
     R ((cauchyPowerSeries v c ρ j) (fun _ => (1 : ℂ))) x
   change g =ᵐ[volume.restrict B.carrier] h
   rw [← hKu]
@@ -194,6 +194,8 @@ theorem coefficient_ae_eq {n : ℕ} (B : LocalBall n)
     (K i) (hKc i) (hKB i)
   rw [Measure.restrict_restrict_of_subset (hKB i)] at hh
   exact hh
+end
+
 
 end DedekindZetaZeroFree.KPContLocalHolomorphyUpgrade.CauchyAssembly.ContourLift
 
@@ -217,7 +219,7 @@ private theorem jets_continuous {n m : ℕ} (B : LocalBall n)
     (hjets : Raw.JetContinuousOn B f O) :
     letI : CompactSpace K := isCompact_iff_compactSpace.mp hcompact
     Continuous (fun z : O => compactJet (m := m) B K hK (f z) (hf z z.property)) := by
-  letI : CompactSpace K := isCompact_iff_compactSpace.mp hcompact
+  letI  := isCompact_iff_compactSpace.mp hcompact
   apply Metric.continuous_iff.mpr
   intro z₀ ε hε
   obtain ⟨δ, hδ, hbound⟩ := hjets z₀ z₀.property K hcompact hK m ε hε
@@ -236,10 +238,13 @@ private theorem jets_continuous {n m : ℕ} (B : LocalBall n)
   rw [← he]
   exact hbound z z.property hz α x
 
-theorem spatial_jet_continuousOn {n : ℕ} (B : LocalBall n)
+section
+variable {n : ℕ} (B : LocalBall n)
     (O : Set ℂ) (f : ℂ → Space n → ℂ)
     (hf : ∀ z ∈ O, ContDiffOn ℝ (⊤ : ℕ∞) (f z) B.carrier)
     (hjets : Raw.JetContinuousOn B f O)
+include n B O f hf hjets
+theorem spatial_jet_continuousOn  
     (m : ℕ) (α : MultiIndex n m) (x : Space n) (hx : x ∈ B.carrier) :
     ContinuousOn (fun z => coordinateDerivative α (f z) x) O := by
   apply Metric.continuousOn_iff.mpr
@@ -256,14 +261,11 @@ theorem spatial_jet_continuousOn {n : ℕ} (B : LocalBall n)
   rw [← he]
   exact hb z hz hdist α ⟨x, Set.mem_singleton x⟩
 
-theorem jetContinuousOn_continuous_mul {n : ℕ} (B : LocalBall n)
-    (O : Set ℂ) (f : ℂ → Space n → ℂ)
-    (hf : ∀ z ∈ O, ContDiffOn ℝ (⊤ : ℕ∞) (f z) B.carrier)
-    (hjets : Raw.JetContinuousOn B f O)
+theorem jetContinuousOn_continuous_mul  
     (q : ℂ → ℂ) (hq : ContinuousOn q O) :
     Raw.JetContinuousOn B (fun z y => q z * f z y) O := by
   intro z₀ hz₀ K hcompact hK m ε hε
-  letI : CompactSpace K := isCompact_iff_compactSpace.mp hcompact
+  letI  := isCompact_iff_compactSpace.mp hcompact
   have hcont := (continuousOn_iff_continuous_restrict.mp hq).smul
     (jets_continuous (m := m) B K hcompact hK O f hf hjets)
   obtain ⟨δ, hδ, hb⟩ := Metric.continuous_iff.mp hcont (⟨z₀, hz₀⟩ : O) ε hε
@@ -277,10 +279,12 @@ theorem jetContinuousOn_continuous_mul {n : ℕ} (B : LocalBall n)
     (ContinuousMap.norm_lt_iff _ hε).mp hpi x
   have hfs : ∀ t ∈ O, ContDiffOn ℝ (⊤ : ℕ∞) (fun y => q t * f t y) B.carrier := by
     intro t ht
-    simpa only [smul_eq_mul] using (hf t ht).const_smul (q t)
+    exact (hf t ht).const_smul (q t)
   change ‖coordinateDerivativeList α.directions (fun y => q z * f z y - q z₀ * f z₀ y) x‖ < ε
   rw [finite_coordinate_derivative_sub B (hfs z hz) (hfs z₀ hz₀) α.directions (hK x.property)]
   simpa only [coordinateDerivative, finite_coordinate_derivative_const_mul] using hpt
+end
+
 
 theorem spatial_jets_differentiableOn {n : ℕ} (B : LocalBall n)
     {H : Type*} [NormedAddCommGroup H] [NormedSpace ℂ H] [CompleteSpace H]
@@ -300,8 +304,8 @@ theorem spatial_jets_differentiableOn {n : ℕ} (B : LocalBall n)
     interior_subset (hsO (Metric.closedBall_subset_ball (by dsimp [ρ]; linarith) hz))
   have hball : Metric.ball c ρ ⊆ interior O := fun z hz =>
     hsO (Metric.ball_subset_ball (by dsimp [ρ]; linarith) hz)
-  let g : ℂ → ℂ := fun z => coordinateDerivative α (f z) x
-  let G : ℂ → ℂ := fun w => (2 * Real.pi * Complex.I : ℂ)⁻¹ •
+  let g  := fun z => coordinateDerivative α (f z) x
+  let G  := fun w => (2 * Real.pi * Complex.I)⁻¹ •
     ∮ z in C(c, ρ), (z - w)⁻¹ • g z
   have hG : DifferentiableOn ℂ G (Metric.ball c ρ) := by
     have hi : CircleIntegrable g c ρ :=
@@ -316,8 +320,8 @@ theorem spatial_jets_differentiableOn {n : ℕ} (B : LocalBall n)
     intro w hw
     let d := ρ - ‖w - c‖
     have hd : 0 < d := by dsimp [d]; exact sub_pos.mpr (mem_ball_iff_norm.mp hw)
-    let a : ℂ → ℂ := fun z => (z - c) * star (z - w) *
-      ((max (Complex.normSq (z - w)) (d ^ 2))⁻¹ : ℝ)
+    let a  := fun z => (z - c) * star (z - w) *
+      ((max (Complex.normSq (z - w)) (d ^ 2))⁻¹)
     have ha : Continuous a := by
       have hm : Continuous (fun z : ℂ => max (Complex.normSq (z - w)) (d ^ 2)) := by fun_prop
       have hn : ∀ z : ℂ, max (Complex.normSq (z - w)) (d ^ 2) ≠ 0 := by
@@ -350,8 +354,8 @@ theorem spatial_jets_differentiableOn {n : ℕ} (B : LocalBall n)
         rw [he, norm_zero] at hzρ
         linarith
       rw [haeq z hz, ← mul_assoc, inv_mul_cancel₀ hzc, one_mul]
-    let F : ℂ → Space n → ℂ := fun z y => a z * f z y
-    let V : ℂ → H := fun z => a z • v z
+    let F  := fun z y => a z * f z y
+    let V  := fun z => a z • v z
     have hF : ∀ z ∈ O, ContDiffOn ℝ (⊤ : ℕ∞) (F z) B.carrier :=
       fun z hz => contDiffOn_const.mul (hf z hz).1
     have hFj : Raw.JetContinuousOn B F O :=
@@ -378,7 +382,7 @@ theorem spatial_jets_differentiableOn {n : ℕ} (B : LocalBall n)
         Set.countable_empty hw (hv.continuousOn.mono hclosed)
         (fun z hz => (hv z (hclosed (Metric.ball_subset_closedBall hz.1))).differentiableAt
           (Filter.mem_of_superset (isOpen_interior.mem_nhds (hball hz.1)) interior_subset))
-    let A : Space n → ℂ := fun y => (cauchyPowerSeries (fun z => F z y) c ρ 0)
+    let A  := fun y => (cauchyPowerSeries (fun z => F z y) c ρ 0)
       (fun _ => (1 : ℂ))
     have hAs := coefficient_smooth_and_derivatives B O F hF hFj c ρ hρ hclosed 0
     have hAe : A =ᵐ[volume.restrict B.carrier] f w := by
@@ -386,10 +390,9 @@ theorem spatial_jets_differentiableOn {n : ℕ} (B : LocalBall n)
         (fun z hz => ⟨hF z hz, hFa z hz⟩) hFj c ρ hρ hclosed 0
       rw [hcoeff] at h
       exact h.trans ((hf w (hclosed (Metric.ball_subset_closedBall hw))).2.symm)
-    have hAf : Set.EqOn A (f w) B.carrier := Measure.eqOn_open_of_ae_eq hAe
+    have hAf  := Measure.eqOn_open_of_ae_eq hAe
       Metric.isOpen_ball hAs.1.continuousOn (hf w (hclosed (Metric.ball_subset_closedBall hw))).1.continuousOn
-    have hder : coordinateDerivative α A x = coordinateDerivative α (f w) x := by
-      exact (KPLocalCubeSobolevJets.coordinateDerivativeList_eventuallyEq α.directions
+    have hder : coordinateDerivative α A x = coordinateDerivative α (f w) x := (KPLocalCubeSobolevJets.coordinateDerivativeList_eventuallyEq α.directions
         (Filter.eventuallyEq_of_mem (Metric.isOpen_ball.mem_nhds hx) hAf)).eq_of_nhds
     change coordinateDerivative α (f w) x = G w
     rw [← hder, hAs.2 m α hx]
@@ -402,7 +405,7 @@ theorem spatial_jets_differentiableOn {n : ℕ} (B : LocalBall n)
     change (z - c)⁻¹ • coordinateDerivativeList α.directions (fun y => a z * f z y) x = _
     rw [finite_coordinate_derivative_const_mul]
     simp only [smul_eq_mul, ← mul_assoc, hkernel z hz, coordinateDerivative]
-  have hnear : g =ᶠ[nhds c] G := Filter.eventuallyEq_of_mem (Metric.ball_mem_nhds c hρ) heq
+  have hnear  := Filter.eventuallyEq_of_mem (Metric.ball_mem_nhds c hρ) heq
   exact (hG c (Metric.mem_ball_self hρ)).differentiableAt (Metric.ball_mem_nhds c hρ)
     |>.congr_of_eventuallyEq hnear |>.differentiableWithinAt
 
@@ -421,7 +424,7 @@ namespace DedekindZetaZeroFree.KPContLocalHolomorphyUpgrade.CauchyAssembly
 open MeasureTheory KPContLocalNorm
 
 def spatialCauchyCoefficient {n : ℕ} (f : ℂ → Space n → ℂ)
-    (c : ℂ) (r : ℝ) (j : ℕ) (x : Space n) : ℂ :=
+    (c : ℂ) (r : ℝ) (j : ℕ) (x : Space n)  :=
   (cauchyPowerSeries (fun z => f z x) c r j) (fun _ => (1 : ℂ))
 
 theorem eqOn_of_ae_eq_of_contDiffOn {n : ℕ} {B : LocalBall n} {g h : Space n → ℂ}
@@ -431,8 +434,11 @@ theorem eqOn_of_ae_eq_of_contDiffOn {n : ℕ} {B : LocalBall n} {g h : Space n �
     rw [LocalBall.carrier, Metric.isOpen_ball.interior_eq]
     exact subset_closure)
 
-theorem smooth_cauchy_coefficient_unique {n : ℕ} (B : LocalBall n)
+section
+variable {n : ℕ} (B : LocalBall n)
     {H : Type*} [NormedAddCommGroup H] [NormedSpace ℂ H]
+include n B H
+theorem smooth_cauchy_coefficient_unique  
     (R : H →L[ℂ] BallL2 B) (v : ℂ → H) (z₀ : ℂ) (ρ : ℝ) (j : ℕ)
     (c : Space n → ℂ) (hc : ContDiffOn ℝ (⊤ : ℕ∞) c B.carrier)
     (hcae : c =ᵐ[volume.restrict B.carrier]
@@ -443,8 +449,7 @@ theorem smooth_cauchy_coefficient_unique {n : ℕ} (B : LocalBall n)
     Set.EqOn g c B.carrier :=
   eqOn_of_ae_eq_of_contDiffOn hg hc (hgae.trans hcae.symm)
 
-theorem cauchy_coefficients_of_jet_continuity {n : ℕ} (B : LocalBall n)
-    {H : Type*} [NormedAddCommGroup H] [NormedSpace ℂ H] [CompleteSpace H]
+theorem cauchy_coefficients_of_jet_continuity   [CompleteSpace H]
     (R : H →L[ℂ] BallL2 B)
     (O : Set ℂ) (v : ℂ → H) (hv : DifferentiableOn ℂ v O)
     (f : ℂ → Space n → ℂ)
@@ -461,7 +466,7 @@ theorem cauchy_coefficients_of_jet_continuity {n : ℕ} (B : LocalBall n)
             (fun x => R ((cauchyPowerSeries v z₀ ρ j) (fun _ => (1 : ℂ))) x)) →
           Set.EqOn g (coeff j) B.carrier)) ∧
       Raw.SmoothPowerSeriesOn B z₀ ρ coeff f := by
-  let coeff : ℕ → Space n → ℂ := spatialCauchyCoefficient f z₀ ρ
+  let coeff  := spatialCauchyCoefficient f z₀ ρ
   have hsmooth : ∀ j, ContDiffOn ℝ (⊤ : ℕ∞) (coeff j) B.carrier := by
     intro j
     exact (ContourLift.coefficient_smooth_and_derivatives B O f
@@ -492,7 +497,7 @@ theorem cauchy_coefficients_of_jet_continuity {n : ℕ} (B : LocalBall n)
       K hK hKB m r hr hrρ ε hε
     refine ⟨N, ?_⟩
     intro M hM z hz α x
-    have hzO : z ∈ O := hclosed ((Metric.closedBall_subset_closedBall hrρ.le) hz)
+    have hzO  := hclosed ((Metric.closedBall_subset_closedBall hrρ.le) hz)
     rw [coordinate_derivative_taylor_remainder B coeff hsmooth (f z)
       (hf z hzO).1 (z - z₀) M α (hKB x.property)]
     have hderiv : ∀ j, coordinateDerivative α (coeff j) x =
@@ -502,7 +507,9 @@ theorem cauchy_coefficients_of_jet_continuity {n : ℕ} (B : LocalBall n)
       exact (ContourLift.coefficient_smooth_and_derivatives B O f
         (fun w hw => (hf w hw).1) hjets z₀ ρ hρ hclosed j).2 m α (hKB x.property)
     simp only [hderiv]
-    exact hN M hM z hz α x
+    apply hN <;> assumption
+end
+
 
 end DedekindZetaZeroFree.KPContLocalHolomorphyUpgrade.CauchyAssembly
 

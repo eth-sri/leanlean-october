@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Characters.CharacterLift
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.Remainders.GeometricBudgetsAndRowRatios
 
 @[expose] public section
+
 
 section
 /-
@@ -57,7 +60,7 @@ theorem cutoff_pair_decay
         · apply (div_lt_iff₀ hd0).mpr
           change C.N < (Ideal.absNorm u : ℝ) * (Ideal.absNorm C.d : ℝ)
           simpa only [map_mul, Nat.cast_mul,
-            mul_comm (Ideal.absNorm C.d : ℝ) (Ideal.absNorm u : ℝ)] using hduN.2.2.1
+            mul_comm (Ideal.absNorm C.d) (Ideal.absNorm u)] using hduN.2.2.1
         · simpa only [ExplicitTerms.norm, mul_div_assoc] using huN.2.2
       let L : Finset (Ideal (𝓞 F)) := {p.1, p.2}
       have hL : L ⊆ Sieve.paperShell F ⊤ (C.N / (Ideal.absNorm C.d : ℝ)) := by
@@ -80,7 +83,7 @@ theorem cutoff_pair_decay
         C.M C.N C.K hM hN hK0 C.d C.hd0 hd1 hdN L hL (fun _ => 1) θ hθ η
       have hc0 : 0 < (Ideal.absNorm c : ℝ) := by
         exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr D.original_ne_bot)
-      have habsorb := TransformTail.absorb (Ideal.absNorm c : ℝ) ε 2 T CW
+      have habsorb := TransformTail.absorb (Ideal.absNorm c) ε 2 T CW
         hc0 hε hT hCW.le A hA horder C.M C.N C.K (norm C.d) hM hN hd1 hK
       have henergy : (∑ u ∈ L, ‖(1 : ℂ)‖ ^ 2) ≤ (2 : ℝ) := by
         have hc : L.card ≤ 2 := (Finset.card_insert_le p.1 {p.2}).trans (by simp)
@@ -126,11 +129,14 @@ open scoped NumberField Classical BigOperators
 namespace DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitAssembly
 open ExplicitTerms
 
- theorem column_energy_le {F : Type} [Field F] [NumberField F]
+ section
+variable {F : Type} [Field F] [NumberField F]
     {c : Ideal (𝓞 F)} {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
-    (C : Context Q) :
+    (C : Context Q)
+include F c Q C
+theorem column_energy_le   :
     (∑ u ∈ C.columns, ‖C.lam (C.d * u)‖ ^ 2) ≤ Sieve.energy F c C.N C.lam := by
-  have hinj : Set.InjOn (fun u => C.d * u) (C.columns : Set (Ideal (𝓞 F))) := by
+  have hinj : Set.InjOn (fun u => C.d * u) C.columns := by
     intro u hu v hv h
     exact mul_left_cancel₀ C.hd0 h
   have heq := Finset.sum_image (f := fun b => ‖C.lam b‖ ^ 2) hinj
@@ -143,9 +149,7 @@ open ExplicitTerms
   · intro b hb hnot
     positivity
 
- theorem pair_coefficient_sum_le {F : Type} [Field F] [NumberField F]
-    {c : Ideal (𝓞 F)} {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
-    (C : Context Q) :
+ theorem pair_coefficient_sum_le   :
     (∑ p ∈ C.pairs, ‖C.coefficient p‖) ≤
       (C.columns.card : ℝ) * Sieve.energy F c C.N C.lam := by
   calc
@@ -162,6 +166,8 @@ open ExplicitTerms
       sq_sum_le_card_mul_sum_sq
     _ ≤ (C.columns.card : ℝ) * Sieve.energy F c C.N C.lam :=
       mul_le_mul_of_nonneg_left (column_energy_le C) (Nat.cast_nonneg _)
+end
+
 
 theorem finite_pair_energy_bound (F : Type) [Field F] [NumberField F] :
     ∃ H : ℝ, 0 < H ∧
@@ -177,7 +183,7 @@ theorem finite_pair_energy_bound (F : Type) [Field F] [NumberField F] :
     intro u hu
     have hnorm : (Ideal.absNorm u : ℝ) ≤ 2 * C.N / norm C.d :=
       ((Sieve.mem_idealAdmissibleFinset F c _ u).mp (Finset.mem_filter.mp hu).1).2.2
-    exact hnorm.trans ((div_le_iff₀ (by linarith : 0 < norm C.d)).mpr (by nlinarith))
+    exact hnorm.trans ((div_le_iff₀ (by linarith)).mpr (by nlinarith))
   have henergy : 0 ≤ Sieve.energy F c C.N C.lam := by
     unfold Sieve.energy; positivity
   exact (pair_coefficient_sum_le C).trans
@@ -193,8 +199,11 @@ noncomputable section
 open scoped NumberField Classical BigOperators
 namespace DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitAssembly.LocalTailAux
 
-lemma cutoff_inner_bound (F : Type*) [Field F] [NumberField F]
-    (p : ℝ) (hp : 1 < p) :
+section
+variable (F : Type*) [Field F] [NumberField F]
+    (p : ℝ) (hp : 1 < p)
+include F p hp
+lemma cutoff_inner_bound   :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (k : ℝ → ℂ) (P : ℝ), 0 ≤ P →
       (∀ x : ℝ, 0 < x → ‖k x‖ ≤ P * Real.rpow x (-p)) →
       ∀ (T L : ℝ) (d : Ideal (𝓞 F)), 0 < T → 1 ≤ L → d ≠ ⊥ →
@@ -236,8 +245,7 @@ lemma cutoff_inner_bound (F : Type*) [Field F] [NumberField F]
         ((T / (Ideal.absNorm d : ℝ)) * (T / (Ideal.absNorm d : ℝ)) ^ (-p)) := by ring
     _ = _ := by rw [he]; ring
 
-theorem primal_tail_all_scale (F : Type*) [Field F] [NumberField F]
-    (p : ℝ) (hp : 1 < p) :
+theorem primal_tail_all_scale   :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (g : ℝ → ℂ) (P : ℝ), 0 ≤ P →
       (∀ x : ℝ, 0 < x → ‖g x‖ ≤ P * Real.rpow x (-p)) →
       ∀ (T Z : ℝ), 0 < T → 0 < Z →
@@ -278,8 +286,7 @@ theorem primal_tail_all_scale (F : Type*) [Field F] [NumberField F]
     _ ≤ ∑ _d ∈ D, C * P * Real.rpow (Z / T) (-p) := Finset.sum_le_sum hterm
     _ = _ := by simp only [Finset.sum_const, nsmul_eq_mul]; ring
 
-theorem small_dual_tail_all_scale (F : Type*) [Field F] [NumberField F]
-    (p : ℝ) (hp : 1 < p) :
+theorem small_dual_tail_all_scale   :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (k : ℝ → ℂ) (P : ℝ), 0 ≤ P →
       (∀ x : ℝ, 0 < x → ‖k x‖ ≤ P * Real.rpow x (-p)) →
       ∀ (T Y : ℝ), 0 < T → 0 < Y →
@@ -338,8 +345,7 @@ theorem small_dual_tail_all_scale (F : Type*) [Field F] [NumberField F]
     _ ≤ ∑ _d ∈ D, C * P * Real.rpow (T / Y) (1-p) := Finset.sum_le_sum hterm
     _ = _ := by simp only [Finset.sum_const, nsmul_eq_mul]; ring
 
-theorem dual_cutoff_tail_all_scale (F : Type*) [Field F] [NumberField F]
-    (p : ℝ) (hp : 1 < p) :
+theorem dual_cutoff_tail_all_scale   :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (k : ℝ → ℂ) (P : ℝ), 0 ≤ P →
       (∀ x : ℝ, 0 < x → ‖k x‖ ≤ P * Real.rpow x (-p)) →
       ∀ (T Z L : ℝ), 0 < T → 0 < Z → 1 ≤ L →
@@ -374,6 +380,8 @@ theorem dual_cutoff_tail_all_scale (F : Type*) [Field F] [NumberField F]
         ∑' b, ReflectedTails.dualCutoffSummand F k T L d b‖ := norm_sum_le _ _
     _ ≤ ∑ _d ∈ D, C * P * Real.rpow (L * T / Z) (1-p) := Finset.sum_le_sum hterm
     _ = _ := by simp only [Finset.sum_const, nsmul_eq_mul]; ring
+end
+
 
 end DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitAssembly.LocalTailAux
 
@@ -395,7 +403,7 @@ private lemma global_power_of_two_ended (f : ℝ → ℂ) (P p : ℝ) (hp : 0 < 
     (hP : 0 ≤ P) : ∀ x : ℝ, 0 < x → ‖f x‖ ≤ P * Real.rpow x (-p) := by
   intro x hx
   rcases le_or_gt x 1 with hx1 | hx1
-  · exact hsmall x hx hx1
+  · apply hsmall <;> assumption
   · exact (hlarge x hx1.le).trans (mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow_of_exponent_le hx1.le (neg_le_neg hn)) hP)
 
@@ -406,8 +414,8 @@ private lemma field_global_power (D : ℝ) (r : ℕ) (f : ℝ → ℂ) (hD : 0 <
   obtain ⟨P, hP, hs, hl⟩ := DedekindZetaZeroFree.LargeSieve.fieldTransform_euler_two_ended_bound
     D r f hD hr hf hc 0 ⌈p⌉₊ p hp
   refine ⟨P, hP, global_power_of_two_ended _ P p hp ⌈p⌉₊ (Nat.le_ceil p) ?_ ?_ hP.le⟩
-  · simpa using hs
-  · simpa using hl
+  · exact hs
+  · exact hl
 
 private lemma reflected_global_power (D : ℝ) (r : ℕ) (f : ℝ → ℂ) (a b : ℝ)
     (hD : 0 < D) (hr : 1 ≤ r) (hf : ContDiff ℝ ∞ f)
@@ -417,16 +425,16 @@ private lemma reflected_global_power (D : ℝ) (r : ℕ) (f : ℝ → ℂ) (a b 
   obtain ⟨P, hP, hs, hl⟩ := DedekindZetaZeroFree.LargeSieve.reflectedSquareTransform_euler_two_ended_bound
     D r f a b hD hr hf hsupp ha hab 0 ⌈p⌉₊ p hp
   refine ⟨P, hP, global_power_of_two_ended _ P p hp ⌈p⌉₊ (Nat.le_ceil p) ?_ ?_ hP.le⟩
-  · simpa using hs
-  · simpa using hl
+  · exact hs
+  · exact hl
 
 private lemma compact_sq (h : ℝ → ℂ) (hc : HasCompactSupport h) :
     HasCompactSupport (fun t : ℝ => h (t ^ 2)) := by
-  obtain ⟨r, hr⟩ := Metric.isBounded_iff_subset_closedBall (0 : ℝ) |>.mp hc.isBounded
+  obtain ⟨r, hr⟩ := Metric.isBounded_iff_subset_closedBall (0) |>.mp hc.isBounded
   apply HasCompactSupport.of_support_subset_isCompact
     (K := Set.Icc (-(|r| + 1)) (|r| + 1)) isCompact_Icc
   intro t ht
-  have hmem : t ^ 2 ∈ tsupport h := subset_tsupport h ht
+  have hmem  := subset_tsupport h ht
   have hbound : |t ^ 2| ≤ r := by
     have := hr hmem
     simpa [Metric.mem_closedBall, dist_zero_right] using this
@@ -436,7 +444,7 @@ private lemma compact_sq (h : ℝ → ℂ) (hc : HasCompactSupport h) :
 
 private lemma square_power (x p : ℝ) (hx : 0 < x) :
     Real.rpow (x ^ 2) (-(p / 2)) = Real.rpow x (-p) := by
-  have h : Real.rpow x 2 = x ^ (2 : ℕ) := Real.rpow_two x
+  have h : Real.rpow x 2 = x ^ (2) := Real.rpow_two x
   rw [← h]
   have h2 : Real.rpow x (2 * (-(p/2))) =
       Real.rpow (Real.rpow x 2) (-(p/2)) := Real.rpow_mul hx.le 2 (-(p/2))
@@ -459,11 +467,11 @@ theorem kernel_power_certificates
   · by_cases hF : NumberField.IsTotallyComplex F
     · let f : ℝ → ℂ := fun x => W x
       have hf : ContDiff ℝ ∞ f := Complex.ofRealCLM.contDiff.comp hW.smooth
-      have hsupp : Function.support f ⊆ Set.Icc (1/2 : ℝ) (5/2) := by
+      have hsupp : Function.support f ⊆ Set.Icc (1/2) (5/2) := by
         intro x hx
         by_contra hn
         exact hx (by simp [f, hW.zero_outside x hn])
-      have hfc : HasCompactSupport f :=
+      have hfc  :=
         HasCompactSupport.of_support_subset_isCompact isCompact_Icc hsupp
       have hD := principalDiscriminant_pos F
       have hr := principalComplexPlaces_pos F hF
@@ -488,7 +496,7 @@ theorem kernel_power_certificates
               _ ≤ P₁ * (Real.rpow 2 p * Real.rpow x (-p)) :=
                 mul_le_mul_of_nonneg_left hpow hP₁0
               _ = P₀ * Real.rpow x (-p) := by dsimp [P₀]; ring)
-        · have hn : x ^ 2 ∉ Set.Icc (1/2 : ℝ) (5/2) := by
+        · have hn : x ^ 2 ∉ Set.Icc (1/2) (5/2) := by
             intro h
             have := h.2
             have : 2 < x := lt_of_not_ge hx2
@@ -549,10 +557,13 @@ namespace DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitAssembly
 
 open ExplicitTerms
 
-def localBlockKernel {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
+section
+variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
     {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
     (C : Context Q) (p : Ideal (𝓞 F) × Ideal (𝓞 F)) (hp : C.ValidPair p)
-    (B : ℝ) (unit : Bool := false) : ℂ :=
+include F c Q C p hp
+def localBlockKernel  
+    (B : ℝ) (unit : Bool := false)  :=
   (∑ e ∈ C.mobiusDivisors, C.prefactor e p hp *
       ∑ a ∈ C.reflectedRows B unit,
         (C.primitive p hp) a *
@@ -563,13 +574,16 @@ def localBlockKernel {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
         C.originalRemainder (c * C.d * (p.1 * p.2))
           (Real.sqrt (C.M / norm a)) (C.Y2 B) (C.Z2 B) C.L2
 
-def localTailMajorant {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
-    (C : Context Q) (p : Ideal (𝓞 F) × Ideal (𝓞 F)) (hp : C.ValidPair p) : ℝ :=
+def localTailMajorant    :=
   ‖localBlockKernel C p hp 1 true‖ +
     ∑ B ∈ dyadicScales C, ‖localBlockKernel C p hp B‖
+end
 
-private lemma mu_norm {F : Type} [Field F] [NumberField F] (j : Ideal (𝓞 F)) :
+
+section
+variable {F : Type} [Field F] [NumberField F]
+include F
+private lemma mu_norm   (j : Ideal (𝓞 F)) :
     ‖(UniqueFactorizationMonoid.moebius j : ℂ)‖ ≤ 1 := by
   by_cases h : Squarefree j
   · rw [Squarefree.moebius_eq h]
@@ -579,7 +593,7 @@ private lemma mu_norm {F : Type} [Field F] [NumberField F] (j : Ideal (𝓞 F)) 
   · rw [UniqueFactorizationMonoid.moebius_of_not_squarefree h]
     simp
 
-private lemma three_tail_bound {F : Type} [Field F] [NumberField F]
+private lemma three_tail_bound  
     (a : ℝ) (ha : 1 < a) :
     ∃ H : ℝ, 0 ≤ H ∧ ∀ (g k : ℝ → ℂ) (P : ℝ), 0 ≤ P →
       (∀ x, 0 < x → ‖g x‖ ≤ P * Real.rpow x (-a)) →
@@ -587,9 +601,9 @@ private lemma three_tail_bound {F : Type} [Field F] [NumberField F]
       ∀ (j : Ideal (𝓞 F)), j ≠ ⊥ →
       ∀ (T Y Z L : ℝ), 0 < T → 0 < Y → 0 < Z → 1 ≤ L →
       ‖ReflectedTails.primalTail F g T ((idealDivisors j).filter (fun f => Z < norm f))
-          (fun f => (UniqueFactorizationMonoid.moebius f : ℂ)) +
+          (fun f => (UniqueFactorizationMonoid.moebius f)) +
         ReflectedTails.smallDualTail F k T ((idealDivisors j).filter (fun f => norm f ≤ Y))
-          (fun f => (UniqueFactorizationMonoid.moebius f : ℂ)) +
+          (fun f => (UniqueFactorizationMonoid.moebius f)) +
         ReflectedTails.dualCutoffTail F k T L
           ((idealDivisors j).filter (fun f => Y < norm f ∧ norm f ≤ Z))
           (fun f => (UniqueFactorizationMonoid.moebius f : ℂ))‖ ≤
@@ -633,30 +647,33 @@ private lemma three_tail_bound {F : Type} [Field F] [NumberField F]
     mul_nonneg (mul_nonneg hCk hm) h1, mul_nonneg (mul_nonneg hCk hm) h3,
     mul_nonneg (mul_nonneg hCl hm) h1, mul_nonneg (mul_nonneg hCl hm) h2]
 
-private lemma norm_pos {F : Type} [Field F] [NumberField F] {j : Ideal (𝓞 F)}
+private lemma norm_pos   {j : Ideal (𝓞 F)}
     (hj : j ≠ ⊥) : 0 < norm j := by
   unfold ExplicitTerms.norm
   exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hj)
+end
 
-private lemma original_row_pos {F : Type} [Field F] [NumberField F]
+
+section
+variable {F : Type} [Field F] [NumberField F]
     {c : Ideal (𝓞 F)} {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+include F c Q
+private lemma original_row_pos  
     (C : Context Q) (B : ℝ) (unit : Bool) {r : Ideal (𝓞 F)}
     (hr : r ∈ C.originalRows B unit) : 0 < norm r := by
   cases unit
   · have hs := ((Sieve.mem_paperShell F (c * C.d) B r).mp (Finset.mem_filter.mp hr).1).1
     exact norm_pos hs.ne_zero
-  · have he : r = ⊤ := Finset.mem_singleton.mp (Finset.mem_filter.mp hr).1
+  · have he  := Finset.mem_singleton.mp (Finset.mem_filter.mp hr).1
     simp [he, ExplicitTerms.norm]
 
-private lemma reflected_row_pos {F : Type} [Field F] [NumberField F]
-    {c : Ideal (𝓞 F)} {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+private lemma reflected_row_pos  
     (C : Context Q) (B : ℝ) (unit : Bool) {r : Ideal (𝓞 F)}
     (hr : r ∈ C.reflectedRows B unit) : 0 < norm r := by
   obtain ⟨tr, ht, rfl⟩ := Finset.mem_image.mp hr
   exact norm_pos (Finset.mem_filter.mp ht).2.2.2
 
-private lemma thresholds_pos {F : Type} [Field F] [NumberField F]
-    {c : Ideal (𝓞 F)} {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+private lemma thresholds_pos  
     (C : Context Q) (hM : 1 ≤ C.M) (hN : 1 ≤ C.N) (hδ : 0 < C.δ)
     (B : ℝ) (hB : 0 < B) :
     (0 < C.Y2 B ∧ 0 < C.Z2 B ∧ 1 ≤ C.L2) ∧
@@ -687,8 +704,7 @@ private lemma thresholds_pos {F : Type} [Field F] [NumberField F]
       simp only [Real.rpow_eq_pow]
       positivity
 
-private lemma local_block_budget {F : Type} [Field F] [NumberField F]
-    {c : Ideal (𝓞 F)} {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+private lemma local_block_budget  
     (W : ℝ → ℝ) (a : ℝ) (ha : 1 < a) :
     ∃ J : ℝ, 0 ≤ J ∧ ∀ C : Context Q, C.W = W →
       1 ≤ C.M → 1 ≤ C.N → 0 < C.δ →
@@ -701,14 +717,13 @@ private lemma local_block_budget {F : Type} [Field F] [NumberField F]
   intro C hW hM hN hδ p hp B unit hB
   have hthr := thresholds_pos C hM hN hδ B hB
   have hpc : p.1 * p.2 ≠ ⊥ := mul_ne_zero hp.hu0 hp.hv0
-  have hc0 : c ≠ ⊥ := C.D.original_ne_bot
+  have hc0  := C.D.original_ne_bot
   have hj : (c * C.d) * (p.1 * p.2) ≠ ⊥ := mul_ne_zero (mul_ne_zero hc0 C.hd0) hpc
   have horig (r : Ideal (𝓞 F)) (hr : r ∈ C.originalRows B unit) :
       ‖C.originalRemainder ((c * C.d) * (p.1 * p.2)) (Real.sqrt (C.M / norm r))
         (C.Y2 B) (C.Z2 B) C.L2‖ ≤
       H * P * ((idealDivisors ((c * C.d) * (p.1 * p.2))).card : ℝ) *
-        LocalTailAux.tailBudget a (Real.sqrt (C.M / norm r)) (C.Y2 B) (C.Z2 B) C.L2 := by
-    exact ht _ _ P hP (fun x hx => (hcert C hW x hx).1)
+        LocalTailAux.tailBudget a (Real.sqrt (C.M / norm r)) (C.Y2 B) (C.Z2 B) C.L2 := ht _ _ P hP (fun x hx => (hcert C hW x hx).1)
       (fun x hx => (hcert C hW x hx).2.1) _ hj _ _ _ _
       (Real.sqrt_pos.mpr (div_pos (zero_lt_one.trans_le hM) (original_row_pos C B unit hr)))
       hthr.1.1 hthr.1.2.1 hthr.1.2.2
@@ -768,8 +783,7 @@ private lemma local_block_budget {F : Type} [Field F] [NumberField F]
     ring))
 
 theorem uniform_local_tail_pair
-    {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+     
     (D : Sieve.AllIndexNormalizedFamilyData Q) (W : ℝ → ℝ)
     (ε : ℝ) (hε : 0 < ε) (δ : ℝ) (hδ : 0 < δ) (hδε : δ ≤ ε / 100) :
     ∃ B, 0 ≤ B ∧
@@ -780,7 +794,7 @@ theorem uniform_local_tail_pair
         1 ≤ norm C.d → norm C.d ≤ 2 * C.N →
         ∀ (p : Ideal (𝓞 F) × Ideal (𝓞 F)) (hp : C.ValidPair p),
           p ∈ C.pairs → localTailMajorant C p hp ≤ B * Real.rpow (C.M * C.N) (-2) := by
-  let a : ℝ := 1 + (12 + 4 * δ) / δ
+  let a  := 1 + (12 + 4 * δ) / δ
   have ha : 1 < a := by
     dsimp [a]
     have : 0 < (12 + 4 * δ) / δ := div_pos (by positivity) hδ
@@ -804,6 +818,8 @@ theorem uniform_local_tail_pair
   have hg := hgeom C hD heδ hM hN hKlo hKhi hd1 hd2 p hp hpair
   rw [hexp] at hg
   exact hmajor.trans ((mul_le_mul_of_nonneg_left hg hJ).trans_eq (by ring))
+end
+
 
 end DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitAssembly
 
@@ -906,7 +922,7 @@ theorem uniform_remainder_small_delta
   have hSN : C.N ≤ C.M * C.N := by nlinarith
   have hpower : Real.rpow (C.M * C.N) (-2) * C.N ≤ 1 := by
     have hpow : Real.rpow (C.M * C.N) (-2) = ((C.M * C.N) ^ 2)⁻¹ :=
-      (Real.rpow_neg hSpos.le (2 : ℝ)).trans
+      (Real.rpow_neg hSpos.le (2)).trans
         (congrArg Inv.inv (Real.rpow_two (C.M * C.N)))
     rw [hpow]
     apply (inv_mul_le_iff₀ (pow_pos hSpos 2)).mpr
@@ -924,7 +940,7 @@ theorem uniform_remainder_small_delta
         ((Bc + Bl) * Real.rpow (C.M * C.N) (-2)) := by
       apply Finset.sum_le_sum
       intro p hp
-      have hv : C.ValidPair p := (Finset.mem_filter.mp hp).2
+      have hv  := (Finset.mem_filter.mp hp).2
       rw [dif_pos hv]
       apply mul_le_mul_of_nonneg_left _ (norm_nonneg _)
       simpa only [add_mul] using add_le_add

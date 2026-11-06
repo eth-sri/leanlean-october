@@ -12,8 +12,11 @@ namespace DedekindZetaZeroFree.KPCubicFamilyResolution
 open scoped ValuativeRel
 open ValuativeRel
 
- noncomputable def exponent (K : Type*) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] : Kˣ →* Multiplicative ℤ where
+ section
+variable (K : Type*) [Field K] [ValuativeRel K]
+    [TopologicalSpace K] [IsNonarchimedeanLocalField K]
+include K
+noncomputable def exponent   : Kˣ →* Multiplicative ℤ where
   toFun x := Multiplicative.ofAdd (-WithZero.log
     (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K (valuation K x)))
   map_one' := by simp
@@ -23,8 +26,7 @@ open ValuativeRel
     rw [WithZero.log_mul (by simp) (by simp)]
     simp [add_comm]
 
-private lemma exponent_eq_one_iff (K : Type*) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] (x : Kˣ) :
+private lemma exponent_eq_one_iff   (x : Kˣ) :
     exponent K x = 1 ↔ valuation K (x : K) = 1 := by
   let e := IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
   change Multiplicative.ofAdd (-WithZero.log (e (valuation K (x : K)))) = 1 ↔ _
@@ -40,8 +42,7 @@ private lemma exponent_eq_one_iff (K : Type*) [Field K] [ValuativeRel K]
   · intro h
     simp [h]
 
-private lemma exponent_uniformizer (K : Type*) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] (π : Kˣ)
+private lemma exponent_uniformizer   (π : Kˣ)
     (hπ : valuation K (π : K) = uniformizer K) :
     exponent K π = Multiplicative.ofAdd 1 := by
   let e := IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
@@ -64,6 +65,8 @@ private lemma exponent_uniformizer (K : Type*) [Field K] [ValuativeRel K]
   change Multiplicative.ofAdd (-WithZero.log (e (valuation K (π : K)))) = _
   rw [hπ, he, WithZero.log_exp]
   rfl
+end
+
 
  noncomputable def coordinateMap (K : Type*) [Field K] [ValuativeRel K]
     (π : Kˣ) : Multiplicative ℤ × (𝒪[K])ˣ →* Kˣ where
@@ -74,9 +77,12 @@ private lemma exponent_uniformizer (K : Type*) [Field K] [ValuativeRel K]
     rw [zpow_add, map_mul]
     ac_rfl
 
-private lemma coordinateMap_bijective (K : Type*) [Field K] [ValuativeRel K]
+section
+variable (K : Type*) [Field K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K] (π : Kˣ)
-    (hπ : valuation K (π : K) = uniformizer K) :
+    (hπ : valuation K (π : K) = uniformizer K)
+include K π hπ
+private lemma coordinateMap_bijective   :
     Function.Bijective (coordinateMap K π) := by
   let m := Units.map (𝒪[K]).subtype.toMonoidHom
   have hm (u : (𝒪[K])ˣ) : exponent K (m u) = 1 := by
@@ -123,9 +129,7 @@ private lemma coordinateMap_bijective (K : Type*) [Field K] [ValuativeRel K]
     rw [← mul_assoc, ← zpow_add]
     simp
 
-private lemma cube_coordinate_iff (K : Type*) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] (π : Kˣ)
-    (hπ : valuation K (π : K) = uniformizer K) (j : ℤ) (u : (𝒪[K])ˣ) :
+private lemma cube_coordinate_iff   (j : ℤ) (u : (𝒪[K])ˣ) :
     π ^ j * Units.map (𝒪[K]).subtype.toMonoidHom u ∈
       (powMonoidHom (α := Kˣ) 3).range ↔
       (3 : ℤ) ∣ j ∧ u ∈ KPCubicUnitIndices.cubeUnits K := by
@@ -153,6 +157,8 @@ private lemma cube_coordinate_iff (K : Type*) [Field K] [ValuativeRel K]
     · apply Multiplicative.toAdd.injective
       exact hn.symm
     · exact hw
+end
+
 
 open scoped Classical in
 
@@ -343,8 +349,11 @@ private lemma units_borel (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpa
   rw [‹BorelSpace K›.measurable_eq, ← borel_comap]
   rw [← (Units.isEmbedding_val₀ (G₀ := K)).isInducing.eq_induced]
 
-private theorem cube_proper (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] :
+section
+variable (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
+    [TopologicalSpace K] [IsNonarchimedeanLocalField K]
+include K
+private theorem cube_proper   :
     IsProperMap (fun x : Kˣ => x ^ 3) := by
   letI := IsTopologicalAddGroup.rightUniformSpace K
   haveI := isUniformAddGroup_of_addCommGroup (G := K)
@@ -369,8 +378,7 @@ private theorem cube_proper (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
   exact Units.embedProduct_injective K
 
 theorem compact_test_integrability
-    (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K]
+     
     [MeasurableSpace K] [BorelSpace K]
     (dx : Measure K) [dx.IsAddHaarMeasure]
     (ψ : Kˣ →ₜ* ℂˣ) (Ω : Kˣ → ℂ)
@@ -411,6 +419,8 @@ theorem compact_test_integrability
   · intro χ
     exact ((Units.continuous_val.comp χ.continuous).mul hF.continuous).integrable_of_hasCompactSupport
       hFc.mul_left
+end
+
 
 end
 
@@ -462,21 +472,24 @@ namespace KPCubicExpansion
 
 open ValuativeRel
 
-noncomputable def valuationExponent (K : Type*) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] (y : Kˣ) : ℤ :=
+section
+variable (K : Type*) [Field K] [ValuativeRel K]
+    [TopologicalSpace K] [IsNonarchimedeanLocalField K]
+include K
+noncomputable def valuationExponent   (y : Kˣ) : ℤ :=
   -WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
     (valuation K (y : K)))
 
-noncomputable def omega (K : Type*) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K]
+noncomputable def omega  
     (t : ℂˣ) (y : Kˣ) : ℂ :=
   ((t ^ valuationExponent K y : ℂˣ) : ℂ)
 
-noncomputable def betaFunction (K : Type*) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K]
+noncomputable def betaFunction  
     (s : ℂ) (v : Kˣ) : ℂ := by
   classical
   exact if v = 1 then 0 else (KPCubicHaar.abs K (1 - (v : K)) : ℂ) ^ (-s)
+end
+
 
 open scoped WithZero
 
@@ -803,9 +816,12 @@ local instance : BorelSpace Kˣ := ⟨by
   rw [@BorelSpace.measurable_eq K _ _ _,
     Units.isEmbedding_val₀.isInducing.eq_induced, borel_comap]⟩
 
-theorem integrable_character_beta
-    (dx : Measure K) [dx.IsAddHaarMeasure]
+section
+variable (dx : Measure K) [dx.IsAddHaarMeasure]
     (π : Kˣ) (hπ : ValuativeRel.valuation K (π : K) = ValuativeRel.uniformizer K)
+include dx π hπ
+theorem integrable_character_beta
+     
     (ξ : CubicUnitCharacters.Character K) (χ : Kˣ →ₜ* ℂˣ)
     (hχ : ∀ u : (𝒪[K])ˣ,
       χ (Units.map (𝒪[K]).subtype.toMonoidHom u) = (ξ u : ℂˣ))
@@ -847,8 +863,7 @@ theorem integrable_character_beta
   exact hc
 
 theorem family_beta_integrable
-    (dx : Measure K) [dx.IsAddHaarMeasure]
-    (π : Kˣ) (hπ : ValuativeRel.valuation K (π : K) = ValuativeRel.uniformizer K)
+     
     (z : ℂˣ)
     (χ : CubicUnitCharacters.Character K → CubicCharacters.Mu3 → (Kˣ →ₜ* ℂˣ))
     (hχ : ∀ (ξ : CubicUnitCharacters.Character K) (ζ : CubicCharacters.Mu3)
@@ -875,6 +890,8 @@ theorem family_beta_integrable
     (by simpa using hχ ξ ζ 1 1) s hs0 hs1
   · rwa [hn]
   · rwa [hn]
+end
+
 
 end BetaIntegrability
 

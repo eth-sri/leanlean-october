@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.NormFormula
 public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.NormFormulaCoefficients
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -33,22 +36,25 @@ namespace Valuations
 
 open scoped Polynomial
 
-/-- A closed unit for the finite norm-formula value is integral over the base
-valuation ring, using only the primitive factorization definition's primitive factorization property. -/
-theorem normFormula_finiteExtensionNormFormulaValue_isIntegral_of_le_one_of_henselFactorization
-    {K L : Type*} [Field K] [Field L] [Algebra K L]
+section
+variable {K L : Type*} [Field K] [Field L] [Algebra K L]
     [FiniteDimensional K L]
     (v : AbsoluteValue K ℝ) (hnonarch : LubinTate.Valuations.NonarchimedeanAbsoluteValue v)
     (hv : ValuationTheory.DiscreteValuationField.HenselFactorizationProperty
       (absoluteValueValuationSubring v hnonarch))
+include K L v hnonarch hv
+/-- A closed unit for the finite norm-formula value is integral over the base
+valuation ring, using only the primitive factorization definition's primitive factorization property. -/
+theorem normFormula_finiteExtensionNormFormulaValue_isIntegral_of_le_one_of_henselFactorization
+     
     {x : L} (hx : finiteExtensionNormFormulaValue v x ≤ 1) :
     IsIntegral
       (absoluteValueValuationSubring v hnonarch) x := by
   let V := absoluteValueValuationSubring v hnonarch
-  let : Algebra.IsAlgebraic K L := Algebra.IsAlgebraic.of_finite K L
+  let  := Algebra.IsAlgebraic.of_finite K L
   let : Algebra.IsIntegral K L := Algebra.IsAlgebraic.isIntegral
   have hxint : IsIntegral K x := Algebra.IsIntegral.isIntegral x
-  have hconst : v ((minpoly K x).coeff 0) ≤ 1 :=
+  have hconst  :=
     (normFormula_finiteExtensionNormFormulaValue_le_one_iff_minpoly_coeff_zero_le_one
       v x).1 hx
   have hcoeff : ∀ i : ℕ, v ((minpoly K x).coeff i) ≤ 1 :=
@@ -81,11 +87,7 @@ theorem normFormula_finiteExtensionNormFormulaValue_isIntegral_of_le_one_of_hens
 /-- In a finite extension, every element or its inverse belongs to the actual
 integral closure of the base valuation ring. -/
 theorem normFormula_finite_integralClosure_mem_or_inv_of_henselFactorization
-    {K L : Type*} [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L]
-    (v : AbsoluteValue K ℝ) (hnonarch : LubinTate.Valuations.NonarchimedeanAbsoluteValue v)
-    (hv : ValuationTheory.DiscreteValuationField.HenselFactorizationProperty
-      (absoluteValueValuationSubring v hnonarch))
+     
     (x : L) :
     x ∈ (integralClosure
         (absoluteValueValuationSubring v hnonarch) L).toSubring ∨
@@ -93,9 +95,7 @@ theorem normFormula_finite_integralClosure_mem_or_inv_of_henselFactorization
         (absoluteValueValuationSubring v hnonarch) L).toSubring := by
   by_cases hx : finiteExtensionNormFormulaValue v x ≤ 1
   · left
-    exact
-      normFormula_finiteExtensionNormFormulaValue_isIntegral_of_le_one_of_henselFactorization
-        v hnonarch hv hx
+    apply normFormula_finiteExtensionNormFormulaValue_isIntegral_of_le_one_of_henselFactorization <;> assumption
   · right
     have hx_gt : 1 < finiteExtensionNormFormulaValue v x :=
       lt_of_not_ge hx
@@ -104,9 +104,9 @@ theorem normFormula_finite_integralClosure_mem_or_inv_of_henselFactorization
     have hinv : finiteExtensionNormFormulaValue v x⁻¹ ≤ 1 := by
       rw [normFormula_finiteExtensionNormFormulaValue_inv]
       exact (inv_le_one₀ hx_pos).2 hx_gt.le
-    exact
-      normFormula_finiteExtensionNormFormulaValue_isIntegral_of_le_one_of_henselFactorization
-        v hnonarch hv hinv
+    apply normFormula_finiteExtensionNormFormulaValue_isIntegral_of_le_one_of_henselFactorization <;> assumption
+end
+
 
 /-- the finite norm-formula theorem, source-producing algebraic endpoint: for an arbitrary
 algebraic extension, the actual integral closure of the Henselian valuation
@@ -139,15 +139,13 @@ theorem normFormula_algebraic_integralClosure_mem_or_inv_of_henselFactorization
     have hxEint : IsIntegral V xE := hxE
     have hmap := hxEint.map
       ((IntermediateField.val E).restrictScalars V)
-    have hxintV : IsIntegral V x := by
-      simpa [E, xE] using hmap
+    have hxintV : IsIntegral V x := hmap
     exact (mem_integralClosure_iff (R := V) (A := L)).2 hxintV
   · right
     have hxEinvint : IsIntegral V xE⁻¹ := hxEinv
     have hmap := hxEinvint.map
       ((IntermediateField.val E).restrictScalars V)
-    have hxinvintV : IsIntegral V x⁻¹ := by
-      simpa [E, xE] using hmap
+    have hxinvintV : IsIntegral V x⁻¹ := hmap
     exact (mem_integralClosure_iff (R := V) (A := L)).2 hxinvintV
 
 end Valuations

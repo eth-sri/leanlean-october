@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.LocalFields.CubicUnitRootBalls
 
 @[expose] public section
+
 
 section
 namespace DedekindZetaZeroFree.KPCubicUnitIndices.CubicPreimageCosets
@@ -22,8 +25,7 @@ private theorem shallow {O : Type*} [CommRing O] [IsDomain O]
       (((j + 2) / 3 : ℕ) : ℕ∞) ≤ IsDiscreteValuationRing.addVal O (x - 1) := by
   let v := IsDiscreteValuationRing.addVal O
   let r := (v (1 - z)).toNat
-  have hr : v (1 - z) = (r : ℕ∞) := by
-    exact (ENat.natCast_toNat (fun h => hz.ne_one (by decide)
+  have hr : v (1 - z) = (r : ℕ∞) := (ENat.natCast_toNat (fun h => hz.ne_one (by decide)
       (sub_eq_zero.mp (IsDiscreteValuationRing.addVal_eq_top_iff.mp h)).symm)).symm
   have hzv : v z = 0 := by
     obtain ⟨u, hu⟩ := hz.isUnit (by decide)
@@ -37,15 +39,10 @@ private theorem shallow {O : Type*} [CommRing O] [IsDomain O]
     exact (mul_eq_zero.mp h).resolve_left (sub_ne_zero.mpr (hz.ne_one (by decide)))
   have hg : v (1 - z ^ 2) = (r : ℕ∞) := by
     have h : 1 - z ^ 2 = -z ^ 2 * (1 - z) := by
-      calc
-        _ = -z ^ 2 * (1 - z) + (1 - z ^ 3) := by ring
-        _ = _ := by rw [hz.pow_eq_one]; ring
+      grind
     rw [h, v.map_mul, v.map_neg, v.map_pow, hzv, nsmul_zero, zero_add, hr]
   have hf : x ^ 3 - 1 = (x - 1) * (x - z) * (x - z ^ 2) := by
-    calc
-      _ = (x - 1) * (x - z) * (x - z ^ 2) +
-        (x - 1) * x * (z ^ 2 + z + 1) - (x - 1) * (z ^ 3 - 1) := by ring
-      _ = _ := by rw [hp, hz.pow_eq_one]; ring
+    grind
   change (j : ℕ∞) ≤ v (x ^ 3 - 1) ↔ _
   rw [hf, v.map_mul, v.map_mul]
   by_cases ht : v (x - 1) < (r : ℕ∞)
@@ -104,7 +101,7 @@ theorem cubic_preimage_shallow
   rw [Subgroup.mem_comap, hm, hm, mem_pow, mem_pow]
   change (j : ℕ∞) ≤ IsDiscreteValuationRing.addVal (valuation K).integer
       ((u : (valuation K).integer) ^ 3 - 1) ↔ _
-  exact shallow ζ hζ (u : (valuation K).integer) j hshallow
+  apply shallow <;> assumption
 
 end DedekindZetaZeroFree.KPCubicUnitIndices.CubicPreimageCosets
 
@@ -234,12 +231,11 @@ private theorem generic_deep
         DedekindZetaZeroFree.CubicUnitBalls.rootDepth v z := by
       unfold DedekindZetaZeroFree.CubicUnitBalls.rootDepth
       simp only [z, IsUnit.unit_spec]
-      with_unfolding_all exact depth_identify K (1 - ζ)
+      with_unfolding_all apply depth_identify
     have deep : 3 * DedekindZetaZeroFree.CubicUnitBalls.rootDepth v z < j := by
       simpa only [hd] using hdeep
     have roots : (rootsOfUnity 3 (DedekindZetaZeroFree.CubicUnitBalls.Ring (av K)).toSubring : Set Oˣ) = DedekindZetaZeroFree.CubicUnitBalls.cubeRoots v z := by
-      have hzu : IsPrimitiveRoot z 3 := by
-        simpa only [z] using hζ.isUnit_unit (by decide)
+      have hzu : IsPrimitiveRoot z 3 := hζ.isUnit_unit (by decide)
       ext ξ
       constructor
       · intro hξ
@@ -291,8 +287,7 @@ theorem cubic_preimage_deep_cosets
       (rootsOfUnity 3 O : Set Oˣ).Pairwise
         (fun ξ η => Disjoint
           ((fun u => ξ * u) '' (P : Set Oˣ))
-          ((fun u => η * u) '' (P : Set Oˣ))) := by
-  exact generic_deep K (valuation K).integer (rings K).symm ζ hζ j hdeep
+          ((fun u => η * u) '' (P : Set Oˣ))) := generic_deep K (valuation K).integer (rings K).symm ζ hζ j hdeep
 
 end DedekindZetaZeroFree.KPCubicUnitIndices.CubicPreimageCosets
 
@@ -357,17 +352,17 @@ variable (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
 
 abbrev Integers := (valuation K).integer
 
-def principalUnits (j : ℕ) : Subgroup (Integers K)ˣ :=
+def principalUnits (j : ℕ)  :=
   (Units.map (Ideal.Quotient.mk (IsLocalRing.maximalIdeal (Integers K) ^ j)).toMonoidHom).ker
 
 def cubeUnits : Subgroup (Integers K)ˣ := (powMonoidHom 3).range
 
-def truncatedIndex (j : ℕ) : ℕ :=
+def truncatedIndex (j : ℕ)  :=
   (cubeUnits K ⊔ principalUnits K j).index
 
-def residueCard : ℕ := Nat.card (IsLocalRing.ResidueField (Integers K))
+def residueCard  := Nat.card (IsLocalRing.ResidueField (Integers K))
 
-def rootDepth (ζ : Integers K) : ℕ :=
+def rootDepth (ζ : Integers K)  :=
   (IsDiscreteValuationRing.addVal (Integers K) (1 - ζ)).toNat
 
 @[simp] theorem principalUnits_zero : principalUnits K 0 = ⊤ := by
@@ -385,7 +380,7 @@ theorem two_le_residueCard : 2 ≤ residueCard K := by
   classical
   let R := IsLocalRing.ResidueField (Integers K)
   haveI : Finite R := inferInstance
-  letI : Fintype R := Fintype.ofFinite R
+  letI  := Fintype.ofFinite R
   have h := Fintype.one_lt_card (α := R)
   simpa [R, residueCard, Nat.card_eq_fintype_card, Nat.add_one_le_iff] using h
 
@@ -414,7 +409,7 @@ theorem truncatedIndex_eq_preimage_relIndex (j : ℕ) :
   have hPB : P ≤ P.comap f := by
     intro u hu
     exact P.pow_mem hu 3
-  haveI : (P.comap f).FiniteIndex := Subgroup.finiteIndex_of_le hPB
+  haveI  := Subgroup.finiteIndex_of_le hPB
   have hB : (P.comap f).index = P.relIndex (f.range ⊔ P) := by
     rw [Subgroup.index_comap, Subgroup.relIndex_sup_right]
   have h1 := Subgroup.relIndex_mul_index hPB
@@ -426,7 +421,10 @@ theorem truncatedIndex_eq_preimage_relIndex (j : ℕ) :
     (P.comap f).index * (f.range ⊔ P).index = P.index := by rw [hB, h2]
     _ = (P.comap f).index * P.relIndex (P.comap f) := by rw [← h1, Nat.mul_comm]
 
-def principalUnits_reductionEquivIdeal (a b : ℕ) (ha : 1 ≤ a) :
+section
+variable (a b : ℕ) (ha : 1 ≤ a)
+include a b ha
+def principalUnits_reductionEquivIdeal   :
     ((principalUnits K a).map
       (Units.map (Ideal.Quotient.mk (IsLocalRing.maximalIdeal (Integers K) ^ b)).toMonoidHom)) ≃
     (IsLocalRing.maximalIdeal (Integers K) ^ a).map
@@ -463,7 +461,7 @@ def principalUnits_reductionEquivIdeal (a b : ℕ) (ha : 1 ≤ a) :
     change f (u : Integers K) - 1 = x.val
     rw [hu.unit_spec, map_add, map_one, add_sub_cancel_left, hyx]
 
-theorem principalUnits_relIndex_eq_addIndex (a b : ℕ) (ha : 1 ≤ a) :
+theorem principalUnits_relIndex_eq_addIndex   :
     (principalUnits K b).relIndex (principalUnits K a) =
       (IsLocalRing.maximalIdeal (Integers K) ^ b).toAddSubgroup.relIndex
         (IsLocalRing.maximalIdeal (Integers K) ^ a).toAddSubgroup := by
@@ -476,7 +474,7 @@ theorem principalUnits_relIndex_eq_addIndex (a b : ℕ) (ha : 1 ≤ a) :
   let f := Ideal.Quotient.mk (p ^ b)
   have hker : f.toAddMonoidHom.ker = (p ^ b).toAddSubgroup := by
     ext x
-    exact (Ideal.Quotient.eq_zero_iff_mem)
+    apply Ideal.Quotient.eq_zero_iff_mem
   rw [← hker, AddSubgroup.relIndex_ker]
   congr 1
   congr 1
@@ -488,13 +486,12 @@ theorem principalUnits_relIndex_eq_addIndex (a b : ℕ) (ha : 1 ≤ a) :
   · rintro ⟨y, hy, hyx⟩
     exact (Ideal.mem_map_iff_of_surjective f Ideal.Quotient.mk_surjective).mpr ⟨y, hy, hyx⟩
 
-theorem principalUnits_relIndex (a b : ℕ) (ha : 1 ≤ a) (hab : a ≤ b) :
+theorem principalUnits_relIndex   (hab : a ≤ b) :
     (principalUnits K b).relIndex (principalUnits K a) = residueCard K ^ (b - a) := by
   rw [principalUnits_relIndex_eq_addIndex K a b ha]
   let p := IsLocalRing.maximalIdeal (Integers K)
   have hn : p ≠ ⊥ := IsDiscreteValuationRing.not_a_field _
-  have hp : (p : Submodule (Integers K) (Integers K)).cardQuot = residueCard K := by
-    rfl
+  have hp : (p : Submodule (Integers K) (Integers K)).cardQuot = residueCard K := rfl
   have hpow (n : ℕ) : (p ^ n).toAddSubgroup.index = residueCard K ^ n := by
     change (p ^ n : Submodule (Integers K) (Integers K)).cardQuot = _
     rw [cardQuot_pow_of_prime hn, hp]
@@ -505,16 +502,21 @@ theorem principalUnits_relIndex (a b : ℕ) (ha : 1 ≤ a) (hab : a ≤ b) :
     have := two_le_residueCard K
     omega))
   rw [hdiv, ← pow_add, Nat.sub_add_cancel hab]
+end
+
 
 end
 end KPCubicUnitIndices
 
 open KPCubicUnitIndices
 
-theorem kp_cubic_unit_truncated_indices
-    (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
+section
+variable (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    (ζ : Integers K) (hζ : IsPrimitiveRoot ζ 3) :
+    (ζ : Integers K) (hζ : IsPrimitiveRoot ζ 3)
+include K ζ hζ
+theorem kp_cubic_unit_truncated_indices
+      :
     let q := residueCard K
     let r := rootDepth K ζ
     2 ≤ q ∧ truncatedIndex K 0 = 1 ∧
@@ -547,7 +549,7 @@ theorem kp_cubic_unit_truncated_indices
       exact Set.mem_iUnion.mpr ⟨1, Set.mem_iUnion.mpr
         ⟨(rootsOfUnity 3 (Integers K)).one_mem, ⟨u, hu, one_mul u⟩⟩⟩
     have hcard : Nat.card (rootsOfUnity 3 (Integers K)) = 3 := hζ.card_rootsOfUnity
-    haveI : Finite (rootsOfUnity 3 (Integers K)) :=
+    haveI  :=
       Nat.finite_of_card_ne_zero (by rw [hcard]; decide)
     have hindex : P.relIndex B = 3 := by
       rw [CubicPreimageCosets.relIndex_of_disjoint_cosets P B
@@ -562,14 +564,14 @@ theorem kp_cubic_unit_truncated_indices
     rw [hexp, Nat.mul_comm]
 
 theorem kp_cubic_unit_truncated_indices_stable
-    (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    (ζ : Integers K) (hζ : IsPrimitiveRoot ζ 3) :
+      :
     ∀ j : ℕ, 3 * rootDepth K ζ + 1 ≤ j →
       truncatedIndex K j = truncatedIndex K (3 * rootDepth K ζ + 1) := by
   intro j hj
   have h := (kp_cubic_unit_truncated_indices K ζ hζ).2.2.2
   rw [h j (by omega), h (3 * rootDepth K ζ + 1) (by omega)]
+end
+
 
 end DedekindZetaZeroFree
 

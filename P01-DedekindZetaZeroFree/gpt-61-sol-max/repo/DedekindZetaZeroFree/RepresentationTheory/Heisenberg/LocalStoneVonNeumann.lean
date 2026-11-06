@@ -415,38 +415,48 @@ structure Polarization {H D : Type*} [Group H] [TopologicalSpace H]
   extends_center : ∀ a : L.comap T.π, ∀ ha : (a : H) ∈ T.C,
     ωL a = T.ω ⟨(a : H), ha⟩
 
-theorem inducedSpace_stable {H : Type*} [Group H] [TopologicalSpace H]
-    (A : Subgroup H) (χ : A →* ℂˣ) (g : H) :
+section
+variable {H : Type*} [Group H] [TopologicalSpace H]
+    (A : Subgroup H) (χ : A →* ℂˣ)
+include H A χ
+theorem inducedSpace_stable   (g : H) :
     inducedSpace A χ ≤ Submodule.comap
       (rightTranslationRepresentation (G := H) g) (inducedSpace A χ) := by
   intro f hf a x
   change f (((a : H) * x) * g) = (χ a : ℂ) * f (x * g)
   rw [mul_assoc, hf a (x * g)]
 
-def inducedRepresentation {H : Type*} [Group H] [TopologicalSpace H]
-    (A : Subgroup H) (χ : A →* ℂˣ) :
+def inducedRepresentation   :
     Representation ℂ H (inducedSpace A χ) :=
   (rightTranslationRepresentation (G := H)).subrepresentation
     (inducedSpace A χ) (inducedSpace_stable A χ)
+end
 
-abbrev InducedModule {H D : Type*} [Group H] [TopologicalSpace H]
+
+section
+variable {H D : Type*} [Group H] [TopologicalSpace H]
     [IsTopologicalGroup H] [CommGroup D] [Finite D]
-    {T : LocalHeisenbergData H D} (P : Polarization T) :=
+    {T : LocalHeisenbergData H D} (P : Polarization T)
+include H D T P
+abbrev InducedModule   :=
   inducedSpace (P.L.comap T.π) P.ωL.toMonoidHom
 
-def tau {H D : Type*} [Group H] [TopologicalSpace H]
-    [IsTopologicalGroup H] [CommGroup D] [Finite D]
-    {T : LocalHeisenbergData H D} (P : Polarization T) :
+def tau   :
     Representation ℂ H (InducedModule P) :=
   inducedRepresentation (P.L.comap T.π) P.ωL.toMonoidHom
+end
+
 
 def HasCentralCharacter {H V : Type*} [Group H] [AddCommGroup V] [Module ℂ V]
     (C : Subgroup H) (ω : C →* ℂˣ) (ρ : Representation ℂ H V) : Prop :=
   ∀ (c : C) (v : V), ρ (c : H) v = (ω c : ℂ) • v
 
-theorem tau_hasCentralCharacter {H D : Type*} [Group H] [TopologicalSpace H]
+section
+variable {H D : Type*} [Group H] [TopologicalSpace H]
     [IsTopologicalGroup H] [CommGroup D] [Finite D]
-    (T : LocalHeisenbergData H D) (P : Polarization T) :
+    (T : LocalHeisenbergData H D) (P : Polarization T)
+include H D T P
+theorem tau_hasCentralCharacter   :
     HasCentralCharacter T.C T.ω.toMonoidHom (tau P) := by
   intro c f
   have hc : T.π (c : H) = 1 := by
@@ -460,9 +470,7 @@ theorem tau_hasCentralCharacter {H D : Type*} [Group H] [TopologicalSpace H]
   change (P.ωL a : ℂ) * f.val x = (T.ω c : ℂ) * f.val x
   rw [P.extends_center a c.property]
 
-theorem tau_smooth {H D : Type*} [Group H] [TopologicalSpace H]
-    [IsTopologicalGroup H] [CommGroup D] [Finite D]
-    (T : LocalHeisenbergData H D) (P : Polarization T) : SmoothRepresentation (tau P) := by
+theorem tau_smooth   : SmoothRepresentation (tau P) := by
   let J : Subgroup H := T.ω.toMonoidHom.ker.map T.C.subtype
   have hJ : IsOpen (J : Set H) :=
     T.center_open.isOpenMap_subtype_val _ T.character_kernel_open
@@ -477,9 +485,7 @@ theorem tau_smooth {H D : Type*} [Group H] [TopologicalSpace H]
   rw [show T.ω c = 1 from hc]
   simp
 
-theorem tau_moduleFinite {H D : Type*} [Group H] [TopologicalSpace H]
-    [IsTopologicalGroup H] [CommGroup D] [Finite D]
-    (T : LocalHeisenbergData H D) (P : Polarization T) : Module.Finite ℂ (InducedModule P) := by
+theorem tau_moduleFinite   : Module.Finite ℂ (InducedModule P) := by
   classical
   let r : D → H := Function.surjInv T.quotient_surjective
   have hr : ∀ d, T.π (r d) = d := Function.surjInv_eq T.quotient_surjective
@@ -501,6 +507,8 @@ theorem tau_moduleFinite {H D : Type*} [Group H] [TopologicalSpace H]
   rw [← hxy, f.property a y, g.property a y]
   congr 1
   exact congrFun hfg (T.π x)
+end
+
 
  noncomputable def inducedCosetEquiv {H : Type*} [Group H]
     (A : Subgroup H) [A.Normal] (χ : A →* ℂˣ) : inducedSpace A χ ≃ₗ[ℂ] (H ⧸ A → ℂ) := by
@@ -582,9 +590,12 @@ theorem diagonal_isolation {ι k : Type*} [Finite ι] [DecidableEq ι] [Field k]
     · simp [Pi.single_apply, hji, hgz j (Finset.mem_univ _) hji]
   exact he ▸ hg
 
-theorem tau_diagonal_formula {H D : Type*} [Group H] [TopologicalSpace H]
+section
+variable {H D : Type*} [Group H] [TopologicalSpace H]
     [IsTopologicalGroup H] [CommGroup D] [Finite D]
     (T : LocalHeisenbergData H D) (P : Polarization T)
+include H D T P
+theorem tau_diagonal_formula  
     (a : P.L.comap T.π) (f : InducedModule P) (x : H) :
     (tau P (a : H) f).val x =
       (T.pairing (T.π x) (T.π a) : ℂˣ) * (P.ωL a : ℂ) * f.val x := by
@@ -605,9 +616,7 @@ theorem tau_diagonal_formula {H D : Type*} [Group H] [TopologicalSpace H]
   rw [hω]
   exact congrArg (fun u : ℂˣ => (u : ℂ)) (T.commutator_pairing x a)
 
-theorem polarization_separates {H D : Type*} [Group H] [TopologicalSpace H]
-    [IsTopologicalGroup H] [CommGroup D] [Finite D]
-    (T : LocalHeisenbergData H D) (P : Polarization T) (x y : H)
+theorem polarization_separates   (x y : H)
     (hxy : (x : H ⧸ P.L.comap T.π) ≠ y) :
     ∃ a : P.L.comap T.π,
       (T.pairing (T.π x) (T.π a) : ℂˣ) ≠ (T.pairing (T.π y) (T.π a) : ℂˣ) := by
@@ -631,9 +640,7 @@ theorem polarization_separates {H D : Type*} [Group H] [TopologicalSpace H]
   rw [← ha, map_div, map_div, hh'']
   simp
 
-theorem tau_irreducible {H D : Type*} [Group H] [TopologicalSpace H]
-    [IsTopologicalGroup H] [CommGroup D] [Finite D]
-    (T : LocalHeisenbergData H D) (P : Polarization T) : (tau P).IsIrreducible := by
+theorem tau_irreducible   : (tau P).IsIrreducible := by
   classical
   let A := P.L.comap T.π
   letI : A.Normal := inferInstance
@@ -733,9 +740,7 @@ theorem tau_irreducible {H D : Type*} [Group H] [TopologicalSpace H]
   have : u = v := e.injective heuv
   exact this ▸ hu
 
-theorem finite_heisenberg_induction {H D : Type*} [Group H] [TopologicalSpace H]
-    [IsTopologicalGroup H] [CommGroup D] [Finite D]
-    (T : LocalHeisenbergData H D) (P : Polarization T) :
+theorem finite_heisenberg_induction   :
     Module.Finite ℂ (InducedModule P) ∧ SmoothRepresentation (tau P) ∧
       (tau P).IsIrreducible ∧ HasCentralCharacter T.C T.ω.toMonoidHom (tau P) ∧
       Module.finrank ℂ (InducedModule P) = (P.L.comap T.π).index ∧
@@ -746,6 +751,8 @@ theorem finite_heisenberg_induction {H D : Type*} [Group H] [TopologicalSpace H]
     P.L.index_comap_of_surjective T.quotient_surjective]
   exact KPLocalHeisenbergPolarization.maximal_isotropic_index T.pairing
     T.alternating T.perfect P.L P.maximal
+end
+
 
 theorem stone_von_neumann_uniqueness {H D V : Type*} [Group H] [TopologicalSpace H]
     [IsTopologicalGroup H] [CommGroup D] [Finite D] [AddCommGroup V] [Module ℂ V]
@@ -773,17 +780,21 @@ theorem stone_von_neumann_uniqueness {H D V : Type*} [Group H] [TopologicalSpace
   letI : (tau P).IsIrreducible := tau_irreducible T P
   exact ⟨F.ofBijective ((Representation.IsIrreducible.bijective_or_eq_zero F).resolve_right hF)⟩
 
-theorem independence_of_polarization {H D : Type*} [Group H] [TopologicalSpace H]
+section
+variable {H D : Type*} [Group H] [TopologicalSpace H]
     [IsTopologicalGroup H] [CommGroup D] [Finite D]
+include H D
+theorem independence_of_polarization  
     (T : LocalHeisenbergData H D) (P Q : Polarization T) :
     Nonempty ((tau P).Equiv (tau Q)) := by
   obtain ⟨_, hsmooth, hirr, hcentral, _⟩ := finite_heisenberg_induction T P
   exact stone_von_neumann_uniqueness T Q (tau P) hirr hsmooth hcentral
 
-def weylConjugate {H D : Type*} [Group H] [TopologicalSpace H]
-    [IsTopologicalGroup H] [CommGroup D] [Finite D]
+def weylConjugate  
     {T : LocalHeisenbergData H D} (P : Polarization T) (w : H ≃ₜ* H) :
     Representation ℂ H (InducedModule P) := (tau P).comp w.toMulEquiv.toMonoidHom
+end
+
 
 private theorem smooth_comp {H V : Type*} [Group H] [TopologicalSpace H]
     [AddCommGroup V] [Module ℂ V] (ρ : Representation ℂ H V)
@@ -795,8 +806,11 @@ private theorem smooth_comp {H V : Type*} [Group H] [TopologicalSpace H]
   intro j hj
   exact hJ (w j) hj
 
- def compSubrepresentationOrderIso {H V : Type*} [Group H]
-    [AddCommGroup V] [Module ℂ V] (ρ : Representation ℂ H V) (w : H ≃* H) :
+ section
+variable {H V : Type*} [Group H]
+    [AddCommGroup V] [Module ℂ V] (ρ : Representation ℂ H V) (w : H ≃* H)
+include H V ρ w
+def compSubrepresentationOrderIso   :
     Subrepresentation (ρ.comp w.toMonoidHom) ≃o Subrepresentation ρ where
   toFun S := ⟨S.toSubmodule, fun g v hv => by
     simpa using S.apply_mem_toSubmodule (w.symm g) hv⟩
@@ -805,10 +819,11 @@ private theorem smooth_comp {H V : Type*} [Group H] [TopologicalSpace H]
   right_inv S := by ext; rfl
   map_rel_iff' := by rfl
 
-private theorem irreducible_comp {H V : Type*} [Group H]
-    [AddCommGroup V] [Module ℂ V] (ρ : Representation ℂ H V) (w : H ≃* H)
+private theorem irreducible_comp  
     (h : ρ.IsIrreducible) : Representation.IsIrreducible (ρ.comp w.toMonoidHom) :=
   (compSubrepresentationOrderIso ρ w).isSimpleOrder_iff.mpr h
+end
+
 
 theorem weyl_conjugate_properties {H D : Type*} [Group H] [TopologicalSpace H]
     [IsTopologicalGroup H] [CommGroup D] [Finite D]

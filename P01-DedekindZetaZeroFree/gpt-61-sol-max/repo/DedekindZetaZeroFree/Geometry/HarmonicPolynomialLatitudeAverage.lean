@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Sphere.LatitudeDisintegration
 public import DedekindZetaZeroFree.HarmonicAnalysis.Sphere.SmoothPolynomialDensity
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.ComplexFractionalInverse.FunkHecke.CircleAverage
 open MeasureTheory KPCplxIntertwinerEigenvalues
@@ -19,10 +22,10 @@ private lemma shift (f : ℝ → ℂ) (hf : Function.Periodic f (2 * Real.pi)) (
   simp_rw [add_comm θ]
   rw [intervalIntegral.integral_comp_add_right]
   simpa only [zero_add, add_comm θ] using hf.intervalIntegral_add_eq θ 0
-noncomputable def moment (i j : ℕ) : ℂ :=
+noncomputable def moment (i j : ℕ)  :=
   ∫ θ : ℝ, (Real.cos θ : ℂ)^i * (Real.sin θ : ℂ)^j ∂angleMeasure
 private lemma moment_odd (i j : ℕ) (h : Odd (i+j)) : moment i j = 0 := by
-  let f : ℝ → ℂ := fun θ => (Real.cos θ : ℂ)^i * (Real.sin θ : ℂ)^j
+  let f  := fun θ => (Real.cos θ : ℂ)^i * (Real.sin θ : ℂ)^j
   have hp : Function.Periodic f (2*Real.pi) := by
     intro θ
     dsimp only [f]
@@ -43,7 +46,7 @@ private lemma moment_odd (i j : ℕ) (h : Odd (i+j)) : moment i j = 0 := by
   change -moment i j = moment i j at he
   linear_combination -he / 2
 private lemma mono_formula (d : Fin 3 →₀ ℕ) (a : ℂ) (u θ : ℝ)
-    (hu : u ∈ Set.Icc (0:ℝ) 1) :
+    (hu : u ∈ Set.Icc (0) 1) :
     polynomialSphere (MvPolynomial.monomial d a) (latitudePoint (.refl ℝ Ambient) u θ) =
       a * ((1-2*u : ℝ):ℂ)^(d 0) * (Real.sqrt (4*u*(1-u)) : ℂ)^(d 1+d 2) *
         ((Real.cos θ : ℂ)^(d 1) * (Real.sin θ : ℂ)^(d 2)) := by
@@ -52,14 +55,17 @@ private lemma mono_formula (d : Fin 3 →₀ ℕ) (a : ℂ) (u θ : ℝ)
   simp [latitudeAmbient, Fin.prod_univ_succ, mul_pow, pow_add]
   ring
 private lemma mono_integral (d : Fin 3 →₀ ℕ) (a : ℂ) (u : ℝ)
-    (hu : u ∈ Set.Icc (0:ℝ) 1) :
+    (hu : u ∈ Set.Icc (0) 1) :
     (∫ θ : ℝ, polynomialSphere (MvPolynomial.monomial d a)
       (latitudePoint (.refl ℝ Ambient) u θ) ∂angleMeasure) =
       a * ((1-2*u : ℝ):ℂ)^(d 0) * (Real.sqrt (4*u*(1-u)) : ℂ)^(d 1+d 2) * moment (d 1) (d 2) := by
   simp_rw [mono_formula d a u _ hu]
   exact integral_const_mul _ _
-private lemma poly_integrable (p : MvPolynomial (Fin 3) ℂ) (u : ℝ)
-    (hu : u ∈ Set.Icc (0:ℝ) 1) :
+section
+variable (p : MvPolynomial (Fin 3) ℂ)
+include p
+private lemma poly_integrable   (u : ℝ)
+    (hu : u ∈ Set.Icc (0) 1) :
     Integrable (fun θ => polynomialSphere p (latitudePoint (.refl ℝ Ambient) u θ)) angleMeasure := by
   have hc : Continuous (fun θ => polynomialSphere p (latitudePoint (.refl ℝ Ambient) u θ)) := by
     simp only [polynomialSphere, latitudePoint_val _ _ _ hu]
@@ -69,8 +75,8 @@ private lemma poly_integrable (p : MvPolynomial (Fin 3) ℂ) (u : ℝ)
     fin_cases i <;> change Continuous _ <;> dsimp [latitudeAmbient]
     all_goals fun_prop
   exact (hc.integrableOn_Icc).smul_measure (by simp [ENNReal.inv_ne_top]; positivity)
-private lemma exists_profile (p : MvPolynomial (Fin 3) ℂ) :
-    ∃ Q : Polynomial ℂ, ∀ u : ℝ, u ∈ Set.Icc (0:ℝ) 1 →
+private lemma exists_profile   :
+    ∃ Q : Polynomial ℂ, ∀ u : ℝ, u ∈ Set.Icc (0) 1 →
       (∫ θ : ℝ, polynomialSphere p (latitudePoint (.refl ℝ Ambient) u θ) ∂angleMeasure) = Q.eval (u:ℂ) := by
   classical
   induction p using MvPolynomial.induction_on' with
@@ -105,9 +111,9 @@ private lemma exists_profile (p : MvPolynomial (Fin 3) ℂ) :
     rw [integral_add (poly_integrable p u hu) (poly_integrable q u hu)]
     exact (congrArg₂ (· + ·) (hP u hu) (hQ u hu)).trans (Polynomial.eval_add).symm
 
-theorem latitude_average_polynomial (p : MvPolynomial (Fin 3) ℂ) :
+theorem latitude_average_polynomial   :
     ∃ Q : Polynomial ℂ,
-      (∀ (u : ℝ), u ∈ Set.Icc (0 : ℝ) 1 →
+      (∀ (u : ℝ), u ∈ Set.Icc (0) 1 →
         (∫ θ : ℝ, polynomialSphere p
           (latitudePoint (.refl ℝ Ambient) u θ) ∂angleMeasure) = Q.eval (u : ℂ)) ∧
       Q.eval 0 = polynomialSphere p
@@ -128,5 +134,7 @@ theorem latitude_average_polynomial (p : MvPolynomial (Fin 3) ℂ) :
   simp only [hz, Complex.ofReal_zero, integral_const, Measure.real, hm,
     ENNReal.toReal_one, one_smul] at he
   exact he.symm
+end
+
 
 end DedekindZetaZeroFree.ComplexFractionalInverse.FunkHecke.CircleAverage

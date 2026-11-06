@@ -15,7 +15,7 @@ open KPActualReflectionData.StandardLocalSource
 open KPReferenceChange.StandardComplexImage
 variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
+variable {R : PrincipalMellin.ActualRecipe S η} 
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 

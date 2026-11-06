@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import Mathlib.FieldTheory.Galois.Basic
 public import ValuedFieldTheory.LocalField.NonarchimedeanLocalField.ValuationExactSequence
 public import ValuedFieldTheory.LocalField.NonarchimedeanLocalField.IdealQuotients
 public import ValuedFieldTheory.LocalField.NonarchimedeanLocalField.GaloisIntegerRing
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -49,10 +52,10 @@ def galoisGroupFieldUnitsMulDistribMulAction
     rfl
   smul_mul := by
     intro σ x y
-    exact map_mul (Units.mapEquiv σ.toMulEquiv) x y
+    apply map_mul
   smul_one := by
     intro σ
-    exact map_one (Units.mapEquiv σ.toMulEquiv)
+    apply map_one
 
 /-- States the theorem `galoisGroupFieldUnitsMulDistribMulAction_smul`. -/
 @[simp]
@@ -63,14 +66,17 @@ theorem galoisGroupFieldUnitsMulDistribMulAction_smul
     σ • x = Units.mapEquiv σ.toMulEquiv x :=
   rfl
 
+section
+variable (K L : Type u) [Field K] [ValuativeRel K] [Field L] [ValuativeRel L]
+    [Algebra K L]
+    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
+    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
+include K L
 /-- The actual `Gal(L / K)` action on integer units.  Its source is the
 restriction of the field automorphism to the integral closure `𝒪[L]`. -/
 @[implicit_reducible]
 def galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure
-    (K L : Type u) [Field K] [ValuativeRel K] [Field L] [ValuativeRel L]
-    [Algebra K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] :
+      :
     MulDistribMulAction (Gal(L / K)) 𝒪[L]ˣ where
   smul σ x := Units.mapEquiv
     (galoisGroupIntegerRingEquivOfIsIntegralClosure K L σ).toMulEquiv x
@@ -84,33 +90,31 @@ def galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure
     rfl
   smul_mul := by
     intro σ x y
-    exact map_mul
-      (Units.mapEquiv
-        (galoisGroupIntegerRingEquivOfIsIntegralClosure K L σ).toMulEquiv) x y
+    apply map_mul
   smul_one := by
     intro σ
-    exact map_one
-      (Units.mapEquiv
-        (galoisGroupIntegerRingEquivOfIsIntegralClosure K L σ).toMulEquiv)
+    apply map_one
 
 /-- States the theorem `galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure_smul`. -/
 @[simp]
 theorem galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure_smul
-    (K L : Type u) [Field K] [ValuativeRel K] [Field L] [ValuativeRel L]
-    [Algebra K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
+     
     (σ : Gal(L / K)) (x : 𝒪[L]ˣ) :
     letI := galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure K L
     σ • x = Units.mapEquiv
       (galoisGroupIntegerRingEquivOfIsIntegralClosure K L σ).toMulEquiv x :=
   rfl
+end
 
+
+section
+variable (K L : Type u) [Field K]
+include K L
 /-- The trivial Galois action on the value group `ℤ`, written
 multiplicatively so that it is a multiplicative Galois module. -/
 @[implicit_reducible]
 def galoisGroupValueGroupMulDistribMulAction
-    (K L : Type u) [Field K] [Field L] [Algebra K L] :
+      [Field L] [Algebra K L] :
     MulDistribMulAction (Gal(L / K)) (Multiplicative Int) where
   smul _ n := n
   one_smul := by intro n; rfl
@@ -121,7 +125,7 @@ def galoisGroupValueGroupMulDistribMulAction
 /-- States the theorem `galoisGroupValueGroupMulDistribMulAction_smul`. -/
 @[simp]
 theorem galoisGroupValueGroupMulDistribMulAction_smul
-    (K L : Type u) [Field K] [Field L] [Algebra K L]
+      [Field L] [Algebra K L]
     (σ : Gal(L / K)) (n : Multiplicative Int) :
     letI := galoisGroupValueGroupMulDistribMulAction K L
     σ • n = n :=
@@ -129,7 +133,7 @@ theorem galoisGroupValueGroupMulDistribMulAction_smul
 
 /-- The inclusion `𝒪_Lˣ → Lˣ` is equivariant for the actual actions. -/
 theorem integerUnitsToFieldUnits_galoisGroup_equivariant
-    (K L : Type u) [Field K] [ValuativeRel K] [Field L] [ValuativeRel L]
+      [ValuativeRel K] [Field L] [ValuativeRel L]
     [Algebra K L]
     [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
     [IsIntegralClosure 𝒪[L] 𝒪[K] L]
@@ -142,36 +146,40 @@ theorem integerUnitsToFieldUnits_galoisGroup_equivariant
   let := galoisGroupFieldUnitsMulDistribMulAction K L
   ext
   rfl
+end
 
+
+section
+variable (K L : Type u) [Field K] [ValuativeRel K]
+    [Field L] [ValuativeRel L] [TopologicalSpace L]
+    [IsNonarchimedeanLocalField L] [Algebra K L]
+    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
+    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
+    (σ : Gal(L / K)) (x : Lˣ)
+include K L σ x
 /-- A Galois automorphism preserves the normalized additive valuation.  The
 proof uses only the actual integral-closure restriction to `𝒪_L`, the DVR
 normalization of an irreducible uniformizer, and the unit--uniformizer
 decomposition of `Lˣ`; no extension-invariant package is assumed. -/
 theorem valuationMap_unitsMapEquiv_galoisGroup
-    (K L : Type u) [Field K] [ValuativeRel K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L]
-    [IsNonarchimedeanLocalField L] [Algebra K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    (σ : Gal(L / K)) (x : Lˣ) :
+      :
     valuationMap L
         (Additive.ofMul (Units.mapEquiv σ.toMulEquiv x)) =
       valuationMap L (Additive.ofMul x) := by
-  let e : 𝒪[L] ≃+* 𝒪[L] := galoisGroupIntegerRingEquivOfIsIntegralClosure K L σ
-  let πO : 𝒪[L] := chosenIntegerRingUniformizer L
-  let π : Lˣ := integerRingUniformizerFieldUnit L
-  let σπ : Lˣ := Units.mapEquiv σ.toMulEquiv π
+  let e  := galoisGroupIntegerRingEquivOfIsIntegralClosure K L σ
+  let πO  := chosenIntegerRingUniformizer L
+  let π  := integerRingUniformizerFieldUnit L
+  let σπ  := Units.mapEquiv σ.toMulEquiv π
   have heπO : Irreducible (e πO) :=
     (MulEquiv.irreducible_iff e.toMulEquiv).2
       (chosenIntegerRingUniformizer_irreducible L)
-  have hσπ : (σπ : L) = ((e πO : 𝒪[L]) : L) := by
-    rfl
-  have hvσπ : v L (Additive.ofMul σπ) = -1 :=
+  have hσπ : (σπ : L) = ((e πO) : L) := rfl
+  have hvσπ  :=
     v_integerRingIrreducibleFieldUnit L (e πO) heπO σπ hσπ
   have hvσπinv : v L (Additive.ofMul σπ⁻¹) = 1 := by
     rw [v_inv, hvσπ]
     norm_num
-  let ϖ : Lˣ := inverseIntegerRingUniformizerFieldUnit L
+  let ϖ  := inverseIntegerRingUniformizerFieldUnit L
   have hmapϖ : Units.mapEquiv σ.toMulEquiv ϖ = σπ⁻¹ := by
     ext
     rfl
@@ -179,11 +187,10 @@ theorem valuationMap_unitsMapEquiv_galoisGroup
       v L (Additive.ofMul (Units.mapEquiv σ.toMulEquiv ϖ)) = 1 := by
     rw [hmapϖ]
     exact hvσπinv
-  have hϖ : valuationMap L (Additive.ofMul ϖ) = 1 := by
-    exact v_inverseIntegerRingUniformizerFieldUnit L
-  let n : Int := valuationMap L (Additive.ofMul x)
-  let u : 𝒪[L]ˣ := uniformizerUnitFactor L ϖ hϖ x
-  let σu : 𝒪[L]ˣ := Units.mapEquiv e.toMulEquiv u
+  have hϖ : valuationMap L (Additive.ofMul ϖ) = 1 := v_inverseIntegerRingUniformizerFieldUnit L
+  let n  := valuationMap L (Additive.ofMul x)
+  let u  := uniformizerUnitFactor L ϖ hϖ x
+  let σu  := Units.mapEquiv e.toMulEquiv u
   have hmapu :
       Units.mapEquiv σ.toMulEquiv (integerUnitsToFieldUnits L u) =
         integerUnitsToFieldUnits L σu := by
@@ -215,12 +222,7 @@ theorem valuationMap_unitsMapEquiv_galoisGroup
 /-- The normalized valuation on `Lˣ` is equivariant for the actual Galois
 action and the trivial action on its value group. -/
 theorem valuationUnitsMulHom_galoisGroup_equivariant
-    (K L : Type u) [Field K] [ValuativeRel K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L]
-    [IsNonarchimedeanLocalField L] [Algebra K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    (σ : Gal(L / K)) (x : Lˣ) :
+      :
     letI := galoisGroupFieldUnitsMulDistribMulAction K L
     letI := galoisGroupValueGroupMulDistribMulAction K L
     valuationUnitsMulHom L (σ • x) =
@@ -229,28 +231,25 @@ theorem valuationUnitsMulHom_galoisGroup_equivariant
   let := galoisGroupValueGroupMulDistribMulAction K L
   exact congrArg Multiplicative.ofAdd
     (valuationMap_unitsMapEquiv_galoisGroup K L σ x)
+end
 
+
+section
+variable (L : Type u) [Field L] [ValuativeRel L] [TopologicalSpace L]
+    [IsNonarchimedeanLocalField L]
+include L
 /-- Multiplicative and additive presentations of valuation-one/valuation-zero
 agree for a field unit. -/
 theorem valuationUnitsMulHom_eq_one_iff_valuationMap_eq_zero
-    (L : Type u) [Field L] [ValuativeRel L] [TopologicalSpace L]
-    [IsNonarchimedeanLocalField L] (x : Lˣ) :
+      (x : Lˣ) :
     valuationUnitsMulHom L x = 1 ↔
       valuationMap L (Additive.ofMul x) = 0 := by
-  change valuationUnitsMulHom L x = 1 ↔
-    Multiplicative.toAdd (valuationUnitsMulHom L x) = 0
-  constructor
-  · intro hx
-    exact congrArg Multiplicative.toAdd hx
-  · intro hx
-    apply Multiplicative.toAdd.injective
-    exact hx
+  rfl
 
 /-- Exactness at `Lˣ`: the kernel of normalized valuation consists exactly
 of the units of the valuation integer ring. -/
 theorem valuationUnitsMulHom_eq_one_iff_exists_integerUnit
-    (L : Type u) [Field L] [ValuativeRel L] [TopologicalSpace L]
-    [IsNonarchimedeanLocalField L] (x : Lˣ) :
+      (x : Lˣ) :
     valuationUnitsMulHom L x = 1 ↔
       ∃ y : 𝒪[L]ˣ, integerUnitsToFieldUnits L y = x := by
   rw [valuationUnitsMulHom_eq_one_iff_valuationMap_eq_zero]
@@ -263,30 +262,29 @@ theorem valuationUnitsMulHom_eq_one_iff_exists_integerUnit
       (integerUnitsToFieldUnits_mem_range_iff_valuationMap_eq_zero L
         (integerUnitsToFieldUnits L y)).1 ⟨y, rfl⟩
 
-/-- Exactness of the multiplicative valuation sequence at `Lˣ`, stated as
-the equality of the actual range and kernel subgroups. -/
-theorem integerUnitsToFieldUnits_range_eq_ker_valuationUnitsMulHom
-    (L : Type u) [Field L] [ValuativeRel L] [TopologicalSpace L]
-    [IsNonarchimedeanLocalField L] :
-    MonoidHom.range (integerUnitsToFieldUnits L) =
-      MonoidHom.ker (valuationUnitsMulHom L) := by
-  ext x
-  change (∃ y : 𝒪[L]ˣ, integerUnitsToFieldUnits L y = x) ↔
-    valuationUnitsMulHom L x = 1
-  exact (valuationUnitsMulHom_eq_one_iff_exists_integerUnit L x).symm
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The multiplicative normalized valuation `Lˣ → Multiplicative ℤ` is
 surjective. -/
 theorem valuationUnitsMulHom_surjective
-    (L : Type u) [Field L] [ValuativeRel L] [TopologicalSpace L]
-    [IsNonarchimedeanLocalField L] :
+      :
     Function.Surjective (valuationUnitsMulHom L) := by
   intro n
   rcases valuationMap_surjective L (Multiplicative.toAdd n) with ⟨x, hx⟩
   refine ⟨Additive.toMul x, ?_⟩
-  change Multiplicative.ofAdd (valuationMap L x) = n
-  rw [hx]
-  rfl
+  exact congrArg Multiplicative.ofAdd hx
+end
+
 
 end
 end LocalClassFieldTheory

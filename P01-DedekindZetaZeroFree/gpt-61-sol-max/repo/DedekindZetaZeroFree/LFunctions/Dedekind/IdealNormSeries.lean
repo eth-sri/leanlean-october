@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Ideals.PrimeFactorization
 public import DedekindZetaZeroFree.Analysis.FiniteFiberDirichletSeries
 public import DedekindZetaZeroFree.LFunctions.Dedekind.PrimeIdealSummability
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 The FLT Project. All rights reserved.
@@ -32,12 +35,11 @@ namespace DedekindZetaZeroFree.Odlyzko
 
 variable (K : Type*) [Field K] [NumberField K]
 
-noncomputable def dedekindZetaSummand (s : ℂ) (n : ℕ) : ℂ :=
+noncomputable def dedekindZetaSummand (s : ℂ) (n : ℕ)  :=
   LSeries.term (fun m ↦ (idealNormCount K m : ℂ)) s n
 
 @[simp] lemma dedekindZetaSummand_zero (s : ℂ) :
-    dedekindZetaSummand K s 0 = 0 := by
-  simp [dedekindZetaSummand]
+    dedekindZetaSummand K s 0 = 0 := rfl
 
 end DedekindZetaZeroFree.Odlyzko
 
@@ -53,7 +55,7 @@ namespace DedekindZetaZeroFree.Odlyzko
 
 variable (K : Type*) [Field K] [NumberField K]
 
-noncomputable def idealInverseNormPower (s : ℂ) (I : Ideal (𝓞 K)) : ℂ :=
+noncomputable def idealInverseNormPower (s : ℂ) (I : Ideal (𝓞 K))  :=
   if I = 0 then 0 else ((absNorm I : ℂ) ^ (-s))
 
 lemma idealInverseNormPower_zero (s : ℂ) :
@@ -80,8 +82,7 @@ theorem summable_norm_idealInverseNormPower {s : ℂ} (hs : 1 < s.re) :
     exact Nat.pos_of_ne_zero (by
       simpa [Ideal.absNorm_eq_zero_iff] using hI)
 
-theorem summable_idealInverseNormPower {s : ℂ} (hs : 1 < s.re) :
-    Summable (idealInverseNormPower K s) :=
+def summable_idealInverseNormPower {s : ℂ} (hs : 1 < s.re)  :=
   (summable_norm_idealInverseNormPower K hs).of_norm
 
 lemma hasSum_idealInverseNormPower_fiber (s : ℂ) (n : ℕ) :

@@ -16,11 +16,11 @@ variable (F : Type) [Field F] [NumberField F]
   (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
 
 section LegacyRootCompatibility
-variable (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
+variable (S : CanonicalFiniteInducingData F ζ hζ q) 
   (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
-  (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
+  
   (ξ ξ' : (valuation (LocalField F q)).integer)
-  (hξ : IsPrimitiveRoot ξ 3) (hξ' : IsPrimitiveRoot ξ' 3)
+   
 
 end LegacyRootCompatibility
 

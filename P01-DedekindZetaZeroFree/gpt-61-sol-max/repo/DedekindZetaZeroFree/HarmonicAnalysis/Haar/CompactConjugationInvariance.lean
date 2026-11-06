@@ -1,24 +1,30 @@
 module
 
+public import Mathlib
+
 public import Mathlib.MeasureTheory.Group.ModularCharacter
 
 @[expose] public section
+
 
 noncomputable section
 namespace DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel.CompactHaar
 open MeasureTheory Set Filter Topology
 open scoped NNReal
 
+section
+variable {G : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
+    [LocallyCompactSpace G] [T2Space G]
+include G
 private theorem continuous_translated_integral
-    {G : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
-    [LocallyCompactSpace G] [T2Space G] [MeasurableSpace G] [BorelSpace G]
+      [MeasurableSpace G] [BorelSpace G]
     (μ : Measure G) [IsFiniteMeasureOnCompacts μ]
     (f : G → ℝ) (hf : Continuous f) (hfc : HasCompactSupport f) :
     Continuous (fun g => ∫ x, f (x * g) ∂μ) := by
   rw [continuous_iff_continuousAt]
   intro g
   obtain ⟨s, hsc, hsn⟩ := exists_compact_mem_nhds g
-  let t : Set G := (fun p : G × G => p.1 * p.2⁻¹) '' (tsupport f ×ˢ s)
+  let t  := (fun p : G × G => p.1 * p.2⁻¹) '' (tsupport f ×ˢ s)
   have htc : IsCompact t := (hfc.prod hsc).image (by fun_prop)
   have hc : ContinuousOn (fun p : G × G => f (p.2 * p.1)) (s ×ˢ univ) :=
     (hf.comp (by fun_prop)).continuousOn
@@ -31,8 +37,7 @@ private theorem continuous_translated_integral
   exact (continuousOn_integral_of_compact_support htc hc hz).continuousAt hsn
 
 theorem continuous_modularCharacter
-    {G : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
-    [LocallyCompactSpace G] [T2Space G] :
+      :
     Continuous (Measure.modularCharacter (G := G)) := by
   borelize G
   let μ : Measure G := Measure.haar
@@ -53,6 +58,8 @@ theorem continuous_modularCharacter
   change Continuous (fun g : G => (Measure.modularCharacter g : ℝ))
   rw [heq]
   exact (continuous_translated_integral μ f hf hfc).div_const _
+end
+
 
 theorem compact_character_eq_one
     {K : Type*} [Group K] [TopologicalSpace K] [CompactSpace K]
@@ -75,12 +82,15 @@ theorem compact_character_eq_one
       _ = χ k := mul_one _
   exact le_antisymm (hle k) hlow
 
-theorem map_mul_right_compact
-    {G K : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
+section
+variable {G K : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
     [LocallyCompactSpace G] [T2Space G] [MeasurableSpace G] [BorelSpace G]
     [Group K] [TopologicalSpace K] [CompactSpace K]
     (π : K →* G) (hπ : Continuous π)
-    (μ : Measure G) [μ.IsHaarMeasure] [Measure.InnerRegular μ] (k : K) :
+    (μ : Measure G) [μ.IsHaarMeasure] [Measure.InnerRegular μ] (k : K)
+include G K π hπ μ k
+theorem map_mul_right_compact
+      :
     Measure.map (fun a : G => a * π k) μ = μ := by
   have he := compact_character_eq_one ((Measure.modularCharacter (G := G)).comp π)
     (continuous_modularCharacter.comp hπ) k
@@ -89,17 +99,15 @@ theorem map_mul_right_compact
   rw [show Measure.modularCharacter (π k) = 1 from he, one_smul]
 
 theorem map_conjugation_compact
-    {G K : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
-    [LocallyCompactSpace G] [T2Space G] [MeasurableSpace G] [BorelSpace G]
-    [Group K] [TopologicalSpace K] [CompactSpace K]
-    (π : K →* G) (hπ : Continuous π)
-    (μ : Measure G) [μ.IsHaarMeasure] [Measure.InnerRegular μ] (k : K) :
+      :
     Measure.map (fun a : G => (π k)⁻¹ * a * π k) μ = μ := by
   have hc : (fun a : G => (π k)⁻¹ * a * π k) =
       (fun a : G => a * π k) ∘ (fun a : G => (π k)⁻¹ * a) := rfl
   rw [hc, ← Measure.map_map (continuous_mul_const _).measurable
     (continuous_const_mul _).measurable, map_mul_left_eq_self,
     map_mul_right_compact π hπ μ k]
+end
+
 
 end DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel.CompactHaar
 

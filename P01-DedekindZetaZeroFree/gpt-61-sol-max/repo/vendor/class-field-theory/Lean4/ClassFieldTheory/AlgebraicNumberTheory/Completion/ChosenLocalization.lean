@@ -44,19 +44,19 @@ abbrev ChosenFinitePlaceBaseCompletion
     (w₀ : HeightOneSpectrum (𝓞 K)) :=
   (HeightOneSpectrum.adicAbv K w₀).Completion
 
-noncomputable instance chosenFinitePlaceExtensionCompletionAlgebra
-    (w₀ : HeightOneSpectrum (𝓞 K)) :
-    Algebra K
-      (chosenFinitePlaceExtension (L := L) w₀).1.Completion :=
-  AbsoluteValue.extensionCompletionAlgebra
-    (K := K) (chosenFinitePlaceExtension (L := L) w₀).1
 
-noncomputable instance chosenFinitePlaceExtensionCompletionSMul
-    (w₀ : HeightOneSpectrum (𝓞 K)) :
-    SMul K
-      (chosenFinitePlaceExtension (L := L) w₀).1.Completion :=
-  (chosenFinitePlaceExtensionCompletionAlgebra
-    (K := K) (L := L) w₀).toSMul
+
+
+
+
+
+
+
+
+
+
+
+
 
 noncomputable instance chosenFinitePlaceCompletionAlgebra
     (w₀ : HeightOneSpectrum (𝓞 K)) :
@@ -84,11 +84,13 @@ noncomputable instance chosenFinitePlaceBaseValuativeRel
     (HeightOneSpectrum.adicAbv K w₀)
     (HeightOneSpectrum.isNonarchimedean_adicAbv K w₀)
 
+
+local notation:max "current_ChosenFinitePlaceLocalizedCompletion" => ChosenFinitePlaceLocalizedCompletion (K := K) (L := L)
+
 noncomputable instance chosenFinitePlaceLocalizedValued
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     Valued
-      (ChosenFinitePlaceLocalizedCompletion
-        (K := K) (L := L) w₀) ℝ≥0 :=
+      (current_ChosenFinitePlaceLocalizedCompletion w₀) ℝ≥0 :=
   localizedCompletionFinitePlaceValued
     (HeightOneSpectrum.adicAbv K w₀)
     (chosenFinitePlaceExtension (L := L) w₀)
@@ -97,8 +99,7 @@ noncomputable instance chosenFinitePlaceLocalizedValued
 noncomputable instance chosenFinitePlaceLocalizedValuativeRel
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     ValuativeRel
-      (ChosenFinitePlaceLocalizedCompletion
-        (K := K) (L := L) w₀) :=
+      (current_ChosenFinitePlaceLocalizedCompletion w₀) :=
   localizedCompletionFinitePlaceValuativeRel
     (HeightOneSpectrum.adicAbv K w₀)
     (chosenFinitePlaceExtension (L := L) w₀)
@@ -111,8 +112,7 @@ noncomputable instance
       (ValuativeRel.valuation
         (ChosenFinitePlaceBaseCompletion (K := K) w₀))
       (ValuativeRel.valuation
-        (ChosenFinitePlaceLocalizedCompletion
-          (K := K) (L := L) w₀)) :=
+        (current_ChosenFinitePlaceLocalizedCompletion w₀)) :=
   localizedCompletionValuationHasExtension
     (HeightOneSpectrum.adicAbv K w₀)
     (chosenFinitePlaceExtension (L := L) w₀)
@@ -122,19 +122,16 @@ noncomputable instance chosenFinitePlaceLocalizedIntegerAlgebra
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     Algebra
       𝒪[ChosenFinitePlaceBaseCompletion (K := K) w₀]
-      (ChosenFinitePlaceLocalizedCompletion
-        (K := K) (L := L) w₀) :=
+      (current_ChosenFinitePlaceLocalizedCompletion w₀) :=
   Algebra.ofSubsemiring
     𝒪[ChosenFinitePlaceBaseCompletion (K := K) w₀]
 
 noncomputable instance chosenFinitePlaceLocalizedIsIntegralClosure
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     IsIntegralClosure
-      𝒪[ChosenFinitePlaceLocalizedCompletion
-        (K := K) (L := L) w₀]
+      𝒪[current_ChosenFinitePlaceLocalizedCompletion w₀]
       𝒪[ChosenFinitePlaceBaseCompletion (K := K) w₀]
-      (ChosenFinitePlaceLocalizedCompletion
-        (K := K) (L := L) w₀) :=
+      (current_ChosenFinitePlaceLocalizedCompletion w₀) :=
   localizedCompletionIsIntegralClosureWithExtension
     (HeightOneSpectrum.adicAbv K w₀)
     (chosenFinitePlaceExtension (L := L) w₀)
@@ -244,8 +241,7 @@ noncomputable instance chosenFinitePlaceLocalizedFiniteDimensional
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     FiniteDimensional
       (ChosenFinitePlaceBaseCompletion (K := K) w₀)
-      (ChosenFinitePlaceLocalizedCompletion
-        (K := K) (L := L) w₀) :=
+      (current_ChosenFinitePlaceLocalizedCompletion w₀) :=
   AlgebraicNumberTheory.Valuations.localizedCompletionModuleFinite
     (HeightOneSpectrum.adicAbv K w₀)
     (RayClass.adicAbv_isNontrivial w₀)
@@ -255,8 +251,7 @@ noncomputable instance chosenFinitePlaceLocalizedIsGalois
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     IsGalois
       (ChosenFinitePlaceBaseCompletion (K := K) w₀)
-      (ChosenFinitePlaceLocalizedCompletion
-        (K := K) (L := L) w₀) :=
+      (current_ChosenFinitePlaceLocalizedCompletion w₀) :=
   HilbertRamification.algebraicLocalization_isGalois
     (HeightOneSpectrum.adicAbv K w₀)
     (chosenFinitePlaceExtension (L := L) w₀)
@@ -265,11 +260,9 @@ noncomputable instance
     chosenFinitePlaceLocalizedLocallyCompactSpace
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     LocallyCompactSpace
-      (ChosenFinitePlaceLocalizedCompletion
-        (K := K) (L := L) w₀) := by
+      (current_ChosenFinitePlaceLocalizedCompletion w₀) := by
   let e :
-      ChosenFinitePlaceLocalizedCompletion
-          (K := K) (L := L) w₀ ≃ᵢ
+      current_ChosenFinitePlaceLocalizedCompletion w₀ ≃ᵢ
         (chosenFinitePlaceExtension (L := L) w₀).1.Completion :=
     { toEquiv :=
         (AlgebraicNumberTheory.Valuations.localizedCompletionEquivCompletion
@@ -279,22 +272,21 @@ noncomputable instance
       isometry_toFun := Isometry.of_dist_eq fun _ _ => rfl }
   exact (e.toHomeomorph.locallyCompactSpace_iff).2 inferInstance
 
-noncomputable instance chosenFinitePlaceLocalizedIsUltrametricDist
-    (w₀ : HeightOneSpectrum (𝓞 K)) :
-    IsUltrametricDist
-      (ChosenFinitePlaceLocalizedCompletion
-        (K := K) (L := L) w₀) :=
-  localizedCompletionIsUltrametricDist
-    (HeightOneSpectrum.adicAbv K w₀)
-    (chosenFinitePlaceExtension (L := L) w₀)
-    (HeightOneSpectrum.isNonarchimedean_adicAbv K w₀)
+
+
+
+
+
+
+
+
+
 
 noncomputable instance chosenFinitePlaceLocalizedValuationCompatible
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     (Valued.v :
       Valuation
-        (ChosenFinitePlaceLocalizedCompletion
-          (K := K) (L := L) w₀)
+        (current_ChosenFinitePlaceLocalizedCompletion w₀)
         ℝ≥0).Compatible :=
   Valuation.Compatible.ofValuation _
 
@@ -302,41 +294,34 @@ noncomputable instance
     chosenFinitePlaceLocalizedValuationIsNontrivial
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     (ValuativeRel.valuation
-      (ChosenFinitePlaceLocalizedCompletion
-        (K := K) (L := L) w₀)).IsNontrivial :=
+      (current_ChosenFinitePlaceLocalizedCompletion w₀)).IsNontrivial :=
   Valuation.IsNontrivial.of_hasExtension
     (ValuativeRel.valuation
       (ChosenFinitePlaceBaseCompletion (K := K) w₀))
     (ValuativeRel.valuation
-      (ChosenFinitePlaceLocalizedCompletion
-        (K := K) (L := L) w₀))
+      (current_ChosenFinitePlaceLocalizedCompletion w₀))
 
 noncomputable instance
     chosenFinitePlaceLocalizedValuativeRelIsNontrivial
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     ValuativeRel.IsNontrivial
-      (ChosenFinitePlaceLocalizedCompletion
-        (K := K) (L := L) w₀) :=
+      (current_ChosenFinitePlaceLocalizedCompletion w₀) :=
   (ValuativeRel.isNontrivial_iff_isNontrivial
     (ValuativeRel.valuation
-      (ChosenFinitePlaceLocalizedCompletion
-        (K := K) (L := L) w₀))).2 inferInstance
+      (current_ChosenFinitePlaceLocalizedCompletion w₀))).2 inferInstance
 
 noncomputable instance chosenFinitePlaceLocalizedIsValuativeTopology
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     IsValuativeTopology
-      (ChosenFinitePlaceLocalizedCompletion
-        (K := K) (L := L) w₀) :=
+      (current_ChosenFinitePlaceLocalizedCompletion w₀) :=
   isValuativeTopology_of_valued_ofValuation
-    (ChosenFinitePlaceLocalizedCompletion
-      (K := K) (L := L) w₀) ℝ≥0
+    (current_ChosenFinitePlaceLocalizedCompletion w₀) ℝ≥0
 
 noncomputable instance
     chosenFinitePlaceLocalizedIsNonarchimedeanLocalField
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     IsNonarchimedeanLocalField
-      (ChosenFinitePlaceLocalizedCompletion
-        (K := K) (L := L) w₀) :=
+      (current_ChosenFinitePlaceLocalizedCompletion w₀) :=
   { toIsValuativeTopology := inferInstance
     toLocallyCompactSpace := inferInstance
     toIsNontrivial := inferInstance }
@@ -345,16 +330,14 @@ noncomputable instance chosenFinitePlaceLocalizedIntegerModuleFinite
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     Module.Finite
       𝒪[ChosenFinitePlaceBaseCompletion (K := K) w₀]
-      𝒪[ChosenFinitePlaceLocalizedCompletion
-        (K := K) (L := L) w₀] := by
+      𝒪[current_ChosenFinitePlaceLocalizedCompletion w₀] := by
   let : Algebra.IsSeparable
       (ChosenFinitePlaceBaseCompletion (K := K) w₀)
-      (ChosenFinitePlaceLocalizedCompletion (K := K) (L := L) w₀) :=
+      (current_ChosenFinitePlaceLocalizedCompletion w₀) :=
     (chosenFinitePlaceLocalizedIsGalois (K := K) (L := L) w₀).to_isSeparable
   exact integerRing_moduleFinite_of_isIntegralClosure
     (ChosenFinitePlaceBaseCompletion (K := K) w₀)
-    (ChosenFinitePlaceLocalizedCompletion
-      (K := K) (L := L) w₀)
+    (current_ChosenFinitePlaceLocalizedCompletion w₀)
 
 /-- The chosen extension of the completed field is unramified, expressed
 using the intrinsic valuation on the algebraic localization.  The canonical local-field instances for the chosen completion are exported
@@ -364,7 +347,6 @@ noncomputable def ChosenFinitePlaceIsUnramified
     (w₀ : HeightOneSpectrum (𝓞 K)) : Prop :=
   IsNonarchimedeanLocalField.IsUnramifiedValuedExtension
     (ChosenFinitePlaceBaseCompletion (K := K) w₀)
-    (ChosenFinitePlaceLocalizedCompletion
-      (K := K) (L := L) w₀)
+    (current_ChosenFinitePlaceLocalizedCompletion w₀)
 
 end

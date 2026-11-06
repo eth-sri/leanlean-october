@@ -45,10 +45,22 @@ def E (domain poles : Set ℂ) (cutoff V : ℂ → Smooth) (s : ℂ) : Smooth :=
 def numerator (cutoff : ℂ → Smooth) (s₀ : ℂ) (W : ℂ → Smooth) (s : ℂ) : Smooth :=
   (s - s₀) • cutoff s + W s
 
+
+local notation:max "current_E" => E F ζ hζ C R P H U
+
+
+local notation:max "current_Sigma" => KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U
+
+
+local notation:max "current_Source" => KPContActualAllCuspSource.Source F ζ hζ C R P H U ι
+
+
+local notation:max "current_numerator" => numerator F ζ hζ C R P H U
+
 structure ClearedNumerator
     (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ level R P H)
     (buffer : KPContActualCollarBuffer.CollarBuffer F ζ hζ level R P H T)
-    (source : KPContActualAllCuspSource.Source F ζ hζ C R P H U ι buffer Ω f χ)
+    (source : current_Source buffer Ω f χ)
     (V : ℂ → Smooth) (s₀ : ℂ) (r : ℝ)
     (w : ℂ → Hactual) where
   W : ℂ → Smooth
@@ -59,45 +71,48 @@ structure ClearedNumerator
   correction_holomorphy : KPContActualSmoothLineGluing.HolomorphicData
     F ζ hζ level R P H (Metric.ball s₀ r) w W
   numerator_data : SmoothTaylorData F ζ hζ C R P H U
-    (Metric.ball s₀ r) ((numerator F ζ hζ C R P H U source.descent.cutoff) s₀ W)
+    (Metric.ball s₀ r) ((current_numerator source.descent.cutoff) s₀ W)
   punctured_sections : ∀ s ∈ Metric.ball s₀ r, s ≠ s₀ →
-    (numerator F ζ hζ C R P H U source.descent.cutoff) s₀ W s = (s - s₀) • (E F ζ hζ C R P H U Ω (KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR realization Ω) source.descent.cutoff) V s
+    (current_numerator source.descent.cutoff) s₀ W s = (s - s₀) • (current_E Ω (current_Sigma μG hμG hR realization Ω) source.descent.cutoff) V s
   punctured_covered : ∀ s ∈ Metric.ball s₀ r, s ≠ s₀ →
-    scalar ((numerator F ζ hζ C R P H U source.descent.cutoff) s₀ W s) = (s - s₀) • scalar ((E F ζ hζ C R P H U Ω (KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR realization Ω) source.descent.cutoff) V s)
+    scalar ((current_numerator source.descent.cutoff) s₀ W s) = (s - s₀) • scalar ((current_E Ω (current_Sigma μG hμG hR realization Ω) source.descent.cutoff) V s)
   punctured_charts : ∀ s ∈ Metric.ball s₀ r, s ≠ s₀ → ∀ A : Charts,
-    Set.EqOn (coefficient ((numerator F ζ hζ C R P H U source.descent.cutoff) s₀ W s).val A)
-      ((s - s₀) • coefficient ((E F ζ hζ C R P H U Ω (KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR realization Ω) source.descent.cutoff) V s).val A) A.ball.carrier
+    Set.EqOn (coefficient ((current_numerator source.descent.cutoff) s₀ W s).val A)
+      ((s - s₀) • coefficient ((current_E Ω (current_Sigma μG hμG hR realization Ω) source.descent.cutoff) V s).val A) A.ball.carrier
   punctured_group : ∀ s ∈ Metric.ball s₀ r, s ≠ s₀ →
-    groupScalar F ζ hζ C R P H U ((numerator F ζ hζ C R P H U source.descent.cutoff) s₀ W s) =
-      (s - s₀) • groupScalar F ζ hζ C R P H U ((E F ζ hζ C R P H U Ω (KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR realization Ω) source.descent.cutoff) V s)
+    groupScalar F ζ hζ C R P H U ((current_numerator source.descent.cutoff) s₀ W s) =
+      (s - s₀) • groupScalar F ζ hζ C R P H U ((current_E Ω (current_Sigma μG hμG hR realization Ω) source.descent.cutoff) V s)
   correction_class : ∀ s ∈ Metric.ball s₀ r,
-    Represents ((numerator F ζ hζ C R P H U source.descent.cutoff) s₀ W s - (s - s₀) • source.descent.cutoff s).val (w s)
+    Represents ((current_numerator source.descent.cutoff) s₀ W s - (s - s₀) • source.descent.cutoff s).val (w s)
 
   zero_extension : s₀ = 0 →
-    (∀ s ∈ Metric.ball 0 r, s ≠ 0 → (numerator F ζ hζ C R P H U source.descent.cutoff) s₀ W s = s • (E F ζ hζ C R P H U Ω (KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR realization Ω) source.descent.cutoff) V s) ∧
+    (∀ s ∈ Metric.ball 0 r, s ≠ 0 → (current_numerator source.descent.cutoff) s₀ W s = s • (current_E Ω (current_Sigma μG hμG hR realization Ω) source.descent.cutoff) V s) ∧
     (∀ s ∈ Metric.ball 0 r,
-      (numerator F ζ hζ C R P H U source.descent.cutoff) s₀ W s - s • source.descent.cutoff s = W s ∧
-      Represents ((numerator F ζ hζ C R P H U source.descent.cutoff) s₀ W s - s • source.descent.cutoff s).val (w s))
+      (current_numerator source.descent.cutoff) s₀ W s - s • source.descent.cutoff s = W s ∧
+      Represents ((current_numerator source.descent.cutoff) s₀ W s - s • source.descent.cutoff s).val (w s))
+
+
+local notation:max "current_v" => KPContActualHilbertSimpleGerms.v F ζ hζ C R P H U
 
 structure Properties
     (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ level R P H)
     (buffer : KPContActualCollarBuffer.CollarBuffer F ζ hζ level R P H T)
-    (source : KPContActualAllCuspSource.Source F ζ hζ C R P H U ι buffer Ω f χ)
+    (source : current_Source buffer Ω f χ)
     (V : ℂ → Smooth) : Prop where
-  correction_represents : ∀ s ∈ Ω \ (KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR realization Ω), Represents (V s).val ((KPContActualHilbertSimpleGerms.v F ζ hζ C R P H U μG hμG hR realization ι buffer Ω f χ source) s)
-  correction_unique : ∀ s ∈ Ω \ (KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR realization Ω), ∀ Z : Smooth,
-    Represents Z.val ((KPContActualHilbertSimpleGerms.v F ζ hζ C R P H U μG hμG hR realization ι buffer Ω f χ source) s) → Z = V s
+  correction_represents : ∀ s ∈ Ω \ (current_Sigma μG hμG hR realization Ω), Represents (V s).val ((current_v μG hμG hR realization ι buffer Ω f χ source) s)
+  correction_unique : ∀ s ∈ Ω \ (current_Sigma μG hμG hR realization Ω), ∀ Z : Smooth,
+    Represents Z.val ((current_v μG hμG hR realization ι buffer Ω f χ source) s) → Z = V s
   correction_holomorphy : KPContActualSmoothLineGluing.HolomorphicData
-    F ζ hζ level R P H (Ω \ (KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR realization Ω)) (KPContActualHilbertSimpleGerms.v F ζ hζ C R P H U μG hμG hR realization ι buffer Ω f χ source) V
-  off_pole_class : ∀ s ∈ Ω \ (KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR realization Ω),
-    Represents ((E F ζ hζ C R P H U Ω (KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR realization Ω) source.descent.cutoff) V s - source.descent.cutoff s).val ((KPContActualHilbertSimpleGerms.v F ζ hζ C R P H U μG hμG hR realization ι buffer Ω f χ source) s)
-  off_pole_unique : ∀ s ∈ Ω \ (KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR realization Ω), ∀ Z : Smooth,
-    Represents (Z - source.descent.cutoff s).val ((KPContActualHilbertSimpleGerms.v F ζ hζ C R P H U μG hμG hR realization ι buffer Ω f χ source) s) → Z = (E F ζ hζ C R P H U Ω (KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR realization Ω) source.descent.cutoff) V s
-  totalization : ∀ s, s ∉ Ω \ (KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR realization Ω) → (E F ζ hζ C R P H U Ω (KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR realization Ω) source.descent.cutoff) V s = 0
+    F ζ hζ level R P H (Ω \ (current_Sigma μG hμG hR realization Ω)) (current_v μG hμG hR realization ι buffer Ω f χ source) V
+  off_pole_class : ∀ s ∈ Ω \ (current_Sigma μG hμG hR realization Ω),
+    Represents ((current_E Ω (current_Sigma μG hμG hR realization Ω) source.descent.cutoff) V s - source.descent.cutoff s).val ((current_v μG hμG hR realization ι buffer Ω f χ source) s)
+  off_pole_unique : ∀ s ∈ Ω \ (current_Sigma μG hμG hR realization Ω), ∀ Z : Smooth,
+    Represents (Z - source.descent.cutoff s).val ((current_v μG hμG hR realization ι buffer Ω f χ source) s) → Z = (current_E Ω (current_Sigma μG hμG hR realization Ω) source.descent.cutoff) V s
+  totalization : ∀ s, s ∉ Ω \ (current_Sigma μG hμG hR realization Ω) → (current_E Ω (current_Sigma μG hμG hR realization Ω) source.descent.cutoff) V s = 0
   every_germ : ∀ s₀ ∈ Ω, ∀ r : ℝ, 0 < r → Metric.ball s₀ r ⊆ Ω →
-    Metric.ball s₀ r ∩ (KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR realization Ω) ⊆ {s₀} →
+    Metric.ball s₀ r ∩ (current_Sigma μG hμG hR realization Ω) ⊆ {s₀} →
     ∀ w : ℂ → Hactual, DifferentiableOn ℂ w (Metric.ball s₀ r) →
-    (∀ s ∈ Metric.ball s₀ r, s ≠ s₀ → w s = (s - s₀) • (KPContActualHilbertSimpleGerms.v F ζ hζ C R P H U μG hμG hR realization ι buffer Ω f χ source) s) →
+    (∀ s ∈ Metric.ball s₀ r, s ≠ s₀ → w s = (s - s₀) • (current_v μG hμG hR realization ι buffer Ω f χ source) s) →
     Nonempty (ClearedNumerator F ζ hζ C R P H U μG hμG hR ι Ω f χ
       realization buffer source V s₀ r w)
   cleared_germs : ∀ s₀ ∈ Ω,
@@ -105,13 +120,13 @@ structure Properties
       (fun _ : Charts => KPCuspLogShape.dimension F * 3) (fun A => A.ball)
       (chartPullback F ζ hζ C R P H U)
       (KPContSectorScalarLineAlgebra.GenuineCoveredScalars F ζ hζ level)
-      (fun s => scalar ((E F ζ hζ C R P H U Ω (KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR realization Ω) source.descent.cutoff) V s)) Ω s₀
+      (fun s => scalar ((current_E Ω (current_Sigma μG hμG hR realization Ω) source.descent.cutoff) V s)) Ω s₀
   cleared_at_zero : 0 ∈ Ω →
     KPSphericalL2Formula.ClearedSmoothGerm
       (fun _ : Charts => KPCuspLogShape.dimension F * 3) (fun A => A.ball)
       (chartPullback F ζ hζ C R P H U)
       (KPContSectorScalarLineAlgebra.GenuineCoveredScalars F ζ hζ level)
-      (fun s => scalar ((E F ζ hζ C R P H U Ω (KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR realization Ω) source.descent.cutoff) V s)) Ω 0
+      (fun s => scalar ((current_E Ω (current_Sigma μG hμG hR realization Ω) source.descent.cutoff) V s)) Ω 0
 
 theorem same_class_unique
     (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ level R P H)
@@ -201,17 +216,17 @@ theorem coefficient_smul (a : ℂ) (Z : Smooth)
   ring
 
  theorem numerator_sub_cutoff (cutoff W : ℂ → Smooth) (s₀ s : ℂ) :
-    numerator F ζ hζ C R P H U cutoff s₀ W s - (s - s₀) • cutoff s = W s := by
+    current_numerator cutoff s₀ W s - (s - s₀) • cutoff s = W s := by
   unfold numerator
   abel
 
  theorem numerator_at_center (cutoff W : ℂ → Smooth) (s₀ : ℂ) :
-    numerator F ζ hζ C R P H U cutoff s₀ W s₀ = W s₀ := by
+    current_numerator cutoff s₀ W s₀ = W s₀ := by
   simp [numerator]
 
  theorem off_pole_difference (domain poles : Set ℂ) (cutoff V : ℂ → Smooth)
     (s : ℂ) (hs : s ∈ domain \ poles) :
-    E F ζ hζ C R P H U domain poles cutoff V s - cutoff s = V s := by
+    current_E domain poles cutoff V s - cutoff s = V s := by
   simp only [E, if_pos hs]
   abel
 
@@ -219,7 +234,7 @@ theorem coefficient_smul (a : ℂ) (Z : Smooth)
     (s : ℂ) (hs : s ∈ domain \ poles) (u : Hactual)
     (hv : ∀ Z : Smooth, Represents Z.val u → Z = V s)
     (Z : Smooth) (hZ : Represents (Z - cutoff s).val u) :
-    Z = E F ζ hζ C R P H U domain poles cutoff V s := by
+    Z = current_E domain poles cutoff V s := by
   have he := hv (Z - cutoff s) hZ
   simp only [E, if_pos hs]
   rw [← he]
@@ -235,8 +250,8 @@ theorem coefficient_smul (a : ℂ) (Z : Smooth)
     (hW : ∀ s ∈ Metric.ball s₀ r, Represents (W s).val (w s))
     (hclears : ∀ s ∈ Metric.ball s₀ r, s ≠ s₀ → w s = (s - s₀) • v s)
     (s : ℂ) (hs : s ∈ Metric.ball s₀ r) (hne : s ≠ s₀) :
-    numerator F ζ hζ C R P H U cutoff s₀ W s =
-      (s - s₀) • E F ζ hζ C R P H U domain poles cutoff V s := by
+    current_numerator cutoff s₀ W s =
+      (s - s₀) • current_E domain poles cutoff V s := by
   have hsp : s ∈ domain \ poles := ⟨hball hs, fun hp => hne (hisol ⟨hs, hp⟩)⟩
   have hrep := represents_smul F ζ hζ C R P H U (v s) (V s) (hV s hsp) (s - s₀)
   have hw : W s = (s - s₀) • V s :=
@@ -306,24 +321,24 @@ private theorem chart_holomorphic_congr {n : ℕ} (B : LocalBall n)
 def clearedNumerator_of_promoted
     (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ level R P H)
     (buffer : KPContActualCollarBuffer.CollarBuffer F ζ hζ level R P H T)
-    (source : KPContActualAllCuspSource.Source F ζ hζ C R P H U ι buffer Ω f χ)
+    (source : current_Source buffer Ω f χ)
     (V : ℂ → Smooth)
-    (hV : ∀ s ∈ Ω \ KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR realization Ω,
-      Represents (V s).val (KPContActualHilbertSimpleGerms.v F ζ hζ C R P H U μG hμG hR realization ι buffer Ω f χ source s))
+    (hV : ∀ s ∈ Ω \ current_Sigma μG hμG hR realization Ω,
+      Represents (V s).val (current_v μG hμG hR realization ι buffer Ω f χ source s))
     (s₀ : ℂ) (r : ℝ) (hball : Metric.ball s₀ r ⊆ Ω)
-    (hisol : Metric.ball s₀ r ∩ KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR realization Ω ⊆ {s₀})
+    (hisol : Metric.ball s₀ r ∩ current_Sigma μG hμG hR realization Ω ⊆ {s₀})
     (w : ℂ → Hactual) (W : ℂ → Smooth)
     (hW : ∀ s ∈ Metric.ball s₀ r, Represents (W s).val (w s))
     (hhol : KPContActualSmoothLineGluing.HolomorphicData F ζ hζ level R P H (Metric.ball s₀ r) w W)
     (hdata : SmoothTaylorData F ζ hζ C R P H U (Metric.ball s₀ r)
-      (numerator F ζ hζ C R P H U source.descent.cutoff s₀ W))
+      (current_numerator source.descent.cutoff s₀ W))
     (hclears : ∀ s ∈ Metric.ball s₀ r, s ≠ s₀ → w s = (s - s₀) •
-      KPContActualHilbertSimpleGerms.v F ζ hζ C R P H U μG hμG hR realization ι buffer Ω f χ source s) :
+      current_v μG hμG hR realization ι buffer Ω f χ source s) :
     ClearedNumerator F ζ hζ C R P H U μG hμG hR ι Ω f χ realization buffer source V s₀ r w := by
   have he : ∀ s ∈ Metric.ball s₀ r, s ≠ s₀ →
-      numerator F ζ hζ C R P H U source.descent.cutoff s₀ W s =
-      (s - s₀) • E F ζ hζ C R P H U Ω
-        (KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR realization Ω)
+      current_numerator source.descent.cutoff s₀ W s =
+      (s - s₀) • current_E Ω
+        (current_Sigma μG hμG hR realization Ω)
         source.descent.cutoff V s :=
     numerator_punctured_of_classes F ζ hζ C R P H U realization Ω _ _ V W _ w
       s₀ r hball hisol hV hW hclears
@@ -346,7 +361,7 @@ def clearedNumerator_of_promoted
     · intro s hs hne
       simpa using he s hs hne
     · intro s hs
-      rw [show numerator F ζ hζ C R P H U source.descent.cutoff 0 W s - s • source.descent.cutoff s = W s by
+      rw [show current_numerator source.descent.cutoff 0 W s - s • source.descent.cutoff s = W s by
         simpa using numerator_sub_cutoff F ζ hζ C R P H U source.descent.cutoff W 0 s]
       exact ⟨rfl, hW s hs⟩
 
@@ -397,10 +412,10 @@ theorem glue_promotions
 theorem actual_off_pole_isOpen
     (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ level R P H)
     (buffer : KPContActualCollarBuffer.CollarBuffer F ζ hζ level R P H T)
-    (source : KPContActualAllCuspSource.Source F ζ hζ C R P H U ι buffer Ω f χ)
+    (source : current_Source buffer Ω f χ)
     (h : KPContActualHilbertSimpleGerms.Properties F ζ hζ C R P H U μG hμG hR
       realization ι buffer Ω f χ source) :
-    IsOpen (Ω \ KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR realization Ω) := by
+    IsOpen (Ω \ current_Sigma μG hμG hR realization Ω) := by
   apply Metric.isOpen_iff.mpr
   intro s hs
   obtain ⟨r,hr,hball,hisol,_⟩ := h.simple_germs s hs.1
@@ -414,23 +429,23 @@ theorem actual_off_pole_isOpen
  theorem cleared_germs_of_every_germ
     (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ level R P H)
     (buffer : KPContActualCollarBuffer.CollarBuffer F ζ hζ level R P H T)
-    (source : KPContActualAllCuspSource.Source F ζ hζ C R P H U ι buffer Ω f χ)
+    (source : current_Source buffer Ω f χ)
     (V : ℂ → Smooth)
     (h : KPContActualHilbertSimpleGerms.Properties F ζ hζ C R P H U μG hμG hR
       realization ι buffer Ω f χ source)
     (hN : ∀ s₀ ∈ Ω, ∀ r : ℝ, 0 < r → Metric.ball s₀ r ⊆ Ω →
-      Metric.ball s₀ r ∩ KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR realization Ω ⊆ {s₀} →
+      Metric.ball s₀ r ∩ current_Sigma μG hμG hR realization Ω ⊆ {s₀} →
       ∀ w : ℂ → Hactual, DifferentiableOn ℂ w (Metric.ball s₀ r) →
       (∀ s ∈ Metric.ball s₀ r, s ≠ s₀ → w s = (s - s₀) •
-        KPContActualHilbertSimpleGerms.v F ζ hζ C R P H U μG hμG hR realization ι buffer Ω f χ source s) →
+        current_v μG hμG hR realization ι buffer Ω f χ source s) →
       Nonempty (ClearedNumerator F ζ hζ C R P H U μG hμG hR ι Ω f χ
         realization buffer source V s₀ r w)) :
     ∀ s₀ ∈ Ω, KPSphericalL2Formula.ClearedSmoothGerm
       (fun _ : Charts => KPCuspLogShape.dimension F * 3) (fun A => A.ball)
       (chartPullback F ζ hζ C R P H U)
       (KPContSectorScalarLineAlgebra.GenuineCoveredScalars F ζ hζ level)
-      (fun s => scalar (E F ζ hζ C R P H U Ω
-        (KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR realization Ω)
+      (fun s => scalar (current_E Ω
+        (current_Sigma μG hμG hR realization Ω)
         source.descent.cutoff V s)) Ω s₀ := by
   intro s₀ hs₀
   obtain ⟨r,hr,hball,hisol,w,hw,hclear,_⟩ := h.simple_germs s₀ hs₀
@@ -443,11 +458,11 @@ local notation "a" => KPContinuation.spectralCoordinate ((Module.finrank ℚ F /
  theorem v_holomorphic_off_poles
     (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ level R P H)
     (buffer : KPContActualCollarBuffer.CollarBuffer F ζ hζ level R P H T)
-    (source : KPContActualAllCuspSource.Source F ζ hζ C R P H U ι buffer Ω f χ)
+    (source : current_Source buffer Ω f χ)
     (hΩ : Ω ⊆ KPContinuation.spectralDomain) (hopen : IsOpen Ω) :
     DifferentiableOn ℂ
-      (KPContActualHilbertSimpleGerms.v F ζ hζ C R P H U μG hμG hR realization ι buffer Ω f χ source)
-      (Ω \ KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR realization Ω) := by
+      (current_v μG hμG hR realization ι buffer Ω f χ source)
+      (Ω \ current_Sigma μG hμG hR realization Ω) := by
   have hspec := kp_cont_actual_sector_resolvent_specialization F ζ hζ μG hμG level R hR P H realization
   haveI : NumberField.IsTotallyComplex F := NumberField.nrRealPlaces_eq_zero_iff.mp H.totallyComplex
   have hfin : Module.finrank ℚ F = 2 * NumberField.InfinitePlace.nrComplexPlaces F :=
@@ -486,15 +501,18 @@ local notation "a" => KPContinuation.spectralCoordinate ((Module.finrank ℚ F /
       (ContinuousLinearMap.id ℂ (Hactual →L[ℂ] Hactual))
       (KPContActualSectorResolventSpecialization.R_U F ζ hζ level R P H μG hμG hR realization (a s), source.h s)).comp₂ hA hh).neg
   have he : (fun z => -(KPContActualSectorResolventSpecialization.R_U F ζ hζ level R P H μG hμG hR realization (a z) (source.h z))) =
-      KPContActualHilbertSimpleGerms.v F ζ hζ C R P H U μG hμG hR realization ι buffer Ω f χ source := by
+      current_v μG hμG hR realization ι buffer Ω f χ source := by
     funext z
     rw [hspec.resolvent_exact]
     rfl
   rw [← he]
   exact hv.differentiableAt.differentiableWithinAt
 
-private theorem chart_smul {n : ℕ} (B : LocalBall n) {O : Set ℂ}
+section
+variable {n : ℕ} (B : LocalBall n) {O : Set ℂ}
     (q : ℂ → ℂ) (hq : DifferentiableOn ℂ q O) (g : ℂ → Space n → ℂ)
+include n B O q hq g
+private theorem chart_smul  
     (hg : KPCutoffSource.ChartSmoothHolomorphicOn B g O) :
     KPCutoffSource.ChartSmoothHolomorphicOn B (fun s => q s • g s) O := by
   refine ⟨fun s hs => (hg.1 s hs).const_smul (q s), ?_⟩
@@ -508,8 +526,7 @@ private theorem chart_smul {n : ℕ} (B : LocalBall n) {O : Set ℂ}
   exact (congrFun (KPContLocalHolomorphyUpgrade.CauchyAssembly.finite_coordinate_derivative_const_mul
     α.directions (q s) (g s)) x).symm
 
-private theorem sobolev_smul {n : ℕ} (B : LocalBall n) {O : Set ℂ}
-    (q : ℂ → ℂ) (hq : DifferentiableOn ℂ q O) (g : ℂ → Space n → ℂ)
+private theorem sobolev_smul  
     (hg : KPCutoffSource.ChartSobolevHolomorphicOn B g O) :
     KPCutoffSource.ChartSobolevHolomorphicOn B (fun s => q s • g s) O := by
   intro k
@@ -522,10 +539,12 @@ private theorem sobolev_smul {n : ℕ} (B : LocalBall n) {O : Set ℂ}
   rw [hd]
   filter_upwards [Lp.coeFn_smul (q s) (v s α), (hve s hs α).2] with x hx he
   exact hx.trans (congrArg (fun z : ℂ => q s • z) he)
+end
+
 
  theorem source_class_restriction
     (buffer : KPContActualCollarBuffer.CollarBuffer F ζ hζ level R P H T)
-    (source : KPContActualAllCuspSource.Source F ζ hζ C R P H U ι buffer Ω f χ)
+    (source : current_Source buffer Ω f χ)
     (A : Charts) (s : ℂ) (hs : s ∈ Ω) :
     (fun p => KPContActualChartRestrictionDensity.restriction F ζ hζ level R P H
       A.component A.center A.chart A.phase A.ball A.contained (source.h s) p) =ᵐ[volume.restrict A.ball.carrier]
@@ -542,7 +561,7 @@ private theorem sobolev_smul {n : ℕ} (B : LocalBall n) {O : Set ℂ}
 
  theorem source_holomorphic_coefficient
     (buffer : KPContActualCollarBuffer.CollarBuffer F ζ hζ level R P H T)
-    (source : KPContActualAllCuspSource.Source F ζ hζ C R P H U ι buffer Ω f χ)
+    (source : current_Source buffer Ω f χ)
     (A : Charts) :
     KPCutoffSource.ChartSmoothHolomorphicOn A.ball
       (fun s => coefficient (source.descent.commutator s).val A) Ω ∧
@@ -558,7 +577,7 @@ private theorem sobolev_smul {n : ℕ} (B : LocalBall n) {O : Set ℂ}
  theorem source_solution_promotions
     (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ level R P H)
     (buffer : KPContActualCollarBuffer.CollarBuffer F ζ hζ level R P H T)
-    (source : KPContActualAllCuspSource.Source F ζ hζ C R P H U ι buffer Ω f χ)
+    (source : current_Source buffer Ω f χ)
     (O : Set ℂ) (hO : IsOpen O) (hOΩ : O ⊆ Ω)
     (u : ℂ → Hactual) (hu : DifferentiableOn ℂ u O)
     (q : ℂ → ℂ) (hq : DifferentiableOn ℂ q O)
@@ -749,7 +768,10 @@ end ChartSeriesBridge
     simpa using he
   | @insert i t hi ih => rw [Finset.sum_insert hi, coefficient_add, ih, Finset.sum_insert hi]
 
-private theorem derivative_add {n : ℕ} (B : LocalBall n)
+section
+variable {n : ℕ} (B : LocalBall n)
+include n B
+private theorem derivative_add  
     {f g : Space n → ℂ} (hf : ContDiffOn ℝ (⊤ : ℕ∞) f B.carrier)
     (hg : ContDiffOn ℝ (⊤ : ℕ∞) g B.carrier) (l : List (Fin n)) :
     Set.EqOn (coordinateDerivativeList l (f + g))
@@ -769,7 +791,7 @@ private theorem derivative_add {n : ℕ} (B : LocalBall n)
     · exact ((KPContLocalHolomorphyUpgrade.CauchyAssembly.finite_coordinate_derivative_smooth B hg l).contDiffAt
         (Metric.isOpen_ball.mem_nhds hx)).differentiableAt (by simp)
 
-private theorem chart_add {n : ℕ} (B : LocalBall n) {O : Set ℂ} {f g : ℂ → Space n → ℂ}
+private theorem chart_add   {O : Set ℂ} {f g : ℂ → Space n → ℂ}
     (hf : KPCutoffSource.ChartSmoothHolomorphicOn B f O)
     (hg : KPCutoffSource.ChartSmoothHolomorphicOn B g O) :
     KPCutoffSource.ChartSmoothHolomorphicOn B (fun s => f s + g s) O := by
@@ -784,7 +806,7 @@ private theorem chart_add {n : ℕ} (B : LocalBall n) {O : Set ℂ} {f g : ℂ �
   rw [hje s hs α x, hke s hs α x]
   exact (derivative_add B (hf.1 s hs) (hg.1 s hs) α.directions (hKB x.property)).symm
 
-private theorem series_add {n : ℕ} (B : LocalBall n) (c : ℂ) (ρ : ℝ)
+private theorem series_add   (c : ℂ) (ρ : ℝ)
     {b d : ℕ → Space n → ℂ} {f g : ℂ → Space n → ℂ}
     (hb : SmoothPowerSeriesOn B c ρ b f) (hd : SmoothPowerSeriesOn B c ρ d g) :
     SmoothPowerSeriesOn B c ρ (fun j => b j + d j) (fun s => f s + g s) := by
@@ -813,16 +835,18 @@ private theorem series_add {n : ℕ} (B : LocalBall n) (c : ℂ) (ρ : ℝ)
     have h2 := hM L (le_trans (le_max_right _ _) hL) s hs α x
     simp only [coordinateDerivative] at h1 h2
     linarith)
+end
+
 
 set_option maxHeartbeats 1000000 in
  theorem numerator_smoothTaylorData
     (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ level R P H)
     (buffer : KPContActualCollarBuffer.CollarBuffer F ζ hζ level R P H T)
-    (source : KPContActualAllCuspSource.Source F ζ hζ C R P H U ι buffer Ω f χ)
+    (source : current_Source buffer Ω f χ)
     (hΩ : IsOpen Ω) (O : Set ℂ) (hO : IsOpen O) (hOΩ : O ⊆ Ω)
     (s₀ : ℂ) (W : ℂ → Smooth) (hW : SmoothTaylorData F ζ hζ C R P H U O W) :
     SmoothTaylorData F ζ hζ C R P H U O
-      (numerator F ζ hζ C R P H U source.descent.cutoff s₀ W) := by
+      (current_numerator source.descent.cutoff s₀ W) := by
   have hC : ∀ A : Charts, KPCutoffSource.ChartSmoothHolomorphicOn A.ball
       (fun s => coefficient (source.descent.cutoff s).val A) Ω := by
     intro A
@@ -832,7 +856,7 @@ set_option maxHeartbeats 1000000 in
       rw [KPContSectorLineL2Isometry.scalarRepresentative_eq_symm]
       rfl
     simpa only [hcoef] using hh
-  have hformula : ∀ s A, coefficient (numerator F ζ hζ C R P H U source.descent.cutoff s₀ W s).val A =
+  have hformula : ∀ s A, coefficient (current_numerator source.descent.cutoff s₀ W s).val A =
       (s-s₀) • coefficient (source.descent.cutoff s).val A + coefficient (W s).val A := by
     intro s A
     rw [numerator, coefficient_add, coefficient_smul]

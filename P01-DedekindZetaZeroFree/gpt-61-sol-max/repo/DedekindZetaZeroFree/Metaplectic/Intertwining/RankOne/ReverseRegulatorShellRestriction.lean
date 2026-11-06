@@ -78,10 +78,13 @@ theorem actualSection_spec (B : Binding F ζ hζ q A P)
   exact (Classical.choose_spec (center_pure_coordinate_section F ζ hζ q T A P B rep hrep d
     (additiveParameter F q r) φ hφ hcφ)).1
 
-def forwardSection (I : IwasawaData A) (μ : Measure (LocalField F q))
+section
+variable (I : IwasawaData A) (μ : Measure (LocalField F q))
     (J : CenterStandardFamily F ζ hζ q T A I μ) (B : Binding F ζ hζ q A P)
     (rep : D → H₀) (hrep : ∀ d, T.π (rep d) = d) (d : D)
     (φ : LocalField F q → ℂ) (hφ : IsLocallyConstant φ) (hcφ : HasCompactSupport φ)
+include I μ J B rep hrep d φ hφ hcφ in
+def forwardSection  
     (r : ℂˣ) : centerSectionSpace F ζ hζ q T A .minus (-additiveParameter F q r) :=
   J.op .plus (additiveParameter F q r)
     (actualSection F ζ hζ q T A P B rep hrep d φ hφ hcφ r)
@@ -115,10 +118,8 @@ theorem center_section_affine_locallyConstant (B : Binding F ζ hζ q A P)
     exact continuous_subtype_val.comp (A.upperRoot_continuous.comp continuous_ofAdd)
   exact continuous_const.mul hn
 
-def reverseIntegrand (I : IwasawaData A) (μ : Measure (LocalField F q))
-    (J : CenterStandardFamily F ζ hζ q T A I μ) (B : Binding F ζ hζ q A P)
-    (rep : D → H₀) (hrep : ∀ d, T.π (rep d) = d) (d : D)
-    (φ : LocalField F q → ℂ) (hφ : IsLocallyConstant φ) (hcφ : HasCompactSupport φ)
+include I μ J B rep hrep d φ hφ hcφ in
+def reverseIntegrand  
     (r : ℂˣ) (lam : ℂ) (h : H₀) (v : (LocalField F q)ˣ) : ℂ :=
   (B.eta (kappa F ζ hζ q v 0) : ℂ) *
     (reverseRoot F ζ hζ q T A P B r v
@@ -126,10 +127,8 @@ def reverseIntegrand (I : IwasawaData A) (μ : Measure (LocalField F q))
         (openCoordinate F ζ hζ q (v : LocalField F q)))).val h *
     normPower (LocalField F q) v lam
 
-def H (I : IwasawaData A) (μ : Measure (LocalField F q))
-    (J : CenterStandardFamily F ζ hζ q T A I μ) (B : Binding F ζ hζ q A P)
-    (rep : D → H₀) (hrep : ∀ d, T.π (rep d) = d) (d : D)
-    (φ : LocalField F q → ℂ) (hφ : IsLocallyConstant φ) (hcφ : HasCompactSupport φ)
+include I μ J B rep hrep d φ hφ hcφ in
+def H  
     (r : ℂˣ) (lam : ℂ) (h : H₀) : ℂ :=
   ∫ v : (LocalField F q)ˣ,
     reverseIntegrand F ζ hζ q T A P I μ J B rep hrep d φ hφ hcφ r lam h v
@@ -144,10 +143,8 @@ theorem actualSection_eq_zero_of_profile_eq_zero (B : Binding F ζ hζ q A P)
   exact (Classical.choose_spec (center_pure_coordinate_section F ζ hζ q T A P B rep hrep d
     (additiveParameter F q r) φ hφ hcφ)).2 0 (by simp [hzero])
 
-theorem reverseIntegrand_eq_zero_of_profile_eq_zero (I : IwasawaData A) (μ : Measure (LocalField F q))
-    (J : CenterStandardFamily F ζ hζ q T A I μ) (B : Binding F ζ hζ q A P)
-    (rep : D → H₀) (hrep : ∀ d, T.π (rep d) = d) (d : D)
-    (φ : LocalField F q → ℂ) (hφ : IsLocallyConstant φ) (hcφ : HasCompactSupport φ)
+include I μ J B rep hrep d φ hφ hcφ in
+theorem reverseIntegrand_eq_zero_of_profile_eq_zero  
     (hzero : φ = 0) (r : ℂˣ) (lam : ℂ) (h : H₀) :
     reverseIntegrand F ζ hζ q T A P I μ J B rep hrep d φ hφ hcφ r lam h = 0 := by
   funext v
@@ -161,6 +158,8 @@ theorem reverseIntegrand_eq_zero_of_profile_eq_zero (I : IwasawaData A) (μ : Me
     ((reverseRoot F ζ hζ q T A P B r v) 0).val h * normPower (LocalField F q) v lam = 0
   rw [map_zero]
   simp
+end
+
 
 abbrev ShellNumerator := (ℤ × ℤ) →₀ ℂ
 
@@ -246,14 +245,18 @@ private lemma good_C (c : K) : Good f a (RatFunc.C c) (f c) := by
   simp [Good]
 private lemma good_X : Good f a (RatFunc.X : RatFunc K) a := by
   simp [Good]
-private lemma good_mul {x y : RatFunc K} {b c : L} (hx : Good f a x b) (hy : Good f a y c) :
+section
+variable {x y : RatFunc K} {b c : L} (hx : Good f a x b) (hy : Good f a y c)
+include x y b c hx hy in
+private lemma good_mul   :
     Good f a (x*y) (b*c) := by
   refine ⟨?_, by rw [RatFunc.eval_mul f a hx.1 hy.1, hx.2, hy.2]⟩
   intro h
   have h' := Polynomial.eval₂_eq_zero_of_dvd_of_eval₂_eq_zero f a (RatFunc.denom_mul_dvd x y) h
   rw [Polynomial.eval₂_mul] at h'
   exact (mul_ne_zero hx.1 hy.1) h'
-private lemma good_add {x y : RatFunc K} {b c : L} (hx : Good f a x b) (hy : Good f a y c) :
+include x y b c hx hy in
+private lemma good_add   :
     Good f a (x+y) (b+c) := by
   refine ⟨?_, by rw [RatFunc.eval_add f a hx.1 hy.1, hx.2, hy.2]⟩
   intro h
@@ -262,14 +265,20 @@ private lemma good_add {x y : RatFunc K} {b c : L} (hx : Good f a x b) (hy : Goo
   exact (mul_ne_zero hx.1 hy.1) h'
 private lemma good_neg {x : RatFunc K} {b : L} (hx : Good f a x b) : Good f a (-x) (-b) := by
   simpa using good_mul (good_C (f := f) (a := a) (-1)) hx
-private lemma good_sub {x y : RatFunc K} {b c : L} (hx : Good f a x b) (hy : Good f a y c) :
+include x y b c hx hy in
+private lemma good_sub   :
     Good f a (x-y) (b-c) := by
   simpa [sub_eq_add_neg] using good_add hx (good_neg hy)
+end
+
 private lemma good_one : Good f a (1 : RatFunc K) 1 := by
   simpa using good_C (f := f) (a := a) 1
 private lemma good_zero : Good f a (0 : RatFunc K) 0 := by
   simpa using good_C (f := f) (a := a) 0
-private lemma good_inv {x : RatFunc K} {b : L} (hx : Good f a x b) (hb : b ≠ 0) :
+section
+variable {x : RatFunc K} {b : L} (hx : Good f a x b)
+include x b hx in
+private lemma good_inv   (hb : b ≠ 0) :
     Good f a x⁻¹ b⁻¹ := by
   have hnum : Polynomial.eval₂ f a x.num ≠ 0 := by
     intro h
@@ -289,16 +298,20 @@ private lemma good_inv {x : RatFunc K} {b : L} (hx : Good f a x b) (hb : b ≠ 0
 private lemma good_div {x y : RatFunc K} {b c : L} (hx : Good f a x b) (hy : Good f a y c) (hc : c ≠ 0) :
     Good f a (x/y) (b/c) := by
   simpa [div_eq_mul_inv] using good_mul hx (good_inv hy hc)
-private lemma good_pow {x : RatFunc K} {b : L} (hx : Good f a x b) (n : ℕ) :
+include x b hx in
+private lemma good_pow   (n : ℕ) :
     Good f a (x^n) (b^n) := by
   induction n with
   | zero => simpa using (good_one (f := f) (a := a))
   | succ n hn => simpa [pow_succ] using good_mul hn hx
-private lemma good_zpow {x : RatFunc K} {b : L} (hx : Good f a x b) (hb : b ≠ 0) (n : ℤ) :
+include x b hx in
+private lemma good_zpow   (hb : b ≠ 0) (n : ℤ) :
     Good f a (x^n) (b^n) := by
   cases n with
   | ofNat n => simpa using good_pow hx n
   | negSucc n => simpa [zpow_negSucc] using good_inv (good_pow hx (n+1)) (pow_ne_zero _ hb)
+end
+
 private lemma good_sum {ι : Type*} (s : Finset ι) (x : ι → RatFunc K) (b : ι → L)
     (h : ∀ i ∈ s, Good f a (x i) (b i)) : Good f a (∑ i ∈ s, x i) (∑ i ∈ s, b i) := by
   classical

@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Topology.Algebra.InfiniteSum.Nonarchimedean
 public import ValuedFieldTheory.LocalField.Analytic.LogExpSeries.Homomorphisms
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -45,17 +48,20 @@ namespace MultiplicativeIntegerValuation
 
 variable {K : Type u} [Field K]
 
-/-- The scaled field logarithm series, written as evaluation of the positive
-coefficients of the formal series `log (1 + X)`. -/
-theorem hasSum_powerSeries_log_eval_logOnePlusSeriesField_ofWithZeroValuation_scaled
-    [Algebra ℚ K]
+section
+variable [Algebra ℚ K]
     (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
     {p : ℕ} [Fact p.Prime] (e : ℕ) (x : K)
     (hnK : ∀ n : ℕ, (((n + 1 : ℕ) : K) ≠ 0))
     (hnval : ∀ n : ℕ,
-      v (((n + 1 : ℕ) : K)) =
+      v (((n + 1 : ℕ))) =
         WithZero.exp (-((e : ℤ) * (padicValNat p (n + 1) : ℤ))))
     (hvx : v x < (1 : WithZero (Multiplicative ℤ)))
+include v p e x hnK hnval hvx
+/-- The scaled field logarithm series, written as evaluation of the positive
+coefficients of the formal series `log (1 + X)`. -/
+theorem hasSum_powerSeries_log_eval_logOnePlusSeriesField_ofWithZeroValuation_scaled
+     
     (hcomplete :
       letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
       CompleteSpace K) :
@@ -65,7 +71,7 @@ theorem hasSum_powerSeries_log_eval_logOnePlusSeriesField_ofWithZeroValuation_sc
         PowerSeries.coeff (n + 1) (PowerSeries.log K) *
           x ^ (n + 1))
       (logOnePlusSeriesFieldOfWithZeroValuation v x hnK) := by
-  let : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
+  let  := Valued.mk' v
   have hsum :=
     hasSum_signedLogSeriesTermField_logOnePlusSeriesField_ofWithZeroValuation_scaled_of_lt_one
       (v := v) (p := p) e x hnK hnval hvx hcomplete
@@ -76,14 +82,7 @@ theorem hasSum_powerSeries_log_eval_logOnePlusSeriesField_ofWithZeroValuation_sc
 /-- The scaled one-variable formal logarithm evaluation, including its zero
 constant coefficient. -/
 theorem hasSum_powerSeries_log_eval_nat_logOnePlusSeriesField_ofWithZeroValuation_scaled
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    {p : ℕ} [Fact p.Prime] (e : ℕ) (x : K)
-    (hnK : ∀ n : ℕ, (((n + 1 : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n + 1 : ℕ) : K)) =
-        WithZero.exp (-((e : ℤ) * (padicValNat p (n + 1) : ℤ))))
-    (hvx : v x < (1 : WithZero (Multiplicative ℤ)))
+     
     (hcomplete :
       letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
       CompleteSpace K) :
@@ -92,31 +91,34 @@ theorem hasSum_powerSeries_log_eval_nat_logOnePlusSeriesField_ofWithZeroValuatio
       (fun n : ℕ =>
         PowerSeries.coeff n (PowerSeries.log K) * x ^ n)
       (logOnePlusSeriesFieldOfWithZeroValuation v x hnK) := by
-  let : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-  let f : ℕ → K := fun n =>
+  let  := Valued.mk' v
+  let f  := fun n =>
     PowerSeries.coeff n (PowerSeries.log K) * x ^ n
   have htail :
       HasSum (fun n : ℕ => f (n + 1))
-        (logOnePlusSeriesFieldOfWithZeroValuation v x hnK) := by
-    simpa only [f] using
-      hasSum_powerSeries_log_eval_logOnePlusSeriesField_ofWithZeroValuation_scaled
+        (logOnePlusSeriesFieldOfWithZeroValuation v x hnK) := hasSum_powerSeries_log_eval_logOnePlusSeriesField_ofWithZeroValuation_scaled
         (v := v) (p := p) e x hnK hnval hvx hcomplete
   have hfull :=
     (hasSum_nat_add_iff
       (f := f)
       (g := logOnePlusSeriesFieldOfWithZeroValuation v x hnK) 1).1 htail
   simpa [f, PowerSeries.coeff_log] using hfull
+end
 
-/-- Scaled evaluation of the left-axis series in the two-variable formal
-product formula. -/
-theorem hasSum_formalLogOnePlusLeftVariableLogSubst_monomialValue_pair_ofWithZeroValuation_scaled
-    [Algebra ℚ K]
+
+section
+variable [Algebra ℚ K]
     (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
     {p : ℕ} [Fact p.Prime] (e : ℕ) (x y : K)
     (hnK : ∀ n : ℕ, (((n + 1 : ℕ) : K) ≠ 0))
     (hnval : ∀ n : ℕ,
-      v (((n + 1 : ℕ) : K)) =
+      v (((n + 1 : ℕ))) =
         WithZero.exp (-((e : ℤ) * (padicValNat p (n + 1) : ℤ))))
+include v p e x y hnK hnval
+/-- Scaled evaluation of the left-axis series in the two-variable formal
+product formula. -/
+theorem hasSum_formalLogOnePlusLeftVariableLogSubst_monomialValue_pair_ofWithZeroValuation_scaled
+     
     (hvx : v x < (1 : WithZero (Multiplicative ℤ)))
     (hcomplete :
       letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
@@ -128,15 +130,15 @@ theorem hasSum_formalLogOnePlusLeftVariableLogSubst_monomialValue_pair_ofWithZer
           mvPowerSeriesMonomialValue
             (fun i : Fin 2 => if i = 0 then x else y) d)
       (logOnePlusSeriesFieldOfWithZeroValuation v x hnK) := by
-  let : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-  let term : (Fin 2 →₀ ℕ) → K := fun d =>
+  let  := Valued.mk' v
+  let term  := fun d =>
     MvPowerSeries.coeff d (formalLogOnePlusLeftVariableLogSubst K) *
       mvPowerSeriesMonomialValue
         (fun i : Fin 2 => if i = 0 then x else y) d
-  let axis : ℕ → (Fin 2 →₀ ℕ) := fun n => Finsupp.single (0 : Fin 2) n
+  let axis : ℕ → (Fin 2 →₀ ℕ) := fun n => Finsupp.single (0) n
   have haxis_inj : Function.Injective axis := by
     intro m n h
-    have hcoord := congrArg (fun d : Fin 2 →₀ ℕ => d (0 : Fin 2)) h
+    have hcoord := congrArg (fun d : Fin 2 →₀ ℕ => d (0)) h
     simpa [axis] using hcoord
   have haxis :
       HasSum (term ∘ axis)
@@ -149,22 +151,16 @@ theorem hasSum_formalLogOnePlusLeftVariableLogSubst_monomialValue_pair_ofWithZer
       mvPowerSeriesMonomialValue]
   have hout : ∀ d, d ∉ Set.range axis → term d = 0 := by
     intro d hd
-    have hne : ∀ n : ℕ, d ≠ Finsupp.single (0 : Fin 2) n := by
+    have hne : ∀ n : ℕ, d ≠ Finsupp.single (0) n := by
       intro n h
-      exact hd ⟨n, by simpa [axis] using h.symm⟩
+      exact hd ⟨n, h.symm⟩
     simp [term, formalLogOnePlusLeftVariableLogSubst_coeff_of_ne_axis K d hne]
   exact (haxis_inj.hasSum_iff (f := term) hout).1 haxis
 
 /-- Scaled evaluation of the right-axis series in the two-variable formal
 product formula. -/
 theorem hasSum_formalLogOnePlusRightVariableLogSubst_monomialValue_pair_ofWithZeroValuation_scaled
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    {p : ℕ} [Fact p.Prime] (e : ℕ) (x y : K)
-    (hnK : ∀ n : ℕ, (((n + 1 : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n + 1 : ℕ) : K)) =
-        WithZero.exp (-((e : ℤ) * (padicValNat p (n + 1) : ℤ))))
+     
     (hvy : v y < (1 : WithZero (Multiplicative ℤ)))
     (hcomplete :
       letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
@@ -176,15 +172,15 @@ theorem hasSum_formalLogOnePlusRightVariableLogSubst_monomialValue_pair_ofWithZe
           mvPowerSeriesMonomialValue
             (fun i : Fin 2 => if i = 0 then x else y) d)
       (logOnePlusSeriesFieldOfWithZeroValuation v y hnK) := by
-  let : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-  let term : (Fin 2 →₀ ℕ) → K := fun d =>
+  let  := Valued.mk' v
+  let term  := fun d =>
     MvPowerSeries.coeff d (formalLogOnePlusRightVariableLogSubst K) *
       mvPowerSeriesMonomialValue
         (fun i : Fin 2 => if i = 0 then x else y) d
-  let axis : ℕ → (Fin 2 →₀ ℕ) := fun n => Finsupp.single (1 : Fin 2) n
+  let axis : ℕ → (Fin 2 →₀ ℕ) := fun n => Finsupp.single (1) n
   have haxis_inj : Function.Injective axis := by
     intro m n h
-    have hcoord := congrArg (fun d : Fin 2 →₀ ℕ => d (1 : Fin 2)) h
+    have hcoord := congrArg (fun d : Fin 2 →₀ ℕ => d (1)) h
     simpa [axis] using hcoord
   have haxis :
       HasSum (term ∘ axis)
@@ -197,21 +193,15 @@ theorem hasSum_formalLogOnePlusRightVariableLogSubst_monomialValue_pair_ofWithZe
       mvPowerSeriesMonomialValue]
   have hout : ∀ d, d ∉ Set.range axis → term d = 0 := by
     intro d hd
-    have hne : ∀ n : ℕ, d ≠ Finsupp.single (1 : Fin 2) n := by
+    have hne : ∀ n : ℕ, d ≠ Finsupp.single (1) n := by
       intro n h
-      exact hd ⟨n, by simpa [axis] using h.symm⟩
+      exact hd ⟨n, h.symm⟩
     simp [term, formalLogOnePlusRightVariableLogSubst_coeff_of_ne_axis K d hne]
   exact (haxis_inj.hasSum_iff (f := term) hout).1 haxis
 
 /-- Scaled evaluation of the formal product formula's right-hand side. -/
 theorem hasSum_formalLogOnePlusProductRightSide_monomialValue_pair_ofWithZeroValuation_scaled
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    {p : ℕ} [Fact p.Prime] (e : ℕ) (x y : K)
-    (hnK : ∀ n : ℕ, (((n + 1 : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n + 1 : ℕ) : K)) =
-        WithZero.exp (-((e : ℤ) * (padicValNat p (n + 1) : ℤ))))
+     
     (hvx : v x < (1 : WithZero (Multiplicative ℤ)))
     (hvy : v y < (1 : WithZero (Multiplicative ℤ)))
     (hcomplete :
@@ -225,7 +215,7 @@ theorem hasSum_formalLogOnePlusProductRightSide_monomialValue_pair_ofWithZeroVal
             (fun i : Fin 2 => if i = 0 then x else y) d)
       (logOnePlusSeriesFieldOfWithZeroValuation v x hnK +
         logOnePlusSeriesFieldOfWithZeroValuation v y hnK) := by
-  let : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
+  let  := Valued.mk' v
   have hleft :=
     hasSum_formalLogOnePlusLeftVariableLogSubst_monomialValue_pair_ofWithZeroValuation_scaled
       (v := v) (p := p) e x y hnK hnval hvx hcomplete
@@ -236,6 +226,8 @@ theorem hasSum_formalLogOnePlusProductRightSide_monomialValue_pair_ofWithZeroVal
   intro d
   rw [formalLogOnePlusProductRightSide_coeff]
   ring
+end
+
 
 /-- Natural-number coefficients have valuation at most one under a scaled
 `p`-adic denominator formula. -/
@@ -243,17 +235,17 @@ theorem valuation_natCast_le_one_ofWithZeroValuation_scaled
     (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
     {p : ℕ} (e : ℕ)
     (hnval : ∀ n : ℕ,
-      v (((n + 1 : ℕ) : K)) =
+      v (((n + 1 : ℕ))) =
         WithZero.exp (-((e : ℤ) * (padicValNat p (n + 1) : ℤ))))
     (m : ℕ) :
-    v (m : K) ≤ 1 := by
+    v m ≤ 1 := by
   cases m with
   | zero => simp
   | succ n =>
       rw [hnval n]
       calc
         WithZero.exp (-((e : ℤ) * (padicValNat p (n + 1) : ℤ))) ≤
-            WithZero.exp (0 : ℤ) :=
+            WithZero.exp (0) :=
           WithZero.exp_le_exp.mpr (by
             apply neg_nonpos.mpr
             exact mul_nonneg (Int.natCast_nonneg e)
@@ -313,7 +305,7 @@ theorem valuation_mvPowerSeriesMonomialValue_pair_le_max_pow
           (by simp) (by simp)
       _ = r ^ (d 0 + d 1) := by rw [pow_add]
   have hpow : r ^ (d 0 + d 1) ≤ r ^ q :=
-    pow_le_pow_of_le_one (by exact bot_le) hr hq
+    pow_le_pow_of_le_one (bot_le) hr hq
   calc
     v x ^ d 0 * v y ^ d 1 ≤ r ^ (d 0 + d 1) := hprod
     _ ≤ r ^ q := hpow
@@ -330,7 +322,7 @@ theorem valuation_formalLogOnePlusProductArgument_sigmaTerm_le_max
     (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
     {p : ℕ} (e : ℕ)
     (hnval : ∀ n : ℕ,
-      v (((n + 1 : ℕ) : K)) =
+      v (((n + 1 : ℕ))) =
         WithZero.exp (-((e : ℤ) * (padicValNat p (n + 1) : ℤ))))
     {x y : K}
     (hvx : v x < (1 : WithZero (Multiplicative ℤ)))
@@ -348,7 +340,7 @@ theorem valuation_formalLogOnePlusProductArgument_sigmaTerm_le_max
       MvPowerSeries.coeff d
           ((formalLogOnePlusProductArgument K) ^ q) = 0
   · simp [hc]
-  · have hq : q ≤ d 0 + d 1 :=
+  · have hq  :=
       formalLogOnePlusProductArgument_pow_coeff_ne_zero_q_le_coord_sum q d hc
     have hcoeff :
         v (MvPowerSeries.coeff d
@@ -372,21 +364,24 @@ theorem valuation_formalLogOnePlusProductArgument_sigmaTerm_le_max
           (v (PowerSeries.coeff q (PowerSeries.log K)) * v y ^ q) := by
         simp [mul_max]
 
+section
+variable [Algebra ℚ K]
+    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
+    {p : ℕ} [Fact p.Prime] (e : ℕ) (x y : K)
+    (hnK : ∀ n : ℕ, (((n + 1 : ℕ) : K) ≠ 0))
+    (hnval : ∀ n : ℕ,
+      v (((n + 1 : ℕ))) =
+        WithZero.exp (-((e : ℤ) * (padicValNat p (n + 1) : ℤ))))
+    (hvx : v x < (1 : WithZero (Multiplicative ℤ)))
+    (hvy : v y < (1 : WithZero (Multiplicative ℤ)))
+include v p e x y hnK hnval hvx hvy
 /-- The full Sigma-family obtained by expanding every power of
 `X + Y + XY` in the scaled logarithm substitution is unconditionally
 summable.  No rearrangement hypothesis is exposed: nonzero terms in each
 fixed outer degree have finite polynomial support, while their values are
 bounded by the convergent one-variable logarithm terms. -/
 theorem summable_formalLogOnePlusProductArgument_logDegree_monomialValue_pair_ofWithZeroValuation_scaled
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    {p : ℕ} [Fact p.Prime] (e : ℕ) (x y : K)
-    (hnK : ∀ n : ℕ, (((n + 1 : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n + 1 : ℕ) : K)) =
-        WithZero.exp (-((e : ℤ) * (padicValNat p (n + 1) : ℤ))))
-    (hvx : v x < (1 : WithZero (Multiplicative ℤ)))
-    (hvy : v y < (1 : WithZero (Multiplicative ℤ)))
+     
     (hcomplete :
       letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
       CompleteSpace K) :
@@ -398,7 +393,7 @@ theorem summable_formalLogOnePlusProductArgument_logDegree_monomialValue_pair_of
             ((formalLogOnePlusProductArgument K) ^ qd.1) *
           mvPowerSeriesMonomialValue
             (fun i : Fin 2 => if i = 0 then x else y) qd.2) := by
-  let : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
+  let  := Valued.mk' v
   let : CompleteSpace K := hcomplete
   have : NonarchimedeanRing K := nonarchimedeanRing_ofWithZeroValuation v
   let term : (Sigma fun _ : ℕ => Fin 2 →₀ ℕ) → K := fun qd =>
@@ -416,7 +411,7 @@ theorem summable_formalLogOnePlusProductArgument_logDegree_monomialValue_pair_of
   have hγ := Classical.choose_spec hrepr
   have hball :
       {z : K |
-        v z < MonoidWithZeroHom.ValueGroup₀.embedding γ.1} ∈ nhds (0 : K) := by
+        v z < MonoidWithZeroHom.ValueGroup₀.embedding γ.1} ∈ nhds (0) := by
     apply Valued.mem_nhds_zero.mpr
     exact ⟨γ, by
       intro z hz
@@ -433,28 +428,24 @@ theorem summable_formalLogOnePlusProductArgument_logDegree_monomialValue_pair_of
       Tendsto
         (fun q : ℕ =>
           PowerSeries.coeff q (PowerSeries.log K) * x ^ q)
-        atTop (nhds (0 : K)) := by
+        atTop (nhds (0)) := by
     have h := hxsum.summable.tendsto_cofinite_zero
     simpa [Nat.cofinite_eq_atTop] using h
   have hyzero :
       Tendsto
         (fun q : ℕ =>
           PowerSeries.coeff q (PowerSeries.log K) * y ^ q)
-        atTop (nhds (0 : K)) := by
+        atTop (nhds (0)) := by
     have h := hysum.summable.tendsto_cofinite_zero
     simpa [Nat.cofinite_eq_atTop] using h
-  have hevent : ∀ᶠ q : ℕ in atTop,
-      v (PowerSeries.coeff q (PowerSeries.log K) * x ^ q) <
-          MonoidWithZeroHom.ValueGroup₀.embedding γ.1 ∧
-      v (PowerSeries.coeff q (PowerSeries.log K) * y ^ q) <
-          MonoidWithZeroHom.ValueGroup₀.embedding γ.1 :=
+  have hevent  :=
     (hxzero.eventually hball).and (hyzero.eventually hball)
   have hexN := Filter.eventually_atTop.mp hevent
   let N := Classical.choose hexN
   have hN := Classical.choose_spec hexN
-  let P : MvPolynomial (Fin 2) K :=
+  let P  :=
     formalLogOnePlusProductArgumentPolynomial K
-  let E : Finset (Sigma fun _ : ℕ => Fin 2 →₀ ℕ) :=
+  let E  :=
     (Finset.range N).sigma fun q => (P ^ q).support
   apply Filter.mem_cofinite.mpr
   apply E.finite_toSet.subset
@@ -478,7 +469,7 @@ theorem summable_formalLogOnePlusProductArgument_logDegree_monomialValue_pair_of
       have htermzero : term qd = 0 := by simp [term, hcoeff]
       rw [htermzero]
       exact mem_of_mem_nhds hs
-    · have hqN : N ≤ qd.1 := Nat.le_of_not_gt hqsmall
+    · have hqN  := Nat.le_of_not_gt hqsmall
       have hcomp := hN qd.1 hqN
       apply hγ
       change Valued.v.restrict (term qd) < γ.1
@@ -492,15 +483,7 @@ theorem summable_formalLogOnePlusProductArgument_logDegree_monomialValue_pair_of
 /-- The expanded product-argument Sigma-family has sum equal to the scaled
 logarithm of `x + y + xy`. -/
 theorem hasSum_formalLogOnePlusProductArgument_logDegree_monomialValue_pair_sigma_ofWithZeroValuation_scaled
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    {p : ℕ} [Fact p.Prime] (e : ℕ) (x y : K)
-    (hnK : ∀ n : ℕ, (((n + 1 : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n + 1 : ℕ) : K)) =
-        WithZero.exp (-((e : ℤ) * (padicValNat p (n + 1) : ℤ))))
-    (hvx : v x < (1 : WithZero (Multiplicative ℤ)))
-    (hvy : v y < (1 : WithZero (Multiplicative ℤ)))
+     
     (hcomplete :
       letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
       CompleteSpace K) :
@@ -513,7 +496,7 @@ theorem hasSum_formalLogOnePlusProductArgument_logDegree_monomialValue_pair_sigm
           mvPowerSeriesMonomialValue
             (fun i : Fin 2 => if i = 0 then x else y) qd.2)
       (logOnePlusSeriesFieldOfWithZeroValuation v (x + y + x * y) hnK) := by
-  let : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
+  let  := Valued.mk' v
   have harg :
       v (x + y + x * y) < (1 : WithZero (Multiplicative ℤ)) :=
     valuation_log_mul_argument_lt_one_of_lt_one v hvx hvy
@@ -538,27 +521,17 @@ theorem hasSum_formalLogOnePlusProductArgument_logDegree_monomialValue_pair_sigm
           (PowerSeries.coeff q (PowerSeries.log K) *
             (x + y + x * y) ^ q) := by
     intro q
-    exact
-      hasSum_formalLogOnePlusProductArgument_pow_monomialValue_pair_mul_left
-        K (PowerSeries.coeff q (PowerSeries.log K)) x y q
+    apply hasSum_formalLogOnePlusProductArgument_pow_monomialValue_pair_mul_left
   have hsigma :=
     summable_formalLogOnePlusProductArgument_logDegree_monomialValue_pair_ofWithZeroValuation_scaled
       (v := v) (p := p) e x y hnK hnval hvx hvy hcomplete
-  exact HasSum.sigma_of_hasSum houter hinner hsigma
+  apply HasSum.sigma_of_hasSum <;> assumption
 
 /-- Regrouping the scaled Sigma-family by monomial exponent evaluates the
 substituted formal logarithm itself.  The inner sum is finite for every fixed
 monomial, by the degree bound in power-series substitution. -/
 theorem hasSum_formalLogOnePlusProductArgument_logSubst_monomialValue_pair_ofWithZeroValuation_scaled
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    {p : ℕ} [Fact p.Prime] (e : ℕ) (x y : K)
-    (hnK : ∀ n : ℕ, (((n + 1 : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n + 1 : ℕ) : K)) =
-        WithZero.exp (-((e : ℤ) * (padicValNat p (n + 1) : ℤ))))
-    (hvx : v x < (1 : WithZero (Multiplicative ℤ)))
-    (hvy : v y < (1 : WithZero (Multiplicative ℤ)))
+     
     (hcomplete :
       letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
       CompleteSpace K) :
@@ -570,7 +543,7 @@ theorem hasSum_formalLogOnePlusProductArgument_logSubst_monomialValue_pair_ofWit
           mvPowerSeriesMonomialValue
             (fun i : Fin 2 => if i = 0 then x else y) d)
       (logOnePlusSeriesFieldOfWithZeroValuation v (x + y + x * y) hnK) := by
-  let : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
+  let  := Valued.mk' v
   let sigmaTerm : (Sigma fun _ : ℕ => Fin 2 →₀ ℕ) → K := fun qd =>
     PowerSeries.coeff qd.1 (PowerSeries.log K) *
       MvPowerSeries.coeff qd.2
@@ -580,9 +553,7 @@ theorem hasSum_formalLogOnePlusProductArgument_logSubst_monomialValue_pair_ofWit
   have hsigma :
       HasSum sigmaTerm
         (logOnePlusSeriesFieldOfWithZeroValuation v
-          (x + y + x * y) hnK) := by
-    simpa [sigmaTerm] using
-      hasSum_formalLogOnePlusProductArgument_logDegree_monomialValue_pair_sigma_ofWithZeroValuation_scaled
+          (x + y + x * y) hnK) := hasSum_formalLogOnePlusProductArgument_logDegree_monomialValue_pair_sigma_ofWithZeroValuation_scaled
         (v := v) (p := p) e x y hnK hnval hvx hvy hcomplete
   let swap :
       (Sigma fun _ : (Fin 2 →₀ ℕ) => ℕ) ≃
@@ -591,10 +562,7 @@ theorem hasSum_formalLogOnePlusProductArgument_logSubst_monomialValue_pair_ofWit
       invFun := fun qd => ⟨qd.2, qd.1⟩
       left_inv := by intro dq; cases dq; rfl
       right_inv := by intro qd; cases qd; rfl }
-  have hswapped :
-      HasSum (sigmaTerm ∘ swap)
-        (logOnePlusSeriesFieldOfWithZeroValuation v
-          (x + y + x * y) hnK) :=
+  have hswapped  :=
     (swap.hasSum_iff).2 hsigma
   have hfiber :
       ∀ d : Fin 2 →₀ ℕ,
@@ -608,7 +576,7 @@ theorem hasSum_formalLogOnePlusProductArgument_logSubst_monomialValue_pair_ofWit
     let monomial :=
       mvPowerSeriesMonomialValue
         (fun i : Fin 2 => if i = 0 then x else y) d
-    let fiberTerm : ℕ → K := fun q =>
+    let fiberTerm  := fun q =>
       PowerSeries.coeff q (PowerSeries.log K) *
         MvPowerSeries.coeff d
           ((formalLogOnePlusProductArgument K) ^ q) * monomial
@@ -619,7 +587,7 @@ theorem hasSum_formalLogOnePlusProductArgument_logSubst_monomialValue_pair_ofWit
       intro q hq
       have hqge : Finsupp.degree d + 1 ≤ q := by
         simpa only [Finset.mem_range, not_lt] using hq
-      have hdegree : Finsupp.degree d < q := Nat.lt_of_succ_le hqge
+      have hdegree  := Nat.lt_of_succ_le hqge
       have hzero :=
         formalLogOnePlusProductArgument_pow_coeff_eq_zero_of_degree_lt
           K q d hdegree
@@ -634,22 +602,14 @@ theorem hasSum_formalLogOnePlusProductArgument_logSubst_monomialValue_pair_ofWit
       simp only [smul_eq_mul, fiberTerm]
       rw [Finset.sum_mul]
     rw [hsum] at hfinite
-    simpa [fiberTerm, monomial, sigmaTerm, swap, Function.comp_def] using hfinite
+    exact hfinite
   exact hswapped.sigma hfiber
 
 /-- Scaled field-level logarithm additivity on the open unit ball, obtained by
 evaluating the formal product identity after the unconditional regrouping
 above. -/
 theorem logOnePlusSeriesField_mul_argument_eq_add_ofWithZeroValuation_scaled
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    {p : ℕ} [Fact p.Prime] (e : ℕ) (x y : K)
-    (hnK : ∀ n : ℕ, (((n + 1 : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n + 1 : ℕ) : K)) =
-        WithZero.exp (-((e : ℤ) * (padicValNat p (n + 1) : ℤ))))
-    (hvx : v x < (1 : WithZero (Multiplicative ℤ)))
-    (hvy : v y < (1 : WithZero (Multiplicative ℤ)))
+     
     (hcomplete :
       letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
       CompleteSpace K) :
@@ -657,7 +617,7 @@ theorem logOnePlusSeriesField_mul_argument_eq_add_ofWithZeroValuation_scaled
     logOnePlusSeriesFieldOfWithZeroValuation v (x + y + x * y) hnK =
       logOnePlusSeriesFieldOfWithZeroValuation v x hnK +
         logOnePlusSeriesFieldOfWithZeroValuation v y hnK := by
-  let : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
+  let  := Valued.mk' v
   have hleft :=
     hasSum_formalLogOnePlusProductArgument_logSubst_monomialValue_pair_ofWithZeroValuation_scaled
       (v := v) (p := p) e x y hnK hnval hvx hvy hcomplete
@@ -666,6 +626,8 @@ theorem logOnePlusSeriesField_mul_argument_eq_add_ofWithZeroValuation_scaled
       (v := v) (p := p) e x y hnK hnval hvx hvy hcomplete
   exact formalLogOnePlusProductFormula_hasSum_monomialValue_eq
     (A := K) hleft hright
+end
+
 
 /-- Scaled logarithm-series additivity on first principal units.  Unlike the
 earlier endpoint reduction, this theorem has no defect-convergence hypothesis. -/
@@ -677,7 +639,7 @@ theorem principalUnitLogSeries_mul_eq_add_ofWithZeroValuation_scaled
     (u w : (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup (completeDVFOfWithZeroValuation v)) 1)
     (hnK : ∀ n : ℕ, (((n + 1 : ℕ) : K) ≠ 0))
     (hnval : ∀ n : ℕ,
-      v (((n + 1 : ℕ) : K)) =
+      v (((n + 1 : ℕ))) =
         WithZero.exp (-((e : ℤ) * (padicValNat p (n + 1) : ℤ))))
     (hcomplete :
       letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
@@ -687,27 +649,28 @@ theorem principalUnitLogSeries_mul_eq_add_ofWithZeroValuation_scaled
         principalUnitLogSeriesOfWithZeroValuation v w hnK := by
   let x := principalUnitSubOneOfWithZeroValuation v u
   let y := principalUnitSubOneOfWithZeroValuation v w
-  have hvx : v x < (1 : WithZero (Multiplicative ℤ)) := by
-    simpa [x] using principalUnitSubOne_val_lt_one_ofWithZeroValuation v u
-  have hvy : v y < (1 : WithZero (Multiplicative ℤ)) := by
-    simpa [y] using principalUnitSubOne_val_lt_one_ofWithZeroValuation v w
+  have hvx : v x < (1 : WithZero (Multiplicative ℤ)) := principalUnitSubOne_val_lt_one_ofWithZeroValuation v u
+  have hvy : v y < (1 : WithZero (Multiplicative ℤ)) := principalUnitSubOne_val_lt_one_ofWithZeroValuation v w
   have hadd :=
     logOnePlusSeriesField_mul_argument_eq_add_ofWithZeroValuation_scaled
       (v := v) (p := p) e x y hnK hnval hvx hvy hcomplete
   rw [principalUnitLogSeries_mul_argument_ofWithZeroValuation]
-  simpa [principalUnitLogSeriesOfWithZeroValuation, x, y] using hadd
+  exact hadd
 
-/-- The scaled logarithm series as a genuine homomorphism on first principal
-units, with no supplied additivity or defect theorem. -/
-noncomputable def principalUnitLogSeriesHomOfWithZeroValuationScaled
-    [Algebra ℚ K]
+section
+variable [Algebra ℚ K]
     (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
     [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
     {p : ℕ} [Fact p.Prime] (e : ℕ)
     (hnK : ∀ n : ℕ, (((n + 1 : ℕ) : K) ≠ 0))
     (hnval : ∀ n : ℕ,
-      v (((n + 1 : ℕ) : K)) =
+      v (((n + 1 : ℕ))) =
         WithZero.exp (-((e : ℤ) * (padicValNat p (n + 1) : ℤ))))
+include v p e hnK hnval
+/-- The scaled logarithm series as a genuine homomorphism on first principal
+units, with no supplied additivity or defect theorem. -/
+noncomputable def principalUnitLogSeriesHomOfWithZeroValuationScaled
+     
     (hcomplete :
       letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
       CompleteSpace K) :
@@ -731,14 +694,7 @@ Establishes the identity `Multiplicative.toAdd (principalUnitLogSeriesHomOfWithZ
 (v := v) (p := p) e hnK hnval hcomplete u) = principalUnitLogSeriesOfWithZeroValuation v u hnK`.
 -/
 @[simp] theorem principalUnitLogSeriesHomOfWithZeroValuationScaled_apply_toAdd
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
-    {p : ℕ} [Fact p.Prime] (e : ℕ)
-    (hnK : ∀ n : ℕ, (((n + 1 : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n + 1 : ℕ) : K)) =
-        WithZero.exp (-((e : ℤ) * (padicValNat p (n + 1) : ℤ))))
+     
     (hcomplete :
       letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
       CompleteSpace K)
@@ -746,8 +702,9 @@ Establishes the identity `Multiplicative.toAdd (principalUnitLogSeriesHomOfWithZ
     Multiplicative.toAdd
         (principalUnitLogSeriesHomOfWithZeroValuationScaled
           (v := v) (p := p) e hnK hnval hcomplete u) =
-      principalUnitLogSeriesOfWithZeroValuation v u hnK := by
-  rfl
+      principalUnitLogSeriesOfWithZeroValuation v u hnK := rfl
+end
+
 
 end MultiplicativeIntegerValuation
 end LocalFieldTheory.DiscreteValuationField

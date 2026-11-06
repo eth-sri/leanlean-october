@@ -71,6 +71,8 @@ theorem
         (Nat.sub_pos_of_lt
           (Finite.one_lt_card : 1 < Nat.card F.residueField))
         (Nat.pow_pos Nat.card_pos))
+  letI : Module.Free F.residueField⸨X⸩ (equalCharacteristicCompletedFrobeniusFixedField F a n) :=
+    Module.Free.of_divisionRing _ _
   have hprime : -equalCharacteristicCompletedFrobeniusPrimeElement F a n ≠ 0 := by
     intro hzero
     have hnorm := equalCharacteristicCompletedFrobenius_norm_neg_primeElement F a n

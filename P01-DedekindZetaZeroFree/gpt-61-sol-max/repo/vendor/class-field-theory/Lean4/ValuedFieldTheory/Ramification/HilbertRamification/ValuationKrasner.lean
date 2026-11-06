@@ -48,38 +48,34 @@ The proof is the elementary Krasner contradiction
 
 `v(σ(a)-a) ≥ min(v(σ(a)-b), v(b-a)) = v(a-b)`.
 -/
+
+local notation:max "current_valuationSubringAutOfUniqueExtension" => valuationSubringAutOfUniqueExtension (base := base) (target := target)
+
 theorem valuationSubringAutOfUniqueExtension_eq_of_fixed_of_close
     (huniq :
       RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension
         base target)
     (σ : Gal(L/K)) (a b : target.valuationSubring)
     (hfix :
-      valuationSubringAutOfUniqueExtension
-        (base := base) (target := target) huniq σ b = b)
+      current_valuationSubringAutOfUniqueExtension huniq σ b = b)
     (hclose :
-      valuationSubringAutOfUniqueExtension
-            (base := base) (target := target) huniq σ a ≠ a →
+      current_valuationSubringAutOfUniqueExtension huniq σ a ≠ a →
         IsDiscreteValuationRing.addVal target.valuationSubring
-            (valuationSubringAutOfUniqueExtension
-              (base := base) (target := target) huniq σ a - a) <
+            (current_valuationSubringAutOfUniqueExtension huniq σ a - a) <
           IsDiscreteValuationRing.addVal target.valuationSubring
             (a - b)) :
-    valuationSubringAutOfUniqueExtension
-      (base := base) (target := target) huniq σ a = a := by
+    current_valuationSubringAutOfUniqueExtension huniq σ a = a := by
   by_contra hne
   have hfirst :
       IsDiscreteValuationRing.addVal target.valuationSubring
-          (valuationSubringAutOfUniqueExtension
-              (base := base) (target := target) huniq σ a - b) =
+          (current_valuationSubringAutOfUniqueExtension huniq σ a - b) =
         IsDiscreteValuationRing.addVal target.valuationSubring
           (a - b) := by
     calc
       IsDiscreteValuationRing.addVal target.valuationSubring
-          (valuationSubringAutOfUniqueExtension
-              (base := base) (target := target) huniq σ a - b) =
+          (current_valuationSubringAutOfUniqueExtension huniq σ a - b) =
         IsDiscreteValuationRing.addVal target.valuationSubring
-          (valuationSubringAutOfUniqueExtension
-            (base := base) (target := target) huniq σ (a - b)) := by
+          (current_valuationSubringAutOfUniqueExtension huniq σ (a - b)) := by
               apply congrArg
                 (IsDiscreteValuationRing.addVal
                   target.valuationSubring)
@@ -98,20 +94,16 @@ theorem valuationSubringAutOfUniqueExtension_eq_of_fixed_of_close
     IsDiscreteValuationRing.addVal_add
       (R := target.valuationSubring)
       (a :=
-        valuationSubringAutOfUniqueExtension
-            (base := base) (target := target) huniq σ a - b)
+        current_valuationSubringAutOfUniqueExtension huniq σ a - b)
       (b := b - a)
   have hle :
       IsDiscreteValuationRing.addVal target.valuationSubring (a - b) ≤
         IsDiscreteValuationRing.addVal target.valuationSubring
-          (valuationSubringAutOfUniqueExtension
-            (base := base) (target := target) huniq σ a - a) := by
+          (current_valuationSubringAutOfUniqueExtension huniq σ a - a) := by
     have hsum :
-        (valuationSubringAutOfUniqueExtension
-              (base := base) (target := target) huniq σ a - b) +
+        (current_valuationSubringAutOfUniqueExtension huniq σ a - b) +
             (b - a) =
-          valuationSubringAutOfUniqueExtension
-              (base := base) (target := target) huniq σ a - a := by
+          current_valuationSubringAutOfUniqueExtension huniq σ a - a := by
       ring
     simpa [hfirst, hsecond, hsum] using hultra
   exact (not_le_of_gt (hclose hne)) hle

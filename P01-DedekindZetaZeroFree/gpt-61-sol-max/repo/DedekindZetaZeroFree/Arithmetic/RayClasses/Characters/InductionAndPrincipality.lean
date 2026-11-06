@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Conductors.ProductConductorComparison
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Characters.IdealCharacterFromGroup
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve
 
@@ -17,21 +20,15 @@ theorem initial_ray_principal_descent_equiv {F : Type} [Field F] [NumberField F]
       η I = if I = ⊥ ∨ I ⊔ m ≠ ⊤ then 0 else θ I) :
     η.IsPrincipal ↔ θ.IsPrincipal := by
 
-  have hmf : m ≤ f := Ideal.dvd_iff_le.mp hfm
+  have hmf  := Ideal.dvd_iff_le.mp hfm
 
   have hηθ : ∀ I : Ideal (𝓞 F), I ≠ ⊥ → I ⊔ m = ⊤ → η I = θ I := by
-    intro I hI hIcop
-    have hcond : ¬ (I = ⊥ ∨ I ⊔ m ≠ ⊤) := by
-      rintro (h | h)
-      · exact hI h
-      · exact h hIcop
-    rw [hind I]
-    simp only [hcond, ↓reduceIte]
+    (intros; grind)
   constructor
   ·
     intro hη
 
-    let ε : DedekindZetaZeroFree.RayClassCharacter F f :=
+    let ε  :=
       RayBridge.characterFromRayGroup f hf
         (1 : ClassFieldTheory.RayClassGroup (RayBridge.fullModulus f hf) →* ℂˣ)
     have hεprincipal : ε.IsPrincipal := by
@@ -39,7 +36,7 @@ theorem initial_ray_principal_descent_equiv {F : Type} [Field F] [NumberField F]
       rw [RayBridge.characterFromRayGroup_apply f hf _ I hI hIf]
       simp
 
-    have hθε : ∀ I : Ideal (𝓞 F), θ I = ε I :=
+    have hθε  :=
       RayComparison.away_uniqueness hf hm θ ε (by
         intro I hI hIfm
         have hIf : I ⊔ f = ⊤ :=
@@ -55,6 +52,6 @@ theorem initial_ray_principal_descent_equiv {F : Type} [Field F] [NumberField F]
     have hIf : I ⊔ f = ⊤ :=
       top_unique (le_trans (le_of_eq hIm.symm) (sup_le_sup_left hmf I))
     rw [hηθ I hI hIm]
-    exact hθ I hI hIf
+    apply hθ <;> assumption
 
 end DedekindZetaZeroFree.LargeSieve

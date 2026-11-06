@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Basic
 public import Mathlib.Algebra.Module.ZLattice.Summable
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -19,8 +22,11 @@ def schwartzLatticeTranslate (L : Submodule ℤ E) (f : SchwartzMap E ℂ)
   ⟨fun x => f (x + (ℓ : E)),
     f.continuous.comp (continuous_id.add continuous_const)⟩
 
-theorem schwartzLatticeDecay (L : Submodule ℤ E)
+section
+variable (L : Submodule ℤ E)
     [DiscreteTopology L] [IsZLattice ℝ L] (f : SchwartzMap E ℂ)
+include L f
+theorem schwartzLatticeDecay  
     (C : TopologicalSpace.Compacts E) :
     Summable (fun ℓ : L => ‖(schwartzLatticeTranslate L f ℓ).restrict C‖) := by
   classical
@@ -63,9 +69,7 @@ theorem schwartzLatticeDecay (L : Submodule ℤ E)
     have hh' := mul_le_mul_of_nonneg_left (hdecay' ((x : E) + (ℓ : E)))
       (show (0 : ℝ) ≤ 2 ^ k by positivity)
     have hprod : ‖(ℓ : E)‖ ^ k * ‖f ((x : E) + (ℓ : E))‖ ≤ D * 2 ^ k := by
-      calc
-        _ ≤ (2 ^ k * ‖(x : E) + (ℓ : E)‖ ^ k) * ‖f ((x : E) + (ℓ : E))‖ := hh
-        _ ≤ D * 2 ^ k := by nlinarith [hh']
+      linarith
     calc
       ‖f ((x : E) + (ℓ : E))‖ =
           (‖(ℓ : E)‖ ^ k * ‖f ((x : E) + (ℓ : E))‖) * (‖(ℓ : E)‖⁻¹ ^ k) := by
@@ -75,8 +79,7 @@ theorem schwartzLatticeDecay (L : Submodule ℤ E)
   change ‖‖(schwartzLatticeTranslate L f ℓ).restrict C‖‖ ≤ D * 2 ^ k * ‖ℓ‖⁻¹ ^ k
   simpa only [Real.norm_of_nonneg (norm_nonneg _), Submodule.norm_coe] using hbound
 
-theorem schwartzLatticeDecay_pointwise (L : Submodule ℤ E)
-    [DiscreteTopology L] [IsZLattice ℝ L] (f : SchwartzMap E ℂ) (z : E) :
+theorem schwartzLatticeDecay_pointwise   (z : E) :
     Summable (fun ℓ : L => ‖f (z + (ℓ : E))‖) := by
   let C : TopologicalSpace.Compacts E := ⟨{z}, isCompact_singleton⟩
   apply (schwartzLatticeDecay L f C).of_norm_bounded
@@ -84,25 +87,28 @@ theorem schwartzLatticeDecay_pointwise (L : Submodule ℤ E)
   rw [Real.norm_of_nonneg (norm_nonneg _)]
   exact ContinuousMap.norm_coe_le_norm ((schwartzLatticeTranslate L f ℓ).restrict C)
     ⟨z, Set.mem_singleton z⟩
+end
+
 
 variable {ι : Type*} [Fintype ι]
 
-def coordinateSchwartzTranslate (L : Submodule ℤ E)
+section
+variable (L : Submodule ℤ E)
     [DiscreteTopology L] [IsZLattice ℝ L] (b : Basis ι ℤ L)
-    (f : SchwartzMap E ℂ) (n : ι → ℤ) : C(ι → ℝ, ℂ) := by
+    (f : SchwartzMap E ℂ)
+include L b f
+def coordinateSchwartzTranslate   (n : ι → ℤ) : C(ι → ℝ, ℂ) := by
   let B := LinearEquiv.toContinuousLinearEquiv
     (b.ofZLatticeBasis ℝ L).equivFun.symm
   exact ⟨fun x => f (B (x + fun i => (n i : ℝ))),
     f.continuous.comp (B.continuous.comp (continuous_id.add continuous_const))⟩
 
-theorem schwartzLatticeDecay_coordinates (L : Submodule ℤ E)
-    [DiscreteTopology L] [IsZLattice ℝ L] (b : Basis ι ℤ L)
-    (f : SchwartzMap E ℂ) (C : TopologicalSpace.Compacts (ι → ℝ)) :
+theorem schwartzLatticeDecay_coordinates   (C : TopologicalSpace.Compacts (ι → ℝ)) :
     Summable (fun n : ι → ℤ => ‖(coordinateSchwartzTranslate L b f n).restrict C‖) := by
   classical
   let B := LinearEquiv.toContinuousLinearEquiv
     (b.ofZLatticeBasis ℝ L).equivFun.symm
-  let K : TopologicalSpace.Compacts E := C.map B B.continuous
+  let K  := C.map B B.continuous
   have hcast (n : ι → ℤ) : B (fun i => (n i : ℝ)) = (b.equivFun.symm n : E) := by
     apply (b.ofZLatticeBasis ℝ L).equivFun.injective
     ext i
@@ -127,6 +133,8 @@ theorem schwartzLatticeDecay_coordinates (L : Submodule ℤ E)
   change ‖f (B ((x : ι → ℝ) + fun i => (n i : ℝ)))‖ ≤ _
   rw [map_add, hcast]
   exact ht
+end
+
 
 end DedekindZetaZeroFree
 

@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction.UnramifiedNormQuotient
 public import GaloisCohomology.Cyclic.IntegralRepUniverse
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -42,10 +45,7 @@ namespace ValuationData
 
 /-- Reduction modulo `n` restricted to the actual value subgroup
 `Z ⊆ ℤ̂`. -/
-def canonicalValueReduction
-    (v : ValuationData D A) (n : ℕ) (hn : 0 < n) :
-    v.valueGroup →+ ZMod n :=
-  v.valueModulo n hn
+alias canonicalValueReduction := _root_.ClassFormation.ValuationData.valueModulo
 
 /-- The canonical value reduction sends the unit element to zero. -/
 @[simp]
@@ -55,17 +55,14 @@ theorem canonicalValueReduction_one
   change zHatReduction n hn (1 : ZHat) = 1
   rfl
 
-/-- The canonical value reduction onto the residue-degree quotient is surjective. -/
-theorem canonicalValueReduction_surjective
-    (v : ValuationData D A) (n : ℕ) (hn : 0 < n) :
-    Function.Surjective (v.canonicalValueReduction n hn) :=
-  v.valueModulo_surjective n hn
+
+
+
+
+
 
 /-- Canonical reduction descended to `Z / nZ`. -/
-def canonicalValueQuotientHom
-    (v : ValuationData D A) (n : ℕ) (hn : 0 < n) :
-    (v.valueGroup ⧸ nsmulWithin v.valueGroup n) →+ ZMod n :=
-  v.canonicalQuotientMap n hn
+alias canonicalValueQuotientHom := _root_.ClassFormation.ValuationData.canonicalQuotientMap
 
 /-- The quotient homomorphism evaluates on a coset through canonical value reduction. -/
 @[simp]
@@ -74,30 +71,29 @@ theorem canonicalValueQuotientHom_mk
     (z : v.valueGroup) :
     v.canonicalValueQuotientHom n hn
       (QuotientAddGroup.mk' (nsmulWithin v.valueGroup n) z) =
-        v.canonicalValueReduction n hn z := by
-  rfl
+        v.canonicalValueReduction n hn z := rfl
 
-/-- The induced canonical value map on the quotient is surjective. -/
-theorem canonicalValueQuotientHom_surjective
-    (v : ValuationData D A) (n : ℕ) (hn : 0 < n) :
-    Function.Surjective (v.canonicalValueQuotientHom n hn) :=
-  (v.canonical_value_quotient_bijective n hn).2
+
+
+
+
+
 
 /-- The canonical isomorphism `Z / nZ ≃ ℤ / nℤ` from the valuation-quotient axiom. -/
-def canonicalValueQuotientEquiv
-    (v : ValuationData D A) (n : ℕ) (hn : 0 < n) :
-    (v.valueGroup ⧸ nsmulWithin v.valueGroup n) ≃+ ZMod n :=
-  v.cyclic_value_quotients n hn
+alias canonicalValueQuotientEquiv := _root_.ClassFormation.ValuationData.cyclic_value_quotients
 
+section
+variable (v : ValuationData D A) (E : FiniteAbstractFieldExtension G)
+include v E
 /-- Canonical valuation modulo `[L : K]` on `A_K`. -/
 def canonicalUnramifiedValuationHom
-    (v : ValuationData D A) (E : FiniteAbstractFieldExtension G) :
+      :
     ambientFixedAddSubgroup A E.base.field →+ ZMod (E.degree : ℕ) :=
   (v.canonicalValueReduction (E.degree : ℕ) E.degree.property).comp
     (v.valuationAt E.base)
 
 theorem finiteNormSubgroup_le_canonicalUnramifiedValuationHom_ker
-    (v : ValuationData D A) (E : FiniteAbstractFieldExtension G)
+     
     (hUnramified : E.IsUnramified D) :
     finiteNormSubgroup A E.base.field E.field.field E.below ≤
       (v.canonicalUnramifiedValuationHom E).ker := by
@@ -107,16 +103,13 @@ theorem finiteNormSubgroup_le_canonicalUnramifiedValuationHom_ker
   have htower := v.normalizedValuation_tower E a
   have hresidueDegree :
       ((E.toFiniteResidueAbstractExtension D).residueDegree : ℕ) =
-        (E.degree : ℕ) := by
-    exact E.residueDegree_eq_degree_of_isUnramified D hUnramified
+        (E.degree : ℕ) := E.residueDegree_eq_degree_of_isUnramified D hUnramified
   dsimp only at htower
   rw [hresidueDegree] at htower
   have htower' :
-      n • ((v.valuationAt E.field a : v.valueGroup) : ZHat) =
+      n • ((v.valuationAt E.field a) : ZHat) =
         ((v.valuationAt E.base
-          (relativeNorm A E.base.field E.field.field E.below a) :
-          v.valueGroup) : ZHat) := by
-    simpa [n] using htower
+          (relativeNorm A E.base.field E.field.field E.below a)) : ZHat) := htower
   change zHatReduction n hn
       (v.valuationAt E.base
         (relativeNorm A E.base.field E.field.field E.below a) : ZHat) = 0
@@ -126,7 +119,7 @@ theorem finiteNormSubgroup_le_canonicalUnramifiedValuationHom_ker
 /-- The canonical valuation induced on the finite unramified norm
 quotient. -/
 def canonicalUnramifiedNormQuotientValuation
-    (v : ValuationData D A) (E : FiniteAbstractFieldExtension G)
+     
     (hUnramified : E.IsUnramified D) :
     FiniteNormQuotient A E.base.field E.field.field E.below →+
       ZMod (E.degree : ℕ) :=
@@ -138,30 +131,31 @@ def canonicalUnramifiedNormQuotientValuation
 /-- Valuation sends a finite norm class to its canonical unramified quotient value. -/
 @[simp]
 theorem canonicalUnramifiedNormQuotientValuation_finiteNormClass
-    (v : ValuationData D A) (E : FiniteAbstractFieldExtension G)
+     
     (hUnramified : E.IsUnramified D)
     (a : ambientFixedAddSubgroup A E.base.field) :
     v.canonicalUnramifiedNormQuotientValuation E hUnramified
       (finiteNormClass A E.base.field E.field.field E.below a) =
-        v.canonicalUnramifiedValuationHom E a := by
-  rfl
+        v.canonicalUnramifiedValuationHom E a := rfl
+end
 
-/-- The valuation map from the unramified norm quotient is surjective. -/
-theorem canonicalUnramifiedNormQuotientValuation_surjective
-    (v : ValuationData D A) (E : FiniteAbstractFieldExtension G)
-    (hUnramified : E.IsUnramified D) :
-    Function.Surjective
-      (v.canonicalUnramifiedNormQuotientValuation E hUnramified) := by
-  intro z
-  let n := (E.degree : ℕ)
-  let hn : 0 < n := E.degree.property
-  obtain ⟨w, hw⟩ := v.canonicalValueReduction_surjective n hn z
-  obtain ⟨a, ha⟩ := v.normalizedValuation_surjective E.base w
-  refine ⟨finiteNormClass A E.base.field E.field.field E.below a, ?_⟩
-  rw [v.canonicalUnramifiedNormQuotientValuation_finiteNormClass]
-  change v.canonicalValueReduction n hn (v.valuationAt E.base a) = z
-  rw [ha]
-  exact hw
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The valuation map separates classes in the unramified norm quotient. -/
 theorem canonicalUnramifiedNormQuotientValuation_injective
@@ -197,22 +191,21 @@ theorem canonicalUnramifiedNormQuotientValuation_injective
       (QuotientAddGroup.eq_zero_iff (v.valuationAt E.base a)).1 hqValue
     have haz' : v.valuationAt E.base a = n • z := haz.symm
     obtain ⟨b, hb⟩ := v.normalizedValuation_surjective E.field z
-    let normb : ambientFixedAddSubgroup A E.base.field :=
+    let normb  :=
       relativeNorm A E.base.field E.field.field E.below b
     have htower := v.normalizedValuation_tower E b
     have hresidueDegree :
         ((E.toFiniteResidueAbstractExtension D).residueDegree : ℕ) =
-          (E.degree : ℕ) := by
-      exact E.residueDegree_eq_degree_of_isUnramified D hUnramified
+          (E.degree : ℕ) := E.residueDegree_eq_degree_of_isUnramified D hUnramified
     dsimp only at htower
     rw [hresidueDegree] at htower
     have hnormb : v.valuationAt E.base normb = n • z := by
       apply Subtype.ext
       calc
-        ((v.valuationAt E.base normb : v.valueGroup) : ZHat) =
-            n • ((v.valuationAt E.field b : v.valueGroup) : ZHat) := htower.symm
-        _ = n • ((z : v.valueGroup) : ZHat) := by rw [hb]
-        _ = (((n • z : v.valueGroup)) : ZHat) := rfl
+        ((v.valuationAt E.base normb) : ZHat) =
+            n • ((v.valuationAt E.field b) : ZHat) := htower.symm
+        _ = n • (z : ZHat) := by rw [hb]
+        _ = (((n • z)) : ZHat) := rfl
     let u : v.unitAddSubgroup E.base :=
       ⟨a - normb, by
         rw [v.mem_unitAddSubgroup_iff, map_sub, haz', hnormb, sub_self]⟩
@@ -267,21 +260,21 @@ theorem canonicalUnramifiedNormQuotientValuation_injective
   apply hkernel
   rw [map_sub, hxy, sub_self]
 
-/-- Canonical form of the valuation isomorphism in the unramified norm-quotient equivalence. -/
-def canonicalUnramifiedNormQuotientEquiv
-    (v : ValuationData D A) (hAxiom : SatisfiesUnramifiedUnitCohomology D v)
-    (E : FiniteAbstractFieldExtension G)
-    (hnormal : (extensionSubgroup
-      E.base.field E.field.field E.below).Normal)
-    (hUnramified : E.IsUnramified D) :
-    FiniteNormQuotient A E.base.field E.field.field E.below ≃+
-      ZMod (E.degree : ℕ) :=
-  AddEquiv.ofBijective
-    (v.canonicalUnramifiedNormQuotientValuation E hUnramified)
-    ⟨v.canonicalUnramifiedNormQuotientValuation_injective
-      hAxiom E hnormal hUnramified,
-     v.canonicalUnramifiedNormQuotientValuation_surjective
-      E hUnramified⟩
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end ValuationData
 

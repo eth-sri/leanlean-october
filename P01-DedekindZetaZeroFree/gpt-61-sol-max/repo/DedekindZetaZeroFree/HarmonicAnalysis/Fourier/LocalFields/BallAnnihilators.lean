@@ -15,30 +15,33 @@ namespace DedekindZetaZeroFree
 
 variable (F : Type) [Field F] [NumberField F]
 
-theorem localDifferent_ne_bot (v : HeightOneSpectrum (𝓞 F)) :
+section
+variable (v : HeightOneSpectrum (𝓞 F))
+include v
+theorem localDifferent_ne_bot   :
     localDifferent F v ≠ ⊥ := by
   exact RamificationTheory.DiscreteValuationField.ValuedExtension.differentIdealOfFiniteSeparable_ne_bot
     (LocalConductor.base F v) (LocalConductor.target F v)
 
-theorem exists_localDifferentExponent (v : HeightOneSpectrum (𝓞 F)) :
+theorem exists_localDifferentExponent   :
     ∃ d : ℕ, localDifferent F v =
       IsLocalRing.maximalIdeal (LocalConductor.target F v).valuationSubring ^ d := by
   letI := (LocalConductor.target F v).valuationSubring_isDiscreteValuationRing
   exact exists_maximalIdeal_pow_eq_of_principal _ (inferInstance) _ (localDifferent_ne_bot F v)
 
-def localDifferentExponent (v : HeightOneSpectrum (𝓞 F)) : ℕ :=
+def localDifferentExponent   : ℕ :=
   Classical.choose (exists_localDifferentExponent F v)
 
-theorem localDifferent_eq_maximalIdeal_pow (v : HeightOneSpectrum (𝓞 F)) :
+theorem localDifferent_eq_maximalIdeal_pow   :
     localDifferent F v =
       IsLocalRing.maximalIdeal (LocalConductor.target F v).valuationSubring ^
         localDifferentExponent F v := by
   exact Classical.choose_spec (exists_localDifferentExponent F v)
 
-def localDifferentNorm (v : HeightOneSpectrum (𝓞 F)) : ℕ :=
+def localDifferentNorm   : ℕ :=
   Ideal.absNorm v.asIdeal ^ localDifferentExponent F v
 
- def re (v : HeightOneSpectrum (𝓞 F)) :
+ def re   :
     (LocalConductor.target F v).valuationSubring ≃+* Valued.integer (v.adicCompletion F) where
   toFun x := ⟨x, (Set.ext_iff.mp (LocalConductor.target_integerRing_eq F v) x).mp x.property⟩
   invFun x := ⟨x, (Set.ext_iff.mp (LocalConductor.target_integerRing_eq F v) x).mpr x.property⟩
@@ -46,16 +49,16 @@ def localDifferentNorm (v : HeightOneSpectrum (𝓞 F)) : ℕ :=
   right_inv _ := rfl
   map_mul' _ _ := rfl
   map_add' _ _ := rfl
-private theorem inte (v : HeightOneSpectrum (𝓞 F)) :
+private theorem inte   :
     (Valued.v : Valuation (v.adicCompletion F) ℤᵐ⁰).Integers (LocalConductor.target F v).valuationSubring where
   hom_inj := Subtype.val_injective
   map_le_one x := (re F v x).property
   exists_of_le_one {x} hx := ⟨(re F v).symm ⟨x,hx⟩,rfl⟩
- def pi (v : HeightOneSpectrum (𝓞 F)) : (LocalConductor.target F v).valuationSubring :=
+ def pi   : (LocalConductor.target F v).valuationSubring :=
   (re F v).symm ⟨finiteCompletionUniformizer F v, by
     change Valued.v (finiteCompletionUniformizer F v) ≤ 1
     simp [finiteCompletionUniformizer_valuation]⟩
-private theorem pi_irr (v : HeightOneSpectrum (𝓞 F)) : Irreducible (pi F v) := by
+private theorem pi_irr   : Irreducible (pi F v) := by
   apply IsDiscreteValuationRing.irreducible_of_span_eq_maximalIdeal (pi F v)
   · exact fun h => finiteCompletionUniformizer_ne_zero F v (congrArg Subtype.val h)
   · ext a
@@ -75,7 +78,7 @@ private theorem pi_irr (v : HeightOneSpectrum (𝓞 F)) : Irreducible (pi F v) :
         simp
       rw [hh, WithZero.exp_le_exp]
       omega
-private theorem pow_mem (v : HeightOneSpectrum (𝓞 F)) (d : ℕ) (a : (LocalConductor.target F v).valuationSubring) :
+private theorem pow_mem   (d : ℕ) (a : (LocalConductor.target F v).valuationSubring) :
     a ∈ IsLocalRing.maximalIdeal (LocalConductor.target F v).valuationSubring ^ d ↔
     (a : v.adicCompletion F) ∈ finiteCompletionBall F v d := by
   letI := (LocalConductor.target F v).valuationSubring_isDiscreteValuationRing
@@ -83,7 +86,7 @@ private theorem pow_mem (v : HeightOneSpectrum (𝓞 F)) (d : ℕ) (a : (LocalCo
   change Valued.v (a : v.adicCompletion F) ≤ Valued.v (finiteCompletionUniformizer F v) ^ d ↔ _
   rw [finiteCompletionUniformizer_valuation, ← WithZero.exp_nsmul]
   simp
-private theorem coe_pow (v : HeightOneSpectrum (𝓞 F)) (d : ℕ) :
+private theorem coe_pow   (d : ℕ) :
     (IsLocalization.coeSubmodule (v.adicCompletion F)
       (IsLocalRing.maximalIdeal (LocalConductor.target F v).valuationSubring ^ d) : Set (v.adicCompletion F)) =
     (finiteCompletionBall F v d : Set (v.adicCompletion F)) := by
@@ -103,7 +106,7 @@ private theorem coe_pow (v : HeightOneSpectrum (𝓞 F)) (d : ℕ) :
       exact h0
     let a := (re F v).symm ⟨x,ha⟩
     exact ⟨a, (pow_mem F v d a).mpr hx, rfl⟩
-private theorem inv_pow (v : HeightOneSpectrum (𝓞 F)) (d : ℕ) :
+private theorem inv_pow   (d : ℕ) :
     ((1 / IsLocalization.coeSubmodule (v.adicCompletion F)
       (IsLocalRing.maximalIdeal (LocalConductor.target F v).valuationSubring ^ d) :
       Submodule (LocalConductor.target F v).valuationSubring (v.adicCompletion F)) : Set (v.adicCompletion F)) =
@@ -146,7 +149,7 @@ private theorem inv_pow (v : HeightOneSpectrum (𝓞 F)) (d : ℕ) :
     simpa [← WithZero.exp_add] using h
 
 theorem localFiniteAnnihilator_finiteCompletionBall
-    (v : HeightOneSpectrum (𝓞 F)) (n : ℤ) :
+      (n : ℤ) :
     localFiniteAnnihilator F v (finiteCompletionBall F v n) =
       finiteCompletionBall F v (-n - (localDifferentExponent F v : ℤ)) := by
   have hc : localIntegerAnnihilator F v =
@@ -180,7 +183,7 @@ theorem localFiniteAnnihilator_finiteCompletionBall
   simp [add_comm]
 
 theorem localFiniteAnnihilator_localFiniteAnnihilator_finiteCompletionBall
-    (v : HeightOneSpectrum (𝓞 F)) (n : ℤ) :
+      (n : ℤ) :
     localFiniteAnnihilator F v
         (localFiniteAnnihilator F v (finiteCompletionBall F v n)) =
       finiteCompletionBall F v n := by
@@ -188,7 +191,7 @@ theorem localFiniteAnnihilator_localFiniteAnnihilator_finiteCompletionBall
   congr 1
   omega
 
-theorem isLocallyConstant_localFiniteCharacter (v : HeightOneSpectrum (𝓞 F)) :
+theorem isLocallyConstant_localFiniteCharacter   :
     IsLocallyConstant (localFiniteCharacter F v : v.adicCompletion F → Circle) := by
   rw [IsLocallyConstant.iff_eventually_eq]
   intro x
@@ -203,12 +206,14 @@ theorem isLocallyConstant_localFiniteCharacter (v : HeightOneSpectrum (𝓞 F)) 
   simpa [ht] using he
 
 theorem isLocallyConstant_localFiniteCharacter_neg_mul
-    (v : HeightOneSpectrum (𝓞 F)) (b : v.adicCompletion F) :
+      (b : v.adicCompletion F) :
     IsLocallyConstant (fun y : v.adicCompletion F =>
       (localFiniteCharacter F v (-b * y) : ℂ)) := by
   exact ((isLocallyConstant_localFiniteCharacter F v).comp_continuous
     (by fun_prop : Continuous (fun y : v.adicCompletion F => -b * y))).comp
     (fun z : Circle => (z : ℂ))
+end
+
 
 theorem localDifferentExponent_eq_zero_of_not_mem
     (S : Finset (HeightOneSpectrum (𝓞 F)))

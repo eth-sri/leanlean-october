@@ -99,7 +99,7 @@ variable {T : ℝ} (buffer : KPContActualCollarBuffer.CollarBuffer F ζ hζ
   (level F ζ hζ C R P H U) R P H T)
 variable (Ω : Set ℂ) (f : ℂ → S)
 variable (χ : Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
-variable (D : Descent F ζ hζ C R P H U ι buffer Ω f χ)
+
 
 end DedekindZetaZeroFree.KPContActualCutoffSmoothDescent
 

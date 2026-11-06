@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Valuation.DiscreteValuationField.FiniteExtension.Uniqueness
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -34,18 +37,21 @@ namespace ValuedExtension
 variable {K : Type u} {L : Type w} [Field K] [Field L]
 variable [Algebra K L] [FiniteDimensional K L] [Algebra.IsSeparable K L]
 
-/-- An embedding into an ambient valued field restricts to valuation rings
-whenever the chosen source valuation is equivalent to the pulled-back
-ambient valuation. -/
-noncomputable def valuationSubringMapOfIsEquivComap
-    {M : Type y} [Field M]
+section
+variable {M : Type y} [Field M]
     {GammaL : Type x} {GammaM : Type z}
     [LinearOrderedCommGroupWithZero GammaL]
     [LinearOrderedCommGroupWithZero GammaM]
     (vL : _root_.Valuation L GammaL)
     (vM : _root_.Valuation M GammaM)
     (ι : L →+* M)
-    (hEquiv : vL.IsEquiv (vM.comap ι)) :
+    (hEquiv : vL.IsEquiv (vM.comap ι))
+include M GammaL GammaM vL vM ι hEquiv
+/-- An embedding into an ambient valued field restricts to valuation rings
+whenever the chosen source valuation is equivalent to the pulled-back
+ambient valuation. -/
+noncomputable def valuationSubringMapOfIsEquivComap
+      :
     vL.valuationSubring →+* vM.valuationSubring where
   toFun a :=
     ⟨ι (a : L), by
@@ -76,37 +82,22 @@ noncomputable def valuationSubringMapOfIsEquivComap
 through the original field embedding. -/
 @[simp]
 theorem valuationSubringMapOfIsEquivComap_apply
-    {M : Type y} [Field M]
-    {GammaL : Type x} {GammaM : Type z}
-    [LinearOrderedCommGroupWithZero GammaL]
-    [LinearOrderedCommGroupWithZero GammaM]
-    (vL : _root_.Valuation L GammaL)
-    (vM : _root_.Valuation M GammaM)
-    (ι : L →+* M)
-    (hEquiv : vL.IsEquiv (vM.comap ι))
+     
     (a : vL.valuationSubring) :
-    ((valuationSubringMapOfIsEquivComap vL vM ι hEquiv a :
-      vM.valuationSubring) : M) =
+    ((valuationSubringMapOfIsEquivComap vL vM ι hEquiv a) : M) =
       ι (a : L) :=
   rfl
 
 /-- The valuation-ring map induced by an equivalent ambient pullback is a
 local homomorphism. -/
 theorem valuationSubringMapOfIsEquivComap_isLocalHom
-    {M : Type y} [Field M]
-    {GammaL : Type x} {GammaM : Type z}
-    [LinearOrderedCommGroupWithZero GammaL]
-    [LinearOrderedCommGroupWithZero GammaM]
-    (vL : _root_.Valuation L GammaL)
-    (vM : _root_.Valuation M GammaM)
-    (ι : L →+* M)
-    (hEquiv : vL.IsEquiv (vM.comap ι)) :
+      :
     IsLocalHom
       (valuationSubringMapOfIsEquivComap vL vM ι hEquiv) := by
   let f := valuationSubringMapOfIsEquivComap vL vM ι hEquiv
   apply ((IsLocalRing.local_hom_TFAE f).out 2 1).mp
   rintro _ ⟨a, ha, rfl⟩
-  have haVal : vL (a : L) < 1 :=
+  have haVal  :=
     (_root_.Valuation.mem_maximalIdeal_iff (v := vL)).1 ha
   have hlt :=
     (hEquiv.lt_iff_lt
@@ -121,19 +112,10 @@ theorem valuationSubringMapOfIsEquivComap_isLocalHom
 /-- The induced injection from the chosen residue field into the ambient
 residue field. -/
 noncomputable def residueFieldMapOfIsEquivComap
-    {M : Type y} [Field M]
-    {GammaL : Type x} {GammaM : Type z}
-    [LinearOrderedCommGroupWithZero GammaL]
-    [LinearOrderedCommGroupWithZero GammaM]
-    (vL : _root_.Valuation L GammaL)
-    (vM : _root_.Valuation M GammaM)
-    (ι : L →+* M)
-    (hEquiv : vL.IsEquiv (vM.comap ι)) :
+      :
     IsLocalRing.ResidueField vL.valuationSubring →+*
       IsLocalRing.ResidueField vM.valuationSubring := by
-  letI :
-      IsLocalHom
-        (valuationSubringMapOfIsEquivComap vL vM ι hEquiv) :=
+  letI  :=
     valuationSubringMapOfIsEquivComap_isLocalHom vL vM ι hEquiv
   exact
     IsLocalRing.ResidueField.map
@@ -144,14 +126,7 @@ automorphisms of the source and ambient valuation rings.  This is the
 residue-field naturality needed when a finite valued subfield is realized
 inside a larger complete discrete valuation field. -/
 theorem residueFieldMapOfIsEquivComap_mapEquiv
-    {M : Type y} [Field M]
-    {GammaL : Type x} {GammaM : Type z}
-    [LinearOrderedCommGroupWithZero GammaL]
-    [LinearOrderedCommGroupWithZero GammaM]
-    (vL : _root_.Valuation L GammaL)
-    (vM : _root_.Valuation M GammaM)
-    (ι : L →+* M)
-    (hEquiv : vL.IsEquiv (vM.comap ι))
+     
     (σL : vL.valuationSubring ≃+* vL.valuationSubring)
     (σM : vM.valuationSubring ≃+* vM.valuationSubring)
     (hcompat :
@@ -165,9 +140,7 @@ theorem residueFieldMapOfIsEquivComap_mapEquiv
         (IsLocalRing.ResidueField.mapEquiv σL a) =
       IsLocalRing.ResidueField.mapEquiv σM
         (residueFieldMapOfIsEquivComap vL vM ι hEquiv a) := by
-  let :
-      IsLocalHom
-        (valuationSubringMapOfIsEquivComap vL vM ι hEquiv) :=
+  let  :=
     valuationSubringMapOfIsEquivComap_isLocalHom vL vM ι hEquiv
   let : IsLocalHom σL.toRingHom :=
     IsLocalHom.of_surjective σL.toRingHom σL.surjective
@@ -187,6 +160,8 @@ theorem residueFieldMapOfIsEquivComap_mapEquiv
   exact congrArg
     (IsLocalRing.residue vM.valuationSubring)
     (hcompat b)
+end
+
 
 /-- Let `L / K` be finite separable with a chosen complete discrete valuation
 extending the one on `K`.  If a field embedding of `L` into another complete
@@ -207,8 +182,7 @@ theorem isUniformizer_of_ambient_image_isUniformizer
     [base.valuation.HasExtension (ambient.valuation.comap ι)]
     {π : L} (hπ : ambient.valuation.IsUniformizer (ι π)) :
     target.valuation.IsUniformizer π := by
-  have hEquiv :
-      target.valuation.IsEquiv (ambient.valuation.comap ι) :=
+  have hEquiv  :=
     valuation_isEquiv_of_finite_separable base target
       (ambient.valuation.comap ι)
   have hπ_target_lt : target.valuation π < 1 := by
@@ -229,9 +203,7 @@ theorem isUniformizer_of_ambient_image_isUniformizer
         (_root_.Valuation.mem_maximalIdeal_iff
           (v := target.valuation)).1 ha
       have ha_ambient_lt : ambient.valuation (ι (a : L)) < 1 := by
-        have ha_comap_lt :
-            (ambient.valuation.comap ι) (a : L) <
-              (ambient.valuation.comap ι) 1 :=
+        have ha_comap_lt  :=
           (hEquiv.lt_iff_lt (x := (a : L)) (y := (1 : L))).1
             (by simpa using ha_target_lt)
         simpa using ha_comap_lt
@@ -244,15 +216,12 @@ theorem isUniformizer_of_ambient_image_isUniformizer
         (_root_.Valuation.mem_maximalIdeal_iff
           (v := ambient.valuation)).2 ha_ambient_lt
       have hπambient :
-          ambient.valuation.IsUniformizer (πambient : M) := by
-        simpa [πambient] using hπ
+          ambient.valuation.IsUniformizer (πambient : M) := hπ
       rw [ambient.maximalIdeal_eq_span_uniformizer hπambient,
         Ideal.mem_span_singleton] at ha_ambient_maximal
       obtain ⟨c, hc⟩ := ha_ambient_maximal
       have hc_field :
-          ι (a : L) = ι π * (c : M) := by
-        simpa [aambient, πambient] using
-          congrArg
+          ι (a : L) = ι π * (c : M) := congrArg
             (fun t : ambient.valuationSubring => (t : M)) hc
       have hπ_ne : π ≠ 0 := by
         intro hzero
@@ -292,17 +261,16 @@ theorem isUniformizer_of_ambient_image_isUniformizer
       rw [← mul_assoc, mul_inv_cancel₀ hπ_ne, one_mul]
     · rw [Ideal.span_le]
       intro a ha
-      have ha_eq : a = πtarget := by
-        simpa using ha
+      have ha_eq : a = πtarget := ha
       subst a
       exact
         (_root_.Valuation.mem_maximalIdeal_iff
           (v := target.valuation)).2
-          (by simpa [πtarget] using hπ_target_lt)
+          (hπ_target_lt)
   have hπtarget :
       target.valuation.IsUniformizer (πtarget : L) :=
     target.valuation.isUniformizer_of_maximalIdeal_eq_span hmaximal
-  simpa [πtarget] using hπtarget
+  exact hπtarget
 
 end ValuedExtension
 end DiscreteValuationField

@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.LocalClassFieldTheory.Finite.LocalReciprocity.ResidueDatum
 public import ValuedFieldTheory.Ramification.HilbertRamification.ResidueExactSequence
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -84,12 +87,12 @@ theorem residueAlgActionOfEqTop_surjective
   intro tau
   obtain ⟨sigma, hsigma⟩ :=
     decompositionGroupResidueAction_surjective (K := K) A tau
-  refine ⟨(sigma : L ≃ₐ[K] L), ?_⟩
+  refine ⟨sigma, ?_⟩
   have heq :
-      toDecompositionGroupOfEqTop K A hA (sigma : L ≃ₐ[K] L) = sigma := by
+      toDecompositionGroupOfEqTop K A hA sigma = sigma := by
     ext
     rfl
-  simpa [residueAlgActionOfEqTop, heq] using hsigma
+  exact hsigma
 
 section FiniteImageIndex
 
@@ -112,7 +115,7 @@ theorem residueDegreeImage_index_eq_finrank_of_map_eq_fixingSubgroup
   have h :=
     Internal.residueDatumIn_fieldImage_index_closedFixingSubgroup k Omega E
   rw [(residueDatumIn k Omega).fieldImage_eq_map] at h
-  simpa [residueDatumIn, closedFixingSubgroup] using h
+  exact h
 
 end FiniteImageIndex
 

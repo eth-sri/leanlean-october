@@ -21,12 +21,15 @@ variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local instance : DecidableEq (KPHilbert.Place F) := Classical.decEq _
 attribute [local instance] KPAdelicCoverRestrictedProduct.localTopology
 
-def finitePure (s : RestrictedTensorSimple.Level (bad R P C))
-    (f : ∀ p : s.val, Plus R N P C p) (p : s.val) : Plus R N P C p :=
+section
+variable (s : RestrictedTensorSimple.Level (bad R P C))
+    (f : ∀ p : s.val, Plus R N P C p)
+include s f in
+def finitePure   (p : s.val) : Plus R N P C p :=
   if p.val.isLeft then plusReference R N P C p else f p
 
-def pureArchProduct (s : RestrictedTensorSimple.Level (bad R P C))
-    (f : ∀ p : s.val, Plus R N P C p) (g : Raw R) : ℂ :=
+include s f in
+def pureArchProduct   (g : Raw R) : ℂ :=
   ∏ w, localValue R N P C (Sum.inl w) (g (Sum.inl w)) (f ⟨Sum.inl w, s.property (arch_bad R P C w)⟩)
 
 theorem archValue_continuous (w : InfinitePlace F) (f : Plus R N P C (Sum.inl w)) :
@@ -55,8 +58,8 @@ theorem archValue_continuous (w : InfinitePlace F) (f : Plus R N P C (Sum.inl w)
       (KPSourceConvention.ordinaryGenuineCharacter F R.A.zeta12 R.A.primitive_zeta12 e : ℂ))).comp (continuous_snd.comp hc)
   exact hp.mul ((EisensteinReferenceSections.SourceContinuity.principal_continuous _ f.val).comp hm)
 
-theorem pureArchProduct_continuous (s : RestrictedTensorSimple.Level (bad R P C))
-    (f : ∀ p : s.val, Plus R N P C p) : Continuous (pureArchProduct R N P C s f) := by
+include s f in
+theorem pureArchProduct_continuous   : Continuous (pureArchProduct R N P C s f) := by
   apply continuous_finset_prod
   intro w _
   exact (archValue_continuous R N P C w _).comp (RestrictedProduct.continuous_eval _)
@@ -76,8 +79,8 @@ theorem scalarSource_finite_locallyConstant (x : PlusCore R N P C) :
     Subgroup.mem_map.mpr ⟨g⁻¹ * y, hy, rfl⟩
   simpa using hU g.val (g⁻¹ * y).val hm
 
-theorem scalarSource_pure_raw_factor (s : RestrictedTensorSimple.Level (bad R P C))
-    (f : ∀ p : s.val, Plus R N P C p) (g : Raw R) :
+include s f in
+theorem scalarSource_pure_raw_factor   (g : Raw R) :
     scalarSourceEvaluator R N P C (RestrictedTensorSimple.stageInclusion _ _ _ s (PiTensorProduct.tprod ℂ f))
         (scalarQuotient F R.A.zeta12 R.A.primitive_zeta12 (amalgamation F R.A.zeta12 R.A.primitive_zeta12 g)) =
       pureArchProduct R N P C s f g *
@@ -134,6 +137,9 @@ theorem scalarSource_pure_raw_factor (s : RestrictedTensorSimple.Level (bad R P 
       simp [fh, extendedPlus, finitePure, s.property (arch_bad R P C w), h,
         EisensteinReferenceSections.FiniteSourceTopology.finiteProjection, localValue, complexMatrix,
         plusReference, KPCplxPrincipalSeriesCharts.sphericalSection_one]
+      change KPLocalCover.coefficientEmbedding F R.A.zeta12 R.A.primitive_zeta12
+        (KPLocalCover.threeToSix F 1) = 1
+      simp
     rw [harch, harchh, one_smul]
     congr 2
   have hc := congrArg (fun z =>
@@ -151,6 +157,8 @@ theorem scalarSource_pure_raw_factor (s : RestrictedTensorSimple.Level (bad R P 
         (scalarQuotient F R.A.zeta12 R.A.primitive_zeta12 (amalgamation F R.A.zeta12 R.A.primitive_zeta12 h)))).val.val 1
   rw [quotientCoreVector_raw, quotientCoreVector_raw]
   exact hc
+end
+
 
 theorem scalarSource_continuous (x : PlusCore R N P C) :
     Continuous (scalarSourceEvaluator R N P C x) := by

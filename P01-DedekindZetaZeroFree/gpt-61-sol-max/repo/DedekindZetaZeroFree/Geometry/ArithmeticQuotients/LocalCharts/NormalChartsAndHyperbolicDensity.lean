@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Geometry.ArithmeticQuotients.LocalCharts.LineBundleLocalization
 public import DedekindZetaZeroFree.Geometry.Hyperbolic.Archimedean.RealCoordinatesAndVolume
 
 @[expose] public section
+
 
 noncomputable section
 open scoped Classical ENNReal
@@ -19,25 +22,25 @@ private theorem invariant_neighborhood {G T : Type*} [Group G] [TopologicalSpace
     [MulAction G T] [ContinuousConstSMul G T] [T2Space T] [LocallyCompactSpace T]
     [ProperlyDiscontinuousSMul G T] (p : T) :
     ∃ V : Set T, IsOpen V ∧ p ∈ V ∧
-      (∀ g : MulAction.stabilizer G p, (fun x => (g.val : G) • x) '' V = V) ∧
+      (∀ g : MulAction.stabilizer G p, (fun x => g.val • x) '' V = V) ∧
       (∀ g : G, ∀ x ∈ V, ∀ y ∈ V, g • x = y → g ∈ MulAction.stabilizer G p) := by
   letI : Finite (MulAction.stabilizer G p) :=
     (ProperlyDiscontinuousSMul.finite_stabilizer (Γ := G) p).to_subtype
   letI := Fintype.ofFinite (MulAction.stabilizer G p)
   obtain ⟨W, hW, hsep⟩ := ProperlyDiscontinuousSMul.exists_nhds_disjoint_image G p
   obtain ⟨W₀, hsub, hopen, hp⟩ := mem_nhds_iff.mp hW
-  let V := ⋂ g : MulAction.stabilizer G p, (fun x => (g.val : G) • x) ⁻¹' W₀
+  let V := ⋂ g : MulAction.stabilizer G p, (fun x => g.val • x) ⁻¹' W₀
   have hvopen : IsOpen V := isOpen_iInter_of_finite fun g =>
-    hopen.preimage (continuous_const_smul (g.val : G))
+    hopen.preimage (continuous_const_smul g.val)
   have hpv : p ∈ V := by
     apply Set.mem_iInter.mpr
     intro g
-    change (g.val : G) • p ∈ W₀
+    change g.val • p ∈ W₀
     simpa only [MulAction.mem_stabilizer_iff.mp g.property] using hp
   have hvsub : V ⊆ W := by
     intro x hx
     apply hsub
-    have hh := Set.mem_iInter.mp hx (1 : MulAction.stabilizer G p)
+    have hh := Set.mem_iInter.mp hx (1)
     simpa using hh
   refine ⟨V, hvopen, hpv, ?_, ?_⟩
   · intro g
@@ -46,13 +49,13 @@ private theorem invariant_neighborhood {G T : Type*} [Group G] [TopologicalSpace
     · rintro ⟨y, hy, rfl⟩
       apply Set.mem_iInter.mpr
       intro h
-      change (h.val : G) • ((g.val : G) • y) ∈ W₀
+      change h.val • (g.val • y) ∈ W₀
       simpa only [Set.mem_preimage, Subgroup.coe_mul, Subgroup.coe_inv, ← mul_smul] using Set.mem_iInter.mp hy (h * g)
     · intro hx
-      refine ⟨(g.val : G)⁻¹ • x, ?_, smul_inv_smul _ _⟩
+      refine ⟨g.val⁻¹ • x, ?_, smul_inv_smul _ _⟩
       apply Set.mem_iInter.mpr
       intro h
-      change (h.val : G) • ((g.val : G)⁻¹ • x) ∈ W₀
+      change h.val • (g.val⁻¹ • x) ∈ W₀
       simpa only [Set.mem_preimage, Subgroup.coe_mul, Subgroup.coe_inv, ← mul_smul] using Set.mem_iInter.mp hx (h * g⁻¹)
   · intro g x hx y hy hxy
     apply MulAction.mem_stabilizer_iff.mpr
@@ -81,23 +84,23 @@ theorem component_invariant_separated_neighborhood
     KPFiniteAdelicCuspEnds.FundamentalDomainGeometry.arithmeticStabilizer_properlyDiscontinuous_of_compact
       F hF _ (KPCuspGenuineMonodromy.finiteBase_level_compact F ζ hζ U)
       (KPCuspGenuineMonodromy.finiteBase F ζ hζ g)
-  exact invariant_neighborhood (G := KPCuspGenuineMonodromy.Component F ζ hζ U g) p
+  apply invariant_neighborhood
 
 theorem chart_image_open (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (C : Chart F ζ hζ hF U A) : IsOpen (C.O F ζ hζ hF U) := by
   letI : ContinuousConstSMul (KPCuspArithmetic.PGL2 F)
       (KPArch.Space (KPCuspLogShape.dimension F)) :=
     ⟨KPCuspSiegel.continuous_action F⟩
-  have hball : Metric.ball (0 : E C.n) C.radius ⊆ C.extendedDomain :=
+  have hball : Metric.ball (0) C.radius ⊆ C.extendedDomain :=
     fun _ hx => C.closed_ball_in_extension (subset_closure hx)
   have hrange : Set.range (Set.restrict C.extendedDomain C.coordinates) =
       C.coordinates '' C.extendedDomain := by
     ext y
     simp [Set.restrict]
-  have hopen : IsOpenMap (Set.restrict C.extendedDomain C.coordinates) :=
+  have hopen  :=
     C.coordinates_embedding.isInducing.isOpenMap (hrange.symm ▸ C.coordinates_open)
-  have hcoord : IsOpen (C.coordinates '' Metric.ball (0 : E C.n) C.radius) := by
-    have hh := hopen (Subtype.val ⁻¹' Metric.ball (0 : E C.n) C.radius)
+  have hcoord : IsOpen (C.coordinates '' Metric.ball (0) C.radius) := by
+    have hh := hopen (Subtype.val ⁻¹' Metric.ball (0) C.radius)
       (Metric.isOpen_ball.preimage continuous_subtype_val)
     convert hh using 1
     ext y
@@ -123,7 +126,7 @@ theorem chart_image_open (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
   have hh := hcomponent _ (hproj _ hcoord)
   change IsOpen ((fun x => KPFiniteCuspAtlas.componentMap F ζ hζ U
     (A.representative C.component) (KPCuspSiegel.projection F _ (C.coordinates x))) ''
-    Metric.ball (0 : E C.n) C.radius)
+    Metric.ball (0) C.radius)
   simpa only [Set.image_image, Function.comp_def] using hh
 
 namespace StabilizerLinearization
@@ -134,9 +137,9 @@ lemma rational_action_contDiff (γ : KPCuspArithmetic.PGL2 F) :
     ContDiff ℝ (⊤ : ℕ∞) (fun p : KPArch.Space (KPCuspLogShape.dimension F) => γ • p) := by
   obtain ⟨B, rfl⟩ := Matrix.ProjGenLinGroup.mk_surjective γ
   have he : (fun p : KPArch.Space (KPCuspLogShape.dimension F) =>
-      (Matrix.ProjGenLinGroup.mk B : KPCuspArithmetic.PGL2 F) • p) = KPCuspSiegel.glAction F B := by
+      (Matrix.ProjGenLinGroup.mk B) • p) = KPCuspSiegel.glAction F B := by
     funext p
-    exact KPCuspSiegel.action_mk F B p
+    apply KPCuspSiegel.action_mk
   rw [he]
   exact (KPArch.productAction_contDiff (KPCuspLogShape.dimension F)
       (fun i => Matrix.GeneralLinearGroup.map (KPCusp.complexPlace F i).embedding B)).of_le le_top
@@ -145,7 +148,7 @@ variable (p : KPArch.Space (KPCuspLogShape.dimension F))
 
 def stabilizerDifferential : MulAction.stabilizer Γ p →*
     (KPArch.Space (KPCuspLogShape.dimension F) →L[ℝ] KPArch.Space (KPCuspLogShape.dimension F)) where
-  toFun g := fderiv ℝ (fun q => (g.val.val : KPCuspArithmetic.PGL2 F) • q) p
+  toFun g := fderiv ℝ (fun q => g.val.val • q) p
   map_one' := by
     simp only [OneMemClass.coe_one, Subgroup.coe_one, one_smul]
     change fderiv ℝ id p = 1
@@ -154,21 +157,20 @@ def stabilizerDifferential : MulAction.stabilizer Γ p →*
   map_mul' g h := by
     have hg := (rational_action_contDiff F g.val.val).differentiable (by simp) (h.val.val • p)
     have hh := (rational_action_contDiff F h.val.val).differentiable (by simp) p
-    have hp : (h.val.val : KPCuspArithmetic.PGL2 F) • p = p :=
+    have hp : h.val.val • p = p :=
       MulAction.mem_stabilizer_iff.mp h.property
-    change fderiv ℝ (fun q => (g.val.val * h.val.val : KPCuspArithmetic.PGL2 F) • q) p = _
+    change fderiv ℝ (fun q => (g.val.val * h.val.val) • q) p = _
     simp only [mul_smul]
-    change fderiv ℝ ((fun q => (g.val.val : KPCuspArithmetic.PGL2 F) • q) ∘
+    change fderiv ℝ ((fun q => g.val.val • q) ∘
       (fun q => (h.val.val : KPCuspArithmetic.PGL2 F) • q)) p = _
     rw [fderiv_comp p hg hh, hp]
     rfl
 variable [Fintype (MulAction.stabilizer Γ p)]
 
-def averagedStabilizerCoordinates (q : KPArch.Space (KPCuspLogShape.dimension F)) :
-    KPArch.Space (KPCuspLogShape.dimension F) :=
+def averagedStabilizerCoordinates (q : KPArch.Space (KPCuspLogShape.dimension F))  :=
   (Fintype.card (MulAction.stabilizer Γ p) : ℝ)⁻¹ •
     ∑ g : MulAction.stabilizer Γ p,
-      stabilizerDifferential F Γ p g⁻¹ ((g.val.val : KPCuspArithmetic.PGL2 F) • q - p)
+      stabilizerDifferential F Γ p g⁻¹ (g.val.val • q - p)
 
 lemma averagedStabilizerCoordinates_center : averagedStabilizerCoordinates F Γ p p = 0 := by
   unfold averagedStabilizerCoordinates
@@ -189,14 +191,14 @@ lemma averagedStabilizerCoordinates_hasFDerivAt :
       (ContinuousLinearMap.id ℝ (KPArch.Space (KPCuspLogShape.dimension F))) p := by
   have hh (g : MulAction.stabilizer Γ p) :
       HasFDerivAt (fun q => stabilizerDifferential F Γ p g⁻¹
-          ((g.val.val : KPCuspArithmetic.PGL2 F) • q - p))
+          (g.val.val • q - p))
         (ContinuousLinearMap.id ℝ (KPArch.Space (KPCuspLogShape.dimension F))) p := by
     have hi := (((rational_action_contDiff F g.val.val).differentiable (by simp) p).hasFDerivAt.sub_const p)
     have hd := ((stabilizerDifferential F Γ p g⁻¹).hasFDerivAt
-      (x := (g.val.val : KPCuspArithmetic.PGL2 F) • p - p)).comp p
-        (f := fun q => (g.val.val : KPCuspArithmetic.PGL2 F) • q - p) hi
+      (x := g.val.val • p - p)).comp p
+        (f := fun q => g.val.val • q - p) hi
     have he : (stabilizerDifferential F Γ p g⁻¹).comp
-        (fderiv ℝ (fun q => (g.val.val : KPCuspArithmetic.PGL2 F) • q) p) =
+        (fderiv ℝ (fun q => g.val.val • q) p) =
         ContinuousLinearMap.id ℝ (KPArch.Space (KPCuspLogShape.dimension F)) := by
       change stabilizerDifferential F Γ p g⁻¹ * stabilizerDifferential F Γ p g = 1
       simp only [← map_mul, inv_mul_cancel, map_one]
@@ -213,7 +215,7 @@ lemma averagedStabilizerCoordinates_hasFDerivAt :
 
 lemma averagedStabilizerCoordinates_equivariant
     (h : MulAction.stabilizer Γ p) (q : KPArch.Space (KPCuspLogShape.dimension F)) :
-    averagedStabilizerCoordinates F Γ p ((h.val.val : KPCuspArithmetic.PGL2 F) • q) =
+    averagedStabilizerCoordinates F Γ p (h.val.val • q) =
       stabilizerDifferential F Γ p h (averagedStabilizerCoordinates F Γ p q) := by
   unfold averagedStabilizerCoordinates
   rw [map_smul, map_sum]
@@ -234,7 +236,7 @@ lemma averagedStabilizerCoordinates_local_inverse :
     ∃ e : OpenPartialHomeomorph (KPArch.Space (KPCuspLogShape.dimension F))
         (KPArch.Space (KPCuspLogShape.dimension F)),
       (e : _ → _) = averagedStabilizerCoordinates F Γ p ∧
-      p ∈ e.source ∧ (0 : KPArch.Space (KPCuspLogShape.dimension F)) ∈ e.target ∧
+      p ∈ e.source ∧ (0) ∈ e.target ∧
       e.symm 0 = p ∧ ContDiffAt ℝ (⊤ : ℕ∞) e.symm 0 := by
   let f := averagedStabilizerCoordinates F Γ p
   have hf := (averagedStabilizerCoordinates_smooth F Γ p).contDiffAt (x := p)
@@ -258,7 +260,7 @@ lemma averagedStabilizerCoordinates_smooth_local_inverse :
     ∃ e : OpenPartialHomeomorph (KPArch.Space (KPCuspLogShape.dimension F))
         (KPArch.Space (KPCuspLogShape.dimension F)),
       (e : _ → _) = averagedStabilizerCoordinates F Γ p ∧
-      p ∈ e.source ∧ (0 : KPArch.Space (KPCuspLogShape.dimension F)) ∈ e.target ∧
+      p ∈ e.source ∧ (0) ∈ e.target ∧
       e.symm 0 = p ∧ ContDiffOn ℝ (⊤ : ℕ∞) e.symm e.target ∧
       (∀ q ∈ e.source, (fderiv ℝ (averagedStabilizerCoordinates F Γ p) q).IsInvertible) := by
   obtain ⟨e, he, hp, h0, hc, _⟩ := averagedStabilizerCoordinates_local_inverse F Γ p
@@ -279,7 +281,7 @@ lemma averagedStabilizerCoordinates_smooth_local_inverse :
   · simpa only [he', hf0] using e'.map_source hp'
   · simpa only [he', hf0] using e'.left_inv hp'
   · intro q hq
-    have hqD : e'.symm q ∈ D := (e'.map_target hq).2
+    have hqD  := (e'.map_target hq).2
     obtain ⟨L, hL⟩ := hqD
     apply (e'.contDiffAt_symm hq (f₀' := L) ?_ ?_).contDiffWithinAt
     · rw [he', hL]
@@ -294,55 +296,55 @@ private lemma invariant_smooth_inverse (V : Set (KPArch.Space (KPCuspLogShape.di
     ∃ e : OpenPartialHomeomorph (KPArch.Space (KPCuspLogShape.dimension F))
         (KPArch.Space (KPCuspLogShape.dimension F)),
       (e : _ → _) = averagedStabilizerCoordinates F Γ p ∧
-      p ∈ e.source ∧ (0 : KPArch.Space (KPCuspLogShape.dimension F)) ∈ e.target ∧
+      p ∈ e.source ∧ (0) ∈ e.target ∧
       e.symm 0 = p ∧ ContDiffOn ℝ (⊤ : ℕ∞) e.symm e.target ∧
       (∀ q ∈ e.source, (fderiv ℝ (averagedStabilizerCoordinates F Γ p) q).IsInvertible) ∧
       e.source ⊆ V ∧
       (∀ g : MulAction.stabilizer Γ p,
-        (fun q => (g.val.val : KPCuspArithmetic.PGL2 F) • q) '' e.source = e.source) ∧
+        (fun q => g.val.val • q) '' e.source = e.source) ∧
       (∀ g : MulAction.stabilizer Γ p,
         stabilizerDifferential F Γ p g '' e.target = e.target) ∧
       (∀ g : MulAction.stabilizer Γ p, ∀ q ∈ e.target,
         e.symm (stabilizerDifferential F Γ p g q) =
-          (g.val.val : KPCuspArithmetic.PGL2 F) • e.symm q) := by
+          g.val.val • e.symm q) := by
   obtain ⟨e, he, hp, h0, hc, hs, hd⟩ := averagedStabilizerCoordinates_smooth_local_inverse F Γ p
   let W := ⋂ g : MulAction.stabilizer Γ p,
-    (fun q => (g.val.val : KPCuspArithmetic.PGL2 F) • q) ⁻¹' (e.source ∩ V)
+    (fun q => g.val.val • q) ⁻¹' (e.source ∩ V)
   have hW : IsOpen W := isOpen_iInter_of_finite fun g =>
     (e.open_source.inter hV).preimage (rational_action_contDiff F g.val.val).continuous
   have hpW : p ∈ W := by
     apply Set.mem_iInter.mpr
     intro g
-    change (g.val.val : KPCuspArithmetic.PGL2 F) • p ∈ e.source ∩ V
-    have hg : (g.val.val : KPCuspArithmetic.PGL2 F) • p = p :=
+    change g.val.val • p ∈ e.source ∩ V
+    have hg : g.val.val • p = p :=
       MulAction.mem_stabilizer_iff.mp g.property
     rw [hg]
     exact ⟨hp, hpV⟩
   have hWsub : W ⊆ e.source ∩ V := by
     intro q hq
-    have h := Set.mem_iInter.mp hq (1 : MulAction.stabilizer Γ p)
+    have h := Set.mem_iInter.mp hq (1)
     simpa using h
   have hWsmul (g : MulAction.stabilizer Γ p) {q} (hq : q ∈ W) :
-      (g.val.val : KPCuspArithmetic.PGL2 F) • q ∈ W := by
+      g.val.val • q ∈ W := by
     apply Set.mem_iInter.mpr
     intro h
-    change (h.val.val : KPCuspArithmetic.PGL2 F) •
-      ((g.val.val : KPCuspArithmetic.PGL2 F) • q) ∈ e.source ∩ V
+    change h.val.val •
+      (g.val.val • q) ∈ e.source ∩ V
     simpa only [Set.mem_preimage, Subgroup.coe_mul, ← mul_smul] using
       Set.mem_iInter.mp hq (h * g)
   let e' := e.restrOpen W hW
   have he' : (e' : _ → _) = averagedStabilizerCoordinates F Γ p := he
   have hsource : e'.source = W := Set.inter_eq_right.mpr (fun q hq => (hWsub hq).1)
-  have hp' : p ∈ e'.source := hsource.symm ▸ hpW
+  have hp'  := hsource.symm ▸ hpW
   have hf0 := averagedStabilizerCoordinates_center F Γ p
   have hsource_smul (g : MulAction.stabilizer Γ p) {q} (hq : q ∈ e'.source) :
-      (g.val.val : KPCuspArithmetic.PGL2 F) • q ∈ e'.source := by
+      g.val.val • q ∈ e'.source := by
     rw [hsource] at hq ⊢
     exact hWsmul g hq
   have htarget (q) (hq : q ∈ e'.target) : q ∈ e.target := by
     have hx := e'.map_target hq
     have h := e.map_source hx.1
-    have hinv : (e' : _ → _) (e'.symm q) = q := e'.right_inv hq
+    have hinv  := e'.right_inv hq
     rw [← hinv]
     exact h
   have htarget_smul (g : MulAction.stabilizer Γ p) {q} (hq : q ∈ e'.target) :
@@ -363,7 +365,7 @@ private lemma invariant_smooth_inverse (V : Set (KPArch.Space (KPCuspLogShape.di
     · rintro ⟨v, hv, rfl⟩
       exact hsource_smul g hv
     · intro hq
-      refine ⟨(g.val.val : KPCuspArithmetic.PGL2 F)⁻¹ • q, ?_, smul_inv_smul _ _⟩
+      refine ⟨g.val.val⁻¹ • q, ?_, smul_inv_smul _ _⟩
       exact hsource_smul g⁻¹ hq
   · intro g
     ext q
@@ -448,12 +450,12 @@ lemma stabilizerDifferential_metric (h : MulAction.stabilizer Γ p)
     KPArch.metric _ p (stabilizerDifferential F Γ p h v) = KPArch.metric _ p v := by
   obtain ⟨B, hB⟩ := Matrix.ProjGenLinGroup.mk_surjective h.val.val
   have he : (fun q : KPArch.Space (KPCuspLogShape.dimension F) =>
-      (h.val.val : KPCuspArithmetic.PGL2 F) • q) =
+      h.val.val • q) =
       KPArch.productAction _ (fun i => Matrix.GeneralLinearGroup.map
         (KPCusp.complexPlace F i).embedding B) := by
     funext q
     rw [← hB]
-    exact KPCuspSiegel.action_mk F B q
+    apply KPCuspSiegel.action_mk
   have hp : KPArch.productAction _ (fun i => Matrix.GeneralLinearGroup.map
       (KPCusp.complexPlace F i).embedding B) p = p := by
     rw [← he]
@@ -506,8 +508,7 @@ def stabilizerOrthogonal : MulAction.stabilizer Γ p →*
 lemma tangentFrame_stabilizerOrthogonal (h : MulAction.stabilizer Γ p)
     (x : E (3 * KPCuspLogShape.dimension F)) :
     tangentFrame _ p (stabilizerOrthogonal F Γ p h x) =
-      stabilizerDifferential F Γ p h (tangentFrame _ p x) := by
-  exact (tangentFrame _ p).apply_symm_apply _
+      stabilizerDifferential F Γ p h (tangentFrame _ p x) := (tangentFrame _ p).apply_symm_apply _
 
 end StabilizerLinearization
 
@@ -522,11 +523,11 @@ theorem component_invariant_separated_smooth_inverse
         (KPFiniteCuspAtlas.SymmetricSpace F)),
       (e : _ → _) = @StabilizerLinearization.averagedStabilizerCoordinates F _ _
         (KPCuspGenuineMonodromy.Component F ζ hζ U g) p H ∧
-      p ∈ e.source ∧ (0 : KPFiniteCuspAtlas.SymmetricSpace F) ∈ e.target ∧
+      p ∈ e.source ∧ (0) ∈ e.target ∧
       e.symm 0 = p ∧ ContDiffOn ℝ (⊤ : ℕ∞) e.symm e.target ∧
-      (∀ q ∈ e.source, (fderiv ℝ (e : _ → _) q).IsInvertible) ∧
+      (∀ q ∈ e.source, (fderiv ℝ e q).IsInvertible) ∧
       (∀ h : MulAction.stabilizer (KPCuspGenuineMonodromy.Component F ζ hζ U g) p,
-        (fun q => (h.val.val : KPCuspArithmetic.PGL2 F) • q) '' e.source = e.source) ∧
+        (fun q => h.val.val • q) '' e.source = e.source) ∧
       (∀ h : MulAction.stabilizer (KPCuspGenuineMonodromy.Component F ζ hζ U g) p,
         StabilizerLinearization.stabilizerDifferential F
           (KPCuspGenuineMonodromy.Component F ζ hζ U g) p h '' e.target = e.target) ∧
@@ -534,7 +535,7 @@ theorem component_invariant_separated_smooth_inverse
         ∀ q ∈ e.target,
           e.symm (StabilizerLinearization.stabilizerDifferential F
             (KPCuspGenuineMonodromy.Component F ζ hζ U g) p h q) =
-          (h.val.val : KPCuspArithmetic.PGL2 F) • e.symm q) ∧
+          h.val.val • e.symm q) ∧
       (∀ γ : KPCuspGenuineMonodromy.Component F ζ hζ U g,
         ∀ q ∈ e.source, ∀ r ∈ e.source,
           (γ : KPCuspArithmetic.PGL2 F) • q = r → γ ∈ MulAction.stabilizer _ p) := by
@@ -566,7 +567,7 @@ theorem component_orthogonal_separated_smooth_chart
           (KPCuspGenuineMonodromy.Component F ζ hζ U g) p))
       (c : OpenPartialHomeomorph (E (3 * KPCuspLogShape.dimension F))
         (KPFiniteCuspAtlas.SymmetricSpace F)),
-      (0 : E (3 * KPCuspLogShape.dimension F)) ∈ c.source ∧ c 0 = p ∧
+      (0) ∈ c.source ∧ c 0 = p ∧
       ContDiffOn ℝ (⊤ : ℕ∞) c c.source ∧
       ContDiffOn ℝ (⊤ : ℕ∞) c.symm c.target ∧
       (∀ h : MulAction.stabilizer (KPCuspGenuineMonodromy.Component F ζ hζ U g) p,
@@ -576,7 +577,7 @@ theorem component_orthogonal_separated_smooth_chart
         ∀ x ∈ c.source,
           c (StabilizerLinearization.stabilizerOrthogonal F
             (KPCuspGenuineMonodromy.Component F ζ hζ U g) p h x) =
-            (h.val.val : KPCuspArithmetic.PGL2 F) • c x) ∧
+            h.val.val • c x) ∧
       (∀ γ : KPCuspGenuineMonodromy.Component F ζ hζ U g,
         ∀ q ∈ c.target, ∀ r ∈ c.target,
           (γ : KPCuspArithmetic.PGL2 F) • q = r → γ ∈ MulAction.stabilizer _ p) := by
@@ -591,7 +592,7 @@ theorem component_orthogonal_separated_smooth_chart
   have hctarget : c.target = e.source := by
     simp [c, OpenPartialHomeomorph.trans_target]
   have hcapply (x) : c x = e.symm (L x) := rfl
-  have hcsymm (q) : c.symm q = L.symm (e q) := rfl
+  
   refine ⟨H, c, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · rw [hcsource]
     simpa using h0
@@ -655,7 +656,7 @@ lemma weighted_jacobian_pushforward {n : ℕ} {s : Set (E n)}
   have hfw : AEMeasurable f ((volume.restrict s).withDensity
       (fun x => ENNReal.ofReal (|(f' x).det| * g (f x)))) :=
     hfm.mono_ac (withDensity_absolutelyContinuous _ _)
-  have him : MeasurableSet (f '' s) :=
+  have him  :=
     measurable_image_of_fderivWithin hs hf' hf
   ext t ht
   rw [Measure.map_apply_of_aemeasurable hfw ht,
@@ -675,15 +676,13 @@ lemma weighted_jacobian_pushforward {n : ℕ} {s : Set (E n)}
 lemma smooth_det {n : ℕ} {s : Set (E n)} {L : E n → (E n →L[ℝ] E n)}
     (hL : ContDiffOn ℝ (⊤ : ℕ∞) L s) :
     ContDiffOn ℝ (⊤ : ℕ∞) (fun x => (L x).det) s := by
-  have hm (i j : Fin n) : ContDiffOn ℝ (⊤ : ℕ∞) (fun x => L x (EuclideanSpace.single j 1) i) s := by
-    exact (EuclideanSpace.proj (𝕜 := ℝ) i).contDiff.contDiffOn.comp
+  have hm (i j : Fin n) : ContDiffOn ℝ (⊤ : ℕ∞) (fun x => L x (EuclideanSpace.single j 1) i) s := (EuclideanSpace.proj (𝕜 := ℝ) i).contDiff.contDiffOn.comp
       (hL.clm_apply (contDiffOn_const (c := EuclideanSpace.single j 1))) (Set.mapsTo_univ _ _)
   have he (x : E n) : (L x).det =
       Matrix.det (fun i j : Fin n => L x (EuclideanSpace.single j 1) i) := by
     rw [ContinuousLinearMap.det, ← LinearMap.det_toMatrix (EuclideanSpace.basisFun (Fin n) ℝ).toBasis]
     rfl
-  have hefun : (fun x => (L x).det) = (fun x =>
-      Matrix.det (fun i j : Fin n => L x (EuclideanSpace.single j 1) i)) := funext he
+  have hefun  := funext he
   have hexpand (x : E n) : Matrix.det (fun i j : Fin n => L x (EuclideanSpace.single j 1) i) =
       ∑ σ : Equiv.Perm (Fin n), (Equiv.Perm.sign σ : ℝ) *
         ∏ i, L x (EuclideanSpace.single i 1) (σ i) := Matrix.det_apply' _
@@ -701,7 +700,7 @@ lemma invertible_det_ne_zero {n : ℕ} {L : E n →L[ℝ] E n}
   exact e.toLinearEquiv.isUnit_det'.ne_zero
 
 lemma ball_subset_cube_interior (n : ℕ) {a : ℝ} :
-    Metric.ball (0 : E n) a ⊆ interior (cube n a) := by
+    Metric.ball (0) a ⊆ interior (cube n a) := by
   apply interior_maximal _ Metric.isOpen_ball
   intro x hx j
   have hn : ‖x‖ < a := by simpa [dist_zero_right] using hx
@@ -709,12 +708,12 @@ lemma ball_subset_cube_interior (n : ℕ) {a : ℝ} :
   exact ⟨(abs_lt.mp hj).1.le, (abs_lt.mp hj).2.le⟩
 
 lemma shrink_ball_with_density_bounds {n : ℕ} {D : Set (E n)}
-    (hD : IsOpen D) (h0 : (0 : E n) ∈ D) {w : E n → ℝ}
+    (hD : IsOpen D) (h0 : (0) ∈ D) {w : E n → ℝ}
     (hw : ContinuousOn w D) (hw₀ : ∀ x ∈ D, 0 < w x) :
     ∃ r a lower upper : ℝ, 0 < r ∧ 0 < a ∧ 0 < lower ∧
-      closure (Metric.ball (0 : E n) r) ⊆ D ∧
-      closure (Metric.ball (0 : E n) r) ⊆ interior (cube n a) ∧
-      ∀ x ∈ closure (Metric.ball (0 : E n) r),
+      closure (Metric.ball (0) r) ⊆ D ∧
+      closure (Metric.ball (0) r) ⊆ interior (cube n a) ∧
+      ∀ x ∈ closure (Metric.ball (0) r),
         lower ≤ w x ∧ w x ≤ upper := by
   obtain ⟨r, hr, hrD⟩ := Metric.nhds_basis_closedBall.mem_iff.mp (hD.mem_nhds h0)
   have hc : closure (Metric.ball (0 : E n) r) ⊆ Metric.closedBall 0 r :=
@@ -832,11 +831,10 @@ lemma partial_map_injective {α β : Type*} [TopologicalSpace α] [TopologicalSp
     (h : Measure.map c μ = Measure.map c ν) : μ = ν := by
   have recover (m : Measure α) (hm : ∀ᵐ x ∂m, x ∈ c.source) :
       Measure.map c.symm (Measure.map c m) = m := by
-    have hc : AEMeasurable c m :=
+    have hc  :=
       (c.continuousOn.aemeasurable c.open_source.measurableSet).mono_measure
         (by rw [Measure.restrict_eq_self_of_ae_mem hm])
-    have htarget : ∀ᵐ y ∂Measure.map c m, y ∈ c.target := by
-      exact (ae_map_iff hc c.open_target.measurableSet).mpr
+    have htarget : ∀ᵐ y ∂Measure.map c m, y ∈ c.target := (ae_map_iff hc c.open_target.measurableSet).mpr
         (hm.mono fun x hx => c.map_source hx)
     have hi₀ : AEMeasurable c.symm ((Measure.map c m).restrict c.target) :=
       c.symm.continuousOn.aemeasurable c.open_target.measurableSet
@@ -863,8 +861,7 @@ lemma orthogonal_density_invariant {n : ℕ} {β : Type*}
   have hμ : ∀ᵐ x ∂μ, x ∈ c.source :=
     (ae_restrict_mem c.open_source.measurableSet).filter_mono
       (withDensity_absolutelyContinuous _ _).ae_le
-  have hAμ : ∀ᵐ x ∂Measure.map A μ, x ∈ c.source := by
-    exact (ae_map_iff A.continuous.measurable.aemeasurable c.open_source.measurableSet).mpr
+  have hAμ : ∀ᵐ x ∂Measure.map A μ, x ∈ c.source := (ae_map_iff A.continuous.measurable.aemeasurable c.open_source.measurableSet).mpr
       (hμ.mono fun x hx => hAD ▸ Set.mem_image_of_mem A hx)
   have hcm : AEMeasurable c μ := by
     have hh : AEMeasurable c (μ.restrict c.source) :=
@@ -888,7 +885,7 @@ lemma orthogonal_density_invariant {n : ℕ} {β : Type*}
     have he : (c ∘ A) =ᵐ[μ] (B ∘ c) := hμ.mono fun x hx => heq x hx
     rw [Measure.map_congr he, ← AEMeasurable.map_map_of_aemeasurable
       B.continuous.measurable.aemeasurable hcm, hcv, hν]
-  have hm : Measure.map A μ = μ := partial_map_injective c hAμ hμ hmaps
+  have hm  := partial_map_injective c hAμ hμ hmaps
   have hv : ContinuousOn (fun x => w (A x)) c.source :=
     hw.comp A.continuous.continuousOn (fun x hx => hAD ▸ Set.mem_image_of_mem A hx)
   have hv₀ : ∀ x ∈ c.source, 0 ≤ w (A x) :=
@@ -901,7 +898,7 @@ lemma orthogonal_density_invariant {n : ℕ} {β : Type*}
 
 def reorder (d : ℕ) : E (3*d) ≃ₗᵢ[ℝ] E (d*3) :=
   LinearIsometryEquiv.piLpCongrLeft 2 ℝ ℝ (finCongr (Nat.mul_comm 3 d))
-def flattenThree (d : ℕ) : E (3*d) ≃L[ℝ] KPArch.Space d :=
+def flattenThree (d : ℕ)  :=
   (reorder d).toContinuousLinearEquiv.trans (coordinatesLinear d)
 lemma flattenThree_volume (d : ℕ) : Measure.map (flattenThree d) volume = volume := by
   have hm := Measure.map_map (coordinatesLinear d).continuous.measurable
@@ -963,9 +960,9 @@ lemma action_volume (γ : KPCuspArithmetic.PGL2 F) :
       KPArch.hyperbolicVolume (KPCuspLogShape.dimension F) := by
   obtain ⟨B, rfl⟩ := Matrix.ProjGenLinGroup.mk_surjective γ
   have he : (fun p : KPArch.Space (KPCuspLogShape.dimension F) =>
-      (Matrix.ProjGenLinGroup.mk B : KPCuspArithmetic.PGL2 F) • p) = KPCuspSiegel.glAction F B := by
+      (Matrix.ProjGenLinGroup.mk B) • p) = KPCuspSiegel.glAction F B := by
     funext p
-    exact KPCuspSiegel.action_mk F B p
+    apply KPCuspSiegel.action_mk
   rw [he]
   exact KPArch.hyperbolicVolume_invariant _ _
 
@@ -976,7 +973,7 @@ lemma component_chart (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     ∃ C : Chart F ζ hζ hF U A, C.component = i ∧ C.center = p := by
   have hc0 := component_orthogonal_separated_smooth_chart F ζ hζ hF U (A.representative i) p
   obtain ⟨H,c,h0,hp,hs,hi,hsource,heq,hsep⟩ := hc0
-  have himage : (c : _ → _) '' c.source = c.target := c.toPartialHomeomorph.image_source_eq_target
+  have himage : c '' c.source = c.target := c.toPartialHomeomorph.image_source_eq_target
   letI := H
   letI : ContinuousConstSMul (KPCuspArithmetic.PGL2 F) (KPArch.Space (KPCuspLogShape.dimension F)) :=
     ⟨KPCuspSiegel.continuous_action F⟩
@@ -985,8 +982,8 @@ lemma component_chart (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
   let f := L.symm ∘ c
   let e : OpenPartialHomeomorph (E (3*d)) (E (3*d)) := c.trans L.symm.toHomeomorph.toOpenPartialHomeomorph
   have hes : e.source = c.source := by simp [e, OpenPartialHomeomorph.trans_source]
-  have hef (x) : e x = f x := rfl
-  have heinv (x) : e.symm x = c.symm (L x) := rfl
+  
+  
   have hfs : ContDiffOn ℝ (⊤ : ℕ∞) f c.source :=
     L.symm.contDiff.contDiffOn.comp hs (Set.mapsTo_univ _ _)
   have hies : ContDiffOn ℝ (⊤ : ℕ∞) e.symm e.target := by
@@ -1022,16 +1019,16 @@ lemma component_chart (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
         (A.representative i)) p, ∀ x ∈ c.source,
       w (StabilizerLinearization.stabilizerOrthogonal F _ p g x) = w x := by
     intro g
-    let B : KPArch.Space d ≃ₜ KPArch.Space d := Homeomorph.smul (g.val.val : KPCuspArithmetic.PGL2 F)
+    let B : KPArch.Space d ≃ₜ KPArch.Space d := Homeomorph.smul g.val.val
     apply orthogonal_density_invariant c
       (StabilizerLinearization.stabilizerOrthogonal F _ p g) B (KPArch.hyperbolicVolume d)
-      (show Measure.map B (KPArch.hyperbolicVolume d) = KPArch.hyperbolicVolume d from action_volume F g.val.val) (hsource g) ?_ (heq g) hws.continuousOn
+      ((action_volume F g.val.val)) (hsource g) ?_ (heq g) hws.continuousOn
       (fun x hx => (hwpos x hx).le) hcv
     ext q
     constructor
     · rintro ⟨r, hr, rfl⟩
       obtain ⟨x,hx,rfl⟩ := himage.symm ▸ hr
-      change (g.val.val : KPCuspArithmetic.PGL2 F) • c x ∈ c.target
+      change g.val.val • c x ∈ c.target
       rw [← heq g x hx]
       exact c.map_source (hsource g ▸ Set.mem_image_of_mem _ hx)
     · intro hq
@@ -1079,7 +1076,7 @@ lemma component_chart (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
   }, rfl, rfl⟩
   · have hd : 0 < d := KPCuspLogShape.dimension_pos F hF
     omega
-  · have hb : Metric.ball (0 : E (3*d)) r ⊆ c.source :=
+  · have hb : Metric.ball (0) r ⊆ c.source :=
       fun x hx => hrD (subset_closure hx)
     have hh := hyperbolic_jacobian_three d Metric.isOpen_ball.measurableSet
       (fun x hx => ((hs x (hb hx)).differentiableWithinAt (by simp)).mono hb) (c.injOn.mono hb)

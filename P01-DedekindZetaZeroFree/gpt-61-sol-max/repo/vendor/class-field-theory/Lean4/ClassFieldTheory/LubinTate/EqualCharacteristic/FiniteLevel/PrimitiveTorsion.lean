@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.SetTheory.Cardinal.Finite
 public import ClassFieldTheory.LubinTate.EqualCharacteristic.FiniteLevel.DivisionPolynomial
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -39,19 +42,21 @@ open LocalFieldTheory.DiscreteValuationField
 
 variable {K : Type u} [Field K]
 
+section
+variable (F : LocalField.{u, v} K)
+    [CharP K F.residueCharacteristic]
+include F
 /-- A chosen root of the primitive level-`n+1` division polynomial in the
 fixed separable closure of `κ((T))`. -/
 noncomputable def chosenEqualCharacteristicLubinTatePrimitiveRoot
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) : SeparableClosure F.residueField⸨X⸩ :=
+     
+    (n : ℕ)  :=
   Classical.choose
     (exists_equalCharacteristicLubinTatePrimitivePolynomial_root F n)
 
 /-- The chosen primitive division point is a root of `Q_(n+1)`. -/
 theorem chosenEqualCharacteristicLubinTatePrimitiveRoot_isRoot
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
+     
     (n : ℕ) :
     ((equalCharacteristicLubinTatePrimitivePolynomial F n).map
       (equalCharacteristicSeparableBaseHom F)).IsRoot
@@ -61,8 +66,7 @@ theorem chosenEqualCharacteristicLubinTatePrimitiveRoot_isRoot
 
 /-- Evaluation of `Q_(n+1)` is the defining primitive-division equation. -/
 theorem equalCharacteristicLubinTatePrimitivePolynomial_eval₂
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
+     
     {A : Type*} [Field A] [CharP A F.residueCharacteristic]
     (φ : F.residueField⸨X⸩ →+* A) (n : ℕ) (x : A) :
     Polynomial.eval₂ φ x
@@ -78,8 +82,7 @@ theorem equalCharacteristicLubinTatePrimitivePolynomial_eval₂
 
 /-- The chosen root satisfies the primitive-division equation. -/
 theorem chosenEqualCharacteristicLubinTatePrimitiveRoot_equation
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
+     
     (n : ℕ) :
     equalCharacteristicLubinTateAmbientPiIterate F
         (equalCharacteristicSeparableUniformizer F) n
@@ -98,8 +101,7 @@ theorem chosenEqualCharacteristicLubinTatePrimitiveRoot_equation
 /-- A primitive level-`n+1` point is killed by the next division
 polynomial. -/
 theorem chosenEqualCharacteristicLubinTatePrimitiveRoot_torsion
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
+     
     (n : ℕ) :
     IsEqualCharacteristicLubinTateAmbientTorsion F
       (equalCharacteristicSeparableUniformizer F) (n + 1)
@@ -123,8 +125,7 @@ theorem chosenEqualCharacteristicLubinTatePrimitiveRoot_torsion
 
 /-- The chosen root is not already a level-`n` division point. -/
 theorem chosenEqualCharacteristicLubinTatePrimitiveRoot_not_torsion_pred
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
+     
     (n : ℕ) :
     ¬ IsEqualCharacteristicLubinTateAmbientTorsion F
       (equalCharacteristicSeparableUniformizer F) n
@@ -136,12 +137,11 @@ theorem chosenEqualCharacteristicLubinTatePrimitiveRoot_not_torsion_pred
     apply (equalCharacteristicSeparableBaseHom F).injective
     simpa [equalCharacteristicSeparableUniformizer] using heq
   · exact Nat.sub_ne_zero_of_lt
-      (Finite.one_lt_card : 1 < Nat.card F.residueField)
+      Finite.one_lt_card
 
 /-- In particular, a primitive division point is nonzero. -/
 theorem chosenEqualCharacteristicLubinTatePrimitiveRoot_ne_zero
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
+     
     (n : ℕ) :
     chosenEqualCharacteristicLubinTatePrimitiveRoot F n ≠ 0 := by
   intro hzero
@@ -150,6 +150,8 @@ theorem chosenEqualCharacteristicLubinTatePrimitiveRoot_ne_zero
       (equalCharacteristicSeparableUniformizer F) n
       (chosenEqualCharacteristicLubinTatePrimitiveRoot F n) = 0
   rw [hzero, map_zero]
+end
+
 
 end EqualCharacteristic
 end LubinTate

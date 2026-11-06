@@ -1,10 +1,13 @@
 module
+
+public import Mathlib
 public import Mathlib.Analysis.SpecificLimits.Normed
 public import Mathlib.Analysis.Complex.Basic
 
 public import Mathlib.Analysis.Normed.Ring.InfiniteProd
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.ExteriorEulerGeometricProduct
 noncomputable section
@@ -22,7 +25,7 @@ private theorem finite_geom (ι : Type*) [Fintype ι] (z : ι → ℂ) (hz : ∀
     Summable (fun f : ι → ℕ => ‖∏ i, z i ^ f i‖) ∧
     HasSum (fun f : ι → ℕ => ∏ i, z i ^ f i) (∏ i, (1 - z i)⁻¹)) ?_ ?_ ?_ ι
   · intro α β _ e ih z hz
-    letI : Fintype α := Fintype.ofEquiv β e.symm
+    letI  := Fintype.ofEquiv β e.symm
     let E := Equiv.piCongrLeft (fun _ : β => ℕ) e
     have h := ih (z ∘ e) (fun i => hz (e i))
     constructor
@@ -48,7 +51,10 @@ private theorem finite_geom (ι : Type*) [Fintype ι] (z : ι → ℂ) (hz : ∀
     · simpa [E, Function.comp_def, Fintype.prod_option, mul_comm] using
         E.hasSum_iff.mpr (hg.mul h.2 hp.of_norm)
 
-private theorem supported_hasSum {P : Type*} (r : P → ℂ) (hr : ∀ p, ‖r p‖ < 1) (s : Finset P) :
+section
+variable {P : Type*} (r : P → ℂ) (hr : ∀ p, ‖r p‖ < 1)
+include P r hr
+private theorem supported_hasSum   (s : Finset P) :
     HasSum (fun e : {e : P →₀ ℕ // (↑e.support : Set P) ⊆ (s : Set P)} =>
       e.val.prod (fun p k => r p ^ k)) (∏ p ∈ s, (1 - r p)⁻¹) := by
   classical
@@ -59,19 +65,17 @@ private theorem supported_hasSum {P : Type*} (r : P → ℂ) (hr : ∀ p, ‖r p
     · rfl
     · intro i; simp
   have hh := (finite_geom (s : Set P) (fun p => r p) (fun p => hr p)).2
-  have ht : (∏ p : (s : Set P), (1 - r p)⁻¹) = ∏ p ∈ s, (1 - r p)⁻¹ := by
-    exact Finset.prod_coe_sort s (fun p : P => (1 - r p)⁻¹)
+  have ht : (∏ p : (s : Set P), (1 - r p)⁻¹) = ∏ p ∈ s, (1 - r p)⁻¹ := Finset.prod_coe_sort s (fun p : P => (1 - r p)⁻¹)
   rw [← ht]
   simpa only [Function.comp_def, ← he] using E.hasSum_iff.mpr hh
 
-theorem hasProd_geometric {P : Type*} (r : P → ℂ)
-    (hr : ∀ p, ‖r p‖ < 1)
+theorem hasProd_geometric  
     (h : Summable (fun e : P →₀ ℕ => ‖e.prod (fun p k => r p ^ k)‖)) :
     HasProd (fun p => (1 - r p)⁻¹)
       (∑' e : P →₀ ℕ, e.prod (fun p k => r p ^ k)) := by
   classical
   let f : (P →₀ ℕ) → ℂ := fun e => e.prod (fun p k => r p ^ k)
-  let g : Finset P → (P →₀ ℕ) → ℂ := fun s e =>
+  let g  := fun s e =>
     if e.support ⊆ s then f e else 0
   have ht : Tendsto (fun s : Finset P => ∑' e, g s e) atTop (𝓝 (∑' e, f e)) := by
     apply tendsto_tsum_of_dominated_convergence h
@@ -90,6 +94,8 @@ theorem hasProd_geometric {P : Type*} (r : P → ℂ)
     exact (supported_hasSum r hr s).tsum_eq
   change Tendsto (fun s : Finset P => ∏ p ∈ s, (1 - r p)⁻¹) atTop _
   simpa only [he] using ht
+end
+
 
 end
 end DedekindZetaZeroFree.ExteriorEulerGeometricProduct

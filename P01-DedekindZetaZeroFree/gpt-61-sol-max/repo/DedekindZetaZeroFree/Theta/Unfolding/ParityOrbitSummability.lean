@@ -14,14 +14,17 @@ namespace DedekindZetaZeroFree.AbelianQuotient.RayCoset
 
 variable {K : Type} [Field K] [NumberField K]
 
-def signedOrbitWeight (D : Data K) (δ : Finset (RealPlaces K)) (s : ℂ)
+section
+variable (D : Data K)
+include D
+def signedOrbitWeight   (δ : Finset (RealPlaces K)) (s : ℂ)
     (x : X D) : ℂ :=
   (signδ D δ x : ℂ) * (normWeight D x : ℂ) ^ (-s)
 
-def Zδ (D : Data K) (δ : Finset (RealPlaces K)) (s : ℂ) : ℂ :=
+def Zδ   (δ : Finset (RealPlaces K)) (s : ℂ) : ℂ :=
   ∑' x : X D, signedOrbitWeight D δ s x
 
-theorem normWeight_pos (D : Data K) (x : X D) :
+theorem normWeight_pos   (x : X D) :
     0 < normWeight D x := by
   induction x using Quotient.inductionOn with
   | h α =>
@@ -36,7 +39,7 @@ theorem normWeight_pos (D : Data K) (x : X D) :
       exact_mod_cast (Algebra.norm_eq_zero_iff.not.mpr hα)
     · exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr D.ideal_ne_bot)
 
-theorem norm_signδ (D : Data K) (δ : Finset (RealPlaces K)) (x : X D) :
+theorem norm_signδ   (δ : Finset (RealPlaces K)) (x : X D) :
     ‖(signδ D δ x : ℂ)‖ = 1 := by
   induction x using Quotient.inductionOn with
   | h α =>
@@ -54,7 +57,7 @@ theorem norm_signδ (D : Data K) (δ : Finset (RealPlaces K)) (x : X D) :
       fun h => hα (RingHom.injective (realEmbedding K v) (by simpa using h))
     rcases Real.sign_apply_eq_of_ne_zero _ hne with h | h <;> rw [h] <;> norm_num
 
- def orbitSignEmbedding (D : Data K) :
+ def orbitSignEmbedding   :
     X D ↪ Ideal (𝓞 K) × RealSignVector K where
   toFun x := (orbitIdeal D x, signVector D x)
   inj' := by
@@ -67,7 +70,7 @@ theorem norm_signδ (D : Data K) (δ : Finset (RealPlaces K)) (x : X D) :
       signVector_injective_on_fibre D (orbitIdeal D x) (by simpa [a, b] using hs)
     simpa [a, b] using congrArg Subtype.val hab
 
-theorem summable_normWeight_rpow (D : Data K) (s : ℂ) (hs : 1 < s.re) :
+theorem summable_normWeight_rpow   (s : ℂ) (hs : 1 < s.re) :
     Summable (fun x : X D => (normWeight D x : ℝ) ^ (-s.re)) := by
   have hF : Summable (fun p : Ideal (𝓞 K) × RealSignVector K =>
       (Ideal.absNorm p.1 : ℝ) ^ (-s.re)) := by
@@ -81,24 +84,29 @@ theorem summable_normWeight_rpow (D : Data K) (s : ℂ) (hs : 1 < s.re) :
   intro x
   show (Ideal.absNorm (orbitIdeal D x) : ℝ) ^ (-s.re) = _
   rw [orbitIdeal_absNorm]
+end
 
-theorem summable_norm_signedOrbitWeight (D : Data K)
-    (δ : Finset (RealPlaces K)) (s : ℂ) (hs : 1 < s.re) :
+
+section
+variable (D : Data K)
+    (δ : Finset (RealPlaces K)) (s : ℂ) (hs : 1 < s.re)
+include D δ s hs
+theorem summable_norm_signedOrbitWeight   :
     Summable (fun x : X D => ‖signedOrbitWeight D δ s x‖) := by
   apply (summable_normWeight_rpow D s hs).congr
   intro x
   rw [signedOrbitWeight, norm_mul, norm_signδ D δ x, one_mul,
     Complex.norm_cpow_eq_rpow_re_of_pos (normWeight_pos D x) (-s), Complex.neg_re]
 
-theorem summable_signedOrbitWeight (D : Data K)
-    (δ : Finset (RealPlaces K)) (s : ℂ) (hs : 1 < s.re) :
+theorem summable_signedOrbitWeight   :
     Summable (signedOrbitWeight D δ s) :=
   (summable_norm_signedOrbitWeight D δ s hs).of_norm
 
-theorem hasSum_signedOrbitWeight (D : Data K)
-    (δ : Finset (RealPlaces K)) (s : ℂ) (hs : 1 < s.re) :
+theorem hasSum_signedOrbitWeight   :
     HasSum (signedOrbitWeight D δ s) (Zδ D δ s) :=
   (summable_signedOrbitWeight D δ s hs).hasSum
+end
+
 
 end DedekindZetaZeroFree.AbelianQuotient.RayCoset
 

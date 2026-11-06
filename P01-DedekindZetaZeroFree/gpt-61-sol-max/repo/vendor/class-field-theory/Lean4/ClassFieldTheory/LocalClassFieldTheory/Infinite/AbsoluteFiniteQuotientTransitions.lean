@@ -32,10 +32,13 @@ open RamificationTheory
 
 variable {K : Type} [Field K]
 
+section
+variable {N M : OpenNormalSubgroup (localAbsoluteAbelianProfinite K)}
+    (hNM : N ≤ M)
+include N M hNM
 /-- Pullback of open normal subgroups is monotone. -/
 theorem absoluteFiniteQuotientPreimage_mono
-    {N M : OpenNormalSubgroup (localAbsoluteAbelianProfinite K)}
-    (hNM : N ≤ M) :
+      :
     absoluteFiniteQuotientPreimage K N ≤
       absoluteFiniteQuotientPreimage K M := by
   intro σ hσ
@@ -44,8 +47,7 @@ theorem absoluteFiniteQuotientPreimage_mono
 /-- Inclusion of open normal subgroups reverses the corresponding fixed
 fields. -/
 theorem absoluteFiniteQuotientField_antitone
-    {N M : OpenNormalSubgroup (localAbsoluteAbelianProfinite K)}
-    (hNM : N ≤ M) :
+      :
     absoluteFiniteQuotientField K M ≤
       absoluteFiniteQuotientField K N := by
   intro x hx
@@ -59,8 +61,7 @@ theorem absoluteFiniteQuotientField_antitone
 
 /-- The canonical transition map between two finite quotients. -/
 noncomputable def absoluteFiniteQuotientTransition
-    {N M : OpenNormalSubgroup (localAbsoluteAbelianProfinite K)}
-    (hNM : N ≤ M) :
+      :
     localAbsoluteAbelianProfinite K ⧸ N.toSubgroup →ₜ*
       localAbsoluteAbelianProfinite K ⧸ M.toSubgroup := by
   letI : DiscreteTopology
@@ -77,8 +78,7 @@ noncomputable def absoluteFiniteQuotientTransition
 /-- States the theorem `absoluteFiniteQuotientTransition_mk`. -/
 @[simp]
 theorem absoluteFiniteQuotientTransition_mk
-    {N M : OpenNormalSubgroup (localAbsoluteAbelianProfinite K)}
-    (hNM : N ≤ M) (x : localAbsoluteAbelianProfinite K) :
+      (x : localAbsoluteAbelianProfinite K) :
     absoluteFiniteQuotientTransition hNM (QuotientGroup.mk x) =
       QuotientGroup.mk x := by
   rfl
@@ -86,8 +86,7 @@ theorem absoluteFiniteQuotientTransition_mk
 /-- Under the finite quotient identifications, quotient transition is
 exactly restriction of automorphisms to the smaller fixed field. -/
 theorem absoluteFiniteQuotientEquiv_transition
-    {N M : OpenNormalSubgroup (localAbsoluteAbelianProfinite K)}
-    (hNM : N ≤ M) :
+      :
     (intermediateFieldRestrictContinuous K
       (absoluteFiniteQuotientField K M)
       (absoluteFiniteQuotientField K N)
@@ -141,6 +140,8 @@ theorem absoluteFiniteQuotientEquiv_transition
     (absoluteFiniteQuotientEquiv_mk_mk K M σ)
   exact (congrArg r (absoluteFiniteQuotientEquiv_mk_mk K N σ)).trans
     (hrestrict.trans hright.symm)
+end
+
 
 end LocalClassFieldTheory
 

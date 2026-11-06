@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.AbelianQuotient
 
@@ -14,10 +17,10 @@ private lemma hasSum_finset_sum {ι X M : Type*} [AddCommMonoid M] [TopologicalS
     HasSum (fun x => ∑ i ∈ t, f i x) (∑ i ∈ t, g i) := by
   classical
   induction t using Finset.induction with
-  | empty => simpa using hasSum_zero (α := M) (β := X)
+  | empty => apply hasSum_zero
   | insert i t hi ih =>
-      have h1 : HasSum (f i) (g i) := h i (Finset.mem_insert_self i t)
-      have h2 : HasSum (fun x => ∑ j ∈ t, f j x) (∑ j ∈ t, g j) :=
+      have h1  := h i (Finset.mem_insert_self i t)
+      have h2  :=
         ih fun j hj => h j (Finset.mem_insert_of_mem hj)
       simpa [Finset.sum_insert hi] using h1.add h2
 
@@ -37,11 +40,7 @@ theorem finiteCharacterEntireAssembly
           | some c => ψ c) * w a s) (f s) := by
   classical
   refine ⟨fun s => ∑ c : G, ψ c * F c s, ?_, ?_⟩
-  · convert Differentiable.sum (u := Finset.univ)
-        (A := fun c : G => fun s : ℂ => ψ c * F c s)
-        (fun c _ => (hF c).const_mul (ψ c)) using 1
-    ext s
-    simp only [Finset.sum_apply]
+  · simp_all
   · intro s hs
 
     have hpt : (fun a => (match q a with

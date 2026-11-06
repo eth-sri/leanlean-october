@@ -13,15 +13,18 @@ set_option autoImplicit false
 namespace SArithmeticData
 variable {F : Type} [Field F] [NumberField F]
 
-abbrev FiniteSquareClasses (A : SArithmeticData F) :=
+section
+variable (A : SArithmeticData F)
+include A
+abbrev FiniteSquareClasses   :=
   (v : {v // v ∈ A.Sf}) → ClassFieldTheory.PowerClassGroup (v.val.adicCompletion F) 2
 
-def finiteSquareClass (A : SArithmeticData F) : A.G →* A.FiniteSquareClasses where
+def finiteSquareClass   : A.G →* A.FiniteSquareClasses where
   toFun x v := ClassFieldTheory.powerClass (v.val.adicCompletion F) 2 (x.2 v)
   map_one' := by ext v; exact map_one _
   map_mul' := by intros; ext v; exact map_mul _ _ _
 
-def pi₂ (A : SArithmeticData F) : A.V →* A.FiniteSquareClasses :=
+def pi₂   : A.V →* A.FiniteSquareClasses :=
   QuotientGroup.lift A.sixthPowers A.finiteSquareClass (by
     rintro x ⟨y, rfl⟩
     ext v
@@ -30,10 +33,10 @@ def pi₂ (A : SArithmeticData F) : A.V →* A.FiniteSquareClasses :=
     change ((y.2 v) ^ 3) ^ 2 = (y ^ 6).2 v
     simp [← pow_mul])
 
-def B₂ (A : SArithmeticData F) (B : Subgroup A.V) : Subgroup A.FiniteSquareClasses :=
+def B₂   (B : Subgroup A.V) : Subgroup A.FiniteSquareClasses :=
   Subgroup.map A.pi₂ B
 
-theorem finiteSquareClasses_finite (A : SArithmeticData F) : Finite A.FiniteSquareClasses := by
+theorem finiteSquareClasses_finite   : Finite A.FiniteSquareClasses := by
   letI (v : {v // v ∈ A.Sf}) : Finite
       (ClassFieldTheory.PowerClassGroup (v.val.adicCompletion F) 2) := by
     letI := ClassFieldTheory.finitePlaceCompletionValuativeRel F v.val
@@ -43,11 +46,11 @@ theorem finiteSquareClasses_finite (A : SArithmeticData F) : Finite A.FiniteSqua
     exact ClassFieldTheory.powerClassGroup_finite _ 2 (by norm_num)
   infer_instance
 
-theorem B₂_finite (A : SArithmeticData F) (B : Subgroup A.V) : Finite (A.B₂ B) := by
+theorem B₂_finite   (B : Subgroup A.V) : Finite (A.B₂ B) := by
   letI := A.finiteSquareClasses_finite
   infer_instance
 
-theorem finiteSquareClass_gamma_independent (A : SArithmeticData F)
+theorem finiteSquareClass_gamma_independent  
     (x y : A.G) (hxy : x / y ∈ A.Gamma) :
     A.finiteSquareClass x = A.finiteSquareClass y := by
   have hker : A.finiteSquareClass (x / y) = 1 := by
@@ -61,9 +64,9 @@ theorem finiteSquareClass_gamma_independent (A : SArithmeticData F)
   rw [map_div] at hker
   exact div_eq_one.mp hker
 
-abbrev ExteriorFractional (A : SArithmeticData F) := (FractionalIdeal A.R⁰ F)ˣ
+abbrev ExteriorFractional   := (FractionalIdeal A.R⁰ F)ˣ
 
-def exteriorFractional (A : SArithmeticData F) (I : A.Exterior) : A.ExteriorFractional :=
+def exteriorFractional   (I : A.Exterior) : A.ExteriorFractional :=
   (show IsUnit (A.extendIdeal I : FractionalIdeal A.R⁰ F) from by
     have hO : IsUnit (I.val : FractionalIdeal (𝓞 F)⁰ F) :=
       isUnit_iff_ne_zero.mpr (FractionalIdeal.coeIdeal_ne_zero.mpr I.property.1)
@@ -72,40 +75,47 @@ def exteriorFractional (A : SArithmeticData F) (I : A.Exterior) : A.ExteriorFrac
     rw [← FractionalIdeal.extendedHom_coeIdeal_eq_map (K := F) F A.R I.val]
     exact hO.map (FractionalIdeal.extendedHom F A.R)).unit
 
-theorem exteriorFractional_val (A : SArithmeticData F) (I : A.Exterior) :
+theorem exteriorFractional_val   (I : A.Exterior) :
     (A.exteriorFractional I : FractionalIdeal A.R⁰ F) = A.extendIdeal I := by
   exact IsUnit.unit_spec _
+end
+
 
 namespace GeneralArithmeticContext
 variable {A : SArithmeticData F} {σ : F →+* ℂ}
   {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
-def squareClsGenerator (C : A.GeneralArithmeticContext σ η hS)
-    (I : A.ExteriorFractional) : Fˣ :=
+section
+variable (C : A.GeneralArithmeticContext σ η hS)
+    (I : A.ExteriorFractional)
+include C I
+def squareClsGenerator   : Fˣ :=
   Classical.choose (A.exists_allowed_generator_of_isUnit C.classGroup_trivial
     C.correction.H C.correction.B C.correction.B_complement I.val I.isUnit)
 
-theorem squareClsGenerator_spec (C : A.GeneralArithmeticContext σ η hS)
-    (I : A.ExteriorFractional) :
+theorem squareClsGenerator_spec   :
     A.IsAllowedGenerator C.correction.B I.val (C.squareClsGenerator I) :=
   Classical.choose_spec (A.exists_allowed_generator_of_isUnit C.classGroup_trivial
     C.correction.H C.correction.B C.correction.B_complement I.val I.isUnit)
 
-def cls (C : A.GeneralArithmeticContext σ η hS)
-    (I : A.ExteriorFractional) : A.B₂ C.correction.B :=
+def cls   : A.B₂ C.correction.B :=
   ⟨A.pi₂ (A.sClass (C.squareClsGenerator I)),
     ⟨A.sClass (C.squareClsGenerator I), (C.squareClsGenerator_spec I).2, rfl⟩⟩
 
-private theorem generator_class_independent (C : A.GeneralArithmeticContext σ η hS)
-    (I : A.ExteriorFractional) (x : Fˣ)
+private theorem generator_class_independent   (x : Fˣ)
     (hx : A.IsAllowedGenerator C.correction.B I.val x) :
     A.finiteSquareClass (A.diagonal (C.squareClsGenerator I)) =
       A.finiteSquareClass (A.diagonal x) := by
   apply A.finiteSquareClass_gamma_independent
   rw [← map_div]
   exact ⟨_, C.allowed_unique I.val _ _ (C.squareClsGenerator_spec I) hx, rfl⟩
+end
 
-theorem cls_top (C : A.GeneralArithmeticContext σ η hS) : C.cls 1 = 1 := by
+
+section
+variable (C : A.GeneralArithmeticContext σ η hS)
+include C
+theorem cls_top   : C.cls 1 = 1 := by
   apply Subtype.ext
   change A.finiteSquareClass (A.diagonal (C.squareClsGenerator 1)) = 1
   have hx : A.IsAllowedGenerator C.correction.B (1 : A.ExteriorFractional).val 1 := by
@@ -114,7 +124,7 @@ theorem cls_top (C : A.GeneralArithmeticContext σ η hS) : C.cls 1 = 1 := by
     · exact C.correction.B.one_mem
   simpa using generator_class_independent C 1 1 hx
 
-theorem cls_mul (C : A.GeneralArithmeticContext σ η hS)
+theorem cls_mul  
     (I J : A.ExteriorFractional) : C.cls (I * J) = C.cls I * C.cls J := by
   apply Subtype.ext
   change A.finiteSquareClass (A.diagonal (C.squareClsGenerator (I * J))) =
@@ -125,24 +135,24 @@ theorem cls_mul (C : A.GeneralArithmeticContext σ η hS)
   exact A.allowed_generator_mul C.correction.B I.val J.val _ _
     (C.squareClsGenerator_spec I) (C.squareClsGenerator_spec J)
 
-theorem cls_allowed_generator (C : A.GeneralArithmeticContext σ η hS)
+theorem cls_allowed_generator  
     (I : A.ExteriorFractional) (x : Fˣ)
     (hx : A.IsAllowedGenerator C.correction.B I.val x) :
     (C.cls I).val = A.finiteSquareClass (A.diagonal x) := by
   exact generator_class_independent C I x hx
 
-def integralCls (C : A.GeneralArithmeticContext σ η hS)
+def integralCls  
     (a : Ideal (𝓞 F)) : A.B₂ C.correction.B :=
   if ha : a ≠ ⊥ ∧ a ⊔ A.cS = ⊤ then
     C.cls (A.exteriorFractional ⟨a, ha.1, ha.2⟩)
   else 1
 
-theorem integralCls_exterior (C : A.GeneralArithmeticContext σ η hS)
+theorem integralCls_exterior  
     (I : A.Exterior) : C.integralCls I.val = C.cls (A.exteriorFractional I) := by
   simp only [integralCls, dif_pos I.property]
   rfl
 
-theorem integralCls_top (C : A.GeneralArithmeticContext σ η hS) :
+theorem integralCls_top   :
     C.integralCls ⊤ = 1 := by
   let T : A.Exterior := ⟨⊤, top_ne_bot, by simp⟩
   have hT : A.exteriorFractional T = 1 := by
@@ -151,6 +161,8 @@ theorem integralCls_top (C : A.GeneralArithmeticContext σ η hS) :
     change ((Ideal.map (algebraMap (𝓞 F) A.R) ⊤ : Ideal A.R) : FractionalIdeal A.R⁰ F) = 1
     rw [Ideal.map_top, FractionalIdeal.coeIdeal_top]
   rw [show (⊤ : Ideal (𝓞 F)) = T.val from rfl, C.integralCls_exterior, hT, C.cls_top]
+end
+
 
 private theorem supported_coprime_exterior (A : SArithmeticData F)
     (qS : Ideal (𝓞 F)) (hqS : qS ≠ ⊥)

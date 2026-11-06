@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Valuation.DiscreteValuationField.FiniteExtension.Core
 public import Mathlib.NumberTheory.RamificationInertia.Galois
 public import ValuedFieldTheory.Ramification.HilbertRamification.Dedekind.Basic
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -54,13 +57,12 @@ theorem card_inertia_eq_ramificationIndex_of_finite_separable
     moduleFinite_target_valuationSubring_of_finite_separable base target
   let : Module.IsTorsionFree base.valuationSubring target.valuationSubring :=
     moduleIsTorsionFree_target_valuationSubring_of_finite_separable base target
-  let : target.maximalIdeal.LiesOver base.maximalIdeal :=
+  let  :=
     maximalIdeal_liesOver base target
   rw [HilbertRamification.Dedekind.dedekindRamification_inertia_card_eq_ramificationIdxIn
     (A := base.valuationSubring) (B := target.valuationSubring)
     base.maximalIdeal target.maximalIdeal G base.maximalIdeal_ne_bot]
-  simpa [ramificationIndex] using
-    (Ideal.ramificationIdxIn_eq_ramificationIdx
+  exact (Ideal.ramificationIdxIn_eq_ramificationIdx
       base.maximalIdeal target.maximalIdeal G).trans
       (Ideal.ramificationIdx'_eq_ramificationIdx
         base.maximalIdeal target.maximalIdeal base.maximalIdeal_ne_bot).symm

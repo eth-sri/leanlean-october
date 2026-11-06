@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction.InfiniteUnitNormSubgroup
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction.FiniteIntermediateFieldCompositum
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction.FrobeniusFixedFieldAction
@@ -7,6 +9,7 @@ public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction.FrobeniusQuotientDescent
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -75,22 +78,15 @@ theorem universalNormDescent_endpoint_descent
         (D.maximalUnramifiedField_le K.field) aK.1 =
         relativeNorm A (D.maximalUnramifiedField K.field)
           (D.maximalUnramifiedField L) (D.maximalUnramifiedField_mono hLK) u.1 := by
-  let : Finite
-      ((D.maximalUnramifiedField K.field).toSubgroup ⧸
-        extensionSubgroup (D.maximalUnramifiedField K.field)
-          (D.maximalUnramifiedField L)
-          (D.maximalUnramifiedField_mono hLK)) :=
+  let  :=
     D.maximalUnramifiedExtension_finite K.field L hLK
   have hfixed := D.maximalUnramifiedNorm_fixed_of_hstar A
     (K.toFiniteResidueAbstractField D) L hLK
     s φ.1 τ u.1 (fun i => (uᵢ i).1) hstar
   exact v.descend_maximalUnramifiedNorm_unit K L hLK φ hφ u.1 u.2 hfixed
 
-/-- The universal norm-descent lemma, finite target step.  After placing the finite support in a
-common finite Galois overfield, the descended unit is a norm from every
-prescribed finite intermediate field. -/
-theorem universalNormDescent_mem_finiteUnitNormRange
-    (v : ValuationData D A)
+section
+variable (v : ValuationData D A)
     [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
     [TotallyDisconnectedSpace G]
     (hAxiom : v.SatisfiesUnramifiedUnitCohomology)
@@ -114,6 +110,12 @@ theorem universalNormDescent_mem_finiteUnitNormRange
       ∑ i ∈ s,
         (D.frobeniusQuotientAction A K.field L hLK (τ i).1 (uᵢ i).1 -
           (uᵢ i).1))
+include v hAxiom K L hLK hLnormal hLfinite φ hφ ι s τ u uᵢ hstar
+/-- The universal norm-descent lemma, finite target step.  After placing the finite support in a
+common finite Galois overfield, the descended unit is a norm from every
+prescribed finite intermediate field. -/
+theorem universalNormDescent_mem_finiteUnitNormRange
+     
     (aK : v.unitAddSubgroup K)
     (haK :
       letI : Finite
@@ -158,21 +160,20 @@ theorem universalNormDescent_mem_finiteUnitNormRange
   let B := B₀.compositum Mu
   obtain ⟨Q, hQB, hQMi⟩ :=
     FiniteIntermediateField.exists_common_compositum B
-      (Finset.univ : Finset ιs) Mi
+      Finset.univ Mi
   let P := Q.galoisRefinement
   let hPQ : P.field.toSubgroup ≤ Q.field.toSubgroup :=
     Q.galoisRefinement_le_field
-  let hPB : P.field.toSubgroup ≤ B.field.toSubgroup := hPQ.trans hQB
-  let hPM : P.field.toSubgroup ≤ M.field.toSubgroup :=
+  let hPB  := hPQ.trans hQB
+  let hPM  :=
     hPB.trans ((B₀.compositum_le_left Mu).trans (M.compositum_le_left ML))
   let hPL : P.field.toSubgroup ≤ L.toSubgroup :=
     hPB.trans ((B₀.compositum_le_left Mu).trans (M.compositum_le_right ML))
-  let hPMu : P.field.toSubgroup ≤ Mu.field.toSubgroup :=
+  let hPMu  :=
     hPB.trans (B₀.compositum_le_right Mu)
   let hPMi (j : ιs) : P.field.toSubgroup ≤ (Mi j).field.toSubgroup :=
     hPQ.trans (hQMi j (Finset.mem_univ j))
-  let hPfinite : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field P.field P.below) := P.finite
+  let hPfinite  := P.finite
   let hPnormal : (extensionSubgroup K.field P.field P.below).Normal :=
     FiniteIntermediateField.galoisRefinement_normal Q
   let n := P.quotientCard
@@ -224,7 +225,7 @@ theorem universalNormDescent_mem_finiteUnitNormRange
     powerTower.toFiniteAmbientFrobeniusFixedFieldTower
   let SF := fixedTower.base
   let TF := fixedTower.field
-  let hSMu : S.toSubgroup ≤ Mu.field.toSubgroup := hSP.trans hPMu
+  let hSMu  := hSP.trans hPMu
   let hSMufinite : Finite
       (Mu.field.toSubgroup ⧸ extensionSubgroup Mu.field S hSMu) :=
     FiniteIntermediateField.finite_extension_of_le hSK Mu.below hSMu
@@ -234,12 +235,12 @@ theorem universalNormDescent_mem_finiteUnitNormRange
     change Finite
       (Mu.field.toSubgroup ⧸ extensionSubgroup Mu.field S hSMu)
     exact hSMufinite
-  let ESMu : FiniteAbstractFieldExtension G :=
+  let ESMu  :=
     FiniteAbstractFieldExtension.ofInclusion
       S (Mu.toFiniteAbstractField K) hSMu
   have hESMuField : ESMu.field = SF :=
     FiniteAbstractField.eq_of_field_eq _ _ rfl
-  let uS : v.unitAddSubgroup SF :=
+  let uS  :=
     hESMuField ▸ v.finiteUnitInclusion ESMu uMu
   let hSMi (j : ιs) : S.toSubgroup ≤ (Mi j).field.toSubgroup :=
     hSP.trans (hPMi j)
@@ -262,24 +263,10 @@ theorem universalNormDescent_mem_finiteUnitNormRange
     hESMiField j ▸ v.finiteUnitInclusion (ESMi j) (uMi j)
   have huSval : uS.1.1 = u.1.1 := by
     have huMuVal := congrArg Subtype.val huMu
-    change uMu.1.1 = u.1.1 at huMuVal
-    have huStransport : uS.1.1 = uMu.1.1 := by
-      dsimp only [uS]
-      cases hESMuField
-      rfl
-    calc
-      uS.1.1 = uMu.1.1 := huStransport
-      _ = u.1.1 := huMuVal
+    assumption
   have huᵢSval (j : ιs) : (uᵢS j).1.1 = (uᵢ j.1).1.1 := by
     have huMiVal := congrArg Subtype.val (huMi j)
-    change (uMi j).1.1 = (uᵢ j.1).1.1 at huMiVal
-    have huᵢStransport : (uᵢS j).1.1 = (uMi j).1.1 := by
-      dsimp only [uᵢS]
-      cases hESMiField j
-      rfl
-    calc
-      (uᵢS j).1.1 = (uMi j).1.1 := huᵢStransport
-      _ = (uᵢ j.1).1.1 := huMiVal
+    assumption
   have hstarVal :
       (D.frobeniusQuotientAction A K.field L hLK φ.1 u.1).1 - u.1.1 =
         ∑ i ∈ s,
@@ -313,8 +300,7 @@ theorem universalNormDescent_mem_finiteUnitNormRange
   have hφσn : φ.1 * σn.1 = σn.1 * φ.1 :=
     powerTower.frobenius_commute_field
   have hτσ (j : ιs) : (τs j).1 * (φ.1 ^ n) =
-      (φ.1 ^ n) * (τs j).1 := by
-    exact (D.quotientPower_card_commutes_degreeZero KR L hLK P hPL
+      (φ.1 ^ n) * (τs j).1 := (D.quotientPower_card_commutes_degreeZero KR L hLK P hPL
       φ.1 (τs j).1 (τs j).2).symm
   have hτσn (j : ιs) : (τs j).1 * (φ.1 ^ (n * n)) =
       (φ.1 ^ (n * n)) * (τs j).1 := by
@@ -324,14 +310,14 @@ theorem universalNormDescent_mem_finiteUnitNormRange
     fixedTower.commute
   obtain ⟨uBar, uBarᵢ, yBar, huBar, huBarᵢ, hyBar⟩ :=
     v.universalNormDescent_fixedTower_solution hAxiom powerTower
-      (Finset.univ : Finset ιs) τs hτσ hτσn uS uᵢS hstarS
+      Finset.univ τs hτσ hτσn uS uᵢS hstarS
   let uBarE := fixedFieldInclusion A T E hTE uBar.1
   let uBarᵢE := fun j : ιs => fixedFieldInclusion A T E hTE (uBarᵢ j).1
   let yBarE := fixedFieldInclusion A T E hTE yBar.1
   let φnyBarE := D.frobeniusPowerSum A K.field L hLK φ.1 n yBarE
   let w := uBarE - φnyBarE
   have hstarW := v.universalNormDescent_correctedEquation KR L hLK σ σn
-    (Finset.univ : Finset ιs) φ.1 hφσn (fun j => (τs j).1) hτσn
+    Finset.univ φ.1 hφσn (fun j => (τs j).1) hτσn
       hσσn n rfl uBar uBarᵢ yBar hyBar
   have huBarEmem : uBarE ∈ v.infiniteUnitAddSubgroup E K hEK := by
     let MT := D.frobeniusFixedIntermediateField KR L hLK σn
@@ -358,7 +344,7 @@ theorem universalNormDescent_mem_finiteUnitNormRange
   have hwMem : w ∈ v.infiniteUnitAddSubgroup E K hEK :=
     (v.infiniteUnitAddSubgroup E K hEK).sub_mem huBarEmem hφnyMem
   have hfixedZ := D.maximalUnramifiedNorm_fixed_of_hstar A KR L hLK
-    (Finset.univ : Finset ιs) φ.1 τs w uBarᵢE hstarW
+    Finset.univ φ.1 τs w uBarᵢE hstarW
   obtain ⟨zK, hzK⟩ :=
     v.descend_maximalUnramifiedNorm_unit K L hLK φ hφ w hwMem hfixedZ
   let powerT : ambientFixedAddSubgroup A T :=
@@ -368,23 +354,22 @@ theorem universalNormDescent_mem_finiteUnitNormRange
     ∑ i : Fin n, v.frobeniusFixedFieldUnitAction KR L hLK σn
       (φ.1 ^ i.1) (Commute.pow_left hφσn i.1) yBar
   have hsumUnit (f : Fin n → v.unitAddSubgroup TF) :
-      ((∑ i, f i).1.1 : A.V) = ∑ i, (f i).1.1 := by
+      ((∑ i, f i).1.1) = ∑ i, (f i).1.1 := by
     calc
-      ((∑ i, f i).1.1 : A.V) =
+      ((∑ i, f i).1.1) =
           (ambientFixedAddSubgroup A TF.field).subtype
-            (∑ i, (v.unitAddSubgroup TF).subtype (f i)) := by
-        exact congrArg (ambientFixedAddSubgroup A TF.field).subtype
+            (∑ i, (v.unitAddSubgroup TF).subtype (f i)) := congrArg (ambientFixedAddSubgroup A TF.field).subtype
           (map_sum (v.unitAddSubgroup TF).subtype f Finset.univ)
       _ = _ :=
         map_sum (ambientFixedAddSubgroup A TF.field).subtype
           (fun i => (v.unitAddSubgroup TF).subtype (f i)) Finset.univ
   have hsumAmbient (f : Fin n → ambientFixedAddSubgroup A T) :
-      ((∑ i, f i).1 : A.V) = ∑ i, (f i).1 :=
+      ((∑ i, f i).1) = ∑ i, (f i).1 :=
     map_sum (ambientFixedAddSubgroup A T).subtype f Finset.univ
   have hpowerTUnit : powerTUnit.1 = powerT := by
     apply Subtype.ext
     calc
-      (powerTUnit.1.1 : A.V) =
+      (powerTUnit.1.1) =
           ∑ i : Fin n, (v.frobeniusFixedFieldUnitAction KR L hLK σn
             (φ.1 ^ i.1) (Commute.pow_left hφσn i.1) yBar).1.1 :=
         hsumUnit (fun i : Fin n =>
@@ -405,8 +390,8 @@ theorem universalNormDescent_mem_finiteUnitNormRange
     have hpVal := congrArg Subtype.val hpIncl
     change uBar.1.1 - powerTUnit.1.1 = uBar.1.1 - φnyBarE.1
     rw [hpowerTUnit]
-    exact congrArg (fun z => uBar.1.1 - z) hpVal
-  let EST : FiniteAbstractFieldExtension G := fixedTower.extension
+    apply congrArg <;> assumption
+  let EST  := fixedTower.extension
   let yS : v.unitAddSubgroup SF := v.finiteUnitNorm EST yBar
   let uSraw : ambientFixedAddSubgroup A S :=
     ⟨uS.1.1, by
@@ -453,8 +438,7 @@ theorem universalNormDescent_mem_finiteUnitNormRange
   have hySraw : relativeNorm A S T hTS yBar.1 = ySraw := by
     apply Subtype.ext
     rfl
-  have hpowerNormRaw : relativeNorm A S T hTS powerT = powerS := by
-    simpa [powerT, powerS, S, T, σ, σn, hySraw] using hpowerNorm
+  have hpowerNormRaw : relativeNorm A S T hTS powerT = powerS := hpowerNorm
   have hwBarNorm : relativeNorm A S T hTS wBarraw = uSraw - powerS := by
     have hwBarCoe : wBarraw = uBarraw - powerT := by
       apply Subtype.ext
@@ -463,7 +447,7 @@ theorem universalNormDescent_mem_finiteUnitNormRange
         (congrArg Subtype.val hpowerTUnit)
     rw [hwBarCoe]
     rw [map_sub, huBarraw]
-    exact congrArg (fun z => uSraw - z) hpowerNormRaw
+    apply congrArg <;> assumption
   obtain ⟨gS, hgClosure, _hgDegree, hg⟩ :=
     D.frobeniusPowerFixedField_generator KR L hLK φ hφ n n hn hn
   let fixedGenerator :
@@ -487,12 +471,7 @@ theorem universalNormDescent_mem_finiteUnitNormRange
         (relativeNorm A S T hTS wBarraw))) =
       D.frobeniusPowerSum A K.field L hLK σ.1 n
         (J (N (fixedFieldInclusion A T E hTE wBarraw))) := by
-    change
-      J (N (fixedFieldInclusion A S E hSE
-        (relativeNorm A S T hTS wBar.1))) =
-      D.frobeniusPowerSum A K.field L hLK σ.1 n
-        (J (N (fixedFieldInclusion A T E hTE wBar.1))) at hnormW
-    exact hnormW
+    assumption
   have hσfixedZ : D.frobeniusQuotientAction A K.field L hLK σ.1 (J (N w)) =
       J (N w) := by
     let B := D.frobeniusQuotientRepresentation A K.field L hLK
@@ -500,7 +479,7 @@ theorem universalNormDescent_mem_finiteUnitNormRange
       B φ.1 (J (N w)) hfixedZ n
     change D.frobeniusQuotientAction A K.field L hLK
       (φ.1 ^ n) (J (N w)) = J (N w) at hpow
-    simpa only [σ, D.frobeniusPowerOfDegreeOne_coe] using hpow
+    exact hpow
   have hpowerZ : D.frobeniusPowerSum A K.field L hLK σ.1 n (J (N w)) =
       n • J (N w) :=
     D.frobeniusPowerSum_eq_nsmul_of_fixed A K.field L hLK
@@ -571,17 +550,14 @@ theorem universalNormDescent_mem_finiteUnitNormRange
     change Finite
       (P.field.toSubgroup ⧸ extensionSubgroup P.field S hSP)
     exact hPSfinite
-  let EPS : FiniteAbstractFieldExtension G :=
+  let EPS  :=
     FiniteAbstractFieldExtension.ofInclusion
       S (P.toFiniteAbstractField K) hSP
-  let yP : v.unitAddSubgroup (P.toFiniteAbstractField K) := by
-    simpa [SF, EPS, FiniteAbstractFieldExtension.ofInclusion,
-      DegreeData.frobeniusFixedAbstractField] using
-        v.finiteUnitNorm EPS yS
+  let yP : v.unitAddSubgroup (P.toFiniteAbstractField K) := v.finiteUnitNorm EPS yS
   let EP := P.toFiniteAbstractFieldExtension K
   let zP : v.unitAddSubgroup (P.toFiniteAbstractField K) :=
     v.finiteUnitInclusion EP zK
-  let aP : v.unitAddSubgroup (P.toFiniteAbstractField K) := yP + zP
+  let aP  := yP + zP
   let FT : DegreeData.FiniteTower G := {
     top := S
     middle := P.field
@@ -638,30 +614,7 @@ relation for an infinite-level unit forces its maximal-unramified norm to
 descend to a `K`-unit which is a unit norm from every finite intermediate
 field. -/
 theorem universalNormDescent
-    (v : ValuationData D A)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (hAxiom : v.SatisfiesUnramifiedUnitCohomology)
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    [hLfinite : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
-    (φ : D.FrobeniusElements (K.toFiniteResidueAbstractField D) L hLK)
-    (hφ : D.frobeniusExponent
-      (K.toFiniteResidueAbstractField D) L hLK φ = 1)
-    {ι : Type*} (s : Finset ι)
-    (τ : ι →
-      (D.extensionNormalizedDegreeContinuous
-        (K.toFiniteResidueAbstractField D) L hLK).toMonoidHom.ker)
-    (u : v.infiniteUnitAddSubgroup (D.maximalUnramifiedField L) K
-      (D.maximalUnramifiedField_le_of_le hLK))
-    (uᵢ : ι → v.infiniteUnitAddSubgroup (D.maximalUnramifiedField L) K
-      (D.maximalUnramifiedField_le_of_le hLK))
-    (hstar : D.frobeniusQuotientAction A K.field L hLK φ.1 u.1 - u.1 =
-      ∑ i ∈ s,
-        (D.frobeniusQuotientAction A K.field L hLK (τ i).1 (uᵢ i).1 -
-          (uᵢ i).1)) :
+      :
     letI : Finite
         ((D.maximalUnramifiedField K.field).toSubgroup ⧸
           extensionSubgroup (D.maximalUnramifiedField K.field)
@@ -675,19 +628,16 @@ theorem universalNormDescent
           (D.maximalUnramifiedField L)
           (D.maximalUnramifiedField_mono hLK) u.1 ∧
       aK.1 ∈ v.infiniteUnitNormSubgroup (D.maximalUnramifiedField L) K := by
-  let : Finite
-      ((D.maximalUnramifiedField K.field).toSubgroup ⧸
-        extensionSubgroup (D.maximalUnramifiedField K.field)
-          (D.maximalUnramifiedField L)
-          (D.maximalUnramifiedField_mono hLK)) :=
+  let  :=
     D.maximalUnramifiedExtension_finite K.field L hLK
   obtain ⟨aK, haK⟩ := v.universalNormDescent_endpoint_descent K L hLK φ hφ
     s τ u uᵢ hstar
   refine ⟨aK, haK, ?_⟩
   rw [v.mem_infiniteUnitNormSubgroup_iff]
   intro M
-  exact v.universalNormDescent_mem_finiteUnitNormRange hAxiom K L hLK φ hφ
-    s τ u uᵢ hstar aK haK M
+  apply v.universalNormDescent_mem_finiteUnitNormRange <;> assumption
+end
+
 
 end ValuationData
 

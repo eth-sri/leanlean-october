@@ -24,15 +24,15 @@ variable (C : KPGlobalTorusFiniteStages.LocalFiberData F R.A.zeta12 R.A.primitiv
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 local notation "Core" => RestrictedTensorSimple.Core (Plus R.A P C) (plusReference R.A P C) (bad R.A P C)
-variable (D : KPGlobalTorusInducingPlan.ModelData F R.A.zeta12 R.A.primitive_zeta12)
+
 variable (HR : KPSmoothLocalQuotientCharts.HaarRecipe F R.A.zeta12 R.A.primitive_zeta12)
 variable (HP : KPMsFixedHaarDisintegration.SphericalTransport F R.A.zeta12 R.A.primitive_zeta12)
-variable (M : NativeMeasuredSource F R.A.zeta12 R.A.primitive_zeta12 HR HP)
+
 variable (U : Level F R.A.zeta12 R.A.primitive_zeta12)
 local notation "H" => nativeFamily F ζ hζ HR HP
 local notation "V" => EisensteinSmoothGerms.ScalarSource.atlasLevel F ζ hζ U
-local instance ResidualQuotientWordsMeasurable (K : Subgroup (KPLiteralRaw.G F ζ hζ)) : MeasurableSpace K := borel K
-local instance ResidualQuotientWordsBorel (K : Subgroup (KPLiteralRaw.G F ζ hζ)) : BorelSpace K := ⟨rfl⟩
+
+
 
 open ResidualWeakEnergy KPContActualSphericalRightFieldIdentification
 open KPMsClearedTruncationL2.NativeWordBridge

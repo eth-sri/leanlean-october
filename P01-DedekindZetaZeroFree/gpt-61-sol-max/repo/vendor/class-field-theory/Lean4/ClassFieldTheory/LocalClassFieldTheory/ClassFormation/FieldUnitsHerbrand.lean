@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import Mathlib.SetTheory.Cardinal.Finite
 public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.CohomologyBridge
 public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.Hilbert90
@@ -7,6 +9,7 @@ public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.ValuationHer
 public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.ValueGroupCohomology
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -101,10 +104,8 @@ theorem fieldUnits_tate_card_of_integerUnits_herbrand_eq_one
       K L g hg hU with ⟨hField, hmult⟩
   let : Finite (HerbrandH0 (Gal(L / K)) Lˣ) := hField.1
   let : Finite (HerbrandHMinusOne (Gal(L / K)) Lˣ g) := hField.2
-  let : Finite
-      (HerbrandH0 (Gal(L / K)) (Multiplicative Int)) := hZ.1
-  let : Finite
-      (HerbrandHMinusOne (Gal(L / K)) (Multiplicative Int) g) := hZ.2
+  let  := hZ.1
+  let  := hZ.2
   have hZ0 :
       Nat.card (HerbrandH0 (Gal(L / K)) (Multiplicative Int)) =
         Module.finrank K L :=
@@ -119,12 +120,10 @@ theorem fieldUnits_tate_card_of_integerUnits_herbrand_eq_one
         (Module.finrank K L : ℚ) := by
     rw [herbrandQuotient_eq_card_ratio, hZ0, hZm1]
     simp
-  have hm1_actual :
-      Nat.card (tateCohomology (Rep.ofAlgebraAutOnUnits K L) (-1)) = 1 :=
+  have hm1_actual  :=
     unitsTateHminusOne_card_eq_one K L g hg
   have hm1_field :
-      Nat.card (HerbrandHMinusOne (Gal(L / K)) Lˣ g) = 1 := by
-    exact (Nat.card_congr
+      Nat.card (HerbrandHMinusOne (Gal(L / K)) Lˣ g) = 1 := (Nat.card_congr
       (herbrandHminusOneEquivUnitsTateHminusOne K L g hg)).trans hm1_actual
   have hField_quotient :
       @herbrandQuotient (Gal(L / K)) Lˣ _ _ _

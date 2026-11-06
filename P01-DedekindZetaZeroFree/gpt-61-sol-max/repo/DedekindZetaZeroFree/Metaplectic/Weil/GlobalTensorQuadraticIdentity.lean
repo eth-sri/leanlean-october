@@ -234,8 +234,8 @@ private theorem recombination_fieldMul_coordinates (T : Finset (HeightOneSpectru
 local instance recombinationCompletionMeasurable (v : HeightOneSpectrum (𝓞 F)) :
     MeasurableSpace (v.adicCompletion F) := borel _
 
-local instance recombinationCompletionBorel (v : HeightOneSpectrum (𝓞 F)) :
-    BorelSpace (v.adicCompletion F) := ⟨rfl⟩
+
+
 
 private theorem recombination_fourier_tensor (A : SArithmeticData F)
     (T : Finset (HeightOneSpectrum (𝓞 F)))

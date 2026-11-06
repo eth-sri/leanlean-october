@@ -25,8 +25,8 @@ variable (coordinates : ∀ ε : Sign,
   sectionSpace S.borel P ε 0 ≃ₗ[ℂ] scalarSections F ζ hζ q S P hP ε)
 
 variable (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
-  (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
-  (ξ : (valuation (LocalField F q)).integer) (hξ : IsPrimitiveRoot ξ 3)
+  
+  (ξ : (valuation (LocalField F q)).integer) 
 
 def deformedTest (f : scalarSections F ζ hζ q S P hP .minus) (s : ℂ) :
     sectionSpace S.borel P .minus (sourceParameter .minus s) :=

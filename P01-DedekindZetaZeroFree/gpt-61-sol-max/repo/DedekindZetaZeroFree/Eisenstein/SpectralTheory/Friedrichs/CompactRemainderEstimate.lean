@@ -24,8 +24,11 @@ variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
 variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
 variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 
+
+local notation:max "current_collarError" => collarError F ζ hζ U R P H
+
 def errorSup {T : ℝ} (partition : SquareEndPartition F ζ hζ U R P H T) : ℝ :=
-  sSup (Set.range (collarError F ζ hζ U R P H partition.χ₀ partition.χ))
+  sSup (Set.range (current_collarError partition.χ₀ partition.χ))
 
 def coefficient (ε : ℝ) {T : ℝ}
     (partition : SquareEndPartition F ζ hζ U R P H T) : ℝ :=
@@ -49,11 +52,17 @@ local notation "dF" => KPContActualCuspRadialFormComparison.d F
 local notation "μcov" => KPContSectorFixedPushforwardSupport.coveredMeasure F ζ hζ R U
 local notation "qcov" => KPContSectorCoveredQuotientVocabulary.q F ζ hζ U
 
+
+local notation:max "current_coefficient" => coefficient F ζ hζ U R P H
+
 def Kε (ε : ℝ) {T : ℝ} (partition : SquareEndPartition F ζ hζ U R P H T)
     (multiplier : MultiplierData F ζ hζ U R P H μG hμG hR realization
       (fun x => (partition.ρ.val x : ℂ))) : HU →L[ℂ] HU :=
-  (Real.sqrt (coefficient F ζ hζ U R P H ε partition) : ℂ) •
+  (Real.sqrt (current_coefficient ε partition) : ℂ) •
     (multiplier.M_ρ.comp BU)
+
+
+local notation:max "current_Cusp" => KPContActualCuspRadialFormComparison.Cusp F ζ hζ U R P H
 
 structure Construction (ε : ℝ) where
   positive_dimension : 0 < dF
@@ -63,7 +72,7 @@ structure Construction (ε : ℝ) where
   T : ℝ
   above_end_starts : AboveEndStarts F ζ hζ U R P H T
 
-  exterior_bound : ∀ (c : KPContActualCuspRadialFormComparison.Cusp F ζ hζ U R P H)
+  exterior_bound : ∀ (c : current_Cusp)
       (f : KPContActualSectorSmoothTestModules.S_U F ζ hζ U R P H),
     KPContActualSectorSmoothTestModules.scalarSupport f.val ⊆
       KPContActualCuspRadialFormComparison.endSet F ζ hζ U R P H c T →
@@ -81,20 +90,20 @@ structure Construction (ε : ℝ) where
 
   multiplier_binding : multiplier.M_ρ = partition.rho_multiplier.op
   error_sup_nonnegative : 0 ≤ errorSup F ζ hζ U R P H partition
-  error_le_sup : ∀ x, collarError F ζ hζ U R P H partition.χ₀ partition.χ x ≤
+  error_le_sup : ∀ x, current_collarError partition.χ₀ partition.χ x ≤
     errorSup F ζ hζ U R P H partition
-  coefficient_nonnegative : 0 ≤ coefficient F ζ hζ U R P H ε partition
+  coefficient_nonnegative : 0 ≤ current_coefficient ε partition
 
   form_bound : ∀ v : Q,
     (dF - min (ε / 2) (dF / 2)) * ‖jU v‖ ^ 2 ≤
-      qU v + coefficient F ζ hζ U R P H ε partition * ‖multiplier.M_ρ (jU v)‖ ^ 2
+      qU v + current_coefficient ε partition * ‖multiplier.M_ρ (jU v)‖ ^ 2
 
   inverse_form_energy : ∀ u : HU, qU (bU u) = (inner ℂ (BU u) (u - BU u)).re
   remainder_compact : IsCompactOperator
     (Kε F ζ hζ U R P H μG hμG hR realization ε partition multiplier)
   remainder_norm_sq : ∀ u : HU,
     ‖Kε F ζ hζ U R P H μG hμG hR realization ε partition multiplier u‖ ^ 2 =
-      coefficient F ζ hζ U R P H ε partition * ‖multiplier.M_ρ (BU u)‖ ^ 2
+      current_coefficient ε partition * ‖multiplier.M_ρ (BU u)‖ ^ 2
   remainder_estimate : ∀ u : HU,
     (dF - ε) * ‖BU u‖ ^ 2 ≤ (inner ℂ (BU u) (u - BU u)).re +
       ‖Kε F ζ hζ U R P H μG hμG hR realization ε partition multiplier u‖ ^ 2
@@ -168,17 +177,20 @@ private theorem norm_sq_ofReal_mul (r : ℝ) (hr : 0 ≤ r) (z : ℂ) :
     ‖(r : ℂ) * z‖ ^ 2 = r ^ 2 * ‖z‖ ^ 2 := by
   rw [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hr, mul_pow]
 
+
+local notation:max "current_sectionNorm" => KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ U R P H
+
 private theorem measurable_sectionNorm_here (s : KPContSectorLineL2Isometry.BorelL2Sections F ζ hζ U R P H) :
-    Measurable (KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ U R P H s.val) := by
+    Measurable (current_sectionNorm s.val) := by
   have hme : Measurable (fun x =>
-      KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ U R P H s.val x ^ 2) := by
+      current_sectionNorm s.val x ^ 2) := by
     have h := ENNReal.measurable_toReal.comp
       (KPContSectorLineL2Isometry.squaredNorm_measurable F ζ hζ U R P H s.val s.property.1)
     simpa only [Function.comp_def, KPContSectorLineL2Isometry.squaredNorm,
       ENNReal.toReal_ofReal (sq_nonneg _)] using h
-  have heq : KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ U R P H s.val =
+  have heq : current_sectionNorm s.val =
       fun x => Real.sqrt
-        (KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ U R P H s.val x ^ 2) := by
+        (current_sectionNorm s.val x ^ 2) := by
     funext x
     rw [Real.sqrt_sq_eq_abs, abs_of_nonneg]
     obtain ⟨⟨i, w⟩, rfl⟩ := (H.atlas U).components.surjective x
@@ -192,12 +204,12 @@ private theorem weighted_integral_eq_here {T : ℝ}
     (w : Q) (s : KPContSectorLineL2Isometry.BorelL2Sections F ζ hζ U R P H)
     (hs : KPContSectorLineL2Isometry.sectorLineIsometry F ζ hζ U R P H (jU w) =
       KPContSectorLineL2Isometry.mk F ζ hζ U R P H s) :
-    (∫ x, collarError F ζ hζ U R P H partition.χ₀ partition.χ
+    (∫ x, current_collarError partition.χ₀ partition.χ
         (KPContSectorCoveredQuotientVocabulary.q F ζ hζ U x) *
         ‖(jU w).val x‖ ^ 2
         ∂KPContSectorFixedPushforwardSupport.coveredMeasure F ζ hζ R U) =
-      ∫ x, collarError F ζ hζ U R P H partition.χ₀ partition.χ x *
-        KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ U R P H s.val x ^ 2
+      ∫ x, current_collarError partition.χ₀ partition.χ x *
+        current_sectionNorm s.val x ^ 2
         ∂KPContActualSectorCotangentL2.muU F ζ hζ U R P := by
   have hs' : (KPContSectorLineL2Isometry.lineToSector F ζ hζ U R P H).symm
       (jU w) = KPContSectorLineL2Isometry.mk F ζ hζ U R P H s := hs
@@ -214,11 +226,11 @@ private theorem weighted_integral_eq_here {T : ℝ}
       =ᵐ[KPContSectorFixedPushforwardSupport.coveredMeasure F ζ hζ R U]
         (KPContSectorLineL2Isometry.scalarRepresentative F ζ hζ U R P H s.val).val :=
     (KPContSectorLineL2Isometry.representative_memLp F ζ hζ U R P H s).coeFn_toLp
-  have hstep1 : (∫ x, collarError F ζ hζ U R P H partition.χ₀ partition.χ
+  have hstep1 : (∫ x, current_collarError partition.χ₀ partition.χ
         (KPContSectorCoveredQuotientVocabulary.q F ζ hζ U x) *
         ‖(jU w).val x‖ ^ 2
         ∂KPContSectorFixedPushforwardSupport.coveredMeasure F ζ hζ R U) =
-      ∫ x, collarError F ζ hζ U R P H partition.χ₀ partition.χ
+      ∫ x, current_collarError partition.χ₀ partition.χ
         (KPContSectorCoveredQuotientVocabulary.q F ζ hζ U x) *
         ‖(KPContSectorLineL2Isometry.scalarRepresentative F ζ hζ U R P H s.val).val x‖ ^ 2
         ∂KPContSectorFixedPushforwardSupport.coveredMeasure F ζ hζ R U := by
@@ -236,17 +248,17 @@ private theorem weighted_integral_eq_here {T : ℝ}
     have hS : KPContSectorScalarLineAlgebra.S F ζ hζ U R P H
         (KPContSectorLineL2Isometry.scalarRepresentative F ζ hζ U R P H s.val) = s.val :=
       (KPContSectorScalarLineAlgebra.S F ζ hζ U R P H).apply_symm_apply s.val
-    have hsn : KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ U R P H s.val
+    have hsn : current_sectionNorm s.val
         (KPContSectorCoveredQuotientVocabulary.q F ζ hζ U x) =
         ‖(KPContSectorLineL2Isometry.scalarRepresentative F ζ hζ U R P H s.val).val x‖ := by
       conv_lhs => rw [← hS]
       exact KPContSectorSmoothFramesSupport.sectionNorm_pullback F ζ hζ U R P H _ x
     rw [hsn]
   · exact (KPContSectorQuotientRelationsComparison.q_continuous F ζ hζ U).aemeasurable
-  · have hEc : Continuous (collarError F ζ hζ U R P H partition.χ₀ partition.χ) :=
+  · have hEc : Continuous (current_collarError partition.χ₀ partition.χ) :=
       collarError_continuous_nonnegative F ζ hζ U R P H partition.χ₀ partition.χ |>.1
-    have hm : Measurable (fun y => collarError F ζ hζ U R P H partition.χ₀ partition.χ y *
-        KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ U R P H s.val y ^ 2) :=
+    have hm : Measurable (fun y => current_collarError partition.χ₀ partition.χ y *
+        current_sectionNorm s.val y ^ 2) :=
       hEc.measurable.mul ((measurable_sectionNorm_here F ζ hζ U R P H s).pow_const 2)
     exact hm.aestronglyMeasurable
 
@@ -319,23 +331,23 @@ theorem construction_nonempty (ε : ℝ) (hε : 0 < ε) :
   obtain ⟨mult⟩ :=
     multiplierData_nonempty F ζ hζ U R P H μG hμG hR realization
       (fun x => (part.ρ.val x : ℂ)) hρsm hρc
-  have hsupBdd : BddAbove (Set.range (collarError F ζ hζ U R P H part.χ₀ part.χ)) := by
+  have hsupBdd : BddAbove (Set.range (current_collarError part.χ₀ part.χ)) := by
     obtain ⟨C, _, hC⟩ := part.error_bounded
     exact ⟨C, by rintro _ ⟨x, rfl⟩; exact hC x⟩
   have hsup : 0 ≤ errorSup F ζ hζ U R P H part := by
     rw [errorSup]
     rcases Set.eq_empty_or_nonempty
-      (Set.range (collarError F ζ hζ U R P H part.χ₀ part.χ)) with h | hne
+      (Set.range (current_collarError part.χ₀ part.χ)) with h | hne
     · rw [h, Real.sSup_empty]
     · obtain ⟨y, hy⟩ := hne
       obtain ⟨x, rfl⟩ := hy
       exact le_trans (part.error_nonnegative x) (le_csSup hsupBdd (Set.mem_range_self x))
-  have hle : ∀ x, collarError F ζ hζ U R P H part.χ₀ part.χ x ≤
+  have hle : ∀ x, current_collarError part.χ₀ part.χ x ≤
       errorSup F ζ hζ U R P H part := by
     intro x
     rw [errorSup]
     exact le_csSup hsupBdd (Set.mem_range_self x)
-  have hcoef : 0 ≤ coefficient F ζ hζ U R P H ε part := by
+  have hcoef : 0 ≤ current_coefficient ε part := by
     rw [coefficient]
     exact add_nonneg (le_of_lt hapos) hsup
   have hbind : mult.M_ρ = part.rho_multiplier.op := by
@@ -346,22 +358,22 @@ theorem construction_nonempty (ε : ℝ) (hε : 0 < ε) :
       (Kε F ζ hζ U R P H μG hμG hR realization ε part mult) := by
     rw [Kε]
     exact mult.localized_compact.smul
-      (Real.sqrt (coefficient F ζ hζ U R P H ε part) : ℂ)
-  have hsqrt : ‖(Real.sqrt (coefficient F ζ hζ U R P H ε part) : ℂ)‖ =
-      Real.sqrt (coefficient F ζ hζ U R P H ε part) := by
-    rw [show (Real.sqrt (coefficient F ζ hζ U R P H ε part) : ℂ) =
-        algebraMap ℝ ℂ (Real.sqrt (coefficient F ζ hζ U R P H ε part)) from rfl,
+      (Real.sqrt (current_coefficient ε part) : ℂ)
+  have hsqrt : ‖(Real.sqrt (current_coefficient ε part) : ℂ)‖ =
+      Real.sqrt (current_coefficient ε part) := by
+    rw [show (Real.sqrt (current_coefficient ε part) : ℂ) =
+        algebraMap ℝ ℂ (Real.sqrt (current_coefficient ε part)) from rfl,
       RCLike.norm_ofReal, abs_of_nonneg (Real.sqrt_nonneg _)]
   have hnsq : ∀ u : HU, ‖Kε F ζ hζ U R P H μG hμG hR realization ε part mult u‖ ^ 2 =
-      coefficient F ζ hζ U R P H ε part * ‖mult.M_ρ (BU u)‖ ^ 2 := by
+      current_coefficient ε part * ‖mult.M_ρ (BU u)‖ ^ 2 := by
     intro u
     rw [Kε, ContinuousLinearMap.smul_apply, ContinuousLinearMap.comp_apply, norm_smul,
       hsqrt, mul_pow, Real.sq_sqrt hcoef]
   have hformbound : ∀ v : Q,
       (dF - min (ε / 2) (dF / 2)) * ‖jU v‖ ^ 2 ≤
-        qU v + coefficient F ζ hζ U R P H ε part * ‖mult.M_ρ (jU v)‖ ^ 2 := by
+        qU v + current_coefficient ε part * ‖mult.M_ρ (jU v)‖ ^ 2 := by
 
-    have hcusp : ∀ (c : KPContActualCuspRadialFormComparison.Cusp F ζ hζ U R P H) (v : Q),
+    have hcusp : ∀ (c : current_Cusp) (v : Q),
         (dF - min (ε / 2) (dF / 2)) * ‖jU (ims.A (some c) v)‖ ^ 2 ≤
           qU (ims.A (some c) v) := by
       intro c
@@ -433,35 +445,35 @@ theorem construction_nonempty (ε : ℝ) (hε : 0 < ε) :
     have hsplit : ∑ i : KPContActualFormIMSIdentity.Index F ζ hζ U R P H,
         ‖jU (ims.A i v)‖ ^ 2 =
         ‖jU (ims.A none v)‖ ^ 2 +
-          ∑ c : KPContActualCuspRadialFormComparison.Cusp F ζ hζ U R P H,
+          ∑ c : current_Cusp,
             ‖jU (ims.A (some c) v)‖ ^ 2 := Fintype.sum_option _
     have hcore_nonneg : 0 ≤ qU (ims.A none v) := by
       show 0 ≤ ‖KPContActualFormIMSIdentity.closedGradient F ζ hζ U R P H μG hμG hR
         realization (ims.A none v)‖ ^ 2
       positivity
-    have hcusp_sum : ∑ c : KPContActualCuspRadialFormComparison.Cusp F ζ hζ U R P H,
+    have hcusp_sum : ∑ c : current_Cusp,
         (dF - min (ε / 2) (dF / 2)) * ‖jU (ims.A (some c) v)‖ ^ 2 ≤
-        ∑ c : KPContActualCuspRadialFormComparison.Cusp F ζ hζ U R P H,
+        ∑ c : current_Cusp,
           qU (ims.A (some c) v) :=
       Finset.sum_le_sum (fun c _ => hcusp c v)
-    have hsum_opt : ∑ c : KPContActualCuspRadialFormComparison.Cusp F ζ hζ U R P H,
+    have hsum_opt : ∑ c : current_Cusp,
         qU (ims.A (some c) v) ≤
         ∑ i : KPContActualFormIMSIdentity.Index F ζ hζ U R P H, qU (ims.A i v) := by
       rw [Fintype.sum_option (fun i => qU (ims.A i v))]
       exact le_add_of_nonneg_left hcore_nonneg
 
     have herr : (dF - min (ε / 2) (dF / 2)) * ‖jU (ims.A none v)‖ ^ 2 +
-        (∫ x, collarError F ζ hζ U R P H part.χ₀ part.χ x *
-          KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ U R P H s.val x ^ 2
+        (∫ x, current_collarError part.χ₀ part.χ x *
+          current_sectionNorm s.val x ^ 2
           ∂KPContActualSectorCotangentL2.muU F ζ hζ U R P) ≤
-        coefficient F ζ hζ U R P H ε part * ‖mult.M_ρ (jU v)‖ ^ 2 := by
+        current_coefficient ε part * ‖mult.M_ρ (jU v)‖ ^ 2 := by
         have ha : (0 : ℝ) ≤ dF - min (ε / 2) (dF / 2) := le_of_lt hapos
 
         obtain ⟨V, _hVopen, hVsub, hVone⟩ := part.rho_one_neighborhood
         have hpt : ∀ x : KPContActualSquareEndPartition.Base F ζ hζ U,
             (dF - min (ε / 2) (dF / 2)) * part.χ₀.val x ^ 2 +
-              collarError F ζ hζ U R P H part.χ₀ part.χ x ≤
-            coefficient F ζ hζ U R P H ε part * part.ρ.val x ^ 2 := by
+              current_collarError part.χ₀ part.χ x ≤
+            current_coefficient ε part * part.ρ.val x ^ 2 := by
           intro x
           by_cases hx : x ∈ V
           · have h1 : part.ρ.val x = 1 := hVone x hx
@@ -475,7 +487,7 @@ theorem construction_nonempty (ε : ℝ) (hε : 0 < ε) :
           · have hχ0 : part.χ₀.val x = 0 := by
               by_contra h
               exact hx (hVsub (Or.inl (subset_closure (Function.mem_support.mpr h))))
-            have hE0 : collarError F ζ hζ U R P H part.χ₀ part.χ x = 0 := by
+            have hE0 : current_collarError part.χ₀ part.χ x = 0 := by
               by_contra h
               exact hx (hVsub (Or.inr (subset_closure (Function.mem_support.mpr h))))
             rw [hχ0, hE0]
@@ -496,11 +508,11 @@ theorem construction_nonempty (ε : ℝ) (hε : 0 < ε) :
               ‖(part.core_multiplier.op (jU v)).val x‖ ^ 2) μcov :=
           hcore_sq.const_mul _
         have hrho_int : Integrable (fun x =>
-            coefficient F ζ hζ U R P H ε part *
+            current_coefficient ε part *
               ‖(part.rho_multiplier.op (jU v)).val x‖ ^ 2) μcov :=
           hrho_sq.const_mul _
         have hE_int : Integrable (fun x =>
-            collarError F ζ hζ U R P H part.χ₀ part.χ (qcov x) *
+            current_collarError part.χ₀ part.χ (qcov x) *
               ‖(jU v).val x‖ ^ 2) μcov := by
           refine Integrable.mono_nonneg
             (g := fun x => errorSup F ζ hζ U R P H part * ‖(jU v).val x‖ ^ 2)
@@ -519,24 +531,24 @@ theorem construction_nonempty (ε : ℝ) (hε : 0 < ε) :
         have hpt_ae : (fun x =>
             (dF - min (ε / 2) (dF / 2)) *
                 ‖(part.core_multiplier.op (jU v)).val x‖ ^ 2 +
-              collarError F ζ hζ U R P H part.χ₀ part.χ (qcov x) *
+              current_collarError part.χ₀ part.χ (qcov x) *
                 ‖(jU v).val x‖ ^ 2)
-            ≤ᵐ[μcov] fun x => coefficient F ζ hζ U R P H ε part *
+            ≤ᵐ[μcov] fun x => current_coefficient ε part *
               ‖(part.rho_multiplier.op (jU v)).val x‖ ^ 2 := by
           filter_upwards [hcore_ae, hrho_ae] with x hcx hrx
           rw [hcx, hrx, norm_sq_ofReal_mul _ (part.core_range (qcov x)).1,
             norm_sq_ofReal_mul _ (part.rho_range (qcov x)).1]
           calc (dF - min (ε / 2) (dF / 2)) *
                 (part.χ₀.val (qcov x) ^ 2 * ‖(jU v).val x‖ ^ 2) +
-                collarError F ζ hζ U R P H part.χ₀ part.χ (qcov x) *
+                current_collarError part.χ₀ part.χ (qcov x) *
                   ‖(jU v).val x‖ ^ 2
               = ((dF - min (ε / 2) (dF / 2)) * part.χ₀.val (qcov x) ^ 2 +
-                  collarError F ζ hζ U R P H part.χ₀ part.χ (qcov x)) *
+                  current_collarError part.χ₀ part.χ (qcov x)) *
                   ‖(jU v).val x‖ ^ 2 := by ring
-            _ ≤ (coefficient F ζ hζ U R P H ε part * part.ρ.val (qcov x) ^ 2) *
+            _ ≤ (current_coefficient ε part * part.ρ.val (qcov x) ^ 2) *
                   ‖(jU v).val x‖ ^ 2 :=
                 mul_le_mul_of_nonneg_right (hpt (qcov x)) (sq_nonneg _)
-            _ = coefficient F ζ hζ U R P H ε part *
+            _ = current_coefficient ε part *
                   (part.ρ.val (qcov x) ^ 2 * ‖(jU v).val x‖ ^ 2) := by ring
         have hA0 : jU (ims.A none v) = part.core_multiplier.op (jU v) := by
           have h := DFunLike.congr_fun (ims.intertwines none) v
@@ -555,7 +567,7 @@ theorem construction_nonempty (ε : ℝ) (hε : 0 < ε) :
           ← MeasureTheory.integral_const_mul (dF - min (ε / 2) (dF / 2))
             (fun x => ‖(part.core_multiplier.op (jU v)).val x‖ ^ 2),
           ← MeasureTheory.integral_add hcore_int hE_int,
-          ← MeasureTheory.integral_const_mul (coefficient F ζ hζ U R P H ε part)
+          ← MeasureTheory.integral_const_mul (current_coefficient ε part)
             (fun x => ‖(part.rho_multiplier.op (jU v)).val x‖ ^ 2)]
         exact MeasureTheory.integral_mono_of_nonneg
           (Filter.Eventually.of_forall fun x =>
@@ -567,27 +579,27 @@ theorem construction_nonempty (ε : ℝ) (hε : 0 < ε) :
             ∑ i : KPContActualFormIMSIdentity.Index F ζ hζ U R P H, ‖jU (ims.A i v)‖ ^ 2 := by
           rw [ims.mass]
       _ = (dF - min (ε / 2) (dF / 2)) * (‖jU (ims.A none v)‖ ^ 2 +
-            ∑ c : KPContActualCuspRadialFormComparison.Cusp F ζ hζ U R P H,
+            ∑ c : current_Cusp,
               ‖jU (ims.A (some c) v)‖ ^ 2) := by rw [hsplit]
       _ = (dF - min (ε / 2) (dF / 2)) * ‖jU (ims.A none v)‖ ^ 2 +
-            ∑ c : KPContActualCuspRadialFormComparison.Cusp F ζ hζ U R P H,
+            ∑ c : current_Cusp,
               (dF - min (ε / 2) (dF / 2)) * ‖jU (ims.A (some c) v)‖ ^ 2 := by
           rw [mul_add, Finset.mul_sum]
       _ ≤ (dF - min (ε / 2) (dF / 2)) * ‖jU (ims.A none v)‖ ^ 2 +
-            ∑ c : KPContActualCuspRadialFormComparison.Cusp F ζ hζ U R P H,
+            ∑ c : current_Cusp,
               qU (ims.A (some c) v) := by linarith [hcusp_sum]
       _ ≤ (dF - min (ε / 2) (dF / 2)) * ‖jU (ims.A none v)‖ ^ 2 +
             ∑ i : KPContActualFormIMSIdentity.Index F ζ hζ U R P H, qU (ims.A i v) :=
           by linarith [hsum_opt]
       _ = (dF - min (ε / 2) (dF / 2)) * ‖jU (ims.A none v)‖ ^ 2 +
-            (qU v + ∫ x, collarError F ζ hζ U R P H part.χ₀ part.χ x *
-              KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ U R P H s.val x ^ 2
+            (qU v + ∫ x, current_collarError part.χ₀ part.χ x *
+              current_sectionNorm s.val x ^ 2
               ∂KPContActualSectorCotangentL2.muU F ζ hζ U R P) := by rw [hims]
       _ = qU v + ((dF - min (ε / 2) (dF / 2)) * ‖jU (ims.A none v)‖ ^ 2 +
-            ∫ x, collarError F ζ hζ U R P H part.χ₀ part.χ x *
-              KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ U R P H s.val x ^ 2
+            ∫ x, current_collarError part.χ₀ part.χ x *
+              current_sectionNorm s.val x ^ 2
               ∂KPContActualSectorCotangentL2.muU F ζ hζ U R P) := by ring
-      _ ≤ qU v + coefficient F ζ hζ U R P H ε part * ‖mult.M_ρ (jU v)‖ ^ 2 :=
+      _ ≤ qU v + current_coefficient ε part * ‖mult.M_ρ (jU v)‖ ^ 2 :=
           by linarith [herr]
   have hjbU : ∀ u : HU, jU (bU u) = BU u := fun u => by
     have h := DFunLike.congr_fun

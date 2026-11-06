@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import Mathlib.GroupTheory.OrderOfElement
 public import Mathlib.Order.Iterate
 public import ValuedFieldTheory.Ramification.HilbertRamification.CharacterMap
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -42,7 +45,7 @@ theorem valuation_decomposition_apply_eq_of_isOfFinOrder
     change (σ : L ≃ₐ[K] L) (c : L) * (σ : L ≃ₐ[K] L) b =
       (σ : L ≃ₐ[K] L) a
     rw [← map_mul, hc]
-  let f : A.ValueGroup → A.ValueGroup := fun γ =>
+  let f  := fun γ =>
     A.valuation ((σ : L ≃ₐ[K] L)
       (Function.surjInv A.valuation_surjective γ))
   have hfv (a : L) :
@@ -87,16 +90,16 @@ theorem mem_valueTrivialInertiaGroup_of_isOfFinOrder
   rw [map_div₀, valuation_decomposition_apply_eq_of_isOfFinOrder K A
     (σ : decompositionGroup K A)
     ((inertiaGroup K A).subtype.isOfFinOrder hσ)]
-  exact div_self (A.valuation.ne_zero_iff.mpr x.ne_zero)
+  apply div_self <;> aesop
 
-/-- Finite inertia acts trivially on the actual value group, without any
-finiteness assumption on the full group of field automorphisms. -/
-theorem valueTrivialInertiaGroup_eq_top_of_finite
-    (A : _root_.ValuationSubring L) [Finite (inertiaGroup K A)] :
-    valueTrivialInertiaGroup K A = ⊤ := by
-  apply top_unique
-  intro σ _
-  exact mem_valueTrivialInertiaGroup_of_isOfFinOrder K A σ (isOfFinOrder_of_finite σ)
+
+
+
+
+
+
+
+
 
 end
 

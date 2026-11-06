@@ -27,25 +27,31 @@ open _root_.DedekindZetaZeroFree.KPMsActualAngularCrossLevelFrameSource renaming
 local instance : MulAction (KPCuspArithmetic.PGL2 F) (KPArch.Space (KPCuspLogShape.dimension F)) :=
   KPCuspSiegel.instMulActionPGL2SpaceDimension F
 variable (U V : KPMsActualAngularSource.Level F ζ hζ)
+
+local notation:max "current_nativeAtlas" => nativeAtlas F ζ hζ
+
+
+local notation:max "current_nativeDatum" => nativeDatum F ζ hζ
+
 private theorem nativeFrameTransport
     (j : Cusp S U) (g : KPMsActualAngularSource.G F ζ hζ) :
     ∃ (k : Cusp S V) (h : KPMsActualAngularSource.G F ζ hζ),
       KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g =
         KPSmoothLocalQuotientCharts.quotientMap F ζ hζ h ∧
-      framedFullAngular F ζ hζ (nativeDatum F ζ hζ) (nativeDisintegration F ζ hζ R P S U).radial
+      framedFullAngular F ζ hζ (current_nativeDatum) (nativeDisintegration F ζ hζ R P S U).radial
         (cuspRepresentative S U j) g =
-        framedFullAngular F ζ hζ (nativeDatum F ζ hζ) (nativeDisintegration F ζ hζ R P S V).radial
+        framedFullAngular F ζ hζ (current_nativeDatum) (nativeDisintegration F ζ hζ R P S V).radial
           (cuspRepresentative S V k) h ∧
-      (framedRadius F ζ hζ (nativeDatum F ζ hζ) (cuspRepresentative S U j) g).val =
-        (framedRadius F ζ hζ (nativeDatum F ζ hζ) (cuspRepresentative S V k) h).val ∧
+      (framedRadius F ζ hζ (current_nativeDatum) (cuspRepresentative S U j) g).val =
+        (framedRadius F ζ hζ (current_nativeDatum) (cuspRepresentative S V k) h).val ∧
       ∃ (a : KPSmoothActualFlowData.GInfinity F) (p : KPCuspCharts.Cross F)
         (t : ℝ) (ε : rootsOfUnity 3 F)
         (u : KPGlobalTorusFunctionData.globalLevel F ζ hζ (cofinalLevel F ζ hζ V)),
         KPMsFixedHaarDisintegration.archBasepoint F a = KPCuspSiegel.action F
-          (((nativeAtlas F ζ hζ R P S V).cuspAtlas k.1).representative k.2)
+          (((current_nativeAtlas R P S V).cuspAtlas k.1).representative k.2)
           (KPCuspCharts.toArch F (p,t)) ∧
         h = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a *
-          ((nativeAtlas F ζ hζ R P S V).representative k.1).val *
+          ((current_nativeAtlas R P S V).representative k.1).val *
           KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε * u.val := by
   let σ := cuspRepresentative S U j
   obtain ⟨k,b,a,ε,u,hb,he⟩ := finite_frame S V (σ⁻¹ * g)
@@ -59,43 +65,46 @@ private theorem nativeFrameTransport
     group
   have hq : KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g =
       KPSmoothLocalQuotientCharts.quotientMap F ζ hζ h := by
-    let δ := (((nativeAtlas F ζ hζ R P S V).cuspAtlas k.1).representative k.2) * b *
-      (((nativeAtlas F ζ hζ R P S U).cuspAtlas j.1).representative j.2)⁻¹
+    let δ := (((current_nativeAtlas R P S V).cuspAtlas k.1).representative k.2) * b *
+      (((current_nativeAtlas R P S U).cuspAtlas j.1).representative j.2)⁻¹
     apply (full_quotient_eq_iff_rational_left (F := F) (ζ := ζ) (hζ := hζ) g h).mpr
     refine ⟨δ, ?_⟩
     dsimp only [h,τ,σ,FullSupportGeometry.cuspRepresentative,δ]
     rw [KPMsActualAngularTransitionSource.rationalLift_mul,KPMsActualAngularTransitionSource.rationalLift_mul,KPMsActualAngularTransitionSource.rationalLift_inv]
     group
   let c := (KPCuspCharts.toArchHomeomorph F (KPCuspLogShape.dimension_pos F (nativeFamily F ζ hζ R P).totallyComplex)).symm
-    (KPCuspSiegel.action F (((nativeAtlas F ζ hζ R P S V).cuspAtlas k.1).representative k.2)⁻¹
+    (KPCuspSiegel.action F (((current_nativeAtlas R P S V).cuspAtlas k.1).representative k.2)⁻¹
       (KPMsFixedHaarDisintegration.archBasepoint F a))
   have hc : KPMsFixedHaarDisintegration.archBasepoint F a = KPCuspSiegel.action F
-      (((nativeAtlas F ζ hζ R P S V).cuspAtlas k.1).representative k.2) (KPCuspCharts.toArch F c) := by
+      (((current_nativeAtlas R P S V).cuspAtlas k.1).representative k.2) (KPCuspCharts.toArch F c) := by
     have hc₀ : KPCuspCharts.toArch F c = _ :=
       (KPCuspCharts.toArchHomeomorph F (KPCuspLogShape.dimension_pos F (nativeFamily F ζ hζ R P).totallyComplex)).apply_symm_apply _
     rw [hc₀]
-    exact (smul_inv_smul (((nativeAtlas F ζ hζ R P S V).cuspAtlas k.1).representative k.2)
+    exact (smul_inv_smul (((current_nativeAtlas R P S V).cuspAtlas k.1).representative k.2)
       (KPMsFixedHaarDisintegration.archBasepoint F a)).symm
   refine ⟨k,h,hq,?_,?_,a,c.1,c.2,ε,u,hc,he⟩
-  · exact (frame_change_full_angular (nativeDatum F ζ hζ) _ _ (all_level_radial_slot_eq (nativeFamily F ζ hζ R P) (S.atlasLevel (cofinalLevel F ζ hζ U)) (S.atlasLevel (cofinalLevel F ζ hζ V)))
+  · exact (frame_change_full_angular (current_nativeDatum) _ _ (all_level_radial_slot_eq (nativeFamily F ζ hζ R P) (S.atlasLevel (cofinalLevel F ζ hζ U)) (S.atlasLevel (cofinalLevel F ζ hζ V)))
       σ τ g h y n hframe).symm
-  · have hr := framed_iwasawaNorm_eq_of_delta_one (D := (nativeDatum F ζ hζ)) 1
+  · have hr := framed_iwasawaNorm_eq_of_delta_one (D := (current_nativeDatum)) 1
       (σ⁻¹*g) (τ⁻¹*h) _ n (by simpa only [inv_one,one_mul] using hframe)
       (KPGlobalTorusBorelNormTwistTransport.delta_rational F ζ hζ y)
     simpa only [framedRadius,inv_one,one_mul] using
       (congrArg (fun r : (ℝ≥0)ˣ => ((r : ℝ≥0) : ℝ)) hr).symm
 
+
+local notation:max "current_cuspOffset" => cuspOffset F ζ hζ
+
 private theorem frameCoordinate (j : Cusp S U) (Y : ℝ)
     (hY : OffsetAdmissible F ζ hζ R P S U Y)
     (g : KPMsActualAngularSource.G F ζ hζ)
-    (hg : g ∈ fullCuspDomain S U j (Y / (cuspOffset F ζ hζ R P S U j).val)) :
+    (hg : g ∈ fullCuspDomain S U j (Y / (current_cuspOffset R P S U j).val)) :
     fullCoordinate F ζ hζ R P S U j Y (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g) =
-      framedFullAngular F ζ hζ (nativeDatum F ζ hζ)
+      framedFullAngular F ζ hζ (current_nativeDatum)
         (nativeDisintegration F ζ hζ R P S U).radial (cuspRepresentative S U j) g := by
   let x := KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g
   have hx := quotientMap_mem_cuspEnd_of_mem_fullCuspDomain S U j _ g hg
   have hb := cuspLift_mem_fullCuspDomain S U j _ x hx
-  have hq := (cuspLift_quotient S U j (Y / (cuspOffset F ζ hζ R P S U j).val) x).symm
+  have hq := (cuspLift_quotient S U j (Y / (current_cuspOffset R P S U j).val) x).symm
   exact (actual_full_frame_invariant S U j _ (hY j) g _ hg hb hq).symm
 
 private theorem pointTransport (j : Cusp S U) (Y : ℝ)
@@ -105,36 +114,36 @@ private theorem pointTransport (j : Cusp S U) (Y : ℝ)
     (hx : x ∈ cuspShell F ζ hζ R P S U j Y) :
     ∃ k : Cusp S V, x ∈ cuspShell F ζ hζ R P S V k Y ∧
       fullCoordinate F ζ hζ R P S U j Y x = fullCoordinate F ζ hζ R P S V k Y x := by
-  let z := Y / (cuspOffset F ζ hζ R P S U j).val
+  let z := Y / (current_cuspOffset R P S U j).val
   let g := cuspLift S U j z x
   have hg : g ∈ fullCuspDomain S U j z := cuspLift_mem_fullCuspDomain S U j z x hx.1
   have hqx : KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g = x := cuspLift_quotient S U j z x
   have hrad := radius_eq_offset_modulus S U j z (hU j) x hx.1
-  have hr : Y < (framedRadius F ζ hζ (nativeDatum F ζ hζ) (cuspRepresentative S U j) g).val ∧
-      (framedRadius F ζ hζ (nativeDatum F ζ hζ) (cuspRepresentative S U j) g).val ≤ 2 * Y := by
+  have hr : Y < (framedRadius F ζ hζ (current_nativeDatum) (cuspRepresentative S U j) g).val ∧
+      (framedRadius F ζ hζ (current_nativeDatum) (cuspRepresentative S U j) g).val ≤ 2 * Y := by
     rw [hrad]
     constructor
-    · exact (div_lt_iff₀ (cuspOffset F ζ hζ R P S U j).property).mp hx.2.1 |>.trans_eq (mul_comm _ _)
-    · simpa only [mul_comm] using (le_div_iff₀ (cuspOffset F ζ hζ R P S U j).property).mp hx.2.2
+    · exact (div_lt_iff₀ (current_cuspOffset R P S U j).property).mp hx.2.1 |>.trans_eq (mul_comm _ _)
+    · simpa only [mul_comm] using (le_div_iff₀ (current_cuspOffset R P S U j).property).mp hx.2.2
   obtain ⟨k,h,hq,hang,hrad',a,p,t,ε,u,ha,he⟩ := nativeFrameTransport F ζ hζ R P S U V j g
-  have hn : (framedRadius F ζ hζ (nativeDatum F ζ hζ) (cuspRepresentative S V k) h).val =
-      (cuspOffset F ζ hζ R P S V k).val * Real.exp (2 * (KPCuspLogShape.dimension F : ℝ) * t) := by
-    change ((KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ (nativeDatum F ζ hζ)
+  have hn : (framedRadius F ζ hζ (current_nativeDatum) (cuspRepresentative S V k) h).val =
+      (current_cuspOffset R P S V k).val * Real.exp (2 * (KPCuspLogShape.dimension F : ℝ) * t) := by
+    change ((KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ (current_nativeDatum)
       ((cuspRepresentative S V k)⁻¹ * h) : ℝ≥0) : ℝ) = _
     rw [he]
     exact frame_norm S V k a p t ε u ha
   have ht : KPMsFixedHaarDisintegration.logHeight (F := F)
-      (Y / (cuspOffset F ζ hζ R P S V k).val) < t := by
+      (Y / (current_cuspOffset R P S V k).val) < t := by
     have hl := hr.1
     rw [hrad',hn] at hl
-    have hr' : Y / (cuspOffset F ζ hζ R P S V k).val <
+    have hr' : Y / (current_cuspOffset R P S V k).val <
         Real.exp (2 * (KPCuspLogShape.dimension F : ℝ) * t) := by
-      exact (div_lt_iff₀ (cuspOffset F ζ hζ R P S V k).property).mpr (by simpa only [mul_comm] using hl)
+      exact (div_lt_iff₀ (current_cuspOffset R P S V k).property).mpr (by simpa only [mul_comm] using hl)
     have hd : 0 < 2 * (KPCuspLogShape.dimension F : ℝ) :=
       mul_pos (by norm_num) (Nat.cast_pos.mpr (KPCuspLogShape.dimension_pos F (nativeFamily F ζ hζ R P).totallyComplex))
     apply (div_lt_iff₀ hd).mpr
     simpa only [mul_comm] using (Real.log_lt_iff_lt_exp (hV k).1).mpr hr'
-  have hh : h ∈ fullCuspDomain S V k (Y / (cuspOffset F ζ hζ R P S V k).val) :=
+  have hh : h ∈ fullCuspDomain S V k (Y / (current_cuspOffset R P S V k).val) :=
     ⟨a,p,t,ε,u,ht,ha,he⟩
   have hhx : KPSmoothLocalQuotientCharts.quotientMap F ζ hζ h = x := hq.symm.trans hqx
   have hxend := quotientMap_mem_cuspEnd_of_mem_fullCuspDomain S V k _ h hh
@@ -147,7 +156,7 @@ private theorem pointTransport (j : Cusp S U) (Y : ℝ)
     constructor
     · exact (Real.log_lt_iff_lt_exp (hV k).1).mp ((div_lt_iff₀ (by
         exact mul_pos (by norm_num) (Nat.cast_pos.mpr (KPCuspLogShape.dimension_pos F (nativeFamily F ζ hζ R P).totallyComplex)))).mp ht |>.trans_eq (mul_comm _ _))
-    · apply (le_div_iff₀ (cuspOffset F ζ hζ R P S V k).property).mpr
+    · apply (le_div_iff₀ (current_cuspOffset R P S V k).property).mpr
       have hle := hr.2
       rw [hrad',hn] at hle
       simpa only [mul_comm] using hle
@@ -157,40 +166,40 @@ private theorem pointTransport (j : Cusp S U) (Y : ℝ)
     rw [hhx] at htgt
     exact hsrc.trans (hang.trans htgt.symm)
 private theorem endSet_mono_threshold (j : Cusp S U) (Y : ℝ)
-    (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff (nativeAtlas F ζ hζ R P S U) Y) :
+    (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff (current_nativeAtlas R P S U) Y) :
     KPFiniteCuspAtlas.endSet F
       (KPCuspGenuineMonodromy.Component F ζ hζ (S.atlasLevel (cofinalLevel F ζ hζ U))
-        ((nativeAtlas F ζ hζ R P S U).representative j.1))
-      (((nativeAtlas F ζ hζ R P S U).cuspAtlas j.1).representative j.2)
+        ((current_nativeAtlas R P S U).representative j.1))
+      (((current_nativeAtlas R P S U).cuspAtlas j.1).representative j.2)
       (KPMsFixedHaarDisintegration.logHeight (F := F) Y) ⊆
     KPFiniteCuspAtlas.endSet F
       (KPCuspGenuineMonodromy.Component F ζ hζ (S.atlasLevel (cofinalLevel F ζ hζ U))
-        ((nativeAtlas F ζ hζ R P S U).representative j.1))
-      (((nativeAtlas F ζ hζ R P S U).cuspAtlas j.1).representative j.2)
-      ((nativeAtlas F ζ hζ R P S U).cuspAtlas j.1).threshold := by
+        ((current_nativeAtlas R P S U).representative j.1))
+      (((current_nativeAtlas R P S U).cuspAtlas j.1).representative j.2)
+      ((current_nativeAtlas R P S U).cuspAtlas j.1).threshold := by
   rintro x ⟨w, hw, rfl⟩
   obtain ⟨v, hv, rfl⟩ := hw
-  refine ⟨(((nativeAtlas F ζ hζ R P S U).cuspAtlas j.1).representative j.2) • v, ?_, rfl⟩
+  refine ⟨(((current_nativeAtlas R P S U).cuspAtlas j.1).representative j.2) • v, ?_, rfl⟩
   refine ⟨v, ?_, rfl⟩
-  have hT : ((nativeAtlas F ζ hζ R P S U).cuspAtlas j.1).threshold ≤
+  have hT : ((current_nativeAtlas R P S U).cuspAtlas j.1).threshold ≤
       KPMsFixedHaarDisintegration.logHeight (F := F) Y := by
-    rw [(nativeAtlas F ζ hζ R P S U).common_threshold]
+    rw [(current_nativeAtlas R P S U).common_threshold]
     exact hY.2
   exact lt_of_le_of_lt hT hv
 
 private theorem shiftedEndsDisjoint (Y : ℝ)
     (hY : OffsetAdmissible F ζ hζ R P S U Y) :
-    Pairwise (fun j l : Cusp S U => Disjoint (cuspEnd S U j (Y / (cuspOffset F ζ hζ R P S U j).val)) (cuspEnd S U l (Y / (cuspOffset F ζ hζ R P S U l).val))) := by
+    Pairwise (fun j l : Cusp S U => Disjoint (cuspEnd S U j (Y / (current_cuspOffset R P S U j).val)) (cuspEnd S U l (Y / (current_cuspOffset R P S U l).val))) := by
   intro j l hjl
   apply Set.disjoint_left.mpr
   intro x hxj hxl
   obtain ⟨a, ha, hea⟩ := hxj
   obtain ⟨b, hb, heb⟩ := hxl
-  have hcomp : (nativeAtlas F ζ hζ R P S U).components ⟨j.1,a⟩ =
-      (nativeAtlas F ζ hζ R P S U).components ⟨l.1,b⟩ := by
-    rw [(nativeAtlas F ζ hζ R P S U).components_formula,
-      (nativeAtlas F ζ hζ R P S U).components_formula, hea, heb]
-  have hs := (nativeAtlas F ζ hζ R P S U).components.injective hcomp
+  have hcomp : (current_nativeAtlas R P S U).components ⟨j.1,a⟩ =
+      (current_nativeAtlas R P S U).components ⟨l.1,b⟩ := by
+    rw [(current_nativeAtlas R P S U).components_formula,
+      (current_nativeAtlas R P S U).components_formula, hea, heb]
+  have hs := (current_nativeAtlas R P S U).components.injective hcomp
   have hi : j.1 = l.1 := Sigma.mk.inj_iff.mp hs |>.1
   cases j with
   | mk i j =>
@@ -203,19 +212,19 @@ private theorem shiftedEndsDisjoint (Y : ℝ)
       have hne : j ≠ l := by
         intro he
         exact hjl (congrArg (Sigma.mk i) he)
-      exact Set.disjoint_left.mp (((nativeAtlas F ζ hζ R P S U).cuspAtlas i).disjoint_ends hne)
+      exact Set.disjoint_left.mp (((current_nativeAtlas R P S U).cuspAtlas i).disjoint_ends hne)
         (endSet_mono_threshold F ζ hζ R P S U ⟨i,j⟩ _ (hY ⟨i,j⟩) ha)
         (endSet_mono_threshold F ζ hζ R P S U ⟨i,l⟩ _ (hY ⟨i,l⟩) hb)
 
 private theorem testSet_measurable (j : Cusp S U) (Y : ℝ)
     (hY : OffsetAdmissible F ζ hζ R P S U Y)
-    (E : Set (FullOmega F ζ hζ (nativeDatum F ζ hζ))) (hE : MeasurableSet E) :
+    (E : Set (FullOmega F ζ hζ (current_nativeDatum))) (hE : MeasurableSet E) :
     MeasurableSet ((fullCoordinate F ζ hζ R P S U j Y ⁻¹' E) ∩
       cuspShell F ζ hζ R P S U j Y) := by
-  let B := cuspEnd S U j (Y / (cuspOffset F ζ hζ R P S U j).val)
+  let B := cuspEnd S U j (Y / (current_cuspOffset R P S U j).val)
   have hB : MeasurableSet B := (cuspEnd_isOpen S U j _ (hY j)).measurableSet
   let q₀ := fullCoordinate F ζ hζ R P S U j Y (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ 1)
-  letI : BorelSpace (FullOmega F ζ hζ (nativeDatum F ζ hζ)) := ⟨rfl⟩
+  letI : BorelSpace (FullOmega F ζ hζ (current_nativeDatum)) := ⟨rfl⟩
   have hm : Measurable (B.piecewise (fullCoordinate F ζ hζ R P S U j Y) (fun _ => q₀)) :=
     (fullCoordinate_continuousOn S U j Y hY).measurable_piecewise continuousOn_const hB
   have he : ((fullCoordinate F ζ hζ R P S U j Y ⁻¹' E) ∩ cuspShell F ζ hζ R P S U j Y) =
@@ -231,7 +240,7 @@ private theorem testSet_measurable (j : Cusp S U) (Y : ℝ)
 
 private theorem testSet_disjoint (Y : ℝ)
     (hY : OffsetAdmissible F ζ hζ R P S U Y)
-    (E : Set (FullOmega F ζ hζ (nativeDatum F ζ hζ))) :
+    (E : Set (FullOmega F ζ hζ (current_nativeDatum))) :
     Pairwise (fun j l : Cusp S U => Disjoint
       ((fullCoordinate F ζ hζ R P S U j Y ⁻¹' E) ∩ cuspShell F ζ hζ R P S U j Y)
       ((fullCoordinate F ζ hζ R P S U l Y ⁻¹' E) ∩ cuspShell F ζ hζ R P S U l Y)) := by
@@ -242,7 +251,7 @@ private theorem testSet_disjoint (Y : ℝ)
 private theorem testUnion_eq (Y : ℝ)
     (hU : OffsetAdmissible F ζ hζ R P S U Y)
     (hV : OffsetAdmissible F ζ hζ R P S V Y)
-    (E : Set (FullOmega F ζ hζ (nativeDatum F ζ hζ))) :
+    (E : Set (FullOmega F ζ hζ (current_nativeDatum))) :
     (⋃ j : Cusp S U, (fullCoordinate F ζ hζ R P S U j Y ⁻¹' E) ∩
       cuspShell F ζ hζ R P S U j Y) =
     (⋃ k : Cusp S V, (fullCoordinate F ζ hζ R P S V k Y ⁻¹' E) ∩
@@ -259,7 +268,7 @@ private theorem testUnion_eq (Y : ℝ)
 
 private theorem fullShell_apply (Y : ℝ)
     (hY : OffsetAdmissible F ζ hζ R P S U Y)
-    (E : Set (FullOmega F ζ hζ (nativeDatum F ζ hζ))) (hE : MeasurableSet E) :
+    (E : Set (FullOmega F ζ hζ (current_nativeDatum))) (hE : MeasurableSet E) :
     fullShell F ζ hζ R P S U Y E = ENNReal.ofReal (2 * Y) *
       R.quotientHaar (⋃ j : Cusp S U, (fullCoordinate F ζ hζ R P S U j Y ⁻¹' E) ∩
         cuspShell F ζ hζ R P S U j Y) := by

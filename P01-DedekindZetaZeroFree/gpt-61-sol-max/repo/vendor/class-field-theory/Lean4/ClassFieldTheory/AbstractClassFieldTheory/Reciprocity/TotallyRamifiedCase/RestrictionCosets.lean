@@ -44,13 +44,16 @@ def bundledRestrictionHom
       K L.field M.field hML L.below).comp
         M.extensionQuotientMulEquiv.toMonoidHom)
 
+section
+variable (D : DegreeData G) [IsTopologicalGroup G]
+    (E : DegreeData.AbstractExtension G)
+    (M : FiniteGaloisSubextension E.base)
+    (hME : M.field.toSubgroup ≤ E.field.toSubgroup)
+include D E M hME
 /-- The coset map from the lower maximal-unramified quotient to a totally
 ramified quotient. -/
 noncomputable def abstractReciprocityRestrictionCosetMap
-    (D : DegreeData G) [IsTopologicalGroup G]
-    (E : DegreeData.AbstractExtension G)
-    (M : FiniteGaloisSubextension E.base)
-    (hME : M.field.toSubgroup ≤ E.field.toSubgroup) :
+      :
     let M₀ := M.maximalUnramifiedSubextension D
     let hMM₀ : M.field.toSubgroup ≤ M₀.toSubgroup :=
       M.field_le_intermediateField (M.inertiaImage D)
@@ -73,10 +76,7 @@ noncomputable def abstractReciprocityRestrictionCosetMap
 /-- The restriction coset map is bijective when the upper extension is
 totally ramified and the auxiliary field contains the relevant inertia. -/
 theorem abstractReciprocityRestrictionCosetMap_bijective
-    (D : DegreeData G) [IsTopologicalGroup G]
-    (E : DegreeData.AbstractExtension G)
-    (M : FiniteGaloisSubextension E.base)
-    (hME : M.field.toSubgroup ≤ E.field.toSubgroup)
+     
     (hTot : E.IsTotallyRamified D)
     (hInertia : ∀ i : E.base.toSubgroup,
       i ∈ D.fieldInertiaWithin E.base →
@@ -160,10 +160,7 @@ theorem abstractReciprocityRestrictionCosetMap_bijective
 
 /-- The equivalence induced by the totally ramified restriction coset map. -/
 noncomputable def abstractReciprocityRestrictionCosetEquiv
-    (D : DegreeData G) [IsTopologicalGroup G]
-    (E : DegreeData.AbstractExtension G)
-    (M : FiniteGaloisSubextension E.base)
-    (hME : M.field.toSubgroup ≤ E.field.toSubgroup)
+     
     (hTot : E.IsTotallyRamified D)
     (hInertia : ∀ i : E.base.toSubgroup,
       i ∈ D.fieldInertiaWithin E.base →
@@ -180,10 +177,7 @@ noncomputable def abstractReciprocityRestrictionCosetEquiv
 /-- The multiplicative restriction equivalence from the lower Galois group
 to the original totally ramified quotient. -/
 noncomputable def abstractReciprocityRestrictionMulEquiv
-    (D : DegreeData G) [IsTopologicalGroup G]
-    (E : DegreeData.AbstractExtension G)
-    (M : FiniteGaloisSubextension E.base)
-    (hME : M.field.toSubgroup ≤ E.field.toSubgroup)
+     
     [hEnormal :
       (extensionSubgroup E.base E.field E.below).Normal]
     (hTot : E.IsTotallyRamified D)
@@ -231,6 +225,8 @@ noncomputable def abstractReciprocityRestrictionMulEquiv
   rw [hr]
   exact M.abstractReciprocityRestrictionCosetMap_bijective
     D E hME hTot hInertia
+end
+
 
 /-- Relative coset actions are transported by the restriction coset
 equivalence. -/

@@ -132,17 +132,17 @@ theorem finrank_eq_one_of_finite_nonSplittingPlaces
     Module.finrank_pos
   omega
 
-/-- Algebra-equivalence form of the degree-one conclusion, expressing
-that `L` is the base field without identifying the two Lean types
-definitionally. -/
-noncomputable def algEquivBaseOfFiniteNonSplittingPlaces
-    (hfinite :
-      {v : HeightOneSpectrum (𝓞 K) |
-        ¬ FinitePlaceSplitsCompletelyInExtension
-          (K := K) (E := L) v}.Finite) :
-    L ≃ₐ[K] K :=
-  algEquivBaseOfFinrankEqOne K L
-    (finrank_eq_one_of_finite_nonSplittingPlaces K L hfinite)
+
+
+
+
+
+
+
+
+
+
+
 
 end Cohomology
 end GlobalClassFieldTheory

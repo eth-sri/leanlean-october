@@ -142,7 +142,8 @@ theorem primitive_iff_local_isLeast (hc : NumberField.IsTotallyComplex F)
         change RayClassBridge.ideleClassCharacter F hc m hm χ (IdeleGroup.finitePlaceIdeleClass v u) = 1
         apply hk u
         rwa [ClassFieldTheory.rayLocalHigherUnitGroup_eq_rayClass]
-      have h := H.narrowFiniteLocalConductorExponent_le v hle
+      have h : H.narrowFiniteLocalConductorExponent v ≤ k :=
+        H.narrowFiniteLocalConductorExponent_le v hle
       rw [← H.narrowFiniteConductor_apply_eq_narrowFiniteLocalConductorExponent, hexp] at h
       exact h
   · intro hleast

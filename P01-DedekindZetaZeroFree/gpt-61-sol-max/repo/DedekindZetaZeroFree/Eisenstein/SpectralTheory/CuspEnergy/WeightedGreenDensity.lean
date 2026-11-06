@@ -39,13 +39,15 @@ private theorem smooth_mean (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (KPCuspLogSh
   intro i hi
   exact contDiff_snd.comp (contDiff_apply ℝ KPArch.H3 i)
 
-private theorem derivative_smoothAt (d : ℕ) (g : Space d → ℂ) (x : Space d)
-    (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x) (i : Fin d) (k : Fin 3) :
+section
+variable (d : ℕ) (g : Space d → ℂ) (x : Space d)
+    (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x) (i : Fin d) (k : Fin 3)
+include d g x hg i k
+private theorem derivative_smoothAt   :
     ContDiffAt ℝ (⊤ : ℕ∞) (coordinateDerivative d i k g) x := by
   exact (hg.fderiv_right (by simp)).clm_apply contDiffAt_const
 
-private theorem differential_smoothAt (d : ℕ) (g : Space d → ℂ) (x : Space d)
-    (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x) (i : Fin d) (k : Fin 3) :
+private theorem differential_smoothAt   :
     ContDiffAt ℝ (⊤ : ℕ∞) (fun q => differential d g q i k) x := by
   have he : ContDiffAt ℝ (⊤ : ℕ∞) (fun q : Space d => (Real.exp (q (i,2)) : ℂ)) x :=
     Complex.ofRealCLM.contDiff.contDiffAt.comp x
@@ -54,6 +56,8 @@ private theorem differential_smoothAt (d : ℕ) (g : Space d → ℂ) (x : Space
   · simpa [differential] using derivative_smoothAt d g x hg i 2
   · simpa [differential] using he.mul (derivative_smoothAt d g x hg i 0)
   · simpa [differential] using he.mul (derivative_smoothAt d g x hg i 1)
+end
+
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
     {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
@@ -157,31 +161,34 @@ theorem rawWeightedGreenDensity_support (G : KPCuspCharts.ChartOutput F hF S D)
 
 namespace GreenTransport
 
- def lin (d : ℕ) (a : Fin d → ℂ) : Space d →L[ℝ] Space d :=
+ section
+variable (d : ℕ)
+include d
+def lin   (a : Fin d → ℂ) : Space d →L[ℝ] Space d :=
   (WithLp.linearEquiv 2 ℝ (Fin d × Fin 3 → ℝ)).symm.toContinuousLinearMap.comp
     (ContinuousLinearMap.pi fun j => ![
       (a j.1).re • EuclideanSpace.proj (j.1,0) - (a j.1).im • EuclideanSpace.proj (j.1,1),
       (a j.1).im • EuclideanSpace.proj (j.1,0) + (a j.1).re • EuclideanSpace.proj (j.1,1),
       EuclideanSpace.proj (j.1,2)] j.2)
-private theorem lin_apply (d : ℕ) (a : Fin d → ℂ) (x : Space d) (i : Fin d) :
+private theorem lin_apply   (a : Fin d → ℂ) (x : Space d) (i : Fin d) :
     arch d (lin d a x) i = (a i * (arch d x i).1, (arch d x i).2) := by
   apply Prod.ext
   · apply Complex.ext <;> simp [arch, lin, Complex.mul_re, Complex.mul_im, add_comm]
   · simp [arch, lin]
-private theorem real_arch (d : ℕ) (x : Space d) : real d (arch d x) = x := by
+private theorem real_arch   (x : Space d) : real d (arch d x) = x := by
   ext j
   rcases j with ⟨i,k⟩
   fin_cases k <;> simp [real, arch]
- theorem lin_one (d : ℕ) (x : Space d) : lin d (fun _ => 1) x = x := by
+ theorem lin_one   (x : Space d) : lin d (fun _ => 1) x = x := by
   apply (show Function.Injective (arch d) from fun x y h => by rw [← real_arch d x, ← real_arch d y, h])
   funext i
   simp [lin_apply]
- theorem lin_mul (d : ℕ) (a b : Fin d → ℂ) (x : Space d) :
+ theorem lin_mul   (a b : Fin d → ℂ) (x : Space d) :
     lin d a (lin d b x) = lin d (fun i => a i * b i) x := by
   apply (show Function.Injective (arch d) from fun x y h => by rw [← real_arch d x, ← real_arch d y, h])
   funext i
   simp [lin_apply, mul_assoc]
- def equiv (d : ℕ) (a : Fin d → ℂ) (ha : ∀ i, a i ≠ 0) : Space d ≃L[ℝ] Space d :=
+ def equiv   (a : Fin d → ℂ) (ha : ∀ i, a i ≠ 0) : Space d ≃L[ℝ] Space d :=
   ({ (lin d a).toLinearMap with
       invFun := lin d (fun i => (a i)⁻¹)
       left_inv := by
@@ -193,7 +200,7 @@ private theorem real_arch (d : ℕ) (x : Space d) : real d (arch d x) = x := by
         change lin d a (lin d (fun i => (a i)⁻¹) x) = x
         rw [lin_mul]; simpa [ha] using lin_one d x
     } : Space d ≃ₗ[ℝ] Space d).toContinuousLinearEquiv
-private theorem lin_vector (d : ℕ) (a : Fin d → ℂ) (i : Fin d) (k : Fin 3) :
+private theorem lin_vector   (a : Fin d → ℂ) (i : Fin d) (k : Fin 3) :
     lin d a (coordinateVector d i k) = ![
       (a i).re • coordinateVector d i 0 + (a i).im • coordinateVector d i 1,
       -(a i).im • coordinateVector d i 0 + (a i).re • coordinateVector d i 1,
@@ -203,9 +210,14 @@ private theorem lin_vector (d : ℕ) (a : Fin d → ℂ) (i : Fin d) (k : Fin 3)
   fin_cases k <;> fin_cases l <;>
     simp [lin, coordinateVector, and_comm] <;>
     split_ifs <;> simp_all
-private theorem transform_deriv (d : ℕ) (a : Fin d → ℂ) (ha : ∀ i, a i ≠ 0)
+end
+
+section
+variable (d : ℕ) (a : Fin d → ℂ) (ha : ∀ i, a i ≠ 0)
     (b x : Space d) (f : Space d → ℂ) (c : ℂ)
-    (he : (fun z => f (lin d a z + b)) =ᶠ[nhds x] (fun z => c * f z)) :
+    (he : (fun z => f (lin d a z + b)) =ᶠ[nhds x] (fun z => c * f z))
+include d a ha b x f c he
+private theorem transform_deriv   :
     (fderiv ℝ f (lin d a x + b)).comp (lin d a) = c • fderiv ℝ f x := by
   have h := he.fderiv_eq (𝕜 := ℝ)
   have hL : (fun z => f (lin d a z + b)) = (fun z => f (z + b)) ∘ equiv d a ha := rfl
@@ -213,9 +225,7 @@ private theorem transform_deriv (d : ℕ) (a : Fin d → ℂ) (ha : ∀ i, a i �
   have hR : (fun z => c * f z) = c • f := rfl
   rw [hR, fderiv_const_smul_field] at h
   exact h
-private theorem cd_transform (d : ℕ) (a : Fin d → ℂ) (ha : ∀ i, a i ≠ 0)
-    (b x : Space d) (f : Space d → ℂ) (c : ℂ)
-    (he : (fun z => f (lin d a z + b)) =ᶠ[nhds x] (fun z => c * f z)) (i : Fin d) :
+private theorem cd_transform   (i : Fin d) :
     ![(a i).re • coordinateDerivative d i 0 f (lin d a x + b) +
        (a i).im • coordinateDerivative d i 1 f (lin d a x + b),
       -(a i).im • coordinateDerivative d i 0 f (lin d a x + b) +
@@ -227,6 +237,8 @@ private theorem cd_transform (d : ℕ) (a : Fin d → ℂ) (ha : ∀ i, a i ≠ 
     (transform_deriv d a ha b x f c he)
   rw [ContinuousLinearMap.comp_apply, lin_vector] at h
   fin_cases k <;> simpa [coordinateDerivative] using h
+end
+
 private theorem pair_rotation (a u v u' v' : ℂ) :
     star (a.re • u + a.im • v) * (a.re • u' + a.im • v') +
       star (-a.im • u + a.re • v) * (-a.im • u' + a.re • v') =
@@ -334,9 +346,12 @@ private theorem mean_lin (G : KPCuspCharts.ChartOutput F hF S D)
 
 end GreenTransport
 
-theorem rawWeightedGreenDensity_high_orbit_invariant
-    (G : KPCuspCharts.ChartOutput F hF S D)
+section
+variable (G : KPCuspCharts.ChartOutput F hF S D)
     (v : Representative ζ hζ S ρ V T) (η : ℝ → ℝ)
+include G v η
+theorem rawWeightedGreenDensity_high_orbit_invariant
+     
     (p q : {p : KPCuspCharts.Coordinates F // T < p.2})
     (hrel : KPCuspCharts.highRelation F S T p q) :
     rawWeightedGreenDensity v η p.val = rawWeightedGreenDensity v η q.val := by
@@ -397,8 +412,7 @@ theorem rawWeightedGreenDensity_high_orbit_invariant
       (rawCutoffUpstairs v (fun t => η t ^ 2)) (v.val ∘ arch d) c hc hcut he)
 
 theorem weightedGreenDensity_geometry
-    (G : KPCuspCharts.ChartOutput F hF S D)
-    (v : Representative ζ hζ S ρ V T) (η : ℝ → ℝ)
+     
     (hη : ContDiff ℝ (⊤ : ℕ∞) η) :
     ContinuousOn (rawWeightedGreenDensity v η) {p | T < p.2} ∧
       Function.support (rawWeightedGreenDensity v η) ⊆ {p | p.2 ∈ tsupport η} ∧
@@ -408,6 +422,8 @@ theorem weightedGreenDensity_geometry
   ⟨rawWeightedGreenDensity_continuousOn G v η hη,
    rawWeightedGreenDensity_support G v η,
    fun p q hrel => rawWeightedGreenDensity_high_orbit_invariant G v η p q hrel⟩
+end
+
 
 end DedekindZetaZeroFree.KPCompactGreenRadialIntegrability
 

@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.Meromorphic.Order
 public import Mathlib.Analysis.Complex.Basic
 
 @[expose] public section
+
 
 noncomputable section
 open Filter
@@ -25,8 +28,8 @@ theorem cleared_limit_of_chamber_transformation
     (hclearC : C =ᶠ[𝓝[≠] (0 : ℂ)] (fun s => s * A s))
     (hclearD : D =ᶠ[𝓝[≠] (0 : ℂ)] (fun s => s * B s)) :
     C 0 = m 0 * D 0 := by
-  let L : ℂ → ℂ := fun s => A s - p s
-  let R : ℂ → ℂ := fun s => m s * (B s - q s)
+  let L  := fun s => A s - p s
+  let R  := fun s => m s * (B s - q s)
   have hL : MeromorphicOn L U := hA.sub hp
   have hR : MeromorphicOn R U := hm.mul (hB.sub hq)
   obtain ⟨z, hzV⟩ := hne

@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.MeasureTheory.Measure.Haar.Unique
 public import Mathlib.Algebra.Order.Positive.Field
 
 @[expose] public section
+
 
 open MeasureTheory
 namespace DedekindZetaZeroFree.NormSheetsPositiveAxis
@@ -20,7 +23,7 @@ instance axisContinuousMul : ContinuousMul Axis where
 instance axisContinuousInv : ContinuousInv Axis where
   continuous_inv := by
     apply Continuous.subtype_mk
-    exact continuous_subtype_val.inv₀ (fun x : Axis => ne_of_gt x.property)
+    apply continuous_subtype_val.inv₀ <;> aesop
 
 instance axisTopologicalGroup : IsTopologicalGroup Axis := ⟨⟩
 
@@ -55,7 +58,7 @@ private theorem haar_left : haar.IsMulLeftInvariant := by
       · change (g : ℝ)⁻¹ * (u : ℝ) = x
         rw [he]
         simp [ne_of_gt g.property]
-  rw [hpre, withDensity_apply _ (by exact (ev.measurableSet_image.mpr hs).preimage (by fun_prop)),
+  rw [hpre, withDensity_apply _ ((ev.measurableSet_image.mpr hs).preimage (by fun_prop)),
     withDensity_apply _ (ev.measurableSet_image.mpr hs)]
   have hscale := Real.map_volume_mul_left (ne_of_gt g.property)
   rw [abs_of_pos (inv_pos.mpr g.property), ENNReal.ofReal_inv_of_pos g.property] at hscale
@@ -111,7 +114,7 @@ theorem density_and_haar :
       rcases hx with ⟨u, hu, rfl⟩
       exact le_of_lt (inv_pos.mpr u.property)
 
-instance haar_isHaarMeasure : haar.IsHaarMeasure := density_and_haar.2
+
 
 end
 end DedekindZetaZeroFree.NormSheetsPositiveAxis

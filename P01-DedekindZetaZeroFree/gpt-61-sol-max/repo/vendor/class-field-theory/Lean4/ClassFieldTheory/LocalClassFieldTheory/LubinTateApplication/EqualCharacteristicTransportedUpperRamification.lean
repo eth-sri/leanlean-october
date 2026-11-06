@@ -189,13 +189,16 @@ open LubinTate.EqualCharacteristic
 variable (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
   [IsNonarchimedeanLocalField K]
 
-/-- The two algebra maps from the Laurent model and the target local field
-to a transported Lubin--Tate level have the same image. -/
-theorem equalCharacteristicTransportedLubinTate_algebraMap_compat
-    (p : ℕ) [Fact p.Prime] [hKp : CharP K p]
+section
+variable (p : ℕ) [Fact p.Prime] [hKp : CharP K p]
     (ϖ : Kˣ)
     (hϖ : valuationMap K (Additive.ofMul ϖ) = 1)
     (n : ℕ)
+include p hKp ϖ hϖ n
+/-- The two algebra maps from the Laurent model and the target local field
+to a transported Lubin--Tate level have the same image. -/
+theorem equalCharacteristicTransportedLubinTate_algebraMap_compat
+     
     (x :
       let F := equalCharacteristicTargetLocalField K
       F.residueField⸨X⸩) :
@@ -234,10 +237,7 @@ theorem equalCharacteristicTransportedLubinTate_algebraMap_compat
 Galois group for the transported target-field algebra.  It leaves every
 underlying automorphism of the level field unchanged. -/
 noncomputable def equalCharacteristicTransportedLubinTateGaloisEquiv
-    (p : ℕ) [Fact p.Prime] [hKp : CharP K p]
-    (ϖ : Kˣ)
-    (hϖ : valuationMap K (Additive.ofMul ϖ) = 1)
-    (n : ℕ) :
+      :
     let F := equalCharacteristicTargetLocalField K
     let B := F.residueField⸨X⸩
     letI : CharP K F.residueCharacteristic :=
@@ -269,10 +269,7 @@ noncomputable def equalCharacteristicTransportedLubinTateGaloisEquiv
 
 @[simp]
 theorem equalCharacteristicTransportedLubinTateGaloisEquiv_apply
-    (p : ℕ) [Fact p.Prime] [hKp : CharP K p]
-    (ϖ : Kˣ)
-    (hϖ : valuationMap K (Additive.ofMul ϖ) = 1)
-    (n : ℕ)
+     
     (σ :
       let F := equalCharacteristicTargetLocalField K
       let B := F.residueField⸨X⸩
@@ -302,193 +299,195 @@ theorem equalCharacteristicTransportedLubinTateGaloisEquiv_apply
         K p ϖ hϖ n σ x =
       σ x := by
   rfl
+end
 
-private theorem
-    equalCharacteristicTransportedLubinTateLocalUpperRamificationGroup_map_eq_baseChange
-    [Fact
-      (equalCharacteristicTargetLocalField K).residueCharacteristic.Prime]
-    [CharP K
-      (equalCharacteristicTargetLocalField K).residueCharacteristic]
-    (ϖ : Kˣ)
-    (hϖ : valuationMap K (Additive.ofMul ϖ) = 1)
-    (n : ℕ) (t : ℝ) :
-    let F := equalCharacteristicTargetLocalField K
-    let q := F.residueCharacteristic
-    let B := F.residueField⸨X⸩
-    let E := equalCharacteristicLubinTateLevelField F n
-    letI : ValuativeRel B :=
-      equalCharacteristicLaurentValuativeRel F
-    letI : IsNonarchimedeanLocalField B :=
-      equalCharacteristicLaurentIsNonarchimedeanLocalField F
-    letI algBE : Algebra B E :=
-      equalCharacteristicLubinTateLevelAlgebra F n
-    letI finBE : FiniteDimensional B E :=
-      equalCharacteristicLubinTateLevelField_finiteDimensional F n
-    letI galBE : IsGalois B E :=
-      equalCharacteristicLubinTateLevelField_isGalois F n
-    let upperB :=
-      @localUpperRamificationGroup B E
-        inferInstance inferInstance
-        algBE finBE galBE
-        inferInstance inferInstance inferInstance
-    letI algKE : Algebra K E :=
-      equalCharacteristicTransportedLubinTateLevelAlgebra
-        K q ϖ hϖ n
-    letI finKE : FiniteDimensional K E :=
-      equalCharacteristicTransportedLubinTateLevel_finiteDimensional
-        K q ϖ hϖ n
-    letI galKE : IsGalois K E :=
-      equalCharacteristicTransportedLubinTateLevel_isGalois
-        K q ϖ hϖ n
-    let upperK :=
-      @localUpperRamificationGroup K E
-        inferInstance inferInstance
-        algKE finKE galKE
-        inferInstance inferInstance inferInstance
-    Subgroup.map
-        (@galoisGroupEquivOfBaseRingEquiv
-          B K E
-          inferInstance inferInstance inferInstance
-          algBE algKE
-          (equalCharacteristicTargetLaurentRingEquiv K q ϖ hϖ)
-          (equalCharacteristicTransportedLubinTate_algebraMap_compat
-            K q ϖ hϖ n)).toMonoidHom
-        (upperB t) =
-      upperK t := by
-  let F := equalCharacteristicTargetLocalField K
-  let q := F.residueCharacteristic
-  let B := F.residueField⸨X⸩
-  let E := equalCharacteristicLubinTateLevelField F n
-  let : ValuativeRel B :=
-    equalCharacteristicLaurentValuativeRel F
-  let : IsNonarchimedeanLocalField B :=
-    equalCharacteristicLaurentIsNonarchimedeanLocalField F
-  let algBE : Algebra B E :=
-    equalCharacteristicLubinTateLevelAlgebra F n
-  let finBE : FiniteDimensional B E :=
-    equalCharacteristicLubinTateLevelField_finiteDimensional F n
-  let galBE : IsGalois B E :=
-    equalCharacteristicLubinTateLevelField_isGalois F n
-  let algKE : Algebra K E :=
-    equalCharacteristicTransportedLubinTateLevelAlgebra
-      K q ϖ hϖ n
-  let finKE : FiniteDimensional K E :=
-    equalCharacteristicTransportedLubinTateLevel_finiteDimensional
-      K q ϖ hϖ n
-  let galKE : IsGalois K E :=
-    equalCharacteristicTransportedLubinTateLevel_isGalois
-      K q ϖ hϖ n
-  dsimp only
-  convert
-    @localUpperRamificationGroup_map_baseRingEquiv
-      B K E
-      inferInstance inferInstance inferInstance
-      algBE algKE finBE finKE galBE galKE
-      inferInstance inferInstance inferInstance
-      inferInstance inferInstance inferInstance
-      (equalCharacteristicTargetLaurentRingEquiv K q ϖ hϖ)
-      (equalCharacteristicTransportedLubinTate_algebraMap_compat
-        K q ϖ hϖ n)
-      (equalCharacteristicTargetLaurentRingEquiv_val_le_one_iff
-        K q ϖ hϖ) t using 1
 
-private theorem
-    equalCharacteristicTransportedLubinTateLocalUpperRamificationGroup_map_eq_residueCharacteristic
-    [Fact
-      (equalCharacteristicTargetLocalField K).residueCharacteristic.Prime]
-    [CharP K
-      (equalCharacteristicTargetLocalField K).residueCharacteristic]
-    (ϖ : Kˣ)
-    (hϖ : valuationMap K (Additive.ofMul ϖ) = 1)
-    (n : ℕ) (t : ℝ) :
-    let F := equalCharacteristicTargetLocalField K
-    let q := F.residueCharacteristic
-    let B := F.residueField⸨X⸩
-    let E := equalCharacteristicLubinTateLevelField F n
-    letI : ValuativeRel B :=
-      equalCharacteristicLaurentValuativeRel F
-    letI : IsNonarchimedeanLocalField B :=
-      equalCharacteristicLaurentIsNonarchimedeanLocalField F
-    letI algBE : Algebra B E :=
-      equalCharacteristicLubinTateLevelAlgebra F n
-    letI finBE : FiniteDimensional B E :=
-      equalCharacteristicLubinTateLevelField_finiteDimensional F n
-    letI galBE : IsGalois B E :=
-      equalCharacteristicLubinTateLevelField_isGalois F n
-    let upperB :=
-      @localUpperRamificationGroup B E
-        (by infer_instance) (by infer_instance)
-        algBE finBE galBE
-        (by infer_instance) (by infer_instance) (by infer_instance)
-    letI algKE : Algebra K E :=
-      equalCharacteristicTransportedLubinTateLevelAlgebra
-        K q ϖ hϖ n
-    letI finKE : FiniteDimensional K E :=
-      equalCharacteristicTransportedLubinTateLevel_finiteDimensional
-        K q ϖ hϖ n
-    letI galKE : IsGalois K E :=
-      equalCharacteristicTransportedLubinTateLevel_isGalois
-        K q ϖ hϖ n
-    let upperK :=
-      @localUpperRamificationGroup K E
-        (by infer_instance) (by infer_instance)
-        algKE finKE galKE
-        (by infer_instance) (by infer_instance) (by infer_instance)
-    Subgroup.map
-        (equalCharacteristicTransportedLubinTateGaloisEquiv
-          K q ϖ hϖ n).toMonoidHom
-        (upperB t) =
-      upperK t := by
-  simpa only [equalCharacteristicTransportedLubinTateGaloisEquiv] using
-    equalCharacteristicTransportedLubinTateLocalUpperRamificationGroup_map_eq_baseChange
-      K ϖ hϖ n t
 
-/-- The normalized base-field equivalence transports the canonical local
-upper ramification group on every explicit Lubin--Tate level. -/
-theorem
-    equalCharacteristicTransportedLubinTateLocalUpperRamificationGroup_map_eq
-    (p : ℕ) [Fact p.Prime] [hKp : CharP K p]
-    (ϖ : Kˣ)
-    (hϖ : valuationMap K (Additive.ofMul ϖ) = 1)
-    (n : ℕ) (t : ℝ) :
-    let F := equalCharacteristicTargetLocalField K
-    let B := F.residueField⸨X⸩
-    letI : CharP K F.residueCharacteristic :=
-      equalCharacteristicTargetResidueCharacteristicCharP K p
-    let E := equalCharacteristicLubinTateLevelField F n
-    letI : ValuativeRel B :=
-      equalCharacteristicLaurentValuativeRel F
-    letI : IsNonarchimedeanLocalField B :=
-      equalCharacteristicLaurentIsNonarchimedeanLocalField F
-    letI : FiniteDimensional B E :=
-      equalCharacteristicLubinTateLevelField_finiteDimensional F n
-    let upperB := localUpperRamificationGroup B E
-    letI : Algebra B E :=
-      equalCharacteristicLubinTateLevelAlgebra F n
-    letI : Algebra K E :=
-      equalCharacteristicTransportedLubinTateLevelAlgebra
-        K p (hKp := hKp) ϖ hϖ n
-    letI : Module K E := Algebra.toModule
-    letI : IsGalois K E :=
-      equalCharacteristicTransportedLubinTateLevel_isGalois
-        K p (hKp := hKp) ϖ hϖ n
-    letI : FiniteDimensional K E :=
-      equalCharacteristicTransportedLubinTateLevel_finiteDimensional
-        K p (hKp := hKp) ϖ hϖ n
-    let upperK := localUpperRamificationGroup K E
-    Subgroup.map
-        (equalCharacteristicTransportedLubinTateGaloisEquiv
-          K p (hKp := hKp) ϖ hϖ n).toMonoidHom
-        (upperB t) =
-      upperK t := by
-  let F := equalCharacteristicTargetLocalField K
-  have hp : F.residueCharacteristic = p :=
-    F.residueCharacteristic_eq_of_charP p
-      ((Fact.out : Nat.Prime p).ne_zero)
-  subst p
-  convert
-    equalCharacteristicTransportedLubinTateLocalUpperRamificationGroup_map_eq_residueCharacteristic
-      K ϖ hϖ n t using 1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end LubinTate
 

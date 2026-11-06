@@ -13,16 +13,18 @@ namespace DedekindZetaZeroFree.PoissonS
 
 attribute [local instance] completionMeasurable completionBorel
 
-def elementaryTensorFunction (F : Type) [Field F] [NumberField F]
+section
+variable (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
+include F S
+def elementaryTensorFunction  
     (g : 𝓢(PoissonArch.Space F, ℂ)) (k : S → ℤ) (t : sIntegerRing F S) :
     Space F S → ℂ :=
   fun x => g x.1 *
     {z : PoissonFinite.Space F S | z - PoissonFinite.diagonal F S (t : F) ∈
       finiteBall F S k}.indicator (fun _ => (1 : ℂ)) x.2
 
-private theorem elementary_eq_tensor (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
+private theorem elementary_eq_tensor  
     (g : 𝓢(PoissonArch.Space F, ℂ)) (k : S → ℤ) (t : sIntegerRing F S) :
     elementaryTensorFunction F S g k t = tensorFunction F S g (fun v z =>
       if ‖z - PoissonFinite.diagonal F S (t : F) v‖ ≤
@@ -35,8 +37,7 @@ private theorem elementary_eq_tensor (F : Type) [Field F] [NumberField F]
   simp only [Finset.prod_const_one, Finset.mem_univ, forall_const, finiteBall,
     Set.mem_setOf_eq, Pi.sub_apply]
 
-private theorem canonical_conductor (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F))) :
+private theorem canonical_conductor   :
     TraceConductor F S (fun v => localFiniteCharacter F v.val) := by
   intro v y
   let T : Finset (HeightOneSpectrum (RingOfIntegers F)) := {v.val}
@@ -67,8 +68,7 @@ private theorem canonical_conductor (F : Type) [Field F] [NumberField F]
     exact h xx (by rw [Unique.forall_iff]; exact hx)
 
 theorem summable_norm_elementaryTensorFunction
-    (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (hS : ContainsDifferent F S)
+      (hS : ContainsDifferent F S)
     (g : 𝓢(PoissonArch.Space F, ℂ)) (k : S → ℤ) (t : sIntegerRing F S) :
     Summable (fun m : sIntegerRing F S =>
       ‖elementaryTensorFunction F S g k t (diagonalHom F S (m : F))‖) := by
@@ -80,8 +80,7 @@ theorem summable_norm_elementaryTensorFunction
   exact (ScaleShift.diagonalLatticeEquiv F S).summable_iff.mpr hs
 
 theorem summable_norm_fourierIntegral_elementaryTensorFunction
-    (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (hS : ContainsDifferent F S)
+      (hS : ContainsDifferent F S)
     (μ : (v : S) → Measure (v.val.adicCompletion F))
     [hμ : ∀ v, (μ v).IsAddHaarMeasure] (hnorm : LocalNormalization F S μ)
     (g : 𝓢(PoissonArch.Space F, ℂ)) (k : S → ℤ) (t : sIntegerRing F S) :
@@ -97,10 +96,15 @@ theorem summable_norm_fourierIntegral_elementaryTensorFunction
     g _ (fun v => (htest v).1) (fun v => (htest v).2) (1 : F) one_ne_zero
   rw [inv_one] at hs
   exact (ScaleShift.diagonalLatticeEquiv F S).summable_iff.mpr hs
+end
+
 
 set_option backward.isDefEq.respectTransparency false in
-private theorem canonical_diagonal_phase (F : Type) [Field F] [NumberField F]
+section
+variable (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (hS : ContainsDifferent F S)
+include F S hS
+private theorem canonical_diagonal_phase  
     (r : sIntegerRing F S) :
     ScaleShift.rawPhase F S (fun v => localFiniteCharacter F v.val)
       (diagonalHom F S (r : F)) (diagonalHom F S 1) = 1 := by
@@ -159,8 +163,7 @@ private theorem canonical_diagonal_phase (F : Type) [Field F] [NumberField F]
     PoissonArch.minkowskiEmbedding, hf] using h
 
 theorem poisson_elementaryTensorFunction
-    (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (hS : ContainsDifferent F S)
+     
     (μ : (v : S) → Measure (v.val.adicCompletion F))
     [hμ : ∀ v, (μ v).IsAddHaarMeasure] (hnorm : LocalNormalization F S μ)
     (g : 𝓢(PoissonArch.Space F, ℂ)) (k : S → ℤ) (t : sIntegerRing F S) :
@@ -175,6 +178,8 @@ theorem poisson_elementaryTensorFunction
   rw [← (ScaleShift.diagonalLatticeEquiv F S).tsum_eq,
     ← (ScaleShift.diagonalLatticeEquiv F S).tsum_eq] at hp
   exact hp
+end
+
 
 end DedekindZetaZeroFree.PoissonS
 

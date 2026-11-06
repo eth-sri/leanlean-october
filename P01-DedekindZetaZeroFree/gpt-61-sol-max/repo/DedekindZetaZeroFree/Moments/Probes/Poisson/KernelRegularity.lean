@@ -20,18 +20,20 @@ variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable (D : DedekindZetaZeroFree.Quantitative.FixedData S η)
 
-theorem plus_differentiableAt (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
+section
+variable (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
+include u hu
+theorem plus_differentiableAt  
     (s : ℂ) (hs : 0 < s.re) : DifferentiableAt ℂ ((pkg D).plus u) s :=
   ((pkg D).plus_diff u ((pkg D).nonprincipal u hu).1).differentiableAt
     ((RowHeckeBridge.isOpen_re_gt 0).mem_nhds hs)
 
-theorem minus_differentiableAt (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
+theorem minus_differentiableAt  
     (s : ℂ) (hs : 0 < s.re) : DifferentiableAt ℂ ((pkg D).minus u) s :=
   ((pkg D).minus_diff u ((pkg D).nonprincipal u hu).2).differentiableAt
     ((RowHeckeBridge.isOpen_re_gt 0).mem_nhds hs)
 
-theorem minus_ne_zero_of_not_isLZero (u : Frequency D.recipe)
-    (hu : u ≠ principalFrequency D.recipe) (ξ : ℂ) (hξ : 0 < ξ.re)
+theorem minus_ne_zero_of_not_isLZero   (ξ : ℂ) (hξ : 0 < ξ.re)
     (hz : ¬ DetectorDef.IsLZero (primMinus D u) ξ) : (pkg D).minus u ξ ≠ 0 := by
   rw [RawHeckeIdentification31.minus_eq_hecke_mul_mask D u hu ξ hξ]
   refine mul_ne_zero ?_ (RowHeckeBridge.mask_ne_zero _ _ ((pkg D).deletion_finite u) ξ hξ)
@@ -41,7 +43,7 @@ theorem minus_ne_zero_of_not_isLZero (u : Frequency D.recipe)
     ((pkg D).nonprincipal u hu).2).L, RowHeckeBridge.hecke_analyticOn _ _ _,
     fun z hz1 => RowHeckeBridge.hecke_eq_idealLSeries _ _ _ z hz1, h0⟩
 
-theorem rawKernel_differentiableAt (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
+theorem rawKernel_differentiableAt  
     (Z : ℝ) (hZ : 0 < Z) (p : ℂ × ℂ × ℂ) (hp : p ∈ OmegaStar) (hz : 1 / 6 < p.2.2.re)
     (hξ : (pkg D).minus u p.1 ≠ 0) :
     DifferentiableAt ℂ (fun p : ℂ × ℂ × ℂ => rawKernel D u p.1 p.2.1 p.2.2 Z) p := by
@@ -104,8 +106,7 @@ theorem rawKernel_differentiableAt (u : Frequency D.recipe) (hu : u ≠ principa
   unfold rawKernel
   exact (((((a1.mul a2).mul a3).mul a4).mul a5).mul hrf)
 
-theorem rawKernel_continuousAt_heights (u : Frequency D.recipe)
-    (hu : u ≠ principalFrequency D.recipe) (Z : ℝ) (hZ : 0 < Z) (x y v : ℝ)
+theorem rawKernel_continuousAt_heights   (Z : ℝ) (hZ : 0 < Z) (x y v : ℝ)
     (hp : ((x : ℂ), (y : ℂ), (v : ℂ)) ∈ OmegaStar) (hv : 1 / 6 < v) (t : ℝ × ℝ × ℝ)
     (hξ : (pkg D).minus u ((x : ℂ) + (t.1 : ℂ) * Complex.I) ≠ 0) :
     ContinuousAt (fun t : ℝ × ℝ × ℝ => rawKernel D u ((x : ℂ) + (t.1 : ℂ) * Complex.I)
@@ -121,6 +122,8 @@ theorem rawKernel_continuousAt_heights (u : Frequency D.recipe)
     (f := fun t : ℝ × ℝ × ℝ => (((x : ℂ) + (t.1 : ℂ) * Complex.I,
       (y : ℂ) + (t.2.1 : ℂ) * Complex.I, (v : ℂ) + (t.2.2 : ℂ) * Complex.I) : ℂ × ℂ × ℂ))
     (x := t) hd.continuousAt hcont.continuousAt
+end
+
 
 theorem minus_ne_zero_of_not_exceptional (ρ U : ℝ) (u : Frequency D.recipe)
     (hu : u ≠ principalFrequency D.recipe) (hU1 : U ≤ frequencyNorm D.recipe u)

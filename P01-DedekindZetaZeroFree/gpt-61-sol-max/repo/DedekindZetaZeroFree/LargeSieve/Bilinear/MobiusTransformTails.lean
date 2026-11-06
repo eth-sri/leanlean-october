@@ -33,17 +33,17 @@ def mobiusTail (q d : Ideal (𝓞 F)) (W : ℝ → ℝ) (M K : ℝ)
         (Real.sqrt (Ideal.absNorm (u * v) : ℝ) : ℂ))) *
       ∑' a : Ideal (𝓞 F), term q K dotW (scale M e u v) η a
 
-def blockTail (q d : Ideal (𝓞 F)) (W : ℝ → ℝ) (M K : ℝ)
+section
+variable (q d : Ideal (𝓞 F)) (W : ℝ → ℝ) (M K : ℝ)
     (L : Finset (Ideal (𝓞 F))) (lam : Ideal (𝓞 F) → ℂ)
     (θ : Ideal (𝓞 F) → Ideal (𝓞 F) → ℂ)
-    (η : ∀ u v : Ideal (𝓞 F), DedekindZetaZeroFree.RayClassCharacter F (u * v)) : ℂ :=
+    (η : ∀ u v : Ideal (𝓞 F), DedekindZetaZeroFree.RayClassCharacter F (u * v))
+include q d W M K L lam θ η
+def blockTail   : ℂ :=
   ∑ u ∈ L, ∑ v ∈ L, θ u v * lam u * star (lam v) *
     mobiusTail q d W M K u v (η u v)
 
-def majorant (q d : Ideal (𝓞 F)) (W : ℝ → ℝ) (M K : ℝ)
-    (L : Finset (Ideal (𝓞 F))) (lam : Ideal (𝓞 F) → ℂ)
-    (θ : Ideal (𝓞 F) → Ideal (𝓞 F) → ℂ)
-    (η : ∀ u v : Ideal (𝓞 F), DedekindZetaZeroFree.RayClassCharacter F (u * v)) : ℝ :=
+def majorant   : ℝ :=
   let dotW := DedekindZetaZeroFree.LargeSieve.fieldTransform (DedekindZetaZeroFree.LargeSieve.principalDiscriminant F)
     (DedekindZetaZeroFree.LargeSieve.principalComplexPlaces F) (fun x => (W x : ℂ))
   ∑ u ∈ L, ∑ v ∈ L,
@@ -55,6 +55,8 @@ def majorant (q d : Ideal (𝓞 F)) (W : ℝ → ℝ) (M K : ℝ)
               (Real.sqrt (Ideal.absNorm (u * v) : ℝ) : ℂ)))‖ *
           ∑' a : Ideal (𝓞 F), ‖term q K dotW (scale M e u v) (η u v) a‖)
     else 0
+end
+
 
 theorem chooseOrder {F : Type} [Field F] [NumberField F]
     (hF : NumberField.IsTotallyComplex F)
@@ -327,10 +329,13 @@ private lemma prefactor_identity (E U V M : ℝ) (hE : 0 < E) (hU : 0 < U)
   have hsq := Real.sq_sqrt (mul_pos hU hV).le
   field_simp
   nlinarith
-private lemma absnorm_one {F : Type} [Field F] [NumberField F] (I : Ideal (𝓞 F))
+section
+variable {F : Type} [Field F] [NumberField F]
+include F
+private lemma absnorm_one   (I : Ideal (𝓞 F))
     (hI : I ≠ ⊥) : 1 ≤ (Ideal.absNorm I : ℝ) := by
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
-private lemma divisor_bound {F : Type} [Field F] [NumberField F]
+private lemma divisor_bound  
     (q d : Ideal (𝓞 F)) (hq : q ≠ ⊥) (hd : d ≠ ⊥)
     (e : Ideal (𝓞 F)) (he : e ∈ DedekindZetaZeroFree.LargeSieve.idealDivisors (q*d).radical) :
     (Ideal.absNorm e : ℝ) ≤ (Ideal.absNorm q : ℝ)*(Ideal.absNorm d : ℝ) := by
@@ -342,7 +347,7 @@ private lemma divisor_bound {F : Type} [Field F] [NumberField F]
   have h := h1.trans h2
   rw [map_mul] at h
   exact_mod_cast h
-private lemma coefficient_bound {F : Type} [Field F] [NumberField F]
+private lemma coefficient_bound  
     (M : ℝ) (hM : 0 < M) (e u v : Ideal (𝓞 F))
     (he : e ≠ ⊥) (hu : u ≠ ⊥) (hv : v ≠ ⊥)
     (η : DedekindZetaZeroFree.RayClassCharacter F (u*v)) :
@@ -364,7 +369,7 @@ private lemma coefficient_bound {F : Type} [Field F] [NumberField F]
   apply (mul_le_mul_of_nonneg_right hb (norm_nonneg _)).trans_eq
   simp [norm_div, norm_mul, Complex.norm_natCast, Complex.norm_real,
     abs_of_nonneg hM.le, abs_of_nonneg (Real.sqrt_nonneg _), map_mul]
-private lemma pair_scale_bounds {F : Type} [Field F] [NumberField F]
+private lemma pair_scale_bounds  
     (q d e u v : Ideal (𝓞 F)) (hq : q ≠ ⊥) (hd : d ≠ ⊥)
     (M N : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N)
     (he : e ∈ DedekindZetaZeroFree.LargeSieve.idealDivisors (q*d).radical)
@@ -399,7 +404,7 @@ private lemma pair_scale_bounds {F : Type} [Field F] [NumberField F]
     <;> ring
   · apply (Real.sqrt_le_sqrt hprod).trans_eq
     rw [Real.sqrt_sq (by positivity)]
-private lemma one_divisor_bound {F : Type} [Field F] [NumberField F]
+private lemma one_divisor_bound  
     (q d e u v : Ideal (𝓞 F)) (hq : q ≠ ⊥) (hd : d ≠ ⊥)
     (M N K B CW : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N) (hK : 0 < K)
     (hB : 0 ≤ B) (hCW : 0 ≤ CW) (a : ℝ) (ha : 1 ≤ a)
@@ -454,7 +459,7 @@ private lemma one_divisor_bound {F : Type} [Field F] [NumberField F]
         _ = _ := by rw [hid]
     _ ≤ _ := mul_le_mul (mul_le_mul_of_nonneg_left hs (mul_nonneg hB hCW)) hp
       (Real.rpow_nonneg (div_pos hX hK).le _) (by positivity)
-private lemma block_bound {F : Type} [Field F] [NumberField F]
+private lemma block_bound  
     (q d : Ideal (𝓞 F)) (W : ℝ → ℝ) (M K : ℝ)
     (L : Finset (Ideal (𝓞 F))) (lam : Ideal (𝓞 F) → ℂ)
     (θ : Ideal (𝓞 F) → Ideal (𝓞 F) → ℂ)
@@ -484,7 +489,7 @@ private lemma block_bound {F : Type} [Field F] [NumberField F]
     apply mul_le_mul_of_nonneg_left _ (norm_nonneg _)
     exact norm_tsum_le_tsum_norm (hs u hu v hv ht e he)
 
-theorem aggregate {F : Type} [Field F] [NumberField F]
+theorem aggregate  
     (q : Ideal (𝓞 F)) (hq : q ≠ ⊥) (A : ℕ) (hA : 2 < A) :
     ∃ B : ℝ, 0 ≤ B ∧
       ∀ (W : ℝ → ℝ) (δ CW : ℝ), 0 < δ → δ ≤ (A : ℝ) → 0 ≤ CW →
@@ -610,6 +615,8 @@ theorem aggregate {F : Type} [Field F] [NumberField F]
           (∑ u ∈ L, ‖lam u‖^2) := by positivity
       dsimp only [R]
       convert mul_le_mul_of_nonneg_left hnm hb using 1 <;> ring
+end
+
 
 end DedekindZetaZeroFree.LargeSieve.Bilinear.TransformTail
 

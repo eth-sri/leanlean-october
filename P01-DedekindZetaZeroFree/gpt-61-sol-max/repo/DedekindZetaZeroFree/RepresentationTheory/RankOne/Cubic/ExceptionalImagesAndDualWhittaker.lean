@@ -22,9 +22,9 @@ variable (F : Type) [Field F] [NumberField F]
 local instance plusAdd : AddCommGroup (sectionSpace S.borel P .plus 0) := inferInstance
 local instance minusAdd : AddCommGroup (sectionSpace S.borel P .minus 0) := inferInstance
 
-local instance reverseImageAdd :
-    AddCommGroup (actualCanonicalReverseMap F ζ hζ q S P μ hμ).range.toSubmodule :=
-  Submodule.addCommGroup _
+
+
+
 
 private theorem actual_simple_of_length_two {R M : Type*} [Ring R] [AddCommGroup M]
     [Module R M] (h : Module.length R M = 2) (N : Submodule R M)

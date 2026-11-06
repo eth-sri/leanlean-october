@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Algebra.LinearAlgebra.BasisCoordinates
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 The Tau Ceti contributors. All rights reserved.
@@ -55,7 +58,7 @@ private theorem support_repr_sub_smul_subset [DecidableEq ι] (b : Module.Basis 
     (hf : ∀ i, f (b i) = a i • b i) (w : V) (j : ι) :
     (b.repr (f w - a j • w)).support ⊆ (b.repr w).support.erase j := by
   intro k hk
-  have hk0 : b.repr (f w - a j • w) k ≠ 0 := Finsupp.mem_support_iff.1 hk
+  have hk0  := Finsupp.mem_support_iff.1 hk
   rw [repr_sub_smul_apply b hf w j k] at hk0
   refine Finset.mem_erase.2 ⟨?_, Finsupp.mem_support_iff.2 (right_ne_zero_of_mul hk0)⟩
   rintro rfl
@@ -77,7 +80,7 @@ private theorem self_mem_aux (b : Module.Basis ι K V) (hf : ∀ i, f (b i) = a 
   induction n with
   | zero =>
     intro w _ hcard i hi
-    have hsupp : (b.repr w).support = ∅ := Finset.card_eq_zero.1 (Nat.le_zero.1 hcard)
+    have hsupp  := Finset.card_eq_zero.1 (Nat.le_zero.1 hcard)
     exact absurd (Finsupp.notMem_support_iff.1 (by rw [hsupp]; exact Finset.notMem_empty i)) hi
   | succ n ih =>
     intro w hw hcard i hi
@@ -95,7 +98,7 @@ private theorem self_mem_aux (b : Module.Basis ι K V) (hf : ∀ i, f (b i) = a 
       have hcard' : (b.repr (f w - a j • w)).support.card ≤ n := by
         have hle := Finset.card_le_card (support_repr_sub_smul_subset b hf w j)
         rw [Finset.card_erase_of_mem hjs] at hle
-        have hpos : 0 < (b.repr w).support.card := Finset.card_pos.2 ⟨j, hjs⟩
+        have hpos  := Finset.card_pos.2 ⟨j, hjs⟩
         omega
       refine ih _ hmem hcard' i ?_
       rw [repr_sub_smul_apply b hf w j i]

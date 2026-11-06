@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import GaloisCohomology.Kummer.Concrete.RadicalQuotient
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -40,10 +43,13 @@ section FiniteKummerCharacterIso
 
 variable {K L : Type*} [Field K] [Field L] [Algebra K L]
 
+section
+variable (n : ℕ+)
+include n
 /-- The radical subgroup `A_L^n intersect Kˣ` for the actual extension
 `L/K`: its elements are precisely the base-field units admitting an `n`-th
 root in `Lˣ`. -/
-def finiteKummerRadicalSubgroup (n : ℕ+) : Subgroup Kˣ where
+def finiteKummerRadicalSubgroup   : Subgroup Kˣ where
   carrier := {a | ∃ β : Lˣ,
     β ^ (n : ℕ) = Units.map (algebraMap K L).toMonoidHom a}
   one_mem' := ⟨1, by simp⟩
@@ -59,14 +65,14 @@ def finiteKummerRadicalSubgroup (n : ℕ+) : Subgroup Kˣ where
 /-- The finite Kummer radical consists exactly of classes annihilated by every
 defining character. -/
 @[simp] theorem mem_finiteKummerRadicalSubgroup_iff
-    (n : ℕ+) {a : Kˣ} :
+      {a : Kˣ} :
     a ∈ finiteKummerRadicalSubgroup (K := K) (L := L) n ↔
       ∃ β : Lˣ, β ^ (n : ℕ) = Units.map (algebraMap K L).toMonoidHom a :=
   Iff.rfl
 
 /-- An arbitrary root choice on the already constructed radical subgroup.
 No compatibility between the choices is imposed. -/
-def chosenFiniteKummerRadicalDatum (n : ℕ+) : RadicalDatum (K := K) (L := L) n where
+def chosenFiniteKummerRadicalDatum   : RadicalDatum (K := K) (L := L) n where
   carrier := finiteKummerRadicalSubgroup (K := K) (L := L) n
   root a := Classical.choose a.property
   root_pow_eq a := Classical.choose_spec a.property
@@ -74,17 +80,19 @@ def chosenFiniteKummerRadicalDatum (n : ℕ+) : RadicalDatum (K := K) (L := L) n
 /-- The field-level form of the roots-of-unity hypothesis `mu_n subset K`, restricted
 to the roots of unity occurring in `L`: every `n`-th root of unity in `Lˣ`
 comes from a unit of `K`. -/
-def NthRootsOfUnityInBase (n : ℕ+) : Prop :=
+def NthRootsOfUnityInBase    :=
   ∀ u : Lˣ, u ^ (n : ℕ) = 1 →
     ∃ zeta : Kˣ, Units.map (algebraMap K L).toMonoidHom zeta = u
 
 /-- Under `mu_n subset K`, every Galois automorphism fixes `mu_n(L)`. -/
 theorem nthRootsOfUnity_fixed
-    (n : ℕ+) (hmu : NthRootsOfUnityInBase (K := K) (L := L) n)
+      (hmu : NthRootsOfUnityInBase (K := K) (L := L) n)
     (sigma : Gal(L/K)) (u : Lˣ) (hu : u ^ (n : ℕ) = 1) :
     sigma • u = u := by
   obtain ⟨zeta, rfl⟩ := hmu u hu
-  exact RadicalDatum.smul_algebraMap_unit (K := K) (L := L) sigma zeta
+  apply RadicalDatum.smul_algebraMap_unit
+end
+
 
 /-- The root-choice-free Kummer character on the ambient-power quotient is
 surjective.  The preimage of a character is produced by Noether Hilbert 90,
@@ -100,7 +108,7 @@ theorem finiteKummerQuotientCharacter_surjective
       u ^ (n : ℕ) = 1 → sigma • u = u :=
     nthRootsOfUnity_fixed (K := K) (L := L) n hmu
   intro chi
-  let f : Gal(L/K) → Lˣ := fun sigma => (chi sigma).1
+  let f  := fun sigma => (chi sigma).1
   have hf : groupCohomology.IsMulCocycle₁ f := by
     intro sigma tau
     change (chi (sigma * tau)).1 = sigma • (chi tau).1 * (chi sigma).1
@@ -117,7 +125,7 @@ theorem finiteKummerQuotientCharacter_surjective
     intro sigma
     calc
       sigma • (beta ^ (n : ℕ)) = (sigma • beta) ^ (n : ℕ) := by
-        exact map_pow (MulDistribMulAction.toMonoidHom Lˣ sigma) beta (n : ℕ)
+        apply map_pow
       _ = (f sigma * beta) ^ (n : ℕ) := by rw [hbeta sigma]
       _ = (f sigma) ^ (n : ℕ) * beta ^ (n : ℕ) := mul_pow _ _ _
       _ = beta ^ (n : ℕ) := by
@@ -154,9 +162,7 @@ theorem finiteKummerQuotientCharacter_surjective
 the finite Kummer character equivalence, not the full subgroup/extension correspondence. -/
 def finiteKummerCharacterEquiv
     [FiniteDimensional K L] [IsGalois K L]
-    (n : ℕ+) (hmu : NthRootsOfUnityInBase (K := K) (L := L) n) :
-    (chosenFiniteKummerRadicalDatum (K := K) (L := L) n).RadicalQuotient ≃*
-      (Gal(L/K) →* nthRootsSubgroup L (n : ℕ)) :=
+    (n : ℕ+) (hmu : NthRootsOfUnityInBase (K := K) (L := L) n)  :=
   MulEquiv.ofBijective
     ((chosenFiniteKummerRadicalDatum (K := K) (L := L) n).quotientKummerCharacterWithoutSection
         (nthRootsOfUnity_fixed (K := K) (L := L) n hmu))

@@ -20,9 +20,12 @@ namespace DedekindZetaZeroFree.Hecke.Theta
 variable {F : Type} [Field F] [NumberField F]
 
 -- Source attribution and Apache 2.0 credit: `hecke_ray_angular_transport`.
- def weightedIntegrand {m : Ideal (𝓞 F)}
+ section
+variable {m : Ideal (𝓞 F)}
  (η : DedekindZetaZeroFree.RayClassCharacter F m)
- (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (u : ℝ) (h : RayCoset.logHyperplane F) : ℂ :=
+ (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (u : ℝ)
+include m η I u in
+def weightedIntegrand   (h : RayCoset.logHyperplane F) : ℂ :=
  ∑' x : {x : F // x ∈ (I : FractionalIdeal (𝓞 F)⁰ F)},
  η (integralElementIdeal I x) *
  RayParity.gδ F ∅ (RayParity.Q F (RayTheta.q F u h)
@@ -68,9 +71,8 @@ private theorem coefficient_unit (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (e : (�
  rw [integralElementIdeal_coe, integralElementIdeal_coe]
  change FractionalIdeal.spanSingleton (𝓞 F)⁰ (algebraMap (𝓞 F) F (e : 𝓞 F) * x.val) * _ = _
  rw [← FractionalIdeal.spanSingleton_mul_spanSingleton, span_unit, one_mul]
-private theorem weighted_periodic {m : Ideal (𝓞 F)}
- (η : DedekindZetaZeroFree.RayClassCharacter F m)
- (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (u : ℝ) (hu : 0 < u)
+include m η I u in
+private theorem weighted_periodic   (hu : 0 < u)
  (γ : RayCoset.rayUnitLogLattice F m) (h : RayCoset.logHyperplane F) :
  weightedIntegrand η I u (h+γ) = weightedIntegrand η I u h := by
  obtain ⟨e, he⟩ := γ.property
@@ -101,6 +103,8 @@ private theorem weighted_periodic {m : Ideal (𝓞 F)}
  ext v
  rw [hshape]
  ring
+end
+
 private theorem periodic_translation_without_continuity
     (F : Type) [Field F] [NumberField F]
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
@@ -141,7 +145,7 @@ private theorem periodic_translation_without_continuity
   calc
     _ = ∫ h in e '' D, f h ∂μ :=
       (he.setIntegral_image_emb e.measurableEmbedding f D).symm
-    _ = ∫ h in D, f h ∂μ := hT.setIntegral_eq hD hp
+    _ = ∫ h in D, f h ∂μ := IsAddFundamentalDomain.setIntegral_eq (G := L) hT hD hp
 
 private theorem periodic_negation_without_continuity
     (F : Type) [Field F] [NumberField F]
@@ -181,7 +185,7 @@ private theorem periodic_negation_without_continuity
   calc
     _ = ∫ h in e '' D, f h ∂μ :=
       (he.setIntegral_image_emb e.measurableEmbedding f D).symm
-    _ = ∫ h in D, f h ∂μ := hT.setIntegral_eq hD hp
+    _ = ∫ h in D, f h ∂μ := IsAddFundamentalDomain.setIntegral_eq (G := L) hT hD hp
 
 private theorem weightedNeg_eq (hF : NumberField.IsTotallyComplex F)
     {m : Ideal (𝓞 F)} (hm : m ≠ ⊥) (hmt : m ≠ ⊤)
@@ -218,9 +222,12 @@ private theorem gaussian_scale (q : InfinitePlace F → ℝ) (hq : ∀ v, q v �
   simp only [RayParity.Q, ContinuousLinearEquiv.apply_symm_apply, map_smul]
   ext v <;> simp [mixedSpaceOfRealSpace, mul_assoc, mul_left_comm, smul_eq_mul]
 
- def idealMulEquiv (I J : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (a : Fˣ)
+ section
+variable (I J : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (a : Fˣ)
     (hJ : (J : FractionalIdeal (𝓞 F)⁰ F) =
-      FractionalIdeal.spanSingleton (𝓞 F)⁰ (a : F) * (I : FractionalIdeal (𝓞 F)⁰ F)) :
+      FractionalIdeal.spanSingleton (𝓞 F)⁰ (a : F) * (I : FractionalIdeal (𝓞 F)⁰ F))
+include I J a hJ in
+def idealMulEquiv   :
     {x : F // x ∈ (I : FractionalIdeal (𝓞 F)⁰ F)} ≃
       {x : F // x ∈ (J : FractionalIdeal (𝓞 F)⁰ F)} := by
   have h := FractionalIdeal.eq_spanSingleton_mul.mp hJ
@@ -234,15 +241,13 @@ private theorem gaussian_scale (q : InfinitePlace F → ℝ) (hq : ∀ v, q v �
     obtain ⟨x, hx, he⟩ := h.1 y y.2
     exact ⟨⟨x, hx⟩, Subtype.ext he⟩
 
-private theorem idealMulEquiv_val (I J : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (a : Fˣ)
-    (hJ : (J : FractionalIdeal (𝓞 F)⁰ F) =
-      FractionalIdeal.spanSingleton (𝓞 F)⁰ (a : F) * (I : FractionalIdeal (𝓞 F)⁰ F))
+include I J a hJ in
+private theorem idealMulEquiv_val  
     (x : {x : F // x ∈ (I : FractionalIdeal (𝓞 F)⁰ F)}) :
     (idealMulEquiv I J a hJ x).val = a * x := rfl
 
-private theorem idealMulEquiv_coeff (I J : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (a : Fˣ)
-    (hJ : (J : FractionalIdeal (𝓞 F)⁰ F) =
-      FractionalIdeal.spanSingleton (𝓞 F)⁰ (a : F) * (I : FractionalIdeal (𝓞 F)⁰ F))
+include I J a hJ in
+private theorem idealMulEquiv_coeff  
     (x : {x : F // x ∈ (I : FractionalIdeal (𝓞 F)⁰ F)}) :
     integralElementIdeal J (idealMulEquiv I J a hJ x) = integralElementIdeal I x := by
   apply FractionalIdeal.coeIdeal_injective (K := F)
@@ -277,10 +282,9 @@ private theorem norm_pos (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ) :
   (FractionalIdeal.absNorm (I : FractionalIdeal (𝓞 F)⁰ F) : ℝ) ^
     (-1 / (Module.finrank ℚ F : ℝ)) * RayTheta.q F t h v
 
+include I J a hJ in
 private theorem exists_normShape_shift
-    (I J : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (a : Fˣ)
-    (hJ : (J : FractionalIdeal (𝓞 F)⁰ F) =
-      FractionalIdeal.spanSingleton (𝓞 F)⁰ (a : F) * (I : FractionalIdeal (𝓞 F)⁰ F)) :
+      :
     ∃ d : RayCoset.logHyperplane F, ∀ t h v,
       normShape I t (h + d) v = normShape J t h v * v (a : F) := by
   classical
@@ -326,10 +330,9 @@ private theorem exists_normShape_shift
   rw [Real.exp_add, he]
   ring
 
+include I J a hJ in
 private theorem weighted_series_covariance
-    (I J : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (a : Fˣ)
-    (hJ : (J : FractionalIdeal (𝓞 F)⁰ F) =
-      FractionalIdeal.spanSingleton (𝓞 F)⁰ (a : F) * (I : FractionalIdeal (𝓞 F)⁰ F))
+     
     (η : Ideal (𝓞 F) → ℂ) :
     ∃ d : RayCoset.logHyperplane F, ∀ t h,
       (∑' x : {x : F // x ∈ (J : FractionalIdeal (𝓞 F)⁰ F)},
@@ -350,6 +353,8 @@ private theorem weighted_series_covariance
   intro v _
   rw [map_mul, hd]
   ring
+end
+
 
 private theorem gaussian_normShape (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
     {t : ℝ} (ht : 0 < t) (h : RayCoset.logHyperplane F) (x : F) :

@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.LocalClassFieldTheory.Finite.LocalReciprocity.FiniteResidueFrobenius
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -65,8 +68,7 @@ integer. -/
     change AlgEquiv.restrictNormalHom F.unop
         (finiteResidueFrobeniusFromZHat k E.unop z) =
       finiteResidueFrobeniusFromZHat k F.unop z
-    exact restrictNormalHom_finiteResidueFrobeniusFromZHat
-      (k := k) (E := F.unop) (F := E.unop) z
+    apply restrictNormalHom_finiteResidueFrobeniusFromZHat
 
 /-- The compatible Frobenius coordinates as a continuous homomorphism into
 the finite-Galois inverse limit. -/

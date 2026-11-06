@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AlgebraicNumberTheory.Adele.Coordinates
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -154,25 +157,13 @@ def relativeIdeleLocalComponents :
         RelativeIdeleGroup.finiteComponent
           (K := K) (L := L) w z⟩
   map_one' := by
-    apply Prod.ext
-    · funext w
-      exact map_one
-        (RelativeIdeleGroup.infiniteComponent
-          (K := K) (L := L) w)
-    · funext w
-      exact map_one
-        (RelativeIdeleGroup.finiteComponent
-          (K := K) (L := L) w)
+    rfl
   map_mul' x y := by
     apply Prod.ext
     · funext w
-      exact map_mul
-        (RelativeIdeleGroup.infiniteComponent
-          (K := K) (L := L) w) x y
+      apply map_mul
     · funext w
-      exact map_mul
-        (RelativeIdeleGroup.finiteComponent
-          (K := K) (L := L) w) x y
+      apply map_mul
 
 omit [NumberField L] [FiniteDimensional K L] in
 @[simp]

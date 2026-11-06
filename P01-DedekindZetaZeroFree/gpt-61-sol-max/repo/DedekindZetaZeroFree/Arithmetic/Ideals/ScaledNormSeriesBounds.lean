@@ -1,19 +1,25 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Ideals.InverseNormPowerSums
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve.PoissonTruncation
 
 open scoped NumberField Classical
 
-private lemma one_le_absNorm_cast {F : Type*} [Field F] [NumberField F]
+section
+variable {F : Type*} [Field F] [NumberField F]
+include F
+private lemma one_le_absNorm_cast  
     {I : Ideal (𝓞 F)} (hI : I ≠ ⊥) : 1 ≤ (Ideal.absNorm I : ℝ) := by
   have h : Ideal.absNorm I ≠ 0 := fun h0 => hI (Ideal.absNorm_eq_zero_iff.mp h0)
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr h
 
-private lemma norm_le_majorant {F : Type*} [Field F] [NumberField F]
+private lemma norm_le_majorant  
     {B K u : ℝ} (hu : 0 < u) {φ : ℝ → ℂ}
     (hφ : ∀ t : ℝ, 0 < t → ‖φ t‖ ≤ K * t ^ (-B)) (I : Ideal (𝓞 F)) :
     ‖if I = ⊥ then (0 : ℂ) else φ (u * (Ideal.absNorm I : ℝ))‖ ≤
@@ -21,7 +27,7 @@ private lemma norm_le_majorant {F : Type*} [Field F] [NumberField F]
   by_cases hI : I = ⊥
   · simp [hI]
   · rw [if_neg hI, if_neg hI]
-    have hn : (1 : ℝ) ≤ (Ideal.absNorm I : ℝ) := one_le_absNorm_cast hI
+    have hn  := one_le_absNorm_cast hI
     have hn0 : 0 ≤ (Ideal.absNorm I : ℝ) := le_trans zero_le_one hn
     have hpos : 0 < u * (Ideal.absNorm I : ℝ) := mul_pos hu (lt_of_lt_of_le zero_lt_one hn)
     calc ‖φ (u * (Ideal.absNorm I : ℝ))‖
@@ -29,7 +35,7 @@ private lemma norm_le_majorant {F : Type*} [Field F] [NumberField F]
       _ = K * (u ^ (-B) * (Ideal.absNorm I : ℝ) ^ (-B)) := by rw [Real.mul_rpow hu.le hn0]
       _ = K * u ^ (-B) * (Ideal.absNorm I : ℝ) ^ (-B) := by ring
 
-private lemma norm_le_tail_majorant {F : Type*} [Field F] [NumberField F]
+private lemma norm_le_tail_majorant  
     {B K u R : ℝ} (hu : 0 < u) {φ : ℝ → ℂ}
     (hφ : ∀ t : ℝ, 0 < t → ‖φ t‖ ≤ K * t ^ (-B)) (I : Ideal (𝓞 F)) :
     ‖if I ≠ ⊥ ∧ R < (Ideal.absNorm I : ℝ) then φ (u * (Ideal.absNorm I : ℝ)) else 0‖ ≤
@@ -37,7 +43,7 @@ private lemma norm_le_tail_majorant {F : Type*} [Field F] [NumberField F]
         (if I ≠ ⊥ ∧ R < (Ideal.absNorm I : ℝ) then (Ideal.absNorm I : ℝ) ^ (-B) else 0) := by
   by_cases h : I ≠ ⊥ ∧ R < (Ideal.absNorm I : ℝ)
   · rw [if_pos h, if_pos h]
-    have hn : (1 : ℝ) ≤ (Ideal.absNorm I : ℝ) := one_le_absNorm_cast h.1
+    have hn  := one_le_absNorm_cast h.1
     have hn0 : 0 ≤ (Ideal.absNorm I : ℝ) := le_trans zero_le_one hn
     have hpos : 0 < u * (Ideal.absNorm I : ℝ) := mul_pos hu (lt_of_lt_of_le zero_lt_one hn)
     calc ‖φ (u * (Ideal.absNorm I : ℝ))‖
@@ -46,13 +52,13 @@ private lemma norm_le_tail_majorant {F : Type*} [Field F] [NumberField F]
       _ = K * u ^ (-B) * (Ideal.absNorm I : ℝ) ^ (-B) := by ring
   · simp [h]
 
-private lemma tail_norm_eq_norm_tail {F : Type*} [Field F] [NumberField F]
+private lemma tail_norm_eq_norm_tail  
     {u R : ℝ} (φ : ℝ → ℂ) (I : Ideal (𝓞 F)) :
     (if I ≠ ⊥ ∧ R < (Ideal.absNorm I : ℝ) then ‖φ (u * (Ideal.absNorm I : ℝ))‖ else 0) =
     ‖if I ≠ ⊥ ∧ R < (Ideal.absNorm I : ℝ) then φ (u * (Ideal.absNorm I : ℝ)) else 0‖ := by
   by_cases h : I ≠ ⊥ ∧ R < (Ideal.absNorm I : ℝ) <;> simp [h]
 
-private lemma summable_inverse_power_tail {F : Type*} [Field F] [NumberField F]
+private lemma summable_inverse_power_tail  
     (B : ℝ) (hB : 1 < B) (R : ℝ) :
     Summable (fun I : Ideal (𝓞 F) =>
       if I ≠ ⊥ ∧ R < (Ideal.absNorm I : ℝ) then (Ideal.absNorm I : ℝ) ^ (-B) else 0) := by
@@ -69,11 +75,16 @@ private lemma summable_inverse_power_tail {F : Type*} [Field F] [NumberField F]
       · simp [hbot]
       · rw [if_neg hbot]
         exact Real.rpow_nonneg (Nat.cast_nonneg _) _
+end
 
-theorem scaled_ideal_series_summable (F : Type*) [Field F] [NumberField F]
+
+section
+variable (F : Type*) [Field F] [NumberField F]
     (B : ℝ) (hB : 1 < B) (K : ℝ) (hK : 0 ≤ K) (φ : ℝ → ℂ)
     (hφ : ∀ t : ℝ, 0 < t → ‖φ t‖ ≤ K * t ^ (-B))
-    (u : ℝ) (hu : 0 < u) :
+    (u : ℝ) (hu : 0 < u)
+include F B hB K hK φ hφ u hu
+theorem scaled_ideal_series_summable   :
     Summable (fun I : Ideal (𝓞 F) =>
       ‖if I = ⊥ then (0 : ℂ) else φ (u * (Ideal.absNorm I : ℝ))‖) ∧
     Summable (fun I : Ideal (𝓞 F) =>
@@ -85,10 +96,7 @@ theorem scaled_ideal_series_summable (F : Type*) [Field F] [NumberField F]
       (fun I => norm_le_majorant hu hφ I) hmaj,
     Summable.of_norm_bounded hmaj (fun I => norm_le_majorant hu hφ I)⟩
 
-theorem scaled_ideal_tail_summable (F : Type*) [Field F] [NumberField F]
-    (B : ℝ) (hB : 1 < B) (K : ℝ) (hK : 0 ≤ K) (φ : ℝ → ℂ)
-    (hφ : ∀ t : ℝ, 0 < t → ‖φ t‖ ≤ K * t ^ (-B))
-    (u : ℝ) (hu : 0 < u) (R : ℝ) :
+theorem scaled_ideal_tail_summable   (R : ℝ) :
     Summable (fun I : Ideal (𝓞 F) =>
       if I ≠ ⊥ ∧ R < (Ideal.absNorm I : ℝ)
       then ‖φ (u * (Ideal.absNorm I : ℝ))‖ else 0) ∧
@@ -102,13 +110,10 @@ theorem scaled_ideal_tail_summable (F : Type*) [Field F] [NumberField F]
     (summable_inverse_power_tail B hB R).mul_left (K * u ^ (-B))
   exact ⟨Summable.of_nonneg_of_le
       (fun I => by by_cases h : I ≠ ⊥ ∧ R < (Ideal.absNorm I : ℝ) <;> simp [h])
-      (fun I => by rw [tail_norm_eq_norm_tail φ I]; exact norm_le_tail_majorant hu hφ I) hmaj,
+      (fun I => by rw [tail_norm_eq_norm_tail φ I]; apply norm_le_tail_majorant <;> assumption) hmaj,
     Summable.of_norm_bounded hmaj (fun I => norm_le_tail_majorant hu hφ I)⟩
 
-theorem scaled_ideal_series_split (F : Type*) [Field F] [NumberField F]
-    (B : ℝ) (hB : 1 < B) (K : ℝ) (hK : 0 ≤ K) (φ : ℝ → ℂ)
-    (hφ : ∀ t : ℝ, 0 < t → ‖φ t‖ ≤ K * t ^ (-B))
-    (u : ℝ) (hu : 0 < u) (R : ℝ) :
+theorem scaled_ideal_series_split   (R : ℝ) :
     (∑' I : Ideal (𝓞 F),
       if I = ⊥ then (0 : ℂ) else φ (u * (Ideal.absNorm I : ℝ))) =
       (∑ I ∈ (DedekindZetaZeroFree.LargeSieve.boundedNormIdeals F R).filter (fun I => I ≠ ⊥),
@@ -119,8 +124,8 @@ theorem scaled_ideal_series_split (F : Type*) [Field F] [NumberField F]
   set A : Finset (Ideal (𝓞 F)) := (DedekindZetaZeroFree.LargeSieve.boundedNormIdeals F R).filter (fun I => I ≠ ⊥) with hA
   let f : Ideal (𝓞 F) → ℂ :=
     fun I => if I = ⊥ then (0 : ℂ) else φ (u * (Ideal.absNorm I : ℝ))
-  let g : Ideal (𝓞 F) → ℂ := fun I => if I ∈ A then f I else 0
-  let h : Ideal (𝓞 F) → ℂ := fun I => if I ∈ A then 0 else f I
+  let g  := fun I => if I ∈ A then f I else 0
+  let h  := fun I => if I ∈ A then 0 else f I
   have hsumm : Summable f :=
     (scaled_ideal_series_summable F B hB K hK φ hφ u hu).2
   have hg : Summable g := by
@@ -164,6 +169,8 @@ theorem scaled_ideal_series_split (F : Type*) [Field F] [NumberField F]
             exact Finset.mem_filter.mpr
               ⟨DedekindZetaZeroFree.LargeSieve.mem_boundedNormIdeals.mpr (le_of_not_gt hcon), hbot⟩)
         simp [f, hbot, hlt]
+end
+
 
 theorem exists_scaled_ideal_series_tail_bound
     (F : Type*) [Field F] [NumberField F] (B : ℝ) (hB : 1 < B) :
@@ -197,16 +204,11 @@ theorem exists_scaled_ideal_series_tail_bound
                 if I ≠ ⊥ ∧ R < (Ideal.absNorm I : ℝ)
                 then φ (u * (Ideal.absNorm I : ℝ)) else 0 := by
   obtain ⟨B0, hB0nn, hB0bd⟩ := DedekindZetaZeroFree.LargeSieve.exists_ideal_inverse_power_tail_bound F B hB
-  have hfull : Summable (fun I : Ideal (𝓞 F) =>
-      if I = ⊥ then (0 : ℝ) else (Ideal.absNorm I : ℝ) ^ (-B)) :=
+  have hfull  :=
     DedekindZetaZeroFree.LargeSieve.summable_ideal_inverse_power F B hB
   refine ⟨max (∑' I : Ideal (𝓞 F),
       (if I = ⊥ then (0 : ℝ) else (Ideal.absNorm I : ℝ) ^ (-B))) B0, ?_, ?_⟩
-  · exact le_max_of_le_left
-      (tsum_nonneg (fun I => by
-        by_cases h : I = ⊥
-        · simp [h]
-        · rw [if_neg h]; exact Real.rpow_nonneg (Nat.cast_nonneg _) _))
+  · grind
   · intro K hK φ hφ u hu
     have hKup : 0 ≤ K * u ^ (-B) := mul_nonneg hK (Real.rpow_nonneg hu.le (-B))
     have hmaj : Summable (fun I : Ideal (𝓞 F) =>
@@ -257,7 +259,7 @@ theorem exists_scaled_ideal_series_tail_bound
               K * u ^ (-B) * (if I ≠ ⊥ ∧ R < (Ideal.absNorm I : ℝ)
                 then (Ideal.absNorm I : ℝ) ^ (-B) else 0) :=
         Summable.tsum_le_tsum
-          (fun I => by rw [tail_norm_eq_norm_tail φ I]; exact norm_le_tail_majorant hu hφ I)
+          (fun I => by rw [tail_norm_eq_norm_tail φ I]; apply norm_le_tail_majorant <;> assumption)
           htail.1 hmajT
       have h2 : (∑' I : Ideal (𝓞 F),
               K * u ^ (-B) * (if I ≠ ⊥ ∧ R < (Ideal.absNorm I : ℝ)

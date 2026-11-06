@@ -1,48 +1,57 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.QuadraticForms.ClosedGradientForm
 public import DedekindZetaZeroFree.Analysis.QuadraticForms.EnergyRieszResolvent
 public import DedekindZetaZeroFree.Analysis.OperatorTheory.SelfAdjointOperators.RecoveryFromBoundedInverse
 
 @[expose] public section
 
+
 noncomputable section
 namespace DedekindZetaZeroFree
 
-def closedGradientResolvent
-    {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+section
+variable {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
     [NormedAddCommGroup V] [InnerProductSpace ℂ V] [CompleteSpace V]
-    (D : H →ₗ.[ℂ] V) (hclosable : D.IsClosable) : H →L[ℂ] H :=
+    (D : H →ₗ.[ℂ] V)
+include H V D
+def closedGradientResolvent
+      (hclosable : D.IsClosable) : H →L[ℂ] H :=
   letI : CompleteSpace (ClosedGradientSpace D) := closedGradientSpace_complete D hclosable
   energyRieszResolvent (closedGradientEmbedding D)
 
 def closedGradientFriedrichsOperator
-    {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    [NormedAddCommGroup V] [InnerProductSpace ℂ V] [CompleteSpace V]
-    (D : H →ₗ.[ℂ] V) (hdense : Dense (D.domain : Set H))
+      (hdense : Dense (D.domain : Set H))
     (hclosable : D.IsClosable) : H →ₗ.[ℂ] H :=
   letI : CompleteSpace (ClosedGradientSpace D) := closedGradientSpace_complete D hclosable
   let hj := closedGradientEmbedding_properties D hdense hclosable
   ResolventOperator.fromBoundedInverse (closedGradientResolvent D hclosable)
     (energyRieszResolvent_properties (closedGradientEmbedding D)
       hj.2.1 hj.2.2.1 hj.1).2.2.1
+end
 
-def ClosedGradientVariationalAssociation
-    {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+
+section
+variable {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
     [NormedAddCommGroup V] [InnerProductSpace ℂ V]
-    (D : H →ₗ.[ℂ] V) (T : H →ₗ.[ℂ] H) : Prop :=
+    (D : H →ₗ.[ℂ] V)
+include H V D
+def ClosedGradientVariationalAssociation
+      (T : H →ₗ.[ℂ] H) : Prop :=
   ∀ (u h : H),
     (∃ hu : u ∈ T.domain, T ⟨u, hu⟩ = h) ↔
       ∃ hu : u ∈ D.closure.domain,
         ∀ v : D.closure.domain, closedGradientForm D ⟨u, hu⟩ v = inner ℂ h (v : H)
 
  def graphElem
-    {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
-    [NormedAddCommGroup V] [InnerProductSpace ℂ V]
-    (D : H →ₗ.[ℂ] V) (u : D.closure.domain) : ClosedGradientSpace D :=
+      (u : D.closure.domain) : ClosedGradientSpace D :=
   ⟨WithLp.toLp 2 ((u : H), D.closure u), by
     rw [closedGradientGraph, Submodule.mem_comap]
     simpa using LinearPMap.mem_graph D.closure u⟩
+end
+
 
 private lemma fromBoundedInverse_eq_of_eq
     {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
@@ -57,17 +66,8 @@ private lemma graphElem_embedding
     {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
     [NormedAddCommGroup V] [InnerProductSpace ℂ V]
     (D : H →ₗ.[ℂ] V) (u : D.closure.domain) :
-    closedGradientEmbedding D (graphElem D u) = (u : H) := by
-  simp only [closedGradientEmbedding, graphElem, ContinuousLinearMap.comp_apply,
-    Submodule.subtypeL_apply, WithLp.fstL_apply, WithLp.toLp_fst]
+    closedGradientEmbedding D (graphElem D u) = (u : H) := rfl
 
-private lemma graphElem_coordinate
-    {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
-    [NormedAddCommGroup V] [InnerProductSpace ℂ V]
-    (D : H →ₗ.[ℂ] V) (u : D.closure.domain) :
-    closedGradientCoordinate D (graphElem D u) = D.closure u := by
-  simp only [closedGradientCoordinate, graphElem, ContinuousLinearMap.comp_apply,
-    Submodule.subtypeL_apply, WithLp.sndL_apply, WithLp.toLp_snd]
 
 private lemma graphElem_inner
     {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
@@ -75,8 +75,7 @@ private lemma graphElem_inner
     (D : H →ₗ.[ℂ] V) (u : D.closure.domain) (z : ClosedGradientSpace D) :
     inner ℂ (graphElem D u) z =
       inner ℂ (u : H) (closedGradientEmbedding D z) +
-        inner ℂ (D.closure u) (closedGradientCoordinate D z) := by
-  rw [closedGradientSpace_inner, graphElem_embedding, graphElem_coordinate]
+        inner ℂ (D.closure u) (closedGradientCoordinate D z) := rfl
 
 private lemma exists_domain_of_graph
     {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
@@ -109,7 +108,7 @@ theorem closedGradientFriedrichsOperator_domain_subset
     (D : H →ₗ.[ℂ] V) (hdense : Dense (D.domain : Set H))
     (hclosable : D.IsClosable) :
     (closedGradientFriedrichsOperator D hdense hclosable).domain ≤ D.closure.domain := by
-  letI : CompleteSpace (ClosedGradientSpace D) := closedGradientSpace_complete D hclosable
+  letI  := closedGradientSpace_complete D hclosable
   have hj := closedGradientEmbedding_properties D hdense hclosable
   have hBd : (closedGradientFriedrichsOperator D hdense hclosable).domain
       = LinearMap.range (closedGradientResolvent D hclosable).toLinearMap := by
@@ -133,15 +132,14 @@ theorem closedGradientFriedrichsOperator_variational
     (∃ hu : (u : H) ∈ (closedGradientFriedrichsOperator D hdense hclosable).domain,
       closedGradientFriedrichsOperator D hdense hclosable ⟨(u : H), hu⟩ = h) ↔
     ∀ v : D.closure.domain, inner ℂ (D.closure u) (D.closure v) = inner ℂ h (v : H) := by
-  letI : CompleteSpace (ClosedGradientSpace D) := closedGradientSpace_complete D hclosable
+  letI  := closedGradientSpace_complete D hclosable
   let B := closedGradientResolvent D hclosable
   let hB : Function.Injective B :=
     (energyRieszResolvent_properties (closedGradientEmbedding D)
       (closedGradientEmbedding_properties D hdense hclosable).2.1
       (closedGradientEmbedding_properties D hdense hclosable).2.2.1
       (closedGradientEmbedding_properties D hdense hclosable).1).2.2.1
-  have hΔ : closedGradientFriedrichsOperator D hdense hclosable
-      = ResolventOperator.fromBoundedInverse B hB := rfl
+  
   have hj := closedGradientEmbedding_properties D hdense hclosable
   have hL : (∃ hu : (u : H) ∈ (closedGradientFriedrichsOperator D hdense hclosable).domain,
       closedGradientFriedrichsOperator D hdense hclosable ⟨(u : H), hu⟩ = h) ↔ B ((u : H) + h) = u := by
@@ -150,7 +148,7 @@ theorem closedGradientFriedrichsOperator_variational
       have huB : (u : H) ∈ (ResolventOperator.fromBoundedInverse B hB).domain := hu
       rw [ResolventOperator.fromBoundedInverse_domain, LinearMap.mem_range] at huB
       obtain ⟨f, hf⟩ := huB
-      have hfeq : (ResolventOperator.fromBoundedInverse B hB) ⟨(u : H), hu⟩ = f - u :=
+      have hfeq  :=
         fromBoundedInverse_eq_of_eq B hB hu hf
       have hval' : (ResolventOperator.fromBoundedInverse B hB) ⟨(u : H), hu⟩ = h := hval
       have hfu : f = (u : H) + h := by
@@ -166,7 +164,7 @@ theorem closedGradientFriedrichsOperator_variational
         rw [ResolventOperator.fromBoundedInverse_domain, LinearMap.mem_range]
         exact ⟨(u : H) + h, hBuh⟩
       refine ⟨huB, ?_⟩
-      have hfeq : (ResolventOperator.fromBoundedInverse B hB) ⟨(u : H), huB⟩ = ((u : H) + h) - u :=
+      have hfeq  :=
         fromBoundedInverse_eq_of_eq B hB huB hBuh
       change (ResolventOperator.fromBoundedInverse B hB) ⟨(u : H), huB⟩ = h
       rw [hfeq]
@@ -219,7 +217,7 @@ theorem closedGradientFriedrichsOperator_riesz_estimate
     (hclosable : D.IsClosable) (f : H) :
     letI : CompleteSpace (ClosedGradientSpace D) := closedGradientSpace_complete D hclosable
     ‖(closedGradientEmbedding D).adjoint f‖ ≤ ‖f‖ := by
-  letI : CompleteSpace (ClosedGradientSpace D) := closedGradientSpace_complete D hclosable
+  letI  := closedGradientSpace_complete D hclosable
   have hj := closedGradientEmbedding_properties D hdense hclosable
   have hnorm : ‖(closedGradientEmbedding D).adjoint‖ = ‖closedGradientEmbedding D‖ :=
     LinearIsometryEquiv.norm_map (ContinuousLinearMap.adjoint (𝕜 := ℂ)

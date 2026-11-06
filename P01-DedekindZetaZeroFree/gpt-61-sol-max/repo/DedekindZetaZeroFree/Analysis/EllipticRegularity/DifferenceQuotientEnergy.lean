@@ -38,7 +38,10 @@ private theorem gradient_norm_le_sobolevNorm {n : ℕ} {outer : LocalBall n}
   have hu : 0 ≤ u.sobolevNorm := Real.sqrt_nonneg _
   nlinarith [norm_nonneg (gradient u k)]
 
-private theorem l2_pairing_bound {X : Type*} [MeasurableSpace X] {μ : Measure X}
+section
+variable {X : Type*} [MeasurableSpace X] {μ : Measure X}
+include X μ in
+private theorem l2_pairing_bound  
     (f g : X → ℂ) (hf : MemLp f 2 μ) (hg : MemLp g 2 μ) :
     ‖∫ x, f x * star (g x) ∂μ‖ ≤ ‖hf.toLp f‖ * ‖hg.toLp g‖ := by
   have he : (∫ x, f x * star (g x) ∂μ) = inner ℂ (hg.toLp g) (hf.toLp f) := by
@@ -49,7 +52,8 @@ private theorem l2_pairing_bound {X : Type*} [MeasurableSpace X] {μ : Measure X
   rw [he]
   exact (norm_inner_le_norm _ _).trans_eq (mul_comm _ _)
 
-private theorem l2_multiplier_bound {X : Type*} [MeasurableSpace X] {μ : Measure X}
+include X μ in
+private theorem l2_multiplier_bound  
     (a f : X → ℂ) (hf : MemLp f 2 μ) (ha : MemLp a ⊤ μ)
     (C : ℝ) (hC : 0 ≤ C) (hab : ∀ᵐ x ∂μ, ‖a x‖ ≤ C) :
     ‖(show MemLp (fun x => a x * f x) 2 μ from ha.fun_mul hf).toLp (fun x => a x * f x)‖ ≤ C * ‖hf.toLp f‖ := by
@@ -304,7 +308,8 @@ private theorem difference_test_value_norm_bound {n : ℕ} (mid outer : LocalBal
     (hKB.trans hsub) hvs k t ht w hwb).trans
       (cutoff_leibniz_norm_bound mid η q v hη G hG hd hvg' k)
 
-private theorem bounded_l2_pairing {X : Type*} [MeasurableSpace X] {μ : Measure X}
+include X μ in
+private theorem bounded_l2_pairing  
     (a f g : X → ℂ) (ha : MemLp a ⊤ μ) (hf : MemLp f 2 μ) (hg : MemLp g 2 μ)
     (C : ℝ) (hC : 0 ≤ C) (hab : ∀ᵐ x ∂μ, ‖a x‖ ≤ C) :
     ‖∫ x, a x * f x * star (g x) ∂μ‖ ≤ C * ‖hf.toLp f‖ * ‖hg.toLp g‖ := by
@@ -387,12 +392,14 @@ private theorem difference_lower_order_bound {n : ℕ} (mid outer : LocalBall n)
       · exact hg.trans (by gcongr)
     _ = _ := by dsimp [N, E]; ring
 
-private theorem norm_toLp_self {X : Type*} [MeasurableSpace X] {μ : Measure X}
+include X μ in
+private theorem norm_toLp_self  
     (f : Lp ℂ 2 μ) : (Lp.memLp f).toLp (fun x => f x) = f := by
   apply Lp.ext
   exact MemLp.coeFn_toLp _
 
-private theorem l2_sq_integral {X : Type*} [MeasurableSpace X] {μ : Measure X}
+include X μ in
+private theorem l2_sq_integral  
     (f : X → ℂ) (hf : MemLp f 2 μ) :
     ‖hf.toLp f‖ ^ 2 = ∫ x, ‖f x‖ ^ 2 ∂μ := by
   rw [← real_inner_self_eq_norm_sq, L2.inner_def]
@@ -401,7 +408,8 @@ private theorem l2_sq_integral {X : Type*} [MeasurableSpace X] {μ : Measure X}
   filter_upwards [hf.coeFn_toLp] with x hx
   rw [hx]
 
-private theorem integrated_flux_bound {X : Type*} [MeasurableSpace X] {μ : Measure X}
+include X μ in
+private theorem integrated_flux_bound  
     (n : ℕ) (a b : Fin n → Fin n → X → ℂ) (F H S U : Fin n → X → ℂ)
     (ha : ∀ i j, MemLp (a i j) ⊤ μ) (hb : ∀ i j, MemLp (b i j) ⊤ μ)
     (hF : ∀ j, MemLp (F j) 2 μ) (hH : ∀ j, MemLp (H j) 2 μ)
@@ -475,6 +483,8 @@ private theorem integrated_flux_bound {X : Type*} [MeasurableSpace X] {μ : Meas
   dsimp only [p, e] at hz hmain hre
   simp only [add_assoc] at hz ⊢
   linarith
+end
+
 
 set_option maxHeartbeats 1600000 in
 

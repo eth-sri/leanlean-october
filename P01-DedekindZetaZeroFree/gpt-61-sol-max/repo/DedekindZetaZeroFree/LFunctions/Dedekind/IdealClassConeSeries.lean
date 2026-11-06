@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Ideals.IdealElementDecomposition
 public import DedekindZetaZeroFree.LFunctions.Dedekind.IdealNormSeries
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 The FLT Project. All rights reserved.
@@ -35,25 +38,27 @@ open DedekindZetaZeroFree.Odlyzko
 
 variable (K : Type*) [Field K] [NumberField K]
 
-abbrev idealSetIntNorm (J : (Ideal (𝓞 K))⁰) (a : idealSet K J) : ℕ :=
-  DedekindZetaZeroFree.Theta.idealSetIntNorm K J a
+abbrev idealSetIntNorm := @_root_.DedekindZetaZeroFree.Theta.idealSetIntNorm
 
-def principalIdealNormCount (J : (Ideal (𝓞 K))⁰) (n : ℕ) : ℕ :=
+section
+variable (J : (Ideal (𝓞 K))⁰)
+include J
+def principalIdealNormCount   (n : ℕ)  :=
   Nat.card {I : (Ideal (𝓞 K))⁰ //
     (J : Ideal (𝓞 K)) ∣ I ∧ IsPrincipal (I : Ideal (𝓞 K)) ∧
       absNorm (I : Ideal (𝓞 K)) = n}
 
-def fundamentalConeNormCount (J : (Ideal (𝓞 K))⁰) (n : ℕ) : ℕ :=
+def fundamentalConeNormCount   (n : ℕ)  :=
   Nat.card {a : idealSet K J //
     mixedEmbedding.norm (a : mixedSpace K) = n}
 
 theorem idealSetIntNorm_eq_norm
-    (J : (Ideal (𝓞 K))⁰) (a : idealSet K J) :
+      (a : idealSet K J) :
     ((idealSetIntNorm K J a : ℝ)) = mixedEmbedding.norm (a : mixedSpace K) :=
   intNorm_idealSetEquiv_apply a
 
 noncomputable def idealSetIntNormFiberEquiv
-    (J : (Ideal (𝓞 K))⁰) (n : ℕ) :
+      (n : ℕ) :
     {a : idealSet K J // idealSetIntNorm K J a = n} ≃
       {a : idealSet K J //
         mixedEmbedding.norm (a : mixedSpace K) = n} :=
@@ -62,7 +67,7 @@ noncomputable def idealSetIntNormFiberEquiv
     exact_mod_cast Iff.rfl
 
 private theorem finite_idealSetIntNorm_fiber
-    (J : (Ideal (𝓞 K))⁰) (n : ℕ) :
+      (n : ℕ) :
     Finite {a : idealSet K J // idealSetIntNorm K J a = n} := by
   let : Fintype {I : Ideal (𝓞 K) // absNorm I = n} :=
     (Ideal.finite_setOfPred_absNorm_eq n).fintype
@@ -84,14 +89,14 @@ private theorem finite_idealSetIntNorm_fiber
       (idealSetIntNormFiberEquiv K J n).symm)
 
 theorem fundamentalConeNormCount_eq_natCard_idealSetIntNorm
-    (J : (Ideal (𝓞 K))⁰) (n : ℕ) :
+      (n : ℕ) :
     fundamentalConeNormCount K J n =
       Nat.card {a : idealSet K J // idealSetIntNorm K J a = n} := by
   rw [fundamentalConeNormCount]
   exact (Nat.card_congr (idealSetIntNormFiberEquiv K J n)).symm
 
 theorem idealSetIntNorm_ne_zero
-    (J : (Ideal (𝓞 K))⁰) (a : idealSet K J) :
+      (a : idealSet K J) :
     idealSetIntNorm K J a ≠ 0 := by
   have hpos := fundamentalCone.norm_pos_of_mem a.prop.1
   rw [← idealSetIntNorm_eq_norm K J a] at hpos
@@ -100,7 +105,7 @@ theorem idealSetIntNorm_ne_zero
   exact absurd hpos (by norm_num)
 
 theorem fundamentalConeNormCount_eq_torsion_mul
-    (J : (Ideal (𝓞 K))⁰) (n : ℕ) :
+      (n : ℕ) :
     fundamentalConeNormCount K J n =
       principalIdealNormCount K J n * torsionOrder K := by
   rw [fundamentalConeNormCount, principalIdealNormCount, torsionOrder,
@@ -108,7 +113,7 @@ theorem fundamentalConeNormCount_eq_torsion_mul
   exact Nat.card_congr (idealSetEquivNorm K J n)
 
 theorem principalIdealNormCount_le_idealNormCount
-    (J : (Ideal (𝓞 K))⁰) (n : ℕ) :
+      (n : ℕ) :
     principalIdealNormCount K J n ≤ idealNormCount K n := by
   let : Fintype {I : Ideal (𝓞 K) // absNorm I = n} :=
     (Ideal.finite_setOfPred_absNorm_eq n).fintype
@@ -122,14 +127,19 @@ theorem principalIdealNormCount_le_idealNormCount
   exact Nat.card_le_card_of_injective f fun I I' h ↦ by
     grind
 
-def principalIdealZeta (J : (Ideal (𝓞 K))⁰) (s : ℂ) : ℂ :=
+def principalIdealZeta   (s : ℂ)  :=
   LSeries (fun n ↦ (principalIdealNormCount K J n : ℂ)) s
 
-def fundamentalConeZeta (J : (Ideal (𝓞 K))⁰) (s : ℂ) : ℂ :=
+def fundamentalConeZeta   (s : ℂ)  :=
   LSeries (fun n ↦ (fundamentalConeNormCount K J n : ℂ)) s
+end
 
+
+section
+variable (J : (Ideal (𝓞 K))⁰) {s : ℂ} (hs : 1 < s.re)
+include J s hs
 theorem lSeriesSummable_principalIdealNormCount
-    (J : (Ideal (𝓞 K))⁰) {s : ℂ} (hs : 1 < s.re) :
+      :
     LSeriesSummable (fun n ↦ (principalIdealNormCount K J n : ℂ)) s := by
   rw [LSeriesSummable]
   refine Summable.of_norm_bounded (lSeriesSummable_idealNormCount K hs).norm ?_
@@ -143,7 +153,7 @@ theorem lSeriesSummable_principalIdealNormCount
     (norm_nonneg _)
 
 theorem lSeriesSummable_fundamentalConeNormCount
-    (J : (Ideal (𝓞 K))⁰) {s : ℂ} (hs : 1 < s.re) :
+      :
     LSeriesSummable (fun n ↦ (fundamentalConeNormCount K J n : ℂ)) s := by
   have hcoeff :
       (fun n ↦ (fundamentalConeNormCount K J n : ℂ)) =
@@ -156,7 +166,7 @@ theorem lSeriesSummable_fundamentalConeNormCount
   exact (lSeriesSummable_principalIdealNormCount K J hs).smul _
 
 theorem summable_idealSet_inverseNormPower
-    (J : (Ideal (𝓞 K))⁰) {s : ℂ} (hs : 1 < s.re) :
+      :
     Summable (fun a : idealSet K J ↦
       ((idealSetIntNorm K J a : ℂ) ^ (-s))) := by
   let (n : ℕ) :
@@ -169,7 +179,7 @@ theorem summable_idealSet_inverseNormPower
   rw [fundamentalConeNormCount_eq_natCard_idealSetIntNorm]
 
 theorem hasSum_idealSet_inverseNormPower
-    (J : (Ideal (𝓞 K))⁰) {s : ℂ} (hs : 1 < s.re) :
+      :
     HasSum (fun a : idealSet K J ↦
       ((idealSetIntNorm K J a : ℂ) ^ (-s)))
       (fundamentalConeZeta K J s) := by
@@ -181,6 +191,8 @@ theorem hasSum_idealSet_inverseNormPower
     (summable_idealSet_inverseNormPower K J hs)
   simpa only [fundamentalConeZeta,
     ← fundamentalConeNormCount_eq_natCard_idealSetIntNorm] using h
+end
+
 
 theorem fundamentalConeZeta_eq_torsion_mul_principalIdealZeta
     (J : (Ideal (𝓞 K))⁰) (s : ℂ) :
@@ -197,13 +209,13 @@ theorem fundamentalConeZeta_eq_torsion_mul_principalIdealZeta
 
 open Classical in
 
-def classIdealNormCount (C : ClassGroup (𝓞 K)) (n : ℕ) : ℕ :=
+def classIdealNormCount (C : ClassGroup (𝓞 K)) (n : ℕ)  :=
   Nat.card {I : (Ideal (𝓞 K))⁰ //
     ClassGroup.mk0 I = C ∧ absNorm (I : Ideal (𝓞 K)) = n}
 
 open Classical in
 
-def partialDedekindZeta (C : ClassGroup (𝓞 K)) (s : ℂ) : ℂ :=
+def partialDedekindZeta (C : ClassGroup (𝓞 K)) (s : ℂ)  :=
   LSeries (fun n ↦ (classIdealNormCount K C n : ℂ)) s
 
 open Classical in
@@ -215,9 +227,8 @@ noncomputable def idealNormFiberEquivNonzero
     ⟨⟨I, mem_nonZeroDivisors_iff_ne_zero.mpr fun hI ↦
       hn <| I.2.symm.trans (Ideal.absNorm_eq_zero_iff.mpr hI)⟩, I.2⟩
   invFun I := ⟨I.1.1, I.2⟩
-  left_inv I := by simp
-  right_inv I := by
-    simp
+  left_inv I := rfl
+  right_inv I := rfl
 
 open Classical in
 
@@ -226,8 +237,7 @@ theorem sum_classIdealNormCount {n : ℕ} (hn : n ≠ 0) :
       idealNormCount K n := by
   let : Fintype {I : Ideal (𝓞 K) // absNorm I = n} :=
     (Ideal.finite_setOfPred_absNorm_eq n).fintype
-  let : Fintype {I : (Ideal (𝓞 K))⁰ //
-      absNorm (I : Ideal (𝓞 K)) = n} :=
+  let  :=
     Fintype.ofEquiv _ (idealNormFiberEquivNonzero K hn)
   let e := fun C : ClassGroup (𝓞 K) ↦
     (Equiv.subtypeSubtypeEquivSubtypeInter
@@ -291,11 +301,7 @@ theorem lSeriesSummable_classIdealNormCount
 
 open Classical in
 def classIdealNormFiberEquiv
-    (C : ClassGroup (𝓞 K)) (n : ℕ) :
-    {I : {I : (Ideal (𝓞 K))⁰ // ClassGroup.mk0 I = C} //
-      absNorm (I.1 : Ideal (𝓞 K)) = n} ≃
-      {I : (Ideal (𝓞 K))⁰ //
-        ClassGroup.mk0 I = C ∧ absNorm (I : Ideal (𝓞 K)) = n} :=
+    (C : ClassGroup (𝓞 K)) (n : ℕ)  :=
   Equiv.subtypeSubtypeEquivSubtypeInter
     (fun I : (Ideal (𝓞 K))⁰ ↦ ClassGroup.mk0 I = C)
     (fun I ↦ absNorm (I : Ideal (𝓞 K)) = n)
@@ -564,7 +570,7 @@ theorem principalIdealZeta_eq_inverseNormPower_mul_partialDedekindZeta
 open Classical in
 
 def inverseClassIdealRepresentative
-    (C : ClassGroup (𝓞 K)) : (Ideal (𝓞 K))⁰ :=
+    (C : ClassGroup (𝓞 K))  :=
   Classical.choose
     (ClassGroup.mk0_surjective (R := 𝓞 K) C⁻¹)
 
@@ -606,13 +612,8 @@ theorem partialDedekindZeta_eq_normalized_fundamentalConeZeta_of_mk0
 
 open Classical in
 
-theorem partialDedekindZeta_eq_normalized_fundamentalConeZeta
-    (C : ClassGroup (𝓞 K)) {s : ℂ} (hs : 1 < s.re) :
-    partialDedekindZeta K C s =
-      (torsionOrder K : ℂ)⁻¹ *
-        (absNorm
-          (inverseClassIdealRepresentative K C : Ideal (𝓞 K)) : ℂ) ^ s *
-        fundamentalConeZeta K (inverseClassIdealRepresentative K C) s :=
+def partialDedekindZeta_eq_normalized_fundamentalConeZeta
+    (C : ClassGroup (𝓞 K)) {s : ℂ} (hs : 1 < s.re)  :=
   partialDedekindZeta_eq_normalized_fundamentalConeZeta_of_mk0 K C
     (inverseClassIdealRepresentative K C)
     (mk0_inverseClassIdealRepresentative K C) hs

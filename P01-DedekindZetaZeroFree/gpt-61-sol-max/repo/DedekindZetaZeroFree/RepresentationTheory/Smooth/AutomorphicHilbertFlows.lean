@@ -251,70 +251,70 @@ theorem continuous_rightTranslation :
 
 variable [MeasurableSpace (LeftQuotient Γ)] [BorelSpace (LeftQuotient Γ)]
   (μ : Measure (LeftQuotient Γ))
-  (hμ : ∀ g, MeasurePreserving (rightTranslation Γ g) μ μ)
+  
 
-def translationIsometry (g : G) : Lp ℂ 2 μ ≃ₗᵢ[ℂ] Lp ℂ 2 μ :=
-  { Lp.compMeasurePreservingₗᵢ ℂ (rightTranslation Γ g) (hμ g) with
-    invFun := Lp.compMeasurePreserving (rightTranslation Γ g⁻¹) (hμ g⁻¹)
-    left_inv := by
-      intro f
-      change Lp.compMeasurePreserving _ _ (Lp.compMeasurePreserving _ _ f) = f
-      rw [← Lp.compMeasurePreserving_comp_apply]
-      have he : rightTranslation Γ g ∘ rightTranslation Γ g⁻¹ = id := by
-        rw [← rightTranslation_mul, inv_mul_cancel, rightTranslation_one]
-      simpa only [he] using Lp.compMeasurePreserving_id_apply f
-    right_inv := by
-      intro f
-      change Lp.compMeasurePreserving _ _ (Lp.compMeasurePreserving _ _ f) = f
-      rw [← Lp.compMeasurePreserving_comp_apply]
-      have he : rightTranslation Γ g⁻¹ ∘ rightTranslation Γ g = id := by
-        rw [← rightTranslation_mul, mul_inv_cancel, rightTranslation_one]
-      simpa only [he] using Lp.compMeasurePreserving_id_apply f }
 
-def translationHom : G →* (Lp ℂ 2 μ ≃ₗᵢ[ℂ] Lp ℂ 2 μ) where
-  toFun := translationIsometry Γ μ hμ
-  map_one' := by
-    apply LinearIsometryEquiv.ext
-    intro f
-    change Lp.compMeasurePreserving (rightTranslation Γ 1) (hμ 1) f = f
-    simpa only [rightTranslation_one] using Lp.compMeasurePreserving_id_apply f
-  map_mul' g h := by
-    apply LinearIsometryEquiv.ext
-    intro f
-    change Lp.compMeasurePreserving (rightTranslation Γ (g * h)) (hμ (g * h)) f =
-      Lp.compMeasurePreserving (rightTranslation Γ g) (hμ g)
-        (Lp.compMeasurePreserving (rightTranslation Γ h) (hμ h) f)
-    rw [← Lp.compMeasurePreserving_comp_apply]
-    simp only [rightTranslation_mul Γ g h]
 
-theorem quotient_unitary_action (hμ : ∀ g, MeasurePreserving (rightTranslation Γ g) μ μ)
-    (hΓ : IsClosed (Γ : Set G))
-    [μ.InnerRegularCompactLTTop] [IsLocallyFiniteMeasure μ] :
-    ∃ π : StronglyContinuousHilbertRepresentation
-      (G := G) (H := Lp ℂ 2 μ),
-      ∀ g f, (π.operator g f : LeftQuotient Γ → ℂ) =ᵐ[μ]
-        fun x => f (rightTranslation Γ g x) := by
-  have hq : IsOpenQuotientMap (Quotient.mk'' : G → LeftQuotient Γ) := by
-    have he : (Quotient.mk'' : G → LeftQuotient Γ) =
-        (inversionHomeomorph Γ).symm ∘ (QuotientGroup.mk ∘ Inv.inv) := by
-      funext g
-      simp [inversionHomeomorph, QuotientGroup.quotientRightRelEquivQuotientLeftRel]
-    rw [he]
-    exact (inversionHomeomorph Γ).symm.isOpenQuotientMap.comp
-      ((QuotientGroup.isOpenQuotientMap_mk (N := Γ)).comp
-        (Homeomorph.inv G).isOpenQuotientMap)
-  haveI : T2Space (LeftQuotient Γ) :=
-    (t2Space_iff_of_isOpenQuotientMap hq).mpr (by
-      convert hΓ.preimage (continuous_snd.mul continuous_fst.inv) using 1
-      ext p
-      exact Quotient.eq.trans (QuotientGroup.rightRel_apply (s := Γ)))
-  refine ⟨{ operator := translationHom Γ μ hμ, strongly_continuous := ?_ }, ?_⟩
-  · intro f
-    let c : C(G × LeftQuotient Γ, LeftQuotient Γ) :=
-      ⟨_, continuous_rightTranslation Γ⟩
-    exact (continuous_const.compMeasurePreservingLp c.curry.continuous hμ (by simp))
-  · intro g f
-    exact Lp.coeFn_compMeasurePreserving f (hμ g)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end DedekindZetaZeroFree.KPSmoothQuotientTranslationFlow
 
@@ -361,23 +361,23 @@ structure QuotientMeasureData where
           φ (KPRationalAdelicSplitting.rationalPGLHom F ζ hζ γ *
             (Quotient.out x)) ∂measure
 
-theorem actual_quotient_unitary_action (μ : QuotientMeasureData F ζ hζ) :
-    ∃ π : StronglyContinuousHilbertRepresentation
-      (G := G F ζ hζ) (H := H F ζ hζ μ.measure),
-      ∀ (g : G F ζ hζ) (f : H F ζ hζ μ.measure),
-        (π.operator g f : X F ζ hζ → ℂ) =ᵐ[μ.measure]
-          fun x => f (rightTranslate F ζ hζ g x) := by
-  letI := (ActualQuotient.actual_cover_lc_t2_group F ζ hζ).2.2
-  letI := μ.regular
-  letI := μ.finiteOnCompacts
-  letI := (ActualQuotient.actual_cover_lc_t2_group F ζ hζ).2.1
-  haveI : BorelSpace (X F ζ hζ) := ⟨rfl⟩
-  haveI : WeaklyLocallyCompactSpace (X F ζ hζ) := by
-    let e := KPSmoothQuotientTranslationFlow.inversionHomeomorph (rationalSubgroup F ζ hζ)
-    exact e.symm.isOpenQuotientMap.weaklyLocallyCompactSpace
-  exact KPSmoothQuotientTranslationFlow.quotient_unitary_action
-    (rationalSubgroup F ζ hζ) μ.measure μ.rightInvariant
-    (ActualQuotient.actual_rational_closed_discrete F ζ hζ).1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 def basisMatrix (j : Fin 6) : Matrix (Fin 2) (Fin 2) ℂ :=
   sl2Matrix (fun k => if k = j then 1 else 0)
@@ -434,10 +434,10 @@ theorem flow_properties (b : B F) :
         exact continuous_const
     exact hc.comp hcoords
 
-def pi (μ : QuotientMeasureData F ζ hζ) :
-    StronglyContinuousHilbertRepresentation
-      (G := G F ζ hζ) (H := H F ζ hζ μ.measure) :=
-  (actual_quotient_unitary_action F ζ hζ μ).choose
+
+
+
+
 
 def SmoothAutomorphic (f : X F ζ hζ → ℂ) : Prop :=
   Continuous f ∧ ∀ x : X F ζ hζ,

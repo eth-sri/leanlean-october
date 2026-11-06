@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AlgebraicNumberTheory.SUnit.Rank
 public import Mathlib.Algebra.Module.PID
 public import Mathlib.Algebra.Module.ZLattice.Basic
 public import Mathlib.NumberTheory.NumberField.ProductFormula
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -126,9 +129,7 @@ theorem log_adicAbv_eq_neg_divisorCoordinate_mul_log_absNorm
   ring
 
 /-- The `ℤ`-linear form of the reduced logarithmic embedding. -/
-noncomputable def reducedLogLinearMap :
-    Additive (SUnitGroup (K := K) S) →ₗ[ℤ]
-      ReducedLogSpace (K := K) S :=
+noncomputable def reducedLogLinearMap  :=
   (reducedLog (K := K) S).toIntLinearMap
 
 @[simp]
@@ -187,9 +188,7 @@ theorem reducedLog_eq_zero_iff
     rw [← range_fromNumberFieldUnitsLinearMap_eq_ker_divisorLinearMap
       (K := K) S] at hxdiv
     obtain ⟨u, hu⟩ := hxdiv
-    have hxu :
-        x =
-          fromNumberFieldUnitsLinearMap (K := K) S u :=
+    have hxu  :=
       hu.symm
     have hlog :
         NumberField.Units.logEmbedding K u = 0 := by
@@ -197,9 +196,7 @@ theorem reducedLog_eq_zero_iff
       rw [hxu] at hfst
       simpa [fromNumberFieldUnitsLinearMap] using hfst
     have hutors :
-        Additive.toMul u ∈ NumberField.Units.torsion K := by
-      exact
-        NumberField.Units.dirichletUnitTheorem.logEmbedding_eq_zero_iff.mp
+        Additive.toMul u ∈ NumberField.Units.torsion K := NumberField.Units.dirichletUnitTheorem.logEmbedding_eq_zero_iff.mp
           hlog
     change
       Additive.toMul x ∈
@@ -222,12 +219,9 @@ theorem reducedLog_eq_zero_iff
     rw [hxadd]
     apply Prod.ext
     ·
-      simpa using
-        (NumberField.Units.dirichletUnitTheorem.logEmbedding_eq_zero_iff.mpr
-          hu)
+      apply NumberField.Units.dirichletUnitTheorem.logEmbedding_eq_zero_iff.mpr <;> assumption
     ·
-      exact reducedLog_snd_fromNumberFieldUnits
-        (K := K) S u
+      apply reducedLog_snd_fromNumberFieldUnits
 
 /-- The kernel of the reduced logarithmic map is the additive torsion
 submodule. -/
@@ -237,11 +231,10 @@ theorem reducedLogLinearMap_ker :
         (Additive (SUnitGroup (K := K) S))).toIntSubmodule := by
   ext x
   rw [LinearMap.mem_ker]
-  exact reducedLog_eq_zero_iff (K := K) S x
+  apply reducedLog_eq_zero_iff
 
 /-- The reduced `S`-unit lattice. -/
-noncomputable def reducedLogLattice :
-    Submodule ℤ (ReducedLogSpace (K := K) S) :=
+noncomputable def reducedLogLattice  :=
   LinearMap.range (reducedLogLinearMap (K := K) S)
 
 /-- A reduced logarithmic vector in the lattice vanishes when all of its
@@ -253,9 +246,7 @@ theorem norm_reducedLog_finite_lt_one_implies_zero
     (reducedLog (K := K) S x).2 = 0 := by
   ext v
   have hv :
-      ‖(reducedLog (K := K) S x).2 v‖ < 1 := by
-    exact
-      (norm_le_pi_norm _ v).trans_lt
+      ‖(reducedLog (K := K) S x).2 v‖ < 1 := (norm_le_pi_norm _ v).trans_lt
         ((norm_snd_le
           (reducedLog (K := K) S x)).trans_lt hx)
   change
@@ -289,7 +280,7 @@ instance instDiscreteTopology_reducedLogLattice :
         (0 :
           NumberField.Units.dirichletUnitTheorem.logSpace K) ∈
         NumberField.Units.unitLattice K by simp)
-  let δ : ℝ := min ε 1
+  let δ  := min ε 1
   have hδpos : 0 < δ := lt_min hεpos zero_lt_one
   refine discreteTopology_iff_isOpen_singleton_zero.mpr
     ⟨Metric.ball 0 δ, Metric.isOpen_ball, ?_⟩
@@ -319,8 +310,7 @@ instance instDiscreteTopology_reducedLogLattice :
           (Additive.toMul x) v = 0
       have hvreal :
           (divisorCoordinate (K := K) S
-            (Additive.toMul x) v : ℝ) = 0 := by
-        simpa [reducedLog] using hv
+            (Additive.toMul x) v : ℝ) = 0 := hv
       exact_mod_cast hvreal
     rw [← range_fromNumberFieldUnitsLinearMap_eq_ker_divisorLinearMap
       (K := K) S] at hxdiv
@@ -332,8 +322,7 @@ instance instDiscreteTopology_reducedLogLattice :
       simp [fromNumberFieldUnitsLinearMap]
     have hunitmem :
         NumberField.Units.logEmbedding K u ∈
-          NumberField.Units.unitLattice K := by
-      exact ⟨u, trivial, rfl⟩
+          NumberField.Units.unitLattice K := ⟨u, trivial, rfl⟩
     have hunitball :
         NumberField.Units.logEmbedding K u ∈
           Metric.ball 0 ε := by
@@ -361,8 +350,7 @@ instance instDiscreteTopology_reducedLogLattice :
       simpa [fromNumberFieldUnitsLinearMap] using hunitzero
     · exact hfin
   · intro hz
-    have hz0 : z = 0 := by
-      simpa using hz
+    have hz0 : z = 0 := hz
     subst z
     simp [Metric.mem_ball, hδpos]
 
@@ -389,8 +377,7 @@ theorem finrank_reducedLogLattice :
             (SUnitGroup (K := K) S))).toIntSubmodule from
           reducedLogLinearMap_ker (K := K) S]
     _ = Module.finrank ℤ
-          (Additive (SUnitGroup (K := K) S)) := by
-      exact finrank_quotient_torsion_eq
+          (Additive (SUnitGroup (K := K) S)) := finrank_quotient_torsion_eq
     _ = NumberField.Units.rank K + S.card :=
       finrank (K := K) S
 
@@ -523,15 +510,15 @@ theorem fullLogAmbient_finite
             SUnitGroup (K := K) S) : Kˣ) : K)) :=
   rfl
 
-/-- An `S`-unit has normalized finite absolute value one outside `S`. -/
-theorem adicAbv_eq_one_of_not_mem
-    (x : SUnitGroup (K := K) S)
-    (v : HeightOneSpectrum (𝓞 K)) (hv : v ∉ S) :
-    NumberField.HeightOneSpectrum.adicAbv K v
-        (((x : Kˣ) : K)) = 1 := by
-  rw [NumberField.HeightOneSpectrum.adicAbv_def,
-    x.property v hv]
-  simp
+
+
+
+
+
+
+
+
+
 
 /-- For an `S`-unit the finite part of the global product formula is
 the product over the finite places in `S`. -/
@@ -616,9 +603,7 @@ theorem sum_log_absoluteValues_eq_zero
       rw [Real.log_mul]
       · exact Finset.prod_ne_zero_iff.mpr fun w _ ↦
           pow_ne_zero _ ((w.pos_iff.mpr hx0).ne')
-      · exact Finset.prod_ne_zero_iff.mpr fun v _ ↦
-          ((NumberField.HeightOneSpectrum.adicAbv K
-            (v : HeightOneSpectrum (𝓞 K))).pos_iff.mpr hx0).ne'
+      · grind
     _ = 0 := by
       rw [hprod, Real.log_one]
 
@@ -631,22 +616,18 @@ theorem fullLogAmbient_mem_logHyperplane
     ∑ p : LogPlace (K := K) S,
       fullLogAmbient (K := K) S x p = 0
   rw [Fintype.sum_sum_type]
-  exact
-    sum_log_absoluteValues_eq_zero (K := K) S
-      (Additive.toMul x)
+  apply sum_log_absoluteValues_eq_zero
 
 /-- The normalized all-place logarithmic map with codomain restricted
 to the coordinate-sum-zero hyperplane. -/
-noncomputable def fullLog :
-    Additive (SUnitGroup (K := K) S) →+
-      LogHyperplane (K := K) S :=
+noncomputable def fullLog  :=
   (fullLogAmbient (K := K) S).codRestrict
     (LogHyperplane (K := K) S)
     (fullLogAmbient_mem_logHyperplane (K := K) S)
 
 /-- The nonzero scale converting an integral divisor coordinate into
 the logarithm of the corresponding normalized finite absolute value. -/
-noncomputable def finiteLogWeight (v : S) : ℝ :=
+noncomputable def finiteLogWeight (v : S)  :=
   -Real.log
     (Ideal.absNorm
       (v : HeightOneSpectrum (𝓞 K)).asIdeal : ℝ)
@@ -855,8 +836,7 @@ theorem forgetDistinguishedLog_surjective :
     have hfin :
         (∑ v : S, completed (Sum.inr v)) =
           ∑ v : S,
-            finiteLogWeight (K := K) S v * z.2 v := by
-      rfl
+            finiteLogWeight (K := K) S v * z.2 v := rfl
     rw [hw0, hinf, hfin]
     ring
   let y : LogHyperplane (K := K) S :=
@@ -871,9 +851,7 @@ theorem forgetDistinguishedLog_surjective :
 
 /-- Removing the distinguished infinite coordinate and rescaling the
 finite coordinates is a real linear equivalence. -/
-noncomputable def logHyperplaneEquivReduced :
-    LogHyperplane (K := K) S ≃ₗ[ℝ]
-      ReducedLogSpace (K := K) S :=
+noncomputable def logHyperplaneEquivReduced  :=
   LinearEquiv.ofBijective
     (forgetDistinguishedLog (K := K) S)
     ⟨forgetDistinguishedLog_injective (K := K) S,
@@ -929,9 +907,7 @@ theorem fullLog_eq_zero_iff
 
 /-- The coordinate equivalence as a continuous linear equivalence
 (both spaces are finite-dimensional). -/
-noncomputable def logHyperplaneContinuousEquivReduced :
-    LogHyperplane (K := K) S ≃L[ℝ]
-      ReducedLogSpace (K := K) S :=
+noncomputable def logHyperplaneContinuousEquivReduced  :=
   (logHyperplaneEquivReduced (K := K) S).toContinuousLinearEquiv
 
 /-- The complete lattice in the coordinate-sum-zero hyperplane. -/
@@ -1001,7 +977,7 @@ section Decomposition
 
 /-- The logarithmic rank: the number of places in the
 `S`-unit theorem minus one. -/
-def logRank : ℕ :=
+def logRank  :=
   Fintype.card (NumberField.InfinitePlace K) + S.card - 1
 
 /-- The additive realization of the roots of unity of `K`. -/
@@ -1053,8 +1029,7 @@ theorem finrank_freeQuotient :
   calc
     Module.finrank ℤ (FreeQuotient (K := K) S) =
         Module.finrank ℤ
-          (Additive (SUnitGroup (K := K) S)) := by
-      exact finrank_quotient_eq_of_le_torsion le_rfl
+          (Additive (SUnitGroup (K := K) S)) := finrank_quotient_eq_of_le_torsion le_rfl
     _ = NumberField.Units.rank K + S.card :=
       finrank (K := K) S
     _ = logRank (K := K) S := by
@@ -1141,20 +1116,15 @@ noncomputable def rootsOfUnityEquivTorsion :
     apply Additive.toMul.injective
     exact huy
 
-/-- A linear section of the quotient by torsion.  It exists because
-the quotient is a free, hence projective, `ℤ`-module. -/
- noncomputable def torsionQuotientSection :
-    FreeQuotient (K := K) S →ₗ[ℤ]
-      Additive (SUnitGroup (K := K) S) :=
-  (Module.projective_lifting_property
-    (TorsionAdditive (K := K) S).mkQ
-    LinearMap.id
-    (TorsionAdditive (K := K) S).mkQ_surjective).choose
 
- theorem torsionQuotientSection_spec :
-    (TorsionAdditive (K := K) S).mkQ.comp
-        (torsionQuotientSection (K := K) S) =
-      LinearMap.id :=
+
+
+
+
+
+
+
+ def torsionQuotientSection_spec  :=
   (Module.projective_lifting_property
     (TorsionAdditive (K := K) S).mkQ
     LinearMap.id
@@ -1175,10 +1145,7 @@ group, and its torsion-free quotient. -/
 /-- **`S`-unit theorem, decomposition form.**  Additively, the
 `S`-unit group is the product of the roots of unity and a free
 `ℤ`-module of rank `#S - 1`. -/
-noncomputable def decompositionLinearEquiv :
-    Additive (SUnitGroup (K := K) S) ≃ₗ[ℤ]
-      RootsOfUnityAdditive (K := K) ×
-        (Fin (logRank (K := K) S) →₀ ℤ) :=
+noncomputable def decompositionLinearEquiv  :=
   (torsionProdFreeQuotientEquiv (K := K) S).trans
     ((rootsOfUnityEquivTorsion (K := K) S).symm.prodCongr
       (basisFreeQuotient (K := K) S).repr)
@@ -1199,12 +1166,9 @@ noncomputable def multiplicativeRootsOfUnityEquiv :
     Multiplicative.ofAdd
       (⟨Additive.ofMul (u : (𝓞 K)ˣ), u.property⟩ :
         RootsOfUnityAdditive (K := K))
-  left_inv x := by
-    rfl
-  right_inv u := by
-    rfl
-  map_mul' x y := by
-    rfl
+  left_inv x := rfl
+  right_inv u := rfl
+  map_mul' x y := rfl
 
 /-- **`S`-unit theorem, group form.**
 

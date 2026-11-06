@@ -1,20 +1,23 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Theta.Profiles.ThirdBesselSchlafliIntegral
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.KPCplxBessel
 
 open MeasureTheory Set
 
-noncomputable def modifiedBesselK (ν z : ℝ) : ℝ :=
+noncomputable def modifiedBesselK (ν z : ℝ)  :=
   ∫ t in Ioi (0 : ℝ), Real.exp (-z * Real.cosh t) * Real.cosh (ν * t)
 
-noncomputable def schlafliKernel (a z t : ℝ) : ℝ :=
+noncomputable def schlafliKernel (a z t : ℝ)  :=
   Real.rpow t a * Real.exp (-t - z ^ 2 / (4 * t))
 
-noncomputable def besselKThird (z : ℝ) : ℝ :=
+noncomputable def besselKThird (z : ℝ)  :=
   (1 / 2 : ℝ) * Real.rpow (z / 2) (-(1 / 3 : ℝ)) *
     ∫ t in Ioi (0 : ℝ), schlafliKernel (-(2 / 3 : ℝ)) z t
 
@@ -65,9 +68,9 @@ private lemma schlafli_exponential (z u : ℝ) (hz : 0 < z) :
 
 theorem besselKThird_eq_modifiedBesselK (z : ℝ) (hz : 0 < z) :
     besselKThird z = modifiedBesselK (1 / 3 : ℝ) z := by
-  let c : ℝ := z / 2
-  let F : ℝ → ℝ := fun u => Real.exp (-z * Real.cosh u) * Real.exp (u / 3)
-  let H : ℝ → ℝ := fun u => Real.exp (-z * Real.cosh u) * Real.cosh ((1 / 3 : ℝ) * u)
+  let c  := z / 2
+  let F  := fun u => Real.exp (-z * Real.cosh u) * Real.exp (u / 3)
+  let H  := fun u => Real.exp (-z * Real.cosh u) * Real.cosh ((1 / 3 : ℝ) * u)
   have hc : 0 < c := by dsimp [c]; linarith
   have hs : IntegrableOn (fun t => schlafliKernel (-(2 / 3 : ℝ)) z (c * t)) (Ioi 0) := by
     apply (integrableOn_Ioi_comp_mul_left_iff _ 0 hc).mpr
@@ -75,19 +78,11 @@ theorem besselKThird_eq_modifiedBesselK (z : ℝ) (hz : 0 < z) :
   have hexp := (integrable_comp_exp _).mpr hs
   have hCF : Integrable (fun u => c ^ (-(2 / 3 : ℝ)) * F u) := by
     apply hexp.congr
-    exact Filter.Eventually.of_forall (fun u => by
-      simpa only [smul_eq_mul, c, F] using schlafli_exponential z u hz)
+    exact Filter.Eventually.of_forall (fun u => schlafli_exponential z u hz)
   have hF : Integrable F :=
     (integrable_const_mul_iff (isUnit_iff_ne_zero.mpr (Real.rpow_pos_of_pos hc _).ne') F).mp hCF
   have hsum : (fun u => F u + F (-u)) = fun u => 2 * H u := by
-    funext u
-    dsimp [F, H]
-    rw [Real.cosh_neg, Real.cosh_eq ((1 / 3 : ℝ) * u)]
-    have he : (1 / 3 : ℝ) * u = u / 3 := by ring
-    rw [he]
-    have hn : -u / 3 = -(u / 3) := by ring
-    rw [hn]
-    ring
+    grind [Real.cosh_neg, Real.cosh_eq]
   have hIF : (∫ u, F u) = ∫ u, H u := by
     have h := integral_add hF hF.comp_neg
     rw [show (fun u => F u + F (-u)) = (fun u => 2 * H u) from hsum,
@@ -111,8 +106,7 @@ theorem besselKThird_eq_modifiedBesselK (z : ℝ) (hz : 0 < z) :
         c ^ (-(2 / 3 : ℝ)) * (∫ u, F u) := by
       rw [← integral_const_mul]
       apply integral_congr_ae
-      exact Filter.Eventually.of_forall (fun u => by
-        simpa only [smul_eq_mul, c, F] using schlafli_exponential z u hz)
+      exact Filter.Eventually.of_forall (fun u => schlafli_exponential z u hz)
     rw [hp] at hsub
     rw [← hsub] at hscale
     simp only [mul_zero, smul_eq_mul] at hscale

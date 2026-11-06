@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Fourier.LocalFields.BallAnnihilators
 public import DedekindZetaZeroFree.RepresentationTheory.Smooth.LocalPGLCoverModules
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -18,29 +21,37 @@ variable (F : Type) [Field F] [NumberField F]
   (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
   (w : HeightOneSpectrum (𝓞 F))
 
-def rootRepresentation {V : Type*} [AddCommGroup V] [Module ℂ V]
+section
+variable {V : Type*} [AddCommGroup V] [Module ℂ V]
+include V
+def rootRepresentation  
     (ρ : Representation ℂ (KPLocalSmoothRepresentation.FiniteCover F ζ hζ w) V) :
     Representation ℂ (Multiplicative (w.adicCompletion F)) V :=
   ρ.comp (KPLocalSmoothRepresentation.upperRoot F ζ hζ w)
 
-abbrev IsSmooth {V : Type*} [AddCommGroup V] [Module ℂ V] (m : ℕ)
+abbrev IsSmooth   (m : ℕ)
     (ρ : Representation ℂ (KPLocalSmoothRepresentation.FiniteCover F ζ hζ w) V) :=
   letI := KPLocalSmoothRepresentation.finiteCoverTopology F ζ hζ w m
   SmoothRepresentation ρ
 
-def FixedByBall {V : Type*} [AddCommGroup V] [Module ℂ V]
+def FixedByBall  
     (ρ : Representation ℂ (KPLocalSmoothRepresentation.FiniteCover F ζ hζ w) V)
-    (l : ℤ) (v : V) : Prop :=
+    (l : ℤ) (v : V)  :=
   ∀ x ∈ finiteCompletionBall F w l,
     rootRepresentation F ζ hζ w ρ (Multiplicative.ofAdd x) v = v
+end
+
 
 abbrev DualQuotient (u l : ℤ) :=
   KPRootAverage.LevelQuotient
     (localFiniteAnnihilator F w (finiteCompletionBall F w l))
     (localFiniteAnnihilator F w (finiteCompletionBall F w u))
 
- theorem phase_eq_of_mk_eq (u l : ℤ) (t : w.adicCompletion F)
+ section
+variable (u l : ℤ) (t : w.adicCompletion F)
     (ht : t ∈ localFiniteAnnihilator F w (finiteCompletionBall F w l))
+include u l t ht
+theorem phase_eq_of_mk_eq  
     {a b : finiteCompletionBall F w u}
     (h : (QuotientAddGroup.mk a : finiteCompletionBallQuotient F w u l) =
       QuotientAddGroup.mk b) :
@@ -54,34 +65,30 @@ abbrev DualQuotient (u l : ℤ) :=
   rw [mul_comm, mul_sub, AddChar.map_sub_eq_div, div_eq_one] at hp
   exact hp
 
-def quotientCharacter (u l : ℤ) (t : w.adicCompletion F)
-    (ht : t ∈ localFiniteAnnihilator F w (finiteCompletionBall F w l)) :
+def quotientCharacter   :
     AddChar (finiteCompletionBallQuotient F w u l) Circle where
   toFun q := localFiniteCharacter F w
     (t * ((Quotient.out q : finiteCompletionBall F w u) : w.adicCompletion F))
   map_zero_eq_one' := by
     have h : (QuotientAddGroup.mk (Quotient.out (0 : finiteCompletionBallQuotient F w u l)) :
         finiteCompletionBallQuotient F w u l) = QuotientAddGroup.mk 0 := by
-      simpa using (Quotient.out_eq (0 : finiteCompletionBallQuotient F w u l))
+      apply Quotient.out_eq
     simpa using phase_eq_of_mk_eq F w u l t ht h
   map_add_eq_mul' := by
     intro a b
     have h : (QuotientAddGroup.mk (Quotient.out (a + b)) :
         finiteCompletionBallQuotient F w u l) =
         QuotientAddGroup.mk (Quotient.out a + Quotient.out b) := by
-      change (QuotientAddGroup.mk' (finiteCompletionBallSubgroup F w u l)) _ =
-        (QuotientAddGroup.mk' (finiteCompletionBallSubgroup F w u l)) _
-      rw [map_add]
-      simp only [QuotientAddGroup.mk'_apply, Quotient.out_eq]
+      norm_num
     simpa only [AddSubgroup.coe_add, mul_add, AddChar.map_add_eq_mul] using
       phase_eq_of_mk_eq F w u l t ht h
 
-theorem quotientCharacter_mk (u l : ℤ) (t : w.adicCompletion F)
-    (ht : t ∈ localFiniteAnnihilator F w (finiteCompletionBall F w l))
+theorem quotientCharacter_mk  
     (x : finiteCompletionBall F w u) :
     quotientCharacter F w u l t ht (QuotientAddGroup.mk x) =
-      localFiniteCharacter F w (t * (x : w.adicCompletion F)) := by
-  exact phase_eq_of_mk_eq F w u l t ht (Quotient.out_eq _)
+      localFiniteCharacter F w (t * (x : w.adicCompletion F)) := phase_eq_of_mk_eq F w u l t ht (Quotient.out_eq _)
+end
+
 
 theorem quotientCharacter_eq_iff (u l : ℤ) (hul : u ≤ l)
     (t s : w.adicCompletion F)
@@ -104,26 +111,27 @@ theorem quotientCharacter_eq_iff (u l : ℤ) (hul : u ≤ l)
     rw [mul_sub, AddChar.map_sub_eq_div, div_eq_one] at he
     simpa only [mul_comm] using he
 
-def dualCharacter (u l : ℤ) (q : DualQuotient F w u l) :
-    AddChar (finiteCompletionBallQuotient F w u l) Circle :=
+def dualCharacter (u l : ℤ) (q : DualQuotient F w u l)  :=
   quotientCharacter F w u l
-    ((Quotient.out q : localFiniteAnnihilator F w (finiteCompletionBall F w l)) :
-      w.adicCompletion F) (Quotient.out q).property
+    ((Quotient.out q : localFiniteAnnihilator F w (finiteCompletionBall F w l))) (Quotient.out q).property
 
-private theorem finiteBallDual_injective (u l : ℤ) (hul : u ≤ l) : Function.Injective (dualCharacter F w u l) := by
+section
+variable (u l : ℤ) (hul : u ≤ l)
+include u l hul
+private theorem finiteBallDual_injective   : Function.Injective (dualCharacter F w u l) := by
   intro a b h
   rw [← Quotient.out_eq a, ← Quotient.out_eq b]
   apply QuotientAddGroup.eq_iff_sub_mem.mpr
   exact (quotientCharacter_eq_iff F w u l hul _ _ (Quotient.out a).property
     (Quotient.out b).property).mp h
-private theorem finiteBallDual_character_card (u l : ℤ) (hul : u ≤ l) :
+private theorem finiteBallDual_character_card   :
     Nat.card (AddChar (finiteCompletionBallQuotient F w u l) Circle) =
     Nat.card (finiteCompletionBallQuotient F w u l) := by
   letI := finite_finiteCompletionBallQuotient F w u l hul
   letI := Fintype.ofFinite (finiteCompletionBallQuotient F w u l)
   rw [Nat.card_congr AddChar.circleEquivComplex.toEquiv, Nat.card_eq_fintype_card,
     Nat.card_eq_fintype_card, AddChar.card_eq]
-private theorem finiteBallDual_card_le (u l : ℤ) (hul : u ≤ l) :
+private theorem finiteBallDual_card_le   :
     Nat.card (DualQuotient F w u l) ≤ Nat.card (finiteCompletionBallQuotient F w u l) := by
   letI := finite_finiteCompletionBallQuotient F w u l hul
   letI : Finite (AddChar (finiteCompletionBallQuotient F w u l) Circle) :=
@@ -131,7 +139,7 @@ private theorem finiteBallDual_card_le (u l : ℤ) (hul : u ≤ l) :
       AddChar.circleEquivComplex.symm.toEquiv
   exact (Nat.card_le_card_of_injective (dualCharacter F w u l) (finiteBallDual_injective F w u l hul)).trans_eq
     (finiteBallDual_character_card F w u l hul)
-private theorem finiteBallDual_card_eq (u l : ℤ) (hul : u ≤ l) :
+private theorem finiteBallDual_card_eq   :
     Nat.card (DualQuotient F w u l) = Nat.card (finiteCompletionBallQuotient F w u l) := by
   apply le_antisymm (finiteBallDual_card_le F w u l hul)
   have h := finiteBallDual_card_le F w (-l - (localDifferentExponent F w : ℤ))
@@ -142,13 +150,13 @@ private theorem finiteBallDual_card_eq (u l : ℤ) (hul : u ≤ l) :
   rw [h1, h2] at h
   exact h
 
-theorem dualCharacter_bijective (u l : ℤ) (hul : u ≤ l) :
+theorem dualCharacter_bijective   :
     Function.Bijective (dualCharacter F w u l) := by
   letI := finite_finiteCompletionBallQuotient F w u l hul
   letI : Finite (AddChar (finiteCompletionBallQuotient F w u l) Circle) :=
     Finite.of_equiv (AddChar (finiteCompletionBallQuotient F w u l) ℂ)
       AddChar.circleEquivComplex.symm.toEquiv
-  letI : Finite (DualQuotient F w u l) :=
+  letI  :=
     Finite.of_injective (dualCharacter F w u l) (finiteBallDual_injective F w u l hul)
   letI := Fintype.ofFinite (DualQuotient F w u l)
   letI := Fintype.ofFinite (AddChar (finiteCompletionBallQuotient F w u l) Circle)
@@ -157,7 +165,7 @@ theorem dualCharacter_bijective (u l : ℤ) (hul : u ≤ l) :
   rw [← Nat.card_eq_fintype_card, ← Nat.card_eq_fintype_card,
     finiteBallDual_character_card F w u l hul, finiteBallDual_card_eq F w u l hul]
 
-theorem finite_dualQuotient (u l : ℤ) (hul : u ≤ l) :
+theorem finite_dualQuotient   :
     Finite (DualQuotient F w u l) := by
   refine KPRootAverage.finite_levelQuotient _ _ ?_ ?_ ?_
   · rw [localFiniteAnnihilator_finiteCompletionBall F w u,
@@ -167,6 +175,8 @@ theorem finite_dualQuotient (u l : ℤ) (hul : u ≤ l) :
     exact isCompact_finiteCompletionBall F w _
   · rw [localFiniteAnnihilator_finiteCompletionBall F w u]
     exact isOpen_finiteCompletionBall F w _
+end
+
 
 variable {V : Type*} [AddCommGroup V] [Module ℂ V]
   (ρ : Representation ℂ (KPLocalSmoothRepresentation.FiniteCover F ζ hζ w) V)
@@ -180,14 +190,14 @@ def levelAverageWithRepresentatives (u l : ℤ) (hul : u ≤ l)
   exact (Nat.card (finiteCompletionBallQuotient F w u l) : ℂ)⁻¹ •
     ∑ q : finiteCompletionBallQuotient F w u l,
       (localFiniteCharacter F w (-t * (r q : w.adicCompletion F)) : ℂ) •
-        rootRepresentation F ζ hζ w ρ (Multiplicative.ofAdd (r q : w.adicCompletion F))
+        rootRepresentation F ζ hζ w ρ (Multiplicative.ofAdd (r q))
 
 def levelAverage (u l : ℤ) (hul : u ≤ l) (t : w.adicCompletion F) :
     V →ₗ[ℂ] V :=
   levelAverageWithRepresentatives F ζ hζ w ρ u l hul t Quotient.out
 
  def phaseUnit (t : w.adicCompletion F) : Multiplicative (w.adicCompletion F) →* ℂˣ where
-  toFun x := Units.mk0 (localFiniteCharacter F w (t * Multiplicative.toAdd x) : ℂ) (Circle.coe_ne_zero _)
+  toFun x := Units.mk0 (localFiniteCharacter F w (t * Multiplicative.toAdd x)) (Circle.coe_ne_zero _)
   map_one' := by apply Units.ext; simp
   map_mul' x y := by apply Units.ext; simp [mul_add, AddChar.map_add_eq_mul]
 private theorem fixed_iff (l : ℤ) (v : V) :
@@ -249,9 +259,12 @@ theorem levelAverage_independent_level
       (isOpen_finiteCompletionBall F w l) (psi_trivial F w k t htk) v
       ((fixed_iff F ζ hζ w ρ k v).mp hvk) ((fixed_iff F ζ hζ w ρ l v).mp hvl)).symm
 
-theorem exists_averagingDepth (m : ℕ)
+section
+variable (m : ℕ)
     (hm : KPLocalChartTopology.MatrixChartDepth F w m)
-    (hρ : IsSmooth F ζ hζ w m ρ) (u : ℤ) (t : w.adicCompletion F) (v : V) :
+    (hρ : IsSmooth F ζ hζ w m ρ) (u : ℤ) (t : w.adicCompletion F) (v : V)
+include m hm hρ u t v
+theorem exists_averagingDepth   :
     ∃ l : ℤ, u ≤ l ∧ FixedByBall F ζ hζ w ρ l v ∧
       t ∈ localFiniteAnnihilator F w (finiteCompletionBall F w l) := by
   letI := KPLocalSmoothRepresentation.finiteCoverTopology F ζ hζ w m
@@ -259,7 +272,7 @@ theorem exists_averagingDepth (m : ℕ)
   let r := KPLocalSmoothRepresentation.continuousUpperRoot F ζ hζ w m hm
   have hopen : IsOpen {x : w.adicCompletion F | r (Multiplicative.ofAdd x) ∈ J} :=
     J.isOpen.preimage (r.continuous.comp continuous_ofAdd)
-  have hzero : (0 : w.adicCompletion F) ∈
+  have hzero : (0) ∈
       {x | r (Multiplicative.ofAdd x) ∈ J} := by simp
   obtain ⟨k, _, hk⟩ := (finiteCompletionBall_hasBasis_nhds F w 0).mem_iff.mp
     (hopen.mem_nhds hzero)
@@ -282,22 +295,17 @@ theorem exists_averagingDepth (m : ℕ)
     exact (finiteCompletionBall_le_iff F w _ _).mpr
       (le_trans (le_max_right k a) (le_max_right u _)) hx
 
-def averagingDepth (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F w m)
-    (hρ : IsSmooth F ζ hζ w m ρ) (u : ℤ) (t : w.adicCompletion F) (v : V) : ℤ :=
+def averagingDepth    :=
   Classical.choose (exists_averagingDepth F ζ hζ w ρ m hm hρ u t v)
 
-theorem averagingDepth_spec (m : ℕ)
-    (hm : KPLocalChartTopology.MatrixChartDepth F w m)
-    (hρ : IsSmooth F ζ hζ w m ρ) (u : ℤ) (t : w.adicCompletion F) (v : V) :
-    let l := averagingDepth F ζ hζ w ρ m hm hρ u t v
-    u ≤ l ∧ FixedByBall F ζ hζ w ρ l v ∧
-      t ∈ localFiniteAnnihilator F w (finiteCompletionBall F w l) :=
+def averagingDepth_spec    :=
   Classical.choose_spec (exists_averagingDepth F ζ hζ w ρ m hm hρ u t v)
 
-def projectorValue (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F w m)
-    (hρ : IsSmooth F ζ hζ w m ρ) (u : ℤ) (t : w.adicCompletion F) (v : V) : V :=
+def projectorValue   : V :=
   levelAverage F ζ hζ w ρ u (averagingDepth F ζ hζ w ρ m hm hρ u t v)
     (averagingDepth_spec F ζ hζ w ρ m hm hρ u t v).1 t v
+end
+
 
 theorem projectorValue_eq_levelAverage (m : ℕ)
     (hm : KPLocalChartTopology.MatrixChartDepth F w m)
@@ -325,70 +333,82 @@ theorem projectorValue_eq_levelAverage (m : ℕ)
     localFiniteAnnihilator_finiteCompletionBall F w l, mem_finiteCompletionBall] at *
   exact ht.trans (WithZero.exp_le_exp.mpr (by omega))
 
-def projector (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F w m)
-    (hρ : IsSmooth F ζ hζ w m ρ) (u : ℤ) (t : w.adicCompletion F) : V →ₗ[ℂ] V where
+section
+variable (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F w m)
+    (hρ : IsSmooth F ζ hζ w m ρ) (u : ℤ) (t : w.adicCompletion F)
+include m hm hρ u t
+
+local notation:max "current_averagingDepth" => averagingDepth F ζ hζ
+
+def projector   : V →ₗ[ℂ] V where
   toFun := projectorValue F ζ hζ w ρ m hm hρ u t
   map_add' v1 v2 := by
-    set L := max (averagingDepth F ζ hζ w ρ m hm hρ u t v1)
-      (max (averagingDepth F ζ hζ w ρ m hm hρ u t v2)
-        (averagingDepth F ζ hζ w ρ m hm hρ u t (v1 + v2)))
+    set L := max (current_averagingDepth w ρ m hm hρ u t v1)
+      (max (current_averagingDepth w ρ m hm hρ u t v2)
+        (current_averagingDepth w ρ m hm hρ u t (v1 + v2)))
     have h1 := averagingDepth_spec F ζ hζ w ρ m hm hρ u t v1
     have h2 := averagingDepth_spec F ζ hζ w ρ m hm hρ u t v2
     have h12 := averagingDepth_spec F ζ hζ w ρ m hm hρ u t (v1 + v2)
-    have hL1 : averagingDepth F ζ hζ w ρ m hm hρ u t v1 ≤ L := le_max_left _ _
-    have hL2 : averagingDepth F ζ hζ w ρ m hm hρ u t v2 ≤ L :=
+    have hL1 : current_averagingDepth w ρ m hm hρ u t v1 ≤ L := le_max_left _ _
+    have hL2 : current_averagingDepth w ρ m hm hρ u t v2 ≤ L :=
       le_trans (le_max_left _ _) (le_max_right _ _)
-    have hL12 : averagingDepth F ζ hζ w ρ m hm hρ u t (v1 + v2) ≤ L :=
+    have hL12 : current_averagingDepth w ρ m hm hρ u t (v1 + v2) ≤ L :=
       le_trans (le_max_right _ _) (le_max_right _ _)
     have hulL : u ≤ L := le_trans h1.1 hL1
     rw [projectorValue_eq_levelAverage F ζ hζ w ρ m hm hρ u L hulL t
           (mem_annihilator_mono F w L
-            (averagingDepth F ζ hζ w ρ m hm hρ u t (v1 + v2)) hL12 t h12.2.2)
+            (current_averagingDepth w ρ m hm hρ u t (v1 + v2)) hL12 t h12.2.2)
           (v1 + v2) (fixedByBall_mono F ζ hζ w ρ L
-            (averagingDepth F ζ hζ w ρ m hm hρ u t (v1 + v2)) hL12 (v1 + v2) h12.2.1),
+            (current_averagingDepth w ρ m hm hρ u t (v1 + v2)) hL12 (v1 + v2) h12.2.1),
         projectorValue_eq_levelAverage F ζ hζ w ρ m hm hρ u L hulL t
           (mem_annihilator_mono F w L
-            (averagingDepth F ζ hζ w ρ m hm hρ u t v1) hL1 t h1.2.2)
+            (current_averagingDepth w ρ m hm hρ u t v1) hL1 t h1.2.2)
           v1 (fixedByBall_mono F ζ hζ w ρ L
-            (averagingDepth F ζ hζ w ρ m hm hρ u t v1) hL1 v1 h1.2.1),
+            (current_averagingDepth w ρ m hm hρ u t v1) hL1 v1 h1.2.1),
         projectorValue_eq_levelAverage F ζ hζ w ρ m hm hρ u L hulL t
           (mem_annihilator_mono F w L
-            (averagingDepth F ζ hζ w ρ m hm hρ u t v2) hL2 t h2.2.2)
+            (current_averagingDepth w ρ m hm hρ u t v2) hL2 t h2.2.2)
           v2 (fixedByBall_mono F ζ hζ w ρ L
-            (averagingDepth F ζ hζ w ρ m hm hρ u t v2) hL2 v2 h2.2.1)]
+            (current_averagingDepth w ρ m hm hρ u t v2) hL2 v2 h2.2.1)]
     exact map_add (levelAverage F ζ hζ w ρ u L hulL t) v1 v2
   map_smul' c v := by
-    set L := max (averagingDepth F ζ hζ w ρ m hm hρ u t (c • v))
-      (averagingDepth F ζ hζ w ρ m hm hρ u t v)
+    set L := max (current_averagingDepth w ρ m hm hρ u t (c • v))
+      (current_averagingDepth w ρ m hm hρ u t v)
     have h1 := averagingDepth_spec F ζ hζ w ρ m hm hρ u t (c • v)
     have h2 := averagingDepth_spec F ζ hζ w ρ m hm hρ u t v
-    have hL1 : averagingDepth F ζ hζ w ρ m hm hρ u t (c • v) ≤ L := le_max_left _ _
-    have hL2 : averagingDepth F ζ hζ w ρ m hm hρ u t v ≤ L := le_max_right _ _
+    have hL1 : current_averagingDepth w ρ m hm hρ u t (c • v) ≤ L := le_max_left _ _
+    have hL2 : current_averagingDepth w ρ m hm hρ u t v ≤ L := le_max_right _ _
     have hulL : u ≤ L := le_trans h1.1 hL1
     rw [projectorValue_eq_levelAverage F ζ hζ w ρ m hm hρ u L hulL t
           (mem_annihilator_mono F w L
-            (averagingDepth F ζ hζ w ρ m hm hρ u t (c • v)) hL1 t h1.2.2)
+            (current_averagingDepth w ρ m hm hρ u t (c • v)) hL1 t h1.2.2)
           (c • v) (fixedByBall_mono F ζ hζ w ρ L
-            (averagingDepth F ζ hζ w ρ m hm hρ u t (c • v)) hL1 (c • v) h1.2.1),
+            (current_averagingDepth w ρ m hm hρ u t (c • v)) hL1 (c • v) h1.2.1),
         projectorValue_eq_levelAverage F ζ hζ w ρ m hm hρ u L hulL t
           (mem_annihilator_mono F w L
-            (averagingDepth F ζ hζ w ρ m hm hρ u t v) hL2 t h2.2.2)
+            (current_averagingDepth w ρ m hm hρ u t v) hL2 t h2.2.2)
           v (fixedByBall_mono F ζ hζ w ρ L
-            (averagingDepth F ζ hζ w ρ m hm hρ u t v) hL2 v h2.2.1)]
+            (current_averagingDepth w ρ m hm hρ u t v) hL2 v h2.2.1)]
     simpa using map_smul (levelAverage F ζ hζ w ρ u L hulL t) c v
 
-@[simp] theorem projector_apply (m : ℕ)
-    (hm : KPLocalChartTopology.MatrixChartDepth F w m)
-    (hρ : IsSmooth F ζ hζ w m ρ) (u : ℤ) (t : w.adicCompletion F) (v : V) :
+@[simp] theorem projector_apply   (v : V) :
     projector F ζ hζ w ρ m hm hρ u t v =
       projectorValue F ζ hζ w ρ m hm hρ u t v := rfl
+end
+
 
 variable (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F w m)
   (hρ : IsSmooth F ζ hζ w m ρ)
 
-theorem projector_eigen (u : ℤ) (t x : w.adicCompletion F)
+section
+variable (u : ℤ)
+include u
+
+local notation:max "current_rootRepresentation" => rootRepresentation F ζ hζ
+
+theorem projector_eigen   (t x : w.adicCompletion F)
     (hx : x ∈ finiteCompletionBall F w u) (v : V) :
-    rootRepresentation F ζ hζ w ρ (Multiplicative.ofAdd x)
+    current_rootRepresentation w ρ (Multiplicative.ofAdd x)
         (projector F ζ hζ w ρ m hm hρ u t v) =
       (localFiniteCharacter F w (t * x) : ℂ) •
         projector F ζ hζ w ρ m hm hρ u t v := by
@@ -396,25 +416,25 @@ theorem projector_eigen (u : ℤ) (t x : w.adicCompletion F)
   have h := averagingDepth_spec F ζ hζ w ρ m hm hρ u t v
   rw [projector_apply, projectorValue_eq_levelAverage F ζ hζ w ρ m hm hρ u l h.1 t h.2.2 v h.2.1,
     bridge F ζ hζ w ρ u l h.1 t v h.2.1]
-  have hr := KPRootAverage.characterAverage_range (rootRepresentation F ζ hζ w ρ)
+  have hr := KPRootAverage.characterAverage_range (current_rootRepresentation w ρ)
     (phaseUnit F w t) (finiteCompletionBall F w u) (finiteCompletionBall F w l)
     ((finiteCompletionBall_le_iff F w u l).mpr h.1)
     (isCompact_finiteCompletionBall F w u) (isOpen_finiteCompletionBall F w l)
     (psi_trivial F w l t h.2.2)
-  have he : (KPRootAverage.characterAverage (rootRepresentation F ζ hζ w ρ)
+  have he : (KPRootAverage.characterAverage (current_rootRepresentation w ρ)
       (phaseUnit F w t) (finiteCompletionBall F w u) (finiteCompletionBall F w l)
       ((finiteCompletionBall_le_iff F w u l).mpr h.1)
       (isCompact_finiteCompletionBall F w u) (isOpen_finiteCompletionBall F w l)
       ⟨v, (fixed_iff F ζ hζ w ρ l v).mp h.2.1⟩ : V) ∈
-      KPRootAverage.eigenspace (rootRepresentation F ζ hζ w ρ) (phaseUnit F w t)
+      KPRootAverage.eigenspace (current_rootRepresentation w ρ) (phaseUnit F w t)
         (finiteCompletionBall F w u) := by
     rw [← hr]
     exact ⟨⟨v, (fixed_iff F ζ hζ w ρ l v).mp h.2.1⟩, rfl⟩
   exact he x hx
 
-theorem projector_eq_self (u : ℤ) (t : w.adicCompletion F) (v : V)
+theorem projector_eq_self   (t : w.adicCompletion F) (v : V)
     (hv : ∀ x ∈ finiteCompletionBall F w u,
-      rootRepresentation F ζ hζ w ρ (Multiplicative.ofAdd x) v =
+      current_rootRepresentation w ρ (Multiplicative.ofAdd x) v =
         (localFiniteCharacter F w (t * x) : ℂ) • v) :
     projector F ζ hζ w ρ m hm hρ u t v = v := by
   let l := averagingDepth F ζ hζ w ρ m hm hρ u t v
@@ -425,7 +445,7 @@ theorem projector_eq_self (u : ℤ) (t : w.adicCompletion F) (v : V)
   have ht : ∀ q : finiteCompletionBallQuotient F w u l,
       (localFiniteCharacter F w (-t * ((Quotient.out q : finiteCompletionBall F w u) :
         w.adicCompletion F)) : ℂ) •
-      rootRepresentation F ζ hζ w ρ (Multiplicative.ofAdd
+      current_rootRepresentation w ρ (Multiplicative.ofAdd
         ((Quotient.out q : finiteCompletionBall F w u) : w.adicCompletion F)) v = v := by
     intro q
     rw [hv _ (Quotient.out q).property, smul_smul, neg_mul, AddChar.map_neg_eq_inv]
@@ -436,26 +456,26 @@ theorem projector_eq_self (u : ℤ) (t : w.adicCompletion F) (v : V)
   rw [← Nat.card_eq_fintype_card, ← Nat.cast_smul_eq_nsmul ℂ, smul_smul, inv_mul_cancel₀, one_smul]
   exact_mod_cast Nat.card_pos.ne'
 
-private theorem commute (u : ℤ) (t x : w.adicCompletion F) (v : V) :
+private theorem commute   (t x : w.adicCompletion F) (v : V) :
     projector F ζ hζ w ρ m hm hρ u t
-      (rootRepresentation F ζ hζ w ρ (Multiplicative.ofAdd x) v) =
-    rootRepresentation F ζ hζ w ρ (Multiplicative.ofAdd x)
+      (current_rootRepresentation w ρ (Multiplicative.ofAdd x) v) =
+    current_rootRepresentation w ρ (Multiplicative.ofAdd x)
       (projector F ζ hζ w ρ m hm hρ u t v) := by
   let l := averagingDepth F ζ hζ w ρ m hm hρ u t v
   have h := averagingDepth_spec F ζ hζ w ρ m hm hρ u t v
   have hc (y : w.adicCompletion F) :
-      (rootRepresentation F ζ hζ w ρ (Multiplicative.ofAdd y)).comp
-        (rootRepresentation F ζ hζ w ρ (Multiplicative.ofAdd x)) =
-      (rootRepresentation F ζ hζ w ρ (Multiplicative.ofAdd x)).comp
-        (rootRepresentation F ζ hζ w ρ (Multiplicative.ofAdd y)) := by
-    change rootRepresentation F ζ hζ w ρ (Multiplicative.ofAdd y) *
-      rootRepresentation F ζ hζ w ρ (Multiplicative.ofAdd x) =
-      rootRepresentation F ζ hζ w ρ (Multiplicative.ofAdd x) *
-      rootRepresentation F ζ hζ w ρ (Multiplicative.ofAdd y)
-    rw [← (rootRepresentation F ζ hζ w ρ).map_mul,
-      ← (rootRepresentation F ζ hζ w ρ).map_mul, mul_comm]
+      (current_rootRepresentation w ρ (Multiplicative.ofAdd y)).comp
+        (current_rootRepresentation w ρ (Multiplicative.ofAdd x)) =
+      (current_rootRepresentation w ρ (Multiplicative.ofAdd x)).comp
+        (current_rootRepresentation w ρ (Multiplicative.ofAdd y)) := by
+    change current_rootRepresentation w ρ (Multiplicative.ofAdd y) *
+      current_rootRepresentation w ρ (Multiplicative.ofAdd x) =
+      current_rootRepresentation w ρ (Multiplicative.ofAdd x) *
+      current_rootRepresentation w ρ (Multiplicative.ofAdd y)
+    rw [← (current_rootRepresentation w ρ).map_mul,
+      ← (current_rootRepresentation w ρ).map_mul, mul_comm]
   have hf : FixedByBall F ζ hζ w ρ l
-      (rootRepresentation F ζ hζ w ρ (Multiplicative.ofAdd x) v) := by
+      (current_rootRepresentation w ρ (Multiplicative.ofAdd x) v) := by
     intro y hy
     have he := LinearMap.congr_fun (hc y) v
     simpa [h.2.1 y hy] using he
@@ -469,10 +489,10 @@ private theorem commute (u : ℤ) (t x : w.adicCompletion F) (v : V) :
   apply Finset.sum_congr rfl
   intro q _
   exact congrArg (fun z : V => _ • z) (LinearMap.congr_fun (hc _) v)
-private theorem kill (u : ℤ) (t s : w.adicCompletion F)
+private theorem kill   (t s : w.adicCompletion F)
     (hst : s - t ∉ localFiniteAnnihilator F w (finiteCompletionBall F w u))
     (v : V) (hv : ∀ x ∈ finiteCompletionBall F w u,
-      rootRepresentation F ζ hζ w ρ (Multiplicative.ofAdd x) v =
+      current_rootRepresentation w ρ (Multiplicative.ofAdd x) v =
         (localFiniteCharacter F w (s * x) : ℂ) • v) :
     projector F ζ hζ w ρ m hm hρ u t v = 0 := by
   have hex : ∃ x ∈ finiteCompletionBall F w u,
@@ -491,7 +511,7 @@ private theorem kill (u : ℤ) (t s : w.adicCompletion F)
     rw [sub_smul, he, sub_self]
   exact (smul_eq_zero.mp hz).resolve_left (sub_ne_zero.mpr (Circle.coe_injective.ne hne))
 
-theorem projector_eq_of_sub_mem_annihilator (u : ℤ) (t s : w.adicCompletion F)
+theorem projector_eq_of_sub_mem_annihilator   (t s : w.adicCompletion F)
     (hts : t - s ∈ localFiniteAnnihilator F w (finiteCompletionBall F w u)) :
     projector F ζ hζ w ρ m hm hρ u t =
       projector F ζ hζ w ρ m hm hρ u s := by
@@ -519,8 +539,7 @@ theorem projector_eq_of_sub_mem_annihilator (u : ℤ) (t s : w.adicCompletion F)
   refine congrArg (fun Z : V => (Nat.card (finiteCompletionBallQuotient F w u L) : ℂ)⁻¹ • Z) ?_
   apply Finset.sum_congr rfl
   intro q _
-  have hyu : ((Quotient.out q : finiteCompletionBall F w u) :
-      w.adicCompletion F) ∈ finiteCompletionBall F w u := (Quotient.out q).property
+  have hyu  := (Quotient.out q).property
   have hq := (mem_localFiniteAnnihilator F w (finiteCompletionBall F w u)
     (t - s)).mp hts _ hyu
   have hpsi : localFiniteCharacter F w (-t *
@@ -534,7 +553,7 @@ theorem projector_eq_of_sub_mem_annihilator (u : ℤ) (t s : w.adicCompletion F)
       AddChar.map_sub_eq_div, mul_comm (t - s), hq, div_one]
   rw [hpsi]
 
-theorem projector_orthogonal (u : ℤ) (t s : w.adicCompletion F)
+theorem projector_orthogonal   (t s : w.adicCompletion F)
     (hts : t - s ∉ localFiniteAnnihilator F w (finiteCompletionBall F w u)) :
     (projector F ζ hζ w ρ m hm hρ u t).comp
       (projector F ζ hζ w ρ m hm hρ u s) = 0 := by
@@ -547,6 +566,8 @@ theorem projector_orthogonal (u : ℤ) (t s : w.adicCompletion F)
       apply hts
       simpa only [neg_sub] using (localFiniteAnnihilator F w (finiteCompletionBall F w u)).neg_mem h)
     _ (fun x hx => projector_eigen F ζ hζ w ρ m hm hρ u s x hx v)
+end
+
 
 private theorem phaseSum (u l : ℤ) (hul : u ≤ l) (x : finiteCompletionBallQuotient F w u l) :
     letI := finite_dualQuotient F w u l hul
@@ -604,7 +625,7 @@ theorem finite_fourier_decomposition (u l : ℤ) (hul : u ≤ l)
         finiteCompletionBall F w u) : w.adicCompletion F)) v = v := by
     apply hv
     have he : QuotientAddGroup.mk (Quotient.out (0 : finiteCompletionBallQuotient F w u l)) =
-        (QuotientAddGroup.mk (0 : finiteCompletionBall F w u) :
+        (QuotientAddGroup.mk (0) :
           finiteCompletionBallQuotient F w u l) := by simp [Quotient.out_eq]
     have h := QuotientAddGroup.eq_iff_sub_mem.mp he
     have h' : Quotient.out (0 : finiteCompletionBallQuotient F w u l) - 0 ∈

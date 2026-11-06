@@ -46,14 +46,16 @@ private theorem smooth_mean (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (KPCuspLogSh
   intro i hi
   exact contDiff_snd.comp (contDiff_apply ℝ KPArch.H3 i)
 
-private theorem derivative_smoothAt (d : ℕ) (g : HyperbolicChart.Space d → ℂ)
+section
+variable (d : ℕ) (g : HyperbolicChart.Space d → ℂ)
     (x : HyperbolicChart.Space d)
-    (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x) (i : Fin d) (k : Fin 3) :
+    (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x)
+include d g x hg
+private theorem derivative_smoothAt   (i : Fin d) (k : Fin 3) :
     ContDiffAt ℝ (⊤ : ℕ∞) (HyperbolicChart.coordinateDerivative d i k g) x :=
   (hg.fderiv_right (by simp)).clm_apply contDiffAt_const
 
-private theorem laplacian_smoothAt (d : ℕ) (g : HyperbolicChart.Space d → ℂ)
-    (x : HyperbolicChart.Space d) (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x) :
+private theorem laplacian_smoothAt   :
     ContDiffAt ℝ (⊤ : ℕ∞) (HyperbolicChart.laplacian d g) x := by
   unfold HyperbolicChart.laplacian
   apply ContDiffAt.sum
@@ -66,6 +68,8 @@ private theorem laplacian_smoothAt (d : ℕ) (g : HyperbolicChart.Space d → �
       ((contDiffAt_const.mul (EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff.contDiffAt).exp)
   exact ((hh 2).neg.add (contDiffAt_const.mul (h 2))).sub
     (he.mul ((hh 0).add (hh 1)))
+end
+
 
 private theorem representative_smoothAt (v : Representative ζ hζ S ρ V T)
     (x : HyperbolicChart.Space (KPCuspLogShape.dimension F))
@@ -104,14 +108,16 @@ private theorem cd_second (d : ℕ) (h : Space d → ℂ) (x : Space d)
   simpa using congrArg (fun L : Space d →L[ℝ] ℂ => L (coordinateVector d i k))
     (((hh.fderiv_right (m := (⊤ : ℕ∞)) (by simp)).differentiableAt (by simp)).hasFDerivAt.clm_apply
       (hasFDerivAt_const (coordinateVector d i k) x)).fderiv
-private theorem affine_first (d : ℕ) (L : Space d →L[ℝ] Space d) (b : Space d)
-    (h : Space d → ℂ) (x : Space d) (v : Space d)
+section
+variable (d : ℕ) (L : Space d →L[ℝ] Space d) (b : Space d)
+    (h : Space d → ℂ) (x : Space d)
+include d L b h x
+private theorem affine_first   (v : Space d)
     (hh : DifferentiableAt ℝ h (L x + b)) :
     fderiv ℝ (fun y => h (L y + b)) x v = fderiv ℝ h (L x + b) (L v) := by
   simpa [Function.comp_def] using congrArg (fun A : Space d →L[ℝ] ℂ => A v)
     (hh.hasFDerivAt.comp x (L.hasFDerivAt.add_const b)).fderiv
-private theorem affine_second (d : ℕ) (L : Space d →L[ℝ] Space d) (b : Space d)
-    (h : Space d → ℂ) (x : Space d) (i : Fin d) (k : Fin 3)
+private theorem affine_second   (i : Fin d) (k : Fin 3)
     (hh : ContDiffAt ℝ (⊤ : ℕ∞) h (L x + b)) :
     coordinateDerivative d i k (coordinateDerivative d i k (fun y => h (L y + b))) x =
       second d h (L x + b) (L (coordinateVector d i k)) (L (coordinateVector d i k)) := by
@@ -129,7 +135,12 @@ private theorem affine_second (d : ℕ) (L : Space d →L[ℝ] Space d) (b : Spa
     (hasFDerivAt_const (c := L (coordinateVector d i k)) x)
   simpa [second] using congrArg (fun A : Space d →L[ℝ] ℂ => A (coordinateVector d i k))
     hcomp.fderiv
- def lin (d : ℕ) (u : Fin d → ℂ) : Space d →L[ℝ] Space d :=
+end
+
+ section
+variable (d : ℕ) (u : Fin d → ℂ)
+include d u
+def lin   : Space d →L[ℝ] Space d :=
   (PiLp.continuousLinearEquiv 2 ℝ (fun _ : Fin d × Fin 3 => ℝ)).symm.toContinuousLinearMap.comp
     (ContinuousLinearMap.pi (fun j =>
       ![(u j.1).re • EuclideanSpace.proj (j.1, (0 : Fin 3)) -
@@ -137,28 +148,28 @@ private theorem affine_second (d : ℕ) (L : Space d →L[ℝ] Space d) (b : Spa
         (u j.1).im • EuclideanSpace.proj (j.1, (0 : Fin 3)) +
           (u j.1).re • EuclideanSpace.proj (j.1, (1 : Fin 3)),
         EuclideanSpace.proj (j.1, (2 : Fin 3))] j.2))
-private theorem lin_apply (d : ℕ) (u : Fin d → ℂ) (x : Space d) (i : Fin d) (k : Fin 3) :
+private theorem lin_apply   (x : Space d) (i : Fin d) (k : Fin 3) :
     lin d u x (i,k) =
       ![(u i).re * x (i,0) - (u i).im * x (i,1),
         (u i).im * x (i,0) + (u i).re * x (i,1), x (i,2)] k := by
   fin_cases k <;> rfl
-private theorem lin_zero (d : ℕ) (u : Fin d → ℂ) (i : Fin d) :
+private theorem lin_zero   (i : Fin d) :
     lin d u (coordinateVector d i 0) =
       (u i).re • coordinateVector d i 0 + (u i).im • coordinateVector d i 1 := by
   ext ⟨j,k⟩
   fin_cases k <;> simp [lin_apply, coordinateVector]
   all_goals split_ifs <;> simp_all
-private theorem lin_one (d : ℕ) (u : Fin d → ℂ) (i : Fin d) :
+private theorem lin_one   (i : Fin d) :
     lin d u (coordinateVector d i 1) =
       -(u i).im • coordinateVector d i 0 + (u i).re • coordinateVector d i 1 := by
   ext ⟨j,k⟩
   fin_cases k <;> simp [lin_apply, coordinateVector]
   all_goals split_ifs <;> simp_all
-private theorem lin_two (d : ℕ) (u : Fin d → ℂ) (i : Fin d) :
+private theorem lin_two   (i : Fin d) :
     lin d u (coordinateVector d i 2) = coordinateVector d i 2 := by
   ext ⟨j,k⟩
   fin_cases k <;> simp [lin_apply, coordinateVector]
-private theorem second_horizontal (d : ℕ) (u : Fin d → ℂ) (h : Space d → ℂ)
+private theorem second_horizontal   (h : Space d → ℂ)
     (x : Space d) (i : Fin d) :
     second d h x (lin d u (coordinateVector d i 0)) (lin d u (coordinateVector d i 0)) +
       second d h x (lin d u (coordinateVector d i 1)) (lin d u (coordinateVector d i 1)) =
@@ -171,7 +182,7 @@ private theorem second_horizontal (d : ℕ) (u : Fin d → ℂ) (h : Space d →
   rw [Complex.sq_norm, Complex.normSq_apply]
   push_cast
   ring
-private theorem affine_laplacian (d : ℕ) (u : Fin d → ℂ) (b : Space d)
+private theorem affine_laplacian   (b : Space d)
     (hb : ∀ i, b (i,2) = Real.log ‖u i‖) (hu : ∀ i, u i ≠ 0)
     (h : Space d → ℂ) (x : Space d)
     (hh : ContDiffAt ℝ (⊤ : ℕ∞) h (lin d u x + b)) :
@@ -201,6 +212,8 @@ private theorem affine_laplacian (d : ℕ) (u : Fin d → ℂ) (b : Space d)
   simp only [Complex.real_smul]
   push_cast
   ring
+end
+
 private theorem laplacian_congr (d : ℕ) (h f : Space d → ℂ) (x : Space d)
     (he : h =ᶠ[nhds x] f) : laplacian d h x = laplacian d f x := by
   have hd (i : Fin d) (k : Fin 3) : coordinateDerivative d i k h =ᶠ[nhds x]
@@ -257,9 +270,12 @@ private theorem upper_fst (A : Matrix.GeneralLinearGroup (Fin 2) ℂ)
   <;> ring
  def shift (d : ℕ) (u b : Fin d → ℂ) : Space d :=
   WithLp.toLp 2 (fun j => ![(b j.1).re, (b j.1).im, Real.log ‖u j.1‖] j.2)
-private theorem upper_real (d : ℕ) (g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ)
+section
+variable (d : ℕ) (g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ)
     (u : Fin d → ℂ) (hu : ∀ i, u i ≠ 0)
     (hz : ∀ i, g i 1 0 = 0) (hr : ∀ i, g i 0 0 = u i * g i 1 1)
+include d g u hu hz hr
+private theorem upper_real  
     (x : Space d) : real d (KPArch.productAction d g (arch d x)) =
       lin d u x + shift d u (fun i => g i 0 1 / g i 1 1) := by
   ext ⟨i,k⟩
@@ -270,9 +286,7 @@ private theorem upper_real (d : ℕ) (g : Fin d → Matrix.GeneralLinearGroup (F
       lin_apply, shift, arch, Complex.mul_im, add_comm]
   · simp [real, KPArch.productAction, KPCuspLogShape.upper_action_snd _ (hz i) _ (hu i) (hr i),
       lin_apply, shift, arch]
-private theorem upper_equivariant_laplacian (d : ℕ)
-    (g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ) (u : Fin d → ℂ)
-    (hu : ∀ i, u i ≠ 0) (hz : ∀ i, g i 1 0 = 0) (hr : ∀ i, g i 0 0 = u i * g i 1 1)
+private theorem upper_equivariant_laplacian  
     (h : Space d → ℂ) (x : Space d) (c : ℂ)
     (hc : (fun y => h (real d (KPArch.productAction d g (arch d y)))) =ᶠ[nhds x]
       (fun y => c * h y))
@@ -282,6 +296,8 @@ private theorem upper_equivariant_laplacian (d : ℕ)
   simp only [upper_real d g u hu hz hr] at hc hy ⊢
   rw [← affine_laplacian d u _ (fun i => rfl) hu h x hy,
     laplacian_congr d _ _ x hc, laplacian_mul d h x c hx]
+end
+
 
 theorem laplacian_action_invariant (d : ℕ)
     (g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ)

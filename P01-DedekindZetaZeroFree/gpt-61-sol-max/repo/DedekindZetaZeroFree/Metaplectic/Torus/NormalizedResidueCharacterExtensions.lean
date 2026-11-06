@@ -27,10 +27,10 @@ def RawPiFirstOrientation (π : (LocalField F q)ˣ)
           (KPTameCompact.unitInclusion F q u)) : ℂ)
 
 variable (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
-  (hP : IsTamePolarization F ζ hζ q S P)
+  
   (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
-  (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
-  (ξ : (valuation (LocalField F q)).integer) (hξ : IsPrimitiveRoot ξ 3)
+  
+  (ξ : (valuation (LocalField F q)).integer) 
 
  def aLift (y : (LocalField F q)ˣ) : actualTorus F ζ hζ q :=
  ⟨KPPGLLocalCover.A F ζ hζ (Sum.inr q) y, by

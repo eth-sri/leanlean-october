@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Eisenstein.Continuation.CuspCutoffs.SmoothDescent
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.GenuineSector.TestFriedrichsRealization
 public import DedekindZetaZeroFree.Geometry.Hyperbolic.Laplacian.IsometryNaturality
 
 @[expose] public section
+
 
 noncomputable section
 open scoped Classical NumberField BigOperators ContDiff
@@ -24,20 +27,17 @@ variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 abbrev d := Module.finrank ℚ F / 2
 
 private theorem smooth_height (d : ℕ) (i : Fin d) :
-    ContDiff ℝ (⊤ : ℕ∞) (fun z : KPArch.Space d => KPArch.height (z i)) := by
-  exact (contDiff_snd.comp (contDiff_apply ℝ KPArch.H3 i)).exp
-private theorem smooth_density (d : ℕ) :
-    ContDiff ℝ (⊤ : ℕ∞) (KPArch.volumeDensity d) := by
-  unfold KPArch.volumeDensity
-  apply contDiff_prod
-  intro i _
-  exact ((smooth_height d i).inv (fun z => Real.exp_ne_zero _)).pow 2
-private theorem density_ne_zero (d : ℕ) (z : KPArch.Space d) :
+    ContDiff ℝ (⊤ : ℕ∞) (fun z : KPArch.Space d => KPArch.height (z i)) := (contDiff_snd.comp (contDiff_apply ℝ KPArch.H3 i)).exp
+private alias smooth_density := _root_.DedekindZetaZeroFree.CoreChartLocalizers.CutoffConstruction.ChartDensityConstruction.volumeDensity_smooth
+section
+variable (d : ℕ)
+include d
+private theorem density_ne_zero   (z : KPArch.Space d) :
     KPArch.volumeDensity d z ≠ 0 := by
   apply Finset.prod_ne_zero_iff.mpr
   intro i _
   exact pow_ne_zero _ (inv_ne_zero (Real.exp_ne_zero _))
- theorem smooth_laplacian (d : ℕ) (f : KPArch.Space d → ℂ)
+ theorem smooth_laplacian   (f : KPArch.Space d → ℂ)
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
     ContDiff ℝ (⊤ : ℕ∞) (KPContActualSphericalFlatStage.localLaplacian d f) := by
   unfold KPContActualSphericalFlatStage.localLaplacian
@@ -60,12 +60,12 @@ private theorem density_ne_zero (d : ℕ) (z : KPArch.Space d) :
         (contDiff_const (c := KPContActualSphericalFlatStage.coordinateDirection d i j)))
     exact (hc.fderiv_right (by simp)).clm_apply contDiff_const
 
- def meanCLM (d : ℕ) : KPArch.Space d →L[ℝ] ℝ :=
+ def meanCLM   : KPArch.Space d →L[ℝ] ℝ :=
   (d : ℝ)⁻¹ • ∑ i : Fin d, (ContinuousLinearMap.snd ℝ ℂ ℝ).comp (ContinuousLinearMap.proj i)
-private theorem meanCLM_apply (d : ℕ) (z : KPArch.Space d) :
+private theorem meanCLM_apply   (z : KPArch.Space d) :
     meanCLM d z = KPCuspLogShape.meanHeight d z := by
   simp [meanCLM, KPCuspLogShape.meanHeight, div_eq_mul_inv, mul_comm]
-private theorem mean_direction (d : ℕ) (i : Fin d) (j : Fin 3) :
+private theorem mean_direction   (i : Fin d) (j : Fin 3) :
     meanCLM d (KPContFlatCuspCasimirSpecialization.coordinateDirection d i j) =
       if j = 2 then (d : ℝ)⁻¹ else 0 := by
   rw [meanCLM_apply]
@@ -77,12 +77,12 @@ private theorem mean_direction (d : ℕ) (i : Fin d) (j : Fin 3) :
     · simp
   fin_cases j <;> simp [KPCuspLogShape.meanHeight,
     KPContFlatCuspCasimirSpecialization.coordinateDirection, he]
-private theorem radial_arch (d : ℕ) (hd : d ≠ 0) (w : ℝ → ℂ)
+private theorem radial_arch   (hd : d ≠ 0) (w : ℝ → ℂ)
     (hw : ContDiff ℝ (⊤ : ℕ∞) w) (z : KPArch.Space d) :
     KPContActualSphericalFlatStage.localLaplacian d
       (fun y => w (KPCuspLogShape.meanHeight d y)) z =
       KPIncomingCasimir.radialLaplacian d w (KPCuspLogShape.meanHeight d z) := by
-  have hmeq : ⇑(meanCLM d) = KPCuspLogShape.meanHeight d := funext (meanCLM_apply d)
+  have hmeq  := funext (meanCLM_apply d)
   have hmean : ContDiff ℝ (⊤ : ℕ∞) (KPCuspLogShape.meanHeight d) :=
     hmeq ▸ (meanCLM d).contDiff
   have hdw : Differentiable ℝ w := hw.differentiable (by simp)
@@ -104,7 +104,7 @@ private theorem radial_arch (d : ℕ) (hd : d ≠ 0) (w : ℝ → ℂ)
       fderiv ℝ (fun y => fderiv ℝ (fun y => w (KPCuspLogShape.meanHeight d y)) y
         (KPContFlatCuspCasimirSpecialization.coordinateDirection d i j)) z
         (KPContFlatCuspCasimirSpecialization.coordinateDirection d i j) =
-      if j = 2 then ((d : ℝ)⁻¹ : ℂ)^2 * deriv (deriv w) (KPCuspLogShape.meanHeight d z) else 0 := by
+      if j = 2 then (d⁻¹ : ℂ)^2 * deriv (deriv w) (KPCuspLogShape.meanHeight d z) else 0 := by
     simp_rw [hfirst]
     split_ifs with hj
     · have hm := (meanCLM d).hasFDerivAt (x := z)
@@ -119,8 +119,7 @@ private theorem radial_arch (d : ℕ) (hd : d ≠ 0) (w : ℝ → ℂ)
       ring
     · simp
   change KPContFlatCuspCasimirSpecialization.Δloc d _ z = _
-  have hsm : ContDiff ℝ 2 (fun y => w (KPCuspLogShape.meanHeight d y)) := by
-    simpa only [Function.comp_def] using (hw.comp hmean).of_le (by simp)
+  have hsm : ContDiff ℝ 2 (fun y => w (KPCuspLogShape.meanHeight d y)) := (hw.comp hmean).of_le (by simp)
   rw [KPContFlatCuspCasimirSpecialization.Δloc_coordinate_expression d _ hsm z]
   simp_rw [hsecond]
   simp only [hfirst]
@@ -132,7 +131,7 @@ private theorem radial_arch (d : ℕ) (hd : d ≠ 0) (w : ℝ → ℂ)
   field_simp
   <;> ring
 
-private theorem localLaplacian_congr (d : ℕ) (f g : KPArch.Space d → ℂ)
+private theorem localLaplacian_congr   (f g : KPArch.Space d → ℂ)
     (z : KPArch.Space d) (he : f =ᶠ[nhds z] g) :
     KPContActualSphericalFlatStage.localLaplacian d f z =
       KPContActualSphericalFlatStage.localLaplacian d g z := by
@@ -152,6 +151,8 @@ private theorem localLaplacian_congr (d : ℕ) (f g : KPArch.Space d → ℂ)
     hd.mono (fun y hy => by dsimp only; rw [hy])
   exact congrArg (fun A : KPArch.Space d →L[ℝ] ℂ =>
     A (KPContActualSphericalFlatStage.coordinateDirection d i j)) hc.fderiv_eq
+end
+
 
 private theorem localLaplacian_zero (n : ℕ) :
     KPContActualSphericalFlatStage.localLaplacian n 0 = 0 := by
@@ -292,10 +293,7 @@ private theorem cutoff_commutator_zero_nhds (s : ℂ) (hs : s ∈ Ω)
     ∀ᶠ y in nhds x,
       scalar F ζ hζ C R P H U (D.cutoff s) y = 0 ∧
       scalar F ζ hζ C R P H U (D.commutator s) y = 0 := by
-  have hz : ∀ᶠ y in nhds x, ∀ a, y ∈ ends F ζ hζ C R P H U B a →
-      (χ a).toFun (height F ζ hζ C R P H U B a y) = 0 ∧
-      deriv (χ a).toFun (height F ζ hζ C R P H U B a y) = 0 ∧
-      deriv (deriv (χ a).toFun) (height F ζ hζ C R P H U B a y) = 0 :=
+  have hz  :=
     Filter.eventually_all.mpr (fun a => cutoff_zero_nhds F ζ hζ C R P H U B a (χ a) x (hx a))
   filter_upwards [hz] with y hy
   rw [D.cutoff_formula s hs, D.commutator_formula s hs]
@@ -371,7 +369,7 @@ private theorem scalar_laplacian_zero_of_zero_nhds
     change scalar F ζ hζ C R P H U w (Q y) = 0 at hy
     rw [hv] at hy
     exact (mul_eq_zero.mp hy).resolve_left (by
-      exact Units.ne_zero (KPCuspGenuineMonodromy.chi F ζ hζ ε))
+      apply Units.ne_zero)
   rw [← hp, scalar_phase_value]
   change (KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ) *
     KPContActualSphericalFlatStage.localLaplacian _ (w.val i).val z = 0
@@ -413,7 +411,7 @@ private theorem radial_cutoff_equation (a : Cusps F ζ hζ C R P H U)
     KPContActualSphericalFlatStage.localLaplacian (KPCuspLogShape.dimension F)
       (fun y => KPCutoffSource.radialCutoff (d F) (χ a).toFun s b
         (KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) y)) z -
-      KPContinuation.spectralCoordinate (d F : ℤ) s *
+      KPContinuation.spectralCoordinate (d F) s *
         KPCutoffSource.radialCutoff (d F) (χ a).toFun s b t =
       KPCutoffSource.incomingCommutatorMultiplier (d F) (χ a).toFun s t *
         (KPIncomingCasimir.heightFactor (d F) s t * b) := by
@@ -428,7 +426,7 @@ include hΩ in
 private theorem cutoff_cusp_laplacian (s : ℂ) (hs : s ∈ Ω)
     (a : Cusps F ζ hζ C R P H U) (p : KPCuspCharts.Coordinates F) (hp : B.τ < p.2) :
     frameValue F ζ hζ C R P H U (Δloc F ζ hζ C R P H U (D.cutoff s)) a p -
-      KPContinuation.spectralCoordinate (d F : ℤ) s *
+      KPContinuation.spectralCoordinate (d F) s *
         frameValue F ζ hζ C R P H U (D.cutoff s) a p =
       frameValue F ζ hζ C R P H U (D.commutator s) a p := by
   let b := KPContFlatCuspIncomingEvaluation.projectedScalar F ζ hζ C R P H U a
@@ -484,7 +482,7 @@ include hΩ in
 private theorem scalar_equation (s : ℂ) (hs : s ∈ Ω)
     (x : Covered F ζ hζ C R P H U) :
     scalar F ζ hζ C R P H U (Δloc F ζ hζ C R P H U (D.cutoff s)) x -
-      KPContinuation.spectralCoordinate (d F : ℤ) s *
+      KPContinuation.spectralCoordinate (d F) s *
         scalar F ζ hζ C R P H U (D.cutoff s) x =
       scalar F ζ hζ C R P H U (D.commutator s) x := by
   by_cases hx : ∃ a, x ∈ ends F ζ hζ C R P H U B a
@@ -495,7 +493,7 @@ private theorem scalar_equation (s : ℂ) (hs : s ∈ Ω)
       s hs l.cusp l.coordinates l.high
     calc _ = (KPCuspGenuineMonodromy.chi F ζ hζ l.sheet : ℂ) *
         (frameValue F ζ hζ C R P H U (Δloc F ζ hζ C R P H U (D.cutoff s))
-          l.cusp l.coordinates - KPContinuation.spectralCoordinate (d F : ℤ) s *
+          l.cusp l.coordinates - KPContinuation.spectralCoordinate (d F) s *
           frameValue F ζ hζ C R P H U (D.cutoff s) l.cusp l.coordinates) := by ring
       _ = _ := congrArg _ he
   · have hn : ∀ a, x ∉ ends F ζ hζ C R P H U B a := fun a ha => hx ⟨a, ha⟩
@@ -507,7 +505,7 @@ private theorem scalar_equation (s : ℂ) (hs : s ∈ Ω)
 include hΩ in
 private theorem section_equation (s : ℂ) (hs : s ∈ Ω) :
     Δloc F ζ hζ C R P H U (D.cutoff s) -
-      KPContinuation.spectralCoordinate (d F : ℤ) s • D.cutoff s = D.commutator s := by
+      KPContinuation.spectralCoordinate (d F) s • D.cutoff s = D.commutator s := by
   apply Subtype.ext
   funext i
   apply Subtype.ext
@@ -528,7 +526,7 @@ structure Properties : Prop where
 
   equation : ∀ s ∈ Ω,
     Δloc F ζ hζ C R P H U (D.cutoff s) -
-      KPContinuation.spectralCoordinate (d F : ℤ) s • D.cutoff s = D.commutator s
+      KPContinuation.spectralCoordinate (d F) s • D.cutoff s = D.commutator s
 
   chart_equation : ∀ (s : ℂ), s ∈ Ω →
     ∀ (a : KPContActualSectorSmoothTestModules.ActualChart
@@ -537,14 +535,14 @@ structure Properties : Prop where
     HyperbolicChart.laplacian (d F)
       (KPContActualSectorTestDifferentialDescent.liftExtension a
         (KPContActualSectorSmoothTestModules.sectionFields (D.cutoff s).val a)) x.val -
-      KPContinuation.spectralCoordinate (d F : ℤ) s *
+      KPContinuation.spectralCoordinate (d F) s *
         KPContActualSectorSmoothTestModules.sectionFields (D.cutoff s).val a x =
       KPContActualSectorSmoothTestModules.sectionFields (D.commutator s).val a x
 
   end_equation : ∀ (s : ℂ) (hs : s ∈ Ω) (a : Cusps F ζ hζ C R P H U)
       (z : KPCuspCharts.Coordinates F), B.τ < z.2 →
     frameValue F ζ hζ C R P H U (Δloc F ζ hζ C R P H U (D.cutoff s)) a z -
-      KPContinuation.spectralCoordinate (d F : ℤ) s *
+      KPContinuation.spectralCoordinate (d F) s *
         frameValue F ζ hζ C R P H U (D.cutoff s) a z =
     KPCutoffSource.incomingCommutatorMultiplier (d F) (χ a).toFun s z.2 *
       (Complex.exp ((d F : ℂ) * ((4 : ℂ) / 3 + 2 * s) * (z.2 : ℂ)) *
@@ -584,8 +582,7 @@ theorem kp_cont_actual_cutoff_local_commutator
     (D : KPContActualCutoffSmoothDescent.Descent F ζ hζ C R P H U ι B Ω f χ) :
     KPContActualCutoffLocalCommutator.Properties F ζ hζ C R P H U ι B Ω hΩ f χ D := by
   refine ⟨?_, ?_, ?_, ?_⟩
-  · exact KPContActualCutoffLocalCommutator.section_equation F ζ hζ C R P H U
-      ι B Ω hΩ f χ D
+  · apply KPContActualCutoffLocalCommutator.section_equation <;> assumption
   · intro s hs a x
     rw [← KPContActualCutoffLocalCommutator.localLaplacian_chart]
     have he := KPContActualCutoffLocalCommutator.section_equation F ζ hζ C R P H U
@@ -606,8 +603,7 @@ theorem kp_cont_actual_cutoff_local_commutator
       KPContActualCutoffSmoothDescent.incomingValue_height_formula F ζ hζ C R P H U
         ι a s (hΩ hs) (f s) z]
     rfl
-  · exact KPContActualCutoffLocalCommutator.cutoff_laplacian_commutator_zero_nhds F ζ hζ
-      C R P H U ι B Ω f χ D
+  · apply KPContActualCutoffLocalCommutator.cutoff_laplacian_commutator_zero_nhds
 
 end DedekindZetaZeroFree
 

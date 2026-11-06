@@ -49,20 +49,23 @@ local instance
 
 /-- The real infinite place of the conjugation fixed field obtained
 by restricting the concrete complex place of the overfield. -/
+
+local notation:max "current_infinitePlaceComplexificationOverfield" => infinitePlaceComplexificationOverfield (K := K) (L := L)
+
+
+local notation:max "current_ramifiedInfinitePlaceRealFixedField" => ramifiedInfinitePlaceRealFixedField (K := K) (L := L)
+
 noncomputable def ramifiedInfinitePlaceRealFixedPlace
     (v : InfinitePlace K)
     (hRamified :
       (chosenInfinitePlaceAbove (L := L) v).IsRamified K) :
     InfinitePlace
-      (ramifiedInfinitePlaceRealFixedField
-        (K := K) (L := L) v hRamified) :=
+      (current_ramifiedInfinitePlaceRealFixedField v hRamified) :=
   (infinitePlaceComplexificationOverfieldComplexPlace
       (K := K) (L := L) v).comap
     (algebraMap
-      (ramifiedInfinitePlaceRealFixedField
-        (K := K) (L := L) v hRamified)
-      (infinitePlaceComplexificationOverfield
-        (K := K) (L := L) v))
+      (current_ramifiedInfinitePlaceRealFixedField v hRamified)
+      (current_infinitePlaceComplexificationOverfield v))
 
 omit [NumberField K] [FiniteDimensional K L] in
 /-- The fixed-field place is genuinely real: every element of the
@@ -74,8 +77,7 @@ theorem ramifiedInfinitePlaceRealFixedPlace_isReal
     (ramifiedInfinitePlaceRealFixedPlace
       (K := K) (L := L) v hRamified).IsReal := by
   let E :=
-    infinitePlaceComplexificationOverfield
-      (K := K) (L := L) v
+    current_infinitePlaceComplexificationOverfield v
   let K' :=
     ramifiedInfinitePlaceRealFixedField
       (K := K) (L := L) v hRamified
@@ -135,21 +137,15 @@ theorem infinitePlaceBelow_ramifiedInfinitePlaceRealFixedPlace
   intro x
   change
     ‖((algebraMap
-          (ramifiedInfinitePlaceRealFixedField
-            (K := K) (L := L) v hRamified)
-          (infinitePlaceComplexificationOverfield
-            (K := K) (L := L) v)
+          (current_ramifiedInfinitePlaceRealFixedField v hRamified)
+          (current_infinitePlaceComplexificationOverfield v)
           (algebraMap K
-            (ramifiedInfinitePlaceRealFixedField
-              (K := K) (L := L) v hRamified) x) :
-        infinitePlaceComplexificationOverfield
-          (K := K) (L := L) v) : ℂ)‖ =
+            (current_ramifiedInfinitePlaceRealFixedField v hRamified) x) :
+        current_infinitePlaceComplexificationOverfield v) : ℂ)‖ =
       v x
   rw [← IsScalarTower.algebraMap_apply K
-    (ramifiedInfinitePlaceRealFixedField
-      (K := K) (L := L) v hRamified)
-    (infinitePlaceComplexificationOverfield
-      (K := K) (L := L) v)]
+    (current_ramifiedInfinitePlaceRealFixedField v hRamified)
+    (current_infinitePlaceComplexificationOverfield v)]
   change
     ‖InfinitePlace.embedding
         (chosenInfinitePlaceAbove (L := L) v)
@@ -171,17 +167,14 @@ theorem
       (chosenInfinitePlaceAbove (L := L) v).IsRamified K) :
     (chosenInfinitePlaceAbove
       (L :=
-        infinitePlaceComplexificationOverfield
-          (K := K) (L := L) v)
+        current_infinitePlaceComplexificationOverfield v)
       (ramifiedInfinitePlaceRealFixedPlace
         (K := K) (L := L) v hRamified)).IsRamified
-      (ramifiedInfinitePlaceRealFixedField
-        (K := K) (L := L) v hRamified) := by
+      (current_ramifiedInfinitePlaceRealFixedField v hRamified) := by
   rw [InfinitePlace.isRamified_iff,
     chosenInfinitePlaceAbove_comap
       (L :=
-        infinitePlaceComplexificationOverfield
-          (K := K) (L := L) v)
+        current_infinitePlaceComplexificationOverfield v)
       (ramifiedInfinitePlaceRealFixedPlace
         (K := K) (L := L) v hRamified)]
   exact
@@ -199,11 +192,9 @@ theorem
       (chosenInfinitePlaceAbove (L := L) v).IsRamified K) :
     chosenInfinitePlaceArtinMonoidHom
         (K :=
-          ramifiedInfinitePlaceRealFixedField
-            (K := K) (L := L) v hRamified)
+          current_ramifiedInfinitePlaceRealFixedField v hRamified)
         (L :=
-          infinitePlaceComplexificationOverfield
-            (K := K) (L := L) v)
+          current_infinitePlaceComplexificationOverfield v)
         (ramifiedInfinitePlaceRealFixedPlace
           (K := K) (L := L) v hRamified)
         (-1 :
@@ -217,11 +208,9 @@ theorem
   · have hConj :=
       chosenInfinitePlaceArtinMonoidHom_neg_one_isConj_of_ramified
         (K :=
-          ramifiedInfinitePlaceRealFixedField
-            (K := K) (L := L) v hRamified)
+          current_ramifiedInfinitePlaceRealFixedField v hRamified)
         (L :=
-          infinitePlaceComplexificationOverfield
-            (K := K) (L := L) v)
+          current_infinitePlaceComplexificationOverfield v)
         (ramifiedInfinitePlaceRealFixedPlace
           (K := K) (L := L) v hRamified)
         (ramifiedInfinitePlaceOverextension_chosenPlace_isRamified
@@ -232,8 +221,7 @@ theorem
           (IsTotallyComplex.isComplex
             (chosenInfinitePlaceAbove
               (L :=
-                infinitePlaceComplexificationOverfield
-                  (K := K) (L := L) v)
+                current_infinitePlaceComplexificationOverfield v)
               (ramifiedInfinitePlaceRealFixedPlace
                 (K := K) (L := L) v hRamified))))
   · intro hc
@@ -252,10 +240,8 @@ theorem
     (hRamified :
       (chosenInfinitePlaceAbove (L := L) v).IsRamified K) :
     globalNormResidueMonoidHom
-        (ramifiedInfinitePlaceRealFixedField
-          (K := K) (L := L) v hRamified)
-        (infinitePlaceComplexificationOverfield
-          (K := K) (L := L) v)
+        (current_ramifiedInfinitePlaceRealFixedField v hRamified)
+        (current_infinitePlaceComplexificationOverfield v)
         (IdeleGroup.infinitePlaceIdeleClass
           (ramifiedInfinitePlaceRealFixedPlace
             (K := K) (L := L) v hRamified)
@@ -275,10 +261,8 @@ noncomputable def ramifiedInfinitePlaceOverextensionRestriction
     (hRamified :
       (chosenInfinitePlaceAbove (L := L) v).IsRamified K) :
     Gal(
-      (infinitePlaceComplexificationOverfield
-        (K := K) (L := L) v) /
-      (ramifiedInfinitePlaceRealFixedField
-        (K := K) (L := L) v hRamified)) →*
+      (current_infinitePlaceComplexificationOverfield v) /
+      (current_ramifiedInfinitePlaceRealFixedField v hRamified)) →*
       Gal(L / K) :=
   (AlgEquiv.restrictNormalHom L).comp
     (AlgEquiv.restrictScalarsHom K)
@@ -302,33 +286,28 @@ theorem ramifiedInfinitePlaceOverextensionRestriction_conjugation
   intro x
   apply
     (algebraMap L
-      (infinitePlaceComplexificationOverfield
-        (K := K) (L := L) v)).injective
+      (current_infinitePlaceComplexificationOverfield v)).injective
   change
     algebraMap L
-        (infinitePlaceComplexificationOverfield
-          (K := K) (L := L) v)
+        (current_infinitePlaceComplexificationOverfield v)
         ((AlgEquiv.restrictNormalHom L
           ((ramifiedInfinitePlaceOverextensionConjugation
             (K := K) (L := L) v hRamified).restrictScalars K)) x) =
       algebraMap L
-        (infinitePlaceComplexificationOverfield
-          (K := K) (L := L) v)
+        (current_infinitePlaceComplexificationOverfield v)
         (chosenInfinitePlaceArtinMonoidHom
           (K := K) (L := L) v
           (-1 : v.Completionˣ) x)
   have hrestrict :
       algebraMap L
-          (infinitePlaceComplexificationOverfield
-            (K := K) (L := L) v)
+          (current_infinitePlaceComplexificationOverfield v)
           ((AlgEquiv.restrictNormalHom L
             ((ramifiedInfinitePlaceOverextensionConjugation
               (K := K) (L := L) v hRamified).restrictScalars K)) x) =
         (ramifiedInfinitePlaceOverextensionConjugation
           (K := K) (L := L) v hRamified).restrictScalars K
           (algebraMap L
-            (infinitePlaceComplexificationOverfield
-              (K := K) (L := L) v) x) := by
+            (current_infinitePlaceComplexificationOverfield v) x) := by
     exact
       AlgEquiv.restrictNormal_commutes
         ((ramifiedInfinitePlaceOverextensionConjugation
@@ -354,16 +333,14 @@ overfield extending the standard embedding of its original top field. -/
 noncomputable def
     infinitePlaceComplexificationOverfieldSeparableClosureEmbedding
     (v : InfinitePlace K) :
-    infinitePlaceComplexificationOverfield
-        (K := K) (L := L) v →ₐ[ℚ]
+    current_infinitePlaceComplexificationOverfield v →ₐ[ℚ]
       SeparableClosure ℚ :=
   Classical.choose
     (IsAlgClosed.surjective_domRestrict_of_isAlgebraic
       (K := ℚ)
       (L := L)
       (E :=
-        infinitePlaceComplexificationOverfield
-          (K := K) (L := L) v)
+        current_infinitePlaceComplexificationOverfield v)
       (M := SeparableClosure ℚ)
       (AlgebraicNumberTheory.numberFieldSeparableClosureEmbedding L))
 
@@ -381,8 +358,7 @@ theorem
       (K := ℚ)
       (L := L)
       (E :=
-        infinitePlaceComplexificationOverfield
-          (K := K) (L := L) v)
+        current_infinitePlaceComplexificationOverfield v)
       (M := SeparableClosure ℚ)
       (AlgebraicNumberTheory.numberFieldSeparableClosureEmbedding L))
 
@@ -395,70 +371,51 @@ theorem
     (hRamified :
       (chosenInfinitePlaceAbove (L := L) v).IsRamified K)
     (j :
-      infinitePlaceComplexificationOverfield
-          (K := K) (L := L) v →ₐ[ℚ]
+      current_infinitePlaceComplexificationOverfield v →ₐ[ℚ]
         SeparableClosure ℚ)
     (c :
       IdeleClassGroup
-        (ramifiedInfinitePlaceRealFixedField
-          (K := K) (L := L) v hRamified)) :
+        (current_ramifiedInfinitePlaceRealFixedField v hRamified)) :
     globalNormResidueMonoidHomOfEmbedding
-        (ramifiedInfinitePlaceRealFixedField
-          (K := K) (L := L) v hRamified)
-        (infinitePlaceComplexificationOverfield
-          (K := K) (L := L) v)
+        (current_ramifiedInfinitePlaceRealFixedField v hRamified)
+        (current_infinitePlaceComplexificationOverfield v)
         j c =
       1 ↔
     c ∈
       (_root_.ideleClassNorm
-        (ramifiedInfinitePlaceRealFixedField
-          (K := K) (L := L) v hRamified)
-        (infinitePlaceComplexificationOverfield
-          (K := K) (L := L) v)).range := by
+        (current_ramifiedInfinitePlaceRealFixedField v hRamified)
+        (current_infinitePlaceComplexificationOverfield v)).range := by
   let e :
       (IdeleClassGroup
-          (ramifiedInfinitePlaceRealFixedField
-            (K := K) (L := L) v hRamified) ⧸
+          (current_ramifiedInfinitePlaceRealFixedField v hRamified) ⧸
         (_root_.ideleClassNorm
-          (ramifiedInfinitePlaceRealFixedField
-            (K := K) (L := L) v hRamified)
-          (infinitePlaceComplexificationOverfield
-            (K := K) (L := L) v)).range) ≃*
+          (current_ramifiedInfinitePlaceRealFixedField v hRamified)
+          (current_infinitePlaceComplexificationOverfield v)).range) ≃*
         Gal(
-          (infinitePlaceComplexificationOverfield
-            (K := K) (L := L) v) /
-          (ramifiedInfinitePlaceRealFixedField
-            (K := K) (L := L) v hRamified)) :=
+          (current_infinitePlaceComplexificationOverfield v) /
+          (current_ramifiedInfinitePlaceRealFixedField v hRamified)) :=
     AddEquiv.toMultiplicative
       (globalNormResidueEquivOfEmbedding
-        (ramifiedInfinitePlaceRealFixedField
-          (K := K) (L := L) v hRamified)
-        (infinitePlaceComplexificationOverfield
-          (K := K) (L := L) v)
+        (current_ramifiedInfinitePlaceRealFixedField v hRamified)
+        (current_infinitePlaceComplexificationOverfield v)
         j)
   change
     e (QuotientGroup.mk'
           (_root_.ideleClassNorm
-            (ramifiedInfinitePlaceRealFixedField
-              (K := K) (L := L) v hRamified)
-            (infinitePlaceComplexificationOverfield
-              (K := K) (L := L) v)).range c) =
+            (current_ramifiedInfinitePlaceRealFixedField v hRamified)
+            (current_infinitePlaceComplexificationOverfield v)).range c) =
         1 ↔
       c ∈
         (_root_.ideleClassNorm
-          (ramifiedInfinitePlaceRealFixedField
-            (K := K) (L := L) v hRamified)
-          (infinitePlaceComplexificationOverfield
-            (K := K) (L := L) v)).range
+          (current_ramifiedInfinitePlaceRealFixedField v hRamified)
+          (current_infinitePlaceComplexificationOverfield v)).range
   constructor
   · intro h
     have hq :
         QuotientGroup.mk'
             (_root_.ideleClassNorm
-              (ramifiedInfinitePlaceRealFixedField
-                (K := K) (L := L) v hRamified)
-              (infinitePlaceComplexificationOverfield
-                (K := K) (L := L) v)).range c =
+              (current_ramifiedInfinitePlaceRealFixedField v hRamified)
+              (current_infinitePlaceComplexificationOverfield v)).range c =
           1 := by
       apply e.injective
       exact h.trans (map_one e).symm
@@ -467,19 +424,15 @@ theorem
     have hq :
         QuotientGroup.mk'
             (_root_.ideleClassNorm
-              (ramifiedInfinitePlaceRealFixedField
-                (K := K) (L := L) v hRamified)
-              (infinitePlaceComplexificationOverfield
-                (K := K) (L := L) v)).range c =
+              (current_ramifiedInfinitePlaceRealFixedField v hRamified)
+              (current_infinitePlaceComplexificationOverfield v)).range c =
           1 :=
       (QuotientGroup.eq_one_iff c).2 hc
     calc
       e (QuotientGroup.mk'
           (_root_.ideleClassNorm
-            (ramifiedInfinitePlaceRealFixedField
-              (K := K) (L := L) v hRamified)
-            (infinitePlaceComplexificationOverfield
-              (K := K) (L := L) v)).range c) = e 1 :=
+            (current_ramifiedInfinitePlaceRealFixedField v hRamified)
+            (current_infinitePlaceComplexificationOverfield v)).range c) = e 1 :=
         congrArg e hq
       _ = 1 := map_one e
 
@@ -495,14 +448,11 @@ theorem
     (hRamified :
       (chosenInfinitePlaceAbove (L := L) v).IsRamified K)
     (j :
-      infinitePlaceComplexificationOverfield
-          (K := K) (L := L) v →ₐ[ℚ]
+      current_infinitePlaceComplexificationOverfield v →ₐ[ℚ]
         SeparableClosure ℚ) :
     globalNormResidueMonoidHomOfEmbedding
-        (ramifiedInfinitePlaceRealFixedField
-          (K := K) (L := L) v hRamified)
-        (infinitePlaceComplexificationOverfield
-          (K := K) (L := L) v)
+        (current_ramifiedInfinitePlaceRealFixedField v hRamified)
+        (current_infinitePlaceComplexificationOverfield v)
         j
         (IdeleGroup.infinitePlaceIdeleClass
           (ramifiedInfinitePlaceRealFixedPlace
@@ -516,10 +466,8 @@ theorem
       ramifiedInfinitePlaceOverextension_eq_one_or_conjugation
         (K := K) (L := L) v hRamified
         (globalNormResidueMonoidHomOfEmbedding
-          (ramifiedInfinitePlaceRealFixedField
-            (K := K) (L := L) v hRamified)
-          (infinitePlaceComplexificationOverfield
-            (K := K) (L := L) v)
+          (current_ramifiedInfinitePlaceRealFixedField v hRamified)
+          (current_infinitePlaceComplexificationOverfield v)
           j
           (IdeleGroup.infinitePlaceIdeleClass
             (ramifiedInfinitePlaceRealFixedPlace
@@ -537,18 +485,14 @@ theorem
               (ramifiedInfinitePlaceRealFixedPlace
                 (K := K) (L := L) v hRamified).Completionˣ) ∈
           (_root_.ideleClassNorm
-            (ramifiedInfinitePlaceRealFixedField
-              (K := K) (L := L) v hRamified)
-            (infinitePlaceComplexificationOverfield
-              (K := K) (L := L) v)).range :=
+            (current_ramifiedInfinitePlaceRealFixedField v hRamified)
+            (current_infinitePlaceComplexificationOverfield v)).range :=
       (ramifiedInfinitePlaceOverextension_globalNormResidueOfEmbedding_eq_one_iff
         (K := K) (L := L) v hRamified j _).mp htrivial
     have hstandard :
         globalNormResidueMonoidHom
-            (ramifiedInfinitePlaceRealFixedField
-              (K := K) (L := L) v hRamified)
-            (infinitePlaceComplexificationOverfield
-              (K := K) (L := L) v)
+            (current_ramifiedInfinitePlaceRealFixedField v hRamified)
+            (current_infinitePlaceComplexificationOverfield v)
             (IdeleGroup.infinitePlaceIdeleClass
               (ramifiedInfinitePlaceRealFixedPlace
                 (K := K) (L := L) v hRamified)
@@ -558,11 +502,9 @@ theorem
           1 :=
       (globalNormResidueMonoidHom_eq_one_iff
         (K :=
-          ramifiedInfinitePlaceRealFixedField
-            (K := K) (L := L) v hRamified)
+          current_ramifiedInfinitePlaceRealFixedField v hRamified)
         (L :=
-          infinitePlaceComplexificationOverfield
-            (K := K) (L := L) v)
+          current_infinitePlaceComplexificationOverfield v)
         _).2 hnorm
     rw [
       ramifiedInfinitePlaceOverextension_globalNormResidue_neg_one]
@@ -596,8 +538,7 @@ noncomputable def
   (infinitePlaceComplexificationOverfieldSeparableClosureEmbedding
       (K := K) (L := L) v).comp
     (IsScalarTower.toAlgHom ℚ L
-      (infinitePlaceComplexificationOverfield
-        (K := K) (L := L) v))
+      (current_infinitePlaceComplexificationOverfield v))
 
 omit [NumberField K] [FiniteDimensional K L] in
 /-- The induced lower embedding is the standard number-field embedding. -/
@@ -619,8 +560,7 @@ noncomputable def ramifiedInfinitePlaceOverextensionNegOneIdeleClass
     (hRamified :
       (chosenInfinitePlaceAbove (L := L) v).IsRamified K) :
     IdeleClassGroup
-      (ramifiedInfinitePlaceRealFixedField
-        (K := K) (L := L) v hRamified) :=
+      (current_ramifiedInfinitePlaceRealFixedField v hRamified) :=
   IdeleGroup.infinitePlaceIdeleClass
     (ramifiedInfinitePlaceRealFixedPlace
       (K := K) (L := L) v hRamified)
@@ -635,15 +575,11 @@ noncomputable def
     (hRamified :
       (chosenInfinitePlaceAbove (L := L) v).IsRamified K) :
     Gal(
-      (infinitePlaceComplexificationOverfield
-        (K := K) (L := L) v) /
-      (ramifiedInfinitePlaceRealFixedField
-        (K := K) (L := L) v hRamified)) :=
+      (current_infinitePlaceComplexificationOverfield v) /
+      (current_ramifiedInfinitePlaceRealFixedField v hRamified)) :=
   globalNormResidueMonoidHomOfEmbedding
-    (ramifiedInfinitePlaceRealFixedField
-      (K := K) (L := L) v hRamified)
-    (infinitePlaceComplexificationOverfield
-      (K := K) (L := L) v)
+    (current_ramifiedInfinitePlaceRealFixedField v hRamified)
+    (current_infinitePlaceComplexificationOverfield v)
     (infinitePlaceComplexificationOverfieldSeparableClosureEmbedding
       (K := K) (L := L) v)
     (ramifiedInfinitePlaceOverextensionNegOneIdeleClass
@@ -672,8 +608,7 @@ noncomputable def
     (infinitePlaceComplexificationLowerSeparableClosureEmbedding
       (K := K) (L := L) v)
     (_root_.ideleClassNorm K
-      (ramifiedInfinitePlaceRealFixedField
-        (K := K) (L := L) v hRamified)
+      (current_ramifiedInfinitePlaceRealFixedField v hRamified)
       (ramifiedInfinitePlaceOverextensionNegOneIdeleClass
         (K := K) (L := L) v hRamified))
 
@@ -690,11 +625,9 @@ private theorem ramifiedInfinitePlace_normResidueDiamond_neg_one
       (globalNormResidueMonoidHomOfEmbedding_norm_restriction
         (K := K) (L := L)
         (K' :=
-          ramifiedInfinitePlaceRealFixedField
-            (K := K) (L := L) v hRamified)
+          current_ramifiedInfinitePlaceRealFixedField v hRamified)
         (L' :=
-          infinitePlaceComplexificationOverfield
-            (K := K) (L := L) v)
+          current_infinitePlaceComplexificationOverfield v)
         (infinitePlaceComplexificationOverfieldSeparableClosureEmbedding
           (K := K) (L := L) v))
       (ramifiedInfinitePlaceOverextensionNegOneIdeleClass
@@ -734,8 +667,7 @@ private theorem ramifiedInfinitePlace_normedNormResidue_neg_one
     IdeleGroup.ideleClassNorm_infinitePlaceIdeleClass_neg_one_of_isReal
       (K := K)
       (L :=
-        ramifiedInfinitePlaceRealFixedField
-          (K := K) (L := L) v hRamified)
+        current_ramifiedInfinitePlaceRealFixedField v hRamified)
       (ramifiedInfinitePlaceRealFixedPlace
         (K := K) (L := L) v hRamified)
       (ramifiedInfinitePlaceRealFixedPlace_isReal

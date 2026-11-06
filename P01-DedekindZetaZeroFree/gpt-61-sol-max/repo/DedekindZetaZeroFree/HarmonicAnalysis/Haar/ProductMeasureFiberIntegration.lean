@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import Mathlib.MeasureTheory.Measure.Haar.Unique
 
 @[expose] public section
+
 
 open MeasureTheory
 open scoped ENNReal NNReal
@@ -24,9 +27,9 @@ theorem exists_unique_product_haar
   classical
   let ν₀ : Measure Y := MeasureTheory.Measure.haar
   let ρ₀ : Measure (X × Y) := Measure.map e.symm ρ
-  let c : ℝ≥0 := ρ₀.haarScalarFactor (μ.prod ν₀)
+  let c  := ρ₀.haarScalarFactor (μ.prod ν₀)
   have hc : c ≠ 0 := (Measure.haarScalarFactor_pos_of_isHaarMeasure ρ₀ (μ.prod ν₀)).ne'
-  letI : (c • ν₀).IsHaarMeasure := Measure.IsHaarMeasure.nnreal_smul ν₀ hc
+  letI  := Measure.IsHaarMeasure.nnreal_smul ν₀ hc
   have hscalar : ρ₀ = c • μ.prod ν₀ := Measure.isMulLeftInvariant_eq_smul ρ₀ (μ.prod ν₀)
   have hprod : μ.prod (c • ν₀) = ρ₀ := by
     rw [Measure.prod_smul_right, ← hscalar]
@@ -39,7 +42,7 @@ theorem exists_unique_product_haar
   have heq : μ.prod ν = μ.prod (c • ν₀) :=
     e.toHomeomorph.toMeasurableEquiv.map_measurableEquiv_injective (hνmap.trans hmap.symm)
   let K : TopologicalSpace.PositiveCompacts X := Classical.arbitrary _
-  have hK0 : μ (K : Set X) ≠ 0 :=
+  have hK0  :=
     (Measure.measure_pos_of_nonempty_interior μ K.interior_nonempty).ne'
   have hKtop : μ (K : Set X) ≠ ∞ := K.isCompact.measure_lt_top.ne
   ext s hs

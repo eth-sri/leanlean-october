@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import Mathlib.RingTheory.DedekindDomain.Factorization
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.Hecke
 
@@ -13,15 +16,17 @@ open scoped nonZeroDivisors
 variable {R K : Type*} [CommRing R] [IsDedekindDomain R]
   [Field K] [Algebra R K] [IsFractionRing R K]
 
-abbrev fractionalResidueDenominator (m : Ideal R) (I : FractionalIdeal R⁰ K) :
-    Submodule R (I : Submodule R K) :=
+section
+variable (m : Ideal R) (I : FractionalIdeal R⁰ K)
+include m I
+abbrev fractionalResidueDenominator    :=
   Submodule.comap (I : Submodule R K).subtype
     (((m : FractionalIdeal R⁰ K) * I : FractionalIdeal R⁰ K) : Submodule R K)
 
-abbrev fractionalResidueModule (m : Ideal R) (I : FractionalIdeal R⁰ K) :=
+abbrev fractionalResidueModule   :=
   (I : Submodule R K) ⧸ fractionalResidueDenominator m I
 
-theorem fractionalResidue_mul_le (m : Ideal R) (I : FractionalIdeal R⁰ K) :
+theorem fractionalResidue_mul_le   :
     (((m : FractionalIdeal R⁰ K) * I : FractionalIdeal R⁰ K) : Submodule R K) ≤
       (I : Submodule R K) := by
   change (m : FractionalIdeal R⁰ K) * I ≤ I
@@ -31,8 +36,7 @@ theorem fractionalResidue_mul_le (m : Ideal R) (I : FractionalIdeal R⁰ K) :
   change (algebraMap R K) r * b ∈ (I : Submodule R K)
   simpa only [Algebra.smul_def] using (I : Submodule R K).smul_mem r hb
 
-theorem fractionalResidueModule_isTorsionBySet (m : Ideal R)
-    (I : FractionalIdeal R⁰ K) :
+theorem fractionalResidueModule_isTorsionBySet   :
     Module.IsTorsionBySet R (fractionalResidueModule m I) (m : Set R) := by
   apply (Module.isTorsionBySet_quotient_iff _ _).mpr
   intro x r hr
@@ -40,6 +44,8 @@ theorem fractionalResidueModule_isTorsionBySet (m : Ideal R)
   simpa only [Algebra.smul_def] using
     FractionalIdeal.mul_mem_mul
       ((FractionalIdeal.mem_coeIdeal _).mpr ⟨r, hr, rfl⟩) x.property
+end
+
 
 noncomputable instance fractionalResidueModuleModule (m : Ideal R)
     (I : FractionalIdeal R⁰ K) : Module (R ⧸ m) (fractionalResidueModule m I) :=

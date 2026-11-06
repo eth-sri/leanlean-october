@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Theta.Profiles.RayParityKernels
 public import DedekindZetaZeroFree.HarmonicAnalysis.Poisson.RayLatticePeriodization
 public import DedekindZetaZeroFree.Arithmetic.Units.RayUnitHalfOpenDomain
 public import DedekindZetaZeroFree.Arithmetic.Units.RayUnitTorsionFibers
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -32,7 +35,7 @@ private theorem parityPolynomialBound (δ : Finset (RayCoset.RealPlaces K)) (y :
       rw [Complex.norm_real, Real.norm_eq_abs, Theta.traceRealCoordinateCLM_apply]
       have hb := PiLp.norm_apply_le (Theta.traceCoordinates K y) (Sum.inl v)
       rw [LinearIsometryEquiv.norm_map] at hb
-      exact hb.trans (by linarith [norm_nonneg y]))
+      apply hb.trans <;> aesop)
     _ = _ := by simp
 
 private theorem parityScaleRadial (q : NumberField.InfinitePlace K → ℝ) (x : euclidean.mixedSpace K) (r : ℝ) :
@@ -68,21 +71,24 @@ private theorem parityCompactLower (S : Set (RayCoset.logHyperplane K)) (hS : Is
   intro h hh x
   by_cases hx : x = 0
   · simp [hx, RayParity.Q]
-  · have hunit : (‖x‖⁻¹ : ℝ) • x ∈ Metric.sphere (0 : euclidean.mixedSpace K) 1 := by
+  · have hunit : (‖x‖⁻¹) • x ∈ Metric.sphere (0 : euclidean.mixedSpace K) 1 := by
       simpa [Metric.mem_sphere, dist_zero_right] using (norm_smul_inv_norm (𝕜 := ℝ) hx)
-    have hb' := hb (h, (‖x‖⁻¹ : ℝ) • x) ⟨hh, hunit⟩
-    have he : RayParity.Q K (fun v => Real.exp (h.val v)) ((‖x‖⁻¹ : ℝ) • x) =
-       (‖x‖⁻¹ : ℝ) • RayParity.Q K (fun v => Real.exp (h.val v)) x := by
+    have hb' := hb (h, (‖x‖⁻¹) • x) ⟨hh, hunit⟩
+    have he : RayParity.Q K (fun v => Real.exp (h.val v)) ((‖x‖⁻¹) • x) =
+       (‖x‖⁻¹) • RayParity.Q K (fun v => Real.exp (h.val v)) x := by
       unfold RayParity.Q
       rw [map_smul, mul_smul_comm, map_smul]
     rw [he, _root_.norm_smul, Real.norm_eq_abs, abs_of_nonneg (inv_nonneg.mpr (norm_nonneg x))] at hb'
     have := mul_le_mul_of_nonneg_left hb' (norm_nonneg x)
-    have hn : ‖x‖ ≠ 0 := norm_ne_zero_iff.mpr hx
+    
     field_simp at this
     nlinarith
 
+section
+variable (δ : Finset (RayCoset.RealPlaces K))
+include δ
 theorem thetaParityShapeBounds
-    (δ : Finset (RayCoset.RealPlaces K))
+     
     (S : Set (RayCoset.logHyperplane K)) (hS : IsCompact S) :
     ∃ P c : ℝ, 0 < P ∧ 0 < c ∧
       ∀ t : ℝ, 0 < t → ∀ h ∈ S, ∀ x : euclidean.mixedSpace K,
@@ -134,7 +140,7 @@ theorem thetaParityShapeBounds
     hbound t ht (-h) (Or.inr ⟨h, hh, rfl⟩) x⟩
 
 theorem continuousOn_thetaParityShape
-    (δ : Finset (RayCoset.RealPlaces K)) :
+      :
     ContinuousOn
       (fun thx : ℝ × (RayCoset.logHyperplane K × euclidean.mixedSpace K) =>
         RayParity.gδ K δ
@@ -150,14 +156,14 @@ theorem continuousOn_thetaParityShape
     apply continuousOn_pi.mpr
     intro v
     apply ContinuousOn.mul
-    · exact continuousOn_fst.rpow_const (fun x hx => Or.inl (ne_of_gt hx))
+    · apply continuousOn_fst.rpow_const <;> aesop
     · exact (Real.continuous_exp.comp ((continuous_apply v).comp
         (continuous_subtype_val.comp (continuous_fst.comp continuous_snd)))).continuousOn
   · exact (Theta.traceToMixed K).continuous.comp_continuousOn
       (continuous_snd.comp continuous_snd).continuousOn
 
 theorem continuousOn_thetaParityShape_neg
-    (δ : Finset (RayCoset.RealPlaces K)) :
+      :
     ContinuousOn
       (fun thx : ℝ × (RayCoset.logHyperplane K × euclidean.mixedSpace K) =>
         RayParity.gδ K δ
@@ -173,20 +179,22 @@ theorem continuousOn_thetaParityShape_neg
     apply continuousOn_pi.mpr
     intro v
     apply ContinuousOn.mul
-    · exact continuousOn_fst.rpow_const (fun x hx => Or.inl (ne_of_gt hx))
+    · apply continuousOn_fst.rpow_const <;> aesop
     · exact (Real.continuous_exp.comp ((continuous_apply v).comp
         (continuous_subtype_val.comp (continuous_neg.comp (continuous_fst.comp continuous_snd))))).continuousOn
   · exact (Theta.traceToMixed K).continuous.comp_continuousOn
       (continuous_snd.comp continuous_snd).continuousOn
 
-theorem thetaParity_zero (δ : Finset (RayCoset.RealPlaces K)) :
+theorem thetaParity_zero   :
     RayParity.gδ K δ (0 : euclidean.mixedSpace K) =
       if δ = ∅ then (1 : ℂ) else 0 := by
   by_cases h : δ = ∅
   · simp [h, RayParity.gδ, Theta.latticeGaussian]
   · obtain ⟨v, hv⟩ := Finset.nonempty_iff_ne_empty.mpr h
     simp only [h, if_false, RayParity.gδ, map_zero, Complex.ofReal_zero]
-    rw [Finset.prod_eq_zero hv (by simp), zero_mul]
+    rw [Finset.prod_eq_zero hv (rfl), zero_mul]
+end
+
 
 end DedekindZetaZeroFree
 

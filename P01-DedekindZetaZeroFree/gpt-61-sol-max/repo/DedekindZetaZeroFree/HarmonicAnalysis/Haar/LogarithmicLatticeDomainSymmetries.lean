@@ -37,7 +37,7 @@ theorem topLogDomainIntegral_translation (ht : (⊤ : Ideal (𝓞 F)) ≠ ⊥)
     rw [add_comm]
     exact hperiodic γ h
   have hQ := RayCoset.isAddFundamentalDomain_rayUnitHalfOpenDomain F ⊤ ht
-  have hd := hQ.vadd_of_comm d
+  have hd := hQ.vadd_of_comm (G := RayCoset.rayUnitLogLattice F ⊤) d
   have hi := (measurePreserving_add_left
     (DedekindZetaZeroFree.AbelianQuotient.Theta.normalizedLogHaar F) d).setIntegral_image_emb
     (MeasurableEquiv.addLeft d).measurableEmbedding f (RayCoset.rayUnitHalfOpenDomain F ⊤ ht)
@@ -46,7 +46,7 @@ theorem topLogDomainIntegral_translation (ht : (⊤ : Ideal (𝓞 F)) ≠ ⊥)
       ∫ h in d +ᵥ RayCoset.rayUnitHalfOpenDomain F ⊤ ht, f h
         ∂DedekindZetaZeroFree.AbelianQuotient.Theta.normalizedLogHaar F := by
     simpa only [← Set.image_vadd, vadd_eq_add, add_comm] using hi.symm
-  exact hi'.trans (hd.setIntegral_eq hQ hf)
+  exact hi'.trans (hd.setIntegral_eq (G := RayCoset.rayUnitLogLattice F ⊤) hQ hf)
 
 theorem topLogDomainIntegral_reflection (ht : (⊤ : Ideal (𝓞 F)) ≠ ⊥)
     (f : RayCoset.logHyperplane F → ℂ)
@@ -78,7 +78,7 @@ theorem topLogDomainIntegral_reflection (ht : (⊤ : Ideal (𝓞 F)) ≠ ⊥)
   have hN : IsAddFundamentalDomain (RayCoset.rayUnitLogLattice F ⊤)
       (e '' RayCoset.rayUnitHalfOpenDomain F ⊤ ht)
       (DedekindZetaZeroFree.AbelianQuotient.Theta.normalizedLogHaar F) := by
-    apply hQ.image_of_equiv e.toEquiv ?_ (Equiv.neg _) ?_
+    apply hQ.image_of_equiv (G := RayCoset.rayUnitLogLattice F ⊤) (H := RayCoset.rayUnitLogLattice F ⊤) e.toEquiv ?_ (Equiv.neg _) ?_
     · exact (Measure.measurePreserving_neg
         (DedekindZetaZeroFree.AbelianQuotient.Theta.normalizedLogHaar F)).quasiMeasurePreserving
     · intro γ h
@@ -90,7 +90,7 @@ theorem topLogDomainIntegral_reflection (ht : (⊤ : Ideal (𝓞 F)) ≠ ⊥)
         ∂DedekindZetaZeroFree.AbelianQuotient.Theta.normalizedLogHaar F :=
       (he.setIntegral_image_emb e.measurableEmbedding f
         (RayCoset.rayUnitHalfOpenDomain F ⊤ ht)).symm
-    _ = _ := hN.setIntegral_eq hQ hf
+    _ = _ := hN.setIntegral_eq (G := RayCoset.rayUnitLogLattice F ⊤) hQ hf
 
 end DedekindZetaZeroFree.Hecke.Theta
 

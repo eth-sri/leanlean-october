@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.SphericalCoefficientSupport
 public import DedekindZetaZeroFree.Metaplectic.Intertwining.CompactOrbits.FiniteDimensionality
 public import DedekindZetaZeroFree.Eisenstein.Induction.Cubic.SphericalFlatFamilies
 
 @[expose] public section
+
 
 noncomputable section
 open scoped Classical NumberField BigOperators NNReal
@@ -34,9 +37,7 @@ private theorem finiteSubgroup_eq_finitePart :
   rw [finiteSubgroup_eq_finitePart F ζ hζ] at h
   exact h
 
-def archFiniteEquiv :
-    (KPSmoothActualFlowData.GInfinity F × KPGlobalTorusFunctionData.finitePart F ζ hζ) ≃ₜ*
-      KPGlobalTorusFunctionData.G F ζ hζ :=
+def archFiniteEquiv  :=
   (exists_archFiniteEquiv F ζ hζ).choose
 
 @[simp] theorem archFiniteEquiv_apply (a : KPSmoothActualFlowData.GInfinity F)
@@ -44,7 +45,7 @@ def archFiniteEquiv :
     archFiniteEquiv F ζ hζ (a, c) = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a * c.val :=
   (exists_archFiniteEquiv F ζ hζ).choose_spec a c
 
-def sphericalPGL (a : KPSmoothActualFlowData.GInfinity F) : ℂ :=
+def sphericalPGL (a : KPSmoothActualFlowData.GInfinity F)  :=
   ∏ w, (KPCplxPrincipalSeriesCharts.pi KPCplxPrincipalSeriesCharts.positiveParameter (a w)
     (KPCplxPrincipalSeriesCharts.sphericalSection KPCplxPrincipalSeriesCharts.positiveParameter)) 1
 
@@ -54,16 +55,18 @@ def sphericalPGL (a : KPSmoothActualFlowData.GInfinity F) : ℂ :=
   simp only [sphericalPGL, sphericalProduct, KPCplxPrincipalSeriesCharts.pi_mk,
     KPCplxPrincipalSeriesCharts.rightTranslate, one_mul]
 
-def scalarSeed
-    (t : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ))
+section
+variable (t : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ))
     {m : ℕ} (k : Fin m → KPContSectorArchSphericalFibers.KInfinity F)
-    (A : Fin m → ℂ) (g : KPGlobalTorusFunctionData.G F ζ hζ) : ℂ :=
+    (A : Fin m → ℂ)
+include t m k A
+def scalarSeed
+      (g : KPGlobalTorusFunctionData.G F ζ hζ)  :=
   sphericalPGL F ((archFiniteEquiv F ζ hζ).symm g).1 *
     evalCoefficient F ζ hζ t k A ((archFiniteEquiv F ζ hζ).symm g).2
 
 @[simp] theorem scalarSeed_arch_finite
-    (t : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ))
-    {m : ℕ} (k : Fin m → KPContSectorArchSphericalFibers.KInfinity F) (A : Fin m → ℂ)
+     
     (a : NumberField.InfinitePlace F → KPCplxCharacterHaar.ComplexGL2)
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ) :
     scalarSeed F ζ hζ t k A (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
@@ -71,6 +74,8 @@ def scalarSeed
       sphericalProduct F a * evalCoefficient F ζ hζ t k A c := by
   rw [← archFiniteEquiv_apply]
   simp only [scalarSeed, (archFiniteEquiv F ζ hζ).symm_apply_apply, sphericalPGL_mk]
+end
+
 
 private theorem diagonal_projective (B : KPCplxCharacterHaar.ComplexGL2)
     (h10 : B 1 0 = 0) (h01 : B 0 1 = 0) :
@@ -117,15 +122,15 @@ private theorem archProjection_torus_diagonal (F : Type) [Field F] [NumberField 
     (e : KPGlobalTorusFunctionData.E F ζ hζ) :
     ∃ (z : InfinitePlace F → ℂˣ) (ef : KPGlobalTorusFunctionData.E F ζ hζ),
       ef.val ∈ KPGlobalTorusFunctionData.finitePart F ζ hζ ∧
-      e = KPGlobalTorusFunctionData.torusArchChart F ζ hζ (fun w => (z w : ℂ)) * ef := by
+      e = KPGlobalTorusFunctionData.torusArchChart F ζ hζ (fun w => (z w)) * ef := by
   obtain ⟨z, hz⟩ := archProjection_torus_diagonal F ζ hζ e
-  let d := KPGlobalTorusFunctionData.torusArchChart F ζ hζ (fun w => (z w : ℂ))
+  let d := KPGlobalTorusFunctionData.torusArchChart F ζ hζ (fun w => (z w))
   let ef := d⁻¹ * e
   refine ⟨z, ef, ?_, ?_⟩
   · have hi : d.val = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
         (fun w => Matrix.ProjGenLinGroup.mk (KubotaRankTwo.d ℂ (z w) 1)) := by
       exact (KPContinuation.ChamberFlatCasimir.arch_diagonal_insertion F ζ hζ
-        (fun w => (z w : ℂ)) (fun w => Units.ne_zero (z w))).symm
+        (fun w => (z w)) (fun w => Units.ne_zero (z w))).symm
     have hp : PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ d.val =
         PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ e.val := by
       rw [hi]
@@ -196,7 +201,7 @@ theorem scalarSeed_right_level
     (evalCoefficient_right_level F ζ hζ t k A U htU c u)
 
 def seedFibre (g : KPGlobalTorusFunctionData.G F ζ hζ)
-    (e : KPGlobalTorusFunctionData.E F ζ hζ) : ℂ :=
+    (e : KPGlobalTorusFunctionData.E F ζ hζ)  :=
   (KPGlobalTorusFunctionData.deltaHalf F ζ hζ e)⁻¹ * scalarSeed F ζ hζ t k A (e.val * g)
 
 theorem scalarSeed_finite_borel_covariance
@@ -223,15 +228,7 @@ theorem scalarSeed_finite_borel_covariance
   rw [evalCoefficient_finite_borel_covariance F ζ hζ t k A h x b hb c]
   ring
 
-private theorem archInsertion_commutes_finite
-    (a : KPSmoothActualFlowData.GInfinity F)
-    (c : KPGlobalTorusFunctionData.finitePart F ζ hζ) :
-    Commute (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a) c.val := by
-  apply RepresentationTheory.ArchFiniteSplitting.insertion_commutes_finite F ζ hζ a
-    ⟨c.val, ?_⟩
-  change c.val ∈ PGLComplex.AdelicSlicesRaw.finiteSubgroup F ζ hζ
-  rw [finiteSubgroup_eq_finitePart F ζ hζ]
-  exact c.property
+private alias archInsertion_commutes_finite := _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingLocal.insertion_commutes_finite
 
 theorem seedFibre_arch_finite_at_finite_torus
     (a : NumberField.InfinitePlace F → KPCplxCharacterHaar.ComplexGL2)
@@ -269,7 +266,7 @@ theorem seedFibre_arch_finite_at_finite_torus
 theorem scalarSeed_arch_diagonal_covariance
     (z : InfinitePlace F → ℂˣ) (g : KPGlobalTorusFunctionData.G F ζ hζ) :
     scalarSeed F ζ hζ t k A
-      ((KPGlobalTorusFunctionData.torusArchChart F ζ hζ (fun w => (z w : ℂ))).val * g) =
+      ((KPGlobalTorusFunctionData.torusArchChart F ζ hζ (fun w => (z w))).val * g) =
       (((∏ w : InfinitePlace F, ‖(z w : ℂ)‖ ^ 2) ^ (2 / 3 : ℝ) : ℝ) : ℂ) *
         scalarSeed F ζ hζ t k A g := by
   let e := archFiniteEquiv F ζ hζ
@@ -283,9 +280,9 @@ theorem scalarSeed_arch_diagonal_covariance
     rw [ha, ← archFiniteEquiv_apply]
     exact e.apply_symm_apply g
   have hd := KPContinuation.ChamberFlatCasimir.arch_diagonal_insertion F ζ hζ
-    (fun w => (z w : ℂ)) (fun w => Units.ne_zero (z w))
+    (fun w => (z w)) (fun w => Units.ne_zero (z w))
   change scalarSeed F ζ hζ t k A
-    (KPGlobalTorusFunctionData.archDiagonalLift F ζ hζ (fun w => (z w : ℂ)) * g) = _
+    (KPGlobalTorusFunctionData.archDiagonalLift F ζ hζ (fun w => (z w)) * g) = _
   rw [← hg, ← hd]
   change scalarSeed F ζ hζ t k A
     (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
@@ -297,8 +294,7 @@ theorem scalarSeed_arch_diagonal_covariance
       (fun w => Matrix.ProjGenLinGroup.mk (a w))) =
       fun w => Matrix.ProjGenLinGroup.mk (KubotaRankTwo.d ℂ (z w) 1 * a w) := by
     funext w
-    exact (map_mul (Matrix.ProjGenLinGroup.mk : KPCplxCharacterHaar.ComplexGL2 →*
-      Matrix.ProjGenLinGroup (Fin 2) ℂ) _ _).symm
+    exact (map_mul Matrix.ProjGenLinGroup.mk _ _).symm
   rw [hm, scalarSeed_arch_finite, scalarSeed_arch_finite,
     sphericalProduct_diagonal_covariance]
   ring
@@ -316,7 +312,7 @@ theorem seedFibre_arch_finite_all_torus
   let M : ℂ := (((∏ w : InfinitePlace F, ‖(z w : ℂ)‖ ^ 2) ^ (2 / 3 : ℝ) : ℝ) : ℂ)
   have ht (g : KPGlobalTorusFunctionData.G F ζ hζ) : t.val.val (d.val * g) = M * t.val.val g := by
     have hh := ActualRaisingGeometry.source_arch_borel_covariance F ζ hζ t
-      (fun w => (z w : ℂ)) (fun w => Units.ne_zero (z w)) 0 g
+      (fun w => (z w)) (fun w => Units.ne_zero (z w)) 0 g
     have hn : KPGlobalTorusFunctionData.N F ζ hζ 0 = 1 :=
       (KPGlobalTorusFunctionData.Nhom F ζ hζ).map_one
     simpa only [hn, mul_one] using hh
@@ -335,11 +331,11 @@ theorem seedFibre_arch_finite_all_torus
   rw [he', mul_assoc, hs]
   have hd : KPGlobalTorusFunctionData.deltaHalf F ζ hζ ef ≠ 0 := by
     unfold KPGlobalTorusFunctionData.deltaHalf
-    have hn : (((KPGlobalTorusFunctionData.delta F ζ hζ ef : ℝ≥0) : ℝ)) ≠ 0 :=
+    have hn : (((KPGlobalTorusFunctionData.delta F ζ hζ ef) : ℝ)) ≠ 0 :=
       NNReal.coe_ne_zero.mpr (Units.ne_zero _)
     have hp := Real.sqrt_pos.mpr (lt_of_le_of_ne (NNReal.coe_nonneg _) (Ne.symm hn))
     exact Complex.ofReal_ne_zero.mpr hp.ne'
-  have hh := congrArg (fun x : ℂ => KPGlobalTorusFunctionData.deltaHalf F ζ hζ ef * x) hf
+  
   have hclear : scalarSeed F ζ hζ t k A (ef.val *
       (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
         (fun w => Matrix.ProjGenLinGroup.mk (a w)) * c.val)) =
@@ -350,8 +346,7 @@ theorem seedFibre_arch_finite_all_torus
           ((KPGlobalTorusFunctionData.deltaHalf F ζ hζ ef)⁻¹ *
             scalarSeed F ζ hζ t k A (ef.val *
               (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
-                (fun w => Matrix.ProjGenLinGroup.mk (a w)) * c.val))) := by
-            exact (mul_inv_cancel_left₀ hd _).symm
+                (fun w => Matrix.ProjGenLinGroup.mk (a w)) * c.val))) := (mul_inv_cancel_left₀ hd _).symm
       _ = _ := by
         rw [hf]
         simp only [Finset.mul_sum]
@@ -367,18 +362,19 @@ theorem seedFibre_arch_finite_all_torus
 def smoothSeedFibre
     (T : KPGlobalTorusBorelTwistCompatibility.Induced F ζ hζ
       (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0))
-    (g : KPGlobalTorusFunctionData.G F ζ hζ) :
-    KPGlobalTorusBorelTwistCompatibility.Smooth F ζ hζ
-      (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0) :=
+    (g : KPGlobalTorusFunctionData.G F ζ hζ)  :=
   sphericalPGL F ((archFiniteEquiv F ζ hζ).symm g).1 •
     ∑ ν, A ν • T.val.val (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (k ν).val *
       ((archFiniteEquiv F ζ hζ).symm g).2.val)
 
-theorem smoothSeedFibre_value
-    (T : KPGlobalTorusBorelTwistCompatibility.Induced F ζ hζ
+section
+variable (T : KPGlobalTorusBorelTwistCompatibility.Induced F ζ hζ
       (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0))
     (hT : KPGlobalTorusBorelTwistCompatibility.scalarSection F ζ hζ
       (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0) T = t.val)
+include T hT
+theorem smoothSeedFibre_value
+     
     (g : KPGlobalTorusFunctionData.G F ζ hζ) (e : KPGlobalTorusFunctionData.E F ζ hζ) :
     (smoothSeedFibre F ζ hζ k A T g).val.val e = seedFibre F ζ hζ t k A g e := by
   let E := archFiniteEquiv F ζ hζ
@@ -405,10 +401,7 @@ theorem smoothSeedFibre_value
   rw [← fibreValue_eq_owned_lift F ζ hζ t T hT]
 
 theorem smoothSeedFibre_torus_covariance
-    (T : KPGlobalTorusBorelTwistCompatibility.Induced F ζ hζ
-      (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0))
-    (hT : KPGlobalTorusBorelTwistCompatibility.scalarSection F ζ hζ
-      (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0) T = t.val)
+     
     (b : KPGlobalTorusFunctionData.E F ζ hζ) (g : KPGlobalTorusFunctionData.G F ζ hζ) :
     smoothSeedFibre F ζ hζ k A T (b.val * g) =
       KPGlobalTorusFunctionData.deltaHalf F ζ hζ b •
@@ -429,15 +422,13 @@ theorem smoothSeedFibre_torus_covariance
     rw [map_mul, Units.val_mul, NNReal.coe_mul, Real.sqrt_mul (NNReal.coe_nonneg _), Complex.ofReal_mul]
   rw [hd]
   have hb : KPGlobalTorusFunctionData.deltaHalf F ζ hζ b ≠ 0 := by
-    unfold KPGlobalTorusFunctionData.deltaHalf
-    have hn : (((KPGlobalTorusFunctionData.delta F ζ hζ b : ℝ≥0) : ℝ)) ≠ 0 :=
-      NNReal.coe_ne_zero.mpr (Units.ne_zero _)
-    exact Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr
-      (lt_of_le_of_ne (NNReal.coe_nonneg _) (Ne.symm hn))).ne'
+    simp_all [DedekindZetaZeroFree.KPGlobalTorusFunctionData.deltaHalf] <;> aesop
   change _ * scalarSeed F ζ hζ t k A (e.val * (b.val * g)) =
     _ * (_ * scalarSeed F ζ hζ t k A ((e.val * b.val) * g))
   rw [mul_assoc e.val b.val g, mul_inv_rev]
   field_simp
+end
+
 
 theorem scalarSeed_upper_root_invariant
     (x : KPGlobalTorusFunctionData.Adeles F)
@@ -450,22 +441,17 @@ theorem scalarSeed_upper_root_invariant
     apply Subgroup.mem_iInf.mpr
     intro w
     change KPStandardLocalRootLifts.N F ζ hζ (Sum.inl w) 0 = 1
-    exact KPStandardLocalRootLifts.N_zero F ζ hζ (Sum.inl w)
+    apply KPStandardLocalRootLifts.N_zero
   have hfinite (g : KPGlobalTorusFunctionData.G F ζ hζ) :
       scalarSeed F ζ hζ t k A (nf * g) = scalarSeed F ζ hζ t k A g := by
     have hh := scalarSeed_finite_borel_covariance F ζ hζ t k A 1 (0, x.2) ⟨nf, hnf⟩
       (by change nf = 1 * nf; simp) g
     simpa [KPGlobalTorusFunctionData.deltaHalf] using hh
   let E := archFiniteEquiv F ζ hζ
-  let a : InfinitePlace F → KPCplxCharacterHaar.ComplexGL2 := fun w => (E.symm g).1 w |>.out
-  let c := (E.symm g).2
-  have ha : (fun w => Matrix.ProjGenLinGroup.mk (a w)) = (E.symm g).1 := by
-    funext w
-    exact Quotient.out_eq _
-  have hg : KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
-      (fun w => Matrix.ProjGenLinGroup.mk (a w)) * c.val = g := by
-    rw [ha, ← archFiniteEquiv_apply]
-    exact E.apply_symm_apply g
+  
+  
+  
+  
   let z := KPMsResidualTailRestoration.SharpConstantTerm.FiberStability.complexParameter F ζ hζ x.1
   have harch (g : KPGlobalTorusFunctionData.G F ζ hζ) :
       scalarSeed F ζ hζ t k A (KPGlobalTorusFunctionData.N F ζ hζ (x.1, 0) * g) =
@@ -483,8 +469,7 @@ theorem scalarSeed_upper_root_invariant
         (fun w => Matrix.ProjGenLinGroup.mk (aa w))) =
         fun w => Matrix.ProjGenLinGroup.mk (KubotaRankTwo.n ℂ (z w) * aa w) := by
       funext w
-      exact (map_mul (Matrix.ProjGenLinGroup.mk : KPCplxCharacterHaar.ComplexGL2 →*
-        Matrix.ProjGenLinGroup (Fin 2) ℂ) _ _).symm
+      exact (map_mul Matrix.ProjGenLinGroup.mk _ _).symm
     rw [hm, scalarSeed_arch_finite, scalarSeed_arch_finite]
     congr 1
     unfold sphericalProduct
@@ -514,11 +499,14 @@ theorem scalarSeed_upper_root_invariant
       _ = _ := hN
   rw [hN', mul_assoc, harch, hfinite]
 
-theorem smoothSeedFibre_borel_covariance
-    (T : KPGlobalTorusBorelTwistCompatibility.Induced F ζ hζ
+section
+variable (T : KPGlobalTorusBorelTwistCompatibility.Induced F ζ hζ
       (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0))
     (hT : KPGlobalTorusBorelTwistCompatibility.scalarSection F ζ hζ
       (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0) T = t.val)
+include T hT
+theorem smoothSeedFibre_borel_covariance
+     
     (b : KPGlobalTorusFunctionData.E F ζ hζ) (x : KPGlobalTorusFunctionData.Adeles F)
     (g : KPGlobalTorusFunctionData.G F ζ hζ) :
     smoothSeedFibre F ζ hζ k A T ((b.val * KPGlobalTorusFunctionData.N F ζ hζ x) * g) =
@@ -542,14 +530,13 @@ theorem smoothSeedFibre_borel_covariance
   rw [← mul_assoc, hr, mul_assoc, scalarSeed_upper_root_invariant F ζ hζ t k A]
 
 def seededInducedFunctions
-    (T : KPGlobalTorusBorelTwistCompatibility.Induced F ζ hζ
-      (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0))
-    (hT : KPGlobalTorusBorelTwistCompatibility.scalarSection F ζ hζ
-      (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0) T = t.val) :
+      :
     KPGlobalTorusBorelTwistCompatibility.InducedFunctions F ζ hζ
       (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0) :=
   ⟨smoothSeedFibre F ζ hζ k A T,
     smoothSeedFibre_borel_covariance F ζ hζ t k A T hT⟩
+end
+
 
 open scoped Matrix.Norms.Elementwise in
 private theorem sphericalProduct_left_chart_smooth
@@ -609,18 +596,20 @@ theorem scalarSeed_group_chart_smooth
         (fun w => Matrix.ProjGenLinGroup.mk (a w))) =
         fun w => Matrix.ProjGenLinGroup.mk (KPLiteralChamber.leftMatrix (z w) * a w) := by
       funext w
-      exact (map_mul (Matrix.ProjGenLinGroup.mk : KPCplxCharacterHaar.ComplexGL2 →*
-        Matrix.ProjGenLinGroup (Fin 2) ℂ) _ _).symm
+      exact (map_mul Matrix.ProjGenLinGroup.mk _ _).symm
     rw [hh, scalarSeed_arch_finite]
   simpa only [he] using (sphericalProduct_left_chart_smooth F a).mul contDiffOn_const
 
-def seededInducedLevel
-    (T : KPGlobalTorusBorelTwistCompatibility.Induced F ζ hζ
+section
+variable (T : KPGlobalTorusBorelTwistCompatibility.Induced F ζ hζ
       (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0))
     (hT : KPGlobalTorusBorelTwistCompatibility.scalarSection F ζ hζ
       (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0) T = t.val)
     (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
-    (htU : t ∈ KPContFlatCommonLevelKernel.CommonLevel F ζ hζ U) :
+    (htU : t ∈ KPContFlatCommonLevelKernel.CommonLevel F ζ hζ U)
+include T hT U htU
+def seededInducedLevel
+      :
     KPGlobalTorusBorelTwistCompatibility.InducedLevel F ζ hζ
       (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0) U := by
   refine ⟨seededInducedFunctions F ζ hζ t k A T hT, ?_, ?_⟩
@@ -650,16 +639,13 @@ def seededInducedLevel
     simpa only [v', hvu] using hh
 
 theorem seededInducedLevel_value
-    (T : KPGlobalTorusBorelTwistCompatibility.Induced F ζ hζ
-      (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0))
-    (hT : KPGlobalTorusBorelTwistCompatibility.scalarSection F ζ hζ
-      (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0) T = t.val)
-    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
-    (htU : t ∈ KPContFlatCommonLevelKernel.CommonLevel F ζ hζ U)
+     
     (g : KPGlobalTorusFunctionData.G F ζ hζ) (e : KPGlobalTorusFunctionData.E F ζ hζ) :
     ((seededInducedLevel F ζ hζ t k A T hT U htU).val.val g).val.val e =
       seedFibre F ζ hζ t k A g e :=
   smoothSeedFibre_value F ζ hζ t k A T hT g e
+end
+
 
 include ζ hζ in
 
@@ -671,8 +657,7 @@ theorem sphericalPGL_right_KInfinity
   unfold sphericalPGL
   apply Finset.prod_congr rfl
   intro w _
-  have hmem : q.val w ∈ KPCplxPrincipalSeriesCharts.compactSubgroup := by
-    exact ⟨r w, hr w⟩
+  have hmem : q.val w ∈ KPCplxPrincipalSeriesCharts.compactSubgroup := ⟨r w, hr w⟩
   change (KPCplxPrincipalSeriesCharts.pi _ (a w * q.val w) _) 1 = _
   rw [KPCplxPrincipalSeriesCharts.pi_mul,
     KPCplxPrincipalSeriesCharts.sphericalSection_fixed _ ⟨q.val w, hmem⟩]

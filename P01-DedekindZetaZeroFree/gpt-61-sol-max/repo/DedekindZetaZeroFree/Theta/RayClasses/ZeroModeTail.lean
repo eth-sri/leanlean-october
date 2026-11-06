@@ -41,10 +41,13 @@ private theorem phase_norm (x z : euclidean.mixedSpace K) :
  rw [Complex.norm_exp]; simp
 private theorem Q_zero (q : InfinitePlace K → ℝ) : RayParity.Q K q 0 = 0 := by
  simp [RayParity.Q]
-private theorem series_integrable
- (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K))
+section
+variable (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K))
  (L : Submodule ℤ (euclidean.mixedSpace K)) [DiscreteTopology L] [Countable L]
  (z : euclidean.mixedSpace K) (a : L → ℂ) (ha : ∀ l, ‖a l‖ ≤ 1)
+include D δ L z a ha in
+private theorem series_integrable
+  
  (neg : Bool) (t : ℝ) (ht : 0 < t) :
  (∀ h ∈ RayCoset.rayUnitHalfOpenDomain K D.m D.modulus_ne_bot,
    Summable (fun l : L => a l * RayParity.gδ K δ (RayParity.Q K
@@ -113,10 +116,9 @@ private theorem puncture_sum {ι : Type*} (x : ι → euclidean.mixedSpace K)
    symm
    apply tsum_subtype_eq_of_support_subset
    intro i _; exact fun hi => h ⟨i,hi⟩
+include D δ L z a ha in
 private theorem puncture_integral
- (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K))
- (L : Submodule ℤ (euclidean.mixedSpace K)) [DiscreteTopology L] [Countable L]
- (z : euclidean.mixedSpace K) (a : L → ℂ) (ha : ∀ l, ‖a l‖ ≤ 1)
+  
  (hz : ∀ l : L, z + (l : euclidean.mixedSpace K) = 0 → a l = 1)
  (neg : Bool) (t : ℝ) (ht : 0 < t) :
  (∫ h in RayCoset.rayUnitHalfOpenDomain K D.m D.modulus_ne_bot,
@@ -150,10 +152,9 @@ private theorem puncture_integral
  rw [integral_add hvint H.2, integral_const]
  congr 1
  simp only [Measure.real, Measure.restrict_apply_univ, RayCoset.rayUnitDomainVolume, smul_eq_mul, Complex.real_smul, S, v]
+include D δ L z a ha in
 private theorem averaged_tail
- (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K))
- (L : Submodule ℤ (euclidean.mixedSpace K)) [DiscreteTopology L] [Countable L]
- (z : euclidean.mixedSpace K) (a : L → ℂ) (ha : ∀ l, ‖a l‖ ≤ 1)
+  
  (neg : Bool) (N : ℂ) :
  ∃ A B : ℝ, 0 < A ∧ 0 < B ∧ ∀ t : ℝ, 1 ≤ t →
  ‖N * ∫ h in RayCoset.rayUnitHalfOpenDomain K D.m D.modulus_ne_bot,
@@ -205,6 +206,8 @@ private theorem averaged_tail
    _ ≤ ‖N‖ * ((A * Real.exp (-B * t ^ p)) * μ.real Set.univ) := mul_le_mul_of_nonneg_left hi (norm_nonneg _)
    _ = A' * Real.exp (-B * t ^ p) := by dsimp [A']; ring
    _ ≤ (A' + 1) * Real.exp (-B * t ^ p) := mul_le_mul_of_nonneg_right (by linarith) (Real.exp_nonneg _)
+end
+
 
 variable (K : Type) [Field K] [NumberField K]
 

@@ -20,8 +20,11 @@ def principalRational (Q : ℝ) (d e : ℂ) : ℂ :=
 def principalCorrection (Q : ℝ) (d e : ℂ) : ℂ :=
   (1 - (Q : ℂ)⁻¹) ^ 2 * principalRational Q d e / (1 - d)
 
-theorem principal_rational_specialization (Q : ℝ) (hQ : 2 ≤ Q)
-    (d e : ℂ) (hd : d ≠ 1) (he : e ≠ 1) :
+section
+variable (Q : ℝ) (hQ : 2 ≤ Q)
+    (d e : ℂ) (hd : d ≠ 1) (he : e ≠ 1)
+include Q hQ d e hd he
+theorem principal_rational_specialization   :
     let r : ℂ := (Q : ℂ)⁻¹
     principalRational Q d e =
       (1 + r) / (1 - r) + (1 + r) * (e - d) / (1 - e) := by
@@ -36,8 +39,7 @@ theorem principal_rational_specialization (Q : ℝ) (hQ : 2 ≤ Q)
   <;> field_simp [hQ1]
   <;> ring
 
-theorem principal_correction_formula (Q : ℝ) (hQ : 2 ≤ Q)
-    (d e : ℂ) (hd : d ≠ 1) (he : e ≠ 1) :
+theorem principal_correction_formula   :
     let r : ℂ := (Q : ℂ)⁻¹
     principalCorrection Q d e =
       (1 - r ^ 2) * (1 - (1 - r) * d - r * e) /
@@ -49,6 +51,8 @@ theorem principal_correction_formula (Q : ℝ) (hQ : 2 ≤ Q)
   unfold principalCorrection
   rw [principal_rational_specialization Q hQ d e hd he]
   exact Audit.Euler.principalCorrection_identity (Q : ℂ)⁻¹ d e hr hd' he'
+end
+
 
 open LocalFiniteSums
 
@@ -70,8 +74,11 @@ private lemma principal_qPower_neg_one (p : ExteriorPrime A) :
   have hQ : 0 < Q p := by have := principal_Q_ge_two p; linarith
   simp only [qPower, neg_one_mul, Complex.exp_neg, ← Complex.ofReal_exp, Real.exp_log hQ]
 
-private lemma principal_denominators (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (s : ℂ) (hs : (2 / 3 : ℝ) < s.re) :
+section
+variable (C : A.GeneralArithmeticContext σ η hS)
+    (p : ExteriorPrime A) (s : ℂ) (hs : (2 / 3 : ℝ) < s.re)
+include C p s hs
+private lemma principal_denominators   :
     η p.val.asIdeal * qPower p (-s) ≠ 1 ∧
       vartheta C p ^ 6 * qPower p (3 - 6 * s) ≠ 1 := by
   have hlog : 0 < Real.log (Q p) := Real.log_pos (by
@@ -99,8 +106,7 @@ private lemma principal_denominators (C : A.GeneralArithmeticContext σ η hS)
   · intro h; simpa [h] using hd
   · intro h; simpa [h] using he
 
-theorem principal_correction_eq_h_p (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (s : ℂ) (hs : (2 / 3 : ℝ) < s.re) :
+theorem principal_correction_eq_h_p   :
     principalCorrection (Q p) (η p.val.asIdeal * qPower p (-s))
       (vartheta C p ^ 6 * qPower p (3 - 6 * s)) = h_p C p s := by
   obtain ⟨hd, he⟩ := principal_denominators C p s hs
@@ -121,8 +127,7 @@ theorem principal_correction_eq_h_p (C : A.GeneralArithmeticContext σ η hS)
         vartheta C p ^ 6 * ((Q p : ℂ)⁻¹ * qPower p (3 - 6 * s)) := by ring
     _ = _ := by rw [he2]
 
-theorem principal_goodFactor_eq_h_p (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (s : ℂ) (hs : (2 / 3 : ℝ) < s.re) :
+theorem principal_goodFactor_eq_h_p   :
     goodFactor C p (1 : A.R) s 1 (1 / 6) = h_p C p s := by
   have hv : V p (1 / 6) = (Q p : ℂ)⁻¹ := by
     unfold V
@@ -141,6 +146,8 @@ theorem principal_goodFactor_eq_h_p (C : A.GeneralArithmeticContext σ η hS)
   simp only [goodFactor, goodRational, hv, hw, hd, he, principalCorrection,
     principalRational]
   ring
+end
+
 
 theorem principal_localFactor_eq_h_p (C : A.GeneralArithmeticContext σ η hS)
     (U : Frequency C) (hU : U.u = 1) (p : ExteriorPrime A)

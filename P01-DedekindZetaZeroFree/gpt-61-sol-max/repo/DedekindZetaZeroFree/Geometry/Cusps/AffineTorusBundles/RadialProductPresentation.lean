@@ -29,9 +29,12 @@ def coordinatesAction (F : Type*) [Field F] [NumberField F]
         ((toArchHomeomorph F hd).symm (k.val • ((toArchHomeomorph F hd) p)))))
     simp only [Homeomorph.apply_symm_apply, mul_smul]
 
-theorem coordinatesAction_formula (F : Type*) [Field F] [NumberField F]
+section
+variable (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ParabolicData F S)
+include F hF S D
+theorem coordinatesAction_formula  
     (g : S) (A : Matrix.GeneralLinearGroup (Fin 2) F)
     (hA : Matrix.ProjGenLinGroup.mk A = (g : KPCuspArithmetic.PGL2 F))
     (hc : A 1 0 = 0) (p : Coordinates F) :
@@ -44,18 +47,14 @@ theorem coordinatesAction_formula (F : Type*) [Field F] [NumberField F]
   rw [Homeomorph.apply_symm_apply]
   exact actual_affine_action F hF S D g A hA hc p
 
-theorem coordinatesAction_radial (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ParabolicData F S)
+theorem coordinatesAction_radial  
     (g : S) (p : Coordinates F) :
     (coordinatesAction F (positive_dimension F hF) S g p).2 = p.2 := by
   obtain ⟨A, hA, hc⟩ := D.upper g.val g.property
   rw [coordinatesAction_formula F hF S D g A hA hc]
   rfl
 
-def actualCrossHomeomorph (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ParabolicData F S)
+def actualCrossHomeomorph  
     (g : S) : Cross F ≃ₜ Cross F where
   toFun p := (coordinatesAction F (positive_dimension F hF) S g (p, 0)).1
   invFun p := (coordinatesAction F (positive_dimension F hF) S g⁻¹ (p, 0)).1
@@ -86,9 +85,7 @@ def actualCrossHomeomorph (F : Type*) [Field F] [NumberField F]
   continuous_invFun := (coordinatesAction F (positive_dimension F hF) S g⁻¹).continuous.fst.comp
     (continuous_id.prodMk continuous_const)
 
-def actualCrossAction (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ParabolicData F S) :
+def actualCrossAction   :
     S →* (Cross F ≃ₜ Cross F) where
   toFun := actualCrossHomeomorph F hF S D
   map_one' := by
@@ -110,9 +107,7 @@ def actualCrossAction (F : Type*) [Field F] [NumberField F]
     rw [he, map_mul]
     rfl
 
-theorem actualCrossAction_formula (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ParabolicData F S)
+theorem actualCrossAction_formula  
     (g : S) (A : Matrix.GeneralLinearGroup (Fin 2) F)
     (hA : Matrix.ProjGenLinGroup.mk A = (g : KPCuspArithmetic.PGL2 F))
     (hc : A 1 0 = 0) (p : Cross F) :
@@ -120,9 +115,7 @@ theorem actualCrossAction_formula (F : Type*) [Field F] [NumberField F]
       crossAffine F hF D.E D.integralUnits (D.ratio g) (A 0 1 / A 1 1) p := by
   exact congrArg Prod.fst (coordinatesAction_formula F hF S D g A hA hc (p, 0))
 
-theorem coordinatesAction_product (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ParabolicData F S)
+theorem coordinatesAction_product  
     (g : S) (p : Coordinates F) :
     coordinatesAction F (positive_dimension F hF) S g p =
       (actualCrossAction F hF S D g p.1, p.2) := by
@@ -131,18 +124,14 @@ theorem coordinatesAction_product (F : Type*) [Field F] [NumberField F]
     actualCrossAction_formula F hF S D g A hA hc]
   rfl
 
-theorem actualCrossAction_toArch (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ParabolicData F S)
+theorem actualCrossAction_toArch  
     (g : S) (p : Cross F) :
     toArch F (actualCrossAction F hF S D g p, 0) =
       KPCuspSiegel.action F g.val (toArch F (p, 0)) := by
   rw [← coordinatesAction_product F hF S D g (p, 0)]
   exact (toArchHomeomorph F (positive_dimension F hF)).apply_symm_apply _
 
-theorem crossRelation_actualCrossAction (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ParabolicData F S) :
+theorem crossRelation_actualCrossAction   :
     letI := homeomorphAction (actualCrossAction F hF S D)
     crossRelation F S = MulAction.orbitRel S (Cross F) := by
   letI := homeomorphAction (actualCrossAction F hF S D)
@@ -164,6 +153,8 @@ theorem crossRelation_actualCrossAction (F : Type*) [Field F] [NumberField F]
     change KPCuspSiegel.action F g.val (toArch F (r, 0)) = toArch F (p, 0)
     rw [← actualCrossAction_toArch F hF S D]
     exact congrArg (fun c => toArch F (c, 0)) hg
+end
+
 end DedekindZetaZeroFree.KPCuspCharts
 
 end
@@ -175,9 +166,12 @@ noncomputable section
 open scoped Classical Matrix
 namespace DedekindZetaZeroFree.KPCuspCharts
 
-theorem totalRelation_product (F : Type*) [Field F] [NumberField F]
+section
+variable (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ParabolicData F S)
+include F hF S D
+theorem totalRelation_product  
     (p r : Coordinates F) :
     totalRelation F S p r ↔ crossRelation F S p.1 r.1 ∧ p.2 = r.2 := by
   have hi := (toArchHomeomorph F (positive_dimension F hF)).injective
@@ -203,9 +197,7 @@ theorem totalRelation_product (F : Type*) [Field F] [NumberField F]
     rw [he]
     exact congrArg (toArch F) (Prod.ext hg ht.symm)
 
-def actualRadialPresentation (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ParabolicData F S) :
+def actualRadialPresentation   :
     CrossQuotient F S × ℝ ≃ₜ TotalQuotient F S where
   toFun p := Quotient.lift (fun x : Cross F => Quotient.mk (totalRelation F S) (x, p.2))
     (fun x y h => Quotient.sound ((totalRelation_product F hF S D _ _).mpr ⟨h, rfl⟩)) p.1
@@ -228,22 +220,16 @@ def actualRadialPresentation (F : Type*) [Field F] [NumberField F]
     apply continuous_quot_lift
     exact (continuous_quotient_mk'.comp continuous_fst).prodMk continuous_snd
 
-@[simp] theorem actualRadialPresentation_formula (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ParabolicData F S)
+@[simp] theorem actualRadialPresentation_formula  
     (p : Cross F) (t : ℝ) :
     actualRadialPresentation F hF S D (Quotient.mk _ p, t) = Quotient.mk _ (p, t) := rfl
 
-theorem highRelation_product (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ParabolicData F S) (T : ℝ)
+theorem highRelation_product   (T : ℝ)
     (p r : {p : Coordinates F // T < p.2}) :
     highRelation F S T p r ↔ crossRelation F S p.val.1 r.val.1 ∧ p.val.2 = r.val.2 :=
   totalRelation_product F hF S D p.val r.val
 
-def actualHighPresentation (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ParabolicData F S) (T : ℝ) :
+def actualHighPresentation   (T : ℝ) :
     CrossQuotient F S × Set.Ioi T ≃ₜ HighQuotient F S T where
   toFun p := Quotient.lift (fun x : Cross F => Quotient.mk (highRelation F S T)
       ⟨(x, p.2.val), p.2.property⟩)
@@ -271,12 +257,12 @@ def actualHighPresentation (F : Type*) [Field F] [NumberField F]
     exact (continuous_quotient_mk'.comp (continuous_fst.comp continuous_subtype_val)).prodMk
       ((continuous_snd.comp continuous_subtype_val).subtype_mk _)
 
-@[simp] theorem actualHighPresentation_formula (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ParabolicData F S)
+@[simp] theorem actualHighPresentation_formula  
     (T : ℝ) (p : Cross F) (t : Set.Ioi T) :
     actualHighPresentation F hF S D T (Quotient.mk _ p, t) =
       Quotient.mk _ ⟨(p, t.val), t.property⟩ := rfl
+end
+
 end DedekindZetaZeroFree.KPCuspCharts
 
 end

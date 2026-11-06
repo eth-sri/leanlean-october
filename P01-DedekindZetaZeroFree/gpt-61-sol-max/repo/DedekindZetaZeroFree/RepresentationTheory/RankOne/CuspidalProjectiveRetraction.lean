@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.RepresentationTheory.Smooth.CompactCoefficients.Unitarization
 public import DedekindZetaZeroFree.RepresentationTheory.Smooth.CompactInductionProjectivity
 public import DedekindZetaZeroFree.RepresentationTheory.Smooth.AdmissibleSchurLemma
 
 @[expose] public section
+
 
 section
 namespace DedekindZetaZeroFree.CuspidalProjectiveRetractProof
@@ -19,7 +22,7 @@ variable {G S : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
   intro u hu
   ext s
   change ℓ (ρ u⁻¹ s) = ℓ s
-  exact hU u⁻¹ (U.toOpenSubgroup.inv_mem hu) s
+  apply hU <;> aesop
 
 variable (ρ : Representation ℂ G S) [ρ.IsIrreducible]
   (hρ : SmoothRepresentation ρ) (ℓ : Module.Dual ℂ S) (hℓ : ℓ ≠ 0)
@@ -29,32 +32,27 @@ variable (ρ : Representation ℂ G S) [ρ.IsIrreducible]
 
 include hρ hℓ hU hc
 
- theorem form_add (s t w : S) :
-    CuspidalFiniteCosetForm.form ρ ℓ U (s + t) w =
-      CuspidalFiniteCosetForm.form ρ ℓ U s w + CuspidalFiniteCosetForm.form ρ ℓ U t w :=
+ def form_add (s t w : S)  :=
   (CuspidalFiniteCosetForm.unitarization_noT2 ρ hρ ℓ hℓ U hU
     (hc ℓ (smoothFunctional ρ ℓ U hU))).2.1 s t w
 
- theorem form_smul (a : ℂ) (s w : S) :
-    CuspidalFiniteCosetForm.form ρ ℓ U (a • s) w = a * CuspidalFiniteCosetForm.form ρ ℓ U s w :=
+ def form_smul (a : ℂ) (s w : S)  :=
   (CuspidalFiniteCosetForm.unitarization_noT2 ρ hρ ℓ hℓ U hU
     (hc ℓ (smoothFunctional ρ ℓ U hU))).2.2.1 a s w
 
- theorem form_hermitian (s w : S) :
-    CuspidalFiniteCosetForm.form ρ ℓ U s w = star (CuspidalFiniteCosetForm.form ρ ℓ U w s) :=
+ def form_hermitian (s w : S)  :=
   (CuspidalFiniteCosetForm.unitarization_noT2 ρ hρ ℓ hℓ U hU
     (hc ℓ (smoothFunctional ρ ℓ U hU))).2.2.2.2.2.1 s w
 
- theorem form_real (s : S) : (CuspidalFiniteCosetForm.form ρ ℓ U s s).im = 0 :=
+ def form_real (s : S)  :=
   ((CuspidalFiniteCosetForm.unitarization_noT2 ρ hρ ℓ hℓ U hU
     (hc ℓ (smoothFunctional ρ ℓ U hU))).2.2.2.2.2.2.1 s).1
 
- theorem form_pos (s : S) (hs : s ≠ 0) : 0 < (CuspidalFiniteCosetForm.form ρ ℓ U s s).re :=
+ def form_pos (s : S) (hs : s ≠ 0)  :=
   (CuspidalFiniteCosetForm.unitarization_noT2 ρ hρ ℓ hℓ U hU
     (hc ℓ (smoothFunctional ρ ℓ U hU))).2.2.2.2.2.2.2.1 s hs
 
- theorem form_invariant (g : G) (s w : S) :
-    CuspidalFiniteCosetForm.form ρ ℓ U (ρ g s) (ρ g w) = CuspidalFiniteCosetForm.form ρ ℓ U s w :=
+ def form_invariant (g : G) (s w : S)  :=
   (CuspidalFiniteCosetForm.unitarization_noT2 ρ hρ ℓ hℓ U hU
     (hc ℓ (smoothFunctional ρ ℓ U hU))).2.2.2.2.2.2.2.2.1 g s w
 
@@ -66,9 +64,9 @@ include hρ hℓ hU hc
   have he : CuspidalFiniteCosetForm.coefficient ρ L s =
       (fun g => CuspidalFiniteCosetForm.form ρ ℓ U (ρ g s) w) := by
     funext g
-    exact hL (ρ g s)
+    apply hL
   rw [← he]
-  exact hc L hs s
+  apply hc <;> assumption
 
  theorem section_smooth (W : CompactOpenLevel G) (s w : S)
     (F : EqSections (CompactInductionProjectivity.inducingSubgroup W)
@@ -123,12 +121,12 @@ open scoped Topology
 variable {G S : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
     [T2Space G] [AddCommGroup S] [Module ℂ S]
 
-def CompactSmoothCoefficients (ρ : Representation ℂ G S) : Prop :=
+def CompactSmoothCoefficients (ρ : Representation ℂ G S)  :=
   ∀ L : Module.Dual ℂ S, SmoothVector ρ.dual L →
     ∀ s : S, HasCompactSupport (CuspidalFiniteCosetForm.coefficient ρ L s)
 
 noncomputable def beta (ρ : Representation ℂ G S) (ℓ : Module.Dual ℂ S)
-    (U : CompactOpenLevel G) (s t : S) : ℂ :=
+    (U : CompactOpenLevel G) (s t : S)  :=
   CuspidalFiniteCosetForm.form ρ ℓ U s t
 
 section ExplicitMaps
@@ -157,10 +155,9 @@ noncomputable def coefficientEmbedding
             change ρ (u : G) v₀.val = v₀.val at hv
             simpa only [hv, beta] using
               CuspidalProjectiveRetractProof.form_invariant ρ hρ ℓ hℓ U hU hc (u : G) (ρ g s) v₀.val⟩,
-          by
-            exact CuspidalProjectiveRetractProof.section_smooth ρ hρ ℓ hℓ U hU hc W s v₀.val _
+          CuspidalProjectiveRetractProof.section_smooth ρ hρ ℓ hℓ U hU hc W s v₀.val _
               (fun g => rfl)⟩,
-        by exact CuspidalProjectiveRetractProof.section_compact ρ hρ ℓ hℓ U hU hc s v₀.val W⟩
+        by apply CuspidalProjectiveRetractProof.section_compact <;> assumption⟩
       map_add' := by
         intro s t
         apply Subtype.ext; apply Subtype.ext; apply Subtype.ext
@@ -189,17 +186,15 @@ noncomputable def coefficientEmbedding
       (coefficientEmbedding ρ hρ ℓ hℓ U hU hc W v₀ s) g =
     beta ρ ℓ U (ρ g s) v₀.val := rfl
 
-noncomputable def unnormalizedRetraction :
-    Representation.IntertwiningMap (CompactInductionProjectivity.representation W) ρ :=
+noncomputable def unnormalizedRetraction  :=
   CompactInductionProjectivity.finiteSumMap W ρ v₀
 
 theorem unnormalizedRetraction_apply (F : CompactInductionProjectivity.P W) :
     unnormalizedRetraction ρ W v₀ F =
       ∑ c ∈ (CompactInductionProjectivity.finiteSupportEquiv W F).support,
-        (CompactInductionProjectivity.finiteSupportEquiv W F) c • ρ c.out⁻¹ v₀.val := by
-  rfl
+        (CompactInductionProjectivity.finiteSupportEquiv W F) c • ρ c.out⁻¹ v₀.val := rfl
 
-noncomputable def coefficientSquareSum : ℝ :=
+noncomputable def coefficientSquareSum  :=
   ∑ c ∈ (CompactInductionProjectivity.finiteSupportEquiv W
       (coefficientEmbedding ρ hρ ℓ hℓ U hU hc W v₀ v₀.val)).support,
     ‖beta ρ ℓ U (ρ c.out v₀.val) v₀.val‖ ^ 2
@@ -260,7 +255,7 @@ theorem coefficientSquareSum_pos (hv₀ : v₀.val ≠ 0) :
       change beta ρ ℓ U (ρ c₁.out v₀.val) v₀.val ≠ 0
       rwa [he]
     · rw [he]
-      exact sq_pos_of_pos (norm_pos_iff.mpr hb)
+      apply sq_pos_of_pos <;> aesop
 
 theorem positive_scalar_composite
     [Nontrivial S]
@@ -305,8 +300,7 @@ theorem positive_scalar_composite
   rw [ha, hac]
   rfl
 
-noncomputable def normalizedRetraction (c : ℝ) :
-    Representation.IntertwiningMap (CompactInductionProjectivity.representation W) ρ :=
+noncomputable def normalizedRetraction (c : ℝ)  :=
   ((c : ℂ)⁻¹) • unnormalizedRetraction ρ W v₀
 
 theorem normalizedRetraction_comp (c : ℝ) (hcpos : 0 < c)
@@ -321,12 +315,15 @@ theorem normalizedRetraction_comp (c : ℝ) (hcpos : 0 < c)
 
 end ExplicitMaps
 
-theorem exists_explicit_retract [Nontrivial S]
+section
+variable [Nontrivial S]
     (hcompactOpen : ∀ N ∈ 𝓝 (1 : G),
       ∃ J : CompactOpenLevel G, (J.toOpenSubgroup : Set G) ⊆ N)
     (ρ : Representation ℂ G S) [ρ.IsIrreducible]
     (hρ : SmoothRepresentation ρ) (hadmissible : Admissible ρ)
-    (hc : CompactSmoothCoefficients ρ) :
+    (hc : CompactSmoothCoefficients ρ)
+include hcompactOpen ρ hρ hadmissible hc
+theorem exists_explicit_retract   :
     ∃ (ℓ : Module.Dual ℂ S) (U W : CompactOpenLevel G),
       ℓ ≠ 0 ∧ CuspidalFiniteCosetForm.FixesFunctional ρ U ℓ ∧
       ∃ v₀ : fixedSubmodule ρ (CompactInductionProjectivity.inducingSubgroup W),
@@ -344,7 +341,7 @@ theorem exists_explicit_retract [Nontrivial S]
     exists_smooth_dual_separating hcompactOpen ρ hρ hadmissible v hv
   have hℓ : ℓ ≠ 0 := by
     intro h
-    exact hℓv (by rw [h]; rfl)
+    apply hℓv <;> aesop
   have hBasis : ∀ J : OpenSubgroup G, ∃ U : CompactOpenLevel G,
       U.toOpenSubgroup ≤ J := by
     intro J
@@ -361,14 +358,9 @@ theorem exists_explicit_retract [Nontrivial S]
     ?_, rfl, hscalar, rfl, ?_⟩
   · intro s g
     rfl
-  · exact normalizedRetraction_comp ρ hρ ℓ hℓ U hU hc W v₀ c hcpos hscalar
+  · apply normalizedRetraction_comp <;> assumption
 
-theorem lift_equivariant_surjection [Nontrivial S]
-    (hcompactOpen : ∀ N ∈ 𝓝 (1 : G),
-      ∃ J : CompactOpenLevel G, (J.toOpenSubgroup : Set G) ⊆ N)
-    (ρ : Representation ℂ G S) [ρ.IsIrreducible]
-    (hρ : SmoothRepresentation ρ) (hadmissible : Admissible ρ)
-    (hc : CompactSmoothCoefficients ρ)
+theorem lift_equivariant_surjection  
     {X Y : Type*} [AddCommGroup X] [Module ℂ X] [AddCommGroup Y] [Module ℂ Y]
     (σ : Representation ℂ G X) (τ : Representation ℂ G Y)
     (hσ : SmoothRepresentation σ) (hτ : SmoothRepresentation τ)
@@ -385,6 +377,8 @@ theorem lift_equivariant_surjection [Nontrivial S]
     _ = f.comp (r.comp j) := by ext v; rfl
     _ = f.comp (Representation.IntertwiningMap.id ρ) := by rw [hrj]
     _ = f := by ext v; rfl
+end
+
 
 end DedekindZetaZeroFree.CuspidalProjectiveRetract
 

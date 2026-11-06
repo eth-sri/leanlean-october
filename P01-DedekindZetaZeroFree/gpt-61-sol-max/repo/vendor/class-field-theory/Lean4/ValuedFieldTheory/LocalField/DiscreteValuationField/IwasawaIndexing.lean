@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import Mathlib.NumberTheory.Padics.RingHoms
 public import Mathlib.Topology.Homeomorph.Lemmas
 public import Mathlib.Basic.Denumerable
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -64,14 +67,14 @@ theorem infinite_iwasawaIndex (p f : ℕ) (hp : 0 < p) (hf : 0 < f) :
 /-- The index used in the equal-characteristic proof is denumerable. -/
 noncomputable def chosenIwasawaIndexEquivNat (p f : ℕ) (hp : 0 < p) (hf : 0 < f) :
     IwasawaIndex p f ≃ ℕ := by
-  letI : Infinite (IwasawaIndex p f) := infinite_iwasawaIndex p f hp hf
+  letI  := infinite_iwasawaIndex p f hp hf
   letI : Countable (IwasawaDegree p) := by
     unfold IwasawaDegree
     infer_instance
   letI : Countable (IwasawaIndex p f) := by
     change Countable (IwasawaDegree p × Fin f)
     infer_instance
-  let d : Denumerable (IwasawaIndex p f) :=
+  let d  :=
     Classical.choice (nonempty_denumerable (IwasawaIndex p f))
   exact @Denumerable.eqv (IwasawaIndex p f) d
 

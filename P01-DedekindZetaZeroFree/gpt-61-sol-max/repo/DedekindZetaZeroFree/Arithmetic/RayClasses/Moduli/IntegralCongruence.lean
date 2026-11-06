@@ -10,9 +10,12 @@ open IsDedekindDomain
 
 namespace DedekindZetaZeroFree.RayClassBridge
 
-private theorem local_maximal_pow_mem_iff
-    (F : Type) [Field F] [NumberField F]
+section
+variable (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (𝓞 F)) (n : ℕ)
+include F v n
+private theorem local_maximal_pow_mem_iff
+     
     (t : v.adicCompletionIntegers F) :
     t ∈ (IsLocalRing.maximalIdeal (v.adicCompletionIntegers F)) ^ n ↔
       Valued.v (t : v.adicCompletion F) ≤ WithZero.exp (-(n : ℤ)) := by
@@ -33,8 +36,7 @@ private theorem local_maximal_pow_mem_iff
   simp
 
 theorem integral_mem_rayLocalHigherUnitGroup_iff
-    (F : Type) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (𝓞 F)) (n : ℕ) (_hn : 0 < n)
+      (_hn : 0 < n)
     (α : 𝓞 F) (_hα : α ≠ 0) (x : Fˣ) (hx : (x : F) = (α : F)) :
     ClassFieldTheory.finitePlaceUnitEmbedding v x ∈
       ClassFieldTheory.rayLocalHigherUnitGroup v n ↔
@@ -72,11 +74,16 @@ theorem integral_mem_rayLocalHigherUnitGroup_iff
       1 + algebraMap (𝓞 F) (v.adicCompletion F) (α - 1)
     simp only [map_sub, map_one]
     ring
+end
 
-theorem integral_finite_ray_congruent_iff
-    (F : Type) [Field F] [NumberField F]
+
+section
+variable (F : Type) [Field F] [NumberField F]
     (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥)
-    (α : 𝓞 F) (hα : α ≠ 0) (x : Fˣ) (hx : (x : F) = (α : F)) :
+    (α : 𝓞 F)
+include F 𝔪 h𝔪 α
+theorem integral_finite_ray_congruent_iff
+      (hα : α ≠ 0) (x : Fˣ) (hx : (x : F) = (α : F)) :
     (∀ v, v ∈ (narrowIdealModulus F 𝔪 h𝔪).finitePart.support →
       ClassFieldTheory.finitePlaceUnitEmbedding v x ∈
         ClassFieldTheory.rayLocalHigherUnitGroup v
@@ -107,9 +114,7 @@ theorem integral_finite_ray_congruent_iff
       (Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hv)) α hα x hx).mpr (h v)
 
 theorem integral_infinite_ray_positive_iff
-    (F : Type) [Field F] [NumberField F]
-    (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥)
-    (α : 𝓞 F) (x : Fˣ) (hx : (x : F) = (α : F)) :
+      (x : Fˣ) (hx : (x : F) = (α : F)) :
     (∀ v, v ∈ (narrowIdealModulus F 𝔪 h𝔪).infinitePart →
       0 < v.1.embedding_of_isReal v.2 (x : F)) ↔
       ∀ φ : F →+* ℝ, 0 < φ (α : F) := by
@@ -133,13 +138,13 @@ theorem integral_infinite_ray_positive_iff
     simpa only [hx] using h (v.1.embedding_of_isReal v.2)
 
 theorem isRayCongruent_iff_integral
-    (F : Type) [Field F] [NumberField F]
-    (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥)
-    (α : 𝓞 F) (hα : α ≠ 0) (x : Fˣ) (hx : (x : F) = (α : F)) :
+      (hα : α ≠ 0) (x : Fˣ) (hx : (x : F) = (α : F)) :
     ClassFieldTheory.IsRayCongruent (narrowIdealModulus F 𝔪 h𝔪) x ↔
       α - 1 ∈ 𝔪 ∧ (∀ φ : F →+* ℝ, 0 < φ (α : F)) := by
   exact and_congr (integral_finite_ray_congruent_iff F 𝔪 h𝔪 α hα x hx)
     (integral_infinite_ray_positive_iff F 𝔪 h𝔪 α x hx)
+end
+
 
 theorem span_add_modulus_eq_top_of_sub_one_mem
     (F : Type) [Field F] [NumberField F]

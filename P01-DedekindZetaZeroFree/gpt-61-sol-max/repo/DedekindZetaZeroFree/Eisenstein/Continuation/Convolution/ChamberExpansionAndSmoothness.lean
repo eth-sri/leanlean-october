@@ -17,7 +17,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 local instance smoothTopGroup : IsTopologicalGroup (G F ζ hζ) :=
   (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.1
 local instance smoothBorel (K : Subgroup (G F ζ hζ)) : MeasurableSpace K := borel K
-local instance smoothBorelSpace (K : Subgroup (G F ζ hζ)) : BorelSpace K := ⟨rfl⟩
+
  def rawIwasawa (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K) :
     KPGlobalTorusBorelNormTwistTransport.IwasawaData F ζ hζ where
   K := K
@@ -165,7 +165,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 local instance exchangeTopGroup : IsTopologicalGroup (G F ζ hζ) :=
   (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.1
 local instance exchangeBorel (K : Subgroup (G F ζ hζ)) : MeasurableSpace K := borel K
-local instance exchangeBorelSpace (K : Subgroup (G F ζ hζ)) : BorelSpace K := ⟨rfl⟩
+
 local instance fieldCountable : Countable F :=
   (Module.finBasis ℚ F).repr.injective.countable
 local instance rationalQuotientCountable : Countable (KPChamberBruhatTwoCells.RationalQuotient F) :=

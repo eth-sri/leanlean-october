@@ -21,10 +21,13 @@ variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
- def zext (a : ActualChart (U := U) (H := H)) (f : omega a → ℂ) : M F → ℂ :=
+
+local notation:max "current_ActualChart" => ActualChart (U := U) (H := H)
+
+ def zext (a : current_ActualChart) (f : omega a → ℂ) : M F → ℂ :=
   fun x => if hx : x ∈ omega a then f ⟨x, hx⟩ else 0
 
- def rext (a : ActualChart (U := U) (H := H)) (f : omega a → ℝ) : M F → ℝ :=
+ def rext (a : current_ActualChart) (f : omega a → ℝ) : M F → ℝ :=
   fun x => if hx : x ∈ omega a then f ⟨x, hx⟩ else 0
 
 private theorem continuous_labeledA_self :
@@ -34,10 +37,10 @@ private theorem continuous_labeledA_self :
   exact (continuous_apply (placeEquiv F ζ hζ |>.symm k)).comp
     (CotangentLogCoframe.A (d F)).continuous
 
-private theorem isOpen_omega (a : ActualChart (U := U) (H := H)) : IsOpen (omega a) :=
+private theorem isOpen_omega (a : current_ActualChart) : IsOpen (omega a) :=
   a.domain_open.preimage continuous_labeledA_self
 
-private theorem contDiffAt_zext {a : ActualChart (U := U) (H := H)} {f : omega a → ℂ}
+private theorem contDiffAt_zext {a : current_ActualChart} {f : omega a → ℂ}
     (hf : SmoothOnLift a f) (x : omega a) :
     ContDiffAt ℝ (⊤ : ℕ∞) (zext a f) x.val := by
   obtain ⟨g, hg, hge⟩ := hf
@@ -48,7 +51,7 @@ private theorem contDiffAt_zext {a : ActualChart (U := U) (H := H)} {f : omega a
     exact (hge ⟨y, hy⟩).symm
   exact (hg.contDiffAt hmem).congr_of_eventuallyEq heq
 
-private theorem contDiffAt_rext {a : ActualChart (U := U) (H := H)} {f : omega a → ℝ}
+private theorem contDiffAt_rext {a : current_ActualChart} {f : omega a → ℝ}
     (hf : SmoothOnLift a f) (x : omega a) :
     ContDiffAt ℝ (⊤ : ℕ∞) (rext a f) x.val := by
   obtain ⟨g, hg, hge⟩ := hf
@@ -59,15 +62,15 @@ private theorem contDiffAt_rext {a : ActualChart (U := U) (H := H)} {f : omega a
     exact (hge ⟨y, hy⟩).symm
   exact (hg.contDiffAt hmem).congr_of_eventuallyEq heq
 
-private lemma zext_add (a : ActualChart (U := U) (H := H)) (f g : omega a → ℂ) :
+private lemma zext_add (a : current_ActualChart) (f g : omega a → ℂ) :
     zext a (f + g) = zext a f + zext a g := by
   funext y; by_cases hy : y ∈ omega a <;> simp [zext, hy]
 
-private lemma zext_smul (a : ActualChart (U := U) (H := H)) (c : ℂ) (f : omega a → ℂ) :
+private lemma zext_smul (a : current_ActualChart) (c : ℂ) (f : omega a → ℂ) :
     zext a (c • f) = c • zext a f := by
   funext y; by_cases hy : y ∈ omega a <;> simp [zext, hy]
 
-private lemma zext_ofReal (a : ActualChart (U := U) (H := H)) (η : omega a → ℝ) :
+private lemma zext_ofReal (a : current_ActualChart) (η : omega a → ℝ) :
     zext a (fun y => (η y : ℂ)) = fun y => ((rext a η) y : ℂ) := by
   funext y; by_cases hy : y ∈ omega a <;> simp [zext, rext, hy]
 
@@ -125,29 +128,29 @@ private lemma differential_ofReal_im (d : ℕ) (ψ : HyperbolicChart.Space d →
     simp [HyperbolicChart.differential, coordinateDerivative_ofReal_im d i _ ψ p hψ,
       Complex.mul_im]
 
- def zcplx (a : ActualChart (U := U) (H := H)) (η : omega a → ℝ) : M F → ℂ :=
+ def zcplx (a : current_ActualChart) (η : omega a → ℝ) : M F → ℂ :=
   fun y => ((rext a η) y : ℂ)
 
- def zcot (a : ActualChart (U := U) (H := H)) (W : omega a → E F) :
+ def zcot (a : current_ActualChart) (W : omega a → E F) :
     M F → HyperbolicChart.Cotangent (d F) :=
   fun y => (CotangentLogCoframe.j (d F)).symm (if hy : y ∈ omega a then W ⟨y, hy⟩ else 0)
 
  def ctr : E F → E F → ℂ := fun v W => ∑ i : Fin (d F), ∑ k : Fin 3, v (i,k) * W (i,k)
 
- def ZD (a : ActualChart (U := U) (H := H)) (f : omega a → ℂ) : omega a → E F :=
+ def ZD (a : current_ActualChart) (f : omega a → ℂ) : omega a → E F :=
   fun x => CotangentLogCoframe.j (d F) (HyperbolicChart.differential (d F) (zext a f) x.val)
 
- def ZC (a : ActualChart (U := U) (H := H)) (W : omega a → E F) : omega a → ℂ :=
+ def ZC (a : current_ActualChart) (W : omega a → E F) : omega a → ℂ :=
   fun x => HyperbolicChart.codifferential (d F) (zcot a W) x.val
 
-private lemma zcot_apply_eq_zext (a : ActualChart (U := U) (H := H)) (W : omega a → E F)
+private lemma zcot_apply_eq_zext (a : current_ActualChart) (W : omega a → E F)
     (i : Fin (d F)) (k : Fin 3) :
     (fun q => zcot a W q i k) = zext a (fun y => W y (i,k)) := by
   funext q; by_cases hq : q ∈ omega a
   · simp only [zcot, zext, dif_pos hq]; rfl
   · simp [zcot, zext, dif_neg hq]
 
-private theorem smoothOnLift_component {a : ActualChart (U := U) (H := H)} {W : omega a → E F}
+private theorem smoothOnLift_component {a : current_ActualChart} {W : omega a → E F}
     (hW : SmoothOnLift a W) (i : Fin (d F)) (k : Fin 3) :
     SmoothOnLift a (fun y => W y (i,k)) := by
   obtain ⟨G, hG, hGe⟩ := hW
@@ -251,12 +254,12 @@ private lemma codifferential_smul (d : ℕ) (c : ℂ)
   have hmid : (c • A) p i 0 = c * (A p i 0) := rfl
   rw [h0, h1, h2, hmid]; ring
 
-private lemma zcot_apply (a : ActualChart (U := U) (H := H)) (W : omega a → E F)
+private lemma zcot_apply (a : current_ActualChart) (W : omega a → E F)
     (y : M F) (hy : y ∈ omega a) :
     zcot a W y = (CotangentLogCoframe.j (d F)).symm (W ⟨y, hy⟩) := by
   simp only [zcot, dif_pos hy]
 
-private lemma ZD_add (a : ActualChart (U := U) (H := H)) (f g : omega a → ℂ)
+private lemma ZD_add (a : current_ActualChart) (f g : omega a → ℂ)
     (hf : SmoothOnLift a f) (hg : SmoothOnLift a g) :
     ZD a (f + g) = ZD a f + ZD a g := by
   funext x
@@ -266,7 +269,7 @@ private lemma ZD_add (a : ActualChart (U := U) (H := H)) (f g : omega a → ℂ)
       ((contDiffAt_zext hg x).differentiableAt (by simp)),
     map_add]
 
-private lemma ZD_smul (a : ActualChart (U := U) (H := H)) (c : ℂ) (f : omega a → ℂ)
+private lemma ZD_smul (a : current_ActualChart) (c : ℂ) (f : omega a → ℂ)
     (hf : SmoothOnLift a f) :
     ZD a (c • f) = c • ZD a f := by
   funext x
@@ -275,7 +278,7 @@ private lemma ZD_smul (a : ActualChart (U := U) (H := H)) (c : ℂ) (f : omega a
       ((contDiffAt_zext hf x).differentiableAt (by simp)),
     map_smul]
 
-private lemma ZC_add (a : ActualChart (U := U) (H := H)) (V W : omega a → E F)
+private lemma ZC_add (a : current_ActualChart) (V W : omega a → E F)
     (hV : SmoothOnLift a V) (hW : SmoothOnLift a W) :
     ZC a (V + W) = ZC a V + ZC a W := by
   have hzw : zcot a (V + W) = zcot a V + zcot a W := by
@@ -296,7 +299,7 @@ private lemma ZC_add (a : ActualChart (U := U) (H := H)) (V W : omega a → E F)
       rw [zcot_apply_eq_zext]
       exact (contDiffAt_zext (smoothOnLift_component hW i k) x).differentiableAt (by simp))
 
-private lemma ZC_smul (a : ActualChart (U := U) (H := H)) (c : ℂ) (W : omega a → E F)
+private lemma ZC_smul (a : current_ActualChart) (c : ℂ) (W : omega a → E F)
     (hW : SmoothOnLift a W) :
     ZC a (c • W) = c • ZC a W := by
   have hzw : zcot a (c • W) = c • zcot a W := by
@@ -313,7 +316,7 @@ private lemma ZC_smul (a : ActualChart (U := U) (H := H)) (c : ℂ) (W : omega a
       rw [zcot_apply_eq_zext]
       exact (contDiffAt_zext (smoothOnLift_component hW i k) x).differentiableAt (by simp))
 
-private lemma ZC_ZD (a : ActualChart (U := U) (H := H)) (f : omega a → ℂ)
+private lemma ZC_ZD (a : current_ActualChart) (f : omega a → ℂ)
     (hf : SmoothOnLift a f) (x : omega a) :
     ZC a (ZD a f) x = HyperbolicChart.laplacian (d F) (zext a f) x.val := by
   have hmem : omega a ∈ 𝓝 x.val := (isOpen_omega a).mem_nhds x.2
@@ -333,7 +336,7 @@ private lemma ZC_ZD (a : ActualChart (U := U) (H := H)) (f : omega a → ℂ)
   exact KPCompactGreen.GreenFlux.codifferential_differential_at (d F) (zext a f) x.val
     (contDiffAt_zext hf x)
 
-private lemma ZD_ofReal_im (a : ActualChart (U := U) (H := H)) (η : omega a → ℝ)
+private lemma ZD_ofReal_im (a : current_ActualChart) (η : omega a → ℝ)
     (hη : SmoothOnLift a η) (x : omega a) (i : Fin (d F)) (k : Fin 3) :
     (ZD a (fun y => (η y : ℂ)) x (i,k)).im = 0 := by
   have hd : DifferentiableAt ℝ (rext a η) x.val :=
@@ -341,7 +344,7 @@ private lemma ZD_ofReal_im (a : ActualChart (U := U) (H := H)) (η : omega a →
   simp only [ZD, CotangentLogCoframe.j_apply, zext_ofReal]
   exact differential_ofReal_im (d F) (rext a η) x.val hd i k
 
-private lemma ZD_mul (a : ActualChart (U := U) (H := H)) (η : omega a → ℝ) (f : omega a → ℂ)
+private lemma ZD_mul (a : current_ActualChart) (η : omega a → ℝ) (f : omega a → ℂ)
     (hη : SmoothOnLift a η) (hf : SmoothOnLift a f) (x : omega a) :
     ZD a (fun y => (η y : ℂ) * f y) x =
       (η x : ℂ) • ZD a f x + f x • ZD a (fun y => (η y : ℂ)) x := by
@@ -358,7 +361,7 @@ private lemma ZD_mul (a : ActualChart (U := U) (H := H)) (η : omega a → ℝ) 
     map_add, map_smul, map_smul]
   simp only [zext, rext, dif_pos x.2]
 
-private lemma ZC_smul_mul (a : ActualChart (U := U) (H := H)) (η : omega a → ℝ)
+private lemma ZC_smul_mul (a : current_ActualChart) (η : omega a → ℝ)
     (W : omega a → E F) (hη : SmoothOnLift a η) (hW : SmoothOnLift a W) (x : omega a) :
     ZC a (fun y => (η y : ℂ) • W y) x =
       (η x : ℂ) * ZC a W x - ctr (ZD a (fun y => (η y : ℂ)) x) (W x) := by
@@ -409,39 +412,39 @@ private lemma ZC_smul_mul (a : ActualChart (U := U) (H := H)) (η : omega a → 
   rw [h1]
 
 theorem coframe_calculus :
-  let L : (a : ActualChart (U := U) (H := H)) → (omega a → ℂ) → M F → ℂ :=
+  let L : (a : current_ActualChart) → (omega a → ℂ) → M F → ℂ :=
     fun a f x => if hx : x ∈ omega a then f ⟨x, hx⟩ else 0
-  let D : (a : ActualChart (U := U) (H := H)) → (omega a → ℂ) → omega a → E F :=
+  let D : (a : current_ActualChart) → (omega a → ℂ) → omega a → E F :=
     fun a f x => CotangentLogCoframe.j (d F)
       (HyperbolicChart.differential (d F) (L a f) x.val)
-  let C : (a : ActualChart (U := U) (H := H)) → (omega a → E F) → omega a → ℂ :=
+  let C : (a : current_ActualChart) → (omega a → E F) → omega a → ℂ :=
     fun a W x => HyperbolicChart.codifferential (d F)
       (fun y => (CotangentLogCoframe.j (d F)).symm
         (if hy : y ∈ omega a then W ⟨y, hy⟩ else 0)) x.val
   let contract : E F → E F → ℂ :=
     fun v W => ∑ i : Fin (d F), ∑ k : Fin 3, v (i, k) * W (i, k)
-  (∀ (a : ActualChart (U := U) (H := H)) (f g : omega a → ℂ),
+  (∀ (a : current_ActualChart) (f g : omega a → ℂ),
     SmoothOnLift a f → SmoothOnLift a g →
     D a (f + g) = D a f + D a g) ∧
-  (∀ (a : ActualChart (U := U) (H := H)) (c : ℂ) (f : omega a → ℂ),
+  (∀ (a : current_ActualChart) (c : ℂ) (f : omega a → ℂ),
     SmoothOnLift a f → D a (c • f) = c • D a f) ∧
-  (∀ (a : ActualChart (U := U) (H := H)) (V W : omega a → E F),
+  (∀ (a : current_ActualChart) (V W : omega a → E F),
     SmoothOnLift a V → SmoothOnLift a W →
     C a (V + W) = C a V + C a W) ∧
-  (∀ (a : ActualChart (U := U) (H := H)) (c : ℂ) (W : omega a → E F),
+  (∀ (a : current_ActualChart) (c : ℂ) (W : omega a → E F),
     SmoothOnLift a W → C a (c • W) = c • C a W) ∧
-  (∀ (a : ActualChart (U := U) (H := H)) (f : omega a → ℂ),
+  (∀ (a : current_ActualChart) (f : omega a → ℂ),
     SmoothOnLift a f → ∀ x : omega a,
     C a (D a f) x = HyperbolicChart.laplacian (d F) (L a f) x.val) ∧
-  (∀ (a : ActualChart (U := U) (H := H)) (η : omega a → ℝ),
+  (∀ (a : current_ActualChart) (η : omega a → ℝ),
     SmoothOnLift a η → ∀ (x : omega a) (i : Fin (d F)) (k : Fin 3),
     (D a (fun y => (η y : ℂ)) x (i, k)).im = 0) ∧
-  (∀ (a : ActualChart (U := U) (H := H)) (η : omega a → ℝ)
+  (∀ (a : current_ActualChart) (η : omega a → ℝ)
       (f : omega a → ℂ), SmoothOnLift a η → SmoothOnLift a f →
     ∀ x : omega a,
     D a (fun y => (η y : ℂ) * f y) x =
       (η x : ℂ) • D a f x + f x • D a (fun y => (η y : ℂ)) x) ∧
-  (∀ (a : ActualChart (U := U) (H := H)) (η : omega a → ℝ)
+  (∀ (a : current_ActualChart) (η : omega a → ℝ)
       (W : omega a → E F), SmoothOnLift a η → SmoothOnLift a W →
     ∀ x : omega a,
     C a (fun y => (η y : ℂ) • W y) x =

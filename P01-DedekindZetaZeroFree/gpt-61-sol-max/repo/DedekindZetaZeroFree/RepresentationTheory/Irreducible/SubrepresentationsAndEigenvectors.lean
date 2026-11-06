@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import Mathlib.RepresentationTheory.Semisimple
 public import DedekindZetaZeroFree.RepresentationTheory.Subrepresentations.Restriction
 public import Mathlib.RingTheory.SimpleModule.Rank
@@ -10,6 +12,7 @@ public import Mathlib.LinearAlgebra.Matrix.FiniteDimensional
 public import DedekindZetaZeroFree.Algebra.TensorProduct.SeparatingFunctionals
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 The Tau Ceti contributors. All rights reserved.
@@ -36,8 +39,8 @@ variable {k G V : Type*} [Field k] [Monoid G] [AddCommGroup V] [Module k V]
 
 open scoped MonoidAlgebra in
 
-theorem IsIrreducible.nontrivial {ρ : Representation k G V}
-    (h : ρ.IsIrreducible) : Nontrivial V :=
+def IsIrreducible.nontrivial {ρ : Representation k G V}
+    (h : ρ.IsIrreducible)  :=
   have _ : ρ.IsIrreducible := h
   have _ := IsSimpleModule.nontrivial k[G] ρ.asModule
   ρ.asModuleEquiv.symm.toEquiv.nontrivial
@@ -52,22 +55,22 @@ theorem IsIrreducible.natCast_finrank_ne_zero [CharZero k]
     (Module.finrank k V : k) ≠ 0 :=
   Nat.cast_ne_zero.mpr h.finrank_pos.ne'
 
-theorem isIrreducible_of_finrank_eq_one (ρ : Representation k G V)
-    (h : Module.finrank k V = 1) : ρ.IsIrreducible := by
-  have : IsSimpleModule k V := isSimpleModule_iff_finrank_eq_one.mpr h
-  have : Nontrivial V := IsSimpleModule.nontrivial k V
-  refine ⟨fun σ => (eq_bot_or_eq_top σ.toSubmodule).imp (fun hσ => ?_) fun hσ => ?_⟩
-  · exact Subrepresentation.toSubmodule_injective (hσ.trans Subrepresentation.toSubmodule_bot.symm)
-  · exact Subrepresentation.toSubmodule_injective (hσ.trans Subrepresentation.toSubmodule_top.symm)
 
-instance isIrreducible_trivial_self : (trivial k G k).IsIrreducible :=
-  isIrreducible_of_finrank_eq_one _ (Module.finrank_self k)
+
+
+
+
+
+
+
+
+
 
 theorem isIrreducible_of_linearEquiv {W : Type*} [AddCommGroup W] [Module k W]
     {ρ : Representation k G V} {σ : Representation k G W} (e : V ≃ₗ[k] W)
     (he : ∀ g v, e (ρ g v) = σ g (e v)) (h : ρ.IsIrreducible) : σ.IsIrreducible := by
   have := h.nontrivial
-  have : Nontrivial W := e.symm.toEquiv.nontrivial
+  have  := e.symm.toEquiv.nontrivial
   refine ⟨fun τ => ?_⟩
 
   let τ' : Subrepresentation ρ :=

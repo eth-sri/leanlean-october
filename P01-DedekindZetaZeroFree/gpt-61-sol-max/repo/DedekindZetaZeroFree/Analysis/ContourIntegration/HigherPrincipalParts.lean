@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.MellinVerticalIntegral
 
 @[expose] public section
+
 
 noncomputable section
 open MeasureTheory Filter Complex
@@ -30,7 +33,7 @@ private lemma integrable_one_div_one_add_mul_I_pow {k : ℕ} (hk : 2 ≤ k) :
       have h := norm_add_mul_I_sq 1 t
       simpa using h
     have hge : 1 ≤ ‖((1 : ℂ) + (t : ℂ) * I)‖ := by
-      have h1 : 1 ≤ ‖((1 : ℂ) + (t : ℂ) * I)‖ ^ 2 := by rw [hsq]; linarith [sq_nonneg t]
+      
       nlinarith [norm_nonneg ((1 : ℂ) + (t : ℂ) * I)]
     have hpow : 1 + t ^ 2 ≤ ‖((1 : ℂ) + (t : ℂ) * I)‖ ^ k := by
       calc 1 + t ^ 2 = ‖((1 : ℂ) + (t : ℂ) * I)‖ ^ 2 := hsq.symm
@@ -80,8 +83,11 @@ private lemma tendsto_norm_add_mul_I_atBot (a : ℝ) :
   have hb : b ≤ |t| := by rw [abs_of_nonpos h2]; linarith
   exact le_trans hb (abs_le_norm_add_mul_I a t)
 
-theorem verticalIntegrable_higher_principal_part (R : ℂ)
-    {p c : ℝ} (hcp : c ≠ p) {k : ℕ} (hk : 2 ≤ k) :
+section
+variable (R : ℂ)
+    {p c : ℝ} (hcp : c ≠ p) {k : ℕ} (hk : 2 ≤ k)
+include R p c hcp k hk
+theorem verticalIntegrable_higher_principal_part   :
     Complex.VerticalIntegrable
       (fun s : ℂ => R / (s - (p : ℂ)) ^ k) c volume := by
   have ha : c - p ≠ 0 := sub_ne_zero.mpr hcp
@@ -97,8 +103,7 @@ theorem verticalIntegrable_higher_principal_part (R : ℂ)
   simp only []
   rw [← hpt]
 
-theorem verticalIntegral_higher_principal_part_eq_zero (R : ℂ)
-    {p c : ℝ} (hcp : c ≠ p) {k : ℕ} (hk : 2 ≤ k) :
+theorem verticalIntegral_higher_principal_part_eq_zero   :
     verticalIntegral c (fun s : ℂ => R / (s - (p : ℂ)) ^ k) = 0 := by
   set a : ℝ := c - p with ha_def
   have ha : a ≠ 0 := by rw [ha_def]; exact sub_ne_zero.mpr hcp
@@ -126,8 +131,7 @@ theorem verticalIntegral_higher_principal_part_eq_zero (R : ℂ)
       exact ha h1.symm
     have hcomp := HasDerivAt.comp t (hasDerivAt_zpow m ((a : ℂ) + (t : ℂ) * I) (Or.inl hune)) hu
     have hmain : HasDerivAt (fun t : ℝ => c₀ * ((a : ℂ) + (t : ℂ) * I) ^ m)
-        (c₀ * (((m : ℂ) * ((a : ℂ) + (t : ℂ) * I) ^ (m - 1)) * I)) t := by
-      simpa only [Function.comp_def] using hcomp.const_mul c₀
+        (c₀ * (((m : ℂ) * ((a : ℂ) + (t : ℂ) * I) ^ (m - 1)) * I)) t := hcomp.const_mul c₀
     have hval : c₀ * (((m : ℂ) * ((a : ℂ) + (t : ℂ) * I) ^ (m - 1)) * I) =
         R / ((a : ℂ) + (t : ℂ) * I) ^ k := by
       have hm1 : m - 1 = -(k : ℤ) := by rw [hm_def]; ring
@@ -136,7 +140,7 @@ theorem verticalIntegral_higher_principal_part_eq_zero (R : ℂ)
       have hA : (m : ℂ) = -((((k : ℤ) - 1 : ℤ)) : ℂ) := by rw [hm_def]; push_cast; ring
       have hcoef : c₀ * ((m : ℂ) * I) = R := by
         rw [hA, hc₀_def]
-        have hXI : ((((k : ℤ) - 1 : ℤ)) : ℂ) * I ≠ 0 := mul_ne_zero hX Complex.I_ne_zero
+        
         field_simp
       have hstep : c₀ * (((m : ℂ) * ((a : ℂ) + (t : ℂ) * I) ^ (m - 1)) * I)
           = (c₀ * ((m : ℂ) * I)) * ((a : ℂ) + (t : ℂ) * I) ^ (m - 1) := by ring
@@ -167,12 +171,14 @@ theorem verticalIntegral_higher_principal_part_eq_zero (R : ℂ)
   rw [integral_congr_ae (Filter.Eventually.of_forall (fun t => by
     show R / (((c : ℂ) + (t : ℂ) * I) - (p : ℂ)) ^ k = R / ((a : ℂ) + (t : ℂ) * I) ^ k
     rw [hpt t])), hzero, mul_zero]
+end
+
 
 theorem norm_higher_principal_part_le_on_strip (R : ℂ) (p : ℝ)
     {k : ℕ} (hk : 2 ≤ k) {a b : ℝ} {s : ℂ}
     (hs : s.re ∈ Set.Icc a b) (him : 1 ≤ |s.im|) :
     ‖R / (s - (p : ℂ)) ^ k‖ ≤ ‖R‖ := by
-  have hre : (s - (p : ℂ)).re = s.re - p := by simp
+  have hre : (s - (p : ℂ)).re = s.re - p := rfl
   have him' : (s - (p : ℂ)).im = s.im := by simp
   have hsq : ‖s - (p : ℂ)‖ ^ 2 = (s.re - p) ^ 2 + s.im ^ 2 := by
     rw [Complex.sq_norm, Complex.normSq_apply, hre, him']

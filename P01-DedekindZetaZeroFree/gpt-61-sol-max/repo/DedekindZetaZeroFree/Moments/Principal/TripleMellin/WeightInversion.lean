@@ -26,7 +26,8 @@ theorem sheet_inversion (P : PrincipalData A σ η hS)
     P.additiveMeasure P.multiplicativeMeasure P.domain.measure
     P.additiveHaar P.multiplicativeHaar P.domain.haar N.disintegration
     (Classical.arbitrary _) P.W0 P.W1 P.annular P.compactSupport P.supportUnits
-  exact h.2.2.2.2.2.2.2 2 T (by norm_num) hT
+  simpa [principalMellinWeights, comparisonMellinWeightsFromProbe] using
+    h.2.2.2.2.2.2.2 2 T (by norm_num) hT
 
 theorem realWeight_inversion (P : PrincipalData A σ η hS) (T : ℝ) (hT : 0 < T) :
     Integrable (fun τ : ℝ => (principalMellinWeights A σ η hS P).W1Hat
@@ -45,7 +46,8 @@ theorem realWeight_inversion (P : PrincipalData A σ η hS) (T : ℝ) (hT : 0 < 
     (probeRealWeightMellin P.W1) 4 C
     ((hdiff.continuous.comp (by fun_prop)).aestronglyMeasurable)
     (fun τ => hb 4 (by simp) τ)
-  apply ProbeSheet.MellinProof.mellin_inversion_explicit
+  simpa [principalMellinWeights, comparisonMellinWeightsFromProbe] using
+    ProbeSheet.MellinProof.mellin_inversion_explicit
     (fun x => (P.W1 x : ℂ)) (probeRealWeightMellin P.W1) 4 T hT hconv hM
     (fun τ => congrFun heq.symm _) (Complex.continuous_ofReal.comp P.W1.smooth.continuous).continuousAt
 

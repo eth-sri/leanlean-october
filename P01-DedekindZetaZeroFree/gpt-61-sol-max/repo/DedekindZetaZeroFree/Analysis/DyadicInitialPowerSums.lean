@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve.Vendor
 
@@ -34,7 +37,7 @@ private lemma dyadic_pointwise (x X p : ℝ) (hx1 : 1 ≤ x) (hxX : x ≤ X) (hX
     rcases Nat.eq_zero_or_pos K with h | h
     · rw [h] at hKspec; simp at hKspec; linarith
     · exact h
-  have hxY : x ≤ X / 2 ^ (K - 1) := hKmin (K - 1) (by omega)
+  have hxY  := hKmin (K - 1) (by omega)
   have hstep1 : x ^ (-p) ≤ (X / 2 ^ K) ^ (-p) :=
     Real.rpow_le_rpow_of_nonpos (by positivity) hKspec.le (by linarith)
   have hterm : (X / 2 ^ K) ^ (-p) = 2 ^ p * X ^ (-p) * (2 : ℝ) ^ (((K - 1 : ℕ) : ℝ) * p) := by
@@ -49,9 +52,7 @@ private lemma dyadic_pointwise (x X p : ℝ) (hx1 : 1 ≤ x) (hxX : x ≤ X) (hX
     rw [Finset.mem_range]; omega
   have hnonneg : ∀ k ∈ Finset.range (N + 1),
       0 ≤ (2 : ℝ) ^ ((k : ℝ) * p) * (if x ≤ X / 2 ^ k then (1 : ℝ) else 0) := by
-    intro k hk
-    have : 0 ≤ (2:ℝ) ^ ((k:ℝ) * p) := Real.rpow_nonneg (by norm_num) _
-    split <;> positivity
+    (intros; positivity)
   have hsum : (2 : ℝ) ^ (((K - 1 : ℕ) : ℝ) * p) ≤
       ∑ k ∈ Finset.range (N + 1), (2 : ℝ) ^ ((k : ℝ) * p) *
         (if x ≤ X / 2 ^ k then (1 : ℝ) else 0) := by
@@ -91,12 +92,10 @@ theorem inversePower_initial_sum_le
       exact_mod_cast (Nat.lt_two_pow_self : n < 2 ^ n)
     exact ⟨n, lt_trans hn h2n⟩
   have hXpos : 0 < X := by linarith
-  have hr1 : (2:ℝ)^(p-1) < 1 :=
+  have hr1  :=
     Real.rpow_lt_one_of_one_lt_of_neg (by norm_num : (1:ℝ) < 2) (by linarith : p - 1 < 0)
   have hrpos : 0 < 1 - (2:ℝ)^(p-1) := by linarith
-  have hpt : ∀ i ∈ s, (w i) ^ (-p) ≤ 2 ^ p * X ^ (-p) *
-      ∑ k ∈ Finset.range (N + 1), (2 : ℝ) ^ ((k : ℝ) * p) *
-        (if w i ≤ X / 2 ^ k then (1 : ℝ) else 0) :=
+  have hpt  :=
     fun i hi => dyadic_pointwise (w i) X p (hw i) (hs i hi) hX hp0 hp1 N hN
   have hcard : ∀ k ∈ Finset.range (N+1),
       ((s.filter (fun i => w i ≤ X / 2 ^ k)).card : ℝ) ≤ C * (X / 2 ^ k) := by
@@ -104,11 +103,7 @@ theorem inversePower_initial_sum_le
     by_cases hY : 1 ≤ X / 2 ^ k
     · exact hcount (X / 2 ^ k) hY (s.filter _) (fun i hi => (Finset.mem_filter.mp hi).2)
     · have hempty : s.filter (fun i => w i ≤ X / 2 ^ k) = ∅ := by
-        rw [Finset.filter_eq_empty_iff]
-        intro i hi
-        have h2 : 1 ≤ w i := hw i
-        have hYlt : X / 2 ^ k < 1 := not_le.mp hY
-        linarith
+        grind
       rw [hempty, Finset.card_empty, Nat.cast_zero]
       have h0 : 0 ≤ X / 2 ^ k := by positivity
       nlinarith [hC]
@@ -128,10 +123,7 @@ theorem inversePower_initial_sum_le
     ring
   have hfinal : 2^p * X^(-p) * (C*X) * (1 - (2:ℝ)^(p-1))⁻¹
       = ((2:ℝ)^p * C / (1 - (2:ℝ)^(p-1))) * X^(1-p) := by
-    rw [show 2^p * X^(-p) * (C*X) * (1 - (2:ℝ)^(p-1))⁻¹
-          = 2^p * C * (X^(-p) * X) * (1 - (2:ℝ)^(p-1))⁻¹ by ring,
-        ← hX1p, inv_eq_one_div]
-    ring
+    grind
   calc
     ∑ i ∈ s, (w i) ^ (-p)
       ≤ ∑ i ∈ s, 2 ^ p * X ^ (-p) * (∑ k ∈ Finset.range (N+1), (2:ℝ)^((k:ℝ)*p) * (if w i ≤ X/2^k then (1:ℝ) else 0)) := Finset.sum_le_sum hpt

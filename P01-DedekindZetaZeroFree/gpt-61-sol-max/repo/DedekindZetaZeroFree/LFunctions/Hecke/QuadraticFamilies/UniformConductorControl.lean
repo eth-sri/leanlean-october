@@ -1,21 +1,27 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LFunctions.Hecke.QuadraticFamilies.GcdPairCharacterIdentities
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve
 
 open scoped NumberField Classical
 open DedekindZetaZeroFree
 
-private theorem mul_dvd_of_sup_eq_top {R : Type*} [CommRing R] [IsDedekindDomain R]
+section
+variable {R : Type*} [CommRing R] [IsDedekindDomain R]
+include R
+private theorem mul_dvd_of_sup_eq_top  
     {d u m : Ideal R} (h : d ⊔ u = ⊤) (hd : d ∣ m) (hu : u ∣ m) : d * u ∣ m := by
   rw [Ideal.dvd_iff_le]
   rw [Ideal.mul_eq_inf_of_coprime h]
   exact le_inf (Ideal.le_of_dvd hd) (Ideal.le_of_dvd hu)
 
-private theorem dvd_of_dvd_mul_of_sup_eq_top {R : Type*} [CommRing R] [IsDedekindDomain R]
+private theorem dvd_of_dvd_mul_of_sup_eq_top  
     {a q m : Ideal R} (h : a ⊔ q = ⊤) (hm : a ∣ m * q) : a ∣ m := by
   rw [Ideal.dvd_iff_le] at hm ⊢
   calc m = m * ⊤ := by rw [Ideal.mul_top]
@@ -23,7 +29,7 @@ private theorem dvd_of_dvd_mul_of_sup_eq_top {R : Type*} [CommRing R] [IsDedekin
     _ = m * a ⊔ m * q := Ideal.mul_sup m a q
     _ ≤ a := sup_le (Ideal.mul_le_right (I := m) (J := a)) hm
 
-private theorem dvd_or_dvd_of_isPrime {R : Type*} [CommRing R] [IsDedekindDomain R]
+private theorem dvd_or_dvd_of_isPrime  
     {p m q : Ideal R} (hp : p.IsPrime) (h : p ∣ m * q) : p ∣ m ∨ p ∣ q := by
   by_cases hpm : p ∣ m
   · exact Or.inl hpm
@@ -33,9 +39,11 @@ private theorem dvd_or_dvd_of_isPrime {R : Type*} [CommRing R] [IsDedekindDomain
     obtain ⟨x, hxm, hxp⟩ : ∃ x, x ∈ m ∧ x ∉ p := by
       by_contra hc
       push Not at hc
-      exact hnot fun x hx => hc x hx
+      apply hnot <;> assumption
     intro y hy
     exact (hp.mem_or_mem (h (Ideal.mul_mem_mul hxm hy))).resolve_left hxp
+end
+
 
 variable {F : Type} [Field F] [NumberField F]
 variable {c : Ideal (𝓞 F)}
@@ -51,15 +59,15 @@ theorem allIndexConductorControl
         ∀ p : Ideal (𝓞 F), p.IsPrime → p ∣ a → ¬ p ∣ q →
           p ∣ Q.cond a) := by
   classical
-  haveI : Finite Q.G := Q.instFinite
-  haveI : Fintype Q.G := Fintype.ofFinite Q.G
+  haveI  := Q.instFinite
+  haveI  := Fintype.ofFinite Q.G
 
-  let P : Q.G → Prop := fun g =>
+  let P  := fun g =>
     ∃ a : Ideal (𝓞 F), Squarefree a ∧ a ⊔ c = ⊤ ∧ Q.cls a = g
 
-  let fac : Q.G → Ideal (𝓞 F) := fun g =>
+  let fac  := fun g =>
     if h : P g then (Classical.choose h) * Q.cond (Classical.choose h) else ⊤
-  let q : Ideal (𝓞 F) := c * ∏ g : Q.G, fac g
+  let q  := c * ∏ g : Q.G, fac g
   have hq_eq : q = c * ∏ g : Q.G, fac g := rfl
 
   have hfac_ne : ∀ g : Q.G, fac g ≠ ⊥ := by
@@ -97,7 +105,7 @@ theorem allIndexConductorControl
     intro a ha hac
     have hmem : P (Q.cls a) := ⟨a, ha, hac, rfl⟩
     obtain ⟨hsq, hcop, hcls⟩ := Classical.choose_spec hmem
-    let r : Ideal (𝓞 F) := Classical.choose hmem
+    let r  := Classical.choose hmem
     have hrsq : Squarefree r := hsq
     have hrc : r ⊔ c = ⊤ := hcop
     have hclass : Q.cls a = Q.cls r := hcls.symm
@@ -115,7 +123,7 @@ theorem allIndexConductorControl
       exact dvd_mul_of_dvd_right hmem' c
     have ht' : ∃ t, q = (r * Q.cond r) * t := hfac_dvd
     obtain ⟨t, ht⟩ := ht'
-    have hr_dvd_q : r ∣ q :=
+    have hr_dvd_q  :=
       dvd_trans (dvd_mul_right r (Q.cond r)) hfac_dvd
     have hcondr_dvd_q : Q.cond r ∣ q :=
       dvd_trans (dvd_mul_left (Q.cond r) r) hfac_dvd
@@ -137,14 +145,14 @@ theorem allIndexConductorControl
           (Q.cond a)
       have hu_dvd : u ∣ Q.cond a * q :=
         dvd_trans (dvd_trans (dvd_mul_right u v) huv) (mul_dvd_mul_left (Q.cond a) hcondr_dvd_q)
-      have hdu_dvd : d * u ∣ Q.cond a * q := mul_dvd_of_sup_eq_top hdu hd_dvd hu_dvd
+      have hdu_dvd  := mul_dvd_of_sup_eq_top hdu hd_dvd hu_dvd
       rw [← hau'] at hdu_dvd
       exact hdu_dvd
 
   have hpart2 : ∀ a : Ideal (𝓞 F), Squarefree a → a ⊔ q = ⊤ → a ∣ Q.cond a := by
     intro a ha haq
     have hac : a ⊔ c = ⊤ := by
-      have hqc : q ≤ c := Ideal.le_of_dvd hc_dvd_q
+      have hqc  := Ideal.le_of_dvd hc_dvd_q
       exact top_le_iff.mp (le_trans (le_of_eq haq.symm) (sup_le le_sup_left (hqc.trans le_sup_right)))
     exact dvd_of_dvd_mul_of_sup_eq_top haq (hpart1 a ha hac).2
 

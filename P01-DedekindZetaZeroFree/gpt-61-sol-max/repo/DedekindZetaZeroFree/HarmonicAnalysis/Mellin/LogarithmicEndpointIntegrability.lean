@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Mellin.LogarithmicWeights
 public import DedekindZetaZeroFree.HarmonicAnalysis.Mellin.OriginLaurentAndLogarithmicResidues
 
 @[expose] public section
+
 
 /-
 Repository: openai/math.
@@ -22,7 +25,7 @@ variable {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ}
 private lemma contDiffOn_eulerIter {a : ℝ → ℂ} (ha : ContDiffOn ℝ ∞ a (Set.Ioi 0))
     (j : ℕ) : ContDiffOn ℝ ∞ (EulerIter j a) (Set.Ioi 0) := by
   induction j with
-  | zero => simpa using ha
+  | zero => exact ha
   | succ j ih =>
     have hderiv : ContDiffOn ℝ ∞ (deriv (EulerIter j a)) (Set.Ioi 0) :=
       ih.deriv_of_isOpen isOpen_Ioi (by simp)
@@ -31,7 +34,7 @@ private lemma contDiffOn_eulerIter {a : ℝ → ℂ} (ha : ContDiffOn ℝ ∞ a 
       (Complex.ofRealCLM.contDiff.contDiffOn).mul hderiv
     refine hmul.congr ?_
     intro x hx
-    exact EulerIter_succ_of_pos j a x hx
+    apply EulerIter_succ_of_pos <;> assumption
 
 private lemma eulerIter_add_of_pos {a b : ℝ → ℂ}
     (ha : ContDiffOn ℝ ∞ a (Set.Ioi 0)) (hb : ContDiffOn ℝ ∞ b (Set.Ioi 0)) (j : ℕ) :
@@ -60,7 +63,7 @@ private lemma eulerIter_add_of_pos {a b : ℝ → ℂ}
 private lemma log_pow_le_rpow (k : ℕ) (ε : ℝ) (hε : 0 < ε)
     (x : ℝ) (hx0 : 0 < x) (hx1 : x ≤ 1) :
     |Real.log x| ^ k ≤ ((k.factorial : ℝ) / ε ^ k) * x ^ (-ε) := by
-  have hlog : Real.log x ≤ 0 := Real.log_nonpos hx0.le hx1
+  have hlog  := Real.log_nonpos hx0.le hx1
   have ht : 0 ≤ -Real.log x := by linarith
   have habs : |Real.log x| = -Real.log x := abs_of_nonpos hlog
   have hεk : (0 : ℝ) < ε ^ k := pow_pos hε k
@@ -81,10 +84,7 @@ private lemma polynomial_eval_log_bound (Q : Polynomial ℂ) (ε : ℝ) (hε : 0
   refine ⟨∑ k ∈ Q.support, ‖Q.coeff k‖ * ((k.factorial : ℝ) / ε ^ k), by positivity, ?_⟩
   intro x hx0 hx1
   have hz : ‖(Real.log x : ℂ)‖ = |Real.log x| := by
-    have h2 : ‖(Real.log x : ℂ)‖ ^ 2 = |Real.log x| ^ 2 := by
-      rw [← Complex.normSq_eq_norm_sq, Complex.normSq_ofReal, sq_abs]
-      ring
-    nlinarith [norm_nonneg (Real.log x : ℂ), abs_nonneg (Real.log x)]
+    simp_all
   rw [Polynomial.eval_eq_sum, Polynomial.sum_def]
   calc ‖∑ e ∈ Q.support, Q.coeff e * (Real.log x : ℂ) ^ e‖
       ≤ ∑ e ∈ Q.support, ‖Q.coeff e * (Real.log x : ℂ) ^ e‖ := norm_sum_le _ _
@@ -92,7 +92,7 @@ private lemma polynomial_eval_log_bound (Q : Polynomial ℂ) (ε : ℝ) (hε : 0
         refine Finset.sum_le_sum fun e _ => ?_
         rw [norm_mul, norm_pow, hz]
         gcongr
-        exact log_pow_le_rpow e ε hε x hx0 hx1
+        apply log_pow_le_rpow <;> assumption
     _ = (∑ e ∈ Q.support, ‖Q.coeff e‖ * ((e.factorial : ℝ) / ε ^ e)) * x ^ (-ε) := by
         rw [Finset.sum_mul]
         exact Finset.sum_congr rfl fun e _ => by ring
@@ -101,8 +101,8 @@ private lemma contDiffOn_eval_log (P : Polynomial ℂ) :
     ContDiffOn ℝ ∞ (fun y : ℝ => P.eval (Real.log y : ℂ)) (Set.Ioi 0) := by
   have h1 : ContDiff ℝ ∞ (fun z : ℂ => P.eval z) := by
     have h : ContDiff ℂ ∞ (fun z : ℂ => P.aeval z) := Polynomial.contDiff_aeval P ∞
-    have h' : ContDiff ℝ ∞ (fun z : ℂ => P.aeval z) := h.restrict_scalars ℝ
-    simpa only [Polynomial.coe_aeval_eq_eval] using h'
+    have h'  := h.restrict_scalars ℝ
+    exact h'
   have h2 : ContDiffOn ℝ ∞ (fun y : ℝ => (Real.log y : ℂ)) (Set.Ioi 0) := by
     have hlog : ContDiffOn ℝ ∞ Real.log (Set.Ioi 0) :=
       Real.contDiffOn_log.mono (fun x hx => by
@@ -111,7 +111,10 @@ private lemma contDiffOn_eval_log (P : Polynomial ℂ) :
     exact Complex.ofRealCLM.contDiff.comp_contDiffOn hlog
   exact h1.comp_contDiffOn h2
 
-private lemma eulerIter_sub_originPolynomial_eq (h : LogMellinPhysical f δ P) (j : ℕ) :
+section
+variable (h : LogMellinPhysical f δ P) (j : ℕ)
+include h j
+private lemma eulerIter_sub_originPolynomial_eq   :
     ∀ x : ℝ, 0 < x →
       EulerIter j f x =
         EulerIter j (fun y => f y - P.eval (Real.log y : ℂ)) x +
@@ -119,7 +122,7 @@ private lemma eulerIter_sub_originPolynomial_eq (h : LogMellinPhysical f δ P) (
   intro x hx
   have hf' : ContDiffOn ℝ ∞ (fun y : ℝ => f y - P.eval (Real.log y : ℂ)) (Set.Ioi 0) :=
     h.contDiffOn.sub (contDiffOn_eval_log P)
-  have hp' : ContDiffOn ℝ ∞ (fun y : ℝ => P.eval (Real.log y : ℂ)) (Set.Ioi 0) :=
+  have hp'  :=
     contDiffOn_eval_log P
   have hsplit := eulerIter_add_of_pos hf' hp' j x hx
   have hfun : (fun y : ℝ => (f y - P.eval (Real.log y : ℂ)) + P.eval (Real.log y : ℂ)) = f := by
@@ -127,7 +130,7 @@ private lemma eulerIter_sub_originPolynomial_eq (h : LogMellinPhysical f δ P) (
   rw [hfun] at hsplit
   rw [hsplit, EulerIter_eval_log_polynomial P j x hx]
 
-private lemma eulerIter_eq_remainder_of_degree_lt (h : LogMellinPhysical f δ P) (j : ℕ)
+private lemma eulerIter_eq_remainder_of_degree_lt  
     (hj : P.natDegree < j) :
     ∀ x : ℝ, 0 < x →
       EulerIter j f x = EulerIter j (fun y => f y - P.eval (Real.log y : ℂ)) x := by
@@ -135,7 +138,7 @@ private lemma eulerIter_eq_remainder_of_degree_lt (h : LogMellinPhysical f δ P)
   rw [eulerIter_sub_originPolynomial_eq h j x hx, Polynomial.iterate_derivative_eq_zero hj]
   simp
 
-theorem euler_origin_bound (h : LogMellinPhysical f δ P) (j : ℕ)
+theorem euler_origin_bound  
     (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ x : ℝ, 0 < x → x ≤ 1 →
       ‖EulerIter j f x‖ ≤ C * Real.rpow x (-ε) := by
@@ -158,7 +161,7 @@ theorem euler_origin_bound (h : LogMellinPhysical f δ P) (j : ℕ)
               gcongr
           _ = (C₁ + C₂) * Real.rpow x (-ε) := by ring
 
-theorem euler_mellinConvergent (h : LogMellinPhysical f δ P) (j : ℕ)
+theorem euler_mellinConvergent  
     (s : ℂ) (hs : 0 < s.re) : MellinConvergent (EulerIter j f) s := by
   obtain ⟨N, hN⟩ := exists_nat_gt s.re
   obtain ⟨C₂, hC₂, hbound₂⟩ := h.rapid_decay j N
@@ -171,7 +174,7 @@ theorem euler_mellinConvergent (h : LogMellinPhysical f δ P) (j : ℕ)
     exact hbound₂ x hx
   · exact hN
   · refine IsBigO.of_bound C₁ ?_
-    filter_upwards [Ioc_mem_nhdsGT (show (0 : ℝ) < 1 from one_pos)] with x hx
+    filter_upwards [Ioc_mem_nhdsGT (one_pos)] with x hx
     rw [Real.norm_eq_abs, abs_of_nonneg (Real.rpow_nonneg hx.1.le _)]
     calc ‖EulerIter j f x‖ ≤ C₁ * Real.rpow x (-(s.re / 4)) := hbound₁ x hx.1 hx.2
       _ ≤ C₁ * Real.rpow x (-(s.re / 2)) := by
@@ -179,7 +182,7 @@ theorem euler_mellinConvergent (h : LogMellinPhysical f δ P) (j : ℕ)
           exact mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_ge hx.1 hx.2 hle) hC₁
   · linarith
 
-theorem euler_cpow_tendsto_atTop (h : LogMellinPhysical f δ P) (j : ℕ)
+theorem euler_cpow_tendsto_atTop  
     (s : ℂ) (hs : 0 < s.re) :
     Tendsto (fun x : ℝ => (x : ℂ) ^ s * EulerIter j f x) atTop (𝓝 0) := by
   obtain ⟨N, hN⟩ := exists_nat_gt s.re
@@ -204,7 +207,7 @@ theorem euler_cpow_tendsto_atTop (h : LogMellinPhysical f δ P) (j : ℕ)
           exact this.symm
         rw [mul_left_comm (x ^ s.re) C, hprod]
 
-theorem euler_cpow_tendsto_origin (h : LogMellinPhysical f δ P) (j : ℕ)
+theorem euler_cpow_tendsto_origin  
     (s : ℂ) (hs : 0 < s.re) :
     Tendsto (fun x : ℝ => (x : ℂ) ^ s * EulerIter j f x)
       (nhdsWithin 0 (Set.Ioi 0)) (𝓝 0) := by
@@ -216,7 +219,7 @@ theorem euler_cpow_tendsto_origin (h : LogMellinPhysical f δ P) (j : ℕ)
     simpa using tendsto_const_nhds.mul (hcont.mono_left nhdsWithin_le_nhds)
   rw [tendsto_zero_iff_norm_tendsto_zero]
   refine squeeze_zero' (Eventually.of_forall fun _ => norm_nonneg _) ?_ ht
-  filter_upwards [Ioc_mem_nhdsGT (show (0 : ℝ) < 1 from one_pos)] with x hx
+  filter_upwards [Ioc_mem_nhdsGT (one_pos)] with x hx
   have hfx := hbound x hx.1 hx.2
   rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hx.1]
   have hexp : s.re + -(s.re / 2) = s.re / 2 := by ring
@@ -230,7 +233,7 @@ theorem euler_cpow_tendsto_origin (h : LogMellinPhysical f δ P) (j : ℕ)
           exact this.symm
         rw [mul_left_comm (x ^ s.re) C, hprod]
 
-theorem high_euler_mellinConvergent (h : LogMellinPhysical f δ P) (j : ℕ)
+theorem high_euler_mellinConvergent  
     (hj : P.natDegree < j) (s : ℂ) (hs : -δ < s.re) :
     MellinConvergent (EulerIter j f) s := by
   obtain ⟨b, hb₁, hb₂⟩ : ∃ b : ℝ, -δ ≤ b ∧ b < s.re :=
@@ -246,7 +249,7 @@ theorem high_euler_mellinConvergent (h : LogMellinPhysical f δ P) (j : ℕ)
     exact hbound₂ x hx
   · exact hN
   · refine IsBigO.of_bound (max C₁ 1) ?_
-    filter_upwards [Ioc_mem_nhdsGT (show (0 : ℝ) < 1 from one_pos)] with x hx
+    filter_upwards [Ioc_mem_nhdsGT (one_pos)] with x hx
     rw [Real.norm_eq_abs, abs_of_nonneg (Real.rpow_nonneg hx.1.le _),
       eulerIter_eq_remainder_of_degree_lt h j hj x hx.1]
     calc ‖EulerIter j (fun y => f y - P.eval (Real.log y : ℂ)) x‖
@@ -259,7 +262,7 @@ theorem high_euler_mellinConvergent (h : LogMellinPhysical f δ P) (j : ℕ)
             _ ≤ max C₁ 1 * Real.rpow x (-b) :=
                 mul_le_mul_of_nonneg_right (le_max_left _ _) (Real.rpow_nonneg hx.1.le _)
 
-theorem high_euler_uniform_mellin_norm (h : LogMellinPhysical f δ P) (j : ℕ)
+theorem high_euler_uniform_mellin_norm  
     (hj : P.natDegree < j) (u v : ℝ) (hu : -δ < u) (huv : u ≤ v) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ s : ℂ, u ≤ s.re → s.re ≤ v →
       MellinConvergent (EulerIter j f) s ∧
@@ -268,7 +271,7 @@ theorem high_euler_uniform_mellin_norm (h : LogMellinPhysical f δ P) (j : ℕ)
   obtain ⟨C₂, hC₂, hbound₂⟩ := h.rapid_decay j n
   obtain ⟨C₁, hC₁, hbound₁⟩ := h.origin_remainder j
   have huδ : 0 < u + δ := by linarith
-  have hnv : 0 < (n : ℝ) - v := by linarith
+  
   set h₁ : ℝ → ℝ := fun x => C₁ * x ^ (u - 1 + δ) with hh₁
   set h₂ : ℝ → ℝ := fun x => C₂ * x ^ (v - 1 - (n : ℝ)) with hh₂
   have hint₁ : IntegrableOn h₁ (Set.Ioc (0 : ℝ) 1) volume := by
@@ -304,7 +307,7 @@ theorem high_euler_uniform_mellin_norm (h : LogMellinPhysical f δ P) (j : ℕ)
         Set.indicator_of_notMem (by simp only [Set.mem_Ioi]; linarith), add_zero]
       have hfx : ‖EulerIter j f x‖ ≤ C₁ * x ^ δ := by
         rw [eulerIter_eq_remainder_of_degree_lt h j hj x hx0]
-        exact hbound₁ x hx0 hle
+        apply hbound₁ <;> assumption
       calc x ^ (s.re - 1) * ‖EulerIter j f x‖
           ≤ x ^ (s.re - 1) * (C₁ * x ^ δ) :=
             mul_le_mul_of_nonneg_left hfx (Real.rpow_nonneg hx0.le _)
@@ -350,6 +353,8 @@ theorem high_euler_uniform_mellin_norm (h : LogMellinPhysical f δ P) (j : ℕ)
               Real.one_rpow]
           rw [show v - 1 - ↑n + 1 = -(↑n - v) by ring, neg_div_neg_eq]
           ring
+end
+
 
 end LogMellinPhysical
 end DedekindZetaZeroFree.LargeSieve.Vendor

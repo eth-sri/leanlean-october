@@ -2,7 +2,10 @@ module
 
 public import Mathlib
 
+public import Mathlib
+
 @[expose] public section
+
 
 noncomputable section
 
@@ -18,7 +21,7 @@ structure LocalBall (n : ℕ) where
   radius : ℝ
   radius_pos : 0 < radius
 
-def LocalBall.carrier {n : ℕ} (B : LocalBall n) : Set (Space n) :=
+def LocalBall.carrier {n : ℕ} (B : LocalBall n)  :=
   Metric.ball B.center B.radius
 
 def LocalBall.toOpens {n : ℕ} (B : LocalBall n) : Opens (Space n) :=
@@ -27,10 +30,10 @@ def LocalBall.toOpens {n : ℕ} (B : LocalBall n) : Opens (Space n) :=
 abbrev MultiIndex (n k : ℕ) :=
   {α : Fin n → Fin (k + 1) // (∑ i, (α i).val) ≤ k}
 
-def MultiIndex.degree {n k : ℕ} (α : MultiIndex n k) : ℕ :=
+def MultiIndex.degree {n k : ℕ} (α : MultiIndex n k)  :=
   ∑ i, (α.val i).val
 
-def MultiIndex.directions {n k : ℕ} (α : MultiIndex n k) : List (Fin n) :=
+def MultiIndex.directions {n k : ℕ} (α : MultiIndex n k)  :=
   (List.finRange n).flatMap (fun i => List.replicate (α.val i).val i)
 
 def coordinateDerivativeList {n : ℕ} : List (Fin n) → (Space n → ℂ) →
@@ -40,14 +43,14 @@ def coordinateDerivativeList {n : ℕ} : List (Fin n) → (Space n → ℂ) →
       fderiv ℝ (coordinateDerivativeList is u) x (EuclideanSpace.single i 1)
 
 def coordinateDerivative {n k : ℕ} (α : MultiIndex n k)
-    (u : Space n → ℂ) : Space n → ℂ :=
+    (u : Space n → ℂ)  :=
   coordinateDerivativeList α.directions u
 
 abbrev BallL2 {n : ℕ} (B : LocalBall n) :=
   Lp ℂ 2 (volume.restrict B.carrier)
 
 def IsWeakDerivative {n k : ℕ} (B : LocalBall n) (α : MultiIndex n k)
-    (u v : BallL2 B) : Prop :=
+    (u v : BallL2 B)  :=
   ∀ φ : TestFunction B.toOpens ℂ ⊤,
     (∫ x in B.carrier, u x * coordinateDerivative α (fun y => φ y) x) =
       (-1 : ℂ) ^ α.degree * (∫ x in B.carrier, v x * φ x)
@@ -59,16 +62,15 @@ structure IntegerSobolev {n : ℕ} (B : LocalBall n) (k : ℕ) where
       (derivatives α)
 
 def IntegerSobolev.normSq {n : ℕ} {B : LocalBall n} {k : ℕ}
-    (u : IntegerSobolev B k) : ℝ :=
+    (u : IntegerSobolev B k)  :=
   ∑ α : MultiIndex n k, ‖u.derivatives α‖ ^ 2
 
 def IntegerSobolev.sobolevNorm {n : ℕ} {B : LocalBall n} {k : ℕ}
-    (u : IntegerSobolev B k) : ℝ :=
+    (u : IntegerSobolev B k)  :=
   Real.sqrt u.normSq
 
 theorem IntegerSobolev.sobolevNorm_sq {n : ℕ} {B : LocalBall n} {k : ℕ}
-    (u : IntegerSobolev B k) : u.sobolevNorm ^ 2 = u.normSq := by
-  exact Real.sq_sqrt (Finset.sum_nonneg fun α _ => sq_nonneg _)
+    (u : IntegerSobolev B k) : u.sobolevNorm ^ 2 = u.normSq := Real.sq_sqrt (Finset.sum_nonneg fun α _ => sq_nonneg _)
 
 theorem IntegerSobolev.sobolevNorm_sq_eq_integral {n : ℕ}
     {B : LocalBall n} {k : ℕ} (u : IntegerSobolev B k) :
@@ -82,15 +84,21 @@ theorem IntegerSobolev.sobolevNorm_sq_eq_integral {n : ℕ}
   rw [← real_inner_self_eq_norm_sq, L2.inner_def]
   simp only [real_inner_self_eq_norm_sq]
 
-private theorem list_smooth {n : ℕ} (B : LocalBall n)
+section
+variable {n : ℕ}
+include n
+section
+variable (B : LocalBall n)
     (u : Space n → ℂ) (hu : ContDiffOn ℝ (⊤ : ℕ∞) u B.carrier)
+include B u hu in
+private theorem list_smooth    
     (l : List (Fin n)) : ContDiffOn ℝ (⊤ : ℕ∞) (coordinateDerivativeList l u) B.carrier := by
   induction l with
   | nil => exact hu
   | cons i is ih =>
     exact (ih.fderiv_of_isOpen Metric.isOpen_ball (by simp)).clm_apply contDiffOn_const
 
-private theorem list_global_smooth {n : ℕ} (u : Space n → ℂ)
+private theorem list_global_smooth   (u : Space n → ℂ)
     (hu : ContDiff ℝ (⊤ : ℕ∞) u) (l : List (Fin n)) :
     ContDiff ℝ (⊤ : ℕ∞) (coordinateDerivativeList l u) := by
   induction l with
@@ -98,15 +106,15 @@ private theorem list_global_smooth {n : ℕ} (u : Space n → ℂ)
   | cons i is ih =>
     exact (ih.fderiv_right (by simp)).clm_apply contDiff_const
 
-private theorem list_support {n : ℕ} (u : Space n → ℂ) (l : List (Fin n)) :
+private theorem list_support   (u : Space n → ℂ) (l : List (Fin n)) :
     tsupport (coordinateDerivativeList l u) ⊆ tsupport u := by
   induction l with
   | nil => exact Set.Subset.rfl
   | cons i is ih =>
     exact (tsupport_fderiv_apply_subset ℝ _).trans ih
 
-private theorem list_swap {n : ℕ} (B : LocalBall n) (u : Space n → ℂ)
-    (hu : ContDiffOn ℝ (⊤ : ℕ∞) u B.carrier) (i j : Fin n) (l : List (Fin n)) :
+include B u hu in
+private theorem list_swap     (i j : Fin n) (l : List (Fin n)) :
     Set.EqOn (coordinateDerivativeList (i :: j :: l) u)
       (coordinateDerivativeList (j :: i :: l) u) B.carrier := by
   intro x hx
@@ -119,8 +127,8 @@ private theorem list_swap {n : ℕ} (B : LocalBall n) (u : Space n → ℂ)
     ContinuousLinearMap.zero_apply, zero_add]
   exact (hs.isSymmSndFDerivAt (by simp)).eq _ _
 
-private theorem list_perm {n : ℕ} (B : LocalBall n) (u : Space n → ℂ)
-    (hu : ContDiffOn ℝ (⊤ : ℕ∞) u B.carrier) {l m : List (Fin n)} (h : l.Perm m) :
+include B u hu in
+private theorem list_perm     {l m : List (Fin n)} (h : l.Perm m) :
     Set.EqOn (coordinateDerivativeList l u) (coordinateDerivativeList m u) B.carrier := by
   induction h with
   | nil => intro x hx; rfl
@@ -129,10 +137,12 @@ private theorem list_perm {n : ℕ} (B : LocalBall n) (u : Space n → ℂ)
     have hh : coordinateDerivativeList _ u =ᶠ[𝓝 x] coordinateDerivativeList _ u :=
       Filter.mem_of_superset (Metric.isOpen_ball.mem_nhds hx) ih
     exact congrArg (fun A => A (EuclideanSpace.single i 1)) (hh.fderiv_eq (𝕜 := ℝ))
-  | swap i j l => exact list_swap B u hu j i l
+  | swap i j l => apply list_swap <;> assumption
   | trans h h' ih ih' => exact ih.trans ih'
+end
 
-private theorem compact_product_integrable {n : ℕ} (B : LocalBall n) (u g : Space n → ℂ)
+
+private theorem compact_product_integrable   (B : LocalBall n) (u g : Space n → ℂ)
     (hu : ContinuousOn u B.carrier) (hg : Continuous g) (hc : HasCompactSupport g)
     (hs : tsupport g ⊆ B.carrier) : Integrable (fun x => u x * g x) volume := by
   have hp : Continuous (fun x => u x * g x) :=
@@ -140,10 +150,13 @@ private theorem compact_product_integrable {n : ℕ} (B : LocalBall n) (u g : Sp
       (tsupport_mul_subset_right.trans hs)
   exact hp.integrable_of_hasCompactSupport hc.mul_left
 
-private theorem first_ibp {n : ℕ} (B : LocalBall n) (u g : Space n → ℂ)
+section
+variable (B : LocalBall n) (u g : Space n → ℂ)
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) u B.carrier)
     (hg : ContDiff ℝ (⊤ : ℕ∞) g) (hc : HasCompactSupport g)
-    (hs : tsupport g ⊆ B.carrier) (i : Fin n) :
+    (hs : tsupport g ⊆ B.carrier)
+include B u g hu hg hc hs in
+private theorem first_ibp     (i : Fin n) :
     (∫ x in B.carrier, u x * coordinateDerivativeList [i] g x) =
       -(∫ x in B.carrier, coordinateDerivativeList [i] u x * g x) := by
   have hdc : HasCompactSupport (coordinateDerivativeList [i] g) :=
@@ -172,17 +185,15 @@ private theorem first_ibp {n : ℕ} (B : LocalBall n) (u g : Space n → ℂ)
   rw [hl, hr]
   exact h
 
-private theorem list_append {n : ℕ} (l m : List (Fin n)) (u : Space n → ℂ) :
+private theorem list_append   (l m : List (Fin n)) (u : Space n → ℂ) :
     coordinateDerivativeList (l ++ m) u =
       coordinateDerivativeList l (coordinateDerivativeList m u) := by
   induction l with
   | nil => rfl
   | cons i l ih => simp only [List.cons_append, coordinateDerivativeList, ih]
 
-private theorem list_ibp {n : ℕ} (B : LocalBall n) (u g : Space n → ℂ)
-    (hu : ContDiffOn ℝ (⊤ : ℕ∞) u B.carrier)
-    (hg : ContDiff ℝ (⊤ : ℕ∞) g) (hc : HasCompactSupport g)
-    (hs : tsupport g ⊆ B.carrier) (l : List (Fin n)) :
+include B u g hu hg hc hs in
+private theorem list_ibp     (l : List (Fin n)) :
     (∫ x in B.carrier, u x * coordinateDerivativeList l g x) =
       (-1 : ℂ) ^ l.length * (∫ x in B.carrier, coordinateDerivativeList l u x * g x) := by
   induction l generalizing u with
@@ -206,6 +217,10 @@ private theorem list_ibp {n : ℕ} (B : LocalBall n) (u g : Space n → ℂ)
       exact congrArg (fun z : ℂ => z * g x) (heq hx)
     rw [hint, List.length_cons, pow_succ]
     ring
+end
+
+end
+
 
 private theorem directions_length {n k : ℕ} (α : MultiIndex n k) :
     α.directions.length = α.degree := by
@@ -270,16 +285,16 @@ def compactJet {n m : ℕ} (B : LocalBall n) (K : Set (Space n))
 
 def jetMaxNorm {n m : ℕ} {K : Set (Space n)} (hcompact : IsCompact K)
     (j : CompactJets K m) : ℝ := by
-  letI : CompactSpace K := isCompact_iff_compactSpace.mp hcompact
+  letI  := isCompact_iff_compactSpace.mp hcompact
   exact ‖j‖
 
 def compactJetSeminorm {n : ℕ} (m : ℕ) (B : LocalBall n) (K : Set (Space n))
     (hcompact : IsCompact K) (hK : K ⊆ B.carrier) (u : Space n → ℂ)
-    (hu : ContDiffOn ℝ (⊤ : ℕ∞) u B.carrier) : ℝ :=
+    (hu : ContDiffOn ℝ (⊤ : ℕ∞) u B.carrier)  :=
   jetMaxNorm hcompact (compactJet (m := m) B K hK u hu)
 
 def SmoothPowerSeriesOn {n : ℕ} (B : LocalBall n) (z₀ : ℂ) (ρ : ℝ)
-    (coeff : ℕ → Space n → ℂ) (f : ℂ → Space n → ℂ) : Prop :=
+    (coeff : ℕ → Space n → ℂ) (f : ℂ → Space n → ℂ)  :=
   (∀ q, ContDiffOn ℝ (⊤ : ℕ∞) (coeff q) B.carrier) ∧
   (∀ z ∈ Metric.ball z₀ ρ, ContDiffOn ℝ (⊤ : ℕ∞) (f z) B.carrier) ∧
   ∀ (K : Set (Space n)), IsCompact K → K ⊆ B.carrier →
@@ -290,7 +305,7 @@ def SmoothPowerSeriesOn {n : ℕ} (B : LocalBall n) (z₀ : ℂ) (ρ : ℝ)
               (fun y => (∑ q ∈ Finset.range M, (z - z₀) ^ q * coeff q y) - f z y) x‖ < ε
 
 def SmoothCompactOpenHolomorphicOn {n : ℕ} (B : LocalBall n)
-    (f : ℂ → Space n → ℂ) (U : Set ℂ) : Prop :=
+    (f : ℂ → Space n → ℂ) (U : Set ℂ)  :=
   ∀ z₀ ∈ U, ∃ ρ : ℝ, 0 < ρ ∧ Metric.ball z₀ ρ ⊆ U ∧
     ∃ coeff : ℕ → Space n → ℂ, SmoothPowerSeriesOn B z₀ ρ coeff f
 

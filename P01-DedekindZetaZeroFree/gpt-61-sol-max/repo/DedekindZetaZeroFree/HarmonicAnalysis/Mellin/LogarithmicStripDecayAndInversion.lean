@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Mellin.LogarithmicContinuation
 
 @[expose] public section
+
 
 /-
 Repository: openai/math.
@@ -15,8 +18,11 @@ open scoped Classical
 
 namespace DedekindZetaZeroFree.LargeSieve.Vendor
 
-theorem logMellinContinuation_rapid_vertical_decay {f : ℝ → ℂ} {δ : ℝ}
+section
+variable {f : ℝ → ℂ} {δ : ℝ}
     {P : Polynomial ℂ} (h : LogMellinPhysical f δ P)
+include f δ P h
+theorem logMellinContinuation_rapid_vertical_decay  
     (u v : ℝ) (hu : -δ < u) (huv : u ≤ v) (N : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ σ t : ℝ, u ≤ σ → σ ≤ v → 1 ≤ |t| →
       (1 + |t|) ^ N *
@@ -42,7 +48,7 @@ theorem logMellinContinuation_rapid_vertical_decay {f : ℝ → ℂ} {δ : ℝ}
   have hmellin : ‖mellin (EulerIter n f) s‖ ≤ C0 := by
     rw [mellin]
     refine (norm_integral_le_integral_norm _).trans ?_
-    simpa only [smul_eq_mul] using (hbound s (by rw [hsr]; exact hσu) (by rw [hsr]; exact hσv)).2
+    exact (hbound s (by rw [hsr]; exact hσu) (by rw [hsr]; exact hσv)).2
   have hnormz : ‖(-s) ^ (-(n : ℤ))‖ = ‖s‖ ^ (-(n : ℤ)) := by
     rw [norm_zpow, norm_neg]
   have hprod : ‖(-s) ^ (-(n : ℤ)) * mellin (EulerIter n f) s‖ ≤
@@ -67,26 +73,27 @@ theorem logMellinContinuation_rapid_vertical_decay {f : ℝ → ℂ} {δ : ℝ}
     rw [zpow_neg, zpow_natCast, ← div_eq_mul_inv, div_le_iff₀ hB]
     exact hA
   calc (1 + |t|) ^ N * ‖logMellinContinuation f P ((σ : ℂ) + (t : ℂ) * Complex.I)‖
-      = (1 + |t|) ^ N * ‖logMellinContinuation f P s‖ := by rw [hs]
+      = (1 + |t|) ^ N * ‖logMellinContinuation f P s‖ := rfl
     _ = (1 + |t|) ^ N * ‖(-s) ^ (-(n : ℤ)) * mellin (EulerIter n f) s‖ := by rw [heuler]
     _ ≤ (1 + |t|) ^ N * (‖s‖ ^ (-(n : ℤ)) * C0) :=
           mul_le_mul_of_nonneg_left hprod (by positivity)
     _ = ((1 + |t|) ^ N * ‖s‖ ^ (-(n : ℤ))) * C0 := by rw [mul_assoc]
     _ ≤ (2 : ℝ) ^ N * C0 := mul_le_mul_of_nonneg_right hAB hC0
 
-theorem logMellinContinuation_admissible {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ}
-    (h : LogMellinPhysical f δ P) :
+theorem logMellinContinuation_admissible   :
     LogMellinAdmissible f δ P (logMellinContinuation f P) := by
   refine ⟨h, ?_, ?_, ?_⟩
   · intro s hs
-    exact logMellinContinuation_eq_mellin h s hs
+    apply logMellinContinuation_eq_mellin <;> assumption
   · refine ⟨logMellinHolomorphicPart f P, ?_, ?_⟩
     · intro s hs
-      exact logMellinHolomorphicPart_differentiableAt h s hs
+      apply logMellinHolomorphicPart_differentiableAt <;> assumption
     · intro s _ _
       rfl
   · intro u v hu huv N
-    exact logMellinContinuation_rapid_vertical_decay h u v hu huv N
+    apply logMellinContinuation_rapid_vertical_decay <;> assumption
+end
+
 
 namespace LogMellinAdmissible
 
@@ -102,7 +109,7 @@ theorem verticalIntegrable (h : LogMellinAdmissible f δ P H) (c : ℝ) (hc : 0 
     have hne : ((c : ℂ) + (t : ℂ) * Complex.I) ≠ 0 := by
       intro hz
       have h1 : ((c : ℂ) + (t : ℂ) * Complex.I).re = 0 := by rw [hz]; simp
-      have h2 : c = 0 := by simpa [hre] using h1
+      
       linarith
     have hlin : ContinuousAt (fun t : ℝ => (c : ℂ) + (t : ℂ) * Complex.I) t :=
       continuousAt_const.add (Complex.continuous_ofReal.continuousAt.mul continuousAt_const)

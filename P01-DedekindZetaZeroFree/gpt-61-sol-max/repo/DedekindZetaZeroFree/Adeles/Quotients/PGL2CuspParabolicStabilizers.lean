@@ -225,7 +225,7 @@ variable {F : Type*} [Field F] [NumberField F]
 local notation "R" => IntegralOrder F
 def matrixAut (M : Submodule R (Plane F)) : Subgroup (Matrix.GeneralLinearGroup (Fin 2) F) where
   carrier := {A | ∀ v, v ∈ M ↔ (A : Matrix (Fin 2) (Fin 2) F) *ᵥ v ∈ M}
-  one_mem' := by simp
+  one_mem' := by intro v; rw [Units.val_one, Matrix.one_mulVec]
   mul_mem' := by
     intro A B hA hB v
     rw [Units.val_mul, ← Matrix.mulVec_mulVec]
@@ -302,7 +302,10 @@ variable {F : Type*} [Field F] [NumberField F]
 local notation "R" => IntegralOrder F
 open Translations Multipliers
 def rootEnd : Module.End F (Plane F) := Matrix.mulVecLin !![0, 1; 0, 0]
-def conjEnd (B : Matrix.GeneralLinearGroup (Fin 2) F) : Module.End F (Plane F) :=
+section
+variable (B : Matrix.GeneralLinearGroup (Fin 2) F)
+include B in
+def conjEnd   : Module.End F (Plane F) :=
   (Matrix.GeneralLinearGroup.toLin B : Module.End F (Plane F)).comp
     (rootEnd.comp (Matrix.GeneralLinearGroup.toLin B⁻¹ : Module.End F (Plane F)))
 theorem rootEnd_formula (v : Plane F) : rootEnd v = ![v 1, 0] := by
@@ -310,18 +313,23 @@ theorem rootEnd_formula (v : Plane F) : rootEnd v = ![v 1, 0] := by
   fin_cases i <;> simp [rootEnd, Matrix.mulVecLin_apply, Matrix.mulVec, dotProduct, Fin.sum_univ_two]
 theorem rootEnd_square (v : Plane F) : rootEnd (rootEnd v) = 0 := by
   simp [rootEnd_formula]
-theorem inv_mulVec (B : Matrix.GeneralLinearGroup (Fin 2) F) (v : Plane F) :
+include B in
+theorem inv_mulVec   (v : Plane F) :
     (↑B⁻¹ : Matrix (Fin 2) (Fin 2) F) *ᵥ ((↑B : Matrix (Fin 2) (Fin 2) F) *ᵥ v) = v := by
   rw [Matrix.mulVec_mulVec, ← Units.val_mul, inv_mul_cancel, Units.val_one, Matrix.one_mulVec]
-theorem mul_invVec (B : Matrix.GeneralLinearGroup (Fin 2) F) (v : Plane F) :
+include B in
+theorem mul_invVec   (v : Plane F) :
     (↑B : Matrix (Fin 2) (Fin 2) F) *ᵥ ((↑B⁻¹ : Matrix (Fin 2) (Fin 2) F) *ᵥ v) = v := by
   rw [Matrix.mulVec_mulVec, ← Units.val_mul, mul_inv_cancel, Units.val_one, Matrix.one_mulVec]
-theorem conjEnd_formula (B : Matrix.GeneralLinearGroup (Fin 2) F) (v : Plane F) :
+include B in
+theorem conjEnd_formula   (v : Plane F) :
     conjEnd B v = (↑B : Matrix (Fin 2) (Fin 2) F) *ᵥ rootEnd ((↑B⁻¹ : Matrix (Fin 2) (Fin 2) F) *ᵥ v) := rfl
-theorem conjEnd_square (B : Matrix.GeneralLinearGroup (Fin 2) F) (v : Plane F) :
+include B in
+theorem conjEnd_square   (v : Plane F) :
     conjEnd B (conjEnd B v) = 0 := by
   simp only [conjEnd_formula, inv_mulVec, rootEnd_square, Matrix.mulVec_zero]
-theorem conjEnd_ne (B : Matrix.GeneralLinearGroup (Fin 2) F) : conjEnd B ≠ 0 := by
+include B in
+theorem conjEnd_ne   : conjEnd B ≠ 0 := by
   intro hz
   have he := congrArg (fun f : Module.End F (Plane F) => f ((↑B : Matrix (Fin 2) (Fin 2) F) *ᵥ ![0, 1])) hz
   simp only [conjEnd_formula, inv_mulVec, rootEnd_formula, Matrix.cons_val_one,
@@ -334,11 +342,13 @@ theorem unipotent_vec (x : F) (v : Plane F) :
     (↑(unipotent x) : Matrix (Fin 2) (Fin 2) F) *ᵥ v = v + x • rootEnd v := by
   ext i
   fin_cases i <;> simp [rootEnd_formula, Matrix.mulVec, dotProduct, Fin.sum_univ_two]
-theorem conj_unipotent_vec (B : Matrix.GeneralLinearGroup (Fin 2) F) (x : F) (v : Plane F) :
+include B in
+theorem conj_unipotent_vec   (x : F) (v : Plane F) :
     (↑(B * unipotent x * B⁻¹) : Matrix (Fin 2) (Fin 2) F) *ᵥ v = v + x • conjEnd B v := by
   rw [Units.val_mul, Units.val_mul, ← Matrix.mulVec_mulVec, ← Matrix.mulVec_mulVec,
     unipotent_vec, Matrix.mulVec_add, Matrix.mulVec_smul, mul_invVec, conjEnd_formula]
-theorem conj_unipotent_eigen (B : Matrix.GeneralLinearGroup (Fin 2) F) (x : F) :
+include B in
+theorem conj_unipotent_eigen   (x : F) :
     ∃ v : Plane F, v ≠ 0 ∧ (↑(B * unipotent x * B⁻¹) : Matrix (Fin 2) (Fin 2) F) *ᵥ v = v := by
   refine ⟨(↑B : Matrix (Fin 2) (Fin 2) F) *ᵥ ![1, 0], ?_, ?_⟩
   · intro hz
@@ -352,6 +362,8 @@ theorem conj_unipotent_eigen (B : Matrix.GeneralLinearGroup (Fin 2) F) (x : F) :
       change (↑B : Matrix (Fin 2) (Fin 2) F) *ᵥ (0 : Plane F) = 0
       exact Matrix.mulVec_zero _
     rw [he, smul_zero, add_zero]
+end
+
 theorem full_translation_ideal (M : Submodule R (Plane F)) (hM : FullLattice F M)
     (q : Projectivization F (Plane F)) (σ : ProjectiveGroup F)
     (hσ : σ • StandardCusp F = q) :
@@ -537,10 +549,13 @@ def IsUpperTriangular (g : PGL2 F) : Prop :=
 def rationalUnits : Subgroup Fˣ :=
   (Units.map (algebraMap (Order F) F).toMonoidHom).range
 
-private def integralMatrixAutomorphisms (M : Submodule (Order F) (Vec F)) :
+section
+variable (M : Submodule (Order F) (Vec F))
+include M in
+private def integralMatrixAutomorphisms   :
     Subgroup (Matrix.GeneralLinearGroup (Fin 2) F) where
   carrier := {A | ∀ v : Vec F, v ∈ M ↔ (A : Matrix (Fin 2) (Fin 2) F) *ᵥ v ∈ M}
-  one_mem' := by simp
+  one_mem' := by intro v; rw [Units.val_one, Matrix.one_mulVec]
   mul_mem' := by
     intro A B hA hB v
     rw [Units.val_mul, ← Matrix.mulVec_mulVec]
@@ -552,7 +567,8 @@ private def integralMatrixAutomorphisms (M : Submodule (Order F) (Vec F)) :
       Matrix.one_mulVec] at h
     exact h.symm
 
-theorem mem_projectiveAutomorphisms_iff (M : Submodule (Order F) (Vec F)) (g : PGL2 F) :
+include M in
+theorem mem_projectiveAutomorphisms_iff   (g : PGL2 F) :
     g ∈ projectiveAutomorphisms F M ↔
       ∃ A : Matrix.GeneralLinearGroup (Fin 2) F,
         Matrix.ProjGenLinGroup.mk A = g ∧
@@ -582,8 +598,9 @@ private theorem scalar_mulVec (a : Fˣ) (v : Vec F) :
   ext i
   simp [Matrix.mulVec, dotProduct, Matrix.scalar, Matrix.diagonal, Pi.smul_apply]
 
+include M in
 theorem preservesUpToHomothety_iff_mem_projectiveAutomorphisms
-    (M : Submodule (Order F) (Vec F)) (g : PGL2 F) :
+      (g : PGL2 F) :
     PreservesUpToHomothety F M g ↔ g ∈ projectiveAutomorphisms F M := by
   rw [mem_projectiveAutomorphisms_iff]
   constructor
@@ -622,11 +639,13 @@ theorem preservesUpToHomothety_iff_mem_projectiveAutomorphisms
     · intro v hv
       refine ⟨(↑A⁻¹ : Matrix (Fin 2) (Fin 2) F) *ᵥ v, ?_, ?_⟩
       · apply (hp _).mpr
-        simpa [Matrix.mulVec_mulVec, ← Units.val_mul] using hv
-      · simp [Matrix.mulVec_mulVec, ← Units.val_mul]
+        rw [Matrix.mulVec_mulVec, ← Units.val_mul, mul_inv_cancel, Units.val_one, Matrix.one_mulVec]
+        exact hv
+      · simp only [Matrix.mulVec_mulVec, ← Units.val_mul, mul_inv_cancel, Units.val_one, Matrix.one_mulVec]
 
+include M in
 theorem subgroup_le_projectiveAutomorphisms
-    (M : Submodule (Order F) (Vec F)) (Γ : Subgroup (PGL2 F))
+      (Γ : Subgroup (PGL2 F))
     (hΓ : ∀ g ∈ Γ, PreservesUpToHomothety F M g) :
     Γ ≤ projectiveAutomorphisms F M := by
   intro g hg
@@ -645,8 +664,9 @@ private theorem gl_inv_mulVec (A : Matrix.GeneralLinearGroup (Fin 2) F) (v : Vec
     (↑A⁻¹ : Matrix (Fin 2) (Fin 2) F) *ᵥ ((↑A : Matrix (Fin 2) (Fin 2) F) *ᵥ v) = v := by
   rw [← gl_mulVec_mul, inv_mul_cancel, Units.val_one, Matrix.one_mulVec]
 
+include M in
 theorem projectiveAutomorphisms_conjugate
-    (M : Submodule (Order F) (Vec F)) (A : Matrix.GeneralLinearGroup (Fin 2) F) :
+      (A : Matrix.GeneralLinearGroup (Fin 2) F) :
     (projectiveAutomorphisms F M).map
         (MulAut.conj (Matrix.ProjGenLinGroup.mk A)).toMonoidHom =
       projectiveAutomorphisms F (M.map (rationalMatrixLinearEquiv F A).toLinearMap) := by
@@ -699,7 +719,8 @@ theorem projectiveAutomorphisms_conjugate
       simp only [map_mul, map_inv]
       simp [mul_assoc, hB]
 
-theorem isRankTwoLattice_map (M : Submodule (Order F) (Vec F))
+include M in
+theorem isRankTwoLattice_map  
     (hM : IsRankTwoLattice F M) (A : Matrix.GeneralLinearGroup (Fin 2) F) :
     IsRankTwoLattice F (M.map (rationalMatrixLinearEquiv F A).toLinearMap) := by
   constructor
@@ -714,6 +735,8 @@ theorem isRankTwoLattice_map (M : Submodule (Order F) (Vec F))
     rw [hmap, hM.2]
     rw [Submodule.map_top]
     exact LinearMap.range_eq_top.mpr (Matrix.GeneralLinearGroup.toLin A).toLinearEquiv.surjective
+end
+
 
  theorem fixes_infinity_upper (g : PGL2 F) (hg : g • infinity F = infinity F) :
     IsUpperTriangular F g := by

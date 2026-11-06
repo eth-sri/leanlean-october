@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.RightFrame.PullbackWords
 public import Mathlib.MeasureTheory.Integral.CircleIntegral
 public import Mathlib.Analysis.Calculus.ParametricIntegral
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -15,7 +18,7 @@ open PullbackWords
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
 variable {B : Type*}
 
-def cauchyCoefficient (h : ℂ → E → ℂ) (s₀ : ℂ) (r : ℝ) (k : ℕ) : E → ℂ :=
+def cauchyCoefficient (h : ℂ → E → ℂ) (s₀ : ℂ) (r : ℝ) (k : ℕ)  :=
   fun x => (2 * (Real.pi : ℂ) * Complex.I)⁻¹ *
     circleIntegral (fun z => (z - s₀) ^ (-((k : ℤ) + 1)) * h z x) s₀ r
 
@@ -42,7 +45,7 @@ private theorem cm_cont {X : Type*} [TopologicalSpace X] (n : ℕ)
       intro v
       apply ih
       intro m
-      exact h (Fin.cons v m)
+      apply h
     simpa only [Function.comp_def, LinearIsometryEquiv.symm_apply_apply] using
       L.symm.continuous.comp_continuousOn hh
 
@@ -137,7 +140,7 @@ private theorem dominated_jets
           |>.hasFDerivAt (hS.mem_nhds (hsS hv))))
     have heq : (∫ x, fderivWithin ℝ (iteratedFDerivWithin ℝ n (fun v => F v x) S) S u ∂μ) =
         L (A (n + 1) u) := by
-      letI : TopologicalSpace (E [×(n + 1)]→L[ℝ] ℂ) :=
+      letI  :=
         (inferInstance : NormedAddCommGroup (E [×(n + 1)]→L[ℝ] ℂ)).toPseudoMetricSpace.toUniformSpace.toTopologicalSpace
       letI : TopologicalSpace (E →L[ℝ] E [×n]→L[ℝ] ℂ) :=
         (inferInstance : NormedAddCommGroup (E →L[ℝ] E [×n]→L[ℝ] ℂ)).toPseudoMetricSpace.toUniformSpace.toTopologicalSpace
@@ -185,7 +188,7 @@ private theorem integral_core {B : Type*} [Fintype B]
       fderiv ℝ (fun y => ∫ t, a t * h (q t) y ∂volume.restrict (Set.Ioc 0 (2*Real.pi))) x v =
         ∫ t, a t * fderiv ℝ (h (q t)) x v ∂volume.restrict (Set.Ioc 0 (2*Real.pi)) := by
   let μ := volume.restrict (Set.Ioc 0 (2*Real.pi))
-  let F : E → ℝ → ℂ := fun x t => a t * h (q t) x
+  let F  := fun x t => a t * h (q t) x
   let J (n : ℕ) (p : ℝ × E) := iteratedFDerivWithin ℝ n (fun x => F x p.1) U p.2
   have hsm (t : ℝ) : ContDiffOn ℝ (⊤ : ℕ∞) (fun x => F x t) U :=
     contDiffOn_const.mul (hsp _ (hqD t))
@@ -277,8 +280,7 @@ private theorem coeff_core {B : Type*} [Fintype B]
     change Continuous (fun t => deriv (circleMap s₀ r) t)
     simp only [deriv_circleMap]
     exact (continuous_circleMap 0 r).mul continuous_const
-  have hn (t : ℝ) : circleMap s₀ r t - s₀ ≠ 0 := by
-    exact sub_ne_zero.mpr (circleMap_ne_mem_ball (Metric.mem_ball_self hr) t)
+  have hn (t : ℝ) : circleMap s₀ r t - s₀ ≠ 0 := sub_ne_zero.mpr (circleMap_ne_mem_ball (Metric.mem_ball_self hr) t)
   have ha : Continuous (fun t : ℝ =>
       (2*(Real.pi:ℂ)*Complex.I)⁻¹ * deriv (circleMap s₀ r) t *
         (circleMap s₀ r t - s₀)^(-((k:ℤ)+1))) :=
@@ -327,7 +329,8 @@ private theorem commute_core {B : Type*} [Fintype B]
 
 end
 
-theorem coefficient_smooth [FiniteDimensional ℝ E] [Fintype B]
+section
+variable [FiniteDimensional ℝ E] [Fintype B]
     (U : Set E) (hU : IsOpen U) (fields : B → E → E)
     (hfields : ∀ b, ContDiffOn ℝ (⊤ : ℕ∞) (fields b) U)
     (hframe : ∀ x ∈ U, ∃ e : Module.Basis B ℝ E, ∀ b, e b = fields b x)
@@ -335,6 +338,8 @@ theorem coefficient_smooth [FiniteDimensional ℝ E] [Fintype B]
     (s₀ : ℂ) (r : ℝ) (hr : 0 < r)
     (hdisk : Metric.closedBall s₀ r ⊆ Ω)
     (hspatial : ∀ z ∈ Ω, ContDiffOn ℝ (⊤ : ℕ∞) (h z) U)
+include U hU fields hfields hframe Ω hΩ h s₀ r hr hdisk hspatial
+theorem coefficient_smooth  
     (hjoint : ∀ (w : List B) (K : Set E), IsCompact K → K ⊆ U →
       ContinuousOn (fun p : ℂ × E => directionalWord fields w (h p.1) p.2)
         (Metric.closedBall s₀ r ×ˢ K))
@@ -344,14 +349,7 @@ theorem coefficient_smooth [FiniteDimensional ℝ E] [Fintype B]
   exact (coeff_core U hU fields hfields hframe s₀ r hr h
     (fun z hz => hspatial z (hdisk hz)) hjoint k).1
 
-theorem word_commute [FiniteDimensional ℝ E] [Fintype B]
-    (U : Set E) (hU : IsOpen U) (fields : B → E → E)
-    (hfields : ∀ b, ContDiffOn ℝ (⊤ : ℕ∞) (fields b) U)
-    (hframe : ∀ x ∈ U, ∃ e : Module.Basis B ℝ E, ∀ b, e b = fields b x)
-    (Ω : Set ℂ) (hΩ : IsOpen Ω) (h : ℂ → E → ℂ)
-    (s₀ : ℂ) (r : ℝ) (hr : 0 < r)
-    (hdisk : Metric.closedBall s₀ r ⊆ Ω)
-    (hspatial : ∀ z ∈ Ω, ContDiffOn ℝ (⊤ : ℕ∞) (h z) U)
+theorem word_commute  
     (hjoint : ∀ (v : List B) (K : Set E), IsCompact K → K ⊆ U →
       ContinuousOn (fun p : ℂ × E => directionalWord fields v (h p.1) p.2)
         (Metric.closedBall s₀ r ×ˢ K))
@@ -361,9 +359,10 @@ theorem word_commute [FiniteDimensional ℝ E] [Fintype B]
       (2 * (Real.pi : ℂ) * Complex.I)⁻¹ *
         circleIntegral
           (fun z => (z - s₀) ^ (-((k : ℤ) + 1)) * directionalWord fields w (h z) x)
-          s₀ r := by
-  exact commute_core U hU fields hfields hframe s₀ r hr h
+          s₀ r := commute_core U hU fields hfields hframe s₀ r hr h
     (fun z hz => hspatial z (hdisk hz)) hjoint k w
+end
+
 
 end DedekindZetaZeroFree.RightFrame.CauchyCoefficient
 

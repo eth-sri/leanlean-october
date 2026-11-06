@@ -198,6 +198,12 @@ noncomputable def chosenFinitePlaceCompletionIntegralUniformizer
 index one, a global integral uniformizer remains a uniformizer after passing
 to the chosen localized completion. In particular it is not in the square of
 the target maximal ideal. -/
+
+local notation:max "current_ChosenFinitePlaceLocalizedCompletion" => ChosenFinitePlaceLocalizedCompletion (K := K) (L := L)
+
+
+local notation:max "current_finitePlaceExtensionCentre" => finitePlaceExtensionCentre (K := K) (L := L)
+
 theorem chosenFinitePlace_integral_uniformizer_not_mem_maximalIdeal_sq
     (v : HeightOneSpectrum (𝓞 K))
     (π : 𝓞 K)
@@ -213,30 +219,24 @@ theorem chosenFinitePlace_integral_uniformizer_not_mem_maximalIdeal_sq
           (π : K))
     (hglobal :
       v.asIdeal.ramificationIdx'
-          (finitePlaceExtensionCentre
-            (K := K) (L := L) v
+          (current_finitePlaceExtensionCentre v
             (chosenFinitePlaceExtension (L := L) v)).asIdeal =
         1) :
     algebraMap
         𝒪[ChosenFinitePlaceBaseCompletion (K := K) v]
-        𝒪[ChosenFinitePlaceLocalizedCompletion
-          (K := K) (L := L) v] πBase ∉
-      (𝓂[ChosenFinitePlaceLocalizedCompletion
-        (K := K) (L := L) v] :
+        𝒪[current_ChosenFinitePlaceLocalizedCompletion v] πBase ∉
+      (𝓂[current_ChosenFinitePlaceLocalizedCompletion v] :
           Ideal
-            𝒪[ChosenFinitePlaceLocalizedCompletion
-              (K := K) (L := L) v]) ^ 2 := by
+            𝒪[current_ChosenFinitePlaceLocalizedCompletion v]) ^ 2 := by
   let vK := HeightOneSpectrum.adicAbv K v
   let w := chosenFinitePlaceExtension (L := L) v
   let W :=
-    finitePlaceExtensionCentre
-      (K := K) (L := L) v w
+    current_finitePlaceExtensionCentre v w
   let : W.asIdeal.LiesOver v.asIdeal :=
     finitePlaceExtensionCentre_liesOver
       (K := K) (L := L) v w
   let E :=
-    ChosenFinitePlaceLocalizedCompletion
-      (K := K) (L := L) v
+    current_ChosenFinitePlaceLocalizedCompletion v
   let eTarget :
       𝒪[E] ≃+* W.adicCompletionIntegers L :=
     chosenFinitePlaceLocalizedIntegerRingEquiv
@@ -328,8 +328,7 @@ theorem chosenFinitePlace_maximalIdeal_map_not_le_sq_of_centre_ramificationIdx_e
     (v : HeightOneSpectrum (𝓞 K))
     (hglobal :
       v.asIdeal.ramificationIdx'
-          (finitePlaceExtensionCentre
-            (K := K) (L := L) v
+          (current_finitePlaceExtensionCentre v
             (chosenFinitePlaceExtension (L := L) v)).asIdeal =
         1) :
     ¬ (𝓂[ChosenFinitePlaceBaseCompletion (K := K) v] :
@@ -337,13 +336,10 @@ theorem chosenFinitePlace_maximalIdeal_map_not_le_sq_of_centre_ramificationIdx_e
             𝒪[ChosenFinitePlaceBaseCompletion (K := K) v]).map
         (algebraMap
           𝒪[ChosenFinitePlaceBaseCompletion (K := K) v]
-          𝒪[ChosenFinitePlaceLocalizedCompletion
-            (K := K) (L := L) v]) ≤
-      (𝓂[ChosenFinitePlaceLocalizedCompletion
-        (K := K) (L := L) v] :
+          𝒪[current_ChosenFinitePlaceLocalizedCompletion v]) ≤
+      (𝓂[current_ChosenFinitePlaceLocalizedCompletion v] :
           Ideal
-            𝒪[ChosenFinitePlaceLocalizedCompletion
-              (K := K) (L := L) v]) ^ 2 := by
+            𝒪[current_ChosenFinitePlaceLocalizedCompletion v]) ^ 2 := by
   let πData :=
     chosenFinitePlaceCompletionIntegralUniformizer v
   intro hdeep
@@ -358,8 +354,7 @@ theorem chosenFinitePlace_maximalIdeal_map_not_le_sq_of_centre_ramificationIdx_e
       (Ideal.mem_map_of_mem
         (algebraMap
           𝒪[ChosenFinitePlaceBaseCompletion (K := K) v]
-          𝒪[ChosenFinitePlaceLocalizedCompletion
-            (K := K) (L := L) v])
+          𝒪[current_ChosenFinitePlaceLocalizedCompletion v])
         πData.completionInteger_mem_maximalIdeal)
 
 /-- Ramification index one at the global centre gives ramification index one
@@ -368,23 +363,19 @@ theorem chosenFinitePlace_maximalIdeal_ramificationIdx'_eq_one_of_centre_ramific
     (v : HeightOneSpectrum (𝓞 K))
     (hglobal :
       v.asIdeal.ramificationIdx'
-          (finitePlaceExtensionCentre
-            (K := K) (L := L) v
+          (current_finitePlaceExtensionCentre v
             (chosenFinitePlaceExtension (L := L) v)).asIdeal =
         1) :
     (𝓂[ChosenFinitePlaceBaseCompletion (K := K) v] :
         Ideal
           𝒪[ChosenFinitePlaceBaseCompletion (K := K) v]).ramificationIdx'
-      (𝓂[ChosenFinitePlaceLocalizedCompletion
-        (K := K) (L := L) v] :
+      (𝓂[current_ChosenFinitePlaceLocalizedCompletion v] :
           Ideal
-            𝒪[ChosenFinitePlaceLocalizedCompletion
-              (K := K) (L := L) v]) =
+            𝒪[current_ChosenFinitePlaceLocalizedCompletion v]) =
       1 := by
   let vK := HeightOneSpectrum.adicAbv K v
   let E :=
-    ChosenFinitePlaceLocalizedCompletion
-      (K := K) (L := L) v
+    current_ChosenFinitePlaceLocalizedCompletion v
   change
     (𝓂[vK.Completion] :
         Ideal 𝒪[vK.Completion]).ramificationIdx'
@@ -412,18 +403,15 @@ theorem finitePlaceExtensionCentre_ramificationIdx_eq_one_of_isUnramifiedAt
     (v : HeightOneSpectrum (𝓞 K))
     (hunram :
       Algebra.IsUnramifiedAt (𝓞 K)
-        (finitePlaceExtensionCentre
-          (K := K) (L := L) v
+        (current_finitePlaceExtensionCentre v
           (chosenFinitePlaceExtension (L := L) v)).asIdeal) :
     v.asIdeal.ramificationIdx'
-        (finitePlaceExtensionCentre
-          (K := K) (L := L) v
+        (current_finitePlaceExtensionCentre v
           (chosenFinitePlaceExtension (L := L) v)).asIdeal =
       1 := by
   let w := chosenFinitePlaceExtension (L := L) v
   let W :=
-    finitePlaceExtensionCentre
-      (K := K) (L := L) v w
+    current_finitePlaceExtensionCentre v w
   let : W.asIdeal.LiesOver v.asIdeal :=
     finitePlaceExtensionCentre_liesOver
       (K := K) (L := L) v w
@@ -439,21 +427,17 @@ theorem chosenFinitePlace_maximalIdeal_ramificationIdx_eq_one_of_centre_ramifica
     (v : HeightOneSpectrum (𝓞 K))
     (hglobal :
       v.asIdeal.ramificationIdx'
-          (finitePlaceExtensionCentre
-            (K := K) (L := L) v
+          (current_finitePlaceExtensionCentre v
             (chosenFinitePlaceExtension (L := L) v)).asIdeal =
         1) :
-    (𝓂[ChosenFinitePlaceLocalizedCompletion
-        (K := K) (L := L) v] :
+    (𝓂[current_ChosenFinitePlaceLocalizedCompletion v] :
           Ideal
-            𝒪[ChosenFinitePlaceLocalizedCompletion
-              (K := K) (L := L) v]).ramificationIdx
+            𝒪[current_ChosenFinitePlaceLocalizedCompletion v]).ramificationIdx
         𝒪[ChosenFinitePlaceBaseCompletion (K := K) v] =
       1 := by
   let vK := HeightOneSpectrum.adicAbv K v
   let E :=
-    ChosenFinitePlaceLocalizedCompletion
-      (K := K) (L := L) v
+    current_ChosenFinitePlaceLocalizedCompletion v
   change
     (𝓂[E] : Ideal 𝒪[E]).ramificationIdx
       𝒪[vK.Completion] = 1
@@ -491,8 +475,7 @@ theorem chosenFinitePlaceIsUnramified_of_centre_ramificationIdx_eq_one
     (v : HeightOneSpectrum (𝓞 K))
     (hglobal :
       v.asIdeal.ramificationIdx'
-          (finitePlaceExtensionCentre
-            (K := K) (L := L) v
+          (current_finitePlaceExtensionCentre v
             (chosenFinitePlaceExtension (L := L) v)).asIdeal =
         1) :
     ChosenFinitePlaceIsUnramified
@@ -500,8 +483,7 @@ theorem chosenFinitePlaceIsUnramified_of_centre_ramificationIdx_eq_one
   change
     IsNonarchimedeanLocalField.IsUnramifiedValuedExtension
       (ChosenFinitePlaceBaseCompletion (K := K) v)
-      (ChosenFinitePlaceLocalizedCompletion
-        (K := K) (L := L) v)
+      (current_ChosenFinitePlaceLocalizedCompletion v)
   refine
     { maximalIdeal_ramificationIdx_eq_one := ?_ }
   exact
@@ -515,8 +497,7 @@ theorem chosenFinitePlaceIsUnramified_of_isUnramifiedAt
     (v : HeightOneSpectrum (𝓞 K))
     (hunram :
       Algebra.IsUnramifiedAt (𝓞 K)
-        (finitePlaceExtensionCentre
-          (K := K) (L := L) v
+        (current_finitePlaceExtensionCentre v
           (chosenFinitePlaceExtension (L := L) v)).asIdeal) :
     ChosenFinitePlaceIsUnramified
       (K := K) (L := L) v := by

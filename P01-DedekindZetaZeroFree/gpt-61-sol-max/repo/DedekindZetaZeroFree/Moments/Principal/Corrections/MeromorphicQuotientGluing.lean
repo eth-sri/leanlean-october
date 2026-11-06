@@ -17,7 +17,7 @@ open LocalFiniteSums CorrectionFactors MaskedHeckeMeromorphic FrequencyCharacter
 variable {F : Type} [Field F] [NumberField F]
 variable {A : SArithmeticData F} {σ : F →+* ℂ}
 variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
-variable {C : A.GeneralArithmeticContext σ η hS}
+
 
  def c₁ : ℝ := (499 / 500 : ℝ) - 1 / 100000
 

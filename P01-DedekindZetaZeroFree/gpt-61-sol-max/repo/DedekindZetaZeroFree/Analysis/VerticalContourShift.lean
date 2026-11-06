@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 
 @[expose] public section
+
 
 /-
 Repository: openai/math.
@@ -20,7 +23,7 @@ open scoped Topology
 def comparisonClosedStrip (a b : ℝ) : Set ℂ :=
   {s | a ≤ s.re ∧ s.re ≤ b}
 
-def comparisonVerticalIntegral (σ : ℝ) (f : ℂ → ℂ) : ℂ :=
+def comparisonVerticalIntegral (σ : ℝ) (f : ℂ → ℂ)  :=
   (2 * (Real.pi : ℂ))⁻¹ * ∫ t : ℝ, f ((σ : ℂ) + (t : ℂ) * I)
 
 namespace ComparisonShiftProof
@@ -134,7 +137,7 @@ lemma rectangle_limits (G : ℂ → ℂ) {a b : ℝ} (hab : a≤b)
     · intro z hz
       simpa [uIcc_of_le hab] using hz.1
   have hlim := ((hbot.sub htop).add (hb.const_mul I)).sub (ha.const_mul I)
-  have hz : (0:ℂ)-0+I*Vb-I*Va=0 := tendsto_nhds_unique hlim
+  have hz  := tendsto_nhds_unique hlim
     (by simpa only [hrect] using (tendsto_const_nhds : Tendsto (fun _ : ℝ => (0:ℂ)) atTop (𝓝 0)))
   exact (mul_left_cancel₀ I_ne_zero (show I*Vb=I*Va by simpa using sub_eq_zero.mp hz)).symm
 
@@ -226,16 +229,14 @@ theorem simple_pole_of_boundary_control (A F : ℂ → ℂ) {a b p : ℝ}
   unfold comparisonVerticalIntegral
   rw [he']
   push_cast
-  have hpi : (Real.pi:ℂ)≠0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
+  have hpi  := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
   field_simp
   simp only [mul_comm]
 
 lemma integrable_tail (g : ℝ → ℂ) (C : ℝ) (hg : Continuous g)
     (hbound : ∀ t : ℝ, 1 ≤ |t| → ‖g t‖ ≤ C * (1 + |t|) ^ (-2 : ℝ)) :
     Integrable g := by
-  have hi : Integrable (fun t : ℝ => C * (1 + |t|) ^ (-2 : ℝ)) := by
-    simpa [Real.norm_eq_abs] using
-      (integrable_one_add_norm (E := ℝ) (r := 2) (μ := volume) (by simp)).const_mul C
+  have hi : Integrable (fun t : ℝ => C * (1 + |t|) ^ (-2 : ℝ)) := (integrable_one_add_norm (E := ℝ) (r := 2) (μ := volume) (by simp)).const_mul C
   have hc : IntegrableOn g (Icc (-1) 1) := hg.integrableOn_Icc
   have ht : IntegrableOn g (Icc (-1) 1)ᶜ := by
     apply hi.integrableOn.mono' hg.aestronglyMeasurable.restrict
@@ -270,13 +271,16 @@ lemma horizontal_decay_limit (F : ℂ → ℂ) (a b C ε : ℝ) (hab : a ≤ b)
 
 end ComparisonShiftProof
 
-theorem verticalIntegral_integrable_of_strip_decay
-    (a b C : ℝ) (f : ℂ → ℂ) (U : Set ℂ)
+section
+variable (a b C : ℝ) (f : ℂ → ℂ) (U : Set ℂ)
     (hab : a < b) (hC : 0 ≤ C)
     (hU : IsOpen U) (hstrip : comparisonClosedStrip a b ⊆ U)
     (hhol : DifferentiableOn ℂ f U)
     (hdecay : ∀ s ∈ comparisonClosedStrip a b,
-      ‖f s‖ ≤ C * (1 + |s.im|) ^ (-2 : ℝ)) :
+      ‖f s‖ ≤ C * (1 + |s.im|) ^ (-2 : ℝ))
+include a b C f U hab hC hU hstrip hhol hdecay
+theorem verticalIntegral_integrable_of_strip_decay
+      :
     ∀ σ ∈ Set.Icc a b, Integrable (fun t : ℝ => f ((σ : ℂ) + (t : ℂ) * I)) := by
   intro σ hσ
   have hc : Continuous (fun t : ℝ => f ((σ : ℂ) + (t : ℂ) * I)) :=
@@ -290,12 +294,7 @@ theorem verticalIntegral_integrable_of_strip_decay
     (by simpa [comparisonClosedStrip] using hσ)
 
 theorem verticalIntegral_eq_of_strip_decay
-    (a b C : ℝ) (f : ℂ → ℂ) (U : Set ℂ)
-    (hab : a < b) (hC : 0 ≤ C)
-    (hU : IsOpen U) (hstrip : comparisonClosedStrip a b ⊆ U)
-    (hhol : DifferentiableOn ℂ f U)
-    (hdecay : ∀ s ∈ comparisonClosedStrip a b,
-      ‖f s‖ ≤ C * (1 + |s.im|) ^ (-2 : ℝ)) :
+      :
     (∫ t : ℝ, f ((a : ℂ) + (t : ℂ) * I)) =
       ∫ t : ℝ, f ((b : ℂ) + (t : ℂ) * I) := by
   have hFs : DifferentiableOn ℂ f {s : ℂ | a ≤ s.re ∧ s.re ≤ b} :=
@@ -310,6 +309,8 @@ theorem verticalIntegral_eq_of_strip_decay
     (intervalIntegral_tendsto_integral (hi b ⟨hab.le, le_rfl⟩) tendsto_neg_atTop_atBot tendsto_id)
     (by simpa using ComparisonShiftProof.horizontal_decay_limit f a b C (-1) hab.le (by norm_num) hbound)
     (by simpa using ComparisonShiftProof.horizontal_decay_limit f a b C 1 hab.le (by norm_num) hbound)
+end
+
 
 end
 end DedekindZetaZeroFree

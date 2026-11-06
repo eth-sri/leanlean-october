@@ -35,16 +35,21 @@ structure PositiveBumps {n : ℕ} (C : Fin n → ShrunkChart F ζ hζ U R P H) (
 namespace Construction
 open KPContSectorPhaseComponentCharts
 
- def Q (C : ShrunkChart F ζ hζ U R P H) (x : SymmetricSpace F) : KPFiniteCuspAtlas.rawXU F ζ hζ U :=
+ section
+variable (C : ShrunkChart F ζ hζ U R P H)
+include C in
+def Q   (x : SymmetricSpace F) : KPFiniteCuspAtlas.rawXU F ζ hζ U :=
   Quotient.mk _ (x,(H.atlas U).representative C.component)
-private theorem Q_cont (C : ShrunkChart F ζ hζ U R P H) : Continuous (Q C) :=
+include C in
+private theorem Q_cont   : Continuous (Q C) :=
   continuous_quotient_mk'.comp (continuous_id.prodMk continuous_const)
 private theorem act_smooth (γ : KPCuspArithmetic.PGL2 F) :
     ContDiff ℝ (⊤ : ℕ∞) (fun x : SymmetricSpace F => γ • x) := by
   change ContDiff ℝ (⊤ : ℕ∞) (KPCuspSiegel.action F γ)
   unfold KPCuspSiegel.action KPCuspSiegel.glAction
   exact (KPArch.productAction_contDiff _ _).of_le (by simp)
-private theorem Q_inv (C : ShrunkChart F ζ hζ U R P H) (σ : C.Isotropy) (x : SymmetricSpace F) :
+include C in
+private theorem Q_inv   (σ : C.Isotropy) (x : SymmetricSpace F) :
     Q C ((σ.val : KPCuspArithmetic.PGL2 F) • x) = Q C x := by
   change KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative C.component)
     (KPCuspSiegel.projection F _ (σ.val • x)) =
@@ -55,7 +60,8 @@ private theorem Q_inv (C : ShrunkChart F ζ hζ U R P H) (σ : C.Isotropy) (x : 
   apply MulAction.orbitRel_apply.mpr
   exact MulAction.mem_orbit_iff.mpr ⟨σ.val,rfl⟩
 
-private theorem upstairs (C : ShrunkChart F ζ hζ U R P H)
+include C in
+private theorem upstairs  
     (O : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U)) (hO : IsOpen O)
     (y : C.domain) (hy : C.toBase y ∈ O) :
     ∃ b : SymmetricSpace F → ℝ,
@@ -118,7 +124,8 @@ private theorem upstairs (C : ShrunkChart F ζ hζ U R P H)
     intro τ
     simp only [Subgroup.coe_mul,mul_smul]
 
-private theorem descend (C : ShrunkChart F ζ hζ U R P H) (b : SymmetricSpace F → ℝ)
+include C in
+private theorem descend   (b : SymmetricSpace F → ℝ)
     (hb : Continuous b) (hc : HasCompactSupport b) (hs : tsupport b ⊆ C.domain)
     (hn : ∀ x, 0 ≤ b x)
     (hi : ∀ (σ : C.Isotropy) x, b ((σ.val : KPCuspArithmetic.PGL2 F) • x) = b x) :
@@ -169,7 +176,8 @@ private theorem descend (C : ShrunkChart F ζ hζ U R P H) (b : SymmetricSpace F
   · exact hn _
   · exact le_rfl
 
-private theorem descend_smooth (C : ShrunkChart F ζ hζ U R P H)
+include C in
+private theorem descend_smooth  
     (b : SymmetricSpace F → ℝ) (hb : ContDiff ℝ (⊤ : ℕ∞) b)
     (f : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ)
     (hs : tsupport f ⊆ C.baseDomain)
@@ -203,7 +211,8 @@ private theorem descend_smooth (C : ShrunkChart F ζ hζ U R P H)
     filter_upwards [hq.continuousAt.preimage_mem_nhds ((isClosed_tsupport f).isOpen_compl.mem_nhds hx)] with z hz
     exact image_eq_zero_of_notMem_tsupport hz
 
-private theorem point_bump (C : ShrunkChart F ζ hζ U R P H)
+include C in
+private theorem point_bump  
     (O : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U)) (hO : IsOpen O)
     (x : KPFiniteCuspAtlas.rawXU F ζ hζ U) (hx : x ∈ C.baseDomain ∩ O) :
     ∃ (f : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ) (b : SymmetricSpace F → ℝ),
@@ -227,6 +236,8 @@ private theorem point_bump (C : ShrunkChart F ζ hζ U R P H)
   · rw [hform]; exact hby
   · intro z hz
     exact image_eq_zero_of_notMem_tsupport (fun hh => hz (hbs hh).1)
+end
+
 
 private theorem sum_tsupport {X : Type*} [TopologicalSpace X] {ι : Type*}
     (s : Finset ι) (f : ι → X → ℝ) : tsupport (fun x => ∑ j ∈ s, f j x) ⊆

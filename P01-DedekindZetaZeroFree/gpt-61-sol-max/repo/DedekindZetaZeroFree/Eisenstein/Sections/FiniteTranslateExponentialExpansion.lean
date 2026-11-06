@@ -159,9 +159,12 @@ private theorem raw_finite_translate_kfinite
     exact hJ g j.val.val (hUJ (Subgroup.mem_map.mpr ⟨j.val, j.property, rfl⟩))
   · exact (kfinite_iff_finite_orbit (rightAction F ζ hζ) K f).mp hfin
 
- def localFiniteTranslate
-    (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
-    (a : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q)) :
+ section
+variable (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
+    (a : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q))
+include q a
+def localFiniteTranslate
+      :
     KPGlobalTorusFunctionData.finitePart F ζ hζ := by
   refine ⟨_, Subgroup.mem_map.mpr ⟨KPAdelicCoverRestrictedProduct.localToRestricted
     F ζ hζ (Sum.inr q) a, ?_, rfl⟩⟩
@@ -171,11 +174,12 @@ private theorem raw_finite_translate_kfinite
     RestrictedProduct.coe_mulSingle_apply]
 
 private theorem localFiniteTranslate_val
-    (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
-    (a : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q)) :
+      :
     (localFiniteTranslate F ζ hζ q a).val =
       KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
         (KPAdelicCoverRestrictedProduct.localInjection F ζ hζ (Sum.inr q) a) := rfl
+end
+
 
 open _root_.DedekindZetaZeroFree.KPLiteralChamber renaming diagonalUnit → diagonalUnit
 
@@ -325,18 +329,19 @@ private theorem logInc_right_level
       KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ D (g * a.val) := h₂
   rw [he, h₂']
 
- def correctedValue
-    (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
+ section
+variable (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
     (f : Flat F ζ hζ K) (a : KPGlobalTorusFunctionData.finitePart F ζ hζ)
-    (c : ℝ) (z : ℂ) (g : G F ζ hζ) : ℂ :=
+    (c : ℝ)
+include K hK f a c
+def correctedValue
+      (z : ℂ) (g : G F ζ hζ) : ℂ :=
   Complex.exp (-(z * (c : ℂ))) *
     (if logInc F ζ hζ (KPLiteralChamber.literalIwasawa F ζ hζ K hK) a g = c
       then f.val z (g * a.val) else 0)
 
 private theorem correctedValue_smooth
-    (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (f : Flat F ζ hζ K) (a : KPGlobalTorusFunctionData.finitePart F ζ hζ)
-    (c : ℝ) (z : ℂ) : Smooth F ζ hζ (correctedValue F ζ hζ K hK f a c z) := by
+      (z : ℂ) : Smooth F ζ hζ (correctedValue F ζ hζ K hK f a c z) := by
   let D := KPLiteralChamber.literalIwasawa F ζ hζ K hK
   obtain ⟨J, hJ⟩ := logInc_right_level F ζ hζ D a
   apply smooth_const_mul
@@ -345,9 +350,7 @@ private theorem correctedValue_smooth
   · exact KPGlobalResidualKernelSplit.RawStageL2.OutgoingSplit.ZeroProfileSteps.FiniteNormPartition.logIncrement_finite_global_locallyConstant a
 
  theorem correctedValue_induced
-    (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (f : Flat F ζ hζ K) (a : KPGlobalTorusFunctionData.finitePart F ζ hζ)
-    (c : ℝ) (z : ℂ) : Induced F ζ hζ z (correctedValue F ζ hζ K hK f a c z) := by
+      (z : ℂ) : Induced F ζ hζ z (correctedValue F ζ hζ K hK f a c z) := by
   refine ⟨correctedValue_smooth F ζ hζ K hK f a c z, ?_⟩
   intro r x g
   unfold correctedValue logInc
@@ -360,9 +363,7 @@ private theorem correctedValue_smooth
   · simp [hg]
 
 private theorem correctedValue_multiplier
-    (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (f : Flat F ζ hζ K) (a : KPGlobalTorusFunctionData.finitePart F ζ hζ)
-    (c : ℝ) (z : ℂ) (g : G F ζ hζ) :
+      (z : ℂ) (g : G F ζ hζ) :
     correctedValue F ζ hζ K hK f a c z g =
       Complex.exp (z * (Real.log (((KPGlobalTorusBorelTwistCompatibility.iwasawaNorm
         F ζ hζ (KPLiteralChamber.literalIwasawa F ζ hζ K hK) g : NNReal) : ℝ)) : ℂ)) *
@@ -380,9 +381,7 @@ private theorem correctedValue_multiplier
   · simp [hg]
 
  theorem correctedValue_flat
-    (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (f : Flat F ζ hζ K) (a : KPGlobalTorusFunctionData.finitePart F ζ hζ)
-    (c : ℝ) (z : ℂ) (t : KPGlobalTorusFunctionData.E F ζ hζ) (k : K) :
+      (z : ℂ) (t : KPGlobalTorusFunctionData.E F ζ hζ) (k : K) :
     correctedValue F ζ hζ K hK f a c z (t.val * k.val) =
       KPGlobalExceptionalParameter.realLogPower
         (((KPGlobalTorusFunctionData.delta F ζ hζ t : NNReal) : ℝ)) z *
@@ -403,9 +402,7 @@ private theorem correctedValue_multiplier
   rfl
 
  theorem correctedValue_kfinite
-    (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (f : Flat F ζ hζ K) (a : KPGlobalTorusFunctionData.finitePart F ζ hζ)
-    (c : ℝ) : KFinite F ζ hζ K (correctedValue F ζ hζ K hK f a c 0) := by
+      : KFinite F ζ hζ K (correctedValue F ζ hζ K hK f a c 0) := by
   have hf := raw_finite_translate_kfinite F ζ hζ K hK (f.val 0) (f.property.1 0).1 f.property.2.2 a
   have hzero : correctedValue F ζ hζ K hK f a c 0 =
       (fun g => if logInc F ζ hζ (KPLiteralChamber.literalIwasawa F ζ hζ K hK) a g = c
@@ -424,13 +421,13 @@ private theorem correctedValue_multiplier
       (D := KPLiteralChamber.literalIwasawa F ζ hζ K hK) a
 
  def correctedFlat
-    (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (f : Flat F ζ hζ K) (a : KPGlobalTorusFunctionData.finitePart F ζ hζ)
-    (c : ℝ) : Flat F ζ hζ K :=
+      : Flat F ζ hζ K :=
   ⟨correctedValue F ζ hζ K hK f a c,
     fun z => correctedValue_induced F ζ hζ K hK f a c z,
     fun z t k => correctedValue_flat F ζ hζ K hK f a c z t k,
     correctedValue_kfinite F ζ hζ K hK f a c⟩
+end
+
 
 theorem finite_translate_exponential_expansion
     (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)

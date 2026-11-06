@@ -11,7 +11,7 @@ namespace DedekindZetaZeroFree.AllRowEuler.UnitCovariance
 
 variable {F : Type} [Field F] [NumberField F]
 variable {A : SArithmeticData F} {σ : F →+* ℂ}
-variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
+
 
 def residueCoefficient (σ : F →+* ℂ) (I : A.Exterior) (u : A.R) : ℂ :=
   A.sexticResiduePowerChar σ I 1 (Ideal.Quotient.mk (A.extendIdeal I) u)

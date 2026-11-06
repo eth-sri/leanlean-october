@@ -29,6 +29,9 @@ open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProd
 open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer renaming word_smul → word_smul
 open _root_.DedekindZetaZeroFree.KPContinuation.NativeWordCompactHolomorphy renaming actualRightWord_compact_holomorphy → actualRightWord_compact_holomorphy
 open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber renaming word_zero → word_zero
+
+local notation:max "current_groupScalar" => groupScalar F ζ hζ C R P H U
+
 theorem spherical_word_scalar_hilbert_orthogonal_producer
     (v : KPContActualSphericalFlatStage.Stage F ζ hζ U)
     (w : List (Fin (groupDimension F))) :
@@ -51,10 +54,10 @@ theorem spherical_word_scalar_hilbert_orthogonal_producer
             (sourceLaplacian F ζ hζ C R P H U).graph ∧
           CuspEigentestOrthogonal F ζ hζ C R P H U 0 z ∧
           (∀ g : G, KPMsGreenFlux.casimir F ζ hζ
-            (groupScalar F ζ hζ C R P H U Z) g =
+            (current_groupScalar Z) g =
             KPContinuation.spectralCoordinate (KPCuspLogShape.dimension F : ℤ) 0 *
-              groupScalar F ζ hζ C R P H U Z g) ∧
-          N 0 = actualRightWord F ζ hζ w (groupScalar F ζ hζ C R P H U Z) ∧
+              current_groupScalar Z g) ∧
+          N 0 = actualRightWord F ζ hζ w (current_groupScalar Z) ∧
           (KPGlobalResidualConstruction.IncomingFiberOrthogonality.AllCuspMeanZero
             F ζ hζ C R P H U Z → Z = 0) := by
   by_cases hv : v = 0
@@ -107,13 +110,13 @@ theorem spherical_word_scalar_hilbert_orthogonal_producer
     · intro test t hrep hmean heig
       exact inner_zero_right t
     · intro g
-      have hz : groupScalar F ζ hζ C R P H U (0 : Smooth) = 0 := by
+      have hz : current_groupScalar (0 : Smooth) = 0 := by
         have he := groupScalar_smul F ζ hζ C R P H U (0 : ℂ) (0 : Smooth)
         simpa using he
       rw [hz]
       have he := ResidualSphericalGeometry.casimir_smul F ζ hζ (0 : ℂ) (0 : G → ℂ) g
       simpa using he
-    · have hz : groupScalar F ζ hζ C R P H U (0 : Smooth) = 0 := by
+    · have hz : current_groupScalar (0 : Smooth) = 0 := by
         have he := groupScalar_smul F ζ hζ C R P H U (0 : ℂ) (0 : Smooth)
         simpa using he
       rw [hz]
@@ -121,7 +124,7 @@ theorem spherical_word_scalar_hilbert_orthogonal_producer
       rw [word_zero]
   · obtain ⟨Z, hch, hlocal⟩ := ResidualSphericalGeometry.spherical_scalar_native_orthogonal_centers F ζ hζ C R P H U v hv
     let A : ℂ → G → ℂ := fun s => actualRightWord F ζ hζ w
-      (groupScalar F ζ hζ C R P H U (Z s))
+      (current_groupScalar (Z s))
     have hwordlocal (c : ℂ) (hc : c ∈ KPContinuation.spectralDomain) :
         ∃ r : ℝ, 0 < r ∧ Metric.ball c r ⊆ KPContinuation.spectralDomain ∧
           ∃ N : ℂ → G → ℂ,
@@ -136,15 +139,15 @@ theorem spherical_word_scalar_hilbert_orthogonal_producer
                 (sourceLaplacian F ζ hζ C R P H U).graph ∧
               CuspEigentestOrthogonal F ζ hζ C R P H U c z ∧
               (∀ g : G, KPMsGreenFlux.casimir F ζ hζ
-                (groupScalar F ζ hζ C R P H U Z) g =
+                (current_groupScalar Z) g =
                 KPContinuation.spectralCoordinate (KPCuspLogShape.dimension F : ℤ) c *
-                  groupScalar F ζ hζ C R P H U Z g) ∧
-              N c = actualRightWord F ζ hζ w (groupScalar F ζ hζ C R P H U Z) ∧
+                  current_groupScalar Z g) ∧
+              N c = actualRightWord F ζ hζ w (current_groupScalar Z) ∧
               (KPGlobalResidualConstruction.IncomingFiberOrthogonality.AllCuspMeanZero
                 F ζ hζ C R P H U Z → Z = 0) := by
       obtain ⟨r, hr, hb, N, hN, he, ⟨z, hz, heig, horth⟩, hnative, hcus⟩ := hlocal c hc
       let M : ℂ → G → ℂ := fun s => actualRightWord F ζ hζ w
-        (groupScalar F ζ hζ C R P H U (N s))
+        (current_groupScalar (N s))
       have hM (D : GroupChart F ζ hζ level R P H) :
           KPClearedResolvent.RightSmoothHolomorphicOn D.T D.fields
             (fun s x => M s (D.groupLift x)) (Metric.ball c r) :=
@@ -174,7 +177,7 @@ theorem spherical_word_scalar_hilbert_orthogonal_producer
     obtain ⟨r, hr, hb, N, hNj, hNa, he, hcent⟩ := hwordlocal 0 hzero
     refine ⟨A, N, ?_, hm, r, hr, hb, ?_, hNa, hNj, hcent⟩
     · intro s hs g
-      have hz : groupScalar F ζ hζ C R P H U (Z s) =
+      have hz : current_groupScalar (Z s) =
           fun h => ∑' c : KPChamberBruhatTwoCells.RationalQuotient F,
             (KPContFlatSourceRecipe.flatR F ζ hζ s v.val).val
               (KPLiteralRaw.rationalLift F ζ hζ (Quotient.out c) * h) :=

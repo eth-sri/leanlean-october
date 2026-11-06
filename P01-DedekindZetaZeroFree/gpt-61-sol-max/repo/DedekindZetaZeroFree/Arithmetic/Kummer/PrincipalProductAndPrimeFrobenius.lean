@@ -37,11 +37,14 @@ theorem principal_product (F : Type) [Field F] [NumberField F]
       (frozenPrincipalLocalUnit F α hα v) at heq
   simpa only [map_inv, Units.val_inv_eq_inv_val] using congrArg Units.val (congrArg Inv.inv heq)
 
-theorem prime_arithmeticFrobenius (F : Type) [Field F] [NumberField F]
+section
+variable (F : Type) [Field F] [NumberField F]
     (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ)
     (v : HeightOneSpectrum (𝓞 F))
     (hv : v ∉ (M F (RMKummerConductor.m F h12 x)
       (RMKummerConductor.m_ne_bot F h12 x)).finitePart.support)
+include F h12 x v hv in
+theorem prime_arithmeticFrobenius  
     (w : HeightOneSpectrum (𝓞 (RMKummerConductor.E F h12 x)))
     (hw : w.asIdeal.LiesOver v.asIdeal) :
     RMKummerConductor.Xi F h12 x v.asIdeal =
@@ -57,12 +60,9 @@ theorem prime_arithmeticFrobenius (F : Type) [Field F] [NumberField F]
   rw [frozenRayValue_of_primeTo F _ _ _ _ v.ne_bot hcop]
   exact congrArg Units.val (RMKummerConductor.rho_prime F h12 x v hv w hw)
 
+include F h12 x v hv in
 private theorem lambda_eq_of_order_one
-    (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ)
-    (v : HeightOneSpectrum (𝓞 F))
-    (hv : v ∉ (M F (RMKummerConductor.m F h12 x)
-      (RMKummerConductor.m_ne_bot F h12 x)).finitePart.support)
+     
     (π π' : (v.adicCompletion F)ˣ)
     (hπ : (FiniteIdeleGroup.localOrder v π).toAdd = 1)
     (hπ' : (FiniteIdeleGroup.localOrder v π').toAdd = 1) :
@@ -95,12 +95,9 @@ private theorem localOrder_of_uniformizer
   rw [hπ, WithZero.log_exp]
   rfl
 
+include F h12 x v hv in
 theorem arithmeticFrobenius_eq_lambda_uniformizer
-    (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ)
-    (v : HeightOneSpectrum (𝓞 F))
-    (hv : v ∉ (M F (RMKummerConductor.m F h12 x)
-      (RMKummerConductor.m_ne_bot F h12 x)).finitePart.support)
+     
     (w : HeightOneSpectrum (𝓞 (RMKummerConductor.E F h12 x)))
     (hw : w.asIdeal.LiesOver v.asIdeal)
     (π : (v.adicCompletion F)ˣ)
@@ -125,6 +122,8 @@ theorem arithmeticFrobenius_eq_lambda_uniformizer
   exact lambda_eq_of_order_one F h12 x v hv _ π
     (FiniteIdeleGroup.localOrder_chosenLocalOrderSection v 1)
     (localOrder_of_uniformizer F v π hπ)
+end
+
 
 end
 end DedekindZetaZeroFree.RMKummerPrincipalPrime

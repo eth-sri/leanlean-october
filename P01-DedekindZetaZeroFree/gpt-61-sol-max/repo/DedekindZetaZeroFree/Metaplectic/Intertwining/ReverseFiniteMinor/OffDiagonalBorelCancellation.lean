@@ -20,13 +20,16 @@ set_option autoImplicit false
 set_option maxHeartbeats 1000000
 set_option backward.isDefEq.respectTransparency false
 
- def offDiagonalReverseLinear
-    (F : Type) [Field F] [NumberField F]
+ section
+variable (F : Type) [Field F] [NumberField F]
     (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
     (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
     (hP : IsTamePolarization F ζ hζ q S P)
     (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
-    (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1) :
+    (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
+include F ζ hζ q S P hP μ hμ
+def offDiagonalReverseLinear
+      :
     scalarSections F ζ hζ q S P hP .minus →ₗ[ℂ]
       scalarSections F ζ hζ q S P hP .plus :=
   (scalarCoordinateEquiv F ζ hζ q S P hP .plus).toLinearMap.comp
@@ -34,12 +37,7 @@ set_option backward.isDefEq.respectTransparency false
       (scalarCoordinateEquiv F ζ hζ q S P hP .minus).symm.toLinearMap)
 
 private theorem offDiagonalReverseLinear_intertwines
-    (F : Type) [Field F] [NumberField F]
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
-    (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
-    (hP : IsTamePolarization F ζ hζ q S P)
-    (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
-    (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
+     
     (t : ActualCover F ζ hζ q) (f : scalarSections F ζ hζ q S P hP .minus) :
     offDiagonalReverseLinear F ζ hζ q S P hP μ hμ
       (scalarAction F ζ hζ q S P hP .minus t f) =
@@ -60,12 +58,7 @@ private theorem offDiagonalReverseLinear_intertwines
     (actualCanonicalReverseLinear_intertwines F ζ hζ q S P μ hμ t v)
 
 private theorem actual_lowShell_covariance
-    (F : Type) [Field F] [NumberField F]
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
-    (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
-    (hP : IsTamePolarization F ζ hζ q S P)
-    (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
-    (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
+     
     (a e t : ActualCover F ζ hζ q) (m : ℕ)
     (hnormalW : ∀ k ∈ splitCongruenceSet F ζ hζ q m,
       (KPPGLLocalCover.W F ζ hζ (Sum.inr q))⁻¹ * k *
@@ -127,14 +120,19 @@ private theorem actual_lowShell_covariance
     _ = ∫ x in lowShell F q, chi F ζ hζ q S P hP .plus bplus * (R f).val (g x) ∂μ :=
       setIntegral_congr_fun (valuation (LocalField F q)).isOpen_integer.measurableSet hpoint
     _ = _ := integral_const_mul _ _
+end
+
 
 set_option backward.isDefEq.respectTransparency false in
 
-private theorem actual_lowShell_zero_of_full_chi_ne
-    (F : Type) [Field F] [NumberField F]
+section
+variable (F : Type) [Field F] [NumberField F]
     (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
     (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
     (hP : IsTamePolarization F ζ hζ q S P)
+include F ζ hζ q S P hP
+private theorem actual_lowShell_zero_of_full_chi_ne
+     
     (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
     (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
     (a e t : ActualCover F ζ hζ q) (m : ℕ)
@@ -170,10 +168,7 @@ private theorem actual_lowShell_zero_of_full_chi_ne
   exact hchi (mul_right_cancel₀ hJ hcov)
 
 theorem actual_lowShell_integral_zero_of_differenceLabel_ne_zero
-    (F : Type) [Field F] [NumberField F]
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
-    (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
-    (hP : IsTamePolarization F ζ hζ q S P)
+     
     (hnorm : KPTameTransposeLiteral.RawNormalizedExtension F ζ hζ q S P)
     (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
     (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
@@ -240,6 +235,8 @@ theorem actual_lowShell_integral_zero_of_differenceLabel_ne_zero
     _ hs hse
     (fun x hx => KPTameLowShellConcreteCharts.concrete_outer_chart F ζ hζ q S P hP e u x)
     f hf hchi
+end
+
 
 end DedekindZetaZeroFree.ActualReverseMinorOffDiagonal
 

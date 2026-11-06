@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.Complex.LocallyUniformLimit
 
 @[expose] public section
+
 
 noncomputable section
 open Topology Filter
@@ -19,7 +22,7 @@ theorem disk_series_holomorphic (f : ℂ → E) (a : ℕ → E)
         ‖(∑ j ∈ Finset.range M, (z-c)^j • a j) - f z‖ < ε) :
     DifferentiableOn ℂ f (Metric.ball c r) ∧
       ∀ z ∈ Metric.ball c r, HasSum (fun j => (z-c)^j • a j) (f z) := by
-  let F : ℕ → ℂ → E := fun M z => ∑ j ∈ Finset.range M, (z-c)^j • a j
+  let F  := fun M z => ∑ j ∈ Finset.range M, (z-c)^j • a j
   have hu (t : ℝ) (ht : 0 ≤ t) (htr : t < r) :
       TendstoUniformlyOn F f atTop (Metric.closedBall c t) := by
     rw [Metric.tendstoUniformlyOn_iff]
@@ -27,7 +30,7 @@ theorem disk_series_holomorphic (f : ℂ → E) (a : ℕ → E)
     obtain ⟨N,hN⟩ := hseries t ht htr ε hε
     filter_upwards [eventually_ge_atTop N] with M hM z hz
     rw [dist_eq_norm_sub, norm_sub_rev]
-    exact hN M hM z hz
+    apply hN <;> assumption
   have hl : TendstoLocallyUniformlyOn F f atTop (Metric.ball c r) := by
     intro u hu' z hz
     have hz' : dist z c < r := hz

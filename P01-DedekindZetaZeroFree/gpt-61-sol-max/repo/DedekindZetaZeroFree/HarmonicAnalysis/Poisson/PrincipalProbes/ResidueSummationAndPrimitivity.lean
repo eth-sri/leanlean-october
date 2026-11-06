@@ -60,9 +60,12 @@ theorem raw_tracePhase_eq (A : SArithmeticData F)
   simp only [Complex.ofReal_sum, Complex.ofReal_mul, Complex.ofReal_ofNat]
   rfl
 
-theorem raw_diagonal_tracePhase_eq (A : SArithmeticData F) (σ : F →+* ℂ)
+section
+variable (A : SArithmeticData F) (σ : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (P : NormalizedProbe.PrincipalData A σ η hS) (x y : F) :
+    (P : NormalizedProbe.PrincipalData A σ η hS)
+include A σ η hS P
+theorem raw_diagonal_tracePhase_eq   (x y : F) :
     PoissonS.tracePhase F A.Sf P.finiteTrace (PoissonS.diagonalHom F A.Sf x)
       (PoissonS.diagonalHom F A.Sf y) = P.coefficients.additiveCharacter (x * y) := by
   rw [P.sameTrace]
@@ -86,9 +89,7 @@ theorem raw_diagonal_tracePhase_eq (A : SArithmeticData F) (σ : F →+* ℂ)
   congr 1
   exact (sLocalDiagonal F A.Sf).map_mul x y |>.symm
 
-theorem raw_fourier_coordinate_eq (A : SArithmeticData F) (σ : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (P : NormalizedProbe.PrincipalData A σ η hS)
+theorem raw_fourier_coordinate_eq  
     (N : Normalization A σ η hS P) (y : SLocalProduct F A.Sf) :
     ProbeWeight.fourier F A.Sf P.finiteTrace P.additiveMeasure P.W0 y =
       PoissonS.fourierIntegral F A.Sf P.finiteTrace N.localMeasure
@@ -120,8 +121,13 @@ theorem raw_fourier_coordinate_eq (A : SArithmeticData F) (σ : F →+* ℂ)
   congr 2
   congr 1
   ring
+end
 
-theorem raw_annular_tensor_coordinates (A : SArithmeticData F) (W : SLocalProduct F A.Sf → ℂ)
+
+section
+variable (A : SArithmeticData F)
+include A
+theorem raw_annular_tensor_coordinates   (W : SLocalProduct F A.Sf → ℂ)
     (hW : ProbeWeight.IsAnnularTensor F A.Sf W) :
     ∃ (f : SchwartzMap (PoissonArch.Space F) ℂ)
       (φ : (v : ↥A.Sf) → v.val.adicCompletion F → ℂ),
@@ -164,15 +170,15 @@ theorem raw_annular_tensor_coordinates (A : SArithmeticData F) (W : SLocalProduc
   rw [ContinuousLinearEquiv.apply_symm_apply] at hh
   rw [hh]
 
-theorem raw_productModule_eq_modulus (A : SArithmeticData F) (a : A.R) (ha : a ≠ 0) :
+theorem raw_productModule_eq_modulus   (a : A.R) (ha : a ≠ 0) :
     PoissonS.productModule F A.Sf (a : F) = ProbeCoset.modulus A a := by
   exact (sProductModulus_eq_principalIdeal_index F A.Sf a ha).2
 
-def raw_localUnits (A : SArithmeticData F) : A.G ≃* (SLocalProduct F A.Sf)ˣ :=
+def raw_localUnits   : A.G ≃* (SLocalProduct F A.Sf)ˣ :=
   ((MulEquiv.piUnits).symm.prodCongr (MulEquiv.piUnits).symm).trans
     (MulEquiv.prodUnits).symm
 
-theorem raw_localDilationModule_eq_norm (A : SArithmeticData F) (g : A.G) :
+theorem raw_localDilationModule_eq_norm   (g : A.G) :
     PoissonS.localDilationModule F A.Sf (raw_localUnits A g) = A.norm g := by
   unfold PoissonS.localDilationModule SArithmeticData.norm
   congr 1
@@ -183,7 +189,7 @@ theorem raw_localDilationModule_eq_norm (A : SArithmeticData F) (g : A.G) :
   rw [(A.complex_place v).mult_eq_two]
   rfl
 
- theorem raw_diagonal_coordinates (A : SArithmeticData F) (z : F) : PoissonS.diagonalHom F A.Sf z =
+ theorem raw_diagonal_coordinates   (z : F) : PoissonS.diagonalHom F A.Sf z =
       PoissonS.localProductToSpace F A.Sf (sLocalDiagonal F A.Sf z) := by
     apply Prod.ext
     · apply (mixedEmbedding.euclidean.toMixed F).injective
@@ -200,7 +206,7 @@ theorem raw_localDilationModule_eq_norm (A : SArithmeticData F) (g : A.G) :
       rw [hfst, ← InfiniteAdeleRing.mixedEmbedding_eq_algebraMap_comp]
     · rfl
 
- theorem raw_scalar_diagonal (A : SArithmeticData F) (c x : F) :
+ theorem raw_scalar_diagonal   (c x : F) :
     PoissonS.ScaleShift.scalarAction F A.Sf c (PoissonS.diagonalHom F A.Sf x) =
       PoissonS.diagonalHom F A.Sf (c*x) := by
   rw [raw_diagonal_coordinates, raw_diagonal_coordinates]
@@ -210,7 +216,7 @@ theorem raw_localDilationModule_eq_norm (A : SArithmeticData F) (g : A.G) :
       (PoissonS.localProductToSpace F A.Sf (sLocalDiagonal F A.Sf x))) = _
   rw [AddEquiv.symm_apply_apply, ← map_mul]
 
- theorem raw_tsum_scalar_lattice (A : SArithmeticData F) (c : Fˣ) (f : PoissonS.Space F A.Sf → ℂ) :
+ theorem raw_tsum_scalar_lattice   (c : Fˣ) (f : PoissonS.Space F A.Sf → ℂ) :
     (∑' m : PoissonS.lattice F A.Sf (c : F), f m) =
       ∑' n : A.R, f (PoissonS.diagonalHom F A.Sf ((c : F)*(n : F))) := by
   have hr := PoissonS.ScaleShift.tsum_scalar_lattice F A.Sf c 1 f
@@ -221,6 +227,8 @@ theorem raw_localDilationModule_eq_norm (A : SArithmeticData F) (g : A.G) :
   change f (PoissonS.ScaleShift.scalarAction F A.Sf (c : F)
     (PoissonS.diagonalHom F A.Sf (n : F))) = _
   rw [raw_scalar_diagonal]
+end
+
 
 set_option maxHeartbeats 800000 in
  theorem raw_translate_dilate_poisson (A : SArithmeticData F) (σ : F →+* ℂ)
@@ -283,8 +291,11 @@ set_option maxHeartbeats 800000 in
   rw [hW, raw_fourier_coordinate_eq A σ η hS P N, raw_diagonal_coordinates]
   simp only [PoissonS.localDilation, AddEquiv.symm_apply_apply]
 
-def raw_residueCosetEquiv (A : SArithmeticData F) (s a : A.R)
-    (hs : s ≠ 0) (ha : a ≠ 0) (r : FiniteTransform.Residue A.R.toSubring (s*a)) :
+section
+variable (A : SArithmeticData F) (s a : A.R)
+    (hs : s ≠ 0) (ha : a ≠ 0) (r : FiniteTransform.Residue A.R.toSubring (s*a))
+include A s a hs ha r
+def raw_residueCosetEquiv   :
     A.R ≃ {m : A.R // FiniteTransform.residueMap A.R.toSubring (s*a) m = r} := by
   let l := (FiniteTransform.canonicalLifts A.R.toSubring (s*a)).val r
   have hl : FiniteTransform.residueMap A.R.toSubring (s*a) l = r :=
@@ -309,12 +320,13 @@ def raw_residueCosetEquiv (A : SArithmeticData F) (s a : A.R)
     rw [← hn]
     ring
 
-theorem raw_tsum_residueCoset (A : SArithmeticData F) (s a : A.R)
-    (hs : s ≠ 0) (ha : a ≠ 0) (r : FiniteTransform.Residue A.R.toSubring (s*a))
+theorem raw_tsum_residueCoset  
     (w : A.R → ℂ) :
     (∑' m : {m : A.R // FiniteTransform.residueMap A.R.toSubring (s*a) m = r}, w m.val) =
     ∑' n : A.R, w ((FiniteTransform.canonicalLifts A.R.toSubring (s*a)).val r + (s*a)*n) :=
   ((raw_residueCosetEquiv A s a hs ha r).tsum_eq (fun m => w m.val)).symm
+end
+
 
 theorem raw_productModule_mul (A : SArithmeticData F) (x y : F) :
     PoissonS.productModule F A.Sf (x*y) =
@@ -330,11 +342,14 @@ theorem raw_norm_mul (A : SArithmeticData F) (g h : A.G) : A.norm (g*h) = A.norm
     Units.val_mul, _root_.norm_mul, mul_pow, Finset.prod_mul_distrib]
   ring
 
-theorem raw_residue_poisson
-    (A : SArithmeticData F) (σ : F →+* ℂ)
+section
+variable (A : SArithmeticData F) (σ : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
     (P : NormalizedProbe.PrincipalData A σ η hS)
     (N : Normalization A σ η hS P)
+include A σ η hS P N
+theorem raw_residue_poisson
+     
     (s a : A.R) (hs : s ≠ 0) (ha : a ≠ 0)
     (X : ℝ) (hX : 0 < X) (t : A.G1)
     (r : FiniteTransform.Residue A.R.toSubring (s*a)) :
@@ -400,10 +415,7 @@ theorem raw_residue_poisson
       ring
 
 theorem raw_principal_additiveCharacter_primitive
-    (A : SArithmeticData F) (σ : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (P : NormalizedProbe.PrincipalData A σ η hS)
-    (N : Normalization A σ η hS P)
+     
     (s : A.R) (hs : s ≠ 0) :
     FiniteTransform.IsPrimitiveAt A.R.toSubring s P.coefficients.additiveCharacter := by
   classical
@@ -441,6 +453,8 @@ theorem raw_principal_additiveCharacter_primitive
   change (k : F) = (s : F) * (n : F)
   rw [div_eq_iff hsF] at hkn
   simpa [mul_comm] using hkn
+end
+
 
 end
 end DedekindZetaZeroFree.ProbeCoset

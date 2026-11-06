@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.MellinInversion
 
 @[expose] public section
+
 
 /-
 Repository: openai/math.
@@ -20,7 +23,7 @@ theorem mellin_eq_of_eq_mellinInv (f : ℝ → ℂ) (A : ℂ → ℂ) (c : ℝ) 
     (hInv : ∀ x : ℝ, 0 < x → f x = mellinInv c A x) :
     mellin f z = A z := by
   let q : ℝ → ℂ := fun y => A ((c : ℂ) + 2 * Real.pi * y * Complex.I)
-  let g : ℝ → ℂ := fun u => Real.exp (-c * u) • f (Real.exp (-u))
+  let g  := fun u => Real.exp (-c * u) • f (Real.exp (-u))
   have hq : MeasureTheory.Integrable q := by
     convert hA_int.comp_mul_right' (show 2 * Real.pi ≠ 0 by positivity) using 1 <;>
       simp [q, Complex.ofReal_mul, mul_comm, mul_left_comm, mul_assoc]

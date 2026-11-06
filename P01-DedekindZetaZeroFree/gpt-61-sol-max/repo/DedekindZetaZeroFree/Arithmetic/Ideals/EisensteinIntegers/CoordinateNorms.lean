@@ -1,22 +1,26 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Ideals.EisensteinIntegers.PrimaryIdealDomain
 
 @[expose] public section
 
+
 namespace DedekindZetaZeroFree.Eisenstein
 
-noncomputable def coordBasis (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3) :
+section
+variable (E : Type) [Field E] [NumberField E]
+    [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3)
+include E ω hω
+noncomputable def coordBasis   :
     Module.Basis (Fin 2) ℤ (R E) :=
   hω.integralPowerBasis.basis.reindex (finCongr (by simp; decide))
-private theorem coordBasis_apply (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3) (i : Fin 2) :
+private theorem coordBasis_apply   (i : Fin 2) :
     coordBasis E ω hω i = η E ω hω ^ (i : ℕ) := by
   simp [coordBasis, Module.Basis.reindex_apply, PowerBasis.basis_eq_pow]
 
-theorem existsUnique_int_coordinates (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3)
+theorem existsUnique_int_coordinates  
     (x : R E) :
     ∃! ab : ℤ × ℤ, x = (ab.1 : R E) + (ab.2 : R E) * η E ω hω := by
   let B := coordBasis E ω hω
@@ -38,15 +42,13 @@ theorem existsUnique_int_coordinates (E : Type) [Field E] [NumberField E]
     · have h := congrArg (fun y => B.repr y 1) hab
       simpa [rep] using h.symm
 
-theorem eta_sq_add_eta_add_one (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3) :
+theorem eta_sq_add_eta_add_one   :
     η E ω hω ^ 2 + η E ω hω + 1 = 0 := by
   have h := IsCyclotomicExtension.Rat.Three.eta_sq hω
   simp only [Units.val_pow_eq_pow_val, IsUnit.unit_spec] at h
   linear_combination h
 
-theorem norm_int_coordinates (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3)
+theorem norm_int_coordinates  
     (a b : ℤ) :
     Algebra.norm ℤ ((a : R E) + (b : R E) * η E ω hω) =
       a ^ 2 - a * b + b ^ 2 := by
@@ -75,8 +77,7 @@ theorem norm_int_coordinates (E : Type) [Field E] [NumberField E]
   simp
   ring
 
-theorem normSq_int_coordinates (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3)
+theorem normSq_int_coordinates  
     (ι : E →+* ℂ) (a b : ℤ) :
     Complex.normSq (ιR E ι ((a : R E) + (b : R E) * η E ω hω)) =
       ((a ^ 2 - a * b + b ^ 2 : ℤ) : ℝ) := by
@@ -100,8 +101,7 @@ theorem normSq_int_coordinates (E : Type) [Field E] [NumberField E]
     rw [h] at hr
     nlinarith [sq_nonneg (z.re + 1 / 2)]
   have hre : 2 * z.re + 1 = 0 := by
-    have hh : z.im * (2 * z.re + 1) = 0 := by nlinarith [hi]
-    exact (mul_eq_zero.mp hh).resolve_left him
+    grind
   simp only [map_add, map_mul, map_intCast]
   change Complex.normSq ((a : ℂ) + (b : ℂ) * z) = _
   push_cast
@@ -109,6 +109,8 @@ theorem normSq_int_coordinates (E : Type) [Field E] [NumberField E]
     Complex.mul_re, Complex.mul_im, Complex.intCast_re, Complex.intCast_im,
     zero_mul, mul_zero, sub_zero, zero_add]
   nlinarith [sq_nonneg ((b : ℝ) * z.im)]
+end
+
 
 theorem absNorm_span_eq_normSq (E : Type) [Field E] [NumberField E]
     [IsCyclotomicExtension {3} ℚ E] (ι : E →+* ℂ) (x : R E) :

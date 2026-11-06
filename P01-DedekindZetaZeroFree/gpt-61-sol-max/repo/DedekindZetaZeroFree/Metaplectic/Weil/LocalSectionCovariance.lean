@@ -15,24 +15,24 @@ open KPGlobalTorusFiniteStages
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 variable (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
 
-theorem finite_upper (q : HeightOneSpectrum (𝓞 F))
-    (y : KPHilbert.Completion F (Sum.inr q))
-    (g : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q)) :
-    (LocalSeed.finite F ζ hζ P C q).val
-      (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)
-        (KPStandardLocalRootLifts.N F ζ hζ (Sum.inr q) y * g)) =
-    (LocalSeed.finite F ζ hζ P C q).val
-      (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) g) := by
-  let S := C.canonical q
-  let f := LocalSeed.finite F ζ hζ P C q
-  have hf := f.property.1 (S.borel.upperRoot (Multiplicative.ofAdd y))
-    (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) g)
-  rw [KPLocalPrincipalSeries.upperRoot_trivial] at hf
-  have hn := (S.openCell (C.polarization q)).upper_eq y
-  change f.val (_ * _) = _ at hf
-  rw [hn] at hf
-  rw [map_mul]
-  exact hf
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 theorem finite_scalar (q : HeightOneSpectrum (𝓞 F))
     (z : (KPHilbert.Completion F (Sum.inr q))ˣ)
@@ -90,9 +90,9 @@ def arch (w : InfinitePlace F)
     KPCplxPrincipalSeriesCharts.sphericalSection
       KPCplxPrincipalSeriesCharts.positiveParameter (complexMatrix F ζ hζ w g)
 
-@[simp] theorem arch_one (w : InfinitePlace F) : arch F ζ hζ w 1 = 1 := by
-  simp [arch, complexMatrix, KPLocalCover.one_g, KPLocalCover.one_epsilon,
-    KPCplxPrincipalSeriesCharts.sphericalSection_one]
+
+
+
 
 theorem arch_central (w : InfinitePlace F) (e : rootsOfUnity 3 F)
     (g : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl w)) :
@@ -109,32 +109,32 @@ theorem arch_central (w : InfinitePlace F) (e : rootsOfUnity 3 F)
   simp only [arch, he, hm, map_mul, Units.val_mul]
   ring
 
-theorem arch_upper (w : InfinitePlace F)
-    (y : KPHilbert.Completion F (Sum.inl w))
-    (g : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl w)) :
-    arch F ζ hζ w (KPStandardLocalRootLifts.N F ζ hζ (Sum.inl w) y * g) =
-      arch F ζ hζ w g := by
-  have he : (KPStandardLocalRootLifts.N F ζ hζ (Sum.inl w) y * g).epsilon = g.epsilon := by
-    change 1 * g.epsilon * KPLocalCover.sigmaTwo F ζ hζ (Sum.inl w) _ _ = _
-    rw [KPLocalChartTopology.complex_sigmaTwo_eq_one]
-    simp
-  let y' := (InfinitePlace.Completion.ringEquivComplexOfIsComplex
-    (KPHilbert.infinite_isComplex F ζ hζ w)) y
-  have hm : complexMatrix F ζ hζ w (KPStandardLocalRootLifts.N F ζ hζ (Sum.inl w) y * g) =
-      KPCplxPrincipalSeriesCharts.upperTriangular 1 1 y' * complexMatrix F ζ hζ w g := by
-    unfold complexMatrix
-    change Matrix.GeneralLinearGroup.map _ (_ * g.g) = _
-    rw [map_mul]
-    congr 1
-    apply Units.ext
-    ext i j
-    fin_cases i <;> fin_cases j <;>
-      simp [KPStandardLocalRootLifts.N, KubotaRankTwo.n,
-        Matrix.GeneralLinearGroup.map, KPCplxPrincipalSeriesCharts.upperTriangular, y']
-  unfold arch
-  rw [he, hm, (KPCplxPrincipalSeriesCharts.sphericalSection
-    KPCplxPrincipalSeriesCharts.positiveParameter).property.1]
-  simp [KPCplxPrincipalSeriesCharts.inductionWeight, KPCplxPrincipalSeriesCharts.complexAbs]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 theorem arch_scalar (w : InfinitePlace F)
     (z : (KPHilbert.Completion F (Sum.inl w))ˣ)
@@ -163,42 +163,42 @@ theorem arch_scalar (w : InfinitePlace F)
   unfold arch
   rw [he, hm, KPCplxPrincipalSeriesCharts.central_invariance]
 
-theorem arch_right_su2 (w : InfinitePlace F)
-    (k : KPCplxCharacterHaar.ComplexSU2)
-    (g : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl w)) :
-    arch F ζ hζ w (g * KPLocalCover.sectionMap F ζ hζ (Sum.inl w)
-      (Matrix.GeneralLinearGroup.map
-        (InfinitePlace.Completion.ringEquivComplexOfIsComplex
-          (KPHilbert.infinite_isComplex F ζ hζ w)).symm.toRingHom
-        (KPCplxCharacterHaar.complexSU2Embedding k))) = arch F ζ hζ w g := by
-  have he : (g * KPLocalCover.sectionMap F ζ hζ (Sum.inl w)
-      (Matrix.GeneralLinearGroup.map
-        (InfinitePlace.Completion.ringEquivComplexOfIsComplex
-          (KPHilbert.infinite_isComplex F ζ hζ w)).symm.toRingHom
-        (KPCplxCharacterHaar.complexSU2Embedding k))).epsilon = g.epsilon := by
-    rw [KPLocalCover.mul_epsilon, KPLocalCover.sectionMap_epsilon,
-      KPLocalChartTopology.complex_sigmaTwo_eq_one]
-    simp
-  have hm : complexMatrix F ζ hζ w (g * KPLocalCover.sectionMap F ζ hζ (Sum.inl w)
-      (Matrix.GeneralLinearGroup.map
-        (InfinitePlace.Completion.ringEquivComplexOfIsComplex
-          (KPHilbert.infinite_isComplex F ζ hζ w)).symm.toRingHom
-        (KPCplxCharacterHaar.complexSU2Embedding k))) =
-      complexMatrix F ζ hζ w g * KPCplxCharacterHaar.complexSU2Embedding k := by
-    unfold complexMatrix
-    rw [KPLocalCover.mul_g, map_mul]
-    congr 1
-    apply Units.ext
-    ext i j
-    simp [Matrix.GeneralLinearGroup.map, KPLocalCover.sectionMap]
-  have hs := congrArg (fun f : KPCplxPrincipalSeriesCharts.PrincipalSeries
-      KPCplxPrincipalSeriesCharts.positiveParameter => f (complexMatrix F ζ hζ w g))
-    (KPCplxPrincipalSeriesCharts.sphericalSection_fixed
-      KPCplxPrincipalSeriesCharts.positiveParameter
-      ⟨_, ⟨k, rfl⟩⟩)
-  change KPCplxPrincipalSeriesCharts.sphericalSection _
-    (complexMatrix F ζ hζ w g * KPCplxCharacterHaar.complexSU2Embedding k) = _ at hs
-  rw [arch, arch, he, hm, hs]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end DedekindZetaZeroFree.EisensteinReferenceSections.LocalCovariance
 

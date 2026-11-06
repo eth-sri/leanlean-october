@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Units.SArithmeticData
 
 @[expose] public section
+
 
 open scoped NumberField
 open NumberField
@@ -29,8 +32,7 @@ variable {F : Type} [Field F] [NumberField F]
 theorem exteriorQuotientMap_injective (A : SArithmeticData F) (I : A.Exterior) :
     Function.Injective
       (Ideal.quotientMap (A.extendIdeal I) (algebraMap (𝓞 F) A.R)
-        (show I.val ≤ (A.extendIdeal I).comap (algebraMap (𝓞 F) A.R) from
-          Ideal.le_comap_map)) := by
+        (Ideal.le_comap_map)) := by
   classical
   apply Ideal.quotientMap_injective'
   have hI : I.val ≠ (0 : Ideal (𝓞 F)) := I.property.1
@@ -41,7 +43,7 @@ theorem exteriorQuotientMap_injective (A : SArithmeticData F) (I : A.Exterior) :
   change (A.extendIdeal I).comap (algebraMap (𝓞 F) A.R) ≤ v.asIdeal ^ n
   by_cases hn : n = 0
   · simp [hn, Ideal.one_eq_top]
-  have hvI : I.val ≤ v.asIdeal :=
+  have hvI  :=
     Ideal.dvd_iff_le.mp ((Associates.count_ne_zero_iff_dvd hI v.irreducible).mp hn)
   have hv : v ∉ A.Sf := by
     intro hvS
@@ -51,10 +53,10 @@ theorem exteriorQuotientMap_injective (A : SArithmeticData F) (I : A.Exterior) :
     have ht : (⊤ : Ideal (𝓞 F)) ≤ v.asIdeal := by
       rw [← I.property.2]
       exact sup_le hvI hc
-    exact v.isPrime.ne_top (top_unique ht)
+    apply v.isPrime.ne_top <;> aesop
   have hIn : I.val ≤ v.asIdeal ^ n := by
     rw [← Ideal.iInf_maxPowDividing_eq hI]
-    exact iInf_le (fun w => w.maxPowDividing I.val) v
+    apply iInf_le
   have hmap : A.extendIdeal I ≤ valuationBoundIdeal A v hv n := by
     apply Ideal.map_le_iff_le_comap.mpr
     intro a ha

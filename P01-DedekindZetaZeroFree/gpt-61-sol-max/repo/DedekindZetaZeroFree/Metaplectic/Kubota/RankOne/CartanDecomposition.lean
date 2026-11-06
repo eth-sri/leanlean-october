@@ -126,8 +126,11 @@ private theorem mem_integer_valuation (x : w.adicCompletion F) :
   rw [Valuation.mem_integer_iff]
   exact ((ValuativeRel.isEquiv (Valued.v : Valuation (w.adicCompletion F) (WithZero (Multiplicative ℤ)))
     (ValuativeRel.valuation (w.adicCompletion F))).le_iff_le (x := x) (y := 1)).symm.trans (by simp)
-theorem nonzero_integer_unit_times_uniformizer_pow (π : (w.adicCompletion F)ˣ)
+section
+variable (π : (w.adicCompletion F)ˣ)
     (hπ : Valued.v (π : w.adicCompletion F) = WithZero.exp (-1 : ℤ))
+include π hπ in
+theorem nonzero_integer_unit_times_uniformizer_pow  
     (x : w.adicCompletion F) (hx : x ≠ 0) (hv : Valued.v x ≤ 1) :
     ∃ n : ℕ, ∃ u : (KPTameCompact.O F w)ˣ,
       x = (u.val : w.adicCompletion F) * (π.val ^ n) := by
@@ -191,8 +194,8 @@ private theorem pivot_data (g : KPLocalCover.LocalGL2 F (Sum.inr w))
   apply max_le (hdiv 1 1)
   rw [map_mul]
   exact mul_le_one₀ (hdiv 1 0) zero_le (hdiv 0 1)
-private theorem pivot_factor (π : (w.adicCompletion F)ˣ)
-    (hπ : Valued.v (π : w.adicCompletion F) = WithZero.exp (-1 : ℤ))
+include π hπ in
+private theorem pivot_factor  
     (g : KPLocalCover.LocalGL2 F (Sum.inr w))
     (hmax : ∀ i j : Fin 2, Valued.v (g i j) ≤ Valued.v (g 0 0)) :
     ∃ n : ℕ, ∃ l r : KPTameCompact.K0 F w,
@@ -255,8 +258,8 @@ private theorem unpermute_factor (π : (w.adicCompletion F)ˣ)
         KPPGLLocalCover.baseQuotient F (Sum.inr w) (KPTameCompact.inclusion F w R)) *
       (KPPGLLocalCover.baseQuotient F (Sum.inr w) (KPTameCompact.inclusion F w R))⁻¹ := by group
     _ = _ := by rw [h]; group
-theorem ordinary_matrix_cartan_factorization (π : (w.adicCompletion F)ˣ)
-    (hπ : Valued.v (π : w.adicCompletion F) = WithZero.exp (-1 : ℤ))
+include π hπ in
+theorem ordinary_matrix_cartan_factorization  
     (g : KPLocalCover.LocalGL2 F (Sum.inr w)) :
     ∃ n : ℕ, ∃ l r : KPTameCompact.K0 F w,
       KPPGLLocalCover.baseQuotient F (Sum.inr w) g =
@@ -329,8 +332,8 @@ theorem lift_projected_factorization (π : (w.adicCompletion F)ˣ) (n : ℕ)
   dsimp [k']
   group
 
-theorem cartan_decomposition (π : (w.adicCompletion F)ˣ)
-    (hπ : Valued.v (π : w.adicCompletion F) = WithZero.exp (-1 : ℤ))
+include π hπ in
+theorem cartan_decomposition  
     (g : KPPGLLocalCover.CubicPGL2 F ζ hζ (Sum.inr w)) :
     ∃ n : ℕ, ∃ k₁ k₂ : coveredK0 F ζ hζ w,
       g = k₁.val * diagonalLift F ζ hζ w π n * k₂.val := by
@@ -345,6 +348,8 @@ theorem cartan_decomposition (π : (w.adicCompletion F)ˣ)
   apply lift_projected_factorization F ζ hζ w π n g b₁ b₂
   rw [← hG]
   exact h
+end
+
 
 theorem cartanTruncation_compact (m : ℕ)
     (hm : KPLocalChartTopology.MatrixChartDepth F w m)

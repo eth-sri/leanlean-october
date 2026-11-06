@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.Fourier.FiniteAbelian.Orthogonality
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 
@@ -42,7 +45,7 @@ theorem detector_finite_character_bessel
     rw [← hs] at h
     simpa only [mul_comm] using h
   let n : ℝ := Fintype.card G
-  let c : ℝ := (Real.sqrt n)⁻¹
+  let c  := (Real.sqrt n)⁻¹
   have hn' : 0 < n := hn
   have hc : 0 ≤ c := inv_nonneg.mpr (Real.sqrt_nonneg _)
   have hc2 : c ^ 2 * n = 1 := by

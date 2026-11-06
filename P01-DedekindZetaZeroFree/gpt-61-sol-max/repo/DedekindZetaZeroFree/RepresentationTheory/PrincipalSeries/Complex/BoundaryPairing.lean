@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.ComplexChartsAndSphericalSections
 
 @[expose] public section
+
 
 noncomputable section
 open MeasureTheory
@@ -12,14 +15,14 @@ open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1200000
 
-def pairing (β : ℂˣ) (s : ℝ) (f : PrincipalSeries s) (g : PrincipalSeries (-s)) : ℂ :=
+def pairing (β : ℂˣ) (s : ℝ) (f : PrincipalSeries s) (g : PrincipalSeries (-s))  :=
   ∫ z, star (openCoordinate f z) * openCoordinate g z ∂characterHaar β
 
 private theorem integral_dilation (β c : ℂˣ) (f : ℂ → ℂ) :
     (∫ x : ℂ, f ((c : ℂ) * x) ∂characterHaar β) =
       ((‖(c : ℂ)‖ ^ 2)⁻¹ : ℝ) • ∫ x : ℂ, f x ∂characterHaar β := by
   letI := characterHaar_isAddHaarMeasure β
-  let r : ℝ := ‖(c : ℂ)‖
+  let r  := ‖(c : ℂ)‖
   have hr : 0 < r := norm_pos_iff.mpr c.ne_zero
   let u : Circle := ⟨(c : ℂ) / (r : ℂ), by
     change (c : ℂ) / (r : ℂ) ∈ Metric.sphere (0 : ℂ) 1
@@ -33,7 +36,7 @@ private theorem integral_dilation (β c : ℂˣ) (f : ℂ → ℂ) :
       (rotation u).measurePreserving.map_eq]
   have he (x : ℂ) : (c : ℂ) * x = r • (rotation u x) := by
     change (c : ℂ) * x = (r : ℂ) * (((c : ℂ) / (r : ℂ)) * x)
-    have hr0 : (r : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hr.ne'
+    have hr0  := Complex.ofReal_ne_zero.mpr hr.ne'
     field_simp
     <;> ring
   simp_rw [he]

@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Valuation.Completion.PolynomialFactors
 public import Mathlib.FieldTheory.Separable
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -43,8 +46,8 @@ theorem separable_monic_eq_prod_distinctNormalizedFactors
   classical
   let : NormalizationMonoid F := inferInstance
   let : NormalizationMonoid F[X] := Polynomial.instNormalizationMonoid
-  have hp0 : p ≠ 0 := hpmonic.ne_zero
-  have hnodup : (normalizedFactors p).Nodup :=
+  have hp0  := hpmonic.ne_zero
+  have hnodup  :=
     (squarefree_iff_nodup_normalizedFactors hp0).1 hpsep.squarefree
   have hprod : (normalizedFactors p).prod = p := by
     simpa [hpmonic.leadingCoeff] using
@@ -69,8 +72,7 @@ theorem distinctNormalizedFactors_pairwise_coprime
   let : NormalizationMonoid F := inferInstance
   let : NormalizationMonoid F[X] := Polynomial.instNormalizationMonoid
   intro i j hij
-  have hnorm : polynomialNormalizedFactors p = normalizedFactors p := by
-    rfl
+  have hnorm : polynomialNormalizedFactors p = normalizedFactors p := rfl
   have hi : i.1 ∈ normalizedFactors p := by
     rw [← hnorm]
     exact Multiset.mem_toFinset.mp i.2
@@ -82,7 +84,7 @@ theorem distinctNormalizedFactors_pairwise_coprime
   · exfalso
     apply hij
     apply Subtype.ext
-    exact normalizedFactors_eq_of_dvd p i.1 hi j.1 hj h
+    apply normalizedFactors_eq_of_dvd <;> assumption
 
 end Completion
 end ValuationTheory

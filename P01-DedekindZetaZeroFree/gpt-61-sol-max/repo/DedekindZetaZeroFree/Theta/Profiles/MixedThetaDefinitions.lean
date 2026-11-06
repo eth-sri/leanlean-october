@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Theta.Profiles.FractionalIdealShapeLattice
 public import DedekindZetaZeroFree.Theta.Unfolding.UnitSlabRadialAngularIntegration
 public import DedekindZetaZeroFree.Arithmetic.Ideals.IdealElementDecomposition
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -28,28 +31,32 @@ def radialLift (a : ℝ) : mixedEmbedding.realSpace K :=
 def angularCube : Set (Angular K) :=
   Set.univ.pi (fun _ ↦ Set.Ico (0 : ℝ) 1)
 
-def mixedThetaCovolume (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) : ℝ :=
+def mixedThetaCovolume (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ)  :=
   (FractionalIdeal.absNorm (I : FractionalIdeal (𝓞 K)⁰ K) : ℝ) *
     Real.sqrt |(discr K : ℝ)|
 
-def mixedThetaShape (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ)
-    (t : ℝ) (u : Angular K) : InfinitePlace K → ℝ :=
+section
+variable (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ)
+    (t : ℝ)
+include I t
+def mixedThetaShape   (u : Angular K) : InfinitePlace K → ℝ :=
   expMapBasis (angularLift K u +
     radialLift K ((Real.log t - Real.log (mixedThetaCovolume K I)) /
       (Module.finrank ℚ K : ℝ)))
 
-def mixedRadialTheta (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ)
-    (t : ℝ) (u : Angular K) : ℂ :=
+def mixedRadialTheta   (u : Angular K)  :=
   fractionalShapeIdealTheta K I (mixedThetaShape K I t u)
     (fun v ↦ ne_of_gt (expMapBasis_pos _ v))
 
-def mixedAngularAverage (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) (t : ℝ) : ℂ :=
+def mixedAngularAverage    :=
   ∫ u in angularCube K, mixedRadialTheta K I t u
 
-def mixedNegAngularAverage (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) (t : ℝ) : ℂ :=
+def mixedNegAngularAverage    :=
   ∫ u in angularCube K, mixedRadialTheta K I t (-u)
+end
 
-def alpha : ℝ :=
+
+def alpha  :=
   (2 : ℝ) ^ (nrRealPlaces K + nrComplexPlaces K) * regulator K /
     (torsionOrder K : ℝ)
 

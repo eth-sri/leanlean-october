@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 
@@ -19,13 +22,13 @@ theorem thetaUniformGaussianTail
       Summable (F t h) ∧
         ‖∑' i, F t h i‖ ≤ A * Real.exp (-(c * η ^ 2 / 2) * t ^ p) := by
   set G : ι → ℝ := fun i => Real.exp (-(c / 2) * ‖x i‖ ^ 2) with hG
-  have hGsum : Summable G := by simpa only [hG] using hsum
+  have hGsum  := hsum
   have hGnonneg : ∀ i, 0 ≤ G i := fun i => by rw [hG]; exact Real.exp_nonneg _
   have hGtsum : 0 ≤ ∑' i, G i := tsum_nonneg hGnonneg
   have hc2 : 0 ≤ c / 2 := by positivity
   refine ⟨P * (1 + ∑' i, G i), mul_pos hP (by linarith), ?_⟩
   intro t ht h hh
-  have htp : 1 ≤ t ^ p := Real.one_le_rpow ht hp.le
+  have htp  := Real.one_le_rpow ht hp.le
   set E' : ℝ := Real.exp (-(c * η ^ 2 / 2) * t ^ p) with hE'
   have hE'pos : 0 < E' := Real.exp_pos _
   have hpoint : ∀ i, ‖F t h i‖ ≤ (P * E') * G i := by
@@ -72,6 +75,6 @@ theorem thetaUniformGaussianTail
     _ ≤ ∑' i, (P * E') * G i := step2
     _ = (P * E') * ∑' i, G i := step3
     _ ≤ (P * (1 + ∑' i, G i)) * E' := step4
-    _ = (P * (1 + ∑' i, G i)) * Real.exp (-(c * η ^ 2 / 2) * t ^ p) := by rw [hE']
+    _ = (P * (1 + ∑' i, G i)) * Real.exp (-(c * η ^ 2 / 2) * t ^ p) := rfl
 
 end DedekindZetaZeroFree

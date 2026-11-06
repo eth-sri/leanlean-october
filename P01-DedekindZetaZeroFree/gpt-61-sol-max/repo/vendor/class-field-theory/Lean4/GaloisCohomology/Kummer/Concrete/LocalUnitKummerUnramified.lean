@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.LocalField.NonarchimedeanLocalField.NormalizedIntegerValuation
 public import ValuedFieldTheory.LocalField.NonarchimedeanLocalField.FiniteUnramified
 public import ValuedFieldTheory.Ramification.Different
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -66,7 +69,7 @@ theorem isUnramifiedValuedExtension_of_unit_kummer_generator
     apply Valuation.HasExtension.ofComapInteger
     ext x
     change vF (algebraMap C F x) ≤ 1 ↔ vC x ≤ 1
-    exact Valuation.HasExtension.val_map_le_one_iff vC vF x
+    apply Valuation.HasExtension.val_map_le_one_iff
   let : IsScalarTower base.valuationSubring
       target.valuationSubring F :=
     ValuationTheory.DiscreteValuationField.Valuation.valuationSubring_isScalarTower_of_hasExtension
@@ -100,7 +103,7 @@ theorem isUnramifiedValuedExtension_of_unit_kummer_generator
     change target.valuation beta = 1
     rw [LocalFieldTheory.localCompleteDVF_valuation_eq]
     exact hbeta
-  let P : Polynomial base.valuationSubring :=
+  let P  :=
     Polynomial.X ^ (n : ℕ) - Polynomial.C bBase
   have hP : Polynomial.aeval z P = 0 := by
     simp [P, hzpow]
@@ -130,9 +133,7 @@ theorem isUnramifiedValuedExtension_of_unit_kummer_generator
       Algebra.adjoin C {(algebraMap target.valuationSubring F) z} = ⊤ := by
     change Algebra.adjoin C {beta} = ⊤
     exact hgen
-  have hunramifiedAt :
-      Algebra.IsUnramifiedAt
-        base.valuationSubring target.maximalIdeal :=
+  have hunramifiedAt  :=
     RamificationTheory.DiscreteValuationField.ValuedExtension.isUnramifiedAt_of_aeval_derivative_isUnit
       base target z hzgen P hP hPderiv
   refine ⟨?_⟩
@@ -141,8 +142,7 @@ theorem isUnramifiedValuedExtension_of_unit_kummer_generator
       base.valuationSubring target.valuationSubring := by
     change Module.Finite 𝒪[C] 𝒪[F]
     infer_instance
-  let : Algebra.IsUnramifiedAt
-      base.valuationSubring target.maximalIdeal := hunramifiedAt
+  let  := hunramifiedAt
   exact Ideal.ramificationIdx_eq_one_of_isUnramifiedAt
 
 end KummerTheory

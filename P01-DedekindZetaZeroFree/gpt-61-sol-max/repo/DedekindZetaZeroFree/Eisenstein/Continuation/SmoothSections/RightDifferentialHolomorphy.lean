@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.ComplexAnalysis.CompactBanachDiskSeries
 public import DedekindZetaZeroFree.Eisenstein.Continuation.RightJets.CompactChartRefinement
 public import DedekindZetaZeroFree.RepresentationTheory.RankOne.RaisingOperators.SphericalDerivativeReconstruction
 
 @[expose] public section
+
 
 noncomputable section
 open scoped Classical NumberField
@@ -25,8 +28,7 @@ variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 abbrev Combination :=
   List (ℂ × List (Fin (KPContActualSphericalRightFieldIdentification.groupDimension F)))
 
-def lift (u : Sections F ζ hζ U R P H) :
-    KPSmoothLocalQuotientCharts.ActualCover F ζ hζ → ℂ :=
+def lift (u : Sections F ζ hζ U R P H)  :=
   fun g => (scalarRepresentative F ζ hζ U R P H u).val
     (KPContSectorQuotientRelationsComparison.piTilde F ζ hζ U
       (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g))
@@ -37,14 +39,13 @@ def rightCombination (D : Combination F)
   fun g => (D.map (fun t => t.1 *
     KPContActualSphericalRightFieldIdentification.actualRightWord F ζ hζ t.2 f g)).sum
 
-def baseProjection : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ →
-    KPFiniteCuspAtlas.rawXU F ζ hζ U :=
+def baseProjection  :=
   fun g => q F ζ hζ U
     (KPContSectorQuotientRelationsComparison.piTilde F ζ hζ U
       (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g))
 
 def CoherentSeries (W : ℂ → smoothSections F ζ hζ U R P H)
-    (b : ℕ → smoothSections F ζ hζ U R P H) (c : ℂ) (r : ℝ) : Prop :=
+    (b : ℕ → smoothSections F ζ hζ U R P H) (c : ℂ) (r : ℝ)  :=
   ∀ A : KPContActualSmoothLineGluing.ChartBall F ζ hζ U R P H,
     SmoothPowerSeriesOn A.ball c r
       (fun j => KPContActualSmoothLineGluing.coefficient F ζ hζ U R P H (b j).val A)
@@ -90,7 +91,7 @@ structure CompactEstimate
 def UniformRightSeries
     (C : Set (KPSmoothLocalQuotientCharts.ActualCover F ζ hζ)) (D : Combination F)
     (W : ℂ → smoothSections F ζ hζ U R P H)
-    (b : ℕ → smoothSections F ζ hζ U R P H) (c : ℂ) (r : ℝ) : Prop :=
+    (b : ℕ → smoothSections F ζ hζ U R P H) (c : ℂ) (r : ℝ)  :=
   ∀ t : ℝ, 0 ≤ t → t < r → ∀ ε : ℝ, 0 < ε →
     ∃ N : ℕ, ∀ M ≥ N, ∀ s ∈ Metric.closedBall c t, ∀ g ∈ C,
       ‖(∑ j ∈ Finset.range M, (s - c) ^ j *
@@ -100,7 +101,7 @@ def UniformRightSeries
 def CompactRightHolomorphic
     (C : Set (KPSmoothLocalQuotientCharts.ActualCover F ζ hζ)) (hC : IsCompact C)
     (D : Combination F) (W : ℂ → smoothSections F ζ hζ U R P H)
-    (b : ℕ → smoothSections F ζ hζ U R P H) (c : ℂ) (r : ℝ) : Prop :=
+    (b : ℕ → smoothSections F ζ hζ U R P H) (c : ℂ) (r : ℝ)  :=
   letI : CompactSpace C := isCompact_iff_compactSpace.mp hC
   ∃ f : ℂ → ContinuousMap C ℂ, ∃ a : ℕ → ContinuousMap C ℂ,
     (∀ s ∈ Metric.ball c r, ∀ g : C,
@@ -142,7 +143,7 @@ private lemma coord_perm {n : ℕ} {U : Set (Space n)} (hU : IsOpen U)
     have hf := coord_smooth hU u hu l
     have hfd : ContDiffOn ℝ (⊤ : ℕ∞) (fderiv ℝ f) U := hf.fderiv_of_isOpen hU (by simp)
     have hd := hfd.differentiableOn (by simp)
-    have hfx := (hf.differentiableOn (by simp)).differentiableAt (hU.mem_nhds hx)
+    
     have hdx := hd.differentiableAt (hU.mem_nhds hx)
     have hsym := second_derivative_symmetric_of_eventually_of_real
       (Filter.Eventually.mono (hU.mem_nhds hx) fun y hy =>
@@ -162,9 +163,9 @@ private lemma list_index {n k : ℕ} (l : List (Fin n)) (hl : l.length ≤ k) :
     | nil => simp
     | cons i l ih =>
       simp only [List.count_cons, beq_iff_eq]
-      simp [Finset.sum_add_distrib, ih (by simpa using Nat.le_of_succ_le hl)]
+      simp [Finset.sum_add_distrib, ih (Nat.le_of_succ_le hl)]
   let α : MultiIndex n k := ⟨fun i => ⟨l.count i, Nat.lt_succ_of_le (List.count_le_length.trans hl)⟩,
-    by simpa using hsum.trans_le hl⟩
+    hsum.trans_le hl⟩
   refine ⟨α, List.perm_iff_count.mpr ?_⟩
   intro i
   simp only [MultiIndex.directions, List.count_flatMap, Function.comp_def, List.count_replicate]
@@ -223,8 +224,8 @@ private lemma word_expansion {n m b : ℕ} {U : Set (Space m)} {V : Set (Space n
       obtain ⟨hsm, hsl⟩ := hts s hs
       simp only [expand, List.mem_cons, List.mem_map] at ht
       rcases ht with rfl | ⟨j, hj, rfl⟩
-      · exact ⟨(hsm.fderiv_of_isOpen hU (by simp)).clm_apply (hfields i), by simpa using hsl.trans (Nat.le_succ _)⟩
-      · refine ⟨hsm.mul ?_, by simpa using Nat.succ_le_succ hsl⟩
+      · exact ⟨(hsm.fderiv_of_isOpen hU (by simp)).clm_apply (hfields i), hsl.trans (Nat.le_succ _)⟩
+      · refine ⟨hsm.mul ?_, Nat.succ_le_succ hsl⟩
         have hdπ : ContDiffOn ℝ (⊤ : ℕ∞) (fderiv ℝ π) U := hπ.fderiv_of_isOpen hU (by simp)
         exact Complex.ofRealCLM.contDiff.comp_contDiffOn
           (((EuclideanSpace.proj (𝕜 := ℝ) j).contDiff.comp_contDiffOn (hdπ.clm_apply (hfields i))))
@@ -276,8 +277,11 @@ private lemma word_expansion {n m b : ℕ} {U : Set (Space m)} {V : Set (Space n
           rw [term_deriv s hs, ih (fun t ht => hss t (by simp [ht]))]
       exact sum_deriv ts (fun _ h => h)
 
-private lemma word_congr {m b : ℕ} {V : Set (Space m)} (hV : IsOpen V)
-    (fields : Fin b → Space m → Space m) (w : List (Fin b))
+section
+variable {m b : ℕ} {V : Set (Space m)} (hV : IsOpen V)
+    (fields : Fin b → Space m → Space m)
+include m b V hV fields
+private lemma word_congr   (w : List (Fin b))
     {f g : Space m → ℂ} (h : Set.EqOn f g V) :
     Set.EqOn (KPContRightJets.rightWord fields w f) (KPContRightJets.rightWord fields w g) V := by
   induction w with
@@ -289,14 +293,15 @@ private lemma word_congr {m b : ℕ} {V : Set (Space m)} (hV : IsOpen V)
       Filter.Eventually.mono (hV.mem_nhds hx) fun y hy => ih hy
     exact congrArg (fun d : Space m →L[ℝ] ℂ => d (fields i x)) he.fderiv_eq
 
-private lemma word_smooth {m b : ℕ} {V : Set (Space m)} (hV : IsOpen V)
-    (fields : Fin b → Space m → Space m)
+private lemma word_smooth  
     (hfields : ∀ i, ContDiffOn ℝ (⊤ : ℕ∞) (fields i) V)
     (w : List (Fin b)) (f : Space m → ℂ) (hf : ContDiffOn ℝ (⊤ : ℕ∞) f V) :
     ContDiffOn ℝ (⊤ : ℕ∞) (KPContRightJets.rightWord fields w f) V := by
   induction w with
   | nil => exact hf
   | cons i w ih => exact (ih.fderiv_of_isOpen hV (by simp)).clm_apply (hfields i)
+end
+
 
 private lemma jets_lower {n k l : ℕ} (hkl : k ≤ l)
     (u : Space n → ℂ) (K : Set (Space n)) (B : ℝ)
@@ -394,28 +399,27 @@ private lemma combination_bound {n m b : ℕ} {V : Set (Space m)} {T : Set (Spac
   congr 1
   apply DoubleCoset.eq.mpr
   refine ⟨1, (KPContSectorCoveredQuotientVocabulary.Gamma F ζ hζ).one_mem,
-    ((u.val : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ)⁻¹), ?_, by simp⟩
+    (u.val⁻¹), ?_, by simp⟩
   apply Subgroup.inv_mem
   exact Subgroup.subset_closure (Set.mem_union_right _ ⟨u.val,u.property,rfl⟩)
 
 private lemma insertion_commutes (a : KPSmoothActualFlowData.GInfinity F)
     (v : FiniteCover F ζ hζ) :
     Commute (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a)
-      (v.val : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ) := by
+      v.val := by
   let e := (PGLComplex.AdelicSlicesRaw.actualArchFiniteSplitting F ζ hζ).choose
   let v' : PGLComplex.AdelicSlicesRaw.finiteSubgroup F ζ hζ :=
     ⟨v.val, by
       rw [KPMsResidualTailRestoration.OutgoingTailL2.CoordinateDescent.fullCusp_finiteSubgroup_eq F ζ hζ]
       exact v.property⟩
   have he := (PGLComplex.AdelicSlicesRaw.actualArchFiniteSplitting F ζ hζ).choose_spec.1
-  have ha : e (a,1) = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a := by
-    exact (he a 1).trans (mul_one _)
+  have ha : e (a,1) = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a := (he a 1).trans (mul_one _)
   have hv : e (1,v') = v.val := by
     have hh : e (1,v') = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ 1 * v.val := he 1 v'
     rw [(KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).1, one_mul] at hh
     exact hh
   rw [← ha,← hv]
-  exact (show Commute (a, (1 : PGLComplex.AdelicSlicesRaw.finiteSubgroup F ζ hζ)) (1,v') from by
+  exact (show Commute (a, (1)) (1,v') from by
     change (a,1) * (1,v') = (1,v') * (a,1); simp).map e.toMonoidHom
 
 private lemma word_level (u : U.toOpenSubgroup)
@@ -472,7 +476,7 @@ private lemma coefficient_smooth (u : smoothSections F ζ hζ U R P H)
       (phaseCoefficient F ζ hζ U R P H u.val A.component (Quotient.mk _ ε) (coordinates F x)) : ℂ)) =
       fun x => (chi F ζ hζ ε : ℂ) * (u.val A.component).val (coordinates F x) := by
     funext x
-    exact phaseCoefficient_class F ζ hζ U R P H u.val A.component ε (coordinates F x)
+    apply phaseCoefficient_class
   rw [he]
   exact contDiff_const.mul ((u.property A.component).comp
     (CoreChartLocalizers.CutoffConstruction.ChartDensityConstruction.coordinates_contDiff _))
@@ -544,7 +548,7 @@ private lemma jet_bound {n : ℕ} (l : ℕ) (T : LocalBall n) (K : Set (Space n)
     (hK : IsCompact K) (hKT : K ⊆ T.carrier) (u : Space n → ℂ)
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) u T.carrier) (α : MultiIndex n l) (x : K) :
     ‖coordinateDerivative α u x‖ ≤ compactJetSeminorm l T K hK hKT u hu := by
-  letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
+  letI  := isCompact_iff_compactSpace.mp hK
   exact (ContinuousMap.norm_coe_le_norm (compactJet T K hKT u hu α) x).trans
     (norm_le_pi_norm (compactJet (m := l) T K hKT u hu) α)
 
@@ -556,7 +560,7 @@ private lemma estimate_of_pieces {n : ℕ}
     Nonempty (CompactEstimate F ζ hζ U R P H C D) := by
   choose A hA hb using (fun j => piece_bound F ζ hζ U R P H (p j) D)
   let E := cover_of_pieces F ζ hζ U R P H p C hp
-  let B : ℝ := 1 + ∑ j, A j
+  let B  := 1 + ∑ j, A j
   have hB : 0 < B := by
     have hh : 0 ≤ ∑ j, A j := Finset.sum_nonneg (fun j _ => (hA j).le)
     dsimp [B]; linarith
@@ -581,7 +585,7 @@ private lemma estimate_of_pieces {n : ℕ}
     (E.chart j).ball (E.compact j) (E.isCompact j) (E.contained j)
     (KPContActualSmoothLineGluing.coefficient F ζ hζ U R P H u (E.chart j)) (hu j)
   have hqj (j : Fin E.count) : 0 ≤ qj j := by
-    letI : CompactSpace (E.compact j) := isCompact_iff_compactSpace.mp (E.isCompact j)
+    letI  := isCompact_iff_compactSpace.mp (E.isCompact j)
     dsimp [qj,compactJetSeminorm]
     unfold jetMaxNorm
     exact norm_nonneg _
@@ -591,9 +595,12 @@ private lemma estimate_of_pieces {n : ℕ}
     exact (jet_bound _ _ _ (E.isCompact j) (E.contained j) _ (hu j) α ⟨x,hx⟩).trans
       (Finset.single_le_sum (f := qj) (fun k _ => hqj k) (Finset.mem_univ j))
 
-private lemma word_sum_sub {m b : ℕ} (T : Set (Space m)) (hT : IsOpen T)
+section
+variable {m b : ℕ} (T : Set (Space m)) (hT : IsOpen T)
     (fields : Fin b → Space m → Space m)
     (hfields : ∀ i, ContDiffOn ℝ (⊤ : ℕ∞) (fields i) T)
+include m b T hT fields hfields
+private lemma word_sum_sub  
     (w : List (Fin b)) (s : Finset ℕ) (c : ℕ → ℂ)
     (f : ℕ → Space m → ℂ) (v : Space m → ℂ)
     (hf : ∀ q ∈ s, ContDiffOn ℝ (⊤ : ℕ∞) (f q) T)
@@ -627,9 +634,7 @@ private lemma word_sum_sub {m b : ℕ} (T : Set (Space m)) (hT : IsOpen T)
     rw [fderiv_const_mul (hd q hq)]
     rfl
 
-private lemma combination_sum_sub {m b : ℕ} (T : Set (Space m)) (hT : IsOpen T)
-    (fields : Fin b → Space m → Space m)
-    (hfields : ∀ i, ContDiffOn ℝ (⊤ : ℕ∞) (fields i) T)
+private lemma combination_sum_sub  
     (D : List (ℂ × List (Fin b))) (s : Finset ℕ) (c : ℕ → ℂ)
     (f : ℕ → Space m → ℂ) (v : Space m → ℂ)
     (hf : ∀ q ∈ s, ContDiffOn ℝ (⊤ : ℕ∞) (f q) T)
@@ -648,6 +653,8 @@ private lemma combination_sum_sub {m b : ℕ} (T : Set (Space m)) (hT : IsOpen T
     rw [Finset.mul_sum]
     simp only [mul_left_comm (t.1)]
     ring
+end
+
 
 private lemma piece_series
     (p : KPContActualRightCanonicalRefinement.Piece (F := F) (ζ := ζ) (hζ := hζ)
@@ -678,7 +685,7 @@ private lemma piece_series
     (fun α y hy => (hN M hM s hs α ⟨y,hy⟩).le) x hx
   have hap j : ContDiffOn ℝ (⊤ : ℕ∞) (a j ∘ p.projection) p.openSet :=
     (ha j).comp p.smooth_projection p.projection_inside
-  have hup : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ p.projection) p.openSet :=
+  have hup  :=
     hu.comp p.smooth_projection p.projection_inside
   have hformula : KPContRightJets.scalarLift p.projection (fun _ => 1) tail =
       fun y => (∑ j ∈ Finset.range M, (s-c)^j * (a j ∘ p.projection) y) -
@@ -728,7 +735,7 @@ private lemma piece_continuous
       (p.group.piece p.compact) := by
   letI : T2Space (KPSmoothLocalQuotientCharts.ActualCover F ζ hζ) :=
     (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).1
-  letI : CompactSpace p.compact := isCompact_iff_compactSpace.mp p.isCompact
+  letI  := isCompact_iff_compactSpace.mp p.isCompact
   letI : CompactSpace U.toOpenSubgroup := isCompact_iff_compactSpace.mp U.isCompact
   let φ : p.compact × U.toOpenSubgroup → p.group.piece p.compact := fun z =>
     ⟨p.group.groupLift z.1.val * (z.2.val : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ),
@@ -742,7 +749,7 @@ private lemma piece_continuous
     intro g
     obtain ⟨x,hx,v,hg⟩ := g.property
     exact ⟨(⟨x,hx⟩,v),Subtype.ext hg.symm⟩
-  have hquot : IsQuotientMap φ := hφ.isClosedMap.isQuotientMap hφ hsurj
+  have hquot  := hφ.isClosedMap.isQuotientMap hφ hsurj
   apply continuousOn_iff_continuous_domRestrict.mpr
   apply hquot.continuous_iff.mpr
   have hcoef : ContDiffOn ℝ (⊤ : ℕ∞)
@@ -810,7 +817,7 @@ theorem kp_cont_actual_common_disk_right_holomorphy
   have hest := estimate_of_pieces F ζ hζ U R P H p C hp D
   have hseries := series_of_pieces F ζ hζ U R P H p C hp D W b c r _coherent
   refine ⟨hest,hseries,?_⟩
-  letI : CompactSpace C := isCompact_iff_compactSpace.mp hC
+  letI  := isCompact_iff_compactSpace.mp hC
   let f : ℂ → ContinuousMap C ℂ := fun s =>
     ⟨fun g => rightCombination F ζ hζ D (lift F ζ hζ U R P H (W s).val) g,
       (continuous_of_pieces F ζ hζ U R P H p C hp D (W s)).domRestrict⟩

@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Theta.Unfolding.MixedRadialJacobian
 public import DedekindZetaZeroFree.Nonvanishing.Mellin.ArchimedeanGaussianFactors
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -25,7 +28,10 @@ private theorem positive_prod_cpow {ι : Type*} (t : Finset ι) (a : ι → ℝ)
         (Finset.prod_nonneg (fun j hj ↦ ha j (Finset.mem_insert_of_mem hj))),
       ih (fun j hj ↦ ha j (Finset.mem_insert_of_mem hj))]
 
-private theorem place_integral (x : K) (hx : x ≠ 0) (s : ℂ) (hs : 0 < s.re)
+section
+variable (x : K) (hx : x ≠ 0) (s : ℂ) (hs : 0 < s.re)
+include x hx s hs
+private theorem place_integral  
     (v : InfinitePlace K) :
     (∫ q : ℝ in Set.Ioi 0,
       (q : ℂ) ^ ((v.mult : ℂ) * s - 1) *
@@ -56,8 +62,7 @@ private theorem place_integral (x : K) (hx : x ≠ 0) (s : ℂ) (hs : 0 < s.re)
       ring_nf
     · ring
 
-theorem integrable_mixedMellinGaussian (x : K) (hx : x ≠ 0)
-    (s : ℂ) (hs : 0 < s.re) :
+theorem integrable_mixedMellinGaussian   :
     Integrable (mixedMellinGaussian K x s)
       (Measure.pi (fun _v : InfinitePlace K ↦
         (volume : Measure ℝ).restrict (Set.Ioi 0))) := by
@@ -82,8 +87,7 @@ theorem integrable_mixedMellinGaussian (x : K) (hx : x ≠ 0)
     push_cast
     ring_nf
 
-theorem integral_mixedMellinGaussian (x : K) (hx : x ≠ 0)
-    (s : ℂ) (hs : 0 < s.re) :
+theorem integral_mixedMellinGaussian   :
     (∫ q : InfinitePlace K → ℝ, mixedMellinGaussian K x s q
       ∂Measure.pi (fun _v : InfinitePlace K ↦
         (volume : Measure ℝ).restrict (Set.Ioi 0))) =
@@ -116,6 +120,8 @@ theorem integral_mixedMellinGaussian (x : K) (hx : x ≠ 0)
     ring
   · intro v hv
     exact pow_nonneg (AbsoluteValue.nonneg _ _) _
+end
+
 
 theorem norm_mixedMellinGaussian_eq_realPart (x : K) (s : ℂ)
     (q : InfinitePlace K → ℝ) (hq : ∀ v, 0 < q v) :
@@ -157,7 +163,7 @@ theorem integral_norm_mixedMellinGaussian (x : K) (hx : x ≠ 0)
         (1 / 4 : ℝ) ^ nrComplexPlaces K *
         ‖Complex.Gammaℝ (s.re : ℂ)‖ ^ nrRealPlaces K *
         ‖Complex.Gammaℂ (s.re : ℂ)‖ ^ nrComplexPlaces K *
-        ((|Algebra.norm ℚ x| : ℚ) : ℝ) ^ (-s.re) := by
+        ((|Algebra.norm ℚ x|) : ℝ) ^ (-s.re) := by
   let μ := Measure.pi (fun _v : InfinitePlace K ↦
     (volume : Measure ℝ).restrict (Set.Ioi 0))
   have heq : (∫ q, ‖mixedMellinGaussian K x s q‖ ∂μ) =
@@ -178,7 +184,7 @@ theorem integral_norm_mixedMellinGaussian (x : K) (hx : x ≠ 0)
   change ‖∫ q, mixedMellinGaussian K x (s.re : ℂ) q
     ∂Measure.pi (fun _v : InfinitePlace K ↦
       (volume : Measure ℝ).restrict (Set.Ioi 0))‖ = _
-  rw [integral_mixedMellinGaussian K x hx (s.re : ℂ) (by simpa using hs)]
+  rw [integral_mixedMellinGaussian K x hx (s.re : ℂ) (hs)]
   simp only [norm_mul, norm_pow]
   have hnorm : 0 < ((|Algebra.norm ℚ x| : ℚ) : ℝ) := by
     have hprod : 0 < ∏ v : InfinitePlace K, v x ^ v.mult :=

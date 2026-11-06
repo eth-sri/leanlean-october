@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Ramification.ClosedSubgroups
 public import ValuedFieldTheory.Ramification.ProfiniteInvariant
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -46,41 +49,43 @@ open scoped Pointwise Topology
 variable (K : Type u) {L : Type v} [Field K] [Field L] [Algebra K L]
 variable [IsGalois K L]
 
+section
+variable (A : _root_.ValuationSubring L)
+include A
 /-- The valuation ring on the decomposition field, represented inside the
 chosen valuation ring as the fixed subring of the decomposition group. -/
-abbrev decompositionFixedSubring (A : _root_.ValuationSubring L) : Subring A :=
+abbrev decompositionFixedSubring    :=
   FixedPoints.subring A (decompositionGroup K A)
 
 /-- The maximal ideal of the decomposition-field valuation ring. -/
-abbrev decompositionFixedMaximalIdeal (A : _root_.ValuationSubring L) :
-    Ideal (decompositionFixedSubring K A) :=
+abbrev decompositionFixedMaximalIdeal    :=
   (IsLocalRing.maximalIdeal A).comap (decompositionFixedSubring K A).subtype
 
 /-- The actual base residue field `κ` in the residue-action exact sequence. -/
-abbrev decompositionResidueField (A : _root_.ValuationSubring L) :=
+abbrev decompositionResidueField   :=
   decompositionFixedSubring K A ⧸ decompositionFixedMaximalIdeal K A
 
 /-- The actual target residue field `λ`. -/
-abbrev selectedResidueField (A : _root_.ValuationSubring L) :=
+abbrev selectedResidueField   :=
   IsLocalRing.ResidueField A
 
 /-- The literal valuation ring on the classical decomposition field `Z_w`. -/
 abbrev decompositionFieldValuationSubring
-    (A : _root_.ValuationSubring L) :
+      :
     _root_.ValuationSubring (decompositionField K A) :=
   A.comap (decompositionField K A).val
 
 /-- The fixed-subring presentation used in the residue-action exact sequence is canonically
 the literal valuation ring on `Z_w`. -/
 def decompositionFieldValuationSubringEquivFixedSubring
-    (A : _root_.ValuationSubring L) :
+      :
     decompositionFieldValuationSubring K A ≃+*
       decompositionFixedSubring K A where
   toFun z :=
     ⟨⟨((z : decompositionField K A) : L), z.property⟩, by
       intro sigma
       apply Subtype.ext
-      change ((sigma : decompositionGroup K A) : L ≃ₐ[K] L)
+      change (sigma : L ≃ₐ[K] L)
           ((z : decompositionField K A) : L) =
         ((z : decompositionField K A) : L)
       exact (IntermediateField.mem_fixedField_iff
@@ -99,6 +104,8 @@ def decompositionFieldValuationSubringEquivFixedSubring
   right_inv r := by ext; rfl
   map_add' _ _ := by ext; rfl
   map_mul' _ _ := by ext; rfl
+end
+
 
 /-- Provides the instance `instIsLocalRing`. -/
 instance decompositionFixedSubring.instIsLocalRing
@@ -111,24 +118,24 @@ private theorem decompositionGroup_action_locallyConstant
     IsLocallyConstant (fun g : decompositionGroup K A ↦ g • a) := by
   rw [IsLocallyConstant.iff_exists_open]
   intro sigma
-  let E : IntermediateField K L := IntermediateField.adjoin K {(a : L)}
+  let E  := IntermediateField.adjoin K {(a : L)}
   let : FiniteDimensional K E :=
     IntermediateField.adjoin.finiteDimensional
       (Algebra.IsIntegral.isIntegral (a : L))
-  let U : Set (decompositionGroup K A) :=
+  let U  :=
     ((↑) : decompositionGroup K A → (L ≃ₐ[K] L)) ⁻¹'
       (((sigma : L ≃ₐ[K] L)) • (E.fixingSubgroup : Set (L ≃ₐ[K] L)))
   refine ⟨U, E.fixingSubgroup_isOpen.smul
       (sigma : L ≃ₐ[K] L) |>.preimage continuous_subtype_val, ?_, ?_⟩
-  · exact ⟨1, E.fixingSubgroup.one_mem, by simp⟩
+  · exact ⟨1, E.fixingSubgroup.one_mem, rfl⟩
   · intro tau htau
     rcases htau with ⟨g, hg, heq⟩
-    have hga : g (a : L) = (a : L) :=
+    have hga  :=
       (IntermediateField.mem_fixingSubgroup_iff E g).mp hg (a : L)
-        (IntermediateField.subset_adjoin (F := K) (S := {(a : L)}) (by simp))
+        (IntermediateField.subset_adjoin (F := K) (S := {(a : L)}) (rfl))
     apply Subtype.ext
-    change (((tau : decompositionGroup K A) : L ≃ₐ[K] L) (a : L)) =
-      (((sigma : decompositionGroup K A) : L ≃ₐ[K] L) (a : L))
+    change ((tau : L ≃ₐ[K] L) (a : L)) =
+      ((sigma : L ≃ₐ[K] L) (a : L))
     rw [← heq]
     simp [AlgEquiv.mul_apply, hga]
 
@@ -146,7 +153,7 @@ private theorem decompositionGroup_action_locallyConstant
  theorem decompositionGroup_compactSpace
     (A : _root_.ValuationSubring L) :
     CompactSpace (decompositionGroup K A) := by
-  have hc : IsCompact (decompositionGroup K A : Set (L ≃ₐ[K] L)) :=
+  have hc  :=
     (decompositionGroup_isClosed K A).isCompact
   exact isCompact_iff_compactSpace.mp hc
 
@@ -188,7 +195,7 @@ instance decompositionFixedSubring.instIsInvariant
     (decompositionFixedMaximalIdeal K A).IsMaximal := by
   let : TopologicalSpace A := ⊥
   let : DiscreteTopology A := ⟨rfl⟩
-  let : CompactSpace (decompositionGroup K A) :=
+  let  :=
     decompositionGroup_compactSpace (K := K) A
   let : ContinuousSMul (decompositionGroup K A) A :=
     decompositionGroup_continuousSMul (K := K) A
@@ -214,19 +221,15 @@ instance decompositionFixedMaximalIdeal.instIsMaximal
 
 /-- The contracted ideal used in the intrinsic presentation is the actual
 maximal ideal of the valuation ring on `Z_w`. -/
-theorem decompositionFixedMaximalIdeal_eq_maximalIdeal
-    (A : _root_.ValuationSubring L) :
-    decompositionFixedMaximalIdeal K A =
-      IsLocalRing.maximalIdeal (decompositionFixedSubring K A) :=
+def decompositionFixedMaximalIdeal_eq_maximalIdeal
+    (A : _root_.ValuationSubring L)  :=
   IsLocalRing.eq_maximalIdeal
     (decompositionFixedMaximalIdeal.instIsMaximal (K := K) A)
 
 /-- Canonical identification of the literal residue field of `Z_w` with the
 base residue field used by the residue-action exact sequence. -/
 def decompositionFieldResidueEquiv
-    (A : _root_.ValuationSubring L) :
-    IsLocalRing.ResidueField (decompositionFieldValuationSubring K A) ≃+*
-      decompositionResidueField K A :=
+    (A : _root_.ValuationSubring L)  :=
   (IsLocalRing.ResidueField.mapEquiv
       (decompositionFieldValuationSubringEquivFixedSubring (K := K) A)).trans
     (Ideal.quotientEquivAlgOfEq ℤ
@@ -313,52 +316,52 @@ omit [IsGalois K L] in
       IsLocalRing.residue A (sigma • x) :=
   rfl
 
-/-- The canonical embedding of the literal residue field of `Z_w` into the
-selected residue field `λ`; it is the usual residue map, expressed through
-the canonical fixed-subring comparison. -/
-def decompositionFieldResidueMapToSelected
-    (A : _root_.ValuationSubring L) :
-    IsLocalRing.ResidueField (decompositionFieldValuationSubring K A) →+*
-      selectedResidueField A :=
-  (algebraMap (decompositionResidueField K A)
-      (selectedResidueField A)).comp
-    (decompositionFieldResidueEquiv (K := K) A).toRingHom
 
-/-- The residue action in the exact sequence fixes the actual residue field of the
-decomposition field.  This is the action-compatibility part of the bridge
-from the intrinsic quotient presentation to the classical `λ/κ`. -/
-theorem decompositionGroupResidueAction_commutes_decompositionFieldResidue
-    (A : _root_.ValuationSubring L)
-    (sigma : decompositionGroup K A)
-    (x : IsLocalRing.ResidueField
-      (decompositionFieldValuationSubring K A)) :
-    decompositionGroupResidueAction (K := K) A sigma
-        (decompositionFieldResidueMapToSelected (K := K) A x) =
-      decompositionFieldResidueMapToSelected (K := K) A x := by
-  exact (decompositionGroupResidueAction (K := K) A sigma).commutes
-    (decompositionFieldResidueEquiv (K := K) A x)
 
-omit [IsGalois K L] in
-/-- The residue-action homomorphism has the ordinary inertia group as kernel. -/
-theorem decompositionGroupResidueAction_ker
-    (A : _root_.ValuationSubring L) :
-    MonoidHom.ker (decompositionGroupResidueAction (K := K) A) =
-      inertiaGroup K A := by
-  ext sigma
-  rw [MonoidHom.mem_ker, ← residueAction_ker (K := K) A,
-    MonoidHom.mem_ker]
-  constructor
-  · intro hsigma
-    ext y
-    obtain ⟨x, rfl⟩ := IsLocalRing.residue_surjective y
-    have h := DFunLike.congr_fun hsigma (IsLocalRing.residue A x)
-    exact h
-  · intro hsigma
-    apply AlgEquiv.ext
-    intro y
-    obtain ⟨x, rfl⟩ := IsLocalRing.residue_surjective y
-    have h := DFunLike.congr_fun hsigma (IsLocalRing.residue A x)
-    exact h
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The residue-action exact sequence, including the infinite case: reduction is onto the full
 residue Galois group. -/
@@ -367,7 +370,7 @@ theorem decompositionGroupResidueAction_surjective
     Function.Surjective (decompositionGroupResidueAction (K := K) A) := by
   let : TopologicalSpace A := ⊥
   let : DiscreteTopology A := ⟨rfl⟩
-  let : CompactSpace (decompositionGroup K A) :=
+  let  :=
     decompositionGroup_compactSpace (K := K) A
   let : ContinuousSMul (decompositionGroup K A) A :=
     decompositionGroup_continuousSMul (K := K) A
@@ -384,19 +387,7 @@ theorem decompositionGroupResidueAction_surjective
       (decompositionFixedMaximalIdeal K A)
       (IsLocalRing.maximalIdeal A) sigma
   refine ⟨tau.1, ?_⟩
-  have htau_eq :
-      decompositionGroupToMaximalIdealStabilizer (K := K) A tau.1 = tau := by
-    apply Subtype.ext
-    rfl
-  change
-    Ideal.Quotient.stabilizerHom
-        (IsLocalRing.maximalIdeal A)
-        (decompositionFixedMaximalIdeal K A)
-        (decompositionGroup K A)
-        (decompositionGroupToMaximalIdealStabilizer (K := K) A tau.1) =
-      sigma
-  rw [htau_eq]
-  exact htau
+  assumption
 
 /-- The residue-action exact sequence: `λ/κ` is normal, also in the infinite case. -/
 instance decompositionResidueExtension_normal
@@ -404,7 +395,7 @@ instance decompositionResidueExtension_normal
     Normal (decompositionResidueField K A) (selectedResidueField A) := by
   let : TopologicalSpace A := ⊥
   let : DiscreteTopology A := ⟨rfl⟩
-  let : CompactSpace (decompositionGroup K A) :=
+  let  :=
     decompositionGroup_compactSpace (K := K) A
   let : ContinuousSMul (decompositionGroup K A) A :=
     decompositionGroup_continuousSMul (K := K) A
@@ -419,46 +410,46 @@ instance decompositionResidueExtension_normal
     (decompositionFixedMaximalIdeal K A)
     (IsLocalRing.maximalIdeal A)
 
-omit [IsGalois K L] in
-/-- Exactness at `G_w` in the residue-action exact sequence. -/
-theorem inertiaGroup_mulExact_decompositionGroupResidueAction
-    (A : _root_.ValuationSubring L) :
-    Function.MulExact (inertiaGroup K A).subtype
-      (decompositionGroupResidueAction (K := K) A) := by
-  rw [MonoidHom.mulExact_iff, decompositionGroupResidueAction_ker]
-  exact (Subgroup.range_subtype _).symm
 
-/-- The residue-action exact sequence, arbitrary Galois form:
-`1 → I_w → G_w → Gal(λ/κ) → 1`. -/
-theorem decompositionGroupResidueAction_shortExact
-    (A : _root_.ValuationSubring L) :
-    Function.Injective (inertiaGroup K A).subtype ∧
-      Function.MulExact (inertiaGroup K A).subtype
-        (decompositionGroupResidueAction (K := K) A) ∧
-      Function.Surjective (decompositionGroupResidueAction (K := K) A) := by
-  exact ⟨Subtype.coe_injective,
-    inertiaGroup_mulExact_decompositionGroupResidueAction (K := K) A,
-    decompositionGroupResidueAction_surjective (K := K) A⟩
 
-/-- Quotient form of the residue-action exact sequence. -/
-def decompositionQuotientEquivResidueGalois
-    (A : _root_.ValuationSubring L) :
-    decompositionGroup K A ⧸ inertiaGroup K A ≃*
-      (selectedResidueField A ≃ₐ[decompositionResidueField K A]
-        selectedResidueField A) :=
-  (QuotientGroup.quotientMulEquivOfEq
-      (decompositionGroupResidueAction_ker (K := K) A).symm).trans
-    (QuotientGroup.quotientKerEquivOfSurjective
-      (decompositionGroupResidueAction (K := K) A)
-      (decompositionGroupResidueAction_surjective (K := K) A))
 
-/-- States the theorem `decompositionQuotientEquivResidueGalois_mk`. -/
-@[simp] theorem decompositionQuotientEquivResidueGalois_mk
-    (A : _root_.ValuationSubring L) (sigma : decompositionGroup K A) :
-    decompositionQuotientEquivResidueGalois (K := K) A
-        (QuotientGroup.mk' (inertiaGroup K A) sigma) =
-      decompositionGroupResidueAction (K := K) A sigma := by
-  exact QuotientGroup.kerLift_mk (decompositionGroupResidueAction (K := K) A) sigma
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end ValuationSubring
 end HilbertRamification

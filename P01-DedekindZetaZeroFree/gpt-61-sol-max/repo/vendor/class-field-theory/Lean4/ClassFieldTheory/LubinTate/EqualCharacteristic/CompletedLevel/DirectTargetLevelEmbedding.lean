@@ -103,12 +103,15 @@ theorem equalCharacteristicCompletedLevelBaseHom_changedUniformizer
     ((a : F.residueField⟦X⟧) * PowerSeries.X)
   simpa [RingHom.comp_apply, map_mul] using h.symm
 
+section
+variable (F : LocalField.{u, v} K)
+    [CharP K F.residueCharacteristic]
+    (a : F.residueField⟦X⟧ˣ) (n : ℕ)
+include F a n
 /-- The genuine analytic value `theta(lambda)` is a root of the target
 primitive polynomial over `k((T))`. -/
 theorem equalCharacteristicDirectThetaAtCompletedPrimitiveRoot_isRoot_target
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      :
     ((equalCharacteristicChangedPrimitivePolynomial F a n).map
       (equalCharacteristicCompletedLevelBaseHom F n)).IsRoot
       (equalCharacteristicDirectThetaAtCompletedPrimitiveRoot F a n :
@@ -125,9 +128,7 @@ theorem equalCharacteristicDirectThetaAtCompletedPrimitiveRoot_isRoot_target
 /-- The finite target `uT` level embedded into the standard completed level,
 sending its chosen generator to the analytic value `theta(lambda)`. -/
 noncomputable def equalCharacteristicDirectTargetLevelFieldToCompleted
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      :
     equalCharacteristicChangedLevelField F a n
       →ₐ[F.residueField⸨X⸩]
         equalCharacteristicCompletedLevelField F n := by
@@ -173,9 +174,7 @@ noncomputable def equalCharacteristicDirectTargetLevelFieldToCompleted
 primitive generator. -/
 @[simp]
 theorem equalCharacteristicDirectTargetLevelFieldToCompleted_generator
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
+      :
     equalCharacteristicDirectTargetLevelFieldToCompleted F a n
         (equalCharacteristicChangedLevelGenerator F a n) =
       (equalCharacteristicDirectThetaAtCompletedPrimitiveRoot F a n :
@@ -195,6 +194,8 @@ theorem equalCharacteristicDirectTargetLevelFieldToCompleted_generator
       F.residueField⸨X⸩
       (chosenEqualCharacteristicChangedPrimitiveRoot_isIntegral F a n)
   rw [hgen, AdjoinRoot.liftAlgHom_root]
+end
+
 
 end EqualCharacteristic
 end LubinTate

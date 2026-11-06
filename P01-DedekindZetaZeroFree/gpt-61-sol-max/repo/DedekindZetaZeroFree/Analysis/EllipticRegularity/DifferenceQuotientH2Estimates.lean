@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.WeakH2.SecondWeakDerivatives
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -11,13 +14,13 @@ namespace DedekindZetaZeroFree.KPContLocalDifference
 open KPContLocalNorm KPContLocalEnergy
 
 def BoundedFirstDerivatives {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
-    (D : Coefficients B cρ Cρ κ Λ) (L : ℝ) : Prop :=
+    (D : Coefficients B cρ Cρ κ Λ) (L : ℝ)  :=
   ∀ x ∈ B.carrier, ∀ i j k : Fin n,
     ‖fderiv ℝ (fun y => D.density y * D.matrix y i j) x
       (EuclideanSpace.single k 1)‖ ≤ L
 
 def WeakH2Estimate {n : ℕ} (inner outer : LocalBall n)
-    {cρ Cρ κ Λ : ℝ} (D : Coefficients outer cρ Cρ κ Λ) (M C : ℝ) : Prop :=
+    {cρ Cρ κ Λ : ℝ} (D : Coefficients outer cρ Cρ κ Λ) (M C : ℝ)  :=
   ∀ (z : ℂ), ‖z‖ ≤ M → ∀ (u : IntegerSobolev outer 1) (h : BallL2 outer),
     WeakEquation D z u h → ∃ v : IntegerSobolev inner 2,
       Represents v (fun x => value u x) ∧
@@ -60,7 +63,7 @@ theorem kp_cont_local_difference_h2 (n : ℕ) (hn : 0 < n)
       symmetric := D.symmetric
       ellipticity := D.ellipticity
       upper_bound := D.upper_bound }
-  let A : ℝ := K * (u.sobolevNorm + ‖h‖)
+  let A  := K * (u.sobolevNorm + ‖h‖)
   have hA : 0 ≤ A := by dsimp [A, IntegerSobolev.sobolevNorm]; positivity
   have hpair := fun j k => WeakH2.difference_bound_to_test_pairing inner outer hc hgap
     (gradient u j) k ((R - r) / 8) A (by linarith) hA

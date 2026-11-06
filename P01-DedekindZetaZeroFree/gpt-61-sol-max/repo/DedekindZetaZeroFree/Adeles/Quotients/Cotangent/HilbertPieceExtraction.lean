@@ -34,10 +34,13 @@ def localCoefficient (v : Family (U := U) (H := H)) (n : ℕ)
 def e (v : Family (U := U) (H := H)) (n : ℕ) : (cover.chart n).domain → E F :=
   (liftedPiece cover n).indicator (localCoefficient cover v n)
 
+
+local notation:max "current_kp_cont_actual_cotangent_borel_refinement" => kp_cont_actual_cotangent_borel_refinement F ζ hζ U R P H
+
 theorem measurable_e (v : Family (U := U) (H := H)) (n : ℕ) :
     Measurable (e cover v n) := by
   have hs : MeasurableSet (liftedPiece cover n) :=
-    (kp_cont_actual_cotangent_borel_refinement F ζ hζ U R P H cover).lifted_measurable n
+    (current_kp_cont_actual_cotangent_borel_refinement cover).lifted_measurable n
   have hlc : Measurable (localCoefficient cover v n) :=
     (v.property.1 (cover.chart n)).comp (coordinates_continuous (cover.chart n)).measurable
   exact hlc.indicator hs
@@ -48,7 +51,7 @@ theorem e_equivariant (v : Family (U := U) (H := H)) (n : ℕ)
       actualTensor (cover.chart n) γ y (e cover v n y) := by
   show e cover v n ((cover.chart n).action γ.val.1 y) =
     actualTensor (cover.chart n) γ y (e cover v n y)
-  have hp := kp_cont_actual_cotangent_borel_refinement F ζ hζ U R P H cover
+  have hp := current_kp_cont_actual_cotangent_borel_refinement cover
   have hmem : (cover.chart n).action γ.val.1 y ∈ liftedPiece cover n ↔
       y ∈ liftedPiece cover n := by
     have hinv := hp.lifted_invariant n γ.val.1
@@ -114,7 +117,7 @@ theorem toBase_eq_q (n : ℕ) (y : (cover.chart n).domain) :
 
 theorem memLp_e (v : Family (U := U) (H := H)) (hv : squareFinite v) (n : ℕ) :
     MemLp (e cover v n) 2 (cover.chart n).liftedMeasure := by
-  have hp := kp_cont_actual_cotangent_borel_refinement F ζ hζ U R P H cover
+  have hp := current_kp_cont_actual_cotangent_borel_refinement cover
   have hs : MeasurableSet (liftedPiece cover n) := hp.lifted_measurable n
   have hf : Measurable (localCoefficient cover v n) :=
     (v.property.1 (cover.chart n)).comp (coordinates_continuous (cover.chart n)).measurable
@@ -149,11 +152,14 @@ theorem memLp_e (v : Family (U := U) (H := H)) (hv : squareFinite v) (n : ℕ) :
       hf.stronglyMeasurable.aestronglyMeasurable]
   simpa only [enorm_rpow_two, ENNReal.toReal_ofNat] using hfin
 
-def pieceLp (v : SquareFiniteFamily (U := U) (H := H)) (n : ℕ) :
+
+local notation:max "current_SquareFiniteFamily" => SquareFiniteFamily (U := U) (H := H)
+
+def pieceLp (v : current_SquareFiniteFamily) (n : ℕ) :
     Lp (E F) 2 (cover.chart n).liftedMeasure :=
   (memLp_e cover v.val v.property n).toLp (e cover v.val n)
 
-theorem pieceLp_mem_Q (v : SquareFiniteFamily (U := U) (H := H)) (n : ℕ) :
+theorem pieceLp_mem_Q (v : current_SquareFiniteFamily) (n : ℕ) :
     pieceLp cover v n ∈ Q cover n := by
   have hcoe : ⇑(pieceLp cover v n) =ᵐ[(localData (cover.chart n)).measure] e cover v.val n :=
     MemLp.coeFn_toLp _
@@ -177,7 +183,7 @@ theorem pieceLp_mem_Q (v : SquareFiniteFamily (U := U) (H := H)) (n : ℕ) :
     intro hy
     exact hx.trans (e_supported cover v.val n x hy)
 
-def component (v : SquareFiniteFamily (U := U) (H := H)) (n : ℕ) : Q cover n :=
+def component (v : current_SquareFiniteFamily) (n : ℕ) : Q cover n :=
   ⟨pieceLp cover v n, pieceLp_mem_Q cover v n⟩
 
 private theorem local_lintegral_lt_top (v : Family (U := U) (H := H)) (hv : squareFinite v)
@@ -185,7 +191,7 @@ private theorem local_lintegral_lt_top (v : Family (U := U) (H := H)) (hv : squa
     (∫⁻ y in liftedPiece cover n,
       ENNReal.ofReal (‖localCoefficient cover v n y‖ ^ 2)
         ∂(cover.chart n).liftedMeasure) < ⊤ := by
-  have hp := kp_cont_actual_cotangent_borel_refinement F ζ hζ U R P H cover
+  have hp := current_kp_cont_actual_cotangent_borel_refinement cover
   have hpt : ∀ y : (cover.chart n).domain,
       ENNReal.ofReal (normSquare v ((cover.chart n).toBase y) : ℝ) =
         ENNReal.ofReal (‖localCoefficient cover v n y‖ ^ 2) := by
@@ -208,13 +214,13 @@ private theorem local_lintegral_lt_top (v : Family (U := U) (H := H)) (hv : squa
         ∂(cover.chart k).liftedMeasure) n) hfin_tsum
   simpa only [hpt] using hterm
 
-theorem component_normSquare (v : SquareFiniteFamily (U := U) (H := H)) (n : ℕ) :
+theorem component_normSquare (v : current_SquareFiniteFamily) (n : ℕ) :
     (∫⁻ y in liftedPiece cover n,
       ENNReal.ofReal (‖localCoefficient cover v.val n y‖ ^ 2)
         ∂(cover.chart n).liftedMeasure) =
       ENNReal.ofReal (‖component cover v n‖ ^ 2) := by
   have hs : MeasurableSet (liftedPiece cover n) :=
-    (kp_cont_actual_cotangent_borel_refinement F ζ hζ U R P H cover).lifted_measurable n
+    (current_kp_cont_actual_cotangent_borel_refinement cover).lifted_measurable n
   have hf : Measurable (localCoefficient cover v.val n) :=
     (v.val.property.1 (cover.chart n)).comp (coordinates_continuous (cover.chart n)).measurable
   have hfin := local_lintegral_lt_top cover v.val v.property n
@@ -248,11 +254,11 @@ theorem component_normSquare (v : SquareFiniteFamily (U := U) (H := H)) (n : ℕ
       Real.sq_sqrt ENNReal.toReal_nonneg, ENNReal.ofReal_toReal hfin.ne]
   exact hmain.symm
 
-theorem tsum_component_normSquare (v : SquareFiniteFamily (U := U) (H := H)) :
+theorem tsum_component_normSquare (v : current_SquareFiniteFamily) :
     (∑' n, ENNReal.ofReal (‖component cover v n‖ ^ 2)) =
       ∫⁻ x, ENNReal.ofReal (normSquare v.val x : ℝ)
         ∂(baseMeasure (R := R) (P := P) (U := U)) := by
-  have hp := kp_cont_actual_cotangent_borel_refinement F ζ hζ U R P H cover
+  have hp := current_kp_cont_actual_cotangent_borel_refinement cover
   have hbase : Measurable (fun x => ENNReal.ofReal (normSquare v.val x : ℝ)) :=
     ENNReal.measurable_ofReal.comp (measurable_normSquare v.val).coe_nnreal_real
   rw [hp.lintegral_eq_tsum (fun x => ENNReal.ofReal (normSquare v.val x : ℝ)) hbase]
@@ -263,12 +269,12 @@ theorem tsum_component_normSquare (v : SquareFiniteFamily (U := U) (H := H)) :
   simp only [localCoefficient, coefficient]
   norm_num
 
-theorem tsum_component_normSquare_lt_top (v : SquareFiniteFamily (U := U) (H := H)) :
+theorem tsum_component_normSquare_lt_top (v : current_SquareFiniteFamily) :
     (∑' n, ENNReal.ofReal (‖component cover v n‖ ^ 2)) < ⊤ := by
   rw [tsum_component_normSquare cover v]
   exact v.property
 
-theorem memℓp_component (v : SquareFiniteFamily (U := U) (H := H)) :
+theorem memℓp_component (v : current_SquareFiniteFamily) :
     Memℓp (component cover v) 2 := by
   rw [memℓp_gen_iff (by norm_num : 0 < (2 : ℝ≥0∞).toReal)]
   have hlt := tsum_component_normSquare_lt_top cover v
@@ -285,11 +291,11 @@ theorem memℓp_component (v : SquareFiniteFamily (U := U) (H := H)) :
   simpa only [ENNReal.toReal_ofNat, Real.rpow_two] using hsum
 
 theorem component_eq_of_aeEquivalent
-    (v w : SquareFiniteFamily (U := U) (H := H)) (hvw : AeEquivalent v.val w.val)
+    (v w : current_SquareFiniteFamily) (hvw : AeEquivalent v.val w.val)
     (n : ℕ) : component cover v n = component cover w n := by
   apply Subtype.ext
   apply Lp.ext
-  have hp := kp_cont_actual_cotangent_borel_refinement F ζ hζ U R P H cover
+  have hp := current_kp_cont_actual_cotangent_borel_refinement cover
   have hs : MeasurableSet (liftedPiece cover n) := hp.lifted_measurable n
   have hmeas : Measurable (fun x => ENNReal.ofReal (normSquare (v.val - w.val) x : ℝ)) :=
     ENNReal.measurable_ofReal.comp (measurable_normSquare (v.val - w.val)).coe_nnreal_real
@@ -350,13 +356,13 @@ theorem component_eq_of_aeEquivalent
       rw [Set.indicator_of_notMem hyy _, Set.indicator_of_notMem hyy _]
   exact hcoe_v.trans (hee.trans hcoe_w.symm)
 
-theorem localCoefficient_add (v w : SquareFiniteFamily (U := U) (H := H)) (n : ℕ) :
+theorem localCoefficient_add (v w : current_SquareFiniteFamily) (n : ℕ) :
     localCoefficient cover (v + w).val n
       = localCoefficient cover v.val n + localCoefficient cover w.val n := by
   funext y
   simp only [localCoefficient, coefficient, Submodule.coe_add, Pi.add_apply]
 
-theorem component_add (v w : SquareFiniteFamily (U := U) (H := H)) (n : ℕ) :
+theorem component_add (v w : current_SquareFiniteFamily) (n : ℕ) :
     component cover (v + w) n = component cover v n + component cover w n := by
   apply Subtype.ext
   show pieceLp cover (v + w) n = pieceLp cover v n + pieceLp cover w n
@@ -386,12 +392,12 @@ theorem component_add (v w : SquareFiniteFamily (U := U) (H := H)) (n : ℕ) :
   exact hcoe_vw.trans (hptE.trans
     ((hcoe_v.symm.add hcoe_w.symm).trans (Lp.coeFn_add _ _).symm))
 
-theorem localCoefficient_smul (c : ℂ) (v : SquareFiniteFamily (U := U) (H := H)) (n : ℕ) :
+theorem localCoefficient_smul (c : ℂ) (v : current_SquareFiniteFamily) (n : ℕ) :
     localCoefficient cover (c • v).val n = c • localCoefficient cover v.val n := by
   funext y
   simp only [localCoefficient, coefficient, Submodule.coe_smul, Pi.smul_apply]
 
-theorem component_smul (c : ℂ) (v : SquareFiniteFamily (U := U) (H := H)) (n : ℕ) :
+theorem component_smul (c : ℂ) (v : current_SquareFiniteFamily) (n : ℕ) :
     component cover (c • v) n = c • component cover v n := by
   apply Subtype.ext
   show pieceLp cover (c • v) n = c • pieceLp cover v n
@@ -416,10 +422,10 @@ theorem component_smul (c : ℂ) (v : SquareFiniteFamily (U := U) (H := H)) (n :
   exact hcoe_cv.trans (hptE.trans
     ((hcoe_v.symm.const_smul c).trans (Lp.coeFn_smul c _).symm))
 
-def extractFamily (v : SquareFiniteFamily (U := U) (H := H)) : PieceHilbert cover :=
+def extractFamily (v : current_SquareFiniteFamily) : PieceHilbert cover :=
   ⟨component cover v, memℓp_component cover v⟩
 
-theorem extractFamily_eq_of_aeEquivalent (v w : SquareFiniteFamily (U := U) (H := H))
+theorem extractFamily_eq_of_aeEquivalent (v w : current_SquareFiniteFamily)
     (hvw : AeEquivalent v.val w.val) : extractFamily cover v = extractFamily cover w := by
   apply lp.ext
   funext n
@@ -427,16 +433,16 @@ theorem extractFamily_eq_of_aeEquivalent (v w : SquareFiniteFamily (U := U) (H :
 
 theorem Quotient_lift_toAeQuotient
     (h : ∀ a b, Submodule.quotientRel (R := ℂ)
-      (M := SquareFiniteFamily (U := U) (H := H))
+      (M := current_SquareFiniteFamily)
       (nullSubmodule (U := U) (H := H)) a b →
       extractFamily cover a = extractFamily cover b)
-    (v : SquareFiniteFamily (U := U) (H := H)) :
+    (v : current_SquareFiniteFamily) :
     Quotient.lift (extractFamily cover) h (toAeQuotient v) = extractFamily cover v := by
   show Quotient.lift (extractFamily cover) h (Quotient.mk'' v) = extractFamily cover v
   rw [Quotient.mk''_eq_mk]
   exact Quotient.lift_mk _ _ v
 
-def extractionLinear : SquareFiniteFamily (U := U) (H := H) →ₗ[ℂ] PieceHilbert cover where
+def extractionLinear : current_SquareFiniteFamily →ₗ[ℂ] PieceHilbert cover where
   toFun := extractFamily cover
   map_add' := by
     intro x y
@@ -449,8 +455,8 @@ def extractionLinear : SquareFiniteFamily (U := U) (H := H) →ₗ[ℂ] PieceHil
     funext n
     exact component_smul cover c x n
 
-theorem ext_welldef (a b : SquareFiniteFamily (U := U) (H := H))
-    (hab : Submodule.quotientRel (R := ℂ) (M := SquareFiniteFamily (U := U) (H := H))
+theorem ext_welldef (a b : current_SquareFiniteFamily)
+    (hab : Submodule.quotientRel (R := ℂ) (M := current_SquareFiniteFamily)
       (nullSubmodule (U := U) (H := H)) a b) :
     extractFamily cover a = extractFamily cover b := by
   refine extractFamily_eq_of_aeEquivalent cover a b
@@ -478,11 +484,11 @@ def Ext : CotangentAeQuotient (U := U) (H := H) →ₗ[ℂ] PieceHilbert cover w
       Quotient_lift_toAeQuotient cover (ext_welldef cover) v]
     exact map_smul (extractionLinear cover) c v
 
-theorem Ext_toAeQuotient (v : SquareFiniteFamily (U := U) (H := H)) :
+theorem Ext_toAeQuotient (v : current_SquareFiniteFamily) :
     Ext cover (toAeQuotient v) = extractFamily cover v :=
   Quotient_lift_toAeQuotient cover (ext_welldef cover) v
 
-theorem Ext_component (v : SquareFiniteFamily (U := U) (H := H)) (n : ℕ) :
+theorem Ext_component (v : current_SquareFiniteFamily) (n : ℕ) :
     Ext cover (toAeQuotient v) n = component cover v n := by
   rw [Ext_toAeQuotient cover v]
   rfl

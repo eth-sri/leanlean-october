@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.PGLAffineCoordinates
 public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.PGLChartNormalization
 
 @[expose] public section
+
 
 noncomputable section
 namespace DedekindZetaZeroFree.PGLComplex
@@ -27,13 +30,13 @@ instance : BorelSpace Group := ⟨rfl⟩
 def complexCoordinates (x : Coordinates) : Fin 3 → ℂ :=
   ![⟨x 0, x 1⟩, ⟨x 2, x 3⟩, ⟨x 4, x 5⟩]
 
-def affineMatrix (x : Coordinates) : Matrix (Fin 2) (Fin 2) ℂ :=
+def affineMatrix (x : Coordinates)  :=
   !![1, complexCoordinates x 1; complexCoordinates x 2, 1 + complexCoordinates x 0]
 
-def delta (x : Coordinates) : ℂ :=
+def delta (x : Coordinates)  :=
   1 + complexCoordinates x 0 - complexCoordinates x 1 * complexCoordinates x 2
 
-def affineSource : Set Coordinates := {x | delta x ≠ 0}
+def affineSource  := {x | delta x ≠ 0}
 
 theorem affineMatrix_det (x : Coordinates) : (affineMatrix x).det = delta x := by
   simp [affineMatrix, delta, Matrix.det_fin_two]
@@ -52,41 +55,49 @@ def affineInverse (g : Group) : Coordinates :=
   ![u.re, u.im, b.re, b.im, c.re, c.im]
 
 abbrev AffineGL := Matrix.GeneralLinearGroup (Fin 2) ℂ
-def rawInverse (a : AffineGL) : Coordinates :=
+section
+variable (a : AffineGL)
+include a
+def rawInverse   : Coordinates :=
   let u := a.val 1 1 / a.val 0 0 - 1
   let b := a.val 0 1 / a.val 0 0
   let c := a.val 1 0 / a.val 0 0
   ![u.re, u.im, b.re, b.im, c.re, c.im]
-private theorem scalar_val (a : AffineGL) (z : ℂˣ) (i j : Fin 2) :
+private theorem scalar_val   (z : ℂˣ) (i j : Fin 2) :
     (a * Matrix.GeneralLinearGroup.scalar (Fin 2) z).val i j = a.val i j * (z : ℂ) := by
   simp [Units.val_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_diagonal]
-private theorem rawInverse_scalar (a : AffineGL) (z : ℂˣ) :
+private theorem rawInverse_scalar   (z : ℂˣ) :
     rawInverse (a * Matrix.GeneralLinearGroup.scalar (Fin 2) z) = rawInverse a := by
   simp [rawInverse, scalar_val, mul_div_mul_right _ _ (Units.ne_zero z)]
-private theorem rawInverse_mk (a : AffineGL) : affineInverse (Matrix.ProjGenLinGroup.mk a) = rawInverse a := by
+private theorem rawInverse_mk   : affineInverse (Matrix.ProjGenLinGroup.mk a) = rawInverse a := by
   have he : Matrix.ProjGenLinGroup.mk a = Matrix.ProjGenLinGroup.mk (Matrix.ProjGenLinGroup.mk a).out := (Quotient.out_eq _).symm
   obtain ⟨z, hz⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp he
   change rawInverse (Matrix.ProjGenLinGroup.mk a).out = rawInverse a
   rw [← hz, rawInverse_scalar]
-theorem target_mk (a : AffineGL) : Matrix.ProjGenLinGroup.mk a ∈ affineTarget ↔ a.val 0 0 ≠ 0 := by
+theorem target_mk   : Matrix.ProjGenLinGroup.mk a ∈ affineTarget ↔ a.val 0 0 ≠ 0 := by
   obtain ⟨z, hz⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp ((Quotient.out_eq (Matrix.ProjGenLinGroup.mk a)).symm)
   change (Matrix.ProjGenLinGroup.mk a).out.val 0 0 ≠ 0 ↔ a.val 0 0 ≠ 0
   rw [← hz, scalar_val]
   simp
-private theorem complex_raw (a : AffineGL) : complexCoordinates (rawInverse a) =
+private theorem complex_raw   : complexCoordinates (rawInverse a) =
     ![a.val 1 1 / a.val 0 0 - 1, a.val 0 1 / a.val 0 0, a.val 1 0 / a.val 0 0] := by
   ext i
   fin_cases i <;> apply Complex.ext <;> simp [complexCoordinates, rawInverse]
-private theorem raw_matrix (a : AffineGL) (ha : a.val 0 0 ≠ 0) :
+end
+
+section
+variable (a : AffineGL) (ha : a.val 0 0 ≠ 0)
+include a ha
+private theorem raw_matrix   :
     affineMatrix (rawInverse a) = (a.val 0 0)⁻¹ • a.val := by
   ext i j
   fin_cases i <;> fin_cases j <;> simp [affineMatrix, complex_raw, smul_eq_mul, div_eq_mul_inv, ha, mul_comm]
   exact mul_comm _ _
-private theorem raw_source (a : AffineGL) (ha : a.val 0 0 ≠ 0) : rawInverse a ∈ affineSource := by
+private theorem raw_source   : rawInverse a ∈ affineSource := by
   change delta (rawInverse a) ≠ 0
   rw [← affineMatrix_det, raw_matrix a ha, Matrix.det_smul]
   exact mul_ne_zero (pow_ne_zero _ (inv_ne_zero ha)) (Matrix.GeneralLinearGroup.det_ne_zero a)
-private theorem raw_point (a : AffineGL) (ha : a.val 0 0 ≠ 0) :
+private theorem raw_point   :
     affinePoint (rawInverse a) = Matrix.ProjGenLinGroup.mk a := by
   have hs := raw_source a ha
   unfold affinePoint
@@ -98,24 +109,31 @@ private theorem raw_point (a : AffineGL) (ha : a.val 0 0 ≠ 0) :
   ext i j
   simp [Matrix.mul_diagonal, smul_eq_mul, ha]
   field_simp
+end
+
 private theorem complex_zero : complexCoordinates (0 : Coordinates) = 0 := by
   ext i
   fin_cases i <;> rfl
-private theorem raw_affine (x : Coordinates) (hx : x ∈ affineSource) :
+section
+variable (x : Coordinates) (hx : x ∈ affineSource)
+include x hx
+private theorem raw_affine   :
     rawInverse (Matrix.GeneralLinearGroup.mkOfDetNeZero (affineMatrix x)
       (by rwa [affineMatrix_det])) = x := by
   ext i
   fin_cases i <;> simp [rawInverse, Matrix.GeneralLinearGroup.mkOfDetNeZero,
     affineMatrix, complexCoordinates]
-private theorem point_target (x : Coordinates) (hx : x ∈ affineSource) :
+private theorem point_target   :
     affinePoint x ∈ affineTarget := by
   unfold affinePoint
   rw [dif_pos (show delta x ≠ 0 from hx), target_mk]
   simp [Matrix.GeneralLinearGroup.mkOfDetNeZero, affineMatrix]
-private theorem inverse_point (x : Coordinates) (hx : x ∈ affineSource) :
+private theorem inverse_point   :
     affineInverse (affinePoint x) = x := by
   unfold affinePoint
   rw [dif_pos (show delta x ≠ 0 from hx), rawInverse_mk, raw_affine x hx]
+end
+
 private theorem inverse_source (g : Group) (hg : g ∈ affineTarget) :
     affineInverse g ∈ affineSource := by
   obtain ⟨a, rfl⟩ := Matrix.ProjGenLinGroup.mk_surjective g
@@ -141,8 +159,7 @@ private theorem continuous_complexCoordinates : Continuous complexCoordinates :=
   · exact continuous_complex_pair 0 1
   · exact continuous_complex_pair 2 3
   · exact continuous_complex_pair 4 5
-private theorem continuous_coordinate (i : Fin 3) :
-    Continuous (fun x : Coordinates => complexCoordinates x i) :=
+private def continuous_coordinate (i : Fin 3)  :=
   (continuous_apply i).comp continuous_complexCoordinates
 private theorem continuous_affineMatrix : Continuous affineMatrix := by
   apply continuous_pi
@@ -162,7 +179,7 @@ private theorem open_source : IsOpen affineSource :=
 private theorem quotient_open : IsOpenQuotientMap (Matrix.ProjGenLinGroup.mk : AffineGL → Group) :=
   ⟨Matrix.ProjGenLinGroup.mk_surjective, QuotientGroup.continuous_mk,
     QuotientGroup.isOpenMap_coe⟩
-private theorem continuous_entry (i j : Fin 2) : Continuous (fun a : AffineGL => a.val i j) :=
+private def continuous_entry (i j : Fin 2)  :=
   (continuous_apply j).comp ((continuous_apply i).comp (Units.continuous_val (M := Matrix (Fin 2) (Fin 2) ℂ)))
 private theorem open_target : IsOpen affineTarget := by
   rw [← quotient_open.isQuotientMap.isOpen_preimage]
@@ -205,8 +222,7 @@ private theorem continuous_point : ContinuousOn affinePoint affineSource := by
 private theorem smooth_complex_pair (i j : Fin 6) :
     ContDiff ℝ (⊤ : ℕ∞) (fun x : Coordinates => (⟨x i, x j⟩ : ℂ)) := by
   have h : ContDiff ℝ (⊤ : ℕ∞)
-      (fun x : Coordinates => (x i : ℂ) + (x j : ℂ) * Complex.I) := by
-    exact (Complex.ofRealCLM.contDiff.comp (contDiff_apply ℝ ℝ i)).add
+      (fun x : Coordinates => (x i : ℂ) + (x j : ℂ) * Complex.I) := (Complex.ofRealCLM.contDiff.comp (contDiff_apply ℝ ℝ i)).add
       ((Complex.ofRealCLM.contDiff.comp (contDiff_apply ℝ ℝ j)).mul contDiff_const)
   convert h using 1
   funext x
@@ -238,7 +254,7 @@ theorem affine_chart_exists : ∃ C : OpenPartialHomeomorph Coordinates Group,
       open_target := open_target }
   exact ⟨C, rfl, rfl, fun _ _ => rfl, fun _ _ => rfl⟩
 
-def affineChart : OpenPartialHomeomorph Coordinates Group := affine_chart_exists.choose
+def affineChart  := affine_chart_exists.choose
 
 @[simp] theorem affineChart_source : affineChart.source = affineSource :=
   affine_chart_exists.choose_spec.1
@@ -271,7 +287,7 @@ theorem affineChart_symm_apply (g : Group) (hg : g ∈ affineTarget) :
 section AffineConstruction
 open scoped Matrix.Norms.Elementwise
 
-def translatedAffineChart (g : Group) : OpenPartialHomeomorph Group Coordinates :=
+def translatedAffineChart (g : Group)  :=
   (affineChart.trans (Homeomorph.mulLeft g).toOpenPartialHomeomorph).symm
 
 @[instance_reducible]
@@ -308,11 +324,11 @@ theorem contDiffAt_matrixRatios (a : Matrix (Fin 2) (Fin 2) ℂ)
     Matrix.cons_val_one, Matrix.cons_val_fin_one, Matrix.cons_val,
     Complex.sub_re, Complex.one_re, Complex.sub_im, Complex.one_im, sub_zero]
   · exact (Complex.reCLM.contDiff.comp_contDiffAt a (hd 1 1)).sub contDiffAt_const
-  · exact Complex.imCLM.contDiff.comp_contDiffAt a (hd 1 1)
-  · exact Complex.reCLM.contDiff.comp_contDiffAt a (hd 0 1)
-  · exact Complex.imCLM.contDiff.comp_contDiffAt a (hd 0 1)
-  · exact Complex.reCLM.contDiff.comp_contDiffAt a (hd 1 0)
-  · exact Complex.imCLM.contDiff.comp_contDiffAt a (hd 1 0)
+  · apply Complex.imCLM.contDiff.comp_contDiffAt <;> aesop
+  · apply Complex.reCLM.contDiff.comp_contDiffAt <;> aesop
+  · apply Complex.imCLM.contDiff.comp_contDiffAt <;> aesop
+  · apply Complex.reCLM.contDiff.comp_contDiffAt <;> aesop
+  · apply Complex.imCLM.contDiff.comp_contDiffAt <;> aesop
 
 theorem contDiff_affineMatrix : ContDiff ℝ (⊤ : ℕ∞) affineMatrix := by
   apply contDiff_pi.mpr
@@ -325,7 +341,7 @@ theorem contDiff_affineMatrix : ContDiff ℝ (⊤ : ℕ∞) affineMatrix := by
   · exact (contDiff_pi.mp contDiff_complexCoordinates) 2
   · exact contDiff_const.add ((contDiff_pi.mp contDiff_complexCoordinates) 0)
 
-def affineAdjugate (x : Coordinates) : Matrix (Fin 2) (Fin 2) ℂ :=
+def affineAdjugate (x : Coordinates)  :=
   !![1 + complexCoordinates x 0, -complexCoordinates x 1;
     -complexCoordinates x 2, 1]
 
@@ -347,9 +363,7 @@ theorem contDiff_affineAdjugate : ContDiff ℝ (⊤ : ℕ∞) affineAdjugate := 
   · exact ((contDiff_pi.mp contDiff_complexCoordinates) 2).neg
   · exact contDiff_const
 
-theorem matrixRatios_mk (a : Matrix.GeneralLinearGroup (Fin 2) ℂ) :
-    affineInverse (Matrix.ProjGenLinGroup.mk a) = matrixRatios a.val :=
-  rawInverse_mk a
+alias matrixRatios_mk := _root_.DedekindZetaZeroFree.PGLComplex.rawInverse_mk
 
 theorem affineAdjugate_class (x : Coordinates) (hx : x ∈ affineSource) :
     Matrix.ProjGenLinGroup.mk (Matrix.GeneralLinearGroup.mkOfDetNeZero (affineAdjugate x)
@@ -372,11 +386,13 @@ theorem affineAdjugate_class (x : Coordinates) (hx : x ∈ affineSource) :
     rw [dif_pos (show delta x ≠ 0 from hx)]
   rw [hx', ← hm]
 
-def affineTranslate (a b : Matrix.GeneralLinearGroup (Fin 2) ℂ)
-    (x : Coordinates) : Coordinates := matrixRatios (a.val * affineMatrix x * b.val)
+section
+variable (a b : Matrix.GeneralLinearGroup (Fin 2) ℂ)
+    (x : Coordinates)
+include a b x
+def affineTranslate    := matrixRatios (a.val * affineMatrix x * b.val)
 
-theorem contDiffAt_affineTranslate (a b : Matrix.GeneralLinearGroup (Fin 2) ℂ)
-    (x : Coordinates) (hx : (a.val * affineMatrix x * b.val) 0 0 ≠ 0) :
+theorem contDiffAt_affineTranslate   (hx : (a.val * affineMatrix x * b.val) 0 0 ≠ 0) :
     ContDiffAt ℝ (⊤ : ℕ∞) (affineTranslate a b) x := by
   have he (i j : Fin 2) : ContDiff ℝ (⊤ : ℕ∞)
       (fun x : Coordinates => affineMatrix x i j) :=
@@ -394,8 +410,7 @@ theorem contDiffAt_affineTranslate (a b : Matrix.GeneralLinearGroup (Fin 2) ℂ)
         contDiff_const)
   exact (contDiffAt_matrixRatios _ hx).comp x hm.contDiffAt
 
-theorem affineTranslate_eq_inverse_translate (a b : Matrix.GeneralLinearGroup (Fin 2) ℂ)
-    (x : Coordinates) (hx : x ∈ affineSource) :
+theorem affineTranslate_eq_inverse_translate   (hx : x ∈ affineSource) :
     affineTranslate a b x = affineInverse
       (Matrix.ProjGenLinGroup.mk a * affinePoint x * Matrix.ProjGenLinGroup.mk b) := by
   unfold affinePoint
@@ -403,8 +418,7 @@ theorem affineTranslate_eq_inverse_translate (a b : Matrix.GeneralLinearGroup (F
     ← map_mul Matrix.ProjGenLinGroup.mk, matrixRatios_mk]
   rfl
 
-theorem affineTranslate_denominator (a b : Matrix.GeneralLinearGroup (Fin 2) ℂ)
-    (x : Coordinates) (hx : x ∈ affineSource) :
+theorem affineTranslate_denominator   (hx : x ∈ affineSource) :
     (a.val * affineMatrix x * b.val) 0 0 ≠ 0 ↔
       Matrix.ProjGenLinGroup.mk a * affinePoint x * Matrix.ProjGenLinGroup.mk b ∈
         affineTarget := by
@@ -412,6 +426,8 @@ theorem affineTranslate_denominator (a b : Matrix.GeneralLinearGroup (Fin 2) ℂ
   rw [dif_pos (show delta x ≠ 0 from hx), ← map_mul Matrix.ProjGenLinGroup.mk,
     ← map_mul Matrix.ProjGenLinGroup.mk, target_mk]
   rfl
+end
+
 
 end AffineConstruction
 
@@ -423,7 +439,7 @@ open scoped Matrix.Norms.Elementwise
 
 namespace AffineHaarFrame
 
-def leftFrame (x : Coordinates) : Matrix (Fin 3) (Fin 3) ℂ :=
+def leftFrame (x : Coordinates)  :=
   let d := 1 + complexCoordinates x 0
   let b := complexCoordinates x 1
   let c := complexCoordinates x 2
@@ -449,7 +465,7 @@ def coordinatesEquiv : Coordinates ≃ₗ[ℝ] (Fin 3 → ℂ) where
     ext i
     fin_cases i <;> apply Complex.ext <;> simp [complexCoordinates, Complex.real_smul]
 
-def coordinatesCLE : Coordinates ≃L[ℝ] (Fin 3 → ℂ) :=
+def coordinatesCLE  :=
   coordinatesEquiv.toContinuousLinearEquiv
 
 end AffineHaarFrame
@@ -465,9 +481,7 @@ namespace DedekindZetaZeroFree.PGLComplex
 open MeasureTheory Topology
 open scoped Matrix.Norms.Operator Manifold ContDiff
 
-private theorem smooth_coordinate (i : Fin 3) :
-    ContDiff ℝ (⊤ : ℕ∞) (fun x : Coordinates => complexCoordinates x i) := by
-  exact (contDiff_pi.mp contDiff_complexCoordinates) i
+private def smooth_coordinate (i : Fin 3)  := (contDiff_pi.mp contDiff_complexCoordinates) i
 theorem contDiff_delta : ContDiff ℝ (⊤ : ℕ∞) delta :=
   (contDiff_const.add (smooth_coordinate 0)).sub
     ((smooth_coordinate 1).mul (smooth_coordinate 2))
@@ -475,7 +489,7 @@ theorem contDiff_delta : ContDiff ℝ (⊤ : ℕ∞) delta :=
 section AffineConstruction
 open scoped Matrix.Norms.Elementwise
 
-def affineMultiply (p : Coordinates × Coordinates) : Coordinates :=
+def affineMultiply (p : Coordinates × Coordinates)  :=
   matrixRatios (affineMatrix p.1 * affineMatrix p.2)
 
 theorem translatedAffineChart_source (g : Group) :
@@ -582,7 +596,7 @@ theorem affine_lie_structure : ∃ C : ChartedSpace Coordinates Group,
     have hz (g : Group) : translatedAffineChart g g = 0 := by
       change affineChart.symm (g⁻¹ * g) = 0
       rw [inv_mul_cancel, ← affineChart_zero]
-      exact affineChart.left_inv (by simp)
+      apply affineChart.left_inv <;> aesop
     rw [hz, hz]
     rw [contDiffWithinAt_univ]
     let a : Matrix.GeneralLinearGroup (Fin 2) ℂ := p.2.out
@@ -660,7 +674,7 @@ theorem affine_lie_structure : ∃ C : ChartedSpace Coordinates Group,
     have hz : translatedAffineChart p p = 0 := by
       change affineChart.symm (p⁻¹ * p) = 0
       rw [inv_mul_cancel, ← affineChart_zero]
-      exact affineChart.left_inv (by simp)
+      apply affineChart.left_inv <;> aesop
     rw [hz, contDiffWithinAt_univ]
     let a : Matrix.GeneralLinearGroup (Fin 2) ℂ := p.out
     have ha : Matrix.ProjGenLinGroup.mk a = p := Quotient.out_eq _
@@ -743,8 +757,7 @@ theorem complexLeft_hasFDerivAt (x : Coordinates) :
   let d := 1 + complexCoordinates x 0
   let b := complexCoordinates x 1
   let c := complexCoordinates x 2
-  have hden : HasFDerivAt (fun z : Fin 3 → ℂ => 1 + b * z 2) (b • P 2) 0 := by
-    simpa using (hp 2).const_mul b |>.const_add 1
+  have hden : HasFDerivAt (fun z : Fin 3 → ℂ => 1 + b * z 2) (b • P 2) 0 := (hp 2).const_mul b |>.const_add 1
   have hi : HasFDerivAt (fun z : Fin 3 → ℂ => (1 + b * z 2)⁻¹) (-b • P 2) 0 := by
     have hi0 : HasFDerivAt (fun z : ℂ => z⁻¹)
         (-ContinuousLinearMap.mulLeftRight ℂ ℂ 1 1) (1 + b * (0 : Fin 3 → ℂ) 2) := by
@@ -770,7 +783,7 @@ theorem complexLeft_hasFDerivAt (x : Coordinates) :
         leftFrame, Matrix.toLin'_apply, Matrix.mulVec, dotProduct,
         Fin.sum_univ_three, P, d, b, c, delta] <;> ring
 
-def realFrame (x : Coordinates) : Coordinates →L[ℝ] Coordinates :=
+def realFrame (x : Coordinates)  :=
   coordinatesCLE.symm.toContinuousLinearMap.comp
     (((leftFrameCLM x).restrictScalars ℝ).comp coordinatesCLE.toContinuousLinearMap)
 
@@ -832,8 +845,7 @@ theorem affine_haar_density (μ : Measure Group) [μ.IsHaarMeasure] :
   letI : SecondCountableTopology Group := by
     change SecondCountableTopology (Matrix.GeneralLinearGroup (Fin 2) ℂ ⧸ Subgroup.center _)
     infer_instance
-  have hw : Measurable (fun x : Coordinates => 1 / ‖delta x‖ ^ 4) := by
-    exact measurable_const.div (contDiff_delta.continuous.measurable.norm.pow_const 4)
+  have hw : Measurable (fun x : Coordinates => 1 / ‖delta x‖ ^ 4) := measurable_const.div (contDiff_delta.continuous.measurable.norm.pow_const 4)
   obtain ⟨c, hcpos, he⟩ := AffineLie.haar_chart_density_comparison
     affineChart (fun x => 1 / ‖delta x‖ ^ 4) hw μ ν hd
   refine ⟨c, hcpos, ?_⟩

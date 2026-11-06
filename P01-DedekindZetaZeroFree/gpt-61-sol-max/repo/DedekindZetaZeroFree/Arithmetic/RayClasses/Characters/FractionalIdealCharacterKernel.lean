@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Representatives.PositiveDenominator
 public import ClassFieldTheory.Theorems.ConductorsAndRayClassFields.RayPrincipalIdealMembership
 
 @[expose] public section
+
 
 open scoped NumberField
 
@@ -61,11 +64,9 @@ theorem rayFractionalCharacterKernel
   have hJd_coe : (Jd : ClassFieldTheory.NumberFieldFractionalIdealGroup K) =
       rayIdealFractionalIdeal K (Ideal.span {d}) hId := rfl
   have hJa_val : (((Ja : ClassFieldTheory.NumberFieldFractionalIdealGroup K) : F)) =
-      ((Ideal.span {a} : Ideal (𝓞 K)) : F) := by
-    rw [hJa_coe, rayIdealFractionalIdeal_coe]
+      ((Ideal.span {a}) : F) := rfl
   have hJd_val : (((Jd : ClassFieldTheory.NumberFieldFractionalIdealGroup K) : F)) =
-      ((Ideal.span {d} : Ideal (𝓞 K)) : F) := by
-    rw [hJd_coe, rayIdealFractionalIdeal_coe]
+      ((Ideal.span {d}) : F) := rfl
 
   have hfa : f Ja = 1 := by
     have h := hf (Ideal.span {a}) hIa hca Ja hJa_val
@@ -77,7 +78,7 @@ theorem rayFractionalCharacterKernel
     exact Units.val_eq_one.mp h
 
   have hdK : (d : K) ≠ 0 := fun hzero =>
-    hd (IsFractionRing.injective (𝓞 K) K (by simpa using hzero))
+    hd (IsFractionRing.injective (𝓞 K) K (hzero))
   have hdiv : (a : K) / (d : K) = (x : K) := by
     rw [had, mul_div_cancel_left₀ _ hdK]
   have hunit : toPrincipalIdeal (𝓞 K) K x =

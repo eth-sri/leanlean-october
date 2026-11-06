@@ -551,11 +551,14 @@ open scoped Classical Topology
 namespace DedekindZetaZeroFree.KPCompactGreen.ScalarFluxDescent
 open KPMeanZeroWeightedEnergy HyperbolicChart
 
-def radialMarginal
-    {F : Type} [Field F] [NumberField F]
+section
+variable {F : Type} [Field F] [NumberField F]
     {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
     {S : Subgroup (KPCuspArithmetic.PGL2 F)} {D : KPCuspCharts.ParabolicData F S}
     (G : KPCuspCharts.ChartOutput F hF S D)
+include F hF S D G in
+def radialMarginal
+     
     (W : Space (KPCuspLogShape.dimension F) → Cotangent (KPCuspLogShape.dimension F))
     (t : ℝ) : ℝ :=
   ∫ c : KPCuspCharts.Cross F,
@@ -567,11 +570,9 @@ def radialMarginal
 private theorem arch_real (d : ℕ) (z : KPArch.Space d) : arch d (real d z) = z := by
   ext i <;> simp [arch, real]
 
+include F hF S D G in
 theorem radialMarginal_radial_mul
-    {F : Type} [Field F] [NumberField F]
-    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-    {S : Subgroup (KPCuspArithmetic.PGL2 F)} {D : KPCuspCharts.ParabolicData F S}
-    (G : KPCuspCharts.ChartOutput F hF S D)
+     
     (a : ℝ → ℝ)
     (V : Space (KPCuspLogShape.dimension F) → Cotangent (KPCuspLogShape.dimension F))
     (t : ℝ) :
@@ -586,11 +587,9 @@ theorem radialMarginal_radial_mul
   simp_rw [mul_div_assoc]
   exact integral_const_mul _ _
 
+include F hF S D G in
 theorem hasCompactSupport_radialMarginal_radial_mul
-    {F : Type} [Field F] [NumberField F]
-    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-    {S : Subgroup (KPCuspArithmetic.PGL2 F)} {D : KPCuspCharts.ParabolicData F S}
-    (G : KPCuspCharts.ChartOutput F hF S D)
+     
     (a : ℝ → ℝ) (ha : HasCompactSupport a)
     (V : Space (KPCuspLogShape.dimension F) → Cotangent (KPCuspLogShape.dimension F)) :
     HasCompactSupport (radialMarginal G (fun x i k =>
@@ -604,11 +603,9 @@ theorem hasCompactSupport_radialMarginal_radial_mul
   change radialMarginal G _ t = 0
   rw [radialMarginal_radial_mul, hz, zero_mul]
 
+include F hF S D G in
 theorem radialMarginal_radial_mul_contDiff_of_contDiffOn
-    {F : Type} [Field F] [NumberField F]
-    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-    {S : Subgroup (KPCuspArithmetic.PGL2 F)} {D : KPCuspCharts.ParabolicData F S}
-    (G : KPCuspCharts.ChartOutput F hF S D)
+     
     {T : ℝ} (a : ℝ → ℝ) (ha : CompactRadialTest T a)
     (W : Space (KPCuspLogShape.dimension F) → Cotangent (KPCuspLogShape.dimension F))
     (hW : ContDiffOn ℝ (⊤ : ℕ∞) (radialMarginal G W) (Set.Ioi T)) :
@@ -633,11 +630,9 @@ theorem radialMarginal_radial_mul_contDiff_of_contDiffOn
     change a s * radialMarginal G W s = 0
     rw [hs, zero_mul]
 
+include F hF S D G in
 theorem integral_codifferential_eq_radial_of_slice_identity
-    {F : Type} [Field F] [NumberField F]
-    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-    {S : Subgroup (KPCuspArithmetic.PGL2 F)} {D : KPCuspCharts.ParabolicData F S}
-    (G : KPCuspCharts.ChartOutput F hF S D)
+     
     (W : Space (KPCuspLogShape.dimension F) → Cotangent (KPCuspLogShape.dimension F))
     (hW : Integrable (fun p : KPCuspCharts.Coordinates F =>
       (codifferential (KPCuspLogShape.dimension F) W
@@ -672,11 +667,9 @@ theorem integral_codifferential_eq_radial_of_slice_identity
   rw [integral_prod_symm _ hW]
   exact integral_congr_ae hslice
 
+include F hF S D G in
 theorem scalar_flux_radial_disintegration
-    {F : Type} [Field F] [NumberField F]
-    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-    {S : Subgroup (KPCuspArithmetic.PGL2 F)} {D : KPCuspCharts.ParabolicData F S}
-    (G : KPCuspCharts.ChartOutput F hF S D)
+     
     {T : ℝ} (u : KPArch.Space (KPCuspLogShape.dimension F) → ℝ)
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) u
       {z | T < KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) z})
@@ -708,6 +701,8 @@ theorem scalar_flux_radial_disintegration
         G u hu hinv a ha
     · exact Filter.Eventually.of_forall
         (ScalarFluxDisintegration.cutoff_scalar_codifferential_slice G u hu hinv a ha)
+end
+
 
 end DedekindZetaZeroFree.KPCompactGreen.ScalarFluxDescent
 

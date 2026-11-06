@@ -445,19 +445,19 @@ theorem localArtinMap_toMonoidHom :
     rfl]
   exact (topologicalAbelianization_finite_equiv K L).symm_apply_apply _
 
-/-- The continuous local Artin map is canonical: after forgetting topology,
-it agrees with the reciprocity symbol computed from any realization of the
-extension in the fixed separable closure. -/
-theorem localArtinMap_embedding_independent
-    (i : L →ₐ[K] SeparableClosure K) :
-    (topologicalAbelianization_finite_equiv K L).symm.toMonoidHom.comp
-        (localArtinMap K L).toMonoidHom =
-      concreteNormResidueSymbolOfEmbedding K L i
-        (localResidueDatum K)
-        (localHenselianValuation K)
-        (separableClosureUnits_isClassFormation K) := by
-  rw [localArtinMap_toMonoidHom,
-    localArtinMonoidHom_eq_of_embedding K L i]
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The continuous finite local Artin map is surjective. -/
 theorem localArtinMap_surjective :
@@ -465,18 +465,18 @@ theorem localArtinMap_surjective :
   (localReciprocityEquiv K L).surjective.comp
     (QuotientGroup.mk'_surjective (localNormSubgroup K L))
 
-/-- The kernel of the continuous finite local Artin map is the norm
-subgroup. -/
-theorem localArtinMap_ker :
-    (localArtinMap K L).toMonoidHom.ker = localNormSubgroup K L := by
-  ext x
-  rw [MonoidHom.mem_ker]
-  change
-    localReciprocityEquiv K L (normClass K L x) = 1 ↔
-      x ∈ localNormSubgroup K L
-  rw [← map_one (localReciprocityEquiv K L)]
-  rw [(localReciprocityEquiv K L).apply_eq_iff_eq]
-  exact normClass_eq_one_iff_mem K L x
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The canonical first-isomorphism equivalence induced by the continuous
 local Artin map. -/

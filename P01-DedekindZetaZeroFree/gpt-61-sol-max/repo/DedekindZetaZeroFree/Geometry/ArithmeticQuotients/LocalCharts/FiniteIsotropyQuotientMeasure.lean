@@ -74,14 +74,17 @@ private theorem local_measure_card {G X : Type*} [Group G] [Countable G]
   _ = (Fintype.card H : ℝ≥0∞) * μ ((⋃ g : G, g • T) ∩ D) := by
     rw [hi, Set.iUnion_inter, measure_iUnion hd (fun q => (hT.const_smul q.out).inter hD)]
 
-private theorem local_quotient_card {G X : Type*} [Group G] [Countable G]
+section
+variable {G X : Type*} [Group G] [Countable G]
  [MeasurableSpace X] [MulAction G X] [MeasurableConstSMul G X]
  (μ : Measure X) [SMulInvariantMeasure G X μ]
  (H : Subgroup G) [Fintype H] (D S : Set X)
  (hD : MeasurableSet D) (hS : MeasurableSet S)
  (hFD : IsFundamentalDomain G D μ)
  (hinv : ∀ h : H, (h.val : G) • S = S)
- (hsep : ∀ g : G, ∀ x ∈ S, g • x ∈ S → g ∈ H) :
+ (hsep : ∀ g : G, ∀ x ∈ S, g • x ∈ S → g ∈ H)
+include G X μ H D S hD hS hFD hinv hsep
+private theorem local_quotient_card   :
  Measure.map (Quotient.mk (MulAction.orbitRel G X))
    ((Fintype.card H : ℝ≥0∞)⁻¹ • μ.restrict S) =
  (Measure.map (Quotient.mk (MulAction.orbitRel G X)) (μ.restrict D)).restrict
@@ -140,19 +143,14 @@ private theorem local_quotient_card {G X : Type*} [Group G] [Countable G]
  rw [← mul_assoc, ENNReal.inv_mul_cancel (by exact_mod_cast Fintype.card_ne_zero)
    (by simp), one_mul]
 
-theorem finite_isotropy_quotient_measure {G X : Type*} [Group G] [Countable G]
- [MeasurableSpace X] [MulAction G X] [MeasurableConstSMul G X]
- (μ : Measure X) [SMulInvariantMeasure G X μ]
- (H : Subgroup G) [Fintype H] (D S : Set X)
- (hD : MeasurableSet D) (hS : MeasurableSet S)
- (hFD : IsFundamentalDomain G D μ)
- (hinv : ∀ h : H, (h.val : G) • S = S)
- (hsep : ∀ g : G, ∀ x ∈ S, g • x ∈ S → g ∈ H) :
+theorem finite_isotropy_quotient_measure   :
  Measure.map (Quotient.mk (MulAction.orbitRel G X))
    ((Fintype.card H : ℝ≥0∞)⁻¹ • μ.restrict S) =
  (Measure.map (Quotient.mk (MulAction.orbitRel G X)) (μ.restrict D)).restrict
    ((Quotient.mk (MulAction.orbitRel G X)) '' S) := by
   exact local_quotient_card μ H D S hD hS hFD hinv hsep
+end
+
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 variable (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)

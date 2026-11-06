@@ -38,8 +38,11 @@ private theorem fourier_norm_le (g : ℝ → ℂ) (t : ℝ) :
         ∫ x : ℝ, ‖Real.fourierChar (-inner ℝ x t) • g x‖ := norm_integral_le_integral_norm _
     _ = _ := by simp
 
-private theorem fourier_c2_majorant (g : ℝ → ℂ) (hg : ContDiff ℝ 2 g)
-    (hgi : ∀ n : ℕ, n ≤ 2 → Integrable (iteratedDeriv n g)) (t : ℝ) :
+section
+variable (g : ℝ → ℂ) (hg : ContDiff ℝ 2 g)
+    (hgi : ∀ n : ℕ, n ≤ 2 → Integrable (iteratedDeriv n g))
+include g hg hgi
+private theorem fourier_c2_majorant   (t : ℝ) :
     ‖FourierTransform.fourier g t‖ ≤
       ((∫ x : ℝ, ‖g x‖) + (∫ x : ℝ, ‖iteratedDeriv 2 g x‖)) * (1 + t ^ 2)⁻¹ := by
   have hft := Real.fourier_iteratedDeriv (N := 2) (n := 2) hg
@@ -68,8 +71,7 @@ private theorem fourier_c2_majorant (g : ℝ → ℂ) (hg : ContDiff ℝ 2 g)
   apply (le_div_iff₀ (by positivity : 0 < 1 + t ^ 2)).2
   nlinarith
 
-theorem fourier_c2_l1_bound (g : ℝ → ℂ) (hg : ContDiff ℝ 2 g)
-    (hgi : ∀ n : ℕ, n ≤ 2 → Integrable (iteratedDeriv n g)) :
+theorem fourier_c2_l1_bound   :
     Integrable (FourierTransform.fourier g) ∧
     (∫ t : ℝ, ‖FourierTransform.fourier g t‖) ≤
       ((∫ x : ℝ, ‖g x‖) + (∫ x : ℝ, ‖iteratedDeriv 2 g x‖)) *
@@ -87,6 +89,8 @@ theorem fourier_c2_l1_bound (g : ℝ → ℂ) (hg : ContDiff ℝ 2 g)
     (∫ t : ℝ, ‖FourierTransform.fourier g t‖) ≤ ∫ t : ℝ, M * (1 + t ^ 2)⁻¹ :=
       integral_mono hf.norm hint (fourier_c2_majorant g hg hgi)
     _ = _ := integral_const_mul _ _
+end
+
 
 private theorem compact_iterated {f : ℝ → ℂ} (hf : HasCompactSupport f) (n : ℕ) :
     HasCompactSupport (iteratedDeriv n f) := by
@@ -119,9 +123,12 @@ private theorem scaled_envelope (v x B : ℝ) (hv : 0 < v) :
 
 set_option maxHeartbeats 1200000 in
 
-theorem uniform_fourier_l1 {I : Type*} [Fintype I]
+section
+variable {I : Type*} [Fintype I]
     (ξ : ℝ → ℝ) (hξ : IsCutoff ξ) (P : I → ℝ → ℂ)
-    (hP : UniformLogBounds P) :
+    (hP : UniformLogBounds P)
+include I ξ hξ P hP
+theorem uniform_fourier_l1   :
     ∀ B : ℝ, 0 < B → ∃ K : ℝ, 0 < K ∧
       ∀ (i : I) (v : ℝ), 0 < v →
         Integrable (localizedProfile ξ (P i) v) ∧
@@ -221,9 +228,7 @@ theorem uniform_fourier_l1 {I : Type*} [Fintype I]
       mul_le_mul_of_nonneg_right (add_le_add hi0 hi2) hJ
     _ ≤ (L * ((∫ x, W0 x) + (∫ x, W2 x)) * J + 1) * m := by nlinarith
 
-theorem fourier_inversion {I : Type*} [Fintype I]
-    (ξ : ℝ → ℝ) (hξ : IsCutoff ξ) (P : I → ℝ → ℂ)
-    (hP : UniformLogBounds P) (i : I) (v : ℝ) (hv : 0 < v) (x : ℝ) :
+theorem fourier_inversion   (i : I) (v : ℝ) (hv : 0 < v) (x : ℝ) :
     localizedProfile ξ (P i) v x =
       FourierTransformInv.fourierInv
         (FourierTransform.fourier (localizedProfile ξ (P i) v)) x := by
@@ -238,6 +243,8 @@ theorem fourier_inversion {I : Type*} [Fintype I]
     exact (Complex.continuous_ofReal.comp hξ.1.continuous).mul
       ((hP.1 i).continuous.comp (continuous_const.add continuous_id))
   exact (hf.fourierInv_fourier_eq hff hcont.continuousAt).symm
+end
+
 
 theorem dyadic_log_mem (C D qc qd : ℝ) (hC : 0 < C) (hD : 0 < D)
     (hc : C ≤ qc ∧ qc < 2 * C) (hd : D ≤ qd ∧ qd < 2 * D) :

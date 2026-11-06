@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 
 @[expose] public section
+
 
 open scoped NumberField Classical
 
@@ -19,12 +22,12 @@ theorem quadraticCharacter_quotient_card_two
   have hmem : ∀ g, ψ g = 1 ∨ ψ g = -1 := by
     intro g
     rcases sq_eq_one_iff.mp (hval g) with h | h
-    · exact Or.inl (Units.ext h)
-    · exact Or.inr (Units.ext h)
+    · apply Or.inl <;> aesop
+    · apply Or.inr <;> aesop
   obtain ⟨g₀, hg₀⟩ : ∃ g, ψ g ≠ 1 := by
     obtain ⟨g, hg⟩ := DFunLike.exists_ne hn
-    exact ⟨g, by simpa using hg⟩
-  have hg₀' : ψ g₀ = -1 := (hmem g₀).resolve_left hg₀
+    exact ⟨g, hg⟩
+  have hg₀'  := (hmem g₀).resolve_left hg₀
   have hrange : Set.range ψ = ({1, -1} : Set ℂˣ) := by
     ext x
     constructor

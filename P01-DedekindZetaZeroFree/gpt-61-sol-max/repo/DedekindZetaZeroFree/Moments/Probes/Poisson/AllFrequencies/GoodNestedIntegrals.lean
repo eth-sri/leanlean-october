@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Moments.Probes.Poisson.AllFrequencies.GoodKernelBounds
 public import DedekindZetaZeroFree.Moments.Probes.Poisson.AllFrequencies.LowXiControls
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.Quantitative.RawGoodNestedControls31
 
@@ -19,7 +22,7 @@ variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable (D : DedekindZetaZeroFree.Quantitative.FixedData S η)
 
-def goodNbhd (u : Frequency D.recipe) : Set ℂ :=
+def goodNbhd (u : Frequency D.recipe)  :=
   {ξ : ℂ | Scales.goodLine - EulerDomain.pad / 2 < ξ.re ∧ ξ.re < Scales.rightLine + EulerDomain.pad / 2 ∧
     (pkg D).minus u ξ ≠ 0}
 
@@ -30,10 +33,10 @@ theorem goodNbhd_isOpen (u : Frequency D.recipe) (hu : u ≠ principalFrequency 
   rw [isOpen_iff_mem_nhds]
   intro ξ hξ
   obtain ⟨h1, h2, h3⟩ := hξ
-  have hcont : ContinuousAt ((pkg D).minus u) ξ :=
+  have hcont  :=
     (DedekindZetaZeroFree.Quantitative.RawKernelRegularity31.minus_differentiableAt D u hu ξ
       (by linarith)).continuousAt
-  have hne : ∀ᶠ z in nhds ξ, (pkg D).minus u z ≠ 0 := hcont.eventually_ne h3
+  have hne  := hcont.eventually_ne h3
   have e1 : ∀ᶠ z in nhds ξ, Scales.goodLine - EulerDomain.pad / 2 < z.re :=
     (isOpen_lt continuous_const Complex.continuous_re).mem_nhds h1
   have e2 : ∀ᶠ z in nhds ξ, z.re < Scales.rightLine + EulerDomain.pad / 2 :=
@@ -101,8 +104,8 @@ private theorem rawKernel_norm_eq (u : Frequency D.recipe) (hq : 0 < frequencyNo
         ‖rawFactor D u ξ ((y : ℂ) + (p.2 : ℂ) * Complex.I)
           ((v : ℂ) + (p.1 : ℂ) * Complex.I)‖ := by
   unfold FixedData.rawKernel
-  have hZc : (0 : ℝ) < Z := hZ
-  have hqc : (0 : ℝ) < frequencyNorm D.recipe u := hq
+  have hZc  := hZ
+  have hqc  := hq
   have hre : ∀ A B C X E R : ℂ, A * B * C * X * E * R = A * E * (B * C * X) * R := by
     intro A B C X E R; ring
   have hkey : ∀ A E X R : ℂ, ‖A * E * X * R‖ = ‖A‖ * ‖E‖ * ‖X‖ * ‖R‖ := by
@@ -125,19 +128,19 @@ private theorem rawKernel_cont (u : Frequency D.recipe) (hu : u ≠ principalFre
       ((Scales.zLine : ℂ) + (p.1 : ℂ) * I) Z) := by
   refine continuous_iff_continuousAt.2 fun q => ?_
   have hcont : Continuous (fun q : ℝ × ℝ => ((ξ, (Scales.wLine : ℂ) + (q.2 : ℂ) * I,
-      (Scales.zLine : ℂ) + (q.1 : ℂ) * I) : ℂ × ℂ × ℂ)) := by fun_prop
-  have hw : (((Scales.wLine : ℝ) : ℂ) + (q.2 : ℂ) * I).re = Scales.wLine := by simp
-  have hz : (((Scales.zLine : ℝ) : ℂ) + (q.1 : ℂ) * I).re = Scales.zLine := by simp
+      (Scales.zLine : ℂ) + (q.1 : ℂ) * I))) := by fun_prop
+  have hw : ((Scales.wLine : ℂ) + (q.2 : ℂ) * I).re = Scales.wLine := by simp
+  have hz : ((Scales.zLine : ℂ) + (q.1 : ℂ) * I).re = Scales.zLine := by simp
   have hmem := RowAnalyticContinuation.mem_OmegaStar_of_re ξ
-    (((Scales.wLine : ℝ) : ℂ) + (q.2 : ℂ) * I) (((Scales.zLine : ℝ) : ℂ) + (q.1 : ℂ) * I) hx hw hz
-  have hz6 : (1 : ℝ) / 6 < (((Scales.zLine : ℝ) : ℂ) + (q.1 : ℂ) * I).re := by
+    ((Scales.wLine : ℂ) + (q.2 : ℂ) * I) ((Scales.zLine : ℂ) + (q.1 : ℂ) * I) hx hw hz
+  have hz6 : (1 : ℝ) / 6 < ((Scales.zLine : ℂ) + (q.1 : ℂ) * I).re := by
     rw [hz]; unfold Scales.zLine; norm_num
   have hd := DedekindZetaZeroFree.Quantitative.RawKernelRegularity31.rawKernel_differentiableAt D u hu Z hZ
-    (ξ, ((Scales.wLine : ℝ) : ℂ) + (q.2 : ℂ) * I, ((Scales.zLine : ℝ) : ℂ) + (q.1 : ℂ) * I)
+    (ξ, (Scales.wLine : ℂ) + (q.2 : ℂ) * I, (Scales.zLine : ℂ) + (q.1 : ℂ) * I)
     hmem hz6 hξ
   exact ContinuousAt.comp
     (f := fun q : ℝ × ℝ => ((ξ, (Scales.wLine : ℂ) + (q.2 : ℂ) * I,
-      (Scales.zLine : ℂ) + (q.1 : ℂ) * I) : ℂ × ℂ × ℂ)) (x := q) hd.continuousAt
+      (Scales.zLine : ℂ) + (q.1 : ℂ) * I))) (x := q) hd.continuousAt
     hcont.continuousAt
 
 private theorem exists_Cw (A B : ℝ) (hA : 0 ≤ A) (hB : 0 < B) :
@@ -153,10 +156,7 @@ private theorem exists_Cw (A B : ℝ) (hA : 0 ≤ A) (hB : 0 < B) :
     Scales.wLine Scales.wLine Scales.goodLine Scales.rightLine z₀_pos le_rfl le_rfl x_g_le_x₁ B A hB hA
   refine ⟨Cw, hCw0, fun u hu Z hZ ξ hxg hx1 hne Cf hCf hbd => ?_⟩
   have hcont := rawKernel_cont D u hu Z hZ ξ (by linarith [pad_nn]) hne
-  have hbd' : ∀ p : ℝ × ℝ, ‖rawKernel D u ξ ((Scales.wLine : ℂ) + (p.2 : ℂ) * I)
-        ((Scales.zLine : ℂ) + (p.1 : ℂ) * I) Z‖ ≤
-      Cf * WeightConvolution.weightModulus D ξ Scales.zLine Scales.wLine p *
-        (2 + |p.1| + |p.2| + |ξ.im|) ^ A :=
+  have hbd'  :=
     fun p => weight_dom D ξ Scales.zLine Scales.wLine Cf A A hCf le_rfl hA p _ (hbd p)
   exact (hCw ξ hxg hx1 Scales.zLine Scales.wLine le_rfl le_rfl le_rfl le_rfl Cf hCf
     (fun w z => rawKernel D u ξ w z Z) hcont.aestronglyMeasurable hbd').2.2.2
@@ -173,7 +173,7 @@ private theorem plus_line_bound (u : Frequency D.recipe) (hu : u ≠ principalFr
   refine ⟨Cp * (Cm * frequencyNorm D.recipe u ^ (1 : ℝ)), Ap, by positivity, hAp, fun w hw => ?_⟩
   have hw0 : 0 < w.re := by rw [hw]; unfold Scales.wLine; norm_num
   rw [RawHeckeIdentification31.plus_eq_hecke_mul_mask D u hu w hw0, norm_mul, ← hgpeq w hw0]
-  have h1 : ‖gp w‖ ≤ Cp * (2 + |w.im|) ^ Ap :=
+  have h1  :=
     hP gp hgp (fun s hs => (hgpeq s (by linarith)).trans
       (RowHeckeBridge.hecke_eq_idealLSeries _ _ _ s hs)) w
       (by rw [hw]; unfold Scales.wLine; norm_num)
@@ -193,7 +193,7 @@ private theorem local_majorant (u : Frequency D.recipe) (hu : u ≠ principalFre
     unfold Scales.goodLine EulerDomain.pad; norm_num
   obtain ⟨r0, hr0, hball0⟩ := Metric.isOpen_iff.1 (goodNbhd_isOpen D u hu) ξ₀ h₀
   obtain ⟨hξ1, hξ2, hξ3⟩ := h₀
-  have hc : ContinuousAt ((pkg D).minus u) ξ₀ :=
+  have hc  :=
     (DedekindZetaZeroFree.Quantitative.RawKernelRegularity31.minus_differentiableAt D u hu ξ₀
       (by linarith)).continuousAt
   have hnorm : 0 < ‖(pkg D).minus u ξ₀‖ := norm_pos_iff.2 hξ3
@@ -223,7 +223,7 @@ private theorem local_majorant (u : Frequency D.recipe) (hu : u ≠ principalFre
   have hd : dist ξ ξ₀ < min (min r0 r1) 1 := hξ
   have hd1 : dist ξ ξ₀ < r1 := hd.trans_le hrr1
   have hd2 : dist ξ ξ₀ < 1 := hd.trans_le hrr2
-  have hξG : ξ ∈ goodNbhd D u := hball0 (Metric.ball_subset_ball hrr0 hξ)
+  have hξG  := hball0 (Metric.ball_subset_ball hrr0 hξ)
   have hxg : Scales.goodLine - EulerDomain.pad ≤ ξ.re := by
     have := hξG.1
     linarith [pad_nn]
@@ -238,9 +238,9 @@ private theorem local_majorant (u : Frequency D.recipe) (hu : u ≠ principalFre
       ‖rawFactor D u ξ w z‖ ≤
         C1 * (Cp * (2 + |w.im|) ^ Ap) * (C3 * frequencyNorm D.recipe u ^ (1 : ℝ)) * Cinv := by
     intro w z hw hz
-    have hz1 : ‖D.recipe.L (6 * z)‖ ≤ C1 :=
+    have hz1  :=
       (h1 z (by rw [hz]; unfold Scales.zLine; norm_num)).2.1
-    have hmem : ((ξ, w, z) : EulerDomain.Coordinates) ∈ EulerDomain.paddedBoxes := by
+    have hmem : ((ξ, w, z)) ∈ EulerDomain.paddedBoxes := by
       refine Or.inl (Or.inl ?_)
       refine ⟨hxg, ?_, ?_⟩
       · show 3 / 25 - EulerDomain.pad ≤ w.re
@@ -264,9 +264,9 @@ private theorem local_majorant (u : Frequency D.recipe) (hu : u ≠ principalFre
     rw [e]
     exact mul_le_mul (mul_le_mul (mul_le_mul hz1 hpl (norm_nonneg _) hC1.le) hcorr
       (norm_nonneg _) hA) hLξ (norm_nonneg _) hB
-  have hw : (((Scales.wLine : ℝ) : ℂ) + (p.2 : ℂ) * I).re = Scales.wLine := by simp
-  have hz : (((Scales.zLine : ℝ) : ℂ) + (p.1 : ℂ) * I).re = Scales.zLine := by simp
-  have him : (((Scales.wLine : ℝ) : ℂ) + (p.2 : ℂ) * I).im = p.2 := by simp
+  have hw : ((Scales.wLine : ℂ) + (p.2 : ℂ) * I).re = Scales.wLine := by simp
+  have hz : ((Scales.zLine : ℂ) + (p.1 : ℂ) * I).re = Scales.zLine := by simp
+  have him : ((Scales.wLine : ℂ) + (p.2 : ℂ) * I).im = p.2 := by simp
   have hRb' := hRb _ _ hw hz
   rw [him] at hRb'
   have hZe : Z ^ (Scales.kernelExponent ξ.re Scales.wLine Scales.zLine) ≤ Zbd := by
@@ -284,8 +284,8 @@ private theorem local_majorant (u : Frequency D.recipe) (hu : u ≠ principalFre
   have hqz0 : 0 ≤ frequencyNorm D.recipe u ^ (-Scales.zLine) := Real.rpow_nonneg hq0.le _
   calc Z ^ (Scales.kernelExponent ξ.re Scales.wLine Scales.zLine) * frequencyNorm D.recipe u ^ (-Scales.zLine) *
         WeightConvolution.weightModulus D ξ Scales.zLine Scales.wLine p *
-        ‖rawFactor D u ξ (((Scales.wLine : ℝ) : ℂ) + (p.2 : ℂ) * I)
-          (((Scales.zLine : ℝ) : ℂ) + (p.1 : ℂ) * I)‖
+        ‖rawFactor D u ξ ((Scales.wLine : ℂ) + (p.2 : ℂ) * I)
+          ((Scales.zLine : ℂ) + (p.1 : ℂ) * I)‖
       ≤ Zbd * frequencyNorm D.recipe u ^ (-Scales.zLine) *
         WeightConvolution.weightModulus D ξ Scales.zLine Scales.wLine p *
         (C1 * (Cp * (2 + |p.2|) ^ Ap) * (C3 * frequencyNorm D.recipe u ^ (1 : ℝ)) * Cinv) := by
@@ -310,29 +310,23 @@ theorem Iwz_differentiableOn_goodNbhd (A : ℝ) (hA : 0 ≤ A) (hconv : RawConve
       (fun x : ℂ => rawKernel D u x ((Scales.wLine : ℂ) + (s : ℂ) * I)
         ((Scales.zLine : ℂ) + (t : ℂ) * I) Z) ξ := by
     intro ξ hξ s t
-    have hw : (((Scales.wLine : ℝ) : ℂ) + (s : ℂ) * I).re = Scales.wLine := by simp
-    have hz : (((Scales.zLine : ℝ) : ℂ) + (t : ℂ) * I).re = Scales.zLine := by simp
+    have hw : ((Scales.wLine : ℂ) + (s : ℂ) * I).re = Scales.wLine := by simp
+    have hz : ((Scales.zLine : ℂ) + (t : ℂ) * I).re = Scales.zLine := by simp
     have hmem := RowAnalyticContinuation.mem_OmegaStar_of_re ξ
-      (((Scales.wLine : ℝ) : ℂ) + (s : ℂ) * I) (((Scales.zLine : ℝ) : ℂ) + (t : ℂ) * I)
+      ((Scales.wLine : ℂ) + (s : ℂ) * I) ((Scales.zLine : ℂ) + (t : ℂ) * I)
       (hxgle ξ hξ) hw hz
-    have hz6 : (1 : ℝ) / 6 < (((Scales.zLine : ℝ) : ℂ) + (t : ℂ) * I).re := by
+    have hz6 : (1 : ℝ) / 6 < ((Scales.zLine : ℂ) + (t : ℂ) * I).re := by
       rw [hz]; unfold Scales.zLine; norm_num
     have hd := DedekindZetaZeroFree.Quantitative.RawKernelRegularity31.rawKernel_differentiableAt D u hu Z hZ
-      (ξ, ((Scales.wLine : ℝ) : ℂ) + (s : ℂ) * I, ((Scales.zLine : ℝ) : ℂ) + (t : ℂ) * I)
+      (ξ, (Scales.wLine : ℂ) + (s : ℂ) * I, (Scales.zLine : ℂ) + (t : ℂ) * I)
       hmem hz6 hξ.2.2
     have hf : DifferentiableAt ℂ (fun x : ℂ => ((x, ((Scales.wLine : ℝ) : ℂ) + (s : ℂ) * I,
-        ((Scales.zLine : ℝ) : ℂ) + (t : ℂ) * I) : ℂ × ℂ × ℂ)) ξ := by fun_prop
+        ((Scales.zLine : ℝ) : ℂ) + (t : ℂ) * I))) ξ := by fun_prop
     have := hd.comp ξ hf
     exact this
-  have hcont : ∀ ξ ∈ goodNbhd D u, Continuous (fun p : ℝ × ℝ => rawKernel D u ξ
-      ((Scales.wLine : ℂ) + (p.2 : ℂ) * I) ((Scales.zLine : ℂ) + (p.1 : ℂ) * I) Z) :=
+  have hcont  :=
     fun ξ hξ => rawKernel_cont D u hu Z hZ ξ (hxgle ξ hξ) hξ.2.2
-  have hmaj : ∀ ξ₀ ∈ goodNbhd D u, ∃ r : ℝ, 0 < r ∧ Metric.ball ξ₀ r ⊆ goodNbhd D u ∧
-      ∃ C k : ℝ, 0 ≤ C ∧ 0 ≤ k ∧ ∀ ξ ∈ Metric.ball ξ₀ r, ∀ p : ℝ × ℝ,
-        ‖rawKernel D u ξ ((Scales.wLine : ℂ) + (p.2 : ℂ) * I)
-            ((Scales.zLine : ℂ) + (p.1 : ℂ) * I) Z‖ ≤
-          C * WeightConvolution.weightModulus D ξ Scales.zLine Scales.wLine p *
-            (2 + |p.1| + |p.2| + |ξ.im|) ^ k :=
+  have hmaj  :=
     fun ξ₀ h₀ => local_majorant D u hu Z hZ ξ₀ h₀
   exact RowKernelHolomorphy.differentiableOn_nested_integral D (goodNbhd D u)
     (goodNbhd_isOpen D u hu) (fun ξ w z => rawKernel D u ξ w z Z) Scales.wLine Scales.zLine z₀_pos
@@ -353,8 +347,8 @@ theorem Iwz_decay_rect (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExponent
   refine ⟨C * Cw * ((2 * Real.pi)⁻¹) ^ 2 + 1, by positivity, U₀, hU₀, ?_⟩
   intro U hU u hu hqU hqU2 hex ξ Z hZ hxg hx1 him
   have hU0 : 0 < U := by linarith
-  have hnn : 0 ≤ U ^ ρ := Real.rpow_nonneg hU0.le ρ
-  have hne : (pkg D).minus u ξ ≠ 0 :=
+  have hnn  := Real.rpow_nonneg hU0.le ρ
+  have hne  :=
     (DedekindZetaZeroFree.Quantitative.RawKernelRegularity31.minus_ne_zero_of_not_exceptional D ρ U u hu hqU hqU2
       hex ξ (by unfold DedekindZetaZeroFree.Quantitative.DetectorDef.σ₀; unfold Scales.goodLine at hxg; linarith)
       (by unfold Scales.goodLine at hxg; linarith)
@@ -400,7 +394,7 @@ theorem Iwz_integrable_right (A : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExpon
   have hdiff := Iwz_differentiableOn_goodNbhd D A hA hconv u hu Z hZ
   have hmem : ∀ t : ℝ, ((Scales.rightLine : ℂ) + (t : ℂ) * I) ∈ goodNbhd D u := by
     intro t
-    have hre : (((Scales.rightLine : ℝ) : ℂ) + (t : ℂ) * I).re = Scales.rightLine := by simp
+    have hre : ((Scales.rightLine : ℂ) + (t : ℂ) * I).re = Scales.rightLine := by simp
     refine ⟨?_, ?_, (h4 u hu _ hre.ge).1⟩
     · rw [hre, Scales.rightLine_eq]; unfold Scales.goodLine EulerDomain.pad; norm_num
     · rw [hre]
@@ -415,8 +409,8 @@ theorem Iwz_integrable_right (A : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExpon
     (KernelWeightIntegration.one_add_abs_rpow_integrable 2 (by norm_num)).const_mul _
   refine Integrable.mono' hI hcont.aestronglyMeasurable
     (Filter.Eventually.of_forall fun t => ?_)
-  have hre : (((Scales.rightLine : ℝ) : ℂ) + (t : ℂ) * I).re = Scales.rightLine := by simp
-  have him : (((Scales.rightLine : ℝ) : ℂ) + (t : ℂ) * I).im = t := by simp
+  have hre : ((Scales.rightLine : ℂ) + (t : ℂ) * I).re = Scales.rightLine := by simp
+  have him : ((Scales.rightLine : ℂ) + (t : ℂ) * I).im = t := by simp
   have := h U hU u hu hqU hqU2 _ Z hZ hre
   rw [him] at this
   exact this

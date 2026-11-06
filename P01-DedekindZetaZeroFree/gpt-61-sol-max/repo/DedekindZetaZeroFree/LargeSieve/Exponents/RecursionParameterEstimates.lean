@@ -2,7 +2,10 @@ module
 
 public import Mathlib
 
+public import Mathlib
+
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve
 
@@ -57,7 +60,7 @@ private lemma nat_le_of_one_le {r : ℕ} (hr : 1 ≤ r) : (0 : ℝ) < (r : ℝ) 
 private lemma rpow_H5_le {M N η : ℝ} {r : ℕ} (hM : 1 ≤ M) (hN : 1 ≤ N) (hη : 0 < η)
     (hr : 1 ≤ r) (hrη : 20 / η ≤ (r : ℝ)) :
     Real.rpow (Real.rpow N (1 / (r : ℝ))) 5 ≤ Real.rpow (M * N) (η / 4) := by
-  have hr0 : (0 : ℝ) < (r : ℝ) := nat_le_of_one_le hr
+  have hr0  := nat_le_of_one_le hr
   have hM0 : 0 < M := by linarith
   have hN0 : 0 < N := by linarith
   have hη4 : 0 ≤ η / 4 := by positivity
@@ -75,15 +78,18 @@ private lemma rpow_H5_le {M N η : ℝ} {r : ℕ} (hM : 1 ≤ M) (hN : 1 ≤ N) 
       ≤ Real.rpow N (η / 4) := rpow_le_rpow_exp' hN h5
     _ ≤ Real.rpow (M * N) (η / 4) := by
         rw [mul_rpow' (le_of_lt hM0) (le_of_lt hN0)]
-        have h1 : (1 : ℝ) ≤ Real.rpow M (η / 4) := one_le_rpow' hM hη4
+        have h1  := one_le_rpow' hM hη4
         have h2 : 0 ≤ Real.rpow N (η / 4) := rpow_nonneg' (le_of_lt hN0) _
         calc Real.rpow N (η / 4) = 1 * Real.rpow N (η / 4) := (one_mul _).symm
           _ ≤ Real.rpow M (η / 4) * Real.rpow N (η / 4) :=
               mul_le_mul_of_nonneg_right h1 h2
 
-theorem recursion_parameter_basic (α M N η : ℝ) (r : ℕ)
+section
+variable (α M N η : ℝ) (r : ℕ)
     (hα : 1 ≤ α) (hM : 1 ≤ M) (hN : 1 ≤ N) (hη : 0 < η)
-    (hr : 1 ≤ r) (hrη : 20 / η ≤ (r : ℝ)) :
+    (hr : 1 ≤ r) (hrη : 20 / η ≤ (r : ℝ))
+include α M N η r hα hM hN hη hr hrη in
+theorem recursion_parameter_basic   :
     let T := M * N
     let δ := η / (8 * (r : ℝ) * (α + 1))
     let H := Real.rpow N (1 / (r : ℝ))
@@ -95,8 +101,8 @@ theorem recursion_parameter_basic (α M N η : ℝ) (r : ℕ)
   · rw [div_pos_iff]
     left
     exact ⟨hη, by positivity⟩
-  · exact one_le_rpow' hN (by positivity)
-  · exact rpow_H5_le hM hN hη hr hrη
+  · apply one_le_rpow' <;> aesop
+  · apply rpow_H5_le <;> assumption
 
 private lemma far_aux (α M N η T δ K R : ℝ) (r : ℕ)
     (hα : 1 ≤ α) (hM : 1 ≤ M) (hN : 1 ≤ N) (hη : 0 < η)
@@ -111,14 +117,14 @@ private lemma far_aux (α M N η T δ K R : ℝ) (r : ℕ)
       K ≤ M * Real.rpow (M * n) (-δ) ∧
       M + n + Real.sqrt M * Real.rpow K (α - 1 / 2) + Real.sqrt (M / K) * n ≤
         2 * Real.rpow T (δ * (α + 1)) * R) := by
-  have hr0 : (0 : ℝ) < (r : ℝ) := nat_le_of_one_le hr
+  have hr0  := nat_le_of_one_le hr
   have hM0 : 0 < M := by linarith
   have hN0 : 0 < N := by linarith
   have hT0 : 0 < T := by rw [hT]; nlinarith
   have hT1 : 1 ≤ T := by rw [hT]; nlinarith
   have hδ0 : 0 < δ := by rw [hδ]; positivity
   have hδnn : 0 ≤ δ := le_of_lt hδ0
-  have hTδ0 : 0 < Real.rpow T δ := rpow_pos' hT0 δ
+  have hTδ0  := rpow_pos' hT0 δ
   have hTδ1 : 1 ≤ Real.rpow T δ := one_le_rpow' hT1 hδnn
   have h2N : 2 * N ≤ M := by nlinarith [hfar, hTδ1]
   have hKpos : 0 < K := by rw [hK]; positivity
@@ -165,7 +171,7 @@ private lemma far_aux (α M N η T δ K R : ℝ) (r : ℕ)
         _ ≤ M * Real.rpow (M * n) (-δ) := le_trans hstep1 hstep2
     · have hαhalf : 0 ≤ δ * (α - 1 / 2) := by
         apply mul_nonneg hδnn; linarith
-      have hTe : 1 ≤ Real.rpow T (δ * (α - 1 / 2)) := one_le_rpow' hT1 hαhalf
+      have hTe  := one_le_rpow' hT1 hαhalf
       have hTenn : 0 ≤ Real.rpow T (δ * (α - 1 / 2)) := le_trans zero_le_one hTe
       have ht1 : M + n ≤ Real.rpow T (δ * (α - 1 / 2)) * (M + N) := by
         calc M + n ≤ M + N := by linarith
@@ -205,11 +211,7 @@ private lemma far_aux (α M N η T δ K R : ℝ) (r : ℕ)
           rw [mul_pow, Real.sq_sqrt (by positivity)]
           rw [div_mul_eq_mul_div, div_le_iff₀ hKpos]
           rw [show M ^ 2 * K = M * N ^ 2 * Real.rpow T δ by
-            rw [hK]
-            rw [show M ^ 2 * (N ^ 2 / M * Real.rpow T δ) =
-                M ^ 2 * (N ^ 2 / M) * Real.rpow T δ by ring]
-            rw [show M ^ 2 * (N ^ 2 / M) = M * N ^ 2 by field_simp]
-            try ring]
+            grind]
           have hMN2 : 0 ≤ M * N ^ 2 := by positivity
           have h1 : M * n ^ 2 ≤ M * N ^ 2 := mul_le_mul_of_nonneg_left hn2 (le_of_lt hM0)
           have h2 : M * N ^ 2 ≤ M * N ^ 2 * Real.rpow T δ :=
@@ -224,13 +226,7 @@ private lemma far_aux (α M N η T δ K R : ℝ) (r : ℕ)
       have hsum : M + n + Real.sqrt M * Real.rpow K (α - 1 / 2) + Real.sqrt (M / K) * n ≤
           Real.rpow T (δ * (α - 1 / 2)) *
             (2 * M + N + Real.rpow N (2 * α - 1) * Real.rpow M (1 - α)) := by
-        have h4 : Real.rpow T (δ * (α - 1 / 2)) * (M + N) +
-              Real.rpow T (δ * (α - 1 / 2)) *
-                (Real.rpow N (2 * α - 1) * Real.rpow M (1 - α)) +
-              Real.rpow T (δ * (α - 1 / 2)) * M =
-            Real.rpow T (δ * (α - 1 / 2)) *
-              (2 * M + N + Real.rpow N (2 * α - 1) * Real.rpow M (1 - α)) := by ring
-        linarith [ht1, ht2.le, ht3, h4]
+        grind
       have hX : 0 ≤ Real.rpow N (2 * α - 1) * Real.rpow M (1 - α) :=
         mul_nonneg (rpow_nonneg' (le_of_lt hN0) _) (rpow_nonneg' (le_of_lt hM0) _)
       have h2R : 2 * M + N + Real.rpow N (2 * α - 1) * Real.rpow M (1 - α) ≤ 2 * R := by
@@ -253,9 +249,8 @@ private lemma far_aux (α M N η T δ K R : ℝ) (r : ℕ)
                   apply mul_le_mul_of_nonneg_right _ hRnn
                   exact mul_le_mul_of_nonneg_left hle (by norm_num)
 
-theorem recursion_parameter_far (α M N η : ℝ) (r : ℕ)
-    (hα : 1 ≤ α) (hM : 1 ≤ M) (hN : 1 ≤ N) (hη : 0 < η)
-    (hr : 1 ≤ r) (hrη : 20 / η ≤ (r : ℝ))
+include α M N η r hα hM hN hη hr hrη in
+theorem recursion_parameter_far  
     (hfar : 2 * N * Real.rpow (M * N) (η / (8 * (r : ℝ) * (α + 1))) ≤ M) :
     let T := M * N
     let δ := η / (8 * (r : ℝ) * (α + 1))
@@ -322,12 +317,7 @@ private lemma near_aux (α M N η δ : ℝ) (r : ℕ)
       rw [rpow_zero']
     have hl : Real.rpow N (1 - α) * Real.rpow M (α - 1) * Real.rpow N (2 * α - 1) *
         Real.rpow M (1 - α) = Real.rpow N α := by
-      rw [show Real.rpow N (1 - α) * Real.rpow M (α - 1) * Real.rpow N (2 * α - 1) *
-            Real.rpow M (1 - α) =
-          Real.rpow N (1 - α) * Real.rpow N (2 * α - 1) *
-            (Real.rpow M (α - 1) * Real.rpow M (1 - α)) by ring]
-      rw [hNa, hMa]
-      ring
+      grind [Real.rpow]
     calc Real.rpow N α
         = Real.rpow N (1 - α) * Real.rpow M (α - 1) * Real.rpow N (2 * α - 1) *
             Real.rpow M (1 - α) := hl.symm
@@ -344,9 +334,8 @@ private lemma near_aux (α M N η δ : ℝ) (r : ℕ)
       nlinarith [hrr, hη]
     exact rpow_le_rpow_exp' hT1 (by linarith)
 
-theorem recursion_parameter_near (α M N η : ℝ) (r : ℕ)
-    (hα : 1 ≤ α) (hM : 1 ≤ M) (hN : 1 ≤ N) (hη : 0 < η)
-    (hr : 1 ≤ r) (hrη : 20 / η ≤ (r : ℝ))
+include α M N η r hα hM hN hη hr hrη in
+theorem recursion_parameter_near  
     (hnear : M ≤ 2 * N * Real.rpow (M * N) (η / (8 * (r : ℝ) * (α + 1)))) :
     let T := M * N
     let δ := η / (8 * (r : ℝ) * (α + 1))
@@ -358,5 +347,7 @@ theorem recursion_parameter_near (α M N η : ℝ) (r : ℕ)
   dsimp only []
   exact near_aux α M N η (η / (8 * (r : ℝ) * (α + 1))) r
     hα hM hN hη hr hrη rfl hnear
+end
+
 
 end DedekindZetaZeroFree.LargeSieve

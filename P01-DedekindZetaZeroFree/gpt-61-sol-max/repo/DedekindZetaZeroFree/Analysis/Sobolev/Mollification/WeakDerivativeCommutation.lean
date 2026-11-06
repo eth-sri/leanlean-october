@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.Sobolev.WeakDerivatives.CompactInteriorZeroExtension
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -34,7 +37,7 @@ theorem allTests_weak_derivative_mollification
   have hρ_cd : ContDiff ℝ ∞ (φ.normed volume) := φ.contDiff_normed
   have hρ_cs : HasCompactSupport (φ.normed volume) := φ.hasCompactSupport_normed
   have hρ_cont : Continuous (φ.normed volume) := hρ_cd.continuous
-  have hF_li : LocallyIntegrable F volume := hF.locallyIntegrable (by norm_num)
+  have hF_li  := hF.locallyIntegrable (by norm_num)
   have hF_supp : support F ⊆ C := fun x hx => by_contra fun h => hx (hF_zero x h)
   have hF_cs : HasCompactSupport F :=
     hC.of_isClosed_subset isClosed_closure (closure_minimal hF_supp hC.isClosed)

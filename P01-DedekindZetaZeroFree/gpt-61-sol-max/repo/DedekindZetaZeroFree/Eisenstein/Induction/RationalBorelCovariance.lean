@@ -44,8 +44,11 @@ theorem rationalLift_unipotent (t : F) :
   exact congrArg (KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ)
     (KPRationalAdelicSplitting.N_rational F ζ hζ t).symm
 
-theorem val_rational_diagonal_invariant (K : Subgroup (G F ζ hζ))
-    (f : Flat F ζ hζ K) (s : ℂ) (y : Fˣ) (g : G F ζ hζ) :
+section
+variable (K : Subgroup (G F ζ hζ))
+    (f : Flat F ζ hζ K) (s : ℂ)
+include K f s in
+theorem val_rational_diagonal_invariant   (y : Fˣ) (g : G F ζ hζ) :
     f.val s ((KPGlobalTorusFunctionData.s F ζ hζ y).val * g) = f.val s g := by
   let r := KPGlobalTorusPeriodizationInverse.rationalLift F ζ hζ y
   have h := (f.property.1 s).2 r 0 g
@@ -82,8 +85,8 @@ private theorem upper_matrix_factorization (b : KPRationalFlag.borel F) :
       Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
       Matrix.mul_apply, Fin.sum_univ_two, hb] <;> field_simp <;> ring
 
-theorem val_rational_borel_invariant (K : Subgroup (G F ζ hζ))
-    (f : Flat F ζ hζ K) (s : ℂ)
+include K f s in
+theorem val_rational_borel_invariant  
     (b : KPChamberBruhatTwoCells.rationalBorel F) (g : G F ζ hζ) :
     f.val s (rationalLift F ζ hζ b.val * g) = f.val s g := by
   obtain ⟨B, hB, he⟩ := b.property
@@ -91,8 +94,8 @@ theorem val_rational_borel_invariant (K : Subgroup (G F ζ hζ))
   rw [← he, ht, rationalLift_mul, rationalLift_diagonal, rationalLift_unipotent, mul_assoc]
   rw [val_rational_diagonal_invariant, val_N_invariant]
 
-theorem literal_scalar_rational_borel_invariant (K : Subgroup (G F ζ hζ))
-    (f : Flat F ζ hζ K) (s : ℂ) :
+include K f s in
+theorem literal_scalar_rational_borel_invariant   :
     KPChamberBruhatTwoCells.ScalarRationalBorelInvariant F
       (KPGlobalResidualConstruction.ElementaryOutputs.rationalSplitting F ζ hζ).lift
       (f.val s) := by
@@ -100,8 +103,8 @@ theorem literal_scalar_rational_borel_invariant (K : Subgroup (G F ζ hζ))
   rw [← rationalLift_eq_constructed]
   exact val_rational_borel_invariant F ζ hζ K f s b g
 
-theorem val_rationalCoset_out_eq (K : Subgroup (G F ζ hζ))
-    (f : Flat F ζ hζ K) (s : ℂ)
+include K f s in
+theorem val_rationalCoset_out_eq  
     (a : Matrix.ProjGenLinGroup (Fin 2) F) (g : G F ζ hζ) :
     f.val s (rationalLift F ζ hζ
       (Quotient.out (KPChamberBruhatTwoCells.rationalCoset F a)) * g) =
@@ -109,6 +112,8 @@ theorem val_rationalCoset_out_eq (K : Subgroup (G F ζ hζ))
   simp only [rationalLift_eq_constructed]
   exact KPChamberBruhatTwoCells.rationalTerm_eq F _ (f.val s)
     (literal_scalar_rational_borel_invariant F ζ hζ K f s) g a
+end
+
 
 end DedekindZetaZeroFree.KPLiteralExceptionalResidue
 

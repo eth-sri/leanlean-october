@@ -277,6 +277,8 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 
 
 set_option autoImplicit false
+set_option maxHeartbeats 2000000
+set_option synthInstance.maxHeartbeats 100000
 
 /-!
 # Abstract unramified fixed fields and ramification groups
@@ -374,39 +376,39 @@ private theorem ramificationIdx_mul_residue_finrank_eq_finrank_compatible
 
 universe u
 
-private theorem baseFixingExtensionSubgroup_index_eq_finrank
-    (K Ω : Type) [Field K] [Field Ω] [Algebra K Ω] [IsGalois K Ω]
-    (E : IntermediateField K Ω) [FiniteDimensional K E] [IsGalois K E] :
-    (extensionSubgroup
-      (closedFixingSubgroup K Ω (⊥ : IntermediateField K Ω))
-      (closedFixingSubgroup K Ω E)
-      (fixingSubgroupLeBase K Ω E)).index =
-        Module.finrank K E := by
-  let : Finite
-      ((closedFixingSubgroup K Ω
-          (⊥ : IntermediateField K Ω)).toSubgroup ⧸
-        extensionSubgroup
-          (closedFixingSubgroup K Ω
-            (⊥ : IntermediateField K Ω))
-          (closedFixingSubgroup K Ω E)
-          (fixingSubgroupLeBase K Ω E)) :=
-    Finite.of_equiv (Gal(E / K))
-      (baseFixingExtensionQuotientEquivGaloisGroup K Ω E).symm.toEquiv
-  calc
-    _ = Nat.card
-        ((closedFixingSubgroup K Ω
-            (⊥ : IntermediateField K Ω)).toSubgroup ⧸
-          extensionSubgroup
-            (closedFixingSubgroup K Ω
-              (⊥ : IntermediateField K Ω))
-            (closedFixingSubgroup K Ω E)
-            (fixingSubgroupLeBase K Ω E)) :=
-      Subgroup.index_eq_card _
-    _ = Nat.card (Gal(E / K)) :=
-      Nat.card_congr
-        (baseFixingExtensionQuotientEquivGaloisGroup K Ω E).toEquiv
-    _ = Module.finrank K E :=
-      IsGalois.card_aut_eq_finrank K E
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- For a field finite over the distinguished abstract base, the absolute
 residue degree agrees with its relative residue degree over that base. -/

@@ -19,13 +19,16 @@ private lemma flow_radialUnit (t ρ : ℝ) (u : ℂˣ) (hρ : 0 < ρ) :
     dite_eq_left (mul_pos (Real.exp_pos _) hρ), Units.val_mk0, Complex.ofReal_mul]
   ring
 
-private lemma induced_amplitude_logarithmic_transport (β κ : ℂˣ)
+section
+variable (β κ : ℂˣ)
     (f : PrincipalSeries positiveParameter)
     (hf : HasInducedAmplitudeEstimates β κ f) (F : ℂˣ → ℂ)
     (hF : ∀ (u : ℂˣ) (ρ : ℝ), ‖(u : ℂ)‖ = 1 → 0 < ρ →
       F (radialUnit ρ u) = ∫ x : ℂ,
         Complex.exp (-Complex.I * ((characterScale β * x.re : ℝ) : ℂ)) *
           rotatedAmplitude β κ f u ρ x ∂euclideanArea)
+include β κ f hf F hF
+private lemma induced_amplitude_logarithmic_transport  
     (j : ℕ) (hj : j ≤ 2) (u : ℂˣ) (hu : ‖(u : ℂ)‖ = 1) (ρ : ℝ) (hρ : 0 < ρ) :
     ((logarithmicDerivative^[j]) F) (radialUnit ρ u) = ((2 : ℂ)⁻¹) ^ j *
       ∫ x : ℂ, Complex.exp (-Complex.I * ((characterScale β * x.re : ℝ) : ℂ)) *
@@ -62,13 +65,7 @@ private lemma induced_amplitude_logarithmic_transport (β κ : ℂˣ)
         Complex.ofReal_ofNat, pow_succ]
       field_simp [Complex.ofReal_ne_zero.mpr hρ.ne']
 
-lemma exists_norm_iterate_logarithmicDerivative_le (β κ : ℂˣ)
-    (f : PrincipalSeries positiveParameter)
-    (hf : HasInducedAmplitudeEstimates β κ f) (F : ℂˣ → ℂ)
-    (hF : ∀ (u : ℂˣ) (ρ : ℝ), ‖(u : ℂ)‖ = 1 → 0 < ρ →
-      F (radialUnit ρ u) = ∫ x : ℂ,
-        Complex.exp (-Complex.I * ((characterScale β * x.re : ℝ) : ℂ)) *
-          rotatedAmplitude β κ f u ρ x ∂euclideanArea)
+lemma exists_norm_iterate_logarithmicDerivative_le  
     (j h : ℕ) (hj : j ≤ 2) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ y : ℂˣ,
       ‖((logarithmicDerivative^[j]) F) y‖ ≤ C * ‖(y : ℂ)‖ ^ ((2 / 3 : ℝ) - (h : ℝ)) := by
@@ -83,6 +80,8 @@ lemma exists_norm_iterate_logarithmicDerivative_le (β κ : ℂˣ)
   rw [he, norm_mul]
   simpa only [mul_assoc] using
     mul_le_mul_of_nonneg_left (hb u ‖(y : ℂ)‖ hu hρ) (norm_nonneg (((2 : ℂ)⁻¹) ^ j))
+end
+
 
 end DedekindZetaZeroFree.ThetaArchInducedMajorant
 

@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.Gamma.ReflectionAndReciprocalStripBounds
 
 @[expose] public section
+
 
 /-
 Repository: openai/math.
@@ -14,13 +17,12 @@ namespace DedekindZetaZeroFree
 
 noncomputable section
 
-def reciprocalGamma (z : ℂ) : ℂ := (Complex.Gamma z)⁻¹
+def reciprocalGamma (z : ℂ)  := (Complex.Gamma z)⁻¹
 
-theorem reciprocalGamma_differentiable : Differentiable ℂ reciprocalGamma := by
-  exact Complex.differentiable_one_div_Gamma
+def reciprocalGamma_differentiable  := Complex.differentiable_one_div_Gamma
 
-@[simp] theorem reciprocalGamma_neg_nat (n : ℕ) : reciprocalGamma (-(n : ℂ)) = 0 := by
-  simp [reciprocalGamma, Complex.Gamma_neg_nat_eq_zero]
+
+
 
 theorem reciprocalGamma_strip_exp_bound (a b : ℝ) (hab : a ≤ b) :
     ∃ C : ℝ, 0 < C ∧ ∀ z : ℂ, a ≤ z.re → z.re ≤ b →
@@ -28,12 +30,15 @@ theorem reciprocalGamma_strip_exp_bound (a b : ℝ) (hab : a ≤ b) :
   obtain ⟨C, hC, hbound⟩ := GammaBounds.inverse_Gamma_strip_exp_bound_complex a b
   exact ⟨C, hC, fun z ha hb => hbound z ⟨ha, hb⟩⟩
 
-def thetaProfileReciprocalMellinFactor (C₀ A₀ : ℝ) (r : ℕ) (s : ℂ) : ℂ :=
+def thetaProfileReciprocalMellinFactor (C₀ A₀ : ℝ) (r : ℕ) (s : ℂ)  :=
   (C₀ : ℂ)⁻¹ * (A₀ : ℂ) ^ (-s) *
     (reciprocalGamma (s + 5 / 6) * reciprocalGamma (s + 7 / 6)) ^ r
 
+section
+variable (C₀ A₀ : ℝ) (r : ℕ) (hC₀ : 0 < C₀) (hA₀ : 0 < A₀) (hr : 1 ≤ r)
+include C₀ A₀ r hC₀ hA₀ hr
 theorem thetaProfileReciprocalMellinFactor_differentiable
-    (C₀ A₀ : ℝ) (r : ℕ) (hC₀ : 0 < C₀) (hA₀ : 0 < A₀) (hr : 1 ≤ r) :
+      :
     Differentiable ℂ (thetaProfileReciprocalMellinFactor C₀ A₀ r) := by
   have hp : Differentiable ℂ (fun s : ℂ => (A₀ : ℂ) ^ (-s)) :=
     differentiable_id.neg.const_cpow (Or.inl (Complex.ofReal_ne_zero.mpr hA₀.ne'))
@@ -44,7 +49,7 @@ theorem thetaProfileReciprocalMellinFactor_differentiable
   exact (hp.const_mul _).mul ((h₁.mul h₂).pow r)
 
 theorem thetaProfileReciprocalMellinFactor_strip_exp_bound
-    (C₀ A₀ : ℝ) (r : ℕ) (hC₀ : 0 < C₀) (hA₀ : 0 < A₀) (hr : 1 ≤ r)
+     
     (a b : ℝ) (hab : a ≤ b) :
     ∃ C : ℝ, 0 < C ∧ ∀ s : ℂ, a ≤ s.re → s.re ≤ b →
       ‖thetaProfileReciprocalMellinFactor C₀ A₀ r s‖ ≤
@@ -53,7 +58,7 @@ theorem thetaProfileReciprocalMellinFactor_strip_exp_bound
     (a + 5 / 6) (b + 5 / 6) (by linarith)
   obtain ⟨C₂, hC₂, h₂⟩ := reciprocalGamma_strip_exp_bound
     (a + 7 / 6) (b + 7 / 6) (by linarith)
-  let D : ℝ := Real.exp (|Real.log A₀| * max |a| |b|)
+  let D  := Real.exp (|Real.log A₀| * max |a| |b|)
   have hD : 0 < D := Real.exp_pos _
   have hnorm : 0 < ‖(C₀ : ℂ)⁻¹‖ :=
     norm_pos_iff.mpr (inv_ne_zero (Complex.ofReal_ne_zero.mpr hC₀.ne'))
@@ -94,6 +99,8 @@ theorem thetaProfileReciprocalMellinFactor_strip_exp_bound
       mul_le_mul (mul_le_mul_of_nonneg_left hp (norm_nonneg _)) hpow
         (by positivity) (by positivity)
     _ = _ := by ring
+end
+
 
 end
 

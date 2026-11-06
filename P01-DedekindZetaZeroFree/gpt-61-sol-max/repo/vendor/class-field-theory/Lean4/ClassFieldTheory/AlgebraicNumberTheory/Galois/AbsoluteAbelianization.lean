@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import Mathlib.FieldTheory.Galois.Abelian
 public import Mathlib.FieldTheory.Galois.Profinite
 public import Mathlib.FieldTheory.IsSepClosed
 public import Mathlib.Topology.Algebra.Group.TopologicalAbelianization
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -51,8 +54,7 @@ instance absoluteCommutatorClosure_normal :
   infer_instance
 
 /-- The maximal abelian subextension of the separable closure. -/
-def maximalAbelianExtension :
-    IntermediateField K (SeparableClosure K) :=
+def maximalAbelianExtension  :=
   IntermediateField.fixedField (absoluteCommutatorClosure K).toSubgroup
 
 /-- The maximal abelian subextension is Galois over the base field. -/
@@ -141,18 +143,18 @@ theorem finiteAbelianIntermediateField_le_maximalAbelianExtension
       E.fixingSubgroup
   apply Subgroup.topologicalClosure_minimal
   · rw [← E.restrictNormalHom_ker]
-    exact
-      Abelianization.commutator_subset_ker
-        (AlgEquiv.restrictNormalHom
-          (F := K) (K₁ := SeparableClosure K) E)
+    apply Abelianization.commutator_subset_ker
   · exact E.fixingSubgroup_isClosed
 
+section
+variable (L : Type*) [Field L] [Algebra K L]
+    [FiniteDimensional K L] [IsAbelianGalois K L]
+include L
 /-- A selected embedding of a finite abelian extension into the maximal
 abelian extension.  Naming this embedding keeps downstream finite-coordinate
 arguments independent of the implementation of the separable closure. -/
 noncomputable def finiteAbelianExtensionEmbeddingIntoMaximalAbelianExtension
-    (L : Type*) [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsAbelianGalois K L] :
+      :
     L →ₐ[K] maximalAbelianExtension K := by
   let i : L →ₐ[K] SeparableClosure K := IsSepClosed.lift
   let e : L ≃ₐ[K] i.fieldRange := i.equivFieldRange
@@ -160,7 +162,7 @@ noncomputable def finiteAbelianExtensionEmbeddingIntoMaximalAbelianExtension
     e.toLinearEquiv.finiteDimensional
   letI : IsAbelianGalois K i.fieldRange :=
     IsAbelianGalois.of_algHom e.symm.toAlgHom
-  have hle : i.fieldRange ≤ maximalAbelianExtension K :=
+  have hle  :=
     finiteAbelianIntermediateField_le_maximalAbelianExtension K i.fieldRange
   exact
     i.codRestrict (maximalAbelianExtension K).toSubalgebra
@@ -169,8 +171,7 @@ noncomputable def finiteAbelianExtensionEmbeddingIntoMaximalAbelianExtension
 /-- The finite Galois intermediate field of the maximal abelian extension
 selected by a finite abelian extension. -/
 noncomputable def finiteAbelianExtensionInMaximalAbelianExtension
-    (L : Type*) [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsAbelianGalois K L] :
+      :
     FiniteGaloisIntermediateField K (maximalAbelianExtension K) :=
   let j := finiteAbelianExtensionEmbeddingIntoMaximalAbelianExtension K L
   { toIntermediateField := j.fieldRange
@@ -180,9 +181,10 @@ noncomputable def finiteAbelianExtensionInMaximalAbelianExtension
 /-- The selected finite layer is canonically equivalent to the original
 finite abelian extension. -/
 noncomputable def finiteAbelianExtensionEquivInMaximalAbelianExtension
-    (L : Type*) [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsAbelianGalois K L] :
+      :
     L ≃ₐ[K] finiteAbelianExtensionInMaximalAbelianExtension K L :=
   (finiteAbelianExtensionEmbeddingIntoMaximalAbelianExtension K L).equivFieldRange
+end
+
 
 end

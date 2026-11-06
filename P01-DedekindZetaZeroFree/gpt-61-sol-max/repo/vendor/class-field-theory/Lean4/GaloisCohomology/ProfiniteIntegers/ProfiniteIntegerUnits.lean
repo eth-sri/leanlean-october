@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import GaloisCohomology.ProfiniteIntegers.ProfiniteIntegerPrimeProduct
 public import Mathlib.Topology.Algebra.Group.Units
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -30,8 +33,7 @@ noncomputable section
 namespace ClassFormation
 
 /-- The Chinese-remainder isomorphism as a topological monoid equivalence. -/
-noncomputable def zHatContinuousMulEquivPrimeProduct :
-    ZHat ≃ₜ* ProfiniteIntegerPrimeProduct :=
+noncomputable def zHatContinuousMulEquivPrimeProduct  :=
   ContinuousMulEquiv.mk'
     (continuous_zHatToProfiniteIntegerPrimeProduct.homeoOfEquivCompactToT2
       (f := zHatRingEquivProfiniteIntegerPrimeProduct.toEquiv))
@@ -51,8 +53,7 @@ local instance (p : Nat.Primes) : Fact p.1.Prime :=
 
 /-- The canonical topological Chinese-remainder equivalence on unit
 groups. -/
-noncomputable def zHatUnitsContinuousMulEquivPrimeProduct :
-    ZHatˣ ≃ₜ* ((p : Nat.Primes) → ℤ_[p.1]ˣ) :=
+noncomputable def zHatUnitsContinuousMulEquivPrimeProduct  :=
   (Units.mapContinuousMulEquiv
     zHatContinuousMulEquivPrimeProduct).trans
       ContinuousMulEquiv.piUnits

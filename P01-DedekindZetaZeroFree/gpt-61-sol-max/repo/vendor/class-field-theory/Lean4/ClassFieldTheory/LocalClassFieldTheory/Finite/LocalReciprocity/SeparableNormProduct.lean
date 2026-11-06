@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import Mathlib.FieldTheory.PrimitiveElement
 public import Mathlib.FieldTheory.IsSepClosed
 public import Mathlib.RingTheory.Norm.Transitivity
 public import Mathlib.RingTheory.AlgebraTower
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -54,7 +57,7 @@ theorem prod_embeddings_algebraMap_powerBasisGen_eq
       ((@Finset.univ (L →ₐ[k] Ω) (PowerBasis.AlgHom.fintype pb)).prod
         (fun σ => σ pb.gen)) ^ Module.finrank L E := by
   have : FiniteDimensional L E := FiniteDimensional.right k L E
-  have : Algebra.IsSeparable L E :=
+  have  :=
     Algebra.isSeparable_tower_top_of_isSeparable k L E
   let : Fintype (L →ₐ[k] Ω) := PowerBasis.AlgHom.fintype pb
   rw [Fintype.prod_equiv algHomEquivSigma
@@ -62,16 +65,13 @@ theorem prod_embeddings_algebraMap_powerBasisGen_eq
     (fun σ => σ.1 pb.gen)]
   rw [← Finset.univ_sigma_univ, Finset.prod_sigma, ← Finset.prod_pow]
   · refine Finset.prod_congr rfl fun σ _ => ?_
-    let : Algebra L Ω := σ.toRingHom.toAlgebra
+    let  := σ.toRingHom.toAlgebra
     simp_rw [Finset.prod_const]
     congr
     rw [Finset.card_univ, Fintype.card_eq_nat_card]
     exact AlgHom.natCard_of_splits L E Ω (fun x =>
       IsSepClosed.splits_codomain _ (Algebra.IsSeparable.isSeparable L x))
-  · intro σ
-    change σ (algebraMap L E pb.gen) =
-      (σ.comp (IsScalarTower.toAlgHom k L E)) pb.gen
-    exact (AlgHom.comp_apply σ (IsScalarTower.toAlgHom k L E) pb.gen).symm
+  · aesop
 
 /-- Mapping the norm of an element of a finite separable extension into a
 separably closed field gives the product of all base-field embeddings. -/

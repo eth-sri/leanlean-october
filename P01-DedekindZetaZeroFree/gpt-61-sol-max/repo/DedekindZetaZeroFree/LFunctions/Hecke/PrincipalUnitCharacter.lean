@@ -36,10 +36,10 @@ theorem principalUnitRayCharacter_apply (F : Type) [Field F] [NumberField F]
   rw [principalUnitRayCharacter_apply]
   simp
 
-@[simp] theorem principalUnitRayCharacter_top (F : Type) [Field F] [NumberField F] :
-    principalUnitRayCharacter F ⊤ = 1 := by
-  rw [principalUnitRayCharacter_apply]
-  simp [bot_lt_top.ne']
+
+
+
+
 
 theorem principalUnitRayCharacter_isPrincipal (F : Type) [Field F] [NumberField F] :
     (principalUnitRayCharacter F).IsPrincipal := by

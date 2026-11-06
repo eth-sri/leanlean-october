@@ -40,12 +40,15 @@ def denominator (ε : Sign) (s : ℂ) : ℂ :=
   if ε = .plus then 1 - t K s else
     1 - (residueCardinality K : ℂ) * (r K s)⁻¹ ^ 6
 
-def kernelW (A : LocalBorelData (K := K) (G := G) T) : Sign → G
+
+local notation:max "current_LocalBorelData" => LocalBorelData (K := K) (G := G)
+
+def kernelW (A : current_LocalBorelData T) : Sign → G
   | .plus => A.liftedW⁻¹
   | .minus => A.liftedW
 
 def standardIntegralCoordinate
-    (A : LocalBorelData (K := K) (G := G) T) (P : Polarization T)
+    (A : current_LocalBorelData T) (P : Polarization T)
     (I : IwasawaData A) (μ : Measure K) (ε : Sign) (s : ℂ)
     (φ : compactPicture A P I (sourceSign ε)) (g : G) (h : H) : ℂ :=
   ∫ x : K,
@@ -53,12 +56,12 @@ def standardIntegralCoordinate
       (kernelW K A ε * (A.upperRoot (Multiplicative.ofAdd x) : G) * g)).val h ∂μ
 
 abbrev LevelLaurentOperator
-    (A : LocalBorelData (K := K) (G := G) T) (P : Polarization T)
+    (A : current_LocalBorelData T) (P : Polarization T)
     (I : IwasawaData A) (J : CompactOpenLevel G) (ε : Sign) :=
   ℤ →₀ (compactLevel A P I (sourceSign ε) J →ₗ[ℂ]
     compactLevel A P I (targetSign ε) J)
 
-def evaluate (A : LocalBorelData (K := K) (G := G) T)
+def evaluate (A : current_LocalBorelData T)
     (P : Polarization T) (I : IwasawaData A) (J : CompactOpenLevel G)
     (ε : Sign) (p : LevelLaurentOperator K A P I J ε) (u : ℂˣ) :
     compactLevel A P I (sourceSign ε) J →ₗ[ℂ]
@@ -66,7 +69,7 @@ def evaluate (A : LocalBorelData (K := K) (G := G) T)
   p.sum (fun n M => ((u : ℂ) ^ n) • M)
 
 def IsLevelNumerator
-    (A : LocalBorelData (K := K) (G := G) T) (P : Polarization T)
+    (A : current_LocalBorelData T) (P : Polarization T)
     (I : IwasawaData A) (J : CompactOpenLevel G) (μ : Measure K)
     (ε : Sign) (p : LevelLaurentOperator K A P I J ε) : Prop :=
   ∀ (s : ℂ), convergenceHalfPlane ε s →
@@ -79,7 +82,7 @@ def IsLevelNumerator
             (φ : compactPicture A P I (sourceSign ε)) (k : G) h
 
 def continuedLevel
-    (A : LocalBorelData (K := K) (G := G) T) (P : Polarization T)
+    (A : current_LocalBorelData T) (P : Polarization T)
     (I : IwasawaData A) (J : CompactOpenLevel G) (ε : Sign)
     (p : LevelLaurentOperator K A P I J ε) (s : ℂ) :
     compactLevel A P I (sourceSign ε) J →ₗ[ℂ]
@@ -87,7 +90,7 @@ def continuedLevel
   (denominator K ε s)⁻¹ • evaluate K A P I J ε p (evaluationUnit K ε s)
 
 theorem continuedLevel_eq_integral
-    (A : LocalBorelData (K := K) (G := G) T) (P : Polarization T)
+    (A : current_LocalBorelData T) (P : Polarization T)
     (I : IwasawaData A) (J : CompactOpenLevel G)
     (μ : Measure K) (ε : Sign)
     (p : LevelLaurentOperator K A P I J ε)
@@ -106,7 +109,7 @@ theorem continuedLevel_eq_integral
   rw [hp s hs φ k h, ← mul_assoc, inv_mul_cancel₀ hd, one_mul]
 
 def transportToSections
-    (A : LocalBorelData (K := K) (G := G) T) (P : Polarization T)
+    (A : current_LocalBorelData T) (P : Polarization T)
     (I : IwasawaData A) (ε : Sign) (s : ℂ)
     (B : compactPicture A P I (sourceSign ε) →ₗ[ℂ]
       compactPicture A P I (targetSign ε)) :
@@ -236,7 +239,7 @@ private theorem evaluation_infinite (ε : Sign) :
     reduceCtorEq, Complex.ofReal_re] <;> linarith
 
  def scalarCoordinate
-    (A : LocalBorelData (K := K) (G := G) T) (P : Polarization T)
+    (A : current_LocalBorelData T) (P : Polarization T)
     (I : IwasawaData A) (J : CompactOpenLevel G) (ε : Sign)
     (φ : compactLevel A P I (sourceSign ε) J)
     (k : I.compact.toOpenSubgroup) (h : H) :
@@ -247,7 +250,7 @@ private theorem evaluation_infinite (ε : Sign) :
   map_smul' := by intros; rfl
 
 theorem level_numerator_compatible
-    (A : LocalBorelData (K := K) (G := G) T) (P : Polarization T)
+    (A : current_LocalBorelData T) (P : Polarization T)
     (I : IwasawaData A) (J J' : CompactOpenLevel G)
     (hJ : (J.toOpenSubgroup : Subgroup G) ≤ I.compact.toOpenSubgroup)
     (hJ' : (J'.toOpenSubgroup : Subgroup G) ≤ I.compact.toOpenSubgroup)
@@ -285,7 +288,7 @@ theorem level_numerator_compatible
   exact he
 
 theorem level_numerator_unique
-    (A : LocalBorelData (K := K) (G := G) T) (P : Polarization T)
+    (A : current_LocalBorelData T) (P : Polarization T)
     (I : IwasawaData A) (J : CompactOpenLevel G)
     (μ : Measure K) (ε : Sign)
     (p p' : LevelLaurentOperator K A P I J ε)
@@ -314,11 +317,11 @@ theorem level_numerator_unique
   rw [scalarLaurent_coeff, scalarLaurent_coeff] at he
   exact he
 
-def lowerRootCoordinate (A : LocalBorelData (K := K) (G := G) T) (x : K) : G :=
+def lowerRootCoordinate (A : current_LocalBorelData T) (x : K) : G :=
   A.liftedW⁻¹ * (A.upperRoot (Multiplicative.ofAdd x) : G) * A.liftedW
 
 theorem lowerRootCoordinate_uniform_cutoff
-    (A : LocalBorelData (K := K) (G := G) T)
+    (A : current_LocalBorelData T)
     (I : IwasawaData A) (J : CompactOpenLevel G) :
     ∀ᶠ x : K in nhds 0, ∀ k : I.compact.toOpenSubgroup,
       (k : G)⁻¹ * lowerRootCoordinate K A x * (k : G) ∈ J.toOpenSubgroup := by
@@ -365,7 +368,7 @@ theorem denominator_ne_zero_of_convergence (ε : Sign) (s : ℂ)
     simpa [hz] using ht
 
 theorem continuedLevel_eq_integral_of_convergence
-    (A : LocalBorelData (K := K) (G := G) T) (P : Polarization T)
+    (A : current_LocalBorelData T) (P : Polarization T)
     (I : IwasawaData A) (J : CompactOpenLevel G)
     (μ : Measure K) (ε : Sign)
     (p : LevelLaurentOperator K A P I J ε)
@@ -381,7 +384,7 @@ theorem continuedLevel_eq_integral_of_convergence
     (denominator_ne_zero_of_convergence K ε s hs) φ k h
 
 theorem continuedLevel_compatible
-    (A : LocalBorelData (K := K) (G := G) T) (P : Polarization T)
+    (A : current_LocalBorelData T) (P : Polarization T)
     (I : IwasawaData A) (J J' : CompactOpenLevel G)
     (hJ : (J.toOpenSubgroup : Subgroup G) ≤ I.compact.toOpenSubgroup)
     (hJ' : (J'.toOpenSubgroup : Subgroup G) ≤ I.compact.toOpenSubgroup)
@@ -422,7 +425,7 @@ theorem continuedLevel_compatible
   exact congrArg ((denominator K ε s)⁻¹ * ·) hv
 
 private theorem section_locallyConstant
-    (A : LocalBorelData (K := K) (G := G) T) (P : Polarization T)
+    (A : current_LocalBorelData T) (P : Polarization T)
     (ε : Sign) (s : ℂ) (f : sectionSpace A P ε s) : IsLocallyConstant f.val := by
   obtain ⟨J, hJ⟩ := f.property.2
   rw [IsLocallyConstant.iff_eventually_eq]
@@ -435,7 +438,7 @@ private theorem section_locallyConstant
   simpa [vectorRightTranslation] using he
 
 theorem standardIntegral_integrand_locallyConstant
-    (A : LocalBorelData (K := K) (G := G) T) (P : Polarization T)
+    (A : current_LocalBorelData T) (P : Polarization T)
     (I : IwasawaData A) (ε : Sign) (s : ℂ)
     (φ : compactPicture A P I (sourceSign ε)) (g : G) (h : H) :
     IsLocallyConstant (fun x : K =>
@@ -448,7 +451,7 @@ theorem standardIntegral_integrand_locallyConstant
     (A.upperRoot_continuous.comp continuous_ofAdd))).mul continuous_const
 
 theorem standardIntegral_integrableOn_compact
-    (A : LocalBorelData (K := K) (G := G) T) (P : Polarization T)
+    (A : current_LocalBorelData T) (P : Polarization T)
     (I : IwasawaData A) (μ : Measure K) [μ.IsAddHaarMeasure]
     (ε : Sign) (s : ℂ) (φ : compactPicture A P I (sourceSign ε))
     (g : G) (h : H) (C : Set K) (hC : IsCompact C) (hmC : MeasurableSet C) :
@@ -475,7 +478,7 @@ variable (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
     [MeasurableSpace K] [BorelSpace K]
 variable {G H D : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
     [Group H] [TopologicalSpace H] [IsTopologicalGroup H] [CommGroup D] [Finite D]
-variable {T : LocalHeisenbergData H D}
+
 
 private theorem r_diff : Differentiable ℂ (r K) := by
   unfold r

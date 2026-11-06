@@ -1,21 +1,24 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.Complex.PositiveIntertwinerChartEstimates
 
 @[expose] public section
+
 
 noncomputable section
 namespace DedekindZetaZeroFree.KPReferenceChange.StandardComplexImage.FamilyCorrect
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts KPCplxHarmonicIntertwinerSpectrum
 open MeasureTheory Filter
 
-def height (g : ComplexGL2) : ℝ :=
+def height (g : ComplexGL2)  :=
   (‖((Matrix.GeneralLinearGroup.det g : ℂˣ) : ℂ)‖ / bottomRowNormSq g) ^ 2
 
-def twist (s : ℂ) (g : ComplexGL2) : ℂ :=
+def twist (s : ℂ) (g : ComplexGL2)  :=
   Complex.exp (s * (Real.log (height g) : ℂ))
 
-def plusValue (f : PrincipalSeries positiveParameter) (s : ℂ) (g : ComplexGL2) : ℂ :=
+def plusValue (f : PrincipalSeries positiveParameter) (s : ℂ) (g : ComplexGL2)  :=
   twist s g * f g
 
 def chamber : Set ℂ := {s | (-1 / 6 : ℝ) < s.re}
@@ -89,7 +92,7 @@ theorem twist_chart_smooth (s : ℂ) :
   have hh := (hc.inv (by intro z; positivity)).pow 2
   have hl := hh.log (by
     intro z
-    exact pow_ne_zero 2 (inv_ne_zero (by positivity : (1 + ‖z‖ ^ 2 : ℝ) ≠ 0)))
+    exact pow_ne_zero 2 (inv_ne_zero (by positivity : (1 + ‖z‖ ^ 2) ≠ 0)))
   exact (contDiff_const.mul (Complex.ofRealCLM.contDiff.comp hl)).cexp
 
 theorem plusValue_charts_smooth (f : PrincipalSeries positiveParameter) (s : ℂ) :
@@ -114,8 +117,7 @@ def realTwisted (f : PrincipalSeries positiveParameter) (r : ℝ) :
   intro a d b g
   rw [plusValue_covariance]
   congr 1
-  have hp : 0 < complexAbs ((a : ℂ) / (d : ℂ)) := by
-    exact pow_pos (norm_pos_iff.mpr (div_ne_zero a.ne_zero d.ne_zero)) _
+  have hp : 0 < complexAbs ((a : ℂ) / (d : ℂ)) := pow_pos (norm_pos_iff.mpr (div_ne_zero a.ne_zero d.ne_zero)) _
   change (((complexAbs ((a : ℂ) / (d : ℂ))) ^ (1 / 2 + positiveParameter) : ℝ) : ℂ) *
     Complex.exp ((r : ℂ) * (Real.log (complexAbs ((a : ℂ) / (d : ℂ))) : ℂ)) =
     (((complexAbs ((a : ℂ) / (d : ℂ))) ^ (1 / 2 + (positiveParameter + r)) : ℝ) : ℂ)

@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.EmbedsInRayClassField
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -27,7 +30,7 @@ exactly the least modulus whose ray class field contains the extension. -/
 def IsAbelianConductor
     (K : Type u) [Field K] [NumberField K]
     (L : Type v) [Field L] [NumberField L] [Algebra K L]
-    (c : RayClassModulus K) : Prop :=
+    (c : RayClassModulus K)  :=
   ∀ m : RayClassModulus K,
     EmbedsInRayClassField K L m ↔ c ≤ m
 

@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LFunctions.Hecke.PrimeArtinValues
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.AbelianQuotient
 
@@ -27,8 +30,8 @@ theorem frobeniusQuotientOrder
   let G := L ≃ₐ[K] L
   let g : G := ClassFieldTheory.arithmeticFrobeniusAt (K := K) W
   letI : Q.LiesOver P := hw
-  letI : Field ((𝓞 K) ⧸ P) := Ideal.Quotient.field P
-  letI : Field ((𝓞 L) ⧸ Q) := Ideal.Quotient.field Q
+  letI  := Ideal.Quotient.field P
+  letI  := Ideal.Quotient.field Q
   letI : Finite ((𝓞 K) ⧸ P) := Ring.HasFiniteQuotients.finiteQuotient p.ne_bot
   letI : Finite ((𝓞 L) ⧸ Q) := Ring.HasFiniteQuotients.finiteQuotient W.ne_bot
   letI : Fintype ((𝓞 K) ⧸ P) := Fintype.ofFinite _

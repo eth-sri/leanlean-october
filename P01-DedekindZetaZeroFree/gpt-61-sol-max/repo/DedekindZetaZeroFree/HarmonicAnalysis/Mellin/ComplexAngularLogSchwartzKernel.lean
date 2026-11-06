@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Deriv
 public import Mathlib.Analysis.Calculus.ParametricIntegral
 
 @[expose] public section
+
 
 section
 
@@ -11,11 +14,11 @@ namespace DedekindZetaZeroFree.ProbeSheetLogDensityRegularity.Angular
 noncomputable section
 open MeasureTheory
 
-def circleAverage (g : ℂ → ℂ) (t : ℝ) : ℂ :=
+def circleAverage (g : ℂ → ℂ) (t : ℝ)  :=
   ∫ θ : ℝ in Set.Icc 0 (2 * Real.pi),
     g ((Real.exp (t / 2) : ℂ) * Complex.exp ((θ : ℂ) * Complex.I))
 
-def weightedCircleAverage (g : ℂ → ℂ) (σ t : ℝ) : ℂ :=
+def weightedCircleAverage (g : ℂ → ℂ) (σ t : ℝ)  :=
   ((Real.exp (σ * t) : ℂ) / 2) * circleAverage g t
 
 def rawEulerOp (h : SchwartzMap ℂ ℂ) : SchwartzMap ℂ ℂ :=
@@ -26,13 +29,12 @@ def rawEulerOp (h : SchwartzMap ℂ ℂ) : SchwartzMap ℂ ℂ :=
 @[simp] theorem rawEulerOp_apply (h : SchwartzMap ℂ ℂ) (z : ℂ) :
     rawEulerOp h z = (1 / 2 : ℝ) • fderiv ℝ h z z := rfl
 
-def angPoint (a : ℝ) : ℂ := Complex.exp ((a : ℂ) * Complex.I)
+def angPoint (a : ℝ)  := Complex.exp ((a : ℂ) * Complex.I)
 
 private theorem continuous_angPoint : Continuous angPoint := by
   unfold angPoint; fun_prop
 
-private theorem continuous_flow (h : SchwartzMap ℂ ℂ) (x : ℝ) :
-    Continuous (fun a : ℝ => h (Real.exp (x / 2) • angPoint a)) :=
+private def continuous_flow (h : SchwartzMap ℂ ℂ) (x : ℝ)  :=
   h.continuous.comp
     ((continuous_const : Continuous (fun _ : ℝ => Real.exp (x / 2))).smul continuous_angPoint)
 
@@ -40,8 +42,7 @@ private theorem hasDerivAt_flow (h : SchwartzMap ℂ ℂ) (y : ℂ) (t : ℝ) :
     HasDerivAt (fun s : ℝ => h (Real.exp (s / 2) • y))
       (rawEulerOp h (Real.exp (t / 2) • y)) t := by
   have hz : HasDerivAt (fun s : ℝ => Real.exp (s / 2)) (Real.exp (t / 2) / 2) t := by
-    have h1 : HasDerivAt (fun s : ℝ => s / 2) (1 / 2) t := by
-      simpa using (hasDerivAt_id t).div_const 2
+    have h1 : HasDerivAt (fun s : ℝ => s / 2) (1 / 2) t := (hasDerivAt_id t).div_const 2
     simpa only [div_eq_mul_inv, one_mul] using h1.exp
   have hinner : HasDerivAt (fun s : ℝ => Real.exp (s / 2) • y)
       ((Real.exp (t / 2) / 2) • y) t := hz.smul_const y
@@ -73,15 +74,7 @@ private theorem hasDerivAt_circleAverage (h : SchwartzMap ℂ ℂ) (t : ℝ) :
     (integrable_const _)
     (Filter.Eventually.of_forall fun a x _ => hasDerivAt_flow h (angPoint a) x)
   obtain ⟨-, hderiv⟩ := hmain
-  have hfun : (fun n : ℝ => ∫ a, h (Real.exp (n / 2) • angPoint a)
-      ∂(volume.restrict (Set.Icc 0 (2 * Real.pi)))) = circleAverage h := by
-    funext n
-    simp only [circleAverage, angPoint, Complex.real_smul]
-  have hder : (∫ a, rawEulerOp h (Real.exp (t / 2) • angPoint a)
-      ∂(volume.restrict (Set.Icc 0 (2 * Real.pi)))) = circleAverage (rawEulerOp h) t := by
-    simp only [circleAverage, angPoint, Complex.real_smul]
-  rw [hfun, hder] at hderiv
-  exact hderiv
+  assumption
 
 theorem circleAverage_contDiff_iteratedDeriv (g : SchwartzMap ℂ ℂ) :
     ContDiff ℝ (⊤ : ℕ∞) (circleAverage g) ∧
@@ -100,7 +93,7 @@ theorem circleAverage_contDiff_iteratedDeriv (g : SchwartzMap ℂ ℂ) :
       exact (hasDerivAt_circleAverage (rawEulerOp^[n] g) t).deriv
   have hdiff : ∀ h : SchwartzMap ℂ ℂ, Differentiable ℝ (circleAverage h) :=
     fun h _ => (hasDerivAt_circleAverage h _).differentiableAt
-  have hcont : ∀ h : SchwartzMap ℂ ℂ, Continuous (circleAverage h) :=
+  have hcont  :=
     fun h => (hdiff h).continuous
   refine ⟨?_, fun n t => congr_fun (hiter n) t⟩
   rw [contDiff_infty]
@@ -119,7 +112,10 @@ namespace DedekindZetaZeroFree.ProbeSheetLogDensityRegularity.Angular
 noncomputable section
 open MeasureTheory
 
-private theorem circleAverage_integrable (h : SchwartzMap ℂ ℂ) (t : ℝ) :
+section
+variable (h : SchwartzMap ℂ ℂ)
+include h
+private theorem circleAverage_integrable   (t : ℝ) :
     Integrable (fun θ : ℝ => h ((Real.exp (t / 2) : ℂ) *
       Complex.exp ((θ : ℂ) * Complex.I))) (volume.restrict (Set.Icc 0 (2 * Real.pi))) := by
   apply Integrable.of_bound (C := SchwartzMap.seminorm ℝ 0 0 h)
@@ -127,7 +123,7 @@ private theorem circleAverage_integrable (h : SchwartzMap ℂ ℂ) (t : ℝ) :
     exact h.continuous.comp (by fun_prop)
   · exact Filter.Eventually.of_forall fun θ => SchwartzMap.norm_le_seminorm ℝ h _
 
-private theorem circleAverage_linear (h : SchwartzMap ℂ ℂ) (σ t : ℝ) :
+private theorem circleAverage_linear   (σ t : ℝ) :
     circleAverage ((σ : ℂ) • h + rawEulerOp h) t =
       (σ : ℂ) * circleAverage h t + circleAverage (rawEulerOp h) t := by
   simp only [circleAverage, Pi.add_apply,
@@ -135,7 +131,7 @@ private theorem circleAverage_linear (h : SchwartzMap ℂ ℂ) (σ t : ℝ) :
   rw [integral_add ((circleAverage_integrable h t).const_mul _) (circleAverage_integrable _ t),
     integral_const_mul]
 
-private theorem weighted_hasDerivAt (h : SchwartzMap ℂ ℂ) (σ t : ℝ) :
+private theorem weighted_hasDerivAt   (σ t : ℝ) :
     HasDerivAt (weightedCircleAverage h σ)
       (weightedCircleAverage ((σ : ℂ) • h + rawEulerOp h) σ t) t := by
   have hc := circleAverage_contDiff_iteratedDeriv h
@@ -153,7 +149,7 @@ private theorem weighted_hasDerivAt (h : SchwartzMap ℂ ℂ) (σ t : ℝ) :
   · rw [weightedCircleAverage, circleAverage_linear]
     ring
 
-private theorem weighted_iterate (h : SchwartzMap ℂ ℂ) (σ : ℝ) (n : ℕ) :
+private theorem weighted_iterate   (σ : ℝ) (n : ℕ) :
     iteratedDeriv n (weightedCircleAverage h σ) =
       weightedCircleAverage ((fun h : SchwartzMap ℂ ℂ => (σ : ℂ) • h + rawEulerOp h)^[n] h) σ := by
   induction n with
@@ -163,6 +159,8 @@ private theorem weighted_iterate (h : SchwartzMap ℂ ℂ) (σ : ℝ) (n : ℕ) 
     funext t
     rw [Function.iterate_succ_apply']
     exact (weighted_hasDerivAt _ σ t).deriv
+end
+
 
 private theorem polynomial_exp_bound (k : ℕ) (b : ℝ) (hb : 0 < b) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ x : ℝ, 0 ≤ x → x ^ k * Real.exp (-b * x) ≤ C := by
@@ -281,7 +279,7 @@ namespace DedekindZetaZeroFree.ProbeSheetLogDensityRegularity
 noncomputable section
 open MeasureTheory
 
-def rawComplexAngularLogKernel (g : ℂ → ℂ) (σ t : ℝ) : ℂ :=
+def rawComplexAngularLogKernel (g : ℂ → ℂ) (σ t : ℝ)  :=
   ((Real.exp (σ * t) : ℂ) / 2) *
     ∫ θ : ℝ in Set.Icc 0 (2 * Real.pi),
       g ((Real.exp (t / 2) : ℂ) * Complex.exp ((θ : ℂ) * Complex.I))

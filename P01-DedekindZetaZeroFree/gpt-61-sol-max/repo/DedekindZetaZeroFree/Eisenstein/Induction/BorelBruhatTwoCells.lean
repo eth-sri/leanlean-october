@@ -116,7 +116,10 @@ variable [NumberField F] {G : Type*} [Group G]
 
 abbrev Adeles := NumberField.AdeleRing (𝓞 F) F
 
-def CompatibleUnipotentLift (s : PGL(2, F) →* G)
+section
+variable (s : PGL(2, F) →* G)
+include s in
+def CompatibleUnipotentLift  
     (n : Multiplicative (Adeles F) →* G) : Prop :=
   ∀ t : F, s (rationalUnipotent F t) =
     n (Multiplicative.ofAdd (algebraMap F (Adeles F) t))
@@ -125,14 +128,17 @@ def ScalarUnipotentInvariant (n : Multiplicative (Adeles F) →* G)
     (fR : G → ℂ) : Prop :=
   ∀ x g, fR (n (Multiplicative.ofAdd x) * g) = fR g
 
-def ScalarRationalBorelInvariant (s : PGL(2, F) →* G) (fR : G → ℂ) : Prop :=
+include s in
+def ScalarRationalBorelInvariant   (fR : G → ℂ) : Prop :=
   ∀ b : rationalBorel F, ∀ g, fR (s b * g) = fR g
 
-def rationalTerm (s : PGL(2, F) →* G) (fR : G → ℂ)
+include s in
+def rationalTerm   (fR : G → ℂ)
     (g : G) (q : RationalQuotient F) : ℂ :=
   fR (s (Quotient.out q) * g)
 
-theorem rationalTerm_eq (s : PGL(2, F) →* G) (fR : G → ℂ)
+include s in
+theorem rationalTerm_eq   (fR : G → ℂ)
     (hB : ScalarRationalBorelInvariant F s fR) (g : G) (a : PGL(2, F)) :
     rationalTerm F s fR g (rationalCoset F a) = fR (s a * g) := by
   have he : rationalCoset F (Quotient.out (rationalCoset F a)) = rationalCoset F a :=
@@ -142,7 +148,8 @@ theorem rationalTerm_eq (s : PGL(2, F) →* G) (fR : G → ℂ)
   have hi := hB ⟨_, hb⟩ (s (Quotient.out (rationalCoset F a)) * g)
   simpa [rationalTerm, map_mul, map_inv, mul_assoc] using hi.symm
 
-theorem open_cell_translate (s : PGL(2, F) →* G)
+include s in
+theorem open_cell_translate  
     (n : Multiplicative (Adeles F) →* G)
     (hcompat : CompatibleUnipotentLift F s n)
     (fR : G → ℂ) (t : F) (x : Adeles F) (g : G) :
@@ -153,7 +160,8 @@ theorem open_cell_translate (s : PGL(2, F) →* G)
   rw [map_mul, hcompat t]
   simp only [ofAdd_add, map_mul, mul_assoc]
 
-theorem eisenstein_two_cells (s : PGL(2, F) →* G) (fR : G → ℂ)
+include s in
+theorem eisenstein_two_cells   (fR : G → ℂ)
     (hB : ScalarRationalBorelInvariant F s fR) (g : G)
     (hsum : KPGlobalEisensteinData.EisensteinSummable
       (fun q : RationalQuotient F => s (Quotient.out q)) fR g) :
@@ -180,6 +188,8 @@ theorem eisenstein_two_cells (s : PGL(2, F) →* G) (fR : G → ℂ)
     rationalTerm F s fR g (cellIndex F none) = _
   simp only [cellIndex, rationalTerm_eq F s fR hB g, map_one, one_mul]
   exact add_comm _ _
+end
+
 
 end Lifts
 

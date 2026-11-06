@@ -1,16 +1,22 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.Fourier.Convolution
 
 @[expose] public section
+
 
 open Metric MeasureTheory
 open scoped FourierTransform Convolution
 
 namespace DedekindZetaZeroFree
 
-private lemma fourier_fourier_apply_neg {W : Type*} [NormedAddCommGroup W] [InnerProductSpace ℝ W]
+section
+variable {W : Type*} [NormedAddCommGroup W] [InnerProductSpace ℝ W]
     [FiniteDimensional ℝ W] [MeasurableSpace W] [BorelSpace W]
+include W
+private lemma fourier_fourier_apply_neg  
     (f : SchwartzMap W ℂ) (x : W) :
     ((𝓕 (𝓕 f) : SchwartzMap W ℂ) : W → ℂ) x = f (-x) := by
   have h := Continuous.fourierInv_fourier_eq f.continuous f.integrable (𝓕 f).integrable
@@ -18,8 +24,7 @@ private lemma fourier_fourier_apply_neg {W : Type*} [NormedAddCommGroup W] [Inne
   rw [Real.fourierInv_eq_fourier_neg] at hx
   simpa only [SchwartzMap.fourier_coe, neg_neg] using hx
 
-private lemma schwartz_pairing_fourier_eq_convolution {W : Type*} [NormedAddCommGroup W]
-    [InnerProductSpace ℝ W] [FiniteDimensional ℝ W] [MeasurableSpace W] [BorelSpace W]
+private lemma schwartz_pairing_fourier_eq_convolution  
     (f g : SchwartzMap W ℂ) :
     (𝓕 (SchwartzMap.pairing (ContinuousLinearMap.mul ℂ ℂ) f g) : SchwartzMap W ℂ)
       = SchwartzMap.convolution (ContinuousLinearMap.mul ℂ ℂ) (𝓕 f) (𝓕 g) := by
@@ -31,6 +36,8 @@ private lemma schwartz_pairing_fourier_eq_convolution {W : Type*} [NormedAddComm
     rw [fourier_fourier_apply_neg, SchwartzMap.pairing_apply_apply]
   have h2 := congrArg (fun (h : SchwartzMap W ℂ) => (𝓕⁻ h : SchwartzMap W ℂ)) hA
   simpa using h2
+end
+
 
 theorem schwartz_product_fourier_tsupport_subset_closedBall
     (W : Type*) [NormedAddCommGroup W] [InnerProductSpace ℝ W]
@@ -46,7 +53,7 @@ theorem schwartz_product_fourier_tsupport_subset_closedBall
                     ((𝓕 g : SchwartzMap W ℂ) : W → ℂ)) x := by
     rw [schwartz_pairing_fourier_eq_convolution]
     ext x
-    exact SchwartzMap.convolution_apply (ContinuousLinearMap.mul ℂ ℂ) (𝓕 f) (𝓕 g) x
+    apply SchwartzMap.convolution_apply
   have hsupp : Function.support ((𝓕 (SchwartzMap.pairing (ContinuousLinearMap.mul ℂ ℂ) f g) :
         SchwartzMap W ℂ) : W → ℂ) ⊆ closedBall (0 : W) (R + Q) := by
     rw [hfun]

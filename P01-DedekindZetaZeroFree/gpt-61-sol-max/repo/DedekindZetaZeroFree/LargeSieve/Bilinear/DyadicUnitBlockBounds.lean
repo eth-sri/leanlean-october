@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Ideals.DyadicNormBlocks
 public import DedekindZetaZeroFree.LFunctions.Hecke.QuadraticFamilies.CharacterValues
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve.Sieve
 
@@ -26,9 +29,12 @@ private theorem squarefree_top_ideal : Squarefree (⊤ : Ideal (𝓞 F)) := by
   rw [h]
   exact squarefree_one
 
-private theorem unit_row_bound (c : Ideal (𝓞 F))
+section
+variable (c : Ideal (𝓞 F))
     (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c) (S : Finset (Ideal (𝓞 F)))
-    (lam : Ideal (𝓞 F) → ℂ) :
+    (lam : Ideal (𝓞 F) → ℂ)
+include c Q S lam
+private theorem unit_row_bound   :
     (∑ _a ∈ ({⊤} : Finset (Ideal (𝓞 F))),
       ‖∑ b ∈ S, lam b * (Q.χ b) _a‖ ^ 2) ≤
       (S.card : ℝ) * ∑ b ∈ S, ‖lam b‖ ^ 2 := by
@@ -40,9 +46,7 @@ private theorem unit_row_bound (c : Ideal (𝓞 F))
   rw [h]
   exact sum_norm_sq_le_card_mul S lam
 
-private theorem unit_column_bound (c : Ideal (𝓞 F))
-    (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c) (S : Finset (Ideal (𝓞 F)))
-    (lam : Ideal (𝓞 F) → ℂ) :
+private theorem unit_column_bound   :
     (∑ a ∈ S, ‖∑ _b ∈ ({⊤} : Finset (Ideal (𝓞 F))), lam _b * (Q.χ _b) a‖ ^ 2) ≤
       (S.card : ℝ) * ‖lam ⊤‖ ^ 2 := by
   have hbound : ∀ a ∈ S,
@@ -58,6 +62,8 @@ private theorem unit_column_bound (c : Ideal (𝓞 F))
       ≤ ∑ _a ∈ S, ‖lam ⊤‖ ^ 2 := Finset.sum_le_sum hbound
     _ = (S.card : ℝ) * ‖lam ⊤‖ ^ 2 := by
         rw [Finset.sum_const, nsmul_eq_mul]
+end
+
 
 private theorem dyadicBlock_card_le (c : Ideal (𝓞 F)) (A : ℝ) (hA : 1 ≤ A)
     (hcount : ∀ X : ℝ, 1 ≤ X → ((DedekindZetaZeroFree.LargeSieve.boundedNormIdeals F X).card : ℝ) ≤ A * X)
@@ -91,15 +97,14 @@ private theorem unit_error_factor (C A δ s t : ℝ) (hC : 0 ≤ C) (hA : 1 ≤ 
   have hs0 : 0 ≤ s := by linarith
   have ht0 : 0 ≤ t := by linarith
   have hst : (1 : ℝ) ≤ s * t := by nlinarith
-  have hpow : (1 : ℝ) ≤ (s * t) ^ δ := Real.one_le_rpow hst hδ
+  have hpow  := Real.one_le_rpow hst hδ
   have hpow0 : 0 ≤ (s * t) ^ δ := by linarith
   have hsum : s ≤ s + t := by linarith
   calc A * (2 * s) = 2 * A * s := by ring
     _ ≤ (C + 2 * A + 1) * s := mul_le_mul_of_nonneg_right hK2 hs0
     _ ≤ (C + 2 * A + 1) * ((s * t) ^ δ * s) := by
         have h1 : s ≤ (s * t) ^ δ * s := by
-          calc s = 1 * s := (one_mul s).symm
-            _ ≤ (s * t) ^ δ * s := mul_le_mul_of_nonneg_right hpow hs0
+          nlinarith
         exact mul_le_mul_of_nonneg_left h1 hK
     _ ≤ (C + 2 * A + 1) * ((s * t) ^ δ * (s + t)) :=
         mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left hsum hpow0) hK
@@ -112,7 +117,7 @@ private theorem shell_constant_le (C A δ m n E : ℝ) (hC : 0 ≤ C) (hA : 1 �
   have hm0 : 0 ≤ m := by linarith
   have hn0 : 0 ≤ n := by linarith
   have hmn0 : 0 ≤ m * n := mul_nonneg hm0 hn0
-  have hpow0 : 0 ≤ (m * n) ^ δ := Real.rpow_nonneg hmn0 δ
+  have hpow0  := Real.rpow_nonneg hmn0 δ
   have hsum0 : 0 ≤ m + n := by linarith
   have h1 : C * (m * n) ^ δ ≤ (C + 2 * A + 1) * (m * n) ^ δ :=
     mul_le_mul_of_nonneg_right hK hpow0
@@ -181,7 +186,7 @@ theorem unit_block_extension
       refine le_trans (unit_column_bound c 𝓕 (paperShell F c ((2 : ℝ) ^ k)) lam) ?_
       refine le_trans (mul_le_mul_of_nonneg_right hcard hE) ?_
       refine le_trans (mul_le_mul_of_nonneg_right hfac hE) ?_
-      exact le_of_eq (by rw [Finset.sum_singleton])
+      apply le_of_eq <;> aesop
     ·
       simp only [idealDyadicBlock, dyadicScale, one_mul, mul_one]
       refine le_trans (hshell ((2 : ℝ) ^ k) ((2 : ℝ) ^ l)

@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Ideals.ExteriorIdeals.EulerWeights
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 
@@ -107,10 +110,10 @@ theorem unique_coprime_powerful_squarefree_decomposition
       omega
     · simp only [ht1, ne_eq, not_false_eq_true, if_true, if_false]
       omega
-  have heq : h' = h := associated_iff_eq.mp
+  have heq  := associated_iff_eq.mp
     ((UniqueFactorizationMonoid.associated_iff_normalizedFactors_eq_normalizedFactors hh' hh0).mpr
       (Multiset.ext.mpr fun p => (hc' p).1))
-  have deq : d' = d := associated_iff_eq.mp
+  have deq  := associated_iff_eq.mp
     ((UniqueFactorizationMonoid.associated_iff_normalizedFactors_eq_normalizedFactors hd' hd0).mpr
       (Multiset.ext.mpr fun p => (hc' p).2))
   exact Prod.ext (Subtype.ext heq) (Subtype.ext deq)
@@ -127,8 +130,11 @@ theorem exterior_of_powerful_squarefree_factorization
     rw [← hm, hmd]
     exact sup_le (Ideal.mul_le_right.trans le_sup_left) le_sup_right
 
+section
+variable (h : Ideal (𝓞 F)) (hh : h ≠ ⊥) (hpower : Powerful h)
+include h hh hpower
 theorem squarefree_radical_divisor_pow_two_le_powerful
-    (h : Ideal (𝓞 F)) (hh : h ≠ ⊥) (hpower : Powerful h)
+     
     (f : Ideal (𝓞 F)) (hf : Squarefree f)
     (hdiv : f ∣ idealRadical h) :
     f ^ 2 ∣ h ∧ idealNorm f ^ 2 ≤ idealNorm h := by
@@ -153,8 +159,7 @@ theorem squarefree_radical_divisor_pow_two_le_powerful
     have hph : p ∈ idealPrimeSupport h := by
       by_contra hn
       simp [hn] at hrad
-    have hhpos : 0 < idealPrimeExponent p h := by
-      exact Multiset.count_pos.mpr (by simpa only [idealPrimeSupport, Multiset.mem_toFinset] using hph)
+    have hhpos : 0 < idealPrimeExponent p h := Multiset.count_pos.mpr (by simpa only [idealPrimeSupport, Multiset.mem_toFinset] using hph)
     have he := (hpower p hp).resolve_left (Nat.ne_of_gt hhpos)
     have hc := (Multiset.nodup_iff_count_le_one.mp hsq) p
     change 2 * (UniqueFactorizationMonoid.normalizedFactors f).count p ≤ idealPrimeExponent p h
@@ -167,7 +172,7 @@ theorem squarefree_radical_divisor_pow_two_le_powerful
   simpa [idealNorm, map_pow] using hn'
 
 theorem unique_powerful_square_cube_decomposition
-    (h : Ideal (𝓞 F)) (hh : h ≠ ⊥) (hpower : Powerful h) :
+      :
     ∃! rs : NonzeroIdeal F × NonzeroIdeal F,
       h = rs.1.val ^ 2 * rs.2.val ^ 3 ∧ Squarefree rs.2.val := by
   classical
@@ -218,13 +223,15 @@ theorem unique_powerful_square_cube_decomposition
     have hc := hscount p
     have hc' := hscount' p
     omega
-  have hre : r' = r := associated_iff_eq.mp
+  have hre  := associated_iff_eq.mp
     ((UniqueFactorizationMonoid.associated_iff_normalizedFactors_eq_normalizedFactors hr' hr0).mpr
       (Multiset.ext.mpr fun p => (hcount p).1))
-  have hse' : s' = s := associated_iff_eq.mp
+  have hse'  := associated_iff_eq.mp
     ((UniqueFactorizationMonoid.associated_iff_normalizedFactors_eq_normalizedFactors hs' hs0).mpr
       (Multiset.ext.mpr fun p => (hcount p).2))
   exact Prod.ext (Subtype.ext hre) (Subtype.ext hse')
+end
+
 
 end
 end DedekindZetaZeroFree

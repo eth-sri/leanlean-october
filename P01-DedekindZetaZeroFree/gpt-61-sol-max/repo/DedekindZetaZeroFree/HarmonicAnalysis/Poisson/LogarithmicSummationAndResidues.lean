@@ -125,10 +125,13 @@ private lemma logarithmic_left_integral
     dsimp [c]; ring
   rw [hreflect, Vendor.verticalIntegral_const_mul c _ G hVI, hVeq]
 
-theorem principal_logarithmic_contour
-    (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
+section
+variable (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
     {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ} {H : ℂ → ℂ}
     (hf : Vendor.LogMellinAdmissible f δ P H) {X : ℝ} (hX : 0 < X)
+include F hF f δ P H hf X hX
+theorem principal_logarithmic_contour
+     
     (a b : ℝ) (haδ : -δ < a) (ha0 : a < 0) (hb : 1 < b) :
     let M := Vendor.logMellinProduct H (principalZetaContinuation F hF) X
     Complex.VerticalIntegrable M a ∧ Complex.VerticalIntegrable M b ∧
@@ -225,9 +228,7 @@ theorem principal_logarithmic_contour
     rfl
 
 theorem principal_logarithmic_poisson
-    (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
-    {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ} {H : ℂ → ℂ}
-    (hf : Vendor.LogMellinAdmissible f δ P H) {X : ℝ} (hX : 0 < X) :
+      :
     let k := Vendor.reflectedLogDual (principalDiscriminant F)
       (principalComplexPlaces F) H δ
     Summable (fun I : {I : Ideal (𝓞 F) // I ≠ ⊥} =>
@@ -277,6 +278,8 @@ theorem principal_logarithmic_poisson
   rw [sub_eq_iff_eq_add] at hshift
   rw [hshift]
   ring
+end
+
 
 end DedekindZetaZeroFree.LargeSieve
 

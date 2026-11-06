@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.Complex.PositiveIntertwinerConvergence
 public import DedekindZetaZeroFree.HarmonicAnalysis.Fourier.SphericalHarmonics.LegendreBeta
 public import DedekindZetaZeroFree.HarmonicAnalysis.Fourier.Sphere.PolynomialFunkHecke
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.KPCplxHarmonicIntertwinerSpectrum
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts MeasureTheory
@@ -24,9 +27,9 @@ theorem positive_haar_integral_of_transport
       (ComplexLocal.StereographicTransport.denominator z ^ (-2 : ℝ) / Real.pi : ℝ) *
         K (q z)) :
     (∫ z, g z ∂characterHaar β) =
-      ((3 * characterScale β / 2 : ℝ) : ℂ) *
+      ((3 * characterScale β / 2) : ℂ) *
         ∫ y, K y ∂ComplexFractionalInverse.RawSphereProjection.rawSphereArea := by
-  let d : ℂ → ℝ := fun z =>
+  let d  := fun z =>
     ComplexLocal.StereographicTransport.denominator z ^ (-2 : ℝ) / Real.pi
   have hd : Measurable (fun z => ENNReal.ofReal (d z)) := by
     dsimp [d, ComplexLocal.StereographicTransport.denominator]
@@ -89,8 +92,7 @@ theorem positive_intertwiner_harmonic_integral (β : ℂˣ) (ℓ : ℕ)
   have hpoint : HarmonicIntegral.rawPolynomialSphere p x =
       MvPolynomial.eval (compactSphereCoordinate k) p := by
     unfold HarmonicIntegral.rawPolynomialSphere
-    rw [show (fun i => ((x : ComplexFractionalInverse.RawSphereProjection.rawAmbient) i : ℂ)) =
-      compactSphereCoordinate k from funext hx]
+    rw [(funext hx)]
   rw [hpoint]
   push_cast
   ring

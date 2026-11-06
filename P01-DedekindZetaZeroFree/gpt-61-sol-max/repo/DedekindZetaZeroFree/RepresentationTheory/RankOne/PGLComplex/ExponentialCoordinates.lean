@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 import all Mathlib.Geometry.Manifold.LocalDiffeomorph
 public import DedekindZetaZeroFree.Geometry.PGL.TranslatedExponentialFrame
 public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.PGL.ChartDensity
 
 @[expose] public section
+
 
 noncomputable section
 namespace DedekindZetaZeroFree.PGLComplex
@@ -29,7 +32,7 @@ namespace DedekindZetaZeroFree.PGLComplex
 open MeasureTheory Topology
 open scoped Matrix.Norms.Operator Manifold ContDiff Classical
 
-def sl2Matrix (a : Coordinates) : Matrix (Fin 2) (Fin 2) ℂ :=
+def sl2Matrix (a : Coordinates)  :=
   !![(a 0 : ℂ) + Complex.I * (a 1 : ℂ), (a 2 : ℂ) + Complex.I * (a 3 : ℂ);
     (a 4 : ℂ) + Complex.I * (a 5 : ℂ), -((a 0 : ℂ) + Complex.I * (a 1 : ℂ))]
 
@@ -42,7 +45,7 @@ def affineExpDerivative : Coordinates →L[ℝ] Coordinates :=
       map_add' := by intro a b; ext i; simp [mul_add]
       map_smul' := by intro r a; ext i; simp [mul_left_comm] }
 
-def basisMatrix (j : Fin 6) : Matrix (Fin 2) (Fin 2) ℂ :=
+def basisMatrix (j : Fin 6)  :=
   sl2Matrix (fun k => if k = j then 1 else 0)
 
 def matrixCoordinates (M : Matrix (Fin 2) (Fin 2) ℂ) : Coordinates :=
@@ -50,8 +53,8 @@ def matrixCoordinates (M : Matrix (Fin 2) (Fin 2) ℂ) : Coordinates :=
 
 def entryLM (i j : Fin 2) : Matrix (Fin 2) (Fin 2) ℂ →ₗ[ℝ] ℂ where
   toFun M := M i j
-  map_add' M N := by simp
-  map_smul' r M := by simp
+  map_add' M N := rfl
+  map_smul' r M := rfl
 
 def entry (i j : Fin 2) : Matrix (Fin 2) (Fin 2) ℂ →L[ℝ] ℂ :=
   (entryLM i j).toContinuousLinearMap
@@ -114,13 +117,16 @@ private def sl2CLM : Coordinates →L[ℝ] Matrix (Fin 2) (Fin 2) ℂ :=
       map_add' := sl2Matrix_add
       map_smul' := sl2Matrix_smul }
 
-private def entryCLM (i j : Fin 2) : Matrix (Fin 2) (Fin 2) ℂ →L[ℝ] ℂ :=
+section
+variable (i j : Fin 2)
+include i j
+private def entryCLM   : Matrix (Fin 2) (Fin 2) ℂ →L[ℝ] ℂ :=
   LinearMap.toContinuousLinearMap
     { toFun := fun M => M i j
       map_add' := by intros; rfl
       map_smul' := by intros; rfl }
 
-private theorem hentryExp (i j : Fin 2) : HasStrictFDerivAt (fun a => NormedSpace.exp (sl2Matrix a) i j)
+private theorem hentryExp   : HasStrictFDerivAt (fun a => NormedSpace.exp (sl2Matrix a) i j)
     ((entryCLM i j).comp sl2CLM) 0 := by
   have h : HasStrictFDerivAt (fun a => NormedSpace.exp (sl2Matrix a)) sl2CLM 0 := by
     have h : HasStrictFDerivAt NormedSpace.exp
@@ -129,10 +135,12 @@ private theorem hentryExp (i j : Fin 2) : HasStrictFDerivAt (fun a => NormedSpac
     convert h.comp 0 sl2CLM.hasStrictFDerivAt using 1 <;> ext a <;> rfl
   exact (entryCLM i j).hasStrictFDerivAt.comp 0 h
 
-private def expEntry (i j : Fin 2) (a : Coordinates) : ℂ := NormedSpace.exp (sl2Matrix a) i j
+private def expEntry   (a : Coordinates)  := NormedSpace.exp (sl2Matrix a) i j
 
-private theorem expEntry_zero (i j : Fin 2) : expEntry i j 0 = (1 : Matrix (Fin 2) (Fin 2) ℂ) i j := by
+private theorem expEntry_zero   : expEntry i j 0 = (1 : Matrix (Fin 2) (Fin 2) ℂ) i j := by
   simp [expEntry, sl2Matrix_zero, NormedSpace.exp_zero]
+end
+
 
 private theorem hdenInv : HasStrictFDerivAt (fun a => (expEntry 0 0 a)⁻¹)
     (-((entryCLM 0 0).comp sl2CLM)) 0 := by
@@ -183,8 +191,7 @@ theorem exponential_hasStrictFDerivAt_zero : HasStrictFDerivAt (fun a => affineI
   ext a i
   simp [exponential, affineInverse_mk, expEntry]
 
-theorem exponential_hasFDerivAt_zero :
-    HasFDerivAt (fun a => affineInverse (exponential a)) affineExpDerivative 0 :=
+def exponential_hasFDerivAt_zero  :=
   exponential_hasStrictFDerivAt_zero.hasFDerivAt
 
 end ExponentialDerivative
@@ -317,8 +324,7 @@ private theorem affine_exponential_smooth_local_homeomorph :
       ContDiffOn ℝ (⊤ : ℕ∞) e e.source ∧
       ContDiffOn ℝ (⊤ : ℕ∞) e.symm e.target := by
   obtain ⟨e, he0, he⟩ := affine_exponential_local_homeomorph
-  have hefun : (e : Coordinates → Coordinates) =
-      (fun a => affineInverse (exponential a)) := funext he
+  have hefun  := funext he
   have hf : AnalyticAt ℝ e 0 := by rw [hefun]; exact exponential_analyticAt_zero
   let d := affineExpDerivative.toContinuousLinearEquivOfDetNeZero
     (by change affineExpDerivative.toLinearMap.det ≠ 0; rw [affineExpDerivative_det]; norm_num)
@@ -328,7 +334,7 @@ private theorem affine_exponential_smooth_local_homeomorph :
     rw [hefun, hd]
     exact exponential_hasFDerivAt_zero.fderiv
   have hi : AnalyticAt ℝ e.symm (e 0) := e.analyticAt_symm' he0 hf hfd
-  let U : Set Coordinates := {a | AnalyticAt ℝ e a} ∩
+  let U  := {a | AnalyticAt ℝ e a} ∩
     e ⁻¹' {a | AnalyticAt ℝ e.symm a}
   have hU : (0 : Coordinates) ∈ interior U := by
     apply mem_interior_iff_mem_nhds.mpr
@@ -338,11 +344,11 @@ private theorem affine_exponential_smooth_local_homeomorph :
   refine ⟨f, ⟨he0, hU⟩, ?_, ?_, ?_⟩
   · intro a; exact he a
   · intro a ha
-    have ha' : a ∈ U := interior_subset ha.2
+    have ha'  := interior_subset ha.2
     exact ha'.1.contDiffAt.contDiffWithinAt
   · intro a ha
     have hs := f.map_target ha
-    have hs' : f.symm a ∈ U := interior_subset hs.2
+    have hs'  := interior_subset hs.2
     have heq : e (f.symm a) = a := f.right_inv ha
     have hi' : AnalyticAt ℝ e.symm a := by
       rw [← heq]
@@ -369,13 +375,11 @@ def adjointLinearEquiv (g : Group) : Coordinates ≃ₗ[ℝ] Coordinates where
   right_inv a := by
     change matrixCoordinates (g.out.val * sl2Matrix (matrixCoordinates
       (g.out⁻¹.val * sl2Matrix a * g.out.val)) * g.out⁻¹.val) = a
-    have ht : Matrix.trace (g.out⁻¹.val * sl2Matrix a * g.out.val) = 0 := by
-      simpa using (trace_conjugation g.out⁻¹ (sl2Matrix a)).trans (sl2Matrix_trace a)
+    have ht : Matrix.trace (g.out⁻¹.val * sl2Matrix a * g.out.val) = 0 := (trace_conjugation g.out⁻¹ (sl2Matrix a)).trans (sl2Matrix_trace a)
     rw [sl2Matrix_matrixCoordinates _ ht]
     simp [Matrix.mul_assoc, ← Matrix.mul_assoc g.out.val g.out⁻¹.val]
     exact matrixCoordinates_sl2Matrix a
-theorem exponential_adjoint (g : Group) (a : Coordinates) :
-    g * exponential a * g⁻¹ = exponential (adjointLinearEquiv g a) := exponential_conjugation g a
+alias exponential_adjoint := _root_.DedekindZetaZeroFree.PGLComplex.exponential_conjugation
 theorem adjointLinearEquiv_basis (g : Group) (a b : Fin 6) :
     (adjointLinearEquiv g ((Pi.basisFun ℝ (Fin 6)) b)) a = adjointMatrix g a b := by
   have hs : (Pi.single b (1 : ℝ) : Coordinates) = (fun k => if k = b then 1 else 0) := by
@@ -394,9 +398,9 @@ theorem exponential_local_coordinates :
         (fun a => E.symm (affinePoint a)) (affinePoint ⁻¹' E.target ∩ affineSource) := by
   refine ⟨exponential_hasFDerivAt_zero, affineExpDerivative_det, ?_⟩
   obtain ⟨e, he0, he, hf, hi⟩ := affine_exponential_smooth_local_homeomorph
-  let U : Set Coordinates := {a | exponential a ∈ affineTarget}
+  let U  := {a | exponential a ∈ affineTarget}
   have hU : (0 : Coordinates) ∈ interior U := by
-    have h00 : ContinuousAt (fun a => NormedSpace.exp (sl2Matrix a) 0 0) 0 :=
+    have h00  :=
       (hentryExp 0 0).continuousAt
     have hn : ∀ᶠ a in 𝓝 (0 : Coordinates), NormedSpace.exp (sl2Matrix a) 0 0 ≠ 0 :=
       h00.eventually_ne (by simp [sl2Matrix_zero, NormedSpace.exp_zero])
@@ -405,11 +409,11 @@ theorem exponential_local_coordinates :
   let E := (e.restr U).trans affineChart
   have hEexp : ∀ a ∈ E.source, E a = exponential a := by
     intro a ha
-    have haU : a ∈ U := interior_subset ha.1.2
+    have haU  := interior_subset ha.1.2
     change affineChart ((e.restr U) a) = exponential a
     rw [OpenPartialHomeomorph.restr_apply, he,
       ← affineChart_symm_apply _ haU]
-    exact affineChart.right_inv (by simpa [U] using haU)
+    apply affineChart.right_inv <;> aesop
   have h0 : affineInverse 1 = 0 := by
     rw [← Matrix.ProjGenLinGroup.mk_one, affineInverse_mk]
     ext i; fin_cases i <;> simp
@@ -429,7 +433,7 @@ theorem exponential_local_coordinates :
       change (e.restr U).symm (affineChart.symm (affinePoint a)) = e.symm a
       have hleft : affineChart.symm (affinePoint a) = a := by
         rw [← affineChart_apply a ha.2]
-        exact affineChart.left_inv (by simpa using ha.2)
+        apply affineChart.left_inv <;> aesop
       rw [hleft]
       rfl
     have hsub : affinePoint ⁻¹' E.target ∩ affineSource ⊆ e.target := by
@@ -471,9 +475,7 @@ theorem exponential_contMDiff {C : ChartedSpace Coordinates Group}
     change Matrix.ProjGenLinGroup.mk (g.out⁻¹) = g⁻¹
     rw [map_inv]
     exact congrArg Inv.inv (Quotient.out_eq g)
-  have hchart : ∀ x, ((affineChart.trans
-      (Homeomorph.mulLeft g).toOpenPartialHomeomorph).symm) (exponential x) =
-      affineChart.symm (g⁻¹ * exponential x) := by intro x; rfl
+  
   simp only [Function.comp_def, PartialEquiv.refl_symm, PartialEquiv.refl_coe,
     Set.range_id]
   change ContDiffWithinAt ℝ (⊤ : ℕ∞)
@@ -527,7 +529,7 @@ theorem exponential_partialDiffeomorph_exists {C : ChartedSpace Coordinates Grou
       Coordinates Group (⊤ : ℕ∞),
       0 ∈ D.source ∧ (∀ a ∈ D.source, D a = exponential a) := by
   obtain ⟨_, _, E, h0, hexp, hf, hi⟩ := exponential_local_coordinates
-  let U : Set Coordinates := E ⁻¹' affineTarget
+  let U  := E ⁻¹' affineTarget
   have hU : (0 : Coordinates) ∈ interior U := by
     apply mem_interior_iff_mem_nhds.mpr
     have ht : E 0 ∈ affineTarget := by rw [hexp 0 h0, exponential_zero]; exact one_mem_affineTarget
@@ -537,7 +539,7 @@ theorem exponential_partialDiffeomorph_exists {C : ChartedSpace Coordinates Grou
   have hFt : F.target ⊆ affineTarget := by
     intro y hy
     have hs := F.map_target hy
-    have hsU : F.symm y ∈ U := interior_subset hs.2
+    have hsU  := interior_subset hs.2
     have hr : E (F.symm y) = y := F.right_inv hy
     change E (F.symm y) ∈ affineTarget at hsU
     rwa [hr] at hsU
@@ -564,7 +566,7 @@ theorem exponential_partialDiffeomorph_exists {C : ChartedSpace Coordinates Grou
     simp only [modelWithCornersSelf_coe, Set.range_id]
     apply ContMDiffAt.contMDiffWithinAt
     apply ContDiffAt.contMDiffAt
-    let S : Set Coordinates := affinePoint ⁻¹' E.target ∩ affineSource
+    let S  := affinePoint ⁻¹' E.target ∩ affineSource
     have haS : affineChart.symm y ∈ S := by
       have hys : y ∈ affineChart.target := by simpa using hFt hy
       have has := affineChart.map_target hys
@@ -602,7 +604,7 @@ private theorem conjugation_scalar (h : Matrix.GeneralLinearGroup (Fin 2) ℂ) (
     (h * Matrix.GeneralLinearGroup.scalar (Fin 2) z)⁻¹.val = h.val * M * h⁻¹.val := by
   simp only [mul_inv_rev, Units.val_mul]
   have hv : (Matrix.GeneralLinearGroup.scalar (Fin 2) z)⁻¹.val =
-      (Matrix.GeneralLinearGroup.scalar (Fin 2) z⁻¹).val := by rw [map_inv]
+      (Matrix.GeneralLinearGroup.scalar (Fin 2) z⁻¹).val := rfl
   rw [hv]
   simp only [Matrix.GeneralLinearGroup.coe_scalar]
   ext i j
@@ -642,10 +644,13 @@ private def readCoordinate (a : Fin 6) : Matrix (Fin 2) (Fin 2) ℂ →L[ℝ] �
       map_add' M N := by fin_cases a <;> simp [matrixCoordinates]
       map_smul' r M := by fin_cases a <;> simp [matrixCoordinates, Complex.real_smul] }
 
-theorem adjointMatrix_contMDiff {C : ChartedSpace Coordinates Group}
+section
+variable {C : ChartedSpace Coordinates Group}
     [LieGroup (𝓘(ℝ, Coordinates)) (⊤ : ℕ∞) Group]
     (hC : ∀ g : Group, chartAt Coordinates g =
       ((affineChart.trans (Homeomorph.mulLeft g).toOpenPartialHomeomorph).symm))
+include C hC
+theorem adjointMatrix_contMDiff  
     (a b : Fin 6) :
     ContMDiff (𝓘(ℝ, Coordinates)) (𝓘(ℝ, ℝ)) (⊤ : ℕ∞)
       (fun g => adjointMatrix g a b) := by
@@ -668,9 +673,7 @@ theorem adjointMatrix_contMDiff {C : ChartedSpace Coordinates Group}
     simpa [f, hz] using g.out.isUnit
   have hm : ContDiffAt ℝ (⊤ : ℕ∞) f 0 :=
     contDiffAt_const.mul affineMatrix_smooth_op.contDiffAt
-  have hri : ContDiffAt ℝ (⊤ : ℕ∞) Ring.inverse (f 0) := by
-    simpa only [IsUnit.unit_spec] using
-      (contDiffAt_ringInverse (n := (⊤ : ℕ∞)) ℝ hfu.unit)
+  have hri : ContDiffAt ℝ (⊤ : ℕ∞) Ring.inverse (f 0) := (contDiffAt_ringInverse (n := (⊤ : ℕ∞)) ℝ hfu.unit)
   have hi : ContDiffAt ℝ (⊤ : ℕ∞) (fun x => Ring.inverse (f x)) 0 := hri.comp 0 hm
   have hs : ContDiffAt ℝ (⊤ : ℕ∞)
       (fun x => readCoordinate a (f x * basisMatrix b * Ring.inverse (f x))) 0 :=
@@ -700,10 +703,7 @@ theorem adjointMatrix_contMDiff {C : ChartedSpace Coordinates Group}
     matrixCoordinates (f x * basisMatrix b * Ring.inverse (f x)) a
   rw [← hv, Ring.inverse_unit]
 
-theorem single_lie_exponential_data {C : ChartedSpace Coordinates Group}
-    [LieGroup (𝓘(ℝ, Coordinates)) (⊤ : ℕ∞) Group]
-    (hC : ∀ g : Group, chartAt Coordinates g =
-      ((affineChart.trans (Homeomorph.mulLeft g).toOpenPartialHomeomorph).symm)) :
+theorem single_lie_exponential_data   :
     ∃ D : HilbertLieExponentialData Group Coordinates (Fin 6),
       D.exponential = exponential ∧
       (∀ b c, D.basis b c = if c = b then 1 else 0) ∧
@@ -725,10 +725,12 @@ theorem single_lie_exponential_data {C : ChartedSpace Coordinates Group}
   · intro b c
     simp [D, Pi.basisFun_apply, Pi.single_apply]
   · intro g a b
-    exact adjointLinearEquiv_basis g a b
+    apply adjointLinearEquiv_basis
   · intro a b
     simpa only [Pi.basisFun_equivFun, LinearEquiv.refl_apply,
       adjointLinearEquiv_basis] using adjointMatrix_contMDiff hC a b
+end
+
 
 end ExponentialSmooth
 
@@ -736,7 +738,7 @@ section Products
 variable (ι : Type) [Fintype ι]
 abbrev ProductGroup := ι → Group
 
-def productExponential (a : ProductCoordinates ι) : ProductGroup ι :=
+def productExponential (a : ProductCoordinates ι)  :=
   fun v => exponential (fun j => a (v, j))
 
 def productAdjointMatrix (g : ProductGroup ι) : Matrix (ι × Fin 6) (ι × Fin 6) ℝ :=
@@ -748,7 +750,7 @@ theorem productExponential_zero : productExponential ι 0 = 1 := by
 theorem productExponential_add_ray (a : ProductCoordinates ι) (s t : ℝ) :
     productExponential ι ((s+t) • a) = productExponential ι (s • a) * productExponential ι (t • a) := by
   funext v
-  exact exponential_add_ray (fun j => a (v,j)) s t
+  apply exponential_add_ray
 def productAdjointLinearEquiv (g : ProductGroup ι) : ProductCoordinates ι ≃ₗ[ℝ] ProductCoordinates ι where
   toFun a c := adjointLinearEquiv (g c.1) (fun j => a (c.1,j)) c.2
   invFun a c := (adjointLinearEquiv (g c.1)).symm (fun j => a (c.1,j)) c.2
@@ -758,12 +760,12 @@ def productAdjointLinearEquiv (g : ProductGroup ι) : ProductCoordinates ι ≃�
   map_smul' r a := by
     ext c
     exact congrFun ((adjointLinearEquiv (g c.1)).map_smul r (fun j => a (c.1,j))) c.2
-  left_inv a := by ext c; exact congrFun ((adjointLinearEquiv (g c.1)).symm_apply_apply (fun j => a (c.1,j))) c.2
-  right_inv a := by ext c; exact congrFun ((adjointLinearEquiv (g c.1)).apply_symm_apply (fun j => a (c.1,j))) c.2
+  left_inv a := by simp_all
+  right_inv a := by simp_all
 theorem productExponential_adjoint (g : ProductGroup ι) (a : ProductCoordinates ι) :
     g * productExponential ι a * g⁻¹ = productExponential ι (productAdjointLinearEquiv ι g a) := by
   funext v
-  exact exponential_adjoint (g v) (fun j => a (v,j))
+  apply exponential_adjoint
 
 theorem productAdjointLinearEquiv_basis (g : ProductGroup ι) (a b : ι × Fin 6) :
     (productAdjointLinearEquiv ι g ((Pi.basisFun ℝ (ι × Fin 6)) b)) a =
@@ -1005,7 +1007,7 @@ theorem product_lie_exponential_data :
   · intro b c
     simp [D, Pi.basisFun_apply, Pi.single_apply]
   · intro g a b
-    exact productAdjointLinearEquiv_basis ι g a b
+    apply productAdjointLinearEquiv_basis
 end Products
 
 end DedekindZetaZeroFree.PGLComplex

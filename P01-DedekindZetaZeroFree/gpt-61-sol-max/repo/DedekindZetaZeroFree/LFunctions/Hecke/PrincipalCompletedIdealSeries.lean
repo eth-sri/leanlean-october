@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LFunctions.Dedekind.MixedThetaPairMellin
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Conductors.PrimitivePrincipalCharacters
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.Hecke
 
@@ -21,8 +24,8 @@ theorem principal_prefactor_all_ideal_hasSum
         (η I * (Ideal.absNorm I : ℂ) ^ (-s)))
       ((DedekindZetaZeroFree.AbelianQuotient.Theta.mixedThetaPair F).Λ s) := by
   classical
-  have hm : m = ⊤ := primitivePrincipal_modulus_eq_top η hprimitive hprincipal
-  have hr : NumberField.InfinitePlace.nrRealPlaces F = 0 :=
+  have hm  := primitivePrincipal_modulus_eq_top η hprimitive hprincipal
+  have hr  :=
     NumberField.nrRealPlaces_eq_zero_iff.mpr hF
   have hpref :
       (((|NumberField.discr F| : ℤ) : ℂ) * (Ideal.absNorm m : ℂ)) ^ (s / 2) *
@@ -30,11 +33,9 @@ theorem principal_prefactor_all_ideal_hasSum
       DedekindZetaZeroFree.AbelianQuotient.zetaGammaFactor F s := by
     simp [hm, DedekindZetaZeroFree.AbelianQuotient.zetaGammaFactor, hr]
   have hM := (DedekindZetaZeroFree.AbelianQuotient.Theta.mixedThetaPair F).hasMellin
-    (s := s) (by simpa using hs)
+    (s := s) (hs)
   have hZ := DedekindZetaZeroFree.AbelianQuotient.Theta.hasMellin_mixedThetaPair F hs
-  have hΛ : (DedekindZetaZeroFree.AbelianQuotient.Theta.mixedThetaPair F).Λ s =
-      DedekindZetaZeroFree.AbelianQuotient.zetaGammaFactor F s *
-        NumberField.dedekindZeta F s := hM.2.symm.trans hZ.2
+  have hΛ  := hM.2.symm.trans hZ.2
   rw [hΛ]
   have hsum := (DedekindZetaZeroFree.Odlyzko.hasSum_idealInverseNormPower F hs).mul_left
     (DedekindZetaZeroFree.AbelianQuotient.zetaGammaFactor F s)

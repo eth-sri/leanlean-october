@@ -1,5 +1,7 @@
 module
 
+
+
 public import DedekindZetaZeroFree.CharacterSums.Gauss.PositiveDepthLocalSums
 public import DedekindZetaZeroFree.CharacterSums.Gauss.Sextic.WeilCorrection
 public import DedekindZetaZeroFree.CharacterSums.Gauss.Sextic.InversePowerProduct
@@ -16,7 +18,7 @@ variable {F : Type} [Field F] [NumberField F]
 variable {A : SArithmeticData F} {σ : F →+* ℂ}
 variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
-private lemma good_series_Q_gt_one (p : ExteriorPrime A) : 1 < Q p := by
+private def good_series_Q_gt_one (p : ExteriorPrime A)  := by
   change 1 < (Ideal.absNorm p.val.asIdeal : ℝ)
   exact_mod_cast NumberField.HeightOneSpectrum.one_lt_absNorm p.val
 private lemma good_series_Ctk_bound (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
@@ -256,8 +258,7 @@ private lemma good_strict_geom_tail (V : ℂ) (hV : ‖V‖ < 1) (d : ℕ) :
   simp only [Nat.le_add_left, if_true, pow_add, tsum_mul_right,
     tsum_geometric_of_norm_lt_one hV, div_eq_mul_inv]
   ring
-private lemma good_strict_geom_strict_tail (V : ℂ) (hV : ‖V‖ < 1) (d : ℕ) :
-    (∑' m : ℕ, if d < m then V^m else 0) = V^(d+1)/(1-V) := by
+private def good_strict_geom_strict_tail (V : ℂ) (hV : ‖V‖ < 1) (d : ℕ)  := by
   simpa only [Nat.succ_le_iff] using good_strict_geom_tail V hV (d+1)
 private lemma good_strict_even_shell_sum_zero (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
     (B W V : ℂ) (hV : ‖V‖ < 1) (d : ℕ) (hd : 0 < d) :

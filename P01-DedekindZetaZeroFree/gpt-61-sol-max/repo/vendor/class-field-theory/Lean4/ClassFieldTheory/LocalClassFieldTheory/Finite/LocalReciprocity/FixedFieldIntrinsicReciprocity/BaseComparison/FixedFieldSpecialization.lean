@@ -152,10 +152,8 @@ theorem intrinsicExtensionSubgroup_iff_ambientFixedField
       exact hFimage.trans (map_one qF).symm
     exact (QuotientGroup.eq_one_iff τ).1 hFquotient
 
-/-- Membership in intrinsic extension inertia is equivalent, under the
-fixed-field base equivalence, to membership in the ambient extension inertia. -/
-theorem intrinsicExtensionInertia_iff_ambientFixedField
-    (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
+section
+variable (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K]
     (H : FiniteAbstractField
       Gal(SeparableClosure K / K))
@@ -163,7 +161,12 @@ theorem intrinsicExtensionInertia_iff_ambientFixedField
     (hJH : J.toSubgroup ≤ H.field.toSubgroup)
     [hJnormal : (extensionSubgroup H.field J hJH).Normal]
     [hJfinite : Finite
-      (H.field.toSubgroup ⧸ extensionSubgroup H.field J hJH)] :
+      (H.field.toSubgroup ⧸ extensionSubgroup H.field J hJH)]
+include K H J hJH hJnormal hJfinite in
+/-- Membership in intrinsic extension inertia is equivalent, under the
+fixed-field base equivalence, to membership in the ambient extension inertia. -/
+theorem intrinsicExtensionInertia_iff_ambientFixedField
+      :
     let F := abstractFixedField K (SeparableClosure K) H.field
     letI : Algebra F (SeparableClosure F) :=
       (separableClosure F (AlgebraicClosure F)).algebra
@@ -290,18 +293,11 @@ abbrev intrinsicFixedFieldSeparableClosureEquiv
     (separableClosure F (AlgebraicClosure F)).algebra
     F.val.toRingHom.toAlgebra
 
+include K H J hJH hJnormal hJfinite in
 /-- The intrinsic base subgroup modulo extension inertia for a finite
 fixed-field extension, using the chosen separable-closure equivalence. -/
 abbrev intrinsicFixedFieldFrobeniusQuotient
-    (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    (H : FiniteAbstractField
-      Gal(SeparableClosure K / K))
-    (J : ClosedSubgroup Gal(SeparableClosure K / K))
-    (hJH : J.toSubgroup ≤ H.field.toSubgroup)
-    [hJnormal : (extensionSubgroup H.field J hJH).Normal]
-    [hJfinite : Finite
-      (H.field.toSubgroup ⧸ extensionSubgroup H.field J hJH)]
+     
     (e : intrinsicFixedFieldSeparableClosureEquiv K H) :=
   let F := abstractFixedField K (SeparableClosure K) H.field
   letI : Algebra F (SeparableClosure F) :=
@@ -328,6 +324,8 @@ abbrev intrinsicFixedFieldFrobeniusQuotient
   (intrinsicAbstractBase F).toSubgroup ⧸
     (localResidueDatum F).extensionInertiaWithin
       (intrinsicAbstractBase F) EI.field EI.below
+end
+
 
 end LocalClassFieldTheory
 

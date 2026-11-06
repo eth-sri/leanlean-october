@@ -38,7 +38,7 @@ set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualScalarCasimirTransport
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+
 
 theorem insertion_commutes_finiteRepresentative
     (r : KPSmoothActualFlowData.GInfinity F)

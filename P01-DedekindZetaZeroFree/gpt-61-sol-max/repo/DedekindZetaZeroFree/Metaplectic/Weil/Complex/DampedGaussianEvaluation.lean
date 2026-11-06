@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Metaplectic.Weil.Complex.QuadraticUnitaryCoordinates
 public import DedekindZetaZeroFree.Metaplectic.Weil.Complex.TraceFourierNormalization
 
 @[expose] public section
+
 
 /-
 The one-dimensional Gaussian integral API is imported from Mathlib's
@@ -23,7 +26,7 @@ theorem gaussian_principal_prefactor (ε r : ℝ) (hε : 0 < ε) (hr : 0 < r) :
         ((Real.pi : ℂ) / bPlus) ^ (1 / 2 : ℂ) =
       ((Real.pi / Real.sqrt (ε ^ 2 + 4 * Real.pi ^ 2 * r ^ 2) : ℝ) : ℂ) := by
   dsimp
-  let b : ℂ := (ε : ℂ) - 2 * (Real.pi : ℂ) * Complex.I * (r : ℂ)
+  let b  := (ε : ℂ) - 2 * (Real.pi : ℂ) * Complex.I * (r : ℂ)
   have hb : Complex.normSq b = ε ^ 2 + 4 * Real.pi ^ 2 * r ^ 2 := by
     simp [b, Complex.normSq_apply]
     ring
@@ -104,11 +107,11 @@ theorem damped_gaussian_evaluation (β a ξ : ℂ) (hβ : β ≠ 0) (ha : a ≠ 
         Complex.exp (-(Real.pi : ℂ) ^ 2 * (p : ℂ) ^ 2 / bMinus -
           (Real.pi : ℂ) ^ 2 * (q : ℂ) ^ 2 / bPlus) := by
   dsimp
-  let bm : ℂ := (ε : ℂ) - 2 * (Real.pi : ℂ) * Complex.I * (‖β * a‖ : ℂ)
-  let bp : ℂ := (ε : ℂ) + 2 * (Real.pi : ℂ) * Complex.I * (‖β * a‖ : ℂ)
+  let bm  := (ε : ℂ) - 2 * (Real.pi : ℂ) * Complex.I * (‖β * a‖ : ℂ)
+  let bp  := (ε : ℂ) + 2 * (Real.pi : ℂ) * Complex.I * (‖β * a‖ : ℂ)
   have hm : 0 < bm.re := by simpa [bm] using hε
   have hp : 0 < bp.re := by simpa [bp] using hε
-  let f : ℂ → ℂ := fun x => Complex.exp (((-ε * ‖x‖ ^ 2 : ℝ) : ℂ)) *
+  let f  := fun x => Complex.exp (((-ε * ‖x‖ ^ 2 : ℝ) : ℂ)) *
     psi β (a * x ^ 2 - x * ξ)
   have hrot : (∫ x : ℂ, f x) = ∫ x : ℂ, f (u * x) := by
     symm
@@ -135,7 +138,7 @@ theorem damped_gaussian_evaluation (β a ξ : ℂ) (hβ : β ≠ 0) (ha : a ≠ 
         Complex.exp (-bp * (x.2 : ℂ) ^ 2 + Complex.I *
           (2 * (Real.pi : ℂ) * ((β * u * ξ).im : ℂ)) * (x.2 : ℂ)) := by
     funext x
-    exact rotated_integrand β a ξ ε u hu hrotate x.1 x.2
+    apply rotated_integrand <;> assumption
   rw [hsplit, Measure.volume_eq_prod]
   rw [integral_prod_mul (μ := (volume : Measure ℝ)) (ν := (volume : Measure ℝ))
     (f := fun s : ℝ => Complex.exp (-bm * (s : ℂ) ^ 2 +

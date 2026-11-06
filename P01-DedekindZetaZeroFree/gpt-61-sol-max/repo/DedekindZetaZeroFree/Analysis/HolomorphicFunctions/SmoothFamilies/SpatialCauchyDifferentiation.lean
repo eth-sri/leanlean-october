@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.HolomorphicFunctions.SmoothFamilies.CompactJetTopology
 
 @[expose] public section
+
 
 set_option maxHeartbeats 800000
 noncomputable section
@@ -55,15 +58,18 @@ private lemma list_sub {n : ℕ} (B : LocalBall n) (u v : Space n → ℂ)
     exact congrArg (fun L : Space n →L[ℝ] ℂ => L (EuclideanSpace.single i 1))
       (fderiv_sub (hd u hu) (hd v hv))
 
-private lemma list_family_continuous {n : ℕ} (B : LocalBall n)
+section
+variable {n : ℕ} (B : LocalBall n)
     (O : Set ℂ) (f : ℂ → Space n → ℂ)
     (hf : ∀ z ∈ O, ContDiffOn ℝ (⊤ : ℕ∞) (f z) B.carrier)
     (hj : Raw.JetContinuousOn B f O)
     (K : Set (Space n)) (hK : IsCompact K) (hKB : K ⊆ B.carrier)
-    (l : List (Fin n)) :
+    (l : List (Fin n))
+include n B O f hf hj K hK hKB l
+private lemma list_family_continuous   :
     Continuous (fun z : O => (⟨fun x : K => coordinateDerivativeList l (f z) x,
       ((WeakJets.Raw.coordinateDerivativeList_smooth_on l (hf z z.property)).continuousOn.mono hKB).restrict⟩ : C(K, ℂ))) := by
-  letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
+  letI  := isCompact_iff_compactSpace.mp hK
   obtain ⟨m, α, hp⟩ := list_index l
   apply Metric.continuous_iff.mpr
   intro z₀ ε hε
@@ -81,19 +87,17 @@ private lemma list_family_continuous {n : ℕ} (B : LocalBall n)
     ((hf z z.property).sub (hf z₀ z₀.property)) (hKB x.property)]
   exact hb z z.property hz α x
 
-private lemma joint_list {n : ℕ} (B : LocalBall n) (O : Set ℂ)
-    (f : ℂ → Space n → ℂ)
-    (hf : ∀ z ∈ O, ContDiffOn ℝ (⊤ : ℕ∞) (f z) B.carrier)
-    (hj : Raw.JetContinuousOn B f O) (K : Set (Space n))
-    (hK : IsCompact K) (hKB : K ⊆ B.carrier) (l : List (Fin n))
+private lemma joint_list  
     (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (hc : Metric.closedBall c ρ ⊆ O) :
     Continuous (fun p : K × ℝ => coordinateDerivativeList l (f (circleMap c ρ p.2)) p.1) := by
-  letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
-  have hz : ∀ t, circleMap c ρ t ∈ O := fun t =>
+  letI  := isCompact_iff_compactSpace.mp hK
+  have hz  := fun t =>
     hc (Metric.sphere_subset_closedBall (circleMap_mem_sphere c hρ.le t))
   have hh := (list_family_continuous B O f hf hj K hK hKB l).comp
     ((continuous_circleMap c ρ).subtype_mk hz)
   exact continuous_eval.comp ((hh.comp continuous_snd).prodMk continuous_fst)
+end
+
 
 private lemma compact_integral_deriv {n : ℕ} (B : LocalBall n)
     (g : List (Fin n) → Space n → ℝ → ℂ)
@@ -112,7 +116,7 @@ private lemma compact_integral_deriv {n : ℕ} (B : LocalBall n)
   have hKB : K ⊆ B.carrier := fun y hy => hrB (Metric.mem_ball.mpr
     ((Metric.mem_closedBall.mp hy).trans_lt (by linarith)))
   have hxK : x ∈ K := Metric.mem_closedBall_self (by positivity)
-  let g' : Space n → ℝ → Space n →L[ℝ] ℂ := fun y t => assemble (fun i => g (i :: l) y t)
+  let g'  := fun y t => assemble (fun i => g (i :: l) y t)
   have hc' : Continuous (fun p : K × ℝ => g' p.1 p.2) := by
     apply continuous_finset_sum
     intro i _
@@ -180,7 +184,7 @@ theorem coefficient_smooth_and_derivatives {n : ℕ} (B : LocalBall n)
     intro he
     rw [he, norm_zero] at hh
     linarith
-  let k : ℝ → ℂ := fun t => (2 * Real.pi * Complex.I : ℂ)⁻¹ *
+  let k  := fun t => (2 * Real.pi * Complex.I)⁻¹ *
     deriv (circleMap c ρ) t * (circleMap c ρ t - c)⁻¹ ^ j * (circleMap c ρ t - c)⁻¹
   have hk : Continuous k := by
     dsimp [k]
@@ -192,9 +196,9 @@ theorem coefficient_smooth_and_derivatives {n : ℕ} (B : LocalBall n)
         exact (continuous_circleMap 0 ρ).mul continuous_const)
       · exact (((continuous_circleMap c ρ).sub continuous_const).inv₀ hn).pow j
     · exact ((continuous_circleMap c ρ).sub continuous_const).inv₀ hn
-  let g : List (Fin n) → Space n → ℝ → ℂ := fun l x t =>
+  let g  := fun l x t =>
     k t * coordinateDerivativeList l (f (circleMap c ρ t)) x
-  let J : List (Fin n) → Space n → ℂ := fun l x => ∫ t in Icc 0 (2 * Real.pi), g l x t
+  let J  := fun l x => ∫ t in Icc 0 (2 * Real.pi), g l x t
   have hs (l : List (Fin n)) (t : ℝ) : ContDiffOn ℝ (⊤ : ℕ∞) (fun x => g l x t) B.carrier :=
     contDiffOn_const.mul (WeakJets.Raw.coordinateDerivativeList_smooth_on l (hf _ (hz t)))
   have hd (l : List (Fin n)) (i : Fin n) (x : Space n) (t : ℝ) (hx : x ∈ B.carrier) :

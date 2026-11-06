@@ -45,19 +45,22 @@ section Primitive
 
 variable {F : Type} [Field F] [NumberField F]
 
-def hecke (A : SArithmeticData F) (ν : Detector.PrimitiveFrequencyCharacter F)
-    (hν : ¬ ν.character.IsPrincipal) :
+section
+variable (A : SArithmeticData F) (ν : Detector.PrimitiveFrequencyCharacter F)
+    (hν : ¬ ν.character.IsPrincipal)
+include A ν hν in
+def hecke   :
     NonprincipalRayHeckeData F ν.conductor ν.character :=
   nonprincipalRayHeckeData F (primitive12_totallyComplex F A.zeta12 A.primitive_zeta12)
     ν.conductor ν.conductor_ne_zero ν.character ν.primitive hν
 
-theorem hecke_analyticOn (A : SArithmeticData F) (ν : Detector.PrimitiveFrequencyCharacter F)
-    (hν : ¬ ν.character.IsPrincipal) :
+include A ν hν in
+theorem hecke_analyticOn   :
     AnalyticOnNhd ℂ (hecke A ν hν).L {z : ℂ | 0 < z.re} :=
   (hecke A ν hν).L_holo.analyticOnNhd (isOpen_re_gt 0)
 
-theorem hecke_eq_idealLSeries (A : SArithmeticData F) (ν : Detector.PrimitiveFrequencyCharacter F)
-    (hν : ¬ ν.character.IsPrincipal) (s : ℂ) (hs : 1 < s.re) :
+include A ν hν in
+theorem hecke_eq_idealLSeries   (s : ℂ) (hs : 1 < s.re) :
     (hecke A ν hν).L s = Detector.idealLSeries F ν.character s := by
   rw [← ((hecke A ν hν).series s hs).tsum_eq]
   unfold Detector.idealLSeries
@@ -67,22 +70,22 @@ theorem hecke_eq_idealLSeries (A : SArithmeticData F) (ν : Detector.PrimitiveFr
     simp [(ν.character.eq_zero_iff' ⊥).mpr (Or.inl rfl)]
   · simp [h]
 
-theorem eq_hecke_of_analyticOn (A : SArithmeticData F) (ν : Detector.PrimitiveFrequencyCharacter F)
-    (hν : ¬ ν.character.IsPrincipal) {g : ℂ → ℂ}
+include A ν hν in
+theorem eq_hecke_of_analyticOn   {g : ℂ → ℂ}
     (hg : AnalyticOnNhd ℂ g {z : ℂ | 0 < z.re})
     (h : ∀ s : ℂ, 1 < s.re → g s = Detector.idealLSeries F ν.character s) :
     ∀ s : ℂ, 0 < s.re → g s = (hecke A ν hν).L s :=
   eqOn_halfPlane_of_eq_right hg (hecke_analyticOn A ν hν)
     (fun s hs => (h s hs).trans (hecke_eq_idealLSeries A ν hν s hs).symm)
 
-theorem entire_eq_hecke (A : SArithmeticData F) (ν : Detector.PrimitiveFrequencyCharacter F)
-    (hν : ¬ ν.character.IsPrincipal) {g : ℂ → ℂ} (hg : Differentiable ℂ g)
+include A ν hν in
+theorem entire_eq_hecke   {g : ℂ → ℂ} (hg : Differentiable ℂ g)
     (h : ∀ s : ℂ, 1 < s.re → g s = Detector.idealLSeries F ν.character s) :
     ∀ s : ℂ, 0 < s.re → g s = (hecke A ν hν).L s :=
   eq_hecke_of_analyticOn A ν hν (fun z _ => hg.analyticAt z) h
 
-theorem hecke_exists_entire (A : SArithmeticData F) (ν : Detector.PrimitiveFrequencyCharacter F)
-    (hν : ¬ ν.character.IsPrincipal) :
+include A ν hν in
+theorem hecke_exists_entire   :
     ∃ g : ℂ → ℂ, Differentiable ℂ g ∧ ∀ s : ℂ, 0 < s.re → g s = (hecke A ν hν).L s := by
   have hF := primitive12_totallyComplex F A.zeta12 A.primitive_zeta12
   exact ⟨nonprincipalHeckeEntireContinuation F ν.conductor ν.character (hecke A ν hν),
@@ -91,8 +94,8 @@ theorem hecke_exists_entire (A : SArithmeticData F) (ν : Detector.PrimitiveFreq
     fun s hs => nonprincipalHeckeEntireContinuation_eq F hF ν.conductor ν.conductor_ne_zero
       ν.character (hecke A ν hν) s hs⟩
 
-theorem mask_differentiable (A : SArithmeticData F) (ν : Detector.PrimitiveFrequencyCharacter F)
-    (hν : ¬ ν.character.IsPrincipal) (E : Set (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
+include A ν hν in
+theorem mask_differentiable   (E : Set (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
     (hE : E.Finite) :
     Differentiable ℂ
       (Detector.finiteEulerDeletionMask F E (fun v => ν.character v.asIdeal)) := by
@@ -113,8 +116,8 @@ theorem mask_ne_zero (ν : Detector.PrimitiveFrequencyCharacter F)
     (RayUnitary.ray_character_norm_le_one F ν.conductor ν.conductor_ne_zero
       ν.character p.val.asIdeal) le_rfl).2.2
 
-theorem deleted_tsum_eq_mask_mul (A : SArithmeticData F)
-    (ν : Detector.PrimitiveFrequencyCharacter F) (hν : ¬ ν.character.IsPrincipal)
+include A ν hν in
+theorem deleted_tsum_eq_mask_mul  
     (E : Set (IsDedekindDomain.HeightOneSpectrum (𝓞 F))) (hE : E.Finite) (s : ℂ)
     (hs : 1 < s.re) :
     ∑' I : Ideal (𝓞 F), Detector.deletedPrimitiveIdealCoefficient F ν E I *
@@ -124,6 +127,8 @@ theorem deleted_tsum_eq_mask_mul (A : SArithmeticData F)
   obtain ⟨-, -, hBs⟩ := Detector.deleted_primitive_L_continuation F ν E hE {s : ℂ | 0 < s.re}
     (hecke A ν hν).L (hecke_analyticOn A ν hν).meromorphicOn (hecke A ν hν).series
   rw [(hBs s hs).tsum_eq, mul_comm]
+end
+
 
 end Primitive
 
@@ -392,7 +397,10 @@ theorem conductor_bound :
   · show 1 + (Ideal.absNorm (D.omega r).conductor : ℝ) ≤ _
     nlinarith [mul_nonneg hCn.le hq0, mul_nonneg hCd.le hq0]
 
-abbrev heckePlus (u : D.Row) (hnp : ¬ (D.inducers u).plus.character.IsPrincipal) :
+section
+variable (u : D.Row) (hnp : ¬ (D.inducers u).plus.character.IsPrincipal)
+include u hnp in
+abbrev heckePlus   :
     NonprincipalRayHeckeData F (D.inducers u).plus.conductor (D.inducers u).plus.character :=
   hecke D.recipe.A (D.inducers u).plus hnp
 
@@ -400,7 +408,8 @@ abbrev heckeOmega (u : D.Row) (hnp : ¬ (D.omega u).character.IsPrincipal) :
     NonprincipalRayHeckeData F (D.omega u).conductor (D.omega u).character :=
   hecke D.recipe.A (D.omega u) hnp
 
-theorem Lpsi_eq_mask_mul (u : D.Row) (hnp : ¬ (D.inducers u).plus.character.IsPrincipal)
+include u hnp in
+theorem Lpsi_eq_mask_mul  
     (s : ℂ) (hs : 1 < s.re) :
     D.Lpsi u s =
       Detector.finiteEulerDeletionMask F (deletionSet D u)
@@ -434,7 +443,8 @@ theorem Llam_eq_mask_mul (u : D.Row) (hnp : ¬ (D.omega u).character.IsPrincipal
   have h := (D.inducers u).minus_mask I
   exact congrArg (· * ((Ideal.absNorm I : ℂ) ^ (-s))) h
 
-theorem eq_mask_mul_Lpsi (u : D.Row) (hnp : ¬ (D.inducers u).plus.character.IsPrincipal)
+include u hnp in
+theorem eq_mask_mul_Lpsi  
     {g : ℂ → ℂ} (hg : AnalyticOnNhd ℂ g {z : ℂ | 0 < z.re})
     (h : ∀ s : ℂ, 1 < s.re → g s = D.Lpsi u s) :
     ∀ s : ℂ, 0 < s.re → g s =
@@ -445,13 +455,15 @@ theorem eq_mask_mul_Lpsi (u : D.Row) (hnp : ¬ (D.inducers u).plus.character.IsP
   exact ((mask_differentiable D.recipe.A _ hnp _ (deletionSet_finite D u)).analyticAt z).mul
     (hecke_analyticOn D.recipe.A _ hnp z hz)
 
-theorem entire_eq_mask_mul_Lpsi (u : D.Row)
-    (hnp : ¬ (D.inducers u).plus.character.IsPrincipal)
+include u hnp in
+theorem entire_eq_mask_mul_Lpsi  
     {g : ℂ → ℂ} (hg : Differentiable ℂ g) (h : ∀ s : ℂ, 1 < s.re → g s = D.Lpsi u s) :
     ∀ s : ℂ, 0 < s.re → g s =
       Detector.finiteEulerDeletionMask F (deletionSet D u)
         (fun v => (D.inducers u).plus.character v.asIdeal) s * (heckePlus D u hnp).L s :=
   eq_mask_mul_Lpsi D u hnp (fun z _ => hg.analyticAt z) h
+end
+
 
 theorem entire_eq_heckeOmega (u : D.Row) (hnp : ¬ (D.omega u).character.IsPrincipal)
     {g : ℂ → ℂ} (hg : Differentiable ℂ g)

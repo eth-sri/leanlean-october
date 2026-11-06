@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Algebra.Module.MinimalAxioms
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.PrincipalUnitPadicAction.ProdiscretePadicModule
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.PrincipalUnitPadicAction.AdicProdiscreteComparison
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -185,28 +188,31 @@ of `x`. -/
       F a (Additive.ofMul x))
   exact h
 
-/-- The canonical identification of adic principal units with the
-prodiscrete limit respects the p-adic action. -/
-theorem adicPrincipalUnitsHomeomorphProdiscreteLimit_map_smul
-    (F : LocalField.{u, v} K)
-    (a : ℤ_[F.residueCharacteristic])
-    (x : AdicPrincipalUnits F.toCompleteDVF) :
-    adicPrincipalUnitsHomeomorphProdiscreteLimit F.toCompleteDVF (a • x) =
-      a • adicPrincipalUnitsHomeomorphProdiscreteLimit F.toCompleteDVF x := by
-  apply (PrincipalUnitProdiscreteLimit.addEquiv F.toCompleteDVF).injective
-  rw [adicPrincipalUnitsHomeomorphProdiscreteLimit_to_addEquiv,
-    PrincipalUnitProdiscreteLimit.addEquiv_map_smul,
-    adicPrincipalUnitsHomeomorphProdiscreteLimit_to_addEquiv,
-    AdicPrincipalUnits.addEquiv_map_smul,
-    Internal.principalUnitAddEquivInverseLimitCarrier_map_smul]
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+section
+variable (F : LocalField.{u, v} K)
+include F
 /--
 Establishes the identity `adicPrincipalUnitsAddEquivProdiscreteLimit F.toCompleteDVF (a • x) = a •
 adicPrincipalUnitsAddEquivProdiscreteLimit F.toCompleteDVF x`.
 -/
 @[simp]
 theorem adicPrincipalUnitsAddEquivProdiscreteLimit_map_smul
-    (F : LocalField.{u, v} K)
+     
     (a : ℤ_[F.residueCharacteristic])
     (x : AdicPrincipalUnits F.toCompleteDVF) :
     adicPrincipalUnitsAddEquivProdiscreteLimit F.toCompleteDVF (a • x) =
@@ -230,7 +236,7 @@ theorem adicPrincipalUnitsAddEquivProdiscreteLimit_map_smul
 
 /-- `Z_p`-linear form of the canonical adic/prodiscrete comparison. -/
 noncomputable def adicPrincipalUnitsLinearEquivProdiscreteLimit
-    (F : LocalField.{u, v} K) :
+      :
     AdicPrincipalUnits F.toCompleteDVF ≃ₗ[ℤ_[F.residueCharacteristic]]
       PrincipalUnitProdiscreteLimit F.toCompleteDVF :=
   { adicPrincipalUnitsAddEquivProdiscreteLimit F.toCompleteDVF with
@@ -239,9 +245,7 @@ noncomputable def adicPrincipalUnitsLinearEquivProdiscreteLimit
 /-- Projection from adic first principal units to one wrapped quotient
 coordinate. -/
 noncomputable def adicPrincipalUnitsCoordinateLinear
-    (F : LocalField.{u, v} K) (n : ℕ) :
-    AdicPrincipalUnits F.toCompleteDVF →ₗ[ℤ_[F.residueCharacteristic]]
-      DiscretePrincipalUnitQuotient F.toCompleteDVF n :=
+      (n : ℕ)  :=
   (PrincipalUnitProdiscreteLimit.coordinateLinear F n).comp
     (adicPrincipalUnitsLinearEquivProdiscreteLimit F).toLinearMap
 
@@ -250,7 +254,7 @@ The specified map is continuous: `Continuous fun z : ℤ_[F.residueCharacteristi
 AdicPrincipalUnits F.toCompleteDVF => z.1 • z.2`.
 -/
 theorem continuous_adicPrincipalUnitsPadic_smul
-    (F : LocalField.{u, v} K) :
+      :
     Continuous fun z : ℤ_[F.residueCharacteristic] ×
         AdicPrincipalUnits F.toCompleteDVF =>
       z.1 • z.2 := by
@@ -261,6 +265,8 @@ theorem continuous_adicPrincipalUnitsPadic_smul
     continuous_fst.prodMk (e.continuous.comp continuous_snd)
   have htransport := e.continuous_symm.comp (continuous_smul.comp hpair)
   exact htransport
+end
+
 
 /--
 The scalar action in `ContinuousSMul ℤ_[F.residueCharacteristic] (AdicPrincipalUnits
@@ -291,7 +297,7 @@ noncomputable instance adicPrincipalUnitsContinuousAdd
   change z.1 + z.2 = e.symm (e z.1 + e z.2)
   apply e.injective
   rw [e.apply_symm_apply]
-  exact e.map_add z.1 z.2
+  apply e.map_add
 
 end higherPrincipalUnitGroup
 end CompleteDVF

@@ -46,9 +46,12 @@ theorem mem_omega_strip (ξ w z : ℂ) (hξ : ξ.re = 4) (hw : Scales.wLine ≤ 
   simp only [EulerDomain.OmegaStar, Set.mem_setOf_eq]
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> linarith
 
-theorem rawKernel_differentiableOn_z (u : Frequency D.recipe)
+section
+variable (u : Frequency D.recipe)
     (hu : u ≠ principalFrequency D.recipe) (Z : ℝ) (hZ : 0 < Z) (ξ w : ℂ) (hξ : ξ.re = 4)
-    (hw : Scales.wLine ≤ w.re ∧ w.re ≤ 4) :
+    (hw : Scales.wLine ≤ w.re ∧ w.re ≤ 4)
+include u hu Z hZ ξ w hξ hw in
+theorem rawKernel_differentiableOn_z   :
     DifferentiableOn ℂ (fun z : ℂ => rawKernel D u ξ w z Z)
       {z : ℂ | Scales.zLine - EulerDomain.pad / 2 < z.re ∧ z.re < 3} := by
   intro z hz
@@ -90,8 +93,8 @@ theorem norm_exp_sq_le (ξ z : ℂ) (hξ : ξ.re = 4) (hz : 2 / 5 ≤ z.re ∧ z
   nlinarith [mul_self_nonneg (ξ.im + z.im), mul_nonneg (sub_nonneg.2 hz.2)
     (by linarith [hz.1] : (0 : ℝ) ≤ 8 + z.re)]
 
-theorem kernel_norm_le_M (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
-    (Z : ℝ) (hZ : 0 < Z) (ξ w : ℂ) (hξ : ξ.re = 4) (hw : Scales.wLine ≤ w.re ∧ w.re ≤ 4) :
+include u hu Z hZ ξ w hξ hw in
+theorem kernel_norm_le_M   :
     ∃ K : ℝ, 0 ≤ K ∧ ∀ z : ℂ, 2 / 5 ≤ z.re → z.re ≤ 2 →
       ‖rawKernel D u ξ w z Z‖ ≤ K * ‖D.M z‖ := by
   obtain ⟨CL, hCL0, hCL⟩ := RawRightHecke31.recipe_L_right D (2 / 5) (by norm_num)
@@ -175,8 +178,8 @@ theorem M_decay_all (B : ℝ) (hB : 0 < B) :
   calc _ ≤ |CM| * (t ^ n)⁻¹ := h1
     _ ≤ |CM| * t ^ (-B) := mul_le_mul_of_nonneg_left h2 (abs_nonneg _)
 
-theorem kernel_decay_all (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
-    (Z : ℝ) (hZ : 0 < Z) (ξ w : ℂ) (hξ : ξ.re = 4) (hw : Scales.wLine ≤ w.re ∧ w.re ≤ 4)
+include u hu Z hZ ξ w hξ hw in
+theorem kernel_decay_all  
     (B : ℝ) (hB : 0 < B) :
     ∃ C : ℝ, ∀ x : ℝ, 2 / 5 ≤ x → x ≤ 2 → ∀ y : ℝ,
       ‖rawKernel D u ξ w ((x : ℂ) + (y : ℂ) * I) Z‖ ≤ C * (1 + |y|) ^ (-B) := by
@@ -189,8 +192,8 @@ theorem kernel_decay_all (u : Frequency D.recipe) (hu : u ≠ principalFrequency
     _ ≤ K * (CM * (1 + |y|) ^ (-B)) := mul_le_mul_of_nonneg_left (hCM x hx1 hx2 y) hK0
     _ = _ := by ring
 
-theorem rawKernel_decayOn_z (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
-    (Z : ℝ) (hZ : 0 < Z) (ξ w : ℂ) (hξ : ξ.re = 4) (hw : Scales.wLine ≤ w.re ∧ w.re ≤ 4) :
+include u hu Z hZ ξ w hξ hw in
+theorem rawKernel_decayOn_z   :
     LowRowXiControls.DecayOn (fun z : ℂ => rawKernel D u ξ w z Z) Scales.zLine 2 := by
   intro B hB
   obtain ⟨C, hC⟩ := kernel_decay_all D u hu Z hZ ξ w hξ hw B hB
@@ -201,8 +204,8 @@ theorem rawKernel_decayOn_z (u : Frequency D.recipe) (hu : u ≠ principalFreque
     exact this
   exact hC x hx1 hx.2 y
 
-theorem Iz_z_shift (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
-    (Z : ℝ) (hZ : 0 < Z) (ξ w : ℂ) (hξ : ξ.re = 4) (hw : Scales.wLine ≤ w.re ∧ w.re ≤ 4) :
+include u hu Z hZ ξ w hξ hw in
+theorem Iz_z_shift   :
     Iz D u ξ w 2 Z = Iz D u ξ w Scales.zLine Z := by
   unfold Iz
   refine LowRowXiControls.verticalIntegral_eq_of_decayOn (by norm_num [Scales.zLine]) ?_
@@ -215,6 +218,8 @@ theorem Iz_z_shift (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.rec
     linarith
   · have := hz.2
     linarith
+end
+
 
 end
 

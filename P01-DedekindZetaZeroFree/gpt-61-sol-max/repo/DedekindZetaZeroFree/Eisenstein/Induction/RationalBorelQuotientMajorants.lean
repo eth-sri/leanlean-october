@@ -161,17 +161,17 @@ open scoped Classical NumberField NNReal
 namespace DedekindZetaZeroFree.KPGlobalResidualKernel.ChamberNorm.Actual
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
- def rationalEquiv : Matrix.ProjGenLinGroup (Fin 2) F ≃* KPRationalAdelicSplitting.RationalPGL2 F :=
-  QuotientGroup.quotientMulEquivOfEq Matrix.GeneralLinearGroup.center_eq_range_scalar
-@[simp] private theorem rationalEquiv_mk (m : Matrix.GeneralLinearGroup (Fin 2) F) :
-    rationalEquiv F (Matrix.ProjGenLinGroup.mk m) = KPRationalAdelicSplitting.rationalPGLQuotient F m := by
-  exact QuotientGroup.quotientMulEquivOfEq_mk _ m
-@[simp] private theorem rationalEquiv_lift (g : Matrix.ProjGenLinGroup (Fin 2) F) :
-    KPRationalAdelicSplitting.rationalPGLHom F ζ hζ (rationalEquiv F g) = KPLiteralRaw.rationalLift F ζ hζ g := by
-  induction g using Matrix.ProjGenLinGroup.induction_on with
-  | mk m =>
-    rw [rationalEquiv_mk, KPLiteralExceptionalResidue.rationalLift_eq_constructed]
-    rfl
+
+
+
+
+
+
+
+
+
+
+
 
 variable {T : KPMsRationalCompactCrossPairing.ModelData F ζ hζ}
 variable {D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ}

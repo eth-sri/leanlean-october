@@ -2,7 +2,10 @@ module
 
 public import Mathlib
 
+public import Mathlib
+
 @[expose] public section
+
 
 /-
 https://github.com/openai/math
@@ -28,15 +31,7 @@ private lemma disjoint_indicator_expansion {P : Type*} [DecidableEq P]
     (∑ D ∈ ambient.powerset, (-1 : ℂ) ^ D.card *
         (if D ⊆ S ∧ D ⊆ T then 1 else 0)) = if Disjoint S T then 1 else 0 := by
   have hfilter : ambient.powerset.filter (fun D => D ⊆ S ∧ D ⊆ T) = (S ∩ T).powerset := by
-    ext D
-    simp only [Finset.mem_filter, Finset.mem_powerset]
-    constructor
-    · rintro ⟨_, hDS, hDT⟩ x hx
-      exact Finset.mem_inter.mpr ⟨hDS hx, hDT hx⟩
-    · intro hD
-      exact ⟨fun x hx => hS (Finset.mem_inter.mp (hD hx)).1,
-        fun x hx => (Finset.mem_inter.mp (hD hx)).1,
-        fun x hx => (Finset.mem_inter.mp (hD hx)).2⟩
+    grind
   have hsum : (∑ D ∈ ambient.powerset, (-1 : ℂ) ^ D.card *
         (if D ⊆ S ∧ D ⊆ T then 1 else 0))
       = ∑ D ∈ ambient.powerset.filter (fun D => D ⊆ S ∧ D ⊆ T), (-1 : ℂ) ^ D.card := by
@@ -69,9 +64,7 @@ private lemma masked_coefficient_energy {P L : Type*} [DecidableEq P] [Fintype L
     split_ifs <;> ring
   rw [hstep]
   have hfilt : B.powerset.filter (fun D => D ⊆ left j) = (left j).powerset := by
-    ext D
-    simp only [Finset.mem_filter, Finset.mem_powerset]
-    exact ⟨fun h => h.2, fun h => ⟨fun x hx => hl j (h hx), h⟩⟩
+    grind
   rw [Finset.sum_boole, hfilt, Finset.card_powerset]
   push_cast
   ring
@@ -144,7 +137,7 @@ theorem coprime_bilinear_operator_bound
       (A r l * x l) * star (B r k * y k) else 0‖) ^ 2 ≤
       UA * UB * (∑ l, (2 : ℝ) ^ (s l).card * ‖x l‖ ^ 2) *
         (∑ k, (2 : ℝ) ^ (t k).card * ‖y k‖ ^ 2) := by
-  let ambient : Finset P := (Finset.univ.biUnion s) ∪ (Finset.univ.biUnion t)
+  let ambient  := (Finset.univ.biUnion s) ∪ (Finset.univ.biUnion t)
   have hs : ∀ l, s l ⊆ ambient := fun l =>
     le_trans (Finset.subset_biUnion_of_mem s (Finset.mem_univ l)) Finset.subset_union_left
   have ht : ∀ k, t k ⊆ ambient := fun k =>
@@ -181,7 +174,7 @@ theorem coprime_bilinear_operator_bound
       _ ≤ ∑ D ∈ ambient.powerset, UA * ∑ l, ‖(if D ⊆ s l then x l else 0 : ℂ)‖ ^ 2 := by
         apply Finset.sum_le_sum
         intro D _
-        exact hA (fun l => if D ⊆ s l then x l else 0)
+        apply hA
       _ = _ := by rw [← Finset.mul_sum, masked_coefficient_energy ambient s hs x]
   have hY : (∑ D ∈ ambient.powerset, ∑ r, ‖Y D r‖ ^ 2) ≤
       UB * ∑ k, (2 : ℝ) ^ (t k).card * ‖y k‖ ^ 2 := by
@@ -189,7 +182,7 @@ theorem coprime_bilinear_operator_bound
       _ ≤ ∑ D ∈ ambient.powerset, UB * ∑ k, ‖(if D ⊆ t k then y k else 0 : ℂ)‖ ^ 2 := by
         apply Finset.sum_le_sum
         intro D _
-        exact hB (fun k => if D ⊆ t k then y k else 0)
+        apply hB
       _ = _ := by rw [← Finset.mul_sum, masked_coefficient_energy ambient t ht y]
   have hmain : UA * UB * (∑ l, (2 : ℝ) ^ (s l).card * ‖x l‖ ^ 2) *
         (∑ k, (2 : ℝ) ^ (t k).card * ‖y k‖ ^ 2)

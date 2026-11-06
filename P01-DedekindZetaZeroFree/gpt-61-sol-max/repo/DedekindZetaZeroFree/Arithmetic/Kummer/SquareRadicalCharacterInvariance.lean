@@ -11,8 +11,11 @@ noncomputable section
 open scoped NumberField Classical
 open IsDedekindDomain
 
-private theorem prime_eq_lambda (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ)
+section
+variable (F : Type) [Field F] [NumberField F]
+    (h12 : (primitiveRoots 12 F).Nonempty)
+include F h12 in
+private theorem prime_eq_lambda   (x : Fˣ)
     (v : HeightOneSpectrum (𝓞 F))
     (hc : v.asIdeal ⊔ RMKummerConductor.m F h12 x = ⊤)
     (π : (v.adicCompletion F)ˣ)
@@ -53,8 +56,8 @@ private theorem exists_uniformizer (F : Type) [Field F] [NumberField F]
     exact WithZero.exp_ne_zero ha.symm
   exact ⟨Units.mk0 a ha0, ha⟩
 
-theorem Xi_mul_sq (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (x y : Fˣ)
+include F h12 in
+theorem Xi_mul_sq   (x y : Fˣ)
     (I : Ideal (𝓞 F)) :
     RMKummerConductor.Xi F h12 (x * y ^ 2) I =
       RMKummerConductor.Xi F h12 x I := by
@@ -85,8 +88,8 @@ theorem Xi_mul_sq (F : Type) [Field F] [NumberField F]
         rw [(RMKummerConductor.Xi F h12 (x * y ^ 2)).eq_zero_iff' _ |>.mpr (Or.inr hc'),
           (RMKummerConductor.Xi F h12 x).eq_zero_iff' _ |>.mpr (Or.inr hc)]
 
-theorem Xi_cube (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ)
+include F h12 in
+theorem Xi_cube   (x : Fˣ)
     (I : Ideal (𝓞 F)) :
     (RMKummerConductor.Xi F h12 x I) ^ 3 =
       RMKummerConductor.Xi F h12 x I := by
@@ -105,8 +108,8 @@ theorem Xi_cube (F : Type) [Field F] [NumberField F]
       (RMKummerConductor.Xi F h12 x).eq_zero_iff' I |>.mpr (by tauto)
     simp [hz]
 
-theorem Xi_one (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (I : Ideal (𝓞 F)) :
+include F h12 in
+theorem Xi_one   (I : Ideal (𝓞 F)) :
     RMKummerConductor.Xi F h12 (1 : Fˣ) I =
       if I = ⊥ then (0 : ℂ) else 1 := by
   have hm := RMKummerSquareConductor.m_one F h12
@@ -127,6 +130,8 @@ theorem Xi_one (F : Type) [Field F] [NumberField F]
           rw [hm, sup_top_eq]
         rw [prime_eq_lambda F h12 1 v hc π hπ,
           RMKummerLocalSquareLaws.lambda_one, Units.val_one]
+end
+
 
 end
 end DedekindZetaZeroFree.RMKummerSquareCharacter

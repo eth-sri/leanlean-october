@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.Ideals.PrimeFactorDivisorBounds
 public import DedekindZetaZeroFree.Analysis.LocalDivisorExponentialBounds
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve
 
@@ -52,7 +55,7 @@ theorem ideal_divisor_count_le_rpow
       rw [hT, ← Real.rpow_mul (show (0 : ℝ) ≤ 2 by norm_num)]
       rw [show 1 / ε * ε = 1 by field_simp, Real.rpow_one]
     have hpow : (2 : ℝ) ≤ (Ideal.absNorm P : ℝ) ^ ε := by
-      have hlt : T ^ ε < (Ideal.absNorm P : ℝ) ^ ε :=
+      have hlt  :=
         Real.rpow_lt_rpow hTpos.le hPT hε
       rw [hTeps] at hlt
       exact hlt.le

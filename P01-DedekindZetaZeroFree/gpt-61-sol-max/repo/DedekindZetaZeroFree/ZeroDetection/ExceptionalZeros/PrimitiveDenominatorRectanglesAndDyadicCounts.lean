@@ -329,7 +329,7 @@ namespace DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuatio
 noncomputable section
 open scoped Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+variable {S : SArithmeticData F} 
 
 end
 end DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuation

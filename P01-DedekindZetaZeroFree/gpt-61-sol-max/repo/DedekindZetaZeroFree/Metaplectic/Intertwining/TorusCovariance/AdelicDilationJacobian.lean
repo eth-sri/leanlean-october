@@ -9,7 +9,7 @@ open MeasureTheory
 open scoped Classical NumberField ENNReal NNReal Topology
 set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.KPGlobalResidualKernel.ScatteringResidue
-variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
+variable {F : Type} [Field F] [NumberField F] {ζ : F} 
 
 theorem adelic_integral_mul_idele_inv (μ : Measure (KPGlobalTorusFunctionData.Adeles F)) [μ.IsAddHaarMeasure]
     (a : (KPGlobalTorusFunctionData.Adeles F)ˣ) (k : KPGlobalTorusFunctionData.Adeles F → ℂ) :

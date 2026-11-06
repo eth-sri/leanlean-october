@@ -13,74 +13,79 @@ namespace DedekindZetaZeroFree.KPStandardLocalRootLifts
 noncomputable section
 set_option autoImplicit false
 
-def lowerN (K : Type*) [Field K] (t : K) : KubotaRankTwo.GL2 K :=
+section
+variable (K : Type*) [Field K]
+include K
+def lowerN   (t : K) : KubotaRankTwo.GL2 K :=
   Matrix.GeneralLinearGroup.mkOfDetNeZero !![1, 0; t, 1] (by
     simp [Matrix.det_fin_two])
 
-def weylSwap (K : Type*) [Field K] : KubotaRankTwo.GL2 K :=
+def weylSwap   : KubotaRankTwo.GL2 K :=
   Matrix.GeneralLinearGroup.mkOfDetNeZero !![0, 1; 1, 0] (by
     simp [Matrix.det_fin_two])
 
-private theorem n_zero_matrix (K : Type*) [Field K] : KubotaRankTwo.n K 0 = 1 := by
+private theorem n_zero_matrix   : KubotaRankTwo.n K 0 = 1 := by
   apply Matrix.GeneralLinearGroup.ext
   intro i j
   fin_cases i <;> fin_cases j <;> simp [KubotaRankTwo.n]
 
-private theorem n_add_matrix (K : Type*) [Field K] (t u : K) :
+private theorem n_add_matrix   (t u : K) :
     KubotaRankTwo.n K t * KubotaRankTwo.n K u = KubotaRankTwo.n K (t + u) := by
   apply Matrix.GeneralLinearGroup.ext
   intro i j
   fin_cases i <;> fin_cases j <;> simp [Matrix.mul_apply, add_comm]
 
-private theorem lower_zero_matrix (K : Type*) [Field K] : lowerN K 0 = 1 := by
+private theorem lower_zero_matrix   : lowerN K 0 = 1 := by
   apply Matrix.GeneralLinearGroup.ext
   intro i j
   fin_cases i <;> fin_cases j <;> simp [lowerN]
 
-private theorem lower_add_matrix (K : Type*) [Field K] (t u : K) :
+private theorem lower_add_matrix   (t u : K) :
     lowerN K t * lowerN K u = lowerN K (t + u) := by
   apply Matrix.GeneralLinearGroup.ext
   intro i j
   fin_cases i <;> fin_cases j <;> simp [lowerN, Matrix.mul_apply]
 
-theorem d_mul_matrix (K : Type*) [Field K] (x y : Kˣ) :
+theorem d_mul_matrix   (x y : Kˣ) :
     KubotaRankTwo.d K x 1 * KubotaRankTwo.d K y 1 = KubotaRankTwo.d K (x * y) 1 := by
   apply Matrix.GeneralLinearGroup.ext
   intro i j
   fin_cases i <;> fin_cases j <;> simp [Matrix.mul_apply]
 
-private theorem d_one_matrix (K : Type*) [Field K] : KubotaRankTwo.d K 1 1 = 1 := by
+private theorem d_one_matrix   : KubotaRankTwo.d K 1 1 = 1 := by
   apply Matrix.GeneralLinearGroup.ext
   intro i j
   fin_cases i <;> fin_cases j <;> simp
 
-private theorem swap_sq_matrix (K : Type*) [Field K] : weylSwap K * weylSwap K = 1 := by
+private theorem swap_sq_matrix   : weylSwap K * weylSwap K = 1 := by
   apply Matrix.GeneralLinearGroup.ext
   intro i j
   fin_cases i <;> fin_cases j <;> simp [weylSwap, Matrix.mul_apply]
 
-private theorem signed_sq_matrix (K : Type*) [Field K] :
+private theorem signed_sq_matrix   :
     KubotaRankTwo.w K * KubotaRankTwo.w K = KubotaRankTwo.d K (-1) (-1) := by
   apply Matrix.GeneralLinearGroup.ext
   intro i j
   fin_cases i <;> fin_cases j <;> simp [Matrix.mul_apply]
 
-private theorem lower_det (K : Type*) [Field K] (t : K) : KubotaRankTwo.det K (lowerN K t) = 1 := by
+private theorem lower_det   (t : K) : KubotaRankTwo.det K (lowerN K t) = 1 := by
   apply Units.ext
   simp [KubotaRankTwo.det, lowerN, Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two]
 
-private theorem swap_det (K : Type*) [Field K] : KubotaRankTwo.det K (weylSwap K) = -1 := by
+private theorem swap_det   : KubotaRankTwo.det K (weylSwap K) = -1 := by
   apply Units.ext
   simp [KubotaRankTwo.det, weylSwap, Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two]
 
-private theorem swap_X (K : Type*) [Field K] : KubotaRankTwo.X K (weylSwap K) = 1 := by
+private theorem swap_X   : KubotaRankTwo.X K (weylSwap K) = 1 := by
   apply Units.ext
   simp [KubotaRankTwo.X, KubotaRankTwo.x, weylSwap]
 
-private theorem lower_X (K : Type*) [Field K] (t : K) (ht : t ≠ 0) :
+private theorem lower_X   (t : K) (ht : t ≠ 0) :
     KubotaRankTwo.X K (lowerN K t) = Units.mk0 t ht := by
   apply Units.ext
   simp [KubotaRankTwo.X, KubotaRankTwo.x, lowerN, ht]
+end
+
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -207,8 +212,11 @@ theorem A_mul (x y : (KPHilbert.Completion F v)ˣ) :
   rw [A, A, KPLocalCover.sectionMap_mul, hs, d_mul_matrix]
   rfl
 
-private theorem n_continuous (K : Type*) [Field K] [TopologicalSpace K]
-    [IsTopologicalRing K] : Continuous (KubotaRankTwo.n K) := by
+section
+variable (K : Type*) [Field K] [TopologicalSpace K]
+    [IsTopologicalRing K]
+include K
+private theorem n_continuous   : Continuous (KubotaRankTwo.n K) := by
   apply Units.continuous_iff.mpr
   constructor
   · apply continuous_pi; intro i; apply continuous_pi; intro j
@@ -225,8 +233,7 @@ private theorem n_continuous (K : Type*) [Field K] [TopologicalSpace K]
       Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons, Matrix.head_fin_const]
     all_goals first | exact continuous_const | exact continuous_neg
 
-private theorem lower_continuous (K : Type*) [Field K] [TopologicalSpace K]
-    [IsTopologicalRing K] : Continuous (lowerN K) := by
+private theorem lower_continuous   : Continuous (lowerN K) := by
   apply Units.continuous_iff.mpr
   constructor
   · apply continuous_pi; intro i; apply continuous_pi; intro j
@@ -241,8 +248,7 @@ private theorem lower_continuous (K : Type*) [Field K] [TopologicalSpace K]
     fin_cases i <;> fin_cases j <;> change Continuous (fun t : K => _)
     all_goals first | exact continuous_const | exact continuous_neg
 
-private theorem d_continuous (K : Type*) [Field K] [TopologicalSpace K]
-    [IsTopologicalRing K] : Continuous (fun y : Kˣ => KubotaRankTwo.d K y 1) := by
+private theorem d_continuous   : Continuous (fun y : Kˣ => KubotaRankTwo.d K y 1) := by
   apply Units.continuous_iff.mpr
   constructor
   · apply continuous_pi; intro i; apply continuous_pi; intro j
@@ -256,6 +262,8 @@ private theorem d_continuous (K : Type*) [Field K] [TopologicalSpace K]
     apply continuous_pi; intro i; apply continuous_pi; intro j
     fin_cases i <;> fin_cases j <;> change Continuous (fun y : Kˣ => _)
     all_goals first | exact continuous_const | exact Units.continuous_coe_inv
+end
+
 
 variable (q : HeightOneSpectrum (𝓞 F))
 
@@ -279,7 +287,10 @@ private theorem finite_section_continuousAt {X : Type*} [TopologicalSpace X]
   exact (hs.comp hf.continuousOn (fun _ ht => ht)).continuousAt
     ((hopen.preimage hf).mem_nhds (by simp [hx]))
 
-theorem finite_N_continuous (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F q m) :
+section
+variable (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F q m)
+include m hm
+theorem finite_N_continuous   :
     letI := KPLocalChartTopology.translatedTopology F ζ hζ q m
     Continuous (N F ζ hζ (Sum.inr q)) := by
   letI := KPLocalChartTopology.translatedTopology F ζ hζ q m
@@ -290,8 +301,7 @@ theorem finite_N_continuous (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDept
     continuous_of_continuousAt_one (N_hom F ζ hζ (Sum.inr q)) hc
   exact hh
 
-theorem finite_LowerN_continuous (m : ℕ)
-    (hm : KPLocalChartTopology.MatrixChartDepth F q m) :
+theorem finite_LowerN_continuous   :
     letI := KPLocalChartTopology.translatedTopology F ζ hζ q m
     Continuous (LowerN F ζ hζ (Sum.inr q)) := by
   letI := KPLocalChartTopology.translatedTopology F ζ hζ q m
@@ -302,7 +312,7 @@ theorem finite_LowerN_continuous (m : ℕ)
     continuous_of_continuousAt_one (LowerN_hom F ζ hζ (Sum.inr q)) hc
   exact hh
 
-theorem finite_A_continuous (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F q m) :
+theorem finite_A_continuous   :
     letI := KPLocalChartTopology.translatedTopology F ζ hζ q m
     Continuous (A F ζ hζ (Sum.inr q)) := by
   letI := KPLocalChartTopology.translatedTopology F ζ hζ q m
@@ -338,6 +348,8 @@ theorem finite_A_continuous (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDept
     congr 1
     exact (mul_inv_cancel_left x y).symm
   exact hc.congr_of_eventuallyEq (Filter.Eventually.of_forall he)
+end
+
 
 variable (w : InfinitePlace F)
 

@@ -13,11 +13,14 @@ open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 open KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPLocalPrincipalSeries
 open Raw
 
-private theorem scalar_root_invariant
-    (F : Type) [Field F] [NumberField F]
+section
+variable (F : Type) [Field F] [NumberField F]
     (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
     (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
-    (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
+    (hP : IsTamePolarization F ζ hζ q S P)
+include F ζ hζ q S P hP
+private theorem scalar_root_invariant
+      (ε : Sign)
     (f : scalarSections F ζ hζ q S P hP ε)
     (x : LocalField F q) (g : ActualCover F ζ hζ q) :
     f.val (KPPGLLocalCover.N F ζ hζ (Sum.inr q) x * g) = f.val g := by
@@ -41,10 +44,7 @@ private theorem scalar_root_invariant
   rw [← he, f.property.1, hc, one_mul]
 
 private theorem scalar_borel_root_invariant
-    (F : Type) [Field F] [NumberField F]
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
-    (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
-    (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
+      (ε : Sign)
     (f : scalarSections F ζ hζ q S P hP ε)
     (x : LocalField F q) (b : S.borel.B) :
     f.val (b.val * KPPGLLocalCover.N F ζ hζ (Sum.inr q) x) = f.val b.val := by
@@ -73,10 +73,7 @@ private theorem scalar_borel_root_invariant
   exact scalar_root_invariant F ζ hζ q S P hP ε f _ _
 
 theorem scalar_tail_translation
-    (F : Type) [Field F] [NumberField F]
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
-    (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
-    (hP : IsTamePolarization F ζ hζ q S P)
+     
     (htame : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
     (π : (LocalField F q)ˣ)
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
@@ -190,6 +187,8 @@ theorem scalar_tail_translation
     KPPGLLocalCover.N F ζ hζ (Sum.inr q) t) - f.val _ = 0 at hz
   rw [mul_assoc, ← KPPGLLocalCover.N_add] at hz
   exact sub_eq_zero.mp hz
+end
+
 
 end DedekindZetaZeroFree.KPTameJacquetBruhatTests.Stabilization
 
@@ -212,7 +211,10 @@ private theorem valuation_norm_le (x y : LocalField F q) :
   change Valued.v x ≤ Valued.v y ↔ _
   exact (Valued.toNormedField.norm_le_iff).symm
 
-private theorem expandingBall_norm (π : (LocalField F q)ˣ) (r : ℕ) (x : LocalField F q) :
+section
+variable (π : (LocalField F q)ˣ)
+include π
+private theorem expandingBall_norm   (r : ℕ) (x : LocalField F q) :
     x ∈ expandingBall F q π r ↔ ‖x‖ ≤ ‖(π : LocalField F q)‖⁻¹ ^ r := by
   let a : LocalField F q := ((π ^ r : (LocalField F q)ˣ) : LocalField F q)⁻¹
   have ha : a ≠ 0 := inv_ne_zero (π ^ r).ne_zero
@@ -233,7 +235,7 @@ private theorem expandingBall_norm (π : (LocalField F q)ˣ) (r : ℕ) (x : Loca
     rw [norm_div, div_le_one (norm_pos_iff.mpr ha)]
     exact hx
 
-private theorem eventually_mem_ball (π : (LocalField F q)ˣ)
+private theorem eventually_mem_ball  
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
       (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
     (t : LocalField F q) :
@@ -254,7 +256,7 @@ private theorem eventually_mem_ball (π : (LocalField F q)ˣ)
   obtain ⟨r₀, hr₀⟩ := Filter.eventually_atTop.mp (ht.eventually (Filter.eventually_ge_atTop ‖t‖))
   exact ⟨r₀, fun r hr => (expandingBall_norm F q π r t).mpr (hr₀ r hr)⟩
 
-private theorem ball_translate (π : (LocalField F q)ˣ) (r : ℕ)
+private theorem ball_translate   (r : ℕ)
     (t : LocalField F q) (ht : t ∈ expandingBall F q π r) :
     (fun x => x + t) ⁻¹' expandingBall F q π r = expandingBall F q π r := by
   ext x
@@ -265,6 +267,8 @@ private theorem ball_translate (π : (LocalField F q)ˣ) (r : ℕ)
     simpa using h.trans (max_le hx (by simpa using ht))
   · intro hx
     exact (IsUltrametricDist.norm_add_le_max x t).trans (max_le hx ht)
+end
+
 
 theorem shell_vanishing_of_tail_translation
     (F : Type) [Field F] [NumberField F] (q : HeightOneSpectrum (𝓞 F))
@@ -370,9 +374,12 @@ open scoped NumberField Classical
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 open KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPLocalPrincipalSeries Raw
 
-private theorem pi_mem_integer
-    (F : Type) [Field F] [NumberField F] (q : HeightOneSpectrum (𝓞 F))
+section
+variable (F : Type) [Field F] [NumberField F] (q : HeightOneSpectrum (𝓞 F))
     (π : (LocalField F q)ˣ)
+include F q π
+private theorem pi_mem_integer
+     
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
       (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ)) :
     (π : LocalField F q) ∈ (valuation (LocalField F q)).integer := by
@@ -387,8 +394,7 @@ private theorem pi_mem_integer
     (le_of_lt hv)
 
 private theorem ball_subset_succ
-    (F : Type) [Field F] [NumberField F] (q : HeightOneSpectrum (𝓞 F))
-    (π : (LocalField F q)ˣ)
+     
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
       (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
     (r : ℕ) : expandingBall F q π r ⊆ expandingBall F q π (r + 1) := by
@@ -403,8 +409,7 @@ private theorem ball_subset_succ
   field_simp
 
 private theorem ball_measurable
-    (F : Type) [Field F] [NumberField F] (q : HeightOneSpectrum (𝓞 F))
-    (π : (LocalField F q)ˣ) (r : ℕ) :
+      (r : ℕ) :
     MeasurableSet (expandingBall F q π r) := by
   have hset : expandingBall F q π r =
       (fun x : LocalField F q =>
@@ -426,8 +431,7 @@ private theorem ball_measurable
     (measurable_const.mul measurable_id)
 
 theorem integrals_stabilize_of_shell_vanishing
-    (F : Type) [Field F] [NumberField F] (q : HeightOneSpectrum (𝓞 F))
-    (π : (LocalField F q)ˣ)
+     
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
       (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
     (μ : Measure (LocalField F q)) (g : LocalField F q → ℂ)
@@ -459,6 +463,8 @@ theorem integrals_stabilize_of_shell_vanishing
   refine ⟨hint r, ?_⟩
   rw [← Nat.add_sub_of_le hr]
   exact key (r - R)
+end
+
 
 end DedekindZetaZeroFree.KPTameJacquetBruhatTests.Stabilization
 
@@ -477,10 +483,13 @@ variable (F : Type) [Field F] [NumberField F]
   (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
   (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
 
-private theorem stable_unique
-    (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
+section
+variable (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
     (π : (LocalField F q)ˣ) (ψ : Multiplicative (LocalField F q) →* ℂˣ)
     (μ : Measure (LocalField F q)) (a : ActualCover F ζ hζ q)
+include hP ε π ψ μ a
+private theorem stable_unique
+     
     (f : scalarSections F ζ hζ q S P hP ε) {z z' : ℂ}
     (hz : HasStableValue F ζ hζ q S P hP ε π ψ μ a f z)
     (hz' : HasStableValue F ζ hζ q S P hP ε π ψ μ a f z') : z = z' := by
@@ -490,9 +499,7 @@ private theorem stable_unique
     (hr' (max r r') (le_max_right _ _)).2
 
 private theorem stable_add
-    (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
-    (π : (LocalField F q)ˣ) (ψ : Multiplicative (LocalField F q) →* ℂˣ)
-    (μ : Measure (LocalField F q)) (a : ActualCover F ζ hζ q)
+     
     (f g : scalarSections F ζ hζ q S P hP ε) (z z' : ℂ)
     (hf : HasStableValue F ζ hζ q S P hP ε π ψ μ a f z)
     (hg : HasStableValue F ζ hζ q S P hP ε π ψ μ a g z') :
@@ -512,9 +519,7 @@ private theorem stable_add
   exact ⟨hfi.add hgi, by simp only [Pi.add_apply]; rw [integral_add hfi hgi, hfv, hgv]⟩
 
 private theorem stable_smul
-    (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
-    (π : (LocalField F q)ˣ) (ψ : Multiplicative (LocalField F q) →* ℂˣ)
-    (μ : Measure (LocalField F q)) (a : ActualCover F ζ hζ q)
+     
     (f : scalarSections F ζ hζ q S P hP ε) (z c : ℂ)
     (hf : HasStableValue F ζ hζ q S P hP ε π ψ μ a f z) :
     HasStableValue F ζ hζ q S P hP ε π ψ μ a (c • f) (c * z) := by
@@ -528,6 +533,8 @@ private theorem stable_smul
   obtain ⟨hint, hval⟩ := hr r hrr
   rw [he]
   exact ⟨hint.const_mul _, by rw [integral_const_mul, hval]⟩
+end
+
 
 private theorem valuation_norm_le (x y : LocalField F q) :
     valuation (LocalField F q) x ≤ valuation (LocalField F q) y ↔ ‖x‖ ≤ ‖y‖ := by
@@ -535,7 +542,10 @@ private theorem valuation_norm_le (x y : LocalField F q) :
   change Valued.v x ≤ Valued.v y ↔ _
   exact (Valued.toNormedField.norm_le_iff).symm
 
-private theorem expandingBall_norm (π : (LocalField F q)ˣ) (r : ℕ) (x : LocalField F q) :
+section
+variable (π : (LocalField F q)ˣ)
+include π
+private theorem expandingBall_norm   (r : ℕ) (x : LocalField F q) :
     x ∈ expandingBall F q π r ↔ ‖x‖ ≤ ‖(π : LocalField F q)‖⁻¹ ^ r := by
   let a : LocalField F q := ((π ^ r : (LocalField F q)ˣ) : LocalField F q)⁻¹
   have ha : a ≠ 0 := inv_ne_zero (π ^ r).ne_zero
@@ -556,7 +566,7 @@ private theorem expandingBall_norm (π : (LocalField F q)ˣ) (r : ℕ) (x : Loca
     rw [norm_div, div_le_one (norm_pos_iff.mpr ha)]
     exact hx
 
-private theorem eventually_mem_ball (π : (LocalField F q)ˣ)
+private theorem eventually_mem_ball  
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
       (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
     (t : LocalField F q) :
@@ -577,7 +587,7 @@ private theorem eventually_mem_ball (π : (LocalField F q)ˣ)
   obtain ⟨r₀, hr₀⟩ := Filter.eventually_atTop.mp (ht.eventually (Filter.eventually_ge_atTop ‖t‖))
   exact ⟨r₀, fun r hr => (expandingBall_norm F q π r t).mpr (hr₀ r hr)⟩
 
-private theorem ball_translate (π : (LocalField F q)ˣ) (r : ℕ)
+private theorem ball_translate   (r : ℕ)
     (t : LocalField F q) (ht : t ∈ expandingBall F q π r) :
     (fun x => x + t) ⁻¹' expandingBall F q π r = expandingBall F q π r := by
   ext x
@@ -588,9 +598,14 @@ private theorem ball_translate (π : (LocalField F q)ˣ) (r : ℕ)
     simpa using h.trans (max_le hx (by simpa using ht))
   · intro hx
     exact (IsUltrametricDist.norm_add_le_max x t).trans (max_le hx ht)
+end
 
+
+section
+variable (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
+include hP ε
 private theorem integrand_root
-    (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
+     
     (ψ : Multiplicative (LocalField F q) →* ℂˣ) (a : ActualCover F ζ hζ q)
     (f : scalarSections F ζ hζ q S P hP ε) (t x : LocalField F q) :
     jacquetIntegrand F ζ hζ q S P hP ε ψ a
@@ -614,7 +629,7 @@ private theorem integrand_root
   ring
 
 private theorem stable_root
-    (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
+     
     (π : (LocalField F q)ˣ)
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
       (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
@@ -646,7 +661,7 @@ private theorem stable_root
   exact ⟨hi.const_mul _, by rw [integral_const_mul, hv, hfv]⟩
 
 private theorem family_of_stable_values
-    (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
+     
     (π : (LocalField F q)ˣ) (ψ : Multiplicative (LocalField F q) →* ℂˣ)
     (μ : Measure (LocalField F q))
     (hex : ∀ j f, ∃ z, HasStableValue F ζ hζ q S P hP ε π ψ μ
@@ -675,7 +690,7 @@ private theorem family_of_stable_values
     (hv j _) (hroot j t f _ (hv j f))
 
 theorem scalar_section_continuous
-    (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
+     
     (f : scalarSections F ζ hζ q S P hP ε) : Continuous f.val := by
   obtain ⟨J, hJ⟩ := f.property.2
   have hf : IsLocallyConstant f.val := by
@@ -688,6 +703,8 @@ theorem scalar_section_continuous
       have he := congrFun (hJ (g⁻¹ * x) hx) g
       simpa only [rightTranslationRepresentation_apply, mul_inv_cancel_left] using he
   exact hf.continuous
+end
+
 
 theorem expanding_ball_compact (π : (LocalField F q)ˣ) (r : ℕ) :
     IsCompact (expandingBall F q π r) := by

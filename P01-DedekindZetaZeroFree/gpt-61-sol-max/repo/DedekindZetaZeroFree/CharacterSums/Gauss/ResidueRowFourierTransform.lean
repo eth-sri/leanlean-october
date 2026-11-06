@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.FiniteTransform
 
@@ -11,39 +14,51 @@ open scoped Classical
 
 variable {K : Type*} [Field K]
 
-abbrev Residue (R : Subring K) (a : R) := R ⧸ Ideal.span ({a} : Set R)
+section
+variable (R : Subring K) (a : R)
+include R a
+abbrev Residue   := R ⧸ Ideal.span ({a} : Set R)
 
-def residueMap (R : Subring K) (a : R) : R →+* Residue R a :=
+def residueMap   : R →+* Residue R a :=
   Ideal.Quotient.mk _
 
-def ResidueLifts (R : Subring K) (a : R) :=
+def ResidueLifts   :=
   {l : Residue R a → R // ∀ d, residueMap R a (l d) = d}
 
-def canonicalLifts (R : Subring K) (a : R) : ResidueLifts R a :=
+def canonicalLifts   : ResidueLifts R a :=
   ⟨Quotient.out, fun d => Quotient.out_eq d⟩
 
-def exteriorNorm (R : Subring K) (a : R) : ℕ := Nat.card (Residue R a)
+def exteriorNorm    := Nat.card (Residue R a)
+end
 
-def IsTrivialOn (R : Subring K) (e : AddChar K ℂ) : Prop :=
+
+def IsTrivialOn (R : Subring K) (e : AddChar K ℂ)  :=
   ∀ r : R, e (r : K) = 1
 
-def IsPrimitiveAt (R : Subring K) (s : R) (e : AddChar K ℂ) : Prop :=
+def IsPrimitiveAt (R : Subring K) (s : R) (e : AddChar K ℂ)  :=
   ∀ k : R, residueMap R s k ≠ 0 →
     ∃ j : R, e ((k : K) * (j : K) / (s : K)) ≠ 1
 
-def gaussSumWithLifts (R : Subring K) (s : R) [Fintype (Residue R s)]
+section
+variable (R : Subring K) (s : R) [Fintype (Residue R s)]
     (χs : MulChar (Residue R s) ℂ) (e : AddChar K ℂ)
-    (ds : ResidueLifts R s) (k : R) : ℂ :=
+include R s χs e
+def gaussSumWithLifts  
+    (ds : ResidueLifts R s) (k : R)  :=
   ∑ d : Residue R s, χs d * e ((k : K) * (ds.val d : K) / (s : K))
 
-def gaussSum (R : Subring K) (s : R) [Fintype (Residue R s)]
-    (χs : MulChar (Residue R s) ℂ) (e : AddChar K ℂ) (k : R) : ℂ :=
+def gaussSum   (k : R)  :=
   gaussSumWithLifts R s χs e (canonicalLifts R s) k
+end
 
-def finiteCoefficientWithLifts (R : Subring K) (s A h : R)
+
+section
+variable (R : Subring K) (s A h : R)
     [Fintype (Residue R s)] [Fintype (Residue R A)]
     (χs : MulChar (Residue R s) ℂ) (χA : MulChar (Residue R A) ℂ)
-    (e : AddChar K ℂ) (ds : ResidueLifts R s) (vA : ResidueLifts R A) : ℂ :=
+    (e : AddChar K ℂ)
+include R s A h χs χA e
+def finiteCoefficientWithLifts   (ds : ResidueLifts R s) (vA : ResidueLifts R A)  :=
   ∑ d : Residue R s,
     if residueMap R s h = residueMap R s A * d then
       χs d * ∑ v : Residue R A, χA v *
@@ -51,17 +66,16 @@ def finiteCoefficientWithLifts (R : Subring K) (s A h : R)
           ((s : K) * (A : K)))
     else 0
 
-def finiteCoefficient (R : Subring K) (s A h : R)
-    [Fintype (Residue R s)] [Fintype (Residue R A)]
-    (χs : MulChar (Residue R s) ℂ) (χA : MulChar (Residue R A) ℂ)
-    (e : AddChar K ℂ) : ℂ :=
+def finiteCoefficient    :=
   finiteCoefficientWithLifts R s A h χs χA e (canonicalLifts R s) (canonicalLifts R A)
+end
+
 
 def rowTransformWithLifts (R : Subring K) (s A h : R)
     [Fintype (Residue R s)] [Fintype (Residue R A)]
     [Fintype (Residue R (s * A))]
     (χs : MulChar (Residue R s) ℂ) (χA : MulChar (Residue R A) ℂ)
-    (e : AddChar K ℂ) (ds : ResidueLifts R s) (msA : ResidueLifts R (s * A)) : ℂ :=
+    (e : AddChar K ℂ) (ds : ResidueLifts R s) (msA : ResidueLifts R (s * A))  :=
   ∑ m : Residue R (s * A),
     (Real.sqrt (exteriorNorm R s) : ℂ)⁻¹ *
       gaussSumWithLifts R s χs e ds (-msA.val m) *
@@ -72,21 +86,23 @@ def rowTransform (R : Subring K) (s A h : R)
     [Fintype (Residue R s)] [Fintype (Residue R A)]
     [Fintype (Residue R (s * A))]
     (χs : MulChar (Residue R s) ℂ) (χA : MulChar (Residue R A) ℂ)
-    (e : AddChar K ℂ) : ℂ :=
+    (e : AddChar K ℂ)  :=
   rowTransformWithLifts R s A h χs χA e (canonicalLifts R s)
     (canonicalLifts R (s * A))
 
-private theorem phase_eq (R : Subring K) (e : AddChar K ℂ)
+section
+variable (R : Subring K)
+include R
+private theorem phase_eq   (e : AddChar K ℂ)
     (he : IsTrivialOn R e) (x y : K) (r : R) (hr : x - y = (r : K)) :
     e x = e y := by
   have hx : x = y + (r : K) := by rw [← hr]; ring
   rw [hx, e.map_add_eq_mul, he r, mul_one]
 
-private theorem residue_difference (R : Subring K) (a x y : R)
-    (h : residueMap R a x = residueMap R a y) : ∃ r : R, x - y = a * r := by
-  exact Ideal.mem_span_singleton.mp (Ideal.Quotient.eq.mp h)
+private theorem residue_difference   (a x y : R)
+    (h : residueMap R a x = residueMap R a y) : ∃ r : R, x - y = a * r := Ideal.mem_span_singleton.mp (Ideal.Quotient.eq.mp h)
 
-theorem linear_phase_eq (R : Subring K) (s : R) (hs : s ≠ 0)
+theorem linear_phase_eq   (s : R) (hs : s ≠ 0)
     (e : AddChar K ℂ) (he : IsTrivialOn R e) (x y k : R)
     (h : residueMap R s x = residueMap R s y) :
     e ((k : K) * (x : K) / (s : K)) = e ((k : K) * (y : K) / (s : K)) := by
@@ -99,7 +115,7 @@ theorem linear_phase_eq (R : Subring K) (s : R) (hs : s ≠ 0)
   field_simp
   <;> ring
 
-private theorem double_phase_eq (R : Subring K) (s A h x y v w : R)
+private theorem double_phase_eq   (s A h x y v w : R)
     (hs : s ≠ 0) (hA : A ≠ 0) (e : AddChar K ℂ) (he : IsTrivialOn R e)
     (hxy : residueMap R s x = residueMap R s y)
     (hvw : residueMap R A v = residueMap R A w)
@@ -108,7 +124,7 @@ private theorem double_phase_eq (R : Subring K) (s A h x y v w : R)
       e (((h : K) - (A : K) * (y : K)) * (w : K) / ((s : K) * (A : K))) := by
   obtain ⟨r, hr⟩ := residue_difference R s x y hxy
   obtain ⟨t, ht⟩ := residue_difference R A v w hvw
-  obtain ⟨b, hb⟩ := residue_difference R s h (A * y) (by simpa using hc)
+  obtain ⟨b, hb⟩ := residue_difference R s h (A * y) (hc)
   have hs' : (s : K) ≠ 0 := by exact_mod_cast hs
   have hA' : (A : K) ≠ 0 := by exact_mod_cast hA
   have hr' : (x : K) - (y : K) = (s : K) * (r : K) := by exact_mod_cast hr
@@ -123,7 +139,7 @@ private theorem double_phase_eq (R : Subring K) (s A h x y v w : R)
   field_simp
   <;> ring
 
-theorem finiteCoefficient_lifts_independent (R : Subring K) (s A h : R)
+theorem finiteCoefficient_lifts_independent   (s A h : R)
     (hs : s ≠ 0) (hA : A ≠ 0)
     [Fintype (Residue R s)] [Fintype (Residue R A)]
     (χs : MulChar (Residue R s) ℂ) (χA : MulChar (Residue R A) ℂ)
@@ -145,7 +161,7 @@ theorem finiteCoefficient_lifts_independent (R : Subring K) (s A h : R)
     · simpa only [(canonicalLifts R s).property] using hc
   · rfl
 
-private theorem residue_factor (R : Subring K) (s A x y : R)
+private theorem residue_factor   (s A x y : R)
     (h : residueMap R (s * A) x = residueMap R (s * A) y) :
     residueMap R s x = residueMap R s y := by
   obtain ⟨r, hr⟩ := residue_difference R (s * A) x y h
@@ -153,12 +169,12 @@ private theorem residue_factor (R : Subring K) (s A x y : R)
   apply Ideal.mem_span_singleton.mpr
   exact ⟨A * r, by rw [hr]; ring⟩
 
-def residueDecomposition (R : Subring K) (s A : R)
+def residueDecomposition   (s A : R)
     (ds : ResidueLifts R s) (vA : ResidueLifts R A) :
     Residue R A × Residue R s → Residue R (s * A) :=
   fun p => residueMap R (s * A) (vA.val p.1 + A * ds.val p.2)
 
-private theorem residueDecomposition_bijective (R : Subring K) (s A : R)
+private theorem residueDecomposition_bijective   (s A : R)
     (hA : A ≠ 0) (ds : ResidueLifts R s) (vA : ResidueLifts R A) :
     Function.Bijective (residueDecomposition R s A ds vA) := by
   constructor
@@ -172,7 +188,7 @@ private theorem residueDecomposition_bijective (R : Subring K) (s A : R)
         linear_combination hr
       simpa only [vA.property] using hv'
     apply Prod.ext hv
-    have hl : vA.val p.1 = vA.val q.1 := congrArg vA.val hv
+    have hl  := congrArg vA.val hv
     have hj : ds.val p.2 - ds.val q.2 = s * r := by
       apply mul_left_cancel₀ hA
       rw [hl] at hr
@@ -195,7 +211,7 @@ private theorem residueDecomposition_bijective (R : Subring K) (s A : R)
     change vA.val v + A * ds.val (residueMap R s j) - x = s * A * r
     linear_combination A * hr - hj
 
-def residueAddChar (R : Subring K) (s k : R) (hs : s ≠ 0)
+def residueAddChar   (s k : R) (hs : s ≠ 0)
     (e : AddChar K ℂ) (he : IsTrivialOn R e) (ds : ResidueLifts R s) :
     AddChar (Residue R s) ℂ where
   toFun j := e ((k : K) * (ds.val j : K) / (s : K))
@@ -207,7 +223,7 @@ def residueAddChar (R : Subring K) (s k : R) (hs : s ≠ 0)
       (by simp [ds.property])]
     rw [Subring.coe_add, mul_add, add_div, e.map_add_eq_mul]
 
-private theorem residue_orthogonality (R : Subring K) (s k : R) (hs : s ≠ 0)
+private theorem residue_orthogonality   (s k : R) (hs : s ≠ 0)
     [Fintype (Residue R s)] (e : AddChar K ℂ) (he : IsTrivialOn R e)
     (hp : IsPrimitiveAt R s e) (ds : ResidueLifts R s) :
     (∑ j : Residue R s, e ((k : K) * (ds.val j : K) / (s : K))) =
@@ -226,20 +242,20 @@ private theorem residue_orthogonality (R : Subring K) (s k : R) (hs : s ≠ 0)
       ext j
       change e ((k : K) * (ds.val j : K) / (s : K)) = 1
       rw [mul_comm]
-      rw [linear_phase_eq R s hs e he k 0 (ds.val j) (by simpa using hk)]
+      rw [linear_phase_eq R s hs e he k 0 (ds.val j) (hk)]
       simp
   change (∑ j, ψ j) = _
   rw [AddChar.sum_eq_ite]
   simp only [hz, exteriorNorm, Nat.card_eq_fintype_card]
 
-def rawRowTerm (R : Subring K) (s A h : R)
+def rawRowTerm   (s A h : R)
     [Fintype (Residue R s)] (χs : MulChar (Residue R s) ℂ)
     (χA : MulChar (Residue R A) ℂ) (e : AddChar K ℂ)
-    (ds : ResidueLifts R s) (m : R) : ℂ :=
+    (ds : ResidueLifts R s) (m : R)  :=
   gaussSumWithLifts R s χs e ds (-m) * χA (residueMap R A m) *
     e ((h : K) * (m : K) / ((s : K) * (A : K)))
 
-private theorem rawRowTerm_eq (R : Subring K) (s A h x y : R)
+private theorem rawRowTerm_eq   (s A h x y : R)
     (hs : s ≠ 0) (hA : A ≠ 0) [Fintype (Residue R s)]
     (χs : MulChar (Residue R s) ℂ) (χA : MulChar (Residue R A) ℂ)
     (e : AddChar K ℂ) (he : IsTrivialOn R e) (ds : ResidueLifts R s)
@@ -260,13 +276,13 @@ private theorem rawRowTerm_eq (R : Subring K) (s A h x y : R)
     simp only [Subring.coe_neg]
     rw [mul_comm (-(x : K)), mul_comm (-(y : K))]
     exact linear_phase_eq R s hs e he (-x) (-y) (ds.val d)
-      (by simpa only [map_neg] using congrArg Neg.neg hxs)
+      (congrArg Neg.neg hxs)
   rw [hg]
   congr 1
   change e ((h : K) * (x : K) / ((s * A : R) : K)) = _
   exact linear_phase_eq R (s * A) (mul_ne_zero hs hA) e he x y h hxy
 
-private theorem phase_split (R : Subring K) (s A h d v j : R)
+private theorem phase_split   (s A h d v j : R)
     (hs : s ≠ 0) (hA : A ≠ 0) (e : AddChar K ℂ) :
     e ((-(v + A * j : R) : K) * (d : K) / (s : K)) *
       e ((h : K) * ((v + A * j : R) : K) / ((s : K) * (A : K))) =
@@ -280,7 +296,7 @@ private theorem phase_split (R : Subring K) (s A h d v j : R)
   field_simp
   <;> ring
 
-private theorem rawRowTerm_decomposed (R : Subring K) (s A h : R)
+private theorem rawRowTerm_decomposed   (s A h : R)
     (hs : s ≠ 0) (hA : A ≠ 0) [Fintype (Residue R s)]
     (χs : MulChar (Residue R s) ℂ) (χA : MulChar (Residue R A) ℂ)
     (e : AddChar K ℂ) (ds : ResidueLifts R s) (vA : ResidueLifts R A)
@@ -291,7 +307,7 @@ private theorem rawRowTerm_decomposed (R : Subring K) (s A h : R)
           ((s : K) * (A : K))) *
         e (((h - A * ds.val d : R) : K) * (ds.val j : K) / (s : K)) := by
   have hA0 : residueMap R A A = 0 :=
-    Ideal.Quotient.eq_zero_iff_mem.mpr (Ideal.subset_span (by simp))
+    Ideal.Quotient.eq_zero_iff_mem.mpr (Ideal.subset_span (rfl))
   unfold rawRowTerm gaussSumWithLifts
   simp only [map_add, map_mul, hA0, zero_mul, add_zero, vA.property]
   rw [Finset.sum_mul, Finset.sum_mul]
@@ -304,10 +320,15 @@ private theorem rawRowTerm_decomposed (R : Subring K) (s A h : R)
         (e ((-(vA.val v + A * ds.val j : R) : K) * (ds.val d : K) / (s : K)) *
           e ((h : K) * ((vA.val v + A * ds.val j : R) : K) / ((s : K) * (A : K)))) := by ring
     _ = _ := by rw [ht]; ring
+end
 
-private theorem raw_transform (R : Subring K) (s A h : R)
+
+section
+variable (R : Subring K) (s A h : R)
     (hs : s ≠ 0) (hA : A ≠ 0)
     [Fintype (Residue R s)] [Fintype (Residue R A)]
+include R s A h hs hA in
+private theorem raw_transform  
     [Fintype (Residue R (s * A))]
     (χs : MulChar (Residue R s) ℂ) (χA : MulChar (Residue R A) ℂ)
     (e : AddChar K ℂ) (he : IsTrivialOn R e) (hp : IsPrimitiveAt R s e)
@@ -344,9 +365,8 @@ private theorem raw_transform (R : Subring K) (s A h : R)
     ring
   · simp
 
-theorem exact_finite_transform (R : Subring K) (s A h : R)
-    (hs : s ≠ 0) (hA : A ≠ 0)
-    [Fintype (Residue R s)] [Fintype (Residue R A)]
+include R s A h hs hA in
+theorem exact_finite_transform  
     [Fintype (Residue R (s * A))]
     (χs : MulChar (Residue R s) ℂ) (χA : MulChar (Residue R A) ℂ)
     (e : AddChar K ℂ) (he : IsTrivialOn R e) (hprimitive : IsPrimitiveAt R s e) :
@@ -413,17 +433,16 @@ theorem finiteCoefficient_norm_le (R : Subring K) (s A h : R)
       · simp
     _ = _ := by simp [exteriorNorm, Nat.card_eq_fintype_card]
 
-private theorem finiteCoefficient_unit_invariant (R : Subring K) (s A h : R)
-    (hs : s ≠ 0) (hA : A ≠ 0)
-    [Fintype (Residue R s)] [Fintype (Residue R A)]
+include R s A h hs hA in
+private theorem finiteCoefficient_unit_invariant  
     (χs : MulChar (Residue R s) ℂ) (χA : MulChar (Residue R A) ℂ)
     (e : AddChar K ℂ) (he : IsTrivialOn R e) (c : Rˣ)
     (hcs : χs (residueMap R s (c : R)) = 1)
     (hcA : χA (residueMap R A ((c⁻¹ : Rˣ) : R)) = 1) :
     finiteCoefficient R s A ((c : R) * h) χs χA e =
       finiteCoefficient R s A h χs χA e := by
-  let cs : (Residue R s)ˣ := Units.map (residueMap R s).toMonoidHom c
-  let cA : (Residue R A)ˣ := Units.map (residueMap R A).toMonoidHom c⁻¹
+  let cs  := Units.map (residueMap R s).toMonoidHom c
+  let cA  := Units.map (residueMap R A).toMonoidHom c⁻¹
   have hcs' : χs (cs : Residue R s) = 1 := hcs
   have hcA' : χA (cA : Residue R A) = 1 := hcA
   unfold finiteCoefficient finiteCoefficientWithLifts
@@ -484,9 +503,8 @@ private theorem sixth_unit_character {T : Type*} [CommRing T]
   rw [Units.val_pow_eq_pow_val, map_pow, ← χ.pow_apply_coe 6 u, hχ,
     MulChar.one_apply_coe]
 
-theorem finiteCoefficient_sixth_unit_invariant (R : Subring K) (s A h : R)
-    (hs : s ≠ 0) (hA : A ≠ 0)
-    [Fintype (Residue R s)] [Fintype (Residue R A)]
+include R s A h hs hA in
+theorem finiteCoefficient_sixth_unit_invariant  
     (χs : MulChar (Residue R s) ℂ) (χA : MulChar (Residue R A) ℂ)
     (hχs : χs ^ 6 = 1) (hχA : χA ^ 6 = 1)
     (e : AddChar K ℂ) (he : IsTrivialOn R e) (u : Rˣ) :
@@ -502,6 +520,8 @@ theorem finiteCoefficient_sixth_unit_invariant (R : Subring K) (s A h : R)
     rw [Units.val_pow_eq_pow_val, map_pow] at H
     rw [map_pow]
     exact H
+end
+
 
 end
 

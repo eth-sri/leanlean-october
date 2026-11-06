@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.Complex.HarmonicKTypes
 public import DedekindZetaZeroFree.RepresentationTheory.RankOne.SU2.IrreducibleClassification
 
 @[expose] public section
+
 
 noncomputable section
 namespace DedekindZetaZeroFree.HarmonicVendor.HomogeneousRaw
@@ -27,11 +30,11 @@ private lemma top_entries (g : ComplexSU2) :
     (g : Matrix (Fin 2) (Fin 2) ℂ) 0 1 = -star ((g : Matrix (Fin 2) (Fin 2) ℂ) 1 0) := by
   have hg := Matrix.specialUnitaryGroup.star_eq_adjugate g
   have h00 := congrArg (fun M : Matrix (Fin 2) (Fin 2) ℂ => M 1 1) hg
-  have h01 := congrArg (fun M : Matrix (Fin 2) (Fin 2) ℂ => M 1 0) hg
+  
   simp [Matrix.star_eq_conjTranspose, Matrix.adjugate_fin_two, Matrix.trace_fin_two] at h00
   have h10 := congrArg (fun M : Matrix (Fin 2) (Fin 2) ℂ => M 0 1) hg
   simp [Matrix.star_eq_conjTranspose, Matrix.adjugate_fin_two] at h10
-  exact ⟨h00.symm, by simpa using (neg_eq_iff_eq_neg.mpr h10).symm⟩
+  exact ⟨h00.symm, (neg_eq_iff_eq_neg.mpr h10).symm⟩
 
 theorem sphereMatrix_mul (g h : ComplexSU2) :
     sphereMatrix (g * h) = sphereMatrix h * sphereMatrix g := by
@@ -76,8 +79,7 @@ theorem torus_weights (z : Circle) :
     coefficientAction (TauCeti.SU2.torusHom z) u = (z : ℂ)^2 • u ∧
     coefficientAction (TauCeti.SU2.torusHom z) v = (z : ℂ)^(-2 : ℤ) • v ∧
     coefficientAction (TauCeti.SU2.torusHom z) w = w := by
-  have hz : (z : ℂ) = ((z : ℂ).re : ℂ) + Complex.I * ((z : ℂ).im : ℂ) := by
-    exact (Complex.re_add_im _).symm.trans (by ring)
+  have hz : (z : ℂ) = ((z : ℂ).re : ℂ) + Complex.I * ((z : ℂ).im : ℂ) := (Complex.re_add_im _).symm.trans (by ring)
   have hinv : ((z : ℂ)^2)⁻¹ = (starRingEnd ℂ (z : ℂ)) ^ 2 := by
     rw [← Circle.coe_inv_eq_conj, Circle.coe_inv, inv_pow]
   have hn : (((z : ℂ).re : ℂ)^2 + ((z : ℂ).im : ℂ)^2) = 1 := by
@@ -152,7 +154,7 @@ private lemma chalf : (C (1/2 : ℂ) : MvPolynomial (Fin 3) ℂ) * 2 = 1 := by
 private lemma cI : (C Complex.I : MvPolynomial (Fin 3) ℂ)^2 = -1 := by
   rw [← map_pow, Complex.I_sq, map_neg, map_one]
 def uvwSub : Polynomial →ₐ[ℂ] Polynomial := aeval ![u,v,w]
-def uvwInv : Polynomial →ₐ[ℂ] Polynomial := aeval ![C (1/2 : ℂ) * (X 0 + X 1), C (1/(2*Complex.I) : ℂ) * (X 0 - X 1), X 2]
+def uvwInv : Polynomial →ₐ[ℂ] Polynomial := aeval ![C (1/2 : ℂ) * (X 0 + X 1), C (1/(2*Complex.I)) * (X 0 - X 1), X 2]
 lemma uvw_left : uvwInv.comp uvwSub = AlgHom.id ℂ Polynomial := by
   apply MvPolynomial.algHom_ext
   intro i
@@ -167,32 +169,35 @@ lemma uvw_right : uvwSub.comp uvwInv = AlgHom.id ℂ Polynomial := by
     ring_nf <;> (try simp only [cI]) <;>
     solve | rfl | (convert congrArg (fun p : Polynomial => p * X 0) chalf using 1 <;> ring) |
       (convert congrArg (fun p : Polynomial => p * X 1) chalf using 1 <;> ring)
-lemma uvw_hom (n : ℕ) (p : Homogeneous n) : (uvwSub p).IsHomogeneous n := by
+section
+variable (n : ℕ)
+include n
+lemma uvw_hom   (p : Homogeneous n) : (uvwSub p).IsHomogeneous n := by
   have hv (i : Fin 3) : (![u,v,w] i).IsHomogeneous 1 := by
     fin_cases i
     · exact (isHomogeneous_X ℂ 0).add (isHomogeneous_C_mul_X _ _)
     · exact (isHomogeneous_X ℂ 0).sub (isHomogeneous_C_mul_X _ _)
     · exact isHomogeneous_X ℂ 2
   simpa [uvwSub] using p.property.aeval ![u,v,w] hv
-lemma inv_hom (n : ℕ) (p : Homogeneous n) : (uvwInv p).IsHomogeneous n := by
-  have hv (i : Fin 3) : (![C (1/2 : ℂ) * (X 0 + X 1), C (1/(2*Complex.I) : ℂ) * (X 0 - X 1), X 2] i : Polynomial).IsHomogeneous 1 := by
+lemma inv_hom   (p : Homogeneous n) : (uvwInv p).IsHomogeneous n := by
+  have hv (i : Fin 3) : (![C (1/2 : ℂ) * (X 0 + X 1), C (1/(2*Complex.I)) * (X 0 - X 1), X 2] i : Polynomial).IsHomogeneous 1 := by
     fin_cases i
     · exact ((isHomogeneous_X ℂ 0).add (isHomogeneous_X ℂ 1)).C_mul _
     · exact ((isHomogeneous_X ℂ 0).sub (isHomogeneous_X ℂ 1)).C_mul _
     · exact isHomogeneous_X ℂ 2
   simpa [uvwInv] using p.property.aeval _ hv
-def uvwEquiv (n : ℕ) : Homogeneous n ≃ₗ[ℂ] Homogeneous n where
+def uvwEquiv   : Homogeneous n ≃ₗ[ℂ] Homogeneous n where
   toFun p := ⟨uvwSub p, uvw_hom n p⟩
   invFun p := ⟨uvwInv p, inv_hom n p⟩
   map_add' p q := Subtype.ext (map_add _ _ _)
   map_smul' c p := Subtype.ext (map_smul _ _ _)
   left_inv p := Subtype.ext (congrArg (fun f : Polynomial →ₐ[ℂ] Polynomial => f p) uvw_left)
   right_inv p := Subtype.ext (congrArg (fun f : Polynomial →ₐ[ℂ] Polynomial => f p) uvw_right)
-def xyzBasis (n : ℕ) : Module.Basis (HomogeneousExponent n) ℂ (Homogeneous n) :=
+def xyzBasis    :=
   (basisRestrictSupport ℂ {d : Fin 3 →₀ ℕ | d.degree = n}).map
     (LinearEquiv.ofEq _ _ (homogeneousSubmodule_eq_finsupp_supported (Fin 3) ℂ n).symm)
 
-theorem homogeneous_uvw_basis (n : ℕ) :
+theorem homogeneous_uvw_basis   :
     ∃ b : Module.Basis (HomogeneousExponent n) ℂ (Homogeneous n),
       ∀ d, (b d : Polynomial) = u ^ (d.val 0) * v ^ (d.val 1) * w ^ (d.val 2) := by
   refine ⟨(xyzBasis n).map (uvwEquiv n), ?_⟩
@@ -207,13 +212,13 @@ theorem homogeneous_uvw_basis (n : ℕ) :
   rw [uvwSub, aeval_monomial]
   simp [Finsupp.prod_fintype, Fin.prod_univ_three]
 
-private lemma uvw_eigen (n : ℕ) (z : Circle) (d : HomogeneousExponent n) :
+private lemma uvw_eigen   (z : Circle) (d : HomogeneousExponent n) :
     coefficientAction (TauCeti.SU2.torusHom z) (u ^ d.val 0 * v ^ d.val 1 * w ^ d.val 2) =
     (z : ℂ) ^ (2 * ((d.val 0 : ℤ) - (d.val 1 : ℤ))) •
       (u ^ d.val 0 * v ^ d.val 1 * w ^ d.val 2) := by
   obtain ⟨hu,hv,hw⟩ := torus_weights z
   simp only [map_mul, map_pow, hu,hv,hw, smul_eq_C_mul, mul_pow]
-  have hz : (z : ℂ) ≠ 0 := Circle.coe_ne_zero z
+  have hz  := Circle.coe_ne_zero z
   have he : ((z : ℂ)^2) ^ d.val 0 * ((z : ℂ)^(-2 : ℤ)) ^ d.val 1 =
       (z : ℂ) ^ (2 * ((d.val 0 : ℤ) - (d.val 1 : ℤ))) := by
     rw [← zpow_natCast (z : ℂ) 2]
@@ -228,11 +233,11 @@ private lemma uvw_eigen (n : ℕ) (z : Circle) (d : HomogeneousExponent n) :
     _ = C (((z : ℂ)^2) ^ d.val 0 * ((z : ℂ)^(-2 : ℤ)) ^ d.val 1) *
       (u ^ d.val 0 * v ^ d.val 1 * w ^ d.val 2) := by rw [map_mul]; ring
     _ = _ := by rw [he]
-private lemma exponent_sum (n : ℕ) (d : HomogeneousExponent n) : d.val 0 + d.val 1 + d.val 2 = n := by
+private lemma exponent_sum   (d : HomogeneousExponent n) : d.val 0 + d.val 1 + d.val 2 = n := by
   have hd : d.val.degree = n := d.property
   simpa only [Finsupp.degree_eq_sum, Fin.sum_univ_three] using hd
 
-theorem homogeneous_torus_trace (n : ℕ) (z : Circle) :
+theorem homogeneous_torus_trace   (z : Circle) :
     (homogeneousRepresentation n).character (TauCeti.SU2.torusHom z) =
       ∑ a ∈ Finset.range (n + 1), ∑ b ∈ Finset.range (n - a + 1),
         (z : ℂ) ^ (2 * ((a : ℤ) - (b : ℤ))) := by
@@ -245,7 +250,7 @@ theorem homogeneous_torus_trace (n : ℕ) (z : Circle) :
     change coefficientAction _ (b d : Polynomial) = _
     change coefficientAction _ (b d : Polynomial) = _ • (b d : Polynomial)
     rw [hb]
-    exact uvw_eigen n z d
+    apply uvw_eigen
   change LinearMap.trace ℂ _ _ = _
   rw [LinearMap.trace_eq_matrix_trace ℂ b]
   simp only [Matrix.trace, Matrix.diag, LinearMap.toMatrix_apply, he, map_smul, Module.Basis.repr_self,
@@ -262,7 +267,7 @@ theorem homogeneous_torus_trace (n : ℕ) (z : Circle) :
   · intro d hd e he hde
     apply Subtype.ext
     have h0 : d.val 0 = e.val 0 := congrArg Sigma.fst hde
-    have h1 : d.val 1 = e.val 1 := by simpa using congrArg (fun x : Σ _ : ℕ, ℕ => x.2) hde
+    have h1 : d.val 1 = e.val 1 := congrArg (fun x : Σ _ : ℕ, ℕ => x.2) hde
     have hs := exponent_sum n d
     have ht := exponent_sum n e
     ext i
@@ -279,6 +284,8 @@ theorem homogeneous_torus_trace (n : ℕ) (z : Circle) :
     rfl
   · intro d hd
     rfl
+end
+
 
 end DedekindZetaZeroFree.HarmonicVendor.HomogeneousRaw
 

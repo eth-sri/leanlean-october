@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.FiniteAbelianSubextension
 public import ClassFieldTheory.LocalClassFieldTheory.Finite.LocalReciprocity.FiniteAbstractFixedField
 public import Mathlib.FieldTheory.Galois.Abelian
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -55,12 +58,7 @@ private theorem algEquiv_commutes_algebraMap_of_base_equiv
   have hbase :
       algebraMap K L (e.symm x) =
         algebraMap K' L x := by
-    calc
-      algebraMap K L (e.symm x) =
-          algebraMap K' L (e (e.symm x)) :=
-        h (e.symm x)
-      _ = algebraMap K' L x :=
-        congrArg (algebraMap K' L) (e.apply_symm_apply x)
+    simp_all
   calc
     f (algebraMap K' L x) =
         f (algebraMap K L (e.symm x)) :=
@@ -86,10 +84,10 @@ theorem IsAbelianGalois.of_base_equiv
     IsAbelianGalois K L := by
   refine
     { is_comm.comm := fun σ τ => ?_ }
-  let σ' : L ≃ₐ[K'] L :=
+  let σ'  :=
     AlgEquiv.ofRingEquiv (f := σ.toRingEquiv)
       (algEquiv_commutes_algebraMap_of_base_equiv e h σ)
-  let τ' : L ≃ₐ[K'] L :=
+  let τ'  :=
     AlgEquiv.ofRingEquiv (f := τ.toRingEquiv)
       (algEquiv_commutes_algebraMap_of_base_equiv e h τ)
   apply AlgEquiv.ext

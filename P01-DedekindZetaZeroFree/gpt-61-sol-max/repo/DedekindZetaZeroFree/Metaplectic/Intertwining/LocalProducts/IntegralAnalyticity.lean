@@ -99,15 +99,13 @@ theorem finite_full_right_coordinate_analytic
 
 variable (P₀ : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
 variable (C₀ : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P₀)
-variable (E : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F))) (hE : C₀.exceptional ⊆ E)
-variable (φfin : ∀ q : E, compactPicture (C₀.canonical q.val).borel (C₀.polarization q.val)
-  (C₀.canonical q.val).iwasawa .plus)
-variable (gfin : ∀ q : E, ActualCover F ζ hζ q.val)
-variable (t : KPGlobalTorusFunctionData.E F ζ hζ)
+variable (E : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F))) 
 
-variable (φarch : {w : NumberField.InfinitePlace F // w.IsComplex} →
-  KPComplexIntertwinerParameterMajorant.CompactPicture)
-variable (garch : {w : NumberField.InfinitePlace F // w.IsComplex} → KPCplxCharacterHaar.ComplexGL2)
+
+
+
+
+
 
 end DedekindZetaZeroFree.KPGlobalResidualKernel.IntertwinerRegularization.FactorizationSources.NormalizedCoordinateAnalyticity.ActualOutputAnalytic
 

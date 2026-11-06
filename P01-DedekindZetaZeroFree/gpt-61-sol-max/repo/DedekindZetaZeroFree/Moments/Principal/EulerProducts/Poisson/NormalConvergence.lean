@@ -18,11 +18,14 @@ variable {F : Type} [Field F] [NumberField F]
 variable {A : SArithmeticData F} {σ : F →+* ℂ}
 variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
-private lemma Q_gt_one (p : ExteriorPrime A) : 1 < Q p := by
+section
+variable (p : ExteriorPrime A)
+include p
+private lemma Q_gt_one   : 1 < Q p := by
   change 1 < (Ideal.absNorm p.val.asIdeal : ℝ)
   exact_mod_cast NumberField.HeightOneSpectrum.one_lt_absNorm p.val
 
-private lemma chi_le (p : ExteriorPrime A) (u : A.R) :
+private lemma chi_le   (u : A.R) :
     ‖chi (σ := σ) p (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) u)‖ ≤ 1 := by
   letI := A.exteriorResidue_finite (primeIdeal p)
   letI := Fintype.ofFinite (A.R ⧸ A.extendIdeal (primeIdeal p))ˣ
@@ -34,31 +37,33 @@ private lemma chi_le (p : ExteriorPrime A) (u : A.R) :
     simpa only [MulChar.coe_equivToUnitHom] using h.le
   · simp [MulChar.map_nonunit _ hu]
 
-private lemma eta_le (p : ExteriorPrime A) : ‖η p.val.asIdeal‖ ≤ 1 := by
+private lemma eta_le   : ‖η p.val.asIdeal‖ ≤ 1 := by
   by_cases h : η p.val.asIdeal = 0
   · simp [h]
   · exact (RayClassBridge.rayClassCharacter_norm_of_ne_zero F
       (primitive12_totallyComplex F A.zeta12 A.primitive_zeta12)
       A.modulus A.modulus_ne_zero η p.val.asIdeal h).le
 
-private lemma qPower_norm (p : ExteriorPrime A) (s : ℂ) :
+private lemma qPower_norm   (s : ℂ) :
     ‖qPower p s‖ = Real.exp (s.re * Real.log (Q p)) := by
   simp [qPower, Complex.norm_exp]
 
-private lemma norm_V' (p : ExteriorPrime A) (z : ℂ) :
+private lemma norm_V'   (z : ℂ) :
     ‖V p z‖ = Real.exp ((-6 * z.re) * Real.log (Q p)) := by
   simp [V, qPower_norm]
 
-private lemma norm_W' (p : ExteriorPrime A) (u : A.R) (w : ℂ) :
+private lemma norm_W'   (u : A.R) (w : ℂ) :
     ‖W (σ := σ) p u w‖ ≤ Real.exp (-w.re * Real.log (Q p)) := by
   simp only [W, norm_mul, qPower_norm, Complex.neg_re]
   exact mul_le_of_le_one_left (Real.exp_pos _).le (chi_le p u)
 
-private lemma norm_D' (p : ExteriorPrime A) (u : A.R) (ξ : ℂ) :
+private lemma norm_D'   (u : A.R) (ξ : ℂ) :
     ‖D (σ := σ) (η := η) p u ξ‖ ≤ Real.exp (-ξ.re * Real.log (Q p)) := by
   simp only [D, norm_mul, norm_star, qPower_norm, Complex.neg_re]
   exact mul_le_of_le_one_left (Real.exp_pos _).le
     (mul_le_one₀ (eta_le p) (norm_nonneg _) (chi_le p u))
+end
+
 
 private lemma norm_E' (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (ξ z : ℂ) :
@@ -76,9 +81,12 @@ private lemma star_region (x : Coordinates) (hx : x ∈ DedekindZetaZeroFree.Qua
   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11⟩ := hx
   refine ⟨by linarith, by linarith, by linarith, by linarith⟩
 
-private lemma norms_lt_one_star (C : A.GeneralArithmeticContext σ η hS)
+section
+variable (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (u : A.R) (x : Coordinates)
-    (hx : x ∈ DedekindZetaZeroFree.Quantitative.EulerDomain.OmegaStar) :
+    (hx : x ∈ DedekindZetaZeroFree.Quantitative.EulerDomain.OmegaStar)
+include C p u x hx
+private lemma norms_lt_one_star   :
     ‖V p x.2.2‖ < 1 ∧ ‖W (σ := σ) p u x.2.1‖ < 1 ∧
     ‖D (σ := σ) (η := η) p u x.1‖ < 1 ∧ ‖E C p x.1 x.2.2‖ < 1 := by
   obtain ⟨hz, hw, hξ, he⟩ := star_region x hx
@@ -92,9 +100,7 @@ private lemma norms_lt_one_star (C : A.GeneralArithmeticContext σ η hS)
   · exact (norm_D' p u _).trans_lt (hexp _ (by linarith))
   · rw [norm_E']; exact hexp _ (by linarith)
 
-private lemma denominators_ne_zero_star (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (u : A.R) (x : Coordinates)
-    (hx : x ∈ DedekindZetaZeroFree.Quantitative.EulerDomain.OmegaStar) :
+private lemma denominators_ne_zero_star   :
     1 - V p x.2.2 ≠ 0 ∧
     1 - W (σ := σ) p u x.2.1 ≠ 0 ∧
     1 - D (σ := σ) (η := η) p u x.1 ≠ 0 ∧
@@ -105,6 +111,8 @@ private lemma denominators_ne_zero_star (C : A.GeneralArithmeticContext σ η hS
     have : a = 1 := (sub_eq_zero.mp heq).symm
     simp [this] at ha
   exact ⟨h _ hv, h _ hw, h _ hd, h _ he⟩
+end
+
 
 set_option maxHeartbeats 1500000 in
 theorem goodFactor_differentiableOn_star

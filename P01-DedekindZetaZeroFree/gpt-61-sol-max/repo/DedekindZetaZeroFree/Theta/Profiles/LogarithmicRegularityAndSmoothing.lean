@@ -13,9 +13,12 @@ open scoped Classical Topology
 variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
-def sheetLogProfile (R : PrincipalMellin.ActualRecipe S η)
+section
+variable (R : PrincipalMellin.ActualRecipe S η)
     {N : TraceHaarTransport R} (C : JointDigitDescentSources R N)
-    (v : R.A.UnitQuotient) (κ : R.A.V) (u : ℝ) : ℂ :=
+    (v : R.A.UnitQuotient) (κ : R.A.V)
+include R N C v κ in
+def sheetLogProfile   (u : ℝ) : ℂ :=
   C.realization.sheet C.packet v κ ⟨Real.exp u, Real.exp_pos u⟩
 
 theorem sheet_log_differentiation (R : PrincipalMellin.ActualRecipe S η)
@@ -105,13 +108,12 @@ theorem sheet_log_jet_power_bounds (R : PrincipalMellin.ActualRecipe S η)
     exact (norm_integral_le_integral_norm _).trans (by
       simpa only [K, dif_pos hσ] using (hp σ hσ).choose_spec.2 v κ j hj u)
 
-def sheetPositiveExtension (R : PrincipalMellin.ActualRecipe S η)
-    {N : TraceHaarTransport R} (C : JointDigitDescentSources R N)
-    (v : R.A.UnitQuotient) (κ : R.A.V) (x : ℝ) : ℂ :=
+include R N C v κ in
+def sheetPositiveExtension   (x : ℝ) : ℂ :=
   if hx : 0 < x then C.realization.sheet C.packet v κ ⟨x, hx⟩ else 0
 
-private theorem sheet_positive_extension_log_profile (R : PrincipalMellin.ActualRecipe S η)
-    {N : TraceHaarTransport R} (C : JointDigitDescentSources R N) (v : R.A.UnitQuotient) (κ : R.A.V) :
+include R N C v κ in
+private theorem sheet_positive_extension_log_profile   :
     logProfile (sheetPositiveExtension R C v κ) = sheetLogProfile R C v κ := by
   funext u
   simp [logProfile, sheetPositiveExtension, sheetLogProfile, Real.exp_pos]
@@ -150,8 +152,8 @@ theorem gaussian_kernel_measurable_and_absolute_moments (R : PrincipalMellin.Act
   simp [Packet.kernel, ENNReal.toReal_ofReal (inv_nonneg.mpr hT.le),
     smul_eq_mul, div_eq_mul_inv, mul_comm, mul_left_comm]
 
-private theorem smoothed_sheet_log_eq_log_convolution (R : PrincipalMellin.ActualRecipe S η)
-    {N : TraceHaarTransport R} (C : JointDigitDescentSources R N) (v : R.A.UnitQuotient) (κ : R.A.V) :
+include R N C v κ in
+private theorem smoothed_sheet_log_eq_log_convolution   :
     logProfile (C.realization.H C.packet v κ) =
       logProfile (logConvolution C.packet.kernel (sheetPositiveExtension R C v κ)) := by
   funext u
@@ -160,6 +162,8 @@ private theorem smoothed_sheet_log_eq_log_convolution (R : PrincipalMellin.Actua
   apply integral_congr_ae
   filter_upwards with t
   simp only [sheetPositiveExtension, dif_pos (div_pos (Real.exp_pos u) t.property)]
+end
+
 
 theorem smoothed_sheet_log_calculus (R : PrincipalMellin.ActualRecipe S η)
     (N : TraceHaarTransport R) (C : JointDigitDescentSources R N) :

@@ -135,14 +135,17 @@ open scoped Matrix.Norms.Elementwise in
     rw [dif_pos (show m.det ≠ 0 from hm)]
     exact raw_derivative_eq s f (Matrix.GeneralLinearGroup.mkOfDetNeZero m hm) M
 
- def rightDerivative (s : ℝ) (X : Matrix (Fin 2) (Fin 2) ℂ)
+ section
+variable (s : ℝ) (X : Matrix (Fin 2) (Fin 2) ℂ)
+include s X
+def rightDerivative  
     (f : KPCplxPrincipalSeriesCharts.PrincipalSeries s) :
     KPCplxPrincipalSeriesCharts.PrincipalSeries s :=
   ⟨fun g => deriv (fun t : ℝ =>
       f (g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • X))) 0,
     local_derivative_mem s X f⟩
 
-private theorem rightDerivative_add (s : ℝ) (X : Matrix (Fin 2) (Fin 2) ℂ)
+private theorem rightDerivative_add  
     (f h : KPCplxPrincipalSeriesCharts.PrincipalSeries s) :
     rightDerivative s X (f + h) = rightDerivative s X f + rightDerivative s X h := by
   apply Subtype.ext
@@ -161,7 +164,7 @@ private theorem rightDerivative_add (s : ℝ) (X : Matrix (Fin 2) (Fin 2) ℂ)
   rw [hfh]
   exact deriv_add (local_path_differentiable s f g X) (local_path_differentiable s h g X)
 
-private theorem rightDerivative_smul (s : ℝ) (X : Matrix (Fin 2) (Fin 2) ℂ) (a : ℂ)
+private theorem rightDerivative_smul   (a : ℂ)
     (f : KPCplxPrincipalSeriesCharts.PrincipalSeries s) :
     rightDerivative s X (a • f) = a • rightDerivative s X f := by
   apply Subtype.ext
@@ -177,7 +180,7 @@ private theorem rightDerivative_smul (s : ℝ) (X : Matrix (Fin 2) (Fin 2) ℂ) 
   rw [hsf]
   exact deriv_const_smul a (local_path_differentiable s f g X)
 
-theorem right_derivative_linear_exists (s : ℝ) (X : Matrix (Fin 2) (Fin 2) ℂ) :
+theorem right_derivative_linear_exists   :
     ∃ D : KPCplxPrincipalSeriesCharts.PrincipalSeries s →ₗ[ℂ]
         KPCplxPrincipalSeriesCharts.PrincipalSeries s,
       ∀ f g, D f g = deriv (fun t : ℝ =>
@@ -189,16 +192,16 @@ theorem right_derivative_linear_exists (s : ℝ) (X : Matrix (Fin 2) (Fin 2) ℂ
       map_smul' := rightDerivative_smul s X }
   exact ⟨D, fun f g => rfl⟩
 
-def rightDerivativeLinear (s : ℝ) (X : Matrix (Fin 2) (Fin 2) ℂ) :=
+def rightDerivativeLinear   :=
   (right_derivative_linear_exists s X).choose
 
-theorem rightDerivativeLinear_apply (s : ℝ) (X : Matrix (Fin 2) (Fin 2) ℂ)
+theorem rightDerivativeLinear_apply  
     (f : KPCplxPrincipalSeriesCharts.PrincipalSeries s) (g) :
     rightDerivativeLinear s X f g = deriv (fun t : ℝ =>
       f (g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • X))) 0 :=
   (right_derivative_linear_exists s X).choose_spec f g
 
-theorem right_derivative_mem (s : ℝ) (X : Matrix (Fin 2) (Fin 2) ℂ)
+theorem right_derivative_mem  
     (f : KPCplxPrincipalSeriesCharts.PrincipalSeries s) :
     (fun g => deriv (fun t : ℝ =>
       f (g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • X))) 0) ∈
@@ -210,6 +213,8 @@ theorem right_derivative_mem (s : ℝ) (X : Matrix (Fin 2) (Fin 2) ℂ)
     exact (rightDerivativeLinear_apply s X f g).symm
   rw [he]
   exact (rightDerivativeLinear s X f).property
+end
+
 
 def localDerivative (s : ℝ) (b : LocalBasis)
     (f : KPCplxPrincipalSeriesCharts.PrincipalSeries s) :

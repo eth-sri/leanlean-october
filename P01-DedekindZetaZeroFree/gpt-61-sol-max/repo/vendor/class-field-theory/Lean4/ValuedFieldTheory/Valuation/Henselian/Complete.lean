@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Valuation.Henselian.Factorization.Complete
 public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.NormFormulaExtension
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -31,13 +34,16 @@ noncomputable section
 namespace AlgebraicNumberTheory
 namespace Valuations
 
+section
+variable {K : Type*} [Field K]
+    (v : AbsoluteValue K ℝ)
+    (hcomplete : IsCompleteForAbsoluteValue v)
+    (hnonarch : LubinTate.Valuations.NonarchimedeanAbsoluteValue v)
+include K v hcomplete hnonarch
 /-- A complete nonarchimedean absolute value satisfies the factorization
 form of Hensel's lemma from the primitive factorization definition. -/
 theorem henselFactorization_of_complete
-    {K : Type*} [Field K]
-    (v : AbsoluteValue K ℝ)
-    (hcomplete : IsCompleteForAbsoluteValue v)
-    (hnonarch : LubinTate.Valuations.NonarchimedeanAbsoluteValue v) :
+      :
     ValuationTheory.DiscreteValuationField.HenselFactorizationProperty
       (absoluteValueValuationSubring v hnonarch) := by
   intro f gbar hbar hprimitive hfactor hcoprime
@@ -68,15 +74,14 @@ theorem henselFactorization_of_complete
 /-- A complete nonarchimedean absolute value is Henselian in the exact sense
 of the primitive factorization definition. -/
 theorem henselianValuation_of_complete
-    {K : Type*} [Field K]
-    (v : AbsoluteValue K ℝ)
-    (hcomplete : IsCompleteForAbsoluteValue v)
-    (hnonarch : LubinTate.Valuations.NonarchimedeanAbsoluteValue v) :
+      :
     ValuationTheory.DiscreteValuationField.HenselianValuationByFactorization
       (absoluteValueValuationSubring
         v hnonarch).valuation := by
   rw [henselianValuation_iff_henselFactorization v hnonarch]
-  exact henselFactorization_of_complete v hcomplete hnonarch
+  apply henselFactorization_of_complete <;> assumption
+end
+
 
 end Valuations
 end AlgebraicNumberTheory

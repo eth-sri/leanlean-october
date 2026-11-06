@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Valuation.Henselian.AlgebraicIntegralClosure
 public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.UniqueValuationSubring
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -38,7 +41,7 @@ theorem valuationSubring_eq_integralClosure_of_henselianRing
       z ∈ (integralClosure V.valuation.valuationSubring L).toSubring ∨
       z⁻¹ ∈ (integralClosure V.valuation.valuationSubring L).toSubring := by
     rw [ValuationSubring.valuationSubring_valuation]
-    exact integralClosure_mem_or_inv_of_henselianRing (L := L) V
+    apply integralClosure_mem_or_inv_of_henselianRing
   have h := congrArg ValuationSubring.toSubring
     (_root_.DiscreteValuationField.Valuation.normFormula_extension_valuationSubring_eq_integralClosure_of_mem_or_inv
       V hval w)

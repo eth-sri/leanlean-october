@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.EllipticEquations.HolomorphicFamilies.SolutionJetContinuity
 public import DedekindZetaZeroFree.Geometry.Orbifolds.EllipticRegularity.EquivariantLineCharts
 
 @[expose] public section
+
 
 noncomputable section
 namespace DedekindZetaZeroFree.KPContSmoothPromotion.LocalSolutionEstimates.LocalFamily
@@ -11,14 +14,16 @@ open MeasureTheory KPContLocalNorm KPContLocalOrbifold
 open KPContLocalEnergy
 open KPContLocalHolomorphyUpgrade.CauchyAssembly
 
-private lemma pair_integrable {n : ℕ} {B : LocalBall n}
+section
+variable {n : ℕ} {B : LocalBall n}
     {a : Space n → ℂ} (ha : ContDiffOn ℝ (⊤ : ℕ∞) a B.carrier)
+include n B a ha
+private lemma pair_integrable  
     (q : BallL2 B) (φ : TestFunction B.toOpens ℂ ⊤) :
     Integrable (fun x => a x * q x * star (φ x)) (volume.restrict B.carrier) :=
   WeakJets.Raw.jet_localTest_integrable ha (WeakJets.Raw.conjugateTest φ) q
 
-private lemma pair_sub {n : ℕ} {B : LocalBall n}
-    {a : Space n → ℂ} (ha : ContDiffOn ℝ (⊤ : ℕ∞) a B.carrier)
+private lemma pair_sub  
     (q r : BallL2 B) (φ : TestFunction B.toOpens ℂ ⊤) :
     (∫ x in B.carrier, a x * (q-r) x * star (φ x)) =
       (∫ x in B.carrier, a x * q x * star (φ x)) -
@@ -27,6 +32,8 @@ private lemma pair_sub {n : ℕ} {B : LocalBall n}
   apply integral_congr_ae
   filter_upwards [Lp.coeFn_sub q r] with x hx
   simp only [hx, Pi.sub_apply, mul_sub, sub_mul]
+end
+
 
 private lemma difference_equation {n k : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
     (D : Coefficients B cρ Cρ κ Λ) (a₁ a₀ : ℂ)
@@ -49,8 +56,7 @@ private lemma difference_equation {n k : ℕ} {B : LocalBall n} {cρ Cρ κ Λ :
     have hterm (i j : Fin n) : Integrable (fun x =>
         (D.density x : ℂ) * (D.matrix x i j : ℂ) * gradient u j x *
           star (coordinateDerivativeList [i] (fun y => φ y) x))
-        (volume.restrict B.carrier) := by
-      exact pair_integrable (hρa i j) (gradient u j)
+        (volume.restrict B.carrier) := pair_integrable (hρa i j) (gradient u j)
         (WeakJets.Raw.coordinateDerivativeTest (firstIndex i) φ) |>.congr
         (Filter.Eventually.of_forall (fun x => by
           change (D.density x : ℂ) * (D.matrix x i j : ℂ) * gradient u j x *
@@ -69,7 +75,7 @@ private lemma difference_equation {n k : ℕ} {B : LocalBall n} {cρ Cρ κ Λ :
         gradient (subtractSobolev u₁ u₀) j x = gradient u₁ j x - gradient u₀ j x := by
       apply ae_all_iff.mpr
       intro j
-      exact Lp.coeFn_sub (gradient u₁ j) (gradient u₀ j)
+      apply Lp.coeFn_sub
     filter_upwards [hs] with x hx
     simp only [E, hx, mul_sub, sub_mul, Finset.sum_sub_distrib]
   have hv : value (subtractSobolev u₁ u₀) = value u₁ - value u₀ := rfl
@@ -178,7 +184,7 @@ theorem chart_solution_difference_jet_estimate {n : ℕ} (D : LineChart n)
     change value w y = _ at hwy ⊢
     change value v₁ y = value u₁ y at hv₁y
     rw [hwy, hq₁y, hq₀y, hv₁y, hu₁y]
-  have heq : WeakEquation DC a₀ (subtractSobolev v₁ v₀) (value w) :=
+  have heq  :=
     difference_equation DC a₁ a₀ v₁ v₀ q₁ q₀ heq₁ heq₀ w hw'
   obtain ⟨v, hv, hb⟩ := he a₀ le_rfl (subtractSobolev v₁ v₀) w heq
   have hnorm : ‖value (subtractSobolev v₁ v₀)‖ ≤ ‖value u₁ - value u₀‖ := by
@@ -222,7 +228,7 @@ theorem chart_solution_difference_jet_estimate {n : ℕ} (D : LineChart n)
   obtain ⟨v', hv', hb'⟩ := hex
   let β : MultiIndex n (m+2) :=
     ⟨fun i => (α.val i).castLE (by omega),
-      by simpa using α.property.trans (by omega : m ≤ m+2)⟩
+      α.property.trans (by omega : m ≤ m+2)⟩
   have hder : coordinateDerivative β (fun y => f₁ y-f₀ y) =
       coordinateDerivative α (fun y => f₁ y-f₀ y) := rfl
   rw [← hder]

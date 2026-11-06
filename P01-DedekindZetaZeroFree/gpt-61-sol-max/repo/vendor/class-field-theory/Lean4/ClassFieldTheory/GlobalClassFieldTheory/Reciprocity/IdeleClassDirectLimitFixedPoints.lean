@@ -28,17 +28,20 @@ noncomputable section
 namespace GlobalClassFieldTheory
 namespace Reciprocity
 
-/-- Scalar extension of a rational relative adele is fixed by every
-absolute Galois element fixing the source field. -/
-theorem
-    rationalRelativeAdeleEmbedding_fixed_of_mem_fixingSubgroup
-    {K : IntermediateField ℚ (SeparableClosure ℚ)}
+section
+variable {K : IntermediateField ℚ (SeparableClosure ℚ)}
     [FiniteDimensional ℚ K]
     {N : FiniteGaloisIntermediateField ℚ (SeparableClosure ℚ)}
     (hKN : K ≤ (N :
       IntermediateField ℚ (SeparableClosure ℚ)))
     (σ : SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)
     (hσ : σ ∈ K.fixingSubgroup)
+include K N hKN σ hσ
+/-- Scalar extension of a rational relative adele is fixed by every
+absolute Galois element fixing the source field. -/
+theorem
+    rationalRelativeAdeleEmbedding_fixed_of_mem_fixingSubgroup
+     
     (z : RelativeAdeleRing ℚ K) :
     RelativeIdeleGroup.conjugation ℚ N
         (AlgEquiv.restrictNormalHom N σ)
@@ -74,13 +77,7 @@ theorem
 absolute Galois element fixing the source field. -/
 theorem
     rationalRelativeIdeleClassEmbedding_fixed_of_mem_fixingSubgroup
-    {K : IntermediateField ℚ (SeparableClosure ℚ)}
-    [FiniteDimensional ℚ K]
-    {N : FiniteGaloisIntermediateField ℚ (SeparableClosure ℚ)}
-    (hKN : K ≤ (N :
-      IntermediateField ℚ (SeparableClosure ℚ)))
-    (σ : SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)
-    (hσ : σ ∈ K.fixingSubgroup)
+     
     (c : RelativeIdeleGroup.ClassGroup ℚ K) :
     σ • RelativeIdeleGroup.classEmbedding (K := ℚ) (L := K) (M := N)
         (IntermediateField.inclusion hKN) c =
@@ -105,78 +102,80 @@ theorem
   exact
     rationalRelativeAdeleEmbedding_fixed_of_mem_fixingSubgroup
       hKN σ hσ (a : RelativeAdeleRing ℚ K)
+end
 
-/-- The map from an intermediate idele class group to the direct limit
-intertwines compatible finite and absolute Galois actions. -/
-theorem rationalIntermediateIdeleClassToDirectLimit_conjugation
-    (E : IntermediateField ℚ (SeparableClosure ℚ))
-    [FiniteDimensional ℚ E]
-    (σ : SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)
-    (τ : E ≃ₐ[ℚ] E)
-    (hστ : ∀ x : E,
-      ((τ x : E) : SeparableClosure ℚ) =
-        σ (x : SeparableClosure ℚ))
-    (c : RelativeIdeleGroup.ClassGroup ℚ E) :
-    σ • rationalIntermediateIdeleClassToDirectLimit E
-        (_root_.relativeIdeleClassBaseChangeMulEquiv
-          (K := ℚ) (L := E) c) =
-      rationalIntermediateIdeleClassToDirectLimit E
-        (_root_.relativeIdeleClassBaseChangeMulEquiv
-          (K := ℚ) (L := E) (τ • c)) := by
-  let N : FiniteGaloisIntermediateField ℚ (SeparableClosure ℚ) :=
-    rationalNormalClosure E
-  let hEN : E ≤ (N : IntermediateField ℚ (SeparableClosure ℚ)) :=
-    IntermediateField.le_normalClosure E
-  let : SMul
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)
-      (RelativeIdeleGroup.ClassGroup ℚ N) :=
-    (rationalAbsoluteGaloisIdeleClassAction
-      N).toSMul
-  have hconjugation :
-      σ • RelativeIdeleGroup.classEmbedding (K := ℚ) (L := E) (M := N)
-          (IntermediateField.inclusion hEN) c =
-        RelativeIdeleGroup.classEmbedding (K := ℚ) (L := E) (M := N)
-          (IntermediateField.inclusion hEN)
-          (τ • c) :=
-    (rationalRelativeIdeleClassEmbedding_conjugation_of_restrict
-      hEN σ τ hστ c).symm
-  have hlimit_smul
-      (d : RelativeIdeleGroup.ClassGroup ℚ N) :
-      σ • rationalRelativeIdeleClassToDirectLimit N d =
-        rationalRelativeIdeleClassToDirectLimit N
-          (σ • d) := by
-    exact DirectLimit.smul_def _ _ _
-  calc
-    σ • rationalIntermediateIdeleClassToDirectLimit E
-        (_root_.relativeIdeleClassBaseChangeMulEquiv
-          (K := ℚ) (L := E) c) =
-      σ • rationalRelativeIdeleClassToDirectLimit N
-        (RelativeIdeleGroup.classEmbedding (K := ℚ) (L := E) (M := N)
-          (IntermediateField.inclusion hEN) c) := by
-        convert congrArg (fun z => σ • z)
-          (rationalIntermediateIdeleClassToDirectLimit_baseChange E c) using 1
-        simp only [N, rationalNormalClosure]
-        congr 4
-    _ = rationalRelativeIdeleClassToDirectLimit N
-        (σ • RelativeIdeleGroup.classEmbedding (K := ℚ) (L := E) (M := N)
-          (IntermediateField.inclusion hEN) c) :=
-      hlimit_smul _
-    _ = rationalRelativeIdeleClassToDirectLimit N
-        (RelativeIdeleGroup.classEmbedding (K := ℚ) (L := E) (M := N)
-          (IntermediateField.inclusion hEN)
-          (τ • c)) :=
-      congrArg
-        (rationalRelativeIdeleClassToDirectLimit N)
-        hconjugation
-    _ = rationalIntermediateIdeleClassToDirectLimit E
-        (_root_.relativeIdeleClassBaseChangeMulEquiv
-          (K := ℚ) (L := E) (τ • c)) :=
-      by
-        convert
-          (rationalIntermediateIdeleClassToDirectLimit_baseChange E (τ • c)).symm
-            using 1
-        simp only [N, rationalNormalClosure]
-        congr 4
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The canonical direct-limit realization of idèle classes is natural
 under an equivalence between two finite rational intermediate fields
@@ -384,11 +383,14 @@ theorem rationalIntermediateIdeleClassToDirectLimit_ambientAlgEquiv
         (ideleClassCongr e c) :=
       hF.symm
 
+section
+variable (K : IntermediateField ℚ (SeparableClosure ℚ))
+    [FiniteDimensional ℚ K]
+include K
 /-- The image in the direct limit of an idele class over `K` is fixed by
 the absolute Galois subgroup fixing `K`. -/
 theorem rationalIntermediateIdeleClassToDirectLimit_fixed
-    (K : IntermediateField ℚ (SeparableClosure ℚ))
-    [FiniteDimensional ℚ K]
+     
     (c : IdeleClassGroup K)
     (σ : SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)
     (hσ : σ ∈ K.fixingSubgroup) :
@@ -464,8 +466,7 @@ theorem rationalIntermediateIdeleClassToDirectLimit_fixed
 /-- Additive idele classes map into the fixed subgroup of the rational
 idele-class representation. -/
 theorem rationalIntermediateIdeleClassToDirectLimit_mem_fixed
-    (K : IntermediateField ℚ (SeparableClosure ℚ))
-    [FiniteDimensional ℚ K]
+     
     (c : Additive (IdeleClassGroup K)) :
     MonoidHom.toAdditive
         (rationalIntermediateIdeleClassToDirectLimit K) c ∈
@@ -498,8 +499,7 @@ theorem rationalIntermediateIdeleClassToDirectLimit_mem_fixed
 /-- The canonical additive homomorphism from the idele class group of a
 finite rational intermediate field to the corresponding fixed subgroup. -/
 noncomputable def rationalIntermediateIdeleClassToFixed
-    (K : IntermediateField ℚ (SeparableClosure ℚ))
-    [FiniteDimensional ℚ K] :
+      :
     Additive (IdeleClassGroup K) →+
       KummerTheory.ambientFixedAddSubgroup
         rationalIdeleClassRepresentation
@@ -516,8 +516,7 @@ noncomputable def rationalIntermediateIdeleClassToFixed
 /-- The canonical map from a finite rational idele class group to the
 corresponding fixed subgroup is injective. -/
 theorem rationalIntermediateIdeleClassToFixed_injective
-    (K : IntermediateField ℚ (SeparableClosure ℚ))
-    [FiniteDimensional ℚ K] :
+      :
     Function.Injective
       (rationalIntermediateIdeleClassToFixed K) := by
   intro a b hab
@@ -557,8 +556,7 @@ theorem rationalIntermediateIdeleClassToFixed_injective
 /-- The canonical map from a finite rational idele class group to the
 corresponding fixed subgroup is surjective. -/
 theorem rationalIntermediateIdeleClassToFixed_surjective
-    (K : IntermediateField ℚ (SeparableClosure ℚ))
-    [FiniteDimensional ℚ K] :
+      :
     Function.Surjective
       (rationalIntermediateIdeleClassToFixed K) := by
   intro x
@@ -591,8 +589,7 @@ theorem rationalIntermediateIdeleClassToFixed_surjective
 absolute Galois group over a finite rational intermediate field is
 exactly that field's actual idele class group. -/
 noncomputable def rationalIdeleClassEquivFixed
-    (K : IntermediateField ℚ (SeparableClosure ℚ))
-    [FiniteDimensional ℚ K] :
+      :
     Additive (IdeleClassGroup K) ≃+
       KummerTheory.ambientFixedAddSubgroup
         rationalIdeleClassRepresentation
@@ -602,6 +599,8 @@ noncomputable def rationalIdeleClassEquivFixed
     (rationalIntermediateIdeleClassToFixed K)
     ⟨rationalIntermediateIdeleClassToFixed_injective K,
       rationalIntermediateIdeleClassToFixed_surjective K⟩
+end
+
 
 end Reciprocity
 end GlobalClassFieldTheory

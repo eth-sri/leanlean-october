@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Valuation.DiscreteValuationField.ChevalleyExtension
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -55,7 +58,7 @@ theorem normFormula_extension_valuationSubring_eq_integralClosure_of_mem_or_inv
     wL.valuationSubring =
       integralClosureValuationSubringOfMemOrInv
         (L := L) V.valuation hval := by
-  let B : ValuationSubring L :=
+  let B  :=
     integralClosureValuationSubringOfMemOrInv
       (L := L) V.valuation hval
   change wL.valuationSubring = B
@@ -74,10 +77,10 @@ theorem normFormula_extension_valuationSubring_eq_integralClosure_of_mem_or_inv
       map_one' := by ext; simp
       map_add' := by intro a b; ext; simp
       map_mul' := by intro a b; ext; simp }
-  let : Algebra V.valuation.valuationSubring B := i.toAlgebra
+  let  := i.toAlgebra
   let : IsScalarTower V.valuation.valuationSubring B L :=
     IsScalarTower.of_algebraMap_eq fun _ => rfl
-  let P : Ideal B :=
+  let P  :=
     ValuationSubring.idealOfLE B wL.valuationSubring hBW
   have hPcomap :
       P.comap i =
@@ -92,23 +95,17 @@ theorem normFormula_extension_valuationSubring_eq_integralClosure_of_mem_or_inv
     rw [Valuation.mem_maximalIdeal_iff (v := wL)]
     rw [Valuation.mem_maximalIdeal_iff (v := V.valuation)]
     have hcoe :
-        ((B.inclusion wL.valuationSubring hBW (i a) :
-          wL.valuationSubring) : L) = algebraMap K L (a : K) := by
-      rfl
+        ((B.inclusion wL.valuationSubring hBW (i a)) : L) = algebraMap K L (a : K) := rfl
     rw [hcoe]
-    exact
-      _root_.Valuation.HasExtension.val_map_lt_one_iff
-        V.valuation wL (a : K)
+    apply _root_.Valuation.HasExtension.val_map_lt_one_iff
   have hBClosure :
       IsIntegralClosure B V.valuation.valuationSubring L := by
-    simpa [B] using
-      (integralClosureValuationSubringOfMemOrInv_isIntegralClosure
-        (L := L) V.valuation hval)
-  let : IsIntegralClosure B V.valuation.valuationSubring L := hBClosure
+    apply integralClosureValuationSubringOfMemOrInv_isIntegralClosure
+  let  := hBClosure
   have hBIntegral :
       Algebra.IsIntegral V.valuation.valuationSubring B :=
     IsIntegralClosure.isIntegral_algebra V.valuation.valuationSubring L
-  let : Algebra.IsIntegral V.valuation.valuationSubring B := hBIntegral
+  let  := hBIntegral
   have hPmax : P.IsMaximal := by
     have hcomapMax :
         (P.comap (algebraMap V.valuation.valuationSubring B)).IsMaximal := by
@@ -123,9 +120,7 @@ theorem normFormula_extension_valuationSubring_eq_integralClosure_of_mem_or_inv
       ValuationSubring.idealOfLE B wL.valuationSubring hBW =
         IsLocalRing.maximalIdeal B :=
     IsLocalRing.eq_maximalIdeal hPmax
-  exact
-    valuationSubring_eq_of_le_of_idealOfLE_eq_maximalIdeal
-      B wL.valuationSubring hBW hP
+  apply valuationSubring_eq_of_le_of_idealOfLE_eq_maximalIdeal <;> assumption
 
 end Valuation
 end DiscreteValuationField

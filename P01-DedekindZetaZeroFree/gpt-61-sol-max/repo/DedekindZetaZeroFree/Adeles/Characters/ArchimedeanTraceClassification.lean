@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Adeles.Characters.ArchimedeanAdditiveCharacters
 public import DedekindZetaZeroFree.Adeles.Lattices.FractionalIdealTraceDual
 
 @[expose] public section
+
 
 noncomputable section
 open scoped Classical InnerProductSpace
@@ -33,8 +36,7 @@ theorem character_parameter_mem_inverseDifferent
   have hydual : y ∈ PoissonArch.idealTraceDual F J := by
     intro a ha
     have hexp : Circle.exp (2 * Real.pi * PoissonArch.tracePairing F
-        (PoissonArch.minkowskiEmbedding F a) y) = 1 := by
-      exact (hy (embedding F a)).symm.trans (hIχ a ha)
+        (PoissonArch.minkowskiEmbedding F a) y) = 1 := (hy (embedding F a)).symm.trans (hIχ a ha)
     obtain ⟨n, hn⟩ := Circle.exp_eq_one.mp hexp
     refine ⟨n, ?_⟩
     have hpi : 2 * Real.pi ≠ 0 := by positivity
@@ -58,7 +60,7 @@ private theorem infiniteToSpace_eq (x : InfiniteAdeleRing F) :
   rw [PoissonArch.infiniteAdeleToSpace_coordinates]
   exact (NumberField.mixedEmbedding.euclidean.toMixed F).apply_symm_apply _
 
-def infiniteTracePairing (x y : InfiniteAdeleRing F) : ℝ :=
+def infiniteTracePairing (x y : InfiniteAdeleRing F)  :=
   PoissonArch.tracePairing F (infiniteToSpace F x) (infiniteToSpace F y)
 
 theorem infinite_character_classification

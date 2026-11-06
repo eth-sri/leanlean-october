@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.PrincipalUnitPadicAction.InverseLimitCore
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.PrincipalUnitPadicAction.TopologyModelTypes
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -46,18 +49,15 @@ def Internal.principalUnitQuotientCarrierTransitionAdd
         (principalUnitQuotientCarrierTransition F hmn 1) = Additive.ofMul 1
     rw [map_one]
   map_add' x y := by
-    change Additive.ofMul
-        (principalUnitQuotientCarrierTransition F hmn
-          (Additive.toMul x * Additive.toMul y)) =
-      Additive.ofMul
-        (principalUnitQuotientCarrierTransition F hmn (Additive.toMul x) *
-          principalUnitQuotientCarrierTransition F hmn (Additive.toMul y))
-    rw [map_mul]
+    simp_all
 
 namespace DiscretePrincipalUnitQuotient
 
+section
+variable (F : CompleteDVF.{u, v} K) {m n : ℕ} (hmn : m ≤ n)
+include F m n hmn
 /-- Reduction between two wrapped discrete quotient coordinates. -/
-def transition (F : CompleteDVF.{u, v} K) {m n : ℕ} (hmn : m ≤ n) :
+def transition   :
     DiscretePrincipalUnitQuotient F n →+
       DiscretePrincipalUnitQuotient F m where
   toFun x := of F m
@@ -76,11 +76,13 @@ def transition (F : CompleteDVF.{u, v} K) {m n : ℕ} (hmn : m ≤ n) :
 
 /-- The wrapped transition has the original additive transition as its value. -/
 @[simp] theorem val_transition
-    (F : CompleteDVF.{u, v} K) {m n : ℕ} (hmn : m ≤ n)
+     
     (x : DiscretePrincipalUnitQuotient F n) :
     (transition F hmn x).val =
       Internal.principalUnitQuotientCarrierTransitionAdd F hmn x.val :=
   rfl
+end
+
 
 end DiscretePrincipalUnitQuotient
 

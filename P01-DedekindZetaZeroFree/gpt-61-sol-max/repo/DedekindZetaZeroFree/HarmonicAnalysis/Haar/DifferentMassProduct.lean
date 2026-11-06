@@ -1,38 +1,43 @@
 module
 
+public import Mathlib
+
 public import Mathlib.NumberTheory.NumberField.Discriminant.Different
 public import Mathlib.NumberTheory.NumberField.Completion.FinitePlace
 public import Mathlib.Analysis.SpecialFunctions.Sqrt
 
 @[expose] public section
 
+
 namespace DedekindZetaZeroFree.DifferentMass
 
 noncomputable section
 
-def exponent (F : Type*) [Field F] [NumberField F]
-    (v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F)) : ℕ :=
+section
+variable (F : Type*) [Field F] [NumberField F]
+include F
+def exponent  
+    (v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F))  :=
   multiplicity v.asIdeal (differentIdeal ℤ (NumberField.RingOfIntegers F))
 
-def halfNormMass (F : Type*) [Field F] [NumberField F]
-    (v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F)) : ℝ :=
+def halfNormMass  
+    (v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F))  :=
   1 / Real.sqrt ((Ideal.absNorm v.asIdeal : ℝ) ^ exponent F v)
 
-theorem differentIdeal_ne_bot (F : Type*) [Field F] [NumberField F] :
-    differentIdeal ℤ (NumberField.RingOfIntegers F) ≠ ⊥ := by
-  exact _root_.differentIdeal_ne_bot
+theorem differentIdeal_ne_bot   :
+    differentIdeal ℤ (NumberField.RingOfIntegers F) ≠ ⊥ := _root_.differentIdeal_ne_bot
 
-theorem one_lt_absNorm (F : Type*) [Field F] [NumberField F]
-    (v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F)) :
-    1 < Ideal.absNorm v.asIdeal := by
-  exact NumberField.RingOfIntegers.HeightOneSpectrum.one_lt_absNorm v
+def one_lt_absNorm  
+    (v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F))  := NumberField.RingOfIntegers.HeightOneSpectrum.one_lt_absNorm v
 
-theorem exponent_finite_support (F : Type*) [Field F] [NumberField F] :
+theorem exponent_finite_support   :
     Set.Finite {v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F) |
       exponent F v ≠ 0} := by
   refine (Ideal.finite_factors (differentIdeal_ne_bot F)).subset ?_
   intro v hv
   exact dvd_of_multiplicity_pos (Nat.pos_of_ne_zero hv)
+end
+
 
 end
 
@@ -44,19 +49,21 @@ namespace DedekindZetaZeroFree.DifferentMass
 
 noncomputable section
 
-theorem halfNormMass_eq_one (F : Type*) [Field F] [NumberField F]
+section
+variable (F : Type*) [Field F] [NumberField F]
+include F
+theorem halfNormMass_eq_one  
     (v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F))
     (hv : exponent F v = 0) : halfNormMass F v = 1 := by
   simp [halfNormMass, hv]
 
-theorem finprod_halfNormMass_eq_natAbs_discr (F : Type*) [Field F] [NumberField F] :
+theorem finprod_halfNormMass_eq_natAbs_discr   :
     (∏ᶠ v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F),
       halfNormMass F v) = 1 / Real.sqrt ((NumberField.discr F).natAbs : ℝ) := by
   classical
   let s := (exponent_finite_support F).toFinset
   have hs (v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F))
-      (hv : exponent F v ≠ 0) : v ∈ s := by
-    exact (exponent_finite_support F).mem_toFinset.mpr hv
+      (hv : exponent F v ≠ 0) : v ∈ s := (exponent_finite_support F).mem_toFinset.mpr hv
   have hfactor : (∏ v ∈ s, v.asIdeal ^ exponent F v) =
       differentIdeal ℤ (NumberField.RingOfIntegers F) := by
     rw [← Ideal.finprod_heightOneSpectrum_pow_multiplicity (differentIdeal_ne_bot F)]
@@ -77,12 +84,14 @@ theorem finprod_halfNormMass_eq_natAbs_discr (F : Type*) [Field F] [NumberField 
   simp only [halfNormMass, Finset.prod_div_distrib, Finset.prod_const_one]
   rw [← Real.sqrt_prod s (fun v _ => pow_nonneg (Nat.cast_nonneg _) _), hnorm]
 
-theorem finprod_halfNormMass_eq_abs_discr (F : Type*) [Field F] [NumberField F] :
+theorem finprod_halfNormMass_eq_abs_discr   :
     (∏ᶠ v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F),
       halfNormMass F v) = 1 / Real.sqrt |(NumberField.discr F : ℝ)| := by
   rw [finprod_halfNormMass_eq_natAbs_discr]
   congr 2
   rw [← Int.cast_natCast, Int.natCast_natAbs, Int.cast_abs]
+end
+
 
 end
 

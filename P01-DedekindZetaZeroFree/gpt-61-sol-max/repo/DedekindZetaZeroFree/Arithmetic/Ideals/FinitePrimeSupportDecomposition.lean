@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 
 @[expose] public section
+
 
 noncomputable section
 open scoped NumberField Classical
@@ -11,18 +14,18 @@ namespace DedekindZetaZeroFree.LargeSieve.Bilinear
 
 variable {F : Type} [Field F] [NumberField F]
 
-def badPrimes (q : Ideal (𝓞 F)) : Finset (Ideal (𝓞 F)) :=
+def badPrimes (q : Ideal (𝓞 F))  :=
   (UniqueFactorizationMonoid.normalizedFactors q).toFinset
 
-def badPart (q I : Ideal (𝓞 F)) : Ideal (𝓞 F) :=
+def badPart (q I : Ideal (𝓞 F))  :=
   ((UniqueFactorizationMonoid.normalizedFactors I).filter
     (fun p => p ∈ badPrimes q)).prod
 
-def goodPart (q I : Ideal (𝓞 F)) : Ideal (𝓞 F) :=
+def goodPart (q I : Ideal (𝓞 F))  :=
   ((UniqueFactorizationMonoid.normalizedFactors I).filter
     (fun p => p ∉ badPrimes q)).prod
 
-def squarefreeBadPool (q : Ideal (𝓞 F)) : Finset (Ideal (𝓞 F)) :=
+def squarefreeBadPool (q : Ideal (𝓞 F))  :=
   (badPrimes q).powerset.image (fun s => ∏ p ∈ s, p)
 
 theorem mem_badPrimes {q p : Ideal (𝓞 F)} (hq : q ≠ ⊥) :
@@ -132,11 +135,10 @@ private theorem supported_subset {q e : Ideal (𝓞 F)} (hq : q ≠ ⊥) (he : e
     ∃! s : Finset (Ideal (𝓞 F)), s ⊆ badPrimes q ∧ e = ∏ p ∈ s, p := by
   let s := (UniqueFactorizationMonoid.normalizedFactors e).toFinset
   have hn := (UniqueFactorizationMonoid.squarefree_iff_nodup_normalizedFactors he).mp hsf
-  have hv : s.val = UniqueFactorizationMonoid.normalizedFactors e := by
-    exact (Multiset.toFinset_val _).trans (Multiset.dedup_eq_self.mpr hn)
+  have hv : s.val = UniqueFactorizationMonoid.normalizedFactors e := (Multiset.toFinset_val _).trans (Multiset.dedup_eq_self.mpr hn)
   have hs : s ⊆ badPrimes q := by
     intro p hp
-    have hp' : p ∈ UniqueFactorizationMonoid.normalizedFactors e := Multiset.mem_toFinset.mp hp
+    have hp'  := Multiset.mem_toFinset.mp hp
     have hprime := UniqueFactorizationMonoid.prime_of_normalized_factor p hp'
     exact (mem_badPrimes hq).mpr ⟨hprime, hsup p hprime
       (UniqueFactorizationMonoid.dvd_of_mem_normalizedFactors hp')⟩
@@ -153,7 +155,7 @@ theorem mem_squarefreeBadPool {q e : Ideal (𝓞 F)} (hq : q ≠ ⊥) :
   constructor
   · intro he
     obtain ⟨s, hs, rfl⟩ := Finset.mem_image.mp he
-    have hs' : s ⊆ badPrimes q := Finset.mem_powerset.mp hs
+    have hs'  := Finset.mem_powerset.mp hs
     have hne : (∏ p ∈ s, p) ≠ ⊥ := by
       change (∏ p ∈ s, p) ≠ 0
       rw [Finset.prod_ne_zero_iff]
@@ -171,10 +173,8 @@ theorem mem_squarefreeBadPool {q e : Ideal (𝓞 F)} (hq : q ≠ ⊥) :
     obtain ⟨s, ⟨hs, rfl⟩, _⟩ := supported_subset hq he hsf hsup
     exact Finset.mem_image.mpr ⟨s, Finset.mem_powerset.mpr hs, rfl⟩
 
-theorem badPart_mem_squarefreeBadPool {q I : Ideal (𝓞 F)}
-    (hq : q ≠ ⊥) (hI : I ≠ ⊥) (hsf : Squarefree I) :
-    badPart q I ∈ squarefreeBadPool q := by
-  exact (mem_squarefreeBadPool hq).mpr ⟨(bad_good_factorization hq hI).1,
+def badPart_mem_squarefreeBadPool {q I : Ideal (𝓞 F)}
+    (hq : q ≠ ⊥) (hI : I ≠ ⊥) (hsf : Squarefree I)  := (mem_squarefreeBadPool hq).mpr ⟨(bad_good_factorization hq hI).1,
     (squarefree_bad_good hq hI hsf).1, (bad_good_factorization hq hI).2.2.2.2⟩
 
 end DedekindZetaZeroFree.LargeSieve.Bilinear

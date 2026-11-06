@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import Mathlib.SetTheory.Cardinal.Finite
 public import Mathlib.Topology.Neighborhoods
 public import Mathlib.Algebra.Group.Subgroup.Ker
@@ -7,6 +9,7 @@ public import Mathlib.GroupTheory.Index
 public import GaloisCohomology.ProfiniteIntegers.ProfiniteIntegerCore
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -47,8 +50,7 @@ theorem proCIntegerOne_pow_nat_injective :
   have ha : a < m := by omega
   have hb : b < m := by omega
   have habAdd := congrArg Multiplicative.toAdd hab
-  have habAdd' : a • (1 : ZHat) = b • (1 : ZHat) := by
-    simpa using habAdd
+  have habAdd' : a • (1 : ZHat) = b • (1 : ZHat) := habAdd
   have habRed := congrArg (fun z : ZHat => zHatReduction m hm z) habAdd'
   have hredOne : zHatReduction m hm (1 : ZHat) = 1 :=
     rfl
@@ -101,32 +103,33 @@ theorem zHatMulNat_injective {n : ℕ} (hn : 0 < n) :
   intro x y hxy
   apply ZHat.ext
   intro m hm
-  have hnm : 0 < n * m := Nat.mul_pos hn hm
+  have hnm  := Nat.mul_pos hn hm
   have hdiv : m ∣ n * m := ⟨n, by simp [Nat.mul_comm]⟩
   have hj : n • zHatReduction (n * m) hnm x =
-      n • zHatReduction (n * m) hnm y := by
-    simpa only [zHatMulNat_apply, map_nsmul] using
-      congrArg (fun z : ZHat => zHatReduction (n * m) hnm z) hxy
+      n • zHatReduction (n * m) hnm y := congrArg (fun z : ZHat => zHatReduction (n * m) hnm z) hxy
   rw [← zHatReduction_transition hm hnm hdiv x,
     ← zHatReduction_transition hm hnm hdiv y]
   exact zmod_cast_eq_of_nsmul_eq hn hj
 
+section
+variable (n : ℕ)
+include n
 /-- The image `n ℤ̂` is closed. -/
-theorem isClosed_zHatMulNat_range (n : ℕ) :
+theorem isClosed_zHatMulNat_range   :
     IsClosed ((zHatMulNat n).toAddMonoidHom.range : Set ZHat) := by
   rw [AddMonoidHom.coe_range]
   exact (isCompact_range (map_continuous (zHatMulNat n))).isClosed
 
 /-- Establishes the identity `zHatReduction n hn ((Int.castRingHom ZHat) a) = (a : ZMod n)`. -/
 @[simp]
-theorem zHatReduction_int (n : ℕ) (hn : 0 < n) (a : ℤ) :
+theorem zHatReduction_int   (hn : 0 < n) (a : ℤ) :
     zHatReduction n hn
         ((Int.castRingHom ZHat) a) =
       (a : ZMod n) :=
   rfl
 
 /-- Reduction modulo a positive integer is onto. -/
-theorem zHatReduction_surjective (n : ℕ) (hn : 0 < n) :
+theorem zHatReduction_surjective   (hn : 0 < n) :
     Function.Surjective (zHatReduction n hn) := by
   intro a
   rcases ZMod.intCast_surjective a with ⟨a, rfl⟩
@@ -137,16 +140,13 @@ Establishes the identity `zHatMulNat n ((Int.castRingHom ZHat) a) = (Int.castRin
 ℤ) * a)`.
 -/
 @[simp]
-theorem zHatMulNat_int (n : ℕ) (a : ℤ) :
+theorem zHatMulNat_int   (a : ℤ) :
     zHatMulNat n ((Int.castRingHom ZHat) a) =
       (Int.castRingHom ZHat) ((n : ℤ) * a) := by
-  apply ZHat.ext
-  intro m hm
-  change n • (a : ZMod m) = (((n : ℤ) * a : ℤ) : ZMod m)
-  simp [nsmul_eq_mul]
+  simp_all
 
 /-- The subgroup `n ℤ̂` is exactly the kernel of reduction modulo `n`. -/
-theorem zHatMulNat_range_eq_ker_reduction (n : ℕ) (hn : 0 < n) :
+theorem zHatMulNat_range_eq_ker_reduction   (hn : 0 < n) :
     (zHatMulNat n).toAddMonoidHom.range =
       (zHatReduction n hn).toAddMonoidHom.ker := by
   apply AddSubgroup.ext
@@ -157,32 +157,30 @@ theorem zHatMulNat_range_eq_ker_reduction (n : ℕ) (hn : 0 < n) :
     change n • zHatReduction n hn x = 0
     simp [nsmul_eq_mul]
   · intro hy
-    let K : Set ZHat :=
+    let K  :=
       ((zHatReduction n hn).toAddMonoidHom.ker : Set ZHat)
-    let D : Set ZHat :=
+    let D  :=
       Set.range (Int.castRingHom ZHat)
     have hKopen : IsOpen K := by
       change IsOpen ((zHatReduction n hn) ⁻¹' ({0} : Set (ZMod n)))
       have hzeroOpen : IsOpen ({0} : Set (ZMod n)) := isOpen_discrete _
       exact hzeroOpen.preimage (map_continuous (zHatReduction n hn))
-    have hDdense : Dense D := by
-      exact denseRange_intCast_zHat
+    have hDdense : Dense D := denseRange_intCast_zHat
     have hKD : K ∩ D ⊆
         ((zHatMulNat n).toAddMonoidHom.range : Set ZHat) := by
       rintro _ ⟨hzK, a, rfl⟩
-      have ha0 : (a : ZMod n) = 0 := by
-        simpa [K] using hzK
-      have hna : (n : ℤ) ∣ a :=
+      have ha0 : (a : ZMod n) = 0 := hzK
+      have hna  :=
         (ZMod.intCast_zmod_eq_zero_iff_dvd a n).mp ha0
       rcases hna with ⟨b, rfl⟩
       refine ⟨(Int.castRingHom ZHat) b, ?_⟩
       exact zHatMulNat_int n b
-    have hyClosure : y ∈ closure (K ∩ D) :=
+    have hyClosure  :=
       (hDdense.open_subset_closure_inter hKopen) hy
     exact (closure_minimal hKD (isClosed_zHatMulNat_range n)) hyClosure
 
 /-- The additive index of `n ℤ̂` in `ℤ̂` is `n`. -/
-theorem zHatMulNat_range_index (n : ℕ) (hn : 0 < n) :
+theorem zHatMulNat_range_index   (hn : 0 < n) :
     (zHatMulNat n).toAddMonoidHom.range.index = n := by
   let : NeZero n := ⟨hn.ne'⟩
   rw [zHatMulNat_range_eq_ker_reduction n hn,
@@ -197,6 +195,8 @@ theorem zHatMulNat_range_index (n : ℕ) (hn : 0 < n) :
           left_inv := fun x => Subtype.ext rfl
           right_inv := fun _ => rfl }
     _ = n := Nat.card_zmod n
+end
+
 
 /-- Every additive subgroup of finite nonzero index in `ℤ̂` is the expected
 principal subgroup.  Closedness is not needed: the quotient is abelian, so its
@@ -208,18 +208,15 @@ theorem zHatAddSubgroup_eq_mulNat_range_of_index_ne_zero
   have hle : (zHatMulNat H.index).toAddMonoidHom.range ≤ H := by
     rintro y ⟨x, rfl⟩
     exact H.nsmul_index_mem x
-  have hrangeIndex :
-      (zHatMulNat H.index).toAddMonoidHom.range.index = H.index :=
+  have hrangeIndex  :=
     zHatMulNat_range_index H.index (Nat.pos_of_ne_zero hH)
   have hrel :
       (zHatMulNat H.index).toAddMonoidHom.range.relIndex H = 1 := by
-    have heq :
-        (zHatMulNat H.index).toAddMonoidHom.range.relIndex H * H.index =
-          H.index :=
+    have heq  :=
       (AddSubgroup.relIndex_mul_index hle).trans hrangeIndex
     apply Nat.eq_of_mul_eq_mul_right (Nat.pos_of_ne_zero hH)
     simpa only [one_mul] using heq
-  exact le_antisymm (AddSubgroup.relIndex_eq_one.mp hrel) hle
+  apply le_antisymm <;> aesop
 
 /-- Index-explicit form of the classification of finite-index additive
 subgroups of `ℤ̂`. -/
@@ -227,19 +224,21 @@ theorem zHatAddSubgroup_eq_mulNat_range_of_index_eq
     (H : AddSubgroup ZHat) {n : ℕ} (hn : 0 < n) (hindex : H.index = n) :
     H = (zHatMulNat n).toAddMonoidHom.range := by
   subst n
-  exact zHatAddSubgroup_eq_mulNat_range_of_index_ne_zero H
-    (Nat.ne_of_gt hn)
+  apply zHatAddSubgroup_eq_mulNat_range_of_index_ne_zero <;> aesop
 
-/-- A subgroup with finite quotient is the subgroup obtained by multiplying by
-its index. -/
-theorem zHatAddSubgroup_eq_mulNat_range_of_finite_quotient
-    (H : AddSubgroup ZHat) [Finite (ZHat ⧸ H)] :
-    H = (zHatMulNat H.index).toAddMonoidHom.range :=
-  zHatAddSubgroup_eq_mulNat_range_of_index_ne_zero H
-    H.index_ne_zero_of_finite
 
+
+
+
+
+
+
+
+section
+variable (n : ℕ) (hn : 0 < n)
+include n hn
 /-- Multiplication by `n > 0` identifies `ℤ̂` continuously with its image. -/
-noncomputable def zHatMulNatRangeEquiv (n : ℕ) (hn : 0 < n) :
+noncomputable def zHatMulNatRangeEquiv   :
     ZHat ≃ₜ+ (zHatMulNat n).toAddMonoidHom.range := by
   let e : ZHat ≃+ (zHatMulNat n).toAddMonoidHom.range :=
     AddMonoidHom.ofInjective (zHatMulNat_injective hn)
@@ -247,7 +246,7 @@ noncomputable def zHatMulNatRangeEquiv (n : ℕ) (hn : 0 < n) :
     change Continuous fun x : ZHat =>
       (⟨zHatMulNat n x, ⟨x, rfl⟩⟩ : (zHatMulNat n).toAddMonoidHom.range)
     exact Continuous.subtype_mk (map_continuous (zHatMulNat n)) fun x => ⟨x, rfl⟩
-  let h : ZHat ≃ₜ (zHatMulNat n).toAddMonoidHom.range :=
+  let h  :=
     he.homeoOfEquivCompactToT2
   exact
     { e with
@@ -255,27 +254,29 @@ noncomputable def zHatMulNatRangeEquiv (n : ℕ) (hn : 0 < n) :
       continuous_invFun := h.symm.continuous }
 
 /-- Division by `n` on the subgroup `n ℤ̂`. -/
-noncomputable def zHatDivide (n : ℕ) (hn : 0 < n) :
+noncomputable def zHatDivide   :
     ContinuousAddMonoidHom ((zHatMulNat n).toAddMonoidHom.range) ZHat :=
   (zHatMulNatRangeEquiv n hn).symm
 
 /-- Establishes the identity `zHatMulNat n (zHatDivide n hn y) = y.1`. -/
 @[simp]
-theorem zHatMulNat_zHatDivide (n : ℕ) (hn : 0 < n)
+theorem zHatMulNat_zHatDivide  
     (y : (zHatMulNat n).toAddMonoidHom.range) :
     zHatMulNat n (zHatDivide n hn y) = y.1 := by
   change ((zHatMulNatRangeEquiv n hn)
     ((zHatMulNatRangeEquiv n hn).symm y)).1 = y.1
-  exact congrArg Subtype.val ((zHatMulNatRangeEquiv n hn).apply_symm_apply y)
+  apply congrArg <;> aesop
 
 /-- Establishes the identity `zHatDivide n hn ⟨zHatMulNat n x, ⟨x, rfl⟩⟩ = x`. -/
 @[simp]
-theorem zHatDivide_zHatMulNat (n : ℕ) (hn : 0 < n) (x : ZHat) :
+theorem zHatDivide_zHatMulNat   (x : ZHat) :
     zHatDivide n hn
       ⟨zHatMulNat n x, ⟨x, rfl⟩⟩ = x := by
   change (zHatMulNatRangeEquiv n hn).symm
     ((zHatMulNatRangeEquiv n hn) x) = x
   exact (zHatMulNatRangeEquiv n hn).symm_apply_apply x
+end
+
 
 end
 end ClassFormation

@@ -147,92 +147,92 @@ theorem
         ((_root_.ideleClassNorm K M).range) c :=
   rfl
 
-/-- If two nested cyclic extensions have the same exact narrow finite
-conductor and both exhaust its ray class group, then the upper extension
-has relative degree one.  Thus a maximal cyclic class field at a fixed
-narrow finite conductor has no proper nested cyclic overextension with the
-same conductor. -/
-theorem
-    nestedMaximalCyclicExtensions_sameNarrowFiniteConductor_relativeDegree_eq_one
-    [Algebra M L] [IsScalarTower K M L]
-    [FiniteDimensional M L]
-    (hconductor :
-      ideleClassNormNarrowFiniteConductor (K := K) (L := L) =
-        ideleClassNormNarrowFiniteConductor (K := K) (L := M))
-    (hLcard :
-      Nat.card
-          (RayClass.RayClassGroup
-            (RayClass.Modulus.narrowOfFinite
-              (ideleClassNormNarrowFiniteConductor (K := K) (L := L)))) =
-        Module.finrank K L)
-    (hMcard :
-      Nat.card
-          (RayClass.RayClassGroup
-            (RayClass.Modulus.narrowOfFinite
-              (ideleClassNormNarrowFiniteConductor (K := K) (L := M)))) =
-        Module.finrank K M) :
-    Module.finrank M L = 1 := by
-  have hnorm :
-      (_root_.ideleClassNorm K L).range =
-        (_root_.ideleClassNorm K M).range :=
-    cyclicIdeleClassNorm_ranges_eq_of_narrowFiniteConductors_eq_of_rayClassGroup_cards_eq_extensionDegrees
-      (K := K) (L := L) (M := M)
-      hconductor hLcard hMcard
-  have hdegree :
-      Module.finrank K L = Module.finrank K M := by
-    calc
-      Module.finrank K L =
-          (_root_.ideleClassNorm K L).range.index :=
-        (ClassFieldAxiom.ideleClassNorm_index_eq_finrank_cyclic
-          K L).symm
-      _ = (_root_.ideleClassNorm K M).range.index :=
-        congrArg
-          (fun H : Subgroup (IdeleClassGroup K) => H.index)
-          hnorm
-      _ = Module.finrank K M :=
-        ClassFieldAxiom.ideleClassNorm_index_eq_finrank_cyclic K M
-  have hmul :
-      Module.finrank K M * Module.finrank M L =
-        Module.finrank K M := by
-    calc
-      Module.finrank K M * Module.finrank M L =
-          Module.finrank K L :=
-        Module.finrank_mul_finrank K M L
-      _ = Module.finrank K M := hdegree
-  apply
-    Nat.mul_left_cancel
-      (show 0 < Module.finrank K M from Module.finrank_pos)
-  simpa only [mul_one] using hmul
 
-/-- A proper nested cyclic overextension cannot remain maximal at the
-same exact narrow finite conductor.  Hence maximal cyclic class fields in a
-proper tower have distinct narrow finite conductors. -/
-theorem
-    nestedMaximalCyclicExtensions_narrowFiniteConductors_ne_of_relativeDegree_ne_one
-    [Algebra M L] [IsScalarTower K M L]
-    [FiniteDimensional M L]
-    (hLcard :
-      Nat.card
-          (RayClass.RayClassGroup
-            (RayClass.Modulus.narrowOfFinite
-              (ideleClassNormNarrowFiniteConductor (K := K) (L := L)))) =
-        Module.finrank K L)
-    (hMcard :
-      Nat.card
-          (RayClass.RayClassGroup
-            (RayClass.Modulus.narrowOfFinite
-              (ideleClassNormNarrowFiniteConductor (K := K) (L := M)))) =
-        Module.finrank K M)
-    (hrelativeDegree :
-      Module.finrank M L ≠ 1) :
-    ideleClassNormNarrowFiniteConductor (K := K) (L := L) ≠
-      ideleClassNormNarrowFiniteConductor (K := K) (L := M) := by
-  intro hconductor
-  exact
-    hrelativeDegree
-      (nestedMaximalCyclicExtensions_sameNarrowFiniteConductor_relativeDegree_eq_one
-        (K := K) (L := L) (M := M)
-        hconductor hLcard hMcard)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end GlobalClassFields
 end GlobalClassFieldTheory

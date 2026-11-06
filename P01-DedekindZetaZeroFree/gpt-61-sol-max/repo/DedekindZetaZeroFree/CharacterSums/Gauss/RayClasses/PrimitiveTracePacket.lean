@@ -172,6 +172,7 @@ theorem coprimeIdealResiduePacket_eq_gauss_conjugate_coefficient
   have hγcoeff : η (integralElementIdeal I xγ) = (η a)⁻¹ := by
     have hh := coprimeIdealResidueCoefficient_integral_lift hF m a hm ha hcop hmt η E γ hγ
     rw [coprimeIdealResidueCoefficient_mk, hγres] at hh
+    change η (integralElementIdeal I xγ) = _ at hh
     simpa [unitCharExtend] using hh
   have hξideal : integralElementIdeal L ξ =
       integralElementIdeal I xγ * integralElementIdeal J β := by

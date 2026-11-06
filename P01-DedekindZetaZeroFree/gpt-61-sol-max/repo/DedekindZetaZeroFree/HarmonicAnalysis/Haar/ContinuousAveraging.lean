@@ -81,13 +81,13 @@ theorem haarAverage_comp_mulRight (f : C(G, V)) (g : G) :
     ContinuousMap.coe_mulRight]
   exact integral_mul_right_eq_self f g
 
-@[simp]
-theorem haarAverage_comp_inv (f : C(G, V)) :
-    haarAverage G (𝕜 := 𝕜) (f.comp (Homeomorph.inv G : C(G, G))) =
-      haarAverage G (𝕜 := 𝕜) f := by
-  simp only [haarAverage_apply, ContinuousMap.coe_comp, Function.comp_apply,
-    ContinuousMap.coe_coe, Homeomorph.coe_inv]
-  exact integral_inv_eq_self f (haarProb G)
+
+
+
+
+
+
+
 
 end NormedFieldScalars
 

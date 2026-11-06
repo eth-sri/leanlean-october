@@ -42,14 +42,14 @@ theorem residue_ne (D : PeriodSource R N) : D.realization.theta D.probe ≠ 0 :=
   apply D.detected
   simp [hz, MomentSources.fourier]
 
-theorem flat_ne (D : PeriodSource R N) : (D.sources.flat D.probe).val 0 ≠ 0 := by
-  intro hz
-  have hx : (⟨(D.sources.flat D.probe).val 0,
-      Submodule.subset_span ⟨D.probe, rfl⟩⟩ : SharedSource.flatScalarStage D.sources) = 0 :=
-    Subtype.ext hz
-  have h := SharedSource.realizedSourceResidue_companion D.realization D.probe
-  rw [hx, map_zero] at h
-  exact D.residue_ne h.symm
+
+
+
+
+
+
+
+
 
 end PeriodSource
 

@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.RightFrame.CauchyCoefficient
 public import DedekindZetaZeroFree.Geometry.Hyperbolic.Laplacian.ChartGreenIdentities
 public import Mathlib.Analysis.Complex.CauchyIntegral
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -48,7 +51,7 @@ private theorem coefficient_deriv (O : Set ℂ) (hO : IsOpen O) (f : ℂ → ℂ
     simp [smul_eq_mul]
   rw [cauchyCoefficient, he, hc, smul_eq_mul]
   have hn : (k.factorial : ℂ) ≠ 0 := by exact_mod_cast k.factorial_ne_zero
-  have hp : 2 * (Real.pi : ℂ) * Complex.I ≠ 0 := Complex.two_pi_I_ne_zero
+  
   field_simp
 
 private theorem fields_word {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
@@ -73,16 +76,18 @@ private theorem compact_joint {E : Type*} [NormedAddCommGroup E] [NormedSpace �
   intro p
   exact (he p.val.1 p.property.1 ⟨p.val.2, p.property.2⟩).symm
 
-private theorem word_smooth {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    {B : Type*} (W : Set E) (hW : IsOpen W) (a : B → E) (f : E → ℂ)
+section
+variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+    {B : Type*} (W : Set E) (hW : IsOpen W) (a : B → E)
+include E B W hW a
+private theorem word_smooth   (f : E → ℂ)
     (hf : ContDiffOn ℝ (⊤ : ℕ∞) f W) (w : List B) :
     ContDiffOn ℝ (⊤ : ℕ∞) (directionalWord (fun b (_ : E) => a b) w f) W := by
   induction w with
   | nil => exact hf
   | cons b w ih => exact (ih.fderiv_of_isOpen hW (by simp)).clm_apply contDiffOn_const
 
-private theorem word_congr {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    {B : Type*} (W : Set E) (hW : IsOpen W) (a : B → E) (w : List B)
+private theorem word_congr   (w : List B)
     (f g : E → ℂ) (hfg : Set.EqOn f g W) :
     Set.EqOn (directionalWord (fun b (_ : E) => a b) w f)
       (directionalWord (fun b (_ : E) => a b) w g) W := by
@@ -96,8 +101,7 @@ private theorem word_congr {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E
       Filter.eventually_of_mem (hW.mem_nhds hx) (fun y hy => ih hy)
     rw [he.fderiv_eq]
 
-private theorem word_mul {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    {B : Type*} (W : Set E) (hW : IsOpen W) (a : B → E) (w : List B)
+private theorem word_mul   (w : List B)
     (c : ℂ) (f : E → ℂ) (hf : ContDiffOn ℝ (⊤ : ℕ∞) f W) :
     ∀ x ∈ W, directionalWord (fun b (_ : E) => a b) w (fun y => c * f y) x =
       c * directionalWord (fun b (_ : E) => a b) w f x := by
@@ -112,6 +116,8 @@ private theorem word_mul {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     rw [he.fderiv_eq, fderiv_const_mul]
     · rfl
     · exact ((word_smooth W hW a f hf w).contDiffAt (hW.mem_nhds hx)).differentiableAt (by simp)
+end
+
 
 theorem parameter_jets_positive_laplacian (d : ℕ) (W : Set (HyperbolicChart.Space d))
     (hW : IsOpen W) (O : Set ℂ) (hO : IsOpen O)
@@ -138,7 +144,7 @@ theorem parameter_jets_positive_laplacian (d : ℕ) (W : Set (HyperbolicChart.Sp
       letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
       ∃ j : ℂ → ContinuousMap K ℂ, DifferentiableOn ℂ j O ∧
         ∀ z ∈ O, ∀ x : K, j z x = directionalWord fields w (u z) x.val := by
-    letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
+    letI  := isCompact_iff_compactSpace.mp hK
     obtain ⟨j,hj,he⟩ := hjets K hK hKW (w.map a).length (w.map a).get
     refine ⟨j,hj,?_⟩
     intro z hz x
@@ -157,7 +163,7 @@ theorem parameter_jets_positive_laplacian (d : ℕ) (W : Set (HyperbolicChart.Sp
       (hKW : K ⊆ W) :
       ContinuousOn (fun p : ℂ × HyperbolicChart.Space d => directionalWord fields w (u p.1) p.2)
         (Metric.closedBall s r ×ˢ K) := by
-    letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
+    letI  := isCompact_iff_compactSpace.mp hK
     obtain ⟨j,hj,he⟩ := hjword K hK hKW w
     exact (compact_joint K O j hj.continuousOn _ (fun z hz x => (he z hz x).symm)).mono
       (Set.prod_mono hd Set.Subset.rfl)

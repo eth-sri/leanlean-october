@@ -63,7 +63,10 @@ theorem Hu_differentiableOn (u : D.Row) :
     DifferentiableOn ℂ (fun p : Coordinates => Hu D u p.1 p.2.1 p.2.2) OmegaStar :=
   (EulerDomain.Hu_normal_convergence D u).2.2.1
 
-private lemma kernel_differentiableAt (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 0 < Z)
+section
+variable (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 0 < Z)
+include u hu Z hZ
+private lemma kernel_differentiableAt  
     (p : Coordinates) (hξ : 1 < p.1.re) (hw : 0 < p.2.1.re) (hw1 : p.2.1 ≠ 1)
     (hz : 0 < p.2.2.re) (hz6 : 6 * p.2.2 ≠ 1) (hΩ : p ∈ OmegaStar) :
     DifferentiableAt ℂ
@@ -112,7 +115,7 @@ private lemma kernel_differentiableAt (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ :
     (((hζ.fun_mul hLp).fun_mul hHu).fun_mul
       (hLl.inv (RightHeckeBounds.Llam_ne_zero_of_one_lt D u _ hξ)))
 
-private lemma kernel_differentiableOn_of (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 0 < Z)
+private lemma kernel_differentiableOn_of  
     (U : Set Coordinates)
     (h : ∀ p ∈ U, 1 < p.1.re ∧ 0 < p.2.1.re ∧ p.2.1 ≠ 1 ∧ 0 < p.2.2.re ∧ 6 * p.2.2 ≠ 1 ∧
       p ∈ OmegaStar) :
@@ -122,7 +125,7 @@ private lemma kernel_differentiableOn_of (u : D.Row) (hu : u.u = 1) (Z : ℝ) (h
   obtain ⟨h1, h2, h3, h4, h5, h6⟩ := h p hp
   exact (kernel_differentiableAt D u hu Z hZ p h1 h2 h3 h4 h5 h6).differentiableWithinAt
 
-theorem kernel_analytic_paddedBox₂ (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 0 < Z) :
+theorem kernel_analytic_paddedBox₂   :
     DifferentiableOn ℂ
       (fun p : Coordinates => kernelWith D (rowContLocal D) u p.1 p.2.1 p.2.2 Z)
       ((paddedBox₂ ∩ xiPrincipal ∩ zPrincipal) \ singW) := by
@@ -144,8 +147,13 @@ theorem kernel_analytic_paddedBox₂ (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 
   · rintro p ⟨⟨⟨hb, hxi⟩, hzp⟩, hs⟩
     simp only [paddedBox₂, box, Set.mem_setOf_eq] at hb
     exact ⟨hxi, by linarith [hb.2.1], hzp, hs⟩
+end
 
-theorem kernel_majorant_paddedBox₂ (u : D.Row) (hu : u.u = 1)
+
+section
+variable (u : D.Row) (hu : u.u = 1)
+include u hu
+theorem kernel_majorant_paddedBox₂  
     (x₀ x₁ y₀ y₁ v₀ v₁ : ℝ)
     (hx : ∀ x ∈ Set.Icc x₀ x₁, Scales.rightLine - Scales.contourOffset / 2 ≤ x)
     (hy : ∀ y ∈ Set.Icc y₀ y₁, 9 / 10 - EulerDomain.pad ≤ y ∧ y ≠ 1)
@@ -158,7 +166,7 @@ theorem kernel_majorant_paddedBox₂ (u : D.Row) (hu : u.u = 1)
             Z ^ (Scales.kernelExponent x y v) * g t :=
   PrincipalBox2Majorant.kernel_majorant_paddedBox2 D u hu x₀ x₁ y₀ y₁ v₀ v₁ hx hy hv
 
-private lemma wResidue_majorant_aux (u : D.Row) (hu : u.u = 1) (v₀ : ℝ)
+private lemma wResidue_majorant_aux   (v₀ : ℝ)
     (hv0 : 1 / 20 ≤ v₀) (hv1 : v₀ ≤ 1) (hv6 : 6 * v₀ ≠ 1) :
     ∃ g : ℝ × ℝ → ℝ, Integrable g ∧ (∀ p, 0 ≤ g p) ∧ ∀ Z : ℝ, 2 ≤ Z → ∀ t : ℝ × ℝ,
       ‖wResidueLocal D u ((Scales.rightLine : ℂ) + (t.1 : ℂ) * Complex.I)
@@ -300,20 +308,22 @@ private lemma wResidue_majorant_aux (u : D.Row) (hu : u.u = 1) (v₀ : ℝ)
         simp only [gaussShear]
         ring
 
-theorem wResidue_majorant_z (u : D.Row) (hu : u.u = 1) :
+theorem wResidue_majorant_z   :
     ∃ g : ℝ × ℝ → ℝ, Integrable g ∧ (∀ p, 0 ≤ g p) ∧ ∀ Z : ℝ, 2 ≤ Z → ∀ t : ℝ × ℝ,
       ‖wResidueLocal D u ((Scales.rightLine : ℂ) + (t.1 : ℂ) * Complex.I)
           (((1 / 20 : ℝ) : ℂ) + (t.2 : ℂ) * Complex.I) Z‖ ≤
         Z ^ (Scales.kernelExponent Scales.rightLine 1 (1 / 20)) * g t :=
   wResidue_majorant_aux D u hu (1 / 20) le_rfl (by norm_num) (by norm_num)
 
-theorem wResidue_majorant_w (u : D.Row) (hu : u.u = 1) :
+theorem wResidue_majorant_w   :
     ∃ g : ℝ × ℝ → ℝ, Integrable g ∧ (∀ p, 0 ≤ g p) ∧ ∀ Z : ℝ, 2 ≤ Z → ∀ t : ℝ × ℝ,
       ‖wResidueLocal D u ((Scales.rightLine : ℂ) + (t.1 : ℂ) * Complex.I)
           (((1 / 6 + Scales.contourOffset : ℝ) : ℂ) + (t.2 : ℂ) * Complex.I) Z‖ ≤
         Z ^ (Scales.kernelExponent Scales.rightLine 1 (1 / 6 + Scales.contourOffset)) * g t :=
   wResidue_majorant_aux D u hu (1 / 6 + Scales.contourOffset) (by unfold Scales.contourOffset; norm_num)
     (by unfold Scales.contourOffset; norm_num) (by unfold Scales.contourOffset; norm_num)
+end
+
 
 end
 

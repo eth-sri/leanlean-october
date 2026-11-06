@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Mellin.LogarithmicWeights
 public import DedekindZetaZeroFree.Arithmetic.Ideals.InverseNormPowerSums
 
 @[expose] public section
+
 
 /-
 Repository: openai/math.
@@ -15,12 +18,14 @@ open scoped NumberField Classical
 
 namespace DedekindZetaZeroFree.LargeSieve.Vendor
 
-def logIdealTerm {F : Type*} [Field F] [NumberField F]
-    (a : Ideal (𝓞 F) → ℂ) (f : ℝ → ℂ) (X : ℝ) (I : Ideal (𝓞 F)) : ℂ :=
+section
+variable {F : Type*} [Field F] [NumberField F]
+    (a : Ideal (𝓞 F) → ℂ)
+include F a
+def logIdealTerm   (f : ℝ → ℂ) (X : ℝ) (I : Ideal (𝓞 F))  :=
   if I = ⊥ then 0 else a I * f ((Ideal.absNorm I : ℝ) / X)
 
-theorem logIdealTerm_summable_of_envelope {F : Type*} [Field F] [NumberField F]
-    (a : Ideal (𝓞 F) → ℂ) (ha : ∀ I : Ideal (𝓞 F), I ≠ ⊥ → ‖a I‖ ≤ 1)
+theorem logIdealTerm_summable_of_envelope   (ha : ∀ I : Ideal (𝓞 F), I ≠ ⊥ → ‖a I‖ ≤ 1)
     (f : ℝ → ℂ) (hf : ContinuousOn f (Set.Ioi 0))
     (hdecay : ∃ A C : ℝ, 1 < A ∧ 0 ≤ C ∧
       ∀ x : ℝ, 1 ≤ x → ‖f x‖ ≤ C * Real.rpow x (-A))
@@ -42,8 +47,7 @@ theorem logIdealTerm_summable_of_envelope {F : Type*} [Field F] [NumberField F]
     intro I
     rw [Set.indicator_apply]
 
-  have henv : Summable (fun I : Ideal (𝓞 F) =>
-      if I = ⊥ then (0 : ℝ) else (Ideal.absNorm I : ℝ) ^ (-A)) :=
+  have henv  :=
     DedekindZetaZeroFree.LargeSieve.summable_ideal_inverse_power F A hA
   have hg : Summable (fun I : Ideal (𝓞 F) =>
       (if I ∈ S then ‖logIdealTerm a f X I‖ else 0)
@@ -57,17 +61,14 @@ theorem logIdealTerm_summable_of_envelope {F : Type*} [Field F] [NumberField F]
     by_cases hI : I ∈ S
     · have hnn : (0 : ℝ) ≤
           (C * X ^ A) * (if I = ⊥ then (0 : ℝ) else (Ideal.absNorm I : ℝ) ^ (-A)) := by
-        refine mul_nonneg (mul_nonneg hC0 (Real.rpow_nonneg (le_of_lt hX) A)) ?_
-        split_ifs with h
-        · exact le_rfl
-        · exact Real.rpow_nonneg (Nat.cast_nonneg _) _
+        positivity
       rw [if_pos hI]
       linarith [norm_nonneg (logIdealTerm a f X I)]
     ·
       have hlt : max 1 X < (Ideal.absNorm I : ℝ) := by
         by_contra h
         push Not at h
-        exact hI ((hSmem I).mpr h)
+        apply hI <;> assumption
       have hNI1 : (1 : ℝ) ≤ (Ideal.absNorm I : ℝ) :=
         le_trans (le_max_left 1 X) (le_of_lt hlt)
       have hIne : I ≠ ⊥ := by
@@ -91,8 +92,7 @@ theorem logIdealTerm_summable_of_envelope {F : Type*} [Field F] [NumberField F]
   have hmain : Summable (logIdealTerm a f X) := Summable.of_norm_bounded hg hbound
   exact ⟨hmain.norm, hmain⟩
 
-theorem logIdealTerm_summable {F : Type*} [Field F] [NumberField F]
-    (a : Ideal (𝓞 F) → ℂ) (ha : ∀ I : Ideal (𝓞 F), I ≠ ⊥ → ‖a I‖ ≤ 1)
+theorem logIdealTerm_summable   (ha : ∀ I : Ideal (𝓞 F), I ≠ ⊥ → ‖a I‖ ≤ 1)
     {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ} (hf : LogMellinPhysical f δ P)
     (X : ℝ) (hX : 0 < X) :
     Summable (fun I : Ideal (𝓞 F) => ‖logIdealTerm a f X I‖) ∧
@@ -101,7 +101,9 @@ theorem logIdealTerm_summable {F : Type*} [Field F] [NumberField F]
   refine logIdealTerm_summable_of_envelope a ha f hf.contDiffOn.continuousOn
     ⟨2, C, by norm_num, hC0, fun x hx => ?_⟩ X hX
   have h := hC x hx
-  simpa using h
+  exact h
+end
+
 
 end DedekindZetaZeroFree.LargeSieve.Vendor
 

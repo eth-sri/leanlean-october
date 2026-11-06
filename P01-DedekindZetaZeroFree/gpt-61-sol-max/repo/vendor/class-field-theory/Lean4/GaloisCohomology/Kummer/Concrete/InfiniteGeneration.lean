@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import GaloisCohomology.Kummer.Concrete.FiniteGeneration
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -45,11 +48,11 @@ theorem kummerRootSet_adjoin_eq_top
     (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
     (hexponent : ∀ σ : Gal(Ω/K), σ ^ (n : ℕ) = 1) :
     IntermediateField.adjoin K (finiteKummerRootSet (K := K) (L := Ω) n) = ⊤ := by
-  let U : IntermediateField K Ω :=
+  let U  :=
     IntermediateField.adjoin K (finiteKummerRootSet (K := K) (L := Ω) n)
   apply top_unique
   intro x _
-  let E : FiniteGaloisIntermediateField K Ω :=
+  let E  :=
     FiniteGaloisIntermediateField.adjoin K {x}
   let res : Gal(Ω/K) →* Gal(E/K) := AlgEquiv.restrictNormalHom E
   have hres_surjective : Function.Surjective res :=
@@ -63,8 +66,7 @@ theorem kummerRootSet_adjoin_eq_top
     intro σ
     obtain ⟨σ', rfl⟩ := hres_surjective σ
     rw [← map_pow, hexponent σ', map_one]
-  have hE_generation :
-      IntermediateField.adjoin K (finiteKummerRootSet (K := K) (L := E) n) = ⊤ :=
+  have hE_generation  :=
     finiteKummerRootSet_adjoin_eq_top
       (K := K) (L := E) n hmu hE_exponent
   have hroot_subset : finiteKummerRootSet (K := K) (L := E) n ⊆ U.comap E.val := by
@@ -82,7 +84,7 @@ theorem kummerRootSet_adjoin_eq_top
     exact IntermediateField.adjoin_le_iff.mpr hroot_subset
   let xE : E :=
     ⟨x, FiniteGaloisIntermediateField.subset_adjoin K {x} (Set.mem_singleton x)⟩
-  have hxE : xE ∈ U.comap E.val := htop_le (Set.mem_univ xE)
+  have hxE  := htop_le (Set.mem_univ xE)
   exact hxE
 
 end KummerTheory

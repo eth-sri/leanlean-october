@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import Mathlib.RingTheory.Complex
 
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.Complex.BoundaryRegularity
 public import Mathlib.Analysis.Complex.UpperHalfPlane.Manifold
 
 @[expose] public section
+
 
 noncomputable section
 open MeasureTheory
@@ -28,15 +31,10 @@ theorem integral_inversion (β : ℂˣ) (f : ℂ → ℂ) :
       norm_pow, ← pow_mul, Real.rpow_neg (norm_nonneg z)]
   have he := integral_image_eq_integral_abs_det_fderiv_smul (characterHaar β)
     (s := {0}ᶜ) (isClosed_singleton.isOpen_compl.measurableSet)
-    (fun z hz => (hd z (by simpa using hz)).hasFDerivWithinAt)
+    (fun z hz => (hd z (hz)).hasFDerivWithinAt)
     (inv_injective.injOn) f
   have him : (fun z : ℂ => z⁻¹) '' ({0}ᶜ : Set ℂ) = {0}ᶜ := by
-    ext z
-    constructor
-    · rintro ⟨x,hx,rfl⟩
-      simpa using inv_ne_zero (show x ≠ 0 by simpa using hx)
-    · intro hz
-      exact ⟨z⁻¹,by simpa using inv_ne_zero (show z ≠ 0 by simpa using hz),inv_inv z⟩
+    norm_num
   rw [him] at he
   simp only [hdet,Complex.real_smul] at he
   simpa only [restrict_compl_singleton] using he.symm

@@ -15,7 +15,7 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 2000000
 variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+variable (R : PrincipalMellin.ActualRecipe S η) 
 variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
 variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12

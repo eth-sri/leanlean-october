@@ -111,7 +111,10 @@ private theorem ofReal_norm_inner_le
         ENNReal.ofReal ((‖v‖₊ ^ 2 : NNReal) : ℝ) :=
         ENNReal.ofReal_add (by positivity) (by positivity)
 
-theorem integrable_pair (r s : SquareFiniteFamily (U := U) (H := H)) :
+
+local notation:max "current_SquareFiniteFamily" => SquareFiniteFamily (U := U) (H := H)
+
+theorem integrable_pair (r s : current_SquareFiniteFamily) :
     Integrable (pair r.val s.val) (baseMeasure (R := R) (P := P) (U := U)) := by
   classical
   obtain ⟨cover⟩ := (kp_cont_actual_cotangent_countable_shrinking F ζ hζ U R P H).2
@@ -153,7 +156,7 @@ theorem integrable_pair (r s : SquareFiniteFamily (U := U) (H := H)) :
         lintegral_add_left hmeas _
     _ < ⊤ := ENNReal.add_lt_top.mpr ⟨r.property, s.property⟩
 
-theorem integrable_normSquare (r : SquareFiniteFamily (U := U) (H := H)) :
+theorem integrable_normSquare (r : current_SquareFiniteFamily) :
     Integrable (fun x => (normSquare r.val x : ℝ))
       (baseMeasure (R := R) (P := P) (U := U)) := by
   refine ⟨((measurable_normSquare r.val).coe_nnreal_real).aestronglyMeasurable, ?_⟩
@@ -163,7 +166,7 @@ theorem integrable_normSquare (r : SquareFiniteFamily (U := U) (H := H)) :
   simpa only [ENNReal.ofReal_coe_nnreal] using h
 
 private theorem piece_inner_eq (cover : CountableCover F ζ hζ U R P H)
-    (r s : SquareFiniteFamily (U := U) (H := H)) (n : ℕ) :
+    (r s : current_SquareFiniteFamily) (n : ℕ) :
     inner ℂ (component cover r n) (component cover s n) =
       ∫ y in KPContActualCotangentBorelRefinement.liftedPiece cover n,
         pair r.val s.val ((cover.chart n).toBase y) ∂(cover.chart n).liftedMeasure := by
@@ -206,7 +209,7 @@ private theorem piece_inner_eq (cover : CountableCover F ζ hζ U R P H)
 set_option maxHeartbeats 1600000 in
 
 theorem inner_eq_integral (v w : IntrinsicHilbert cover)
-    (r s : SquareFiniteFamily (U := U) (H := H))
+    (r s : current_SquareFiniteFamily)
     (hr : toAeQuotient r = intrinsicClass cover v)
     (hs : toAeQuotient s = intrinsicClass cover w) :
     inner ℂ v w = ∫ x, pair r.val s.val x
@@ -229,7 +232,7 @@ theorem inner_eq_integral (v w : IntrinsicHilbert cover)
   rw [← hBR.integral_eq_tsum (pair r.val s.val) (integrable_pair r s)]
 
 theorem norm_sq_eq_integral (v : IntrinsicHilbert cover)
-    (r : SquareFiniteFamily (U := U) (H := H))
+    (r : current_SquareFiniteFamily)
     (hr : toAeQuotient r = intrinsicClass cover v) :
     ‖v‖ ^ 2 = ∫ x, (normSquare r.val x : ℝ)
       ∂(baseMeasure (R := R) (P := P) (U := U)) := by
@@ -305,19 +308,19 @@ structure Properties : Prop where
   extraction_inner : ∀ v w : IntrinsicHilbert cover,
     inner ℂ v w = inner ℂ (Ext cover (intrinsicClass cover v))
       (Ext cover (intrinsicClass cover w))
-  pairing_integrable : ∀ r s : SquareFiniteFamily (U := U) (H := H),
+  pairing_integrable : ∀ r s : current_SquareFiniteFamily,
     Integrable (pair r.val s.val) (baseMeasure (R := R) (P := P) (U := U))
-  square_integrable : ∀ r : SquareFiniteFamily (U := U) (H := H),
+  square_integrable : ∀ r : current_SquareFiniteFamily,
     Integrable (fun x => (normSquare r.val x : ℝ))
       (baseMeasure (R := R) (P := P) (U := U))
   inner_integral : ∀ (v w : IntrinsicHilbert cover)
-    (r s : SquareFiniteFamily (U := U) (H := H)),
+    (r s : current_SquareFiniteFamily),
     toAeQuotient r = intrinsicClass cover v →
     toAeQuotient s = intrinsicClass cover w →
     inner ℂ v w = ∫ x, pair r.val s.val x
       ∂(baseMeasure (R := R) (P := P) (U := U))
   norm_integral : ∀ (v : IntrinsicHilbert cover)
-    (r : SquareFiniteFamily (U := U) (H := H)),
+    (r : current_SquareFiniteFamily),
     toAeQuotient r = intrinsicClass cover v →
     ‖v‖ ^ 2 = ∫ x, (normSquare r.val x : ℝ)
       ∂(baseMeasure (R := R) (P := P) (U := U))

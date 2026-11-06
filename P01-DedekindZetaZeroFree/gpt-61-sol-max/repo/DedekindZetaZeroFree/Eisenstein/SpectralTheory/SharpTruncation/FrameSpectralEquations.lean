@@ -14,7 +14,7 @@ namespace DedekindZetaZeroFree.KPMsGreenFlux.IntrinsicFrameSpectral
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
 variable {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
 variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+
 
  theorem smooth_intrinsic_scalar
     (f : Cover F ζ hζ → ℂ) (hs : Smooth F ζ hζ f)

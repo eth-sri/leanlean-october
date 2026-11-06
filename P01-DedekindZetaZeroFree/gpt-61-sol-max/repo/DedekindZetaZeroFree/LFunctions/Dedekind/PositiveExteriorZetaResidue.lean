@@ -10,23 +10,26 @@ noncomputable section
 open scoped NumberField Topology
 open Filter IsDedekindDomain
 
-def exteriorEulerFactor (F : Type) [Field F] [NumberField F]
+section
+variable (F : Type) [Field F] [NumberField F]
+include F
+def exteriorEulerFactor  
     (S : Finset (HeightOneSpectrum (𝓞 F))) (s : ℂ) : ℂ :=
   ∏ p ∈ S, (1 - (Ideal.absNorm p.asIdeal : ℂ) ^ (-s))
 
-def exteriorResidue (F : Type) [Field F] [NumberField F]
+def exteriorResidue  
     (S : Finset (HeightOneSpectrum (𝓞 F))) : ℝ :=
   NumberField.dedekindZeta_residue F *
     ∏ p ∈ S, (1 - (Ideal.absNorm p.asIdeal : ℝ)⁻¹)
 
-def exteriorRegularization (F : Type) [Field F] [NumberField F]
+def exteriorRegularization  
     {η : RayClassCharacter F (⊤ : Ideal (𝓞 F))}
     (P : PrincipalRayHeckeData F ⊤ η)
     (S : Finset (HeightOneSpectrum (𝓞 F))) (s : ℂ) : ℂ :=
   P.R s * exteriorEulerFactor F S s
 
 theorem principal_continuation_eq_dedekindZeta
-    (F : Type) [Field F] [NumberField F]
+     
     (η : RayClassCharacter F (⊤ : Ideal (𝓞 F))) (hη : η.IsPrincipal)
     (P : PrincipalRayHeckeData F ⊤ η) (s : ℂ) (hs : 1 < s.re) :
     P.L s = NumberField.dedekindZeta F s := by
@@ -62,7 +65,7 @@ theorem principal_continuation_eq_dedekindZeta
   exact (P.series s hs).tsum_eq.symm.trans hgroup.tsum_eq.symm
 
 theorem principal_regularization_at_one
-    (F : Type) [Field F] [NumberField F]
+     
     (η : RayClassCharacter F (⊤ : Ideal (𝓞 F))) (hη : η.IsPrincipal)
     (P : PrincipalRayHeckeData F ⊤ η) :
     P.R 1 = (NumberField.dedekindZeta_residue F : ℂ) := by
@@ -79,7 +82,7 @@ theorem principal_regularization_at_one
     principal_continuation_eq_dedekindZeta F η hη P _ hx']
 
 theorem exterior_residue_pos
-    (F : Type) [Field F] [NumberField F]
+     
     (S : Finset (HeightOneSpectrum (𝓞 F))) :
     0 < exteriorResidue F S := by
   classical
@@ -91,7 +94,7 @@ theorem exterior_residue_pos
   exact sub_pos.mpr ((inv_lt_one₀ (zero_lt_one.trans hn)).mpr hn)
 
 theorem exterior_regularization_at_one
-    (F : Type) [Field F] [NumberField F]
+     
     (η : RayClassCharacter F (⊤ : Ideal (𝓞 F))) (hη : η.IsPrincipal)
     (P : PrincipalRayHeckeData F ⊤ η)
     (S : Finset (HeightOneSpectrum (𝓞 F))) :
@@ -99,6 +102,8 @@ theorem exterior_regularization_at_one
   simp [exteriorRegularization, exteriorEulerFactor, exteriorResidue,
     principal_regularization_at_one F η hη P, Complex.cpow_neg,
     Complex.cpow_one, Complex.ofReal_prod]
+end
+
 
 end
 end DedekindZetaZeroFree.PositiveZetaResidue

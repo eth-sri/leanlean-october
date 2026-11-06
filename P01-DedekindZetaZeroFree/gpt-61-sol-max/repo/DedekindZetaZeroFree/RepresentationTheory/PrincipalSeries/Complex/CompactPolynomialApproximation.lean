@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Metaplectic.Intertwining.ComplexCompactSphericalCharts
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.Complex.HarmonicCharacterProjection
 
 @[expose] public section
+
 
 section
 
@@ -25,7 +28,7 @@ theorem principalSeries_compact_continuous_fiberInvariant (s : ℝ)
     have hc := hf.comp_continuous hm (fun k =>
       Matrix.GeneralLinearGroup.det_ne_zero (complexSU2Embedding k))
     have he : ∀ k : ComplexSU2,
-        matrixFunction f (complexSU2Embedding k : Matrix (Fin 2) (Fin 2) ℂ) =
+        matrixFunction f (complexSU2Embedding k) =
           compactRestriction s f k := by
       intro k
       rw [matrixFunction, dif_pos (Matrix.GeneralLinearGroup.det_ne_zero
@@ -87,7 +90,7 @@ private lemma ev_apply (p : MvPolynomial (Fin 3) ℂ) (x : S) :
   induction p using MvPolynomial.induction_on with
   | C a => simp [ev]
   | add p r hp hr => simpa only [map_add, ContinuousMap.add_apply] using congrArg₂ (· + ·) hp hr
-  | mul_X p i hp => simpa only [map_mul, ContinuousMap.mul_apply, ev, MvPolynomial.aeval_X, v, ContinuousMap.coe_mk, MvPolynomial.eval_mul, MvPolynomial.eval_X] using congrArg (· * x.val i) hp
+  | mul_X p i hp => simp_all [map_mul, ContinuousMap.mul_apply, DedekindZetaZeroFree.KPCplxHarmonicExtraction.CompactPolynomial.ev, MvPolynomial.aeval_X, DedekindZetaZeroFree.KPCplxHarmonicExtraction.CompactPolynomial.v, ContinuousMap.coe_mk, MvPolynomial.eval_mul, MvPolynomial.eval_X] <;> aesop
 
 lemma star_ev (p : MvPolynomial (Fin 3) ℂ) :
     ∃ r : MvPolynomial (Fin 3) ℂ, ev r = star (ev p) := by
@@ -136,16 +139,16 @@ theorem compact_polynomial_approximation (F : ComplexSU2 → ℂ)
   have hq : Function.Surjective q := by
     rintro ⟨x, k, rfl⟩
     exact ⟨k, rfl⟩
-  have hquot : Topology.IsQuotientMap q :=
+  have hquot  :=
     Topology.IsQuotientMap.of_surjective_continuous hq q.continuous
   have hfac : Function.FactorsThrough F q := by
     intro k t h
     exact hfiber k t (congrArg Subtype.val h)
-  let f : C(S, ℂ) := hquot.lift ⟨F, hF⟩ hfac
+  let f  := hquot.lift ⟨F, hF⟩ hfac
   have hdesc : ∀ k, f (q k) = F k := by
     intro k
     exact congrArg (fun g : C(ComplexSU2, ℂ) => g k) (hquot.lift_comp ⟨F, hF⟩ hfac)
-  have hmem : f ∈ closure (A : Set C(S, ℂ)) := by
+  have hmem : f ∈ closure A := by
     have ht := ContinuousMap.starSubalgebra_topologicalClosure_eq_top_of_separatesPoints A sep
     change f ∈ (A.topologicalClosure : Set C(S, ℂ))
     rw [ht]
@@ -159,7 +162,7 @@ theorem compact_polynomial_approximation (F : ComplexSU2 → ℂ)
     funext n k
     rw [← hp n, ev_apply]
     rfl
-  have hright : (fun k => f (q k)) = F := funext hdesc
+  have hright  := funext hdesc
   simpa only [Function.comp_def, hleft, hright] using hu
 
 end DedekindZetaZeroFree.KPCplxHarmonicExtraction.CompactPolynomial
@@ -173,25 +176,8 @@ namespace DedekindZetaZeroFree.KPCplxHarmonicExtraction.CompactPolynomial
 open KPCplxCharacterHaar KPCplxIntertwinerEigenvalues MeasureTheory Filter
 open scoped Topology
 
-private lemma entry_continuous (i j : Fin 2) :
-    Continuous (fun k : ComplexSU2 => (k : Matrix (Fin 2) (Fin 2) ℂ) i j) :=
-  (continuous_apply j).comp ((continuous_apply i).comp continuous_subtype_val)
 
-private lemma compactSphereCoordinate_continuous :
-    Continuous (compactSphereCoordinate : ComplexSU2 → Fin 3 → ℂ) := by
-  rw [continuous_pi_iff]
-  intro i
-  have h : Continuous (fun k : ComplexSU2 =>
-      (k : Matrix (Fin 2) (Fin 2) ℂ) 1 0 * star ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 1)) :=
-    (entry_continuous 1 0).mul (entry_continuous 1 1).star
-  fin_cases i
-  · simp only [compactSphereCoordinate, Matrix.cons_val_zero]
-    exact RCLike.continuous_ofReal.comp ((Complex.continuous_re.comp h).const_mul 2)
-  · simp only [compactSphereCoordinate, Matrix.cons_val_one, Matrix.head_cons]
-    exact RCLike.continuous_ofReal.comp ((Complex.continuous_im.comp h).const_mul 2)
-  · simp only [compactSphereCoordinate, Matrix.cons_val_two, Matrix.tail_cons]
-    exact RCLike.continuous_ofReal.comp
-      (((entry_continuous 1 0).norm.pow 2).sub ((entry_continuous 1 1).norm.pow 2))
+private alias compactSphereCoordinate_continuous := _root_.DedekindZetaZeroFree.KPCplxHarmonicExtraction.CompactPolynomial.coord_cont
 
 private lemma polynomialCompactRestriction_continuous (q : MvPolynomial (Fin 3) ℂ) :
     Continuous (polynomialCompactRestriction q) := by
@@ -202,12 +188,11 @@ private lemma su2HarmonicCharacter_continuous' (ℓ : ℕ) :
     Continuous (su2HarmonicCharacter ℓ) := by
   have htrace : ∀ n : ℕ, Continuous (fun k : ComplexSU2 =>
       KPCompactHarmonic.symmetricPowerTrace n
-        ⟨(k : Matrix (Fin 2) (Fin 2) ℂ),
+        ⟨k,
           (Matrix.mem_specialUnitaryGroup_iff.mp k.property).1⟩) := by
     intro n
     induction n using Nat.twoStepInduction with
-    | zero => simpa [KPCompactHarmonic.symmetricPowerTrace] using
-        (continuous_const : Continuous (fun _ : ComplexSU2 => (1 : ℂ)))
+    | zero => exact (continuous_const : Continuous (fun _ : ComplexSU2 => (1 : ℂ)))
     | one => simp only [KPCompactHarmonic.symmetricPowerTrace]; fun_prop
     | more n hn hn1 =>
         simp only [KPCompactHarmonic.symmetricPowerTrace]
@@ -217,7 +202,7 @@ private lemma su2HarmonicCharacter_continuous' (ℓ : ℕ) :
             Matrix.det (k : Matrix (Fin 2) (Fin 2) ℂ))).mul hn)
   unfold su2HarmonicCharacter KPCompactHarmonic.rankOneCharacter
   simp only [(Matrix.mem_specialUnitaryGroup_iff.mp (Subtype.prop _)).2, one_pow, div_one]
-  exact htrace (2 * ℓ)
+  apply htrace
 
 theorem character_convolution_tendsto_of_uniform (μ : Measure ComplexSU2)
     (hfinite : IsFiniteMeasure μ) (ℓ : ℕ) (F : ComplexSU2 → ℂ)
@@ -230,14 +215,14 @@ theorem character_convolution_tendsto_of_uniform (μ : Measure ComplexSU2)
       (𝓝 (∫ t : ComplexSU2,
         star (su2HarmonicCharacter ℓ t) * F (k * t) ∂μ)) := by
   classical
-  letI : IsFiniteMeasure μ := hfinite
+  letI  := hfinite
   letI : CompactSpace ComplexSU2 := isCompact_iff_compactSpace.mp (by
     convert complexSU2_isCompact using 1
     exact Subtype.range_coe.symm)
   have hmul : Continuous (fun t : ComplexSU2 => k * t) := by fun_prop
   have hcomp := hp.comp (fun t : ComplexSU2 => k * t)
   obtain ⟨M, hM⟩ : ∃ M, ∀ x, ‖F x‖ ≤ M := by
-    have hbdd : Bornology.IsBounded (Set.range F) := (isCompact_range hF).isBounded
+    have hbdd  := (isCompact_range hF).isBounded
     obtain ⟨M, hM⟩ := hbdd.exists_norm_le
     exact ⟨M, fun x => hM (F x) ⟨x, rfl⟩⟩
   obtain ⟨Mc, hMc⟩ : ∃ M, ∀ x, ‖su2HarmonicCharacter ℓ x‖ ≤ M := by
@@ -290,8 +275,7 @@ theorem harmonicCompactRestriction_isClosed (ℓ : ℕ) :
   haveI : Module.Finite ℂ (MvPolynomial.homogeneousSubmodule (Fin 3) ℂ ℓ) :=
     Module.Finite.of_fg (MvPolynomial.homogeneousSubmodule_fg (Fin 3) ℂ ℓ)
   haveI : FiniteDimensional ℂ (harmonicPolynomials ℓ) :=
-    Submodule.finiteDimensional_of_le (show harmonicPolynomials ℓ ≤
-      MvPolynomial.homogeneousSubmodule (Fin 3) ℂ ℓ from inf_le_left)
+    Submodule.finiteDimensional_of_le (inf_le_left)
   exact Submodule.closed_of_finiteDimensional _
 
 end DedekindZetaZeroFree.KPCplxHarmonicExtraction.CompactPolynomial
@@ -313,7 +297,7 @@ theorem characterAverage_compact_polynomial (s : ℝ) (μ : Measure ComplexSU2)
         polynomialCompactRestriction p k =
           characterAverage s μ ℓ f (complexSU2Embedding k) := by
   classical
-  letI : IsProbabilityMeasure μ := hprob
+  letI  := hprob
   obtain ⟨hcont, hfiber⟩ :=
     CompactPolynomial.principalSeries_compact_continuous_fiberInvariant s f
   obtain ⟨q, hq⟩ := CompactPolynomial.compact_polynomial_approximation
@@ -327,7 +311,7 @@ theorem characterAverage_compact_polynomial (s : ℝ) (μ : Measure ComplexSU2)
     apply tendsto_pi_nhds.mpr
     intro k
     have h := CompactPolynomial.character_convolution_tendsto_of_uniform
-      μ (inferInstance : IsFiniteMeasure μ) ℓ (compactRestriction s f)
+      μ inferInstance ℓ (compactRestriction s f)
       hcont q hq k
     have hscaled := h.const_mul (((2 * ℓ + 1 : ℕ) : ℂ))
     simpa only [hrestriction, characterAverage_formula, compactRestriction,

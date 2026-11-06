@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.DyadicUnitBlockBounds
 public import DedekindZetaZeroFree.Analysis.PartitionedQuadraticForms
 public import DedekindZetaZeroFree.Analysis.QuadraticFormRestriction
 public import DedekindZetaZeroFree.Arithmetic.Ideals.DyadicNormPartition
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve.Sieve
 
@@ -33,7 +36,7 @@ theorem global_from_shell_bounds
   have hη : 0 < ε / 2 := by linarith
   have hηle : 0 ≤ ε / 2 := hη.le
   obtain ⟨C, hC, hshellC⟩ := hshell (ε / 2) hη
-  have hC' : 0 ≤ C + 2 * A + 1 := unit_block_extension_constant_nonneg C A hC hA
+  have hC'  := unit_block_extension_constant_nonneg C A hC hA
   set k : ℝ := 2 + 1 / ((ε / 2) * Real.log 2) with hkdef
   have hk : 0 < k := by rw [hkdef]; exact DedekindZetaZeroFree.LargeSieve.Vendor.dyadicLength_small_power_constant_pos hη
   refine ⟨(C + 2 * A + 1) * k ^ 2, mul_nonneg hC' (sq_nonneg k), ?_⟩

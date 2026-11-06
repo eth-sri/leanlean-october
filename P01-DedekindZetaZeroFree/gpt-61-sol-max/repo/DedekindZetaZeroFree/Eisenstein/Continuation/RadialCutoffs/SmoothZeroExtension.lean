@@ -33,20 +33,23 @@ private theorem act_smooth (γ : KPCuspArithmetic.PGL2 F) :
   change ContDiff ℝ (⊤ : ℕ∞) (KPCuspSiegel.action F γ)
   unfold KPCuspSiegel.action KPCuspSiegel.glAction
   exact (KPArch.productAction_contDiff _ _).of_le (by simp)
-private theorem Q_invariant (i : Fin (H.atlas U).componentCount)
+section
+variable (i : Fin (H.atlas U).componentCount)
+include i
+private theorem Q_invariant  
     (g : KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative i))
     (x : S (F := F)) : Q (H := H) i (g.val • x) = Q (H := H) i x := by
   apply congrArg (KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative i))
   apply Quotient.sound
   exact ⟨g,rfl⟩
-private theorem component_injective (i : Fin (H.atlas U).componentCount) :
+private theorem component_injective   :
     Function.Injective (KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative i)) := by
   intro x y he
   have hh : (H.atlas U).components ⟨i,x⟩ = (H.atlas U).components ⟨i,y⟩ := by
     simpa only [(H.atlas U).components_formula, Q, chartLift,
       KPFiniteCuspAtlas.componentMap, KPCuspSiegel.projection, Quotient.lift_mk] using he
   exact eq_of_heq (Sigma.mk.inj ((H.atlas U).components.injective hh)).2
-private theorem same_component (i : Fin (H.atlas U).componentCount)
+private theorem same_component  
     (c : CuspIndex F ζ hζ U R P H) (x : S (F := F)) (z : KPCuspCharts.Coordinates F)
     (he : Q (H := H) i x = chartLift F ζ hζ U R P H c z) : i = c.1 := by
   have hh : (H.atlas U).components ⟨i, KPCuspSiegel.projection F _ x⟩ =
@@ -55,6 +58,8 @@ private theorem same_component (i : Fin (H.atlas U).componentCount)
     simpa only [(H.atlas U).components_formula, Q, chartLift,
       KPFiniteCuspAtlas.componentMap, KPCuspSiegel.projection, Quotient.lift_mk] using he
   exact congrArg Sigma.fst ((H.atlas U).components.injective hh)
+end
+
  def localHeight (γ : KPCuspArithmetic.PGL2 F) (x : S (F := F)) : ℝ :=
   KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) (γ • x)
 private theorem localHeight_smooth (γ : KPCuspArithmetic.PGL2 F) :
@@ -78,9 +83,12 @@ private theorem local_lift (c : CuspIndex F ζ hζ U R P H)
         ((KPCuspCharts.toArchHomeomorph F hd).symm _)) = _
   rw [Homeomorph.apply_symm_apply, smul_inv_smul]
   simpa only [Subgroup.coe_inv] using Q_invariant (H := H) c.1 g⁻¹ y
-private theorem interior_height (A : ℝ)
+section
+variable (A : ℝ)
     (buffer : CollarBuffer F ζ hζ U R P H A)
-    (c : CuspIndex F ζ hζ U R P H) (x : S (F := F))
+    (c : CuspIndex F ζ hζ U R P H)
+include A buffer c
+private theorem interior_height   (x : S (F := F))
     (hx : Q (H := H) c.1 x ∈ endSet F ζ hζ U R P H buffer.τ c) :
     ∃ γ : KPCuspArithmetic.PGL2 F, buffer.τ < localHeight γ x ∧
       (fun y => height F ζ hζ U R P H buffer.τ c (Q (H := H) c.1 y)) =ᶠ[𝓝 x]
@@ -113,8 +121,7 @@ private theorem interior_height (A : ℝ)
     rw [mul_smul]
     exact local_lift c buffer.positive_dimension g y
   rw [← hl, buffer.height_coordinates c w (hw ▸ hy), hw]
-private theorem zero_germ (A : ℝ) (buffer : CollarBuffer F ζ hζ U R P H A)
-    (c : CuspIndex F ζ hζ U R P H) (φ : ℝ → ℝ)
+private theorem zero_germ   (φ : ℝ → ℝ)
     (hzero : ∀ t, t ≤ A → φ t = 0) (p : Base F ζ hζ U)
     (hp : p ∉ endSet F ζ hζ U R P H buffer.τ c) :
     KPContActualCollarBuffer.zeroExtension F ζ hζ U R P H buffer.τ c φ =ᶠ[𝓝 p] 0 := by
@@ -131,8 +138,7 @@ private theorem zero_germ (A : ℝ) (buffer : CollarBuffer F ζ hζ U R P H A)
   · filter_upwards [isClosed_closure.isOpen_compl.mem_nhds hc] with y hy
     have he : y ∉ endSet F ζ hζ U R P H buffer.τ c := fun he => hy (subset_closure he)
     simp [KPContActualCollarBuffer.zeroExtension, he]
-private theorem upstairs_smooth (A : ℝ) (buffer : CollarBuffer F ζ hζ U R P H A)
-    (c : CuspIndex F ζ hζ U R P H) (φ : ℝ → ℝ)
+private theorem upstairs_smooth   (φ : ℝ → ℝ)
     (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (hzero : ∀ t, t ≤ A → φ t = 0)
     (i : Fin (H.atlas U).componentCount) :
     ContDiff ℝ (⊤ : ℕ∞) (fun x : S (F := F) =>
@@ -158,6 +164,8 @@ private theorem upstairs_smooth (A : ℝ) (buffer : CollarBuffer F ζ hζ U R P 
   · have he := (zero_germ A buffer c φ hzero (Q (H := H) i x) hx).comp_tendsto
       (Q_cont i).continuousAt
     exact (contDiffAt_const (c := (0 : ℝ))).congr_of_eventuallyEq he
+end
+
 private theorem labeledA_smooth : ContDiff ℝ (⊤ : ℕ∞)
     (labeledA (placeEquiv F ζ hζ) : M F → S (F := F)) := by
   apply contDiff_pi.mpr

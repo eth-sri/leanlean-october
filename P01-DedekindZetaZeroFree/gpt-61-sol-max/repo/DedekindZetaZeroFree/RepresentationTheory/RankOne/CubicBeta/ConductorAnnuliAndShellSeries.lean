@@ -11,29 +11,32 @@ namespace DedekindZetaZeroFree.KPRamifiedBetaShell
 
 open scoped ValuativeRel Topology
 
-def puncturedUnitRegion (K : Type*) [Field K] [ValuativeRel K] : Set K :=
+section
+variable (K : Type*) [Field K] [ValuativeRel K]
+include K
+def puncturedUnitRegion   : Set K :=
   {x | ValuativeRel.valuation K x = 1 ∧ x ≠ 1}
 
-def unitAnnulus (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
+def unitAnnulus   [TopologicalSpace K]
     [IsNonarchimedeanLocalField K] (j : ℕ) : Set K :=
   {x | ∃ u : (𝒪[K])ˣ, (u : K) = x ∧
     u ∈ CubicUnitCharacters.unitFiltration K j ∧
     u ∉ CubicUnitCharacters.unitFiltration K (j + 1)}
 
 private lemma unit_coe_injective
-    (K : Type*) [Field K] [ValuativeRel K] :
+      :
     Function.Injective (fun u : (𝒪[K])ˣ => (u : K)) := by
   intro u v h
   apply Units.ext
   exact Subtype.ext h
 
 private lemma unit_value_one
-    (K : Type*) [Field K] [ValuativeRel K] (u : (𝒪[K])ˣ) :
+      (u : (𝒪[K])ˣ) :
     ValuativeRel.valuation K (u : K) = 1 := by
   exact (Valuation.integer.integers (ValuativeRel.valuation K)).one_of_isUnit u.isUnit
 
 private lemma exists_unit
-    (K : Type*) [Field K] [ValuativeRel K] {x : K}
+      {x : K}
     (hx : ValuativeRel.valuation K x = 1) : ∃ u : (𝒪[K])ˣ, (u : K) = x := by
   let a : 𝒪[K] := ⟨x, by change ValuativeRel.valuation K x ≤ 1; rw [hx]⟩
   have ha : IsUnit a :=
@@ -41,7 +44,7 @@ private lemma exists_unit
   exact ⟨ha.unit, congrArg (fun z : 𝒪[K] => (z : K)) ha.unit_spec⟩
 
 private lemma filtration_separates
-    (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
+      [TopologicalSpace K]
     [IsNonarchimedeanLocalField K] (u : (𝒪[K])ˣ) (hu : u ≠ 1) :
     ∃ j, u ∉ CubicUnitCharacters.unitFiltration K j := by
   by_contra! h
@@ -55,7 +58,7 @@ private lemma filtration_separates
   simpa only [Ideal.mem_bot, sub_eq_zero, Units.val_one] using hm
 
 theorem unit_annuli_partition
-    (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
+      [TopologicalSpace K]
     [IsNonarchimedeanLocalField K] [MeasurableSpace K] [BorelSpace K] :
     MeasurableSet (puncturedUnitRegion K) ∧
     (∀ j : ℕ, MeasurableSet (unitAnnulus K j)) ∧
@@ -124,6 +127,8 @@ theorem unit_annuli_partition
     rcases lt_or_gt_of_ne hij with hlt | hgt
     · exact hnu (CubicUnitCharacters.unitFiltration_antitone K (by omega) hv)
     · exact hnv (CubicUnitCharacters.unitFiltration_antitone K (by omega) hu)
+end
+
 
 end DedekindZetaZeroFree.KPRamifiedBetaShell
 
@@ -576,13 +581,18 @@ variable (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
   [IsNonarchimedeanLocalField K] [MeasurableSpace K] [BorelSpace K]
 local instance : UniformSpace K := IsTopologicalAddGroup.rightUniformSpace K
 local instance : IsUniformAddGroup K := isUniformAddGroup_of_addCommGroup
-private lemma unit_val (u : (𝒪[K])ˣ) : ValuativeRel.valuation K (u : K) = 1 := by
+section
+variable (u : (𝒪[K])ˣ)
+include u
+private lemma unit_val   : ValuativeRel.valuation K (u : K) = 1 := by
   exact (Valuation.integer.integers (ValuativeRel.valuation K)).one_of_isUnit u.isUnit
- noncomputable def mulEquiv (u : (𝒪[K])ˣ) : K ≃ₜ+ K :=
+ noncomputable def mulEquiv   : K ≃ₜ+ K :=
   { DistribMulAction.toAddEquiv K (Units.map (𝒪[K]).subtype.toMonoidHom u) with
     continuous_toFun := by change Continuous (fun x : K => (u : K) * x); fun_prop
     continuous_invFun := by change Continuous (fun x : K => ((u⁻¹ : (𝒪[K])ˣ) : K) * x); fun_prop }
-private lemma mulEquiv_apply (u : (𝒪[K])ˣ) (x : K) : mulEquiv K u x = (u : K) * x := rfl
+private lemma mulEquiv_apply   (x : K) : mulEquiv K u x = (u : K) * x := rfl
+end
+
 private lemma unit_preserving (μ : Measure K) [μ.IsAddHaarMeasure] (u : (𝒪[K])ˣ) :
     MeasurePreserving (mulEquiv K u) μ μ := by
   letI := KPJointRegulator.MellinBetaIntegrability.localField_secondCountable K

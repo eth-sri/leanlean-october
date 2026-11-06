@@ -18,42 +18,48 @@ variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
 variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
 variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 
-def baseMeasure (C : ShrunkChart F ζ hζ U R P H) : Measure C.baseDomain :=
+
+local notation:max "current_ShrunkChart" => ShrunkChart F ζ hζ U R P H
+
+def baseMeasure (C : current_ShrunkChart) : Measure C.baseDomain :=
   Measure.comap (Subtype.val : C.baseDomain → KPFiniteCuspAtlas.rawXU F ζ hζ U)
     ((KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U).restrict C.baseDomain)
 
 variable {F ζ hζ U R P H}
 
-def NonnegativeDescentIdentities (C : ShrunkChart F ζ hζ U R P H)
+
+local notation:max "current_baseMeasure" => baseMeasure F ζ hζ U R P H
+
+def NonnegativeDescentIdentities (C : current_ShrunkChart)
     (f : C.domain → ℝ≥0∞) (fbar : C.baseDomain → ℝ≥0∞) : Prop :=
   (∫⁻ x, f x ∂C.liftedMeasure) =
       (∫⁻ b, fbar b ∂baseMeasure F ζ hζ U R P H C) ∧
     ∀ E : Set C.baseDomain, MeasurableSet E →
       (∫⁻ x, f x ∂(C.liftedMeasure.restrict (C.quotientMap ⁻¹' E))) =
-        (∫⁻ b, fbar b ∂((baseMeasure F ζ hζ U R P H C).restrict E))
+        (∫⁻ b, fbar b ∂((current_baseMeasure C).restrict E))
 
-def ComplexDescentIdentities (C : ShrunkChart F ζ hζ U R P H)
+def ComplexDescentIdentities (C : current_ShrunkChart)
     (f : C.domain → ℂ) (fbar : C.baseDomain → ℂ) : Prop :=
-  (Integrable f C.liftedMeasure ↔ Integrable fbar (baseMeasure F ζ hζ U R P H C)) ∧
-    ((Integrable f C.liftedMeasure ∨ Integrable fbar (baseMeasure F ζ hζ U R P H C)) →
+  (Integrable f C.liftedMeasure ↔ Integrable fbar (current_baseMeasure C)) ∧
+    ((Integrable f C.liftedMeasure ∨ Integrable fbar (current_baseMeasure C)) →
       (∫ x, f x ∂C.liftedMeasure) = (∫ b, fbar b ∂baseMeasure F ζ hζ U R P H C)) ∧
     ∀ E : Set C.baseDomain, MeasurableSet E →
       (Integrable f (C.liftedMeasure.restrict (C.quotientMap ⁻¹' E)) ↔
-        Integrable fbar ((baseMeasure F ζ hζ U R P H C).restrict E)) ∧
+        Integrable fbar ((current_baseMeasure C).restrict E)) ∧
       ((Integrable f (C.liftedMeasure.restrict (C.quotientMap ⁻¹' E)) ∨
-        Integrable fbar ((baseMeasure F ζ hζ U R P H C).restrict E)) →
+        Integrable fbar ((current_baseMeasure C).restrict E)) →
         (∫ x, f x ∂(C.liftedMeasure.restrict (C.quotientMap ⁻¹' E))) =
-          (∫ b, fbar b ∂((baseMeasure F ζ hζ U R P H C).restrict E)))
+          (∫ b, fbar b ∂((current_baseMeasure C).restrict E)))
 
-private theorem shrunk_descends {C : ShrunkChart F ζ hζ U R P H} {S : Type*}
+private theorem shrunk_descends {C : current_ShrunkChart} {S : Type*}
     [MeasurableSpace S] (f : C.domain → S) (hf : Measurable f)
     (hinv : ∀ σ y, f (C.action σ y) = f y) :
     BorelDescends C.quotientMap f :=
   shrunk_chart_borel_descent F ζ hζ U R P H C f hf hinv
 
-theorem chart_pushforward (C : ShrunkChart F ζ hζ U R P H) :
+theorem chart_pushforward (C : current_ShrunkChart) :
     Measurable C.quotientMap ∧
-      Measure.map C.quotientMap C.liftedMeasure = baseMeasure F ζ hζ U R P H C := by
+      Measure.map C.quotientMap C.liftedMeasure = current_baseMeasure C := by
   have h := every_shrunkChart_properties F ζ hζ U R P H C
   have hq : Measurable C.quotientMap :=
     h.measurable.subtype_mk (h := fun y => Set.mem_range_self y)
@@ -61,10 +67,10 @@ theorem chart_pushforward (C : ShrunkChart F ζ hζ U R P H) :
   have hemb : MeasurableEmbedding
       (Subtype.val : C.baseDomain → KPFiniteCuspAtlas.rawXU F ζ hζ U) :=
     MeasurableEmbedding.subtype_coe h.base_measurable
-  have hval : Measure.map Subtype.val (baseMeasure F ζ hζ U R P H C) =
+  have hval : Measure.map Subtype.val (current_baseMeasure C) =
       (KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U).restrict
         C.baseDomain := by
-    rw [show baseMeasure F ζ hζ U R P H C = Measure.comap Subtype.val
+    rw [show current_baseMeasure C = Measure.comap Subtype.val
       ((KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U).restrict
         C.baseDomain) from rfl]
     rw [map_comap_subtype_coe h.base_measurable,
@@ -74,14 +80,14 @@ theorem chart_pushforward (C : ShrunkChart F ζ hζ U R P H) :
   rw [show (Subtype.val ∘ C.quotientMap) = C.toBase from rfl]
   rw [h.exact_pushforward, hval]
 
-theorem chart_restricted_pushforward (C : ShrunkChart F ζ hζ U R P H)
+theorem chart_restricted_pushforward (C : current_ShrunkChart)
     (E : Set C.baseDomain) (hE : MeasurableSet E) :
     Measure.map C.quotientMap (C.liftedMeasure.restrict (C.quotientMap ⁻¹' E)) =
-      (baseMeasure F ζ hζ U R P H C).restrict E := by
+      (current_baseMeasure C).restrict E := by
   rw [← (chart_pushforward C).2]
   exact (Measure.restrict_map (chart_pushforward C).1 hE).symm
 
-theorem chart_lintegral_descent (C : ShrunkChart F ζ hζ U R P H)
+theorem chart_lintegral_descent (C : current_ShrunkChart)
     (f : C.domain → ℝ≥0∞) (hf : Measurable f)
     (hinv : ∀ σ y, f (C.action σ y) = f y)
     (fbar : C.baseDomain → ℝ≥0∞) (hbar : Measurable fbar)
@@ -96,7 +102,7 @@ theorem chart_lintegral_descent (C : ShrunkChart F ζ hζ U R P H)
     rw [← chart_restricted_pushforward C E hE]
     exact ((lintegral_map hbar hq).trans (lintegral_congr fun y => hdesc y)).symm
 
-theorem chart_complex_descent (C : ShrunkChart F ζ hζ U R P H)
+theorem chart_complex_descent (C : current_ShrunkChart)
     (f : C.domain → ℂ) (hf : Measurable f)
     (hinv : ∀ σ y, f (C.action σ y) = f y)
     (fbar : C.baseDomain → ℂ) (hbar : Measurable fbar)
@@ -120,13 +126,13 @@ theorem chart_complex_descent (C : ShrunkChart F ζ hζ U R P H)
     · rw [← hmapE, integral_map hq.aemeasurable hbar.aestronglyMeasurable]
       exact integral_congr_ae (Filter.Eventually.of_forall fun y => (hdesc y).symm)
 
-structure ChartDescentIntegrals (C : ShrunkChart F ζ hζ U R P H) : Prop where
+structure ChartDescentIntegrals (C : current_ShrunkChart) : Prop where
   measurable : Measurable C.quotientMap
   exact_pushforward : Measure.map C.quotientMap C.liftedMeasure =
-    baseMeasure F ζ hζ U R P H C
+    current_baseMeasure C
   restricted_pushforward : ∀ E : Set C.baseDomain, MeasurableSet E →
     Measure.map C.quotientMap (C.liftedMeasure.restrict (C.quotientMap ⁻¹' E)) =
-      (baseMeasure F ζ hζ U R P H C).restrict E
+      (current_baseMeasure C).restrict E
   nonnegative : ∀ (f : C.domain → ℝ≥0∞), Measurable f →
     (∀ σ y, f (C.action σ y) = f y) →
     BorelDescends C.quotientMap f ∧
@@ -138,7 +144,7 @@ structure ChartDescentIntegrals (C : ShrunkChart F ζ hζ U R P H) : Prop where
       ∀ fbar : C.baseDomain → ℂ, Measurable fbar →
         (∀ y, fbar (C.quotientMap y) = f y) → ComplexDescentIdentities C f fbar
 
-theorem chartDescentIntegrals (C : ShrunkChart F ζ hζ U R P H) :
+theorem chartDescentIntegrals (C : current_ShrunkChart) :
     ChartDescentIntegrals C := by
   have hp := chart_pushforward C
   refine ⟨hp.1, hp.2, ?_, ?_, ?_⟩

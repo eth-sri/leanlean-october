@@ -108,17 +108,17 @@ theorem fractionalIdeal_finitePrimeIdele
               (nonZeroDivisors (𝓞 K)) K)
     rw [FractionalIdeal.count_maximal_coprime K w (Ne.symm hw)]
 
-/-- The ordinary ideal class of the normalized one-place prime idele is the
-class of the corresponding prime ideal. -/
-@[simp]
-theorem idealClass_finitePrimeIdele
-    (v : HeightOneSpectrum (𝓞 K)) :
-    idealClass (finitePrimeIdele v) =
-      ClassGroup.mk K (FractionalIdealGroup.prime v) := by
-  change
-    ClassGroup.mk K (fractionalIdeal (finitePrimeIdele v)) =
-      ClassGroup.mk K (FractionalIdealGroup.prime v)
-  rw [fractionalIdeal_finitePrimeIdele]
+
+
+
+
+
+
+
+
+
+
+
 
 end IdeleGroup
 

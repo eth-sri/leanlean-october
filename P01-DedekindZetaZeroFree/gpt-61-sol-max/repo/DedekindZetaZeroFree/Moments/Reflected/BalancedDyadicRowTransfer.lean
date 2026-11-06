@@ -18,7 +18,10 @@ def rowIdeal (A : SArithmeticData F) (m : ThetaReflectionData.Row A) : A.Exterio
   A.exteriorIdealEquiv.symm ⟨Ideal.span {m.val}, by
     exact fun h => m.property (Ideal.span_singleton_eq_bot.mp h)⟩
 
-def canonicalRow (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+section
+variable (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+include A D in
+def canonicalRow  
     (u : A.Rˣ) (I : A.Exterior) : ThetaReflectionData.Row A :=
   ⟨(u : A.R) * D.generator I, mul_ne_zero u.ne_zero (D.generates I).1⟩
 
@@ -33,8 +36,8 @@ theorem span_rowIdeal (A : SArithmeticData F) (m : ThetaReflectionData.Row A) :
     exact congrArg Subtype.val h
   exact h'.symm
 
-theorem exists_unit_mul_generator (A : SArithmeticData F)
-    (D : ComparisonPoissonCoefficientData F A) (m : ThetaReflectionData.Row A) :
+include A D in
+theorem exists_unit_mul_generator   (m : ThetaReflectionData.Row A) :
     ∃ ε : A.Rˣ, m.val = (ε : A.R) * D.generator (rowIdeal A m) := by
   have hspan : Ideal.span {m.val} = Ideal.span {D.generator (rowIdeal A m)} := by
     rw [span_rowIdeal A m, (D.generates (rowIdeal A m)).2]
@@ -43,7 +46,8 @@ theorem exists_unit_mul_generator (A : SArithmeticData F)
   refine ⟨ε⁻¹, ?_⟩
   rw [← hε', ← mul_assoc, ← Units.val_mul, inv_mul_cancel, Units.val_one, one_mul]
 
-def dyadicRow (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+include A D in
+def dyadicRow  
     (u : A.Rˣ) (h d : A.Exterior) : ThetaReflectionData.Row A :=
   ⟨(u : A.R) * D.generator h * D.generator d,
     mul_ne_zero (mul_ne_zero u.ne_zero (D.generates h).1) (D.generates d).1⟩
@@ -51,18 +55,21 @@ def dyadicRow (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
 def UnitRepresentatives (A : SArithmeticData F) (U : Finset A.Rˣ) : Prop :=
   ∀ v : A.Rˣ, ∃! u : {u : A.Rˣ // u ∈ U}, ∃ w : A.Rˣ, v = u.val * w ^ 6
 
-def AllowedSection (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+include A D in
+def AllowedSection  
     (L : Subgroup A.V) : Prop :=
   ∀ I, A.IsAllowed L (ThetaReflectionData.rowUnit A
     ⟨D.generator I, (D.generates I).1⟩)
 
-def idealUnitMass (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+include A D in
+def idealUnitMass  
     (U : Finset A.Rˣ) (X Z : ℝ) : ℝ :=
   ∑ u ∈ U, ∑' I : A.Exterior,
     if A.exteriorNorm I ≤ X then
       ‖ThetaReflectionData.forwardB A D (canonicalRow A D u I) Z‖ ^ 2 else 0
 
-def DyadicBound (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+include A D in
+def DyadicBound  
     (U : Finset A.Rˣ) (M Cstar : ℝ) : Prop :=
   ∀ δ : ℝ, 0 < δ → ∃ K : ℝ, 0 < K ∧
     ∀ Z P Q : ℝ, 1 ≤ Z → 1 ≤ P → 1 ≤ Q → P * Q ≤ Cstar * Z ^ M →
@@ -167,12 +174,13 @@ theorem compactShape_idealFiber_bound (A : SArithmeticData F)
     rw [Finset.not_nonempty_iff_eq_empty.mp hn]
     exact Nat.zero_le _
 
-def InCanonicalFiber (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+include A D in
+def InCanonicalFiber  
     (u : A.Rˣ) (I : A.Exterior) (m : ThetaReflectionData.Row A) : Prop :=
   ∃ w : A.Rˣ, m = ThetaReflectionData.sixthTranslate A w (canonicalRow A D u I)
 
-private theorem rowIdeal_canonical (A : SArithmeticData F)
-    (D : ComparisonPoissonCoefficientData F A) (u : A.Rˣ) (I : A.Exterior) :
+include A D in
+private theorem rowIdeal_canonical   (u : A.Rˣ) (I : A.Exterior) :
     rowIdeal A (canonicalRow A D u I) = I := by
   apply A.exteriorIdealEquiv.injective
   apply Subtype.ext
@@ -188,15 +196,15 @@ private theorem rowIdeal_sixth (A : SArithmeticData F) (w : A.Rˣ)
   apply Subtype.ext
   exact Ideal.span_singleton_mul_left_unit (w.isUnit.pow 6) m.val
 
-private theorem fiber_ideal (A : SArithmeticData F)
-    (D : ComparisonPoissonCoefficientData F A) (u : A.Rˣ) (I : A.Exterior)
+include A D in
+private theorem fiber_ideal   (u : A.Rˣ) (I : A.Exterior)
     (m : ThetaReflectionData.Row A) (hm : InCanonicalFiber A D u I m) :
     rowIdeal A m = I := by
   obtain ⟨w, rfl⟩ := hm
   rw [rowIdeal_sixth, rowIdeal_canonical]
 
-private theorem exists_fiber (A : SArithmeticData F)
-    (D : ComparisonPoissonCoefficientData F A) (U : Finset A.Rˣ)
+include A D in
+private theorem exists_fiber   (U : Finset A.Rˣ)
     (hU : UnitRepresentatives A U) (m : ThetaReflectionData.Row A) :
     ∃ u ∈ U, InCanonicalFiber A D u (rowIdeal A m) m := by
   have hspan : Ideal.span {m.val} = Ideal.span {D.generator (rowIdeal A m)} := by
@@ -218,8 +226,9 @@ private theorem boundedIdeals_finite (A : SArithmeticData F) (X : ℝ) :
     (by intro I _ J _ h; apply Subtype.ext; exact congrArg (fun x : NonzeroIdeal F => x.val) h)).subset
     (by intro I hI; exact hI)
 
+include A D in
 theorem multisetMass_le_idealUnitMass
-    (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+     
     (hchar : ThetaReflectionData.SixthUnitCharacterCompatibility A D)
     (U : Finset A.Rˣ) (hU : UnitRepresentatives A U)
     (rows : Multiset (ThetaReflectionData.Row A)) (X Z : ℝ) (k₀ : ℕ)
@@ -268,8 +277,9 @@ theorem multisetMass_le_idealUnitMass
       simpa [ideals] using hI
     simp [hnot]
 
+include A D in
 theorem idealUnitMass_bound_of_dyadic
-    (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+     
     (hCl : Subsingleton (ClassGroup A.R)) (H : A.V → A.V → Fˣ)
     (L : Subgroup A.V) (hL : A.IsSUnitIsotropicComplement H L)
     (hgen : AllowedSection A D L)
@@ -335,8 +345,9 @@ theorem idealUnitMass_bound_of_dyadic
       gcongr
       exact le_add_of_nonneg_right zero_le_one
 
+include A D in
 theorem balancedRowMass_bound_of_dyadic
-    (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+     
     (hCl : Subsingleton (ClassGroup A.R)) (H : A.V → A.V → Fˣ)
     (L : Subgroup A.V) (hL : A.IsSUnitIsotropicComplement H L)
     (hgen : AllowedSection A D L)
@@ -379,6 +390,8 @@ theorem balancedRowMass_bound_of_dyadic
     _ = ((k₀ : ℝ) + 1) * C * Z ^ (2 * M - 1 + ε) := by
       push_cast
       ring
+end
+
 
 end ActualRowTransfer
 end

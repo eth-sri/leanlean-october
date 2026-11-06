@@ -587,7 +587,7 @@ open scoped Classical NumberField SchwartzMap
 open NumberField IsDedekindDomain MeasureTheory
 
 variable (F : Type) [Field F] [NumberField F] [NumberField.IsTotallyComplex F]
-variable (S : Finset (HeightOneSpectrum (𝓞 F)))
+
 
 theorem archTensor_integrable_of_factors
     (g : (v : {v : InfinitePlace F // v.IsComplex}) → ℂ → ℂ)

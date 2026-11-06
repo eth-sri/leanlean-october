@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import GaloisCohomology.Kummer.Concrete.Cyclotomic.RationalCyclotomicCharacter
 public import Mathlib.FieldTheory.Galois.Profinite
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -55,16 +58,16 @@ theorem rationalCyclotomicCharacterPrimeProduct_toZModPow_of_dvd
     exact rationalCyclotomicLevel_isCyclotomicExtension m
   have hFK : F ≤ K :=
     rationalCyclotomicLevel_mono h
-  let ζ : F :=
+  let ζ  :=
     IsCyclotomicExtension.zeta (p.1 ^ k) ℚ F
   have hζ : IsPrimitiveRoot ζ (p.1 ^ k) :=
     IsCyclotomicExtension.zeta_spec (p.1 ^ k) ℚ F
-  let x : rationalCyclotomicField :=
+  let x  :=
     algebraMap F rationalCyclotomicField ζ
   have hζx : IsPrimitiveRoot x (p.1 ^ k) :=
     hζ.map_of_injective
       (algebraMap F rationalCyclotomicField).injective
-  let y : K :=
+  let y  :=
     IntermediateField.inclusion hFK ζ
   have hy : y ^ (n : ℕ) = 1 := by
     apply Subtype.ext
@@ -78,16 +81,12 @@ theorem rationalCyclotomicCharacterPrimeProduct_toZModPow_of_dvd
       (n : ℕ) K (σ.restrictNormal K)
   have ha :
       (σ.restrictNormal F) ζ =
-        ζ ^ a.val.val := by
-    exact
-      IsCyclotomicExtension.Rat.galEquivZMod_apply_of_pow_eq
+        ζ ^ a.val.val := IsCyclotomicExtension.Rat.galEquivZMod_apply_of_pow_eq
         (p.1 ^ k) F (σ.restrictNormal F) hζ.pow_eq_one
   have hb :
       (σ.restrictNormal K) y =
         y ^ b.val.val := by
-    exact
-      IsCyclotomicExtension.Rat.galEquivZMod_apply_of_pow_eq
-        (n : ℕ) K (σ.restrictNormal K) hy
+    apply IsCyclotomicExtension.Rat.galEquivZMod_apply_of_pow_eq <;> assumption
   change
     Units.map (PadicInt.toZModPow k).toMonoidHom
         (rationalCyclotomicCharacterPrimeProduct σ p) =
@@ -96,8 +95,7 @@ theorem rationalCyclotomicCharacterPrimeProduct_toZModPow_of_dvd
     Units.map (PadicInt.toZModPow k).toMonoidHom
         (rationalCyclotomicCharacterPrimeProduct σ p) =
         a := by
-      simpa only [a, F, m] using
-        rationalCyclotomicCharacterPrimeProduct_toZModPow σ p k
+      apply rationalCyclotomicCharacterPrimeProduct_toZModPow
     _ = ZMod.unitsMap h b := by
       suffices x ^ a.val.val = x ^ b.val.val by
         rw [(hζx.isOfFinOrder (NeZero.ne _)).pow_inj_mod,
@@ -109,8 +107,7 @@ theorem rationalCyclotomicCharacterPrimeProduct_toZModPow_of_dvd
       calc
         x ^ a.val.val =
             algebraMap F rationalCyclotomicField
-              (ζ ^ a.val.val) := by
-          rw [map_pow]
+              (ζ ^ a.val.val) := rfl
         _ = algebraMap F rationalCyclotomicField
               ((σ.restrictNormal F) ζ) := by
           rw [ha]
@@ -143,7 +140,7 @@ theorem rationalCyclotomicCharacterPrimeProduct_injective :
       ZMod.equivPi (n := (n : ℕ)) n.2.ne'
     apply e.injective
     funext q
-    have hqPrime : q.1.Prime :=
+    have hqPrime  :=
       Nat.prime_of_mem_primeFactors q.2
     let p : Nat.Primes := ⟨q.1, hqPrime⟩
     let k := (n : ℕ).factorization q.1
@@ -171,9 +168,7 @@ theorem rationalCyclotomicCharacterPrimeProduct_injective :
             ZMod.castHom hpow (ZMod (p.1 ^ k)) z
       exact RingHom.congr_fun (Subsingleton.elim _ _) z
     rw [heval, heval]
-    simpa only [p, k, ZMod.unitsMap_val,
-      ZMod.castHom_apply] using
-      congrArg
+    exact congrArg
         (fun u : (ZMod (p.1 ^ k))ˣ =>
           (u : ZMod (p.1 ^ k)))
         hpReduction
@@ -294,7 +289,7 @@ theorem rationalCyclotomicCharacter_surjective :
     let algFK : Algebra F K :=
       RingHom.toAlgebra
         (IntermediateField.inclusion hFK).toRingHom
-    let : SMul F K :=
+    let  :=
       @Algebra.toSMul F K _ _ algFK
     let : Algebra F K := algFK
     let : IsScalarTower ℚ F K :=
@@ -324,9 +319,7 @@ theorem rationalCyclotomicCharacter_surjective :
         ZMod.castHom hnN (ZMod (n : ℕ))
             (zHatReduction (N : ℕ) N.2 (u : ZHat)) =
           zHatReduction (n : ℕ) n.2 (u : ZHat)
-      exact
-        zHatReduction_transition
-          n.2 N.2 hnN (u : ZHat)
+      apply zHatReduction_transition
     change σ.restrictNormal F = τ n
     calc
       σ.restrictNormal F =
@@ -335,11 +328,8 @@ theorem rationalCyclotomicCharacter_surjective :
         IsScalarTower.AlgEquiv.restrictNormalHom_comp_apply F K σ
       _ = (AlgEquiv.restrictNormalHom F) (τ N) := by
         have hσN' :
-            (AlgEquiv.restrictNormalHom K) σ = τ N := by
-          simpa only [K] using hσN
-        exact congrArg
-          (AlgEquiv.restrictNormalHom F)
-          hσN'
+            (AlgEquiv.restrictNormalHom K) σ = τ N := hσN
+        apply congrArg <;> assumption
       _ = τ n := hτ
   obtain ⟨σ, hσ⟩ :=
     CompactSpace.iInter_nonempty hclosed hfip
@@ -358,7 +348,7 @@ theorem rationalCyclotomicCharacter_surjective :
   intro k
   let n : ℕ+ :=
     ⟨p.1 ^ k, pow_pos p.2.pos k⟩
-  have hσn : σ ∈ C n :=
+  have hσn  :=
     Set.mem_iInter.mp hσ n
   change
     σ.restrictNormal (rationalCyclotomicLevel n) =
@@ -393,9 +383,7 @@ theorem rationalCyclotomicCharacter_surjective :
           (pow_pos p.2.pos k) (u : ZHat)
     rw [
       zHatUnitsContinuousMulEquivPrimeProduct_coe_apply]
-    simpa only [RingHom.comp_apply, zHatPadicReduction,
-      zHatReductionRingHom_apply] using
-      RingHom.congr_fun
+    exact RingHom.congr_fun
         (toZModPow_zHatToPadicInt p k) (u : ZHat)
   exact
     congrArg

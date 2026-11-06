@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Valuation.Henselian.Factorization.Assembly
 public import ValuedFieldTheory.Valuation.AbsoluteValue.PrincipalAdicCompleteness
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -65,14 +68,12 @@ theorem henselFactorization_complete_exists_factorization
       ∀ π : V, π ≠ 0 → π ∈ IsLocalRing.maximalIdeal V →
         IsPrecomplete (Ideal.span ({π} : Set V)) V := by
     intro π hπne hπmem
-    exact principalPrecomplete_of_complete
-      v hcomplete hnonarch hπne hπmem
+    apply principalPrecomplete_of_complete <;> assumption
   let hhaus :
       ∀ π : V, π ≠ 0 → π ∈ IsLocalRing.maximalIdeal V →
         IsHausdorff (Ideal.span ({π} : Set V)) V := by
     intro π hπne hπmem
-    exact principalHausdorff_of_nonzero_mem_maximalIdeal
-      v hnonarch hπne hπmem
+    apply principalHausdorff_of_nonzero_mem_maximalIdeal <;> assumption
   rcases
       henselFactorization_exists_limit_factorization_of_residual_factors_valuationRing_principal
         (R := V) hpre hhaus

@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import Mathlib.SetTheory.Cardinal.Finite
 public import ClassFieldTheory.LubinTate.EqualCharacteristic.Frobenius.CoefficientFrobenius
 public import ClassFieldTheory.LubinTate.EqualCharacteristic.Existence.LaurentLocalField
 public import Mathlib.RingTheory.PowerSeries.Evaluation
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -46,12 +49,15 @@ namespace EqualCharacteristic
 
 variable (k : Type u) [Field k] [Finite k]
 
+section
+variable {K : Type u} {Γ : Type v} [Field K]
+    [LinearOrderedCommGroupWithZero Γ] [Valued K Γ]
+include K Γ
 /-- The valuation balls in a valued integer ring, expressed as genuine
 ideals, form its neighbourhood basis at zero. -/
 theorem valuedInteger_hasBasis_ltIdeal
-    {K : Type u} {Γ : Type v} [Field K]
-    [LinearOrderedCommGroupWithZero Γ] [Valued K Γ] :
-    (𝓝 (0 : Valued.integer K)).HasBasis
+      :
+    (𝓝 (0)).HasBasis
       (fun _ : (MonoidWithZeroHom.ValueGroup₀
         ((Valued.v : Valuation K Γ) : K →*₀ Γ))ˣ ↦ True)
       (fun γ ↦ (Valuation.ltIdeal (Valued.v : Valuation K Γ)
@@ -63,9 +69,7 @@ theorem valuedInteger_hasBasis_ltIdeal
     ((↑) : Valued.integer K → K)).congr (fun _ ↦ Iff.rfl) ?_
   intro γ _
   ext x
-  change (Valued.v : Valuation K Γ).restrict x < (γ.1 :
-      MonoidWithZeroHom.ValueGroup₀
-        ((Valued.v : Valuation K Γ) : K →*₀ Γ)) ↔
+  change (Valued.v : Valuation K Γ).restrict x < (γ.1) ↔
     (Valued.v : Valuation K Γ) (x : K) <
       ((Units.map (MonoidWithZeroHom.ValueGroup₀.embedding
         (f := ((Valued.v : Valuation K Γ) : K →*₀ Γ))) γ : Γˣ) : Γ)
@@ -75,8 +79,7 @@ theorem valuedInteger_hasBasis_ltIdeal
 /-- The native topology on a valued integer ring is linear: its valuation
 balls are ideals. -/
 theorem valuedIntegerLinearTopology
-    {K : Type u} {Γ : Type v} [Field K]
-    [LinearOrderedCommGroupWithZero Γ] [Valued K Γ] :
+      :
     IsLinearTopology (Valued.integer K) (Valued.integer K) :=
   IsLinearTopology.mk_of_hasBasis (Valued.integer K)
     (valuedInteger_hasBasis_ltIdeal (K := K))
@@ -84,40 +87,40 @@ theorem valuedIntegerLinearTopology
 /-- A closed valued integer ring inherits completeness from its fraction
 field. -/
 theorem valuedIntegerCompleteSpace
-    {K : Type u} {Γ : Type v} [Field K]
-    [LinearOrderedCommGroupWithZero Γ] [Valued K Γ] [CompleteSpace K] :
+      [CompleteSpace K] :
     CompleteSpace (Valued.integer K) :=
   (Valued.isClosed_integer K).completeSpace_coe
 
 /-- The induced uniformity on a valued integer ring is compatible with its
 additive group. -/
 theorem valuedIntegerIsUniformAddGroup
-    {K : Type u} {Γ : Type v} [Field K]
-    [LinearOrderedCommGroupWithZero Γ] [Valued K Γ] :
+      :
     IsUniformAddGroup (Valued.integer K) :=
   (Valued.integer K).toAddSubgroup.isUniformAddGroup
+end
 
-noncomputable local instance valuedIntegerLinearTopologyInstance
-    {K : Type u} {Γ : Type v} [Field K]
-    [LinearOrderedCommGroupWithZero Γ] [Valued K Γ] :
-    IsLinearTopology (Valued.integer K) (Valued.integer K) :=
-  valuedIntegerLinearTopology
 
-noncomputable local instance valuedIntegerCompleteSpaceInstance
-    {K : Type u} {Γ : Type v} [Field K]
-    [LinearOrderedCommGroupWithZero Γ] [Valued K Γ] [CompleteSpace K] :
-    CompleteSpace (Valued.integer K) :=
-  valuedIntegerCompleteSpace
 
-noncomputable local instance valuedIntegerIsUniformAddGroupInstance
-    {K : Type u} {Γ : Type v} [Field K]
-    [LinearOrderedCommGroupWithZero Γ] [Valued K Γ] :
-    IsUniformAddGroup (Valued.integer K) :=
-  valuedIntegerIsUniformAddGroup
 
-omit [Finite k] in
-noncomputable local instance equalCharacteristicCoefficientUniformSpace :
-    UniformSpace (AlgebraicClosure k) := ⊥
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The fixed elements of arithmetic Frobenius in the algebraic closure are
 exactly the embedded elements of the finite coefficient field. -/
@@ -129,14 +132,14 @@ theorem equalCharacteristicCoefficientFrobenius_fixed_iff
   · intro hx
     have hxpow : x ^ Nat.card k = x := by
       simpa [equalCharacteristicCoefficientFrobenius_apply] using hx
-    let : Fintype k := Fintype.ofFinite k
+    let  := Fintype.ofFinite k
     have hxint : IsIntegral k x :=
       (Algebra.IsAlgebraic.isAlgebraic x).isIntegral
     have hroot : Polynomial.aeval x
         (Polynomial.X ^ Nat.card k - Polynomial.X : k[X]) = 0 := by
       simpa using sub_eq_zero.mpr hxpow
     have hdiv : minpoly k x ∣
-        (Polynomial.X ^ Nat.card k - Polynomial.X : k[X]) :=
+        (Polynomial.X ^ Nat.card k - Polynomial.X) :=
       minpoly.dvd k x hroot
     have hsplit :
         (Polynomial.X ^ Nat.card k - Polynomial.X : k[X]).Splits := by
@@ -146,10 +149,9 @@ theorem equalCharacteristicCoefficientFrobenius_fixed_iff
         (Polynomial.X ^ Nat.card k - Polynomial.X : k[X]) ≠ 0 := by
       rw [Nat.card_eq_fintype_card]
       exact FiniteField.X_pow_card_sub_X_ne_zero k Fintype.one_lt_card
-    have hminsplit : (minpoly k x).Splits :=
+    have hminsplit  :=
       hsplit.of_dvd hpolyne hdiv
-    exact hxint.mem_range_algebraMap_of_minpoly_splits (K := k) (by
-      simpa using hminsplit)
+    apply hxint.mem_range_algebraMap_of_minpoly_splits <;> aesop
   · rintro ⟨a, rfl⟩
     exact (equalCharacteristicCoefficientFrobenius k).commutes a
 
@@ -184,15 +186,11 @@ def equalCharacteristicCompletedUnramifiedFieldEquivLaurentSeries :
   RingEquiv.refl _
 
 /-- Embed a Laurent series into the named completed-unramified field. -/
-def equalCharacteristicCompletedUnramifiedFieldOfLaurentSeries :
-    (AlgebraicClosure k)⸨X⸩ →+*
-      equalCharacteristicCompletedUnramifiedField k :=
+def equalCharacteristicCompletedUnramifiedFieldOfLaurentSeries  :=
   (equalCharacteristicCompletedUnramifiedFieldEquivLaurentSeries k).symm.toRingHom
 
 /-- Read a named completed-unramified element in its Laurent-series model. -/
-def equalCharacteristicCompletedUnramifiedFieldToLaurentSeries :
-    equalCharacteristicCompletedUnramifiedField k →+*
-      (AlgebraicClosure k)⸨X⸩ :=
+def equalCharacteristicCompletedUnramifiedFieldToLaurentSeries  :=
   (equalCharacteristicCompletedUnramifiedFieldEquivLaurentSeries k).toRingHom
 
 omit [Finite k] in
@@ -206,15 +204,13 @@ theorem equalCharacteristicCompletedUnramifiedFieldToLaurentSeries_ofLaurentSeri
 
 /-- A single Laurent monomial in the named completed-unramified field. -/
 def equalCharacteristicCompletedUnramifiedFieldSingle
-    (m : ℤ) (a : AlgebraicClosure k) :
-    equalCharacteristicCompletedUnramifiedField k :=
+    (m : ℤ) (a : AlgebraicClosure k)  :=
   equalCharacteristicCompletedUnramifiedFieldOfLaurentSeries k
     (HahnSeries.single m a)
 
 /-- The coefficient of a named completed-unramified Laurent element. -/
 def equalCharacteristicCompletedUnramifiedFieldCoeff
-    (x : equalCharacteristicCompletedUnramifiedField k) (m : ℤ) :
-    AlgebraicClosure k :=
+    (x : equalCharacteristicCompletedUnramifiedField k) (m : ℤ)  :=
   (equalCharacteristicCompletedUnramifiedFieldToLaurentSeries k x).coeff m
 
 omit [Finite k] in
@@ -289,11 +285,7 @@ theorem equalCharacteristicCompletedUnramifiedFieldCoeff_algebraMap_laurentSerie
         (algebraMap k⸨X⸩
           (equalCharacteristicCompletedUnramifiedField k) f) m =
       algebraMap k (AlgebraicClosure k) (f.coeff m) := by
-  change
-    (laurentSeriesCoefficientMap
-      (algebraMap k (AlgebraicClosure k)) f).coeff m =
-      algebraMap k (AlgebraicClosure k) (f.coeff m)
-  rw [laurentSeriesCoefficientMap_coeff]
+  rfl
 
 /-- Arithmetic Frobenius on the completed maximal-unramified Laurent field,
 acting coefficientwise and fixing the Laurent-series base `k((T))`. -/
@@ -329,8 +321,7 @@ theorem equalCharacteristicCompletedUnramifiedFrobenius_valuation
   · by_cases hx : x = 0
     · simp [hx]
     have hxval : Valued.v x ≠ (0 : ℤᵐ⁰) :=
-      (Valuation.ne_zero_iff (Valued.v :
-        Valuation (equalCharacteristicCompletedUnramifiedField k) ℤᵐ⁰)).2 hx
+      (Valuation.ne_zero_iff Valued.v).2 hx
     apply (LaurentSeries.valuation_le_iff_coeff_lt_log_eq_zero
       (AlgebraicClosure k) hxval).2
     intro n hn
@@ -349,8 +340,7 @@ theorem equalCharacteristicCompletedUnramifiedFrobenius_valuation
     have hfxval :
         Valued.v (equalCharacteristicCompletedUnramifiedFrobenius k x) ≠
           (0 : ℤᵐ⁰) :=
-      (Valuation.ne_zero_iff (Valued.v :
-        Valuation (equalCharacteristicCompletedUnramifiedField k) ℤᵐ⁰)).2 hfxne
+      (Valuation.ne_zero_iff Valued.v).2 hfxne
     apply (LaurentSeries.valuation_le_iff_coeff_lt_log_eq_zero
       (AlgebraicClosure k) hfxval).2
     intro n hn
@@ -364,29 +354,29 @@ theorem equalCharacteristicCompletedUnramifiedFrobenius_valuation
     rw [equalCharacteristicCompletedUnramifiedFrobenius_coeff] at hcoeff
     exact eq_zero_of_pow_eq_zero hcoeff
 
-/-- Coefficient Frobenius is continuous for the Laurent valuation topology.
--/
-theorem equalCharacteristicCompletedUnramifiedFrobenius_continuous :
-    Continuous (equalCharacteristicCompletedUnramifiedFrobenius k) := by
-  apply continuous_of_continuousAt_zero
-    (equalCharacteristicCompletedUnramifiedFrobenius k).toAddMonoidHom
-  simp_rw [ContinuousAt, map_zero,
-    (Valued.hasBasis_nhds_zero
-      (equalCharacteristicCompletedUnramifiedField k) ℤᵐ⁰).tendsto_iff
-      (Valued.hasBasis_nhds_zero
-        (equalCharacteristicCompletedUnramifiedField k) ℤᵐ⁰),
-    true_and, forall_const]
-  intro γ
-  refine ⟨γ, fun x hx ↦ ?_⟩
-  change (Valued.v :
-      Valuation (equalCharacteristicCompletedUnramifiedField k) ℤᵐ⁰).restrict
-        (equalCharacteristicCompletedUnramifiedFrobenius k x) < γ.1
-  change (Valued.v :
-      Valuation (equalCharacteristicCompletedUnramifiedField k) ℤᵐ⁰).restrict
-        x < γ.1 at hx
-  rw [Valuation.restrict_lt_iff_lt_embedding] at hx ⊢
-  rw [equalCharacteristicCompletedUnramifiedFrobenius_valuation]
-  exact hx
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- On the integer ring `(AlgebraicClosure k)[[T]]`, Laurent Frobenius is
 the coefficientwise power-series Frobenius constructed for theta. -/
@@ -402,32 +392,25 @@ theorem equalCharacteristicCompletedUnramifiedFrobenius_algebraMap_powerSeries
   ext m
   cases m with
   | ofNat n =>
-      rw [equalCharacteristicCompletedUnramifiedFrobenius_coeff]
-      change
-        ((f : (AlgebraicClosure k)⸨X⸩).coeff (Int.ofNat n)) ^
-            Nat.card k =
-          ((equalCharacteristicPowerSeriesFrobenius k f :
-            (AlgebraicClosure k)⟦X⟧) :
-              (AlgebraicClosure k)⸨X⸩).coeff (Int.ofNat n)
-      rw [PowerSeries.coeff_coe, PowerSeries.coeff_coe,
-        equalCharacteristicPowerSeriesFrobenius_coeff]
-      simp [hcard]
+      simp_all
   | negSucc n =>
       rw [equalCharacteristicCompletedUnramifiedFrobenius_coeff]
       change
         ((f : (AlgebraicClosure k)⸨X⸩).coeff (Int.negSucc n)) ^
             Nat.card k =
-          ((equalCharacteristicPowerSeriesFrobenius k f :
-            (AlgebraicClosure k)⟦X⟧) :
+          ((equalCharacteristicPowerSeriesFrobenius k f) :
               (AlgebraicClosure k)⸨X⸩).coeff (Int.negSucc n)
       rw [PowerSeries.coeff_coe, PowerSeries.coeff_coe]
       simp [hcard]
 
+section
+variable (x : equalCharacteristicCompletedUnramifiedField k)
+    (hx : equalCharacteristicCompletedUnramifiedFrobenius k x = x)
+include x hx
 /-- Every coefficient of a Frobenius-fixed completed Laurent series comes
 from the original finite coefficient field. -/
 theorem equalCharacteristicCompletedUnramified_fixed_coeff_mem_range
-    (x : equalCharacteristicCompletedUnramifiedField k)
-    (hx : equalCharacteristicCompletedUnramifiedFrobenius k x = x)
+     
     (m : ℤ) :
     equalCharacteristicCompletedUnramifiedFieldCoeff k x m ∈
       (algebraMap k (AlgebraicClosure k)).range := by
@@ -446,17 +429,15 @@ theorem equalCharacteristicCompletedUnramified_fixed_coeff_mem_range
 /-- A chosen coefficient in `k` lifting one coefficient of a
 Frobenius-fixed completed Laurent series. -/
 noncomputable def equalCharacteristicCompletedUnramifiedFixedCoeff
-    (x : equalCharacteristicCompletedUnramifiedField k)
-    (hx : equalCharacteristicCompletedUnramifiedFrobenius k x = x)
-    (m : ℤ) : k :=
+     
+    (m : ℤ)  :=
   Classical.choose
     (equalCharacteristicCompletedUnramified_fixed_coeff_mem_range k x hx m)
 
 /-- The chosen base coefficient embeds to the coefficient of the fixed series. -/
 @[simp]
 theorem algebraMap_equalCharacteristicCompletedUnramifiedFixedCoeff
-    (x : equalCharacteristicCompletedUnramifiedField k)
-    (hx : equalCharacteristicCompletedUnramifiedFrobenius k x = x)
+     
     (m : ℤ) :
     algebraMap k (AlgebraicClosure k)
         (equalCharacteristicCompletedUnramifiedFixedCoeff k x hx m) =
@@ -466,8 +447,7 @@ theorem algebraMap_equalCharacteristicCompletedUnramifiedFixedCoeff
 
 /-- A Frobenius-fixed series, descended coefficientwise to `k((T))`. -/
 noncomputable def equalCharacteristicCompletedUnramifiedFixedPreimage
-    (x : equalCharacteristicCompletedUnramifiedField k)
-    (hx : equalCharacteristicCompletedUnramifiedFrobenius k x = x) :
+      :
     k⸨X⸩ :=
   HahnSeries.ofSuppBddBelow
     (fun m : ℤ ↦
@@ -478,23 +458,25 @@ noncomputable def equalCharacteristicCompletedUnramifiedFixedPreimage
       by_contra hnot
       have hxzero :
           equalCharacteristicCompletedUnramifiedFieldCoeff k x m = 0 := by
-        exact HahnSeries.coeff_eq_zero_of_lt_order (not_le.mp hnot)
+        apply HahnSeries.coeff_eq_zero_of_lt_order <;> aesop
       apply hm
       apply (algebraMap k (AlgebraicClosure k)).injective
       rw [map_zero,
         algebraMap_equalCharacteristicCompletedUnramifiedFixedCoeff,
         hxzero])
+end
 
-/-- The descended Laurent series has the chosen fixed coefficients. -/
-@[simp]
-theorem equalCharacteristicCompletedUnramifiedFixedPreimage_coeff
-    (x : equalCharacteristicCompletedUnramifiedField k)
-    (hx : equalCharacteristicCompletedUnramifiedFrobenius k x = x)
-    (m : ℤ) :
-    (equalCharacteristicCompletedUnramifiedFixedPreimage k x hx).coeff m =
-      equalCharacteristicCompletedUnramifiedFixedCoeff k x hx m := by
-  rw [equalCharacteristicCompletedUnramifiedFixedPreimage]
-  exact congrFun HahnSeries.coeff_ofSuppBddBelow m
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The fixed field of coefficientwise Frobenius is exactly the embedded
 Laurent-series base `k((T))`. -/
@@ -507,7 +489,7 @@ theorem equalCharacteristicCompletedUnramifiedFrobenius_fixed_iff
   · intro hx
     refine ⟨equalCharacteristicCompletedUnramifiedFixedPreimage k x hx, ?_⟩
     ext m
-    exact algebraMap_equalCharacteristicCompletedUnramifiedFixedCoeff k x hx m
+    apply algebraMap_equalCharacteristicCompletedUnramifiedFixedCoeff <;> assumption
   · rintro ⟨y, rfl⟩
     exact (equalCharacteristicCompletedUnramifiedFrobenius k).commutes y
 
@@ -536,71 +518,71 @@ noncomputable def equalCharacteristicPowerSeriesToCompletedInteger :
   exact
     (powerSeriesEquivLaurentInteger (AlgebraicClosure k)).toRingHom
 
-omit [Finite k] in
-/-- The embedding of power series into the completed valuation ring is continuous. -/
-theorem equalCharacteristicPowerSeriesToCompletedInteger_continuous :
-    Continuous (equalCharacteristicPowerSeriesToCompletedInteger k) := by
-  change Continuous
-    (powerSeriesEquivLaurentInteger (AlgebraicClosure k)).toRingHom
-  exact continuous_powerSeriesToLaurentInteger
 
-/-- Defines `equalCharacteristicCompletedIntegerEvaluation`. -/
-noncomputable def equalCharacteristicCompletedIntegerEvaluation
-    (a : Valued.integer (equalCharacteristicCompletedUnramifiedField k))
-    (ha : PowerSeries.HasEval a) :
-    ((AlgebraicClosure k)⟦X⟧)⟦X⟧ →+*
-      Valued.integer (equalCharacteristicCompletedUnramifiedField k) := by
-  letI : IsLinearTopology
-      (Valued.integer (equalCharacteristicCompletedUnramifiedField k))
-      (Valued.integer (equalCharacteristicCompletedUnramifiedField k)) :=
-    valuedIntegerLinearTopology
-  letI : CompleteSpace
-      (Valued.integer (equalCharacteristicCompletedUnramifiedField k)) :=
-    valuedIntegerCompleteSpace
-  letI : IsUniformAddGroup
-      (Valued.integer (equalCharacteristicCompletedUnramifiedField k)) :=
-    valuedIntegerIsUniformAddGroup
-  exact PowerSeries.eval₂Hom
-    (equalCharacteristicPowerSeriesToCompletedInteger_continuous k) ha
 
-/-- The Laurent uniformizer, viewed in the completed-unramified integer
-ring. -/
-noncomputable def equalCharacteristicCompletedIntegerUniformizer :
-    Valued.integer (equalCharacteristicCompletedUnramifiedField k) :=
-  equalCharacteristicPowerSeriesToCompletedInteger k PowerSeries.X
 
-omit [Finite k] in
-/-- The completed-unramified uniformizer is topologically nilpotent. -/
-theorem equalCharacteristicCompletedIntegerUniformizer_hasEval :
-    PowerSeries.HasEval
-      (equalCharacteristicCompletedIntegerUniformizer k) := by
-  have hX : PowerSeries.HasEval
-      (PowerSeries.X : (AlgebraicClosure k)⟦X⟧) :=
-    PowerSeries.HasEval.X
-  exact hX.map
-    (equalCharacteristicPowerSeriesToCompletedInteger_continuous k)
 
-omit [Finite k] in
-/-- Completed power-series evaluation sends `X` to the chosen integral element. -/
-@[simp]
-theorem equalCharacteristicCompletedIntegerEvaluation_X
-    (a : Valued.integer (equalCharacteristicCompletedUnramifiedField k))
-    (ha : PowerSeries.HasEval a) :
-    equalCharacteristicCompletedIntegerEvaluation k a ha PowerSeries.X = a := by
-  rw [equalCharacteristicCompletedIntegerEvaluation,
-    PowerSeries.coe_eval₂Hom, PowerSeries.eval₂_X]
 
-omit [Finite k] in
-/-- Completed evaluation sends a constant series to its canonical embedded value. -/
-@[simp]
-theorem equalCharacteristicCompletedIntegerEvaluation_C
-    (a : Valued.integer (equalCharacteristicCompletedUnramifiedField k))
-    (ha : PowerSeries.HasEval a)
-    (f : (AlgebraicClosure k)⟦X⟧) :
-    equalCharacteristicCompletedIntegerEvaluation k a ha (PowerSeries.C f) =
-      equalCharacteristicPowerSeriesToCompletedInteger k f := by
-  rw [equalCharacteristicCompletedIntegerEvaluation,
-    PowerSeries.coe_eval₂Hom, PowerSeries.eval₂_C]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end EqualCharacteristic
 end LubinTate

@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Analysis.Complex.CauchyIntegral
 public import Mathlib.Analysis.Normed.Module.Connected
 public import Mathlib.LinearAlgebra.Complex.FiniteDimensional
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 
@@ -17,7 +20,7 @@ theorem holomorphic_eqOn_of_open_agreement
   obtain ⟨z₀, hz₀⟩ := hVne
   have hf' : AnalyticOnNhd ℂ f U := (Complex.analyticOnNhd_iff_differentiableOn hU).mpr hf
   have hg' : AnalyticOnNhd ℂ g U := (Complex.analyticOnNhd_iff_differentiableOn hU).mpr hg
-  have hnhds : f =ᶠ[nhds z₀] g :=
+  have hnhds  :=
     Filter.eventuallyEq_iff_exists_mem.mpr ⟨V, hV.mem_nhds hz₀, hfg⟩
   exact fun z hz => hf'.eqOn_of_preconnected_of_eventuallyEq hg' hUc (hVU hz₀) hnhds hz
 

@@ -2,7 +2,10 @@ module
 
 public import Mathlib
 
+public import Mathlib
+
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.KPIsolatedProjection
 
@@ -10,14 +13,18 @@ open scoped InnerProductSpace
 
 noncomputable section
 
-def IsIsolatedSpectralPoint {H : Type*} [NormedAddCommGroup H]
-    [InnerProductSpace ℂ H] (B : H →L[ℂ] H) (β : ℝ) : Prop :=
+section
+variable {H : Type*} [NormedAddCommGroup H]
+    [InnerProductSpace ℂ H] (B : H →L[ℂ] H) (β : ℝ)
+include H B β
+def IsIsolatedSpectralPoint    :=
   (β : ℂ) ∈ spectrum ℂ B ∧
     ∃ ε : ℝ, 0 < ε ∧ ∀ w ∈ spectrum ℂ B, dist w (β : ℂ) < ε → w = (β : ℂ)
 
-def eigenspace {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
-    (B : H →L[ℂ] H) (β : ℝ) : Submodule ℂ H :=
+def eigenspace    :=
   (B - (β : ℂ) • (1 : H →L[ℂ] H)).ker
+end
+
 
 instance eigenspace_completeSpace {H : Type*} [NormedAddCommGroup H]
     [InnerProductSpace ℂ H] [CompleteSpace H] (B : H →L[ℂ] H) (β : ℝ) :
@@ -60,15 +67,18 @@ private theorem continuousOn_isolated_ite
     filter_upwards [mem_nhdsWithin_of_mem_nhds (isOpen_compl_singleton.mem_nhds he)] with z hz
     simp_all
 
+section
+variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+    (B : H →L[ℂ] H)
+include H B
 theorem projection_eq_cfc
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (B : H →L[ℂ] H) (hB : IsSelfAdjoint B) (β : ℝ)
+      (hB : IsSelfAdjoint B) (β : ℝ)
     (hβ : β ≠ 0) (hiso : IsIsolatedSpectralPoint B β) :
     projection B β = cfc (fun w : ℂ => if w = (β : ℂ) then (1 : ℂ) else 0) B := by
   classical
   let f : ℂ → ℂ := fun w => if w = (β : ℂ) then 1 else 0
-  let g : ℂ → ℂ := fun w => if w = (β : ℂ) then 0 else (w - (β : ℂ))⁻¹
-  have hn : IsStarNormal B := hB.isStarNormal
+  let g  := fun w => if w = (β : ℂ) then 0 else (w - (β : ℂ))⁻¹
+  have hn  := hB.isStarNormal
   have hf : ContinuousOn f (spectrum ℂ B) :=
     continuousOn_isolated_ite B β hiso 1 (fun _ => 0) (by intros; fun_prop)
   have hg : ContinuousOn g (spectrum ℂ B) :=
@@ -125,8 +135,7 @@ theorem projection_eq_cfc
     exact congrArg (fun T : H →L[ℂ] H => T y) hmul
 
 theorem projection_spec
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (B : H →L[ℂ] H) (hB : IsSelfAdjoint B) (β : ℝ)
+      (hB : IsSelfAdjoint B) (β : ℝ)
     (hβ : β ≠ 0) (hiso : IsIsolatedSpectralPoint B β) :
     projection B β ≠ 0 ∧ IsSelfAdjoint (projection B β) ∧
     projection B β * projection B β = projection B β ∧
@@ -144,8 +153,7 @@ theorem projection_spec
     Submodule.range_starProjection _, hmul, ?_⟩
   · rw [projection_eq_cfc B hB β hβ hiso]
     intro hz
-    have hf : ContinuousOn (fun w : ℂ => if w = (β : ℂ) then (1 : ℂ) else 0)
-        (spectrum ℂ B) :=
+    have hf  :=
       continuousOn_isolated_ite B β hiso 1 (fun _ => 0) (by intros; fun_prop)
     have he := eqOn_of_cfc_eq_cfc (hz.trans (cfc_const_zero ℂ B).symm)
       hf continuousOn_const hB.isStarNormal hiso.1
@@ -155,20 +163,18 @@ theorem projection_spec
       Complex.conj_ofReal] using he
 
 theorem projection_finiteRank
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (B : H →L[ℂ] H) (β : ℝ) [FiniteDimensional ℂ (eigenspace B β)] :
+      (β : ℝ) [FiniteDimensional ℂ (eigenspace B β)] :
     FiniteDimensional ℂ (projection B β).range := by
   rw [projection, Submodule.range_starProjection]
   infer_instance
 
 theorem isUnit_gap_add_projection
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (B : H →L[ℂ] H) (hB : IsSelfAdjoint B) (β : ℝ)
+      (hB : IsSelfAdjoint B) (β : ℝ)
     (hβ : β ≠ 0) (hiso : IsIsolatedSpectralPoint B β) :
     IsUnit (1 - (β : ℂ)⁻¹ • B + projection B β) := by
   classical
   let f : ℂ → ℂ := fun w => if w = (β : ℂ) then 1 else 0
-  have hn : IsStarNormal B := hB.isStarNormal
+  have hn  := hB.isStarNormal
   have hf : ContinuousOn f (spectrum ℂ B) :=
     continuousOn_isolated_ite B β hiso 1 (fun _ => 0) (by intros; fun_prop)
   have he : cfc (fun w => 1 - (β : ℂ)⁻¹ * w + f w) B =
@@ -184,15 +190,17 @@ theorem isUnit_gap_add_projection
     (fun w : ℂ => 1 - (β : ℂ)⁻¹ * w) (spectrum ℂ B)).add hf) hn).mpr
   intro w hw
   change 1 - (β : ℂ)⁻¹ * w + f w ≠ 0
-  have hb : (β : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hβ
+  have hb  := Complex.ofReal_ne_zero.mpr hβ
   by_cases he : w = (β : ℂ)
   · simp [f, he, hb]
   · simp only [f, if_neg he, add_zero]
     intro hz
     apply he
-    have hz' : (β : ℂ)⁻¹ * w = 1 := (sub_eq_zero.mp hz).symm
+    have hz'  := (sub_eq_zero.mp hz).symm
     have := congrArg (fun z : ℂ => (β : ℂ) * z) hz'
     simpa [← mul_assoc, hb] using this
+end
+
 
 end
 end DedekindZetaZeroFree.KPIsolatedProjection

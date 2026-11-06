@@ -16,7 +16,6 @@ open NumberField IsDedekindDomain MeasureTheory
 
 namespace DedekindZetaZeroFree.KPWildKernelUpperBound
 
-open KPLocalExceptionalConstruction KPWildPartialPeriodFactorization
 
 def quotientHaar (F : Type) [Field F] [NumberField F] :
     Measure (KPCompactFourier.AdditiveQuotient F) :=
@@ -48,7 +47,6 @@ open NumberField IsDedekindDomain MeasureTheory
 
 namespace DedekindZetaZeroFree.KPWildKernelUpperBound
 
-open KPLocalExceptionalConstruction KPWildPartialPeriodFactorization
 
 def borelRootFiber (F : Type) [Field F] [NumberField F]
     (ζ : F) (hζ : IsPrimitiveRoot ζ 12)

@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.RepresentationTheory.Smooth.SubmodulesAndQuotients
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 
@@ -34,9 +37,9 @@ def EqSections : Submodule ℂ (G → E) where
   add_mem' := by intro f k hf hk h g; simp [hf h g, hk h g]
   smul_mem' := by intro a f hf h g; simp [hf h g]
 
-@[simp] theorem mem_EqSections (f : G → E) : f ∈ EqSections H τ d ↔
-    ∀ (h : H) (g : G), f ((h : G) * g) =
-      (((d h : ℝ≥0) : ℝ) : ℂ) • τ h (f g) := Iff.rfl
+
+
+
 
 def eqSectionsRepresentation : Representation ℂ G (EqSections H τ d) where
   toFun a :=
@@ -57,7 +60,7 @@ def LCSections : Submodule ℂ (EqSections H τ d) where
   add_mem' := by intro f k hf hk; exact hf.add hk
   smul_mem' := by
     intro a f hf
-    exact hf.comp (fun v => a • v)
+    apply hf.comp
 
 @[simp] theorem mem_LCSections (f : EqSections H τ d) :
     f ∈ LCSections H τ d ↔ IsLocallyConstant (f : G → E) := Iff.rfl
@@ -88,7 +91,7 @@ theorem SmoothInd_le_LCSections : SmoothInd H τ d ≤ LCSections H τ d := by
 
 abbrev SectionCosetSpace := Quotient (QuotientGroup.rightRel H)
 
-def HasCompactSupportModH (f : G → E) : Prop :=
+def HasCompactSupportModH (f : G → E)  :=
   IsCompact (closure ((Quotient.mk (QuotientGroup.rightRel H)) '' Function.support f))
 
 def cosetRightMap (a : G) :
@@ -96,9 +99,7 @@ def cosetRightMap (a : G) :
   Quot.map (· * a)
     (fun x y (h : (QuotientGroup.rightRel H).r x y) =>
       (by
-        rw [QuotientGroup.rightRel_apply] at h ⊢
-        have : (y * a) * (x * a)⁻¹ = y * x⁻¹ := by group
-        rwa [this] : (QuotientGroup.rightRel H).r (x * a) (y * a)))
+        simp_all [QuotientGroup.rightRel_apply] <;> aesop : (QuotientGroup.rightRel H).r (x * a) (y * a)))
 
 private theorem cosetRightMap_mk (a x : G) :
     cosetRightMap H a (Quotient.mk (QuotientGroup.rightRel H) x) =
@@ -142,7 +143,7 @@ def CompactSmoothInd : Submodule ℂ (SmoothInd H τ d) where
       simp only [Set.mem_union, Function.mem_support]
       by_contra h
       simp only [not_or, not_not] at h
-      exact hg (by simp [Submodule.coe_add, h.1, h.2])
+      apply hg <;> aesop
     have himg : Quotient.mk (QuotientGroup.rightRel H) '' Function.support ((f + k).val : G → E) ⊆
         Quotient.mk (QuotientGroup.rightRel H) '' Function.support (f.val : G → E) ∪
         Quotient.mk (QuotientGroup.rightRel H) '' Function.support (k.val : G → E) :=
@@ -161,7 +162,7 @@ def CompactSmoothInd : Submodule ℂ (SmoothInd H τ d) where
       intro g hg
       simp only [Function.mem_support]
       intro h
-      exact hg (by simp [Submodule.coe_smul, h])
+      apply hg <;> aesop
     change IsCompact (closure (Quotient.mk (QuotientGroup.rightRel H) ''
       Function.support ((c • f).val : G → E)))
     change IsCompact (closure (Quotient.mk (QuotientGroup.rightRel H) ''
@@ -214,8 +215,7 @@ theorem CompactSmoothInd_stable (a : G) :
   rw [hcl]
   exact hcompact
 
-def compactSmoothIndRepresentation :
-    Representation ℂ G (CompactSmoothInd H τ d) :=
+def compactSmoothIndRepresentation  :=
   (smoothIndRepresentation H τ d).subrepresentation
     (CompactSmoothInd H τ d) (CompactSmoothInd_stable H τ d)
 

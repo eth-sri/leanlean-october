@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import Mathlib.FieldTheory.Galois.Profinite
 public import GaloisCohomology.Kummer.Concrete.ExtensionRoundTrip
 public import GaloisCohomology.Kummer.Concrete.InfiniteInverse
 public import GaloisCohomology.Kummer.Concrete.InfiniteContinuity
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -58,7 +61,7 @@ theorem kummerRadicalExtension_internalRoots_adjoin_eq_top
         n Delta.1) = ⊤ := by
   let E := kummerRadicalExtension
     (K := K) (Omega := Omega) n Delta.1
-  let R : IntermediateField K E := IntermediateField.adjoin K
+  let R  := IntermediateField.adjoin K
     (kummerRootSet (K := K) (Omega := E) n Delta.1)
   apply top_unique
   intro x _
@@ -77,53 +80,53 @@ theorem kummerRadicalExtension_internalRoots_adjoin_eq_top
     | add x y hx hy ihx ihy => exact R.add_mem ihx ihy
     | inv x hx ihx => exact R.inv_mem ihx
     | mul x y hx hy ihx ihy => exact R.mul_mem ihx ihy
-  exact hall x.1 x.property
+  apply hall
 
-/-- The finite restricted pairing is perfect also in the transposed
-direction.  Both exponent and commutativity of the finite Galois group are
-derived from injectivity of the canonical transpose; neither is an extra
-hypothesis. -/
-def restrictedKummerTransposeMulEquivOfAdjoin
-    {L : Type*} [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (Delta : KummerSubgroup K n)
-    (hDelta : Delta.1 ≤
-      finiteKummerRadicalSubgroup (K := K) (L := L) n)
-    (hgenerate : IntermediateField.adjoin K
-      (kummerRootSet (K := K) (Omega := L) n Delta.1) = ⊤) :
-    Gal(L/K) ≃*
-      (RestrictedRadicalQuotient n Delta →*
-        nthRootsSubgroup L (n : ℕ)) := by
-  let t₀ := restrictedKummerTranspose n hmu Delta hDelta
-  have ht₀ : Function.Injective t₀ :=
-    restrictedKummerTranspose_injective_of_adjoin
-      n hmu Delta hDelta hgenerate
-  have hcomm : ∀ sigma tau : Gal(L/K), sigma * tau = tau * sigma := by
-    intro sigma tau
-    apply ht₀
-    rw [map_mul, map_mul, mul_comm]
-  letI : IsMulCommutative Gal(L/K) :=
-    { is_comm := ⟨hcomm⟩ }
-  letI : CommGroup Gal(L/K) := by infer_instance
-  let t := restrictedKummerTranspose n hmu Delta hDelta
-  have ht : Function.Injective t :=
-    restrictedKummerTranspose_injective_of_adjoin
-      n hmu Delta hDelta hgenerate
-  have hexponent : ∀ sigma : Gal(L/K), sigma ^ (n : ℕ) = 1 := by
-    intro sigma
-    apply ht
-    rw [map_pow, map_one]
-    apply MonoidHom.ext
-    intro q
-    apply Subtype.ext
-    exact (t sigma q).2
-  let e := restrictedKummerCharacterMulEquivOfAdjoin
-    n hmu Delta hDelta hgenerate
-  exact transposeCharacterMulEquiv
-    (K := K) (L := L) (G := Gal(L/K))
-    (R := RestrictedRadicalQuotient n Delta)
-    n hmu hexponent e
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- A finite set of coordinates of a nondegenerate continuous pairing is
 simultaneously realizable.  The proof forms the finite quotient of the
@@ -145,7 +148,7 @@ theorem exists_pairing_element_matching_finset
     (S : Finset R)
     (chi : R →* DiscreteNthRootsSubgroup L (n : ℕ)) :
     ∃ g : G, ∀ r ∈ S, t g r = chi r := by
-  let H : Subgroup G := ⨅ r : S, MonoidHom.ker (f r.1)
+  let H  := ⨅ r : S, MonoidHom.ker (f r.1)
   have hHopen : IsOpen (H : Set G) := by
     dsimp only [H]
     rw [Subgroup.coe_iInf]
@@ -156,15 +159,15 @@ theorem exists_pairing_element_matching_finset
     exact (isOpen_discrete ({1} :
       Set (DiscreteNthRootsSubgroup L (n : ℕ)))).preimage
         (hcontinuous r.1)
-  let : H.Normal := H.normal_of_isMulCommutative
+  let  := H.normal_of_isMulCommutative
   let Q := G ⧸ H
   let : Finite Q := H.quotient_finite_of_isOpen hHopen
   let R0 := Subgroup.closure (S : Set R)
   have hR0exponent : ∀ r : R0, r ^ (n : ℕ) = 1 := by
     intro r
     apply Subtype.ext
-    exact hRexponent r.1
-  let : Finite R0 := CommGroup.finite_of_fg_isMulTorsion (G := R0) (fun r =>
+    apply hRexponent
+  let  := CommGroup.finite_of_fg_isMulTorsion (G := R0) (fun r =>
     isOfFinOrder_iff_pow_eq_one.mpr ⟨(n : ℕ), n.pos, hR0exponent r⟩)
   have hHker (r : R0) : H ≤ MonoidHom.ker (f r.1) := by
     intro g hg
@@ -173,8 +176,7 @@ theorem exists_pairing_element_matching_finset
       intro x hx
       change t g x = 1
       rw [hpair]
-      exact (show g ∈ MonoidHom.ker (f x) from
-        (iInf_le (fun r : S => MonoidHom.ker (f r.1)) ⟨x, hx⟩) hg)
+      exact (((iInf_le (fun r : S => MonoidHom.ker (f r.1)) ⟨x, hx⟩) hg))
     rw [MonoidHom.mem_ker, ← hpair]
     exact hclosure r.property
   let f0 : R0 →* (Q →* DiscreteNthRootsSubgroup L (n : ℕ)) :=
@@ -241,8 +243,8 @@ theorem exists_pairing_element_matching_finset
   let : NeZero (n : ℕ) := ⟨n.ne_zero⟩
   let : Finite (DiscreteNthRootsSubgroup L (n : ℕ)) :=
     inferInstanceAs (Finite (nthRootsSubgroup L (n : ℕ)))
-  let : Fintype Q := Fintype.ofFinite Q
-  let : Fintype R0 := Fintype.ofFinite R0
+  let  := Fintype.ofFinite Q
+  let  := Fintype.ofFinite R0
   let : Finite (R0 →* DiscreteNthRootsSubgroup L (n : ℕ)) :=
     Finite.of_injective
       (fun psi : R0 →* DiscreteNthRootsSubgroup L (n : ℕ) =>
@@ -250,10 +252,10 @@ theorem exists_pairing_element_matching_finset
       DFunLike.coe_injective
   let : Fintype (R0 →* DiscreteNthRootsSubgroup L (n : ℕ)) :=
     Fintype.ofFinite _
-  have hcardR0Q : Fintype.card R0 ≤ Fintype.card Q :=
+  have hcardR0Q  :=
     Fintype.card_le_of_injective
       (fun r : R0 => dualQ (f0 r)) (dualQ.injective.comp hf0)
-  have hcardQR0 : Fintype.card Q ≤ Fintype.card R0 :=
+  have hcardQR0  :=
     Fintype.card_le_of_injective
       (fun q : Q => dualR0 (t0 q)) (dualR0.injective.comp ht0)
   have hcardQTarget :
@@ -279,12 +281,15 @@ section RadicalExtensionPairing
 
 variable [IsSepClosure K Omega]
 
+section
+variable (n : ℕ+) (hn : ((n : ℕ) : K) ≠ 0)
+    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
+    (Delta : KummerSubgroup K n)
+include n hn hmu Delta
 /-- The canonical map in the displayed formula of the Kummer correspondence,
 constructed by transposing the restricted Kummer character pairing. -/
 def kummerRadicalExtensionRestrictedTranspose
-    (n : ℕ+) (hn : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (Delta : KummerSubgroup K n) :
+      :
     Gal(kummerRadicalExtension
         (K := K) (Omega := Omega) n Delta.1/K) →*
       (RestrictedRadicalQuotient n Delta →*
@@ -301,9 +306,7 @@ def kummerRadicalExtensionRestrictedTranspose
 generation theorem above, so no generation hypothesis is exposed in this
 statement. -/
 theorem kummerRadicalExtensionRestrictedTranspose_injective
-    (n : ℕ+) (hn : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (Delta : KummerSubgroup K n) :
+      :
     Function.Injective
       (kummerRadicalExtensionRestrictedTranspose
         (K := K) (Omega := Omega) n hn hmu Delta) := by
@@ -313,15 +316,20 @@ theorem kummerRadicalExtensionRestrictedTranspose_injective
   exact restrictedKummerTranspose_injective_of_adjoin n hmu Delta
     (le_finiteKummerRadicalSubgroup_kummerRadicalExtension n hn Delta.1)
     (kummerRadicalExtension_internalRoots_adjoin_eq_top n Delta)
+end
 
+
+section
+variable {L : Type*} [Field L] [Algebra K L] [IsGalois K L]
+    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
+    (Delta : KummerSubgroup K n)
+include L n hmu Delta
 /-- Each evaluation coordinate of the restricted transpose is continuous
 for the Krull topology on the Galois group and the discrete topology on
 `mu_n(E)`.  This is the closed-locus source for the compactness/FIP proof of
 surjectivity. -/
 theorem restrictedKummerTranspose_evaluation_continuous
-    {L : Type*} [Field L] [Algebra K L] [IsGalois K L]
-    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (Delta : KummerSubgroup K n)
+     
     (hDelta : Delta.1 ≤
       finiteKummerRadicalSubgroup (K := K) (L := L) n)
     (q : RestrictedRadicalQuotient n Delta) :
@@ -343,21 +351,17 @@ theorem restrictedKummerTranspose_evaluation_continuous
 These are the closed sets whose finite-intersection property yields the
 surjectivity half of the displayed Kummer formula. -/
 def restrictedKummerEvaluationLocus
-    {L : Type*} [Field L] [Algebra K L] [IsGalois K L]
-    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (Delta : KummerSubgroup K n)
+     
     (hDelta : Delta.1 ≤
       finiteKummerRadicalSubgroup (K := K) (L := L) n)
     (chi : RestrictedRadicalQuotient n Delta →*
       nthRootsSubgroup L (n : ℕ))
-    (q : RestrictedRadicalQuotient n Delta) : Set Gal(L/K) :=
+    (q : RestrictedRadicalQuotient n Delta)  :=
   {sigma | restrictedKummerTranspose n hmu Delta hDelta sigma q = chi q}
 
 /-- Every evaluation locus is closed. -/
 theorem restrictedKummerEvaluationLocus_isClosed
-    {L : Type*} [Field L] [Algebra K L] [IsGalois K L]
-    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (Delta : KummerSubgroup K n)
+     
     (hDelta : Delta.1 ≤
       finiteKummerRadicalSubgroup (K := K) (L := L) n)
     (chi : RestrictedRadicalQuotient n Delta →*
@@ -378,28 +382,26 @@ theorem restrictedKummerEvaluationLocus_isClosed
     (restrictedKummerTranspose_evaluation_continuous n hmu Delta hDelta q)
     continuous_const
 
-/-- Evaluation loci are compact as closed subsets of the profinite Galois
-group. -/
-theorem restrictedKummerEvaluationLocus_isCompact
-    {L : Type*} [Field L] [Algebra K L] [IsGalois K L]
-    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (Delta : KummerSubgroup K n)
-    (hDelta : Delta.1 ≤
-      finiteKummerRadicalSubgroup (K := K) (L := L) n)
-    (chi : RestrictedRadicalQuotient n Delta →*
-      nthRootsSubgroup L (n : ℕ))
-    (q : RestrictedRadicalQuotient n Delta) :
-    IsCompact (restrictedKummerEvaluationLocus n hmu Delta hDelta chi q) :=
-  (restrictedKummerEvaluationLocus_isClosed
-    n hmu Delta hDelta chi q).isCompact
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- Membership in all evaluation loci is exactly equality with the target
 character.  Together with compactness of `Gal(L/K)`, this identifies the
 precise finite-intersection problem remaining in the surjectivity proof. -/
 theorem mem_iInter_restrictedKummerEvaluationLocus_iff
-    {L : Type*} [Field L] [Algebra K L] [IsGalois K L]
-    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (Delta : KummerSubgroup K n)
+     
     (hDelta : Delta.1 ≤
       finiteKummerRadicalSubgroup (K := K) (L := L) n)
     (chi : RestrictedRadicalQuotient n Delta →*
@@ -415,13 +417,18 @@ theorem mem_iInter_restrictedKummerEvaluationLocus_iff
     exact h
   · intro h q
     exact DFunLike.congr_fun h q
+end
 
+
+section
+variable (n : ℕ+) (hn : ((n : ℕ) : K) ≠ 0)
+    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
+    (Delta : KummerSubgroup K n)
+include n hn hmu Delta
 /-- Every finite set of coordinates of a target character is realized by
 one Galois automorphism of the radical extension. -/
 theorem exists_kummerRadicalExtensionRestrictedTranspose_match_finset
-    (n : ℕ+) (hn : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (Delta : KummerSubgroup K n)
+     
     (S : Finset (RestrictedRadicalQuotient n Delta))
     (chi : RestrictedRadicalQuotient n Delta →*
       nthRootsSubgroup
@@ -464,9 +471,7 @@ Compactness of the profinite Galois group upgrades the finite-coordinate
 realization theorem to a single automorphism realizing every coordinate.
 -/
 theorem kummerRadicalExtensionRestrictedTranspose_surjective
-    (n : ℕ+) (hn : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (Delta : KummerSubgroup K n) :
+      :
     Function.Surjective
       (kummerRadicalExtensionRestrictedTranspose
         (K := K) (Omega := Omega) n hn hmu Delta) := by
@@ -501,9 +506,7 @@ theorem kummerRadicalExtensionRestrictedTranspose_surjective
 pairing identifies the Galois group of `K(√[n]{Delta})` with the full
 character group of `Delta / Kˣⁿ`. -/
 def kummerRadicalExtensionRestrictedTransposeMulEquiv
-    (n : ℕ+) (hn : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (Delta : KummerSubgroup K n) :
+      :
     Gal(kummerRadicalExtension
         (K := K) (Omega := Omega) n Delta.1/K) ≃*
       (RestrictedRadicalQuotient n Delta →*
@@ -514,6 +517,8 @@ def kummerRadicalExtensionRestrictedTransposeMulEquiv
     (kummerRadicalExtensionRestrictedTranspose n hn hmu Delta)
     ⟨kummerRadicalExtensionRestrictedTranspose_injective n hn hmu Delta,
       kummerRadicalExtensionRestrictedTranspose_surjective n hn hmu Delta⟩
+end
+
 
 end RadicalExtensionPairing
 

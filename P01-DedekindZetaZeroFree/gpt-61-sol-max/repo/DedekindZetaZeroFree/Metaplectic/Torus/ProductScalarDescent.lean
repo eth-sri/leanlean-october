@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Metaplectic.Torus.RestrictedScalarEvaluations
 
 @[expose] public section
+
 
 open scoped NumberField Classical ComplexOrder
 open NumberField IsDedekindDomain
@@ -12,15 +15,18 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 variable (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
 variable (T : KPGlobalProductPolarizationCharacter.FiniteAdjustment F ζ hζ P)
 
-def RawUnitProductModel (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ) : Prop :=
+def RawUnitProductModel (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)  :=
   Q.H = KPGlobalProductPolarizationCharacter.B F ζ hζ P ∧
   ∀ (r : Q.H) (s : KPGlobalProductPolarizationCharacter.B F ζ hζ P), r.val = s.val →
     Q.character r = KPGlobalProductPolarizationCharacter.lambdaB F ζ hζ P T s /
       KPGlobalCenterRationalCharacter.positiveComplex
         (KPGlobalCenterRationalCharacter.nu F ζ hζ s.val)
 
+section
+variable (C : RawLocalScalarData F ζ hζ P T)
+include C
 def RawPureScalarFormula
-    (C : RawLocalScalarData F ζ hζ P T)
+     
     (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
     (S : Finset (HeightOneSpectrum (𝓞 F)))
     (f : ∀ q : S, KPLocalStoneVonNeumann.InducedModule (C.polarization q))
@@ -36,14 +42,14 @@ def RawPureScalarFormula
       (if h : q ∈ S then f ⟨q, h⟩ else C.reference q) (t q)
 
 theorem raw_local_denominator_mul
-    (C : RawLocalScalarData F ζ hζ P T) (q : HeightOneSpectrum (𝓞 F))
+      (q : HeightOneSpectrum (𝓞 F))
     (a t : KPLocalExceptionalConstruction.actualTorus F ζ hζ q) :
     (Real.rpow (KPGlobalCenterRationalCharacter.localAbs F (Sum.inr q)
-      ((C.canonical q).borel.coordinate (a * t))) (1 / 6 : ℝ) : ℂ) =
+      ((C.canonical q).borel.coordinate (a * t))) (1 / 6) : ℂ) =
     (Real.rpow (KPGlobalCenterRationalCharacter.localAbs F (Sum.inr q)
-      ((C.canonical q).borel.coordinate a)) (1 / 6 : ℝ) : ℂ) *
+      ((C.canonical q).borel.coordinate a)) (1 / 6) : ℂ) *
     (Real.rpow (KPGlobalCenterRationalCharacter.localAbs F (Sum.inr q)
-      ((C.canonical q).borel.coordinate t)) (1 / 6 : ℝ) : ℂ) := by
+      ((C.canonical q).borel.coordinate t)) (1 / 6) : ℂ) := by
   rw [map_mul]
   have habs : (KPGlobalCenterRationalCharacter.localAbs F (Sum.inr q)
       ((C.canonical q).borel.coordinate a * (C.canonical q).borel.coordinate t) : ℝ) =
@@ -56,21 +62,17 @@ theorem raw_local_denominator_mul
     exact norm_mul _ _
   rw [habs, ← Complex.ofReal_mul]
   congr 1
-  exact Real.mul_rpow
-    (by exact_mod_cast (KPGlobalCenterRationalCharacter.localAbs_pos F (Sum.inr q)
-      ((C.canonical q).borel.coordinate a)).le)
-    (by exact_mod_cast (KPGlobalCenterRationalCharacter.localAbs_pos F (Sum.inr q)
-      ((C.canonical q).borel.coordinate t)).le)
+  apply Real.mul_rpow <;> aesop
 
 theorem raw_local_evaluation_covariance
-    (C : RawLocalScalarData F ζ hζ P T) (q : HeightOneSpectrum (𝓞 F))
+      (q : HeightOneSpectrum (𝓞 F))
     (a : (C.polarization q).L.comap (C.canonical q).heisenberg.π)
     (f : KPLocalStoneVonNeumann.InducedModule (C.polarization q))
     (t : KPLocalExceptionalConstruction.actualTorus F ζ hζ q) :
     C.evaluation q f (a.val * t) =
       ((C.polarization q).ωL a : ℂ) /
         (Real.rpow (KPGlobalCenterRationalCharacter.localAbs F (Sum.inr q)
-          ((C.canonical q).borel.coordinate a.val)) (1 / 6 : ℝ) : ℂ) *
+          ((C.canonical q).borel.coordinate a.val)) (1 / 6) : ℂ) *
       C.evaluation q f t := by
   rw [C.evaluation_formula, C.evaluation_formula, f.property a t,
     raw_local_denominator_mul F ζ hζ P T C q a.val t]
@@ -78,7 +80,7 @@ theorem raw_local_evaluation_covariance
   ring
 
 theorem raw_local_polarization_lift
-    (C : RawLocalScalarData F ζ hζ P T)
+     
     (x : KPGlobalProductPolarizationCharacter.rawB F ζ hζ P)
     (q : HeightOneSpectrum (𝓞 F)) :
     ∃ a : (C.polarization q).L.comap (C.canonical q).heisenberg.π,
@@ -93,7 +95,7 @@ theorem raw_local_polarization_lift
   exact ⟨⟨a, ha⟩, hab.trans hb⟩
 
 theorem raw_pure_product_covariance
-    (C : RawLocalScalarData F ζ hζ P T)
+     
     (S : Finset (HeightOneSpectrum (𝓞 F))) (hS : C.exceptional ⊆ S)
     (f : ∀ q : S, KPLocalStoneVonNeumann.InducedModule (C.polarization q))
     (rawA raw : KPAdelicCoverRestrictedProduct.RestrictedCover F ζ hζ)
@@ -111,7 +113,7 @@ theorem raw_pure_product_covariance
   have href : ∀ q, C.evaluation q (C.reference q) (a q).val =
       ((C.polarization q).ωL (a q) : ℂ) /
         (Real.rpow (KPGlobalCenterRationalCharacter.localAbs F (Sum.inr q)
-          ((C.canonical q).borel.coordinate (a q).val)) (1 / 6 : ℝ) : ℂ) := by
+          ((C.canonical q).borel.coordinate (a q).val)) (1 / 6) : ℂ) := by
     intro q
     have hmem : (C.canonical q).heisenberg.π (a q).val ∈ (C.polarization q).L :=
       (a q).property
@@ -136,7 +138,7 @@ theorem raw_pure_product_covariance
   · exact restricted_local_evaluations_finite_support F ζ hζ P T C S hS f raw t ht
 
 theorem raw_local_central_denominator
-    (C : RawLocalScalarData F ζ hζ P T) (q : HeightOneSpectrum (𝓞 F))
+      (q : HeightOneSpectrum (𝓞 F))
     (e : rootsOfUnity 3 F) :
     (Real.rpow (KPGlobalCenterRationalCharacter.localAbs F (Sum.inr q)
       ((C.canonical q).borel.coordinate ((C.canonical q).central e).val))
@@ -150,14 +152,14 @@ theorem raw_local_central_denominator
         ((C.canonical q).central e).val) : q.adicCompletion F)‖ ^ 3 = 1 := by
       have hv := congrArg (fun u : (q.adicCompletion F)ˣ => ‖(u : q.adicCompletion F)‖) hy
       simpa only [Units.val_pow_eq_pow_val, norm_pow, Units.val_one, norm_one] using hv
-    exact (pow_eq_one_iff_of_nonneg (norm_nonneg _) (by norm_num : (3 : ℕ) ≠ 0)).mp hp
+    exact (pow_eq_one_iff_of_nonneg (norm_nonneg _) (by norm_num : (3) ≠ 0)).mp hp
   have hAbs : (KPGlobalCenterRationalCharacter.localAbs F (Sum.inr q)
       ((C.canonical q).borel.coordinate ((C.canonical q).central e).val) : ℝ) = 1 := hnorm
   rw [hAbs]
   simp
 
 theorem raw_local_central_evaluation_covariance
-    (C : RawLocalScalarData F ζ hζ P T) (q : HeightOneSpectrum (𝓞 F))
+      (q : HeightOneSpectrum (𝓞 F))
     (e : rootsOfUnity 3 F)
     (f : KPLocalStoneVonNeumann.InducedModule (C.polarization q))
     (t : KPLocalExceptionalConstruction.actualTorus F ζ hζ q) :
@@ -169,23 +171,22 @@ theorem raw_local_central_evaluation_covariance
     exact ((C.canonical q).central e).property
   let a : (C.polarization q).L.comap (C.canonical q).heisenberg.π :=
     ⟨((C.canonical q).central e).val, by
-      change (C.canonical q).heisenberg.π ((C.canonical q).central e).val ∈ (C.polarization q).L
-      rw [hker]
-      exact (C.polarization q).L.one_mem⟩
+      simp_all⟩
   rw [show ((C.canonical q).central e).val = a.val from rfl,
     raw_local_evaluation_covariance F ζ hζ P T C q a f t,
     (C.polarization q).extends_center a ((C.canonical q).central e).property]
   change ((C.canonical q).heisenberg.ω ((C.canonical q).central e) : ℂ) / _ * _ = _
   rw [(C.canonical q).central_character,
     raw_local_central_denominator F ζ hζ P T C q e, div_one]
+end
+
 
 private theorem finprod_finite_places {M : Type*} [CommMonoid M]
     (z : KPHilbert.Place F → M) (hz : ∀ w : InfinitePlace F, z (Sum.inl w) = 1) :
     (∏ᶠ v, z v) = ∏ᶠ q, z (Sum.inr q) := by
   classical
   calc
-    (∏ᶠ v, z v) = ∏ᶠ v, if h : v ∈ Set.range (Sum.inr :
-        HeightOneSpectrum (𝓞 F) → KPHilbert.Place F) then
+    (∏ᶠ v, z v) = ∏ᶠ v, if h : v ∈ Set.range Sum.inr then
         z (Sum.inr (Classical.choose h)) else 1 := by
       apply finprod_congr
       intro v
@@ -195,13 +196,15 @@ private theorem finprod_finite_places {M : Type*} [CommMonoid M]
         | inl w => exact hz w
         | inr q => exact (h ⟨q, rfl⟩).elim
     _ = ∏ᶠ q, z (Sum.inr q) := finprod_emb_domain'
-      (Sum.inr_injective : Function.Injective (Sum.inr :
-        HeightOneSpectrum (𝓞 F) → KPHilbert.Place F)) (fun q => z (Sum.inr q))
+      (Sum.inr_injective : Function.Injective Sum.inr) (fun q => z (Sum.inr q))
 
-theorem raw_pure_product_product_one_invariant
-    (C : RawLocalScalarData F ζ hζ P T)
+section
+variable (C : RawLocalScalarData F ζ hζ P T)
     (S : Finset (HeightOneSpectrum (𝓞 F))) (hS : C.exceptional ⊆ S)
     (f : ∀ q : S, KPLocalStoneVonNeumann.InducedModule (C.polarization q))
+include C S hS f
+theorem raw_pure_product_product_one_invariant
+     
     (raw : KPAdelicCoverRestrictedProduct.RestrictedCover F ζ hζ)
     (e : KPAdelicCoverRestrictedProduct.CentralTuples F)
     (he : KPAdelicCoverRestrictedProduct.centralProduct F e = 1)
@@ -251,9 +254,7 @@ theorem raw_pure_product_product_one_invariant
   rw [hep, map_one, one_mul]
 
 theorem raw_pure_product_quotient_independent
-    (C : RawLocalScalarData F ζ hζ P T)
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (hS : C.exceptional ⊆ S)
-    (f : ∀ q : S, KPLocalStoneVonNeumann.InducedModule (C.polarization q))
+     
     (raw raw' : KPAdelicCoverRestrictedProduct.RestrictedCover F ζ hζ)
     (t t' : ∀ q, KPLocalExceptionalConstruction.actualTorus F ζ hζ q)
     (hinf : ∀ w : InfinitePlace F, raw (Sum.inl w) = 1)
@@ -287,8 +288,7 @@ theorem raw_pure_product_quotient_independent
     change A (raw'⁻¹ * raw) * (KPAdelicCoverRestrictedProduct.scalarHom F ζ hζ u)⁻¹ = 1
     rw [← hu, mul_inv_cancel]
   obtain ⟨e, he, hek⟩ := Subgroup.mem_map.mp hk
-  have hcomm : Commute k raw' := by
-    exact (Subgroup.mem_center_iff.mp
+  have hcomm : Commute k raw' := (Subgroup.mem_center_iff.mp
       (KPAdelicCoverRestrictedProduct.M_central F ζ hζ hk) raw').symm
   have hraw : raw = KPAdelicCoverRestrictedProduct.centralTupleMap F ζ hζ e * (raw' * s) := by
     rw [hek]
@@ -327,9 +327,7 @@ theorem raw_pure_product_quotient_independent
   exact ht q
 
 theorem raw_pure_product_function_descent
-    (C : RawLocalScalarData F ζ hζ P T)
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (hS : C.exceptional ⊆ S)
-    (f : ∀ q : S, KPLocalStoneVonNeumann.InducedModule (C.polarization q)) :
+      :
     ∃ w : KPGlobalTorusFunctionData.E F ζ hζ → ℂ,
       ∀ (raw : KPAdelicCoverRestrictedProduct.RestrictedCover F ζ hζ)
         (t : ∀ q, KPLocalExceptionalConstruction.actualTorus F ζ hζ q)
@@ -362,9 +360,14 @@ theorem raw_pure_product_function_descent
   exact raw_pure_product_quotient_independent F ζ hζ P T C S hS f
     (Classical.choose hR) raw (Classical.choose (Classical.choose_spec hR)) t
     hinf' hinf ht' ht (hg'.trans hg.symm)
+end
 
+
+section
+variable (C : RawLocalScalarData F ζ hζ P T)
+include C
 theorem raw_local_coordinate_norm_matches
-    (C : RawLocalScalarData F ζ hζ P T) (q : HeightOneSpectrum (𝓞 F))
+      (q : HeightOneSpectrum (𝓞 F))
     (a : KPLocalExceptionalConstruction.actualTorus F ζ hζ q)
     (b : KPGlobalProductPolarizationCharacter.LocalE F ζ hζ (Sum.inr q))
     (hab : a.val = b.val) :
@@ -394,7 +397,7 @@ theorem raw_local_coordinate_norm_matches
     dsimp only [z]
     rw [← map_pow, ← Subgroup.coe_pow, ← map_pow, he, map_one, Subgroup.coe_one, map_one]
   have hzn : ‖(↑((C.canonical q).borel.coordinate z) : q.adicCompletion F)‖ = 1 := by
-    apply (pow_eq_one_iff_of_nonneg (norm_nonneg _) (by norm_num : (3 : ℕ) ≠ 0)).mp
+    apply (pow_eq_one_iff_of_nonneg (norm_nonneg _) (by norm_num : (3) ≠ 0)).mp
     have hv := congrArg (fun u : (q.adicCompletion F)ˣ => ‖(u : q.adicCompletion F)‖) hzpow
     simpa only [Units.val_pow_eq_pow_val, norm_pow, Units.val_one, norm_one] using hv
   have hy : y = KPGlobalProductPolarizationCharacter.localRatio F ζ hζ (Sum.inr q) b := by
@@ -414,18 +417,18 @@ theorem raw_local_coordinate_norm_matches
   rfl
 
 theorem raw_local_denominator_eq_adjusted_norm
-    (C : RawLocalScalarData F ζ hζ P T) (q : HeightOneSpectrum (𝓞 F))
+      (q : HeightOneSpectrum (𝓞 F))
     (a : (C.polarization q).L.comap (C.canonical q).heisenberg.π)
     (b : KPGlobalProductPolarizationCharacter.localPreimage F ζ hζ (Sum.inr q)
       (P.localData (Sum.inr q)).L) (hab : a.val.val = b.val.val) :
     Real.rpow (KPGlobalCenterRationalCharacter.localAbs F (Sum.inr q)
-      ((C.canonical q).borel.coordinate a.val)) (1 / 6 : ℝ) =
+      ((C.canonical q).borel.coordinate a.val)) (1 / 6) =
     ‖(KPGlobalProductPolarizationCharacter.adjustedLocalValue F ζ hζ P T (Sum.inr q) b : ℂ)‖ := by
   rw [raw_local_coordinate_norm_matches F ζ hζ P T C q a.val b.val hab]
   exact (adjustedLocalValue_preserves_modulus F ζ hζ P T (Sum.inr q) b).symm
 
 theorem raw_reference_product_character
-    (C : RawLocalScalarData F ζ hζ P T)
+     
     (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
     (hQ : RawUnitProductModel F ζ hζ P T Q)
     (x : KPGlobalProductPolarizationCharacter.rawB F ζ hζ P)
@@ -489,18 +492,23 @@ theorem raw_reference_product_character
     (‖(KPGlobalProductPolarizationCharacter.lambdaB F ζ hζ P T b : ℂ)‖ : ℂ) = _
   rw [KPGlobalProductPolarizationCharacter.lambdaB_norm, hQ.2 h b rfl]
   simp [Units.val_div_eq_div_val, KPGlobalCenterRationalCharacter.positiveComplex]
+end
+
 
  def covarianceExtension {G : Type*} [Group G] (H S : Subgroup G)
-    (χ : H →* ℂˣ) (f : S → ℂ) (g : G) : ℂ :=
+    (χ : H →* ℂˣ) (f : S → ℂ) (g : G)  :=
   if hg : ∃ (h : H) (x : S), g = h.val * x.val then
     (χ (Classical.choose hg) : ℂ) * f (Classical.choose (Classical.choose_spec hg))
   else 0
 
-private theorem covarianceExtension_formula {G : Type*} [Group G] (H S : Subgroup G)
+section
+variable {G : Type*} [Group G] (H S : Subgroup G)
     (χ : H →* ℂˣ) (f : S → ℂ)
     (hf : ∀ (h : H.comap S.subtype) (x : S),
       f (h.val * x) = (χ ⟨h.val.val, h.property⟩ : ℂ) * f x)
-    (h : H) (x : S) : covarianceExtension H S χ f (h.val * x.val) = (χ h : ℂ) * f x := by
+    (h : H)
+include G H S χ f hf h
+private theorem covarianceExtension_formula   (x : S) : covarianceExtension H S χ f (h.val * x.val) = (χ h : ℂ) * f x := by
   have hg : ∃ (a : H) (y : S), h.val * x.val = a.val * y.val := ⟨h, x, rfl⟩
   rw [covarianceExtension, dif_pos hg]
   let a := Classical.choose hg
@@ -523,11 +531,7 @@ private theorem covarianceExtension_formula {G : Type*} [Group G] (H S : Subgrou
   have hne : (χ a : ℂ) ≠ 0 := Units.ne_zero (χ a)
   field_simp
 
-private theorem covarianceExtension_covariance {G : Type*} [Group G] (H S : Subgroup G)
-    (χ : H →* ℂˣ) (f : S → ℂ)
-    (hf : ∀ (h : H.comap S.subtype) (x : S),
-      f (h.val * x) = (χ ⟨h.val.val, h.property⟩ : ℂ) * f x)
-    (h : H) (g : G) : covarianceExtension H S χ f (h.val * g) =
+private theorem covarianceExtension_covariance   (g : G) : covarianceExtension H S χ f (h.val * g) =
       (χ h : ℂ) * covarianceExtension H S χ f g := by
   by_cases hg : ∃ (a : H) (x : S), g = a.val * x.val
   · obtain ⟨a, x, rfl⟩ := hg
@@ -542,6 +546,8 @@ private theorem covarianceExtension_covariance {G : Type*} [Group G] (H S : Subg
       have hh := congrArg (fun z => h.val⁻¹ * z) he
       simpa only [mul_assoc, inv_mul_cancel_left, Subgroup.coe_mul, Subgroup.coe_inv] using hh
     simp only [covarianceExtension, dif_neg hg, dif_neg hh, mul_zero]
+end
+
 
 theorem raw_pure_scalar_descent_exists
     (C : RawLocalScalarData F ζ hζ P T)
@@ -604,9 +610,7 @@ theorem raw_pure_scalar_descent_exists
         rw [hgH]
         exact Subgroup.mem_map.mpr ⟨h.val.val, hQ.1 ▸ h.property, rfl⟩⟩
     choose a ha using raw_local_polarization_lift F ζ hζ P T C rH
-    have haH : ∀ q, (a q).val = tH q := by
-      intro q
-      exact Subtype.ext ((ha q).trans (htH q).symm)
+    
     have htprod : ∀ q, ((a q).val * tX q).val =
         KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) ((rawH * rawX) (Sum.inr q)) := by
       intro q
@@ -631,7 +635,7 @@ theorem raw_pure_scalar_descent_exists
   refine ⟨v, ?_⟩
   intro raw t g hi ht hg
   let x : R := ⟨g, ⟨raw, t, hi, ht, hg⟩⟩
-  have hv := covarianceExtension_formula Q.H R Q.character.toMonoidHom wR hcov (1 : Q.H) x
+  have hv := covarianceExtension_formula Q.H R Q.character.toMonoidHom wR hcov (1) x
   change covarianceExtension Q.H R Q.character.toMonoidHom wR g = _
   have hv' : covarianceExtension Q.H R Q.character.toMonoidHom wR g = w g := by
     simpa only [Subgroup.coe_one, one_mul, map_one, Units.val_one, wR] using hv

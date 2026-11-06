@@ -18,35 +18,40 @@ set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 
-theorem primitive_six (ζ : F) (hζ : IsPrimitiveRoot ζ 12) : IsPrimitiveRoot (ζ ^ 2) 6 :=
+section
+variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+include ζ hζ
+theorem primitive_six   : IsPrimitiveRoot (ζ ^ 2) 6 :=
   hζ.pow (by decide) (by decide : 12 = 2 * 6)
 
-theorem primitive_three (ζ : F) (hζ : IsPrimitiveRoot ζ 12) : IsPrimitiveRoot (ζ ^ 4) 3 :=
+theorem primitive_three   : IsPrimitiveRoot (ζ ^ 4) 3 :=
   hζ.pow (by decide) (by decide : 12 = 4 * 3)
 
-def rootsSix (ζ : F) (hζ : IsPrimitiveRoot ζ 12) : (primitiveRoots 6 F).Nonempty :=
+def rootsSix   : (primitiveRoots 6 F).Nonempty :=
   ⟨ζ ^ 2, (mem_primitiveRoots (by decide : 0 < 6)).2 (primitive_six F ζ hζ)⟩
 
-def rootsThree (ζ : F) (hζ : IsPrimitiveRoot ζ 12) : (primitiveRoots 3 F).Nonempty :=
+def rootsThree   : (primitiveRoots 3 F).Nonempty :=
   ⟨ζ ^ 4, (mem_primitiveRoots (by decide : 0 < 3)).2 (primitive_three F ζ hζ)⟩
 
-def finiteRootsSix (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (v : HeightOneSpectrum (𝓞 F)) :
+def finiteRootsSix   (v : HeightOneSpectrum (𝓞 F)) :
     rootsOfUnity 6 F ≃* rootsOfUnity 6 (v.adicCompletion F) :=
   rootsOfUnityEquivOfPrimitiveRoots (algebraMap F (v.adicCompletion F)).injective
     (rootsSix F ζ hζ)
 
-def finiteRootsThree (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (v : HeightOneSpectrum (𝓞 F)) :
+def finiteRootsThree   (v : HeightOneSpectrum (𝓞 F)) :
     rootsOfUnity 3 F ≃* rootsOfUnity 3 (v.adicCompletion F) :=
   rootsOfUnityEquivOfPrimitiveRoots (algebraMap F (v.adicCompletion F)).injective
     (rootsThree F ζ hζ)
 
-def finiteSixPairing (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (v : HeightOneSpectrum (𝓞 F)) :
+def finiteSixPairing   (v : HeightOneSpectrum (𝓞 F)) :
     ClassFieldTheory.PowerClassGroup (v.adicCompletion F) (6 : ℕ+) →*
       ClassFieldTheory.PowerClassGroup (v.adicCompletion F) (6 : ℕ+) →*
         rootsOfUnity 6 F :=
   NormalizedSymbolTransport.inverseTransport (finiteRootsSix F ζ hζ v)
     (ClassFieldTheory.finitePlaceAdicHilbertPairingFamily F (6 : ℕ+)
       (rootsSix F ζ hζ) v)
+end
+
 
 abbrev Place := InfinitePlace F ⊕ HeightOneSpectrum (𝓞 F)
 
@@ -79,10 +84,13 @@ def squareToThree : rootsOfUnity 6 F →* rootsOfUnity 3 F where
   map_one' := by apply Subtype.ext; simp
   map_mul' := by intro x y; apply Subtype.ext; simp [mul_pow]
 
-def B3 (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (v : Place F) (a b : (Completion F v)ˣ) : rootsOfUnity 3 F :=
+section
+variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+include ζ hζ
+def B3   (v : Place F) (a b : (Completion F v)ˣ) : rootsOfUnity 3 F :=
   squareToThree F (B6 F ζ hζ v a b)
 
-def finiteThreePairing (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (v : HeightOneSpectrum (𝓞 F)) :
+def finiteThreePairing   (v : HeightOneSpectrum (𝓞 F)) :
     ClassFieldTheory.PowerClassGroup (v.adicCompletion F) (3 : ℕ+) →*
       ClassFieldTheory.PowerClassGroup (v.adicCompletion F) (3 : ℕ+) →*
         rootsOfUnity 3 F :=
@@ -90,17 +98,22 @@ def finiteThreePairing (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (v : HeightOneSpec
     (ClassFieldTheory.finitePlaceAdicHilbertPairingFamily F (3 : ℕ+)
       (rootsThree F ζ hζ) v)
 
-theorem infinite_isComplex (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (w : InfinitePlace F) :
+theorem infinite_isComplex   (w : InfinitePlace F) :
     w.IsComplex := by
   letI := primitive12_totallyComplex F ζ hζ
   exact NumberField.IsTotallyComplex.isComplex w
 
-theorem B6_infinite (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (w : InfinitePlace F)
+theorem B6_infinite   (w : InfinitePlace F)
     (a b : w.Completionˣ) : B6 F ζ hζ (Sum.inl w) a b = 1 := rfl
+end
+
 
 open ClassFieldTheory in
-private theorem raw_three_six (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (v : HeightOneSpectrum (𝓞 F))
-    (a b : (v.adicCompletion F)ˣ) :
+section
+variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (v : HeightOneSpectrum (𝓞 F))
+    (a b : (v.adicCompletion F)ˣ)
+include ζ hζ v a b
+private theorem raw_three_six   :
     ((finitePlaceAdicHilbertPairingFamily F 3 (rootsThree F ζ hζ) v
       (powerClass _ 3 a) (powerClass _ 3 b)) : (v.adicCompletion F)ˣ) =
     ((finitePlaceAdicHilbertPairingFamily F 6 (rootsSix F ζ hζ) v
@@ -117,8 +130,7 @@ private theorem raw_three_six (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (v : Height
   exact congrArg Units.val (LocalClassFieldTheory.Kummer.localHilbertSymbol_exponentCompatibility
     (HeightOneSpectrum.adicAbv F v).Completion 3 6 _ _ _ _ (by decide) _ _)
 
-theorem B3_canonical (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (v : HeightOneSpectrum (𝓞 F)) (a b : (v.adicCompletion F)ˣ) :
+theorem B3_canonical   :
     B3 F ζ hζ (Sum.inr v) a b = finiteThreePairing F ζ hζ v
       (ClassFieldTheory.powerClass (v.adicCompletion F) 3 a)
       (ClassFieldTheory.powerClass (v.adicCompletion F) 3 b) := by
@@ -140,6 +152,8 @@ theorem B3_canonical (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
         rootsOfUnityEquivOfPrimitiveRoots_symm_apply _ _ _]
   exact congrArg Units.val (by simpa only [map_inv, inv_pow] using
     (congrArg Inv.inv (raw_three_six F ζ hζ v a b)).symm)
+end
+
 
 open ClassFieldTheory in
 private theorem raw_neg_self (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) F).Nonempty)
@@ -439,8 +453,11 @@ theorem tame_place_iff :
   rw [← h] at hp
   simpa only [map_ofNat] using hp
 
-theorem B6_tame_ordinaryValuation (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+section
+variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (hgood : ValuativeRel.valuation (v.adicCompletion F) (6 : v.adicCompletion F) = 1)
+include ζ hζ hgood
+theorem B6_tame_ordinaryValuation  
     (x : (v.adicCompletion F)ˣ) (u u' : LocalIntegerUnits F v) :
     B6 F ζ hζ (Sum.inr v) x (integerUnitInclusion F v u) =
       residueSixCharacter F v ζ hζ hgood u ^ ordinaryValuation F v x ∧
@@ -461,8 +478,7 @@ theorem B6_tame_ordinaryValuation (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     rw [B6_localCanonical, map_one]
     exact hu
 
-theorem B6_tame (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (hgood : ValuativeRel.valuation (v.adicCompletion F) (6 : v.adicCompletion F) = 1)
+theorem B6_tame  
     (π : (v.adicCompletion F)ˣ) (hπ : ordinaryValuation F v π = 1)
     (u u' : LocalIntegerUnits F v) :
     B6 F ζ hζ (Sum.inr v) π (integerUnitInclusion F v u) =
@@ -471,6 +487,8 @@ theorem B6_tame (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
       (integerUnitInclusion F v u') = 1 := by
   simpa only [hπ, zpow_one] using
     B6_tame_ordinaryValuation F v ζ hζ hgood π u u'
+end
+
 
 end FiniteNormalization
 

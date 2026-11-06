@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Algebra.Ring.Subring.Basic
 public import Mathlib.Algebra.Ring.Pi
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -40,10 +43,10 @@ def compatibleRingFamilies
     {x | ∀ {i j : ι} (hij : i ≤ j), transition hij (x j) = x i}
   zero_mem' := by
     intro i j hij
-    exact map_zero (transition hij)
+    apply map_zero
   one_mem' := by
     intro i j hij
-    exact map_one (transition hij)
+    apply map_one
   add_mem' hx hy := by
     intro i j hij
     simpa using congrArg₂ (· + ·) (hx hij) (hy hij)
@@ -65,7 +68,7 @@ def compatibleGroupFamilies
     {x | ∀ {i j : ι} (hij : i ≤ j), transition hij (x j) = x i}
   one_mem' := by
     intro i j hij
-    exact map_one (transition hij)
+    apply map_one
   mul_mem' hx hy := by
     intro i j hij
     simpa using congrArg₂ (· * ·) (hx hij) (hy hij)
@@ -93,45 +96,44 @@ instance compatibleGroupFamiliesCommGroup
     mul_comm := fun x y => by
       apply Subtype.ext
       funext i
-      exact mul_comm (x.1 i) (y.1 i) }
+      apply mul_comm }
 
+section
+variable { ι : Type*} [Preorder ι] (G : ι → Type*) [∀ i, Group (G i)]
+    (transition : ∀ {i j : ι}, i ≤ j → G j →* G i)
+include ι G transition
 /-- Evaluation of a compatible family at one coordinate. -/
 def compatibleGroupFamiliesEval
-    { ι : Type*} [Preorder ι] (G : ι → Type*) [∀ i, Group (G i)]
-    (transition : ∀ {i j : ι}, i ≤ j → G j →* G i) (i : ι) :
-    compatibleGroupFamilies G transition →* G i :=
+      (i : ι)  :=
   (Pi.evalMonoidHom G i).comp (compatibleGroupFamilies G transition).subtype
 
 /-- Evaluation of a compatible group family returns its component at the chosen index. -/
 @[simp]
 theorem compatibleGroupFamiliesEval_apply
-    { ι : Type*} [Preorder ι] (G : ι → Type*) [∀ i, Group (G i)]
-    (transition : ∀ {i j : ι}, i ≤ j → G j →* G i)
+     
     (i : ι) (x : compatibleGroupFamilies G transition) :
     compatibleGroupFamiliesEval G transition i x = x.1 i :=
   rfl
 
 /-- The named compatibility law for an inverse-limit family. -/
-theorem compatibleGroupFamilies_transition
-    { ι : Type*} [Preorder ι] (G : ι → Type*) [∀ i, Group (G i)]
-    (transition : ∀ {i j : ι}, i ≤ j → G j →* G i)
-    (x : compatibleGroupFamilies G transition) {i j : ι} (hij : i ≤ j) :
-    transition hij (compatibleGroupFamiliesEval G transition j x) =
-      compatibleGroupFamiliesEval G transition i x :=
+def compatibleGroupFamilies_transition
+     
+    (x : compatibleGroupFamilies G transition) {i j : ι} (hij : i ≤ j)  :=
   x.2 hij
 
 /-- Compatible families are equal when all named coordinate evaluations
 agree. -/
 @[ext]
 theorem compatibleGroupFamilies_ext
-    { ι : Type*} [Preorder ι] (G : ι → Type*) [∀ i, Group (G i)]
-    (transition : ∀ {i j : ι}, i ≤ j → G j →* G i)
+     
     {x y : compatibleGroupFamilies G transition}
     (h : ∀ i, compatibleGroupFamiliesEval G transition i x =
       compatibleGroupFamiliesEval G transition i y) : x = y := by
   apply Subtype.ext
   funext i
   exact h i
+end
+
 
 /-- Stagewise multiplicative equivalences induce an equivalence of compatible
 families when they commute with every transition map.  This is the reusable

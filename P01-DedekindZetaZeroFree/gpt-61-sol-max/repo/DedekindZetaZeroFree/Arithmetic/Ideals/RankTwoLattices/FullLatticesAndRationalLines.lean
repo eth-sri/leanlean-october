@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Algebra.Module.Lattice
 public import Mathlib.LinearAlgebra.Projectivization.Basic
 public import Mathlib.RingTheory.DedekindDomain.Basic
 public import Mathlib.RingTheory.FractionalIdeal.Operations
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 
@@ -15,12 +18,12 @@ def FullLattice (R : Type*) [CommRing R] [IsDedekindDomain R]
 
 abbrev RationalLine (K : Type*) [Field K] := Projectivization K (K × K)
 
-def det₂ (K : Type*) [Field K] (x y : K × K) : K :=
+def det₂ (K : Type*) [Field K] (x y : K × K)  :=
   x.1 * y.2 - x.2 * y.1
 
 def determinantSubmodule (R : Type*) [CommRing R] [IsDedekindDomain R]
     (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
-    (M : Submodule R (K × K)) : Submodule R K :=
+    (M : Submodule R (K × K))  :=
   Submodule.span R {d : K | ∃ x ∈ M, ∃ y ∈ M, d = det₂ K x y}
 
 def coefficientSubmodule (R : Type*) [CommRing R] [IsDedekindDomain R]
@@ -44,13 +47,13 @@ def coordinateLattice (R : Type*) [CommRing R] [IsDedekindDomain R]
 
 def latticeEquivalent (R : Type*) [CommRing R] [IsDedekindDomain R]
     (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
-    (M N : Submodule R (K × K)) : Prop :=
+    (M N : Submodule R (K × K))  :=
   ∃ g : (K × K) ≃ₗ[K] (K × K),
     Submodule.map (g.toLinearMap.restrictScalars R) M = N
 
 def lineEquivalent (R : Type*) [CommRing R] [IsDedekindDomain R]
     (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
-    (M : Submodule R (K × K)) (q q' : RationalLine K) : Prop :=
+    (M : Submodule R (K × K)) (q q' : RationalLine K)  :=
   ∃ g : (K × K) ≃ₗ[K] (K × K),
     Submodule.map (g.toLinearMap.restrictScalars R) M = M ∧
       Projectivization.map g.toLinearMap g.injective q = q'

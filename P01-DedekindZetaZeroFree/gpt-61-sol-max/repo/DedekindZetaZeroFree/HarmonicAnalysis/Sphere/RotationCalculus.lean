@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Fourier.SphericalFractionalIntegrals.RotationDerivatives
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.ComplexFractionalInverse
 open MeasureTheory
@@ -15,25 +18,25 @@ noncomputable def radialExtension (F : Sphere → ℂ) (x : Ambient) : ℂ :=
         abs_inv, abs_norm, inv_mul_cancel₀ (norm_ne_zero_iff.mpr hx)]⟩
   else 0
 
-def IsSphereSmooth (F : Sphere → ℂ) : Prop :=
+def IsSphereSmooth (F : Sphere → ℂ)  :=
   ContDiffOn ℝ (⊤ : ℕ∞) (radialExtension F) {x : Ambient | x ≠ 0}
 
 noncomputable def rotationVector (i : Fin 3) (x : Ambient) : Ambient :=
   WithLp.toLp 2 (fun j : Fin 3 =>
     if j = i + 1 then -x (i + 2) else if j = i + 2 then x (i + 1) else 0)
 
-noncomputable def rotationDeriv (i : Fin 3) (F : Sphere → ℂ) (x : Sphere) : ℂ :=
+noncomputable def rotationDeriv (i : Fin 3) (F : Sphere → ℂ) (x : Sphere)  :=
   fderiv ℝ (radialExtension F) (x : Ambient) (rotationVector i x)
 
 noncomputable def rotationWord : List (Fin 3) → (Sphere → ℂ) → (Sphere → ℂ)
   | [], F => F
   | i :: w, F => rotationDeriv i (rotationWord w F)
 
-noncomputable def rotationSup (n : ℕ) (F : Sphere → ℂ) : ℝ :=
+noncomputable def rotationSup (n : ℕ) (F : Sphere → ℂ)  :=
   sSup {r : ℝ | ∃ w : List (Fin 3), w.length ≤ n ∧
     ∃ x : Sphere, r = ‖rotationWord w F x‖}
 
-noncomputable def positiveLaplacian (F : Sphere → ℂ) (x : Sphere) : ℂ :=
+noncomputable def positiveLaplacian (F : Sphere → ℂ) (x : Sphere)  :=
   -∑ i : Fin 3, rotationDeriv i (rotationDeriv i F) x
 
 private theorem sphere_norm (x : Sphere) : ‖(x : Ambient)‖ = 1 := by
@@ -119,9 +122,8 @@ theorem rotationSup_bddAbove (n : ℕ) {F : Sphere → ℂ} (hF : IsSphereSmooth
   apply hb.mono
   rintro r ⟨w, hw, x, rfl⟩
   exact Set.mem_iUnion.mpr ⟨w, Set.mem_iUnion.mpr ⟨hw, Set.mem_range_self x⟩⟩
-theorem rotationWord_norm_le_rotationSup {F : Sphere → ℂ} (hF : IsSphereSmooth F) (w : List (Fin 3))
-    {n : ℕ} (hw : w.length ≤ n) (x : Sphere) : ‖rotationWord w F x‖ ≤ rotationSup n F := by
-  exact le_csSup (rotationSup_bddAbove n hF) ⟨w, hw, x, rfl⟩
+def rotationWord_norm_le_rotationSup {F : Sphere → ℂ} (hF : IsSphereSmooth F) (w : List (Fin 3))
+    {n : ℕ} (hw : w.length ≤ n) (x : Sphere)  := le_csSup (rotationSup_bddAbove n hF) ⟨w, hw, x, rfl⟩
 theorem radialExtension_add (F G : Sphere → ℂ) :
     radialExtension (fun x => F x + G x) = fun x => radialExtension F x + radialExtension G x := by
   funext x
@@ -220,7 +222,10 @@ theorem rotationWord_positiveLaplacian (w : List (Fin 3)) {F : Sphere → ℂ} (
   rintro r ⟨w, hw, x, rfl⟩
   exact rotationWord_norm_le_rotationSup hF w (hw.trans hnm) x
 
- theorem fractionalIntegral_add (α : ℝ) (hα : 0 < α)
+ section
+variable (α : ℝ)
+include α
+theorem fractionalIntegral_add   (hα : 0 < α)
     {F G : Sphere → ℂ} (hF : IsSphereSmooth F) (hG : IsSphereSmooth G) :
     fractionalIntegral α (fun x => F x + G x) =
       fun x => fractionalIntegral α F x + fractionalIntegral α G x := by
@@ -228,18 +233,18 @@ theorem rotationWord_positiveLaplacian (w : List (Fin 3)) {F : Sphere → ℂ} (
   unfold fractionalIntegral
   simp only [mul_add]
   exact integral_add (fractionalIntegral_integrable α hα hF x) (fractionalIntegral_integrable α hα hG x)
- theorem fractionalIntegral_const_mul (α : ℝ) (c : ℂ) (F : Sphere → ℂ) :
+ theorem fractionalIntegral_const_mul   (c : ℂ) (F : Sphere → ℂ) :
     fractionalIntegral α (fun x => c * F x) = fun x => c * fractionalIntegral α F x := by
   funext x
   unfold fractionalIntegral
   simp only [← mul_assoc]
   conv_lhs => arg 2; ext y; rw [mul_comm _ c, mul_assoc]
   exact integral_const_mul c _
- theorem fractionalIntegral_neg (α : ℝ) (F : Sphere → ℂ) :
+ theorem fractionalIntegral_neg   (F : Sphere → ℂ) :
     fractionalIntegral α (fun x => -F x) = fun x => -fractionalIntegral α F x := by
   funext x
   simp only [fractionalIntegral, mul_neg, integral_neg]
- theorem fractionalIntegral_norm_le_of_bound (α : ℝ) (hα : 0 < α)
+ theorem fractionalIntegral_norm_le_of_bound   (hα : 0 < α)
     (F : Sphere → ℂ) (C : ℝ) (hC : ∀ y, ‖F y‖ ≤ C) (x : Sphere) :
     ‖fractionalIntegral α F x‖ ≤ C := by
   have hK := (fractionalKernel_mass α hα).2 x
@@ -250,7 +255,7 @@ theorem rotationWord_positiveLaplacian (w : List (Fin 3)) {F : Sphere → ℂ} (
       simp only [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (hK.2.1 y)]
       exact mul_le_mul_of_nonneg_left (hC y) (hK.2.1 y)
     _ = _ := by rw [integral_mul_const, hK.2.2, one_mul]
- theorem fractionalIntegral_rotationSup_of_commutes (α : ℝ) (hα : 0 < α)
+ theorem fractionalIntegral_rotationSup_of_commutes   (hα : 0 < α)
     {F : Sphere → ℂ} (hF : IsSphereSmooth F)
     (hcomm : ∀ w : List (Fin 3), rotationWord w (fractionalIntegral α F) =
       fractionalIntegral α (rotationWord w F)) (n : ℕ) :
@@ -261,7 +266,7 @@ theorem rotationWord_positiveLaplacian (w : List (Fin 3)) {F : Sphere → ℂ} (
   exact fractionalIntegral_norm_le_of_bound α hα _ _
     (fun y => rotationWord_norm_le_rotationSup hF w hw y) x
 
- theorem fractionalIntegral_rotationWord_of_deriv (α : ℝ)
+ theorem fractionalIntegral_rotationWord_of_deriv  
     (hcomm : ∀ (i : Fin 3) (F : Sphere → ℂ), IsSphereSmooth F →
       rotationDeriv i (fractionalIntegral α F) = fractionalIntegral α (rotationDeriv i F))
     {F : Sphere → ℂ} (hF : IsSphereSmooth F) (w : List (Fin 3)) :
@@ -272,7 +277,7 @@ theorem rotationWord_positiveLaplacian (w : List (Fin 3)) {F : Sphere → ℂ} (
     simp only [rotationWord, ih]
     exact hcomm i _ (rotationWord_smooth w hF)
 
-theorem fractionalIntegral_rotation (α : ℝ) (hα : 0 < α)
+theorem fractionalIntegral_rotation   (hα : 0 < α)
     (F : Sphere → ℂ) (hF : IsSphereSmooth F) :
     (∀ x : Sphere, Integrable
       (fun y => (fractionalKernel α x y : ℂ) * F y) sphereArea) ∧
@@ -285,12 +290,13 @@ theorem fractionalIntegral_rotation (α : ℝ) (hα : 0 < α)
   have hderiv : ∀ (i : Fin 3) (G : Sphere → ℂ), IsSphereSmooth G →
       rotationDeriv i (fractionalIntegral α G) = fractionalIntegral α (rotationDeriv i G) := by
     intro i G hG
-    exact RotationCalculus.fractionalIntegral_raw_rotationDeriv α hα i G hG
-  have hword : ∀ w : List (Fin 3), rotationWord w (fractionalIntegral α F) =
-      fractionalIntegral α (rotationWord w F) :=
+    apply RotationCalculus.fractionalIntegral_raw_rotationDeriv <;> assumption
+  have hword  :=
     fractionalIntegral_rotationWord_of_deriv α hderiv hF
   exact ⟨fractionalIntegral_integrable α hα hF, hsmooth, hword,
     fractionalIntegral_rotationSup_of_commutes α hα hF hword⟩
+end
+
 
 theorem positiveLaplacian_rotation_bound (F : Sphere → ℂ) (hF : IsSphereSmooth F) :
     IsSphereSmooth (positiveLaplacian F) ∧
@@ -322,14 +328,17 @@ theorem positiveLaplacian_rotation_bound (F : Sphere → ℂ) (hF : IsSphereSmoo
 open Set
 open scoped Pointwise
 
-noncomputable def sphereOrthogonal (e : Ambient ≃ₗᵢ[ℝ] Ambient) : Sphere ≃ₜ Sphere :=
+section
+variable (e : Ambient ≃ₗᵢ[ℝ] Ambient)
+include e
+noncomputable def sphereOrthogonal   : Sphere ≃ₜ Sphere :=
   e.toHomeomorph.subtype (fun x => by
     change ‖x - 0‖ = 1 ↔ ‖e x - 0‖ = 1
     simp only [sub_zero, e.norm_map])
-@[simp] theorem sphereOrthogonal_coe (e : Ambient ≃ₗᵢ[ℝ] Ambient) (x : Sphere) :
+@[simp] theorem sphereOrthogonal_coe   (x : Sphere) :
     (sphereOrthogonal e x : Ambient) = e x := rfl
 
-theorem sphereOrthogonal_measurePreserving (e : Ambient ≃ₗᵢ[ℝ] Ambient) :
+theorem sphereOrthogonal_measurePreserving   :
     MeasurePreserving (sphereOrthogonal e) sphereArea sphereArea := by
   have hraw : MeasurePreserving (sphereOrthogonal e) volume.toSphere volume.toSphere := by
     refine ⟨(sphereOrthogonal e).measurable, Measure.ext fun s hs => ?_⟩
@@ -350,8 +359,13 @@ theorem sphereOrthogonal_measurePreserving (e : Ambient ≃ₗᵢ[ℝ] Ambient) 
     rw [hset]
     exact e.measurePreserving.measure_preimage_emb e.toHomeomorph.measurableEmbedding _
   exact hraw.smul_measure _
+end
 
-noncomputable def rotationFlowMap (i : Fin 3) (t : ℝ) : Ambient →ₗ[ℝ] Ambient where
+
+section
+variable (i : Fin 3) (t : ℝ)
+include i t
+noncomputable def rotationFlowMap   : Ambient →ₗ[ℝ] Ambient where
   toFun x := WithLp.toLp 2 (fun j : Fin 3 =>
     if j = i then x i else if j = i + 1 then
       Real.cos t * x (i+1) - Real.sin t * x (i+2)
@@ -359,7 +373,7 @@ noncomputable def rotationFlowMap (i : Fin 3) (t : ℝ) : Ambient →ₗ[ℝ] Am
   map_add' x y := by ext j; simp only [PiLp.toLp_apply, PiLp.add_apply]; split_ifs <;> ring
   map_smul' c x := by ext j; simp only [PiLp.toLp_apply, PiLp.smul_apply, smul_eq_mul, RingHom.id_apply]; split_ifs <;> ring
 
-theorem rotationFlowMap_inverse (i : Fin 3) (t : ℝ) (x : Ambient) :
+theorem rotationFlowMap_inverse   (x : Ambient) :
     rotationFlowMap i (-t) (rotationFlowMap i t x) = x := by
   have ht := Real.cos_sq_add_sin_sq t
   ext j
@@ -369,7 +383,7 @@ theorem rotationFlowMap_inverse (i : Fin 3) (t : ℝ) (x : Ambient) :
       congrArg (fun a : ℝ => a * x 1) ht,
       congrArg (fun a : ℝ => a * x 2) ht]
 
-theorem rotationFlowMap_norm (i : Fin 3) (t : ℝ) (x : Ambient) :
+theorem rotationFlowMap_norm   (x : Ambient) :
     ‖rotationFlowMap i t x‖ = ‖x‖ := by
   apply (sq_eq_sq₀ (norm_nonneg _) (norm_nonneg _)).mp
   rw [EuclideanSpace.norm_sq_eq, EuclideanSpace.norm_sq_eq]
@@ -378,7 +392,7 @@ theorem rotationFlowMap_norm (i : Fin 3) (t : ℝ) (x : Ambient) :
     AddHom.coe_mk, PiLp.toLp_apply, Fin.reduceAdd, Real.norm_eq_abs, sq_abs] <;>
     simp <;> nlinarith [sq_nonneg (x 0), sq_nonneg (x 1), sq_nonneg (x 2)]
 
-noncomputable def rotationFlow (i : Fin 3) (t : ℝ) : Ambient ≃ₗᵢ[ℝ] Ambient where
+noncomputable def rotationFlow   : Ambient ≃ₗᵢ[ℝ] Ambient where
   toLinearEquiv :=
     { rotationFlowMap i t with
       invFun := rotationFlowMap i (-t)
@@ -388,8 +402,10 @@ noncomputable def rotationFlow (i : Fin 3) (t : ℝ) : Ambient ≃ₗᵢ[ℝ] Am
         simpa only [neg_neg] using rotationFlowMap_inverse i (-t) x }
   norm_map' := rotationFlowMap_norm i t
 
-@[simp] theorem rotationFlow_apply (i : Fin 3) (t : ℝ) (x : Ambient) :
+@[simp] theorem rotationFlow_apply   (x : Ambient) :
     rotationFlow i t x = rotationFlowMap i t x := rfl
+end
+
 @[simp] theorem rotationFlow_zero (i : Fin 3) (x : Ambient) : rotationFlow i 0 x = x := by
   ext j
   fin_cases i <;> fin_cases j <;> simp [rotationFlowMap, rotationFlow, Fin.reduceAdd]

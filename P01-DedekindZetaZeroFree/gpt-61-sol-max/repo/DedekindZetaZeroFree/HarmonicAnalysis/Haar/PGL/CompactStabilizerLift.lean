@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.PGLHyperbolic.CompactStabilizer
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.KPCompactStabilizerHaarSources
 
@@ -34,7 +37,7 @@ set_option maxHeartbeats 800000 in
     have hm : Continuous (fun x : X d =>
       (KPArithmeticAction.productProjectiveSection d (a • x))⁻¹ * a) := hb.mul_const a
     exact hm.mul hs
-  exact hc.subtype_mk (fun x => (cocycle d a x).property)
+  apply hc.subtype_mk
 
 set_option maxHeartbeats 800000 in
 
@@ -54,13 +57,12 @@ theorem compact_fiber_lift_isHaar (d : ℕ)
   have :=  hinvariant
   have :=  hdk
   have :=  hprob
-  have : IsFiniteMeasureOnCompacts (Measure.map e.symm (ν.prod dk)) :=
+  have  :=
     Measure.IsFiniteMeasureOnCompacts.map (ν.prod dk) e.symm
   have : (Measure.map e.symm (ν.prod dk)).IsOpenPosMeasure :=
     e.symm.continuous.isOpenPosMeasure_map e.symm.surjective
   refine { map_mul_left_eq_self := fun a => ?_ }
-  have hgm : Measurable (Function.uncurry (fun x k => cocycle d a x * k)) := by
-    exact (((cocycle_continuous d a).comp continuous_fst).mul continuous_snd).measurable
+  have hgm : Measurable (Function.uncurry (fun x k => cocycle d a x * k)) := (((cocycle_continuous d a).comp continuous_fst).mul continuous_snd).measurable
   have hp := (measurePreserving_smul a ν).skew_product hgm
     (Filter.Eventually.of_forall (fun x => map_mul_left_eq_self dk (cocycle d a x)))
   have hh : (fun p : X d × K d => e.symm (a • p.1, cocycle d a p.1 * p.2)) =

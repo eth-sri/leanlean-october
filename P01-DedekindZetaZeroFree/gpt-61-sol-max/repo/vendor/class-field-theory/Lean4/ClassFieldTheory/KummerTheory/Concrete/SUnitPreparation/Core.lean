@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.KummerTheory.Concrete.SUnitPreparation.EnlargedSUnitRestriction
 public import GaloisCohomology.Kummer.Concrete.SUnitPreparation.PrimePowerKernelCoordinates
 public import ClassFieldTheory.KummerTheory.Concrete.SUnitPreparation.SUnitPowerQuotient
@@ -8,6 +10,7 @@ public import ClassFieldTheory.KummerTheory.Concrete.SUnitPreparation.SUnitLocal
 public import ClassFieldTheory.KummerTheory.Concrete.SUnitPreparation.FiniteRadicalSupport
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -41,22 +44,25 @@ namespace KummerTheory
 variable {K : Type*} [Field K]
     [numberFieldK : NumberField K]
 
-/-- The cardinal comparison in the finite S-unit preparation argument: if
-`Gal(E/K) ≃ (Z/nZ)^r`, then `r ≤ s` for the source-produced enlarged
-set of places. -/
-theorem galoisRank_le_totalPlaceCard_enlargedS
-    {Omega : Type*} [Field Omega] [Algebra K Omega]
+section
+variable {Omega : Type*} [Field Omega] [Algebra K Omega]
     [IsSepClosure K Omega]
     (E : IntermediateField K Omega)
     [FiniteDimensional K E] [IsGalois K E]
     [IsMulCommutative Gal(E/K)]
     (n : ℕ+) (hn : 1 < (n : ℕ))
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
+    (hmu : (primitiveRoots n K).Nonempty)
     (r : ℕ)
     (eG :
       Gal(E/K) ≃*
-        (Fin r → Multiplicative (ZMod (n : ℕ))))
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+        (Fin r → Multiplicative (ZMod n)))
+    (S : Finset (HeightOneSpectrum (𝓞 K)))
+include Omega E n hn hmu r eG S
+/-- The cardinal comparison in the finite S-unit preparation argument: if
+`Gal(E/K) ≃ (Z/nZ)^r`, then `r ≤ s` for the source-produced enlarged
+set of places. -/
+theorem galoisRank_le_totalPlaceCard_enlargedS
+      :
     r ≤
       totalPlaceCard (K := K)
         (enlargeByFiniteKummerRadicalSupport
@@ -67,7 +73,7 @@ theorem galoisRank_le_totalPlaceCard_enlargedS
   let N :=
     fullSUnitKummerExtension
       (K := K) (Omega := Omega) n S'
-  have hnK : ((n : ℕ) : K) ≠ 0 := by
+  have hnK : (n : K) ≠ 0 := by
     exact_mod_cast n.ne_zero
   let : IsGalois K N :=
     fullSUnitKummerExtension_isGalois
@@ -103,18 +109,7 @@ theorem galoisRank_le_totalPlaceCard_enlargedS
 cardinality `n ^ (s - r)`.  Both fields and the restriction map are the
 concrete objects constructed above. -/
 theorem card_enlargedSUnitKummerRestrictionHom_ker
-    {Omega : Type*} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (E : IntermediateField K Omega)
-    [FiniteDimensional K E] [IsGalois K E]
-    [IsMulCommutative Gal(E/K)]
-    (n : ℕ+) (hn : 1 < (n : ℕ))
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (r : ℕ)
-    (eG :
-      Gal(E/K) ≃*
-        (Fin r → Multiplicative (ZMod (n : ℕ))))
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+      :
     Nat.card
         (enlargedSUnitKummerRestrictionHom
           (K := K) (Omega := Omega) E n hmu
@@ -130,7 +125,7 @@ theorem card_enlargedSUnitKummerRestrictionHom_ker
   let N :=
     fullSUnitKummerExtension
       (K := K) (Omega := Omega) n S'
-  have hnK : ((n : ℕ) : K) ≠ 0 := by
+  have hnK : (n : K) ≠ 0 := by
     exact_mod_cast n.ne_zero
   let : IsGalois K N :=
     fullSUnitKummerExtension_isGalois
@@ -157,9 +152,7 @@ theorem card_enlargedSUnitKummerRestrictionHom_ker
         (n : ℕ) ^ totalPlaceCard (K := K) S' :=
     card_fullSUnitKummerExtension_galois
       (K := K) (Omega := Omega) n hnK hmu S'
-  have hquotient :
-      Nat.card (Gal(N/K) ⧸ f.ker) =
-        Nat.card Gal(E/K) :=
+  have hquotient  :=
     Nat.card_congr
       (QuotientGroup.quotientKerEquivOfSurjective
         f hf).toEquiv
@@ -180,34 +173,35 @@ theorem card_enlargedSUnitKummerRestrictionHom_ker
           (n : ℕ) ^
             (totalPlaceCard (K := K) S' - r) := by
     rw [← pow_add, Nat.add_sub_of_le hr]
-  have hcancel :
-      (n : ℕ) ^ r * Nat.card f.ker =
-        (n : ℕ) ^ r *
-          (n : ℕ) ^
-            (totalPlaceCard (K := K) S' - r) :=
+  have hcancel  :=
     hfactor.symm.trans hsplit
   exact Nat.eq_of_mul_eq_mul_left
     (pow_pos n.pos r) hcancel
+end
 
-/-- In the prime-power case, the actual relative Galois group
-`Gal(N/E)` is a free `ZMod n`-module of rank `s - r`.  This is the
-concrete basis source used to choose the fields `N_i` in the finite S-unit preparation argument. -/
-theorem
-    exists_enlargedSUnitKummerRestrictionKernelEquivPiZMod
-    {Omega : Type*} [Field Omega] [Algebra K Omega]
+
+section
+variable {Omega : Type*} [Field Omega] [Algebra K Omega]
     [IsSepClosure K Omega]
     (E : IntermediateField K Omega)
     [FiniteDimensional K E] [IsGalois K E]
     [IsMulCommutative Gal(E/K)]
     (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
+    (hmu : (primitiveRoots n K).Nonempty)
     (p v : ℕ) (hp : p.Prime) (hv : 0 < v)
     (hn : (n : ℕ) = p ^ v)
     (r : ℕ)
     (eG :
       Gal(E/K) ≃*
-        (Fin r → Multiplicative (ZMod (n : ℕ))))
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+        (Fin r → Multiplicative (ZMod n)))
+    (S : Finset (HeightOneSpectrum (𝓞 K)))
+include Omega E n hmu p v hp hv hn r eG S
+/-- In the prime-power case, the actual relative Galois group
+`Gal(N/E)` is a free `ZMod n`-module of rank `s - r`.  This is the
+concrete basis source used to choose the fields `N_i` in the finite S-unit preparation argument. -/
+theorem
+    exists_enlargedSUnitKummerRestrictionKernelEquivPiZMod
+      :
     Nonempty
       ((enlargedSUnitKummerRestrictionHom
           (K := K) (Omega := Omega) E n hmu
@@ -217,7 +211,7 @@ theorem
             (totalPlaceCard (K := K)
               (enlargeByFiniteKummerRadicalSupport
                 (K := K) (L := E) n hmu S) - r) →
-          Multiplicative (ZMod (n : ℕ)))) := by
+          Multiplicative (ZMod n))) := by
   let S' :=
     enlargeByFiniteKummerRadicalSupport
       (K := K) (L := E) n hmu S
@@ -226,7 +220,7 @@ theorem
       (K := K) (Omega := Omega) n S'
   let G := Gal(N/K)
   let H := Gal(E/K)
-  have hnK : ((n : ℕ) : K) ≠ 0 := by
+  have hnK : (n : K) ≠ 0 := by
     exact_mod_cast n.ne_zero
   have hnOne : 1 < (n : ℕ) := by
     rw [hn]
@@ -248,20 +242,20 @@ theorem
   let : IsMulCommutative G :=
     KummerTheory.kummerRadicalExtension_isMulCommutative
       n hmu (fullSUnitKummerSubgroup (K := K) n S').1
-  let : Module (ZMod (n : ℕ)) (Additive G) :=
-    additiveZModModuleOfPowEqOne (n : ℕ)
+  let : Module (ZMod n) (Additive G) :=
+    additiveZModModuleOfPowEqOne n
       (fullSUnitKummerExtension_galois_pow_eq_one
         (K := K) (Omega := Omega) n hmu S')
-  let : Module (ZMod (n : ℕ)) (Additive H) :=
-    additiveZModModuleOfPowEqOne (n : ℕ) hexponentE
-  have hfreeG : Module.Free (ZMod (n : ℕ)) (Additive G) :=
+  let  :=
+    additiveZModModuleOfPowEqOne n hexponentE
+  have hfreeG : Module.Free (ZMod n) (Additive G) :=
     fullSUnitKummerExtension_galois_moduleFree
       (K := K) (Omega := Omega) n hnK hmu S'
   let eH :
-      Additive H ≃ₗ[ZMod (n : ℕ)]
-        (Fin r → ZMod (n : ℕ)) :=
-    additivePiLinearEquiv (n : ℕ) eG
-  have hfreeH : Module.Free (ZMod (n : ℕ)) (Additive H) :=
+      Additive H ≃ₗ[ZMod n]
+        (Fin r → ZMod n) :=
+    additivePiLinearEquiv n eG
+  have hfreeH  :=
     Module.Free.of_equiv eH.symm
   let f : G →* H :=
     enlargedSUnitKummerRestrictionHom
@@ -278,31 +272,13 @@ theorem
     card_enlargedSUnitKummerRestrictionHom_ker
       (K := K) (Omega := Omega) E n hnOne
         hmu r eG S
-  exact
-    exists_kernelMulEquiv_pi_zmod_of_primePower
-      (G := G) (H := H)
-      (n : ℕ) p v
-      (totalPlaceCard (K := K) S' - r)
-      hp hv hn hfreeG hfreeH f hf hcard
+  apply exists_kernelMulEquiv_pi_zmod_of_primePower <;> assumption
 
 /-- A chosen coordinate equivalence for the actual relative Galois
 group in the finite S-unit preparation argument. -/
 noncomputable def
     chosenEnlargedSUnitKummerRestrictionKernelEquivPiZMod
-    {Omega : Type*} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (E : IntermediateField K Omega)
-    [FiniteDimensional K E] [IsGalois K E]
-    [IsMulCommutative Gal(E/K)]
-    (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (p v : ℕ) (hp : p.Prime) (hv : 0 < v)
-    (hn : (n : ℕ) = p ^ v)
-    (r : ℕ)
-    (eG :
-      Gal(E/K) ≃*
-        (Fin r → Multiplicative (ZMod (n : ℕ))))
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+      :
     (enlargedSUnitKummerRestrictionHom
         (K := K) (Omega := Omega) E n hmu
         (galois_pow_eq_one_of_equiv_pi_zmod E n r eG)
@@ -311,11 +287,13 @@ noncomputable def
           (totalPlaceCard (K := K)
             (enlargeByFiniteKummerRadicalSupport
               (K := K) (L := E) n hmu S) - r) →
-        Multiplicative (ZMod (n : ℕ))) :=
+        Multiplicative (ZMod n)) :=
   Classical.choice
     (exists_enlargedSUnitKummerRestrictionKernelEquivPiZMod
       (K := K) (Omega := Omega) E n hmu
       p v hp hv hn r eG S)
+end
+
 
 end KummerTheory
 

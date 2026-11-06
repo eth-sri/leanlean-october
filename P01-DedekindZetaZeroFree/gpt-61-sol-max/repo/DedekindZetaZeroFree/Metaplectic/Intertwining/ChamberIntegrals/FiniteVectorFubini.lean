@@ -67,10 +67,13 @@ open KPLocalPrincipalSeries KPLocalExceptionalConstruction KPLocalStoneVonNeuman
 open KPRankOneShellContinuation
 open _root_.DedekindZetaZeroFree.KPLocalStoneVonNeumann renaming inducedCosetEquiv → inducedCosetEquiv
 
- theorem compact_forward_eq_integral
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+ section
+variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
     (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
+include F ζ hζ q S P
+theorem compact_forward_eq_integral
+     
     (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
     (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
     (φ : compactPicture S.borel P S.iwasawa .plus)
@@ -93,19 +96,17 @@ open _root_.DedekindZetaZeroFree.KPLocalStoneVonNeumann renaming inducedCosetEqu
   exact h
 
  def actualFiberCoordinates
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
-    (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg) :
+      :
     InducedModule P ≃ₗ[ℂ] ((actualTorus F ζ hζ q ⧸ P.L.comap S.heisenberg.π) → ℂ) :=
   inducedCosetEquiv (P.L.comap S.heisenberg.π) P.ωL.toMonoidHom
 
  theorem actual_fiber_coordinates_apply
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
-    (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
+     
     (v : InducedModule P) (j : actualTorus F ζ hζ q ⧸ P.L.comap S.heisenberg.π) :
     actualFiberCoordinates F ζ hζ q S P v j = v.val
       (Function.surjInv (QuotientGroup.mk'_surjective (P.L.comap S.heisenberg.π)) j) := rfl
+end
+
 
 theorem rational_finite_chamber_integral
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)

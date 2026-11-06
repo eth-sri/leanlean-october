@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Fourier.LocalCompactOpenAnnihilators
 public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.DifferentMassProduct
 public import DedekindZetaZeroFree.Adeles.RestrictedProduct.LocalTopology
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -36,14 +39,14 @@ instance finitePlaces_countable : Countable (HeightOneSpectrum (𝓞 F)) :=
 
 instance completion_secondCountable (v : HeightOneSpectrum (𝓞 F)) :
     SecondCountableTopology (v.adicCompletion F) := by
-  letI : SeparableSpace (v.adicCompletion F) :=
+  letI  :=
     SeparableSpace.of_denseRange _ (v.denseRange_algebraMap F)
   infer_instance
 
 instance adeles_secondCountable : SecondCountableTopology (Adeles F) := by
   exact KPAdelicTopology.finiteAdeles_secondCountableTopology F
 
-def integralCompact : Set (Adeles F) :=
+def integralCompact  :=
   Set.range (RestrictedProduct.structureMap
     (fun v : HeightOneSpectrum (𝓞 F) => v.adicCompletion F)
     (fun v => (v.adicCompletionIntegers F : Set (v.adicCompletion F)))
@@ -57,8 +60,7 @@ theorem integralCompact_eq_coordinatewise :
   rw [RestrictedProduct.range_structureMap]
   rfl
 
-def integralSubgroup : AddSubgroup (Adeles F) :=
-  KPAdelicTopology.integralAdeles F
+alias integralSubgroup := _root_.DedekindZetaZeroFree.KPAdelicTopology.integralAdeles
 
 @[simp] theorem coe_integralSubgroup :
     (integralSubgroup F : Set (Adeles F)) = integralCompact F := by
@@ -86,7 +88,7 @@ def K0 : PositiveCompacts (Adeles F) :=
 
 @[simp] theorem coe_K0 : (K0 F : Set (Adeles F)) = integralCompact F := rfl
 
-def kappa : ℝ := 1 / Real.sqrt |(NumberField.discr F : ℝ)|
+def kappa  := 1 / Real.sqrt |(NumberField.discr F : ℝ)|
 
 theorem kappa_pos : 0 < kappa F := by
   apply one_div_pos.mpr
@@ -94,18 +96,17 @@ theorem kappa_pos : 0 < kappa F := by
   apply abs_pos.mpr
   exact_mod_cast NumberField.discr_ne_zero F
 
-def measure : Measure (Adeles F) :=
+def measure  :=
   ENNReal.ofReal (kappa F) • Measure.addHaarMeasure (K0 F)
 
 instance measure_isAddHaarMeasure : (measure F).IsAddHaarMeasure := by
   exact Measure.IsAddHaarMeasure.smul (Measure.addHaarMeasure (K0 F))
     (ENNReal.ofReal_ne_zero_iff.mpr (kappa_pos F)) ENNReal.ofReal_ne_top
 
-instance measure_regular : (measure F).Regular := by
-  exact Measure.Regular.smul ENNReal.ofReal_ne_top
+instance measure_regular : (measure F).Regular := Measure.Regular.smul ENNReal.ofReal_ne_top
 
-instance measure_sigmaFinite : SigmaFinite (measure F) := by
-  infer_instance
+
+
 
 end DedekindZetaZeroFree.FiniteHaarNormalization
 
@@ -123,8 +124,8 @@ namespace DedekindZetaZeroFree.FiniteHaarNormalization
 variable (F : Type) [Field F] [NumberField F]
 
 theorem finprod_halfNormMass_eq_kappa :
-    (∏ᶠ v : HeightOneSpectrum (𝓞 F), DifferentMass.halfNormMass F v) = kappa F := by
-  exact DifferentMass.finprod_halfNormMass_eq_abs_discr F
+    (∏ᶠ v : HeightOneSpectrum (𝓞 F), DifferentMass.halfNormMass F v) = kappa F :=
+  DifferentMass.finprod_halfNormMass_eq_abs_discr F
 
 theorem measure_integralCompact :
     measure F (integralCompact F) = ENNReal.ofReal (kappa F) := by

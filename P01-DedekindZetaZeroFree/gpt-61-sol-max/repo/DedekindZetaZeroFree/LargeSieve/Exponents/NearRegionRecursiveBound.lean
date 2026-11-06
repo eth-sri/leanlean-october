@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.QuadraticFormsAndSieveExponents
 public import DedekindZetaZeroFree.LargeSieve.Exponents.RecursionParameterEstimates
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -39,11 +42,7 @@ theorem recursion_near_region (F : Type) [Field F] [NumberField F]
   set X : ℝ := Real.rpow N (2 * α - 1) * Real.rpow M (1 - α) with hX
   set cc : ℝ := Real.rpow 2 (α - 1) * Real.rpow (M * N) (d * (α - 1)) with hcc
   have hd0 : 0 < d := by
-    rw [hd]
-    apply div_pos hη
-    have : (1 : ℝ) ≤ ((max 1 ⌈20 / η⌉₊ : ℕ) : ℝ) := by
-      exact_mod_cast le_max_left 1 ⌈20 / η⌉₊
-    nlinarith [hα, this]
+    positivity
   have hXnn : 0 ≤ X := by
     rw [hX]; exact mul_nonneg (Real.rpow_nonneg hN0 _) (Real.rpow_nonneg hM0 _)
   have hcc1 : 1 ≤ cc := by

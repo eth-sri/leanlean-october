@@ -1,11 +1,14 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Adeles.Lattices.NormalizedRayCosetLattice
 public import DedekindZetaZeroFree.HarmonicAnalysis.Poisson.RayLatticePeriodization
 public import DedekindZetaZeroFree.Arithmetic.Units.RayUnitHalfOpenDomain
 public import DedekindZetaZeroFree.Arithmetic.Units.RayUnitTorsionFibers
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -15,13 +18,16 @@ namespace DedekindZetaZeroFree.AbelianQuotient.RayCoset
 
 variable {K : Type} [Field K] [NumberField K]
 
-def orbitRepresentative (D : Data K) (x : X D) : Cx D := Quotient.out x
+def orbitRepresentative (D : Data K) (x : X D)  := Quotient.out x
 
 @[simp] theorem orbitMk_orbitRepresentative (D : Data K) (x : X D) :
     orbitMk D (orbitRepresentative D x) = x := Quotient.out_eq x
 
-theorem orbitParametrization_bijective (D : Data K) (ρ : X D → Cx D)
-    (hρ : ∀ x, orbitMk D (ρ x) = x) :
+section
+variable (D : Data K) (ρ : X D → Cx D)
+    (hρ : ∀ x, orbitMk D (ρ x) = x)
+include D ρ hρ
+theorem orbitParametrization_bijective   :
     Function.Bijective (fun p : X D × U K D.m => p.2 • ρ p.1) := by
   constructor
   · rintro ⟨x, u⟩ ⟨y, v⟩ h
@@ -33,10 +39,10 @@ theorem orbitParametrization_bijective (D : Data K) (ρ : X D → Cx D)
     have hxy : x = y := by
       rw [← horb x u, ← horb y v, h]
     subst y
-    have hv : (u.val : 𝓞 K) = (v.val : 𝓞 K) :=
+    have hv  :=
       mul_right_cancel₀ ((mem_Cnonzero_iff D _).mp (ρ x).property).2
         (congrArg Subtype.val h)
-    have huv : u = v := Subtype.ext (Units.val_injective hv)
+    have huv  := Subtype.ext (Units.val_injective hv)
     subst v
     rfl
   · intro α
@@ -44,16 +50,16 @@ theorem orbitParametrization_bijective (D : Data K) (ρ : X D → Cx D)
     obtain ⟨u, hu⟩ := Quotient.exact h
     exact ⟨(orbitMk D α, u), hu⟩
 
-def orbitProductEquiv (D : Data K) (ρ : X D → Cx D)
-    (hρ : ∀ x, orbitMk D (ρ x) = x) : X D × U K D.m ≃ Cx D :=
+def orbitProductEquiv   : X D × U K D.m ≃ Cx D :=
   Equiv.ofBijective (fun p => p.2 • ρ p.1)
     (orbitParametrization_bijective D ρ hρ)
 
-@[simp] theorem orbitProductEquiv_apply (D : Data K) (ρ : X D → Cx D)
-    (hρ : ∀ x, orbitMk D (ρ x) = x) (x : X D) (u : U K D.m) :
+@[simp] theorem orbitProductEquiv_apply   (x : X D) (u : U K D.m) :
     orbitProductEquiv D ρ hρ (x,u) = u • ρ x := rfl
+end
 
-def chosenOrbitProductEquiv (D : Data K) : X D × U K D.m ≃ Cx D :=
+
+def chosenOrbitProductEquiv (D : Data K)  :=
   orbitProductEquiv D (orbitRepresentative D) (orbitMk_orbitRepresentative D)
 
 theorem rayUnitLogMap_surjective (m : Ideal (𝓞 K)) :
@@ -104,8 +110,7 @@ theorem gδ_normalizedEmbedding_smul (D : Data K)
     RayParity.gδ K δ
       (RayParity.Q K (fun v => q v * absEmbedding D.m u v)
         (normalizedEmbedding D α.val)) := by
-  have habs (v : InfinitePlace K) : 0 < absEmbedding D.m u v := by
-    exact v.pos_iff.mpr (RingOfIntegers.coe_ne_zero_iff.mpr u.val.ne_zero)
+  have habs (v : InfinitePlace K) : 0 < absEmbedding D.m u v := v.pos_iff.mpr (RingOfIntegers.coe_ne_zero_iff.mpr u.val.ne_zero)
   have hq' : ∀ v, q v * absEmbedding D.m u v ≠ 0 :=
     fun v => ne_of_gt (mul_pos (hq v) (habs v))
   have hn : ‖RayParity.Q K q (normalizedEmbedding D (u • α).val)‖ ^ 2 =
@@ -130,12 +135,12 @@ theorem gδ_normalizedEmbedding_smul (D : Data K)
   · simp only [Theta.latticeGaussian, ← Complex.ofReal_pow, hn]
 
 theorem countable_Cx (D : Data K) : Countable (Cx D) := by
-  letI : Countable K := (Module.finBasis ℚ K).equivFun.injective.countable
+  letI  := (Module.finBasis ℚ K).equivFun.injective.countable
   letI : Countable (𝓞 K) := RingOfIntegers.coe_injective.countable
   infer_instance
 
 theorem countable_U (m : Ideal (𝓞 K)) : Countable (U K m) := by
-  letI : Countable K := (Module.finBasis ℚ K).equivFun.injective.countable
+  letI  := (Module.finBasis ℚ K).equivFun.injective.countable
   letI : Countable (𝓞 K) := RingOfIntegers.coe_injective.countable
   letI : Countable ((𝓞 K)ˣ) := Units.val_injective.countable
   infer_instance

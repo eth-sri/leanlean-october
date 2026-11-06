@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.LFunctions.Hecke.PoissonRows.Reciprocals.Rectangles
 public import DedekindZetaZeroFree.Analysis.ContourIntegration.KernelWeightIntegration
 public import DedekindZetaZeroFree.Moments.Probes.Poisson.AllowedRows.KernelHolomorphy
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.Quantitative.RowKernelGrowth
 
@@ -18,7 +21,7 @@ variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable (D : FixedData S η)
 
-def EntireNumerator (u : D.Row) : Prop :=
+def EntireNumerator (u : D.Row)  :=
   ∃ g : ℂ → ℂ, Differentiable ℂ g ∧ ∀ s : ℂ, 1 < s.re → g s = D.Lpsi u s
 
 theorem Hu_box_bound (ε : ℝ) (hε : 0 < ε) :
@@ -26,7 +29,7 @@ theorem Hu_box_bound (ε : ℝ) (hε : 0 < ε) :
       Scales.zLine ≤ z.re → ‖Hu D u ξ w z‖ ≤ C * D.q u ^ ε := by
   obtain ⟨C, hC, h⟩ := EulerSubpower.Hu_subpower_boxes D ε hε
   refine ⟨C, hC, fun u ξ w z h1 h2 h3 => ?_⟩
-  have hp : ((ξ, w, z) : Coordinates) ∈ boxes := by
+  have hp : ((ξ, w, z)) ∈ boxes := by
     refine Or.inl (Or.inl ?_)
     exact ⟨h1, h2, h3⟩
   exact (h u _ hp).2
@@ -48,12 +51,12 @@ theorem Lpsi_line_bound (A_F : ℝ) (hconv : ConvexityExponent D A_F) (ε : ℝ)
   obtain ⟨g, hg, hgeq⟩ := hent
   have hy : Scales.wLine = 3 / 25 := by unfold Scales.wLine; norm_num
   have hw0 : 0 < w.re := by rw [hw, hy]; norm_num
-  have e : D.Lpsi u w = g w :=
+  have e  :=
     (RowAnalyticContinuation.entire_eq_Lpsi D u hu1 hg hgeq w hw0).symm
-  have hwe : w = ((Scales.wLine : ℝ) : ℂ) + (w.im : ℂ) * Complex.I := by
+  have hwe : w = (Scales.wLine : ℂ) + (w.im : ℂ) * Complex.I := by
     apply Complex.ext <;> simp [hw]
   have key := h u hu1 U hU hq1 hq2 g hg hgeq w.im
-  calc ‖D.Lpsi u w‖ = ‖g (((Scales.wLine : ℝ) : ℂ) + (w.im : ℂ) * Complex.I)‖ := by
+  calc ‖D.Lpsi u w‖ = ‖g ((Scales.wLine : ℂ) + (w.im : ℂ) * Complex.I)‖ := by
         rw [e, ← hwe]
     _ ≤ C * U ^ ((11 / 25 : ℝ) + ε) * (2 + |w.im|) ^ A_F := by
         rw [hy]; exact key
@@ -65,18 +68,14 @@ theorem Llam_inv_right_line (ε : ℝ) (hε : 0 < ε) :
   obtain ⟨C, hC, h⟩ := RightHeckeBounds.Llam_inv_norm_le_right D Scales.rightLine hx1
   refine ⟨C, hC, fun u _ U hU _ _ ξ hξ => ?_⟩
   have hUe : 1 ≤ U ^ ε := Real.one_le_rpow (by linarith) hε.le
-  have hne : D.Llam u ξ ≠ 0 :=
+  have hne  :=
     RightHeckeBounds.Llam_ne_zero_of_one_lt D u ξ (by rw [hξ]; exact hx1)
   refine ⟨hne, ?_⟩
   calc ‖(D.Llam u ξ)⁻¹‖ ≤ C := h u ξ hξ.ge
     _ ≤ C * U ^ ε := le_mul_of_one_le_right hC.le hUe
 
-private theorem recip_bound' (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExponent D A_F)
-    (hρ : HeightSpec D A_F ρ) (ε : ℝ) (hε : 0 < ε) :
-    ∃ C : ℝ, 0 < C ∧ ∃ Uε : ℝ, 2 ≤ Uε ∧ ∀ U : ℝ, Uε ≤ U →
-      ∀ u : D.Row, u.toFrequency.u ≠ 1 → U ≤ D.q u → D.q u < 2 * U → u ∉ exceptionalSet D ρ U →
-        ∀ s : ℂ, Scales.goodLine ≤ s.re → |s.im| ≤ 2 * U ^ ρ →
-          D.Llam u s ≠ 0 ∧ ‖(D.Llam u s)⁻¹‖ ≤ C * U ^ ε :=
+private def recip_bound' (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExponent D A_F)
+    (hρ : HeightSpec D A_F ρ) (ε : ℝ) (hε : 0 < ε)  :=
   Recip.recip_bound D A_F ρ hA hconv hρ ε hε
 
 private theorem rowFactor_combine (u : D.Row) (U : ℝ) (hU : 0 < U) (hq : D.q u < 2 * U)
@@ -166,8 +165,8 @@ theorem K_norm_eq (u : D.Row) (hq : 0 < D.q u) (ξ : ℂ) (v y : ℝ) (p : ℝ �
         ‖rowFactor D u ξ ((y : ℂ) + (p.2 : ℂ) * Complex.I)
           ((v : ℂ) + (p.1 : ℂ) * Complex.I)‖ := by
   unfold K kernelWith
-  have hZc : (0 : ℝ) < Z := hZ
-  have hqc : (0 : ℝ) < D.q u := hq
+  have hZc  := hZ
+  have hqc  := hq
   have hre : ∀ A B C X E R : ℂ, A * B * C * X * E * R = A * E * (B * C * X) * R := by
     intro A B C X E R; ring
   have hkey : ∀ A E X R : ℂ, ‖A * E * X * R‖ = ‖A‖ * ‖E‖ * ‖X‖ * ‖R‖ := by
@@ -207,7 +206,7 @@ private theorem K_majorant_aux (u : D.Row) (U : ℝ) (hU0 : 0 < U) (hqU : U ≤ 
     exact norm_nonneg _
   have hZp : 0 ≤ Z ^ (Scales.xExponent / 2 + x - 1 + Scales.smoothingExponent * Scales.zLine + Scales.yExponent * (Scales.wLine - 1)) :=
     Real.rpow_nonneg hZ.le _
-  have hUz : 0 ≤ U ^ (-Scales.zLine) := Real.rpow_nonneg hU0.le _
+  
   have h1 : Z ^ (Scales.xExponent / 2 + x - 1 + Scales.smoothingExponent * Scales.zLine + Scales.yExponent * (Scales.wLine - 1)) *
         D.q u ^ (-Scales.zLine) *
         WeightConvolution.weightModulus D ξ Scales.zLine Scales.wLine p ≤
@@ -215,7 +214,7 @@ private theorem K_majorant_aux (u : D.Row) (U : ℝ) (hU0 : 0 < U) (hqU : U ≤ 
         U ^ (-Scales.zLine) *
         WeightConvolution.weightModulus D ξ Scales.zLine Scales.wLine p :=
     mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hqz hZp) hW
-  have h2 : 0 ≤ C * U ^ ((11 / 25 : ℝ) + ε) * (2 + |p.2|) ^ A_F := by positivity
+  
   calc _ ≤ Z ^ (Scales.xExponent / 2 + x - 1 + Scales.smoothingExponent * Scales.zLine + Scales.yExponent * (Scales.wLine - 1)) *
         U ^ (-Scales.zLine) *
         WeightConvolution.weightModulus D ξ Scales.zLine Scales.wLine p *
@@ -238,9 +237,9 @@ theorem kernel_majorant_rect (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityE
   refine ⟨C, hC, U₀, hU₀, ?_⟩
   intro U hU u hu1 hent hqU hqU2 hex ξ Z p hZ hξ hξim
   have hU0 : 0 < U := by linarith
-  have hw : (((Scales.wLine : ℝ) : ℂ) + (p.2 : ℂ) * Complex.I).re = Scales.wLine := by simp
-  have hz : (((Scales.zLine : ℝ) : ℂ) + (p.1 : ℂ) * Complex.I).re = Scales.zLine := by simp
-  have him : (((Scales.wLine : ℝ) : ℂ) + (p.2 : ℂ) * Complex.I).im = p.2 := by simp
+  have hw : ((Scales.wLine : ℂ) + (p.2 : ℂ) * Complex.I).re = Scales.wLine := by simp
+  have hz : ((Scales.zLine : ℂ) + (p.1 : ℂ) * Complex.I).re = Scales.zLine := by simp
+  have him : ((Scales.wLine : ℂ) + (p.2 : ℂ) * Complex.I).im = p.2 := by simp
   have hR := h U hU u hu1 hent hqU hqU2 hex ξ _ _ hξ hξim hw hz
   rw [him] at hR
   exact K_majorant_aux D u U hU0 hqU ε A_F C ξ.re hC.le ξ rfl Z hZ p hR
@@ -260,9 +259,9 @@ theorem kernel_majorant_right (A_F : ℝ) (hconv : ConvexityExponent D A_F) (ε 
   refine ⟨C, hC, ?_⟩
   intro U hU2 u hu1 hent hqU hqU2 ξ Z p hZ hξ
   have hU0 : 0 < U := by linarith
-  have hw : (((Scales.wLine : ℝ) : ℂ) + (p.2 : ℂ) * Complex.I).re = Scales.wLine := by simp
-  have hz : (((Scales.zLine : ℝ) : ℂ) + (p.1 : ℂ) * Complex.I).re = Scales.zLine := by simp
-  have him : (((Scales.wLine : ℝ) : ℂ) + (p.2 : ℂ) * Complex.I).im = p.2 := by simp
+  have hw : ((Scales.wLine : ℂ) + (p.2 : ℂ) * Complex.I).re = Scales.wLine := by simp
+  have hz : ((Scales.zLine : ℂ) + (p.1 : ℂ) * Complex.I).re = Scales.zLine := by simp
+  have him : ((Scales.wLine : ℂ) + (p.2 : ℂ) * Complex.I).im = p.2 := by simp
   have hR := h U hU2 u hu1 hent hqU hqU2 ξ _ _ hξ hw hz
   rw [him] at hR
   exact K_majorant_aux D u U hU0 hqU ε A_F C Scales.rightLine hC.le ξ hξ Z hZ p hR
@@ -296,7 +295,7 @@ private theorem K_cont_swap (u : D.Row) (hu : u.toFrequency.u ≠ 1) (hq : 0 < D
 private theorem Llam_ne_rect (ρ U : ℝ) (hU : 0 ≤ U) (u : D.Row) (hu : u.toFrequency.u ≠ 1)
     (hU1 : U ≤ D.q u) (hU2 : D.q u < 2 * U) (hexc : u ∉ exceptionalSet D ρ U) (ξ : ℂ)
     (hx : Scales.goodLine ≤ ξ.re) (him : |ξ.im| ≤ 2 * U ^ ρ) : D.Llam u ξ ≠ 0 := by
-  have hnn : 0 ≤ U ^ ρ := Real.rpow_nonneg hU ρ
+  have hnn  := Real.rpow_nonneg hU ρ
   refine RowAnalyticContinuation.Llam_ne_zero_of_not_exceptional D ρ U u hu hU1 hU2 hexc ξ ?_
     (by linarith)
   unfold DedekindZetaZeroFree.Quantitative.DetectorDef.σ₀
@@ -349,7 +348,7 @@ theorem wzIntegral_decay_rect (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : Convexity
   have hle := (hCw ξ hξ hξ1 Scales.zLine Scales.wLine le_rfl le_rfl le_rfl le_rfl _ hCc
     (fun w z => K D u ξ w z Z) hcont.aestronglyMeasurable
     (fun p => weight_dom D ξ Scales.zLine Scales.wLine _ A_F A_F hCc le_rfl hA p _
-      (by simpa only [mul_assoc] using h U hU u hu1 hent hqU hqU2 hex ξ Z p hZ hξ hξim))).2.2.2
+      (by apply h <;> assumption))).2.2.2
   have hP : 0 ≤ Z ^ (Scales.xExponent / 2 + ξ.re - 1 + Scales.smoothingExponent * Scales.zLine +
       Scales.yExponent * (Scales.wLine - 1)) * U ^ ((11 / 25 : ℝ) + ε - Scales.zLine) *
       (1 + |ξ.im|) ^ (-B) := by positivity
@@ -385,23 +384,23 @@ theorem wzIntegral_decay_right (A_F : ℝ) (hconv : ConvexityExponent D A_F) (ε
   intro U hU2 u hu1 hent hqU hqU2 t Z hZ
   have hU0 : 0 < U := by linarith
   have hq0 : 0 < D.q u := by linarith
-  have hre : (((Scales.rightLine : ℝ) : ℂ) + (t : ℂ) * Complex.I).re = Scales.rightLine := by simp
-  have him : (((Scales.rightLine : ℝ) : ℂ) + (t : ℂ) * Complex.I).im = t := by simp
+  have hre : ((Scales.rightLine : ℂ) + (t : ℂ) * Complex.I).re = Scales.rightLine := by simp
+  have him : ((Scales.rightLine : ℂ) + (t : ℂ) * Complex.I).im = t := by simp
   have hne := (h4 u hu1 U hU2 hqU hqU2 _ hre).1
   have hcont := K_cont_swap D u hu1 hq0 Z hZ _ (by rw [hre]; exact xg_pad_le_x1) hne
   have hCc : 0 ≤ C * Z ^ (Scales.xExponent / 2 + Scales.rightLine - 1 + Scales.smoothingExponent * Scales.zLine +
       Scales.yExponent * (Scales.wLine - 1)) * U ^ ((11 / 25 : ℝ) + ε - Scales.zLine) := by positivity
   have hle := (hCw _ hre.ge hre.le Scales.zLine Scales.wLine le_rfl le_rfl le_rfl le_rfl _ hCc
-    (fun w z => K D u (((Scales.rightLine : ℝ) : ℂ) + (t : ℂ) * Complex.I) w z Z)
+    (fun w z => K D u ((Scales.rightLine : ℂ) + (t : ℂ) * Complex.I) w z Z)
     hcont.aestronglyMeasurable
     (fun p => weight_dom D _ Scales.zLine Scales.wLine _ A_F (max A_F 0) hCc
       (le_max_left _ _) (le_max_right _ _) p _
-      (by simpa only [mul_assoc] using h U hU2 u hu1 hent hqU hqU2 _ Z p hZ hre))).2.2.2
+      (h U hU2 u hu1 hent hqU hqU2 _ Z p hZ hre))).2.2.2
   rw [him] at hle
   have hP : 0 ≤ Z ^ (Scales.xExponent / 2 + Scales.rightLine - 1 + Scales.smoothingExponent * Scales.zLine +
       Scales.yExponent * (Scales.wLine - 1)) * U ^ ((11 / 25 : ℝ) + ε - Scales.zLine) *
       (1 + |t|) ^ (-B) := by positivity
-  calc ‖wzIntegral D u (((Scales.rightLine : ℝ) : ℂ) + (t : ℂ) * Complex.I) Scales.wLine Scales.zLine Z‖
+  calc ‖wzIntegral D u ((Scales.rightLine : ℂ) + (t : ℂ) * Complex.I) Scales.wLine Scales.zLine Z‖
       ≤ ((2 * Real.pi)⁻¹) ^ 2 * ((C * Z ^ (Scales.xExponent / 2 + Scales.rightLine - 1 + Scales.smoothingExponent * Scales.zLine +
       Scales.yExponent * (Scales.wLine - 1)) * U ^ ((11 / 25 : ℝ) + ε - Scales.zLine)) * Cw *
         (1 + |t|) ^ (-B)) := hle
@@ -413,7 +412,7 @@ theorem wzIntegral_decay_right (A_F : ℝ) (hconv : ConvexityExponent D A_F) (ε
       (1 + |t|) ^ (-B)) := mul_le_mul_of_nonneg_right (by linarith) hP
     _ = _ := by ring
 
-def nbhd (u : D.Row) : Set ℂ :=
+def nbhd (u : D.Row)  :=
   {ξ : ℂ | Scales.goodLine - pad < ξ.re ∧ D.Llam u ξ ≠ 0}
 
 theorem wzIntegral_differentiableOn (A_F : ℝ) (hconv : ConvexityExponent D A_F) (u : D.Row)
@@ -422,7 +421,7 @@ theorem wzIntegral_differentiableOn (A_F : ℝ) (hconv : ConvexityExponent D A_F
     IsOpen (nbhd D u) ∧
       DifferentiableOn ℂ (fun ξ => wzIntegral D u ξ Scales.wLine Scales.zLine Z) (nbhd D u) := by
   have hq0 : 0 < D.q u := by linarith
-  have hpad : (0 : ℝ) ≤ EulerDomain.pad := by unfold EulerDomain.pad; norm_num
+  
   have hopen : IsOpen (nbhd D u) := by
     have hc : ContinuousOn (D.Llam u) {s : ℂ | Scales.goodLine - pad < s.re} := by
       refine (RowAnalyticContinuation.Llam_analyticOnNhd D u hu1).continuousOn.mono ?_
@@ -433,7 +432,7 @@ theorem wzIntegral_differentiableOn (A_F : ℝ) (hconv : ConvexityExponent D A_F
       linarith
     have hs : IsOpen {s : ℂ | Scales.goodLine - pad < s.re} :=
       isOpen_lt continuous_const Complex.continuous_re
-    have := hc.isOpen_inter_preimage hs (isOpen_compl_singleton (x := (0 : ℂ)))
+    have := hc.isOpen_inter_preimage hs (isOpen_compl_singleton (x := (0)))
     exact this
   refine ⟨hopen, ?_⟩
   have hdiff : ∀ ξ ∈ nbhd D u, ∀ s t : ℝ, DifferentiableAt ℂ
@@ -476,7 +475,7 @@ theorem wzIntegral_integrable_right (A_F : ℝ) (hconv : ConvexityExponent D A_F
   obtain ⟨-, hdiff⟩ := wzIntegral_differentiableOn D A_F hconv u hu1 (by linarith) hent Z hZ
   have hmem : ∀ t : ℝ, ((Scales.rightLine : ℂ) + (t : ℂ) * Complex.I) ∈ nbhd D u := by
     intro t
-    have hre : (((Scales.rightLine : ℝ) : ℂ) + (t : ℂ) * Complex.I).re = Scales.rightLine := by simp
+    have hre : ((Scales.rightLine : ℂ) + (t : ℂ) * Complex.I).re = Scales.rightLine := by simp
     refine ⟨?_, (h4 u hu1 U hU hqU hqU2 _ hre).1⟩
     rw [hre]
     exact xg_pad_lt_x1

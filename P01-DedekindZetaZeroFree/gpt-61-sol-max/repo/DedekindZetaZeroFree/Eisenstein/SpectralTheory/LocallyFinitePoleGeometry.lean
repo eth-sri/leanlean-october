@@ -1,15 +1,18 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.SpectralCoordinateAndPoleOrders
 
 @[expose] public section
+
 
 noncomputable section
 open scoped Topology
 open Filter
 namespace DedekindZetaZeroFree.ResidueContinuity.ScalarSourcePoleGeometry
 
-def IsolatedPoles (O P : Set ℂ) : Prop :=
+def IsolatedPoles (O P : Set ℂ)  :=
   ∀ z ∈ O, ∃ r : ℝ, 0 < r ∧ Metric.ball z r ⊆ O ∧
     ∀ s ∈ Metric.ball z r, s ∈ P → s = z
 

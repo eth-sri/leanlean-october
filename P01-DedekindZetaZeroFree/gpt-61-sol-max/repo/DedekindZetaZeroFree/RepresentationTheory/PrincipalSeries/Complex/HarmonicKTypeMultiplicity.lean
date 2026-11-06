@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.Complex.HarmonicHighestWeightCyclicity
 
 @[expose] public section
+
 
 section
 namespace DedekindZetaZeroFree.KPCplxHarmonicIntertwinerSpectrum
@@ -53,12 +56,12 @@ theorem harmonicIdentityEvaluation_nonzero (s : ℝ) (ℓ : ℕ) :
     change f (complexSU2Embedding h) = 0
     let k : compactSubgroup :=
       ⟨Matrix.ProjGenLinGroup.mk (complexSU2Embedding h), ⟨h, rfl⟩⟩
-    have hmem : pi s (k : ComplexPGL2) f ∈ harmonicKType s ℓ :=
+    have hmem  :=
       (harmonicKType_structure s ℓ).1 k f hf
     have h1 : (pi s (k : ComplexPGL2) f) 1 = 0 := by
       have hc := DFunLike.congr_fun hzero
         (⟨pi s (k : ComplexPGL2) f, hmem⟩ : harmonicKType s ℓ)
-      simpa [harmonicIdentityEvaluation] using hc
+      exact hc
     have heq : (pi s (k : ComplexPGL2) f) 1 = f (complexSU2Embedding h) := by
       change (pi s (Matrix.ProjGenLinGroup.mk (complexSU2Embedding h)) f) 1 =
         f (complexSU2Embedding h)
@@ -67,7 +70,7 @@ theorem harmonicIdentityEvaluation_nonzero (s : ℝ) (ℓ : ℕ) :
       rw [one_mul]
     rw [← heq]
     exact h1
-  have hbot : harmonicKType s ℓ = ⊥ := (Submodule.eq_bot_iff (harmonicKType s ℓ)).mpr hvan
+  have hbot  := (Submodule.eq_bot_iff (harmonicKType s ℓ)).mpr hvan
   have hfr := (harmonicKType_structure s ℓ).2.1
   rw [hbot, finrank_bot] at hfr
   omega
@@ -99,7 +102,7 @@ theorem harmonicIdentityEvaluation_mem_torusInvariant (s : ℝ) (ℓ : ℕ) :
   intro k hk u v hv
   change (v : PrincipalSeries s) 1 = (u : PrincipalSeries s) 1
   rw [hv]
-  exact compactDiagonalTorus_identity_invariant s k hk u
+  apply compactDiagonalTorus_identity_invariant <;> assumption
 
 theorem torusInvariantHarmonicDual_finrank_pos (s : ℝ) (ℓ : ℕ) :
     0 < Module.finrank ℂ (torusInvariantHarmonicDual s ℓ) := by
@@ -119,13 +122,12 @@ private theorem torus_lift_mem (z : Circle) :
     (⟨Matrix.ProjGenLinGroup.mk (complexSU2Embedding (TauCeti.SU2.torusHom z)),
       ⟨TauCeti.SU2.torusHom z, rfl⟩⟩ : compactSubgroup) ∈ compactDiagonalTorus := by
   refine ⟨Circle.toUnits z, (Circle.toUnits z)⁻¹, ?_, ?_, ?_⟩
-  · simpa using Circle.norm_coe z
+  · exact Circle.norm_coe z
   · simp [Units.val_inv_eq_inv_val, norm_inv, Circle.norm_coe]
   · congr 1
     apply Units.ext
     ext i j
-    change (!![(Circle.toUnits z : ℂ), 0; 0, ((Circle.toUnits z)⁻¹ : ℂˣ)] :
-      Matrix (Fin 2) (Fin 2) ℂ) i j =
+    change (!![(Circle.toUnits z : ℂ), 0; 0, ((Circle.toUnits z)⁻¹ : ℂˣ)]) i j =
       (TauCeti.SU2.torusHom z : Matrix (Fin 2) (Fin 2) ℂ) i j
     fin_cases i <;> fin_cases j <;>
       simp [TauCeti.SU2.coe_torusHom,
@@ -136,8 +138,8 @@ private theorem torus_lift_mem (z : Circle) :
 private theorem generic_powers_injective :
     Function.Injective fun m : ℤ => (Circle.exp 1 : ℂ) ^ m := by
   intro m n hmn
-  have h : (Circle.exp 1 ^ m : Circle) = Circle.exp 1 ^ n :=
-    Subtype.ext (by simpa only [Circle.coe_zpow] using hmn)
+  have h : (Circle.exp 1 ^ m) = Circle.exp 1 ^ n :=
+    Subtype.ext (hmn)
   rw [← Circle.exp_intCast_mul, ← Circle.exp_intCast_mul, mul_one, mul_one] at h
   obtain ⟨k, hk⟩ := Circle.exp_eq_exp.1 h
   rcases eq_or_ne k 0 with rfl | hk0
@@ -165,11 +167,11 @@ theorem torusInvariantHarmonicDual_finrank (s : ℝ) (ℓ : ℕ) :
   have hdim : Module.finrank ℂ (harmonicPolynomials ℓ) =
       Module.finrank ℂ ((harmonicPolynomials ℓ).map polynomialCompactRestriction) := by
     rw [polynomialCompactHarmonics_finrank]
-    exact e.toLinearEquiv.finrank_eq.trans (TauCeti.SU2.finrank_symPower (2 * ℓ))
+    apply e.toLinearEquiv.finrank_eq.trans <;> aesop
   let qe := LinearEquiv.ofBijective q
     ⟨(LinearMap.injective_iff_surjective_of_finrank_eq_finrank hdim).mpr hqs, hqs⟩
   let r := harmonicKTypeRestrictionEquiv s ℓ (polynomialCompactHarmonics_extend s ℓ)
-  let t : harmonicPolynomials ℓ ≃ₗ[ℂ] harmonicKType s ℓ := qe.trans r.symm
+  let t  := qe.trans r.symm
   have ht (p : harmonicPolynomials ℓ) :
       compactRestriction s (t p) = polynomialCompactRestriction p := by
     have hh := r.apply_symm_apply (qe p)
@@ -189,7 +191,7 @@ theorem torusInvariantHarmonicDual_finrank (s : ℝ) (ℓ : ℕ) :
         e.toLinearEquiv.apply_symm_apply _
       rw [hep, TauCeti.SU2.symPower_torusHom_weightBasis] at hh
       simpa only [map_smul, hep] using hh
-    have hbi : b i = t p := by rfl
+    have hbi : b i = t p := rfl
     rw [hbi]
     apply compactRestriction_injective s
     ext k
@@ -206,7 +208,7 @@ theorem torusInvariantHarmonicDual_finrank (s : ℝ) (ℓ : ℕ) :
   have vanish (L : torusInvariantHarmonicDual s ℓ) (i : Fin (2 * ℓ + 1))
       (hi : i ≠ i₀) : L.val (b i) = 0 := by
     let z := Circle.exp 1
-    let c : ℂ := (z : ℂ) ^ TauCeti.SU2.weight (2 * ℓ) i
+    let c  := (z : ℂ) ^ TauCeti.SU2.weight (2 * ℓ) i
     have hw : TauCeti.SU2.weight (2 * ℓ) i ≠ 0 := by
       intro h
       apply hi
@@ -218,7 +220,7 @@ theorem torusInvariantHarmonicDual_finrank (s : ℝ) (ℓ : ℕ) :
       intro h
       apply hw
       apply generic_powers_injective
-      simpa [c, z] using h
+      exact h
     have hh := L.property
       (⟨Matrix.ProjGenLinGroup.mk (complexSU2Embedding (TauCeti.SU2.torusHom z)),
         ⟨TauCeti.SU2.torusHom z, rfl⟩⟩ : compactSubgroup)
@@ -253,7 +255,10 @@ namespace DedekindZetaZeroFree.KPCplxHarmonicIntertwinerSpectrum
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts MeasureTheory
 open scoped BigOperators
 
-theorem harmonicKType_zero_fixed (s : ℝ) (f : PrincipalSeries s)
+section
+variable (s : ℝ)
+include s
+theorem harmonicKType_zero_fixed   (f : PrincipalSeries s)
     (hf : f ∈ harmonicKType s 0) (k : compactSubgroup) : pi s k f = f := by
   obtain ⟨l, hl⟩ := k.property
   apply compactRestriction_injective s
@@ -269,7 +274,7 @@ theorem harmonicKType_zero_fixed (s : ℝ) (f : PrincipalSeries s)
   rw [he, he, hc]
   simp
 
-theorem harmonicKType_zero_eq_span (s : ℝ) :
+theorem harmonicKType_zero_eq_span   :
     harmonicKType s 0 = ℂ ∙ sphericalSection s := by
   apply le_antisymm
   · intro f hf
@@ -297,13 +302,13 @@ theorem harmonicKType_zero_eq_span (s : ℝ) :
     rw [smul_smul, inv_mul_cancel₀ hc, one_smul] at hh'
     exact hh'
 
-noncomputable def principalSeriesEvaluation (s : ℝ) (g : ComplexGL2) :
+noncomputable def principalSeriesEvaluation   (g : ComplexGL2) :
     PrincipalSeries s →ₗ[ℂ] ℂ where
   toFun f := f g
   map_add' _ _ := rfl
   map_smul' _ _ := rfl
 
-theorem KEquivalent_symm (s : ℝ) (U V : Submodule ℂ (PrincipalSeries s))
+theorem KEquivalent_symm   (U V : Submodule ℂ (PrincipalSeries s))
     (hU : IsKInvariant s U) (he : KEquivalent s U V) : KEquivalent s V U := by
   obtain ⟨e, he⟩ := he
   refine ⟨e.symm, ?_⟩
@@ -312,12 +317,11 @@ theorem KEquivalent_symm (s : ℝ) (U V : Submodule ℂ (PrincipalSeries s))
   have hw := he k (e.symm u) w rfl
   have hwv : e w = v := by
     apply Subtype.ext
-    simpa only [e.apply_symm_apply] using hw.trans (by simpa only [e.apply_symm_apply] using hv.symm)
-  have hw' : w = e.symm v := by
-    exact e.injective (hwv.trans (e.apply_symm_apply v).symm)
+    exact hw.trans (by simpa only [e.apply_symm_apply] using hv.symm)
+  have hw' : w = e.symm v := e.injective (hwv.trans (e.apply_symm_apply v).symm)
   exact (congrArg Subtype.val hw').symm
 
-theorem compactEquivariantMap_eq_smul_of_evaluation (s : ℝ) (ℓ : ℕ)
+theorem compactEquivariantMap_eq_smul_of_evaluation   (ℓ : ℕ)
     (r : harmonicKType s ℓ →ₗ[ℂ] PrincipalSeries s)
     (hr : ∀ (k : compactSubgroup) (u v : harmonicKType s ℓ),
       (v : PrincipalSeries s) = pi s k u → r v = pi s k (r u))
@@ -338,7 +342,7 @@ theorem compactEquivariantMap_eq_smul_of_evaluation (s : ℝ) (ℓ : ℕ)
     c * (u : PrincipalSeries s) (1 * complexSU2Embedding k) at hc
   simpa only [one_mul] using hc
 
-theorem harmonicKType_unique_copy_of_invariant_functionals (s : ℝ) (ℓ : ℕ)
+theorem harmonicKType_unique_copy_of_invariant_functionals   (ℓ : ℕ)
     (T : Set compactSubgroup)
     (hT : ∀ k ∈ T, ∀ f : PrincipalSeries s, (pi s k f) 1 = f 1)
     (hfunctional : ∀ L : harmonicKType s ℓ →ₗ[ℂ] ℂ,
@@ -349,19 +353,19 @@ theorem harmonicKType_unique_copy_of_invariant_functionals (s : ℝ) (ℓ : ℕ)
     (he : KEquivalent s U (harmonicKType s ℓ)) : U = harmonicKType s ℓ := by
   classical
   obtain ⟨e, he⟩ := KEquivalent_symm s U (harmonicKType s ℓ) hU he
-  let r : harmonicKType s ℓ →ₗ[ℂ] PrincipalSeries s := U.subtype.comp e.toLinearMap
+  let r  := U.subtype.comp e.toLinearMap
   have hr : ∀ (k : compactSubgroup) (u v : harmonicKType s ℓ),
       (v : PrincipalSeries s) = pi s k u → r v = pi s k (r u) := he
-  let L : harmonicKType s ℓ →ₗ[ℂ] ℂ := (principalSeriesEvaluation s 1).comp r
+  let L  := (principalSeriesEvaluation s 1).comp r
   obtain ⟨c, hc⟩ := hfunctional L (by
     intro k hk u v hv
     change (r v) 1 = (r u) 1
     rw [hr k u v hv]
-    exact hT k hk (r u))
+    apply hT <;> assumption)
   have hscalar := compactEquivariantMap_eq_smul_of_evaluation s ℓ r hr c hc
   have hle : U ≤ harmonicKType s ℓ := by
     intro f hf
-    let u : harmonicKType s ℓ := e.symm ⟨f, hf⟩
+    let u  := e.symm ⟨f, hf⟩
     have hh := hscalar u
     have hru : r u = f := by
       change (e (e.symm ⟨f, hf⟩) : PrincipalSeries s) = f
@@ -370,10 +374,10 @@ theorem harmonicKType_unique_copy_of_invariant_functionals (s : ℝ) (ℓ : ℕ)
     rw [hh]
     exact (harmonicKType s ℓ).smul_mem c u.property
   letI := harmonicKType_finite s ℓ
-  letI : Module.Finite ℂ U := Module.Finite.of_surjective e.toLinearMap e.surjective
+  letI  := Module.Finite.of_surjective e.toLinearMap e.surjective
   exact Submodule.eq_of_le_of_finrank_eq hle e.finrank_eq.symm
 
-theorem harmonicKType_unique_copy (s : ℝ) (ℓ : ℕ)
+theorem harmonicKType_unique_copy   (ℓ : ℕ)
     (U : Submodule ℂ (PrincipalSeries s)) (hU : IsKInvariant s U)
     (he : KEquivalent s U (harmonicKType s ℓ)) :
     U = harmonicKType s ℓ := by
@@ -385,7 +389,7 @@ theorem harmonicKType_unique_copy (s : ℝ) (ℓ : ℕ)
       intro k hk u v hv
       change (v : PrincipalSeries s) 1 = (u : PrincipalSeries s) 1
       rw [hv]
-      exact compactDiagonalTorus_identity_invariant s k hk u⟩
+      apply compactDiagonalTorus_identity_invariant <;> assumption⟩
   have hE : E ≠ 0 := by
     intro h
     exact harmonicIdentityEvaluation_nonzero s ℓ (congrArg Subtype.val h)
@@ -397,6 +401,8 @@ theorem harmonicKType_unique_copy (s : ℝ) (ℓ : ℕ)
   have hu := congrArg (fun M : torusInvariantHarmonicDual s ℓ =>
     (M : harmonicKType s ℓ →ₗ[ℂ] ℂ) u) hc
   exact hu.symm
+end
+
 
 end DedekindZetaZeroFree.KPCplxHarmonicIntertwinerSpectrum
 

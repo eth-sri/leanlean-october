@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import Mathlib.SetTheory.Cardinal.Finite
 public import ClassFieldTheory.LubinTate.FormalModule.CoefficientEquation
 public import ClassFieldTheory.LubinTate.FormalModule.Intertwiner
@@ -7,6 +9,7 @@ public import Mathlib.FieldTheory.Finite.Basic
 public import Mathlib.RingTheory.MvPowerSeries.Expand
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -46,12 +49,11 @@ theorem mvPowerSeries_expand_natCard
     {σ : Type w} [Finite σ] (f : MvPowerSeries σ k) :
     MvPowerSeries.expand (Nat.card k) (Nat.ne_of_gt Nat.card_pos) f =
       f ^ Nat.card k := by
-  let : Fintype k := Fintype.ofFinite k
+  let  := Fintype.ofFinite k
   obtain ⟨p, hp⟩ := CharP.exists k
   rcases FiniteField.card k p with ⟨⟨n, npos⟩, ⟨hpprime, hn⟩⟩
   let : Fact p.Prime := ⟨hpprime⟩
-  have hncard : Fintype.card k = p ^ n := by
-    simpa using hn
+  have hncard : Fintype.card k = p ^ n := hn
   have hn' : Nat.card k = p ^ n := by
     simpa only [Nat.card_eq_fintype_card] using hncard
   have hpow :
@@ -139,7 +141,7 @@ theorem uniformizer_dvd_coeff_defect
   apply uniformizer_dvd_of_residueMap_eq_zero hπ
   have hcoeff := congrArg (MvPowerSeries.coeff d)
     (map_defect_eq_zero e ebar hH)
-  simpa using hcoeff
+  exact hcoeff
 
 end SameUniformizer
 end LubinTate

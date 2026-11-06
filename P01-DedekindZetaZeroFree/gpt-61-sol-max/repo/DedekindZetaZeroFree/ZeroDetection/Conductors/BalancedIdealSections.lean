@@ -52,8 +52,11 @@ structure BalancedIdealSection {F : Type} [Field F] [NumberField F]
     A.diagonal (fieldUnit I) /
       A.radialSection (A.exteriorNorm I) (A.exteriorNorm_pos I) ∈ K_bal
 
-theorem balanced_ideal_section_injective {F : Type} [Field F] [NumberField F]
-    (A : SArithmeticData F) (B : Subgroup A.V) (K_bal : Set A.G)
+section
+variable {F : Type} [Field F] [NumberField F]
+    (A : SArithmeticData F)
+include F A
+theorem balanced_ideal_section_injective   (B : Subgroup A.V) (K_bal : Set A.G)
     (s : A.BalancedIdealSection B K_bal) : Function.Injective s.generator := by
   intro I J h
   apply A.exteriorIdealEquiv.injective
@@ -61,18 +64,15 @@ theorem balanced_ideal_section_injective {F : Type} [Field F] [NumberField F]
   rw [A.exteriorIdealEquiv_apply, A.exteriorIdealEquiv_apply,
     ← (s.generates I).2, ← (s.generates J).2, h]
 
-def balancedDyadicBox {F : Type} [Field F] [NumberField F]
-    (A : SArithmeticData F) (K_bal : Set A.G) : Set (SLocalProduct F A.Sf) :=
+def balancedDyadicBox   (K_bal : Set A.G) : Set (SLocalProduct F A.Sf) :=
   (fun p : ℝ × A.G =>
     ProbeAdditive.balancedDilation F A.Sf p.1 * A.localToAdditive p.2) ''
       (Set.Icc (1 / 2 : ℝ) 1 ×ˢ K_bal)
 
-def balancedDyadicIdeals {F : Type} [Field F] [NumberField F]
-    (A : SArithmeticData F) (X : ℝ) : Set A.Exterior :=
+def balancedDyadicIdeals   (X : ℝ) : Set A.Exterior :=
   {I | X / 2 < A.exteriorNorm I ∧ A.exteriorNorm I ≤ X}
 
-private theorem continuous_localToAdditive {F : Type} [Field F] [NumberField F]
-    (A : SArithmeticData F) : Continuous A.localToAdditive := by
+private theorem continuous_localToAdditive   : Continuous A.localToAdditive := by
   unfold localToAdditive
   apply Continuous.prodMk
   · apply continuous_pi
@@ -82,18 +82,15 @@ private theorem continuous_localToAdditive {F : Type} [Field F] [NumberField F]
     intro v
     exact Units.continuous_val.comp ((continuous_apply v).comp continuous_snd)
 
-private theorem localToAdditive_mul {F : Type} [Field F] [NumberField F]
-    (A : SArithmeticData F) (x y : A.G) :
+private theorem localToAdditive_mul   (x y : A.G) :
     A.localToAdditive (x * y) = A.localToAdditive x * A.localToAdditive y := by
   ext w <;> rfl
 
-private theorem localToAdditive_diagonal {F : Type} [Field F] [NumberField F]
-    (A : SArithmeticData F) (a : Fˣ) :
+private theorem localToAdditive_diagonal   (a : Fˣ) :
     A.localToAdditive (A.diagonal a) = sLocalDiagonal F A.Sf (a : F) := by
   ext w <;> rfl
 
-private theorem balancedDyadicBox_compact {F : Type} [Field F] [NumberField F]
-    (A : SArithmeticData F) (K_bal : Set A.G) (hK : IsCompact K_bal) :
+private theorem balancedDyadicBox_compact   (K_bal : Set A.G) (hK : IsCompact K_bal) :
     IsCompact (A.balancedDyadicBox K_bal) := by
   apply (isCompact_Icc.prod hK).image_of_continuousOn
   have hrad : ContinuousOn (fun t : ℝ => ProbeAdditive.balancedDilation F A.Sf t)
@@ -111,9 +108,14 @@ private theorem balancedDyadicBox_compact {F : Type} [Field F] [NumberField F]
     simpa only [Function.comp_def, Set.domRestrict, A.localToAdditive_radialSection] using hc.comp hsub
   exact (hrad.comp continuousOn_fst (fun p hp => hp.1)).mul
     (A.continuous_localToAdditive.continuousOn.comp continuousOn_snd (fun p hp => hp.2))
+end
 
-private theorem balanced_generator_row {F : Type} [Field F] [NumberField F]
+
+section
+variable {F : Type} [Field F] [NumberField F]
     (A : SArithmeticData F) (B : Subgroup A.V) (K_bal : Set A.G)
+include F A B K_bal
+private theorem balanced_generator_row  
     (s : A.BalancedIdealSection B K_bal) (X : ℝ) (hX : 0 < X)
     (I : A.Exterior) (hI : I ∈ A.balancedDyadicIdeals X) :
     s.generator I ∈ ProbeAdditive.boxRows F A.Sf X (A.balancedDyadicBox K_bal) := by
@@ -146,8 +148,7 @@ private theorem balanced_generator_row {F : Type} [Field F] [NumberField F]
     exact mul_div_cancel _ _
   rw [hmul, A.localToAdditive_diagonal, s.fieldUnit_coe]
 
-theorem detector_balanced_ideal_section {F : Type} [Field F] [NumberField F]
-    (A : SArithmeticData F) (B : Subgroup A.V) (K_bal : Set A.G)
+theorem detector_balanced_ideal_section  
     (hK : IsCompact K_bal) (s : A.BalancedIdealSection B K_bal) :
     IsCompact (A.balancedDyadicBox K_bal) ∧
     Function.Injective s.generator ∧
@@ -174,14 +175,12 @@ theorem detector_balanced_ideal_section {F : Type} [Field F] [NumberField F]
     rw [hI]
     norm_num
 
-def balancedTransportCoeff {F : Type} [Field F] [NumberField F]
-    (A : SArithmeticData F) (B : Subgroup A.V) (K_bal : Set A.G)
+def balancedTransportCoeff  
     (s : A.BalancedIdealSection B K_bal) (T : Finset A.Exterior)
     (a : A.Exterior → ℂ) (m : A.R) : ℂ :=
   if h : ∃ I : A.Exterior, I ∈ T ∧ s.generator I = m then a (Classical.choose h) else 0
 
-theorem balancedTransportCoeff_generator {F : Type} [Field F] [NumberField F]
-    (A : SArithmeticData F) (B : Subgroup A.V) (K_bal : Set A.G)
+theorem balancedTransportCoeff_generator  
     (s : A.BalancedIdealSection B K_bal) (T : Finset A.Exterior)
     (a : A.Exterior → ℂ) (I : A.Exterior) (hI : I ∈ T) :
     A.balancedTransportCoeff B K_bal s T a (s.generator I) = a I := by
@@ -190,8 +189,7 @@ theorem balancedTransportCoeff_generator {F : Type} [Field F] [NumberField F]
   congr 1
   exact A.balanced_ideal_section_injective B K_bal s (Classical.choose_spec h).2
 
-theorem balancedTransportCoeff_zero {F : Type} [Field F] [NumberField F]
-    (A : SArithmeticData F) (B : Subgroup A.V) (K_bal : Set A.G)
+theorem balancedTransportCoeff_zero  
     (s : A.BalancedIdealSection B K_bal) (T : Finset A.Exterior)
     (a : A.Exterior → ℂ) (m : A.R) (hm : m ∉ T.image s.generator) :
     A.balancedTransportCoeff B K_bal s T a m = 0 := by
@@ -199,8 +197,7 @@ theorem balancedTransportCoeff_zero {F : Type} [Field F] [NumberField F]
   rintro ⟨I, hI, h⟩
   exact hm (Finset.mem_image.mpr ⟨I, hI, h⟩)
 
-theorem balanced_ideal_section_energy {F : Type} [Field F] [NumberField F]
-    (A : SArithmeticData F) (B : Subgroup A.V) (K_bal : Set A.G)
+theorem balanced_ideal_section_energy  
     (hK : IsCompact K_bal) (s : A.BalancedIdealSection B K_bal)
     (X : ℝ) (hX : 1 ≤ X) (T : Finset A.Exterior)
     (hT : ∀ I ∈ T, I ∈ A.balancedDyadicIdeals X) (a : A.Exterior → ℂ) :
@@ -233,6 +230,8 @@ theorem balanced_ideal_section_energy {F : Type} [Field F] [NumberField F]
       apply Finset.sum_congr rfl
       intro I hI
       rw [A.balancedTransportCoeff_generator B K_bal s T a I hI]
+end
+
 
 end SArithmeticData
 end

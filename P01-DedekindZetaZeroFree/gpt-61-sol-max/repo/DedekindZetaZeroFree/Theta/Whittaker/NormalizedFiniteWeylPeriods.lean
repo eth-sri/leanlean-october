@@ -41,11 +41,14 @@ theorem finite_translate_period
   rw [C.factorization.finite_intertwining q a s hq x]
   simp only [mul_one]
 
-theorem selected_tensor_nonzero (v : R.A.UnitQuotient)
+section
+variable (v : R.A.UnitQuotient)
     (s : RestrictedTensorSimple.Level C.factorization.bad)
     (x : ∀ p : s.val, actualLocal R C.factorization.finiteData p)
     (hx : C.factorization.selected v = RestrictedTensorSimple.stageInclusion _
-      C.factorization.references C.factorization.bad s (PiTensorProduct.tprod ℂ x)) :
+      C.factorization.references C.factorization.bad s (PiTensorProduct.tprod ℂ x))
+include v s x hx in
+theorem selected_tensor_nonzero   :
     ∀ p : s.val, C.factorization.ell p (x p) ≠ 0 := by
   have h := ThetaExpansion.first_root_forward_period_ne_zero R C v
   rw [← C.factorization.selected_eq v, hx, C.factorization.product_exact] at h
@@ -62,11 +65,8 @@ theorem normalized_update_product {I : Type*} [Fintype I]
   simp only [Finset.sdiff_singleton_eq_erase]
   field_simp
 
-theorem selected_finite_ratio (v : R.A.UnitQuotient)
-    (s : RestrictedTensorSimple.Level C.factorization.bad)
-    (x : ∀ p : s.val, actualLocal R C.factorization.finiteData p)
-    (hx : C.factorization.selected v = RestrictedTensorSimple.stageInclusion _
-      C.factorization.references C.factorization.bad s (PiTensorProduct.tprod ℂ x))
+include v s x hx in
+theorem selected_finite_ratio  
     (q : KPFinitePlace F) (hq : Sum.inr q ∈ s.val)
     (a : KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q)) :
     fourier R C.sources.dq (C.realization.theta v)
@@ -138,11 +138,8 @@ theorem dependent_prod_update {I : Type*} [Fintype I] [DecidableEq I] {V : I →
   intro j hj
   exact congrArg (f j) (Function.update_of_ne (Finset.mem_erase.mp hj).1 b x)
 
-theorem localWeylValue_eq (v : R.A.UnitQuotient)
-    (s : RestrictedTensorSimple.Level C.factorization.bad)
-    (x : ∀ p : s.val, actualLocal R C.factorization.finiteData p)
-    (hx : C.factorization.selected v = RestrictedTensorSimple.stageInclusion _
-      C.factorization.references C.factorization.bad s (PiTensorProduct.tprod ℂ x))
+include v s x hx in
+theorem localWeylValue_eq  
     (q : KPFinitePlace F) (hq : Sum.inr q ∈ s.val) (z : (q.adicCompletion F)ˣ) :
     ThetaExpansion.normalizedLocalWeylValue R C v (Sum.inr q) z =
     C.factorization.ell (Sum.inr q)
@@ -162,6 +159,8 @@ theorem localWeylValue_eq (v : R.A.UnitQuotient)
       KPStandardLocalRootLifts.W F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q))
   simpa only [map_mul, KPRationalAdelicSplitting.WCoordinates,
     KPPGLLocalCover.A, KPPGLLocalCover.W] using h
+end
+
 
 end DedekindZetaZeroFree.SheetRescaling
 

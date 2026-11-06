@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.Sobolev.WeightedCovariant.CompactMetricBounds
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -19,9 +22,12 @@ private lemma transport_restrict_density {n : ℕ} (Ω : Opens (E n))
   rw [KPChartL2.weightedMeasure, restrict_withDensity hC.measurableSet,
     Measure.restrict_restrict_of_subset hCΩ]
 
-private lemma transport_support_norm {n r : ℕ} (C : Set (E n))
+section
+variable {n r : ℕ} (C : Set (E n))
     (hC : MeasurableSet C) (μ : Measure (E n)) (f : E n → V r)
-    (hsupp : ∀ᵐ x ∂μ, x ∉ C → f x = 0) :
+    (hsupp : ∀ᵐ x ∂μ, x ∉ C → f x = 0)
+include n r C hC μ f hsupp
+private lemma transport_support_norm   :
     eLpNorm f 2 (μ.restrict C) = eLpNorm f 2 μ := by
   rw [← eLpNorm_indicator_eq_eLpNorm_restrict hC.nullMeasurableSet]
   apply eLpNorm_congr_ae
@@ -30,9 +36,7 @@ private lemma transport_support_norm {n r : ℕ} (C : Set (E n))
   · simp [h]
   · simp [h, hx h]
 
-private lemma transport_support_memLp {n r : ℕ} (C : Set (E n))
-    (hC : MeasurableSet C) (μ : Measure (E n)) (f : E n → V r)
-    (hsupp : ∀ᵐ x ∂μ, x ∉ C → f x = 0) (hf : MemLp f 2 (μ.restrict C)) :
+private lemma transport_support_memLp   (hf : MemLp f 2 (μ.restrict C)) :
     MemLp f 2 μ := by
   have heq : C.indicator f =ᵐ[μ] f := by
     filter_upwards [hsupp] with x hx
@@ -40,6 +44,8 @@ private lemma transport_support_memLp {n r : ℕ} (C : Set (E n))
     · simp [h]
     · simp [h, hx h]
   exact ((memLp_indicator_iff_restrict hC.nullMeasurableSet).mpr hf).ae_eq heq
+end
+
 
 private lemma transport_weighted_support {n r : ℕ} (Ω : Opens (E n))
     (C : Set (E n)) (w : E n → ℝ) (f : E n → V r)
@@ -65,11 +71,7 @@ private lemma transport_norm_bridge {n r : ℕ} (μ : Measure (E n))
   norm_num only [ENNReal.toReal_ofNat]
   have heq : (∫⁻ x, ‖f x‖ₑ ^ (2 : ℝ) ∂μ) =
       ∫⁻ x, ENNReal.ofReal (‖f x‖ ^ (2 : ℕ)) ∂μ := by
-    apply lintegral_congr
-    intro x
-    rw [← ofReal_norm, ENNReal.ofReal_rpow_of_nonneg (norm_nonneg _)
-      (by norm_num : (0 : ℝ) ≤ 2)]
-    norm_num
+    simp_all
   rw [heq, ← ofReal_integral_eq_lintegral_ofReal hint hnn]
   rw [ENNReal.ofReal_rpow_of_nonneg (by positivity) (by norm_num : (0 : ℝ) ≤ 1 / 2)]
   rw [l2Norm, Real.sqrt_eq_rpow]
@@ -83,9 +85,12 @@ private lemma transport_real_bound {n r : ℕ} (μ ν : Measure (E n))
     ← ENNReal.ofReal_mul hb] at h
   exact (ENNReal.ofReal_le_ofReal_iff (by unfold l2Norm; positivity)).mp h
 
-theorem compact_weighted_l2_upper {n r : ℕ} (Ω : Opens (E n))
+section
+variable {n r : ℕ} (Ω : Opens (E n))
     (C : Set (E n)) (hC : IsCompact C) (hCΩ : C ⊆ (Ω : Set (E n)))
-    (w : E n → ℝ) (Cw : ℝ) (hCw : 0 < Cw)
+    (w : E n → ℝ)
+include n r Ω C hC hCΩ w
+theorem compact_weighted_l2_upper   (Cw : ℝ) (hCw : 0 < Cw)
     (hbound : ∀ x ∈ C, w x ≤ Cw)
     (f : E n → V r) (hsupp : ∀ᵐ x ∂volume, x ∉ C → f x = 0)
     (hf : MemLp f 2 volume) :
@@ -99,7 +104,7 @@ theorem compact_weighted_l2_upper {n r : ℕ} (Ω : Opens (E n))
     rw [transport_restrict_density Ω C hC hCΩ w, ← withDensity_const]
     apply withDensity_mono
     filter_upwards [ae_restrict_mem hC.measurableSet] with x hx
-    exact ENNReal.ofReal_le_ofReal (hbound x hx)
+    apply ENNReal.ofReal_le_ofReal <;> aesop
   have hsW := transport_weighted_support Ω C w f hsupp
   have hfW := transport_support_memLp C hC.measurableSet μ f hsW
     ((hf.restrict C).of_measure_le_smul ENNReal.ofReal_ne_top hmeasure)
@@ -112,9 +117,7 @@ theorem compact_weighted_l2_upper {n r : ℕ} (Ω : Opens (E n))
   exact ⟨hfW, hnorm, transport_real_bound μ volume f hfW hf _
     (Real.sqrt_nonneg _) hnorm⟩
 
-theorem compact_weighted_l2_lower {n r : ℕ} (Ω : Opens (E n))
-    (C : Set (E n)) (hC : IsCompact C) (hCΩ : C ⊆ (Ω : Set (E n)))
-    (w : E n → ℝ) (hw : ContDiffOn ℝ ∞ w (Ω : Set (E n)))
+theorem compact_weighted_l2_lower   (hw : ContDiffOn ℝ ∞ w (Ω : Set (E n)))
     (cw : ℝ) (hcw : 0 < cw) (hbound : ∀ x ∈ C, cw ≤ w x)
     (f : E n → V r) (hsupp : ∀ᵐ x ∂volume, x ∉ C → f x = 0)
     (hfW : MemLp f 2 (KPChartL2.weightedMeasure n (Ω : Set (E n)) w)) :
@@ -158,6 +161,8 @@ theorem compact_weighted_l2_lower {n r : ℕ} (Ω : Opens (E n))
     simpa only [one_div, ENNReal.toReal_inv, smul_eq_mul, hfactor] using
       (eLpNorm_le_of_measure_le_smul (p := 2) (f := f) hmeasure)
   exact ⟨hf, hnorm, transport_real_bound volume μ f hf hfW _ (by positivity) hnorm⟩
+end
+
 
 end DedekindZetaZeroFree.KPCompactInteriorH1
 

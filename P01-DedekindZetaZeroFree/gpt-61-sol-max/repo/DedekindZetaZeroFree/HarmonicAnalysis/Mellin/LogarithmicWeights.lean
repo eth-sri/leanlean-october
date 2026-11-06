@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Poisson.FieldTransform.EulerDerivativesAndDecay
 
 @[expose] public section
+
 
 /-
 Repository: openai/math.
@@ -22,7 +25,7 @@ structure LogMellinPhysical (f : ℝ → ℂ) (δ : ℝ) (P : Polynomial ℂ) : 
   origin_remainder : ∀ j : ℕ, ∃ C : ℝ, 0 ≤ C ∧ ∀ x : ℝ, 0 < x → x ≤ 1 →
     ‖EulerIter j (fun y => f y - P.eval (Real.log y : ℂ)) x‖ ≤ C * Real.rpow x δ
 
-def logPrincipalPart (P : Polynomial ℂ) (s : ℂ) : ℂ :=
+def logPrincipalPart (P : Polynomial ℂ) (s : ℂ)  :=
   ∑ k ∈ P.support,
     ((-1 : ℂ) ^ k * (k.factorial : ℂ) * P.coeff k) / s ^ (k + 1)
 
@@ -49,30 +52,30 @@ namespace LogMellinAdmissible
 
 variable {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ} {H : ℂ → ℂ}
 
-theorem delta_pos (h : LogMellinAdmissible f δ P H) : 0 < δ := h.physical.delta_pos
+section
+variable (h : LogMellinAdmissible f δ P H)
+include h
+def delta_pos    := h.physical.delta_pos
 
-theorem contDiffOn (h : LogMellinAdmissible f δ P H) :
-    ContDiffOn ℝ ∞ f (Set.Ioi 0) := h.physical.contDiffOn
+def contDiffOn    := h.physical.contDiffOn
 
-theorem rapid_decay (h : LogMellinAdmissible f δ P H) (j n : ℕ) :
-    ∃ C : ℝ, 0 ≤ C ∧ ∀ x : ℝ, 1 ≤ x →
-      ‖EulerIter j f x‖ ≤ C * Real.rpow x (-(n : ℝ)) := h.physical.rapid_decay j n
+def rapid_decay   (j n : ℕ)  := h.physical.rapid_decay j n
 
-theorem origin_remainder (h : LogMellinAdmissible f δ P H) (j : ℕ) :
-    ∃ C : ℝ, 0 ≤ C ∧ ∀ x : ℝ, 0 < x → x ≤ 1 →
-      ‖EulerIter j (fun y => f y - P.eval (Real.log y : ℂ)) x‖ ≤ C * Real.rpow x δ :=
+def origin_remainder   (j : ℕ)  :=
   h.physical.origin_remainder j
 
-theorem differentiableAt (h : LogMellinAdmissible f δ P H) (s : ℂ)
+theorem differentiableAt   (s : ℂ)
     (hs : -δ < s.re) (hs0 : s ≠ 0) : DifferentiableAt ℂ H s := by
   obtain ⟨A, hA, hHA⟩ := h.holomorphic_remainder
   have hopen : IsOpen {z : ℂ | -δ < z.re ∧ z ≠ 0} :=
     (isOpen_lt continuous_const Complex.continuous_re).inter isOpen_ne
   have heq : H =ᶠ[nhds s] (fun z => A z + logPrincipalPart P z) := by
-    filter_upwards [hopen.mem_nhds (show s ∈ {z : ℂ | -δ < z.re ∧ z ≠ 0} from ⟨hs, hs0⟩)]
+    filter_upwards [hopen.mem_nhds ((⟨hs, hs0⟩))]
       with z hz
     exact hHA z hz.1 hz.2
   exact ((hA s hs).add (logPrincipalPart_differentiableAt P s hs0)).congr_of_eventuallyEq heq
+end
+
 
 end LogMellinAdmissible
 end DedekindZetaZeroFree.LargeSieve.Vendor

@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.Valuation.Henselian.Factorization.Step
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -53,28 +56,28 @@ theorem henselFactorization_henselIterate_succ
         Polynomial.C (π ^ (n + 1)) * corr (n + 1) :=
   rfl
 
-/-- every recursive iterate has the same reduction as the
-initial lift modulo the maximal ideal. -/
-theorem henselFactorization_henselIterate_reduction_of_mem
-    {R : Type*} [CommRing R] [IsLocalRing R] {π : R}
-    (hπ : π ∈ IsLocalRing.maximalIdeal R)
-    (F0 : R[X]) (corr : ℕ → R[X]) :
-    ∀ n i : ℕ,
-      (henselFactorization_henselIterate π F0 corr n - F0).coeff i ∈
-        IsLocalRing.maximalIdeal R := by
-  intro n
-  induction n with
-  | zero =>
-      intro i
-      simp
-  | succ n ih =>
-      intro i
-      simpa [henselFactorization_henselIterate_succ] using
-        (henselFactorization_update_preserves_reduction_of_mem
-          (π := π) (n := n + 1)
-          (g := henselFactorization_henselIterate π F0 corr n)
-          (g0 := F0) (p := corr (n + 1))
-          (Nat.succ_pos n) hπ ih i)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- every recursive iterate is congruent to its initial lift
 modulo `(π)`.  This is built into the update formula and does not require
@@ -92,12 +95,7 @@ theorem henselFactorization_henselIterate_span_singleton
       simp
   | succ n ih =>
       intro i
-      simpa [henselFactorization_henselIterate_succ] using
-        (henselFactorization_update_preserves_span_singleton
-          (π := π) (n := n + 1)
-          (g := henselFactorization_henselIterate π F0 corr n)
-          (g0 := F0) (p := corr (n + 1))
-          (Nat.succ_pos n) ih i)
+      apply henselFactorization_update_preserves_span_singleton <;> aesop
 
 /-- if the initial polynomial and all correction polynomials
 have degree at most `M`, then every recursive iterate has degree at most
@@ -135,9 +133,7 @@ theorem henselFactorization_henselIterate_eq_of_corr_eq_le
   | succ n ih =>
       rw [henselFactorization_henselIterate_succ,
         henselFactorization_henselIterate_succ]
-      have hprev :
-          henselFactorization_henselIterate π F0 corr n =
-            henselFactorization_henselIterate π F0 corr' n :=
+      have hprev  :=
         ih (by
           intro k hk
           exact hcorr k (Nat.le_trans hk (Nat.le_succ n)))
@@ -158,7 +154,7 @@ theorem henselFactorization_henselIterate_update_of_lt
         henselFactorization_henselIterate_succ]
       have hnlt : n < k := lt_trans (Nat.lt_succ_self n) h
       rw [ih hnlt]
-      have hne : n + 1 ≠ k := ne_of_lt h
+      have hne  := ne_of_lt h
       rw [Function.update_of_ne hne]
 
 /-- extending the correction sequence at the next index gives
@@ -170,10 +166,7 @@ theorem henselFactorization_henselIterate_update_next
         (Function.update corr (n + 1) c) (n + 1) =
       henselFactorization_henselIterate π F0 corr n +
         Polynomial.C (π ^ (n + 1)) * c := by
-  rw [henselFactorization_henselIterate_succ]
-  rw [henselFactorization_henselIterate_update_of_lt
-    (π := π) (F0 := F0) (corr := corr) (c := c) (Nat.lt_succ_self n)]
-  rw [Function.update_self]
+  simp_all [AlgebraicNumberTheory.Valuations.henselFactorization_henselIterate_succ, AlgebraicNumberTheory.Valuations.henselFactorization_henselIterate_update_of_lt, Nat.lt_succ_self, Function.update_self] <;> aesop
 
 /-- updating the correction functions at `n+1` preserves all
 factorization invariants already established up to stage `n`. -/
@@ -190,12 +183,7 @@ theorem henselFactorization_henselIterate_update_preserves_factor_of_le
         henselFactorization_henselIterate π h0
           (Function.update qCorr (n + 1) q) r =
       Polynomial.C (π ^ (r + 1)) * fn := by
-  have hrlt : r < n + 1 := Nat.lt_succ_of_le hr
-  rw [henselFactorization_henselIterate_update_of_lt
-      (π := π) (F0 := g0) (corr := pCorr) (c := p) hrlt,
-    henselFactorization_henselIterate_update_of_lt
-      (π := π) (F0 := h0) (corr := qCorr) (c := q) hrlt]
-  exact hfactor
+  simp_all [AlgebraicNumberTheory.Valuations.henselFactorization_henselIterate_update_of_lt] <;> aesop
 
 /-- the one-step factorization statement rewritten in terms
 of the updated Hensel iterates. -/
@@ -246,10 +234,13 @@ theorem henselFactorization_henselIterate_succ_sub_eq
   rw [henselFactorization_henselIterate_succ]
   ring
 
+section
+variable {R : Type*} [CommRing R] {π : R} (F0 : R[X]) (corr : ℕ → R[X])
+include R π F0 corr
 /-- coefficient form of the increment estimate in the
 principal ideal `(π^(n+1))`. -/
 theorem henselFactorization_henselIterate_succ_sub_coeff_mem_span_singleton_pow
-    {R : Type*} [CommRing R] {π : R} (F0 : R[X]) (corr : ℕ → R[X])
+     
     (n i : ℕ) :
     (henselFactorization_henselIterate π F0 corr (n + 1) -
         henselFactorization_henselIterate π F0 corr n).coeff i ∈
@@ -261,74 +252,72 @@ theorem henselFactorization_henselIterate_succ_sub_coeff_mem_span_singleton_pow
 /-- coefficient form of the increment estimate in the
 `(n+1)`-st power of the principal ideal `(π)`. -/
 theorem henselFactorization_henselIterate_succ_sub_coeff_mem_span_pow
-    {R : Type*} [CommRing R] {π : R} (F0 : R[X]) (corr : ℕ → R[X])
+     
     (n i : ℕ) :
     (henselFactorization_henselIterate π F0 corr (n + 1) -
         henselFactorization_henselIterate π F0 corr n).coeff i ∈
       Ideal.span ({π} : Set R) ^ (n + 1) := by
   rw [Ideal.span_singleton_pow]
-  exact henselFactorization_henselIterate_succ_sub_coeff_mem_span_singleton_pow
-    F0 corr n i
+  apply henselFactorization_henselIterate_succ_sub_coeff_mem_span_singleton_pow
 
-/-- coefficient form of the increment estimate in the
-`(n+1)`-st power of the maximal ideal, using only `π ∈ m`. -/
-theorem henselFactorization_henselIterate_succ_sub_coeff_mem_maximalIdeal_pow_of_mem
-    {R : Type*} [CommRing R] [IsLocalRing R] {π : R}
-    (hπ : π ∈ IsLocalRing.maximalIdeal R)
-    (F0 : R[X]) (corr : ℕ → R[X]) (n i : ℕ) :
-    (henselFactorization_henselIterate π F0 corr (n + 1) -
-        henselFactorization_henselIterate π F0 corr n).coeff i ∈
-      IsLocalRing.maximalIdeal R ^ (n + 1) :=
-  henselFactorization_coeff_mem_maximalIdeal_pow_of_factor_of_mem
-    (π := π) (n := n + 1) hπ
-    (henselFactorization_henselIterate_succ_sub_eq π F0 corr n) i
 
-/-- Cauchy-control estimate for two iterates: for `m ≤ n`,
-their coefficient difference lies in the `(m+1)`-st power of the maximal
-ideal. -/
-theorem henselFactorization_henselIterate_sub_coeff_mem_maximalIdeal_pow_of_le_of_mem
-    {R : Type*} [CommRing R] [IsLocalRing R] {π : R}
-    (hπ : π ∈ IsLocalRing.maximalIdeal R)
-    (F0 : R[X]) (corr : ℕ → R[X]) :
-    ∀ {m n : ℕ}, m ≤ n → ∀ i : ℕ,
-      (henselFactorization_henselIterate π F0 corr n -
-          henselFactorization_henselIterate π F0 corr m).coeff i ∈
-        IsLocalRing.maximalIdeal R ^ (m + 1) := by
-  intro m n hmn
-  induction n generalizing m with
-  | zero =>
-      intro i
-      have hm0 : m = 0 := Nat.eq_zero_of_le_zero hmn
-      simp [hm0]
-  | succ n ih =>
-      intro i
-      by_cases hm : m = n + 1
-      · simp [hm]
-      · have hmle : m ≤ n := Nat.lt_succ_iff.mp (lt_of_le_of_ne hmn hm)
-        have hprev := ih hmle i
-        have hincr :
-            (henselFactorization_henselIterate π F0 corr (n + 1) -
-                henselFactorization_henselIterate π F0 corr n).coeff i ∈
-              IsLocalRing.maximalIdeal R ^ (m + 1) :=
-          (Ideal.pow_le_pow_right (Nat.succ_le_succ hmle))
-            (henselFactorization_henselIterate_succ_sub_coeff_mem_maximalIdeal_pow_of_mem
-              (π := π) hπ F0 corr n i)
-        have hsplit :
-            henselFactorization_henselIterate π F0 corr (n + 1) -
-                henselFactorization_henselIterate π F0 corr m =
-              (henselFactorization_henselIterate π F0 corr n -
-                  henselFactorization_henselIterate π F0 corr m) +
-                (henselFactorization_henselIterate π F0 corr (n + 1) -
-                  henselFactorization_henselIterate π F0 corr n) := by
-          ring
-        rw [hsplit, Polynomial.coeff_add]
-        exact (IsLocalRing.maximalIdeal R ^ (m + 1)).add_mem hprev hincr
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- Cauchy-control estimate for two iterates in the
 principal-ideal filtration generated by `π`. -/
 theorem henselFactorization_henselIterate_sub_coeff_mem_span_pow_of_le
-    {R : Type*} [CommRing R] {π : R}
-    (F0 : R[X]) (corr : ℕ → R[X]) :
+      :
     ∀ {m n : ℕ}, m ≤ n → ∀ i : ℕ,
       (henselFactorization_henselIterate π F0 corr n -
           henselFactorization_henselIterate π F0 corr m).coeff i ∈
@@ -337,13 +326,13 @@ theorem henselFactorization_henselIterate_sub_coeff_mem_span_pow_of_le
   induction n generalizing m with
   | zero =>
       intro i
-      have hm0 : m = 0 := Nat.eq_zero_of_le_zero hmn
+      have hm0  := Nat.eq_zero_of_le_zero hmn
       simp [hm0]
   | succ n ih =>
       intro i
       by_cases hm : m = n + 1
       · simp [hm]
-      · have hmle : m ≤ n := Nat.lt_succ_iff.mp (lt_of_le_of_ne hmn hm)
+      · have hmle  := Nat.lt_succ_iff.mp (lt_of_le_of_ne hmn hm)
         have hprev := ih hmle i
         have hincr :
             (henselFactorization_henselIterate π F0 corr (n + 1) -
@@ -362,6 +351,8 @@ theorem henselFactorization_henselIterate_sub_coeff_mem_span_pow_of_le
           ring
         rw [hsplit, Polynomial.coeff_add]
         exact (Ideal.span ({π} : Set R) ^ (m + 1)).add_mem hprev hincr
+end
+
 
 
 end Valuations

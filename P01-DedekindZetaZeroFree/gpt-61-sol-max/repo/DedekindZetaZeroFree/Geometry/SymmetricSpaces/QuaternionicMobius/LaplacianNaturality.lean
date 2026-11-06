@@ -1,18 +1,24 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Geometry.Hyperbolic.DivergenceIsometry
 
 @[expose] public section
+
 
 noncomputable section
 open scoped ContDiff BigOperators
 open Filter Topology
 namespace DedekindZetaZeroFree.KPShift68LaplacianInvariant
 open HyperbolicChart
- def realGrad (d : ℕ) (f : Space d → ℝ) (x : Space d) : Space d :=
+ section
+variable (d : ℕ)
+include d
+def realGrad   (f : Space d → ℝ) (x : Space d) : Space d :=
   WithLp.toLp 2 (fun ik => (if ik.2 = 2 then 1 else Real.exp (2 * x (ik.1,2))) *
     fderiv ℝ f x (coordinateVector d ik.1 ik.2))
-private theorem vector_expansion (d : ℕ) (u : Space d) :
+private theorem vector_expansion   (u : Space d) :
     (∑ i : Fin d, ∑ k : Fin 3, u (i,k) • coordinateVector d i k) = u := by
   ext j
   simp [coordinateVector, WithLp.ofLp_sum, WithLp.ofLp_smul, Pi.smul_apply]
@@ -27,7 +33,7 @@ private theorem vector_expansion (d : ℕ) (u : Space d) :
     intro k _
     simp [hi, Ne.symm hi, Prod.ext_iff]
   · simp
-private theorem realGrad_duality (d : ℕ) (f : Space d → ℝ) (x u : Space d) :
+private theorem realGrad_duality   (f : Space d → ℝ) (x u : Space d) :
     metric d x (realGrad d f x) u = fderiv ℝ f x u := by
   have he (i : Fin d) : Real.exp (-2 * x (i,2)) * Real.exp (2 * x (i,2)) = 1 := by
     rw [← Real.exp_add, show -2 * x (i,2) + 2 * x (i,2) = 0 by ring, Real.exp_zero]
@@ -44,7 +50,7 @@ private theorem realGrad_duality (d : ℕ) (f : Space d → ℝ) (x u : Space d)
       (Real.exp (-2 * x (i,2)) * Real.exp (2 * x (i,2))) *
         (fderiv ℝ f x (coordinateVector d i 0) * u (i,0) + fderiv ℝ f x (coordinateVector d i 1) * u (i,1)) := by ring
        _ = _ := by rw [he]; ring
-private theorem realGrad_smoothAt (d : ℕ) (f : Space d → ℝ) (x : Space d)
+private theorem realGrad_smoothAt   (f : Space d → ℝ) (x : Space d)
     (hf : ContDiffAt ℝ 2 f x) : ContDiffAt ℝ 1 (realGrad d f) x := by
   apply (contDiffAt_piLp 2).mpr
   intro k
@@ -52,7 +58,7 @@ private theorem realGrad_smoothAt (d : ℕ) (f : Space d → ℝ) (x : Space d)
   apply ContDiffAt.mul
   · split_ifs <;> fun_prop
   · exact (hf.fderiv_right (m := 1) (by norm_num)).clm_apply contDiffAt_const
-private theorem metric_separates (d : ℕ) (x v w : Space d)
+private theorem metric_separates   (x v w : Space d)
     (h : ∀ u, metric d x v u = metric d x w u) : v = w := by
   have he : ∀ u, inner ℝ (CotangentLogCoframe.C d x v) (CotangentLogCoframe.C d x u) =
       inner ℝ (CotangentLogCoframe.C d x w) (CotangentLogCoframe.C d x u) := by
@@ -62,7 +68,7 @@ private theorem metric_separates (d : ℕ) (x v w : Space d)
   apply ext_inner_right ℝ
   intro u
   simpa [CotangentLogCoframe.H] using he (CotangentLogCoframe.H d x u)
-private theorem realGrad_pushforward (d : ℕ) (ψ : Space d → Space d)
+private theorem realGrad_pushforward   (ψ : Space d → Space d)
     (hψ : ContDiff ℝ ∞ ψ) (hm : ∀ x u v, metric d (ψ x) (fderiv ℝ ψ x u) (fderiv ℝ ψ x v) = metric d x u v)
     (f : Space d → ℝ) (x : Space d) (hf : DifferentiableAt ℝ f (ψ x)) :
     realGrad d f (ψ x) = fderiv ℝ ψ x (realGrad d (f ∘ ψ) x) := by
@@ -78,7 +84,7 @@ private theorem realGrad_pushforward (d : ℕ) (ψ : Space d → Space d)
   rw [hm, realGrad_duality, realGrad_duality]
   rw [fderiv_comp x hf (hψ.differentiable (by simp) _)]
   rfl
-private theorem projected_laplacian (d : ℕ) (f : Space d → ℂ) (L : ℂ →L[ℝ] ℝ) (x : Space d) (hf : ContDiffAt ℝ (⊤ : ℕ∞) f x) :
+private theorem projected_laplacian   (f : Space d → ℂ) (L : ℂ →L[ℝ] ℝ) (x : Space d) (hf : ContDiffAt ℝ (⊤ : ℕ∞) f x) :
     L (laplacian d f x) =
       ∑ i : Fin d, (-(fderiv ℝ (fun y => realGrad d (L ∘ f) y (i,2)) x (coordinateVector d i 2)) +
         2 * realGrad d (L ∘ f) x (i,2) -
@@ -92,8 +98,7 @@ private theorem projected_laplacian (d : ℕ) (f : Space d → ℂ) (L : ℂ →
       fderiv ℝ (L ∘ f) y (coordinateVector d i k) = L (fderiv ℝ f y (coordinateVector d i k)) := by
     rw [fderiv_comp y L.differentiableAt hy, L.fderiv]
     rfl
-  have hs (i : Fin d) (k : Fin 3) : DifferentiableAt ℝ (fun y => fderiv ℝ f y (coordinateVector d i k)) x := by
-    exact ((hf.fderiv_right (m := 1) (by simp)).clm_apply contDiffAt_const).differentiableAt (by norm_num)
+  have hs (i : Fin d) (k : Fin 3) : DifferentiableAt ℝ (fun y => fderiv ℝ f y (coordinateVector d i k)) x := ((hf.fderiv_right (m := 1) (by simp)).clm_apply contDiffAt_const).differentiableAt (by norm_num)
   have hsecond (i : Fin d) (k : Fin 3) :
       fderiv ℝ (fun y => fderiv ℝ (L ∘ f) y (coordinateVector d i k)) x (coordinateVector d i k) =
         L (fderiv ℝ (fun y => fderiv ℝ f y (coordinateVector d i k)) x (coordinateVector d i k)) := by
@@ -140,7 +145,7 @@ private theorem projected_laplacian (d : ℕ) (f : Space d → ℂ) (L : ℂ →
   rw [h2mul]
   ring
 
-theorem isometry_pullback_at (d : ℕ) (ψ : Space d → Space d)
+theorem isometry_pullback_at   (ψ : Space d → Space d)
     (hψ : ContDiff ℝ (⊤ : ℕ∞) ψ)
     (hm : ∀ y u v, metric d (ψ y) (fderiv ℝ ψ y u) (fderiv ℝ ψ y v) = metric d y u v)
     (f : Space d → ℂ) (x : Space d) (hf : ContDiffAt ℝ (⊤ : ℕ∞) f (ψ x)) :
@@ -161,11 +166,12 @@ theorem isometry_pullback_at (d : ℕ) (ψ : Space d → Space d)
     filter_upwards [hψ.continuous.continuousAt.eventually hnear] with y hy
     exact realGrad_pushforward d ψ hψ hm (L ∘ f) y (L.differentiableAt.comp (ψ y) hy)
   exact Complex.ext (hproj Complex.reCLM) (hproj Complex.imCLM)
+end
 
- def act (d : ℕ) (g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ) : Space d → Space d :=
+
+ def act (d : ℕ) (g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ)  :=
     fun x => (CotangentLogCoframe.A d).symm (KPArch.productAction d g (CotangentLogCoframe.A d x))
-private theorem act_smooth (d : ℕ) (g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ) : ContDiff ℝ ∞ (act d g) := by
-  exact (CotangentLogCoframe.A d).symm.contDiff.comp
+private def act_smooth (d : ℕ) (g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ)  := (CotangentLogCoframe.A d).symm.contDiff.comp
     (((KPArch.productAction_contDiff d g).of_le (show (⊤ : ℕ∞) ≤ (⊤ : ℕ∞ω) from le_top)).comp
       (CotangentLogCoframe.A d).contDiff)
 private theorem act_metric (d : ℕ) (g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ)

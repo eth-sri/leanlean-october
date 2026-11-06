@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Schwartz.LatticeDecay
 public import DedekindZetaZeroFree.Theta.Profiles.FractionalIdealShapeLattice
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -16,16 +19,19 @@ variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
   [FiniteDimensional ℝ E] [MeasurableSpace E] [BorelSpace E]
   {ι : Type*} [Fintype ι]
 
-theorem continuous_intPeriodization_coordinateSchwartz (L : Submodule ℤ E)
+section
+variable (L : Submodule ℤ E)
     [DiscreteTopology L] [IsZLattice ℝ L] (b : Basis ι ℤ L)
-    (f : SchwartzMap E ℂ) :
+    (f : SchwartzMap E ℂ)
+include L b f
+theorem continuous_intPeriodization_coordinateSchwartz   :
     Continuous (intPeriodization
       (fun x => f ((b.ofZLatticeBasis ℝ L).equivFun.symm x))) := by
   classical
   have hF : Summable (coordinateSchwartzTranslate L b f) := by
     apply ContinuousMap.summable_of_locally_summable_norm
     intro K
-    exact schwartzLatticeDecay_coordinates L b f K
+    apply schwartzLatticeDecay_coordinates
   have hcont : Continuous (fun x : ι → ℝ =>
       (∑' n, coordinateSchwartzTranslate L b f n) x) :=
     (∑' n, coordinateSchwartzTranslate L b f n).continuous
@@ -41,38 +47,32 @@ theorem continuous_intPeriodization_coordinateSchwartz (L : Submodule ℤ E)
     funext fun x => (heval x).symm]
   exact hcont
 
-def schwartzTorusPeriodization (L : Submodule ℤ E)
-    [DiscreteTopology L] [IsZLattice ℝ L] (b : Basis ι ℤ L)
-    (f : SchwartzMap E ℂ) : C(UnitAddTorus ι, ℂ) :=
+def schwartzTorusPeriodization    :=
   torusPeriodization
     (fun x => f ((b.ofZLatticeBasis ℝ L).equivFun.symm x))
     (continuous_intPeriodization_coordinateSchwartz L b f)
 
-@[simp] theorem schwartzTorusPeriodization_apply_quotient (L : Submodule ℤ E)
-    [DiscreteTopology L] [IsZLattice ℝ L] (b : Basis ι ℤ L)
-    (f : SchwartzMap E ℂ) (x : ι → ℝ) :
+@[simp] theorem schwartzTorusPeriodization_apply_quotient   (x : ι → ℝ) :
     schwartzTorusPeriodization L b f (torusQuotientMap x) =
       ∑' k : ι → ℤ,
         f ((b.ofZLatticeBasis ℝ L).equivFun.symm
-          (x + fun i => (k i : ℝ))) := by
-  exact torusPeriodization_apply_quotient _ _ x
+          (x + fun i => (k i : ℝ))) := torusPeriodization_apply_quotient _ _ x
 
-noncomputable def coordinateFourierSchwartz (L : Submodule ℤ E)
-    [DiscreteTopology L] [IsZLattice ℝ L] (b : Basis ι ℤ L)
-    (f : SchwartzMap E ℂ) (n : ι → ℤ) (x : ι → ℝ) : ℂ :=
+noncomputable def coordinateFourierSchwartz   (n : ι → ℤ) (x : ι → ℝ)  :=
   coordinateFourierCharacter n x *
     f ((b.ofZLatticeBasis ℝ L).equivFun.symm x)
 
 noncomputable def coordinateFourierSchwartzTranslate
-    (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
-    (b : Basis ι ℤ L) (f : SchwartzMap E ℂ) (n k : ι → ℤ)
-    (x : ι → ℝ) : ℂ :=
+      (n k : ι → ℤ)
+    (x : ι → ℝ)  :=
   coordinateFourierCharacter n x *
     f ((b.ofZLatticeBasis ℝ L).equivFun.symm
       (x + fun i => (k i : ℝ)))
+end
+
 
 noncomputable def ambientFourierSchwartz (f : SchwartzMap E ℂ)
-    (w y : E) : ℂ :=
+    (w y : E)  :=
   𝐞 (-(inner ℝ y w)) • f y
 
 private theorem continuous_coordinateFourierCharacter (n : ι → ℤ) :
@@ -91,9 +91,12 @@ private theorem coordinateFourierCharacter_add_intPi
   rw [add_comm]
   exact torusQuotientMap_add_intPi x k
 
+section
+variable (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
+    (b : Basis ι ℤ L) (f : SchwartzMap E ℂ)
+include L b f
 private theorem continuous_coordinateFourierSchwartz
-    (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
-    (b : Basis ι ℤ L) (f : SchwartzMap E ℂ) (n : ι → ℤ) :
+      (n : ι → ℤ) :
     Continuous (coordinateFourierSchwartz L b f n) := by
   unfold coordinateFourierSchwartz
   exact (continuous_coordinateFourierCharacter n).mul
@@ -101,8 +104,7 @@ private theorem continuous_coordinateFourierSchwartz
       (b.ofZLatticeBasis ℝ L).equivFun.symm).continuous)
 
 private theorem continuous_coordinateFourierSchwartzTranslate
-    (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
-    (b : Basis ι ℤ L) (f : SchwartzMap E ℂ) (n k : ι → ℤ) :
+      (n k : ι → ℤ) :
     Continuous (coordinateFourierSchwartzTranslate L b f n k) := by
   unfold coordinateFourierSchwartzTranslate
   refine (continuous_coordinateFourierCharacter n).mul ?_
@@ -112,14 +114,15 @@ private theorem continuous_coordinateFourierSchwartzTranslate
         (continuous_id.add continuous_const))
 
 private theorem coordinateFourierSchwartz_add_intPi
-    (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
-    (b : Basis ι ℤ L) (f : SchwartzMap E ℂ) (n k : ι → ℤ) (x : ι → ℝ) :
+      (n k : ι → ℤ) (x : ι → ℝ) :
     coordinateFourierSchwartz L b f n ((fun i => (k i : ℝ)) + x) =
       coordinateFourierSchwartzTranslate L b f n k x := by
   rw [coordinateFourierSchwartz, coordinateFourierSchwartzTranslate,
     coordinateFourierCharacter_add_intPi]
   congr 1
   rw [add_comm]
+end
+
 
 private theorem coordinateFourierSchwartz_eq_ambient [DecidableEq ι]
     (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
@@ -135,9 +138,12 @@ private theorem coordinateFourierSchwartz_eq_ambient [DecidableEq ι]
   push_cast
   ring_nf
 
+section
+variable (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
+    (b : Basis ι ℤ L) (f : SchwartzMap E ℂ) (n : ι → ℤ)
+include L b f n
 private theorem integrable_coordinateFourierSchwartz
-    (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
-    (b : Basis ι ℤ L) (f : SchwartzMap E ℂ) (n : ι → ℤ) :
+      :
     Integrable (coordinateFourierSchwartz L b f n) := by
   have hbase : Integrable (fun x : ι → ℝ =>
       f ((b.ofZLatticeBasis ℝ L).equivFun.symm x)) :=
@@ -149,8 +155,7 @@ private theorem integrable_coordinateFourierSchwartz
     one_mul]
 
 private theorem summable_integral_norm_coordinateFourierSchwartzTranslate
-    (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
-    (b : Basis ι ℤ L) (f : SchwartzMap E ℂ) (n : ι → ℤ) :
+      :
     Summable (fun k : ι → ℤ =>
       ∫ x in {x : ι → ℝ | ∀ i, x i ∈ Ioc 0 1},
         ‖coordinateFourierSchwartzTranslate L b f n k x‖) := by
@@ -188,11 +193,10 @@ private theorem summable_integral_norm_coordinateFourierSchwartzTranslate
           ‖(coordinateSchwartzTranslate L b f k).restrict K‖ := by simp
   apply Summable.of_nonneg_of_le
       (fun _ => integral_nonneg fun _ => norm_nonneg _) hbound
-  exact hKsum.mul_left (volume.real S)
+  apply hKsum.mul_left
 
 private theorem integral_tsum_coordinateFourierSchwartzTranslate
-    (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
-    (b : Basis ι ℤ L) (f : SchwartzMap E ℂ) (n : ι → ℤ) :
+      :
     ∫ x in {x : ι → ℝ | ∀ i, x i ∈ Ioc 0 1},
         ∑' k : ι → ℤ, coordinateFourierSchwartzTranslate L b f n k x =
       ∑' k : ι → ℤ,
@@ -207,7 +211,9 @@ private theorem integral_tsum_coordinateFourierSchwartzTranslate
     have hSK : S ⊆ K := fun x hx =>
       ⟨fun i => (hx i).1.le, fun i => (hx i).2⟩
     exact ((continuous_coordinateFourierSchwartzTranslate L b f n k).integrableOn_Icc).mono_set hSK
-  · exact summable_integral_norm_coordinateFourierSchwartzTranslate L b f n
+  · apply summable_integral_norm_coordinateFourierSchwartzTranslate
+end
+
 
 private theorem integral_ambientFourierSchwartz (f : SchwartzMap E ℂ)
     (w : E) :
@@ -233,7 +239,7 @@ private theorem integral_coordinateFourierSchwartz [DecidableEq ι]
       fun x => ambientFourierSchwartz f (dualLatticePoint L b n)
         ((b.ofZLatticeBasis ℝ L).equivFun.symm x) := by
     funext x
-    exact coordinateFourierSchwartz_eq_ambient L b f n x
+    apply coordinateFourierSchwartz_eq_ambient
   rw [hfun, integral_comp_ofZLatticeBasis_equivFun_symm L b
       (fun y => ambientFourierSchwartz f (dualLatticePoint L b n) y),
     integral_ambientFourierSchwartz f (dualLatticePoint L b n)]

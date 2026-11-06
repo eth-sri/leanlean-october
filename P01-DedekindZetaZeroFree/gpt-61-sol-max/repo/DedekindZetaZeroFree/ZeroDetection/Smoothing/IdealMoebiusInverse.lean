@@ -9,23 +9,26 @@ open scoped NumberField
 
 namespace DedekindZetaZeroFree.Detector
 
-noncomputable def idealMoebius (F : Type) [Field F] [NumberField F]
+section
+variable (F : Type) [Field F] [NumberField F]
+include F
+noncomputable def idealMoebius  
     (d : Ideal (𝓞 F)) : ℤ :=
   UniqueFactorizationMonoid.moebius d
 
-noncomputable def truncatedIdealMoebius (F : Type) [Field F] [NumberField F]
+noncomputable def truncatedIdealMoebius  
     (U : ℝ) (n : Ideal (𝓞 F)) : ℝ := by
   classical
   exact ∑ᶠ d : Ideal (𝓞 F),
     if d ≠ ⊥ ∧ d ∣ n ∧ (Ideal.absNorm d : ℝ) ≤ U ^ (2 : ℕ) then
       (idealMoebius F d : ℝ) else 0
 
-noncomputable def idealLSeries (F : Type) [Field F] [NumberField F]
+noncomputable def idealLSeries  
     {m : Ideal (𝓞 F)} (ω : RayClassCharacter F m) (s : ℂ) : ℂ :=
   ∑' n : Ideal (𝓞 F),
     if n ≠ ⊥ then ω n * (Ideal.absNorm n : ℂ) ^ (-s) else 0
 
-theorem truncatedIdealMoebius_top (F : Type) [Field F] [NumberField F]
+theorem truncatedIdealMoebius_top  
     (U : ℝ) (hU : 2 ≤ U) : truncatedIdealMoebius F U ⊤ = 1 := by
   classical
   unfold truncatedIdealMoebius
@@ -41,10 +44,15 @@ theorem truncatedIdealMoebius_top (F : Type) [Field F] [NumberField F]
     have hnot : ¬d ∣ (⊤ : Ideal (𝓞 F)) := by
       simpa [Ideal.dvd_iff_le] using hd
     simp [hnot]
+end
+
 
 open UniqueFactorizationMonoid
 
-private theorem squarefree_prod_subset (F : Type) [Field F] [NumberField F]
+section
+variable (F : Type) [Field F] [NumberField F]
+include F
+private theorem squarefree_prod_subset  
     (n : Ideal (𝓞 F)) (hn : n ≠ ⊥) (t : Finset (Ideal (𝓞 F)))
     (ht : t ⊆ (normalizedFactors n).toFinset) :
     (∏ p ∈ t, p) ≠ ⊥ ∧ (∏ p ∈ t, p) ∣ n ∧ Squarefree (∏ p ∈ t, p) ∧
@@ -66,7 +74,7 @@ private theorem squarefree_prod_subset (F : Type) [Field F] [NumberField F]
     exact Multiset.mem_toFinset.mp (ht hp)
   · rw [idealMoebius, hsq.moebius_eq, factors_eq_normalizedFactors, hfactor]
     rfl
-private theorem mobius_sum_zero (F : Type) [Field F] [NumberField F]
+private theorem mobius_sum_zero  
     (n : Ideal (𝓞 F)) (hn : n ≠ ⊥) (hnt : n ≠ ⊤) :
     (∑ d ∈ (ideal_divisors_finite F n hn).toFinset, (idealMoebius F d : ℝ)) = 0 := by
   classical
@@ -123,7 +131,7 @@ private theorem mobius_sum_zero (F : Type) [Field F] [NumberField F]
   have := Finset.prod_add_one (R := ℝ) (f := fun _ : Ideal (𝓞 F) => -1) P
   simpa [Finset.prod_const, zero_pow hP.card_ne_zero] using this.symm
 
-theorem truncatedIdealMoebius_eq_zero (F : Type) [Field F] [NumberField F]
+theorem truncatedIdealMoebius_eq_zero  
     (U : ℝ) (hU : 2 ≤ U) (n : Ideal (𝓞 F))
     (hn : n ≠ ⊥) (hNorm : 1 < (Ideal.absNorm n : ℝ))
     (hCutoff : (Ideal.absNorm n : ℝ) ≤ U ^ (2 : ℕ)) :
@@ -155,7 +163,7 @@ theorem truncatedIdealMoebius_eq_zero (F : Type) [Field F] [NumberField F]
     simp only [Function.mem_support] at hd
     exact hd (if_neg (fun h => hd' ⟨h.1, h.2.1⟩))
 
-theorem idealLSeries_summable (F : Type) [Field F] [NumberField F]
+theorem idealLSeries_summable  
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (ω : RayClassCharacter F m)
     (hω : ω.IsPrimitive) (s : ℂ) (hs : 1 < s.re) :
     Summable (fun n : Ideal (𝓞 F) =>
@@ -167,5 +175,7 @@ theorem idealLSeries_summable (F : Type) [Field F] [NumberField F]
     · simp [hn]
     · have hz : ω n = 0 := (ω.eq_zero_iff' n).mpr (Or.inl (not_ne_iff.mp hn))
       simp [hn, hz]
+end
+
 
 end DedekindZetaZeroFree.Detector

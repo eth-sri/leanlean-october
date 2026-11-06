@@ -22,11 +22,11 @@ def whittakerSpace (β : ℂˣ) (ψ : AddChar ℂ Circle) :
     simp only [ContinuousLinearMap.smul_apply, smul_eq_mul, hL t h]
     ring
 
-@[simp] theorem mem_whittakerSpace (β : ℂˣ) (ψ : AddChar ℂ Circle)
-    (L : Theta β →L[ℂ] ℂ) :
-    L ∈ whittakerSpace β ψ ↔ ∀ (t : ℂ) (h : Theta β),
-      L (imageAction β (Matrix.ProjGenLinGroup.mk (upperUnipotent t)) h) =
-        (ψ t : ℂ) * L h := Iff.rfl
+
+
+
+
+
 
 noncomputable def jacquetIntegrand (ψ : AddChar ℂ Circle)
     (f : PrincipalSeries positiveParameter) (x : ℂ) : ℂ :=

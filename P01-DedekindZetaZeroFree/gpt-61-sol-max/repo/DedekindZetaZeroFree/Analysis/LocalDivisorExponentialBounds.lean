@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve.Vendor
 
@@ -22,7 +25,7 @@ theorem exists_local_exponential_bound (ε : ℝ) (hε : 0 < ε) :
   have hsum : HasSum (fun n : ℕ => ((n : ℝ) + 1) * r ^ n) (1 / (1 - r) ^ 2) := by
     simpa [Nat.choose_one_right, Nat.cast_add, Nat.cast_one] using hbase
   refine ⟨max 1 (1 / (1 - r) ^ 2), le_max_left _ _, fun k => ?_⟩
-  have hsumm : Summable (fun n : ℕ => ((n : ℝ) + 1) * r ^ n) := hsum.summable
+  have hsumm  := hsum.summable
   have hle : ((k : ℝ) + 1) * r ^ k ≤ 1 / (1 - r) ^ 2 := by
     have h := hsumm.sum_le_tsum {k} (fun i _ => by positivity)
     simpa [hsum.tsum_eq] using h

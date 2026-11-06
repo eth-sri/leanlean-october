@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import Mathlib.SetTheory.Cardinal.Finite
 public import ClassFieldTheory.LubinTate.EqualCharacteristic.FiniteLevel.LevelField
 public import Mathlib.FieldTheory.Finite.Basic
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -41,12 +44,15 @@ open LocalFieldTheory.DiscreteValuationField
 
 variable {K : Type u} [Field K]
 
+section
+variable (F : LocalField.{u, v} K)
+    {A : Type*} [Field A] [CharP A F.residueCharacteristic]
+    (ι : F.residueField →+* A) (t : A)
+include F A ι t
 /-- On a level-one torsion point, every longer bracket only sees the
 constant coefficient of the power series. -/
 theorem equalCharacteristicLubinTateAmbientBracket_apply_of_levelOne_torsion
-    (F : LocalField.{u, v} K)
-    {A : Type*} [Field A] [CharP A F.residueCharacteristic]
-    (ι : F.residueField →+* A) (t : A)
+     
     (m : ℕ) (a : F.residueField⟦X⟧) (x : A)
     (hx : IsEqualCharacteristicLubinTateAmbientTorsion F t 1 x) :
     equalCharacteristicLubinTateAmbientBracket F ι t (m + 1) a x =
@@ -68,9 +74,7 @@ theorem equalCharacteristicLubinTateAmbientBracket_apply_of_levelOne_torsion
 /-- Applying `e^n` after a bracket scales the level-one predecessor of any
 primitive level-`n+1` point by the bracket's constant coefficient. -/
 theorem equalCharacteristicLubinTateAmbientPrimitive_iterate_bracket
-    (F : LocalField.{u, v} K)
-    {A : Type*} [Field A] [CharP A F.residueCharacteristic]
-    (ι : F.residueField →+* A) (t : A)
+     
     (n : ℕ) (a : F.residueField⟦X⟧) (x : A)
     (hx : IsEqualCharacteristicLubinTateAmbientTorsion F t (n + 1) x) :
     equalCharacteristicLubinTateAmbientPiIterate F t n
@@ -84,25 +88,15 @@ theorem equalCharacteristicLubinTateAmbientPrimitive_iterate_bracket
   rw [← equalCharacteristicLubinTateAmbientPiIterate_add]
   rw [Nat.add_comm 1 n]
   exact hx
+end
+
 
 /-- Applying `e^n` after a unit bracket scales the primitive level-one
 predecessor by the unit's constant coefficient. -/
-theorem chosenEqualCharacteristicLubinTatePrimitiveRoot_iterate_bracket
+def chosenEqualCharacteristicLubinTatePrimitiveRoot_iterate_bracket
     (F : LocalField.{u, v} K)
     [CharP K F.residueCharacteristic]
-    (n : ℕ) (a : F.residueField⟦X⟧) :
-    equalCharacteristicLubinTateAmbientPiIterate F
-        (equalCharacteristicSeparableUniformizer F) n
-        (equalCharacteristicLubinTateAmbientBracket F
-          (equalCharacteristicSeparableCoefficientHom F)
-          (equalCharacteristicSeparableUniformizer F) (n + 1) a
-          (chosenEqualCharacteristicLubinTatePrimitiveRoot F n)) =
-      equalCharacteristicSeparableCoefficientHom F
-          (PowerSeries.coeff 0 a) *
-        equalCharacteristicLubinTateAmbientPiIterate F
-          (equalCharacteristicSeparableUniformizer F) n
-          (chosenEqualCharacteristicLubinTatePrimitiveRoot F n) := by
-  exact equalCharacteristicLubinTateAmbientPrimitive_iterate_bracket F
+    (n : ℕ) (a : F.residueField⟦X⟧)  := equalCharacteristicLubinTateAmbientPrimitive_iterate_bracket F
     (equalCharacteristicSeparableCoefficientHom F)
     (equalCharacteristicSeparableUniformizer F) n a
     (chosenEqualCharacteristicLubinTatePrimitiveRoot F n)
@@ -115,12 +109,15 @@ theorem powerSeries_unit_coeff_zero_ne_zero
   rw [PowerSeries.coeff_zero_eq_constantCoeff_apply]
   exact (PowerSeries.isUnit_iff_constantCoeff.mp a.isUnit).ne_zero
 
+section
+variable (F : LocalField.{u, v} K)
+    {A : Type*} [Field A] [CharP A F.residueCharacteristic]
+    (ι : F.residueField →+* A) (t : A)
+include F A ι t
 /-- The ambient bracket is additive in its power-series coordinate, in
 subtraction form. -/
 theorem equalCharacteristicLubinTateAmbientBracket_sub
-    (F : LocalField.{u, v} K)
-    {A : Type*} [Field A] [CharP A F.residueCharacteristic]
-    (ι : F.residueField →+* A) (t : A)
+     
     (m : ℕ) (a b : F.residueField⟦X⟧) :
     equalCharacteristicLubinTateAmbientBracket F ι t m (a - b) =
       equalCharacteristicLubinTateAmbientBracket F ι t m a -
@@ -143,9 +140,7 @@ theorem equalCharacteristicLubinTateAmbientBracket_sub
 point.  This is the intrinsic Lubin--Tate statement used both before and
 after passage to the completed maximal-unramified base. -/
 theorem equalCharacteristicLubinTateAmbientPrimitive_bracket_eq_coeff
-    (F : LocalField.{u, v} K)
-    {A : Type*} [Field A] [CharP A F.residueCharacteristic]
-    (ι : F.residueField →+* A) (t : A)
+     
     (n : ℕ) (x : A)
     (hx : IsEqualCharacteristicLubinTateAmbientTorsion F t (n + 1) x)
     (hxpred : ¬ IsEqualCharacteristicLubinTateAmbientTorsion F t n x)
@@ -205,19 +200,24 @@ theorem equalCharacteristicLubinTateAmbientPrimitive_bracket_eq_coeff
           exact (hnot (Finset.mem_range.mpr
             (Nat.lt_succ_iff.mpr hi))).elim
       rw [hsum] at hshift
-      have hcoeffMap : ι (PowerSeries.coeff i d) = 0 :=
+      have hcoeffMap  :=
         (mul_eq_zero.mp hshift).resolve_right hynonzero
       have hcoeff : PowerSeries.coeff i d = 0 := by
         apply ι.injective
         simpa using hcoeffMap
       simpa [d, sub_eq_zero] using hcoeff
+end
 
+
+section
+variable (F : LocalField.{u, v} K)
+    [CharP K F.residueCharacteristic]
+    (n : ℕ)
+include F n
 /-- Faithfulness on a primitive level-`n+1` point: equality of two bracket
 images forces equality of all coefficients visible at that level. -/
-theorem chosenEqualCharacteristicLubinTatePrimitiveRoot_bracket_eq_coeff
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) (a b : F.residueField⟦X⟧)
+def chosenEqualCharacteristicLubinTatePrimitiveRoot_bracket_eq_coeff
+      (a b : F.residueField⟦X⟧)
     (hbracket :
       equalCharacteristicLubinTateAmbientBracket F
           (equalCharacteristicSeparableCoefficientHom F)
@@ -226,9 +226,7 @@ theorem chosenEqualCharacteristicLubinTatePrimitiveRoot_bracket_eq_coeff
         equalCharacteristicLubinTateAmbientBracket F
           (equalCharacteristicSeparableCoefficientHom F)
           (equalCharacteristicSeparableUniformizer F) (n + 1) b
-          (chosenEqualCharacteristicLubinTatePrimitiveRoot F n)) :
-    ∀ i ≤ n, PowerSeries.coeff i a = PowerSeries.coeff i b := by
-  exact equalCharacteristicLubinTateAmbientPrimitive_bracket_eq_coeff F
+          (chosenEqualCharacteristicLubinTatePrimitiveRoot F n))  := equalCharacteristicLubinTateAmbientPrimitive_bracket_eq_coeff F
     (equalCharacteristicSeparableCoefficientHom F)
     (equalCharacteristicSeparableUniformizer F) n
     (chosenEqualCharacteristicLubinTatePrimitiveRoot F n)
@@ -239,20 +237,18 @@ theorem chosenEqualCharacteristicLubinTatePrimitiveRoot_bracket_eq_coeff
 /-- Every unit bracket of the chosen primitive point is again a root of
 the primitive division polynomial. -/
 theorem equalCharacteristicLubinTatePrimitivePolynomial_isRoot_bracket
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) (a : F.residueField⟦X⟧ˣ) :
+      (a : F.residueField⟦X⟧ˣ) :
     ((equalCharacteristicLubinTatePrimitivePolynomial F n).map
       (equalCharacteristicSeparableBaseHom F)).IsRoot
         (equalCharacteristicLubinTateAmbientBracket F
           (equalCharacteristicSeparableCoefficientHom F)
           (equalCharacteristicSeparableUniformizer F) (n + 1)
-          (a : F.residueField⟦X⟧)
+          a
           (chosenEqualCharacteristicLubinTatePrimitiveRoot F n)) := by
   let z := equalCharacteristicLubinTateAmbientBracket F
     (equalCharacteristicSeparableCoefficientHom F)
     (equalCharacteristicSeparableUniformizer F) (n + 1)
-    (a : F.residueField⟦X⟧)
+    a
     (chosenEqualCharacteristicLubinTatePrimitiveRoot F n)
   let y := equalCharacteristicLubinTateAmbientPiIterate F
     (equalCharacteristicSeparableUniformizer F) n
@@ -267,9 +263,7 @@ theorem equalCharacteristicLubinTatePrimitivePolynomial_isRoot_bracket
       equalCharacteristicLubinTateAmbientPiIterate F
           (equalCharacteristicSeparableUniformizer F) n z =
         equalCharacteristicSeparableCoefficientHom F c * y := by
-    simpa [z, y, c] using
-      chosenEqualCharacteristicLubinTatePrimitiveRoot_iterate_bracket F n
-        (a : F.residueField⟦X⟧)
+    apply chosenEqualCharacteristicLubinTatePrimitiveRoot_iterate_bracket
   have hy := chosenEqualCharacteristicLubinTatePrimitiveRoot_equation F n
   have hzEquation :
       equalCharacteristicLubinTateAmbientPiIterate F
@@ -286,6 +280,8 @@ theorem equalCharacteristicLubinTatePrimitivePolynomial_isRoot_bracket
   rw [Polynomial.eval_map,
     equalCharacteristicLubinTatePrimitivePolynomial_eval₂]
   exact hzEquation
+end
+
 
 end EqualCharacteristic
 end LubinTate

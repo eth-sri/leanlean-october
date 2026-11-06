@@ -14,23 +14,26 @@ namespace DedekindZetaZeroFree.KPCompactFourierSeparation
 noncomputable section
 set_option allowUnsafeReducibility true in
 attribute [local reducible] NumberField.AdeleRing
- def archIn (F : Type) [Field F] [NumberField F] :
+ section
+variable (F : Type) [Field F] [NumberField F]
+include F
+def archIn   :
     InfiniteAdeleRing F →+ AdeleRing (𝓞 F) F where
   toFun x := (x, 0)
   map_zero' := rfl
   map_add' _ _ := by simp
 
-private theorem archIn_cont (F : Type) [Field F] [NumberField F] :
+private theorem archIn_cont   :
     Continuous (archIn F) := continuous_id.prodMk continuous_const
 
-private theorem diagonal_decomp (F : Type) [Field F] [NumberField F] (a : F) :
+private theorem diagonal_decomp   (a : F) :
     algebraMap F (AdeleRing (𝓞 F) F) a =
       archIn F (algebraMap F (InfiniteAdeleRing F) a) +
         ((0, algebraMap F (FiniteAdeleRing (𝓞 F) F) a) : AdeleRing (𝓞 F) F) := by
   apply Prod.ext <;> simp [archIn]
 
 private theorem character_rational_arch
-    (F : Type) [Field F] [NumberField F]
+     
     (χ : AddChar (AdeleRing (𝓞 F) F) Circle) (hc : Continuous χ)
     (hF : ∀ t : F, χ (algebraMap F (AdeleRing (𝓞 F) F) t) = 1) :
     ∃ a : F, ∀ x : InfiniteAdeleRing F,
@@ -57,7 +60,7 @@ private theorem character_rational_arch
   simpa only [ha, χa, AddChar.compAddMonoidHom_apply, archIn, AddMonoidHom.coe_mk, ZeroHom.coe_mk] using hy x
 
 private theorem characters_eq_of_arch_eq
-    (F : Type) [Field F] [NumberField F]
+     
     (χ η : AddChar (AdeleRing (𝓞 F) F) Circle)
     (hc : Continuous χ) (he : Continuous η)
     (hχF : ∀ t : F, χ (algebraMap F (AdeleRing (𝓞 F) F) t) = 1)
@@ -84,7 +87,7 @@ private theorem characters_eq_of_arch_eq
   rw [hx, AddChar.map_add_eq_mul, AddChar.map_add_eq_mul, ha, hf]
 
 private theorem pairing_scale
-    (F : Type) [Field F] [NumberField F]
+     
     (x : InfiniteAdeleRing F) (a t : F) :
     KPArchTrace.infiniteTracePairing F
       (algebraMap F (InfiniteAdeleRing F) t * x)
@@ -106,7 +109,7 @@ private theorem pairing_scale
     ring
 
 theorem adelic_annihilator_scalar
-      (F : Type) [Field F] [NumberField F]
+       
       (ψ : AddChar (NumberField.AdeleRing (𝓞 F) F) Circle)
       (hψcont : Continuous ψ) (hψne : ψ ≠ 1)
       (hψF : ∀ t : F, ψ (algebraMap F (NumberField.AdeleRing (𝓞 F) F) t) = 1)
@@ -151,6 +154,8 @@ theorem adelic_annihilator_scalar
   intro x
   rw [heq]
   simp [η, AddChar.mulShift_apply, mul_comm]
+end
+
 end
 end DedekindZetaZeroFree.KPCompactFourierSeparation
 
@@ -401,21 +406,26 @@ end KPCompactFourier
 
 namespace KPCompactFourier
 
-noncomputable def representative (F : Type) [Field F] [NumberField F] :
+section
+variable (F : Type) [Field F] [NumberField F]
+include F
+noncomputable def representative   :
     AdditiveQuotient F → NumberField.AdeleRing (𝓞 F) F := Quotient.out
 
 noncomputable def unipotentFiber
-    (F : Type) [Field F] [NumberField F] {G : Type*} [Group G]
+      {G : Type*} [Group G]
     (n : AddChar (NumberField.AdeleRing (𝓞 F) F) G) (θ : G → ℂ) (g : G)
     (x : AdditiveQuotient F) : ℂ :=
   θ (n (representative F x) * g)
 
 noncomputable def fourierPeriod
-    (F : Type) [Field F] [NumberField F] {G : Type*} [Group G]
+      {G : Type*} [Group G]
     (μ : Measure (AdditiveQuotient F))
     (ψ : AddChar (NumberField.AdeleRing (𝓞 F) F) Circle)
     (n : AddChar (NumberField.AdeleRing (𝓞 F) F) G) (θ : G → ℂ) (g : G) : ℂ :=
   ∫ x, unipotentFiber F n θ g x * (ψ (representative F x) : ℂ) ∂μ
+end
+
 
 end KPCompactFourier
 
@@ -469,12 +479,15 @@ theorem kp_adelic_scaled_character
     obtain ⟨x, rfl⟩ := QuotientAddGroup.mk_surjective q
     exact (hχ'.2.2 x).trans (hχ x).symm
 
-theorem kp_additive_adelic_fourier_uniqueness
-    (F : Type) [Field F] [NumberField F]
+section
+variable (F : Type) [Field F] [NumberField F]
     [CompactSpace (KPCompactFourier.AdditiveQuotient F)]
     [T2Space (KPCompactFourier.AdditiveQuotient F)]
     (μ : Measure (KPCompactFourier.AdditiveQuotient F))
     [μ.IsAddHaarMeasure] [IsProbabilityMeasure μ]
+include F μ
+theorem kp_additive_adelic_fourier_uniqueness
+     
     (h : KPCompactFourier.AdditiveQuotient F → ℂ) (hh : Continuous h)
     (hfourier : ∀ χ : AddChar (KPCompactFourier.AdditiveQuotient F) Circle,
       Continuous χ → χ ≠ 1 → (∫ x, h x * (χ x : ℂ) ∂μ) = 0) :
@@ -483,11 +496,7 @@ theorem kp_additive_adelic_fourier_uniqueness
     (AdelicSeparation.additiveAdeleQuotient_characters_separate F) h hh hfourier
 
 theorem kp_right_translate_periods_force_constant
-    (F : Type) [Field F] [NumberField F]
-    [CompactSpace (KPCompactFourier.AdditiveQuotient F)]
-    [T2Space (KPCompactFourier.AdditiveQuotient F)]
-    (μ : Measure (KPCompactFourier.AdditiveQuotient F))
-    [μ.IsAddHaarMeasure] [IsProbabilityMeasure μ]
+     
     (ψ : AddChar (NumberField.AdeleRing (𝓞 F) F) Circle)
     (hψcont : Continuous ψ) (hψne : ψ ≠ 1)
     (hψF : ∀ t : F, ψ (algebraMap F (NumberField.AdeleRing (𝓞 F) F) t) = 1)
@@ -584,6 +593,8 @@ theorem kp_right_translate_periods_force_constant
   rw [hDmp.map_eq] at hint
   simp_rw [htransform] at hint
   exact hint.symm.trans (hperiod (a u * g))
+end
+
 
 end DedekindZetaZeroFree
 

@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Metaplectic.Weil.Complex.QuadraticKernelAndPhase
 
 @[expose] public section
+
 
 section
 
@@ -19,7 +22,7 @@ private theorem cutoff_derivative_bound {E : Type*}
     (i : ℕ) (x : E) :
     ‖iteratedFDeriv ℝ i (fun x => u (a • x) - 1) x‖ ≤
       SchwartzMap.seminorm ℝ 0 i u + 1 := by
-  have hu : ContDiff ℝ (i : ℕ∞ω) (fun x => u (a • x)) :=
+  have hu : ContDiff ℝ i (fun x => u (a • x)) :=
     (u.smooth i).comp (contDiff_id.const_smul a)
   have hc : ‖iteratedFDeriv ℝ i (fun _ : E => (1 : ℝ)) x‖ ≤ 1 := by
     cases i with
@@ -50,7 +53,7 @@ private theorem cutoff_error_bound {E F : Type*}
         (n.choose i : ℝ) * (SchwartzMap.seminorm ℝ 0 i u + 1) *
           SchwartzMap.seminorm ℝ (k + 1) (n - i) f) / R := by
   have hRp : 0 < R := lt_of_lt_of_le zero_lt_one hR
-  have hs : ContDiff ℝ (n : ℕ∞ω) (fun x => u (R⁻¹ • x) - 1) :=
+  have hs : ContDiff ℝ n (fun x => u (R⁻¹ • x) - 1) :=
     ((u.smooth n).comp (contDiff_id.const_smul _)).sub contDiff_const
   have he : (g - f : SchwartzMap E F) =
       (fun x => (u (R⁻¹ • x) - 1) • f x) := by
@@ -100,13 +103,13 @@ private theorem cutoff_error_bound {E F : Type*}
           _ ≤ (n.choose i : ℝ) * (SchwartzMap.seminorm ℝ 0 i u + 1) *
               (SchwartzMap.seminorm ℝ (k + 1) (n - i) f / R) := by
             gcongr
-            exact hd (n - i)
+            apply hd
           _ = _ := by ring
 
 theorem compactSupport_dense (E F : Type*)
     [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
     [NormedAddCommGroup F] [NormedSpace ℝ F] :
-    Dense {f : SchwartzMap E F | HasCompactSupport (f : E → F)} := by
+    Dense {f : SchwartzMap E F | HasCompactSupport f} := by
   intro f
   let b : ContDiffBump (0 : E) := ⟨1, 2, zero_lt_one, one_lt_two⟩
   let u : SchwartzMap E ℝ := b.hasCompactSupport.toSchwartzMap b.contDiff
@@ -154,10 +157,10 @@ theorem mem_closure_of_fixedSupport_derivative_approximation
     [NormedAddCommGroup F] [NormedSpace ℝ F]
     (S : Set (SchwartzMap E F)) (f : SchwartzMap E F)
     (R : ℝ) (hR : 1 ≤ R)
-    (hf : Function.support (f : E → F) ⊆ Metric.closedBall 0 R)
+    (hf : Function.support f ⊆ Metric.closedBall 0 R)
     (happrox : ∀ (N : ℕ) (ε : ℝ), 0 < ε →
       ∃ t : SchwartzMap E F, t ∈ S ∧
-        Function.support (t : E → F) ⊆ Metric.closedBall 0 R ∧
+        Function.support t ⊆ Metric.closedBall 0 R ∧
         ∀ n ≤ N, ∀ x : E,
           ‖iteratedFDeriv ℝ n (fun z => t z - f z) x‖ < ε) :
     f ∈ closure S := by
@@ -183,8 +186,8 @@ theorem mem_closure_of_fixedSupport_derivative_approximation
   have hsupp : Function.support (fun z => t z - f z) ⊆ Metric.closedBall 0 R := by
     intro x hx
     by_contra hxR
-    have htx : t x = 0 := Function.notMem_support.mp (fun h => hxR (htR h))
-    have hfx : f x = 0 := Function.notMem_support.mp (fun h => hxR (hf h))
+    have htx  := Function.notMem_support.mp (fun h => hxR (htR h))
+    have hfx  := Function.notMem_support.mp (fun h => hxR (hf h))
     exact hx (by simp [htx, hfx])
   have hdsupp : Function.support (iteratedFDeriv ℝ i.2 (fun z => t z - f z)) ⊆
       Metric.closedBall 0 R :=
@@ -227,12 +230,12 @@ set_option maxHeartbeats 1000000 in
 
 theorem convolution_jet_integral
     (ι : Type*) [Fintype ι] (f k s : SchwartzMap (ι → ℂ) ℂ)
-    (hf : HasCompactSupport (f : (ι → ℂ) → ℂ))
-    (hk : HasCompactSupport (k : (ι → ℂ) → ℂ))
+    (hf : HasCompactSupport f)
+    (hk : HasCompactSupport k)
     (hs : ∀ x, s x = ∫ y : ι → ℂ, f y * k (x - y))
     (n : ℕ) (x : ι → ℂ) :
-    iteratedFDeriv ℝ n (s : (ι → ℂ) → ℂ) x =
-      ∫ y : ι → ℂ, f y • iteratedFDeriv ℝ n (k : (ι → ℂ) → ℂ) (x - y) := by
+    iteratedFDeriv ℝ n s x =
+      ∫ y : ι → ℂ, f y • iteratedFDeriv ℝ n k (x - y) := by
   induction n generalizing x with
   | zero =>
     rw [iteratedFDeriv_zero_eq_comp, Function.comp_apply, hs]
@@ -248,11 +251,11 @@ theorem convolution_jet_integral
   | succ n ih =>
     let L : ℂ →L[ℝ] (ContinuousMultilinearMap ℝ (fun _ : Fin n => ι → ℂ) ℂ) →L[ℝ]
         (ContinuousMultilinearMap ℝ (fun _ : Fin n => ι → ℂ) ℂ) := lsmul ℝ ℂ
-    have heq : iteratedFDeriv ℝ n (s : (ι → ℂ) → ℂ) =
-        ((f : (ι → ℂ) → ℂ) ⋆[L] iteratedFDeriv ℝ n (k : (ι → ℂ) → ℂ)) := by
+    have heq : iteratedFDeriv ℝ n s =
+        (f ⋆[L] iteratedFDeriv ℝ n k) := by
       funext z
       exact ih z
-    have hg : ContDiff ℝ 1 (iteratedFDeriv ℝ n (k : (ι → ℂ) → ℂ)) :=
+    have hg : ContDiff ℝ 1 (iteratedFDeriv ℝ n k) :=
       (k.smooth (n+1)).iteratedFDeriv_right (by norm_cast; omega)
     have hd := ((hk.iteratedFDeriv n).hasFDerivAt_convolution_right (μ := volume) L
       f.continuous.locallyIntegrable hg x).fderiv
@@ -261,7 +264,7 @@ theorem convolution_jet_integral
     calc
       _ = ∫ y : ι → ℂ, (continuousMultilinearCurryLeftEquiv ℝ (n := n)
           (fun _ : Fin (n+1) => ι → ℂ) ℂ).symm
-          ((L.precompR (ι → ℂ)) (f y) (fderiv ℝ (iteratedFDeriv ℝ n (k : (ι → ℂ) → ℂ)) (x-y))) :=
+          ((L.precompR (ι → ℂ)) (f y) (fderiv ℝ (iteratedFDeriv ℝ n k) (x-y))) :=
         by
           convert ((continuousMultilinearCurryLeftEquiv ℝ (n := n)
             (fun _ : Fin (n+1) => ι → ℂ) ℂ).symm.toLinearIsometry.integral_comp_comm
@@ -321,7 +324,7 @@ private theorem integral_approx_span {E V : Type*} [NormedAddCommGroup E]
     change (∫ z, Q.subtypeL (g z)) ∈ Q
     rw [he]
     exact (∫ z, g z).property
-  have hc : (∫ z, f z • T z) ∈ closure (P : Set V) := hI
+  have hc : (∫ z, f z • T z) ∈ closure P := hI
   obtain ⟨v, hv, hvε⟩ := Metric.mem_closure_iff.mp hc ε hε
   obtain ⟨a, ha⟩ := Finsupp.mem_span_range_iff_exists_finsupp.mp hv
   let e := (Fintype.equivFin a.support).symm
@@ -335,8 +338,11 @@ private theorem integral_approx_span {E V : Type*} [NormedAddCommGroup E]
   rw [heq]
   simpa [dist_eq_norm, norm_sub_rev] using hvε
 
- def translatedJet {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    (k : SchwartzMap E ℂ) (n : ℕ) (y : E) :
+ section
+variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+    (k : SchwartzMap E ℂ)
+include E k
+def translatedJet   (n : ℕ) (y : E) :
     E →ᵇ ContinuousMultilinearMap ℝ (fun _ : Fin n => E) ℂ :=
   BoundedContinuousFunction.ofNormedAddCommGroup
     (fun x => iteratedFDeriv ℝ n k (x - y))
@@ -344,8 +350,7 @@ private theorem integral_approx_span {E V : Type*} [NormedAddCommGroup E]
     (SchwartzMap.seminorm ℝ 0 n k)
     (fun x => SchwartzMap.norm_iteratedFDeriv_le_seminorm ℝ k n (x-y))
 
-private theorem translatedJet_continuous {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    (k : SchwartzMap E ℂ) (hk : HasCompactSupport (k : E → ℂ)) (n : ℕ) :
+private theorem translatedJet_continuous   (hk : HasCompactSupport k) (n : ℕ) :
     Continuous (translatedJet k n) := by
   have hu := (hk.iteratedFDeriv n).uniformContinuous_of_continuous
     ((k.smooth ⊤).continuous_iteratedFDeriv (by simp))
@@ -357,18 +362,20 @@ private theorem translatedJet_continuous {E : Type*} [NormedAddCommGroup E] [Nor
   intro x
   apply (hd ?_).le
   simpa [dist_eq_norm, sub_sub_sub_cancel_left, norm_sub_rev] using hz
+end
+
 
 theorem uniform_translated_jet_quadrature
     (ι : Type*) [Fintype ι] (f k : SchwartzMap (ι → ℂ) ℂ)
     (r : ℝ) (hr : 0 ≤ r)
-    (hf : Function.support (f : (ι → ℂ) → ℂ) ⊆ Metric.closedBall 0 r)
-    (hk : HasCompactSupport (k : (ι → ℂ) → ℂ))
+    (hf : Function.support f ⊆ Metric.closedBall 0 r)
+    (hk : HasCompactSupport k)
     (N : ℕ) (ε : ℝ) (hε : 0 < ε) :
     ∃ (m : ℕ) (c : Fin m → ℂ) (y : Fin m → ι → ℂ),
       (∀ j, y j ∈ Metric.closedBall 0 r) ∧
       ∀ n ≤ N, ∀ x : ι → ℂ,
-        ‖(∑ j, c j • iteratedFDeriv ℝ n (k : (ι → ℂ) → ℂ) (x - y j)) -
-          ∫ y : ι → ℂ, f y • iteratedFDeriv ℝ n (k : (ι → ℂ) → ℂ) (x - y)‖ < ε := by
+        ‖(∑ j, c j • iteratedFDeriv ℝ n k (x - y j)) -
+          ∫ y : ι → ℂ, f y • iteratedFDeriv ℝ n k (x - y)‖ < ε := by
   let E := ι → ℂ
   let V := (n : Fin (N+1)) → E →ᵇ ContinuousMultilinearMap ℝ (fun _ : Fin n.val => E) ℂ
   letI : NormedAddCommGroup V := Pi.normedAddCommGroup
@@ -383,7 +390,7 @@ theorem uniform_translated_jet_quadrature
   let nn : Fin (N+1) := ⟨n, by omega⟩
   let L : V →L[ℂ] ContinuousMultilinearMap ℝ (fun _ : Fin n => E) ℂ :=
     (BoundedContinuousFunction.evalCLM ℂ x).comp (ContinuousLinearMap.proj nn)
-  have hi : Integrable (fun z : E => (f z • T z : V)) :=
+  have hi : Integrable (fun z : E => (f z • T z)) :=
     (f.continuous.smul hT).integrable_of_hasCompactSupport hfs.smul_right
   have he := L.integral_comp_comm hi
   have hbound := (BoundedContinuousFunction.norm_coe_le_norm
@@ -422,8 +429,8 @@ theorem finite_translate_sum_jet
     (ht : ∀ x, t x = ∑ j, c j * k (x - y j))
     (n : ℕ) (x : ι → ℂ) :
     iteratedFDeriv ℝ n (fun z => t z - s z) x =
-      (∑ j, c j • iteratedFDeriv ℝ n (k : (ι → ℂ) → ℂ) (x - y j)) -
-        iteratedFDeriv ℝ n (s : (ι → ℂ) → ℂ) x := by
+      (∑ j, c j • iteratedFDeriv ℝ n k (x - y j)) -
+        iteratedFDeriv ℝ n s x := by
   have hfun : (fun z => t z - s z) =
       fun z => (∑ j, c j • k (z - y j)) - s z := by
     funext z
@@ -437,15 +444,15 @@ theorem finite_translate_sum_jet
     apply ContDiff.sum
     intro j _
     exact (contDiff_const_smul (c j)).comp
-      ((k.smooth (⊤ : ℕ∞)).comp (contDiff_id.sub contDiff_const))
+      ((k.smooth (⊤)).comp (contDiff_id.sub contDiff_const))
   rw [iteratedFDeriv_sub_apply (hsum_smooth.of_le (by simp)).contDiffAt
-    ((s.smooth (⊤ : ℕ∞)).of_le (by simp)).contDiffAt]
+    ((s.smooth (⊤)).of_le (by simp)).contDiffAt]
   congr 1
   rw [iteratedFDeriv_fun_sum_apply]
   · apply Finset.sum_congr rfl
     intro j _
     have hkj : ContDiffAt ℝ n (fun z => (k : (ι → ℂ) → ℂ) (z - y j)) x :=
-      (((k.smooth (⊤ : ℕ∞)).comp (contDiff_id.sub contDiff_const)).of_le (by simp)).contDiffAt
+      (((k.smooth (⊤)).comp (contDiff_id.sub contDiff_const)).of_le (by simp)).contDiffAt
     change iteratedFDeriv ℝ n (c j • (fun z => (k : (ι → ℂ) → ℂ) (z - y j))) x = _
     rw [iteratedFDeriv_const_smul_apply (a := c j)
       (f := fun z => (k : (ι → ℂ) → ℂ) (z - y j)) hkj]
@@ -474,18 +481,18 @@ set_option maxHeartbeats 2000000 in
 theorem product_mollification_uniform_derivative_approximation
     (ι : Type*) [Fintype ι] (f : SchwartzMap (ι → ℂ) ℂ)
     (r : ℝ) (hr : 1 ≤ r)
-    (hf : Function.support (f : (ι → ℂ) → ℂ) ⊆ Metric.closedBall 0 r)
+    (hf : Function.support f ⊆ Metric.closedBall 0 r)
     (N : ℕ) (ε : ℝ) (hε : 0 < ε) :
     ∃ (g : ι → SchwartzMap ℂ ℂ) (s : SchwartzMap (ι → ℂ) ℂ),
-      (∀ i, HasCompactSupport (g i : ℂ → ℂ)) ∧
-      (∀ i, Function.support (g i : ℂ → ℂ) ⊆ Metric.closedBall 0 1) ∧
+      (∀ i, HasCompactSupport (g i)) ∧
+      (∀ i, Function.support (g i) ⊆ Metric.closedBall 0 1) ∧
       (∀ i, ∫ z : ℂ, g i z = 1) ∧
       (∀ x, s x = ∫ y : ι → ℂ, f y * ∏ i, g i (x i - y i)) ∧
-      Function.support (s : (ι → ℂ) → ℂ) ⊆ Metric.closedBall 0 (r + 1) ∧
+      Function.support s ⊆ Metric.closedBall 0 (r + 1) ∧
       ∀ n ≤ N, ∀ x : ι → ℂ,
         ‖iteratedFDeriv ℝ n (fun z => s z - f z) x‖ < ε := by
   let E := ι → ℂ
-  have hfc : HasCompactSupport (f : E → ℂ) :=
+  have hfc : HasCompactSupport f :=
     HasCompactSupport.of_support_subset_isCompact (isCompact_closedBall 0 r) hf
   let V := (n : Fin (N+1)) → ContinuousMultilinearMap ℝ (fun _ : Fin n.val => E) ℂ
   let J : E → V := fun x n => iteratedFDeriv ℝ n.val f x
@@ -499,7 +506,7 @@ theorem product_mollification_uniform_derivative_approximation
   let q : ℂ → ℝ := b.normed volume
   have hqc : HasCompactSupport q := b.hasCompactSupport_normed
   have hqs : ContDiff ℝ (⊤ : ℕ∞) q := b.contDiff_normed
-  let g0 : SchwartzMap ℂ ℂ :=
+  let g0  :=
     (hqc.comp_left Complex.ofReal_zero).toSchwartzMap
       (Complex.ofRealCLM.contDiff.comp hqs)
   have hg : ∀ z, g0 z = (q z : ℂ) := fun _ => rfl
@@ -529,9 +536,9 @@ theorem product_mollification_uniform_derivative_approximation
     (hKc.comp_left Complex.ofReal_zero).toSchwartzMap
       (Complex.ofRealCLM.contDiff.comp hKs)
   have hk : ∀ x, k x = (K x : ℂ) := fun _ => rfl
-  have hkc : HasCompactSupport (k : E → ℂ) :=
+  have hkc : HasCompactSupport k :=
     hKc.comp_left Complex.ofReal_zero
-  let S : E → ℂ := (k : E → ℂ) ⋆[ContinuousLinearMap.mul ℝ ℂ] (f : E → ℂ)
+  let S  := k ⋆[ContinuousLinearMap.mul ℝ ℂ] f
   have hSs : ContDiff ℝ (⊤ : ℕ∞) S :=
     hfc.contDiff_convolution_right _ k.continuous.locallyIntegrable f.smooth'
   have hSR : Function.support S ⊆ Metric.closedBall 0 (r+1) := by
@@ -555,7 +562,7 @@ theorem product_mollification_uniform_derivative_approximation
     exact (by simpa [Metric.mem_ball, dist_zero_right] using hz' : ‖z‖ < a).le.trans (min_le_left _ _)
   · intro x
     change S x = _
-    rw [show S = (k : E → ℂ) ⋆[ContinuousLinearMap.mul ℝ ℂ] (f : E → ℂ) from rfl, convolution_eq_swap]
+    rw [show S = k ⋆[ContinuousLinearMap.mul ℝ ℂ] f from rfl, convolution_eq_swap]
     apply integral_congr_ae
     filter_upwards with y
     change k (x-y) * f y = f y * ∏ i, g0 (x i - y i)
@@ -566,29 +573,29 @@ theorem product_mollification_uniform_derivative_approximation
   · intro n hn x
     change ‖iteratedFDeriv ℝ n ((s : E → ℂ) - (f : E → ℂ)) x‖ < ε
     rw [iteratedFDeriv_sub (s.smooth n) (f.smooth n)]
-    change ‖iteratedFDeriv ℝ n (s : E → ℂ) x - iteratedFDeriv ℝ n (f : E → ℂ) x‖ < ε
+    change ‖iteratedFDeriv ℝ n s x - iteratedFDeriv ℝ n f x‖ < ε
     rw [JetQuadrature.convolution_jet_integral ι k f s hkc hfc hs n x]
     have hball : Function.support K ⊆ Metric.ball 0 δ := by
       intro z hz
       have hz' : ‖z‖ ≤ a := by simpa [Metric.mem_closedBall, dist_zero_right] using hKR hz
       simpa [Metric.mem_ball, dist_zero_right] using hz'.trans_lt ((min_le_right _ _).trans_lt (half_lt_self hδ))
-    have hmeas : AEStronglyMeasurable (iteratedFDeriv ℝ n (f : E → ℂ)) volume :=
+    have hmeas : AEStronglyMeasurable (iteratedFDeriv ℝ n f) volume :=
       ((f.smooth ⊤).continuous_iteratedFDeriv (by simp)).aestronglyMeasurable
     have hclose : ∀ z ∈ Metric.ball x δ,
-        dist (iteratedFDeriv ℝ n (f : E → ℂ) z) (iteratedFDeriv ℝ n (f : E → ℂ) x) ≤ ε/2 := by
+        dist (iteratedFDeriv ℝ n f z) (iteratedFDeriv ℝ n f x) ≤ ε/2 := by
       intro z hz
-      have hdist := (hd (by simpa [Metric.mem_ball] using hz)).le
+      have hdist := (hd (hz)).le
       let nn : Fin (N+1) := ⟨n, by omega⟩
       have hb := norm_le_pi_norm (J z - J x) nn
-      change ‖iteratedFDeriv ℝ n (f : E → ℂ) z - iteratedFDeriv ℝ n (f : E → ℂ) x‖ ≤ ‖J z - J x‖ at hb
+      change ‖iteratedFDeriv ℝ n f z - iteratedFDeriv ℝ n f x‖ ≤ ‖J z - J x‖ at hb
       rw [dist_eq_norm] at hdist ⊢
       exact hb.trans hdist
-    have hbound := dist_convolution_le (μ := volume) (f := K) (g := iteratedFDeriv ℝ n (f : E → ℂ))
-      (x₀ := x) (z₀ := iteratedFDeriv ℝ n (f : E → ℂ) x) (half_pos hε).le hball
+    have hbound := dist_convolution_le (μ := volume) (f := K) (g := iteratedFDeriv ℝ n f)
+      (x₀ := x) (z₀ := iteratedFDeriv ℝ n f x) (half_pos hε).le hball
       (fun z => Finset.prod_nonneg (fun i _ => b.nonneg_normed (z i))) hKI
       hmeas hclose
-    have he : (∫ y : E, k y • iteratedFDeriv ℝ n (f : E → ℂ) (x-y)) =
-        (K ⋆[lsmul ℝ ℝ] iteratedFDeriv ℝ n (f : E → ℂ)) x := by
+    have he : (∫ y : E, k y • iteratedFDeriv ℝ n f (x-y)) =
+        (K ⋆[lsmul ℝ ℝ] iteratedFDeriv ℝ n f) x := by
       apply integral_congr_ae
       filter_upwards with y
       simp [hk, Complex.real_smul]
@@ -611,7 +618,7 @@ namespace DedekindZetaZeroFree.QuadraticRawProduct.ArchimedeanSteps.TensorDensit
 
 theorem translated_product_support (ι : Type*) [Fintype ι] (r : ℝ) (hr : 0 ≤ r)
     (g : ι → SchwartzMap ℂ ℂ)
-    (hgR : ∀ i, Function.support (g i : ℂ → ℂ) ⊆ Metric.closedBall 0 1)
+    (hgR : ∀ i, Function.support (g i) ⊆ Metric.closedBall 0 1)
     (y : ι → ℂ) (hy : y ∈ Metric.closedBall 0 r) :
     Function.support (fun x : ι → ℂ => ∏ i, g i (x i - y i)) ⊆
       Metric.closedBall 0 (r + 1) := by
@@ -620,17 +627,19 @@ theorem translated_product_support (ι : Type*) [Fintype ι] (r : ℝ) (hr : 0 �
   have hxy : ‖x - y‖ ≤ 1 := by
     apply (pi_norm_le_iff_of_nonneg zero_le_one).2
     intro i
-    have hi : x i - y i ∈ Function.support (g i : ℂ → ℂ) := by
-      exact (Finset.prod_ne_zero_iff.mp hprod) i (Finset.mem_univ i)
+    have hi : x i - y i ∈ Function.support (g i) := (Finset.prod_ne_zero_iff.mp hprod) i (Finset.mem_univ i)
     simpa [Metric.mem_closedBall, dist_zero_right] using hgR i hi
   have hy' : ‖y‖ ≤ r := by simpa [Metric.mem_closedBall, dist_zero_right] using hy
   have he : x = (x - y) + y := by simp
   rw [Metric.mem_closedBall, dist_zero_right, he]
   exact (norm_add_le _ _).trans (add_le_add hxy hy') |>.trans_eq (add_comm 1 r)
 
-def translatedProduct (ι : Type*) [Fintype ι]
+section
+variable (ι : Type*) [Fintype ι]
     (g : ι → SchwartzMap ℂ ℂ)
-    (hgR : ∀ i, Function.support (g i : ℂ → ℂ) ⊆ Metric.closedBall 0 1)
+    (hgR : ∀ i, Function.support (g i) ⊆ Metric.closedBall 0 1)
+include ι g hgR
+def translatedProduct  
     (y : ι → ℂ) : SchwartzMap (ι → ℂ) ℂ :=
   (HasCompactSupport.intro (f := fun x : ι → ℂ => ∏ i, g i (x i - y i))
     (isCompact_closedBall y 1) (by
@@ -640,28 +649,29 @@ def translatedProduct (ι : Type*) [Fintype ι]
     rw [Metric.mem_closedBall, dist_eq_norm]
     apply (pi_norm_le_iff_of_nonneg zero_le_one).2
     intro i
-    have hi : x i - y i ∈ Function.support (g i : ℂ → ℂ) :=
+    have hi : x i - y i ∈ Function.support (g i) :=
       (Finset.prod_ne_zero_iff.mp h) i (Finset.mem_univ i)
     simpa [Metric.mem_closedBall, dist_zero_right] using hgR i hi)).toSchwartzMap
     (contDiff_prod fun i _ => (g i).smooth'.comp ((contDiff_apply ℝ ℂ i).sub contDiff_const))
 
-theorem translatedProduct_apply (ι : Type*) [Fintype ι]
-    (g : ι → SchwartzMap ℂ ℂ)
-    (hgR : ∀ i, Function.support (g i : ℂ → ℂ) ⊆ Metric.closedBall 0 1)
+theorem translatedProduct_apply  
     (y x : ι → ℂ) : translatedProduct ι g hgR y x = ∏ i, g i (x i - y i) := rfl
 
-theorem translatedProduct_mem_span (ι : Type*) [Fintype ι]
-    (g : ι → SchwartzMap ℂ ℂ)
-    (hgR : ∀ i, Function.support (g i : ℂ → ℂ) ⊆ Metric.closedBall 0 1)
+theorem translatedProduct_mem_span  
     (y : ι → ℂ) : translatedProduct ι g hgR y ∈ Submodule.span ℂ
       {u : SchwartzMap (ι → ℂ) ℂ | ∃ k : ι → SchwartzMap ℂ ℂ,
         ∀ z, u z = ∏ i, k i (z i)} := by
   apply Submodule.subset_span
   exact ⟨fun i => (g i).compSubConstCLM ℂ (y i), fun z => rfl⟩
+end
 
-theorem quadrature_tensor_support (ι : Type*) [Fintype ι] (r : ℝ) (hr : 0 ≤ r)
+
+section
+variable (ι : Type*) [Fintype ι] (r : ℝ) (hr : 0 ≤ r)
     (g : ι → SchwartzMap ℂ ℂ)
-    (hgR : ∀ i, Function.support (g i : ℂ → ℂ) ⊆ Metric.closedBall 0 1)
+    (hgR : ∀ i, Function.support (g i) ⊆ Metric.closedBall 0 1)
+include ι r hr g hgR
+theorem quadrature_tensor_support  
     (m : ℕ) (c : Fin m → ℂ) (y : Fin m → ι → ℂ)
     (hy : ∀ j, y j ∈ Metric.closedBall 0 r) :
     (∑ j, c j • translatedProduct ι g hgR (y j)) ∈ Submodule.span ℂ
@@ -684,9 +694,7 @@ theorem quadrature_tensor_support (ι : Type*) [Fintype ι] (r : ℝ) (hr : 0 �
     simp [hz]
 
 theorem finite_tensor_approximation_of_quadrature
-    (ι : Type*) [Fintype ι] (r : ℝ) (hr : 0 ≤ r)
-    (g : ι → SchwartzMap ℂ ℂ)
-    (hgR : ∀ i, Function.support (g i : ℂ → ℂ) ⊆ Metric.closedBall 0 1)
+     
     (s : SchwartzMap (ι → ℂ) ℂ) (N : ℕ) (ε : ℝ)
     (hq : ∃ (m : ℕ) (c : Fin m → ℂ) (y : Fin m → ι → ℂ),
       (∀ j, y j ∈ Metric.closedBall 0 r) ∧
@@ -697,19 +705,24 @@ theorem finite_tensor_approximation_of_quadrature
       t ∈ Submodule.span ℂ
         {u : SchwartzMap (ι → ℂ) ℂ |
           ∃ k : ι → SchwartzMap ℂ ℂ, ∀ z, u z = ∏ i, k i (z i)} ∧
-      Function.support (t : (ι → ℂ) → ℂ) ⊆ Metric.closedBall 0 (r + 1) ∧
+      Function.support t ⊆ Metric.closedBall 0 (r + 1) ∧
       ∀ n ≤ N, ∀ x : ι → ℂ,
         ‖iteratedFDeriv ℝ n (fun z => t z - s z) x‖ < ε := by
   obtain ⟨m, c, y, hy, hjet⟩ := hq
   obtain ⟨ht, hsupp⟩ := quadrature_tensor_support ι r hr g hgR m c y hy
   exact ⟨∑ j, c j • translatedProduct ι g hgR (y j), ht, hsupp, hjet⟩
+end
+
 namespace KernelAux
 
 variable {ι : Type*} [Fintype ι]
 
-lemma translated_product_support (g : ι → SchwartzMap ℂ ℂ)
-    (hgR : ∀ i, Function.support (g i : ℂ → ℂ) ⊆ Metric.closedBall 0 1)
-    (y : ι → ℂ) :
+section
+variable (g : ι → SchwartzMap ℂ ℂ)
+    (hgR : ∀ i, Function.support (g i) ⊆ Metric.closedBall 0 1)
+    (y : ι → ℂ)
+include g hgR y
+lemma translated_product_support   :
     Function.support (fun x : ι → ℂ => ∏ i, g i (x i - y i)) ⊆
       Metric.closedBall y 1 := by
   intro x hx
@@ -717,27 +730,27 @@ lemma translated_product_support (g : ι → SchwartzMap ℂ ℂ)
   have hne : ∀ i, g i (x i - y i) ≠ 0 := by
     simpa using (Finset.prod_ne_zero_iff.mp hx')
   rw [Metric.mem_closedBall, dist_eq_norm]
-  apply (pi_norm_le_iff_of_nonneg (by norm_num : (0 : ℝ) ≤ 1)).2
+  apply (pi_norm_le_iff_of_nonneg (by norm_num)).2
   intro i
   simpa [Metric.mem_closedBall, dist_eq_norm] using hgR i (hne i)
 
-lemma translated_product_compact (g : ι → SchwartzMap ℂ ℂ)
-    (hgR : ∀ i, Function.support (g i : ℂ → ℂ) ⊆ Metric.closedBall 0 1)
-    (y : ι → ℂ) : HasCompactSupport (fun x : ι → ℂ => ∏ i, g i (x i - y i)) := by
+lemma translated_product_compact   : HasCompactSupport (fun x : ι → ℂ => ∏ i, g i (x i - y i)) := by
   apply HasCompactSupport.intro (isCompact_closedBall y 1)
   intro x hx
   by_contra h
   exact hx (translated_product_support g hgR y h)
+end
+
 
 end KernelAux
 
 theorem product_convolution_finite_tensor_approximation
     (ι : Type*) [Fintype ι] (f : SchwartzMap (ι → ℂ) ℂ)
     (r : ℝ) (hr : 0 ≤ r)
-    (hf : Function.support (f : (ι → ℂ) → ℂ) ⊆ Metric.closedBall 0 r)
+    (hf : Function.support f ⊆ Metric.closedBall 0 r)
     (g : ι → SchwartzMap ℂ ℂ)
-    (hg : ∀ i, HasCompactSupport (g i : ℂ → ℂ))
-    (hgR : ∀ i, Function.support (g i : ℂ → ℂ) ⊆ Metric.closedBall 0 1)
+    (hg : ∀ i, HasCompactSupport (g i))
+    (hgR : ∀ i, Function.support (g i) ⊆ Metric.closedBall 0 1)
     (s : SchwartzMap (ι → ℂ) ℂ)
     (hs : ∀ x, s x = ∫ y : ι → ℂ, f y * ∏ i, g i (x i - y i))
     (N : ℕ) (ε : ℝ) (hε : 0 < ε) :
@@ -745,15 +758,14 @@ theorem product_convolution_finite_tensor_approximation
       t ∈ Submodule.span ℂ
         {u : SchwartzMap (ι → ℂ) ℂ |
           ∃ k : ι → SchwartzMap ℂ ℂ, ∀ z, u z = ∏ i, k i (z i)} ∧
-      Function.support (t : (ι → ℂ) → ℂ) ⊆ Metric.closedBall 0 (r + 1) ∧
+      Function.support t ⊆ Metric.closedBall 0 (r + 1) ∧
       ∀ n ≤ N, ∀ x : ι → ℂ,
         ‖iteratedFDeriv ℝ n (fun z => t z - s z) x‖ < ε := by
   apply finite_tensor_approximation_of_quadrature ι r hr g hgR s N ε
   let k := translatedProduct ι g hgR 0
-  have hk : HasCompactSupport (k : (ι → ℂ) → ℂ) := by
-    exact KernelAux.translated_product_compact g hgR 0
-  have hfcompact : HasCompactSupport (f : (ι → ℂ) → ℂ) := by
-    apply HasCompactSupport.intro (isCompact_closedBall (0 : ι → ℂ) r)
+  have hk : HasCompactSupport k := KernelAux.translated_product_compact g hgR 0
+  have hfcompact : HasCompactSupport f := by
+    apply HasCompactSupport.intro (isCompact_closedBall (0) r)
     intro x hx
     by_contra h
     exact hx (hf h)
@@ -771,7 +783,7 @@ theorem product_convolution_finite_tensor_approximation
   rw [JetQuadrature.finite_translate_sum_jet ι k s
     (∑ j, c j • translatedProduct ι g hgR (y j)) m c y ht n x,
     JetQuadrature.convolution_jet_integral ι f k s hfcompact hk hs' n x]
-  exact hjet n hn x
+  apply hjet <;> assumption
 
 end DedekindZetaZeroFree.QuadraticRawProduct.ArchimedeanSteps.TensorDensity.ProductConvolution
 
@@ -786,22 +798,24 @@ open scoped Classical
 
 namespace DedekindZetaZeroFree.QuadraticRawProduct.ArchimedeanSteps.TensorDensity
 
-theorem compactSupport_support_radius (ι : Type*) [Fintype ι]
-    (f : SchwartzMap (ι → ℂ) ℂ) (hf : HasCompactSupport (f : (ι → ℂ) → ℂ)) :
-    ∃ R : ℝ, 1 ≤ R ∧ Function.support (f : (ι → ℂ) → ℂ) ⊆ Metric.closedBall 0 R := by
+section
+variable (ι : Type*) [Fintype ι]
+    (f : SchwartzMap (ι → ℂ) ℂ) (hf : HasCompactSupport f)
+include ι f hf
+theorem compactSupport_support_radius   :
+    ∃ R : ℝ, 1 ≤ R ∧ Function.support f ⊆ Metric.closedBall 0 R := by
   obtain ⟨R, hR, hs⟩ := hf.isCompact.isBounded.subset_closedBall_lt 1 0
   exact ⟨R, hR.le, Set.Subset.trans (subset_closure) hs⟩
 
-theorem compact_tensor_uniform_approximation (ι : Type*) [Fintype ι]
-    (f : SchwartzMap (ι → ℂ) ℂ) (hf : HasCompactSupport (f : (ι → ℂ) → ℂ)) :
+theorem compact_tensor_uniform_approximation   :
     ∃ R : ℝ, 1 ≤ R ∧
-      Function.support (f : (ι → ℂ) → ℂ) ⊆ Metric.closedBall 0 R ∧
+      Function.support f ⊆ Metric.closedBall 0 R ∧
       ∀ (N : ℕ) (ε : ℝ), 0 < ε →
         ∃ t : SchwartzMap (ι → ℂ) ℂ,
           t ∈ Submodule.span ℂ
             {u : SchwartzMap (ι → ℂ) ℂ |
               ∃ g : ι → SchwartzMap ℂ ℂ, ∀ z, u z = ∏ i, g i (z i)} ∧
-          Function.support (t : (ι → ℂ) → ℂ) ⊆ Metric.closedBall 0 R ∧
+          Function.support t ⊆ Metric.closedBall 0 R ∧
           ∀ n ≤ N, ∀ x : ι → ℂ,
             ‖iteratedFDeriv ℝ n (fun z => t z - f z) x‖ < ε := by
   classical
@@ -832,6 +846,8 @@ theorem compact_tensor_uniform_approximation (ι : Type*) [Fintype ι]
     (by have h₁ := htapprox n hn x
         have h₂ := hsapprox n hn x
         linarith)
+end
+
 
 end DedekindZetaZeroFree.QuadraticRawProduct.ArchimedeanSteps.TensorDensity
 
@@ -849,14 +865,14 @@ namespace DedekindZetaZeroFree.QuadraticRawProduct.ArchimedeanSteps
 
 variable {ι : Type*} [Fintype ι]
 
-def productFourier (f : (ι → ℂ) → ℂ) (y : ι → ℂ) : ℂ :=
+def productFourier (f : (ι → ℂ) → ℂ) (y : ι → ℂ)  :=
   ∫ z, f z * ∏ i, ComplexWeil.psi 2 (-z i * y i)
     ∂Measure.pi (fun _ : ι => ComplexWeil.mu 2)
 
-def productChirp (b : ι → ℂ) (f : (ι → ℂ) → ℂ) (z : ι → ℂ) : ℂ :=
+def productChirp (b : ι → ℂ) (f : (ι → ℂ) → ℂ) (z : ι → ℂ)  :=
   (∏ i, ComplexWeil.psi 2 (b i * z i ^ 2)) * f z
 
-def productDilation (c : ι → ℂ) (f : (ι → ℂ) → ℂ) (z : ι → ℂ) : ℂ :=
+def productDilation (c : ι → ℂ) (f : (ι → ℂ) → ℂ) (z : ι → ℂ)  :=
   f (fun i => c i * z i)
 
 def tensorCore (ι : Type*) [Fintype ι] : Submodule ℂ (SchwartzMap (ι → ℂ) ℂ) :=
@@ -865,13 +881,12 @@ def tensorCore (ι : Type*) [Fintype ι] : Submodule ℂ (SchwartzMap (ι → �
 theorem tensorCore_dense (ι : Type*) [Fintype ι] :
     Dense (tensorCore ι : Set (SchwartzMap (ι → ℂ) ℂ)) := by
   have hcompact :
-      {f : SchwartzMap (ι → ℂ) ℂ | HasCompactSupport (f : (ι → ℂ) → ℂ)} ⊆
-        closure (tensorCore ι : Set (SchwartzMap (ι → ℂ) ℂ)) := by
+      {f : SchwartzMap (ι → ℂ) ℂ | HasCompactSupport f} ⊆
+        closure (tensorCore ι) := by
     intro f hf
     obtain ⟨R, hR, hsupport, happrox⟩ :=
       TensorDensity.compact_tensor_uniform_approximation ι f hf
-    exact TensorDensity.mem_closure_of_fixedSupport_derivative_approximation
-      (tensorCore ι : Set (SchwartzMap (ι → ℂ) ℂ)) f R hR hsupport happrox
+    apply TensorDensity.mem_closure_of_fixedSupport_derivative_approximation <;> assumption
   exact ((TensorDensity.compactSupport_dense (ι → ℂ) ℂ).mono hcompact).of_closure
 
 end DedekindZetaZeroFree.QuadraticRawProduct.ArchimedeanSteps

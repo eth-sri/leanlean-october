@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Metaplectic.Kubota.RootAndDiagonalDefects
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 namespace KubotaWeylBoundaryCells
@@ -18,11 +21,14 @@ private theorem x_w (K : Type*) [Field K] (g : GL2 K) :
   classical
   simp [x, Matrix.mul_apply]
 
-private theorem factor (K : Type*) [Field K] (M : Type*) [CommGroup M]
+section
+variable (K : Type*) [Field K] (M : Type*) [CommGroup M]
     (B : Kˣ → Kˣ → M)
     (hL : ∀ a b c : Kˣ, B (a * b) c = B a c * B b c)
     (hR : ∀ a b c : Kˣ, B a (b * c) = B a b * B a c)
-    (hAlt : ∀ a : Kˣ, B a a = 1) (g h : GL2 K) :
+    (hAlt : ∀ a : Kˣ, B a a = 1)
+include K M B hL hR hAlt
+private theorem factor   (g h : GL2 K) :
     KubotaElementaryLastArgument.defect K M B g h (w K) =
       B (X K (g * h * w K) * X K h / (X K (g * h) * X K (h * w K)))
         (X K (g * h) * X K (h * w K) / (X K g * det K h)) := by
@@ -34,11 +40,7 @@ private theorem factor (K : Type*) [Field K] (M : Type*) [CommGroup M]
       (X K (g * (h * w K))) 1 (det K g) (det K h)
 
 theorem defect_w_boundary
-    (K : Type*) [Field K] (M : Type*) [CommGroup M]
-    (B : Kˣ → Kˣ → M)
-    (hL : ∀ a b c : Kˣ, B (a * b) c = B a c * B b c)
-    (hR : ∀ a b c : Kˣ, B a (b * c) = B a b * B a c)
-    (hAlt : ∀ a : Kˣ, B a a = 1)
+     
     (hCub : ∀ a b : Kˣ, (B a b) ^ 3 = 1)
     (g h : KubotaRankTwo.GL2 K)
     (hBoundary :
@@ -48,12 +50,12 @@ theorem defect_w_boundary
       (g * h : Matrix (Fin 2) (Fin 2) K) 1 0 = 0 ∨
       (g * h : Matrix (Fin 2) (Fin 2) K) 1 1 = 0) :
     KubotaElementaryLastArgument.defect K M B g h (KubotaRankTwo.w K) = 1 := by
-  let c : K := (g : Matrix (Fin 2) (Fin 2) K) 1 0
-  let d : K := (g : Matrix (Fin 2) (Fin 2) K) 1 1
-  let e : K := (h : Matrix (Fin 2) (Fin 2) K) 1 0
-  let f : K := (h : Matrix (Fin 2) (Fin 2) K) 1 1
-  let C : K := (g * h : Matrix (Fin 2) (Fin 2) K) 1 0
-  let D : K := (g * h : Matrix (Fin 2) (Fin 2) K) 1 1
+  let c  := (g : Matrix (Fin 2) (Fin 2) K) 1 0
+  let d  := (g : Matrix (Fin 2) (Fin 2) K) 1 1
+  let e  := (h : Matrix (Fin 2) (Fin 2) K) 1 0
+  let f  := (h : Matrix (Fin 2) (Fin 2) K) 1 1
+  let C  := (g * h : Matrix (Fin 2) (Fin 2) K) 1 0
+  let D  := (g * h : Matrix (Fin 2) (Fin 2) K) 1 1
   let q : K := (det K h : Kˣ)
   let r := X K g
   let x0 := X K h
@@ -71,14 +73,13 @@ theorem defect_w_boundary
   have hq : q ≠ 0 := (det K h).ne_zero
   have hr : (r : K) = if c = 0 then d else c := rfl
   have hx : (x0 : K) = if e = 0 then f else e := rfl
-  have hy : (y : K) = if f = 0 then -e else f := by
-    exact x_w K h
+  have hy : (y : K) = if f = 0 then -e else f := x_w K h
   have hz : (z : K) = if C = 0 then D else C := rfl
   have ht : (t : K) = if D = 0 then -C else D := by
-    exact x_w K (g * h)
+    apply x_w
   have hfac : KubotaElementaryLastArgument.defect K M B g h (w K) =
       B (t * x0 / (z * y)) (z * y / (r * det K h)) := by
-    exact factor K M B hL hR hAlt g h
+    apply factor <;> assumption
   rw [hfac]
   by_cases hc : c = 0
   · have hd : d ≠ 0 := bottomRight_ne_zero K g hc
@@ -169,6 +170,8 @@ theorem defect_w_boundary
       simpa [hDzero] using hrel
     rw [hslot]
     exact one_right K M B hR _
+end
+
 
 end KubotaWeylBoundaryCells
 end DedekindZetaZeroFree

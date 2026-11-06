@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.Jets.Seminorms
 public import DedekindZetaZeroFree.Analysis.Jets.LocallyUniformLimits
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.KPCplxPrincipalSeriesGlobalLimits
 open Filter Topology Set
@@ -17,8 +20,7 @@ lemma global_smooth_jet_limit (F : ℕ → ℂ → ℂ)
         (iteratedFDeriv ℝ n G) atTop (Metric.closedBall (0 : ℂ) R) := by
   classical
   have hex (n : ℕ) (x : ℂ) : ∃ q : (ℂ [×n]→L[ℝ] ℂ),
-      Tendsto (fun i => iteratedFDeriv ℝ n (F i) x) atTop (𝓝 q) := by
-    exact cauchySeq_tendsto_of_complete ((hC n (‖x‖+1)).cauchySeq (by
+      Tendsto (fun i => iteratedFDeriv ℝ n (F i) x) atTop (𝓝 q) := cauchySeq_tendsto_of_complete ((hC n (‖x‖+1)).cauchySeq (by
       simp only [Metric.mem_closedBall, dist_zero_right]; linarith))
   choose Q hQ using hex
   have hu (n : ℕ) (R : ℝ) : TendstoUniformlyOn
@@ -29,11 +31,10 @@ lemma global_smooth_jet_limit (F : ℕ → ℂ → ℂ)
     intro u hu' x hx
     refine ⟨Metric.ball 0 (‖x‖+1), ?_, ?_⟩
     · rw [nhdsWithin_univ]
-      exact Metric.isOpen_ball.mem_nhds (by
-        simp only [Metric.mem_ball, dist_zero_right]; linarith)
+      apply Metric.isOpen_ball.mem_nhds <;> aesop
     · exact ((hu n (‖x‖+1)) u hu').mono (fun i hi y hy =>
         hi y (Metric.ball_subset_closedBall hy))
-  let G : ℂ → ℂ := fun x => (Q 0 x).curry0
+  let G  := fun x => (Q 0 x).curry0
   have hp : HasFTaylorSeriesUpToOn (⊤ : ℕ∞) G (fun x n => Q n x) univ := by
     apply KPCplxPrincipalSeriesJetLimits.taylorSeries_locallyUniform_limit atTop univ isOpen_univ
       F (fun i => ftaylorSeries ℝ (F i)) G (fun x n => Q n x)
@@ -49,7 +50,7 @@ lemma global_smooth_jet_limit (F : ℕ → ℂ → ℂ)
       (congrFun iteratedFDerivWithin_univ x)
   refine ⟨G, hg, ?_⟩
   intro n R
-  have he : Q n = iteratedFDeriv ℝ n G := funext (hqeq n)
+  have he  := funext (hqeq n)
   rw [← he]
   exact hu n R
 end DedekindZetaZeroFree.KPCplxPrincipalSeriesGlobalLimits

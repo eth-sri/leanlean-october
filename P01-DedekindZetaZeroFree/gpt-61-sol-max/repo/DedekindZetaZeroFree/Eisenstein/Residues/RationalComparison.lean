@@ -31,9 +31,7 @@ theorem comparison_pure_rational
         (ScalarAbsorption.rightLevel C.exceptional s).val
         (ScalarAbsorption.rightLevel C.exceptional s).property t
         (fun q => x ⟨.inr q.val, Finset.mem_toRight.mp q.property⟩) := by
-  unfold comparison
-  simp only [LinearMap.comp_apply]
-  rw [ScalarAbsorption.absorb_stage, ScalarAbsorption.stageEquiv_pure]
+  rw [comparison_stage, ScalarAbsorption.stageEquiv_pure]
   simp only [map_smul]
   rw [finiteTensorMap_stage]
   rfl

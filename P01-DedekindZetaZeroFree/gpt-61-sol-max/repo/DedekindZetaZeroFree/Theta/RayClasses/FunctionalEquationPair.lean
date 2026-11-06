@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Theta.RayClasses.RapidDecay
 public import DedekindZetaZeroFree.HarmonicAnalysis.Poisson.ShiftedParityGaussian
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -14,16 +17,18 @@ namespace DedekindZetaZeroFree.AbelianQuotient.RayTheta
 
 variable {K : Type} [Field K] [NumberField K]
 
-private lemma q_pos (t : ℝ) (ht : 0 < t) (h : RayCoset.logHyperplane K)
-    (v : InfinitePlace K) : 0 < q K t h v := by
-  exact mul_pos (Real.rpow_pos_of_pos ht _) (Real.exp_pos _)
+section
+variable (t : ℝ) (ht : 0 < t) (h : RayCoset.logHyperplane K)
+include t ht h
+private lemma q_pos  
+    (v : InfinitePlace K) : 0 < q K t h v := mul_pos (Real.rpow_pos_of_pos ht _) (Real.exp_pos _)
 
-private lemma q_inv (t : ℝ) (ht : 0 < t) (h : RayCoset.logHyperplane K) :
+private lemma q_inv   :
     (fun v => (q K (1 / t) h v)⁻¹) = q K t (-h) := by
   funext v
   simp [q, one_div, Real.inv_rpow ht.le, Real.exp_neg, mul_inv_rev, mul_comm]
 
-private lemma J_q (t : ℝ) (ht : 0 < t) (h : RayCoset.logHyperplane K) :
+private lemma J_q   :
     RayParity.J K (q K t h) = t := by
   have hn : (Module.finrank ℚ K : ℝ) ≠ 0 := by
     exact_mod_cast (Module.finrank_pos (R := ℚ) (M := K)).ne'
@@ -36,9 +41,14 @@ private lemma J_q (t : ℝ) (ht : 0 < t) (h : RayCoset.logHyperplane K) :
   rw [he, mul_one, Finset.prod_pow_eq_pow_sum,
     InfinitePlace.sum_mult_eq, ← Real.rpow_natCast,
     ← Real.rpow_mul ht.le, inv_mul_cancel₀ hn, Real.rpow_one]
+end
 
+
+section
+variable (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K))
+include D δ
 theorem fδ_one_div
-    (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K))
+     
     (t : ℝ) (ht : 0 < t) :
     fδ D δ (1 / t) = RayParity.εδ K δ * (t : ℂ) * gδDual D δ t := by
   letI := RayCoset.normalizedLattice_discrete D
@@ -58,7 +68,7 @@ theorem fδ_one_div
   field_simp
   <;> ring
 
-def Pδ (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K)) :
+def Pδ   :
     WeakFEPair ℂ where
   f := fδ D δ
   g := gδDual D δ
@@ -69,41 +79,40 @@ def Pδ (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K)) :
   hf_int := locallyIntegrableOn_fδ D δ
   hg_int := locallyIntegrableOn_gδDual D δ
   hk := by norm_num
-  hε := by
-    exact pow_ne_zero _ (neg_ne_zero.mpr Complex.I_ne_zero)
+  hε := pow_ne_zero _ (neg_ne_zero.mpr Complex.I_ne_zero)
   h_feq := by
     intro t ht
     simpa only [Real.rpow_one, smul_eq_mul] using fδ_one_div D δ t ht
   hf_top := fδ_sub_f0δ_isBigO_rpow D δ
   hg_top := gδDual_sub_g0δ_isBigO_rpow D δ
 
-@[simp] theorem Pδ_f (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K)) :
+@[simp] theorem Pδ_f   :
     (Pδ D δ).f = fδ D δ := rfl
 
-@[simp] theorem Pδ_g (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K)) :
+@[simp] theorem Pδ_g   :
     (Pδ D δ).g = gδDual D δ := rfl
 
-@[simp] theorem Pδ_k (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K)) :
+@[simp] theorem Pδ_k   :
     (Pδ D δ).k = 1 := rfl
 
-@[simp] theorem Pδ_ε (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K)) :
+@[simp] theorem Pδ_ε   :
     (Pδ D δ).ε = RayParity.εδ K δ := rfl
 
-@[simp] theorem Pδ_f₀ (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K)) :
+@[simp] theorem Pδ_f₀   :
     (Pδ D δ).f₀ = f0δ D δ := rfl
 
-@[simp] theorem Pδ_g₀ (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K)) :
+@[simp] theorem Pδ_g₀   :
     (Pδ D δ).g₀ = g0δ D δ := rfl
 
-theorem f0δ_of_nonempty (D : RayCoset.Data K)
-    (δ : Finset (RayCoset.RealPlaces K)) (hδ : δ.Nonempty) :
+theorem f0δ_of_nonempty   (hδ : δ.Nonempty) :
     f0δ D δ = 0 := by
   simp [f0δ, hδ.ne_empty]
 
-theorem g0δ_of_nonempty (D : RayCoset.Data K)
-    (δ : Finset (RayCoset.RealPlaces K)) (hδ : δ.Nonempty) :
+theorem g0δ_of_nonempty   (hδ : δ.Nonempty) :
     g0δ D δ = 0 := by
   simp [g0δ, hδ.ne_empty]
+end
+
 
 end DedekindZetaZeroFree.AbelianQuotient.RayTheta
 

@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.LinearAlgebra.PiTensorProduct.Basic
 public import Mathlib.RepresentationTheory.Coinvariants
 
 @[expose] public section
+
 
 noncomputable section
 open scoped TensorProduct
@@ -37,7 +40,7 @@ theorem slot_relationSpan_eq_top [DecidableEq I] (i : I) (ρ : Representation R 
       rintro x ⟨⟨g, y⟩, rfl⟩
       change L (ρ g y - y) ∈ Q
       rw [map_sub, ← hcomm]
-      exact Representation.Coinvariants.sub_mem_ker g (L y)
+      apply Representation.Coinvariants.sub_mem_ker
     have hx : f i ∈ Representation.Coinvariants.ker ρ := by rw [hρ]; trivial
     have hm := hle hx
     change L (f i) ∈ Q at hm
@@ -51,7 +54,7 @@ theorem slot_relationSpan_eq_top [DecidableEq I] (i : I) (ρ : Representation R 
     induction f using PiTensorProduct.induction_on with
     | smul_tprod r f =>
       rw [TensorProduct.smul_tmul]
-      exact hpure f (r • e)
+      apply hpure
     | add a b ha hb =>
       rw [TensorProduct.add_tmul]
       exact Q.add_mem ha hb
@@ -69,7 +72,7 @@ theorem relationSpan_eq_top_of_surjective
     rintro x ⟨⟨g, y⟩, rfl⟩
     change L (ρ g y - y) ∈ Representation.Coinvariants.ker σ
     rw [map_sub, hcomm]
-    exact Representation.Coinvariants.sub_mem_ker g (L y)
+    apply Representation.Coinvariants.sub_mem_ker
   apply eq_top_iff.mpr
   intro y _
   obtain ⟨x, rfl⟩ := hL y

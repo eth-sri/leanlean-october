@@ -15,11 +15,14 @@ noncomputable def sigmaTwo
     (B : Kˣ → Kˣ → M) (g h : GL2 K) : M :=
   tau K M B g h * B (det K g) (det K h) ^ 2
 
-theorem determinantTwist_cocycle
-    (K : Type*) [Field K] (M : Type*) [CommGroup M]
+section
+variable (K : Type*) [Field K] (M : Type*) [CommGroup M]
     (B : Kˣ → Kˣ → M)
     (hL : ∀ a b c : Kˣ, B (a * b) c = B a c * B b c)
     (hR : ∀ a b c : Kˣ, B a (b * c) = B a b * B a c)
+include K M B hL hR
+theorem determinantTwist_cocycle
+     
     (g h k : GL2 K) :
     B (det K g) (det K h) ^ 2 * B (det K (g * h)) (det K k) ^ 2 =
       B (det K h) (det K k) ^ 2 * B (det K g) (det K (h * k)) ^ 2 := by
@@ -27,10 +30,7 @@ theorem determinantTwist_cocycle
   simp only [mul_assoc, mul_left_comm, mul_comm]
 
 theorem sigmaTwo_cocycle
-    (K : Type*) [Field K] (M : Type*) [CommGroup M]
-    (B : Kˣ → Kˣ → M)
-    (hL : ∀ a b c : Kˣ, B (a * b) c = B a c * B b c)
-    (hR : ∀ a b c : Kˣ, B a (b * c) = B a b * B a c)
+     
     (hAlt : ∀ a : Kˣ, B a a = 1)
     (hCub : ∀ a b : Kˣ, (B a b) ^ 3 = 1)
     (hSt : ∀ (a : Kˣ) (ha : (a : K) ≠ 1),
@@ -52,10 +52,7 @@ theorem sigmaTwo_cocycle
           (tau K M B g (h * k) * B (det K g) (det K (h * k)) ^ 2) := by ac_rfl
 
 theorem sigmaTwo_one_left
-    (K : Type*) [Field K] (M : Type*) [CommGroup M]
-    (B : Kˣ → Kˣ → M)
-    (hL : ∀ a b c : Kˣ, B (a * b) c = B a c * B b c)
-    (hR : ∀ a b c : Kˣ, B a (b * c) = B a b * B a c)
+     
     (g : GL2 K) : sigmaTwo K M B 1 g = 1 := by
   simp only [sigmaTwo, tau, one_mul, X_one, map_one, mul_one]
   rw [show X K g / X K g = 1 by exact div_self' _,
@@ -64,13 +61,12 @@ theorem sigmaTwo_one_left
   simp
 
 theorem sigmaTwo_one_right
-    (K : Type*) [Field K] (M : Type*) [CommGroup M]
-    (B : Kˣ → Kˣ → M)
-    (hL : ∀ a b c : Kˣ, B (a * b) c = B a c * B b c)
-    (hR : ∀ a b c : Kˣ, B a (b * c) = B a b * B a c)
+     
     (g : GL2 K) : sigmaTwo K M B g 1 = 1 := by
   simp only [sigmaTwo, tau_one_right K M B hL g, map_one,
     KubotaDefectSymbolAlgebra.one_right K M B hR, one_pow, mul_one]
+end
+
 
 theorem sigmaTwo_n_mul_mul_n
     (K : Type*) [Field K] (M : Type*) [CommGroup M]

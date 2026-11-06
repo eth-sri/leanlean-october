@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.IsRayCongruent
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.RayClassPrimeToIdeals
 public import Mathlib.RingTheory.ClassGroup.Basic
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -43,8 +46,7 @@ def rayPrincipalIdealSubgroup
 modulus. -/
 def rayPrincipalIdealSubgroupInPrimeTo
     {K : Type u} [Field K] [NumberField K]
-    (m : RayClassModulus K) :
-    Subgroup (rayClassPrimeToIdeals m) :=
+    (m : RayClassModulus K)  :=
   Subgroup.comap (rayClassPrimeToIdeals m).subtype
     (rayPrincipalIdealSubgroup m)
 

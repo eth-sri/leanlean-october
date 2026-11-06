@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.RayLocalHigherUnitGroup
 public import ClassFieldTheory.AlgebraicNumberTheory.RayClass.Basic
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -36,8 +39,7 @@ by the existing ray-class implementation. -/
 theorem rayLocalHigherUnitGroup_eq_rayClass
     {K : Type} [Field K] [NumberField K]
     (v : HeightOneSpectrum (𝓞 K)) (n : ℕ) :
-    rayLocalHigherUnitGroup v n = RayClass.localHigherUnitGroup v n := by
-  rfl
+    rayLocalHigherUnitGroup v n = RayClass.localHigherUnitGroup v n := rfl
 
 end ClassFieldTheory
 

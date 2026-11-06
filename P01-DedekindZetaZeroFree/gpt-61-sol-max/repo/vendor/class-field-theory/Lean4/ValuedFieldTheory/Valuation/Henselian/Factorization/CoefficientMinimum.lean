@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import Mathlib.RingTheory.Valuation.ValuationRing
 public import ValuedFieldTheory.Valuation.Henselian.Factorization.ErrorPowers
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -65,7 +68,7 @@ theorem henselFactorization_exists_mem_finset_dvd_all
         rw [Finset.mem_insert] at hx
         rcases hx with rfl | hxs
         · exact dvd_refl _
-        · exact False.elim (hs' ⟨x, hxs⟩)
+        · apply False.elim <;> aesop
 
 /-- the finite set of coefficients of two polynomials from
 which the construction chooses the minimum-value coefficient. -/
@@ -75,10 +78,13 @@ def henselFactorization_twoPolynomialCoeffFinset
   exact P.support.image (fun n => P.coeff n) ∪
     Q.support.image (fun n => Q.coeff n)
 
+section
+variable {R : Type*} [Semiring R] {P Q : R[X]}
+include R P Q
 /-- A coefficient supported in the left polynomial belongs to the two-polynomial
 coefficient set. -/
 theorem henselFactorization_mem_twoPolynomialCoeffFinset_left
-    {R : Type*} [Semiring R] {P Q : R[X]} {n : ℕ}
+      {n : ℕ}
     (hn : n ∈ P.support) :
     P.coeff n ∈ henselFactorization_twoPolynomialCoeffFinset P Q := by
   classical
@@ -89,7 +95,7 @@ theorem henselFactorization_mem_twoPolynomialCoeffFinset_left
 /-- A coefficient supported in the right polynomial belongs to the
 two-polynomial coefficient set. -/
 theorem henselFactorization_mem_twoPolynomialCoeffFinset_right
-    {R : Type*} [Semiring R] {P Q : R[X]} {n : ℕ}
+      {n : ℕ}
     (hn : n ∈ Q.support) :
     Q.coeff n ∈ henselFactorization_twoPolynomialCoeffFinset P Q := by
   classical
@@ -100,17 +106,13 @@ theorem henselFactorization_mem_twoPolynomialCoeffFinset_right
 /-- every element of the finite coefficient set is a
 nonzero coefficient. -/
 theorem henselFactorization_ne_zero_of_mem_twoPolynomialCoeffFinset
-    {R : Type*} [Semiring R] {P Q : R[X]} {x : R}
+      {x : R}
     (hx : x ∈ henselFactorization_twoPolynomialCoeffFinset P Q) :
     x ≠ 0 := by
   classical
-  unfold henselFactorization_twoPolynomialCoeffFinset at hx
-  rw [Finset.mem_union] at hx
-  rcases hx with hx | hx
-  · rcases Finset.mem_image.mp hx with ⟨n, hn, rfl⟩
-    simpa [Polynomial.mem_support_iff] using hn
-  · rcases Finset.mem_image.mp hx with ⟨n, hn, rfl⟩
-    simpa [Polynomial.mem_support_iff] using hn
+  grind [AlgebraicNumberTheory.Valuations.henselFactorization_twoPolynomialCoeffFinset, Finset.mem_union, Polynomial.mem_support_iff]
+end
+
 
 /-- if the two-polynomial coefficient set is nonempty, one of
 its coefficients divides every coefficient of both polynomials. -/
@@ -140,14 +142,17 @@ theorem henselFactorization_exists_coeff_dvd_all_two_polynomials
     · rw [Polynomial.notMem_support_iff.mp hn]
       exact dvd_zero π
 
-/-- if the two polynomials have coefficients in an ideal, the
-chosen finite-minimum coefficient lies in the same ideal. -/
-theorem henselFactorization_exists_coeff_mem_ideal_dvd_all_two_polynomials
-    {R : Type*} [CommRing R] [PreValuationRing R] {I : Ideal R}
+section
+variable {R : Type*} [CommRing R] [PreValuationRing R] {I : Ideal R}
     {P Q : R[X]}
     (hP : ∀ n : ℕ, P.coeff n ∈ I)
     (hQ : ∀ n : ℕ, Q.coeff n ∈ I)
-    (hs : (henselFactorization_twoPolynomialCoeffFinset P Q).Nonempty) :
+    (hs : (henselFactorization_twoPolynomialCoeffFinset P Q).Nonempty)
+include R I P Q hP hQ hs
+/-- if the two polynomials have coefficients in an ideal, the
+chosen finite-minimum coefficient lies in the same ideal. -/
+theorem henselFactorization_exists_coeff_mem_ideal_dvd_all_two_polynomials
+      :
     ∃ π ∈ I,
       π ∈ henselFactorization_twoPolynomialCoeffFinset P Q ∧
         (∀ n : ℕ, π ∣ P.coeff n) ∧
@@ -157,15 +162,7 @@ theorem henselFactorization_exists_coeff_mem_ideal_dvd_all_two_polynomials
       (R := R) (P := P) (Q := Q) hs with
     ⟨π, hπcoeff, hπP, hπQ⟩
   have hπI : π ∈ I := by
-    unfold henselFactorization_twoPolynomialCoeffFinset at hπcoeff
-    rw [Finset.mem_union] at hπcoeff
-    rcases hπcoeff with hπleft | hπright
-    · rcases Finset.mem_image.mp hπleft with ⟨n, _hn, hnπ⟩
-      rw [← hnπ]
-      exact hP n
-    · rcases Finset.mem_image.mp hπright with ⟨n, _hn, hnπ⟩
-      rw [← hnπ]
-      exact hQ n
+    grind [AlgebraicNumberTheory.Valuations.henselFactorization_twoPolynomialCoeffFinset, Finset.mem_union]
   exact ⟨π, hπI, hπcoeff, hπP, hπQ⟩
 
 /-- nonempty finite-minimum branch with the ideal
@@ -173,11 +170,7 @@ membership retained: if both source polynomials have coefficients in `I`, the
 chosen coefficient `π` lies in `I` and simultaneously factors both
 polynomials. -/
 theorem henselFactorization_exists_coeff_mem_ideal_minimum_factor_two_polynomials
-    {R : Type*} [CommRing R] [PreValuationRing R] {I : Ideal R}
-    {P Q : R[X]}
-    (hP : ∀ n : ℕ, P.coeff n ∈ I)
-    (hQ : ∀ n : ℕ, Q.coeff n ∈ I)
-    (hs : (henselFactorization_twoPolynomialCoeffFinset P Q).Nonempty) :
+      :
     ∃ π ∈ I,
       π ∈ henselFactorization_twoPolynomialCoeffFinset P Q ∧
         (∃ P' : R[X], P = Polynomial.C π * P') ∧
@@ -197,28 +190,26 @@ theorem henselFactorization_exists_coeff_mem_ideal_minimum_factor_two_polynomial
         intro n
         rw [Ideal.mem_span_singleton]
         exact hπQ n)
+end
 
+
+section
+variable {R : Type*} [CommRing R] [IsLocalRing R] [PreValuationRing R]
+    {f g0 h0 a b : R[X]}
+include R f g0 h0 a b
 /-- the first choice of `π` in the nonempty branch:
 from the two initial source polynomials
 `f - g0*h0` and `a*g0 + b*h0 - 1`, choose a coefficient `π` lying in the
 maximal ideal that factors both source polynomials. -/
-theorem henselFactorization_exists_pi_factor_initial_errors_of_nonempty
-    {R : Type*} [CommRing R] [IsLocalRing R] [PreValuationRing R]
-    {f g0 h0 a b : R[X]}
+def henselFactorization_exists_pi_factor_initial_errors_of_nonempty
+     
     (herr : ∀ n : ℕ, (f - g0 * h0).coeff n ∈
       IsLocalRing.maximalIdeal R)
     (hbezerr : ∀ n : ℕ, (a * g0 + b * h0 - 1).coeff n ∈
       IsLocalRing.maximalIdeal R)
     (hs :
       (henselFactorization_twoPolynomialCoeffFinset
-        (f - g0 * h0) (a * g0 + b * h0 - 1)).Nonempty) :
-    ∃ π ∈ IsLocalRing.maximalIdeal R,
-      π ∈ henselFactorization_twoPolynomialCoeffFinset
-        (f - g0 * h0) (a * g0 + b * h0 - 1) ∧
-        (∃ f1 : R[X], f - g0 * h0 = Polynomial.C π * f1) ∧
-          (∃ e1 : R[X],
-            a * g0 + b * h0 - 1 = Polynomial.C π * e1) := by
-  exact henselFactorization_exists_coeff_mem_ideal_minimum_factor_two_polynomials
+        (f - g0 * h0) (a * g0 + b * h0 - 1)).Nonempty)  := henselFactorization_exists_coeff_mem_ideal_minimum_factor_two_polynomials
     (R := R) (I := IsLocalRing.maximalIdeal R)
     (P := f - g0 * h0) (Q := a * g0 + b * h0 - 1)
     herr hbezerr hs
@@ -227,9 +218,8 @@ theorem henselFactorization_exists_pi_factor_initial_errors_of_nonempty
 choice in the nonempty branch.  The two coefficient-in-the-maximal-ideal
 inputs are produced from the residue factorization and lifted Bezout
 congruence. -/
-theorem henselFactorization_exists_pi_factor_initial_errors_of_residue_lifts_of_nonempty
-    {R : Type*} [CommRing R] [IsLocalRing R] [PreValuationRing R]
-    {f g0 h0 a b : R[X]}
+def henselFactorization_exists_pi_factor_initial_errors_of_residue_lifts_of_nonempty
+     
     {gbar hbar : (IsLocalRing.ResidueField R)[X]}
     (hfbar : f.map (IsLocalRing.residue R) = gbar * hbar)
     (hg0 : g0.map (IsLocalRing.residue R) = gbar)
@@ -237,68 +227,56 @@ theorem henselFactorization_exists_pi_factor_initial_errors_of_residue_lifts_of_
     (hbez : (a * g0 + b * h0).map (IsLocalRing.residue R) = 1)
     (hs :
       (henselFactorization_twoPolynomialCoeffFinset
-        (f - g0 * h0) (a * g0 + b * h0 - 1)).Nonempty) :
-    ∃ π ∈ IsLocalRing.maximalIdeal R,
-      π ∈ henselFactorization_twoPolynomialCoeffFinset
-        (f - g0 * h0) (a * g0 + b * h0 - 1) ∧
-        (∃ f1 : R[X], f - g0 * h0 = Polynomial.C π * f1) ∧
-          (∃ e1 : R[X],
-            a * g0 + b * h0 - 1 = Polynomial.C π * e1) := by
-  exact henselFactorization_exists_pi_factor_initial_errors_of_nonempty
+        (f - g0 * h0) (a * g0 + b * h0 - 1)).Nonempty)  := henselFactorization_exists_pi_factor_initial_errors_of_nonempty
     (R := R) (f := f) (g0 := g0) (h0 := h0) (a := a) (b := b)
     (henselFactorization_coeff_mem_maximalIdeal_sub_mul_of_residue_lifts
       hfbar hg0 hh0)
     (henselFactorization_coeff_mem_maximalIdeal_sub_one_of_bezout_lift hbez)
     hs
+end
 
-/-- if the finite coefficient set is empty, the first
-polynomial is zero. -/
-theorem henselFactorization_left_eq_zero_of_twoPolynomialCoeffFinset_empty
-    {R : Type*} [Semiring R] {P Q : R[X]}
-    (h : henselFactorization_twoPolynomialCoeffFinset P Q = ∅) :
-    P = 0 := by
-  ext n
-  by_cases hn : n ∈ P.support
-  · have hmem :
-        P.coeff n ∈ henselFactorization_twoPolynomialCoeffFinset P Q :=
-      henselFactorization_mem_twoPolynomialCoeffFinset_left
-        (P := P) (Q := Q) hn
-    rw [h] at hmem
-    simp at hmem
-  · exact Polynomial.notMem_support_iff.mp hn
 
-/-- if the finite coefficient set is empty, the second
-polynomial is zero. -/
-theorem henselFactorization_right_eq_zero_of_twoPolynomialCoeffFinset_empty
-    {R : Type*} [Semiring R] {P Q : R[X]}
-    (h : henselFactorization_twoPolynomialCoeffFinset P Q = ∅) :
-    Q = 0 := by
-  ext n
-  by_cases hn : n ∈ Q.support
-  · have hmem :
-        Q.coeff n ∈ henselFactorization_twoPolynomialCoeffFinset P Q :=
-      henselFactorization_mem_twoPolynomialCoeffFinset_right
-        (P := P) (Q := Q) hn
-    rw [h] at hmem
-    simp at hmem
-  · exact Polynomial.notMem_support_iff.mp hn
+section
+variable {R : Type*} [Semiring R] {P Q : R[X]}
+include R P Q
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- the empty finite coefficient set is exactly the branch
 where both source polynomials are zero. -/
 theorem henselFactorization_twoPolynomialCoeffFinset_empty_iff
-    {R : Type*} [Semiring R] {P Q : R[X]} :
+      :
     henselFactorization_twoPolynomialCoeffFinset P Q = ∅ ↔ P = 0 ∧ Q = 0 := by
-  classical
-  constructor
-  · intro h
-    exact ⟨
-      henselFactorization_left_eq_zero_of_twoPolynomialCoeffFinset_empty
-        (P := P) (Q := Q) h,
-      henselFactorization_right_eq_zero_of_twoPolynomialCoeffFinset_empty
-        (P := P) (Q := Q) h⟩
-  · rintro ⟨rfl, rfl⟩
-    unfold henselFactorization_twoPolynomialCoeffFinset
-    simp
+  simp_all [AlgebraicNumberTheory.Valuations.henselFactorization_twoPolynomialCoeffFinset] <;> aesop
+end
+
 
 end Valuations
 end AlgebraicNumberTheory

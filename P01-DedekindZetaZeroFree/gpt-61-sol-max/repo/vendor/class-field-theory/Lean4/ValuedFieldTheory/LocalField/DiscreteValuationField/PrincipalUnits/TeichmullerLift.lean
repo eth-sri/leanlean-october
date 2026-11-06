@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.PrincipalUnits.ResidueRoots
 public import Mathlib.Algebra.CharP.Lemmas
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -43,10 +46,12 @@ namespace higherPrincipalUnitGroup
 
 variable (F : ValuationTheory.DiscreteValuationField.CompleteDVF.{u, v} K)
 
+section
+variable [Finite F.residueField]
 /-- The Teichmuller representative lift from the finite residue field to the
 valuation ring: `0` lifts to `0`, and nonzero residue classes lift through the
 root-of-unity splitting of `κˣ`. -/
-noncomputable def residueTeichmullerLift [Finite F.residueField] :
+noncomputable def residueTeichmullerLift   :
     F.residueField → F.valuationSubring :=
   fun y =>
     letI := Classical.decEq F.residueField
@@ -59,29 +64,22 @@ noncomputable def residueTeichmullerLift [Finite F.residueField] :
         F.valuationSubringˣ)
 
 /-- Establishes the identity `higherPrincipalUnitGroup.residueTeichmullerLift F 0 = 0`. -/
-@[simp] theorem residueTeichmullerLift_zero [Finite F.residueField] :
+@[simp] theorem residueTeichmullerLift_zero   :
     higherPrincipalUnitGroup.residueTeichmullerLift F 0 = 0 := by
   simp [higherPrincipalUnitGroup.residueTeichmullerLift]
 
 /-- Establishes the identity `higherPrincipalUnitGroup.residueTeichmullerLift F 1 = 1`. -/
-@[simp] theorem residueTeichmullerLift_one [Finite F.residueField] :
+@[simp] theorem residueTeichmullerLift_one   :
     higherPrincipalUnitGroup.residueTeichmullerLift F 1 = 1 := by
   let e :=
     higherPrincipalUnitGroup.residueRootsOfUnityEquivResidueFieldUnits F
   have hone : (1 : F.residueField) ≠ 0 := one_ne_zero
-  have hroot :
-      e.symm (Units.mk0 (1 : F.residueField) hone) = 1 := by
-    apply e.injective
-    simp [e]
-  have hunit :
-      ((e.symm (Units.mk0 (1 : F.residueField) hone) :
-          higherPrincipalUnitGroup.residueRootsOfUnityGroup F) :
-          F.valuationSubringˣ) = 1 := by
-    simp
+  
+  
   simp [higherPrincipalUnitGroup.residueTeichmullerLift, hone]
 
 /-- The Teichmuller lift reduces to the residue class it lifts. -/
-theorem residueMap_residueTeichmullerLift [Finite F.residueField]
+theorem residueMap_residueTeichmullerLift  
     (y : F.residueField) :
     F.residueMap (higherPrincipalUnitGroup.residueTeichmullerLift F y) = y := by
   classical
@@ -103,7 +101,7 @@ theorem residueMap_residueTeichmullerLift [Finite F.residueField]
       higherPrincipalUnitGroup.residueUnitHom] using hval
 
 /-- The Teichmuller lift is multiplicative. -/
-theorem residueTeichmullerLift_mul [Finite F.residueField]
+theorem residueTeichmullerLift_mul  
     (x y : F.residueField) :
     higherPrincipalUnitGroup.residueTeichmullerLift F (x * y) =
       higherPrincipalUnitGroup.residueTeichmullerLift F x *
@@ -113,31 +111,16 @@ theorem residueTeichmullerLift_mul [Finite F.residueField]
   · simp [higherPrincipalUnitGroup.residueTeichmullerLift, hx]
   by_cases hy : y = 0
   · simp [higherPrincipalUnitGroup.residueTeichmullerLift, hy]
-  have hxy : x * y ≠ 0 := mul_ne_zero hx hy
+  have hxy  := mul_ne_zero hx hy
   let e :=
     higherPrincipalUnitGroup.residueRootsOfUnityEquivResidueFieldUnits F
-  have hroot :
-      e.symm (Units.mk0 (x * y) hxy) =
-        e.symm (Units.mk0 x hx) * e.symm (Units.mk0 y hy) := by
-    apply e.injective
-    apply Units.ext
-    simp [e]
-  have hunit :
-      ((e.symm (Units.mk0 (x * y) hxy) :
-          higherPrincipalUnitGroup.residueRootsOfUnityGroup F) :
-          F.valuationSubringˣ) =
-        ((e.symm (Units.mk0 x hx) :
-            higherPrincipalUnitGroup.residueRootsOfUnityGroup F) :
-            F.valuationSubringˣ) *
-          ((e.symm (Units.mk0 y hy) :
-            higherPrincipalUnitGroup.residueRootsOfUnityGroup F) :
-            F.valuationSubringˣ) := by
-    simp
+  
+  
   simp [higherPrincipalUnitGroup.residueTeichmullerLift, hx, hy, hxy]
 
 /-- Every Teichmuller representative is a root of `T^q - T`, where
 `q = #κ`. -/
-theorem residueTeichmullerLift_pow_card [Finite F.residueField]
+theorem residueTeichmullerLift_pow_card  
     (y : F.residueField) :
     higherPrincipalUnitGroup.residueTeichmullerLift F y ^
         Nat.card F.residueField =
@@ -149,7 +132,7 @@ theorem residueTeichmullerLift_pow_card [Finite F.residueField]
       (Fintype.card_pos : 0 < Fintype.card F.residueField)
   by_cases hy : y = 0
   · simp [higherPrincipalUnitGroup.residueTeichmullerLift, hy]
-  · let u : higherPrincipalUnitGroup.residueRootsOfUnityGroup F :=
+  · let u  :=
       (higherPrincipalUnitGroup.residueRootsOfUnityEquivResidueFieldUnits F).symm
         (Units.mk0 y hy)
     have hpowUnits :
@@ -158,9 +141,7 @@ theorem residueTeichmullerLift_pow_card [Finite F.residueField]
       u.property
     have hpowRing :
         ((u : F.valuationSubringˣ) : F.valuationSubring) ^
-            (Nat.card F.residueField - 1) = 1 := by
-      simpa using
-        congrArg (fun z : F.valuationSubringˣ => (z : F.valuationSubring))
+            (Nat.card F.residueField - 1) = 1 := congrArg (fun z : F.valuationSubringˣ => (z : F.valuationSubring))
           hpowUnits
     have hpow :
         ((u : F.valuationSubringˣ) : F.valuationSubring) ^
@@ -186,20 +167,25 @@ Every residue Teichmüller lift is a root of the polynomial `X^q - X`, where `q`
 residue-field cardinality.
 -/
 theorem residueTeichmullerLift_isRoot_X_pow_card_sub_X
-    [Finite F.residueField] (y : F.residueField) :
+      (y : F.residueField) :
     (Polynomial.X ^ Nat.card F.residueField - Polynomial.X :
         Polynomial F.valuationSubring).IsRoot
       (higherPrincipalUnitGroup.residueTeichmullerLift F y) := by
   rw [Polynomial.IsRoot.def]
   simp [Polynomial.eval_sub,
     higherPrincipalUnitGroup.residueTeichmullerLift_pow_card]
+end
 
+
+section
+variable [Finite F.residueField] (p : ℕ) [Fact p.Prime]
+    [CharP F.valuationSubring p] {n : ℕ+}
+    (hcard : Nat.card F.residueField = p ^ (n : ℕ))
+include p n hcard
 /-- In equal characteristic, `T^q - T` has unit derivative at every
 Teichmuller representative. -/
 theorem residueTeichmullerRootPolynomial_derivative_eval_isUnit_of_charP
-    [Finite F.residueField] (p : ℕ) [Fact p.Prime]
-    [CharP F.valuationSubring p] {n : ℕ+}
-    (hcard : Nat.card F.residueField = p ^ (n : ℕ))
+     
     (y : F.residueField) :
     IsUnit
       (((Polynomial.X ^ Nat.card F.residueField - Polynomial.X :
@@ -223,24 +209,20 @@ theorem residueTeichmullerRootPolynomial_derivative_eval_isUnit_of_charP
 
 /-- In equal characteristic, the Teichmuller lift from the finite residue field
 to the valuation ring is additive. -/
-theorem residueTeichmullerLift_add_of_charP [Finite F.residueField]
-    (p : ℕ) [Fact p.Prime] [CharP F.valuationSubring p] {n : ℕ+}
-    (hcard : Nat.card F.residueField = p ^ (n : ℕ))
+theorem residueTeichmullerLift_add_of_charP  
     (x y : F.residueField) :
     higherPrincipalUnitGroup.residueTeichmullerLift F (x + y) =
       higherPrincipalUnitGroup.residueTeichmullerLift F x +
         higherPrincipalUnitGroup.residueTeichmullerLift F y := by
   let f : Polynomial F.valuationSubring :=
     Polynomial.X ^ Nat.card F.residueField - Polynomial.X
-  let a : F.valuationSubring :=
+  let a  :=
     higherPrincipalUnitGroup.residueTeichmullerLift F (x + y)
-  let b : F.valuationSubring :=
+  let b  :=
     higherPrincipalUnitGroup.residueTeichmullerLift F x +
       higherPrincipalUnitGroup.residueTeichmullerLift F y
   have ha : f.IsRoot a := by
-    simpa [f, a] using
-      higherPrincipalUnitGroup.residueTeichmullerLift_isRoot_X_pow_card_sub_X
-        (F := F) (x + y)
+    apply higherPrincipalUnitGroup.residueTeichmullerLift_isRoot_X_pow_card_sub_X
   have hb : f.IsRoot b := by
     rw [Polynomial.IsRoot.def]
     have hxpow :=
@@ -253,11 +235,7 @@ theorem residueTeichmullerLift_add_of_charP [Finite F.residueField]
               (p ^ (n : ℕ)) +
             higherPrincipalUnitGroup.residueTeichmullerLift F y ^
               (p ^ (n : ℕ)) := by
-      simpa [b] using
-        add_pow_char_pow
-          (higherPrincipalUnitGroup.residueTeichmullerLift F x)
-          (higherPrincipalUnitGroup.residueTeichmullerLift F y)
-          p (n : ℕ)
+      apply add_pow_char_pow
     have hxpow' :
         higherPrincipalUnitGroup.residueTeichmullerLift F x ^
             (p ^ (n : ℕ)) =
@@ -276,9 +254,7 @@ theorem residueTeichmullerLift_add_of_charP [Finite F.residueField]
     simp [a, b, map_add,
       higherPrincipalUnitGroup.residueMap_residueTeichmullerLift]
   have hderiv : IsUnit (f.derivative.eval a) := by
-    simpa [f, a] using
-      higherPrincipalUnitGroup.residueTeichmullerRootPolynomial_derivative_eval_isUnit_of_charP
-        (F := F) p hcard (x + y)
+    apply higherPrincipalUnitGroup.residueTeichmullerRootPolynomial_derivative_eval_isUnit_of_charP <;> assumption
   have hba : b = a :=
     F.toHenselianDVF.eq_of_isRoot_of_isRoot_of_residue_eq_of_derivative_isUnit
       (f := f) ha hb hres hderiv
@@ -287,15 +263,13 @@ theorem residueTeichmullerLift_add_of_charP [Finite F.residueField]
 /-- In equal characteristic, the Teichmuller lift is a ring homomorphic
 coefficient-field section of the residue map. -/
 noncomputable def residueTeichmullerRingHomOfCharP
-    [Finite F.residueField] (p : ℕ) [Fact p.Prime]
-    [CharP F.valuationSubring p] {n : ℕ+}
-    (hcard : Nat.card F.residueField = p ^ (n : ℕ)) :
+      :
     F.residueField →+* F.valuationSubring where
   toFun := higherPrincipalUnitGroup.residueTeichmullerLift F
   map_zero' := by
-    exact higherPrincipalUnitGroup.residueTeichmullerLift_zero (F := F)
+    apply higherPrincipalUnitGroup.residueTeichmullerLift_zero
   map_one' := by
-    exact higherPrincipalUnitGroup.residueTeichmullerLift_one (F := F)
+    apply higherPrincipalUnitGroup.residueTeichmullerLift_one
   map_mul' := fun x y =>
     higherPrincipalUnitGroup.residueTeichmullerLift_mul (F := F) x y
   map_add' := fun x y =>
@@ -308,9 +282,7 @@ The defining evaluation formula for `residueTeichmullerRingHomOfCharP` is
 higherPrincipalUnitGroup.residueTeichmullerLift F x`.
 -/
 @[simp] theorem residueTeichmullerRingHomOfCharP_apply
-    [Finite F.residueField] (p : ℕ) [Fact p.Prime]
-    [CharP F.valuationSubring p] {n : ℕ+}
-    (hcard : Nat.card F.residueField = p ^ (n : ℕ))
+     
     (x : F.residueField) :
     higherPrincipalUnitGroup.residueTeichmullerRingHomOfCharP
         (F := F) p hcard x =
@@ -323,23 +295,17 @@ Establishes the identity `F.residueMap.comp
 F.residueField`.
 -/
 theorem residueMap_comp_residueTeichmullerRingHomOfCharP
-    [Finite F.residueField] (p : ℕ) [Fact p.Prime]
-    [CharP F.valuationSubring p] {n : ℕ+}
-    (hcard : Nat.card F.residueField = p ^ (n : ℕ)) :
+      :
     F.residueMap.comp
         (higherPrincipalUnitGroup.residueTeichmullerRingHomOfCharP
           (F := F) p hcard) =
       RingHom.id F.residueField := by
   ext x
-  exact higherPrincipalUnitGroup.residueMap_residueTeichmullerLift
-    (F := F) x
+  apply higherPrincipalUnitGroup.residueMap_residueTeichmullerLift
 
 /-- The corresponding coefficient-field embedding into the fraction field. -/
 noncomputable def residueTeichmullerFieldHomOfCharP
-    [Finite F.residueField] (p : ℕ) [Fact p.Prime]
-    [CharP F.valuationSubring p] {n : ℕ+}
-    (hcard : Nat.card F.residueField = p ^ (n : ℕ)) :
-    F.residueField →+* K :=
+       :=
   F.valuation.valuationSubring.subtype.comp
     (higherPrincipalUnitGroup.residueTeichmullerRingHomOfCharP
       (F := F) p hcard)
@@ -350,14 +316,14 @@ The defining evaluation formula for `residueTeichmullerFieldHomOfCharP` is
 (higherPrincipalUnitGroup.residueTeichmullerLift F x : K)`.
 -/
 @[simp] theorem residueTeichmullerFieldHomOfCharP_apply
-    [Finite F.residueField] (p : ℕ) [Fact p.Prime]
-    [CharP F.valuationSubring p] {n : ℕ+}
-    (hcard : Nat.card F.residueField = p ^ (n : ℕ))
+     
     (x : F.residueField) :
     higherPrincipalUnitGroup.residueTeichmullerFieldHomOfCharP
         (F := F) p hcard x =
       (higherPrincipalUnitGroup.residueTeichmullerLift F x : K) :=
   rfl
+end
+
 end higherPrincipalUnitGroup
 
 end CompleteDVF

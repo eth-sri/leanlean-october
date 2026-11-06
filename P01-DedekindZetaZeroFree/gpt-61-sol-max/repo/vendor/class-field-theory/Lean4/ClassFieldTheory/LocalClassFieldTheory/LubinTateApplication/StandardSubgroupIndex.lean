@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import Mathlib.GroupTheory.Index
 public import Mathlib.SetTheory.Cardinal.Finite
 public import ClassFieldTheory.LubinTate.FiniteLevel.StandardLocalField
@@ -8,6 +10,7 @@ public import ClassFieldTheory.LubinTate.FiniteLevel.FiniteParameters
 public import ClassFieldTheory.LubinTate.FiniteLevel.NormSubgroup
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -80,9 +83,7 @@ Lubin--Tate unit parameters with the topology-first principal-unit
 quotient. -/
 noncomputable def
     standardLubinTateUnitParameterEquivIntegerUnitsPrincipalQuotient
-    (n : ℕ) :
-    standardLubinTateUnitParameter (standardLocalField K) n ≃*
-      IntegerUnitsPrincipalQuot K (n + 1) :=
+    (n : ℕ)  :=
   QuotientGroup.congr _ _
     (standardLocalFieldIntegerUnitsEquiv K).symm
     (standardLocalFieldHigherPrincipalUnitGroup_map_eq_principalUnits
@@ -97,15 +98,13 @@ theorem standardLubinTateCanonicalUniformizerPrincipalSubgroup_index
           (standardLocalFieldUniformizer_isUniformizer K))
         1 (n + 1)).index =
       (Nat.card 𝓀[K] - 1) * Nat.card 𝓀[K] ^ n := by
-  let pi : Kˣ :=
+  let pi  :=
     standardLubinTateBaseUniformizerUnit
       (standardLocalFieldUniformizer_isUniformizer K)
   change
     (LocalFieldTheory.uniformizerPrincipalSubgroup K pi 1 (n + 1)).index =
       (Nat.card 𝓀[K] - 1) * Nat.card 𝓀[K] ^ n
-  have hpi : valuationMap K (Additive.ofMul pi⁻¹) = 1 := by
-    simpa only [pi] using
-      standardLubinTateCanonicalBaseUniformizerUnit_inv_valuationMap K
+  have hpi : valuationMap K (Additive.ofMul pi⁻¹) = 1 := standardLubinTateCanonicalBaseUniformizerUnit_inv_valuationMap K
   have hinv :
       LocalFieldTheory.uniformizerPrincipalSubgroup K pi 1 (n + 1) =
         LocalFieldTheory.uniformizerPrincipalSubgroup K pi⁻¹ 1 (n + 1) := by
@@ -125,9 +124,7 @@ theorem standardLubinTateCanonicalUniformizerPrincipalSubgroup_index
         (standardLubinTateUnitParameterEquivIntegerUnitsPrincipalQuotient
           K n).symm.toEquiv
     _ = (Nat.card 𝓀[K] - 1) * Nat.card 𝓀[K] ^ n := by
-      simpa only [standardLocalField_residueField_natCard] using
-        standardLubinTateUnitParameter_natCard
-          (standardLocalField K) n
+      apply standardLubinTateUnitParameter_natCard
 
 /-- A finite-index subgroup contained in another subgroup with the same
 index is already equal to it.  The nonzero-index hypothesis excludes the
@@ -144,7 +141,7 @@ theorem subgroup_eq_of_le_of_index_eq_of_ne_zero
     intro heq
     apply hNH
     rw [heq]
-  have hstrict : H < N := lt_of_le_of_ne hHN hne
+  have hstrict  := lt_of_le_of_ne hHN hne
   have hi := Subgroup.index_strictAnti hstrict
   rw [hindex] at hi
   exact Nat.lt_irrefl _ hi

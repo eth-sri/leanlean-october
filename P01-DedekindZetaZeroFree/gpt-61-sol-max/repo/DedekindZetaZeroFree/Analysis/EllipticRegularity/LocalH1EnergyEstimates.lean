@@ -1,5 +1,7 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Analysis.Sobolev.Restriction.IntegerOrderWeakDerivatives
 public import DedekindZetaZeroFree.Analysis.Sobolev.WeakDerivatives.FirstOrderSmoothProducts
 public import DedekindZetaZeroFree.Analysis.EllipticEquations.DivergenceForm.H1TestContinuity
@@ -8,6 +10,7 @@ public import DedekindZetaZeroFree.Analysis.EllipticEquations.DivergenceForm.Cla
 public import DedekindZetaZeroFree.Analysis.Sobolev.LocalEmbeddingAndSmoothRepresentatives
 
 @[expose] public section
+
 
 noncomputable section
 
@@ -25,11 +28,11 @@ def firstIndex {n : ℕ} (i : Fin n) : MultiIndex n 1 :=
     simp only [apply_ite Fin.val, Fin.val_one, Fin.val_zero]
     simp⟩
 
-def value {n k : ℕ} {B : LocalBall n} (u : IntegerSobolev B k) : BallL2 B :=
+def value {n k : ℕ} {B : LocalBall n} (u : IntegerSobolev B k)  :=
   u.derivatives (zeroIndex n k)
 
 def gradient {n : ℕ} {B : LocalBall n} (u : IntegerSobolev B 1)
-    (i : Fin n) : BallL2 B :=
+    (i : Fin n)  :=
   u.derivatives (firstIndex i)
 
 structure Coefficients {n : ℕ} (B : LocalBall n) (cρ Cρ κ Λ : ℝ) where
@@ -45,7 +48,7 @@ structure Coefficients {n : ℕ} (B : LocalBall n) (cρ Cρ κ Λ : ℝ) where
     (∑ i, ∑ j, matrix x i j * ξ i * ξ j) ≤ Λ * ‖ξ‖ ^ 2
 
 def divergenceOperator {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
-    (D : Coefficients B cρ Cρ κ Λ) (u : Space n → ℂ) : Space n → ℂ :=
+    (D : Coefficients B cρ Cρ κ Λ) (u : Space n → ℂ)  :=
   fun x => -(D.density x : ℂ)⁻¹ * ∑ i,
     fderiv ℝ (fun y => (D.density y : ℂ) *
       ∑ j, (D.matrix y i j : ℂ) * coordinateDerivativeList [j] u y) x
@@ -53,7 +56,7 @@ def divergenceOperator {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
 
 def WeakEquation {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
     (D : Coefficients B cρ Cρ κ Λ) (z : ℂ)
-    (u : IntegerSobolev B 1) (h : BallL2 B) : Prop :=
+    (u : IntegerSobolev B 1) (h : BallL2 B)  :=
   ∀ φ : TestFunction B.toOpens ℂ ⊤,
     (∫ x in B.carrier, (D.density x : ℂ) *
       ∑ i, ∑ j, (D.matrix x i j : ℂ) * gradient u j x *
@@ -61,27 +64,33 @@ def WeakEquation {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
       z * (∫ x in B.carrier, (D.density x : ℂ) * value u x * star (φ x)) =
         ∫ x in B.carrier, (D.density x : ℂ) * h x * star (φ x)
 
-def Represents {n k : ℕ} {B : LocalBall n} (u : IntegerSobolev B k)
-    (f : Space n → ℂ) : Prop :=
+section
+variable {n k : ℕ} {B : LocalBall n} (u : IntegerSobolev B k)
+    (f : Space n → ℂ)
+include n k B u f
+def Represents    :=
   ∀ᵐ x ∂volume.restrict B.carrier, value u x = f x
 
-def RepresentsClassicalDerivatives {n k : ℕ} {B : LocalBall n}
-    (u : IntegerSobolev B k) (f : Space n → ℂ) : Prop :=
+def RepresentsClassicalDerivatives    :=
   ∀ α : MultiIndex n k,
     ∀ᵐ x ∂volume.restrict B.carrier, u.derivatives α x = coordinateDerivative α f x
+end
 
-def functionL2Norm {n : ℕ} (B : LocalBall n) (f : Space n → ℂ) : ℝ :=
+
+def functionL2Norm {n : ℕ} (B : LocalBall n) (f : Space n → ℂ)  :=
   Real.sqrt (∫ x in B.carrier, ‖f x‖ ^ 2)
 
-def WeakEnergyEstimate {n : ℕ} (inner outer : LocalBall n)
-    {cρ Cρ κ Λ : ℝ} (D : Coefficients outer cρ Cρ κ Λ) (M C : ℝ) : Prop :=
+section
+variable {n : ℕ} (inner outer : LocalBall n)
+    {cρ Cρ κ Λ : ℝ} (D : Coefficients outer cρ Cρ κ Λ) (M C : ℝ)
+include n inner outer cρ Cρ κ Λ D M C
+def WeakEnergyEstimate    :=
   ∀ (z : ℂ), ‖z‖ ≤ M → ∀ (u : IntegerSobolev outer 1) (h : BallL2 outer),
     WeakEquation D z u h → ∃ v : IntegerSobolev inner 1,
       Represents v (fun x => value u x) ∧
       v.sobolevNorm ≤ C * (‖value u‖ + ‖h‖)
 
-def SmoothEnergyEstimate {n : ℕ} (inner outer : LocalBall n)
-    {cρ Cρ κ Λ : ℝ} (D : Coefficients outer cρ Cρ κ Λ) (M C : ℝ) : Prop :=
+def SmoothEnergyEstimate    :=
   ∀ (z : ℂ), ‖z‖ ≤ M → ∀ (u : Space n → ℂ) (h : BallL2 outer)
     (U : Set (Space n)), IsOpen U →
     Metric.closedBall outer.center outer.radius ⊆ U → ContDiffOn ℝ (⊤ : ℕ∞) u U →
@@ -89,6 +98,8 @@ def SmoothEnergyEstimate {n : ℕ} (inner outer : LocalBall n)
       divergenceOperator D u x - z * u x = h x) →
     ∃ v : IntegerSobolev inner 1, RepresentsClassicalDerivatives v u ∧
       v.sobolevNorm ≤ C * (functionL2Norm outer u + ‖h‖)
+end
+
 
 end DedekindZetaZeroFree.KPContLocalEnergy
 

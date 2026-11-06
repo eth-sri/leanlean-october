@@ -1,10 +1,13 @@
 module
 
+public import Mathlib
+
 public import Mathlib.Topology.Algebra.ContinuousMonoidHom
 public import Mathlib.Topology.Algebra.Group.Quotient
 public import Mathlib.Topology.Algebra.Group.TopologicalAbelianization
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -37,8 +40,11 @@ variable {G : Type u} {H : Type v}
   [TopologicalSpace G] [TopologicalSpace H]
   [IsTopologicalGroup G] [IsTopologicalGroup H]
 
- theorem topologicalCommutatorClosure_le_comap
-    (e : G ≃ₜ* H) :
+ section
+variable (e : G ≃ₜ* H)
+include e
+theorem topologicalCommutatorClosure_le_comap
+      :
     (commutator G).topologicalClosure ≤
       (commutator H).topologicalClosure.comap
         e.toMulEquiv.toMonoidHom := by
@@ -58,8 +64,7 @@ variable {G : Type u} {H : Type v}
     exact Subgroup.mem_map_of_mem e.toMulEquiv.toMonoidHom hx
   · exact (Subgroup.isClosed_topologicalClosure _).preimage e.continuous
 
- def topologicalAbelianizationMap (e : G ≃ₜ* H) :
-    TopologicalAbelianization G →* TopologicalAbelianization H :=
+ def topologicalAbelianizationMap    :=
   QuotientGroup.map
     (commutator G).topologicalClosure
     (commutator H).topologicalClosure
@@ -68,20 +73,20 @@ variable {G : Type u} {H : Type v}
 
 @[simp]
 private theorem topologicalAbelianizationMap_mk
-    (e : G ≃ₜ* H) (x : G) :
+      (x : G) :
     topologicalAbelianizationMap e (QuotientGroup.mk x) =
       QuotientGroup.mk (e x) :=
   rfl
 
  theorem topologicalAbelianizationMap_continuous
-    (e : G ≃ₜ* H) :
+      :
     Continuous (topologicalAbelianizationMap e) := by
   apply (QuotientGroup.isQuotientMap_mk
     (commutator G).topologicalClosure).continuous_iff.2
   change Continuous (QuotientGroup.mk ∘ e.toHomeomorph)
   exact QuotientGroup.continuous_mk.comp e.continuous
 
- def topologicalAbelianizationMulEquiv (e : G ≃ₜ* H) :
+ def topologicalAbelianizationMulEquiv   :
     TopologicalAbelianization G ≃* TopologicalAbelianization H where
   toFun := topologicalAbelianizationMap e
   invFun := topologicalAbelianizationMap e.symm
@@ -97,7 +102,7 @@ private theorem topologicalAbelianizationMap_mk
 
 /-- A continuous multiplicative equivalence induces the canonical
 continuous multiplicative equivalence of topological abelianizations. -/
-noncomputable def topologicalAbelianizationCongr (e : G ≃ₜ* H) :
+noncomputable def topologicalAbelianizationCongr   :
     TopologicalAbelianization G ≃ₜ* TopologicalAbelianization H :=
   { topologicalAbelianizationMulEquiv e with
     continuous_toFun := topologicalAbelianizationMap_continuous e
@@ -106,10 +111,12 @@ noncomputable def topologicalAbelianizationCongr (e : G ≃ₜ* H) :
 /-- States the theorem `topologicalAbelianizationCongr_mk`. -/
 @[simp]
 theorem topologicalAbelianizationCongr_mk
-    (e : G ≃ₜ* H) (x : G) :
+      (x : G) :
     topologicalAbelianizationCongr e (QuotientGroup.mk x) =
       QuotientGroup.mk (e x) :=
   rfl
+end
+
 
 end LocalClassFieldTheory
 

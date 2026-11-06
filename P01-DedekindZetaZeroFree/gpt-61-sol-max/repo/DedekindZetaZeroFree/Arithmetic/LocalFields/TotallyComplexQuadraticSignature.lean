@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve
 
@@ -15,14 +18,13 @@ theorem quadraticExtension_signature
     NumberField.IsTotallyComplex E ∧
       NumberField.InfinitePlace.nrComplexPlaces E =
         2 * NumberField.InfinitePlace.nrComplexPlaces F := by
-  haveI hFc : NumberField.IsTotallyComplex F := hF
-  haveI : NumberField.IsTotallyComplex E :=
+  haveI hFc  := hF
+  haveI  :=
     NumberField.isTotallyComplex_of_algebra F E
   refine ⟨inferInstance, ?_⟩
   have hE := NumberField.IsTotallyComplex.finrank E
   have hF' := NumberField.IsTotallyComplex.finrank F
-  have hmult : Module.finrank ℚ E =
-      Module.finrank ℚ F * Module.finrank F E :=
+  have hmult  :=
     (Module.finrank_mul_finrank ℚ F E).symm
   rw [hdeg, hF'] at hmult
   have h2 : 2 * NumberField.InfinitePlace.nrComplexPlaces E =

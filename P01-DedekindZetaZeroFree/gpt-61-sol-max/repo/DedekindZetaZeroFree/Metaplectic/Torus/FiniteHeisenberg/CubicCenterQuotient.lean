@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Metaplectic.Torus.FiniteTensorRealizations
 
 @[expose] public section
+
 
 open scoped NumberField Classical
 
@@ -18,30 +21,7 @@ open KPGlobalTorusFiniteStages
 
 variable (C : CompatibleModelData F ζ hζ) (L : Level F ζ hζ C)
 
-theorem diagonal_formula (t : KPGlobalTorusFunctionData.ordinaryTorus F) :
-    KPGlobalCubicIdelePairing.diagonalPGL F (KPGlobalTorusFunctionData.torusRatio F t) = t.val := by
-  let A := Classical.choose t.property
-  have hA : QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) A = t.val ∧
-      A 1 0 = 0 ∧ A 0 1 = 0 := Classical.choose_spec t.property
-  let u := (KPGlobalTorusFunctionData.diagonal_entries_units F A hA.2.1 hA.2.2).1.unit
-  let w := (KPGlobalTorusFunctionData.diagonal_entries_units F A hA.2.1 hA.2.2).2.unit
-  have hu : (u : KPAdelicCoverRestrictedProduct.Adeles F) = A 0 0 := IsUnit.unit_spec _
-  have hw : (w : KPAdelicCoverRestrictedProduct.Adeles F) = A 1 1 := IsUnit.unit_spec _
-  have heq : A = KPGlobalCubicIdelePairing.diagonalHom F (u * w⁻¹) *
-      Matrix.GeneralLinearGroup.scalar (Fin 2) w := by
-    apply Units.ext
-    ext i j
-    fin_cases i <;> fin_cases j <;>
-      simp [KPGlobalCubicIdelePairing.diagonalHom, KPGlobalCubicIdelePairing.diagonalMatrix,
-        Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
-        Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar, hu, hA.2.1, hA.2.2]
-    exact hw.symm
-  change QuotientGroup.mk' _ (KPGlobalCubicIdelePairing.diagonalHom F (u * w⁻¹)) = t.val
-  rw [← hA.1, heq]
-  have hs : QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F)
-      (Matrix.GeneralLinearGroup.scalar (Fin 2) w) = 1 :=
-    (QuotientGroup.eq_one_iff _).mpr ⟨w, rfl⟩
-  rw [(QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F)).map_mul, hs, mul_one]
+alias diagonal_formula := _root_.DedekindZetaZeroFree.KPGlobalCenterRationalCharacterExtension.CubeDiagonalProduct.diagonalPGL_torusRatio
 
 def torusPullbackBridge : KPGlobalTorusFunctionData.E F ζ hζ →* KPGlobalCubicIdelePairing.E F ζ hζ where
   toFun e := ⟨(e.val, KPGlobalTorusFunctionData.p F ζ hζ e),
@@ -69,10 +49,10 @@ private theorem commute_iff_beta (x y : KPGlobalTorusFunctionData.E F ζ hζ) :
 def phaseInclusion : phaseGroup F ζ hζ C L →* stageDomain F ζ hζ C L :=
   Subgroup.inclusion (phase_inside_domain F ζ hζ C L)
 
-def phaseInDomain : Subgroup (stageDomain F ζ hζ C L) :=
+def phaseInDomain  :=
   (phaseGroup F ζ hζ C L).comap (stageDomain F ζ hζ C L).subtype
 
-def phaseKernel : Subgroup (stageDomain F ζ hζ C L) :=
+def phaseKernel  :=
   (phaseCharacter F ζ hζ C L).ker.map (phaseInclusion F ζ hζ C L)
 
 theorem phaseKernel_le_phaseInDomain :
@@ -101,7 +81,7 @@ theorem phaseInDomain_central : phaseInDomain F ζ hζ C L ≤ Subgroup.center (
   intro y
   exact (phaseInclusion_central F ζ hζ C L ⟨x.val, hx⟩ y).symm.eq
 
-theorem phaseKernel_central : phaseKernel F ζ hζ C L ≤ Subgroup.center (stageDomain F ζ hζ C L) :=
+def phaseKernel_central  :=
   (phaseKernel_le_phaseInDomain F ζ hζ C L).trans (phaseInDomain_central F ζ hζ C L)
 
 instance phaseKernel_normal : (phaseKernel F ζ hζ C L).Normal :=
@@ -115,7 +95,7 @@ def center : Subgroup (H F ζ hζ C L) :=
 def projection : H F ζ hζ C L →* symplecticQuotient F ζ hζ C L :=
   QuotientGroup.lift _ (domainProjection F ζ hζ C L) (by
     rw [domainProjection_kernel]
-    exact phaseKernel_le_phaseInDomain F ζ hζ C L)
+    apply phaseKernel_le_phaseInDomain)
 
 theorem projection_kernel : (projection F ζ hζ C L).ker = center F ζ hζ C L := by
   ext h
@@ -153,7 +133,7 @@ theorem phaseToCenter_kernel :
   rw [QuotientGroup.eq_one_iff]
   constructor
   · rintro ⟨k', hk', he⟩
-    have he' : k' = k := (Subgroup.inclusion_injective _) he
+    have he'  := (Subgroup.inclusion_injective _) he
     rwa [he'] at hk'
   · intro hk
     exact Subgroup.mem_map.mpr ⟨k, hk, rfl⟩
@@ -163,8 +143,7 @@ def centerCharacter : center F ζ hζ C L →* ℂˣ :=
     ⟨phaseCharacter F ζ hζ C L, by rw [phaseToCenter_kernel]⟩
 
 theorem centerCharacter_phase (k : phaseGroup F ζ hζ C L) :
-    centerCharacter F ζ hζ C L (phaseToCenter F ζ hζ C L k) = phaseCharacter F ζ hζ C L k := by
-  exact MonoidHom.liftOfRightInverse_comp_apply _ _ _ _ _
+    centerCharacter F ζ hζ C L (phaseToCenter F ζ hζ C L k) = phaseCharacter F ζ hζ C L k := MonoidHom.liftOfRightInverse_comp_apply _ _ _ _ _
 
 theorem centerCharacter_faithful : Function.Injective (centerCharacter F ζ hζ C L) := by
   intro x y he
@@ -234,14 +213,14 @@ def rootPhaseHom : rootsOfUnity 3 F →* phaseGroup F ζ hζ C L where
 def rootToH : rootsOfUnity 3 F →* H F ζ hζ C L :=
   (center F ζ hζ C L).subtype.comp ((phaseToCenter F ζ hζ C L).comp (rootPhaseHom F ζ hζ C L))
 
-def cubicCenter : Subgroup (H F ζ hζ C L) := (rootToH F ζ hζ C L).range
+def cubicCenter  := (rootToH F ζ hζ C L).range
 
 theorem cubicCenter_le_center : cubicCenter F ζ hζ C L ≤ center F ζ hζ C L := by
   rintro _ ⟨ε, rfl⟩
   exact (phaseToCenter F ζ hζ C L (rootPhase F ζ hζ C L ε)).property
 
-instance cubicCenter_finite : Finite (cubicCenter F ζ hζ C L) := by
-  exact Set.finite_range _ |>.to_subtype
+
+
 
 theorem rootToH_injective : Function.Injective (rootToH F ζ hζ C L) := by
   intro ε δ he
@@ -323,7 +302,7 @@ theorem commutator_formula (x y : stageDomain F ζ hζ C L) :
       (domainProjection F ζ hζ C L y) = KPGlobalCubicIdelePairing.beta3 F ζ hζ (pD F ζ hζ x.val) (pD F ζ hζ y.val) :=
     stagePairing_formula F ζ hζ C L _ _
   rw [hp]
-  exact commutator_root F ζ hζ x.val y.val
+  apply commutator_root
 
 end
 end DedekindZetaZeroFree.TorusFiniteCenterQuotient

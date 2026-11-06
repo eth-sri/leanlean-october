@@ -1,9 +1,12 @@
 module
 
+public import Mathlib
+
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.RayLocalHigherUnitGroup
 public import ClassFieldTheory.AlgebraicNumberTheory.RayClass.Topology
 
 @[expose] public section
+
 
 /-
 Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
@@ -37,10 +40,8 @@ open NumberField IsDedekindDomain
 theorem isOpen_rayLocalHigherUnitGroup
     {K : Type u} [Field K] [NumberField K]
     (v : HeightOneSpectrum (𝓞 K)) (n : ℕ) :
-    IsOpen ((rayLocalHigherUnitGroup v n :
-      Subgroup (v.adicCompletion K)ˣ) : Set (v.adicCompletion K)ˣ) := by
-  change IsOpen ((RayClass.localHigherUnitGroup v n :
-    Subgroup (v.adicCompletion K)ˣ) : Set (v.adicCompletion K)ˣ)
+    IsOpen ((rayLocalHigherUnitGroup v n) : Set (v.adicCompletion K)ˣ) := by
+  change IsOpen ((RayClass.localHigherUnitGroup v n) : Set (v.adicCompletion K)ˣ)
   exact RayClass.isOpen_localHigherUnitGroup v n
 
 end ClassFieldTheory

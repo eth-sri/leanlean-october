@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 
 @[expose] public section
+
 
 /-
 https://github.com/openai/math/blob/adc7f1241b42e322a6451854ab7e4b4c146bf78a/lean/OAI/NumberTheory/DirichletL/QuadraticSieve/InitialBound.lean
@@ -72,7 +75,7 @@ private lemma gram_form_bound {β : Type*} (S : Finset β) (M : β → β → �
     refine mul_le_mul_of_nonneg_left ?_ (by positivity)
     by_cases h : d = b
     · rw [h, if_pos rfl]; exact hdiag b hb
-    · rw [if_neg h]; exact hoff d hd b hb h
+    · rw [if_neg h]; apply hoff <;> assumption
   have hErase : ∑ b ∈ S, ∑ d ∈ S.erase b, ‖v b‖ * ‖v d‖ ≤ (∑ b ∈ S, ‖v b‖) ^ 2 := by
     have hsub : ∀ b ∈ S, ∑ d ∈ S.erase b, ‖v b‖ * ‖v d‖ ≤ ∑ d ∈ S, ‖v b‖ * ‖v d‖ := by
       intro b hb
@@ -93,7 +96,7 @@ private lemma gram_form_bound {β : Type*} (S : Finset β) (M : β → β → �
     have hs : ∑ x ∈ S.erase b, ‖v b‖ * ‖v x‖ * (if x = b then D else H)
         = ∑ x ∈ S.erase b, ‖v b‖ * ‖v x‖ * H :=
       Finset.sum_congr rfl (fun d hd => by
-        have hdb : d ≠ b := (Finset.mem_erase.mp hd).1
+        have hdb  := (Finset.mem_erase.mp hd).1
         simp [hdb])
     rw [hs, if_pos rfl]
     ring
@@ -111,13 +114,7 @@ private lemma gram_form_bound {β : Type*} (S : Finset β) (M : β → β → �
       rw [Finset.sum_congr rfl h, ← Finset.sum_mul, mul_comm]
   have h3 : ∑ b ∈ S, ∑ d ∈ S, ‖v b‖ * ‖v d‖ * (if d = b then D else H)
       ≤ (D + H * (S.card : ℝ)) * ∑ b ∈ S, ‖v b‖ ^ 2 := by
-    calc ∑ b ∈ S, ∑ d ∈ S, ‖v b‖ * ‖v d‖ * (if d = b then D else H)
-        = D * ∑ b ∈ S, ‖v b‖ ^ 2 + H * ∑ b ∈ S, ∑ d ∈ S.erase b, ‖v b‖ * ‖v d‖ := hsum
-      _ ≤ D * ∑ b ∈ S, ‖v b‖ ^ 2 + H * (∑ b ∈ S, ‖v b‖) ^ 2 :=
-            add_le_add le_rfl (mul_le_mul_of_nonneg_left hErase hH)
-      _ ≤ D * ∑ b ∈ S, ‖v b‖ ^ 2 + H * ((S.card : ℝ) * ∑ b ∈ S, ‖v b‖ ^ 2) :=
-            add_le_add le_rfl (mul_le_mul_of_nonneg_left hCS hH)
-      _ = (D + H * (S.card : ℝ)) * ∑ b ∈ S, ‖v b‖ ^ 2 := by ring
+    nlinarith
   calc ‖∑ b ∈ S, ∑ d ∈ S, (starRingEnd ℂ) (v b) * v d * M d b‖
       ≤ ∑ b ∈ S, ∑ d ∈ S, ‖v b‖ * ‖v d‖ * ‖M d b‖ := h1
     _ ≤ ∑ b ∈ S, ∑ d ∈ S, ‖v b‖ * ‖v d‖ * (if d = b then D else H) := h2

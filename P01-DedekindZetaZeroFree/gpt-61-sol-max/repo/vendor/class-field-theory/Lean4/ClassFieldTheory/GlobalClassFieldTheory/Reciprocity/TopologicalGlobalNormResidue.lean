@@ -166,13 +166,13 @@ theorem globalNormResidueContinuousMonoidHom_apply
       globalNormResidueMonoidHom K L c := by
   rfl
 
-/-- The existing actual global norm-residue homomorphism is continuous
-for the ordinary idele-class topology and the finite Krull topology. -/
-theorem globalNormResidueMonoidHom_continuous :
-    Continuous (globalNormResidueMonoidHom K L) :=
-  (globalNormResidueContinuousMonoidHom K L).continuous.congr
-    (fun c =>
-      globalNormResidueContinuousMonoidHom_apply K L c)
+
+
+
+
+
+
+
 
 end Reciprocity
 end GlobalClassFieldTheory

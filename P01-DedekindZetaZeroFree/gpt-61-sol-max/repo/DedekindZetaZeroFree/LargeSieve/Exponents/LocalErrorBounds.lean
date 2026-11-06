@@ -19,10 +19,13 @@ open scoped BigOperators
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
 variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
 
-def shellRestriction (C : Context Q) : Context Q :=
+section
+variable (C : Context Q)
+include C
+def shellRestriction   : Context Q :=
   { C with lam := fun b => if b ∈ Sieve.paperShell F c C.N then C.lam b else 0 }
 
-theorem shellRestriction_support (C : Context Q) :
+theorem shellRestriction_support   :
     Function.support (shellRestriction C).lam ⊆
       (Sieve.paperShell F c C.N : Set (Ideal (𝓞 F))) := by
   intro b hb
@@ -30,25 +33,25 @@ theorem shellRestriction_support (C : Context Q) :
   by_contra h
   exact hb (by simp [shellRestriction, h])
 
-theorem shellRestriction_energy (C : Context Q) :
+theorem shellRestriction_energy   :
     Sieve.energy F c C.N (shellRestriction C).lam =
       Sieve.energy F c C.N C.lam := by
   apply Finset.sum_congr rfl
   intro b hb
   simp [shellRestriction, hb]
 
-theorem shellRestriction_validPair (C : Context Q) (p : Ideal (𝓞 F) × Ideal (𝓞 F)) :
+theorem shellRestriction_validPair   (p : Ideal (𝓞 F) × Ideal (𝓞 F)) :
     (shellRestriction C).ValidPair p ↔ C.ValidPair p := by
   constructor <;> intro h <;> cases h <;> constructor <;> assumption
 
-theorem shellRestriction_pairs (C : Context Q) :
+theorem shellRestriction_pairs   :
     (shellRestriction C).pairs = C.pairs := by
   ext p
   simp only [Context.pairs, Finset.mem_filter, Finset.mem_product,
     shellRestriction_validPair]
   rfl
 
-theorem shellRestriction_E3 (C : Context Q) (B : ℝ) (unit : Bool) :
+theorem shellRestriction_E3   (B : ℝ) (unit : Bool) :
     E3 (shellRestriction C) B unit = E3 C B unit := by
   unfold E3 Context.pairSum
   rw [shellRestriction_pairs]
@@ -65,6 +68,8 @@ theorem shellRestriction_E3 (C : Context Q) (B : ℝ) (unit : Bool) :
   rw [dif_pos hv', dif_pos hv]
   simp only [shellRestriction, Context.coefficient, hs1, hs2, if_pos]
   rfl
+end
+
 
 theorem finiteSup_mul_le (S : Finset (ℝ × ℝ)) (f : ℝ × ℝ → ℝ)
     (k R : ℝ) (hk : 0 < k) (hR : 0 ≤ R)
@@ -156,9 +161,12 @@ private theorem rectangle_thresholds (C : Context Q) (B α η A : ℝ)
 
 section
 open MiddleFinite
-private lemma middle_rectangle_bound (A η α B M N n θ Cq : ℝ)
+section
+variable (A η α B M N n θ Cq : ℝ)
     (hA : 0 < A) (hη : 0 ≤ η) (hB : 1 ≤ B) (hBM : B ≤ M)
     (hN : 1 ≤ N) (hn : 1 ≤ n)
+include A η α B M N n θ Cq hA hη hB hBM hN hn
+private lemma middle_rectangle_bound  
     (hU0 : ∀ X, 0 < X → 0 ≤ U Q B X)
     (hU : ∀ X, 0 < X → U Q B X ≤ A * (B * max 1 X) ^ η * (max 1 X + B ^ α))
     (ij : ℕ × ℕ) (hij : ij ∈ rectangles F B M N n θ Cq) :
@@ -230,9 +238,7 @@ private lemma middle_rectangle_bound (A η α B M N n θ Cq : ℝ)
   change Real.sqrt (P*S*U Q B (N/(n*P))*U Q B (N/(n*S))) ≤ _
   calc _ ≤ 2*A*(2*(M*N))^η*(N/n+B^α*(P*S)) := (Real.sqrt_le_left (by positivity)).mpr hprod
        _ ≤ _ := mul_le_mul_of_nonneg_left (add_le_add_right (mul_le_mul_of_nonneg_left hp (Real.rpow_nonneg hB0.le α)) _) (by positivity)
-private lemma middle_R_bound (A η α B M N n θ Cq : ℝ)
-    (hA : 0 < A) (hη : 0 ≤ η) (hB : 1 ≤ B) (hBM : B ≤ M)
-    (hN : 1 ≤ N) (hn : 1 ≤ n) (hθ : 1 ≤ θ) (hCq : 1 ≤ Cq)
+private lemma middle_R_bound   (hθ : 1 ≤ θ) (hCq : 1 ≤ Cq)
     (hU0 : ∀ X, 0 < X → 0 ≤ U Q B X)
     (hU : ∀ X, 0 < X → U Q B X ≤ A * (B * max 1 X) ^ η * (max 1 X + B ^ α)) :
     (n*M/N) * MiddleFinite.R Q B M N n θ Cq ≤
@@ -273,6 +279,8 @@ private lemma middle_R_bound (A η α B M N n θ Cq : ℝ)
       have hm : M ≤ Cq*n*θ*M := by nlinarith
       have ht := mul_le_mul_of_nonneg_left (add_le_add_right hm (Cq*n*θ*Real.sqrt M*B^(α-1/2))) (by positivity : 0 ≤ 2*A*2^η*(M*N)^η)
       convert ht using 1 <;> ring
+end
+
 
 end
 private theorem loss_bound (X n ζ δ Cj C0 : ℝ) (hX : 1 ≤ X)

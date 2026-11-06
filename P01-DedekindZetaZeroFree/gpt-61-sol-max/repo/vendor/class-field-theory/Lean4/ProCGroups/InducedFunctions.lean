@@ -95,33 +95,33 @@ def inducedEvaluation [Group G] (H : Subgroup G) [CommGroup B]
     inducedEvaluation H f = f.1 1 :=
   rfl
 
-/-- Evaluation intertwines the restricted translation action and the
-original subgroup action. -/
-theorem inducedEvaluation_smul [Group G] (H : Subgroup G) [CommGroup B]
-    [MulDistribMulAction H B] (h : H) (f : InducedModule (B := B) H) :
-    inducedEvaluation H ((h : G) • f) = h • inducedEvaluation H f := by
-  change f.1 (1 * (h : G)) = h • f.1 1
-  simpa only [one_mul, mul_one] using f.2 h 1
 
-/-- An arbitrary value at the identity extends to an equivariant function:
-use the original action on `H` and the identity value outside `H`. -/
-theorem inducedEvaluation_surjective [Group G] (H : Subgroup G) [CommGroup B]
-    [MulDistribMulAction H B] : Function.Surjective (inducedEvaluation (B := B) H) := by
-  classical
-  intro b
-  let f : G → B := fun x => if hx : x ∈ H then (⟨x, hx⟩ : H) • b else 1
-  have hf : f ∈ inducedSubgroup (B := B) H := by
-    intro h x
-    by_cases hx : x ∈ H
-    · have hhx : (h : G) * x ∈ H := H.mul_mem h.property hx
-      simp only [f, dite_eq_left hhx, dite_eq_left hx]
-      change (h * (⟨x, hx⟩ : H)) • b = h • ((⟨x, hx⟩ : H) • b)
-      exact mul_smul h (⟨x, hx⟩ : H) b
-    · have hhx : (h : G) * x ∉ H := fun hmem => hx ((H.mul_mem_cancel_left h.property).mp hmem)
-      simp only [f, dite_eq_right hhx, dite_eq_right hx, smul_one]
-  refine ⟨⟨f, hf⟩, ?_⟩
-  change f 1 = b
-  simp only [f, dite_eq_left H.one_mem]
-  exact one_smul H b
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end ProCGroups.InducedFunctions

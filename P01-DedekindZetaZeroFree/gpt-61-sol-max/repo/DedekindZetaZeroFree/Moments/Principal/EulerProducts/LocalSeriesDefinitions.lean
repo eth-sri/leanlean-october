@@ -26,21 +26,24 @@ def primeIdeal (p : ExteriorPrime A) : A.Exterior :=
 abbrev LocalField (p : ExteriorPrime A) := p.val.adicCompletion F
 abbrev LocalIntegers (p : ExteriorPrime A) := p.val.adicCompletionIntegers F
 
-def generator (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) : A.R :=
+section
+variable (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
+include C p in
+def generator   : A.R :=
   Classical.choose (C.allowed_integral (primeIdeal p))
 
-private theorem generator_spec (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) :
+include C p in
+private theorem generator_spec   :
     ∃ a : Fˣ, A.Generates (primeIdeal p) (generator C p) ∧
       (a : F) = (generator C p : F) ∧ A.IsAllowed C.correction.B a :=
   Classical.choose_spec (C.allowed_integral (primeIdeal p))
 
-theorem generator_generates (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) : A.Generates (primeIdeal p) (generator C p) :=
+include C p in
+theorem generator_generates   : A.Generates (primeIdeal p) (generator C p) :=
   (generator_spec C p).choose_spec.1
 
-theorem generator_allowed (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) :
+include C p in
+theorem generator_allowed   :
     A.IsAllowed C.correction.B (Units.mk0 (generator C p : F)
       (by exact_mod_cast (generator_generates C p).1)) := by
   obtain ⟨a, _, ha, hallowed⟩ := generator_spec C p
@@ -48,8 +51,8 @@ theorem generator_allowed (C : A.GeneralArithmeticContext σ η hS)
   apply Units.ext
   exact ha.symm
 
-def uniformizer (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) : LocalField p :=
+include C p in
+def uniformizer   : LocalField p :=
   algebraMap F (LocalField p) (generator C p : F)
 
 def Q (p : ExteriorPrime A) : ℝ := A.exteriorNorm (primeIdeal p)
@@ -57,16 +60,18 @@ def Q (p : ExteriorPrime A) : ℝ := A.exteriorNorm (primeIdeal p)
 def powerIdeal (p : ExteriorPrime A) (n : ℕ) : A.Exterior :=
   ExteriorIdealEuler.pow (primeIdeal p) n
 
- theorem generator_power_generates (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n : ℕ) :
+ include C p in
+theorem generator_power_generates   (n : ℕ) :
     A.Generates (powerIdeal p n) (generator C p ^ n) := by
   refine ⟨pow_ne_zero _ (generator_generates C p).1, ?_⟩
   rw [← Ideal.span_singleton_pow, (generator_generates C p).2]
   exact (Ideal.map_pow _ _ _).symm
 
-abbrev Residue (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n : ℕ) :=
+include C p in
+abbrev Residue   (n : ℕ) :=
   FiniteTransform.Residue A.R.toSubring (generator C p ^ n)
+end
+
 
 instance residueFinite (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (n : ℕ) : Finite (Residue C p n) := by
@@ -77,20 +82,23 @@ instance residueFinite (C : A.GeneralArithmeticContext σ η hS)
 instance residueFintype (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (n : ℕ) : Fintype (Residue C p n) := Fintype.ofFinite _
 
-def residueMap (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n : ℕ) : A.R →+* Residue C p n :=
+section
+variable (C : A.GeneralArithmeticContext σ η hS)
+    (p : ExteriorPrime A) (n : ℕ)
+include C p n in
+def residueMap   : A.R →+* Residue C p n :=
   FiniteTransform.residueMap A.R.toSubring (generator C p ^ n)
 
-def lifts (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n : ℕ) : FiniteTransform.ResidueLifts
+include C p n in
+def lifts   : FiniteTransform.ResidueLifts
       A.R.toSubring (generator C p ^ n) :=
   FiniteTransform.canonicalLifts A.R.toSubring (generator C p ^ n)
 
 def chi (p : ExteriorPrime A) : MulChar (A.R ⧸ A.extendIdeal (primeIdeal p)) ℂ :=
   A.sexticResiduePowerChar σ (primeIdeal p) 1
 
-def reduction (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n : ℕ) (hn : n ≠ 0) :
+include C p n in
+def reduction   (hn : n ≠ 0) :
     Residue C p n →+* (A.R ⧸ A.extendIdeal (primeIdeal p)) :=
   Ideal.Quotient.factor (by
     rw [← (generator_generates C p).2]
@@ -99,8 +107,8 @@ def reduction (C : A.GeneralArithmeticContext σ η hS)
     obtain ⟨r, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hn
     exact Ideal.mem_span_singleton'.mpr ⟨generator C p ^ r, by rw [pow_succ]⟩)
 
-def maskedPower (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n : ℕ) (a : ℤ) (x : Residue C p n) : ℂ :=
+include C p n in
+def maskedPower   (a : ℤ) (x : Residue C p n) : ℂ :=
   if hn : n = 0 then 1 else
     if IsUnit x then
       A.sexticResiduePowerChar σ (primeIdeal p) a (reduction C p n hn x)
@@ -109,19 +117,24 @@ def maskedPower (C : A.GeneralArithmeticContext σ η hS)
 def negativeTrace (p : ExteriorPrime A) : AddChar (LocalField p) Circle :=
   -(ResidueTrace.localTraceCharacter p.val)
 
-def quotientTrace (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n : ℕ) : AddChar (Residue C p n) Circle := by
+include C p n in
+def quotientTrace   : AddChar (Residue C p n) Circle := by
   let ψ := A.residueTraceCharacter hS (powerIdeal p n) (generator C p ^ n)
     (generator_power_generates C p n)
   rw [← (generator_power_generates C p n).2] at ψ
   exact ψ
 
-def psi (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n : ℕ) (x : Residue C p n) : ℂ :=
+include C p n in
+def psi   (x : Residue C p n) : ℂ :=
   (quotientTrace C p n x : ℂ)
+end
 
-def Ctk (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (t k J : ℕ) : ℂ :=
+
+section
+variable (C : A.GeneralArithmeticContext σ η hS)
+    (p : ExteriorPrime A)
+include C p in
+def Ctk   (t k J : ℕ) : ℂ :=
   ∑ d : Residue C p k,
     if residueMap C p k (generator C p ^ J) =
         residueMap C p k (generator C p ^ t) * d then
@@ -132,19 +145,19 @@ def Ctk (C : A.GeneralArithmeticContext σ η hS)
               (lifts C p t).val v))
     else 0
 
-def T (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (a : ℤ) (y : Residue C p 1) : ℂ :=
+include C p in
+def T   (a : ℤ) (y : Residue C p 1) : ℂ :=
   ∑ x : Residue C p 1, maskedPower C p 1 a x * psi C p 1 (y * x)
 
-def tau (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (a : ℤ) : ℂ := T C p a 1
+include C p in
+def tau   (a : ℤ) : ℂ := T C p a 1
 
-def gammaTwo (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) : ℂ :=
+include C p in
+def gammaTwo   : ℂ :=
   A.idealGauss σ hS (primeIdeal p) (generator C p) (generator_generates C p) 2
 
-def vartheta (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) : ℂ :=
+include C p in
+def vartheta   : ℂ :=
   (A.correctionLS C.correction.Λ C.correction.G C.correction.η_id
     (A.diagonal (Units.mk0 (generator C p : F)
       (by exact_mod_cast (generator_generates C p).1))) : ℂ)
@@ -152,8 +165,8 @@ def vartheta (C : A.GeneralArithmeticContext σ η hS)
 def qPower (p : ExteriorPrime A) (s : ℂ) : ℂ :=
   Complex.exp (s * (Real.log (Q p) : ℂ))
 
-def seriesTerm (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (j : Fin 6) (θ : {θ : ℂ // ‖θ‖ = 1})
+include C p in
+def seriesTerm   (j : Fin 6) (θ : {θ : ℂ // ‖θ‖ = 1})
     (e : Fin 2) (l k m : ℕ) (ξ w z : ℂ) : ℂ :=
   gammaTwo C p ^ e.val * vartheta C p ^ (e.val + 3 * l) *
     θ.val ^ ((k : ℤ) - (e.val : ℤ) - 3 * (l : ℤ)) *
@@ -161,11 +174,13 @@ def seriesTerm (C : A.GeneralArithmeticContext σ η hS)
     qPower p (-(e.val : ℂ) * (1 / 2 + ξ) - (l : ℂ) * (1 + 3 * ξ) -
       (k : ℂ) * w - 6 * (m : ℂ) * z)
 
-def f (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (j : Fin 6) (θ : {θ : ℂ // ‖θ‖ = 1})
+include C p in
+def f   (j : Fin 6) (θ : {θ : ℂ // ‖θ‖ = 1})
     (ξ w z : ℂ) : ℂ :=
   ∑' i : Fin 2 × ℕ × ℕ × ℕ,
     seriesTerm C p j θ i.1 i.2.1 i.2.2.1 i.2.2.2 ξ w z
+end
+
 
 end DedekindZetaZeroFree.LocalFiniteSums
 

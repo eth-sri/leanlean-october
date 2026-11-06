@@ -29,12 +29,14 @@ theorem finitePlus_has_level (q : KPFinitePlace F) (f : Plus R N P C (Sum.inr q)
       (C.canonical q).iwasawa.compact.isCompact.inter_right U.isClosed⟩
   exact ⟨J, inf_le_left, fun k g => congrFun (hU k.val k.property.2) g⟩
 
-def extendedPlus (s : RestrictedTensorSimple.Level (bad R P C))
-    (f : ∀ p : s.val, Plus R N P C p) (p : KPHilbert.Place F) : Plus R N P C p :=
+section
+variable (s : RestrictedTensorSimple.Level (bad R P C))
+    (f : ∀ p : s.val, Plus R N P C p)
+include s f
+def extendedPlus   (p : KPHilbert.Place F) : Plus R N P C p :=
   if h : p ∈ s.val then f ⟨p, h⟩ else plusReference R N P C p
 
-def pureProductLevel (s : RestrictedTensorSimple.Level (bad R P C))
-    (f : ∀ p : s.val, Plus R N P C p) : ActualFiniteFactor.ProductLevelData F R.A.zeta12 R.A.primitive_zeta12 where
+def pureProductLevel   : ActualFiniteFactor.ProductLevelData F R.A.zeta12 R.A.primitive_zeta12 where
   localLevel q := if h : Sum.inr q ∈ s.val then
     (finitePlus_has_level R N P C q (f ⟨Sum.inr q, h⟩)).choose
     else (C.canonical q).iwasawa.compact
@@ -51,8 +53,7 @@ def pureProductLevel (s : RestrictedTensorSimple.Level (bad R P C))
     simp only [finiteCompact, dif_neg hb]
     rw [KPLocalExceptionalConstruction.actualGoodCompactSplit, MonoidHom.range_comp]
 
-theorem extendedPlus_right_level (s : RestrictedTensorSimple.Level (bad R P C))
-    (f : ∀ p : s.val, Plus R N P C p) (q : KPFinitePlace F)
+theorem extendedPlus_right_level   (q : KPFinitePlace F)
     (k : (pureProductLevel R N P C s f).localLevel q |>.toOpenSubgroup)
     (g : KPLocalExceptionalConstruction.ActualCover F R.A.zeta12 R.A.primitive_zeta12 q) :
     (extendedPlus R N P C s f (Sum.inr q)).val (g * k.val) =
@@ -68,8 +69,7 @@ theorem extendedPlus_right_level (s : RestrictedTensorSimple.Level (bad R P C))
     exact congrArg (fun u : Plus R N P C (Sum.inr q) => u.val g)
       ((normalized_section R N P C q hqc).choose_spec.1 ⟨k.val, hk⟩)
 
-theorem rawCoreVector_pure_congr (s : RestrictedTensorSimple.Level (bad R P C))
-    (f : ∀ p : s.val, Plus R N P C p) (g h : Raw R)
+theorem rawCoreVector_pure_congr   (g h : Raw R)
     (he : ∀ p, localValue R N P C p (g p) (extendedPlus R N P C s f p) =
       localValue R N P C p (h p) (extendedPlus R N P C s f p)) :
     rawCoreVector R N P C g (RestrictedTensorSimple.stageInclusion _ _ _ s (PiTensorProduct.tprod ℂ f)) =
@@ -94,8 +94,7 @@ theorem rawCoreVector_pure_congr (s : RestrictedTensorSimple.Level (bad R P C))
   funext p
   exact he p
 
-theorem rawCoreVector_pure_right_level (s : RestrictedTensorSimple.Level (bad R P C))
-    (f : ∀ p : s.val, Plus R N P C p) (g u : Raw R)
+theorem rawCoreVector_pure_right_level   (g u : Raw R)
     (hu : u ∈ ActualFiniteFactor.productTuples F R.A.zeta12 R.A.primitive_zeta12
       (pureProductLevel R N P C s f)) :
     rawCoreVector R N P C (g * u) (RestrictedTensorSimple.stageInclusion _ _ _ s (PiTensorProduct.tprod ℂ f)) =
@@ -115,8 +114,7 @@ theorem rawCoreVector_pure_right_level (s : RestrictedTensorSimple.Level (bad R 
     exact extendedPlus_right_level R N P C s f q
       ⟨_, Subgroup.mem_iInf.mp hu.2 q⟩ _
 
-theorem quotientCoreVector_pure_right_level (s : RestrictedTensorSimple.Level (bad R P C))
-    (f : ∀ p : s.val, Plus R N P C p) (g u : Group R)
+theorem quotientCoreVector_pure_right_level   (g u : Group R)
     (hu : u ∈ ActualFiniteFactor.productSubgroup F R.A.zeta12 R.A.primitive_zeta12
       (pureProductLevel R N P C s f)) :
     quotientCoreVector R N P C (RestrictedTensorSimple.stageInclusion _ _ _ s (PiTensorProduct.tprod ℂ f)) (g * u) =
@@ -135,8 +133,7 @@ theorem quotientCoreVector_pure_right_level (s : RestrictedTensorSimple.Level (b
       rw [quotientCoreVector_raw]
       exact rawCoreVector_pure_right_level R N P C s f g v hv
 
-theorem scalarSource_pure_right_level (s : RestrictedTensorSimple.Level (bad R P C))
-    (f : ∀ p : s.val, Plus R N P C p) (g u : Group R)
+theorem scalarSource_pure_right_level   (g u : Group R)
     (hu : u ∈ ActualFiniteFactor.productSubgroup F R.A.zeta12 R.A.primitive_zeta12
       (pureProductLevel R N P C s f)) :
     scalarSourceEvaluator R N P C (RestrictedTensorSimple.stageInclusion _ _ _ s (PiTensorProduct.tprod ℂ f)) (g * u) =
@@ -144,6 +141,8 @@ theorem scalarSource_pure_right_level (s : RestrictedTensorSimple.Level (bad R P
   change (comparisonSmooth R P C (quotientCoreVector R N P C _ (g * u))).val.val 1 = _
   rw [quotientCoreVector_pure_right_level R N P C s f g u hu]
   rfl
+end
+
 
 def productFiniteLevel (J : ActualFiniteFactor.ProductLevelData F R.A.zeta12 R.A.primitive_zeta12) :
     KPGlobalTorusFunctionData.FiniteLevel F R.A.zeta12 R.A.primitive_zeta12 := by

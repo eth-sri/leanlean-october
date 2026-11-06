@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree
 
@@ -18,8 +21,8 @@ theorem mellin_converse_axis_inversion
     (hg_inv : ∀ x : ℝ, 0 < x → g x = mellinInv (-c) (fun z : ℂ => G (-z)) x) :
     ∀ t : ℝ, mellin g (-((c : ℂ) + t * Complex.I)) = G ((c : ℂ) + t * Complex.I) := by
   classical
-  let p : ℝ → ℂ := fun u => Real.exp (c * u) • g (Real.exp (-u))
-  let F : ℝ → ℂ := fun y => G ((c : ℂ) - (2 * Real.pi * y : ℝ) * Complex.I)
+  let p  := fun u => Real.exp (c * u) • g (Real.exp (-u))
+  let F  := fun y => G ((c : ℂ) - (2 * Real.pi * y : ℝ) * Complex.I)
   have hp_int : Integrable p := by
     have h : Integrable (fun u : ℝ => Real.exp u •
         ((Real.exp u : ℂ) ^ (-(c : ℂ) - 1) • g (Real.exp u))) :=

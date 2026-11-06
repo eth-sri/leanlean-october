@@ -1,8 +1,11 @@
 module
 
+public import Mathlib
+
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 
 @[expose] public section
+
 
 namespace DedekindZetaZeroFree.LargeSieve.IdealEuler
 
@@ -16,20 +19,16 @@ private lemma finsupp_pow_single {P : Type u} (w : (P →₀ ℕ) → ℂ)
   induction n with
   | zero => simpa using hzero
   | succ n ih =>
-    have hstep : Finsupp.single p (n + 1) = Finsupp.single p n + Finsupp.single p 1 :=
-      Finsupp.single_add p n 1
-    rw [hstep, hadd, ih, pow_succ]
+    simp_all [pow_succ] <;> aesop
 
-noncomputable def supportedEraseEquiv {P : Type u} [DecidableEq P] (p : P)
-    (S : Finset P) (hp : p ∉ S) :
+section
+variable {P : Type u} [DecidableEq P] (p : P)
+    (S : Finset P) (hp : p ∉ S)
+include P p S hp
+noncomputable def supportedEraseEquiv   :
     {e : P →₀ ℕ // e.support ⊆ insert p S} ≃ ℕ × {d : P →₀ ℕ // d.support ⊆ S} where
   toFun e := (e.val p, ⟨e.val.erase p, by
-    intro x hx
-    rw [Finsupp.support_erase, Finset.mem_erase] at hx
-    obtain ⟨hxp, hxs⟩ := hx
-    rcases Finset.mem_insert.mp (e.property hxs) with h | h
-    · exact absurd h hxp
-    · exact h⟩)
+    grind [Finsupp.support_erase, Finset.mem_erase]⟩)
   invFun x := ⟨Finsupp.single p x.1 + x.2.val, by
     intro q hq
     rcases Finset.mem_union.mp (Finsupp.support_add hq) with h | h
@@ -52,13 +51,17 @@ noncomputable def supportedEraseEquiv {P : Type u} [DecidableEq P] (p : P)
       rw [Finsupp.erase_add, Finsupp.erase_single, zero_add,
         Finsupp.erase_of_notMem_support (fun h => hp (x.2.property h))]
 
-private lemma supportedEraseEquiv_symm_apply {P : Type u} [DecidableEq P] (p : P)
-    (S : Finset P) (hp : p ∉ S) (x : ℕ × {d : P →₀ ℕ // d.support ⊆ S}) :
+private lemma supportedEraseEquiv_symm_apply   (x : ℕ × {d : P →₀ ℕ // d.support ⊆ S}) :
     ((supportedEraseEquiv p S hp).symm x).val = Finsupp.single p x.1 + x.2.val := rfl
+end
 
-theorem finsupp_generator_norm_lt_one {P : Type u} (w : (P →₀ ℕ) → ℂ)
+
+section
+variable {P : Type u} (w : (P →₀ ℕ) → ℂ)
     (hzero : w 0 = 1) (hadd : ∀ e d, w (e + d) = w e * w d)
-    (habs : Summable (fun e => ‖w e‖)) (p : P) :
+    (habs : Summable (fun e => ‖w e‖))
+include P w hzero hadd habs
+theorem finsupp_generator_norm_lt_one   (p : P) :
     ‖w (Finsupp.single p 1)‖ < 1 := by
   classical
   have h1 : Summable (fun n : ℕ => w (Finsupp.single p n)) :=
@@ -69,9 +72,7 @@ theorem finsupp_generator_norm_lt_one {P : Type u} (w : (P →₀ ℕ) → ℂ)
   rw [hf] at h1
   exact summable_geometric_iff_norm_lt_one.mp h1
 
-theorem hasSum_finsupp_supported {P : Type u} (w : (P →₀ ℕ) → ℂ)
-    (hzero : w 0 = 1) (hadd : ∀ e d, w (e + d) = w e * w d)
-    (habs : Summable (fun e => ‖w e‖)) (S : Finset P) :
+theorem hasSum_finsupp_supported   (S : Finset P) :
     HasSum (fun e : {e : P →₀ ℕ // e.support ⊆ S} => w e.val)
       (∏ p ∈ S, (1 - w (Finsupp.single p 1))⁻¹) := by
   classical
@@ -82,9 +83,7 @@ theorem hasSum_finsupp_supported {P : Type u} (w : (P →₀ ℕ) → ℂ)
         uniq := fun e =>
           Subtype.ext (Finsupp.support_eq_empty.mp (Finset.subset_empty.mp e.property)) }
     have h1 : HasSum (fun _ : {e : P →₀ ℕ // e.support ⊆ ∅} => (1 : ℂ)) 1 := by
-      have h := hasSum_unique (fun _ : {e : P →₀ ℕ // e.support ⊆ ∅} => (1 : ℂ))
-      beta_reduce at h
-      exact h
+      simp_all
     have hf : (fun e : {e : P →₀ ℕ // e.support ⊆ ∅} => w e.val)
         = fun _ => (1 : ℂ) := by
       funext e
@@ -98,7 +97,7 @@ theorem hasSum_finsupp_supported {P : Type u} (w : (P →₀ ℕ) → ℂ)
           = w (Finsupp.single p x.1) * w x.2.val :=
       fun x => by
         rw [supportedEraseEquiv_symm_apply]
-        exact hadd (Finsupp.single p x.1) x.2.val
+        apply hadd
     have hgeo : HasSum (fun n : ℕ => w (Finsupp.single p n))
         (1 - w (Finsupp.single p 1))⁻¹ := by
       have h := hasSum_geometric_of_norm_lt_one
@@ -126,5 +125,7 @@ theorem hasSum_finsupp_supported {P : Type u} (w : (P →₀ ℕ) → ℂ)
     exact (Equiv.hasSum_iff (supportedEraseEquiv p S hp).symm
       (f := fun e : {e : P →₀ ℕ // e.support ⊆ insert p S} => w e.val)).mp
       (hmain.congr_fun hfac)
+end
+
 
 end DedekindZetaZeroFree.LargeSieve.IdealEuler
