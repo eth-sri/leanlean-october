@@ -1,68 +1,47 @@
 module
 public import BN.Spectral.Variational
-public import BN.Spectral.Interlace
+public import BN.Definition
 @[expose] public section
-
-/-!
-# Positive rank-two compression and the actual ordered spectrum
-
-An orthonormal two-column matrix identifies a two-dimensional subspace.
-For a positive semidefinite compression, its squared Frobenius mass is bounded
-by the squares of the two largest positive eigenvalues of the ambient matrix.
-The proof uses the checked rank-two variational theorem of the pinned BN source.
--/
 
 namespace KKP
 open Matrix
 
-variable {n : Type*} [Fintype n] [DecidableEq n]
+variable {n : Type*} [Fintype n] [DecidableEq n] [Nontrivial n]
 
-/-- A positive two-dimensional compression is controlled by the actual positive spectrum. -/
+/-- A positive two-dimensional compression is controlled by the two largest eigenvalues. -/
 theorem positive_compression_le (A : Matrix n n ℝ) (hA : A.IsHermitian)
     (Q : Matrix n (Fin 2) ℝ) (hQ : Qᵀ * Q = 1)
     (hC : (Qᵀ * A * Q).PosSemidef) :
-    BN.inner (Qᵀ * A * Q) (Qᵀ * A * Q) ≤ BN.F hA := by
+    BN.inner (Qᵀ * A * Q) (Qᵀ * A * Q) ≤
+      BN.lambdaMax hA ^ 2 + BN.lambdaSecond hA ^ 2 := by
   let C := Qᵀ * A * Q
-  let X := Q * C * Qᵀ
-  have hX : X.PosSemidef := by
-    simpa only [conjTranspose_eq_transpose_of_trivial] using hC.mul_mul_conjTranspose_same Q
-  have hr : X.rank ≤ 2 := by
-    exact (rank_mul_le_left _ _).trans
-      ((rank_mul_le_left _ _).trans (by simpa using Q.rank_le_card_width))
-  have hCt : Cᵀ = C := by
-    simpa only [conjTranspose_eq_transpose_of_trivial] using hC.isHermitian.eq
-  have hAt : Aᵀ = A := by
-    simpa only [conjTranspose_eq_transpose_of_trivial] using hA.eq
-  have hAX : BN.inner A X = BN.inner C C := by
-    simp only [BN.inner, X, hAt, hCt]
-    calc
-      (A * (Q * C * Qᵀ)).trace = (Qᵀ * A * (Q * C)).trace := by
-        rw [Matrix.mul_assoc Q C Qᵀ, ← Matrix.mul_assoc A Q (C * Qᵀ),
-          trace_mul_cycle' (A * Q) C Qᵀ]
-        simp only [Matrix.mul_assoc]
-      _ = (C * C).trace := by simp only [C, Matrix.mul_assoc]
-  have hXt : Xᵀ = X := by
-    simp only [X, transpose_mul, transpose_transpose, hCt, Matrix.mul_assoc]
-  have hXX : BN.inner X X = BN.inner C C := by
-    simp only [BN.inner, hXt, hCt, X]
-    calc
-      ((Q * C * Qᵀ) * (Q * C * Qᵀ)).trace =
-          (Q * C * (Qᵀ * Q) * C * Qᵀ).trace := by simp only [Matrix.mul_assoc]
-      _ = (Q * (C * C) * Qᵀ).trace := by rw [hQ]; simp only [mul_one, Matrix.mul_assoc]
-      _ = (Qᵀ * Q * (C * C)).trace := trace_mul_cycle _ _ _
-      _ = (C * C).trace := by rw [hQ, one_mul]
-  have hn : 0 ≤ BN.inner C C := by
-    rw [BN.inner_self]
-    exact Finset.sum_nonneg fun i _ => Finset.sum_nonneg fun j _ => sq_nonneg _
-  have hv := BN.variational_lemma hA hX hr
-  rw [hAX, hXX] at hv
-  have hs : (BN.inner C C) ^ 2 ≤ BN.F hA * BN.inner C C := by
-    have hp := mul_nonneg (BN.F_nonneg hA) hn
-    rw [← Real.sqrt_mul (BN.F_nonneg hA)] at hv
-    exact (Real.le_sqrt hn hp).mp hv
-  by_cases hz : BN.inner C C = 0
-  · rw [hz]; exact BN.F_nonneg hA
-  · have hp : 0 < BN.inner C C := lt_of_le_of_ne hn (Ne.symm hz)
-    exact (mul_le_mul_iff_of_pos_right hp).mp (by simpa [pow_two] using hs)
+  obtain ⟨u, v, α, β, hβ, hβα, hu, hv, huv, hCeq⟩ := BN.exists_finTwo_writing hC
+  change C = α • vecMulVec u u + β • vecMulVec v v at hCeq
+  have hCu : u ⬝ᵥ C *ᵥ u = α := by
+    rw [← BN.inner_vecMulVec, hCeq]
+    simp [BN.inner_add_left, BN.inner_smul_left,
+      BN.inner_vecMulVec_vecMulVec, hu, huv, dotProduct_comm]
+  have hCv : v ⬝ᵥ C *ᵥ v = β := by
+    rw [← BN.inner_vecMulVec, hCeq]
+    simp [BN.inner_add_left, BN.inner_smul_left, BN.inner_vecMulVec_vecMulVec, hv, huv]
+  have hprod (x y : Fin 2 → ℝ) : (Q *ᵥ x) ⬝ᵥ (Q *ᵥ y) = x ⬝ᵥ y := by
+    rw [dotProduct_mulVec, ← vecMul_transpose, vecMul_vecMul, hQ, vecMul_one]
+  have hray (x : Fin 2 → ℝ) : (Q *ᵥ x) ⬝ᵥ A *ᵥ (Q *ᵥ x) = x ⬝ᵥ C *ᵥ x := by
+    rw [dotProduct_mulVec]
+    nth_rewrite 1 [← vecMul_transpose]
+    rw [vecMul_vecMul, ← dotProduct_mulVec]
+    simp only [mulVec_mulVec]
+    rfl
+  have hU : (Q *ᵥ u) ⬝ᵥ (Q *ᵥ u) = 1 := by rw [hprod, hu]
+  have hV : (Q *ᵥ v) ⬝ᵥ (Q *ᵥ v) = 1 := by rw [hprod, hv]
+  have hUV : (Q *ᵥ u) ⬝ᵥ (Q *ᵥ v) = 0 := by rw [hprod, huv]
+  have hR := BN.rayleigh_le_lambdaMax hA hU
+  have h2 := BN.orthonormal_pair_le_lambdaMax_add_lambdaSecond hA hU hV hUV
+  simp only [hray, hCu, hCv] at hR h2
+  change BN.inner C C ≤ _
+  rw [hCeq, BN.inner_self_rankTwo hu hv huv]
+  nlinarith [mul_nonneg (sub_nonneg.mpr hβα) (sub_nonneg.mpr hR),
+    mul_nonneg hβ (sub_nonneg.mpr h2), sq_nonneg (BN.lambdaMax hA - α),
+    sq_nonneg (BN.lambdaSecond hA - β)]
 
 end KKP

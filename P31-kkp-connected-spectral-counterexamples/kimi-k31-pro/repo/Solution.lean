@@ -18,9 +18,7 @@ theorem connected_counterexample_family (s : ℕ) (hs : 3 ≤ s) :
           (4 / 3 : ℝ) * ((bridgeGraph s).edgeFinset.card : ℝ) ∧
       (4 / 3 : ℝ) * ((bridgeGraph s).edgeFinset.card : ℝ) <
         BN.lambda1 (bridgeGraph s) ^ 2 + BN.lambda2 (bridgeGraph s) ^ 2 := by
-  refine ⟨forbidden_chromaticNumber, forbidden_color_critical,
+  exact ⟨forbidden_chromaticNumber, forbidden_color_critical,
     bridgeGraph_connected s (by omega), bridgeGraph_free s, bridgeGraph_edge_count s (by omega),
-    ?_, bridgeGraph_ordered_excess s hs⟩
-  have h := bridgeGraph_spectral_gap s hs
-  rwa [BN.F_adjMatrix_eq (bridgeGraph s) (bridgeGraph_noncomplete s hs)] at h
+    bridgeGraph_spectral_gap s hs, bridgeGraph_spectral_excess s hs⟩
 end KKP
