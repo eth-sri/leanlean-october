@@ -55,17 +55,14 @@ def stateConstraintVector (R : S → ℕ) (d : S) (k : ℕ)
 def statePairing (f : S → ℝ) : (S →₀ ℤ) →ₗ[ℤ] ℝ :=
   Finsupp.linearCombination ℤ f
 
-omit [CommSemiring S] [Preorder S] in
 theorem statePairing_apply (f : S → ℝ) (v : S →₀ ℤ) :
     statePairing f v = ∑ x ∈ v.support, (v x : ℝ) * f x := by
   simp [statePairing, Finsupp.linearCombination_apply, Finsupp.sum, zsmul_eq_mul]
 
-omit [CommSemiring S] [Preorder S] in
 @[simp] theorem statePairing_single (f : S → ℝ) (x : S) (n : ℤ) :
     statePairing f (Finsupp.single x n) = (n : ℝ) * f x := by
   simp [statePairing, zsmul_eq_mul]
 
-omit [CommSemiring S] [Preorder S] in
 theorem continuous_statePairing (v : S →₀ ℤ) :
     Continuous (fun f : S → ℝ ↦ statePairing f v) := by
   simp only [statePairing_apply]

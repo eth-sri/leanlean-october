@@ -19,7 +19,6 @@ reuse the constant coefficient when the shift exceeds the requested degree.
 
 namespace OAI.MatrixMultiplication.AuxiliarySeparation.Integral
 
-noncomputable section
 open Foundation
 open scoped BigOperators Polynomial
 
@@ -86,7 +85,6 @@ theorem restrict_coefficient {U V W X Y Z : Type*}
     (A x u).coeff q.1 * (B y v).coeff q.2 *
       shiftedCoeff (C z w) h (q.1.val + q.2.val) * T u v w)
 
-end
 end OAI.MatrixMultiplication.AuxiliarySeparation.Integral
 
 namespace OAI.MatrixMultiplication.Foundation.Tensor.PolynomialRestrictionDegeneration

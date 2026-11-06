@@ -65,7 +65,7 @@ def compileFamily [Fintype Output] (expressions : Output → Expression F Input)
     output := fun i => p.output (e i)
     correct := by
       intro inputs i
-      simpa only [Equiv.symm_apply_apply] using p.correct inputs (e i)
+      simpa using p.correct inputs (e i)
     cost_eq := by
       rw [p.cost_eq]
       exact e.symm.sum_comp (fun i => (expressions i).cost) }

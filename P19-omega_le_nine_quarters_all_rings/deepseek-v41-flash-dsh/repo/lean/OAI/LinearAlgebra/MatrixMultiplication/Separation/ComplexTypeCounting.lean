@@ -22,7 +22,6 @@ variable {A I J : Type*} [Fintype A] [DecidableEq A] [Fintype I] [Fintype J]
 
 def wordPopulation (w : I → A) (a : A) : ℕ := Fintype.card {i // w i = a}
 
-omit [Fintype A] [DecidableEq I] in
 theorem wordPopulation_reindex (w : I → A) (e : J ≃ I) (a : A) :
     wordPopulation (w ∘ e) a = wordPopulation w a :=
   Fintype.card_congr (Equiv.subtypeEquiv e fun _ => Iff.rfl)
@@ -50,7 +49,6 @@ theorem exactWords_nonempty (counts : A → ℕ) : Nonempty (ExactWords counts) 
   intro a
   rw [wordPopulation_reindex, wordPopulation_sigma_fst]
 
-omit [Fintype A] [DecidableEq I] in
 theorem samePopulation_iff_permutation (w v : I → A) :
     (∀ a, wordPopulation v a = wordPopulation w a) ↔
       ∃ e : Equiv.Perm I, w ∘ e = v := by

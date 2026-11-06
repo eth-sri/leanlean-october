@@ -22,7 +22,6 @@ namespace OAI
 The tensor class of a block direct sum is the sum of its constituent classes.
 -/
 
-noncomputable section
 
 open MatrixMultiplication.Foundation
 open scoped BigOperators
@@ -85,6 +84,5 @@ theorem classOf_directSum {ι : Type*} [Fintype ι] [dec : DecidableEq ι]
 
 end MatrixMultiplication.AuxiliarySeparation.TensorSemiring
 
-end
 
 end OAI

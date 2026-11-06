@@ -12,7 +12,6 @@ namespace OAI
 
 /-! Division-free arithmetic programs over a ring and their operation counts. -/
 
-noncomputable section
 
 open scoped BigOperators
 
@@ -99,6 +98,5 @@ theorem innerSize_cast_le {n : ℕ} (hn : 1 ≤ n) {k : ℝ} (hk : 0 ≤ k) :
 
 end MatrixMultiplication.Arithmetic
 
-end
 
 end OAI

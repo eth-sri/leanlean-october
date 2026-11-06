@@ -13,7 +13,6 @@ needed to prove that an interpolation-clearing norm is prime to a chosen prime. 
 
 namespace OAI.MatrixMultiplication.AuxiliarySeparation.Integral
 
-noncomputable section
 open scoped BigOperators
 
 variable {R S E K ι : Type*}
@@ -88,5 +87,4 @@ theorem norm_specialize_ne_zero {R S E K ι : Type*}
     (isUnit_iff_ne_zero.mpr hx).map (Algebra.leftMulMatrix c).toMonoidHom
   exact ((Matrix.isUnit_iff_isUnit_det _).mp hu).ne_zero
 
-end
 end OAI.MatrixMultiplication.AuxiliarySeparation.Integral

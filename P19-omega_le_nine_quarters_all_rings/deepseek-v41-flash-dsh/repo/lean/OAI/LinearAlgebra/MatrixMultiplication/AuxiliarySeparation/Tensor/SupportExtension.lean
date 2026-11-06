@@ -34,7 +34,6 @@ variable {X Y Z X' Y' Z' : Type}
 variable [Fintype X] [Fintype Y] [Fintype Z]
 variable [Fintype X'] [Fintype Y'] [Fintype Z']
 
-omit [Fintype X'] [Fintype Y'] [Fintype Z'] in
 /-- Support in embedded coordinate sets reconstructs the tensor by zero extension. -/
 theorem tensor_eq_extendByZero_pullback (T : Tensor K X' Y' Z')
     (fx : X → X') (fy : Y → Y') (fz : Z → Z')

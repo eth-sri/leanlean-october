@@ -29,7 +29,6 @@ multiplicative state. Additive stabilization extends it to the full tensor
 semiring and hence to the concrete coefficient-level character interface.
 -/
 
-noncomputable section
 
 namespace MatrixMultiplication.AuxiliarySeparation
 
@@ -83,6 +82,5 @@ theorem exists_detecting_character {d k : ℕ} (hd : 2 ≤ d)
 
 end MatrixMultiplication.AuxiliarySeparation
 
-end
 
 end OAI

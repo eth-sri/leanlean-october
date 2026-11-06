@@ -168,7 +168,6 @@ theorem DegeneratesTo.refl (T : Tensor ℂ X Y Z) : DegeneratesTo T T := by
     (fun z' z => if z = z' then 1 else 0)
   simpa only [restrict_identity] using h
 
-omit [Fintype X''] [Fintype Y''] [Fintype Z''] in
 theorem mem_restrictionOrbit_restrict {T : Tensor ℂ X Y Z}
     {U : Tensor ℂ X' Y' Z'} (h : U ∈ restrictionOrbit T)
     (D : X'' → X' → ℂ) (E : Y'' → Y' → ℂ) (F : Z'' → Z' → ℂ) :

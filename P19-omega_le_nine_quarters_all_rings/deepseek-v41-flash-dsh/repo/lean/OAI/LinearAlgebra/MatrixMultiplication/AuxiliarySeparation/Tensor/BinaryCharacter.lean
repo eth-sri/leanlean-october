@@ -23,7 +23,6 @@ The summands may have different finite coordinate types.  A binary sum is a
 coordinate reindexing of the dependent direct sum over `Bool`.
 -/
 
-noncomputable section
 
 open MatrixMultiplication.Foundation
 open scoped BigOperators
@@ -63,6 +62,5 @@ theorem value_sumTensor (χ : (Character K))
 
 end MatrixMultiplication.AuxiliarySeparation.Character
 
-end
 
 end OAI

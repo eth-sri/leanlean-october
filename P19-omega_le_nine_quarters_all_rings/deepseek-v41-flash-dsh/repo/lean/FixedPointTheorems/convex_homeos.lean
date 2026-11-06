@@ -50,7 +50,7 @@ theorem homeo_of_finrank_eq {V W : Type*}
     exact Homeomorph.surjective L.toHomeomorph
     use 0
     rw [interior_closedBall]
-    {simp only [Metric.mem_ball, dist_self, zero_lt_one]}
+    {simp}
     {exact Ne.symm (zero_ne_one' ℝ)}
   }
   have e1 : pL ≃ₜ Metric.closedBall (0:W) 1 := by {
@@ -115,13 +115,13 @@ lemma homeo_unit_cube_of_convex_compact {V : Type*}
     refine (Set.mem_image g1 (g1 ⁻¹' s) v).mpr ?_
     have h11 : v ∈ affineSpan ℝ s := mem_affineSpan ℝ h1
     use ⟨v, h11⟩
-    simp only [Set.mem_preimage]
+    simp
     apply And.intro h1 rfl
   }
   let e1 := (h4.restrict h5).toHomeomorphOfSurjective h6
   have h31 : IsCompact s3 := by {
     have h51 : _ → IsCompact Set.univ := (Homeomorph.isCompact_image e1).mp
-    simp only [Set.image_univ, EquivLike.range_eq_univ] at h51
+    simp at h51
     apply isCompact_iff_isCompact_univ.mpr
     apply h51 $ isCompact_iff_isCompact_univ.mp hcmpct
   }

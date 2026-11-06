@@ -21,7 +21,6 @@ to a nonprimitive scalar multiple.
 
 namespace OAI.MatrixMultiplication.AuxiliarySeparation.Integral
 
-noncomputable section
 open Foundation
 open scoped BigOperators
 
@@ -125,5 +124,4 @@ theorem exists_finite_bezout_of_prime_witness (S : Set ℤ)
   obtain ⟨u, hu⟩ := (Submodule.mem_span_range_iff_exists_fun ℤ).mp ht
   exact ⟨t, htS, u, by simpa only [smul_eq_mul] using hu⟩
 
-end
 end OAI.MatrixMultiplication.AuxiliarySeparation.Integral

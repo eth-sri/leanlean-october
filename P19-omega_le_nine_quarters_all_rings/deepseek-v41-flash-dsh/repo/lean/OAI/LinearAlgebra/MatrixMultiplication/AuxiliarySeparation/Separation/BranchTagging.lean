@@ -24,7 +24,6 @@ recovered by independent coordinate maps, and forgetting them recovers the
 original coefficientwise sum of branches.
 -/
 
-noncomputable section
 
 open MatrixMultiplication.Foundation
 open scoped BigOperators
@@ -36,7 +35,6 @@ variable {K : Type*} [CommSemiring K]
 variable {M : ℕ} {X Y Z : Type}
 variable [Fintype X] [Fintype Y] [Fintype Z]
 
-omit [Fintype X] [Fintype Y] [Fintype Z] in
 /-- Recovering the two coordinate labels identifies the tagged tensor with
 the coefficientwise sum of the branches. -/
 theorem sharedFirstTensor_pullback_labels
@@ -91,6 +89,5 @@ theorem value_sharedFirstTensor_eq_sum (χ : (Character K))
 end Character
 end MatrixMultiplication.AuxiliarySeparation
 
-end
 
 end OAI

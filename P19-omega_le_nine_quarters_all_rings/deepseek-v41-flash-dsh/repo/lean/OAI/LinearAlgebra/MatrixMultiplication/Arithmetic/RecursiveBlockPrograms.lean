@@ -119,7 +119,6 @@ theorem eval_mapInputs {NewInput : Type*} (f : Input → NewInput)
     (p.mapInputs f).eval inputs o = p.eval (fun i => inputs (f i)) o := by
   exact Program.eval_mapInput f p.program inputs (p.output o)
 
-omit [Ring F] in
 theorem cost_mapInputs {NewInput : Type*} (f : Input → NewInput)
     (p : Family F Input Output) : (p.mapInputs f).cost = p.cost := by
   exact Program.cost_mapInput f p.program
@@ -147,7 +146,6 @@ theorem eval_parallel (r : ℕ) (p : Fin r → Family F Input Output)
     · exact (Program.eval_append_new _ _ inputs _).trans
         (ih (fun j => p j.succ) (j, o))
 
-omit [Ring F] in
 theorem cost_parallel (r : ℕ) (p : Fin r → Family F Input Output) :
     (parallel r p).cost = ∑ i, (p i).cost := by
   induction r with
@@ -167,7 +165,6 @@ theorem eval_copies (r : ℕ) (p : Family F Input Output)
     (copies r p).eval inputs o = p.eval (fun x => inputs (o.1, x)) o.2 := by
   rw [copies, eval_parallel, eval_mapInputs]
 
-omit [Ring F] in
 theorem cost_copies (r : ℕ) (p : Family F Input Output) :
     (copies r p).cost = r * p.cost := by
   simp [copies, cost_parallel, cost_mapInputs]
@@ -176,7 +173,6 @@ def ofMatrix {m l q : ℕ} (p : MatrixAlgorithm F m l q) :
     Family F (MatrixInput m l q) (Fin m × Fin q) :=
   ⟨p.registers, p.program, fun o => p.output o.1 o.2⟩
 
-omit [Ring F] in
 @[simp] theorem cost_ofMatrix {m l q : ℕ} (p : MatrixAlgorithm F m l q) :
     (ofMatrix p).cost = p.cost := rfl
 

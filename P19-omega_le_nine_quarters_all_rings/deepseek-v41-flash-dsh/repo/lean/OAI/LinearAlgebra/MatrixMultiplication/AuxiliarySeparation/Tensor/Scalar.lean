@@ -25,7 +25,6 @@ terms.  Consequently, comparison with `r` in the restriction order is exactly
 the existence of a rank decomposition with `r` terms.
 -/
 
-noncomputable section
 
 open MatrixMultiplication.Foundation
 
@@ -59,7 +58,7 @@ theorem scalarTensor_rankAtMost (r : ℕ) : Tensor.RankAtMost ((scalarTensor (K 
   apply le_antisymm (exactRank_le (scalarTensor_rankAtMost r))
   have h := (exactRank_spec ((scalarTensor (K := K)) r)).card_le_of_identity id id id
     (by intro i j; simp [scalarTensor])
-  simpa only [Fintype.card_fin] using h
+  simpa using h
 
 namespace TensorSemiring
 
@@ -135,11 +134,11 @@ theorem le_rank (T : (TensorClass K)) : T ≤ (rank T : (TensorClass K)) := by
     (m : (TensorClass K)) ≤ (n : (TensorClass K)) ↔ m ≤ n := by
   constructor
   · intro h
-    simpa only [rank_natCast] using rank_mono h
+    simpa using rank_mono h
   · intro h
     obtain ⟨k, rfl⟩ := Nat.exists_eq_add_of_le h
     rw [Nat.cast_add]
-    simpa only [add_zero] using add_mono (le_refl (m : (TensorClass K))) (zero_le (k : (TensorClass K)))
+    simpa using add_mono (le_refl (m : (TensorClass K))) (zero_le (k : (TensorClass K)))
 
 end TensorSemiring
 
@@ -147,15 +146,8 @@ end General
 
 namespace TensorSemiring
 
-section Field
-
-variable {K : Type*} [Field K]
-
-end Field
-
 end TensorSemiring
 end MatrixMultiplication.AuxiliarySeparation
 
-end
 
 end OAI

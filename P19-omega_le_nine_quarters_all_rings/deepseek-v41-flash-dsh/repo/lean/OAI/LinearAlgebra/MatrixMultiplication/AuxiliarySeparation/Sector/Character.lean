@@ -170,12 +170,6 @@ theorem convolution_tripling_tag_of_separation (χ : Character K)
       χ.value ((convolution (K := K)) a (3 * h + a - 1)) at hresult
   simpa only [mul_assoc] using hresult
 
-section Field
-
-variable {K : Type*} [Field K]
-
-end Field
-
 end MatrixMultiplication.AuxiliarySeparation.Sector
 
 end

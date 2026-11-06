@@ -11,7 +11,6 @@ namespace OAI
 
 /-! Finite entropy, rate estimates and ordered asymptotic limits. -/
 
-noncomputable section
 
 namespace MatrixMultiplication
 
@@ -44,12 +43,6 @@ namespace ConditionalLabels
 
 universe u v
 
-section PairAccounting
-
-variable {I : Type u} [Fintype I]
-
-end PairAccounting
-
 section SourceHierarchy
 
 variable {A : Type u} [Fintype A] {Label : ℕ → Type v}
@@ -61,6 +54,5 @@ end SourceHierarchy
 end ConditionalLabels
 end MatrixMultiplication
 
-end
 
 end OAI

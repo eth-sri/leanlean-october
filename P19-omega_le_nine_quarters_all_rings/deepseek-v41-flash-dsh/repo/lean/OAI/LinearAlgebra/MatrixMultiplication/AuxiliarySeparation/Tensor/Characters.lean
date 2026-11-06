@@ -91,7 +91,7 @@ theorem valueOnTensorClass_mul (χ : (Character K)) (T S : (TensorClass K)) :
   change χ.valueOnTensorClass (tensorClass T * tensorClass S) =
     χ.valueOnTensorClass (tensorClass T) * χ.valueOnTensorClass (tensorClass S)
   rw [← classOf_coeff T, ← classOf_coeff S, ← classOf_product]
-  simp only [χ.valueOnTensorClass_classOf]
+  simp
   exact χ.map_product T.coeff S.coeff
 
 /-- Additivity is unchanged on passing to tensor classes. -/
@@ -102,7 +102,7 @@ theorem valueOnTensorClass_add (χ : (Character K)) (T S : (TensorClass K)) :
   change χ.valueOnTensorClass (tensorClass T + tensorClass S) =
     χ.valueOnTensorClass (tensorClass T) + χ.valueOnTensorClass (tensorClass S)
   rw [← classOf_coeff T, ← classOf_coeff S, ← classOf_sum]
-  simp only [χ.valueOnTensorClass_classOf]
+  simp
   exact χ.value_sumTensor T.coeff S.coeff
 
 /-- A coefficient-level character descends to a normalized semiring homomorphism. -/
@@ -127,7 +127,7 @@ def ofTensorClassHom (φ : (TensorClass K) →+* ℝ) (hφ : Monotone φ) : (Cha
   value := fun T => φ (classOf T)
   nonneg := by
     intro X Y Z hX hY hZ T
-    simpa only [φ.map_zero] using hφ (TensorSemiring.zero_le (classOf T))
+    simpa using hφ (TensorSemiring.zero_le (classOf T))
   map_zero := by
     intro X Y Z hX hY hZ
     rw [classOf_zero]

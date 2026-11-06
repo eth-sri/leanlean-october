@@ -44,7 +44,7 @@ theorem admissibleExponent_of_subsingleton (R : Type u) [Ring R] [Subsingleton R
   refine ⟨1, zero_lt_one, ?_⟩
   intro n _hn
   refine ⟨zeroConstantAlgorithm R n n n, zeroConstantAlgorithm_correct R n n n, ?_⟩
-  simpa only [zeroConstantAlgorithm_cost, Nat.cast_zero, one_mul] using
+  simpa using
     Real.rpow_nonneg (Nat.cast_nonneg n) (τ + ε)
 
 theorem admissibleExponent_set_eq_univ_of_subsingleton

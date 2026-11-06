@@ -27,7 +27,7 @@ theorem monicQuotientProjection_one [Nontrivial R] (hf : f.Monic)
     (hdeg : 0 < f.natDegree) : monicQuotientProjection hf 1 = 1 := by
   have hmod : (1 : Polynomial R) %ₘ f = 1 :=
     (Polynomial.modByMonic_eq_self_iff hf).mpr (by
-      simpa only [Polynomial.degree_one] using
+      simpa using
         Polynomial.natDegree_pos_iff_degree_pos.mp hdeg)
   change (AdjoinRoot.modByMonicHom hf (1 : AdjoinRoot f)).coeff 0 = 1
   rw [← map_one (AdjoinRoot.mk f), AdjoinRoot.modByMonicHom_mk, hmod]

@@ -11,7 +11,6 @@ public section
 
 namespace OAI.MatrixMultiplication.AuxiliarySeparation.Integral
 
-noncomputable section
 open Foundation
 open scoped BigOperators
 
@@ -125,5 +124,4 @@ theorem finiteSeparation_bound_int (χ : Character ℤ) (hM : 0 < M)
   rw [separationTarget_eq_directSum, χ.value_reindex, χ.map_directSum] at h
   simpa only [χ.map_product, χ.value_cyclic_cyclic_dotPairing hM, Finset.sum_mul] using h
 
-end
 end OAI.MatrixMultiplication.AuxiliarySeparation.Integral

@@ -52,7 +52,6 @@ def poolCode (pool : Prefix → Finset Label) {k : ℕ}
     (allowed : ∀ x, label x ∈ pool (prior x)) : X → Fin k :=
   fun x => enumerate (prior x) ⟨label x, allowed x⟩
 
-omit [DecidableEq Label] in
 @[simp] theorem poolCode_decode (pool : Prefix → Finset Label) {k : ℕ}
     (enumerate : ∀ p, ↥(pool p) ≃ Fin k)
     (prior : X → Prefix) (label : X → Label)
@@ -77,18 +76,6 @@ universe u
 
 variable {K : Type*} [CommSemiring K]
 variable {X Y Z A B C : ℕ → Type*}
-
-def AuxiliaryCoordinates (A : ℕ → Type u) : ℕ → Type u
-  | 0 => PUnit
-  | n + 1 => AuxiliaryCoordinates A n × A n
-
-instance auxiliaryCoordinatesFintype [∀ n, Fintype (A n)] (n : ℕ) :
-    Fintype (AuxiliaryCoordinates A n) := by
-  induction n with
-  | zero => exact inferInstanceAs (Fintype PUnit)
-  | succ n ih =>
-      letI : Fintype (AuxiliaryCoordinates A n) := ih
-      exact inferInstanceAs (Fintype (AuxiliaryCoordinates A n × A n))
 
 end FiniteAssembly
 

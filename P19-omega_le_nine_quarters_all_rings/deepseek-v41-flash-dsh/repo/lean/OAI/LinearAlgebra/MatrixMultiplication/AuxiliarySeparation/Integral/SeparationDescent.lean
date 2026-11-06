@@ -10,7 +10,6 @@ public section
 
 namespace OAI.MatrixMultiplication.AuxiliarySeparation.Integral
 
-noncomputable section
 open Foundation
 open scoped BigOperators
 
@@ -76,5 +75,4 @@ theorem value_descentSource {ι X Y Z : Type} [Fintype ι] [DecidableEq ι]
     Nat.cast_mul, Nat.cast_add, Nat.cast_one]
   ring
 
-end
 end OAI.MatrixMultiplication.AuxiliarySeparation.Integral

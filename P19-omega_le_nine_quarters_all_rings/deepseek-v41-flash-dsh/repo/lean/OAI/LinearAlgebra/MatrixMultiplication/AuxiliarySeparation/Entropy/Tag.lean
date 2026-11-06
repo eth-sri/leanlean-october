@@ -189,12 +189,6 @@ theorem tag_of_integral_type_comparison_of_value_pos (χ : Character K)
   MatrixMultiplication.AuxiliarySeparation.tag_of_integral_bounds q
     (fun a => χ.value (B a)) p (χ.value T) 6 hB hT (by norm_num) hfinite
 
-section Field
-
-variable {K : Type*} [Field K]
-
-end Field
-
 end Character
 
 end MatrixMultiplication.AuxiliarySeparation

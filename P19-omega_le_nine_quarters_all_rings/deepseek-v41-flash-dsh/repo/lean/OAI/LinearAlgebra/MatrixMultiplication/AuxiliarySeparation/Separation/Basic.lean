@@ -30,7 +30,6 @@ The three maps below are independent linear substitutions on the three legs of
 `L` complete copies of the source tensor.
 -/
 
-noncomputable section
 
 open scoped BigOperators
 open MatrixMultiplication.Foundation
@@ -126,6 +125,5 @@ theorem separationTarget_eq_directSum {K : Type*} [CommSemiring K]
 
 end MatrixMultiplication.AuxiliarySeparation
 
-end
 
 end OAI

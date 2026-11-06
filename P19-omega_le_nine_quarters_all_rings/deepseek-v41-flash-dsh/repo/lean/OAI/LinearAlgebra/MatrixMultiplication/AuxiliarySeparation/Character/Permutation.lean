@@ -23,7 +23,6 @@ six resulting values multiply to the symmetrized product, and each singleton
 leg exponent occurs twice among their first-leg exponents.
 -/
 
-noncomputable section
 
 open MatrixMultiplication.Foundation
 open scoped BigOperators
@@ -125,6 +124,5 @@ theorem sum_permutedCharacter_pX :
 
 end MatrixMultiplication.AuxiliarySeparation.Character
 
-end
 
 end OAI

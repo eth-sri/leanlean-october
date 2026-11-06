@@ -13,7 +13,6 @@ local clearing schemes is selected once, before the power parameter varies. -/
 
 namespace OAI.MatrixMultiplication.AuxiliarySeparation.Integral
 
-noncomputable section
 open Foundation
 open scoped BigOperators
 
@@ -52,5 +51,4 @@ theorem convolution_integer_power_rank (a b : ℕ) :
   exact rankAtMost_patch_power_family T (fun j : t => (j : ℤ)) u
     (fun j => d j * d j) h hu (fun j k => by simpa only [Nat.mul_assoc] using hscheme j k) k
 
-end
 end OAI.MatrixMultiplication.AuxiliarySeparation.Integral

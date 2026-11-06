@@ -13,7 +13,6 @@ namespace OAI
 
 /-! Division-free arithmetic programs over a ring and their operation counts. -/
 
-noncomputable section
 
 open scoped BigOperators
 
@@ -223,6 +222,5 @@ theorem omega_le_of_admissibleExponent {F : Type*} [Ring F] [Nontrivial F] {τ :
 
 end MatrixMultiplication.Arithmetic
 
-end
 
 end OAI

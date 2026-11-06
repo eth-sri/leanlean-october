@@ -34,7 +34,7 @@ def finiteCoordinateState {S : Type*} (H : Finset S)
   unfold finiteCoordinateState
   have hz : (fun j : H ↦ if (j : S) = x then (1 : ℝ) else 0) = 0 := by
     funext j
-    simp only [Pi.zero_apply, ite_eq_right_iff, one_ne_zero, imp_false]
+    simp
     exact fun h ↦ hx (h ▸ j.property)
   rw [hz, map_zero]
 
@@ -47,7 +47,7 @@ theorem linearCombination_finiteCoordinateState {S : Type*}
   classical
   induction v using Finsupp.induction with
   | zero =>
-    simp only [map_zero, Finsupp.zero_apply, Int.cast_zero]
+    simp
     exact (L.map_zero).symm
   | single_add x n v _ _ ih =>
     rw [map_add, Finsupp.linearCombination_single, ih]

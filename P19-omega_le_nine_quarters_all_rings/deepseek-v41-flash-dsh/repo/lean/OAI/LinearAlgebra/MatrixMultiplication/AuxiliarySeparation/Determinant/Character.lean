@@ -29,7 +29,6 @@ checked determinant degeneration. All basis changes and the output-dual change
 are supplied by `DeterminantFiltration`.
 -/
 
-noncomputable section
 
 open MatrixMultiplication.Foundation
 open scoped BigOperators
@@ -199,15 +198,8 @@ theorem convolution_concavity_tag_of_separation
   obtain ⟨e, rfl, he⟩ : ∃ e, b = e + 1 ∧ 0 < e := ⟨b - 1, by omega, by omega⟩
   simpa [Nat.add_assoc] using χ.convolution_concavity_tag_dims_of_separation hsep d e he q hq₀ hq₁
 
-section Field
-
-variable {K : Type*} [Field K] (χ : Character K)
-
-end Field
-
 end Character
 end MatrixMultiplication.AuxiliarySeparation
 
-end
 
 end OAI

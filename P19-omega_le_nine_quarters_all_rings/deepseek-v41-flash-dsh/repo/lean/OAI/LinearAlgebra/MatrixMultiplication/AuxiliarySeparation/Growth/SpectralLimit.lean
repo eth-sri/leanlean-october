@@ -35,7 +35,7 @@ theorem spectral_bound_of_positive_slack {ν k D : ℝ} {d n : ℕ}
     tendsto_one_div_add_atTop_nhds_zero_nat
   have hdenom : Tendsto (fun m : ℕ => ν + 1 / ((m : ℝ) + 1))
       atTop (𝓝 ν) := by
-    simpa only [add_zero] using (tendsto_const_nhds (x := ν)).add hδ
+    simpa using (tendsto_const_nhds (x := ν)).add hδ
   have hexponent : Tendsto (fun m : ℕ => ν / (ν + 1 / ((m : ℝ) + 1)))
       atTop (𝓝 1) := by
     have h : Tendsto (fun m : ℕ => ν / (ν + 1 / ((m : ℝ) + 1)))

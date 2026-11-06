@@ -18,7 +18,6 @@ The determinant filtration uses an arbitrary binary law, while the three-sector
 filtration uses the uniform law on three branches.
 -/
 
-noncomputable section
 
 open scoped BigOperators
 open MatrixMultiplication.Foundation
@@ -67,6 +66,5 @@ theorem uniformThree_product (f : Fin 3 → ℝ) :
 
 end MatrixMultiplication.AuxiliarySeparation
 
-end
 
 end OAI

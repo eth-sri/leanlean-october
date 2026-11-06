@@ -28,7 +28,6 @@ the existence of a tensor spectrum or the separation argument producing that
 comparison.
 -/
 
-noncomputable section
 
 open MatrixMultiplication.Foundation
 
@@ -185,22 +184,19 @@ theorem catalytic_power_comparison {S : Type*} [CommSemiring S] [Preorder S]
     (hcat : D + t * s ≤ D + (k : S) * s)
     (hD : D ≤ (C : S) * s) (n j : ℕ) :
     (n : S) ^ j * t ^ j * s ≤ ((n * k + C : ℕ) : S) ^ j * s := by
-  have hiter : ∀ m : ℕ,
-      D + (m : S) * (t * s) ≤ D + (m : S) * ((k : S) * s) := by
+  have hiter : ∀ m : ℕ, D + (m : S) * (t * s) ≤ D + (m : S) * ((k : S) * s) := by
     intro m
     induction m with
     | zero => simp
     | succ m ih =>
-      calc
-        D + ((m + 1 : ℕ) : S) * (t * s) =
-            (D + t * s) + (m : S) * (t * s) := by push_cast; ring
+      calc D + ((m + 1 : ℕ) : S) * (t * s) = (D + t * s) + (m : S) * (t * s) := by
+            push_cast; ring
         _ ≤ (D + (k : S) * s) + (m : S) * (t * s) := hadd hcat le_rfl
         _ = (D + (m : S) * (t * s)) + (k : S) * s := by ring
         _ ≤ (D + (m : S) * ((k : S) * s)) + (k : S) * s := hadd ih le_rfl
         _ = D + ((m + 1 : ℕ) : S) * ((k : S) * s) := by push_cast; ring
-  have habsorb : (n : S) * t * s ≤ ((n * k + C : ℕ) : S) * s := by
-    calc
-      (n : S) * t * s = 0 + (n : S) * (t * s) := by ring
+  have habsorb : (n : S) * t * s ≤ ((n * k + C : ℕ) : S) * s :=
+    calc (n : S) * t * s = 0 + (n : S) * (t * s) := by ring
       _ ≤ D + (n : S) * (t * s) := hadd (hzero D) le_rfl
       _ ≤ D + (n : S) * ((k : S) * s) := hiter n
       _ ≤ (C : S) * s + (n : S) * ((k : S) * s) := hadd hD le_rfl
@@ -208,14 +204,10 @@ theorem catalytic_power_comparison {S : Type*} [CommSemiring S] [Preorder S]
   induction j with
   | zero => simp
   | succ j ih =>
-    calc
-      (n : S) ^ (j + 1) * t ^ (j + 1) * s =
-          ((n : S) ^ j * t ^ j) * ((n : S) * t * s) := by ring
-      _ ≤ ((n : S) ^ j * t ^ j) * (((n * k + C : ℕ) : S) * s) :=
-        hmul le_rfl habsorb
+    calc (n : S) ^ (j + 1) * t ^ (j + 1) * s = ((n : S) ^ j * t ^ j) * ((n : S) * t * s) := by ring
+      _ ≤ ((n : S) ^ j * t ^ j) * (((n * k + C : ℕ) : S) * s) := hmul le_rfl habsorb
       _ = ((n * k + C : ℕ) : S) * ((n : S) ^ j * t ^ j * s) := by ring
-      _ ≤ ((n * k + C : ℕ) : S) * (((n * k + C : ℕ) : S) ^ j * s) :=
-        hmul le_rfl ih
+      _ ≤ ((n * k + C : ℕ) : S) * (((n * k + C : ℕ) : S) ^ j * s) := hmul le_rfl ih
       _ = ((n * k + C : ℕ) : S) ^ (j + 1) * s := by ring
 
 /-- A rank-compatible ordered tensor semiring converts a single finite
@@ -345,14 +337,7 @@ theorem not_tensor_add_positive_nat_le_self (D : (TensorSemiring.TensorClass K))
 
 end General
 
-section Field
-
-variable {K : Type*} [Field K]
-
-end Field
-
 end MatrixMultiplication.AuxiliarySeparation
 
-end
 
 end OAI

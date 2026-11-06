@@ -13,7 +13,6 @@ namespace OAI
 
 /-! Finite coefficient tensors and their algebraic transformations. -/
 
-noncomputable section
 
 open scoped BigOperators
 
@@ -42,11 +41,10 @@ theorem RankAtMost.card_le_of_identity {ι : Type*} [Fintype ι] [DecidableEq ι
     have heq := congrArg L.mulVecLin hvw
     simpa only [← LinearMap.comp_apply, ← Matrix.mulVecLin_mul,
       hmul, Matrix.mulVecLin_one, LinearMap.id_apply] using heq
-  simpa only [Fintype.card_fin] using card_le_of_injective K R.mulVecLin hinj
+  simpa using card_le_of_injective K R.mulVecLin hinj
 
 end Tensor
 end MatrixMultiplication.Foundation
 
-end
 
 end OAI

@@ -26,7 +26,6 @@ forces invariance under independent invertible changes of coordinates, so this
 interface descends to the mutual-restriction classes of Section 3 of the paper.
 -/
 
-noncomputable section
 
 open MatrixMultiplication.Foundation
 open scoped BigOperators
@@ -108,7 +107,6 @@ theorem value_reindex (T : Tensor K X Y Z)
   rw [← heq, χ.value_reindex, χ.map_directSum]
   simp [T, χ.map_one]
 
-omit [Fintype X] [Fintype Y] [Fintype Z] in
 /-- Restricting a diagonal scalar tensor realizes a rank decomposition. -/
 theorem restrict_scalarTensor (r : ℕ) (a : Fin r → X → K)
     (b : Fin r → Y → K) (c : Fin r → Z → K) :
@@ -184,6 +182,5 @@ end Character
 
 end MatrixMultiplication.AuxiliarySeparation
 
-end
 
 end OAI

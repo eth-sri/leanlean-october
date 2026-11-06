@@ -17,7 +17,6 @@ this state space, and its instantiation by the tensor restriction semiring,
 are separate statements.
 -/
 
-noncomputable section
 
 namespace MatrixMultiplication.AuxiliarySeparation
 
@@ -146,6 +145,5 @@ theorem state_rescale {R : S → ℕ} {d : S} {k : ℝ} {f : S → ℝ}
 
 end MatrixMultiplication.AuxiliarySeparation
 
-end
 
 end OAI

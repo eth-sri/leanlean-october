@@ -38,19 +38,19 @@ def subsemiring : Subsemiring S where
   add_mem' := by
     intro a b ha hb
     rcases ha with rfl | ha
-    · simpa only [zero_add] using hb
-    · exact Or.inr (ha.trans (by simpa only [add_zero] using hadd le_rfl (hzero b)))
+    · simpa using hb
+    · exact Or.inr (ha.trans (by simpa using hadd le_rfl (hzero b)))
   mul_mem' := by
     intro a b ha hb
     rcases ha with rfl | ha
     · exact Or.inl (zero_mul b)
     rcases hb with rfl | hb
     · exact Or.inl (mul_zero a)
-    exact Or.inr (by simpa only [one_mul] using hmul ha hb)
+    exact Or.inr (by simpa using hmul ha hb)
 
 /-- Adding one always places an element in the unit-dominating part. -/
 def stabilize (x : S) : subsemiring hzero hadd hmul :=
-  ⟨x + 1, Or.inr (by simpa only [zero_add] using hadd (hzero x) (le_refl 1))⟩
+  ⟨x + 1, Or.inr (by simpa using hadd (hzero x) (le_refl 1))⟩
 
 @[simp] theorem coe_stabilize (x : S) :
     (stabilize hzero hadd hmul x : S) = x + 1 := rfl
@@ -67,7 +67,7 @@ variable {hzero hadd hmul}
 @[simp] theorem stabilize_zero :
     stabilize hzero hadd hmul 0 = 1 := by
   apply Subtype.ext
-  simp only [coe_stabilize, zero_add, OneMemClass.coe_one]
+  simp
 
 theorem stabilize_one :
     stabilize hzero hadd hmul 1 = 1 + 1 := by
@@ -92,15 +92,15 @@ theorem stabilize_mul (x y : S) :
 /-- Extend a character by additive stabilization. -/
 def extend (φ : subsemiring hzero hadd hmul →+* ℝ) : S →+* ℝ where
   toFun x := φ (stabilize hzero hadd hmul x) - 1
-  map_zero' := by simp only [stabilize_zero, map_one, sub_self]
+  map_zero' := by simp
   map_one' := by rw [stabilize_one, map_add, map_one]; ring
   map_add' x y := by
     have h := congrArg φ (stabilize_add (hzero := hzero) (hadd := hadd) (hmul := hmul) x y)
-    simp only [map_add, map_one] at h
+    simp at h
     linarith
   map_mul' x y := by
     have h := congrArg φ (stabilize_mul (hzero := hzero) (hadd := hadd) (hmul := hmul) x y)
-    simp only [map_add, map_one, map_mul] at h
+    simp at h
     nlinarith
 
 @[simp] theorem extend_apply (φ : subsemiring hzero hadd hmul →+* ℝ) (x : S) :

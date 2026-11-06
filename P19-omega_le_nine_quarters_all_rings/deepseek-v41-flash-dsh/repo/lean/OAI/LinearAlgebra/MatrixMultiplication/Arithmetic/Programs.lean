@@ -11,7 +11,6 @@ namespace OAI
 
 /-! Division-free arithmetic programs over a ring and their operation counts. -/
 
-noncomputable section
 
 namespace MatrixMultiplication.Arithmetic
 
@@ -33,7 +32,6 @@ theorem eval_mapRegister (g : Gate F Input R) (f : R → S)
     (g.mapRegister f).eval inputs registers = g.eval inputs (fun i => registers (f i)) := by
   cases g <;> rfl
 
-omit [Ring F] in
 @[simp] theorem cost_mapRegister (g : Gate F Input R) (f : R → S) :
     (g.mapRegister f).cost = g.cost := by
   cases g <;> rfl
@@ -92,7 +90,6 @@ theorem eval_append_old {r s : ℕ} (p : Program F Input r) (q : Program F Input
     intro i
     simpa only [append, oldIndex_succ, eval_step_succ] using ih i
 
-omit [Ring F] in
 @[simp] theorem cost_append {r s : ℕ} (p : Program F Input r) (q : Program F Input s) :
     (p.append q).cost = p.cost + q.cost := by
   induction q with
@@ -189,6 +186,5 @@ def compile : (e : Expression F Input) → Compiled e
 end Expression
 end MatrixMultiplication.Arithmetic
 
-end
 
 end OAI

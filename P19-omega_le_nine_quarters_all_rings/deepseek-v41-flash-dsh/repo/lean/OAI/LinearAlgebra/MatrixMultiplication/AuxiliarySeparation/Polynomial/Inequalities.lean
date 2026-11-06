@@ -165,12 +165,6 @@ theorem exponent_sum_le_nine_quarters_of_separation_and_convolution
   unfold meanExponent at h
   linarith
 
-section Field
-
-variable {K : Type*} [Field K] [IsAlgClosed K] (χ : Character K)
-
-end Field
-
 end MatrixMultiplication.AuxiliarySeparation.Character
 
 end

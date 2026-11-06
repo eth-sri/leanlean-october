@@ -10,7 +10,6 @@ namespace OAI
 
 /-! Division-free arithmetic programs over a ring and their operation counts. -/
 
-noncomputable section
 
 open scoped BigOperators
 
@@ -109,6 +108,5 @@ end MatrixAlgorithm
 
 end MatrixMultiplication.Arithmetic
 
-end
 
 end OAI

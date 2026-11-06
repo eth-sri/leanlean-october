@@ -126,14 +126,12 @@ def paddedBranch (T : ∀ i, Tensor K (X i) (Y i) (Z i)) (i : ι) :
     (fun _ _ h => eq_of_heq (Sigma.mk.inj h).2)
     (fun _ _ h => eq_of_heq (Sigma.mk.inj h).2)
 
-omit [Fintype ι] in
 @[simp] theorem paddedBranch_matching
     (T : ∀ i, Tensor K (X i) (Y i) (Z i))
     (i : ι) (x : X i) (y : Y i) (z : Z i) :
     paddedBranch T i ⟨i, x⟩ ⟨i, y⟩ ⟨i, z⟩ = T i x y z := by
   simp [paddedBranch, Tensor.restrict, ite_mul, mul_ite]
 
-omit [Fintype ι] in
 theorem paddedBranch_zero_left
     (T : ∀ i, Tensor K (X i) (Y i) (Z i)) (i : ι)
     (x : Σ i, X i) (y : Σ i, Y i) (z : Σ i, Z i) (hx : x.1 ≠ i) :
@@ -142,7 +140,6 @@ theorem paddedBranch_zero_left
     fun a h => hx (congrArg Sigma.fst h).symm
   simp [paddedBranch, Tensor.restrict, hzero]
 
-omit [Fintype ι] in
 theorem paddedBranch_zero_middle
     (T : ∀ i, Tensor K (X i) (Y i) (Z i)) (i : ι)
     (x : Σ i, X i) (y : Σ i, Y i) (z : Σ i, Z i) (hy : y.1 ≠ i) :
@@ -151,7 +148,6 @@ theorem paddedBranch_zero_middle
     fun b h => hy (congrArg Sigma.fst h).symm
   simp [paddedBranch, Tensor.restrict, hzero]
 
-omit [Fintype ι] in
 theorem paddedBranch_zero_right
     (T : ∀ i, Tensor K (X i) (Y i) (Z i)) (i : ι)
     (x : Σ i, X i) (y : Σ i, Y i) (z : Σ i, Z i) (hz : z.1 ≠ i) :

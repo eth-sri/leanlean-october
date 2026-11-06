@@ -24,7 +24,6 @@ coordinates. The middle branch is a zero extension after reversing the first
 coordinate and exchanging the second and third tensor legs.
 -/
 
-noncomputable section
 
 open MatrixMultiplication.Foundation
 open scoped Classical
@@ -266,6 +265,5 @@ theorem value_middleTensor (χ : Character K) (a h : ℕ) :
 
 end MatrixMultiplication.AuxiliarySeparation.Sector
 
-end
 
 end OAI

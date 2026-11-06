@@ -1,0 +1,17 @@
+{
+  "problem_idx": 19,
+  "key": "PALOMAR-2026-10-11-000007-v1",
+  "model_name": "DeepSeek-V4.1-Flash-1017 (Max)",
+  "model_id": "deepseek-v41-flash-dsh",
+  "harness": "DeepSeek Harness 0.2.1-rc.5",
+  "status": "verified",
+  "verified": true,
+  "failure_label": null,
+  "verification_note": "Fresh verification passed.",
+  "baseline_tokens": 145127,
+  "final_tokens": 143399,
+  "compression_percent": 1.1906812653744652,
+  "credited_compression_percent": 1.1906812653744652,
+  "cost": 0.8005511280000001,
+  "elapsed_seconds": 10757.475219449
+}

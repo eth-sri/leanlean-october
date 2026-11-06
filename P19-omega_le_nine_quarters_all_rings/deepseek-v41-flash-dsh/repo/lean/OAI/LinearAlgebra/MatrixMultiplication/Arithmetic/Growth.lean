@@ -24,179 +24,87 @@ namespace OAI
 
 /-! Arithmetic programs over an arbitrary ring and asymptotic matrix multiplication costs. -/
 
-noncomputable section
 
 namespace MatrixMultiplication.Arithmetic
 
 open MatrixMultiplication.Foundation
 
-section Ring
-
 variable {F : Type*} [Ring F]
-
-/-- Square matrix algorithms over a specified scalar field. -/
-abbrev SquareAlgorithm (F : Type*) (n : ℕ) := MatrixAlgorithm F n n n
 
 theorem exists_power_cover {b n : ℕ} (hb : 2 ≤ b) (hn : 1 ≤ n) :
-    ∃ k : ℕ, n ≤ b ^ k ∧ b ^ k ≤ b * n := by
-  refine ⟨Nat.log b n + 1, (Nat.lt_pow_succ_log_self (by omega) n).le, ?_⟩
-  rw [pow_succ']
-  exact Nat.mul_le_mul_left b (Nat.pow_log_le_self b (by omega))
+    ∃ k : ℕ, n ≤ b ^ k ∧ b ^ k ≤ b * n :=
+  ⟨Nat.log b n + 1, (Nat.lt_pow_succ_log_self (by omega) n).le, by
+    rw [pow_succ']
+    exact Nat.mul_le_mul_left b (Nat.pow_log_le_self b (by omega))⟩
 
-theorem geometric_cost_recurrence_bound (x : ℕ → ℝ) (a b d q : ℝ)
-    (hx : 0 ≤ x 0) (ha : 0 ≤ a) (hb : 0 ≤ b) (hd : 0 ≤ d)
-    (haq : a < q) (hdq : d ≤ q)
-    (hstep : ∀ k, x (k + 1) ≤ a * x k + b * d ^ k) :
-    ∃ C : ℝ, 0 < C ∧ ∀ k, x k ≤ C * q ^ k := by
-  let C := x 0 + b / (q - a) + 1
-  have hgap : 0 < q - a := sub_pos.mpr haq
-  have hfrac : 0 ≤ b / (q - a) := div_nonneg hb hgap.le
-  have hC : 0 < C := by dsimp [C]; linarith
-  have hcancel : (q - a) * (b / (q - a)) = b := by
-    field_simp [ne_of_gt hgap]
-  have hCfrac : b / (q - a) ≤ C := by dsimp [C]; linarith
-  have hcoeff : a * C + b ≤ C * q := by
-    have hmul := mul_le_mul_of_nonneg_left hCfrac hgap.le
-    rw [hcancel] at hmul
-    calc
-      a * C + b ≤ a * C + (q - a) * C := add_le_add_right hmul _
-      _ = C * q := by ring
-  refine ⟨C, hC, ?_⟩
-  intro k
-  induction k with
-  | zero => simp only [pow_zero, mul_one]; dsimp [C]; linarith
-  | succ k ih =>
-    calc
-      x (k + 1) ≤ a * x k + b * d ^ k := hstep k
-      _ ≤ a * (C * q ^ k) + b * q ^ k :=
-        add_le_add (mul_le_mul_of_nonneg_left ih ha)
-          (mul_le_mul_of_nonneg_left (pow_le_pow_left₀ hd hdq k) hb)
-      _ = (a * C + b) * q ^ k := by ring
-      _ ≤ (C * q) * q ^ k :=
-        mul_le_mul_of_nonneg_right hcoeff (pow_nonneg (hd.trans hdq) k)
-      _ = C * q ^ (k + 1) := by rw [pow_succ]; ring
-
-theorem power_cost_padding_bound
-    (hpad : ∀ {n m : ℕ}, n ≤ m → ∀ P : SquareAlgorithm F m, P.Correct →
-      ∃ Q : SquareAlgorithm F n, Q.Correct ∧ Q.cost ≤ P.cost)
-    {b : ℕ} (hb : 2 ≤ b) {s C : ℝ} (hs : 0 ≤ s) (hC : 0 < C)
-    (hpower : ∀ k : ℕ, ∃ P : SquareAlgorithm F (b ^ k),
-      P.Correct ∧ (P.cost : ℝ) ≤ C * ((b : ℝ) ^ s) ^ k) :
-    ∃ D : ℝ, 0 < D ∧ ∀ n : ℕ, 1 ≤ n → ∃ P : SquareAlgorithm F n,
-      P.Correct ∧ (P.cost : ℝ) ≤ D * (n : ℝ) ^ s := by
-  have hbpos : 0 < (b : ℝ) := by exact_mod_cast (by omega : 0 < b)
-  refine ⟨C * (b : ℝ) ^ s, mul_pos hC (Real.rpow_pos_of_pos hbpos s), ?_⟩
-  intro n hn
-  obtain ⟨k, hnk, hkn⟩ := exists_power_cover hb hn
-  obtain ⟨P, hP, hcost⟩ := hpower k
-  obtain ⟨Q, hQ, hQP⟩ := hpad hnk P hP
-  refine ⟨Q, hQ, ?_⟩
-  calc
-    (Q.cost : ℝ) ≤ (P.cost : ℝ) := by exact_mod_cast hQP
-    _ ≤ C * ((b : ℝ) ^ s) ^ k := hcost
-    _ = C * ((b ^ k : ℕ) : ℝ) ^ s := by
-      rw [Real.rpow_pow_comm hbpos.le, Nat.cast_pow]
-    _ ≤ C * ((b : ℝ) * (n : ℝ)) ^ s :=
-      mul_le_mul_of_nonneg_left
-        (Real.rpow_le_rpow (Nat.cast_nonneg _) (by exact_mod_cast hkn) hs) hC.le
-    _ = (C * (b : ℝ) ^ s) * (n : ℝ) ^ s := by
-      rw [Real.mul_rpow hbpos.le (Nat.cast_nonneg n)]
-      ring
-
-theorem admissibleExponent_of_power_costs
-    (hpad : ∀ {n m : ℕ}, n ≤ m → ∀ P : SquareAlgorithm F m, P.Correct →
-      ∃ Q : SquareAlgorithm F n, Q.Correct ∧ Q.cost ≤ P.cost)
-    {b : ℕ} (hb : 2 ≤ b) {τ : ℝ} (hτ : 0 ≤ τ)
-    (hpower : ∀ ε : ℝ, 0 < ε → ∃ C : ℝ, 0 < C ∧
-      ∀ k : ℕ, ∃ P : SquareAlgorithm F (b ^ k),
-        P.Correct ∧ (P.cost : ℝ) ≤ C * ((b : ℝ) ^ (τ + ε)) ^ k) :
-    AdmissibleExponent F τ := by
-  intro ε hε
-  obtain ⟨C, hC, hcost⟩ := hpower ε hε
-  exact power_cost_padding_bound hpad hb (by linarith) hC hcost
-
-def blockRecurrenceCost (b R K : ℕ) : ℕ → ℕ
-  | 0 => 1
-  | k + 1 => R * blockRecurrenceCost b R K k + K * (b ^ k) ^ 2
-
-@[simp] theorem blockRecurrenceCost_zero (b R K : ℕ) :
-    blockRecurrenceCost b R K 0 = 1 := rfl
-
-@[simp] theorem blockRecurrenceCost_succ (b R K k : ℕ) :
-    blockRecurrenceCost b R K (k + 1) =
-      R * blockRecurrenceCost b R K k + K * (b ^ k) ^ 2 := rfl
-
-theorem power_programs_of_block_step {b R K : ℕ}
-    (hstep : ∀ m : ℕ, ∀ P : SquareAlgorithm F m, P.Correct →
-      ∃ Q : SquareAlgorithm F (b * m), Q.Correct ∧
-        Q.cost ≤ R * P.cost + K * m ^ 2) :
-    ∀ k : ℕ, ∃ P : SquareAlgorithm F (b ^ k), P.Correct ∧
-      P.cost ≤ blockRecurrenceCost b R K k := by
-  intro k
-  induction k with
-  | zero =>
-    exact ⟨scalarAlgorithm F, scalarAlgorithm_correct F, by simp⟩
-  | succ k ih =>
-    obtain ⟨P, hP, hcost⟩ := ih
-    obtain ⟨Q, hQ, hQcost⟩ := hstep (b ^ k) P hP
-    have hbound : Q.cost ≤ blockRecurrenceCost b R K (k + 1) := by
-      exact hQcost.trans (Nat.add_le_add_right (Nat.mul_le_mul_left R hcost) _)
-    have hresult : ∃ Q : SquareAlgorithm F (b * b ^ k), Q.Correct ∧
-        Q.cost ≤ blockRecurrenceCost b R K (k + 1) := ⟨Q, hQ, hbound⟩
-    exact (pow_succ' b k).symm ▸ hresult
-
-theorem admissibleExponent_of_block_step_of_padding
-    (hpad : ∀ {n m : ℕ}, n ≤ m → ∀ P : SquareAlgorithm F m, P.Correct →
-      ∃ Q : SquareAlgorithm F n, Q.Correct ∧ Q.cost ≤ P.cost)
-    {b R K : ℕ} (hb : 2 ≤ b) {τ : ℝ} (hτ : 2 ≤ τ)
+/-- A block-recursion step with ratio `R` and quadratic overhead `K` gives the
+admissible exponent `τ` for every ring, via power-of-`b` sizes and padding. -/
+theorem admissibleExponent_of_block_step {b R K : ℕ} (hb : 2 ≤ b) {τ : ℝ} (hτ : 2 ≤ τ)
     (hR : (R : ℝ) ≤ (b : ℝ) ^ τ)
-    (hstep : ∀ m : ℕ, ∀ P : SquareAlgorithm F m, P.Correct →
-      ∃ Q : SquareAlgorithm F (b * m), Q.Correct ∧
+    (hstep : ∀ m : ℕ, ∀ P : MatrixAlgorithm F m m m, P.Correct →
+      ∃ Q : MatrixAlgorithm F (b * m) (b * m) (b * m), Q.Correct ∧
         Q.cost ≤ R * P.cost + K * m ^ 2) :
     AdmissibleExponent F τ := by
-  apply admissibleExponent_of_power_costs hpad hb (by linarith)
   intro ε hε
-  have hbone : 1 < (b : ℝ) := by exact_mod_cast (by omega : 1 < b)
-  have hrate : (R : ℝ) < (b : ℝ) ^ (τ + ε) :=
-    hR.trans_lt (Real.rpow_lt_rpow_of_exponent_lt hbone (by linarith))
-  have hquad : (b : ℝ) ^ (2 : ℕ) ≤ (b : ℝ) ^ (τ + ε) := by
+  have hb1 : 1 < (b : ℝ) := by exact_mod_cast (by omega : 1 < b)
+  have hb0 : (0 : ℝ) < b := by linarith
+  have hq : (R : ℝ) < (b : ℝ) ^ (τ + ε) :=
+    hR.trans_lt (Real.rpow_lt_rpow_of_exponent_lt hb1 (by linarith))
+  have hgap : 0 < (b : ℝ) ^ (τ + ε) - R := by linarith
+  have hb2 : ((b : ℝ) ^ 2) ≤ (b : ℝ) ^ (τ + ε) := by
     rw [← Real.rpow_natCast]
-    change (b : ℝ) ^ (2 : ℝ) ≤ (b : ℝ) ^ (τ + ε)
-    exact Real.rpow_le_rpow_of_exponent_le hbone.le (by linarith)
-  obtain ⟨C, hC, hbound⟩ := geometric_cost_recurrence_bound
-    (fun k => (blockRecurrenceCost b R K k : ℝ))
-    (R : ℝ) (K : ℝ) ((b : ℝ) ^ (2 : ℕ)) ((b : ℝ) ^ (τ + ε))
-    (Nat.cast_nonneg _) (Nat.cast_nonneg _) (Nat.cast_nonneg _)
-    (sq_nonneg _) hrate hquad (fun k => by
-      simp only [blockRecurrenceCost_succ, Nat.cast_add, Nat.cast_mul, Nat.cast_pow]
-      rw [← pow_mul, ← pow_mul, Nat.mul_comm k 2])
-  refine ⟨C, hC, ?_⟩
-  intro k
-  obtain ⟨P, hP, hcost⟩ := power_programs_of_block_step hstep k
-  exact ⟨P, hP, (by exact_mod_cast hcost : (P.cost : ℝ) ≤
-    (blockRecurrenceCost b R K k : ℝ)).trans (hbound k)⟩
-
-theorem admissibleExponent_of_block_step
-    {b R K : ℕ} (hb : 2 ≤ b) {τ : ℝ} (hτ : 2 ≤ τ)
-    (hR : (R : ℝ) ≤ (b : ℝ) ^ τ)
-    (hstep : ∀ m : ℕ, ∀ P : SquareAlgorithm F m, P.Correct →
-      ∃ Q : SquareAlgorithm F (b * m), Q.Correct ∧
-        Q.cost ≤ R * P.cost + K * m ^ 2) :
-    AdmissibleExponent F τ :=
-  admissibleExponent_of_block_step_of_padding
-    (fun h P hP => MatrixAlgorithm.exists_restrict h h h P hP) hb hτ hR hstep
-
-end Ring
-
-section CommRing
-
-variable {F : Type*} [CommRing F]
-
-end CommRing
-
-section Ring
-
-variable {F : Type*} [Ring F]
+    exact Real.rpow_le_rpow_of_exponent_le hb1.le (by push_cast; linarith)
+  obtain ⟨C, hC1, hC2⟩ : ∃ C : ℝ, 1 ≤ C ∧ (R : ℝ) * C + K ≤ C * (b : ℝ) ^ (τ + ε)
+  · refine ⟨(K : ℝ) / ((b : ℝ) ^ (τ + ε) - R) + 1, ?_, ?_⟩
+    · have h2 : (0 : ℝ) ≤ (K : ℝ) / ((b : ℝ) ^ (τ + ε) - R) :=
+        div_nonneg (Nat.cast_nonneg K) hgap.le
+      linarith
+    have hc : ((K : ℝ) / ((b : ℝ) ^ (τ + ε) - R) + 1) * ((b : ℝ) ^ (τ + ε) - R) =
+        (K : ℝ) + ((b : ℝ) ^ (τ + ε) - R) := by
+      rw [add_mul, div_mul_cancel₀ _ hgap.ne', one_mul]
+    nlinarith
+  have hCpos : (0 : ℝ) < C := by linarith
+  have hpow : ∀ k, ∃ P : MatrixAlgorithm F (b ^ k) (b ^ k) (b ^ k), P.Correct ∧
+      (P.cost : ℝ) ≤ C * (((b : ℝ) ^ (τ + ε)) ^ k) := by
+    intro k
+    induction k with
+    | zero => exact ⟨scalarAlgorithm F, scalarAlgorithm_correct F, by simp [hC1]⟩
+    | succ k ih =>
+      obtain ⟨P, hP, hPc⟩ := ih
+      obtain ⟨Q, hQ, hQc⟩ := hstep (b ^ k) P hP
+      have hQc' : (Q.cost : ℝ) ≤ (R : ℝ) * P.cost + (K : ℝ) * (((b : ℝ) ^ k) ^ 2) := by
+        push_cast
+        exact_mod_cast hQc
+      rw [show (((b : ℝ) ^ k) ^ 2) = (((b : ℝ) ^ 2) ^ k) by
+        rw [← pow_mul, ← pow_mul, Nat.mul_comm]] at hQc'
+      have hfin : (Q.cost : ℝ) ≤ C * (((b : ℝ) ^ (τ + ε)) ^ (k + 1)) := by
+        calc (Q.cost : ℝ) ≤ (R : ℝ) * P.cost + (K : ℝ) * (((b : ℝ) ^ 2) ^ k) := hQc'
+          _ ≤ (R : ℝ) * (C * (((b : ℝ) ^ (τ + ε)) ^ k)) +
+                (K : ℝ) * (((b : ℝ) ^ (τ + ε)) ^ k) :=
+              add_le_add (mul_le_mul_of_nonneg_left hPc (Nat.cast_nonneg R))
+                (mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (by positivity) hb2 k)
+                  (Nat.cast_nonneg K))
+          _ = ((R : ℝ) * C + K) * (((b : ℝ) ^ (τ + ε)) ^ k) := by ring
+          _ ≤ (C * (b : ℝ) ^ (τ + ε)) * (((b : ℝ) ^ (τ + ε)) ^ k) :=
+              mul_le_mul_of_nonneg_right hC2 (pow_nonneg (by positivity) k)
+          _ = C * (((b : ℝ) ^ (τ + ε)) ^ (k + 1)) := by ring
+      exact (pow_succ' b k).symm ▸ ⟨Q, hQ, hfin⟩
+  refine ⟨C * (b : ℝ) ^ (τ + ε), by positivity, fun n hn => ?_⟩
+  obtain ⟨k, hnk, hkn⟩ := exists_power_cover hb hn
+  obtain ⟨P, hP, hPc⟩ := hpow k
+  obtain ⟨Q, hQ, hQP⟩ := MatrixAlgorithm.exists_restrict hnk hnk hnk P hP
+  refine ⟨Q, hQ, (by exact_mod_cast hQP : (Q.cost : ℝ) ≤ (P.cost : ℝ)).trans ?_⟩
+  refine hPc.trans ?_
+  have h1 : (((b : ℝ) ^ (τ + ε)) ^ k) = ((b ^ k : ℕ) : ℝ) ^ (τ + ε) := by
+    rw [Real.rpow_pow_comm hb0.le, Nat.cast_pow]
+  have h3 : ((b : ℝ) * n) ^ (τ + ε) = ((b : ℝ) ^ (τ + ε)) * (n : ℝ) ^ (τ + ε) :=
+    Real.mul_rpow hb0.le (Nat.cast_nonneg n)
+  have h4 : ((b ^ k : ℕ) : ℝ) ^ (τ + ε) ≤ ((b : ℝ) * n) ^ (τ + ε) :=
+    Real.rpow_le_rpow (Nat.cast_nonneg _) (by exact_mod_cast hkn) (by linarith)
+  rw [h1]
+  calc C * ((b ^ k : ℕ) : ℝ) ^ (τ + ε) ≤ C * ((b : ℝ) * n) ^ (τ + ε) :=
+        mul_le_mul_of_nonneg_left h4 hCpos.le
+    _ = C * (b : ℝ) ^ (τ + ε) * (n : ℝ) ^ (τ + ε) := by rw [h3]; ring
 
 /-- A fixed exact integer coefficient scheme gives the same arithmetic
 exponent over every associative unital ring. -/
@@ -207,9 +115,7 @@ theorem admissibleExponent_of_int_rankAtMost {n r : ℕ} (hn : 2 ≤ n)
   apply admissibleExponent_of_block_step (K := 6 * r * n ^ 2) hn hτ hr
   intro m P hP
   obtain ⟨Q, hQ, hcost⟩ := RecursiveBlock.int_rank_block_step hRank P hP
-  refine ⟨Q, hQ, ?_⟩
-  rw [hcost]
-  exact le_of_eq (by ring)
+  exact ⟨Q, hQ, by rw [hcost]; exact le_of_eq (by ring)⟩
 
 /-- Arbitrarily close integer rank schemes imply the unchanged positive-slack
 arithmetic exponent bound over every ring, including the zero ring. -/
@@ -223,17 +129,13 @@ theorem admissibleExponent_of_int_rank_bounds {τ : ℝ} (hτ : 2 ≤ τ)
   have hadm : AdmissibleExponent F (τ + ε / 2) :=
     admissibleExponent_of_int_rankAtMost hn hrank (by linarith) hr
   obtain ⟨C, hC, hcost⟩ := hadm (ε / 2) (half_pos hε)
-  refine ⟨C, hC, ?_⟩
-  intro m hm
+  refine ⟨C, hC, fun m hm => ?_⟩
   obtain ⟨P, hP, hbound⟩ := hcost m hm
-  refine ⟨P, hP, ?_⟩
-  have he : τ + ε / 2 + ε / 2 = τ + ε := by ring
-  simpa only [he] using hbound
-
-end Ring
+  exact ⟨P, hP, by
+    rw [show τ + ε / 2 + ε / 2 = τ + ε by ring] at hbound
+    exact hbound⟩
 
 end MatrixMultiplication.Arithmetic
 
-end
 
 end OAI

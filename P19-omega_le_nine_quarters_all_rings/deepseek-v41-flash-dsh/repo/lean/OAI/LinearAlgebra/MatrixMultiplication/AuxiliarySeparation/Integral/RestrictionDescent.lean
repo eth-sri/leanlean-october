@@ -11,7 +11,6 @@ its larger coefficient-map identities do not delay monic quotient setup. -/
 
 namespace OAI.MatrixMultiplication.AuxiliarySeparation.Integral
 
-noncomputable section
 open Foundation
 open scoped BigOperators
 
@@ -95,5 +94,4 @@ theorem descend_restriction_basis [Fintype U] [Fintype V] [Fintype W]
   rw [h] at heq
   simpa only [Algebra.algebraMap_eq_smul_one, map_smul, hπ, smul_eq_mul, mul_one] using heq
 
-end
 end OAI.MatrixMultiplication.AuxiliarySeparation.Integral

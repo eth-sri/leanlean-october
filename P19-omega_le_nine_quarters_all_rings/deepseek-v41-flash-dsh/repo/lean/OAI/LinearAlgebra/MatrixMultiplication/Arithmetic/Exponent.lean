@@ -12,7 +12,6 @@ namespace OAI
 
 /-! Division-free arithmetic programs over a ring and their operation counts. -/
 
-noncomputable section
 
 namespace MatrixMultiplication.Arithmetic
 
@@ -70,6 +69,5 @@ theorem rectangularOmega_two_le (k : ℝ) : 2 ≤ rectangularOmega F k :=
 
 end MatrixMultiplication.Arithmetic
 
-end
 
 end OAI

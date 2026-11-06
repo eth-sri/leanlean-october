@@ -41,7 +41,7 @@ theorem rpow_exponent_le_of_nat_bound {a b C : ℝ}
     (hbound (2 ^ k) (Nat.one_le_iff_ne_zero.mpr (by positivity)))
   rw [Real.log_mul hC.ne' (Real.rpow_pos_of_pos hn b).ne',
     Real.log_rpow hn a, Real.log_rpow hn b] at h
-  simp only [Nat.cast_pow, Nat.cast_ofNat, Real.log_pow] at h
+  simp at h
   nlinarith
 
 /-- The diagonal lower bound and the dimension upper bound force the scalar
@@ -67,7 +67,7 @@ theorem diagonal_exponent_le_three_quarters {D : ℕ → ℝ} {t : ℝ}
       _ ≤ ((2 * (n : ℝ)) ^ (1 / t)) ^ 3 :=
         pow_le_pow_left₀ (hnonneg n hn) hu 3
       _ = (2 * (n : ℝ)) ^ ((1 / t) * 3) := by
-        simpa only [Nat.cast_ofNat] using
+        simpa using
           (Real.rpow_mul_natCast (show 0 ≤ 2 * (n : ℝ) by positivity) (1 / t) 3).symm
       _ = (2 : ℝ) ^ ((1 / t) * 3) * (n : ℝ) ^ ((1 / t) * 3) :=
         Real.mul_rpow (by norm_num) (by positivity)

@@ -60,7 +60,7 @@ theorem positiveMultiplicative_log_pow_le
     (h : m ^ j ≤ n ^ k) :
     (j : ℝ) * Real.log (f m) ≤ (k : ℝ) * Real.log (f n) := by
   have hv := positiveMultiplicative_pow_le_pow hpos hmul hmono hm hn h
-  simpa only [Real.log_pow] using
+  simpa using
     Real.log_le_log (pow_pos (hpos m hm) j) hv
 
 /-- Bounds from neighboring powers of two have a fixed logarithmic error,
@@ -92,7 +92,7 @@ theorem positiveMultiplicative_log_error_bounds
   have hnp : (0 : ℝ) < n := by exact_mod_cast hn
   have hnlow := Real.log_le_log (pow_pos (by norm_num : (0 : ℝ) < 2) m) hlow'
   have hnupp := Real.log_le_log (pow_pos hnp k) hupp'
-  simp only [Real.log_pow, Nat.cast_add, Nat.cast_one] at hflow hfupp hnlow hnupp
+  simp at hflow hfupp hnlow hnupp
   have h₁ := mul_le_mul_of_nonneg_right hfupp hlog2
   have h₂ := mul_le_mul_of_nonneg_right hnlow hf2
   have h₃ := mul_le_mul_of_nonneg_right hnupp hf2

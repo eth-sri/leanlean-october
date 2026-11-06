@@ -12,7 +12,6 @@ namespace OAI
 
 /-! Complex arithmetic programs and asymptotic matrix multiplication costs. -/
 
-noncomputable section
 
 open scoped BigOperators
 
@@ -132,6 +131,5 @@ def matrixMultiplication (a b c : ℕ) :
 end Tensor
 end MatrixMultiplication.Foundation
 
-end
 
 end OAI

@@ -16,7 +16,6 @@ norm-specialization argument requires. -/
 
 namespace OAI.MatrixMultiplication.AuxiliarySeparation.Integral
 
-noncomputable section
 open scoped BigOperators
 
 /-- Lift a finite-field power basis to a monic integer polynomial quotient.
@@ -117,5 +116,4 @@ theorem exists_prime_clearing_convolution (p : ℕ) [Fact p.Prime] (a b : ℕ) :
       Finset.card_univ, Fintype.card_fin]
   · simp only [Fintype.card_fin, h]
 
-end
 end OAI.MatrixMultiplication.AuxiliarySeparation.Integral

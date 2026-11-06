@@ -54,7 +54,6 @@ theorem IsRestriction.refl (T : Tensor K X Y Z) : IsRestriction T T := by
   classical
   exact ⟨_, _, _, (Tensor.restrict_identity T).symm⟩
 
-omit [Fintype X] [Fintype Y] [Fintype Z] in
 theorem IsRestriction.trans {T : Tensor K X Y Z} {S : Tensor K U V W}
     {L : Tensor K P Q R} (hTS : IsRestriction T S) (hSL : IsRestriction S L) :
     IsRestriction T L := by
@@ -63,14 +62,12 @@ theorem IsRestriction.trans {T : Tensor K X Y Z} {S : Tensor K U V W}
   exact ⟨Tensor.composeRestrictionMatrix A D, Tensor.composeRestrictionMatrix B E,
     Tensor.composeRestrictionMatrix C F, Tensor.restrict_restrict D E F A B C L⟩
 
-omit [Fintype U] [Fintype V] [Fintype W] in
 theorem IsRestriction.pullback (T : Tensor K X Y Z)
     (fx : U → X) (fy : V → Y) (fz : W → Z) :
     IsRestriction (Tensor.pullback fx fy fz T) T := by
   classical
   exact ⟨_, _, _, Tensor.pullback_eq_restrict fx fy fz T⟩
 
-omit [Fintype X] [Fintype Y] [Fintype Z] in
 theorem IsRestriction.of_reindex (T : Tensor K X Y Z)
     (ex : U ≃ X) (ey : V ≃ Y) (ez : W ≃ Z) :
     IsRestriction T (Tensor.pullback ex ey ez T) := by
@@ -97,7 +94,6 @@ theorem IsRestriction.reindex_iff
     exact (IsRestriction.pullback T ex ey ez).trans
       (h.trans (IsRestriction.of_reindex S eu ev ew))
 
-omit [Fintype X] [Fintype Y] [Fintype Z] [Fintype U] [Fintype V] [Fintype W] in
 theorem IsRestriction.product {T : Tensor K X Y Z} {S : Tensor K U V W}
     {T' : Tensor K P Q R} {U' V' W' : Type*}
     [Fintype U'] [Fintype V'] [Fintype W'] {S' : Tensor K U' V' W'}
@@ -107,7 +103,6 @@ theorem IsRestriction.product {T : Tensor K X Y Z} {S : Tensor K U V W}
   rcases hS with ⟨D, E, F, rfl⟩
   exact ⟨_, _, _, (Tensor.restrict_product A B C D E F T' S').symm⟩
 
-omit [Fintype X] [Fintype Y] [Fintype Z] [Fintype U] [Fintype V] [Fintype W] in
 theorem IsRestriction.sum {T : Tensor K X Y Z} {S : Tensor K U V W}
     {T' : Tensor K P Q R} {U' V' W' : Type*}
     [Fintype U'] [Fintype V'] [Fintype W'] {S' : Tensor K U' V' W'}
@@ -117,7 +112,6 @@ theorem IsRestriction.sum {T : Tensor K X Y Z} {S : Tensor K U V W}
   rcases hS with ⟨D, E, F, rfl⟩
   exact ⟨_, _, _, (sumTensor_restrict A B C D E F T' S').symm⟩
 
-omit [Fintype X] [Fintype Y] [Fintype Z] in
 theorem IsRestriction.zero (S : Tensor K U V W) :
     IsRestriction (0 : Tensor K X Y Z) S := by
   refine ⟨0, 0, 0, ?_⟩
@@ -129,7 +123,6 @@ theorem IsRestriction.rank_le {T : Tensor K X Y Z} {S : Tensor K U V W}
   rcases h with ⟨A, B, C, rfl⟩
   exact exactRank_restrict_le S A B C
 
-omit [Fintype X] [Fintype Y] [Fintype Z] in
 theorem IsRestriction.eq_zero_of_zero {T : Tensor K X Y Z}
     (h : IsRestriction T (0 : Tensor K U V W)) : T = 0 := by
   rcases h with ⟨A, B, C, h⟩
@@ -539,12 +532,6 @@ theorem one_le_classOf_of_coefficient_one {X Y Z : Type*}
   simp [Tensor.restrict, ite_mul, mul_ite, hxyz]
 
 end General
-
-section Field
-
-variable {K : Type*} [Field K]
-
-end Field
 
 end MatrixMultiplication.AuxiliarySeparation.TensorSemiring
 

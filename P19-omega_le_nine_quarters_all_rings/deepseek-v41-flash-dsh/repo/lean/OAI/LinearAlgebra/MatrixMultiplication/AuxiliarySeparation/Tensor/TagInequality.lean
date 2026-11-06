@@ -28,7 +28,6 @@ The finite auxiliary separation inequality therefore supplies the integral
 bounds required by the entropy limit.
 -/
 
-noncomputable section
 
 open MatrixMultiplication.Foundation
 open scoped BigOperators Classical
@@ -89,7 +88,6 @@ def typeWordCoordinate (counts : Fin s → ℕ)
       (Fin (∑ a, counts a) → U)) : Fin (∑ a, counts a) → (Fin s × U) :=
   fun i => ((e y.1).val i, y.2 i)
 
-omit [Fintype X] [Fintype Y] [Fintype Z] in
 /-- Restricting both split legs to one exact type produces a shared-first
 tensor whose branches are precisely the prescribed branch products. -/
 theorem exactType_power_pullback (B : Fin s → Tensor K X Y Z)
@@ -202,26 +200,13 @@ theorem Character.sharedFirst_tag_of_separation_of_coefficient_one (χ : Charact
   χ.sharedFirst_tag_of_separation hsep q B
     (fun a => zero_lt_one.trans_le (χ.one_le_value_of_coefficient_one (hB a)))
 
-section DependentGeneral
-
-variable {U V : Fin s → Type} [∀ a, Fintype (U a)] [∀ a, Fintype (V a)]
-
-end DependentGeneral
-
 section Field
 
 variable {K : Type*} [Field K] [IsAlgClosed K]
-
-section Dependent
-
-variable {U V : Fin s → Type} [∀ a, Fintype (U a)] [∀ a, Fintype (V a)]
-
-end Dependent
 
 end Field
 
 end MatrixMultiplication.AuxiliarySeparation
 
-end
 
 end OAI

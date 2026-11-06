@@ -13,7 +13,6 @@ arbitrary finite algebra over a ring. -/
 
 namespace OAI.MatrixMultiplication.Foundation.Tensor
 
-noncomputable section
 open scoped BigOperators
 
 variable {R E X Y Z : Type*} [CommRing R] [CommRing E] [Algebra R E]
@@ -86,6 +85,5 @@ theorem RankAtMost.descend_finite_basis_powers {ι : Type*} [Fintype ι]
     simp only [Tensor.power, map_prod]
   exact hp.descend_finite_basis basis π hπ
 
-end
 end OAI.MatrixMultiplication.Foundation.Tensor
 

@@ -48,7 +48,6 @@ def paddedSharedBranch (B : ∀ i, Tensor K X (Y i) (Z i)) (i : Fin M) :
     (fun y b => if Sigma.mk i b = y then 1 else 0)
     (fun z c => if Sigma.mk i c = z then 1 else 0) (B i)
 
-omit [Fintype X] [∀ i, Fintype (Y i)] [∀ i, Fintype (Z i)] in
 @[simp] theorem sharedFirstDependentTensor_matching
     (B : ∀ i, Tensor K X (Y i) (Z i)) (i : Fin M)
     (x : X) (y : Y i) (z : Z i) :
